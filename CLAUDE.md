@@ -428,6 +428,24 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
   AMBIENCE, VOLUME. Cost: three looping sources, at most two one-shots at a time, 0.007 ms a frame for the ambience's tick; nothing fetched.
   Not taken: its money and reputation curves (nothing sells yet), its day scheduler (no daily cast), its languages, its blur shader (no blur).
 
+- **Interiors only near a door** (owner, 17 Oct 2026: "only load the parts of the interior that you can see from outside, and only load the
+  interior when you are close enough to enter a door area ... within 5 blocks of any entrance"; `src/interiors.js`): every still face sits in a
+  few batched meshes, so a building's inside was drawn from everywhere (the bodega's shelves from the castle: 116K of the 450K triangles in view
+  there). Each interior (the bodega's shop and back room, the apartment building's rooms, the dojo, the apartment house, the Diner, the Bar, every
+  stored room with walls) owns the faces inside its walls: those within 3 tiles of its door always drawn (what shows through it), the rest put
+  into the meshes' index only within 5 tiles of a door or inside (a tile more to leave); the apartment house's inner wall meshes hidden the same
+  way; the pool's water with the pool hall. The index is rebuilt only when an interior comes or goes. `?interiors=0` draws all. Measured at the
+  castle: 1.12M to 0.76M triangles a frame (all passes); the street 1.25M to 0.89M.
+- **`?trees=0`** hides the park's oaks (owner, 17 Oct 2026, for screenshots: "hide all trees on map so you dont get blocked").
+
+- **The tour's fixes** (owner, 17 Oct 2026, "fix", after a run through twenty spots): the shade by day gets a little sky (`clock.js`, the fill
+  .15 where it was .05: the buildings' backs were black boxes at 1pm; the sun still the light); the apartment house's lights three times as
+  strong, hung at half the storey and reaching 8 tiles (`apts.js`: the hall's one lamp of 3 at the ceiling lit nothing), and its inner walls
+  cut by the side you're on (an inner wall has a room on both sides); the dungeon's torches and fill brighter (`castle.js`); the water's own
+  glow fades with daylight outdoors (`WATER.glowK`, `clock.js`: the pond glowed green at noon); a stored room's menu spot just inside its door
+  (the Diner's stood outside behind a street light), a room without a door at its middle (the shrine's stood behind its wall). Not done: the
+  Walker's 56,700 triangles (every unworn hairstyle folded in his mesh, drawn in every pass) and the apartment house's 600 wall draw calls.
+
 ## THE MARKET: the one official map
 
 **THE MARKET** (owner, 17 Oct 2026: "one official MARKET map im gona start filling in") is the game's map here: every place the owner adds goes

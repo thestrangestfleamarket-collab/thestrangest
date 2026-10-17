@@ -42,7 +42,7 @@ function makeNPC(D,o){ const N={key:o.key,name:o.name,names:o.names,lv:o.lv||'do
         #include <skinning_vertex>
         vN=normalize(mat3(modelMatrix)*objectNormal); vec4 w=modelMatrix*vec4(transformed,1.); vW=w.xyz; gl_Position=projectionMatrix*viewMatrix*w; }`,
     fragmentShader:`uniform vec3 uL,uTint; uniform float uLv,uEye; uniform sampler2D uSM; uniform mat4 uLVP; varying vec3 vC,vN,vW; varying float vS,vR;
-      void main(){ if(abs(vR-uEye)<.5){ gl_FragColor=vec4(1.,.9,.3,1.); return; } float l=dot(normalize(vN)*(gl_FrontFacing?1.:-1.),uL); vec3 c0=min(vec3(1.),vC*1.1), c1=vC, c2=vC*.84*vec3(.95,.97,1.04), cd=vC*.7*vec3(.92,.95,1.06), c;
+      void main(){ if(abs(vR-uEye)<.5){ gl_FragColor=vec4(${o.eyeC||'1.,.9,.3'},1.); return; } float l=dot(normalize(vN)*(gl_FrontFacing?1.:-1.),uL); vec3 c0=min(vec3(1.),vC*1.1), c1=vC, c2=vC*.84*vec3(.95,.97,1.04), cd=vC*.7*vec3(.92,.95,1.06), c;
         if(uLv<.5)c=l>-.3?c1:c2;
         else{ int t=l>.55?0:l>.05?1:l>-.4?2:3;
           if(uLv>1.5&&t<2){ vec4 p=uLVP*vec4(vW,1.); vec3 q=p.xyz/p.w*.5+.5; if(q.x>0.&&q.x<1.&&q.y>0.&&q.y<1.&&q.z-.004>texture2D(uSM,q.xy).r)t=2; }
@@ -55,17 +55,19 @@ function makeNPC(D,o){ const N={key:o.key,name:o.name,names:o.names,lv:o.lv||'do
   const toon=new THREE.MeshToonMaterial({vertexColors:true,gradientMap:W3.G3,side:THREE.DoubleSide});
   toon.onBeforeCompile=s=>{ s.uniforms.uEye={value:o.eye??-1}; s.vertexShader='attribute float sh; attribute float reg; varying float vS,vR;\n'+s.vertexShader.replace('#include <color_vertex>','vColor=pow(color,vec3(2.2)); vS=sh; vR=reg;');
     s.fragmentShader='uniform float uEye; varying float vS,vR;\n'+s.fragmentShader.replace('#include <color_fragment>','#include <color_fragment>\n diffuseColor.rgb*=vS>.55?.36:vS>.15?.6:1.;').replace('#include <normal_fragment_begin>','float faceDirection=1.0; vec3 normal=normalize(vNormal); vec3 nonPerturbedNormal=normal;')
-      .replace('#include <opaque_fragment>','#include <opaque_fragment>\n if(abs(vR-uEye)<.5)gl_FragColor=vec4(1.,.9,.3,1.);').replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n totalEmissiveRadiance+=diffuseColor.rgb*0.16;'); };
-  toon.customProgramCacheKey=()=>'npctoon'+(o.eye??-1);
+      .replace('#include <opaque_fragment>','#include <opaque_fragment>\n if(abs(vR-uEye)<.5)gl_FragColor=vec4('+(o.eyeC||'1.,.9,.3')+',1.);').replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n totalEmissiveRadiance+=diffuseColor.rgb*0.16;'); };
+  toon.customProgramCacheKey=()=>'npctoon'+(o.eye??-1)+(o.eyeC||'');   // (o.eyeC: his eyes' glow, '1.,.2,.1' red; yellow if none)
   const me=o.skin?new THREE.SkinnedMesh(geo,mat):new THREE.Mesh(geo,mat); me.castShadow=true; me.receiveShadow=true; N.me=me; N.flat=mat; N.toon=toon; if(o.skin){ me.add(o.skin.bones[0]); me.bind(o.skin.skeleton); me.frustumCulled=false; }
   const H=o.metres/.84*TILE, s=H/tall, body=new THREE.Group(), g=new THREE.Group(); body.add(me); body.scale.set(s,s*ZU*24/TILE,s); g.add(body); MAPG[o.group||'down'].add(g);   // (his height as the world's verticals are drawn)
   // the platform's back lane, between the wall and the benches (tiles: x the platform's depth, y along it), in the scene
   // (or the lane given, o.lane, on the ground given, o.ground: a lane long one way, he goes a few tiles along it at a time, anywhere across it)
   const TX=x=>(x+27)*TILE+STN.DX, TZ=y=>(y+73)*TILE+STN.DZ, LN=o.lane||{x0:TX(-29.5),x1:TX(-28.6),z0:TZ(-84.2),z1:TZ(-61.9)}, LX0=LN.x0, LX1=LN.x1, LZ0=LN.z0, LZ1=LN.z1, QS=new URLSearchParams(location.search), ground=o.ground||MODS.station.ground, longX=LX1-LX0>LZ1-LZ0;
   const st={x:o.x??TX(-29),z:o.z??TZ(o.at),h:Math.PI/2,to:null,wait:+(QS.get('npcwait')||2),ph:Math.random()*6,R:o.radius*TILE,v:o.speed*TILE};
-  const pick=()=>{ for(let k=0;k<12;k++){ const r=(Math.random()<.5?-1:1)*(2+Math.random()*7)*TILE; st.to=longX?{x:Math.max(LX0,Math.min(LX1,st.x+r)),z:LZ0+Math.random()*(LZ1-LZ0)}:{x:LX0+Math.random()*(LX1-LX0),z:Math.max(LZ0,Math.min(LZ1,st.z+r))}; if(!o.free||o.free(st.to.x,st.to.z,st.R))return; } st.to=null; st.wait=1; };   // (o.free: where he may stand, when he has more than a lane: a spot that isn't, picked again)
+  const pick=()=>{ if(o.pick){ o.pick(st); return; } for(let k=0;k<12;k++){   // (o.pick: where he goes next, his own say: a guard's beat)
+    const r=(Math.random()<.5?-1:1)*(2+Math.random()*7)*TILE; st.to=longX?{x:Math.max(LX0,Math.min(LX1,st.x+r)),z:LZ0+Math.random()*(LZ1-LZ0)}:{x:LX0+Math.random()*(LX1-LX0),z:Math.max(LZ0,Math.min(LZ1,st.z+r))}; if(!o.free||o.free(st.to.x,st.to.z,st.R))return; } st.to=null; st.wait=1; };   // (o.free: where he may stand, when he has more than a lane: a spot that isn't, picked again)
   const block=(x,z,R)=>Math.hypot(x-st.x,z-st.z)<st.R+R;
-  N.tick=(dt,you)=>{ const dx=you.x-st.x, dz=you.z-st.z, near=Math.hypot(dx,dz)<3.5*TILE; let want=st.h, moving=false;
+  N.tick=(dt,you)=>{ if(o.brain)o.brain(dt,you,st,N);   // (o.brain: his mind each frame, setting where he goes (st.to), how fast (st.v), what he faces (st.face), whether he stays put (st.hold))
+    const dx=you.x-st.x, dz=you.z-st.z, near=!o.brain&&Math.hypot(dx,dz)<3.5*TILE; let want=st.h, moving=false;
     if(st.to){ const ex=st.to.x-st.x, ez=st.to.z-st.z, d=Math.hypot(ex,ez); if(d<.05){ st.to=null; st.wait=1.5+Math.random()*4; }
       else{ want=Math.atan2(ex,ez); const turn=Math.abs(((want-st.h+Math.PI*3)%(Math.PI*2))-Math.PI);
         if(turn<.5){ const step=Math.min(d,st.v*dt), nx=st.x+ex/d*step, nz=st.z+ez/d*step;
@@ -73,7 +75,7 @@ function makeNPC(D,o){ const N={key:o.key,name:o.name,names:o.names,lv:o.lv||'do
           if(o.free&&!o.free(nx,nz,st.R)){ st.to=null; st.wait=.5; }   // (something in his way: somewhere else)
           else if(Math.hypot(you.x-nx,you.z-nz)<st.R+.35||NPCS.some(q=>q!==N&&q.blocks(nx,nz,st.R))){ if((st.held=(st.held||0)+dt)>2){ st.to=null; st.held=0; st.wait=1; } }
           else{ st.x=nx; st.z=nz; moving=true; st.held=0; } } } }
-    else{ if(near)want=Math.atan2(dx,dz); if((st.wait-=dt)<=0&&!near)pick(); }
+    else{ if(st.face)want=Math.atan2(st.face.x-st.x,st.face.z-st.z); else if(near)want=Math.atan2(dx,dz); if(!st.hold&&(st.wait-=dt)<=0&&!near)pick(); }
     let dh=((want-st.h+Math.PI*3)%(Math.PI*2))-Math.PI; st.h+=dh*Math.min(1,dt*5);
     st.ph+=dt*(moving?o.stride:1.6);
     // the walk: rocking side to side, a bob each step; standing, a slow breath

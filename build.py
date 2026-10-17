@@ -139,13 +139,7 @@ const RESL=[.5,.75,1,1.5,2,3,4,6,8,12,16,24,32,48,64], V0=PPU*PXS;   // (past 16
 // CLOSE UP, ONE STEP FINER (owner, 17 Oct 2026: the opening "1 less than it is now, and when you zoom in to this level i want it to be this
 // resolution", his picture at 6 screen pixels a pixel, 1.5x): once a pixel of the chosen art would be 6 screen pixels or more, the art one step
 // finer; zoomed back out, back to the chosen
-// THE OWNER'S OWN TABLE (17 Oct 2026: "shift+r will allow me to set the resolution level for every zoom level as permanent ... i want to be able
-// to adjust it to any level and save"): the zoom in bands (each a quarter more than the last, ZB); a band he has set keeps its own fineness, any
-// level of RESL; a band he hasn't, the nearest one he has; none set, the rule below. ZRES0 is the game's own (what he exports, saved here for
-// good); his browser's changes go over it (market-zres) until he sends them
-const ZRES0={}, ZB=()=>Math.round(Math.log(ppu/PPU)/Math.log(1.25)), ZRES=(()=>{ let o={}; try{ o=JSON.parse(localStorage.getItem('market-zres')||'{}'); }catch(e){} return Object.assign({},ZRES0,o); })();
-const zres=()=>{ if(FULLRES||RES.hold)return null; const ks=Object.keys(ZRES); if(!ks.length)return null; const b=ZB(); let best=null, bd=1e9; for(const k of ks){ const d=Math.abs(+k-b)+(+k>b?.01:0); if(d<bd){ bd=d; best=ZRES[k]; } } return best; };
-const ZUPX=6, RES=()=>{ const z=zres(); return z!=null?RESL[Math.max(0,Math.min(RESL.length-1,z))]:RESL[Math.min(RESL.length-1,RESI+(V0*ppu/PPU/(PPU*RESL[RESI])>=ZUPX?1:0))]; };   // (V0: screen pixels a world unit at zoom 1, as it opened)
+const ZUPX=6, RES=()=>RESL[Math.min(RESL.length-1,RESI+(V0*ppu/PPU/(PPU*RESL[RESI])>=ZUPX?1:0))];   // (V0: screen pixels a world unit at zoom 1, as it opened; Shift+R's table taken out, owner 17 Oct 2026: "resolution is fine as it is")
 // NEVER SHARPER ZOOMED OUT (owner, 17 Oct 2026: "when i zoom out i dont want it to get this sharp ... never sharper than this resolution"): a
 // pixel is never smaller on screen than it is at the opening zoom for the sharpness chosen (MINPX); zoomed out past that, each pixel keeps its
 // size and takes in more of the world, instead of the picture getting finer (owner, 17 Oct 2026, his picture: "i dont want zoom getting any
@@ -158,7 +152,7 @@ const MINPX=()=>Math.max(1,Math.round(PXS/RES())), MAXPX=8, ZMAX=PPU*80;
 // (the menu's SHARP, 1.5x, the ceiling; the opening NORMAL, 1x, finer close up: ZUPX)
 const RESMAX=FULLRES?10:3, vpu=()=>V0*ppu/PPU, art=()=>PPU*RES(), pxS=()=>Math.max(MINPX(),Math.round(vpu()/art())), rppu=()=>Math.round(vpu()/art())<MINPX()?vpu()/pxS():art();
 function frustum(){ const u=rppu(); cam.left=-RW/2/u; cam.right=RW/2/u; cam.top=RH/2/u; cam.bottom=-RH/2/u; cam.updateProjectionMatrix(); }""")
-mod=rp(mod,"ppu*=Math.pow(ppuTo/ppu,ease); frustum();","ppu*=Math.pow(ppuTo/ppu,ease); if(pxS()!==SCL)resize(); else frustum(); if(RES()!==RES.was){ RES.was=RES(); resize(); }")
+mod=rp(mod,"ppu*=Math.pow(ppuTo/ppu,ease); frustum();","ppu*=Math.pow(ppuTo/ppu,ease); if(pxS()!==SCL)resize(); else frustum();")
 mod=rp(mod,"zoom ${(ppu/PPU).toFixed(2)}×`","zoom ${(SCL*rppu()/V0).toFixed(2)}× · art ${SCL===1&&vpu()<art()?'full':RES()+'×'}`")
 mod=rp(mod,"if(k==='-'||k==='_'){PXS=Math.min(12,PXS+1);resize();} if(k==='='||k==='+'){PXS=Math.max(1,PXS-1);resize();}",
   "if(k==='-'||k==='_'){RESI=Math.max(0,RESI-1);resize();} if(k==='='||k==='+'){ if(pxS()>1||vpu()>art())RESI=Math.min(RESMAX,RESI+1); resize(); }   // (= finer, back up to the opening's, never past)")

@@ -76,7 +76,7 @@ const musScale=(g,bh)=>g.scale.set(W3.SZ/PPU,ZU*W3.SZ*(bh||W3.BH||1),W3.SZ/PPU);
   // arms and fingers with weight, a breath and a nod with the beat; at a tune's end, a moment's rest, the next in the book
   const a={t:0}; let song=0, rest=0;
   MUS.start=()=>{ rest=0; song=gtNext(song); gtSet(song); }; MUS.stop=()=>gtHush();   // (his turn on the stage: a tune from its start; off it, silent)
-  MUS.tick=dt=>{ if(MUS.watch&&!UI.freeCam){ MUS.watch=false; RES.hold=false; SHB.hidden=true; SHB.style.display='none'; if(MUS.res0!=null){ RESI=MUS.res0; MUS.res0=null; resize(); } } const d=Math.hypot(pos.x-AT.x,pos.z-AT.z); if(!MUS.on||!MAPG.bodega.visible||d>18&&!MUS.watch){ gtHush(); return; }
+  MUS.tick=dt=>{ if(MUS.watch&&!UI.freeCam){ MUS.watch=false; SHB.hidden=true; SHB.style.display='none'; if(MUS.res0!=null){ RESI=MUS.res0; MUS.res0=null; resize(); } } const d=Math.hypot(pos.x-AT.x,pos.z-AT.z); if(!MUS.on||!MAPG.bodega.visible||d>18&&!MUS.watch){ gtHush(); return; }
     if(GTS.t>GTEND+1.5){ rest+=dt; if(rest>2.5){ rest=0; song=gtNext(song); gtSet(song); } }
     R.farOnly(false); GTS.t+=dt; const t=GTS.t, P=gtPose(t); npcSpring(a,P,dt,NPCARMS); gtFing(P,RIG.build(P,null),P._T); npcSpring(a,P,dt,NPCFING); a.t+=dt;
     P.nod+=Math.sin(a.t*1.6)*0.6*R.D+Math.sin(t/GTBEAT*Math.PI)*0.8*R.D; a.P=P; musScale(g);
@@ -97,7 +97,7 @@ const musScale=(g,bh)=>g.scale.set(W3.SZ/PPU,ZU*W3.SZ*(bh||W3.BH||1),W3.SZ/PPU);
   // A DOUBLE CLICK ON HIM: walk up, then the camera close on his hands (the free camera, there; C goes back)
   const hitBox=new THREE.Mesh(new THREE.BoxGeometry(22,58,24),new THREE.MeshBasicMaterial({visible:false})); hitBox.position.set(0,29,2); g.add(hitBox);   // (what a double click finds: him, roughly)
   UI.thing({name:'THE GUITARIST',obj:hitBox,reach:1.6,tall:1.9,act:()=>{ const p=new THREE.Vector3().setFromMatrixPosition(new THREE.Matrix4().multiplyMatrices(g.matrixWorld,new THREE.Matrix4().makeTranslation(GTF.o.x,GTF.o.y,GTF.o.z)));
-    UI.setFree(true); UI.camT.copy(p); ppuTo=PPU*16; MUS.watch=true; RES.hold=true; MUS.res0=RESI; RESI=MUS.sharp(); resize(); SHB.show(); }});   // (owner, 17 Oct 2026: "when you watch the guitarist zoom in all the way and add a sharpen bar to adjust to the level i want": all the way in that still shows his hands and the guitar, the wheel closer still; and the SHARPEN bar)
+    UI.setFree(true); UI.camT.copy(p); ppuTo=PPU*16; MUS.watch=true; MUS.res0=RESI; RESI=MUS.sharp(); resize(); SHB.show(); }});   // (owner, 17 Oct 2026: "when you watch the guitarist zoom in all the way and add a sharpen bar to adjust to the level i want": all the way in that still shows his hands and the guitar, the wheel closer still; and the SHARPEN bar)
   // THE SHARPEN BAR (while you watch him): the art's fineness from the coarsest to one screen pixel each (past the menu's ceiling, here only), the
   // level kept in this browser for the next time; back as it was when you leave
   const SHB=document.createElement('div'); SHB.id='shbar'; SHB.hidden=true; SHB.style.cssText='position:fixed;left:50%;bottom:52px;transform:translateX(-50%);z-index:6;display:none;gap:10px;align-items:center;padding:8px 12px;background:#0b0d13e0;border:2px solid #2a3040;font:11px Silkscreen,monospace;letter-spacing:1px;color:#c9ccd6';

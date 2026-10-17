@@ -21,7 +21,6 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
         try{ localStorage.setItem('market-keys',JSON.stringify(BIND)); }catch(err){} REV=rev(); } waiting=null; drawKeys(); e.preventDefault(); return null; }
     if(raw==='escape'){ if(e.type==='keydown'){ if(ED.on)ED.exit(); else if(WE.on)WE.toggle(); else toggleMenu(); } return null; }
     if(e.target&&/^(TEXTAREA|INPUT|SELECT)$/.test(e.target.tagName))return null;   // (typing in a box isn't walking)
-    if(raw==='r'&&e.shiftKey){ if(e.type==='keydown'&&!e.repeat)UI.zresP(); return null; }   // (Shift+R: the fineness for each zoom, his table: below)
     if(raw==='?'){ if(e.type==='keydown'&&!e.repeat)UI.moves(); return null; }   // (? : every action and move he has, with its key: below)
     if(raw==='m'&&e.shiftKey&&!ED.on){ if(e.type==='keydown'&&!e.repeat)MAPED.toggle(); return null; }   // (Shift+M: the map editor, src/mapedit.js)
     if(raw==='e'&&e.shiftKey&&!ED.on&&!UI.menuOpen){ if(e.type==='keydown'&&!e.repeat)WE.toggle(); return null; }   // (Shift+E: edit the world, src/worldedit.js)
@@ -40,7 +39,7 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
       const row=(k,t)=>'<div style="display:flex;gap:14px"><b style="min-width:120px;color:#f2c14e">'+k+'</b><span>'+t+'</span></div>', h=t=>'<div style="margin:12px 0 4px;color:#8a8f9c">'+t+'</div>';
       let o='<div style="display:flex;justify-content:space-between"><b>WHAT YOU CAN DO</b><span style="color:#8a8f9c">? OR ESC CLOSES</span></div>'+h('KEYS (CHANGE THEM IN THE MENU\'S KEYS)');
       for(const [a,what] of ACTS)o+=row(NAME(keyOf(a)),what.toUpperCase());
-      o+=row('N','NOON / 7 PM')+row('SHIFT + E','EDIT THE WORLD')+row('SHIFT + R','RESOLUTION FOR EACH ZOOM')+row('SHIFT + M','MAP EDITOR: MOVE THE PLACES AND THE LAND')+row('ESC','THE MENU')+row('?','THIS LIST');
+      o+=row('N','NOON / 7 PM')+row('SHIFT + E','EDIT THE WORLD')+row('SHIFT + M','MAP EDITOR: MOVE THE PLACES AND THE LAND')+row('ESC','THE MENU')+row('?','THIS LIST');
       const M=RIG.MOVES||{}, fights=Object.keys(M).filter(n=>M[n]&&M[n].combo);
       if(fights.length){ o+=h('FIGHTING: J PUNCH, K KICK; PRESS AGAIN IN TIME TO CHAIN'); for(const n of fights){ const c=M[n].combo; o+=row(n.replace(/([A-Z])/g,' $1').toUpperCase(),Object.entries(c).map(([k,v])=>k+' → '+v.replace(/([A-Z])/g,' $1').toUpperCase()).join(' · ')); } }
       const K=RIG.KEYMOVE||{}; if(Object.keys(K).length){ o+=h('YOUR OWN MOVES (HIS SHAPE → ANIMATE)'); for(const [k,n] of Object.entries(K))o+=row(k,n.toUpperCase()); }
@@ -48,25 +47,6 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
         +row('LEFT DRAG','MOVE THE VIEW (ISOMETRIC, MAP) · LOOK ROUND (THIRD PERSON, BEHIND, FIRST)')+row('RIGHT DRAG','TURN THE VIEW')+row('WHEEL','ZOOM');
       P.innerHTML=o; P.style.display='block'; };
     addEventListener('keydown',e=>{ if(e.key==='Escape'&&P.style.display!=='none'){ P.style.display='none'; e.stopImmediatePropagation(); } },true); }
-  // ---- THE FINENESS FOR EVERY ZOOM (owner, 17 Oct 2026: "shift+r will allow me to set the resolution level for every zoom level as permanent. once
-  // i select i will export to you and you will save that as perm for game. i want to be able to adjust it to any level and save"): a panel that
-  // follows the zoom; its slider sets this zoom band's art to any level of RESL (build.py's ZRES), kept in the browser at once; EXPORT gives
-  // the table to send, which goes into ZRES0 for good
-  { const P=document.createElement('div'); P.id='zresp'; P.style.cssText='position:fixed;right:12px;top:12px;z-index:21;display:none;width:300px;padding:12px 14px;background:#0b0d13f2;border:2px solid #2a3040;color:#c9ccd6;font:11px Silkscreen,monospace;letter-spacing:1px;line-height:1.8';
-    P.innerHTML='<div style="display:flex;justify-content:space-between"><b>RESOLUTION BY ZOOM</b><span style="color:#8a8f9c">SHIFT+R</span></div><div id="zrI"></div>'
-      +'<input id="zrS" type="range" min="0" max="'+(RESL.length-1)+'" step="1" style="width:100%"><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">'
-      +'<button class="btn" id="zrC">COARSER</button><button class="btn" id="zrF">FINER</button><button class="btn" id="zrX">UNSET THIS ZOOM</button><button class="btn" id="zrA">CLEAR ALL</button><button class="btn" id="zrE">EXPORT</button></div>'
-      +'<div id="zrL" style="margin-top:8px;color:#8a8f9c"></div><textarea id="zrT" readonly style="display:none;width:100%;height:70px;margin-top:6px;background:#000;color:#f2c14e;font:11px monospace"></textarea>';
-    document.body.appendChild(P); const q=s=>P.querySelector(s), save=()=>{ try{ localStorage.setItem('market-zres',JSON.stringify(ZRES)); }catch(e){} resize(); show(); };
-    const lv=()=>{ const r=RES(); return RESL.indexOf(r); };
-    const set=i=>{ ZRES[ZB()]=Math.max(0,Math.min(RESL.length-1,i)); save(); };
-    const show=()=>{ const b=ZB(), own=ZRES[b]!=null; q('#zrI').innerHTML='ZOOM '+(ppu/PPU).toFixed(2)+'× (BAND '+b+')<br>ART '+RES()+'× · LEVEL '+lv()+' · '+(own?'<span style="color:#f2c14e">SET HERE</span>':Object.keys(ZRES).length?'FROM THE NEAREST SET':'THE GAME\'S RULE');
-      q('#zrS').value=lv(); const ks=Object.keys(ZRES).map(Number).sort((a,b)=>a-b); q('#zrL').textContent=ks.length?'SET: '+ks.map(k=>Math.pow(1.25,k).toFixed(2)+'×→'+RESL[ZRES[k]]+'×').join('  '):'NOTHING SET YET'; };
-    q('#zrS').oninput=e=>set(+e.target.value); q('#zrC').onclick=()=>set(lv()-1); q('#zrF').onclick=()=>set(lv()+1);
-    q('#zrX').onclick=()=>{ delete ZRES[ZB()]; save(); }; q('#zrA').onclick=()=>{ for(const k in ZRES)delete ZRES[k]; save(); };
-    q('#zrE').onclick=()=>{ const t=q('#zrT'), j=JSON.stringify(ZRES); t.value='ZRES '+j; t.style.display='block'; t.select(); try{ navigator.clipboard.writeText(t.value).then(()=>{ q('#zrE').textContent='COPIED'; setTimeout(()=>q('#zrE').textContent='EXPORT',1500); },()=>{}); }catch(e){} };
-    let iv=0; UI.zresP=()=>{ const on=P.style.display==='none'; P.style.display=on?'block':'none'; clearInterval(iv); if(on){ show(); iv=setInterval(show,250); } };
-    P.addEventListener('keydown',e=>e.stopPropagation()); P.addEventListener('mousedown',e=>e.stopPropagation()); P.addEventListener('wheel',e=>e.stopPropagation()); }
   // ---- FREE CAMERA and FLY
   const badge=document.createElement('div'); badge.id='mode'; document.body.appendChild(badge);
   const drawBadge=()=>{ const m=[UI.freeCam&&'FREE CAMERA: '+NAME(keyOf('c'))+' to go back',UI.fly&&'FLY: '+NAME(keyOf('g'))+' to land'].filter(Boolean); badge.textContent=m.join(' · '); badge.hidden=!m.length; };
@@ -284,7 +264,7 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
 // ---- EVERY PANEL CLOSES AND MOVES (owner, 17 Oct 2026: "make sure menus have way to exit out, allow all menus to be draggable"): each panel gets
 // an X in its corner (what Escape or its own key would do) and is dragged by any of its plain parts (not its buttons, sliders, fields or the map);
 // panels made later, or whose insides are rewritten (the ? list), get their X back on the next look round (a few times a second, cheap)
-{ const PANS=[['menu',()=>UI.toggleMenu(),'.box'],['ed',()=>ED.exit()],['looks',el=>{ el.hidden=true; }],['we',()=>WE.toggle()],['movesp'],['zresp'],['maped',()=>MAPED.toggle()],['shbar'],['hud'],['stat'],['shd']];
+{ const PANS=[['menu',()=>UI.toggleMenu(),'.box'],['ed',()=>ED.exit()],['looks',el=>{ el.hidden=true; }],['we',()=>WE.toggle()],['movesp'],['maped',()=>MAPED.toggle()],['shbar'],['hud'],['stat'],['shd']];
   const css=document.createElement('style'); css.textContent='.pX{position:absolute;right:4px;top:4px;z-index:2;font:12px Silkscreen,monospace;color:#f2c14e;background:#0e1016;border:2px solid #3a3f4e;width:24px;height:24px;line-height:18px;padding:0;cursor:pointer} .pDrag{cursor:move}'; document.head.appendChild(css);
   const hide=el=>{ el.hidden=true; if(el.style.display)el.style.display='none'; };
   const NOPE='button,input,select,textarea,a,label,canvas,option,.pX';

@@ -38,7 +38,7 @@ function figureMesh(PCS,key){ const NP=Math.max(MUSNP,PCS.length), PM={value:Arr
   const me=new THREE.Mesh(all,mat); me.customDistanceMaterial=dist; me.customDepthMaterial=depth; me.castShadow=true; me.receiveShadow=true; me.frustumCulled=false;
   const M=(F,out)=>out.set(F.x.x,F.y.x,F.z.x,F.o.x, F.x.y,F.y.y,F.z.y,F.o.y, F.x.z,F.y.z,F.z.z,F.o.z, 0,0,0,1);
   // a piece to its frame; the player's own pieces with his build's sizes on them (W3.E, as his are: src/looks.js, editor.js)
-  return {me,PM,tris:all.attributes.position.count/3,per:geos.map((g,i)=>[PCS[i].n,g.attributes.position.count/3]),set:(i,F)=>{ M(F,PM.value[i]); const e=PCS[i].e; if(e!=null&&W3.E&&W3.E[e])W3.applyE(PM.value[i],W3.E[e],F.o); }}; }
+  return {me,PM,tris:all.attributes.position.count/3,per:geos.map((g,i)=>[PCS[i].n,g.attributes.position.count/3]),set:(i,F)=>{ M(F,PM.value[i]); const p=PCS[i], E=p.E!==undefined?p.E:p.e!=null&&W3.E&&W3.E[p.e]; if(E)W3.applyE(PM.value[i],E,F.o); }}; }   // (E: a piece's own sizes, not his: the singer's FEMALE body)
 // A PLAIN BOX AS ITS TWELVE TRIANGLES (P.box: its middle and half sizes where its shape is), in its own frame as meshOf puts a piece (a piano
 // key: some 1,270 triangles from the shape's grid, 12 this way)
 function musBox(P){ const [cx,cy,cz,hx,hy,hz]=P.box, F=P.F0, g=new THREE.BoxGeometry(2*hx,2*hy,2*hz).toNonIndexed(), p=g.attributes.position, nn=g.attributes.normal, n=p.count, mi=RIG.MATS.indexOf(P.m), r=W3.ramp[mi];
@@ -47,7 +47,7 @@ function musBox(P){ const [cx,cy,cz,hx,hy,hz]=P.box, F=P.F0, g=new THREE.BoxGeom
     pos.set([d(x,y,z,F.x),d(x,y,z,F.y),d(x,y,z,F.z)],i*3); nor.set([d(a,b,c,F.x),d(a,b,c,F.y),d(a,b,c,F.z)],i*3); c1.set([r[1].r,r[1].g,r[1].b],i*3); }
   const o=new THREE.BufferGeometry(); o.setAttribute('position',new THREE.BufferAttribute(pos,3)); o.setAttribute('normal',new THREE.BufferAttribute(nor,3)); o.setAttribute('c1',new THREE.BufferAttribute(c1,3)); o.setAttribute('mat',new THREE.BufferAttribute(new Float32Array(n).fill(mi),1)); return o; }
 // his size, the player's (W3.SZ, a fifth bigger; his build's height, W3.BH), from his feet
-const musScale=g=>g.scale.set(W3.SZ/PPU,ZU*W3.SZ*(W3.BH||1),W3.SZ/PPU);
+const musScale=(g,bh)=>g.scale.set(W3.SZ/PPU,ZU*W3.SZ*(bh||W3.BH||1),W3.SZ/PPU);   // (bh: a body's own height, the singer's)
 { const R=RIG, V=R.V, S=STORE.bar, AT={x:BOD.X(S.gtr.x),z:BOD.Z(S.gtr.y),hd:0,y:BOD.Y(S.stage.z)};
   // his pieces: the player's (musBody, the shapes shared with the others: share), and the guitar in its own frame
   const PCS=musBody().PCS;

@@ -15,6 +15,7 @@ const LOOKS={};
   // 10% smaller"): MALE is him, his hips a tenth narrower than they were; FEMALE the slim one; the other six builds gone
   const BUILDS=[['MALE',1,{hips:[.81,1,.873],torso:sz(1.05,1.06),...arms(1.05,1.03),...legs(1.04,1)}],
     ['FEMALE',.95,{torso:[.82,.98,1],neck:[.84,1.04,.84],head:sz(.95),hips:[1.08,1.04,1.04],...arms(.8),...LR('hand',[.84,.9,.84]),...legs(1.02,.9),...LR('shoe',[.85,.92,.85])},1]];
+  LOOKS.BUILDS=BUILDS;   // (the bodies, for others built on his: the singer wears the FEMALE one, src/singer.js)
   const ALLN=[...new Set(BUILDS.flatMap(b=>Object.keys(b[2])))];
   const L={name:'',sex:'M',build:0,eyes:0,hair:0,skin:1,hairc:1,eye:0,shirt:0,pants:0,shoes:0};
   try{ const o=JSON.parse(localStorage.getItem('market-looks')||'{}'); o.build=o.sex==='F'||o.build>=6?1:0; Object.assign(L,o);   /* (a looks saved with the old eight builds: its sex keeps) */ }catch(e){}

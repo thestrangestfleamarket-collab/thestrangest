@@ -5,6 +5,8 @@
 # Each model: its faces (three corners each, flat: the low-poly look), each coloured by its material (the pack's textures are near-flat colours:
 # the texture's mean, so the game needs no texture, as the rule is), its feet at 0, 1 tall; its own height in metres kept, so park.js can
 # scale it as the owner wants (trees 5 to 20 times a person).
+# (NO TREES, owner 17 Oct 2026: "remove all the trees from game for now": data/forest.json now keeps only the rocks; a bake that puts the
+# trees back is his call)
 import sys, os, json, struct, base64, numpy as np
 R=sys.argv[1]
 def glb(f):

@@ -47,7 +47,7 @@ const PB={on:false,ready:false,loose:0.5};
     PCS.forEach((pc,i)=>{ const j=PART[i]; if(j<0)return; const O=new THREE.Matrix4().multiplyMatrices(Bm[j],M(R.frameOf(pc.on||pc.n,B))); const PM=W3.PM.value[i].multiplyMatrices(Fb[j],O);
       if(W3.E&&W3.E[i])W3.applyE(PM,W3.E[i],new THREE.Vector3().setFromMatrixPosition(PM)); });
     return true; };
-  PB.load=()=>{ if(RAPIER||PB.loading)return; PB.loading=true; import('https://cdn.jsdelivr.net/npm/@dimforge/rapier3d-compat@0.12.0/rapier.es.js').then(async m=>{ RAPIER=m.default||m; await RAPIER.init(); PB.ready=true; need=true; }).catch(e=>{ console.warn('physics body: Rapier did not load',e); PB.on=false; }); };
+  PB.load=()=>{ if(RAPIER||PB.loading)return; PB.loading=true; import('https://cdn.jsdelivr.net/npm/@dimforge/rapier3d-compat@0.12.0/rapier.es.js').then(async m=>{ RAPIER=m.default||m; await RAPIER.init(); PB.ready=true; need=true; PB.R=RAPIER; (PB.onReady||[]).forEach(f=>f()); /* (the street's characters take the engine too: npc-street) */ }).catch(e=>{ console.warn('physics body: Rapier did not load',e); PB.on=false; }); };
   PB.set=on=>{ PB.on=on; if(on){ PB.load(); need=true; } try{ localStorage.setItem('market-physbody',on?'1':'0'); }catch(e){} };
   let on0=true; try{ const v=localStorage.getItem('market-physbody'); if(v!=null)on0=v==='1'; const l=localStorage.getItem('market-loose'); if(l!=null)PB.loose=+l; }catch(e){} PB.set(on0);
 }

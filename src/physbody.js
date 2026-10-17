@@ -19,7 +19,8 @@ const PB={on:false,ready:false,loose:0.5};
   const S=new THREE.Matrix4(), T=new THREE.Matrix4(), Q=new THREE.Quaternion(), P=new THREE.Vector3(), Sc=new THREE.Vector3(), tgt=KEYS.map(()=>({p:new THREE.Vector3(),q:new THREE.Quaternion(),m:new THREE.Matrix4(),p0:new THREE.Vector3(),v:new THREE.Vector3()})), q0=new THREE.Quaternion(), dq=new THREE.Quaternion(), ax=new THREE.Vector3();
   // where each part should be: his pose's frame for it, where he stands, turned to his heading (in his own units, the world's scaled to him)
   // (and how fast each is going: his walk's own speed handed to the part, so the body keeps up with the legs and only the give lags)
-  function targets(B,x,y,z,hd,dt){ T.makeRotationY(hd).setPosition(x*PPU,y/ZU,z*PPU); KEYS.forEach((k,i)=>{ const t=tgt[i]; t.p0.copy(t.p); t.m.multiplyMatrices(T,M(R.frameOf(k,B))); t.m.decompose(t.p,t.q,Sc); t.v.subVectors(t.p,t.p0).divideScalar(Math.max(dt,1e-3)); if(t.v.length()>600)t.v.set(0,0,0); }); }
+  function targets(B,x,y,z,hd,dt){ const k=W3.SZ; T.makeRotationY(hd).setPosition(x*PPU/k,y/ZU/k,z*PPU/k);   // (the world in his units, he a fifth bigger: W3.SZ)
+    KEYS.forEach((k,i)=>{ const t=tgt[i]; t.p0.copy(t.p); t.m.multiplyMatrices(T,M(R.frameOf(k,B))); t.m.decompose(t.p,t.q,Sc); t.v.subVectors(t.p,t.p0).divideScalar(Math.max(dt,1e-3)); if(t.v.length()>600)t.v.set(0,0,0); }); }
   function build(){ const G=R.G?R.G():280; world=new RAPIER.World({x:0,y:-G,z:0}); world.timestep=1/120;
     ground=world.createRigidBody(RAPIER.RigidBodyDesc.kinematicPositionBased()); world.createCollider(RAPIER.ColliderDesc.cuboid(400,5,400).setTranslation(0,-5,0).setFriction(1.2).setCollisionGroups(0x00020001),ground);
     bodies=KEYS.map((k,i)=>{ const t=tgt[i], b=BOX[i], rb=world.createRigidBody(RAPIER.RigidBodyDesc.dynamic().setTranslation(t.p.x,t.p.y,t.p.z).setRotation({x:t.q.x,y:t.q.y,z:t.q.z,w:t.q.w}).setLinearDamping(0.6).setAngularDamping(1.5).setCcdEnabled(/^(hand|shoe)/.test(k)));
@@ -37,10 +38,10 @@ const PB={on:false,ready:false,loose:0.5};
         rb.setLinvel({x:v.x+((t.p.x-p.x)*kp+f.x-v.x)*0.7,y:v.y+((t.p.y-p.y)*kp+f.y-v.y)*0.7,z:v.z+((t.p.z-p.z)*kp+f.z-v.z)*0.7},true); } }); }
   PB.step=(dt,B,x,y,z,hd,gy,down)=>{ if(!PB.on||!PB.ready||ED.anim)return false; targets(B,x,y,z,hd,dt); if(need){ build(); }
     if(tgt[0].p.distanceTo(bodies[0].translation())>40)reset();   // (taken somewhere: the map, the stairs' level, a teleport)
-    ground.setNextKinematicTranslation({x:x*PPU,y:gy/ZU,z:z*PPU}); acc=Math.min(acc+dt,6/120);
+    ground.setNextKinematicTranslation({x:x*PPU/W3.SZ,y:gy/ZU/W3.SZ,z:z*PPU/W3.SZ}); acc=Math.min(acc+dt,6/120);
     while(acc>=1/120){ acc-=1/120; drive(1/120,down); world.step(); }
     // his pieces where their parts are (each riding its part as his pose has it); he in the world as his units scaled, not turned (the parts are)
-    W3.group.position.set(0,0,0); W3.group.rotation.set(0,0,0); W3.group.scale.set(1/PPU,ZU,1/PPU); W3.L.applyAxisAngle(new THREE.Vector3(0,1,0),hd); W3.G.value.identity();
+    W3.group.position.set(0,0,0); W3.group.rotation.set(0,0,0); W3.group.scale.set(W3.SZ/PPU,ZU*W3.SZ,W3.SZ/PPU); W3.L.applyAxisAngle(new THREE.Vector3(0,1,0),hd); W3.G.value.identity();
     const Fb=KEYS.map((k,i)=>{ const rb=bodies[i], p=rb.translation(), r=rb.rotation(); return new THREE.Matrix4().compose(P.set(p.x,p.y,p.z),Q.set(r.x,r.y,r.z,r.w),Sc.set(1,1,1)); });
     const Bm=KEYS.map(k=>M(R.frameOf(k,B)).invert());
     PCS.forEach((pc,i)=>{ const j=PART[i]; if(j<0)return; const O=new THREE.Matrix4().multiplyMatrices(Bm[j],M(R.frameOf(pc.on||pc.n,B))); const PM=W3.PM.value[i].multiplyMatrices(Fb[j],O);

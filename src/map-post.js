@@ -1,5 +1,5 @@
 // ---- THE POOL ROOM FROM OUTSIDE: its brick (the row's, as the bodega's), its door on the sidewalk, its roof; cut with its walls while you're inside ----
-grab('poolout',()=>{ const P=POOLR, X=P.X, Z=P.Z, Y=P.Y, H=P.H, DOOR=[17.4,18.6], cw=MODS.pool.cut;   // (cw: the room's four walls' cuts: west, east, back, front)
+grab('poolout',()=>{ const P=POOLR, X=P.X, Z=P.Z, Y=P.Y, H=P.H, DOOR=[17.22,18.78], cw=MODS.pool.cut;   // (cw: the room's four walls' cuts: west, east, back, front)
   const face=(pts,w,h,fn,pl)=>{ const c=document.createElement('canvas'); c.width=Math.round(w); c.height=Math.round(h); const g=c.getContext('2d'), im=g.createImageData(c.width,c.height);
     for(let j=0;j<c.height;j++)for(let i=0;i<c.width;i++){ const v=fn(i,j), k=(j*c.width+i)*4; if(!v)continue; im.data[k]=v[0]; im.data[k+1]=v[1]; im.data[k+2]=v[2]; im.data[k+3]=255; } g.putImageData(im,0,0);
     const t=new THREE.CanvasTexture(c); t.magFilter=t.minFilter=THREE.NearestFilter; t.generateMipmaps=false; t.colorSpace=THREE.SRGBColorSpace;
@@ -10,11 +10,11 @@ grab('poolout',()=>{ const P=POOLR, X=P.X, Z=P.Z, Y=P.Y, H=P.H, DOOR=[17.4,18.6]
   face([[X(P.x0-.2),Y(0),Z(P.y1)],[X(P.x0-.2),Y(0),Z(P.y0)],[X(P.x0-.2),Y(H),Z(P.y0)],[X(P.x0-.2),Y(H),Z(P.y1)]],P.y1*24,H,(i,j)=>brick(-1,0,P.y1-(i+.5)/24,P.x0,H-j-.5),cw[0].pl);
   face([[X(P.x1+.2),Y(0),Z(P.y0)],[X(P.x1+.2),Y(0),Z(P.y1)],[X(P.x1+.2),Y(H),Z(P.y1)],[X(P.x1+.2),Y(H),Z(P.y0)]],P.y1*24,H,(i,j)=>brick(1,0,(i+.5)/24,P.x1,H-j-.5),cw[1].pl);
   face([[X(P.x1),Y(0),Z(P.y0-.2)],[X(P.x0),Y(0),Z(P.y0-.2)],[X(P.x0),Y(H),Z(P.y0-.2)],[X(P.x1),Y(H),Z(P.y0-.2)]],P.x1*24,H,(i,j)=>brick(0,-1,P.x1-(i+.5)/24,P.y0,H-j-.5),cw[2].pl);
-  face([[X(P.x0),Y(0),Z(P.y1+.2)],[X(P.x1),Y(0),Z(P.y1+.2)],[X(P.x1),Y(H),Z(P.y1+.2)],[X(P.x0),Y(H),Z(P.y1+.2)]],P.x1*24,H,(i,j)=>{ const u=(i+.5)/24, z=H-j-.5; return u>=DOOR[0]&&u<DOOR[1]&&z<72?null:brick(0,1,u,P.y1,z); },cw[3].pl);
+  face([[X(P.x0),Y(0),Z(P.y1+.2)],[X(P.x1),Y(0),Z(P.y1+.2)],[X(P.x1),Y(H),Z(P.y1+.2)],[X(P.x0),Y(H),Z(P.y1+.2)]],P.x1*24,H,(i,j)=>{ const u=(i+.5)/24, z=H-j-.5; return u>=DOOR[0]&&u<DOOR[1]&&z<94?null:brick(0,1,u,P.y1,z); },cw[3].pl);
   // the door's frame through the wall's thickness
   const fm=new THREE.MeshLambertMaterial({color:new THREE.Color(70/255,72/255,78/255),clippingPlanes:[cw[3].pl]});
-  for(const u of DOOR){ const m=new THREE.Mesh(new THREE.BoxGeometry(.06,Y(72),.2*TILE),fm); m.position.set(X(u),Y(36),Z(P.y1+.1)); scene.add(m); }
-  { const m=new THREE.Mesh(new THREE.BoxGeometry((DOOR[1]-DOOR[0])*TILE,.06,.2*TILE),fm); m.position.set(X((DOOR[0]+DOOR[1])/2),Y(72),Z(P.y1+.1)); scene.add(m); }
+  for(const u of DOOR){ const m=new THREE.Mesh(new THREE.BoxGeometry(.06,Y(94),.2*TILE),fm); m.position.set(X(u),Y(47),Z(P.y1+.1)); scene.add(m); }
+  { const m=new THREE.Mesh(new THREE.BoxGeometry((DOOR[1]-DOOR[0])*TILE*BLDK,.06,.2*TILE),fm); m.position.set(X((DOOR[0]+DOOR[1])/2),Y(94),Z(P.y1+.1)); scene.add(m); }
   // the roof: the tar of a flat roof, its cope round it; hidden while you're inside
   const roof=new THREE.Mesh(new THREE.BoxGeometry((P.x1-P.x0+.4)*TILE,.08,(P.y1-P.y0+.4)*TILE),new THREE.MeshLambertMaterial({color:new THREE.Color(.2,.2,.21)})); roof.position.set(X((P.x0+P.x1)/2),Y(H)+.04,Z((P.y0+P.y1)/2)); scene.add(roof); MODS.pool.roof=roof; });
 // ---- THE SUBWAY'S STAIRS: from the sidewalk (its top at the street's side) twelve steps down to the station's exit tunnel, its side walls, a

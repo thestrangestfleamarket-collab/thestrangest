@@ -105,7 +105,7 @@ WATER.under=(renderer,scene,cam,lamps)=>{ const w=renderer.domElement.width, h=r
 // splashes, strokes and steps push the water
 WATER.feed=(st,pos,dt,go,keys)=>{ const b=POOLR.inBasin(pos.x,pos.z), in0=st.water&&st.water.in;
   WATER.rise=in0?0.065/(POOLR.LX*POOLR.LY*0.84*0.84)/WATER.MPU:0; WATER.mesh.position.y=WATER.lvl+WATER.rise;   // (his body in it, some 65 litres, over the pool's 46 square metres: a millimetre and a half)
-  const W=RIG.water(st,b?{level:POOLR.level+(WATER.hAt(pos.x,pos.z)+WATER.rise)/ZU,floor:POOLR.bedAt(b[0])}:{level:null,floor:0});
+  const W=RIG.water(st,b?{level:POOLR.level*BLDK+(WATER.hAt(pos.x,pos.z)+WATER.rise)/ZU,floor:POOLR.bedAt(b[0])*BLDK}:{level:null,floor:0});
   W.go=!!go; W.fast=W.in&&(keys.has('k')||keys.has('shift'))?1:0;
   if(W.in&&W.floor>=W.level-30&&!st.move&&!W.dive){ W.in=false; if(st.last)st.out={pose:JSON.parse(JSON.stringify(st.last)),t:0,T:0.4}; }   // (shallow enough to stand: up on his feet, wading)
   const was=WATER.wasIn; WATER.wasIn=W.in; if(W.in&&!was){ WATER.drop(pos.x,pos.z,0.5,0.09); WATER.splash(pos.x,WATER.lvl,pos.z,70,2.6); }   // (in: a splash where he went in, its spray)

@@ -24,11 +24,11 @@ const BODB={};
         if(w.ax==='x')m.position.set(X((h.a0+h.a1)/2),Y((h.z0+h.z1)/2),Z(w.at)); else{ m.position.set(X(w.at),Y((h.z0+h.z1)/2),Z((h.a0+h.a1)/2)); m.rotation.y=Math.PI/2; } scene.add(m); } } }
   // THE ROOF (tar, the cope round it), hidden while you're inside
   const roofCol=(x,y)=>{ const n=grain(x,y,61,1.4); return speck(n<.35?[50,50,52]:n>.7?[66,64,62]:[58,57,57],x,y,63); };
-  const flat=(x0,y0,x1,y1,z,col,kind)=>BOD.bq([X(x0),Y(z),Z(y1)],[X(x1),Y(z),Z(y1)],[X(x1),Y(z),Z(y0)],[X(x0),Y(z),Z(y0)],BOD.faceTex((x1-x0)*24,(y1-y0)*24,(i,j)=>BOD.C(col(x0+(i+.5)/24,y1-(j+.5)/24))),kind);
+  const flat=(x0,y0,x1,y1,z,col,kind,S)=>{ const X=S?BOD.XS:BOD.X, Y=S?BOD.YS:BOD.Y, Z=S?BOD.ZS:BOD.Z; return BOD.bq([X(x0),Y(z),Z(y1)],[X(x1),Y(z),Z(y1)],[X(x1),Y(z),Z(y0)],[X(x0),Y(z),Z(y0)],BOD.faceTex((x1-x0)*24,(y1-y0)*24,(i,j)=>BOD.C(col(x0+(i+.5)/24,y1-(j+.5)/24))),kind); };   // (S: on the street, its size as it was; else the building's)
   flat(B0.x0,B0.y0,B0.x1,B0.y1,H,roofCol,'R');
   // THE GROUND, and the kerbs' faces down to the street
-  for(const g of BOD.grounds)flat(g.x0,g.y0,g.x1,g.y1,g.z,g.col,'G');
-  for(const k of BOD.kerbs)BOD.bq([X(k.a0),Y(k.z0),Z(k.at)],[X(k.a1),Y(k.z0),Z(k.at)],[X(k.a1),Y(k.z1),Z(k.at)],[X(k.a0),Y(k.z1),Z(k.at)],BOD.faceTex((k.a1-k.a0)*24,k.z1-k.z0,()=>[150,146,138]),'G');
+  for(const g of BOD.grounds)flat(g.x0,g.y0,g.x1,g.y1,g.z,g.col,'G',!g.bld);
+  { const X=BOD.XS, Y=BOD.YS, Z=BOD.ZS; for(const k of BOD.kerbs)BOD.bq([X(k.a0),Y(k.z0),Z(k.at)],[X(k.a1),Y(k.z0),Z(k.at)],[X(k.a1),Y(k.z1),Z(k.at)],[X(k.a0),Y(k.z1),Z(k.at)],BOD.faceTex((k.a1-k.a0)*24,k.z1-k.z0,()=>[150,146,138]),'G'); }
   // THE OBJECTS: every box of every one, painted by the game's own painters, into the atlas
   BOD.paintProps();
   BATCH.cast=true;

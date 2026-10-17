@@ -66,6 +66,9 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
   const m=new THREE.Mesh(all,new THREE.ShaderMaterial({vertexShader:VS,fragmentShader:FS,side:THREE.DoubleSide,uniforms:U}));
   // his shadows from the lamps: the lamps' own distance material, moved the same way
   const dist=new THREE.MeshDistanceMaterial({side:THREE.DoubleSide}); dist.onBeforeCompile=sh=>{ sh.uniforms.uPM=W3.PM; sh.vertexShader=MOVE+'\n'+sh.vertexShader.replace('#include <begin_vertex>',AT+' vec3 transformed=(PM*vec4(position,1.)).xyz;'); }; dist.customProgramCacheKey=()=>'w3dist'+NP;
+  // (and the sun's: its depth material, moved the same way: src/clock.js)
+  const depth=new THREE.MeshDepthMaterial({side:THREE.DoubleSide,depthPacking:THREE.RGBADepthPacking}); depth.onBeforeCompile=sh=>{ sh.uniforms.uPM=W3.PM; sh.vertexShader=MOVE+'\n'+sh.vertexShader.replace('#include <begin_vertex>',AT+' vec3 transformed=(PM*vec4(position,1.)).xyz;'); }; depth.customProgramCacheKey=()=>'w3depth'+NP;
+  m.customDepthMaterial=depth;
   m.customDistanceMaterial=dist; m.matrixAutoUpdate=true; m.castShadow=true; m.frustumCulled=false;
   W3.idMat=new THREE.ShaderMaterial({vertexShader:IVS,fragmentShader:IFS,side:THREE.DoubleSide,uniforms:{uPM:W3.PM}});
   W3.depthMat=new THREE.ShaderMaterial({vertexShader:MOVE+`void main(){ `+AT+` gl_Position=projectionMatrix*modelViewMatrix*(PM*vec4(position,1.)); }`,fragmentShader:`void main(){ gl_FragColor=vec4(0.); }`,side:THREE.DoubleSide,uniforms:{uPM:W3.PM}});
@@ -82,7 +85,8 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
   scene.add(W3.group);
   // each frame: every piece where his skeleton has it (his units), the whole of him where he stands, turned to his heading, his verticals as the world's
   const LIGHT=nrm(V(-0.55,0.75,0.5)), m4=new THREE.Matrix4();
-  W3.place=(B,x,y,z,hd,yawA,ZY)=>{ W3.group.position.set(x,y,z); W3.group.rotation.set(0,hd,0); W3.group.scale.set(1/PPU,ZY,1/PPU);
+  W3.SZ=1.2;   // HIS SIZE (owner, 17 Oct 2026: "make avatar character 20% larger"): his rig and shape as they were, drawn a fifth bigger from his feet
+  W3.place=(B,x,y,z,hd,yawA,ZY)=>{ W3.group.position.set(x,y,z); W3.group.rotation.set(0,hd,0); W3.group.scale.set(W3.SZ/PPU,ZY*W3.SZ,W3.SZ/PPU);
     const L=R.yaw(LIGHT,-yawA); W3.L.set(L.x,L.y,L.z);
     W3.G.value.setFromMatrix4(new THREE.Matrix4().makeRotationY(hd)); if(typeof SHL!=='undefined')SHL.forEach((S,i)=>{ W3.LP.value[i].copy(S.position);
       // (a lamp under the water reaches him only through the water's surface: over the basin a little of it, from the deck none; the deck stands between)

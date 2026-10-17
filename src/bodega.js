@@ -8,7 +8,7 @@ const BOD={meshes:[], walls:{}, lamps:[]};
 /*GAMEKIT*/
 { // (the map's own names in a scope of their own: the game's files above have some of the same)
   const B0=LBLD[0], BODOFF=B0.y0+3.75, W=LSEED.walk, CURB=LSEED.street, FAR=LSEED.grass, RD=-4;   // (the road 4 art px below the sidewalk: a kerb you step down)
-  const OX=(B0.x0+B0.x1)/2, OY=B0.y1, X=x=>(x-OX)*TILE, Z=y=>(y-OY)*TILE, Y=z=>z*ZU; Object.assign(BOD,{X,Z,Y,OX,OY,B0,BODOFF});
+  const OX=(B0.x0+B0.x1)/2, OY=B0.y1, K=BLDK, X=x=>(x-OX)*TILE*K, Z=y=>(y-OY)*TILE*K, Y=z=>z*ZU*K, XS=x=>(x-OX)*TILE, ZS=y=>(y-OY)*TILE, YS=z=>z*ZU; Object.assign(BOD,{X,Z,Y,XS,ZS,YS,OX,OY,B0,BODOFF});   // (X Z Y: the building, a tenth bigger from its front's middle, BLDK; XS ZS YS: the street, as it was)
   const MAP={x0:50,x1:108,y0:B0.y0,y1:FAR+3}, POOLX=82;   // (the street's run; the pool room's west wall)
   // the subway's stairs (MAPSTAIR, the map's: tiles) a hole in the ground; elsewhere the ground's own colour
   const holed=f=>(x,y)=>x>=MAPSTAIR.x0&&x<MAPSTAIR.x1&&y>=MAPSTAIR.y0&&y<MAPSTAIR.y1?null:f(x,y);
@@ -47,8 +47,8 @@ const BOD={meshes:[], walls:{}, lamps:[]};
   // the shop, its doorway behind the counter. Each wall's faces in pieces round its holes, the edges of its holes (frames) too
   const WALLS=[];
   const wall=(id,ax,at,a0,a1,H,holes,inS,outS,outer)=>{ WALLS.push({id,ax,at,a0,a1,H,holes,inS,outS,outer}); };
-  { const B=B0, m=(B.x0+B.x1)/2, d=(m0)=>({a0:m0-.6,a1:m0+.6,z0:0,z1:72,door:true});
-    const cuts=[B.x0+.35,m-.75,m+.75,B.x1-.35], win=[]; for(let i=0;i+1<cuts.length;i+=2)win.push({a0:cuts[i],a1:cuts[i+1],z0:16,z1:94,glass:true});
+  { const B=B0, m=(B.x0+B.x1)/2, d=(m0)=>({a0:m0-.78,a1:m0+.78,z0:0,z1:94,door:true});   // (the doors 1.3 times: 1.56 wide, 94 high)
+    const cuts=[B.x0+.35,m-.95,m+.95,B.x1-.35], win=[]; for(let i=0;i+1<cuts.length;i+=2)win.push({a0:cuts[i],a1:cuts[i+1],z0:16,z1:94,glass:true});
     wall('front','x',B.y1,B.x0,B.x1,B.h,[{...d(m),glass:true},...win],-1,1,true);
     wall('back','x',B.y0,B.x0,B.x1,B.h,[],1,-1,true);
     wall('west','y',B.x0,B.y0-T,B.y1+T,B.h,[],1,-1,true);
@@ -93,11 +93,12 @@ const BOD={meshes:[], walls:{}, lamps:[]};
   const FRONT=[], ROOF=[], STREET=[];
   { const M=MKS, bo=B0, bm=(bo.x0+bo.x1)/2, n0=PROPS.length;
     M.pipe(bo.x0+.2,W,bo.h-6);
-    M.awning(bm-1.7,bm+1.7,W,80,[190,40,40],[240,236,220],'DELI','');
-    M.neon(bo.x0+1.5,W,64,'OPEN',[255,90,110]); M.signbox(bo.x0+.45,bo.x0+2.3,W,36,48,[250,250,246],[40,80,200],'LOTTO',false); M.signbox(bo.x1-2.6,bo.x1-.4,W,46,58,[250,250,246],[200,40,40],'COFFEE',false);
-    M.gatebox(bo.x0+.2,bo.x1-.2,W,114); M.bell(bm,W,76); M.meterbox(bo.x0+.9,W,30); M.number(bo.x0+1.6,W,82,'66'); M.moss(bo.x0+.3,bo.x0+3,W);
+    // (the DELI awning and the COFFEE sign gone: owner, 17 Oct 2026, "remove the awning and coffee sign from bodega"; to be replaced)
+    M.neon(bo.x0+1.5,W,64,'OPEN',[255,90,110]); M.signbox(bo.x0+.45,bo.x0+2.3,W,36,48,[250,250,246],[40,80,200],'LOTTO',false);
+    M.gatebox(bo.x0+.2,bo.x1-.2,W,114); M.bell(bm,W,98); M.meterbox(bo.x0+.9,W,30); M.number(bo.x0+1.6,W,82,'66'); M.moss(bo.x0+.3,bo.x0+3,W);
     for(const p of PROPS.slice(n0))FRONT.push(p);
-    const n1=PROPS.length; M.icebox(bo.x1-1.7,W+.2); M.papers(bm-1.3,W+.3); M.milkcrates(77,W-2); M.standpipe(80,W+.3); M.cobra(71,CURB-.35,1); for(const p of PROPS.slice(n1))STREET.push(p);
+    // (the street's things, gone: the ice box, the papers, the milk crates, the standpipe and the cobra-head street light; owner, 17 Oct 2026: "remove trash can and all
+    // street items (like poles and street lights) all will be replaced". STREET stays, empty, for what replaces them)
     const n2=PROPS.length, R=(f,x,y,z,...a)=>{ const p=f(x,y,z,W,...a); p.solids=[]; return p; };
     R(M.vent,bo.x0+3,bo.y0+5,bo.h); R(M.antenna,bo.x0+8,bo.y0+3.5,bo.h); R(M.roofac,bo.x0+6,bo.y0+7.5,bo.h); for(const p of PROPS.slice(n2))ROOF.push(p); }
   BOD.O=O; BOD.FRONT=FRONT; BOD.STREET=STREET; BOD.ROOF=ROOF; BOD.MAP=MAP; BOD.RD=RD;
@@ -109,7 +110,7 @@ const BOD={meshes:[], walls:{}, lamps:[]};
   BOD.gbox=gbox; BOD.faceTex=faceTex; BOD.bq=bq; BOD.C=C; BOD.facade=facade; BOD.FRAME=FRAME;
   // ---- THE GROUND: the shop's sealed concrete (and the office's), the sidewalk's slabs, the kerb, the street's asphalt, the far kerb and sidewalk, grass in the gaps
   BOD.grounds=[
-    {id:'shop',x0:B0.x0,y0:B0.y0,x1:B0.x1,y1:B0.y1,z:0,col:(x,y)=>bodegaFloorCol(x,y),tex:'concrete_floor_worn_001',tint:[112,116,124],rep:3},
+    {id:'shop',bld:true,x0:B0.x0,y0:B0.y0,x1:B0.x1,y1:B0.y1,z:.15,col:(x,y)=>bodegaFloorCol(x,y),tex:'concrete_floor_worn_001',tint:[112,116,124],rep:3},
     {id:'walk',x0:MAP.x0,y0:W,x1:MAP.x1,y1:CURB-.16,z:0,col:holed(slabCol),tex:'concrete_pavement',tint:[166,161,148],rep:2},
     {id:'kerb',x0:MAP.x0,y0:CURB-.16,x1:MAP.x1,y1:CURB,z:0,col:()=>[178,174,164],tex:'concrete_pavement',tint:[178,174,164],rep:2},
     {id:'road',x0:MAP.x0,y0:CURB,x1:MAP.x1,y1:FAR,z:RD,col:(x,y)=>roadCol(x,y,0),tex:'asphalt_02',tint:[62,64,68],rep:3},
@@ -132,8 +133,8 @@ const BOD={meshes:[], walls:{}, lamps:[]};
   for(const p of [...Object.values(O),...STREET]){ if(p.high||/mat$|^door mat|bags|fly|tube|bell|clock|calendar|cord|mirror|phone|flap|dock|radio|cigs|chair/.test(p.key||p.name||''))continue;
     const bs=p.boxes.filter(b=>!b.nb&&b.z0<30&&b.z1-b.z0>3); if(!bs.length)continue; const r={x0:Math.min(...bs.map(b=>b.x0)),y0:Math.min(...bs.map(b=>b.y0)),x1:Math.max(...bs.map(b=>b.x1)),y1:Math.max(...bs.map(b=>b.y1))};
     sol(r.x0,r.y0,r.x1,r.y1,Math.max(...bs.map(b=>b.z1))); }
-  BOUND={x0:X(MAP.x0),x1:X(MAP.x1),z0:Z(B0.y0),z1:Z(MAP.y1)};
-  groundY=(x,z)=>{ const gy=z/TILE+OY; return gy>CURB&&gy<FAR?Y(RD):0; };
-  BOD.inside=(x,z)=>{ const gx=x/TILE+OX, gy=z/TILE+OY; return gx>B0.x0&&gx<B0.x1&&gy>B0.y0&&gy<B0.y1; };
+  BOUND={x0:XS(MAP.x0),x1:XS(MAP.x1),z0:Z(B0.y0),z1:ZS(MAP.y1)};
+  groundY=(x,z)=>{ const gy=z/TILE+OY; return gy>CURB&&gy<FAR?YS(RD):0; };
+  BOD.inside=(x,z)=>{ const gx=x/TILE/K+OX, gy=z/TILE/K+OY; return gx>B0.x0&&gx<B0.x1&&gy>B0.y0&&gy<B0.y1; };
 }
 }

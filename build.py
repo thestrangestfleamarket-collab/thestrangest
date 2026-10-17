@@ -14,10 +14,10 @@ stn=rq(stn,"fixed.push([X(x0),Z(y0),0,X(x1),Z(y1),Math.max(.05,Y(zt+SZ))]);","fi
 stn=rq(stn,"cutaway(wallX(END,AVE,PLAT,0,UH,conc),0,-1,8);","cutaway(wallX(END,AVE,PLAT,0,UH,(u,z)=>u>=-29&&u<-25?null:conc(u,z)),0,-1,8);")
 stn=rq(stn,"solid(AVE,END,PLAT,END+1,UH);","solid(AVE,END,-29,END+1,UH); solid(-25,END,PLAT,END+1,UH);")
 pool=body('src/pool.js','{ const hash=','\nscene.background')
-pool=rq(pool,"const X=x=>(x-OX)*TILE, Z=y=>(y-OY)*TILE, Y=z=>z*ZU;","const X=x=>(x-OX)*TILE+PDX, Z=y=>(y-OY)*TILE+PDZ, Y=z=>z*ZU;")
-pool=rq(pool,"const gx=x/TILE+OX-P.bx0, gy=z/TILE+OY-P.by0;","const gx=(x-PDX)/TILE+OX-P.bx0, gy=(z-PDZ)/TILE+OY-P.by0;")
-pool=rq(pool,"cutaway(wallX(P.y1,P.x0,P.x1,0,P.H,(u,z)=>poolTile(u,z)),0,-1,10);","cutaway(wallX(P.y1,P.x0,P.x1,0,P.H,(u,z)=>u>=17.4&&u<18.6&&z<72?null:poolTile(u,z)),0,-1,10);")
-pool=rq(pool,"solid(P.x0,P.y1,P.x1,P.y1+1,P.H);","solid(P.x0,P.y1,17.4,P.y1+1,P.H); solid(18.6,P.y1,P.x1,P.y1+1,P.H);")
+pool=rq(pool,"const X=x=>(x-OX)*TILE, Z=y=>(y-OY)*TILE, Y=z=>z*ZU;","const X=x=>(x-OX)*BLDK*TILE+PDX, Z=y=>((y-OY)*BLDK+(P.y1-OY)*(1-BLDK))*TILE+PDZ, Y=z=>z*ZU*BLDK;")   # (a tenth bigger from its front's middle: BLDK)
+pool=rq(pool,"const gx=x/TILE+OX-P.bx0, gy=z/TILE+OY-P.by0;","const gx=(x-PDX)/TILE/BLDK+OX-P.bx0, gy=((z-PDZ)/TILE-(P.y1-OY)*(1-BLDK))/BLDK+OY-P.by0;")
+pool=rq(pool,"cutaway(wallX(P.y1,P.x0,P.x1,0,P.H,(u,z)=>poolTile(u,z)),0,-1,10);","cutaway(wallX(P.y1,P.x0,P.x1,0,P.H,(u,z)=>u>=17.22&&u<18.78&&z<94?null:poolTile(u,z)),0,-1,10);")
+pool=rq(pool,"solid(P.x0,P.y1,P.x1,P.y1+1,P.H);","solid(P.x0,P.y1,17.22,P.y1+1,P.H); solid(18.78,P.y1,P.x1,P.y1+1,P.H);")
 game=['23-w-bodega-shop.js','23-w-street-1-kit.js','23-w-street-2-furniture.js','23-w-street-3-city.js','23-w-street-4-catalog.js','23-w-studio-apartment-1-furniture.js','23-w-studio-apartment-2-computer.js','23-w-studio-apartment-3-rooms.js','23-x-laundry-room.js']
 kit=rd('src/gamekit.js')+'\n'+'\n'.join('// ==== '+f+' (the game\'s, word for word)\n'+rd(S+f) for f in game)
 bod=rd('src/bodega.js')
@@ -131,7 +131,7 @@ print('ok zoom')
 # 17 Oct 2026, KayKit's four, rigged and animated) on the far sidewalk: src/npc-skel.js, data/skel.json (tools/skeletons-bake.py)
 mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);","const GOLDFISH="+open('data/goldfish.json').read()+";\nconst BEARD="+open('data/bear.json').read()+";\nconst SKEL="+open('data/skel.json').read()+";\n"+open('src/npc-map.js').read()+"\n"+open('src/npc-skel.js').read()+"\nresize(); applyTime(0); requestAnimationFrame(frame);")
 mod=rp(mod,"  marker.visible=!!target;","  for(const N of NPCS)N.tick(dt,pos);\n  marker.visible=!!target;")
-mod=rp(mod,"function collide(p){ const r=0.3;","function collide(p){ if(typeof NPCS!=='undefined')for(const N of NPCS)if(N.lv===LVL)N.push(p); const r=0.3;")
+mod=rp(mod,"function collide(p){ const r=0.3;","function collide(p){ if(typeof NPCS!=='undefined')for(const N of NPCS)if(N.lv===LVL)N.push(p); const r=0.36;")   # (his reach round him: 0.3, a fifth bigger with him)
 print('ok npcs')
 
 
@@ -247,6 +247,9 @@ mod=rp(mod,"  for(const N of NPCS)N.tick(dt,pos);","  for(const N of NPCS)N.tick
 # NO SHADOW ACNE (owner, 17 Oct 2026, his close-up: stripes and jagged dark teeth on the musician's arm): the two lamps nearest you, whose
 # shadows move, finer (1024 a face) and held off the surface they fall on, as the still lamps' are
 mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);","for(const S of SHL){ S.shadow.mapSize.set(1024,1024); S.shadow.normalBias=.06; S.shadow.bias=-.002; }\nresize(); applyTime(0); requestAnimationFrame(frame);")
+# THE CLOCK (owner, 17 Oct 2026: "add the option to control the time", 7pm when the game opens): src/clock.js; ticked each frame
+mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);",open('src/clock.js').read()+"\nresize(); applyTime(0); requestAnimationFrame(frame);")
+mod=rp(mod,"  UI.goTick(); UI.runTick();","  UI.goTick(); UI.runTick(); CLOCK.tick(dt);")
 # LOADING (owner, 17 Oct 2026, the live site's first moments: the help panel, the shadows box and "--" showed while the page loaded, its dots
 # garbled): nothing but its line, "I took a trip to The Strangest Flea Market..." (owner: "loading should always say" it), till the game runs (ui.js takes it away); the page's letters read as UTF-8
 head=rp(head,'<div id="hud">','<div id="loading" style="position:fixed;inset:0;display:grid;place-items:center;font:12px Silkscreen,monospace;letter-spacing:2px;color:#8a8f9c;background:#0e1016">I took a trip to The Strangest Flea Market...</div>\n<div id="hud" hidden>')

@@ -26,7 +26,8 @@ const MUS={};
     sh.fragmentShader=sh.fragmentShader.replace('#include <normal_fragment_begin>','float faceDirection=1.0; vec3 normal=normalize(vNormal); vec3 nonPerturbedNormal=normal;').replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n totalEmissiveRadiance+=diffuseColor.rgb*0.16;'); };
   mat.customProgramCacheKey=()=>'mus'+NP;
   const dist=new THREE.MeshDistanceMaterial({side:THREE.DoubleSide}); dist.onBeforeCompile=sh=>{ sh.uniforms.uPM=PM; sh.vertexShader=MOVE+'\n'+sh.vertexShader.replace('#include <begin_vertex>',AT_+' vec3 transformed=(PM*vec4(position,1.)).xyz;'); }; dist.customProgramCacheKey=()=>'musdist'+NP;
-  const me=new THREE.Mesh(all,mat); me.customDistanceMaterial=dist; me.castShadow=true; me.receiveShadow=true; me.frustumCulled=false;
+  const depth=new THREE.MeshDepthMaterial({side:THREE.DoubleSide,depthPacking:THREE.RGBADepthPacking}); depth.onBeforeCompile=sh=>{ sh.uniforms.uPM=PM; sh.vertexShader=MOVE+'\n'+sh.vertexShader.replace('#include <begin_vertex>',AT_+' vec3 transformed=(PM*vec4(position,1.)).xyz;'); }; depth.customProgramCacheKey=()=>'musdepth'+NP;   // (the sun's shadow of him, moved the same way)
+  const me=new THREE.Mesh(all,mat); me.customDistanceMaterial=dist; me.customDepthMaterial=depth; me.castShadow=true; me.receiveShadow=true; me.frustumCulled=false;
   const g=new THREE.Group(); g.add(me); MAPG.bodega.add(g); MUS.g=g;
   // the strings: six of them, saddle to nut, a pixel wide, in the guitar's frame (nylon trebles, silver basses)
   const sg=new THREE.Group(); sg.matrixAutoUpdate=false; g.add(sg);

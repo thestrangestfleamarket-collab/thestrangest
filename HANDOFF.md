@@ -25,6 +25,11 @@ This note says what was in progress and where it is.
   End's under the main street; (3) a window on the street for the aquarium and the museum's portico; (4) characters on the Avenue (the npc-lives
   plan: numbers until near); (5) the cross street at the west end.
 - The map editor's boxes don't know the new places yet (the garden, the aquarium, the Avenue's row): they can't be dragged there.
+- Seen while checking, not changed: the Avenue's row faces west and the day's shade is lit by lamps alone (the owner's rule, a 0.05 sky), so its
+  fronts are black most of the day (checked with the shadow map off: the same), as the keep's north face is; `?sky=1` lights the shade a little.
+  His call whether the Avenue wants that. `tests/clipcheck.cjs` reports 8 things without a solid, all the Moon Shrine's opened pieces (the
+  terrace, steps, gate, parapet, ferns): the same 8 on the unchanged build. A "vNormal undeclared" shader warning shows in some headless runs
+  on the unchanged build too.
 
 ## Paused, unfinished (branches on GitHub; each says in its last commit what's done)
 | Branch | What | State |

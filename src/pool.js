@@ -118,8 +118,6 @@ POOLR.LX=POOLR.bx1-POOLR.bx0; POOLR.LY=POOLR.by1-POOLR.by0; POOLR.level=-0.16*24
   const ceil=(x,y,c,k)=>{ const m=new THREE.Mesh(new THREE.BoxGeometry(.9*TILE,.03,.5*TILE),new THREE.MeshBasicMaterial({color:new THREE.Color(...c).multiplyScalar(1.3)})); m.position.set(X(x),Y(P.H-2),Z(y)); scene.add(m); OVERHEAD.push({o:m,y:Y(P.H-4)});
     const L=new THREE.PointLight(new THREE.Color(...c),k,7*TILE,1.6); L.position.set(X(x),Y(P.H-12),Z(y)); L.userData.i0=L.intensity; scene.add(L); lamps.push(L); };
   ceil(22.7,12.4,[1,.88,.7],6); ceil(22.7,3,[1,.92,.8],5); ceil(10.5,7.26,[1,.88,.7],3.5); ceil(8.5,3,[.9,.95,1],6); ceil(2.1,5.2,[1,.9,.75],3);
-  // HIS SHADOWS: two shadow-casting stand-ins for the two lamps nearest him (lamps' own colour and strength copied as he moves)
-  SHL.push(...[0,1].map(()=>{ const L=new THREE.PointLight(0xffffff,0,8*TILE,1.4); L.castShadow=true; L.shadow.mapSize.set(512,512); L.shadow.camera.near=0.1; L.shadow.camera.far=14; L.shadow.bias=-0.003; scene.add(L); return L; }));
   // where he walks: the deck and the room's walls; the water is walked into (the rig's water takes him from there)
   solid(P.x0-1,P.y0,P.x0,P.y1,P.H); solid(P.x1,P.y0,P.x1+1,P.y1,P.H); solid(P.x0,P.y0-1,P.x1,P.y0,P.H); solid(P.x0,P.y1,21.97,P.y1+1,P.H); solid(23.53,P.y1,P.x1,P.y1+1,P.H);
   BOUND={x0:X(P.x0)+0.3,x1:X(P.x1)-0.3,z0:Z(P.y0)+0.3,z1:Z(P.y1)-0.3};

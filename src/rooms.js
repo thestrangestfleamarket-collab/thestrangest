@@ -10,6 +10,7 @@ const ROOMS={cur:null};
     RL.push(box(BOD.X,BOD.Z,[B.x0,BOD.BODOFF,B.x1,B.y1],-1,BOD.Y(B.h)),box(BOD.X,BOD.Z,[B.x0,B.y0,B.x1,BOD.BODOFF],-1,BOD.Y(B.h)));
     for(const t of POOLR.ROOMS||[])RL.push(box(POOLR.X,POOLR.Z,t,POOLR.Y(-150),POOLR.Y(POOLR.H)));
     if(BOD.GD)RL.push(box(BOD.X,BOD.Z,BOD.GD.r,-1,BOD.Y(BOD.GD.H))); };   // (Ghost Street's dojo: ghostdojo.js)
+  ROOMS.boxes=()=>{ if(!RL)build(); return RL; };   // (the rooms, for the lamps: a lamp in one lights only it, map-post.js's LITE)
   const within=(b,x,z,e=0)=>x>b.x0-e&&x<b.x1+e&&z>b.z0-e&&z<b.z1+e;
   ROOMS.tick=()=>{ if(!RL)build(); let hit=null; if(typeof LOOKS!=='undefined'&&LOOKS.light)LOOKS.light();   // (his own shadow from the light really on him: looks.js)
     if(LVL==='up'&&!UI.freeCam&&!ED.on){
@@ -25,7 +26,7 @@ const ROOMS={cur:null};
     else if(renderer.clippingPlanes.length)renderer.clippingPlanes=[];
     // the characters: only those in the room (a troublemaker below ground, hidden by his own mind, left alone)
     const show=(g,x,z,o)=>{ const sh=!hit||within(hit,x,z,.4*TILE); if(!sh){ if(g.visible){ g.visible=false; o._rh=true; } } else if(o._rh){ g.visible=true; o._rh=false; } };
-    for(const N of NPCS){ if(N.lv!=='up'||N.mode==='hidden')continue; show(N.g,N.g.position.x,N.g.position.z,N); }
+    for(const N of NPCS){ if(N.lv!=='up'||N.mode==='hidden'||N.far)continue; show(N.g,N.g.position.x,N.g.position.z,N); }
     if(typeof MUS!=='undefined'&&MUS.g)show(MUS.g,MUS.at.x,MUS.at.z,MUS);
     if(typeof WATER!=='undefined'&&WATER.mesh)show(WATER.mesh,WATER.mesh.position.x,WATER.mesh.position.z,WATER); };   // (the pool's water, its own shader: shown only from the pool hall)
 }

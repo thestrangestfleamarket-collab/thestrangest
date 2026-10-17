@@ -25,7 +25,7 @@ const CLOCK={h:19,run:false,speed:1440/600};   // (speed: game minutes a real se
     const dir=new THREE.Vector3(Math.sin(az)*Math.cos(el),Math.sin(el),Math.cos(az)*Math.cos(el));
     sunL.target.position.set(pos.x,py,pos.z); sunL.position.copy(sunL.target.position).addScaledVector(dir,60*TILE); sunL.target.updateMatrixWorld();
     // its shadows: every frame while it's strong enough to show them moving; faint (the moon), only when the hour or where you are changes much
-    const strong=sunL.intensity>.3; sunL.shadow.autoUpdate=strong;
+    const strong=sunL.intensity>.3; sunL.shadow.autoUpdate=strong&&(CLOCK.fr=(CLOCK.fr||0)+1)%2===0;   // (every other frame: half the cost, a frame's lag unseen)
     if(!strong&&(Math.abs(last.h-CLOCK.h)>.05||Math.hypot(last.x-pos.x,last.z-pos.z)>4*TILE||last.lv!==LVL)){ sunL.shadow.needsUpdate=true; last={h:CLOCK.h,x:pos.x,z:pos.z,lv:LVL}; }
     if(UI.menuOpen)CLOCK.draw&&CLOCK.draw(); };
   CLOCK.set=h=>{ CLOCK.h=((h%24)+24)%24; };

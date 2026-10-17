@@ -72,8 +72,6 @@ let BOUND, groundY;
   BATCH.tag=OBJ('station','train car'); W.carBoxes(0,0).forEach(b=>gbox(b,-UH-32,W.TRACKS[0],W.D1Y,true)); BATCH.tag=null;   // (lit like a character at the stop, as the game lights it: never brighter than its own colours) solid(W.TRACKS[0]-W.CARW,W.D1Y-W.CARL/2,W.TRACKS[0]+W.CARW,W.D1Y+W.CARL/2,96-32);
   // THE LIGHTS, as the game lights it: dim cool white over the platform and over its track, every 6.4 tiles (LAMPS, 10 tiles' reach)
   for(let y=SY0+3.2;y<SY1;y+=6.4)for(const x of [AVE+2.6,AVE+8.4]){ const L=new THREE.PointLight(new THREE.Color(.5,.54,.64),LAMPI,10*TILE,LAMPD); L.position.set(X(x),Y(SZ+88),Z(y)); scene.add(L); lamps.push(L); }
-  // HIS SHADOWS: the two lamps nearest him cast them (two shadow-casting lights stand in for those lamps, moved to them as he walks), hard-edged as pixels
-  SHL.push(...[0,1].map(()=>{ const L=new THREE.PointLight(lamps[0].color,LAMPI,10*TILE,LAMPD); L.castShadow=true; L.shadow.mapSize.set(512,512); L.shadow.camera.near=0.1; L.shadow.camera.far=14; L.shadow.bias=-0.003; scene.add(L); return L; }));
   // where he can walk: the platform and the exit tunnel; down the steps onto the track and along it into the tunnels; never through a wall
   solid(AVE-1,SY0-12,AVE,END,UH); solid(TW,SY0-12,TW+1,SY1+12,UH); solid(AVE,SY0-1,PLAT,SY0,UH); solid(AVE,END,PLAT,END+1,UH);
   solid(PLAT,SY1,PLAT+.1,END,UH); solid(TUN0-1,SY0-12,TUN0,SY0,UH); solid(TUN0-1,SY1,TUN0,SY1+12,UH);

@@ -48,6 +48,8 @@ const PB={on:false,ready:false,loose:0.5};
       if(W3.E&&W3.E[i])W3.applyE(PM,W3.E[i],new THREE.Vector3().setFromMatrixPosition(PM)); if(W3.HIDE[i])PM.makeScale(0,0,0); });
     return true; };
   PB.load=()=>{ if(RAPIER||PB.loading)return; PB.loading=true; import('https://cdn.jsdelivr.net/npm/@dimforge/rapier3d-compat@0.12.0/rapier.es.js').then(async m=>{ RAPIER=m.default||m; await RAPIER.init(); PB.ready=true; need=true; PB.R=RAPIER; (PB.onReady||[]).forEach(f=>f()); }).catch(e=>{ console.warn('physics body: Rapier did not load',e); PB.on=false; }); };
-  PB.set=on=>{ PB.on=on; if(on){ PB.load(); need=true; } try{ localStorage.setItem('market-physbody',on?'1':'0'); }catch(e){} };
-  let on0=true; try{ const v=localStorage.getItem('market-physbody'); if(v!=null)on0=v==='1'; const l=localStorage.getItem('market-loose'); if(l!=null)PB.loose=+l; }catch(e){} PB.set(on0);
+  PB.set=on=>{ PB.on=on; if(on){ PB.load(); need=true; } try{ localStorage.setItem('market-physbody2',on?'1':'0'); }catch(e){} };
+  // OFF TO BEGIN WITH (owner, 17 Oct 2026, the budget: nothing fetched that isn't needed at start): Rapier (some 700 KB) is fetched only once
+  // PHYSICS BODY is switched on (its own key: the old one was written on at every start)
+  let on0=false; try{ const v=localStorage.getItem('market-physbody2'); if(v!=null)on0=v==='1'; const l=localStorage.getItem('market-loose'); if(l!=null)PB.loose=+l; }catch(e){} PB.set(on0);
 }

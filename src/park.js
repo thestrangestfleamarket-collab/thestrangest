@@ -35,30 +35,36 @@ grab('park',()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.ox=PO.x; PARK.o
   block(P.x0,P.y0,g0-1,P.y0+.5,0,WH,11); block(g1+1,P.y0,P.x1,P.y0+.5,0,WH,15);
   for(const [x,k] of [[g0-1,21],[g1,25]]){ block(x,P.y0-.2,x+1,P.y0+.7,0,PH,k); block(x-.1,P.y0-.3,x+1.1,P.y0+.8,PH,PH+5,k+4); }   // (each post, its cap)
   // ---- THE ROCKS: his pack's models, each at its place, its height in metres, turned as it likes; one mesh
-  // THE TREES' LOOK, three mockups (owner, 17 Oct 2026, the oaks' crowns striped and toothed by the sun's shadow map, coarser than the art's
-  // pixels: "mockups of three looks"), ?treelook=N, off by default (the game as it was). On the park's things (the oaks, the undergrowth, the pots):
-  // 1: no shadow on them (they still throw theirs on the ground), each face one tone by its facing (top lit, sides mid, underside dark);
-  // 3: no shadow on them, the crown painted top to bottom in four stepped greens (darker underneath and inside, toward the trunk), the steps
-  // broken by the light's own grain; 6: their real shadows, the acne pushed off (a bigger normal offset) and each shadow's edge broken by the
-  // grain (three shadow-map taps jittered by it, the majority kept: hard, per art pixel). All three: the grain locked to each thing's rest place
-  // (it doesn't crawl as the crowns sway), and the shadow the oaks throw sways with them (their own depth pass)
-  const TL=[1,3,6].includes(+QS.get('treelook'))?+QS.get('treelook'):0, TGR='fract(sin(dot(floor(vRP*'+(24/(33.9/30)).toFixed(3)+'+.001),vec3(12.9898,78.233,37.719)))*43758.5453)';
-  const treeLook=sh=>{ sh.vertexShader='attribute vec3 aTr; varying vec3 vTr, vRP;\n'+sh.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\n vTr=aTr; vRP=position;')
-      .replace('#include <shadowmap_vertex>',TL===6?THREE.ShaderChunk.shadowmap_vertex.replace('directionalLightShadows[ i ].shadowNormalBias','(directionalLightShadows[ i ].shadowNormalBias+.09)'):'#include <shadowmap_vertex>');   // (6: pushed a further 9 cm off its face toward the sun's map: no self-acne)
-    let f='varying vec3 vTr, vRP; float TT=1.; vec2 TJ0, TJ1, TJ2;\n'+sh.fragmentShader.replace('vec3 dc=floor(vWP*','vec3 dc=floor(vRP*');   // (the light's grain on its rest place)
-    if(TL!==6)f=f.replace('#include <lights_lambert_pars_fragment>',THREE.ShaderChunk.lights_lambert_pars_fragment.replace('float dotNL = saturate( dot( geometryNormal, directLight.direction ) );','float dotNL = TT;'));   // (1, 3: the face's own tone in place of the light's angle)
-    else f=f.replace('#include <shadowmap_pars_fragment>',THREE.ShaderChunk.shadowmap_pars_fragment.replace('shadow = texture2DCompare( shadowMap, shadowCoord.xy, shadowCoord.z );','{ vec2 ts=2.5/shadowMapSize; shadow=step(1.5,texture2DCompare(shadowMap,shadowCoord.xy+TJ0*ts,shadowCoord.z)+texture2DCompare(shadowMap,shadowCoord.xy+TJ1*ts,shadowCoord.z)+texture2DCompare(shadowMap,shadowCoord.xy+TJ2*ts,shadowCoord.z)); }'));
-    sh.fragmentShader=f.replace('#include <lights_fragment_begin>','{ vec3 wN=inverseTransformDirection(normal,viewMatrix); float g='+TGR+'; '+(TL===6?'TJ0=vec2(fract(g*7.13),fract(g*13.7))*2.-1.; TJ1=vec2(fract(g*29.3),fract(g*41.9))*2.-1.; TJ2=vec2(fract(g*53.1),fract(g*67.3))*2.-1.;':
-      'TT=wN.y>.45?1.:wN.y<-.45?.42:.7;'+(TL===3?' if(vTr.z>.5){ float v=.5*vTr.x+.3*vTr.y+.2*clamp(wN.y*.5+.5,0.,1.)+(g-.5)*.32; TT=.4+.2*floor(clamp(v,0.,.999)*4.); }':''))+' }\n#include <lights_fragment_begin>'); };
-  const F=Object.assign({},FOREST,PROPS), mesh=(list,leafy,solid=true,sway=false)=>{ const P3=[], C3=[], SW=[], TR=[], LF=[], c=new THREE.Color(); for(const [key,x,y,m,turn,lift] of list){ const p0=P3.length, ph=hash(Math.round(x*7),Math.round(y*7),131)*6.28; const D=F[key], p=f32(D.p), col=b8(D.c), k=b8(D.k), s=m/.84*TILE, ca=Math.cos(turn||0), sa=Math.sin(turn||0), ox=X(x), oz=Z(y), oy=(lift||0)/.84*TILE;
+  // THE TREES' LOOK, three mockups (owner, 17 Oct 2026, the oaks' crowns striped and toothed by the sun's shadow map, then "i want smooth
+  // realistic shadows and lighting like gradient radial etc"), ?treelook=N, off by default (the game as it is). On the park's things (the oaks, the
+  // undergrowth, the pots); the leaves told from the rest by their green:
+  // 1 SOFT SHADOWS: the crowns keep the sun's real shadows (soft, as the world's), the acne gone: each leaf held 12 cm further off its face
+  //   toward the shadow map, and the oaks' own shadow pass swaying with them (it stood still while the crowns moved: the stripes crawled);
+  // 2 GRADIENT: no shadow map on the crowns (they still throw theirs on the ground): each crown lit as one round shape (its leaves' normals
+  //   pointed out from its middle, so the light runs across it in one gradient, not face by face), softly wrapped round, and darkened
+  //   underneath and toward the inside (an occlusion by its height and its depth in the crown);
+  // 3 REAL: 2's round crown and occlusion with 1's shadows on it, a leaf's shadow letting a little light through (foliage, not stone)
+  const TL=[1,2,3].includes(+QS.get('treelook'))?+QS.get('treelook'):0;
+  const treeLook=sh=>{ sh.vertexShader='attribute vec3 aTr; varying vec3 vTr;\n'+sh.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\n vTr=aTr;')
+      .replace('#include <shadowmap_vertex>',THREE.ShaderChunk.shadowmap_vertex.replace(/(directional|point)LightShadows\[ i \]\.shadowNormalBias/g,'($&+aTr.z*.12)'));   // (the leaves 12 cm further off: no self-acne)
+    let f='varying vec3 vTr; float TW=0., TSH=1.;\n'+sh.fragmentShader
+      .replace('diffuseColor.rgb*=wn.y>=max(wn.x,wn.z)?1.:','diffuseColor.rgb*=vTr.z>.5&&'+(TL>1)+'?1.:wn.y>=max(wn.x,wn.z)?1.:');   // (2, 3: a round crown has no fixed side shades)
+    if(TL>1)f=f.replace('#include <lights_lambert_pars_fragment>',THREE.ShaderChunk.lights_lambert_pars_fragment.replace('float dotNL = saturate( dot( geometryNormal, directLight.direction ) );','float dotNL = saturate( ( dot( geometryNormal, directLight.direction ) + TW ) / ( 1. + TW ) );'))   // (the light wrapped a little round the crown: leaves let it through)
+      .replace('#include <shadowmap_pars_fragment>',THREE.ShaderChunk.shadowmap_pars_fragment.replace(/return shadow;/g,'return mix( 1., shadow, TSH );'))
+      .replace('#include <lights_fragment_begin>','if(vTr.z>.5){ TW=.45; TSH=.7; }\n#include <lights_fragment_begin>')
+      .replace('#include <lights_fragment_end>','#include <lights_fragment_end>\n if(vTr.z>.5){ float ao=mix(.42,1.,smoothstep(0.,1.,.62*vTr.x+.38*vTr.y)); reflectedLight.directDiffuse*=mix(1.,ao,.6); reflectedLight.indirectDiffuse*=ao; }');   // (darker underneath and inside: most on the open air's light, some on the sun's)
+    sh.fragmentShader=f; };
+  const F=Object.assign({},FOREST,PROPS), mesh=(list,leafy,solid=true,sway=false)=>{ const P3=[], C3=[], SW=[], TR=[], LF=[], RN=[], c=new THREE.Color(); for(const [key,x,y,m,turn,lift] of list){ const p0=P3.length, ph=hash(Math.round(x*7),Math.round(y*7),131)*6.28; const D=F[key], p=f32(D.p), col=b8(D.c), k=b8(D.k), s=m/.84*TILE, ca=Math.cos(turn||0), sa=Math.sin(turn||0), ox=X(x), oz=Z(y), oy=(lift||0)/.84*TILE;
       for(let i=0;i<p.length;i+=3){ const px=p[i]*s, py=p[i+1]*s+oy, pz=p[i+2]*s; P3.push(ox+px*ca-pz*sa,py,oz+px*sa+pz*ca); if(sway)SW.push(Math.max(0,p[i+1])*s,ph); if(TL)LF.push(col[i+1]>col[i]*1.08&&col[i+1]>col[i+2]*1.08?1:0); const t=Math.floor(i/9), sh=k[t]===0?.86+.28*hash(t,x*7,y*3):k[t]===2?.9+.2*hash(t,x*5,y*9):.92+.16*hash(t,x*3,y*5);
         c.setRGB(col[i]/255*sh,col[i+1]/255*sh,col[i+2]/255*sh,THREE.SRGBColorSpace); C3.push(c.r,c.g,c.b); }
       // (treelook: each vertex's place in its leaves, the crown's height 0 at its foot to 1 at its top, out from its middle 0 to 1 at its edge, leaf or not)
       if(TL){ const q0=p0/3, q1=P3.length/3; let y0=1e9, y1=-1e9, cx=0, cz=0, n=0, r1=1e-3; for(let v=q0;v<q1;v++)if(LF[v]){ y0=Math.min(y0,P3[v*3+1]); y1=Math.max(y1,P3[v*3+1]); cx+=P3[v*3]; cz+=P3[v*3+2]; n++; } cx/=n||1; cz/=n||1;
-        for(let v=q0;v<q1;v++)if(LF[v])r1=Math.max(r1,Math.hypot(P3[v*3]-cx,P3[v*3+2]-cz)); for(let v=q0;v<q1;v++)TR.push(LF[v]?(P3[v*3+1]-y0)/Math.max(1e-3,y1-y0):0,LF[v]?Math.hypot(P3[v*3]-cx,P3[v*3+2]-cz)/r1:0,LF[v]); }
+        for(let v=q0;v<q1;v++)if(LF[v])r1=Math.max(r1,Math.hypot(P3[v*3]-cx,P3[v*3+2]-cz)); const cy=(y0+y1)/2, ry=Math.max(1e-3,(y1-y0)/2);
+        for(let v=q0;v<q1;v++){ TR.push(LF[v]?(P3[v*3+1]-y0)/Math.max(1e-3,y1-y0):0,LF[v]?Math.hypot(P3[v*3]-cx,P3[v*3+2]-cz)/r1:0,LF[v]); RN.push((P3[v*3]-cx)/(r1*r1),(P3[v*3+1]-cy)/(ry*ry),(P3[v*3+2]-cz)/(r1*r1)); } }   // (a leaf: its height in the crown 0 foot to 1 top, out from its middle 0 to 1 at the edge, and the crown's round normal there)
       CLIPX.push({place:'park',name:key,P:P3.slice(p0)});   // (its own faces, for the hitboxes' pass: clip.js)
       if(solid){ const r=Math.max(.3,D.trunk*s*.5); SOL.up.push([ox-r,oz-r,ox+r,oz+r]); FIX.up.push([ox-r,oz-r,0,ox+r,oz+r,leafy?Y(60):s*.9]); } }   // (where you can't walk: the trunk, the rock; not the undergrowth)
     const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(P3,3)); g.setAttribute('color',new THREE.Float32BufferAttribute(C3,3)); g.computeVertexNormals(); if(sway)g.setAttribute('aSw',new THREE.Float32BufferAttribute(SW,2)); if(TL)g.setAttribute('aTr',new THREE.Float32BufferAttribute(TR,3));
+    if(TL>1){ const N=g.attributes.normal.array; for(let v=0;v<LF.length;v++)if(LF[v]){ let x=RN[v*3], y=RN[v*3+1], z=RN[v*3+2]; const l=Math.hypot(x,y,z)||1; x=x/l*.8+N[v*3]*.2; y=y/l*.8+N[v*3+1]*.2; z=z/l*.8+N[v*3+2]*.2; const m=Math.hypot(x,y,z)||1; N[v*3]=x/m; N[v*3+1]=y/m; N[v*3+2]=z/m; } }   // (2, 3: the crown's leaves facing out from its middle, a fifth their own face: one round shape to the light)
     // (nothing cut away or dithered round you: owner, 17 Oct 2026, "no dithering and vanishing anything")
     const mat=new THREE.MeshLambertMaterial({vertexColors:true,side:THREE.DoubleSide});
     // (the oaks sway, owner 17 Oct 2026: "make them sway gently": each crown leans a little and back in the air, slow, its own rhythm; the trunk's
@@ -66,7 +72,7 @@ grab('park',()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.ox=PO.x; PARK.o
     // 2026, "why arent the trees gently swaying?": it was some 15 cm at a 10 m oak's top over 11 s; now some 35 cm every 4 s, in slow gusts)
     const SWG=sway&&(sway===2?'{ float h=aSw.x, g=(.7+.3*sin(uSw*.23+aSw.y))*uWk; transformed.x+=sin(uSw*2.3+aSw.y)*h*.12*g; transformed.z+=sin(uSw*1.9+aSw.y*1.7)*h*.08*g; }':'{ float h=aSw.x*aSw.x*.1, g=(.7+.3*sin(uSw*.23+aSw.y))*uWk; transformed.x+=sin(uSw*1.6+aSw.y)*h*.035*g; transformed.z+=sin(uSw*1.2+aSw.y*1.7)*h*.025*g; }'), swayV=sh=>{ sh.uniforms.uSw=PARK.sway; sh.uniforms.uWk=PARK.windK; sh.vertexShader='attribute vec2 aSw; uniform float uSw,uWk;\n'+sh.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\n '+SWG); };
     if(sway||TL){ mat.onBeforeCompile=sh=>{ if(TL)treeLook(sh); if(sway)swayV(sh); }; mat.customProgramCacheKey=()=>'oaksway'+sway+'tl'+TL; }
-    const me=new THREE.Mesh(g,mat); me.castShadow=true; me.receiveShadow=TL!==1&&TL!==3;
+    const me=new THREE.Mesh(g,mat); me.castShadow=true; me.receiveShadow=TL!==2;
     if(sway&&TL)for(const [k,M] of [['customDepthMaterial',new THREE.MeshDepthMaterial({depthPacking:THREE.RGBADepthPacking})],['customDistanceMaterial',new THREE.MeshDistanceMaterial()]]){ M.onBeforeCompile=swayV; M.customProgramCacheKey=()=>'oakswayd'+sway; me[k]=M; }   // (their shadow sways with them)
     scene.add(me); return me; };
   // THE OAKS (owner, 17 Oct 2026: "lets add just trees that look like this back, make them sway gently, vary in size and spread out through the

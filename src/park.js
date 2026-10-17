@@ -52,6 +52,22 @@ grab('park',()=>{ PARK.x0=BOD.MAP.x0; PARK.x1=BOD.MAP.x1; const X=BOD.XS, Z=BOD.
       const [k,m]=UG[Math.floor(hash(i,13,97)*UG.length)]; list.push([k,x,y,m*(.8+.4*hash(i,17,99)),hash(i,19,101)*6.28]); }
     list.push(['log1',60,-38.5,.5,.4],['log2',93,-44,.6,1.2],['log3',104,-39,.6,2.6],['fence1',56,-43,.8,0],['fence1',126,-41,.8,1.57],['pmushroom1',62.5,-36.5,.6,0],['pmushroom2',63.5,-36.2,.5,1],['pmushroom3',61.8,-35.5,.55,2]);
     PARK.under=mesh(list,false,false);
+    // THE TOY STALL (his TOYS-Psionic pack: the bear, the monkey, the penguin, the pig, the sheep, the bunny): a flea-market table inside the gate,
+    // the six toys set out on it; the park's own monument, a pair of ruined pillars by the round, a sitting log, flower beds along the path, three
+    // cedars (his modular terrain collection)
+    block(g1+2.2,P.y0+2.2,g1+5.2,P.y0+3.1,0,27,41,()=>[150,110,70]); block(g1+2.3,P.y0+2.3,g1+2.55,P.y0+2.55,0,27,43,()=>[96,70,46]); block(g1+4.85,P.y0+2.75,g1+5.1,P.y0+3,0,27,45,()=>[96,70,46]);
+    SOL.up.push([X(g1+2.2),Z(P.y0+2.2),X(g1+5.2),Z(P.y0+3.1)]); FIX.up.push([X(g1+2.2),Z(P.y0+2.2),0,X(g1+5.2),Z(P.y0+3.1),Y(27)]);   // (the table stands solid)
+    PARK.toys=mesh([['toybear',g1+2.6,P.y0+2.65,.32,2.6,.95],['toymonkey',g1+3.1,P.y0+2.65,.3,2.9,.95],['toypenguin',g1+3.6,P.y0+2.65,.3,3.3,.95],['toypig',g1+4.1,P.y0+2.65,.26,2.7,.95],['toysheep',g1+4.6,P.y0+2.65,.28,3.1,.95],['toybunny',g1+2.85,P.y0+2.4,.3,3,.95]],false,false);
+    // THE ODDITIES STALL west of the gate (the Psionic pack's crate, gems and gold), and THE CAMPFIRE east of the round by a sitting log and a
+    // wood pile (the terrain collection's), its smoke the game's own (FIGFX, npc-figures.js), its light a flicker
+    block(g0-5.2,P.y0+2.2,g0-2.2,P.y0+3.1,0,27,47,()=>[150,110,70]); block(g0-5.1,P.y0+2.3,g0-4.85,P.y0+2.55,0,27,49,()=>[96,70,46]); block(g0-2.55,P.y0+2.75,g0-2.3,P.y0+3,0,27,51,()=>[96,70,46]);
+    SOL.up.push([X(g0-5.2),Z(P.y0+2.2),X(g0-2.2),Z(P.y0+3.1)]); FIX.up.push([X(g0-5.2),Z(P.y0+2.2),0,X(g0-2.2),Z(P.y0+3.1),Y(27)]);
+    PARK.odd=mesh([['crate',g0-4.6,P.y0+2.65,.4,.2,.95],['gem1',g0-3.9,P.y0+2.5,.22,.5,.95],['gem2',g0-3.5,P.y0+2.8,.2,1.5,.95],['gem3',g0-3.1,P.y0+2.5,.24,2.5,.95],['gold',g0-2.6,P.y0+2.7,.08,.8,.95],['gem1',g0-4,P.y0+2.85,.18,3.5,.95]],false,false);
+    PARK.camp=mesh([['campfire',82.5,-47.2,.13,0],['woodpile',84,-48.5,.5,.6]],false,true); PARK.fire={x:X(82.5),z:Z(-47.2),y:.3};
+    { const L=new THREE.PointLight(new THREE.Color(1,.6,.25),4,5*TILE,1.6); L.position.set(X(82.5),.7,Z(-47.2)); scene.add(L); PARK.fireL=L; }
+    PARK.more=mesh([['pillar1',66,-41.5,3.2,.3],['pillar2',78,-41.5,2.6,1.2],['sitlog',81,-48,.5,.4],['cedar1',88,-36,18,.7],['cedar2',112,-45,22,1.9],['cedar1',130,-58,16,2.4],
+      ['daisy',68.3,-56,.35,0],['tulip',68.3,-54,.4,1],['rose',68.3,-52,.45,2],['sunflower',75.7,-56,.9,.5],['lily',75.7,-54,.4,1.5],['daisy',75.7,-52,.35,2.5],['hbush1',67.5,-58.8,.9,0],['hbush2',76.5,-58.8,.9,1.2]],false,false);
+    for(const [x,y,m] of [[66,-41.5,3.2],[78,-41.5,2.6],[88,-36,18],[112,-45,22],[130,-58,16]]){ const r=.35*m/.84*(m>5?.06:.2); SOL.up.push([X(x)-r,Z(y)-r,X(x)+r,Z(y)+r]); FIX.up.push([X(x)-r,Z(y)-r,0,X(x)+r,Z(y)+r,m/.84*TILE]); }   // (the pillars and the cedars stand solid)
     PARK.pots=mesh([['pot5',g0-1.7,P.y0+1.1,.5,0],['paradise1',g0-1.7,P.y0+1.1,1.2,.3,.45],['pot1',g1+1.7,P.y0+1.1,.45,0],['sanseveria',g1+1.7,P.y0+1.1,.9,1.2,.4],['pot3',g0-3,P.y0+1.2,.35,0],['calathea',g0-3,P.y0+1.2,.5,2,.3],['pot2',g1+3,P.y0+1.2,.35,0],['paradise',g1+3,P.y0+1.2,.8,.8,.3]],false,true); }
   // ---- THE LAMPS: the park's, a pole and a lantern, along the path; each a warm light at night (the clock's)
   for(const [x,y] of [[67.5,-54],[76.5,-50],[78.5,-41.5],[86.5,-36],[120,-56]]){ block(x-.12,y-.12,x+.12,y+.12,0,110,31,()=>[40,40,44]); block(x-.3,y-.3,x+.3,y+.3,110,124,35,()=>[48,46,44]);

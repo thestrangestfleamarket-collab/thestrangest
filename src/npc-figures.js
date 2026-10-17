@@ -115,5 +115,7 @@ const FIGFX={};   // (the figures' effects' tick, for the frame loop)
         if(X.tip&&s2.move&&s2.move.name==='slash'){ const u=s2.move.t/s2.move.T; BN[X.tip].getWorldPosition(V2); if(u>.3&&u<.66&&s2.tip)FX.trail(s2.tip,V2,[.8,.95,1]); s2.tip=(s2.tip||new THREE.Vector3()).copy(V2); } else s2.tip=null; }});
     const act=n=>{ const Mv=MOVES[n]; if(!Mv||st2.move)return; st2.move={name:n,t:0,T:Mv.T,pose:Mv.pose,done:false}; };
     N.act=act; N.fig=st2; FIGURES.push(N); }
-  FIGFX.tick=(dt,you)=>{ FX.step(dt); if(typeof PARK!=='undefined')PARK.tick(you); };   // (each frame, from the loop: the effects, and the park's cut of the trees before you)
+  let fireT=0; FIGFX.tick=(dt,you)=>{ FX.step(dt); if(typeof PARK!=='undefined'){ PARK.tick(you);
+      // the park's campfire: a curl of smoke now and then, its light a flicker
+      if(PARK.fire&&MAPG.park.visible){ fireT+=dt; if(fireT>.3){ fireT-=.3; FX.puff(PARK.fire.x,PARK.fire.y,PARK.fire.z,1.6,{x:.05,z:.03}); } PARK.fireL.intensity=3.2+Math.sin(performance.now()*.021)*.6+Math.sin(performance.now()*.0073)*.5; } } };   // (each frame, from the loop: the effects, and the park's cut of the trees before you)
   window.FIGDBG=()=>FIGURES.map(N=>({key:N.key,x:+N.st.x.toFixed(2),z:+N.st.z.toFixed(2),to:!!N.st.to,wait:+N.st.wait.toFixed(1),move:N.fig.move&&N.fig.move.name,lift:+N.fig.lift.toFixed(2),fx:FX.items.length})); window.FIGFREE=free; }

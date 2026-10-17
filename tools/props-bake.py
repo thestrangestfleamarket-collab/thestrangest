@@ -44,17 +44,24 @@ def from_glb(f):
             else: col=np.tile(np.clip(fac,0,1)**(1/2.2)*255,(len(P),1))
             W=(M[:3,:3]@P.T).T+M[:3,3]; T.append(W[idx].reshape(-1,3,3)); C.append(col[idx].reshape(-1,3,3))
     return np.vstack(T),np.vstack(C)
-def from_obj(f,pal):
-    img=np.array(Image.open(pal).convert('RGB')); V=[]; VT=[]; T=[]; C=[]
+def from_obj(f,pal):   # (a palette image given: the colour at each texture point; else the .mtl's own colour (Kd) for each material)
+    img=np.array(Image.open(pal).convert('RGB')) if pal else None; V=[]; VT=[]; T=[]; C=[]; KD={}; cur=None
     for line in open(f):
         w=line.split()
         if not w: continue
-        if w[0]=='v': V.append([float(x) for x in w[1:4]])
+        if w[0]=='mtllib' and not pal:
+            m=None
+            for l in open(os.path.join(os.path.dirname(f),' '.join(w[1:]))):
+                q=l.split()
+                if q and q[0]=='newmtl': m=q[1]
+                elif q and q[0]=='Kd' and m: KD[m]=np.clip(np.array([float(x) for x in q[1:4]]),0,1)**(1/2.2)*255
+        elif w[0]=='usemtl': cur=w[1]
+        elif w[0]=='v': V.append([float(x) for x in w[1:4]])
         elif w[0]=='vt': VT.append([float(w[1]),1-float(w[2])])
         elif w[0]=='f':
             vs=[(int(a.split('/')[0])-1,int(a.split('/')[1])-1 if len(a.split('/'))>1 and a.split('/')[1] else None) for a in w[1:]]
             for k in range(1,len(vs)-1):
-                tri=[vs[0],vs[k],vs[k+1]]; T.append([V[i] for i,_ in tri]); C.append([sample(img,np.array([VT[t]]))[0] if t is not None else [128,128,128] for _,t in tri])
+                tri=[vs[0],vs[k],vs[k+1]]; T.append([V[i] for i,_ in tri]); C.append([sample(img,np.array([VT[t]]))[0] if (img is not None and t is not None) else KD.get(cur,[128,128,128]) for _,t in tri])
     return np.array(T,float),np.array(C,float)
 OUT=json.load(open(out)) if os.path.exists(out) else {}
 for a in args:

@@ -116,7 +116,10 @@ this repo is `bralynnbell/thestrangest`.
   Animated by Quaternius: the bat, the slime; `tools/creatures-bake.py` → `data/creatures.json`, `src/npc-creatures.js`): each with the pack's
   bones and clips, walked as the skeletons are: rats about the street and the park, frogs, a slime, a snake and spiders in the park, bats over it at
   night, wasps by day. **The boats** (his kayak and fishing boat .fbx: `src/boats.js`): afloat in the pool as bodies of the pool's physics, with
-  the ball and the ring. Not yet in: the Psionic toy animals, the modular terrain collection, the kenney space kit, the plesiosaur page.
+  the ball and the ring. **The stalls at the gate** (the flea market's own: a toy stall with the TOYS-Psionic animals, an oddities stall with the
+  Psionic crate, gems and gold), **the park's monument** (the terrain collection's ruined pillars), **its flower beds, cedars, a campfire** by a
+  sitting log with the game's own smoke and a flickering light (`park.js`). Not fetched (the Drive connection's limit, or .rar files, which
+  nothing here opens): the kenney space kit, Stylized Trees, Laundry, the Village interiors, and everything over 10 MB; the plesiosaur page left.
 - When a request could mean more than one thing, ask with a couple of options (or a quick mockup) before building.
 
 ## THE MARKET: the one official map

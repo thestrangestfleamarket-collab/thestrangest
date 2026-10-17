@@ -129,6 +129,12 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
   `npc-map.js`), used by no one now.
 - **The goldfish on the street** (owner, 17 Oct 2026: "bring in the raincoat fish"): up from the platform, walking the whole street as the others do (`npc-map.js`); the bear stays on the platform.
 - **A stacked room's menu spot is just inside its door** (owner, 17 Oct 2026: "when i try to go to herb cottage i end up in the pool"): the spot outside the door has no floor up there (`lift` in `store.js`).
+- **The vending machines before the dojo** (owner, 17 Oct 2026: "pull in vending machines with real depth from old game, put them in front of ghost
+  street dojo"): the market lounge's two, white and dark red, from the game's own makers word for word (the lounge's kit, 23-w-y-market-lounge-2-bar,
+  and the machine from -4-street, through build.py; `vending machine, white` and `, red` in the catalog): a cabinet of sides, back and top round a
+  hollow, the window real glass over three lit shelves of cans (each can its own box, two rows deep), the button panel and buttons raised, the coin
+  slot, the pickup flap a real dark hollow under a hanging flap, a lamp in the glass. In a row east of the dojo's door against its front with the
+  kit's teal machine (west of the door the bay window juts out), their windows to the street, solid (`STREET` in `bodega.js`).
 - **The mushroom seller** (owner, 17 Oct 2026, his picture: a felted skeleton in a mottled rust robe, long tan hair, a hat crowned with mushrooms,
   a rope strap and woven bag, a tray of mushrooms held out; "add this is a 3d character in the game"; `src/npc-mushroom.js`): built in code from plain
   shapes (no model file), one mesh of about 2,500 triangles, through `makeNPC` like the rest (lamp-lit, the clothes' shadows, SELF; his sockets, nose

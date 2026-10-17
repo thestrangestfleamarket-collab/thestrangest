@@ -106,7 +106,13 @@ const BOD={meshes:[], walls:{}, lamps:[]};
     // building, its front to the street, its paved forecourt out to the sidewalk (GHOSTK.GSK.o: the kit's corner)
     { const K=GHOSTK.GSK, s=K.s; K.o=[131,W-8.3*s];   /* (moved east, owner 17 Oct 2026: the Diner and the Bar between it and the apartments) */ const n3=PROPS.length;
       for(const [k,dx,dy] of PRESETS['Preset Ghost Street 1'])if(!/row house|utility pole/.test(k))CATALOG[k](K.o[0]-3.5*s+dx,K.o[1]-.45*s+dy);
-      for(const p of PROPS.slice(n3))GHOSTST.push(p); BOD.GHOSTST=GHOSTST; BOD.GSK=K; gdShape(GHOSTST,K,LAMPS); }   // (a third taller, its ground floor a dojo you walk into: ghostdojo.js)
+      for(const p of PROPS.slice(n3))GHOSTST.push(p); BOD.GHOSTST=GHOSTST; BOD.GSK=K; gdShape(GHOSTST,K,LAMPS);
+      // THE VENDING MACHINES (owner, 17 Oct 2026: "pull in vending machines with real depth from old game, put them in front of ghost street dojo"):
+      // the market lounge's two, white and dark red, built as the real thing (a cabinet of sides, back and top round a hollow; the window real
+      // glass over lit shelves of cans, each can its own box; the pickup flap a real hollow under a hanging flap; a lamp in the glass:
+      // 23-w-y-market-lounge-4-street, word for word, through build.py), in a row east of the dojo's door against its front, beside the kit's teal machine, their windows to the street
+      { const n4=PROPS.length, X0=K.o[0]+.6*s, DX=X0+(95+143)/48, Y1=K.o[1]+3.2*s;   /* (the dojo's door's middle and its front: ghostdojo.js's measures) */
+        CATALOG['vending machine, red'](DX+2.6,Y1+.55,[0,1]); CATALOG['vending machine, white'](DX+3.85,Y1+.55,[0,1]);   /* (a row east of the door with the kit's teal machine: west of it the bay window juts out) */ for(const p of PROPS.slice(n4))STREET.push(p); } }   // (a third taller, its ground floor a dojo you walk into: ghostdojo.js)
     const n2=PROPS.length, R=(f,x,y,z,...a)=>{ const p=f(x,y,z,W,...a); p.solids=[]; return p; };
     R(M.vent,bo.x0+3,bo.y0+5,bo.h); R(M.antenna,bo.x0+8,bo.y0+3.5,bo.h); R(M.roofac,bo.x0+6,bo.y0+7.5,bo.h); for(const p of PROPS.slice(n2))ROOF.push(p); }
   BOD.O=O; BOD.FRONT=FRONT; BOD.STREET=STREET; BOD.ROOF=ROOF; BOD.MAP=MAP; BOD.RD=RD;

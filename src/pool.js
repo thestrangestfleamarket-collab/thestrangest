@@ -44,6 +44,7 @@ POOLR.LX=POOLR.bx1-POOLR.bx0; POOLR.LY=POOLR.by1-POOLR.by0; POOLR.level=-0.16*24
   // lobby to the STAIRS and the LIFT at its far end), the POOL in front of it (across, left to right, all one depth, deep, a small diving
   // board at its west end), the GYM behind it. Inside, every wall stands cut down to its foot while you're in the building, so its rooms show ----
   const RX=P.x1*2/3, HY0=6.24, HY1=8.28, CX=4.08, CY=3.6, LY0=6.0, D_=[[21.97,23.53]];   // (the right third's line; the hallway's sides; the core's corner; the lobby/office line; the front door)
+  POOLR.ROOMS=[[CX-.05,P.y0,RX,HY0],[P.x0,CY,CX,HY1],[P.x0,P.y0,CX,CY],[CX,HY0,RX,HY1],[P.x0,HY1,RX,P.y1],[RX,LY0,P.x1,P.y1],[RX,P.y0,P.x1,LY0]];   // (its rooms, for ROOMS: the gym (two parts), the core, the hallway, the pool hall, the lobby, the office)
   const plaster=(a,z)=>{ const k=hash(Math.floor(a*24),Math.floor(z),7); return z<8?[86,80,74]:k<.03?[214,208,196]:[226,220,208]; };
   const gymWall=(a,z)=>z<8?[40,42,46]:z>60&&z<66?[180,60,52]:[118,122,128];
   // the floors: the pool hall's deck (the game's), the gym's rubber, the hallway's boards, the lobby's stone, the office's carpet, the core's concrete
@@ -114,7 +115,7 @@ POOLR.LX=POOLR.bx1-POOLR.bx0; POOLR.LY=POOLR.by1-POOLR.by0; POOLR.level=-0.16*24
   for(const a of [2.5,6.75,11])for(const b of [0,LY]){ const L=new THREE.PointLight(new THREE.Color(.32,.68,1),+(QS.get('wl')||3.2),8*TILE,1.4); L.position.set(X(P.bx0+a),Y(lz),Z(P.by0+b+(b?-0.15:0.15))); L.userData.i0=L.intensity; scene.add(L); lamps.push(L); lampDisc(P.bx0+a,P.by0+b+(b?-0.02:0.02),lz); }
   { const L=new THREE.PointLight(new THREE.Color(.32,.68,1),+(QS.get('wl')||3.2),8*TILE,1.4); L.position.set(X(P.bx0+0.15),Y(-(HT-0.04-1.4)*24),Z(P.by0+LY/2)); L.userData.i0=L.intensity; scene.add(L); lamps.push(L); }
   // the rooms' ceiling lights (a warm panel each, its glow): the lobby, the office, the hallway, the gym, the core
-  const ceil=(x,y,c,k)=>{ const m=new THREE.Mesh(new THREE.BoxGeometry(.9*TILE,.03,.5*TILE),new THREE.MeshBasicMaterial({color:new THREE.Color(...c).multiplyScalar(1.3)})); m.position.set(X(x),Y(P.H-2),Z(y)); scene.add(m);
+  const ceil=(x,y,c,k)=>{ const m=new THREE.Mesh(new THREE.BoxGeometry(.9*TILE,.03,.5*TILE),new THREE.MeshBasicMaterial({color:new THREE.Color(...c).multiplyScalar(1.3)})); m.position.set(X(x),Y(P.H-2),Z(y)); scene.add(m); OVERHEAD.push({o:m,y:Y(P.H-4)});
     const L=new THREE.PointLight(new THREE.Color(...c),k,7*TILE,1.6); L.position.set(X(x),Y(P.H-12),Z(y)); L.userData.i0=L.intensity; scene.add(L); lamps.push(L); };
   ceil(22.7,12.4,[1,.88,.7],6); ceil(22.7,3,[1,.92,.8],5); ceil(10.5,7.26,[1,.88,.7],3.5); ceil(8.5,3,[.9,.95,1],6); ceil(2.1,5.2,[1,.9,.75],3);
   // HIS SHADOWS: two shadow-casting stand-ins for the two lamps nearest him (lamps' own colour and strength copied as he moves)

@@ -1,0 +1,27 @@
+// ---- ONLY THE ROOM YOU'RE IN (owner, 17 Oct 2026: "you should only see the interior of the room your in", "the rest of the map should go black when
+// you are in an interior"): inside a building, the room you stand in is all that's drawn; everything past its walls is cut away (six planes round
+// it, for every material at once) and the sky goes black; the characters outside it are hidden. You can still zoom out and turn round it.
+// The rooms: the bodega's shop and its back office, the apartment building's (the gym, the core, the hallway, the pool hall, the lobby, the
+// office), the apartment house's on the floor you're on ----
+const ROOMS={cur:null};
+{ const V=THREE.Vector3, PL=[0,1,2,3,4,5].map(()=>new THREE.Plane()), m=.14*TILE; let RL=null;
+  const box=(X,Z,t,y0,y1)=>{ const a=X(t[0]), b=X(t[2]), c=Z(t[1]), d=Z(t[3]); return {x0:Math.min(a,b),x1:Math.max(a,b),z0:Math.min(c,d),z1:Math.max(c,d),y0,y1}; };
+  const build=()=>{ RL=[]; const B=BOD.B0;
+    RL.push(box(BOD.X,BOD.Z,[B.x0,BOD.BODOFF,B.x1,B.y1],-1,BOD.Y(B.h)),box(BOD.X,BOD.Z,[B.x0,B.y0,B.x1,BOD.BODOFF],-1,BOD.Y(B.h)));
+    for(const t of POOLR.ROOMS||[])RL.push(box(POOLR.X,POOLR.Z,t,POOLR.Y(-150),POOLR.Y(POOLR.H))); };
+  const within=(b,x,z,e=0)=>x>b.x0-e&&x<b.x1+e&&z>b.z0-e&&z<b.z1+e;
+  ROOMS.tick=()=>{ if(!RL)build(); let hit=null;
+    if(LVL==='up'&&!UI.freeCam&&!ED.on){ hit=RL.find(b=>within(b,pos.x,pos.z))||null;
+      const A=MODS.apts; if(!hit&&A&&A.in){ const lv=A.floor(), S=BOD.K.STORY; for(const t of A.rects(lv)){ const b=box(BOD.X,BOD.Z,t,BOD.Y(lv*S)-.5,BOD.Y((lv+1)*S)); if(within(b,pos.x,pos.z)){ hit=b; break; } } } }
+    ROOMS.cur=hit;
+    // THE LIGHTS OVERHEAD (owner, 17 Oct 2026: "dont show over head lights in any view unless looking up at them"): only from under them
+    for(const h of OVERHEAD)h.o.visible=cam.position.y<h.y;
+    if(hit){ PL[0].set(new V(1,0,0),-(hit.x0-m)); PL[1].set(new V(-1,0,0),hit.x1+m); PL[2].set(new V(0,0,1),-(hit.z0-m)); PL[3].set(new V(0,0,-1),hit.z1+m); PL[4].set(new V(0,1,0),-hit.y0); PL[5].set(new V(0,-1,0),hit.y1+.05);
+      renderer.clippingPlanes=PL; scene.background.setRGB(0,0,0); }
+    else if(renderer.clippingPlanes.length)renderer.clippingPlanes=[];
+    // the characters: only those in the room (a troublemaker below ground, hidden by his own mind, left alone)
+    const show=(g,x,z,o)=>{ const sh=!hit||within(hit,x,z,.4*TILE); if(!sh){ if(g.visible){ g.visible=false; o._rh=true; } } else if(o._rh){ g.visible=true; o._rh=false; } };
+    for(const N of NPCS){ if(N.lv!=='up'||N.mode==='hidden')continue; show(N.g,N.g.position.x,N.g.position.z,N); }
+    if(typeof MUS!=='undefined'&&MUS.g)show(MUS.g,MUS.at.x,MUS.at.z,MUS);
+    if(typeof WATER!=='undefined'&&WATER.mesh)show(WATER.mesh,WATER.mesh.position.x,WATER.mesh.position.z,WATER); };   // (the pool's water, its own shader: shown only from the pool hall)
+}

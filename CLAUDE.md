@@ -405,9 +405,13 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
   gives the sun's and the moon's real directions (`CLOCK.sunV`, `CLOCK.moonV`). PIXEL lighting cuts the gradient into 24 bands, SMOOTH leaves
   it smooth. The distance haze (skyline.js) takes the dome's horizon colour (between its two sides), so the skyline fades into the sky it stands against. Cost: one box of 12 triangles round the camera drawn where nothing covers it, one program, no light. Hidden underground and in a
   room. Not shown in the isometric and map views (they look down on the land) except past the land's edge. Seen in `tests/skyshot.cjs <out>
-  [hours] [weather]` (first person, toward the sun and away from it, each hour; then from behind him). Not yet (the ideas list): sunset
-  palettes varied by the day and the weather (clear, moist, overcast), the shade cooler as the sun drops, the street lights coming on one by
-  one at dusk.
+  [hours] [weather]` (first person, toward the sun and away from it, each hour; then from behind him). **The evening's mood** (owner, "1-3"): two more
+  palettes for the stops round the horizon, FIRE (red, pink, magenta) and SOFT (grey-teal, one thin warm line), mixed into the clear one by
+  weights the calendar day sets (`MOOD`, `W0` in sky.js; every evening its own, the same for everyone), SOFT the more the sky is clouded; `?mood=fire|soft|clear`
+  holds one, `?day=N` another day. **The light at dusk**: the lit side warmer, the shade cooler and bluer as the sun drops (oldlook.js's
+  warm-and-cool grade riding the clock, most at 3°, gone by night and high day; outdoors only). **The street lights on one by one** (`dress.js`):
+  each street light and lamp post comes on at its own moment between the sun at 1.5° and 2.5° under (its lamp lit, its light and its pool with
+  it), off again at dawn; by day they're dark and light nothing. The guards keep their beats day and night as before (nothing changed there).
 - **Smooth light, the default now** (owner, 17 Oct 2026, of the grainy cloud and tree mockups: "i dont like any of those mockups, they all look like dots everywhere, i want smooth realistic shadows and lighting like gradient radial etc"; it supersedes the grain and the 24 steps above): `SMOOTH` in `map-pre.js`: no grain, the light not cut into steps, soft shadow edges (PCFSoftShadowMap), the lamps' pools smooth radial gradients; GRAPHICS' LIGHTING switches back to PIXEL (`market-lighting`), `?look=pixel|smooth`.
 
 - **The far** (owner, 17 Oct 2026, his picture of a mountain fading blue into the sky: "how can i make things look realistically far away like

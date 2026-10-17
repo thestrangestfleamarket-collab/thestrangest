@@ -56,6 +56,18 @@ tour scripts in this session's scratchpad (not in the repo): a Playwright page w
 The owner paused all work here to carry on from his other account. Read `CLAUDE.md` first: it holds every decision he has made.
 This note says what was in progress and where it is.
 
+## The sky and the sunset (17 Oct 2026, branch `claude/relaxed-gauss-xerecq`; read the CLAUDE.md entry "The sky and the sunset")
+- **Live** on https://claude.ai/artifact/PnmQqhkusfewby35tf4zo5 (version 12): the sky dome (`src/sky.js`: gradient, sun and moon discs, stars,
+  the clouds' undersides at sunset), the clock's evening stops, and the far (haze and skyline, `src/skyline.js`, merged in from
+  `claude/awesome-noether-mba5hh`; the haze now takes the dome's horizon colour). Looked at from every evening hour: `tests/skyshot.cjs`.
+- **Written, built, syntax-checked, never looked at** (the last commit on the branch, the owner's "1-3"): the evening's moods (FIRE and SOFT
+  palettes mixed by the calendar day and the cloud: `MOOD` in sky.js, `?mood=fire|soft|clear`, `?day=N`), the warm-and-cool grade riding the
+  clock at dusk (`LOOK.cool` set from sky.js), the street lights and lamp posts coming on one by one as the sun goes down (`DRESS.tick` in
+  dress.js, `P.on` a lamp). To finish: `node tests/skyshot.cjs <out> 17.9,18.1,18.3 ` and the same with `?mood=fire` / `?mood=soft`
+  (add `&mood=` to the test's URL), check the lamps light in turn and nothing is dark by day that shouldn't be, then publish to the link above.
+- The publish warned that the page uses the world editor's `sample` capability without declaring it (predates this; DESCRIBE A CHANGE only).
+- Not built: the guards' night watch (they keep their beats day and night).
+
 ## Live now (on `main`, published to https://claude.ai/artifact/X2Bk8UjQKP8yfLdLtVVn3s, version 55)
 - Smooth lighting is the default: no grain, soft shadows, smooth lamp glows. GRAPHICS → LIGHTING switches back to PIXEL.
 - The map editor (Shift+M): drag places in 3D on a quarter-tile grid, with view controls (drag open ground or Ctrl+drag to turn and tilt, Q E Z X, T top, Y side, W A S D slide), APPLY to rebuild and EXPORT.

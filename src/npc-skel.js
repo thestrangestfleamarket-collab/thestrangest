@@ -50,11 +50,24 @@
              ['Rogue','ROGUE',95,.75,'Walking_A','Idle_B',.5,[['Crossbow','handslot_r']],[[55,-62.6],[104,-62.6]],{hit:'1H_Ranged_Shoot',reach:6.5,at:.45,bolt:[1.2,1.1,.8],dmg:.45}] ];
   // (their heights in metres: half what they were, owner 17 Oct 2026: "make them 50% smaller")
   const GUARDS=[], TROUBLE=[], BOLTS=[], RUN=1.9*TILE, SEE=18*TILE;
+  // THE SPREAD (a character's sheet, npc-map.js): the rig's rest is a T, arms straight out; the arms lifted a little and the legs parted, each
+  // bone turned about his front axis in the world and put back under its parent (local = inv(parentRest) · Rz · boneRest)
+  const spread=rig=>{ const R=S.rig, W=[], at=i=>W[i]||(W[i]=(R.parent[i]>=0?at(R.parent[i]).clone():new THREE.Quaternion()).multiply(new THREE.Quaternion().fromArray(R.q[i])));
+    for(const [bn,deg] of [['upperleg_l',14],['upperleg_r',-14],['upperarm_l',22],['upperarm_r',-22]]){ const i=JI[bn], rz=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,0,1),deg*Math.PI/180); rig.bones[i].quaternion.copy(at(R.parent[i]).clone().invert().multiply(rz).multiply(at(i))); } };
   const skel=(key,name,metres,x,z,speed,o)=>{ const M=S.chars[key], rig=rigOf(), mixer=new THREE.AnimationMixer(rig.bones[0]), an=Anim(mixer);
-    let geo=geomOf(M,true); if(o.dark){ const c=geo.attributes.color.array; for(let i=0;i<c.length;i+=3){ const l=(c[i]+c[i+1]+c[i+2])/3; c[i]=Math.min(255,l*.42+18); c[i+1]=l*.3; c[i+2]=Math.min(255,l*.48+22); } }   // (a troublemaker: the Rogue's hood and bones gone the dark of a bruise)
-    const N=makeNPC(null,{key,name,names:M.parts,lv:'up',group:'bodega',geo,skin:rig,tall:2.166,eye:M.eye,eyeC:o.eyeC,rank:M.parts.map(p=>/Helmet|Hat|Hood|Cape|Cloak/.test(p)?2:0),
+    let geo=geomOf(M,true); if(key==='Minion'||key==='Rogue')geo.translate(0,0,-2.2);   // (the pack's files lay these two 2.2 units ahead of the rig, and the bake kept it: back over their bones, so each is drawn where he stands and his limbs turn about their own joints)
+    // THE GOLD ONE (gild): every bone gold by its own light and shade; the face under the eyes and the jaw bone-white; the neck a steel spring;
+    // the eye sockets black, no glow (the picture's are empty); no cloak (its faces dropped)
+    if(o.gild){ const c=geo.attributes.color.array, P=geo.attributes.position.array, R=geo.attributes.reg.array, part=M.parts, ix=geo.index.array, keep=[];
+      for(let i=0;i<R.length;i++){ const p=part[R[i]], l=c[i*3]*.3+c[i*3+1]*.59+c[i*3+2]*.11, x=P[i*3], y=P[i*3+1], z=P[i*3+2]; let k=[1.3,.95,.36];
+        if(p==='Eyes')k=[0,0,0]; else if(p==='Jaw'||p==='Head'&&z>.05&&y<1.6&&Math.abs(x)<.3)k=[1.35,1.3,1.18]; else if(p==='Body'&&y>1.02)k=[.8,.8,.84];
+        c[i*3]=Math.min(255,l*k[0]+(p==='Eyes'?14:0)); c[i*3+1]=Math.min(255,l*k[1]+(p==='Eyes'?9:0)); c[i*3+2]=Math.min(255,l*k[2]+(p==='Eyes'?8:0)); }
+      for(let t=0;t<ix.length;t+=3)if(part[R[ix[t]]]!=='Cloak')keep.push(ix[t],ix[t+1],ix[t+2]); geo.setIndex(new THREE.BufferAttribute(Uint16Array.from(keep),1)); }
+    if(o.dark){ const c=geo.attributes.color.array; for(let i=0;i<c.length;i+=3){ const l=(c[i]+c[i+1]+c[i+2])/3; c[i]=Math.min(255,l*.42+18); c[i+1]=l*.3; c[i+2]=Math.min(255,l*.48+22); } }   // (a troublemaker: the Rogue's hood and bones gone the dark of a bruise)
+    const N=makeNPC(null,{key:o.key||key,name,names:M.parts,lv:'up',group:'bodega',geo,skin:rig,tall:2.166,eye:o.gild?-1:M.eye,eyeC:o.eyeC,rank:M.parts.map(p=>/Helmet|Hat|Hood|Cape|Cloak/.test(p)?2:0),
       metres,x,z,lane:LANE,free,ground:(x,z)=>MODS.bodega.ground(x,z),radius:.25,speed,stride:0,rock:0,bob:0,pick:o.pick,brain:o.brain,
       anim:(dt,moving,st,sc)=>{ const run=moving&&st.v>1.2*TILE; N.sta=run?Math.max(0,N.sta-dt/14):Math.min(1,N.sta+dt/8); if(N.sta<=0)N.tired=true; if(N.tired&&N.sta>.33)N.tired=false;   // (his stamina: spent running, back at a walk or at rest)
+      if(N.sheet){ if(!N.posed){ N.posed=true; spread(rig); } return; }   // (his sheet: still, limbs spread, his clips never run)
       if(QS.get('skelrest'))return; an.base=moving?(run?'Running_A':o.walkN):(N.alert?'Idle_Combat':o.idleN); an.ts=moving?st.v/((run?RUNU:WALK)*sc):1; an.update(dt); }});
     for(const [gn,slot] of o.gear||[]){ const m=new THREE.Mesh(geomOf(S.gear[gn],false),N.me.material); m.castShadow=true; rig.bones[JI[slot]].add(m); }
     N.mixer=mixer; N.an=an; return N; };
@@ -110,5 +123,9 @@
       if(free(nx,nz,st.R)){ st.x=nx; st.z=nz; } st.to=null; st.face={x:from.st.x,z:from.st.z};
       N.an.play('Death_A',{hold:true}); setTimeout(()=>{ if(N.mode!=='down')return; N.an.play('Lie_StandUp',{then:()=>{ N.mode='flee'; N.hp=.5; }}); },1600); };   // (fainted, then up with a little back, and away)
     TROUBLE.push(N); }
+  // ---- THE GOLD ONE (owner, 17 Oct 2026, his picture of a gilded clockwork skeleton, a white skull face under a gold cap: "put this
+  // character in game, use the other skeletons as guides for character design"): the Minion's bones and body, nothing added (gild, above);
+  // unarmed; he strolls the whole street as the others do, no beat and no fight ----
+  skel('Minion','GOLD SKELETON',1.4,T_(72),Z_(-70),.45,{key:'Gold',walkN:'Walking_A',idleN:'Idle_A',gild:true});
   window.GUARDDBG=()=>({guards:GUARDS.map(N=>({k:N.key,mode:N.guard.mode,x:+(N.st.x/TILE).toFixed(1),z:+(N.st.z/TILE).toFixed(1),act:N.an.once&&N.an.once.n})),trouble:TROUBLE.map(N=>({mode:N.mode,x:+(N.st.x/TILE).toFixed(1),z:+(N.st.z/TILE).toFixed(1),act:N.an.once&&N.an.once.n})),next:+next.toFixed(1),dark:CLOCK.dark()});
   window.SKELDBG=()=>NPCS.filter(N=>N.mixer).map(N=>({key:N.key,x:+N.st.x.toFixed(2),z:+N.st.z.toFixed(2),y:+N.g.position.y.toFixed(2),to:!!N.st.to,bones:N.me.skeleton.bones.length})); }

@@ -48,7 +48,7 @@ LENS.init=()=>{ scene.traverse(o=>{ const of=o.isMesh&&o.userData.objOf; if(!of)
 { const F=new THREE.Vector3(), C=new THREE.Vector3(), S=new THREE.Sphere();
   const amt=near=>Math.max(0,Math.min(6,(near/TILE-6)*.8));
   LENS.tick=dt=>{ if((LENS.t-=dt)>0)return; LENS.t=.1; if(!LENS.on){ LENS.any=false; return; } cam.getWorldDirection(F); const cp=cam.position, dp=C.set(pos.x,py+TILE,pos.z).sub(cp).dot(F), D=LENS.tex.image.data; let any=false;
-    LENS.objs.forEach((o,i)=>{ const b=o.b; let m=1e9; for(let c=0;c<8;c++){ C.set(c&1?b.max.x:b.min.x,c&2?b.max.y:b.min.y,c&4?b.max.z:b.min.z).sub(cp); m=Math.min(m,C.dot(F)); } const a=amt(dp-m); D[i+1]=a; if(a>0)any=true; });
+    LENS.objs.forEach((o,i)=>{ const b=o.b; if(b.max.y-b.min.y<.8*24*ZU||Math.max(b.max.x-b.min.x,b.max.z-b.min.z)>10*TILE){ D[i+1]=0; return; }   /* (flat or huge: a floor, a road, a sheet of ground: never blurred, only things that stand) */ let m=1e9; for(let c=0;c<8;c++){ C.set(c&1?b.max.x:b.min.x,c&2?b.max.y:b.min.y,c&4?b.max.z:b.min.z).sub(cp); m=Math.min(m,C.dot(F)); } const a=amt(dp-m); D[i+1]=a; if(a>0)any=true; });
     LENS.meshAmt=o=>{ const g=o.geometry; if(!g.boundingSphere)g.computeBoundingSphere(); S.copy(g.boundingSphere).applyMatrix4(o.matrixWorld); if(S.radius>6*TILE)return 0; const a=amt(dp-(C.copy(S.center).sub(cp).dot(F)-S.radius)); if(a>0)any=true; return a; };
     LENS.tex.needsUpdate=true; LENS.dp=dp; LENS.any=any||LENS.objs.length===0&&false; LENS.check=true; };
   // the amounts' picture, drawn only while something blurs (you and what glows left out: they're never blurred)

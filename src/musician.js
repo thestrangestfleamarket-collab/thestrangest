@@ -43,7 +43,7 @@ const MUS={};
   // his side, a little back and out, the forearm laid over the guitar's lower bout to the strings. The left elbow stays under the neck
   GTPOLE.R=RIG.V(-1,-1,-.55);
   const a={t:0}; let song=0, rest=0;
-  MUS.tick=dt=>{ if(MUS.watch&&!UI.freeCam){ MUS.watch=false; if(MUS.res0!=null){ RESI=MUS.res0; MUS.res0=null; resize(); } } const d=Math.hypot(pos.x-AT.x,pos.z-AT.z); if(!MAPG.bodega.visible||d>18&&!MUS.watch){ gtHush(); return; }
+  MUS.tick=dt=>{ if(MUS.watch&&!UI.freeCam){ MUS.watch=false; SHB.hidden=true; if(MUS.res0!=null){ RESI=MUS.res0; MUS.res0=null; resize(); } } const d=Math.hypot(pos.x-AT.x,pos.z-AT.z); if(!MAPG.bodega.visible||d>18&&!MUS.watch){ gtHush(); return; }
     if(GTS.t>GTEND+1.5){ rest+=dt; if(rest>2.5){ rest=0; song=gtNext(song); gtSet(song); } }
     R.farOnly(false); GTS.t+=dt; const t=GTS.t, P=gtPose(t); npcSpring(a,P,dt,NPCARMS); gtFing(P,RIG.build(P,null),P._T); npcSpring(a,P,dt,NPCFING); a.t+=dt;
     P.nod+=Math.sin(a.t*1.6)*0.6*R.D+Math.sin(t/GTBEAT*Math.PI)*0.8*R.D; a.P=P;
@@ -62,6 +62,15 @@ const MUS={};
   // A DOUBLE CLICK ON HIM: walk up, then the camera close on his hands (the free camera, there; C goes back)
   const hitBox=new THREE.Mesh(new THREE.BoxGeometry(22,58,24),new THREE.MeshBasicMaterial({visible:false})); hitBox.position.set(0,29,2); g.add(hitBox);   // (what a double click finds: him, roughly)
   UI.thing({name:'THE GUITARIST',obj:hitBox,reach:1.6,tall:1.9,act:()=>{ const p=new THREE.Vector3().setFromMatrixPosition(new THREE.Matrix4().multiplyMatrices(g.matrixWorld,new THREE.Matrix4().makeTranslation(GTF.o.x,GTF.o.y,GTF.o.z)));
-    UI.setFree(true); UI.camT.copy(p); ppuTo=Math.min(240,PPU*7); MUS.watch=true; MUS.res0=RESI; while(RESI<RESMAX&&(pxS()>1||vpu()>art())){ RESI++; if(pxS()<=1)break; } resize(); }});   // (close, and sharp: the sharpness up as far as the screen shows, as the game's close-up drew him finer; back as it was when you leave)
+    UI.setFree(true); UI.camT.copy(p); ppuTo=PPU*16; MUS.watch=true; MUS.res0=RESI; RESI=MUS.sharp(); resize(); SHB.show(); }});   // (owner, 17 Oct 2026: "when you watch the guitarist zoom in all the way and add a sharpen bar to adjust to the level i want": all the way in that still shows his hands and the guitar, the wheel closer still; and the SHARPEN bar)
+  // THE SHARPEN BAR (while you watch him): the art's fineness from the coarsest to one screen pixel each (past the menu's ceiling, here only), the
+  // level kept in this browser for the next time; back as it was when you leave
+  const SHB=document.createElement('div'); SHB.id='shbar'; SHB.hidden=true; SHB.style.cssText='position:fixed;left:50%;bottom:52px;transform:translateX(-50%);z-index:6;display:flex;gap:10px;align-items:center;padding:8px 12px;background:#0b0d13e0;border:2px solid #2a3040;font:11px Silkscreen,monospace;letter-spacing:1px;color:#c9ccd6';
+  SHB.innerHTML='<span>SHARPEN</span><input type="range" min="0" step="1" style="width:220px"><span class="v" style="width:52px;text-align:right"></span><span style="color:#8a8f9c">C BACK</span>'; document.body.appendChild(SHB);
+  const shIn=SHB.querySelector('input'), shV=SHB.querySelector('.v'); shIn.max=RESL.length-1;
+  MUS.sharp=()=>{ let v=null; try{ v=localStorage.getItem('market-gtsharp'); }catch(e){} return v!=null?+v:Math.min(RESL.length-1,RESMAX+2); };
+  SHB.show=()=>{ shIn.value=RESI; shV.textContent=RES()+'x'; SHB.hidden=false; };
+  shIn.oninput=()=>{ RESI=+shIn.value; resize(); shV.textContent=RES()+'x'; try{ localStorage.setItem('market-gtsharp',String(RESI)); }catch(e){} };
+  shIn.addEventListener('pointerdown',e=>e.stopPropagation()); shIn.addEventListener('keydown',e=>e.stopPropagation());   // (close, and sharp: the sharpness up as far as the screen shows, as the game's close-up drew him finer; back as it was when you leave)
   SOL.up.push([AT.x-.35,AT.z-.3,AT.x+.35,AT.z+.3]); FIX.up.push([AT.x-.35,AT.z-.3,0,AT.x+.35,AT.z+.3,1.7]);   // (solid: he and his guitar)
 }

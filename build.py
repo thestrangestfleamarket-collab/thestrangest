@@ -130,7 +130,7 @@ const FULLRES=+(new URLSearchParams(location.search).get('fullres')||0); if(FULL
 // SHARPER AT WILL (owner, 16 Oct 2026: "allow the game to go more res if i press = more times, however sharp res it can go"): the art's own
 // pixels a world unit, the game's times RES (- coarser, = finer, as far as one screen pixel each: the sharpest the screen can show); the
 // zoom then makes them bigger by whole screen pixels, so the zoom goes in steps
-const RESL=[.5,.75,1,1.5,2,3,4,6,8,12,16], V0=PPU*PXS;
+const RESL=[.5,.75,1,1.5,2,3,4,6,8,12,16,24,32,48,64], V0=PPU*PXS;   // (past 16: the guitarist's SHARPEN bar, close up, to one screen pixel each)
 // CLOSE UP, ONE STEP FINER (owner, 17 Oct 2026: the opening "1 less than it is now, and when you zoom in to this level i want it to be this
 // resolution", his picture at 6 screen pixels a pixel, 1.5x): once a pixel of the chosen art would be 6 screen pixels or more, the art one step
 // finer; zoomed back out, back to the chosen

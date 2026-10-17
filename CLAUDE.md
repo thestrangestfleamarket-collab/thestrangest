@@ -433,6 +433,7 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
   pockets between things, closed by their true boxes, that no one needs.
 - **THE MARKET's artifact, from this account** (17 Oct 2026): X2Bk8UjQKP8yfLdLtVVn3s can't be opened from here, so THE MARKET is published at
   **https://claude.ai/artifact/PnmQqhkusfewby35tf4zo5** (update that one from here).
+  **This branch's build** (17 Oct 2026, the paused work finished, while other sessions were publishing their own branches to that link): https://claude.ai/artifact/1QpVqQujaY6D6V1F19ZmKy; once the branches are merged, one publish to the link above.
 
 ## THE MARKET: the one official map
 

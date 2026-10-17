@@ -2,7 +2,7 @@
 
 Read `CLAUDE.md` first: it holds every decision the owner has made. This note says what is live and what is still open.
 
-## Live now (branch `claude/admiring-davinci-6bjs2l`, published to https://claude.ai/artifact/PnmQqhkusfewby35tf4zo5)
+## Live now (branch `claude/admiring-davinci-6bjs2l`, its build at https://claude.ai/artifact/1QpVqQujaY6D6V1F19ZmKy; the shared link PnmQqhkusfewby35tf4zo5 was being published by other sessions' branches at the time: skyline, sky dome, power grid, the city's spine)
 - Everything that was paused in the first handoff is finished and merged here (the entry "The paused work finished" in CLAUDE.md): the avatar
   editor (Shift+K), the perf fixes measured and fix 5 remade (`docs/perf-audit.md`), the tree look (3, the default), the map editor's next round
   (live carries, PLACE / SAVE, RAISE / LOWER and GROW / SHRINK for the Diner and the Bar), the angular Fox, NPC lives (`src/lives.js`), the

@@ -32,7 +32,7 @@ kit+='\n// ==== 23-w-west-dojo-1-hall.js (the game\'s, word for word)\n{\n'+dj+'
 # butterflies ... dont add them to the map yet just bring to this new game and all items"): each room's game files, word for word, each group in
 # a block of its own; the buildings their files measure themselves by (the game's LBLD records) at the store's own spots, far off the map, where
 # src/store.js sets them out; what each hands out, on BOD.STOREK. The keep's three files from the game's archive (archive/keep, stored 16 Oct 2026)
-ST_B="LBLD.push({id:'ldiner',label:'DINER',x0:340,y0:-84,x1:353.5,y1:-77,h:130,st:1,c:[176,62,56]},{id:'lbodega2',label:'BAR',x0:360,y0:-89.5,x1:370,y1:-77,h:130,st:1,c:[146,96,64]},{id:'ldungeon',label:'THE DUNGEON',x0:500,y0:-58,x1:513,y1:-47,h:130,st:1,c:[60,56,52]},{id:'lcastle',label:'THE KEEP',x0:426,y0:-86,x1:435.5,y1:-77,h:520,st:4,tall:4,c:[150,142,126]});"
+ST_B="LBLD.push({id:'ldiner',label:'DINER',x0:106.5,y0:-84,x1:120,y1:-77,h:130,st:1,c:[176,62,56]},{id:'lbodega2',label:'BAR',x0:120.5,y0:-89.5,x1:130.5,y1:-77,h:130,st:1,c:[146,96,64]},{id:'ldungeon',label:'THE DUNGEON',x0:500,y0:-58,x1:513,y1:-47,h:130,st:1,c:[60,56,52]},{id:'lcastle',label:'THE KEEP',x0:426,y0:-86,x1:435.5,y1:-77,h:520,st:4,tall:4,c:[150,142,126]});"
 KEEPC="const KEEPC={k:[426,435.5,-86,-77],door:430.75,arches:[428.1,430.75,433.4],b:[422,439,-90,-73],gate:430.5};"
 sconce=body(S+'26-y-theatre-inside.js','// ---- a wall light','// ---- the floor lights')   # (the bar's wall lights are the theatre's)
 def gblock(files,out,pre='',src=S):

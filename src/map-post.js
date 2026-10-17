@@ -39,7 +39,9 @@ grab('stairs',()=>{ const S=MAPSTAIR, X=x=>(x-72)*TILE, Z=y=>(y+77)*TILE, Y=z=>z
   MODS.stairCut=new THREE.Plane(new THREE.Vector3(0,-1,0),1e6);
   const m=new THREE.Mesh(geo,new THREE.MeshLambertMaterial({vertexColors:true,side:THREE.DoubleSide,clippingPlanes:[MODS.stairCut]})); m.receiveShadow=true; m.castShadow=true; scene.add(m);
   // a lamp over the stairs, so the way down is lit
-  for(const [y,z,c,i] of [[S.y1-.3,60,[1,.92,.78],5],[S.y0+.5,-40,[.5,.54,.64],6]]){ const L=new THREE.PointLight(new THREE.Color(...c),i,7*TILE,1.6); L.position.set(X((S.x0+S.x1)/2),Y(z),Z(y)); L.userData.i0=L.intensity; scene.add(L); lamps.push(L); }
+  for(const [y,z,c,i] of [[S.y1-.3,60,[1,.92,.78],5],[S.y0+.5,-40,[.5,.54,.64],6]]){ const L=new THREE.PointLight(new THREE.Color(...c),i,7*TILE,1.6); L.position.set(X((S.x0+S.x1)/2),Y(z),Z(y)); L.userData.i0=L.intensity;
+    L.castShadow=true; L.shadow.mapSize.set(256,256); L.shadow.camera.near=.05; L.shadow.camera.far=7*TILE; L.shadow.bias=-.004; L.shadow.normalBias=.02; L.shadow.autoUpdate=false; L.shadow.needsUpdate=true;   // (its shadows, drawn once: the walls keep its light in the stairwell, as the shop's lamps; owner, 17 Oct 2026, every light checked)
+    scene.add(L); lamps.push(L); }
   // (and the exit tunnel's own cool light, as the platform's: the stairs' foot to the platform)
   for(const y of [-83.5,-88.5]){ const L=new THREE.PointLight(new THREE.Color(.5,.54,.64),6,8*TILE,1.6); L.position.set(X((S.x0+S.x1)/2),Y(-98+88),Z(y)); L.userData.i0=L.intensity; MAPG.down.add(L); lamps.push(L); }
   // where you can't walk: the side walls (both levels), the back rail (on the street)

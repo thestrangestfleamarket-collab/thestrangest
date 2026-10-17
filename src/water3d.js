@@ -26,9 +26,11 @@ WATER.build=()=>{ const P=POOLR, GX=208, GY=80, X0=P.X(P.bx0), X1=P.X(P.bx1), Z0
     // h_tt = c^2 lap h, c from the depth by the waves' own law (c^2 = g/k tanh kd: a metre-long ripple goes some 1.4 m/s in deep water,
     // slower only where it's shallow, over the steps), in the scene's units; a little lost to the water's own drag; the walls hold it (they send it back)
     fragmentShader:`uniform sampler2D uPrev,uDep; uniform vec2 uT,uSize; uniform vec4 uDrop[8]; uniform int uN; uniform float uDt,uDx,uMpu,uK; varying vec2 vUv;
-    void main(){ vec4 c=texture2D(uPrev,vUv); float lap=(texture2D(uPrev,vUv+vec2(uT.x,0.)).r+texture2D(uPrev,vUv-vec2(uT.x,0.)).r+texture2D(uPrev,vUv+vec2(0.,uT.y)).r+texture2D(uPrev,vUv-vec2(0.,uT.y)).r-4.*c.r)/(uDx*uDx);
-      float d=texture2D(uDep,vUv).r, cm=sqrt(9.81/uK*tanh(uK*d)), cw=cm/uMpu;
-      c.g+=uDt*cw*cw*lap; c.g*=exp(-0.35*uDt); c.r+=uDt*c.g; c.r*=0.99995;
+    void main(){ vec4 c=texture2D(uPrev,vUv), e=texture2D(uPrev,vUv+vec2(uT.x,0.)), w=texture2D(uPrev,vUv-vec2(uT.x,0.)), n=texture2D(uPrev,vUv+vec2(0.,uT.y)), s=texture2D(uPrev,vUv-vec2(0.,uT.y));
+      vec4 lp=(e+w+n+s-4.*c)/(uDx*uDx); float lap=lp.r;
+      float d=texture2D(uDep,vUv).r, cm=sqrt(9.81/uK*min(1.,tanh(min(uK*d,8.)))), cw=cm/uMpu;   // (tanh kept small: some cards overflow it)
+      c.g+=uDt*(cw*cw*lap+0.01*lp.g); c.g*=exp(-0.35*uDt); c.r+=uDt*c.g; c.r*=0.99995;   // (0.01: the water's own viscosity, felt only at the finest ripples, where a runaway would start)
+      c.r=clamp(c.r,-0.6,0.6); c.g=clamp(c.g,-8.,8.); if(!(c.r==c.r)||!(c.g==c.g)) c=vec4(0.);   // (never past what water does; anything broken back to calm)
       for(int i=0;i<8;i++){ if(i>=uN)break; vec4 d=uDrop[i]; float r=length((vUv-d.xy)*uSize); if(r<d.z) c.r-=d.w*(0.5+0.5*cos(3.14159*r/d.z)); }
       gl_FragColor=c; }`});
   WATER.simScene=new THREE.Scene(); WATER.simCam=new THREE.Camera(); WATER.simScene.add(new THREE.Mesh(new THREE.PlaneGeometry(1,1),WATER.simMat));
@@ -62,7 +64,9 @@ WATER.drop=(x,z,r,s)=>{ if(WATER.drops.length<8)WATER.drops.push([(x-WATER.X0)/W
 // each frame: the stir, then two steps of the field (the drops in the first)
 WATER.step=(renderer,dt)=>{ WATER.t+=dt; WATER.stir-=dt; if(WATER.stir<0){ WATER.stir=0.05+Math.random()*0.1; WATER.drop(WATER.X0+Math.random()*WATER.W,WATER.Z0+Math.random()*WATER.D,0.14,0.0012); }   // (the circulation: a faint stir all over, so the water is never glass)
   const u=WATER.simMat.uniforms;
-  const n=3; u.uDt.value=Math.min(dt,1/30)/n;   // (three steps a frame: well inside the wave's stability, c dt / dx under 0.3)
+  // ON ITS OWN CLOCK (owner, 17 Oct 2026: the water went to spikes after he jumped in): 180 steps a second whatever the frame rate, at most 8 a
+  // frame (c dt / dx about 0.1, far inside the wave's stability)
+  const H=1/180; WATER.acc=Math.min((WATER.acc||0)+dt,8*H); const n=Math.floor(WATER.acc/H); WATER.acc-=n*H; u.uDt.value=H;
   for(let k=0;k<n;k++){ u.uN.value=k?0:WATER.drops.length; if(!k)WATER.drops.forEach((d,i)=>u.uDrop.value[i].set(...d)); u.uPrev.value=WATER.A.texture;
     renderer.setRenderTarget(WATER.B); renderer.render(WATER.simScene,WATER.simCam); [WATER.A,WATER.B]=[WATER.B,WATER.A]; }
   WATER.drops.length=0; WATER.uH.value=WATER.A.texture;

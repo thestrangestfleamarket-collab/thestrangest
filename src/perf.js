@@ -56,7 +56,8 @@ PERFX.maps=()=>{ if(!PERFX.on[6])return; const L=LITE.pool[0]; if(L.shadow.mapSi
 // 7. THE SIMULATIONS NOBODY SEES: the pool's floats and boats (their physics) only near the pool; the butterflies only near them; the
 // musicians not drawn past where they're heard (18 away, their own rule for playing)
 PERFX.near=(x,z,r)=>Math.hypot(pos.x-x,pos.z-z)<r;
-PERFX.poolNear=()=>!PERFX.on[7]||LVL==='up'&&(MODS.pool.inside(pos.x,pos.z)||PERFX.near(POOLR.X((POOLR.bx0+POOLR.bx1)/2),POOLR.Z((POOLR.by0+POOLR.by1)/2),15*TILE));
+PERFX.poolNear=()=>{ if(!PERFX.fl0){ PERFX.fl0=true; return true; }   /* (the first frame always: a float's mesh is placed only by the step (floats.js: matrixAutoUpdate off); skipped from the start, they sat at the world's origin, by the bodega, casting shadows) */
+  return !PERFX.on[7]||LVL==='up'&&(MODS.pool.inside(pos.x,pos.z)||PERFX.near(POOLR.X((POOLR.bx0+POOLR.bx1)/2),POOLR.Z((POOLR.by0+POOLR.by1)/2),15*TILE)); };
 PERFX.bfNear=()=>!PERFX.on[7]||BF.list.some(b=>PERFX.near(b.g.position.x,b.g.position.z,25*TILE));
 PERFX.hide=(g,h)=>{ if(!g||!!g.userData.ph===h)return; g.userData.ph=h; g.traverse(o=>{ if(o.userData.lm0===undefined)o.userData.lm0=o.layers.mask; o.layers.mask=h?0:o.userData.lm0; }); };   // (by its layers: its own visible flags, ROOMS's and the stage's, left as they are)
 PERFX.tick=()=>{ PERFX.rooms(); if((PERFX.fc=(PERFX.fc||0)+1)%120===30)PERFX.bounds();   // (a moment in, and now and then for what's made later)

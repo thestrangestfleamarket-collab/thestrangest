@@ -53,3 +53,22 @@ const MAPSTAIR={x0:59,x1:63,y0:-80,y1:-74, steps:12, depth:98, dir:-1};
 const CASTLE={b:[50,67,-21,-4],gate:58.5,stair:{x0:61.5,x1:63.5,y0:-19.4,y1:-13.4,steps:12,depth:98,dir:1},hall:{x0:51,y0:-20,x1:65,y1:-6.8,h:130}};   // (clear of the Moon Shrine's garden east of it, store.js)
 const POOLR={x0:0,y0:0,x1:27.3,y1:16.8,H:150}; Object.assign(POOLR,{bx0:3.5,by0:9.7,bx1:17,by1:15.6,HT:5});   // (the apartments' pool: across the front, left to right, 13.5 x 5.9 tiles, all one depth)   // (the basin as the game has it, the room's middle across)
 POOLR.LX=POOLR.bx1-POOLR.bx0; POOLR.LY=POOLR.by1-POOLR.by0; POOLR.level=-0.16*24;   // the water 4 art px under the deck
+// ---- THE FULL CLOUDS, MOCKUPS (owner, 17 Oct 2026: "the clouds seem flat, i want them to be really full and thick, cast real shadows, sun beams
+// etc, fully realistic atmosphere"; then "more pixel art vibes"): ?clouds=vol (raymarched clouds in the picture's own pixels) or ?clouds=thick
+// (cumulus heaped from many sphere-faced puffs); off by default. Both cast their shadows from one map of the sky's cloud, laid on the ground
+// here in the world's lit shader: only the sun's light is taken away (the lamps and the sky's fill stay), its edge a grain fixed to the world's
+// art pixels. The rest (the clouds, the sun's beams, the haze toward the horizon, the sky's gradient) in src/clouds.js ----
+const CLD={mode:(QS.get('clouds')||'').toLowerCase(), U:{tCS:{value:null},uCS:{value:new THREE.Vector4(0,1,0,0)},uCSD:{value:new THREE.Vector4(30,1/200,0,0)},uCSE:{value:new THREE.Vector4(.5,.5,18,42)}}};
+CLD.on=CLD.mode==='vol'||CLD.mode==='thick';
+// the shadow at a point: up the sun's ray to the clouds' middle height, the sky's map there (uCS: toward the sun, strength; uCSD: that height,
+// the map's scale, its drift; uCSE: the cut, the grain's width in world units)
+CLD.SHGLSL=`float cldCov(vec2 xz){ return texture2D(tCS,xz*uCSD.y+uCSD.zw).r; }
+float cldShadow(vec3 p,vec2 j){ vec2 q=p.xz+uCS.xz/max(uCS.y,.08)*(uCSD.x-p.y)+j*uCSE.y; return step(uCSE.x,cldCov(q)); }
+`;
+if(CLD.on){ const L=THREE.ShaderLib.lambert;
+  if(!L.vertexShader.includes('vWP')){ L.vertexShader='varying vec3 vWP;\n'+L.vertexShader.replace('#include <project_vertex>','#include <project_vertex>\n vWP=(modelMatrix*vec4(transformed,1.)).xyz;'); L.fragmentShader='varying vec3 vWP;\n'+L.fragmentShader; }
+  L.fragmentShader='uniform sampler2D tCS; uniform vec4 uCS,uCSD,uCSE;\n'+CLD.SHGLSL+L.fragmentShader.replace('#include <lights_fragment_begin>','float CLDSH=1.; if(uCS.w>0.){ vec3 cc=floor(vWP*21.24+.001); vec2 cj=vec2(fract(sin(dot(cc,vec3(12.9898,78.233,37.719)))*43758.5453),fract(sin(dot(cc,vec3(39.346,11.135,83.155)))*24634.6345))-.5; CLDSH=1.-uCS.w*cldShadow(vWP,cj); }\n'
+    +THREE.ShaderChunk.lights_fragment_begin.replace('getDirectionalLightInfo( directionalLight, directLight );','getDirectionalLightInfo( directionalLight, directLight ); directLight.color*=CLDSH;'));
+  // (the uniforms shared by every lit material, handed over as each one's program is made; the batch's own hook calls this one first; a material
+  // whose own hook replaces it gets strength 0: no cloud shadow on it)
+  THREE.MeshLambertMaterial.prototype.onBeforeCompile=function(sh){ Object.assign(sh.uniforms,CLD.U); }; }

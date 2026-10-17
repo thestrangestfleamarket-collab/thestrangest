@@ -55,7 +55,7 @@
   const spread=rig=>{ const R=S.rig, W=[], at=i=>W[i]||(W[i]=(R.parent[i]>=0?at(R.parent[i]).clone():new THREE.Quaternion()).multiply(new THREE.Quaternion().fromArray(R.q[i])));
     for(const [bn,deg] of [['upperleg_l',14],['upperleg_r',-14],['upperarm_l',22],['upperarm_r',-22]]){ const i=JI[bn], rz=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,0,1),deg*Math.PI/180); rig.bones[i].quaternion.copy(at(R.parent[i]).clone().invert().multiply(rz).multiply(at(i))); } };
   const skel=(key,name,metres,x,z,speed,o)=>{ const M=S.chars[key], rig=rigOf(), mixer=new THREE.AnimationMixer(rig.bones[0]), an=Anim(mixer);
-    let geo=geomOf(M,true); if(key==='Minion'||key==='Rogue')geo.translate(0,0,-2.2);   // (the pack's files lay these two 2.2 units ahead of the rig, and the bake kept it: back over their bones, so each is drawn where he stands and his limbs turn about their own joints)
+    let geo=geomOf(M,true);   // (every body over its bones as the pack binds it, and the gear about its hand slot: data/skel.json simplified in the bake's own packing, tools/simplify.py)
     // THE GOLD ONE (gild): every bone gold by its own light and shade; the face under the eyes and the jaw bone-white; the neck a steel spring;
     // the eye sockets black, no glow (the picture's are empty); no cloak (its faces dropped)
     if(o.gild){ const c=geo.attributes.color.array, P=geo.attributes.position.array, R=geo.attributes.reg.array, part=M.parts, ix=geo.index.array, keep=[];

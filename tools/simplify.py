@@ -49,9 +49,10 @@ def run(V,F,groups):   # groups: (face index list, how much to keep); returns th
     F2=remap[F2]; F2=F2[(F2[:,0]!=F2[:,1])&(F2[:,1]!=F2[:,2])&(F2[:,0]!=F2[:,2])]
     return V2[keepv],F2,O2[keepv]
 
-# ---- INDEXED meshes (the kit, the gear, the rigged characters): n, lo, sc, p (u16 x3), c (u8 x3), [r u8], [j u8 x4, w u8 x4], i (u16 or u32)
+# ---- INDEXED meshes (the kit, the gear, the rigged characters): n, lo, sc, p (i16 x3, the bakes' own: a point is (p+32500)*sc+lo, as every
+# reader in src/ unpacks it; read and written here as uint16 before, every point came back slid round its box: the skeletons' gear out of their hands), c (u8 x3), [r u8], [j u8 x4, w u8 x4], i (u16 or u32)
 def indexed(M,head=None,keepk=THING):
-    n=M['n']; V=np.array(M['lo'])+B(M['p'],np.uint16).reshape(-1,3).astype(float)*M['sc']; C=B(M['c'],np.uint8).reshape(-1,3)
+    n=M['n']; V=np.array(M['lo'])+(B(M['p'],np.int16).reshape(-1,3).astype(float)+32500)*M['sc']; C=B(M['c'],np.uint8).reshape(-1,3)
     big=M.get('i32') or n>65535; F=B(M['i'],np.uint32 if big else np.uint16).reshape(-1,3).astype(np.int64)
     R=B(M['r'],np.uint8) if 'r' in M else np.zeros(n,np.uint8); J=B(M['j'],np.uint8).reshape(-1,4) if 'j' in M else None; W=B(M['w'],np.uint8).reshape(-1,4) if 'w' in M else None
     # (corners stored twice at a colour seam are joined first, or every triangle's edge would count as an edge to hold and nothing would simplify;
@@ -67,7 +68,7 @@ def indexed(M,head=None,keepk=THING):
         dt=details(F,C[F].mean(1))
         for r in np.unique(fr): groups+= [(np.where((fr==r)&dt)[0],1),(np.where((fr==r)&~dt)[0],keepk)]
     V2,F2,O=run(V,F,groups)
-    lo=V2.min(0); sc=max((V2.max(0)-lo).max()/65535,1e-9); q=np.clip(np.round((V2-lo)/sc),0,65535).astype(np.uint16)
+    lo=V2.min(0); sc=max((V2.max(0)-lo).max()/65000,1e-9); q=np.clip(np.round((V2-lo)/sc-32500),-32500,32500).astype(np.int16)
     N=dict(M); N.update(n=len(V2),lo=[round(float(x),5) for x in lo],sc=sc,p=E(q),c=E(C[O]),tris=len(F2))
     big2=len(V2)>65535; N['i']=E(F2.astype(np.uint32 if big2 else np.uint16));
     if 'i32' in M or big2: N['i32']=bool(big2)
@@ -109,27 +110,34 @@ def load(f): return json.load(open(f'data/full/{f}.json'))
 def save(f,d): s=json.dumps(d,separators=(',',':')); open(f'data/{f}.json','w').write(s); return len(s)
 tot0=tot1=0; t0=t1=0
 def report(name,a,b): global t0,t1; t0+=a; t1+=b; print(f'  {name:28s} {a:6d} -> {b:6d} triangles')
-for f in ['props','forest']:
-    d=load(f); out={}
-    for k,M in d.items():
-        if isinstance(M,dict) and 'p' in M: out[k]=soup(M); report(k,M['tris'] if 'tris' in M else len(B(M['p'],np.float32))//9,out[k]['tris'])
-        else: out[k]=M
-    print(f,save(f,out))
-d=load('kit'); used=set()
-for s in os.listdir('src'):
-    if s.endswith('.js'): txt=open('src/'+s).read(); used|={k for k in d if "'"+k+"'" in txt}
-out={k:indexed(M) for k,M in d.items() if k in used}; [report('kit '+k,d[k]['tris'],out[k]['tris']) for k in out]
-print('kit (unused pieces dropped:',sorted(set(d)-used),')',save('kit',out))
-HEAD=lambda nm:nm.lower() in ('head',) or nm in ('Head','Head_001')
-d=load('creatures')
-for k,D in d.items(): hs=headset(D['rig'],lambda nm:nm=='Head'); N=indexed(D['mesh'],hs,BODY); report('creature '+k,D['mesh']['tris'],N['tris']); D['mesh']=N
-print('creatures',save('creatures',d))
-d=load('skel'); hs=headset(d['rig'],lambda nm:nm=='head')
-for k,M in d['chars'].items(): N=indexed(M,hs,BODY); report('skeleton '+k,M['tris'],N['tris']); d['chars'][k]=N
-for k,M in d['gear'].items(): N=indexed(M); report('gear '+k,M['tris'],N['tris']); d['gear'][k]=N
-print('skel',save('skel',d))
-d=load('dragon'); hs=headset(d['rig'],lambda nm:nm=='Head')
-for k,M in d['chars'].items(): N=indexed(M,hs,BODY); report('dragon '+k,M['tris'],N['tris']); d['chars'][k]=N
-print('dragon',save('dragon',d))
-d=load('bear'); nm=d['names']; N=soup(d,{i for i,x in enumerate(nm) if x in ('ears','head','muzzle','eyes and nose')},BODY); report('bear',d['tris'],N['tris']); print('bear',save('bear',N))
+ONLY=set(sys.argv[1:])   # (the models named, or all: python3 tools/simplify.py skel)
+if not ONLY or ONLY&set(('props','forest')):
+    for f in ['props','forest']:
+        d=load(f); out={}
+        for k,M in d.items():
+            if isinstance(M,dict) and 'p' in M: out[k]=soup(M); report(k,M['tris'] if 'tris' in M else len(B(M['p'],np.float32))//9,out[k]['tris'])
+            else: out[k]=M
+        print(f,save(f,out))
+if not ONLY or ONLY&set(('kit',)):
+    d=load('kit'); used=set()
+    for s in os.listdir('src'):
+        if s.endswith('.js'): txt=open('src/'+s).read(); used|={k for k in d if "'"+k+"'" in txt}
+    out={k:indexed(M) for k,M in d.items() if k in used}; [report('kit '+k,d[k]['tris'],out[k]['tris']) for k in out]
+    print('kit (unused pieces dropped:',sorted(set(d)-used),')',save('kit',out))
+    HEAD=lambda nm:nm.lower() in ('head',) or nm in ('Head','Head_001')
+if not ONLY or ONLY&set(('creatures',)):
+    d=load('creatures')
+    for k,D in d.items(): hs=headset(D['rig'],lambda nm:nm=='Head'); N=indexed(D['mesh'],hs,BODY); report('creature '+k,D['mesh']['tris'],N['tris']); D['mesh']=N
+    print('creatures',save('creatures',d))
+if not ONLY or ONLY&set(('skel',)):
+    d=load('skel'); hs=headset(d['rig'],lambda nm:nm=='head')
+    for k,M in d['chars'].items(): N=indexed(M,hs,BODY); report('skeleton '+k,M['tris'],N['tris']); d['chars'][k]=N
+    for k,M in d['gear'].items(): N=indexed(M); report('gear '+k,M['tris'],N['tris']); d['gear'][k]=N
+    print('skel',save('skel',d))
+if not ONLY or ONLY&set(('dragon',)):
+    d=load('dragon'); hs=headset(d['rig'],lambda nm:nm=='Head')
+    for k,M in d['chars'].items(): N=indexed(M,hs,BODY); report('dragon '+k,M['tris'],N['tris']); d['chars'][k]=N
+    print('dragon',save('dragon',d))
+if not ONLY or ONLY&set(('bear',)):
+    d=load('bear'); nm=d['names']; N=soup(d,{i for i,x in enumerate(nm) if x in ('ears','head','muzzle','eyes and nose')},BODY); report('bear',d['tris'],N['tris']); print('bear',save('bear',N))
 print(f'ALL MODELS: {t0} -> {t1} triangles')

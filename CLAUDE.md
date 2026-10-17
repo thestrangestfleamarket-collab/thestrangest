@@ -335,9 +335,11 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
 - **The gold skeleton** (owner, 17 Oct 2026, his picture of a gilded clockwork skeleton with a white skull face: "put this character in game, use
   the other skeletons as guides for character design"; "make him 2x bigger"): the KayKit Minion's bones and body gilded at load (`gild` in
   `npc-skel.js`: gold by each bone's own light and shade, the face under the eyes and the jaw bone-white, the neck a steel spring, the eye sockets
-  black with no glow, no cloak), 1.4 m (twice the others), unarmed, strolling the whole street as they do. The Minion's and the Rogue's meshes
-  came out of the bake 2.2 rig units ahead of their bones (the pack's files lay them there); `npc-skel.js` moves them back at load, so those two
-  guards and the troublemakers now draw where they stand.
+  black with no glow, no cloak), 1.4 m (twice the others), unarmed, strolling the whole street as they do. **The weapons back in their hands** (owner, 17 Oct 2026: "their weapons aren't in their hands anymore"): `tools/simplify.py` read
+  and wrote the bakes' packed points as uint16 where every bake and every reader in `src/` uses int16 +32500 (/65000), so every simplified mesh came
+  back slid round its own box: the gear far off its hand slots, the Minion and the Rogue 2.2 units ahead of their bones (the load-time move back
+  that hid it is gone). Fixed in `simplify.py` (now `python3 tools/simplify.py skel` runs one model alone); `data/skel.json` simplified again from
+  `data/full/`. The kit, the creatures and the dragon went through the same bug and are not yet redone.
 - **Strict hitboxes** (owner, 17 Oct 2026, the Fox found standing in a shelf: "we need to avoid clipping. all objects and characters need hitboxes.
   strictly"; `src/clip.js`, run once everything's built and again when the stacked rooms are): every thing on a floor is solid from its own faces
   (the batch's tagged things, `OBJS`; the park's props and the kits' pieces, `CLIPX`): its faces reaching above the knee (0.45 m) and starting

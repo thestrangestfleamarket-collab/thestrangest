@@ -64,12 +64,12 @@ let BOUND, groundY;
   // THE STATION'S THINGS, where the game places them: the steps from the track up to the platform, the two columns with their cameras and
   // LED boards, four benches, TO STREET over the exit tunnel, a red signal in each tunnel mouth
   for(const [a,b] of W.TSTEPS)for(let k=0;k<3;k++){ const c=[150,146,138]; gbox({x0:PLAT+k*.25,x1:PLAT+(k+1)*.25,y0:a,y1:b,z0:-UH-32,z1:-UH-8*(k+1),c,top:()=>c,fi:()=>sh(c,.62),fj:()=>sh(c,.8)}); }
-  for(const a of [7.14,17.53]){ const p=W.column(TW-8.03,SY0+a); p.boxes.forEach(b=>gbox(b)); solid(TW-8.03,SY0+a,TW-8.03+.7,SY0+a+.7,UH); }
-  for(const a of [3.46,8.83,13.7,19.3]){ const x=TW-7.72-.33, p=W.bench(x,SY0+a); p.boxes.forEach(b=>gbox(b)); solid(x,SY0+a,x+.66,SY0+a+2.8,24); }
-  W.litSign(AVE+3,SY1-.9,'TO STREET ^').boxes.forEach(b=>gbox(b,-UH));
-  W.signal(TUN0+.35,SY0-1.4,1).boxes.forEach(b=>gbox(b,-UH-32)); W.signal(TUN0+.35,SY1+1.4,0).boxes.forEach(b=>gbox(b,-UH-32));
+  for(const a of [7.14,17.53]){ const p=W.column(TW-8.03,SY0+a); BATCH.tag=OBJ('station','column'); p.boxes.forEach(b=>gbox(b)); solid(TW-8.03,SY0+a,TW-8.03+.7,SY0+a+.7,UH); }
+  for(const a of [3.46,8.83,13.7,19.3]){ const x=TW-7.72-.33, p=W.bench(x,SY0+a); BATCH.tag=OBJ('station','bench'); p.boxes.forEach(b=>gbox(b)); solid(x,SY0+a,x+.66,SY0+a+2.8,24); }
+  BATCH.tag=OBJ('station','sign'); W.litSign(AVE+3,SY1-.9,'TO STREET ^').boxes.forEach(b=>gbox(b,-UH));
+  BATCH.tag=OBJ('station','signal'); W.signal(TUN0+.35,SY0-1.4,1).boxes.forEach(b=>gbox(b,-UH-32)); BATCH.tag=OBJ('station','signal'); W.signal(TUN0+.35,SY1+1.4,0).boxes.forEach(b=>gbox(b,-UH-32));
   // THE TRAIN at its stop, doors shut: the game's car, box by box (its boxes along y round its middle, z from the track bed)
-  W.carBoxes(0,0).forEach(b=>gbox(b,-UH-32,W.TRACKS[0],W.D1Y,true));   // (lit like a character at the stop, as the game lights it: never brighter than its own colours) solid(W.TRACKS[0]-W.CARW,W.D1Y-W.CARL/2,W.TRACKS[0]+W.CARW,W.D1Y+W.CARL/2,96-32);
+  BATCH.tag=OBJ('station','train car'); W.carBoxes(0,0).forEach(b=>gbox(b,-UH-32,W.TRACKS[0],W.D1Y,true)); BATCH.tag=null;   // (lit like a character at the stop, as the game lights it: never brighter than its own colours) solid(W.TRACKS[0]-W.CARW,W.D1Y-W.CARL/2,W.TRACKS[0]+W.CARW,W.D1Y+W.CARL/2,96-32);
   // THE LIGHTS, as the game lights it: dim cool white over the platform and over its track, every 6.4 tiles (LAMPS, 10 tiles' reach)
   for(let y=SY0+3.2;y<SY1;y+=6.4)for(const x of [AVE+2.6,AVE+8.4]){ const L=new THREE.PointLight(new THREE.Color(.5,.54,.64),LAMPI,10*TILE,LAMPD); L.position.set(X(x),Y(SZ+88),Z(y)); scene.add(L); lamps.push(L); }
   // HIS SHADOWS: the two lamps nearest him cast them (two shadow-casting lights stand in for those lamps, moved to them as he walks), hard-edged as pixels

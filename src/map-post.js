@@ -60,7 +60,7 @@ const HEMI=new THREE.HemisphereLight(0x55607a,0x14110e,.3); scene.add(HEMI);
 // only that room, one outside only the outside, so with no walls' shadows nothing leaks through a wall), their strength copied every frame.
 // The count never changes, so no shader is rebuilt for a lamp coming or going. The nearest casts the one lamp shadow (the sun the other);
 // the two nearest are his light and shadow (SHL: walker3d.js, looks.js)
-const LITE={N:8,pool:[],recs:[],sel:[],t:0,f:0,at:null};
+const LITE={N:8,pool:[],recs:[],sel:[],t:0,f:0,at:null}; window.LITE=LITE;   // (a test's look)
 for(let i=0;i<LITE.N;i++){ const L=new THREE.PointLight(0xffffff,0,8*TILE,1.6); L.userData.pool=true; if(!i){ L.castShadow=true; L.shadow.mapSize.set(1024,1024); L.shadow.camera.near=.1; L.shadow.camera.far=14; L.shadow.bias=-.002; L.shadow.normalBias=.06; } scene.add(L); LITE.pool.push(L); }
 SHL.push(LITE.pool[0],LITE.pool[1]);
 // (once everything's made: every other lamp in the scene becomes a record, its level's group kept to know when it's shown)
@@ -68,7 +68,7 @@ LITE.init=()=>{ const top=o=>{ while(o.parent&&o.parent!==scene)o=o.parent; retu
   scene.traverse(o=>{ if(o.isPointLight&&!o.userData.pool)LITE.recs.push(o); });
   for(const L of LITE.recs){ const g=top(L); L.userData.grp=g===L?null:g; L.castShadow=false; L.removeFromParent(); } };
 LITE.tick=(dt,x,y,z)=>{ const P=LITE.pool;
-  if((LITE.t-=dt)<=0){ LITE.t=.25; const R=typeof ROOMS!=='undefined'?ROOMS:null, RB=R&&R.boxes?R.boxes():[], cur=R?R.cur:null, e=.5*TILE;
+  LITE.t=Math.min(LITE.t-dt,.25); if(!(LITE.t>0)){ LITE.t=.25;   /* (a bad frame's dt, NaN or backwards, never leaves it stuck) */ const R=typeof ROOMS!=='undefined'?ROOMS:null, RB=R&&R.boxes?R.boxes():[], cur=R?R.cur:null, e=.5*TILE;
     const inB=(b,p,m)=>p.x>b.x0-m&&p.x<b.x1+m&&p.z>b.z0-m&&p.z<b.z1+m&&p.y>b.y0-e&&p.y<b.y1+e;
     LITE.sel=LITE.recs.filter(L=>L.intensity>0&&(!L.userData.grp||L.userData.grp.visible)&&(L.userData.both||(cur?inB(cur,L.position,e):!RB.some(b=>inB(b,L.position,-e)))))
       .map(L=>[(L.position.x-x)**2+(L.position.y-y)**2+(L.position.z-z)**2,L]).sort((p,q)=>p[0]-q[0]).slice(0,LITE.N).map(p=>p[1]); }

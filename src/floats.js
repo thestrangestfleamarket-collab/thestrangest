@@ -34,9 +34,12 @@ const FLOATS={bodies:[], D:6, acc:0};
   FLOATS.step=(dt,walker)=>{ FLOATS.acc+=Math.min(dt,0.05); let n=0;
     while(FLOATS.acc>=PHH&&n<6){ FLOATS.acc-=PHH; n++; const h=PHH;
       for(const b of FLOATS.bodies){ let wet=0; const per=b.vol/b.bp.length;
+        // AT REST TILL PUSHED (owner, 17 Oct 2026: "lets have things rest in place more when they stop"): once still it sleeps (the engine's own
+        // rest), no endless bob or drift, till the water moves under it or he swims up to it
+        if(!b.awake){ const sx=b.x[0]*TL, sz=-b.x[1]*TL; if(!(!WATER.calm&&Math.abs(WATER.hAt(sx,sz))>.003||walker.inWater&&Math.hypot(sx-walker.x,sz-walker.z)<.75+b.rad*TL))continue; }
         for(const q of b.bp){ const w=phyW(b,q), wx=w[0]*TL, wz=-w[1]*TL, surf=WATER.over(wx,wz)?toZ(lvl()+WATER.hAt(wx,wz)):-1e9, rp=Math.cbrt(per)*0.62, s=Math.max(0,Math.min(1,(surf-w[2])/(2*rp)+0.5));
           if(!s)continue; wet+=s/b.bp.length; const J=RHO*PHG*per*s*h, r=v3s(w,b.x); b.v[2]+=J*b.iM; b.w=v3a(b.w,phyIw(b,v3x(r,[0,0,J]))); }
-        if(wet>0){ phyWake(b); b.rest=0; const f=Math.min(1,wet*8);   // (the water's drag and the water it must move to bob: a float settles in about a second, as real ones do)
+        if(wet>0){ phyWake(b); const f=Math.min(1,wet*8);   // (the water's drag and the water it must move to bob: a float settles in about a second, as real ones do)
           b.v=[b.v[0]*Math.exp(-2.5*f*h),b.v[1]*Math.exp(-2.5*f*h),b.v[2]*Math.exp(-45*f*h)]; b.w=v3k(b.w,Math.exp(-8*f*h));
           const sx=b.x[0]*TL, sz=-b.x[1]*TL, [hx,hz]=WATER.slope(sx,sz); b.v[0]-=PHG*hx*wet*h*1.5; b.v[1]+=PHG*hz*wet*h*1.5;   // (down the wave's slope: the water's pressure)
           if(walker.inWater){ const dx=sx-walker.x, dz=sz-walker.z, d=Math.hypot(dx,dz), R=0.45+b.rad*TL; if(d<R&&d>1e-4){ const k2=(R-d)*25*h/TL; b.v[0]+=dx/d*k2+walker.vx/TL*h*3; b.v[1]+=-dz/d*k2-walker.vz/TL*h*3; } } }   // (him, swimming: he shoves it aside and carries it on)

@@ -52,8 +52,11 @@ function makeNPC(D,o){ const N={key:o.key,name:o.name,names:o.names,lv:o.lv||'do
   N.depthMat=new THREE.MeshDepthMaterial({side:THREE.DoubleSide});
   // lit by the lamps, as the Walker (walker3d.js): its own colours (as the model has them), the clothes' shadows on them, the scene's lights in three
   // steps; a rigged one's bones move it (three.js's own skinning); its glowing part (uEye: the skeletons' eyes) lit by nothing
-  const toon=new THREE.MeshToonMaterial({vertexColors:true,gradientMap:W3.G3,side:THREE.DoubleSide});
+  const toon=new THREE.MeshToonMaterial({vertexColors:true,gradientMap:W3.GP,side:THREE.DoubleSide});   // (the same steps of light as you: W3.GP, YOUR LOOKS' STEPS and DEPTH)
   toon.onBeforeCompile=s=>{ s.uniforms.uEye={value:o.eye??-1}; s.vertexShader='attribute float sh; attribute float reg; varying float vS,vR;\n'+s.vertexShader.replace('#include <color_vertex>','vColor=pow(color,vec3(2.2)); vS=sh; vR=reg;');
+    s.uniforms.uLv=W3.lv; s.uniforms.uLVP=N.LVP; s.uniforms.uSM={value:N.sm.depthTexture}; s.uniforms.uSelf=W3.uSelf; s.uniforms.uMine={value:o.noSelf?0:1};
+    s.vertexShader='varying vec3 vWW;\n'+s.vertexShader.replace('#include <project_vertex>','#include <project_vertex>\n vWW=(modelMatrix*vec4(transformed,1.)).xyz;');
+    s.fragmentShader='uniform float uLv,uSelf,uMine; uniform mat4 uLVP; uniform sampler2D uSM; varying vec3 vWW;\n'+s.fragmentShader.replace('#include <opaque_fragment>','#include <opaque_fragment>\n if(uLv>1.5&&uMine>.5){ vec4 sp=uLVP*vec4(vWW,1.); vec3 q=sp.xyz/sp.w*0.5+0.5; if(q.x>0.&&q.x<1.&&q.y>0.&&q.y<1.&&q.z-0.006>texture2D(uSM,q.xy).r) gl_FragColor.rgb*=uSelf; }');   /* (SELF: his own shadow on him, as yours on you) */
     s.fragmentShader='uniform float uEye; varying float vS,vR;\n'+s.fragmentShader.replace('#include <color_fragment>','#include <color_fragment>\n diffuseColor.rgb*=vS>.55?.36:vS>.15?.6:1.;').replace('#include <normal_fragment_begin>','float faceDirection=1.0; vec3 normal=normalize(vNormal); vec3 nonPerturbedNormal=normal;')
       .replace('#include <opaque_fragment>','#include <opaque_fragment>\n if(abs(vR-uEye)<.5)gl_FragColor=vec4('+(o.eyeC||'1.,.9,.3')+',1.);').replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n totalEmissiveRadiance+=diffuseColor.rgb*0.16;'); };
   toon.customProgramCacheKey=()=>'npctoon'+(o.eye??-1)+(o.eyeC||'');   // (o.eyeC: his eyes' glow, '1.,.2,.1' red; yellow if none)

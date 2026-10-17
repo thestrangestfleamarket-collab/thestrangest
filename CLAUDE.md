@@ -51,6 +51,12 @@ this repo is `bralynnbell/thestrangest`.
 - **The dragons** (17 Oct 2026: "all green (4 shades) and 20% as big ... flying all around city and mostly park. add 10 of them. they breath large fire balls"; `src/npc-dragon.js`): ten, a fifth the size, four greens; flying mostly over the green round the street, now and then down on a ledge; now and then a fireball down ahead (glowing, lighting the ground from a pool of two lights, sparks, a burst where it lands; it hurts).
 - **No beards, no buzz cut** (17 Oct 2026: "remove the beard and buzzcut from game completely"): no beard piece on any Walker (him, the musician); hairstyles short, long, bun, ponytail, bald. **A nose** on every Walker's head ("give all playable characters noses"). **Looking about** when he stands still. **His build**: hips a little narrower, a touch fuller (+5 lb) as default sizes. **His feet**: a darker sole. **His own shadow** from the light really on him (the sun, or the nearest lamp), a finer map; four steps of light by default.
 - **V changes the view** (map, third person, first person, isometric); the wave is on B. **The dragons** darker green, a third the speed, longer in the air and on the ledges, beating then gliding (wings held at their widest), nose up climbing, head into a turn, tail trailing; a faint glow at night.
+- **Every character shaded as you are** (owner, 17 Oct 2026: "make sure all chars have same shadowing as main player"): the same steps of light
+  and depth (`W3.GP`, YOUR LOOKS' STEPS and DEPTH, for everyone), the same little light of their own, and each one's own shadow on himself
+  (SELF, his own shadow map, `N.sm`; not the ten dragons, small and many) by the same amount as yours (`W3.uSelf`); the musician the same steps.
+- **Eyes and bodies** (owner, 17 Oct 2026, of the mockups: "use all"): YOUR LOOKS' EYES, six styles (dots, whites, big with a glint,
+  half-lidded, lashes, smiling arcs; `eyes0`-`eyes5` in `walker3d.js`, folded away when not chosen); its BODY, eight builds (slim, him, athletic,
+  stocky, heavy, tall and lanky, female slim, female curvy: `BUILDS` in `looks.js`, his pieces' sizes and his height `W3.BH`).
 - **New characters walk the street** (owner, 17 Oct 2026: "put any new characters that go in the game into the street walking around"): every character added from now on goes onto THE MARKET's street, walking around (`NPCS`, as the skeletons and the goldfish and bear are), unless the owner places it somewhere else.
 - **The view** (17 Oct 2026, `src/ui.js`): a left drag moves the map ("drag the map and change your focal point"), the point grabbed staying under the mouse; a right drag (or Shift / Alt + drag) turns round the point you grab, the wheel zooms toward the mouse, the tilt from straight down to level with the street, never under the ground (17 Oct 2026, "stop them at this angle"); the view keeps its place beside him as he walks; 0 (or RESET VIEW) puts it back on him.
 - **Removed and not wanted for now**: the character editor (edit mode), the Fox.
@@ -87,7 +93,8 @@ this repo is `bralynnbell/thestrangest`.
   bind frame, the smoke, holo rings and UI circles left out, a katana resting under his feet (no hand to hang from) left out; `data/<name>.json`;
   `src/npc-rigged.js`): they have no clips of their own, so the page poses their Mixamo bones itself (idle, walk, wave, jump, written in the
   figure's frame and turned into each bone's own; the arms brought down from the file's T- or A-pose), through `makeNPC` like the rest, lamp-lit,
-  walking both sidewalks of the street. **The Meshy cyborg** (his right arm held out before him) and **the black teddy bear** with the glowing
+  walking both sidewalks of the street. **The cyborg and the teddy: deleted** (owner, 17 Oct 2026: "remove the cyborg + black bear characters";
+  `src/npc-street.js`, `data/cyborg.json`, `teddy.json` gone; the tools that made them stay). What follows is how they were: **The Meshy cyborg** (his right arm held out before him) and **the black teddy bear** with the glowing
   eyes: remade as clean skins and cut into bones like the ghost was (`tools/skin-bake.py`, `skin-bones.py`: the `cyborg` and `teddy` tables;
   `data/cyborg.json`, `teddy.json`), bipeds in `src/npc-street.js` (back, for them, with the kinds' moves and the Rapier bodies; the ghost and the
   items stay deleted). The voxel zips there (Star Marine Trooper, RedFighter, MicroRecon) are spaceships, not characters: left. A test's look at

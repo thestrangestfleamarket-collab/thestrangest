@@ -111,14 +111,14 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
     cam.lookAt(T); cam.updateMatrixWorld(); };
   UI.setView(new URLSearchParams(location.search).get('view')||'iso');   // (owner, 17 Oct 2026, his picture: "start the game always in this view 1st": ISOMETRIC, every time; ?view= for a test)
   UI.home=()=>{ UI.off.set(0,0,0); zAt=null; if(UI.freeCam)setFree(false); };
-  cv.addEventListener('pointerdown',e=>{ if(e.button!==0||ED.on)return; if(WE.down(e)){ cv.setPointerCapture(e.pointerId); return; } L={x:e.clientX,y:e.clientY,x0:e.clientX,y0:e.clientY,moved:false}; UI.grab(e); cv.setPointerCapture(e.pointerId); });
-  cv.addEventListener('pointermove',e=>{ if(WE.dragging){ WE.move(e); return; } if(!L)return; if(!L.moved&&Math.hypot(e.clientX-L.x0,e.clientY-L.y0)>5)L.moved=true;
+  cv.addEventListener('pointerdown',e=>{ if(e.button!==0||ED.on)return; if(MAPED.down(e)||WE.down(e)){ cv.setPointerCapture(e.pointerId); return; }   /* (the map editor's drag of a place first: mapedit.js) */ L={x:e.clientX,y:e.clientY,x0:e.clientX,y0:e.clientY,moved:false}; UI.grab(e); cv.setPointerCapture(e.pointerId); });
+  cv.addEventListener('pointermove',e=>{ if(MAPED.dragging){ MAPED.move(e); return; } if(WE.dragging){ WE.move(e); return; } if(!L)return; if(!L.moved&&Math.hypot(e.clientX-L.x0,e.clientY-L.y0)>5)L.moved=true;
     // DRAGGING THE MAP (owner, 17 Oct 2026: "you should be able to drag the map and change your focal point, its still too hard to navigate"):
     // a left drag slides the world under the mouse, the point you grabbed staying under it; where the view looks (his place plus UI.off) goes
     // with it, and stays there as he walks (0 back on him). Turning and tilting: a right or middle drag (the page's own), or Shift / Alt + drag
     if(L.moved&&!e.shiftKey&&!e.altKey&&!UI.persp)UI.pan(e.clientX-L.x,e.clientY-L.y);
     else if(L.moved)UI.orbit(e.clientX-L.x,e.clientY-L.y); L.x=e.clientX; L.y=e.clientY; });   // (Shift or Alt + drag: turn and tilt, for a trackpad)
-  cv.addEventListener('pointerup',()=>{ WE.up(); L=null; });
+  cv.addEventListener('pointerup',()=>{ MAPED.up(); WE.up(); L=null; });
   // ---- DOUBLE CLICK (owner, 17 Oct 2026: "take off click to walk. double click to walk. double click on anything to interact with it"):
   // on the ground he walks there; on a thing he walks up to it, turns to it and does what it's for (the THINGS list: a thing joins it with its
   // name, the object a click finds it by, how near he goes, and what happens)
@@ -126,7 +126,7 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
   let goal=null; const said=document.createElement('div'); said.id='said'; said.hidden=true; document.body.appendChild(said);
   const say=(txt,at)=>{ const r=cv.getBoundingClientRect(), v=at.clone().project(cam); said.textContent=txt; said.style.left=Math.round(r.left+(v.x+1)/2*r.width)+'px'; said.style.top=Math.round(r.top+(1-v.y)/2*r.height)+'px'; said.hidden=false; clearTimeout(say.t); say.t=setTimeout(()=>said.hidden=true,2500); };
   const thAt=th=>th.obj.getWorldPosition(new THREE.Vector3());
-  cv.addEventListener('dblclick',e=>{ if(WE.on){ WE.pick(e); return; } if(ED.on||UI.freeCam)return; const r=cv.getBoundingClientRect(); ray.setFromCamera(new THREE.Vector2((e.clientX-r.left)/r.width*2-1,-((e.clientY-r.top)/r.height*2-1)),cam);
+  cv.addEventListener('dblclick',e=>{ if(MAPED.on)return; if(WE.on){ WE.pick(e); return; } if(ED.on||UI.freeCam)return; const r=cv.getBoundingClientRect(); ray.setFromCamera(new THREE.Vector2((e.clientX-r.left)/r.width*2-1,-((e.clientY-r.top)/r.height*2-1)),cam);
     const live=THINGS.filter(th=>th.obj.visible&&(!th.obj.parent||th.obj.parent.visible)); const hits=ray.intersectObjects(live.map(th=>th.obj),true);
     let best=null, bd=1e9; if(hits.length){ let o=hits[0].object; const th=live.find(th=>{ let q=o; while(q){ if(q===th.obj)return true; q=q.parent; } return false; }); if(th){ best=th; bd=hits[0].distance; } }
     const u=typeof USE!=='undefined'&&USE.pick(ray); if(u&&u.d<bd)best=u.th;   // (a thing of the world's to use, nearer than any character: use.js)

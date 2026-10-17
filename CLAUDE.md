@@ -405,11 +405,13 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
   turned now and then; the ink jar in his hand, set down by his foot while he reads), THE TV CAT (a rusty TV on four furry legs, its screen his
   face, glowing a little, blinking; the cable trailing), THE FROG ON HIS SCOOTER (the scooter his own: fork on its spring, wheels turning as he
   rolls, the box on the rack, a lean into turns, the cape lifted by his going), THE SHARK (the hood's fin, its jaw snapping now and then, the trench
-  coat's skirt). Built in code from plain shapes; **every part on a bone of its own** (`RIGNPC.make`: one mesh, one draw, each point carried
+  coat's skirt). **Their complexity** (of a ladder of the tomato at 1 to 5, the owner: "#1 but with #2s arms"): the deer sprite's level (a few
+  plain shapes in flat colours, round things in few faces, flat eyes), only the arms the second level's (a sleeve to the wrist, a glove with its
+  thumb and cuff). Built in code from plain shapes; **every part on a bone of its own** (`RIGNPC.make`: one mesh, one draw, each point carried
   rigidly by its part's bone), the things they carry their own parts on their own bones. Each frame the bones go back to rest, the character's
   pose moves them (walk, idle look round, what he does with his things), then **springs** add the give (what hangs or stands lags behind his
   starts, stops and turns, and swings back; at rest it settles and stops; a bump from you sets them going): no Rapier, no new loads. Some
-  1,500-3,300 triangles each (10,800 the five), no lights, one shadow map each (SELF) as every character. They walk the whole street.
+  700-1,600 triangles each (5,250 the five), no lights, one shadow map each (SELF) as every character. They walk the whole street.
   `N.reshape` / `N.recolour` by part, `N.B` the bones. `?toonhold=1` stands the five in a row; `tests/toonshot.cjs <out> [hour] [zoom]`.
 
 ## THE MARKET: the one official map

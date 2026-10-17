@@ -397,6 +397,8 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
 
 - **Smooth light, the default now** (owner, 17 Oct 2026, of the grainy cloud and tree mockups: "i dont like any of those mockups, they all look like dots everywhere, i want smooth realistic shadows and lighting like gradient radial etc"; it supersedes the grain and the 24 steps above): `SMOOTH` in `map-pre.js`: no grain, the light not cut into steps, soft shadow edges (PCFSoftShadowMap), the lamps' pools smooth radial gradients; GRAPHICS' LIGHTING switches back to PIXEL (`market-lighting`), `?look=pixel|smooth`.
 
+- **The Metro from his Drive, IN PROGRESS, paused** (owner, 17 Oct 2026: "look in google drive for metro station", "lets make that the subway in the new game. make sure it has an exit and its really unground. use anything else we have that makes it flesh out and feel real"; then "lets pause, i want to pass off all work to another chat"): his Metro_PSX kit (`tools/metro-bake.py` → `data/metro.json`, `src/metro.js`) assembled as a terminus 30 ft under the lot behind the sidewalk, the kit's own railed exit in the sidewalk between the apartment house and the bodega, its car coming and going with a chime and a rumble, the hall's gates, machines, map, posters, benches, bins and tube lights. Built and loading on branch `claude/amazing-albattani-gn3kp8`, **never yet looked at, one shader error open**: the whole state is in `HANDOFF.md` ("IN PROGRESS, PAUSED"). `station.js` and `wsub.js` (the game's West End station) stay in `src/`, no longer built.
+
 ## THE MARKET: the one official map
 
 **THE MARKET** (owner, 17 Oct 2026: "one official MARKET map im gona start filling in") is the game's map here: every place the owner adds goes

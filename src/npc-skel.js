@@ -100,7 +100,7 @@
   // up the subway's stairs after dark (one at a time, two at most, now and then) and go for you while you're out on the street. One reaching
   // you shoves you back a step (not hurt). Struck, shot or spelled, he's down as a body falls; he lies a moment, gets up and runs back down
   // the stairs. Day breaks: they're gone ----
-  const TOP={x:T_((MAPSTAIR.x0+MAPSTAIR.x1)/2),z:Z_(MAPSTAIR.y1+1.2)}, AWAY={x:T_(MAPSTAIR.x0+2),z:Z_(MAPSTAIR.y0-16)};   // (down the stairs and along: where the map's layout put them)
+  const TOP={x:T_((MAPSTAIR.x0+MAPSTAIR.x1)/2),z:Z_(MAPSTAIR.y1+.7)}, AWAY={x:T_(MAPSTAIR.x0+2),z:Z_(MAPSTAIR.y0-16)};   // (down the stairs and along: where the map's layout put them)
   let next=QS.get('trouble')?3:30+Math.random()*40;
   for(let i=0;i<2;i++){ const N=skel('Rogue','TROUBLEMAKER',.6,AWAY.x,AWAY.z,.6,{walkN:'Walking_B',idleN:'Idle_Combat',eyeC:'1.,.18,.1',dark:true,
       pick:st=>{ st.to=null; st.wait=1; },

@@ -38,7 +38,7 @@ THREE.ShaderLib.lambert.fragmentShader=THREE.ShaderLib.lambert.fragmentShader
 const NEONS=[], SHL=[], cutWalls=[], lamps=[], trees=[], shopGroups=[]; let night=1, nightTo=1; const C1=new THREE.Color(), C2=new THREE.Color(); function applyTime(){}
 const ZU=1/(PPU*Math.cos(Math.PI/6)), TILE=33.9/PPU, QS=new URLSearchParams(location.search), LAMPI=8, LAMPD=1.6;
 const SOL={up:[],down:[]}, FIX={up:[],down:[]}, CLIPX=[];   // (CLIPX: the things not in the batch, for the hitboxes' pass: {place, name, P its triangles in the world, or obj its group}: clip.js)
-let solids=SOL.up, fixed=FIX.up, BOUND, groundY, LVL='up', BOD, BODB;
+let solids=SOL.up, fixed=FIX.up, BOUND, groundY, LVL='up', BOD, BODB, METRO;   // (METRO: the subway, metro.js)
 const STORE={rooms:[],places:[],roofs:[]}, BF={list:[]}; window.STORE=STORE;   // (STORE: the storeroom, store.js; BF: the butterflies, butterflies.js)
 const MAPG={}, MODS={}; let MAPBAKE=0; const OVERHEAD=[]; let RPASS=null, FIRE=null;   // (OVERHEAD: the lights hung over a room, shown only from under them: rooms.js; RPASS: the picture's render pass, its camera the view's: ui.js)
 // a place's own objects gathered in a group of its own (shown and hidden with its level)
@@ -58,8 +58,10 @@ const PDX=(10+27.3/2+LAY.o('apartments').x)*TILE, PDZ=(-8.4+LAY.o('apartments').
 // BIGGER BUILDINGS, BIGGER DOORS (owner, 17 Oct 2026: "make doorways 30% larger, buildings 10% larger"): each building (the bodega, the pool room)
 // a tenth bigger every way from the middle of its front, which stays on the sidewalk; the street, the sidewalks and the road as they were. Doors 1.3 times (1.56 wide, 94 px high)
 const BLDK=1.1;
+// THE METRO'S OPENING in the sidewalk (owner, 17 Oct 2026, the Metro_PSX kit as the subway: metro.js fills this in from the kit's railing round
+// its exit, moved with the subway's layout): a hole in the street's ground and the land's sheet; its has(x, z) says when you're on its stairs
+// and ground(x, z) the floor under you there (the kit's height map: the flight, the turn, the slope)
 const MAPSTAIR={x0:59,x1:63,y0:-80,y1:-74, steps:12, depth:98, dir:-1};
-{ const o=LAY.o('subway'); MAPSTAIR.x0+=o.x; MAPSTAIR.x1+=o.x; MAPSTAIR.y0+=o.y; MAPSTAIR.y1+=o.y; }
 // THE CASTLE (owner, 17 Oct 2026: "the castle on the left back end" of the park, "the dungeon under the castle (only 1 level)"; castle.js): its
 // bailey's curtain wall (the lines of its four sides, bodega tiles), the gate's middle on its front (toward the street), the stair down from the
 // bailey (twelve steps, the subway's depth, descending toward the park's back: dir 1), the one dungeon under it (its walls' lines, its height)

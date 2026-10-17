@@ -116,7 +116,7 @@ function makeNPC(D,o){ const N={key:o.key,name:o.name,names:o.names,lv:o.lv||'do
 const STLANE={x0:BOD.XS(BOD.MAP.x0+2),x1:BOD.XS(BOD.MAP.x1-2),z0:BOD.ZS(-76.3),z1:BOD.ZS(-61.2)}, STHOLE=[BOD.XS(MAPSTAIR.x0-.6),BOD.ZS(MAPSTAIR.y0),BOD.XS(MAPSTAIR.x1+.6),BOD.ZS(MAPSTAIR.y1+.6)],
   stfree=(x,z,R)=>!(x>STHOLE[0]-R&&x<STHOLE[2]+R&&z>STHOLE[1]-R&&z<STHOLE[3]+R)&&!SOL.up.some(b=>x>b[0]-R&&x<b[2]+R&&z>b[1]-R&&z<b[3]+R);
 // (the goldfish in his raincoat: deleted, owner 17 Oct 2026, "delete the fish raincoat character"; STLANE and stfree stay for the street's walkers)
-const BEAR=makeNPC(BEARD,{key:'bear',name:'BEAR',names:BEARD.names,metres:1.9,rank:[0,0,0,0,2,3,0,1,0],at:-67,radius:.45,speed:.7,stride:5.5,rock:.05,bob:.035});
+const BEAR=makeNPC(BEARD,{key:'bear',name:'BEAR',names:BEARD.names,metres:1.9,rank:[0,0,0,0,2,3,0,1,0],lane:METRO.lane,x:METRO.at(16.6,30).x,z:METRO.at(16.6,30).z,radius:.45,speed:.7,stride:5.5,rock:.05,bob:.035});   // (on the metro's platform, behind its columns: metro.js)
 // ONLY WHAT'S NEAR OR SEEN (owner, 17 Oct 2026, the budget: "far characters neither drawn nor moved"): a character more than 25 tiles from you
 // and out of the picture, or on a level not shown, is neither moved nor drawn (nor his own shadow made: shadowPass) till he's near or seen again;
 // a troublemaker's mind always runs (it brings him up the subway stairs after dark)

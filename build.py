@@ -5,14 +5,11 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 rd=lambda f:open(f).read()
 def body(f,start,end):
     t=rd(f); i=t.index(start); j=t.rindex(end); return t[i:j]
-stn=body('src/station.js','{ // the game\'s helpers','\nscene.background').replace('/*WSUB*/',rd('src/wsub.js'))
+# THE METRO (owner, 17 Oct 2026: "lets make that the subway in the new game"): his Drive's Metro_PSX kit (data/metro.json, tools/metro-bake.py)
+# as the subway, src/metro.js, in place of the game's West End station (src/station.js and src/wsub.js, kept, not built)
+stn=rd('src/metro.js')
 def rq(s,a,b):
     assert s.count(a)==1,a[:80]; return s.replace(a,b)
-stn=rq(stn,"const X=x=>(x-OX)*TILE, Z=y=>(y-OY)*TILE, Y=z=>(z-SZ)*ZU;","const X=x=>(x-OX)*TILE+STN.DX, Z=y=>(y-OY)*TILE+STN.DZ, Y=z=>(z-SZ)*ZU+STN.DY;")
-stn=rq(stn,"const gx=x/TILE+OX, gy=z/TILE+OY; if(gx<PLAT)","const gx=(x-STN.DX)/TILE+OX, gy=(z-STN.DZ)/TILE+OY; if(gx<PLAT)")
-stn=rq(stn,"fixed.push([X(x0),Z(y0),0,X(x1),Z(y1),Math.max(.05,Y(zt+SZ))]);","fixed.push([X(x0),Z(y0),0,X(x1),Z(y1),Math.max(.05,Y(zt+SZ)-STN.DY)]);")
-stn=rq(stn,"cutaway(wallX(END,AVE,PLAT,0,UH,conc),0,-1,8);","cutaway(wallX(END,AVE,PLAT,0,UH,(u,z)=>u>=-29&&u<-25?null:conc(u,z)),0,-1,8);")
-stn=rq(stn,"solid(AVE,END,PLAT,END+1,UH);","solid(AVE,END,-29,END+1,UH); solid(-25,END,PLAT,END+1,UH);")
 pool=body('src/pool.js','{ const hash=','\nscene.background')
 pool=rq(pool,"const X=x=>(x-OX)*TILE, Z=y=>(y-OY)*TILE, Y=z=>z*ZU;","const X=x=>(x-OX)*BLDK*TILE+PDX, Z=y=>((y-OY)*BLDK+(P.y1-OY)*(1-BLDK))*TILE+PDZ, Y=z=>z*ZU*BLDK;")   # (a tenth bigger from its front's middle: BLDK)
 pool=rq(pool,"const gx=x/TILE+OX-P.bx0, gy=z/TILE+OY-P.by0;","const gx=(x-PDX)/TILE/BLDK+OX-P.bx0, gy=((z-PDZ)/TILE-(P.y1-OY)*(1-BLDK))/BLDK+OY-P.by0;")
@@ -63,8 +60,8 @@ i=bod.index('const BOD={'); bod=bod[i:]
 bod=rq(bod,"const BOD={meshes:[], walls:{}, lamps:[]};","BOD={meshes:[], walls:{}, lamps:[]};").replace('/*GAMEKIT*/',kit).replace('/*GOODS*/',rd('src/goods-defs.js'))
 bb=rq(rd('src/bodbuild.js'),"const BODB={};","BODB={};")
 wrap=lambda name,code,out,cutwhen: ("grab('%s',()=>{ const solids=SOL.%s, fixed=FIX.%s, SHL=[]; let BOUND, groundY; const c0=cutWalls.length;\n"%(name,'down' if name=='down' else 'up','down' if name=='down' else 'up'))+code+"\n"+out+"\n for(const w of cutWalls.slice(c0))if(!w.when)w.when="+cutwhen+"; for(const L of SHL)L.removeFromParent(); });\n"
-MAPST=('const TEXTURES='+rd('data/textures.json')+';\nconst KITD='+rd('data/kit.json')+';\n'+rd('src/map-pre.js')+'\n'+rd('src/fire.js')+'\n'+rd('src/batch.js')+'\n'+rd('src/water3d.js')+'\n'
-  +wrap('down',stn,"MODS.station={BOUND,ground:(x,z)=>groundY(x,z)+STN.DY};","()=>LVL==='down'")
+MAPST=('const TEXTURES='+rd('data/textures.json')+';\nconst KITD='+rd('data/kit.json')+';\nconst METROD='+rd('data/metro.json')+';\n'+rd('src/map-pre.js')+'\n'+rd('src/fire.js')+'\n'+rd('src/batch.js')+'\n'+rd('src/water3d.js')+'\n'
+  +wrap('down',stn,"MODS.station={BOUND,ground:METRO.ground,DY:METRO.DY};","()=>LVL==='down'")
   +wrap('bodega',bod+'\n'+bb+'\n'+rd('src/apts.js')+'\n'+rd('src/ghostdojo.js')+'\n'+rd('src/butterflies.js')+'\n'+rd('src/store.js'),"MODS.bodega={BOUND,ground:groundY};","()=>BODB.inside()")
   +wrap('pool',pool+'\nWATER.build();',"MODS.pool={BOUND,cut:cutWalls.slice(c0),inside:(x,z)=>x>POOLR.X(POOLR.x0)&&x<POOLR.X(POOLR.x1)&&z>POOLR.Z(POOLR.y0)&&z<POOLR.Z(POOLR.y1)};","()=>MODS.pool.inside(pos.x,pos.z)")
   +"const FOREST="+rd('data/forest.json')+";\nconst PROPS="+rd('data/props.json')+";\n"+rd('src/park.js')+'\n'+rd('src/castle.js')+'\n'   # (CENTRAL PARK'S ENTRANCE, owner 17 Oct 2026: park.js, data/forest.json; THE CASTLE and its dungeon in it: castle.js)
@@ -344,7 +341,7 @@ head=rp(head,'<b>V</b> wave','<b>B</b> wave · <b>V</b> change the view')
 # THE BUDGET (owner, 17 Oct 2026: "render what is only absolutely needed"): the characters moved and drawn only when near or seen (NPCS.tick,
 # npc-map.js); every lamp made a record, eight lights standing in (LITE, map-post.js); then every shader compiled while the loading line shows,
 # for the picture's own target (the composer's), once without a room's cut and once with it (its six planes), so nothing stutters when first seen
-mod=rp(mod,"} for(const N of NPCS)N.tick(dt,pos); if(FIRE)","} NPCS.tick(dt,pos); if(FIRE)")
+mod=rp(mod,"} for(const N of NPCS)N.tick(dt,pos); if(FIRE)","} NPCS.tick(dt,pos); METRO.train.tick(dt,pos); if(FIRE)")   # (the metro's train: metro.js)
 # AT REST AT ONCE (owner, 17 Oct 2026: "when something stops it doesnt keep moving slightly and gradually"): the view's turn, tilt and zoom reach their mark and stop
 mod=rp(mod,"yaw+=(yawTo-yaw)*ease; pitch+=(pitchTo-pitch)*ease;","yaw=Math.abs(yawTo-yaw)<1e-4?yawTo:yaw+(yawTo-yaw)*ease; pitch=Math.abs(pitchTo-pitch)<1e-4?pitchTo:pitch+(pitchTo-pitch)*ease;")
 mod=rp(mod,"ppu*=Math.pow(ppuTo/ppu,ease); if(pxS()!==SCL)","ppu=Math.abs(ppuTo/ppu-1)<1e-4?ppuTo:ppu*Math.pow(ppuTo/ppu,ease); if(pxS()!==SCL)")

@@ -91,7 +91,7 @@
           else{ st.to=null; st.face={x:t.st.x,z:t.st.z}; const off=Math.abs(((Math.atan2(t.st.x-st.x,t.st.z-st.z)-st.h+Math.PI*3)%(Math.PI*2))-Math.PI);
             if(G.cool<=0&&off<.35){ G.cool=1.4+Math.random()*.6; N.an.play(style.hit,{at:[style.at,()=>{ if(style.bolt)shoot(N,t,style.bolt,style.dmg); else if(d2(t.st,st)<R*1.5)t.knock(N,style.dmg); }]}); } }
           return; }
-        if(G.mode==='fight'){ G.mode='cheer'; st.to=null; st.face=null; N.an.play('Cheer',{then:()=>{ G.mode='patrol'; st.hold=false; st.wait=.5; N.alert=false; }}); return; }
+        if(G.mode==='fight'){ G.mode='cheer'; st.to=null; st.face=null; if(typeof LINES!=='undefined')LINES.say(N,'cheer'); N.an.play('Cheer',{then:()=>{ G.mode='patrol'; st.hold=false; st.wait=.5; N.alert=false; }}); return; }
         if(G.mode==='cheer')return;
         // on his beat: at an end, on guard, looking one way and the other
         N.alert=!st.to; if(st.to)st.h0=null; else{ if(st.h0==null)st.h0=st.h; const a=st.h0+Math.sin(G.look*.7)*1.1; st.face={x:st.x+Math.sin(a),z:st.z+Math.cos(a)}; } }});
@@ -115,7 +115,7 @@
         const d=d2(st,you); N.mode=d<.9*TILE?'fight':'come';
         if(N.mode==='come'){ const k=(d-.5*TILE)/d; st.to={x:st.x+(you.x-st.x)*k,z:st.z+(you.z-st.z)*k}; st.v=d>4*TILE&&!N.tired?RUN*.85:st.v0||(st.v0=st.v); st.face=null; }
         else{ st.to=null; st.face={x:you.x,z:you.z};
-          if((N.cool=(N.cool||0)-dt)<=0){ N.cool=2.2; N.an.play('Unarmed_Melee_Attack_Punch_A',{at:[.36,()=>{ VIT.inFight(5); const dx=pos.x-st.x, dz=pos.z-st.z, l=Math.hypot(dx,dz)||1; if(l<1.1*TILE&&onStreet()){ SHOVE.x=dx/l*3.2*TILE; SHOVE.z=dz/l*3.2*TILE; VIT.hurt(.12); } }]}); } } }});
+          if((N.cool=(N.cool||0)-dt)<=0){ N.cool=2.2; if(typeof LINES!=='undefined'&&Math.random()<.5)LINES.say(N,'trouble'); N.an.play('Unarmed_Melee_Attack_Punch_A',{at:[.36,()=>{ VIT.inFight(5); const dx=pos.x-st.x, dz=pos.z-st.z, l=Math.hypot(dx,dz)||1; if(l<1.1*TILE&&onStreet()){ SHOVE.x=dx/l*3.2*TILE; SHOVE.z=dz/l*3.2*TILE; VIT.hurt(.12); } }]}); } } }});
     N.mode='hidden'; N.g.visible=false; N.st.hold=true;
     // down: the fall (pushed back off the blow), a moment on the ground, up again, and away
     N.knock=(from,dmg=.5)=>{ if(N.mode!=='come'&&N.mode!=='fight')return; N.hp-=dmg; if(N.hp>0){ N.an.play('Hit_A'); return; }   // (struck: his health off; while he has some, he staggers)

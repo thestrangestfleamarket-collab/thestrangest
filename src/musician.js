@@ -105,8 +105,8 @@ const musScale=(g,bh)=>g.scale.set(W3.SZ/PPU,ZU*W3.SZ*(bh||W3.BH||1),W3.SZ/PPU);
   const SHB=document.createElement('div'); SHB.id='shbar'; SHB.hidden=true; SHB.style.cssText='position:fixed;left:50%;bottom:52px;transform:translateX(-50%);z-index:6;display:none;gap:10px;align-items:center;padding:8px 12px;background:#0b0d13e0;border:2px solid #2a3040;font:11px Silkscreen,monospace;letter-spacing:1px;color:#c9ccd6';
   SHB.innerHTML='<span>SHARPEN</span><input type="range" min="0" step="1" style="width:220px"><span class="v" style="width:52px;text-align:right"></span><span style="color:#8a8f9c">C BACK</span>'; document.body.appendChild(SHB);
   const shIn=SHB.querySelector('input'), shV=SHB.querySelector('.v'); shIn.max=RESL.length-1;
-  MUS.sharp=()=>{ let v=null; try{ v=localStorage.getItem('market-gtsharp'); }catch(e){} return v!=null?+v:Math.min(RESL.length-1,RESMAX+2); };
+  MUS.sharp=()=>{ let v=null; try{ v=SAVE.get('gtsharp'); }catch(e){} return v!=null?+v:Math.min(RESL.length-1,RESMAX+2); };
   SHB.show=()=>{ shIn.value=RESI; shV.textContent=RES()+'x'; SHB.hidden=false; SHB.style.display='flex'; };
-  shIn.oninput=()=>{ RESI=+shIn.value; resize(); shV.textContent=RES()+'x'; try{ localStorage.setItem('market-gtsharp',String(RESI)); }catch(e){} };
+  shIn.oninput=()=>{ RESI=+shIn.value; resize(); shV.textContent=RES()+'x'; try{ SAVE.set('gtsharp',String(RESI)); }catch(e){} };
   shIn.addEventListener('pointerdown',e=>e.stopPropagation()); shIn.addEventListener('keydown',e=>e.stopPropagation());   // (close, and sharp: the sharpness up as far as the screen shows, as the game's close-up drew him finer; back as it was when you leave)
 }

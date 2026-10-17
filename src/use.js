@@ -32,7 +32,7 @@ const USE={seat:null}; window.USE=USE;   // (a test's look)
   const near=(S,m)=>{ const x0=Math.min(S.min.x+m,(S.min.x+S.max.x)/2), x1=Math.max(S.max.x-m,(S.min.x+S.max.x)/2), z0=Math.min(S.min.z+m,(S.min.z+S.max.z)/2), z1=Math.max(S.max.z-m,(S.min.z+S.max.z)/2);
     return [Math.max(x0,Math.min(x1,pos.x)),Math.max(z0,Math.min(z1,pos.z))]; };
   const stand=back=>{ const s=USE.seat; if(!s)return; USE.seat=null; st.sit=null; if(back){ pos.x=s.back.x; pos.z=s.back.z; } };
-  const sitOn=(se,th)=>{ const [x,z]=near(se.S,.4*T); let fx=se.fx, fz=se.fz; if(!fx&&!fz){ fx=pos.x-x; fz=pos.z-z; const l=Math.hypot(fx,fz)||1; fx/=l; fz/=l; }
+  const sitOn=(se,th)=>{ SFX.play('creak',{vol:.5,vary:.3,delay:.4}); const [x,z]=near(se.S,.4*T); let fx=se.fx, fz=se.fz; if(!fx&&!fz){ fx=pos.x-x; fz=pos.z-z; const l=Math.hypot(fx,fz)||1; fx/=l; fz/=l; }
     const sx=x-fx*.06*T, sz=z-fz*.06*T, g=groundY(sx,sz);
     USE.seat={back:pos.clone(),x:sx,z:sz}; pos.x=sx; pos.z=sz; target=null; heading=Math.atan2(fx,fz);
     st.sit={z:Math.max(2,(se.y-g)/(ZU*W3.SZ*(W3.BH||1)))}; };   // (the rig's units up: W3.place's)
@@ -40,7 +40,7 @@ const USE={seat:null}; window.USE=USE;   // (a test's look)
   const lightsOf=b=>{ const e=.8*T; return LITE.recs.filter(L=>{ const p=L.position; return p.x>b.min.x-e&&p.x<b.max.x+e&&p.y>b.min.y-e&&p.y<b.max.y+e&&p.z>b.min.z-e&&p.z<b.max.z+e; }); };
   const tint=(o,c,which)=>{ for(const p of o.parts){ if(!which(p))continue; const g=p.me.geometry, C=g.attributes.aCol; for(let i=0;i<18;i++)C.array[p.v0*3+i]=c[i%3]; C.needsUpdate=true; } };
   const glows=p=>p.e||p.me.material.isMeshBasicMaterial;
-  const lamp=(o,th)=>{ o.useOff=!o.useOff; for(const L of lightsOf(box(o)))L.userData.off=o.useOff; LITE.t=0; tint(o,o.useOff?[.2,.2,.22]:[1,1,1],glows); th.name=o.useOff?'OFF':'ON'; };
+  const lamp=(o,th)=>{ o.useOff=!o.useOff; for(const L of lightsOf(box(o)))L.userData.off=o.useOff; LITE.t=0; tint(o,o.useOff?[.2,.2,.22]:[1,1,1],glows); th.name=o.useOff?'OFF':'ON'; SFX.play('click',{at:box(o).getCenter(new V3()),vol:.9,vary:.2}); };
   // ---- THE DRINKS FRIDGE: its front the side its light shines from; its door, the faces in the front slab between its foot and its top (the
   // diner's, the bar's), turned on their hinge as the world editor turns a thing; or, with none (the bodega's), a glass leaf made for it
   const box=o=>o.ub||(o.ub=look(tris(o)).b);
@@ -73,16 +73,16 @@ const USE={seat:null}; window.USE=USE;   // (a test's look)
       for(const t0 of [p.v0,p.v0+3]){ const j=t0*3, ux=A[j+3]-A[j], uy=A[j+4]-A[j+1], uz=A[j+5]-A[j+2], wx=A[j+6]-A[j], wy=A[j+7]-A[j+1], wz=A[j+8]-A[j+2];
         let nx=uy*wz-uz*wy, ny=uz*wx-ux*wz, nz=ux*wy-uy*wx; const l=Math.hypot(nx,ny,nz)||1; for(let q=0;q<3;q++){ N[j+q*3]=nx/l; N[j+q*3+1]=ny/l; N[j+q*3+2]=nz/l; } }
       tg.add(g); }); for(const g of tg){ g.attributes.position.needsUpdate=g.attributes.normal.needsUpdate=true; } };
-  const fridge=(o,th)=>{ const d=doorOf(o); d.to=d.to?0:1.75; DOORS.add(d); th.name=d.to?'OPEN':'SHUT'; };
+  const fridge=(o,th)=>{ const d=doorOf(o); d.to=d.to?0:1.75; DOORS.add(d); th.name=d.to?'OPEN':'SHUT'; const at=box(o).getCenter(new V3()); if(d.to)SFX.play('latch',{at,vol:.8}); else SFX.play('door',{at,vol:.35,pitch:1.6,delay:.25}); };   // (the catch opening; shut, a light slam: sfx.js)
   // ---- SOUND (the page's own, woken by the first click: musician.js's SND; or one of its own)
   const ac=()=>{ if(typeof SND!=='undefined'&&SND.ctx)return SND.ctx; if(!USE.ac)try{ USE.ac=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ return null; } if(USE.ac.state!=='running')USE.ac.resume(); return USE.ac; };
-  const clunk=()=>{ const c=ac(); if(!c)return; const t0=c.currentTime+.02, n=c.sampleRate*.25|0, buf=c.createBuffer(1,n,c.sampleRate), D=buf.getChannelData(0); for(let i=0;i<n;i++)D[i]=(Math.random()*2-1)*Math.exp(-i/(c.sampleRate*.03));
+  const clunk=()=>{ const c=ac(); if(!c)return;   /* (unused since sfx.js's 'clunk' took it over, 17 Oct 2026) */ const t0=c.currentTime+.02, n=c.sampleRate*.25|0, buf=c.createBuffer(1,n,c.sampleRate), D=buf.getChannelData(0); for(let i=0;i<n;i++)D[i]=(Math.random()*2-1)*Math.exp(-i/(c.sampleRate*.03));
     for(const [dt,f,g] of [[0,500,.5],[.16,260,.7]]){ const s=c.createBufferSource(), lp=c.createBiquadFilter(), G=c.createGain(); s.buffer=buf; lp.type='lowpass'; lp.frequency.value=f; G.gain.value=g; s.connect(lp).connect(G).connect(c.destination); s.start(t0+dt); } };
   // ---- THE DRINKS MACHINE: a can drops out at its foot on your side (it lies there; the oldest of four goes), a clunk, its lights blink twice
   const BLINK=new Set(), canM=new THREE.MeshLambertMaterial({color:new THREE.Color('rgb(196,44,40)')}), canG=new THREE.BoxGeometry(.07*T,.13*T,.07*T), CANS=[];
   const vend=(o,th)=>{ const b=box(o), c=b.getCenter(new V3()); let dx=pos.x-c.x, dz=pos.z-c.z; if(Math.abs(dx)>Math.abs(dz)){ dx=Math.sign(dx); dz=0; } else { dz=Math.sign(dz); dx=0; }
     const m=new THREE.Mesh(canG,canM); m.position.set(dx?(dx>0?b.max.x:b.min.x)+dx*.12*T:c.x+(Math.random()-.5)*.2*T,b.min.y+.45*T,dz?(dz>0?b.max.z:b.min.z)+dz*.12*T:c.z+(Math.random()-.5)*.2*T); m.castShadow=true;
-    m.userData.vy=0; m.userData.floor=b.min.y+.065*T; scene.add(m); CANS.push(m); if(CANS.length>4)scene.remove(CANS.shift()); clunk();
+    m.userData.vy=0; m.userData.floor=b.min.y+.065*T; scene.add(m); CANS.push(m); if(CANS.length>4)scene.remove(CANS.shift()); SFX.play('clunk',{at:c,vol:.9,delay:.35});
     o.blink=.5; BLINK.add(o); th.name='A CAN'; };
   // ---- THE RADIO: a little tune on and off, from where it stands (quieter as you go; squares and a soft bass, the old game's own kind of sound)
   const TUNE=[[0,.25],[4,.25],[7,.25],[9,.5],[7,.25],[4,.25],[2,.5],[0,.25],[2,.25],[4,.5],[-3,.25],[0,.75],[null,.5]];

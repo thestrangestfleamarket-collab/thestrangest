@@ -18,8 +18,8 @@ const LOOKS={};
   LOOKS.BUILDS=BUILDS;   // (the bodies, for others built on his: the singer wears the FEMALE one, src/singer.js)
   const ALLN=[...new Set(BUILDS.flatMap(b=>Object.keys(b[2])))];
   const L={name:'',sex:'M',build:0,eyes:0,hair:0,skin:1,hairc:1,eye:0,shirt:0,pants:0,shoes:0};
-  try{ const o=JSON.parse(localStorage.getItem('market-looks')||'{}'); o.build=o.sex==='F'||o.build>=6?1:0; Object.assign(L,o);   /* (a looks saved with the old eight builds: its sex keeps) */ }catch(e){}
-  const save=()=>{ try{ localStorage.setItem('market-looks',JSON.stringify(L)); }catch(e){} };
+  try{ const o=JSON.parse(SAVE.get('looks')||'{}'); o.build=o.sex==='F'||o.build>=6?1:0; Object.assign(L,o);   /* (a looks saved with the old eight builds: its sex keeps) */ }catch(e){}
+  const save=()=>{ try{ SAVE.set('looks',JSON.stringify(L)); }catch(e){} };
   // a colour's four tones (light, mid, shade, the deepest), as his ramps have them
   const tones=h=>{ const c=new THREE.Color(h); return [1,.9,.7,.42].map(k=>c.clone().multiplyScalar(k)); };
   const recolor=()=>{ const g=W3.mesh.geometry, A=g.attributes, mt=A.mat.array, n=mt.length;

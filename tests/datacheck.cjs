@@ -1,0 +1,59 @@
+// THE DATA CHECK (17 Oct 2026, after the physician game's validate_data: a headless run that checks the game's tables against each other):
+// node tests/datacheck.cjs loads THE MARKET with the old scattered browser keys planted, and checks: the one save (src/save.js) gathered them
+// and reads them back; every sound recipe (src/sfx.js) makes a finite buffer that isn't silent, and every sound the ambience names
+// (src/ambience.js) is a recipe; every pool of lines (src/lines.js) has lines and every blank in them is one the game can fill, a pick
+// never repeats the last fourteen while others fit, and a line said shows over the character and is logged; every place and room the menu
+// jumps to stands on ground (UI.places); a lamp clicked, a seat sat on and a wave make no page error. Exits 1 if anything fails.
+const {chromium}=require('playwright');
+(async()=>{ const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader','--autoplay-policy=no-user-gesture-required']}); const pg=await b.newPage({viewport:{width:900,height:620}});
+  const errs={}; pg.on('pageerror',e=>{ errs[e.message]=(errs[e.message]||0)+1; });
+  const url='file://'+process.cwd()+'/dist/market.html?hour=21&hideme=1';
+  // the old keys planted before the page runs (a browser that played before this save existed)
+  await pg.addInitScript(()=>{ if(!localStorage.getItem('market-save')&&!localStorage.getItem('planted')){ localStorage.setItem('planted','1'); localStorage.setItem('market-looks',JSON.stringify({name:'TESTER',sex:'M'})); localStorage.setItem('market-outline','1'); localStorage.setItem('market-grain','12'); localStorage.setItem('market-keys',JSON.stringify({v:'p'})); } });
+  await pg.goto(url,{waitUntil:'commit',timeout:180000});
+  let up=false; for(let i=0;i<300&&!(up=await pg.evaluate(()=>!!window.__started).catch(()=>false));i++)await pg.waitForTimeout(1000);
+  if(!up){ console.log('FAIL: the page never started',JSON.stringify(errs)); await b.close(); process.exit(1); }
+  let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
+  const r=await pg.evaluate(async()=>{ const out={}, {SAVE,SFX,AMB,LINES,LOOKS,OUTL,DITH,UI}=__dbg, groundY=__dbg.ground;
+    // the save: the old keys gathered, read back as they were, a write read back, the version
+    const S=SAVE.all(); out.save={v:S.v,looks:SAVE.get('looks'),outline:SAVE.get('outline'),grain:SAVE.get('grain'),keys:SAVE.get('keys'),raw:JSON.parse(localStorage.getItem('market-save')||'{}')};
+    SAVE.set('probe','x'); out.save.probe=JSON.parse(localStorage.getItem('market-save')).probe; SAVE.del('probe'); out.save.gone=SAVE.get('probe');
+    out.name=LOOKS.L.name; out.dith=DITH; out.outl=OUTL.on;
+    // the sounds: every recipe a finite, audible buffer; the ambience's names recipes
+    const c=SFX.ctx(); if(c&&c.state!=='running')await c.resume().catch(()=>{}); out.ctx=c&&c.state;
+    out.sfx={}; for(const k of SFX.names()){ const B=SFX.buffer(k,c), D=B.getChannelData(0); let mx=0, fin=true; for(let i=0;i<D.length;i++){ const v=Math.abs(D[i]); if(!isFinite(v)){ fin=false; break; } if(v>mx)mx=v; } out.sfx[k]={n:D.length,mx:+mx.toFixed(3),fin,len:SFX.recipe(k).len}; }
+    out.ambNames=[...new Set(Object.values(AMB.sets).flat().map(e=>e[0]))].filter(k=>!SFX.recipe(k));
+    SFX.mix.fx.click=.5; SFX.saveMix(); out.mix=JSON.parse(JSON.parse(localStorage.getItem('market-save')).sndmix).fx.click; out.mixLvl=SFX.fxLevel('click'); SFX.resetMix(); out.mixReset=SFX.fxLevel('click'); __dbg.SNDED.open(); out.edRows=document.querySelectorAll('#snded .r input[type=range]').length; __dbg.SNDED.close();
+    out.playing=!!SFX.play('click'); out.blipped=(SFX.blip(SFX.voiceOf('tester')),true);
+    // the lines: pools, blanks, freshness, a line shown and logged
+    out.pools={}; for(const k in LINES.pools){ const P=LINES.pools[k]; out.pools[k]={n:P.length,blanks:[...new Set(P.flatMap(s=>(s.match(/\{\{(\w+)\}\}/g)||[])))]}; }
+    const seen=[]; for(let i=0;i<10;i++)seen.push(LINES.pick('greet',{name:'TESTER'})); out.repeats=seen.length-new Set(seen).size; out.unfilled=seen.filter(s=>/\{\{/.test(s)).length; out.recentN=LINES.recent().length;
+    const N=__dbg.NPCS.find(n=>n.lv==='up'&&!n.far&&n.g.visible)||__dbg.NPCS[0]; out.said=LINES.say(N,'greet'); out.spk=LINES.speaking(); out.logN=LINES.log.length; out.logWho=LINES.log[LINES.log.length-1].who;
+    // the places: each on ground
+    out.places=UI.places().map(([n,x,z,lv])=>{ let g=null; try{ g=groundY(x,z); }catch(e){ g='ERR '+e.message; } return [n,typeof g==='number'&&isFinite(g)]; });
+    // using things: a lamp, a seat, the wave (their sounds and the lines ran, no error)
+    try{ const th=UI.things.find(t=>t.npc); if(th){ th.act(); LINES.say(th.npc,'greet'); } out.waved=!!th; }catch(e){ out.waveErr=e.message; }
+    return out; });
+  ok(r.save.v===1&&r.save.raw.v===1,'the save is version 1 under market-save');
+  ok(r.save.looks&&JSON.parse(r.save.looks).name==='TESTER'&&r.name==='TESTER','the old looks key was gathered and read (name TESTER)');
+  ok(r.save.outline==='1'&&r.outl===true,'the old outline key was gathered and read (outline on)');
+  ok(r.save.grain==='12'&&(r.dith===12||r.dith===0),'the old grain key was gathered (grain 12; the light SMOOTH by default leaves the grain off)');
+  ok(r.save.keys&&JSON.parse(r.save.keys).v==='p','the old keys were gathered');
+  ok(r.save.probe==='x'&&r.save.gone===null,'a write goes to the one key at once and a delete takes it out');
+  console.log('audio context: '+r.ctx);
+  for(const k in r.sfx){ const s=r.sfx[k]; ok(s.fin&&s.mx>.02&&s.mx<=1.01&&s.n>0,'sound '+k+': '+s.len+' s, peak '+s.mx); }
+  ok(r.ambNames.length===0,'every ambience sound is a recipe'+(r.ambNames.length?' (missing '+r.ambNames.join(', ')+')':''));
+  ok(r.playing||r.ctx!=='running','a sound plays when the context runs');
+  ok(r.mix===.5&&r.mixLvl===.5&&r.mixReset===1,'the sound editor\'s level is saved, used and reset ('+r.mix+', '+r.mixLvl+', '+r.mixReset+')');
+  ok(r.edRows>=24,'the sound editor shows a row for every sound ('+r.edRows+')');
+  for(const k in r.pools){ const p=r.pools[k]; ok(p.n>=5&&p.blanks.every(b=>b==='{{name}}'),'lines '+k+': '+p.n+' lines, blanks '+(p.blanks.join(' ')||'none')); }
+  ok(r.repeats===0&&r.unfilled===0,'ten picks from greet: no repeat, no blank left ('+r.repeats+' repeats, '+r.unfilled+' unfilled)');
+  ok(r.recentN<=14,'the recent list holds at most 14 ('+r.recentN+')');
+  ok(r.said&&r.spk>=1&&r.logN>=1&&r.logWho,'a line said shows over '+r.logWho+' and is logged: "'+r.said+'"');
+  for(const [n,g] of r.places)ok(g,'place '+n+' stands on ground');
+  ok(r.waved&&!r.waveErr,'a wave at a character runs'+(r.waveErr?': '+r.waveErr:''));
+  await pg.waitForTimeout(2500);
+  const after=await pg.evaluate(()=>({spk:__dbg.LINES.speaking(),labels:document.querySelectorAll('.said2').length}));
+  ok(after.labels<=3,'labels on screen at most 3 ('+after.labels+')');
+  const E=Object.keys(errs); ok(E.length===0,'no page errors'+(E.length?': '+E.join(' | '):''));
+  await b.close(); console.log(bad?'FAILED '+bad:'ALL OK'); process.exit(bad?1:0); })();

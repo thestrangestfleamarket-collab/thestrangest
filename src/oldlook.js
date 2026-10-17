@@ -4,7 +4,7 @@
 // than what's round it (a lamp's glass, the neon, the lit pool) gathers a halo a few art pixels wide, cut into 8 hard steps, added over;
 // at night and indoors (allowed back by the owner, hard-stepped only: the budget's rule 1 otherwise holds) ----
 const LOOK={on:true, glowK:{value:0}, night:{value:0}, cool:{value:0}};   // (cool: the warm sun and cool shade, ?fx=cool: lookfx.js)
-{ let v='1'; try{ v=localStorage.getItem('market-look')||'1'; }catch(e){} LOOK.on=v==='1'; }   // (GRAPHICS' GLOW AND NIGHT LOOK, kept in this browser: ui.js)
+{ let v='1'; try{ v=SAVE.get('look')||'1'; }catch(e){} LOOK.on=v==='1'; }   // (GRAPHICS' GLOW AND NIGHT LOOK, kept in this browser: ui.js)
 LOOK.shader={uniforms:{tDiffuse:{value:null},uRes:{value:new THREE.Vector2(1,1)},uNight:LOOK.night,uGlowK:LOOK.glowK,uCool:LOOK.cool},
   vertexShader:'varying vec2 vUv; void main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.); }',
   fragmentShader:`uniform sampler2D tDiffuse; uniform vec2 uRes; uniform float uNight,uGlowK,uCool; varying vec2 vUv;

@@ -4,7 +4,11 @@
 // (src/ambience.js) is a recipe; every pool of lines (src/lines.js) has lines and every blank in them is one the game can fill, a pick
 // never repeats the last fourteen while others fit, and a line said shows over the character and is logged; every place and room the menu
 // jumps to stands on ground (UI.places); a lamp clicked, a seat sat on and a wave make no page error. Exits 1 if anything fails.
-const {chromium}=require('playwright');
+const {chromium}=require('playwright'), fs=require('fs');
+// the code's references, checked against the tables before the page runs: every SFX.play('x') a recipe in sfx.js, every LINES.say(N,'x') a pool in lines.js
+const SRC=fs.readdirSync('src').filter(f=>f.endsWith('.js')).map(f=>[f,fs.readFileSync('src/'+f,'utf8')]), sfxSrc=fs.readFileSync('src/sfx.js','utf8'), linesSrc=fs.readFileSync('src/lines.js','utf8');
+const RECIPES=[...sfxSrc.matchAll(/^\s{4}(\w+):\{len:/gm)].map(m=>m[1]), POOLS=[...linesSrc.matchAll(/^\s{4}(\w+):\[/gm)].map(m=>m[1]);
+const refs=[]; for(const [f,s] of SRC){ for(const m of s.matchAll(/SFX\.play\('(\w+)'/g))refs.push(['sound',m[1],f]); for(const m of s.matchAll(/LINES\.say\(\w+,'(\w+)'/g))refs.push(['pool',m[1],f]); }
 (async()=>{ const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader','--autoplay-policy=no-user-gesture-required']}); const pg=await b.newPage({viewport:{width:900,height:620}});
   const errs={}; pg.on('pageerror',e=>{ errs[e.message]=(errs[e.message]||0)+1; });
   const url='file://'+process.cwd()+'/dist/market.html?hour=21&hideme=1';
@@ -14,6 +18,8 @@ const {chromium}=require('playwright');
   let up=false; for(let i=0;i<300&&!(up=await pg.evaluate(()=>!!window.__started).catch(()=>false));i++)await pg.waitForTimeout(1000);
   if(!up){ console.log('FAIL: the page never started',JSON.stringify(errs)); await b.close(); process.exit(1); }
   let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
+  ok(RECIPES.length>=20&&POOLS.length>=5,'the tables read from the source: '+RECIPES.length+' recipes, '+POOLS.length+' pools');
+  for(const [k,n,f] of refs)ok((k==='sound'?RECIPES:POOLS).includes(n),'the code\'s '+k+' '+n+' ('+f+') is in its table');
   const r=await pg.evaluate(async()=>{ const out={}, {SAVE,SFX,AMB,LINES,LOOKS,OUTL,DITH,UI}=__dbg, groundY=__dbg.ground;
     // the save: the old keys gathered, read back as they were, a write read back, the version
     const S=SAVE.all(); out.save={v:S.v,looks:SAVE.get('looks'),outline:SAVE.get('outline'),grain:SAVE.get('grain'),keys:SAVE.get('keys'),raw:JSON.parse(localStorage.getItem('market-save')||'{}')};

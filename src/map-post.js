@@ -40,7 +40,6 @@ grab('stairs',()=>{ const S=MAPSTAIR, X=x=>(x-72)*TILE, Z=y=>(y+77)*TILE, Y=z=>z
   const m=new THREE.Mesh(geo,new THREE.MeshLambertMaterial({vertexColors:true,side:THREE.DoubleSide,clippingPlanes:[MODS.stairCut]})); m.receiveShadow=true; m.castShadow=true; scene.add(m);
   // a lamp over the stairs, so the way down is lit
   for(const [y,z,c,i] of [[S.y1-.3,60,[1,.92,.78],5],[S.y0+.5,-40,[.5,.54,.64],6]]){ const L=new THREE.PointLight(new THREE.Color(...c),i,7*TILE,1.6); L.position.set(X((S.x0+S.x1)/2),Y(z),Z(y)); L.userData.i0=L.intensity;
-    L.castShadow=true; L.shadow.mapSize.set(256,256); L.shadow.camera.near=.05; L.shadow.camera.far=7*TILE; L.shadow.bias=-.004; L.shadow.normalBias=.06; L.shadow.autoUpdate=false; L.shadow.needsUpdate=true;   // (its shadows, drawn once: the walls keep its light in the stairwell, as the shop's lamps; owner, 17 Oct 2026, every light checked)
     scene.add(L); lamps.push(L); }
   // (and the exit tunnel's own cool light, as the platform's: the stairs' foot to the platform)
   for(const y of [-83.5,-88.5]){ const L=new THREE.PointLight(new THREE.Color(.5,.54,.64),6,8*TILE,1.6); L.position.set(X((S.x0+S.x1)/2),Y(-98+88),Z(y)); L.userData.i0=L.intensity; MAPG.down.add(L); lamps.push(L); }
@@ -55,8 +54,27 @@ groundY=(x,z)=>{ const s=inStair(x,z), S=MAPSTAIR; if(s!=null){ const k=Math.min
 BOUND={x0:Math.min(MODS.bodega.BOUND.x0,MODS.station.BOUND.x0),x1:Math.max(MODS.bodega.BOUND.x1,MODS.pool.BOUND.x1),z0:Math.min(MODS.station.BOUND.z0,MODS.pool.BOUND.z0),z1:Math.max(MODS.bodega.BOUND.z1,MODS.park.BOUND.z1)};   // (the park past the far sidewalk: park.js)
 // the light of the open air at night over the street, the station's own underground
 const HEMI=new THREE.HemisphereLight(0x55607a,0x14110e,.3); scene.add(HEMI);
-// HIS SHADOWS: two shadow-casting stand-ins for the two lamps nearest him (on his level)
-SHL.push(...[0,1].map(()=>{ const L=new THREE.PointLight(0xffffff,0,8*TILE,1.6); L.castShadow=true; L.shadow.mapSize.set(512,512); L.shadow.camera.near=0.1; L.shadow.camera.far=14; L.shadow.bias=-0.003; scene.add(L); return L; }));
+// AT MOST EIGHT LAMPS LIGHT ANYTHING (owner, 17 Oct 2026, the budget: "render what is only absolutely needed"): every lamp the places made is a
+// record (where it is, its colour, strength and reach; its own code still sets its strength: the flicker, on and off), taken out of the scene;
+// eight lights stand in, put each quarter second on the eight lit lamps nearest you that can reach you (your level; a lamp in a room lights
+// only that room, one outside only the outside, so with no walls' shadows nothing leaks through a wall), their strength copied every frame.
+// The count never changes, so no shader is rebuilt for a lamp coming or going. The nearest casts the one lamp shadow (the sun the other);
+// the two nearest are his light and shadow (SHL: walker3d.js, looks.js)
+const LITE={N:8,pool:[],recs:[],sel:[],t:0,f:0,at:null};
+for(let i=0;i<LITE.N;i++){ const L=new THREE.PointLight(0xffffff,0,8*TILE,1.6); L.userData.pool=true; if(!i){ L.castShadow=true; L.shadow.mapSize.set(1024,1024); L.shadow.camera.near=.1; L.shadow.camera.far=14; L.shadow.bias=-.002; L.shadow.normalBias=.06; } scene.add(L); LITE.pool.push(L); }
+SHL.push(LITE.pool[0],LITE.pool[1]);
+// (once everything's made: every other lamp in the scene becomes a record, its level's group kept to know when it's shown)
+LITE.init=()=>{ const top=o=>{ while(o.parent&&o.parent!==scene)o=o.parent; return o; };
+  scene.traverse(o=>{ if(o.isPointLight&&!o.userData.pool)LITE.recs.push(o); });
+  for(const L of LITE.recs){ const g=top(L); L.userData.grp=g===L?null:g; L.castShadow=false; L.removeFromParent(); } };
+LITE.tick=(dt,x,y,z)=>{ const P=LITE.pool;
+  if((LITE.t-=dt)<=0){ LITE.t=.25; const R=typeof ROOMS!=='undefined'?ROOMS:null, RB=R&&R.boxes?R.boxes():[], cur=R?R.cur:null, e=.5*TILE;
+    const inB=(b,p,m)=>p.x>b.x0-m&&p.x<b.x1+m&&p.z>b.z0-m&&p.z<b.z1+m&&p.y>b.y0-e&&p.y<b.y1+e;
+    LITE.sel=LITE.recs.filter(L=>L.intensity>0&&(!L.userData.grp||L.userData.grp.visible)&&(L.userData.both||(cur?inB(cur,L.position,e):!RB.some(b=>inB(b,L.position,-e)))))
+      .map(L=>[(L.position.x-x)**2+(L.position.y-y)**2+(L.position.z-z)**2,L]).sort((p,q)=>p[0]-q[0]).slice(0,LITE.N).map(p=>p[1]); }
+  for(let i=0;i<P.length;i++){ const S=P[i], L=LITE.sel[i]; if(!L||!(L.intensity>0)){ S.intensity=0; continue; } S.position.copy(L.position); S.color.copy(L.color); S.intensity=L.intensity; S.distance=L.distance; S.decay=L.decay; }
+  // its shadow drawn only while it lights something, every other frame (half the cost, a frame's lag unseen), and at once when it moves to another lamp
+  const moved=LITE.at!==LITE.sel[0]; LITE.at=LITE.sel[0]; P[0].shadow.autoUpdate=P[0].intensity>0&&(moved||(++LITE.f&1)===0); };
 scene.background=new THREE.Color(0x050507);
 // THE LEVEL YOU'RE ON (from your height): its walls, its ground, its places shown; on the stairs, both
 // (on the stairs: the station shown below you; the street hidden once you're halfway down, as a room's walls are when you're in it)
@@ -65,14 +83,10 @@ const MAPLV=(py,pos)=>{ const lv=py<-1.6?'down':'up', st=inStair(pos.x,pos.z)!=n
   MODS.stairCut.constant=st?py+.25:1e6;
   if(lv===LVL)return false; LVL=lv; solids=SOL[lv]; fixed=FIX[lv]; HEMI.color.set(lv==='down'?0x8a93a8:0x55607a); HEMI.groundColor.set(lv==='down'?0x1a1814:0x14110e); HEMI.intensity=lv==='down'?.1:.3; return true; };
 
-// THE STOREROOM (store.js, off the map): a room's roof hidden while you're in it; the view and his walk bounded by the store while he's there, by the map otherwise.
-// ONLY THE LAMPS WHERE YOU ARE (the store's rooms bring the map to near a hundred lamps, more than the card's shaders take at once: they
-// went black): a stored room's lamps are lit only while you're in it or at its door (three tiles round it), the map's only while you're on the
-// map; the switch only as you go from one to another (every change of how many lamps are lit has the shaders built again). A still lamp keeps its shadows drawn
-{ const MB=BOUND, near=r=>pos.x>r.x0-3*TILE&&pos.x<r.x1+3*TILE&&pos.z>r.z0-3*TILE&&pos.z<r.z1+3*TILE;
-  STORE.tick=()=>{ STORE.pos=pos; STORE.cur=ROOMS.cur?ROOMS.cur.id:null; STORE.nl=lamps.length; STORE.lon=lamps.filter(L=>L.visible).length;
-    const zone=STORE.inStore(pos.x,pos.z)?(STORE.rooms.find(near)||{id:'store'}).id:'map';
-    if(zone!==STORE.zone){ STORE.zone=zone; for(const L of lamps){ const z=L.userData.zone; L.visible=zone==='map'?!z:z===zone; } } for(const r of STORE.roofs)r.me.visible=!r.R.inside(pos.x,pos.z); BOUND=STORE.inStore(pos.x,pos.z)?STORE.bound:MB; }; }
+// THE STOREROOM (store.js, off the map): a room's roof hidden while you're in it; the view and his walk bounded by the store while he's
+// there, by the map otherwise (its lamps: LITE's, as any room's: a lamp in a room lights only it)
+{ const MB=BOUND; STORE.tick=()=>{ STORE.pos=pos; STORE.cur=ROOMS.cur?ROOMS.cur.id:null; STORE.nl=lamps.length; STORE.lon=LITE.sel.length;
+    for(const r of STORE.roofs)r.me.visible=!r.R.inside(pos.x,pos.z); BOUND=STORE.inStore(pos.x,pos.z)?STORE.bound:MB; }; }
 // (a test's look inside)
 window.MAPDBG=()=>({LVL,cut:MODS.stairCut.constant,vis:Object.fromEntries(Object.entries(MAPG).map(([k,g])=>[k,g.visible])),stairLamp:lamps.filter(L=>L.parent===MAPG.stairs).map(L=>L.intensity),py:typeof py!=='undefined'?py:null,pos:typeof pos!=='undefined'?[pos.x,pos.z]:null});
 

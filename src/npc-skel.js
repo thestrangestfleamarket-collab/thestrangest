@@ -102,7 +102,7 @@
         const d=d2(st,you); N.mode=d<.9*TILE?'fight':'come';
         if(N.mode==='come'){ const k=(d-.5*TILE)/d; st.to={x:st.x+(you.x-st.x)*k,z:st.z+(you.z-st.z)*k}; st.v=d>4*TILE&&!N.tired?RUN*.85:st.v0||(st.v0=st.v); st.face=null; }
         else{ st.to=null; st.face={x:you.x,z:you.z};
-          if((N.cool=(N.cool||0)-dt)<=0){ N.cool=2.2; N.an.play('Unarmed_Melee_Attack_Punch_A',{at:[.36,()=>{ const dx=pos.x-st.x, dz=pos.z-st.z, l=Math.hypot(dx,dz)||1; if(l<1.1*TILE&&onStreet()){ SHOVE.x=dx/l*3.2*TILE; SHOVE.z=dz/l*3.2*TILE; VIT.hurt(.12); } }]}); } } }});
+          if((N.cool=(N.cool||0)-dt)<=0){ N.cool=2.2; N.an.play('Unarmed_Melee_Attack_Punch_A',{at:[.36,()=>{ VIT.inFight(5); const dx=pos.x-st.x, dz=pos.z-st.z, l=Math.hypot(dx,dz)||1; if(l<1.1*TILE&&onStreet()){ SHOVE.x=dx/l*3.2*TILE; SHOVE.z=dz/l*3.2*TILE; VIT.hurt(.12); } }]}); } } }});
     N.mode='hidden'; N.g.visible=false; N.st.hold=true;
     // down: the fall (pushed back off the blow), a moment on the ground, up again, and away
     N.knock=(from,dmg=.5)=>{ if(N.mode!=='come'&&N.mode!=='fight')return; N.hp-=dmg; if(N.hp>0){ N.an.play('Hit_A'); return; }   // (struck: his health off; while he has some, he staggers)

@@ -75,14 +75,13 @@ mod=rp(mod,"const pos=new THREE.Vector3(0,0,14); let heading=0.8, py=0;","const 
 mod=rp(mod,"import * as THREE from 'three';","""import * as THREE from 'three';
 import {EffectComposer} from 'three/addons/postprocessing/EffectComposer.js';
 import {RenderPass} from 'three/addons/postprocessing/RenderPass.js';
-import {UnrealBloomPass} from 'three/addons/postprocessing/UnrealBloomPass.js';
 import {OutputPass} from 'three/addons/postprocessing/OutputPass.js';""")
-# halation: the glowing things (the LED boards, the signs, the train's lamps) bloom, at the low resolution, so the glow is pixels too
+# the picture's passes: the scene, (the outline round him, when on), the output (no bloom: owner, 17 Oct 2026, the budget, "no glow or bloom")
 mod=rp(mod,"const scene=new THREE.Scene();","""const scene=new THREE.Scene();
-let composer=null, bloom=null;""")
-mod=rp(mod,"renderer.setSize(RW,RH,false);","renderer.setSize(RW,RH,false); if(composer){ composer.setSize(RW,RH); bloom.resolution.set(RW,RH); }")
+let composer=null;""")
+mod=rp(mod,"renderer.setSize(RW,RH,false);","renderer.setSize(RW,RH,false); if(composer)composer.setSize(RW,RH);")
 mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);","""composer=new EffectComposer(renderer); composer.setPixelRatio(1); composer.addPass(new RenderPass(scene,cam));
-bloom=new UnrealBloomPass(new THREE.Vector2(256,256),1.3,0.6,0.62); composer.addPass(bloom); composer.addPass(new OutputPass());
+composer.addPass(new OutputPass());
 resize(); applyTime(0); requestAnimationFrame(frame);""")
 mod=rp(mod,"  renderer.render(scene,cam);\n","""  // the game's cutaway: a wall between him and the camera is cut down to its foot
   for(const w of cutWalls)w.pl.constant=(Math.sin(a)*w.nx+Math.cos(a)*w.nz<-0.05&&pitch<1.45)?w.foot:1e6;
@@ -111,7 +110,7 @@ head=rp(head,'#stat{','#shd{position:fixed;right:calc(12px + env(safe-area-inset
 mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);",'''{ const SH={on:true,lv:2}, el=document.getElementById('shd'), draw=()=>{ W3.lv.value=SH.on?(SH.lv>=2?2:1):0; el.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.s?String(SH.on):String(SH.on&&SH.lv===+b.dataset.l))); el.querySelector('[data-s]').textContent=SH.on?'ON':'OFF'; };
   el.querySelectorAll('button').forEach(b=>b.onclick=()=>{ if(b.dataset.s)SH.on=!SH.on; else{ SH.lv=+b.dataset.l; SH.on=true; } b.blur(); draw(); }); draw(); }   // (full: self, as the game has it for a character)
 resize(); applyTime(0); requestAnimationFrame(frame);''')
-mod=rp(mod,"  let lampW=0; for(const L of lamps){","  { const nb=lamps.map((L,i)=>[Math.hypot(L.position.x-pos.x,L.position.z-pos.z),i]).sort((p,q)=>p[0]-q[0]); lamps.forEach(L=>L.intensity=LAMPI); nb.slice(0,2).forEach(([,i],k)=>{ SHL[k].position.copy(lamps[i].position); lamps[i].intensity=0; }); }   // (the two lamps nearest him: their shadow-casting stand-ins lit in their place)\n  let lampW=0; for(const L of lamps){")
+mod=rp(mod,"  let lampW=0; for(const L of lamps){","  if(typeof UI!=='undefined'&&UI.freeCam)LITE.tick(dt,UI.camT.x,UI.camT.y,UI.camT.z); else LITE.tick(dt,pos.x,py+1.2*TILE,pos.z);   // (the eight lamps nearest you light the world: map-post.js)\n  let lampW=0; for(const L of lamps){")
 print('ok base')
 
 # PIXELS THAT GROW WITH THE ZOOM (owner, 16 Oct 2026: "keep this level of res on every zoom", his pick "pixels grow with zoom"): as the game draws,
@@ -178,14 +177,11 @@ print('ok npcs')
 mod=rp(mod,"  if(keys.has('q'))yawTo+=dt*1.8;","  if(MAPLV(py,pos))setPhys(LVL);   // (the level you're on: its walls, its ground, its places)\n  if(keys.has('q'))yawTo+=dt*1.8;")
 mod=rp(mod,"PHYROOMS=[{on:true,x0:-1e9,x1:1e9,y0:-1e9,y1:1e9,st:STATIC.map(b=>[b[0],b[1],b[2]/RZ,b[3],b[4],b[5]/RZ])}];",
  "PHYROOMS=[{on:true,x0:-1e9,x1:1e9,y0:-1e9,y1:1e9,st:STATIC.map(b=>[b[0],b[1],b[2]/RZ,b[3],b[4],b[5]/RZ])}];\nfunction setPhys(lv){ STATIC=FIX[lv].map(([x0,z0,y0,x1,z1,y1])=>[x0/TL,-z1/TL,y0/TL,x1/TL,-z0/TL,y1/TL]); PHYROOMS[0].st=STATIC.map(b=>[b[0],b[1],b[2]/RZ,b[3],b[4],b[5]/RZ]); }   // (the ragdoll's room: his level's things)")
-mod=rp(mod,"lamps.forEach(L=>L.intensity=LAMPI); nb.slice(0,2).forEach(([,i],k)=>{ SHL[k].position.copy(lamps[i].position); lamps[i].intensity=0; });",
- "lamps.forEach(L=>L.intensity=L.userData.i0??LAMPI); SHL.forEach(S=>S.intensity=0); nb.filter(([,i])=>lamps[i].parent&&lamps[i].parent.visible).slice(0,2).forEach(([,i],k)=>{ const L=lamps[i], S=SHL[k]; S.position.copy(L.position); S.color.copy(L.color); S.intensity=L.userData.i0??LAMPI; S.distance=L.distance; S.decay=L.decay; L.intensity=0; });")
 mod=rp(mod,"for(const w of cutWalls)w.pl.constant=(Math.sin(a)*w.nx+Math.cos(a)*w.nz<-0.05&&pitch<1.45)?w.foot:1e6;",
  "for(const w of cutWalls)w.pl.constant=(!UI.persp&&(w.always||Math.sin(a)*w.nx+Math.cos(a)*w.nz<-0.05)&&pitch<1.45&&(!w.when||w.when()))?w.foot:1e6;   // (only the room you're in)\n  for(const r of BODB.roof)r.visible=!BODB.inside(); MODS.pool.roof.visible=!MODS.pool.inside(pos.x,pos.z);   // (and its roof off)")
 mod=rp(mod,"  renderer.shadowMap.needsUpdate=true; W3.shadowPass(renderer); OUTL.render(renderer,scene,cam); composer.render();",
- """  if(!MAPBAKE){ MAPBAKE=1; W3.group.visible=false; renderer.shadowMap.needsUpdate=true; renderer.render(scene,cam); W3.group.visible=true; }   // (the lamps' still shadows, once, without him)
-  const wOn=LVL==='up'&&Math.hypot(pos.x-POOLR.X((POOLR.bx0+POOLR.bx1)/2),pos.z-POOLR.Z((POOLR.by0+POOLR.by1)/2))<14*TILE;   // (the water moves while you're near it)
-  if(wOn)WATER.step(renderer,dt); renderer.shadowMap.needsUpdate=true; if(wOn)WATER.under(renderer,scene,cam,lamps); WATER.underAll(renderer,scene,cam,lamps); W3.shadowPass(renderer); OUTL.render(renderer,scene,cam); composer.render();""")
+ """  const wOn=LVL==='up'&&(MODS.pool.inside(pos.x,pos.z)||Math.hypot(pos.x-POOLR.X((POOLR.bx0+POOLR.bx1)/2),pos.z-POOLR.Z((POOLR.by0+POOLR.by1)/2))<15*TILE);   /* (the water moves only while you're near it or in its building; its picture of what's under it only while it's shown) */
+  if(wOn)WATER.step(renderer,dt); renderer.shadowMap.needsUpdate=true; if(wOn&&WATER.mesh.visible)WATER.under(renderer,scene,cam,lamps); WATER.underAll(renderer,scene,cam,lamps); W3.shadowPass(renderer); OUTL.render(renderer,scene,cam); composer.render();""")
 mod=rp(mod,"st.target=ml>0?1:0; const before=st.dist; RIG.step(st,dt);","WATER.feed(st,pos,dt,ml>0,keys); st.target=ml>0?1:0; const before=st.dist; RIG.step(st,dt);")
 mod=rp(mod,"collide(pos); if(target&&","collide(pos); if(st.water&&st.water.in){ const m=0.3; pos.x=Math.max(WATER.X0+m,Math.min(WATER.X0+WATER.W-m,pos.x)); pos.z=Math.max(WATER.Z0+m,Math.min(WATER.Z0+WATER.D-m,pos.z)); }   // (swimming: within the basin's walls)\n    if(target&&")
 mod=rp(mod,"if(MOVEK[k]&&!e.repeat&&!RAG.on)RIG.act(st,MOVEK[k]); });","if(st.water&&st.water.in&&(k===' '||k==='j')){ st.water.dive=true; e.preventDefault(); } else if(MOVEK[k]&&!e.repeat&&!RAG.on)RIG.act(st,MOVEK[k]); });")
@@ -198,7 +194,6 @@ mod=rp(mod,"  if(loose.length)RIG.draw(B,cloud,hdA,uimg,PW,PICH,AX,AY,1,false);"
 mod=rp(mod,"if(nst>=6)looseAcc=0; looseDraw();","if(nst>=6)looseAcc=0; looseDraw();\n  { const px=FLOATS.px??pos.x, pz=FLOATS.pz??pos.z, k=1/Math.max(dt,1e-3); FLOATS.step(dt,{inWater:!!(st.water&&st.water.in),x:pos.x,z:pos.z,vx:(pos.x-px)*k,vz:(pos.z-pz)*k}); FLOATS.px=pos.x; FLOATS.pz=pos.z; }")
 head=rp(head,'<div><b>Space</b> jump','<div>The bodega, the pool room (its door east of it) and the subway (the stairs down west of it) · walk into the pool to swim · <b>Space</b> (held) under</div>\n  <div><b>Space</b> jump')
 mod=rp(mod,"const pos=new THREE.Vector3(-2.2,0,3.2); let heading=0.8, py=0;","const pos=new THREE.Vector3(-2.2,0,3.2); let heading=0.8, py=0; { const a=(QS.get('at')||'').split(',').map(Number); if(a.length>=2&&a.every(isFinite)){ pos.set(a[0],0,a[1]); py=a[2]||0; } }   // (a test's: start at x,z[,height])")
-mod=rp(mod,"  if(MAPLV(py,pos))setPhys(LVL);","  if(MAPLV(py,pos))setPhys(LVL); if(bloom){ const dn=LVL==='down'; bloom.strength=(dn?1.3:.55)*GLOW.k; bloom.radius=dn?.6:.4; bloom.threshold=dn?.62:.8; }   // (the glow: the station's strong, the street's and the shops' gentle)")
 # GETTING AROUND and THE MENU (owner, 17 Oct 2026): src/ui.js, and its hooks in the frame and the keys
 mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);",open('src/physbody.js').read()+"\n"+open('src/ui.js').read()+"\n"+open('src/editor.js').read()+"\n"+open('src/animator.js').read()+"\n"+open('src/worldedit.js').read()+"\n"+open('src/looks.js').read()+"\n"+open('src/vitals.js').read()+"\nresize(); applyTime(0); requestAnimationFrame(frame);")
 mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);","if(typeof KIT!=='undefined')for(const th of KIT.things)UI.thing(th);   // (the street kit's named things: a double click walks up to them, once the menu is here)\nresize(); applyTime(0); requestAnimationFrame(frame);")
@@ -234,7 +229,6 @@ head=rp(head,'<div><b>Click</b> the ground to walk there</div>','<div><b>Double-
 # pavement in front and the shop behind; and every glow in the picture stepped and dithered in square blocks, as the game's light is
 mod=rp(mod,"MK.neon=(x,y,z,s,c)=>{ PNAME='neon sign'; const W=tw(s,2)+4, f=face(W,14,null,[[s,c,2,2]],FL(y),x-W/FP/2,z+7,W/FP);\n  const p=prop([WF(x-.3,x+.3,y),Bw(x-W/FP/2,x+W/FP/2,y,-.12,-.04,z-7,z+7,c,{foot:0,em:1,fj:f,fi:()=>null,top:()=>null})]); LAMPS.push({x,y:y+.4*WD(y),z,r:2.2,c:[c[0]/255,c[1]/255,c[2]/255],prop:p}); return p; };",
 "MK.neon=(x,y,z,s,c)=>{ PNAME='neon sign'; const W=tw(s,2)+4, cells=[]; txt((a,b)=>cells.push([a,b]),s,2,2,c,2);\n  const p=prop([WF(x-.3,x+.3,y)]); NEONS.push({x,y,z,W,cells,c}); LAMPS.push({x,y:y+.3*WD(y),z,r:2.2,c:[c[0]/255,c[1]/255,c[2]/255],prop:p,neon:true}); return p; };   // (the tubes and their light: bodbuild.js)")
-mod=rp(mod,"    if(l.r>=3){ L.castShadow=true;","    if(l.r>=3||l.neon){ L.castShadow=true;")
 mod=rp(mod,"  for(const l of BOD.LAMPS){ const cm=Math.max(...l.c);","""  // the neon's tubes: a glowing block for each lit square of its letters (2 art px), a tube's depth, read from both sides of the glass
   // a halo's picture: an oval of light in three steps (bright, mid, faint), each step's edge dithered (4x4 ordered), in square pixels
   const HALO=(c,W,H)=>{ const cv=document.createElement('canvas'); cv.width=W; cv.height=H; const g=cv.getContext('2d'), im=g.createImageData(W,H), B=[0,8,2,10,12,4,14,6,3,11,1,9,15,7,13,5];
@@ -251,13 +245,6 @@ mod=rp(mod,"  for(const l of BOD.LAMPS){ const cm=Math.max(...l.c);","""  // the
       const at=new THREE.Vector3(X(N.x),Y(N.z),Z(N.y-.08)), f=new THREE.Vector3(); m.position.copy(at); m.renderOrder=2;
       m.onBeforeRender=(r,s,c)=>{ m.quaternion.copy(c.quaternion); c.getWorldDirection(f); m.position.copy(at).addScaledVector(f,-.3); m.updateMatrixWorld(); }; scene.add(m); } }
   for(const l of BOD.LAMPS){ const cm=Math.max(...l.c);""")
-mod=rp(mod,"bloom=new UnrealBloomPass(new THREE.Vector2(256,256),1.3,0.6,0.62); composer.addPass(bloom);","""bloom=new UnrealBloomPass(new THREE.Vector2(256,256),1.3,0.6,0.62); composer.addPass(bloom);
-// THE GLOW, YOUR PICK (owner, 17 Oct 2026: "the light looks like a bubble, can you give me the old lighting ... or diff options?"): OFF (the
-// lamps light the room, nothing glows round them), SOFT (the glow as it first was, smooth), STEPPED (in hard steps and dither); the menu's switch
-const GLOW={mode:'off',k:.3,amount(v){ GLOW.k=v; try{ localStorage.setItem('market-glowk',String(v)); }catch(e){} },set(m){ GLOW.mode=m; bloom.enabled=m!=='off'; if(GLOW.q)GLOW.q.value=m==='stepped'?1:0; try{ localStorage.setItem('market-glow2',m); }catch(e){} }};
-{ const cm=bloom.compositeMaterial; cm.uniforms.uQ={value:1}; GLOW.q=cm.uniforms.uQ; cm.fragmentShader='uniform float uQ;\\n'+cm.fragmentShader.replace(/}\\s*$/,`  if(uQ>.5){ vec3 bc=gl_FragColor.rgb; float bm=max(bc.r,max(bc.g,bc.b)); ivec2 bq=ivec2(mod(gl_FragCoord.xy,4.));
-    float bt[16]=float[16](0.,8.,2.,10.,12.,4.,14.,6.,3.,11.,1.,9.,15.,7.,13.,5.); float bs=5., bv=bm<0.07?0.:max(1./bs,floor(bm*bs+bt[bq.x+bq.y*4]/16.)/bs); gl_FragColor.rgb=bv>0.?bc/bm*bv:vec3(0.); }   /* (its faint end cut, not a scatter of dots) */ }`); cm.needsUpdate=true;
-  bloom.renderTargetsHorizontal[0].texture.magFilter=bloom.renderTargetsHorizontal[0].texture.minFilter=THREE.NearestFilter; }   // (the glow in steps, dithered, in square blocks: the game's light, not a soft haze)""")
 # HIS BODY IN A PHYSICS ENGINE (owner, 17 Oct 2026): src/physbody.js, after the rig has placed him each frame
 mod=rp(mod,"W3.place(B,pos.x,py,pos.z,RAG.on?RAG.hd:heading,hdA,ZU); if(ED.on)ED.tick();","W3.place(B,pos.x,py,pos.z,RAG.on?RAG.hd:heading,hdA,ZU); PB.step(dt,B,pos.x,py,pos.z,RAG.on?RAG.hd:heading,groundY(pos.x,pos.z),RAG.on); if(ED.on)ED.tick();")
 # HIS MOVES, EDITABLE (owner, 17 Oct 2026: "edit his walk and other movements in the HIS SHAPE editor"; his picks: the walk's and the run's
@@ -321,10 +308,8 @@ drsrc="\n// ---- THE OCTOPUS DRUMMER'S FILES (the game's, word for word) ----\nc
 for f in ['47-zzz-bar-octopus-1-body.js','47-zzz-bar-octopus-2-play.js']: drsrc+='\n// ==== '+f+"\n"+open(S+f).read()
 mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);",gtsrc+"\n"+open('src/musician.js').read()+pnsrc+"\n"+open('src/pianist.js').read()+sgsrc+"\n"+open('src/singer.js').read()+drsrc+"\n"+open('src/drummer.js').read()+"\nresize(); applyTime(0); requestAnimationFrame(frame);")
 mod=rp(mod,"  for(const N of NPCS)N.tick(dt,pos);","  for(const N of NPCS)N.tick(dt,pos); MUS.tick(dt);")
-mod=rp(mod,"  for(const N of NPCS)N.tick(dt,pos); MUS.tick(dt);","  DRESS.tick(dt,pos); { const r=MODS.apts.tick(); if(r)solids=r; } for(const N of NPCS)N.tick(dt,pos); if(FIRE)FIRE.tick(dt); FIGFX.tick(dt,pos); MUS.tick(dt); PNM.tick(dt); SGM.tick(dt); DRM.tick(dt);")   # (DRESS: the street's kit; the apartment house's floors; FIGFX: the figures' effects and the park's cut of the trees before you)
-# NO SHADOW ACNE (owner, 17 Oct 2026, his close-up: stripes and jagged dark teeth on the musician's arm): the two lamps nearest you, whose
-# shadows move, finer (1024 a face) and held off the surface they fall on, as the still lamps' are
-mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);","for(const S of SHL){ S.shadow.mapSize.set(1024,1024); S.shadow.normalBias=.06; S.shadow.bias=-.002; }\nresize(); applyTime(0); requestAnimationFrame(frame);")
+mod=rp(mod,"  for(const N of NPCS)N.tick(dt,pos); MUS.tick(dt);","  DRESS.tick(dt,pos); { const r=MODS.apts.tick(); if(r)solids=r; } for(const N of NPCS)N.tick(dt,pos); if(FIRE)FIRE.tick(dt); FIGFX.tick(dt,pos); MUS.tick(dt); PNM.tick(dt); SGM.tick(dt); DRM.tick(dt);")   # (DRESS: the street's kit; the apartment house's floors; FIGFX: the figures' effects and the park's cut of the trees before you; the stored bar's musicians)
+# (NO SHADOW ACNE, owner 17 Oct 2026: the one lamp shadow, 1024 a face, held off the surface it falls on: LITE in map-post.js)
 # THE CLOCK (owner, 17 Oct 2026: "add the option to control the time", 7pm when the game opens): src/clock.js; ticked each frame
 mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);",open('src/clock.js').read()+"\n"+open('src/rooms.js').read()+"\nresize(); applyTime(0); requestAnimationFrame(frame);")
 # ONLY THE ROOM YOU'RE IN (owner, 17 Oct 2026): src/rooms.js, set just before the picture's drawn
@@ -332,7 +317,17 @@ mod=rp(mod,"if(wOn)WATER.step(renderer,dt); renderer.shadowMap.needsUpdate=true;
 mod=rp(mod,"  UI.goTick(); UI.runTick();","  UI.goTick(); UI.runTick(); CLOCK.tick(dt); VIT.tick(dt);")   # (VIT: your health and stamina, src/vitals.js)
 # (the keys' turn and tilt: not in the isometric view, where Q and E go a quarter round: ui.js)
 mod=rp(mod,"  if(keys.has('q'))yawTo+=dt*1.8; if(keys.has('e'))yawTo-=dt*1.8; if(keys.has('z'))pitchTo=clampP(pitchTo-dt*1.2); if(keys.has('x'))pitchTo=clampP(pitchTo+dt*1.2);","  if(UI.view!=='iso'){ if(keys.has('q'))yawTo+=dt*1.8; if(keys.has('e'))yawTo-=dt*1.8; if(keys.has('z'))pitchTo=UI.clampV(pitchTo-dt*1.2); if(keys.has('x'))pitchTo=UI.clampV(pitchTo+dt*1.2); }")
-head=rp(head,'<b>V</b> wave','<b>B</b> wave · <b>V</b> change the view')   # (V: the views, owner 17 Oct 2026)
+head=rp(head,'<b>V</b> wave','<b>B</b> wave · <b>V</b> change the view')
+# THE BUDGET (owner, 17 Oct 2026: "render what is only absolutely needed"): the characters moved and drawn only when near or seen (NPCS.tick,
+# npc-map.js); every lamp made a record, eight lights standing in (LITE, map-post.js); then every shader compiled while the loading line shows,
+# for the picture's own target (the composer's), once without a room's cut and once with it (its six planes), so nothing stutters when first seen
+mod=rp(mod,"} for(const N of NPCS)N.tick(dt,pos); if(FIRE)","} NPCS.tick(dt,pos); if(FIRE)")
+mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);","""LITE.init();
+{ const t0=performance.now(), PL=[0,1,2,3,4,5].map(()=>new THREE.Plane(new THREE.Vector3(0,1,0),1e6)); renderer.setRenderTarget(composer.readBuffer); renderer.compile(scene,cam);
+  renderer.clippingPlanes=PL; renderer.render(new THREE.Scene(),cam); renderer.compile(scene,cam); renderer.clippingPlanes=[]; renderer.setRenderTarget(null);   /* (the empty picture only sets the six planes for the second compile) */
+  window.WARMMS=Math.round(performance.now()-t0); }
+resize(); applyTime(0); requestAnimationFrame(frame);""")
+   # (V: the views, owner 17 Oct 2026)
 # LOADING (owner, 17 Oct 2026, the live site's first moments: the help panel, the shadows box and "--" showed while the page loaded, its dots
 # garbled): nothing but its line, "I took a trip to The Strangest Flea Market..." (owner: "loading should always say" it), till the game runs (ui.js takes it away); the page's letters read as UTF-8
 head=rp(head,'<div id="hud">','<div id="loading" style="position:fixed;inset:0;display:grid;place-items:center;font:12px Silkscreen,monospace;letter-spacing:2px;color:#8a8f9c;background:#0e1016">I took a trip to The Strangest Flea Market...</div>\n<div id="hud" hidden>')

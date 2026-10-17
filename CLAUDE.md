@@ -15,6 +15,29 @@ this repo is `bralynnbell/thestrangest`.
   better ways of doing thing in 3js just do that ... i trust you to build it like that"; "dont follow the pixel pinned rule or anything
   else that makes it more difficult"; "Don't copy how the other system does it just make it look the same. Use whatever method is smartest").
 
+## The budget: render only what's needed (owner, 17 Oct 2026; read before adding anything)
+
+The owner: "i want simple pixelated graphics so i dont want to render a bunch of needless stuff and not even use it. lets render what is only
+absolutely needed at the most basic levels and i will tell you when to improve each. dont assume i want anything looking nice. this is the best
+graphics the game should ever look" (his screenshot: the pool room at night, dark, flat, chunky pixels). Every session keeps to these:
+
+1. **His screenshot is the ceiling.** No glow or bloom, no soft shading, no screen effects, nothing "nicer" unless he asks for that one thing.
+2. **Triangles: the whole screen under 100,000.** A model is made simpler at bake time, never drawn heavy: the same shapes with fewer, bigger
+   faces, no holes (`tools/simplify.py`, the originals kept in `data/full/`). Characters: the head (the head bone and all under it) exactly as
+   it is, the rest of the body to half ("leave the faces as complex as they are, change rest of body to medium"); things (plants, toys, trees,
+   rocks, the kit, gear): the small marks that stand out in colour (eyes, noses, spots) kept, the plain rest to a third. The Walker and the
+   guitarist (built in code, `walker3d.js`): the head, hair and eyes as they were, every other piece about half.
+3. **Lights: at most 8 lamps light anything** (the nearest you); the rest only glow. **Shadows: the sun's and one lamp's at most.**
+4. **Draw and run only what's near or seen**: other rooms not drawn; far characters neither drawn nor moved; the pool's water only steps near it.
+5. **As few shader programs as possible**: what differs only by a number is a uniform, not a new program; shaders are compiled while the loading
+   line shows.
+6. **Never sharper than the opening** (`RESMAX`).
+7. **Load**: nothing fetched that isn't needed at start (Rapier only when the physics body is switched on); no data for things not in the game.
+8. **At rest, at rest, like a 2D game** ("when something stops it doesnt keep moving slightly and gradually. lets have things rest in place more
+   when they stop so not as much stuff is going on"): water goes flat and stops when nothing moves in it; floats and boats stop; he stands still
+   the moment he stops; nothing creeps toward a target forever. Only the deliberate stays: characters' idle moves, a flame's flicker.
+9. **Every new thing says its cost** (triangles, lights, milliseconds a frame) and fits the budget; if it can't, say so before adding it.
+
 ## What the owner has decided so far (keep these)
 
 - **The game's own look**: its colours and patterns, drawn by the game's own painters (24 texels a tile). **No photo textures, shader packs,
@@ -45,7 +68,7 @@ this repo is `bralynnbell/thestrangest`.
 - **Only the room you're in** (17 Oct 2026, `src/rooms.js`): inside a building only your room is drawn (six clip planes round it for every material), the rest black, the characters outside it hidden; the pool's water too.
 - **The neon's glow** (17 Oct 2026: "still a blur and vanishes from certain angles"): a halo in the world (square pixels, three steps, dithered, facing you, added over what's behind), not the screen's bloom; the bloom (GLOW) off unless chosen.
 - **Overhead lights** (17 Oct 2026: "dont show over head lights in any view unless looking up at them"): the bodega's tubes, the apartment building's ceiling panels shown only with the camera under them (`OVERHEAD`).
-- **The views** (17 Oct 2026, Display's VIEW): MAP VIEW (the free one), ISOMETRIC (a quarter turn at a time, the tilt fixed), THIRD PERSON (behind him, the wheel in and out, never under three feet), FIRST PERSON (his eyes). The tilt in the map view never under ten degrees ("cant go completely horizontal").
+- **The views** (17 Oct 2026, Display's VIEW): MAP VIEW (the free one), ISOMETRIC (eight angles, an eighth turn at a time: drag, Q / E or R; the tilt fixed), THIRD PERSON (behind him, the wheel in and out, never under three feet), FIRST PERSON (his eyes). The tilt in the map view never under ten degrees ("cant go completely horizontal").
 - **Your looks** (17 Oct 2026, `src/looks.js`: a double click on yourself, or Display's YOUR LOOKS): name; MALE / FEMALE (HIS SHAPE's bodies); five hairstyles (short, buzz, long, bun, bald) and five beards (full, short, goatee, moustache, none), made once in `walker3d.js` and folded away when not worn (`W3.HIDE`); five colours each for skin, hair, eyes, shirt, trousers, shoes; his face (eyes, brows, a mouth line); his fingers, one piece each. **His shading**: steps of light on him 2-5 and the shadows' depth (sliders here and in Display), SELF on him when lamp-lit.
 - **Health and stamina** (17 Oct 2026, `src/vitals.js`; `hp`, `sta` on every character): running spends stamina, at none no running till a third is back; blows cost health, at none you faint (down as a body, up again with some back). Two small bars bottom left only while not full.
 - **The dragons** (17 Oct 2026: "all green (4 shades) and 20% as big ... flying all around city and mostly park. add 10 of them. they breath large fire balls"; `src/npc-dragon.js`): ten, a fifth the size, four greens; flying mostly over the green round the street, now and then down on a ledge; now and then a fireball down ahead (glowing, lighting the ground from a pool of two lights, sparks, a burst where it lands; it hurts).
@@ -156,7 +179,7 @@ this repo is `bralynnbell/thestrangest`.
   glass), THE KEEP (the great tower from the archive, its stone, turrets and parapet, the dungeon's walls and things inside, the cross wall's
   arches), THE BUTTERFLIES (the butterfly house with its pair, six more over the shrine: `src/butterflies.js`, the game's kinds and pictures
   flying perch to perch). Each room's walls built as the bodega's (cut to their foot when between you and the camera), its roof hidden while
-  you're in, its lamps lit only while you're in it (the map's only on the map: near a hundred lamps would black out the shaders). The menu's
+  you're in, its lamps LITE's as any room's (a lamp in a room lights only it). The menu's
   STORED row takes you to each; the view and his walk are bounded by the store while he's there. The water now runs as more than one body
   (`waterBody` in `water3d.js`: the pool's, the pond's, the tank's). **The bar's musicians** (`src/pianist.js`, `src/singer.js`, `src/drummer.js`,
   each the game's own files word for word, built as the musician is): the pianist in his tuxedo at the grand (the 88 keys his, the real grand's
@@ -193,7 +216,7 @@ published to its own artifact, **https://claude.ai/artifact/X2Bk8UjQKP8yfLdLtVVn
 new places). A place's code is its own file in `src/`; `map-pre.js` says where each place stands (its offset, its level), `map-post.js` joins
 them (the ground, the levels, what cuts away). Its first places: the bodega, the pool room, the subway station and its stairs.
 
-**Not updated any more** (owner, 17 Oct 2026: "stop updating tsfm im not working there anymore"): nothing goes to `bralynnb/tsfm` from here; the copy there stays as it was last merged (version 7.9.7). The artifact link is where THE MARKET is played. What follows is the old way, for the record.
+**Not updated any more** (owner, 17 Oct 2026: "stop updating tsfm im not working there anymore"): nothing goes to `bralynnb/tsfm` from here; the copy there stays as it was last merged (version 7.9.8: updated once more at his word, "merge all and go live", [bralynnb/tsfm#798](https://github.com/bralynnb/tsfm/pull/798)); ask before each update there. The artifact link is where THE MARKET is played. What follows is the old way, for the record.
 
 **On the live website** (owner, 17 Oct 2026, stopped since): THE MARKET is at **thestrangestfleamarket.com/market**, for logged-in players only (the game's
 door checks the login, as for the game). The live copy lives in the game's repo as `market/market.html`; the game's build publishes it. To

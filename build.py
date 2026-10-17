@@ -97,7 +97,11 @@ mod=rp(mod,"let ppu=PPU;                                    // the zoom: screen 
 // pixels a world unit, the game's times RES (- coarser, = finer, as far as one screen pixel each: the sharpest the screen can show); the
 // zoom then makes them bigger by whole screen pixels, so the zoom goes in steps
 const RESL=[.5,.75,1,1.5,2,3,4,6,8,12,16], RES=()=>RESL[RESI], V0=PPU*PXS;   // (V0: screen pixels a world unit at zoom 1, as it opened)
-const vpu=()=>V0*ppu/PPU, art=()=>PPU*RES(), pxS=()=>Math.max(1,Math.round(vpu()/art())), rppu=()=>vpu()/art()<1?vpu():art();
+// NEVER SHARPER ZOOMED OUT (owner, 17 Oct 2026: "when i zoom out i dont want it to get this sharp ... never sharper than this resolution"): a
+// pixel is never smaller on screen than it is at the opening zoom for the sharpness chosen (MINPX); zoomed out past that, each pixel keeps its
+// size and takes in more of the world, instead of the picture getting finer
+const MINPX=()=>Math.max(1,Math.round(PXS/RES()));
+const vpu=()=>V0*ppu/PPU, art=()=>PPU*RES(), pxS=()=>Math.max(MINPX(),Math.round(vpu()/art())), rppu=()=>Math.round(vpu()/art())<MINPX()?vpu()/pxS():art();
 function frustum(){ const u=rppu(); cam.left=-RW/2/u; cam.right=RW/2/u; cam.top=RH/2/u; cam.bottom=-RH/2/u; cam.updateProjectionMatrix(); }""")
 mod=rp(mod,"ppu*=Math.pow(ppuTo/ppu,ease); frustum();","ppu*=Math.pow(ppuTo/ppu,ease); if(pxS()!==SCL)resize(); else frustum();")
 mod=rp(mod,"zoom ${(ppu/PPU).toFixed(2)}×`","zoom ${(SCL*rppu()/V0).toFixed(2)}× · art ${SCL===1&&vpu()<art()?'full':RES()+'×'}`")

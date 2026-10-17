@@ -6,7 +6,7 @@
 // plays his own set (rock, funk, a swing on the ride, a bossa on the rim, a solo), each hit a real one on the kit's physics (the engine's heads
 // and cymbals by their modes, an AudioWorklet) and in the arm that makes it (the stick up before, down at the hit, up off it), heard from where
 // he sits, louder as you come near. Here his body's parts (the game's ellipsoids: place, size, turn, colour) are instances of one sphere, set
-// each frame, coloured from his palette, lit by the lamps ----
+// each frame, coloured from his palette, lit by the lamps; while it's his turn on the stage (bandstand.js) ----
 const DRM={}; STORE.DRM=DRM;   // (a test's reach)
 { const S=STORE.bar, AT={x:BOD.X(S.drums.x),z:BOD.Z(S.drums.y-OCTBK),hd:0,y:BOD.Y(S.stage.z)}, g=new THREE.Group(); MAPG.bodega.add(g); DRM.g=g; DRM.at=AT;
   g.position.set(AT.x,AT.y,AT.z); g.rotation.set(0,AT.hd,0); g.scale.set(1/PPU,ZU,1/PPU);   // (his units the Walker's art px, as the figures')
@@ -19,7 +19,8 @@ const DRM={}; STORE.DRM=DRM;   // (a test's reach)
   // EACH FRAME you're near (the game's bar tick for him, here): the steps due sent to the kit and to his arms (octStep), his cigar and his
   // sips (octHabits), his pose from his hits (octPose, octArms), his body in it (octBody) set into the instances; his kit heard from where
   // he sits (louder near, from his side)
-  DRM.tick=dt=>{ const d=Math.hypot(pos.x-AT.x,pos.z-AT.z); if(!MAPG.bodega.visible||d>18)return; const now=performance.now();
+  const hush=()=>{ const N=IMX.nodes.get('bar|drum kit'); if(N&&SND.ctx)N.g.gain.setTargetAtTime(0,SND.ctx.currentTime,.1); }; DRM.stop=hush;   // (off the stage, or far: his kit silent)
+  DRM.tick=dt=>{ const d=Math.hypot(pos.x-AT.x,pos.z-AT.z); if(!DRM.on||!MAPG.bodega.visible||d>18){ hush(); return; } const now=performance.now();
     octStep(dt,now); octHabits(now); const p=octPose(now), A=octArms(p), B=octBody(A); let n=0;
     for(const e of B.E){ if(n>=CAP)break; place(n++,e[0],e[1],e[2],e[3],e[4],e[5],e[6],e[7],e[8],e[9]); }
     for(const [x,y,z,c] of B.D){ if(n>=CAP)break; place(n++,x,y,z,.7,.7,.7,0,0,0,c); }

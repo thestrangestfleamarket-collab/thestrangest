@@ -93,8 +93,8 @@ const FIGFX={};   // (the figures' effects' tick, for the frame loop)
   // ON GUARD AT GHOST STREET (owner, 17 Oct 2026: "have all the samurai & shogun standing guard by the ghost street building in front of it"):
   // the six stand in a line across its forecourt, three each side of the door, facing the street; they keep their own ways (a breath, a
   // flourish, a smoke, a wave back) but don't leave their posts
-  const GW=BOD.GSK.o[1]+8.3*BOD.GSK.s, GX=[114.6,115.9,117.2,119.8,121.1,122.4]; let gi=0;
-  for(const [key,name,metres,[tx0,tz0],speed,eyeC,stance,own,X] of CH){ const tx=GX[gi], tz=GW-1, k0=gi++; const M=S[key], rig=rigOf(M.rig), pose=Poser(M.rig,rig,stance), BN={}; rig.bones.forEach(B=>BN[B.name]=B);
+  const GO=BOD.GSK.o, GS=BOD.GSK.s, GDC=GO[0]+.6*GS+5, GW=GO[1]+3.2*GS+2.5, GX=[-4.4,-3,-1.6,1.6,3,4.4].map(d=>GDC+d); let gi=0;   /* (GDC: the door's middle, ghostdojo.js; GW: two and a half tiles before the front) */
+  for(const [key,name,metres,[tx0,tz0],speed,eyeC,stance,own,X] of CH){ const tx=GX[gi], tz=GW, k0=gi++; const M=S[key], rig=rigOf(M.rig), pose=Poser(M.rig,rig,stance), BN={}; rig.bones.forEach(B=>BN[B.name]=B);
     const st2={t:Math.random()*10,ph:Math.random()*6,move:null,wait:3+Math.random()*4,waved:-9,look:0,lookTo:0,vy:0,lift:0,ember:0,tip:null};
     const N=makeNPC(null,{key,name,names:M.parts,lv:'up',group:'bodega',geo:geomOf(M),skin:rig,tall:M.tall,eye:M.eye,eyeC,rank:M.parts.map(p=>/Cape|Cloth|coat|Hat|Veil/.test(p)?2:0),
       metres,x:BOD.XS(tx),z:BOD.ZS(tz),lane:LANE,free,brain:(dt,you,st)=>{ st.to=null; st.hold=true; st.x=BOD.XS(tx); st.z=BOD.ZS(tz); st.face={x:st.x,z:st.z+5*TILE}; },ground:(x,z)=>MODS.bodega.ground(x,z),radius:.28,speed,stride:0,rock:0,bob:0,

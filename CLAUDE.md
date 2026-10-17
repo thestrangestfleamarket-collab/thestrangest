@@ -67,6 +67,14 @@ this repo is `bralynnbell/thestrangest`.
   round, a tenth smaller. **Standing still**, a look round every six to fourteen seconds. **Rooms** cut only once all of you is half a tile
   inside (nothing cut in a doorway). **BEHIND** (a view: the third person's camera kept at his back as he turns; V cycles map, third, behind,
   first, isometric); **R** turns the view a quarter onto the four isometric angles (the roll moved to Y).
+- **Ghost Street, its dojo and its guards** (17 Oct 2026: "have all the samurai & shogun standing guard by the ghost street building in front of
+  it. make the ghost street building 33% taller, with bigger door, and the inside should look like the dojo (from other map)"): the building a
+  third taller (its roof made at the new height), a doorway two tiles wide and 100 px high, and inside the old West End dojo's hall from the
+  game's own makers (`23-w-west-dojo-1-hall.js`, embedded by build.py): tatami in polished boards, shoji walls, round windows, the alcove, the
+  sword rack, paper lanterns by the door, a candle in each corner (lit, flickering in steps, only while you're in), incense; its own room
+  (`src/ghostdojo.js`). The six figures stand on guard in a line before its door, facing the street (`npc-figures.js`).
+  **No dithering, nothing vanishing** ("dont dither anything when walking ... no dithering and vanishing anything"): the trees' cut round you
+  gone; the park's big trees stand in the middle of its four lawns, clear of the ways, the tallest at the back.
 - **New characters walk the street** (owner, 17 Oct 2026: "put any new characters that go in the game into the street walking around"): every character added from now on goes onto THE MARKET's street, walking around (`NPCS`, as the skeletons and the goldfish and bear are), unless the owner places it somewhere else.
 - **The view** (17 Oct 2026, `src/ui.js`): a left drag moves the map ("drag the map and change your focal point"), the point grabbed staying under the mouse; a right drag (or Shift / Alt + drag) turns round the point you grab, the wheel zooms toward the mouse, the tilt from straight down to level with the street, never under the ground (17 Oct 2026, "stop them at this angle"); the view keeps its place beside him as he walks; 0 (or RESET VIEW) puts it back on him.
 - **Removed and not wanted for now**: the character editor (edit mode), the Fox.

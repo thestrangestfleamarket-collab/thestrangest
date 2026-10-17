@@ -19,7 +19,15 @@ pool=rq(pool,"const gx=x/TILE+OX-P.bx0, gy=z/TILE+OY-P.by0;","const gx=(x-PDX)/T
 game=['23-w-bodega-shop.js','23-w-street-1-kit.js','23-w-street-2-furniture.js','23-w-street-3-city.js','23-w-street-4-catalog.js','23-w-studio-apartment-1-furniture.js','23-w-studio-apartment-2-computer.js','23-w-studio-apartment-3-rooms.js','23-x-laundry-room.js']
 kit=rd('src/gamekit.js')+'\n'+'\n'.join('// ==== '+f+' (the game\'s, word for word)\n'+rd(S+f) for f in game)
 # GHOST STREET (owner, 17 Oct 2026: "bring in ghost street from old map"): the game's own makers of the kit's wooden shop, word for word, in a block of their own (their names their own), handing out where it's set and its paving
-kit+='\n// ==== 23-w-ghost-street.js (the game\'s, word for word)\nconst PRESETS={}; let GHOSTK=null;\n{\n'+rd(S+'23-w-ghost-street.js')+'\nGHOSTK={GSK,gsFloor};\n}\n'
+# GHOST STREET A THIRD TALLER (owner, 17 Oct 2026: "make the ghost street building 33% taller"): its tiled roof made by the kit's own roofer at
+# the new height (eaves 208, ridge 261: whole tiles, no stretched pixels), the gable's wood under it; the rest of the lift in src/ghostdojo.js
+gs=rq(rd(S+'23-w-ghost-street.js'),"const wall=(v,z)=>Math.abs(v-1.75)<1.45*(1-(z-158)/36)&&z>=158&&z<194?(Math.floor(v*32)%8===0||z===158?QD.woodDark:QD.wood):null;\n    return GPUT('ghost street shop roof',kroof(o,.9,7.1,-.45,3.95,156,196,wall,true),{o:{walk:true,hang:156}}); }",
+  "const wall=(v,z)=>Math.abs(v-1.75)<1.45*(1-(z-210)/49)&&z>=210&&z<259?(Math.floor(v*32)%8===0||z===210?QD.woodDark:QD.wood):null;\n    return GPUT('ghost street shop roof',kroof(o,.9,7.1,-.45,3.95,208,261,wall,true),{o:{walk:true,hang:208}}); }")
+kit+='\n// ==== 23-w-ghost-street.js (the game\'s, word for word but its roof\'s height)\nconst PRESETS={}; let GHOSTK=null;\n{\n'+gs+'\nGHOSTK={GSK,gsFloor};\n}\n'
+# THE DOJO'S MAKERS (owner, 17 Oct 2026: Ghost Street's inside "should look like the dojo (from other map)"): the old West End dojo's hall, word
+# for word, in a block of its own (its measures, DJ, set by src/ghostdojo.js instead of from the West End's plan), handed out on BOD.GDJ
+dj=rq(rd(S+'23-w-west-dojo-1-hall.js'),"DJ=(()=>{ const g=WEND.dojo","DJ=null&&(()=>{ const g=WEND.dojo")
+kit+='\n// ==== 23-w-west-dojo-1-hall.js (the game\'s, word for word)\n{\n'+dj+'\nBOD.GDJ={djAndon,djCandle,djIncense,djHanging,djTokonoma,djBokkenRack,djLeaf,DJTAT,DJBRD,DJWOOD,DJPAP,DJPLA,setDJ:v=>{ DJ=v; }};\n}\n'
 bod=rd('src/bodega.js')
 i=bod.index('const BOD={'); bod=bod[i:]
 bod=rq(bod,"const BOD={meshes:[], walls:{}, lamps:[]};","BOD={meshes:[], walls:{}, lamps:[]};").replace('/*GAMEKIT*/',kit).replace('/*GOODS*/',rd('src/goods-defs.js'))
@@ -27,7 +35,7 @@ bb=rq(rd('src/bodbuild.js'),"const BODB={};","BODB={};")
 wrap=lambda name,code,out,cutwhen: ("grab('%s',()=>{ const solids=SOL.%s, fixed=FIX.%s, SHL=[]; let BOUND, groundY; const c0=cutWalls.length;\n"%(name,'down' if name=='down' else 'up','down' if name=='down' else 'up'))+code+"\n"+out+"\n for(const w of cutWalls.slice(c0))if(!w.when)w.when="+cutwhen+"; for(const L of SHL)L.removeFromParent(); });\n"
 MAPST=('const TEXTURES='+rd('data/textures.json')+';\nconst KITD='+rd('data/kit.json')+';\n'+rd('src/map-pre.js')+'\n'+rd('src/batch.js')+'\n'+rd('src/water3d.js')+'\n'
   +wrap('down',stn,"MODS.station={BOUND,ground:(x,z)=>groundY(x,z)+STN.DY};","()=>LVL==='down'")
-  +wrap('bodega',bod+'\n'+bb+'\n'+rd('src/apts.js'),"MODS.bodega={BOUND,ground:groundY};","()=>BODB.inside()")
+  +wrap('bodega',bod+'\n'+bb+'\n'+rd('src/apts.js')+'\n'+rd('src/ghostdojo.js'),"MODS.bodega={BOUND,ground:groundY};","()=>BODB.inside()")
   +wrap('pool',pool+'\nWATER.build();',"MODS.pool={BOUND,cut:cutWalls.slice(c0),inside:(x,z)=>x>POOLR.X(POOLR.x0)&&x<POOLR.X(POOLR.x1)&&z>POOLR.Z(POOLR.y0)&&z<POOLR.Z(POOLR.y1)};","()=>MODS.pool.inside(pos.x,pos.z)")
   +"const FOREST="+rd('data/forest.json')+";\nconst PROPS="+rd('data/props.json')+";\n"+rd('src/park.js')+'\n'   # (CENTRAL PARK'S ENTRANCE, owner 17 Oct 2026: park.js, data/forest.json)
   +rd('src/map-post.js')+'\n'+rd('src/kit.js')+'\n'+rd('src/dress.js'))   # (the kits placed, the pigeons: after the map)

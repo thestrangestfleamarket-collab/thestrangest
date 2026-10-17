@@ -5,9 +5,14 @@
 // The page's one AudioContext (musician.js's SND when it's up, else use.js's, else one of its own), woken by the first click or key as the
 // browser demands. EFFECTS and the VOLUME in the menu's DISPLAY (kept in the save: SAVE). Voice blips for the characters' lines (LINES):
 // SFX.voiceOf(key) a voice from a hash of the name (a low or a high bank, a pitch of its own), SFX.blip(voice) one syllable. ----
-const SFX={on:true,vol:1};
+const SNDMIX0={fx:{},loops:{},gap:1,blip:1};   // (the game's own levels, from the sound editor's EXPORT: src/sndedit.js)
+const SFX={on:true,vol:1,mix:{fx:{},loops:{},gap:1,blip:1}};
 { const sr=()=>SFX.ctx().sampleRate, rnd=()=>Math.random()*2-1, TAU=Math.PI*2;
   { const s=SAVE.get('sfx'), v=SAVE.get('vol'); if(s!=null)SFX.on=s==='1'; if(v!=null)SFX.vol=Math.max(0,Math.min(1,+v)); }
+  // THE MIX (the sound editor, src/sndedit.js): a level for each effect, each ambience loop, the gap, the blips; the game's own under the save's
+  const mixOf=o=>({fx:Object.assign({},SNDMIX0.fx,o&&o.fx||{}),loops:Object.assign({},SNDMIX0.loops,o&&o.loops||{}),gap:o&&o.gap!=null?+o.gap:SNDMIX0.gap,blip:o&&o.blip!=null?+o.blip:SNDMIX0.blip});
+  try{ SFX.mix=mixOf(JSON.parse(SAVE.get('sndmix')||'null')); }catch(e){ SFX.mix=mixOf(null); }
+  SFX.saveMix=()=>SAVE.set('sndmix',JSON.stringify(SFX.mix)); SFX.resetMix=()=>{ SFX.mix={fx:{},loops:{},gap:1,blip:1}; SAVE.del('sndmix'); }; SFX.fxLevel=k=>SFX.mix.fx[k]==null?1:+SFX.mix.fx[k];
   SFX.ctx=()=>{ if(typeof SND!=='undefined'&&SND.ctx)return SND.ctx; if(typeof USE!=='undefined'&&USE.ac)return USE.ac; if(!SFX.ac)try{ SFX.ac=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ return null; } return SFX.ac; };
   SFX.live=()=>{ const c=SFX.ctx(); return c&&c.state==='running'?c:null; };   // (nothing plays till the browser lets a context run)
   // one bus for the effects (the volume), one for the ambience (its own switch: ambience.js)
@@ -51,7 +56,7 @@ const SFX={on:true,vol:1};
   SFX.play=(k,o={})=>{ const c=SFX.live(); if(!c||!SFX.on||!R[k])return null; const b=SFX.buffer(k,c); if(!b)return null;
     const s=c.createBufferSource(), G=c.createGain(); s.buffer=b; s.loop=!!R[k].loop; s.playbackRate.value=(o.pitch||1)*(o.vary?1+(Math.random()-.5)*o.vary:1);
     let P=null; if(o.at&&c.createStereoPanner){ P=c.createStereoPanner(); } else if(o.pan!=null&&c.createStereoPanner){ P=c.createStereoPanner(); P.pan.value=o.pan; }
-    const kd=place(o,G,o.at?P:null); if(kd<=0)return null; G.gain.value=(o.vol==null?1:o.vol)*kd; const out=o.bus||bus(c); if(P)s.connect(P).connect(G).connect(out); else s.connect(G).connect(out); s.start(c.currentTime+(o.delay||0)); return {s,G,P}; };
+    const kd=place(o,G,o.at?P:null); if(kd<=0)return null; G.gain.value=(o.vol==null?1:o.vol)*kd*(o.raw?1:SFX.fxLevel(k)); const out=o.bus||bus(c); if(P)s.connect(P).connect(G).connect(out); else s.connect(G).connect(out); s.start(c.currentTime+(o.delay||0)); return {s,G,P}; };
   // ---- HIS FOOTSTEPS: one each time a foot comes down (the rig's phase: a foot plants at 0 and at a half), softer walking than running, not on the stairs' creep
   let ph0=0; SFX.steps=(st,go)=>{ const ph=st.ph||0; const down=Math.floor(ph*2)!==Math.floor(ph0*2); ph0=ph; if(!down||!(go>0)||st.w<.3||!SFX.on)return; SFX.play('step',{vol:.18+.3*(st.run||0),vary:.25,pitch:.9+Math.random()*.2}); };
   // ---- VOICES (the game's voice_for / voice_blip: a bank and a pitch from a hash of the name, one syllable a blip, a little different each time)
@@ -60,5 +65,5 @@ const SFX={on:true,vol:1};
   const VB={}; const vbuf=(c,bank,i)=>{ const key=bank+i; if(VB[key]&&VB[key].sampleRate===c.sampleRate)return VB[key]; const S=c.sampleRate, n=S*.07|0, b=c.createBuffer(1,n,S), D=b.getChannelData(0), f0=(bank==='high'?230:140)*(1+(i%4)*.06), fm=[1.5,2.2,2.8,3.6][(i>>2)%4];
     for(let j=0;j<n;j++){ const s=j/S, t=j/n, e=Math.min(t*18,1)*env(t,1.4); D[j]=(Math.sin(TAU*f0*s)*.6+Math.sin(TAU*f0*2*s)*.3*Math.sin(TAU*fm*s*20)+Math.sin(TAU*f0*3*s)*.12)*e*.35; } return VB[key]=b; };
   SFX.blip=(v,o={})=>{ const c=SFX.live(); if(!c||!SFX.on)return; const s=c.createBufferSource(), G=c.createGain(); s.buffer=vbuf(c,v.bank||'low',Math.floor(Math.random()*16)); s.playbackRate.value=(v.pitch||1)*(.96+Math.random()*.08);
-    let P=null; if(o.at&&c.createStereoPanner)P=c.createStereoPanner(); const kd=place(o,G,P); if(kd<=0)return; G.gain.value=.22*kd; if(P)s.connect(P).connect(G).connect(bus(c)); else s.connect(G).connect(bus(c)); s.start(); };
+    let P=null; if(o.at&&c.createStereoPanner)P=c.createStereoPanner(); const kd=place(o,G,P); if(kd<=0)return; G.gain.value=.22*kd*(SFX.mix.blip==null?1:+SFX.mix.blip); if(P)s.connect(P).connect(G).connect(bus(c)); else s.connect(G).connect(bus(c)); s.start(); };
 }

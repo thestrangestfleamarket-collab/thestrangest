@@ -388,6 +388,7 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
   (the game's own). Not possible: turning a place (every place is built on walls along the map's axes); the street itself stays. `?layout=0`
   the game's own layout alone, `?layout={...}` one for a test. Nothing runs while it's closed. Checked by `tests/mapedit.cjs`.
 
+- **The sound editor** (owner, 17 Oct 2026: "add a game sound editor to change levels perm"; `src/sndedit.js`): Shift+S, or SOUND EDITOR in DISPLAY's SOUND row: every effect's level (0 to 200%, PLAY to hear it), the ambience's three loops, the gap between its sounds, the voice blips; each change at once and kept for good (the save's `sndmix`); RESET ALL; EXPORT gives the mix as text for `SNDMIX0` in `sfx.js` (the game's own, under the save's).
 - **From the owner's physician game** (17 Oct 2026, his recovered Godot scripts: "take all that apply to my game and can fit in seamlessly"; what
   fit, rewritten for the page, none of its medical content or Godot UI): **sounds made in code** (`src/sfx.js`: every effect a recipe grown from
   sines and filtered noise into a buffer the first time it's wanted, no sound file; his footsteps, a lamp's click, the fridge's latch and shut, the

@@ -26,15 +26,15 @@ const AMB={on:true};
     if(!loops||loops.hum.s.context!==c)loops={hum:mk(c,'hum',500),rain:mk(c,'rain',3200),wind:mk(c,'wind',600)};
     const w=where(), W=typeof WX!=='undefined'&&WX.now, out=w==='day'||w==='night', ins=w==='inside';
     // the loops' levels by where you are and the weather
-    tgt(loops.hum.G.gain,w==='down'?.05:ins?.02:.035,c); tgt(loops.hum.F.frequency,w==='down'?160:ins?260:500,c);
+    const LM=k=>SFX.mix.loops[k]==null?1:+SFX.mix.loops[k]; tgt(loops.hum.G.gain,(w==='down'?.05:ins?.02:.035)*LM('hum'),c); tgt(loops.hum.F.frequency,w==='down'?160:ins?260:500,c);
     const rain=W&&w!=='down'?(W.rain+W.snow*.15)*WX_RAIN.vol*(ins?WX_RAIN.inside:1):0, wind=W&&w!=='down'?W.wind*WX_WIND.vol*(ins?WX_WIND.inside:1):0;
-    tgt(loops.rain.G.gain,rain,c); tgt(loops.rain.F.frequency,ins?900:3200,c); tgt(loops.wind.G.gain,wind,c);
+    tgt(loops.rain.G.gain,rain*LM('rain'),c); tgt(loops.rain.F.frequency,ins?900:3200,c); tgt(loops.wind.G.gain,wind*LM('wind'),c);
     if(W&&W.flash&&out&&!AMB.thun){ AMB.thun=true; SFX.play('thunder',{vol:.5,delay:.6+Math.random()*1.6,pan:Math.random()*1.2-.6,bus:B}); setTimeout(()=>AMB.thun=false,4000); }
     // the one-shots: picked by weight from the situation's set, not the last kind; the gap 7 to 16 s, longer with no one about
     const now=c.currentTime; if(now<next)return;
     let near=0; for(const N of NPCS)if(!N.far&&N.lv===LVL&&N.g.visible&&Math.hypot(N.st.x-pos.x,N.st.z-pos.z)<10*T)near++; mul=1.8+(1-1.8)*Math.min(1,near/6);
     const set=SETS[w].filter(e=>e[0]!==lastK&&!(W&&W.rain>.3&&e[0]==='chirp')); let tot=0; for(const e of set)tot+=e[1]; let r=Math.random()*tot, pick=set[set.length-1]; for(const e of set){ r-=e[1]; if(r<=0){ pick=e; break; } }
     lastK=pick[0]; SFX.play(pick[0],{vol:dB(pick[2]+Math.random()*-3),vary:pick[3],pan:Math.random()*1.4-.7,bus:B});
-    next=now+(7+Math.random()*9)*mul*(next?1:(.3+Math.random()*.4)); };
+    next=now+(7+Math.random()*9)*mul*(SFX.mix.gap==null?1:+SFX.mix.gap)*(next?1:(.3+Math.random()*.4)); };
   AMB.sets=SETS;   // (the data check: every sound named here is a recipe)
 }

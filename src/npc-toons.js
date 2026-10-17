@@ -27,7 +27,7 @@ const TOONS={};
         part('body',0,'hips',[ shape(cyl(.17,.27,.8,14),RED2,[0,.46,0]), shape(cyl(.14,.17,.1,12),RED,[0,.88,0]) ]),
         part('bib',1,'hips',[ shape(box(.2,.17,.02),YEL,[0,.83,.15],null,[-6,0,0]), shape(box(.38,.03,.02),YEL2,[0,.73,0]) ]),
         part('strap',2,'hips',[-1,1].map(sx=>limb([sx*.09,.91,.15],[sx*.05,1.0,.05],.012,.012,YEL2,4))),
-        part('apron',1,'apron',[ shape(shell(.2,.29,.66,14,-1.1,2.2),YEL,[0,.4,.012]), shape(box(.13,.1,.01),YEL2,[.06,.42,.268],null,[-7,0,0]) ]),
+        part('apron',1,'apron',[ shape(shell(.2,.31,.7,14,-1.1,2.2),YEL,[0,.38,.012]), shape(box(.13,.1,.01),YEL2,[.06,.42,.268],null,[-7,0,0]) ]),
         ...[['L',-1],['R',1]].flatMap(([s,sx])=>[ part('arm '+s,1,'arm'+s,[ limb([sx*.18,.8,0],[sx*.27,.52,.07],.045,.04,WHITE,6) ]),
           part('glove '+s,2,'arm'+s,[ shape(blob(.058,.068,.05,8,6),WHITE,[sx*.28,.46,.08]), shape(blob(.02,.035,.02,6,4),WHITE,[sx*.25,.48,.12],null,[0,0,sx*30]), shape(cyl(.05,.05,.03,8),GLOVE,[sx*.275,.53,.075]) ]),
           part('shoe '+s,1,'foot'+s,[ shape(blob(.075,.045,.11,10,6),WHITE,[sx*.1,.035,.07]) ]) ]) ],

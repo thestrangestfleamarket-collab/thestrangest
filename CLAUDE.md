@@ -403,12 +403,22 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
   the blue hour; the weather's grey and the fog laid over it as before (weather.js); the cumulus's undersides lit in the sunset's colour while
   the sun is low (`uUnder`, weather.js). The clock's light table (`K` in clock.js) has the same stops (10°, 3°, -2°, -6°, -12°), and the clock
   gives the sun's and the moon's real directions (`CLOCK.sunV`, `CLOCK.moonV`). PIXEL lighting cuts the gradient into 24 bands, SMOOTH leaves
-  it smooth. Cost: one box of 12 triangles round the camera drawn where nothing covers it, one program, no light. Hidden underground and in a
+  it smooth. The distance haze (skyline.js) takes the dome's horizon colour (between its two sides), so the skyline fades into the sky it stands against. Cost: one box of 12 triangles round the camera drawn where nothing covers it, one program, no light. Hidden underground and in a
   room. Not shown in the isometric and map views (they look down on the land) except past the land's edge. Seen in `tests/skyshot.cjs <out>
   [hours] [weather]` (first person, toward the sun and away from it, each hour; then from behind him). Not yet (the ideas list): sunset
   palettes varied by the day and the weather (clear, moist, overcast), the shade cooler as the sun drops, the street lights coming on one by
   one at dusk.
 - **Smooth light, the default now** (owner, 17 Oct 2026, of the grainy cloud and tree mockups: "i dont like any of those mockups, they all look like dots everywhere, i want smooth realistic shadows and lighting like gradient radial etc"; it supersedes the grain and the 24 steps above): `SMOOTH` in `map-pre.js`: no grain, the light not cut into steps, soft shadow edges (PCFSoftShadowMap), the lamps' pools smooth radial gradients; GRAPHICS' LIGHTING switches back to PIXEL (`market-lighting`), `?look=pixel|smooth`.
+
+- **The far** (owner, 17 Oct 2026, his picture of a mountain fading blue into the sky: "how can i make things look realistically far away like
+  this mountain? in my game? (it would be buildings)"; "go"; `src/skyline.js`): what makes the far look far is the air between. **A haze**, always on
+  out in the open: the scene's fog in the horizon's colour (the sky's, bluer and paler by day, the deep navy at night; the weather's own FOG, thicker
+  and grey, takes over when it comes), measured from where he stands (not from the camera, which the map views hold 300 units back): clear to 22
+  tiles out, the full colour at 360; the isometric street barely touched, the far end of the park and the skyline going blue from his eyes. **A
+  skyline**: two rows of flat buildings round the land's edge, silhouettes only (plain blocks, dull blue-greys, no windows, no lights, no shadows,
+  nothing solid), the back row taller with a few towers; one instanced draw, some 3,000 triangles. The world's one lit shader carries the fog (no new
+  program); the water and the characters' own shaders don't fog (they're near). GRAPHICS' DISTANCE HAZE ON / OFF; `?far=0` off, `?far=N` its full
+  distance in tiles; `tests/farshot.cjs <out> [query] [name]` (his eyes down the street by day and at seven, the opening, third person).
 
 ## THE MARKET: the one official map
 

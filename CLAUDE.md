@@ -304,6 +304,16 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
   ice cream melting down the left of his face, pink sparkles; "add this character close as possible"; `src/npc-cat.js`): built in code in his parts
   (head, ears, inner ears, eyes, their rims, glints, pupils with the nose and mouth pure black, body, arms, paws, legs, the ice cream and its drips,
   the cone with its waffle grid, the sparkles), some 3,000 triangles, 1.1 m, a chibi; he walks the whole street and turns to you when you come near.
+- **The coat bear and his coats** (owner, 17 Oct 2026, his picture: a shaggy felted bear in a blue knitted sweater and a brown shearling-collared
+  coat at a market, holding up coats on wooden hangers; "create this as a character in game, and all the coats as items, be as detailed as
+  possible"; "those should be shaped like coats ... coats that npcs will wear"; `src/npc-bearcoats.js`): the bear built in his parts (head with
+  his shag, muzzle, ears, eyes and nose, body, sweater with its ribs, coat, collar and lapels, the buckled pocket, sleeves, paws, legs, feet), 1.8
+  m, standing at his rack on the far sidewalk (a seller: he never wanders) facing the street, to you when you come near, the waves-and-sand coat
+  held up before him. The six coats each its own thing on its hanger (keys coat1-coat6: donut, patchwork, ocean, cherry blossom, clover, waves
+  and sand), shaped as a coat a character wears (a flat torso open in a V under the collar with lapels and lining, buttons, patch pockets,
+  sleeves hanging at the sides, cuffs), its decoration laid over body and sleeves (donuts with sprinkles, felt patches, waves with fish, bubbles
+  and seaweed, five-petal blossoms, four-leaf clovers, a lace band over sand); hung along the rack's bar (key rack). Nothing wears them yet:
+  they are things to look at (a double click walks up), the first items of the market. Cost: some 30,000 triangles in all, no lights.
 
 ## THE MARKET: the one official map
 

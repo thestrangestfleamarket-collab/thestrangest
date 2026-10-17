@@ -325,7 +325,11 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
   the belly's seam, warts, the zipper's band, the handle, the pocket). His four legs are their own meshes hung at the hips under the body (a
   thigh, a bent shin, the foot with pale toes), swung from the hip as he walks (`anim`), still when he stands; `?stride=1` shows the step on
   his sheet (`tests/sheet.cjs toadbag <out> stride=1`: a third argument adds to the page's query). 0.85 m, some 6,200 triangles; he waddles the
-  whole street. The sheet keys now also: coatbear, coat1-coat6, rack, toadbag.
+  whole street. The sheet keys now also: coatbear, coat1-coat6, rack, toadbag, flybot.
+- **The flying van** (owner, 17 Oct 2026, his picture: a boxy cream-and-teal robot van hovering over a street on two rotor discs, camera eyes,
+  an orange nose and a smile, a sign of orange lettering, blue doors, a shuttered window, four ball wheels under it; "same rules", "not the
+  man"; `src/npc-flybot.js`): measured from the picture, one flat colour an area, only the details that matter; the rotor discs its own
+  meshes spun each frame, and it hovers 1.5 m over the street, bobbing, keeping the street as the walkers do. Some 2,400 triangles.
 
 ## THE MARKET: the one official map
 

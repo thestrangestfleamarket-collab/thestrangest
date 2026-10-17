@@ -208,6 +208,23 @@ head=rp(head,"const F=qq2=>legReach(lab('hip',qq2,ST,rs)*w,kn(qq2)),","const F=q
 head=rp(head,"w*lerp(16,36,rs)*Math.cos(2*Math.PI*(qq-0.04)))*D","w*lerp(16,36,rs)*g.arm*Math.cos(2*Math.PI*(qq-0.04)))*D")
 head=rp(head,"el=(10+w*(lerp(2,64,rs)","el=(10+g.elbow*w*(lerp(2,64,rs)")
 head=rp(head,"  const B=settle(busy||st.up||(st.water&&st.water.in)?clearPose(P,dev):build(P,dev),","  if(OVL.fn)OVL.fn(st,P);   // (his own keys on whatever he's doing: src/animator.js)\n  const B=settle(busy||st.up||(st.water&&st.water.in)?clearPose(P,dev):build(P,dev),")
-head=rp(head,"return {restOf,IDF,","return {OVL,begin,beginUp,legIK,START,mkMove:move,ARMMOVES,restOf,IDF,")
+head=rp(head,"return {restOf,IDF,","return {OVL,begin,beginUp,legIK,START,mkMove:move,ARMMOVES,fine:v=>{ FINEHAND=!!v; },farOnly:v=>{ FAR=!!v; },restOf,IDF,")
 mod=rp(mod,"B=RIG.pose(st); ragBlend(B);","B=ED.anim?ED.animPose():RIG.pose(st); ragBlend(B);")
+# THE MUSICIAN (owner, 17 Oct 2026): the game's guitarist, its files read from the game as they are (the guitar, its recordings, the tunes,
+# his hands), the few things they take from the game's cast and sound stood in for here; then src/musician.js puts him on the sidewalk
+import base64
+GA=os.path.join(S,'..','audio','guitar.mp3')
+gtsrc='''
+// ---- THE GAME'S CAST AND SOUND, AS THE GUITARIST NEEDS THEM (stand-ins: his standing pose, the sound's way out, no scene to wait for, the
+// recordings instead of the simulated strings) ----
+const CAST={}, PLAY221={seeking:false,pre:0}, PLAYA={}, GTPHYS={model:false,ok:false}, SND={ctx:null,on:true,out:null};
+let CASTSTAND0=null; const castPose=()=>CASTSTAND0||(CASTSTAND0=RIG.apply(RIG.walkPose({ph:0,w:0,run:0},null),RIG.STANDK));
+'''
+gtsrc+="const GTMP3='data:audio/mpeg;base64,"+base64.b64encode(open(GA,'rb').read()).decode()+"';\n"
+for f in ['47-play-3-guitar-1-body.js','47-play-3-guitar-samples.data.js','47-play-3-guitar-2-tunes.js','47-play-3-guitar-3-hands.js']:
+    t=open(S+f).read()
+    if f.endswith('body.js'): t=rp(t,"fetch('audio/guitar.mp3')","fetch(GTMP3)")
+    gtsrc+='\n'+t
+mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);",gtsrc+"\n"+open('src/musician.js').read()+"\nresize(); applyTime(0); requestAnimationFrame(frame);")
+mod=rp(mod,"  for(const N of NPCS)N.tick(dt,pos);","  for(const N of NPCS)N.tick(dt,pos); MUS.tick(dt);")
 os.makedirs('dist',exist_ok=True); open('dist/market.html','w').write(head+mod); print('built dist/market.html')

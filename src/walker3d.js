@@ -8,11 +8,11 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
 { const R=RIG, {V,add,sub,mul,nrm,dot}=R, rest=R.restOf().B, MATS=R.MATS, STEP=1, CELL=2, OUT=0.2*R.PX;   // (CELL: the simplified mesh's corners a cell of his apart; OUT: its surface pushed out a touch, as merging pulls it in)
   const TET=[[0,5,1,6],[0,1,2,6],[0,2,3,6],[0,3,7,6],[0,7,4,6],[0,4,5,6]], CO=[[0,0,0],[1,0,0],[1,1,0],[0,1,0],[0,0,1],[1,0,1],[1,1,1],[0,1,1]];
   const ramp=MATS.map(m=>(R.RAMP[m]||['#ff00ff','#ff00ff','#ff00ff','#ff00ff']).map(h=>new THREE.Color(h)));
-  W3.ramp=ramp; W3.legs=R.PIECES.map(n=>/^(thigh|shin|shoe)/.test(n)?(n.endsWith('L')?1:2):0);
-  function meshOf(P,step,fine){ const bb=P.bb||[-13,13,-1,55,-11,13], nx=Math.ceil((bb[1]-bb[0])/step)+2, ny=Math.ceil((bb[3]-bb[2])/step)+2, nz=Math.ceil((bb[5]-bb[4])/step)+2;
+  W3.ramp=ramp; W3.meshOf=(P,step,fine,RB)=>meshOf(P,step,fine,RB); /* (for another Walker built the same way: src/musician.js) */ W3.legs=R.PIECES.map(n=>/^(thigh|shin|shoe)/.test(n)?(n.endsWith('L')?1:2):0);
+  function meshOf(P,step,fine,RB){ const bb=P.bb||[-13,13,-1,55,-11,13], nx=Math.ceil((bb[1]-bb[0])/step)+2, ny=Math.ceil((bb[3]-bb[2])/step)+2, nz=Math.ceil((bb[5]-bb[4])/step)+2;
     const at=(i,j,k)=>V(bb[0]+i*step,bb[2]+j*step,bb[4]+k*step), val=new Float32Array(nx*ny*nz), I=(i,j,k)=>(i*ny+j)*nz+k;
     for(let i=0;i<nx;i++)for(let j=0;j<ny;j++)for(let k=0;k<nz;k++)val[I(i,j,k)]=P.d(at(i,j,k));
-    const F=R.frameOf(P.on||P.n,rest), raw=[], mats=[];
+    const F=P.F0||R.frameOf(P.on||P.n,RB||rest), raw=[], mats=[];   // (F0: a piece's own frame given, as the guitar's: src/musician.js)
     const vert=p=>{ const e=0.02, g=nrm(V(P.d(V(p.x+e,p.y,p.z))-P.d(V(p.x-e,p.y,p.z)),P.d(V(p.x,p.y+e,p.z))-P.d(V(p.x,p.y-e,p.z)),P.d(V(p.x,p.y,p.z+e))-P.d(V(p.x,p.y,p.z-e))));
       const l=sub(add(p,mul(g,OUT)),F.o); raw.push(dot(l,F.x),dot(l,F.y),dot(l,F.z),dot(g,F.x),dot(g,F.y),dot(g,F.z)); mats.push(MATS.indexOf(P.paint&&P.paint(p)||P.m)); };
     for(let i=0;i<nx-1;i++)for(let j=0;j<ny-1;j++)for(let k=0;k<nz-1;k++){ const v=CO.map(([a,b,c])=>val[I(i+a,j+b,k+c)]); if(v.every(x=>x>0)||v.every(x=>x<=0))continue;
@@ -22,7 +22,7 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
         if(ins.length===1)[E(ins[0],out[0]),E(ins[0],out[1]),E(ins[0],out[2])].forEach(vert);
         else if(ins.length===3)[E(out[0],ins[0]),E(out[0],ins[1]),E(out[0],ins[2])].forEach(vert);
         else { const a=E(ins[0],out[0]),b=E(ins[0],out[1]),c=E(ins[1],out[1]),d=E(ins[1],out[0]); [a,b,c,a,c,d].forEach(vert); } } }
-    const fit0=R.fitPts(P.n,new Float32Array(raw)), {fit,mats:mts}=simplify(fit0,mats,CELL*(fine?0.5:1)); mats.length=0; mats.push(...mts); const n=fit.length/6, pos=new Float32Array(n*3), nor=new Float32Array(n*3), c0=new Float32Array(n*3), c1=new Float32Array(n*3), c2=new Float32Array(n*3), cd=new Float32Array(n*3), mt=new Float32Array(n);
+    const fit0=R.fitPts(P.n,new Float32Array(raw)), {fit,mats:mts}=simplify(fit0,mats,P.cell||CELL*(fine?0.5:1)); mats.length=0; for(const q of mts)mats.push(q); const n=fit.length/6, pos=new Float32Array(n*3), nor=new Float32Array(n*3), c0=new Float32Array(n*3), c1=new Float32Array(n*3), c2=new Float32Array(n*3), cd=new Float32Array(n*3), mt=new Float32Array(n);
     for(let i=0;i<n;i++){ pos.set([fit[i*6],fit[i*6+1],fit[i*6+2]],i*3); nor.set([fit[i*6+3],fit[i*6+4],fit[i*6+5]],i*3); const r=ramp[mats[i]]||ramp[0]; c0.set([r[0].r,r[0].g,r[0].b],i*3); c1.set([r[1].r,r[1].g,r[1].b],i*3); c2.set([r[2].r,r[2].g,r[2].b],i*3); cd.set([(r[2].r+r[3].r)/2,(r[2].g+r[3].g)/2,(r[2].b+r[3].b)/2],i*3); mt[i]=mats[i]; }
     const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(pos,3)); g.setAttribute('normal',new THREE.BufferAttribute(nor,3));
     g.setAttribute('c0',new THREE.BufferAttribute(c0,3)); g.setAttribute('cd',new THREE.BufferAttribute(cd,3)); g.setAttribute('c1',new THREE.BufferAttribute(c1,3)); g.setAttribute('c2',new THREE.BufferAttribute(c2,3)); g.setAttribute('mat',new THREE.BufferAttribute(mt,1)); return g; }

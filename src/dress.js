@@ -21,7 +21,8 @@ const DRESS={};
     // a street light: a stepped foot, the grey pole, the arm out over the road (d: which way), the head at its end (the lit lamp under it: heads)
     const sl=(x,z,d)=>{ const y=G(x,z), GR=0x5d6266, DK=0x3f4448; blk(x,y+.3*M,z,.34*M,.6*M,.34*M,DK); blk(x,y+.66*M,z,.24*M,.14*M,.24*M,GR); blk(x,y+3.05*M,z,.15*M,4.7*M,.15*M,GR);
       blk(x,y+5.45*M,z,.12*M,.14*M,.12*M,DK); blk(x,y+5.86*M,z+d*.55*M,.1*M,.1*M,1.1*M,GR); blk(x,y+5.98*M,z+d*1.3*M,.36*M,.16*M,.62*M,DK); solid(x,z,.18*M,6*M); };
-    const heads=[], pools=[], light=(x,y,z,i,r)=>{ const L=new THREE.PointLight(warm,i,r,1.6); L.position.set(x,y,z); L.userData.i0=i; scene.add(L); pools.push([L,x,z,r*.2]); };
+    const heads=[], pools=[], hsh=n=>{ const v=Math.sin(n*12.9898+78.233)*43758.5453; return v-Math.floor(v); },
+      light=(x,y,z,i,r)=>{ const L=new THREE.PointLight(warm,i,r,1.6); L.position.set(x,y,z); L.userData.i0=i; scene.add(L); const P=[L,x,z,r*.2]; P.on=1.5-hsh(pools.length)*4; pools.push(P); };   // (P.on: the sun's height at which this one comes on)
     // EVERY LAMP'S POOL (owner, 17 Oct 2026, his picture: "some dont glow"): only the 8 lamps nearest you light the world (the budget), so every
     // lamp lays a pool of light on the ground: a disc in three hard steps, its edges broken by a grain (no halftone), added over the ground, warm;
     // under every lamp, lit for real or not, so they all look alike; at night only, gone with the lamp switched off. One draw a pool, 2 triangles
@@ -42,7 +43,14 @@ const DRESS={};
       SOL.up.push([x-.12*M,pz-.12*M,x+.12*M,pz+.12*M]); FIX.up.push([x-.12*M,pz-.12*M,y,x+.12*M,pz+.12*M,y+H]); });
     const hd=new THREE.InstancedMesh(new THREE.BoxGeometry(.5*M,.08*M,.26*M),lant.material,heads.length); heads.forEach(([x,y,z],i)=>hd.setMatrixAt(i,m4.makeTranslation(x,y-.08*M,z))); scene.add(hd);   // (each street light's lamp, lit under its head)
     for(const P of pools){ const [L,x,z,r]=P, me=new THREE.Mesh(poolGeo,poolMat); me.scale.set(r,1,r); me.position.set(x,G(x,z)+.03,z); me.renderOrder=1; me.visible=false; scene.add(me); P.push(me); }
-    DRESS.pools=pools; DRESS.tick=()=>{ const k=Math.max(0,Math.min(1,(3-CLOCK.elev())/8)), up=LVL!=='down'&&!ROOMS.cur; poolMat.opacity=k; for(const [L,,,,me] of pools)me.visible=up&&k>0&&!L.userData.off; };
+    DRESS.pools=pools;
+    // ON ONE BY ONE AT DUSK (owner, 17 Oct 2026, "1-3"): each street light and lamp post comes on at its own moment as the sun goes down (between
+    // 1.5° up and 2.5° under: some twenty minutes of the evening), its lamp lit (the head's or the lantern's colour), its light and its pool with it;
+    // off again as the sun comes up. By day they're dark and light nothing
+    const LIT=new THREE.Color(0xffe4b0), DIM=new THREE.Color(0x4a4238);
+    DRESS.tick=()=>{ const e=CLOCK.elev(), k=Math.max(0,Math.min(1,(3-e)/8)), up=LVL!=='down'&&!ROOMS.cur; poolMat.opacity=k;
+      pools.forEach((P,j)=>{ const [L,,,,me]=P, on=e<P.on; if(on!==P.lit){ P.lit=on; L.intensity=on?L.userData.i0:0; const c=on?LIT:DIM; if(j<heads.length){ hd.setColorAt(j,c); hd.instanceColor.needsUpdate=true; } else { lant.setColorAt(j-heads.length,c); lant.instanceColor.needsUpdate=true; } }
+        me.visible=up&&k>0&&on&&!L.userData.off; }); };
     pole.castShadow=true; scene.add(pole,lant);
     { const me=new THREE.InstancedMesh(new THREE.BoxGeometry(1,1,1),new THREE.MeshLambertMaterial({color:0xffffff}),BL.length), m4=new THREE.Matrix4(), q=new THREE.Quaternion(), c=new THREE.Color();
       BL.forEach(([x,y,z,sx,sy,sz,col],i)=>{ me.setMatrixAt(i,m4.compose(new THREE.Vector3(x,y,z),q,new THREE.Vector3(sx,sy,sz))); me.setColorAt(i,c.setHex(col)); }); me.castShadow=me.receiveShadow=true; scene.add(me); DRESS.blocks=me; } DRESS.posts=xs.length; DRESS.lights=n*2+xs.length; }

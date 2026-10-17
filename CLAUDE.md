@@ -395,6 +395,8 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
   game's own layout alone, `?layout={...}` one for a test. Nothing made or run while it's off (its boxes and grid made as it opens, thrown away as it
   closes). Checked by `tests/mapedit3d.cjs` (and `tests/mapedit.cjs`, the plan).
 
+- **Smooth light, the default now** (owner, 17 Oct 2026, of the grainy cloud and tree mockups: "i dont like any of those mockups, they all look like dots everywhere, i want smooth realistic shadows and lighting like gradient radial etc"; it supersedes the grain and the 24 steps above): `SMOOTH` in `map-pre.js`: no grain, the light not cut into steps, soft shadow edges (PCFSoftShadowMap), the lamps' pools smooth radial gradients; GRAPHICS' LIGHTING switches back to PIXEL (`market-lighting`), `?look=pixel|smooth`.
+
 ## THE MARKET: the one official map
 
 **THE MARKET** (owner, 17 Oct 2026: "one official MARKET map im gona start filling in") is the game's map here: every place the owner adds goes

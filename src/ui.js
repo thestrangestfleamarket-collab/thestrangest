@@ -172,7 +172,7 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
     <div class="pane" data-p="graphics">
       <h3>RESOLUTION</h3><div class="row" id="dres"></div><div class="dim" id="dsharp"></div>
       <h3>SHADOWS</h3><div class="row" id="dshd"></div>
-      <h3>LIGHT</h3><div class="row"><button class="btn" id="dlook">GLOW AND NIGHT LOOK</button><button class="btn" id="dgrain">LIGHT GRAIN</button><button class="btn" id="dlit">LIGHT ON THEM</button><button class="btn" id="doutl">OUTLINE</button></div>
+      <h3>LIGHT</h3><div class="row"><button class="btn" id="dlook">GLOW AND NIGHT LOOK</button><button class="btn" id="dsmooth">LIGHTING</button><button class="btn" id="dgrain">LIGHT GRAIN</button><button class="btn" id="dlit">LIGHT ON THEM</button><button class="btn" id="doutl">OUTLINE</button></div>
       <div class="row"><span style="width:110px">SHADE STEPS</span><input type="range" id="dsteps" min="2" max="12" step="1"><span style="width:110px">SHADOW DEPTH</span><input type="range" id="ddepth" min="0.02" max="0.98" step="0.005"></div></div>
     <div class="pane" data-p="keys"><div class="dim" style="margin-bottom:8px">click a key, then press the one you want (Escape to keep it)</div><table id="keytab"></table>
       <div class="row" style="margin-top:10px"><button class="btn" id="kreset">ALL BACK AS THEY WERE</button></div></div>
@@ -236,6 +236,8 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
   const RESN=['COARSEST','COARSE','NORMAL','SHARP'];
   for(let i=0;i<=RESMAX;i++){ const b=document.createElement('button'); b.className='btn'; b.dataset.res=i; b.textContent=RESN[i]||RESL[i]+'×'; b.onclick=()=>{ if(i<RESI)RESI=i; while(RESI<i&&(pxS()>1||vpu()>art()))RESI++; resize(); drawDisplay(); }; $('#dres').appendChild(b); }
   // LIGHT GRAIN (the noise in the light's steps, map-pre.js's DITH): 16, 12 strong, 24 fine, off; the page loads again to make it
+  // LIGHTING: SMOOTH (gradients, soft shadows: the default) or PIXEL (the light in steps, the grain, hard shadows); the page loads again to make it
+  $('#dsmooth').textContent='LIGHTING '+(SMOOTH?'SMOOTH':'PIXEL'); $('#dsmooth').onclick=()=>{ try{ localStorage.setItem('market-lighting',SMOOTH?'pixel':'smooth'); }catch(e){} location.reload(); }; if(SMOOTH)$('#dgrain').hidden=true;
   { const G=[16,12,24,0], N={16:'ON',12:'STRONG',24:'FINE',0:'OFF'}; $('#dgrain').textContent='LIGHT GRAIN '+N[DITH]; $('#dgrain').onclick=()=>{ const v=G[(G.indexOf(DITH)+1)%G.length]; try{ localStorage.setItem('market-grain',String(v)); }catch(e){} location.reload(); }; }
   $('#dlook').onclick=()=>{ LOOK.on=!LOOK.on; try{ localStorage.setItem('market-look',LOOK.on?'1':'0'); }catch(e){} drawDisplay(); };
   $('#dzoom').oninput=e=>{ ppuTo=r2z(+e.target.value); }; $('#dtilt').oninput=e=>{ pitchTo=clampP(PMIN+(+e.target.value)*(PMAX-PMIN)); };

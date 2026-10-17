@@ -573,6 +573,25 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
 - **THE MARKET's artifact, from this account** (17 Oct 2026): X2Bk8UjQKP8yfLdLtVVn3s can't be opened from here, so THE MARKET is published at
   **https://claude.ai/artifact/PnmQqhkusfewby35tf4zo5** (update that one from here).
   **This branch's build** (17 Oct 2026, the paused work finished, while other sessions were publishing their own branches to that link): https://claude.ai/artifact/1QpVqQujaY6D6V1F19ZmKy; once the branches are merged, one publish to the link above.
+- **The power grid, built to apply later** (owner, 17 Oct 2026, after a video tracing every wire in Red Dead Redemption 2 to one power plant: "i want to
+  use real power lines in the game"; his picks: "a power house as a new place", "i want it graphed to make real lights work. if the line is broken,
+  that section of the map goes dark", "set it up so that if the map is changing in another chat it wont make you redo everything", "create the
+  system that can be applied later"; `src/grid.js`, after dress.js in build.py): **off until applied** (`?grid=1`, or `market-grid` 1 in the browser; a
+  GRAPHICS switch to come). A graph: THE POWER HOUSE (brick, two stacks, a lamp over its door, the wires leaving by a high window on its east
+  wall) past the street's west end on the near kerb's side (moved by the layout as any place: `LAY.o('power')`); the street lights' poles its
+  nodes, a crossarm with three insulators on each and a transformer can on every third; trunk wires pole to pole along each kerb, both kerbs fed from
+  the house; a wire from the nearest far pole to each lamp post; a service drop from the nearest pole to every building's wall near its roof; the
+  subway fed down the stairs (no wire drawn). **Nothing placed by hand**: when switched on it derives itself from whatever stands on the map then
+  (the poles dress.js made, every building's box from where the layout put it, every lamp LITE collected), so the map moved or added to elsewhere
+  needs nothing redone: a building not yet known gets its drop by its box (`GRID.serve(key,{box})`), an unregistered lamp hangs on the nearest pole.
+  **Power** runs from the house over every whole wire; a node no whole wire reaches is dark, and with it its lamps (left out of LITE, their pools
+  gone, a street light's or post's head dimmed), the buildings it feeds (their lit windows, signs and shelf lamps dimmed: the batch's glowing
+  faces in the box, found by sampling each face's picture), the subway's lamps. A cut wire hangs in two halves from its poles. Flames (candles,
+  torches, the campfire, fireballs) are never on the grid. `GRID.cut(i)`, `GRID.mend(i)`, `GRID.cutNear(x,z)`, `GRID.cutDrop(key)`, `GRID.mendAll()`,
+  `GRID.state()`; `?cut=1,5` for a test; `tests/gridshot.cjs <out> [cuts]`. Cost (on): some 1,000 triangles the wires (one draw, one small program of
+  their own: a wire never thinner than a picture pixel), some 100 the hardware (one instanced draw), one lamp record (the house's door), nothing a
+  frame but a quarter-second check. Not yet: what cuts a wire in play (a dragon's fireball, the world editor), mending it, the GRAPHICS switch, the
+  map editor's handle on the house, smoke from its stacks.
 
 ## THE MARKET: the one official map
 

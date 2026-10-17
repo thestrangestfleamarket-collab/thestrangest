@@ -267,6 +267,21 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
   pose so we can see them fully"; "show in full res in screenshots"): show every new character as `tests/sheet.cjs <key>` does (the page's
   `?sheet=key`: out on the land in a black void, the camera on him close, his limbs spread, at the screen's own pixels with `?fullres=8`), from
   the front, the side and the back, beside the owner's picture. Not on the street, not in a field, not at the game's coarse pixels.
+- **The security droids** (owner, 17 Oct 2026, his Drive's UAL1_Standard.glb, the UAL1 animation library's standard body: an Unreal-style rig of
+  65 bones with 43 clips; "make them security droids, they protect the market"; `src/npc-droids.js`, `data/ual.json` by `tools/creatures-bake.py`
+  with `OUT=` and `SIMP=0.5`, the mesh cut to half, 6,872 triangles): four droids, the body gunmetal, the joints lit cyan (the glowing part, uEye),
+  each marching a beat (the shops' sidewalk's two halves, the far sidewalk, the road's middle) at the formal walk, on guard at each end; a
+  troublemaker up the stairs after dark and every droid near sprints to him and stuns him with a cyan beam from his hand (the guards' bolts,
+  `GUARDX` from `npc-skel.js`), a jab up close, a word on the radio after, back to the beat. `?ualclip=<name>` holds them in a clip; `?sheet=droid1`.
+- **The twelve pawns** (owner, 17 Oct 2026, the twelve .fbx characters at the root of his Drive, chibi figures on one rig, RigPawn, 16 bones with
+  free-floating hands, 58 clips of their own: hero_m/f, villager_m/f, ogre, ogre_mage, ogre_guard_light/heavy, skeleton_mage, skeleton_reaper,
+  skeleton_guard_light/heavy; `data/pawns.json`, one rig and one clip set shared, `src/npc-pawns.js`): walking the whole street, 1.35 m. **The UAL
+  clips on them** ("match this same rig skeleton ... give them all the same stuff"): `tools/retarget-ual.py` retells all 43 UAL clips on the pawn
+  rig (each pawn bone turns in the world as its mannequin bone does, the free hands go where the mannequin's go at the pawn's reach, the hips bob
+  at his height), as `UAL_<name>`; they walk on UAL_Walk_Loop and stand on UAL_Idle_Loop. `?pawnclip=<name>`, `?pawnwalk=`, `?pawnidle=`, `?sheet=<key>`.
+  **The Drive's files**: a file over the connection's size for its reply is still saved to disk by the tool (the 5.5 MB .fbx came through that way).
+- **THE MARKET's artifact, from this account**: the link above (X2Bk8UjQKP8yfLdLtVVn3s) can't be opened from here; the page is published at
+  **https://claude.ai/artifact/PnmQqhkusfewby35tf4zo5** until the owner says which is the live one.
 - **The gold skeleton** (owner, 17 Oct 2026, his picture of a gilded clockwork skeleton with a white skull face: "put this character in game, use
   the other skeletons as guides for character design"; "make him 2x bigger"): the KayKit Minion's bones and body gilded at load (`gild` in
   `npc-skel.js`: gold by each bone's own light and shade, the face under the eyes and the jaw bone-white, the neck a steel spring, the eye sockets

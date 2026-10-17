@@ -12,7 +12,7 @@
   const isOut=(r,h)=>h>=r.leave&&h<r.home;
   const goIn=r=>{ const N=r.N, p=inside(); CITY.stop(N); r.state='home'; N.mode='hidden'; N.g.visible=false; N.st.hold=true; N.st.to=null; if(p){ N.st.x=p.x; N.st.z=p.z; N.g.position.x=p.x; N.g.position.z=p.z; } };
   const goOut=r=>{ const N=r.N, H=HOUSE(); if(!H)return; r.state='out'; delete N.mode; N.g.visible=true; N.fv=true; N.st.hold=false; N.st.x=H.door.x; N.st.z=H.door.z; N.g.position.x=N.st.x; N.g.position.z=N.st.z; N.st.h=Math.PI;
-    const P=CITY.place(OUT[(r.n=(r.n||0)+1)%OUT.length]); if(P&&!P.stacked)CITY.send(N,P.door,{then:()=>{ N.st.wait=6+Math.random()*10; r.back=N.st.wait+1; }}); };   // (his errand; a while there, then back to the street, which he walks as the others do)
+    const C=window.CIVIC, want=C&&C.wants&&C.wants(r), P=CITY.place(want||OUT[(r.n=(r.n||0)+1)%OUT.length]); if(P&&!P.stacked)CITY.send(N,P.door,{then:ok=>{ if(ok&&CITY.onArrive)CITY.onArrive(r,P); N.st.wait=6+Math.random()*10; r.back=N.st.wait+1; }}); };   // (hungry, he goes for food; there, he buys: civic.js)   // (his errand; a while there, then back to the street, which he walks as the others do)
   const street=N=>{ for(let k=0;k<12;k++){ const p={x:STLANE.x0+Math.random()*(STLANE.x1-STLANE.x0),z:STLANE.z0+Math.random()*(STLANE.z1-STLANE.z0)}; if(N.free(p.x,p.z,N.st.R)){ CITY.send(N,p); return; } } };
   const goHome=r=>{ const N=r.N, H=HOUSE(); if(!H)return; r.state='homing'; delete N.mode; N.g.visible=true; N.st.hold=false; CITY.send(N,H.door,{then:ok=>{ if(r.state!=='homing')return; if(ok)goIn(r); else { r.state='out'; r.again=20; } }}); };   // (no way home found: out a little longer, then tried again)
   // set at the start by the hour; then each of his hours as the clock passes it

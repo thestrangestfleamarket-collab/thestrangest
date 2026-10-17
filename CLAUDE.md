@@ -394,6 +394,23 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
   in (inside: hidden and still, `N.mode` 'hidden'; no flights of stairs yet, so not up to the flat). Set by the hour at the start (7pm: two
   home, two about to walk home) and at each of his hours as the clock passes; a jump of the clock put right at the next tick. `RESDBG()`;
   `tests/rescheck.cjs`.
+- **The city's services, minimal** (owner, 17 Oct 2026: "lets add the rest except for supabase, look in the google drive for assets to use for
+  anything new you add first before making it for yourself. lets do minimal for now to get started"): **from the Drive** (looked first): his
+  Designersoup Low Poly Car Pack (five cars, .fbx; fbx2gltf, `tools/kit-bake.py` with `OUT=data/vehicles.json`, cut to a third by
+  `tools/simplify.py vehicles`) and his trash bag piece; nothing there is a station, a mailbox or a hydrant, so those are built of blocks the
+  street's way. **The civic row** (`src/civic.js`): six block-built station houses on the land past the street's east end (the precinct,
+  the firehouse, the post office, the depot, city hall, the clinic), addresses of the spine, the view's bounds widened to them; no new lights.
+  **The staff**: eight pawns in uniform (a tint, `UNIFORM` in `npc-pawns.js`), at their doors when free. **The vehicles** (`src/vehicles.js`):
+  the patrol car, the fire truck, the works van, the ambulance (the pack's cars tinted, light bars that flash on a call), driving the road's two
+  lanes to an x, a rider hidden aboard and out at the kerb. **The ledger**: the treasury, rent ($30 a day, notices at 8, due at 9), wages at 17,
+  the shops' tax at 18, the shops' stock and tills (a resident buys when he arrives), the residents' cash and hunger (food resets it; hungry, his
+  errand is for food), a log of everything. **The duties** (`src/duties.js`): the mail round at 9:30 (letters are records; your box is the
+  apartments' lobby's, read in the menu); public works (the trash round at 6:30, deliveries when a shop is low, the power crew when lightning
+  trips a stretch of lamps); the fire department (a live flame that grows at a trash can, Ghost Street's forecourt or the park's gate, by
+  lightning, a small chance each hour, or TRY; it burns anyone close; hosed out with steam); the medic (you faint, he brings you round); the
+  police (the two officers on the beat; a troublemaker is a call; taken in or seen off; curfew noted). **The menu's CITY tab**: all of it, with
+  TRY buttons (a fire, an outage, a full can, a letter to you, you faint). Not done: the train's timetable, cells at the precinct, doors, wet
+  roads, the player's own hunger, persistence (Supabase, at his word). `tests/civiccheck.cjs`; `CIVDBG()`, `VEHDBG()`.
 - **The map editor** (owner, 17 Oct 2026: "build a map editor that allows me to move buildings and land around easily"; `src/mapedit.js`): Shift+M
   (or MAP EDITOR in the menu's MAP tab): the Market from above (a picture of it as built, taken as it opens), each place a labelled box over it:
   drag one to move it (half a tile at a time), the arrows or the arrow keys a tile (Shift five), the park's and the land's edges dragged to size
@@ -437,6 +454,7 @@ the owner's call, and merging publishes). The artifact link above is the quick w
     musicians; `bandstand.js`: their turns on the stage.
   - `city.js`: the city's spine (addresses, routes over the ground, errands walked, the job board, the clock's schedule; nothing drawn).
   - `residents.js`: the four pawns who live in the apartment house, their hours and errands.
+  - `civic.js`: the civic row, the staff, the ledger, the CITY tab; `duties.js`: the services at work; `vehicles.js`: the Drive's cars as the city's.
   - `npc-map.js`: the goldfish on the street and the bear wandering the platform (and `makeNPC`, every character's maker). `npc-skel.js`: the four skeletons on the far sidewalk, rigged and animated, and the gold skeleton (the Minion gilded).
   - `npc-street.js`: the cyborg and the teddy on the street (bones, moves, bodies in Rapier, minds). `npc-rigged.js`: the six figures made a second way (kept, not built: `npc-figures.js` is used).
   - `npc-dragon.js`: the Dragon on the road. `kit.js` + `dress.js`: the kits' pieces and the few on the street. `apts.js`: the apartment house (in the

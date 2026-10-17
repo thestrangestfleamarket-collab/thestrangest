@@ -8,7 +8,7 @@
 // Doors stay as they are (doorways, no leaves). ?errand=<key>,<place> sends one to a door as a look (?errand=villager_m,bodega); the
 // console's CITY.errand the same. Checked by tests/worldcheck.cjs. Cost: nothing a frame while no one is sent; a route some milliseconds
 // once ----
-const CITY={jobs:[],sched:[],day:0,nj:0}; window.CITY=CITY;
+const CITY={jobs:[],sched:[],day:0,nj:0,extra:[]}; window.CITY=CITY;   // (extra: addresses other code adds, the civic row's: civic.js)
 { const T=TILE, R0=.3*T, C=T/2;   // (R0: a walker's girth; C: a cell)
   // ---- ADDRESSES: id, name, the level, the spot a tile before the door (door), the door's own place (at)
   CITY.places=()=>{ const P=[], add=(id,name,x,z,dz,lv='up',o={})=>P.push(Object.assign({id,name,lv,at:{x,z},door:{x,z:z+dz}},o));
@@ -21,6 +21,7 @@ const CITY={jobs:[],sched:[],day:0,nj:0}; window.CITY=CITY;
     add('subway','THE SUBWAY',BOD.XS((MAPSTAIR.x0+MAPSTAIR.x1)/2),BOD.ZS(MAPSTAIR.y1),.8*T);   // (the top of the stairs)
     add('platform','THE PLATFORM',-12.4+LAY.o('subway').x*T,-24.9+LAY.o('subway').y*T,0,'down');
     for(const [n,x,z,lv] of STORE.places)if(x||z)add('store:'+n.toLowerCase().replace(/^the /,'').replace(/\s+/g,'-'),n,x,z,0,lv,{inside:true,stacked:typeof lv==='number'});   // (a stored room's spot is just inside its door; one stacked on the apartments (lv its floor's height) has no way to it on foot)
+    for(const e of CITY.extra)P.push(e);
     return P; };
   CITY.place=id=>CITY.places().find(p=>p.id===id||p.name===String(id).toUpperCase());
   // ---- WAYS: the level's ground in half-tile cells over the places' reach; a cell is free when no solid of the level holds a walker there
@@ -28,6 +29,7 @@ const CITY={jobs:[],sched:[],day:0,nj:0}; window.CITY=CITY;
   const GRID=new Map();   // (one grid a level and a test: the level's own, or a character's own say of where he may stand)
   const bounds=lv=>{ if(lv==='down'){ const L=SOL.down; let x0=1e9,z0=1e9,x1=-1e9,z1=-1e9; for(const b of L){ x0=Math.min(x0,b[0]); z0=Math.min(z0,b[1]); x1=Math.max(x1,b[2]); z1=Math.max(z1,b[3]); } return [x0-2*T,z0-2*T,x1+2*T,z1+2*T]; }
     let x0=1e9,z0=1e9,x1=-1e9,z1=-1e9; for(const k of ['bodega','house','apartments','ghost','park','castle','subway']){ const b=typeof MAPED!=='undefined'&&MAPED.box&&MAPED.box(k); if(!b)continue; x0=Math.min(x0,b[0]); z0=Math.min(z0,b[1]); x1=Math.max(x1,b[2]); z1=Math.max(z1,b[3]); }
+    for(const e of CITY.extra)if(e.box){ x0=Math.min(x0,e.box[0]); z0=Math.min(z0,e.box[1]); x1=Math.max(x1,e.box[2]); z1=Math.max(z1,e.box[3]); }
     return [x0-4*T,z0-4*T,x1+4*T,z1+4*T]; };
   const grid=(lv,free)=>{ const L=SOL[lv], gk=lv+':'+(free?free.name||'f':''); let g=GRID.get(free||lv); if(g&&g.n===L.length)return g; const b=bounds(lv), w=Math.ceil((b[2]-b[0])/C), h=Math.ceil((b[3]-b[1])/C);
     g={n:L.length,lv,free,x0:b[0],z0:b[1],w,h,m:new Uint8Array(w*h),cell:(x,z)=>[Math.floor((x-b[0])/C),Math.floor((z-b[1])/C)],at:(i,j)=>({x:b[0]+(i+.5)*C,z:b[1]+(j+.5)*C})};

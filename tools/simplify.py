@@ -125,6 +125,9 @@ if not ONLY or ONLY&set(('kit',)):
     out={k:indexed(M) for k,M in d.items() if k in used}; [report('kit '+k,d[k]['tris'],out[k]['tris']) for k in out]
     print('kit (unused pieces dropped:',sorted(set(d)-used),')',save('kit',out))
     HEAD=lambda nm:nm.lower() in ('head',) or nm in ('Head','Head_001')
+if not ONLY or ONLY&set(('vehicles',)):   # (the Drive's car pack and its trash, the cars to a third as things are: data/vehicles.json, src/vehicles.js)
+    d=load('vehicles'); out={k:indexed(M) for k,M in d.items()}; [report('vehicle '+k,d[k]['tris'],out[k]['tris']) for k in out]
+    print('vehicles',save('vehicles',out))
 if not ONLY or ONLY&set(('creatures',)):
     d=load('creatures')
     for k,D in d.items(): hs=headset(D['rig'],lambda nm:nm=='Head'); N=indexed(D['mesh'],hs,BODY); report('creature '+k,D['mesh']['tris'],N['tris']); D['mesh']=N

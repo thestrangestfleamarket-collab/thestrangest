@@ -19,7 +19,7 @@
   const HOLD=QS.get('pawnclip'), WALKC=QS.get('pawnwalk')||'UAL_Walk_Loop', IDLEC=QS.get('pawnidle')||'UAL_Idle_Loop', WALK=1.6, RUNU=5.5;   // (how far the walk and the sprint carry one a second at their own pace, in his units)
   const PAWNL=[]; window.PAWNL=PAWNL;
   Object.keys(PW).forEach((key,i)=>{ const D=PW[key], rig=rigOf(D.rig), mixer=new THREE.AnimationMixer(rig.bones[0]), A={}, act=n=>A[n]||(A[n]=mixer.clipAction(CLIPS[n])); let cur=null;
-    const N=makeNPC(null,{key,name:key.toUpperCase().replace('_',' '),names:D.mesh.parts,lv:'up',group:'bodega',geo:geomOf(D.mesh),skin:rig,tall:D.tall,rank:D.mesh.parts.map(()=>0),metres:1.35,x:BOD.XS(54+i*4.4),z:BOD.ZS(i%2?-63.2:-73.6),lane:STLANE,free:stfree,ground:(x,z)=>MODS.bodega.ground(x,z),radius:.3,speed:.5,stride:0,rock:0,bob:0,
+    const N=makeNPC(null,{key,name:key.toUpperCase().replace('_',' '),names:D.mesh.parts,lv:'up',group:'bodega',geo:geomOf(D.mesh),skin:rig,tall:D.tall,rank:D.mesh.parts.map(()=>0),metres:1.35,x:BOD.XS(66+i*4.4),z:BOD.ZS(i%2?-63.2:-73.6),lane:STLANE,free:stfree,roam:true,ground:(x,z)=>MODS.bodega.ground(x,z),radius:.3,speed:.5,stride:0,rock:0,bob:0,
       brain:HOLD?(dt,you,st)=>{ st.to=null; st.hold=true; }:undefined,
       anim:(dt,moving,st,sc)=>{ let want, ts=1;
         if(HOLD)want=HOLD; else if(N.sheet)want='UAL_A_TPose'; else{ const run=moving&&st.v>1.2*TILE; want=moving?(run?'UAL_Sprint_Loop':WALKC):IDLEC; if(moving)ts=Math.max(.6,st.v/((run?RUNU:WALK)*sc)); }

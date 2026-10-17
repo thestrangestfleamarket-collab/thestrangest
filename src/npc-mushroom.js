@@ -4,8 +4,8 @@
 // strap, bag; each reshapable), one mesh of some 3,800 triangles; his skull's sockets, nose and teeth pure black (makeNPC's "eye" part, lit by
 // nothing); his robe mottled rust and olive by a value noise; the strap shades the robe, the caps their stems (makeNPC's ranks). Shaded as the
 // fish and the bear (tones in bands, the clothes' shadows, SELF), lit by the lamps. He walks the whole street as the others do (owner, 17 Oct
-// 2026: "put any new characters that go in the game into the street walking around"), rocking a little under his tray, and turns to face you
-// when you come near ----
+// 2026: "put any new characters that go in the game into the street walking around"), rocking a little under his tray; he roams the whole
+// map (ROAM, npc-map.js) and takes no notice of you ----
 const MUSH={};   // (17 Oct 2026, the owner: "the gold skeleton character is not the mushroom character. the mushroom skeleton is white, and taller": his bones white, 2.2 m; the gold skeleton, npc-skel.js, is another)
 { const {shape,limb,sph,cyl,box,torus,blob,noise}=PARTSNPC.T;
   const CREAM=[.93,.87,.7], BONE=[.95,.95,.93], TAN=[.76,.6,.36], HAT=[.72,.47,.2], HAT2=[.66,.42,.17], CAP=[.74,.5,.22], RUST=[.74,.42,.14], OLIVE=[.47,.43,.18], ROPE=[.58,.42,.2], BAG=[.7,.53,.3], TRAY=[.68,.44,.19], BLACK=[0,0,0];

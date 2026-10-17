@@ -65,7 +65,7 @@
       for(let t=0;t<ix.length;t+=3)if(part[R[ix[t]]]!=='Cloak')keep.push(ix[t],ix[t+1],ix[t+2]); geo.setIndex(new THREE.BufferAttribute(Uint16Array.from(keep),1)); }
     if(o.dark){ const c=geo.attributes.color.array; for(let i=0;i<c.length;i+=3){ const l=(c[i]+c[i+1]+c[i+2])/3; c[i]=Math.min(255,l*.42+18); c[i+1]=l*.3; c[i+2]=Math.min(255,l*.48+22); } }   // (a troublemaker: the Rogue's hood and bones gone the dark of a bruise)
     const N=makeNPC(null,{key:o.key||key,name,names:M.parts,lv:'up',group:'bodega',geo,skin:rig,tall:2.166,eye:o.gild?-1:M.eye,eyeC:o.eyeC,rank:M.parts.map(p=>/Helmet|Hat|Hood|Cape|Cloak/.test(p)?2:0),
-      metres,x,z,lane:LANE,free,ground:(x,z)=>MODS.bodega.ground(x,z),radius:.25,speed,stride:0,rock:0,bob:0,pick:o.pick,brain:o.brain,
+      metres,x,z,lane:LANE,free:o.pick?free:stfree,roam:!o.pick,ground:(x,z)=>MODS.bodega.ground(x,z),radius:.25,speed,stride:0,rock:0,bob:0,pick:o.pick,brain:o.brain,   /* (no beat of his own: he roams the whole map, ROAM in npc-map.js) */
       anim:(dt,moving,st,sc)=>{ const run=moving&&st.v>1.2*TILE; N.sta=run?Math.max(0,N.sta-dt/14):Math.min(1,N.sta+dt/8); if(N.sta<=0)N.tired=true; if(N.tired&&N.sta>.33)N.tired=false;   // (his stamina: spent running, back at a walk or at rest)
       if(N.sheet){ if(!N.posed){ N.posed=true; spread(rig); } return; }   // (his sheet: still, limbs spread, his clips never run)
       if(QS.get('skelrest'))return; an.base=moving?(run?'Running_A':o.walkN):(N.alert?'Idle_Combat':o.idleN); an.ts=moving?st.v/((run?RUNU:WALK)*sc):1; an.update(dt); }});
@@ -125,8 +125,8 @@
     TROUBLE.push(N); }
   // ---- THE GOLD ONE (owner, 17 Oct 2026, his picture of a gilded clockwork skeleton, a white skull face under a gold cap: "put this
   // character in game, use the other skeletons as guides for character design"): the Minion's bones and body, nothing added (gild, above);
-  // unarmed; he strolls the whole street as the others do, no beat and no fight ----
-  skel('Minion','GOLD SKELETON',1.4,T_(72),Z_(-70),.45,{key:'Gold',walkN:'Walking_A',idleN:'Idle_A',gild:true});
+  // unarmed; he roams the whole map as the others do, no beat and no fight ----
+  skel('Minion','GOLD SKELETON',1.4,T_(77),Z_(-64),.45,{key:'Gold',walkN:'Walking_A',idleN:'Idle_A',gild:true});   // (he starts on the far sidewalk, clear of the mushroom seller's spot: owner, 17 Oct 2026, seeing the seller's hat and tray over him, "the gold skeleton should not have anything on them like mushrooms")
   window.GUARDX={TROUBLE,shoot,free,SEE,RUN,LANE,T_,Z_,d2,GUARDS};   // (for the security droids, npc-droids.js: the same troublemakers, bolts and ground)
   window.GUARDDBG=()=>({guards:GUARDS.map(N=>({k:N.key,mode:N.guard.mode,x:+(N.st.x/TILE).toFixed(1),z:+(N.st.z/TILE).toFixed(1),act:N.an.once&&N.an.once.n})),trouble:TROUBLE.map(N=>({mode:N.mode,x:+(N.st.x/TILE).toFixed(1),z:+(N.st.z/TILE).toFixed(1),act:N.an.once&&N.an.once.n})),next:+next.toFixed(1),dark:CLOCK.dark()});
   window.SKELDBG=()=>NPCS.filter(N=>N.mixer).map(N=>({key:N.key,x:+N.st.x.toFixed(2),z:+N.st.z.toFixed(2),y:+N.g.position.y.toFixed(2),to:!!N.st.to,bones:N.me.skeleton.bones.length})); }

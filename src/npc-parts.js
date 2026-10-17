@@ -38,7 +38,7 @@ const PARTSNPC={};
     return N; };
   window.RESHAPE=(key,part,scale,move)=>{ const N=NPCS.find(q=>q.key===key); if(N&&N.reshape)N.reshape(part,{scale,move}); };
   // ---- THE STREET, all of it (the figures' and the skeletons' lane), where a character walks: never into a wall, the stairs or another
-  PARTSNPC.LANE={x0:BOD.XS(BOD.MAP.x0+2),x1:BOD.XS(BOD.MAP.x1-2),z0:BOD.ZS(-76.3),z1:BOD.ZS(-61.2)};
+  PARTSNPC.LANE=STLANE;   // (the whole map: ROAM, npc-map.js)
   { const HOLE=[BOD.XS(MAPSTAIR.x0-.6),BOD.ZS(MAPSTAIR.y0),BOD.XS(MAPSTAIR.x1+.6),BOD.ZS(MAPSTAIR.y1+.6)];
     PARTSNPC.free=(x,z,R)=>!(x>HOLE[0]-R&&x<HOLE[2]+R&&z>HOLE[1]-R&&z<HOLE[3]+R)&&!SOL.up.some(b=>x>b[0]-R&&x<b[2]+R&&z>b[1]-R&&z<b[3]+R); }
-  PARTSNPC.street=(x,y)=>({lv:'up',group:'bodega',x:BOD.XS(x),z:BOD.ZS(y),lane:PARTSNPC.LANE,free:PARTSNPC.free,ground:(x,z)=>MODS.bodega.ground(x,z)}); }
+  PARTSNPC.street=(x,y)=>({lv:'up',group:'bodega',x:BOD.XS(x),z:BOD.ZS(y),lane:PARTSNPC.LANE,free:stfree,roam:true,ground:(x,z)=>MODS.bodega.ground(x,z)}); }

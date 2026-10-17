@@ -407,6 +407,16 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
   program); the water and the characters' own shaders don't fog (they're near). GRAPHICS' DISTANCE HAZE ON / OFF; `?far=0` off, `?far=N` its full
   distance in tiles; `tests/farshot.cjs <out> [query] [name]` (his eyes down the street by day and at seven, the opening, third person).
 
+- **Everyone roams the whole map, nobody minds you** (owner, 17 Oct 2026: "stop having chars stay around and be interested in player. have them
+  roam around the entire map"; `ROAM` in `npc-map.js`): no character turns to you or waits for you any more (makeNPC's `near` is gone; a mind of
+  its own, a troublemaker's, still may); every free walker (the gold skeleton, the mushroom seller, the twelve pawns) wanders the street's whole
+  run and all of Central Park behind it (`STLANE` is now the whole map, `stfree` keeps them out of the stairs' holes, the solids and every
+  building's inside: ROOMS' boxes, the apartment house, the castle's bailey): mostly a stroll of a few tiles, now and then a walk anywhere on the
+  map, through the park's gate when the wall is between (`st.to` the gate, `st.next` the rest). The guards and the droids keep their beats, the
+  Fox his counter, the bear his platform, the animals their own grounds. **The gold skeleton carries nothing** (owner: "should not have anything
+  on them like mushrooms etc. just the skeleton"): he never did; he and the mushroom seller started on the same tile, so the seller's hat and tray
+  stood over him; he starts on the far sidewalk now (and the pawns' row starts east of the stairs' hole, where one stood stuck in its margin).
+
 ## THE MARKET: the one official map
 
 **THE MARKET** (owner, 17 Oct 2026: "one official MARKET map im gona start filling in") is the game's map here: every place the owner adds goes

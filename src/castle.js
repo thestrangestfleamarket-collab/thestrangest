@@ -56,7 +56,7 @@ grab('castlestairs',()=>{ const X=BOD.XS, Z=BOD.ZS, Y=BOD.YS, S=CASTLE.stair, sd
   for(const lv of ['up','down'])for(const x of [S.x0-.2,S.x1]){ const base=lv==='down'?sd:0; SOL[lv].push([X(x),Z(S.y0),X(x+.2),Z(S.y1)]); FIX[lv].push([X(x),Z(S.y0),base,X(x+.2),Z(S.y1),base+Y(lv==='down'?98:30)]); }
   const L=new THREE.PointLight(new THREE.Color(1,.82,.58),5,7*TILE,1.6); L.position.set(X((S.x0+S.x1)/2),Y(-44),Z((S.y0+S.y1)/2)); L.userData.i0=L.intensity; scene.add(L); lamps.push(L); });
 // ---- THE DUNGEON: the great hall under the bailey
-grab('dungeon',()=>{ const K=BOD.KC, KP=BOD.K.PROPS, Kc=BOD.K.CATALOG, X=BOD.XS, Z=BOD.ZS, Y=BOD.YS, {faceTex,bq,C}=BOD, {hash}=BOD.g, D=K.DGN, B=D.b, dy=STN.DY, T=.1, n0=KP.length, l0=K.LAMPS.length;
+grab('dungeon',()=>{ const K=BOD.KC, KP=BOD.K.PROPS, Kc=K.CATALOG, X=BOD.XS, Z=BOD.ZS, Y=BOD.YS, {faceTex,bq,C}=BOD, {hash}=BOD.g, D=K.DGN, B=D.b, dy=STN.DY, T=.1, n0=KP.length, l0=K.LAMPS.length;
   // the walls: four boxes whose faces the dungeon paints by their normal and place (dungeonWall); the floor its cobbles (dungeonFloorCol)
   const wall=(x0,y0,x1,y1)=>({x0,y0,x1,y1,z0:0,z1:D.H+4,c:K.DGP.st[1],top:()=>K.DGP.lo,fs:(nx,ny,Xp,Yp,z,k)=>K.dungeonWall(null,nx,ny,Xp,Yp,z,k,D)});
   const WB=[wall(B.x0-T,B.y0-T,B.x1+T,B.y0+T),wall(B.x0-T,B.y1-T,B.x1+T,B.y1+T),wall(B.x0-T,B.y0+T,B.x0+T,B.y1-T),wall(B.x1-T,B.y0+T,B.x1+T,B.y1-T)];
@@ -74,9 +74,10 @@ grab('dungeon',()=>{ const K=BOD.KC, KP=BOD.K.PROPS, Kc=BOD.K.CATALOG, X=BOD.XS,
   for(const b of WB){ SOL.down.push([X(b.x0),Z(b.y0),X(b.x1),Z(b.y1)]); FIX.down.push([X(b.x0),Z(b.y0),dy,X(b.x1),Z(b.y1),dy+Y(D.H)]); }
   for(const p of made)castleSolid('down',p,dy);
   // THE LIGHTS: the torches' (each a flame of two blocks over its head, flickering a step at a time, its light with it), the brazier's, and the
-  // hall's own cool light (the game's LAMPS, as the dungeon's catalog made them)
+  // hall's own cool light (the game's LAMPS, as the dungeon's catalog made them); twice the dojo's candles: the old game counted lamps twice
+  // (docs/OLD-LOOK.md), and the stone is dark
   const FM=new THREE.MeshBasicMaterial({color:new THREE.Color(1,.62,.24)}), FC=new THREE.MeshBasicMaterial({color:new THREE.Color(1,.92,.62)}), LT=[];
-  const light=l=>{ const cm=Math.max(...l.c), L=new THREE.PointLight(new THREE.Color(l.c[0]/cm,l.c[1]/cm,l.c[2]/cm),7*cm*Math.min(1.2,l.r/5),l.r*TILE*1.25,1.6); L.position.set(X(l.x),Y(l.z)+dy,Z(l.y)); L.userData.i0=L.intensity; scene.add(L); lamps.push(L); return L; };
+  const light=l=>{ const cm=Math.max(...l.c), L=new THREE.PointLight(new THREE.Color(l.c[0]/cm,l.c[1]/cm,l.c[2]/cm),14*cm*Math.min(1.2,l.r/5),l.r*TILE*1.25,1.6); L.position.set(X(l.x),Y(l.z)+dy,Z(l.y)); L.userData.i0=L.intensity; scene.add(L); lamps.push(L); return L; };
   for(const l of K.LAMPS.slice(l0)){ const L=light(l); if(!l.flick)continue;
     const g=new THREE.Group(), s=.07*TILE, f=new THREE.Mesh(new THREE.BoxGeometry(s,Y(12),s),FM), c=new THREE.Mesh(new THREE.BoxGeometry(s*.5,Y(6),s*.5),FC); f.position.y=Y(6); c.position.y=Y(3); g.add(f,c); g.position.set(X(l.x),Y(82)+dy,Z(l.y)); scene.add(g);
     LT.push({L,i:L.intensity,g,s:Math.round(l.x*7+l.y*13)}); }

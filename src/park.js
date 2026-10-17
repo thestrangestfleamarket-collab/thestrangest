@@ -76,19 +76,19 @@ grab('park',()=>{ PARK.x0=BOD.MAP.x0; PARK.x1=BOD.MAP.x1; const X=BOD.XS, Z=BOD.
     { const L=new THREE.PointLight(new THREE.Color(1,.6,.25),4,5*TILE,1.6); L.position.set(X(108),.7,Z(-54.5)); scene.add(L); PARK.fireL=L; }
     // (the plesiosaur skeleton: removed, owner 17 Oct 2026, "remove the dinosaur bones from game")
     PARK.more=mesh([['pillar1',90,-41.5,3.2,.3],['pillar2',102,-41.5,2.6,1.2],['sitlog',106.5,-55.4,.5,.4],
-      ['daisy',92.3,-56,.35,0],['tulip',92.3,-54,.4,1],['rose',92.3,-52,.45,2],['sunflower',99.7,-56,.9,.5],['lily',99.7,-54,.4,1.5],['daisy',99.7,-52,.35,2.5],['hbush1',91.5,-58.8,.9,0],['hbush2',100.5,-58.8,.9,1.2]],false,false);
+      ['daisy',92.3,-56,.35,0],['tulip',92.3,-54,.4,1],['rose',92.3,-52,.45,2],['sunflower',99.7,-56,.9,.5],['lily',99.7,-54,.4,1.5],['daisy',99.7,-52,.35,2.5],['hbush1',91.5,-58.8,.9,0],['hbush2',100.5,-58.8,.9,1.2]],false,false); PARK.sitlog=[X(106.5),Z(-55.4)];   // (the log to sit on: use.js)
     for(const [x,y,m] of [[90,-41.5,3.2],[102,-41.5,2.6]]){ const r=.35*m/.84*.2; SOL.up.push([X(x)-r,Z(y)-r,X(x)+r,Z(y)+r]); FIX.up.push([X(x)-r,Z(y)-r,0,X(x)+r,Z(y)+r,m/.84*TILE]); }   // (the pillars stand solid)
     PARK.pots=mesh([['pot5',g0-1.7,P.y0+1.1,.5,0],['paradise1',g0-1.7,P.y0+1.1,1.2,.3,.45],['pot1',g1+1.7,P.y0+1.1,.45,0],['sanseveria',g1+1.7,P.y0+1.1,.9,1.2,.4],['pot3',g0-3,P.y0+1.2,.35,0],['calathea',g0-3,P.y0+1.2,.5,2,.3],['pot2',g1+3,P.y0+1.2,.35,0],['paradise',g1+3,P.y0+1.2,.8,.8,.3]],false,true); }
   // ---- THE LAMPS: the park's, a pole and a lantern, along the path; each a warm light at night (the clock's)
   // (owner, 17 Oct 2026: "lights taller and smaller in park"): a thin pole 7 tiles high and a small lantern, along the edges of the way in, round
   // the round and up the way on
   const LP=[[92,-57],[100,-57],[92,-38],[100,-38],[58,-51.2],[74,-42.8],[118,-51.2],[134,-42.8]];   // (along both ways' edges)
-  for(const [x,y] of LP){ const h0=170, h1=179, w=.17; block(x-.07,y-.07,x+.07,y+.07,0,h0,31,()=>[40,40,44]); block(x-w-.04,y-w-.04,x+w+.04,y+w+.04,h1,h1+3,35,()=>[48,46,44]);
+  for(const [x,y] of LP){ const h0=170, h1=179, w=.17; BATCH.tag=OBJ('park','park lamp'); block(x-.07,y-.07,x+.07,y+.07,0,h0,31,()=>[40,40,44]); block(x-w-.04,y-w-.04,x+w+.04,y+w+.04,h1,h1+3,35,()=>[48,46,44]);
     for(const [a,b,c,d] of [[[X(x-w),Y(h0),Z(y+w)],[X(x+w),Y(h0),Z(y+w)],[X(x+w),Y(h1),Z(y+w)],[X(x-w),Y(h1),Z(y+w)]],[[X(x+w),Y(h0),Z(y-w)],[X(x-w),Y(h0),Z(y-w)],[X(x-w),Y(h1),Z(y-w)],[X(x+w),Y(h1),Z(y-w)]],
         [[X(x-w),Y(h0),Z(y-w)],[X(x-w),Y(h0),Z(y+w)],[X(x-w),Y(h1),Z(y+w)],[X(x-w),Y(h1),Z(y-w)]],[[X(x+w),Y(h0),Z(y+w)],[X(x+w),Y(h0),Z(y-w)],[X(x+w),Y(h1),Z(y-w)],[X(x+w),Y(h1),Z(y+w)]]])
       BOD.bq(a,b,c,d,BOD.faceTex(9,9,(i,j)=>i<1||i>7||j<1||j>7?[48,46,44]:[255,236,190,1]),'G');   // (the lantern's glass glows)
     const L=new THREE.PointLight(new THREE.Color(1,.86,.62),6,9*TILE,1.6); L.position.set(X(x),Y(h0+4),Z(y)); L.userData.i0=L.intensity; scene.add(L); lamps.push(L);
-    SOL.up.push([X(x-.1),Z(y-.1),X(x+.1),Z(y+.1)]); FIX.up.push([X(x-.1),Z(y-.1),0,X(x+.1),Z(y+.1),Y(h0)]); }
+    SOL.up.push([X(x-.1),Z(y-.1),X(x+.1),Z(y+.1)]); FIX.up.push([X(x-.1),Z(y-.1),0,X(x+.1),Z(y+.1),Y(h0)]); } BATCH.tag=null;   // (each lamp a thing: switched by a double click, use.js)
   // where you can't walk: the wall each side of the gate, the posts
   const sol=(x0,y0,x1,y1,h)=>{ SOL.up.push([X(x0),Z(y0),X(x1),Z(y1)]); FIX.up.push([X(x0),Z(y0),0,X(x1),Z(y1),Y(h)]); };
   sol(P.x0,P.y0,g0-1,P.y0+.5,WH); sol(g1+1,P.y0,P.x1,P.y0+.5,WH); sol(g0-1,P.y0-.2,g0,P.y0+.7,PH); sol(g1,P.y0-.2,g1+1,P.y0+.7,PH);

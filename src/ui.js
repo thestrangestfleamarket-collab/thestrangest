@@ -109,15 +109,18 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
   const thAt=th=>th.obj.getWorldPosition(new THREE.Vector3());
   cv.addEventListener('dblclick',e=>{ if(WE.on){ WE.pick(e); return; } if(ED.on||UI.freeCam)return; const r=cv.getBoundingClientRect(); ray.setFromCamera(new THREE.Vector2((e.clientX-r.left)/r.width*2-1,-((e.clientY-r.top)/r.height*2-1)),cam);
     const live=THINGS.filter(th=>th.obj.visible&&(!th.obj.parent||th.obj.parent.visible)); const hits=ray.intersectObjects(live.map(th=>th.obj),true);
-    if(hits.length){ let o=hits[0].object; const th=live.find(th=>{ let q=o; while(q){ if(q===th.obj)return true; q=q.parent; } return false; }); if(th){ goal=th; return; } }
+    let best=null, bd=1e9; if(hits.length){ let o=hits[0].object; const th=live.find(th=>{ let q=o; while(q){ if(q===th.obj)return true; q=q.parent; } return false; }); if(th){ best=th; bd=hits[0].distance; } }
+    const u=typeof USE!=='undefined'&&USE.pick(ray); if(u&&u.d<bd)best=u.th;   // (a thing of the world's to use, nearer than any character: use.js)
+    if(best){ best.started=false; goal=best; return; }   // (started afresh: a thing used before walks up again)
     goal=null; if(UI.fly)return; gplane.constant=-py; if(ray.ray.intersectPlane(gplane,hit)){ target=hit.clone(); UI.go(Math.hypot(hit.x-pos.x,hit.z-pos.z)); } });
   // HOW FAR, HOW FAST (owner, 17 Oct 2026: "the further away you double click the faster you will go there (far away you will run), few steps
   // you will walk"): past six of the world's units he runs, slowing to a walk for the last stretch; Shift still runs
   UI.go=d=>{ UI.clickGo=true; UI.clickRun=d>6; };
   UI.runTick=()=>{ if(!UI.clickGo)return; if(!target){ UI.clickGo=false; st.runTarget=keys.has('shift')?1:0; return; } st.runTarget=keys.has('shift')||UI.clickRun&&Math.hypot(target.x-pos.x,target.z-pos.z)>1.6?1:0; };
   // each frame while he's going to a thing: toward it (it may be moving); there, he faces it and it happens; walking off with the keys lets it go
+  // (or stopped short by something in the way, but within its near: a lamp over a counter, a seat behind a table; use.js)
   UI.goTick=()=>{ if(!goal)return; const p=thAt(goal), d=Math.hypot(p.x-pos.x,p.z-pos.z), reach=goal.reach||1;
-    if(d>reach){ if(!target&&goal.started)goal=null; else { const k=(d-reach*0.8)/d; target=new THREE.Vector3(pos.x+(p.x-pos.x)*k,py,pos.z+(p.z-pos.z)*k); if(!goal.started)UI.go(d); goal.started=true; } return; }
+    const stuck=!target&&goal.started; if(d>reach&&!(stuck&&d<(goal.near||0))){ if(stuck)goal=null; else { const k=(d-reach*0.8)/d; target=new THREE.Vector3(pos.x+(p.x-pos.x)*k,py,pos.z+(p.z-pos.z)*k); if(!goal.started)UI.go(d); goal.started=true; } return; }
     target=null; heading=Math.atan2(p.x-pos.x,p.z-pos.z); const g=goal; goal=null; g.act(); say(g.name,p.clone().setY(p.y+(g.tall||1.6))); };
   // ---- THE MENU
   const css=document.createElement('style'); css.textContent=`

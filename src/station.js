@@ -16,12 +16,11 @@ let BOUND, groundY;
   // the game's ground (x, y in tiles, z in art px from the street, the platform at -98) to the scene: x to x, y to z, up to y
   const X=x=>(x-OX)*TILE, Z=y=>(y-OY)*TILE, Y=z=>(z-SZ)*ZU;
   // a face painted texel by texel: fn(i, j) its colour, null (a hole), or four long (it glows); its colours and its glow as two textures
-  const faceTex=(w,h,fn)=>{ w=Math.max(1,Math.round(w)); h=Math.max(1,Math.round(h)); const c=document.createElement('canvas'); c.width=w; c.height=h; const g=c.getContext('2d'), im=g.createImageData(w,h);
-    let ge=null, ie=null, any=false;
-    for(let j=0;j<h;j++)for(let i=0;i<w;i++){ const v=fn(i,j), k=(j*w+i)*4; if(!v)continue; im.data[k]=v[0]; im.data[k+1]=v[1]; im.data[k+2]=v[2]; im.data[k+3]=255;
-      if(v.length>3){ if(!ie){ const e=document.createElement('canvas'); e.width=w; e.height=h; ge=e; ie=new ImageData(w,h); } ie.data[k]=v[0]; ie.data[k+1]=v[1]; ie.data[k+2]=v[2]; ie.data[k+3]=255; any=true; } }
-    g.putImageData(im,0,0); const mk=cv=>{ const t=new THREE.CanvasTexture(cv); t.magFilter=THREE.NearestFilter; t.minFilter=THREE.NearestMipmapNearestFilter; t.colorSpace=THREE.SRGBColorSpace; return t; };
-    let em=null; if(any){ ge.getContext('2d').putImageData(ie,0,0); em=mk(ge); } return {map:mk(c),em}; };
+  const faceTex=(w,h,fn)=>{ w=Math.max(1,Math.round(w)); h=Math.max(1,Math.round(h)); const im=new ImageData(w,h), d=im.data; let ie=null, e=null;   // (faster: straight into an ImageData, as bodega.js)
+    for(let j=0,k=0;j<h;j++)for(let i=0;i<w;i++,k+=4){ const v=fn(i,j); if(!v)continue; d[k]=Math.round(v[0]); d[k+1]=Math.round(v[1]); d[k+2]=Math.round(v[2]); d[k+3]=255;
+      if(v.length>3){ if(!ie){ ie=new ImageData(w,h); e=ie.data; } e[k]=d[k]; e[k+1]=d[k+1]; e[k+2]=d[k+2]; e[k+3]=255; } }
+    const mk=cv=>{ const t=new THREE.CanvasTexture(cv); t.magFilter=THREE.NearestFilter; t.minFilter=THREE.NearestMipmapNearestFilter; t.colorSpace=THREE.SRGBColorSpace; return t; };
+    return {map:mk(im),em:ie?mk(ie):null}; };
   // a quad from four corners (bottom-left, bottom-right, top-right, top-left of its picture)
   // (shadow: it casts one; for now only the Walker does)
   const quad=(a,b,c,d,tx,lit,shadow=false,chara=false)=>{ const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute([...a,...b,...c,...a,...c,...d],3));
@@ -31,7 +30,7 @@ let BOUND, groundY;
     const me=new THREE.Mesh(g,m); me.castShadow=shadow; me.receiveShadow=true; scene.add(me); return me; };
   // ONE OF THE GAME'S BOXES (x, y in tiles, z absolute art px): its top by top(X, Y); its sides by fs(nx, ny, X, Y, z from its foot, shade)
   // when it has one, else fi(Y, z) and fj(X, z) with z from the platform; else its colour. em: it glows (lit by nothing)
-  const C=v=>v?(v.length>3?v:v.map(x=>Math.max(0,Math.min(255,Math.round(x))))):null;
+  const C=v=>v;   // (faceTex rounds and clamps)
   // (faster: the boxes' faces into the batch, one atlas and a few meshes; batch.js)
   const bq=(a,b,c,d,tx,lit,shadow,chara)=>BATCH.add([...a,...b,...c,...a,...c,...d],[0,0,1,0,1,1,0,0,1,1,0,1],tx.map.image,tx.em?tx.em.image:null,chara?'C':lit?'L':'B');
   function gbox(b,dz=0,ox=0,oy=0,chara=false){ const x0=b.x0+ox, x1=b.x1+ox, y0=b.y0+oy, y1=b.y1+oy, z0=b.z0+dz, z1=b.z1+dz, lit=!b.em, k=b.em?2:1, H=(z1-z0)*k;   // (k: a glowing board at the game's half pixels, where its letters are)
@@ -72,8 +71,6 @@ let BOUND, groundY;
   BATCH.tag=OBJ('station','train car'); W.carBoxes(0,0).forEach(b=>gbox(b,-UH-32,W.TRACKS[0],W.D1Y,true)); BATCH.tag=null;   // (lit like a character at the stop, as the game lights it: never brighter than its own colours) solid(W.TRACKS[0]-W.CARW,W.D1Y-W.CARL/2,W.TRACKS[0]+W.CARW,W.D1Y+W.CARL/2,96-32);
   // THE LIGHTS, as the game lights it: dim cool white over the platform and over its track, every 6.4 tiles (LAMPS, 10 tiles' reach)
   for(let y=SY0+3.2;y<SY1;y+=6.4)for(const x of [AVE+2.6,AVE+8.4]){ const L=new THREE.PointLight(new THREE.Color(.5,.54,.64),LAMPI,10*TILE,LAMPD); L.position.set(X(x),Y(SZ+88),Z(y)); scene.add(L); lamps.push(L); }
-  // HIS SHADOWS: the two lamps nearest him cast them (two shadow-casting lights stand in for those lamps, moved to them as he walks), hard-edged as pixels
-  SHL.push(...[0,1].map(()=>{ const L=new THREE.PointLight(lamps[0].color,LAMPI,10*TILE,LAMPD); L.castShadow=true; L.shadow.mapSize.set(512,512); L.shadow.camera.near=0.1; L.shadow.camera.far=14; L.shadow.bias=-0.003; scene.add(L); return L; }));
   // where he can walk: the platform and the exit tunnel; down the steps onto the track and along it into the tunnels; never through a wall
   solid(AVE-1,SY0-12,AVE,END,UH); solid(TW,SY0-12,TW+1,SY1+12,UH); solid(AVE,SY0-1,PLAT,SY0,UH); solid(AVE,END,PLAT,END+1,UH);
   solid(PLAT,SY1,PLAT+.1,END,UH); solid(TUN0-1,SY0-12,TUN0,SY0,UH); solid(TUN0-1,SY1,TUN0,SY1+12,UH);

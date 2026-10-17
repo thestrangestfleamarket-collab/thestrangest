@@ -33,7 +33,21 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
    line shows.
 6. **Never sharper than the opening** (`RESMAX`).
 7. **Load**: nothing fetched that isn't needed at start (Rapier only when the physics body is switched on); no data for things not in the game.
-8. **Every new thing says its cost** (triangles, lights, milliseconds a frame) and fits the budget; if it can't, say so before adding it.
+   **Never freeze the page while it loads** (17 Oct 2026, the artifact said "isn't responding": one 52 s freeze in the cloud's software
+   graphics): the build puts a breath every 40 ms between the module's statements (`tools/yields.py`: plain blocks, if / for / while bodies and
+   the places' builders, `grab`, now awaited); what isn't needed at the first moment is built after the game runs, a piece a moment (the rooms
+   stacked on the apartments: `STORE.later`, `STORE.ensure` when you go to one first); a face is painted straight into an ImageData and the
+   batch copies it into its atlas (no canvas a face); a Walker-built body samples only round each piece and works each shared corner once.
+   Measure a change with a long-task observer (the longest freeze, the moment the loading line goes).
+8. **At rest, at rest, like a 2D game** ("when something stops it doesnt keep moving slightly and gradually. lets have things rest in place more
+   when they stop so not as much stuff is going on"): water goes flat and stops when nothing moves in it; floats and boats stop; he stands still
+   the moment he stops; nothing creeps toward a target forever. Only the deliberate stays: characters' idle moves, a flame's flicker.
+9. **The old game's look** (owner, 17 Oct 2026, "look at the actual old game code and see how it was done", "go all"; its recipe with its
+   numbers: `docs/OLD-LOOK.md`): the world's faces their fixed shades by facing (top as it is, x0.62 / x0.8 by side), light multiplied in and cut to
+   24 steps (`map-pre.js`); dark nights lit by the lamps; one final pass (`src/oldlook.js`): the night eye, the deep navy, and a glow in 8 hard
+   steps (the one glow allowed, the owner's word). The pool clear turquoise, lit from inside. **No blur** (tried, then "remove all the blur work
+   for now": not to come back unless he asks).
+10. **Every new thing says its cost** (triangles, lights, milliseconds a frame) and fits the budget; if it can't, say so before adding it.
 
 ## What the owner has decided so far (keep these)
 
@@ -168,6 +182,23 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
   opposite the bodega, the hexagonal pavers in to a round and on north-east, lawns (the game's grass), the pack's oaks, spruces, a dead oak and a
   dead spruce at 9 to 30 metres (a person 1.8), its rocks as outcrops, the park's lamps; one mesh the trees, one the rocks, flat colours (the pack's
   textures' means), the sun's and the lamps' shadows. The menu's PLACES has CENTRAL PARK.
+- **The storeroom** (owner, 17 Oct 2026: "brng back diner and bar with all musicians, the moonshrine, the herb cottage, the octopus tank, castle keep,
+  butterflies ... dont add them to the map yet just bring to this new game and all items"; `src/store.js`, `build.py`): the game's own rooms, built
+  by the game's own makers (their files read word for word into the kit: the Diner, the Bar's three files and the music things, the Moon
+  Shrine's two, the page rooms' kit and the Herb Cottage's two, the octopus room, the dungeon's two and the keep's two from the game's archive,
+  the butterflies and the living rooms' mood pieces), set out far east of the map on one dark concrete floor, out of sight of it: THE DINER
+  (Preset Diner 1 in its room), THE BAR (as 26-zzz-bar sets it out, at night: candles only; the grand and the drum kit on its stage), THE MOON
+  SHRINE (on grass, its koi pond real water), THE HERB COTTAGE (its own walls and roof), THE OCTOPUS TANK (its room, the tank real water behind
+  glass), THE KEEP (the great tower from the archive, its stone, turrets and parapet, the dungeon's walls and things inside, the cross wall's
+  arches), THE BUTTERFLIES (the butterfly house with its pair, six more over the shrine: `src/butterflies.js`, the game's kinds and pictures
+  flying perch to perch). Each room's walls built as the bodega's (cut to their foot when between you and the camera), its roof hidden while
+  you're in, its lamps LITE's as any room's (a lamp in a room lights only it). The menu's
+  STORED row takes you to each; the view and his walk are bounded by the store while he's there. The water now runs as more than one body
+  (`waterBody` in `water3d.js`: the pool's, the pond's, the tank's). **The bar's musicians** (`src/pianist.js`, `src/singer.js`, `src/drummer.js`,
+  each the game's own files word for word, built as the musician is): the pianist in his tuxedo at the grand (the 88 keys his, the real grand's
+  recordings, his book of three pieces), the singer in the red gown at the microphone (the cord real physics, her voice made as a voice is, wordless
+  over the songbook's chords), the octopus drummer at the kit (his set on the kit's physics engine, the AudioWorklet; his cigar and his glass).
+  The guitarist stays on the bodega's sidewalk (the game had him busk outside too). Not found in the game: "raincoast" (asked back).
 - **The creatures' animations fixed** (owner, 17 Oct 2026, "fix the animals animations. check each one"): the packs' armatures stand a quarter turned
   and 100 times their rigs (the rat's 39.5), and the bake dropped that from each rig's root, so every creature's skin collapsed to a hundredth of
   itself as soon as its bones moved it; the root now keeps the armature's size and turn (`rig.s`, `creatures-bake.py`), its clips set under it.

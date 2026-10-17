@@ -15,6 +15,7 @@ const MUS={};
     else if(/^hand[LR]$/.test(p.n)){ p.bb=around([J['wrist'+p.n.slice(-1)]],4.5); p.step=.2; p.cell=.15; } }
   PCS.push(Object.assign({},GT.PIECE,{d:GT.SOLID,F0:{o:V(0,0,0),x:V(1,0,0),y:V(0,1,0),z:V(0,0,1)},step:.15,cell:.12}));   // (the guitar's hull whole: the game's hollow one, thin plates and bracing, breaks up as a mesh)
   const NP=PCS.length, PM={value:PCS.map(()=>new THREE.Matrix4())};
+  for(const P of PCS){ const fine=W3.fine(P); W3.warm(P,P.step||(fine?.5:1),fine,RB); }
   const geos=PCS.map((P,i)=>{ const fine=P.step<1||/^(head|hair|beard|brow|eye|nose|ear|mouth)/.test(P.n), g=W3.meshOf(P,P.step||(fine?.5:1),fine,RB), n=g.attributes.position.count;
     g.setAttribute('pidx',new THREE.BufferAttribute(new Float32Array(n).fill(i),1)); return g; });
   const all=new THREE.BufferGeometry(); for(const k of ['position','normal','c1','pidx']){ const sz=geos[0].attributes[k].itemSize, arr=new Float32Array(geos.reduce((a,g)=>a+g.attributes[k].array.length,0)); let o=0; for(const g of geos){ arr.set(g.attributes[k].array,o); o+=g.attributes[k].array.length; } all.setAttribute(k,new THREE.BufferAttribute(arr,sz)); }

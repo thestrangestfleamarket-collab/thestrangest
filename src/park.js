@@ -6,8 +6,8 @@
 // his pack's models, coloured flat as the pack colours them (tools/forest-bake.py, data/forest.json), one mesh, throwing the sun's and the
 // lamps' shadows. NO TREES (owner, 17 Oct 2026: "remove all the trees from game for now, i want to start clean"): the forest pack's oaks,
 // spruces and dead trees and the terrain collection's cedars are gone from the map and the data. Where you can't walk: the wall, the posts, the rocks, the lamps' poles ----
-const PARK={x0:50,x1:108,y0:-61,y1:-5,gate:[92.5,99.5],round:[96,-47,7]};   // (y1: twice as deep, owner 17 Oct 2026, "expand central park": the castle in its back-left corner, castle.js)   // (bodega tiles, x0 and x1 the street's run, set below; the gate's run along the wall; the round's middle and reach)
-PARK.tick=()=>{};
+const PARK={x0:50,x1:108,y0:-61,y1:-2,gate:[92.5,99.5],round:[96,-47,7]};   // (bodega tiles, x0 and x1 the street's run, set below; the gate's run along the wall; the round's middle and reach; y1: deep enough for the castle in its back-left corner, castle.js)
+PARK.sway={value:0}; PARK.tick=()=>{ PARK.sway.value=performance.now()/1000; };   // (the oaks' sway: their crowns' clock)
 grab('park',()=>{ PARK.x0=BOD.MAP.x0; PARK.x1=BOD.MAP.x1; const X=BOD.XS, Z=BOD.ZS, Y=BOD.YS, {hash,grain,speck,grassCol}=BOD.g, P=PARK, U=TILE/.84, f32=s=>new Float32Array(Uint8Array.from(atob(s),c=>c.charCodeAt(0)).buffer), b8=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
   // ---- THE PATH: from the gate to the round, the round, and on north-east; the rest lawn
   // (owner, 17 Oct 2026: "wider path"; then "make the path go straight through ... the circle in the middle of the park ... two paths going through
@@ -41,20 +41,28 @@ grab('park',()=>{ PARK.x0=BOD.MAP.x0; PARK.x1=BOD.MAP.x1; const X=BOD.XS, Z=BOD.
   block(P.x0,P.y0,g0-1,P.y0+.5,0,WH,11); block(g1+1,P.y0,P.x1,P.y0+.5,0,WH,15);
   for(const [x,k] of [[g0-1,21],[g1,25]]){ block(x,P.y0-.2,x+1,P.y0+.7,0,PH,k); block(x-.1,P.y0-.3,x+1.1,P.y0+.8,PH,PH+5,k+4); }   // (each post, its cap)
   // ---- THE ROCKS: his pack's models, each at its place, its height in metres, turned as it likes; one mesh
-  const F=Object.assign({},FOREST,PROPS), mesh=(list,leafy,solid=true)=>{ const P3=[], C3=[], c=new THREE.Color(); for(const [key,x,y,m,turn,lift] of list){ const D=F[key], p=f32(D.p), col=b8(D.c), k=b8(D.k), s=m/.84*TILE, ca=Math.cos(turn||0), sa=Math.sin(turn||0), ox=X(x), oz=Z(y), oy=(lift||0)/.84*TILE;
-      for(let i=0;i<p.length;i+=3){ const px=p[i]*s, py=p[i+1]*s+oy, pz=p[i+2]*s; P3.push(ox+px*ca-pz*sa,py,oz+px*sa+pz*ca); const t=Math.floor(i/9), sh=k[t]===0?.86+.28*hash(t,x*7,y*3):k[t]===2?.9+.2*hash(t,x*5,y*9):.92+.16*hash(t,x*3,y*5);
+  const F=Object.assign({},FOREST,PROPS), mesh=(list,leafy,solid=true,sway=false)=>{ const P3=[], C3=[], SW=[], c=new THREE.Color(); for(const [key,x,y,m,turn,lift] of list){ const ph=hash(Math.round(x*7),Math.round(y*7),131)*6.28; const D=F[key], p=f32(D.p), col=b8(D.c), k=b8(D.k), s=m/.84*TILE, ca=Math.cos(turn||0), sa=Math.sin(turn||0), ox=X(x), oz=Z(y), oy=(lift||0)/.84*TILE;
+      for(let i=0;i<p.length;i+=3){ const px=p[i]*s, py=p[i+1]*s+oy, pz=p[i+2]*s; P3.push(ox+px*ca-pz*sa,py,oz+px*sa+pz*ca); if(sway)SW.push(Math.max(0,p[i+1]),ph); const t=Math.floor(i/9), sh=k[t]===0?.86+.28*hash(t,x*7,y*3):k[t]===2?.9+.2*hash(t,x*5,y*9):.92+.16*hash(t,x*3,y*5);
         c.setRGB(col[i]/255*sh,col[i+1]/255*sh,col[i+2]/255*sh,THREE.SRGBColorSpace); C3.push(c.r,c.g,c.b); }
       if(solid){ const r=Math.max(.3,D.trunk*s*.5); SOL.up.push([ox-r,oz-r,ox+r,oz+r]); FIX.up.push([ox-r,oz-r,0,ox+r,oz+r,leafy?Y(60):s*.9]); } }   // (where you can't walk: the trunk, the rock; not the undergrowth)
-    const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(P3,3)); g.setAttribute('color',new THREE.Float32BufferAttribute(C3,3)); g.computeVertexNormals();
+    const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(P3,3)); g.setAttribute('color',new THREE.Float32BufferAttribute(C3,3)); g.computeVertexNormals(); if(sway)g.setAttribute('aSw',new THREE.Float32BufferAttribute(SW,2));
     // (nothing cut away or dithered round you: owner, 17 Oct 2026, "no dithering and vanishing anything")
     const mat=new THREE.MeshLambertMaterial({vertexColors:true,side:THREE.DoubleSide});
+    // (the oaks sway, owner 17 Oct 2026: "make them sway gently": each crown leans a little and back in the air, slow, its own rhythm; the trunk's
+    // foot still, the lean growing with the square of the height up the tree; a deliberate motion, as the idle moves are)
+    if(sway){ mat.onBeforeCompile=sh=>{ sh.uniforms.uSw=PARK.sway; sh.vertexShader='attribute vec2 aSw; uniform float uSw;\n'+sh.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\n { float h=aSw.x*aSw.x; transformed.x+=sin(uSw*.55+aSw.y)*h*.16; transformed.z+=sin(uSw*.41+aSw.y*1.7)*h*.11; }'); }; mat.customProgramCacheKey=()=>'oaksway'; }
     const me=new THREE.Mesh(g,mat); me.castShadow=true; me.receiveShadow=true; scene.add(me); return me; };
+  // THE OAKS (owner, 17 Oct 2026: "lets add just trees that look like this back, make them sway gently, vary in size and spread out through the
+  // park, not blocking views or paths"; his go on the plan): sixteen of the pack's three oaks, 6 to 11 m, each crown its true width and kept clear
+  // of the ways, the round, the shrine's garden, the stalls, the campfire and the pillars, a tile and a half apart at least (placed once by that
+  // rule: tools-free, the list below)
+  const TREES=[["OakTree3", 108.9, -31.3, 6.2], ["OakTree2", 81.0, -29.9, 10.9], ["OakTree2", 64.3, -54.8, 8.7], ["OakTree1", 128.2, -35.7, 6.4], ["OakTree2", 57.8, -36.9, 10.5], ["OakTree2", 137.8, -29.9, 10.2], ["OakTree2", 113.1, -39.1, 10.2], ["OakTree2", 127.6, -56.5, 8.3], ["OakTree1", 140.9, -38.6, 5.8], ["OakTree2", 82.8, -55.1, 10.8], ["OakTree2", 56.3, -54.8, 8.2], ["OakTree2", 115.6, -55.7, 8.9], ["OakTree2", 74.3, -54.9, 8.6], ["OakTree3", 136.3, -56.0, 6.3], ["OakTree1", 87.0, -36.5, 5.7], ["OakTree2", 121.9, -29.0, 8.3]].map((t,i)=>[t[0],t[1],t[2],t[3],hash(i,5,77)*6.28]); PARK.trees=mesh(TREES,true,true,true);
   PARK.rocks=mesh([['BigRock3',87.5,-37,2.6,1.8],['BigRock5',126,-41,2.4,.2],['Rock_12',55.5,-41,1,1],['Rock1',111,-41,.6,2],['BigRock1',66,-35,2,1.1]],false);
   // ---- THE UNDERGROWTH (owner, 17 Oct 2026, "start importing google drive assets based on most recent": his Free Shrubs Flowers and Mushrooms
   // pack and the LowPoly-Psionic pack, tools/props-bake.py → data/props.json): bushes, flowers, grass, mushrooms and stones over the lawn at hashed
   // spots, off the path; logs and a bit of fence; the pots and plants of his pots & plants pack by the gate
   { const UG=[['bush1',1.1],['bush2',1.2],['bush3',1.3],['bush4',1.5],['bush5',1.1],['flower1',.5],['flower2',.7],['flower3',.3],['flower4',.7],['flower5',.35],['flower6',.8],['grass1',.5],['grass2',.6],['grass1',.45],['grass2',.55],['mushroom1',.3],['mushroom2',.35],['mushroom3',.3],['mushroom4',.25],['stone2',.5],['stone3',.2],['stones1',.25]];
-    const list=[]; for(let i=0;i<90;i++){ const x=P.x0+2+hash(i,3,91)*(P.x1-P.x0-4), y=P.y1-1-Math.pow(hash(i,7,93),1.6)*(P.y1-P.y0-3); if(path(x,y)||path(x+1,y)||path(x-1,y)||path(x,y+1)||path(x,y-1)||hash(i,11,95)<.3)continue; { const [a,b,c,d]=CASTLE.b; if(x>a-1.6&&x<b+1.6&&y>c-1.6&&y<d+1.6)continue; }   // (not in the castle)   // (fewer, more of them toward the back, a tile clear of the path)
+    const list=[]; for(let i=0;i<90;i++){ const x=P.x0+2+hash(i,3,91)*(P.x1-P.x0-4), y=P.y1-1-Math.pow(hash(i,7,93),1.6)*(P.y1-P.y0-3); if(path(x,y)||path(x+1,y)||path(x-1,y)||path(x,y+1)||path(x,y-1)||hash(i,11,95)<.3)continue; if(x>67&&x<77&&y>-44&&y<-24)continue; { const [a,b,c,d]=CASTLE.b; if(x>a-1.6&&x<b+1.6&&y>c-1.6&&y<d+1.6)continue; }   /* (not in the castle) */   /* (the Moon Shrine's garden: store.js) */   // (fewer, more of them toward the back, a tile clear of the path)
       const [k,m]=UG[Math.floor(hash(i,13,97)*UG.length)]; list.push([k,x,y,m*(.8+.4*hash(i,17,99)),hash(i,19,101)*6.28]); }
     list.push(['log1',65,-41,.5,.4],['log2',86,-40.5,.6,1.2],['log3',104,-39,.6,2.6],['fence1',57,-41,.8,0],['fence1',126,-41,.8,1.57],['pmushroom1',62.5,-36.5,.6,0],['pmushroom2',63.5,-36.2,.5,1],['pmushroom3',61.8,-35.5,.55,2]);
     PARK.under=mesh(list,false,false);

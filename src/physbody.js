@@ -38,8 +38,11 @@ const PB={on:false,ready:false,loose:0.5};
         rb.setLinvel({x:v.x+((t.p.x-p.x)*kp+f.x-v.x)*0.7,y:v.y+((t.p.y-p.y)*kp+f.y-v.y)*0.7,z:v.z+((t.p.z-p.z)*kp+f.z-v.z)*0.7},true); } }); }
   PB.step=(dt,B,x,y,z,hd,gy,down)=>{ if(!PB.on||!PB.ready||ED.anim)return false; targets(B,x,y,z,hd,dt); if(need){ build(); }
     if(tgt[0].p.distanceTo(bodies[0].translation())>40)reset();   // (taken somewhere: the map, the stairs' level, a teleport)
-    ground.setNextKinematicTranslation({x:x*PPU/W3.SZ,y:gy/ZU/W3.SZ,z:z*PPU/W3.SZ}); acc=Math.min(acc+dt,6/120);
-    while(acc>=1/120){ acc-=1/120; drive(1/120,down); world.step(); }
+    // AT REST AT ONCE (owner, 17 Oct 2026: "when something stops it doesnt keep moving slightly"): standing (no part of his pose moving more than
+    // a few units a second, and not down), every part is put exactly where his pose has it, still, and the engine not stepped: no settling sway
+    if(!down&&tgt.every(t=>t.v.lengthSq()<64)){ reset(); acc=0; }
+    else{ ground.setNextKinematicTranslation({x:x*PPU/W3.SZ,y:gy/ZU/W3.SZ,z:z*PPU/W3.SZ}); acc=Math.min(acc+dt,6/120);
+      while(acc>=1/120){ acc-=1/120; drive(1/120,down); world.step(); } }
     // his pieces where their parts are (each riding its part as his pose has it); he in the world as his units scaled, not turned (the parts are)
     W3.group.position.set(0,0,0); W3.group.rotation.set(0,0,0); W3.group.scale.set(W3.SZ/PPU,ZU*W3.SZ*(W3.BH||1),W3.SZ/PPU); W3.L.applyAxisAngle(new THREE.Vector3(0,1,0),hd); W3.G.value.identity();
     const Fb=KEYS.map((k,i)=>{ const rb=bodies[i], p=rb.translation(), r=rb.rotation(); return new THREE.Matrix4().compose(P.set(p.x,p.y,p.z),Q.set(r.x,r.y,r.z,r.w),Sc.set(1,1,1)); });
@@ -48,6 +51,8 @@ const PB={on:false,ready:false,loose:0.5};
       if(W3.E&&W3.E[i])W3.applyE(PM,W3.E[i],new THREE.Vector3().setFromMatrixPosition(PM)); if(W3.HIDE[i])PM.makeScale(0,0,0); });
     return true; };
   PB.load=()=>{ if(RAPIER||PB.loading)return; PB.loading=true; import('https://cdn.jsdelivr.net/npm/@dimforge/rapier3d-compat@0.12.0/rapier.es.js').then(async m=>{ RAPIER=m.default||m; await RAPIER.init(); PB.ready=true; need=true; PB.R=RAPIER; (PB.onReady||[]).forEach(f=>f()); }).catch(e=>{ console.warn('physics body: Rapier did not load',e); PB.on=false; }); };
-  PB.set=on=>{ PB.on=on; if(on){ PB.load(); need=true; } try{ localStorage.setItem('market-physbody',on?'1':'0'); }catch(e){} };
-  let on0=true; try{ const v=localStorage.getItem('market-physbody'); if(v!=null)on0=v==='1'; const l=localStorage.getItem('market-loose'); if(l!=null)PB.loose=+l; }catch(e){} PB.set(on0);
+  PB.set=on=>{ PB.on=on; if(on){ PB.load(); need=true; } try{ localStorage.setItem('market-physbody2',on?'1':'0'); }catch(e){} };
+  // OFF TO BEGIN WITH (owner, 17 Oct 2026, the budget: nothing fetched that isn't needed at start): Rapier (some 700 KB) is fetched only once
+  // PHYSICS BODY is switched on (its own key: the old one was written on at every start)
+  let on0=false; try{ const v=localStorage.getItem('market-physbody2'); if(v!=null)on0=v==='1'; const l=localStorage.getItem('market-loose'); if(l!=null)PB.loose=+l; }catch(e){} PB.set(on0);
 }

@@ -1,4 +1,4 @@
-import os
+import os, sys
 # the game's own code, read as data (its objects' makers, colours and layouts): a checkout of bralynnb/tsfm beside this one, or GAME_SRC
 S=os.environ.get('GAME_SRC',os.path.join(os.path.dirname(os.path.abspath(__file__)),'..','tsfm','src'))+'/'
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
@@ -28,13 +28,31 @@ kit+='\n// ==== 23-w-ghost-street.js (the game\'s, word for word but its roof\'s
 # for word, in a block of its own (its measures, DJ, set by src/ghostdojo.js instead of from the West End's plan), handed out on BOD.GDJ
 dj=rq(rd(S+'23-w-west-dojo-1-hall.js'),"DJ=(()=>{ const g=WEND.dojo","DJ=null&&(()=>{ const g=WEND.dojo")
 kit+='\n// ==== 23-w-west-dojo-1-hall.js (the game\'s, word for word)\n{\n'+dj+'\nBOD.GDJ={djAndon,djCandle,djIncense,djHanging,djTokonoma,djBokkenRack,djLeaf,DJTAT,DJBRD,DJWOOD,DJPAP,DJPLA,setDJ:v=>{ DJ=v; }};\n}\n'
+# THE STOREROOM (owner, 17 Oct 2026: "brng back diner and bar with all musicians, the moonshrine, the herb cottage, the octopus tank, castle keep,
+# butterflies ... dont add them to the map yet just bring to this new game and all items"): each room's game files, word for word, each group in
+# a block of its own; the buildings their files measure themselves by (the game's LBLD records) at the store's own spots, far off the map, where
+# src/store.js sets them out; what each hands out, on BOD.STOREK. The keep's three files from the game's archive (archive/keep, stored 16 Oct 2026)
+ST_B="LBLD.push({id:'ldiner',label:'DINER',x0:106.5,y0:-84,x1:120,y1:-77,h:130,st:1,c:[176,62,56]},{id:'lbodega2',label:'BAR',x0:120.5,y0:-89.5,x1:130.5,y1:-77,h:130,st:1,c:[146,96,64]},{id:'ldungeon',label:'THE DUNGEON',x0:500,y0:-58,x1:513,y1:-47,h:130,st:1,c:[60,56,52]},{id:'lcastle',label:'THE KEEP',x0:88.75,y0:-94,x1:98.25,y1:-85,h:520,st:4,tall:4,c:[150,142,126]});"
+KEEPC="const KEEPC={k:[426,435.5,-86,-77],door:430.75,arches:[428.1,430.75,433.4],b:[422,439,-90,-73],gate:430.5};"
+sconce=body(S+'26-y-theatre-inside.js','// ---- a wall light','// ---- the floor lights')   # (the bar's wall lights are the theatre's)
+def gblock(files,out,pre='',src=S):
+    return '\n{\n'+pre+'\n'.join('// ==== '+f+" (the game's, word for word)\n"+rd(src+f) for f in files)+'\n'+out+'\n}\n'
+kit+='\nconst STOREK={LAMPS,PRESETS,CATALOG,PROPS,LBLD,T,STORY,hash,sh,sided,prop,LSEED}; const SQLV={octo:0}; const DEEPW={ZPX:24};\n'+ST_B+'\n'+KEEPC+'\n'
+kit+=gblock(['23-w-west-diner.js'],"STOREK.diner={dinerFloorCol,dinerWall};")
+kit+=gblock(['23-w-bar-1-counter.js','23-w-bar-2-seats.js','23-w-bar-3-walls.js','23-w-music-1-things.js'],"STOREK.bar={barFloorCol,barWall,theatreSconce};",sconce+'\n')
+kit+=gblock(['23-w-west-moon-shrine-1-pieces.js','23-w-west-moon-shrine-2-pond.js'],"STOREK.shrine={MSP};")
+kit+=gblock(['23-w-page-rooms-0-kit.js','23-w-page-rooms-1-cottage-1-room.js','23-w-page-rooms-1-cottage-2-furniture.js'],"STOREK.cottage={PGK};")
+kit+=gblock(['23-x-octopus-room.js'],"STOREK.octo={OCTK,OCC,octoWall,octoFloorCol,octoTank};")
+kit+=gblock(['23-w-dungeon-1-room.js','23-w-dungeon-2-things.js'],gblock(['23-w-keep-1-look.js','23-w-keep-2-pieces.js'],"STOREK.keep={KEEPR,keepOutWall,keepInWall,keepFloorCol,KMK,DGP};",'',S+'../archive/keep/src/'))
+kit+=gblock(['23-w-butterflies.js','23-w-studio-mood.js'],"STOREK.bf={BF_KINDS,bfPic,bfSpan};")
+kit+='BOD.STOREK=STOREK;\n'
 # THE CASTLE'S AND THE DUNGEON'S MAKERS (owner, 17 Oct 2026: "lets bring back ... the castle, the dungeon under the castle (only 1 level)"): the
 # dungeon's look and things (23-w-dungeon-1-room, -2-things) and the castle's stone and pieces (23-w-dungeon-3-castle-1-stone, -2-pieces), word for
 # word, in a block of their own, handed out on BOD.KC; the dungeon's measures (DGN) the hall's under the castle (CASTLE.hall, map-pre.js); the
 # gatehouse turned to stand out from the wall toward the street (the game's stood out toward +y)
 kc=rq(rd(S+'23-w-dungeon-3-castle-2-pieces.js'),"KMK.gate=(gx,wy,H)=>{ PNAME='gatehouse'; const y0=wy-.5, y1=wy+1.1, w=.65, sd=4800, ps=[];","KMK.gate=(gx,wy,H)=>{ PNAME='gatehouse'; const y0=wy-1.1, y1=wy+.5, w=.65, sd=4800, ps=[];")
 kc=rq(kc,"B.push(sided({x0:gx-w,y0:wy+.36,x1:gx+w,y1:wy+.46,z0:84,z1:104,","B.push(sided({x0:gx-w,y0:wy-.46,x1:gx+w,y1:wy-.36,z0:84,z1:104,")
-kit+='\n// ==== the dungeon and the castle (the game\'s, word for word but the gatehouse\'s side)\n{\nLBLD.push({id:\'ldungeon\',...CASTLE.hall,st:1});\n'+rd(S+'23-w-dungeon-1-room.js')+'\n'+rd(S+'23-w-dungeon-3-castle-1-stone.js')+'\n'+kc+'\n'+rd(S+'23-w-dungeon-2-things.js')+'\nBOD.KC={KMK,KPP,DGN,DGP,LAMPS,dungeonWall,dungeonFloorCol,castleArch,KARCH};\n}\n'
+kit+='\n// ==== the dungeon and the castle (the game\'s, word for word but the gatehouse\'s side)\n{\nconst LBLD=[{id:\'ldungeon\',...CASTLE.hall,st:1}], CATALOG={}, CAT_INFO={}, CAT_DEPTS=[], LAMPS=[];\n'+rd(S+'23-w-dungeon-1-room.js')+'\n'+rd(S+'23-w-dungeon-3-castle-1-stone.js')+'\n'+kc+'\n'+rd(S+'23-w-dungeon-2-things.js')+'\nBOD.KC={KMK,KPP,DGN,DGP,LAMPS,CATALOG,dungeonWall,dungeonFloorCol,castleArch,KARCH};\n}\n'
 bod=rd('src/bodega.js')
 i=bod.index('const BOD={'); bod=bod[i:]
 bod=rq(bod,"const BOD={meshes:[], walls:{}, lamps:[]};","BOD={meshes:[], walls:{}, lamps:[]};").replace('/*GAMEKIT*/',kit).replace('/*GOODS*/',rd('src/goods-defs.js'))
@@ -42,7 +60,7 @@ bb=rq(rd('src/bodbuild.js'),"const BODB={};","BODB={};")
 wrap=lambda name,code,out,cutwhen: ("grab('%s',()=>{ const solids=SOL.%s, fixed=FIX.%s, SHL=[]; let BOUND, groundY; const c0=cutWalls.length;\n"%(name,'down' if name=='down' else 'up','down' if name=='down' else 'up'))+code+"\n"+out+"\n for(const w of cutWalls.slice(c0))if(!w.when)w.when="+cutwhen+"; for(const L of SHL)L.removeFromParent(); });\n"
 MAPST=('const TEXTURES='+rd('data/textures.json')+';\nconst KITD='+rd('data/kit.json')+';\n'+rd('src/map-pre.js')+'\n'+rd('src/batch.js')+'\n'+rd('src/water3d.js')+'\n'
   +wrap('down',stn,"MODS.station={BOUND,ground:(x,z)=>groundY(x,z)+STN.DY};","()=>LVL==='down'")
-  +wrap('bodega',bod+'\n'+bb+'\n'+rd('src/apts.js')+'\n'+rd('src/ghostdojo.js'),"MODS.bodega={BOUND,ground:groundY};","()=>BODB.inside()")
+  +wrap('bodega',bod+'\n'+bb+'\n'+rd('src/apts.js')+'\n'+rd('src/ghostdojo.js')+'\n'+rd('src/butterflies.js')+'\n'+rd('src/store.js'),"MODS.bodega={BOUND,ground:groundY};","()=>BODB.inside()")
   +wrap('pool',pool+'\nWATER.build();',"MODS.pool={BOUND,cut:cutWalls.slice(c0),inside:(x,z)=>x>POOLR.X(POOLR.x0)&&x<POOLR.X(POOLR.x1)&&z>POOLR.Z(POOLR.y0)&&z<POOLR.Z(POOLR.y1)};","()=>MODS.pool.inside(pos.x,pos.z)")
   +"const FOREST="+rd('data/forest.json')+";\nconst PROPS="+rd('data/props.json')+";\n"+rd('src/park.js')+'\n'+rd('src/castle.js')+'\n'   # (CENTRAL PARK'S ENTRANCE, owner 17 Oct 2026: park.js, data/forest.json; THE CASTLE and its dungeon in it: castle.js)
   +rd('src/map-post.js')+'\n'+rd('src/kit.js')+'\n'+rd('src/dress.js'))   # (the kits placed, the pigeons: after the map)
@@ -64,14 +82,13 @@ mod=rp(mod,"const pos=new THREE.Vector3(0,0,14); let heading=0.8, py=0;","const 
 mod=rp(mod,"import * as THREE from 'three';","""import * as THREE from 'three';
 import {EffectComposer} from 'three/addons/postprocessing/EffectComposer.js';
 import {RenderPass} from 'three/addons/postprocessing/RenderPass.js';
-import {UnrealBloomPass} from 'three/addons/postprocessing/UnrealBloomPass.js';
 import {OutputPass} from 'three/addons/postprocessing/OutputPass.js';""")
-# halation: the glowing things (the LED boards, the signs, the train's lamps) bloom, at the low resolution, so the glow is pixels too
+# the picture's passes: the scene, (the outline round him, when on), the output (no bloom: owner, 17 Oct 2026, the budget, "no glow or bloom")
 mod=rp(mod,"const scene=new THREE.Scene();","""const scene=new THREE.Scene();
-let composer=null, bloom=null;""")
-mod=rp(mod,"renderer.setSize(RW,RH,false);","renderer.setSize(RW,RH,false); if(composer){ composer.setSize(RW,RH); bloom.resolution.set(RW,RH); }")
+let composer=null;""")
+mod=rp(mod,"renderer.setSize(RW,RH,false);","renderer.setSize(RW,RH,false); if(composer)composer.setSize(RW,RH);")
 mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);","""composer=new EffectComposer(renderer); composer.setPixelRatio(1); composer.addPass(new RenderPass(scene,cam));
-bloom=new UnrealBloomPass(new THREE.Vector2(256,256),1.3,0.6,0.62); composer.addPass(bloom); composer.addPass(new OutputPass());
+composer.addPass(new OutputPass());
 resize(); applyTime(0); requestAnimationFrame(frame);""")
 mod=rp(mod,"  renderer.render(scene,cam);\n","""  // the game's cutaway: a wall between him and the camera is cut down to its foot
   for(const w of cutWalls)w.pl.constant=(Math.sin(a)*w.nx+Math.cos(a)*w.nz<-0.05&&pitch<1.45)?w.foot:1e6;
@@ -100,7 +117,7 @@ head=rp(head,'#stat{','#shd{position:fixed;right:calc(12px + env(safe-area-inset
 mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);",'''{ const SH={on:true,lv:2}, el=document.getElementById('shd'), draw=()=>{ W3.lv.value=SH.on?(SH.lv>=2?2:1):0; el.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.s?String(SH.on):String(SH.on&&SH.lv===+b.dataset.l))); el.querySelector('[data-s]').textContent=SH.on?'ON':'OFF'; };
   el.querySelectorAll('button').forEach(b=>b.onclick=()=>{ if(b.dataset.s)SH.on=!SH.on; else{ SH.lv=+b.dataset.l; SH.on=true; } b.blur(); draw(); }); draw(); }   // (full: self, as the game has it for a character)
 resize(); applyTime(0); requestAnimationFrame(frame);''')
-mod=rp(mod,"  let lampW=0; for(const L of lamps){","  { const nb=lamps.map((L,i)=>[Math.hypot(L.position.x-pos.x,L.position.z-pos.z),i]).sort((p,q)=>p[0]-q[0]); lamps.forEach(L=>L.intensity=LAMPI); nb.slice(0,2).forEach(([,i],k)=>{ SHL[k].position.copy(lamps[i].position); lamps[i].intensity=0; }); }   // (the two lamps nearest him: their shadow-casting stand-ins lit in their place)\n  let lampW=0; for(const L of lamps){")
+mod=rp(mod,"  let lampW=0; for(const L of lamps){","  if(typeof UI!=='undefined'&&UI.freeCam)LITE.tick(dt,UI.camT.x,UI.camT.y,UI.camT.z); else LITE.tick(dt,pos.x,py+1.2*TILE,pos.z);   // (the eight lamps nearest you light the world: map-post.js)\n  let lampW=0; for(const L of lamps){")
 print('ok base')
 
 # PIXELS THAT GROW WITH THE ZOOM (owner, 16 Oct 2026: "keep this level of res on every zoom", his pick "pixels grow with zoom"): as the game draws,
@@ -167,14 +184,11 @@ print('ok npcs')
 mod=rp(mod,"  if(keys.has('q'))yawTo+=dt*1.8;","  if(MAPLV(py,pos))setPhys(LVL);   // (the level you're on: its walls, its ground, its places)\n  if(keys.has('q'))yawTo+=dt*1.8;")
 mod=rp(mod,"PHYROOMS=[{on:true,x0:-1e9,x1:1e9,y0:-1e9,y1:1e9,st:STATIC.map(b=>[b[0],b[1],b[2]/RZ,b[3],b[4],b[5]/RZ])}];",
  "PHYROOMS=[{on:true,x0:-1e9,x1:1e9,y0:-1e9,y1:1e9,st:STATIC.map(b=>[b[0],b[1],b[2]/RZ,b[3],b[4],b[5]/RZ])}];\nfunction setPhys(lv){ STATIC=FIX[lv].map(([x0,z0,y0,x1,z1,y1])=>[x0/TL,-z1/TL,y0/TL,x1/TL,-z0/TL,y1/TL]); PHYROOMS[0].st=STATIC.map(b=>[b[0],b[1],b[2]/RZ,b[3],b[4],b[5]/RZ]); }   // (the ragdoll's room: his level's things)")
-mod=rp(mod,"lamps.forEach(L=>L.intensity=LAMPI); nb.slice(0,2).forEach(([,i],k)=>{ SHL[k].position.copy(lamps[i].position); lamps[i].intensity=0; });",
- "lamps.forEach(L=>L.intensity=L.userData.i0??LAMPI); SHL.forEach(S=>S.intensity=0); nb.filter(([,i])=>lamps[i].parent&&lamps[i].parent.visible).slice(0,2).forEach(([,i],k)=>{ const L=lamps[i], S=SHL[k]; S.position.copy(L.position); S.color.copy(L.color); S.intensity=L.userData.i0??LAMPI; S.distance=L.distance; S.decay=L.decay; L.intensity=0; });")
 mod=rp(mod,"for(const w of cutWalls)w.pl.constant=(Math.sin(a)*w.nx+Math.cos(a)*w.nz<-0.05&&pitch<1.45)?w.foot:1e6;",
  "for(const w of cutWalls)w.pl.constant=(!UI.persp&&(w.always||Math.sin(a)*w.nx+Math.cos(a)*w.nz<-0.05)&&pitch<1.45&&(!w.when||w.when()))?w.foot:1e6;   // (only the room you're in)\n  for(const r of BODB.roof)r.visible=!BODB.inside(); MODS.pool.roof.visible=!MODS.pool.inside(pos.x,pos.z);   // (and its roof off)")
 mod=rp(mod,"  renderer.shadowMap.needsUpdate=true; W3.shadowPass(renderer); OUTL.render(renderer,scene,cam); composer.render();",
- """  if(!MAPBAKE){ MAPBAKE=1; W3.group.visible=false; renderer.shadowMap.needsUpdate=true; renderer.render(scene,cam); W3.group.visible=true; }   // (the lamps' still shadows, once, without him)
-  const wOn=LVL==='up'&&Math.hypot(pos.x-POOLR.X((POOLR.bx0+POOLR.bx1)/2),pos.z-POOLR.Z((POOLR.by0+POOLR.by1)/2))<14*TILE;   // (the water moves while you're near it)
-  if(wOn)WATER.step(renderer,dt); renderer.shadowMap.needsUpdate=true; if(wOn)WATER.under(renderer,scene,cam,lamps); W3.shadowPass(renderer); OUTL.render(renderer,scene,cam); composer.render();""")
+ """  const wOn=LVL==='up'&&(MODS.pool.inside(pos.x,pos.z)||Math.hypot(pos.x-POOLR.X((POOLR.bx0+POOLR.bx1)/2),pos.z-POOLR.Z((POOLR.by0+POOLR.by1)/2))<15*TILE);   /* (the water moves only while you're near it or in its building; its picture of what's under it only while it's shown) */
+  if(wOn)WATER.step(renderer,dt); renderer.shadowMap.needsUpdate=true; if(wOn&&WATER.mesh.visible)WATER.under(renderer,scene,cam,lamps); WATER.underAll(renderer,scene,cam,lamps); W3.shadowPass(renderer); OUTL.render(renderer,scene,cam); composer.render();""")
 mod=rp(mod,"st.target=ml>0?1:0; const before=st.dist; RIG.step(st,dt);","WATER.feed(st,pos,dt,ml>0,keys); st.target=ml>0?1:0; const before=st.dist; RIG.step(st,dt);")
 mod=rp(mod,"collide(pos); if(target&&","collide(pos); if(st.water&&st.water.in){ const m=0.3; pos.x=Math.max(WATER.X0+m,Math.min(WATER.X0+WATER.W-m,pos.x)); pos.z=Math.max(WATER.Z0+m,Math.min(WATER.Z0+WATER.D-m,pos.z)); }   // (swimming: within the basin's walls)\n    if(target&&")
 mod=rp(mod,"if(MOVEK[k]&&!e.repeat&&!RAG.on)RIG.act(st,MOVEK[k]); });","if(st.water&&st.water.in&&(k===' '||k==='j')){ st.water.dive=true; e.preventDefault(); } else if(MOVEK[k]&&!e.repeat&&!RAG.on)RIG.act(st,MOVEK[k]); });")
@@ -187,7 +201,6 @@ mod=rp(mod,"  if(loose.length)RIG.draw(B,cloud,hdA,uimg,PW,PICH,AX,AY,1,false);"
 mod=rp(mod,"if(nst>=6)looseAcc=0; looseDraw();","if(nst>=6)looseAcc=0; looseDraw();\n  { const px=FLOATS.px??pos.x, pz=FLOATS.pz??pos.z, k=1/Math.max(dt,1e-3); FLOATS.step(dt,{inWater:!!(st.water&&st.water.in),x:pos.x,z:pos.z,vx:(pos.x-px)*k,vz:(pos.z-pz)*k}); FLOATS.px=pos.x; FLOATS.pz=pos.z; }")
 head=rp(head,'<div><b>Space</b> jump','<div>The bodega, the pool room (its door east of it) and the subway (the stairs down west of it) · walk into the pool to swim · <b>Space</b> (held) under</div>\n  <div><b>Space</b> jump')
 mod=rp(mod,"const pos=new THREE.Vector3(-2.2,0,3.2); let heading=0.8, py=0;","const pos=new THREE.Vector3(-2.2,0,3.2); let heading=0.8, py=0; { const a=(QS.get('at')||'').split(',').map(Number); if(a.length>=2&&a.every(isFinite)){ pos.set(a[0],0,a[1]); py=a[2]||0; } }   // (a test's: start at x,z[,height])")
-mod=rp(mod,"  if(MAPLV(py,pos))setPhys(LVL);","  if(MAPLV(py,pos))setPhys(LVL); if(bloom){ const dn=LVL==='down'; bloom.strength=(dn?1.3:.55)*GLOW.k; bloom.radius=dn?.6:.4; bloom.threshold=dn?.62:.8; }   // (the glow: the station's strong, the street's and the shops' gentle)")
 # GETTING AROUND and THE MENU (owner, 17 Oct 2026): src/ui.js, and its hooks in the frame and the keys
 mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);",open('src/physbody.js').read()+"\n"+open('src/ui.js').read()+"\n"+open('src/editor.js').read()+"\n"+open('src/animator.js').read()+"\n"+open('src/worldedit.js').read()+"\n"+open('src/looks.js').read()+"\n"+open('src/vitals.js').read()+"\nresize(); applyTime(0); requestAnimationFrame(frame);")
 mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);","if(typeof KIT!=='undefined')for(const th of KIT.things)UI.thing(th);   // (the street kit's named things: a double click walks up to them, once the menu is here)\nresize(); applyTime(0); requestAnimationFrame(frame);")
@@ -223,7 +236,6 @@ head=rp(head,'<div><b>Click</b> the ground to walk there</div>','<div><b>Double-
 # pavement in front and the shop behind; and every glow in the picture stepped and dithered in square blocks, as the game's light is
 mod=rp(mod,"MK.neon=(x,y,z,s,c)=>{ PNAME='neon sign'; const W=tw(s,2)+4, f=face(W,14,null,[[s,c,2,2]],FL(y),x-W/FP/2,z+7,W/FP);\n  const p=prop([WF(x-.3,x+.3,y),Bw(x-W/FP/2,x+W/FP/2,y,-.12,-.04,z-7,z+7,c,{foot:0,em:1,fj:f,fi:()=>null,top:()=>null})]); LAMPS.push({x,y:y+.4*WD(y),z,r:2.2,c:[c[0]/255,c[1]/255,c[2]/255],prop:p}); return p; };",
 "MK.neon=(x,y,z,s,c)=>{ PNAME='neon sign'; const W=tw(s,2)+4, cells=[]; txt((a,b)=>cells.push([a,b]),s,2,2,c,2);\n  const p=prop([WF(x-.3,x+.3,y)]); NEONS.push({x,y,z,W,cells,c}); LAMPS.push({x,y:y+.3*WD(y),z,r:2.2,c:[c[0]/255,c[1]/255,c[2]/255],prop:p,neon:true}); return p; };   // (the tubes and their light: bodbuild.js)")
-mod=rp(mod,"    if(l.r>=3){ L.castShadow=true;","    if(l.r>=3||l.neon){ L.castShadow=true;")
 mod=rp(mod,"  for(const l of BOD.LAMPS){ const cm=Math.max(...l.c);","""  // the neon's tubes: a glowing block for each lit square of its letters (2 art px), a tube's depth, read from both sides of the glass
   // a halo's picture: an oval of light in three steps (bright, mid, faint), each step's edge dithered (4x4 ordered), in square pixels
   const HALO=(c,W,H)=>{ const cv=document.createElement('canvas'); cv.width=W; cv.height=H; const g=cv.getContext('2d'), im=g.createImageData(W,H), B=[0,8,2,10,12,4,14,6,3,11,1,9,15,7,13,5];
@@ -240,13 +252,6 @@ mod=rp(mod,"  for(const l of BOD.LAMPS){ const cm=Math.max(...l.c);","""  // the
       const at=new THREE.Vector3(X(N.x),Y(N.z),Z(N.y-.08)), f=new THREE.Vector3(); m.position.copy(at); m.renderOrder=2;
       m.onBeforeRender=(r,s,c)=>{ m.quaternion.copy(c.quaternion); c.getWorldDirection(f); m.position.copy(at).addScaledVector(f,-.3); m.updateMatrixWorld(); }; scene.add(m); } }
   for(const l of BOD.LAMPS){ const cm=Math.max(...l.c);""")
-mod=rp(mod,"bloom=new UnrealBloomPass(new THREE.Vector2(256,256),1.3,0.6,0.62); composer.addPass(bloom);","""bloom=new UnrealBloomPass(new THREE.Vector2(256,256),1.3,0.6,0.62); composer.addPass(bloom);
-// THE GLOW, YOUR PICK (owner, 17 Oct 2026: "the light looks like a bubble, can you give me the old lighting ... or diff options?"): OFF (the
-// lamps light the room, nothing glows round them), SOFT (the glow as it first was, smooth), STEPPED (in hard steps and dither); the menu's switch
-const GLOW={mode:'off',k:.3,amount(v){ GLOW.k=v; try{ localStorage.setItem('market-glowk',String(v)); }catch(e){} },set(m){ GLOW.mode=m; bloom.enabled=m!=='off'; if(GLOW.q)GLOW.q.value=m==='stepped'?1:0; try{ localStorage.setItem('market-glow2',m); }catch(e){} }};
-{ const cm=bloom.compositeMaterial; cm.uniforms.uQ={value:1}; GLOW.q=cm.uniforms.uQ; cm.fragmentShader='uniform float uQ;\\n'+cm.fragmentShader.replace(/}\\s*$/,`  if(uQ>.5){ vec3 bc=gl_FragColor.rgb; float bm=max(bc.r,max(bc.g,bc.b)); ivec2 bq=ivec2(mod(gl_FragCoord.xy,4.));
-    float bt[16]=float[16](0.,8.,2.,10.,12.,4.,14.,6.,3.,11.,1.,9.,15.,7.,13.,5.); float bs=5., bv=bm<0.07?0.:max(1./bs,floor(bm*bs+bt[bq.x+bq.y*4]/16.)/bs); gl_FragColor.rgb=bv>0.?bc/bm*bv:vec3(0.); }   /* (its faint end cut, not a scatter of dots) */ }`); cm.needsUpdate=true;
-  bloom.renderTargetsHorizontal[0].texture.magFilter=bloom.renderTargetsHorizontal[0].texture.minFilter=THREE.NearestFilter; }   // (the glow in steps, dithered, in square blocks: the game's light, not a soft haze)""")
 # HIS BODY IN A PHYSICS ENGINE (owner, 17 Oct 2026): src/physbody.js, after the rig has placed him each frame
 mod=rp(mod,"W3.place(B,pos.x,py,pos.z,RAG.on?RAG.hd:heading,hdA,ZU); if(ED.on)ED.tick();","W3.place(B,pos.x,py,pos.z,RAG.on?RAG.hd:heading,hdA,ZU); PB.step(dt,B,pos.x,py,pos.z,RAG.on?RAG.hd:heading,groundY(pos.x,pos.z),RAG.on); if(ED.on)ED.tick();")
 # HIS MOVES, EDITABLE (owner, 17 Oct 2026: "edit his walk and other movements in the HIS SHAPE editor"; his picks: the walk's and the run's
@@ -277,30 +282,76 @@ gtsrc='''
 // ---- THE GAME'S CAST AND SOUND, AS THE GUITARIST NEEDS THEM (stand-ins: his standing pose, the sound's way out, no scene to wait for, the
 // recordings instead of the simulated strings) ----
 const CAST={}, PLAY221={seeking:false,pre:0}, PLAYA={}, GTPHYS={model:false,ok:false}, SND={ctx:null,on:true,out:null};
-let CASTSTAND0=null; const castPose=()=>CASTSTAND0||(CASTSTAND0=RIG.apply(RIG.walkPose({ph:0,w:0,run:0},null),RIG.STANDK));
+// (castPose, the cast's poses: the game's own, with the pianist's files below)
 '''
 gtsrc+="const GTMP3='data:audio/mpeg;base64,"+base64.b64encode(open(GA,'rb').read()).decode()+"';\n"
 for f in ['47-play-3-guitar-1-body.js','47-play-3-guitar-samples.data.js','47-play-3-guitar-2-tunes.js','47-play-3-guitar-3-hands.js']:
     t=open(S+f).read()
     if f.endswith('body.js'): t=rp(t,"fetch('audio/guitar.mp3')","fetch(GTMP3)")
     gtsrc+='\n'+t
-mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);",gtsrc+"\n"+open('src/musician.js').read()+"\nresize(); applyTime(0); requestAnimationFrame(frame);")
+# THE PIANIST (owner, 17 Oct 2026, the bar "with all musicians"): the game's 47-play-5-piano (his tuxedo, the bench and the 88 keys as pieces
+# of his, the book of pieces, his fingers on the keys, the real grand's recordings) read word for word, the cast's poses and arm reach from
+# 47-play-1-cast (the few lines they need), the recordings embedded; then src/pianist.js seats him at the stored bar's grand
+PA=os.path.join(S,'..','audio','piano.mp3')
+pnsrc="\n// ---- THE CAST'S POSES AND REACH, AS THE PIANIST NEEDS THEM (47-play-1-cast's, word for word) ----\nconst POSES={}, CV=RIG.V; function castStep(){}\n"+body(S+'47-play-1-cast.js','// HIS HANDS WHERE THEY MUST BE','// ---- A PLAYER')
+pnsrc+="const PNMP3='data:audio/mpeg;base64,"+base64.b64encode(open(PA,'rb').read()).decode()+"';\n"
+for f in ['47-play-5-piano-samples.data.js','47-play-5-piano-1-sound.js','47-play-5-piano-2-music.js','47-play-5-piano-3-hands.js']:
+    t=open(S+f).read()
+    if f.endswith('sound.js'): t=rp(t,"fetch('audio/piano.mp3')","fetch(PNMP3)")
+    pnsrc+='\n'+t
+# THE SINGER (owner, 17 Oct 2026): the game's 47-play-6-woman, 47-play-7-singer and 47-zzz-bar-singer word for word (her voice's loudness and
+# side from where she stands here: SGM, src/singer.js), after the music engine (47-music-1-engine, -2-instruments, -1b-samples: the bar's echo
+# her voice goes into, and the drummer's kit)
+sgsrc="\n// ---- THE GAME'S MUSIC ENGINE (the instruments' physics, the bar's echo; word for word) ----\nconst IMV={on:false}, ONLINE={others:new Map()}, BARM={on:false}, LEVEL=0; const IMKITBAR={k:1.1,sp:1.35};\n"
+for f in ['47-music-1b-samples.data.js','47-music-1-engine.js','47-music-2-instruments.js','47-play-6-woman.js','47-play-7-singer.js','47-zzz-bar-singer.js']:
+    t=open(S+f).read()
+    if f=='47-zzz-bar-singer.js':
+        t=rp(t,"function voxStep(dt,now){ if(!voxChain())return; const c=SND.ctx, ct=c.currentTime, S=BAR.singer, d=Math.hypot(S.x-P.x,S.y-P.y);","function voxStep(dt,now){ if(!voxChain())return; const c=SND.ctx, ct=c.currentTime, d=SGM.dist();")
+        t=rp(t,"VOX.out.gain.setTargetAtTime(SND.on?.5*Math.max(.18,1-d/10):0,ct,.08); { const [sx]=toS(...vw(S.x,S.y)), [px]=toS(...vw(P.x,P.y)); VOX.pan.pan.setTargetAtTime(Math.max(-.8,Math.min(.8,(sx-px)/120)),ct,.1); }","VOX.out.gain.setTargetAtTime(SND.on?.5*Math.max(0,1-d/14):0,ct,.08); VOX.pan.pan.setTargetAtTime(SGM.pan(),ct,.1);")
+    sgsrc+='\n// ==== '+f+"\n"+t
+# THE DRUMMER (owner, 17 Oct 2026): the game's 47-zzz-bar-octopus-1-body and -2-play word for word (the pets' part maker E they lean on, and the
+# bar's line-up stood in for: he's alone on the stage); src/drummer.js sits him at the stored bar's kit
+drsrc="\n// ---- THE OCTOPUS DRUMMER'S FILES (the game's, word for word) ----\nconst E=(x,y,z,rx,ry,rz,c,yaw=0,pit=0,rol=0,grp)=>[x,y,z,rx,ry,rz,yaw,pit,rol,c,grp]; const pupPaint=()=>null; const BARP={lead:'d'};\n"
+for f in ['47-zzz-bar-octopus-1-body.js','47-zzz-bar-octopus-2-play.js']: drsrc+='\n// ==== '+f+"\n"+open(S+f).read()
+mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);",gtsrc+"\n"+open('src/musician.js').read()+pnsrc+"\n"+open('src/pianist.js').read()+sgsrc+"\n"+open('src/singer.js').read()+drsrc+"\n"+open('src/drummer.js').read()+"\nresize(); applyTime(0); requestAnimationFrame(frame);")
 mod=rp(mod,"  for(const N of NPCS)N.tick(dt,pos);","  for(const N of NPCS)N.tick(dt,pos); MUS.tick(dt);")
-mod=rp(mod,"  for(const N of NPCS)N.tick(dt,pos); MUS.tick(dt);","  DRESS.tick(dt,pos); { const r=MODS.apts.tick(); if(r)solids=r; } for(const N of NPCS)N.tick(dt,pos); if(FIRE)FIRE.tick(dt); FIGFX.tick(dt,pos); MUS.tick(dt);")   # (DRESS: the street's kit; the apartment house's floors; FIGFX: the figures' effects and the park's cut of the trees before you)
-# NO SHADOW ACNE (owner, 17 Oct 2026, his close-up: stripes and jagged dark teeth on the musician's arm): the two lamps nearest you, whose
-# shadows move, finer (1024 a face) and held off the surface they fall on, as the still lamps' are
-mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);","for(const S of SHL){ S.shadow.mapSize.set(1024,1024); S.shadow.normalBias=.06; S.shadow.bias=-.002; }\nresize(); applyTime(0); requestAnimationFrame(frame);")
+mod=rp(mod,"  for(const N of NPCS)N.tick(dt,pos); MUS.tick(dt);","  DRESS.tick(dt,pos); { const r=MODS.apts.tick(); if(r)solids=r; } { const r2=STORE.stackTick&&STORE.stackTick(); if(r2)solids=r2; } for(const N of NPCS)N.tick(dt,pos); if(FIRE)FIRE.tick(dt); FIGFX.tick(dt,pos); MUS.tick(dt); PNM.tick(dt); SGM.tick(dt); DRM.tick(dt);")   # (DRESS: the street's kit; the apartment house's floors; FIGFX: the figures' effects and the park's cut of the trees before you; the stored bar's musicians)
+# (NO SHADOW ACNE, owner 17 Oct 2026: the one lamp shadow, 1024 a face, held off the surface it falls on: LITE in map-post.js)
 # THE CLOCK (owner, 17 Oct 2026: "add the option to control the time", 7pm when the game opens): src/clock.js; ticked each frame
 mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);",open('src/clock.js').read()+"\n"+open('src/rooms.js').read()+"\nresize(); applyTime(0); requestAnimationFrame(frame);")
 # ONLY THE ROOM YOU'RE IN (owner, 17 Oct 2026): src/rooms.js, set just before the picture's drawn
-mod=rp(mod,"if(wOn)WATER.step(renderer,dt); renderer.shadowMap.needsUpdate=true;","ROOMS.tick(); if(wOn)WATER.step(renderer,dt); renderer.shadowMap.needsUpdate=true;")
+mod=rp(mod,"if(wOn)WATER.step(renderer,dt); renderer.shadowMap.needsUpdate=true;","ROOMS.tick(); STORE.tick(); BF.tick(dt); if(wOn)WATER.step(renderer,dt); WATER.tickAll(renderer,dt,pos); renderer.shadowMap.needsUpdate=true;")   # (STORE: the storeroom's roofs and bound, map-post.js)
 mod=rp(mod,"  UI.goTick(); UI.runTick();","  UI.goTick(); UI.runTick(); CLOCK.tick(dt); VIT.tick(dt);")   # (VIT: your health and stamina, src/vitals.js)
+# THE OLD GAME'S FINAL TOUCH (src/oldlook.js): one pass after the picture's colours, its night and glow set each frame
+mod=rp(mod,"CLOCK.tick(dt); VIT.tick(dt);","CLOCK.tick(dt); VIT.tick(dt); LOOK.tick();")
+mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);",open('src/oldlook.js').read()+"\nLOOK.sp=new ShaderPass(LOOK.shader); composer.addPass(LOOK.sp); LOOK.sp.uniforms.uNight=LOOK.night; LOOK.sp.uniforms.uGlowK=LOOK.glowK;\nresize(); applyTime(0); requestAnimationFrame(frame);")   # (VIT: your health and stamina, src/vitals.js)
 # (the keys' turn and tilt: not in the isometric view, where Q and E go a quarter round: ui.js)
 mod=rp(mod,"  if(keys.has('q'))yawTo+=dt*1.8; if(keys.has('e'))yawTo-=dt*1.8; if(keys.has('z'))pitchTo=clampP(pitchTo-dt*1.2); if(keys.has('x'))pitchTo=clampP(pitchTo+dt*1.2);","  if(UI.view!=='iso'){ if(keys.has('q'))yawTo+=dt*1.8; if(keys.has('e'))yawTo-=dt*1.8; if(keys.has('z'))pitchTo=UI.clampV(pitchTo-dt*1.2); if(keys.has('x'))pitchTo=UI.clampV(pitchTo+dt*1.2); }")
-head=rp(head,'<b>V</b> wave','<b>B</b> wave · <b>V</b> change the view')   # (V: the views, owner 17 Oct 2026)
+head=rp(head,'<b>V</b> wave','<b>B</b> wave · <b>V</b> change the view')
+# THE BUDGET (owner, 17 Oct 2026: "render what is only absolutely needed"): the characters moved and drawn only when near or seen (NPCS.tick,
+# npc-map.js); every lamp made a record, eight lights standing in (LITE, map-post.js); then every shader compiled while the loading line shows,
+# for the picture's own target (the composer's), once without a room's cut and once with it (its six planes), so nothing stutters when first seen
+mod=rp(mod,"} for(const N of NPCS)N.tick(dt,pos); if(FIRE)","} NPCS.tick(dt,pos); if(FIRE)")
+# AT REST AT ONCE (owner, 17 Oct 2026: "when something stops it doesnt keep moving slightly and gradually"): the view's turn, tilt and zoom reach their mark and stop
+mod=rp(mod,"yaw+=(yawTo-yaw)*ease; pitch+=(pitchTo-pitch)*ease;","yaw=Math.abs(yawTo-yaw)<1e-4?yawTo:yaw+(yawTo-yaw)*ease; pitch=Math.abs(pitchTo-pitch)<1e-4?pitchTo:pitch+(pitchTo-pitch)*ease;")
+mod=rp(mod,"ppu*=Math.pow(ppuTo/ppu,ease); if(pxS()!==SCL)","ppu=Math.abs(ppuTo/ppu-1)<1e-4?ppuTo:ppu*Math.pow(ppuTo/ppu,ease); if(pxS()!==SCL)")
+mod=rp(mod,"const dt=Math.min(0.05,(now-last)/1000); last=now;","const dt=Math.max(0,Math.min(0.05,(now-last)/1000)); last=now;   /* (never backwards: the first frame's time can be older than the page's start) */")
+mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);","""LITE.init(); STORE.later(); window.__started=true; window.__scene=scene;
+{ const t0=performance.now(), PL=[0,1,2,3,4,5].map(()=>new THREE.Plane(new THREE.Vector3(0,1,0),1e6)); renderer.setRenderTarget(composer.readBuffer); renderer.compile(scene,cam);
+  renderer.clippingPlanes=PL; renderer.render(new THREE.Scene(),cam); renderer.compile(scene,cam); renderer.clippingPlanes=[]; renderer.setRenderTarget(null);   /* (the empty picture only sets the six planes for the second compile) */
+  window.WARMMS=Math.round(performance.now()-t0); }
+resize(); applyTime(0); requestAnimationFrame(frame);""")
+   # (V: the views, owner 17 Oct 2026)
 # LOADING (owner, 17 Oct 2026, the live site's first moments: the help panel, the shadows box and "--" showed while the page loaded, its dots
 # garbled): nothing but its line, "I took a trip to The Strangest Flea Market..." (owner: "loading should always say" it), till the game runs (ui.js takes it away); the page's letters read as UTF-8
 head=rp(head,'<div id="hud">','<div id="loading" style="position:fixed;inset:0;display:grid;place-items:center;font:12px Silkscreen,monospace;letter-spacing:2px;color:#8a8f9c;background:#0e1016">I took a trip to The Strangest Flea Market...</div>\n<div id="hud" hidden>')
 head=rp(head,'<div id="stat">--</div>\n<div id="shd">','<div id="stat" hidden>--</div>\n<div id="shd" hidden>')
 head='<meta charset="utf-8">\n'+head
+# BREATHS WHILE LOADING (owner, 17 Oct 2026, "this artifact isn't responding"): the module script given a moment back to the browser every
+# 40 ms while it builds (tools/yields.py)
+sys.path.insert(0,'tools'); from yields import yields
+import re
+a="const grab=(name,fn)=>{ const n0=scene.children.length; fn();"; assert a in mod; mod=mod.replace(a,"const grab=async(name,fn)=>{ const n0=scene.children.length; await fn();")
+mod,ng=re.subn(r"^grab\('(\w+)',\(\)=>\{",r"await grab('\1',async()=>{",mod,flags=re.M); print('builders awaited:',ng)
+i=mod.index('<script type="module">')+len('<script type="module">'); j=mod.index('</script>',i); body,ny=yields(mod[i:j]); mod=mod[:i]+'\n'+body+mod[j:]; print('breaths:',ny)
 os.makedirs('dist',exist_ok=True); open('dist/market.html','w').write(head+mod); print('built dist/market.html')

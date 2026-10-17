@@ -8,20 +8,35 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
 { const R=RIG, {V,add,sub,mul,nrm,dot}=R, rest=(R.farOnly(false),R.build(R.walkPose({ph:0,w:0},null),null)), MATS=R.MATS,   /* (his fingers on: the skeleton with their joints, FAR off for him) */ STEP=1, CELL=2, OUT=0.2*R.PX;   // (CELL: the simplified mesh's corners a cell of his apart; OUT: its surface pushed out a touch, as merging pulls it in)
   const TET=[[0,5,1,6],[0,1,2,6],[0,2,3,6],[0,3,7,6],[0,7,4,6],[0,4,5,6]], CO=[[0,0,0],[1,0,0],[1,1,0],[0,1,0],[0,0,1],[1,0,1],[1,1,1],[0,1,1]];
   const ramp=MATS.map(m=>(R.RAMP[m]||['#ff00ff','#ff00ff','#ff00ff','#ff00ff']).map(h=>new THREE.Color(h)));
+  W3.wholeBox=/wholebox/.test(location.search);   /* (a test: the old whole-box sampling, to compare) */
   W3.ramp=ramp; W3.meshOf=(P,step,fine,RB)=>meshOf(P,step,fine,RB); /* (for another Walker built the same way: src/musician.js) */ W3.legs=R.PIECES.map(n=>/^(thigh|shin|shoe)/.test(n)?(n.endsWith('L')?1:2):0);
-  function meshOf(P,step,fine,RB){ const bb=P.bb||[-13,13,-1,55,-11,13], nx=Math.ceil((bb[1]-bb[0])/step)+2, ny=Math.ceil((bb[3]-bb[2])/step)+2, nz=Math.ceil((bb[5]-bb[4])/step)+2;
+  // (made ahead, 17 Oct 2026: W3.warm builds a piece's mesh a piece at a time where the loading can breathe between them; meshOf then
+  // hands that one over when asked for the same piece the same way)
+  const PRE=new WeakMap(); W3.warm=(P,step,fine,RB)=>{ PRE.set(P,{step,fine,RB,g:meshOf0(P,step,fine,RB)}); };
+  W3.fine=P=>P.step<1||/^(head|hair|beard|brow|eye|nose|ear|mouth)/.test(P.n);
+  function meshOf(P,step,fine,RB){ const c=PRE.get(P); if(c&&c.step===step&&c.fine===fine&&c.RB===RB){ PRE.delete(P); return c.g; } return meshOf0(P,step,fine,RB); }
+  function meshOf0(P,step,fine,RB){ const bb=P.bb||[-13,13,-1,55,-11,13], nx=Math.ceil((bb[1]-bb[0])/step)+2, ny=Math.ceil((bb[3]-bb[2])/step)+2, nz=Math.ceil((bb[5]-bb[4])/step)+2;
     const at=(i,j,k)=>V(bb[0]+i*step,bb[2]+j*step,bb[4]+k*step), val=new Float32Array(nx*ny*nz), I=(i,j,k)=>(i*ny+j)*nz+k;
-    for(let i=0;i<nx;i++)for(let j=0;j<ny;j++)for(let k=0;k<nz;k++)val[I(i,j,k)]=P.d(at(i,j,k));
+    // (faster, 17 Oct 2026: a small piece, an eye, was sampled over the whole body's box. First a coarse look, 3 units apart, for where its
+    // surface can be (nearer than the coarse cell's reach); then only that part of the fine grid, the same points, so the same shape)
+    let r0=[0,0,0], r1=[nx,ny,nz];
+    if(!W3.wholeBox){ const cs=3, cn=[0,2,4].map(a=>Math.ceil((bb[a+1]-bb[a])/cs)+1), lo=[1e9,1e9,1e9], hi=[-1e9,-1e9,-1e9], reach=cs*.87+1.5;
+      for(let i=0;i<cn[0];i++)for(let j=0;j<cn[1];j++)for(let k=0;k<cn[2];k++){ const q=[bb[0]+i*cs,bb[2]+j*cs,bb[4]+k*cs]; if(Math.abs(P.d(V(q[0],q[1],q[2])))>reach)continue; for(let a=0;a<3;a++){ lo[a]=Math.min(lo[a],q[a]-cs); hi[a]=Math.max(hi[a],q[a]+cs); } }
+      if(lo[0]<1e9){ const N=[nx,ny,nz]; for(let a=0;a<3;a++){ r0[a]=Math.max(0,Math.floor((lo[a]-bb[a*2])/step)-1); r1[a]=Math.min(N[a],Math.ceil((hi[a]-bb[a*2])/step)+2); } } }
+    for(let i=r0[0];i<r1[0];i++)for(let j=r0[1];j<r1[1];j++)for(let k=r0[2];k<r1[2];k++)val[I(i,j,k)]=P.d(at(i,j,k));
     const F=P.F0||R.frameOf(P.on||P.n,RB||rest), raw=[], mats=[];   // (F0: a piece's own frame given, as the guitar's: src/musician.js)
     const vert=p=>{ const e=0.02, g=nrm(V(P.d(V(p.x+e,p.y,p.z))-P.d(V(p.x-e,p.y,p.z)),P.d(V(p.x,p.y+e,p.z))-P.d(V(p.x,p.y-e,p.z)),P.d(V(p.x,p.y,p.z+e))-P.d(V(p.x,p.y,p.z-e))));
-      const l=sub(add(p,mul(g,OUT)),F.o); raw.push(dot(l,F.x),dot(l,F.y),dot(l,F.z),dot(g,F.x),dot(g,F.y),dot(g,F.z)); mats.push(MATS.indexOf(P.paint&&P.paint(p)||P.m)); };
-    for(let i=0;i<nx-1;i++)for(let j=0;j<ny-1;j++)for(let k=0;k<nz-1;k++){ const v=CO.map(([a,b,c])=>val[I(i+a,j+b,k+c)]); if(v.every(x=>x>0)||v.every(x=>x<=0))continue;
-      const p=CO.map(([a,b,c])=>at(i+a,j+b,k+c));
+      const l=sub(add(p,mul(g,OUT)),F.o); return [dot(l,F.x),dot(l,F.y),dot(l,F.z),dot(g,F.x),dot(g,F.y),dot(g,F.z),MATS.indexOf(P.paint&&P.paint(p)||P.m)]; };
+    // (faster, 17 Oct 2026: a corner on an edge of the grid is shared by the triangles round it; it's worked out once, on that edge, the same
+    // way round, and used again: the same numbers as before)
+    const VC=new Map(), NT=nx*ny*nz, emit=r=>{ raw.push(r[0],r[1],r[2],r[3],r[4],r[5]); mats.push(r[6]); };
+    for(let i=r0[0];i<r1[0]-1;i++)for(let j=r0[1];j<r1[1]-1;j++)for(let k=r0[2];k<r1[2]-1;k++){ const v=CO.map(([a,b,c])=>val[I(i+a,j+b,k+c)]); if(v.every(x=>x>0)||v.every(x=>x<=0))continue;
+      const p=CO.map(([a,b,c])=>at(i+a,j+b,k+c)), gi=CO.map(([a,b,c])=>I(i+a,j+b,k+c));
       for(const t of TET){ const ins=t.filter(c=>v[c]<=0), out=t.filter(c=>v[c]>0); if(!ins.length||!out.length)continue;
-        const E=(a,b)=>{ const f=v[a]/(v[a]-v[b]); return add(p[a],mul(sub(p[b],p[a]),f)); };
-        if(ins.length===1)[E(ins[0],out[0]),E(ins[0],out[1]),E(ins[0],out[2])].forEach(vert);
-        else if(ins.length===3)[E(out[0],ins[0]),E(out[0],ins[1]),E(out[0],ins[2])].forEach(vert);
-        else { const a=E(ins[0],out[0]),b=E(ins[0],out[1]),c=E(ins[1],out[1]),d=E(ins[1],out[0]); [a,b,c,a,c,d].forEach(vert); } } }
+        const E=(a,b)=>{ const key=gi[a]*NT+gi[b]; let r=VC.get(key); if(!r){ const f=v[a]/(v[a]-v[b]); r=vert(add(p[a],mul(sub(p[b],p[a]),f))); VC.set(key,r); } return r; };
+        if(ins.length===1)[E(ins[0],out[0]),E(ins[0],out[1]),E(ins[0],out[2])].forEach(emit);
+        else if(ins.length===3)[E(out[0],ins[0]),E(out[0],ins[1]),E(out[0],ins[2])].forEach(emit);
+        else { const a=E(ins[0],out[0]),b=E(ins[0],out[1]),c=E(ins[1],out[1]),d=E(ins[1],out[0]); [a,b,c,a,c,d].forEach(emit); } } }
     const fit0=R.fitPts(P.n,new Float32Array(raw)), {fit,mats:mts}=simplify(fit0,mats,(P.cell||CELL*(fine?0.5:1))*(/^(head|hair|eye|nose|ear|mouth)/.test(P.n)?1:1.42));   /* (owner, 17 Oct 2026: "leave the faces as complex as they are, change rest of body to medium": the head and its hair and eyes as they were, every other piece's corners merged in cells 1.42 times wider: about half its triangles) */ mats.length=0; for(const q of mts)mats.push(q); const n=fit.length/6, pos=new Float32Array(n*3), nor=new Float32Array(n*3), c0=new Float32Array(n*3), c1=new Float32Array(n*3), c2=new Float32Array(n*3), cd=new Float32Array(n*3), mt=new Float32Array(n);
     for(let i=0;i<n;i++){ pos.set([fit[i*6],fit[i*6+1],fit[i*6+2]],i*3); nor.set([fit[i*6+3],fit[i*6+4],fit[i*6+5]],i*3); const r=ramp[mats[i]]||ramp[0]; c0.set([r[0].r,r[0].g,r[0].b],i*3); c1.set([r[1].r,r[1].g,r[1].b],i*3); c2.set([r[2].r,r[2].g,r[2].b],i*3); cd.set([(r[2].r+r[3].r)/2,(r[2].g+r[3].g)/2,(r[2].b+r[3].b)/2],i*3); mt[i]=mats[i]; }
     const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(pos,3)); g.setAttribute('normal',new THREE.BufferAttribute(nor,3));
@@ -88,6 +103,7 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
   // the outline pass's picture of him: which piece, which stuff, how far (in the scene's units, along the view)
   const IVS=MOVE+`attribute float mat,pid; varying float vm,vd,vp; void main(){ `+AT+` vm=mat; vp=pid; vec4 mv=modelViewMatrix*(PM*vec4(position,1.)); vd=-mv.z; gl_Position=projectionMatrix*mv; }`;
   const IFS=`varying float vm,vd,vp; void main(){ gl_FragColor=vec4(floor(vp+0.5),floor(vm+0.5),0.,vd); }`;
+  for(const P of PCS){ const fine=W3.fine(P); W3.warm(P,P.step||(fine?STEP/2:STEP),fine,null); }
   const geos=PCS.map((P,i)=>{ const fine=P.step<1||/^(head|hair|beard|brow|eye|nose|ear|mouth)/.test(P.n), g=meshOf(P,P.step||(fine?STEP/2:STEP),fine,null), n=g.attributes.position.count;
     g.setAttribute('pidx',new THREE.BufferAttribute(new Float32Array(n).fill(i),1)); g.setAttribute('pid',new THREE.BufferAttribute(new Float32Array(n).fill(R.PIECES.indexOf(P.n)),1)); return g; });
   const all=new THREE.BufferGeometry(); for(const k of Object.keys(geos[0].attributes)){ const sz=geos[0].attributes[k].itemSize, tot=geos.reduce((a,g)=>a+g.attributes[k].array.length,0), arr=new Float32Array(tot); let o=0; for(const g of geos){ arr.set(g.attributes[k].array,o); o+=g.attributes[k].array.length; } all.setAttribute(k,new THREE.BufferAttribute(arr,sz)); }

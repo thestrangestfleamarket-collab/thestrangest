@@ -1,7 +1,9 @@
 // ---- THE WATER, LIVE (the hard rule: real liquids only; owner, 13 Oct 2026): a height field over the whole basin, stepped on the graphics card
 // every frame as a wave equation (each point pulled toward its neighbours' mean, the swell carried on, a little lost to drag), so every ripple
 // travels, crosses others, comes back off the walls and dies away; what falls in or moves in it (his splashes, his strokes, his wading) pushes it
-// down where it touches; a faint stir all the time, the pool's circulation. Drawn as a sheet bent by it: the basin and him seen through it, bent
+// down where it touches. CALM (owner, 17 Oct 2026: "i want the water ... to behave more calmly", "when something stops it doesnt keep moving"):
+// no stir; ripples die in a second or two, and once the whole surface is all but still it's set exactly flat and not stepped at all till
+// something touches it again. Drawn as a sheet bent by it: the basin and him seen through it (clear, a light turquoise), bent
 // by its slope (refraction), dimmed and blued by how much water lies between (absorption), the room in it at a glance (Fresnel) and each lamp's
 // glint; on the basin under it, the light it gathers and spreads (caustics), from the same field ----
 const WATER={drops:[], uH:{value:null}, uWB:{value:new THREE.Vector4()}, uLevel:{value:0}, uGrid:{value:new THREE.Vector2()}, uCK:{value:+(QS0=>QS0.get('ck')||160)(new URLSearchParams(location.search))}, mats:[]};
@@ -11,25 +13,28 @@ WATER.caustic=m=>{ m.onBeforeCompile=sh=>{ Object.assign(sh.uniforms,{uH:WATER.u
   if(vWp.y<uLevel){ vec2 uv=(vWp.xz-uWB.xy)/(uWB.zw-uWB.xy); uv=clamp(uv,0.,1.); vec2 t=1./uGrid; float c=texture2D(uH,uv).r;
     float lap=texture2D(uH,uv+vec2(t.x,0.)).r+texture2D(uH,uv-vec2(t.x,0.)).r+texture2D(uH,uv+vec2(0.,t.y)).r+texture2D(uH,uv-vec2(0.,t.y)).r-4.*c;
     float k=clamp(-lap*uCK,-0.45,1.6)*smoothstep(0.,0.4,uLevel-vWp.y); gl_FragColor.rgb+=gl_FragColor.rgb*k*vec3(.75,.92,1.); }`); }; m.needsUpdate=true; WATER.mats.push(m); };
-WATER.build=()=>{ const P=POOLR, GX=208, GY=80, X0=P.X(P.bx0), X1=P.X(P.bx1), Z0=P.Z(P.by0), Z1=P.Z(P.by1), W=X1-X0, D=Z1-Z0, lvl=P.Y(P.level);
+// ONE BODY OF WATER (the pool's, and any other: owner, 17 Oct 2026, the Moon Shrine's koi pond and the octopus tank brought back): its field,
+// its sheet, its spray, each its own; cfg: its rect in the scene (X0, X1, Z0, Z1), its still level, its grid, dep(u) the depth in metres under
+// a point u (0 to 1) along it
+const waterBody=(WATER,cfg)=>{ const {X0,X1,Z0,Z1,lvl,GX,GY}=cfg, W=X1-X0, D=Z1-Z0;
   WATER.uWB.value.set(X0,Z0,X1,Z1); WATER.uLevel.value=lvl; WATER.uGrid.value.set(GX,GY); Object.assign(WATER,{X0,Z0,W,D,lvl});
   const o={type:THREE.HalfFloatType,format:THREE.RGBAFormat,minFilter:THREE.LinearFilter,magFilter:THREE.LinearFilter,wrapS:THREE.ClampToEdgeWrapping,wrapT:THREE.ClampToEdgeWrapping,depthBuffer:false};
   WATER.A=new THREE.WebGLRenderTarget(GX,GY,o); WATER.B=new THREE.WebGLRenderTarget(GX,GY,o); WATER.uH.value=WATER.A.texture;
   // one step of the wave: r its height, g how fast it rises; the drops pushed in where they fall (world units, how deep)
   // REAL UNITS (a tile 84 cm, so a world unit MPU metres; the deep end some 4.1 m): the depth under each point, in metres, for the wave's speed
   const MPU=0.84/TILE, dep=new Float32Array(GX*GY*4);
-  for(let j=0;j<GY;j++)for(let i=0;i<GX;i++)dep[(j*GX+i)*4]=Math.max(0.02,(P.level-P.bedAt((i+.5)/GX*P.LX))/24*0.84);
+  for(let j=0;j<GY;j++)for(let i=0;i<GX;i++)dep[(j*GX+i)*4]=cfg.dep((i+.5)/GX,(j+.5)/GY);
   const depT=new THREE.DataTexture(dep,GX,GY,THREE.RGBAFormat,THREE.FloatType); depT.needsUpdate=true; Object.assign(WATER,{MPU,GX,GY,dx:W/GX});
   WATER.simMat=new THREE.ShaderMaterial({uniforms:{uPrev:{value:null},uDep:{value:depT},uT:{value:new THREE.Vector2(1/GX,1/GY)},uSize:{value:new THREE.Vector2(W,D)},uDrop:{value:Array.from({length:8},()=>new THREE.Vector4())},uN:{value:0},
-      uDt:{value:1/120},uDx:{value:W/GX},uMpu:{value:MPU},uK:{value:2*Math.PI/1.2}},
+      uDt:{value:1/120},uDx:{value:W/GX},uMpu:{value:MPU},uK:{value:2*Math.PI/1.2},uDamp:{value:2.2}},
     vertexShader:`varying vec2 vUv; void main(){ vUv=uv; gl_Position=vec4(position.xy*2.,0.,1.); }`,
     // h_tt = c^2 lap h, c from the depth by the waves' own law (c^2 = g/k tanh kd: a metre-long ripple goes some 1.4 m/s in deep water,
     // slower only where it's shallow, over the steps), in the scene's units; a little lost to the water's own drag; the walls hold it (they send it back)
-    fragmentShader:`uniform sampler2D uPrev,uDep; uniform vec2 uT,uSize; uniform vec4 uDrop[8]; uniform int uN; uniform float uDt,uDx,uMpu,uK; varying vec2 vUv;
+    fragmentShader:`uniform sampler2D uPrev,uDep; uniform vec2 uT,uSize; uniform vec4 uDrop[8]; uniform int uN; uniform float uDt,uDx,uMpu,uK,uDamp; varying vec2 vUv;
     void main(){ vec4 c=texture2D(uPrev,vUv), e=texture2D(uPrev,vUv+vec2(uT.x,0.)), w=texture2D(uPrev,vUv-vec2(uT.x,0.)), n=texture2D(uPrev,vUv+vec2(0.,uT.y)), s=texture2D(uPrev,vUv-vec2(0.,uT.y));
       vec4 lp=(e+w+n+s-4.*c)/(uDx*uDx); float lap=lp.r;
       float d=texture2D(uDep,vUv).r, cm=sqrt(9.81/uK*min(1.,tanh(min(uK*d,8.)))), cw=cm/uMpu;   // (tanh kept small: some cards overflow it)
-      c.g+=uDt*(cw*cw*lap+0.01*lp.g); c.g*=exp(-0.35*uDt); c.r+=uDt*c.g; c.r*=0.99995;   // (0.01: the water's own viscosity, felt only at the finest ripples, where a runaway would start)
+      c.g+=uDt*(cw*cw*lap+0.01*lp.g); c.g*=exp(-uDamp*uDt); c.r+=uDt*c.g; c.r*=0.99995;   // (0.01: the water's own viscosity, felt only at the finest ripples, where a runaway would start)
       c.r=clamp(c.r,-0.6,0.6); c.g=clamp(c.g,-8.,8.); if(!(c.r==c.r)||!(c.g==c.g)) c=vec4(0.);   // (never past what water does; anything broken back to calm)
       for(int i=0;i<8;i++){ if(i>=uN)break; vec4 d=uDrop[i]; float r=length((vUv-d.xy)*uSize); if(r<d.z) c.r-=d.w*(0.5+0.5*cos(3.14159*r/d.z)); }
       gl_FragColor=c; }`});
@@ -39,10 +44,10 @@ WATER.build=()=>{ const P=POOLR, GX=208, GY=80, X0=P.X(P.bx0), X1=P.X(P.bx1), Z0
   const g=new THREE.PlaneGeometry(W,D,GX-1,GY-1); g.rotateX(-Math.PI/2);
   WATER.mat=new THREE.ShaderMaterial({uniforms:{uH:WATER.uH,uScene:{value:WATER.rt.texture},uDepth:{value:WATER.rt.depthTexture},uRes:{value:new THREE.Vector2(4,4)},uGrid:WATER.uGrid,
       uAmp:{value:1},uCell:{value:new THREE.Vector2(W/GX,D/GY)},uNear:{value:0.1},uFar:{value:800},uRefr:{value:0.05},uAbs:{value:+(new URLSearchParams(location.search).get('abs')||0.55)},
-      uCam:{value:new THREE.Vector3()},uDeep:{value:new THREE.Color(0.02,0.11,0.2)},uRoom:{value:new THREE.Color(0.05,0.07,0.1)},uLP:{value:Array.from({length:12},()=>new THREE.Vector3())},uLC:{value:Array.from({length:12},()=>new THREE.Vector3())},uNL:{value:0}},
+      uCam:{value:new THREE.Vector3()},uDeep:{value:new THREE.Color(0.1,0.62,0.68)},uGlow:{value:new THREE.Color(0.02,0.16,0.18)},uRoom:{value:new THREE.Color(0.05,0.07,0.1)},uLP:{value:Array.from({length:12},()=>new THREE.Vector3())},uLC:{value:Array.from({length:12},()=>new THREE.Vector3())},uNL:{value:0}},
     vertexShader:`uniform sampler2D uH; uniform float uAmp; varying vec2 vS; varying vec3 vWp; varying float vVz;
       void main(){ vS=vec2(uv.x,1.-uv.y); vec3 p=position; p.y+=texture2D(uH,vS).r*uAmp; vec4 w=modelMatrix*vec4(p,1.); vWp=w.xyz; vec4 mv=viewMatrix*w; vVz=-mv.z; gl_Position=projectionMatrix*mv; }`,
-    fragmentShader:`uniform sampler2D uH,uScene,uDepth; uniform vec2 uRes,uGrid,uCell; uniform float uAmp,uNear,uFar,uRefr,uAbs; uniform vec3 uCam,uDeep,uRoom; uniform vec3 uLP[12],uLC[12]; uniform int uNL;
+    fragmentShader:`uniform sampler2D uH,uScene,uDepth; uniform vec2 uRes,uGrid,uCell; uniform float uAmp,uNear,uFar,uRefr,uAbs; uniform vec3 uCam,uDeep,uRoom,uGlow; uniform vec3 uLP[12],uLC[12]; uniform int uNL;
       varying vec2 vS; varying vec3 vWp; varying float vVz;
       float lin(vec2 u){ return uNear+texture2D(uDepth,u).r*(uFar-uNear); }
       void main(){ vec2 t=1./uGrid;
@@ -50,19 +55,20 @@ WATER.build=()=>{ const P=POOLR, GX=208, GY=80, X0=P.X(P.bx0), X1=P.X(P.bx1), Z0
         vec3 n=normalize(vec3(-hx,1.,-hz)), V=-uCam;
         vec2 s=gl_FragCoord.xy/uRes; float th=max(0.,lin(s)-vVz);
         vec2 r=clamp(s+n.xz*uRefr*min(th,2.),0.001,0.999); if(lin(r)<vVz) r=s;   // (bent only toward what lies under the water)
-        float th2=max(0.,lin(r)-vVz); vec3 ab=exp(-th2*vec3(0.62,0.2,0.1)*uAbs);
-        vec3 col=texture2D(uScene,r).rgb*ab+uDeep*(1.-ab);
+        float th2=max(0.,lin(r)-vVz); vec3 ab=exp(-th2*vec3(0.26,0.05,0.04)*uAbs);   /* CLEAR (owner, 17 Oct 2026: "clear like real water", the old game's gym pool): the floor plain through it, a light turquoise deepening with depth */
+        vec3 col=texture2D(uScene,r).rgb*ab+uDeep*(1.-ab)+uGlow*min(th2,4.)*.25;   /* (and its own cool glow, as from the lamps in its walls) */
         float fr=0.02+0.98*pow(1.-max(dot(n,V),0.),5.); col=mix(col,uRoom,fr*0.7);
         for(int i=0;i<12;i++){ if(i>=uNL)break; vec3 dl=uLP[i]-vWp; float d=length(dl); vec3 H=normalize(dl/d+V); col+=uLC[i]*pow(max(dot(n,H),0.),70.)*4.5/(1.+d*d*0.12); }
         gl_FragColor=vec4(col,1.); }`});
   WATER.mesh=new THREE.Mesh(g,WATER.mat); WATER.mesh.position.set(X0+W/2,lvl,Z0+D/2); WATER.mesh.frustumCulled=false; scene.add(WATER.mesh);
   WATER.t=0; WATER.stir=0; WATER.rb=new Uint16Array(GX*GY*4);
   WATER.spg=new THREE.BufferGeometry(); WATER.spg.setAttribute('position',new THREE.BufferAttribute(new Float32Array(600*3),3)); WATER.spg.setDrawRange(0,0);
-  const spm=new THREE.Points(WATER.spg,new THREE.PointsMaterial({color:0xdff3ff,size:2,sizeAttenuation:false})); spm.frustumCulled=false; scene.add(spm); };
+  const spm=new THREE.Points(WATER.spg,new THREE.PointsMaterial({color:0xdff3ff,size:2,sizeAttenuation:false})); spm.frustumCulled=false; scene.add(spm);
 // a drop: where (world x, z), how wide and how hard (world units)
 WATER.drop=(x,z,r,s)=>{ if(WATER.drops.length<8)WATER.drops.push([(x-WATER.X0)/WATER.W,(z-WATER.Z0)/WATER.D,r,s]); };
 // each frame: the stir, then two steps of the field (the drops in the first)
-WATER.step=(renderer,dt)=>{ WATER.t+=dt; WATER.stir-=dt; if(WATER.stir<0){ WATER.stir=0.05+Math.random()*0.1; WATER.drop(WATER.X0+Math.random()*WATER.W,WATER.Z0+Math.random()*WATER.D,0.14,0.0012); }   // (the circulation: a faint stir all over, so the water is never glass)
+WATER.step=(renderer,dt)=>{ WATER.t+=dt;
+  if(WATER.drops.length)WATER.calm=false; if(WATER.calm){ if(WATER.SP.n)WATER.spray(dt); return; }   // (flat and still: nothing to step till something touches it)
   const u=WATER.simMat.uniforms;
   // ON ITS OWN CLOCK (owner, 17 Oct 2026: the water went to spikes after he jumped in): 180 steps a second whatever the frame rate, at most 8 a
   // frame (c dt / dx about 0.1, far inside the wave's stability)
@@ -74,7 +80,14 @@ WATER.step=(renderer,dt)=>{ WATER.t+=dt; WATER.stir-=dt; if(WATER.stir<0){ WATER
   // (faster: without waiting for the graphics card. The heights are copied into a buffer it fills in its own time, and picked up a frame
   // later once it says they're there: what floats and his bobbing run a frame behind the waves, 16 ms, which can't be seen)
   const gl=renderer.getContext(), A=WATER.async||(WATER.async={buf:gl.createBuffer(),sync:null,init:false});
-  if(A.sync){ const r=gl.clientWaitSync(A.sync,0,0); if(r===gl.ALREADY_SIGNALED||r===gl.CONDITION_SATISFIED){ gl.bindBuffer(gl.PIXEL_PACK_BUFFER,A.buf); gl.getBufferSubData(gl.PIXEL_PACK_BUFFER,0,WATER.rb); gl.bindBuffer(gl.PIXEL_PACK_BUFFER,null); gl.deleteSync(A.sync); A.sync=null; } }
+  if(A.sync){ const r=gl.clientWaitSync(A.sync,0,0); if(r===gl.ALREADY_SIGNALED||r===gl.CONDITION_SATISFIED){ gl.bindBuffer(gl.PIXEL_PACK_BUFFER,A.buf); gl.getBufferSubData(gl.PIXEL_PACK_BUFFER,0,WATER.rb); gl.bindBuffer(gl.PIXEL_PACK_BUFFER,null); gl.deleteSync(A.sync); A.sync=null;
+      // all but still (every height under 2 thousandths, every rise slower than 1 hundredth: their half floats' bits compared as they are) for a
+      // third of a second, nothing falling in: set exactly flat, and rest
+      const rb=WATER.rb, HR=THREE.DataUtils.toHalfFloat(.002), HG=THREE.DataUtils.toHalfFloat(.01); let mv=false; for(let i=0;i<rb.length;i+=4)if((rb[i]&0x7fff)>HR||(rb[i+1]&0x7fff)>HG){ mv=true; break; }
+      WATER.quiet=mv?0:(WATER.quiet||0)+dt;
+      if(WATER.quiet>.33&&!WATER.drops.length){ const cc=renderer.getClearColor(new THREE.Color()), ca=renderer.getClearAlpha(); renderer.setClearColor(0,0);
+        for(const T of [WATER.A,WATER.B]){ renderer.setRenderTarget(T); renderer.clear(true,false,false); } renderer.setClearColor(cc,ca); renderer.setRenderTarget(null);
+        rb.fill(0); WATER.calm=true; WATER.quiet=0; WATER.spray(dt); return; } } }
   if(!A.sync){ renderer.setRenderTarget(WATER.A); gl.bindBuffer(gl.PIXEL_PACK_BUFFER,A.buf); if(!A.init){ gl.bufferData(gl.PIXEL_PACK_BUFFER,WATER.rb.byteLength,gl.STREAM_READ); A.init=true; }
     gl.readPixels(0,0,WATER.GX,WATER.GY,gl.RGBA,gl.HALF_FLOAT,0); gl.bindBuffer(gl.PIXEL_PACK_BUFFER,null); A.sync=gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE,0); gl.flush(); }
   renderer.setRenderTarget(null);
@@ -100,6 +113,12 @@ WATER.under=(renderer,scene,cam,lamps)=>{ const w=renderer.domElement.width, h=r
   const u=WATER.mat.uniforms; u.uRes.value.set(w,h); u.uNear.value=cam.near; u.uFar.value=cam.far; cam.getWorldDirection(u.uCam.value);
   lamps.slice(0,12).forEach((L,i)=>{ u.uLP.value[i].copy(L.position); u.uLC.value[i].set(L.color.r,L.color.g,L.color.b).multiplyScalar(Math.min(1,(L.userData.i0||L.intensity)/3)); }); u.uNL.value=Math.min(12,lamps.length);
   const v0=WATER.mesh.visible; WATER.mesh.visible=false; renderer.setRenderTarget(WATER.rt); renderer.render(scene,cam); renderer.setRenderTarget(null); WATER.mesh.visible=v0; };   // (left as it was: hidden while you're in another room)
+};
+WATER.build=()=>{ const P=POOLR; waterBody(WATER,{X0:P.X(P.bx0),X1:P.X(P.bx1),Z0:P.Z(P.by0),Z1:P.Z(P.by1),lvl:P.Y(P.level),GX:208,GY:80,dep:u=>Math.max(0.02,(P.level-P.bedAt(u*P.LX))/24*0.84)}); };
+// another body (the pond, the tank): its own; stepped and seen through while you're near it, on the street's level (the pool's is the first)
+WATER.extra=[]; WATER.body=cfg=>{ const W={drops:[],uH:{value:null},uWB:{value:new THREE.Vector4()},uLevel:{value:0},uGrid:{value:new THREE.Vector2()},mats:[],name:cfg.name}; waterBody(W,cfg); WATER.extra.push(W); return W; };
+WATER.tickAll=(renderer,dt,pos)=>{ for(const w of WATER.extra){ w.on=LVL==='up'&&Math.hypot(pos.x-(w.X0+w.W/2),pos.z-(w.Z0+w.D/2))<14*TILE; if(w.on)w.step(renderer,dt); } };
+WATER.underAll=(renderer,scene,cam,lamps)=>{ for(const w of WATER.extra)if(w.on)w.under(renderer,scene,cam,lamps); };
 // HIM IN IT (12-walker-rig's water, as 47-pool feeds it): the water's level and the floor under him each frame; in the basin too deep to stand he's
 // in (the rig floats him, treading, the crawl as he's steered, under with Space held); where it's shallow enough he stands and wades; his
 // splashes, strokes and steps push the water

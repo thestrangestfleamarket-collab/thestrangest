@@ -6,7 +6,7 @@
 // with their arms down), a walk and a run, a breath and a look round standing, a wave back when you wave near him, a hop, and a thing of his
 // own (KASA a flourish of his sword, SAMIDALE a pull on his pipe, GEKKOU and KURENAI a smoke, DRIZZEL a lean on his staff, SHOGUN a bow).
 // Coloured as the packs colour them (no texture), shaded as the fish and the bear (makeNPC: tones in bands, the clothes' shadows, SELF), their
-// glowing parts (a visor, a blade, a halo, a pipe's ember) lit by nothing (makeNPC's eye), so they glow in the GLOW pass.
+// glowing parts (a visor, a blade, a halo, a pipe's ember) lit by nothing (makeNPC's eye), so they glow (lit by nothing; no bloom).
 // THE EFFECTS (owner, 17 Oct 2026, "use the sfx as references to make your own rendered fx": his Brackeys VFX bundle as the reference, the game's
 // look as the rule, hard-edged blocks and no soft haze): smoke in puffs, small blocks that rise, drift, grow and go, from a pipe's bowl, a
 // cigarette's end or a smoker's mouth; the sword's trail, a run of glowing blocks along the blade's way as it sweeps, gone in a moment; the dust

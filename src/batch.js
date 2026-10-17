@@ -10,11 +10,15 @@ BATCH.build=(make)=>{ const it=BATCH.items; if(!it.length)return; const AW=2048;
   // shelves, tallest first
   const order=it.map((o,i)=>i).sort((a,b)=>it[b].cv.height-it[a].cv.height); let x=0, y=0, sh=0;
   for(const i of order){ const o=it[i], w=o.cv.width+2, h=o.cv.height+2; if(x+w>AW){ x=0; y+=sh; sh=0; } o.ax=x; o.ay=y; x+=w; sh=Math.max(sh,h); }
-  const AH=y+sh, atlas=document.createElement('canvas'); atlas.width=AW; atlas.height=AH; const g=atlas.getContext('2d'); g.imageSmoothingEnabled=false;
-  const anyE=it.some(o=>o.ecv), eat=anyE?document.createElement('canvas'):null, eg=anyE?(eat.width=AW,eat.height=AH,eat.getContext('2d')):null; if(eg){ eg.imageSmoothingEnabled=false; eg.fillStyle='#000'; eg.fillRect(0,0,AW,AH); }
-  const put=(G,cv,ax,ay)=>{ const w=cv.width, h=cv.height; G.drawImage(cv,ax+1,ay+1);   // (the picture, and its own edge pixels again round it)
-    G.drawImage(cv,0,0,1,h,ax,ay+1,1,h); G.drawImage(cv,w-1,0,1,h,ax+w+1,ay+1,1,h); G.drawImage(cv,0,0,w,1,ax+1,ay,w,1); G.drawImage(cv,0,h-1,w,1,ax+1,ay+h+1,w,1); };
-  for(const o of it){ put(g,o.cv,o.ax,o.ay); if(o.ecv)put(eg,o.ecv,o.ax,o.ay); }
+  // (the atlas's pixels set directly, one ImageData, put once: no drawing a face at a time)
+  const AH=y+sh, atlas=document.createElement('canvas'); atlas.width=AW; atlas.height=AH; const AD=new ImageData(AW,AH);
+  const anyE=it.some(o=>o.ecv), eat=anyE?document.createElement('canvas'):null, ED=anyE?new ImageData(AW,AH):null; if(eat){ eat.width=AW; eat.height=AH; for(let q=3;q<ED.data.length;q+=4)ED.data[q]=255; }
+  const px=cv=>cv instanceof ImageData?cv.data:cv.getContext('2d').getImageData(0,0,cv.width,cv.height).data;
+  const put=(D,cv,ax,ay)=>{ const w=cv.width, h=cv.height, s=px(cv), A=D.data, ln=(r,c)=>((ay+r)*AW+ax+c)*4;   // (the picture, and its own edge pixels again round it)
+    for(let r=0;r<h;r++){ const row=s.subarray(r*w*4,(r+1)*w*4); A.set(row,ln(r+1,1)); if(r===0)A.set(row,ln(0,1)); if(r===h-1)A.set(row,ln(h+1,1));
+      A.set(s.subarray(r*w*4,r*w*4+4),ln(r+1,0)); A.set(s.subarray((r+1)*w*4-4,(r+1)*w*4),ln(r+1,w+1)); } };
+  for(const o of it){ put(AD,o.cv,o.ax,o.ay); if(o.ecv)put(ED,o.ecv,o.ax,o.ay); }
+  atlas.getContext('2d').putImageData(AD,0,0); if(eat)eat.getContext('2d').putImageData(ED,0,0);
   const tex=c=>{ const t=new THREE.CanvasTexture(c); t.magFilter=t.minFilter=THREE.NearestFilter; t.generateMipmaps=false; t.colorSpace=THREE.SRGBColorSpace; return t; };
   const map=tex(atlas), emap=eat?tex(eat):null;
   // each kind's faces in one mesh, their corners' places on the atlas

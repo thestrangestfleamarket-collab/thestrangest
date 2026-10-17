@@ -10,7 +10,8 @@ const CLOCK={h:19,run:false,speed:1440/600};   // (speed: game minutes a real se
   // how high the sun is at an hour (degrees; under the horizon below 0), and which way it is (east at dawn, south at noon, west at dusk)
   const elev=h=>50*Math.cos(2*Math.PI*(h-12.7)/24)-8, azim=h=>2*Math.PI*(h-12.7)/24;
   // the sky by the sun's height (what shows past the map's edge: kept dim, a ground's colour by day, so the edge reads as the world's end, not water): [height, sky, the open air's light from above, from the ground, its strength, the sun's colour, its strength]
-  const K=[[-90,0x050507,0x55607a,0x14110e,.3,0x6f86c9,.18],[-18,0x050507,0x55607a,0x14110e,.3,0x6f86c9,.18],[-10,0x0e1430,0x4a5a8a,0x15121a,.38,0x6f86c9,.1],
+  // (night as dark as the old game's: a dim blue sky light and a faint moon, the lamps doing the rest: docs/OLD-LOOK.md)
+  const K=[[-90,0x050507,0x55607a,0x14110e,.13,0x6f86c9,.14],[-18,0x050507,0x55607a,0x14110e,.13,0x6f86c9,.14],[-10,0x0e1430,0x4a5a8a,0x15121a,.2,0x6f86c9,.08],
            [-4,0x2a2034,0x7a6a9a,0x2a1e20,.5,0xff8a5a,0],[0,0x3a2a30,0xd09a8a,0x3a2a22,.6,0xff9a5a,.6],[6,0x4a3c38,0xf0c8a0,0x4a3a2a,.75,0xffb070,1.6],
            [14,0x3a4350,0xbfdcff,0x5b4a35,.9,0xfff1d6,2.4],[90,0x3a4350,0xbfdcff,0x5b4a35,.9,0xfff1d6,2.6]];
   const ca=new THREE.Color(), cb=new THREE.Color(), mixC=(a,b,t,out)=>out.copy(ca.setHex(a)).lerp(cb.setHex(b),t);
@@ -25,7 +26,7 @@ const CLOCK={h:19,run:false,speed:1440/600};   // (speed: game minutes a real se
     const dir=new THREE.Vector3(Math.sin(az)*Math.cos(el),Math.sin(el),Math.cos(az)*Math.cos(el));
     sunL.target.position.set(pos.x,py,pos.z); sunL.position.copy(sunL.target.position).addScaledVector(dir,60*TILE); sunL.target.updateMatrixWorld();
     // its shadows: every frame while it's strong enough to show them moving; faint (the moon), only when the hour or where you are changes much
-    const strong=sunL.intensity>.3; sunL.shadow.autoUpdate=strong;
+    const strong=sunL.intensity>.3; sunL.shadow.autoUpdate=strong&&(CLOCK.fr=(CLOCK.fr||0)+1)%2===0;   // (every other frame: half the cost, a frame's lag unseen)
     if(!strong&&(Math.abs(last.h-CLOCK.h)>.05||Math.hypot(last.x-pos.x,last.z-pos.z)>4*TILE||last.lv!==LVL)){ sunL.shadow.needsUpdate=true; last={h:CLOCK.h,x:pos.x,z:pos.z,lv:LVL}; }
     if(UI.menuOpen)CLOCK.draw&&CLOCK.draw(); };
   CLOCK.set=h=>{ CLOCK.h=((h%24)+24)%24; };

@@ -9,16 +9,17 @@ const BOD={meshes:[], walls:{}, lamps:[]};
 { // (the map's own names in a scope of their own: the game's files above have some of the same)
   const B0=LBLD[0], BODOFF=B0.y0+3.75, W=LSEED.walk, CURB=LSEED.street, FAR=LSEED.grass, RD=-4;   // (the road 4 art px below the sidewalk: a kerb you step down)
   const OX=(B0.x0+B0.x1)/2, OY=B0.y1, K=BLDK, X=x=>(x-OX)*TILE*K, Z=y=>(y-OY)*TILE*K, Y=z=>z*ZU*K, XS=x=>(x-OX)*TILE, ZS=y=>(y-OY)*TILE, YS=z=>z*ZU; Object.assign(BOD,{X,Z,Y,XS,ZS,YS,OX,OY,B0,BODOFF});   // (X Z Y: the building, a tenth bigger from its front's middle, BLDK; XS ZS YS: the street, as it was)
-  const MAP={x0:50,x1:142,y0:B0.y0,y1:FAR+3}, POOLX=82;   // (the street's run; the pool room's west wall)
+  const MAP={x0:50,x1:152,y0:B0.y0,y1:FAR+3}, POOLX=82;   // (the street's run; the pool room's west wall)
   // the subway's stairs (MAPSTAIR, the map's: tiles) a hole in the ground; elsewhere the ground's own colour
   const holed=f=>(x,y)=>x>=MAPSTAIR.x0&&x<MAPSTAIR.x1&&y>=MAPSTAIR.y0&&y<MAPSTAIR.y1?null:f(x,y);
   // ---- the painting of a face: fn(i, j) its colour, null (a hole) or glowing (.e, or four long); the colours and the glow as two canvases
-  const C=v=>v?((v.e||v.length>3)?[...v.slice(0,3).map(x=>Math.max(0,Math.min(255,Math.round(x)))),1]:v.map(x=>Math.max(0,Math.min(255,Math.round(x))))):null;
-  const faceTex=(w,h,fn)=>{ w=Math.max(1,Math.round(w)); h=Math.max(1,Math.round(h)); const c=document.createElement('canvas'); c.width=w; c.height=h; const g=c.getContext('2d'), im=g.createImageData(w,h);
-    let ie=null, ge=null;
-    for(let j=0;j<h;j++)for(let i=0;i<w;i++){ const v=fn(i,j), k=(j*w+i)*4; if(!v)continue; im.data[k]=v[0]; im.data[k+1]=v[1]; im.data[k+2]=v[2]; im.data[k+3]=255;
-      if(v.length>3){ if(!ie){ ge=document.createElement('canvas'); ge.width=w; ge.height=h; ie=new ImageData(w,h); } ie.data[k]=v[0]; ie.data[k+1]=v[1]; ie.data[k+2]=v[2]; ie.data[k+3]=255; } }
-    g.putImageData(im,0,0); if(ie)ge.getContext('2d').putImageData(ie,0,0); return {map:{image:c},em:ie?{image:ge}:null}; };
+  // (faster, 17 Oct 2026: no canvas a face and no new colour a pixel: the face's pixels straight into an ImageData, rounded there; the batch
+  // copies them into its atlas. C only marks a glowing colour)
+  const C=v=>v&&v.e&&v.length===3?[v[0],v[1],v[2],1]:v;
+  const faceTex=(w,h,fn)=>{ w=Math.max(1,Math.round(w)); h=Math.max(1,Math.round(h)); const im=new ImageData(w,h), d=im.data; let ie=null, e=null;
+    for(let j=0,k=0;j<h;j++)for(let i=0;i<w;i++,k+=4){ const v=fn(i,j); if(!v)continue; d[k]=Math.round(v[0]); d[k+1]=Math.round(v[1]); d[k+2]=Math.round(v[2]); d[k+3]=255;
+      if(v.length>3){ if(!ie){ ie=new ImageData(w,h); e=ie.data; } e[k]=d[k]; e[k+1]=d[k+1]; e[k+2]=d[k+2]; e[k+3]=255; } }
+    return {map:{image:im},em:ie?{image:ie}:null}; };
   const bq=(a,b,c,d,tx,kind)=>BATCH.add([...a,...b,...c,...a,...c,...d],[0,0,1,0,1,1,0,0,1,1,0,1],tx.map.image,tx.em?tx.em.image:null,kind);
   // ---- ONE OF THE GAME'S BOXES (x, y in tiles, z art px): top(X, Y); fs(nx, ny, X, Y, z from its foot, shade) or fi(Y, z), fj(X, z); else its colour
   function gbox(b,kind='L'){ const {x0,x1,y0,y1,z0,z1}=b; if(b.foot&&z1-z0<.05)return; const k=b.em?2:1, H=Math.max(1,(z1-z0)*k);
@@ -103,7 +104,7 @@ const BOD={meshes:[], walls:{}, lamps:[]};
     // ("Preset Ghost Street 1": the two ground-floor pieces, the floor above, the tiled roof, the eave with its sign and cooler, the bay window,
     // the door curtain, the drinks machine, the planted beds and their lanterns; not the row houses or the pole), east of the apartment
     // building, its front to the street, its paved forecourt out to the sidewalk (GHOSTK.GSK.o: the kit's corner)
-    { const K=GHOSTK.GSK, s=K.s; K.o=[113.2,W-8.3*s]; const n3=PROPS.length;
+    { const K=GHOSTK.GSK, s=K.s; K.o=[131,W-8.3*s];   /* (moved east, owner 17 Oct 2026: the Diner and the Bar between it and the apartments) */ const n3=PROPS.length;
       for(const [k,dx,dy] of PRESETS['Preset Ghost Street 1'])if(!/row house|utility pole/.test(k))CATALOG[k](K.o[0]-3.5*s+dx,K.o[1]-.45*s+dy);
       for(const p of PROPS.slice(n3))GHOSTST.push(p); BOD.GHOSTST=GHOSTST; BOD.GSK=K; gdShape(GHOSTST,K,LAMPS); }   // (a third taller, its ground floor a dojo you walk into: ghostdojo.js)
     const n2=PROPS.length, R=(f,x,y,z,...a)=>{ const p=f(x,y,z,W,...a); p.solids=[]; return p; };
@@ -124,7 +125,7 @@ const BOD={meshes:[], walls:{}, lamps:[]};
     {id:'road',x0:MAP.x0,y0:CURB,x1:MAP.x1,y1:FAR,z:RD,col:(x,y)=>roadCol(x,y,0),tex:'asphalt_02',tint:[62,64,68],rep:3},
     {id:'kerb2',x0:MAP.x0,y0:FAR,x1:MAP.x1,y1:FAR+.16,z:0,col:()=>[178,174,164],tex:'concrete_pavement',tint:[178,174,164],rep:2},
     {id:'walk2',x0:MAP.x0,y0:FAR+.16,x1:MAP.x1,y1:MAP.y1,z:0,col:slabCol,tex:'concrete_pavement',tint:[166,161,148],rep:2},
-    {id:'ghostst',bld:true,x0:113.4,y0:W-8.75*4/3,x1:123.6,y1:W,z:.1,col:(x,y)=>GHOSTK.gsFloor(x,y)||grassCol(x,y),tex:null,rep:2},   // (Ghost Street's paving: the kit's own, gsFloor)
+    {id:'ghostst',bld:true,x0:131.2,y0:W-8.75*4/3,x1:141.4,y1:W,z:.1,col:(x,y)=>GHOSTK.gsFloor(x,y)||grassCol(x,y),tex:null,rep:2},   // (Ghost Street's paving: the kit's own, gsFloor)
     {id:'grassW',x0:MAP.x0,y0:B0.y0,x1:B0.x0,y1:W,z:0,col:holed(grassCol),tex:null,rep:2},
     {id:'grassE',x0:B0.x1,y0:B0.y0,x1:POOLX,y1:W,z:0,col:grassCol,tex:null,rep:2}];
   // the kerbs' faces down to the road

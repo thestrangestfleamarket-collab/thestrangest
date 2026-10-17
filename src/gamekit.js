@@ -8,7 +8,7 @@ const PROPS=[]; let PNAME='object';
 function prop(boxes,extra,o){ const fp=boxes.filter(b=>b.z0===0||b.foot);
   const p={boxes,extra,x0:Math.min(...fp.map(b=>b.x0)),y0:Math.min(...fp.map(b=>b.y0)),x1:Math.max(...fp.map(b=>b.x1)),y1:Math.max(...fp.map(b=>b.y1)),lv:0,id:PROPS.length,name:PNAME,...o};
   p.chunk=chunkAtL((p.x0+p.x1)/2,(p.y0+p.y1)/2,p.lv); PROPS.push(p); return p; }
-const sided=b=>b, cutOut=f=>null;
+const sided=b=>b, cutOut=f=>null; function zShift(b,dz){ const nb={...b,z0:b.z0+dz,z1:b.z1+dz}; return b.fs?sided(nb):nb; }   // (a box lifted: 22-props-layers-1-props, word for word)
 const SQB={lv:-1,hall:{x0:78.5,x1:93.5,y0:-85.2,y1:-77},gym:{x0:78.5,x1:101.24,y0:-99.74,y1:-85.2},lau:{x0:93.5,x1:99.2,y0:-85.2,y1:-77,h:88,lv:-1},H:126,pool:{x0:78.5,x1:101.24,y0:-99.5,y1:-85.5,lv:-2}};
 const LSEED={x0:66,split:76,a0:78.5,x1:93.5,c0:96,deep:-104.5,back:-89.5,walk:-77,street:-71,grass:-64,end:-56,   // (deep: the apartment building's back, 27.5 tiles from its front)
   // (the row spaced out, owner 15 Oct 2026, "all buildings have gap", mockups/rooms-on-map-v3.png C2: 2.5 tiles of grass between each building and the next: the bodega x0..split, the apartments a0..x1, the bar c0..b2; 221B on the row too, hall and sr below)
@@ -25,6 +25,8 @@ const LBLD=[{id:'lbodega',x0:LSEED.split-8,y0:LSEED.walk-14,x1:LSEED.split,y1:LS
 const landK=(x,y)=>y>=LSEED.street&&y<LSEED.grass?3:y>=LSEED.walk||y>=LSEED.grass?5:1;
 const SLAB=[[168,163,150],[161,156,143],[173,168,155]], SEAM=[131,126,115];
 const BRICK=[[146,80,63],[137,73,58],[154,88,70],[128,68,54]], MORTAR=[92,54,45], COPE=[182,176,164];
+function woodCol(x,y){ const r=Math.floor(y*4), o=hash(r,0,13)*3, b=Math.floor(x/1.5+o);   // shop floor boards (21-world-map-2-ground, word for word: the bar's floor is its boards darkened)
+  const c=[[150,112,72],[142,104,66],[156,118,78]][Math.floor(hash(b,r,17)*3)]; return mt('wood',(y*4-r)<.08||(x/1.5+o-b)<.03?sh(c,.75):c); }
 function speck(c,x,y,k){ const n=hash(Math.floor(x*24),Math.floor(y*24),k); return n<.018?sh(c,.9):n>.988?sh(c,1.05):c; }
 // NATURAL GRAIN (owner, 15 Oct 2026: "real depth in natural ways, not lined up in a block pattern"; 16 Oct 2026: "do the make more natural
 // thing again, do another pass, deep dive"): the ground's light and dark from shapes of their own, never tones picked square by square.

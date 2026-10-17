@@ -11,13 +11,13 @@ POOLR.LX=POOLR.bx1-POOLR.bx0; POOLR.LY=POOLR.by1-POOLR.by0; POOLR.level=-0.16*24
   const sh=(c,f)=>[Math.min(255,c[0]*f),Math.min(255,c[1]*f),Math.min(255,c[2]*f)];
   const P=POOLR, OX=(P.x0+P.x1)/2, OY=(P.y0+P.y1)/2;
   const X=x=>(x-OX)*TILE, Z=y=>(y-OY)*TILE, Y=z=>z*ZU; POOLR.X=X; POOLR.Z=Z; POOLR.Y=Y;
-  const faceTex=(w,h,fn)=>{ w=Math.max(1,Math.round(w)); h=Math.max(1,Math.round(h)); const c=document.createElement('canvas'); c.width=w; c.height=h; const g=c.getContext('2d'), im=g.createImageData(w,h);
-    for(let j=0;j<h;j++)for(let i=0;i<w;i++){ const v=fn(i,j), k=(j*w+i)*4; if(!v)continue; im.data[k]=v[0]; im.data[k+1]=v[1]; im.data[k+2]=v[2]; im.data[k+3]=255; }
-    g.putImageData(im,0,0); const t=new THREE.CanvasTexture(c); t.magFilter=THREE.NearestFilter; t.minFilter=THREE.NearestMipmapNearestFilter; t.colorSpace=THREE.SRGBColorSpace; return {map:t}; };
+  const faceTex=(w,h,fn)=>{ w=Math.max(1,Math.round(w)); h=Math.max(1,Math.round(h)); const im=new ImageData(w,h), d=im.data;   // (faster: straight into an ImageData, as bodega.js)
+    for(let j=0,k=0;j<h;j++)for(let i=0;i<w;i++,k+=4){ const v=fn(i,j); if(!v)continue; d[k]=Math.round(v[0]); d[k+1]=Math.round(v[1]); d[k+2]=Math.round(v[2]); d[k+3]=255; }
+    const t=new THREE.CanvasTexture(im); t.magFilter=THREE.NearestFilter; t.minFilter=THREE.NearestMipmapNearestFilter; t.colorSpace=THREE.SRGBColorSpace; return {map:t}; };
   const mat=(tx,basin)=>{ const m=new THREE.MeshLambertMaterial({map:tx.map,alphaTest:.5,side:THREE.DoubleSide}); if(basin)WATER.caustic(m); return m; };
   const quad=(a,b,c,d,tx,basin)=>{ const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute([...a,...b,...c,...a,...c,...d],3));
     g.setAttribute('uv',new THREE.Float32BufferAttribute([0,0,1,0,1,1,0,0,1,1,0,1],2)); g.computeVertexNormals(); const me=new THREE.Mesh(g,mat(tx,basin)); me.receiveShadow=true; scene.add(me); return me; };
-  const C=v=>v?v.map(x=>Math.max(0,Math.min(255,Math.round(x)))):null;
+  const C=v=>v;   // (faceTex rounds and clamps)
   const floor=(x0,y0,x1,y1,z,col)=>quad([X(x0),Y(z),Z(y1)],[X(x1),Y(z),Z(y1)],[X(x1),Y(z),Z(y0)],[X(x0),Y(z),Z(y0)],faceTex((x1-x0)*24,(y1-y0)*24,(i,j)=>C(col(x0+(i+.5)/24,y0+(j+.5)/24))));
   const bq=(a,b,c,d,tx,basin)=>BATCH.add([...a,...b,...c,...a,...c,...d],[0,0,1,0,1,1,0,0,1,1,0,1],tx.map.image,null,basin?'K':'L');   // (faster: into the batch, batch.js)
   const wallY=(x,y0,y1,z0,z1,paint,basin)=>(basin?bq:quad)([X(x),Y(z0),Z(y0)],[X(x),Y(z0),Z(y1)],[X(x),Y(z1),Z(y1)],[X(x),Y(z1),Z(y0)],faceTex((y1-y0)*24,z1-z0,(i,j)=>C(paint(y0+(i+.5)/24,z1-j-.5))),basin);
@@ -118,8 +118,6 @@ POOLR.LX=POOLR.bx1-POOLR.bx0; POOLR.LY=POOLR.by1-POOLR.by0; POOLR.level=-0.16*24
   const ceil=(x,y,c,k)=>{ const m=new THREE.Mesh(new THREE.BoxGeometry(.9*TILE,.03,.5*TILE),new THREE.MeshBasicMaterial({color:new THREE.Color(...c).multiplyScalar(1.3)})); m.position.set(X(x),Y(P.H-2),Z(y)); scene.add(m); OVERHEAD.push({o:m,y:Y(P.H-4)});
     const L=new THREE.PointLight(new THREE.Color(...c),k,7*TILE,1.6); L.position.set(X(x),Y(P.H-12),Z(y)); L.userData.i0=L.intensity; scene.add(L); lamps.push(L); };
   ceil(22.7,12.4,[1,.88,.7],6); ceil(22.7,3,[1,.92,.8],5); ceil(10.5,7.26,[1,.88,.7],3.5); ceil(8.5,3,[.9,.95,1],6); ceil(2.1,5.2,[1,.9,.75],3);
-  // HIS SHADOWS: two shadow-casting stand-ins for the two lamps nearest him (lamps' own colour and strength copied as he moves)
-  SHL.push(...[0,1].map(()=>{ const L=new THREE.PointLight(0xffffff,0,8*TILE,1.4); L.castShadow=true; L.shadow.mapSize.set(512,512); L.shadow.camera.near=0.1; L.shadow.camera.far=14; L.shadow.bias=-0.003; scene.add(L); return L; }));
   // where he walks: the deck and the room's walls; the water is walked into (the rig's water takes him from there)
   solid(P.x0-1,P.y0,P.x0,P.y1,P.H); solid(P.x1,P.y0,P.x1+1,P.y1,P.H); solid(P.x0,P.y0-1,P.x1,P.y0,P.H); solid(P.x0,P.y1,21.97,P.y1+1,P.H); solid(23.53,P.y1,P.x1,P.y1+1,P.H);
   BOUND={x0:X(P.x0)+0.3,x1:X(P.x1)-0.3,z0:Z(P.y0)+0.3,z1:Z(P.y1)-0.3};

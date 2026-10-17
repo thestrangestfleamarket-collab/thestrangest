@@ -125,7 +125,7 @@ print('ok base')
 mod=rp(mod,"  RW=Math.ceil(pw/PXS/2)*2; RH=Math.ceil(ph/PXS/2)*2;","  const S=pxS(); SCL=S; RW=Math.ceil(pw/S/2)*2; RH=Math.ceil(ph/S/2)*2;")
 mod=rp(mod,"const c=renderer.domElement, cw=RW*PXS/dpr, ch=RH*PXS/dpr;","const c=renderer.domElement, cw=RW*S/dpr, ch=RH*S/dpr;")
 mod=rp(mod,"let ppu=PPU;                                    // the zoom: screen pixels per world unit (the wheel)\nfunction frustum(){ cam.left=-RW/2/ppu; cam.right=RW/2/ppu; cam.top=RH/2/ppu; cam.bottom=-RH/2/ppu; cam.updateProjectionMatrix(); }",
-"""let ppu=PPU, SCL=1, RESI=2;                     // the zoom (the wheel); SCL: screen pixels to a picture pixel now; RESI: the art's fineness (- and =)
+"""let ppu=PPU, SCL=1, RESI=3;                     // the zoom (the wheel); SCL: screen pixels to a picture pixel now; RESI: the art's fineness (- and =)
 const FULLRES=+(new URLSearchParams(location.search).get('fullres')||0); if(FULLRES)RESI=FULLRES;   // (?fullres=N: a test's screenshots at the screen's own pixels, the art's fineness N of RESL (owner, 17 Oct 2026: "show in full res in screenshots"); never in play)
 // SHARPER AT WILL (owner, 16 Oct 2026: "allow the game to go more res if i press = more times, however sharp res it can go"): the art's own
 // pixels a world unit, the game's times RES (- coarser, = finer, as far as one screen pixel each: the sharpest the screen can show); the
@@ -139,8 +139,9 @@ const RESL=[.5,.75,1,1.5,2,3,4,6,8,12,16], RES=()=>RESL[RESI], V0=PPU*PXS;   // 
 // pixels a picture pixel the art gets finer instead (MAXPX), so close up you see each finger, not bigger blocks
 const MINPX=()=>Math.max(1,Math.round(PXS/RES())), MAXPX=8, ZMAX=PPU*80;
 // NEVER FINER THAN THE OPENING (owner, 17 Oct 2026, his picture: "dont let the game get any higher res than this at any time, at any zoom level"): the
-// art's pixels never finer than the opening's (RESMAX: = stops there), and zoomed in they only grow (no finer art close up any more)
-const RESMAX=FULLRES?10:2, vpu=()=>V0*ppu/PPU, art=()=>PPU*RES(), pxS=()=>Math.max(MINPX(),Math.round(vpu()/art())), rppu=()=>Math.round(vpu()/art())<MINPX()?vpu()/pxS():art();
+// art's pixels never finer than the opening's (RESMAX: = stops there), and zoomed in they only grow (no finer art close up any more).
+// One step sharper (owner, 17 Oct 2026: "increase resolution by one factor"): the opening's 1.5x the game's, the ceiling with it
+const RESMAX=FULLRES?10:3, vpu=()=>V0*ppu/PPU, art=()=>PPU*RES(), pxS=()=>Math.max(MINPX(),Math.round(vpu()/art())), rppu=()=>Math.round(vpu()/art())<MINPX()?vpu()/pxS():art();
 function frustum(){ const u=rppu(); cam.left=-RW/2/u; cam.right=RW/2/u; cam.top=RH/2/u; cam.bottom=-RH/2/u; cam.updateProjectionMatrix(); }""")
 mod=rp(mod,"ppu*=Math.pow(ppuTo/ppu,ease); frustum();","ppu*=Math.pow(ppuTo/ppu,ease); if(pxS()!==SCL)resize(); else frustum();")
 mod=rp(mod,"zoom ${(ppu/PPU).toFixed(2)}×`","zoom ${(SCL*rppu()/V0).toFixed(2)}× · art ${SCL===1&&vpu()<art()?'full':RES()+'×'}`")
@@ -337,7 +338,7 @@ mod=rp(mod,"} for(const N of NPCS)N.tick(dt,pos); if(FIRE)","} NPCS.tick(dt,pos)
 mod=rp(mod,"yaw+=(yawTo-yaw)*ease; pitch+=(pitchTo-pitch)*ease;","yaw=Math.abs(yawTo-yaw)<1e-4?yawTo:yaw+(yawTo-yaw)*ease; pitch=Math.abs(pitchTo-pitch)<1e-4?pitchTo:pitch+(pitchTo-pitch)*ease;")
 mod=rp(mod,"ppu*=Math.pow(ppuTo/ppu,ease); if(pxS()!==SCL)","ppu=Math.abs(ppuTo/ppu-1)<1e-4?ppuTo:ppu*Math.pow(ppuTo/ppu,ease); if(pxS()!==SCL)")
 mod=rp(mod,"const dt=Math.min(0.05,(now-last)/1000); last=now;","const dt=Math.max(0,Math.min(0.05,(now-last)/1000)); last=now;   /* (never backwards: the first frame's time can be older than the page's start) */")
-mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);","""LITE.init(); STORE.later(); window.__started=true; window.__scene=scene;
+mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);","""LITE.init(); STORE.later(); window.__started=true; window.__scene=scene; window.__dbg={OBJS,setRes:i=>{ RESI=i; resize(); },res:()=>RESI};
 { const t0=performance.now(), PL=[0,1,2,3,4,5].map(()=>new THREE.Plane(new THREE.Vector3(0,1,0),1e6)); renderer.setRenderTarget(composer.readBuffer); renderer.compile(scene,cam);
   renderer.clippingPlanes=PL; renderer.render(new THREE.Scene(),cam); renderer.compile(scene,cam); renderer.clippingPlanes=[]; renderer.setRenderTarget(null);   /* (the empty picture only sets the six planes for the second compile) */
   window.WARMMS=Math.round(performance.now()-t0); }

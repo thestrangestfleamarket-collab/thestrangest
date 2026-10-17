@@ -45,7 +45,7 @@ const PB={on:false,ready:false,loose:0.5};
     const Fb=KEYS.map((k,i)=>{ const rb=bodies[i], p=rb.translation(), r=rb.rotation(); return new THREE.Matrix4().compose(P.set(p.x,p.y,p.z),Q.set(r.x,r.y,r.z,r.w),Sc.set(1,1,1)); });
     const Bm=KEYS.map(k=>M(R.frameOf(k,B)).invert());
     PCS.forEach((pc,i)=>{ const j=PART[i]; if(j<0)return; const O=new THREE.Matrix4().multiplyMatrices(Bm[j],M(R.frameOf(pc.on||pc.n,B))); const PM=W3.PM.value[i].multiplyMatrices(Fb[j],O);
-      if(W3.E&&W3.E[i])W3.applyE(PM,W3.E[i],new THREE.Vector3().setFromMatrixPosition(PM)); });
+      if(W3.E&&W3.E[i])W3.applyE(PM,W3.E[i],new THREE.Vector3().setFromMatrixPosition(PM)); if(W3.HIDE[i])PM.makeScale(0,0,0); });
     return true; };
   PB.load=()=>{ if(RAPIER||PB.loading)return; PB.loading=true; import('https://cdn.jsdelivr.net/npm/@dimforge/rapier3d-compat@0.12.0/rapier.es.js').then(async m=>{ RAPIER=m.default||m; await RAPIER.init(); PB.ready=true; need=true; PB.R=RAPIER; (PB.onReady||[]).forEach(f=>f()); /* (the street's characters take the engine too: npc-street) */ }).catch(e=>{ console.warn('physics body: Rapier did not load',e); PB.on=false; }); };
   PB.set=on=>{ PB.on=on; if(on){ PB.load(); need=true; } try{ localStorage.setItem('market-physbody',on?'1':'0'); }catch(e){} };

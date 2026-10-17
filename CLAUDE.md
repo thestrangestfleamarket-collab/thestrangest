@@ -601,13 +601,36 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
   each its own skinned mesh made from the body's own faces pushed out by the cloth's thickness and bent by the same bones (`PLAYAS.wear`,
   `PLAYAS.colour`; GRAPHICS' buttons; kept in the browser, `market-wear`); the body's faces under a worn item aren't drawn. GRAPHICS' AVATAR
   switches back to the Walker (`?avatar=walker`). The earlier mockups (a dozen soft shapes, the traced sprite) were not taken.
+- **The tomato and his friends** (owner, 17 Oct 2026, his pictures: a tomato-headed mascot in a yellow apron, "simple graphics, like the character
+  on right (the old game's deer sprite), a little more complex but not much": of three mockups (A the sprite's level, B, C) he took C's look; then
+  "lets do the same thing with them. simpel designed characters. each part its own so it can be animated. give it physics and animations for
+  walking, each item separate thing (newspaper, motorcycle) use same style as the tomato guy"; `src/npc-rig.js`, `src/npc-toons.js`): THE TOMATO
+  (freckles, leaves and a curled stem, the apron), THE CAT IN THE RAINCOAT (the newspaper under his arm, opened to read when he stops, its page
+  turned now and then; the ink jar in his hand, set down by his foot while he reads), THE TV CAT (a rusty TV on four furry legs, its screen his
+  face, glowing a little, blinking; the cable trailing), THE FROG ON HIS SCOOTER (the scooter his own: fork on its spring, wheels turning as he
+  rolls, the box on the rack, a lean into turns, the cape lifted by his going), THE SHARK (the hood's fin, its jaw snapping now and then, the trench
+  coat's skirt). **Their complexity** (of a ladder of the tomato at 1 to 5, the owner: "#1 but with #2s arms"): the deer sprite's level (a few
+  plain shapes in flat colours, round things in few faces, flat eyes), only the arms the second level's (a sleeve to the wrist, a glove with its
+  thumb and cuff). Built in code from plain shapes; **every part on a bone of its own** (`RIGNPC.make`: one mesh, one draw, each point carried
+  rigidly by its part's bone), the things they carry their own parts on their own bones. Each frame the bones go back to rest, the character's
+  pose moves them (walk, idle look round, what he does with his things), then **springs** add the give (what hangs or stands lags behind his
+  starts, stops and turns, and swings back; at rest it settles and stops; a bump from you sets them going): no Rapier, no new loads. Some
+  700-1,600 triangles each (5,250 the five), no lights, one shadow map each (SELF) as every character. They walk the whole street.
+  `N.reshape` / `N.recolour` by part, `N.B` the bones. `?toonhold=1` stands the five in a row; `tests/toonshot.cjs <out> [hour] [zoom]`.
+
+- **The opening view and V, again** (owner, 17 Oct 2026, his picture of the dojo: "i want the game to always start you this distance and at this
+  isometric angle, q & e to rotate, v wlil take you in 3rd person view over their shoulders and they can look around 360 and up and down. press v
+  again and in full free view 1st person view"): ISOMETRIC opens at the half turn from the angle before, 1.5 times in (0.7 of the 2.2 before;
+  `UI.setView` in `ui.js`); Q / E jump between its four angles; V: BEHIND, the camera over his right shoulder (0.45 m out), a drag looks all round
+  and up and down, the camera brought in before any wall between his head and it (the solids he walks into); V again FIRST PERSON (a drag looks
+  anywhere); V again back to isometric. `tests/startshot.cjs <out> [place] [view] [w] [h] [keys]`.
 
 ## THE MARKET: the one official map
 
 **THE MARKET** (owner, 17 Oct 2026: "one official MARKET map im gona start filling in") is the game's map here: every place the owner adds goes
 into it, on its street or under it (the subway's level), next to what's there; not new separate pages. It's built to `dist/market.html` and
 published to its own artifact, **https://claude.ai/artifact/X2Bk8UjQKP8yfLdLtVVn3s** (update that one, keep its link; don't make new pages for
-new places). (Another session published to PnmQqhkusfewby35tf4zo5 for a while, a link the owner's main session can't open or update: 17 Oct 2026, version 47 back on X2Bk.) A place's code is its own file in `src/`; `map-pre.js` says where each place stands (its offset, its level), `map-post.js` joins
+new places). (Another session published to PnmQqhkusfewby35tf4zo5 for a while, a link the owner's main session can't open or update: 17 Oct 2026, version 47 back on X2Bk.) (17 Oct 2026, later: X2Bk could not be opened from this session's account, so the tomato and his friends and the opening view went to **PnmQqhkusfewby35tf4zo5**, version 15; try X2Bk first, then PnmQ.) A place's code is its own file in `src/`; `map-pre.js` says where each place stands (its offset, its level), `map-post.js` joins
 them (the ground, the levels, what cuts away). Its first places: the bodega, the pool room, the subway station and its stairs.
 
 **Not updated any more** (owner, 17 Oct 2026: "stop updating tsfm im not working there anymore"): nothing goes to `bralynnb/tsfm` from here; the copy there stays as it was last merged (version 8.0.1: at his word, "pull in all merges and go live", [bralynnb/tsfm#801](https://github.com/bralynnb/tsfm/pull/801); before it 8.0.0, [bralynnb/tsfm#800](https://github.com/bralynnb/tsfm/pull/800), 7.9.9, [bralynnb/tsfm#799](https://github.com/bralynnb/tsfm/pull/799), and 7.9.8, [bralynnb/tsfm#798](https://github.com/bralynnb/tsfm/pull/798)); ask before each update there. The artifact link is where THE MARKET is played. What follows is the old way, for the record.
@@ -641,7 +664,7 @@ the owner's call, and merging publishes). The artifact link above is the quick w
     bodega's scope, after `bodbuild.js`).
   - `npc-dragon.js`: the Dragon on the road. `kit.js` + `dress.js`: the kits' pieces and the few on the street. `apts.js`: the apartment house (in the
     bodega's scope, after `bodbuild.js`). `npc-figures.js`: the six figures (KASA, GEKKOU, DRIZZEL, KURENAI, SAMIDALE, SHOGUN) on their Mixamo
-    bones, posed here, and the effects (smoke, the blade's trail, dust). `npc-creatures.js`: the packs' small animals on their own bones and clips. `npc-parts.js`: the parts builder; `npc-mushroom.js`: the mushroom seller, built in code in his parts.
+    bones, posed here, and the effects (smoke, the blade's trail, dust). `npc-creatures.js`: the packs' small animals on their own bones and clips. `npc-parts.js`: the parts builder; `npc-mushroom.js`: the mushroom seller, built in code in his parts. `npc-rig.js`: characters in parts on bones with springs; `npc-toons.js`: the tomato, the cat in the raincoat, the TV cat, the frog on his scooter, the shark.
     `park.js`: Central Park's entrance past the far sidewalk (the wall and gate, the pavers, the lawns, the pack's trees and rocks, the undergrowth,
     the pots, the lamps). `boats.js`: the kayak and the fishing boat afloat in the pool.
 - `data/`: the characters baked from the owner's models (`goldfish.json`, `bear.json`), the skeletons, their gear and clips (`skel.json`), the six figures (`figures.json`), the park's trees and rocks (`forest.json`), the undergrowth, pots and boats (`props.json`), the creatures (`creatures.json`), the Dragon (`dragon.json`), the kits (`kit.json`). `tools/`: the

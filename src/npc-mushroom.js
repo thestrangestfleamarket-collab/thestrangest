@@ -6,9 +6,9 @@
 // fish and the bear (tones in bands, the clothes' shadows, SELF), lit by the lamps. He walks the whole street as the others do (owner, 17 Oct
 // 2026: "put any new characters that go in the game into the street walking around"), rocking a little under his tray, and turns to face you
 // when you come near ----
-const MUSH={};
+const MUSH={};   // (17 Oct 2026, the owner: "the gold skeleton character is not the mushroom character. the mushroom skeleton is white, and taller": his bones white, 2.2 m; the gold skeleton, npc-skel.js, is another)
 { const {shape,limb,sph,cyl,box,torus,blob,noise}=PARTSNPC.T;
-  const CREAM=[.93,.87,.7], BONE=[.96,.91,.75], TAN=[.76,.6,.36], HAT=[.72,.47,.2], HAT2=[.66,.42,.17], CAP=[.74,.5,.22], RUST=[.74,.42,.14], OLIVE=[.47,.43,.18], ROPE=[.58,.42,.2], BAG=[.7,.53,.3], TRAY=[.68,.44,.19], BLACK=[0,0,0];
+  const CREAM=[.93,.87,.7], BONE=[.95,.95,.93], TAN=[.76,.6,.36], HAT=[.72,.47,.2], HAT2=[.66,.42,.17], CAP=[.74,.5,.22], RUST=[.74,.42,.14], OLIVE=[.47,.43,.18], ROPE=[.58,.42,.2], BAG=[.7,.53,.3], TRAY=[.68,.44,.19], BLACK=[0,0,0];
   const part=(name,rank,of)=>({name,rank,of});
   // a mushroom: a cream stem and a puffy cap (cream or tan), its foot at (x,y,z), h high, the cap r wide; a little lean; into the stems' and the caps' parts
   const mush=(stems,caps,x,y,z,h,r,cap,lean=[0,0,0])=>{ const st=cyl(r*.3,r*.38,h,6); st.translate(0,h/2,0); const cp=sph(r,8,5); cp.scale(1,.62,1); cp.translate(0,h,0);
@@ -37,5 +37,5 @@ const MUSH={};
     part('strap',2,[ limb([.12,1.24,.1],[-.22,.72,.13],.02,.02,ROPE,6), limb([.12,1.24,-.06],[-.24,.72,-.06],.02,.02,ROPE,6),
       ...Array.from({length:7},(_,i)=>{ const u=(i+.5)/7; return shape(sph(.024,6,4),[.52,.37,.17],[.12-.34*u,1.24-.52*u,.1+.03*u]); }) ]),   // (its braid's knots)
     part('bag',1,[ shape(blob(.08,.12,.05,10,8),BAG,[-.26,.62,.04],null,[0,0,-6]), shape(blob(.085,.03,.055,10,6),[.62,.46,.25],[-.26,.72,.04],null,[0,0,-6]) ]) ];
-  const N=PARTSNPC.make(PARTS,Object.assign({key:'mushroom',name:'THE MUSHROOM SELLER',eye:0,eyeC:'0.,0.,0.',metres:1.8,radius:.3,speed:.4,stride:6,rock:.05,bob:.025},PARTSNPC.street(72,-70)));
+  const N=PARTSNPC.make(PARTS,Object.assign({key:'mushroom',name:'THE MUSHROOM SELLER',eye:0,eyeC:'0.,0.,0.',metres:2.2,radius:.3,speed:.4,stride:6,rock:.05,bob:.025},PARTSNPC.street(72,-70)));
   MUSH.N=N; window.MUSHDBG=()=>({key:N.key,x:+N.st.x.toFixed(2),z:+N.st.z.toFixed(2),y:+N.g.position.y.toFixed(2),to:!!N.st.to,vis:N.g.visible,tris:N.tris}); }

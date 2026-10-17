@@ -142,6 +142,9 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
   // each frame: every piece where his skeleton has it (his units), the whole of him where he stands, turned to his heading, his verticals as the world's
   const LIGHT=nrm(V(-0.55,0.75,0.5)), m4=new THREE.Matrix4();
   W3.SZ=1.2;   // HIS SIZE (owner, 17 Oct 2026: "make avatar character 20% larger"): his rig and shape as they were, drawn a fifth bigger from his feet
+  // HIS EYES (owner, 17 Oct 2026: "make sure 1st person view is angle from eyeview of actual avatar"): the point between his eyes, in his head's
+  // own frame (its middle, a little up and at the face), carried by his head's frame this frame and his place in the world: first person looks from there
+  { const HI=PCS.findIndex(P=>P.n==='head'), EYEL=new THREE.Vector3(); W3.eyeAt=out=>{ if(HI<0||!W3.mesh)return null; W3.mesh.updateWorldMatrix(true,false); return out.copy(EYEL.set(0,2,7)).applyMatrix4(W3.PM.value[HI]).applyMatrix4(W3.mesh.matrixWorld); }; }
   W3.hideMe=!!QS.get('hideme');   // (a test's: ?hideme=1 keeps him out of the picture; owner, 17 Oct 2026: "stop showing my avatar in screenshots of other characters")
   W3.place=(B,x,y,z,hd,yawA,ZY)=>{ if(W3.hideMe)W3.group.traverse(o=>{ if(o.isMesh)o.visible=false; }); W3.group.position.set(x,y,z); W3.group.rotation.set(0,hd,0); W3.group.scale.set(W3.SZ/PPU,ZY*W3.SZ*(W3.BH||1),W3.SZ/PPU);
     const L=R.yaw(LIGHT,-yawA); W3.L.set(L.x,L.y,L.z);

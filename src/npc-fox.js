@@ -2,8 +2,7 @@
 // 10-characters.data, "the fox is the merchant there", 13 Oct 2026): his sprite made 3D in his parts (npc-parts.js): a big white fox's head, its
 // tall ears tan inside, an orange patch on his crown, a fierce dark-red look under black brows, a black nose (makeNPC's "eye" part, lit by
 // nothing); a blue roll collar; a puffy orange jacket flecked blue and cream; navy gloves; wide cream trousers in folds to the floor. He stands
-// on the counter's mat behind the long counter where the game stood him (bodega.js's 'mat-fox'), facing the aisle, and turns to you when you come
-// near; lit by the shop's lamps, shaded as every character is ----
+// on the mat behind the long counter, facing the aisle, and turns toward you when you come near; lit by the shop's lamps, shaded as every character is ----
 const FOX={};
 { const {shape,limb,sph,cyl,box,blob,noise,D2R}=PARTSNPC.T;
   const WHITE=[.95,.93,.88], CREAM=[.93,.85,.7], TAN=[.89,.73,.45], ORANGE=[.84,.42,.24], ORANGE2=[.67,.35,.2], BLUE=[.27,.45,.59], BLUE2=[.36,.53,.67], NAVY=[.15,.17,.27], PANT=[.84,.8,.68], PANT2=[.69,.64,.52], RED=[.53,.24,.18], BLACK=[0,0,0];
@@ -27,9 +26,13 @@ const FOX={};
     part('brows',5,[-1,1].map(sx=>shape(box(.1,.025,.02),BLACK,[sx*.085,1.315,.2],null,[0,sx*-25,sx*-22]))),   // (the fierce look: angled down to the middle)
     part('ears',2,[-1,1].map(sx=>shape(cyl(.002,.1,.42,8),WHITE,[sx*.13,1.6,-.01],[1,1,.42],[0,0,sx*-11]))),
     part('ear insides',3,[-1,1].map(sx=>shape(cyl(.002,.07,.34,8),TAN,[sx*.128,1.585,.03],[1,1,.3],[0,0,sx*-11]))) ];
-  const B=BOD.B0, at={x:B.x1-.42,y:B.y0+5.3};   // (the counter's mat, behind the counter, bodega tiles)
+  // (behind the counter, owner 17 Oct 2026, his picture of him in the shelf: "put behind counter, we need to avoid clipping": the game's mat
+  // spot isn't this shop's; the long counter here runs z -7.95 to -4.10 with the wall's mat behind it, 0.7 wide, under the cigarette rack: he
+  // stands on that mat facing the aisle, turning toward you only so far (35 degrees) that his shoulders never meet the counter or the wall)
+  const AT={x:4.33,z:-6.1}, FACE=-Math.PI/2, TURN=35*Math.PI/180;
   const N=PARTSNPC.make(PARTS,{key:'fox',name:'THE FOX',eye:0,eyeC:'0.,0.,0.',metres:1.6,radius:.3,speed:.4,stride:6,rock:0,bob:.015,lv:'up',group:'bodega',
-    x:BOD.X(at.x),z:BOD.Z(at.y),ground:(x,z)=>MODS.bodega.ground(x,z),
-    brain:(dt,you,st,N)=>{ if(N.sheet)return; st.to=null; st.hold=true; st.x=BOD.X(at.x); st.z=BOD.Z(at.y);   // (his place: the mat; never wanders)
-      const d=Math.hypot(you.x-st.x,you.z-st.z); st.face=d<4.5*TILE?{x:you.x,z:you.z}:{x:st.x-5*TILE,z:st.z}; }});   // (you, when you come near; else the aisle)
+    x:AT.x,z:AT.z,ground:(x,z)=>MODS.bodega.ground(x,z),
+    brain:(dt,you,st,N)=>{ if(N.sheet)return; st.to=null; st.hold=true; st.x=AT.x; st.z=AT.z;   // (his place: the mat; never wanders)
+      let a=FACE; if(Math.hypot(you.x-st.x,you.z-st.z)<4.5*TILE){ const w=Math.atan2(you.x-st.x,you.z-st.z), d=((w-FACE+Math.PI*3)%(Math.PI*2))-Math.PI; a=FACE+Math.max(-TURN,Math.min(TURN,d)); }
+      st.face={x:st.x+Math.sin(a),z:st.z+Math.cos(a)}; }});   // (toward you when you come near, as far as the space lets him; else the aisle)
   FOX.N=N; window.FOXDBG=()=>{ const w=N.g.getWorldPosition(new THREE.Vector3()), bb=new THREE.Box3().setFromObject(N.g); return {x:+N.st.x.toFixed(2),z:+N.st.z.toFixed(2),y:+N.g.position.y.toFixed(2),vis:N.g.visible,pvis:N.g.parent&&N.g.parent.visible,far:!!N.far,w:[w.x,w.y,w.z].map(v=>+v.toFixed(2)),size:[bb.max.x-bb.min.x,bb.max.y-bb.min.y].map(v=>+v.toFixed(2)),tris:N.tris}; }; }

@@ -1,0 +1,54 @@
+# The Strangest Flea Market in 3D (three.js) — start here
+
+A separate project from the game: the owner (Bralynn) is building **a new version of The Strangest Flea Market in three.js**, one
+piece at a time. It is **not** the live game and never ships to it. The live game is the repo `bralynnb/tsfm` (thestrangestfleamarket.com);
+this repo is `bralynnb/tsfm-3d`.
+
+## The game's repo: data only, never the rules
+
+- **Read the game's code as data only**: its objects' makers, their colours, sizes and layouts, the Walker's rig, the physics. That is why
+  the build reads it (a checkout of `bralynnb/tsfm` beside this one, or `GAME_SRC`).
+- **Don't use it when making decisions.** Treat the game's code, its CLAUDE.md, its rules, its DECISIONS.md and its ways of doing things as
+  **old, outdated and bad unless the owner says otherwise.** Its rules (pixel-pinned, four angles, its engine's budgets, its review steps,
+  its mail, its version numbers) do not apply here.
+- **Do it the best three.js way** (owner: "i dont want you to copy the game engine in places that you could do a better job ... if there are
+  better ways of doing thing in 3js just do that ... i trust you to build it like that"; "dont follow the pixel pinned rule or anything
+  else that makes it more difficult"; "Don't copy how the other system does it just make it look the same. Use whatever method is smartest").
+
+## What the owner has decided so far (keep these)
+
+- **The game's own look**: its colours and patterns, drawn by the game's own painters (24 texels a tile). **No photo textures, shader packs,
+  "realism" filters or looks** (owner, 16 Oct 2026: "lets stop the textures and shaders packs", "delete all of them"; "no shaders or textures").
+- **Pixels grow with the zoom** (his pick): a tile is always the same number of pixels; zooming makes them bigger by whole screen pixels.
+  `=` makes the art finer, up to one screen pixel each (`-` coarser).
+- **Free rotation and tilt, any zoom**; shadows (the SHADOWS menu: on, shaded, self, full).
+- **The 3D Walker** (the game's rig, his pieces as one mesh, one hand a piece, no fingers unless close up), his moves, ragdoll, physics.
+- **His characters from his models** (Meshy AI .glb): the goldfish in his raincoat and the bear in his jacket. Cut to a few thousand
+  triangles, coloured face by face, soft tone shading like the Walker's, **no outlines on them** ("fish shouldnt have lines").
+- **Real water only** in the pool (a simulated surface, swimming, floats).
+- **Removed and not wanted for now**: the character editor (edit mode), the Fox.
+- When a request could mean more than one thing, ask with a couple of options (or a quick mockup) before building.
+
+## What's here
+
+- `build.py` builds `dist/map-3d.html` (one page; three.js r160 from jsdelivr). Run: `python3 build.py` (with `../tsfm` checked out, or
+  `GAME_SRC=/path/to/tsfm/src`). Publish the page as an artifact for the owner to play.
+- `src/` the pieces:
+  - `flea-market-3d.html`: the base page (renderer, camera, input, the Walker's rig, physics, ragdoll, the loop); `build.py` patches it.
+  - `walker-rig-mock.js` (the game's rig, adapted), `walker3d.js` (the Walker as a 3D mesh, his shading, outline, self shadow).
+  - `map-pre.js` / `map-post.js`: **the map**: places, their positions, the two levels (street, underground), ground heights, the
+    subway's stairs, the pool's outside, which walls cut away when you're inside.
+  - `station.js` + `wsub.js`: the subway station (the game's West End station). `pool.js` + `water3d.js` + `floats.js`: the pool room,
+    its water, its floats. `bodega.js` (the bodega's plan from the game's code, via `gamekit.js` stand-ins and `goods-defs.js`) +
+    `bodbuild.js` (built in 3D). `batch.js`: every still face packed into one texture and a few meshes (fast).
+  - `npc-map.js`: the goldfish and the bear wandering the platform.
+- `data/`: the characters baked from the owner's models (`goldfish.json`, `bear.json`). `tools/`: the scripts that baked them (they need
+  the owner's .glb files and `fast-simplification`).
+- `tests/`: Playwright screenshots (`mapshot.cjs`: the street; `maptour.cjs`: platform, pool, bodega, stairs, a walk down). The page takes
+  `?at=x,z[,height]` to start somewhere, for tests. In a cloud container rendering is software (slow, ~20 fps): run them in the background.
+
+## Where it's going
+
+Building it into a fuller game one piece at a time. First map done (16-17 Oct 2026): one street; the bodega and the pool room side by side;
+the subway underneath, stairs down from the sidewalk. Next pieces are the owner's call. The list of what the game has that this doesn't
+(places, NPCs and animals, activities, weather and time of day, multiplayer, menus) is in `README.md`.

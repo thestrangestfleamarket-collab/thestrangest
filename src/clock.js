@@ -19,7 +19,7 @@ const CLOCK={h:12,run:false,speed:1440/600};   // (speed: game minutes a real se
   // source of light during day besides others on map)": the day's sky blue, deepest overhead at noon; 1 keeps a weak fill of the sky's own blue
   // light in the shade, 2 the sun alone by day (the shade lit only by lamps and what the sun bounces); the clouds below)
   const SKYV=QS.get('sky')!=null?+QS.get('sky'):2;   // (the blue sky and the sun alone by day: the default since 17 Oct 2026, "go"; ?sky=0 the old dim day, ?sky=1 with a little sky fill)
-  if(SKYV){ K[5]=[6,0x9fb8d8,0xf0c8a0,0x4a3a2a,SKYV===2?.06:.3,0xffb070,1.9]; K[6]=[14,0x6a9fe0,0xbfdcff,0x5b4a35,SKYV===2?.05:.28,0xfff1d6,3.1]; K[7]=[90,0x4f8ee0,0xbfdcff,0x5b4a35,SKYV===2?.05:.28,0xfff1d6,3.4]; }
+  if(SKYV){ K[5]=[6,0x9fb8d8,0xf0c8a0,0x4a3a2a,SKYV===2?.16:.3,0xffb070,1.9]; K[6]=[14,0x6a9fe0,0xbfdcff,0x5b4a35,SKYV===2?.15:.28,0xfff1d6,3.1]; K[7]=[90,0x4f8ee0,0xbfdcff,0x5b4a35,SKYV===2?.15:.28,0xfff1d6,3.4]; }   // (the shade's sky fill .15 since 17 Oct 2026, "fix": at .05 the backs of the buildings were black boxes by day; the sun still the light)
   const ca=new THREE.Color(), cb=new THREE.Color(), mixC=(a,b,t,out)=>out.copy(ca.setHex(a)).lerp(cb.setHex(b),t);
   let last={h:-1,x:0,z:0,lv:''};
   CLOCK.tick=dt=>{ if(CLOCK.run)CLOCK.h=(CLOCK.h+dt*CLOCK.speed/60)%24;
@@ -34,6 +34,7 @@ const CLOCK={h:12,run:false,speed:1440/600};   // (speed: game minutes a real se
     // its shadows: every frame while it's strong enough to show them moving; faint (the moon), only when the hour or where you are changes much
     const strong=sunL.intensity>.3; sunL.shadow.autoUpdate=strong&&(CLOCK.fr=(CLOCK.fr||0)+1)%2===0;   // (every other frame: half the cost, a frame's lag unseen)
     if(!strong&&(Math.abs(last.h-CLOCK.h)>.05||Math.hypot(last.x-pos.x,last.z-pos.z)>4*TILE||last.lv!==LVL)){ sunL.shadow.needsUpdate=true; last={h:CLOCK.h,x:pos.x,z:pos.z,lv:LVL}; }
+    if(typeof WATER!=='undefined')WATER.glowK=(typeof ROOMS!=='undefined'&&ROOMS.cur)||!up?1:Math.max(0,Math.min(1,(3-e)/8));   // (the water's own glow: the pond glowed green at noon)
     if(UI.menuOpen)CLOCK.draw&&CLOCK.draw(); };
   CLOCK.set=h=>{ CLOCK.h=((h%24)+24)%24; };
   CLOCK.dark=()=>elev(CLOCK.h)<-2;

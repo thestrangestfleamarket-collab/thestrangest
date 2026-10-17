@@ -74,7 +74,7 @@
       L.position.set(X(l.x),Y(l.z),Z(l.y)); L.userData.i0=L.intensity; scene.add(L); lamps.push(L);
       if(l.r>=3||l.neon){ L.castShadow=true; L.shadow.mapSize.set(256,256); L.shadow.camera.near=.05; L.shadow.camera.far=l.r*TILE*1.3; L.shadow.bias=-.004; L.shadow.normalBias=.06; L.shadow.autoUpdate=false; L.shadow.needsUpdate=true; } }
     FLAME.props(props,X,Y,Z,lamps);   // (its candles', torches' and brazier's flames, live: fire.js; each light flickering with its own)
-    const dx=door?(door.w==='f'||door.w==='b'?door.a:door.w==='w'?B.x0-1.2:B.x1+1.2):(B.x0+B.x1)/2, dy=door?(door.w==='f'?B.y1+1.2:door.w==='b'?B.y0-1.2:door.a):B.y1+1.5;
+    const dx=door?(door.w==='f'||door.w==='b'?door.a:door.w==='w'?B.x0+1.2:B.x1-1.2):(B.x0+B.x1)/2, dy=door?(door.w==='f'?B.y1-1.2:door.w==='b'?B.y0+1.2:door.a):(B.y0+B.y1)/2;   // (just inside its door, or the middle of one with none; owner 17 Oct 2026 "fix": the Diner's spot stood outside behind a street light, the shrine's behind its wall)
     const R={id,name,B,x0:X(B.x0),x1:X(B.x1),z0:Z(B.y0),z1:Z(B.y1),y0:-1,y1:Y(B.h),walls:!!look.in||!!o.pieceWalls,at:{x:X(dx),z:Z(dy)}}; R.inside=(x,z)=>x>R.x0&&x<R.x1&&z>R.z0&&z<R.z1&&py>R.y0-.3&&py<R.y1;   /* (by your height too: the stacked rooms share their ground) */
     STORE.rooms.push(R); const pl=STORE.places.find(q=>q[0]===name); if(pl){ pl[1]=R.at.x; pl[2]=R.at.z; pl[3]='up'; } else STORE.places.push([name,R.at.x,R.at.z,'up']); return R; };
 

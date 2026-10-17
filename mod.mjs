@@ -427,7 +427,7 @@ WATER.spray=dt=>{ const S=WATER.SP, g=9.81/WATER.MPU; let k=0; dt=Math.min(dt,1/
   S.n=k; const a=WATER.spg.attributes.position; a.array.set(S.p.subarray(0,k*3)); a.needsUpdate=true; WATER.spg.setDrawRange(0,k); };
 // before the frame: the scene without the water (what's seen through it), its lamps' glints, the camera's way
 WATER.under=(renderer,scene,cam,lamps)=>{ const w=renderer.domElement.width, h=renderer.domElement.height; if(WATER.rt.width!==w||WATER.rt.height!==h)WATER.rt.setSize(w,h);
-  const u=WATER.mat.uniforms; u.uRes.value.set(w,h); u.uNear.value=cam.near; u.uFar.value=cam.far; cam.getWorldDirection(u.uCam.value);
+  const u=WATER.mat.uniforms; u.uRes.value.set(w,h); u.uGlow.value.setRGB(.02,.16,.18).multiplyScalar(WATER.glowK==null?1:WATER.glowK);   /* (its glow by the dark: full in a room or at night, none in the noon sun: clock.js) */ u.uNear.value=cam.near; u.uFar.value=cam.far; cam.getWorldDirection(u.uCam.value);
   lamps.slice(0,12).forEach((L,i)=>{ u.uLP.value[i].copy(L.position); u.uLC.value[i].set(L.color.r,L.color.g,L.color.b).multiplyScalar(Math.min(1,(L.userData.i0||L.intensity)/3)); }); u.uNL.value=Math.min(12,lamps.length);
   const v0=WATER.mesh.visible; WATER.mesh.visible=false; renderer.setRenderTarget(WATER.rt); renderer.render(scene,cam); renderer.setRenderTarget(null); WATER.mesh.visible=v0; };   // (left as it was: hidden while you're in another room)
 };if(performance.now()-__YT>40)await __Y();
@@ -5982,7 +5982,10 @@ const APTS={};
     fr([e(w.a0,w.z1,-T),e(w.a1,w.z1,-T),e(w.a1,w.z1,T),e(w.a0,w.z1,T)],w.a1-w.a0,5,w.cut?STONE:[200,196,186]);
     for(const h of w.holes){ for(const a of [h.a0,h.a1])fr([e(a,h.z0,-T),e(a,h.z0,T),e(a,h.z1,T),e(a,h.z1,-T)],.2,h.z1-h.z0,h.door?[88,62,44]:FRAME);
       fr([e(h.a0,h.z1,-T),e(h.a1,h.z1,-T),e(h.a1,h.z1,T),e(h.a0,h.z1,T)],h.a1-h.a0,5,h.door?[88,62,44]:FRAME); if(h.z0>0)fr([e(h.a0,h.z0,-T),e(h.a1,h.z0,-T),e(h.a1,h.z0,T),e(h.a0,h.z0,T)],h.a1-h.a0,5,FRAME); }
-    if(pl)cutWalls.push({pl,nx:w.nx,nz:w.nz,foot:Y(w.foot||8),when:()=>APTS.in}); return w; }
+    if(pl){ const o={pl,foot:Y(w.foot||8),when:()=>APTS.in};
+      // (an inner wall has a room on both sides, so its inside is the side you're on: cut when the camera is across it from you; the outer walls keep their one inside)
+      if(w.inner){ const at=w.ax==='x'?Z(w.at):X(w.at); if(w.ax==='x'){ o.nx=0; Object.defineProperty(o,'nz',{get:()=>Math.sign(pos.z-at)||1}); } else { o.nz=0; Object.defineProperty(o,'nx',{get:()=>Math.sign(pos.x-at)||1}); } } else { o.nx=w.nx; o.nz=w.nz; }
+      cutWalls.push(o); } return w; }
   // ---- the glass in a window: a pane lit warm behind curtains where someone is home (glows), else dark with the room's dim behind it
   const pane=(w,h,lit,seed)=>{ const cur=hash(seed,2,7)<.5, cc=[[220,200,170],[180,120,110],[150,170,200],[230,230,220]][seed%4];
     bq(pt(w,0,h.a0,h.z0),pt(w,0,h.a1,h.z0),pt(w,0,h.a1,h.z1),pt(w,0,h.a0,h.z1),faceTex((h.a1-h.a0)*24,h.z1-h.z0,(i,j)=>{ const W_=(h.a1-h.a0)*24, u=i/W_, bar=Math.abs(u-.5)<.03||Math.abs(j-(h.z1-h.z0)/2)<1.5;
@@ -6020,7 +6023,7 @@ const APTS={};
     // building doors and fire escapes")
     // the rooms' walls (cut to their feet between you and the camera, as the outer ones): the hall's two, the living rooms' partitions, the
     // kitchen's and the bathroom's, the passage's; each with its door
-    const room=(id,ax,at,a0,a1,holes,tiledA,tiledB,nx,nz)=>wall({id:id+lv,ax,at,a0,a1,z0:z,z1:z+S-4,holes:holes.map(h=>({...h,z0:h.z0+z,z1:h.z1+z})),cut:true,nx,nz,foot:z+8,paint:(s,u,zz)=>plaster(u,zz-z,ax==='x'?.84:.68,s>0?tiledA:tiledB)});
+    const room=(id,ax,at,a0,a1,holes,tiledA,tiledB,nx,nz)=>wall({id:id+lv,ax,at,a0,a1,z0:z,z1:z+S-4,holes:holes.map(h=>({...h,z0:h.z0+z,z1:h.z1+z})),cut:true,inner:true,nx,nz,foot:z+8,paint:(s,u,zz)=>plaster(u,zz-z,ax==='x'?.84:.68,s>0?tiledA:tiledB)});
     const dr=a=>({a0:a-DW,a1:a+DW,z0:0,z1:DH,door:true}), yl=R.liv.y0;
     room('hallF','x',H.y1,A.x0+T,A.x1-T,[dr(A.x0+1.5),...(R.pass?[dr(A.x1-.75)]:[])],true,false,0,1); room('hallB','x',H.y0,A.x0+T,A.x1-T,[dr(A.x1-1.5)],false,true,0,-1);
     for(const f of [1,-1]){ const Yf=y=>f>0?y:Ym(y), yL=Yf(yl), s=f>0?1:-1, bx1=R.bed.x1;
@@ -6040,8 +6043,8 @@ const APTS={};
   for(let lv=0;lv<ST;lv++){ SOLS[lv]=[]; const R=rooms(lv), x0=A.x0, yl=R.liv.y0, y1=A.y1, hy=H.y1, bx1=R.bed.x1, k=lv*7;
     for(const f of [1,-1]){ const Yf=y=>f>0?y:2*hm-y;
       // the lights: the living room's (warm), the kitchen's
-      LIGHTS.push({x:X(x0+2.6),y:Y(lv*S+S-14),z:Z(Yf(y1-1.5)),c:0xffd9a8,i:5},{x:X(x0+1.6),y:Y(lv*S+S-14),z:Z(Yf(hy+1.2)),c:0xfff2dc,i:3}); }
-    LIGHTS.push({x:X(m),y:Y(lv*S+S-14),z:Z(hm),c:0xf2ead6,i:3}); }
+      LIGHTS.push({x:X(x0+2.6),y:Y(lv*S+S*.55),z:Z(Yf(y1-1.5)),c:0xffd9a8,i:15},{x:X(x0+1.6),y:Y(lv*S+S*.55),z:Z(Yf(hy+1.2)),c:0xfff2dc,i:9}); }
+    LIGHTS.push({x:X(m),y:Y(lv*S+S*.55),z:Z(hm),c:0xf2ead6,i:12}); }   // (three times what they were, owner 17 Oct 2026 "fix": the hall's one lamp of 3 at 4.9 m lit nothing)
   // ---- built: the batch (the pieces of this house: lit, clipped above the ceiling you're under), its solids (the outer walls but the door; the
   // rooms' walls and what stands in them, floor by floor), its lights (only on while you're inside, but the door's), the cutaway each frame
   BATCH.build((k,map,emap)=>k==='B'?new THREE.MeshBasicMaterial({map,side:THREE.DoubleSide,alphaTest:.5,clippingPlanes:[HP]}):new THREE.MeshLambertMaterial({map,alphaTest:.5,side:THREE.DoubleSide,clippingPlanes:[HP],...(emap?{emissiveMap:emap,emissive:0xffffff,emissiveIntensity:1.3}:{})}));
@@ -6052,7 +6055,7 @@ const APTS={};
   for(let lv=0;lv<ST;lv++){ const R=rooms(lv), yl=R.liv.y0, seg=(ax,at,a0,a1,holes)=>{ let a=a0; for(const h of [...holes].sort((p,q)=>p.a0-q.a0)){ if(h.a0>a)SOLS[lv].push(ax==='x'?[X(a),Z(at-T),X(h.a0),Z(at+T)]:[X(at-T),Z(a),X(at+T),Z(h.a0)]); a=h.a1; } if(a1>a)SOLS[lv].push(ax==='x'?[X(a),Z(at-T),X(a1),Z(at+T)]:[X(at-T),Z(a),X(at+T),Z(a1)]); };
     const dr=a=>({a0:a-DW,a1:a+DW}); seg('x',H.y1,A.x0,A.x1,[dr(A.x0+1.5),...(R.pass?[dr(A.x1-.75)]:[])]); seg('x',H.y0,A.x0,A.x1,[dr(A.x1-1.5)]);
     for(const f of [1,-1]){ const Yf=y=>f>0?y:2*hm-y, yL=Yf(yl), ya=Math.min(yL,Yf(H.y1)), yb=Math.max(yL,Yf(H.y1)); seg('x',yL,A.x0,R.bed.x1,[dr(A.x0+1.6),dr(A.x0+3.9),dr(A.x0+5.4)]); seg('y',R.kit.x1,ya,yb,[]); seg('y',R.bath.x1,ya,yb,[]); if(R.pass&&f>0)seg('y',R.pass.x0,H.y1,A.y1,[]); } }
-  for(const L of LIGHTS){ const P=new THREE.PointLight(L.c,0,5.5*TILE,1.6); P.position.set(L.x,L.y,L.z); P.userData.i0=L.i; scene.add(P); L.light=P; }
+  for(const L of LIGHTS){ const P=new THREE.PointLight(L.c,0,8*TILE,1.6); P.position.set(L.x,L.y,L.z); P.userData.i0=L.i; scene.add(P); L.light=P; }   // (hung at half the storey height, reaching 8 tiles: at the ceiling with a 5.5-tile reach, the floor 4.9 m under got next to nothing)
   // where you stand in it: the floor under you (the flight carries you between floors), which rooms' solids count, the clip above your ceiling
   const SY=Y(S), x0s=X(A.x0), x1s=X(A.x1), z0s=Z(A.y0), z1s=Z(A.y1), sx0=X(STX[0]), sx1=X(STX[1]), sz0=Z(STY[0]), sz1=Z(STY[1]);
   APTS.inside=(x,z)=>x>x0s&&x<x1s&&z>z0s&&z<z1s;
@@ -6271,7 +6274,7 @@ function gdShape(GS,K,LAMPS){ const G=GS.filter(p=>p.name==='ghost street shop')
       L.position.set(X(l.x),Y(l.z),Z(l.y)); L.userData.i0=L.intensity; scene.add(L); lamps.push(L);
       if(l.r>=3||l.neon){ L.castShadow=true; L.shadow.mapSize.set(256,256); L.shadow.camera.near=.05; L.shadow.camera.far=l.r*TILE*1.3; L.shadow.bias=-.004; L.shadow.normalBias=.06; L.shadow.autoUpdate=false; L.shadow.needsUpdate=true; } }
     FLAME.props(props,X,Y,Z,lamps);   // (its candles', torches' and brazier's flames, live: fire.js; each light flickering with its own)
-    const dx=door?(door.w==='f'||door.w==='b'?door.a:door.w==='w'?B.x0-1.2:B.x1+1.2):(B.x0+B.x1)/2, dy=door?(door.w==='f'?B.y1+1.2:door.w==='b'?B.y0-1.2:door.a):B.y1+1.5;
+    const dx=door?(door.w==='f'||door.w==='b'?door.a:door.w==='w'?B.x0+1.2:B.x1-1.2):(B.x0+B.x1)/2, dy=door?(door.w==='f'?B.y1-1.2:door.w==='b'?B.y0+1.2:door.a):(B.y0+B.y1)/2;   // (just inside its door, or the middle of one with none; owner 17 Oct 2026 "fix": the Diner's spot stood outside behind a street light, the shrine's behind its wall)
     const R={id,name,B,x0:X(B.x0),x1:X(B.x1),z0:Z(B.y0),z1:Z(B.y1),y0:-1,y1:Y(B.h),walls:!!look.in||!!o.pieceWalls,at:{x:X(dx),z:Z(dy)}}; R.inside=(x,z)=>x>R.x0&&x<R.x1&&z>R.z0&&z<R.z1&&py>R.y0-.3&&py<R.y1;   /* (by your height too: the stacked rooms share their ground) */
     STORE.rooms.push(R); const pl=STORE.places.find(q=>q[0]===name); if(pl){ pl[1]=R.at.x; pl[2]=R.at.z; pl[3]='up'; } else STORE.places.push([name,R.at.x,R.at.z,'up']); return R; };
 
@@ -6723,10 +6726,10 @@ await grab('dungeon',async()=>{ const K=BOD.KC, KP=BOD.K.PROPS, Kc=K.CATALOG, X=
   // light flickering with its flame), and the hall's own cool light (the game's LAMPS, as the dungeon's catalog made them); twice the dojo's
   // candles: the old game counted lamps twice (docs/OLD-LOOK.md), and the stone is dark
   const LF=[];
-  const light=l=>{ const cm=Math.max(...l.c), L=new THREE.PointLight(new THREE.Color(l.c[0]/cm,l.c[1]/cm,l.c[2]/cm),14*cm*Math.min(1.2,l.r/5),l.r*TILE*1.25,1.6); L.position.set(X(l.x),Y(l.z)+dy,Z(l.y)); L.userData.i0=L.intensity; scene.add(L); lamps.push(L); return L; };
+  const light=l=>{ const cm=Math.max(...l.c), L=new THREE.PointLight(new THREE.Color(l.c[0]/cm,l.c[1]/cm,l.c[2]/cm),22*cm*Math.min(1.2,l.r/5),l.r*TILE*1.4,1.6); L.position.set(X(l.x),Y(l.z)+dy,Z(l.y)); L.userData.i0=L.intensity; scene.add(L); lamps.push(L); return L; };
   for(const l of K.LAMPS.slice(l0)){ const L=light(l); if(l.flick)LF.push(L); }
   FLAME.props(made,X,z=>Y(z)+dy,Z,LF);
-  light({x:D.cx,y:D.cy,z:70,r:9,c:[.24,.28,.38]});
+  light({x:D.cx,y:D.cy,z:70,r:11,c:[.4,.46,.6]});   // (the torches and the fill brighter, owner 17 Oct 2026 "fix": the hall was near black)
   MODS.dungeon={B,ground:()=>dy,inside:(x,z)=>x>X(B.x0)&&x<X(B.x1)&&z>Z(B.y0)&&z<Z(B.y1),
     tick(){}}; });if(performance.now()-__YT>40)await __Y();   // (its flames and their lights: fire.js)
 
@@ -11166,7 +11169,7 @@ const CLOCK={h:12,run:false,speed:1440/600};if(performance.now()-__YT>40)await _
   // source of light during day besides others on map)": the day's sky blue, deepest overhead at noon; 1 keeps a weak fill of the sky's own blue
   // light in the shade, 2 the sun alone by day (the shade lit only by lamps and what the sun bounces); the clouds below)
   const SKYV=QS.get('sky')!=null?+QS.get('sky'):2;if(performance.now()-__YT>40)await __Y();   // (the blue sky and the sun alone by day: the default since 17 Oct 2026, "go"; ?sky=0 the old dim day, ?sky=1 with a little sky fill)
-  if(SKYV){ K[5]=[6,0x9fb8d8,0xf0c8a0,0x4a3a2a,SKYV===2?.06:.3,0xffb070,1.9];if(performance.now()-__YT>40)await __Y(); K[6]=[14,0x6a9fe0,0xbfdcff,0x5b4a35,SKYV===2?.05:.28,0xfff1d6,3.1];if(performance.now()-__YT>40)await __Y(); K[7]=[90,0x4f8ee0,0xbfdcff,0x5b4a35,SKYV===2?.05:.28,0xfff1d6,3.4];if(performance.now()-__YT>40)await __Y(); }
+  if(SKYV){ K[5]=[6,0x9fb8d8,0xf0c8a0,0x4a3a2a,SKYV===2?.16:.3,0xffb070,1.9];if(performance.now()-__YT>40)await __Y(); K[6]=[14,0x6a9fe0,0xbfdcff,0x5b4a35,SKYV===2?.15:.28,0xfff1d6,3.1];if(performance.now()-__YT>40)await __Y(); K[7]=[90,0x4f8ee0,0xbfdcff,0x5b4a35,SKYV===2?.15:.28,0xfff1d6,3.4];if(performance.now()-__YT>40)await __Y(); }   // (the shade's sky fill .15 since 17 Oct 2026, "fix": at .05 the backs of the buildings were black boxes by day; the sun still the light)
   const ca=new THREE.Color(), cb=new THREE.Color(), mixC=(a,b,t,out)=>out.copy(ca.setHex(a)).lerp(cb.setHex(b),t);if(performance.now()-__YT>40)await __Y();
   let last={h:-1,x:0,z:0,lv:''};if(performance.now()-__YT>40)await __Y();
   CLOCK.tick=dt=>{ if(CLOCK.run)CLOCK.h=(CLOCK.h+dt*CLOCK.speed/60)%24;
@@ -11181,6 +11184,7 @@ const CLOCK={h:12,run:false,speed:1440/600};if(performance.now()-__YT>40)await _
     // its shadows: every frame while it's strong enough to show them moving; faint (the moon), only when the hour or where you are changes much
     const strong=sunL.intensity>.3; sunL.shadow.autoUpdate=strong&&(CLOCK.fr=(CLOCK.fr||0)+1)%2===0;   // (every other frame: half the cost, a frame's lag unseen)
     if(!strong&&(Math.abs(last.h-CLOCK.h)>.05||Math.hypot(last.x-pos.x,last.z-pos.z)>4*TILE||last.lv!==LVL)){ sunL.shadow.needsUpdate=true; last={h:CLOCK.h,x:pos.x,z:pos.z,lv:LVL}; }
+    if(typeof WATER!=='undefined')WATER.glowK=(typeof ROOMS!=='undefined'&&ROOMS.cur)||!up?1:Math.max(0,Math.min(1,(3-e)/8));   // (the water's own glow: the pond glowed green at noon)
     if(UI.menuOpen)CLOCK.draw&&CLOCK.draw(); };if(performance.now()-__YT>40)await __Y();
   CLOCK.set=h=>{ CLOCK.h=((h%24)+24)%24; };if(performance.now()-__YT>40)await __Y();
   CLOCK.dark=()=>elev(CLOCK.h)<-2;if(performance.now()-__YT>40)await __Y();

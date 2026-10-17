@@ -437,6 +437,14 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
   castle: 1.12M to 0.76M triangles a frame (all passes); the street 1.25M to 0.89M.
 - **`?trees=0`** hides the park's oaks (owner, 17 Oct 2026, for screenshots: "hide all trees on map so you dont get blocked").
 
+- **The tour's fixes** (owner, 17 Oct 2026, "fix", after a run through twenty spots): the shade by day gets a little sky (`clock.js`, the fill
+  .15 where it was .05: the buildings' backs were black boxes at 1pm; the sun still the light); the apartment house's lights three times as
+  strong, hung at half the storey and reaching 8 tiles (`apts.js`: the hall's one lamp of 3 at the ceiling lit nothing), and its inner walls
+  cut by the side you're on (an inner wall has a room on both sides); the dungeon's torches and fill brighter (`castle.js`); the water's own
+  glow fades with daylight outdoors (`WATER.glowK`, `clock.js`: the pond glowed green at noon); a stored room's menu spot just inside its door
+  (the Diner's stood outside behind a street light), a room without a door at its middle (the shrine's stood behind its wall). Not done: the
+  Walker's 56,700 triangles (every unworn hairstyle folded in his mesh, drawn in every pass) and the apartment house's 600 wall draw calls.
+
 ## THE MARKET: the one official map
 
 **THE MARKET** (owner, 17 Oct 2026: "one official MARKET map im gona start filling in") is the game's map here: every place the owner adds goes

@@ -77,9 +77,9 @@ grab('dungeon',()=>{ const K=BOD.KC, KP=BOD.K.PROPS, Kc=K.CATALOG, X=BOD.XS, Z=B
   // light flickering with its flame), and the hall's own cool light (the game's LAMPS, as the dungeon's catalog made them); twice the dojo's
   // candles: the old game counted lamps twice (docs/OLD-LOOK.md), and the stone is dark
   const LF=[];
-  const light=l=>{ const cm=Math.max(...l.c), L=new THREE.PointLight(new THREE.Color(l.c[0]/cm,l.c[1]/cm,l.c[2]/cm),14*cm*Math.min(1.2,l.r/5),l.r*TILE*1.25,1.6); L.position.set(X(l.x),Y(l.z)+dy,Z(l.y)); L.userData.i0=L.intensity; scene.add(L); lamps.push(L); return L; };
+  const light=l=>{ const cm=Math.max(...l.c), L=new THREE.PointLight(new THREE.Color(l.c[0]/cm,l.c[1]/cm,l.c[2]/cm),22*cm*Math.min(1.2,l.r/5),l.r*TILE*1.4,1.6); L.position.set(X(l.x),Y(l.z)+dy,Z(l.y)); L.userData.i0=L.intensity; scene.add(L); lamps.push(L); return L; };
   for(const l of K.LAMPS.slice(l0)){ const L=light(l); if(l.flick)LF.push(L); }
   FLAME.props(made,X,z=>Y(z)+dy,Z,LF);
-  light({x:D.cx,y:D.cy,z:70,r:9,c:[.24,.28,.38]});
+  light({x:D.cx,y:D.cy,z:70,r:11,c:[.4,.46,.6]});   // (the torches and the fill brighter, owner 17 Oct 2026 "fix": the hall was near black)
   MODS.dungeon={B,ground:()=>dy,inside:(x,z)=>x>X(B.x0)&&x<X(B.x1)&&z>Z(B.y0)&&z<Z(B.y1),
     tick(){}}; });   // (its flames and their lights: fire.js)

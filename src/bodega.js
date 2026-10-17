@@ -115,7 +115,7 @@ const BOD={meshes:[], walls:{}, lamps:[]};
   BOD.kindOf=p=>{ if(/fluorescent tube/.test(p.name||''))return 'U'; if(ROOF.includes(p))return 'R';   // (U: hung overhead, seen only from under it)
     if(FRONT.includes(p))return 'Hfront'; if(p.high){ const w=wallOf(p); if(w)return 'H'+w.id; } return 'L'; };
   BOD.paintProps=()=>{ for(const p of [...Object.values(O),...FRONT,...STREET,...ROOF,...GHOSTST]){ const k=BOD.kindOf(p); BATCH.tag=OBJ('bodega',p.name); for(const b of p.boxes)gbox(b,k); } BATCH.tag=null; };   // (each thing tagged: the world editor)
-  BOD.g={bodegaWall,grain,speck,COPE,DTBRICK,hash,grassCol}; BOD.CURB=CURB; BOD.FAR=FAR;   // (the game's painters the look's builder asks for)
+  BOD.g={bodegaWall,grain,speck,COPE,DTBRICK,hash,grassCol,lawnCol}; BOD.CURB=CURB; BOD.FAR=FAR;   // (the game's painters the look's builder asks for)
   BOD.gbox=gbox; BOD.faceTex=faceTex; BOD.bq=bq; BOD.C=C; BOD.facade=facade; BOD.FRAME=FRAME; BOD.place=place; BOD.MAP=MAP; BOD.K={MKS,CATALOG,PROPS,STUDIO,LSEED,STORY,sh};   // (place: the apartment house's furniture is set the same way, apts.js)
   // ---- THE GROUND: the shop's sealed concrete (and the office's), the sidewalk's slabs, the kerb, the street's asphalt, the far kerb and sidewalk, grass in the gaps
   BOD.grounds=[
@@ -125,9 +125,9 @@ const BOD={meshes:[], walls:{}, lamps:[]};
     {id:'road',x0:MAP.x0,y0:CURB,x1:MAP.x1,y1:FAR,z:RD,col:(x,y)=>roadCol(x,y,0),tex:'asphalt_02',tint:[62,64,68],rep:3},
     {id:'kerb2',x0:MAP.x0,y0:FAR,x1:MAP.x1,y1:FAR+.16,z:0,col:()=>[178,174,164],tex:'concrete_pavement',tint:[178,174,164],rep:2},
     {id:'walk2',x0:MAP.x0,y0:FAR+.16,x1:MAP.x1,y1:MAP.y1,z:0,col:slabCol,tex:'concrete_pavement',tint:[166,161,148],rep:2},
-    {id:'ghostst',bld:true,x0:131.2,y0:W-8.75*4/3,x1:141.4,y1:W,z:.1,col:(x,y)=>GHOSTK.gsFloor(x,y)||grassCol(x,y),tex:null,rep:2},   // (Ghost Street's paving: the kit's own, gsFloor)
-    {id:'grassW',x0:MAP.x0,y0:B0.y0,x1:B0.x0,y1:W,z:0,col:holed(grassCol),tex:null,rep:2},
-    {id:'grassE',x0:B0.x1,y0:B0.y0,x1:POOLX,y1:W,z:0,col:grassCol,tex:null,rep:2}];
+    {id:'ghostst',bld:true,x0:131.2,y0:W-8.75*4/3,x1:141.4,y1:W,z:.1,col:(x,y)=>GHOSTK.gsFloor(x,y)||lawnCol(x,y),tex:null,rep:2},   // (Ghost Street's paving: the kit's own, gsFloor)
+    {id:'grassW',x0:MAP.x0,y0:B0.y0,x1:B0.x0,y1:W,z:0,col:holed(lawnCol),tex:null,rep:2},
+    {id:'grassE',x0:B0.x1,y0:B0.y0,x1:POOLX,y1:W,z:0,col:lawnCol,tex:null,rep:2}];   // (the gaps' grass: the park's lawn, as all grass is)
   // the kerbs' faces down to the road
   BOD.kerbs=[{ax:'x',at:CURB,a0:MAP.x0,a1:MAP.x1,z0:RD,z1:0,n:1},{ax:'x',at:FAR,a0:MAP.x0,a1:MAP.x1,z0:RD,z1:0,n:-1}];
   // ---- the lights: the game's LAMPS as its objects made them (the tubes, the coolers, the neon, the street light), each a point light here

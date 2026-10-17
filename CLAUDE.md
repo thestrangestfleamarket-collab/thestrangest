@@ -386,7 +386,14 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
   along a route by the rig's own steps; out of sight, not drawn, he's moved along it all the same; held up again and again, the way found
   afresh). THE BOARD (`CITY.post(kind,place|spot,data)`, `CITY.take(kind,by,from)` the nearest open job, `CITY.done`). THE SCHEDULE
   (`CITY.at(hour,fn)`, each day as the clock passes it). Doors stay doorways. `?errand=villager_m,bodega` (or `CITY.errand(key,place,tiles/s)`)
-  sends a pawn to a door as a look. Checked by `tests/worldcheck.cjs`. Next, on this: residents with routines, then mail and delivery (the plan).
+  sends a pawn to a door as a look. Checked by `tests/worldcheck.cjs`. Next, on this: mail and delivery (the plan).
+- **The residents** (owner, 17 Oct 2026: "2 - residents in the apartment house, bare minimum"; `src/residents.js`, `CITY.residents`): four pawns
+  live in the apartment house, a flat each (hero_m 1A, hero_f 1B, villager_m 2A, villager_f 2B), each with his hours (out 7:30 to 9:18, home
+  18:12 to 20:24, staggered): out of the front door in the morning onto an errand of the day (the bodega, the park's gate, the diner, the bar,
+  Ghost Street, by the spine's routes), a while there, then back to the street walking as the others do; at his hour he walks home and goes
+  in (inside: hidden and still, `N.mode` 'hidden'; no flights of stairs yet, so not up to the flat). Set by the hour at the start (7pm: two
+  home, two about to walk home) and at each of his hours as the clock passes; a jump of the clock put right at the next tick. `RESDBG()`;
+  `tests/rescheck.cjs`.
 - **The map editor** (owner, 17 Oct 2026: "build a map editor that allows me to move buildings and land around easily"; `src/mapedit.js`): Shift+M
   (or MAP EDITOR in the menu's MAP tab): the Market from above (a picture of it as built, taken as it opens), each place a labelled box over it:
   drag one to move it (half a tile at a time), the arrows or the arrow keys a tile (Shift five), the park's and the land's edges dragged to size
@@ -429,6 +436,7 @@ the owner's call, and merging publishes). The artifact link above is the quick w
   - `musician.js` (the guitarist, and `musBody` / `figureMesh` for every Walker-built musician), `pianist.js`, `singer.js`, `drummer.js`: the bar's
     musicians; `bandstand.js`: their turns on the stage.
   - `city.js`: the city's spine (addresses, routes over the ground, errands walked, the job board, the clock's schedule; nothing drawn).
+  - `residents.js`: the four pawns who live in the apartment house, their hours and errands.
   - `npc-map.js`: the goldfish on the street and the bear wandering the platform (and `makeNPC`, every character's maker). `npc-skel.js`: the four skeletons on the far sidewalk, rigged and animated, and the gold skeleton (the Minion gilded).
   - `npc-street.js`: the cyborg and the teddy on the street (bones, moves, bodies in Rapier, minds). `npc-rigged.js`: the six figures made a second way (kept, not built: `npc-figures.js` is used).
   - `npc-dragon.js`: the Dragon on the road. `kit.js` + `dress.js`: the kits' pieces and the few on the street. `apts.js`: the apartment house (in the

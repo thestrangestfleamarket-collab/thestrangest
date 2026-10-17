@@ -370,6 +370,8 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
 - **Every panel closes and moves** (owner, 17 Oct 2026: "make sure menus have way to exit out, allow all menus to be draggable"; the end of `ui.js`): an X in each panel's corner (the menu, HIS SHAPE, YOUR LOOKS, the world editor, the ? list, Shift+R's, the SHARPEN bar, the help, stats and shadows boxes) and a drag by any plain part of it (not its buttons, sliders, fields or the map). A new panel joins by its id in `PANS`.
 - **The simplified models put right** (17 Oct 2026): `tools/simplify.py` had read the bakes' packed points wrong (as plain uint16 /65535, not int16 +32500), sliding every indexed model round inside its box: the skeletons' weapons out of their hands, the creatures, the Dragon and the street kit off their places. Fixed, and the skel, kit, creatures and dragon data cut again from `data/full/` (`python3 tools/simplify.py <names>`).
 
+- **The bus stop and its bench removed** (owner, 17 Oct 2026: "remove the bus stop and bus bench"; `dress.js`): the street keeps its trash cans and street light.
+
 ## THE MARKET: the one official map
 
 **THE MARKET** (owner, 17 Oct 2026: "one official MARKET map im gona start filling in") is the game's map here: every place the owner adds goes

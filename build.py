@@ -167,7 +167,7 @@ head=rp(head,'<div><b>Space</b> jump','<div>The bodega, the pool room (its door 
 mod=rp(mod,"const pos=new THREE.Vector3(-2.2,0,3.2); let heading=0.8, py=0;","const pos=new THREE.Vector3(-2.2,0,3.2); let heading=0.8, py=0; { const a=(QS.get('at')||'').split(',').map(Number); if(a.length>=2&&a.every(isFinite)){ pos.set(a[0],0,a[1]); py=a[2]||0; } }   // (a test's: start at x,z[,height])")
 mod=rp(mod,"  if(MAPLV(py,pos))setPhys(LVL);","  if(MAPLV(py,pos))setPhys(LVL); if(bloom){ const dn=LVL==='down'; bloom.strength=(dn?1.3:.55)*GLOW.k; bloom.radius=dn?.6:.4; bloom.threshold=dn?.62:.8; }   // (the glow: the station's strong, the street's and the shops' gentle)")
 # GETTING AROUND and THE MENU (owner, 17 Oct 2026): src/ui.js, and its hooks in the frame and the keys
-mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);",open('src/physbody.js').read()+"\n"+open('src/ui.js').read()+"\n"+open('src/editor.js').read()+"\n"+open('src/animator.js').read()+"\n"+open('src/worldedit.js').read()+"\n"+open('src/looks.js').read()+"\nresize(); applyTime(0); requestAnimationFrame(frame);")
+mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);",open('src/physbody.js').read()+"\n"+open('src/ui.js').read()+"\n"+open('src/editor.js').read()+"\n"+open('src/animator.js').read()+"\n"+open('src/worldedit.js').read()+"\n"+open('src/looks.js').read()+"\n"+open('src/vitals.js').read()+"\nresize(); applyTime(0); requestAnimationFrame(frame);")
 # (the street's characters from the owner's models, src/npc-street.js: deleted, owner 17 Oct 2026, the last of them "delete ghost with bag inside and whatever this is")
 mod=rp(mod,"addEventListener('keydown',e=>{ const k=e.key.toLowerCase(); keys.add(k);","addEventListener('keydown',e=>{ const k=UI.key(e); if(!k)return; keys.add(k);")
 mod=rp(mod,"addEventListener('keyup',e=>{ const k=e.key.toLowerCase(); keys.delete(k);","addEventListener('keyup',e=>{ const k=UI.key(e); if(!k)return; keys.delete(k);")
@@ -262,7 +262,7 @@ for f in ['47-play-3-guitar-1-body.js','47-play-3-guitar-samples.data.js','47-pl
     gtsrc+='\n'+t
 mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);",gtsrc+"\n"+open('src/musician.js').read()+"\nresize(); applyTime(0); requestAnimationFrame(frame);")
 mod=rp(mod,"  for(const N of NPCS)N.tick(dt,pos);","  for(const N of NPCS)N.tick(dt,pos); MUS.tick(dt);")
-mod=rp(mod,"  for(const N of NPCS)N.tick(dt,pos); MUS.tick(dt);","  DRESS.tick(dt,pos); { const r=MODS.apts.tick(); if(r)solids=r; } for(const N of NPCS)N.tick(dt,pos); MUS.tick(dt);")   # (DRESS: the pigeons; the apartment house's floors. STREET.tick: the street characters' physics world, stepped before their minds)
+mod=rp(mod,"  for(const N of NPCS)N.tick(dt,pos); MUS.tick(dt);","  DRESS.tick(dt,pos); { const r=MODS.apts.tick(); if(r)solids=r; } for(const N of NPCS)N.tick(dt,pos); if(FIRE)FIRE.tick(dt); MUS.tick(dt);")   # (DRESS: the pigeons; the apartment house's floors. STREET.tick: the street characters' physics world, stepped before their minds)
 # NO SHADOW ACNE (owner, 17 Oct 2026, his close-up: stripes and jagged dark teeth on the musician's arm): the two lamps nearest you, whose
 # shadows move, finer (1024 a face) and held off the surface they fall on, as the still lamps' are
 mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);","for(const S of SHL){ S.shadow.mapSize.set(1024,1024); S.shadow.normalBias=.06; S.shadow.bias=-.002; }\nresize(); applyTime(0); requestAnimationFrame(frame);")
@@ -270,7 +270,7 @@ mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);","for(const S 
 mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);",open('src/clock.js').read()+"\n"+open('src/rooms.js').read()+"\nresize(); applyTime(0); requestAnimationFrame(frame);")
 # ONLY THE ROOM YOU'RE IN (owner, 17 Oct 2026): src/rooms.js, set just before the picture's drawn
 mod=rp(mod,"if(wOn)WATER.step(renderer,dt); renderer.shadowMap.needsUpdate=true;","ROOMS.tick(); if(wOn)WATER.step(renderer,dt); renderer.shadowMap.needsUpdate=true;")
-mod=rp(mod,"  UI.goTick(); UI.runTick();","  UI.goTick(); UI.runTick(); CLOCK.tick(dt);")
+mod=rp(mod,"  UI.goTick(); UI.runTick();","  UI.goTick(); UI.runTick(); CLOCK.tick(dt); VIT.tick(dt);")   # (VIT: your health and stamina, src/vitals.js)
 # (the keys' turn and tilt: not in the isometric view, where Q and E go a quarter round: ui.js)
 mod=rp(mod,"  if(keys.has('q'))yawTo+=dt*1.8; if(keys.has('e'))yawTo-=dt*1.8; if(keys.has('z'))pitchTo=clampP(pitchTo-dt*1.2); if(keys.has('x'))pitchTo=clampP(pitchTo+dt*1.2);","  if(UI.view!=='iso'){ if(keys.has('q'))yawTo+=dt*1.8; if(keys.has('e'))yawTo-=dt*1.8; if(keys.has('z'))pitchTo=UI.clampV(pitchTo-dt*1.2); if(keys.has('x'))pitchTo=UI.clampV(pitchTo+dt*1.2); }")
 # LOADING (owner, 17 Oct 2026, the live site's first moments: the help panel, the shadows box and "--" showed while the page loaded, its dots

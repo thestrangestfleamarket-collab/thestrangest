@@ -13,14 +13,10 @@
 { const T=TILE, S_=CIVIC.staff, H_=CIVIC.house, log=CIVIC.note, G=(x,z)=>MODS.bodega.ground(x,z);
   const far=(a,b)=>Math.hypot(a.x-b.x,a.z-b.z)>18*T;
   // a staff member goes to a spot: by his vehicle to the kerb nearest it when far, then on foot; then(ok)
-  const dispatch=(S,veh,spot,then,v)=>{ S.state='on a call'; const walk=()=>CIVIC.go(S,spot,then,v||2.2);
-    if(veh&&far(S.N.st,spot)&&!veh.rider&&veh.to==null){ veh.alarm=true; const walkToCar=()=>{ VEH.ride(S.N,veh,spot.x,()=>{ walk(); }); }; if(Math.hypot(S.N.st.x-veh.x,S.N.st.z-veh.z)>3*T)CIVIC.go(S,{x:veh.x,z:(DRESS.kerb?DRESS.kerb.sw:veh.z)-.6*T},ok=>walkToCar(),2.4); else walkToCar(); } else walk(); };
-  const back=(S,veh)=>{ if(veh&&far(S.N.st,S.N.home)&&!veh.rider){ CIVIC.go(S,{x:veh.x,z:(DRESS.kerb?DRESS.kerb.sw:veh.z)-.6*T},()=>VEH.ride(S.N,veh,veh.home,()=>{ veh.alarm=false; CIVIC.home(S); }),2); } else { if(veh)veh.alarm=false; CIVIC.home(S); } };
-  // ---- THE VEHICLES at their houses' kerbs
-  const K=DRESS.kerb, carAt=id=>H_(id).x;
-  const PATROL=VEH.make('patrol','THE PATROL CAR','Toyoyo_Highlight',[.12,.16,.4],.7,{bar:true,x:carAt('precinct')}), TRUCK=VEH.make('fire','THE FIRE TRUCK','Landyroamer',[.8,.12,.08],.75,{bar:true,x:carAt('firehouse')}),
-    VAN=VEH.make('works','THE WORKS VAN','Beatall',[.95,.5,.1],.7,{x:carAt('depot')}), AMB=VEH.make('ambulance','THE AMBULANCE','docLorean',[.95,.95,.92],.8,{bar:true,x:carAt('clinic')});
-  for(const v of VEH.list)v.alarm=false;
+  // (no vehicles: owner, 17 Oct 2026, "remove all the boats and vehicles": every call on foot, at a run when it's far)
+  const dispatch=(S,veh,spot,then,v)=>{ S.state='on a call'; CIVIC.go(S,spot,then,(v||2.2)*(far(S.N.st,spot)?1.5:1)); };
+  const back=(S,veh)=>CIVIC.home(S);
+  const K=DRESS.kerb, PATROL=null, TRUCK=null, VAN=null, AMB=null;   // (the vehicles: removed)
   // ---- THE MAIL
   const MAILTO=to=>CITY.residents.find(r=>r.key===to)?'house':to==='you'?'apartments':CIVIC.shops[to]?to:to;   // (where a letter goes: the residents' house, your box in the lobby, a shop's door)
   CITY.at(9.5,()=>{ const S=S_.carrier; if(!S||S.state!=='free'||!CIVIC.mail.bag.length)return; const bag=CIVIC.mail.bag.splice(0); S.state='on the round'; S.job={kind:'mail',n:bag.length}; CIVIC.carry(S,0x3a6ac8); log('the carrier left with '+bag.length+' letter'+(bag.length>1?'s':''),'post');
@@ -31,7 +27,8 @@
   // ---- PUBLIC WORKS: the cans, the trash round, deliveries, the power crew; one crew, one job at a time
   const bagGeo=(()=>{ const M=VEHD.trashbag; if(!M)return null; const b=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0)), q=new Int16Array(b(M.p).buffer), P=new Float32Array(q.length); for(let i=0;i<q.length;i++)P[i]=(q[i]+32500)*M.sc+M.lo[i%3];
     const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(P,3)); g.setAttribute('color',new THREE.BufferAttribute(b(M.c),3,true)); g.setIndex(new THREE.BufferAttribute(new Uint16Array(b(M.i).buffer),1)); g.computeVertexNormals(); g.computeBoundingBox(); return g; })();
-  CIVIC.cans=(DRESS.cans||[]).map((c,i)=>{ const can={id:'can'+(i+1),x:c.x,z:c.z,fill:0,heap:null}; if(bagGeo){ const bb=bagGeo.boundingBox, s=1/.84*T*.8, me=new THREE.Mesh(bagGeo,VEH.mat); me.position.set(-(bb.min.x+bb.max.x)/2,-bb.min.y,-(bb.min.z+bb.max.z)/2); const body=new THREE.Group(); body.add(me); body.scale.set(s,s*ZU*24/TILE,s); const g=new THREE.Group(); g.add(body); g.position.set(c.x+.9*T,G(c.x,c.z),c.z-.1*T); g.visible=false; MAPG.bodega.add(g); can.heap=g; } return can; });
+  const BAGMAT=new THREE.MeshLambertMaterial({vertexColors:true});
+  CIVIC.cans=(DRESS.cans||[]).map((c,i)=>{ const can={id:'can'+(i+1),x:c.x,z:c.z,fill:0,heap:null}; if(bagGeo){ const bb=bagGeo.boundingBox, s=1/.84*T*.8, me=new THREE.Mesh(bagGeo,BAGMAT); me.position.set(-(bb.min.x+bb.max.x)/2,-bb.min.y,-(bb.min.z+bb.max.z)/2); const body=new THREE.Group(); body.add(me); body.scale.set(s,s*ZU*24/TILE,s); const g=new THREE.Group(); g.add(body); g.position.set(c.x+.9*T,G(c.x,c.z),c.z-.1*T); g.visible=false; MAPG.bodega.add(g); can.heap=g; } return can; });
   CIVIC.nearCan=(x,z)=>CIVIC.cans.find(c=>Math.hypot(c.x-x,c.z-z)<6*T);
   CIVIC.fillCan=(c,n)=>{ c.fill+=n; if(c.fill>=4&&c.heap&&!c.heap.visible){ c.heap.visible=true; CITY.post('trash',{x:c.x,z:c.z-.8*T,place:c.id},{can:c.id}); log('a can is overflowing','street'); } };
   CIVIC.emptyCan=c=>{ c.fill=0; if(c.heap)c.heap.visible=false; for(const j of CITY.open('trash'))if(j.data.can===c.id)CITY.done(j); };
@@ -40,9 +37,9 @@
     if(j.kind==='restock'){ const P=CITY.place(j.place); CIVIC.carry(S,0x8a6a3a); dispatch(S,VAN,P.door,ok=>{ if(ok){ const Sh=CIVIC.shops[j.place]; Sh.stock+=12; Sh.low=Sh.stock<8; log('a crate delivered to '+j.place+' (stock '+Sh.stock+')',j.place); } CITY.done(j); CIVIC.carry(S,null); back(S,VAN); }); }
     else if(j.kind==='trash'){ const c=CIVIC.cans.find(c=>c.id===j.data.can); dispatch(S,VAN,{x:c.x,z:c.z-.9*T},ok=>{ if(ok){ CIVIC.emptyCan(c); log('a can emptied','street'); } CITY.done(j); back(S,VAN); }); }
     else if(j.kind==='power'){ CIVIC.carry(S,0xd8b030); dispatch(S,VAN,j.at,ok=>{ S.busy=8; S.after=()=>{ CIVIC.power(true,j.data.x0,j.data.x1); log('power back on','street'); CITY.done(j); CIVIC.carry(S,null); back(S,VAN); }; }); } };
-  CITY.at(6.5,()=>{ const S=S_.works; if(!S||S.state!=='free'||!CIVIC.cans.length)return; S.state='on the round'; S.job={kind:'trash round'}; log('the trash round began','depot'); const cans=CIVIC.cans.slice(); let first=true;
+  CITY.at(6.5,()=>{ const S=S_.works; if(!S||S.state!=='free'||!CIVIC.cans.length)return; S.state='on the round'; S.job={kind:'trash round'}; log('the trash round began','depot'); const cans=CIVIC.cans.slice();
     const next=()=>{ const c=cans.shift(); if(!c){ log('the trash round is done','depot'); back(S,VAN); return; } const go=()=>CIVIC.go(S,{x:c.x,z:c.z-.9*T},ok=>{ if(ok)CIVIC.emptyCan(c); S.N.st.wait=1; setTimeout(next,1200); },1.8);
-      if(first){ first=false; VAN.alarm=false; CIVIC.go(S,{x:VAN.x,z:(K?K.sw:VAN.z)-.6*T},()=>VEH.ride(S.N,VAN,c.x,go),2); } else go(); }; next(); },'the trash round');
+      go(); }; next(); },'the trash round');
   // the power: a stretch of the street's lamps off (L.userData.off: LITE leaves them out, their pools go), till the crew has been
   CIVIC.power=(on,x0,x1)=>{ for(const [L] of DRESS.pools||[])if(L.position.x>=x0&&L.position.x<=x1)L.userData.off=!on; LITE.t=0; };
   CIVIC.outage=x=>{ const x0=x-12*T, x1=x+12*T; CIVIC.power(false,x0,x1); if(!CITY.open('power').some(j=>j.data.x0===x0))CITY.post('power',{x,z:(K?K.sw:0)-.6*T,place:'street'},{x0,x1}); log('the lights went out along the street','street'); };

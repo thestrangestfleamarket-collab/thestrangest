@@ -68,7 +68,6 @@ const CIVIC={row:[],staff:{},log:[],ledger:{treasury:500,day:0,rent:30,tax:10,wa
       o+='<h3>RESIDENTS</h3>'+CITY.residents.map(r=>row(r.name+' · '+r.flat,r.state+' · $'+r.cash+(r.owed?' owes $'+r.owed:'')+' · hunger '+Math.round(r.hunger*100)+'% · letters '+CIVIC.box(r.key).length)).join('');
       o+='<h3>SHOPS</h3>'+Object.values(CIVIC.shops).map(S=>row(S.id,'stock '+S.stock+' · till $'+S.till+' · sold '+S.sold)).join('');
       o+='<h3>SERVICES</h3>'+Object.values(CIVIC.staff).map(S=>row(S.name,S.state+(S.job?' · '+S.job.kind+(S.job.place?' at '+S.job.place:''):''))).join('');
-      o+='<h3>VEHICLES</h3>'+VEH.list.map(v=>row(v.name,(v.to!=null?'driving':'parked')+' at '+(v.x/T).toFixed(0)+(v.rider?' · '+v.rider.name+' aboard':'')+(v.alarm?' · LIGHTS':''))).join('');
       o+='<h3>OPEN JOBS</h3>'+(CITY.open().map(j=>row(j.kind,(j.place||'')+' · posted '+fmt(j.posted))).join('')||row('none',''));
       const my=CIVIC.box('you'); o+='<h3>YOUR MAILBOX (THE APARTMENTS\' LOBBY)</h3>'+(my.slice(-5).reverse().map(l=>row(l.from+': '+l.subject,esc(l.body))).join('')||row('nothing yet','the carrier comes at 9:30'));
       o+='<h3>THE LOG</h3>'+CIVIC.log.slice(0,14).map(e=>row('DAY '+e.day+' '+fmt(e.t),esc(e.what))).join('');
@@ -77,6 +76,6 @@ const CIVIC={row:[],staff:{},log:[],ledger:{treasury:500,day:0,rent:30,tax:10,wa
     pane.querySelector('#cvfire').onclick=()=>CIVIC.tryFire&&CIVIC.tryFire(); pane.querySelector('#cvout').onclick=()=>CIVIC.tryOutage&&CIVIC.tryOutage(); pane.querySelector('#cvcan').onclick=()=>CIVIC.tryCan&&CIVIC.tryCan(); pane.querySelector('#cvfaint').onclick=()=>{ CIVIC.tryFaint&&CIVIC.tryFaint(); UI.toggleMenu(); };
     pane.querySelector('#cvmail').onclick=()=>{ CIVIC.send('you','THE MARKET','HELLO','A letter for you, in the bag till the carrier\'s round.'); CIVIC.draw(); }; }
   // each frame: the vehicles, hunger
-  const t0=CITY.tick; CITY.tick=(dt,you)=>{ t0(dt,you); VEH.tick(dt); CIVIC.hungerTick(dt); };
+  const t0=CITY.tick; CITY.tick=(dt,you)=>{ t0(dt,you); CIVIC.hungerTick(dt); };
   CIVIC.note('the city opened','hall');
 }

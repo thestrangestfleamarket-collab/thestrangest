@@ -69,7 +69,12 @@ function gdShape(GS,K,LAMPS){ const G=GS.filter(p=>p.name==='ghost street shop')
     // WHAT STANDS IN IT (the dojo's own makers): the alcove, the sword rack on the east wall, a candle in each corner, a lantern each side of
     // the door, incense on the west and back walls
     const ITEMS=[J.djTokonoma(TK[0],yi0,TK[1]),J.djBokkenRack(xi1,yi0+1.2,yi0+2.2)], CAND=[[xi0+.5,yi0+.5],[xi1-.5,yi0+.5],[xi0+.5,yi1-.5],[xi1-.5,yi1-.5]], AND=[[dx0-.6,yi1-.45],[dx1+.6,yi1-.45]];
-    for(const [x,y] of CAND)ITEMS.push(J.djCandle(x,y)); for(const [x,y] of AND)ITEMS.push(J.djAndon(x,y));
+    // (each candle wax, no longer a glowing block: the game drew its top half glowing white; now cream wax, only its top fingers' width lit
+    // through dimly by the flame, warm, as wax is, its top a melted dish, a black wick standing out of it; the light is the flame's, fire.js)
+    const WAX=[226,214,186], WG=[236,184,120], E=c=>Object.assign(c,{e:1}), wax=p=>{ for(const b of p.boxes)if(!b.life)for(const f of ['fs','fi','fj','top']){ const g=b[f]; if(g)b[f]=(...a)=>{ const c=g(...a); if(!c)return c; if(!c.e)return f==='fs'?E(sh(WG,.28)):c;
+        const k=Math.max(0,Math.min(1,(c[0]/240-.3)/1.07)); return f==='top'?E(sh(WG,.62)):E(sh(WG,.3+.34*k*k)); }; }
+      const fb=p.boxes.find(b=>b.life), x=(fb.x0+fb.x1)/2, y=(fb.y0+fb.y1)/2; p.boxes.push({x0:x-.012,y0:y-.012,x1:x+.012,y1:y+.012,z0:30,z1:32.5,c:[26,22,20],foot:0,nb:1}); return p; };
+    for(const [x,y] of CAND)ITEMS.push(wax(J.djCandle(x,y))); for(const [x,y] of AND)ITEMS.push(J.djAndon(x,y));
     ITEMS.push(J.djIncense(xi0,yi0+1.8,[1,0]),J.djIncense(xi0+3.6,yi0,[0,1]));
     for(const p of ITEMS){ BATCH.tag=OBJ('bodega',p.name); for(const b of p.boxes)gbox(b,'GDL'); } BATCH.tag=null;
     // built: each wall's faces their own mesh (clipped to its foot when it stands between you and the camera, while you're in), the rest one
@@ -86,14 +91,14 @@ function gdShape(GS,K,LAMPS){ const G=GS.filter(p=>p.name==='ghost street shop')
     for(const b of WB)if(b.z0===0)sol(b.x0,b.y0,b.x1,b.y1,H);
     for(const p of ITEMS){ const bs=p.boxes.filter(b=>b.z0<30&&b.z1-b.z0>3); if(!bs.length||/incense/.test(p.name))continue;
       sol(Math.min(...bs.map(b=>b.x0)),Math.min(...bs.map(b=>b.y0)),Math.max(...bs.map(b=>b.x1)),Math.max(...bs.map(b=>b.y1)),Math.max(...bs.map(b=>b.z1))); }
-    // THE FLAMES: the candles' (a flame of two blocks over each, flickering a step at a time, its light with it) and the lanterns' (still);
-    // their light only while you're in the hall (the walls would not keep it in)
-    const LT=[], FM=new THREE.MeshBasicMaterial({color:new THREE.Color(1,.62,.24)}), FC=new THREE.MeshBasicMaterial({color:new THREE.Color(1,.92,.62)});
+    // THE FLAMES: the candles' (live flames, fire.js; their light flickering with them) and the lanterns' (still); the incense's thin smoke
+    // curling up off each stick's tip; their light only while you're in the hall (the walls would not keep it in)
+    const LT=[];
     const light=(x,y,z,c,r,fl)=>{ const cm=Math.max(...c), L=new THREE.PointLight(new THREE.Color(c[0]/cm,c[1]/cm,c[2]/cm),0,r*TILE*1.25,1.6); L.position.set(X(x),Y(z),Z(y)); scene.add(L); LT.push({L,i:7*cm*Math.min(1.2,r/5),fl,s:Math.round(x*7+y*13)}); return LT[LT.length-1]; };
-    for(const [x,y] of CAND){ const l=light(x,y,34,[.85,.42,.17],4,1), g=new THREE.Group(), w=.06*TILE*BLDK;
-      const f=new THREE.Mesh(new THREE.BoxGeometry(w,Y(10),w),FM), c=new THREE.Mesh(new THREE.BoxGeometry(w*.5,Y(5),w*.5),FC); f.position.y=Y(5); c.position.y=Y(3); g.add(f,c); g.position.set(X(x),Y(30),Z(y)); scene.add(g); l.g=g; }
+    for(const [x,y] of CAND)light(x,y,34,[.85,.42,.17],4,1); FLAME.props(ITEMS,X,Y,Z);
+    for(const [x,y,n] of [[xi0,yi0+1.8,[1,0]],[xi0+3.6,yi0,[0,1]]]){ const bx=x+n[0]*.12, by=y+n[1]*.12;   // (djIncense's sticks: their tips)
+      for(const [ox,oy,h] of [[-.025,0,12],[.02,.02,10],[0,-.025,11]])FLAME.add({kind:'none',x:X(bx+ox),y:Y(30+h),z:Z(by+oy),w:.02*TILE,smoke:1.6,sk:.35,seed:h}); }
     for(const [x,y] of AND)light(x,y,20,[.66,.34,.14],4.8,0);
     let was=null;
     BOD.GD={r:[xi0,yi0,xi1,yi1],door:[(dx0+dx1)/2,Y1],H:110,inside,tick(){ const t=performance.now()/1000, inn=inside();
-      for(const l of LT){ const k=l.fl?.8+.08*Math.floor(hash(Math.floor(t*10),l.s,425)*5):1; if(l.g)l.g.scale.set(1,.8+.1*Math.floor(hash(Math.floor(t*10),l.s,425)*5)/2,1);
-        if(inn||was!==inn)l.L.intensity=inn?l.i*k:0; } was=inn; }}; } }
+      for(const l of LT){ const k=l.fl?FLAME.flick(l.s,t):1; if(inn||was!==inn)l.L.intensity=inn?l.i*k:0; } was=inn; }}; } }

@@ -28,9 +28,9 @@
   STORE.stackAt=(x,z)=>{ let best=null; for(const R of STACK)if(x>R.x0&&x<R.x1&&z>R.z0&&z<R.z1&&R.fy<=py+.35*TILE&&(!best||R.fy>best.fy))best=R; return best; };
   STORE.stackGround=(x,z)=>{ const R=STORE.stackAt(x,z); return R?R.fy:null; };
   { let was=null; STORE.stackTick=()=>{ const R=STORE.stackAt(pos.x,pos.z); if(R===was)return null; was=R; return R?R.solids:SOL.up; }; }
-  const lift=(dz,fn)=>{ const b0=BATCH.items.length, l0=lamps.length, s0=solids.length, f0=fixed.length, r0=STORE.rooms.length, dy=Y(dz)-Y(0); fn();
+  const lift=(dz,fn)=>{ const b0=BATCH.items.length, l0=lamps.length, fl0=FLAME.src.length, s0=solids.length, f0=fixed.length, r0=STORE.rooms.length, dy=Y(dz)-Y(0); fn();
     for(const it of BATCH.items.slice(b0))for(let q=1;q<it.pos.length;q+=3)it.pos[q]+=dy;
-    for(const L of lamps.slice(l0))L.position.y+=dy;
+    for(const L of lamps.slice(l0))L.position.y+=dy; for(const f of FLAME.src.slice(fl0))if(!f.ride){ f.y+=dy; f.a.position.y+=dy; }   // (its flames with it: those riding a lamp follow it)
     const own=solids.splice(s0); for(const f of fixed.splice(f0)){ f[2]+=dy; f[5]+=dy; fixed.push(f); }
     for(const R of STORE.rooms.slice(r0)){ R.y0=dy-.05; R.y1=Math.max(R.y1,Y(0)+Y(130)-Y(0))+dy-Y(0); R.fy=dy; R.solids=own; STACK.push(R);
       // (its menu spot just inside its door, not the step outside it: a stacked room has no floor out there, and you'd drop to the pool below; owner, 17 Oct 2026: "when i try to go to herb cottage i end up in the pool")
@@ -69,6 +69,7 @@
     for(const l of lam){ if(l.off||!(l.r>0))continue; const cm=Math.max(...l.c); if(!(cm>0))continue; const L=new THREE.PointLight(new THREE.Color(l.c[0]/cm,l.c[1]/cm,l.c[2]/cm),7*cm*Math.min(1.2,l.r/5),l.r*TILE*1.25,1.6);
       L.position.set(X(l.x),Y(l.z),Z(l.y)); L.userData.i0=L.intensity; scene.add(L); lamps.push(L);
       if(l.r>=3||l.neon){ L.castShadow=true; L.shadow.mapSize.set(256,256); L.shadow.camera.near=.05; L.shadow.camera.far=l.r*TILE*1.3; L.shadow.bias=-.004; L.shadow.normalBias=.06; L.shadow.autoUpdate=false; L.shadow.needsUpdate=true; } }
+    FLAME.props(props,X,Y,Z,lamps);   // (its candles', torches' and brazier's flames, live: fire.js; each light flickering with its own)
     const dx=door?(door.w==='f'||door.w==='b'?door.a:door.w==='w'?B.x0-1.2:B.x1+1.2):(B.x0+B.x1)/2, dy=door?(door.w==='f'?B.y1+1.2:door.w==='b'?B.y0-1.2:door.a):B.y1+1.5;
     const R={id,name,B,x0:X(B.x0),x1:X(B.x1),z0:Z(B.y0),z1:Z(B.y1),y0:-1,y1:Y(B.h),walls:!!look.in||!!o.pieceWalls,at:{x:X(dx),z:Z(dy)}}; R.inside=(x,z)=>x>R.x0&&x<R.x1&&z>R.z0&&z<R.z1&&py>R.y0-.3&&py<R.y1;   /* (by your height too: the stacked rooms share their ground) */
     STORE.rooms.push(R); const pl=STORE.places.find(q=>q[0]===name); if(pl){ pl[1]=R.at.x; pl[2]=R.at.z; pl[3]='up'; } else STORE.places.push([name,R.at.x,R.at.z,'up']); return R; };

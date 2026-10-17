@@ -292,6 +292,12 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
   black with no glow, no cloak), 1.4 m (twice the others), unarmed, strolling the whole street as they do. The Minion's and the Rogue's meshes
   came out of the bake 2.2 rig units ahead of their bones (the pack's files lay them there); `npc-skel.js` moves them back at load, so those two
   guards and the troublemakers now draw where they stand.
+  The pack's gear (blade, shields, staff, crossbow) came out of the bake at each piece's own spot in the assets file, so the guards' weapons
+  floated beside them; `npc-skel.js` brings each back to its grip at load. **Every character's sheet** (`tests/sheet.cjs <key>`, or
+  `?sheet=key&fullres=8` by hand): the first of his kind, out of his group into the scene (the bear up from the platform, a bat shown by day),
+  held still on his spot facing the camera, the camera framed on his bones or his shape (the art as fine as his size asks); the skeletons'
+  limbs spread; the dragon on the ground. The keys: fish, bear, Warrior, Mage, Minion, Rogue, Gold, mushroom, fox, dragon, rat, frog, slime,
+  snake, spider, bat, wasp.
 
 ## THE MARKET: the one official map
 

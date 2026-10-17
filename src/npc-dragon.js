@@ -81,7 +81,7 @@
           NECK.forEach((b,k)=>bend(b,UP,D.turn*.12)); } } });
     N.push=()=>{}; N.blocks=()=>false;
     const tick0=N.tick, st=N.st; st.hold=true; st.h=Math.random()*6; N.g.rotation.order='YXZ';
-    N.tick=(dt,you)=>{ st.to=null; st.face=null; tick0(dt,you); let turn=0; D.snap-=dt;
+    N.tick=(dt,you)=>{ if(N.sheet){ tick0(dt,you); N.g.position.set(st.x,0,st.z); N.g.rotation.set(0,st.h,0); return; }   /* (his sheet: on the ground, still) */ st.to=null; st.face=null; tick0(dt,you); let turn=0; D.snap-=dt;
       { const g=CLOCK.dark()?.35:0; N.toon.emissive.lerp(GLC.setRGB(.04*g,.2*g,.06*g),Math.min(1,dt*.5)); }   // (at night a faint glow of his own)
       const y0=D.y;
       if(D.mode==='perch'){ st.x=D.p.x; st.z=D.p.z; st.h=ease(st.h,D.p.h,Math.min(1,dt*2)); D.y=ease(D.y,D.p.y,Math.min(1,dt*4)); D.v=0;

@@ -69,7 +69,7 @@
       anim:(dt,moving,st,sc)=>{ const run=moving&&st.v>1.2*TILE; N.sta=run?Math.max(0,N.sta-dt/14):Math.min(1,N.sta+dt/8); if(N.sta<=0)N.tired=true; if(N.tired&&N.sta>.33)N.tired=false;   // (his stamina: spent running, back at a walk or at rest)
       if(N.sheet){ if(!N.posed){ N.posed=true; spread(rig); } return; }   // (his sheet: still, limbs spread, his clips never run)
       if(QS.get('skelrest'))return; an.base=moving?(run?'Running_A':o.walkN):(N.alert?'Idle_Combat':o.idleN); an.ts=moving?st.v/((run?RUNU:WALK)*sc):1; an.update(dt); }});
-    for(const [gn,slot] of o.gear||[]){ const m=new THREE.Mesh(geomOf(S.gear[gn],false),N.me.material); m.castShadow=true; rig.bones[JI[slot]].add(m); }
+    for(const [gn,slot] of o.gear||[]){ const gg=geomOf(S.gear[gn],false); gg.computeBoundingBox(); const c=gg.boundingBox.getCenter(new THREE.Vector3()); gg.translate(-c.x,gn==='Crossbow'?-1.5:0,-c.z);   /* (the pack's assets file lays each piece out on its own spot, and the bake kept it: back to its grip, so it sits in the hand) */ const m=new THREE.Mesh(gg,N.me.material); m.castShadow=true; rig.bones[JI[slot]].add(m); }
     N.mixer=mixer; N.an=an; return N; };
   // a shot (the Rogue's bolt, the Mage's spell): a little glowing block flying at the troublemaker; on him, he's down
   const shoot=(G,T,col,dmg)=>{ let b=BOLTS.find(b=>!b.on); if(!b){ b={m:new THREE.Mesh(new THREE.BoxGeometry(.05*TILE,.05*TILE,.3*TILE),new THREE.MeshBasicMaterial({color:0xffffff,toneMapped:false}))}; MAPG.bodega.add(b.m); BOLTS.push(b); }

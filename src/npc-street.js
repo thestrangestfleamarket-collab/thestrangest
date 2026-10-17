@@ -16,36 +16,15 @@
 // now and then), stop, look at you when you come near, wave back when you wave, hop the kerb, and use the things they come to. ----
 const STREET={npcs:[],items:[],ready:false}; window.STREET=STREET;   // (a test's look)
 { const b=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0)), fl=s=>new Float32Array(b(s).buffer), YS=ZU*24/TILE, D2R=Math.PI/180;
-  // ---- the skin: positions, colours, (bones), smooth normals in bands across him, as the fish's
-  function skinGeo(D){ const geo=new THREE.BufferGeometry(), P=fl(D.p); geo.setAttribute('position',new THREE.BufferAttribute(P,3)); geo.setAttribute('color',new THREE.BufferAttribute(b(D.c),3,true));
-    const n=P.length/3; geo.setAttribute('sh',new THREE.BufferAttribute(new Float32Array(n),1));
+  // ---- the skin as makeNPC (npc-map) takes it: positions, colours, each corner's part (his main bone), the bones' indices and weights
+  function skinGeo(D){ const geo=new THREE.BufferGeometry(), P=fl(D.p), n=P.length/3; geo.setAttribute('position',new THREE.BufferAttribute(P,3)); geo.setAttribute('color',new THREE.BufferAttribute(b(D.c),3,true));
+    geo.setAttribute('reg',new THREE.BufferAttribute(D.r?Float32Array.from(b(D.r)):new Float32Array(n),1)); geo.setAttribute('sh',new THREE.BufferAttribute(new Float32Array(n),1));
     if(D.w){ const W=b(D.w), WT=fl(D.wt), si=new Float32Array(n*4), sw=new Float32Array(n*4); for(let i=0;i<n;i++){ si[i*4]=W[i*2]; si[i*4+1]=W[i*2+1]; sw[i*4]=WT[i*2]; sw[i*4+1]=WT[i*2+1]; }
       geo.setAttribute('skinIndex',new THREE.BufferAttribute(si,4)); geo.setAttribute('skinWeight',new THREE.BufferAttribute(sw,4)); }
-    geo.computeVertexNormals(); const Nn=geo.attributes.normal.array, acc=new Map(), key=i=>Math.round(P[i]*2e3)+','+Math.round(P[i+1]*2e3)+','+Math.round(P[i+2]*2e3);
-    for(let i=0;i<P.length;i+=3){ const k=key(i), a=acc.get(k)||[0,0,0]; a[0]+=Nn[i]; a[1]+=Nn[i+1]; a[2]+=Nn[i+2]; acc.set(k,a); }
-    for(let i=0;i<P.length;i+=3){ const a=acc.get(key(i)), l=Math.hypot(...a)||1; Nn[i]=a[0]/l; Nn[i+1]=a[1]/l; Nn[i+2]=a[2]/l; }
-    geo.attributes.normal.needsUpdate=true; geo.computeBoundingBox(); geo.computeBoundingSphere(); return geo; }
-  // the fish's shading (npc-map), with the bones' skinning in the vertex shader when he has them
-  function skinMat(N,o){ return new THREE.ShaderMaterial({side:o.glass?THREE.FrontSide:THREE.DoubleSide,transparent:!!o.glass,depthWrite:!o.glass,uniforms:{uL:{value:W3.Lw},uTint:{value:W3.tint},uLv:W3.lv,uSM:{value:N.sm.depthTexture},uLVP:N.LVP,uA:{value:o.glass||1}},
-    vertexShader:`attribute vec3 color; attribute float sh; varying vec3 vC,vN,vW; varying float vS;
-      #include <skinning_pars_vertex>
-      void main(){ vS=sh; vC=pow(color,vec3(2.2)); vec3 objectNormal=normal, transformed=position;
-        #include <skinbase_vertex>
-        #include <skinnormal_vertex>
-        #include <skinning_vertex>
-        vN=normalize(mat3(modelMatrix)*objectNormal); vec4 w=modelMatrix*vec4(transformed,1.); vW=w.xyz; gl_Position=projectionMatrix*viewMatrix*w; }`,
-    fragmentShader:`uniform vec3 uL,uTint; uniform float uLv,uA; uniform sampler2D uSM; uniform mat4 uLVP; varying vec3 vC,vN,vW; varying float vS;
-      void main(){ float l=dot(normalize(vN)*(gl_FrontFacing?1.:-1.),uL); vec3 c0=min(vec3(1.),vC*1.1), c1=vC, c2=vC*.84*vec3(.95,.97,1.04), cd=vC*.7*vec3(.92,.95,1.06), c;
-        if(uLv<.5)c=l>-.3?c1:c2;
-        else{ int t=l>.55?0:l>.05?1:l>-.4?2:3;
-          if(uLv>1.5&&t<2){ vec4 p=uLVP*vec4(vW,1.); vec3 q=p.xyz/p.w*.5+.5; if(q.x>0.&&q.x<1.&&q.y>0.&&q.y<1.&&q.z-.004>texture2D(uSM,q.xy).r)t=2; }
-          c=t==0?c0:t==1?c1:t==2?c2:cd; }
-        gl_FragColor=vec4(c*uTint,uA); }`}); }
-  // SELF: his depth from his light each frame, as the fish's (the skinning rides along: three's depth material knows a skinned mesh)
-  function selfShadow(N,g,H){ N.sm=new THREE.WebGLRenderTarget(256,256); N.sm.depthTexture=new THREE.DepthTexture(256,256); N.smCam=new THREE.OrthographicCamera(-1.8,1.8,1.8,-1.8,.1,14); N.LVP={value:new THREE.Matrix4()}; N.depthMat=new THREE.MeshDepthMaterial({side:THREE.DoubleSide});
-    N.shadowPass=renderer=>{ if(W3.lv.value<1.5||!g.parent||!g.parent.visible)return; const wp=g.getWorldPosition(new THREE.Vector3()), mid=wp.clone().setY(wp.y+H*.45); N.smCam.position.copy(mid).addScaledVector(W3.Lw,7); N.smCam.lookAt(mid); N.smCam.updateMatrixWorld();
-      N.LVP.value.multiplyMatrices(N.smCam.projectionMatrix,N.smCam.matrixWorldInverse); const me=N.me, m0=me.material; me.material=N.depthMat; renderer.setRenderTarget(N.sm); renderer.clear(); renderer.render(g,N.smCam); renderer.setRenderTarget(null); me.material=m0; };
-    const s0=W3.shadowPass; W3.shadowPass=r=>{ s0(r); N.shadowPass(r); }; }
+    return geo; }
+  // see-through (the ghost, a plastic bag): his front skin alone, drawn after what's inside him, in both his materials (flat and lamp-lit)
+  function glass(N,a){ for(const m of [N.flat,N.toon]){ m.transparent=true; m.depthWrite=false; m.side=THREE.FrontSide; m.needsUpdate=true; } N.toon.opacity=a; N.flat.uniforms.uA={value:a};
+    N.flat.fragmentShader=N.flat.fragmentShader.replace('uniform vec3 uL,uTint;','uniform vec3 uL,uTint; uniform float uA;').replace('gl_FragColor=vec4(c*uTint,1.);','gl_FragColor=vec4(c*uTint,uA);'); N.me.castShadow=false; N.me.renderOrder=2; }
   // ---- THE BODY IN THE ENGINE: one world for the street (scene units; its verticals as drawn): the ground in bands (the sidewalks, the road a kerb
   // down), the walls and the furniture (the map's fixed boxes), the street's edges, the stairs' opening stopped (they're not going down there), you
   // as a capsule that moves as you do; each character a capsule that can't tip over, driven by where he wants to go, gravity on him
@@ -62,15 +41,14 @@ const STREET={npcs:[],items:[],ready:false}; window.STREET=STREET;   // (a test'
   SP.step=(dt,you,yy)=>{ const w=SP.world; if(!w)return; SP.you.setNextKinematicTranslation({x:you.x,y:yy+1.1,z:you.z}); SP.acc=Math.min(SP.acc+dt,4/90);
     while(SP.acc>=1/90){ SP.acc-=1/90; for(const N of STREET.npcs)N.drive(1/90); w.step(); } };
   // ---- A CHARACTER: his skin on his bones, his kind's moves, his body, his mind
-  function makeChar(D,o){ const N={key:o.key,name:o.name,lvl:'up',kind:o.kind,H:0}; const geo=skinGeo(D), g=new THREE.Group(), body=new THREE.Group();
-    const H=o.metres/.84*TILE, tall=geo.boundingBox.max.y, s=H/tall; N.H=H*YS;
-    // his bones: each at its head, hanging from its parent's; the skin bound to them at rest
+  function makeChar(D,o){ const geo=skinGeo(D);
+    // his bones: each at its head, hanging from its parent's; the skin bound to them at rest (makeNPC binds)
     const bones=D.bones.map(()=>new THREE.Bone()), BN={}; D.bones.forEach(([nm,p,h],i)=>{ BN[nm]=bones[i]; const ph=p>=0?D.bones[p][2]:[0,0,0]; bones[i].position.set(h[0]-ph[0],h[1]-ph[1],h[2]-ph[2]); bones[i].name=nm; if(p>=0)bones[p].add(bones[i]); });
-    selfShadow(N,g,H); const mat=skinMat(N,o), me=new THREE.SkinnedMesh(geo,mat); me.add(bones[0]); me.bind(new THREE.Skeleton(bones)); me.castShadow=!o.glass; me.frustumCulled=false; N.me=me;
-    body.add(me); body.scale.set(s,s*YS,s); g.add(body); MAPG.bodega.add(g); N.g=g; N.body=body; N.BN=BN; N.inner=new THREE.Group(); body.add(N.inner);   // (inner: what he carries inside, the ghost's tote)
+    const N=makeNPC(null,{key:o.key,name:o.name,names:D.bones.map(bn=>bn[0]),lv:'up',group:'bodega',geo,skin:{bones,skeleton:new THREE.Skeleton(bones)},tall:1,rank:D.bones.map(()=>0),metres:o.metres,x:o.at[0],z:o.at[1],
+      lane:{x0:o.at[0],x1:o.at[0],z0:o.at[1],z1:o.at[1]},ground:(x,z)=>MODS.bodega.ground(x,z),radius:o.radius,speed:o.speed,stride:0,rock:0,bob:0});
+    if(o.glass)glass(N,o.glass); N.kind=o.kind; const g=N.g, body=N.body, H=N.H, s=body.scale.x, me=N.me; N.H=H*YS; N.BN=BN; N.inner=new THREE.Group(); body.add(N.inner);   // (inner: what he carries inside, the ghost's tote)
     // ---- his mind's state: where he is (his feet), his heading, what he's doing
-    const YOU=st, ns=N.st={x:o.at[0],z:o.at[1],y:0,h:0,to:null,wait:2+Math.random()*3,ph:Math.random()*6,t:Math.random()*10,R:o.radius*TILE,v:o.speed*TILE,run:0,moving:false,move:null,look:0,lookTo:0,vy:0,ground:true,held:0,waved:0,item:null};
-    N.blocks=(x,z,R)=>Math.hypot(x-ns.x,z-ns.z)<ns.R+R; N.push=p=>{ const dx=p.x-ns.x, dz=p.z-ns.z, d=Math.hypot(dx,dz), R=ns.R+.3; if(d<R&&d>1e-4){ p.x=ns.x+dx/d*R; p.z=ns.z+dz/d*R; } };
+    const YOU=st, ns=Object.assign(N.st,{y:0,h:0,to:null,wait:2+Math.random()*3,t:Math.random()*10,run:0,moving:false,move:null,look:0,lookTo:0,vy:0,ground:true,held:0,waved:0,item:null});   // (N.st: makeNPC's x, z, h, ph, R, v; the rest his mind's)
     // ---- his body in the engine: a capsule that can't tip, his feet its bottom
     let rb=null; const half=Math.max(.05,N.H/2-ns.R);
     N.embody=()=>{ const R=SP.R, w=SP.world; if(!w||rb)return; rb=w.createRigidBody(R.RigidBodyDesc.dynamic().setTranslation(ns.x,ns.y+half+ns.R+.05,ns.z).lockRotations().setLinearDamping(0.2).setCcdEnabled(true).setGravityScale(o.kind==='sheet'?0.15:1));
@@ -111,13 +89,13 @@ const STREET={npcs:[],items:[],ready:false}; window.STREET=STREET;   // (a test'
       // the pose: the kind's walk or stand, his move laid over it as it rises and falls
       let P=ns.moving?MOVES.walk(ns.ph,ns.run,ns.t):MOVES.idle(ns.t); if(ns.move){ const u=ns.move.t/ns.move.T, w=Math.min(1,u/.15,(1-u)/.15)*1; P=mix(P,ns.move.pose(u,ns.t),Math.max(0,w)); }
       setPose(P,ns.look); g.position.set(ns.x,ns.y,ns.z); g.rotation.set(0,ns.h,0); if(N.carry)N.carry(ns); };
-    NPCS.push(N); STREET.npcs.push(N); return N; }
+    STREET.npcs.push(N); return N; }
   // ---- AN ITEM: a thing standing on the sidewalk (or carried): its skin, shaded the same, named for a double click
-  function makeItem(D,o){ const N={key:o.key,name:o.name,x:o.at?o.at[0]:0,z:o.at?o.at[1]:0,R:0}; const geo=skinGeo(D), g=new THREE.Group(), body=new THREE.Group(), H=o.metres/.84*TILE, s=H/geo.boundingBox.max.y;
-    N.R=Math.max(D.wide,D.deep)*s/2; selfShadow(N,g,H); const me=new THREE.Mesh(geo,skinMat(N,o)); me.castShadow=true; me.frustumCulled=false; N.me=me;
-    body.add(me); body.scale.set(s,s*YS,s); g.add(body); N.g=g; N.body=body; N.H=H*YS;
-    if(o.at){ MAPG.bodega.add(g); g.position.set(N.x,MODS.bodega.ground(N.x,N.z),N.z); g.rotation.y=o.turn||0; SOL.up.push([N.x-N.R*.8,N.z-N.R*.8,N.x+N.R*.8,N.z+N.R*.8]); FIX.up.push([N.x-N.R*.8,N.z-N.R*.8,0,N.x+N.R*.8,N.z+N.R*.8,N.H]); }
-    if(typeof UI!=='undefined'&&UI.thing)UI.thing({name:N.name,obj:g,reach:1.1,tall:N.H,act:()=>{}}); STREET.items.push(N); return N; }
+  function makeItem(D,o){ const N=makeNPC(null,{key:o.key,name:o.name,names:['all'],lv:'up',group:'bodega',geo:skinGeo(D),tall:1,rank:[0],metres:o.metres,x:o.at?o.at[0]:0,z:o.at?o.at[1]:0,lane:{x0:0,x1:0,z0:0,z1:0},ground:(x,z)=>MODS.bodega.ground(x,z),radius:.1,speed:0,stride:0,rock:0,bob:0});
+    const g=N.g, s=N.body.scale.x; N.x=N.st.x; N.z=N.st.z; N.R=Math.max(D.wide,D.deep)*s/2; N.st.R=N.R; N.H=N.H*YS; N.tick=()=>{}; N.blocks=()=>false;
+    if(o.at){ g.position.set(N.x,MODS.bodega.ground(N.x,N.z),N.z); g.rotation.y=o.turn||0; SOL.up.push([N.x-N.R*.8,N.z-N.R*.8,N.x+N.R*.8,N.z+N.R*.8]); FIX.up.push([N.x-N.R*.8,N.z-N.R*.8,0,N.x+N.R*.8,N.z+N.R*.8,N.H]); }
+    else { N.push=()=>{}; N.shadowPass=()=>{}; }   // (carried: inside whoever carries it, in his shadow pass)
+    STREET.items.push(N); return N; }
   // ---- THE KINDS AND THEIR MOVES: a pose is each bone's turn (degrees about x, y, z, in his own frame: x his right, y up, z his front) and root,
   // his whole body's lift (his units). idle(t) and walk(phase, running, t) are his stance and his gait; the others are moves of T seconds, pose(u)
   const sn=(a,p=0)=>Math.sin(a+p), cs=(a,p=0)=>Math.cos(a+p), up=x=>Math.max(0,x), bell=(u,a,b)=>u<a?u/a:u>b?(1-u)/(1-b):1;
@@ -154,7 +132,7 @@ const STREET={npcs:[],items:[],ready:false}; window.STREET=STREET;   // (a test'
     const cat=makeChar(CATD,{key:'cat',name:'GRUMPY CAT',kind:'sitter',metres:1.15,at:[6*TILE,sw-.3],radius:.5,speed:.45,stride:9,jump:4.6});
     const gho=makeChar(GHOSTD,{key:'ghost',name:'PLASTIC BAG GHOST',kind:'sheet',metres:1.7,at:[14*TILE,sw],radius:.45,speed:.6,stride:6,jump:4.8,glass:.74,hover:.12});
     // the tote inside the ghost, floating, rising when he lifts it
-    const tote=makeItem(TOTE,{key:'tote',name:'BROWN TOTE',metres:.55}); gho.inner.add(tote.g); tote.g.scale.setScalar(1/gho.body.scale.x); tote.g.scale.y=1/gho.body.scale.y; tote.g.position.set(0,.22,0); tote.me.material.depthWrite=true; gho.me.renderOrder=2; tote.me.renderOrder=1;
+    const tote=makeItem(TOTE,{key:'tote',name:'BROWN TOTE',metres:.55}); gho.inner.add(tote.g); tote.g.scale.setScalar(1/gho.body.scale.x); tote.g.scale.y=1/gho.body.scale.y; tote.g.position.set(0,.22,0); tote.me.renderOrder=1;
     gho.carry=ns=>{ const lift=ns.move&&ns.move.name==='use'?bell(ns.move.t/ns.move.T,.3,.7):0; tote.g.position.set(0,.22+.03*Math.sin(ns.t*1.7)+.3*lift,.02*Math.cos(ns.t*1.1)); tote.g.rotation.y=.2*Math.sin(ns.t*.6); };
     makeItem(TERMINAL,{key:'terminal',name:'RETRO CYBORG TERMINAL',metres:1.5,at:[-1.5*TILE,sw-1.4*TILE],turn:Math.PI*.1});
     makeItem(POWERUP,{key:'powerup',name:'PIXEL PANTRY POWER-UP',metres:.9,at:[9.5*TILE,sw-1.3*TILE],turn:-Math.PI*.15});

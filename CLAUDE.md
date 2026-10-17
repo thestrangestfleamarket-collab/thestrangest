@@ -57,6 +57,16 @@ this repo is `bralynnbell/thestrangest`.
 - **Eyes and bodies** (owner, 17 Oct 2026, of the mockups: "use all"): YOUR LOOKS' EYES, six styles (dots, whites, big with a glint,
   half-lidded, lashes, smiling arcs; `eyes0`-`eyes5` in `walker3d.js`, folded away when not chosen); its BODY, eight builds (slim, him, athletic,
   stocky, heavy, tall and lanky, female slim, female curvy: `BUILDS` in `looks.js`, his pieces' sizes and his height `W3.BH`).
+- **17 Oct 2026, the evening's asks**: **the park** (`park.js`): an all-green lawn with sprouts and weeds (noise-cut greens, dithered); two straight
+  ways 7.2 tiles wide, one from the gate to the back, one end to end, crossing at the round in the park's middle (the gate moved along the wall to
+  meet it); the trees further back, the biggest at the back, fewer, the undergrowth thinner; the lamps thin poles 7 tiles high with small
+  lanterns along the ways; the plesiosaur skeleton removed ("remove the dinosaur bones from game"). **The ground locked to the pixels** (map and
+  isometric views: the camera stands on the picture's pixel grid, so nothing flickers as you run). **Never finer than the opening** ("dont let
+  the game get any higher res than this at any time, at any zoom level": `RESMAX`, and zoomed in the art's pixels only grow). **Lamplight in
+  steps** (every lamp's light on the world falls off in hard steps, two a halving: `map-pre.js`). **His face**: eyes only (no brows, no mouth),
+  round, a tenth smaller. **Standing still**, a look round every six to fourteen seconds. **Rooms** cut only once all of you is half a tile
+  inside (nothing cut in a doorway). **BEHIND** (a view: the third person's camera kept at his back as he turns; V cycles map, third, behind,
+  first, isometric); **R** turns the view a quarter onto the four isometric angles (the roll moved to Y).
 - **New characters walk the street** (owner, 17 Oct 2026: "put any new characters that go in the game into the street walking around"): every character added from now on goes onto THE MARKET's street, walking around (`NPCS`, as the skeletons and the goldfish and bear are), unless the owner places it somewhere else.
 - **The view** (17 Oct 2026, `src/ui.js`): a left drag moves the map ("drag the map and change your focal point"), the point grabbed staying under the mouse; a right drag (or Shift / Alt + drag) turns round the point you grab, the wheel zooms toward the mouse, the tilt from straight down to level with the street, never under the ground (17 Oct 2026, "stop them at this angle"); the view keeps its place beside him as he walks; 0 (or RESET VIEW) puts it back on him.
 - **Removed and not wanted for now**: the character editor (edit mode), the Fox.

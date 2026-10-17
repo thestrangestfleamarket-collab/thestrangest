@@ -61,6 +61,6 @@ const MUS={};
   // A DOUBLE CLICK ON HIM: walk up, then the camera close on his hands (the free camera, there; C goes back)
   const hitBox=new THREE.Mesh(new THREE.BoxGeometry(22,58,24),new THREE.MeshBasicMaterial({visible:false})); hitBox.position.set(0,29,2); g.add(hitBox);   // (what a double click finds: him, roughly)
   UI.thing({name:'THE GUITARIST',obj:hitBox,reach:1.6,tall:1.9,act:()=>{ const p=new THREE.Vector3().setFromMatrixPosition(new THREE.Matrix4().multiplyMatrices(g.matrixWorld,new THREE.Matrix4().makeTranslation(GTF.o.x,GTF.o.y,GTF.o.z)));
-    UI.setFree(true); UI.camT.copy(p); ppuTo=Math.min(240,PPU*7); MUS.watch=true; MUS.res0=RESI; while(RESI<RESL.length-1&&(pxS()>1||vpu()>art())){ RESI++; if(pxS()<=1)break; } resize(); }});   // (close, and sharp: the sharpness up as far as the screen shows, as the game's close-up drew him finer; back as it was when you leave)
+    UI.setFree(true); UI.camT.copy(p); ppuTo=Math.min(240,PPU*7); MUS.watch=true; MUS.res0=RESI; while(RESI<RESMAX&&(pxS()>1||vpu()>art())){ RESI++; if(pxS()<=1)break; } resize(); }});   // (close, and sharp: the sharpness up as far as the screen shows, as the game's close-up drew him finer; back as it was when you leave)
   SOL.up.push([AT.x-.35,AT.z-.3,AT.x+.35,AT.z+.3]); FIX.up.push([AT.x-.35,AT.z-.3,0,AT.x+.35,AT.z+.3,1.7]);   // (solid: he and his guitar)
 }

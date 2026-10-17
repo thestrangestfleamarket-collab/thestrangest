@@ -73,10 +73,13 @@ const LOOKS={};
     for(const n of ALLN){ const i=W3.idx(n); if(i<0)continue; const v=B[2][n]; if(force||!W3.E[i])W3.E[i]=v?{s:v.slice(),o:[0,0,0],q:[0,0,0,1]}:null; }
     if(force&&typeof ED!=='undefined'&&ED.save)ED.save(); }
   build(false);
-  // LOOKING ABOUT (owner, 17 Oct 2026: "look around idle"): standing still a while, he looks one way and the other, now and then down, slowly
-  { const R=RIG, f0=R.OVL.fn; let idle=0;
-    R.OVL.fn=(s,P)=>{ if(f0)f0(s,P); if(s!==st)return; const still=!s.move&&(s.w||0)<.05&&!RAG.on; idle=still?idle+1/60:0;
-      if(idle>2.5){ const t=idle-2.5, k=Math.min(1,t/1.5); P.look=(P.look||0)+k*(Math.sin(t*.45)*38+Math.sin(t*1.3)*6)*R.D; P.nod=(P.nod||0)+k*(Math.max(0,Math.sin(t*.23-1))*10)*R.D; } }; }
+  // LOOKING ABOUT (owner, 17 Oct 2026: "look around idle"; then "stands still except for idle animations like look around, every once in a
+  // while"): standing, he's still; every six to fourteen seconds he turns his head one way (now and then down a little), holds, and turns back
+  { const R=RIG, f0=R.OVL.fn; let idle=0, next=4+Math.random()*6, lk=null;
+    R.OVL.fn=(s,P)=>{ if(f0)f0(s,P); if(s!==st)return; const still=!s.move&&(s.w||0)<.05&&!RAG.on; if(!still){ idle=0; lk=null; return; } idle+=1/60;
+      if(!lk&&idle>next){ lk={t:0,a:(Math.random()<.5?-1:1)*(25+Math.random()*20),n:Math.random()<.3?8+Math.random()*6:0,d:3+Math.random()*2}; }
+      if(lk){ lk.t+=1/60; const u=lk.t/lk.d, k=u<.25?u/.25:u>.75?(1-u)/.25:1, e=k*k*(3-2*k); P.look=(P.look||0)+e*lk.a*R.D; P.nod=(P.nod||0)+e*lk.n*R.D;
+        if(u>=1){ lk=null; idle=0; next=6+Math.random()*8; } } }; }
   // HIS SHADOWS, REAL (owner, 17 Oct 2026: "i should see more shadows on the person, make it realistic, all his body cast shadow, his right arm
   // should cast shadow on his body"): his own shadow on him falls from the light that's really on him: the sun by day, the nearest lamp at
   // night (not his fixed one), on a finer map, a little deeper by default

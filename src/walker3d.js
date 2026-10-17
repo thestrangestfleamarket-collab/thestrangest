@@ -52,9 +52,7 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
     const head=PCS.find(P=>P.n==='head'), hair=PCS.find(P=>P.n==='hair'), hd=head.d, hr=hair.d;
     for(const P of PCS)if(/^shoe[LR]$/.test(P.n))P.paint=p=>p.y<1.15?'sole':null;   // (HIS FEET: a darker sole under each, owner 17 Oct 2026, "give his feet more depth")
     const side=p=>Math.abs(p.x-H.x), front=p=>p.z>H.z+3.6;
-    head.paint=p=>{ if(!front(p))return null; const s=side(p), y=p.y-H.y; if(Math.abs(s-2.3)<1.35&&Math.abs(y-2.35)<.38)return 'hair'; return null; };   // (the brows; the eyes are their own pieces, below)
-    const lip=p=>box(p,ad(H,Vv(0,-5.95,5.2)),Vv(1.8,.32,3.2))<0?'mouth':null;   // (the mouth: a dark line, in the beard or on the skin)
-    head.paint=(f=>p=>f(p)||(front(p)&&lip(p)))(head.paint);
+    head.paint=()=>null;   // (no brows, no mouth: owner, 17 Oct 2026, "get rid of eye brows and mouth, like just have eye"; the eyes are their own pieces, below)
     const V=(n,on,m,d,paint)=>({n,on,m,d,paint,bb:HB,step:.5});
     PCS.push(V('hairPony','hair','hair',p=>Math.min(hr(p),ell(p,ad(H,Vv(0,1.5,-7.2)),Vv(1.6,1.6,1.4)),R.rcone(p,ad(H,Vv(0,1.2,-7.6)),ad(H,Vv(0,-6.5,-8.6)),1.3,.8))),
              V('hairLong','hair','hair',p=>Math.min(hr(p),Math.max(rbox(p,ad(H,Vv(0,-3.6,-1.6)),Vv(7.1,11.2,6.4),3.6),-box(p,ad(H,Vv(0,-3.6,5.9)),Vv(5.3,9.5,4.4)),H.y-13.6-p.y))),
@@ -62,11 +60,11 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
     // HIS EYES, SIX WAYS (owner, 17 Oct 2026: "make his eyes look better. give me 6 mockups of variety"; then "use all"): each style a thin skin
     // over the front of his head where the eyes are, its rects as the mockup drew them (its pixels, the left eye; the right one mirrored),
     // later rects over earlier; the styles not chosen folded away (W3.HIDE), as the hairstyles are (src/looks.js)
-    const EYES=[[[7,13,8,14,'eye']], [[6,13,8,14,'eyeW'],[7,13,8,14,'eye']], [[6,12,9,15,'eyeW'],[7,12,8,15,'eye'],[7,13,7,13,'pupil'],[8,12,8,12,'eyeW']],
+    const EYES=[[[7,13,8,14,'eye','o']], [[6,13,8,14,'eyeW'],[7,13,8,14,'eye']], [[6,12,9,15,'eyeW'],[7,12,8,15,'eye'],[7,13,7,13,'pupil'],[8,12,8,12,'eyeW']],
       [[6,13,9,14,'eyeW'],[7,13,8,14,'eye'],[6,12,9,12,'lid']], [[6,12,9,14,'eyeW'],[7,12,8,14,'eye'],[5,11,9,11,'pupil'],[5,12,5,12,'pupil']], [[6,14,6,14,'pupil'],[7,13,7,13,'pupil'],[8,14,8,14,'pupil']]];
     const U=.47, RX=r=>[(r[0]-13)*U,(r[2]+1-13)*U], RY=r=>[.7-(r[3]+1-14)*U,.7-(r[1]-14)*U];   // (a mockup pixel to his units: the eye's middle 2.35 out and .7 up)
-    EYES.forEach((E,k)=>{ const R2=E.map(r=>({x:RX(r),y:RY(r),m:r[4]})), sx=p=>-Math.abs(p.x-H.x);   // (both eyes the left one's, mirrored)
-      const r2=(p,r)=>{ const x=sx(p), y=p.y-H.y; return Math.max(r.x[0]-x,x-r.x[1],r.y[0]-y,y-r.y[1]); };
+    EYES.forEach((E,k)=>{ const R2=E.map(r=>({x:RX(r),y:RY(r),m:r[4],o:r[5]})), sx=p=>-Math.abs(p.x-H.x);   // (both eyes the left one's, mirrored)
+      const r2=(p,r)=>{ const x=sx(p), y=p.y-H.y; if(r.o){ const cx=(r.x[0]+r.x[1])/2, cy=(r.y[0]+r.y[1])/2; return Math.hypot(x-cx,y-cy)-(r.x[1]-r.x[0])*.45; } return Math.max(r.x[0]-x,x-r.x[1],r.y[0]-y,y-r.y[1]); };   // (o: a round eye, a tenth smaller than its square: owner, 17 Oct 2026, "10% smaller and circles")
       PCS.push({n:'eyes'+k,on:'head',m:E[0][4],bb:[H.x-5.5,H.x+5.5,H.y-1.5,H.y+3.5,H.z+1,H.z+12],step:.18,cell:.14,
         d:p=>Math.max(hd(p)-.22,Math.min(...R2.map(r=>r2(p,r))),H.z+2-p.z), paint:p=>{ let m=null; for(const r of R2)if(r2(p,r)<.03)m=r.m; return m; }}); }); }
   const NP=PCS.length; W3.HIDE=new Array(NP).fill(false); W3.idx=n=>PCS.findIndex(P=>P.n===n); W3.PM={value:PCS.map(()=>new THREE.Matrix4())}; W3.pcs=PCS;

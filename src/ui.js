@@ -9,11 +9,11 @@
 const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
 { // ---- THE KEYS: each action's key, changeable (kept in this browser); the game's code asks for the action's own default key
   const ACTS=[['w','walk up (screen)'],['s','walk down'],['a','walk left'],['d','walk right'],['shift','run · sink (free camera, fly)'],[' ','jump · rise (free camera, fly) · dive (swimming)'],
-    ['view','change the view (map, third person, first person, isometric)'],['j','punch'],['k','kick'],['r','roll'],['v','wave'],['f','fall'],['q','turn left'],['e','turn right'],['z','tilt down'],['x','tilt up'],['0','reset the view'],
+    ['view','change the view (map, third person, behind, first person, isometric)'],['rot','turn the view a quarter (four angles)'],['j','punch'],['k','kick'],['r','roll'],['v','wave'],['f','fall'],['q','turn left'],['e','turn right'],['z','tilt down'],['x','tilt up'],['0','reset the view'],
     ['c','free camera'],['g','fly (through walls)'],['=','sharper'],['-','coarser'],['h','hide the help']];
   const NAME=k=>k===' '?'SPACE':k.length===1?k.toUpperCase():k.toUpperCase();
   let BIND={}; try{ BIND=JSON.parse(localStorage.getItem('market-keys')||'{}')||{}; }catch(e){}
-  const DEF={view:'v',v:'b'}, keyOf=a=>BIND[a]??DEF[a]??a,   /* (V changes the view, owner 17 Oct 2026; so the wave's on B) */ rev=()=>{ const r={}; for(const [a] of ACTS)r[keyOf(a)]=a; return r; };
+  const DEF={view:'v',v:'b',rot:'r',r:'y'},   /* (R turns the view, owner 17 Oct 2026; so the roll's on Y) */ keyOf=a=>BIND[a]??DEF[a]??a,   /* (V changes the view, owner 17 Oct 2026; so the wave's on B) */ rev=()=>{ const r={}; for(const [a] of ACTS)r[keyOf(a)]=a; return r; };
   let REV=rev(), waiting=null;
   // a pressed key to the action the game's code knows (null: not for the game: the menu has it, or a key moved to another action)
   UI.key=e=>{ const raw=e.key.toLowerCase();
@@ -24,7 +24,7 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
     if(raw==='e'&&e.shiftKey&&!ED.on&&!UI.menuOpen){ if(e.type==='keydown'&&!e.repeat)WE.toggle(); return null; }   // (Shift+E: edit the world, src/worldedit.js)
     if(UI.menuOpen)return null;
     if(ED.on){ const a=REV[raw]; return ['q','e','z','x','0','=','-'].includes(a)?a:null; }   // (shaping him: only the view's keys)
-    const act=REV[raw]; if(act!==undefined){ if(e.type==='keydown'&&!e.repeat){ if(act==='c')setFree(!UI.freeCam); if(act==='g')setFly(!UI.fly); if(act==='view'){ const V=['map','third','first','iso']; UI.setView(V[(V.indexOf(UI.view)+1)%V.length]); } } return act==='view'?null:act; }
+    const act=REV[raw]; if(act!==undefined){ if(e.type==='keydown'&&!e.repeat){ if(act==='c')setFree(!UI.freeCam); if(act==='g')setFly(!UI.fly); if(act==='view'){ const V=['map','third','follow','first','iso']; UI.setView(V[(V.indexOf(UI.view)+1)%V.length]); } if(act==='rot')UI.turn4(); } return act==='view'||act==='rot'?null:act; }
     return ACTS.some(([a])=>a===raw)?'':raw; };   // (a default key now given to nothing)
   // ---- FREE CAMERA and FLY
   const badge=document.createElement('div'); badge.id='mode'; document.body.appendChild(badge);
@@ -56,7 +56,7 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
     if(!UI.freeCam){ tv.set(0,0,1).applyQuaternion(q1); UI.off.addScaledVector(tv,-UI.off.dot(tv)); } };   // (and kept level with him along the line of sight, where it changes nothing seen)   // (what he looks at swings round the pivot as the view turns)
   // HOW FAR OUT (owner, 17 Oct 2026: "lets limit the zoom out to this far", his picture some thirty tiles across): no further out than MAXW across
   UI.MAXW=34*TILE;
-  let zAt=null; UI.wheelAt=e=>{ if(UI.persp){ ppuTo=ppu; if(UI.view==='third')UI.dist=Math.max(1.2*TILE,Math.min(22*TILE,UI.dist*Math.pow(1.0015,e.deltaY))); return; }   // (third person: the wheel brings the camera in and out; first: nothing)
+  let zAt=null; UI.wheelAt=e=>{ if(UI.persp){ ppuTo=ppu; if(UI.view==='third'||UI.view==='follow')UI.dist=Math.max(1.2*TILE,Math.min(22*TILE,UI.dist*Math.pow(1.0015,e.deltaY))); return; }   // (third person: the wheel brings the camera in and out; first: nothing)
     if(e.deltaY>0&&cam.right-cam.left>=UI.MAXW){ ppuTo=Math.max(ppuTo,ppu); return; } const r=cv.getBoundingClientRect(); zAt={x:e.clientX-r.left-r.width/2,y:r.height/2-(e.clientY-r.top)}; };
   UI.zk=()=>(cam.right-cam.left)/cv.getBoundingClientRect().width;
   UI.zoomStep=k0=>{ if(cam.right-cam.left>UI.MAXW&&ppuTo<ppu)ppuTo=ppu;   // (the menu's zoom held to it too)
@@ -71,11 +71,15 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
   // wheel brings it in or out; never lower than three feet off the ground), FIRST PERSON (his eyes: a drag looks about; his body out of the way)
   UI.view='map'; UI.persp=false; UI.dist=7*TILE; let isoAcc=0;
   const HEAD=1.5/.84*TILE, EYE=1.62/.84*TILE, LOW=.9/.84*TILE;   // (his head's height, his eyes', three feet)
-  UI.clampV=v=>UI.view==='first'?Math.max(-1.2,Math.min(1.3,v)):UI.view==='third'?Math.max(-.35,Math.min(1.4,v)):clampP(v);
-  UI.setView=v=>{ UI.view=v; UI.persp=v==='third'||v==='first'; if(UI.freeCam&&UI.persp)setFree(false);
+  UI.clampV=v=>UI.view==='first'?Math.max(-1.2,Math.min(1.3,v)):UI.view==='third'||UI.view==='follow'?Math.max(-.35,Math.min(1.4,v)):clampP(v);
+  UI.setView=v=>{ UI.view=v; UI.persp=v==='third'||v==='first'||v==='follow'; if(UI.freeCam&&UI.persp)setFree(false);
     if(v==='iso'){ yawTo=Math.round((yawTo-Math.PI/4)/(Math.PI/2))*(Math.PI/2)+Math.PI/4; pitchTo=Math.PI/6; }
-    if(v==='first')pitchTo=.05; if(v==='third')pitchTo=.3; if(!UI.persp)pitchTo=clampP(pitchTo); try{ localStorage.setItem('market-view',v); }catch(e){} };
-  UI.view3=a=>{ cam=UI.persp?PCAM:OCAM; if(RPASS)RPASS.camera=cam; if(UI.persp&&Math.abs(PCAM.aspect-RW/RH)>1e-3){ PCAM.aspect=RW/RH; PCAM.updateProjectionMatrix(); } };
+    if(v==='first')pitchTo=.05; if(v==='third'||v==='follow')pitchTo=.3; if(!UI.persp)pitchTo=clampP(pitchTo); try{ localStorage.setItem('market-view',v); }catch(e){} };
+  // BEHIND HIM (owner, 17 Oct 2026: "a view that locks on behind, 3rd person view, and autorotates with player"): the third person's camera, turned
+  // with him each frame so it stays at his back; R (any view but these two) turns the view a quarter round, onto the four isometric angles
+  UI.turn4=()=>{ if(UI.view==='first'||UI.view==='follow')return; yawTo=Math.round((yawTo-Math.PI/4)/(Math.PI/2))*(Math.PI/2)+Math.PI/4-Math.PI/2; };
+  UI.view3=a=>{ if(UI.view==='follow'&&!RAG.on){ const t=heading+Math.PI; yawTo=yaw+((((t-yaw)%(2*Math.PI))+3*Math.PI)%(2*Math.PI))-Math.PI; }
+    cam=UI.persp?PCAM:OCAM; if(RPASS)RPASS.camera=cam; if(UI.persp&&Math.abs(PCAM.aspect-RW/RH)>1e-3){ PCAM.aspect=RW/RH; PCAM.updateProjectionMatrix(); } };
   UI.view3b=a=>{ W3.group.visible=UI.view!=='first'; if(!UI.persp)return; const sk=W3.SZ||1;
     if(UI.view==='first'){ cam.position.set(pos.x,py+EYE*sk,pos.z); cam.position.addScaledVector(new THREE.Vector3(-Math.sin(a),0,-Math.cos(a)),.12*TILE); cam.updateMatrixWorld(); return; }
     const T=new THREE.Vector3(pos.x,py+HEAD*sk,pos.z), F=new THREE.Vector3(Math.sin(a)*Math.cos(pitch),Math.sin(pitch),Math.cos(a)*Math.cos(pitch));
@@ -136,7 +140,7 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
       <h3>SHARPNESS</h3><div class="row"><button class="btn" data-sh="-1">COARSER</button><span id="dsharp" class="dim"></span><button class="btn" data-sh="1">SHARPER</button></div>
       <h3>VIEW</h3><div class="row"><span style="width:60px">ZOOM</span><input type="range" id="dzoom" min="0" max="1" step="0.001"></div>
       <div class="row"><span style="width:60px">TILT</span><input type="range" id="dtilt" min="0" max="1" step="0.001"><button class="btn" id="dreset">RESET THE VIEW</button></div>
-      <h3>VIEW</h3><div class="row" id="dview"><button class="btn" data-view="map">MAP VIEW</button><button class="btn" data-view="iso">ISOMETRIC</button><button class="btn" data-view="third">THIRD PERSON</button><button class="btn" data-view="first">FIRST PERSON</button></div>
+      <h3>VIEW</h3><div class="row" id="dview"><button class="btn" data-view="map">MAP VIEW</button><button class="btn" data-view="iso">ISOMETRIC</button><button class="btn" data-view="third">THIRD PERSON</button><button class="btn" data-view="follow">BEHIND</button><button class="btn" data-view="first">FIRST PERSON</button></div>
       <h3>SHADOWS</h3><div class="row" id="dshd"></div>
       <h3>HIM</h3><div class="row"><button class="btn" id="doutl">OUTLINE</button><button class="btn" id="dshape">EDIT HIS SHAPE</button><button class="btn" id="dlooks">YOUR LOOKS</button></div>
       <div class="row"><span style="width:110px">SHADE STEPS</span><input type="range" id="dsteps" min="2" max="5" step="1"><span style="width:110px">SHADOW DEPTH</span><input type="range" id="ddepth" min="0.1" max="0.9" step="0.01"></div>
@@ -172,14 +176,14 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
   const goTo=(x,z,lv)=>{ pos.set(x,0,z); target=null; py=lv==='down'?MODS.station.ground(x,z):0; if(UI.freeCam)UI.camT.set(x,py+.9,z); toggleMenu(); };
   mcv.addEventListener('click',e=>{ const r=mcv.getBoundingClientRect(), R=mapRect(mapLv); goTo(R.x0+(e.clientX-r.left)/r.width*(R.x1-R.x0),R.z0+(e.clientY-r.top)/r.height*(R.z1-R.z0),mapLv); });
   M.querySelectorAll('[data-lv]').forEach(b=>b.onclick=()=>{ mapLv=b.dataset.lv; drawMap(); });
-  const PLACES=[['THE STREET',-2.2,3.2,'up'],['THE BODEGA',0,-3.4,'up'],['THE APARTMENTS',POOLR.X(22.75),POOLR.Z(12),'up'],['THE PLATFORM',-12.4,-24.9,'down'],['CENTRAL PARK',0,22,'up']];
+  const PLACES=[['THE STREET',-2.2,3.2,'up'],['THE BODEGA',0,-3.4,'up'],['THE APARTMENTS',POOLR.X(22.75),POOLR.Z(12),'up'],['THE PLATFORM',-12.4,-24.9,'down'],['CENTRAL PARK',BOD.XS(96),BOD.ZS(-54),'up']];
   for(const [n,x,z,lv] of PLACES){ const b=document.createElement('button'); b.className='btn'; b.textContent=n; b.onclick=()=>goTo(x,z,lv); $('#places').appendChild(b); }
   // DISPLAY
   const zMin=3, zMax=ZMAX, z2r=v=>Math.log(v/zMin)/Math.log(zMax/zMin), r2z=r=>zMin*Math.pow(zMax/zMin,r);
   function drawDisplay(){ $('#dsteps').value=W3.shade.steps; $('#ddepth').value=W3.shade.depth; M.querySelectorAll('[data-view]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.view===UI.view))); $('#dsharp').textContent=(SCL===1&&vpu()<art()?'full':RES()+'×')+' the game\'s detail'; $('#dzoom').value=z2r(ppuTo); $('#dtilt').value=(pitchTo-PMIN)/(PMAX-PMIN);
     $('#dglow').textContent='GLOW: '+GLOW.mode.toUpperCase(); $('#dglowk').value=GLOW.k; $('#dlit').textContent='LIGHT ON THEM: '+(UI.lit?'LAMPS':'FLAT'); $('#dlit').setAttribute('aria-pressed',String(UI.lit)); $('#dbody').setAttribute('aria-pressed',String(PB.on)); $('#dbody').textContent='PHYSICS BODY '+(PB.on?'ON':'OFF'); $('#dloose').value=PB.loose; $('#doutl').setAttribute('aria-pressed',String(OUTL.on)); $('#doutl').textContent='OUTLINE '+(OUTL.on?'ON':'OFF'); $('#dhelp').setAttribute('aria-pressed',String(!document.getElementById('hud').hidden)); $('#dstat').setAttribute('aria-pressed',String(!document.getElementById('stat').hidden));
     const sh=document.getElementById('shd'); $('#dshd').innerHTML=''; sh.querySelectorAll('button').forEach(b=>{ const c=document.createElement('button'); c.className='btn'; c.textContent=b.textContent; c.setAttribute('aria-pressed',b.getAttribute('aria-pressed')); c.onclick=()=>{ b.click(); drawDisplay(); }; $('#dshd').appendChild(c); }); }
-  M.querySelectorAll('[data-sh]').forEach(b=>b.onclick=()=>{ if(+b.dataset.sh<0)RESI=Math.max(0,RESI-1); else if(pxS()>1||vpu()>art())RESI=Math.min(RESL.length-1,RESI+1); resize(); drawDisplay(); });
+  M.querySelectorAll('[data-sh]').forEach(b=>b.onclick=()=>{ if(+b.dataset.sh<0)RESI=Math.max(0,RESI-1); else if(pxS()>1||vpu()>art())RESI=Math.min(RESMAX,RESI+1); resize(); drawDisplay(); });
   $('#dzoom').oninput=e=>{ ppuTo=r2z(+e.target.value); }; $('#dtilt').oninput=e=>{ pitchTo=clampP(PMIN+(+e.target.value)*(PMAX-PMIN)); };
   M.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>{ UI.setView(b.dataset.view); drawDisplay(); });
   $('#dlooks').onclick=()=>{ toggleMenu(); LOOKS.open(); }; $('#dsteps').oninput=e=>W3.setShade(+e.target.value,W3.shade.depth); $('#ddepth').oninput=e=>W3.setShade(W3.shade.steps,+e.target.value);   // (his shading: the steps of light on him, how deep his shadows)

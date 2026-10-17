@@ -105,12 +105,14 @@ const RESL=[.5,.75,1,1.5,2,3,4,6,8,12,16], RES=()=>RESL[RESI], V0=PPU*PXS;   // 
 // ALL THE WAY IN (owner, 17 Oct 2026: "zoom in all the way to his super close of each finger"): the zoom goes to 80 times; past 8 screen
 // pixels a picture pixel the art gets finer instead (MAXPX), so close up you see each finger, not bigger blocks
 const MINPX=()=>Math.max(1,Math.round(PXS/RES())), MAXPX=8, ZMAX=PPU*80;
-const vpu=()=>V0*ppu/PPU, art=()=>Math.max(PPU*RES(),vpu()/MAXPX), pxS=()=>Math.max(MINPX(),Math.round(vpu()/art())), rppu=()=>Math.round(vpu()/art())<MINPX()?vpu()/pxS():art();
+// NEVER FINER THAN THE OPENING (owner, 17 Oct 2026, his picture: "dont let the game get any higher res than this at any time, at any zoom level"): the
+// art's pixels never finer than the opening's (RESMAX: = stops there), and zoomed in they only grow (no finer art close up any more)
+const RESMAX=2, vpu=()=>V0*ppu/PPU, art=()=>PPU*RES(), pxS=()=>Math.max(MINPX(),Math.round(vpu()/art())), rppu=()=>Math.round(vpu()/art())<MINPX()?vpu()/pxS():art();
 function frustum(){ const u=rppu(); cam.left=-RW/2/u; cam.right=RW/2/u; cam.top=RH/2/u; cam.bottom=-RH/2/u; cam.updateProjectionMatrix(); }""")
 mod=rp(mod,"ppu*=Math.pow(ppuTo/ppu,ease); frustum();","ppu*=Math.pow(ppuTo/ppu,ease); if(pxS()!==SCL)resize(); else frustum();")
 mod=rp(mod,"zoom ${(ppu/PPU).toFixed(2)}×`","zoom ${(SCL*rppu()/V0).toFixed(2)}× · art ${SCL===1&&vpu()<art()?'full':RES()+'×'}`")
 mod=rp(mod,"if(k==='-'||k==='_'){PXS=Math.min(12,PXS+1);resize();} if(k==='='||k==='+'){PXS=Math.max(1,PXS-1);resize();}",
-  "if(k==='-'||k==='_'){RESI=Math.max(0,RESI-1);resize();} if(k==='='||k==='+'){ if(pxS()>1||vpu()>art())RESI=Math.min(RESL.length-1,RESI+1); resize(); }   // (= finer until each is one screen pixel)")
+  "if(k==='-'||k==='_'){RESI=Math.max(0,RESI-1);resize();} if(k==='='||k==='+'){ if(pxS()>1||vpu()>art())RESI=Math.min(RESMAX,RESI+1); resize(); }   // (= finer, back up to the opening's, never past)")
 head=rp(head,'<div><b>-</b> / <b>=</b> pixel size</div>','<div><b>-</b> / <b>=</b> coarser / sharper</div>')
 mod=rp(mod,"ppuTo=Math.max(3,Math.min(240,ppuTo*Math.pow(1.0015,-e.deltaY)));","ppuTo=Math.max(3,Math.min(ZMAX,ppuTo*Math.pow(1.0015,-e.deltaY)));")
 # EVERY VIEW (owner, 17 Oct 2026: "i cant drag my mouse in enough directions to get every view i want"): the tilt all the way round, from

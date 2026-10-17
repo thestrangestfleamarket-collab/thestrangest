@@ -1,3 +1,6 @@
+// THE LIGHT IN STEPS (owner, 17 Oct 2026, of a lamp's smooth shine on the bodega's counter: "i dont want the shine to look so, it doesnt match the
+// pixel art style"): every lamp's light on the world falls off in hard steps (two a halving), not a smooth glow; the open air's light as it was
+THREE.ShaderLib.lambert.fragmentShader=THREE.ShaderLib.lambert.fragmentShader.replace('#include <lights_fragment_end>','#include <lights_fragment_end>\n { vec3 dd=reflectedLight.directDiffuse; float L=max(dd.r,max(dd.g,dd.b)); if(L>.002){ float q=exp2(floor(log2(L)*2.+.5)/2.); reflectedLight.directDiffuse=dd*(q/L); } }');
 // ---- THE MAP (owner, 16 Oct 2026: "a small map with only the subway, pool and bodega (next to each other for now)", "build the exit to the
 // subway (floor level) and subway underneath"): one street; the bodega and the pool room side by side on its sidewalk; the West End's
 // subway station under the lot west of the bodega, its stairs down from the sidewalk into the station's exit tunnel. Two levels: the street's

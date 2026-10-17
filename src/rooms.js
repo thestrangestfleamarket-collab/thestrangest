@@ -11,8 +11,11 @@ const ROOMS={cur:null};
     for(const t of POOLR.ROOMS||[])RL.push(box(POOLR.X,POOLR.Z,t,POOLR.Y(-150),POOLR.Y(POOLR.H))); };
   const within=(b,x,z,e=0)=>x>b.x0-e&&x<b.x1+e&&z>b.z0-e&&z<b.z1+e;
   ROOMS.tick=()=>{ if(!RL)build(); let hit=null; if(typeof LOOKS!=='undefined'&&LOOKS.light)LOOKS.light();   // (his own shadow from the light really on him: looks.js)
-    if(LVL==='up'&&!UI.freeCam&&!ED.on){ hit=RL.find(b=>within(b,pos.x,pos.z))||null;
-      const A=MODS.apts; if(!hit&&A&&A.in){ const lv=A.floor(), S=BOD.K.STORY; for(const t of A.rects(lv)){ const b=box(BOD.X,BOD.Z,t,BOD.Y(lv*S)-.5,BOD.Y((lv+1)*S)); if(within(b,pos.x,pos.z)){ hit=b; break; } } } }
+    if(LVL==='up'&&!UI.freeCam&&!ED.on){
+      // (owner, 17 Oct 2026: "when i first walk into interior its cutting off the back of my body too"): a room is yours once all of you is in it
+      // (half a tile in from its walls); in a doorway, coming or going, nothing is cut
+      const IN=-.55*TILE; hit=RL.find(b=>within(b,pos.x,pos.z,IN))||null;
+      const A=MODS.apts; if(!hit&&A&&A.in){ const lv=A.floor(), S=BOD.K.STORY; for(const t of A.rects(lv)){ const b=box(BOD.X,BOD.Z,t,BOD.Y(lv*S)-.5,BOD.Y((lv+1)*S)); if(within(b,pos.x,pos.z,IN)){ hit=b; break; } } } }
     ROOMS.cur=hit;
     // THE LIGHTS OVERHEAD (owner, 17 Oct 2026: "dont show over head lights in any view unless looking up at them"): only from under them
     for(const h of OVERHEAD)h.o.visible=cam.position.y<h.y;

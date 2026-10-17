@@ -1,3 +1,34 @@
+# THE MAIN LINE (17 Oct 2026, late): branch `claude/awesome-noether-mba5hh`, everything merged here
+
+The owner made this chat the main one and asked for every chat's work pulled in. This branch now holds, on top of `main`:
+- `claude/fervent-babbage-uj6s3z`: noon start, where you left off (`where.js`), interiors drawn only near a door, nobody drawn unseen, the tour's
+  fixes; with it the sound work (`claude/vibrant-pasteur-lpq1xi`: SAVE, SFX, ambience, lines, the sound editor Shift+S) and the layout
+  (`claude/keen-meitner-37e6es`: mockup 1, the Avenue, and the groundwork for its turned rooms).
+- `claude/relaxed-gauss-xerecq`: the sky dome, the evening's moods, the dusk grade, the street lights coming on in turn.
+- `claude/loving-johnson-l3chjz`: the perf fixes measured, the stats line's draws and triangles.
+- `claude/admiring-davinci-6bjs2l`: the avatar editor (Shift+K), perf fix 5, tree look 3, the map editor's RAISE / LOWER, GROW / SHRINK, PLACE,
+  the angular Fox, NPC lives (`lives.js`).
+- `claude/quirky-mendel-rvrxwx`: the city's spine, the residents, the civic services and vehicles.
+- `claude/magical-bohr-xxd7qs`: the power grid, off until `?grid=1`.
+- This chat's own: the far (haze and skyline), everyone roaming the whole map and minding no one, the gold skeleton's start.
+Built, syntax-checked, loaded clean (no page errors, by day, at 7pm, and with `?grid=1`); published to
+https://claude.ai/artifact/PnmQqhkusfewby35tf4zo5. `main` has not moved: this branch is ready to be merged into it at the owner's word.
+
+**Not pulled in, on purpose**: `claude/amazing-albattani-gn3kp8`, the Metro from his Drive as the subway. Its own handoff says it was never
+looked at and has a shader error open, and it replaces the working subway. Finish it on its branch (its HANDOFF.md has the details), then merge.
+Older branches (`ice-cream-cat`, `jolly-hawking`, `skeletons`, `admiring-franklin`, the `worktree-agent-*`, the paused `perf-*`, `tree-look`,
+`avatar-editor`, `npc-lives`, `map-editor`, `clouds-mockup`, `gold-skeleton`, `character-sheets`) are superseded by the above or were mockups.
+
+**What's left to do** (from every chat's handoff, in order of payoff):
+1. The Walker built from the pieces he wears only (56,700 triangles drawn in every pass; every unworn hairstyle and eye style folded in).
+2. The nearest lamp's cube shadow (the scene drawn six more times a frame).
+3. The apartment house's walls batched (600 to 700 draws inside).
+4. The Avenue's buildings turned a quarter to face it (designed step by step in keen-meitner's section below).
+5. The evening's moods and the lamps coming on in turn: built, never looked at (`tests/skyshot.cjs` with `&mood=fire|soft`).
+6. The metro (above).
+7. Publishing with `capabilities: {sample:{}, downloads:{}}` so DESCRIBE A CHANGE and the DOWNLOAD buttons work (load `artifact-capabilities` first).
+8. The open question to the owner: should the mushroom seller lose his mushrooms too ("just the skeleton")?
+
 # Handoff (17 Oct 2026, evening: the far, the roaming, the sky; paused to carry on in another chat)
 
 Branch `claude/awesome-noether-mba5hh` (pushed, everything committed) carries, on top of `main`:

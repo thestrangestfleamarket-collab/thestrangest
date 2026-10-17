@@ -76,14 +76,11 @@ const APTS={};
   const STX=[A.x0+.5,A.x1-.5], STY=[H.y0+.1,H.y0+1.3];   // the flight: along the hall's back, the whole width; up toward +x on even floors
   for(let lv=0;lv<ST;lv++){ const z=lv*S, R=rooms(lv), Ym=y=>2*hm-y;
     { const zf=lv>0?z:1; for(const [r,col] of [[R.liv,boards],[R.bed,boards],[R.kit,tiles],[R.bath,tiles]]){ flat(r.x0,r.y0,r.x1,r.y1,zf,col); flat(r.x0,Ym(r.y1),r.x1,Ym(r.y0),zf,col); }
-      if(lv>0){ flat(A.x0,H.y0,A.x1,STY[0],z,lino); flat(A.x0,STY[1],A.x1,H.y1,z,lino); for(const [a,b] of [[A.x0,STX[0]],[STX[1],A.x1]])flat(a,STY[0],b,STY[1],z,lino); } else flat(A.x0,H.y0,A.x1,H.y1,1,lino);   // (the hall, but over the flight below; the ground floor's a hair up, over the lot's grass)
+      flat(A.x0,H.y0,A.x1,H.y1,lv>0?z:1,lino);   // (the hall's floor whole: no flight, owner 17 Oct 2026)   // (the hall, but over the flight below; the ground floor's a hair up, over the lot's grass)
       if(R.pass)flat(R.pass.x0,R.pass.y0,R.pass.x1,R.pass.y1,zf,lino); }
     flat(A.x0,A.y0,A.x1,A.y1,z+S-4,()=>[228,226,220],false);   // the ceiling
-    // the flight up from this floor (none from the top): a ramp of treads, its side
-    if(lv<ST-1){ const up=lv%2===0, xa=up?STX[0]:STX[1], xb=up?STX[1]:STX[0], tread=(x,y)=>{ const t=Math.abs(x-xa)/(STX[1]-STX[0]), k=Math.floor(t*16), e=t*16-k; return sh(e<.12?[70,54,40]:[128,96,66],.9+.1*(k&1)); };
-      bq([X(xa),Y(z),Z(STY[1])],[X(xb),Y(z+S),Z(STY[1])],[X(xb),Y(z+S),Z(STY[0])],[X(xa),Y(z),Z(STY[0])],faceTex((STX[1]-STX[0])*24,(STY[1]-STY[0])*24,(i,j)=>C(tread(xa+(up?1:-1)*(i+.5)/24,0))),'A');
-      bq([X(xa),Y(z),Z(STY[1])],[X(xb),Y(z+S),Z(STY[1])],[X(xb),Y(z),Z(STY[1])],[X(xa),Y(z),Z(STY[1])],faceTex((STX[1]-STX[0])*24,S,()=>[110,84,60]),'A');
-      gbox({x0:STX[0],x1:STX[1],y0:STY[1],y1:STY[1]+.05,z0:z+40,z1:z+43,c:[70,54,40],foot:0},'A'); }   // (a hand rail along its open side, low: the flight stands at the hall's back)
+    // (no flight up: the house emptied, owner, 17 Oct 2026: "empty out the new building completely of furniture and stairs and items. only leave the
+    // building doors and fire escapes")
     // the rooms' walls (cut to their feet between you and the camera, as the outer ones): the hall's two, the living rooms' partitions, the
     // kitchen's and the bathroom's, the passage's; each with its door
     const room=(id,ax,at,a0,a1,holes,tiledA,tiledB,nx,nz)=>wall({id:id+lv,ax,at,a0,a1,z0:z,z1:z+S-4,holes:holes.map(h=>({...h,z0:h.z0+z,z1:h.z1+z})),cut:true,nx,nz,foot:z+8,paint:(s,u,zz)=>plaster(u,zz-z,ax==='x'?.84:.68,s>0?tiledA:tiledB)});
@@ -94,12 +91,7 @@ const APTS={};
       room('kit'+f,'y',R.kit.x1,Math.min(yL,Yf(H.y1)),Math.max(yL,Yf(H.y1)),[],true,true,1,0); room('bath'+f,'y',R.bath.x1,Math.min(yL,Yf(H.y1)),Math.max(yL,Yf(H.y1)),[],true,false,-1,0);
       if(R.pass&&f>0)room('pass','y',R.pass.x0,H.y1,A.y1-T,[],false,false,-1,0); } }
   flat(A.x0,A.y0,A.x1,A.y1,AH,roofCol); flat(A.x0,A.y0,A.x1,A.y1,AH-4,()=>[228,226,220],false);
-  // ---- the things on the walls, the stoop, the roof: the old game's makers (its street kit, the bodega's), painted into the batch
-  { const M=MKS, n0=PROPS.length; M.pipe(A.x0+.2,W,AH-6); M.pipe(A.x1-.2,W,AH-6); M.number(A.x1-1.0,W,DH+6,'24'); M.walllamp(A.x1-1.0-DW-.35,W,DH-10); M.meterbox(A.x0+.6,W,30); M.moss(A.x0+.2,A.x0+2.5,W);
-    M.ac(A.x0+1.5,W,S*2+42); M.ac(m,W,S*3+42); M.ac(A.x1-1.5,W,S*4+42); M.stoop(A.x1-1.0-.8,W+.1);
-    const R=(f,x,y,...a)=>{ const p=f(x,y,AH,W,...a); p.solids=[]; return p; }; R(M.watertank,A.x0+2.2,A.y0+3.5); R(M.vent,A.x1-1.4,A.y1-2.5); R(M.antenna,A.x1-.8,A.y0+1.2); R(M.roofpots,m-1.4,A.y1-1.3); R(M.roofac,m+.6,H.y0+.6);
-    gbox({x0:m-.2,x1:m+1.4,y0:H.y0,y1:H.y0+1.4,z0:AH,z1:AH+40,c:[110,66,52],foot:0,fj:(u,zz)=>Math.abs(u-m-.6)<.25&&zz<AH+32?[50,46,44]:brick(u,zz-AH+30,1,1e9,[]),fi:(u,zz)=>brick(u,zz-AH+30,.8,1e9,[]),top:()=>[70,66,62]},'A');   // (the bulkhead over the stairs: the game's, but in the house's own brick)
-    for(const p of PROPS.slice(n0)){ BATCH.tag=OBJ('apartments',p.name); for(const b of p.boxes)gbox(b,'A'); } BATCH.tag=null; }
+  // (the things on its walls, its stoop, the things on its roof and the stairs' bulkhead: gone with the rest, owner, 17 Oct 2026)
   // ---- THE FURNITURE: the game's studio set by the catalog, each piece made facing a way (STUDIO.face) as 26-apartments does, placed as the
   // bodega's things are (place), its boxes painted into the batch lifted to its floor; what stands on the floor blocks on that floor
   const FD={N:[0,-1],S:[0,1],E:[1,0],W:[-1,0]}, SOLS=[]; APTS.sol=SOLS; const LIGHTS=[]; APTS.lights=LIGHTS;
@@ -107,17 +99,9 @@ const APTS={};
     const add0=BATCH.add, dy=Y(lv*S); BATCH.add=(pos,...r)=>{ for(let i=1;i<18;i+=3)pos[i]+=dy; add0(pos,...r); }; BATCH.tag=OBJ('apartments',p.name); try{ for(const b of p.boxes)gbox(b,'A'); }finally{ BATCH.add=add0; BATCH.tag=null; }
     const bs=p.boxes.filter(b=>!b.nb&&b.z0<30&&b.z1-b.z0>3); if(bs.length&&sol!==false){ const r={x0:Math.min(...bs.map(b=>b.x0)),y0:Math.min(...bs.map(b=>b.y0)),x1:Math.max(...bs.map(b=>b.x1)),y1:Math.max(...bs.map(b=>b.y1))}; SOLS[lv].push([X(r.x0),Z(r.y0),X(r.x1),Z(r.y1)]); }
     PROPS.length=n0; return p; };
+  // (the furniture: gone, owner, 17 Oct 2026; the rooms' ceiling lights stay)
   for(let lv=0;lv<ST;lv++){ SOLS[lv]=[]; const R=rooms(lv), x0=A.x0, yl=R.liv.y0, y1=A.y1, hy=H.y1, bx1=R.bed.x1, k=lv*7;
-    for(const f of [1,-1]){ const Yf=y=>f>0?y:2*hm-y, Df=d=>f>0?d:d==='N'?'S':d==='S'?'N':d, P=(kind,x,y,d,z,sol)=>put(kind,x,Yf(y),d?Df(d):null,z,lv,sol), v=hash(lv,f+2,5), v2=hash(lv,f+4,6);
-      // the living room: the TV on the west wall across the rug from the sofa, the bookcase on the back wall, the desk under the window
-      P('TV on a low stand',x0+.32,y1-1.5,'E'); P('rug',x0+1.5,y1-1.5,'E',null,false); P('coffee table',x0+1.5,y1-1.5,'E',null,false); P('sofa',x0+2.75,y1-1.5,'W'); P('bookcase',x0+5.2,yl+.3,'S');
-      if(bx1>A.x1-1){ P('desk',bx1-1.2,y1-.8,'N'); P('office chair',bx1-1.2,y1-1.85,'S'); P('home computer',bx1-1.2,y1-.7,'N',null,false); P('radio',bx1-.3,y1-.55,'N',30,false); }
-      P('poster',x0+.06,y1-2.5,'E',null,false); if(v>.3)P('wall shelf with plant',x0+.15,y1-.45,'E',null,false); P('floor lamp',x0+4.1,y1-.4,null,null,false); if(v2<.35)P('vacuum',x0+6.3,yl+.4,'W');
-      // the kitchen along its back wall, a table for two; the mat inside the door
-      P('fridge',x0+.5,hy+.6,'S'); P('stove',x0+1.55,hy+.42,'S'); P('sink and counter',x0+2.6,hy+.42,'S'); if(v2>.6)P('washing machine',x0+2.75,yl-.45,'N'); P('dining table',x0+1.8,yl-.9,'N'); P('stool',x0+1.0,yl-.9,'E'); P('stool',x0+2.6,yl-.9,'W'); P('entrance mat',x0+1.5,hy+.5,'N',null,false);
-      // the bathroom, the bedroom
-      P('bath',x0+4.15,hy+1.3,'W'); P('toilet',x0+3.65,yl-.45,'N'); P('bathroom sink',x0+3.7,hy+.42,'S'); P('towel rail',x0+3.25,hy+1.9,'E',null,false);
-      P('single bed',bx1-.9,hy+1.3,'N'); if(bx1-x0>3)P('wardrobe',x0+4.95,hy+1.3,'E'); if(v>.55&&bx1-x0>3)P('floor lamp',bx1-.4,yl-.4,null,null,false);
+    for(const f of [1,-1]){ const Yf=y=>f>0?y:2*hm-y;
       // the lights: the living room's (warm), the kitchen's
       LIGHTS.push({x:X(x0+2.6),y:Y(lv*S+S-14),z:Z(Yf(y1-1.5)),c:0xffd9a8,i:5},{x:X(x0+1.6),y:Y(lv*S+S-14),z:Z(Yf(hy+1.2)),c:0xfff2dc,i:3}); }
     LIGHTS.push({x:X(m),y:Y(lv*S+S-14),z:Z(hm),c:0xf2ead6,i:3}); }
@@ -132,12 +116,11 @@ const APTS={};
     const dr=a=>({a0:a-DW,a1:a+DW}); seg('x',H.y1,A.x0,A.x1,[dr(A.x0+1.5),...(R.pass?[dr(A.x1-.75)]:[])]); seg('x',H.y0,A.x0,A.x1,[dr(A.x1-1.5)]);
     for(const f of [1,-1]){ const Yf=y=>f>0?y:2*hm-y, yL=Yf(yl), ya=Math.min(yL,Yf(H.y1)), yb=Math.max(yL,Yf(H.y1)); seg('x',yL,A.x0,R.bed.x1,[dr(A.x0+1.6),dr(A.x0+3.9),dr(A.x0+5.4)]); seg('y',R.kit.x1,ya,yb,[]); seg('y',R.bath.x1,ya,yb,[]); if(R.pass&&f>0)seg('y',R.pass.x0,H.y1,A.y1,[]); } }
   for(const L of LIGHTS){ const P=new THREE.PointLight(L.c,0,5.5*TILE,1.6); P.position.set(L.x,L.y,L.z); P.userData.i0=L.i; scene.add(P); L.light=P; }
-  { const P=new THREE.PointLight(0xffe2b0,LAMPI,6*TILE,LAMPD); P.position.set(X(A.x1-1.0-DW-.35),Y(DH-4),Z(W+.35)); scene.add(P); lamps.push(P); }   // (the door's lamp: the street's, always on)
   // where you stand in it: the floor under you (the flight carries you between floors), which rooms' solids count, the clip above your ceiling
   const SY=Y(S), x0s=X(A.x0), x1s=X(A.x1), z0s=Z(A.y0), z1s=Z(A.y1), sx0=X(STX[0]), sx1=X(STX[1]), sz0=Z(STY[0]), sz1=Z(STY[1]);
   APTS.inside=(x,z)=>x>x0s&&x<x1s&&z>z0s&&z<z1s;
   APTS.floor=()=>Math.max(0,Math.min(ST-1,Math.floor(py/SY+.08)));
-  APTS.ground=(x,z)=>{ if(x>sx0&&x<sx1&&z>sz0&&z<sz1){ const lv=Math.min(ST-2,Math.max(0,Math.floor(py/SY+.08))), t=Math.max(0,Math.min(1,lv%2===0?(x-sx0)/(sx1-sx0):(sx1-x)/(sx1-sx0))); return SY*(lv+t); } return SY*APTS.floor(); };
+  APTS.ground=()=>SY*APTS.floor();   // (no flight now: the floor you're on)
   APTS.in=false; let was=false, lvWas=-1;
   APTS.tick=()=>{ const inside=APTS.inside(pos.x,pos.z), lv=APTS.floor(); APTS.in=inside;
     if(inside!==was||lv!==lvWas){ was=inside; lvWas=lv; HP.constant=inside?SY*lv+SY*.93:1e6; for(const L of LIGHTS)L.light.intensity=inside?L.i:0; return inside?SOL.up.concat(SOLS[lv]):SOL.up; } return null; };   // (what blocks you: this floor's walls and things, or the street's; the loop sets it)

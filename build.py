@@ -18,6 +18,8 @@ pool=rq(pool,"const X=x=>(x-OX)*TILE, Z=y=>(y-OY)*TILE, Y=z=>z*ZU;","const X=x=>
 pool=rq(pool,"const gx=x/TILE+OX-P.bx0, gy=z/TILE+OY-P.by0;","const gx=(x-PDX)/TILE/BLDK+OX-P.bx0, gy=((z-PDZ)/TILE-(P.y1-OY)*(1-BLDK))/BLDK+OY-P.by0;")
 game=['23-w-bodega-shop.js','23-w-street-1-kit.js','23-w-street-2-furniture.js','23-w-street-3-city.js','23-w-street-4-catalog.js','23-w-studio-apartment-1-furniture.js','23-w-studio-apartment-2-computer.js','23-w-studio-apartment-3-rooms.js','23-x-laundry-room.js']
 kit=rd('src/gamekit.js')+'\n'+'\n'.join('// ==== '+f+' (the game\'s, word for word)\n'+rd(S+f) for f in game)
+# GHOST STREET (owner, 17 Oct 2026: "bring in ghost street from old map"): the game's own makers of the kit's wooden shop, word for word, in a block of their own (their names their own), handing out where it's set and its paving
+kit+='\n// ==== 23-w-ghost-street.js (the game\'s, word for word)\nconst PRESETS={}; let GHOSTK=null;\n{\n'+rd(S+'23-w-ghost-street.js')+'\nGHOSTK={GSK,gsFloor};\n}\n'
 bod=rd('src/bodega.js')
 i=bod.index('const BOD={'); bod=bod[i:]
 bod=rq(bod,"const BOD={meshes:[], walls:{}, lamps:[]};","BOD={meshes:[], walls:{}, lamps:[]};").replace('/*GAMEKIT*/',kit).replace('/*GOODS*/',rd('src/goods-defs.js'))

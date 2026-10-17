@@ -303,6 +303,17 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
   black with no glow, no cloak), 1.4 m (twice the others), unarmed, strolling the whole street as they do. The Minion's and the Rogue's meshes
   came out of the bake 2.2 rig units ahead of their bones (the pack's files lay them there); `npc-skel.js` moves them back at load, so those two
   guards and the troublemakers now draw where they stand.
+- **Strict hitboxes** (owner, 17 Oct 2026, the Fox found standing in a shelf: "we need to avoid clipping. all objects and characters need hitboxes.
+  strictly"; `src/clip.js`, run once everything's built and again when the stacked rooms are): every thing on a floor is solid from its own faces
+  (the batch's tagged things, `OBJS`; the park's props and the kits' pieces, `CLIPX`): its faces reaching above the knee (0.45 m) and starting
+  under the chest (1.2 m) are sampled across the plan, and what no solid held becomes boxes on that floor's list (the street's, the station's, a
+  stacked room's), for you, every character and the physics. Open still: mats, rugs, steps, kerbs (under the knee), what hangs higher (the
+  cigarette rack over the Fox), grass and flowers, dust in the air. Every character is checked at load against his floor's solids and the
+  others, and one standing in either is moved to the nearest clear spot he can reach (never through a wall; `N.home` for one his mind holds in
+  place) with a console warning `CLIP: ...`; walking, a character keeps out of solids (makeNPC's default `free`) and never steps into another,
+  standing or walking (a step away from one he's touching is let through, so two who meet don't stick: the goldfish inside the mushroom seller).
+  The Fox on the mat's middle (x 4.51), his radius his depth (.27). Checked by `tests/clipcheck.cjs` (every thing held, every character clear,
+  the goldfish and the mushroom seller sent at each other, no room's door closed; spots now walled off listed as notes). `?clip=0` leaves it off.
 
 ## THE MARKET: the one official map
 

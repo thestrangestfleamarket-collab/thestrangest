@@ -12,7 +12,7 @@ import json,base64,os,shutil,sys,numpy as np,fast_simplification as FS
 from collections import defaultdict
 B=lambda s,t:np.frombuffer(base64.b64decode(s),t); E=lambda a:base64.b64encode(np.ascontiguousarray(a).tobytes()).decode()
 BODY,THING=.5,.33
-FILES=['props','forest','kit','figures','creatures','skel','dragon','bear','goldfish']
+FILES=['props','forest','kit','creatures','skel','dragon','bear','goldfish']   # (the six figures removed, 17 Oct 2026)
 os.makedirs('data/full',exist_ok=True)
 for f in FILES:
     if not os.path.exists(f'data/full/{f}.json'): shutil.copy(f'data/{f}.json',f'data/full/{f}.json')
@@ -121,9 +121,6 @@ for s in os.listdir('src'):
 out={k:indexed(M) for k,M in d.items() if k in used}; [report('kit '+k,d[k]['tris'],out[k]['tris']) for k in out]
 print('kit (unused pieces dropped:',sorted(set(d)-used),')',save('kit',out))
 HEAD=lambda nm:nm.lower() in ('head',) or nm in ('Head','Head_001')
-d=load('figures')
-for k,M in d.items(): hs=headset(M['rig'],lambda nm:nm=='Head'); N=indexed(M,hs,BODY); report('figure '+k,M['tris'],N['tris']); d[k]=N
-print('figures',save('figures',d))
 d=load('creatures')
 for k,D in d.items(): hs=headset(D['rig'],lambda nm:nm=='Head'); N=indexed(D['mesh'],hs,BODY); report('creature '+k,D['mesh']['tris'],N['tris']); D['mesh']=N
 print('creatures',save('creatures',d))

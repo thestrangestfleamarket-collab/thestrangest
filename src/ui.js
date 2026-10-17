@@ -150,7 +150,7 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
       <h3>RESOLUTION</h3><div class="row" id="dres"></div><div class="dim" id="dsharp"></div>
       <h3>SHADOWS</h3><div class="row" id="dshd"></div>
       <h3>LIGHT</h3><div class="row"><button class="btn" id="dlook">GLOW AND NIGHT LOOK</button><button class="btn" id="dlit">LIGHT ON THEM</button><button class="btn" id="doutl">OUTLINE</button></div>
-      <div class="row"><span style="width:110px">SHADE STEPS</span><input type="range" id="dsteps" min="2" max="5" step="1"><span style="width:110px">SHADOW DEPTH</span><input type="range" id="ddepth" min="0.1" max="0.9" step="0.01"></div></div>
+      <div class="row"><span style="width:110px">SHADE STEPS</span><input type="range" id="dsteps" min="2" max="12" step="1"><span style="width:110px">SHADOW DEPTH</span><input type="range" id="ddepth" min="0.02" max="0.98" step="0.005"></div></div>
     <div class="pane" data-p="keys"><div class="dim" style="margin-bottom:8px">click a key, then press the one you want (Escape to keep it)</div><table id="keytab"></table>
       <div class="row" style="margin-top:10px"><button class="btn" id="kreset">ALL BACK AS THEY WERE</button></div></div>
     <div class="foot"><span>ESC closes</span><span>THE MARKET</span></div></div>`;

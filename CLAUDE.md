@@ -286,8 +286,9 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
   silent; each comes on from the start of a piece; the clock runs only while you're near the stage. **The people are the player's avatar** (owner,
   17 Oct 2026: "reset all npcs to same exact avatar as main player", his pick: the people): the guitarist, the pianist and the singer are built from
   the player's own pieces (`musBody` in `musician.js`: `W3.pcs`, his hair and eyes, his build's sizes `W3.E` each frame, his size `W3.SZ`, `W3.BH`), only
-  their fingers a piece a bone for playing; their clothes their own colours (the tuxedo; his shirt and trousers in the singer's gown red: her gown's
-  shape and her body went with it). One mesh maker for them all (`figureMesh`, shared shapes made once, one set of shader programs). **Their cost**
+  their fingers a piece a bone for playing; their clothes their own colours (the tuxedo). **The singer's gown back** (owner, 17 Oct 2026: "yes"): on the player's FEMALE
+  body (YOUR LOOKS' sizes and height, `LOOKS.BUILDS`), the gown's own skirt to the floor and its strapless bodice in the gown's red, no sleeves,
+  her legs bare under it; her mic cord clears the skirt again (the game's `cordStep` keeps out of that shape); some 27,500 triangles. One mesh maker for them all (`figureMesh`, shared shapes made once, one set of shader programs). **Their cost**
   (measured): the guitarist 30,300 triangles (was 64,200), the pianist 22,600 (was 140,100: each key now a plain box, the keys were 112,000), the
   singer 27,000 (was 62,000); one on the stage, so at most 30,300 where the bar's three were 202,000 together. Not found in the game: "raincoast" (asked back).
 - **The creatures' animations fixed** (owner, 17 Oct 2026, "fix the animals animations. check each one"): the packs' armatures stand a quarter turned

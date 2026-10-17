@@ -50,6 +50,7 @@ grab('stairs',()=>{ const S=MAPSTAIR, X=x=>(x-72)*TILE, Z=y=>(y+77)*TILE, Y=z=>z
 // ---- ONE GROUND FOR THE MAP: on the stairs, the step under you; underground, the station's floor; on the street, the street's (its road a kerb down)
 const inStair=(x,z)=>{ const gx=x/TILE+72, gy=z/TILE-77, S=MAPSTAIR; return gx>=S.x0&&gx<S.x1&&gy>=S.y0&&gy<S.y1?gy:null; };
 groundY=(x,z)=>{ const s=inStair(x,z), S=MAPSTAIR; if(s!=null){ const k=Math.min(S.steps,Math.max(1,Math.floor((S.y1-s)/((S.y1-S.y0)/S.steps))+1)); return -k*S.depth/S.steps*ZU; }
+  { const st=LVL==='up'&&STORE.stackGround?STORE.stackGround(x,z):null; if(st!=null)return st; }   // (a floor stacked on the apartments: store.js)
   return LVL==='down'?MODS.station.ground(x,z):MODS.apts&&MODS.apts.inside(x,z)?MODS.apts.ground(x,z):MODS.bodega.ground(x,z); };   // (in the apartment house: its floor under you, its stairs: apts.js)
 BOUND={x0:Math.min(MODS.bodega.BOUND.x0,MODS.station.BOUND.x0),x1:Math.max(MODS.bodega.BOUND.x1,MODS.pool.BOUND.x1),z0:Math.min(MODS.station.BOUND.z0,MODS.pool.BOUND.z0),z1:Math.max(MODS.bodega.BOUND.z1,MODS.park.BOUND.z1)};   // (the park past the far sidewalk: park.js)
 // the light of the open air at night over the street, the station's own underground

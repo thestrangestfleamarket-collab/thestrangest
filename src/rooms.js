@@ -17,7 +17,7 @@ const ROOMS={cur:null};
     if(LVL==='up'&&!UI.freeCam&&!ED.on){
       // (owner, 17 Oct 2026: "when i first walk into interior its cutting off the back of my body too"): a room is yours once all of you is in it
       // (half a tile in from its walls); in a doorway, coming or going, nothing is cut
-      const IN=-.55*TILE; hit=RL.find(b=>within(b,pos.x,pos.z,IN))||null;
+      const IN=-.55*TILE; hit=RL.find(b=>within(b,pos.x,pos.z,IN)&&py>b.y0-.3&&py<b.y1)||null;   /* (and by your height: the rooms stacked on the apartments share their ground) */
       const A=MODS.apts; if(!hit&&A&&A.in){ const lv=A.floor(), S=BOD.K.STORY; for(const t of A.rects(lv)){ const b=box(BOD.X,BOD.Z,t,BOD.Y(lv*S)-.5,BOD.Y((lv+1)*S)); if(within(b,pos.x,pos.z,IN)){ hit=b; break; } } } }
     ROOMS.cur=hit; if(BOD.GD)BOD.GD.tick();   // (the dojo's flames: lit only while you're in it)
     // THE LIGHTS OVERHEAD (owner, 17 Oct 2026: "dont show over head lights in any view unless looking up at them"): only from under them

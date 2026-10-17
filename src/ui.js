@@ -174,7 +174,7 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
     const im=mg.createImageData(W,H); for(let y=0;y<H;y++){ const o=y*W*4, q=(H-1-y)*W*4; for(let i=0;i<W*4;i+=4){ im.data[o+i]=GAM[px[q+i]]; im.data[o+i+1]=GAM[px[q+i+1]]; im.data[o+i+2]=GAM[px[q+i+2]]; im.data[o+i+3]=255; } } mg.putImageData(im,0,0);
     const sx=x=>(x-R.x0)/(R.x1-R.x0)*W, sz=z=>(z-R.z0)/(R.z1-R.z0)*H; if((LVL)===mapLv){ mg.fillStyle='#f2c14e'; mg.fillRect(Math.round(sx(pos.x))-3,Math.round(sz(pos.z))-3,7,7); mg.fillStyle='#000'; mg.fillRect(Math.round(sx(pos.x))-1,Math.round(sz(pos.z))-1,3,3); } }
   STORE.goTo=(x,z,lv)=>goTo(x,z,lv);   // (a test's reach)
-  const goTo=(x,z,lv)=>{ pos.set(x,0,z); target=null; py=lv==='down'?MODS.station.ground(x,z):0; if(UI.freeCam)UI.camT.set(x,py+.9,z); if(UI.menuOpen)toggleMenu(); };
+  const goTo=(x,z,lv)=>{ pos.set(x,0,z); target=null; py=typeof lv==='number'?lv:lv==='down'?MODS.station.ground(x,z):0;   /* (a number: a stacked floor's height) */ if(UI.freeCam)UI.camT.set(x,py+.9,z); if(UI.menuOpen)toggleMenu(); };
   mcv.addEventListener('click',e=>{ const r=mcv.getBoundingClientRect(), R=mapRect(mapLv); goTo(R.x0+(e.clientX-r.left)/r.width*(R.x1-R.x0),R.z0+(e.clientY-r.top)/r.height*(R.z1-R.z0),mapLv); });
   M.querySelectorAll('[data-lv]').forEach(b=>b.onclick=()=>{ mapLv=b.dataset.lv; drawMap(); });
   const PLACES=[['THE STREET',-2.2,3.2,'up'],['THE BODEGA',0,-3.4,'up'],['THE APARTMENTS',POOLR.X(22.75),POOLR.Z(12),'up'],['THE POOL',POOLR.X(10),POOLR.Z(8.9),'up'],['THE PLATFORM',-12.4,-24.9,'down'],['CENTRAL PARK',BOD.XS(96),BOD.ZS(-54),'up'],['GHOST STREET',BOD.X(BOD.GD.door[0]),BOD.Z(BOD.GD.door[1]+4.5),'up']];

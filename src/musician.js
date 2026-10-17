@@ -9,7 +9,7 @@ const MUS={};
 { const R=RIG, V=R.V, AT={x:-2.45,z:1.75,hd:0.35};
   // his pieces: his own (the fingers' bones too: the rig's fine hand), and the guitar in its own frame
   // (his fingers: the rig leaves them out of a figure seen from afar, FAR; he's built and posed with them, the player without)
-  R.farOnly(false); R.fine(true); const RB=R.build(R.walkPose({ph:0,w:0},null),null), PCS=R.shell(RB.J,0).filter(p=>p.on!=='prop'&&p.on!=='world'); R.fine(false); R.farOnly(true);
+  R.farOnly(false); R.fine(true); const RB=R.build(R.walkPose({ph:0,w:0},null),null), PCS=R.shell(RB.J,0).filter(p=>p.on!=='prop'&&p.on!=='world'); R.fine(false); R.farOnly(false);
   const J=RB.J, around=(ps,m)=>{ const b=[1e9,-1e9,1e9,-1e9,1e9,-1e9]; for(const p of ps){ b[0]=Math.min(b[0],p.x-m); b[1]=Math.max(b[1],p.x+m); b[2]=Math.min(b[2],p.y-m); b[3]=Math.max(b[3],p.y+m); b[4]=Math.min(b[4],p.z-m); b[5]=Math.max(b[5],p.z+m); } return b; };
   for(const p of PCS){ const f=/^fing(\d)(\d)([LR])$/.exec(p.n); if(f){ p.bb=around([J['k'+f[1]+f[2]+f[3]],J['k'+f[1]+(+f[2]+1)+f[3]]],1); p.step=.12; p.cell=.08; }   // (a finger's bone, fine: whole, not simplified away)
     else if(/^hand[LR]$/.test(p.n)){ p.bb=around([J['wrist'+p.n.slice(-1)]],4.5); p.step=.2; p.cell=.15; } }
@@ -37,12 +37,16 @@ const MUS={};
   g.position.set(AT.x,0,AT.z); g.rotation.set(0,AT.hd,0); g.scale.set(1/PPU,ZU,1/PPU); MUS.at=AT;
   // HIS PLAYING, each frame he's near (the game's gtStep, here): the tune's clock, his pose solved onto its notes, his arms and fingers with
   // weight, a breath and a nod with the beat; at a tune's end, a moment's rest, the next in the book
+  // HIS STRUMMING ARM, NATURAL (owner, 17 Oct 2026: "can you have NPCs use natural body movement? his elbow is lifted unnatural"): the game's pose
+  // had the right elbow out to his side, near level (right for its flat picture); in 3D a guitarist's strumming arm hangs: the elbow down by
+  // his side, a little back and out, the forearm laid over the guitar's lower bout to the strings. The left elbow stays under the neck
+  GTPOLE.R=RIG.V(-1,-1,-.55);
   const a={t:0}; let song=0, rest=0;
   MUS.tick=dt=>{ if(MUS.watch&&!UI.freeCam){ MUS.watch=false; if(MUS.res0!=null){ RESI=MUS.res0; MUS.res0=null; resize(); } } const d=Math.hypot(pos.x-AT.x,pos.z-AT.z); if(!MAPG.bodega.visible||d>18&&!MUS.watch){ gtHush(); return; }
     if(GTS.t>GTEND+1.5){ rest+=dt; if(rest>2.5){ rest=0; song=gtNext(song); gtSet(song); } }
     R.farOnly(false); GTS.t+=dt; const t=GTS.t, P=gtPose(t); npcSpring(a,P,dt,NPCARMS); gtFing(P,RIG.build(P,null),P._T); npcSpring(a,P,dt,NPCFING); a.t+=dt;
     P.nod+=Math.sin(a.t*1.6)*0.6*R.D+Math.sin(t/GTBEAT*Math.PI)*0.8*R.D; a.P=P;
-    const B=R.settle(R.build(P,null),0); PCS.forEach((pc,i)=>{ if(pc.n==='guitar')M(GTF,PM.value[i]); else M(R.frameOf(pc.on||pc.n,B),PM.value[i]); }); M(GTF,sg.matrix); sg.matrixWorldNeedsUpdate=true; R.farOnly(true);
+    const B=R.settle(R.build(P,null),0); PCS.forEach((pc,i)=>{ if(pc.n==='guitar')M(GTF,PM.value[i]); else M(R.frameOf(pc.on||pc.n,B),PM.value[i]); }); M(GTF,sg.matrix); sg.matrixWorldNeedsUpdate=true; R.farOnly(false);
     gtTones(t,d); };
   // ITS SOUND (the game's gtSound, here): the notes in the next tenth of a second, each at its time; as loud as he is near, from his side
   function gtTones(t,d){ if(!SND.ctx||SND.ctx.state!=='running')return; if(!gtAudio())return; const c=SND.ctx, ct=c.currentTime, A=t+0.1, when=x=>ct+Math.max(0,x-t)+0.03;

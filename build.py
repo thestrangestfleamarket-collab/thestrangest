@@ -16,21 +16,21 @@ stn=rq(stn,"solid(AVE,END,PLAT,END+1,UH);","solid(AVE,END,-29,END+1,UH); solid(-
 pool=body('src/pool.js','{ const hash=','\nscene.background')
 pool=rq(pool,"const X=x=>(x-OX)*TILE, Z=y=>(y-OY)*TILE, Y=z=>z*ZU;","const X=x=>(x-OX)*BLDK*TILE+PDX, Z=y=>((y-OY)*BLDK+(P.y1-OY)*(1-BLDK))*TILE+PDZ, Y=z=>z*ZU*BLDK;")   # (a tenth bigger from its front's middle: BLDK)
 pool=rq(pool,"const gx=x/TILE+OX-P.bx0, gy=z/TILE+OY-P.by0;","const gx=(x-PDX)/TILE/BLDK+OX-P.bx0, gy=((z-PDZ)/TILE-(P.y1-OY)*(1-BLDK))/BLDK+OY-P.by0;")
-pool=rq(pool,"cutaway(wallX(P.y1,P.x0,P.x1,0,P.H,(u,z)=>poolTile(u,z)),0,-1,10);","cutaway(wallX(P.y1,P.x0,P.x1,0,P.H,(u,z)=>u>=17.22&&u<18.78&&z<94?null:poolTile(u,z)),0,-1,10);")
-pool=rq(pool,"solid(P.x0,P.y1,P.x1,P.y1+1,P.H);","solid(P.x0,P.y1,17.22,P.y1+1,P.H); solid(18.78,P.y1,P.x1,P.y1+1,P.H);")
 game=['23-w-bodega-shop.js','23-w-street-1-kit.js','23-w-street-2-furniture.js','23-w-street-3-city.js','23-w-street-4-catalog.js','23-w-studio-apartment-1-furniture.js','23-w-studio-apartment-2-computer.js','23-w-studio-apartment-3-rooms.js','23-x-laundry-room.js']
 kit=rd('src/gamekit.js')+'\n'+'\n'.join('// ==== '+f+' (the game\'s, word for word)\n'+rd(S+f) for f in game)
+# GHOST STREET (owner, 17 Oct 2026: "bring in ghost street from old map"): the game's own makers of the kit's wooden shop, word for word, in a block of their own (their names their own), handing out where it's set and its paving
+kit+='\n// ==== 23-w-ghost-street.js (the game\'s, word for word)\nconst PRESETS={}; let GHOSTK=null;\n{\n'+rd(S+'23-w-ghost-street.js')+'\nGHOSTK={GSK,gsFloor};\n}\n'
 bod=rd('src/bodega.js')
 i=bod.index('const BOD={'); bod=bod[i:]
 bod=rq(bod,"const BOD={meshes:[], walls:{}, lamps:[]};","BOD={meshes:[], walls:{}, lamps:[]};").replace('/*GAMEKIT*/',kit).replace('/*GOODS*/',rd('src/goods-defs.js'))
 bb=rq(rd('src/bodbuild.js'),"const BODB={};","BODB={};")
 wrap=lambda name,code,out,cutwhen: ("grab('%s',()=>{ const solids=SOL.%s, fixed=FIX.%s, SHL=[]; let BOUND, groundY; const c0=cutWalls.length;\n"%(name,'down' if name=='down' else 'up','down' if name=='down' else 'up'))+code+"\n"+out+"\n for(const w of cutWalls.slice(c0))if(!w.when)w.when="+cutwhen+"; for(const L of SHL)L.removeFromParent(); });\n"
-MAPST=(rd('src/map-pre.js')+'\n'+rd('src/batch.js')+'\n'+rd('src/water3d.js')+'\n'
+MAPST=('const TEXTURES='+rd('data/textures.json')+';\nconst KITD='+rd('data/kit.json')+';\n'+rd('src/map-pre.js')+'\n'+rd('src/batch.js')+'\n'+rd('src/water3d.js')+'\n'
   +wrap('down',stn,"MODS.station={BOUND,ground:(x,z)=>groundY(x,z)+STN.DY};","()=>LVL==='down'")
-  +wrap('bodega',bod+'\n'+bb,"MODS.bodega={BOUND,ground:groundY};","()=>BODB.inside()")
+  +wrap('bodega',bod+'\n'+bb+'\n'+rd('src/apts.js'),"MODS.bodega={BOUND,ground:groundY};","()=>BODB.inside()")
   +wrap('pool',pool+'\nWATER.build();',"MODS.pool={BOUND,cut:cutWalls.slice(c0),inside:(x,z)=>x>POOLR.X(POOLR.x0)&&x<POOLR.X(POOLR.x1)&&z>POOLR.Z(POOLR.y0)&&z<POOLR.Z(POOLR.y1)};","()=>MODS.pool.inside(pos.x,pos.z)")
   +"const FOREST="+rd('data/forest.json')+";\n"+rd('src/park.js')+'\n'   # (CENTRAL PARK'S ENTRANCE, owner 17 Oct 2026: park.js, data/forest.json)
-  +rd('src/map-post.js'))
+  +rd('src/map-post.js')+'\n'+rd('src/kit.js')+'\n'+rd('src/dress.js'))   # (the kits placed, the pigeons: after the map)
 f=open('src/flea-market-3d.html').read()  # (carries the simpler Walker)
 st=MAPST
 i=f.index('<script type="module">'); head,mod=f[:i],f[i:]
@@ -115,14 +115,19 @@ head=rp(head,'<div><b>-</b> / <b>=</b> pixel size</div>','<div><b>-</b> / <b>=</
 mod=rp(mod,"ppuTo=Math.max(3,Math.min(240,ppuTo*Math.pow(1.0015,-e.deltaY)));","ppuTo=Math.max(3,Math.min(ZMAX,ppuTo*Math.pow(1.0015,-e.deltaY)));")
 # EVERY VIEW (owner, 17 Oct 2026: "i cant drag my mouse in enough directions to get every view i want"): the tilt all the way round, from
 # straight down over the top, level, to straight up from under the ground (a hair short of each pole, where the view would flip)
-mod=rp(mod,"const PMIN=0.02, PMAX=Math.PI/2-0.002,","const PMIN=-Math.PI/2+0.01, PMAX=Math.PI/2-0.002,")
+# NEVER UNDER THE GROUND (owner, 17 Oct 2026: "dont let viewer rotate under ground, stop them at this angle", his picture level with the street):
+# the tilt from straight down to level, no further
+mod=rp(mod,"const PMIN=0.02, PMAX=Math.PI/2-0.002,","const PMIN=0.17, PMAX=Math.PI/2-0.002,")   # (and never flat to the ground: "dont allow rotate to get closer than 3 feet off ground", some ten degrees up at least)
 # TURNING ROUND ANY POINT, ZOOMING AT THE MOUSE (owner, 17 Oct 2026: "i still cant drag my mouse in enough directions to get every view i
 # want", "it always zooms back in at my feet", "as the point of x y z"): a drag turns the view round the point you grab, the wheel zooms toward
 # the point under the mouse, the tilt goes on over the top and under (the camera turned by its own angles, not pointed with an up, so it
 # never flips at the poles); the view keeps its place beside him as he walks (UI.off), 0 puts it back on him (src/ui.js)
 mod=rp(mod,"ppu*=Math.pow(ppuTo/ppu,ease); if(pxS()!==SCL)resize(); else frustum();","const zk0=UI.zk(); ppu*=Math.pow(ppuTo/ppu,ease); if(pxS()!==SCL)resize(); else frustum(); UI.zoomStep(zk0);")
 mod=rp(mod,"ppuTo=Math.max(3,Math.min(ZMAX,ppuTo*Math.pow(1.0015,-e.deltaY)));","ppuTo=Math.max(3,Math.min(ZMAX,ppuTo*Math.pow(1.0015,-e.deltaY))); UI.wheelAt(e);")
-mod=rp(mod,"cam.position.copy(disp).addScaledVector(F,300); cam.lookAt(disp);","cam.quaternion.setFromEuler(UI.eul.set(-pitch,a,0,'YXZ')); cam.position.copy(disp).addScaledVector(F,300);")
+mod=rp(mod,"cam.position.copy(disp).addScaledVector(F,300); cam.lookAt(disp);","UI.view3(a); cam.quaternion.setFromEuler(UI.eul.set(-pitch,a,0,'YXZ')); cam.position.copy(disp).addScaledVector(F,300); UI.view3b(a);")
+# THE VIEWS (owner, 17 Oct 2026: "in display tab add an isometric toggle ... add 1st person view toggle and 3rd person view with zoom in and out"): one camera or the other
+mod=rp(mod,"const cam=new THREE.OrthographicCamera(-1,1,1,-1,0.1,800);","let cam=new THREE.OrthographicCamera(-1,1,1,-1,0.1,800); const OCAM=cam, PCAM=new THREE.PerspectiveCamera(60,1,.05,600);")
+mod=rp(mod,"composer.addPass(new RenderPass(scene,cam));","composer.addPass(RPASS=new RenderPass(scene,cam));")
 mod=rp(mod,"if(k==='0'){ yawTo=VIEW0.yaw; pitchTo=VIEW0.pitch; ppuTo=VIEW0.ppu; }","if(k==='0'){ yawTo=VIEW0.yaw; pitchTo=VIEW0.pitch; ppuTo=VIEW0.ppu; UI.home(); }")
 mod=rp(mod,"if(e.button===2||e.button===1){ drag={x:e.clientX,y:e.clientY};","if(e.button===2||e.button===1){ drag={x:e.clientX,y:e.clientY}; UI.grab(e);")
 mod=rp(mod,"yawTo-=(e.clientX-drag.x)*0.008; pitchTo=clampP(pitchTo+(e.clientY-drag.y)*0.006);","UI.orbit(e.clientX-drag.x,e.clientY-drag.y);")
@@ -130,7 +135,7 @@ print('ok zoom')
 
 # THE OWNER'S CHARACTERS FROM HIS MODELS (owner, 16 Oct 2026): the goldfish and the bear, coloured, wandering the platform; THE SKELETONS (owner,
 # 17 Oct 2026, KayKit's four, rigged and animated) on the far sidewalk: src/npc-skel.js, data/skel.json (tools/skeletons-bake.py)
-mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);","const GOLDFISH="+open('data/goldfish.json').read()+";\nconst BEARD="+open('data/bear.json').read()+";\nconst SKEL="+open('data/skel.json').read()+";\n"+open('src/npc-map.js').read()+"\n"+open('src/npc-skel.js').read()+"\n"+"".join("const %s=%s;\n"%(k,open("data/%s.json"%f).read()) for k,f in [("GHOSTD","ghost"),("TOTE","tote"),("POWERUP","powerup")])+open('src/npc-street.js').read()+"\nconst FIGS="+open('data/figures.json').read()+";\n"+open('src/npc-figures.js').read()+"\nresize(); applyTime(0); requestAnimationFrame(frame);")   # (THE SIX FIGURES, owner 17 Oct 2026: npc-figures.js, data/figures.json)   # (THE STREET'S CHARACTERS from the owner's models, owner 17 Oct 2026: npc-street.js)
+mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);","const GOLDFISH="+open('data/goldfish.json').read()+";\nconst BEARD="+open('data/bear.json').read()+";\nconst SKEL="+open('data/skel.json').read()+";\n"+open('src/npc-map.js').read()+"\n"+open('src/npc-skel.js').read()+"\nconst DRAGON="+open('data/dragon.json').read()+";\n"+open('src/npc-dragon.js').read()+"\nconst FIGS="+open('data/figures.json').read()+";\n"+open('src/npc-figures.js').read()+"\nresize(); applyTime(0); requestAnimationFrame(frame);")   # (THE SIX FIGURES, owner 17 Oct 2026: npc-figures.js, data/figures.json)   # (THE STREET'S CHARACTERS from the owner's models, owner 17 Oct 2026: npc-street.js)
 mod=rp(mod,"  marker.visible=!!target;","  for(const N of NPCS)N.tick(dt,pos);\n  marker.visible=!!target;")
 mod=rp(mod,"function collide(p){ const r=0.3;","function collide(p){ if(typeof NPCS!=='undefined')for(const N of NPCS)if(N.lv===LVL)N.push(p); const r=0.36;")   # (his reach round him: 0.3, a fifth bigger with him)
 print('ok npcs')
@@ -144,7 +149,7 @@ mod=rp(mod,"PHYROOMS=[{on:true,x0:-1e9,x1:1e9,y0:-1e9,y1:1e9,st:STATIC.map(b=>[b
 mod=rp(mod,"lamps.forEach(L=>L.intensity=LAMPI); nb.slice(0,2).forEach(([,i],k)=>{ SHL[k].position.copy(lamps[i].position); lamps[i].intensity=0; });",
  "lamps.forEach(L=>L.intensity=L.userData.i0??LAMPI); SHL.forEach(S=>S.intensity=0); nb.filter(([,i])=>lamps[i].parent&&lamps[i].parent.visible).slice(0,2).forEach(([,i],k)=>{ const L=lamps[i], S=SHL[k]; S.position.copy(L.position); S.color.copy(L.color); S.intensity=L.userData.i0??LAMPI; S.distance=L.distance; S.decay=L.decay; L.intensity=0; });")
 mod=rp(mod,"for(const w of cutWalls)w.pl.constant=(Math.sin(a)*w.nx+Math.cos(a)*w.nz<-0.05&&pitch<1.45)?w.foot:1e6;",
- "for(const w of cutWalls)w.pl.constant=(Math.sin(a)*w.nx+Math.cos(a)*w.nz<-0.05&&pitch<1.45&&(!w.when||w.when()))?w.foot:1e6;   // (only the room you're in)\n  for(const r of BODB.roof)r.visible=!BODB.inside(); MODS.pool.roof.visible=!MODS.pool.inside(pos.x,pos.z);   // (and its roof off)")
+ "for(const w of cutWalls)w.pl.constant=(!UI.persp&&(w.always||Math.sin(a)*w.nx+Math.cos(a)*w.nz<-0.05)&&pitch<1.45&&(!w.when||w.when()))?w.foot:1e6;   // (only the room you're in)\n  for(const r of BODB.roof)r.visible=!BODB.inside(); MODS.pool.roof.visible=!MODS.pool.inside(pos.x,pos.z);   // (and its roof off)")
 mod=rp(mod,"  renderer.shadowMap.needsUpdate=true; W3.shadowPass(renderer); OUTL.render(renderer,scene,cam); composer.render();",
  """  if(!MAPBAKE){ MAPBAKE=1; W3.group.visible=false; renderer.shadowMap.needsUpdate=true; renderer.render(scene,cam); W3.group.visible=true; }   // (the lamps' still shadows, once, without him)
   const wOn=LVL==='up'&&Math.hypot(pos.x-POOLR.X((POOLR.bx0+POOLR.bx1)/2),pos.z-POOLR.Z((POOLR.by0+POOLR.by1)/2))<14*TILE;   // (the water moves while you're near it)
@@ -163,8 +168,8 @@ head=rp(head,'<div><b>Space</b> jump','<div>The bodega, the pool room (its door 
 mod=rp(mod,"const pos=new THREE.Vector3(-2.2,0,3.2); let heading=0.8, py=0;","const pos=new THREE.Vector3(-2.2,0,3.2); let heading=0.8, py=0; { const a=(QS.get('at')||'').split(',').map(Number); if(a.length>=2&&a.every(isFinite)){ pos.set(a[0],0,a[1]); py=a[2]||0; } }   // (a test's: start at x,z[,height])")
 mod=rp(mod,"  if(MAPLV(py,pos))setPhys(LVL);","  if(MAPLV(py,pos))setPhys(LVL); if(bloom){ const dn=LVL==='down'; bloom.strength=(dn?1.3:.55)*GLOW.k; bloom.radius=dn?.6:.4; bloom.threshold=dn?.62:.8; }   // (the glow: the station's strong, the street's and the shops' gentle)")
 # GETTING AROUND and THE MENU (owner, 17 Oct 2026): src/ui.js, and its hooks in the frame and the keys
-mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);",open('src/physbody.js').read()+"\n"+open('src/ui.js').read()+"\n"+open('src/editor.js').read()+"\n"+open('src/animator.js').read()+"\n"+open('src/worldedit.js').read()+"\nresize(); applyTime(0); requestAnimationFrame(frame);")
-mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);","STREET.start();   // (the street's characters and things, once the menu and the engine's loader are here)\nresize(); applyTime(0); requestAnimationFrame(frame);")
+mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);",open('src/physbody.js').read()+"\n"+open('src/ui.js').read()+"\n"+open('src/editor.js').read()+"\n"+open('src/animator.js').read()+"\n"+open('src/worldedit.js').read()+"\n"+open('src/looks.js').read()+"\n"+open('src/vitals.js').read()+"\nresize(); applyTime(0); requestAnimationFrame(frame);")
+# (the street's characters from the owner's models, src/npc-street.js: deleted, owner 17 Oct 2026, the last of them "delete ghost with bag inside and whatever this is")
 mod=rp(mod,"addEventListener('keydown',e=>{ const k=e.key.toLowerCase(); keys.add(k);","addEventListener('keydown',e=>{ const k=UI.key(e); if(!k)return; keys.add(k);")
 mod=rp(mod,"addEventListener('keyup',e=>{ const k=e.key.toLowerCase(); keys.delete(k);","addEventListener('keyup',e=>{ const k=UI.key(e); if(!k)return; keys.delete(k);")
 mod=rp(mod,"if(k==='f'&&!e.repeat)trip=true;","if(k==='f'&&!e.repeat&&!UI.freeCam&&!UI.fly&&!ED.on)trip=true;")
@@ -176,10 +181,10 @@ mod=rp(mod,"\n  if(up){mx+=fx;mz+=fz;} if(dn){mx-=fx;mz-=fz;}","\n  UI.camStep(d
 mod=rp(mod,"collide(pos); if(st.water&&st.water.in){","if(UI.fly)UI.flyStep(0); else collide(pos); if(st.water&&st.water.in){")
 mod=rp(mod,"    py+=(groundY(pos.x,pos.z)-py)*Math.min(1,dt*20); P.x=pos.x/TL;","    if(UI.fly)UI.flyStep(dt); else py+=(groundY(pos.x,pos.z)-py)*Math.min(1,dt*20); P.x=pos.x/TL;   // (flying: up and down as you hold Space and Shift, through anything)\n   ")
 mod=rp(mod,"  disp.set(pos.x,py,pos.z); F.set(","  if(UI.freeCam)disp.copy(UI.camT); else disp.set(pos.x,py,pos.z); F.set(")
-head=rp(head,'<div><b>Right-drag</b> or <b>Q</b> / <b>E</b>, <b>Z</b> / <b>X</b> turn and tilt</div>','<div><b>Drag</b> move the map · <b>Right-drag</b> (or <b>Shift</b> + drag), <b>Q</b> / <b>E</b>, <b>Z</b> / <b>X</b> turn and tilt, all the way round · <b>0</b> back on him</div>\n  <div><b>C</b> free camera · <b>G</b> fly through walls (<b>Space</b> up, <b>Shift</b> down)</div>')
+head=rp(head,'<div><b>Right-drag</b> or <b>Q</b> / <b>E</b>, <b>Z</b> / <b>X</b> turn and tilt</div>','<div><b>Drag</b> move the map · <b>Right-drag</b> (or <b>Shift</b> + drag), <b>Q</b> / <b>E</b>, <b>Z</b> / <b>X</b> turn and tilt · <b>0</b> back on him</div>\n  <div><b>C</b> free camera · <b>G</b> fly through walls (<b>Space</b> up, <b>Shift</b> down)</div>')
 head=rp(head,'<div class="dim"><b>H</b> hide this</div>','<div class="dim"><b>Esc</b> menu: map, display, keys · <b>H</b> hide this</div>')
 # HIS SHAPE and THE OUTLINE (owner, 17 Oct 2026): src/editor.js; each piece's change on its frame; the outline pass off unless turned on
-mod=rp(mod,"0,0,0,1); }); };","0,0,0,1); if(W3.E&&W3.E[i])W3.applyE(W3.PM.value[i],W3.E[i],F.o); }); };   // (his shape as edited: src/editor.js)")
+mod=rp(mod,"0,0,0,1); }); };","0,0,0,1); if(W3.E&&W3.E[i])W3.applyE(W3.PM.value[i],W3.E[i],F.o); if(W3.HIDE[i])W3.PM.value[i].makeScale(0,0,0); }); };   // (his shape as edited: src/editor.js)")
 mod=rp(mod,"W3.place(B,pos.x,py,pos.z,RAG.on?RAG.hd:heading,hdA,ZU);","W3.place(B,pos.x,py,pos.z,RAG.on?RAG.hd:heading,hdA,ZU); if(ED.on)ED.tick();")
 mod=rp(mod,"W3.tint.setRGB(.58,.6,.66).lerp(C2.setRGB(1,1,1),Math.max(0,lampW)*0.9);","W3.tint.setRGB(.58,.6,.66).lerp(C2.setRGB(1,1,1),Math.max(0,lampW)*0.9); if(ED.on)W3.tint.setRGB(1,1,1);   // (shaping him: in full light)")
 mod=rp(mod,"W3.shadowPass(renderer); OUTL.render(renderer,scene,cam); composer.render();","W3.shadowPass(renderer); if(OUTL.on)OUTL.render(renderer,scene,cam); composer.render();")
@@ -187,7 +192,7 @@ mod=rp(mod,"{ const sp=new ShaderPass(OUTL.pass); composer.addPass(sp);","{ cons
 # STOPPING AT ONCE (owner, 17 Oct 2026: "when i stop walking ... im sliding a little"): the rig's own snap, the game's for you (47-you-jointed);
 # the close view of HIS SHAPE on his middle; the double click's walk to a thing each frame
 mod=rp(mod,"const cloud=RIG.bake(0.5,1), st=RIG.create();","const cloud=RIG.bake(0.5,1), st=RIG.create(); st.snap=true;")
-mod=rp(mod,"if(UI.freeCam)disp.copy(UI.camT); else disp.set(pos.x,py,pos.z);","if(UI.freeCam)disp.copy(UI.camT); else{ disp.set(pos.x,py+(ED.on?0.85:0),pos.z); if(!ED.on)disp.add(UI.off); }")
+mod=rp(mod,"if(UI.freeCam)disp.copy(UI.camT); else disp.set(pos.x,py,pos.z);","if(UI.freeCam)disp.copy(UI.camT); else{ disp.set(pos.x,py+(ED.on?0.85:0),pos.z); disp.add(UI.off); }")
 mod=rp(mod,"  marker.visible=!!target;","  UI.goTick(); UI.runTick();\n  marker.visible=!!target;")
 head=rp(head,'<div><b>Click</b> the ground to walk there</div>','<div><b>Double-click</b> the ground to walk there, or a thing to go to it</div>')
 # THE NEON, REAL (owner, 17 Oct 2026: "the light isnt taking into account its surroundings", "match the style", "totally disappears when diff
@@ -198,14 +203,25 @@ mod=rp(mod,"MK.neon=(x,y,z,s,c)=>{ PNAME='neon sign'; const W=tw(s,2)+4, f=face(
 "MK.neon=(x,y,z,s,c)=>{ PNAME='neon sign'; const W=tw(s,2)+4, cells=[]; txt((a,b)=>cells.push([a,b]),s,2,2,c,2);\n  const p=prop([WF(x-.3,x+.3,y)]); NEONS.push({x,y,z,W,cells,c}); LAMPS.push({x,y:y+.3*WD(y),z,r:2.2,c:[c[0]/255,c[1]/255,c[2]/255],prop:p,neon:true}); return p; };   // (the tubes and their light: bodbuild.js)")
 mod=rp(mod,"    if(l.r>=3){ L.castShadow=true;","    if(l.r>=3||l.neon){ L.castShadow=true;")
 mod=rp(mod,"  for(const l of BOD.LAMPS){ const cm=Math.max(...l.c);","""  // the neon's tubes: a glowing block for each lit square of its letters (2 art px), a tube's depth, read from both sides of the glass
+  // a halo's picture: an oval of light in three steps (bright, mid, faint), each step's edge dithered (4x4 ordered), in square pixels
+  const HALO=(c,W,H)=>{ const cv=document.createElement('canvas'); cv.width=W; cv.height=H; const g=cv.getContext('2d'), im=g.createImageData(W,H), B=[0,8,2,10,12,4,14,6,3,11,1,9,15,7,13,5];
+    for(let j=0;j<H;j++)for(let i=0;i<W;i++){ const dx=(i+.5)/W*2-1, dy=(j+.5)/H*2-1, d=Math.hypot(dx,dy), t=(B[(j%4)*4+i%4]+.5)/16, s=d<.42+(t-.5)*.12?.5:d<.68+(t-.5)*.14?.26:d<.96+(t-.5)*.12?.1:0, q=(j*W+i)*4;
+      im.data[q]=c[0]; im.data[q+1]=c[1]; im.data[q+2]=c[2]; im.data[q+3]=Math.round(s*255); }
+    g.putImageData(im,0,0); const t=new THREE.CanvasTexture(cv); t.magFilter=t.minFilter=THREE.NearestFilter; t.generateMipmaps=false; t.colorSpace=THREE.SRGBColorSpace; return t; };
   for(const N of NEONS){ const n=N.cells.length/4, k=1/24, geo=new THREE.BoxGeometry(2*k*TILE,Y(2)-Y(0),2*k*TILE*.8), me=new THREE.InstancedMesh(geo,new THREE.MeshBasicMaterial({color:new THREE.Color(N.c[0]/255*1.1,N.c[1]/255*1.1,N.c[2]/255*1.1)}),n), m4=new THREE.Matrix4(); let i=0;
     for(const [a,b] of N.cells){ if(a%2||b%2)continue; m4.makeTranslation(X(N.x-N.W*k/2+(a+1)*k),Y(N.z+7-(b+1)),Z(N.y-.08)); me.setMatrixAt(i++,m4); }
-    me.count=i; me.castShadow=false; me.receiveShadow=false; scene.add(me); }
+    me.count=i; me.castShadow=false; me.receiveShadow=false; scene.add(me);
+    // ITS GLOW (owner, 17 Oct 2026: "the glow is still a blur and vanishes instantly from certain angles"): a halo in the world, not a blur on the
+    // screen: square pixels in three steps, dithered where they meet, the tube's colour added over what's behind; it faces you from any side,
+    // a little toward you so the glass and the wall don't cut it, so it's there from every angle
+    { const w=N.W*k*TILE*2, h=(Y(14)-Y(0))*2.6, m=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshBasicMaterial({map:HALO(N.c,Math.round(N.W*k*24*2/1.2),Math.round(14*2.6/1.2)),transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,toneMapped:false}));
+      const at=new THREE.Vector3(X(N.x),Y(N.z),Z(N.y-.08)), f=new THREE.Vector3(); m.position.copy(at); m.renderOrder=2;
+      m.onBeforeRender=(r,s,c)=>{ m.quaternion.copy(c.quaternion); c.getWorldDirection(f); m.position.copy(at).addScaledVector(f,-.3); m.updateMatrixWorld(); }; scene.add(m); } }
   for(const l of BOD.LAMPS){ const cm=Math.max(...l.c);""")
 mod=rp(mod,"bloom=new UnrealBloomPass(new THREE.Vector2(256,256),1.3,0.6,0.62); composer.addPass(bloom);","""bloom=new UnrealBloomPass(new THREE.Vector2(256,256),1.3,0.6,0.62); composer.addPass(bloom);
 // THE GLOW, YOUR PICK (owner, 17 Oct 2026: "the light looks like a bubble, can you give me the old lighting ... or diff options?"): OFF (the
 // lamps light the room, nothing glows round them), SOFT (the glow as it first was, smooth), STEPPED (in hard steps and dither); the menu's switch
-const GLOW={mode:'soft',k:.3,amount(v){ GLOW.k=v; try{ localStorage.setItem('market-glowk',String(v)); }catch(e){} },set(m){ GLOW.mode=m; bloom.enabled=m!=='off'; if(GLOW.q)GLOW.q.value=m==='stepped'?1:0; try{ localStorage.setItem('market-glow',m); }catch(e){} }};
+const GLOW={mode:'off',k:.3,amount(v){ GLOW.k=v; try{ localStorage.setItem('market-glowk',String(v)); }catch(e){} },set(m){ GLOW.mode=m; bloom.enabled=m!=='off'; if(GLOW.q)GLOW.q.value=m==='stepped'?1:0; try{ localStorage.setItem('market-glow2',m); }catch(e){} }};
 { const cm=bloom.compositeMaterial; cm.uniforms.uQ={value:1}; GLOW.q=cm.uniforms.uQ; cm.fragmentShader='uniform float uQ;\\n'+cm.fragmentShader.replace(/}\\s*$/,`  if(uQ>.5){ vec3 bc=gl_FragColor.rgb; float bm=max(bc.r,max(bc.g,bc.b)); ivec2 bq=ivec2(mod(gl_FragCoord.xy,4.));
     float bt[16]=float[16](0.,8.,2.,10.,12.,4.,14.,6.,3.,11.,1.,9.,15.,7.,13.,5.); float bs=5., bv=bm<0.07?0.:max(1./bs,floor(bm*bs+bt[bq.x+bq.y*4]/16.)/bs); gl_FragColor.rgb=bv>0.?bc/bm*bv:vec3(0.); }   /* (its faint end cut, not a scatter of dots) */ }`); cm.needsUpdate=true;
   bloom.renderTargetsHorizontal[0].texture.magFilter=bloom.renderTargetsHorizontal[0].texture.minFilter=THREE.NearestFilter; }   // (the glow in steps, dithered, in square blocks: the game's light, not a soft haze)""")
@@ -227,7 +243,8 @@ head=rp(head,"const F=qq2=>legReach(lab('hip',qq2,ST,rs)*w,kn(qq2)),","const F=q
 head=rp(head,"w*lerp(16,36,rs)*Math.cos(2*Math.PI*(qq-0.04)))*D","w*lerp(16,36,rs)*g.arm*Math.cos(2*Math.PI*(qq-0.04)))*D")
 head=rp(head,"el=(10+w*(lerp(2,64,rs)","el=(10+g.elbow*w*(lerp(2,64,rs)")
 head=rp(head,"  const B=settle(busy||st.up||(st.water&&st.water.in)?clearPose(P,dev):build(P,dev),","  if(OVL.fn)OVL.fn(st,P);   // (his own keys on whatever he's doing: src/animator.js)\n  const B=settle(busy||st.up||(st.water&&st.water.in)?clearPose(P,dev):build(P,dev),")
-head=rp(head,"return {restOf,IDF,","return {OVL,begin,beginUp,legIK,START,mkMove:move,ARMMOVES,fine:v=>{ FINEHAND=!!v; },farOnly:v=>{ FAR=!!v; },restOf,IDF,")
+head=rp(head,"const MATS=Object.keys(RAMP)","RAMP.eye=['#5a3a26','#4c311f','#3c2618','#24160d']; const MATS=Object.keys(RAMP)")   # (his eyes' colour: the character editor, src/looks.js)
+head=rp(head,"return {restOf,IDF,","return {rbox,ell,rcone,box,OVL,begin,beginUp,legIK,START,mkMove:move,ARMMOVES,fine:v=>{ FINEHAND=!!v; },farOnly:v=>{ FAR=!!v; },restOf,IDF,")
 mod=rp(mod,"B=RIG.pose(st); ragBlend(B);","B=ED.anim?ED.animPose():RIG.pose(st); ragBlend(B);")
 # THE MUSICIAN (owner, 17 Oct 2026): the game's guitarist, its files read from the game as they are (the guitar, its recordings, the tunes,
 # his hands), the few things they take from the game's cast and sound stood in for here; then src/musician.js puts him on the sidewalk
@@ -246,13 +263,17 @@ for f in ['47-play-3-guitar-1-body.js','47-play-3-guitar-samples.data.js','47-pl
     gtsrc+='\n'+t
 mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);",gtsrc+"\n"+open('src/musician.js').read()+"\nresize(); applyTime(0); requestAnimationFrame(frame);")
 mod=rp(mod,"  for(const N of NPCS)N.tick(dt,pos);","  for(const N of NPCS)N.tick(dt,pos); MUS.tick(dt);")
-mod=rp(mod,"  for(const N of NPCS)N.tick(dt,pos); MUS.tick(dt);","  STREET.tick(dt,pos,py); for(const N of NPCS)N.tick(dt,pos); MUS.tick(dt);")   # (STREET.tick: the street characters' physics world, stepped before their minds)
+mod=rp(mod,"  for(const N of NPCS)N.tick(dt,pos); MUS.tick(dt);","  DRESS.tick(dt,pos); { const r=MODS.apts.tick(); if(r)solids=r; } for(const N of NPCS)N.tick(dt,pos); if(FIRE)FIRE.tick(dt); FIGFX.tick(dt,pos); MUS.tick(dt);")   # (FIGFX: the figures' effects and the park's cut of the trees before you)   # (DRESS: the pigeons; the apartment house's floors. STREET.tick: the street characters' physics world, stepped before their minds)
 # NO SHADOW ACNE (owner, 17 Oct 2026, his close-up: stripes and jagged dark teeth on the musician's arm): the two lamps nearest you, whose
 # shadows move, finer (1024 a face) and held off the surface they fall on, as the still lamps' are
 mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);","for(const S of SHL){ S.shadow.mapSize.set(1024,1024); S.shadow.normalBias=.06; S.shadow.bias=-.002; }\nresize(); applyTime(0); requestAnimationFrame(frame);")
 # THE CLOCK (owner, 17 Oct 2026: "add the option to control the time", 7pm when the game opens): src/clock.js; ticked each frame
-mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);",open('src/clock.js').read()+"\nresize(); applyTime(0); requestAnimationFrame(frame);")
-mod=rp(mod,"  UI.goTick(); UI.runTick();","  UI.goTick(); UI.runTick(); CLOCK.tick(dt);")
+mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);",open('src/clock.js').read()+"\n"+open('src/rooms.js').read()+"\nresize(); applyTime(0); requestAnimationFrame(frame);")
+# ONLY THE ROOM YOU'RE IN (owner, 17 Oct 2026): src/rooms.js, set just before the picture's drawn
+mod=rp(mod,"if(wOn)WATER.step(renderer,dt); renderer.shadowMap.needsUpdate=true;","ROOMS.tick(); if(wOn)WATER.step(renderer,dt); renderer.shadowMap.needsUpdate=true;")
+mod=rp(mod,"  UI.goTick(); UI.runTick();","  UI.goTick(); UI.runTick(); CLOCK.tick(dt); VIT.tick(dt);")   # (VIT: your health and stamina, src/vitals.js)
+# (the keys' turn and tilt: not in the isometric view, where Q and E go a quarter round: ui.js)
+mod=rp(mod,"  if(keys.has('q'))yawTo+=dt*1.8; if(keys.has('e'))yawTo-=dt*1.8; if(keys.has('z'))pitchTo=clampP(pitchTo-dt*1.2); if(keys.has('x'))pitchTo=clampP(pitchTo+dt*1.2);","  if(UI.view!=='iso'){ if(keys.has('q'))yawTo+=dt*1.8; if(keys.has('e'))yawTo-=dt*1.8; if(keys.has('z'))pitchTo=UI.clampV(pitchTo-dt*1.2); if(keys.has('x'))pitchTo=UI.clampV(pitchTo+dt*1.2); }")
 # LOADING (owner, 17 Oct 2026, the live site's first moments: the help panel, the shadows box and "--" showed while the page loaded, its dots
 # garbled): nothing but its line, "I took a trip to The Strangest Flea Market..." (owner: "loading should always say" it), till the game runs (ui.js takes it away); the page's letters read as UTF-8
 head=rp(head,'<div id="hud">','<div id="loading" style="position:fixed;inset:0;display:grid;place-items:center;font:12px Silkscreen,monospace;letter-spacing:2px;color:#8a8f9c;background:#0e1016">I took a trip to The Strangest Flea Market...</div>\n<div id="hud" hidden>')

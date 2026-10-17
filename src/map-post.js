@@ -1,5 +1,5 @@
 // ---- THE POOL ROOM FROM OUTSIDE: its brick (the row's, as the bodega's), its door on the sidewalk, its roof; cut with its walls while you're inside ----
-grab('poolout',()=>{ const P=POOLR, X=P.X, Z=P.Z, Y=P.Y, H=P.H, DOOR=[17.22,18.78], cw=MODS.pool.cut;   // (cw: the room's four walls' cuts: west, east, back, front)
+grab('poolout',()=>{ const P=POOLR, X=P.X, Z=P.Z, Y=P.Y, H=P.H, DOOR=[21.97,23.53], cw=MODS.pool.cut;   // (cw: the room's four walls' cuts: west, east, back, front)
   const face=(pts,w,h,fn,pl)=>{ const c=document.createElement('canvas'); c.width=Math.round(w); c.height=Math.round(h); const g=c.getContext('2d'), im=g.createImageData(c.width,c.height);
     for(let j=0;j<c.height;j++)for(let i=0;i<c.width;i++){ const v=fn(i,j), k=(j*c.width+i)*4; if(!v)continue; im.data[k]=v[0]; im.data[k+1]=v[1]; im.data[k+2]=v[2]; im.data[k+3]=255; } g.putImageData(im,0,0);
     const t=new THREE.CanvasTexture(c); t.magFilter=t.minFilter=THREE.NearestFilter; t.generateMipmaps=false; t.colorSpace=THREE.SRGBColorSpace;
@@ -16,7 +16,7 @@ grab('poolout',()=>{ const P=POOLR, X=P.X, Z=P.Z, Y=P.Y, H=P.H, DOOR=[17.22,18.7
   for(const u of DOOR){ const m=new THREE.Mesh(new THREE.BoxGeometry(.06,Y(94),.2*TILE),fm); m.position.set(X(u),Y(47),Z(P.y1+.1)); scene.add(m); }
   { const m=new THREE.Mesh(new THREE.BoxGeometry((DOOR[1]-DOOR[0])*TILE*BLDK,.06,.2*TILE),fm); m.position.set(X((DOOR[0]+DOOR[1])/2),Y(94),Z(P.y1+.1)); scene.add(m); }
   // the roof: the tar of a flat roof, its cope round it; hidden while you're inside
-  const roof=new THREE.Mesh(new THREE.BoxGeometry((P.x1-P.x0+.4)*TILE,.08,(P.y1-P.y0+.4)*TILE),new THREE.MeshLambertMaterial({color:new THREE.Color(.2,.2,.21)})); roof.position.set(X((P.x0+P.x1)/2),Y(H)+.04,Z((P.y0+P.y1)/2)); scene.add(roof); MODS.pool.roof=roof; });
+  const roof=new THREE.Mesh(new THREE.BoxGeometry((P.x1-P.x0+.4)*TILE*BLDK,.08,(P.y1-P.y0+.4)*TILE*BLDK),new THREE.MeshLambertMaterial({color:new THREE.Color(.2,.2,.21)})); roof.position.set(X((P.x0+P.x1)/2),Y(H)+.04,Z((P.y0+P.y1)/2)); scene.add(roof); MODS.pool.roof=roof; });
 // ---- THE SUBWAY'S STAIRS: from the sidewalk (its top at the street's side) twelve steps down to the station's exit tunnel, its side walls, a
 // green rail round the opening (as New York's stairs down have) but at its top, open to the sidewalk ----
 grab('stairs',()=>{ const S=MAPSTAIR, X=x=>(x-72)*TILE, Z=y=>(y+77)*TILE, Y=z=>z*ZU, n=S.steps, rise=S.depth/n, run=(S.y1-S.y0)/n;
@@ -51,7 +51,7 @@ grab('stairs',()=>{ const S=MAPSTAIR, X=x=>(x-72)*TILE, Z=y=>(y+77)*TILE, Y=z=>z
 // ---- ONE GROUND FOR THE MAP: on the stairs, the step under you; underground, the station's floor; on the street, the street's (its road a kerb down)
 const inStair=(x,z)=>{ const gx=x/TILE+72, gy=z/TILE-77, S=MAPSTAIR; return gx>=S.x0&&gx<S.x1&&gy>=S.y0&&gy<S.y1?gy:null; };
 groundY=(x,z)=>{ const s=inStair(x,z), S=MAPSTAIR; if(s!=null){ const k=Math.min(S.steps,Math.max(1,Math.floor((S.y1-s)/((S.y1-S.y0)/S.steps))+1)); return -k*S.depth/S.steps*ZU; }
-  return LVL==='down'?MODS.station.ground(x,z):MODS.bodega.ground(x,z); };
+  return LVL==='down'?MODS.station.ground(x,z):MODS.apts&&MODS.apts.inside(x,z)?MODS.apts.ground(x,z):MODS.bodega.ground(x,z); };   // (in the apartment house: its floor under you, its stairs: apts.js)
 BOUND={x0:Math.min(MODS.bodega.BOUND.x0,MODS.station.BOUND.x0),x1:Math.max(MODS.bodega.BOUND.x1,MODS.pool.BOUND.x1),z0:Math.min(MODS.station.BOUND.z0,MODS.pool.BOUND.z0),z1:Math.max(MODS.bodega.BOUND.z1,MODS.park.BOUND.z1)};   // (the park past the far sidewalk: park.js)
 // the light of the open air at night over the street, the station's own underground
 const HEMI=new THREE.HemisphereLight(0x55607a,0x14110e,.3); scene.add(HEMI);
@@ -67,3 +67,21 @@ const MAPLV=(py,pos)=>{ const lv=py<-1.6?'down':'up', st=inStair(pos.x,pos.z)!=n
 
 // (a test's look inside)
 window.MAPDBG=()=>({LVL,cut:MODS.stairCut.constant,vis:Object.fromEntries(Object.entries(MAPG).map(([k,g])=>[k,g.visible])),stairLamp:lamps.filter(L=>L.parent===MAPG.stairs).map(L=>L.intensity),py:typeof py!=='undefined'?py:null,pos:typeof pos!=='undefined'?[pos.x,pos.z]:null});
+
+// ---- THE LAND ROUND IT (owner, 17 Oct 2026: "fill in the rest with land (flat only for now) around"): past the map's edges, flat ground as far
+// as the view can reach, the game's own grass (its painter, grassCol: noise cut into tones, tufts at hashed spots), a hair under the street's
+// ground so the street lies on it; open where the ground goes down (the road, the subway's stairs, the pool's basin). One sheet, one texture
+// (thirty-two tiles of grass, mirrored at its edges so it never shows a seam), lit and shadowed as the street is; shown with the street's level
+{ const K=32, N=K*24, c=document.createElement('canvas'); c.width=c.height=N; const g=c.getContext('2d'), im=g.createImageData(N,N), GC=BOD.g.grassCol;
+  for(let j=0;j<N;j++)for(let i=0;i<N;i++){ const v=GC((i+.5)/24+200,(j+.5)/24+200), k=(j*N+i)*4; im.data[k]=v[0]; im.data[k+1]=v[1]; im.data[k+2]=v[2]; im.data[k+3]=255; }
+  g.putImageData(im,0,0); const t=new THREE.CanvasTexture(c); t.magFilter=t.minFilter=THREE.NearestFilter; t.generateMipmaps=false; t.colorSpace=THREE.SRGBColorSpace;
+  t.wrapS=t.wrapT=THREE.MirroredRepeatWrapping; t.repeat.set(1/K,1/K);
+  // the sheet, in tiles (x across, -z up its plane: laid flat after), and its holes
+  const XS=BOD.XS, ZS=BOD.ZS, M=BOD.MAP, tt=v=>v/TILE, R=220, cx=tt(XS((M.x0+M.x1)/2)), cz=tt(ZS(M.y0));
+  const sh=new THREE.Shape([[cx-R,-(cz-R)],[cx+R,-(cz-R)],[cx+R,-(cz+R)],[cx-R,-(cz+R)]].map(p=>new THREE.Vector2(...p)));
+  const hole=(x0,z0,x1,z1)=>sh.holes.push(new THREE.Path([[x0,-z0],[x0,-z1],[x1,-z1],[x1,-z0]].map(p=>new THREE.Vector2(...p))));
+  hole(tt(XS(M.x0)),tt(ZS(BOD.CURB)),tt(XS(M.x1)),tt(ZS(BOD.FAR)));   // (the road, a kerb down)
+  hole(tt(XS(MAPSTAIR.x0)),tt(ZS(MAPSTAIR.y0)),tt(XS(MAPSTAIR.x1)),tt(ZS(MAPSTAIR.y1)));   // (the stairs down)
+  hole(tt(POOLR.X(POOLR.bx0)),tt(POOLR.Z(POOLR.by0)),tt(POOLR.X(POOLR.bx1)),tt(POOLR.Z(POOLR.by1)));   // (the pool's basin)
+  const geo=new THREE.ShapeGeometry(sh); geo.rotateX(-Math.PI/2); geo.scale(TILE,1,TILE); geo.translate(0,-.5*ZU,0);
+  const m=new THREE.Mesh(geo,new THREE.MeshLambertMaterial({map:t})); m.receiveShadow=true; MAPG.bodega.add(m); MODS.land=m; }

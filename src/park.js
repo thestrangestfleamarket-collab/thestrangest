@@ -6,9 +6,9 @@
 // the way. The ground and the wall are painted faces as the street's are (the game's grass, the pavers and the stone drawn here); the trees
 // and the rocks his pack's models, coloured flat as the pack colours them (tools/forest-bake.py, data/forest.json), one mesh each kind,
 // throwing the sun's and the lamps' shadows. Where you can't walk: the wall, the posts, the trunks, the rocks, the lamps' poles ----
-const PARK={x0:50,x1:108,y0:-61,y1:-33,gate:[68.5,75.5],round:[72,-47,6]};   // (bodega tiles; the gate's run along the wall; the round's middle and reach)
+const PARK={x0:50,x1:108,y0:-61,y1:-33,gate:[68.5,75.5],round:[72,-47,6]};   // (bodega tiles, x0 and x1 the street's run, set below; the gate's run along the wall; the round's middle and reach)
 PARK.cut={value:1e6}; { const D=new THREE.Vector3(), V=new THREE.Vector3(); PARK.tick=you=>{ cam.getWorldDirection(D); PARK.cut.value=V.set(you.x,you.y+1,you.z).sub(cam.position).dot(D)-.8; }; }   // (how deep you are from the camera: the trees' cut)
-grab('park',()=>{ const X=BOD.XS, Z=BOD.ZS, Y=BOD.YS, {hash,grain,speck,grassCol}=BOD.g, P=PARK, U=TILE/.84, f32=s=>new Float32Array(Uint8Array.from(atob(s),c=>c.charCodeAt(0)).buffer), b8=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+grab('park',()=>{ PARK.x0=BOD.MAP.x0; PARK.x1=BOD.MAP.x1; const X=BOD.XS, Z=BOD.ZS, Y=BOD.YS, {hash,grain,speck,grassCol}=BOD.g, P=PARK, U=TILE/.84, f32=s=>new Float32Array(Uint8Array.from(atob(s),c=>c.charCodeAt(0)).buffer), b8=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
   // ---- THE PATH: from the gate to the round, the round, and on north-east; the rest lawn
   const path=(x,y)=>{ const [cx,cy,r]=P.round; if(y<cy&&Math.abs(x-cx)<3.5)return true; if(Math.hypot(x-cx,y-cy)<r)return true;
     const ax=cx+1, ay=cy+3, bx=90, by=P.y1+.5, dx=bx-ax, dy=by-ay, t=Math.max(0,Math.min(1,((x-ax)*dx+(y-ay)*dy)/(dx*dx+dy*dy))); return Math.hypot(x-(ax+dx*t),y-(ay+dy*t))<2.6; };
@@ -41,10 +41,10 @@ grab('park',()=>{ const X=BOD.XS, Z=BOD.ZS, Y=BOD.YS, {hash,grain,speck,grassCol
     const mat=new THREE.MeshLambertMaterial({vertexColors:true,side:THREE.DoubleSide}); mat.onBeforeCompile=sh=>{ sh.uniforms.uCut=PARK.cut; sh.fragmentShader='uniform float uCut;\n'+sh.fragmentShader.replace('#include <clipping_planes_fragment>','#include <clipping_planes_fragment>\n { ivec2 q=ivec2(mod(gl_FragCoord.xy,4.)); float bt[16]=float[16](0.,8.,2.,10.,12.,4.,14.,6.,3.,11.,1.,9.,15.,7.,13.,5.); if(vViewPosition.z<uCut-3.+3.*bt[q.x+q.y*4]/16.)discard; }'); }; mat.customProgramCacheKey=()=>'parkcut';
     const me=new THREE.Mesh(g,mat); me.castShadow=true; me.receiveShadow=true; scene.add(me); return me; };
   PARK.trees=mesh([['OakTree1',63.5,-57,11,.4],['OakTree1',80.5,-57.5,12.5,2.1],['SpruceTree2',57,-57.5,9,0],['OakTree3',58,-50,16,1],['OakTree2',85,-52,9.5,.7],['OakTree3',97,-45,20,2.6],['OakTree1',65.5,-42,13,1.7],['DeadOak3',90,-40,10,.3],
-    ['DeadSpruce1',52.5,-45,14,0],['OakTree2',104,-52,9.5,1.2],['SpruceTree1',54,-38,24,.5],['SpruceTree3',62,-35,30,1.1],['SpruceTree1',76,-36,26,2.2],['SpruceTree2',100,-38,14,.9],['SpruceTree3',106,-35.5,28,0],['OakTree2',87,-58.5,8.5,3]],true);
-  PARK.rocks=mesh([['BigRock1',88.5,-57.5,2.2,.6],['BigRock3',60.5,-46,3,1.8],['BigRock5',80,-38.5,2.6,.2],['Rock_12',76.5,-55,1,1],['Rock1',66.5,-50.5,.6,2],['BigRock5',102,-44,2,2.7],['Rock_12',56,-40,1.2,.4]],false);
+    ['DeadSpruce1',52.5,-45,14,0],['OakTree2',104,-52,9.5,1.2],['SpruceTree1',54,-38,24,.5],['SpruceTree3',62,-35,30,1.1],['SpruceTree1',76,-36,26,2.2],['SpruceTree2',100,-38,14,.9],['SpruceTree3',106,-35.5,28,0],['OakTree2',87,-58.5,8.5,3],['OakTree1',118,-50,12,.8],['SpruceTree3',128,-38,26,1.9],['OakTree3',137,-52,15,.3],['DeadOak1',113,-37,8,1.4]],true);
+  PARK.rocks=mesh([['BigRock1',88.5,-57.5,2.2,.6],['BigRock3',60.5,-46,3,1.8],['BigRock5',80,-38.5,2.6,.2],['Rock_12',76.5,-55,1,1],['Rock1',66.5,-50.5,.6,2],['BigRock5',102,-44,2,2.7],['Rock_12',56,-40,1.2,.4],['BigRock1',124,-57,2,1.1],['Rock1',131,-45,.7,0]],false);
   // ---- THE LAMPS: the park's, a pole and a lantern, along the path; each a warm light at night (the clock's)
-  for(const [x,y] of [[67.5,-54],[76.5,-50],[78.5,-41.5],[86.5,-36]]){ block(x-.12,y-.12,x+.12,y+.12,0,110,31,()=>[40,40,44]); block(x-.3,y-.3,x+.3,y+.3,110,124,35,()=>[48,46,44]);
+  for(const [x,y] of [[67.5,-54],[76.5,-50],[78.5,-41.5],[86.5,-36],[120,-56]]){ block(x-.12,y-.12,x+.12,y+.12,0,110,31,()=>[40,40,44]); block(x-.3,y-.3,x+.3,y+.3,110,124,35,()=>[48,46,44]);
     for(const [a,b,c,d] of [[[X(x-.3),Y(110),Z(y+.3)],[X(x+.3),Y(110),Z(y+.3)],[X(x+.3),Y(124),Z(y+.3)],[X(x-.3),Y(124),Z(y+.3)]],[[X(x+.3),Y(110),Z(y-.3)],[X(x-.3),Y(110),Z(y-.3)],[X(x-.3),Y(124),Z(y-.3)],[X(x+.3),Y(124),Z(y-.3)]],
         [[X(x-.3),Y(110),Z(y-.3)],[X(x-.3),Y(110),Z(y+.3)],[X(x-.3),Y(124),Z(y+.3)],[X(x-.3),Y(124),Z(y-.3)]],[[X(x+.3),Y(110),Z(y+.3)],[X(x+.3),Y(110),Z(y-.3)],[X(x+.3),Y(124),Z(y-.3)],[X(x+.3),Y(124),Z(y+.3)]]])
       BOD.bq(a,b,c,d,BOD.faceTex(14,14,(i,j)=>i<1||i>12||j<1||j>12?[48,46,44]:[255,236,190,1]),'G');   // (the lantern's glass glows)

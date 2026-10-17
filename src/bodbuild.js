@@ -37,6 +37,7 @@ const BODB={};
     return new THREE.MeshLambertMaterial({map,alphaTest:.5,side:THREE.DoubleSide,...(emap?{emissiveMap:emap,emissive:0xffffff,emissiveIntensity:1.4}:{}),...cp}); });
   BATCH.cast=false; Object.assign(KINDS,BATCH.meshes); BATCH.meshes={};
   if(KINDS.G)KINDS.G.castShadow=false;
+  if(KINDS.U){ const O=BOD.O, zs=Object.values(O).filter(p=>/fluorescent tube/.test(p.name||'')).flatMap(p=>p.boxes.map(b=>b.z0)); OVERHEAD.push({o:KINDS.U,y:BOD.Y(Math.min(...zs))}); }   // (the tubes: shown only from under them)
   BODB.roof=[KINDS.R].filter(Boolean);
   // the cutaway: each wall (and what hangs on it) cut to its foot when it stands between you and the camera, while you're inside
   const NRM={front:[0,-1],back:[0,1],west:[1,0],east:[-1,0],office:[0,1]};

@@ -9,7 +9,7 @@
 // (makeNPC takes any of them: his level and group, the lane he keeps to and the ground under it; or a rigged one, o.geo with its bones in
 // o.skin, walked by his own clips through o.anim: the skeletons, npc-skel.js) ----
 const NPCS=[];
-function makeNPC(D,o){ const N={key:o.key,name:o.name,names:o.names,lv:o.lv||'down'}; const b=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0)), geo=o.geo||new THREE.BufferGeometry();
+function makeNPC(D,o){ const N={key:o.key,name:o.name,names:o.names,lv:o.lv||'down',hp:1,sta:1}; /* (hp, sta: every character's health and stamina, src/vitals.js) */ const b=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0)), geo=o.geo||new THREE.BufferGeometry();
   if(!o.geo){ const P=new Float32Array(b(D.p).buffer); geo.setAttribute('position',new THREE.BufferAttribute(P,3)); geo.setAttribute('color',new THREE.BufferAttribute(b(D.c),3,true)); geo.setAttribute('reg',new THREE.BufferAttribute(Float32Array.from(b(D.r)),1)); }
   const RG=geo.attributes.reg.array; geo.computeVertexNormals();
   // smooth normals (each corner the average of the faces that meet there), so his tones fall in bands across him, not face by face
@@ -88,7 +88,7 @@ function makeNPC(D,o){ const N={key:o.key,name:o.name,names:o.names,lv:o.lv||'do
   N.shadowPass=renderer=>{ if(W3.lv.value<1.5)return; const mid=new THREE.Vector3(st.x,g.position.y+H*.45,st.z); N.smCam.position.copy(mid).addScaledVector(W3.Lw,7); N.smCam.lookAt(mid); N.smCam.updateMatrixWorld();
     N.LVP.value.multiplyMatrices(N.smCam.projectionMatrix,N.smCam.matrixWorldInverse); const ms=[]; g.traverse(o=>{ if(o.isMesh){ ms.push([o,o.material]); o.material=N.depthMat; } });   // (him and what he holds, as depth only)
     renderer.setRenderTarget(N.sm); renderer.clear(); renderer.render(g,N.smCam); renderer.setRenderTarget(null); for(const [o,m] of ms)o.material=m; };
-  { const s0=W3.shadowPass; W3.shadowPass=r=>{ s0(r); N.shadowPass(r); }; }
+  if(!o.noSelf){ const s0=W3.shadowPass; W3.shadowPass=r=>{ s0(r); N.shadowPass(r); }; }   // (noSelf: no shadow of his own on him: small and many, the dragons)
   N.g=g; N.st=st; N.body=body; N.H=H; NPCS.push(N); return N; }
 const FISH=makeNPC(GOLDFISH,{key:'fish',name:'GOLDFISH',names:['eyes','eye rims','head','hood','lips','chin','raincoat','fins and tail'],metres:.95,rank:[0,0,0,2,0,0,2,0],at:-77,radius:.42,speed:.55,stride:9,rock:.14,bob:.05});
 const BEAR=makeNPC(BEARD,{key:'bear',name:'BEAR',names:BEARD.names,metres:1.9,rank:[0,0,0,0,2,3,0,1,0],at:-67,radius:.45,speed:.7,stride:5.5,rock:.05,bob:.035});

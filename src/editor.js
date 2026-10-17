@@ -89,7 +89,7 @@ const ED={on:false};
     <div class="pane" data-q="pieces"><div class="dim">click a piece on him, then drag</div><div class="row"><button class="btn" data-g="move">MOVE</button><button class="btn" data-g="scale">SCALE</button><button class="btn" data-g="turn">TURN</button></div>
       <div class="row"><button class="btn" id="eresp">THIS PIECE BACK</button></div></div>
     <div class="pane" id="egen"><div class="row"><span id="ename" class="dim"></span></div><div class="row"><button class="btn" id="eboth">BOTH SIDES</button></div>
-      <div class="dim">right-drag or Q / E turns the view · wheel zooms</div></div>
+      <div class="dim">drag off him moves the view · right-drag (or Shift + drag) turns it round the point you grab · wheel zooms at the mouse · 0 back</div></div>
     <div class="foot"><div class="row"><button class="btn" id="eundo">UNDO</button><button class="btn" id="eall">ALL BACK</button></div>
       <div class="row"><button class="btn" id="edown">DOWNLOAD</button><button class="btn" id="eload">LOAD</button><button class="btn" id="edone">DONE</button></div></div>`;
   document.body.appendChild(P); const ring=document.createElement('div'); ring.id='ering'; ring.hidden=true; document.body.appendChild(ring);
@@ -138,14 +138,17 @@ const ED={on:false};
   const ringAt=e=>{ if(mode!=='sculpt')return; const r=cv.getBoundingClientRect(), s=B.size/PPU*ppu*r.width/RW; ring.style.left=(e.clientX-s)+'px'; ring.style.top=(e.clientY-s)+'px'; ring.style.width=ring.style.height=(2*s)+'px'; };
   const inv=new THREE.Matrix4(), d3=new THREE.Vector3();
   // a drag on the screen as a move in his body (the screen's right and up in the world, then into his own units)
+  let panD=null; ED.pickW=e=>{ const h=pick(e); return h?new THREE.Vector3(...h.p).applyMatrix4(W3.group.matrixWorld):null; };
   const toBody=(dx,dy)=>{ const r=cv.getBoundingClientRect(), k=RW/r.width/ppu; d3.setFromMatrixColumn(cam.matrixWorld,0).multiplyScalar(dx*k).addScaledVector(new THREE.Vector3().setFromMatrixColumn(cam.matrixWorld,1),-dy*k);
     inv.copy(W3.group.matrixWorld).invert().setPosition(0,0,0); return d3.applyMatrix4(inv); };
   cv.addEventListener('pointerdown',e=>{ if(!ED.on||e.button!==0)return; const h=pick(e);
+    if(e.shiftKey||e.altKey){ UI.grab(e); panD={x:e.clientX,y:e.clientY,turn:true}; cv.setPointerCapture(e.pointerId); return; }   // (Shift / Alt + drag: turn round the point grabbed, for a trackpad)
+    if(!h&&!(ED.ext[mode]&&ED.ext[mode].down&&ED.ext[mode].down(h,e))){ panD={x:e.clientX,y:e.clientY}; cv.setPointerCapture(e.pointerId); return; }   // (a drag off him: the view slides, as the map's; owner: "the same click and drag like google maps ... to the his shape editor")
     if(ED.ext[mode]){ if(h)setSel(h.piece); if(ED.ext[mode].down&&ED.ext[mode].down(h,e)){ drag={x:e.clientX,y:e.clientY}; cv.setPointerCapture(e.pointerId); } return; }
     if(mode==='sculpt'){ if(!h)return; snap(); brush(h); drag={x:e.clientX,y:e.clientY}; }
     else { if(h)setSel(h.piece); if(mode==='pieces'&&cur>=0){ snap(); drag={x:e.clientX,y:e.clientY}; } }
     if(drag)cv.setPointerCapture(e.pointerId); });
-  cv.addEventListener('pointermove',e=>{ if(!ED.on)return; ringAt(e); if(!drag)return; const dx=e.clientX-drag.x, dy=e.clientY-drag.y; drag={x:e.clientX,y:e.clientY};
+  cv.addEventListener('pointermove',e=>{ if(!ED.on)return; ringAt(e); if(panD){ (panD.turn?UI.orbit:UI.pan)(e.clientX-panD.x,e.clientY-panD.y); panD={x:e.clientX,y:e.clientY,turn:panD.turn}; return; } if(!drag)return; const dx=e.clientX-drag.x, dy=e.clientY-drag.y; drag={x:e.clientX,y:e.clientY};
     if(ED.ext[mode]){ if(ED.ext[mode].move)ED.ext[mode].move(dx,dy,e); return; }
     if(mode==='sculpt'){ const h=pick(e); if(h)brush(h); return; }
     if(mode==='pieces'&&cur>=0){
@@ -153,13 +156,13 @@ const ED={on:false};
       else if(gmode==='scale'){ const k=Math.exp(-dy*0.01); setE(cur,E=>{ E.s=E.s.map(x=>Math.max(0.2,Math.min(4,x*k))); }); }
       else { const ax=new THREE.Vector3(); cam.getWorldDirection(ax); inv.copy(W3.group.matrixWorld).invert().setPosition(0,0,0); ax.applyMatrix4(inv).normalize(); const t=new THREE.Quaternion().setFromAxisAngle(ax,dx*0.012);
         setE(cur,E=>{ const q=new THREE.Quaternion(...E.q).premultiply(t); E.q=[q.x,q.y,q.z,q.w]; }); } } });
-  cv.addEventListener('pointerup',()=>{ if(!ED.on)return; if(drag&&ED.ext[mode]){ drag=null; if(ED.ext[mode].up)ED.ext[mode].up(); return; } if(drag){ drag=null; if(sculpted)normals(); save(); draw(); } });
+  cv.addEventListener('pointerup',()=>{ if(!ED.on)return; if(panD){ panD=null; return; } if(drag&&ED.ext[mode]){ drag=null; if(ED.ext[mode].up)ED.ext[mode].up(); return; } if(drag){ drag=null; if(sculpted)normals(); save(); draw(); } });
   // ---- IN AND OUT
   let V0=null;
   // the goldfish and the bear: he walks up and waves (the first things a double click does something with)
   for(const N of NPCS)UI.thing({name:N.name,obj:N.g,reach:1.3,tall:N.H||1.8,act:()=>{ if(!st.move)RIG.act(st,'V'); setTimeout(()=>RIG.release(st,'V'),900); }});
-  ED.enter=()=>{ if(UI.menuOpen)UI.toggleMenu(); if(UI.freeCam)UI.setFree(false); if(UI.fly)UI.setFly(false); target=null; ED.on=true; V0={yaw:yawTo,pitch:pitchTo,ppu:ppuTo}; pitchTo=clampP(0.22); ppuTo=Math.min(240,PPU*3.2); P.hidden=false; draw(); };
-  ED.exit=()=>{ if(ED.onExit)ED.onExit(); ED.on=false; P.hidden=true; sel.visible=false; ring.hidden=true; drag=null; if(V0){ yawTo=V0.yaw; pitchTo=V0.pitch; ppuTo=V0.ppu; } save(); };
+  ED.enter=()=>{ if(UI.menuOpen)UI.toggleMenu(); if(UI.freeCam)UI.setFree(false); if(UI.fly)UI.setFly(false); target=null; ED.on=true; V0={yaw:yawTo,pitch:pitchTo,ppu:ppuTo,off:UI.off.clone()}; UI.off.set(0,0,0); pitchTo=clampP(0.22); ppuTo=Math.min(240,PPU*3.2); P.hidden=false; draw(); };
+  ED.exit=()=>{ if(ED.onExit)ED.onExit(); ED.on=false; P.hidden=true; sel.visible=false; ring.hidden=true; drag=null; if(V0){ yawTo=V0.yaw; pitchTo=V0.pitch; ppuTo=V0.ppu; UI.off.copy(V0.off); } save(); };
   // each frame while open: the selected piece's picture where he is, his light as a lamp's, his new normals once a frame while brushing
   ED.tick=()=>{ W3.group.updateMatrixWorld(); sel.matrix.copy(W3.group.matrixWorld); sel.matrixWorldNeedsUpdate=true; if(dirty){ dirty=false; normals(); } };
 }

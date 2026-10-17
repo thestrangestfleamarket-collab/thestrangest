@@ -12,6 +12,7 @@
 // cigarette's end or a smoker's mouth; the sword's trail, a run of glowing blocks along the blade's way as it sweeps, gone in a moment; the dust
 // of a landing, a ring of little blocks thrown out from the feet. All three one pool of blocks in two meshes (lit, and glowing), one draw each.
 // They walk the whole street, the sidewalks and the road, as the skeletons do; never into a wall, the stairs, the musician or each other ----
+const FIGFX={};   // (the figures' effects' tick, for the frame loop)
 { const S=FIGS, b=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0)), f32=s=>new Float32Array(b(s).buffer), i16=s=>new Int16Array(b(s).buffer), u16=s=>new Uint16Array(b(s).buffer), D2R=Math.PI/180;
   const pts=M=>{ const q=i16(M.p), P=new Float32Array(q.length); for(let i=0;i<q.length;i++)P[i]=(q[i]+32500)*M.sc+M.lo[i%3]; return P; };
   const geomOf=M=>{ const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(pts(M),3)); g.setAttribute('color',new THREE.BufferAttribute(b(M.c),3,true)); g.setIndex(new THREE.BufferAttribute(u16(M.i),1));
@@ -76,7 +77,7 @@
     // the blade's trail: blocks laid from where the tip was to where it is, glowing, shrinking away
     FX.trail=(a,c,col)=>{ const d=a.distanceTo(c), n=Math.max(1,Math.ceil(d/(.04*TILE))); for(let i=0;i<n;i++){ const u=(i+.5)/n; FX.add({x:a.x+(c.x-a.x)*u,y:a.y+(c.y-a.y)*u,z:a.z+(c.z-a.z)*u,vx:0,vy:0,vz:0,turn:0,life:.32,glow:true,size:u=>.05*(1-u)*TILE/.84,col:u=>[col[0]*(1-u*.5)+u*.5,col[1]*(1-u*.5)+u*.5,col[2]]}); } }; }
   // ---- THE STREET, all of it (the skeletons' lane), where they may stand
-  const LANE={x0:BOD.XS(52),x1:BOD.XS(106),z0:BOD.ZS(-76.3),z1:BOD.ZS(-61.2)}, HOLE=[BOD.XS(MAPSTAIR.x0-.6),BOD.ZS(MAPSTAIR.y0),BOD.XS(MAPSTAIR.x1+.6),BOD.ZS(MAPSTAIR.y1+.6)],
+  const LANE={x0:BOD.XS(BOD.MAP.x0+2),x1:BOD.XS(BOD.MAP.x1-2),z0:BOD.ZS(-76.3),z1:BOD.ZS(-61.2)}, HOLE=[BOD.XS(MAPSTAIR.x0-.6),BOD.ZS(MAPSTAIR.y0),BOD.XS(MAPSTAIR.x1+.6),BOD.ZS(MAPSTAIR.y1+.6)],
     free=(x,z,R)=>!(x>HOLE[0]-R&&x<HOLE[2]+R&&z>HOLE[1]-R&&z<HOLE[3]+R)&&!SOL.up.some(b=>x>b[0]-R&&x<b[2]+R&&z>b[1]-R&&z<b[3]+R);
   const YS=ZU*24/TILE, V1=new THREE.Vector3(), V2=new THREE.Vector3();
   // ---- EACH FIGURE: key, name, height in metres, where he starts (bodega tiles), his pace, his glow's colour, his stance, his own move and its
@@ -114,6 +115,5 @@
         if(X.tip&&s2.move&&s2.move.name==='slash'){ const u=s2.move.t/s2.move.T; BN[X.tip].getWorldPosition(V2); if(u>.3&&u<.66&&s2.tip)FX.trail(s2.tip,V2,[.8,.95,1]); s2.tip=(s2.tip||new THREE.Vector3()).copy(V2); } else s2.tip=null; }});
     const act=n=>{ const Mv=MOVES[n]; if(!Mv||st2.move)return; st2.move={name:n,t:0,T:Mv.T,pose:Mv.pose,done:false}; };
     N.act=act; N.fig=st2; FIGURES.push(N); }
-  // (the smokers' mouths: SAMIDALE has no smoke bone; the puffs come from before his face)
-  { const s0=STREET.tick; STREET.tick=(dt,you,yy)=>{ s0(dt,you,yy); FX.step(dt); if(typeof PARK!=='undefined')PARK.tick(you); }; }   // (and the park's cut of the trees before you)
+  FIGFX.tick=(dt,you)=>{ FX.step(dt); if(typeof PARK!=='undefined')PARK.tick(you); };   // (each frame, from the loop: the effects, and the park's cut of the trees before you)
   window.FIGDBG=()=>FIGURES.map(N=>({key:N.key,x:+N.st.x.toFixed(2),z:+N.st.z.toFixed(2),to:!!N.st.to,wait:+N.st.wait.toFixed(1),move:N.fig.move&&N.fig.move.name,lift:+N.fig.lift.toFixed(2),fx:FX.items.length})); window.FIGFREE=free; }

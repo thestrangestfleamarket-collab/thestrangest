@@ -1599,7 +1599,7 @@ function frame(now){ requestAnimationFrame(frame); renderer.info.reset(); const 
   cam.position.copy(disp).addScaledVector(F,300); cam.lookAt(disp); cam.updateMatrixWorld();
   you.quaternion.copy(cam.quaternion); you.position.copy(disp).addScaledVector(F,0.35);
   renderer.render(scene,cam);
-  fpsN++; fpsT+=dt; if(fpsT>0.5){ statEl.textContent=`${Math.round(fpsN/fpsT)} fps · ${RW}×${RH} px · turn ${Math.round(((a*180/Math.PI)%360+360)%360)}° · tilt ${Math.round(pitch*180/Math.PI)}° · zoom ${(ppu/PPU).toFixed(2)}×`; fpsN=0; fpsT=0; }
+  fpsN++; fpsT+=dt; if(fpsT>0.5){ const RI=renderer.info.render; statEl.textContent=`${Math.round(fpsN/fpsT)} fps · ${Math.round(RI.calls/fpsN)} draws · ${(RI.triangles/fpsN/1000).toFixed(1)}k tris · ${RW}×${RH} px · turn ${Math.round(((a*180/Math.PI)%360+360)%360)}° · tilt ${Math.round(pitch*180/Math.PI)}° · zoom ${(ppu/PPU).toFixed(2)}×`; renderer.info.reset(); fpsN=0; fpsT=0; }   // (draws and triangles: the whole frame's, shadow and self-shadow passes in, averaged over the half second: the sun's and the lamp's maps redraw every other frame)
 }
 resize(); applyTime(0); requestAnimationFrame(frame);
 </script>

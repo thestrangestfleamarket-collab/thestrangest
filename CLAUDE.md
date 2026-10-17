@@ -333,6 +333,15 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
   the sign, doors and shutter at their places), the body lofted from rounded rectangles with its top and bottom edges rounded (`rr`, `loft`);
   one flat colour an area, only the details that matter; the rotor discs its own meshes spun each frame, and it hovers 1.5 m over the street,
   bobbing, keeping the street as the walkers do. Some 3,000 triangles.
+- **The shark hood** (owner, 17 Oct 2026, his picture: a small kid on a wet street in a shark's-head hood, grey on top with its fin, yellow
+  underneath, the mouth open round his little face with white teeth on red gums, a yellow raincoat bib, a beige trench with lapels and one button,
+  yellow mittens and boots; "same", then "build one part at a time and make it logical"; `src/npc-sharkkid.js`): BUILT INSIDE OUT, AS HE IS
+  DRESSED: first his body (the head with his face, neck, torso, arms to the mittens, the legs their own meshes hung at the hips with the boots on
+  them, swung as he walks), then the coat over the torso (the trench, its rounded shoulders, sleeves over the arms, lapels, the button), then the
+  bib (the collar and its point down his chest), last the hood as a shark's head over his (the crown cupping the back and top of his head, open
+  at the front; the snout rising forward and up from it; the upper jaw's yellow roof; the lower jaw hung under his chin, its mouth open; the
+  teeth and gums on both rims; the fin; the shark's eyes on the snout). `?sharkstage=1..4` builds him up to a stage, so his sheet can show him
+  coming together. 1.1 m, some 2,700 triangles; he walks the whole street. The sheet keys now also: sharkkid.
 
 ## THE MARKET: the one official map
 

@@ -33,7 +33,7 @@ const FAR3={};
     const up=LVL!=='down', inside=!!ROOMS.cur||!up; me.visible=FAR3.on&&up;
     if(!FAR3.on||inside||(scene.fog&&scene.fog!==FOG)){ if(scene.fog===FOG)scene.fog=null; return; }   // (the weather's own fog, when it comes, is thicker: it has the scene)
     const day=Math.max(0,Math.min(1,(CLOCK.elev()+4)/14)), d=-V.copy(pos).applyMatrix4(cam.matrixWorldInverse).z;   // (how deep you stand in the camera's view: the haze starts past you)
-    FOG.color.copy(scene.background).lerp(day>0?pale:navy,day>0?.3+.2*day:.45); FOG.near=d+HAZE0*TILE; FOG.far=d+HAZE1*TILE; scene.fog=FOG; };
+    FOG.color.copy(SKY.U.uH.value).lerp(SKY.U.uA.value,.4);   /* (the dome's horizon colour, between the sun's side and the side away, so the far fades into the sky it stands against: sky.js, built before this) */ FOG.near=d+HAZE0*TILE; FOG.far=d+HAZE1*TILE; scene.fog=FOG; };
   // GRAPHICS' DISTANCE HAZE, beside LIGHT GRAIN
   const g=document.querySelector('#dgrain'); if(g){ const b=document.createElement('button'); b.className='btn'; b.id='dhaze'; const draw=()=>{ b.textContent='DISTANCE HAZE '+(FAR3.on?'ON':'OFF'); b.setAttribute('aria-pressed',String(FAR3.on)); };
     b.onclick=()=>{ FAR3.on=!FAR3.on; try{ localStorage.setItem('market-haze',FAR3.on?'1':'0'); }catch(e){} draw(); }; g.after(b); draw(); }

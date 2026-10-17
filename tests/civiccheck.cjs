@@ -24,8 +24,8 @@ const {chromium}=require('playwright');
   t=await until(()=>CIVIC.fires.length===0||CIVIC.fires.every(f=>f.out),600000,4000); d=await dbg(); console.log('  the fire out after',t>=0?(t/1000).toFixed(0)+' s':'NEVER (10 min)','·',d.log.find(l=>/fire is out|burnt/.test(l))||'(no log line)');
   await pg.screenshot({path:out+'/civic_fire.png'});
   // AN OUTAGE
-  await pg.evaluate(()=>CIVIC.tryOutage()); const off0=await pg.evaluate(()=>DRESS.pools.filter(p=>p[0].userData.off).length); console.log('outage: lamps off',off0);
-  t=await until(()=>DRESS.pools.every(p=>!p[0].userData.off)&&CITY.open('power').length===0,600000,4000); console.log('  power back after',t>=0?(t/1000).toFixed(0)+' s':'NEVER (10 min)','· works crew:',(await dbg()).staff.find(s=>s[0]==='works')[1]);
+  await pg.evaluate(()=>CIVIC.tryOutage()); const off0=await pg.evaluate(()=>CIVIC.lampsOff()); console.log('outage: lamps off',off0);
+  t=await until(()=>CIVIC.lampsOff()===0&&CITY.open('power').length===0,600000,4000); console.log('  power back after',t>=0?(t/1000).toFixed(0)+' s':'NEVER (10 min)','· works crew:',(await dbg()).staff.find(s=>s[0]==='works')[1]);
   // A FULL CAN
   t=await until(()=>CIVIC.staff.works.state==='free',300000,4000); await pg.evaluate(()=>CIVIC.tryCan()); d=await dbg(); console.log('a full can:',JSON.stringify(d.cans[0]),'· job',d.jobs.filter(j=>j.startsWith('trash')).join());
   t=await until(()=>CIVIC.cans[0].fill===0&&CITY.open('trash').length===0,600000,4000); console.log('  emptied after',t>=0?(t/1000).toFixed(0)+' s':'NEVER (10 min)');
@@ -34,6 +34,6 @@ const {chromium}=require('playwright');
   d=await dbg(); console.log('the mail: bag',d.bag,'· carrier',d.staff.find(s=>s[0]==='carrier')[1]);
   t=await until(()=>CIVIC.box('you').length>0,600000,4000); console.log('  your letter arrived after',t>=0?(t/1000).toFixed(0)+' s':'NEVER (10 min)','· boxes',JSON.stringify((await dbg()).boxes));
   // YOU FAINT
-  await pg.evaluate(()=>{ STORE.goTo(BOD.X((BOD.B0.x0+BOD.B0.x1)/2),BOD.Z(BOD.B0.y1)+3*__dbg.cv().TILE,'up'); CIVIC.tryFaint(); }); await pg.waitForTimeout(2000); d=await dbg(); console.log('you fainted: job',d.jobs.filter(j=>j.startsWith('medical')).join(),'· medic',d.staff.find(s=>s[0]==='medic')[1]);
+  await pg.evaluate(()=>{ const P=CITY.place('bodega'); STORE.goTo(P.door.x,P.door.z+2*__dbg.cv().TILE,'up'); CIVIC.tryFaint(); }); await pg.waitForTimeout(2000); d=await dbg(); console.log('you fainted: job',d.jobs.filter(j=>j.startsWith('medical')).join(),'· medic',d.staff.find(s=>s[0]==='medic')[1]);
   t=await until(()=>CIVIC.log.some(e=>/brought you round/.test(e.what)),600000,4000); console.log('  the medic brought you round after',t>=0?(t/1000).toFixed(0)+' s':'NEVER (10 min)');
   console.log('treasury',(await dbg()).treasury,'· the log:',JSON.stringify((await dbg()).log)); console.log('page errors:',errs.length); await b.close(); })().catch(e=>{ console.error(e); process.exit(1); });

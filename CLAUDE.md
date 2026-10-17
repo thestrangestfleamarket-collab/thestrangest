@@ -1,8 +1,8 @@
-# The Strangest Flea Market in 3D (three.js) — start here
+# The Strangest Flea Market in 3D (three.js): start here
 
 A separate project from the game: the owner (Bralynn) is building **a new version of The Strangest Flea Market in three.js**, one
 piece at a time. It is **not** the live game and never ships to it. The live game is the repo `bralynnb/tsfm` (thestrangestfleamarket.com);
-this repo is `bralynnb/tsfm-3d`.
+this repo is `bralynnbell/thestrangest`.
 
 ## The game's repo: data only, never the rules
 

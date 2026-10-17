@@ -1,4 +1,4 @@
-# tsfm-3d
+# thestrangest (The Strangest Flea Market in three.js)
 
 The Strangest Flea Market, rebuilt in three.js, a piece at a time. Separate from the live game (`bralynnb/tsfm`), which it reads only as data.
 

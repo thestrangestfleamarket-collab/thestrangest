@@ -283,6 +283,13 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
 - **THE MARKET's artifact** (17 Oct 2026, "you decide, push"): the old link (X2Bk8UjQKP8yfLdLtVVn3s) can't be opened from this account, so THE MARKET
   is now published at **https://claude.ai/artifact/PnmQqhkusfewby35tf4zo5** (update that one, keep its link). The droids stay the mannequins (not the
   pawn guards); the twelve pawns stay plain street walkers at 1.35 m.
+- **Faces must read; smooth shapes, not bubbles** (owner, 17 Oct 2026, of the crystal ball: "i always want to be able to tell what the faces look
+  like"; "stop rounding things in bubble shapes, smooth flowing shapes"; "match the shapes closer, think real textures"): every character's or
+  figure's face is built so its features show (eyes with whites and pupils, brows, nose, mouth) and nothing covers it; a thing built in parts is
+  made of smooth flowing shapes (a lathe from a real profile, tubes along curves, arcs), never clumps of ellipsoids; shapes match the picture, and
+  a surface's grain (stone's speckle, hair's shading) is cut fine enough to show. **The crystal ball** (`src/crystal.js`, on the shops' sidewalk by
+  the bodega, never moves): the stone table, the ringed base, the glow, the head (lathe), eyes, brows, moustache, the crown and locks of hair
+  (tubes), the glass a clear sphere; ?sheet=crystal.
 - **The gold skeleton** (owner, 17 Oct 2026, his picture of a gilded clockwork skeleton with a white skull face: "put this character in game, use
   the other skeletons as guides for character design"; "make him 2x bigger"): the KayKit Minion's bones and body gilded at load (`gild` in
   `npc-skel.js`: gold by each bone's own light and shade, the face under the eyes and the jaw bone-white, the neck a steel spring, the eye sockets

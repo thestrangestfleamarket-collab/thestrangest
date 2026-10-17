@@ -1,0 +1,9 @@
+// THE PIANIST (or the singer: 'sg') CLOSE, from before him and above the keys, and his triangles; the page's errors. node tests/pnshot.cjs out [pn|sg]
+const {chromium}=(()=>{ try{ return require('playwright'); }catch(e){ return require(require('child_process').execSync('npm root -g').toString().trim()+'/playwright'); } })();
+(async()=>{ const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader']}); const pg=await b.newPage({viewport:{width:800,height:700}}); pg.setDefaultTimeout(240000);
+  const errs={}; pg.on('pageerror',e=>{ errs[e.message]=(errs[e.message]||0)+1; if(errs[e.message]===1)console.log('pageerror:',e.message.slice(0,300)); });
+  const out=process.argv[2]||'pn', who=process.argv[3]||'pn', X=who==='sg'?'SGM':'PNM';
+  await pg.goto('file://'+process.cwd()+'/dist/market.html?hideme=1&npcwait=99&hour=21&place=the%20bar&set=600',{waitUntil:'commit',timeout:240000}); for(let i=0;i<120&&!(await pg.evaluate(()=>!!window.__started).catch(()=>false));i++)await pg.waitForTimeout(1000); await pg.waitForTimeout(8000);
+  await pg.evaluate(([who,X])=>{ if(STORE.STAGE)STORE.STAGE.go(who); const A=STORE[X].at; STORE.pos.set(A.x,0,A.z+1.6); },[who,X]); await pg.waitForTimeout(2000);
+  for(const [n,y,p,h] of [['front',0,.35,.9],['above',2.6,.95,.8],['side',1.2,.3,.8]]){ await pg.evaluate(([y,p,h,X])=>{ const A=STORE[X].at; window.__dbg.UI.setFree(true); window.__dbg.UI.camT.set(A.x,(A.y||0)+h,A.z); window.__dbg.cam(y,p,window.__dbg.cv().PPU*4); },[y,p,h,X]); await pg.waitForTimeout(3500); await pg.screenshot({path:out+'_'+n+'.png'}); }
+  console.log(await pg.evaluate(X=>{ let n=0; STORE[X].g.traverse(o=>{ if(o.isMesh)n+=o.geometry.attributes.position.count/3; }); return X+' triangles '+n; },X)); console.log('errors',JSON.stringify(errs)); await b.close(); })();

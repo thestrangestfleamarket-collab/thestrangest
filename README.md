@@ -2,7 +2,7 @@
 
 The Strangest Flea Market, rebuilt in three.js, a piece at a time. Separate from the live game (`bralynnb/tsfm`), which it reads only as data.
 
-Build: `python3 build.py` (needs `../tsfm`, a checkout of the game, or `GAME_SRC=/path/to/tsfm/src`) → `dist/map-3d.html`.
+Build: `python3 build.py` (needs `../tsfm`, a checkout of the game, or `GAME_SRC=/path/to/tsfm/src`) → `dist/market.html` (**THE MARKET**, the one official map: https://claude.ai/artifact/X2Bk8UjQKP8yfLdLtVVn3s).
 
 ## Now
 

@@ -29,9 +29,17 @@ this repo is `bralynnbell/thestrangest`.
 - **Removed and not wanted for now**: the character editor (edit mode), the Fox.
 - When a request could mean more than one thing, ask with a couple of options (or a quick mockup) before building.
 
+## THE MARKET: the one official map
+
+**THE MARKET** (owner, 17 Oct 2026: "one official MARKET map im gona start filling in") is the game's map here: every place the owner adds goes
+into it, on its street or under it (the subway's level), next to what's there; not new separate pages. It's built to `dist/market.html` and
+published to its own artifact, **https://claude.ai/artifact/X2Bk8UjQKP8yfLdLtVVn3s** (update that one, keep its link; don't make new pages for
+new places). A place's code is its own file in `src/`; `map-pre.js` says where each place stands (its offset, its level), `map-post.js` joins
+them (the ground, the levels, what cuts away). Its first places: the bodega, the pool room, the subway station and its stairs.
+
 ## What's here
 
-- `build.py` builds `dist/map-3d.html` (one page; three.js r160 from jsdelivr). Run: `python3 build.py` (with `../tsfm` checked out, or
+- `build.py` builds `dist/market.html` (THE MARKET: one page; three.js r160 from jsdelivr). Run: `python3 build.py` (with `../tsfm` checked out, or
   `GAME_SRC=/path/to/tsfm/src`). Publish the page as an artifact for the owner to play.
 - `src/` the pieces:
   - `flea-market-3d.html`: the base page (renderer, camera, input, the Walker's rig, physics, ragdoll, the loop); `build.py` patches it.

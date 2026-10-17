@@ -35,8 +35,8 @@ st=MAPST
 i=f.index('<script type="module">'); head,mod=f[:i],f[i:]
 def rp(s,a,b):
     assert s.count(a)==1,a[:80]; return s.replace(a,b)
-head=rp(head,'<title>Flea Market in 3D</title>','<title>The Map in 3D</title>')
-head=rp(head,'<h1>FLEA MARKET · THREE.JS TEST</h1>','<h1>THE MAP · THREE.JS TEST</h1>')
+head=rp(head,'<title>Flea Market in 3D</title>','<title>The Market</title>')
+head=rp(head,'<h1>FLEA MARKET · THREE.JS TEST</h1>','<h1>THE MARKET</h1>')
 head=rp(head,'<div><b>N</b> day / night · <b>-</b> / <b>=</b> pixel size</div>','<div><b>-</b> / <b>=</b> pixel size</div>')
 head=rp(head,'{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}','{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}')
 a=mod.index('// ---- collision: boxes on the ground plan'); b=mod.index('// ---- the walker: the game\'s own rig')
@@ -139,4 +139,4 @@ mod=rp(mod,"if(nst>=6)looseAcc=0; looseDraw();","if(nst>=6)looseAcc=0; looseDraw
 head=rp(head,'<div><b>Space</b> jump','<div>The bodega, the pool room (its door east of it) and the subway (the stairs down west of it) · walk into the pool to swim · <b>Space</b> (held) under</div>\n  <div><b>Space</b> jump')
 mod=rp(mod,"const pos=new THREE.Vector3(-2.2,0,3.2); let heading=0.8, py=0;","const pos=new THREE.Vector3(-2.2,0,3.2); let heading=0.8, py=0; { const a=(QS.get('at')||'').split(',').map(Number); if(a.length>=2&&a.every(isFinite)){ pos.set(a[0],0,a[1]); py=a[2]||0; } }   // (a test's: start at x,z[,height])")
 mod=rp(mod,"  if(MAPLV(py,pos))setPhys(LVL);","  if(MAPLV(py,pos))setPhys(LVL); if(bloom){ const dn=LVL==='down'; bloom.strength=dn?1.3:.55; bloom.radius=dn?.6:.4; bloom.threshold=dn?.62:.8; }   // (the glow: the station's strong, the street's and the shops' gentle)")
-os.makedirs('dist',exist_ok=True); open('dist/map-3d.html','w').write(head+mod); print('built dist/map-3d.html')
+os.makedirs('dist',exist_ok=True); open('dist/market.html','w').write(head+mod); print('built dist/market.html')

@@ -67,6 +67,24 @@ this repo is `bralynnbell/thestrangest`.
   his moves, a body in Rapier; he wanders the street. **The items**: the tote and the pixel pantry power-up (`tools/item-bake.py`). The .glb files
   are not in the repo (too big): they're in the owner's Drive, folder G. **Deleted** (owner, 17 Oct 2026: "delete the phone head character, the
   cheetah and the catnewspaper characters from game completely"): the snow leopard, the grumpy cat (and his ink bottle), the retro cyborg terminal.
+- **The street brought to life** (17 Oct 2026: "start fleshing it out with our available assets to make it come to life. fill in everything
+  automatically"): THE KITS from his G folder (a city street kit, a restaurant kit: `tools/kit-bake.py` → `data/kit.json`, `src/kit.js`: a piece
+  is its points coloured from its texture, lit by the lamps, `KIT.put` sets it on the ground, solid when it should be); the street dressed with
+  them (`src/dress.js`: dumpsters and trash in the gap by the house, cans and bags at the kerb, the bus stop, bollards, a street light and a
+  traffic light, cones at the subway stairs, a hoarding, fences, barriers, his 1980s model on the sidewalk) and PIGEONS (code-made) that peck,
+  step and scatter when anyone comes near. THE DRAGON (his Dragon2.glb, rigged with its own clips, `data/dragon.json`, `src/npc-dragon.js`): keeps
+  the road with his menacing walk, snaps at you when you come close, flies a loop now and then. **The apartment house** (his words: "the apartment
+  building from the last old tsfm repo ... fire escapes on back and front windows. 2 apartments per floor. real textures and nyc design, lived
+  in"; `src/apts.js`, in the bodega's scope): the old game's walk-up (its plan and its studio furniture through the game's catalog) rebuilt as a
+  five-storey New York tenement on the lot west of the subway stairs, in the owner's brick texture (`data/textures.json`: his jpgs shrunk to the
+  game's texels, the one photo texture allowed because he asked for "real textures"), fire escapes front and back on every floor up, lit windows
+  behind curtains, the door with its stoop, lamp and number, the roof's water tower, bulkhead, vents; inside, the entrance passage, the stair hall
+  with a straight flight each floor (switching back), two furnished apartments a floor (railroad flats: the door into the kitchen, the living room
+  across the windows, the bathroom, the bedroom), warm lights on while you're in; the floors above you and the roof cut away inside, the walls
+  cut to their feet the bodega's way; the floor under you is yours (`MODS.apts.ground`, the stairs carry you up; the solids switch floor by
+  floor). **The subway redone New York** ("replace subway, walls, tracks, etc."; `src/wsub.js`): a concrete platform with the yellow tactile
+  edge, white glazed tiles with a dark green band and WEST END in mosaic, green tiles below the waist, a track bed of ballast, ties, rails and
+  the third rail under its cover board.
 - When a request could mean more than one thing, ask with a couple of options (or a quick mockup) before building.
 
 ## THE MARKET: the one official map
@@ -97,6 +115,8 @@ the owner's call, and merging publishes). The artifact link above is the quick w
     `bodbuild.js` (built in 3D). `batch.js`: every still face packed into one texture and a few meshes (fast).
   - `npc-map.js`: the goldfish and the bear wandering the platform (and `makeNPC`, every character's maker). `npc-skel.js`: the four skeletons on the far sidewalk, rigged and animated.
   - `npc-street.js`: the ghost wandering the street (bones, moves, a body in Rapier, a mind), and the items.
+  - `npc-dragon.js`: the Dragon on the road. `kit.js` + `dress.js`: the kits' pieces and the street's dressing, the pigeons. `apts.js`: the apartment house (in the
+    bodega's scope, after `bodbuild.js`).
 - `data/`: the characters baked from the owner's models (`goldfish.json`, `bear.json`) and the skeletons, their gear and clips (`skel.json`). `tools/`: the
   scripts that baked them (they need the owner's .glb files and `fast-simplification`; `skeletons-bake.py` the KayKit pack, unzipped;
   `skin-bake.py`, `skin-bones.py`, `item-bake.py`, `mesh-cut.py` the street's characters and items: `trimesh`, `scipy`, `scikit-image` too).

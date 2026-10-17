@@ -135,6 +135,6 @@ const STREET={npcs:[],items:[],ready:false}; window.STREET=STREET;   // (a test'
     gho.carry=ns=>{ const lift=ns.move&&ns.move.name==='use'?bell(ns.move.t/ns.move.T,.3,.7):0; tote.g.position.set(0,.22+.03*Math.sin(ns.t*1.7)+.3*lift,.02*Math.cos(ns.t*1.1)); tote.g.rotation.y=.2*Math.sin(ns.t*.6); };
     makeItem(POWERUP,{key:'powerup',name:'PIXEL PANTRY POWER-UP',metres:.9,at:[9.5*TILE,sw-1.3*TILE],turn:-Math.PI*.15});
     // the engine, when it's here (the Walker's loader; without it they walk on the ground)
-    STREET.PB=PB; PB.load(); const go=()=>{ if(PB.R&&!SP.world){ SP.R=PB.R; try{ SP.build(); }catch(e){ console.warn('street physics',e); SP.world=null; } } }; go(); if(!SP.world)(PB.onReady=PB.onReady||[]).push(go); };
+    STREET.PB=PB; if(typeof KIT!=='undefined')for(const th of KIT.things)UI.thing(th); PB.load(); const go=()=>{ if(PB.R&&!SP.world){ SP.R=PB.R; try{ SP.build(); }catch(e){ console.warn('street physics',e); SP.world=null; } } }; go(); if(!SP.world)(PB.onReady=PB.onReady||[]).push(go); };
   STREET.tick=(dt,you,yy)=>{ if(SP.world)SP.step(dt,you,yy); };
 }

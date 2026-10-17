@@ -296,8 +296,14 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
   floated beside them; `npc-skel.js` brings each back to its grip at load. **Every character's sheet** (`tests/sheet.cjs <key>`, or
   `?sheet=key&fullres=8` by hand): the first of his kind, out of his group into the scene (the bear up from the platform, a bat shown by day),
   held still on his spot facing the camera, the camera framed on his bones or his shape (the art as fine as his size asks); the skeletons'
-  limbs spread; the dragon on the ground. The keys: fish, bear, Warrior, Mage, Minion, Rogue, Gold, mushroom, fox, dragon, rat, frog, slime,
+  limbs spread; the dragon on the ground. The keys: fish, Warrior, Mage, Minion, Rogue, Gold, mushroom, fox, cat, dragon, rat, frog, slime,
   snake, spider, bat, wasp.
+- **The old bear: deleted** (owner, 17 Oct 2026: "delete the bear ... the old bear i mean"): the Meshy bear in his jacket is off the platform and out of the
+  data (`data/bear.json`, `data/full/bear.json` gone; the goldfish's maker stays).
+- **The ice cream cat** (owner, 17 Oct 2026, his pixel picture: a dark-brown cat with huge yellow eyes, a waffle cone tipped on his head, strawberry
+  ice cream melting down the left of his face, pink sparkles; "add this character close as possible"; `src/npc-cat.js`): built in code in his parts
+  (head, ears, inner ears, eyes, their rims, glints, pupils with the nose and mouth pure black, body, arms, paws, legs, the ice cream and its drips,
+  the cone with its waffle grid, the sparkles), some 3,000 triangles, 1.1 m, a chibi; he walks the whole street and turns to you when you come near.
 
 ## THE MARKET: the one official map
 

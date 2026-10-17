@@ -36,23 +36,24 @@
     for(let j=0;j<W;j++)for(let i=0;i<W;i++){ const d=Math.hypot((i+.5)/W*2-1,(j+.5)/W*2-1), t=(Bm[(j%4)*4+i%4]+.5)/16, a=d<.35+(t-.5)*.1?.9:d<.6+(t-.5)*.12?.45:d<.95+(t-.5)*.1?.15:0, q=(j*W+i)*4; im.data[q]=c[0]; im.data[q+1]=c[1]; im.data[q+2]=c[2]; im.data[q+3]=a*255; }
     g.putImageData(im,0,0); const t=new THREE.CanvasTexture(cv); t.magFilter=t.minFilter=THREE.NearestFilter; t.generateMipmaps=false; t.colorSpace=THREE.SRGBColorSpace; return t; };
   const HT=haloTex([255,150,40],24), FL=[0,1].map(()=>{ const L=new THREE.PointLight(0xff8a30,0,7*TI,1.6); MAPG.bodega.add(L); return L; });
-  const FB=[], SP=[], boxG=new THREE.BoxGeometry(1,1,1), core=new THREE.MeshBasicMaterial({color:0xffd060,toneMapped:false}), shell=new THREE.MeshBasicMaterial({color:0xff5a1a,toneMapped:false,transparent:true,opacity:.75});
-  const fire=(from,dir)=>{ let f=FB.find(f=>!f.on); if(!f){ f={g:new THREE.Group()}; const c=new THREE.Mesh(boxG,core); c.scale.setScalar(.32*TI); const sh=new THREE.Mesh(boxG,shell); sh.scale.setScalar(.5*TI); sh.rotation.set(.6,.8,0);
+  // (the ball itself a live flame, churning, sparks shed behind it and thrown out where it lands: fire.js; the halo the game's stepped glow round it)
+  const FB=[];
+  const fire=(from,dir)=>{ let f=FB.find(f=>!f.on); if(!f){ f={g:new THREE.Group()};
       const h=new THREE.Mesh(new THREE.PlaneGeometry(1.6*TI,1.6*TI),new THREE.MeshBasicMaterial({map:HT,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,toneMapped:false})); h.onBeforeRender=(r,s,cm)=>{ h.quaternion.copy(cm.quaternion); h.updateMatrixWorld(); };
-      f.g.add(c,sh,h); f.sh=sh; MAPG.bodega.add(f.g); FB.push(f); }
-    f.on=true; f.t=0; f.g.visible=true; f.g.position.copy(from); f.v=dir.clone(); };
-  const spark=(p,v,life,col)=>{ let s=SP.find(s=>!s.on); if(!s){ s={m:new THREE.Mesh(boxG,new THREE.MeshBasicMaterial({color:0xffa030,toneMapped:false}))}; MAPG.bodega.add(s.m); SP.push(s); }
-    s.on=true; s.t=0; s.life=life; s.m.visible=true; s.m.position.copy(p); s.v=v; s.m.material.color.setHex(col); s.m.scale.setScalar(.12*TI); };
-  const burst=p=>{ for(let k=0;k<14;k++){ const a=Math.random()*Math.PI*2, u=Math.random(); spark(p,new THREE.Vector3(Math.cos(a)*u*3*TI,(1+Math.random()*2.5)*TI,Math.sin(a)*u*3*TI),.6+Math.random()*.5,k%3?0xff7a20:0xffd060); }
+      f.g.add(h); MAPG.bodega.add(f.g); f.fl=FLAME.add({kind:'ball',x:0,y:0,z:0,w:.95*TI,h:.95*TI,parent:f.g}); FB.push(f); }
+    f.on=f.fl.on=true; f.t=0; f.g.visible=true; f.g.position.copy(from); f.v=dir.clone(); };
+  const spark=(p,v,life)=>FLAME.part(4,p.x,p.y,p.z,v.x,v.y,v.z,life,.11*TI,undefined,G*1.6);
+  const burst=p=>{ for(let k=0;k<18;k++){ const a=Math.random()*Math.PI*2, u=Math.random(); spark(p,new THREE.Vector3(Math.cos(a)*u*3*TI,(1+Math.random()*2.5)*TI,Math.sin(a)*u*3*TI),.6+Math.random()*.6); }
+    for(let k=0;k<4;k++)FLAME.puff(p.x+(Math.random()-.5)*.5*TI,p.y+.2*TI,p.z+(Math.random()-.5)*.5*TI,2.2);
     const hit=(x,z)=>Math.hypot(x-p.x,z-p.z)<1.3*TI; if(LVL==='up'&&hit(pos.x,pos.z))VIT.hurt(.25); for(const N of NPCS)if(N.lv==='up'&&N.key!=='dragon'&&N.g.visible&&hit(N.st.x,N.st.z))N.hp=Math.max(0,N.hp-.25); };
   const G=9.8/.84*TI*.35;   // (a fireball falls gently: a third of a stone's fall)
   FIRE={tick:dt=>{ let li=0;
-    for(const f of FB){ if(!f.on)continue; f.t+=dt; f.v.y-=G*dt; f.g.position.addScaledVector(f.v,dt); f.sh.rotation.x+=dt*3; f.sh.rotation.y+=dt*2;
-      if(Math.random()<dt*30)spark(f.g.position.clone(),new THREE.Vector3((Math.random()-.5)*.6*TI,.4*TI,(Math.random()-.5)*.6*TI),.4,0xff6a20);
+    for(const f of FB){ if(!f.on)continue; f.t+=dt; f.v.y-=G*dt; f.g.position.addScaledVector(f.v,dt); const q=f.g.position; f.fl.x=q.x; f.fl.y=q.y; f.fl.z=q.z;
+      if(Math.random()<dt*30)spark(q,new THREE.Vector3((Math.random()-.5)*.6*TI,.4*TI,(Math.random()-.5)*.6*TI),.4);
       if(li<2){ FL[li].position.copy(f.g.position); FL[li].intensity=6; li++; }
-      const gy=MODS.bodega.ground(f.g.position.x,f.g.position.z); if(f.g.position.y<=gy+.2*TI||f.t>6){ f.on=false; f.g.visible=false; burst(f.g.position.clone().setY(gy+.1)); } }
+      const gy=MODS.bodega.ground(f.g.position.x,f.g.position.z); if(f.g.position.y<=gy+.2*TI||f.t>6){ f.on=f.fl.on=false; f.g.visible=false; burst(f.g.position.clone().setY(gy+.1)); } }
     for(;li<2;li++)FL[li].intensity=0;
-    for(const s of SP){ if(!s.on)continue; s.t+=dt; s.v.y-=G*1.6*dt; s.m.position.addScaledVector(s.v,dt); s.m.scale.setScalar(.12*TI*Math.max(0,1-s.t/s.life)); if(s.t>=s.life){ s.on=false; s.m.visible=false; } } }};
+  }};
   // ---- HIS FLIGHT (owner, 17 Oct 2026: "the dragons need better flying animations in air ... they should also fly 3x slower and hang out longer.
   // they faintly glow at night"): over his one flying loop, flight as a big bird has it: a few slow beats, then a long glide on his wings held
   // out (the loop's frame where they're widest, found once here), beating again as he sinks; climbing nose up, sinking nose down; his head

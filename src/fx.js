@@ -1,7 +1,7 @@
 // ---- THE EFFECTS (owner, 17 Oct 2026, "use the sfx as references to make your own rendered fx": his Brackeys VFX bundle as the reference, the
 // game's look as the rule): smoke in puffs, the dust of a landing, a blade's trail; one pool of blocks in two meshes (lit, and glowing), one draw
-// each. Made for the six figures (removed, owner 17 Oct 2026: "lets remove all the samurai characters"), kept for the park's campfire smoke and
-// anything after. FIGFX.tick, each frame: the effects, the park's tick (the oaks' sway), the campfire's smoke and flicker ----
+// each. Made for the six figures (removed, owner 17 Oct 2026: "lets remove all the samurai characters"), kept for
+// anything after. FIGFX.tick, each frame: the effects, the park's tick (the oaks' sway); the campfire's fire is fire.js's ----
 const FIGFX={};
 {
   // ---- THE EFFECTS: one pool of blocks, lit (smoke, dust) and glowing (the blade's trail); each a place, a way, a life, a size that grows or
@@ -23,7 +23,6 @@ const FIGFX={};
         size:u=>.045*(1-u)*TILE/.84,col:()=>[.55,.5,.42]}); } };
     // the blade's trail: blocks laid from where the tip was to where it is, glowing, shrinking away
     FX.trail=(a,c,col)=>{ const d=a.distanceTo(c), n=Math.max(1,Math.ceil(d/(.04*TILE))); for(let i=0;i<n;i++){ const u=(i+.5)/n; FX.add({x:a.x+(c.x-a.x)*u,y:a.y+(c.y-a.y)*u,z:a.z+(c.z-a.z)*u,vx:0,vy:0,vz:0,turn:0,life:.32,glow:true,size:u=>.05*(1-u)*TILE/.84,col:u=>[col[0]*(1-u*.5)+u*.5,col[1]*(1-u*.5)+u*.5,col[2]]}); } }; }
-  let fireT=0; FIGFX.tick=(dt,you)=>{ FX.step(dt); if(typeof PARK!=='undefined'){ PARK.tick(you);
-      // the park's campfire: a curl of smoke now and then, its light a flicker
-      if(PARK.fire&&MAPG.park.visible){ fireT+=dt; if(fireT>.3){ fireT-=.3; FX.puff(PARK.fire.x,PARK.fire.y,PARK.fire.z,1.6,{x:.05,z:.03}); } PARK.fireL.intensity=3.2+Math.sin(performance.now()*.021)*.6+Math.sin(performance.now()*.0073)*.5; } } };   // (each frame, from the loop: the effects, and the park's cut of the trees before you)
+  FIGFX.tick=(dt,you)=>{ FX.step(dt); if(typeof PARK!=='undefined'){ PARK.tick(you);
+      /* (the park's campfire, its flame, embers, smoke and light: fire.js) */ } };   // (each frame, from the loop: the effects, and the park's cut of the trees before you)
   FIGFX.FX=FX; }

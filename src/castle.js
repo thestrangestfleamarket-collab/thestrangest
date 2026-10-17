@@ -6,7 +6,7 @@
 // castle's great hall, its room dressed by the dungeon's own painters (23-w-dungeon-1-room: the stone in courses, the torches' soot, chains, the
 // mice's holes, webs, banners, ivy, cracks; the cobbled floor, its drain), its things from the dungeon's catalog (23-w-dungeon-2-things: the
 // arcade of three round arches, two columns, the brazier, barrels, crates, straw, bones, skulls), reached by twelve steps down from the bailey
-// as the subway's stairs go down from the sidewalk. The torches' flames are blocks here, each a flickering warm light (the game's moving
+// as the subway's stairs go down from the sidewalk. The torches' flames are live ones (fire.js), each a flickering warm light (the game's moving
 // pictures don't run); the mice and the dust in the air (moving pictures) are left out. Underground only the dungeon and the station are drawn ----
 // a box of the game's painted in the street's frame (as gbox, bodega.js, but at the street's own size, not the buildings' tenth bigger; dy lifts
 // it to the dungeon's depth)
@@ -73,14 +73,13 @@ grab('dungeon',()=>{ const K=BOD.KC, KP=BOD.K.PROPS, Kc=K.CATALOG, X=BOD.XS, Z=B
   BATCH.build(castleMat); BATCH.cast=false;
   for(const b of WB){ SOL.down.push([X(b.x0),Z(b.y0),X(b.x1),Z(b.y1)]); FIX.down.push([X(b.x0),Z(b.y0),dy,X(b.x1),Z(b.y1),dy+Y(D.H)]); }
   for(const p of made)castleSolid('down',p,dy);
-  // THE LIGHTS: the torches' (each a flame of two blocks over its head, flickering a step at a time, its light with it), the brazier's, and the
-  // hall's own cool light (the game's LAMPS, as the dungeon's catalog made them); twice the dojo's candles: the old game counted lamps twice
-  // (docs/OLD-LOOK.md), and the stone is dark
-  const FM=new THREE.MeshBasicMaterial({color:new THREE.Color(1,.62,.24)}), FC=new THREE.MeshBasicMaterial({color:new THREE.Color(1,.92,.62)}), LT=[];
+  // THE LIGHTS: the torches' and the brazier's (live flames over the torches' heads and on the coals, embers and smoke going up: fire.js; each
+  // light flickering with its flame), and the hall's own cool light (the game's LAMPS, as the dungeon's catalog made them); twice the dojo's
+  // candles: the old game counted lamps twice (docs/OLD-LOOK.md), and the stone is dark
+  const LF=[];
   const light=l=>{ const cm=Math.max(...l.c), L=new THREE.PointLight(new THREE.Color(l.c[0]/cm,l.c[1]/cm,l.c[2]/cm),14*cm*Math.min(1.2,l.r/5),l.r*TILE*1.25,1.6); L.position.set(X(l.x),Y(l.z)+dy,Z(l.y)); L.userData.i0=L.intensity; scene.add(L); lamps.push(L); return L; };
-  for(const l of K.LAMPS.slice(l0)){ const L=light(l); if(!l.flick)continue;
-    const g=new THREE.Group(), s=.07*TILE, f=new THREE.Mesh(new THREE.BoxGeometry(s,Y(12),s),FM), c=new THREE.Mesh(new THREE.BoxGeometry(s*.5,Y(6),s*.5),FC); f.position.y=Y(6); c.position.y=Y(3); g.add(f,c); g.position.set(X(l.x),Y(82)+dy,Z(l.y)); scene.add(g);
-    LT.push({L,i:L.intensity,g,s:Math.round(l.x*7+l.y*13)}); }
+  for(const l of K.LAMPS.slice(l0)){ const L=light(l); if(l.flick)LF.push(L); }
+  FLAME.props(made,X,z=>Y(z)+dy,Z,LF);
   light({x:D.cx,y:D.cy,z:70,r:9,c:[.24,.28,.38]});
   MODS.dungeon={B,ground:()=>dy,inside:(x,z)=>x>X(B.x0)&&x<X(B.x1)&&z>Z(B.y0)&&z<Z(B.y1),
-    tick(){ if(LVL!=='down')return; const t=performance.now()/1000; for(const l of LT){ const q=Math.floor(hash(Math.floor(t*10),l.s,425)*5); l.L.intensity=l.i*(.8+.08*q); l.g.scale.set(1,.8+.05*q,1); } }}; });
+    tick(){}}; });   // (its flames and their lights: fire.js)

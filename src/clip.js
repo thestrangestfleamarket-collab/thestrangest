@@ -81,7 +81,7 @@ const CLIP={moved:[],found:[],added:0,boxes:new Map(),done:new Set(),ms:0}; wind
       if(b||q){ let to=null; for(let r=D;r<=8*TILE&&!to;r+=D){ const n=Math.max(8,Math.round(2*Math.PI*r/D)); for(let k=0;k<n;k++){ const a=k/n*2*Math.PI, x=st.x+Math.sin(a)*r, z=st.z+Math.cos(a)*r; if(clear(N,x,z,ok)&&!through(L,st.x,st.z,x,z)){ to={x,z}; break; } } }
         const why=b?'inside a solid ['+b.map(v=>v.toFixed(2))+']':'inside '+q.key;
         if(to){ CLIP.moved.push({key:N.key,from:[+st.x.toFixed(2),+st.z.toFixed(2)],to:[+to.x.toFixed(2),+to.z.toFixed(2)],why}); console.warn('CLIP: '+N.key+' stood '+why+' at '+st.x.toFixed(2)+','+st.z.toFixed(2)+'; moved '+Math.hypot(to.x-st.x,to.z-st.z).toFixed(2)+' to '+to.x.toFixed(2)+','+to.z.toFixed(2));
-          st.x=to.x; st.z=to.z; st.to=null; N.home={x:to.x,z:to.z}; }   // (N.home: a character held to his spot by his own mind keeps the new one: npc-fox.js, npc-figures.js)
+          st.x=to.x; st.z=to.z; st.to=null; N.home={x:to.x,z:to.z}; }   // (N.home: a character held to his spot by his own mind keeps the new one: npc-fox.js)
         else console.warn('CLIP: '+N.key+' stands '+why+' and no clear spot within eight tiles'); }
       ok.push(N); } };
   // A TEST'S LOOK (tests/clipcheck.cjs): every thing whose faces some solid doesn't hold (its samples missed), every character in a solid or in another

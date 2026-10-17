@@ -28,6 +28,13 @@ kit+='\n// ==== 23-w-ghost-street.js (the game\'s, word for word but its roof\'s
 # for word, in a block of its own (its measures, DJ, set by src/ghostdojo.js instead of from the West End's plan), handed out on BOD.GDJ
 dj=rq(rd(S+'23-w-west-dojo-1-hall.js'),"DJ=(()=>{ const g=WEND.dojo","DJ=null&&(()=>{ const g=WEND.dojo")
 kit+='\n// ==== 23-w-west-dojo-1-hall.js (the game\'s, word for word)\n{\n'+dj+'\nBOD.GDJ={djAndon,djCandle,djIncense,djHanging,djTokonoma,djBokkenRack,djLeaf,DJTAT,DJBRD,DJWOOD,DJPAP,DJPLA,setDJ:v=>{ DJ=v; }};\n}\n'
+# THE CASTLE'S AND THE DUNGEON'S MAKERS (owner, 17 Oct 2026: "lets bring back ... the castle, the dungeon under the castle (only 1 level)"): the
+# dungeon's look and things (23-w-dungeon-1-room, -2-things) and the castle's stone and pieces (23-w-dungeon-3-castle-1-stone, -2-pieces), word for
+# word, in a block of their own, handed out on BOD.KC; the dungeon's measures (DGN) the hall's under the castle (CASTLE.hall, map-pre.js); the
+# gatehouse turned to stand out from the wall toward the street (the game's stood out toward +y)
+kc=rq(rd(S+'23-w-dungeon-3-castle-2-pieces.js'),"KMK.gate=(gx,wy,H)=>{ PNAME='gatehouse'; const y0=wy-.5, y1=wy+1.1, w=.65, sd=4800, ps=[];","KMK.gate=(gx,wy,H)=>{ PNAME='gatehouse'; const y0=wy-1.1, y1=wy+.5, w=.65, sd=4800, ps=[];")
+kc=rq(kc,"B.push(sided({x0:gx-w,y0:wy+.36,x1:gx+w,y1:wy+.46,z0:84,z1:104,","B.push(sided({x0:gx-w,y0:wy-.46,x1:gx+w,y1:wy-.36,z0:84,z1:104,")
+kit+='\n// ==== the dungeon and the castle (the game\'s, word for word but the gatehouse\'s side)\n{\nLBLD.push({id:\'ldungeon\',...CASTLE.hall,st:1});\n'+rd(S+'23-w-dungeon-1-room.js')+'\n'+rd(S+'23-w-dungeon-3-castle-1-stone.js')+'\n'+kc+'\n'+rd(S+'23-w-dungeon-2-things.js')+'\nBOD.KC={KMK,KPP,DGN,DGP,LAMPS,dungeonWall,dungeonFloorCol,castleArch,KARCH};\n}\n'
 bod=rd('src/bodega.js')
 i=bod.index('const BOD={'); bod=bod[i:]
 bod=rq(bod,"const BOD={meshes:[], walls:{}, lamps:[]};","BOD={meshes:[], walls:{}, lamps:[]};").replace('/*GAMEKIT*/',kit).replace('/*GOODS*/',rd('src/goods-defs.js'))
@@ -37,7 +44,7 @@ MAPST=('const TEXTURES='+rd('data/textures.json')+';\nconst KITD='+rd('data/kit.
   +wrap('down',stn,"MODS.station={BOUND,ground:(x,z)=>groundY(x,z)+STN.DY};","()=>LVL==='down'")
   +wrap('bodega',bod+'\n'+bb+'\n'+rd('src/apts.js')+'\n'+rd('src/ghostdojo.js'),"MODS.bodega={BOUND,ground:groundY};","()=>BODB.inside()")
   +wrap('pool',pool+'\nWATER.build();',"MODS.pool={BOUND,cut:cutWalls.slice(c0),inside:(x,z)=>x>POOLR.X(POOLR.x0)&&x<POOLR.X(POOLR.x1)&&z>POOLR.Z(POOLR.y0)&&z<POOLR.Z(POOLR.y1)};","()=>MODS.pool.inside(pos.x,pos.z)")
-  +"const FOREST="+rd('data/forest.json')+";\nconst PROPS="+rd('data/props.json')+";\n"+rd('src/park.js')+'\n'   # (CENTRAL PARK'S ENTRANCE, owner 17 Oct 2026: park.js, data/forest.json)
+  +"const FOREST="+rd('data/forest.json')+";\nconst PROPS="+rd('data/props.json')+";\n"+rd('src/park.js')+'\n'+rd('src/castle.js')+'\n'   # (CENTRAL PARK'S ENTRANCE, owner 17 Oct 2026: park.js, data/forest.json; THE CASTLE and its dungeon in it: castle.js)
   +rd('src/map-post.js')+'\n'+rd('src/kit.js')+'\n'+rd('src/dress.js'))   # (the kits placed, the pigeons: after the map)
 f=open('src/flea-market-3d.html').read()  # (carries the simpler Walker)
 st=MAPST

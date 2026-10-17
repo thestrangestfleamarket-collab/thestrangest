@@ -13,14 +13,17 @@ WATER.caustic=m=>{ m.onBeforeCompile=sh=>{ Object.assign(sh.uniforms,{uH:WATER.u
   if(vWp.y<uLevel){ vec2 uv=(vWp.xz-uWB.xy)/(uWB.zw-uWB.xy); uv=clamp(uv,0.,1.); vec2 t=1./uGrid; float c=texture2D(uH,uv).r;
     float lap=texture2D(uH,uv+vec2(t.x,0.)).r+texture2D(uH,uv-vec2(t.x,0.)).r+texture2D(uH,uv+vec2(0.,t.y)).r+texture2D(uH,uv-vec2(0.,t.y)).r-4.*c;
     float k=clamp(-lap*uCK,-0.45,1.6)*smoothstep(0.,0.4,uLevel-vWp.y); gl_FragColor.rgb+=gl_FragColor.rgb*k*vec3(.75,.92,1.); }`); }; m.needsUpdate=true; WATER.mats.push(m); };
-WATER.build=()=>{ const P=POOLR, GX=208, GY=80, X0=P.X(P.bx0), X1=P.X(P.bx1), Z0=P.Z(P.by0), Z1=P.Z(P.by1), W=X1-X0, D=Z1-Z0, lvl=P.Y(P.level);
+// ONE BODY OF WATER (the pool's, and any other: owner, 17 Oct 2026, the Moon Shrine's koi pond and the octopus tank brought back): its field,
+// its sheet, its spray, each its own; cfg: its rect in the scene (X0, X1, Z0, Z1), its still level, its grid, dep(u) the depth in metres under
+// a point u (0 to 1) along it
+const waterBody=(WATER,cfg)=>{ const {X0,X1,Z0,Z1,lvl,GX,GY}=cfg, W=X1-X0, D=Z1-Z0;
   WATER.uWB.value.set(X0,Z0,X1,Z1); WATER.uLevel.value=lvl; WATER.uGrid.value.set(GX,GY); Object.assign(WATER,{X0,Z0,W,D,lvl});
   const o={type:THREE.HalfFloatType,format:THREE.RGBAFormat,minFilter:THREE.LinearFilter,magFilter:THREE.LinearFilter,wrapS:THREE.ClampToEdgeWrapping,wrapT:THREE.ClampToEdgeWrapping,depthBuffer:false};
   WATER.A=new THREE.WebGLRenderTarget(GX,GY,o); WATER.B=new THREE.WebGLRenderTarget(GX,GY,o); WATER.uH.value=WATER.A.texture;
   // one step of the wave: r its height, g how fast it rises; the drops pushed in where they fall (world units, how deep)
   // REAL UNITS (a tile 84 cm, so a world unit MPU metres; the deep end some 4.1 m): the depth under each point, in metres, for the wave's speed
   const MPU=0.84/TILE, dep=new Float32Array(GX*GY*4);
-  for(let j=0;j<GY;j++)for(let i=0;i<GX;i++)dep[(j*GX+i)*4]=Math.max(0.02,(P.level-P.bedAt((i+.5)/GX*P.LX))/24*0.84);
+  for(let j=0;j<GY;j++)for(let i=0;i<GX;i++)dep[(j*GX+i)*4]=cfg.dep((i+.5)/GX,(j+.5)/GY);
   const depT=new THREE.DataTexture(dep,GX,GY,THREE.RGBAFormat,THREE.FloatType); depT.needsUpdate=true; Object.assign(WATER,{MPU,GX,GY,dx:W/GX});
   WATER.simMat=new THREE.ShaderMaterial({uniforms:{uPrev:{value:null},uDep:{value:depT},uT:{value:new THREE.Vector2(1/GX,1/GY)},uSize:{value:new THREE.Vector2(W,D)},uDrop:{value:Array.from({length:8},()=>new THREE.Vector4())},uN:{value:0},
       uDt:{value:1/120},uDx:{value:W/GX},uMpu:{value:MPU},uK:{value:2*Math.PI/1.2},uDamp:{value:2.2}},
@@ -60,7 +63,7 @@ WATER.build=()=>{ const P=POOLR, GX=208, GY=80, X0=P.X(P.bx0), X1=P.X(P.bx1), Z0
   WATER.mesh=new THREE.Mesh(g,WATER.mat); WATER.mesh.position.set(X0+W/2,lvl,Z0+D/2); WATER.mesh.frustumCulled=false; scene.add(WATER.mesh);
   WATER.t=0; WATER.stir=0; WATER.rb=new Uint16Array(GX*GY*4);
   WATER.spg=new THREE.BufferGeometry(); WATER.spg.setAttribute('position',new THREE.BufferAttribute(new Float32Array(600*3),3)); WATER.spg.setDrawRange(0,0);
-  const spm=new THREE.Points(WATER.spg,new THREE.PointsMaterial({color:0xdff3ff,size:2,sizeAttenuation:false})); spm.frustumCulled=false; scene.add(spm); };
+  const spm=new THREE.Points(WATER.spg,new THREE.PointsMaterial({color:0xdff3ff,size:2,sizeAttenuation:false})); spm.frustumCulled=false; scene.add(spm);
 // a drop: where (world x, z), how wide and how hard (world units)
 WATER.drop=(x,z,r,s)=>{ if(WATER.drops.length<8)WATER.drops.push([(x-WATER.X0)/WATER.W,(z-WATER.Z0)/WATER.D,r,s]); };
 // each frame: the stir, then two steps of the field (the drops in the first)
@@ -110,6 +113,12 @@ WATER.under=(renderer,scene,cam,lamps)=>{ const w=renderer.domElement.width, h=r
   const u=WATER.mat.uniforms; u.uRes.value.set(w,h); u.uNear.value=cam.near; u.uFar.value=cam.far; cam.getWorldDirection(u.uCam.value);
   lamps.slice(0,12).forEach((L,i)=>{ u.uLP.value[i].copy(L.position); u.uLC.value[i].set(L.color.r,L.color.g,L.color.b).multiplyScalar(Math.min(1,(L.userData.i0||L.intensity)/3)); }); u.uNL.value=Math.min(12,lamps.length);
   const v0=WATER.mesh.visible; WATER.mesh.visible=false; renderer.setRenderTarget(WATER.rt); renderer.render(scene,cam); renderer.setRenderTarget(null); WATER.mesh.visible=v0; };   // (left as it was: hidden while you're in another room)
+};
+WATER.build=()=>{ const P=POOLR; waterBody(WATER,{X0:P.X(P.bx0),X1:P.X(P.bx1),Z0:P.Z(P.by0),Z1:P.Z(P.by1),lvl:P.Y(P.level),GX:208,GY:80,dep:u=>Math.max(0.02,(P.level-P.bedAt(u*P.LX))/24*0.84)}); };
+// another body (the pond, the tank): its own; stepped and seen through while you're near it, on the street's level (the pool's is the first)
+WATER.extra=[]; WATER.body=cfg=>{ const W={drops:[],uH:{value:null},uWB:{value:new THREE.Vector4()},uLevel:{value:0},uGrid:{value:new THREE.Vector2()},mats:[],name:cfg.name}; waterBody(W,cfg); WATER.extra.push(W); return W; };
+WATER.tickAll=(renderer,dt,pos)=>{ for(const w of WATER.extra){ w.on=LVL==='up'&&Math.hypot(pos.x-(w.X0+w.W/2),pos.z-(w.Z0+w.D/2))<14*TILE; if(w.on)w.step(renderer,dt); } };
+WATER.underAll=(renderer,scene,cam,lamps)=>{ for(const w of WATER.extra)if(w.on)w.under(renderer,scene,cam,lamps); };
 // HIM IN IT (12-walker-rig's water, as 47-pool feeds it): the water's level and the floor under him each frame; in the basin too deep to stand he's
 // in (the rig floats him, treading, the crawl as he's steered, under with Space held); where it's shallow enough he stands and wades; his
 // splashes, strokes and steps push the water

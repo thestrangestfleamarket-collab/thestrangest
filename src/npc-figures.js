@@ -90,10 +90,14 @@ const FIGFX={};   // (the figures' effects' tick, for the frame loop)
     ['SAMIDALE','SAMIDALE',1.62,[97,-74.5],.45,'1.,.55,.15',{},'pipe',{smoke:'Smoke_mouth',held:['LeftArm'],sway:[['Cape_Spine_002',5,1.1,0],['Cape_Side_L',6,1.2,.5],['Cape_Side_R',6,1.2,1.5],['Pipe_Ribon',12,2,0]],waveR:true}],
     ['SHOGUN','SHOGUN',1.66,[103,-66],.42,'1.,.3,.25',{LeftArm:[0,0,-76],RightArm:[0,0,76],LeftShoulder:[0,0,-3],RightShoulder:[0,0,3]},'bow',{sway:[['Tissue_A',8,2,0],['Tissue_A_002',10,2,1]]}]];
   const FIGURES=[]; window.FIGURES=FIGURES;   // (a test's look)
-  for(const [key,name,metres,[tx,tz],speed,eyeC,stance,own,X] of CH){ const M=S[key], rig=rigOf(M.rig), pose=Poser(M.rig,rig,stance), BN={}; rig.bones.forEach(B=>BN[B.name]=B);
+  // ON GUARD AT GHOST STREET (owner, 17 Oct 2026: "have all the samurai & shogun standing guard by the ghost street building in front of it"):
+  // the six stand in a line across its forecourt, three each side of the door, facing the street; they keep their own ways (a breath, a
+  // flourish, a smoke, a wave back) but don't leave their posts
+  const GW=BOD.GSK.o[1]+8.3*BOD.GSK.s, GX=[114.6,115.9,117.2,119.8,121.1,122.4]; let gi=0;
+  for(const [key,name,metres,[tx0,tz0],speed,eyeC,stance,own,X] of CH){ const tx=GX[gi], tz=GW-1, k0=gi++; const M=S[key], rig=rigOf(M.rig), pose=Poser(M.rig,rig,stance), BN={}; rig.bones.forEach(B=>BN[B.name]=B);
     const st2={t:Math.random()*10,ph:Math.random()*6,move:null,wait:3+Math.random()*4,waved:-9,look:0,lookTo:0,vy:0,lift:0,ember:0,tip:null};
     const N=makeNPC(null,{key,name,names:M.parts,lv:'up',group:'bodega',geo:geomOf(M),skin:rig,tall:M.tall,eye:M.eye,eyeC,rank:M.parts.map(p=>/Cape|Cloth|coat|Hat|Veil/.test(p)?2:0),
-      metres,x:BOD.XS(tx),z:BOD.ZS(tz),lane:LANE,free,ground:(x,z)=>MODS.bodega.ground(x,z),radius:.28,speed,stride:0,rock:0,bob:0,
+      metres,x:BOD.XS(tx),z:BOD.ZS(tz),lane:LANE,free,brain:(dt,you,st)=>{ st.to=null; st.hold=true; st.x=BOD.XS(tx); st.z=BOD.ZS(tz); st.face={x:st.x,z:st.z+5*TILE}; },ground:(x,z)=>MODS.bodega.ground(x,z),radius:.28,speed,stride:0,rock:0,bob:0,
       anim:(dt,moving,st,sc)=>{ const s2=st2; s2.t+=dt; const run=moving&&st.v>1.2*TILE; s2.ph+=dt*(moving?Math.PI*st.v/(.45*sc):0);   // (a step .45 of his metres; a cycle two steps)
         // what he does standing: a wave back when you wave near, else now and then his own thing, or a hop
         const you=pos, dx=you.x-st.x, dz=you.z-st.z, near=Math.hypot(dx,dz)<3.5*TILE;

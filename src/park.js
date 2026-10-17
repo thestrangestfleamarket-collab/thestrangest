@@ -21,7 +21,7 @@ grab('park',()=>{ PARK.x0=BOD.MAP.x0; PARK.x1=BOD.MAP.x1; const X=BOD.XS, Z=BOD.
   // cut into four, dithered pixel by pixel at the cuts; at hashed spots in it fresh sprouts (a light V of two blades), clover-like weeds (a
   // darker four-leaf patch) and now and then a weed's tiny flower, yellow or white
   const LAWN=[[46,86,38],[56,102,44],[66,116,50],[78,130,56]], SPR=[[112,162,72],[94,146,62]], WEED=[[38,70,32],[44,80,36]], BLOOM=[[214,196,84],[228,226,212]];
-  const lawn=(x,y)=>{ const ix=Math.floor(x*24), iy=Math.floor(y*24), n=grain(x,y,301,1.2)+(hash(ix,iy,303)-.5)*.06; let c=LAWN[n<.42?0:n<.5?1:n<.58?2:3];
+  const lawn=(x,y)=>{ const ix=Math.floor(x*24), iy=Math.floor(y*24), n=grain(x,y,301,1.2);   /* (no dither at the cuts: "dont dither anything") */ let c=LAWN[n<.42?0:n<.5?1:n<.58?2:3];
     const cx=Math.floor(ix/6), cy=Math.floor(iy/6), h=hash(cx,cy,305), ax=cx*6+1+Math.floor(hash(cx,cy,307)*4), ay=cy*6+1+Math.floor(hash(cx,cy,309)*4), dx=ix-ax, dy=iy-ay;
     if(h<.2){ if(dx===0&&dy===0)c=SPR[0]; else if(Math.abs(dx)===1&&dy===-1)c=SPR[1]; }   // (a sprout)
     else if(h<.3){ if(dx>=0&&dx<2&&dy>=0&&dy<2)c=WEED[(dx+dy)&1]; else if(h<.235&&dx===2&&dy===-1)c=BLOOM[h<.215?0:1]; }   // (a weed, and its flower)
@@ -47,16 +47,16 @@ grab('park',()=>{ PARK.x0=BOD.MAP.x0; PARK.x1=BOD.MAP.x1; const X=BOD.XS, Z=BOD.
         c.setRGB(col[i]/255*sh,col[i+1]/255*sh,col[i+2]/255*sh,THREE.SRGBColorSpace); C3.push(c.r,c.g,c.b); }
       if(solid){ const r=Math.max(.3,D.trunk*s*.5); SOL.up.push([ox-r,oz-r,ox+r,oz+r]); FIX.up.push([ox-r,oz-r,0,ox+r,oz+r,leafy?Y(60):s*.9]); } }   // (where you can't walk: the trunk, the rock; not the undergrowth)
     const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(P3,3)); g.setAttribute('color',new THREE.Float32BufferAttribute(C3,3)); g.computeVertexNormals();
-    // (the crowns are high and wide, and you walk under them: whatever stands between the camera and you, nearer the camera than you are, is
-    // left out, in a dither at its edge, so the trees never hide you; PARK.tick sets how deep you are each frame)
-    const mat=new THREE.MeshLambertMaterial({vertexColors:true,side:THREE.DoubleSide}); mat.onBeforeCompile=sh=>{ sh.uniforms.uCut=PARK.cut; sh.fragmentShader='uniform float uCut;\n'+sh.fragmentShader.replace('#include <clipping_planes_fragment>','#include <clipping_planes_fragment>\n { ivec2 q=ivec2(mod(gl_FragCoord.xy,4.)); float bt[16]=float[16](0.,8.,2.,10.,12.,4.,14.,6.,3.,11.,1.,9.,15.,7.,13.,5.); if(vViewPosition.z<uCut-3.+3.*bt[q.x+q.y*4]/16.)discard; }'); }; mat.customProgramCacheKey=()=>'parkcut';
+    // (nothing cut away or dithered round you: owner, 17 Oct 2026, "no dithering and vanishing anything"; the big trees stand clear of the ways instead)
+    const mat=new THREE.MeshLambertMaterial({vertexColors:true,side:THREE.DoubleSide});
     const me=new THREE.Mesh(g,mat); me.castShadow=true; me.receiveShadow=true; scene.add(me); return me; };
   // (owner, 17 Oct 2026: "move the trees further back into the park, with the bigger ones in the back, less clutter"): the tallest spruces and the
   // cedars along the back, the big oaks before them, a few small ones nearer the wall at the sides; the lawn by the gate open; none on the path
-  const TREES=[['SpruceTree3',56,-34.5,30,1.1],['SpruceTree1',68,-34.2,26,2.2],['SpruceTree3',108,-34.5,28,0],['SpruceTree1',129,-34.6,24,.5],['SpruceTree3',139,-35,26,1.9],
-    ['OakTree3',52,-38.5,20,2.6],['OakTree3',82,-39.5,16,1],['OakTree1',114,-39.5,13,1.7],['SpruceTree2',128,-40,14,.9],['DeadOak3',62,-39.5,10,.3],
-    ['OakTree2',56,-54.5,9.5,.7],['OakTree1',78,-55,11,.4],['OakTree2',134,-55,8.5,3],['DeadOak1',122,-55.5,8,1.4]].filter(([k,x,y,m])=>{ const r=FOREST[k].trunk*m/.84*.5+1.2; for(let a=0;a<6.28;a+=.785)if(path(x+Math.cos(a)*r,y+Math.sin(a)*r))return false; return true; }); PARK.trees=mesh(TREES,true);
-  PARK.rocks=mesh([['BigRock3',87.5,-37,2.6,1.8],['BigRock5',126,-41,2.4,.2],['Rock_12',55.5,-41,1,1],['Rock1',111,-41,.6,2],['BigRock1',62,-36.6,2,1.1]],false);
+  // (owner, 17 Oct 2026: "put the big trees away from the path, in the middle areas between the paths so they dont block views"): each in the
+  // middle of one of the four lawns the ways cut the park into, the tallest in the two at the back, smaller ones in the two by the wall
+  const TREES=[['SpruceTree3',60,-37.5,30,1.1],['OakTree3',71,-38.5,20,2.6],['SpruceTree1',82,-37.5,26,2.2],['SpruceTree3',110,-37.5,28,0],['OakTree3',121,-38.5,16,1],['SpruceTree1',132,-37.5,24,.5],
+    ['OakTree1',64,-56,11,.4],['OakTree2',78,-56.5,9.5,.7],['DeadOak1',118,-56,8,1.4],['OakTree2',131,-56,8.5,3]].filter(([k,x,y,m])=>{ const r=FOREST[k].trunk*m/.84*.5+1.2; for(let a=0;a<6.28;a+=.785)if(path(x+Math.cos(a)*r,y+Math.sin(a)*r))return false; return true; }); PARK.trees=mesh(TREES,true);
+  PARK.rocks=mesh([['BigRock3',87.5,-37,2.6,1.8],['BigRock5',126,-41,2.4,.2],['Rock_12',55.5,-41,1,1],['Rock1',111,-41,.6,2],['BigRock1',66,-35,2,1.1]],false);
   // ---- THE UNDERGROWTH (owner, 17 Oct 2026, "start importing google drive assets based on most recent": his Free Shrubs Flowers and Mushrooms
   // pack and the LowPoly-Psionic pack, tools/props-bake.py → data/props.json): bushes, flowers, grass, mushrooms and stones over the lawn at hashed
   // spots, off the path and clear of the trunks; logs and a bit of fence by the trees; the pots and plants of his pots & plants pack by the gate
@@ -64,7 +64,7 @@ grab('park',()=>{ PARK.x0=BOD.MAP.x0; PARK.x1=BOD.MAP.x1; const X=BOD.XS, Z=BOD.
     const list=[]; for(let i=0;i<90;i++){ const x=P.x0+2+hash(i,3,91)*(P.x1-P.x0-4), y=P.y1-1-Math.pow(hash(i,7,93),1.6)*(P.y1-P.y0-3); if(path(x,y)||path(x+1,y)||path(x-1,y)||path(x,y+1)||path(x,y-1)||hash(i,11,95)<.3)continue;   // (fewer, more of them toward the back, a tile clear of the path)
       let near=false; for(const [k,tx,ty,m] of TREES){  if(Math.hypot(x-tx,y-ty)<.6+F[k].trunk*m/.84*.6)near=true; } if(near)continue;
       const [k,m]=UG[Math.floor(hash(i,13,97)*UG.length)]; list.push([k,x,y,m*(.8+.4*hash(i,17,99)),hash(i,19,101)*6.28]); }
-    list.push(['log1',60,-38.5,.5,.4],['log2',86,-40.5,.6,1.2],['log3',104,-39,.6,2.6],['fence1',57,-41,.8,0],['fence1',126,-41,.8,1.57],['pmushroom1',62.5,-36.5,.6,0],['pmushroom2',63.5,-36.2,.5,1],['pmushroom3',61.8,-35.5,.55,2]);
+    list.push(['log1',65,-41,.5,.4],['log2',86,-40.5,.6,1.2],['log3',104,-39,.6,2.6],['fence1',57,-41,.8,0],['fence1',126,-41,.8,1.57],['pmushroom1',62.5,-36.5,.6,0],['pmushroom2',63.5,-36.2,.5,1],['pmushroom3',61.8,-35.5,.55,2]);
     PARK.under=mesh(list,false,false);
     // THE TOY STALL (his TOYS-Psionic pack: the bear, the monkey, the penguin, the pig, the sheep, the bunny): a flea-market table inside the gate,
     // the six toys set out on it; the park's own monument, a pair of ruined pillars by the round, a sitting log, flower beds along the path, three
@@ -80,9 +80,9 @@ grab('park',()=>{ PARK.x0=BOD.MAP.x0; PARK.x1=BOD.MAP.x1; const X=BOD.XS, Z=BOD.
     PARK.camp=mesh([['campfire',108,-54.5,.13,0],['woodpile',109.5,-55.6,.5,.6]],false,true); PARK.fire={x:X(108),z:Z(-54.5),y:.3};
     { const L=new THREE.PointLight(new THREE.Color(1,.6,.25),4,5*TILE,1.6); L.position.set(X(108),.7,Z(-54.5)); scene.add(L); PARK.fireL=L; }
     // (the plesiosaur skeleton: removed, owner 17 Oct 2026, "remove the dinosaur bones from game")
-    PARK.more=mesh([['pillar1',90,-41.5,3.2,.3],['pillar2',102,-41.5,2.6,1.2],['sitlog',106.5,-55.4,.5,.4],['cedar1',80,-34.3,18,.7],['cedar2',119,-34.4,22,1.9],['cedar1',46.5,-35,16,2.4],
+    PARK.more=mesh([['pillar1',90,-41.5,3.2,.3],['pillar2',102,-41.5,2.6,1.2],['sitlog',106.5,-55.4,.5,.4],['cedar1',53,-35,18,.7],['cedar2',139,-35,22,1.9],
       ['daisy',92.3,-56,.35,0],['tulip',92.3,-54,.4,1],['rose',92.3,-52,.45,2],['sunflower',99.7,-56,.9,.5],['lily',99.7,-54,.4,1.5],['daisy',99.7,-52,.35,2.5],['hbush1',91.5,-58.8,.9,0],['hbush2',100.5,-58.8,.9,1.2]],false,false);
-    for(const [x,y,m] of [[90,-41.5,3.2],[102,-41.5,2.6],[80,-34.3,18],[119,-34.4,22],[46.5,-35,16]]){ const r=.35*m/.84*(m>5?.06:.2); SOL.up.push([X(x)-r,Z(y)-r,X(x)+r,Z(y)+r]); FIX.up.push([X(x)-r,Z(y)-r,0,X(x)+r,Z(y)+r,m/.84*TILE]); }   // (the pillars and the cedars stand solid)
+    for(const [x,y,m] of [[90,-41.5,3.2],[102,-41.5,2.6],[53,-35,18],[139,-35,22]]){ const r=.35*m/.84*(m>5?.06:.2); SOL.up.push([X(x)-r,Z(y)-r,X(x)+r,Z(y)+r]); FIX.up.push([X(x)-r,Z(y)-r,0,X(x)+r,Z(y)+r,m/.84*TILE]); }   // (the pillars and the cedars stand solid)
     PARK.pots=mesh([['pot5',g0-1.7,P.y0+1.1,.5,0],['paradise1',g0-1.7,P.y0+1.1,1.2,.3,.45],['pot1',g1+1.7,P.y0+1.1,.45,0],['sanseveria',g1+1.7,P.y0+1.1,.9,1.2,.4],['pot3',g0-3,P.y0+1.2,.35,0],['calathea',g0-3,P.y0+1.2,.5,2,.3],['pot2',g1+3,P.y0+1.2,.35,0],['paradise',g1+3,P.y0+1.2,.8,.8,.3]],false,true); }
   // ---- THE LAMPS: the park's, a pole and a lantern, along the path; each a warm light at night (the clock's)
   // (owner, 17 Oct 2026: "lights taller and smaller in park"): a thin pole 7 tiles high and a small lantern, along the edges of the way in, round

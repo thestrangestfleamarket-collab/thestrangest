@@ -169,7 +169,7 @@ mod=rp(mod,"{ const sp=new ShaderPass(OUTL.pass); composer.addPass(sp);","{ cons
 # the close view of HIS SHAPE on his middle; the double click's walk to a thing each frame
 mod=rp(mod,"const cloud=RIG.bake(0.5,1), st=RIG.create();","const cloud=RIG.bake(0.5,1), st=RIG.create(); st.snap=true;")
 mod=rp(mod,"if(UI.freeCam)disp.copy(UI.camT); else disp.set(pos.x,py,pos.z);","if(UI.freeCam)disp.copy(UI.camT); else disp.set(pos.x,py+(ED.on?0.85:0),pos.z);")
-mod=rp(mod,"  marker.visible=!!target;","  UI.goTick();\n  marker.visible=!!target;")
+mod=rp(mod,"  marker.visible=!!target;","  UI.goTick(); UI.runTick();\n  marker.visible=!!target;")
 head=rp(head,'<div><b>Click</b> the ground to walk there</div>','<div><b>Double-click</b> the ground to walk there, or a thing to go to it</div>')
 # THE NEON, REAL (owner, 17 Oct 2026: "the light isnt taking into account its surroundings", "match the style", "totally disappears when diff
 # angles ... just laid on map point at me"): its letters as glowing tubes with depth (a little block for every lit square of the game's
@@ -184,8 +184,11 @@ mod=rp(mod,"  for(const l of BOD.LAMPS){ const cm=Math.max(...l.c);","""  // the
     me.count=i; me.castShadow=false; me.receiveShadow=false; scene.add(me); }
   for(const l of BOD.LAMPS){ const cm=Math.max(...l.c);""")
 mod=rp(mod,"bloom=new UnrealBloomPass(new THREE.Vector2(256,256),1.3,0.6,0.62); composer.addPass(bloom);","""bloom=new UnrealBloomPass(new THREE.Vector2(256,256),1.3,0.6,0.62); composer.addPass(bloom);
-{ const cm=bloom.compositeMaterial; cm.fragmentShader=cm.fragmentShader.replace(/}\\s*$/,`  vec3 bc=gl_FragColor.rgb; float bm=max(bc.r,max(bc.g,bc.b)); ivec2 bq=ivec2(mod(gl_FragCoord.xy,4.));
-    float bt[16]=float[16](0.,8.,2.,10.,12.,4.,14.,6.,3.,11.,1.,9.,15.,7.,13.,5.); float bs=5., bv=bm<0.07?0.:max(1./bs,floor(bm*bs+bt[bq.x+bq.y*4]/16.)/bs); gl_FragColor.rgb=bv>0.?bc/bm*bv:vec3(0.);   /* (its faint end cut, not a scatter of dots) */ }`); cm.needsUpdate=true;
+// THE GLOW, YOUR PICK (owner, 17 Oct 2026: "the light looks like a bubble, can you give me the old lighting ... or diff options?"): OFF (the
+// lamps light the room, nothing glows round them), SOFT (the glow as it first was, smooth), STEPPED (in hard steps and dither); the menu's switch
+const GLOW={mode:'soft',set(m){ GLOW.mode=m; bloom.enabled=m!=='off'; if(GLOW.q)GLOW.q.value=m==='stepped'?1:0; try{ localStorage.setItem('market-glow',m); }catch(e){} }};
+{ const cm=bloom.compositeMaterial; cm.uniforms.uQ={value:1}; GLOW.q=cm.uniforms.uQ; cm.fragmentShader='uniform float uQ;\\n'+cm.fragmentShader.replace(/}\\s*$/,`  if(uQ>.5){ vec3 bc=gl_FragColor.rgb; float bm=max(bc.r,max(bc.g,bc.b)); ivec2 bq=ivec2(mod(gl_FragCoord.xy,4.));
+    float bt[16]=float[16](0.,8.,2.,10.,12.,4.,14.,6.,3.,11.,1.,9.,15.,7.,13.,5.); float bs=5., bv=bm<0.07?0.:max(1./bs,floor(bm*bs+bt[bq.x+bq.y*4]/16.)/bs); gl_FragColor.rgb=bv>0.?bc/bm*bv:vec3(0.); }   /* (its faint end cut, not a scatter of dots) */ }`); cm.needsUpdate=true;
   bloom.renderTargetsHorizontal[0].texture.magFilter=bloom.renderTargetsHorizontal[0].texture.minFilter=THREE.NearestFilter; }   // (the glow in steps, dithered, in square blocks: the game's light, not a soft haze)""")
 # HIS BODY IN A PHYSICS ENGINE (owner, 17 Oct 2026): src/physbody.js, after the rig has placed him each frame
 mod=rp(mod,"W3.place(B,pos.x,py,pos.z,RAG.on?RAG.hd:heading,hdA,ZU); if(ED.on)ED.tick();","W3.place(B,pos.x,py,pos.z,RAG.on?RAG.hd:heading,hdA,ZU); PB.step(dt,B,pos.x,py,pos.z,RAG.on?RAG.hd:heading,groundY(pos.x,pos.z),RAG.on); if(ED.on)ED.tick();")
@@ -207,5 +210,4 @@ head=rp(head,"el=(10+w*(lerp(2,64,rs)","el=(10+g.elbow*w*(lerp(2,64,rs)")
 head=rp(head,"  const B=settle(busy||st.up||(st.water&&st.water.in)?clearPose(P,dev):build(P,dev),","  if(OVL.fn)OVL.fn(st,P);   // (his own keys on whatever he's doing: src/animator.js)\n  const B=settle(busy||st.up||(st.water&&st.water.in)?clearPose(P,dev):build(P,dev),")
 head=rp(head,"return {restOf,IDF,","return {OVL,begin,beginUp,legIK,START,mkMove:move,ARMMOVES,restOf,IDF,")
 mod=rp(mod,"B=RIG.pose(st); ragBlend(B);","B=ED.anim?ED.animPose():RIG.pose(st); ragBlend(B);")
-mod=rp(mod,"PB.step=(dt,B,x,y,z,hd,gy,down)=>{ if(!PB.on||!PB.ready)return false;","PB.step=(dt,B,x,y,z,hd,gy,down)=>{ if(!PB.on||!PB.ready||ED.anim)return false;")
 os.makedirs('dist',exist_ok=True); open('dist/market.html','w').write(head+mod); print('built dist/market.html')

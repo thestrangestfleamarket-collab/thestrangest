@@ -41,7 +41,12 @@ function makeNPC(D,o){ const N={key:o.key,name:o.name,names:o.names}; const b=s=
         if(vS>.15)c=vC*.6*vec3(.95,.97,1.05); if(vS>.55)c=vC*.36*vec3(.9,.94,1.12);   // (the clothes' shadows)
         gl_FragColor=vec4(c*uTint,1.); }`});
   N.depthMat=new THREE.MeshDepthMaterial({side:THREE.DoubleSide});
-  const me=new THREE.Mesh(geo,mat); me.castShadow=true; N.me=me;
+  // lit by the lamps, as the Walker (walker3d.js): its own colours (as the model has them), the clothes' shadows on them, the scene's lights in three steps
+  const toon=new THREE.MeshToonMaterial({vertexColors:true,gradientMap:W3.G3,side:THREE.DoubleSide});
+  toon.onBeforeCompile=s=>{ s.vertexShader='attribute float sh; varying float vS;\n'+s.vertexShader.replace('#include <color_vertex>','vColor=pow(color,vec3(2.2)); vS=sh;');
+    s.fragmentShader='varying float vS;\n'+s.fragmentShader.replace('#include <color_fragment>','#include <color_fragment>\n diffuseColor.rgb*=vS>.55?.36:vS>.15?.6:1.;').replace('#include <normal_fragment_begin>','float faceDirection=1.0; vec3 normal=normalize(vNormal); vec3 nonPerturbedNormal=normal;'); };
+  toon.customProgramCacheKey=()=>'npctoon';
+  const me=new THREE.Mesh(geo,mat); me.castShadow=true; me.receiveShadow=true; N.me=me; N.flat=mat; N.toon=toon;
   const H=o.metres/.84*TILE, s=H/tall, body=new THREE.Group(), g=new THREE.Group(); body.add(me); body.scale.set(s,s*ZU*24/TILE,s); g.add(body); MAPG.down.add(g);   // (his height as the world's verticals are drawn)
   // the platform's back lane, between the wall and the benches (tiles: x the platform's depth, y along it), in the scene
   const TX=x=>(x+27)*TILE+STN.DX, TZ=y=>(y+73)*TILE+STN.DZ, LX0=TX(-29.5), LX1=TX(-28.6), LZ0=TZ(-84.2), LZ1=TZ(-61.9), QS=new URLSearchParams(location.search);

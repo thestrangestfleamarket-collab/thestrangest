@@ -69,6 +69,15 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
   m.customDistanceMaterial=dist; m.matrixAutoUpdate=true; m.castShadow=true; m.frustumCulled=false;
   W3.idMat=new THREE.ShaderMaterial({vertexShader:IVS,fragmentShader:IFS,side:THREE.DoubleSide,uniforms:{uPM:W3.PM}});
   W3.depthMat=new THREE.ShaderMaterial({vertexShader:MOVE+`void main(){ `+AT+` gl_Position=projectionMatrix*modelViewMatrix*(PM*vec4(position,1.)); }`,fragmentShader:`void main(){ gl_FragColor=vec4(0.); }`,side:THREE.DoubleSide,uniforms:{uPM:W3.PM}});
+  // LIT BY THE LAMPS (owner, 17 Oct 2026: "lets make sure the avatars are affected by lights, they are same shade all time"): his colours lit by
+  // the scene's own lights (each lamp's colour, how near, which side of him, the walls' shadows on him from the lamps that cast them, the
+  // level's ambient), in three hard steps as the world's pixel art; his first look (his own fixed light) kept as FLAT, the menu's switch
+  all.setAttribute('color',all.attributes.c1.clone());
+  const G3=new THREE.DataTexture(new Uint8Array([70,70,70,255,160,160,160,255,255,255,255,255]),3,1,THREE.RGBAFormat); G3.magFilter=G3.minFilter=THREE.NearestFilter; G3.needsUpdate=true; W3.G3=G3;
+  const toon=new THREE.MeshToonMaterial({vertexColors:true,gradientMap:G3,side:THREE.DoubleSide});
+  toon.onBeforeCompile=sh=>{ sh.uniforms.uPM=W3.PM; sh.vertexShader=MOVE+'\n'+sh.vertexShader.replace('#include <beginnormal_vertex>',AT+' vec3 objectNormal=mat3(PM)*normal;').replace('#include <begin_vertex>','vec3 transformed=(PM*vec4(position,1.)).xyz;');
+    sh.fragmentShader=sh.fragmentShader.replace('#include <normal_fragment_begin>','float faceDirection=1.0; vec3 normal=normalize(vNormal); vec3 nonPerturbedNormal=normal;'); };   // (his normals are his shape's own, whichever way a triangle faces)
+  toon.customProgramCacheKey=()=>'w3toon'+NP; W3.flat=m.material; W3.toon=toon; m.receiveShadow=true;
   W3.group.add(m); W3.meshes.push(m); W3.mesh=m;
   scene.add(W3.group);
   // each frame: every piece where his skeleton has it (his units), the whole of him where he stands, turned to his heading, his verticals as the world's

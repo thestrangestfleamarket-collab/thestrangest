@@ -16,9 +16,10 @@ const PB={on:false,ready:false,loose:0.5};
   const g=W3.mesh.geometry, PA=g.attributes.position.array, PI=g.attributes.pidx.array, BOX=KEYS.map(()=>[1e9,1e9,1e9,-1e9,-1e9,-1e9]);
   for(let i=0;i<PI.length;i++){ const p=PCS[PI[i]|0]; if(p.n!==KEYS[PART[PI[i]|0]])continue; const b=BOX[PART[PI[i]|0]]; for(let k=0;k<3;k++){ b[k]=Math.min(b[k],PA[i*3+k]); b[k+3]=Math.max(b[k+3],PA[i*3+k]); } }
   let RAPIER=null, world=null, bodies=[], ground=null, acc=0, need=true;
-  const S=new THREE.Matrix4(), T=new THREE.Matrix4(), Q=new THREE.Quaternion(), P=new THREE.Vector3(), Sc=new THREE.Vector3(), tgt=KEYS.map(()=>({p:new THREE.Vector3(),q:new THREE.Quaternion(),m:new THREE.Matrix4()})), q0=new THREE.Quaternion(), dq=new THREE.Quaternion(), ax=new THREE.Vector3();
+  const S=new THREE.Matrix4(), T=new THREE.Matrix4(), Q=new THREE.Quaternion(), P=new THREE.Vector3(), Sc=new THREE.Vector3(), tgt=KEYS.map(()=>({p:new THREE.Vector3(),q:new THREE.Quaternion(),m:new THREE.Matrix4(),p0:new THREE.Vector3(),v:new THREE.Vector3()})), q0=new THREE.Quaternion(), dq=new THREE.Quaternion(), ax=new THREE.Vector3();
   // where each part should be: his pose's frame for it, where he stands, turned to his heading (in his own units, the world's scaled to him)
-  function targets(B,x,y,z,hd){ T.makeRotationY(hd).setPosition(x*PPU,y/ZU,z*PPU); KEYS.forEach((k,i)=>{ const t=tgt[i]; t.m.multiplyMatrices(T,M(R.frameOf(k,B))); t.m.decompose(t.p,t.q,Sc); }); }
+  // (and how fast each is going: his walk's own speed handed to the part, so the body keeps up with the legs and only the give lags)
+  function targets(B,x,y,z,hd,dt){ T.makeRotationY(hd).setPosition(x*PPU,y/ZU,z*PPU); KEYS.forEach((k,i)=>{ const t=tgt[i]; t.p0.copy(t.p); t.m.multiplyMatrices(T,M(R.frameOf(k,B))); t.m.decompose(t.p,t.q,Sc); t.v.subVectors(t.p,t.p0).divideScalar(Math.max(dt,1e-3)); if(t.v.length()>600)t.v.set(0,0,0); }); }
   function build(){ const G=R.G?R.G():280; world=new RAPIER.World({x:0,y:-G,z:0}); world.timestep=1/120;
     ground=world.createRigidBody(RAPIER.RigidBodyDesc.kinematicPositionBased()); world.createCollider(RAPIER.ColliderDesc.cuboid(400,5,400).setTranslation(0,-5,0).setFriction(1.2).setCollisionGroups(0x00020001),ground);
     bodies=KEYS.map((k,i)=>{ const t=tgt[i], b=BOX[i], rb=world.createRigidBody(RAPIER.RigidBodyDesc.dynamic().setTranslation(t.p.x,t.p.y,t.p.z).setRotation({x:t.q.x,y:t.q.y,z:t.q.z,w:t.q.w}).setLinearDamping(0.6).setAngularDamping(1.5).setCcdEnabled(/^(hand|shoe)/.test(k)));
@@ -32,9 +33,9 @@ const PB={on:false,ready:false,loose:0.5};
     bodies.forEach((rb,i)=>{ const t=tgt[i], r=rb.rotation(); q0.set(r.x,r.y,r.z,r.w); dq.copy(t.q).multiply(q0.clone().invert()); if(dq.w<0){ dq.x=-dq.x; dq.y=-dq.y; dq.z=-dq.z; dq.w=-dq.w; }
       const an=2*Math.acos(Math.min(1,dq.w)), s=Math.sqrt(Math.max(1e-9,1-dq.w*dq.w)); ax.set(dq.x/s,dq.y/s,dq.z/s); const w=rb.angvel(), k=(i===0&&!down?Math.max(limp,0.35):limp)*an/h;
       rb.setAngvel({x:w.x+(ax.x*k-w.x)*0.6,y:w.y+(ax.y*k-w.y)*0.6,z:w.z+(ax.z*k-w.z)*0.6},true);
-      if(!down&&(i===0||/^(torso|head)$/.test(KEYS[i]))){ const p=rb.translation(), v=rb.linvel(), kp=(i===0?0.35:0.08)*(0.4+0.6*(1-PB.loose))/h;   // (the hips held to where he is; his chest and head a little, to stand him up)
-        rb.setLinvel({x:v.x+((t.p.x-p.x)*kp-v.x)*0.7,y:v.y+((t.p.y-p.y)*kp-v.y)*0.7,z:v.z+((t.p.z-p.z)*kp-v.z)*0.7},true); } }); }
-  PB.step=(dt,B,x,y,z,hd,gy,down)=>{ if(!PB.on||!PB.ready)return false; targets(B,x,y,z,hd); if(need){ build(); }
+      if(!down){ const p=rb.translation(), v=rb.linvel(), kp=(i===0?0.35:/^(torso|head)$/.test(KEYS[i])?0.1:0.04)*(0.4+0.6*(1-PB.loose))/h, f=t.v;   // (the hips held to where he is, his chest and head a little, the rest gently; every part going his speed)
+        rb.setLinvel({x:v.x+((t.p.x-p.x)*kp+f.x-v.x)*0.7,y:v.y+((t.p.y-p.y)*kp+f.y-v.y)*0.7,z:v.z+((t.p.z-p.z)*kp+f.z-v.z)*0.7},true); } }); }
+  PB.step=(dt,B,x,y,z,hd,gy,down)=>{ if(!PB.on||!PB.ready||ED.anim)return false; targets(B,x,y,z,hd,dt); if(need){ build(); }
     if(tgt[0].p.distanceTo(bodies[0].translation())>40)reset();   // (taken somewhere: the map, the stairs' level, a teleport)
     ground.setNextKinematicTranslation({x:x*PPU,y:gy/ZU,z:z*PPU}); acc=Math.min(acc+dt,6/120);
     while(acc>=1/120){ acc-=1/120; drive(1/120,down); world.step(); }

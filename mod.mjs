@@ -9,7 +9,7 @@ import {ShaderPass} from 'three/addons/postprocessing/ShaderPass.js';if(performa
 
 // ---- renderer: no antialiasing, drawn small and scaled up by whole pixels (hard pixel art) ----
 const stage=document.getElementById('stage'), statEl=document.getElementById('stat');if(performance.now()-__YT>40)await __Y();
-const renderer=new THREE.WebGLRenderer({antialias:false,powerPreference:'high-performance'});if(performance.now()-__YT>40)await __Y();
+const renderer=new THREE.WebGLRenderer({antialias:false,powerPreference:'high-performance'});if(performance.now()-__YT>40)await __Y(); renderer.info.autoReset=false;if(performance.now()-__YT>40)await __Y();   // (the counts kept over the whole frame, reset at its start: the simulation reads a frame's triangles, tests/simrun.cjs)
 renderer.setPixelRatio(1);if(performance.now()-__YT>40)await __Y(); renderer.localClippingEnabled=true;if(performance.now()-__YT>40)await __Y(); renderer.shadowMap.autoUpdate=false;if(performance.now()-__YT>40)await __Y(); renderer.shadowMap.enabled=true;if(performance.now()-__YT>40)await __Y(); renderer.shadowMap.type=(()=>{ const q=new URLSearchParams(location.search).get('look'); let v=null; try{ v=localStorage.getItem('market-lighting'); }catch(e){} return (q||v||'smooth')==='pixel'?THREE.BasicShadowMap:THREE.PCFSoftShadowMap; })();if(performance.now()-__YT>40)await __Y();   /* (soft shadow edges unless the PIXEL lighting: map-pre.js's SMOOTH) */
 stage.appendChild(renderer.domElement);if(performance.now()-__YT>40)await __Y();
 const scene=new THREE.Scene();if(performance.now()-__YT>40)await __Y();
@@ -98,7 +98,7 @@ const KITD={"busstop_bench":{"n":33,"lo":[21.32519,-0.00872,18.0],"sc":3.0769230
 // it), SAVE.del(name) drops one. Every value is the string the code kept before, so a reader is unchanged. The old scattered keys
 // (market-looks, market-keys, market-moves...) are read once into the save the first time a browser without one opens the page, and left as
 // they were (an older page in the same browser still finds them). A save from a newer page (v above ours) is left alone and not used. ----
-const SAVE=(()=>{ const KEY='market-save', V=1, OLD=['looks','walker','body','moves','keys','view','grain','look','outline','avlight','loose','physbody2','layout','gtsharp','sfx','amb','vol','recent','lighting','sndmix','where'];
+const SAVE=(()=>{ const KEY='market-save', V=1, OLD=['looks','walker','body','moves','keys','view','grain','look','outline','avlight','loose','physbody2','layout','gtsharp','sfx','amb','vol','recent','lighting','sndmix','where','uiscale'];
   const migrate=o=>{ /* v1: as it is; a later version changes what it must here, by o.v */ o.v=V; return o; };
   const read=()=>{ try{ const o=JSON.parse(localStorage.getItem(KEY)||'null'); if(o&&typeof o==='object'&&!Array.isArray(o)&&+o.v<=V)return migrate(o); }catch(e){} return null; };
   const write=()=>{ try{ localStorage.setItem(KEY,JSON.stringify(S)); return true; }catch(e){ return false; } };
@@ -162,7 +162,12 @@ const grab=async(name,fn)=>{ const n0=scene.children.length; await fn(); const g
 // moves too (e: west, back, east, front); read once here by the code that sets each place out, so its faces, solids, lights, rooms, ground,
 // stairs and lanes all go with it. LAYOUT0 is the game's own (what he exports, saved here for good); the editor's own in the browser
 // (market-layout) over it, the page reloaded to build it; ?layout=0 the game's own alone, ?layout={...} one for a test
-const LAYOUT0={};if(performance.now()-__YT>40)await __Y();
+// THE MARKET'S LAYOUT, MOCKUP 1 (owner, 17 Oct 2026, of three mockups: "mockup 1"): one block, shoulder to shoulder, homes at both ends and
+// the shops between: the apartment house | the community garden (the herb cottage and the butterfly garden, down off the roof, on the lot
+// the subway stairs stand before) | the bodega | the Diner | THE AQUARIUM (the octopus tank's room, a storefront) | the Bar | Ghost Street |
+// the apartment building with its pool at the east end, nothing on its roof; the keep in the castle's bailey; the street run on east past
+// them (BOD.MAP.x1), and THE AVENUE north from its east end along the park's east wall (AVE, below). The moves here in the map's tiles
+const LAYOUT0={bodega:{x:8.75},diner:{x:-24.75},bar:{x:-8},ghost:{x:-8.75},apartments:{x:59},park:{e:[-4,0,0,0]}};if(performance.now()-__YT>40)await __Y();
 const LAY=(()=>{ const q=QS.get('layout'); let o={}; try{ o=q&&q[0]==='{'?JSON.parse(q):q==='0'?{}:JSON.parse(SAVE.get('layout')||'{}')||{}; }catch(e){}
   const L=Object.assign({},LAYOUT0,o); return {L, o:k=>({x:+(L[k]&&L[k].x)||0,y:+(L[k]&&L[k].y)||0}), e:k=>(L[k]&&L[k].e||[0,0,0,0]).map(v=>+v||0)}; })();if(performance.now()-__YT>40)await __Y();
 // where each place goes: the station (its platform 98 px down, its exit tunnel's end 3 tiles behind the sidewalk, 11 tiles west of the
@@ -172,12 +177,17 @@ const PDX=(10+27.3/2+LAY.o('apartments').x)*TILE, PDZ=(-8.4+LAY.o('apartments').
 // BIGGER BUILDINGS, BIGGER DOORS (owner, 17 Oct 2026: "make doorways 30% larger, buildings 10% larger"): each building (the bodega, the pool room)
 // a tenth bigger every way from the middle of its front, which stays on the sidewalk; the street, the sidewalks and the road as they were. Doors 1.3 times (1.56 wide, 94 px high)
 const BLDK=1.1;if(performance.now()-__YT>40)await __Y();
+// THE AVENUE (owner, 17 Oct 2026: "have the street on right side go up and fill the right side of that street with places as well. pull from old
+// game"): a cross street north from the main street's east end, the park's east wall its west side, a row of the old game's places its east
+// side (avenue.js). In the street's tiles (BOD.XS/ZS): x0..x1 its whole width (two sidewalks of 3.2 and a road of 7.7, the main street's), y1
+// how far north it runs (the park's back is -2); its road's kerbs at r0, r1
+const AVE={x0:152,x1:166.5,y1:49};if(performance.now()-__YT>40)await __Y(); AVE.r0=AVE.x0+3.2;if(performance.now()-__YT>40)await __Y(); AVE.r1=AVE.x1-3.2;if(performance.now()-__YT>40)await __Y();
 const MAPSTAIR={x0:59,x1:63,y0:-80,y1:-74, steps:12, depth:98, dir:-1};if(performance.now()-__YT>40)await __Y();
 { const o=LAY.o('subway');if(performance.now()-__YT>40)await __Y(); MAPSTAIR.x0+=o.x;if(performance.now()-__YT>40)await __Y(); MAPSTAIR.x1+=o.x;if(performance.now()-__YT>40)await __Y(); MAPSTAIR.y0+=o.y;if(performance.now()-__YT>40)await __Y(); MAPSTAIR.y1+=o.y;if(performance.now()-__YT>40)await __Y(); }
 // THE CASTLE (owner, 17 Oct 2026: "the castle on the left back end" of the park, "the dungeon under the castle (only 1 level)"; castle.js): its
 // bailey's curtain wall (the lines of its four sides, bodega tiles), the gate's middle on its front (toward the street), the stair down from the
 // bailey (twelve steps, the subway's depth, descending toward the park's back: dir 1), the one dungeon under it (its walls' lines, its height)
-const CASTLE={b:[50,67,-21,-4],gate:58.5,stair:{x0:61.5,x1:63.5,y0:-19.4,y1:-13.4,steps:12,depth:98,dir:1},hall:{x0:51,y0:-20,x1:65,y1:-6.8,h:130}};if(performance.now()-__YT>40)await __Y();   // (clear of the Moon Shrine's garden east of it, store.js)
+const CASTLE={b:[46,67,-21,-4],gate:58.5,stair:{x0:61.5,x1:63.5,y0:-19.4,y1:-13.4,steps:12,depth:98,dir:1},hall:{x0:51,y0:-20,x1:65,y1:-6.8,h:130}};if(performance.now()-__YT>40)await __Y();   // (clear of the Moon Shrine's garden east of it, store.js)
 { const o=LAY.o('castle'), C=CASTLE, S=C.stair, H=C.hall;if(performance.now()-__YT>40)await __Y(); C.b=[C.b[0]+o.x,C.b[1]+o.x,C.b[2]+o.y,C.b[3]+o.y];if(performance.now()-__YT>40)await __Y(); C.gate+=o.x;if(performance.now()-__YT>40)await __Y(); for(const R of [S,H]){ R.x0+=o.x;if(performance.now()-__YT>40)await __Y(); R.x1+=o.x;if(performance.now()-__YT>40)await __Y(); R.y0+=o.y;if(performance.now()-__YT>40)await __Y(); R.y1+=o.y;if(performance.now()-__YT>40)await __Y(); } }   // (the dungeon under it goes with it)
 const POOLR={x0:0,y0:0,x1:27.3,y1:16.8,H:150};if(performance.now()-__YT>40)await __Y(); Object.assign(POOLR,{bx0:3.5,by0:9.7,bx1:17,by1:15.6,HT:5});if(performance.now()-__YT>40)await __Y();   // (the apartments' pool: across the front, left to right, 13.5 x 5.9 tiles, all one depth)   // (the basin as the game has it, the room's middle across)
 POOLR.LX=POOLR.bx1-POOLR.bx0;if(performance.now()-__YT>40)await __Y(); POOLR.LY=POOLR.by1-POOLR.by0;if(performance.now()-__YT>40)await __Y(); POOLR.level=-0.16*24;if(performance.now()-__YT>40)await __Y();   // the water 4 art px under the deck
@@ -5624,7 +5634,7 @@ BOD.KC={KMK,KPP,DGN,DGP,LAMPS,CATALOG,dungeonWall,dungeonFloorCol,castleArch,KAR
 { // (the map's own names in a scope of their own: the game's files above have some of the same)
   const B0=LBLD[0], B00={...B0}, W=LSEED.walk, CURB=LSEED.street, FAR=LSEED.grass, RD=-4;   // (the road 4 art px below the sidewalk: a kerb you step down)
   const OX=(B00.x0+B00.x1)/2, OY=B00.y1, K=BLDK, X=x=>(x-OX)*TILE*K, Z=y=>(y-OY)*TILE*K, Y=z=>z*ZU*K, XS=x=>(x-OX)*TILE, ZS=y=>(y-OY)*TILE, YS=z=>z*ZU; Object.assign(BOD,{X,Z,Y,XS,ZS,YS,OX,OY,B0});   // (X Z Y: the building, a tenth bigger from its front's middle, BLDK; XS ZS YS: the street, as it was)
-  const MAP={x0:50,x1:152,y0:B00.y0,y1:FAR+3}, POOLX=82;   // (the street's run; the pool room's west wall)
+  const MAP={x0:50,x1:172,y0:B00.y0,y1:FAR+3}, POOLX=82, AV=AVE;   // (the street's run: on east past the apartment building and the Avenue's mouth, 17 Oct 2026; the pool room's west wall as it was)
   // (moved on the map's layout, LAY: the building itself in the game's tiles, the world's middle (OX, OY: its front's middle as it was) and the street staying put; a tenth bigger, so a tile on the map is 1/BLDK of the game's)
   { const o=LAY.o('bodega'); B0.x0+=o.x/K; B0.x1+=o.x/K; B0.y0+=o.y/K; B0.y1+=o.y/K; }
   const BODOFF=B0.y0+3.75; BOD.BODOFF=BODOFF;
@@ -5741,19 +5751,35 @@ BOD.KC={KMK,KPP,DGN,DGP,LAMPS,CATALOG,dungeonWall,dungeonFloorCol,castleArch,KAR
   BOD.paintProps=()=>{ for(const p of [...Object.values(O),...FRONT,...STREET,...ROOF,...GHOSTST]){ const k=BOD.kindOf(p); BATCH.tag=OBJ('bodega',p.name); for(const b of p.boxes)gbox(b,k); } BATCH.tag=null; };   // (each thing tagged: the world editor)
   BOD.g={bodegaWall,grain,speck,COPE,DTBRICK,hash,grassCol,lawnCol}; BOD.CURB=CURB; BOD.FAR=FAR;   // (the game's painters the look's builder asks for)
   BOD.gbox=gbox; BOD.faceTex=faceTex; BOD.bq=bq; BOD.C=C; BOD.facade=facade; BOD.FRAME=FRAME; BOD.place=place; BOD.MAP=MAP; BOD.K={MKS,CATALOG,PROPS,STUDIO,LSEED,STORY,sh};   // (place: the apartment house's furniture is set the same way, apts.js)
+  // CROSSWALKS (owner, 17 Oct 2026, mockup 1): white bars over the road at the park's gate and across the Avenue's mouth, over the Avenue at its mouth
+  // and at the park's east gate; each a run [a0, a1, axis]: the bars across the axis, long along the way people walk, a little worn
+  const GATE=[92.5+LAY.o('park').x,99.5+LAY.o('park').x];
+  const zebra=(x,y,runs)=>{ const c=roadCol(x,y,0); for(const [a0,a1,ax] of runs){ const u=ax==='x'?x:y, v=ax==='x'?y:x, lo=ax==='x'?CURB+.4:AV.r0+.4, hi=ax==='x'?FAR-.4:AV.r1-.4;
+      if(u>a0&&u<a1&&v>lo&&v<hi&&(Math.floor((u-a0)/.6)&1)===0){ const n=grain(x,y,39,2.2); return n<.3?[150,148,142]:[196,194,186]; } } return c; };
   // ---- THE GROUND: the shop's sealed concrete (and the office's), the sidewalk's slabs, the kerb, the street's asphalt, the far kerb and sidewalk, grass in the gaps
   BOD.grounds=[
     {id:'shop',bld:true,x0:B0.x0,y0:B0.y0,x1:B0.x1,y1:B0.y1,z:.15,col:(x,y)=>bodegaFloorCol(x,y),tex:'concrete_floor_worn_001',tint:[112,116,124],rep:3},
     {id:'walk',x0:MAP.x0,y0:W,x1:MAP.x1,y1:CURB-.16,z:0,col:holed(slabCol),tex:'concrete_pavement',tint:[166,161,148],rep:2},
     {id:'kerb',x0:MAP.x0,y0:CURB-.16,x1:MAP.x1,y1:CURB,z:0,col:()=>[178,174,164],tex:'concrete_pavement',tint:[178,174,164],rep:2},
-    {id:'road',x0:MAP.x0,y0:CURB,x1:MAP.x1,y1:FAR,z:RD,col:(x,y)=>roadCol(x,y,0),tex:'asphalt_02',tint:[62,64,68],rep:3},
-    {id:'kerb2',x0:MAP.x0,y0:FAR,x1:MAP.x1,y1:FAR+.16,z:0,col:()=>[178,174,164],tex:'concrete_pavement',tint:[178,174,164],rep:2},
-    {id:'walk2',x0:MAP.x0,y0:FAR+.16,x1:MAP.x1,y1:MAP.y1,z:0,col:slabCol,tex:'concrete_pavement',tint:[166,161,148],rep:2},
+    {id:'road',x0:MAP.x0,y0:CURB,x1:MAP.x1,y1:FAR,z:RD,col:(x,y)=>zebra(x,y,[[GATE[0],GATE[1],'x'],[AV.r1+.3,AV.x1-.3,'x']]),tex:'asphalt_02',tint:[62,64,68],rep:3},
+    // THE BACK ALLEY (owner, 17 Oct 2026, mockup 1): a service lane behind the whole row, worn asphalt, the fire escapes' side
+    {id:'alley',x0:MAP.x0,y0:-101,x1:MAP.x1,y1:-96,z:0,col:(x,y)=>roadCol(x,y,1),tex:'asphalt_02',tint:[86,87,90],rep:3},
+    // (the far kerb and sidewalk in two, either side of the Avenue's mouth, where its road runs into the street's; the Avenue's own: its two
+    // sidewalks, its road a kerb down, its kerb strips, north from the far sidewalk's line to its end; its west sidewalk along the park's east wall)
+    {id:'kerb2',x0:MAP.x0,y0:FAR,x1:AV.r0,y1:FAR+.16,z:0,col:()=>[178,174,164],tex:'concrete_pavement',tint:[178,174,164],rep:2},
+    {id:'walk2',x0:MAP.x0,y0:FAR+.16,x1:AV.r0,y1:MAP.y1,z:0,col:slabCol,tex:'concrete_pavement',tint:[166,161,148],rep:2},
+    {id:'kerb2e',x0:AV.r1,y0:FAR,x1:MAP.x1,y1:FAR+.16,z:0,col:()=>[178,174,164],tex:'concrete_pavement',tint:[178,174,164],rep:2},
+    {id:'walk2e',x0:AV.r1,y0:FAR+.16,x1:MAP.x1,y1:MAP.y1,z:0,col:slabCol,tex:'concrete_pavement',tint:[166,161,148],rep:2},
+    {id:'aveW',x0:AV.x0,y0:MAP.y1,x1:AV.r0-.16,y1:AV.y1,z:0,col:slabCol,tex:'concrete_pavement',tint:[166,161,148],rep:2},
+    {id:'aveKW',x0:AV.r0-.16,y0:MAP.y1,x1:AV.r0,y1:AV.y1,z:0,col:()=>[178,174,164],tex:'concrete_pavement',tint:[178,174,164],rep:2},
+    {id:'aveRoad',x0:AV.r0,y0:FAR,x1:AV.r1,y1:AV.y1,z:RD,col:(x,y)=>zebra(x,y,[[FAR+.2,FAR+1.8,'y'],[-34.5,-30.5,'y']]),tex:'asphalt_02',tint:[62,64,68],rep:3},
+    {id:'aveKE',x0:AV.r1,y0:MAP.y1,x1:AV.r1+.16,y1:AV.y1,z:0,col:()=>[178,174,164],tex:'concrete_pavement',tint:[178,174,164],rep:2},
+    {id:'aveE',x0:AV.r1+.16,y0:MAP.y1,x1:AV.x1,y1:AV.y1,z:0,col:slabCol,tex:'concrete_pavement',tint:[166,161,148],rep:2},
     {id:'ghostst',bld:true,x0:GHOSTK.GSK.o[0]+.2,y0:GHOSTK.GSK.o[1]+8.3*GHOSTK.GSK.s-8.75*4/3,x1:GHOSTK.GSK.o[0]+10.4,y1:GHOSTK.GSK.o[1]+8.3*GHOSTK.GSK.s,z:.1,col:(x,y)=>GHOSTK.gsFloor(x,y)||lawnCol(x,y),tex:null,rep:2},   // (Ghost Street's paving: the kit's own, gsFloor)
-    {id:'grassW',x0:MAP.x0,y0:B00.y0,x1:B00.x0,y1:W,z:0,col:holed(lawnCol),tex:null,rep:2},
-    {id:'grassE',x0:B00.x1,y0:B00.y0,x1:POOLX,y1:W,z:0,col:lawnCol,tex:null,rep:2}];   // (the gaps' grass: the park's lawn, as all grass is)
+    {id:'grassW',x0:MAP.x0,y0:B00.y0,x1:B0.x0,y1:W,z:0,col:holed(lawnCol),tex:null,rep:2}];   // (the lot west of the bodega, the stairs' hole in it: the park's lawn, as all grass is; the land's sheet lies under every other gap)
   // the kerbs' faces down to the road
-  BOD.kerbs=[{ax:'x',at:CURB,a0:MAP.x0,a1:MAP.x1,z0:RD,z1:0,n:1},{ax:'x',at:FAR,a0:MAP.x0,a1:MAP.x1,z0:RD,z1:0,n:-1}];
+  BOD.kerbs=[{ax:'x',at:CURB,a0:MAP.x0,a1:MAP.x1,z0:RD,z1:0,n:1},{ax:'x',at:FAR,a0:MAP.x0,a1:AV.r0,z0:RD,z1:0,n:-1},{ax:'x',at:FAR,a0:AV.r1,a1:MAP.x1,z0:RD,z1:0,n:-1},
+    {ax:'y',at:AV.r0,a0:FAR,a1:AV.y1,z0:RD,z1:0,n:1},{ax:'y',at:AV.r1,a0:FAR,a1:AV.y1,z0:RD,z1:0,n:-1},{ax:'x',at:AV.y1,a0:AV.r0,a1:AV.r1,z0:RD,z1:0,n:-1}];   // (the far kerb open at the Avenue's mouth; the Avenue's two kerbs, and its end)
   // ---- the lights: the game's LAMPS as its objects made them (the tubes, the coolers, the neon, the street light), each a point light here
   BOD.LAMPS=LAMPS.filter(l=>!l.off&&l.r>0);
   // ---- the goods (47-physics-5-goods: their kinds, colours and rows, word for word)
@@ -5833,7 +5859,7 @@ const GLAY={
     const bs=p.boxes.filter(b=>!b.nb&&b.z0<30&&b.z1-b.z0>3); if(!bs.length)continue; const r={x0:Math.min(...bs.map(b=>b.x0)),y0:Math.min(...bs.map(b=>b.y0)),x1:Math.max(...bs.map(b=>b.x1)),y1:Math.max(...bs.map(b=>b.y1))};
     sol(r.x0,r.y0,r.x1,r.y1,Math.max(...bs.map(b=>b.z1))); }
   BOUND={x0:XS(MAP.x0),x1:XS(MAP.x1),z0:Z(B00.y0),z1:ZS(MAP.y1)};
-  groundY=(x,z)=>{ const gy=z/TILE+OY; return gy>CURB&&gy<FAR?YS(RD):0; };
+  groundY=(x,z)=>{ const gx=x/TILE+OX, gy=z/TILE+OY; return (gy>CURB&&gy<FAR&&gx>MAP.x0&&gx<MAP.x1)||(gx>AV.r0&&gx<AV.r1&&gy>=FAR&&gy<AV.y1)?YS(RD):0; };   // (the road a kerb down: the street's, and the Avenue's north from it)
   BOD.inside=(x,z)=>{ const gx=x/TILE/K+OX, gy=z/TILE/K+OY; return gx>B0.x0&&gx<B0.x1&&gy>B0.y0&&gy<B0.y1; };
 }
 }
@@ -5868,7 +5894,7 @@ BODB={};
   flat(B0.x0,B0.y0,B0.x1,B0.y1,H,roofCol,'R');
   // THE GROUND, and the kerbs' faces down to the street
   for(const g of BOD.grounds)flat(g.x0,g.y0,g.x1,g.y1,g.z,g.col,'G',!g.bld);
-  { const X=BOD.XS, Y=BOD.YS, Z=BOD.ZS; for(const k of BOD.kerbs)BOD.bq([X(k.a0),Y(k.z0),Z(k.at)],[X(k.a1),Y(k.z0),Z(k.at)],[X(k.a1),Y(k.z1),Z(k.at)],[X(k.a0),Y(k.z1),Z(k.at)],BOD.faceTex((k.a1-k.a0)*24,k.z1-k.z0,()=>[150,146,138]),'G'); }
+  { const X=BOD.XS, Y=BOD.YS, Z=BOD.ZS; for(const k of BOD.kerbs){ const P=(a,z)=>k.ax==='y'?[X(k.at),Y(z),Z(a)]:[X(a),Y(z),Z(k.at)]; BOD.bq(P(k.a0,k.z0),P(k.a1,k.z0),P(k.a1,k.z1),P(k.a0,k.z1),BOD.faceTex((k.a1-k.a0)*24,k.z1-k.z0,()=>[150,146,138]),'G'); } }   // (a kerb along x, or along y: the Avenue's)
   // THE OBJECTS: every box of every one, painted by the game's own painters, into the atlas
   BOD.paintProps();
   BATCH.cast=true;
@@ -6215,30 +6241,16 @@ function gdShape(GS,K,LAMPS){ const G=GS.filter(p=>p.name==='ghost street shop')
   const B_=id=>LBLD.find(b=>b.id===id);
   // (moved on the map's layout, LAY: the Diner and the Bar each on its own, the keep and the rooms stacked on the apartments with them, the shrine
   // with the park; the game's tiles here a tenth bigger, so a map tile is 1/BLDK of them)
-  const LG=k=>{ const o=LAY.o(k); return [o.x/BLDK,o.y/BLDK]; }, AO=LG('apartments');
-  for(const [id,k] of [['ldiner','diner'],['lbodega2','bar'],['lcastle','apartments']]){ const b=B_(id), [dx,dy]=LG(k); if(b&&!b.laid){ b.x0+=dx; b.x1+=dx; b.y0+=dy; b.y1+=dy; b.laid=1; } }
+  const LG=k=>{ const o=LAY.o(k); return [o.x/BLDK,o.y/BLDK]; };
+  for(const [id,k] of [['ldiner','diner'],['lbodega2','bar']]){ const b=B_(id), [dx,dy]=LG(k); if(b&&!b.laid){ b.x0+=dx; b.x1+=dx; b.y0+=dy; b.y1+=dy; b.laid=1; } }
   const PLATE={x0:334,y0:-100,x1:456,y1:-70};   // (the storeroom's floor, bodega tiles)
   const flat=(x0,y0,x1,y1,z,col,kind)=>bq([X(x0),Y(z),Z(y1)],[X(x1),Y(z),Z(y1)],[X(x1),Y(z),Z(y0)],[X(x0),Y(z),Z(y0)],faceTex((x1-x0)*24,(y1-y0)*24,(i,j)=>C(col(x0+(i+.5)/24,y1-(j+.5)/24))),kind);
   const put=(kind,x,y,rot=0)=>{ const f=CATALOG[kind]; if(!f){ console.warn('store: no',kind); return null; } const p=f(+x.toFixed(3),+y.toFixed(3)); if(!p)return null; p.kind=kind; place(p,rot); return p; };
   const sol=(x0,y0,x1,y1,zt)=>{ solids.push([X(x0),Z(y0),X(x1),Z(y1)]); fixed.push([X(x0),Z(y0),0,X(x1),Z(y1),Math.max(.05,Y(zt))]); };
   const roofCol=(x,y)=>{ const n=grain(x,y,61,1.4); return speck(n<.35?[50,50,52]:n>.7?[66,64,62]:[58,57,57],x,y,63); };
   const planes={}, cuts=[];
-  // STACKED ON THE APARTMENTS (owner, 17 Oct 2026: "add other rooms onto the map, stack on top of apartments for now, whatever size they are,
-  // biggest to smallest from bottom to top"): a room built as any other, then everything it added lifted to its floor's height: its faces, its
-  // lights, its record (its floor and ceiling, so the room you're in is known by your height too); its solids its floor's own, used only while
-  // you stand on it (STACK.tick), and the floor under you there its own (STACK.ground)
-  const STACK=STORE.stack=[];
-  // the stacked floor under you: the highest of them whose footprint you're on, no higher than you (a step's give); what blocks you there: its own
-  STORE.stackAt=(x,z)=>{ let best=null; for(const R of STACK)if(x>R.x0&&x<R.x1&&z>R.z0&&z<R.z1&&R.fy<=py+.35*TILE&&(!best||R.fy>best.fy))best=R; return best; };
-  STORE.stackGround=(x,z)=>{ const R=STORE.stackAt(x,z); return R?R.fy:null; };
-  { let was=null; STORE.stackTick=()=>{ const R=STORE.stackAt(pos.x,pos.z); if(R===was)return null; was=R; return R?R.solids:SOL.up; }; }
-  const lift=(dz,fn)=>{ const b0=BATCH.items.length, l0=lamps.length, fl0=FLAME.src.length, s0=solids.length, f0=fixed.length, r0=STORE.rooms.length, dy=Y(dz)-Y(0); fn();
-    for(const it of BATCH.items.slice(b0))for(let q=1;q<it.pos.length;q+=3)it.pos[q]+=dy;
-    for(const L of lamps.slice(l0))L.position.y+=dy; for(const f of FLAME.src.slice(fl0))if(!f.ride){ f.y+=dy; f.a.position.y+=dy; }   // (its flames with it: those riding a lamp follow it)
-    const own=solids.splice(s0); for(const f of fixed.splice(f0)){ f[2]+=dy; f[5]+=dy; fixed.push(f); }
-    for(const R of STORE.rooms.slice(r0)){ R.y0=dy-.05; R.y1=Math.max(R.y1,Y(0)+Y(130)-Y(0))+dy-Y(0); R.fy=dy; R.solids=own; STACK.push(R);
-      // (its menu spot just inside its door, not the step outside it: a stacked room has no floor out there, and you'd drop to the pool below; owner, 17 Oct 2026: "when i try to go to herb cottage i end up in the pool")
-      const m=X(1.2)-X(0); R.at={x:Math.min(Math.max(R.at.x,R.x0+m),R.x1-m),z:Math.min(Math.max(R.at.z,R.z0+m),R.z1-m)}; const pl=STORE.places.find(q=>q[0]===R.name); if(pl){ pl[1]=R.at.x; pl[2]=R.at.z; pl[3]=dy; } } return dy; };
+  // (The rooms once STACKED ON THE APARTMENTS' roof, the herb cottage, the octopus tank, the keep and the butterfly house, stand on the ground
+  // now, each where it makes sense: owner, 17 Oct 2026, "mockup 1". The lift that raised them, and the stacked floors' ground and solids, are gone.)
   // A ROOM: B its building (tiles, h its walls' height); look: floor(x, y) its floor's colour, in(q, nx, ny, X, Y, z, f) its walls' inside,
   // out(nx, ny, X, Y, z, f, cap) their outside (the row's brick unless its own), roof; door {w: 'f' 'b' 'w' 'e', a: along, wd, h}; set(B, l0)
   // places its things (the game's catalog); o.xw: inner walls [id, ax, at, a0, a1, inS, holes, inner]; o.open: no walls of its own (a garden)
@@ -6335,28 +6347,38 @@ function gdShape(GS,K,LAMPS){ const G=GS.filter(p=>p.name==='ghost street shop')
     const T=ter.hi[1], S0=pl.hi[1], in_=(b,x,z)=>x>=b.lo[0]&&x<=b.hi[0]&&z>=b.lo[2]&&z<=b.hi[2];
     STORE.shrineGround=(x,z)=>{ if(in_(ter,x,z))return T; if(in_(st,x,z))return S0+(T-S0)*Math.max(0,Math.min(1,(st.hi[2]-z)/(st.hi[2]-st.lo[2]))); if(in_(pl,x,z))return S0; return null; }; };
 
-  // (faster opening, 17 Oct 2026: the page froze while all of this was painted. The stacked rooms are built after the game opens, one a
+  // (faster opening, 17 Oct 2026: the page froze while all of this was painted. These four rooms are built after the game opens, one a
   // moment, then batched on their own; going to one of them first finishes them at once: STORE.ensure)
-  const STEPS=[]; for(const n of ['THE HERB COTTAGE','THE OCTOPUS TANK','THE KEEP','THE BUTTERFLIES'])STORE.places.push([n,0,0,'up']);
+  const STEPS=[]; for(const n of ['THE HERB COTTAGE','THE AQUARIUM','THE KEEP','THE BUTTERFLIES'])STORE.places.push([n,0,0,'up']);
   // THE HERB COTTAGE: every piece where the page put it, from the room's corner (its own floor, walls, roof and door step among them)
-  STEPS.push(()=>{ const O=[89+AO[0],-95.5+AO[1]]; lift(152,()=>room('cottage','THE HERB COTTAGE',{x0:O[0],y0:O[1],x1:O[0]+9,y1:O[1]+12,h:96},{floor:grassCol},null,()=>{ PRESETS['Preset Herb Cottage 1'].forEach(([k,dx,dy,r])=>put(k,O[0]+dx,O[1]+dy,r)); },
-      {z:.05,pieceWalls:{'herb cottage wall, west':['w',1,0],'herb cottage wall, east':['e',-1,0],'herb cottage wall, north':['b',0,1],'herb cottage wall, south':['f',0,-1]}})); });   // (its own walls cut to their foot between you and the camera while you're in; its roof hidden then)
+  // THE COMMUNITY GARDEN (owner, 17 Oct 2026, mockup 1): the lot between the apartment house and the bodega, the subway stairs on the sidewalk
+  // before it (no door behind them): the herb cottage at its west, the butterfly garden beside it at its east; its fence and gate: dress.js
+  const GARDEN=STORE.garden={cottage:[72-15/BLDK,-77-14.6/BLDK],house:[72-4.6/BLDK,-77-9.2/BLDK]};   // (the game's tiles: the cottage 9 x 12 from its corner, the butterfly plot 8 x 7)
+  STEPS.push(()=>{ const O=GARDEN.cottage, R=room('cottage','THE HERB COTTAGE',{x0:O[0],y0:O[1],x1:O[0]+9,y1:O[1]+12,h:96},{floor:grassCol},null,()=>{ PRESETS['Preset Herb Cottage 1'].forEach(([k,dx,dy,r])=>put(k,O[0]+dx,O[1]+dy,r)); },
+      {z:.05,pieceWalls:{'herb cottage wall, west':['w',1,0],'herb cottage wall, east':['e',-1,0],'herb cottage wall, north':['b',0,1],'herb cottage wall, south':['f',0,-1]}});
+    R.at={x:-4.6*TILE,z:1.6*TILE}; const pl=STORE.places.find(q=>q[0]===R.name); if(pl){ pl[1]=R.at.x; pl[2]=R.at.z; } });   // (its menu spot the garden's gate on the sidewalk, not the front's middle: the subway stairs' hole is there)   // (its own walls cut to their foot between you and the camera while you're in; its roof hidden then)
 
   // THE OCTOPUS TANK'S ROOM: dark blue-grey plaster, a polished concrete floor, no light but the tank's; the tank in the middle, its glow in the
   // room from the lights along the foot of its glass (its water: water3d's third body)
-  STEPS.push(()=>{ const B={id:'locto',x0:86+AO[0],y0:-93+AO[1],x1:101+AO[0],y1:-86+AO[1],h:130}, O=K.octo; lift(254,()=>room('octo','THE OCTOPUS TANK',B,{floor:O.octoFloorCol,in:O.octoWall},{w:'f',a:(B.x0+B.x1)/2,wd:1.56,h:94},B=>{ const {LX,LY,Z0,ZT}=O.OCTK, x=B.x0+5.5-LX/2, y=B.y1-2.6-LY/2, p=O.octoTank(x,y); place(p,0);
+  // THE AQUARIUM (owner, 17 Oct 2026, mockup 1): the octopus tank's room a storefront on the street between the Diner and the Bar, its door on
+  // the sidewalk (the game's tiles 97.6 to 112.4, 14.8 wide, its front the row's line)
+  STEPS.push(()=>{ const B={id:'locto',x0:97.6,y0:-84,x1:112.4,y1:-77,h:130}, O=K.octo; room('octo','THE AQUARIUM',B,{floor:O.octoFloorCol,in:O.octoWall},{w:'f',a:(B.x0+B.x1)/2,wd:1.56,h:94},B=>{ const {LX,LY,Z0,ZT}=O.OCTK, x=B.x0+5.5-LX/2, y=B.y1-2.6-LY/2, p=O.octoTank(x,y); place(p,0);
       for(const [lx,ly,i] of [[x+LX/2,y-.35,0],[x+LX/2,y+LY+.35,1],[x-.35,y+LY/2,2],[x+LX+.35,y+LY/2,3]])LAMPS.push({own:1,room:1,day:true,x:lx,y:ly,z:Z0+4,r:i<2?4.2:3,c:[.5,.72,.95]});
-      STORE.tank={x0:x+.035,y0:y+.035,x1:x+LX-.035,y1:y+LY-.035,z:ZT-4,bed:Z0+1}; })); STORE.tank.dz=254; });
+      STORE.tank={x0:x+.035,y0:y+.035,x1:x+LX-.035,y1:y+LY-.035,z:ZT-4,bed:Z0+1}; }); STORE.tank.dz=0; });
 
   // THE KEEP: the great tower from the archive, as 26-zzzzzzzzz-keep set it out: its walls of dressed stone (keepOutWall), its door in the
   // front, its corner turrets, parapet, pilasters and plinth, the gravel to its door, the well; inside, the dungeon's walls (keepInWall) and
   // cobbles, the cross wall across its middle with its three arches, and the dungeon's things where the walls paint for them
-  STEPS.push(()=>{ const B=B_('lcastle'), KK=K.keep, KC={door:B.x0+4.75,arches:[B.x0+2.1,B.x0+4.75,B.x0+7.4]}, my=(B.y0+B.y1)/2, lead=(x,y)=>{ const n=grain(x,y,67,1.2); return n<.4?[74,76,80]:n>.7?[90,92,96]:[82,84,88]; };
-    lift(390,()=>room('keep','THE KEEP',B,{floor:KK.keepFloorCol,in:KK.keepInWall,out:(nx,ny,Xx,Yy,z,f,cap)=>KK.keepOutWall(B,nx,ny,Xx,Yy,z,f,cap),cope:[184,174,150],roof:lead},{w:'f',a:KC.door,wd:1.4,h:96},B=>{ const M=KK.KMK;
+  // THE KEEP IN THE CASTLE'S BAILEY (owner, 17 Oct 2026, mockup 1: "the keep goes to the castle's bailey across the street, where a keep belongs"):
+  // in the bailey's west half, behind the dungeon's stairwell, its door toward the gatehouse (the bailey's front, the smaller y); it goes with the
+  // castle on the map's layout. Its box the game's (lcastle, 9.5 x 9, 520 tall), set here in the game's tiles from the bailey's street tiles
+  STEPS.push(()=>{ const B=B_('lcastle'), [cx,cy]=LG('castle'); Object.assign(B,{x0:51.09+cx,x1:60.59+cx,y0:-22.9+cy,y1:-13.9+cy});   /* (world: x -23 to -12.5, z 59.5 to 69.4, its turrets a tile out; the stairwell east of it at x -10.5) */
+    const KK=K.keep, KC={door:B.x0+4.75,arches:[B.x0+2.1,B.x0+4.75,B.x0+7.4]}, my=(B.y0+B.y1)/2, lead=(x,y)=>{ const n=grain(x,y,67,1.2); return n<.4?[74,76,80]:n>.7?[90,92,96]:[82,84,88]; };
+    room('keep','THE KEEP',B,{floor:KK.keepFloorCol,in:KK.keepInWall,out:(nx,ny,Xx,Yy,z,f,cap)=>KK.keepOutWall(B,nx,ny,Xx,Yy,z,f,cap),cope:[184,174,150],roof:lead},{w:'b',a:KC.door,wd:1.4,h:96},B=>{ const M=KK.KMK;
       M.turret(B.x0-T,B.y0-T,-1,-1); M.turret(B.x1+T,B.y0-T,1,-1); M.turret(B.x0-T,B.y1+T,-1,1); M.turret(B.x1+T,B.y1+T,1,1);
       for(const s of ['f','b','l','r'])M.parapet(B,s);
-      M.keepFace(B,'f',[KC.door-1,KC.door+1]); M.keepFace(B,'b'); M.keepFace(B,'l'); M.keepFace(B,'r');
-      M.gravel(KC.door-.75,B.y1+T+.3,KC.door+.75,B.y1+3.2); M.well(B.x0-1.2,B.y1+1.4);
+      M.keepFace(B,'b',[KC.door-1,KC.door+1]); M.keepFace(B,'f'); M.keepFace(B,'l'); M.keepFace(B,'r');
+      M.gravel(KC.door-.75,B.y0-3.2,KC.door+.75,B.y0-T-.3);   /* (the gravel from its door toward the gate; the bailey's own well stays: castle.js) */
       const R=KK.KEEPR, x0=R.x0, y0=R.y0, x1=R.x1, y1=R.y1, at=(w,u,d)=>w==='b'?[x0+u,y0+d]:w==='f'?[x0+u,y1-d]:w==='l'?[x0+d,y0+u]:[x1-d,y0+u];
       for(const t of R.torches){ const [x,y]=at(t.w,t.u,.16); CATALOG['wall torch'](x,y,t.w); CATALOG['dust in the air'](x+(t.w==='l'?.5:t.w==='r'?-.5:0),y+(t.w==='b'?.5:t.w==='f'?-.5:0)); }
       for(const [x,y] of [[2.3,2.2],[7,2.2],[2.3,6.6],[7,6.6]])CATALOG['stone column'](x0+x,y0+y);
@@ -6371,11 +6393,25 @@ function gdShape(GS,K,LAMPS){ const G=GS.filter(p=>p.name==='ghost street shop')
       M.bars(x1-1.7,y0,x1-1.7,R.my-T);
       CATALOG['mouse run'](x0+.7,y0+.14,x0+3.9,y0+.14); CATALOG['mouse run'](x0+.14,y0+.5,x0+.14,y0+3.6); CATALOG['mouse run'](x1-.14,y0+4.9,x1-.14,y0+8.2); CATALOG['mouse run'](x0+6.9,y1-.14,x0+8.6,y1-.14);
       const o={own:1,room:1,day:true}; LAMPS.push({x:R.cx,y:R.cy,z:70,r:9,c:[.24,.28,.38],...o}); LAMPS.push({x:x0+R.slit.u,y:y0+.4,z:100,r:3,c:[.3,.36,.52],...o}); },
-      {xw:[['x','x',my,B.x0+T,B.x1-T,1,KC.arches.map(a=>({a0:a-.8,a1:a+.8,z0:0,z1:110})),true]]})); });
+      {xw:[['x','x',my,B.x0+T,B.x1-T,1,KC.arches.map(a=>({a0:a-.8,a1:a+.8,z0:0,z1:110})),true]]}); });
 
   // THE BUTTERFLY HOUSE (the living rooms' atrium, 23-w-studio-mood: a mesh cube on a walnut stand, moss, leaves and a flower of nectar) on
   // its own plot; its two butterflies and the flight of the others: butterflies.js
-  STEPS.push(()=>{ const O=[89.5+AO[0],-93+AO[1]]; STORE.houseAt=[O[0]+4,O[1]+3.5]; STORE.houseZ=916; lift(916,()=>room('butterflies','THE BUTTERFLIES',{x0:O[0],y0:O[1],x1:O[0]+8,y1:O[1]+7,h:0},{floor:grassCol},null,()=>{ const p=put('butterfly house',O[0]+4,O[1]+3.5); if(p)p.bf=[12,21]; STORE.bfHouse=p; },{z:.05})); });
+  STEPS.push(()=>{ const O=GARDEN.house; STORE.houseAt=[O[0]+4,O[1]+3.5]; STORE.houseZ=0; room('butterflies','THE BUTTERFLIES',{x0:O[0],y0:O[1],x1:O[0]+8,y1:O[1]+7,h:0},{floor:grassCol},null,()=>{ const p=put('butterfly house',O[0]+4,O[1]+3.5); if(p)p.bf=[12,21]; STORE.bfHouse=p; },{z:.05}); });   // (the community garden's east plot, beside the cottage)
+
+  // THE AVENUE'S ROW (owner, 17 Oct 2026: "have the street on right side go up and fill the right side of that street with places as well. pull
+  // from old game and map and logically think what we need there"; his pick, mockup 1): the old game's buildings along the Avenue's east side,
+  // their doors on its sidewalk, south to north: MARKET · LOUNGE on the corner (the flea market itself, the lounge upstairs), the MUSEUM OF EARTH
+  // facing the park's east gate, LUCKY 7 and THE YELLOW AWNING (shops with rooms upstairs), an alley, then past the park's end the MOVIE
+  // THEATRE with the ARCADE, the PLAYHOUSE, and 221B BAKER STREET closing the north end by Cherry Station's stairs (to come). FOR NOW EACH IS ITS
+  // SHELL: the row's brick with its windows and door, a plain room inside under one lamp, its roof; the old game's own insides come building by
+  // building (each was built to face the main street, so each needs a quarter turn as it's set out: not yet written). Built after the game
+  // opens with the rooms above, batched with them; no characters on the Avenue yet
+  const AVR=[['market','MARKET · LOUNGE',17.6,33.6,16,230],['museum','MUSEUM OF EARTH',33.6,59.6,26,210],['lucky','LUCKY 7',59.6,70.6,11,200],['yellow','THE YELLOW AWNING',70.6,81.6,11,200],
+    ['theatre','MOVIE THEATRE · ARCADE',87.6,103.6,16,260],['playhouse','PLAYHOUSE',103.6,115.6,12,220],['baker','221B BAKER STREET',115.6,126,12,230]];   // (id, name, its run along the Avenue in the map's tiles from the street's building line, its depth, its height in art px)
+  { const AX=72+(AVE.x1-72)/BLDK, plaster=(B,nx,ny,Xw,Yw,z,f)=>sh(z<8?[118,112,102]:[168,160,146],f*(z<8?.9:1)), conc=(x,y)=>{ const n=grain(x,y,71,1.3); return n<.4?[92,90,86]:n>.7?[104,102,98]:[98,96,92]; };   // (AX: the east sidewalk's edge, the street's tile 166.5, in the game's tiles)
+    for(const [id,name,z0,z1,d,h] of AVR){ STORE.places.push([name,0,0,'up']);
+      STEPS.push(()=>{ const B={id:'lav_'+id,x0:AX,y0:-77+z0/BLDK+.1,x1:AX+d,y1:-77+z1/BLDK-.1,h}; room('av_'+id,name,B,{floor:conc,in:plaster},{w:'w',a:(B.y0+B.y1)/2,wd:1.56,h:94},(B,l0)=>{ LAMPS.push({own:1,room:1,day:true,x:(B.x0+B.x1)/2,y:(B.y0+B.y1)/2,z:Math.min(h-20,120),r:Math.max(6,.75*Math.max(d,(z1-z0)/BLDK)),c:[1,.9,.75]}); }); }); } }   // (its one lamp's reach by the room's size: the museum is 26 tiles across)
 
   // THE WATER'S BEDS: the koi pond's, half a metre down, dark mud and its banks; the tank's is its stand's top. The water itself, below, once built
   { const P=STORE.pond, bed=(x,y)=>{ const n=grain(x,y,911,.8); return n<.4?[38,44,30]:n>.7?[58,64,44]:[46,52,36]; }, BK=[52,46,34], zb=-14;
@@ -6558,7 +6594,7 @@ const PROPS={"bush1":{"p":"0OEwPle5Fj97wbq+5KkzPKzenj5lizO++YOBvbvt8j5Xz4m90OEwP
 const PARK={x0:50,x1:108,y0:-61,y1:-2,gate:[92.5,99.5],round:[96,-47,7]};if(performance.now()-__YT>40)await __Y();   // (bodega tiles, x0 and x1 the street's run, set below; the gate's run along the wall; the round's middle and reach; y1: deep enough for the castle in its back-left corner, castle.js)
 PARK.sway={value:0};if(performance.now()-__YT>40)await __Y(); PARK.windK={value:1};if(performance.now()-__YT>40)await __Y(); /* (windK: the wind's strength on the crowns, weather.js) */ PARK.tick=()=>{ PARK.sway.value=performance.now()/1000; };if(performance.now()-__YT>40)await __Y();   // (the oaks' sway: their crowns' clock)
 // (moved and its edges moved on the map's layout, LAY: everything here in the park's own tiles, X and Z carrying the move: PARK.ox, oy; its edges' moves e: west, front (the wall), east, back)
-await grab('park',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.ox=PO.x; PARK.oy=PO.y; PARK.x0=BOD.MAP.x0+PE[0]; PARK.x1=BOD.MAP.x1+PE[2]; PARK.y0+=PE[1]; PARK.y1+=PE[3]; const X=x=>BOD.XS(x+PO.x), Z=y=>BOD.ZS(y+PO.y), Y=BOD.YS, {hash,grain,speck,grassCol}=BOD.g, P=PARK, U=TILE/.84, f32=s=>new Float32Array(Uint8Array.from(atob(s),c=>c.charCodeAt(0)).buffer), b8=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+await grab('park',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.ox=PO.x; PARK.oy=PO.y; PARK.x0=BOD.MAP.x0+PE[0]; PARK.x1=AVE.x0+PE[2];   /* (the park's east edge the Avenue's west side, not the street's end: map-pre.js) */ PARK.y0+=PE[1]; PARK.y1+=PE[3]; const X=x=>BOD.XS(x+PO.x), Z=y=>BOD.ZS(y+PO.y), Y=BOD.YS, {hash,grain,speck,grassCol}=BOD.g, P=PARK, U=TILE/.84, f32=s=>new Float32Array(Uint8Array.from(atob(s),c=>c.charCodeAt(0)).buffer), b8=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
   // ---- THE PATH: from the gate to the round, the round, and on north-east; the rest lawn
   // (owner, 17 Oct 2026: "wider path"; then "make the path go straight through ... the circle in the middle of the park ... two paths going through
   // the entire park meeting in the middle"): two straight ways 7.2 tiles wide, one from the gate to the back, one from end to end, crossing at
@@ -6583,6 +6619,11 @@ await grab('park',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.ox=P
   const WH=32, PH=54, [g0,g1]=P.gate;
   block(P.x0,P.y0,g0-1,P.y0+.5,0,WH,11); block(g1+1,P.y0,P.x1,P.y0+.5,0,WH,15);
   for(const [x,k] of [[g0-1,21],[g1,25]]){ block(x,P.y0-.2,x+1,P.y0+.7,0,PH,k); block(x-.1,P.y0-.3,x+1.1,P.y0+.8,PH,PH+5,k+4); }   // (each post, its cap)
+  // THE EAST WALL (owner, 17 Oct 2026, the Avenue): the same wall up the park's east side along the Avenue's west sidewalk, its gate (the Avenue's
+  // gate, two posts) opposite the museum; the park's back stays open lawn
+  const EG=PARK.egate=[-34,-31], ex=P.x1-.5;
+  block(ex,P.y0+.5,P.x1,EG[0]-1,0,WH,31); block(ex,EG[1]+1,P.x1,P.y1,0,WH,35);
+  for(const [y,k] of [[EG[0]-1,41],[EG[1],45]]){ block(ex-.2,y,P.x1+.2,y+1,0,PH,k); block(ex-.3,y-.1,P.x1+.3,y+1.1,PH,PH+5,k+4); }
   // ---- THE ROCKS: his pack's models, each at its place, its height in metres, turned as it likes; one mesh
   const F=Object.assign({},FOREST,PROPS), mesh=(list,leafy,solid=true,sway=false)=>{ const P3=[], C3=[], SW=[], c=new THREE.Color(); for(const [key,x,y,m,turn,lift] of list){ const p0=P3.length, ph=hash(Math.round(x*7),Math.round(y*7),131)*6.28; const D=F[key], p=f32(D.p), col=b8(D.c), k=b8(D.k), s=m/.84*TILE, ca=Math.cos(turn||0), sa=Math.sin(turn||0), ox=X(x), oz=Z(y), oy=(lift||0)/.84*TILE;
       for(let i=0;i<p.length;i+=3){ const px=p[i]*s, py=p[i+1]*s+oy, pz=p[i+2]*s; P3.push(ox+px*ca-pz*sa,py,oz+px*sa+pz*ca); if(sway)SW.push(Math.max(0,p[i+1])*s,ph); const t=Math.floor(i/9), sh=k[t]===0?.86+.28*hash(t,x*7,y*3):k[t]===2?.9+.2*hash(t,x*5,y*9):.92+.16*hash(t,x*3,y*5);
@@ -6644,6 +6685,7 @@ await grab('park',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.ox=P
   // where you can't walk: the wall each side of the gate, the posts
   const sol=(x0,y0,x1,y1,h)=>{ SOL.up.push([X(x0),Z(y0),X(x1),Z(y1)]); FIX.up.push([X(x0),Z(y0),0,X(x1),Z(y1),Y(h)]); };
   sol(P.x0,P.y0,g0-1,P.y0+.5,WH); sol(g1+1,P.y0,P.x1,P.y0+.5,WH); sol(g0-1,P.y0-.2,g0,P.y0+.7,PH); sol(g1,P.y0-.2,g1+1,P.y0+.7,PH);
+  sol(ex,P.y0+.5,P.x1,EG[0]-1,WH); sol(ex,EG[1]+1,P.x1,P.y1,WH); sol(ex-.2,EG[0]-1,P.x1+.2,EG[0],PH); sol(ex-.2,EG[1],P.x1+.2,EG[1]+1,PH);   // (the east wall and its gate's posts)
   BATCH.build((k,map,emap)=>new THREE.MeshLambertMaterial({map,emissiveMap:emap||null,emissive:emap?new THREE.Color(1,1,1):new THREE.Color(0,0,0),alphaTest:.5,side:THREE.DoubleSide}));
   MODS.park={BOUND:{x0:X(P.x0+.3),x1:X(P.x1-.3),z0:Z(P.y0),z1:Z(P.y1-.3)},inside:()=>false}; });if(performance.now()-__YT>40)await __Y();
 
@@ -6682,7 +6724,7 @@ await grab('castle',async()=>{ const K=BOD.KC, KP=BOD.K.PROPS, X=BOD.XS, Z=BOD.Z
   K.KMK.drum(gx-2,wy-.25,1.1,290,4); K.KMK.drum(gx+2,wy-.25,1.1,290,5); K.KMK.gate(gx,wy,250);
   // the stairwell's rim (open at its front, the way in from the gate), the gravel from the gate to it, the well
   K.KMK.rim(S.x0-.3,S.y1,S.x1+.3,S.y1+.3); K.KMK.rim(S.x0-.3,S.y0,S.x0,S.y1); K.KMK.rim(S.x1,S.y0,S.x1+.3,S.y1);
-  K.KMK.gravel(gx-.65,wy+.6,S.x1+.6,S.y0-.2); K.KMK.gravel(gx-.65,wy-.3,gx+.65,wy+.6); K.KMK.well(bx0+5,by1-5);
+  K.KMK.gravel(gx-.65,wy+.6,S.x1+.6,S.y0-.2); K.KMK.gravel(gx-.65,wy-.3,gx+.65,wy+.6); K.KMK.well(bx1-3,by1-4);   /* (east of the stairwell: the keep stands in the bailey's west half, store.js) */
   const made=KP.slice(n0); BATCH.cast=true;
   for(const p of made){ BATCH.tag=OBJ('castle',p.name); for(const b of p.boxes)gboxS(b,'L'); } BATCH.tag=null;
   BATCH.build(castleMat); BATCH.cast=false;
@@ -6847,7 +6889,8 @@ window.MAPDBG=()=>({LVL,cut:MODS.stairCut.constant,vis:Object.fromEntries(Object
   const LO=LAY.o('land'), LE=LAY.e('land'), LR=MODS.landR={x0:cx-R+LO.x+LE[0],z0:cz-R+LO.y+LE[1],x1:cx+R+LO.x+LE[2],z1:cz+R+LO.y+LE[3]};if(performance.now()-__YT>40)await __Y();
   const sh=new THREE.Shape([[LR.x0,-LR.z0],[LR.x1,-LR.z0],[LR.x1,-LR.z1],[LR.x0,-LR.z1]].map(p=>new THREE.Vector2(...p)));if(performance.now()-__YT>40)await __Y();
   const hole=(x0,z0,x1,z1)=>x0>LR.x0&&x1<LR.x1&&z0>LR.z0&&z1<LR.z1&&sh.holes.push(new THREE.Path([[x0,-z0],[x0,-z1],[x1,-z1],[x1,-z0]].map(p=>new THREE.Vector2(...p))));if(performance.now()-__YT>40)await __Y();
-  hole(tt(XS(M.x0)),tt(ZS(BOD.CURB)),tt(XS(M.x1)),tt(ZS(BOD.FAR)));if(performance.now()-__YT>40)await __Y();   // (the road, a kerb down)
+  { const A=AVE, P=[[M.x0,BOD.CURB],[M.x1,BOD.CURB],[M.x1,BOD.FAR],[A.r1,BOD.FAR],[A.r1,A.y1],[A.r0,A.y1],[A.r0,BOD.FAR],[M.x0,BOD.FAR]].map(([x,y])=>[tt(XS(x)),tt(ZS(y))]);if(performance.now()-__YT>40)await __Y();   // (the road, a kerb down, and the Avenue's road north from it: one hole)
+    if(P.every(([x,z])=>x>LR.x0&&x<LR.x1&&z>LR.z0&&z<LR.z1))sh.holes.push(new THREE.Path(P.map(([x,z])=>new THREE.Vector2(x,-z))));if(performance.now()-__YT>40)await __Y(); }
   hole(tt(XS(MAPSTAIR.x0)),tt(ZS(MAPSTAIR.y0)),tt(XS(MAPSTAIR.x1)),tt(ZS(MAPSTAIR.y1)));if(performance.now()-__YT>40)await __Y();   // (the stairs down)
   { const S=CASTLE.stair;if(performance.now()-__YT>40)await __Y(); hole(tt(XS(S.x0)),tt(ZS(S.y0)),tt(XS(S.x1)),tt(ZS(S.y1)));if(performance.now()-__YT>40)await __Y(); }   // (the castle's stair down)
   hole(tt(POOLR.X(POOLR.bx0)),tt(POOLR.Z(POOLR.by0)),tt(POOLR.X(POOLR.bx1)),tt(POOLR.Z(POOLR.by1)));if(performance.now()-__YT>40)await __Y();   // (the pool's basin)
@@ -6910,19 +6953,30 @@ const DRESS={};if(performance.now()-__YT>40)await __Y();
     const poolMat=new THREE.MeshBasicMaterial({map:poolTex,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,toneMapped:false,polygonOffset:true,polygonOffsetFactor:-2}), poolGeo=new THREE.PlaneGeometry(2,2).rotateX(-Math.PI/2);if(performance.now()-__YT>40)await __Y();
     for(let i=0;i<n;i++){ const x=x0+i*SP;if(performance.now()-__YT>40)await __Y();   // (the near kerb's, then the far kerb's half a span along: staggered)
       sl(x,sw-.25*M,1);if(performance.now()-__YT>40)await __Y(); light(x,5.8*M,sw+1.4*M,40,13*TILE);if(performance.now()-__YT>40)await __Y(); heads.push([x,5.8*M,sw+1.4*M]);if(performance.now()-__YT>40)await __Y();
-      const xf=x+SP/2;if(performance.now()-__YT>40)await __Y(); if(xf<BOUND.x1-3){ sl(xf,far+.25*M,-1);if(performance.now()-__YT>40)await __Y(); light(xf,5.8*M,far-1.4*M,40,13*TILE);if(performance.now()-__YT>40)await __Y(); heads.push([xf,5.8*M,far-1.4*M]);if(performance.now()-__YT>40)await __Y(); } }
+      const xf=x+SP/2;if(performance.now()-__YT>40)await __Y(); if(xf<BOUND.x1-3&&!(xf>BOD.XS(AVE.r0)-1&&xf<BOD.XS(AVE.r1)+1)){ sl(xf,far+.25*M,-1);if(performance.now()-__YT>40)await __Y(); light(xf,5.8*M,far-1.4*M,40,13*TILE);if(performance.now()-__YT>40)await __Y(); heads.push([xf,5.8*M,far-1.4*M]);if(performance.now()-__YT>40)await __Y(); } }
     // the lamp posts: the far sidewalk's park side (the wall's line, a little in front of it)
-    const wz=BOD.ZS(PARK.y0+PARK.oy), pz=far+(wz-far)*.7, g0=BOD.XS(PARK.gate[0]+PARK.ox), g1=BOD.XS(PARK.gate[1]+PARK.ox), xs=[g0-.9*M,g1+.9*M];if(performance.now()-__YT>40)await __Y();
-    for(let x=g0-14*M;x>BOUND.x0+2;x-=14*M)xs.push(x);if(performance.now()-__YT>40)await __Y(); for(let x=g1+14*M;x<BOUND.x1-2;x+=14*M)xs.push(x);if(performance.now()-__YT>40)await __Y();
+    const wz=BOD.ZS(PARK.y0+PARK.oy), pz=far+(wz-far)*.7, g0=BOD.XS(PARK.gate[0]+PARK.ox), g1=BOD.XS(PARK.gate[1]+PARK.ox), pts=[[g0-.9*M,pz],[g1+.9*M,pz]], px1=BOD.XS(PARK.x1+PARK.ox)-2;if(performance.now()-__YT>40)await __Y();
+    for(let x=g0-14*M;x>BOUND.x0+2;x-=14*M)pts.push([x,pz]);if(performance.now()-__YT>40)await __Y(); for(let x=g1+14*M;x<px1;x+=14*M)pts.push([x,pz]);if(performance.now()-__YT>40)await __Y();
+    // (and up the Avenue's west sidewalk, the park's side, from its mouth to its end: owner, 17 Oct 2026)
+    { const ax=BOD.XS(AVE.x0)+(BOD.XS(AVE.r0)-BOD.XS(AVE.x0))*.35, z0=BOD.ZS(BOD.MAP.y1)+5*M, z1=BOD.ZS(AVE.y1)-2;if(performance.now()-__YT>40)await __Y(); for(let z=z0;z<z1;z+=14*M)pts.push([ax,z]);if(performance.now()-__YT>40)await __Y(); }
+    const xs=pts.map(p=>p[0]);if(performance.now()-__YT>40)await __Y();
     const H=4.2*M, pole=new THREE.InstancedMesh(new THREE.BoxGeometry(.13*M,H,.13*M).translate(0,H/2,0),new THREE.MeshLambertMaterial({color:0x22262b}),xs.length*2),
       lant=new THREE.InstancedMesh(new THREE.BoxGeometry(.34*M,.5*M,.34*M),new THREE.MeshBasicMaterial({color:0xffe4b0}),xs.length), m4=new THREE.Matrix4(), y0=G(xs[0],pz);if(performance.now()-__YT>40)await __Y();
-    xs.forEach((x,i)=>{ const y=G(x,pz); pole.setMatrixAt(i*2,m4.makeTranslation(x,y,pz)); pole.setMatrixAt(i*2+1,m4.makeScale(2.6,.06,2.6).setPosition(x,y,pz));   // (the post and its foot)
+    pts.forEach(([x,pz],i)=>{ const y=G(x,pz); pole.setMatrixAt(i*2,m4.makeTranslation(x,y,pz)); pole.setMatrixAt(i*2+1,m4.makeScale(2.6,.06,2.6).setPosition(x,y,pz));   // (the post and its foot)
       lant.setMatrixAt(i,m4.makeTranslation(x,y+H+.25*M,pz)); light(x,y+H+.2*M,pz,18,9*TILE);
       SOL.up.push([x-.12*M,pz-.12*M,x+.12*M,pz+.12*M]); FIX.up.push([x-.12*M,pz-.12*M,y,x+.12*M,pz+.12*M,y+H]); });if(performance.now()-__YT>40)await __Y();
     const hd=new THREE.InstancedMesh(new THREE.BoxGeometry(.5*M,.08*M,.26*M),lant.material,heads.length);if(performance.now()-__YT>40)await __Y(); heads.forEach(([x,y,z],i)=>hd.setMatrixAt(i,m4.makeTranslation(x,y-.08*M,z)));if(performance.now()-__YT>40)await __Y(); scene.add(hd);if(performance.now()-__YT>40)await __Y();   // (each street light's lamp, lit under its head)
     for(const P of pools){ const [L,x,z,r]=P, me=new THREE.Mesh(poolGeo,poolMat);if(performance.now()-__YT>40)await __Y(); me.scale.set(r,1,r);if(performance.now()-__YT>40)await __Y(); me.position.set(x,G(x,z)+.03,z);if(performance.now()-__YT>40)await __Y(); me.renderOrder=1;if(performance.now()-__YT>40)await __Y(); me.visible=false;if(performance.now()-__YT>40)await __Y(); scene.add(me);if(performance.now()-__YT>40)await __Y(); P.push(me);if(performance.now()-__YT>40)await __Y(); }
     DRESS.pools=pools;if(performance.now()-__YT>40)await __Y(); DRESS.tick=()=>{ const k=Math.max(0,Math.min(1,(3-CLOCK.elev())/8)), up=LVL!=='down'&&!ROOMS.cur; poolMat.opacity=k; for(const [L,,,,me] of pools)me.visible=up&&k>0&&!L.userData.off; };if(performance.now()-__YT>40)await __Y();
     pole.castShadow=true;if(performance.now()-__YT>40)await __Y(); scene.add(pole,lant);if(performance.now()-__YT>40)await __Y();
+    // THE COMMUNITY GARDEN'S FENCE (owner, 17 Oct 2026, mockup 1): a low wooden fence along the lot's front between the apartment house and the
+    // bodega, posts every two tiles, two rails, its gate open between the cottage and the butterfly garden; solid but for the gate
+    { const z=-.35*TILE, x0=AX+.15, x1=BX0-.15, gx0=-5.6*TILE, gx1=-3.6*TILE, sx0=BOD.XS(MAPSTAIR.x0)-.3, sx1=BOD.XS(MAPSTAIR.x1)+.3, WD=0x4a3b2a, RL=0x6b573f, H=1.05*M;if(performance.now()-__YT>40)await __Y();   // (on the lot's line, a hair behind the sidewalk; open where the subway stairs' well cuts the line)
+      const post=(x,h)=>{ const y=G(x,z); blk(x,y+h/2,z,.09*M,h,.09*M,WD); };if(performance.now()-__YT>40)await __Y();
+      const runs=[[x0,sx0],[sx1,gx0],[gx1,x1]];if(performance.now()-__YT>40)await __Y();
+      for(const [a,b] of runs){ for(let x=a;x<b-.5;x+=2*TILE)post(x,H);if(performance.now()-__YT>40)await __Y(); post(b,H);if(performance.now()-__YT>40)await __Y(); } post(gx0,H*1.2);if(performance.now()-__YT>40)await __Y(); post(gx1,H*1.2);if(performance.now()-__YT>40)await __Y();
+      const rail=(a,b)=>{ const y=G((a+b)/2,z); for(const h of [.42*M,.9*M])blk((a+b)/2,y+h,z,b-a,.06*M,.05*M,RL); SOL.up.push([a,z-.06*M,b,z+.06*M]); FIX.up.push([a,z-.06*M,y,b,z+.06*M,y+H]); };if(performance.now()-__YT>40)await __Y();
+      for(const [a,b] of runs)rail(a,b);if(performance.now()-__YT>40)await __Y(); }
     { const me=new THREE.InstancedMesh(new THREE.BoxGeometry(1,1,1),new THREE.MeshLambertMaterial({color:0xffffff}),BL.length), m4=new THREE.Matrix4(), q=new THREE.Quaternion(), c=new THREE.Color();if(performance.now()-__YT>40)await __Y();
       BL.forEach(([x,y,z,sx,sy,sz,col],i)=>{ me.setMatrixAt(i,m4.compose(new THREE.Vector3(x,y,z),q,new THREE.Vector3(sx,sy,sz))); me.setColorAt(i,c.setHex(col)); });if(performance.now()-__YT>40)await __Y(); me.castShadow=me.receiveShadow=true;if(performance.now()-__YT>40)await __Y(); scene.add(me);if(performance.now()-__YT>40)await __Y(); DRESS.blocks=me;if(performance.now()-__YT>40)await __Y(); } DRESS.posts=xs.length;if(performance.now()-__YT>40)await __Y(); DRESS.lights=n*2+xs.length;if(performance.now()-__YT>40)await __Y(); }
 }
@@ -7511,7 +7565,7 @@ function collide(p){ if(typeof NPCS!=='undefined')for(const N of NPCS)if(N.lv===
 // ---- the loop: move, animate, then the camera follows him ----
 const R=new THREE.Vector3(),U=new THREE.Vector3(),F=new THREE.Vector3(),disp=new THREE.Vector3();if(performance.now()-__YT>40)await __Y();
 let last=performance.now(), fpsT=0, fpsN=0, t=0;if(performance.now()-__YT>40)await __Y();
-function frame(now){ requestAnimationFrame(frame); const dt=Math.max(0,Math.min(0.05,(now-last)/1000)); last=now;   /* (never backwards: the first frame's time can be older than the page's start) */ t+=dt;
+function frame(now){ requestAnimationFrame(frame); renderer.info.reset(); const dt=Math.max(0,Math.min(0.05,(now-last)/1000)); last=now;   /* (never backwards: the first frame's time can be older than the page's start) */ t+=dt;
   if(UI.freeCam?MAPLV(UI.camT.y-.9,UI.camT):MAPLV(py,pos))setPhys(LVL);   // (the free camera shows the level it's on)   // (the level you're on: its walls, its ground, its places)
   if(UI.view!=='iso'){ if(keys.has('q'))yawTo+=dt*1.8; if(keys.has('e'))yawTo-=dt*1.8; if(keys.has('z'))pitchTo=UI.clampV(pitchTo-dt*1.2); if(keys.has('x'))pitchTo=UI.clampV(pitchTo+dt*1.2); }
   const ease=Math.min(1,dt*12); yaw=Math.abs(yawTo-yaw)<1e-4?yawTo:yaw+(yawTo-yaw)*ease; pitch=Math.abs(pitchTo-pitch)<1e-4?pitchTo:pitch+(pitchTo-pitch)*ease; const zk0=UI.zk(); ppu=Math.abs(ppuTo/ppu-1)<1e-4?ppuTo:ppu*Math.pow(ppuTo/ppu,ease); if(pxS()!==SCL)resize(); else frustum(); UI.zoomStep(zk0);
@@ -8616,6 +8670,7 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};if(pe
   const css=document.createElement('style');if(performance.now()-__YT>40)await __Y(); css.textContent=`
   #mode{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(12px + env(safe-area-inset-bottom,0px));font:12px var(--pixel);color:var(--key);background:var(--panel);border:2px solid var(--line);padding:6px 10px;z-index:15}
   #mode[hidden],#shd[hidden],#said[hidden]{display:none}
+  #menu .box,#ed,#looks,#we,#movesp,#maped,#snded,#shbar,#hud,#stat,#shd,#said,.said2,#vit,#moves{zoom:var(--uiz,1)}
   #said{position:fixed;transform:translate(-50%,-100%);font:12px var(--pixel);color:var(--key);background:var(--panel);border:2px solid var(--line);padding:4px 8px;pointer-events:none;z-index:14}
   #menu{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(5,6,10,.55);z-index:30}
   #menu[hidden]{display:none}
@@ -8640,7 +8695,7 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};if(pe
       <h3>HIM</h3><div class="row"><button class="btn" id="dshape">EDIT HIS SHAPE</button><button class="btn" id="dlooks">YOUR LOOKS</button></div>
       <div class="row"><button class="btn" id="dbody">PHYSICS BODY</button><span style="width:60px">LOOSE</span><input type="range" id="dloose" min="0" max="1" step="0.01"></div>
       <h3>SOUND</h3><div class="row"><button class="btn" id="dsfx">EFFECTS</button><button class="btn" id="damb">AMBIENCE</button><span style="width:60px">VOLUME</span><input type="range" id="dvol" min="0" max="1" step="0.01"><button class="btn" id="dsnded">SOUND EDITOR</button></div>
-      <h3>ON SCREEN</h3><div class="row"><button class="btn" id="dhelp">HELP PANEL</button><button class="btn" id="dstat">STATS</button></div></div>
+      <h3>ON SCREEN</h3><div class="row"><button class="btn" id="dhelp">HELP PANEL</button><button class="btn" id="dstat">STATS</button><span style="width:70px;margin-left:8px">UI SCALE</span><button class="btn" data-ui="small">SMALL</button><button class="btn" data-ui="medium">MEDIUM</button><button class="btn" data-ui="large">LARGE</button></div></div>
     <div class="pane" data-p="graphics">
       <h3>RESOLUTION</h3><div class="row" id="dres"></div><div class="dim" id="dsharp"></div>
       <h3>SHADOWS</h3><div class="row" id="dshd"></div>
@@ -8680,8 +8735,8 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};if(pe
   mcv.addEventListener('click',e=>{ const r=mcv.getBoundingClientRect(), R=mapRect(mapLv); goTo(R.x0+(e.clientX-r.left)/r.width*(R.x1-R.x0),R.z0+(e.clientY-r.top)/r.height*(R.z1-R.z0),mapLv); });if(performance.now()-__YT>40)await __Y();
   M.querySelectorAll('[data-lv]').forEach(b=>b.onclick=()=>{ mapLv=b.dataset.lv; drawMap(); });if(performance.now()-__YT>40)await __Y();
   const PLACES=[['THE STREET',-2.2,3.2,'up'],['THE BODEGA',BOD.X((BOD.B0.x0+BOD.B0.x1)/2),BOD.Z(BOD.B0.y1)-3.4,'up'],['THE APARTMENTS',POOLR.X(22.75),POOLR.Z(12),'up'],['THE POOL',POOLR.X(10),POOLR.Z(8.9),'up'],['THE PLATFORM',-12.4+LAY.o('subway').x*TILE,-24.9+LAY.o('subway').y*TILE,'down'],['CENTRAL PARK',BOD.XS(96+PARK.ox),BOD.ZS(-54+PARK.oy),'up'],['GHOST STREET',BOD.X(BOD.GD.door[0]),BOD.Z(BOD.GD.door[1]+4.5),'up'],['THE CASTLE',BOD.XS(CASTLE.gate),BOD.ZS(CASTLE.b[2]-3),'up'],['THE DUNGEON',BOD.XS((CASTLE.hall.x0+CASTLE.hall.x1)/2),BOD.ZS((CASTLE.hall.y0+CASTLE.hall.y1)/2),'down']];if(performance.now()-__YT>40)await __Y();
-  UI.places=()=>PLACES.concat(STORE.places||[]);if(performance.now()-__YT>40)await __Y();   /* (the data check's: tests/datacheck.cjs) */
-  const goPlace=n=>{ if(STORE.ensure)STORE.ensure(); const P=PLACES.concat(STORE.places).find(p=>p[0]===n); if(P)goTo(P[1],P[2],P[3]); };if(performance.now()-__YT>40)await __Y();   // (a stacked room is finished first if it isn't yet: store.js)
+  UI.places=()=>PLACES.concat(STORE.places||[]);if(performance.now()-__YT>40)await __Y();   /* (the data check's: tests/datacheck.cjs; goPlace the simulation's: tests/simrun.cjs) */
+  const goPlace=n=>{ if(STORE.ensure)STORE.ensure(); const P=PLACES.concat(STORE.places).find(p=>p[0]===n); if(P)goTo(P[1],P[2],P[3]); };if(performance.now()-__YT>40)await __Y(); UI.goPlace=goPlace;if(performance.now()-__YT>40)await __Y();   // (a stacked room is finished first if it isn't yet: store.js)
   { const q=QS.get('place');if(performance.now()-__YT>40)await __Y(); const go=()=>window.__started?goPlace(q.toUpperCase()):setTimeout(go,200);if(performance.now()-__YT>40)await __Y(); if(q)setTimeout(go,300);if(performance.now()-__YT>40)await __Y(); }   /* (once the game runs: the page breathes while it loads) */   // (?place=central park: a test's start)
   for(const [n,x,z,lv] of PLACES){ const b=document.createElement('button');if(performance.now()-__YT>40)await __Y(); b.className='btn';if(performance.now()-__YT>40)await __Y(); b.textContent=n;if(performance.now()-__YT>40)await __Y(); b.onclick=()=>goTo(x,z,lv);if(performance.now()-__YT>40)await __Y(); $('#places').appendChild(b);if(performance.now()-__YT>40)await __Y(); }
   // EVERY ROOM A BUTTON (owner, 17 Oct 2026: "make sure every room and location on map has a button to jump there"): the bodega's two rooms, the
@@ -8717,6 +8772,9 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};if(pe
   M.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>{ UI.setView(b.dataset.view); drawDisplay(); });if(performance.now()-__YT>40)await __Y();
   $('#dlooks').onclick=()=>{ toggleMenu(); LOOKS.open(); };if(performance.now()-__YT>40)await __Y(); $('#dsteps').oninput=e=>W3.setShade(+e.target.value,W3.shade.depth);if(performance.now()-__YT>40)await __Y(); $('#ddepth').oninput=e=>W3.setShade(W3.shade.steps,+e.target.value);if(performance.now()-__YT>40)await __Y();   // (his shading: the steps of light on him, how deep his shadows)
   $('#dreset').onclick=()=>{ yawTo=VIEW0.yaw; pitchTo=VIEW0.pitch; ppuTo=VIEW0.ppu; UI.home(); drawDisplay(); };if(performance.now()-__YT>40)await __Y();
+  // UI SCALE (17 Oct 2026, the physician game's settings: SMALL .9, MEDIUM 1, LARGE 1.1; kept in the save): every panel, label and bar zoomed by it, the game's picture untouched
+  const UIS={small:.9,medium:1,large:1.1};if(performance.now()-__YT>40)await __Y(); UI.setScale=k=>{ if(!UIS[k])k='medium'; UI.scale=k; document.documentElement.style.setProperty('--uiz',UIS[k]); SAVE.set('uiscale',k); M.querySelectorAll('[data-ui]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.ui===k))); };if(performance.now()-__YT>40)await __Y();
+  UI.setScale(SAVE.get('uiscale')||'medium');if(performance.now()-__YT>40)await __Y(); M.querySelectorAll('[data-ui]').forEach(b=>b.onclick=()=>UI.setScale(b.dataset.ui));if(performance.now()-__YT>40)await __Y();
   $('#dhelp').onclick=()=>{ const h=document.getElementById('hud'); h.hidden=!h.hidden; drawDisplay(); };if(performance.now()-__YT>40)await __Y(); $('#dstat').onclick=()=>{ const h=document.getElementById('stat'); h.hidden=!h.hidden; drawDisplay(); };if(performance.now()-__YT>40)await __Y();
   // THE OUTLINE round him (owner, 17 Oct 2026: "add ability to remove the line from avatar"; off unless turned on, kept in this browser)
   try{ OUTL.on=SAVE.get('outline')==='1';if(performance.now()-__YT>40)await __Y(); }catch(e){ OUTL.on=false; } OUTL.sp.enabled=OUTL.on;if(performance.now()-__YT>40)await __Y();
@@ -11571,7 +11629,7 @@ const INTERIORS={on:QS.get('interiors')!=='0',list:[],near:5*TILE,seen:3*TILE,wa
   INTERIORS.state=()=>L.map(I=>[I.id,I.on,I.meshes.size,I.walls.length,Math.round(near2(I,pos.x,pos.z,py)/TILE*10)/10]);if(performance.now()-__YT>40)await __Y();   // (a test's look)
 }
 
-CLIP.run();if(performance.now()-__YT>40)await __Y(); STORE.shrineFix&&STORE.shrineFix();if(performance.now()-__YT>40)await __Y(); LITE.init();if(performance.now()-__YT>40)await __Y(); INTERIORS.build();if(performance.now()-__YT>40)await __Y(); STORE.later();if(performance.now()-__YT>40)await __Y(); window.__started=true;if(performance.now()-__YT>40)await __Y(); window.__scene=scene;if(performance.now()-__YT>40)await __Y(); window.__dbg={OBJS,SOL,FIX,NPCS,renderer,scene,THREE,camera:cam,MAPG,LITE,lamps,INTERIORS,SAVE,SFX,AMB,LINES,SNDED,LOOKS,OUTL,DITH,ground:(x,z)=>groundY(x,z),lvl:()=>LVL,CLOCK,WHERE,ROOMS,hd:()=>heading,setHd:h=>{ heading=h; },setRes:i=>{ RESI=i; resize(); },res:()=>RESI,UI,yaw:()=>[yaw,yawTo],px:()=>[SCL,RES(),pxS(),vpu()/art()],cam:(y,p,z,d)=>{ if(y!=null)yawTo=y; if(p!=null)pitchTo=p; if(z!=null)ppuTo=z; if(d!=null)UI.dist=d; },cv:()=>({yaw,pitch,ppu,PPU,dist:UI.dist,TILE,heading,keys:[...keys],look:UI.look}),camO:()=>cam,go:(x,z)=>{ target=new THREE.Vector3(x,py,z); },collide:(x,z)=>{ const p={x,z}; collide(p); return [p.x,p.z]; }};if(performance.now()-__YT>40)await __Y();   // (go: walk him there; collide: where a spot is pushed out of the level's solids: tests/mapedit.cjs)
+CLIP.run();if(performance.now()-__YT>40)await __Y(); STORE.shrineFix&&STORE.shrineFix();if(performance.now()-__YT>40)await __Y(); LITE.init();if(performance.now()-__YT>40)await __Y(); INTERIORS.build();if(performance.now()-__YT>40)await __Y(); STORE.later();if(performance.now()-__YT>40)await __Y(); window.__started=true;if(performance.now()-__YT>40)await __Y(); window.__scene=scene;if(performance.now()-__YT>40)await __Y(); window.__dbg={VIT,info:()=>renderer.info.render,gl:()=>{ const g=renderer.getContext(), x=g.getExtension('WEBGL_debug_renderer_info'); return x?g.getParameter(x.UNMASKED_RENDERER_WEBGL):''; },tris:()=>{ const F=new THREE.Frustum(), M=new THREE.Matrix4().multiplyMatrices(cam.projectionMatrix,cam.matrixWorldInverse); F.setFromProjectionMatrix(M); let n=0; scene.traverseVisible(o=>{ if(!o.isMesh&&!o.isPoints&&!o.isLine)return; if(o.frustumCulled&&!F.intersectsObject(o))return; const g=o.geometry; if(!g)return; const c=g.index?g.index.count:g.attributes.position?g.attributes.position.count:0, d=g.drawRange, k=Math.min(c,d.count===Infinity?c:d.count); n+=(o.isMesh?k/3:o.isPoints?k:k/2)*(o.isInstancedMesh?o.count:1); }); return Math.round(n); },pos:()=>[pos.x,py,pos.z],OBJS,SOL,FIX,NPCS,renderer,scene,THREE,camera:cam,MAPG,LITE,lamps,INTERIORS,SAVE,SFX,AMB,LINES,SNDED,LOOKS,OUTL,DITH,ground:(x,z)=>groundY(x,z),lvl:()=>LVL,CLOCK,WHERE,ROOMS,hd:()=>heading,setHd:h=>{ heading=h; },setRes:i=>{ RESI=i; resize(); },res:()=>RESI,UI,yaw:()=>[yaw,yawTo],px:()=>[SCL,RES(),pxS(),vpu()/art()],cam:(y,p,z,d)=>{ if(y!=null)yawTo=y; if(p!=null)pitchTo=p; if(z!=null)ppuTo=z; if(d!=null)UI.dist=d; },cv:()=>({yaw,pitch,ppu,PPU,dist:UI.dist,TILE,heading,keys:[...keys],look:UI.look}),camO:()=>cam,go:(x,z)=>{ target=new THREE.Vector3(x,py,z); },collide:(x,z)=>{ const p={x,z}; collide(p); return [p.x,p.z]; }};if(performance.now()-__YT>40)await __Y();   // (go: walk him there; collide: where a spot is pushed out of the level's solids: tests/mapedit.cjs)
 { const t0=performance.now(), PL=[0,1,2,3,4,5].map(()=>new THREE.Plane(new THREE.Vector3(0,1,0),1e6));if(performance.now()-__YT>40)await __Y(); renderer.setRenderTarget(composer.readBuffer);if(performance.now()-__YT>40)await __Y(); renderer.compile(scene,cam);if(performance.now()-__YT>40)await __Y();
   renderer.clippingPlanes=PL;if(performance.now()-__YT>40)await __Y(); renderer.render(new THREE.Scene(),cam);if(performance.now()-__YT>40)await __Y(); renderer.compile(scene,cam);if(performance.now()-__YT>40)await __Y(); renderer.clippingPlanes=[];if(performance.now()-__YT>40)await __Y(); renderer.setRenderTarget(null);if(performance.now()-__YT>40)await __Y();   /* (the empty picture only sets the six planes for the second compile) */
   window.WARMMS=Math.round(performance.now()-t0);if(performance.now()-__YT>40)await __Y(); }

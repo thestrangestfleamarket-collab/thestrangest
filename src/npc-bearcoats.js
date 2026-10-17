@@ -12,35 +12,53 @@ const BEARCOATS={};
   let seed=11; const rnd=()=>{ seed=(seed*16807)%2147483647; return seed/2147483647; };
   // ---- the coats' colours
   const WOOD=[.72,.58,.4], DARK=[.2,.14,.1], CREAM=[.92,.88,.78];
-  // ---- A COAT ON ITS HANGER, shaped as a coat a character wears (owner, 17 Oct 2026: "those should be shaped like coats ... coats that npcs
-  // will wear"): a torso, flat front and back (an elliptical tube, wider than deep, a little fuller to the hem), its front open in a V under the
-  // collar where the lapels fold back over the chest and the lining shows, buttoned below, patch pockets on the hips; the shoulders a low
-  // dome on the hanger's arms; two sleeves hanging straight down beside the body, cuffed; the hook up from the collar. Its origin at the
-  // hook's top (ox,oy,oz). deco(pts,rows,c) lays the decoration on its skin: pts(n,gap) gives n points spread over body and sleeves (each
-  // {p,rot}: the point and its outward turn about y), rows(nr,nc) a grid over the body ----
-  const coat=(pre,ox,oy,oz,col,deco,o={})=>{ const RX=.29, RZ=.125, TOP=oy-.14, HEM=oy-.98, L=TOP-HEM, SX=RX+.085;   // (SX: a sleeve's axis from the middle)
-    const rx=y=>RX+(TOP-y)*.035, rz=y=>RZ+(TOP-y)*.02;
-    const body=[ shape(cyl(1,1,L,22,1,true),col,[ox,(TOP+HEM)/2,oz]), shape(sph(1,18,6),col,[ox,TOP,oz]) ];   // (sized below: the tube and the shoulders' dome)
-    { const g=body[0]; for(let i=0;i<g.P.length;i+=3){ const y=g.P[i+1]-(TOP+HEM)/2+(TOP+HEM)/2, yy=g.P[i+1]; g.P[i]=ox+(g.P[i]-ox)*rx(yy); g.P[i+2]=oz+(g.P[i+2]-oz)*rz(yy); }
-      const d=body[1]; for(let i=0;i<d.P.length;i+=3){ d.P[i]=ox+(d.P[i]-ox)*RX; d.P[i+1]=TOP+(d.P[i+1]-TOP)*.09; d.P[i+2]=oz+(d.P[i+2]-oz)*RZ; } }
-    const lining=o.lining||CREAM, lapelC=o.lapel||col;
-    const front=[ shape(box(.2,.3,.01),lining,[ox,TOP-.15,oz+RZ+.004]),   // (the lining in the V)
-      ...[-1,1].map(sx=>shape(box(.085,.3,.016),lapelC,[ox+sx*.075,TOP-.16,oz+RZ+.012],null,[0,0,sx*-24])),   // (the lapels, folded back)
-      shape(shell(.1,.1,.06,10,Math.PI*.55,Math.PI*.9),lapelC,[ox,TOP+.02,oz],[1,1,.7]),   // (the collar round the back of the neck)
-      shape(box(.03,L-.34,.012),col,[ox+.01,HEM+(L-.34)/2,oz+RZ+.012]),   // (the front edge, overlapping)
-      ...[0,1,2].map(i=>shape(sph(.02,8,6),o.button||DARK,[ox+.03,TOP-.38-i*.16,oz+RZ+.024])),
-      ...[-1,1].map(sx=>shape(box(.13,.13,.014),col,[ox+sx*.16,HEM+.3,oz+rz(HEM+.3)+.008])) ];   // (the pockets)
-    const sleeves=[-1,1].flatMap(sx=>[limb([ox+sx*SX,TOP-.01,oz],[ox+sx*(SX+.02),HEM+.2,oz],.08,.072,col,10), shape(cyl(.078,.078,.06,10),o.cuff||col,[ox+sx*(SX+.02),HEM+.2,oz])]);
-    const hanger=[ shape(torus(.035,.007,6,12),WOOD,[ox,oy-.035,oz]), shape(cyl(.008,.008,.08,6),WOOD,[ox,oy-.11,oz]), limb([ox-.24,TOP+.015,oz],[ox,oy-.13,oz],.012,.012,WOOD,6), limb([ox+.24,TOP+.015,oz],[ox,oy-.13,oz],.012,.012,WOOD,6) ];
-    // the skin: a point on the body at angle a (0 the front) and height y, or on a sleeve (side sx, angle b), out by a little
+  // ---- A COAT ON ITS HANGER, cut as a tailor cuts one (owner, 17 Oct 2026: "those should be shaped like coats ... coats that npcs will
+  // wear"; "they still look square, i want real coat shapes"): no model file could be fetched from here (the free ones sit behind logins
+  // and quotas), so the coat is lofted from a pattern: cross-sections from the neck over sloping shoulders, out at the chest, in at the
+  // waist, out again over the hips to a flared hem, each an ellipse (wider than deep) joined in a smooth skin; the sleeves lofted tubes set
+  // into the shoulders, full at the top, bent a little at the elbow, hanging to the cuffs; the collar stands round the neck and folds into
+  // two lapels lying on the chest with the lining showing in the V; the front overlaps, buttoned; patch pockets on the hips. The hanger's
+  // hook up from the collar. Its origin at the hook's top (ox,oy,oz). deco(pts,rows,c,D) lays the decoration on its skin ----
+  const lerp=(a,b,t)=>a+(b-a)*t, smooth=t=>t*t*(3-2*t);
+  // a loft: sections [{y,rx,rz,x,z}] top to bottom, each an ellipse of n points, joined by quads; open at both ends (the top closed by a lid)
+  const loft=(S,n=24,lid=true)=>{ const P=[]; const ring=s=>Array.from({length:n},(_,k)=>{ const a=k/n*TAU; return [s.x+Math.sin(a)*s.rx,s.y,s.z+Math.cos(a)*s.rz]; });
+    const R=S.map(ring); for(let i=0;i<S.length-1;i++)for(let k=0;k<n;k++){ const a=R[i][k], b=R[i][(k+1)%n], c=R[i+1][(k+1)%n], d=R[i+1][k]; P.push(...a,...b,...c, ...a,...c,...d); }
+    if(lid){ const s=S[0], r=R[0]; for(let k=0;k<n;k++)P.push(s.x,s.y,s.z, ...r[(k+1)%n], ...r[k]); }
+    const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(new Float32Array(P),3)); return g; };
+  // a tube along a path of points with a radius at each, sections set square to the path
+  const tube=(path,radii,n=10)=>{ const S=[]; for(let i=0;i<path.length;i++){ const p=path[i], q=path[Math.min(path.length-1,i+1)], o=path[Math.max(0,i-1)], d=new THREE.Vector3(q[0]-o[0],q[1]-o[1],q[2]-o[2]).normalize(), u=new THREE.Vector3(1,0,0).cross(d).normalize(), v=new THREE.Vector3().crossVectors(d,u);
+      if(u.length()<.01){ u.set(0,0,1); v.crossVectors(d,u); } S.push({p,u,v,r:radii[i]}); }
+    const P=[], ring=s=>Array.from({length:n},(_,k)=>{ const a=k/n*TAU; return [s.p[0]+(s.u.x*Math.cos(a)+s.v.x*Math.sin(a))*s.r,s.p[1]+(s.u.y*Math.cos(a)+s.v.y*Math.sin(a))*s.r,s.p[2]+(s.u.z*Math.cos(a)+s.v.z*Math.sin(a))*s.r]; });
+    const R=S.map(ring); for(let i=0;i<S.length-1;i++)for(let k=0;k<n;k++){ const a=R[i][k], b=R[i][(k+1)%n], c=R[i+1][(k+1)%n], d=R[i+1][k]; P.push(...a,...b,...c, ...a,...c,...d); }
+    for(const [i,sg] of [[0,-1],[S.length-1,1]]){ const s=S[i], r=R[i]; for(let k=0;k<n;k++)P.push(...s.p, ...(sg<0?[...r[(k+1)%n],...r[k]]:[...r[k],...r[(k+1)%n]])); }   // (both ends closed)
+    const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(new Float32Array(P),3)); return g; };
+  const coat=(pre,ox,oy,oz,col,deco,o={})=>{ const TOP=oy-.14, HEM=oy-.98, L=TOP-HEM;
+    // the pattern: height below the top, half width across, half depth (metres); the neck sits a little forward
+    const PAT=[[-.07,.11,.085,.01],[-.035,.2,.11,.005],[0,.30,.13,0],[.06,.285,.14,0],[.16,.27,.145,0],[.3,.255,.14,0],[.42,.245,.135,0],[.56,.26,.14,0],[.72,.285,.15,0],[.84,.31,.16,0]];
+    const SEC=PAT.map(([d,rx,rz,zf])=>({y:TOP-d,rx,rz,x:ox,z:oz+zf})), rx=y=>{ for(let i=0;i<SEC.length-1;i++)if(y<=SEC[i].y&&y>=SEC[i+1].y){ const t=(SEC[i].y-y)/(SEC[i].y-SEC[i+1].y); return lerp(SEC[i].rx,SEC[i+1].rx,t); } return y>SEC[0].y?SEC[0].rx:SEC[SEC.length-1].rx; },
+      rz=y=>{ for(let i=0;i<SEC.length-1;i++)if(y<=SEC[i].y&&y>=SEC[i+1].y){ const t=(SEC[i].y-y)/(SEC[i].y-SEC[i+1].y); return lerp(SEC[i].rz,SEC[i+1].rz,t); } return y>SEC[0].y?SEC[0].rz:SEC[SEC.length-1].rz; };
+    const body=[ shape(loft(SEC,26),col) ];
+    // the sleeves: set into the shoulder at its point, a full cap, bent at the elbow, hanging just clear of the body
+    const SL=sx=>[[ox+sx*.25,TOP-.04,oz],[ox+sx*.335,TOP-.07,oz+.005],[ox+sx*.365,TOP-.2,oz+.01],[ox+sx*.37,TOP-.36,oz+.02],[ox+sx*.375,TOP-.52,oz+.04],[ox+sx*.38,TOP-.66,oz+.05]];
+    const sleeves=[-1,1].flatMap(sx=>[shape(tube(SL(sx),[.07,.086,.082,.078,.073,.07],12),col), shape(tube([[ox+sx*.379,TOP-.64,oz+.049],[ox+sx*.381,TOP-.69,oz+.052]],[.074,.074],12),o.cuff||col)]);
+    const lining=o.lining||CREAM, lapelC=o.lapel||col, RZ0=rz(TOP-.15);
+    const front=[ shape(box(.19,.3,.008),lining,[ox,TOP-.15,oz+RZ0+.002]),   // (the lining in the V)
+      ...[-1,1].map(sx=>shape(box(.08,.3,.014),lapelC,[ox+sx*.075,TOP-.16,oz+RZ0+.012],null,[-8,sx*18,sx*-24])),   // (the lapels, folded back over the chest, following its curve)
+      shape(loft([{y:TOP+.09,rx:.12,rz:.1,x:ox,z:oz-.01},{y:TOP+.0,rx:.15,rz:.125,x:ox,z:oz-.02}],18,false),lapelC),   // (the collar standing round the neck)
+      shape(box(.03,L-.36,.01),col,[ox+.012,HEM+(L-.36)/2,oz+rz(HEM+.4)+.006]),   // (the front edge, overlapping)
+      ...[0,1,2].map(i=>shape(sph(.019,8,6),o.button||DARK,[ox+.035,TOP-.4-i*.15,oz+rz(TOP-.4-i*.15)+.016])),
+      ...[-1,1].map(sx=>shape(box(.13,.13,.012),col,[ox+sx*.15,HEM+.3,oz+rz(HEM+.3)+.004],null,[0,sx*18,0])) ];   // (the pockets, on the curve)
+    const hanger=[ shape(torus(.035,.007,6,12),WOOD,[ox,oy-.035,oz]), shape(cyl(.008,.008,.08,6),WOOD,[ox,oy-.11,oz]), limb([ox-.26,TOP-.01,oz],[ox,oy-.13,oz],.012,.012,WOOD,6), limb([ox+.26,TOP-.01,oz],[ox,oy-.13,oz],.012,.012,WOOD,6) ];
+    // the skin: a point on the body at angle a (0 the front) and height y, or on a sleeve (side sx, angle b, height y), out by a little
     const onBody=(a,y,out=.012)=>{ const n=Math.atan2(Math.sin(a)/rx(y),Math.cos(a)/rz(y)); return {p:[ox+Math.sin(a)*(rx(y)+out),y,oz+Math.cos(a)*(rz(y)+out)],rot:n*180/Math.PI,a}; };
-    const onSleeve=(sx,b,y,out=.012)=>{ const u=(TOP-.01-y)/(TOP-.21-HEM), X=ox+sx*(SX+.02*u), r=.08-.008*u+out; return {p:[X+Math.sin(b)*r,y,oz+Math.cos(b)*r],rot:b*180/Math.PI,a:b}; };
-    const pts=(n,gap)=>{ const S=[]; let tries=0; const nr=Math.max(2,Math.round(.52/gap)), na=Math.max(2,Math.round(.36/gap));   // (the sleeves first: rows round each one's outer side, as many as the gap allows)
-      for(const sx of [-1,1])for(let i=0;i<nr;i++)for(let j=0;j<na;j++){ const y=HEM+.28+(i+.5)/nr*(L-.36), b=sx*Math.PI/2+((j+.5)/na-.5)*Math.PI*1.1; const q=onSleeve(sx,b,y); q.sx=sx; q.y=y; S.push(q); }
+    const onSleeve=(sx,b,y,out=.012)=>{ const path=SL(sx), rad=[.07,.086,.082,.078,.073,.07]; let i=1; while(i<path.length-1&&path[i+1][1]>y)i++; const t=Math.max(0,Math.min(1,(path[i][1]-y)/(path[i][1]-path[i+1][1]||1))), X=lerp(path[i][0],path[i+1][0],t), Z=lerp(path[i][2],path[i+1][2],t), r=lerp(rad[i],rad[i+1],t)+out;
+      return {p:[X+Math.sin(b)*r,y,Z+Math.cos(b)*r],rot:b*180/Math.PI,a:b}; };
+    const pts=(n,gap)=>{ const S=[]; let tries=0; const nr=Math.max(2,Math.round(.5/gap)), na=Math.max(2,Math.round(.36/gap));   // (the sleeves first: rows round each one's outer side, as many as the gap allows)
+      for(const sx of [-1,1])for(let i=0;i<nr;i++)for(let j=0;j<na;j++){ const y=TOP-.62+(i+.5)/nr*.52, b=sx*Math.PI/2+((j+.5)/na-.5)*Math.PI*1.1; const q=onSleeve(sx,b,y); q.sx=sx; q.y=y; S.push(q); }
       const need=S.length+n; while(S.length<need&&tries++<1200){ const y=HEM+.06+rnd()*(L-.1), a=rnd()*TAU; { if(y>TOP-.3&&Math.cos(a)>.9&&Math.abs(Math.sin(a))<.4)continue;   /* (then n over the body; the V at the top of the front stays clear) */ const q=onBody(a,y);
           if(S.every(s=>s.sx||Math.hypot(s.p[0]-q.p[0],s.p[1]-q.p[1],s.p[2]-q.p[2])>gap)){ q.sx=0; q.y=y; S.push(q); } } } return S; };
     const rows=(nr,nc,fn)=>{ for(let i=0;i<nr;i++)for(let j=0;j<nc;j++){ const a=(j+.5)/nc*TAU, y=TOP-.06-(i+.5)*(L-.1)/nr; fn(onBody(a,y),i,j); } };
-    const D=[]; if(deco)deco(pts,rows,{ox,oy,oz,TOP,HEM,RX,RZ,onBody,onSleeve},D);
+    const D=[]; if(deco)deco(pts,rows,{ox,oy,oz,TOP,HEM,onBody,onSleeve},D);
     return [part(pre+' hanger',3,hanger),part(pre+' body',1,body),part(pre+' sleeves',1,sleeves),part(pre+' front',2,front)].concat(D.length?[part(pre+' decoration',3,D)]:[]); };
   // the decorations, over the skin (rot: the piece turned to lie flat on it)
   const flat=(g,colr,q,extra=[0,0,0])=>shape(g,colr,q.p,null,[extra[0],q.rot+extra[1],extra[2]]);

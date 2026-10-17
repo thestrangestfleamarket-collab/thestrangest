@@ -310,8 +310,11 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
   his shag, muzzle, ears, eyes and nose, body, sweater with its ribs, coat, collar and lapels, the buckled pocket, sleeves, paws, legs, feet), 1.8
   m, standing at his rack on the far sidewalk (a seller: he never wanders) facing the street, to you when you come near, the waves-and-sand coat
   held up before him. The six coats each its own thing on its hanger (keys coat1-coat6: donut, patchwork, ocean, cherry blossom, clover, waves
-  and sand), shaped as a coat a character wears (a flat torso open in a V under the collar with lapels and lining, buttons, patch pockets,
-  sleeves hanging at the sides, cuffs), its decoration laid over body and sleeves (donuts with sprinkles, felt patches, waves with fish, bubbles
+  and sand), cut as a tailor cuts one (owner: "they still look square, i want real coat shapes"; no free coat model could be fetched from the
+  cloud container: Sketchfab and itch sit behind logins, Quaternius's Drive mirror was over quota, his own Meshy clothing .glb is 99 MB, past
+  the Drive connection's 10 MB): lofted from a pattern of cross-sections (the neck, sloping shoulders, the chest, in at the waist, out over the
+  hips to a flared hem), the sleeves lofted tubes set into the shoulders and bent at the elbow, a standing collar folding into lapels over the
+  lining's V, the front overlapping and buttoned, patch pockets, cuffs (`loft`, `tube` in `npc-bearcoats.js`), its decoration laid over body and sleeves (donuts with sprinkles, felt patches, waves with fish, bubbles
   and seaweed, five-petal blossoms, four-leaf clovers, a lace band over sand); hung along the rack's bar (key rack). Nothing wears them yet:
   they are things to look at (a double click walks up), the first items of the market. Cost: some 30,000 triangles in all, no lights.
 

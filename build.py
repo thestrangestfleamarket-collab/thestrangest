@@ -45,6 +45,11 @@ kit+=gblock(['23-w-page-rooms-0-kit.js','23-w-page-rooms-1-cottage-1-room.js','2
 kit+=gblock(['23-x-octopus-room.js'],"STOREK.octo={OCTK,OCC,octoWall,octoFloorCol,octoTank};")
 kit+=gblock(['23-w-dungeon-1-room.js','23-w-dungeon-2-things.js'],gblock(['23-w-keep-1-look.js','23-w-keep-2-pieces.js'],"STOREK.keep={KEEPR,keepOutWall,keepInWall,keepFloorCol,KMK,DGP};",'',S+'../archive/keep/src/'))
 kit+=gblock(['23-w-butterflies.js','23-w-studio-mood.js'],"STOREK.bf={BF_KINDS,bfPic,bfSpan};")
+# THE VENDING MACHINES (owner, 17 Oct 2026: "pull in vending machines with real depth from old game, put them in front of ghost street dojo"): the
+# market lounge's kit (MLK: 23-w-y-market-lounge-2-bar, word for word) and its vending machine's maker (23-w-y-market-lounge-4-street's, word for
+# word: a cabinet round a hollow, the window real glass over lit shelves of cans, the flap a real hollow), two catalog kinds, white and dark red
+vend=body(S+'23-w-y-market-lounge-4-street.js','  // A VENDING MACHINE','  // THE BIN BAG')
+kit+=gblock(['23-w-y-market-lounge-2-bar.js'],"{ const {art,onF,lit,C,rect,sub,fb,worn,metal}=MLK, FP=24;\n// ==== 23-w-y-market-lounge-4-street.js, the vending machine (the game's, word for word)\n"+vend+"\n  CATALOG['vending machine, white']=(x,y,f)=>vending(x,y,f||[1,0],0); CATALOG['vending machine, red']=(x,y,f)=>vending(x,y,f||[1,0],1); }")
 kit+='BOD.STOREK=STOREK;\n'
 # THE CASTLE'S AND THE DUNGEON'S MAKERS (owner, 17 Oct 2026: "lets bring back ... the castle, the dungeon under the castle (only 1 level)"): the
 # dungeon's look and things (23-w-dungeon-1-room, -2-things) and the castle's stone and pieces (23-w-dungeon-3-castle-1-stone, -2-pieces), word for

@@ -124,7 +124,11 @@ mod=rp(mod,"const PMIN=0.02, PMAX=Math.PI/2-0.002,","const PMIN=0.17, PMAX=Math.
 # never flips at the poles); the view keeps its place beside him as he walks (UI.off), 0 puts it back on him (src/ui.js)
 mod=rp(mod,"ppu*=Math.pow(ppuTo/ppu,ease); if(pxS()!==SCL)resize(); else frustum();","const zk0=UI.zk(); ppu*=Math.pow(ppuTo/ppu,ease); if(pxS()!==SCL)resize(); else frustum(); UI.zoomStep(zk0);")
 mod=rp(mod,"ppuTo=Math.max(3,Math.min(ZMAX,ppuTo*Math.pow(1.0015,-e.deltaY)));","ppuTo=Math.max(3,Math.min(ZMAX,ppuTo*Math.pow(1.0015,-e.deltaY))); UI.wheelAt(e);")
-mod=rp(mod,"cam.position.copy(disp).addScaledVector(F,300); cam.lookAt(disp);","UI.view3(a); cam.quaternion.setFromEuler(UI.eul.set(-pitch,a,0,'YXZ')); cam.position.copy(disp).addScaledVector(F,300); UI.view3b(a);")
+mod=rp(mod,"cam.position.copy(disp).addScaledVector(F,300); cam.lookAt(disp);","UI.view3(a); cam.quaternion.setFromEuler(UI.eul.set(-pitch,a,0,'YXZ')); cam.position.copy(disp).addScaledVector(F,300); if(!UI.persp){ const u=rppu(), cr=UI.snR.set(1,0,0).applyQuaternion(cam.quaternion), cu=UI.snU.set(0,1,0).applyQuaternion(cam.quaternion), x=cam.position.dot(cr), y=cam.position.dot(cu); cam.position.addScaledVector(cr,Math.round(x*u)/u-x).addScaledVector(cu,Math.round(y*u)/u-y); } UI.view3b(a);")
+# LOCKED TO THE PIXELS (owner, 17 Oct 2026: "is there a way to not make the ground look so grainy? it looks bad when i run when i see every pixel
+# change nonstop"; his pick: lock to pixels): in the map and isometric views the camera stands only on the picture's own pixel grid (across and
+# up the screen, whole picture pixels), so the world moves under you a whole pixel at a time and the ground's pixels keep their colours instead
+# of flickering between neighbours as the view glides
 # THE VIEWS (owner, 17 Oct 2026: "in display tab add an isometric toggle ... add 1st person view toggle and 3rd person view with zoom in and out"): one camera or the other
 mod=rp(mod,"const cam=new THREE.OrthographicCamera(-1,1,1,-1,0.1,800);","let cam=new THREE.OrthographicCamera(-1,1,1,-1,0.1,800); const OCAM=cam, PCAM=new THREE.PerspectiveCamera(60,1,.05,600);")
 mod=rp(mod,"composer.addPass(new RenderPass(scene,cam));","composer.addPass(RPASS=new RenderPass(scene,cam));")

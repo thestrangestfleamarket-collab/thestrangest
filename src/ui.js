@@ -43,7 +43,7 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
   // where the view looks is his place plus UI.off (or the free camera's own point); a drag turns it round the point under the mouse when
   // the drag began (the thing there, or else the point level with the view's middle), the wheel draws the point under the mouse no nearer
   // the middle, so it stays under the mouse; the tilt has no stops (the camera turned by its own angles); 0 (or RESET VIEW) back on him
-  UI.off=new THREE.Vector3(); UI.eul=new THREE.Euler(); const viewV=()=>UI.freeCam?UI.camT:UI.off, piv=new THREE.Vector3(), q0=new THREE.Quaternion(), q1=new THREE.Quaternion(), tv=new THREE.Vector3();
+  UI.off=new THREE.Vector3(); UI.eul=new THREE.Euler(); UI.snR=new THREE.Vector3(); UI.snU=new THREE.Vector3();   /* (the pixel lock: build.py) */  const viewV=()=>UI.freeCam?UI.camT:UI.off, piv=new THREE.Vector3(), q0=new THREE.Quaternion(), q1=new THREE.Quaternion(), tv=new THREE.Vector3();
   const ndc=e=>{ const r=cv.getBoundingClientRect(); return new THREE.Vector2((e.clientX-r.left)/r.width*2-1,-((e.clientY-r.top)/r.height*2-1)); };
   const shown=o=>{ for(let q=o;q;q=q.parent)if(!q.visible||q===W3.group||q===MUS.g)return false;   // (he and the guitarist are moved on the chip: not where a ray finds them)
     return o.isMesh&&!(o.material&&o.material.visible===false)&&!(o.material&&o.material.transparent&&o.material.opacity<.05); };

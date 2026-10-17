@@ -397,6 +397,32 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
 
 - **Smooth light, the default now** (owner, 17 Oct 2026, of the grainy cloud and tree mockups: "i dont like any of those mockups, they all look like dots everywhere, i want smooth realistic shadows and lighting like gradient radial etc"; it supersedes the grain and the 24 steps above): `SMOOTH` in `map-pre.js`: no grain, the light not cut into steps, soft shadow edges (PCFSoftShadowMap), the lamps' pools smooth radial gradients; GRAPHICS' LIGHTING switches back to PIXEL (`market-lighting`), `?look=pixel|smooth`.
 
+- **The paused work finished** (17 Oct 2026, "lets finish those paused ones, go"; the branches in HANDOFF.md, all merged here):
+  **The avatar editor** (Shift+K, DISPLAY's AVATAR EDITOR, a double click on yourself; `src/avatar.js`): one panel, six tabs: BODY (MALE / FEMALE,
+  height, a slider a region, the sides together or apart, the feet and TOES round / pointed / square, the sculpting brush, HIS SHAPE's pieces, moves
+  and animation a button away), LOOK (name, hair, eyes, every colour: five swatches and a picker each), TEXTURES (a pattern woven in his shader on the
+  shirt, the trousers, the shoes: stripes, plaid, denim, knit, camo, dots, its scale and two colours), OUTLINE (on, its colour, 1-4 pixels), SHADING
+  (smooth or stepped, steps, depth, SELF, a rim light, lamps or flat), PRESETS (named looks in the browser, RESET, DOWNLOAD / LOAD). `tests/avshot.cjs`.
+  **The perf fixes** (`src/perf.js`, `docs/perf-audit.md` with the numbers; `?perfx=0` all off, `?perfx=-5` one off): the rooms' insides split off and
+  drawn only from inside, self-shadows for you and the two nearest, real bounds on everything, the lamp's cube 512, the floats and butterflies only
+  near them, the musicians hidden past 18; and fix 5 remade: the Walker indexed to what he wears (57K to 15K triangles), the batches cut into map chunks
+  of 16 tiles for the frustum, the bodega's own mesh split by room, the pool's water not drawn from the street. The street by day: 1.71M to 410K
+  triangles a frame; the main pass 1.60M to 397K. **The trees' look**: the round crown lit in one gradient with soft shadows letting a little light
+  through (`?treelook=3`, now the game's; 0 the old, 1 and 2 the others; `tests/treeshot.cjs`): +4 shader programs, no frame cost measured.
+  **The map editor's next round** (`src/mapedit.js`): every building moves live (the bodega, the apartment house, Ghost Street, the Diner and the Bar
+  carried: their batched faces hidden where they were, a copy with the drag, their unbatched meshes and lamps along, the old spot empty); PLACE keeps a
+  place where it's put and picks up the next, one SAVE (RELOADS) at the end; RAISE / LOWER (a quarter tile, Shift a tile; a stack, the Diner on the
+  Bar) and GROW / SHRINK (5%, about the middle of the front) for the Diner and the Bar only, built lifted as the stacked rooms are (their floor, solids
+  and ground with them; the musicians' stage rides the Bar's lift) and sized (`LAY.h`, `LAY.s` in `map-pre.js`; EXPORT carries them); the bodega, the
+  house and Ghost Street move only (their builders set their own heights and sizes). `tests/mapedit4.cjs`. **The Fox angular**, like his sprite
+  (CHARS[1] in the game's 10-characters.data, read as data): boxy head, wedge muzzle, pyramid ears, a chunky quilted puffer, block mitts, flared legs,
+  588 triangles (was 3,532); `tbox` and a part's `flat` in `npc-parts.js`. **The apartment house lit**: brighter lamps, the hall lit end to end, a
+  floor's lamps light its rooms (`userData.in` on a lamp, LITE in map-post.js); **the cigarette rack** hung 42 px higher, above the Fox's head.
+  **The hitbox-walled spots** (a corner of the Diner between its chairs, behind the bar counter, a strip at the castle's drums) are left as they are:
+  pockets between things, closed by their true boxes, that no one needs.
+- **THE MARKET's artifact, from this account** (17 Oct 2026): X2Bk8UjQKP8yfLdLtVVn3s can't be opened from here, so THE MARKET is published at
+  **https://claude.ai/artifact/PnmQqhkusfewby35tf4zo5** (update that one from here).
+
 ## THE MARKET: the one official map
 
 **THE MARKET** (owner, 17 Oct 2026: "one official MARKET map im gona start filling in") is the game's map here: every place the owner adds goes

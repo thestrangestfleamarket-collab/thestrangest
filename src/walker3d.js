@@ -69,9 +69,24 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
     const side=p=>Math.abs(p.x-H.x), front=p=>p.z>H.z+3.6;
     head.paint=()=>null;   // (no brows, no mouth: owner, 17 Oct 2026, "get rid of eye brows and mouth, like just have eye"; the eyes are their own pieces, below)
     const V=(n,on,m,d,paint)=>({n,on,m,d,paint,bb:HB,step:.5});
-    PCS.push(V('hairPony','hair','hair',p=>Math.min(hr(p),ell(p,ad(H,Vv(0,1.5,-7.2)),Vv(1.6,1.6,1.4)),R.rcone(p,ad(H,Vv(0,1.2,-7.6)),ad(H,Vv(0,-6.5,-8.6)),1.3,.8))),
-             V('hairLong','hair','hair',p=>Math.min(hr(p),Math.max(rbox(p,ad(H,Vv(0,-3.6,-1.6)),Vv(7.1,11.2,6.4),3.6),-box(p,ad(H,Vv(0,-3.6,5.9)),Vv(5.3,9.5,4.4)),H.y-13.6-p.y))),
-             V('hairBun','hair','hair',p=>Math.min(hr(p),ell(p,ad(H,Vv(0,5.2,-6.2)),Vv(2.7,2.5,2.5)))));
+    // HAIR THAT MOVES (owner, 17 Oct 2026: "make sure they have real physics"): the long hair's fall and the ponytail's tail are pieces of
+    // their own, each hung from a pivot on the head (swing: the pivot and the way it hangs at rest, in the head's own units) and swung each
+    // frame as a pendulum in the world (W3.place: gravity, his motion through the pivot, a little stiffness back to its hang, damping; at rest it
+    // settles and stops); the cap, the band and the bun ride the head as they are
+    // THE STYLES CLEANED UP (owner, 17 Oct 2026: "look through hairstyles from multiple angles and clean up, make more realistic"): the long
+    // hair a mane over the ears, narrowing and thinning as it falls, in locks (grooves down it), its ends uneven, no lock in front of the face;
+    // the ponytail a full bundle from its band, waisted, in locks, a tuft at its end; the bun twisted. Each from the head's own cap (hr)
+    const CUT=H.y-5.5, sq=x=>x*x, lock=(p,k=1.7)=>.28*sq(Math.sin(p.x*k+.5*Math.sin(p.y*.6))), lockY=(p,k=2.4)=>.22*sq(Math.sin(p.y*k+.4*Math.sin(p.x*.9)));
+    const fall=p=>{ const t=Math.max(0,CUT-p.y), w=7.4-.11*t, d=5.9-.08*t, hem=(H.y-13.6+.5*Math.sin(p.x*2.3)+.35*Math.cos(p.z*2.1))-p.y;
+      return Math.max(rbox(p,ad(H,Vv(0,-9.5,-1.8)),Vv(w,4.4,d),3.2)+lock(p),-box(p,ad(H,Vv(0,-3.6,6.1)),Vv(5.6,9.5,4.4)),hem); };   // (the fall below the cut)
+    const mane=p=>Math.min(hr(p),Math.max(rbox(p,ad(H,Vv(0,-1.2,-1.6)),Vv(7.9,6.2,6.6),3.6)+lock(p),-box(p,ad(H,Vv(0,-3.6,6.1)),Vv(5.6,9.5,4.4)),p.y-(H.y+6.2)),   // (the mane over the ears, down to the cut)
+      ell(p,ad(H,Vv(7.6,-1.6,-1.2)),Vv(1.7,4.2,3.6)),ell(p,ad(H,Vv(-7.6,-1.6,-1.2)),Vv(1.7,4.2,3.6)));   // (over each ear)
+    const tail=p=>{ const u=Math.max(0,Math.min(1,(H.y+.9-p.y)/7.7)); return Math.min(R.rcone(p,ad(H,Vv(0,.9,-9.3)),ad(H,Vv(0,-6.6,-10.1)),1.8,1.0)+lockY(p)-.5*Math.sin(u*Math.PI)*(u>.5?.6:.25),ell(p,ad(H,Vv(0,-7.1,-10.2)),Vv(1.5,1.5,1.5))); };   // (the bundle, clear of the cap: fullest under the band, waisted, a tuft at the end)
+    PCS.push(V('hairPony','hair','hair',p=>Math.min(hr(p),R.rcone(p,ad(H,Vv(0,2.0,-7.0)),ad(H,Vv(0,1.0,-9.4)),2.2,1.7))),   // (the band's knot where the hair gathers, out of the cap's back)
+             Object.assign(V('hairPonyA','hair','hair',tail),{swing:{pivot:[0,.9,-9.3],rest:[0,-7.5,-.8],len:7.8,max:.8,k:30}}),
+             V('hairLong','hair','hair',p=>Math.max(mane(p),CUT-p.y)),
+             Object.assign(V('hairLongA','hair','hair',p=>Math.max(fall(p),p.y-CUT)),{swing:{pivot:[0,-5.5,-1.6],rest:[0,-1,0],len:8.1,max:.7,k:45}}),
+             V('hairBun','hair','hair',p=>Math.min(hr(p),ell(p,ad(H,Vv(0,5.3,-9.8)),Vv(3.0,2.7,2.6))+.22*sq(Math.sin(Math.atan2(p.y-H.y-5.3,p.x-H.x)*3)))));
     // HIS EYES, SIX WAYS (owner, 17 Oct 2026: "make his eyes look better. give me 6 mockups of variety"; then "use all"): each style a thin skin
     // over the front of his head where the eyes are, its rects as the mockup drew them (its pixels, the left eye; the right one mirrored),
     // later rects over earlier; the styles not chosen folded away (W3.HIDE), as the hairstyles are (src/looks.js)
@@ -126,8 +141,8 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
   // HIS SHADING (owner, 17 Oct 2026: "i have self shadow enabled but i cant see them. add a scroll bar to allow levels of shadows and depth, 2-5
   // options of shadowing your own avatar"): his own steps of light (2 to 5) and how dark the darkest goes (DEPTH), and SELF on him lit by the
   // lamps too: where his own body stands between the light and a part of him (his shadow pass), that part a step darker
-  const GP=new THREE.DataTexture(new Uint8Array(20),5,1,THREE.RGBAFormat); GP.magFilter=GP.minFilter=THREE.NearestFilter; W3.GP=GP; W3.uSelf={value:.7};
-  W3.setShade=(n,dp)=>{ n=Math.max(2,Math.min(5,Math.round(n))); dp=Math.max(.1,Math.min(.9,dp)); W3.shade={steps:n,depth:dp}; const d=new Uint8Array(n*4); for(let i=0;i<n;i++){ const v=Math.round(255*((1-dp)+dp*i/(n-1))); d.set([v,v,v,255],i*4); }
+  const GP=new THREE.DataTexture(new Uint8Array(48),12,1,THREE.RGBAFormat); GP.magFilter=GP.minFilter=THREE.NearestFilter; W3.GP=GP; W3.uSelf={value:.7};
+  W3.setShade=(n,dp)=>{ n=Math.max(2,Math.min(12,Math.round(n))); dp=Math.max(.02,Math.min(.98,dp));   /* (steps to twelve, the depth finer: owner, 17 Oct 2026, "add more levels of depth and steps") */ W3.shade={steps:n,depth:dp}; const d=new Uint8Array(n*4); for(let i=0;i<n;i++){ const v=Math.round(255*((1-dp)+dp*i/(n-1))); d.set([v,v,v,255],i*4); }
     GP.image={data:d,width:n,height:1}; GP.needsUpdate=true; W3.uSelf.value=1-dp*.55; try{ localStorage.setItem('market-shade',JSON.stringify(W3.shade)); }catch(e){} };
   { let s0={steps:4,depth:.78}; try{ const v=localStorage.getItem('market-shade'); if(v)s0=JSON.parse(v); }catch(e){} W3.setShade(s0.steps,s0.depth); }
   const toon=new THREE.MeshToonMaterial({vertexColors:true,gradientMap:GP,side:THREE.DoubleSide});
@@ -158,6 +173,31 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
     const mid=new THREE.Vector3(x,y+1.25,z); W3.smCam.position.copy(mid).addScaledVector(W3.Lw,6); W3.smCam.lookAt(mid); W3.smCam.updateMatrixWorld();
     W3.LVP.value.multiplyMatrices(W3.smCam.projectionMatrix,W3.smCam.matrixWorldInverse);
     PCS.forEach((P,i)=>{ const F=R.frameOf(P.on||P.n,B); W3.PM.value[i].set(F.x.x,F.y.x,F.z.x,F.o.x, F.x.y,F.y.y,F.z.y,F.o.y, F.x.z,F.y.z,F.z.z,F.o.z, 0,0,0,1); }); };
+  { const place0=W3.place; W3.place=(...a)=>{ place0(...a); W3.group.updateMatrixWorld(true); const now=performance.now(), hdt=Math.min(.05,(now-(W3.hairT||now))/1000); W3.hairT=now;
+      PCS.forEach((P,i)=>{ if(P.swing&&!W3.HIDE[i])swing(P,i,hdt); }); }; }   // (after his pieces are placed and edited: the hung hair swung)
+  // THE SWING of a hung piece of hair: its pivot carried by the head into the world; a point a length down the way it hangs, kept at that
+  // length (verlet: last frame's motion carries on, less drag), pulled down by gravity, back toward its hang by the hair's own stiffness, and
+  // flung by the pivot's own motion (walking, turning, a jump); never past its most; its turn from the hang laid onto the piece about the pivot
+  const SW={pW:new THREE.Vector3(),rest:new THREE.Vector3(),m:new THREE.Vector3(),v:new THREE.Vector3(),d:new THREE.Vector3(),q:new THREE.Quaternion(),M1:new THREE.Matrix4(),M2:new THREE.Matrix4(),inv:new THREE.Matrix3(),G:new THREE.Vector3()};
+  function swing(P,i,dt){ const S=P.swing, st=P.sw||(P.sw={m:null,pm:new THREE.Vector3()}), PM=W3.PM.value[i], GW=W3.group.matrixWorld;
+    SW.inv.setFromMatrix4(GW).invert(); const sy=W3.group.scale.y, L=S.len*sy;
+    SW.pW.set(S.pivot[0],S.pivot[1],S.pivot[2]).applyMatrix4(PM).applyMatrix4(GW);   // (the pivot in the world)
+    SW.rest.set(S.rest[0],S.rest[1],S.rest[2]).transformDirection(PM).transformDirection(GW);   // (the way it hangs with the head, in the world)
+    if(!st.m||dt<=0){ st.m=SW.m.copy(SW.pW).addScaledVector(SW.rest,L).clone(); st.pm.copy(st.m); st.pp=SW.pW.clone(); return; }
+    // the point: verlet on its motion relative to the pivot (a steady walk carries it along with no trail; a start, a stop, a turn, the
+    // bob of a step swing it), gravity, the stiffness toward the hang, drag
+    const pv=st.pp?SW.G.subVectors(SW.pW,st.pp).clone():new THREE.Vector3(); (st.pp||(st.pp=new THREE.Vector3())).copy(SW.pW);
+    SW.v.subVectors(st.m,st.pm).sub(pv).multiplyScalar(Math.max(0,1-4.5*dt)).add(pv); st.pm.copy(st.m);
+    SW.G.copy(SW.pW).addScaledVector(SW.rest,L).sub(st.m).multiplyScalar(S.k*dt*dt); st.m.add(SW.v).add(SW.G); st.m.y-=7*dt*dt;
+    SW.d.subVectors(st.m,SW.pW); if(SW.d.lengthSq()<1e-9)SW.d.copy(SW.rest); SW.d.normalize();
+    // never past its most from the hang (the hair meets his back, his neck)
+    const a=SW.d.angleTo(SW.rest); if(a>S.max){ SW.q.setFromUnitVectors(SW.rest,SW.d); const ax=new THREE.Vector3().crossVectors(SW.rest,SW.d).normalize(); SW.d.copy(SW.rest).applyAxisAngle(ax,S.max); }
+    st.m.copy(SW.pW).addScaledVector(SW.d,L);
+    if(a<.004&&SW.v.lengthSq()<1e-8){ st.m.copy(SW.pW).addScaledVector(SW.rest,L); st.pm.copy(st.m); return; }   // (at rest, at rest: settled, it stops)
+    // the turn, in his own space (the world's direction brought back through his group, which stretches his verticals), laid on about the pivot
+    const dl=SW.d.clone().applyMatrix3(SW.inv).normalize(), rl=SW.rest.clone().applyMatrix3(SW.inv).normalize(); SW.q.setFromUnitVectors(rl,dl);
+    const p=new THREE.Vector3(S.pivot[0],S.pivot[1],S.pivot[2]).applyMatrix4(PM);   // (the pivot in his space)
+    SW.M1.makeTranslation(p.x,p.y,p.z).multiply(SW.M2.makeRotationFromQuaternion(SW.q)).multiply(new THREE.Matrix4().makeTranslation(-p.x,-p.y,-p.z)); PM.premultiply(SW.M1); }
 }
 // THE OUTLINE PASS: the scene (all but him) as what stands in front or behind, then his pieces; then on the picture, his edge tone wherever he
 // ends (the next pixel is empty or behind him), or one piece stands well in front of the next (as the rig's draw: 3.5 of his units for the same

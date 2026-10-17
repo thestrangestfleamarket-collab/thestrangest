@@ -184,7 +184,7 @@ print('ok zoom')
 
 # THE OWNER'S CHARACTERS FROM HIS MODELS (owner, 16 Oct 2026): the goldfish and the bear, coloured, wandering the platform; THE SKELETONS (owner,
 # 17 Oct 2026, KayKit's four, rigged and animated) on the far sidewalk: src/npc-skel.js, data/skel.json (tools/skeletons-bake.py)
-mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);","const GOLDFISH="+open('data/goldfish.json').read()+";\nconst BEARD="+open('data/bear.json').read()+";\nconst SKEL="+open('data/skel.json').read()+";\n"+open('src/npc-map.js').read()+"\n"+open('src/npc-skel.js').read()+"\nconst DRAGON="+open('data/dragon.json').read()+";\n"+open('src/npc-dragon.js').read()+"\n"+"\n"+open('src/fx.js').read()+"\n"+open('src/npc-parts.js').read()+"\n"+open('src/npc-mushroom.js').read()+"\n"+open('src/npc-fox.js').read()+"\nconst CREATURES="+open('data/creatures.json').read()+";\n"+open('src/npc-creatures.js').read()+"\nresize(); applyTime(0); requestAnimationFrame(frame);")   # (the cyborg and the teddy: deleted, owner 17 Oct 2026, "remove the cyborg + black bear characters"; THE SIX FIGURES, npc-figures.js (their second making, npc-rigged.js with data/<name>.json, kept but not built: the same six twice); the creatures)
+mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);","const GOLDFISH="+open('data/goldfish.json').read()+";\nconst BEARD="+open('data/bear.json').read()+";\nconst SKEL="+open('data/skel.json').read()+";\n"+open('src/npc-map.js').read()+"\n"+open('src/npc-skel.js').read()+"\nconst DRAGON="+open('data/dragon.json').read()+";\n"+open('src/npc-dragon.js').read()+"\n"+"\n"+open('src/fx.js').read()+"\n"+open('src/npc-parts.js').read()+"\n"+open('src/npc-mushroom.js').read()+"\n"+open('src/npc-fox.js').read()+"\nconst CREATURES="+open('data/creatures.json').read()+";\n"+open('src/npc-creatures.js').read()+"\nconst UAL="+open('data/ual.json').read()+";\n"+open('src/npc-droids.js').read()+"\nconst PAWNS="+open('data/pawns.json').read()+";\n"+open('src/npc-pawns.js').read()+"\nresize(); applyTime(0); requestAnimationFrame(frame);")   # (the cyborg and the teddy: deleted, owner 17 Oct 2026, "remove the cyborg + black bear characters"; THE SIX FIGURES, npc-figures.js (their second making, npc-rigged.js with data/<name>.json, kept but not built: the same six twice); the creatures)
 mod=rp(mod,"  marker.visible=!!target;","  for(const N of NPCS)N.tick(dt,pos);\n  marker.visible=!!target;")
 mod=rp(mod,"function collide(p){ const r=0.3;","function collide(p){ if(typeof NPCS!=='undefined')for(const N of NPCS)if(N.lv===LVL)N.push(p); const r=0.36;")   # (his reach round him: 0.3, a fifth bigger with him)
 print('ok npcs')
@@ -213,7 +213,7 @@ mod=rp(mod,"if(nst>=6)looseAcc=0; looseDraw();","if(nst>=6)looseAcc=0; looseDraw
 head=rp(head,'<div><b>Space</b> jump','<div>The bodega, the pool room (its door east of it) and the subway (the stairs down west of it) · walk into the pool to swim · <b>Space</b> (held) under</div>\n  <div><b>Space</b> jump')
 mod=rp(mod,"const pos=new THREE.Vector3(-2.2,0,3.2); let heading=0.8, py=0;","const pos=new THREE.Vector3(-2.2,0,3.2); let heading=0.8, py=0; { const a=(QS.get('at')||'').split(',').map(Number); if(a.length>=2&&a.every(isFinite)){ pos.set(a[0],0,a[1]); py=a[2]||0; } }   // (a test's: start at x,z[,height])")
 # GETTING AROUND and THE MENU (owner, 17 Oct 2026): src/ui.js, and its hooks in the frame and the keys
-mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);",open('src/physbody.js').read()+"\n"+open('src/ui.js').read()+"\n"+open('src/editor.js').read()+"\n"+open('src/animator.js').read()+"\n"+open('src/worldedit.js').read()+"\n"+open('src/looks.js').read()+"\n"+open('src/vitals.js').read()+"\nresize(); applyTime(0); requestAnimationFrame(frame);")
+mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);",open('src/physbody.js').read()+"\n"+open('src/ui.js').read()+"\n"+open('src/editor.js').read()+"\n"+open('src/animator.js').read()+"\n"+open('src/worldedit.js').read()+"\n"+open('src/use.js').read()+"\n"+open('src/looks.js').read()+"\n"+open('src/vitals.js').read()+"\nresize(); applyTime(0); requestAnimationFrame(frame);")
 mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);","if(typeof KIT!=='undefined')for(const th of KIT.things)UI.thing(th);   // (the street kit's named things: a double click walks up to them, once the menu is here)\nresize(); applyTime(0); requestAnimationFrame(frame);")
 # (the street's first characters from the owner's models: deleted, owner 17 Oct 2026, the last of them "delete ghost with bag inside and whatever this is"; then the cyborg and the teddy, "remove the cyborg + black bear characters")
 mod=rp(mod,"addEventListener('keydown',e=>{ const k=e.key.toLowerCase(); keys.add(k);","addEventListener('keydown',e=>{ const k=UI.key(e); if(!k)return; keys.add(k);")
@@ -286,19 +286,21 @@ head=rp(head,"const MATS=Object.keys(RAMP)","RAMP.sole=['#3a2c22','#30241b','#25
 head=rp(head,"return {restOf,IDF,","return {rbox,ell,rcone,box,OVL,begin,beginUp,legIK,START,mkMove:move,ARMMOVES,fine:v=>{ FINEHAND=!!v; },farOnly:v=>{ FAR=!!v; },restOf,IDF,")
 mod=rp(mod,"B=RIG.pose(st); ragBlend(B);","B=ED.anim?ED.animPose():RIG.pose(st); ragBlend(B);")
 # THE MUSICIAN (owner, 17 Oct 2026): the game's guitarist, its files read from the game as they are (the guitar, its recordings, the tunes,
-# his hands), the few things they take from the game's cast and sound stood in for here; then src/musician.js puts him on the sidewalk
+# his hands), the few things they take from the game's cast and sound stood in for here; then src/musician.js puts him on the bar's stage
+# (owner, 17 Oct 2026: "move him to the bar"); his right wrist's place on the guitar a number of ours (GTWR: "fix the guitarist arm")
 import base64
 GA=os.path.join(S,'..','audio','guitar.mp3')
 gtsrc='''
 // ---- THE GAME'S CAST AND SOUND, AS THE GUITARIST NEEDS THEM (stand-ins: his standing pose, the sound's way out, no scene to wait for, the
 // recordings instead of the simulated strings) ----
-const CAST={}, PLAY221={seeking:false,pre:0}, PLAYA={}, GTPHYS={model:false,ok:false}, SND={ctx:null,on:true,out:null};
+const CAST={}, PLAY221={seeking:false,pre:0}, PLAYA={}, GTPHYS={model:false,ok:false}, SND={ctx:null,on:true,out:null}, GTWR={R:[-3.22,3.15,2.06]};
 // (castPose, the cast's poses: the game's own, with the pianist's files below)
 '''
 gtsrc+="const GTMP3='data:audio/mpeg;base64,"+base64.b64encode(open(GA,'rb').read()).decode()+"';\n"
 for f in ['47-play-3-guitar-1-body.js','47-play-3-guitar-samples.data.js','47-play-3-guitar-2-tunes.js','47-play-3-guitar-3-hands.js']:
     t=open(S+f).read()
     if f.endswith('body.js'): t=rp(t,"fetch('audio/guitar.mp3')","fetch(GTMP3)")
+    if f.endswith('hands.js'): t=rp(t,"R:gtAt(-3.22,3.15,2.06)}","R:gtAt(...GTWR.R)}")
     gtsrc+='\n'+t
 # THE PIANIST (owner, 17 Oct 2026, the bar "with all musicians"): the game's 47-play-5-piano (his tuxedo, the bench and the 88 keys as pieces
 # of his, the book of pieces, his fingers on the keys, the real grand's recordings) read word for word, the cast's poses and arm reach from
@@ -324,18 +326,18 @@ for f in ['47-music-1b-samples.data.js','47-music-1-engine.js','47-music-2-instr
 # bar's line-up stood in for: he's alone on the stage); src/drummer.js sits him at the stored bar's kit
 drsrc="\n// ---- THE OCTOPUS DRUMMER'S FILES (the game's, word for word) ----\nconst E=(x,y,z,rx,ry,rz,c,yaw=0,pit=0,rol=0,grp)=>[x,y,z,rx,ry,rz,yaw,pit,rol,c,grp]; const pupPaint=()=>null; const BARP={lead:'d'};\n"
 for f in ['47-zzz-bar-octopus-1-body.js','47-zzz-bar-octopus-2-play.js']: drsrc+='\n// ==== '+f+"\n"+open(S+f).read()
-mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);",gtsrc+"\n"+open('src/musician.js').read()+pnsrc+"\n"+open('src/pianist.js').read()+sgsrc+"\n"+open('src/singer.js').read()+drsrc+"\n"+open('src/drummer.js').read()+"\nresize(); applyTime(0); requestAnimationFrame(frame);")
+mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);",gtsrc+"\n"+open('src/musician.js').read()+pnsrc+"\n"+open('src/pianist.js').read()+sgsrc+"\n"+open('src/singer.js').read()+drsrc+"\n"+open('src/drummer.js').read()+"\n"+open('src/bandstand.js').read()+"\nresize(); applyTime(0); requestAnimationFrame(frame);")
 mod=rp(mod,"  for(const N of NPCS)N.tick(dt,pos);","  for(const N of NPCS)N.tick(dt,pos); MUS.tick(dt);")
-mod=rp(mod,"  for(const N of NPCS)N.tick(dt,pos); MUS.tick(dt);","  DRESS.tick(dt,pos); { const r=MODS.apts.tick(); if(r)solids=r; } { const r2=STORE.stackTick&&STORE.stackTick(); if(r2)solids=r2; } for(const N of NPCS)N.tick(dt,pos); if(FIRE)FIRE.tick(dt); FIGFX.tick(dt,pos); FLAME.tick(dt,pos); MUS.tick(dt); PNM.tick(dt); SGM.tick(dt); DRM.tick(dt);")   # (DRESS: the street's kit; the apartment house's floors; FIGFX: the figures' effects and the park's cut of the trees before you; the stored bar's musicians)
+mod=rp(mod,"  for(const N of NPCS)N.tick(dt,pos); MUS.tick(dt);","  DRESS.tick(dt,pos); { const r=MODS.apts.tick(); if(r)solids=r; } { const r2=STORE.stackTick&&STORE.stackTick(); if(r2)solids=r2; } for(const N of NPCS)N.tick(dt,pos); if(FIRE)FIRE.tick(dt); FIGFX.tick(dt,pos); FLAME.tick(dt,pos); MUS.tick(dt); PNM.tick(dt); SGM.tick(dt); DRM.tick(dt); STAGE.tick(dt);")   # (DRESS: the street's kit; the apartment house's floors; FIGFX: the figures' effects and the park's cut of the trees before you; the stored bar's musicians, one on the stage at a time: src/bandstand.js)
 # (NO SHADOW ACNE, owner 17 Oct 2026: the one lamp shadow, 1024 a face, held off the surface it falls on: LITE in map-post.js)
 # THE CLOCK (owner, 17 Oct 2026: "add the option to control the time", 7pm when the game opens): src/clock.js; ticked each frame
-mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);",open('src/clock.js').read()+"\n"+open('src/rooms.js').read()+"\nresize(); applyTime(0); requestAnimationFrame(frame);")
+mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);",open('src/clock.js').read()+"\n"+open('src/rooms.js').read()+"\n"+open('src/weather.js').read()+"\n"+open('src/lookfx.js').read()+"\nresize(); applyTime(0); requestAnimationFrame(frame);")
 # ONLY THE ROOM YOU'RE IN (owner, 17 Oct 2026): src/rooms.js, set just before the picture's drawn
 mod=rp(mod,"if(wOn)WATER.step(renderer,dt); renderer.shadowMap.needsUpdate=true;","ROOMS.tick(); STORE.tick(); BF.tick(dt); if(wOn)WATER.step(renderer,dt); WATER.tickAll(renderer,dt,pos); renderer.shadowMap.needsUpdate=true;")   # (STORE: the storeroom's roofs and bound, map-post.js)
 mod=rp(mod,"  UI.goTick(); UI.runTick();","  UI.goTick(); UI.runTick(); CLOCK.tick(dt); VIT.tick(dt);")   # (VIT: your health and stamina, src/vitals.js)
 # THE OLD GAME'S FINAL TOUCH (src/oldlook.js): one pass after the picture's colours, its night and glow set each frame
 mod=rp(mod,"CLOCK.tick(dt); VIT.tick(dt);","CLOCK.tick(dt); VIT.tick(dt); LOOK.tick();")
-mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);",open('src/oldlook.js').read()+"\nLOOK.sp=new ShaderPass(LOOK.shader); composer.addPass(LOOK.sp); LOOK.sp.uniforms.uNight=LOOK.night; LOOK.sp.uniforms.uGlowK=LOOK.glowK;\nresize(); applyTime(0); requestAnimationFrame(frame);")   # (VIT: your health and stamina, src/vitals.js)
+mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);",open('src/oldlook.js').read()+"\nLOOK.sp=new ShaderPass(LOOK.shader); composer.addPass(LOOK.sp); LOOK.sp.uniforms.uNight=LOOK.night; LOOK.sp.uniforms.uCool=LOOK.cool; LOOK.sp.uniforms.uGlowK=LOOK.glowK;\nresize(); applyTime(0); requestAnimationFrame(frame);")   # (VIT: your health and stamina, src/vitals.js)
 # (the keys' turn and tilt: not in the isometric view, where Q and E go a quarter round: ui.js)
 mod=rp(mod,"  if(keys.has('q'))yawTo+=dt*1.8; if(keys.has('e'))yawTo-=dt*1.8; if(keys.has('z'))pitchTo=clampP(pitchTo-dt*1.2); if(keys.has('x'))pitchTo=clampP(pitchTo+dt*1.2);","  if(UI.view!=='iso'){ if(keys.has('q'))yawTo+=dt*1.8; if(keys.has('e'))yawTo-=dt*1.8; if(keys.has('z'))pitchTo=UI.clampV(pitchTo-dt*1.2); if(keys.has('x'))pitchTo=UI.clampV(pitchTo+dt*1.2); }")
 head=rp(head,'<b>V</b> wave','<b>B</b> wave · <b>V</b> change the view')
@@ -347,7 +349,8 @@ mod=rp(mod,"} for(const N of NPCS)N.tick(dt,pos); if(FIRE)","} NPCS.tick(dt,pos)
 mod=rp(mod,"yaw+=(yawTo-yaw)*ease; pitch+=(pitchTo-pitch)*ease;","yaw=Math.abs(yawTo-yaw)<1e-4?yawTo:yaw+(yawTo-yaw)*ease; pitch=Math.abs(pitchTo-pitch)<1e-4?pitchTo:pitch+(pitchTo-pitch)*ease;")
 mod=rp(mod,"ppu*=Math.pow(ppuTo/ppu,ease); if(pxS()!==SCL)","ppu=Math.abs(ppuTo/ppu-1)<1e-4?ppuTo:ppu*Math.pow(ppuTo/ppu,ease); if(pxS()!==SCL)")
 mod=rp(mod,"const dt=Math.min(0.05,(now-last)/1000); last=now;","const dt=Math.max(0,Math.min(0.05,(now-last)/1000)); last=now;   /* (never backwards: the first frame's time can be older than the page's start) */")
-mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);","""LITE.init(); STORE.later(); window.__started=true; window.__scene=scene; window.__dbg={OBJS,setRes:i=>{ RESI=i; resize(); },res:()=>RESI,UI,yaw:()=>[yaw,yawTo],px:()=>[SCL,RES(),pxS(),vpu()/art()],cam:(y,p,z,d)=>{ if(y!=null)yawTo=y; if(p!=null)pitchTo=p; if(z!=null)ppuTo=z; if(d!=null)UI.dist=d; },cv:()=>({yaw,pitch,ppu,PPU,dist:UI.dist,TILE}),camO:()=>cam};
+mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);",open('src/clip.js').read()+"""
+CLIP.run(); STORE.shrineFix&&STORE.shrineFix(); LITE.init(); STORE.later(); window.__started=true; window.__scene=scene; window.__dbg={OBJS,SOL,FIX,NPCS,setRes:i=>{ RESI=i; resize(); },res:()=>RESI,UI,yaw:()=>[yaw,yawTo],px:()=>[SCL,RES(),pxS(),vpu()/art()],cam:(y,p,z,d)=>{ if(y!=null)yawTo=y; if(p!=null)pitchTo=p; if(z!=null)ppuTo=z; if(d!=null)UI.dist=d; },cv:()=>({yaw,pitch,ppu,PPU,dist:UI.dist,TILE,heading,keys:[...keys],look:UI.look}),camO:()=>cam};
 { const t0=performance.now(), PL=[0,1,2,3,4,5].map(()=>new THREE.Plane(new THREE.Vector3(0,1,0),1e6)); renderer.setRenderTarget(composer.readBuffer); renderer.compile(scene,cam);
   renderer.clippingPlanes=PL; renderer.render(new THREE.Scene(),cam); renderer.compile(scene,cam); renderer.clippingPlanes=[]; renderer.setRenderTarget(null);   /* (the empty picture only sets the six planes for the second compile) */
   window.WARMMS=Math.round(performance.now()-t0); }

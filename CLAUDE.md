@@ -68,11 +68,24 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
 - **Loading** (17 Oct 2026: "loading should always say"): while the page loads, only the line "I took a trip to The Strangest Flea Market..." (no help panel or shadows box for that moment).
 - **The street cleared** (17 Oct 2026: "remove the awning and coffee sign from bodega, remove trash can and all street items ... all will be replaced"): no awning, no COFFEE sign, no ice box, papers, crates, standpipe or street light (`STREET` in `bodega.js` stays, empty, for what replaces them).
 - **Sizes** (17 Oct 2026): the skeletons half their size; the Walker a fifth bigger (`W3.SZ`, his physics body and reach with him); the buildings (the bodega, the pool room) a tenth bigger every way from the middle of their fronts (`BLDK`: `BOD.X/Y/Z` the building, `BOD.XS/YS/ZS` the street as it was); doors 1.3 times (1.56 wide, 94 px high).
+- **The blue day and the weather** (owner, 17 Oct 2026: "make the sky blue, add cumulus clouds, real sun that effects the brightness level (only
+  source of light during day besides others on map)"; "put the clouds lower, bring in weather system from old game, only essential, not (temp,
+  humidity, etc)"; "go"): the day's sky blue (pale at dawn, deep at noon; sunset, the blue hour and night as before), the sun the day's only light
+  (the shade lit by lamps alone; `?sky=1` a little sky fill, `?sky=0` the old dim day: `clock.js`). `src/weather.js`: the old game's simulation
+  (41-weather.js's sums, the same for everyone by the calendar day and the hour), only what shows: CLOUD (forty low-poly cumulus round the map
+  toward the horizon, as many shown as the sky's cloud, greyer in rain; the sky greys, the sun dims), RAIN (streaks round you, slanting with the
+  wind), a STORM (a darker sky, lightning flashes), SNOW (in a cold spell), FOG (the sky and the far going grey), WIND (the clouds' drift, the
+  rain's slant, the oaks' sway: `PARK.windK`). Nothing falls indoors or underground. The menu's WEATHER (DISPLAY): NATURAL, or one held (CLEAR,
+  CLOUDY, RAIN, STORM, SNOW, FOG); `?wx=rain` for a test. Cost: one draw for the clouds (some 20,000 triangles at most, far off), one for rain,
+  one for snow; no new lights. Not yet: wet ground, snow lying.
 - **The clock** (17 Oct 2026, `src/clock.js`): the hour, 7pm when the game opens; the sun over New York in mid-October (its height, its way round, its shadows), the sky and the open air's light by it, the moon at night; DISPLAY's TIME (the hour, STOPPED / RUNNING, a day in 2 min to 24 h); N noon / 7pm.
 - **The guards** (17 Oct 2026: "patrol the streets as guards and really protect us"; his picks: patrol routes, fight threats; `src/npc-skel.js`): each skeleton marches his beat (the Warrior the shops' sidewalk, the Rogue the far one, the Mage and the Minion the road), on guard at each end. **Troublemakers** (small hooded figures: the Rogue gone dark, red eyes) come up the subway stairs after dark, one or two now and then, and go for you on the street (a punch shoves you back, no harm); every guard near comes running and fights his own way (blade, fists, crossbow bolt, spell), the troublemaker falls, gets up and runs back down; a cheer, and back to the beat. The pack's own combat clips (KayKit Skeletons 1.0 on GitHub, CC0: `tools/skeletons-clips.py`).
 - **The apartment building** (17 Oct 2026, his plan from a mockup, "a fifth bigger"; `src/pool.js`, `POOLR` in `map-pre.js`): the pool room's building made the apartments' ground floor, 27.3 x 16.8 tiles: the right third the lobby (the front door) and the office behind it; the left two thirds a hallway through the middle to the stairs and the lift at its far end, the pool in front of it (across, left to right, all one depth, deep, a small diving board at its west end), the gym behind it. Inner walls cut to their foot while you're inside (`always` cut walls). The roof meets the walls' tops.
 - **The land** (17 Oct 2026): flat grass all round the map (`MODS.land` in `map-post.js`), open over the road, the stairs and the pool's basin. **How far out**: the zoom stops at some 34 tiles across (`UI.MAXW`), and the view can't slide far past the map's edges. **Never under the ground**: the tilt stops level with the street.
-- **The musician's arm** (17 Oct 2026, "his elbow is lifted unnatural"): his strumming elbow hangs by his side (`GTPOLE.R` in `musician.js`).
+- **The musician's arm** (17 Oct 2026, "his elbow is lifted unnatural"; again, "fix the guitarist arm"): the game's guitar sat high on his chest, so
+  the strumming forearm could only cross it from an upper arm held out level (measured: the elbow at his shoulder's height, 7 of his units ahead).
+  Now the guitar hangs lower on its strap, the neck up a little more, the right wrist over the lower bout's upper edge, the elbow down by his side
+  (5.7 under the shoulder, 4 ahead, 2 out), his fingertips as near their notes as before (`MUS.hold` in `musician.js`, `GTWR`; `tests/gthold.cjs`).
 - **Ghost Street** (17 Oct 2026, "bring in ghost street from old map"): the old game's own makers of the kit's wooden shop (`23-w-ghost-street.js`, read by build.py, in a block of its own), "Preset Ghost Street 1" without the row houses and the pole: the shop, its upper floor, the tiled roof, the eave with its sign and cooler, the bay window, the door curtain, the drinks machine, the planted beds and lanterns; east of the apartment building, its front and paved forecourt to the street (`GHOSTST` in `bodega.js`). Its six ghosts: to come.
 - **The Dragon, calm** (17 Oct 2026: "flying around, and perching on the ledges of buildings. calm"; `src/npc-dragon.js`): he sits a long while on a building's front ledge (the apartment house's, the bodega's, the apartment building's), then lifts off and glides in slow banking turns over the roofs, then settles on another ledge; he snaps at no one.
 - **The apartment house emptied** (17 Oct 2026: "empty out the new building completely of furniture and stairs and items. only leave the building doors and fire escapes"; `src/apts.js`): no furniture, no flights of stairs, nothing on its walls or roof, no stoop; its walls, floors, windows, doors, fire escapes and the rooms' ceiling lights stay.
@@ -118,6 +131,9 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
   **No dithering, nothing vanishing** ("dont dither anything when walking ... no dithering and vanishing anything"): the trees' cut round you
   gone; the park's big trees stand in the middle of its four lawns, clear of the ways, the tallest at the back.
 - **No trees** (owner, 17 Oct 2026: "remove all the trees from game for now, i want to start clean - delete all trees from map and game files"): the forest pack's oaks, spruces and dead trees and the terrain collection's cedars are out of the park (`park.js`) and out of the data (`data/forest.json` and `data/full/forest.json` keep only the rocks; `props.json` has no cedars). The next trees are drawn fresh at his word (his picks from the mockups: smooth green hills, one tree about 10 m with branches, softer radial shadows).
+- **The Moon Shrine opened** (owner, 17 Oct 2026: "steps and gap", the strict hitboxes having closed it): a gap in its east parapet (the middle
+  piece left out) toward the park's round; the plaza, the steps and the terrace floors you stand on (`STORE.shrineGround`: the steps a slope up),
+  the gate's two posts solid and the way under it open, the terrace's front beside the steps a drop (`STORE.shrineFix`, run after the hitboxes).
 - **The castle and its dungeon** (owner, 17 Oct 2026: "lets bring back ... the castle, the dungeon under the castle (only 1 level)", "expand central park but the castle on the left back end"; `src/castle.js`, `CASTLE` in `map-pre.js`): the park twice as deep (`PARK.y1` -5); the old game's castle from its own makers (23-w-dungeon-3-castle-1-stone, -2-pieces, embedded by build.py word for word, `BOD.KC`; the gatehouse turned to stand out toward the street) in the park's back-left corner: the curtain wall between four drums, the gatehouse in its front, the bailey's grass, the gravel to the stairwell, its rim, the well. Under the bailey, at the subway's depth, one dungeon: the old castle's great hall (its walls and cobbles by 23-w-dungeon-1-room's painters, its things from 23-w-dungeon-2-things: the arcade, columns, brazier, barrels, crates, straw, bones, skulls), down twelve steps from the bailey (`CASTLE.stair`, the second stair in `STAIRS`, map-post.js); the torches' flames live ones (fire.js, below), the mice and the dust left out. The menu's PLACES has THE CASTLE and THE DUNGEON. **A fix found on the way**: the park's lawn painter was mirrored front to back (row 0 of a painted ground is y0, as gbox's tops are); the dojo's floor painter (`ghostdojo.js`) has the same mirror, untouched.
 - **The park's grass everywhere** (owner, 17 Oct 2026: "i want the same grass in park to extend everywhere there isnt something else (instead of the brown green stuff"): the land round the map (`MODS.land`, map-post.js) is painted with the park's lawn painter (`PARK.lawn`: the all-green noise-cut lawn with its sprouts and weeds), no longer the game's grainy grass.
 - **Every character built here is made in parts** (owner, 17 Oct 2026: "i always want to import them as different parts where possible. wings, hat,
@@ -136,6 +152,15 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
   hollow, the window real glass over three lit shelves of cans (each can its own box, two rows deep), the button panel and buttons raised, the coin
   slot, the pickup flap a real dark hollow under a hanging flap, a lamp in the glass. In a row east of the dojo's door against its front with the
   kit's teal machine (west of the door the bay window juts out), their windows to the street, solid (`STREET` in `bodega.js`).
+- **YOUR LOOKS tidied, the hair alive** (owner, 17 Oct 2026: "have all the colors for things to change in a dropdown not always on screen. add
+  more levels of depth and steps to the scroll bar option. look through hairstyles from multiple angles and clean up, make more realistic, make
+  sure they have real physics"): the six colour rows fold under a COLOURS dropdown (`looks.js`); SHADE STEPS 2 to 12 and SHADOW DEPTH .02 to .98
+  in finer steps (`W3.setShade`, both panels). **The hair** (`walker3d.js`): the long hair a mane over the ears, narrowing as it falls, in locks,
+  its ends uneven; the ponytail a full bundle from its knot, clear of the cap, a tuft at its end; the bun out where it shows, twisted. **Real
+  physics**: the long hair's fall and the ponytail's tail are pieces hung from a pivot on the head and swung each frame as a pendulum in the
+  world (`swing`: gravity, his motion through the pivot, the hair's stiffness back to its hang, drag; never past its most, into his back); a
+  steady walk carries them along with no trail, a start, stop, turn or the bob of a step swings them; at rest they settle and stop. Looked at
+  from four angles, walking and stopped: `tests/hairshot.cjs <out> 0,1,2,3,4`.
 - **The mushroom seller** (owner, 17 Oct 2026, his picture: a felted skeleton in a mottled rust robe, long tan hair, a hat crowned with mushrooms,
   a rope strap and woven bag, a tray of mushrooms held out; "add this is a 3d character in the game"; `src/npc-mushroom.js`): built in code from plain
   shapes (no model file), one mesh of about 2,500 triangles, through `makeNPC` like the rest (lamp-lit, the clothes' shadows, SELF; his sockets, nose
@@ -150,7 +175,8 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
   clipping": this shop's counter, not the game's spot, which was in a shelf), facing the aisle, turning toward you only 35 degrees (the space
   behind the counter is narrower than he is wide); he never wanders.
 - **Free view and his eyes** (owner, 17 Oct 2026): in THIRD PERSON and BEHIND a drag looks round him freely ("if in 3rd person view, allow free
-  view"), from under his chin to overhead; BEHIND swings back to his back only once he walks (`UI.look`). FIRST PERSON looks from his own eyes
+  view"), from under his chin to overhead; BEHIND swings back to his back only once he walks (`UI.look`). **Running any way** ("take off the limitation of running in directions when in 3rd person view"): sideways or back (S, A, D, the
+  arrows) BEHIND's camera stays put, so he runs where you press instead of circling; it swings behind him only as he runs forward or walks somewhere. FIRST PERSON looks from his own eyes
   where his head is this moment (`W3.eyeAt`: "make sure 1st person view is angle from eyeview of actual avatar").
 - **The mushroom seller white and taller** (owner, 17 Oct 2026: "the mushroom skeleton is white, and taller, and diff char" from the gold
   skeleton): his bones white, 2.2 m.
@@ -173,9 +199,23 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
 - **The physics body keeps up** (17 Oct 2026, "my body behind my legs when i walk"): every part is handed his walk's speed, and pulled to its place, so only the give lags.
 - **How far, how fast** (17 Oct 2026): a double click more than six units away, he runs, walking the last stretch; nearer, he walks.
 - **Edit the world** (17 Oct 2026, `src/worldedit.js`): Shift+E; a double click picks a thing (every face is tagged with its thing as it's built: `BATCH.tag`, `OBJS` in `batch.js`; so far the shop's things and the station's benches, columns, signs, signals, train); move (drag, arrows, up/down), turn, size (all, width, height, depth), colour tint, see-through (dithered), delete, back as it was; DESCRIBE A CHANGE asks Claude through the artifact's `sample` capability (publish with `capabilities: {sample:{}}`) and applies the same edits. Kept in the browser. Not yet: lamps and what he bumps into follow a moved thing.
+- **Using things** (owner, 17 Oct 2026: "double click on things uses them or activates", his pick "common things first"; `src/use.js`): a double
+  click on a thing of the world walks him up to it and it does what it's for (the first face along the ray: `BATCH.tag`'s things, a cut-away
+  wall's faces not counted; the nearer of it and a character wins). Seats (the station's benches, the office chair, the diner's and the bar's
+  stools, sofas and armchairs, the bus stop's bench, the park's sitting log): he sits (the rig's own sitting, `st.sit`; its back says which way
+  he faces) till a move or a walk gets him up (the view's keys don't). Lamps (the park's lamps, lanterns, wall lights, the desk lamp, the
+  tubes): off and on, the light (`L.userData.off`, LITE leaves it out) and the glow (its glowing faces dimmed: the batch's tint now on the
+  glow too). The drinks fridges: the door swings open and shut (the diner's and the bar's their own door faces on their hinge; the bodega's,
+  which the game gives glass but no leaf here, a framed glass leaf). Ghost Street's drinks machine: a can drops at its foot, a clunk, a blink.
+  The bodega's radio: a little tune on and off, quieter as you go. No new lights; costs nothing while nothing moves. Not done: doors (the
+  buildings have doorways, no leaves; the diner's doors are pictures on its wall), fire (candles, torches, the campfire, the brazier), the
+  street kit's street light (no light in it), the neon signs, the TVs; an open fridge door doesn't block his way; the bodega's tubes are shown
+  (so clickable) only from under them; the radio is small on the counter, a click on it often lands on the counter. Stopped short by
+  something in the way but still near (`near` on a thing), it happens anyway. Sitting needed the rig to keep its own sitting pose (the walk
+  laid itself over it: `swimming` in `pose()` now counts `st.sit`).
 - **The glow's amount** (17 Oct 2026, "30% between off and glow"): the soft glow at 0.3 to begin with; AMOUNT slider beside GLOW.
 - **Feature list**: `TODO.md` (the owner's asks for later: NPCs that talk with a real AI and ElevenLabs voices, their lines saved and reused).
-- **The musician** (17 Oct 2026, `src/musician.js`): the game's guitarist brought over whole (build.py reads the game's 47-play-3-guitar-1-body, -samples.data, -2-tunes, -3-hands, and embeds `audio/guitar.mp3`; small stand-ins for the game's cast and sound): a second Walker with his finger bones, the classical guitar (its solid hull; the game's hollow one breaks up as a mesh), the book of tunes in turn, his hands solved onto every note with weight; on the sidewalk by the bodega in the street light, lit by the lamps; his recorded notes, louder as you near him, from his side (sound starts with your first click or key). A double click on him: the camera close on his hands (16 times in, the wheel closer still) with the SHARPEN bar (owner, 17 Oct 2026: "zoom in all the way and add a sharpen bar to adjust to the level i want": the art from coarsest to one screen pixel each, past the menu's ceiling here only, the level kept in the browser; C back, the sharpness as it was).
+- **The musician** (17 Oct 2026, `src/musician.js`): the game's guitarist brought over whole (build.py reads the game's 47-play-3-guitar-1-body, -samples.data, -2-tunes, -3-hands, and embeds `audio/guitar.mp3`; small stand-ins for the game's cast and sound): a second Walker with his finger bones, the classical guitar (its solid hull; the game's hollow one breaks up as a mesh), the book of tunes in turn, his hands solved onto every note with weight; on the stored bar's stage (owner, 17 Oct 2026: "move him to the bar"; `STORE.bar.gtr`), lit by the lamps; his recorded notes, louder as you near him, from his side, with the bar's echo (sound starts with your first click or key). A double click on him: the camera close on his hands (16 times in, the wheel closer still) with the SHARPEN bar (owner, 17 Oct 2026: "zoom in all the way and add a sharpen bar to adjust to the level i want": the art from coarsest to one screen pixel each, past the menu's ceiling here only, the level kept in the browser; C back, the sharpness as it was).
 - **Never lost in the dark; no shadow acne** (17 Oct 2026): the lamp-lit avatars (the Walker, the musician, the fish, the bear, the skeletons) carry a little light of their own (a sixth of their colour), the lamps on top; every lamp's shadow held off the surface it falls on (normalBias), the two nearest lamps' shadows finer (1024).
 - **The street's characters from his models: all deleted** (owner, 17 Oct 2026: "delete the phone head character, the cheetah and the catnewspaper
   characters from game completely"; then "delete ghost with bag inside and whatever this is"): the snow leopard, the grumpy cat and his ink bottle,
@@ -241,7 +281,15 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
   each the game's own files word for word, built as the musician is): the pianist in his tuxedo at the grand (the 88 keys his, the real grand's
   recordings, his book of three pieces), the singer in the red gown at the microphone (the cord real physics, her voice made as a voice is, wordless
   over the songbook's chords), the octopus drummer at the kit (his set on the kit's physics engine, the AudioWorklet; his cigar and his glass).
-  The guitarist stays on the bodega's sidewalk (the game had him busk outside too). Not found in the game: "raincoast" (asked back).
+  The guitarist is on the stage with them now. **One on the stage at a time** (owner, 17 Oct 2026: "only 1 musician on stage at once"; `src/bandstand.js`):
+  a set each (three minutes, `?set=` seconds for a test), the guitarist, the pianist, the singer, the drummer in turn; the others not drawn, not run,
+  silent; each comes on from the start of a piece; the clock runs only while you're near the stage. **The people are the player's avatar** (owner,
+  17 Oct 2026: "reset all npcs to same exact avatar as main player", his pick: the people): the guitarist, the pianist and the singer are built from
+  the player's own pieces (`musBody` in `musician.js`: `W3.pcs`, his hair and eyes, his build's sizes `W3.E` each frame, his size `W3.SZ`, `W3.BH`), only
+  their fingers a piece a bone for playing; their clothes their own colours (the tuxedo; his shirt and trousers in the singer's gown red: her gown's
+  shape and her body went with it). One mesh maker for them all (`figureMesh`, shared shapes made once, one set of shader programs). **Their cost**
+  (measured): the guitarist 30,300 triangles (was 64,200), the pianist 22,600 (was 140,100: each key now a plain box, the keys were 112,000), the
+  singer 27,000 (was 62,000); one on the stage, so at most 30,300 where the bar's three were 202,000 together. Not found in the game: "raincoast" (asked back).
 - **The creatures' animations fixed** (owner, 17 Oct 2026, "fix the animals animations. check each one"): the packs' armatures stand a quarter turned
   and 100 times their rigs (the rat's 39.5), and the bake dropped that from each rig's root, so every creature's skin collapsed to a hundredth of
   itself as soon as its bones moved it; the root now keeps the armature's size and turn (`rig.s`, `creatures-bake.py`), its clips set under it.
@@ -267,12 +315,39 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
   pose so we can see them fully"; "show in full res in screenshots"): show every new character as `tests/sheet.cjs <key>` does (the page's
   `?sheet=key`: out on the land in a black void, the camera on him close, his limbs spread, at the screen's own pixels with `?fullres=8`), from
   the front, the side and the back, beside the owner's picture. Not on the street, not in a field, not at the game's coarse pixels.
+- **The security droids** (owner, 17 Oct 2026, his Drive's UAL1_Standard.glb, the UAL1 animation library's standard body: an Unreal-style rig of
+  65 bones with 43 clips; "make them security droids, they protect the market"; `src/npc-droids.js`, `data/ual.json` by `tools/creatures-bake.py`
+  with `OUT=` and `SIMP=0.5`, the mesh cut to half, 6,872 triangles): four droids, the body gunmetal, the joints lit cyan (the glowing part, uEye),
+  each marching a beat (the shops' sidewalk's two halves, the far sidewalk, the road's middle) at the formal walk, on guard at each end; a
+  troublemaker up the stairs after dark and every droid near sprints to him and stuns him with a cyan beam from his hand (the guards' bolts,
+  `GUARDX` from `npc-skel.js`), a jab up close, a word on the radio after, back to the beat. `?ualclip=<name>` holds them in a clip; `?sheet=droid1`.
+- **The twelve pawns** (owner, 17 Oct 2026, the twelve .fbx characters at the root of his Drive, chibi figures on one rig, RigPawn, 16 bones with
+  free-floating hands, 58 clips of their own: hero_m/f, villager_m/f, ogre, ogre_mage, ogre_guard_light/heavy, skeleton_mage, skeleton_reaper,
+  skeleton_guard_light/heavy; `data/pawns.json`, one rig and one clip set shared, `src/npc-pawns.js`): walking the whole street, 1.35 m. **The UAL
+  clips on them** ("match this same rig skeleton ... give them all the same stuff"): `tools/retarget-ual.py` retells all 43 UAL clips on the pawn
+  rig (each pawn bone turns in the world as its mannequin bone does, the free hands go where the mannequin's go at the pawn's reach, the hips bob
+  at his height), as `UAL_<name>`; they walk on UAL_Walk_Loop and stand on UAL_Idle_Loop. `?pawnclip=<name>`, `?pawnwalk=`, `?pawnidle=`, `?sheet=<key>`.
+  **The Drive's files**: a file over the connection's size for its reply is still saved to disk by the tool (the 5.5 MB .fbx came through that way).
+- **THE MARKET's artifact** (17 Oct 2026, "you decide, push"): the old link (X2Bk8UjQKP8yfLdLtVVn3s) can't be opened from this account, so THE MARKET
+  is now published at **https://claude.ai/artifact/PnmQqhkusfewby35tf4zo5** (update that one, keep its link). The droids stay the mannequins (not the
+  pawn guards); the twelve pawns stay plain street walkers at 1.35 m.
 - **The gold skeleton** (owner, 17 Oct 2026, his picture of a gilded clockwork skeleton with a white skull face: "put this character in game, use
   the other skeletons as guides for character design"; "make him 2x bigger"): the KayKit Minion's bones and body gilded at load (`gild` in
   `npc-skel.js`: gold by each bone's own light and shade, the face under the eyes and the jaw bone-white, the neck a steel spring, the eye sockets
   black with no glow, no cloak), 1.4 m (twice the others), unarmed, strolling the whole street as they do. The Minion's and the Rogue's meshes
   came out of the bake 2.2 rig units ahead of their bones (the pack's files lay them there); `npc-skel.js` moves them back at load, so those two
   guards and the troublemakers now draw where they stand.
+- **Strict hitboxes** (owner, 17 Oct 2026, the Fox found standing in a shelf: "we need to avoid clipping. all objects and characters need hitboxes.
+  strictly"; `src/clip.js`, run once everything's built and again when the stacked rooms are): every thing on a floor is solid from its own faces
+  (the batch's tagged things, `OBJS`; the park's props and the kits' pieces, `CLIPX`): its faces reaching above the knee (0.45 m) and starting
+  under the chest (1.2 m) are sampled across the plan, and what no solid held becomes boxes on that floor's list (the street's, the station's, a
+  stacked room's), for you, every character and the physics. Open still: mats, rugs, steps, kerbs (under the knee), what hangs higher (the
+  cigarette rack over the Fox), grass and flowers, dust in the air. Every character is checked at load against his floor's solids and the
+  others, and one standing in either is moved to the nearest clear spot he can reach (never through a wall; `N.home` for one his mind holds in
+  place) with a console warning `CLIP: ...`; walking, a character keeps out of solids (makeNPC's default `free`) and never steps into another,
+  standing or walking (a step away from one he's touching is let through, so two who meet don't stick: the goldfish inside the mushroom seller).
+  The Fox on the mat's middle (x 4.51), his radius his depth (.27). Checked by `tests/clipcheck.cjs` (every thing held, every character clear,
+  the goldfish and the mushroom seller sent at each other, no room's door closed; spots now walled off listed as notes). `?clip=0` leaves it off.
 - **Fire, real** (owner, 17 Oct 2026, of the dojo's candle, a white block with a block flame: "can we start using real elements like fire? i dont
   want blocky animations"; `src/fire.js`, `FLAME`): every flame a live one, grown each frame by one shader from a noise rising and churning in
   three dimensions (never repeating): a white-yellow core, orange body, red tongues tearing off; a candle's teardrop with its blue foot, a torch's
@@ -288,8 +363,8 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
 
 **THE MARKET** (owner, 17 Oct 2026: "one official MARKET map im gona start filling in") is the game's map here: every place the owner adds goes
 into it, on its street or under it (the subway's level), next to what's there; not new separate pages. It's built to `dist/market.html` and
-published to its own artifact, **https://claude.ai/artifact/X2Bk8UjQKP8yfLdLtVVn3s** (update that one, keep its link; don't make new pages for
-new places). A place's code is its own file in `src/`; `map-pre.js` says where each place stands (its offset, its level), `map-post.js` joins
+published to its own artifact, **https://claude.ai/artifact/PnmQqhkusfewby35tf4zo5** (update that one, keep its link; don't make new pages for
+new places; the earlier link, X2Bk8UjQKP8yfLdLtVVn3s, can't be opened from this account). A place's code is its own file in `src/`; `map-pre.js` says where each place stands (its offset, its level), `map-post.js` joins
 them (the ground, the levels, what cuts away). Its first places: the bodega, the pool room, the subway station and its stairs.
 
 **Not updated any more** (owner, 17 Oct 2026: "stop updating tsfm im not working there anymore"): nothing goes to `bralynnb/tsfm` from here; the copy there stays as it was last merged (version 8.0.1: at his word, "pull in all merges and go live", [bralynnb/tsfm#801](https://github.com/bralynnb/tsfm/pull/801); before it 8.0.0, [bralynnb/tsfm#800](https://github.com/bralynnb/tsfm/pull/800), 7.9.9, [bralynnb/tsfm#799](https://github.com/bralynnb/tsfm/pull/799), and 7.9.8, [bralynnb/tsfm#798](https://github.com/bralynnb/tsfm/pull/798)); ask before each update there. The artifact link is where THE MARKET is played. What follows is the old way, for the record.
@@ -312,6 +387,8 @@ the owner's call, and merging publishes). The artifact link above is the quick w
   - `station.js` + `wsub.js`: the subway station (the game's West End station). `pool.js` + `water3d.js` + `floats.js`: the pool room,
     its water, its floats. `bodega.js` (the bodega's plan from the game's code, via `gamekit.js` stand-ins and `goods-defs.js`) +
     `bodbuild.js` (built in 3D). `batch.js`: every still face packed into one texture and a few meshes (fast).
+  - `musician.js` (the guitarist, and `musBody` / `figureMesh` for every Walker-built musician), `pianist.js`, `singer.js`, `drummer.js`: the bar's
+    musicians; `bandstand.js`: their turns on the stage.
   - `npc-map.js`: the goldfish on the street and the bear wandering the platform (and `makeNPC`, every character's maker). `npc-skel.js`: the four skeletons on the far sidewalk, rigged and animated, and the gold skeleton (the Minion gilded).
   - `npc-street.js`: the cyborg and the teddy on the street (bones, moves, bodies in Rapier, minds). `npc-rigged.js`: the six figures made a second way (kept, not built: `npc-figures.js` is used).
   - `npc-dragon.js`: the Dragon on the road. `kit.js` + `dress.js`: the kits' pieces and the few on the street. `apts.js`: the apartment house (in the
@@ -326,8 +403,8 @@ the owner's call, and merging publishes). The artifact link above is the quick w
   `skin-bake.py`, `skin-bones.py`, `item-bake.py`, `mesh-cut.py` the street's characters and items: `trimesh`, `scipy`, `scikit-image` too;
   `figures-bake.py` the six figures, `forest-bake.py` the park's pack, `props-bake.py` still things from .glb or .obj with a palette, `creatures-bake.py` rigged ones with their clips; the packs' .fbx made .glb with npm's fbx2gltf).
 - **Screenshots of other characters never show his avatar** (owner, 17 Oct 2026: "stop showing my avatar in screenshots of other characters"): a test looking at a character opens the page with `?hideme=1` (the Walker not drawn, `W3.hideMe` in `walker3d.js`).
-- `tests/`: Playwright screenshots (`fireshot.cjs`: the live flames close up; `mapshot.cjs`: the street; `maptour.cjs`: platform, pool, bodega, stairs, a walk down; `skelshot.cjs`: the skeletons, close; `mushshot.cjs`: a character built in parts (the mushroom seller; another with its debug hook's name as the last argument), close, by day or night; `sheet.cjs <key>`: a character's sheet (black void, close, limbs spread, full res: `?sheet=key&fullres=8`; `?npcat=key,field` stands one out on the land); `streetshot.cjs` the
-  street's characters over a few moments; `streetact.cjs` one of them told each move, close up; `figshot.cjs` the six figures over a few moments; `figact.cjs` one told each move; `parkshot.cjs` the park's gate, round and path; `creatshot.cjs` the creatures by day and night; `poolshot.cjs` the boats). The page takes
+- `tests/`: Playwright screenshots (`fireshot.cjs`: the live flames close up; `mapshot.cjs`: the street; `maptour.cjs`: platform, pool, bodega, stairs, a walk down; `skelshot.cjs`: the skeletons, close; `mushshot.cjs`: a character built in parts (the mushroom seller; another with its debug hook's name as the last argument), close, by day or night; `hairshot.cjs`: his hairstyles from four angles, walking and stopped; `sheet.cjs <key>`: a character's sheet (black void, close, limbs spread, full res: `?sheet=key&fullres=8`; `?npcat=key,field` stands one out on the land); `streetshot.cjs` the
+  street's characters over a few moments; `streetact.cjs` one of them told each move, close up; `figshot.cjs` the six figures over a few moments; `figact.cjs` one told each move; `parkshot.cjs` the park's gate, round and path; `creatshot.cjs` the creatures by day and night; `poolshot.cjs` the boats; `gtshot.cjs` the guitarist close, `gthold.cjs` his holds tried, `bandshot.cjs` the stage's turns and who is heard, `pnshot.cjs` the pianist or the singer close; `modcheck.cjs` the page's module out for `node --check`). The page takes
   `?at=x,z[,height]` to start somewhere, for tests. In a cloud container rendering is software (slow, ~20 fps): run them in the background.
 
 ## Where it's going

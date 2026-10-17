@@ -106,6 +106,30 @@
   // THE MOON SHRINE: Preset Moon Shrine 1 from its back corner, on grass (the pond's kerb here; its water: water3d's second body)
   { const O=[69,-45.9]; STORE.shrineO=O;   /* (in Central Park's back-west lawn, owner 17 Oct 2026: XS 68.7-75.3, -42.8 to -25.2) */ room('shrine','THE MOON SHRINE',{x0:O[0],y0:O[1],x1:O[0]+6,y1:O[1]+16,h:0},{floor:grassCol},null,()=>{ PRESETS['Preset Moon Shrine 1'].forEach(([k,dx,dy,r])=>put(k,O[0]+dx,O[1]+dy,r)); },{z:.05});
     STORE.pond={x0:O[0]+.5,y0:O[1]+12.6,x1:O[0]+5.5,y1:O[1]+15.6,z:4}; }
+  // THE SHRINE OPENED (owner, 17 Oct 2026: "steps and gap", when its parapets, solid since the hitboxes, closed it): a gap in the east parapet,
+  // its middle piece taken away (toward the park's round), and the terrace climbed by its steps: the plaza, the steps and the terrace are
+  // floors you stand on (STORE.shrineGround: the plaza a little up, the steps a slope, the terrace its top), their solids gone, the things on
+  // the terrace still solid, its front edge beside the steps a drop you can't climb. Run once the hitboxes are made (build.py, after CLIP.run)
+  STORE.shrineFix=()=>{ const bb=o=>{ const lo=[1e9,1e9,1e9], hi=[-1e9,-1e9,-1e9]; for(const p of o.parts){ const P=p.me.geometry.attributes.position.array; for(let v=p.v0;v<p.v0+6;v++)for(let a=0;a<3;a++){ lo[a]=Math.min(lo[a],P[v*3+a]); hi[a]=Math.max(hi[a],P[v*3+a]); } } return {o,lo,hi}; };
+    const all=OBJS.filter(o=>/^store:shrine/.test(o.id||'')&&o.parts.length).map(bb), one=n=>all.find(b=>b.o.name===n); if(!all.length)return;
+    // (a rect cut out of every solid it touches: what's left of each box kept, up to four pieces)
+    const cut=(x0,z0,x1,z1)=>{ const sub=(L,get,make)=>{ for(let i=L.length-1;i>=0;i--){ const [a0,c0,a1,c1]=get(L[i]); if(a1<=x0||a0>=x1||c1<=z0||c0>=z1)continue; const f=L[i]; L.splice(i,1);
+        if(a0<x0)L.push(make(f,a0,c0,x0,c1)); if(a1>x1)L.push(make(f,x1,c0,a1,c1)); if(c0<z0)L.push(make(f,Math.max(a0,x0),c0,Math.min(a1,x1),z0)); if(c1>z1)L.push(make(f,Math.max(a0,x0),z1,Math.min(a1,x1),c1)); } };
+      sub(SOL.up,b=>b,(f,a0,c0,a1,c1)=>[a0,c0,a1,c1]); sub(FIX.up,f=>[f[0],f[1],f[3],f[4]],(f,a0,c0,a1,c1)=>[a0,c0,f[2],a1,c1,f[5]]); };
+    const sol=(x0,z0,x1,z1,h)=>{ SOL.up.push([x0,z0,x1,z1]); FIX.up.push([x0,z0,0,x1,z1,h]); };
+    // the gap: the east parapet's middle piece, its faces left out (as the world editor hides a thing) and its solid gone
+    const east=all.filter(b=>b.o.name==='mossy parapet'&&b.lo[0]>0&&b.hi[2]-b.lo[2]>3).sort((a,b)=>a.lo[2]-b.lo[2]), mid=east[1];
+    if(mid){ for(const p of mid.o.parts){ const A=p.me.geometry.attributes.aOp; if(!A)continue; for(let v=p.v0;v<p.v0+6;v++)A.setX(v,0); A.needsUpdate=true; }
+      const g0=east[0].hi[2], g1=east[2]?east[2].lo[2]:mid.hi[2]; cut(mid.lo[0]-.3,g0+.01,mid.hi[0]+.3,g1-.01); STORE.shrineGap=[mid.lo[0],g0,mid.hi[0],g1]; }
+    // the floors: the plaza, the steps (a slope from the plaza up to the terrace), the terrace; what stands on the terrace stays solid
+    const ter=one('stone terrace'), st=one('mossy steps'), pl=one('spiral stone plaza'); if(!ter||!st||!pl)return;
+    cut(ter.lo[0],ter.lo[2],ter.hi[0],ter.hi[2]); cut(st.lo[0],st.lo[2],st.hi[0],st.hi[2]);
+    { const g=one('moon shrine gate'); if(g){ cut(g.lo[0],g.lo[2],g.hi[0],g.hi[2]); sol(g.lo[0],g.lo[2],g.lo[0]+.45,g.hi[2],g.hi[1]); sol(g.hi[0]-.45,g.lo[2],g.hi[0],g.hi[2],g.hi[1]); } }   // (the gate: its two posts, the way under it open)
+    for(const b of all){ if(b===ter||b===st||b===pl||/parapet|pond|walkway|fern|blossom|shrine gate/.test(b.o.name))continue; const cx=(b.lo[0]+b.hi[0])/2, cz=(b.lo[2]+b.hi[2])/2;
+      if(cx>ter.lo[0]&&cx<ter.hi[0]&&cz>ter.lo[2]&&cz<ter.hi[2]+.6&&b.hi[1]-b.lo[1]>.4)sol(b.lo[0],b.lo[2],b.hi[0],b.hi[2],b.hi[1]); }   // (the statue, its plinth, the rock, the post, the lantern, the gate's posts)
+    const e=.12; sol(ter.lo[0],ter.hi[2]-e,st.lo[0],ter.hi[2]+e,ter.hi[1]); sol(st.hi[0],ter.hi[2]-e,ter.hi[0],ter.hi[2]+e,ter.hi[1]);   // (the terrace's front, a drop beside the steps)
+    const T=ter.hi[1], S0=pl.hi[1], in_=(b,x,z)=>x>=b.lo[0]&&x<=b.hi[0]&&z>=b.lo[2]&&z<=b.hi[2];
+    STORE.shrineGround=(x,z)=>{ if(in_(ter,x,z))return T; if(in_(st,x,z))return S0+(T-S0)*Math.max(0,Math.min(1,(st.hi[2]-z)/(st.hi[2]-st.lo[2]))); if(in_(pl,x,z))return S0; return null; }; };
 
   // (faster opening, 17 Oct 2026: the page froze while all of this was painted. The stacked rooms are built after the game opens, one a
   // moment, then batched on their own; going to one of them first finishes them at once: STORE.ensure)
@@ -188,7 +212,7 @@
     for(const [x,z,w,ry] of [[(Tk.x0+Tk.x1)/2,Tk.y0,Tk.x1-Tk.x0,0],[(Tk.x0+Tk.x1)/2,Tk.y1,Tk.x1-Tk.x0,0],[Tk.x0,(Tk.y0+Tk.y1)/2,Tk.y1-Tk.y0,Math.PI/2],[Tk.x1,(Tk.y0+Tk.y1)/2,Tk.y1-Tk.y0,Math.PI/2]]){ const m=new THREE.Mesh(new THREE.PlaneGeometry(w*TILE*BLDK,gh),gm); m.position.set(X(x),gy,Z(z)); m.rotation.y=ry; scene.add(m); } 
       const H=STORE.houseAt, hp=(dx,dy,z)=>[X(H[0]+dx),Y(z+(STORE.houseZ||0)),Z(H[1]+dy)], HP=[hp(-.16,-.09,38),hp(-.12,.07,41),hp(.18,.09,37),hp(.13,-.1,35),hp(-.06,0,44),hp(.06,0,44),hp(.08,-.11,32),hp(-.24,0,47),hp(.24,0,47),hp(0,-.17,49)];
     [12,21].forEach((k,i)=>{ const b=BF.add(k,HP); b.at=b.to=i*4; b.g.position.set(...HP[b.at]); });
-      if(ROOMS.reset)ROOMS.reset(); };
+      if(ROOMS.reset)ROOMS.reset(); if(window.CLIP)window.CLIP.run(); };   // (CLIP: their things made solid on their own floors, as the rest were at load: clip.js)
     STORE.ensure=finish;
     const run=()=>{ if(done)return; if(STEPS.length){ step(); setTimeout(run,60); } else finish(); };
     STORE.later=()=>setTimeout(run,1500); }   // (started once the game runs: build.py)

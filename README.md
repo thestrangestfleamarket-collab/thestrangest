@@ -7,7 +7,8 @@ Build: `python3 build.py` (needs `../tsfm`, a checkout of the game, or `GAME_SRC
 ## Now
 
 One street at night: the bodega (its shelves, coolers, goods, counter, back office, lights) and the pool room (real water, swimming, floats)
-side by side; the subway station underneath, twelve steps down from the sidewalk, the goldfish and the bear on its platform. The 3D Walker
+side by side; the subway station underneath, twelve steps down from the sidewalk, the goldfish and the bear on its platform; four skeletons
+(KayKit's, rigged, walking on their own bones) haunting the far sidewalk across the street. The 3D Walker
 with his moves, ragdoll and physics; real lights and shadows; free rotation and zoom, pixels that grow with the zoom.
 
 ## Not here yet (what the game has)

@@ -37,6 +37,11 @@ this repo is `bralynnbell/thestrangest`.
 - **Neon and glow** (17 Oct 2026): a neon sign is its letters as glowing tube blocks with depth (readable from any side), its light at the glass casting shadows (walls keep it in); every glow (bloom) is stepped and dithered in square blocks, never a soft haze.
 - **Lights checked** (17 Oct 2026): every lamp tested against a copy where all cast shadows; only the subway stairs' two lamps leaked through a wall, now shadowed (drawn once). A lamp whose reach crosses a wall gets shadows.
 - **Water on its own clock** (17 Oct 2026, it spiked after a jump in on the owner's machine): 180 steps a second whatever the frame rate, a little viscosity at the finest ripples, heights and speeds held to what water does, anything broken reset to calm.
+- **The skeletons** (17 Oct 2026, "can you add these characters into game": Kay Lousberg's KayKit Skeletons 1.1, CC0): the Warrior, the Mage, the
+  Minion and the Rogue haunt the far sidewalk across the street, wandering its length, armed as the pack arms them. The first rigged characters:
+  each keeps the pack's bones and walks and idles with the pack's own clips (`tools/skeletons-bake.py` → `data/skel.json`, `src/npc-skel.js`);
+  coloured from the pack's palette at each point (no texture), shaded as the fish and the bear are, eyes glowing. `makeNPC` (`npc-map.js`) now
+  takes a level, a lane and a ground, and a rigged mesh, so any character can go anywhere on the map.
 - When a request could mean more than one thing, ask with a couple of options (or a quick mockup) before building.
 
 ## THE MARKET: the one official map
@@ -65,10 +70,10 @@ the owner's call, and merging publishes). The artifact link above is the quick w
   - `station.js` + `wsub.js`: the subway station (the game's West End station). `pool.js` + `water3d.js` + `floats.js`: the pool room,
     its water, its floats. `bodega.js` (the bodega's plan from the game's code, via `gamekit.js` stand-ins and `goods-defs.js`) +
     `bodbuild.js` (built in 3D). `batch.js`: every still face packed into one texture and a few meshes (fast).
-  - `npc-map.js`: the goldfish and the bear wandering the platform.
-- `data/`: the characters baked from the owner's models (`goldfish.json`, `bear.json`). `tools/`: the scripts that baked them (they need
-  the owner's .glb files and `fast-simplification`).
-- `tests/`: Playwright screenshots (`mapshot.cjs`: the street; `maptour.cjs`: platform, pool, bodega, stairs, a walk down). The page takes
+  - `npc-map.js`: the goldfish and the bear wandering the platform (and `makeNPC`, every character's maker). `npc-skel.js`: the four skeletons on the far sidewalk, rigged and animated.
+- `data/`: the characters baked from the owner's models (`goldfish.json`, `bear.json`) and the skeletons, their gear and clips (`skel.json`). `tools/`: the
+  scripts that baked them (they need the owner's .glb files and `fast-simplification`; `skeletons-bake.py` the KayKit pack, unzipped).
+- `tests/`: Playwright screenshots (`mapshot.cjs`: the street; `maptour.cjs`: platform, pool, bodega, stairs, a walk down; `skelshot.cjs`: the skeletons, close). The page takes
   `?at=x,z[,height]` to start somewhere, for tests. In a cloud container rendering is software (slow, ~20 fps): run them in the background.
 
 ## Where it's going

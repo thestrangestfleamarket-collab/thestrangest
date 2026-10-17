@@ -111,10 +111,11 @@ mod=rp(mod,"if(k==='-'||k==='_'){PXS=Math.min(12,PXS+1);resize();} if(k==='='||k
 head=rp(head,'<div><b>-</b> / <b>=</b> pixel size</div>','<div><b>-</b> / <b>=</b> coarser / sharper</div>')
 print('ok zoom')
 
-# THE OWNER'S CHARACTERS FROM HIS MODELS (owner, 16 Oct 2026): the goldfish and the bear, coloured, wandering the platform
-mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);","const GOLDFISH="+open('data/goldfish.json').read()+";\nconst BEARD="+open('data/bear.json').read()+";\n"+open('src/npc-map.js').read()+"\nresize(); applyTime(0); requestAnimationFrame(frame);")
+# THE OWNER'S CHARACTERS FROM HIS MODELS (owner, 16 Oct 2026): the goldfish and the bear, coloured, wandering the platform; THE SKELETONS (owner,
+# 17 Oct 2026, KayKit's four, rigged and animated) on the far sidewalk: src/npc-skel.js, data/skel.json (tools/skeletons-bake.py)
+mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);","const GOLDFISH="+open('data/goldfish.json').read()+";\nconst BEARD="+open('data/bear.json').read()+";\nconst SKEL="+open('data/skel.json').read()+";\n"+open('src/npc-map.js').read()+"\n"+open('src/npc-skel.js').read()+"\nresize(); applyTime(0); requestAnimationFrame(frame);")
 mod=rp(mod,"  marker.visible=!!target;","  for(const N of NPCS)N.tick(dt,pos);\n  marker.visible=!!target;")
-mod=rp(mod,"function collide(p){ const r=0.3;","function collide(p){ if(typeof NPCS!=='undefined'&&LVL==='down')for(const N of NPCS)N.push(p); const r=0.3;")
+mod=rp(mod,"function collide(p){ const r=0.3;","function collide(p){ if(typeof NPCS!=='undefined')for(const N of NPCS)if(N.lv===LVL)N.push(p); const r=0.3;")
 print('ok npcs')
 
 

@@ -7,7 +7,7 @@
 // THE GRAIN, FOR GOOD (owner, 17 Oct 2026: "i want to avoid these types of shadows and grids half tone, can we do the shadows style i mentioned
 // earlier with screenshot i shared?", the noise-dithered light he called perfect): on by default, 16 steps; GRAPHICS' LIGHT GRAIN sets it (24 fine,
 // 16, 12 strong, or off: the clean 24 bands), kept in the browser, the page loads again to make it; ?dith=N for a test
-const DITH=(()=>{ const q=new URLSearchParams(location.search).get('dith'); if(q!=null)return +q; let v=null; try{ v=localStorage.getItem('market-grain'); }catch(e){} return v!=null?+v:16; })();
+const DITH=(()=>{ const q=new URLSearchParams(location.search).get('dith'); if(q!=null)return +q; let v=null; try{ v=SAVE.get('grain'); }catch(e){} return v!=null?+v:16; })();
 // THE LIVELIER LOOK (owner, 17 Oct 2026: "how can i get the world to look more dynamic with light, shadows, weather etc without dragging down
 // with lag? this looks too bland"; "let me see mockups of all of those"): ?fx=cs,cool,ao,var,wet,sway,life (or all): the clouds' shadows
 // drifting over the ground (cs), contact shadows where things stand on it (ao), the ground's tones varied in patches (var), wet ground with
@@ -45,7 +45,7 @@ const grab=(name,fn)=>{ const n0=scene.children.length; fn(); const g=new THREE.
 // stairs and lanes all go with it. LAYOUT0 is the game's own (what he exports, saved here for good); the editor's own in the browser
 // (market-layout) over it, the page reloaded to build it; ?layout=0 the game's own alone, ?layout={...} one for a test
 const LAYOUT0={};
-const LAY=(()=>{ const q=QS.get('layout'); let o={}; try{ o=q&&q[0]==='{'?JSON.parse(q):q==='0'?{}:JSON.parse(localStorage.getItem('market-layout')||'{}')||{}; }catch(e){}
+const LAY=(()=>{ const q=QS.get('layout'); let o={}; try{ o=q&&q[0]==='{'?JSON.parse(q):q==='0'?{}:JSON.parse(SAVE.get('layout')||'{}')||{}; }catch(e){}
   const L=Object.assign({},LAYOUT0,o); return {L, o:k=>({x:+(L[k]&&L[k].x)||0,y:+(L[k]&&L[k].y)||0}), e:k=>(L[k]&&L[k].e||[0,0,0,0]).map(v=>+v||0)}; })();
 // where each place goes: the station (its platform 98 px down, its exit tunnel's end 3 tiles behind the sidewalk, 11 tiles west of the
 // bodega's door), the pool room (its west wall 10 tiles east of the bodega's door, its front on the sidewalk), the stairs (bodega tiles)

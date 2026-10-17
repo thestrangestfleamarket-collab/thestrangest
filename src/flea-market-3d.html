@@ -1576,7 +1576,7 @@ function frame(now){ requestAnimationFrame(frame); const dt=Math.min(0.05,(now-l
     // as the game walks him: he turns toward where you steer (half a turn in a third of a second) and goes the way he faces, as far as his feet carried him
     const ml=Math.hypot(mx,mz), busy=st.move;
     if(ml>0&&!busy){ let dh=Math.atan2(mx,mz)-heading; dh=Math.atan2(Math.sin(dh),Math.cos(dh)); const turn=3*Math.PI*dt; heading+=Math.max(-turn,Math.min(turn,dh)); }
-    st.target=ml>0?1:0; const before=st.dist; RIG.step(st,dt); const go=(st.dist-before)/PPU;   // (his units are art pixels across)
+    st.target=ml>0?1:0; const before=st.dist; RIG.step(st,dt); const go=(st.dist-before)/PPU; if(typeof SFX!=='undefined')SFX.steps(st,go);   // (his units are art pixels across; a footfall each step: src/sfx.js)
     if(go){ const ox=pos.x,oz=pos.z; pos.x+=Math.sin(heading)*go; pos.z+=Math.cos(heading)*go; collide(pos); if(target&&Math.hypot(pos.x-ox,pos.z-oz)<go*0.2)target=null; }
     py+=(groundY(pos.x,pos.z)-py)*Math.min(1,dt*20); P.x=pos.x/TL; P.y=-pos.z/TL; PH.hd=heading;
     B=RIG.pose(st); ragBlend(B); ragStrikes(B,J0,J0t?(now-J0t)/1000:0); J0=B.J; J0t=now; }

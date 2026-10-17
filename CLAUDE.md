@@ -388,6 +388,22 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
   (the game's own). Not possible: turning a place (every place is built on walls along the map's axes); the street itself stays. `?layout=0`
   the game's own layout alone, `?layout={...}` one for a test. Nothing runs while it's closed. Checked by `tests/mapedit.cjs`.
 
+- **From the owner's physician game** (17 Oct 2026, his recovered Godot scripts: "take all that apply to my game and can fit in seamlessly"; what
+  fit, rewritten for the page, none of its medical content or Godot UI): **sounds made in code** (`src/sfx.js`: every effect a recipe grown from
+  sines and filtered noise into a buffer the first time it's wanted, no sound file; his footsteps, a lamp's click, the fridge's latch and shut, the
+  can's clunk, a seat's creak, a blow on you, a fireball's boom; quieter with distance, panned to its side); **the ambience** (`src/ambience.js`:
+  a low hush under everything, the rain's hiss and the wind's breath from the weather, muffled indoors, none underground; every 7 to 16 s one
+  small sound by weight, never the same kind twice running, nearer together with company: by day a car passing, a bird, a horn, the subway's
+  rumble, a dog; by night crickets, a dog, a siren; indoors creaks; underground drips, the rumble, a train; thunder after a storm's flash);
+  **what they say** (`src/lines.js`: pools of lines, a blank unfilled drops the line, the last fourteen said set aside, a word typed over the
+  speaker's head with voice blips from a hash of his name; a character waved to answers, a guard cheers, a droid reports, the Fox greets you at
+  his counter, a troublemaker taunts; the hundred last lines logged: the start of TODO.md's talking characters); **one save** (`src/save.js`:
+  everything kept in the browser under `market-save` as {v, name: value}, the old scattered `market-*` keys gathered once; a migrate hook by
+  version; `SAVE.get/set/del`); **a data check** (`tests/datacheck.cjs`: the save's gathering, every sound recipe finite and audible, the
+  ambience's names, the pools' blanks and freshness, every menu place on ground, a wave without error). The menu's DISPLAY has SOUND: EFFECTS,
+  AMBIENCE, VOLUME. Cost: three looping sources, at most two one-shots at a time, 0.007 ms a frame for the ambience's tick; nothing fetched.
+  Not taken: its money and reputation curves (nothing sells yet), its day scheduler (no daily cast), its languages, its blur shader (no blur).
+
 ## THE MARKET: the one official map
 
 **THE MARKET** (owner, 17 Oct 2026: "one official MARKET map im gona start filling in") is the game's map here: every place the owner adds goes
@@ -433,7 +449,7 @@ the owner's call, and merging publishes). The artifact link above is the quick w
   `figures-bake.py` the six figures, `forest-bake.py` the park's pack, `props-bake.py` still things from .glb or .obj with a palette, `creatures-bake.py` rigged ones with their clips; the packs' .fbx made .glb with npm's fbx2gltf).
 - **Screenshots of other characters never show his avatar** (owner, 17 Oct 2026: "stop showing my avatar in screenshots of other characters"): a test looking at a character opens the page with `?hideme=1` (the Walker not drawn, `W3.hideMe` in `walker3d.js`).
 - `tests/`: Playwright screenshots (`fireshot.cjs`: the live flames close up; `mapshot.cjs`: the street; `maptour.cjs`: platform, pool, bodega, stairs, a walk down; `skelshot.cjs`: the skeletons, close; `mushshot.cjs`: a character built in parts (the mushroom seller; another with its debug hook's name as the last argument), close, by day or night; `hairshot.cjs`: his hairstyles from four angles, walking and stopped; `sheet.cjs <key>`: a character's sheet (black void, close, limbs spread, full res: `?sheet=key&fullres=8`; `?npcat=key,field` stands one out on the land); `streetshot.cjs` the
-  street's characters over a few moments; `streetact.cjs` one of them told each move, close up; `figshot.cjs` the six figures over a few moments; `figact.cjs` one told each move; `parkshot.cjs` the park's gate, round and path; `creatshot.cjs` the creatures by day and night; `poolshot.cjs` the boats; `gtshot.cjs` the guitarist close, `gthold.cjs` his holds tried, `bandshot.cjs` the stage's turns and who is heard, `pnshot.cjs` the pianist or the singer close; `modcheck.cjs` the page's module out for `node --check`; `mapedit.cjs <out>` the map editor: two places moved, their walls and lights with them). The page takes
+  street's characters over a few moments; `streetact.cjs` one of them told each move, close up; `figshot.cjs` the six figures over a few moments; `figact.cjs` one told each move; `parkshot.cjs` the park's gate, round and path; `creatshot.cjs` the creatures by day and night; `poolshot.cjs` the boats; `gtshot.cjs` the guitarist close, `gthold.cjs` his holds tried, `bandshot.cjs` the stage's turns and who is heard, `pnshot.cjs` the pianist or the singer close; `modcheck.cjs` the page's module out for `node --check`; `datacheck.cjs` the data check (the save, the sounds, the lines, the places); `mapedit.cjs <out>` the map editor: two places moved, their walls and lights with them). The page takes
   `?at=x,z[,height]` to start somewhere, for tests. In a cloud container rendering is software (slow, ~20 fps): run them in the background.
 
 ## Where it's going

@@ -14,6 +14,10 @@ The owner's list of features to build, newest last. Each line is his ask; the no
 - **Reused before made new**: each NPC keeps a library of its lines (the text and its recorded ElevenLabs audio). When something it already
   said fits, it says that again (no new AI call, no new voice cost); a new line is made only when nothing fits, until it has **up to 100
   lines**; from then on it only reuses.
+- **Begun** (17 Oct 2026, `src/lines.js`, from his physician game's line pools): each character says a line from a pool when waved to (and the
+  guards, droids, the Fox and the troublemakers at their moments), typed over his head with voice blips made in code; the last fourteen said are
+  set aside so lines don't repeat; the hundred last said are logged (`LINES.log`: who, which pool, the text, when, the hour). The AI, the voices
+  and the saved library of up to 100 lines a character come next on this base (`LINES.add(pool, lines)` takes new ones).
 - Needs, when it's built:
   - an ElevenLabs account and API key, and a choice of voices;
   - a small server to hold the keys and make the calls (never in the page): on the live site the game's Cloudflare worker, which already sits

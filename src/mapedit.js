@@ -70,7 +70,7 @@ const MAPED={on:false};
   const nudge=(dx,dy)=>{ const e=ent(sel); e.x=(e.x||0)+dx; e.y=(e.y||0)+dy; WORK=clean(WORK); draw(); };
   P.querySelectorAll('[data-n]').forEach(b=>b.onclick=ev=>{ const [x,y]=b.dataset.n.split(',').map(Number), m=ev.shiftKey?5:1; nudge(x*m,y*m); });
   q('#meR').onclick=()=>{ delete WORK[sel]; draw(); }; q('#meRA').onclick=()=>{ WORK={}; draw(); };
-  q('#meA').onclick=()=>{ try{ localStorage.setItem('market-layout',JSON.stringify(clean(WORK))); }catch(e){} location.reload(); };
+  q('#meA').onclick=()=>{ try{ SAVE.set('layout',JSON.stringify(clean(WORK))); }catch(e){} location.reload(); };
   q('#meE').onclick=()=>{ const t=q('#meT'); t.value='LAYOUT '+JSON.stringify(clean(WORK)); t.style.display='block'; t.select(); try{ navigator.clipboard.writeText(t.value); }catch(e){} };
   // the mouse on the plan: an edge of the park or the land (when it's the one chosen) sizes it; a place moves; empty ground slides the plan
   const hit=(px,pz)=>{ const x=wx(px), z=wz(pz), L=KEYS.map(k=>[k,boxOf(k)]).filter(p=>p[1]&&x>=p[1][0]&&x<=p[1][2]&&z>=p[1][1]&&z<=p[1][3]);

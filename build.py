@@ -29,7 +29,7 @@ MAPST=('const TEXTURES='+rd('data/textures.json')+';\nconst KITD='+rd('data/kit.
   +wrap('down',stn,"MODS.station={BOUND,ground:(x,z)=>groundY(x,z)+STN.DY};","()=>LVL==='down'")
   +wrap('bodega',bod+'\n'+bb+'\n'+rd('src/apts.js'),"MODS.bodega={BOUND,ground:groundY};","()=>BODB.inside()")
   +wrap('pool',pool+'\nWATER.build();',"MODS.pool={BOUND,cut:cutWalls.slice(c0),inside:(x,z)=>x>POOLR.X(POOLR.x0)&&x<POOLR.X(POOLR.x1)&&z>POOLR.Z(POOLR.y0)&&z<POOLR.Z(POOLR.y1)};","()=>MODS.pool.inside(pos.x,pos.z)")
-  +"const FOREST="+rd('data/forest.json')+";\n"+rd('src/park.js')+'\n'   # (CENTRAL PARK'S ENTRANCE, owner 17 Oct 2026: park.js, data/forest.json)
+  +"const FOREST="+rd('data/forest.json')+";\nconst PROPS="+rd('data/props.json')+";\n"+rd('src/park.js')+'\n'   # (CENTRAL PARK'S ENTRANCE, owner 17 Oct 2026: park.js, data/forest.json)
   +rd('src/map-post.js')+'\n'+rd('src/kit.js')+'\n'+rd('src/dress.js'))   # (the kits placed, the pigeons: after the map)
 f=open('src/flea-market-3d.html').read()  # (carries the simpler Walker)
 st=MAPST
@@ -135,7 +135,7 @@ print('ok zoom')
 
 # THE OWNER'S CHARACTERS FROM HIS MODELS (owner, 16 Oct 2026): the goldfish and the bear, coloured, wandering the platform; THE SKELETONS (owner,
 # 17 Oct 2026, KayKit's four, rigged and animated) on the far sidewalk: src/npc-skel.js, data/skel.json (tools/skeletons-bake.py)
-mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);","const GOLDFISH="+open('data/goldfish.json').read()+";\nconst BEARD="+open('data/bear.json').read()+";\nconst SKEL="+open('data/skel.json').read()+";\n"+open('src/npc-map.js').read()+"\n"+open('src/npc-skel.js').read()+"\nconst DRAGON="+open('data/dragon.json').read()+";\n"+open('src/npc-dragon.js').read()+"\nconst FIGS="+open('data/figures.json').read()+";\n"+open('src/npc-figures.js').read()+"\nresize(); applyTime(0); requestAnimationFrame(frame);")   # (THE SIX FIGURES, owner 17 Oct 2026: npc-figures.js, data/figures.json)   # (THE STREET'S CHARACTERS from the owner's models, owner 17 Oct 2026: npc-street.js)
+mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);","const GOLDFISH="+open('data/goldfish.json').read()+";\nconst BEARD="+open('data/bear.json').read()+";\nconst SKEL="+open('data/skel.json').read()+";\n"+open('src/npc-map.js').read()+"\n"+open('src/npc-skel.js').read()+"\nconst DRAGON="+open('data/dragon.json').read()+";\n"+open('src/npc-dragon.js').read()+"\nconst FIGS="+open('data/figures.json').read()+";\n"+open('src/npc-figures.js').read()+"\nconst CREATURES="+open('data/creatures.json').read()+";\n"+open('src/npc-creatures.js').read()+"\nresize(); applyTime(0); requestAnimationFrame(frame);")   # (THE SIX FIGURES, owner 17 Oct 2026: npc-figures.js, data/figures.json)   # (THE STREET'S CHARACTERS from the owner's models, owner 17 Oct 2026: npc-street.js)
 mod=rp(mod,"  marker.visible=!!target;","  for(const N of NPCS)N.tick(dt,pos);\n  marker.visible=!!target;")
 mod=rp(mod,"function collide(p){ const r=0.3;","function collide(p){ if(typeof NPCS!=='undefined')for(const N of NPCS)if(N.lv===LVL)N.push(p); const r=0.36;")   # (his reach round him: 0.3, a fifth bigger with him)
 print('ok npcs')
@@ -159,7 +159,7 @@ mod=rp(mod,"collide(pos); if(target&&","collide(pos); if(st.water&&st.water.in){
 mod=rp(mod,"if(MOVEK[k]&&!e.repeat&&!RAG.on)RIG.act(st,MOVEK[k]); });","if(st.water&&st.water.in&&(k===' '||k==='j')){ st.water.dive=true; e.preventDefault(); } else if(MOVEK[k]&&!e.repeat&&!RAG.on)RIG.act(st,MOVEK[k]); });")
 mod=rp(mod,"if(MOVEK[k])RIG.release(st,MOVEK[k]); });","if(k===' '||k==='j'){ if(st.water)st.water.dive=false; } if(MOVEK[k])RIG.release(st,MOVEK[k]); });")
 mod=rp(mod,"if(!RAG.on&&(trip||hit>12)){","if(!RAG.on&&!(st.water&&st.water.level!=null)&&(trip||hit>12)){")
-mod=rp(mod,"looseDraw();\nlet looseAcc",open('src/floats.js').read()+"\nlooseDraw();\nlet looseAcc")
+mod=rp(mod,"looseDraw();\nlet looseAcc",open('src/floats.js').read()+"\n"+open('src/boats.js').read()+"\nlooseDraw();\nlet looseAcc")   # (THE BOATS in the pool, owner 17 Oct 2026: boats.js)
 mod=rp(mod,"const PHYOU={m:null,","let PHYZ0=0; const PHYOU={m:null,")
 mod=rp(mod,"fj=AY-(p[2]*TL-py)*PPU/VS","fj=AY-((p[2]-PHYZ0)*TL-py)*PPU/VS")
 mod=rp(mod,"  if(loose.length)RIG.draw(B,cloud,hdA,uimg,PW,PICH,AX,AY,1,false);","  if(loose.length||FLOATS.bodies.some(b=>Math.hypot(b.x[0]*TL-pos.x,-b.x[1]*TL-pos.z)<2.5))RIG.draw(B,cloud,hdA,uimg,PW,PICH,AX,AY,1,false);   // (his figure for the physics only when something he could push is near)")

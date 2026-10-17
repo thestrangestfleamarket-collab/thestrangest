@@ -79,7 +79,7 @@ const ED={on:false};
   document.head.appendChild(css);
   const P=document.createElement('div'); P.id='ed'; P.hidden=true; P.innerHTML=`<h2>HIS SHAPE</h2>
     <div class="tabs"><button data-m="sizes">SIZES</button><button data-m="sculpt">SCULPT</button><button data-m="pieces">PIECES</button></div>
-    <div class="pane" data-q="sizes"><div class="dim">pick a piece (or click it on him)</div><div class="list" id="elist"></div>
+    <div class="pane" data-q="sizes"><div class="row"><span class="lab">BODY</span><button class="btn" data-body="current">CURRENT</button><button class="btn" data-body="male">MALE</button><button class="btn" data-body="female">FEMALE</button></div><div class="dim">pick a piece (or click it on him)</div><div class="list" id="elist"></div>
       <div id="esz"><div class="row"><span class="lab">LENGTH</span><input type="range" min="0.4" max="2.2" step="0.01" data-k="1"></div>
       <div class="row"><span class="lab">WIDTH</span><input type="range" min="0.4" max="2.2" step="0.01" data-k="0"></div>
       <div class="row"><span class="lab">THICKNESS</span><input type="range" min="0.4" max="2.2" step="0.01" data-k="2"></div></div></div>
@@ -115,6 +115,20 @@ const ED={on:false};
   $('#emir').onclick=()=>{ B.mirror=!B.mirror; $('#emir').setAttribute('aria-pressed',String(B.mirror)); };
   $('#eboth').onclick=()=>{ $('#eboth').setAttribute('aria-pressed',String(!both())); };
   $('#eresp').onclick=()=>{ if(cur<0)return; snap(); W3.E[cur]=null; if(both()&&PART[cur]>=0)W3.E[PART[cur]]=null; save(); draw(); };
+  // BODY (owner, 17 Oct 2026: "a version based on female vs male body + current avatar proportions"; his pick: a switch, as the mockup):
+  // each his own proportions, the skeleton his; the male broader in the shoulders, chest, arms and neck, narrower in the hips; the female
+  // narrower in the shoulders and arms, wider in the hips and thighs, smaller hands and feet, longer hair, no beard. Picking one sets his
+  // pieces' sizes (what's sculpted stays); SIZES, SCULPT and PIECES still change him after
+  const e3=(s,o=[0,0,0])=>({s,o,q:[0,0,0,1]}), two=(n,v)=>({[n+'L']:v,[n+'R']:v});
+  const BODIES={current:{},
+    male:{torso:e3([1.12,1,1.06]),neck:e3([1.12,1,1.12]),hips:e3([0.95,1,0.98]),...two('sleeve',e3([1.12,1,1.12])),...two('upperArm',e3([1.12,1,1.12])),...two('forearm',e3([1.08,1,1.08])),...two('hand',e3([1.08,1.04,1.08])),...two('thigh',e3([1.02,1,1.02]))},
+    female:{torso:e3([0.86,0.98,1.08]),neck:e3([0.84,1.04,0.84]),head:e3([0.95,0.97,0.95]),beard:e3([0.2,0.2,0.2],[0,1.5,-1.2]),hair:e3([1.1,1.75,1.16],[0,-5.5,-0.6]),hips:e3([1.18,1.04,1.1]),
+      ...two('sleeve',e3([0.84,0.97,0.84])),...two('upperArm',e3([0.84,0.97,0.84])),...two('forearm',e3([0.84,1,0.84])),...two('hand',e3([0.84,0.9,0.84])),...two('thigh',e3([1.12,1,1.12])),...two('shin',e3([0.92,1,0.92])),...two('shoe',e3([0.85,0.92,0.85]))}};
+  let body='current'; try{ body=localStorage.getItem('market-body')||'current'; }catch(e){}
+  const drawBody=()=>P.querySelectorAll('[data-body]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.body===body)));
+  P.querySelectorAll('[data-body]').forEach(b=>b.onclick=()=>{ snap(); body=b.dataset.body; W3.E=PCS.map(()=>null); const B0=BODIES[body]; for(const n in B0){ const i=NAMES.indexOf(n); if(i>=0)W3.E[i]=JSON.parse(JSON.stringify(B0[n])); }
+    try{ localStorage.setItem('market-body',body); }catch(e){} save(); draw(); drawBody(); });
+  drawBody();
   $('#eundo').onclick=undo; $('#eall').onclick=()=>{ snap(); W3.E=PCS.map(()=>null); PA.array.set(BASE); NA.array.set(NBASE); PA.needsUpdate=NA.needsUpdate=true; sculpted=false; save(); draw(); };
   $('#edown').onclick=()=>{ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([JSON.stringify(pack2())],{type:'application/json'})); a.download='walker-shape.json'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1000); };
   $('#eload').onclick=()=>{ const f=document.createElement('input'); f.type='file'; f.accept='.json,application/json'; f.onchange=async()=>{ try{ snap(); if(unpack(JSON.parse(await f.files[0].text()))){ save(); draw(); } }catch(e){} }; f.click(); };

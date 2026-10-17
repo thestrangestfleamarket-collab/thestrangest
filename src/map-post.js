@@ -65,6 +65,14 @@ const MAPLV=(py,pos)=>{ const lv=py<-1.6?'down':'up', st=inStair(pos.x,pos.z)!=n
   MODS.stairCut.constant=st?py+.25:1e6;
   if(lv===LVL)return false; LVL=lv; solids=SOL[lv]; fixed=FIX[lv]; HEMI.color.set(lv==='down'?0x8a93a8:0x55607a); HEMI.groundColor.set(lv==='down'?0x1a1814:0x14110e); HEMI.intensity=lv==='down'?.1:.3; return true; };
 
+// THE STOREROOM (store.js, off the map): a room's roof hidden while you're in it; the view and his walk bounded by the store while he's there, by the map otherwise.
+// ONLY THE LAMPS WHERE YOU ARE (the store's rooms bring the map to near a hundred lamps, more than the card's shaders take at once: they
+// went black): a stored room's lamps are lit only while you're in it or at its door (three tiles round it), the map's only while you're on the
+// map; the switch only as you go from one to another (every change of how many lamps are lit has the shaders built again). A still lamp keeps its shadows drawn
+{ const MB=BOUND, near=r=>pos.x>r.x0-3*TILE&&pos.x<r.x1+3*TILE&&pos.z>r.z0-3*TILE&&pos.z<r.z1+3*TILE;
+  STORE.tick=()=>{ STORE.pos=pos; STORE.cur=ROOMS.cur?ROOMS.cur.id:null; STORE.nl=lamps.length; STORE.lon=lamps.filter(L=>L.visible).length;
+    const zone=STORE.inStore(pos.x,pos.z)?(STORE.rooms.find(near)||{id:'store'}).id:'map';
+    if(zone!==STORE.zone){ STORE.zone=zone; for(const L of lamps){ const z=L.userData.zone; L.visible=zone==='map'?!z:z===zone; } } for(const r of STORE.roofs)r.me.visible=!r.R.inside(pos.x,pos.z); BOUND=STORE.inStore(pos.x,pos.z)?STORE.bound:MB; }; }
 // (a test's look inside)
 window.MAPDBG=()=>({LVL,cut:MODS.stairCut.constant,vis:Object.fromEntries(Object.entries(MAPG).map(([k,g])=>[k,g.visible])),stairLamp:lamps.filter(L=>L.parent===MAPG.stairs).map(L=>L.intensity),py:typeof py!=='undefined'?py:null,pos:typeof pos!=='undefined'?[pos.x,pos.z]:null});
 

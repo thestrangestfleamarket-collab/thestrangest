@@ -28,6 +28,24 @@ kit+='\n// ==== 23-w-ghost-street.js (the game\'s, word for word but its roof\'s
 # for word, in a block of its own (its measures, DJ, set by src/ghostdojo.js instead of from the West End's plan), handed out on BOD.GDJ
 dj=rq(rd(S+'23-w-west-dojo-1-hall.js'),"DJ=(()=>{ const g=WEND.dojo","DJ=null&&(()=>{ const g=WEND.dojo")
 kit+='\n// ==== 23-w-west-dojo-1-hall.js (the game\'s, word for word)\n{\n'+dj+'\nBOD.GDJ={djAndon,djCandle,djIncense,djHanging,djTokonoma,djBokkenRack,djLeaf,DJTAT,DJBRD,DJWOOD,DJPAP,DJPLA,setDJ:v=>{ DJ=v; }};\n}\n'
+# THE STOREROOM (owner, 17 Oct 2026: "brng back diner and bar with all musicians, the moonshrine, the herb cottage, the octopus tank, castle keep,
+# butterflies ... dont add them to the map yet just bring to this new game and all items"): each room's game files, word for word, each group in
+# a block of its own; the buildings their files measure themselves by (the game's LBLD records) at the store's own spots, far off the map, where
+# src/store.js sets them out; what each hands out, on BOD.STOREK. The keep's three files from the game's archive (archive/keep, stored 16 Oct 2026)
+ST_B="LBLD.push({id:'ldiner',label:'DINER',x0:340,y0:-84,x1:353.5,y1:-77,h:130,st:1,c:[176,62,56]},{id:'lbodega2',label:'BAR',x0:360,y0:-89.5,x1:370,y1:-77,h:130,st:1,c:[146,96,64]},{id:'ldungeon',label:'THE DUNGEON',x0:500,y0:-58,x1:513,y1:-47,h:130,st:1,c:[60,56,52]},{id:'lcastle',label:'THE KEEP',x0:426,y0:-86,x1:435.5,y1:-77,h:520,st:4,tall:4,c:[150,142,126]});"
+KEEPC="const KEEPC={k:[426,435.5,-86,-77],door:430.75,arches:[428.1,430.75,433.4],b:[422,439,-90,-73],gate:430.5};"
+sconce=body(S+'26-y-theatre-inside.js','// ---- a wall light','// ---- the floor lights')   # (the bar's wall lights are the theatre's)
+def gblock(files,out,pre='',src=S):
+    return '\n{\n'+pre+'\n'.join('// ==== '+f+" (the game's, word for word)\n"+rd(src+f) for f in files)+'\n'+out+'\n}\n'
+kit+='\nconst STOREK={LAMPS,PRESETS,CATALOG,PROPS,LBLD,T,STORY,hash,sh,sided,prop,LSEED}; const SQLV={octo:0}; const DEEPW={ZPX:24};\n'+ST_B+'\n'+KEEPC+'\n'
+kit+=gblock(['23-w-west-diner.js'],"STOREK.diner={dinerFloorCol,dinerWall};")
+kit+=gblock(['23-w-bar-1-counter.js','23-w-bar-2-seats.js','23-w-bar-3-walls.js','23-w-music-1-things.js'],"STOREK.bar={barFloorCol,barWall,theatreSconce};",sconce+'\n')
+kit+=gblock(['23-w-west-moon-shrine-1-pieces.js','23-w-west-moon-shrine-2-pond.js'],"STOREK.shrine={MSP};")
+kit+=gblock(['23-w-page-rooms-0-kit.js','23-w-page-rooms-1-cottage-1-room.js','23-w-page-rooms-1-cottage-2-furniture.js'],"STOREK.cottage={PGK};")
+kit+=gblock(['23-x-octopus-room.js'],"STOREK.octo={OCTK,OCC,octoWall,octoFloorCol,octoTank};")
+kit+=gblock(['23-w-dungeon-1-room.js','23-w-dungeon-2-things.js'],gblock(['23-w-keep-1-look.js','23-w-keep-2-pieces.js'],"STOREK.keep={KEEPR,keepOutWall,keepInWall,keepFloorCol,KMK,DGP};",'',S+'../archive/keep/src/'))
+kit+=gblock(['23-w-butterflies.js','23-w-studio-mood.js'],"STOREK.bf={BF_KINDS,bfPic,bfSpan};")
+kit+='BOD.STOREK=STOREK;\n'
 bod=rd('src/bodega.js')
 i=bod.index('const BOD={'); bod=bod[i:]
 bod=rq(bod,"const BOD={meshes:[], walls:{}, lamps:[]};","BOD={meshes:[], walls:{}, lamps:[]};").replace('/*GAMEKIT*/',kit).replace('/*GOODS*/',rd('src/goods-defs.js'))
@@ -35,7 +53,7 @@ bb=rq(rd('src/bodbuild.js'),"const BODB={};","BODB={};")
 wrap=lambda name,code,out,cutwhen: ("grab('%s',()=>{ const solids=SOL.%s, fixed=FIX.%s, SHL=[]; let BOUND, groundY; const c0=cutWalls.length;\n"%(name,'down' if name=='down' else 'up','down' if name=='down' else 'up'))+code+"\n"+out+"\n for(const w of cutWalls.slice(c0))if(!w.when)w.when="+cutwhen+"; for(const L of SHL)L.removeFromParent(); });\n"
 MAPST=('const TEXTURES='+rd('data/textures.json')+';\nconst KITD='+rd('data/kit.json')+';\n'+rd('src/map-pre.js')+'\n'+rd('src/batch.js')+'\n'+rd('src/water3d.js')+'\n'
   +wrap('down',stn,"MODS.station={BOUND,ground:(x,z)=>groundY(x,z)+STN.DY};","()=>LVL==='down'")
-  +wrap('bodega',bod+'\n'+bb+'\n'+rd('src/apts.js')+'\n'+rd('src/ghostdojo.js'),"MODS.bodega={BOUND,ground:groundY};","()=>BODB.inside()")
+  +wrap('bodega',bod+'\n'+bb+'\n'+rd('src/apts.js')+'\n'+rd('src/ghostdojo.js')+'\n'+rd('src/butterflies.js')+'\n'+rd('src/store.js'),"MODS.bodega={BOUND,ground:groundY};","()=>BODB.inside()")
   +wrap('pool',pool+'\nWATER.build();',"MODS.pool={BOUND,cut:cutWalls.slice(c0),inside:(x,z)=>x>POOLR.X(POOLR.x0)&&x<POOLR.X(POOLR.x1)&&z>POOLR.Z(POOLR.y0)&&z<POOLR.Z(POOLR.y1)};","()=>MODS.pool.inside(pos.x,pos.z)")
   +"const FOREST="+rd('data/forest.json')+";\nconst PROPS="+rd('data/props.json')+";\n"+rd('src/park.js')+'\n'   # (CENTRAL PARK'S ENTRANCE, owner 17 Oct 2026: park.js, data/forest.json)
   +rd('src/map-post.js')+'\n'+rd('src/kit.js')+'\n'+rd('src/dress.js'))   # (the kits placed, the pigeons: after the map)
@@ -167,7 +185,7 @@ mod=rp(mod,"for(const w of cutWalls)w.pl.constant=(Math.sin(a)*w.nx+Math.cos(a)*
 mod=rp(mod,"  renderer.shadowMap.needsUpdate=true; W3.shadowPass(renderer); OUTL.render(renderer,scene,cam); composer.render();",
  """  if(!MAPBAKE){ MAPBAKE=1; W3.group.visible=false; renderer.shadowMap.needsUpdate=true; renderer.render(scene,cam); W3.group.visible=true; }   // (the lamps' still shadows, once, without him)
   const wOn=LVL==='up'&&Math.hypot(pos.x-POOLR.X((POOLR.bx0+POOLR.bx1)/2),pos.z-POOLR.Z((POOLR.by0+POOLR.by1)/2))<14*TILE;   // (the water moves while you're near it)
-  if(wOn)WATER.step(renderer,dt); renderer.shadowMap.needsUpdate=true; if(wOn)WATER.under(renderer,scene,cam,lamps); W3.shadowPass(renderer); OUTL.render(renderer,scene,cam); composer.render();""")
+  if(wOn)WATER.step(renderer,dt); renderer.shadowMap.needsUpdate=true; if(wOn)WATER.under(renderer,scene,cam,lamps); WATER.underAll(renderer,scene,cam,lamps); W3.shadowPass(renderer); OUTL.render(renderer,scene,cam); composer.render();""")
 mod=rp(mod,"st.target=ml>0?1:0; const before=st.dist; RIG.step(st,dt);","WATER.feed(st,pos,dt,ml>0,keys); st.target=ml>0?1:0; const before=st.dist; RIG.step(st,dt);")
 mod=rp(mod,"collide(pos); if(target&&","collide(pos); if(st.water&&st.water.in){ const m=0.3; pos.x=Math.max(WATER.X0+m,Math.min(WATER.X0+WATER.W-m,pos.x)); pos.z=Math.max(WATER.Z0+m,Math.min(WATER.Z0+WATER.D-m,pos.z)); }   // (swimming: within the basin's walls)\n    if(target&&")
 mod=rp(mod,"if(MOVEK[k]&&!e.repeat&&!RAG.on)RIG.act(st,MOVEK[k]); });","if(st.water&&st.water.in&&(k===' '||k==='j')){ st.water.dive=true; e.preventDefault(); } else if(MOVEK[k]&&!e.repeat&&!RAG.on)RIG.act(st,MOVEK[k]); });")
@@ -270,23 +288,47 @@ gtsrc='''
 // ---- THE GAME'S CAST AND SOUND, AS THE GUITARIST NEEDS THEM (stand-ins: his standing pose, the sound's way out, no scene to wait for, the
 // recordings instead of the simulated strings) ----
 const CAST={}, PLAY221={seeking:false,pre:0}, PLAYA={}, GTPHYS={model:false,ok:false}, SND={ctx:null,on:true,out:null};
-let CASTSTAND0=null; const castPose=()=>CASTSTAND0||(CASTSTAND0=RIG.apply(RIG.walkPose({ph:0,w:0,run:0},null),RIG.STANDK));
+// (castPose, the cast's poses: the game's own, with the pianist's files below)
 '''
 gtsrc+="const GTMP3='data:audio/mpeg;base64,"+base64.b64encode(open(GA,'rb').read()).decode()+"';\n"
 for f in ['47-play-3-guitar-1-body.js','47-play-3-guitar-samples.data.js','47-play-3-guitar-2-tunes.js','47-play-3-guitar-3-hands.js']:
     t=open(S+f).read()
     if f.endswith('body.js'): t=rp(t,"fetch('audio/guitar.mp3')","fetch(GTMP3)")
     gtsrc+='\n'+t
-mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);",gtsrc+"\n"+open('src/musician.js').read()+"\nresize(); applyTime(0); requestAnimationFrame(frame);")
+# THE PIANIST (owner, 17 Oct 2026, the bar "with all musicians"): the game's 47-play-5-piano (his tuxedo, the bench and the 88 keys as pieces
+# of his, the book of pieces, his fingers on the keys, the real grand's recordings) read word for word, the cast's poses and arm reach from
+# 47-play-1-cast (the few lines they need), the recordings embedded; then src/pianist.js seats him at the stored bar's grand
+PA=os.path.join(S,'..','audio','piano.mp3')
+pnsrc="\n// ---- THE CAST'S POSES AND REACH, AS THE PIANIST NEEDS THEM (47-play-1-cast's, word for word) ----\nconst POSES={}, CV=RIG.V; function castStep(){}\n"+body(S+'47-play-1-cast.js','// HIS HANDS WHERE THEY MUST BE','// ---- A PLAYER')
+pnsrc+="const PNMP3='data:audio/mpeg;base64,"+base64.b64encode(open(PA,'rb').read()).decode()+"';\n"
+for f in ['47-play-5-piano-samples.data.js','47-play-5-piano-1-sound.js','47-play-5-piano-2-music.js','47-play-5-piano-3-hands.js']:
+    t=open(S+f).read()
+    if f.endswith('sound.js'): t=rp(t,"fetch('audio/piano.mp3')","fetch(PNMP3)")
+    pnsrc+='\n'+t
+# THE SINGER (owner, 17 Oct 2026): the game's 47-play-6-woman, 47-play-7-singer and 47-zzz-bar-singer word for word (her voice's loudness and
+# side from where she stands here: SGM, src/singer.js), after the music engine (47-music-1-engine, -2-instruments, -1b-samples: the bar's echo
+# her voice goes into, and the drummer's kit)
+sgsrc="\n// ---- THE GAME'S MUSIC ENGINE (the instruments' physics, the bar's echo; word for word) ----\nconst IMV={on:false}, ONLINE={others:new Map()}, BARM={on:false}, LEVEL=0; const IMKITBAR={k:1.1,sp:1.35};\n"
+for f in ['47-music-1b-samples.data.js','47-music-1-engine.js','47-music-2-instruments.js','47-play-6-woman.js','47-play-7-singer.js','47-zzz-bar-singer.js']:
+    t=open(S+f).read()
+    if f=='47-zzz-bar-singer.js':
+        t=rp(t,"function voxStep(dt,now){ if(!voxChain())return; const c=SND.ctx, ct=c.currentTime, S=BAR.singer, d=Math.hypot(S.x-P.x,S.y-P.y);","function voxStep(dt,now){ if(!voxChain())return; const c=SND.ctx, ct=c.currentTime, d=SGM.dist();")
+        t=rp(t,"VOX.out.gain.setTargetAtTime(SND.on?.5*Math.max(.18,1-d/10):0,ct,.08); { const [sx]=toS(...vw(S.x,S.y)), [px]=toS(...vw(P.x,P.y)); VOX.pan.pan.setTargetAtTime(Math.max(-.8,Math.min(.8,(sx-px)/120)),ct,.1); }","VOX.out.gain.setTargetAtTime(SND.on?.5*Math.max(0,1-d/14):0,ct,.08); VOX.pan.pan.setTargetAtTime(SGM.pan(),ct,.1);")
+    sgsrc+='\n// ==== '+f+"\n"+t
+# THE DRUMMER (owner, 17 Oct 2026): the game's 47-zzz-bar-octopus-1-body and -2-play word for word (the pets' part maker E they lean on, and the
+# bar's line-up stood in for: he's alone on the stage); src/drummer.js sits him at the stored bar's kit
+drsrc="\n// ---- THE OCTOPUS DRUMMER'S FILES (the game's, word for word) ----\nconst E=(x,y,z,rx,ry,rz,c,yaw=0,pit=0,rol=0,grp)=>[x,y,z,rx,ry,rz,yaw,pit,rol,c,grp]; const pupPaint=()=>null; const BARP={lead:'d'};\n"
+for f in ['47-zzz-bar-octopus-1-body.js','47-zzz-bar-octopus-2-play.js']: drsrc+='\n// ==== '+f+"\n"+open(S+f).read()
+mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);",gtsrc+"\n"+open('src/musician.js').read()+pnsrc+"\n"+open('src/pianist.js').read()+sgsrc+"\n"+open('src/singer.js').read()+drsrc+"\n"+open('src/drummer.js').read()+"\nresize(); applyTime(0); requestAnimationFrame(frame);")
 mod=rp(mod,"  for(const N of NPCS)N.tick(dt,pos);","  for(const N of NPCS)N.tick(dt,pos); MUS.tick(dt);")
-mod=rp(mod,"  for(const N of NPCS)N.tick(dt,pos); MUS.tick(dt);","  DRESS.tick(dt,pos); { const r=MODS.apts.tick(); if(r)solids=r; } for(const N of NPCS)N.tick(dt,pos); if(FIRE)FIRE.tick(dt); FIGFX.tick(dt,pos); MUS.tick(dt);")   # (DRESS: the street's kit; the apartment house's floors; FIGFX: the figures' effects and the park's cut of the trees before you)
+mod=rp(mod,"  for(const N of NPCS)N.tick(dt,pos); MUS.tick(dt);","  DRESS.tick(dt,pos); { const r=MODS.apts.tick(); if(r)solids=r; } for(const N of NPCS)N.tick(dt,pos); if(FIRE)FIRE.tick(dt); FIGFX.tick(dt,pos); MUS.tick(dt); PNM.tick(dt); SGM.tick(dt); DRM.tick(dt);")   # (DRESS: the street's kit; the apartment house's floors; FIGFX: the figures' effects and the park's cut of the trees before you)
 # NO SHADOW ACNE (owner, 17 Oct 2026, his close-up: stripes and jagged dark teeth on the musician's arm): the two lamps nearest you, whose
 # shadows move, finer (1024 a face) and held off the surface they fall on, as the still lamps' are
 mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);","for(const S of SHL){ S.shadow.mapSize.set(1024,1024); S.shadow.normalBias=.06; S.shadow.bias=-.002; }\nresize(); applyTime(0); requestAnimationFrame(frame);")
 # THE CLOCK (owner, 17 Oct 2026: "add the option to control the time", 7pm when the game opens): src/clock.js; ticked each frame
 mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);",open('src/clock.js').read()+"\n"+open('src/rooms.js').read()+"\nresize(); applyTime(0); requestAnimationFrame(frame);")
 # ONLY THE ROOM YOU'RE IN (owner, 17 Oct 2026): src/rooms.js, set just before the picture's drawn
-mod=rp(mod,"if(wOn)WATER.step(renderer,dt); renderer.shadowMap.needsUpdate=true;","ROOMS.tick(); if(wOn)WATER.step(renderer,dt); renderer.shadowMap.needsUpdate=true;")
+mod=rp(mod,"if(wOn)WATER.step(renderer,dt); renderer.shadowMap.needsUpdate=true;","ROOMS.tick(); STORE.tick(); BF.tick(dt); if(wOn)WATER.step(renderer,dt); WATER.tickAll(renderer,dt,pos); renderer.shadowMap.needsUpdate=true;")   # (STORE: the storeroom's roofs and bound, map-post.js)
 mod=rp(mod,"  UI.goTick(); UI.runTick();","  UI.goTick(); UI.runTick(); CLOCK.tick(dt); VIT.tick(dt);")   # (VIT: your health and stamina, src/vitals.js)
 # (the keys' turn and tilt: not in the isometric view, where Q and E go a quarter round: ui.js)
 mod=rp(mod,"  if(keys.has('q'))yawTo+=dt*1.8; if(keys.has('e'))yawTo-=dt*1.8; if(keys.has('z'))pitchTo=clampP(pitchTo-dt*1.2); if(keys.has('x'))pitchTo=clampP(pitchTo+dt*1.2);","  if(UI.view!=='iso'){ if(keys.has('q'))yawTo+=dt*1.8; if(keys.has('e'))yawTo-=dt*1.8; if(keys.has('z'))pitchTo=UI.clampV(pitchTo-dt*1.2); if(keys.has('x'))pitchTo=UI.clampV(pitchTo+dt*1.2); }")

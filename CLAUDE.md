@@ -146,6 +146,23 @@ this repo is `bralynnbell/thestrangest`.
   opposite the bodega, the hexagonal pavers in to a round and on north-east, lawns (the game's grass), the pack's oaks, spruces, a dead oak and a
   dead spruce at 9 to 30 metres (a person 1.8), its rocks as outcrops, the park's lamps; one mesh the trees, one the rocks, flat colours (the pack's
   textures' means), the sun's and the lamps' shadows. The menu's PLACES has CENTRAL PARK.
+- **The storeroom** (owner, 17 Oct 2026: "brng back diner and bar with all musicians, the moonshrine, the herb cottage, the octopus tank, castle keep,
+  butterflies ... dont add them to the map yet just bring to this new game and all items"; `src/store.js`, `build.py`): the game's own rooms, built
+  by the game's own makers (their files read word for word into the kit: the Diner, the Bar's three files and the music things, the Moon
+  Shrine's two, the page rooms' kit and the Herb Cottage's two, the octopus room, the dungeon's two and the keep's two from the game's archive,
+  the butterflies and the living rooms' mood pieces), set out far east of the map on one dark concrete floor, out of sight of it: THE DINER
+  (Preset Diner 1 in its room), THE BAR (as 26-zzz-bar sets it out, at night: candles only; the grand and the drum kit on its stage), THE MOON
+  SHRINE (on grass, its koi pond real water), THE HERB COTTAGE (its own walls and roof), THE OCTOPUS TANK (its room, the tank real water behind
+  glass), THE KEEP (the great tower from the archive, its stone, turrets and parapet, the dungeon's walls and things inside, the cross wall's
+  arches), THE BUTTERFLIES (the butterfly house with its pair, six more over the shrine: `src/butterflies.js`, the game's kinds and pictures
+  flying perch to perch). Each room's walls built as the bodega's (cut to their foot when between you and the camera), its roof hidden while
+  you're in, its lamps lit only while you're in it (the map's only on the map: near a hundred lamps would black out the shaders). The menu's
+  STORED row takes you to each; the view and his walk are bounded by the store while he's there. The water now runs as more than one body
+  (`waterBody` in `water3d.js`: the pool's, the pond's, the tank's). **The bar's musicians** (`src/pianist.js`, `src/singer.js`, `src/drummer.js`,
+  each the game's own files word for word, built as the musician is): the pianist in his tuxedo at the grand (the 88 keys his, the real grand's
+  recordings, his book of three pieces), the singer in the red gown at the microphone (the cord real physics, her voice made as a voice is, wordless
+  over the songbook's chords), the octopus drummer at the kit (his set on the kit's physics engine, the AudioWorklet; his cigar and his glass).
+  The guitarist stays on the bodega's sidewalk (the game had him busk outside too). Not found in the game: "raincoast" (asked back).
 - **The creatures' animations fixed** (owner, 17 Oct 2026, "fix the animals animations. check each one"): the packs' armatures stand a quarter turned
   and 100 times their rigs (the rat's 39.5), and the bake dropped that from each rig's root, so every creature's skin collapsed to a hundredth of
   itself as soon as its bones moved it; the root now keeps the armature's size and turn (`rig.s`, `creatures-bake.py`), its clips set under it.

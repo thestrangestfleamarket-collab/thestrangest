@@ -16,11 +16,24 @@ const PARTSNPC={};
   // rounded shapes (owner, 17 Oct 2026: "not so blocky, more natural shape, rounded"): a capsule (along y), an open curved shell (a cylinder's side
   // from angle t0 round tl: a jacket's back, a collar; angle 0 at his front), a soft clump (an ellipsoid)
   const capsule=(r,l,cs=4,rs=10)=>new THREE.CapsuleGeometry(r,l,cs,rs), shell=(r0,r1,h,seg,t0,tl)=>new THREE.CylinderGeometry(r0,r1,h,seg,1,true,t0,tl), blob=(rx,ry,rz,w=12,h=8)=>{ const g=new THREE.SphereGeometry(1,w,h); g.scale(rx,ry,rz); return g; };
+  // angular shapes (owner, 17 Oct 2026, the Fox "more angular, like his sprite"): a tapered box, its base w0 by d0 on y 0 and its top w1 by d1
+  // at height h (the top's middle moved ox, oz: a leaning ear, a muzzle's tip raised); w1 and d1 both 0 make a pyramid. Eight corners, twelve
+  // faces (six for a pyramid); its corners are never shared with another shape's, so a part marked flat keeps every face its own one tone
+  const tbox=(w0,d0,w1,d1,h,ox=0,oz=0)=>{ const a=w0/2, b=d0/2, c=w1/2, d=d1/2, pyr=!w1&&!d1;
+    const V=[-a,0,-b, a,0,-b, a,0,b, -a,0,b, ox-c,h,oz-d, ox+c,h,oz-d, ox+c,h,oz+d, ox-c,h,oz+d];
+    const I=pyr?[0,1,2, 0,2,3, 3,2,6, 1,0,4, 2,1,5, 0,3,7]:[0,1,2, 0,2,3, 4,6,5, 4,7,6, 3,2,6, 3,6,7, 1,0,4, 1,4,5, 2,1,5, 2,5,6, 0,3,7, 0,7,4];
+    const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(V,3)); g.setIndex(I); return g; };
+  // a part's faces each one tone (flat: true on the part): makeNPC smooths every shared corner so a rounded character's tones fall in bands;
+  // an angular one wants each face its own, so its faces are given their own normals again after every smoothing
+  const flatten=(geo,ranges,parts)=>{ const P=geo.attributes.position.array, Nn=geo.attributes.normal.array;
+    for(const p of parts){ if(!p.flat)continue; const r=ranges[p.name]; for(let i=r.start;i<r.start+r.count;i+=3){ const a=i*3, ax=P[a], ay=P[a+1], az=P[a+2], bx=P[a+3]-ax, by=P[a+4]-ay, bz=P[a+5]-az, cx=P[a+6]-ax, cy=P[a+7]-ay, cz=P[a+8]-az;
+      let nx=by*cz-bz*cy, ny=bz*cx-bx*cz, nz=bx*cy-by*cx; const l=Math.hypot(nx,ny,nz)||1; nx/=l; ny/=l; nz/=l; for(let k=0;k<9;k+=3){ Nn[a+k]=nx; Nn[a+k+1]=ny; Nn[a+k+2]=nz; } } }
+    geo.attributes.normal.needsUpdate=true; };
   // a value noise, for a cloth's mottling
   const hsh=(x,y,z)=>{ const s=Math.sin(x*127.1+y*311.7+z*74.7)*43758.5453; return s-Math.floor(s); };
   const noise=(x,y,z,k=7)=>{ x*=k; y*=k; z*=k; const x0=Math.floor(x), y0=Math.floor(y), z0=Math.floor(z), fx=x-x0, fy=y-y0, fz=z-z0, s=t=>t*t*(3-2*t), l=(a,b,t)=>a+(b-a)*t, c=(dx,dy,dz)=>hsh(x0+dx,y0+dy,z0+dz);
     return l(l(l(c(0,0,0),c(1,0,0),s(fx)),l(c(0,1,0),c(1,1,0),s(fx)),s(fy)),l(l(c(0,0,1),c(1,0,1),s(fx)),l(c(0,1,1),c(1,1,1),s(fx)),s(fy)),s(fz)); };
-  PARTSNPC.T={shape,limb,sph,cyl,box,torus,capsule,shell,blob,noise,D2R};
+  PARTSNPC.T={shape,limb,sph,cyl,box,torus,capsule,shell,blob,tbox,noise,D2R};
   // the character: parts [{name, rank, of:[shape,...]}], and makeNPC's options (key, name, metres, where he walks, his pace...)
   PARTSNPC.make=(parts,o)=>{ let n=0; for(const p of parts)for(const c of p.of)n+=c.P.length/3;
     const P=new Float32Array(n*3), C=new Float32Array(n*3), R=new Float32Array(n), ranges={}; let at=0;
@@ -30,6 +43,7 @@ const PARTSNPC={};
     const N=makeNPC(null,Object.assign({names:parts.map(p=>p.name),rank:parts.map(p=>p.rank||0),geo},o));
     const base=Float32Array.from(geo.attributes.position.array), baseC=Float32Array.from(C);   // (as made, after makeNPC set his feet on the ground)
     N.parts=ranges; N.tris=n/3;
+    if(parts.some(p=>p.flat)){ const smooth=N.renorm; N.renorm=()=>{ smooth(); flatten(geo,ranges,parts); }; N.renorm(); }   // (the angular parts' faces each their own tone)
     N.reshape=(name,{scale=[1,1,1],move=[0,0,0],pivot}={})=>{ const r=ranges[name]; if(!r)return; const A=geo.attributes.position.array; let cx=0, cy=0, cz=0;
       if(pivot)[cx,cy,cz]=pivot; else{ for(let i=r.start;i<r.start+r.count;i++){ cx+=base[i*3]; cy+=base[i*3+1]; cz+=base[i*3+2]; } cx/=r.count; cy/=r.count; cz/=r.count; }
       for(let i=r.start;i<r.start+r.count;i++){ A[i*3]=cx+(base[i*3]-cx)*scale[0]+move[0]; A[i*3+1]=cy+(base[i*3+1]-cy)*scale[1]+move[1]; A[i*3+2]=cz+(base[i*3+2]-cz)*scale[2]+move[2]; }

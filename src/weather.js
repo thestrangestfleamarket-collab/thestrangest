@@ -35,6 +35,13 @@ const WX={hold:null,now:null};
   const CP=new Float32Array(vc*3); { let o=0; for(const g of geos){ CP.set(g.attributes.position.array,o); o+=g.attributes.position.array.length; } }
   const cg=new THREE.BufferGeometry(); cg.setAttribute('position',new THREE.BufferAttribute(CP,3)); cg.computeVertexNormals();
   const cmat=new THREE.MeshLambertMaterial({color:0xffffff,emissive:0x2a3346});   // (flat-faced as made: no flatShading, which the world's shading patch can't take: map-pre.js)
+  // NEVER BETWEEN YOU AND THE STREET (owner, 17 Oct 2026, his picture of a cloud over the street in the isometric view): the clouds stand low
+  // round the map, so seen from above at a slant the ones on the camera's side came over the picture; those are left out where they stand
+  // (the half of the sky on the camera's side of where you are, by the camera's way round), the far half stays toward the horizon
+  const CU={uCF:{value:new THREE.Vector3(0,0,1)},uCO:{value:new THREE.Vector3()}};
+  cmat.onBeforeCompile=sh=>{ Object.assign(sh.uniforms,CU); sh.vertexShader='varying vec3 vCW;\n'+sh.vertexShader.replace('#include <project_vertex>','#include <project_vertex>\n vCW=(modelMatrix*vec4(transformed,1.)).xyz;');
+    sh.fragmentShader='varying vec3 vCW; uniform vec3 uCF,uCO;\n'+sh.fragmentShader.replace('void main() {','void main() { if(dot(vCW.xz-uCO.xz,uCF.xz)<12.) discard;'); };
+  WX.cloudCut=()=>{ const f=new THREE.Vector3(); cam.getWorldDirection(f); f.y=0; if(f.lengthSq()<1e-6)f.set(0,0,1); f.normalize(); CU.uCF.value.copy(f); CU.uCO.value.set(pos.x,0,pos.z); };
   const CL=new THREE.Mesh(cg,cmat); CL.frustumCulled=false; scene.add(CL); WX.clouds=CL;
   // ---- THE RAIN: streaks in a box round you, falling fast, slanting with the wind; as many shown as it rains (one draw, its points moved here)
   const NR=1800, RB=16*TILE, RH=14*TILE, rp=new Float32Array(NR*6), rs=new Float32Array(NR*3); for(let i=0;i<NR;i++){ rs[i*3]=(Math.random()-.5)*2*RB; rs[i*3+1]=Math.random()*RH; rs[i*3+2]=(Math.random()-.5)*2*RB; }
@@ -50,7 +57,7 @@ const WX={hold:null,now:null};
     if((ft-=dt)<=0){ ft=.5; WX.now=WX.hold?Object.assign({flash:WX.hold==='STORM'&&Math.random()<.04},HOLDS[WX.hold]):WX.at(T()); }   // (the simulation twice a second: it moves over minutes)
     const W=WX.now, up=LVL!=='down', inside=!!(ROOMS.cur)||!up, day=cl((CLOCK.elev()+4)/14), t=performance.now()/1000;
     // the clouds: how many, their colour, their drift with the wind
-    const show=Math.round(3+W.cloud*37); CL.geometry.setDrawRange(0,ends[Math.min(39,show-1)]); CL.visible=up;
+    WX.cloudCut(); const show=Math.round(3+W.cloud*37); CL.geometry.setDrawRange(0,ends[Math.min(39,show-1)]); CL.visible=up;
     cmat.color.setRGB(1,1,1).multiplyScalar(1-.35*W.rain-.35*W.storm); cmat.emissive.setRGB(.16,.2,.27).multiplyScalar(.4+.6*day);
     CL.position.set(pos.x+((t*(.3+W.wind*1.5)*TILE)%(40*TILE)),0,pos.z);
     // the sky greys and the sun dims under cloud; a storm's sky darker still; lightning a flash of white for a moment

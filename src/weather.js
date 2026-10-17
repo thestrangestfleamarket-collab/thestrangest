@@ -74,4 +74,4 @@ const WX={hold:null,now:null};
   box.innerHTML='<h3>WEATHER</h3><div class="row" id="wxrow"></div><div class="dim" id="wxnow"></div>'; pane.insertBefore(box,pane.children[1]||null);
   const row=box.querySelector('#wxrow'), draw=()=>{ row.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String((b.dataset.wx||null)===WX.hold))); const W=WX.now; if(W)box.querySelector('#wxnow').textContent=W.storm>.1?'A STORM':W.snow>.05?'SNOW':W.rain>.05?'RAIN':W.fog>.2?'FOG':W.cloud>.7?'OVERCAST':W.cloud>.35?'SOME CLOUD':'CLEAR'; };
   for(const k of ['NATURAL',...Object.keys(HOLDS)]){ const b=document.createElement('button'); b.className='btn'; b.textContent=k; if(k!=='NATURAL')b.dataset.wx=k; b.onclick=()=>{ WX.hold=k==='NATURAL'?null:k; ft=0; draw(); }; row.appendChild(b); }
-  WX.draw=draw; setInterval(()=>{ if(UI.menuOpen)draw(); },1000); window.WXDBG=()=>WX.now; }
+  WX.draw=draw; window.WX=WX; setInterval(()=>{ if(UI.menuOpen)draw(); },1000); window.WXDBG=()=>WX.now; }

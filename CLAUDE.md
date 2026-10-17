@@ -388,6 +388,41 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
 - **Every room a button** (owner, 17 Oct 2026: "make sure every room and location on map has a button to jump there"; the menu's MAP, `ui.js`): PLACES, then ROOMS (the shop and the back room, the gym, the hallway, the lobby, the office, the dojo, each floor of the apartment house: its only way up now, the top of the subway stairs), then STORED; a jump puts the view back on him.
 
 - **Pixel art, not 3D, on the street** (owner, 17 Oct 2026, of the kit street light's smooth smeared foot: "i dont want things to look so 3d and glitchy, more pixel art vibes"): the street lights and the trash cans built from flat-coloured blocks in `dress.js` (one draw), the kit's models no longer on the street. **Every lamp's pool**: a stepped warm disc on the ground under each street light and lamp post at night ("some dont glow": only 8 lamps light for real). **Clouds never over the street**: the clouds on the camera's side of you are left out (`WX.cloudCut`, weather.js).
+- **The city's spine** (owner, 17 Oct 2026, after the gameplan for a world "fully functional ... police, fire, government, mail and delivery handled
+  by bots": "1 - minimal on map only bare minimum required"; `src/city.js`, `CITY`): the four things every service will need, at their least,
+  nothing drawn. ADDRESSES (`CITY.places()`: each place with the spot a tile before its door: the bodega, the apartments' lobby, the apartment
+  house, the dojo, the park's gate, the castle's gatehouse, the top of the subway stairs, the platform; the stored rooms as stacked, no way on
+  foot). WAYS (`CITY.route(lv,a,b)`: A* over half-tile cells of the level's ground, each cell tested with the hitboxes' own test as first looked
+  at, the found path pulled straight; some 2-20 ms a route). WALKING (`CITY.send(N,spot,{v,then})`: a character without a mind of his own walked
+  along a route by the rig's own steps; out of sight, not drawn, he's moved along it all the same; held up again and again, the way found
+  afresh). THE BOARD (`CITY.post(kind,place|spot,data)`, `CITY.take(kind,by,from)` the nearest open job, `CITY.done`). THE SCHEDULE
+  (`CITY.at(hour,fn)`, each day as the clock passes it). Doors stay doorways. `?errand=villager_m,bodega` (or `CITY.errand(key,place,tiles/s)`)
+  sends a pawn to a door as a look. Checked by `tests/worldcheck.cjs`. Next, on this: mail and delivery (the plan).
+- **The residents** (owner, 17 Oct 2026: "2 - residents in the apartment house, bare minimum"; `src/residents.js`, `CITY.residents`): four pawns
+  live in the apartment house, a flat each (hero_m 1A, hero_f 1B, villager_m 2A, villager_f 2B), each with his hours (out 7:30 to 9:18, home
+  18:12 to 20:24, staggered): out of the front door in the morning onto an errand of the day (the bodega, the park's gate, the diner, the bar,
+  Ghost Street, by the spine's routes), a while there, then back to the street walking as the others do; at his hour he walks home and goes
+  in (inside: hidden and still, `N.mode` 'hidden'; no flights of stairs yet, so not up to the flat). Set by the hour at the start (7pm: two
+  home, two about to walk home) and at each of his hours as the clock passes; a jump of the clock put right at the next tick. `RESDBG()`;
+  `tests/rescheck.cjs`.
+- **The city's services, minimal** (owner, 17 Oct 2026: "lets add the rest except for supabase, look in the google drive for assets to use for
+  anything new you add first before making it for yourself. lets do minimal for now to get started"): **from the Drive** (looked first): his
+  Designersoup Low Poly Car Pack (five cars, .fbx; fbx2gltf, `tools/kit-bake.py` with `OUT=data/vehicles.json`, cut to a third by
+  `tools/simplify.py vehicles`) and his trash bag piece; nothing there is a station, a mailbox or a hydrant, so those are built of blocks the
+  street's way. **The civic row** (`src/civic.js`): six block-built station houses on the land past the street's east end (the precinct,
+  the firehouse, the post office, the depot, city hall, the clinic), addresses of the spine, the view's bounds widened to them; no new lights.
+  **The staff**: eight pawns in uniform (a tint, `UNIFORM` in `npc-pawns.js`), at their doors when free. **The vehicles** (`src/vehicles.js`):
+  the patrol car, the fire truck, the works van, the ambulance (the pack's cars tinted, light bars that flash on a call), driving the road's two
+  lanes to an x, a rider hidden aboard and out at the kerb. **The ledger**: the treasury, rent ($30 a day, notices at 8, due at 9), wages at 17,
+  the shops' tax at 18, the shops' stock and tills (a resident buys when he arrives), the residents' cash and hunger (food resets it; hungry, his
+  errand is for food), a log of everything. **The duties** (`src/duties.js`): the mail round at 9:30 (letters are records; your box is the
+  apartments' lobby's, read in the menu); public works (the trash round at 6:30, deliveries when a shop is low, the power crew when lightning
+  trips a stretch of lamps); the fire department (a live flame that grows at a trash can, Ghost Street's forecourt or the park's gate, by
+  lightning, a small chance each hour, or TRY; it burns anyone close; hosed out with steam); the medic (you faint, he brings you round); the
+  police (the two officers on the beat; a troublemaker is a call; taken in or seen off; curfew noted). **The menu's CITY tab**: all of it, with
+  TRY buttons (a fire, an outage, a full can, a letter to you, you faint). Not done: the train's timetable, cells at the precinct, doors, wet
+  roads, the player's own hunger, persistence (Supabase, at his word). `tests/civiccheck.cjs`; `CIVDBG()`, `VEHDBG()`.
+  **This branch's build** (17 Oct 2026, the shared link PnmQ being published by other sessions' branches at the time): https://claude.ai/artifact/HkTZPr3szpVZmu4g2QDsP3; once the branches are merged, one publish to the shared link. **Found on the way**: the pool's boats and floats are flat shaded (`boats.js`, `floats.js`) against the world's Lambert shading patch (`map-pre.js`, which reads `vNormal`), so their program fails to compile whenever the menu's map draws everything at once (a console shader error; weather.js's clouds avoid flatShading for that reason). Not fixed here.
 - **The map editor** (owner, 17 Oct 2026: "build a map editor that allows me to move buildings and land around easily"; then "the shift+m map
   layout editor needs full 360 draggable view to move things. they should snap in place to a very small grid"; `src/mapedit.js`): Shift+M (or MAP
   EDITOR in the menu's MAP tab). In the game's own view: the map view, turned all the way round (a right drag or Shift + drag) and tilted, slid
@@ -569,6 +604,9 @@ the owner's call, and merging publishes). The artifact link above is the quick w
     `bodbuild.js` (built in 3D). `batch.js`: every still face packed into one texture and a few meshes (fast).
   - `musician.js` (the guitarist, and `musBody` / `figureMesh` for every Walker-built musician), `pianist.js`, `singer.js`, `drummer.js`: the bar's
     musicians; `bandstand.js`: their turns on the stage.
+  - `city.js`: the city's spine (addresses, routes over the ground, errands walked, the job board, the clock's schedule; nothing drawn).
+  - `residents.js`: the four pawns who live in the apartment house, their hours and errands.
+  - `civic.js`: the civic row, the staff, the ledger, the CITY tab; `duties.js`: the services at work; `vehicles.js`: the Drive's cars as the city's.
   - `npc-map.js`: the goldfish on the street and the bear wandering the platform (and `makeNPC`, every character's maker). `npc-skel.js`: the four skeletons on the far sidewalk, rigged and animated, and the gold skeleton (the Minion gilded).
   - `npc-street.js`: the cyborg and the teddy on the street (bones, moves, bodies in Rapier, minds). `npc-rigged.js`: the six figures made a second way (kept, not built: `npc-figures.js` is used).
   - `npc-dragon.js`: the Dragon on the road. `kit.js` + `dress.js`: the kits' pieces and the few on the street. `apts.js`: the apartment house (in the

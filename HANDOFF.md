@@ -136,6 +136,27 @@ Read `CLAUDE.md` first: it holds every decision the owner has made. This note sa
   His call whether the Avenue wants that. `tests/clipcheck.cjs` reports 8 things without a solid, all the Moon Shrine's opened pieces (the
   terrace, steps, gate, parapet, ferns): the same 8 on the unchanged build. A "vNormal undeclared" shader warning shows in some headless runs
   on the unchanged build too.
+## This branch: `claude/quirky-mendel-rvrxwx` (the city run by bots; paused 17 Oct 2026, handed off)
+Everything is committed and pushed; the build of this branch is at https://claude.ai/artifact/HkTZPr3szpVZmu4g2QDsP3 (published with
+`capabilities: {sample: {}}` for the world editor's DESCRIBE). `origin/main` is merged in (the 3D map editor, smooth light). Build: `python3 build.py`
+with the game's repo cloned beside this one (`../tsfm`). Every piece is described in CLAUDE.md under "The city's spine", "The residents" and
+"The city's services, minimal".
+- **Done and checked** (each a Playwright test; in the cloud's software rendering each takes minutes): `src/city.js` the spine (addresses,
+  A* routes over the hitboxes, errands walked, the job board, the clock's schedule; `tests/worldcheck.cjs`); `src/residents.js` four pawns
+  living in the apartment house by the clock (`tests/rescheck.cjs`); `src/civic.js` + `src/duties.js` + `src/vehicles.js` the civic row,
+  the staff in uniform, the Drive's car pack as the vehicles, the ledger, mail, public works (trash, deliveries, power), fire, the medic,
+  the police, the menu's CITY tab with TRY buttons (`tests/civiccheck.cjs`: all six legs passed on the merged build).
+- **Data**: `data/vehicles.json` (the five cars + the trash bag and pile, cut to a third; originals in `data/full/`), baked by
+  `OUT=data/vehicles.json python3 tools/kit-bake.py <folder of glb>` then `python3 tools/simplify.py vehicles`. The Drive's .rar packs open
+  with the npm package `node-unrar-js` (nothing else here opens .rar); .fbx become .glb with the npm package `fbx2gltf`.
+- **Not done, in order of the plan**: the subway's train on a timetable (the train is a batched thing; the world editor's move code is the way
+  to slide it); cells at the precinct (an arrest only logs); door leaves; wet roads and snow lying; the player's own hunger; persistence
+  (Supabase: the owner said not yet); residents are only ever on the ground floor (no flights of stairs in the house).
+- **Known faults**: the pool's boats and floats are flat shaded against the world's Lambert shading patch, so their shader fails to compile
+  whenever the menu's map draws everything (console error; predates this branch). A pawn set down in the subway stairs' margin can't step by
+  his own rule; the spine eases such a one clear. The civic row stands on grass with no lamps (the 8-lamp budget), dark at night.
+- **The shared artifact link** (PnmQqhkusfewby35tf4zo5) was being published by other sessions' branches at the time, so this branch kept its
+  own link; once the branches are merged, one publish to the shared link.
 
 ## Paused, unfinished (branches on GitHub; each says in its last commit what's done)
 | Branch | What | State |

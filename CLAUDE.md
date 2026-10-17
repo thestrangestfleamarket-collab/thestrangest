@@ -172,7 +172,8 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
   clipping": this shop's counter, not the game's spot, which was in a shelf), facing the aisle, turning toward you only 35 degrees (the space
   behind the counter is narrower than he is wide); he never wanders.
 - **Free view and his eyes** (owner, 17 Oct 2026): in THIRD PERSON and BEHIND a drag looks round him freely ("if in 3rd person view, allow free
-  view"), from under his chin to overhead; BEHIND swings back to his back only once he walks (`UI.look`). FIRST PERSON looks from his own eyes
+  view"), from under his chin to overhead; BEHIND swings back to his back only once he walks (`UI.look`). **Running any way** ("take off the limitation of running in directions when in 3rd person view"): sideways or back (S, A, D, the
+  arrows) BEHIND's camera stays put, so he runs where you press instead of circling; it swings behind him only as he runs forward or walks somewhere. FIRST PERSON looks from his own eyes
   where his head is this moment (`W3.eyeAt`: "make sure 1st person view is angle from eyeview of actual avatar").
 - **The mushroom seller white and taller** (owner, 17 Oct 2026: "the mushroom skeleton is white, and taller, and diff char" from the gold
   skeleton): his bones white, 2.2 m.

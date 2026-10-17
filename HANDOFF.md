@@ -15,6 +15,17 @@ This note says what was in progress and where it is.
 - Shift+R has been removed.
 - The artifact link above belongs to the first account. The other account can't update it unless it's shared with edit access from its Share menu; otherwise that account publishes its own link.
 
+## The map put in order (17 Oct 2026, "mockup 1", branch `claude/keen-meitner-37e6es`)
+- Done: the row reordered (CLAUDE.md's "THE MARKET IN ORDER"), the four stacked rooms down on the ground, the keep in the bailey, the street run
+  east, the alley, the crosswalks, the garden's fence, the Avenue's ground, its park wall and gate, its lamp posts, the seven shells of the old
+  game's buildings along its east side, the menu's THE GARDEN and THE AVENUE.
+- Next, in order: (1) a quarter turn for a place as it's set out (every old-game interior is built facing the main street; the Avenue's face west),
+  then each shell's inside from the old game's own files through build.py as the Diner and the Bar were (the market lounge's four files, the museum's
+  six, the arcade and the theatre's, the two awnings', 221B's); (2) Cherry Station's stairs at the Avenue's north end, its station joined to the West
+  End's under the main street; (3) a window on the street for the aquarium and the museum's portico; (4) characters on the Avenue (the npc-lives
+  plan: numbers until near); (5) the cross street at the west end.
+- The map editor's boxes don't know the new places yet (the garden, the aquarium, the Avenue's row): they can't be dragged there.
+
 ## Paused, unfinished (branches on GitHub; each says in its last commit what's done)
 | Branch | What | State |
 |---|---|---|

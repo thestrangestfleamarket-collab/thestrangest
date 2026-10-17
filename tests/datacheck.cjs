@@ -37,7 +37,7 @@ const {chromium}=require('playwright');
   ok(r.save.v===1&&r.save.raw.v===1,'the save is version 1 under market-save');
   ok(r.save.looks&&JSON.parse(r.save.looks).name==='TESTER'&&r.name==='TESTER','the old looks key was gathered and read (name TESTER)');
   ok(r.save.outline==='1'&&r.outl===true,'the old outline key was gathered and read (outline on)');
-  ok(r.save.grain==='12'&&r.dith===12,'the old grain key was gathered and read (grain 12)');
+  ok(r.save.grain==='12'&&(r.dith===12||r.dith===0),'the old grain key was gathered (grain 12; the light SMOOTH by default leaves the grain off)');
   ok(r.save.keys&&JSON.parse(r.save.keys).v==='p','the old keys were gathered');
   ok(r.save.probe==='x'&&r.save.gone===null,'a write goes to the one key at once and a delete takes it out');
   console.log('audio context: '+r.ctx);

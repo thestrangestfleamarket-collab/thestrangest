@@ -1128,7 +1128,7 @@ import * as THREE from 'three';
 // ---- renderer: no antialiasing, drawn small and scaled up by whole pixels (hard pixel art) ----
 const stage=document.getElementById('stage'), statEl=document.getElementById('stat');
 const renderer=new THREE.WebGLRenderer({antialias:false,powerPreference:'high-performance'});
-renderer.setPixelRatio(1); renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.BasicShadowMap;
+renderer.setPixelRatio(1); renderer.shadowMap.enabled=true; renderer.shadowMap.type=(()=>{ const q=new URLSearchParams(location.search).get('look'); let v=null; try{ v=localStorage.getItem('market-lighting'); }catch(e){} return (q||v||'smooth')==='pixel'?THREE.BasicShadowMap:THREE.PCFSoftShadowMap; })();   /* (soft shadow edges unless the PIXEL lighting: map-pre.js's SMOOTH) */
 stage.appendChild(renderer.domElement);
 const scene=new THREE.Scene();
 const PPU=30;                                   // screen pixels per world unit: the world is scaled to the Walker (56 pixels tall, about 1.85 units)

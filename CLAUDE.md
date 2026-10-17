@@ -202,6 +202,9 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
   with a straight flight each floor (switching back), two furnished apartments a floor (railroad flats: the door into the kitchen, the living room
   across the windows, the bathroom, the bedroom), warm lights on while you're in; the floors above you and the roof cut away inside, the walls
   cut to their feet the bodega's way; the floor under you is yours (`MODS.apts.ground`, the stairs carry you up; the solids switch floor by floor).
+- **The six figures: removed** (owner, 17 Oct 2026: "lets remove all the samurai characters"): KASA, GEKKOU, DRIZZEL, KURENAI, SAMIDALE and SHOGUN,
+  their guard before Ghost Street, `src/npc-figures.js`, `src/npc-rigged.js` and their data gone; the effects they made (smoke, dust, a blade's
+  trail) kept in `src/fx.js` for the campfire and what comes; the bake tools stay. What follows is how they were.
 - **The six figures** (owner, 17 Oct 2026, "lets only do the new characters": the six low-poly figures in his Drive's G folder, KASA, GEKKOU, DRIZZEL,
   KURENAI, SAMIDALE, SHOGUN, each a .blend and a .fbx on a Mixamo rig, no clips, no textures; `tools/figures-bake.py` → `data/figures.json`,
   `src/npc-figures.js`): each keeps the pack's bones and weights and is posed by moves made here in his own axes (a stance, a walk, a run, a

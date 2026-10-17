@@ -2,9 +2,14 @@
 // docs/OLD-LOOK.md): (1) every face its own fixed shade by the way it faces, whatever the light: a top as its colour, a side facing along x
 // x0.62, along z x0.8 (the old game's rasterBox); (2) the light it gets multiplied in, and its strength cut to 24 even steps (on the
 // brightest of its three colours, so its hue stays; no dither), so a lamp's pool falls off in clear bands, not a smooth glow
+// (a mockup's choice, ?dith=N: the light in N steps, each pixel's cut moved by a noise fixed to the world's art pixels, so a step's edge breaks
+// up into grain instead of a clean ring)
+const DITH=+(new URLSearchParams(location.search).get('dith')||0);
+if(DITH){ THREE.ShaderLib.lambert.vertexShader='varying vec3 vWP;\n'+THREE.ShaderLib.lambert.vertexShader.replace('#include <project_vertex>','#include <project_vertex>\n vWP=(modelMatrix*vec4(transformed,1.)).xyz;');
+  THREE.ShaderLib.lambert.fragmentShader='varying vec3 vWP;\n'+THREE.ShaderLib.lambert.fragmentShader.replace('#include <lights_fragment_end>','#include <lights_fragment_end>\n vec3 dc=floor(vWP*'+(24/(33.9/30)).toFixed(3)+'+.001); float dh=fract(sin(dot(dc,vec3(12.9898,78.233,37.719)))*43758.5453);'); }
 THREE.ShaderLib.lambert.fragmentShader=THREE.ShaderLib.lambert.fragmentShader
   .replace('#include <map_fragment>','#include <map_fragment>\n { vec3 wn=abs((vec4(normalize(vNormal),0.)*viewMatrix).xyz); diffuseColor.rgb*=wn.y>=max(wn.x,wn.z)?1.:wn.x>wn.z?.62:.8; }')
-  .replace('#include <lights_fragment_end>','#include <lights_fragment_end>\n { vec3 al=max(diffuseColor.rgb,vec3(.02)); vec3 L=(reflectedLight.directDiffuse+reflectedLight.indirectDiffuse)/al*3.14159; float m=max(L.r,max(L.g,L.b)); if(m>.001){ float q=min(floor(min(m,1.7)*24.+.5)/24.,1.7)/m; reflectedLight.directDiffuse*=q; reflectedLight.indirectDiffuse*=q; } }');
+  .replace('#include <lights_fragment_end>','#include <lights_fragment_end>\n { vec3 al=max(diffuseColor.rgb,vec3(.02)); vec3 L=(reflectedLight.directDiffuse+reflectedLight.indirectDiffuse)/al*3.14159; float m=max(L.r,max(L.g,L.b)); if(m>.001){ float q=min(floor(min(m,1.7)*'+(DITH?DITH+'.+dh':'24.+.5')+')/'+(DITH||24)+'.,1.7)/m; reflectedLight.directDiffuse*=q; reflectedLight.indirectDiffuse*=q; } }');
 // ---- THE MAP (owner, 16 Oct 2026: "a small map with only the subway, pool and bodega (next to each other for now)", "build the exit to the
 // subway (floor level) and subway underneath"): one street; the bodega and the pool room side by side on its sidewalk; the West End's
 // subway station under the lot west of the bodega, its stairs down from the sidewalk into the station's exit tunnel. Two levels: the street's

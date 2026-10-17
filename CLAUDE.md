@@ -31,7 +31,7 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
 4. **Draw and run only what's near or seen**: other rooms not drawn; far characters neither drawn nor moved; the pool's water only steps near it.
 5. **As few shader programs as possible**: what differs only by a number is a uniform, not a new program; shaders are compiled while the loading
    line shows.
-6. **Never sharper than the opening** (`RESMAX`).
+6. **Never sharper than the opening** (`RESMAX`). The opening one step sharper since 17 Oct 2026 ("increase resolution by one factor": the art 1.5x the game's, `RESI` 3, `RESMAX` 3).
 7. **Load**: nothing fetched that isn't needed at start (Rapier only when the physics body is switched on); no data for things not in the game.
    **Never freeze the page while it loads** (17 Oct 2026, the artifact said "isn't responding": one 52 s freeze in the cloud's software
    graphics): the build puts a breath every 40 ms between the module's statements (`tools/yields.py`: plain blocks, if / for / while bodies and
@@ -84,7 +84,14 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
 - **Health and stamina** (17 Oct 2026, `src/vitals.js`; `hp`, `sta` on every character): running spends stamina, at none no running till a third is back; blows cost health, at none you faint (down as a body, up again with some back). Two small bars bottom left only while not full.
 - **The dragons** (17 Oct 2026: "all green (4 shades) and 20% as big ... flying all around city and mostly park. add 10 of them. they breath large fire balls"; `src/npc-dragon.js`): ten, a fifth the size, four greens; flying mostly over the green round the street, now and then down on a ledge; now and then a fireball down ahead (glowing, lighting the ground from a pool of two lights, sparks, a burst where it lands; it hurts).
 - **No beards, no buzz cut** (17 Oct 2026: "remove the beard and buzzcut from game completely"): no beard piece on any Walker (him, the musician); hairstyles short, long, bun, ponytail, bald. **A nose** on every Walker's head ("give all playable characters noses"). **Looking about** when he stands still. **His build**: hips a little narrower, a touch fuller (+5 lb) as default sizes. **His feet**: a darker sole. **His own shadow** from the light really on him (the sun, or the nearest lamp), a finer map; four steps of light by default.
-- **V changes the view** (map, third person, first person, isometric); the wave is on B. **The dragons** darker green, a third the speed, longer in the air and on the ledges, beating then gliding (wings held at their widest), nose up climbing, head into a turn, tail trailing; a faint glow at night.
+- **The start and V** (owner, 17 Oct 2026: "start the game always in this view 1st", then BEHIND, then FIRST PERSON, "each time you press v it
+  changes"): the game opens in ISOMETRIC every time; V cycles isometric, behind, first person (map and third person in DISPLAY's VIEW). **In
+  isometric** ("left click to drag your screen around, not your angle, q,e will rotate your angle back and forth, only between 4 isometric
+  angles"): a left drag slides the screen; Q / E (and R) turn it a quarter onto its four diagonal angles; a drag never turns it.
+- **GRAPHICS** (owner, 17 Oct 2026: "add resolution and other graphics settings into menu"; a tab of its own in the menu, `ui.js`): RESOLUTION
+  (COARSEST, COARSE, NORMAL, SHARP: the art 0.5, 0.75, 1, 1.5 times the game's), SHADOWS, GLOW AND NIGHT LOOK (oldlook.js's pass, on or off),
+  LIGHT ON THEM, OUTLINE, SHADE STEPS and SHADOW DEPTH.
+- **V changes the view** (map, third person, first person, isometric); the wave is on B. (Superseded: V now cycles isometric, behind, first.) **The dragons** darker green, a third the speed, longer in the air and on the ledges, beating then gliding (wings held at their widest), nose up climbing, head into a turn, tail trailing; a faint glow at night.
 - **Every character shaded as you are** (owner, 17 Oct 2026: "make sure all chars have same shadowing as main player"): the same steps of light
   and depth (`W3.GP`, YOUR LOOKS' STEPS and DEPTH, for everyone), the same little light of their own, and each one's own shadow on himself
   (SELF, his own shadow map, `N.sm`; not the ten dragons, small and many) by the same amount as yours (`W3.uSelf`); the musician the same steps.

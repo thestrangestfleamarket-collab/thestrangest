@@ -1,3 +1,38 @@
+# Handoff from session claude/fervent-babbage-uj6s3z (17 Oct 2026, evening)
+
+Everything this session made is committed and pushed on branch **`claude/fervent-babbage-uj6s3z`** (nothing uncommitted, nothing local-only).
+The branch holds, on top of `main`: its own work (below), plus merges of `claude/vibrant-pasteur-lpq1xi` (the sound work: SAVE, SFX, ambience,
+lines, the sound editor) and `claude/keen-meitner-37e6es` (THE MARKET in order, mockup 1, the Avenue). Its build is live at
+https://claude.ai/artifact/PnmQqhkusfewby35tf4zo5 (version 10). `main` itself has not moved: merge this branch into `main` first, so the
+other sessions stop stacking on the old HANDOFF commit and overwriting each other's publishes (three sessions republished the same link within an hour).
+
+## Done this session (each in CLAUDE.md with its reasons)
+- The day opens at noon (`clock.js`).
+- Where you left off is kept and restored (`where.js`; `?fresh=1` forgets it).
+- The guitarist plays in the apartment house's top-floor front living room; the bar's stage rotates the other three (`musician.js`, `bandstand.js`).
+- Nobody out of the camera's view is drawn; near ones still live and think (`NPCS.tick` / `NPCS.cull`, `npc-map.js`).
+- Interiors drawn only within 5 tiles of a door or inside; the 3 tiles by the door always (`interiors.js`; `?interiors=0`).
+- `?trees=0` hides the oaks for screenshots.
+- The tour's fixes: sky fill in the shade by day, the apartment house lit and its inner walls cut by your side, the dungeon brighter,
+  the water's glow by the dark, the stored rooms' spots inside their doors.
+- Debug handles on `window.__dbg` for tests: renderer, scene, THREE, camera, MAPG, LITE, lamps, INTERIORS, CLOCK, WHERE, ROOMS.
+
+## Measured, not fixed (the next job, in this order)
+1. The Walker is 56,700 triangles, drawn in every pass (shadow, self-shadow, the picture): every unworn hairstyle and eye style is folded
+   into his mesh. Build him from the worn pieces only; rebuild on a looks change. The biggest single win.
+2. The nearest lamp's 1024 cube shadow redraws the scene six times a frame.
+3. The apartment house is 600 to 700 draw calls inside (a mesh per wall segment): batch its walls.
+The street draws about 450,000 triangles in view and 900,000 a frame with the passes, against the 100,000 budget. Numbers from the
+tour scripts in this session's scratchpad (not in the repo): a Playwright page with `?fresh=1&npcwait=99&hour=13&trees=0`,
+`renderer.info.autoReset=false`, reset, wait, divide by frames.
+
+## Loose ends
+- CLAUDE.md names two artifact links as official (X2Bk8UjQKP8yfLdLtVVn3s and PnmQqhkusfewby35tf4zo5); pick one.
+- CLAUDE.md's "No trees" note is stale: the oaks are back in `park.js`.
+- The page's DOWNLOAD links and the world editor's DESCRIBE A CHANGE need the `downloads` and `sample` capabilities declared on publish.
+- The dojo doorway and the apartment house's door frames stay in front of you when their walls cut away (the frames are batched, not cut).
+- The yields scanner (`tools/yields.py`) stops the build on an unbalanced bracket: a `//` comment put mid-line swallows the rest of the line.
+
 # Handoff (17 Oct 2026)
 
 The owner paused all work here to carry on from his other account. Read `CLAUDE.md` first: it holds every decision he has made.

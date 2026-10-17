@@ -36,7 +36,10 @@ const BOD={meshes:[], walls:{}, lamps:[]};
     if(x1-x0>.004&&y1-y0>.004)bq([X(x0),Y(z1),Z(y1)],[X(x1),Y(z1),Z(y1)],[X(x1),Y(z1),Z(y0)],[X(x0),Y(z1),Z(y0)],
       faceTex((x1-x0)*24,(y1-y0)*24,(i,j)=>C(b.top?b.top(x0+(i+.5)/24,y0+(j+.5)/24):b.c)),kind); }
   // ---- placing a thing as the game's placeProp does (22-props-layers-1-props): turned a quarter at a time round its middle, its paint and its lights with it
-  function place(p,rot){ const o={boxes:p.boxes,x0:p.x0,y0:p.y0,x1:p.x1,y1:p.y1,solids:p.solids}, r=((rot%4)+4)%4, cx=(o.x0+o.x1)/2, cy=(o.y0+o.y1)/2, ncx=cx, ncy=cy;
+  // (placeAt: the same turn about a given middle (cx, cy) onto another (ncx, ncy): a whole room's things turned together, store.js's turned rooms;
+  // place: a thing turned about its own middle, as the game's placeProp does)
+  function place(p,rot){ const o={boxes:p.boxes,x0:p.x0,y0:p.y0,x1:p.x1,y1:p.y1,solids:p.solids}; placeAt(p,rot,(o.x0+o.x1)/2,(o.y0+o.y1)/2,(o.x0+o.x1)/2,(o.y0+o.y1)/2,true); }
+  function placeAt(p,rot,cx,cy,ncx,ncy,own){ const o={boxes:p.boxes,x0:p.x0,y0:p.y0,x1:p.x1,y1:p.y1,solids:p.solids}, r=((rot%4)+4)%4;
     const fw=(x,y)=>{ let dx=x-cx, dy=y-cy; for(let k=0;k<r;k++)[dx,dy]=[-dy,dx]; return [ncx+dx,ncy+dy]; };
     const bw=(x,y)=>{ let dx=x-ncx, dy=y-ncy; for(let k=0;k<r;k++)[dx,dy]=[dy,-dx]; return [cx+dx,cy+dy]; };
     const rect=b=>{ const a=fw(b.x0,b.y0), c=fw(b.x1,b.y1); return {x0:Math.min(a[0],c[0]),x1:Math.max(a[0],c[0]),y0:Math.min(a[1],c[1]),y1:Math.max(a[1],c[1])}; };
@@ -44,8 +47,8 @@ const BOD={meshes:[], walls:{}, lamps:[]};
       if(b.top)nb.top=(x,y)=>b.top(...bw(x,y));
       if(b.fs){ nb.fs=(nx,ny,x,y,z,k)=>{ for(let q=0;q<r;q++)[nx,ny]=[ny,-nx]; return b.fs(nx,ny,...bw(x,y),z,k); }; return sided(nb); }
       nb.fi=(y,z)=>{ const [ox,oy]=bw(ncx,y); return fi0(r&1?ox:oy,z); }; nb.fj=(x,z)=>{ const [ox,oy]=bw(x,ncy); return fj0(r&1?oy:ox,z); }; return nb; });
-    Object.assign(p,rect(o)); if(o.solids&&r)p.solids=o.solids.map(b=>({...b,...rect(b)}));
-    for(const l of LAMPS)if(l.prop===p){ l.at0=l.at0||[l.x,l.y]; [l.x,l.y]=fw(...l.at0); } }
+    Object.assign(p,rect(o)); if(o.solids&&(r||cx!==ncx||cy!==ncy))p.solids=o.solids.map(b=>({...b,...rect(b)}));
+    if(own)for(const l of LAMPS)if(l.prop===p){ l.at0=l.at0||[l.x,l.y]; [l.x,l.y]=fw(...l.at0); } }   // (a thing's own turn carries its lamps; a room's turn moves every lamp once, itself)
   // ---- THE WALLS (21-world-map-3-walls, -5-land): .2 thick on the building's edge (its inside face .1 in), STORY high; the front's shop windows
   // and glass door (shop(): the door 1.2 wide in the middle, a window each side from .35 in, 16 to 94 up); the back office's wall across behind
   // the shop, its doorway behind the counter. Each wall's faces in pieces round its holes, the edges of its holes (frames) too
@@ -61,7 +64,7 @@ const BOD={meshes:[], walls:{}, lamps:[]};
   BOD.WALLS=WALLS;
   // ---- the game's painting of a wall: inside, the bodega's painted cinder block (bodegaWall); outside, the row's brick (22's facadeCol: the plinth,
   // its water table, the courses, the cornice and its cope)
-  function facade(nx,ny,X_,Y_,z,f,cap){ const u=nx?Y_:X_, c=DTBRICK;
+  function facade(nx,ny,X_,Y_,z,f,cap,brick){ const u=nx?Y_:X_, c=brick||DTBRICK;   // (brick: a building's own colour, else the row's)
     if(z>=cap-4)return sh(mt('cope',COPE),z<cap-3?f*.72:f);
     if(z>=cap-20){ const r=cap-4-z, t=sh(mt('cope',COPE),f); if(r<3)return sh(t,1.08); if(r<5)return sh(t,.62); if(r<10)return (Math.floor(u*24/3)&1)?sh(t,.95):sh(t,.55); if(r<12)return sh(t,.7); if(r<15)return t; }
     { const s=z%STORY; if(z>STORY-4&&(s<4||s>=STORY-2)){ const t=sh(mt('cope',speck([170,162,148],u,z/24,97)),f); return s>=STORY-2?sh(mt('mortar',sh(c,.6)),f*.6):s===3?sh(t,1.12):s===0?sh(t,.8):t; } }
@@ -125,7 +128,7 @@ const BOD={meshes:[], walls:{}, lamps:[]};
     if(FRONT.includes(p))return 'Hfront'; if(p.high){ const w=wallOf(p); if(w)return 'H'+w.id; } return 'L'; };
   BOD.paintProps=()=>{ for(const p of [...Object.values(O),...FRONT,...STREET,...ROOF,...GHOSTST]){ const k=BOD.kindOf(p); BATCH.tag=OBJ('bodega',p.name); for(const b of p.boxes)gbox(b,k); } BATCH.tag=null; };   // (each thing tagged: the world editor)
   BOD.g={bodegaWall,grain,speck,COPE,DTBRICK,hash,grassCol,lawnCol}; BOD.CURB=CURB; BOD.FAR=FAR;   // (the game's painters the look's builder asks for)
-  BOD.gbox=gbox; BOD.faceTex=faceTex; BOD.bq=bq; BOD.C=C; BOD.facade=facade; BOD.FRAME=FRAME; BOD.place=place; BOD.MAP=MAP; BOD.K={MKS,CATALOG,PROPS,STUDIO,LSEED,STORY,sh};   // (place: the apartment house's furniture is set the same way, apts.js)
+  BOD.gbox=gbox; BOD.faceTex=faceTex; BOD.bq=bq; BOD.C=C; BOD.facade=facade; BOD.FRAME=FRAME; BOD.place=place; BOD.placeAt=placeAt; BOD.MAP=MAP; BOD.K={MKS,CATALOG,PROPS,STUDIO,LSEED,STORY,sh};   // (place: the apartment house's furniture is set the same way, apts.js)
   // CROSSWALKS (owner, 17 Oct 2026, mockup 1): white bars over the road at the park's gate and across the Avenue's mouth, over the Avenue at its mouth
   // and at the park's east gate; each a run [a0, a1, axis]: the bars across the axis, long along the way people walk, a little worn
   const GATE=[92.5+LAY.o('park').x,99.5+LAY.o('park').x];

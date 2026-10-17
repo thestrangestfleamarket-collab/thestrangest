@@ -67,7 +67,7 @@ const BLDK=1.1;
 // game"): a cross street north from the main street's east end, the park's east wall its west side, a row of the old game's places its east
 // side (avenue.js). In the street's tiles (BOD.XS/ZS): x0..x1 its whole width (two sidewalks of 3.2 and a road of 7.7, the main street's), y1
 // how far north it runs (the park's back is -2); its road's kerbs at r0, r1
-const AVE={x0:152,x1:166.5,y1:49}; AVE.r0=AVE.x0+3.2; AVE.r1=AVE.x1-3.2;
+const AVE={x0:152,x1:166.5,y1:57.5}; AVE.r0=AVE.x0+3.2; AVE.r1=AVE.x1-3.2;
 const MAPSTAIR={x0:59,x1:63,y0:-80,y1:-74, steps:12, depth:98, dir:-1};
 { const o=LAY.o('subway'); MAPSTAIR.x0+=o.x; MAPSTAIR.x1+=o.x; MAPSTAIR.y0+=o.y; MAPSTAIR.y1+=o.y; }
 // THE CASTLE (owner, 17 Oct 2026: "the castle on the left back end" of the park, "the dungeon under the castle (only 1 level)"; castle.js): its

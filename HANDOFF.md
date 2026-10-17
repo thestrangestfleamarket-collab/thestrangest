@@ -72,12 +72,58 @@ This note says what was in progress and where it is.
 - Done: the row reordered (CLAUDE.md's "THE MARKET IN ORDER"), the four stacked rooms down on the ground, the keep in the bailey, the street run
   east, the alley, the crosswalks, the garden's fence, the Avenue's ground, its park wall and gate, its lamp posts, the seven shells of the old
   game's buildings along its east side, the menu's THE GARDEN and THE AVENUE.
+- **Paused mid-way (17 Oct 2026, "pause, pass off to another chat")**: groundwork for the Avenue's interiors is committed, nothing of it is used yet:
+  `BOD.placeAt(p,rot,cx,cy,ncx,ncy)` in bodega.js turns a thing's boxes and solids about any middle onto any other (`place` now calls it); `facade`
+  takes an 8th argument, a building's own brick colour; `AVE.y1` is 57.5 (the Avenue runs to z 134.5, room for the real market's length).
+  **The plan for the turn, worked out and ready to write** (store.js): a helper `turned(B,B2,k)` where B is the room's box in the old game's frame,
+  B2 its box on the Avenue, k quarter turns counter-clockwise (the old game's `place` convention: (x,y) to (-y,x) per step). It gives: `fw`/`bw`
+  (a point old to new and back, about the two middles), `fn`/`bn` (a normal), `wall(w)` (an old side f/b/w/e to its new side), and maps the door,
+  the window holes and the inner walls (`o.xw`) the same way; `look` wraps the painters so they are asked in the old frame (`in(B,...bn(nx,ny),
+  ...bw(X,Y))`, `floor(...bw(x,y))`, `out` likewise); after `set()` runs in the old frame, every prop made is turned with `placeAt(p,r,cx,cy,ncx,
+  ncy)` and every lamp made is moved with `fw` (lamps once, not per prop). `room()` needs two additions: `o.holes` ({f,b,w,e: [{a0,a1,z0,z1}]},
+  merged into each wall's holes; a hole with z0 0 opens the solids as a door does) and upstairs things: a prop tagged `p.lv=1` has its boxes
+  `zShift`ed by STORY and its solids kept on the room's own upper list with the walls' solids; a floor slab drawn at STORY in the new frame; and
+  the stacked-floor ground and solids brought back for upper floors (the old `STORE.stackGround` / `STORE.stackTick` hooks are still called by
+  map-post.js and build.py: a record {x0,z0,x1,z1,fy,solids} per upper floor; the ground the highest whose footprint you are on with fy <=
+  py+.35*TILE; the tick swaps `solids` for the floor's own). Upper floors are reached from the menu (a place with its height as the 4th field,
+  which goTo takes), as the apartment house's are: no stairs for now.
+  **Which way each building turns**: MARKET · LOUNGE k=2 (a half turn: its shop front was on its east face in the old game, toward a cross
+  street; here that face goes west onto the Avenue, its back door and bollards onto the main street's side, its lounge window north). The
+  awnings' row buildings, the Desk Room, 221B, the Playhouse, the Theatre, the Museum all had their fronts on the main street (+y): k=1 puts
+  them onto the Avenue (west).
+  **The market, exactly**: old box 10.5 x 20.4 (LSEED.mkt), two storeys (h 260), its own dark navy brick [40,44,66]; measures MLB (21-world-map-
+  5-land line 257): door (the back door on +y) B.x1-2.2, mdoor (the glass door on +x) B.y0+4, mwin B.y0+6, awn [B.y0+.8,B.y0+8.8], win (the
+  lounge's, on -y) B.x1-2.6, mezz {x1:B.x0+T+5.5,y1:B.y0+T+7.4,z:70}; holes: +y back door a0 door-.6..+.6 z 0..72; +x glass door (the room's
+  door, 1.56 x 94) and window mwin+-.7 z 22..84; -y window win+-.8 z STORY+34..+106. Things (26-zz-market-lounge): the market downstairs (door mat,
+  counter, two 'shelf of goods', three 'shop shelf', two drinks fridges: the bodega's kinds, in the kit already); outside on the +x face the
+  'market awning and sign', planters, the two vending machines, the bin bag; on +y the hydrant, spray cans, wall ladder, 'steel door, open', four
+  bollards at F+3.75, weeds; the lounge upstairs is empty in the old code (it moved to the square's lobby): lay it out from the file's own
+  comment (fridge and five PC desks along the west wall, the bar two tiles in from the front with its end counter and seven stools, two arcade
+  cabinets with red stools facing the front wall, the sofa, coffee table, TV, pizza boxes, paper bag, backpack, small fridge, the palm and
+  boxes under the back window, the floor grille, the mezzanine with its long desk and gaming chair (those two zShifted 70 more), the ducting).
+  Its kit: 23-w-y-market-lounge-1-walls (MLC, mlSoot, mlOutside, mlWall, mlMarketFloor, mlLoungeFloor), -2-bar (MLK: already embedded once in
+  its own block for the vending machines), -3-lounge, -4-street (the catalog table, lines 76-98: every kind's name). Embed all four in one
+  `gblock` with a prelude: `const KIND_OF={}, rlf=(c,t)=>{ if(t)c.t=t; return c; };` an 'lmarket' record pushed into LBLD (x0 0, y0 0, x1 10.5,
+  y1 20.4) and `const MLB=` as land.js line 257 builds it (ex0 0); out: `STOREK.ml={MLB,MLC,mlOutside,mlWall,mlMarketFloor,mlLoungeFloor,MLK}`.
+  Its outside painter: `mlOutside(B,...)||facade(...,[40,44,66])`.
+  **The others' files**: the Museum: 23-x-museum-0..6 (82 KB of scans data; its walls' plan MUS in -1-building; placed by 26-zzzzzzz-museum.js;
+  the land's inner walls at 21-world-map-5-land lines 420-428); the Theatre and Arcade: 23-w-arcade.js, 26-theatre-front.js, 26-y-theatre-inside.js
+  (the bar's sconce came from it); the Playhouse: 26-z-the-playhouse.js, 47-playhouse-1..3 (its show); Lucky 7 and the Yellow Awning: 23-w-west-
+  awnings-1-dining, -2-gamer, placed by 26-zzzzzzzzzzzz-west-awnings.js, their boxes in WEND.row (21-world-map-5-0-west-plan: 9 x 11, two storeys,
+  the rooms upstairs); the Desk Room: 23-w-west-desk-1-room, -2-crt (8 x 8); 221B: 23-w-sitting-room-221b.js (placed by 26-zzzzzzzzzzz-lived-in.js;
+  10.6 x 12.5); Cherry Station: 23-w-cherry-station.js (29 KB), 26-zzzz-cherry-station.js. Sizes in AVR (store.js) are guesses: replace each with
+  the real box as it comes in and move the ones after it north (AVE.y1 with them).
 - Next, in order: (1) a quarter turn for a place as it's set out (every old-game interior is built facing the main street; the Avenue's face west),
   then each shell's inside from the old game's own files through build.py as the Diner and the Bar were (the market lounge's four files, the museum's
   six, the arcade and the theatre's, the two awnings', 221B's); (2) Cherry Station's stairs at the Avenue's north end, its station joined to the West
   End's under the main street; (3) a window on the street for the aquarium and the museum's portico; (4) characters on the Avenue (the npc-lives
   plan: numbers until near); (5) the cross street at the west end.
 - The map editor's boxes don't know the new places yet (the garden, the aquarium, the Avenue's row): they can't be dragged there.
+- Seen while checking, not changed: the Avenue's row faces west and the day's shade is lit by lamps alone (the owner's rule, a 0.05 sky), so its
+  fronts are black most of the day (checked with the shadow map off: the same), as the keep's north face is; `?sky=1` lights the shade a little.
+  His call whether the Avenue wants that. `tests/clipcheck.cjs` reports 8 things without a solid, all the Moon Shrine's opened pieces (the
+  terrace, steps, gate, parapet, ferns): the same 8 on the unchanged build. A "vNormal undeclared" shader warning shows in some headless runs
+  on the unchanged build too.
 
 ## Paused, unfinished (branches on GitHub; each says in its last commit what's done)
 | Branch | What | State |

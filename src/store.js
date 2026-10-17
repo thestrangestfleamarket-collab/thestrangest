@@ -11,7 +11,7 @@
 // Each room's walls are built as the bodega's (their faces painted by the game's painters, cut to their foot when they stand between you
 // and the camera while you're in), its roof hidden while you're in, its things each box painted, its lamps point lights, its things and
 // walls solid. The water (the shrine's koi pond, the tank), the butterflies in flight and the bar's musicians: their own files ----
-{ const K=BOD.STOREK, {X,Y,Z,gbox,faceTex,bq,C,place,facade}=BOD, {CATALOG,PROPS,LAMPS,PRESETS,LBLD,T,sh,hash}=K, {grain,speck,grassCol}=BOD.g;
+{ const K=BOD.STOREK, {X,Y,Z,gbox,faceTex,bq,C,place,facade}=BOD, {CATALOG,PROPS,LAMPS,PRESETS,LBLD,T,sh,hash}=K, {grain,speck,lawnCol:grassCol}=BOD.g;   // (every grass the park's lawn)
   const B_=id=>LBLD.find(b=>b.id===id);
   const PLATE={x0:334,y0:-100,x1:456,y1:-70};   // (the storeroom's floor, bodega tiles)
   const flat=(x0,y0,x1,y1,z,col,kind)=>bq([X(x0),Y(z),Z(y1)],[X(x1),Y(z),Z(y1)],[X(x1),Y(z),Z(y0)],[X(x0),Y(z),Z(y0)],faceTex((x1-x0)*24,(y1-y0)*24,(i,j)=>C(col(x0+(i+.5)/24,y1-(j+.5)/24))),kind);

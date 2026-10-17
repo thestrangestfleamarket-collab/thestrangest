@@ -17,15 +17,8 @@ grab('park',()=>{ PARK.x0=BOD.MAP.x0; PARK.x1=BOD.MAP.x1; const X=BOD.XS, Z=BOD.
   // the pavers: the park's hexagons (a third of a tile across), each its own grey, a dark seam between, worn here and there
   const hexCol=(x,y)=>{ const s=1/3, w=s*Math.sqrt(3), row=Math.floor(y/(s*1.5)), ox=(row&1)?w/2:0, col=Math.floor((x-ox)/w), cx=(col+.5)*w+ox, cy=row*s*1.5+s;
     const dx=Math.abs(x-cx), dy=Math.abs(y-cy), e=Math.max(dx/w*2,(dy+dx/Math.sqrt(3))/s), seam=e>.86, n=hash(col,row,71), g=grain(x,y,73,2), c=seam?42+8*n:58+22*n+10*(g-.5); return speck([c,c,c+2],x,y,75); };
-  // THE LAWN (owner, 17 Oct 2026: "make the park grass all green, add sprouts and weeds, make look natural"): greens only, a smooth noise field
-  // cut into four, dithered pixel by pixel at the cuts; at hashed spots in it fresh sprouts (a light V of two blades), clover-like weeds (a
-  // darker four-leaf patch) and now and then a weed's tiny flower, yellow or white
-  const LAWN=[[46,86,38],[56,102,44],[66,116,50],[78,130,56]], SPR=[[112,162,72],[94,146,62]], WEED=[[38,70,32],[44,80,36]], BLOOM=[[214,196,84],[228,226,212]];
-  const lawn=(x,y)=>{ const ix=Math.floor(x*24), iy=Math.floor(y*24), n=grain(x,y,301,1.2);   /* (no dither at the cuts: "dont dither anything") */ let c=LAWN[n<.42?0:n<.5?1:n<.58?2:3];
-    const cx=Math.floor(ix/6), cy=Math.floor(iy/6), h=hash(cx,cy,305), ax=cx*6+1+Math.floor(hash(cx,cy,307)*4), ay=cy*6+1+Math.floor(hash(cx,cy,309)*4), dx=ix-ax, dy=iy-ay;
-    if(h<.2){ if(dx===0&&dy===0)c=SPR[0]; else if(Math.abs(dx)===1&&dy===-1)c=SPR[1]; }   // (a sprout)
-    else if(h<.3){ if(dx>=0&&dx<2&&dy>=0&&dy<2)c=WEED[(dx+dy)&1]; else if(h<.235&&dx===2&&dy===-1)c=BLOOM[h<.215?0:1]; }   // (a weed, and its flower)
-    return c; };
+  // THE LAWN: lawnCol (gamekit.js: the all-green lawn with its sprouts and weeds, every grass on the map)
+  const lawn=BOD.g.lawnCol;
   const CS=CASTLE.stair, groundCol=(x,y)=>x>=CS.x0&&x<CS.x1&&y>=CS.y0&&y<CS.y1?null:path(x,y)?hexCol(x,y):lawn(x,y);   // (open where the castle's stair goes down)
   const flat=(x0,y0,x1,y1,z,col)=>BOD.bq([X(x0),Y(z),Z(y1)],[X(x1),Y(z),Z(y1)],[X(x1),Y(z),Z(y0)],[X(x0),Y(z),Z(y0)],BOD.faceTex((x1-x0)*24,(y1-y0)*24,(i,j)=>BOD.C(col(x0+(i+.5)/24,y0+(j+.5)/24))),'G');   // (row 0 of the picture is y0, as gbox's tops are: it was mirrored, unseen while the park was symmetric)
   // (in strips, so no one picture is too wide for the atlas)

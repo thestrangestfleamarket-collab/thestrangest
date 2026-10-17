@@ -24,6 +24,16 @@ elif name=='grumpycat':
      ('earL','head',(-.20,.80,0),(-.32,.98,0)),('earR','head',(.20,.80,0),(.32,.98,0))]
   bottle=(c[:,0]<-.22)&(c[:,1]<.30)&(c[:,2]>.12); base=(c[:,1]<.025)&(~bottle); keep=~bottle&~base
   Tb=T[bottle]; np.save(D+'bottle_T.npy',Tb); np.save(D+'bottle_c.npy',col[bottle]); print('bottle faces',bottle.sum(),'base faces',base.sum())
+elif name in ('cyborg','teddy'):
+  # on two legs, arms at the sides (the cyborg's right arm held out before him): the same tree, each one's measurements
+  C={'cyborg':dict(hip=.45,chest=.5,neck=.8,top=1,leg=.08,knee=.22,ankle=.05,sh=.25,shY=.72,elb=.58,hand=.46,fwd=(.1,.2,.28)),'teddy':dict(hip=.27,chest=.3,neck=.62,top=1,leg=.1,knee=.14,ankle=.04,sh=.26,shY=.52,elb=.4,hand=.3,fwd=None)}[name]
+  B=[('hips',None,(0,C['hip'],0),(0,C['chest'],0)),('chest','hips',(0,C['chest'],0),(0,C['neck'],0)),('head','chest',(0,C['neck'],0),(0,C['top'],0)),
+     ('armL','chest',(-C['sh'],C['shY'],0),(-C['sh']-.02,C['elb'],0)),('foreL','armL',(-C['sh']-.02,C['elb'],0),(-C['sh']-.02,C['hand'],.03)),
+     ('armR','chest',(C['sh'],C['shY'],0),(C['sh']+.02,C['elb'],0)),('foreR','armR',(C['sh']+.02,C['elb'],0),(C['sh']+.02,C['hand'],.03)),
+     ('thighL','hips',(-C['leg'],C['hip'],0),(-C['leg'],C['knee'],0)),('shinL','thighL',(-C['leg'],C['knee'],0),(-C['leg'],C['ankle'],0)),('footL','shinL',(-C['leg'],C['ankle'],0),(-C['leg'],.02,.08)),
+     ('thighR','hips',(C['leg'],C['hip'],0),(C['leg'],C['knee'],0)),('shinR','thighR',(C['leg'],C['knee'],0),(C['leg'],C['ankle'],0)),('footR','shinR',(C['leg'],C['ankle'],0),(C['leg'],.02,.08))]
+  if C['fwd']: x,y,z=C['fwd']; B[5]=('armR','chest',(C['sh'],C['shY'],0),(x,y+.05,z*.6)); B[6]=('foreR','armR',(x,y+.05,z*.6),(x,y,z))
+  keep=np.ones(len(f),bool)
 elif name=='ghost':
   B=[('hips',None,(0,.25,0),(0,.50,0)),('chest','hips',(0,.50,0),(0,.72,0)),('head','chest',(0,.72,0),(0,1,0)),
      ('armL','chest',(-.18,.48,0),(-.34,.42,0)),('armR','chest',(.18,.48,0),(.33,.42,0)),('hem','hips',(0,.25,0),(0,0,0))]
@@ -33,6 +43,11 @@ T=T[keep]; col=col[keep]; P=T.reshape(-1,3)
 def segd(P,a,b):
     ab=b-a; t=np.clip(((P-a)@ab)/max(1e-9,ab@ab),0,1)[:,None]; return np.linalg.norm(P-(a+t*ab),axis=1)
 Dm=np.stack([segd(P,H[i],E[i]) for i in range(len(B))],1)
+if name in ('cyborg','teddy'):
+  for n in ['thighL','shinL','footL']: Dm[:,names.index(n)][P[:,0]>0]+=1
+  for n in ['thighR','shinR','footR']: Dm[:,names.index(n)][P[:,0]<0]+=1
+  for n in ['armL','foreL']: Dm[:,names.index(n)][P[:,0]>-.12]+=.08
+  for n in ['armR','foreR']: Dm[:,names.index(n)][P[:,0]<.12]+=.08
 if name=='cheetah':
   # the legs are told apart by side, the hanging arm from the chest by being outside it, the tail by being behind
   Dm[:,names.index('thighL')][P[:,0]>0]+=1; Dm[:,names.index('shinL')][P[:,0]>0]+=1; Dm[:,names.index('footL')][P[:,0]>0]+=1
@@ -56,5 +71,5 @@ np.save(D+'reg.npy',reg.reshape(-1,3)[:,0]); np.save(D+'v.npy',P); np.save(D+'f.
 out={'p':base64.b64encode(P.astype(np.float32).tobytes()).decode(),'c':base64.b64encode(np.repeat(col.clip(0,255).round().astype(np.uint8),3,axis=0).reshape(-1).tobytes()).decode(),
      'r':base64.b64encode(reg.astype(np.uint8).tobytes()).decode(),'w':base64.b64encode(np.stack([o[:,0],o[:,1]],1).astype(np.uint8).tobytes()).decode(),
      'wt':base64.b64encode(np.stack([w0,w1],1).astype(np.float32).tobytes()).decode(),'tris':len(T),'bones':[[b[0],par[i],list(map(float,H[i])),list(map(float,E[i]))] for i,b in enumerate(B)]}
-open('data/'+{'ghost':'ghost'}[name]+'.json','w').write(json.dumps(out))
+open('data/'+{'cheetah':'leopard','grumpycat':'cat','ghost':'ghost','cyborg':'cyborg','teddy':'teddy'}[name]+'.json','w').write(json.dumps(out))
 import collections; print(name,'tris',len(T),collections.Counter(names[r] for r in reg[::3]))

@@ -6,7 +6,7 @@
 import sys,os,numpy as np,fast_simplification,trimesh
 from scipy import ndimage
 from skimage import measure
-name,src,N,RES,NS=sys.argv[1],sys.argv[2],int(sys.argv[3]),int(sys.argv[4]),int(sys.argv[5]); D=os.environ.get('BAKE','bake')+'/'+name+'/'
+name,src,N,RES,NS=sys.argv[1],sys.argv[2],int(sys.argv[3]),int(sys.argv[4]),int(sys.argv[5]); D=os.environ.get('BAKE','bake')+'/'+name+'/'; os.makedirs(D,exist_ok=True)
 s=trimesh.load(src,force='scene',process=False); g=list(s.geometry.values())[0]
 V0=np.asarray(g.vertices,float); F=np.asarray(g.faces); VC=np.asarray(g.visual.to_color().vertex_colors)[:,:3].astype(float)
 lo0=V0.min(0); h=(V0[:,1].max()-V0[:,1].min()); V0=(V0-lo0)/h; V0[:,0]-=(V0[:,0].max()+V0[:,0].min())/2; V0[:,2]-=(V0[:,2].max()+V0[:,2].min())/2

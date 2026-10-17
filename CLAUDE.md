@@ -81,6 +81,17 @@ this repo is `bralynnbell/thestrangest`.
   characters from game completely"; then "delete ghost with bag inside and whatever this is"): the snow leopard, the grumpy cat and his ink bottle,
   the retro cyborg terminal, the plastic-bag ghost and his tote, the pixel pantry power-up; `src/npc-street.js` and their data gone. The tools that
   made them stay (`tools/skin-bake.py`, `skin-bones.py`, `item-bake.py`, `mesh-cut.py`: a furry model into a clean skin with bones) for the next.
+- **The newest characters from the drive** (17 Oct 2026, "start pulling in any new characters you see in the drive"): **the six Mixamo-rigged
+  figures** (DRIZZLE, GEKKOU, KASA, KURENAI, SAMIDALE, SHOGUN: .fbx in the G folder, turned to .glb with FBX2glTF; `tools/rigged-bake.py` keeps
+  each one's own bones and skin in its rest frame (a SkinnedMesh bound makeNPC's way recomputes its inverses from the rest), every mesh in one
+  bind frame, the smoke, holo rings and UI circles left out, a katana resting under his feet (no hand to hang from) left out; `data/<name>.json`;
+  `src/npc-rigged.js`): they have no clips of their own, so the page poses their Mixamo bones itself (idle, walk, wave, jump, written in the
+  figure's frame and turned into each bone's own; the arms brought down from the file's T- or A-pose), through `makeNPC` like the rest, lamp-lit,
+  walking both sidewalks of the street. **The Meshy cyborg** (his right arm held out before him) and **the black teddy bear** with the glowing
+  eyes: remade as clean skins and cut into bones like the ghost was (`tools/skin-bake.py`, `skin-bones.py`: the `cyborg` and `teddy` tables;
+  `data/cyborg.json`, `teddy.json`), bipeds in `src/npc-street.js` (back, for them, with the kinds' moves and the Rapier bodies; the ghost and the
+  items stay deleted). The voxel zips there (Star Marine Trooper, RedFighter, MicroRecon) are spaceships, not characters: left. A test's look at
+  one: `node tests/townshot.cjs "npc:<key>&npcwait=99&hour=13" out -1` (the Walker a step beside him).
 - **The street dressed, the Dragon, the apartment house** (17 Oct 2026: "start fleshing it out with our available assets to make it come to life. fill in
   everything automatically"; then "delete everything you added except for the new building, street lights, and trash can and bus stop"): THE KITS
   from his G folder (a city street kit, a restaurant kit: `tools/kit-bake.py` → `data/kit.json`, `src/kit.js`: a piece is its points coloured from
@@ -126,7 +137,7 @@ the owner's call, and merging publishes). The artifact link above is the quick w
     its water, its floats. `bodega.js` (the bodega's plan from the game's code, via `gamekit.js` stand-ins and `goods-defs.js`) +
     `bodbuild.js` (built in 3D). `batch.js`: every still face packed into one texture and a few meshes (fast).
   - `npc-map.js`: the goldfish and the bear wandering the platform (and `makeNPC`, every character's maker). `npc-skel.js`: the four skeletons on the far sidewalk, rigged and animated.
-  - `npc-dragon.js`: the Dragon on the road. `kit.js` + `dress.js`: the kits' pieces and the few on the street. `apts.js`: the apartment house (in the
+  - `npc-street.js`: the cyborg and the teddy on the street (bones, moves, bodies in Rapier, minds). `npc-rigged.js`: the six Mixamo figures on the sidewalks. - `npc-dragon.js`: the Dragon on the road. `kit.js` + `dress.js`: the kits' pieces and the few on the street. `apts.js`: the apartment house (in the
     bodega's scope, after `bodbuild.js`).
 - `data/`: the characters baked from the owner's models (`goldfish.json`, `bear.json`) and the skeletons, their gear and clips (`skel.json`). `tools/`: the
   scripts that baked them (they need the owner's .glb files and `fast-simplification`; `skeletons-bake.py` the KayKit pack, unzipped;

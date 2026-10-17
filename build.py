@@ -134,7 +134,7 @@ print('ok zoom')
 
 # THE OWNER'S CHARACTERS FROM HIS MODELS (owner, 16 Oct 2026): the goldfish and the bear, coloured, wandering the platform; THE SKELETONS (owner,
 # 17 Oct 2026, KayKit's four, rigged and animated) on the far sidewalk: src/npc-skel.js, data/skel.json (tools/skeletons-bake.py)
-mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);","const GOLDFISH="+open('data/goldfish.json').read()+";\nconst BEARD="+open('data/bear.json').read()+";\nconst SKEL="+open('data/skel.json').read()+";\n"+open('src/npc-map.js').read()+"\n"+open('src/npc-skel.js').read()+"\nconst DRAGON="+open('data/dragon.json').read()+";\n"+open('src/npc-dragon.js').read()+"\nresize(); applyTime(0); requestAnimationFrame(frame);")   # (THE STREET'S CHARACTERS from the owner's models, owner 17 Oct 2026: npc-street.js)
+mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);","const GOLDFISH="+open('data/goldfish.json').read()+";\nconst BEARD="+open('data/bear.json').read()+";\nconst SKEL="+open('data/skel.json').read()+";\n"+open('src/npc-map.js').read()+"\n"+open('src/npc-skel.js').read()+"\nconst DRAGON="+open('data/dragon.json').read()+";\n"+open('src/npc-dragon.js').read()+"\n"+"".join("const %s=%s;\n"%(k,open("data/%s.json"%f).read()) for k,f in [("CYBORG","cyborg"),("TEDDY","teddy"),("DRIZZLE","drizzle"),("GEKKOU","gekkou"),("KASA","kasa"),("KURENAI","kurenai"),("SAMIDALE","samidale"),("SHOGUN","shogun")])+open('src/npc-street.js').read()+"\n"+open('src/npc-rigged.js').read()+"\nresize(); applyTime(0); requestAnimationFrame(frame);")   # (THE NEWEST CHARACTERS from the drive, owner 17 Oct 2026: the cyborg and the teddy, npc-street.js; the six Mixamo figures, npc-rigged.js)
 mod=rp(mod,"  marker.visible=!!target;","  for(const N of NPCS)N.tick(dt,pos);\n  marker.visible=!!target;")
 mod=rp(mod,"function collide(p){ const r=0.3;","function collide(p){ if(typeof NPCS!=='undefined')for(const N of NPCS)if(N.lv===LVL)N.push(p); const r=0.36;")   # (his reach round him: 0.3, a fifth bigger with him)
 print('ok npcs')
@@ -168,7 +168,8 @@ mod=rp(mod,"const pos=new THREE.Vector3(-2.2,0,3.2); let heading=0.8, py=0;","co
 mod=rp(mod,"  if(MAPLV(py,pos))setPhys(LVL);","  if(MAPLV(py,pos))setPhys(LVL); if(bloom){ const dn=LVL==='down'; bloom.strength=(dn?1.3:.55)*GLOW.k; bloom.radius=dn?.6:.4; bloom.threshold=dn?.62:.8; }   // (the glow: the station's strong, the street's and the shops' gentle)")
 # GETTING AROUND and THE MENU (owner, 17 Oct 2026): src/ui.js, and its hooks in the frame and the keys
 mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);",open('src/physbody.js').read()+"\n"+open('src/ui.js').read()+"\n"+open('src/editor.js').read()+"\n"+open('src/animator.js').read()+"\n"+open('src/worldedit.js').read()+"\n"+open('src/looks.js').read()+"\n"+open('src/vitals.js').read()+"\nresize(); applyTime(0); requestAnimationFrame(frame);")
-# (the street's characters from the owner's models, src/npc-street.js: deleted, owner 17 Oct 2026, the last of them "delete ghost with bag inside and whatever this is")
+mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);","STREET.start();   // (the street's characters and things, once the menu and the engine's loader are here)\nresize(); applyTime(0); requestAnimationFrame(frame);")
+# (the street's first characters from the owner's models: deleted, owner 17 Oct 2026, the last of them "delete ghost with bag inside and whatever this is"; npc-street.js now holds the cyborg and the teddy)
 mod=rp(mod,"addEventListener('keydown',e=>{ const k=e.key.toLowerCase(); keys.add(k);","addEventListener('keydown',e=>{ const k=UI.key(e); if(!k)return; keys.add(k);")
 mod=rp(mod,"addEventListener('keyup',e=>{ const k=e.key.toLowerCase(); keys.delete(k);","addEventListener('keyup',e=>{ const k=UI.key(e); if(!k)return; keys.delete(k);")
 mod=rp(mod,"if(k==='f'&&!e.repeat)trip=true;","if(k==='f'&&!e.repeat&&!UI.freeCam&&!UI.fly&&!ED.on)trip=true;")
@@ -263,7 +264,7 @@ for f in ['47-play-3-guitar-1-body.js','47-play-3-guitar-samples.data.js','47-pl
     gtsrc+='\n'+t
 mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);",gtsrc+"\n"+open('src/musician.js').read()+"\nresize(); applyTime(0); requestAnimationFrame(frame);")
 mod=rp(mod,"  for(const N of NPCS)N.tick(dt,pos);","  for(const N of NPCS)N.tick(dt,pos); MUS.tick(dt);")
-mod=rp(mod,"  for(const N of NPCS)N.tick(dt,pos); MUS.tick(dt);","  DRESS.tick(dt,pos); { const r=MODS.apts.tick(); if(r)solids=r; } for(const N of NPCS)N.tick(dt,pos); if(FIRE)FIRE.tick(dt); MUS.tick(dt);")   # (DRESS: the pigeons; the apartment house's floors. STREET.tick: the street characters' physics world, stepped before their minds)
+mod=rp(mod,"  for(const N of NPCS)N.tick(dt,pos); MUS.tick(dt);","  STREET.tick(dt,pos,py); DRESS.tick(dt,pos); { const r=MODS.apts.tick(); if(r)solids=r; } for(const N of NPCS)N.tick(dt,pos); if(FIRE)FIRE.tick(dt); MUS.tick(dt);")   # (DRESS: the pigeons; the apartment house's floors. STREET.tick: the street characters' physics world, stepped before their minds)
 # NO SHADOW ACNE (owner, 17 Oct 2026, his close-up: stripes and jagged dark teeth on the musician's arm): the two lamps nearest you, whose
 # shadows move, finer (1024 a face) and held off the surface they fall on, as the still lamps' are
 mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);","for(const S of SHL){ S.shadow.mapSize.set(1024,1024); S.shadow.normalBias=.06; S.shadow.bias=-.002; }\nresize(); applyTime(0); requestAnimationFrame(frame);")

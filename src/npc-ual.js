@@ -24,4 +24,4 @@
       if(N.sheet||HOLD==='T')want='A_TPose'; else if(HOLD)want=HOLD; else{ const run=moving&&st.v>1.2*TILE, sprint=moving&&st.v>2.6*TILE; want=moving?(sprint?'Sprint_Loop':run?'Jog_Fwd_Loop':'Walk_Loop'):'Idle_Loop'; if(moving)ts=Math.max(.6,st.v/((sprint?SPRINT:run?JOG:WALK)*sc)); }
       if(want!==cur){ const a=act(want); a.reset().setLoop(THREE.LoopRepeat,Infinity).fadeIn(.2).play(); if(cur)act(cur).fadeOut(.2); cur=want; }
       act(cur).timeScale=N.sheet?0:ts; mixer.update(dt); }});
-  N.mixer=mixer; window.UALN=N; window.UALCAM=(k=1.5)=>{ UI.setFree(true); UI.camT.set(N.st.x,N.g.position.y+N.H*.5,N.st.z); ppu=ppuTo=PPU*k; };   // (a test's look: the free camera on his middle) window.UALDBG=()=>({key:N.key,x:+N.st.x.toFixed(2),z:+N.st.z.toFixed(2),y:+N.g.position.y.toFixed(2),to:!!N.st.to,vis:N.g.visible,clip:cur}); }
+  N.mixer=mixer; window.UALN=N; window.UALCAM=(k=1.5)=>{ UI.setFree(true); UI.camT.set(N.st.x,N.g.position.y+N.H*.5,N.st.z); ppu=ppuTo=PPU*k; }; /* (a test's look: the free camera on his middle) */ window.UALDBG=()=>({key:N.key,x:+N.st.x.toFixed(2),z:+N.st.z.toFixed(2),y:+N.g.position.y.toFixed(2),to:!!N.st.to,vis:N.g.visible,clip:cur}); }

@@ -94,6 +94,6 @@ function gdShape(GS,K,LAMPS){ const G=GS.filter(p=>p.name==='ghost street shop')
       const f=new THREE.Mesh(new THREE.BoxGeometry(w,Y(10),w),FM), c=new THREE.Mesh(new THREE.BoxGeometry(w*.5,Y(5),w*.5),FC); f.position.y=Y(5); c.position.y=Y(3); g.add(f,c); g.position.set(X(x),Y(30),Z(y)); scene.add(g); l.g=g; }
     for(const [x,y] of AND)light(x,y,20,[.66,.34,.14],4.8,0);
     let was=null;
-    BOD.GD={r:[xi0,yi0,xi1,yi1],H:110,inside,tick(){ const t=performance.now()/1000, inn=inside();
+    BOD.GD={r:[xi0,yi0,xi1,yi1],door:[(dx0+dx1)/2,Y1],H:110,inside,tick(){ const t=performance.now()/1000, inn=inside();
       for(const l of LT){ const k=l.fl?.8+.08*Math.floor(hash(Math.floor(t*10),l.s,425)*5):1; if(l.g)l.g.scale.set(1,.8+.1*Math.floor(hash(Math.floor(t*10),l.s,425)*5)/2,1);
         if(inn||was!==inn)l.L.intensity=inn?l.i*k:0; } was=inn; }}; } }

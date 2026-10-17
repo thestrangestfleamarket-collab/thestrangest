@@ -78,7 +78,7 @@ LITE.init=()=>{ const top=o=>{ while(o.parent&&o.parent!==scene)o=o.parent; retu
 LITE.tick=(dt,x,y,z)=>{ const P=LITE.pool;
   LITE.t=Math.min(LITE.t-dt,.25); if(!(LITE.t>0)){ LITE.t=.25;   /* (a bad frame's dt, NaN or backwards, never leaves it stuck) */ const R=typeof ROOMS!=='undefined'?ROOMS:null, RB=R&&R.boxes?R.boxes():[], cur=R?R.cur:null, e=.5*TILE;
     const inB=(b,p,m)=>p.x>b.x0-m&&p.x<b.x1+m&&p.z>b.z0-m&&p.z<b.z1+m&&p.y>b.y0-e&&p.y<b.y1+e;
-    LITE.sel=LITE.recs.filter(L=>L.intensity>0&&!L.userData.off&&(!L.userData.grp||L.userData.grp.visible)&&(L.userData.both||(cur?inB(cur,L.position,e):!RB.some(b=>inB(b,L.position,-e)))))
+    LITE.sel=LITE.recs.filter(L=>L.intensity>0&&!L.userData.off&&(!L.userData.grp||L.userData.grp.visible)&&(L.userData.in?L.userData.in(cur):L.userData.both||(cur?inB(cur,L.position,e):!RB.some(b=>inB(b,L.position,-e)))))   /* (in: a lamp's own rule for which room it lights: the apartment house's floors, apts.js) */
       .map(L=>[(L.position.x-x)**2+(L.position.y-y)**2+(L.position.z-z)**2,L]).sort((p,q)=>p[0]-q[0]).slice(0,LITE.N).map(p=>p[1]); }
   for(let i=0;i<P.length;i++){ const S=P[i], L=LITE.sel[i]; if(!L||!(L.intensity>0)){ S.intensity=0; continue; } S.position.copy(L.position); S.color.copy(L.color); S.intensity=L.intensity; S.distance=L.distance; S.decay=L.decay; }
   // its shadow drawn only while it lights something, every other frame (half the cost, a frame's lag unseen), and at once when it moves to another lamp

@@ -50,7 +50,7 @@ const grab=(name,fn)=>{ const n0=scene.children.length; fn(); const g=new THREE.
 // (market-layout) over it, the page reloaded to build it; ?layout=0 the game's own alone, ?layout={...} one for a test
 const LAYOUT0={};
 const LAY=(()=>{ const q=QS.get('layout'); let o={}; try{ o=q&&q[0]==='{'?JSON.parse(q):q==='0'?{}:JSON.parse(localStorage.getItem('market-layout')||'{}')||{}; }catch(e){}
-  const L=Object.assign({},LAYOUT0,o); return {L, o:k=>({x:+(L[k]&&L[k].x)||0,y:+(L[k]&&L[k].y)||0}), e:k=>(L[k]&&L[k].e||[0,0,0,0]).map(v=>+v||0)}; })();
+  const L=Object.assign({},LAYOUT0,o); return {L, o:k=>({x:+(L[k]&&L[k].x)||0,y:+(L[k]&&L[k].y)||0}), e:k=>(L[k]&&L[k].e||[0,0,0,0]).map(v=>+v||0), h:k=>+(L[k]&&L[k].h)||0, s:k=>+(L[k]&&L[k].s)||1}; })();   // (h: a room's lift in tiles, s: its size, the Diner's and the Bar's: store.js, mapedit.js)
 // where each place goes: the station (its platform 98 px down, its exit tunnel's end 3 tiles behind the sidewalk, 11 tiles west of the
 // bodega's door), the pool room (its west wall 10 tiles east of the bodega's door, its front on the sidewalk), the stairs (bodega tiles)
 const STN={DX:(-11+LAY.o('subway').x)*TILE, DZ:(-35+LAY.o('subway').y)*TILE, DY:-98*ZU};   // (the subway: the station and its stairs move together)

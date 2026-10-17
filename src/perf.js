@@ -77,6 +77,7 @@ PERFX.near=(x,z,r)=>Math.hypot(pos.x-x,pos.z-z)<r;
 PERFX.poolNear=()=>!PERFX.on[7]||LVL==='up'&&(MODS.pool.inside(pos.x,pos.z)||PERFX.near(POOLR.X((POOLR.bx0+POOLR.bx1)/2),POOLR.Z((POOLR.by0+POOLR.by1)/2),15*TILE));
 PERFX.bfNear=()=>!PERFX.on[7]||BF.list.some(b=>PERFX.near(b.g.position.x,b.g.position.z,25*TILE));
 PERFX.hide=(g,h)=>{ if(!g||!!g.userData.ph===h)return; g.userData.ph=h; g.traverse(o=>{ if(o.userData.lm0===undefined)o.userData.lm0=o.layers.mask; o.layers.mask=h?0:o.userData.lm0; }); };   // (by its layers: its own visible flags, ROOMS's and the stage's, left as they are)
-PERFX.tick=()=>{ PERFX.rooms(); if(PERFX.on[7]&&typeof WATER!=='undefined'&&WATER.mesh)PERFX.hide(WATER.mesh,!ROOMS.cur&&!UI.freeCam&&!MAPED.on&&!ED.on&&!PERFX.poolNear());   // (the pool's water, 33K triangles, not drawn from the street: it's under the building's roof) if((PERFX.fc=(PERFX.fc||0)+1)%120===30)PERFX.bounds();   // (a moment in, and now and then for what's made later)
+PERFX.tick=()=>{ PERFX.rooms(); if(PERFX.on[7]&&typeof WATER!=='undefined'&&WATER.mesh)PERFX.hide(WATER.mesh,!ROOMS.cur&&!UI.freeCam&&!MAPED.on&&!ED.on&&!PERFX.poolNear());   /* (the pool's water, 33K triangles, not drawn from the street: it's under the building's roof) */
+  if((PERFX.fc=(PERFX.fc||0)+1)%120===30)PERFX.bounds();   // (a moment in, and now and then for what's made later)
  
   if(PERFX.on[7])for(const M of [MUS,PNM,SGM,DRM])if(M&&M.g){ const A=M.at||M.g.position; PERFX.hide(M.g,!UI.freeCam&&!MAPED.on&&!PERFX.near(A.x,A.z,18)); } };

@@ -68,3 +68,21 @@ What would change the look, for the owner to see:
 - Fix 6: the lamp's shadow is coarser.
 
 Everything else on the list is invisible. `?perfx=0` turns all the fixes off, and `?perfx=-1,-2` turns off single ones, for before/after checks.
+
+## Measured after the fixes (17 Oct 2026, a patched copy of the published page, 1280x720; the stats line now shows draws and triangles)
+
+Triangles a frame, averaged over the two alternating frames (the lamp's cube map redraws every other frame):
+
+| spot | before | after | cut |
+|---|---|---|---|
+| street, 7pm | 1,102k | 686k | 38% |
+| street, 1pm | 1,268k | 799k | 37% |
+| bodega door, 7pm | 1,051k | 648k | 38% |
+| dojo, 7pm | 895k | 604k | 33% |
+
+The main pass on the street: 382k to 299k (-22%); the lamp's cube pass: 1,440k to 772k (-46%). Fix 1 hides 21 inner meshes, about 110k triangles,
+from the street (0 shown there). Pictures: the street and the dojo identical before and after; the bodega's door differed (the Walker's shadow
+replaced by long strips and a bush-like shadow) until found: **fix 7's pool gate skipped the floats' first step, and a float's mesh is placed only
+by the step (`matrixAutoUpdate` off), so the kayak, the boat, the ball and the ring sat at the world's origin, by the bodega, casting shadows.**
+Fixed: the step runs once at the start wherever you are (`PERFX.fl0`). After that the bodega matches the original to within 96 pixels of noise.
+Not yet looked at: the pool itself (fix 7 near the pool), the stored bar (the musicians' hiding), the look of the 512 lamp map close up.

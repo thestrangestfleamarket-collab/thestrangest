@@ -69,7 +69,15 @@ for key in KEYS:
             if mn not in parts: parts.append(mn)
             col=np.clip(np.array(mat['pbrMetallicRoughness']['baseColorFactor'][:3]),0,1)**(1/2.2)*255
             P.append(out); C.append(np.tile(col,(len(pos),1))); RG.append(np.full(len(pos),parts.index(mn))); JJ.append(rm[jn]); WW.append(w); IX.append(idx+base); base+=len(pos)
-    P=np.vstack(P); C=np.vstack(C); RG=np.concatenate(RG); JJ=np.vstack(JJ); WW=np.vstack(WW); IX=np.concatenate(IX); lo=P.min(0); hi=P.max(0); sc=(hi-lo).max()/65000
+    P=np.vstack(P); C=np.vstack(C); RG=np.concatenate(RG); JJ=np.vstack(JJ); WW=np.vstack(WW); IX=np.concatenate(IX)
+    # SIMP=0.5: the mesh made simpler (the budget: fewer, bigger faces), each kept corner taking the colour, part, bones and weights of the
+    # nearest corner it came from
+    SIMP=float(os.environ.get('SIMP',0))
+    if SIMP>0:
+        import fast_simplification as fs; from scipy.spatial import cKDTree
+        P2,F2=fs.simplify(P.astype(np.float32),IX.reshape(-1,3).astype(np.int64),target_reduction=SIMP); near=cKDTree(P).query(P2)[1]
+        C=C[near]; RG=RG[near]; JJ=JJ[near]; WW=WW[near]; P=P2.astype(float); IX=F2.reshape(-1).astype(int); print(' simplified to',len(P),'points',len(IX)//3,'tris')
+    lo=P.min(0); hi=P.max(0); sc=(hi-lo).max()/65000
     mesh={'n':len(P),'lo':np.round(lo,5).tolist(),'sc':float(sc),'p':b64(np.round((P-lo)/sc-32500).astype(np.int16)),'c':b64(C.round().astype(np.uint8)),'r':b64(RG.astype(np.uint8)),'j':b64(JJ.astype(np.uint8)),'w':b64(np.round(WW*255).astype(np.uint8)),'i':b64(IX.astype(np.uint16)),'parts':parts,'tris':len(IX)//3}
     # the clips, 24 a second: every bone's turn (quaternion, int16), the bones that move (float32), in the rig's order
     clips={}
@@ -92,4 +100,4 @@ for key in KEYS:
         clips[nm]={'dur':round(dur,4),'n':nf,'q':b64(np.round(Q*32000).astype(np.int16)),'p':TR}
     OUT[key]={'rig':rig,'mesh':mesh,'clips':clips,'tall':float(np.round(hi[1]-lo[1],4)),'lo':np.round(lo,4).tolist(),'hi':np.round(hi,4).tolist()}
     print(key,len(P),'points',len(IX)//3,'tris',len(names),'bones; box',np.round(lo,2),np.round(hi,2),'clips',{k:(v['dur'],list(v['p'])) for k,v in clips.items()},'parts',parts)
-open('data/creatures.json','w').write(json.dumps(OUT,separators=(',',':'))); print('data/creatures.json',os.path.getsize('data/creatures.json'),'bytes')
+OUTF=os.environ.get('OUT','data/creatures.json'); open(OUTF,'w').write(json.dumps(OUT,separators=(',',':'))); print(OUTF,os.path.getsize(OUTF),'bytes')   # (OUT=data/x.json: another file, for another pack baked the same way: the UAL mannequin, data/ual.json)

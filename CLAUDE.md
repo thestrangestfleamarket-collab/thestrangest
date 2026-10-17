@@ -395,6 +395,19 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
   game's own layout alone, `?layout={...}` one for a test. Nothing made or run while it's off (its boxes and grid made as it opens, thrown away as it
   closes). Checked by `tests/mapedit3d.cjs` (and `tests/mapedit.cjs`, the plan).
 
+- **The sky and the sunset** (owner, 17 Oct 2026: "look for ideas on how we could do the best sunset / sky", "go"; `src/sky.js`): a dome
+  painted by one shader in place of the one flat colour: a gradient by height (horizon, middle, zenith), the horizon warmed on the sun's side
+  and pinked on the side away from it (the Belt of Venus), its colours by the sun's height in stops close round the horizon (`P` in sky.js), so
+  golden hour, the sunset, the afterglow and the blue hour each look their own; the sun a hard-edged disc (1.6° across high up, 3° at the
+  horizon; deep red-orange low, cream high: `SUN`), a small halo round it, never bloom; the moon a disc; stars fixed to the sky from the end of
+  the blue hour; the weather's grey and the fog laid over it as before (weather.js); the cumulus's undersides lit in the sunset's colour while
+  the sun is low (`uUnder`, weather.js). The clock's light table (`K` in clock.js) has the same stops (10°, 3°, -2°, -6°, -12°), and the clock
+  gives the sun's and the moon's real directions (`CLOCK.sunV`, `CLOCK.moonV`). PIXEL lighting cuts the gradient into 24 bands, SMOOTH leaves
+  it smooth. Cost: one box of 12 triangles round the camera drawn where nothing covers it, one program, no light. Hidden underground and in a
+  room. Not shown in the isometric and map views (they look down on the land) except past the land's edge. Seen in `tests/skyshot.cjs <out>
+  [hours] [weather]` (first person, toward the sun and away from it, each hour; then from behind him). Not yet (the ideas list): sunset
+  palettes varied by the day and the weather (clear, moist, overcast), the shade cooler as the sun drops, the street lights coming on one by
+  one at dusk.
 - **Smooth light, the default now** (owner, 17 Oct 2026, of the grainy cloud and tree mockups: "i dont like any of those mockups, they all look like dots everywhere, i want smooth realistic shadows and lighting like gradient radial etc"; it supersedes the grain and the 24 steps above): `SMOOTH` in `map-pre.js`: no grain, the light not cut into steps, soft shadow edges (PCFSoftShadowMap), the lamps' pools smooth radial gradients; GRAPHICS' LIGHTING switches back to PIXEL (`market-lighting`), `?look=pixel|smooth`.
 
 ## THE MARKET: the one official map

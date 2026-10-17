@@ -106,8 +106,9 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
   and depth (`W3.GP`, YOUR LOOKS' STEPS and DEPTH, for everyone), the same little light of their own, and each one's own shadow on himself
   (SELF, his own shadow map, `N.sm`; not the ten dragons, small and many) by the same amount as yours (`W3.uSelf`); the musician the same steps.
 - **Eyes and bodies** (owner, 17 Oct 2026, of the mockups: "use all"): YOUR LOOKS' EYES, six styles (dots, whites, big with a glint,
-  half-lidded, lashes, smiling arcs; `eyes0`-`eyes5` in `walker3d.js`, folded away when not chosen); its BODY, eight builds (slim, him, athletic,
-  stocky, heavy, tall and lanky, female slim, female curvy: `BUILDS` in `looks.js`, his pieces' sizes and his height `W3.BH`).
+  half-lidded, lashes, smiling arcs; `eyes0`-`eyes5` in `walker3d.js`, folded away when not chosen); its BODY (`BUILDS` in `looks.js`, his pieces'
+  sizes and his height `W3.BH`): **two only** (owner, 17 Oct 2026: "make female slim the only female avatar option, and him as the only male
+  option, make the males hips 10% smaller"): MALE (him, hips a tenth narrower) and FEMALE (the slim one); the eight builds before are gone.
 - **17 Oct 2026, the evening's asks**: **the park** (`park.js`): an all-green lawn with sprouts and weeds (noise-cut greens, dithered); two straight
   ways 7.2 tiles wide, one from the gate to the back, one end to end, crossing at the round in the park's middle (the gate moved along the wall to
   meet it); the trees further back, the biggest at the back, fewer, the undergrowth thinner; the lamps thin poles 7 tiles high with small

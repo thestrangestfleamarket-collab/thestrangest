@@ -22,6 +22,8 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
     if(raw==='escape'){ if(e.type==='keydown'){ if(ED.on)ED.exit(); else if(WE.on)WE.toggle(); else toggleMenu(); } return null; }
     if(e.target&&/^(TEXTAREA|INPUT|SELECT)$/.test(e.target.tagName))return null;   // (typing in a box isn't walking)
     if(raw==='e'&&e.shiftKey&&!ED.on&&!UI.menuOpen){ if(e.type==='keydown'&&!e.repeat)WE.toggle(); return null; }   // (Shift+E: edit the world, src/worldedit.js)
+    // (isometric: Q / E / R turn it a quarter, before any key of his own choosing: owner 17 Oct 2026, Q / E were changing the view instead)
+    if(UI.view==='iso'&&!ED.on&&(raw==='q'||raw==='e'||raw==='r')){ if(e.type==='keydown'&&!e.repeat)yawTo+=raw==='q'?Math.PI/2:-Math.PI/2; return null; }
     if(UI.menuOpen)return null;
     if(ED.on){ const a=REV[raw]; return ['q','e','z','x','0','=','-'].includes(a)?a:null; }   // (shaping him: only the view's keys)
     const act=REV[raw]; if(act!==undefined){ if(e.type==='keydown'&&!e.repeat){ if(act==='c')setFree(!UI.freeCam); if(act==='g')setFly(!UI.fly); if(act==='view'){ const V=['iso','follow','first'];   /* (owner, 17 Oct 2026: isometric first, behind second, first person third; map and third person in DISPLAY) */ UI.setView(V[(V.indexOf(UI.view)+1)%V.length]); } if(act==='rot')UI.turn4(); } return act==='view'||act==='rot'?null:act; }
@@ -73,8 +75,9 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
   const HEAD=1.5/.84*TILE, EYE=1.62/.84*TILE, LOW=.9/.84*TILE;   // (his head's height, his eyes', three feet)
   UI.clampV=v=>UI.view==='first'?Math.max(-1.2,Math.min(1.3,v)):UI.view==='third'||UI.view==='follow'?Math.max(-.35,Math.min(1.4,v)):clampP(v);
   UI.setView=v=>{ UI.view=v; UI.persp=v==='third'||v==='first'||v==='follow'; if(UI.freeCam&&UI.persp)setFree(false);
-    if(v==='iso'){ yawTo=Math.round((yawTo-Math.PI/4)/(Math.PI/2))*(Math.PI/2)+Math.PI/4; pitchTo=Math.PI/6; }   // (the four diagonal angles)
-    if(v==='first')pitchTo=.05; if(v==='third'||v==='follow')pitchTo=.3; if(!UI.persp)pitchTo=clampP(pitchTo); try{ localStorage.setItem('market-view',v); }catch(e){} };
+    if(v==='iso'){ yawTo+=((((-Math.PI/4-yawTo)%(2*Math.PI))+3*Math.PI)%(2*Math.PI))-Math.PI; pitchTo=Math.PI/6; ppuTo=PPU*2.2; UI.off.set(0,0,0); zAt=null; }   // (owner, 17 Oct 2026, his picture: "this should always be the angle when you switch to isometric": the counter up to his left, 2.2 times in; Q / E turn it from there)
+    if(v==='follow'){ UI.dist=4*TILE; pitchTo=.2; }   // (owner, 17 Oct 2026, his picture: "when you switch to over shoulder view it should always be at this zoom and angle (you can change once you switch to it)")
+    if(v==='first')pitchTo=.05; if(v==='third')pitchTo=.3; if(!UI.persp)pitchTo=clampP(pitchTo); try{ localStorage.setItem('market-view',v); }catch(e){} };
   // BEHIND HIM (owner, 17 Oct 2026: "a view that locks on behind, 3rd person view, and autorotates with player"): the third person's camera, turned
   // with him each frame so it stays at his back; R (any view but these two) turns the view a quarter round, onto the four isometric angles
   UI.turn4=()=>{ if(UI.view==='first'||UI.view==='follow')return; if(UI.view==='iso'){ yawTo=Math.round((yawTo-Math.PI/4)/(Math.PI/2))*(Math.PI/2)+Math.PI/4-Math.PI/2; return; } yawTo=Math.round((yawTo-Math.PI/4)/(Math.PI/2))*(Math.PI/2)+Math.PI/4-Math.PI/2; };
@@ -85,7 +88,6 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
     const T=new THREE.Vector3(pos.x,py+HEAD*sk,pos.z), F=new THREE.Vector3(Math.sin(a)*Math.cos(pitch),Math.sin(pitch),Math.cos(a)*Math.cos(pitch));
     cam.position.copy(T).addScaledVector(F,UI.dist); const g=groundY(cam.position.x,cam.position.z)+LOW; if(cam.position.y<g)cam.position.y=g;   // (never under three feet)
     cam.lookAt(T); cam.updateMatrixWorld(); };
-  addEventListener('keydown',e=>{ if(UI.view!=='iso'||e.repeat||UI.menuOpen||/INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName||''))return; const k=e.key.toLowerCase(); if(k==='q')yawTo+=Math.PI/2; if(k==='e')yawTo-=Math.PI/2; });   // (a quarter: the four isometric angles)
   UI.setView(new URLSearchParams(location.search).get('view')||'iso');   // (owner, 17 Oct 2026, his picture: "start the game always in this view 1st": ISOMETRIC, every time; ?view= for a test)
   UI.home=()=>{ UI.off.set(0,0,0); zAt=null; if(UI.freeCam)setFree(false); };
   cv.addEventListener('pointerdown',e=>{ if(e.button!==0||ED.on)return; if(WE.down(e)){ cv.setPointerCapture(e.pointerId); return; } L={x:e.clientX,y:e.clientY,x0:e.clientX,y0:e.clientY,moved:false}; UI.grab(e); cv.setPointerCapture(e.pointerId); });

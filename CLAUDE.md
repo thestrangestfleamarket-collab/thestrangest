@@ -31,7 +31,7 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
 4. **Draw and run only what's near or seen**: other rooms not drawn; far characters neither drawn nor moved; the pool's water only steps near it.
 5. **As few shader programs as possible**: what differs only by a number is a uniform, not a new program; shaders are compiled while the loading
    line shows.
-6. **Never sharper than the opening** (`RESMAX`). The opening one step sharper since 17 Oct 2026 ("increase resolution by one factor": the art 1.5x the game's, `RESI` 3, `RESMAX` 3).
+6. **Never sharper than the opening** (`RESMAX`). The opening NORMAL (the art 1x the game's, `RESI` 2; owner, 17 Oct 2026: "1 less than it is now"), one step finer once zoomed in to 6 screen pixels a pixel (`ZUPX`: "when you zoom in to this level i want it to be this resolution", his picture, 1.5x); the menu's SHARP (1.5x) the ceiling (`RESMAX` 3).
 7. **Load**: nothing fetched that isn't needed at start (Rapier only when the physics body is switched on); no data for things not in the game.
    **Never freeze the page while it loads** (17 Oct 2026, the artifact said "isn't responding": one 52 s freeze in the cloud's software
    graphics): the build puts a breath every 40 ms between the module's statements (`tools/yields.py`: plain blocks, if / for / while bodies and

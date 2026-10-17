@@ -126,7 +126,12 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
   A character from a model file keeps its parts the same way (`names`, `reg`).
 - **The moth man** (owner, 17 Oct 2026, his sticker, "lets add him into the game, exactly like this"; `src/npc-mothman.js`): a stout greybeard with a
   moth's yellow veined wings and antennae, a denim cap, round black sunglasses, shaggy grey hair, a denim jacket open over a tan shirt and his
-  belly, jeans, brown boots; thirteen parts, some 2,700 triangles; walking the street.
+  belly, jeans, brown boots; walking the street. **Rounded, not blocky** (owner: "not so blocky, more natural shape, rounded, match the image"):
+  soft clumps, capsules and curved shells, no boxes. **Real denim** (owner: "make look like real jean texture and shadows, logical design"): a
+  twill woven in the shader on any part flagged denim (`fab` in `npc-parts.js`, `DENIM_GLSL` in `npc-map.js`; no picture, the no-textures rule
+  kept), faded at the shoulders, thighs and knees; the jacket and jeans cut as they really are (yoke seam, collar, buttoned pocket flaps, a row of
+  buttons, cuffs; waistband, fly, belt loops, front and back pockets, outer seams, inseams, turned cuffs), seams darker, stitching tan; the belly
+  shades the waistband, the jacket the shirt (ranks). Some 13,000 triangles, the heaviest character: cut if the street grows crowded.
 - **The mushroom seller** (owner, 17 Oct 2026, his picture: a felted skeleton in a mottled rust robe, long tan hair, a hat crowned with mushrooms,
   a rope strap and woven bag, a tray of mushrooms held out; "add this is a 3d character in the game"; `src/npc-mushroom.js`): built in code from plain
   shapes (no model file), one mesh of about 2,500 triangles, through `makeNPC` like the rest (lamp-lit, the clothes' shadows, SELF; his sockets, nose

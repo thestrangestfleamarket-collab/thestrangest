@@ -9,11 +9,11 @@
 const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
 { // ---- THE KEYS: each action's key, changeable (kept in this browser); the game's code asks for the action's own default key
   const ACTS=[['w','walk up (screen)'],['s','walk down'],['a','walk left'],['d','walk right'],['shift','run · sink (free camera, fly)'],[' ','jump · rise (free camera, fly) · dive (swimming)'],
-    ['j','punch'],['k','kick'],['r','roll'],['v','wave'],['f','fall'],['q','turn left'],['e','turn right'],['z','tilt down'],['x','tilt up'],['0','reset the view'],
+    ['view','change the view (map, third person, first person, isometric)'],['j','punch'],['k','kick'],['r','roll'],['v','wave'],['f','fall'],['q','turn left'],['e','turn right'],['z','tilt down'],['x','tilt up'],['0','reset the view'],
     ['c','free camera'],['g','fly (through walls)'],['=','sharper'],['-','coarser'],['h','hide the help']];
   const NAME=k=>k===' '?'SPACE':k.length===1?k.toUpperCase():k.toUpperCase();
   let BIND={}; try{ BIND=JSON.parse(localStorage.getItem('market-keys')||'{}')||{}; }catch(e){}
-  const keyOf=a=>BIND[a]??a, rev=()=>{ const r={}; for(const [a] of ACTS)r[keyOf(a)]=a; return r; };
+  const DEF={view:'v',v:'b'}, keyOf=a=>BIND[a]??DEF[a]??a,   /* (V changes the view, owner 17 Oct 2026; so the wave's on B) */ rev=()=>{ const r={}; for(const [a] of ACTS)r[keyOf(a)]=a; return r; };
   let REV=rev(), waiting=null;
   // a pressed key to the action the game's code knows (null: not for the game: the menu has it, or a key moved to another action)
   UI.key=e=>{ const raw=e.key.toLowerCase();
@@ -24,7 +24,7 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
     if(raw==='e'&&e.shiftKey&&!ED.on&&!UI.menuOpen){ if(e.type==='keydown'&&!e.repeat)WE.toggle(); return null; }   // (Shift+E: edit the world, src/worldedit.js)
     if(UI.menuOpen)return null;
     if(ED.on){ const a=REV[raw]; return ['q','e','z','x','0','=','-'].includes(a)?a:null; }   // (shaping him: only the view's keys)
-    const act=REV[raw]; if(act!==undefined){ if(e.type==='keydown'&&!e.repeat){ if(act==='c')setFree(!UI.freeCam); if(act==='g')setFly(!UI.fly); } return act; }
+    const act=REV[raw]; if(act!==undefined){ if(e.type==='keydown'&&!e.repeat){ if(act==='c')setFree(!UI.freeCam); if(act==='g')setFly(!UI.fly); if(act==='view'){ const V=['map','third','first','iso']; UI.setView(V[(V.indexOf(UI.view)+1)%V.length]); } } return act==='view'?null:act; }
     return ACTS.some(([a])=>a===raw)?'':raw; };   // (a default key now given to nothing)
   // ---- FREE CAMERA and FLY
   const badge=document.createElement('div'); badge.id='mode'; document.body.appendChild(badge);

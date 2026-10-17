@@ -119,7 +119,7 @@
   $a('#aundo').onclick=()=>{ const u=UNDO.pop(); if(u){ OV=JSON.parse(u); save(); drawAnim(); } };
   $a('#aclear').onclick=()=>{ snap(); delete OV[clip]; save(); drawAnim(); };
   // NEW MOVES
-  const FREE='bilmoptuy123456789';
+  const FREE='ilmoptuy123456789';   // (B is the wave's now: V changes the view)
   function drawCustom(){ const h=$a('#acustom'); h.innerHTML=''; for(const c of CUSTOM){ const b=document.createElement('button'); b.className='btn'; b.textContent=c.name.toUpperCase()+(c.key?' ['+c.key.toUpperCase()+']':'')+' ✕';
       b.title='delete this move'; b.onclick=()=>{ if(!confirm('Delete the move '+c.name+'?'))return; CUSTOM=CUSTOM.filter(x=>x!==c); delete R.MOVES[c.name]; delete OV[c.name]; if(c.key){ delete R.KEYMOVE[c.key.toUpperCase()]; delete MOVEK[c.key]; } if(clip===c.name){ clip=clip0='stand'; } save(); drawAnim(); }; h.appendChild(b); } }
   $a('#anew').onclick=()=>{ const name=$a('#aname').value.trim().toLowerCase().replace(/[^a-z0-9]+/g,''), dur=Math.max(.2,Math.min(20,+$a('#alen').value||1.2)), key=($a('#akeych').value||'').toLowerCase();

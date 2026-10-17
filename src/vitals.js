@@ -13,7 +13,7 @@ const VIT={hp:1,sta:1,out:0,tired:false};
     if(running){ VIT.sta=Math.max(0,VIT.sta-dt/12); rest=0; } else if((rest+=dt)>.8)VIT.sta=Math.min(1,VIT.sta+dt/7);
     if(VIT.sta<=0)VIT.tired=true; if(VIT.tired&&VIT.sta>.33)VIT.tired=false; if(VIT.tired)st.runTarget=0;   // (out of breath: a walk)
     if(VIT.out>0){ VIT.out-=dt; keys.clear(); target=null; if(VIT.out<=0)VIT.hp=Math.max(VIT.hp,.4); } else VIT.hp=Math.min(1,VIT.hp+dt/90);   // (fainted: nothing to be done but lie there)
-    if(VIT.hp<1||VIT.sta<1)seen=Math.max(seen,1.2); seen-=dt; const show=seen>0; if(B.hidden===show)B.hidden=!show;
+    if(VIT.hp<.99||VIT.sta<.99)seen=Math.max(seen,1.2); seen-=dt; const show=seen>0; if(B.hidden===show)B.hidden=!show;
     if(show){ hpI.style.width=(VIT.hp*100).toFixed(0)+'%'; stI.style.width=(VIT.sta*100).toFixed(0)+'%'; }
     if(typeof LOOKS!=='undefined')LOOKS.stats(VIT.hp,VIT.sta); };
 }

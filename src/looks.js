@@ -8,8 +8,9 @@ const LOOKS={};
   const PAL={skin:['#f1d2bf','#e6c4b0','#c99a7a','#9a6a4a','#5e3b26'], hair:['#2a2220','#6a5958','#7a5432','#c9a25a','#8e3b22'], eye:['#5a3a26','#3c6a9a','#4a7a3a','#7a6a3a','#6a7078'],
     shirt:['#a9a57e','#e8e6e0','#3a4a6a','#a83a32','#303034'], pants:['#434e58','#2a2a2e','#a8946a','#6a6e74','#5a4634'], shoes:['#77614a','#2c2a28','#e0dcd4','#a83a32','#a8845a']};
   const NAMES={skin:'SKIN',hair:'HAIR COLOUR',eye:'EYES',shirt:'SHIRT',pants:'TROUSERS',shoes:'SHOES'};
-  const HAIRS=[['SHORT','hair'],['BUZZ','hairBuzz'],['LONG','hairLong'],['BUN','hairBun'],['BALD',null]], BEARDS=[['FULL','beard'],['SHORT','beardShort'],['GOATEE','beardGoatee'],['MOUSTACHE','beardMoustache'],['NONE',null]];
-  const L={name:'',sex:'M',hair:0,beard:0,skin:1,hairc:1,eye:0,shirt:0,pants:0,shoes:0};
+  // (no beards and no buzz cut: owner, 17 Oct 2026, "remove the beard and buzzcut from game completely")
+  const HAIRS=[['SHORT','hair'],['LONG','hairLong'],['BUN','hairBun'],['PONYTAIL','hairPony'],['BALD',null]];
+  const L={name:'',sex:'M',hair:0,skin:1,hairc:1,eye:0,shirt:0,pants:0,shoes:0};
   try{ Object.assign(L,JSON.parse(localStorage.getItem('market-looks')||'{}')); }catch(e){}
   const save=()=>{ try{ localStorage.setItem('market-looks',JSON.stringify(L)); }catch(e){} };
   // a colour's four tones (light, mid, shade, the deepest), as his ramps have them
@@ -19,8 +20,8 @@ const LOOKS={};
     for(const k of ['c0','c1','c2','cd','color'])if(A[k])A[k].needsUpdate=true; };
   const apply=()=>{ const set=(m,h)=>{ const i=MATS.indexOf(m); if(i>=0)W3.ramp[i]=tones(h); };
     set('skin',PAL.skin[L.skin]); set('hair',PAL.hair[L.hairc]); set('eye',PAL.eye[L.eye]); set('shirt',PAL.shirt[L.shirt]); set('pants',PAL.pants[L.pants]); set('shoes',PAL.shoes[L.shoes]); recolor();
-    for(const [,n] of HAIRS.concat(BEARDS))if(n){ const i=W3.idx(n); if(i>=0)W3.HIDE[i]=true; }
-    const h=HAIRS[L.hair][1], b=BEARDS[L.beard][1]; if(h)W3.HIDE[W3.idx(h)]=false; if(b)W3.HIDE[W3.idx(b)]=false; };
+    if(!(L.hair>=0&&L.hair<HAIRS.length))L.hair=0; for(const [,n] of HAIRS)if(n){ const i=W3.idx(n); if(i>=0)W3.HIDE[i]=true; }
+    const h=HAIRS[L.hair][1]; if(h)W3.HIDE[W3.idx(h)]=false; };
   // THE PANEL
   const css=document.createElement('style'); css.textContent=`#looks{position:fixed;right:12px;top:12px;width:330px;max-height:calc(100vh - 24px);overflow:auto;background:var(--panel,#10131b);border:2px solid var(--line,#2a3040);color:var(--fg,#d8dbe4);font:11px var(--pixel,monospace);padding:12px;z-index:30}
     #looks h2{margin:0 0 8px;font-size:13px;color:#ffd27a;letter-spacing:1px} #looks h3{margin:10px 0 4px;font-size:10px;color:var(--dim,#8a8f9c);letter-spacing:1px}
@@ -34,7 +35,7 @@ const LOOKS={};
   P.innerHTML=`<h2>YOU</h2><div class="row"><input type="text" id="lname" maxlength="24" placeholder="your name"><button id="lclose">CLOSE</button></div>
     <h3>STATS</h3><div class="row"><span style="width:70px">HEALTH</span><div class="bar"><i id="lhp" style="background:#c84a3a;width:100%"></i></div></div>
     <div class="row" style="margin-top:4px"><span style="width:70px">STAMINA</span><div class="bar"><i id="lst" style="background:#d8b84a;width:100%"></i></div></div>
-    ${pick('sex',['MALE','FEMALE'],'BODY')}${pick('hair',HAIRS.map(h=>h[0]),'HAIR')}${pick('beard',BEARDS.map(h=>h[0]),'FACIAL HAIR')}
+    ${pick('sex',['MALE','FEMALE'],'BODY')}${pick('hair',HAIRS.map(h=>h[0]),'HAIR')}
     ${['skin','hair','eye','shirt','pants','shoes'].map(sw).join('')}
     <h3>SHADING ON YOU</h3><div class="row"><span style="width:70px">STEPS</span><input type="range" id="lsteps" min="2" max="5" step="1" style="flex:1"><span id="lstepsv" style="width:14px"></span></div>
     <div class="row"><span style="width:70px">DEPTH</span><input type="range" id="ldepth" min="0.1" max="0.9" step="0.01" style="flex:1"></div>`;
@@ -42,7 +43,7 @@ const LOOKS={};
   const draw=()=>{ $('#lname').value=L.name; P.querySelectorAll('[data-k]').forEach(r=>{ const k=r.dataset.k, v=k==='sex'?(L.sex==='F'?1:0):L[k]; r.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.i===v))); });
     $('#lsteps').value=W3.shade.steps; $('#lstepsv').textContent=W3.shade.steps; $('#ldepth').value=W3.shade.depth; };
   P.addEventListener('click',e=>{ const b=e.target.closest('button[data-i]'); if(!b)return; const k=b.parentElement.dataset.k, i=+b.dataset.i;
-    if(k==='sex'){ const s=i?'F':'M'; if(s!==L.sex){ L.sex=s; const bb=document.querySelector(`[data-body="${s==='F'?'female':'male'}"]`); if(bb)bb.click(); if(s==='F'){ if(L.beard!==4)L.beard=4; if(L.hair===0||L.hair===1)L.hair=2; } } }
+    if(k==='sex'){ const s=i?'F':'M'; if(s!==L.sex){ L.sex=s; const bb=document.querySelector(`[data-body="${s==='F'?'female':'male'}"]`); if(bb)bb.click(); if(s==='F'&&L.hair===0)L.hair=1; } }
     else L[k]=i; apply(); save(); draw(); });
   $('#lname').oninput=e=>{ L.name=e.target.value; save(); };
   $('#lname').addEventListener('keydown',e=>e.stopPropagation());
@@ -54,4 +55,18 @@ const LOOKS={};
   const hit=new THREE.Mesh(new THREE.BoxGeometry(.8*TILE,2.2*TILE,.8*TILE),new THREE.MeshBasicMaterial({visible:false})); scene.add(hit);
   renderer.domElement.addEventListener('pointerdown',()=>{ hit.position.set(pos.x,py+1.1*TILE,pos.z); hit.updateMatrixWorld(); },true);
   UI.thing({name:'YOU',obj:hit,reach:99,tall:2,act:()=>LOOKS.open()});
+  // HIS BUILD (owner, 17 Oct 2026: "make his hips a little less wide. gain 5 pounds"): his hips a little narrower, his chest, arms and legs a
+  // touch fuller, set as his shape's own sizes (HIS SHAPE), unless he's been given others there
+  const SIZE={hips:[.9,1,.97],torso:[1.05,1,1.06],upperArmL:[1.05,1,1.05],upperArmR:[1.05,1,1.05],thighL:[1.04,1,1.05],thighR:[1.04,1,1.05],forearmL:[1.03,1,1.03],forearmR:[1.03,1,1.03]};
+  W3.E=W3.E||[]; for(const n in SIZE){ const i=W3.idx(n); if(i>=0&&!W3.E[i])W3.E[i]={s:SIZE[n].slice(),o:[0,0,0],q:[0,0,0,1]}; }
+  // LOOKING ABOUT (owner, 17 Oct 2026: "look around idle"): standing still a while, he looks one way and the other, now and then down, slowly
+  { const R=RIG, f0=R.OVL.fn; let idle=0;
+    R.OVL.fn=(s,P)=>{ if(f0)f0(s,P); if(s!==st)return; const still=!s.move&&(s.w||0)<.05&&!RAG.on; idle=still?idle+1/60:0;
+      if(idle>2.5){ const t=idle-2.5, k=Math.min(1,t/1.5); P.look=(P.look||0)+k*(Math.sin(t*.45)*38+Math.sin(t*1.3)*6)*R.D; P.nod=(P.nod||0)+k*(Math.max(0,Math.sin(t*.23-1))*10)*R.D; } }; }
+  // HIS SHADOWS, REAL (owner, 17 Oct 2026: "i should see more shadows on the person, make it realistic, all his body cast shadow, his right arm
+  // should cast shadow on his body"): his own shadow on him falls from the light that's really on him: the sun by day, the nearest lamp at
+  // night (not his fixed one), on a finer map, a little deeper by default
+  LOOKS.light=()=>{ const sun=CLOCK.sun; if(sun&&sun.intensity>.3&&LVL==='up'){ W3.Lw.copy(sun.position).sub(sun.target.position).normalize(); return; }
+    let best=null, bd=1e9; for(const S of SHL){ if(!(S.intensity>0))continue; const d=S.position.distanceTo(new THREE.Vector3(pos.x,py+1.2*TILE,pos.z)); if(d<bd){ bd=d; best=S; } }
+    if(best)W3.Lw.set(best.position.x-pos.x,best.position.y-(py+1.2*TILE),best.position.z-pos.z).normalize(); };
   apply(); }

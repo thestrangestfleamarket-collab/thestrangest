@@ -3,7 +3,7 @@
 // frames), coloured by his own rule (lit or half lit the ramp's second tone, in shade its third, from his light), the station's light at
 // where he stands on him, his outline (the ramp's fourth tone) drawn after by the outline pass where he ends or a piece stands well in front ----
 const W3={group:new THREE.Group(), meshes:[], idMeshes:[], L:new THREE.Vector3(), tint:new THREE.Color(1,1,1), tris:0, lv:{value:2}, look:{value:+(new URLSearchParams(location.search).get('look')||0)}, G:{value:new THREE.Matrix3()}, LP:{value:[new THREE.Vector3(),new THREE.Vector3()]}, LC:{value:[new THREE.Vector3(),new THREE.Vector3()]}, CamW:{value:new THREE.Vector3()}, LVP:{value:new THREE.Matrix4()},
-  sm:new THREE.WebGLRenderTarget(256,256), smCam:new THREE.OrthographicCamera(-2.1,2.1,2.1,-2.1,0.1,12)   /* (wide enough for him a fifth bigger) */, Lw:new THREE.Vector3()};
+  sm:new THREE.WebGLRenderTarget(512,512), smCam:new THREE.OrthographicCamera(-2.1,2.1,2.1,-2.1,0.1,12)   /* (wide enough for him a fifth bigger) */, Lw:new THREE.Vector3()};
 W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THREE.FloatType;   // (his own shadow map, from his light: SELF)
 { const R=RIG, {V,add,sub,mul,nrm,dot}=R, rest=(R.farOnly(false),R.build(R.walkPose({ph:0,w:0},null),null)), MATS=R.MATS,   /* (his fingers on: the skeleton with their joints, FAR off for him) */ STEP=1, CELL=2, OUT=0.2*R.PX;   // (CELL: the simplified mesh's corners a cell of his apart; OUT: its surface pushed out a touch, as merging pulls it in)
   const TET=[[0,5,1,6],[0,1,2,6],[0,2,3,6],[0,3,7,6],[0,7,4,6],[0,4,5,6]], CO=[[0,0,0],[1,0,0],[1,1,0],[0,1,0],[0,0,1],[1,0,1],[1,1,1],[0,1,1]];
@@ -39,7 +39,7 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
   // handed to the graphics card each frame (uPM), which moves each corner by its own piece's: one draw for all of him in every pass
   // HIS FINGERS (owner, 17 Oct 2026: "make my characters fingers visible (as one joint each, not every possible finger joint)"): the palm to
   // the knuckles (the rig's fine hand), and each finger and the thumb one piece, its three bones' shapes as one, bending at the knuckle
-  R.fine(true); const PCS0=R.shell(rest.J,0).filter(P=>P.on!=='prop'&&P.on!=='world'); R.fine(false);
+  R.fine(true); const PCS0=R.shell(rest.J,0).filter(P=>P.on!=='prop'&&P.on!=='world'&&P.n!=='beard'); R.fine(false);   // (no beard: owner, 17 Oct 2026, "remove the beard and buzzcut from game completely")
   const around=(ps,m)=>{ const b=[1e9,-1e9,1e9,-1e9,1e9,-1e9]; for(const p of ps){ b[0]=Math.min(b[0],p.x-m); b[1]=Math.max(b[1],p.x+m); b[2]=Math.min(b[2],p.y-m); b[3]=Math.max(b[3],p.y+m); b[4]=Math.min(b[4],p.z-m); b[5]=Math.max(b[5],p.z+m); } return b; };
   const PCS=[]; for(const P of PCS0){ const f=/^fing(\d)(\d)([LR])$/.exec(P.n); if(!f){ if(/^hand[LR]$/.test(P.n)){ P.bb=around([rest.J['wrist'+P.n.slice(-1)]],4.5); P.step=.25; P.cell=.2; } PCS.push(P); continue; }
     if(f[2]!=='0')continue; const sib=[1,2].map(j=>PCS0.find(q=>q.n==='fing'+f[1]+j+f[3])), d0=P.d, J=rest.J, k=j=>J['k'+f[1]+j+f[3]];
@@ -49,18 +49,16 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
   // beard without the bare skin round the moustache; and the five hairstyles and five beards made once here, each its own piece on his head,
   // the ones not worn folded away to nothing each frame (W3.HIDE), so changing them is instant and his mesh never changes (src/looks.js)
   { const H=rest.J.head, {rbox,ell,box}=R, Vv=R.V, ad=R.add, HB=[H.x-11,H.x+11,H.y-14,H.y+11,H.z-11,H.z+11];
-    const head=PCS.find(P=>P.n==='head'), hair=PCS.find(P=>P.n==='hair'), beard=PCS.find(P=>P.n==='beard'), hd=head.d, hr=hair.d, bd=beard.d;
+    const head=PCS.find(P=>P.n==='head'), hair=PCS.find(P=>P.n==='hair'), hd=head.d, hr=hair.d;
+    for(const P of PCS)if(/^shoe[LR]$/.test(P.n))P.paint=p=>p.y<1.15?'sole':null;   // (HIS FEET: a darker sole under each, owner 17 Oct 2026, "give his feet more depth")
     const side=p=>Math.abs(p.x-H.x), front=p=>p.z>H.z+3.6;
     head.paint=p=>{ if(!front(p))return null; const s=side(p), y=p.y-H.y; if(Math.abs(s-2.3)<.8&&Math.abs(y-.7)<.95)return 'eye'; if(Math.abs(s-2.3)<1.35&&Math.abs(y-2.35)<.38)return 'hair'; return null; };
     const lip=p=>box(p,ad(H,Vv(0,-5.95,5.2)),Vv(1.8,.32,3.2))<0?'mouth':null;   // (the mouth: a dark line, in the beard or on the skin)
-    beard.paint=lip; head.paint=(f=>p=>f(p)||(front(p)&&lip(p)))(head.paint);
+    head.paint=(f=>p=>f(p)||(front(p)&&lip(p)))(head.paint);
     const V=(n,on,m,d,paint)=>({n,on,m,d,paint,bb:HB,step:.5});
-    PCS.push(V('hairBuzz','hair','hair',p=>Math.max(hd(p)-.55,-hd(p)-.05,-box(p,ad(H,Vv(0,-2.8,5.5)),Vv(4.8,6.0,3.4)),H.y-2.6-p.y)),
+    PCS.push(V('hairPony','hair','hair',p=>Math.min(hr(p),ell(p,ad(H,Vv(0,1.5,-7.2)),Vv(1.6,1.6,1.4)),R.rcone(p,ad(H,Vv(0,1.2,-7.6)),ad(H,Vv(0,-6.5,-8.6)),1.3,.8))),
              V('hairLong','hair','hair',p=>Math.min(hr(p),Math.max(rbox(p,ad(H,Vv(0,-3.6,-1.6)),Vv(7.1,11.2,6.4),3.6),-box(p,ad(H,Vv(0,-3.6,5.9)),Vv(5.3,9.5,4.4)),H.y-13.6-p.y))),
-             V('hairBun','hair','hair',p=>Math.min(hr(p),ell(p,ad(H,Vv(0,5.2,-6.2)),Vv(2.7,2.5,2.5)))),
-             V('beardShort','beard','hair',p=>Math.max(bd(p),hd(p)-.55),lip),
-             V('beardGoatee','beard','hair',p=>Math.max(bd(p),side(p)-2.1,p.y-(H.y-3.9)),lip),
-             V('beardMoustache','beard','hair',p=>Math.max(bd(p),side(p)-2.9,Math.abs(p.y-(H.y-4.75))-.7),lip)); }
+             V('hairBun','hair','hair',p=>Math.min(hr(p),ell(p,ad(H,Vv(0,5.2,-6.2)),Vv(2.7,2.5,2.5))))); }
   const NP=PCS.length; W3.HIDE=new Array(NP).fill(false); W3.idx=n=>PCS.findIndex(P=>P.n===n); W3.PM={value:PCS.map(()=>new THREE.Matrix4())}; W3.pcs=PCS;
   const MOVE=`attribute float pidx; uniform mat4 uPM[${NP}];`, AT=`mat4 PM=uPM[int(pidx+0.5)];`;
   const VS=MOVE+`attribute vec3 c0,c1,c2,cd; varying vec3 vC0,vC1,vC2,vCd,vN,vW; void main(){ `+AT+` vN=mat3(PM)*normal; vC0=c0; vC1=c1; vC2=c2; vCd=cd; vec4 w=modelMatrix*(PM*vec4(position,1.)); vW=w.xyz; gl_Position=projectionMatrix*viewMatrix*w; }`;
@@ -107,7 +105,7 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
   const GP=new THREE.DataTexture(new Uint8Array(20),5,1,THREE.RGBAFormat); GP.magFilter=GP.minFilter=THREE.NearestFilter; W3.GP=GP; W3.uSelf={value:.7};
   W3.setShade=(n,dp)=>{ n=Math.max(2,Math.min(5,Math.round(n))); dp=Math.max(.1,Math.min(.9,dp)); W3.shade={steps:n,depth:dp}; const d=new Uint8Array(n*4); for(let i=0;i<n;i++){ const v=Math.round(255*((1-dp)+dp*i/(n-1))); d.set([v,v,v,255],i*4); }
     GP.image={data:d,width:n,height:1}; GP.needsUpdate=true; W3.uSelf.value=1-dp*.55; try{ localStorage.setItem('market-shade',JSON.stringify(W3.shade)); }catch(e){} };
-  { let s0={steps:3,depth:.72}; try{ const v=localStorage.getItem('market-shade'); if(v)s0=JSON.parse(v); }catch(e){} W3.setShade(s0.steps,s0.depth); }
+  { let s0={steps:4,depth:.78}; try{ const v=localStorage.getItem('market-shade'); if(v)s0=JSON.parse(v); }catch(e){} W3.setShade(s0.steps,s0.depth); }
   const toon=new THREE.MeshToonMaterial({vertexColors:true,gradientMap:GP,side:THREE.DoubleSide});
   toon.onBeforeCompile=sh=>{ sh.uniforms.uPM=W3.PM; sh.vertexShader=MOVE+'\n'+sh.vertexShader.replace('#include <beginnormal_vertex>',AT+' vec3 objectNormal=mat3(PM)*normal;').replace('#include <begin_vertex>','vec3 transformed=(PM*vec4(position,1.)).xyz;');
     sh.uniforms.uLv=W3.lv; sh.uniforms.uLVP=W3.LVP; sh.uniforms.uSM={value:W3.sm.depthTexture}; sh.uniforms.uSelf=W3.uSelf;

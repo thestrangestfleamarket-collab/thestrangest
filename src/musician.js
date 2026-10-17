@@ -9,7 +9,7 @@ const MUS={};
 { const R=RIG, V=R.V, AT={x:-2.45,z:1.75,hd:0.35};
   // his pieces: his own (the fingers' bones too: the rig's fine hand), and the guitar in its own frame
   // (his fingers: the rig leaves them out of a figure seen from afar, FAR; he's built and posed with them, the player without)
-  R.farOnly(false); R.fine(true); const RB=R.build(R.walkPose({ph:0,w:0},null),null), PCS=R.shell(RB.J,0).filter(p=>p.on!=='prop'&&p.on!=='world'); R.fine(false); R.farOnly(false);
+  R.farOnly(false); R.fine(true); const RB=R.build(R.walkPose({ph:0,w:0},null),null), PCS=R.shell(RB.J,0).filter(p=>p.on!=='prop'&&p.on!=='world'&&p.n!=='beard'); R.fine(false); R.farOnly(false);
   const J=RB.J, around=(ps,m)=>{ const b=[1e9,-1e9,1e9,-1e9,1e9,-1e9]; for(const p of ps){ b[0]=Math.min(b[0],p.x-m); b[1]=Math.max(b[1],p.x+m); b[2]=Math.min(b[2],p.y-m); b[3]=Math.max(b[3],p.y+m); b[4]=Math.min(b[4],p.z-m); b[5]=Math.max(b[5],p.z+m); } return b; };
   for(const p of PCS){ const f=/^fing(\d)(\d)([LR])$/.exec(p.n); if(f){ p.bb=around([J['k'+f[1]+f[2]+f[3]],J['k'+f[1]+(+f[2]+1)+f[3]]],1); p.step=.12; p.cell=.08; }   // (a finger's bone, fine: whole, not simplified away)
     else if(/^hand[LR]$/.test(p.n)){ p.bb=around([J['wrist'+p.n.slice(-1)]],4.5); p.step=.2; p.cell=.15; } }

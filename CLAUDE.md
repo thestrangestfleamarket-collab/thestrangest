@@ -280,8 +280,9 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
   rig (each pawn bone turns in the world as its mannequin bone does, the free hands go where the mannequin's go at the pawn's reach, the hips bob
   at his height), as `UAL_<name>`; they walk on UAL_Walk_Loop and stand on UAL_Idle_Loop. `?pawnclip=<name>`, `?pawnwalk=`, `?pawnidle=`, `?sheet=<key>`.
   **The Drive's files**: a file over the connection's size for its reply is still saved to disk by the tool (the 5.5 MB .fbx came through that way).
-- **THE MARKET's artifact, from this account**: the link above (X2Bk8UjQKP8yfLdLtVVn3s) can't be opened from here; the page is published at
-  **https://claude.ai/artifact/PnmQqhkusfewby35tf4zo5** until the owner says which is the live one.
+- **THE MARKET's artifact** (17 Oct 2026, "you decide, push"): the old link (X2Bk8UjQKP8yfLdLtVVn3s) can't be opened from this account, so THE MARKET
+  is now published at **https://claude.ai/artifact/PnmQqhkusfewby35tf4zo5** (update that one, keep its link). The droids stay the mannequins (not the
+  pawn guards); the twelve pawns stay plain street walkers at 1.35 m.
 - **The gold skeleton** (owner, 17 Oct 2026, his picture of a gilded clockwork skeleton with a white skull face: "put this character in game, use
   the other skeletons as guides for character design"; "make him 2x bigger"): the KayKit Minion's bones and body gilded at load (`gild` in
   `npc-skel.js`: gold by each bone's own light and shade, the face under the eyes and the jaw bone-white, the neck a steel spring, the eye sockets
@@ -293,8 +294,8 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
 
 **THE MARKET** (owner, 17 Oct 2026: "one official MARKET map im gona start filling in") is the game's map here: every place the owner adds goes
 into it, on its street or under it (the subway's level), next to what's there; not new separate pages. It's built to `dist/market.html` and
-published to its own artifact, **https://claude.ai/artifact/X2Bk8UjQKP8yfLdLtVVn3s** (update that one, keep its link; don't make new pages for
-new places). A place's code is its own file in `src/`; `map-pre.js` says where each place stands (its offset, its level), `map-post.js` joins
+published to its own artifact, **https://claude.ai/artifact/PnmQqhkusfewby35tf4zo5** (update that one, keep its link; don't make new pages for
+new places; the earlier link, X2Bk8UjQKP8yfLdLtVVn3s, can't be opened from this account). A place's code is its own file in `src/`; `map-pre.js` says where each place stands (its offset, its level), `map-post.js` joins
 them (the ground, the levels, what cuts away). Its first places: the bodega, the pool room, the subway station and its stairs.
 
 **Not updated any more** (owner, 17 Oct 2026: "stop updating tsfm im not working there anymore"): nothing goes to `bralynnb/tsfm` from here; the copy there stays as it was last merged (version 8.0.1: at his word, "pull in all merges and go live", [bralynnb/tsfm#801](https://github.com/bralynnb/tsfm/pull/801); before it 8.0.0, [bralynnb/tsfm#800](https://github.com/bralynnb/tsfm/pull/800), 7.9.9, [bralynnb/tsfm#799](https://github.com/bralynnb/tsfm/pull/799), and 7.9.8, [bralynnb/tsfm#798](https://github.com/bralynnb/tsfm/pull/798)); ask before each update there. The artifact link is where THE MARKET is played. What follows is the old way, for the record.

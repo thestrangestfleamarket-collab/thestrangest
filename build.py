@@ -316,9 +316,8 @@ mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);",open('src/clo
 mod=rp(mod,"if(wOn)WATER.step(renderer,dt); renderer.shadowMap.needsUpdate=true;","ROOMS.tick(); STORE.tick(); BF.tick(dt); if(wOn)WATER.step(renderer,dt); WATER.tickAll(renderer,dt,pos); renderer.shadowMap.needsUpdate=true;")   # (STORE: the storeroom's roofs and bound, map-post.js)
 mod=rp(mod,"  UI.goTick(); UI.runTick();","  UI.goTick(); UI.runTick(); CLOCK.tick(dt); VIT.tick(dt);")   # (VIT: your health and stamina, src/vitals.js)
 # THE OLD GAME'S FINAL TOUCH (src/oldlook.js): one pass after the picture's colours, its night and glow set each frame
-mod=rp(mod,"CLOCK.tick(dt); VIT.tick(dt);","CLOCK.tick(dt); VIT.tick(dt); LOOK.tick(); LENS.tick(dt);")
-mod=rp(mod,"W3.shadowPass(renderer); if(OUTL.on)OUTL.render(renderer,scene,cam); composer.render();","W3.shadowPass(renderer); if(OUTL.on)OUTL.render(renderer,scene,cam); LENS.draw(); composer.render();")   # (the lens: each pixel's amount, before the picture: src/oldlook.js)
-mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);",open('src/oldlook.js').read()+"\nLOOK.sp=new ShaderPass(LOOK.shader); composer.addPass(LOOK.sp); LOOK.sp.uniforms.uNight=LOOK.night; LOOK.sp.uniforms.uGlowK=LOOK.glowK; setTimeout(()=>LENS.init(),0);\nresize(); applyTime(0); requestAnimationFrame(frame);")   # (VIT: your health and stamina, src/vitals.js)
+mod=rp(mod,"CLOCK.tick(dt); VIT.tick(dt);","CLOCK.tick(dt); VIT.tick(dt); LOOK.tick();")
+mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);",open('src/oldlook.js').read()+"\nLOOK.sp=new ShaderPass(LOOK.shader); composer.addPass(LOOK.sp); LOOK.sp.uniforms.uNight=LOOK.night; LOOK.sp.uniforms.uGlowK=LOOK.glowK;\nresize(); applyTime(0); requestAnimationFrame(frame);")   # (VIT: your health and stamina, src/vitals.js)
 # (the keys' turn and tilt: not in the isometric view, where Q and E go a quarter round: ui.js)
 mod=rp(mod,"  if(keys.has('q'))yawTo+=dt*1.8; if(keys.has('e'))yawTo-=dt*1.8; if(keys.has('z'))pitchTo=clampP(pitchTo-dt*1.2); if(keys.has('x'))pitchTo=clampP(pitchTo+dt*1.2);","  if(UI.view!=='iso'){ if(keys.has('q'))yawTo+=dt*1.8; if(keys.has('e'))yawTo-=dt*1.8; if(keys.has('z'))pitchTo=UI.clampV(pitchTo-dt*1.2); if(keys.has('x'))pitchTo=UI.clampV(pitchTo+dt*1.2); }")
 head=rp(head,'<b>V</b> wave','<b>B</b> wave · <b>V</b> change the view')

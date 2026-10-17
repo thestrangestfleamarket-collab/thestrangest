@@ -36,7 +36,12 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
 8. **At rest, at rest, like a 2D game** ("when something stops it doesnt keep moving slightly and gradually. lets have things rest in place more
    when they stop so not as much stuff is going on"): water goes flat and stops when nothing moves in it; floats and boats stop; he stands still
    the moment he stops; nothing creeps toward a target forever. Only the deliberate stays: characters' idle moves, a flame's flicker.
-9. **Every new thing says its cost** (triangles, lights, milliseconds a frame) and fits the budget; if it can't, say so before adding it.
+9. **The old game's look** (owner, 17 Oct 2026, "look at the actual old game code and see how it was done", "go all"; its recipe with its
+   numbers: `docs/OLD-LOOK.md`): the world's faces their fixed shades by facing (top as it is, x0.62 / x0.8 by side), light multiplied in and cut to
+   24 steps (`map-pre.js`); dark nights lit by the lamps; one final pass (`src/oldlook.js`): the night eye, the deep navy, and a glow in 8 hard
+   steps (the one glow allowed, the owner's word). The pool clear turquoise, lit from inside. **No blur** (tried, then "remove all the blur work
+   for now": not to come back unless he asks).
+10. **Every new thing says its cost** (triangles, lights, milliseconds a frame) and fits the budget; if it can't, say so before adding it.
 
 ## What the owner has decided so far (keep these)
 

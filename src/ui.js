@@ -23,7 +23,7 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
     if(e.target&&/^(TEXTAREA|INPUT|SELECT)$/.test(e.target.tagName))return null;   // (typing in a box isn't walking)
     if(raw==='e'&&e.shiftKey&&!ED.on&&!UI.menuOpen){ if(e.type==='keydown'&&!e.repeat)WE.toggle(); return null; }   // (Shift+E: edit the world, src/worldedit.js)
     // (isometric: Q / E / R turn it a quarter, before any key of his own choosing: owner 17 Oct 2026, Q / E were changing the view instead)
-    if(UI.view==='iso'&&!ED.on&&(raw==='q'||raw==='e'||raw==='r')){ if(e.type==='keydown'&&!e.repeat)yawTo+=raw==='q'?Math.PI/2:-Math.PI/2; return null; }
+    if(UI.view==='iso'&&!ED.on&&(raw==='q'||raw==='e'||raw==='r')){ if(e.type==='keydown'&&!e.repeat){ yawTo+=raw==='q'?Math.PI/2:-Math.PI/2; yaw=yawTo; } return null; }   /* (straight to the next angle, no turning: owner, 17 Oct 2026, "q/e should automatically show up at the next angle (jump to) not rotate") */
     if(UI.menuOpen)return null;
     if(ED.on){ const a=REV[raw]; return ['q','e','z','x','0','=','-'].includes(a)?a:null; }   // (shaping him: only the view's keys)
     const act=REV[raw]; if(act!==undefined){ if(e.type==='keydown'&&!e.repeat){ if(act==='c')setFree(!UI.freeCam); if(act==='g')setFly(!UI.fly); if(act==='view'){ const V=['iso','follow','first'];   /* (owner, 17 Oct 2026: isometric first, behind second, first person third; map and third person in DISPLAY) */ UI.setView(V[(V.indexOf(UI.view)+1)%V.length]); } if(act==='rot')UI.turn4(); } return act==='view'||act==='rot'?null:act; }

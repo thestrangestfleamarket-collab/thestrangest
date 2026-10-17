@@ -21,8 +21,8 @@ this repo is `bralynnbell/thestrangest`.
   "realism" filters or looks** (owner, 16 Oct 2026: "lets stop the textures and shaders packs", "delete all of them"; "no shaders or textures").
 - **Pixels grow with the zoom** (his pick): a tile is always the same number of pixels; zooming makes them bigger by whole screen pixels.
   `=` makes the art finer, up to one screen pixel each (`-` coarser).
-  **Never sharper zoomed out** (17 Oct 2026: "never sharper than this resolution"): zooming out, a pixel keeps its size on screen from the
-  opening zoom (for the sharpness chosen) and takes in more of the world; only `=` makes the picture finer.
+  **Never sharper zoomed out** (17 Oct 2026: "never sharper than this resolution"): zooming out, a pixel stops shrinking one step sharper
+  than the opening zoom's ("1 sharper resolution than that"; for the sharpness chosen) and takes in more of the world; only `=` makes the picture finer.
 - **Free rotation and tilt, any zoom**; shadows (the SHADOWS menu: on, shaded, self, full).
 - **The 3D Walker** (the game's rig, his pieces as one mesh, one hand a piece, no fingers unless close up), his moves, ragdoll, physics.
 - **His characters from his models** (Meshy AI .glb): the goldfish in his raincoat and the bear in his jacket. Cut to a few thousand

@@ -374,6 +374,8 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
 
 - **Street lights and lamp posts** (owner, 17 Oct 2026: "lets add a street light and lamp posts where they would go"; `dress.js`): the kit's tall street lights at both kerbs, staggered, about every 30 m, the arm over the road, a lit lamp under each head; cast-iron lamp posts (a post and a lantern) along the park's side of the far sidewalk, a pair at the gate, every 14 m; each a warm light (LITE's 8 nearest), solid at its foot. Cost: some 2,000 triangles, no new shadow lights.
 
+- **Every room a button** (owner, 17 Oct 2026: "make sure every room and location on map has a button to jump there"; the menu's MAP, `ui.js`): PLACES, then ROOMS (the shop and the back room, the gym, the hallway, the lobby, the office, the dojo, each floor of the apartment house: its only way up now, the top of the subway stairs), then STORED; a jump puts the view back on him.
+
 ## THE MARKET: the one official map
 
 **THE MARKET** (owner, 17 Oct 2026: "one official MARKET map im gona start filling in") is the game's map here: every place the owner adds goes

@@ -221,13 +221,24 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
     const im=mg.createImageData(W,H); for(let y=0;y<H;y++){ const o=y*W*4, q=(H-1-y)*W*4; for(let i=0;i<W*4;i+=4){ im.data[o+i]=GAM[px[q+i]]; im.data[o+i+1]=GAM[px[q+i+1]]; im.data[o+i+2]=GAM[px[q+i+2]]; im.data[o+i+3]=255; } } mg.putImageData(im,0,0);
     const sx=x=>(x-R.x0)/(R.x1-R.x0)*W, sz=z=>(z-R.z0)/(R.z1-R.z0)*H; if((LVL)===mapLv){ mg.fillStyle='#f2c14e'; mg.fillRect(Math.round(sx(pos.x))-3,Math.round(sz(pos.z))-3,7,7); mg.fillStyle='#000'; mg.fillRect(Math.round(sx(pos.x))-1,Math.round(sz(pos.z))-1,3,3); } }
   STORE.goTo=(x,z,lv)=>goTo(x,z,lv);   // (a test's reach)
-  const goTo=(x,z,lv)=>{ pos.set(x,0,z); target=null; py=typeof lv==='number'?lv:lv==='down'?(MODS.dungeon&&MODS.dungeon.inside(x,z)?MODS.dungeon.ground(x,z):MODS.station.ground(x,z)):0;   /* (a number: a stacked floor's height) */ if(UI.freeCam)UI.camT.set(x,py+.9,z); if(UI.menuOpen)toggleMenu(); };
+  const goTo=(x,z,lv)=>{ pos.set(x,0,z); target=null; py=typeof lv==='number'?lv:lv==='down'?(MODS.dungeon&&MODS.dungeon.inside(x,z)?MODS.dungeon.ground(x,z):MODS.station.ground(x,z)):0;   /* (a number: a stacked floor's height) */ if(UI.freeCam)UI.camT.set(x,py+.9,z); else UI.off.set(0,0,0); if(UI.menuOpen)toggleMenu(); };   /* (the view back on him where he lands) */
   mcv.addEventListener('click',e=>{ const r=mcv.getBoundingClientRect(), R=mapRect(mapLv); goTo(R.x0+(e.clientX-r.left)/r.width*(R.x1-R.x0),R.z0+(e.clientY-r.top)/r.height*(R.z1-R.z0),mapLv); });
   M.querySelectorAll('[data-lv]').forEach(b=>b.onclick=()=>{ mapLv=b.dataset.lv; drawMap(); });
   const PLACES=[['THE STREET',-2.2,3.2,'up'],['THE BODEGA',0,-3.4,'up'],['THE APARTMENTS',POOLR.X(22.75),POOLR.Z(12),'up'],['THE POOL',POOLR.X(10),POOLR.Z(8.9),'up'],['THE PLATFORM',-12.4,-24.9,'down'],['CENTRAL PARK',BOD.XS(96),BOD.ZS(-54),'up'],['GHOST STREET',BOD.X(BOD.GD.door[0]),BOD.Z(BOD.GD.door[1]+4.5),'up'],['THE CASTLE',BOD.XS(CASTLE.gate),BOD.ZS(CASTLE.b[2]-3),'up'],['THE DUNGEON',BOD.XS((CASTLE.hall.x0+CASTLE.hall.x1)/2),BOD.ZS((CASTLE.hall.y0+CASTLE.hall.y1)/2),'down']];
   const goPlace=n=>{ if(STORE.ensure)STORE.ensure(); const P=PLACES.concat(STORE.places).find(p=>p[0]===n); if(P)goTo(P[1],P[2],P[3]); };   // (a stacked room is finished first if it isn't yet: store.js)
   { const q=QS.get('place'); const go=()=>window.__started?goPlace(q.toUpperCase()):setTimeout(go,200); if(q)setTimeout(go,300); }   /* (once the game runs: the page breathes while it loads) */   // (?place=central park: a test's start)
   for(const [n,x,z,lv] of PLACES){ const b=document.createElement('button'); b.className='btn'; b.textContent=n; b.onclick=()=>goTo(x,z,lv); $('#places').appendChild(b); }
+  // EVERY ROOM A BUTTON (owner, 17 Oct 2026: "make sure every room and location on map has a button to jump there"): the bodega's two rooms, the
+  // apartment building's (POOLR.ROOMS: the gym, the hallway, the lobby, the office; the pool hall is THE POOL above), every floor of the apartment
+  // house (no stairs in it now: this is the way up), the dojo, the top of the subway stairs; each into its middle, on its floor
+  { const h=document.createElement('h3'); h.textContent='ROOMS'; $('#places').parentNode.appendChild(h); const row=document.createElement('div'); row.className='row'; row.id='roomsrow'; $('#places').parentNode.appendChild(row);
+    const add=(n,x,z,lv)=>{ const b=document.createElement('button'); b.className='btn'; b.textContent=n; b.onclick=()=>goTo(x,z,lv); row.appendChild(b); PLACES.push([n,x,z,lv]); };
+    const mid=(X,Z,r)=>[(X(r[0])+X(r[2]))/2,(Z(r[1])+Z(r[3]))/2], B=BOD.B0;
+    add('THE SHOP',...mid(BOD.X,BOD.Z,[B.x0,BOD.BODOFF,B.x1,B.y1]),'up'); add('THE BACK ROOM',...mid(BOD.X,BOD.Z,[B.x0,B.y0,B.x1,BOD.BODOFF]),'up');
+    const R=POOLR.ROOMS||[]; [['THE GYM',0],['THE HALLWAY',3],['THE LOBBY',5],['THE OFFICE',6]].forEach(([n,i])=>R[i]&&add(n,...mid(POOLR.X,POOLR.Z,R[i]),'up'));
+    if(BOD.GD)add('THE DOJO',...mid(BOD.X,BOD.Z,BOD.GD.r),'up');
+    if(MODS.apts){ const A=MODS.apts.A, H=MODS.apts.H; for(let f=0;f<5;f++)add('APARTMENT HOUSE '+(f?'FLOOR '+(f+1):'GROUND'),BOD.X((A.x0+A.x1)/2),BOD.Z((H.y0+H.y1)/2),f?MODS.apts.SY*f:'up'); }
+    add('THE SUBWAY STAIRS',BOD.XS((MAPSTAIR.x0+MAPSTAIR.x1)/2),BOD.ZS(MAPSTAIR.y1+1.2),'up'); }
   // THE STOREROOM (owner, 17 Oct 2026: the game's rooms brought back, "dont add them to the map yet"): off the map, each a place to go and look
   { const h=document.createElement('h3'); h.textContent='STORED (OFF THE MAP)'; $('#places').parentNode.appendChild(h); const row=document.createElement('div'); row.className='row'; row.id='stored'; $('#places').parentNode.appendChild(row);
     for(const [n] of STORE.places){ const b=document.createElement('button'); b.className='btn'; b.textContent=n; b.onclick=()=>goPlace(n); row.appendChild(b); } }

@@ -51,7 +51,8 @@ grab('stairs',()=>{ const S=MAPSTAIR, X=x=>(x-72)*TILE, Z=y=>(y+77)*TILE, Y=z=>z
 // (two stairs down: the subway's from the sidewalk, descending toward the street's back (dir -1); the castle's from its bailey (dir 1): castle.js)
 const STAIRS=[MAPSTAIR,CASTLE.stair], inStair=(x,z)=>{ const gx=x/TILE+72, gy=z/TILE-77; for(const S of STAIRS)if(gx>=S.x0&&gx<S.x1&&gy>=S.y0&&gy<S.y1)return {S,gy}; return null; };
 groundY=(x,z)=>{ const s=inStair(x,z); if(s){ const S=s.S, t=S.dir>0?s.gy-S.y0:S.y1-s.gy, k=Math.min(S.steps,Math.max(1,Math.floor(t/((S.y1-S.y0)/S.steps))+1)); return -k*S.depth/S.steps*ZU; }
-  { const st=LVL==='up'&&STORE.stackGround?STORE.stackGround(x,z):null; if(st!=null)return st; }   // (a floor stacked on the apartments: store.js)
+  { const st=LVL==='up'&&STORE.stackGround?STORE.stackGround(x,z):null; if(st!=null)return st; }
+  { const sg=LVL==='up'&&STORE.shrineGround?STORE.shrineGround(x,z):null; if(sg!=null)return sg; }   // (the Moon Shrine's plaza, steps and terrace: store.js)   // (a floor stacked on the apartments: store.js)
   return LVL==='down'?(MODS.dungeon&&MODS.dungeon.inside(x,z)?MODS.dungeon.ground(x,z):MODS.station.ground(x,z)):MODS.apts&&MODS.apts.inside(x,z)?MODS.apts.ground(x,z):MODS.bodega.ground(x,z); };   // (in the apartment house: its floor under you, its stairs: apts.js)
 BOUND={x0:Math.min(MODS.bodega.BOUND.x0,MODS.station.BOUND.x0),x1:Math.max(MODS.bodega.BOUND.x1,MODS.pool.BOUND.x1),z0:Math.min(MODS.station.BOUND.z0,MODS.pool.BOUND.z0),z1:Math.max(MODS.bodega.BOUND.z1,MODS.park.BOUND.z1)};   // (the park past the far sidewalk: park.js)
 // the light of the open air at night over the street, the station's own underground

@@ -49,7 +49,7 @@
             if(G.cool<=0&&off<.35){ G.cool=1.5+Math.random()*.6; const S=d<JAB.reach*TILE?JAB:STUN;
               an.play(S===JAB?'Punch_Jab':'Spell_Simple_Shoot',{at:[S.at,()=>{ if(S===STUN)shoot(N,t,BEAM,S.dmg); else if(d2(t.st,st)<R*1.5)t.knock(N,S.dmg); }]}); } }
           return; }
-        if(G.mode==='fight'){ G.mode='report'; st.to=null; st.face=null; an.play('Idle_Talking_Loop',{then:()=>{ G.mode='patrol'; st.hold=false; st.wait=.5; N.alert=false; }}); return; }
+        if(G.mode==='fight'){ G.mode='report'; st.to=null; st.face=null; if(typeof LINES!=='undefined')LINES.say(N,'report'); an.play('Idle_Talking_Loop',{then:()=>{ G.mode='patrol'; st.hold=false; st.wait=.5; N.alert=false; }}); return; }
         if(G.mode==='report')return;
         // on his beat: at an end, on guard, looking one way and the other
         N.alert=!st.to; if(st.to)st.h0=null; else{ if(st.h0==null)st.h0=st.h; const a=st.h0+Math.sin(G.look*.7)*1.1; st.face={x:st.x+Math.sin(a),z:st.z+Math.cos(a)}; } },

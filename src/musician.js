@@ -3,9 +3,9 @@
 // from the game: 47-play-3-guitar-1-body, -samples.data, -2-tunes, -3-hands): the classical guitar at its real size with its real recorded
 // notes, the book of tunes (the Romance fingerpicked, four songs strummed, in turn), his hands solved every frame onto each note (each finger to
 // its fret, the thumb on the bass, the strums; solid against the wood and each other; arms and fingers with weight). Here he's a second Walker
-// with his fingers, in 3D (the player's own body: musBody, below), lit by the lamps, on the stored bar's stage at his mark (STORE.bar.gtr),
-// facing the room; louder as you come near, from his side, with the bar's echo. A double click on him: the camera comes close on his hands
-// (C to go back). He takes his turn on the stage with the others (src/bandstand.js) ----
+// with his fingers, in 3D (the player's own body: musBody, below), lit by the lamps, in the apartment house's top-floor front living room (AT, below),
+// facing the room; louder as you come near, from his side, with the room's echo. A double click on him: the camera comes close on his hands
+// (C to go back). He plays all the time up there (the bar's three take turns on its stage without him: src/bandstand.js) ----
 const MUS={}; STORE.MUS=MUS;   // (a test's reach)
 // THE PLAYER'S OWN BODY, FOR A MUSICIAN (owner, 17 Oct 2026: "reset all npcs to same exact avatar as main player", his pick: the people): the
 // pieces walker3d.js made the player of (W3.pcs: his shell, his nose, the eyes and the hair he wears, his soles; no brows, mouth or beard), in
@@ -48,7 +48,9 @@ function musBox(P){ const [cx,cy,cz,hx,hy,hz]=P.box, F=P.F0, g=new THREE.BoxGeom
   const o=new THREE.BufferGeometry(); o.setAttribute('position',new THREE.BufferAttribute(pos,3)); o.setAttribute('normal',new THREE.BufferAttribute(nor,3)); o.setAttribute('c1',new THREE.BufferAttribute(c1,3)); o.setAttribute('mat',new THREE.BufferAttribute(new Float32Array(n).fill(mi),1)); return o; }
 // his size, the player's (W3.SZ, a fifth bigger; his build's height, W3.BH), from his feet
 const musScale=(g,bh)=>g.scale.set(W3.SZ/PPU,ZU*W3.SZ*(bh||W3.BH||1),W3.SZ/PPU);   // (bh: a body's own height, the singer's)
-{ const R=RIG, V=R.V, S=STORE.bar, AT={x:BOD.X(S.gtr.x),z:BOD.Z(S.gtr.y),hd:0,y:BOD.Y(S.stage.z)};
+// WHERE HE PLAYS (owner, 17 Oct 2026: "move the musician into an apartment top floor"; before, the stored bar's stage, STORE.bar.gtr): the
+// apartment house's top floor, in the front living room (the one with the fire escape over the street), the middle of the room, facing its door
+{ const R=RIG, V=R.V, AP=MODS.apts, AA=AP.A, AT={x:BOD.X((AA.x0+AA.x1)/2),z:BOD.Z(AA.y1-1.5),hd:0,y:AP.SY*4}; MUS.floor=4;
   // his pieces: the player's (musBody, the shapes shared with the others: share), and the guitar in its own frame
   const PCS=musBody().PCS;
   PCS.push(Object.assign({},GT.PIECE,{d:GT.SOLID,F0:{o:V(0,0,0),x:V(1,0,0),y:V(0,1,0),z:V(0,0,1)},step:.25,cell:.25}));   // (the guitar's hull whole: the game's hollow one, thin plates and bracing, breaks up as a mesh)
@@ -86,7 +88,7 @@ const musScale=(g,bh)=>g.scale.set(W3.SZ/PPU,ZU*W3.SZ*(bh||W3.BH||1),W3.SZ/PPU);
     gtTones(t,d); };
   // ITS SOUND (the game's gtSound, here): the notes in the next tenth of a second, each at its time; as loud as he is near, from his side
   function gtTones(t,d){ if(!SND.ctx||SND.ctx.state!=='running')return; if(!gtAudio())return; const c=SND.ctx, ct=c.currentTime, A=t+0.1, when=x=>ct+Math.max(0,x-t)+0.03;
-    if(GTA.wet)GTA.wet.gain.value=.2;   // (in the bar: the room's echo, the game's own share)
+    if(GTA.wet)GTA.wet.gain.value=.08;   // (a small room's echo; the bar's was .2)
     GTA.g.gain.setTargetAtTime(0.5*Math.max(0,1-d/16),ct,0.05);
     const v=new THREE.Vector3(AT.x,1,AT.z).project(cam); GTA.pan.pan.setTargetAtTime(Math.max(-0.8,Math.min(0.8,v.x*0.8)),ct,0.1);
     while(GTS.sent<GTEV.length&&GTEV[GTS.sent].t<=A){ const e=GTEV[GTS.sent++]; if(e.t<t-0.05)continue; if(e.n)gtPlay(e.n.s,e.n.at,when(e.t),e.n.amp,e.n.tone,e.n.r); else gtMute(e.s,when(e.t),0.04); } }
@@ -103,8 +105,8 @@ const musScale=(g,bh)=>g.scale.set(W3.SZ/PPU,ZU*W3.SZ*(bh||W3.BH||1),W3.SZ/PPU);
   const SHB=document.createElement('div'); SHB.id='shbar'; SHB.hidden=true; SHB.style.cssText='position:fixed;left:50%;bottom:52px;transform:translateX(-50%);z-index:6;display:none;gap:10px;align-items:center;padding:8px 12px;background:#0b0d13e0;border:2px solid #2a3040;font:11px Silkscreen,monospace;letter-spacing:1px;color:#c9ccd6';
   SHB.innerHTML='<span>SHARPEN</span><input type="range" min="0" step="1" style="width:220px"><span class="v" style="width:52px;text-align:right"></span><span style="color:#8a8f9c">C BACK</span>'; document.body.appendChild(SHB);
   const shIn=SHB.querySelector('input'), shV=SHB.querySelector('.v'); shIn.max=RESL.length-1;
-  MUS.sharp=()=>{ let v=null; try{ v=localStorage.getItem('market-gtsharp'); }catch(e){} return v!=null?+v:Math.min(RESL.length-1,RESMAX+2); };
+  MUS.sharp=()=>{ let v=null; try{ v=SAVE.get('gtsharp'); }catch(e){} return v!=null?+v:Math.min(RESL.length-1,RESMAX+2); };
   SHB.show=()=>{ shIn.value=RESI; shV.textContent=RES()+'x'; SHB.hidden=false; SHB.style.display='flex'; };
-  shIn.oninput=()=>{ RESI=+shIn.value; resize(); shV.textContent=RES()+'x'; try{ localStorage.setItem('market-gtsharp',String(RESI)); }catch(e){} };
+  shIn.oninput=()=>{ RESI=+shIn.value; resize(); shV.textContent=RES()+'x'; try{ SAVE.set('gtsharp',String(RESI)); }catch(e){} };
   shIn.addEventListener('pointerdown',e=>e.stopPropagation()); shIn.addEventListener('keydown',e=>e.stopPropagation());   // (close, and sharp: the sharpness up as far as the screen shows, as the game's close-up drew him finer; back as it was when you leave)
 }

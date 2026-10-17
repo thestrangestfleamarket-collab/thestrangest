@@ -2,8 +2,9 @@
 // gives the street. The sun goes round as it does over New York in mid-October (up a little after seven, highest past noon at about 42°,
 // down a little after six), one light from it with its shadows; the sky's colour, the open air's light and the moon's follow how high (or
 // how far under) the sun is: day, the gold of a low sun, sunset, the blue hour, night. Underground none of it reaches. The menu's TIME:
-// the hour (a slider), STOPPED or RUNNING, and how fast a day goes; N jumps between noon and seven in the evening. The game opens at 7pm ----
-const CLOCK={h:19,run:false,speed:1440/600,sunV:new THREE.Vector3(0,1,0),moonV:new THREE.Vector3(0,1,0)};   // (speed: game minutes a real second; a day in ten minutes)
+// the hour (a slider), STOPPED or RUNNING, and how fast a day goes; N jumps between noon and seven in the evening. The game opens at noon
+// (owner, 17 Oct 2026: "day always starts at noon"; before that 7pm) ----
+const CLOCK={h:12,run:false,speed:1440/600,sunV:new THREE.Vector3(0,1,0),moonV:new THREE.Vector3(0,1,0)};   // (speed: game minutes a real second; a day in ten minutes; sunV, moonV: where they really are, for the sky dome, sky.js)
 { const D=Math.PI/180, sunL=new THREE.DirectionalLight(0xffffff,0), R=22*TILE;
   sunL.castShadow=true; sunL.shadow.mapSize.set(2048,2048); Object.assign(sunL.shadow.camera,{left:-R,right:R,top:R,bottom:-R,near:.5,far:120*TILE}); sunL.shadow.camera.updateProjectionMatrix();
   sunL.shadow.bias=-.0005; sunL.shadow.normalBias=.04; scene.add(sunL,sunL.target);
@@ -22,8 +23,8 @@ const CLOCK={h:19,run:false,speed:1440/600,sunV:new THREE.Vector3(0,1,0),moonV:n
   // source of light during day besides others on map)": the day's sky blue, deepest overhead at noon; 1 keeps a weak fill of the sky's own blue
   // light in the shade, 2 the sun alone by day (the shade lit only by lamps and what the sun bounces); the clouds below)
   const SKYV=QS.get('sky')!=null?+QS.get('sky'):2;   // (the blue sky and the sun alone by day: the default since 17 Oct 2026, "go"; ?sky=0 the old dim day, ?sky=1 with a little sky fill)
-  if(SKYV){ const F=SKYV===2?.06:.3, G=SKYV===2?.05:.28, at=(e,v)=>{ K[K.findIndex(k=>k[0]===e)]=v; };
-    at(6,[6,0x9fb8d8,0xf0c8a0,0x4a3a2a,F,0xffb070,1.9]); at(10,[10,0x86aadc,0xf0d4b0,0x54442e,F,0xffd4a0,2.6]); at(14,[14,0x6a9fe0,0xbfdcff,0x5b4a35,G,0xfff1d6,3.1]); at(90,[90,0x4f8ee0,0xbfdcff,0x5b4a35,G,0xfff1d6,3.4]); }
+  if(SKYV){ const F=SKYV===2?.16:.3, G=SKYV===2?.15:.28, at=(e,v)=>{ K[K.findIndex(k=>k[0]===e)]=v; };
+    at(6,[6,0x9fb8d8,0xf0c8a0,0x4a3a2a,F,0xffb070,1.9]); at(10,[10,0x86aadc,0xf0d4b0,0x54442e,F,0xffd4a0,2.6]); at(14,[14,0x6a9fe0,0xbfdcff,0x5b4a35,G,0xfff1d6,3.1]); at(90,[90,0x4f8ee0,0xbfdcff,0x5b4a35,G,0xfff1d6,3.4]); }   // (the shade's sky fill .15 since 17 Oct 2026, "fix": at .05 the backs of the buildings were black boxes by day; the sun still the light)
   const ca=new THREE.Color(), cb=new THREE.Color(), mixC=(a,b,t,out)=>out.copy(ca.setHex(a)).lerp(cb.setHex(b),t);
   let last={h:-1,x:0,z:0,lv:''};
   CLOCK.tick=dt=>{ if(CLOCK.run)CLOCK.h=(CLOCK.h+dt*CLOCK.speed/60)%24;
@@ -41,6 +42,7 @@ const CLOCK={h:19,run:false,speed:1440/600,sunV:new THREE.Vector3(0,1,0),moonV:n
     // its shadows: every frame while it's strong enough to show them moving; faint (the moon), only when the hour or where you are changes much
     const strong=sunL.intensity>.3; sunL.shadow.autoUpdate=strong&&(CLOCK.fr=(CLOCK.fr||0)+1)%2===0;   // (every other frame: half the cost, a frame's lag unseen)
     if(!strong&&(Math.abs(last.h-CLOCK.h)>.05||Math.hypot(last.x-pos.x,last.z-pos.z)>4*TILE||last.lv!==LVL)){ sunL.shadow.needsUpdate=true; last={h:CLOCK.h,x:pos.x,z:pos.z,lv:LVL}; }
+    if(typeof WATER!=='undefined')WATER.glowK=(typeof ROOMS!=='undefined'&&ROOMS.cur)||!up?1:Math.max(0,Math.min(1,(3-e)/8));   // (the water's own glow: the pond glowed green at noon)
     if(UI.menuOpen)CLOCK.draw&&CLOCK.draw(); };
   CLOCK.set=h=>{ CLOCK.h=((h%24)+24)%24; };
   CLOCK.dark=()=>elev(CLOCK.h)<-2;

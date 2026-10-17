@@ -9,7 +9,7 @@
 const PARK={x0:50,x1:108,y0:-61,y1:-2,gate:[92.5,99.5],round:[96,-47,7]};   // (bodega tiles, x0 and x1 the street's run, set below; the gate's run along the wall; the round's middle and reach; y1: deep enough for the castle in its back-left corner, castle.js)
 PARK.sway={value:0}; PARK.windK={value:1}; /* (windK: the wind's strength on the crowns, weather.js) */ PARK.tick=()=>{ PARK.sway.value=performance.now()/1000; };   // (the oaks' sway: their crowns' clock)
 // (moved and its edges moved on the map's layout, LAY: everything here in the park's own tiles, X and Z carrying the move: PARK.ox, oy; its edges' moves e: west, front (the wall), east, back)
-grab('park',()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.ox=PO.x; PARK.oy=PO.y; PARK.x0=BOD.MAP.x0+PE[0]; PARK.x1=BOD.MAP.x1+PE[2]; PARK.y0+=PE[1]; PARK.y1+=PE[3]; const X=x=>BOD.XS(x+PO.x), Z=y=>BOD.ZS(y+PO.y), Y=BOD.YS, {hash,grain,speck,grassCol}=BOD.g, P=PARK, U=TILE/.84, f32=s=>new Float32Array(Uint8Array.from(atob(s),c=>c.charCodeAt(0)).buffer), b8=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+grab('park',()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.ox=PO.x; PARK.oy=PO.y; PARK.x0=BOD.MAP.x0+PE[0]; PARK.x1=AVE.x0+PE[2];   /* (the park's east edge the Avenue's west side, not the street's end: map-pre.js) */ PARK.y0+=PE[1]; PARK.y1+=PE[3]; const X=x=>BOD.XS(x+PO.x), Z=y=>BOD.ZS(y+PO.y), Y=BOD.YS, {hash,grain,speck,grassCol}=BOD.g, P=PARK, U=TILE/.84, f32=s=>new Float32Array(Uint8Array.from(atob(s),c=>c.charCodeAt(0)).buffer), b8=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
   // ---- THE PATH: from the gate to the round, the round, and on north-east; the rest lawn
   // (owner, 17 Oct 2026: "wider path"; then "make the path go straight through ... the circle in the middle of the park ... two paths going through
   // the entire park meeting in the middle"): two straight ways 7.2 tiles wide, one from the gate to the back, one from end to end, crossing at
@@ -34,6 +34,11 @@ grab('park',()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.ox=PO.x; PARK.o
   const WH=32, PH=54, [g0,g1]=P.gate;
   block(P.x0,P.y0,g0-1,P.y0+.5,0,WH,11); block(g1+1,P.y0,P.x1,P.y0+.5,0,WH,15);
   for(const [x,k] of [[g0-1,21],[g1,25]]){ block(x,P.y0-.2,x+1,P.y0+.7,0,PH,k); block(x-.1,P.y0-.3,x+1.1,P.y0+.8,PH,PH+5,k+4); }   // (each post, its cap)
+  // THE EAST WALL (owner, 17 Oct 2026, the Avenue): the same wall up the park's east side along the Avenue's west sidewalk, its gate (the Avenue's
+  // gate, two posts) opposite the museum; the park's back stays open lawn
+  const EG=PARK.egate=[-34,-31], ex=P.x1-.5;
+  block(ex,P.y0+.5,P.x1,EG[0]-1,0,WH,31); block(ex,EG[1]+1,P.x1,P.y1,0,WH,35);
+  for(const [y,k] of [[EG[0]-1,41],[EG[1],45]]){ block(ex-.2,y,P.x1+.2,y+1,0,PH,k); block(ex-.3,y-.1,P.x1+.3,y+1.1,PH,PH+5,k+4); }
   // ---- THE ROCKS: his pack's models, each at its place, its height in metres, turned as it likes; one mesh
   const F=Object.assign({},FOREST,PROPS), mesh=(list,leafy,solid=true,sway=false)=>{ const P3=[], C3=[], SW=[], c=new THREE.Color(); for(const [key,x,y,m,turn,lift] of list){ const p0=P3.length, ph=hash(Math.round(x*7),Math.round(y*7),131)*6.28; const D=F[key], p=f32(D.p), col=b8(D.c), k=b8(D.k), s=m/.84*TILE, ca=Math.cos(turn||0), sa=Math.sin(turn||0), ox=X(x), oz=Z(y), oy=(lift||0)/.84*TILE;
       for(let i=0;i<p.length;i+=3){ const px=p[i]*s, py=p[i+1]*s+oy, pz=p[i+2]*s; P3.push(ox+px*ca-pz*sa,py,oz+px*sa+pz*ca); if(sway)SW.push(Math.max(0,p[i+1])*s,ph); const t=Math.floor(i/9), sh=k[t]===0?.86+.28*hash(t,x*7,y*3):k[t]===2?.9+.2*hash(t,x*5,y*9):.92+.16*hash(t,x*3,y*5);
@@ -52,7 +57,7 @@ grab('park',()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.ox=PO.x; PARK.o
   // park, not blocking views or paths"; his go on the plan): sixteen of the pack's three oaks, 6 to 11 m, each crown its true width and kept clear
   // of the ways, the round, the shrine's garden, the stalls, the campfire and the pillars, a tile and a half apart at least (placed once by that
   // rule: tools-free, the list below)
-  const TREES=[["OakTree3", 108.9, -31.3, 6.2], ["OakTree2", 81.0, -29.9, 10.9], ["OakTree2", 64.3, -54.8, 8.7], ["OakTree1", 128.2, -35.7, 6.4], ["OakTree2", 57.8, -36.9, 10.5], ["OakTree2", 137.8, -29.9, 10.2], ["OakTree2", 113.1, -39.1, 10.2], ["OakTree2", 127.6, -56.5, 8.3], ["OakTree1", 140.9, -38.6, 5.8], ["OakTree2", 82.8, -55.1, 10.8], ["OakTree2", 56.3, -54.8, 8.2], ["OakTree2", 115.6, -55.7, 8.9], ["OakTree2", 74.3, -54.9, 8.6], ["OakTree3", 136.3, -56.0, 6.3], ["OakTree1", 87.0, -36.5, 5.7], ["OakTree2", 121.9, -29.0, 8.3]].map((t,i)=>[t[0],t[1],t[2],t[3],hash(i,5,77)*6.28]); PARK.trees=mesh(TREES,true,true,true);
+  const TREES=[["OakTree3", 108.9, -31.3, 6.2], ["OakTree2", 81.0, -29.9, 10.9], ["OakTree2", 64.3, -54.8, 8.7], ["OakTree1", 128.2, -35.7, 6.4], ["OakTree2", 57.8, -36.9, 10.5], ["OakTree2", 137.8, -29.9, 10.2], ["OakTree2", 113.1, -39.1, 10.2], ["OakTree2", 127.6, -56.5, 8.3], ["OakTree1", 140.9, -38.6, 5.8], ["OakTree2", 82.8, -55.1, 10.8], ["OakTree2", 56.3, -54.8, 8.2], ["OakTree2", 115.6, -55.7, 8.9], ["OakTree2", 74.3, -54.9, 8.6], ["OakTree3", 136.3, -56.0, 6.3], ["OakTree1", 87.0, -36.5, 5.7], ["OakTree2", 121.9, -29.0, 8.3]].map((t,i)=>[t[0],t[1],t[2],t[3],hash(i,5,77)*6.28]); PARK.trees=mesh(TREES,true,true,true); if(QS.get("trees")==="0")PARK.trees.visible=false;   // (?trees=0: a test's clear view of the map, owner 17 Oct 2026, "hide all trees on map so you dont get blocked on screenshots")
   PARK.oaks=TREES.map(([k,x,y,m])=>[X(x),Z(y),m]);   // (where the oaks stand, world units: their falling leaves, lookfx.js)
   PARK.rocks=mesh([['BigRock3',87.5,-37,2.6,1.8],['BigRock5',126,-41,2.4,.2],['Rock_12',55.5,-41,1,1],['Rock1',111,-41,.6,2],['BigRock1',66,-35,2,1.1]],false);
   // ---- THE UNDERGROWTH (owner, 17 Oct 2026, "start importing google drive assets based on most recent": his Free Shrubs Flowers and Mushrooms
@@ -95,5 +100,6 @@ grab('park',()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.ox=PO.x; PARK.o
   // where you can't walk: the wall each side of the gate, the posts
   const sol=(x0,y0,x1,y1,h)=>{ SOL.up.push([X(x0),Z(y0),X(x1),Z(y1)]); FIX.up.push([X(x0),Z(y0),0,X(x1),Z(y1),Y(h)]); };
   sol(P.x0,P.y0,g0-1,P.y0+.5,WH); sol(g1+1,P.y0,P.x1,P.y0+.5,WH); sol(g0-1,P.y0-.2,g0,P.y0+.7,PH); sol(g1,P.y0-.2,g1+1,P.y0+.7,PH);
+  sol(ex,P.y0+.5,P.x1,EG[0]-1,WH); sol(ex,EG[1]+1,P.x1,P.y1,WH); sol(ex-.2,EG[0]-1,P.x1+.2,EG[0],PH); sol(ex-.2,EG[1],P.x1+.2,EG[1]+1,PH);   // (the east wall and its gate's posts)
   BATCH.build((k,map,emap)=>new THREE.MeshLambertMaterial({map,emissiveMap:emap||null,emissive:emap?new THREE.Color(1,1,1):new THREE.Color(0,0,0),alphaTest:.5,side:THREE.DoubleSide}));
   MODS.park={BOUND:{x0:X(P.x0+.3),x1:X(P.x1-.3),z0:Z(P.y0),z1:Z(P.y1-.3)},inside:()=>false}; });

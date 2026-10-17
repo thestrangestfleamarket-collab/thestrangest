@@ -16,6 +16,40 @@ mushrooms) had been standing on his tile. If he meant the mushroom seller should
 tray, strap and bag parts.
 
 Not merged into `main` yet: this branch. Not done: nothing else was in progress.
+# Handoff from session claude/fervent-babbage-uj6s3z (17 Oct 2026, evening)
+
+Everything this session made is committed and pushed on branch **`claude/fervent-babbage-uj6s3z`** (nothing uncommitted, nothing local-only).
+The branch holds, on top of `main`: its own work (below), plus merges of `claude/vibrant-pasteur-lpq1xi` (the sound work: SAVE, SFX, ambience,
+lines, the sound editor) and `claude/keen-meitner-37e6es` (THE MARKET in order, mockup 1, the Avenue). Its build is live at
+https://claude.ai/artifact/PnmQqhkusfewby35tf4zo5 (version 10). `main` itself has not moved: merge this branch into `main` first, so the
+other sessions stop stacking on the old HANDOFF commit and overwriting each other's publishes (three sessions republished the same link within an hour).
+
+## Done this session (each in CLAUDE.md with its reasons)
+- The day opens at noon (`clock.js`).
+- Where you left off is kept and restored (`where.js`; `?fresh=1` forgets it).
+- The guitarist plays in the apartment house's top-floor front living room; the bar's stage rotates the other three (`musician.js`, `bandstand.js`).
+- Nobody out of the camera's view is drawn; near ones still live and think (`NPCS.tick` / `NPCS.cull`, `npc-map.js`).
+- Interiors drawn only within 5 tiles of a door or inside; the 3 tiles by the door always (`interiors.js`; `?interiors=0`).
+- `?trees=0` hides the oaks for screenshots.
+- The tour's fixes: sky fill in the shade by day, the apartment house lit and its inner walls cut by your side, the dungeon brighter,
+  the water's glow by the dark, the stored rooms' spots inside their doors.
+- Debug handles on `window.__dbg` for tests: renderer, scene, THREE, camera, MAPG, LITE, lamps, INTERIORS, CLOCK, WHERE, ROOMS.
+
+## Measured, not fixed (the next job, in this order)
+1. The Walker is 56,700 triangles, drawn in every pass (shadow, self-shadow, the picture): every unworn hairstyle and eye style is folded
+   into his mesh. Build him from the worn pieces only; rebuild on a looks change. The biggest single win.
+2. The nearest lamp's 1024 cube shadow redraws the scene six times a frame.
+3. The apartment house is 600 to 700 draw calls inside (a mesh per wall segment): batch its walls.
+The street draws about 450,000 triangles in view and 900,000 a frame with the passes, against the 100,000 budget. Numbers from the
+tour scripts in this session's scratchpad (not in the repo): a Playwright page with `?fresh=1&npcwait=99&hour=13&trees=0`,
+`renderer.info.autoReset=false`, reset, wait, divide by frames.
+
+## Loose ends
+- CLAUDE.md names two artifact links as official (X2Bk8UjQKP8yfLdLtVVn3s and PnmQqhkusfewby35tf4zo5); pick one.
+- CLAUDE.md's "No trees" note is stale: the oaks are back in `park.js`.
+- The page's DOWNLOAD links and the world editor's DESCRIBE A CHANGE need the `downloads` and `sample` capabilities declared on publish.
+- The dojo doorway and the apartment house's door frames stay in front of you when their walls cut away (the frames are batched, not cut).
+- The yields scanner (`tools/yields.py`) stops the build on an unbalanced bracket: a `//` comment put mid-line swallows the rest of the line.
 
 # Handoff (17 Oct 2026)
 
@@ -33,6 +67,17 @@ This note says what was in progress and where it is.
 - The skeletons' weapons are back in their hands.
 - Shift+R has been removed.
 - The artifact link above belongs to the first account. The other account can't update it unless it's shared with edit access from its Share menu; otherwise that account publishes its own link.
+
+## The map put in order (17 Oct 2026, "mockup 1", branch `claude/keen-meitner-37e6es`)
+- Done: the row reordered (CLAUDE.md's "THE MARKET IN ORDER"), the four stacked rooms down on the ground, the keep in the bailey, the street run
+  east, the alley, the crosswalks, the garden's fence, the Avenue's ground, its park wall and gate, its lamp posts, the seven shells of the old
+  game's buildings along its east side, the menu's THE GARDEN and THE AVENUE.
+- Next, in order: (1) a quarter turn for a place as it's set out (every old-game interior is built facing the main street; the Avenue's face west),
+  then each shell's inside from the old game's own files through build.py as the Diner and the Bar were (the market lounge's four files, the museum's
+  six, the arcade and the theatre's, the two awnings', 221B's); (2) Cherry Station's stairs at the Avenue's north end, its station joined to the West
+  End's under the main street; (3) a window on the street for the aquarium and the museum's portico; (4) characters on the Avenue (the npc-lives
+  plan: numbers until near); (5) the cross street at the west end.
+- The map editor's boxes don't know the new places yet (the garden, the aquarium, the Avenue's row): they can't be dragged there.
 
 ## Paused, unfinished (branches on GitHub; each says in its last commit what's done)
 | Branch | What | State |

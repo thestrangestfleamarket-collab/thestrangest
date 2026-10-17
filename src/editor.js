@@ -63,8 +63,8 @@ const ED={on:false};
   function unpack(o){ if(!o||o.v!==1)return false; W3.E=PCS.map(()=>null); for(const n in o.E||{}){ const i=NAMES.indexOf(n); if(i>=0)W3.E[i]=o.E[n]; }
     PA.array.set(BASE); sculpted=false; if(o.d&&o.n===NV){ const s=atob(o.d), u=new Uint8Array(s.length); for(let i=0;i<s.length;i++)u[i]=s.charCodeAt(i); const f=new Float32Array(u.buffer); for(let i=0;i<NV*3;i++)PA.array[i]=BASE[i]+f[i]; sculpted=true; }
     normals(); if(!sculpted){ NA.array.set(NBASE); NA.needsUpdate=true; } return true; }
-  const save=()=>{ try{ localStorage.setItem('market-walker',JSON.stringify(pack2())); }catch(e){} };
-  try{ unpack(JSON.parse(localStorage.getItem('market-walker')||'null')); }catch(e){}
+  const save=()=>{ try{ SAVE.set('walker',JSON.stringify(pack2())); }catch(e){} };
+  try{ unpack(JSON.parse(SAVE.get('walker')||'null')); }catch(e){}
   // ---- THE PANEL
   const css=document.createElement('style'); css.textContent=`
   #ed{position:fixed;left:calc(12px + env(safe-area-inset-left,0px));top:12px;bottom:12px;width:300px;overflow:auto;background:var(--bg);border:2px solid var(--line);font:12px var(--pixel);color:var(--fg);z-index:20}
@@ -124,10 +124,10 @@ const ED={on:false};
     male:{torso:e3([1.12,1,1.06]),neck:e3([1.12,1,1.12]),hips:e3([0.95,1,0.98]),...two('sleeve',e3([1.12,1,1.12])),...two('upperArm',e3([1.12,1,1.12])),...two('forearm',e3([1.08,1,1.08])),...two('hand',e3([1.08,1.04,1.08])),...two('thigh',e3([1.02,1,1.02]))},
     female:{torso:e3([0.86,0.98,1.08]),neck:e3([0.84,1.04,0.84]),head:e3([0.95,0.97,0.95]),beard:e3([0.2,0.2,0.2],[0,1.5,-1.2]),hair:e3([1.1,1.75,1.16],[0,-5.5,-0.6]),hips:e3([1.18,1.04,1.1]),
       ...two('sleeve',e3([0.84,0.97,0.84])),...two('upperArm',e3([0.84,0.97,0.84])),...two('forearm',e3([0.84,1,0.84])),...two('hand',e3([0.84,0.9,0.84])),...two('thigh',e3([1.12,1,1.12])),...two('shin',e3([0.92,1,0.92])),...two('shoe',e3([0.85,0.92,0.85]))}};
-  let body='current'; try{ body=localStorage.getItem('market-body')||'current'; }catch(e){}
+  let body='current'; try{ body=SAVE.get('body')||'current'; }catch(e){}
   const drawBody=()=>P.querySelectorAll('[data-body]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.body===body)));
   P.querySelectorAll('[data-body]').forEach(b=>b.onclick=()=>{ snap(); body=b.dataset.body; W3.E=PCS.map(()=>null); const B0=BODIES[body]; for(const n in B0){ const i=NAMES.indexOf(n); if(i>=0)W3.E[i]=JSON.parse(JSON.stringify(B0[n])); }
-    try{ localStorage.setItem('market-body',body); }catch(e){} save(); draw(); drawBody(); });
+    try{ SAVE.set('body',body); }catch(e){} save(); draw(); drawBody(); });
   drawBody();
   $('#eundo').onclick=undo; $('#eall').onclick=()=>{ snap(); W3.E=PCS.map(()=>null); PA.array.set(BASE); NA.array.set(NBASE); PA.needsUpdate=NA.needsUpdate=true; sculpted=false; save(); draw(); };
   $('#edown').onclick=()=>{ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([JSON.stringify(pack2())],{type:'application/json'})); a.download='walker-shape.json'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1000); };
@@ -160,7 +160,7 @@ const ED={on:false};
   // ---- IN AND OUT
   let V0=null;
   // the goldfish and the bear: he walks up and waves (the first things a double click does something with)
-  for(const N of NPCS)UI.thing({name:N.name,obj:N.g,reach:1.3,tall:N.H||1.8,act:()=>{ if(!st.move)RIG.act(st,'V'); setTimeout(()=>RIG.release(st,'V'),900); }});
+  for(const N of NPCS)UI.thing({name:N.name,npc:N,obj:N.g,reach:1.3,tall:N.H||1.8,act:()=>{ if(!st.move)RIG.act(st,'V'); setTimeout(()=>RIG.release(st,'V'),900); }});
   ED.enter=()=>{ if(UI.menuOpen)UI.toggleMenu(); if(UI.freeCam)UI.setFree(false); if(UI.fly)UI.setFly(false); target=null; ED.on=true; V0={yaw:yawTo,pitch:pitchTo,ppu:ppuTo,off:UI.off.clone()}; UI.off.set(0,0,0); pitchTo=clampP(0.22); ppuTo=Math.min(240,PPU*3.2); P.hidden=false; draw(); };
   ED.exit=()=>{ if(ED.onExit)ED.onExit(); ED.on=false; P.hidden=true; sel.visible=false; ring.hidden=true; drag=null; if(V0){ yawTo=V0.yaw; pitchTo=V0.pitch; ppuTo=V0.ppu; UI.off.copy(V0.off); } save(); };
   // each frame while open: the selected piece's picture where he is, his light as a lamp's, his new normals once a frame while brushing

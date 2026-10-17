@@ -131,11 +131,18 @@ ROAM.pick=(st,free)=>{ const L=ROAM.L; for(let k=0;k<12;k++){ let to;
     if((st.z<ROAM.wallZ)!==(to.z<ROAM.wallZ)){ st.next=to; st.to={x:ROAM.gate[0]+Math.random()*(ROAM.gate[1]-ROAM.gate[0]),z:ROAM.wallZ}; } else{ st.to=to; st.next=null; } return true; } return false; };
 // (the goldfish in his raincoat: deleted, owner 17 Oct 2026, "delete the fish raincoat character"; STLANE and stfree stay for the street's walkers)
 const BEAR=makeNPC(BEARD,{key:'bear',name:'BEAR',names:BEARD.names,metres:1.9,rank:[0,0,0,0,2,3,0,1,0],at:-67,radius:.45,speed:.7,stride:5.5,rock:.05,bob:.035});
-// ONLY WHAT'S NEAR OR SEEN (owner, 17 Oct 2026, the budget: "far characters neither drawn nor moved"): a character more than 25 tiles from you
-// and out of the picture, or on a level not shown, is neither moved nor drawn (nor his own shadow made: shadowPass) till he's near or seen again;
-// a troublemaker's mind always runs (it brings him up the subway stairs after dark)
-{ const FR=new THREE.Frustum(), M4=new THREE.Matrix4(), SP=new THREE.Sphere();
+// ONLY WHAT'S NEAR OR SEEN (owner, 17 Oct 2026, the budget: "far characters neither drawn nor moved"; and "dont render anyone not visible (they
+// still exist just dont show them until you must)"): a character out of the picture is not drawn, whoever he is, but he still lives: near you
+// (25 tiles) he is moved and thinks as before; farther than that and out of the picture, or on a level not shown, he is neither moved nor drawn
+// (nor his own shadow made: shadowPass) till he's near or seen again; a troublemaker's mind always runs (it brings him up the subway stairs
+// after dark). The hiding is done only round the picture's drawing (NPCS.cull, the loop), so what each one's own mind, rooms.js or the stage
+// does with his visibility is never overwritten. The bar's musicians and the guitarist join the cull through NPCS.extra (their g and at)
+{ const FR=new THREE.Frustum(), M4=new THREE.Matrix4(), SP=new THREE.Sphere(), V=new THREE.Vector3(); NPCS.extra=[];
   NPCS.tick=(dt,you)=>{ M4.multiplyMatrices(cam.projectionMatrix,cam.matrixWorldInverse); FR.setFromProjectionMatrix(M4); const R=25*TILE;
-    for(const N of NPCS){ const p=N.g.position, far=!('mode' in N)&&!N.sheet&&(!N.g.parent.visible||Math.hypot(p.x-you.x,p.z-you.z)>R&&!FR.intersectsSphere(SP.set(p,2*TILE)));
-      if(far!==!!N.far){ N.far=far; if(far){ N.fv=N.g.visible; N.g.visible=false; } else N.g.visible=N.fv; }
-      if(!far)N.tick(dt,you); } }; }
+    for(const N of NPCS){ const p=N.g.position, seen=FR.intersectsSphere(SP.set(p,Math.max(2*TILE,N.cullR||0))), far=!('mode' in N)&&!N.sheet&&(!N.g.parent.visible||Math.hypot(p.x-you.x,p.z-you.z)>R&&!seen);
+      N.far=far; N.hid=!N.sheet&&(far||!seen);
+      if(!far)N.tick(dt,you); }
+    for(const X of NPCS.extra){ const a=X.at; X.hid=!!a&&!FR.intersectsSphere(SP.set(V.set(a.x,(a.y||0)+1,a.z),2*TILE)); } };
+  // round the picture: on, the hidden ones put out of sight; off, each back as he was
+  NPCS.cull=on=>{ const one=(o,g)=>{ if(on){ if(o.hid&&g.visible){ g.visible=false; o._cv=true; } } else if(o._cv){ g.visible=true; o._cv=false; } };
+    for(const N of NPCS)one(N,N.g); for(const X of NPCS.extra)if(X.g)one(X,X.g); }; }

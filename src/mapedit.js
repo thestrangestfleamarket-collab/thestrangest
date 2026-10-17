@@ -93,7 +93,7 @@ const MAPED={on:false};
   P.querySelectorAll('[data-v]').forEach(b=>b.onclick=()=>VIEW[b.dataset.v]());
   P.querySelectorAll('[data-n]').forEach(b=>b.onclick=ev=>{ const [x,y]=b.dataset.n.split(',').map(Number), m=ev.shiftKey?1:G; nudge(x*m,y*m); });
   q('#meR').onclick=()=>{ delete WORK[sel]; changed(); }; q('#meRA').onclick=()=>{ WORK={}; changed(); };
-  q('#meA').onclick=()=>{ try{ localStorage.setItem('market-layout',JSON.stringify(clean(WORK))); }catch(e){} location.reload(); };
+  q('#meA').onclick=()=>{ try{ SAVE.set('layout',JSON.stringify(clean(WORK))); }catch(e){} location.reload(); };
   q('#meE').onclick=()=>{ const t=q('#meT'); t.value='LAYOUT '+JSON.stringify(clean(WORK)); t.style.display='block'; t.select(); try{ navigator.clipboard.writeText(t.value); }catch(e){} };
   // ---- dragging: a place moves by whole grid steps from where the drag began; an edge of the park or the land the same
   const moveBy=(k,s,dx,dz)=>{ const o=ent(k); o.x=q4(s.x+dx); o.y=q4(s.y+dz); };

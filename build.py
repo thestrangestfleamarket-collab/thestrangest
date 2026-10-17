@@ -101,6 +101,7 @@ mod=rp(mod,"  RW=Math.ceil(pw/PXS/2)*2; RH=Math.ceil(ph/PXS/2)*2;","  const S=px
 mod=rp(mod,"const c=renderer.domElement, cw=RW*PXS/dpr, ch=RH*PXS/dpr;","const c=renderer.domElement, cw=RW*S/dpr, ch=RH*S/dpr;")
 mod=rp(mod,"let ppu=PPU;                                    // the zoom: screen pixels per world unit (the wheel)\nfunction frustum(){ cam.left=-RW/2/ppu; cam.right=RW/2/ppu; cam.top=RH/2/ppu; cam.bottom=-RH/2/ppu; cam.updateProjectionMatrix(); }",
 """let ppu=PPU, SCL=1, RESI=2;                     // the zoom (the wheel); SCL: screen pixels to a picture pixel now; RESI: the art's fineness (- and =)
+const FULLRES=+(new URLSearchParams(location.search).get('fullres')||0); if(FULLRES)RESI=FULLRES;   // (?fullres=N: a test's screenshots at the screen's own pixels, the art's fineness N of RESL (owner, 17 Oct 2026: "show in full res in screenshots"); never in play)
 // SHARPER AT WILL (owner, 16 Oct 2026: "allow the game to go more res if i press = more times, however sharp res it can go"): the art's own
 // pixels a world unit, the game's times RES (- coarser, = finer, as far as one screen pixel each: the sharpest the screen can show); the
 // zoom then makes them bigger by whole screen pixels, so the zoom goes in steps
@@ -114,7 +115,7 @@ const RESL=[.5,.75,1,1.5,2,3,4,6,8,12,16], RES=()=>RESL[RESI], V0=PPU*PXS;   // 
 const MINPX=()=>Math.max(1,Math.round(PXS/RES())), MAXPX=8, ZMAX=PPU*80;
 // NEVER FINER THAN THE OPENING (owner, 17 Oct 2026, his picture: "dont let the game get any higher res than this at any time, at any zoom level"): the
 // art's pixels never finer than the opening's (RESMAX: = stops there), and zoomed in they only grow (no finer art close up any more)
-const RESMAX=2, vpu=()=>V0*ppu/PPU, art=()=>PPU*RES(), pxS=()=>Math.max(MINPX(),Math.round(vpu()/art())), rppu=()=>Math.round(vpu()/art())<MINPX()?vpu()/pxS():art();
+const RESMAX=FULLRES?10:2, vpu=()=>V0*ppu/PPU, art=()=>PPU*RES(), pxS=()=>Math.max(MINPX(),Math.round(vpu()/art())), rppu=()=>Math.round(vpu()/art())<MINPX()?vpu()/pxS():art();
 function frustum(){ const u=rppu(); cam.left=-RW/2/u; cam.right=RW/2/u; cam.top=RH/2/u; cam.bottom=-RH/2/u; cam.updateProjectionMatrix(); }""")
 mod=rp(mod,"ppu*=Math.pow(ppuTo/ppu,ease); frustum();","ppu*=Math.pow(ppuTo/ppu,ease); if(pxS()!==SCL)resize(); else frustum();")
 mod=rp(mod,"zoom ${(ppu/PPU).toFixed(2)}×`","zoom ${(SCL*rppu()/V0).toFixed(2)}× · art ${SCL===1&&vpu()<art()?'full':RES()+'×'}`")

@@ -1,3 +1,22 @@
+# Handoff (17 Oct 2026, evening: the far, the roaming, the sky; paused to carry on in another chat)
+
+Branch `claude/awesome-noether-mba5hh` (pushed, everything committed) carries, on top of `main`:
+- **The far** (`src/skyline.js`): a sky-tinted haze from where he stands (not the camera) and a ring of silhouette buildings round the land's edge;
+  GRAPHICS' DISTANCE HAZE; `tests/farshot.cjs`. The owner asked for it from a Zelda screenshot ("make things look realistically far away").
+- **Everyone roams the whole map, nobody minds you** (`ROAM` in `npc-map.js`): the gold skeleton, the mushroom seller and the twelve pawns wander
+  the street and all of Central Park (through the gate); makeNPC's `near` (turning to you, waiting for you) is gone; guards, droids, the Fox, the
+  bear and the animals as they were. The gold skeleton starts on the far sidewalk (he carried nothing; the seller stood over him at start).
+- **Merged in from `origin/claude/relaxed-gauss-xerecq`** (the owner's other session): `src/sky.js`, a painted sky dome (sunset phases, sun and moon
+  discs, stars), the clock's evening stops, the clouds' lit undersides; the haze now takes the dome's horizon colour.
+- Built and published: https://claude.ai/artifact/PnmQqhkusfewby35tf4zo5 (version 13). The X2Bk link can't be opened from this account.
+
+**Open question for the owner** (asked, not answered): he said "the gold skeleton should not have anything on them like mushrooms etc. just the
+skeleton". The gold one never carried anything (his sheet: `node tests/sheet.cjs Gold`); the mushroom seller (white, 2.2 m, the hat and tray of
+mushrooms) had been standing on his tile. If he meant the mushroom seller should be a bare skeleton too, strip `npc-mushroom.js`'s hat mushrooms,
+tray, strap and bag parts.
+
+Not merged into `main` yet: this branch. Not done: nothing else was in progress.
+
 # Handoff (17 Oct 2026)
 
 The owner paused all work here to carry on from his other account. Read `CLAUDE.md` first: it holds every decision he has made.

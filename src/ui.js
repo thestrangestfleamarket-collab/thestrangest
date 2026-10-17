@@ -49,7 +49,7 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
     return o.isMesh&&!(o.material&&o.material.visible===false)&&!(o.material&&o.material.transparent&&o.material.opacity<.05); };
   UI.grab=e=>{ if(ED.on&&ED.pickW){ const p=ED.pickW(e); if(p){ piv.copy(p); return; } }   // (shaping him: the point of him you grab)
     ray.setFromCamera(ndc(e),cam); const h=ray.intersectObjects(scene.children,true).find(h=>shown(h.object)); if(h)piv.copy(h.point); else ray.ray.closestPointToPoint(disp,piv); };
-  UI.orbit=(dx,dy)=>{ if(UI.view==='iso'){ isoAcc+=dx; if(Math.abs(isoAcc)>70){ yawTo-=Math.sign(isoAcc)*Math.PI/2; isoAcc=0; } return; }   // (iso: a quarter round at a time)
+  UI.orbit=(dx,dy)=>{ if(UI.view==='iso'){ isoAcc+=dx; if(Math.abs(isoAcc)>70){ yawTo-=Math.sign(isoAcc)*Math.PI/4; isoAcc=0; } return; }   // (iso: an eighth round at a time, owner 17 Oct 2026: "lock the view into 8 angles when in isometric view")
     if(UI.persp){ yawTo-=dx*.006; pitchTo=UI.clampV(pitchTo+dy*.005); yaw=yawTo; pitch=pitchTo; return; }   // (the near views: turn about him, or look about)
     q0.setFromEuler(UI.eul.set(-pitch,yaw,0,'YXZ')); yawTo-=dx*0.008; pitchTo=clampP(pitchTo+dy*0.006); yaw=yawTo; pitch=pitchTo; q1.setFromEuler(UI.eul.set(-pitch,yaw,0,'YXZ'));
     tv.subVectors(disp,piv); const t0=tv.clone(); tv.applyQuaternion(q0.invert()).applyQuaternion(q1); viewV().add(tv.sub(t0)); disp.add(tv);
@@ -73,11 +73,11 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
   const HEAD=1.5/.84*TILE, EYE=1.62/.84*TILE, LOW=.9/.84*TILE;   // (his head's height, his eyes', three feet)
   UI.clampV=v=>UI.view==='first'?Math.max(-1.2,Math.min(1.3,v)):UI.view==='third'||UI.view==='follow'?Math.max(-.35,Math.min(1.4,v)):clampP(v);
   UI.setView=v=>{ UI.view=v; UI.persp=v==='third'||v==='first'||v==='follow'; if(UI.freeCam&&UI.persp)setFree(false);
-    if(v==='iso'){ yawTo=Math.round((yawTo-Math.PI/4)/(Math.PI/2))*(Math.PI/2)+Math.PI/4; pitchTo=Math.PI/6; }
+    if(v==='iso'){ yawTo=Math.round(yawTo/(Math.PI/4))*(Math.PI/4); pitchTo=Math.PI/6; }
     if(v==='first')pitchTo=.05; if(v==='third'||v==='follow')pitchTo=.3; if(!UI.persp)pitchTo=clampP(pitchTo); try{ localStorage.setItem('market-view',v); }catch(e){} };
   // BEHIND HIM (owner, 17 Oct 2026: "a view that locks on behind, 3rd person view, and autorotates with player"): the third person's camera, turned
   // with him each frame so it stays at his back; R (any view but these two) turns the view a quarter round, onto the four isometric angles
-  UI.turn4=()=>{ if(UI.view==='first'||UI.view==='follow')return; yawTo=Math.round((yawTo-Math.PI/4)/(Math.PI/2))*(Math.PI/2)+Math.PI/4-Math.PI/2; };
+  UI.turn4=()=>{ if(UI.view==='first'||UI.view==='follow')return; if(UI.view==='iso'){ yawTo=Math.round(yawTo/(Math.PI/4))*(Math.PI/4)-Math.PI/4; return; } yawTo=Math.round((yawTo-Math.PI/4)/(Math.PI/2))*(Math.PI/2)+Math.PI/4-Math.PI/2; };
   UI.view3=a=>{ if(UI.view==='follow'&&!RAG.on){ const t=heading+Math.PI; yawTo=yaw+((((t-yaw)%(2*Math.PI))+3*Math.PI)%(2*Math.PI))-Math.PI; }
     cam=UI.persp?PCAM:OCAM; if(RPASS)RPASS.camera=cam; if(UI.persp&&Math.abs(PCAM.aspect-RW/RH)>1e-3){ PCAM.aspect=RW/RH; PCAM.updateProjectionMatrix(); } };
   UI.view3b=a=>{ W3.group.visible=UI.view!=='first'; if(!UI.persp)return; const sk=W3.SZ||1;
@@ -85,7 +85,7 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
     const T=new THREE.Vector3(pos.x,py+HEAD*sk,pos.z), F=new THREE.Vector3(Math.sin(a)*Math.cos(pitch),Math.sin(pitch),Math.cos(a)*Math.cos(pitch));
     cam.position.copy(T).addScaledVector(F,UI.dist); const g=groundY(cam.position.x,cam.position.z)+LOW; if(cam.position.y<g)cam.position.y=g;   // (never under three feet)
     cam.lookAt(T); cam.updateMatrixWorld(); };
-  addEventListener('keydown',e=>{ if(UI.view!=='iso'||e.repeat||UI.menuOpen||/INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName||''))return; const k=e.key.toLowerCase(); if(k==='q')yawTo+=Math.PI/2; if(k==='e')yawTo-=Math.PI/2; });
+  addEventListener('keydown',e=>{ if(UI.view!=='iso'||e.repeat||UI.menuOpen||/INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName||''))return; const k=e.key.toLowerCase(); if(k==='q')yawTo+=Math.PI/4; if(k==='e')yawTo-=Math.PI/4; });
   { let v='map'; try{ v=localStorage.getItem('market-view')||'map'; }catch(e){} UI.setView(v); }
   UI.home=()=>{ UI.off.set(0,0,0); zAt=null; if(UI.freeCam)setFree(false); };
   cv.addEventListener('pointerdown',e=>{ if(e.button!==0||ED.on)return; if(WE.down(e)){ cv.setPointerCapture(e.pointerId); return; } L={x:e.clientX,y:e.clientY,x0:e.clientX,y0:e.clientY,moved:false}; UI.grab(e); cv.setPointerCapture(e.pointerId); });

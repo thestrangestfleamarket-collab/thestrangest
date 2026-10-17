@@ -109,7 +109,12 @@ function makeNPC(D,o){ const N={key:o.key,name:o.name,names:o.names,lv:o.lv||'do
     renderer.setRenderTarget(N.sm); renderer.clear(); renderer.render(g,N.smCam); renderer.setRenderTarget(null); for(const [o,m] of ms)o.material=m; };
   if(!o.noSelf){ const s0=W3.shadowPass; W3.shadowPass=r=>{ s0(r); N.shadowPass(r); }; }   // (noSelf: no shadow of his own on him: small and many, the dragons)
   N.g=g; N.st=st; N.body=body; N.H=H; NPCS.push(N); return N; }
-const FISH=makeNPC(GOLDFISH,{key:'fish',name:'GOLDFISH',names:['eyes','eye rims','head','hood','lips','chin','raincoat','fins and tail'],metres:.95,rank:[0,0,0,2,0,0,2,0],at:-77,radius:.42,speed:.55,stride:9,rock:.14,bob:.05});
+// THE GOLDFISH ON THE STREET (owner, 17 Oct 2026: "bring in the raincoat fish"): up from the platform, walking the whole street as the others do
+const STLANE={x0:BOD.XS(BOD.MAP.x0+2),x1:BOD.XS(BOD.MAP.x1-2),z0:BOD.ZS(-76.3),z1:BOD.ZS(-61.2)}, STHOLE=[BOD.XS(MAPSTAIR.x0-.6),BOD.ZS(MAPSTAIR.y0),BOD.XS(MAPSTAIR.x1+.6),BOD.ZS(MAPSTAIR.y1+.6)],
+  stfree=(x,z,R)=>!(x>STHOLE[0]-R&&x<STHOLE[2]+R&&z>STHOLE[1]-R&&z<STHOLE[3]+R)&&!SOL.up.some(b=>x>b[0]-R&&x<b[2]+R&&z>b[1]-R&&z<b[3]+R);
+const FISH=makeNPC(GOLDFISH,{key:'fish',name:'GOLDFISH',names:['eyes','eye rims','head','hood','lips','chin','raincoat','fins and tail'],metres:.95,rank:[0,0,0,2,0,0,2,0],radius:.42,speed:.55,stride:9,rock:.14,bob:.05,
+  lv:'up',group:'bodega',x:BOD.XS(64),z:BOD.ZS(-73),lane:STLANE,free:stfree,ground:(x,z)=>MODS.bodega.ground(x,z)});
+window.FISHDBG=()=>({key:FISH.key,x:+FISH.st.x.toFixed(2),z:+FISH.st.z.toFixed(2),y:+FISH.g.position.y.toFixed(2),to:!!FISH.st.to,vis:FISH.g.visible});   // (a test's look)
 const BEAR=makeNPC(BEARD,{key:'bear',name:'BEAR',names:BEARD.names,metres:1.9,rank:[0,0,0,0,2,3,0,1,0],at:-67,radius:.45,speed:.7,stride:5.5,rock:.05,bob:.035});
 // ONLY WHAT'S NEAR OR SEEN (owner, 17 Oct 2026, the budget: "far characters neither drawn nor moved"): a character more than 25 tiles from you
 // and out of the picture, or on a level not shown, is neither moved nor drawn (nor his own shadow made: shadowPass) till he's near or seen again;

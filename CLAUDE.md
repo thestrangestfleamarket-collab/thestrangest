@@ -328,8 +328,11 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
   whole street. The sheet keys now also: coatbear, coat1-coat6, rack, toadbag, flybot.
 - **The flying van** (owner, 17 Oct 2026, his picture: a boxy cream-and-teal robot van hovering over a street on two rotor discs, camera eyes,
   an orange nose and a smile, a sign of orange lettering, blue doors, a shuttered window, four ball wheels under it; "same rules", "not the
-  man"; `src/npc-flybot.js`): measured from the picture, one flat colour an area, only the details that matter; the rotor discs its own
-  meshes spun each frame, and it hovers 1.5 m over the street, bobbing, keeping the street as the walkers do. Some 2,400 triangles.
+  man"; then "yours is too square, face doesnt match, 1:1 remember same rules everytime"; `src/npc-flybot.js`): measured from the picture's
+  face (the eye rims a quarter of the face across and standing proud, the nose high between them, the slot on the brow, the smile's curve,
+  the sign, doors and shutter at their places), the body lofted from rounded rectangles with its top and bottom edges rounded (`rr`, `loft`);
+  one flat colour an area, only the details that matter; the rotor discs its own meshes spun each frame, and it hovers 1.5 m over the street,
+  bobbing, keeping the street as the walkers do. Some 3,000 triangles.
 
 ## THE MARKET: the one official map
 

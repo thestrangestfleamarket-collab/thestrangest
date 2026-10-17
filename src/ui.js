@@ -34,14 +34,17 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
   UI.setFly=setFly; UI.setFree=setFree;
   UI.camStep=(dt,a,up,dn,lf,rt)=>{ if(!UI.freeCam||UI.menuOpen)return; const fx=-Math.sin(a), fz=-Math.cos(a), s=dt*9*PPU/Math.max(4,ppu);   // (as fast across the screen at any zoom)
     let mx=0,mz=0; if(up){mx+=fx;mz+=fz;} if(dn){mx-=fx;mz-=fz;} if(rt){mx+=-fz;mz+=fx;} if(lf){mx-=-fz;mz-=fx;} const n=Math.hypot(mx,mz)||1;
-    UI.camT.x+=mx/n*s; UI.camT.z+=mz/n*s; UI.camT.y+=((keys.has(' ')?1:0)-(keys.has('shift')?1:0))*s*.7;
-    UI.camT.x=Math.max(BOUND.x0,Math.min(BOUND.x1,UI.camT.x)); UI.camT.z=Math.max(BOUND.z0,Math.min(BOUND.z1,UI.camT.z)); UI.camT.y=Math.max(-6,Math.min(12,UI.camT.y)); };
+    UI.camT.x+=mx/n*s; UI.camT.z+=mz/n*s; UI.camT.y+=((keys.has(' ')?1:0)-(keys.has('shift')&&!L?1:0))*s*.7;   // (Shift sinks it, but not while it's held to slide the view)
+    UI.camT.x=Math.max(BOUND.x0,Math.min(BOUND.x1,UI.camT.x)); UI.camT.z=Math.max(BOUND.z0,Math.min(BOUND.z1,UI.camT.z)); UI.camT.y=Math.max(-12,Math.min(30,UI.camT.y)); };
   UI.flyStep=dt=>{ py+=((keys.has(' ')?1:0)-(keys.has('shift')?1:0))*dt*4; py=Math.max(-5,Math.min(10,py)); pos.x=Math.max(BOUND.x0,Math.min(BOUND.x1,pos.x)); pos.z=Math.max(BOUND.z0,Math.min(BOUND.z1,pos.z)); };
   // ---- TURNING ROUND HIM with any button's drag; a left click that didn't drag walks him there (on his own level); a double click: the view back
   const cv=renderer.domElement; let L=null;
   cv.addEventListener('pointerdown',e=>{ if(e.button!==0||ED.on)return; if(WE.down(e)){ cv.setPointerCapture(e.pointerId); return; } L={x:e.clientX,y:e.clientY,x0:e.clientX,y0:e.clientY,moved:false}; cv.setPointerCapture(e.pointerId); });
   cv.addEventListener('pointermove',e=>{ if(WE.dragging){ WE.move(e); return; } if(!L)return; if(!L.moved&&Math.hypot(e.clientX-L.x0,e.clientY-L.y0)>5)L.moved=true;
-    if(L.moved){ yawTo-=(e.clientX-L.x)*0.008; pitchTo=clampP(pitchTo+(e.clientY-L.y)*0.006); } L.x=e.clientX; L.y=e.clientY; });
+    // (Shift + drag: the view slides across the screen instead, up, down and sideways; the free camera takes over from where it is)
+    if(L.moved&&e.shiftKey){ if(!UI.freeCam)setFree(true); const r=cv.getBoundingClientRect(), k=(cam.right-cam.left)/r.width, R0=new THREE.Vector3().setFromMatrixColumn(cam.matrixWorld,0), U0=new THREE.Vector3().setFromMatrixColumn(cam.matrixWorld,1);
+      UI.camT.addScaledVector(R0,-(e.clientX-L.x)*k).addScaledVector(U0,(e.clientY-L.y)*k); }
+    else if(L.moved){ yawTo-=(e.clientX-L.x)*0.008; pitchTo=clampP(pitchTo+(e.clientY-L.y)*0.006); } L.x=e.clientX; L.y=e.clientY; });
   cv.addEventListener('pointerup',()=>{ WE.up(); L=null; });
   // ---- DOUBLE CLICK (owner, 17 Oct 2026: "take off click to walk. double click to walk. double click on anything to interact with it"):
   // on the ground he walks there; on a thing he walks up to it, turns to it and does what it's for (the THINGS list: a thing joins it with its

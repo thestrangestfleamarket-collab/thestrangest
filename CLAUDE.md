@@ -24,7 +24,7 @@ this repo is `bralynnbell/thestrangest`.
   **Never sharper zoomed out** (17 Oct 2026, again with his picture: "no matter how far you zoom out"): zooming out, a pixel stops shrinking at
   the opening zoom's size (for the sharpness chosen) and takes in more of the world; only `=` makes the picture finer. **All the way in**: the
   zoom to 80 times, and past 8 screen pixels a pixel the art gets finer (each finger close up).
-- **Free rotation and tilt, any zoom**; shadows (the SHADOWS menu: on, shaded, self, full).
+- **Free rotation and tilt, any zoom** (17 Oct 2026: the tilt all the way round, over the top to from underneath; Shift + drag slides the view); shadows (the SHADOWS menu: on, shaded, self, full).
 - **The 3D Walker** (the game's rig, his pieces as one mesh, one hand a piece, no fingers unless close up), his moves, ragdoll, physics.
 - **His characters from his models** (Meshy AI .glb): the goldfish in his raincoat and the bear in his jacket. Cut to a few thousand
   triangles, coloured face by face, soft tone shading like the Walker's, **no outlines on them** ("fish shouldnt have lines").

@@ -434,6 +434,15 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
 - **THE MARKET's artifact, from this account** (17 Oct 2026): X2Bk8UjQKP8yfLdLtVVn3s can't be opened from here, so THE MARKET is published at
   **https://claude.ai/artifact/PnmQqhkusfewby35tf4zo5** (update that one from here).
   **This branch's build** (17 Oct 2026, the paused work finished, while other sessions were publishing their own branches to that link): https://claude.ai/artifact/1QpVqQujaY6D6V1F19ZmKy; once the branches are merged, one publish to the link above.
+- **The far** (owner, 17 Oct 2026, his picture of a mountain fading blue into the sky: "how can i make things look realistically far away like
+  this mountain? in my game? (it would be buildings)"; "go"; `src/skyline.js`): what makes the far look far is the air between. **A haze**, always on
+  out in the open: the scene's fog in the horizon's colour (the sky's, bluer and paler by day, the deep navy at night; the weather's own FOG, thicker
+  and grey, takes over when it comes), measured from where he stands (not from the camera, which the map views hold 300 units back): clear to 22
+  tiles out, the full colour at 360; the isometric street barely touched, the far end of the park and the skyline going blue from his eyes. **A
+  skyline**: two rows of flat buildings round the land's edge, silhouettes only (plain blocks, dull blue-greys, no windows, no lights, no shadows,
+  nothing solid), the back row taller with a few towers; one instanced draw, some 3,000 triangles. The world's one lit shader carries the fog (no new
+  program); the water and the characters' own shaders don't fog (they're near). GRAPHICS' DISTANCE HAZE ON / OFF; `?far=0` off, `?far=N` its full
+  distance in tiles; `tests/farshot.cjs <out> [query] [name]` (his eyes down the street by day and at seven, the opening, third person).
 
 ## THE MARKET: the one official map
 

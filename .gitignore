@@ -3,3 +3,4 @@ dist/
 *.png
 .claude/worktrees/
 node_modules/
+mod.mjs

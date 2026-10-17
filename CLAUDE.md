@@ -397,6 +397,21 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
 
 - **Smooth light, the default now** (owner, 17 Oct 2026, of the grainy cloud and tree mockups: "i dont like any of those mockups, they all look like dots everywhere, i want smooth realistic shadows and lighting like gradient radial etc"; it supersedes the grain and the 24 steps above): `SMOOTH` in `map-pre.js`: no grain, the light not cut into steps, soft shadow edges (PCFSoftShadowMap), the lamps' pools smooth radial gradients; GRAPHICS' LIGHTING switches back to PIXEL (`market-lighting`), `?look=pixel|smooth`.
 
+- **The tomato and his friends** (owner, 17 Oct 2026, his pictures: a tomato-headed mascot in a yellow apron, "simple graphics, like the character
+  on right (the old game's deer sprite), a little more complex but not much": of three mockups (A the sprite's level, B, C) he took C's look; then
+  "lets do the same thing with them. simpel designed characters. each part its own so it can be animated. give it physics and animations for
+  walking, each item separate thing (newspaper, motorcycle) use same style as the tomato guy"; `src/npc-rig.js`, `src/npc-toons.js`): THE TOMATO
+  (freckles, leaves and a curled stem, the apron), THE CAT IN THE RAINCOAT (the newspaper under his arm, opened to read when he stops, its page
+  turned now and then; the ink jar in his hand, set down by his foot while he reads), THE TV CAT (a rusty TV on four furry legs, its screen his
+  face, glowing a little, blinking; the cable trailing), THE FROG ON HIS SCOOTER (the scooter his own: fork on its spring, wheels turning as he
+  rolls, the box on the rack, a lean into turns, the cape lifted by his going), THE SHARK (the hood's fin, its jaw snapping now and then, the trench
+  coat's skirt). Built in code from plain shapes; **every part on a bone of its own** (`RIGNPC.make`: one mesh, one draw, each point carried
+  rigidly by its part's bone), the things they carry their own parts on their own bones. Each frame the bones go back to rest, the character's
+  pose moves them (walk, idle look round, what he does with his things), then **springs** add the give (what hangs or stands lags behind his
+  starts, stops and turns, and swings back; at rest it settles and stops; a bump from you sets them going): no Rapier, no new loads. Some
+  1,500-3,300 triangles each (10,800 the five), no lights, one shadow map each (SELF) as every character. They walk the whole street.
+  `N.reshape` / `N.recolour` by part, `N.B` the bones. `?toonhold=1` stands the five in a row; `tests/toonshot.cjs <out> [hour] [zoom]`.
+
 ## THE MARKET: the one official map
 
 **THE MARKET** (owner, 17 Oct 2026: "one official MARKET map im gona start filling in") is the game's map here: every place the owner adds goes
@@ -433,7 +448,7 @@ the owner's call, and merging publishes). The artifact link above is the quick w
     bodega's scope, after `bodbuild.js`).
   - `npc-dragon.js`: the Dragon on the road. `kit.js` + `dress.js`: the kits' pieces and the few on the street. `apts.js`: the apartment house (in the
     bodega's scope, after `bodbuild.js`). `npc-figures.js`: the six figures (KASA, GEKKOU, DRIZZEL, KURENAI, SAMIDALE, SHOGUN) on their Mixamo
-    bones, posed here, and the effects (smoke, the blade's trail, dust). `npc-creatures.js`: the packs' small animals on their own bones and clips. `npc-parts.js`: the parts builder; `npc-mushroom.js`: the mushroom seller, built in code in his parts.
+    bones, posed here, and the effects (smoke, the blade's trail, dust). `npc-creatures.js`: the packs' small animals on their own bones and clips. `npc-parts.js`: the parts builder; `npc-mushroom.js`: the mushroom seller, built in code in his parts. `npc-rig.js`: characters in parts on bones with springs; `npc-toons.js`: the tomato, the cat in the raincoat, the TV cat, the frog on his scooter, the shark.
     `park.js`: Central Park's entrance past the far sidewalk (the wall and gate, the pavers, the lawns, the pack's trees and rocks, the undergrowth,
     the pots, the lamps). `boats.js`: the kayak and the fishing boat afloat in the pool.
 - `data/`: the characters baked from the owner's models (`goldfish.json`, `bear.json`), the skeletons, their gear and clips (`skel.json`), the six figures (`figures.json`), the park's trees and rocks (`forest.json`), the undergrowth, pots and boats (`props.json`), the creatures (`creatures.json`), the Dragon (`dragon.json`), the kits (`kit.json`). `tools/`: the

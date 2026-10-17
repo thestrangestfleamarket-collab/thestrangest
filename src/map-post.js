@@ -52,7 +52,7 @@ grab('stairs',()=>{ const S=MAPSTAIR, X=x=>(x-72)*TILE, Z=y=>(y+77)*TILE, Y=z=>z
 const inStair=(x,z)=>{ const gx=x/TILE+72, gy=z/TILE-77, S=MAPSTAIR; return gx>=S.x0&&gx<S.x1&&gy>=S.y0&&gy<S.y1?gy:null; };
 groundY=(x,z)=>{ const s=inStair(x,z), S=MAPSTAIR; if(s!=null){ const k=Math.min(S.steps,Math.max(1,Math.floor((S.y1-s)/((S.y1-S.y0)/S.steps))+1)); return -k*S.depth/S.steps*ZU; }
   return LVL==='down'?MODS.station.ground(x,z):MODS.bodega.ground(x,z); };
-BOUND={x0:Math.min(MODS.bodega.BOUND.x0,MODS.station.BOUND.x0),x1:Math.max(MODS.bodega.BOUND.x1,MODS.pool.BOUND.x1),z0:Math.min(MODS.station.BOUND.z0,MODS.pool.BOUND.z0),z1:MODS.bodega.BOUND.z1};
+BOUND={x0:Math.min(MODS.bodega.BOUND.x0,MODS.station.BOUND.x0),x1:Math.max(MODS.bodega.BOUND.x1,MODS.pool.BOUND.x1),z0:Math.min(MODS.station.BOUND.z0,MODS.pool.BOUND.z0),z1:Math.max(MODS.bodega.BOUND.z1,MODS.park.BOUND.z1)};   // (the park past the far sidewalk: park.js)
 // the light of the open air at night over the street, the station's own underground
 const HEMI=new THREE.HemisphereLight(0x55607a,0x14110e,.3); scene.add(HEMI);
 // HIS SHADOWS: two shadow-casting stand-ins for the two lamps nearest him (on his level)
@@ -61,7 +61,7 @@ scene.background=new THREE.Color(0x050507);
 // THE LEVEL YOU'RE ON (from your height): its walls, its ground, its places shown; on the stairs, both
 // (on the stairs: the station shown below you; the street hidden once you're halfway down, as a room's walls are when you're in it)
 const MAPLV=(py,pos)=>{ const lv=py<-1.6?'down':'up', st=inStair(pos.x,pos.z)!=null;
-  MAPG.down.visible=lv==='down'||st; for(const k of ['bodega','pool','poolout'])MAPG[k].visible=lv==='up'&&!(st&&py<-1);
+  MAPG.down.visible=lv==='down'||st; for(const k of ['bodega','pool','poolout','park'])MAPG[k].visible=lv==='up'&&!(st&&py<-1);
   MODS.stairCut.constant=st?py+.25:1e6;
   if(lv===LVL)return false; LVL=lv; solids=SOL[lv]; fixed=FIX[lv]; HEMI.color.set(lv==='down'?0x8a93a8:0x55607a); HEMI.groundColor.set(lv==='down'?0x1a1814:0x14110e); HEMI.intensity=lv==='down'?.1:.3; return true; };
 

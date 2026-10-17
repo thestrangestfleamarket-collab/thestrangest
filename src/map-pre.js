@@ -39,17 +39,27 @@ const STORE={rooms:[],places:[],roofs:[]}, BF={list:[]}; window.STORE=STORE;   /
 const MAPG={}, MODS={}; let MAPBAKE=0; const OVERHEAD=[]; let RPASS=null, FIRE=null;   // (OVERHEAD: the lights hung over a room, shown only from under them: rooms.js; RPASS: the picture's render pass, its camera the view's: ui.js)
 // a place's own objects gathered in a group of its own (shown and hidden with its level)
 const grab=(name,fn)=>{ const n0=scene.children.length; fn(); const g=new THREE.Group(); g.name=name; for(const o of scene.children.slice(n0))g.add(o); scene.add(g); MAPG[name]=g; return g; };
+// THE MAP'S LAYOUT (owner, 17 Oct 2026: "build a map editor that allows me to move buildings and land around easily"; Shift+M, src/mapedit.js):
+// each place's move from where its code puts it, in the map's tiles (x east, y toward the park), and for the park and the land their edges'
+// moves too (e: west, back, east, front); read once here by the code that sets each place out, so its faces, solids, lights, rooms, ground,
+// stairs and lanes all go with it. LAYOUT0 is the game's own (what he exports, saved here for good); the editor's own in the browser
+// (market-layout) over it, the page reloaded to build it; ?layout=0 the game's own alone, ?layout={...} one for a test
+const LAYOUT0={};
+const LAY=(()=>{ const q=QS.get('layout'); let o={}; try{ o=q&&q[0]==='{'?JSON.parse(q):q==='0'?{}:JSON.parse(localStorage.getItem('market-layout')||'{}')||{}; }catch(e){}
+  const L=Object.assign({},LAYOUT0,o); return {L, o:k=>({x:+(L[k]&&L[k].x)||0,y:+(L[k]&&L[k].y)||0}), e:k=>(L[k]&&L[k].e||[0,0,0,0]).map(v=>+v||0)}; })();
 // where each place goes: the station (its platform 98 px down, its exit tunnel's end 3 tiles behind the sidewalk, 11 tiles west of the
 // bodega's door), the pool room (its west wall 10 tiles east of the bodega's door, its front on the sidewalk), the stairs (bodega tiles)
-const STN={DX:-11*TILE, DZ:-35*TILE, DY:-98*ZU};
-const PDX=(10+27.3/2)*TILE, PDZ=-8.4*TILE;   // (the apartment building, a fifth bigger: its west wall where it was, its front on the sidewalk)
+const STN={DX:(-11+LAY.o('subway').x)*TILE, DZ:(-35+LAY.o('subway').y)*TILE, DY:-98*ZU};   // (the subway: the station and its stairs move together)
+const PDX=(10+27.3/2+LAY.o('apartments').x)*TILE, PDZ=(-8.4+LAY.o('apartments').y)*TILE;   // (the apartment building, a fifth bigger: its west wall where it was, its front on the sidewalk)
 // BIGGER BUILDINGS, BIGGER DOORS (owner, 17 Oct 2026: "make doorways 30% larger, buildings 10% larger"): each building (the bodega, the pool room)
 // a tenth bigger every way from the middle of its front, which stays on the sidewalk; the street, the sidewalks and the road as they were. Doors 1.3 times (1.56 wide, 94 px high)
 const BLDK=1.1;
 const MAPSTAIR={x0:59,x1:63,y0:-80,y1:-74, steps:12, depth:98, dir:-1};
+{ const o=LAY.o('subway'); MAPSTAIR.x0+=o.x; MAPSTAIR.x1+=o.x; MAPSTAIR.y0+=o.y; MAPSTAIR.y1+=o.y; }
 // THE CASTLE (owner, 17 Oct 2026: "the castle on the left back end" of the park, "the dungeon under the castle (only 1 level)"; castle.js): its
 // bailey's curtain wall (the lines of its four sides, bodega tiles), the gate's middle on its front (toward the street), the stair down from the
 // bailey (twelve steps, the subway's depth, descending toward the park's back: dir 1), the one dungeon under it (its walls' lines, its height)
 const CASTLE={b:[50,67,-21,-4],gate:58.5,stair:{x0:61.5,x1:63.5,y0:-19.4,y1:-13.4,steps:12,depth:98,dir:1},hall:{x0:51,y0:-20,x1:65,y1:-6.8,h:130}};   // (clear of the Moon Shrine's garden east of it, store.js)
+{ const o=LAY.o('castle'), C=CASTLE, S=C.stair, H=C.hall; C.b=[C.b[0]+o.x,C.b[1]+o.x,C.b[2]+o.y,C.b[3]+o.y]; C.gate+=o.x; for(const R of [S,H]){ R.x0+=o.x; R.x1+=o.x; R.y0+=o.y; R.y1+=o.y; } }   // (the dungeon under it goes with it)
 const POOLR={x0:0,y0:0,x1:27.3,y1:16.8,H:150}; Object.assign(POOLR,{bx0:3.5,by0:9.7,bx1:17,by1:15.6,HT:5});   // (the apartments' pool: across the front, left to right, 13.5 x 5.9 tiles, all one depth)   // (the basin as the game has it, the room's middle across)
 POOLR.LX=POOLR.bx1-POOLR.bx0; POOLR.LY=POOLR.by1-POOLR.by0; POOLR.level=-0.16*24;   // the water 4 art px under the deck

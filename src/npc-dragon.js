@@ -25,7 +25,7 @@
     for(let i=0;i<n;i++){ const k=L[i]<q[0]?0:L[i]<q[1]?1:L[i]<q[2]?2:3, C=GR[k]; arr[i*3]=C.r*255; arr[i*3+1]=C.g*255; arr[i*3+2]=C.b*255; }   // (sRGB numbers as the bake wrote them)
     g.setAttribute('color',new THREE.BufferAttribute(arr,3,true)); return g; };
   const B0=BOD.B0, TI=TILE, PER=[
-    {x:BOD.X(54.1),z:BOD.Z(B0.y1)-.6*TI,y:BOD.Y(650),h:0},{x:BOD.X((B0.x0+B0.x1)/2),z:BOD.Z(B0.y1)-.6*TI,y:BOD.Y(B0.h),h:0},
+    {x:BOD.X(MODS.apts.A.x0+3.7),z:BOD.Z(MODS.apts.A.y1)-.6*TI,y:BOD.Y(650),h:0},{x:BOD.X((B0.x0+B0.x1)/2),z:BOD.Z(B0.y1)-.6*TI,y:BOD.Y(B0.h),h:0},
     {x:POOLR.X(8),z:POOLR.Z(POOLR.y1)-.6*TI,y:POOLR.Y(POOLR.H),h:0},{x:POOLR.X(21),z:POOLR.Z(POOLR.y1)-.6*TI,y:POOLR.Y(POOLR.H),h:0}];
   // where they fly: the park (the green behind the row and past the far sidewalk) mostly, the street now and then
   const sky=()=>{ const r=Math.random(), x=BOUND.x0+Math.random()*(BOUND.x1-BOUND.x0);

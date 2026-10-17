@@ -36,7 +36,7 @@
     const tick2=LFX.tick; LFX.tick=()=>{ tick2(); const t=performance.now()/1000, dt=1/60, up=LVL!=='down', day=cl((CLOCK.elev()+3)/12), park=typeof PARK!=='undefined'&&PARK.oaks;
       BIRDS.visible=LEAVES.visible=MOTES.visible=up&&!ROOMS.cur;
       // the birds: a loose flock wheeling over the park, each a little V that beats
-      const cx=BOD.XS(96), cz=BOD.ZS(-40); for(let i=0;i<NB;i++){ const a=t*.18+i*.35, r=(14+i*1.3)*TILE, x=cx+Math.cos(a)*r, z=cz+Math.sin(a)*r*.7, y=(9+Math.sin(i*2.1+t*.5))*TILE, w=.35*TILE, f=Math.sin(t*9+i)*.18*TILE, dx=-Math.sin(a), dz=Math.cos(a)*.7;
+      const cx=BOD.XS(96+PARK.ox), cz=BOD.ZS(-40+PARK.oy); for(let i=0;i<NB;i++){ const a=t*.18+i*.35, r=(14+i*1.3)*TILE, x=cx+Math.cos(a)*r, z=cz+Math.sin(a)*r*.7, y=(9+Math.sin(i*2.1+t*.5))*TILE, w=.35*TILE, f=Math.sin(t*9+i)*.18*TILE, dx=-Math.sin(a), dz=Math.cos(a)*.7;
         bp.set([x-dz*w,y+f,z+dx*w, x,y,z, x,y,z, x+dz*w,y+f,z-dx*w],i*12); } bg.attributes.position.needsUpdate=true;
       // the leaves: from an oak's crown, down in a flutter, round again
       if(park)for(let i=0;i<NL;i++){ const L=ls[i], o=park[L.o%park.length]; L.t+=dt; const T=L.t%9, y=o[2]*.8-T*.9; if(y<.02){ lp.set([o[0]+Math.sin(L.ph)*1.6,.02,o[1]+Math.cos(L.ph)*1.6],i*3); continue; }

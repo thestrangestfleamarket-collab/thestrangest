@@ -13,6 +13,10 @@
 // walls solid. The water (the shrine's koi pond, the tank), the butterflies in flight and the bar's musicians: their own files ----
 { const K=BOD.STOREK, {X,Y,Z,gbox,faceTex,bq,C,place,facade}=BOD, {CATALOG,PROPS,LAMPS,PRESETS,LBLD,T,sh,hash}=K, {grain,speck,lawnCol:grassCol}=BOD.g;   // (every grass the park's lawn)
   const B_=id=>LBLD.find(b=>b.id===id);
+  // (moved on the map's layout, LAY: the Diner and the Bar each on its own, the keep and the rooms stacked on the apartments with them, the shrine
+  // with the park; the game's tiles here a tenth bigger, so a map tile is 1/BLDK of them)
+  const LG=k=>{ const o=LAY.o(k); return [o.x/BLDK,o.y/BLDK]; }, AO=LG('apartments');
+  for(const [id,k] of [['ldiner','diner'],['lbodega2','bar'],['lcastle','apartments']]){ const b=B_(id), [dx,dy]=LG(k); if(b&&!b.laid){ b.x0+=dx; b.x1+=dx; b.y0+=dy; b.y1+=dy; b.laid=1; } }
   const PLATE={x0:334,y0:-100,x1:456,y1:-70};   // (the storeroom's floor, bodega tiles)
   const flat=(x0,y0,x1,y1,z,col,kind)=>bq([X(x0),Y(z),Z(y1)],[X(x1),Y(z),Z(y1)],[X(x1),Y(z),Z(y0)],[X(x0),Y(z),Z(y0)],faceTex((x1-x0)*24,(y1-y0)*24,(i,j)=>C(col(x0+(i+.5)/24,y1-(j+.5)/24))),kind);
   const put=(kind,x,y,rot=0)=>{ const f=CATALOG[kind]; if(!f){ console.warn('store: no',kind); return null; } const p=f(+x.toFixed(3),+y.toFixed(3)); if(!p)return null; p.kind=kind; place(p,rot); return p; };
@@ -104,7 +108,7 @@
       STORE.bar={B,stage:{x:SX,y:SY,z:14},piano:{x:PX,y:PY,keys:PY-1.736},drums:{x:SX+.35,y:Kb+1.25},gtr:{x:SX-.35,y:Kb+2.35},singer:{x:SX+.8,y:Kb+2.4},stools}; }); }
 
   // THE MOON SHRINE: Preset Moon Shrine 1 from its back corner, on grass (the pond's kerb here; its water: water3d's second body)
-  { const O=[69,-45.9]; STORE.shrineO=O;   /* (in Central Park's back-west lawn, owner 17 Oct 2026: XS 68.7-75.3, -42.8 to -25.2) */ room('shrine','THE MOON SHRINE',{x0:O[0],y0:O[1],x1:O[0]+6,y1:O[1]+16,h:0},{floor:grassCol},null,()=>{ PRESETS['Preset Moon Shrine 1'].forEach(([k,dx,dy,r])=>put(k,O[0]+dx,O[1]+dy,r)); },{z:.05});
+  { const O=[69+LAY.o('park').x/BLDK,-45.9+LAY.o('park').y/BLDK]; STORE.shrineO=O;   /* (in Central Park's back-west lawn, owner 17 Oct 2026: XS 68.7-75.3, -42.8 to -25.2) */ room('shrine','THE MOON SHRINE',{x0:O[0],y0:O[1],x1:O[0]+6,y1:O[1]+16,h:0},{floor:grassCol},null,()=>{ PRESETS['Preset Moon Shrine 1'].forEach(([k,dx,dy,r])=>put(k,O[0]+dx,O[1]+dy,r)); },{z:.05});
     STORE.pond={x0:O[0]+.5,y0:O[1]+12.6,x1:O[0]+5.5,y1:O[1]+15.6,z:4}; }
   // THE SHRINE OPENED (owner, 17 Oct 2026: "steps and gap", when its parapets, solid since the hitboxes, closed it): a gap in the east parapet,
   // its middle piece taken away (toward the park's round), and the terrace climbed by its steps: the plaza, the steps and the terrace are
@@ -135,12 +139,12 @@
   // moment, then batched on their own; going to one of them first finishes them at once: STORE.ensure)
   const STEPS=[]; for(const n of ['THE HERB COTTAGE','THE OCTOPUS TANK','THE KEEP','THE BUTTERFLIES'])STORE.places.push([n,0,0,'up']);
   // THE HERB COTTAGE: every piece where the page put it, from the room's corner (its own floor, walls, roof and door step among them)
-  STEPS.push(()=>{ const O=[89,-95.5]; lift(152,()=>room('cottage','THE HERB COTTAGE',{x0:O[0],y0:O[1],x1:O[0]+9,y1:O[1]+12,h:96},{floor:grassCol},null,()=>{ PRESETS['Preset Herb Cottage 1'].forEach(([k,dx,dy,r])=>put(k,O[0]+dx,O[1]+dy,r)); },
+  STEPS.push(()=>{ const O=[89+AO[0],-95.5+AO[1]]; lift(152,()=>room('cottage','THE HERB COTTAGE',{x0:O[0],y0:O[1],x1:O[0]+9,y1:O[1]+12,h:96},{floor:grassCol},null,()=>{ PRESETS['Preset Herb Cottage 1'].forEach(([k,dx,dy,r])=>put(k,O[0]+dx,O[1]+dy,r)); },
       {z:.05,pieceWalls:{'herb cottage wall, west':['w',1,0],'herb cottage wall, east':['e',-1,0],'herb cottage wall, north':['b',0,1],'herb cottage wall, south':['f',0,-1]}})); });   // (its own walls cut to their foot between you and the camera while you're in; its roof hidden then)
 
   // THE OCTOPUS TANK'S ROOM: dark blue-grey plaster, a polished concrete floor, no light but the tank's; the tank in the middle, its glow in the
   // room from the lights along the foot of its glass (its water: water3d's third body)
-  STEPS.push(()=>{ const B={id:'locto',x0:86,y0:-93,x1:101,y1:-86,h:130}, O=K.octo; lift(254,()=>room('octo','THE OCTOPUS TANK',B,{floor:O.octoFloorCol,in:O.octoWall},{w:'f',a:(B.x0+B.x1)/2,wd:1.56,h:94},B=>{ const {LX,LY,Z0,ZT}=O.OCTK, x=B.x0+5.5-LX/2, y=B.y1-2.6-LY/2, p=O.octoTank(x,y); place(p,0);
+  STEPS.push(()=>{ const B={id:'locto',x0:86+AO[0],y0:-93+AO[1],x1:101+AO[0],y1:-86+AO[1],h:130}, O=K.octo; lift(254,()=>room('octo','THE OCTOPUS TANK',B,{floor:O.octoFloorCol,in:O.octoWall},{w:'f',a:(B.x0+B.x1)/2,wd:1.56,h:94},B=>{ const {LX,LY,Z0,ZT}=O.OCTK, x=B.x0+5.5-LX/2, y=B.y1-2.6-LY/2, p=O.octoTank(x,y); place(p,0);
       for(const [lx,ly,i] of [[x+LX/2,y-.35,0],[x+LX/2,y+LY+.35,1],[x-.35,y+LY/2,2],[x+LX+.35,y+LY/2,3]])LAMPS.push({own:1,room:1,day:true,x:lx,y:ly,z:Z0+4,r:i<2?4.2:3,c:[.5,.72,.95]});
       STORE.tank={x0:x+.035,y0:y+.035,x1:x+LX-.035,y1:y+LY-.035,z:ZT-4,bed:Z0+1}; })); STORE.tank.dz=254; });
 
@@ -171,7 +175,7 @@
 
   // THE BUTTERFLY HOUSE (the living rooms' atrium, 23-w-studio-mood: a mesh cube on a walnut stand, moss, leaves and a flower of nectar) on
   // its own plot; its two butterflies and the flight of the others: butterflies.js
-  STEPS.push(()=>{ const O=[89.5,-93]; STORE.houseAt=[O[0]+4,O[1]+3.5]; STORE.houseZ=916; lift(916,()=>room('butterflies','THE BUTTERFLIES',{x0:O[0],y0:O[1],x1:O[0]+8,y1:O[1]+7,h:0},{floor:grassCol},null,()=>{ const p=put('butterfly house',O[0]+4,O[1]+3.5); if(p)p.bf=[12,21]; STORE.bfHouse=p; },{z:.05})); });
+  STEPS.push(()=>{ const O=[89.5+AO[0],-93+AO[1]]; STORE.houseAt=[O[0]+4,O[1]+3.5]; STORE.houseZ=916; lift(916,()=>room('butterflies','THE BUTTERFLIES',{x0:O[0],y0:O[1],x1:O[0]+8,y1:O[1]+7,h:0},{floor:grassCol},null,()=>{ const p=put('butterfly house',O[0]+4,O[1]+3.5); if(p)p.bf=[12,21]; STORE.bfHouse=p; },{z:.05})); });
 
   // THE WATER'S BEDS: the koi pond's, half a metre down, dark mud and its banks; the tank's is its stand's top. The water itself, below, once built
   { const P=STORE.pond, bed=(x,y)=>{ const n=grain(x,y,911,.8); return n<.4?[38,44,30]:n>.7?[58,64,44]:[46,52,36]; }, BK=[52,46,34], zb=-14;

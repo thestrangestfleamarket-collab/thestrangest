@@ -19,7 +19,7 @@ const DRESS={};
       P('street_light',x,sw-.25,{m:6.2,name:'STREET LIGHT'}); light(x,5.8*M,sw+1.4*M,40,13*TILE); heads.push([x,5.8*M,sw+1.4*M]);
       const xf=x+SP/2; if(xf<BOUND.x1-3){ P('street_light',xf,far+.25,{rot:Math.PI,m:6.2,name:'STREET LIGHT'}); light(xf,5.8*M,far-1.4*M,40,13*TILE); heads.push([xf,5.8*M,far-1.4*M]); } }
     // the lamp posts: the far sidewalk's park side (the wall's line, a little in front of it)
-    const wz=BOD.ZS(PARK.y0), pz=far+(wz-far)*.7, g0=BOD.XS(PARK.gate[0]), g1=BOD.XS(PARK.gate[1]), xs=[g0-.9*M,g1+.9*M];
+    const wz=BOD.ZS(PARK.y0+PARK.oy), pz=far+(wz-far)*.7, g0=BOD.XS(PARK.gate[0]+PARK.ox), g1=BOD.XS(PARK.gate[1]+PARK.ox), xs=[g0-.9*M,g1+.9*M];
     for(let x=g0-14*M;x>BOUND.x0+2;x-=14*M)xs.push(x); for(let x=g1+14*M;x<BOUND.x1-2;x+=14*M)xs.push(x);
     const H=4.2*M, pole=new THREE.InstancedMesh(new THREE.BoxGeometry(.13*M,H,.13*M).translate(0,H/2,0),new THREE.MeshLambertMaterial({color:0x22262b}),xs.length*2),
       lant=new THREE.InstancedMesh(new THREE.BoxGeometry(.34*M,.5*M,.34*M),new THREE.MeshBasicMaterial({color:0xffe4b0}),xs.length), m4=new THREE.Matrix4(), y0=G(xs[0],pz);

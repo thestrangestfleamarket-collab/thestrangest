@@ -411,6 +411,7 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
   police (the two officers on the beat; a troublemaker is a call; taken in or seen off; curfew noted). **The menu's CITY tab**: all of it, with
   TRY buttons (a fire, an outage, a full can, a letter to you, you faint). Not done: the train's timetable, cells at the precinct, doors, wet
   roads, the player's own hunger, persistence (Supabase, at his word). `tests/civiccheck.cjs`; `CIVDBG()`, `VEHDBG()`.
+  **This branch's build** (17 Oct 2026, the shared link PnmQ being published by other sessions' branches at the time): https://claude.ai/artifact/HkTZPr3szpVZmu4g2QDsP3; once the branches are merged, one publish to the shared link. **Found on the way**: the pool's boats and floats are flat shaded (`boats.js`, `floats.js`) against the world's Lambert shading patch (`map-pre.js`, which reads `vNormal`), so their program fails to compile whenever the menu's map draws everything at once (a console shader error; weather.js's clouds avoid flatShading for that reason). Not fixed here.
 - **The map editor** (owner, 17 Oct 2026: "build a map editor that allows me to move buildings and land around easily"; then "the shift+m map
   layout editor needs full 360 draggable view to move things. they should snap in place to a very small grid"; `src/mapedit.js`): Shift+M (or MAP
   EDITOR in the menu's MAP tab). In the game's own view: the map view, turned all the way round (a right drag or Shift + drag) and tilted, slid

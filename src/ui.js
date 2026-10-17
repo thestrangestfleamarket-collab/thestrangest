@@ -58,10 +58,12 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
   UI.home=()=>{ UI.off.set(0,0,0); zAt=null; if(UI.freeCam)setFree(false); };
   cv.addEventListener('pointerdown',e=>{ if(e.button!==0||ED.on)return; if(WE.down(e)){ cv.setPointerCapture(e.pointerId); return; } L={x:e.clientX,y:e.clientY,x0:e.clientX,y0:e.clientY,moved:false}; UI.grab(e); cv.setPointerCapture(e.pointerId); });
   cv.addEventListener('pointermove',e=>{ if(WE.dragging){ WE.move(e); return; } if(!L)return; if(!L.moved&&Math.hypot(e.clientX-L.x0,e.clientY-L.y0)>5)L.moved=true;
-    // (Shift + drag: the view slides across the screen instead, up, down and sideways; the free camera takes over from where it is)
-    if(L.moved&&e.shiftKey){ const r=cv.getBoundingClientRect(), k=(cam.right-cam.left)/r.width, R0=new THREE.Vector3().setFromMatrixColumn(cam.matrixWorld,0), U0=new THREE.Vector3().setFromMatrixColumn(cam.matrixWorld,1);
+    // DRAGGING THE MAP (owner, 17 Oct 2026: "you should be able to drag the map and change your focal point, its still too hard to navigate"):
+    // a left drag slides the world under the mouse, the point you grabbed staying under it; where the view looks (his place plus UI.off) goes
+    // with it, and stays there as he walks (0 back on him). Turning and tilting: a right or middle drag (the page's own), or Shift / Alt + drag
+    if(L.moved&&!e.shiftKey&&!e.altKey){ const r=cv.getBoundingClientRect(), k=(cam.right-cam.left)/r.width, R0=new THREE.Vector3().setFromMatrixColumn(cam.matrixWorld,0), U0=new THREE.Vector3().setFromMatrixColumn(cam.matrixWorld,1);
       viewV().addScaledVector(R0,-(e.clientX-L.x)*k).addScaledVector(U0,(e.clientY-L.y)*k); }
-    else if(L.moved)UI.orbit(e.clientX-L.x,e.clientY-L.y); L.x=e.clientX; L.y=e.clientY; });
+    else if(L.moved)UI.orbit(e.clientX-L.x,e.clientY-L.y); L.x=e.clientX; L.y=e.clientY; });   // (Shift or Alt + drag: turn and tilt, for a trackpad)
   cv.addEventListener('pointerup',()=>{ WE.up(); L=null; });
   // ---- DOUBLE CLICK (owner, 17 Oct 2026: "take off click to walk. double click to walk. double click on anything to interact with it"):
   // on the ground he walks there; on a thing he walks up to it, turns to it and does what it's for (the THINGS list: a thing joins it with its

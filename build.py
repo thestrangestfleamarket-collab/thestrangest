@@ -175,7 +175,7 @@ mod=rp(mod,"\n  if(up){mx+=fx;mz+=fz;} if(dn){mx-=fx;mz-=fz;}","\n  UI.camStep(d
 mod=rp(mod,"collide(pos); if(st.water&&st.water.in){","if(UI.fly)UI.flyStep(0); else collide(pos); if(st.water&&st.water.in){")
 mod=rp(mod,"    py+=(groundY(pos.x,pos.z)-py)*Math.min(1,dt*20); P.x=pos.x/TL;","    if(UI.fly)UI.flyStep(dt); else py+=(groundY(pos.x,pos.z)-py)*Math.min(1,dt*20); P.x=pos.x/TL;   // (flying: up and down as you hold Space and Shift, through anything)\n   ")
 mod=rp(mod,"  disp.set(pos.x,py,pos.z); F.set(","  if(UI.freeCam)disp.copy(UI.camT); else disp.set(pos.x,py,pos.z); F.set(")
-head=rp(head,'<div><b>Right-drag</b> or <b>Q</b> / <b>E</b>, <b>Z</b> / <b>X</b> turn and tilt</div>','<div><b>Drag</b> or <b>Q</b> / <b>E</b>, <b>Z</b> / <b>X</b> turn and tilt, all the way round · <b>Shift</b> + drag slide the view</div>\n  <div><b>C</b> free camera · <b>G</b> fly through walls (<b>Space</b> up, <b>Shift</b> down)</div>')
+head=rp(head,'<div><b>Right-drag</b> or <b>Q</b> / <b>E</b>, <b>Z</b> / <b>X</b> turn and tilt</div>','<div><b>Drag</b> move the map · <b>Right-drag</b> (or <b>Shift</b> + drag), <b>Q</b> / <b>E</b>, <b>Z</b> / <b>X</b> turn and tilt, all the way round · <b>0</b> back on him</div>\n  <div><b>C</b> free camera · <b>G</b> fly through walls (<b>Space</b> up, <b>Shift</b> down)</div>')
 head=rp(head,'<div class="dim"><b>H</b> hide this</div>','<div class="dim"><b>Esc</b> menu: map, display, keys · <b>H</b> hide this</div>')
 # HIS SHAPE and THE OUTLINE (owner, 17 Oct 2026): src/editor.js; each piece's change on its frame; the outline pass off unless turned on
 mod=rp(mod,"0,0,0,1); }); };","0,0,0,1); if(W3.E&&W3.E[i])W3.applyE(W3.PM.value[i],W3.E[i],F.o); }); };   // (his shape as edited: src/editor.js)")

@@ -78,7 +78,7 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
   rain's slant, the oaks' sway: `PARK.windK`). Nothing falls indoors or underground. The menu's WEATHER (DISPLAY): NATURAL, or one held (CLEAR,
   CLOUDY, RAIN, STORM, SNOW, FOG); `?wx=rain` for a test. Cost: one draw for the clouds (some 20,000 triangles at most, far off), one for rain,
   one for snow; no new lights. Not yet: wet ground, snow lying.
-- **The clock** (17 Oct 2026, `src/clock.js`): the hour, 7pm when the game opens; the sun over New York in mid-October (its height, its way round, its shadows), the sky and the open air's light by it, the moon at night; DISPLAY's TIME (the hour, STOPPED / RUNNING, a day in 2 min to 24 h); N noon / 7pm.
+- **The clock** (17 Oct 2026, `src/clock.js`): the hour, noon when the game opens (owner, 17 Oct 2026: "day always starts at noon"; 7pm before); the sun over New York in mid-October (its height, its way round, its shadows), the sky and the open air's light by it, the moon at night; DISPLAY's TIME (the hour, STOPPED / RUNNING, a day in 2 min to 24 h); N noon / 7pm.
 - **The guards** (17 Oct 2026: "patrol the streets as guards and really protect us"; his picks: patrol routes, fight threats; `src/npc-skel.js`): each skeleton marches his beat (the Warrior the shops' sidewalk, the Rogue the far one, the Mage and the Minion the road), on guard at each end. **Troublemakers** (small hooded figures: the Rogue gone dark, red eyes) come up the subway stairs after dark, one or two now and then, and go for you on the street (a punch shoves you back, no harm); every guard near comes running and fights his own way (blade, fists, crossbow bolt, spell), the troublemaker falls, gets up and runs back down; a cheer, and back to the beat. The pack's own combat clips (KayKit Skeletons 1.0 on GitHub, CC0: `tools/skeletons-clips.py`).
 - **The apartment building** (17 Oct 2026, his plan from a mockup, "a fifth bigger"; `src/pool.js`, `POOLR` in `map-pre.js`): the pool room's building made the apartments' ground floor, 27.3 x 16.8 tiles: the right third the lobby (the front door) and the office behind it; the left two thirds a hallway through the middle to the stairs and the lift at its far end, the pool in front of it (across, left to right, all one depth, deep, a small diving board at its west end), the gym behind it. Inner walls cut to their foot while you're inside (`always` cut walls). The roof meets the walls' tops.
 - **The land** (17 Oct 2026): flat grass all round the map (`MODS.land` in `map-post.js`), open over the road, the stairs and the pool's basin. **How far out**: the zoom stops at some 34 tiles across (`UI.MAXW`), and the view can't slide far past the map's edges. **Never under the ground**: the tilt stops level with the street.
@@ -396,6 +396,20 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
   closes). Checked by `tests/mapedit3d.cjs` (and `tests/mapedit.cjs`, the plan).
 
 - **Smooth light, the default now** (owner, 17 Oct 2026, of the grainy cloud and tree mockups: "i dont like any of those mockups, they all look like dots everywhere, i want smooth realistic shadows and lighting like gradient radial etc"; it supersedes the grain and the 24 steps above): `SMOOTH` in `map-pre.js`: no grain, the light not cut into steps, soft shadow edges (PCFSoftShadowMap), the lamps' pools smooth radial gradients; GRAPHICS' LIGHTING switches back to PIXEL (`market-lighting`), `?look=pixel|smooth`.
+
+- **Where you left off** (owner, 17 Oct 2026: "leaves off exactly where your character was last"; `src/where.js`): where he stands (x, z, the
+  height of his floor) and the way he faces are kept in the browser (`market-where`) every two seconds as he moves and as the page is left, and
+  he is put back there when the game opens (a stacked room finished first). A test's start (`?at`, `?place`, `?sheet`, `?npcat`) wins over it;
+  `?fresh=1` forgets it. The day still starts at noon.
+- **The guitarist in his apartment** (owner, 17 Oct 2026: "move the musician into an apartment top floor"; `musician.js`): he plays all the
+  time in the apartment house's top-floor front living room (the middle of the room, facing its door), heard as you come near, the room's
+  echo small; shown only from that floor (rooms.js's `show` now takes his height). The bar's stage keeps its turns without him: the pianist, the
+  singer, the drummer (`bandstand.js`).
+- **Nobody drawn who isn't seen** (owner, 17 Oct 2026: "dont render anyone not visible (they still exist just dont show them until you must)";
+  `NPCS.tick` and `NPCS.cull` in `npc-map.js`): every character out of the picture (the camera's frustum) is not drawn, whoever he is, but he still
+  lives: near you he is moved and thinks; farther than 25 tiles and unseen he is neither (as before). The hiding is done only round the picture's
+  drawing (`NPCS.cull(true)` after `ROOMS.tick`, `NPCS.cull(false)` after the composer), so each one's own visibility (his mind's, rooms.js's, the
+  stage's) is never overwritten. The bar's three and the guitarist join through `NPCS.extra`. Measured on the street at noon: 4 of 51 drawn.
 
 ## THE MARKET: the one official map
 

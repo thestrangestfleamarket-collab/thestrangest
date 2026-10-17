@@ -124,14 +124,11 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
   in code is a list of named parts (each a few plain shapes with its colour and its layer), packed into one mesh for `makeNPC` but each part kept
   apart so it can be reshaped or recoloured after (`N.reshape('hat',{scale,move})`, `N.recolour`, `RESHAPE(key,part,scale,move)` in the console).
   A character from a model file keeps its parts the same way (`names`, `reg`).
-- **The moth man** (owner, 17 Oct 2026, his sticker, "lets add him into the game, exactly like this"; `src/npc-mothman.js`): a stout greybeard with a
-  moth's yellow veined wings and antennae, a denim cap, round black sunglasses, shaggy grey hair, a denim jacket open over a tan shirt and his
-  belly, jeans, brown boots; walking the street. **Rounded, not blocky** (owner: "not so blocky, more natural shape, rounded, match the image"):
-  soft clumps, capsules and curved shells, no boxes. **Real denim** (owner: "make look like real jean texture and shadows, logical design"): a
-  twill woven in the shader on any part flagged denim (`fab` in `npc-parts.js`, `DENIM_GLSL` in `npc-map.js`; no picture, the no-textures rule
-  kept), faded at the shoulders, thighs and knees; the jacket and jeans cut as they really are (yoke seam, collar, buttoned pocket flaps, a row of
-  buttons, cuffs; waistband, fly, belt loops, front and back pockets, outer seams, inseams, turned cuffs), seams darker, stitching tan; the belly
-  shades the waistband, the jacket the shirt (ranks). Some 13,000 triangles, the heaviest character: cut if the street grows crowded.
+- **The moth man: deleted** (owner, 17 Oct 2026: "delete the moth man"; he had been built in parts from his sticker, rounded, in a shader-woven denim).
+  What stays of him for the next: the parts builder's rounded shapes (capsules, shells, clumps) and the denim twill (`fab` on a part, `DENIM_GLSL` in
+  `npc-map.js`), used by no one now.
+- **The goldfish on the street** (owner, 17 Oct 2026: "bring in the raincoat fish"): up from the platform, walking the whole street as the others do (`npc-map.js`); the bear stays on the platform.
+- **A stacked room's menu spot is just inside its door** (owner, 17 Oct 2026: "when i try to go to herb cottage i end up in the pool"): the spot outside the door has no floor up there (`lift` in `store.js`).
 - **The mushroom seller** (owner, 17 Oct 2026, his picture: a felted skeleton in a mottled rust robe, long tan hair, a hat crowned with mushrooms,
   a rope strap and woven bag, a tray of mushrooms held out; "add this is a 3d character in the game"; `src/npc-mushroom.js`): built in code from plain
   shapes (no model file), one mesh of about 2,500 triangles, through `makeNPC` like the rest (lamp-lit, the clothes' shadows, SELF; his sockets, nose
@@ -289,13 +286,13 @@ the owner's call, and merging publishes). The artifact link above is the quick w
   - `station.js` + `wsub.js`: the subway station (the game's West End station). `pool.js` + `water3d.js` + `floats.js`: the pool room,
     its water, its floats. `bodega.js` (the bodega's plan from the game's code, via `gamekit.js` stand-ins and `goods-defs.js`) +
     `bodbuild.js` (built in 3D). `batch.js`: every still face packed into one texture and a few meshes (fast).
-  - `npc-map.js`: the goldfish and the bear wandering the platform (and `makeNPC`, every character's maker). `npc-skel.js`: the four skeletons on the far sidewalk, rigged and animated, and the gold skeleton (the Minion gilded).
+  - `npc-map.js`: the goldfish on the street and the bear wandering the platform (and `makeNPC`, every character's maker). `npc-skel.js`: the four skeletons on the far sidewalk, rigged and animated, and the gold skeleton (the Minion gilded).
   - `npc-street.js`: the cyborg and the teddy on the street (bones, moves, bodies in Rapier, minds). `npc-rigged.js`: the six figures made a second way (kept, not built: `npc-figures.js` is used).
   - `npc-dragon.js`: the Dragon on the road. `kit.js` + `dress.js`: the kits' pieces and the few on the street. `apts.js`: the apartment house (in the
     bodega's scope, after `bodbuild.js`).
   - `npc-dragon.js`: the Dragon on the road. `kit.js` + `dress.js`: the kits' pieces and the few on the street. `apts.js`: the apartment house (in the
     bodega's scope, after `bodbuild.js`). `npc-figures.js`: the six figures (KASA, GEKKOU, DRIZZEL, KURENAI, SAMIDALE, SHOGUN) on their Mixamo
-    bones, posed here, and the effects (smoke, the blade's trail, dust). `npc-creatures.js`: the packs' small animals on their own bones and clips. `npc-parts.js`: the parts builder; `npc-mushroom.js`: the mushroom seller, `npc-mothman.js`: the moth man, built in code in their parts.
+    bones, posed here, and the effects (smoke, the blade's trail, dust). `npc-creatures.js`: the packs' small animals on their own bones and clips. `npc-parts.js`: the parts builder; `npc-mushroom.js`: the mushroom seller, built in code in his parts.
     `park.js`: Central Park's entrance past the far sidewalk (the wall and gate, the pavers, the lawns, the pack's trees and rocks, the undergrowth,
     the pots, the lamps). `boats.js`: the kayak and the fishing boat afloat in the pool.
 - `data/`: the characters baked from the owner's models (`goldfish.json`, `bear.json`), the skeletons, their gear and clips (`skel.json`), the six figures (`figures.json`), the park's trees and rocks (`forest.json`), the undergrowth, pots and boats (`props.json`), the creatures (`creatures.json`), the Dragon (`dragon.json`), the kits (`kit.json`). `tools/`: the
@@ -303,7 +300,7 @@ the owner's call, and merging publishes). The artifact link above is the quick w
   `skin-bake.py`, `skin-bones.py`, `item-bake.py`, `mesh-cut.py` the street's characters and items: `trimesh`, `scipy`, `scikit-image` too;
   `figures-bake.py` the six figures, `forest-bake.py` the park's pack, `props-bake.py` still things from .glb or .obj with a palette, `creatures-bake.py` rigged ones with their clips; the packs' .fbx made .glb with npm's fbx2gltf).
 - **Screenshots of other characters never show his avatar** (owner, 17 Oct 2026: "stop showing my avatar in screenshots of other characters"): a test looking at a character opens the page with `?hideme=1` (the Walker not drawn, `W3.hideMe` in `walker3d.js`).
-- `tests/`: Playwright screenshots (`mapshot.cjs`: the street; `maptour.cjs`: platform, pool, bodega, stairs, a walk down; `skelshot.cjs`: the skeletons, close; `mushshot.cjs`: a character built in parts (the mushroom seller, or the moth man with MOTHDBG as its last argument), close, by day or night; `sheet.cjs <key>`: a character's sheet (black void, close, limbs spread, full res: `?sheet=key&fullres=8`; `?npcat=key,field` stands one out on the land); `streetshot.cjs` the
+- `tests/`: Playwright screenshots (`mapshot.cjs`: the street; `maptour.cjs`: platform, pool, bodega, stairs, a walk down; `skelshot.cjs`: the skeletons, close; `mushshot.cjs`: a character built in parts (the mushroom seller; another with its debug hook's name as the last argument), close, by day or night; `sheet.cjs <key>`: a character's sheet (black void, close, limbs spread, full res: `?sheet=key&fullres=8`; `?npcat=key,field` stands one out on the land); `streetshot.cjs` the
   street's characters over a few moments; `streetact.cjs` one of them told each move, close up; `figshot.cjs` the six figures over a few moments; `figact.cjs` one told each move; `parkshot.cjs` the park's gate, round and path; `creatshot.cjs` the creatures by day and night; `poolshot.cjs` the boats). The page takes
   `?at=x,z[,height]` to start somewhere, for tests. In a cloud container rendering is software (slow, ~20 fps): run them in the background.
 

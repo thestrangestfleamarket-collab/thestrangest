@@ -32,7 +32,9 @@
     for(const it of BATCH.items.slice(b0))for(let q=1;q<it.pos.length;q+=3)it.pos[q]+=dy;
     for(const L of lamps.slice(l0))L.position.y+=dy;
     const own=solids.splice(s0); for(const f of fixed.splice(f0)){ f[2]+=dy; f[5]+=dy; fixed.push(f); }
-    for(const R of STORE.rooms.slice(r0)){ R.y0=dy-.05; R.y1=Math.max(R.y1,Y(0)+Y(130)-Y(0))+dy-Y(0); R.fy=dy; R.solids=own; STACK.push(R); const pl=STORE.places.find(q=>q[0]===R.name); if(pl)pl[3]=dy; } return dy; };
+    for(const R of STORE.rooms.slice(r0)){ R.y0=dy-.05; R.y1=Math.max(R.y1,Y(0)+Y(130)-Y(0))+dy-Y(0); R.fy=dy; R.solids=own; STACK.push(R);
+      // (its menu spot just inside its door, not the step outside it: a stacked room has no floor out there, and you'd drop to the pool below; owner, 17 Oct 2026: "when i try to go to herb cottage i end up in the pool")
+      const m=X(1.2)-X(0); R.at={x:Math.min(Math.max(R.at.x,R.x0+m),R.x1-m),z:Math.min(Math.max(R.at.z,R.z0+m),R.z1-m)}; const pl=STORE.places.find(q=>q[0]===R.name); if(pl){ pl[1]=R.at.x; pl[2]=R.at.z; pl[3]=dy; } } return dy; };
   // A ROOM: B its building (tiles, h its walls' height); look: floor(x, y) its floor's colour, in(q, nx, ny, X, Y, z, f) its walls' inside,
   // out(nx, ny, X, Y, z, f, cap) their outside (the row's brick unless its own), roof; door {w: 'f' 'b' 'w' 'e', a: along, wd, h}; set(B, l0)
   // places its things (the game's catalog); o.xw: inner walls [id, ax, at, a0, a1, inS, holes, inner]; o.open: no walls of its own (a garden)

@@ -317,6 +317,15 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
   lining's V, the front overlapping and buttoned, patch pockets, cuffs (`loft`, `tube` in `npc-bearcoats.js`), its decoration laid over body and sleeves (donuts with sprinkles, felt patches, waves with fish, bubbles
   and seaweed, five-petal blossoms, four-leaf clovers, a lace band over sand); hung along the rack's bar (key rack). Nothing wears them yet:
   they are things to look at (a double click walks up), the first items of the market. Cost: some 30,000 triangles in all, no lights.
+- **The toad bag** (owner, 17 Oct 2026, his picture: a fat felted toad that is a bag; "turn into character in game"; "just take an imprint of it
+  and turn into simple 3d character including only details that matter"; "pick single colors for complex color areas"; "limbs should attach,
+  make realistically designed to function and walk around"; `src/npc-toadbag.js`): THE IMPRINT WAY for a picture: its outline cut from the
+  picture (the toad masked from the street by colour, each row's left and right edge: `ROWS`), lofted into the body; one flat colour an area
+  (olive face, darker belly, one brown bag, maroon warts, black eyes); only the details that matter as parts (eyes on their brows, the mouth,
+  the belly's seam, warts, the zipper's band, the handle, the pocket). His four legs are their own meshes hung at the hips under the body (a
+  thigh, a bent shin, the foot with pale toes), swung from the hip as he walks (`anim`), still when he stands; `?stride=1` shows the step on
+  his sheet (`tests/sheet.cjs toadbag <out> stride=1`: a third argument adds to the page's query). 0.85 m, some 6,200 triangles; he waddles the
+  whole street. The sheet keys now also: coatbear, coat1-coat6, rack, toadbag.
 
 ## THE MARKET: the one official map
 

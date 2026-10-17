@@ -365,6 +365,17 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
 - **The goldfish deleted** (owner, 17 Oct 2026: "delete the fish raincoat character"): out of the street (`npc-map.js`) and the data (`data/goldfish.json`, `data/full/goldfish.json`); `tools/goldfish-paint.py` stays.
 - **? lists what you can do** (owner, 17 Oct 2026: "pressing ? should give me list of all possible actions and moves for my player"; `UI.moves`, `ui.js`): every key's action as KEYS has them, the fighting moves and their chains, his own moves (ANIMATE), the mouse and the double click's uses.
 - **Shift+R taken out** (owner, 17 Oct 2026: "resolution is fine as it is, take away shift+r option"): no table of resolution by zoom; the rule above stands (`RESI`, `ZUPX`).
+- **NPC lives** (17 Oct 2026, the paused plan built; `src/lives.js`, after `clip.js` in build.py, `LIVES.init()` after `CLIP.run()`): every street
+  walker who isn't a guard, a troublemaker, a dragon or a creature has a day by the clock (`CLOCK.h`), his hours shifted a little from the next's:
+  asleep at home till seven (the apartment house's hall, the apartment building's lobby or hallway; the skeleton pawns in the dungeon, the gold one on
+  the platform), breakfast at the Diner, work (the bodega, the dojo, the stalls, the park, the castle, the platform), lunch, work, the evening on the
+  street or in the park (the street as full at seven as before), a few to the Bar, home by eleven. **Far** (out of the picture and more than four
+  tiles from you, indoors where you aren't, on a level not shown: `NPCS.tick`, `LIVES.hidden`) a character is neither drawn nor his rig run: his
+  numbers walk him four times a second along the street's lanes and each place's way in (its door, its room), a sidestep round what blocks him,
+  down a stair with his level and group switched halfway; in the picture again his own tick takes over where his numbers are (one state, `st`, no
+  pop). A far one blocks no one (`makeNPC`'s walk, `collide`, `clip.js`). The guards go end to end of their beats when far, the creatures and the
+  bear wander on. Not done: a pose for sitting or sleeping (they stand, idle); the apartment house's upper floors (no stairs); the stacked rooms
+  (no way in on foot). `?lives=1` lists everyone; `?lives=0` the old rule (frozen when far). `tests/livescheck.cjs` (its cost figures at the head of lives.js).
 - **The grain, not halftone** (owner, 17 Oct 2026: "i want to avoid these types of shadows and grids half tone, can we do the shadows style i mentioned earlier"): the light's steps broken by a noise fixed to the world's art pixels, on by default (16 steps; `DITH` in `map-pre.js`; GRAPHICS' LIGHT GRAIN: on, strong 12, fine 24, off); no 4x4 ordered (Bayer) grid anywhere: the characters' shading, the see-through and the neon's halo take a grain instead.
 
 - **Every panel closes and moves** (owner, 17 Oct 2026: "make sure menus have way to exit out, allow all menus to be draggable"; the end of `ui.js`): an X in each panel's corner (the menu, HIS SHAPE, YOUR LOOKS, the world editor, the ? list, Shift+R's, the SHARPEN bar, the help, stats and shadows boxes) and a drag by any plain part of it (not its buttons, sliders, fields or the map). A new panel joins by its id in `PANS`.

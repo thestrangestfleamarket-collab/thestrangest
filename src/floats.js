@@ -13,7 +13,7 @@ const FLOATS={bodies:[], D:6, acc:0};
   for(let a=0;a<P.LX;a+=0.25)box(P.X(P.bx0+a),Z0,P.X(P.bx0+a+0.25),Z1,toZ(P.Y(P.bedAt(a+0.125))));
   FLOATS.st=st;
   const lvl=()=>WATER.lvl+(WATER.rise||0);
-  const add=(o,mesh,pts,vol)=>{ const b=phyBody(o); b.mesh=mesh; b.bp=pts; b.vol=vol; mesh.matrixAutoUpdate=false; mesh.traverse(m=>{ m.castShadow=true; }); scene.add(mesh); FLOATS.bodies.push(b); phyWake(b); return b; };
+  const add=FLOATS.add=(o,mesh,pts,vol)=>{ const b=phyBody(o); b.mesh=mesh; b.bp=pts; b.vol=vol; mesh.matrixAutoUpdate=false; mesh.traverse(m=>{ m.castShadow=true; }); scene.add(mesh); FLOATS.bodies.push(b); phyWake(b); return b; };
   // the beach ball: 36 cm across, 0.3 kg, white with coloured panels; its buoyancy at seven points through it
   { const r=0.18/0.84, g=new THREE.IcosahedronGeometry(r*TL,2), col=[], p=g.attributes.position;
     for(let i=0;i<p.count;i++){ const a=Math.atan2(p.getZ(i),p.getX(i)), k=Math.floor((a+Math.PI)/(Math.PI/3))%6, y=p.getY(i)/(r*TL); const c=Math.abs(y)>0.85?[1,1,1]:[[0.9,0.15,0.12],[1,1,1],[0.2,0.4,0.85],[1,1,1],[0.98,0.8,0.15],[1,1,1]][k]; col.push(...c); }

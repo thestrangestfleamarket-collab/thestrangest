@@ -29,6 +29,7 @@ MAPST=('const TEXTURES='+rd('data/textures.json')+';\nconst KITD='+rd('data/kit.
   +wrap('down',stn,"MODS.station={BOUND,ground:(x,z)=>groundY(x,z)+STN.DY};","()=>LVL==='down'")
   +wrap('bodega',bod+'\n'+bb+'\n'+rd('src/apts.js'),"MODS.bodega={BOUND,ground:groundY};","()=>BODB.inside()")
   +wrap('pool',pool+'\nWATER.build();',"MODS.pool={BOUND,cut:cutWalls.slice(c0),inside:(x,z)=>x>POOLR.X(POOLR.x0)&&x<POOLR.X(POOLR.x1)&&z>POOLR.Z(POOLR.y0)&&z<POOLR.Z(POOLR.y1)};","()=>MODS.pool.inside(pos.x,pos.z)")
+  +"const FOREST="+rd('data/forest.json')+";\nconst PROPS="+rd('data/props.json')+";\n"+rd('src/park.js')+'\n'   # (CENTRAL PARK'S ENTRANCE, owner 17 Oct 2026: park.js, data/forest.json)
   +rd('src/map-post.js')+'\n'+rd('src/kit.js')+'\n'+rd('src/dress.js'))   # (the kits placed, the pigeons: after the map)
 f=open('src/flea-market-3d.html').read()  # (carries the simpler Walker)
 st=MAPST
@@ -134,7 +135,7 @@ print('ok zoom')
 
 # THE OWNER'S CHARACTERS FROM HIS MODELS (owner, 16 Oct 2026): the goldfish and the bear, coloured, wandering the platform; THE SKELETONS (owner,
 # 17 Oct 2026, KayKit's four, rigged and animated) on the far sidewalk: src/npc-skel.js, data/skel.json (tools/skeletons-bake.py)
-mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);","const GOLDFISH="+open('data/goldfish.json').read()+";\nconst BEARD="+open('data/bear.json').read()+";\nconst SKEL="+open('data/skel.json').read()+";\n"+open('src/npc-map.js').read()+"\n"+open('src/npc-skel.js').read()+"\nconst DRAGON="+open('data/dragon.json').read()+";\n"+open('src/npc-dragon.js').read()+"\n"+"".join("const %s=%s;\n"%(k,open("data/%s.json"%f).read()) for k,f in [("CYBORG","cyborg"),("TEDDY","teddy"),("DRIZZLE","drizzle"),("GEKKOU","gekkou"),("KASA","kasa"),("KURENAI","kurenai"),("SAMIDALE","samidale"),("SHOGUN","shogun")])+open('src/npc-street.js').read()+"\n"+open('src/npc-rigged.js').read()+"\nresize(); applyTime(0); requestAnimationFrame(frame);")   # (THE NEWEST CHARACTERS from the drive, owner 17 Oct 2026: the cyborg and the teddy, npc-street.js; the six Mixamo figures, npc-rigged.js)
+mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);","const GOLDFISH="+open('data/goldfish.json').read()+";\nconst BEARD="+open('data/bear.json').read()+";\nconst SKEL="+open('data/skel.json').read()+";\n"+open('src/npc-map.js').read()+"\n"+open('src/npc-skel.js').read()+"\nconst DRAGON="+open('data/dragon.json').read()+";\n"+open('src/npc-dragon.js').read()+"\n"+"".join("const %s=%s;\n"%(k,open("data/%s.json"%f).read()) for k,f in [("CYBORG","cyborg"),("TEDDY","teddy")])+open('src/npc-street.js').read()+"\nconst FIGS="+open('data/figures.json').read()+";\n"+open('src/npc-figures.js').read()+"\nconst CREATURES="+open('data/creatures.json').read()+";\n"+open('src/npc-creatures.js').read()+"\nresize(); applyTime(0); requestAnimationFrame(frame);")   # (the cyborg and the teddy, npc-street.js; THE SIX FIGURES, npc-figures.js (their second making, npc-rigged.js with data/<name>.json, kept but not built: the same six twice); the creatures)
 mod=rp(mod,"  marker.visible=!!target;","  for(const N of NPCS)N.tick(dt,pos);\n  marker.visible=!!target;")
 mod=rp(mod,"function collide(p){ const r=0.3;","function collide(p){ if(typeof NPCS!=='undefined')for(const N of NPCS)if(N.lv===LVL)N.push(p); const r=0.36;")   # (his reach round him: 0.3, a fifth bigger with him)
 print('ok npcs')
@@ -158,7 +159,7 @@ mod=rp(mod,"collide(pos); if(target&&","collide(pos); if(st.water&&st.water.in){
 mod=rp(mod,"if(MOVEK[k]&&!e.repeat&&!RAG.on)RIG.act(st,MOVEK[k]); });","if(st.water&&st.water.in&&(k===' '||k==='j')){ st.water.dive=true; e.preventDefault(); } else if(MOVEK[k]&&!e.repeat&&!RAG.on)RIG.act(st,MOVEK[k]); });")
 mod=rp(mod,"if(MOVEK[k])RIG.release(st,MOVEK[k]); });","if(k===' '||k==='j'){ if(st.water)st.water.dive=false; } if(MOVEK[k])RIG.release(st,MOVEK[k]); });")
 mod=rp(mod,"if(!RAG.on&&(trip||hit>12)){","if(!RAG.on&&!(st.water&&st.water.level!=null)&&(trip||hit>12)){")
-mod=rp(mod,"looseDraw();\nlet looseAcc",open('src/floats.js').read()+"\nlooseDraw();\nlet looseAcc")
+mod=rp(mod,"looseDraw();\nlet looseAcc",open('src/floats.js').read()+"\n"+open('src/boats.js').read()+"\nlooseDraw();\nlet looseAcc")   # (THE BOATS in the pool, owner 17 Oct 2026: boats.js)
 mod=rp(mod,"const PHYOU={m:null,","let PHYZ0=0; const PHYOU={m:null,")
 mod=rp(mod,"fj=AY-(p[2]*TL-py)*PPU/VS","fj=AY-((p[2]-PHYZ0)*TL-py)*PPU/VS")
 mod=rp(mod,"  if(loose.length)RIG.draw(B,cloud,hdA,uimg,PW,PICH,AX,AY,1,false);","  if(loose.length||FLOATS.bodies.some(b=>Math.hypot(b.x[0]*TL-pos.x,-b.x[1]*TL-pos.z)<2.5))RIG.draw(B,cloud,hdA,uimg,PW,PICH,AX,AY,1,false);   // (his figure for the physics only when something he could push is near)")
@@ -264,7 +265,7 @@ for f in ['47-play-3-guitar-1-body.js','47-play-3-guitar-samples.data.js','47-pl
     gtsrc+='\n'+t
 mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);",gtsrc+"\n"+open('src/musician.js').read()+"\nresize(); applyTime(0); requestAnimationFrame(frame);")
 mod=rp(mod,"  for(const N of NPCS)N.tick(dt,pos);","  for(const N of NPCS)N.tick(dt,pos); MUS.tick(dt);")
-mod=rp(mod,"  for(const N of NPCS)N.tick(dt,pos); MUS.tick(dt);","  STREET.tick(dt,pos,py); DRESS.tick(dt,pos); { const r=MODS.apts.tick(); if(r)solids=r; } for(const N of NPCS)N.tick(dt,pos); if(FIRE)FIRE.tick(dt); MUS.tick(dt);")   # (DRESS: the pigeons; the apartment house's floors. STREET.tick: the street characters' physics world, stepped before their minds)
+mod=rp(mod,"  for(const N of NPCS)N.tick(dt,pos); MUS.tick(dt);","  STREET.tick(dt,pos,py); DRESS.tick(dt,pos); { const r=MODS.apts.tick(); if(r)solids=r; } for(const N of NPCS)N.tick(dt,pos); if(FIRE)FIRE.tick(dt); FIGFX.tick(dt,pos); MUS.tick(dt);")   # (STREET: the cyborg's and the teddy's physics; DRESS: the street's kit; the apartment house's floors; FIGFX: the figures' effects and the park's cut of the trees before you)
 # NO SHADOW ACNE (owner, 17 Oct 2026, his close-up: stripes and jagged dark teeth on the musician's arm): the two lamps nearest you, whose
 # shadows move, finer (1024 a face) and held off the surface they fall on, as the still lamps' are
 mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);","for(const S of SHL){ S.shadow.mapSize.set(1024,1024); S.shadow.normalBias=.06; S.shadow.bias=-.002; }\nresize(); applyTime(0); requestAnimationFrame(frame);")

@@ -108,6 +108,33 @@ this repo is `bralynnbell/thestrangest`.
   with a straight flight each floor (switching back), two furnished apartments a floor (railroad flats: the door into the kitchen, the living room
   across the windows, the bathroom, the bedroom), warm lights on while you're in; the floors above you and the roof cut away inside, the walls
   cut to their feet the bodega's way; the floor under you is yours (`MODS.apts.ground`, the stairs carry you up; the solids switch floor by floor).
+- **The six figures** (owner, 17 Oct 2026, "lets only do the new characters": the six low-poly figures in his Drive's G folder, KASA, GEKKOU, DRIZZEL,
+  KURENAI, SAMIDALE, SHOGUN, each a .blend and a .fbx on a Mixamo rig, no clips, no textures; `tools/figures-bake.py` → `data/figures.json`,
+  `src/npc-figures.js`): each keeps the pack's bones and weights and is posed by moves made here in his own axes (a stance, a walk, a run, a
+  breath, a wave back, a hop, and his own thing: KASA's sword flourish, SAMIDALE's pipe, GEKKOU's and KURENAI's smoke, DRIZZEL's lean on his
+  staff, SHOGUN's bow); his glowing parts (a visor, a blade, a halo, an ember) glow. They walk the whole street. **The effects** (owner: "use the
+  sfx as references to make your own rendered fx", his Brackeys VFX bundle the reference, never its pictures): smoke in puffs of blocks, the
+  blade's trail of glowing blocks, the dust of a landing; one pool of blocks in two meshes (`FX` in `npc-figures.js`), the game's hard-edged look.
+- **Central Park's entrance** (owner, 17 Oct 2026: "import the low poly forest pack, and anything else you can use to build out central park
+  entrance and a little bit further. make the trees to scale (5-20 times bigger than people)"; `src/park.js`, `tools/forest-bake.py` →
+  `data/forest.json` from his Drive's LowpolyForestPack.zip): past the far sidewalk, the park's stone wall the street's length with its gate
+  opposite the bodega, the hexagonal pavers in to a round and on north-east, lawns (the game's grass), the pack's oaks, spruces, a dead oak and a
+  dead spruce at 9 to 30 metres (a person 1.8), its rocks as outcrops, the park's lamps; one mesh the trees, one the rocks, flat colours (the pack's
+  textures' means), the sun's and the lamps' shadows. The menu's PLACES has CENTRAL PARK.
+- **The imports from his Drive, by recency** (owner, 17 Oct 2026: "start importing google drive assets based on most recent and import into game, keep
+  going for 3 hours"): what the Drive connection could fetch (files under 10 MB; the bigger packs and models it cannot). **The undergrowth**
+  (his Free Shrubs Flowers and Mushrooms pack and LowPoly-Psionic: `tools/props-bake.py` → `data/props.json`, placed by `park.js`): bushes,
+  flowers, grass, mushrooms, stones over the park's lawns, logs and bits of fence, the Psionic mushrooms; **the pots and plants** (his pots &
+  plants pack) by the gate. **The creatures** (Easy Animated Enemy Pack: the rat, the frog, the snake, the spider, the wasp; Monster Pack
+  Animated by Quaternius: the bat, the slime; `tools/creatures-bake.py` → `data/creatures.json`, `src/npc-creatures.js`): each with the pack's
+  bones and clips, walked as the skeletons are: rats about the street and the park, frogs, a slime, a snake and spiders in the park, bats over it at
+  night, wasps by day. **The boats** (his kayak and fishing boat .fbx: `src/boats.js`): afloat in the pool as bodies of the pool's physics, with
+  the ball and the ring. **The stalls at the gate** (the flea market's own: a toy stall with the TOYS-Psionic animals, an oddities stall with the
+  Psionic crate, gems and gold), **the park's monument** (the terrain collection's ruined pillars), **its flower beds, cedars, a campfire** by a
+  sitting log with the game's own smoke and a flickering light (`park.js`). Not fetched (the Drive connection's limit, or .rar files, which
+  nothing here opens): the kenney space kit, Stylized Trees, Laundry, the Village interiors, and everything over 10 MB. **The plesiosaur skeleton**
+  (his PointNemo pack, three.js code, not a model: `tools/nemo-bake.cjs` builds it once in a headless browser and keeps its faces, cut down) stands
+  on its base between the pillars at the round's north.
 - When a request could mean more than one thing, ask with a couple of options (or a quick mockup) before building.
 
 ## THE MARKET: the one official map
@@ -137,13 +164,20 @@ the owner's call, and merging publishes). The artifact link above is the quick w
     its water, its floats. `bodega.js` (the bodega's plan from the game's code, via `gamekit.js` stand-ins and `goods-defs.js`) +
     `bodbuild.js` (built in 3D). `batch.js`: every still face packed into one texture and a few meshes (fast).
   - `npc-map.js`: the goldfish and the bear wandering the platform (and `makeNPC`, every character's maker). `npc-skel.js`: the four skeletons on the far sidewalk, rigged and animated.
-  - `npc-street.js`: the cyborg and the teddy on the street (bones, moves, bodies in Rapier, minds). `npc-rigged.js`: the six Mixamo figures on the sidewalks. - `npc-dragon.js`: the Dragon on the road. `kit.js` + `dress.js`: the kits' pieces and the few on the street. `apts.js`: the apartment house (in the
+  - `npc-street.js`: the cyborg and the teddy on the street (bones, moves, bodies in Rapier, minds). `npc-rigged.js`: the six figures made a second way (kept, not built: `npc-figures.js` is used).
+  - `npc-dragon.js`: the Dragon on the road. `kit.js` + `dress.js`: the kits' pieces and the few on the street. `apts.js`: the apartment house (in the
     bodega's scope, after `bodbuild.js`).
-- `data/`: the characters baked from the owner's models (`goldfish.json`, `bear.json`) and the skeletons, their gear and clips (`skel.json`). `tools/`: the
+  - `npc-dragon.js`: the Dragon on the road. `kit.js` + `dress.js`: the kits' pieces and the few on the street. `apts.js`: the apartment house (in the
+    bodega's scope, after `bodbuild.js`). `npc-figures.js`: the six figures (KASA, GEKKOU, DRIZZEL, KURENAI, SAMIDALE, SHOGUN) on their Mixamo
+    bones, posed here, and the effects (smoke, the blade's trail, dust). `npc-creatures.js`: the packs' small animals on their own bones and clips.
+    `park.js`: Central Park's entrance past the far sidewalk (the wall and gate, the pavers, the lawns, the pack's trees and rocks, the undergrowth,
+    the pots, the lamps). `boats.js`: the kayak and the fishing boat afloat in the pool.
+- `data/`: the characters baked from the owner's models (`goldfish.json`, `bear.json`), the skeletons, their gear and clips (`skel.json`), the six figures (`figures.json`), the park's trees and rocks (`forest.json`), the undergrowth, pots and boats (`props.json`), the creatures (`creatures.json`), the Dragon (`dragon.json`), the kits (`kit.json`). `tools/`: the
   scripts that baked them (they need the owner's .glb files and `fast-simplification`; `skeletons-bake.py` the KayKit pack, unzipped;
-  `skin-bake.py`, `skin-bones.py`, `item-bake.py`, `mesh-cut.py` the street's characters and items: `trimesh`, `scipy`, `scikit-image` too).
+  `skin-bake.py`, `skin-bones.py`, `item-bake.py`, `mesh-cut.py` the street's characters and items: `trimesh`, `scipy`, `scikit-image` too;
+  `figures-bake.py` the six figures, `forest-bake.py` the park's pack, `props-bake.py` still things from .glb or .obj with a palette, `creatures-bake.py` rigged ones with their clips; the packs' .fbx made .glb with npm's fbx2gltf).
 - `tests/`: Playwright screenshots (`mapshot.cjs`: the street; `maptour.cjs`: platform, pool, bodega, stairs, a walk down; `skelshot.cjs`: the skeletons, close; `streetshot.cjs` the
-  street's characters over a few moments; `streetact.cjs` one of them told each move, close up). The page takes
+  street's characters over a few moments; `streetact.cjs` one of them told each move, close up; `figshot.cjs` the six figures over a few moments; `figact.cjs` one told each move; `parkshot.cjs` the park's gate, round and path; `creatshot.cjs` the creatures by day and night; `poolshot.cjs` the boats). The page takes
   `?at=x,z[,height]` to start somewhere, for tests. In a cloud container rendering is software (slow, ~20 fps): run them in the background.
 
 ## Where it's going

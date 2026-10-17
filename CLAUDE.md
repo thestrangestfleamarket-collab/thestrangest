@@ -372,6 +372,8 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
 
 - **The bus stop and its bench removed** (owner, 17 Oct 2026: "remove the bus stop and bus bench"; `dress.js`): the street keeps its trash cans and street light.
 
+- **Street lights and lamp posts** (owner, 17 Oct 2026: "lets add a street light and lamp posts where they would go"; `dress.js`): the kit's tall street lights at both kerbs, staggered, about every 30 m, the arm over the road, a lit lamp under each head; cast-iron lamp posts (a post and a lantern) along the park's side of the far sidewalk, a pair at the gate, every 14 m; each a warm light (LITE's 8 nearest), solid at its foot. Cost: some 2,000 triangles, no new shadow lights.
+
 ## THE MARKET: the one official map
 
 **THE MARKET** (owner, 17 Oct 2026: "one official MARKET map im gona start filling in") is the game's map here: every place the owner adds goes

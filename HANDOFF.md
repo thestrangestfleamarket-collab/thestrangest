@@ -28,6 +28,12 @@ This note says what was in progress and where it is.
 
 A branch may not exist if its work was stopped before it pushed.
 
+## How the perf work was measured, to carry on (17 Oct 2026)
+- No game source in that container: `git clone` of `bralynnb/tsfm` needs a login there. With it beside this repo, `python3 build.py` builds `dist/market.html` with the fixes (build.py's hooks on `src/perf.js`).
+- Without it: the published page (artifact PnmQqhkusfewby35tf4zo5, `index.html`) is the game as built; the fixes were patched into a copy of it by string replacement of build.py's anchors (the page's breath markers `if(performance.now()-__YT>40)await __Y();` sit between statements) and `window.__PERFX=PERFX` exposed after `CLIP.run()`.
+- `tests/perfstat.cjs "<query>" [wait]` prints the stats line and takes a screenshot; `?perfx=0` is the before. Screenshots are compared by pixel difference.
+- Open for the next: the pool with fix 7 on, the bar with the musicians' hiding, the 512 lamp map's look close up, then a build and the owner's own stats line before and after. Fix 5 (fewer draws) and the Walker's folded hair and eyes (56.7K triangles drawn about 8 times) not started.
+
 ## Known open items
 - The cigarette rack overlaps the Fox's head.
 - Spots cut off by the strict hitboxes: a corner of the Diner, behind the bar counter, a strip of the castle.

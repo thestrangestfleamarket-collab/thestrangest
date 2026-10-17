@@ -18,7 +18,7 @@
       for(const [bn,p] of Object.entries(Cl.p))tracks.push(new THREE.VectorKeyframeTrack(bn+'.position',T,f32(p)));
       out[name]=new THREE.AnimationClip(name,Cl.dur,tracks); } return out; };
   // the grounds they keep to: the park's lawn, the whole street and the park; where they may stand (not in a wall, a trunk, a rock, the stairs)
-  const M=BOD.MAP, X=BOD.XS, Z=BOD.ZS, PARKL={x0:X(M.x0+2),x1:X(M.x1-2),z0:Z(PARK.y0+1.5),z1:Z(PARK.y1-1)}, ALL={x0:X(M.x0+2),x1:X(M.x1-2),z0:Z(-76.3),z1:Z(PARK.y1-1)},
+  const M=BOD.MAP, X=BOD.XS, Z=BOD.ZS, PARKL={x0:X(PARK.x0+PARK.ox+2),x1:X(PARK.x1+PARK.ox-2),z0:Z(PARK.y0+PARK.oy+1.5),z1:Z(PARK.y1+PARK.oy-1)}, ALL={x0:X(M.x0+2),x1:X(M.x1-2),z0:Z(-76.3),z1:Z(PARK.y1+PARK.oy-1)},   /* (the park as the map's layout has it: park.js) */
     HOLE=[X(MAPSTAIR.x0-.6),Z(MAPSTAIR.y0),X(MAPSTAIR.x1+.6),Z(MAPSTAIR.y1+.6)], free=(x,z,R)=>!(x>HOLE[0]-R&&x<HOLE[2]+R&&z>HOLE[1]-R&&z<HOLE[3]+R)&&!SOL.up.some(b=>x>b[0]-R&&x<b[2]+R&&z>b[1]-R&&z<b[3]+R);
   // each kind: its clips for going and standing, its pace (its own units a second at the clip's own pace), the height it keeps (a flyer), when it's out
   const KIND={Rat:{walk:'Rat_Walk',run:'Rat_Run',idle:'Rat_Idle',pace:3,lane:ALL,night:.6},Frog:{walk:'Frog_Jump',idle:'Frog_Idle',pace:2.4,lane:PARKL,hop:[.33,.78]},Slime:{walk:'Slime_Walk',idle:'Slime_Idle',pace:1.2,lane:PARKL,turn:-Math.PI/2},

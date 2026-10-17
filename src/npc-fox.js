@@ -29,7 +29,7 @@ const FOX={};
   // (behind the counter, owner 17 Oct 2026, his picture of him in the shelf: "put behind counter, we need to avoid clipping": the game's mat
   // spot isn't this shop's; the long counter here runs z -7.95 to -4.10 with the wall's mat behind it, 0.7 wide, under the cigarette rack: he
   // stands on that mat facing the aisle, turning toward you only so far (35 degrees) that his shoulders never meet the counter or the wall)
-  const AT={x:4.51,z:-6.1}, FACE=-Math.PI/2, TURN=35*Math.PI/180;
+  const AT={x:4.51+LAY.o('bodega').x*TILE,z:-6.1+LAY.o('bodega').y*TILE},   /* (with the bodega where the map's layout put it) */ FACE=-Math.PI/2, TURN=35*Math.PI/180;
   const N=PARTSNPC.make(PARTS,{key:'fox',name:'THE FOX',eye:0,eyeC:'0.,0.,0.',metres:1.6,radius:.27,speed:.4,stride:6,rock:0,bob:.015,lv:'up',group:'bodega',
     x:AT.x,z:AT.z,ground:(x,z)=>MODS.bodega.ground(x,z),
     brain:(dt,you,st,N)=>{ if(N.sheet)return; st.to=null; st.hold=true; const H=N.home||AT; st.x=H.x; st.z=H.z;   // (his place: the mat, or where the hitboxes' check moved him, N.home: clip.js; never wanders)

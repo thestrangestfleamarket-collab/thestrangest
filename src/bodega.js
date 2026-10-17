@@ -7,9 +7,12 @@ const BOD={meshes:[], walls:{}, lamps:[]};
 {
 /*GAMEKIT*/
 { // (the map's own names in a scope of their own: the game's files above have some of the same)
-  const B0=LBLD[0], BODOFF=B0.y0+3.75, W=LSEED.walk, CURB=LSEED.street, FAR=LSEED.grass, RD=-4;   // (the road 4 art px below the sidewalk: a kerb you step down)
-  const OX=(B0.x0+B0.x1)/2, OY=B0.y1, K=BLDK, X=x=>(x-OX)*TILE*K, Z=y=>(y-OY)*TILE*K, Y=z=>z*ZU*K, XS=x=>(x-OX)*TILE, ZS=y=>(y-OY)*TILE, YS=z=>z*ZU; Object.assign(BOD,{X,Z,Y,XS,ZS,YS,OX,OY,B0,BODOFF});   // (X Z Y: the building, a tenth bigger from its front's middle, BLDK; XS ZS YS: the street, as it was)
-  const MAP={x0:50,x1:152,y0:B0.y0,y1:FAR+3}, POOLX=82;   // (the street's run; the pool room's west wall)
+  const B0=LBLD[0], B00={...B0}, W=LSEED.walk, CURB=LSEED.street, FAR=LSEED.grass, RD=-4;   // (the road 4 art px below the sidewalk: a kerb you step down)
+  const OX=(B00.x0+B00.x1)/2, OY=B00.y1, K=BLDK, X=x=>(x-OX)*TILE*K, Z=y=>(y-OY)*TILE*K, Y=z=>z*ZU*K, XS=x=>(x-OX)*TILE, ZS=y=>(y-OY)*TILE, YS=z=>z*ZU; Object.assign(BOD,{X,Z,Y,XS,ZS,YS,OX,OY,B0});   // (X Z Y: the building, a tenth bigger from its front's middle, BLDK; XS ZS YS: the street, as it was)
+  const MAP={x0:50,x1:152,y0:B00.y0,y1:FAR+3}, POOLX=82;   // (the street's run; the pool room's west wall)
+  // (moved on the map's layout, LAY: the building itself in the game's tiles, the world's middle (OX, OY: its front's middle as it was) and the street staying put; a tenth bigger, so a tile on the map is 1/BLDK of the game's)
+  { const o=LAY.o('bodega'); B0.x0+=o.x/K; B0.x1+=o.x/K; B0.y0+=o.y/K; B0.y1+=o.y/K; }
+  const BODOFF=B0.y0+3.75; BOD.BODOFF=BODOFF;
   // the subway's stairs (MAPSTAIR, the map's: tiles) a hole in the ground; elsewhere the ground's own colour
   const holed=f=>(x,y)=>x>=MAPSTAIR.x0&&x<MAPSTAIR.x1&&y>=MAPSTAIR.y0&&y<MAPSTAIR.y1?null:f(x,y);
   // ---- the painting of a face: fn(i, j) its colour, null (a hole) or glowing (.e, or four long); the colours and the glow as two canvases
@@ -89,14 +92,14 @@ const BOD={meshes:[], walls:{}, lamps:[]};
     put('of-shelf','shelves with boxes',x0+4.6,y0+.5); put('of-boxes','cardboard boxes',x0+6.6,y0+.7); put('of-sink','utility sink',x0+.55,y0+2.6,3);
     put('of-clock','wall clock',x0+3.2,y0+.29); put('of-tube','fluorescent tube',x0+3.6,y0+1.9); }
   BOD.food={x:B.x1-1.05,y:B.y0+6.3};
-  put('mat-out','door mat',m,W+.75); }   // (the mat outside the door: 26-zzz-downtown's door mats)
+  put('mat-out','door mat',m,B0.y1+.75); }   // (the mat outside the door: 26-zzz-downtown's door mats)
   // THE FRONT AND THE STREET, as 26-zzz-downtown dresses them (and the cobra-head street light the city had along the row, 26-zzzz-city, here at x 71)
   const FRONT=[], ROOF=[], STREET=[], GHOSTST=[];
   { const M=MKS, bo=B0, bm=(bo.x0+bo.x1)/2, n0=PROPS.length;
-    M.pipe(bo.x0+.2,W,bo.h-6);
+    M.pipe(bo.x0+.2,bo.y1,bo.h-6);
     // (the DELI awning and the COFFEE sign gone: owner, 17 Oct 2026, "remove the awning and coffee sign from bodega"; to be replaced)
-    M.neon(bo.x0+1.5,W,64,'OPEN',[255,90,110]); M.signbox(bo.x0+.45,bo.x0+2.3,W,36,48,[250,250,246],[40,80,200],'LOTTO',false);
-    M.gatebox(bo.x0+.2,bo.x1-.2,W,114); M.bell(bm,W,98); M.meterbox(bo.x0+.9,W,30); M.number(bo.x0+1.6,W,82,'66'); M.moss(bo.x0+.3,bo.x0+3,W);
+    M.neon(bo.x0+1.5,bo.y1,64,'OPEN',[255,90,110]); M.signbox(bo.x0+.45,bo.x0+2.3,bo.y1,36,48,[250,250,246],[40,80,200],'LOTTO',false);
+    M.gatebox(bo.x0+.2,bo.x1-.2,bo.y1,114); M.bell(bm,bo.y1,98); M.meterbox(bo.x0+.9,bo.y1,30); M.number(bo.x0+1.6,bo.y1,82,'66'); M.moss(bo.x0+.3,bo.x0+3,bo.y1);
     for(const p of PROPS.slice(n0))FRONT.push(p);
     // (the street's things, gone: the ice box, the papers, the milk crates, the standpipe and the cobra-head street light; owner, 17 Oct 2026: "remove trash can and all
     // street items (like poles and street lights) all will be replaced". STREET stays, empty, for what replaces them)
@@ -104,7 +107,7 @@ const BOD={meshes:[], walls:{}, lamps:[]};
     // ("Preset Ghost Street 1": the two ground-floor pieces, the floor above, the tiled roof, the eave with its sign and cooler, the bay window,
     // the door curtain, the drinks machine, the planted beds and their lanterns; not the row houses or the pole), east of the apartment
     // building, its front to the street, its paved forecourt out to the sidewalk (GHOSTK.GSK.o: the kit's corner)
-    { const K=GHOSTK.GSK, s=K.s; K.o=[131,W-8.3*s];   /* (moved east, owner 17 Oct 2026: the Diner and the Bar between it and the apartments) */ const n3=PROPS.length;
+    { const K=GHOSTK.GSK, s=K.s; { const o=LAY.o('ghost'); K.o=[131+o.x/BLDK,W-8.3*s+o.y/BLDK]; }   /* (moved east, owner 17 Oct 2026: the Diner and the Bar between it and the apartments) */ const n3=PROPS.length;
       for(const [k,dx,dy] of PRESETS['Preset Ghost Street 1'])if(!/row house|utility pole/.test(k))CATALOG[k](K.o[0]-3.5*s+dx,K.o[1]-.45*s+dy);
       for(const p of PROPS.slice(n3))GHOSTST.push(p); BOD.GHOSTST=GHOSTST; BOD.GSK=K; gdShape(GHOSTST,K,LAMPS);
       // THE VENDING MACHINES (owner, 17 Oct 2026: "pull in vending machines with real depth from old game, put them in front of ghost street dojo"):
@@ -113,7 +116,7 @@ const BOD={meshes:[], walls:{}, lamps:[]};
       // 23-w-y-market-lounge-4-street, word for word, through build.py), in a row east of the dojo's door against its front, beside the kit's teal machine, their windows to the street
       { const n4=PROPS.length, X0=K.o[0]+.6*s, DX=X0+(95+143)/48, Y1=K.o[1]+3.2*s;   /* (the dojo's door's middle and its front: ghostdojo.js's measures) */
         CATALOG['vending machine, red'](DX+2.6,Y1+.55,[0,1]); CATALOG['vending machine, white'](DX+3.85,Y1+.55,[0,1]);   /* (a row east of the door with the kit's teal machine: west of it the bay window juts out) */ for(const p of PROPS.slice(n4))STREET.push(p); } }   // (a third taller, its ground floor a dojo you walk into: ghostdojo.js)
-    const n2=PROPS.length, R=(f,x,y,z,...a)=>{ const p=f(x,y,z,W,...a); p.solids=[]; return p; };
+    const n2=PROPS.length, R=(f,x,y,z,...a)=>{ const p=f(x,y,z,bo.y1,...a); p.solids=[]; return p; };
     R(M.vent,bo.x0+3,bo.y0+5,bo.h); R(M.antenna,bo.x0+8,bo.y0+3.5,bo.h); R(M.roofac,bo.x0+6,bo.y0+7.5,bo.h); for(const p of PROPS.slice(n2))ROOF.push(p); }
   BOD.O=O; BOD.FRONT=FRONT; BOD.STREET=STREET; BOD.ROOF=ROOF; BOD.MAP=MAP; BOD.RD=RD;
   // which wall a hung thing is on (it goes with that wall where the wall is cut away)
@@ -131,9 +134,9 @@ const BOD={meshes:[], walls:{}, lamps:[]};
     {id:'road',x0:MAP.x0,y0:CURB,x1:MAP.x1,y1:FAR,z:RD,col:(x,y)=>roadCol(x,y,0),tex:'asphalt_02',tint:[62,64,68],rep:3},
     {id:'kerb2',x0:MAP.x0,y0:FAR,x1:MAP.x1,y1:FAR+.16,z:0,col:()=>[178,174,164],tex:'concrete_pavement',tint:[178,174,164],rep:2},
     {id:'walk2',x0:MAP.x0,y0:FAR+.16,x1:MAP.x1,y1:MAP.y1,z:0,col:slabCol,tex:'concrete_pavement',tint:[166,161,148],rep:2},
-    {id:'ghostst',bld:true,x0:131.2,y0:W-8.75*4/3,x1:141.4,y1:W,z:.1,col:(x,y)=>GHOSTK.gsFloor(x,y)||lawnCol(x,y),tex:null,rep:2},   // (Ghost Street's paving: the kit's own, gsFloor)
-    {id:'grassW',x0:MAP.x0,y0:B0.y0,x1:B0.x0,y1:W,z:0,col:holed(lawnCol),tex:null,rep:2},
-    {id:'grassE',x0:B0.x1,y0:B0.y0,x1:POOLX,y1:W,z:0,col:lawnCol,tex:null,rep:2}];   // (the gaps' grass: the park's lawn, as all grass is)
+    {id:'ghostst',bld:true,x0:GHOSTK.GSK.o[0]+.2,y0:GHOSTK.GSK.o[1]+8.3*GHOSTK.GSK.s-8.75*4/3,x1:GHOSTK.GSK.o[0]+10.4,y1:GHOSTK.GSK.o[1]+8.3*GHOSTK.GSK.s,z:.1,col:(x,y)=>GHOSTK.gsFloor(x,y)||lawnCol(x,y),tex:null,rep:2},   // (Ghost Street's paving: the kit's own, gsFloor)
+    {id:'grassW',x0:MAP.x0,y0:B00.y0,x1:B00.x0,y1:W,z:0,col:holed(lawnCol),tex:null,rep:2},
+    {id:'grassE',x0:B00.x1,y0:B00.y0,x1:POOLX,y1:W,z:0,col:lawnCol,tex:null,rep:2}];   // (the gaps' grass: the park's lawn, as all grass is)
   // the kerbs' faces down to the road
   BOD.kerbs=[{ax:'x',at:CURB,a0:MAP.x0,a1:MAP.x1,z0:RD,z1:0,n:1},{ax:'x',at:FAR,a0:MAP.x0,a1:MAP.x1,z0:RD,z1:0,n:-1}];
   // ---- the lights: the game's LAMPS as its objects made them (the tubes, the coolers, the neon, the street light), each a point light here
@@ -149,7 +152,7 @@ const BOD={meshes:[], walls:{}, lamps:[]};
   for(const p of [...Object.values(O),...STREET,...GHOSTST]){ if(p.high||/mat$|^door mat|bags|fly|tube|bell|clock|calendar|cord|mirror|phone|flap|dock|radio|cigs|chair/.test(p.key||p.name||''))continue;
     const bs=p.boxes.filter(b=>!b.nb&&b.z0<30&&b.z1-b.z0>3); if(!bs.length)continue; const r={x0:Math.min(...bs.map(b=>b.x0)),y0:Math.min(...bs.map(b=>b.y0)),x1:Math.max(...bs.map(b=>b.x1)),y1:Math.max(...bs.map(b=>b.y1))};
     sol(r.x0,r.y0,r.x1,r.y1,Math.max(...bs.map(b=>b.z1))); }
-  BOUND={x0:XS(MAP.x0),x1:XS(MAP.x1),z0:Z(B0.y0),z1:ZS(MAP.y1)};
+  BOUND={x0:XS(MAP.x0),x1:XS(MAP.x1),z0:Z(B00.y0),z1:ZS(MAP.y1)};
   groundY=(x,z)=>{ const gy=z/TILE+OY; return gy>CURB&&gy<FAR?YS(RD):0; };
   BOD.inside=(x,z)=>{ const gx=x/TILE/K+OX, gy=z/TILE/K+OY; return gx>B0.x0&&gx<B0.x1&&gy>B0.y0&&gy<B0.y1; };
 }

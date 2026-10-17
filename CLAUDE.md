@@ -377,6 +377,16 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
 - **Every room a button** (owner, 17 Oct 2026: "make sure every room and location on map has a button to jump there"; the menu's MAP, `ui.js`): PLACES, then ROOMS (the shop and the back room, the gym, the hallway, the lobby, the office, the dojo, each floor of the apartment house: its only way up now, the top of the subway stairs), then STORED; a jump puts the view back on him.
 
 - **Pixel art, not 3D, on the street** (owner, 17 Oct 2026, of the kit street light's smooth smeared foot: "i dont want things to look so 3d and glitchy, more pixel art vibes"): the street lights and the trash cans built from flat-coloured blocks in `dress.js` (one draw), the kit's models no longer on the street. **Every lamp's pool**: a stepped warm disc on the ground under each street light and lamp post at night ("some dont glow": only 8 lamps light for real). **Clouds never over the street**: the clouds on the camera's side of you are left out (`WX.cloudCut`, weather.js).
+- **The map editor** (owner, 17 Oct 2026: "build a map editor that allows me to move buildings and land around easily"; `src/mapedit.js`): Shift+M
+  (or MAP EDITOR in the menu's MAP tab): the Market from above (a picture of it as built, taken as it opens), each place a labelled box over it:
+  drag one to move it (half a tile at a time), the arrows or the arrow keys a tile (Shift five), the park's and the land's edges dragged to size
+  them, RESET THIS / RESET ALL; APPLY keeps it in the browser (`market-layout`) and loads the page again. Each place's code reads its move from
+  `LAY` (`map-pre.js`) where it sets itself out, so its faces, solids, lights, rooms, ground, stairs and lanes all go with it: the bodega (its
+  things, front, neon, the Fox), the apartment house, the apartments with the pool (and the rooms stacked on them), Ghost Street with its dojo
+  and machines, the Diner, the Bar (its musicians), Central Park (the shrine with it; edges too), the castle (its dungeon with it), the subway
+  (stairs and station together), the land's sheet (edges). EXPORT gives `LAYOUT {...}`: when he sends it, put it in `LAYOUT0` in `map-pre.js`
+  (the game's own). Not possible: turning a place (every place is built on walls along the map's axes); the street itself stays. `?layout=0`
+  the game's own layout alone, `?layout={...}` one for a test. Nothing runs while it's closed. Checked by `tests/mapedit.cjs`.
 
 ## THE MARKET: the one official map
 
@@ -423,7 +433,7 @@ the owner's call, and merging publishes). The artifact link above is the quick w
   `figures-bake.py` the six figures, `forest-bake.py` the park's pack, `props-bake.py` still things from .glb or .obj with a palette, `creatures-bake.py` rigged ones with their clips; the packs' .fbx made .glb with npm's fbx2gltf).
 - **Screenshots of other characters never show his avatar** (owner, 17 Oct 2026: "stop showing my avatar in screenshots of other characters"): a test looking at a character opens the page with `?hideme=1` (the Walker not drawn, `W3.hideMe` in `walker3d.js`).
 - `tests/`: Playwright screenshots (`fireshot.cjs`: the live flames close up; `mapshot.cjs`: the street; `maptour.cjs`: platform, pool, bodega, stairs, a walk down; `skelshot.cjs`: the skeletons, close; `mushshot.cjs`: a character built in parts (the mushroom seller; another with its debug hook's name as the last argument), close, by day or night; `hairshot.cjs`: his hairstyles from four angles, walking and stopped; `sheet.cjs <key>`: a character's sheet (black void, close, limbs spread, full res: `?sheet=key&fullres=8`; `?npcat=key,field` stands one out on the land); `streetshot.cjs` the
-  street's characters over a few moments; `streetact.cjs` one of them told each move, close up; `figshot.cjs` the six figures over a few moments; `figact.cjs` one told each move; `parkshot.cjs` the park's gate, round and path; `creatshot.cjs` the creatures by day and night; `poolshot.cjs` the boats; `gtshot.cjs` the guitarist close, `gthold.cjs` his holds tried, `bandshot.cjs` the stage's turns and who is heard, `pnshot.cjs` the pianist or the singer close; `modcheck.cjs` the page's module out for `node --check`). The page takes
+  street's characters over a few moments; `streetact.cjs` one of them told each move, close up; `figshot.cjs` the six figures over a few moments; `figact.cjs` one told each move; `parkshot.cjs` the park's gate, round and path; `creatshot.cjs` the creatures by day and night; `poolshot.cjs` the boats; `gtshot.cjs` the guitarist close, `gthold.cjs` his holds tried, `bandshot.cjs` the stage's turns and who is heard, `pnshot.cjs` the pianist or the singer close; `modcheck.cjs` the page's module out for `node --check`; `mapedit.cjs <out>` the map editor: two places moved, their walls and lights with them). The page takes
   `?at=x,z[,height]` to start somewhere, for tests. In a cloud container rendering is software (slow, ~20 fps): run them in the background.
 
 ## Where it's going

@@ -42,7 +42,7 @@ grab('stairs',()=>{ const S=MAPSTAIR, X=x=>(x-72)*TILE, Z=y=>(y+77)*TILE, Y=z=>z
   for(const [y,z,c,i] of [[S.y1-.3,60,[1,.92,.78],5],[S.y0+.5,-40,[.5,.54,.64],6]]){ const L=new THREE.PointLight(new THREE.Color(...c),i,7*TILE,1.6); L.position.set(X((S.x0+S.x1)/2),Y(z),Z(y)); L.userData.i0=L.intensity;
     scene.add(L); lamps.push(L); }
   // (and the exit tunnel's own cool light, as the platform's: the stairs' foot to the platform)
-  for(const y of [-83.5,-88.5]){ const L=new THREE.PointLight(new THREE.Color(.5,.54,.64),6,8*TILE,1.6); L.position.set(X((S.x0+S.x1)/2),Y(-98+88),Z(y)); L.userData.i0=L.intensity; MAPG.down.add(L); lamps.push(L); }
+  for(const y of [S.y0-3.5,S.y0-8.5]){ const L=new THREE.PointLight(new THREE.Color(.5,.54,.64),6,8*TILE,1.6); L.position.set(X((S.x0+S.x1)/2),Y(-98+88),Z(y)); L.userData.i0=L.intensity; MAPG.down.add(L); lamps.push(L); }
   // where you can't walk: the side walls (both levels), the back rail (on the street)
   const sol=(lv,x0,y0,x1,y1,h)=>{ SOL[lv].push([X(x0),Z(y0),X(x1),Z(y1)]); FIX[lv].push([X(x0),Z(y0),0,X(x1),Z(y1),h]); };
   for(const lv of ['up','down'])for(const x of [S.x0-.2,S.x1])sol(lv,x,S.y0,x+.2,S.y1,Y(30));
@@ -55,6 +55,11 @@ groundY=(x,z)=>{ const s=inStair(x,z); if(s){ const S=s.S, t=S.dir>0?s.gy-S.y0:S
   { const sg=LVL==='up'&&STORE.shrineGround?STORE.shrineGround(x,z):null; if(sg!=null)return sg; }   // (the Moon Shrine's plaza, steps and terrace: store.js)   // (a floor stacked on the apartments: store.js)
   return LVL==='down'?(MODS.dungeon&&MODS.dungeon.inside(x,z)?MODS.dungeon.ground(x,z):MODS.station.ground(x,z)):MODS.apts&&MODS.apts.inside(x,z)?MODS.apts.ground(x,z):MODS.bodega.ground(x,z); };   // (in the apartment house: its floor under you, its stairs: apts.js)
 BOUND={x0:Math.min(MODS.bodega.BOUND.x0,MODS.station.BOUND.x0),x1:Math.max(MODS.bodega.BOUND.x1,MODS.pool.BOUND.x1),z0:Math.min(MODS.station.BOUND.z0,MODS.pool.BOUND.z0),z1:Math.max(MODS.bodega.BOUND.z1,MODS.park.BOUND.z1)};   // (the park past the far sidewalk: park.js)
+// (and every place the map's layout moved, wherever it put it, so the view can reach it: the bodega, the apartment house, the castle, Ghost Street,
+// the Diner and the Bar; src/mapedit.js. Only a moved one: the street lights are spaced from these edges, dress.js)
+{ const g=(k,x0,z0,x1,z1)=>{ if(!LAY.L[k])return; BOUND.x0=Math.min(BOUND.x0,x0); BOUND.z0=Math.min(BOUND.z0,z0); BOUND.x1=Math.max(BOUND.x1,x1); BOUND.z1=Math.max(BOUND.z1,z1); }, B=BOD.B0, A=MODS.apts.A, C=CASTLE.b, G=BOD.grounds.find(q=>q.id==='ghostst');
+  g('bodega',BOD.X(B.x0),BOD.Z(B.y0),BOD.X(B.x1),BOD.Z(B.y1)); g('house',BOD.X(A.x0),BOD.Z(A.y0),BOD.X(A.x1),BOD.Z(A.y1)); g('castle',BOD.XS(C[0]),BOD.ZS(C[2]),BOD.XS(C[1]),BOD.ZS(C[3]));
+  if(G)g('ghost',BOD.X(G.x0),BOD.Z(G.y0),BOD.X(G.x1),BOD.Z(G.y1)); for(const R of STORE.rooms)g(R.id,R.x0,R.z0,R.x1,R.z1); }
 // the light of the open air at night over the street, the station's own underground
 const HEMI=new THREE.HemisphereLight(0x55607a,0x14110e,.3); scene.add(HEMI);
 // AT MOST EIGHT LAMPS LIGHT ANYTHING (owner, 17 Oct 2026, the budget: "render what is only absolutely needed"): every lamp the places made is a
@@ -103,8 +108,10 @@ window.MAPDBG=()=>({LVL,cut:MODS.stairCut.constant,vis:Object.fromEntries(Object
   t.wrapS=t.wrapT=THREE.MirroredRepeatWrapping; t.repeat.set(1/K,1/K);
   // the sheet, in tiles (x across, -z up its plane: laid flat after), and its holes
   const XS=BOD.XS, ZS=BOD.ZS, M=BOD.MAP, tt=v=>v/TILE, R=220, cx=tt(XS((M.x0+M.x1)/2)), cz=tt(ZS(M.y0));
-  const sh=new THREE.Shape([[cx-R,-(cz-R)],[cx+R,-(cz-R)],[cx+R,-(cz+R)],[cx-R,-(cz+R)]].map(p=>new THREE.Vector2(...p)));
-  const hole=(x0,z0,x1,z1)=>sh.holes.push(new THREE.Path([[x0,-z0],[x0,-z1],[x1,-z1],[x1,-z0]].map(p=>new THREE.Vector2(...p))));
+  // (moved and its edges moved on the map's layout, LAY: the sheet's four edges, in tiles; a hole only where the sheet still is)
+  const LO=LAY.o('land'), LE=LAY.e('land'), LR=MODS.landR={x0:cx-R+LO.x+LE[0],z0:cz-R+LO.y+LE[1],x1:cx+R+LO.x+LE[2],z1:cz+R+LO.y+LE[3]};
+  const sh=new THREE.Shape([[LR.x0,-LR.z0],[LR.x1,-LR.z0],[LR.x1,-LR.z1],[LR.x0,-LR.z1]].map(p=>new THREE.Vector2(...p)));
+  const hole=(x0,z0,x1,z1)=>x0>LR.x0&&x1<LR.x1&&z0>LR.z0&&z1<LR.z1&&sh.holes.push(new THREE.Path([[x0,-z0],[x0,-z1],[x1,-z1],[x1,-z0]].map(p=>new THREE.Vector2(...p))));
   hole(tt(XS(M.x0)),tt(ZS(BOD.CURB)),tt(XS(M.x1)),tt(ZS(BOD.FAR)));   // (the road, a kerb down)
   hole(tt(XS(MAPSTAIR.x0)),tt(ZS(MAPSTAIR.y0)),tt(XS(MAPSTAIR.x1)),tt(ZS(MAPSTAIR.y1)));   // (the stairs down)
   { const S=CASTLE.stair; hole(tt(XS(S.x0)),tt(ZS(S.y0)),tt(XS(S.x1)),tt(ZS(S.y1))); }   // (the castle's stair down)

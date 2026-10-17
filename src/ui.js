@@ -23,6 +23,7 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
     if(e.target&&/^(TEXTAREA|INPUT|SELECT)$/.test(e.target.tagName))return null;   // (typing in a box isn't walking)
     if(raw==='?'){ if(e.type==='keydown'&&!e.repeat)UI.moves(); return null; }   // (? : every action and move he has, with its key: below)
     if(raw==='m'&&e.shiftKey&&!ED.on){ if(e.type==='keydown'&&!e.repeat)MAPED.toggle(); return null; }   // (Shift+M: the map editor, src/mapedit.js)
+    if(raw==='k'&&e.shiftKey&&!MAPED.on){ if(e.type==='keydown'&&!e.repeat)AV.toggle(); return null; }   // (Shift+K: the avatar editor, src/avatar.js)
     if(raw==='e'&&e.shiftKey&&!ED.on&&!UI.menuOpen){ if(e.type==='keydown'&&!e.repeat)WE.toggle(); return null; }   // (Shift+E: edit the world, src/worldedit.js)
     // (isometric: Q / E / R turn it a quarter, before any key of his own choosing: owner 17 Oct 2026, Q / E were changing the view instead)
     if(UI.view==='iso'&&!ED.on&&(raw==='q'||raw==='e'||raw==='r')){ if(e.type==='keydown'&&!e.repeat){ yawTo+=raw==='q'?Math.PI/2:-Math.PI/2; yaw=yawTo; } return null; }   /* (straight to the next angle, no turning: owner, 17 Oct 2026, "q/e should automatically show up at the next angle (jump to) not rotate") */
@@ -39,7 +40,7 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
       const row=(k,t)=>'<div style="display:flex;gap:14px"><b style="min-width:120px;color:#f2c14e">'+k+'</b><span>'+t+'</span></div>', h=t=>'<div style="margin:12px 0 4px;color:#8a8f9c">'+t+'</div>';
       let o='<div style="display:flex;justify-content:space-between"><b>WHAT YOU CAN DO</b><span style="color:#8a8f9c">? OR ESC CLOSES</span></div>'+h('KEYS (CHANGE THEM IN THE MENU\'S KEYS)');
       for(const [a,what] of ACTS)o+=row(NAME(keyOf(a)),what.toUpperCase());
-      o+=row('N','NOON / 7 PM')+row('SHIFT + E','EDIT THE WORLD')+row('SHIFT + M','MAP EDITOR: MOVE THE PLACES AND THE LAND')+row('ESC','THE MENU')+row('?','THIS LIST');
+      o+=row('N','NOON / 7 PM')+row('SHIFT + E','EDIT THE WORLD')+row('SHIFT + M','MAP EDITOR: MOVE THE PLACES AND THE LAND')+row('SHIFT + K','AVATAR EDITOR: BODY, LOOK, TEXTURES, OUTLINE, SHADING, PRESETS')+row('ESC','THE MENU')+row('?','THIS LIST');
       const M=RIG.MOVES||{}, fights=Object.keys(M).filter(n=>M[n]&&M[n].combo);
       if(fights.length){ o+=h('FIGHTING: J PUNCH, K KICK; PRESS AGAIN IN TIME TO CHAIN'); for(const n of fights){ const c=M[n].combo; o+=row(n.replace(/([A-Z])/g,' $1').toUpperCase(),Object.entries(c).map(([k,v])=>k+' → '+v.replace(/([A-Z])/g,' $1').toUpperCase()).join(' · ')); } }
       const K=RIG.KEYMOVE||{}; if(Object.keys(K).length){ o+=h('YOUR OWN MOVES (HIS SHAPE → ANIMATE)'); for(const [k,n] of Object.entries(K))o+=row(k,n.toUpperCase()); }
@@ -166,7 +167,7 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
       <h3>VIEW</h3><div class="row"><span style="width:60px">ZOOM</span><input type="range" id="dzoom" min="0" max="1" step="0.001"></div>
       <div class="row"><span style="width:60px">TILT</span><input type="range" id="dtilt" min="0" max="1" step="0.001"><button class="btn" id="dreset">RESET THE VIEW</button></div>
       <h3>VIEW</h3><div class="row" id="dview"><button class="btn" data-view="map">MAP VIEW</button><button class="btn" data-view="iso">ISOMETRIC</button><button class="btn" data-view="third">THIRD PERSON</button><button class="btn" data-view="follow">BEHIND</button><button class="btn" data-view="first">FIRST PERSON</button></div>
-      <h3>HIM</h3><div class="row"><button class="btn" id="dshape">EDIT HIS SHAPE</button><button class="btn" id="dlooks">YOUR LOOKS</button></div>
+      <h3>HIM</h3><div class="row"><button class="btn" id="davatar">AVATAR EDITOR (SHIFT+K)</button><button class="btn" id="dshape">EDIT HIS SHAPE</button><button class="btn" id="dlooks">YOUR LOOKS</button></div>
       <div class="row"><button class="btn" id="dbody">PHYSICS BODY</button><span style="width:60px">LOOSE</span><input type="range" id="dloose" min="0" max="1" step="0.01"></div>
       <h3>ON SCREEN</h3><div class="row"><button class="btn" id="dhelp">HELP PANEL</button><button class="btn" id="dstat">STATS</button></div></div>
     <div class="pane" data-p="graphics">
@@ -248,7 +249,7 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
   // THE OUTLINE round him (owner, 17 Oct 2026: "add ability to remove the line from avatar"; off unless turned on, kept in this browser)
   try{ OUTL.on=localStorage.getItem('market-outline')==='1'; }catch(e){ OUTL.on=false; } OUTL.sp.enabled=OUTL.on;
   $('#doutl').onclick=()=>{ OUTL.on=!OUTL.on; OUTL.sp.enabled=OUTL.on; try{ localStorage.setItem('market-outline',OUTL.on?'1':'0'); }catch(e){} drawDisplay(); };
-  $('#dshape').onclick=()=>ED.enter();
+  $('#dshape').onclick=()=>AV.open('body'); $('#davatar').onclick=()=>AV.open();   // (the avatar editor, src/avatar.js: HIS SHAPE's pieces, moves and animation a button in it)
   // LIGHT ON THEM: the Walker, the goldfish and the bear lit by the lamps (walker3d.js, npc-map.js), or each by its own fixed light (FLAT)
   UI.setLit=on=>{ UI.lit=on; W3.mesh.material=on?W3.toon:W3.flat; for(const N of NPCS)N.me.material=on?N.toon:N.flat; try{ localStorage.setItem('market-avlight',on?'1':'0'); }catch(e){} };
   { let v='1'; try{ v=localStorage.getItem('market-avlight')||'1'; }catch(e){} UI.setLit(v==='1'); }
@@ -266,7 +267,7 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
 // ---- EVERY PANEL CLOSES AND MOVES (owner, 17 Oct 2026: "make sure menus have way to exit out, allow all menus to be draggable"): each panel gets
 // an X in its corner (what Escape or its own key would do) and is dragged by any of its plain parts (not its buttons, sliders, fields or the map);
 // panels made later, or whose insides are rewritten (the ? list), get their X back on the next look round (a few times a second, cheap)
-{ const PANS=[['menu',()=>UI.toggleMenu(),'.box'],['ed',()=>ED.exit()],['looks',el=>{ el.hidden=true; }],['we',()=>WE.toggle()],['movesp'],['maped',()=>MAPED.toggle()],['shbar'],['hud'],['stat'],['shd']];
+{ const PANS=[['menu',()=>UI.toggleMenu(),'.box'],['ed',()=>ED.exit()],['av',()=>ED.exit()],['looks',el=>{ el.hidden=true; }],['we',()=>WE.toggle()],['movesp'],['maped',()=>MAPED.toggle()],['shbar'],['hud'],['stat'],['shd']];
   const css=document.createElement('style'); css.textContent='.pX{position:absolute;right:4px;top:4px;z-index:2;font:12px Silkscreen,monospace;color:#f2c14e;background:#0e1016;border:2px solid #3a3f4e;width:24px;height:24px;line-height:18px;padding:0;cursor:pointer} .pDrag{cursor:move}'; document.head.appendChild(css);
   const hide=el=>{ el.hidden=true; if(el.style.display)el.style.display='none'; };
   const NOPE='button,input,select,textarea,a,label,canvas,option,.pX';

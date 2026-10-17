@@ -51,7 +51,7 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
   // i select i will export to you and you will save that as perm for game. i want to be able to adjust it to any level and save"): a panel that
   // follows the zoom; its slider sets this zoom band's art to any level of RESL (build.py's ZRES), kept in the browser at once; EXPORT gives
   // the table to send, which goes into ZRES0 for good
-  { const P=document.createElement('div'); P.style.cssText='position:fixed;right:12px;top:12px;z-index:21;display:none;width:300px;padding:12px 14px;background:#0b0d13f2;border:2px solid #2a3040;color:#c9ccd6;font:11px Silkscreen,monospace;letter-spacing:1px;line-height:1.8';
+  { const P=document.createElement('div'); P.id='zresp'; P.style.cssText='position:fixed;right:12px;top:12px;z-index:21;display:none;width:300px;padding:12px 14px;background:#0b0d13f2;border:2px solid #2a3040;color:#c9ccd6;font:11px Silkscreen,monospace;letter-spacing:1px;line-height:1.8';
     P.innerHTML='<div style="display:flex;justify-content:space-between"><b>RESOLUTION BY ZOOM</b><span style="color:#8a8f9c">SHIFT+R</span></div><div id="zrI"></div>'
       +'<input id="zrS" type="range" min="0" max="'+(RESL.length-1)+'" step="1" style="width:100%"><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">'
       +'<button class="btn" id="zrC">COARSER</button><button class="btn" id="zrF">FINER</button><button class="btn" id="zrX">UNSET THIS ZOOM</button><button class="btn" id="zrA">CLEAR ALL</button><button class="btn" id="zrE">EXPORT</button></div>'
@@ -168,7 +168,7 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
   #menu{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(5,6,10,.55);z-index:30}
   #menu[hidden]{display:none}
   #menu .box{width:min(860px,94vw);max-height:90vh;overflow:auto;background:var(--bg);border:2px solid var(--line);font:12px var(--pixel);color:var(--fg)}
-  #menu .tabs{display:flex;gap:0;border-bottom:2px solid var(--line)} #menu .tabs button{flex:1;font:inherit;color:var(--dim);background:transparent;border:0;border-right:2px solid var(--line);padding:12px;cursor:pointer}
+  #menu .tabs{display:flex;gap:0;border-bottom:2px solid var(--line);padding-right:32px} #menu .tabs button{flex:1;font:inherit;color:var(--dim);background:transparent;border:0;border-right:2px solid var(--line);padding:12px;cursor:pointer}
   #menu .tabs button[aria-selected="true"]{color:var(--key);background:var(--panel)} #menu .tabs button:last-child{border-right:0}
   #menu .pane{padding:14px 16px} #menu .pane[hidden]{display:none} #menu h3{font:12px var(--pixel);color:var(--key);margin:12px 0 8px} #menu h3:first-child{margin-top:0}
   #menu .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:6px 0} #menu .btn{font:inherit;color:var(--fg);background:#0e1016;border:2px solid #3a3f4e;padding:6px 10px;cursor:pointer}
@@ -267,3 +267,18 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
   // the help panel, the stats and the shadows' buttons start hidden; the menu has them all (DISPLAY: shadows, help, stats; KEYS: every control)
   for(const id of ['hud','stat','shd'])document.getElementById(id).hidden=true; { const L=document.getElementById('loading'); if(L)setTimeout(()=>{ L.style.opacity=0; setTimeout(()=>L.remove(),500); },Math.max(0,6000-(performance.now()-(window.__ld0||0)))); }   /* (the line's fade done first: 1.5 s in, 3 s, 1.5 s out, then the dark lifts) */
   drawBadge(); }
+// ---- EVERY PANEL CLOSES AND MOVES (owner, 17 Oct 2026: "make sure menus have way to exit out, allow all menus to be draggable"): each panel gets
+// an X in its corner (what Escape or its own key would do) and is dragged by any of its plain parts (not its buttons, sliders, fields or the map);
+// panels made later, or whose insides are rewritten (the ? list), get their X back on the next look round (a few times a second, cheap)
+{ const PANS=[['menu',()=>UI.toggleMenu(),'.box'],['ed',()=>ED.exit()],['looks',el=>{ el.hidden=true; }],['we',()=>WE.toggle()],['movesp'],['zresp'],['shbar'],['hud'],['stat'],['shd']];
+  const css=document.createElement('style'); css.textContent='.pX{position:absolute;right:4px;top:4px;z-index:2;font:12px Silkscreen,monospace;color:#f2c14e;background:#0e1016;border:2px solid #3a3f4e;width:24px;height:24px;line-height:18px;padding:0;cursor:pointer} .pDrag{cursor:move}'; document.head.appendChild(css);
+  const hide=el=>{ el.hidden=true; if(el.style.display)el.style.display='none'; };
+  const NOPE='button,input,select,textarea,a,label,canvas,option,.pX';
+  const drag=(box)=>{ box.classList.add('pDrag'); box.addEventListener('mousedown',e=>{ if(e.button!==0||e.target.closest(NOPE))return; e.stopPropagation(); e.preventDefault();
+      const r=box.getBoundingClientRect(), dx=e.clientX-r.left, dy=e.clientY-r.top; Object.assign(box.style,{position:'fixed',left:r.left+'px',top:r.top+'px',right:'auto',bottom:'auto',transform:'none',margin:'0',width:r.width+'px',height:box.id==='ed'?r.height+'px':box.style.height}); box.style.inset='auto'; box.style.left=r.left+'px'; box.style.top=r.top+'px';
+      const mv=e=>{ box.style.left=Math.max(-r.width+60,Math.min(innerWidth-60,e.clientX-dx))+'px'; box.style.top=Math.max(0,Math.min(innerHeight-30,e.clientY-dy))+'px'; }, up=()=>{ removeEventListener('mousemove',mv,true); removeEventListener('mouseup',up,true); };
+      addEventListener('mousemove',mv,true); addEventListener('mouseup',up,true); }); };
+  const look=()=>{ for(const [id,close,sub] of PANS){ const el=document.getElementById(id); if(!el)continue; const box=sub?el.querySelector(sub):el; if(!box)continue;
+      if(!box.dataset.pan){ box.dataset.pan=1; drag(box); if(getComputedStyle(box).position==='static')box.style.position='relative'; }
+      if(!box.querySelector(':scope>.pX')){ const x=document.createElement('button'); x.className='pX'; x.type='button'; x.textContent='X'; x.title='close'; x.onclick=e=>{ e.stopPropagation(); close?close(el):hide(el); }; box.appendChild(x); } } };
+  look(); setInterval(look,400); }

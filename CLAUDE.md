@@ -15,6 +15,26 @@ this repo is `bralynnbell/thestrangest`.
   better ways of doing thing in 3js just do that ... i trust you to build it like that"; "dont follow the pixel pinned rule or anything
   else that makes it more difficult"; "Don't copy how the other system does it just make it look the same. Use whatever method is smartest").
 
+## The budget: render only what's needed (owner, 17 Oct 2026; read before adding anything)
+
+The owner: "i want simple pixelated graphics so i dont want to render a bunch of needless stuff and not even use it. lets render what is only
+absolutely needed at the most basic levels and i will tell you when to improve each. dont assume i want anything looking nice. this is the best
+graphics the game should ever look" (his screenshot: the pool room at night, dark, flat, chunky pixels). Every session keeps to these:
+
+1. **His screenshot is the ceiling.** No glow or bloom, no soft shading, no screen effects, nothing "nicer" unless he asks for that one thing.
+2. **Triangles: the whole screen under 100,000.** A model is made simpler at bake time, never drawn heavy: the same shapes with fewer, bigger
+   faces, no holes (`tools/simplify.py`, the originals kept in `data/full/`). Characters: the head (the head bone and all under it) exactly as
+   it is, the rest of the body to half ("leave the faces as complex as they are, change rest of body to medium"); things (plants, toys, trees,
+   rocks, the kit, gear): the small marks that stand out in colour (eyes, noses, spots) kept, the plain rest to a third. The Walker and the
+   guitarist (built in code, `walker3d.js`): the head, hair and eyes as they were, every other piece about half.
+3. **Lights: at most 8 lamps light anything** (the nearest you); the rest only glow. **Shadows: the sun's and one lamp's at most.**
+4. **Draw and run only what's near or seen**: other rooms not drawn; far characters neither drawn nor moved; the pool's water only steps near it.
+5. **As few shader programs as possible**: what differs only by a number is a uniform, not a new program; shaders are compiled while the loading
+   line shows.
+6. **Never sharper than the opening** (`RESMAX`).
+7. **Load**: nothing fetched that isn't needed at start (Rapier only when the physics body is switched on); no data for things not in the game.
+8. **Every new thing says its cost** (triangles, lights, milliseconds a frame) and fits the budget; if it can't, say so before adding it.
+
 ## What the owner has decided so far (keep these)
 
 - **The game's own look**: its colours and patterns, drawn by the game's own painters (24 texels a tile). **No photo textures, shader packs,

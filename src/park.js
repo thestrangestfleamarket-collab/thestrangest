@@ -6,7 +6,7 @@
 // his pack's models, coloured flat as the pack colours them (tools/forest-bake.py, data/forest.json), one mesh, throwing the sun's and the
 // lamps' shadows. NO TREES (owner, 17 Oct 2026: "remove all the trees from game for now, i want to start clean"): the forest pack's oaks,
 // spruces and dead trees and the terrain collection's cedars are gone from the map and the data. Where you can't walk: the wall, the posts, the rocks, the lamps' poles ----
-const PARK={x0:50,x1:108,y0:-61,y1:-5,gate:[92.5,99.5],round:[96,-47,7]};   // (y1: twice as deep, owner 17 Oct 2026, "expand central park": the castle in its back-left corner, castle.js)   // (bodega tiles, x0 and x1 the street's run, set below; the gate's run along the wall; the round's middle and reach)
+const PARK={x0:50,x1:108,y0:-61,y1:-2,gate:[92.5,99.5],round:[96,-47,7]};   // (bodega tiles, x0 and x1 the street's run, set below; the gate's run along the wall; the round's middle and reach; y1: deep enough for the castle in its back-left corner, castle.js)
 PARK.sway={value:0}; PARK.tick=()=>{ PARK.sway.value=performance.now()/1000; };   // (the oaks' sway: their crowns' clock)
 grab('park',()=>{ PARK.x0=BOD.MAP.x0; PARK.x1=BOD.MAP.x1; const X=BOD.XS, Z=BOD.ZS, Y=BOD.YS, {hash,grain,speck,grassCol}=BOD.g, P=PARK, U=TILE/.84, f32=s=>new Float32Array(Uint8Array.from(atob(s),c=>c.charCodeAt(0)).buffer), b8=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
   // ---- THE PATH: from the gate to the round, the round, and on north-east; the rest lawn

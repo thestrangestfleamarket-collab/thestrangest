@@ -99,16 +99,19 @@ mod=rp(mod,"let ppu=PPU;                                    // the zoom: screen 
 const RESL=[.5,.75,1,1.5,2,3,4,6,8,12,16], RES=()=>RESL[RESI], V0=PPU*PXS;   // (V0: screen pixels a world unit at zoom 1, as it opened)
 // NEVER SHARPER ZOOMED OUT (owner, 17 Oct 2026: "when i zoom out i dont want it to get this sharp ... never sharper than this resolution"): a
 // pixel is never smaller on screen than it is at the opening zoom for the sharpness chosen (MINPX); zoomed out past that, each pixel keeps its
-// size and takes in more of the world, instead of the picture getting finer; the limit one step sharper than the opening's ("1 sharper
-// resolution than that at that level"): the next sharpness's pixel
-const MINPX=()=>Math.max(1,Math.round(PXS/RESL[Math.min(RESL.length-1,RESI+1)]));
-const vpu=()=>V0*ppu/PPU, art=()=>PPU*RES(), pxS=()=>Math.max(MINPX(),Math.round(vpu()/art())), rppu=()=>Math.round(vpu()/art())<MINPX()?vpu()/pxS():art();
+// size and takes in more of the world, instead of the picture getting finer (owner, 17 Oct 2026, his picture: "i dont want zoom getting any
+// sharper res than this no matter how far you zoom out": the opening's pixel for the sharpness chosen, no finer)
+// ALL THE WAY IN (owner, 17 Oct 2026: "zoom in all the way to his super close of each finger"): the zoom goes to 80 times; past 8 screen
+// pixels a picture pixel the art gets finer instead (MAXPX), so close up you see each finger, not bigger blocks
+const MINPX=()=>Math.max(1,Math.round(PXS/RES())), MAXPX=8, ZMAX=PPU*80;
+const vpu=()=>V0*ppu/PPU, art=()=>Math.max(PPU*RES(),vpu()/MAXPX), pxS=()=>Math.max(MINPX(),Math.round(vpu()/art())), rppu=()=>Math.round(vpu()/art())<MINPX()?vpu()/pxS():art();
 function frustum(){ const u=rppu(); cam.left=-RW/2/u; cam.right=RW/2/u; cam.top=RH/2/u; cam.bottom=-RH/2/u; cam.updateProjectionMatrix(); }""")
 mod=rp(mod,"ppu*=Math.pow(ppuTo/ppu,ease); frustum();","ppu*=Math.pow(ppuTo/ppu,ease); if(pxS()!==SCL)resize(); else frustum();")
 mod=rp(mod,"zoom ${(ppu/PPU).toFixed(2)}×`","zoom ${(SCL*rppu()/V0).toFixed(2)}× · art ${SCL===1&&vpu()<art()?'full':RES()+'×'}`")
 mod=rp(mod,"if(k==='-'||k==='_'){PXS=Math.min(12,PXS+1);resize();} if(k==='='||k==='+'){PXS=Math.max(1,PXS-1);resize();}",
   "if(k==='-'||k==='_'){RESI=Math.max(0,RESI-1);resize();} if(k==='='||k==='+'){ if(pxS()>1||vpu()>art())RESI=Math.min(RESL.length-1,RESI+1); resize(); }   // (= finer until each is one screen pixel)")
 head=rp(head,'<div><b>-</b> / <b>=</b> pixel size</div>','<div><b>-</b> / <b>=</b> coarser / sharper</div>')
+mod=rp(mod,"ppuTo=Math.max(3,Math.min(240,ppuTo*Math.pow(1.0015,-e.deltaY)));","ppuTo=Math.max(3,Math.min(ZMAX,ppuTo*Math.pow(1.0015,-e.deltaY)));")
 print('ok zoom')
 
 # THE OWNER'S CHARACTERS FROM HIS MODELS (owner, 16 Oct 2026): the goldfish and the bear, coloured, wandering the platform

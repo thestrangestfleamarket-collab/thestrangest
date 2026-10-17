@@ -31,7 +31,7 @@ const LOOKS={};
     set('skin',col('skin',L.skin)); set('hair',col('hair',L.hairc)); set('eye',col('eye',L.eye)); set('shirt',col('shirt',L.shirt)); set('pants',col('pants',L.pants)); set('shoes',col('shoes',L.shoes)); { const i=MATS.indexOf('lid'); if(i>=0)W3.ramp[i]=tones(col('skin',L.skin)).map(c=>c.multiplyScalar(.78)); } recolor();
     if(!(L.hair>=0&&L.hair<HAIRS.length))L.hair=0; for(const [,ns] of HAIRS)for(const n of ns){ const i=W3.idx(n); if(i>=0)W3.HIDE[i]=true; }
     for(const n of HAIRS[L.hair][1]){ const i=W3.idx(n); if(i>=0)W3.HIDE[i]=false; }
-    if(!(L.eyes>=0&&L.eyes<6))L.eyes=0; for(let k=0;k<6;k++){ const i=W3.idx('eyes'+k); if(i>=0)W3.HIDE[i]=k!==L.eyes; } };
+    if(!(L.eyes>=0&&L.eyes<6))L.eyes=0; for(let k=0;k<6;k++){ const i=W3.idx('eyes'+k); if(i>=0)W3.HIDE[i]=k!==L.eyes; } if(W3.reindex)W3.reindex(); };   // (his index: only what he wears, drawn)
   // THE PANEL
   const css=document.createElement('style'); css.textContent=`#looks{position:fixed;right:12px;top:12px;width:330px;max-height:calc(100vh - 24px);overflow:auto;background:var(--panel,#10131b);border:2px solid var(--line,#2a3040);color:var(--fg,#d8dbe4);font:11px var(--pixel,monospace);padding:12px;z-index:30}
     #looks h2{margin:0 0 8px;font-size:13px;color:#ffd27a;letter-spacing:1px} #looks h3{margin:10px 0 4px;font-size:10px;color:var(--dim,#8a8f9c);letter-spacing:1px}

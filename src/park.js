@@ -44,7 +44,7 @@ grab('park',()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.ox=PO.x; PARK.o
   //   pointed out from its middle, so the light runs across it in one gradient, not face by face), softly wrapped round, and darkened
   //   underneath and toward the inside (an occlusion by its height and its depth in the crown);
   // 3 REAL: 2's round crown and occlusion with 1's shadows on it, a leaf's shadow letting a little light through (foliage, not stone)
-  const TL=[1,2,3].includes(+QS.get('treelook'))?+QS.get('treelook'):0;
+  const TL=[0,1,2,3].includes(+QS.get('treelook'))&&QS.get('treelook')!==null?+QS.get('treelook'):3;   // (3 the game's: looked at side by side, 17 Oct 2026, the round crown lit in one gradient with soft shadows; ?treelook=0 the old, 1, 2 the others)
   const treeLook=sh=>{ sh.vertexShader='attribute vec3 aTr; varying vec3 vTr;\n'+sh.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\n vTr=aTr;')
       .replace('#include <shadowmap_vertex>',THREE.ShaderChunk.shadowmap_vertex.replace(/(directional|point)LightShadows\[ i \]\.shadowNormalBias/g,'($&+aTr.z*.12)'));   // (the leaves 12 cm further off: no self-acne)
     let f='varying vec3 vTr; float TW=0., TSH=1.;\n'+sh.fragmentShader

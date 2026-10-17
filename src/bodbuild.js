@@ -73,7 +73,7 @@ const BODB={};
           for(let j=0;j<NZ;j++){ const z0=-hh+2*hh*j/NZ, z1=-hh+2*hh*(j+1)/NZ; quad(it,pa,[Math.cos(a0)*r,Math.sin(a0)*r,z0],[Math.cos(a1)*r,Math.sin(a1)*r,z0],[Math.cos(a1)*r,Math.sin(a1)*r,z1],[Math.cos(a0)*r,Math.sin(a0)*r,z1],n); }
           for(const s of [1,-1])emit(it,pa,[[[0,0,s*hh],[0,0,s]],[[Math.cos(a0)*r,Math.sin(a0)*r,s*hh],[0,0,s]],[[Math.cos(a1)*r,Math.sin(a1)*r,s*hh],[0,0,s]]]); } } }
     const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); geo.setAttribute('normal',new THREE.Float32BufferAttribute(N,3)); geo.setAttribute('color',new THREE.Float32BufferAttribute(Cc,3));
-    const me=new THREE.Mesh(geo,new THREE.MeshLambertMaterial({vertexColors:true,side:THREE.DoubleSide})); me.receiveShadow=true; scene.add(me); }
+    const me=new THREE.Mesh(geo,new THREE.MeshLambertMaterial({vertexColors:true,side:THREE.DoubleSide})); me.receiveShadow=true; me.userData.splitOK=true; scene.add(me); }   // (splitOK: its faces inside a room split off and drawn only from in there: src/perf.js)
   // THE LIGHTS: the game's lamps (the tubes, the coolers, the neon, the street light), each where its object put it, its reach and its colour;
   // (no shadows of their own: a lamp in the shop lights only the shop, map-post.js's LITE, so its light stays in the shop)
   for(const l of BOD.LAMPS){ const cm=Math.max(...l.c); if(!(cm>0))continue; const L=new THREE.PointLight(new THREE.Color(l.c[0]/cm,l.c[1]/cm,l.c[2]/cm),7*cm*Math.min(1.2,l.r/5),l.r*TILE*1.25,1.6);

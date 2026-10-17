@@ -123,6 +123,12 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
     g.setAttribute('pidx',new THREE.BufferAttribute(new Float32Array(n).fill(i),1)); g.setAttribute('pid',new THREE.BufferAttribute(new Float32Array(n).fill(R.PIECES.indexOf(P.n)),1)); return g; });
   const all=new THREE.BufferGeometry(); for(const k of Object.keys(geos[0].attributes)){ const sz=geos[0].attributes[k].itemSize, tot=geos.reduce((a,g)=>a+g.attributes[k].array.length,0), arr=new Float32Array(tot); let o=0; for(const g of geos){ arr.set(g.attributes[k].array,o); o+=g.attributes[k].array.length; } all.setAttribute(k,new THREE.BufferAttribute(arr,sz)); }
   W3.tris=all.attributes.position.count/3;
+  // ONLY WHAT HE WEARS, DRAWN (the perf audit, 17 Oct 2026: every hairstyle and eye style sat folded in his mesh, 57K triangles drawn some eight
+  // times a frame): his mesh is indexed, the index listing only the pieces not folded away (W3.HIDE); made again whenever a piece is put on or
+  // taken off (looks.js). The buffers never change, so the editor's sculpting is untouched
+  { const RG=[]; let o=0; for(const g of geos){ const n=g.attributes.position.count; RG.push([o,n]); o+=n; }
+    W3.reindex=()=>{ let n=0; for(let i=0;i<RG.length;i++)if(!W3.HIDE[i])n+=RG[i][1]; const I=new Uint32Array(n); let k=0; for(let i=0;i<RG.length;i++){ if(W3.HIDE[i])continue; const [a,c]=RG[i]; for(let v=0;v<c;v++)I[k++]=a+v; }
+      all.setIndex(new THREE.BufferAttribute(I,1)); W3.trisWorn=n/3; }; W3.reindex(); }
   const U={uPM:W3.PM,uL:{value:W3.L},uTint:{value:W3.tint},uLv:W3.lv,uLVP:W3.LVP,uSM:{value:W3.sm.depthTexture},uLook:W3.look,uG:W3.G,uLP:W3.LP,uLC:W3.LC,uCamW:W3.CamW};
   const m=new THREE.Mesh(all,new THREE.ShaderMaterial({vertexShader:VS,fragmentShader:FS,side:THREE.DoubleSide,uniforms:U}));
   // his shadows from the lamps: the lamps' own distance material, moved the same way

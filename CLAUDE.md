@@ -146,6 +146,12 @@ this repo is `bralynnbell/thestrangest`.
   opposite the bodega, the hexagonal pavers in to a round and on north-east, lawns (the game's grass), the pack's oaks, spruces, a dead oak and a
   dead spruce at 9 to 30 metres (a person 1.8), its rocks as outcrops, the park's lamps; one mesh the trees, one the rocks, flat colours (the pack's
   textures' means), the sun's and the lamps' shadows. The menu's PLACES has CENTRAL PARK.
+- **The creatures' animations fixed** (owner, 17 Oct 2026, "fix the animals animations. check each one"): the packs' armatures stand a quarter turned
+  and 100 times their rigs (the rat's 39.5), and the bake dropped that from each rig's root, so every creature's skin collapsed to a hundredth of
+  itself as soon as its bones moved it; the root now keeps the armature's size and turn (`rig.s`, `creatures-bake.py`), its clips set under it.
+  Each checked close up (`tests/creatact.cjs`: one of each kind, walking then standing): the rat scurries nose first, the frog hops (it moves only
+  while in the air, `hop`), the slime wobbles, the snake slithers (the pack's bunch and stretch), the spider creeps, the wasp hovers, the bat flaps;
+  the wasp and the slime face their packs' x, turned to face their way (`turn`); the slime basketball-sized.
 - **The imports from his Drive, by recency** (owner, 17 Oct 2026: "start importing google drive assets based on most recent and import into game, keep
   going for 3 hours"): what the Drive connection could fetch (files under 10 MB; the bigger packs and models it cannot). **The undergrowth**
   (his Free Shrubs Flowers and Mushrooms pack and LowPoly-Psionic: `tools/props-bake.py` → `data/props.json`, placed by `park.js`): bushes,

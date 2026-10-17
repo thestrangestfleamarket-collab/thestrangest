@@ -37,15 +37,24 @@ for key in KEYS:
     for k in range(len(J)): walk(k)
     remap={k:i for i,k in enumerate(order)}; names=[JN[k] for k in order]; par_=[remap[parent[k]] if parent[k]>=0 else -1 for k in order]
     L=[np.linalg.inv(glob_(J[parent[k]]))@glob_(J[k]) if parent[k]>=0 else glob_(J[k]) for k in order]
-    t=[]; q=[]
+    # (a root joint keeps the armature's turn and size over it (the packs' armatures are turned a quarter and 100 times their rig), so the
+    # points, the bind matrices and the bones agree; its clips' turns and moves, local to the armature, are set under it too: A below)
+    A={k:glob_(par[J[k]]) for k in order if parent[k]<0 and J[k] in par}; qmul=lambda a,b:np.array([a[3]*b[0]+a[0]*b[3]+a[1]*b[2]-a[2]*b[1],a[3]*b[1]-a[0]*b[2]+a[1]*b[3]+a[2]*b[0],a[3]*b[2]+a[0]*b[1]-a[1]*b[0]+a[2]*b[3],a[3]*b[3]-a[0]*b[0]-a[1]*b[1]-a[2]*b[2]])
+    def m2q(Rm):
+        tr=np.trace(Rm)
+        if tr>0: S=np.sqrt(tr+1)*2; return np.array([(Rm[2,1]-Rm[1,2])/S,(Rm[0,2]-Rm[2,0])/S,(Rm[1,0]-Rm[0,1])/S,.25*S])
+        i=int(np.argmax(np.diag(Rm))); jx,kx=(i+1)%3,(i+2)%3; S=np.sqrt(1+Rm[i,i]-Rm[jx,jx]-Rm[kx,kx])*2; qq=[0,0,0,0]; qq[i]=.25*S; qq[jx]=(Rm[jx,i]+Rm[i,jx])/S; qq[kx]=(Rm[kx,i]+Rm[i,kx])/S; qq[3]=(Rm[kx,jx]-Rm[jx,kx])/S; return np.array(qq)
+    AQ={k:m2q(M[:3,:3]/np.linalg.norm(M[:3,:3],axis=0)) for k,M in A.items()}
+    t=[]; q=[]; sc_=[]
     for M in L:
-        s=np.linalg.norm(M[:3,:3],axis=0); Rm=M[:3,:3]/s; tr=np.trace(Rm)
+        s=np.linalg.norm(M[:3,:3],axis=0); Rm=M[:3,:3]/s; tr=np.trace(Rm); sc_.append(np.round(s,5).tolist())
         if tr>0: S=np.sqrt(tr+1)*2; qq=[(Rm[2,1]-Rm[1,2])/S,(Rm[0,2]-Rm[2,0])/S,(Rm[1,0]-Rm[0,1])/S,.25*S]
         else:
             i=int(np.argmax(np.diag(Rm))); jx,kx=(i+1)%3,(i+2)%3; S=np.sqrt(1+Rm[i,i]-Rm[jx,jx]-Rm[kx,kx])*2; qq=[0,0,0,0]; qq[i]=.25*S; qq[jx]=(Rm[jx,i]+Rm[i,jx])/S; qq[kx]=(Rm[kx,i]+Rm[i,kx])/S; qq[3]=(Rm[kx,jx]-Rm[jx,kx])/S
         t.append(np.round(M[:3,3],5).tolist()); q.append(np.round(qq,6).tolist())
     Gf=np.stack([glob_(J[k]) for k in order]); ibm=np.linalg.inv(Gf)
     rig={'names':names,'parent':par_,'t':t,'q':q,'ibm':b64(ibm.transpose(0,2,1).astype(np.float32))}
+    if any(abs(np.array(x)-1).max()>1e-4 for x in sc_): rig['s']=sc_
     # the skin: every skinned mesh's points at rest in the world, its material's colour, joints (remapped) and weights
     P=[];C=[];RG=[];JJ=[];WW=[];IX=[]; parts=[]; base=0
     for n in j['nodes']:
@@ -72,10 +81,12 @@ for key in KEYS:
             if bn not in JI: continue
             k=remap[JI[bn]]; tt=acc(j,b,s['input']).reshape(-1).astype(float); v=acc(j,b,s['output']).astype(float)
             if c['target']['path']=='rotation':
+                if k in AQ: v=np.stack([qmul(AQ[k],x) for x in v])   # (a root's turn: under the armature's)
                 for d in range(1,len(v)):
                     if np.dot(v[d],v[d-1])<0: v[d]=-v[d]
                 qq=np.stack([np.interp(T,tt,v[:,i]) for i in range(4)],1); Q[:,k]=qq/np.linalg.norm(qq,axis=1,keepdims=True)
             elif c['target']['path']=='translation':
+                if k in A: v=(A[k][:3,:3]@v.T).T+A[k][:3,3]   # (a root's move: under the armature)
                 p=np.stack([np.interp(T,tt,v[:,i]) for i in range(3)],1)
                 if np.ptp(p,axis=0).max()>1e-4: TR[names[k]]=b64(p.astype(np.float32))
         clips[nm]={'dur':round(dur,4),'n':nf,'q':b64(np.round(Q*32000).astype(np.int16)),'p':TR}

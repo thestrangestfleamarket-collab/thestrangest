@@ -145,7 +145,7 @@ head=rp(head,'<div><b>Space</b> jump','<div>The bodega, the pool room (its door 
 mod=rp(mod,"const pos=new THREE.Vector3(-2.2,0,3.2); let heading=0.8, py=0;","const pos=new THREE.Vector3(-2.2,0,3.2); let heading=0.8, py=0; { const a=(QS.get('at')||'').split(',').map(Number); if(a.length>=2&&a.every(isFinite)){ pos.set(a[0],0,a[1]); py=a[2]||0; } }   // (a test's: start at x,z[,height])")
 mod=rp(mod,"  if(MAPLV(py,pos))setPhys(LVL);","  if(MAPLV(py,pos))setPhys(LVL); if(bloom){ const dn=LVL==='down'; bloom.strength=dn?1.3:.55; bloom.radius=dn?.6:.4; bloom.threshold=dn?.62:.8; }   // (the glow: the station's strong, the street's and the shops' gentle)")
 # GETTING AROUND and THE MENU (owner, 17 Oct 2026): src/ui.js, and its hooks in the frame and the keys
-mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);",open('src/physbody.js').read()+"\n"+open('src/ui.js').read()+"\n"+open('src/editor.js').read()+"\nresize(); applyTime(0); requestAnimationFrame(frame);")
+mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);",open('src/physbody.js').read()+"\n"+open('src/ui.js').read()+"\n"+open('src/editor.js').read()+"\n"+open('src/animator.js').read()+"\nresize(); applyTime(0); requestAnimationFrame(frame);")
 mod=rp(mod,"addEventListener('keydown',e=>{ const k=e.key.toLowerCase(); keys.add(k);","addEventListener('keydown',e=>{ const k=UI.key(e); if(!k)return; keys.add(k);")
 mod=rp(mod,"addEventListener('keyup',e=>{ const k=e.key.toLowerCase(); keys.delete(k);","addEventListener('keyup',e=>{ const k=UI.key(e); if(!k)return; keys.delete(k);")
 mod=rp(mod,"if(k==='f'&&!e.repeat)trip=true;","if(k==='f'&&!e.repeat&&!UI.freeCam&&!UI.fly&&!ED.on)trip=true;")
@@ -189,4 +189,23 @@ mod=rp(mod,"bloom=new UnrealBloomPass(new THREE.Vector2(256,256),1.3,0.6,0.62); 
   bloom.renderTargetsHorizontal[0].texture.magFilter=bloom.renderTargetsHorizontal[0].texture.minFilter=THREE.NearestFilter; }   // (the glow in steps, dithered, in square blocks: the game's light, not a soft haze)""")
 # HIS BODY IN A PHYSICS ENGINE (owner, 17 Oct 2026): src/physbody.js, after the rig has placed him each frame
 mod=rp(mod,"W3.place(B,pos.x,py,pos.z,RAG.on?RAG.hd:heading,hdA,ZU); if(ED.on)ED.tick();","W3.place(B,pos.x,py,pos.z,RAG.on?RAG.hd:heading,hdA,ZU); PB.step(dt,B,pos.x,py,pos.z,RAG.on?RAG.hd:heading,groundY(pos.x,pos.z),RAG.on); if(ED.on)ED.tick();")
+# HIS MOVES, EDITABLE (owner, 17 Oct 2026: "edit his walk and other movements in the HIS SHAPE editor"; his picks: the walk's and the run's
+# dials, a keyframe editor for every move, new moves of his own): src/animator.js. In the rig: the walk's dials (each 1 as it was), the
+# hook where every pose he takes passes on its way to be drawn (his keys added on), and what the editor needs to play a move by itself
+def rpn(s,a,c,n):
+    assert s.count(a)==n,(a[:80],s.count(a)); return s.replace(a,c)
+head=rp(head,"const WALK={cycle:0.929,stance:0.6,stride:14.67,lean:2},RUN={cycle:0.56,stance:0.4,stride:20,lean:10};",
+  "const WALK={cycle:0.929,stance:0.6,stride:14.67,lean:2,bounce:1,arm:1,elbow:1,sway:1,twist:1,knee:1,width:1},RUN={cycle:0.56,stance:0.4,stride:20,lean:10,bounce:1,arm:1,elbow:1,sway:1,twist:1,knee:1,width:1};   // (bounce...width: the walk's and the run's dials, HIS MOVES: 1 as made)\nconst OVL={fn:null};   // (where his own keys are added onto every pose: src/animator.js)")
+head=rp(head,"P.pyaw=-3*D*sw*(1+0.5*r); P.cyaw=2.5*D*sw*(1+r);","P.pyaw=-3*D*sw*(1+0.5*r)*g.twist; P.cyaw=2.5*D*sw*(1+r)*g.twist;")
+head=rp(head,"const sway=0.9*w*(1-0.6*r)*Math.sin(2*Math.PI*q.L);","const sway=0.9*g.sway*w*(1-0.6*r)*Math.sin(2*Math.PI*q.L);")
+head=rp(head,"P.roll=-4*D*w*(1-0.4*r)*Math.sin(","P.roll=-4*D*g.sway*w*(1-0.4*r)*Math.sin(")
+head=rp(head,"P.root=V(sway,STAND-Math.max(0,Math.round((STAND-py)/PX))*PX,0);","P.root=V(sway,STAND-Math.max(0,Math.round((STAND-py)*g.bounce/PX))*PX,0);")
+head=rpn(head,"const n=s>0?'L':'R',x=s*FOOTX,qq=q[n];","const n=s>0?'L':'R',x=s*FOOTX*g.width,qq=q[n];",2)
+head=rp(head,"const F=qq2=>legReach(lab('hip',qq2,ST,rs)*w,kn(qq2)),","const F=qq2=>legReach(lab('hip',qq2,ST,rs)*w*g.knee,kn(qq2)*g.knee),")
+head=rp(head,"w*lerp(16,36,rs)*Math.cos(2*Math.PI*(qq-0.04)))*D","w*lerp(16,36,rs)*g.arm*Math.cos(2*Math.PI*(qq-0.04)))*D")
+head=rp(head,"el=(10+w*(lerp(2,64,rs)","el=(10+g.elbow*w*(lerp(2,64,rs)")
+head=rp(head,"  const B=settle(busy||st.up||(st.water&&st.water.in)?clearPose(P,dev):build(P,dev),","  if(OVL.fn)OVL.fn(st,P);   // (his own keys on whatever he's doing: src/animator.js)\n  const B=settle(busy||st.up||(st.water&&st.water.in)?clearPose(P,dev):build(P,dev),")
+head=rp(head,"return {restOf,IDF,","return {OVL,begin,beginUp,legIK,START,mkMove:move,ARMMOVES,restOf,IDF,")
+mod=rp(mod,"B=RIG.pose(st); ragBlend(B);","B=ED.anim?ED.animPose():RIG.pose(st); ragBlend(B);")
+mod=rp(mod,"PB.step=(dt,B,x,y,z,hd,gy,down)=>{ if(!PB.on||!PB.ready)return false;","PB.step=(dt,B,x,y,z,hd,gy,down)=>{ if(!PB.on||!PB.ready||ED.anim)return false;")
 os.makedirs('dist',exist_ok=True); open('dist/market.html','w').write(head+mod); print('built dist/market.html')

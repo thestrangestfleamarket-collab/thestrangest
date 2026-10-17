@@ -69,7 +69,7 @@ const ED={on:false};
   const css=document.createElement('style'); css.textContent=`
   #ed{position:fixed;left:calc(12px + env(safe-area-inset-left,0px));top:12px;bottom:12px;width:300px;overflow:auto;background:var(--bg);border:2px solid var(--line);font:12px var(--pixel);color:var(--fg);z-index:20}
   #ed[hidden],#ering[hidden]{display:none} #ed h2{font:12px var(--pixel);color:var(--key);margin:0;padding:12px 14px;border-bottom:2px solid var(--line)}
-  #ed .tabs{display:flex;border-bottom:2px solid var(--line)} #ed .tabs button{flex:1;font:inherit;color:var(--dim);background:transparent;border:0;border-right:2px solid var(--line);padding:10px 4px;cursor:pointer} #ed .tabs button:last-child{border-right:0}
+  #ed .tabs{display:flex;border-bottom:2px solid var(--line)} #ed .tabs{flex-wrap:wrap} #ed .tabs button{flex:1 1 30%;font:inherit;color:var(--dim);background:transparent;border:0;border-right:2px solid var(--line);padding:10px 4px;cursor:pointer} #ed .tabs button:last-child{border-right:0}
   #ed .tabs button[aria-selected="true"]{color:var(--key);background:var(--panel)} #ed .pane{padding:10px 14px} #ed .pane[hidden]{display:none}
   #ed .row{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:6px 0} #ed .btn{font:inherit;color:var(--fg);background:#0e1016;border:2px solid #3a3f4e;padding:5px 8px;cursor:pointer}
   #ed .btn[aria-pressed="true"]{color:var(--key);border-color:#6b6f80} #ed .dim{color:var(--dim)} #ed input[type=range]{width:150px} #ed .lab{width:90px}
@@ -88,7 +88,7 @@ const ED={on:false};
       <div class="row"><button class="btn" id="emir">MIRROR</button></div><div class="dim">drag on him to shape him</div></div>
     <div class="pane" data-q="pieces"><div class="dim">click a piece on him, then drag</div><div class="row"><button class="btn" data-g="move">MOVE</button><button class="btn" data-g="scale">SCALE</button><button class="btn" data-g="turn">TURN</button></div>
       <div class="row"><button class="btn" id="eresp">THIS PIECE BACK</button></div></div>
-    <div class="pane"><div class="row"><span id="ename" class="dim"></span></div><div class="row"><button class="btn" id="eboth">BOTH SIDES</button></div>
+    <div class="pane" id="egen"><div class="row"><span id="ename" class="dim"></span></div><div class="row"><button class="btn" id="eboth">BOTH SIDES</button></div>
       <div class="dim">right-drag or Q / E turns the view · wheel zooms</div></div>
     <div class="foot"><div class="row"><button class="btn" id="eundo">UNDO</button><button class="btn" id="eall">ALL BACK</button></div>
       <div class="row"><button class="btn" id="edown">DOWNLOAD</button><button class="btn" id="eload">LOAD</button><button class="btn" id="edone">DONE</button></div></div>`;
@@ -101,8 +101,13 @@ const ED={on:false};
     P.querySelectorAll('[data-b]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.b===B.mode))); P.querySelectorAll('[data-g]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.g===gmode)));
     P.querySelectorAll('#elist .btn').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.i===cur))); $('#ename').textContent=cur>=0?'PIECE: '+NICE(NAMES[cur]):'NO PIECE PICKED';
     $('#esz').style.opacity=cur>=0?1:.4; const E=cur>=0&&W3.E[cur]||E0(); P.querySelectorAll('#esz input').forEach(s=>s.value=E.s[+s.dataset.k]); $('#ebs').value=B.size; $('#ebt').value=B.str;
+    $('#egen').hidden=!!(ED.ext&&ED.ext[mode]);   // (the piece and both sides: not the moves' tabs)
     sel.visible=ED.on&&mode!=='sculpt'&&cur>=0; ring.hidden=!(ED.on&&mode==='sculpt'); }
   P.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{ mode=b.dataset.m; draw(); });
+  // more tabs from other files (HIS MOVES: src/animator.js): their pane, their own handling of a press on him; the piece picked, lit up
+  ED.ext={}; ED.mode=()=>mode; ED.redraw=()=>draw(); ED.pick=e=>pick(e); ED.setSel=i=>setSel(i); ED.sel=()=>cur; ED.names=NAMES;
+  ED.addTab=(key,label,pane,h)=>{ const b=document.createElement('button'); b.dataset.m=key; b.textContent=label; b.onclick=()=>{ mode=key; draw(); if(h.show)h.show(); }; P.querySelector('.tabs').appendChild(b);
+    pane.classList.add('pane'); pane.dataset.q=key; P.querySelector('.foot').before(pane); ED.ext[key]=h; };
   P.querySelectorAll('[data-b]').forEach(b=>b.onclick=()=>{ B.mode=b.dataset.b; draw(); });
   P.querySelectorAll('[data-g]').forEach(b=>b.onclick=()=>{ gmode=b.dataset.g; draw(); });
   P.querySelectorAll('#esz input').forEach(s=>{ s.onpointerdown=()=>snap(); s.oninput=()=>{ if(cur<0)return; setE(cur,E=>E.s[+s.dataset.k]=+s.value); }; s.onchange=save; });
@@ -122,23 +127,25 @@ const ED={on:false};
   const toBody=(dx,dy)=>{ const r=cv.getBoundingClientRect(), k=RW/r.width/ppu; d3.setFromMatrixColumn(cam.matrixWorld,0).multiplyScalar(dx*k).addScaledVector(new THREE.Vector3().setFromMatrixColumn(cam.matrixWorld,1),-dy*k);
     inv.copy(W3.group.matrixWorld).invert().setPosition(0,0,0); return d3.applyMatrix4(inv); };
   cv.addEventListener('pointerdown',e=>{ if(!ED.on||e.button!==0)return; const h=pick(e);
+    if(ED.ext[mode]){ if(h)setSel(h.piece); if(ED.ext[mode].down&&ED.ext[mode].down(h,e)){ drag={x:e.clientX,y:e.clientY}; cv.setPointerCapture(e.pointerId); } return; }
     if(mode==='sculpt'){ if(!h)return; snap(); brush(h); drag={x:e.clientX,y:e.clientY}; }
     else { if(h)setSel(h.piece); if(mode==='pieces'&&cur>=0){ snap(); drag={x:e.clientX,y:e.clientY}; } }
     if(drag)cv.setPointerCapture(e.pointerId); });
   cv.addEventListener('pointermove',e=>{ if(!ED.on)return; ringAt(e); if(!drag)return; const dx=e.clientX-drag.x, dy=e.clientY-drag.y; drag={x:e.clientX,y:e.clientY};
+    if(ED.ext[mode]){ if(ED.ext[mode].move)ED.ext[mode].move(dx,dy,e); return; }
     if(mode==='sculpt'){ const h=pick(e); if(h)brush(h); return; }
     if(mode==='pieces'&&cur>=0){
       if(gmode==='move'){ const d=toBody(dx,dy); setE(cur,E=>{ E.o[0]+=d.x; E.o[1]+=d.y; E.o[2]+=d.z; }); }
       else if(gmode==='scale'){ const k=Math.exp(-dy*0.01); setE(cur,E=>{ E.s=E.s.map(x=>Math.max(0.2,Math.min(4,x*k))); }); }
       else { const ax=new THREE.Vector3(); cam.getWorldDirection(ax); inv.copy(W3.group.matrixWorld).invert().setPosition(0,0,0); ax.applyMatrix4(inv).normalize(); const t=new THREE.Quaternion().setFromAxisAngle(ax,dx*0.012);
         setE(cur,E=>{ const q=new THREE.Quaternion(...E.q).premultiply(t); E.q=[q.x,q.y,q.z,q.w]; }); } } });
-  cv.addEventListener('pointerup',()=>{ if(!ED.on)return; if(drag){ drag=null; if(sculpted)normals(); save(); draw(); } });
+  cv.addEventListener('pointerup',()=>{ if(!ED.on)return; if(drag&&ED.ext[mode]){ drag=null; if(ED.ext[mode].up)ED.ext[mode].up(); return; } if(drag){ drag=null; if(sculpted)normals(); save(); draw(); } });
   // ---- IN AND OUT
   let V0=null;
   // the goldfish and the bear: he walks up and waves (the first things a double click does something with)
   for(const N of NPCS)UI.thing({name:N.name,obj:N.g,reach:1.3,tall:N.H||1.8,act:()=>{ if(!st.move)RIG.act(st,'V'); setTimeout(()=>RIG.release(st,'V'),900); }});
   ED.enter=()=>{ if(UI.menuOpen)UI.toggleMenu(); if(UI.freeCam)UI.setFree(false); if(UI.fly)UI.setFly(false); target=null; ED.on=true; V0={yaw:yawTo,pitch:pitchTo,ppu:ppuTo}; pitchTo=clampP(0.22); ppuTo=Math.min(240,PPU*3.2); P.hidden=false; draw(); };
-  ED.exit=()=>{ ED.on=false; P.hidden=true; sel.visible=false; ring.hidden=true; drag=null; if(V0){ yawTo=V0.yaw; pitchTo=V0.pitch; ppuTo=V0.ppu; } save(); };
+  ED.exit=()=>{ if(ED.onExit)ED.onExit(); ED.on=false; P.hidden=true; sel.visible=false; ring.hidden=true; drag=null; if(V0){ yawTo=V0.yaw; pitchTo=V0.pitch; ppuTo=V0.ppu; } save(); };
   // each frame while open: the selected piece's picture where he is, his light as a lamp's, his new normals once a frame while brushing
   ED.tick=()=>{ W3.group.updateMatrixWorld(); sel.matrix.copy(W3.group.matrixWorld); sel.matrixWorldNeedsUpdate=true; if(dirty){ dirty=false; normals(); } };
 }

@@ -37,9 +37,10 @@ const MAPED={on:false};
   // ---- THE PANEL: a small plan, the places, the buttons
   const P=document.createElement('div'); P.id='maped'; P.style.cssText='position:fixed;right:12px;top:12px;z-index:22;display:none;width:340px;max-width:calc(100vw - 24px);padding:10px 12px;background:#0b0d13f2;border:2px solid #2a3040;color:#c9ccd6;font:10px Silkscreen,monospace;letter-spacing:.5px';
   P.innerHTML='<div style="display:flex;justify-content:space-between;padding-right:28px"><b>MAP EDITOR</b><span style="color:#8a8f9c">SHIFT+M</span></div>'
-    +'<div style="color:#8a8f9c;margin:4px 0 6px;line-height:1.5">LEFT DRAG A PLACE: MOVE IT (¼ TILE GRID) · RIGHT DRAG OR SHIFT+DRAG: TURN ALL ROUND, TILT · LEFT DRAG ELSEWHERE: SLIDE · WHEEL: ZOOM · PARK, LAND: DRAG AN EDGE</div>'
+    +'<div style="color:#8a8f9c;margin:4px 0 6px;line-height:1.5">LEFT DRAG A PLACE: MOVE IT (¼ TILE GRID) · DRAG OPEN GROUND, CTRL+DRAG OR RIGHT DRAG: TURN ALL ROUND, TILT · Q E TURN, Z X TILT, T TOP, Y SIDE · W A S D: SLIDE · WHEEL: ZOOM · PARK, LAND: DRAG AN EDGE</div>'
     +'<canvas id="meC" width="316" height="200" style="display:block;width:100%;image-rendering:pixelated;border:2px solid #2a3040;background:#07090d;cursor:grab;touch-action:none"></canvas>'
     +'<div id="meL" style="display:flex;gap:3px;flex-wrap:wrap;margin-top:6px"></div><div id="meI" style="margin-top:6px;color:#f2c14e;min-height:12px"></div>'
+    +'<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:6px;align-items:center">VIEW <button class="btn" data-v="turnL">⟲ TURN</button><button class="btn" data-v="turnR">TURN ⟳</button><button class="btn" data-v="up">TILT UP</button><button class="btn" data-v="down">TILT DOWN</button><button class="btn" data-v="top">TOP</button><button class="btn" data-v="side">SIDE</button></div>'
     +'<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:6px;align-items:center"><button class="btn" data-n="-1,0">◀</button><button class="btn" data-n="0,-1">▲</button><button class="btn" data-n="0,1">▼</button><button class="btn" data-n="1,0">▶</button>'
     +'<button class="btn" id="meR">RESET THIS</button><button class="btn" id="meRA">RESET ALL</button><button class="btn" id="meA" style="color:#f2c14e">APPLY (RELOADS)</button><button class="btn" id="meE">EXPORT</button></div>'
     +'<div style="margin-top:6px;color:#8a8f9c;line-height:1.5">ARROWS ¼ TILE, SHIFT A TILE. NO TURNING (WALLS RUN ALONG THE MAP). THE SHRINE GOES WITH THE PARK, THE DUNGEON THE CASTLE, THE STACKED ROOMS THE APARTMENTS, THE STATION ITS STAIRS</div>'
@@ -87,6 +88,9 @@ const MAPED={on:false};
     if(MODS.land){ const a=off(BUILT,'land'), w=off(WORK,'land'); MODS.land.position.set(reset?0:(w.x-a.x)*T,MODS.land.position.y,reset?0:(w.y-a.y)*T); } };
   const changed=()=>{ overlay(); draw(); };
   const nudge=(dx,dy)=>{ const e=ent(sel); e.x=q4((e.x||0)+dx); e.y=q4((e.y||0)+dy); WORK=clean(WORK); changed(); };
+  // THE VIEW'S OWN BUTTONS (owner, 17 Oct 2026: "how do i view sideview? nothing is letting me drag it"): turn an eighth, tilt, straight down, from the side
+  const VIEW={turnL:()=>UI.orbit(-Math.PI/4/.008,0),turnR:()=>UI.orbit(Math.PI/4/.008,0),up:()=>UI.orbit(0,40),down:()=>UI.orbit(0,-40),top:()=>UI.orbit(0,1e4),side:()=>UI.orbit(0,-1e4)};
+  P.querySelectorAll('[data-v]').forEach(b=>b.onclick=()=>VIEW[b.dataset.v]());
   P.querySelectorAll('[data-n]').forEach(b=>b.onclick=ev=>{ const [x,y]=b.dataset.n.split(',').map(Number), m=ev.shiftKey?1:G; nudge(x*m,y*m); });
   q('#meR').onclick=()=>{ delete WORK[sel]; changed(); }; q('#meRA').onclick=()=>{ WORK={}; changed(); };
   q('#meA').onclick=()=>{ try{ localStorage.setItem('market-layout',JSON.stringify(clean(WORK))); }catch(e){} location.reload(); };
@@ -117,13 +121,15 @@ const MAPED={on:false};
     return inZ&&Math.abs(gp.x-b[0])<d?0:inX&&Math.abs(gp.z-b[1])<d?1:inZ&&Math.abs(gp.x-b[2])<d?2:inX&&Math.abs(gp.z-b[3])<d?3:-1; };
   MAPED.down=e=>{ if(!MAPED.on||e.button!==0||e.shiftKey||e.altKey)return false; const ray=rayOf(e), gp=ground(ray), ed=edge3(gp,e);
     if(ed>=0){ d3={t:'edge',i:ed,g0:gp,g:gp,e:off(WORK,sel).e.slice()}; overlay(); return true; }
-    const k=pick3(ray); if(!k||!gp)return false; sel=k; const w=off(WORK,k); d3={t:'move',g0:gp,s:{x:w.x,y:w.y}}; changed(); return true; };
-  MAPED.move=e=>{ if(!d3)return; const gp=ground(rayOf(e)); if(!gp)return; const dx=(gp.x-d3.g0.x)/T, dz=(gp.z-d3.g0.z)/T; d3.g=gp;
+    const k=e.ctrlKey||e.metaKey?null:pick3(ray); if(!k||!gp){ d3={t:'orbit',x:e.clientX,y:e.clientY}; return true; } sel=k;   /* (open ground, or Ctrl / Cmd + drag: turn and tilt the view) */ const w=off(WORK,k); d3={t:'move',g0:gp,s:{x:w.x,y:w.y}}; changed(); return true; };
+  MAPED.move=e=>{ if(!d3)return; if(d3.t==='orbit'){ UI.orbit(e.clientX-d3.x,e.clientY-d3.y); d3.x=e.clientX; d3.y=e.clientY; return; } const gp=ground(rayOf(e)); if(!gp)return; const dx=(gp.x-d3.g0.x)/T, dz=(gp.z-d3.g0.z)/T; d3.g=gp;
     if(d3.t==='move')moveBy(sel,d3.s,dx,dz); else edgeBy(sel,d3.e,d3.i,dx,dz); changed(); };
-  MAPED.up=()=>{ if(!d3)return; d3=null; WORK=clean(WORK); changed(); };
+  MAPED.up=()=>{ if(!d3)return; if(d3.t==='orbit'){ d3=null; return; } d3=null; WORK=clean(WORK); changed(); };
   Object.defineProperty(MAPED,'dragging',{get:()=>!!d3});
   // the arrows nudge the chosen place while the editor's open (a grid step; Shift a whole tile); Escape closes it
   addEventListener('keydown',e=>{ if(!MAPED.on||/^(TEXTAREA|INPUT|SELECT)$/.test(e.target.tagName||''))return; const m=e.shiftKey?1:G, A={arrowleft:[-1,0],arrowright:[1,0],arrowup:[0,-1],arrowdown:[0,1]}[e.key.toLowerCase()];
+    const S={w:[0,-1],s:[0,1],a:[-1,0],d:[1,0]}[e.key.toLowerCase()]; if(S&&!e.ctrlKey&&!e.metaKey){ const f=new THREE.Vector3(); cam.getWorldDirection(f); f.y=0; f.normalize(); const r=new THREE.Vector3(-f.z,0,f.x), k=(e.shiftKey?8:2)*T; UI.off.addScaledVector(f,-S[1]*k).addScaledVector(r,S[0]*k); e.preventDefault(); e.stopImmediatePropagation(); return; }   // (W A S D slide the view: the editor's, not his walk)
+    const V={q:'turnL',e:'turnR',x:'up',z:'down',t:'top',y:'side'}[e.key.toLowerCase()]; if(V&&!e.repeat&&!e.ctrlKey&&!e.metaKey&&!(e.shiftKey&&e.key.toLowerCase()==='e')){ VIEW[V](); e.preventDefault(); e.stopImmediatePropagation(); return; }
     if(A){ nudge(A[0]*m,A[1]*m); e.preventDefault(); e.stopImmediatePropagation(); } else if(e.key==='Escape'){ MAPED.toggle(); e.stopImmediatePropagation(); } },true);
   // ---- ON AND OFF: on, the map view (free all round), zoomed out far, the rooms' cut away off; off, the view as it was, the live moves put back
   // (what's built is what stands till APPLY), the boxes and the grid thrown away

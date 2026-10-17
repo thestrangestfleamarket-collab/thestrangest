@@ -9,7 +9,7 @@ const LOOKS={};
     shirt:['#a9a57e','#e8e6e0','#3a4a6a','#a83a32','#303034'], pants:['#434e58','#2a2a2e','#a8946a','#6a6e74','#5a4634'], shoes:['#77614a','#2c2a28','#e0dcd4','#a83a32','#a8845a']};
   const NAMES={skin:'SKIN',hair:'HAIR COLOUR',eye:'EYES',shirt:'SHIRT',pants:'TROUSERS',shoes:'SHOES'};
   // (no beards and no buzz cut: owner, 17 Oct 2026, "remove the beard and buzzcut from game completely")
-  const HAIRS=[['SHORT','hair'],['LONG','hairLong'],['BUN','hairBun'],['PONYTAIL','hairPony'],['BALD',null]];
+  const HAIRS=[['SHORT',['hair']],['LONG',['hairLong','hairLongA']],['BUN',['hairBun']],['PONYTAIL',['hairPony','hairPonyA']],['BALD',[]]];   // (a style's pieces: the long hair's fall and the ponytail's tail swing on their own, walker3d.js)
   const sz=(w,d=w)=>[w,1,d], LR=(n,v)=>({[n+'L']:v,[n+'R']:v}), arms=(u,f=u)=>({...LR('upperArm',sz(u)),...LR('sleeve',sz(u)),...LR('forearm',sz(f))}), legs=(t,sh=t)=>({...LR('thigh',sz(t)),...LR('shin',sz(sh))});
   // TWO BODIES ONLY (owner, 17 Oct 2026: "make female slim the only female avatar option, and him as the only male option, make the males hips
   // 10% smaller"): MALE is him, his hips a tenth narrower than they were; FEMALE the slim one; the other six builds gone
@@ -26,8 +26,8 @@ const LOOKS={};
     for(const k of ['c0','c1','c2','cd','color'])if(A[k])A[k].needsUpdate=true; };
   const apply=()=>{ const set=(m,h)=>{ const i=MATS.indexOf(m); if(i>=0)W3.ramp[i]=tones(h); };
     set('skin',PAL.skin[L.skin]); set('hair',PAL.hair[L.hairc]); set('eye',PAL.eye[L.eye]); set('shirt',PAL.shirt[L.shirt]); set('pants',PAL.pants[L.pants]); set('shoes',PAL.shoes[L.shoes]); { const i=MATS.indexOf('lid'); if(i>=0)W3.ramp[i]=tones(PAL.skin[L.skin]).map(c=>c.multiplyScalar(.78)); } recolor();
-    if(!(L.hair>=0&&L.hair<HAIRS.length))L.hair=0; for(const [,n] of HAIRS)if(n){ const i=W3.idx(n); if(i>=0)W3.HIDE[i]=true; }
-    const h=HAIRS[L.hair][1]; if(h)W3.HIDE[W3.idx(h)]=false;
+    if(!(L.hair>=0&&L.hair<HAIRS.length))L.hair=0; for(const [,ns] of HAIRS)for(const n of ns){ const i=W3.idx(n); if(i>=0)W3.HIDE[i]=true; }
+    for(const n of HAIRS[L.hair][1]){ const i=W3.idx(n); if(i>=0)W3.HIDE[i]=false; }
     if(!(L.eyes>=0&&L.eyes<6))L.eyes=0; for(let k=0;k<6;k++){ const i=W3.idx('eyes'+k); if(i>=0)W3.HIDE[i]=k!==L.eyes; } };
   // THE PANEL
   const css=document.createElement('style'); css.textContent=`#looks{position:fixed;right:12px;top:12px;width:330px;max-height:calc(100vh - 24px);overflow:auto;background:var(--panel,#10131b);border:2px solid var(--line,#2a3040);color:var(--fg,#d8dbe4);font:11px var(--pixel,monospace);padding:12px;z-index:30}
@@ -43,9 +43,9 @@ const LOOKS={};
     <h3>STATS</h3><div class="row"><span style="width:70px">HEALTH</span><div class="bar"><i id="lhp" style="background:#c84a3a;width:100%"></i></div></div>
     <div class="row" style="margin-top:4px"><span style="width:70px">STAMINA</span><div class="bar"><i id="lst" style="background:#d8b84a;width:100%"></i></div></div>
     ${pick('build',BUILDS.map(b=>b[0]),'BODY')}${pick('eyes',['DOTS','WHITES','BIG','HALF-LIDDED','LASHES','SMILING'],'EYES')}${pick('hair',HAIRS.map(h=>h[0]),'HAIR')}
-    ${['skin','hair','eye','shirt','pants','shoes'].map(sw).join('')}
-    <h3>SHADING ON YOU</h3><div class="row"><span style="width:70px">STEPS</span><input type="range" id="lsteps" min="2" max="5" step="1" style="flex:1"><span id="lstepsv" style="width:14px"></span></div>
-    <div class="row"><span style="width:70px">DEPTH</span><input type="range" id="ldepth" min="0.1" max="0.9" step="0.01" style="flex:1"></div>`;
+    <details id="lcols"><summary style="cursor:pointer;color:#ffd27a;margin:10px 0 4px;font-size:10px;letter-spacing:1px">COLOURS &#9662;</summary>${['skin','hair','eye','shirt','pants','shoes'].map(sw).join('')}</details>
+    <h3>SHADING ON YOU</h3><div class="row"><span style="width:70px">STEPS</span><input type="range" id="lsteps" min="2" max="12" step="1" style="flex:1"><span id="lstepsv" style="width:14px"></span></div>
+    <div class="row"><span style="width:70px">DEPTH</span><input type="range" id="ldepth" min="0.02" max="0.98" step="0.005" style="flex:1"></div>`;
   document.body.appendChild(P);
   const draw=()=>{ $('#lname').value=L.name; P.querySelectorAll('[data-k]').forEach(r=>{ const k=r.dataset.k, v=L[k]; r.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.i===v))); });
     $('#lsteps').value=W3.shade.steps; $('#lstepsv').textContent=W3.shade.steps; $('#ldepth').value=W3.shade.depth; };

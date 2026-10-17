@@ -12,10 +12,10 @@ const grab=(name,fn)=>{ const n0=scene.children.length; fn(); const g=new THREE.
 // where each place goes: the station (its platform 98 px down, its exit tunnel's end 3 tiles behind the sidewalk, 11 tiles west of the
 // bodega's door), the pool room (its west wall 10 tiles east of the bodega's door, its front on the sidewalk), the stairs (bodega tiles)
 const STN={DX:-11*TILE, DZ:-35*TILE, DY:-98*ZU};
-const PDX=(10+22.74/2)*TILE, PDZ=-7*TILE;
+const PDX=(10+27.3/2)*TILE, PDZ=-8.4*TILE;   // (the apartment building, a fifth bigger: its west wall where it was, its front on the sidewalk)
 // BIGGER BUILDINGS, BIGGER DOORS (owner, 17 Oct 2026: "make doorways 30% larger, buildings 10% larger"): each building (the bodega, the pool room)
 // a tenth bigger every way from the middle of its front, which stays on the sidewalk; the street, the sidewalks and the road as they were. Doors 1.3 times (1.56 wide, 94 px high)
 const BLDK=1.1;
 const MAPSTAIR={x0:59,x1:63,y0:-80,y1:-74, steps:12, depth:98};
-const POOLR={x0:0,y0:0,x1:22.74,y1:14,H:150}; Object.assign(POOLR,{bx0:3.5,by0:2+2.5,bx1:16.5,by1:7+2.5,HT:5});   // (the basin as the game has it, the room's middle across)
+const POOLR={x0:0,y0:0,x1:27.3,y1:16.8,H:150}; Object.assign(POOLR,{bx0:3.5,by0:9.7,bx1:17,by1:15.6,HT:5});   // (the apartments' pool: across the front, left to right, 13.5 x 5.9 tiles, all one depth)   // (the basin as the game has it, the room's middle across)
 POOLR.LX=POOLR.bx1-POOLR.bx0; POOLR.LY=POOLR.by1-POOLR.by0; POOLR.level=-0.16*24;   // the water 4 art px under the deck

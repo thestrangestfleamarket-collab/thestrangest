@@ -37,6 +37,10 @@ const MUS={};
   g.position.set(AT.x,0,AT.z); g.rotation.set(0,AT.hd,0); g.scale.set(1/PPU,ZU,1/PPU); MUS.at=AT;
   // HIS PLAYING, each frame he's near (the game's gtStep, here): the tune's clock, his pose solved onto its notes, his arms and fingers with
   // weight, a breath and a nod with the beat; at a tune's end, a moment's rest, the next in the book
+  // HIS STRUMMING ARM, NATURAL (owner, 17 Oct 2026: "can you have NPCs use natural body movement? his elbow is lifted unnatural"): the game's pose
+  // had the right elbow out to his side, near level (right for its flat picture); in 3D a guitarist's strumming arm hangs: the elbow down by
+  // his side, a little back and out, the forearm laid over the guitar's lower bout to the strings. The left elbow stays under the neck
+  GTPOLE.R=RIG.V(-1,-1,-.55);
   const a={t:0}; let song=0, rest=0;
   MUS.tick=dt=>{ if(MUS.watch&&!UI.freeCam){ MUS.watch=false; if(MUS.res0!=null){ RESI=MUS.res0; MUS.res0=null; resize(); } } const d=Math.hypot(pos.x-AT.x,pos.z-AT.z); if(!MAPG.bodega.visible||d>18&&!MUS.watch){ gtHush(); return; }
     if(GTS.t>GTEND+1.5){ rest+=dt; if(rest>2.5){ rest=0; song=gtNext(song); gtSet(song); } }

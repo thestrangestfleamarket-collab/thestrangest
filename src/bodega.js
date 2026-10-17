@@ -9,7 +9,7 @@ const BOD={meshes:[], walls:{}, lamps:[]};
 { // (the map's own names in a scope of their own: the game's files above have some of the same)
   const B0=LBLD[0], BODOFF=B0.y0+3.75, W=LSEED.walk, CURB=LSEED.street, FAR=LSEED.grass, RD=-4;   // (the road 4 art px below the sidewalk: a kerb you step down)
   const OX=(B0.x0+B0.x1)/2, OY=B0.y1, K=BLDK, X=x=>(x-OX)*TILE*K, Z=y=>(y-OY)*TILE*K, Y=z=>z*ZU*K, XS=x=>(x-OX)*TILE, ZS=y=>(y-OY)*TILE, YS=z=>z*ZU; Object.assign(BOD,{X,Z,Y,XS,ZS,YS,OX,OY,B0,BODOFF});   // (X Z Y: the building, a tenth bigger from its front's middle, BLDK; XS ZS YS: the street, as it was)
-  const MAP={x0:50,x1:108,y0:B0.y0,y1:FAR+3}, POOLX=82;   // (the street's run; the pool room's west wall)
+  const MAP={x0:50,x1:118,y0:B0.y0,y1:FAR+3}, POOLX=82;   // (the street's run; the pool room's west wall)
   // the subway's stairs (MAPSTAIR, the map's: tiles) a hole in the ground; elsewhere the ground's own colour
   const holed=f=>(x,y)=>x>=MAPSTAIR.x0&&x<MAPSTAIR.x1&&y>=MAPSTAIR.y0&&y<MAPSTAIR.y1?null:f(x,y);
   // ---- the painting of a face: fn(i, j) its colour, null (a hole) or glowing (.e, or four long); the colours and the glow as two canvases
@@ -106,7 +106,7 @@ const BOD={meshes:[], walls:{}, lamps:[]};
   const wallOf=p=>{ const cx=(p.x0+p.x1)/2, cy=(p.y0+p.y1)/2; let best=null, bd=.5; for(const w of WALLS){ const a=w.ax==='x'?cx:cy, d=Math.abs((w.ax==='x'?cy:cx)-w.at); if(a>=w.a0-.2&&a<=w.a1+.2&&d<bd){ bd=d; best=w; } } return best; };
   BOD.kindOf=p=>{ if(ROOF.includes(p))return 'R'; if(FRONT.includes(p))return 'Hfront'; if(p.high){ const w=wallOf(p); if(w)return 'H'+w.id; } return 'L'; };
   BOD.paintProps=()=>{ for(const p of [...Object.values(O),...FRONT,...STREET,...ROOF]){ const k=BOD.kindOf(p); BATCH.tag=OBJ('bodega',p.name); for(const b of p.boxes)gbox(b,k); } BATCH.tag=null; };   // (each thing tagged: the world editor)
-  BOD.g={bodegaWall,grain,speck,COPE,DTBRICK,hash};   // (the game's painters the look's builder asks for)
+  BOD.g={bodegaWall,grain,speck,COPE,DTBRICK,hash,grassCol}; BOD.CURB=CURB; BOD.FAR=FAR;   // (the game's painters the look's builder asks for)
   BOD.gbox=gbox; BOD.faceTex=faceTex; BOD.bq=bq; BOD.C=C; BOD.facade=facade; BOD.FRAME=FRAME;
   // ---- THE GROUND: the shop's sealed concrete (and the office's), the sidewalk's slabs, the kerb, the street's asphalt, the far kerb and sidewalk, grass in the gaps
   BOD.grounds=[

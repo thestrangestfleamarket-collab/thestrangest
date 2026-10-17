@@ -47,22 +47,28 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
   const ndc=e=>{ const r=cv.getBoundingClientRect(); return new THREE.Vector2((e.clientX-r.left)/r.width*2-1,-((e.clientY-r.top)/r.height*2-1)); };
   const shown=o=>{ for(let q=o;q;q=q.parent)if(!q.visible||q===W3.group||q===MUS.g)return false;   // (he and the guitarist are moved on the chip: not where a ray finds them)
     return o.isMesh&&!(o.material&&o.material.visible===false)&&!(o.material&&o.material.transparent&&o.material.opacity<.05); };
-  UI.grab=e=>{ ray.setFromCamera(ndc(e),cam); const h=ray.intersectObjects(scene.children,true).find(h=>shown(h.object)); if(h)piv.copy(h.point); else ray.ray.closestPointToPoint(disp,piv); };
-  UI.orbit=(dx,dy)=>{ if(ED.on){ yawTo-=dx*0.008; pitchTo=clampP(pitchTo+dy*0.006); return; } q0.setFromEuler(UI.eul.set(-pitch,yaw,0,'YXZ')); yawTo-=dx*0.008; pitchTo+=dy*0.006; yaw=yawTo; pitch=pitchTo; q1.setFromEuler(UI.eul.set(-pitch,yaw,0,'YXZ'));
+  UI.grab=e=>{ if(ED.on&&ED.pickW){ const p=ED.pickW(e); if(p){ piv.copy(p); return; } }   // (shaping him: the point of him you grab)
+    ray.setFromCamera(ndc(e),cam); const h=ray.intersectObjects(scene.children,true).find(h=>shown(h.object)); if(h)piv.copy(h.point); else ray.ray.closestPointToPoint(disp,piv); };
+  UI.orbit=(dx,dy)=>{ q0.setFromEuler(UI.eul.set(-pitch,yaw,0,'YXZ')); yawTo-=dx*0.008; pitchTo=clampP(pitchTo+dy*0.006); yaw=yawTo; pitch=pitchTo; q1.setFromEuler(UI.eul.set(-pitch,yaw,0,'YXZ'));
     tv.subVectors(disp,piv); const t0=tv.clone(); tv.applyQuaternion(q0.invert()).applyQuaternion(q1); viewV().add(tv.sub(t0)); disp.add(tv);
     if(!UI.freeCam){ tv.set(0,0,1).applyQuaternion(q1); UI.off.addScaledVector(tv,-UI.off.dot(tv)); } };   // (and kept level with him along the line of sight, where it changes nothing seen)   // (what he looks at swings round the pivot as the view turns)
-  let zAt=null; UI.wheelAt=e=>{ if(ED.on)return; const r=cv.getBoundingClientRect(); zAt={x:e.clientX-r.left-r.width/2,y:r.height/2-(e.clientY-r.top)}; };
+  // HOW FAR OUT (owner, 17 Oct 2026: "lets limit the zoom out to this far", his picture some thirty tiles across): no further out than MAXW across
+  UI.MAXW=34*TILE;
+  let zAt=null; UI.wheelAt=e=>{ if(e.deltaY>0&&cam.right-cam.left>=UI.MAXW){ ppuTo=Math.max(ppuTo,ppu); return; } const r=cv.getBoundingClientRect(); zAt={x:e.clientX-r.left-r.width/2,y:r.height/2-(e.clientY-r.top)}; };
   UI.zk=()=>(cam.right-cam.left)/cv.getBoundingClientRect().width;
-  UI.zoomStep=k0=>{ if(!zAt)return; const k1=UI.zk(); if(Math.abs(k1-k0)<1e-9){ if(Math.abs(ppu/ppuTo-1)<1e-3)zAt=null; return; } const R0=tv.setFromMatrixColumn(cam.matrixWorld,0).clone(), U0=new THREE.Vector3().setFromMatrixColumn(cam.matrixWorld,1);
+  UI.zoomStep=k0=>{ if(cam.right-cam.left>UI.MAXW&&ppuTo<ppu)ppuTo=ppu;   // (the menu's zoom held to it too)
+    if(!zAt)return; const k1=UI.zk(); if(Math.abs(k1-k0)<1e-9){ if(Math.abs(ppu/ppuTo-1)<1e-3)zAt=null; return; } const R0=tv.setFromMatrixColumn(cam.matrixWorld,0).clone(), U0=new THREE.Vector3().setFromMatrixColumn(cam.matrixWorld,1);
     viewV().addScaledVector(R0,zAt.x*(k0-k1)).addScaledVector(U0,zAt.y*(k0-k1)); };
+  UI.pan=(dx,dy)=>{ const r=cv.getBoundingClientRect(), k=(cam.right-cam.left)/r.width, R0=new THREE.Vector3().setFromMatrixColumn(cam.matrixWorld,0), U0=new THREE.Vector3().setFromMatrixColumn(cam.matrixWorld,1);
+    viewV().addScaledVector(R0,-dx*k).addScaledVector(U0,dy*k);
+    const T=UI.freeCam?UI.camT:new THREE.Vector3(pos.x,0,pos.z).add(UI.off), m=8*TILE, cx=Math.max(BOUND.x0-m,Math.min(BOUND.x1+m,T.x))-T.x, cz=Math.max(BOUND.z0-m,Math.min(BOUND.z1+m,T.z))-T.z; viewV().x+=cx; viewV().z+=cz; };   // (never slid off past the map's edges)   // (the world slid under the mouse: the map's drag, and HIS SHAPE's on empty space)
   UI.home=()=>{ UI.off.set(0,0,0); zAt=null; if(UI.freeCam)setFree(false); };
   cv.addEventListener('pointerdown',e=>{ if(e.button!==0||ED.on)return; if(WE.down(e)){ cv.setPointerCapture(e.pointerId); return; } L={x:e.clientX,y:e.clientY,x0:e.clientX,y0:e.clientY,moved:false}; UI.grab(e); cv.setPointerCapture(e.pointerId); });
   cv.addEventListener('pointermove',e=>{ if(WE.dragging){ WE.move(e); return; } if(!L)return; if(!L.moved&&Math.hypot(e.clientX-L.x0,e.clientY-L.y0)>5)L.moved=true;
     // DRAGGING THE MAP (owner, 17 Oct 2026: "you should be able to drag the map and change your focal point, its still too hard to navigate"):
     // a left drag slides the world under the mouse, the point you grabbed staying under it; where the view looks (his place plus UI.off) goes
     // with it, and stays there as he walks (0 back on him). Turning and tilting: a right or middle drag (the page's own), or Shift / Alt + drag
-    if(L.moved&&!e.shiftKey&&!e.altKey){ const r=cv.getBoundingClientRect(), k=(cam.right-cam.left)/r.width, R0=new THREE.Vector3().setFromMatrixColumn(cam.matrixWorld,0), U0=new THREE.Vector3().setFromMatrixColumn(cam.matrixWorld,1);
-      viewV().addScaledVector(R0,-(e.clientX-L.x)*k).addScaledVector(U0,(e.clientY-L.y)*k); }
+    if(L.moved&&!e.shiftKey&&!e.altKey)UI.pan(e.clientX-L.x,e.clientY-L.y);
     else if(L.moved)UI.orbit(e.clientX-L.x,e.clientY-L.y); L.x=e.clientX; L.y=e.clientY; });   // (Shift or Alt + drag: turn and tilt, for a trackpad)
   cv.addEventListener('pointerup',()=>{ WE.up(); L=null; });
   // ---- DOUBLE CLICK (owner, 17 Oct 2026: "take off click to walk. double click to walk. double click on anything to interact with it"):
@@ -143,7 +149,7 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
   const goTo=(x,z,lv)=>{ pos.set(x,0,z); target=null; py=lv==='down'?MODS.station.ground(x,z):0; if(UI.freeCam)UI.camT.set(x,py+.9,z); toggleMenu(); };
   mcv.addEventListener('click',e=>{ const r=mcv.getBoundingClientRect(), R=mapRect(mapLv); goTo(R.x0+(e.clientX-r.left)/r.width*(R.x1-R.x0),R.z0+(e.clientY-r.top)/r.height*(R.z1-R.z0),mapLv); });
   M.querySelectorAll('[data-lv]').forEach(b=>b.onclick=()=>{ mapLv=b.dataset.lv; drawMap(); });
-  const PLACES=[['THE STREET',-2.2,3.2,'up'],['THE BODEGA',0,-3.4,'up'],['THE POOL',32.8,-2.3,'up'],['THE PLATFORM',-12.4,-24.9,'down']];
+  const PLACES=[['THE STREET',-2.2,3.2,'up'],['THE BODEGA',0,-3.4,'up'],['THE APARTMENTS',POOLR.X(22.75),POOLR.Z(12),'up'],['THE PLATFORM',-12.4,-24.9,'down']];
   for(const [n,x,z,lv] of PLACES){ const b=document.createElement('button'); b.className='btn'; b.textContent=n; b.onclick=()=>goTo(x,z,lv); $('#places').appendChild(b); }
   // DISPLAY
   const zMin=3, zMax=ZMAX, z2r=v=>Math.log(v/zMin)/Math.log(zMax/zMin), r2z=r=>zMin*Math.pow(zMax/zMin,r);

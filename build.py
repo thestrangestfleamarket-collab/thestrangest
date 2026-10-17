@@ -16,8 +16,6 @@ stn=rq(stn,"solid(AVE,END,PLAT,END+1,UH);","solid(AVE,END,-29,END+1,UH); solid(-
 pool=body('src/pool.js','{ const hash=','\nscene.background')
 pool=rq(pool,"const X=x=>(x-OX)*TILE, Z=y=>(y-OY)*TILE, Y=z=>z*ZU;","const X=x=>(x-OX)*BLDK*TILE+PDX, Z=y=>((y-OY)*BLDK+(P.y1-OY)*(1-BLDK))*TILE+PDZ, Y=z=>z*ZU*BLDK;")   # (a tenth bigger from its front's middle: BLDK)
 pool=rq(pool,"const gx=x/TILE+OX-P.bx0, gy=z/TILE+OY-P.by0;","const gx=(x-PDX)/TILE/BLDK+OX-P.bx0, gy=((z-PDZ)/TILE-(P.y1-OY)*(1-BLDK))/BLDK+OY-P.by0;")
-pool=rq(pool,"cutaway(wallX(P.y1,P.x0,P.x1,0,P.H,(u,z)=>poolTile(u,z)),0,-1,10);","cutaway(wallX(P.y1,P.x0,P.x1,0,P.H,(u,z)=>u>=17.22&&u<18.78&&z<94?null:poolTile(u,z)),0,-1,10);")
-pool=rq(pool,"solid(P.x0,P.y1,P.x1,P.y1+1,P.H);","solid(P.x0,P.y1,17.22,P.y1+1,P.H); solid(18.78,P.y1,P.x1,P.y1+1,P.H);")
 game=['23-w-bodega-shop.js','23-w-street-1-kit.js','23-w-street-2-furniture.js','23-w-street-3-city.js','23-w-street-4-catalog.js','23-w-studio-apartment-1-furniture.js','23-w-studio-apartment-2-computer.js','23-w-studio-apartment-3-rooms.js','23-x-laundry-room.js']
 kit=rd('src/gamekit.js')+'\n'+'\n'.join('// ==== '+f+' (the game\'s, word for word)\n'+rd(S+f) for f in game)
 bod=rd('src/bodega.js')
@@ -114,7 +112,9 @@ head=rp(head,'<div><b>-</b> / <b>=</b> pixel size</div>','<div><b>-</b> / <b>=</
 mod=rp(mod,"ppuTo=Math.max(3,Math.min(240,ppuTo*Math.pow(1.0015,-e.deltaY)));","ppuTo=Math.max(3,Math.min(ZMAX,ppuTo*Math.pow(1.0015,-e.deltaY)));")
 # EVERY VIEW (owner, 17 Oct 2026: "i cant drag my mouse in enough directions to get every view i want"): the tilt all the way round, from
 # straight down over the top, level, to straight up from under the ground (a hair short of each pole, where the view would flip)
-mod=rp(mod,"const PMIN=0.02, PMAX=Math.PI/2-0.002,","const PMIN=-Math.PI/2+0.01, PMAX=Math.PI/2-0.002,")
+# NEVER UNDER THE GROUND (owner, 17 Oct 2026: "dont let viewer rotate under ground, stop them at this angle", his picture level with the street):
+# the tilt from straight down to level, no further
+mod=rp(mod,"const PMIN=0.02, PMAX=Math.PI/2-0.002,","const PMIN=0.003, PMAX=Math.PI/2-0.002,")
 # TURNING ROUND ANY POINT, ZOOMING AT THE MOUSE (owner, 17 Oct 2026: "i still cant drag my mouse in enough directions to get every view i
 # want", "it always zooms back in at my feet", "as the point of x y z"): a drag turns the view round the point you grab, the wheel zooms toward
 # the point under the mouse, the tilt goes on over the top and under (the camera turned by its own angles, not pointed with an up, so it
@@ -129,7 +129,7 @@ print('ok zoom')
 
 # THE OWNER'S CHARACTERS FROM HIS MODELS (owner, 16 Oct 2026): the goldfish and the bear, coloured, wandering the platform; THE SKELETONS (owner,
 # 17 Oct 2026, KayKit's four, rigged and animated) on the far sidewalk: src/npc-skel.js, data/skel.json (tools/skeletons-bake.py)
-mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);","const GOLDFISH="+open('data/goldfish.json').read()+";\nconst BEARD="+open('data/bear.json').read()+";\nconst SKEL="+open('data/skel.json').read()+";\n"+open('src/npc-map.js').read()+"\n"+open('src/npc-skel.js').read()+"\n"+"".join("const %s=%s;\n"%(k,open("data/%s.json"%f).read()) for k,f in [("GHOSTD","ghost"),("TOTE","tote"),("POWERUP","powerup")])+open('src/npc-street.js').read()+"\nresize(); applyTime(0); requestAnimationFrame(frame);")   # (THE STREET'S CHARACTERS from the owner's models, owner 17 Oct 2026: npc-street.js)
+mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);","const GOLDFISH="+open('data/goldfish.json').read()+";\nconst BEARD="+open('data/bear.json').read()+";\nconst SKEL="+open('data/skel.json').read()+";\n"+open('src/npc-map.js').read()+"\n"+open('src/npc-skel.js').read()+"\nresize(); applyTime(0); requestAnimationFrame(frame);")   # (THE STREET'S CHARACTERS from the owner's models, owner 17 Oct 2026: npc-street.js)
 mod=rp(mod,"  marker.visible=!!target;","  for(const N of NPCS)N.tick(dt,pos);\n  marker.visible=!!target;")
 mod=rp(mod,"function collide(p){ const r=0.3;","function collide(p){ if(typeof NPCS!=='undefined')for(const N of NPCS)if(N.lv===LVL)N.push(p); const r=0.36;")   # (his reach round him: 0.3, a fifth bigger with him)
 print('ok npcs')
@@ -143,7 +143,7 @@ mod=rp(mod,"PHYROOMS=[{on:true,x0:-1e9,x1:1e9,y0:-1e9,y1:1e9,st:STATIC.map(b=>[b
 mod=rp(mod,"lamps.forEach(L=>L.intensity=LAMPI); nb.slice(0,2).forEach(([,i],k)=>{ SHL[k].position.copy(lamps[i].position); lamps[i].intensity=0; });",
  "lamps.forEach(L=>L.intensity=L.userData.i0??LAMPI); SHL.forEach(S=>S.intensity=0); nb.filter(([,i])=>lamps[i].parent&&lamps[i].parent.visible).slice(0,2).forEach(([,i],k)=>{ const L=lamps[i], S=SHL[k]; S.position.copy(L.position); S.color.copy(L.color); S.intensity=L.userData.i0??LAMPI; S.distance=L.distance; S.decay=L.decay; L.intensity=0; });")
 mod=rp(mod,"for(const w of cutWalls)w.pl.constant=(Math.sin(a)*w.nx+Math.cos(a)*w.nz<-0.05&&pitch<1.45)?w.foot:1e6;",
- "for(const w of cutWalls)w.pl.constant=(Math.sin(a)*w.nx+Math.cos(a)*w.nz<-0.05&&pitch<1.45&&(!w.when||w.when()))?w.foot:1e6;   // (only the room you're in)\n  for(const r of BODB.roof)r.visible=!BODB.inside(); MODS.pool.roof.visible=!MODS.pool.inside(pos.x,pos.z);   // (and its roof off)")
+ "for(const w of cutWalls)w.pl.constant=((w.always||Math.sin(a)*w.nx+Math.cos(a)*w.nz<-0.05)&&pitch<1.45&&(!w.when||w.when()))?w.foot:1e6;   // (only the room you're in)\n  for(const r of BODB.roof)r.visible=!BODB.inside(); MODS.pool.roof.visible=!MODS.pool.inside(pos.x,pos.z);   // (and its roof off)")
 mod=rp(mod,"  renderer.shadowMap.needsUpdate=true; W3.shadowPass(renderer); OUTL.render(renderer,scene,cam); composer.render();",
  """  if(!MAPBAKE){ MAPBAKE=1; W3.group.visible=false; renderer.shadowMap.needsUpdate=true; renderer.render(scene,cam); W3.group.visible=true; }   // (the lamps' still shadows, once, without him)
   const wOn=LVL==='up'&&Math.hypot(pos.x-POOLR.X((POOLR.bx0+POOLR.bx1)/2),pos.z-POOLR.Z((POOLR.by0+POOLR.by1)/2))<14*TILE;   // (the water moves while you're near it)
@@ -163,7 +163,7 @@ mod=rp(mod,"const pos=new THREE.Vector3(-2.2,0,3.2); let heading=0.8, py=0;","co
 mod=rp(mod,"  if(MAPLV(py,pos))setPhys(LVL);","  if(MAPLV(py,pos))setPhys(LVL); if(bloom){ const dn=LVL==='down'; bloom.strength=(dn?1.3:.55)*GLOW.k; bloom.radius=dn?.6:.4; bloom.threshold=dn?.62:.8; }   // (the glow: the station's strong, the street's and the shops' gentle)")
 # GETTING AROUND and THE MENU (owner, 17 Oct 2026): src/ui.js, and its hooks in the frame and the keys
 mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);",open('src/physbody.js').read()+"\n"+open('src/ui.js').read()+"\n"+open('src/editor.js').read()+"\n"+open('src/animator.js').read()+"\n"+open('src/worldedit.js').read()+"\nresize(); applyTime(0); requestAnimationFrame(frame);")
-mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);","STREET.start();   // (the street's characters and things, once the menu and the engine's loader are here)\nresize(); applyTime(0); requestAnimationFrame(frame);")
+# (the street's characters from the owner's models, src/npc-street.js: deleted, owner 17 Oct 2026, the last of them "delete ghost with bag inside and whatever this is")
 mod=rp(mod,"addEventListener('keydown',e=>{ const k=e.key.toLowerCase(); keys.add(k);","addEventListener('keydown',e=>{ const k=UI.key(e); if(!k)return; keys.add(k);")
 mod=rp(mod,"addEventListener('keyup',e=>{ const k=e.key.toLowerCase(); keys.delete(k);","addEventListener('keyup',e=>{ const k=UI.key(e); if(!k)return; keys.delete(k);")
 mod=rp(mod,"if(k==='f'&&!e.repeat)trip=true;","if(k==='f'&&!e.repeat&&!UI.freeCam&&!UI.fly&&!ED.on)trip=true;")
@@ -175,7 +175,7 @@ mod=rp(mod,"\n  if(up){mx+=fx;mz+=fz;} if(dn){mx-=fx;mz-=fz;}","\n  UI.camStep(d
 mod=rp(mod,"collide(pos); if(st.water&&st.water.in){","if(UI.fly)UI.flyStep(0); else collide(pos); if(st.water&&st.water.in){")
 mod=rp(mod,"    py+=(groundY(pos.x,pos.z)-py)*Math.min(1,dt*20); P.x=pos.x/TL;","    if(UI.fly)UI.flyStep(dt); else py+=(groundY(pos.x,pos.z)-py)*Math.min(1,dt*20); P.x=pos.x/TL;   // (flying: up and down as you hold Space and Shift, through anything)\n   ")
 mod=rp(mod,"  disp.set(pos.x,py,pos.z); F.set(","  if(UI.freeCam)disp.copy(UI.camT); else disp.set(pos.x,py,pos.z); F.set(")
-head=rp(head,'<div><b>Right-drag</b> or <b>Q</b> / <b>E</b>, <b>Z</b> / <b>X</b> turn and tilt</div>','<div><b>Drag</b> move the map · <b>Right-drag</b> (or <b>Shift</b> + drag), <b>Q</b> / <b>E</b>, <b>Z</b> / <b>X</b> turn and tilt, all the way round · <b>0</b> back on him</div>\n  <div><b>C</b> free camera · <b>G</b> fly through walls (<b>Space</b> up, <b>Shift</b> down)</div>')
+head=rp(head,'<div><b>Right-drag</b> or <b>Q</b> / <b>E</b>, <b>Z</b> / <b>X</b> turn and tilt</div>','<div><b>Drag</b> move the map · <b>Right-drag</b> (or <b>Shift</b> + drag), <b>Q</b> / <b>E</b>, <b>Z</b> / <b>X</b> turn and tilt · <b>0</b> back on him</div>\n  <div><b>C</b> free camera · <b>G</b> fly through walls (<b>Space</b> up, <b>Shift</b> down)</div>')
 head=rp(head,'<div class="dim"><b>H</b> hide this</div>','<div class="dim"><b>Esc</b> menu: map, display, keys · <b>H</b> hide this</div>')
 # HIS SHAPE and THE OUTLINE (owner, 17 Oct 2026): src/editor.js; each piece's change on its frame; the outline pass off unless turned on
 mod=rp(mod,"0,0,0,1); }); };","0,0,0,1); if(W3.E&&W3.E[i])W3.applyE(W3.PM.value[i],W3.E[i],F.o); }); };   // (his shape as edited: src/editor.js)")
@@ -186,7 +186,7 @@ mod=rp(mod,"{ const sp=new ShaderPass(OUTL.pass); composer.addPass(sp);","{ cons
 # STOPPING AT ONCE (owner, 17 Oct 2026: "when i stop walking ... im sliding a little"): the rig's own snap, the game's for you (47-you-jointed);
 # the close view of HIS SHAPE on his middle; the double click's walk to a thing each frame
 mod=rp(mod,"const cloud=RIG.bake(0.5,1), st=RIG.create();","const cloud=RIG.bake(0.5,1), st=RIG.create(); st.snap=true;")
-mod=rp(mod,"if(UI.freeCam)disp.copy(UI.camT); else disp.set(pos.x,py,pos.z);","if(UI.freeCam)disp.copy(UI.camT); else{ disp.set(pos.x,py+(ED.on?0.85:0),pos.z); if(!ED.on)disp.add(UI.off); }")
+mod=rp(mod,"if(UI.freeCam)disp.copy(UI.camT); else disp.set(pos.x,py,pos.z);","if(UI.freeCam)disp.copy(UI.camT); else{ disp.set(pos.x,py+(ED.on?0.85:0),pos.z); disp.add(UI.off); }")
 mod=rp(mod,"  marker.visible=!!target;","  UI.goTick(); UI.runTick();\n  marker.visible=!!target;")
 head=rp(head,'<div><b>Click</b> the ground to walk there</div>','<div><b>Double-click</b> the ground to walk there, or a thing to go to it</div>')
 # THE NEON, REAL (owner, 17 Oct 2026: "the light isnt taking into account its surroundings", "match the style", "totally disappears when diff
@@ -245,7 +245,7 @@ for f in ['47-play-3-guitar-1-body.js','47-play-3-guitar-samples.data.js','47-pl
     gtsrc+='\n'+t
 mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);",gtsrc+"\n"+open('src/musician.js').read()+"\nresize(); applyTime(0); requestAnimationFrame(frame);")
 mod=rp(mod,"  for(const N of NPCS)N.tick(dt,pos);","  for(const N of NPCS)N.tick(dt,pos); MUS.tick(dt);")
-mod=rp(mod,"  for(const N of NPCS)N.tick(dt,pos); MUS.tick(dt);","  STREET.tick(dt,pos,py); for(const N of NPCS)N.tick(dt,pos); MUS.tick(dt);")   # (STREET.tick: the street characters' physics world, stepped before their minds)
+mod=rp(mod,"  for(const N of NPCS)N.tick(dt,pos); MUS.tick(dt);","  for(const N of NPCS)N.tick(dt,pos); MUS.tick(dt);")   # (STREET.tick: the street characters' physics world, stepped before their minds)
 # NO SHADOW ACNE (owner, 17 Oct 2026, his close-up: stripes and jagged dark teeth on the musician's arm): the two lamps nearest you, whose
 # shadows move, finer (1024 a face) and held off the surface they fall on, as the still lamps' are
 mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);","for(const S of SHL){ S.shadow.mapSize.set(1024,1024); S.shadow.normalBias=.06; S.shadow.bias=-.002; }\nresize(); applyTime(0); requestAnimationFrame(frame);")

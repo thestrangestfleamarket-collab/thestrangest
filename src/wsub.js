@@ -14,33 +14,19 @@ const WSUB=(()=>{ const ox=-90, oy=-105;   // (the old plan's x 60-114, y -4.8-6
   // the floor's height underground: the tracks lie 32 lower, with a few steps up to the platform at each of its ends (30's floorZ asks fzAt)
   W.fzAt=(x,y)=>x<PLAT+.75&&W.TSTEPS.some(([a,b])=>y>=a&&y<b)?-8*(1+Math.floor((x-PLAT)/.25)):-32;
   // THE PLATFORM (the owner's picture): a mustard strip of raised dots at the edge, then big marble tiles in a checker, faint veins
-  // NEW YORK (owner, 17 Oct 2026, "replace subway, walls, tracks, etc."): THE PLATFORM, concrete in big slabs, worn and stained, with the
-  // yellow tactile strip of raised domes along its edge and a white safety line behind it
-  W.platformCol=(x,y)=>{ const e=x>=E_PLAT-.5?x-E_PLAT:PLAT-x;
-    if(e<=.06)return mt('lines',[208,170,60]); if(e<=.62){ const u=mod(x*8,1)-.5, v=mod(y*8,1)-.5; return mt('lines',u*u+v*v<.07?[236,196,70]:[214,176,62]); } if(e<=.7)return mt('lines',[224,222,214]);
-    const i=Math.floor(x/1.5), j=Math.floor(y/1.5); if(x/1.5-i<.03||y/1.5-j<.03)return mt('platform',[118,118,116]);
-    const n=hash(Math.floor(x*6),Math.floor(y*6),101), g=hash(i,j,102), c=[146+g*10,146+g*10,142+g*8]; return mt('platform',n<.05?sh(c,.84):n>.95?sh(c,1.05):Math.abs(hash(Math.floor(x*2),Math.floor(y*2),104)-.5)<.03?sh(c,.9):c); };
+  W.platformCol=(x,y)=>{ const e=x>=E_PLAT-.5?x-E_PLAT:PLAT-x;   // (how far from its edge: the far platform's edge is on its west)
+    if(e<=.06)return mt('lines',[214,180,72]); if(e<=.8){ const u=mod(x*6,1)-.5, v=mod(y*6,1)-.5; return mt('lines',u*u+v*v<.08?[176,148,74]:[150,124,56]); }
+    const i=Math.floor(x), j=Math.floor(y); if(x-i<.04||y-j<.04)return mt('platform',[158,161,166]);
+    const n=hash(Math.floor(x*5),Math.floor(y*5),101), c=(i+j)&1?[216,218,222]:[188,191,198]; return mt('platform',n<.035?sh(c,.84):n>.93?sh(c,.97):c); };
   W.platEdge=(u,z)=>sh(mt('concrete',[128,126,120]),z>-3?1:.7);   // its edge, dropping to the track bed
   // THE TRACK BED: dark ballast, wooden sleepers every 1.25 tiles, two steel rails (light along the middle) with rusty clips
-  // THE TRACK BED: grey ballast, timber ties every 0.6 tile, two steel rails bright along their heads on plates, the third rail outside the far
-  // rail under its yellow-edged cover board; a grease-black strip down the middle where the trains drip
-  W.tracksCol=(x,y)=>{ for(const t of W.TRACKS){ const d=x-t, ad=Math.abs(d), tie=mod(y,.6)<.22;
-      if(Math.abs(ad-.7)<.05)return mt('rails',Math.abs(ad-.7)<.02?[206,208,214]:[96,98,104]); if(Math.abs(ad-.7)<.11&&tie)return mt('rails',[116,70,44]);
-      if(d>.86&&d<1.0)return mt('rails',[42,40,38]); if(d>=1.0&&d<1.16)return mt('rails',mod(y,2)<.08?[70,68,64]:[214,196,78]);   // (the third rail and its cover)
-      if(ad<1.25&&tie)return mt('ballast',sh([92,66,46],.9+.2*hash(Math.floor(y/.6),0,105))); if(ad<.3)return mt('ballast',[26,26,28]); }
-    const n=hash(Math.floor(x*12),Math.floor(y*12),103); return mt('ballast',n<.25?[74,74,78]:n<.5?[58,58,62]:n<.8?[88,86,90]:[104,102,106]); };
+  W.tracksCol=(x,y)=>{ for(const t of W.TRACKS){ const d=Math.abs(x-t), r=Math.abs(d-.7);
+      if(r<.07)return mt('rails',r<.025?[200,202,208]:[120,122,128]); if(r<.13&&mod(y,1.25)<.32)return mt('rails',[128,72,44]); if(d<.95&&mod(y,1.25)<.32)return mt('ballast',[74,44,32]); }
+    const n=hash(Math.floor(x*10),Math.floor(y*10),103); return mt('ballast',n<.3?[30,30,34]:n<.6?[22,22,26]:[40,40,44]); };
   // THE STATION'S WALLS: square tiles 0.63 a side in pale grey, charcoal up to a man's shoulder, each tile a touch lighter or darker; a black
   // top. z from the platform (the track bed is 32 lower)
-  // THE STATION'S WALLS: white glazed tiles, 3 x 6 in running bond with grey grout, dulled with the years; a dark green band at the shoulder
-  // with the station's name in a mosaic (WEST END, cream on green, every 12 tiles), a thin green line under it; dark green tiles below the
-  // waist; a black top. z from the platform (the track bed is 32 lower)
-  const MOS={W:'101101101111010',E:'111100110100111',S:'011100010001110',T:'111010010010010',N:'101111111111101',D:'110101101101110',' ':'000000000000000'}, MNAME='WEST END';
-  W.tile=(u,z,f)=>{ const TW=.26*24, TH=7, k=Math.floor(z/TH), i=Math.floor((u*24+(k&1)*TW/2)/TW), gx=mod(u*24+(k&1)*TW/2,TW)<.9, gy=mod(z,TH)<.9;
-    if(z>=60&&z<72){ const a=mod(-u*24-2,12*TW), col=Math.floor(a/5), row=Math.floor((z-62)/2), ch=MNAME[Math.floor(col/4)%MNAME.length], q=col%4; const on=z>=62&&z<72&&a<MNAME.length*4*5&&q<3&&MOS[ch]&&MOS[ch][(4-Math.min(4,row))*3+q]==='1';
-      return sh(mt('subtile',on?[236,226,196]:(mod(u*24,4)<.6||mod(z-60,4)<.6)?[20,52,36]:[30,78,54]),f); }
-    if(z>=72&&z<74)return sh(mt('subtile',[30,78,54]),f); if(z>=94-6)return sh(mt('subtile',[22,22,26]),f);
-    if(z<36){ const c=gx||gy?[24,46,36]:[36,84,58]; return sh(mt('subtile',c),f*(.94+.1*hash(i,k,108))); }
-    const c=gx||gy?[168,166,158]:[226,224,214]; return sh(mt('subtile',c),f*(.93+.1*hash(i,k,107))); };
+  W.tile=(u,z,f)=>{ const T6=.63*24, i=Math.floor(u*24/T6), k=Math.floor((z+32)/T6), g=(u*24/T6-i)<.11||((z+32)/T6-k)<.11, low=z<36;
+    const c=low?(g?[40,42,46]:[60,62,68]):(g?[142,146,152]:[186,190,197]); return sh(mt('subtile',c),f*(.95+.1*hash(i,k,107))); };
   // the curved track wall: the same tiles bent into a shallow hollow (darker toward its foot and its top), three framed posters of the
   // station's own (made up: a teal car in the night, a grey sea, a bright comic), red cables on brackets below the platform
   const PW=4.5, PZ0=17, PZ1=64, POSTERS=[[SY0+1.55,'car'],[SY0+9.96,'sea'],[SY0+18.35,'comic']];

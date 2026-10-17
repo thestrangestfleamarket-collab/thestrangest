@@ -14,10 +14,10 @@ const CLOCK={h:19,run:false,speed:1440/600};   // (speed: game minutes a real se
   const K=[[-90,0x050507,0x55607a,0x14110e,.13,0x6f86c9,.14],[-18,0x050507,0x55607a,0x14110e,.13,0x6f86c9,.14],[-10,0x0e1430,0x4a5a8a,0x15121a,.2,0x6f86c9,.08],
            [-4,0x2a2034,0x7a6a9a,0x2a1e20,.5,0xff8a5a,0],[0,0x3a2a30,0xd09a8a,0x3a2a22,.6,0xff9a5a,.6],[6,0x4a3c38,0xf0c8a0,0x4a3a2a,.75,0xffb070,1.6],
            [14,0x3a4350,0xbfdcff,0x5b4a35,.9,0xfff1d6,2.4],[90,0x3a4350,0xbfdcff,0x5b4a35,.9,0xfff1d6,2.6]];
-  // (a mockup's choice, ?sky=1 or 2, owner 17 Oct 2026: "make the sky blue, add cumulus clouds, real sun that effects the brightness level (only
+  // (THE BLUE DAY, owner 17 Oct 2026: "make the sky blue, add cumulus clouds, real sun that effects the brightness level (only
   // source of light during day besides others on map)": the day's sky blue, deepest overhead at noon; 1 keeps a weak fill of the sky's own blue
   // light in the shade, 2 the sun alone by day (the shade lit only by lamps and what the sun bounces); the clouds below)
-  const SKYV=+(QS.get('sky')||0);
+  const SKYV=QS.get('sky')!=null?+QS.get('sky'):2;   // (the blue sky and the sun alone by day: the default since 17 Oct 2026, "go"; ?sky=0 the old dim day, ?sky=1 with a little sky fill)
   if(SKYV){ K[5]=[6,0x9fb8d8,0xf0c8a0,0x4a3a2a,SKYV===2?.06:.3,0xffb070,1.9]; K[6]=[14,0x6a9fe0,0xbfdcff,0x5b4a35,SKYV===2?.05:.28,0xfff1d6,3.1]; K[7]=[90,0x4f8ee0,0xbfdcff,0x5b4a35,SKYV===2?.05:.28,0xfff1d6,3.4]; }
   const ca=new THREE.Color(), cb=new THREE.Color(), mixC=(a,b,t,out)=>out.copy(ca.setHex(a)).lerp(cb.setHex(b),t);
   let last={h:-1,x:0,z:0,lv:''};
@@ -34,20 +34,9 @@ const CLOCK={h:19,run:false,speed:1440/600};   // (speed: game minutes a real se
     const strong=sunL.intensity>.3; sunL.shadow.autoUpdate=strong&&(CLOCK.fr=(CLOCK.fr||0)+1)%2===0;   // (every other frame: half the cost, a frame's lag unseen)
     if(!strong&&(Math.abs(last.h-CLOCK.h)>.05||Math.hypot(last.x-pos.x,last.z-pos.z)>4*TILE||last.lv!==LVL)){ sunL.shadow.needsUpdate=true; last={h:CLOCK.h,x:pos.x,z:pos.z,lv:LVL}; }
     if(UI.menuOpen)CLOCK.draw&&CLOCK.draw(); };
-  // THE CLOUDS (with ?sky): cumulus, each a heap of a dozen low-poly puffs (flat-bottomed, piled up in the middle), white lit by the sun,
-  // grey-blue in their own shade, round the map out toward the horizon, drifting slowly east and round again
-  if(SKYV){ const ph=(a,b,c)=>{ const v=Math.sin(a*127.1+b*311.7+c*74.7)*43758.5453; return v-Math.floor(v); }, geos=[];
-    for(let n=0;n<16;n++){ const ang=n/16*Math.PI*2+ph(n,1,2)*.3, dist=(70+ph(n,3,4)*60)*TILE, cx=Math.sin(ang)*dist, cz=Math.cos(ang)*dist, cy=(7+ph(n,5,6)*6)*TILE, w=(8+ph(n,7,8)*9)*TILE;   /* (round the map toward the horizon, where you see them) */
-      for(let k=0;k<12;k++){ const u=ph(n,k,9)-.5, v=ph(n,k,10)-.5, r=w*(.22+.18*(1-Math.abs(u)*2)*ph(n,k,11)), g=new THREE.IcosahedronGeometry(r,1);
-        g.scale(1,.75,1); const P=g.attributes.position; for(let i=0;i<P.count;i++)if(P.getY(i)<-r*.15)P.setY(i,-r*.15);   // (the cumulus's flat foot)
-        g.translate(cx+u*w*1.6,cy+r*.3+(1-Math.abs(u)*2)*w*.18,cz+v*w*.7); geos.push(g); } }
-    const n=geos.reduce((a,g)=>a+g.attributes.position.count,0), P=new Float32Array(n*3); let o=0; for(const g of geos){ P.set(g.attributes.position.array,o); o+=g.attributes.position.array.length; }
-    const cg=new THREE.BufferGeometry(); cg.setAttribute('position',new THREE.BufferAttribute(P,3)); cg.computeVertexNormals();
-    /* (flat-faced as made: the puffs' own faces; no flatShading, which the world's shading patch can't take: map-pre.js) */ const CL=new THREE.Mesh(cg,new THREE.MeshLambertMaterial({color:0xffffff,emissive:0x2a3346})); CL.frustumCulled=false; scene.add(CL);
-    const t0=performance.now(); CLOCK.clouds=CL; window.CLOUDS=CL; const tick0=CLOCK.tick; CLOCK.tick=dt=>{ tick0(dt); CL.visible=LVL!=='down'; CL.position.set(pos.x+((performance.now()-t0)/1000*.6*TILE)%(30*TILE),0,pos.z); }; }
   CLOCK.set=h=>{ CLOCK.h=((h%24)+24)%24; };
   CLOCK.dark=()=>elev(CLOCK.h)<-2;
-  CLOCK.sun=sunL;
+  CLOCK.sun=sunL; CLOCK.elev=()=>elev(CLOCK.h); CLOCK.SKYV=SKYV;   // (the weather's: weather.js)
   // the menu's TIME (in DISPLAY, first)
   const pane=document.querySelector('#menu [data-p="display"]'), box=document.createElement('div');
   box.innerHTML=`<h3>TIME</h3><div class="row"><span id="ctime" style="width:72px"></span><input type="range" id="chour" min="0" max="24" step="0.05" style="flex:1">

@@ -142,11 +142,37 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
   // options of shadowing your own avatar"): his own steps of light (2 to 5) and how dark the darkest goes (DEPTH), and SELF on him lit by the
   // lamps too: where his own body stands between the light and a part of him (his shadow pass), that part a step darker
   const GP=new THREE.DataTexture(new Uint8Array(48),12,1,THREE.RGBAFormat); GP.magFilter=GP.minFilter=THREE.NearestFilter; W3.GP=GP; W3.uSelf={value:.7};
-  W3.setShade=(n,dp)=>{ n=Math.max(2,Math.min(12,Math.round(n))); dp=Math.max(.02,Math.min(.98,dp));   /* (steps to twelve, the depth finer: owner, 17 Oct 2026, "add more levels of depth and steps") */ W3.shade={steps:n,depth:dp}; const d=new Uint8Array(n*4); for(let i=0;i<n;i++){ const v=Math.round(255*((1-dp)+dp*i/(n-1))); d.set([v,v,v,255],i*4); }
-    GP.image={data:d,width:n,height:1}; GP.needsUpdate=true; W3.uSelf.value=1-dp*.55; try{ localStorage.setItem('market-shade',JSON.stringify(W3.shade)); }catch(e){} };
-  { let s0={steps:4,depth:.78}; try{ const v=localStorage.getItem('market-shade'); if(v)s0=JSON.parse(v); }catch(e){} W3.setShade(s0.steps,s0.depth); }
+  // SMOOTH OR STEPPED (owner, 17 Oct 2026, the avatar editor: "shadows"; smooth the default with the smooth light, map-pre.js's SMOOTH): smooth,
+  // the light on him a gradient from the darkest to full (32 texels, filtered); stepped, n hard steps. The texture remade at its new size
+  // (dispose: the graphics card's copy made again), so every character on W3.GP follows (everyone shaded as you are)
+  W3.setShade=(n,dp,sm)=>{ n=Math.max(2,Math.min(12,Math.round(n))); dp=Math.max(.02,Math.min(.98,dp));   /* (steps to twelve, the depth finer: owner, 17 Oct 2026, "add more levels of depth and steps") */ if(sm==null)sm=W3.shade?W3.shade.smooth:W3.smooth0; W3.shade={steps:n,depth:dp,smooth:!!sm};
+    const w=sm?32:n, f=sm?THREE.LinearFilter:THREE.NearestFilter, d=new Uint8Array(w*4); for(let i=0;i<w;i++){ const v=Math.round(255*((1-dp)+dp*i/(w-1))); d.set([v,v,v,255],i*4); }
+    if((GP.image&&GP.image.width)!==w||GP.magFilter!==f)GP.dispose(); GP.magFilter=GP.minFilter=f; GP.image={data:d,width:w,height:1}; GP.needsUpdate=true; W3.uSelf.value=W3.selfOff?1:1-dp*.55; try{ localStorage.setItem('market-shade',JSON.stringify(W3.shade)); }catch(e){} };
+  W3.smooth0=(()=>{ const q=new URLSearchParams(location.search).get('look'); let v=null; try{ v=localStorage.getItem('market-lighting'); }catch(e){} return (q||v||'smooth')!=='pixel'; })();   // (map-pre.js's SMOOTH, read the same way: it is made later)
+  // SELF ON OR OFF (the avatar editor): off, his own shadow pass isn't drawn (its map cleared once) and nothing of him is darkened by it
+  W3.selfOff=false; try{ W3.selfOff=localStorage.getItem('market-self')==='0'; }catch(e){}
+  W3.setSelf=on=>{ W3.selfOff=!on; W3.smClr=false; W3.uSelf.value=on?1-W3.shade.depth*.55:1; try{ localStorage.setItem('market-self',on?'1':'0'); }catch(e){} };
+  { let s0={steps:4,depth:.78}; try{ const v=localStorage.getItem('market-shade'); if(v)s0=JSON.parse(v); }catch(e){} W3.setShade(s0.steps,s0.depth,s0.smooth); }
+  // HIS CLOTHES' PATTERNS AND HIS RIM (owner, 17 Oct 2026: "edit my characters avatar by adding outlines, shadows, textures"; src/avatar.js): made
+  // in his toon shader from where each point sits in its own piece (so a pattern rides him as he moves), no picture: per garment (shirt,
+  // trousers, shoes) its kind (0 plain, 1 stripes, 2 plaid, 3 denim twill, 4 knit, 5 camo, 6 dots), its scale and its stuff's index, and a second
+  // colour; the rim a light round his edge as he's seen. A few sums a pixel, in the program he has (no new one)
+  W3.PAT={value:[0,1,2].map(()=>new THREE.Vector4(0,1,-9,0))}; W3.PB={value:[0,1,2].map(()=>new THREE.Vector3(1,1,1))}; W3.uRim={value:0};
+  const PATG=`uniform vec4 uPat[3]; uniform vec3 uPB[3]; uniform float uRim; varying float vMt; varying vec3 vPL;
+  float pH(vec3 q){ return fract(sin(dot(q,vec3(12.9898,78.233,37.719)))*43758.5453); }
+  float pN(vec3 p){ vec3 i=floor(p), f=fract(p); f=f*f*(3.-2.*f); return mix(mix(mix(pH(i),pH(i+vec3(1,0,0)),f.x),mix(pH(i+vec3(0,1,0)),pH(i+vec3(1,1,0)),f.x),f.y),mix(mix(pH(i+vec3(0,0,1)),pH(i+vec3(1,0,1)),f.x),mix(pH(i+vec3(0,1,1)),pH(i+vec3(1,1,1)),f.x),f.y),f.z); }
+  float patW(float t,vec3 p){ float h=p.x+p.z;
+    if(t<1.5)return step(.5,fract(p.y));
+    if(t<2.5)return clamp(step(.62,fract(p.y))*.5+step(.62,fract(h))*.5+step(.9,fract(p.y*3.+.15))*.45+step(.9,fract(h*3.+.15))*.45,0.,1.);
+    if(t<3.5){ float u=h*.7071+p.y*.5, v=h*.7071-p.y*.5; return step(.5,fract(u*5.))*.5+step(.55,fract(v*7.))*.2+step(.93,pH(floor(vec3(u,v,0.)*9.)))*.3; }   /* (the denim twill: DENIM_GLSL's ribs and weft, npc-map.js, in his units) */
+    if(t<4.5){ float c=abs(fract(h*1.4)-.5); return step(.5,fract(p.y*2.+c*2.))*.75; }
+    if(t<5.5){ float n=pN(p*.7)+pN(p*1.8+7.)*.5; return n>1.?1.:n>.78?.5:0.; }
+    return step(length(fract(p+vec3(0.,.5*step(.5,fract(p.y*.5)),0.))-.5),.27); }`;
   const toon=new THREE.MeshToonMaterial({vertexColors:true,gradientMap:GP,side:THREE.DoubleSide});
-  toon.onBeforeCompile=sh=>{ sh.uniforms.uPM=W3.PM; sh.vertexShader=MOVE+'\n'+sh.vertexShader.replace('#include <beginnormal_vertex>',AT+' vec3 objectNormal=mat3(PM)*normal;').replace('#include <begin_vertex>','vec3 transformed=(PM*vec4(position,1.)).xyz;');
+  toon.onBeforeCompile=sh=>{ sh.uniforms.uPM=W3.PM; sh.vertexShader='attribute float mat; varying float vMt; varying vec3 vPL;\n'+MOVE+'\n'+sh.vertexShader.replace('#include <beginnormal_vertex>',AT+' vec3 objectNormal=mat3(PM)*normal;').replace('#include <begin_vertex>','vec3 transformed=(PM*vec4(position,1.)).xyz; vMt=mat; vPL=position;');
+    sh.uniforms.uPat=W3.PAT; sh.uniforms.uPB=W3.PB; sh.uniforms.uRim=W3.uRim;
+    sh.fragmentShader=PATG+'\n'+sh.fragmentShader.replace('#include <color_fragment>','#include <color_fragment>\n for(int i=0;i<3;i++) if(uPat[i].x>.5&&abs(vMt-uPat[i].z)<.5) diffuseColor.rgb=mix(diffuseColor.rgb,uPB[i],patW(uPat[i].x,vPL*uPat[i].y));')
+      .replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n if(uRim>0.){ vec3 vd=isOrthographic?vec3(0.,0.,1.):normalize(vViewPosition); totalEmissiveRadiance+=mix(diffuseColor.rgb,vec3(1.),.4)*uRim*pow(1.-abs(dot(normalize(vNormal),vd)),3.); }');
     sh.uniforms.uLv=W3.lv; sh.uniforms.uLVP=W3.LVP; sh.uniforms.uSM={value:W3.sm.depthTexture}; sh.uniforms.uSelf=W3.uSelf;
     sh.vertexShader='varying vec3 vWW;\n'+sh.vertexShader.replace('#include <project_vertex>','#include <project_vertex>\n vWW=(modelMatrix*vec4(transformed,1.)).xyz;');
     sh.fragmentShader='uniform float uLv,uSelf; uniform mat4 uLVP; uniform sampler2D uSM; varying vec3 vWW;\n'+sh.fragmentShader.replace('#include <normal_fragment_begin>','float faceDirection=1.0; vec3 normal=normalize(vNormal); vec3 nonPerturbedNormal=normal;').replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n totalEmissiveRadiance+=diffuseColor.rgb*0.16;')
@@ -205,13 +231,13 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
 const OUTL={rt:new THREE.WebGLRenderTarget(4,4,{type:THREE.FloatType,format:THREE.RGBAFormat,minFilter:THREE.NearestFilter,magFilter:THREE.NearestFilter}),
   occ:new THREE.ShaderMaterial({vertexShader:`varying float vd; void main(){ vec4 mv=modelViewMatrix*vec4(position,1.); vd=-mv.z; gl_Position=projectionMatrix*mv; }`,fragmentShader:`varying float vd; void main(){ gl_FragColor=vec4(-1.,0.,0.,vd); }`,side:THREE.DoubleSide})};
 OUTL.pass={uniforms:{tDiffuse:{value:null},tId:{value:OUTL.rt.texture},px:{value:new THREE.Vector2(1,1)},cols:{value:W3.ramp.map(r=>new THREE.Vector3(r[3].r,r[3].g,r[3].b)).concat(Array(Math.max(0,24-W3.ramp.length)).fill(new THREE.Vector3())).slice(0,24)},
-    legs:{value:W3.legs.concat(Array(Math.max(0,64-W3.legs.length)).fill(0)).slice(0,64)},tint:{value:W3.tint},t1:{value:3.5/PPU},t2:{value:1.6/PPU}},
+    legs:{value:W3.legs.concat(Array(Math.max(0,64-W3.legs.length)).fill(0)).slice(0,64)},tint:{value:W3.tint},t1:{value:3.5/PPU},t2:{value:1.6/PPU},wid:{value:1},oc:{value:new THREE.Vector3()},ocK:{value:0}},   // (wid: its thickness in the picture's pixels; oc, ocK: one colour of his choosing in place of each stuff's own dark: src/avatar.js)
   vertexShader:`varying vec2 vUv; void main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.); }`,
-  fragmentShader:`uniform sampler2D tDiffuse,tId; uniform vec2 px; uniform vec3 cols[24]; uniform float legs[64]; uniform vec3 tint; uniform float t1,t2; varying vec2 vUv;
-  bool edgeTo(vec4 c,vec2 o){ vec4 q=texture2D(tId,vUv+o*px); if(q.x<0.)return q.w>c.w+0.05; if(abs(q.x-c.x)<0.5)return false;
+  fragmentShader:`uniform sampler2D tDiffuse,tId; uniform vec2 px; uniform vec3 cols[24]; uniform float legs[64]; uniform vec3 tint; uniform float t1,t2,wid,ocK; uniform vec3 oc; varying vec2 vUv;
+  bool edgeTo(vec4 c,vec2 o){ vec4 q=texture2D(tId,vUv+o*px*wid); if(q.x<0.)return q.w>c.w+0.05; if(abs(q.x-c.x)<0.5)return false;
     if(q.w-c.w>(abs(q.y-c.y)<0.5?t1:t2))return true; float a=legs[int(c.x+0.5)], b=legs[int(q.x+0.5)]; return a>0.&&b>0.&&a!=b&&q.w>=c.w; }
   void main(){ vec4 c=texture2D(tId,vUv); vec4 base=texture2D(tDiffuse,vUv); if(c.x<0.){ gl_FragColor=base; return; }
-    bool e=edgeTo(c,vec2(1,0))||edgeTo(c,vec2(-1,0))||edgeTo(c,vec2(0,1))||edgeTo(c,vec2(0,-1)); gl_FragColor=e?vec4(cols[int(c.y+0.5)]*tint,1.):base; }`};
+    bool e=edgeTo(c,vec2(1,0))||edgeTo(c,vec2(-1,0))||edgeTo(c,vec2(0,1))||edgeTo(c,vec2(0,-1)); gl_FragColor=e?vec4(mix(cols[int(c.y+0.5)]*tint,oc,ocK),1.):base; }`};
 OUTL.render=(renderer,scene,cam)=>{ const w=renderer.domElement.width, h=renderer.domElement.height; if(OUTL.rt.width!==w||OUTL.rt.height!==h)OUTL.rt.setSize(w,h); OUTL.pass.uniforms.px.value.set(1/w,1/h);
   const ac=renderer.autoClear; renderer.setRenderTarget(OUTL.rt); renderer.state.buffers.color.setClear(-2,0,0,1e9); renderer.clear(true,true,false);
   const cut=OUTL.hidden?OUTL.hidden():[]; for(const o of cut)o.visible=false; W3.group.visible=false; scene.overrideMaterial=OUTL.occ; const bg=scene.background; scene.background=null; renderer.autoClear=false; renderer.render(scene,cam); scene.overrideMaterial=null; scene.background=bg; W3.group.visible=true; for(const o of cut)o.visible=true;
@@ -219,5 +245,5 @@ OUTL.render=(renderer,scene,cam)=>{ const w=renderer.domElement.width, h=rendere
   renderer.autoClear=ac; renderer.setRenderTarget(null); };
 
 // SELF: his own depth from his light, his pieces alone (each frame, before the scene)
-W3.shadowPass=renderer=>{ if(W3.lv.value<1.5)return; const m0=W3.mesh.material; W3.mesh.material=W3.depthMat;
+W3.shadowPass=renderer=>{ if(W3.lv.value<1.5)return; if(W3.selfOff){ if(!W3.smClr){ W3.smClr=true; renderer.setRenderTarget(W3.sm); renderer.clear(); renderer.setRenderTarget(null); } return; } const m0=W3.mesh.material; W3.mesh.material=W3.depthMat;
   renderer.setRenderTarget(W3.sm); renderer.clear(); renderer.render(W3.group,W3.smCam); renderer.setRenderTarget(null); W3.mesh.material=m0; };

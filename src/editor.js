@@ -161,7 +161,19 @@ const ED={on:false};
   let V0=null;
   // the goldfish and the bear: he walks up and waves (the first things a double click does something with)
   for(const N of NPCS)UI.thing({name:N.name,obj:N.g,reach:1.3,tall:N.H||1.8,act:()=>{ if(!st.move)RIG.act(st,'V'); setTimeout(()=>RIG.release(st,'V'),900); }});
-  ED.enter=()=>{ if(UI.menuOpen)UI.toggleMenu(); if(UI.freeCam)UI.setFree(false); if(UI.fly)UI.setFly(false); target=null; ED.on=true; V0={yaw:yawTo,pitch:pitchTo,ppu:ppuTo,off:UI.off.clone()}; UI.off.set(0,0,0); pitchTo=clampP(0.22); ppuTo=Math.min(240,PPU*3.2); P.hidden=false; draw(); };
+  ED.enter=quiet=>{ if(UI.menuOpen)UI.toggleMenu(); if(UI.freeCam)UI.setFree(false); if(UI.fly)UI.setFly(false); target=null; ED.on=true; V0={yaw:yawTo,pitch:pitchTo,ppu:ppuTo,off:UI.off.clone()}; UI.off.set(0,0,0); pitchTo=clampP(0.22); ppuTo=Math.min(240,PPU*3.2); P.hidden=!!quiet; draw(); };   // (quiet: the avatar editor's own panel in place of this one, src/avatar.js)
+  // (for the avatar editor, src/avatar.js: this panel, its tab, the brush, a step back, all back, his shape as data and back)
+  ED.P=P; ED.B=B; ED.setMode=m=>{ mode=m; draw(); }; ED.show=m=>{ if(m)mode=m; P.hidden=false; draw(); }; ED.snap=()=>snap(); ED.undo=()=>undo(); ED.allBack=()=>$('#eall').onclick(); ED.pack=()=>pack2(); ED.unpack=o=>{ if(unpack(o)){ save(); draw(); } };
+  // HIS TOES (the avatar editor's FEET: "toe shape"): each shoe's front made again from its first shape: ROUND as made, POINTED (narrowing and
+  // a little lower and longer to a point), SQUARE (as wide and high as the shoe to a flat front); in his shape as a sculpt is (kept, undone, a file)
+  ED.toe=k=>{ snap(); for(const [pi,n] of NAMES.entries()){ if(!/^shoe[LR]$/.test(n))continue; const vs=[]; let x0=1e9,x1=-1e9,y0=1e9,z0=1e9,z1=-1e9;
+      for(let i=0;i<NV;i++)if((PI.array[i]|0)===pi){ vs.push(i); const x=BASE[i*3],y=BASE[i*3+1],z=BASE[i*3+2]; x0=Math.min(x0,x); x1=Math.max(x1,x); y0=Math.min(y0,y); z0=Math.min(z0,z); z1=Math.max(z1,z); }
+      const xm=(x0+x1)/2, hw=(x1-x0)/2;
+      for(const i of vs){ let x=BASE[i*3],y=BASE[i*3+1],z=BASE[i*3+2]; const t=(z-z0)/(z1-z0), f=Math.max(0,Math.min(1,(t-.5)/.5)), e=f*f*(3-2*f);
+        if(k==='pointed'){ x=xm+(x-xm)*(1-.6*e); y=y0+(y-y0)*(1-.3*e); z+=e*1.6; }
+        else if(k==='square'){ const a=Math.abs(x-xm); x=xm+Math.sign(x-xm)*Math.min(hw*.92,a+(hw*.92-a)*e*.8); z=Math.min(z,z1-.9)+(z>z1-.9?(z-(z1-.9))*.25:0); }
+        PA.array[i*3]=x; PA.array[i*3+1]=y; PA.array[i*3+2]=z; } }
+    sculpted=true; normals(); save(); draw(); try{ localStorage.setItem('market-toe',k); }catch(e){} };
   ED.exit=()=>{ if(ED.onExit)ED.onExit(); ED.on=false; P.hidden=true; sel.visible=false; ring.hidden=true; drag=null; if(V0){ yawTo=V0.yaw; pitchTo=V0.pitch; ppuTo=V0.ppu; UI.off.copy(V0.off); } save(); };
   // each frame while open: the selected piece's picture where he is, his light as a lamp's, his new normals once a frame while brushing
   ED.tick=()=>{ W3.group.updateMatrixWorld(); sel.matrix.copy(W3.group.matrixWorld); sel.matrixWorldNeedsUpdate=true; if(dirty){ dirty=false; normals(); } };

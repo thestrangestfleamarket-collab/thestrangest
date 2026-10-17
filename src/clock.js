@@ -2,8 +2,9 @@
 // gives the street. The sun goes round as it does over New York in mid-October (up a little after seven, highest past noon at about 42°,
 // down a little after six), one light from it with its shadows; the sky's colour, the open air's light and the moon's follow how high (or
 // how far under) the sun is: day, the gold of a low sun, sunset, the blue hour, night. Underground none of it reaches. The menu's TIME:
-// the hour (a slider), STOPPED or RUNNING, and how fast a day goes; N jumps between noon and seven in the evening. The game opens at 7pm ----
-const CLOCK={h:19,run:false,speed:1440/600};   // (speed: game minutes a real second; a day in ten minutes)
+// the hour (a slider), STOPPED or RUNNING, and how fast a day goes; N jumps between noon and seven in the evening. The game opens at noon
+// (owner, 17 Oct 2026: "day always starts at noon"; before that 7pm) ----
+const CLOCK={h:12,run:false,speed:1440/600};   // (speed: game minutes a real second; a day in ten minutes)
 { const D=Math.PI/180, sunL=new THREE.DirectionalLight(0xffffff,0), R=22*TILE;
   sunL.castShadow=true; sunL.shadow.mapSize.set(2048,2048); Object.assign(sunL.shadow.camera,{left:-R,right:R,top:R,bottom:-R,near:.5,far:120*TILE}); sunL.shadow.camera.updateProjectionMatrix();
   sunL.shadow.bias=-.0005; sunL.shadow.normalBias=.04; scene.add(sunL,sunL.target);

@@ -56,5 +56,5 @@ np.save(D+'reg.npy',reg.reshape(-1,3)[:,0]); np.save(D+'v.npy',P); np.save(D+'f.
 out={'p':base64.b64encode(P.astype(np.float32).tobytes()).decode(),'c':base64.b64encode(np.repeat(col.clip(0,255).round().astype(np.uint8),3,axis=0).reshape(-1).tobytes()).decode(),
      'r':base64.b64encode(reg.astype(np.uint8).tobytes()).decode(),'w':base64.b64encode(np.stack([o[:,0],o[:,1]],1).astype(np.uint8).tobytes()).decode(),
      'wt':base64.b64encode(np.stack([w0,w1],1).astype(np.float32).tobytes()).decode(),'tris':len(T),'bones':[[b[0],par[i],list(map(float,H[i])),list(map(float,E[i]))] for i,b in enumerate(B)]}
-open('data/'+{'cheetah':'leopard','grumpycat':'cat','ghost':'ghost'}[name]+'.json','w').write(json.dumps(out))
+open('data/'+{'ghost':'ghost'}[name]+'.json','w').write(json.dumps(out))
 import collections; print(name,'tris',len(T),collections.Counter(names[r] for r in reg[::3]))

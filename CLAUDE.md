@@ -62,15 +62,11 @@ this repo is `bralynnbell/thestrangest`.
 - **Feature list**: `TODO.md` (the owner's asks for later: NPCs that talk with a real AI and ElevenLabs voices, their lines saved and reused).
 - **The musician** (17 Oct 2026, `src/musician.js`): the game's guitarist brought over whole (build.py reads the game's 47-play-3-guitar-1-body, -samples.data, -2-tunes, -3-hands, and embeds `audio/guitar.mp3`; small stand-ins for the game's cast and sound): a second Walker with his finger bones, the classical guitar (its solid hull; the game's hollow one breaks up as a mesh), the book of tunes in turn, his hands solved onto every note with weight; on the sidewalk by the bodega in the street light, lit by the lamps; his recorded notes, louder as you near him, from his side (sound starts with your first click or key). A double click on him: the camera close on his hands, as sharp as the screen shows (C back).
 - **Never lost in the dark; no shadow acne** (17 Oct 2026): the lamp-lit avatars (the Walker, the musician, the fish, the bear, the skeletons) carry a little light of their own (a sixth of their colour), the lamps on top; every lamp's shadow held off the surface it falls on (normalBias), the two nearest lamps' shadows finer (1024).
-- **The street's characters from his models** (17 Oct 2026, the G folder's .glb files, `src/npc-street.js`, `data/leopard.json`, `cat.json`,
-  `ghost.json`): the snow leopard, the grumpy cat in his raincoat with his newspaper, the plastic-bag ghost (hollow, see-through, the brown tote
-  floating inside him). A furry model is remade as one clean skin (`tools/skin-bake.py`: its surface sampled into voxels, closed, a smooth surface
-  pulled off, cut to some thousands of triangles, coloured from its own texture), cut into bones with soft weights (`tools/skin-bones.py`; through
-  `makeNPC` as a rigged one, so the lamps light them like the rest), and given his kind's moves: idle, walk, run, jump, wave, use (a reach and a grab).
-  Each has a body in Rapier (a capsule in a world of the street's ground, kerbs, walls and furniture: gravity, pushes, a real jump); without the
-  engine he walks on the ground. They wander the street as their own NPCs, look at you, wave back, use the things they come to; "they will be part
-  of the market later". **The items** from the same folder (the tote, the retro cyborg terminal, the pixel pantry power-up, the cat's ink bottle:
-  `tools/item-bake.py`) stand on the sidewalk as things. The .glb files are not in the repo (too big): they're in the owner's Drive, folder G.
+- **The street's characters from his models** (17 Oct 2026, the G folder's .glb files, `src/npc-street.js`, `data/ghost.json`): the plastic-bag ghost
+  (hollow, see-through, the brown tote floating inside him), remade as one clean skin (`tools/skin-bake.py`), cut into bones (`tools/skin-bones.py`),
+  his moves, a body in Rapier; he wanders the street. **The items**: the tote and the pixel pantry power-up (`tools/item-bake.py`). The .glb files
+  are not in the repo (too big): they're in the owner's Drive, folder G. **Deleted** (owner, 17 Oct 2026: "delete the phone head character, the
+  cheetah and the catnewspaper characters from game completely"): the snow leopard, the grumpy cat (and his ink bottle), the retro cyborg terminal.
 - When a request could mean more than one thing, ask with a couple of options (or a quick mockup) before building.
 
 ## THE MARKET: the one official map
@@ -100,7 +96,7 @@ the owner's call, and merging publishes). The artifact link above is the quick w
     its water, its floats. `bodega.js` (the bodega's plan from the game's code, via `gamekit.js` stand-ins and `goods-defs.js`) +
     `bodbuild.js` (built in 3D). `batch.js`: every still face packed into one texture and a few meshes (fast).
   - `npc-map.js`: the goldfish and the bear wandering the platform (and `makeNPC`, every character's maker). `npc-skel.js`: the four skeletons on the far sidewalk, rigged and animated.
-  - `npc-street.js`: the leopard, the cat and the ghost wandering the street (bones, moves, bodies in Rapier, minds), and the items.
+  - `npc-street.js`: the ghost wandering the street (bones, moves, a body in Rapier, a mind), and the items.
 - `data/`: the characters baked from the owner's models (`goldfish.json`, `bear.json`) and the skeletons, their gear and clips (`skel.json`). `tools/`: the
   scripts that baked them (they need the owner's .glb files and `fast-simplification`; `skeletons-bake.py` the KayKit pack, unzipped;
   `skin-bake.py`, `skin-bones.py`, `item-bake.py`, `mesh-cut.py` the street's characters and items: `trimesh`, `scipy`, `scikit-image` too).

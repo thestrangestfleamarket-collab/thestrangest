@@ -125,18 +125,15 @@ const STREET={npcs:[],items:[],ready:false}; window.STREET=STREET;   // (a test'
       wave:{T:1.8,pose:(u,t)=>({armR:[0,-10,65+14*sn(u*22)],head:[0,10,0]})},
       jump:{T:1.4,pose:u=>{ const r=bell(u,.3,.6); return {armL:[0,0,-45*r],armR:[0,0,45*r],hem:[10*r,0,0],head:[-6*r,0,0],root:0}; }},
       use:{T:2,pose:u=>{ const r=bell(u,.3,.7); return {armL:[0,55*r,-10*r],armR:[0,-55*r,10*r],head:[14*r,0,0]}; }}}};
-  // ---- THE OWNER'S CHARACTERS AND THINGS, on the street: the leopard outside the bodega, the cat down the sidewalk with his ink bottle by him,
-  // the ghost by the pool room's door; the terminal and the power-up on the sidewalk by the shop fronts
+  // ---- THE OWNER'S CHARACTERS AND THINGS, on the street: the ghost by the pool room's door; the power-up on the sidewalk by the shop fronts
+  // (the snow leopard, the grumpy cat with his ink bottle and the retro cyborg terminal: deleted, owner 17 Oct 2026, "delete the phone head
+  // character, the cheetah and the catnewspaper characters from game completely")
   STREET.start=()=>{ const L=(()=>{ const G=MODS.bodega.ground, xm=(BOUND.x0+BOUND.x1)/2; let zc=null; for(let z=BOUND.z0;z<BOUND.z1;z+=0.02)if(G(xm,z)<-.01){ zc=z; break; } return zc; })(), sw=L-1.6*TILE;
-    const leo=makeChar(LEOPARD,{key:'leopard',name:'SNOW LEOPARD',kind:'biped',metres:1.85,at:[-5*TILE,sw],radius:.42,speed:.75,stride:7.5,jump:5.2,uses:['terminal','powerup']});
-    const cat=makeChar(CATD,{key:'cat',name:'GRUMPY CAT',kind:'sitter',metres:1.15,at:[6*TILE,sw-.3],radius:.5,speed:.45,stride:9,jump:4.6});
     const gho=makeChar(GHOSTD,{key:'ghost',name:'PLASTIC BAG GHOST',kind:'sheet',metres:1.7,at:[14*TILE,sw],radius:.45,speed:.6,stride:6,jump:4.8,glass:.74,hover:.12});
     // the tote inside the ghost, floating, rising when he lifts it
     const tote=makeItem(TOTE,{key:'tote',name:'BROWN TOTE',metres:.55}); gho.inner.add(tote.g); tote.g.scale.setScalar(1/gho.body.scale.x); tote.g.scale.y=1/gho.body.scale.y; tote.g.position.set(0,.22,0); tote.me.renderOrder=1;
     gho.carry=ns=>{ const lift=ns.move&&ns.move.name==='use'?bell(ns.move.t/ns.move.T,.3,.7):0; tote.g.position.set(0,.22+.03*Math.sin(ns.t*1.7)+.3*lift,.02*Math.cos(ns.t*1.1)); tote.g.rotation.y=.2*Math.sin(ns.t*.6); };
-    makeItem(TERMINAL,{key:'terminal',name:'RETRO CYBORG TERMINAL',metres:1.5,at:[-1.5*TILE,sw-1.4*TILE],turn:Math.PI*.1});
     makeItem(POWERUP,{key:'powerup',name:'PIXEL PANTRY POWER-UP',metres:.9,at:[9.5*TILE,sw-1.3*TILE],turn:-Math.PI*.15});
-    makeItem(INKBOTTLE,{key:'ink',name:'INK BOTTLE',metres:.3,at:[6.8*TILE,sw-.9*TILE]});
     // the engine, when it's here (the Walker's loader; without it they walk on the ground)
     STREET.PB=PB; PB.load(); const go=()=>{ if(PB.R&&!SP.world){ SP.R=PB.R; try{ SP.build(); }catch(e){ console.warn('street physics',e); SP.world=null; } } }; go(); if(!SP.world)(PB.onReady=PB.onReady||[]).push(go); };
   STREET.tick=(dt,you,yy)=>{ if(SP.world)SP.step(dt,you,yy); };

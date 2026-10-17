@@ -2,7 +2,7 @@
 const {chromium}=require('playwright');
 (async()=>{ const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader']}); const pg=await b.newPage({viewport:{width:1000,height:700}}); pg.setDefaultTimeout(180000);
   const errs={}, warns=[]; pg.on('pageerror',e=>{ errs[e.message]=(errs[e.message]||0)+1; if(errs[e.message]===1)console.log('pageerror:',e.message.slice(0,300),(e.stack||'').split('\n').slice(1,4).join(' / ').slice(0,500)); }); pg.on('console',m=>{ const t=m.text(); if(/store:|no /.test(t)&&warns.length<30)warns.push(t.slice(0,120)); });
-  const out=process.argv[2]||'store', hour=process.argv[3]||'22', places=(process.argv[4]||'THE DINER,THE BAR,THE MOON SHRINE,THE HERB COTTAGE,THE OCTOPUS TANK,THE KEEP,THE BUTTERFLIES').split(',');
+  const out=process.argv[2]||'store', hour=process.argv[3]||'22', places=(process.argv[4]||'THE DINER,THE BAR,THE MOON SHRINE,THE HERB COTTAGE,THE AQUARIUM,THE KEEP,THE BUTTERFLIES').split(',');
   await pg.goto('file://'+process.cwd()+'/dist/market.html?hour='+hour+'&npcwait=60',{timeout:240000}); await pg.waitForTimeout(25000);
   console.log('rooms',await pg.evaluate(()=>JSON.stringify(STORE.rooms.map(r=>[r.id,+r.at.x.toFixed(1),+r.at.z.toFixed(1)]))),'batch',await pg.evaluate(()=>JSON.stringify(STORE.stats)));
   for(const P of places){ const tag=P.toLowerCase().replace(/[^a-z]+/g,'-'); await pg.evaluate(P=>{ const p=STORE.places.find(q=>q[0]===P); STORE.goTo(p[1],p[2],'up'); },P); await pg.waitForTimeout(2500);

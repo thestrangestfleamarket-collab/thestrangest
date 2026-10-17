@@ -397,6 +397,27 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
 
 - **Smooth light, the default now** (owner, 17 Oct 2026, of the grainy cloud and tree mockups: "i dont like any of those mockups, they all look like dots everywhere, i want smooth realistic shadows and lighting like gradient radial etc"; it supersedes the grain and the 24 steps above): `SMOOTH` in `map-pre.js`: no grain, the light not cut into steps, soft shadow edges (PCFSoftShadowMap), the lamps' pools smooth radial gradients; GRAPHICS' LIGHTING switches back to PIXEL (`market-lighting`), `?look=pixel|smooth`.
 
+- **THE MARKET IN ORDER: MOCKUP 1 (owner, 17 Oct 2026: "go through and try to make the map make sense, place things logical, organize the buildings and
+  stacks of rooms in a way that would be logical, keep it on that side of the street"; then "have the street on right side go up and fill the right side
+  of that street with places as well. pull from old game"; of three mockups, "mockup 1"; the mockups: https://claude.ai/artifact/UYDHWQFnYRe3cUMN7YmMVe)**:
+  **one block, shoulder to shoulder**, homes at both ends and the shops between, west to east (`LAYOUT0` in `map-pre.js`, the moves in the map's tiles):
+  the apartment house | THE COMMUNITY GARDEN on the lot the subway stairs stand before (the herb cottage at its west, the butterfly garden at its
+  east, a wooden fence with an open gate on the sidewalk: `STORE.garden` in `store.js`, the fence in `dress.js`; the menu's THE GARDEN) | the bodega
+  (+8.75) | the Diner (-24.75) | THE AQUARIUM (the octopus tank's room, a storefront with its door on the sidewalk, 28.2 to 44.4) | the Bar (-8) | Ghost
+  Street (-8.75) | the apartment building with its pool at the east end (+59), **nothing on its roof** (the stack is gone, and with it `lift`, the
+  stacked floors' ground and solids). **The keep in the castle's bailey** (its west half, behind the dungeon's stairwell, its door toward the
+  gatehouse; the bailey four tiles wider west, `CASTLE.b` 46, the park's west edge with it, its well moved east). **The street runs on east** to x 100
+  (`BOD.MAP.x1` 172), a crosswalk at the park's gate and two at the Avenue's mouth, **a back alley** behind the whole row (worn asphalt, y -101 to -96).
+  **THE AVENUE** (`AVE` in `map-pre.js`: street tiles 152 to 166.5, north to y 49): a cross street north from the main street's east end, the main
+  street's width (two sidewalks of 3.2, a road of 7.7, a kerb down, its own hole in the land), the park's new east wall along its west sidewalk with
+  THE PARK'S EAST GATE opposite the museum (`PARK.egate`), lamp posts up its park side, the lawn north of the park open; its east side **the old game's
+  row, as shells for now** (`AVR` in `store.js`: the row's brick, windows and a door on the Avenue, a plain room under one lamp, a roof), south to north:
+  MARKET · LOUNGE on the corner, MUSEUM OF EARTH facing the gate, LUCKY 7, THE YELLOW AWNING, an alley, MOVIE THEATRE · ARCADE, PLAYHOUSE, 221B BAKER
+  STREET; each in the menu's STORED row. Not yet: the old game's insides of those seven (each built to face the main street: a quarter turn per
+  place as it's set out is new code), Cherry Station at the Avenue's north end, characters on the Avenue, the museum's window and the aquarium's,
+  the cross street at the west end. **The budget, kept**: everything new is built after the game opens with the four rooms (`STEPS`, `STORE.later`),
+  nothing at the loading line; one lamp a shell (LITE's pool); the only-your-room rule covers them.
+
 ## THE MARKET: the one official map
 
 **THE MARKET** (owner, 17 Oct 2026: "one official MARKET map im gona start filling in") is the game's map here: every place the owner adds goes

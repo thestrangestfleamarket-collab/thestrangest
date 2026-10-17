@@ -31,19 +31,30 @@ const DRESS={};
     const poolMat=new THREE.MeshBasicMaterial({map:poolTex,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,toneMapped:false,polygonOffset:true,polygonOffsetFactor:-2}), poolGeo=new THREE.PlaneGeometry(2,2).rotateX(-Math.PI/2);
     for(let i=0;i<n;i++){ const x=x0+i*SP;   // (the near kerb's, then the far kerb's half a span along: staggered)
       sl(x,sw-.25*M,1); light(x,5.8*M,sw+1.4*M,40,13*TILE); heads.push([x,5.8*M,sw+1.4*M]);
-      const xf=x+SP/2; if(xf<BOUND.x1-3){ sl(xf,far+.25*M,-1); light(xf,5.8*M,far-1.4*M,40,13*TILE); heads.push([xf,5.8*M,far-1.4*M]); } }
+      const xf=x+SP/2; if(xf<BOUND.x1-3&&!(xf>BOD.XS(AVE.r0)-1&&xf<BOD.XS(AVE.r1)+1)){ sl(xf,far+.25*M,-1); light(xf,5.8*M,far-1.4*M,40,13*TILE); heads.push([xf,5.8*M,far-1.4*M]); } }
     // the lamp posts: the far sidewalk's park side (the wall's line, a little in front of it)
-    const wz=BOD.ZS(PARK.y0+PARK.oy), pz=far+(wz-far)*.7, g0=BOD.XS(PARK.gate[0]+PARK.ox), g1=BOD.XS(PARK.gate[1]+PARK.ox), xs=[g0-.9*M,g1+.9*M];
-    for(let x=g0-14*M;x>BOUND.x0+2;x-=14*M)xs.push(x); for(let x=g1+14*M;x<BOUND.x1-2;x+=14*M)xs.push(x);
+    const wz=BOD.ZS(PARK.y0+PARK.oy), pz=far+(wz-far)*.7, g0=BOD.XS(PARK.gate[0]+PARK.ox), g1=BOD.XS(PARK.gate[1]+PARK.ox), pts=[[g0-.9*M,pz],[g1+.9*M,pz]], px1=BOD.XS(PARK.x1+PARK.ox)-2;
+    for(let x=g0-14*M;x>BOUND.x0+2;x-=14*M)pts.push([x,pz]); for(let x=g1+14*M;x<px1;x+=14*M)pts.push([x,pz]);
+    // (and up the Avenue's west sidewalk, the park's side, from its mouth to its end: owner, 17 Oct 2026)
+    { const ax=BOD.XS(AVE.x0)+(BOD.XS(AVE.r0)-BOD.XS(AVE.x0))*.35, z0=BOD.ZS(BOD.MAP.y1)+5*M, z1=BOD.ZS(AVE.y1)-2; for(let z=z0;z<z1;z+=14*M)pts.push([ax,z]); }
+    const xs=pts.map(p=>p[0]);
     const H=4.2*M, pole=new THREE.InstancedMesh(new THREE.BoxGeometry(.13*M,H,.13*M).translate(0,H/2,0),new THREE.MeshLambertMaterial({color:0x22262b}),xs.length*2),
       lant=new THREE.InstancedMesh(new THREE.BoxGeometry(.34*M,.5*M,.34*M),new THREE.MeshBasicMaterial({color:0xffe4b0}),xs.length), m4=new THREE.Matrix4(), y0=G(xs[0],pz);
-    xs.forEach((x,i)=>{ const y=G(x,pz); pole.setMatrixAt(i*2,m4.makeTranslation(x,y,pz)); pole.setMatrixAt(i*2+1,m4.makeScale(2.6,.06,2.6).setPosition(x,y,pz));   // (the post and its foot)
+    pts.forEach(([x,pz],i)=>{ const y=G(x,pz); pole.setMatrixAt(i*2,m4.makeTranslation(x,y,pz)); pole.setMatrixAt(i*2+1,m4.makeScale(2.6,.06,2.6).setPosition(x,y,pz));   // (the post and its foot)
       lant.setMatrixAt(i,m4.makeTranslation(x,y+H+.25*M,pz)); light(x,y+H+.2*M,pz,18,9*TILE);
       SOL.up.push([x-.12*M,pz-.12*M,x+.12*M,pz+.12*M]); FIX.up.push([x-.12*M,pz-.12*M,y,x+.12*M,pz+.12*M,y+H]); });
     const hd=new THREE.InstancedMesh(new THREE.BoxGeometry(.5*M,.08*M,.26*M),lant.material,heads.length); heads.forEach(([x,y,z],i)=>hd.setMatrixAt(i,m4.makeTranslation(x,y-.08*M,z))); scene.add(hd);   // (each street light's lamp, lit under its head)
     for(const P of pools){ const [L,x,z,r]=P, me=new THREE.Mesh(poolGeo,poolMat); me.scale.set(r,1,r); me.position.set(x,G(x,z)+.03,z); me.renderOrder=1; me.visible=false; scene.add(me); P.push(me); }
     DRESS.pools=pools; DRESS.tick=()=>{ const k=Math.max(0,Math.min(1,(3-CLOCK.elev())/8)), up=LVL!=='down'&&!ROOMS.cur; poolMat.opacity=k; for(const [L,,,,me] of pools)me.visible=up&&k>0&&!L.userData.off; };
     pole.castShadow=true; scene.add(pole,lant);
+    // THE COMMUNITY GARDEN'S FENCE (owner, 17 Oct 2026, mockup 1): a low wooden fence along the lot's front between the apartment house and the
+    // bodega, posts every two tiles, two rails, its gate open between the cottage and the butterfly garden; solid but for the gate
+    { const z=-.35*TILE, x0=AX+.15, x1=BX0-.15, gx0=-5.6*TILE, gx1=-3.6*TILE, sx0=BOD.XS(MAPSTAIR.x0)-.3, sx1=BOD.XS(MAPSTAIR.x1)+.3, WD=0x4a3b2a, RL=0x6b573f, H=1.05*M;   // (on the lot's line, a hair behind the sidewalk; open where the subway stairs' well cuts the line)
+      const post=(x,h)=>{ const y=G(x,z); blk(x,y+h/2,z,.09*M,h,.09*M,WD); };
+      const runs=[[x0,sx0],[sx1,gx0],[gx1,x1]];
+      for(const [a,b] of runs){ for(let x=a;x<b-.5;x+=2*TILE)post(x,H); post(b,H); } post(gx0,H*1.2); post(gx1,H*1.2);
+      const rail=(a,b)=>{ const y=G((a+b)/2,z); for(const h of [.42*M,.9*M])blk((a+b)/2,y+h,z,b-a,.06*M,.05*M,RL); SOL.up.push([a,z-.06*M,b,z+.06*M]); FIX.up.push([a,z-.06*M,y,b,z+.06*M,y+H]); };
+      for(const [a,b] of runs)rail(a,b); }
     { const me=new THREE.InstancedMesh(new THREE.BoxGeometry(1,1,1),new THREE.MeshLambertMaterial({color:0xffffff}),BL.length), m4=new THREE.Matrix4(), q=new THREE.Quaternion(), c=new THREE.Color();
       BL.forEach(([x,y,z,sx,sy,sz,col],i)=>{ me.setMatrixAt(i,m4.compose(new THREE.Vector3(x,y,z),q,new THREE.Vector3(sx,sy,sz))); me.setColorAt(i,c.setHex(col)); }); me.castShadow=me.receiveShadow=true; scene.add(me); DRESS.blocks=me; } DRESS.posts=xs.length; DRESS.lights=n*2+xs.length; }
 }

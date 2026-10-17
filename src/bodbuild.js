@@ -28,7 +28,7 @@ const BODB={};
   flat(B0.x0,B0.y0,B0.x1,B0.y1,H,roofCol,'R');
   // THE GROUND, and the kerbs' faces down to the street
   for(const g of BOD.grounds)flat(g.x0,g.y0,g.x1,g.y1,g.z,g.col,'G',!g.bld);
-  { const X=BOD.XS, Y=BOD.YS, Z=BOD.ZS; for(const k of BOD.kerbs)BOD.bq([X(k.a0),Y(k.z0),Z(k.at)],[X(k.a1),Y(k.z0),Z(k.at)],[X(k.a1),Y(k.z1),Z(k.at)],[X(k.a0),Y(k.z1),Z(k.at)],BOD.faceTex((k.a1-k.a0)*24,k.z1-k.z0,()=>[150,146,138]),'G'); }
+  { const X=BOD.XS, Y=BOD.YS, Z=BOD.ZS; for(const k of BOD.kerbs){ const P=(a,z)=>k.ax==='y'?[X(k.at),Y(z),Z(a)]:[X(a),Y(z),Z(k.at)]; BOD.bq(P(k.a0,k.z0),P(k.a1,k.z0),P(k.a1,k.z1),P(k.a0,k.z1),BOD.faceTex((k.a1-k.a0)*24,k.z1-k.z0,()=>[150,146,138]),'G'); } }   // (a kerb along x, or along y: the Avenue's)
   // THE OBJECTS: every box of every one, painted by the game's own painters, into the atlas
   BOD.paintProps();
   BATCH.cast=true;

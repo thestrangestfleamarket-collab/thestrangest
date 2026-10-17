@@ -33,7 +33,7 @@ grab('castle',()=>{ const K=BOD.KC, KP=BOD.K.PROPS, X=BOD.XS, Z=BOD.ZS, Y=BOD.YS
   K.KMK.drum(gx-2,wy-.25,1.1,290,4); K.KMK.drum(gx+2,wy-.25,1.1,290,5); K.KMK.gate(gx,wy,250);
   // the stairwell's rim (open at its front, the way in from the gate), the gravel from the gate to it, the well
   K.KMK.rim(S.x0-.3,S.y1,S.x1+.3,S.y1+.3); K.KMK.rim(S.x0-.3,S.y0,S.x0,S.y1); K.KMK.rim(S.x1,S.y0,S.x1+.3,S.y1);
-  K.KMK.gravel(gx-.65,wy+.6,S.x1+.6,S.y0-.2); K.KMK.gravel(gx-.65,wy-.3,gx+.65,wy+.6); K.KMK.well(bx0+5,by1-5);
+  K.KMK.gravel(gx-.65,wy+.6,S.x1+.6,S.y0-.2); K.KMK.gravel(gx-.65,wy-.3,gx+.65,wy+.6); K.KMK.well(bx1-3,by1-4);   /* (east of the stairwell: the keep stands in the bailey's west half, store.js) */
   const made=KP.slice(n0); BATCH.cast=true;
   for(const p of made){ BATCH.tag=OBJ('castle',p.name); for(const b of p.boxes)gboxS(b,'L'); } BATCH.tag=null;
   BATCH.build(castleMat); BATCH.cast=false;

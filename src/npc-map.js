@@ -63,14 +63,15 @@ function makeNPC(D,o){ const N={key:o.key,name:o.name,names:o.names,lv:o.lv||'do
   // (or the lane given, o.lane, on the ground given, o.ground: a lane long one way, he goes a few tiles along it at a time, anywhere across it)
   const TX=x=>(x+27)*TILE+STN.DX, TZ=y=>(y+73)*TILE+STN.DZ, LN=o.lane||{x0:TX(-29.5),x1:TX(-28.6),z0:TZ(-84.2),z1:TZ(-61.9)}, LX0=LN.x0, LX1=LN.x1, LZ0=LN.z0, LZ1=LN.z1, QS=new URLSearchParams(location.search), ground=o.ground||MODS.station.ground, longX=LX1-LX0>LZ1-LZ0;
   const st={x:o.x??TX(-29),z:o.z??TZ(o.at),h:Math.PI/2,to:null,wait:+(QS.get('npcwait')||2),ph:Math.random()*6,R:o.radius*TILE,v:o.speed*TILE};
-  const pick=()=>{ const r=(Math.random()<.5?-1:1)*(2+Math.random()*7)*TILE; st.to=longX?{x:Math.max(LX0,Math.min(LX1,st.x+r)),z:LZ0+Math.random()*(LZ1-LZ0)}:{x:LX0+Math.random()*(LX1-LX0),z:Math.max(LZ0,Math.min(LZ1,st.z+r))}; };
+  const pick=()=>{ for(let k=0;k<12;k++){ const r=(Math.random()<.5?-1:1)*(2+Math.random()*7)*TILE; st.to=longX?{x:Math.max(LX0,Math.min(LX1,st.x+r)),z:LZ0+Math.random()*(LZ1-LZ0)}:{x:LX0+Math.random()*(LX1-LX0),z:Math.max(LZ0,Math.min(LZ1,st.z+r))}; if(!o.free||o.free(st.to.x,st.to.z,st.R))return; } st.to=null; st.wait=1; };   // (o.free: where he may stand, when he has more than a lane: a spot that isn't, picked again)
   const block=(x,z,R)=>Math.hypot(x-st.x,z-st.z)<st.R+R;
   N.tick=(dt,you)=>{ const dx=you.x-st.x, dz=you.z-st.z, near=Math.hypot(dx,dz)<3.5*TILE; let want=st.h, moving=false;
     if(st.to){ const ex=st.to.x-st.x, ez=st.to.z-st.z, d=Math.hypot(ex,ez); if(d<.05){ st.to=null; st.wait=1.5+Math.random()*4; }
       else{ want=Math.atan2(ex,ez); const turn=Math.abs(((want-st.h+Math.PI*3)%(Math.PI*2))-Math.PI);
         if(turn<.5){ const step=Math.min(d,st.v*dt), nx=st.x+ex/d*step, nz=st.z+ez/d*step;
           // (he waits for you, or for the other, to be out of his way; held up long, he goes somewhere else)
-          if(Math.hypot(you.x-nx,you.z-nz)<st.R+.35||NPCS.some(q=>q!==N&&q.blocks(nx,nz,st.R))){ if((st.held=(st.held||0)+dt)>2){ st.to=null; st.held=0; st.wait=1; } }
+          if(o.free&&!o.free(nx,nz,st.R)){ st.to=null; st.wait=.5; }   // (something in his way: somewhere else)
+          else if(Math.hypot(you.x-nx,you.z-nz)<st.R+.35||NPCS.some(q=>q!==N&&q.blocks(nx,nz,st.R))){ if((st.held=(st.held||0)+dt)>2){ st.to=null; st.held=0; st.wait=1; } }
           else{ st.x=nx; st.z=nz; moving=true; st.held=0; } } } }
     else{ if(near)want=Math.atan2(dx,dz); if((st.wait-=dt)<=0&&!near)pick(); }
     let dh=((want-st.h+Math.PI*3)%(Math.PI*2))-Math.PI; st.h+=dh*Math.min(1,dt*5);

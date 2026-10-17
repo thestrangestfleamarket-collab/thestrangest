@@ -115,6 +115,16 @@ mod=rp(mod,"ppuTo=Math.max(3,Math.min(240,ppuTo*Math.pow(1.0015,-e.deltaY)));","
 # EVERY VIEW (owner, 17 Oct 2026: "i cant drag my mouse in enough directions to get every view i want"): the tilt all the way round, from
 # straight down over the top, level, to straight up from under the ground (a hair short of each pole, where the view would flip)
 mod=rp(mod,"const PMIN=0.02, PMAX=Math.PI/2-0.002,","const PMIN=-Math.PI/2+0.01, PMAX=Math.PI/2-0.002,")
+# TURNING ROUND ANY POINT, ZOOMING AT THE MOUSE (owner, 17 Oct 2026: "i still cant drag my mouse in enough directions to get every view i
+# want", "it always zooms back in at my feet", "as the point of x y z"): a drag turns the view round the point you grab, the wheel zooms toward
+# the point under the mouse, the tilt goes on over the top and under (the camera turned by its own angles, not pointed with an up, so it
+# never flips at the poles); the view keeps its place beside him as he walks (UI.off), 0 puts it back on him (src/ui.js)
+mod=rp(mod,"ppu*=Math.pow(ppuTo/ppu,ease); if(pxS()!==SCL)resize(); else frustum();","const zk0=UI.zk(); ppu*=Math.pow(ppuTo/ppu,ease); if(pxS()!==SCL)resize(); else frustum(); UI.zoomStep(zk0);")
+mod=rp(mod,"ppuTo=Math.max(3,Math.min(ZMAX,ppuTo*Math.pow(1.0015,-e.deltaY)));","ppuTo=Math.max(3,Math.min(ZMAX,ppuTo*Math.pow(1.0015,-e.deltaY))); UI.wheelAt(e);")
+mod=rp(mod,"cam.position.copy(disp).addScaledVector(F,300); cam.lookAt(disp);","cam.quaternion.setFromEuler(UI.eul.set(-pitch,a,0,'YXZ')); cam.position.copy(disp).addScaledVector(F,300);")
+mod=rp(mod,"if(k==='0'){ yawTo=VIEW0.yaw; pitchTo=VIEW0.pitch; ppuTo=VIEW0.ppu; }","if(k==='0'){ yawTo=VIEW0.yaw; pitchTo=VIEW0.pitch; ppuTo=VIEW0.ppu; UI.home(); }")
+mod=rp(mod,"if(e.button===2||e.button===1){ drag={x:e.clientX,y:e.clientY};","if(e.button===2||e.button===1){ drag={x:e.clientX,y:e.clientY}; UI.grab(e);")
+mod=rp(mod,"yawTo-=(e.clientX-drag.x)*0.008; pitchTo=clampP(pitchTo+(e.clientY-drag.y)*0.006);","UI.orbit(e.clientX-drag.x,e.clientY-drag.y);")
 print('ok zoom')
 
 # THE OWNER'S CHARACTERS FROM HIS MODELS (owner, 16 Oct 2026): the goldfish and the bear, coloured, wandering the platform; THE SKELETONS (owner,
@@ -175,7 +185,7 @@ mod=rp(mod,"{ const sp=new ShaderPass(OUTL.pass); composer.addPass(sp);","{ cons
 # STOPPING AT ONCE (owner, 17 Oct 2026: "when i stop walking ... im sliding a little"): the rig's own snap, the game's for you (47-you-jointed);
 # the close view of HIS SHAPE on his middle; the double click's walk to a thing each frame
 mod=rp(mod,"const cloud=RIG.bake(0.5,1), st=RIG.create();","const cloud=RIG.bake(0.5,1), st=RIG.create(); st.snap=true;")
-mod=rp(mod,"if(UI.freeCam)disp.copy(UI.camT); else disp.set(pos.x,py,pos.z);","if(UI.freeCam)disp.copy(UI.camT); else disp.set(pos.x,py+(ED.on?0.85:0),pos.z);")
+mod=rp(mod,"if(UI.freeCam)disp.copy(UI.camT); else disp.set(pos.x,py,pos.z);","if(UI.freeCam)disp.copy(UI.camT); else{ disp.set(pos.x,py+(ED.on?0.85:0),pos.z); if(!ED.on)disp.add(UI.off); }")
 mod=rp(mod,"  marker.visible=!!target;","  UI.goTick(); UI.runTick();\n  marker.visible=!!target;")
 head=rp(head,'<div><b>Click</b> the ground to walk there</div>','<div><b>Double-click</b> the ground to walk there, or a thing to go to it</div>')
 # THE NEON, REAL (owner, 17 Oct 2026: "the light isnt taking into account its surroundings", "match the style", "totally disappears when diff
@@ -237,4 +247,9 @@ mod=rp(mod,"  for(const N of NPCS)N.tick(dt,pos);","  for(const N of NPCS)N.tick
 # NO SHADOW ACNE (owner, 17 Oct 2026, his close-up: stripes and jagged dark teeth on the musician's arm): the two lamps nearest you, whose
 # shadows move, finer (1024 a face) and held off the surface they fall on, as the still lamps' are
 mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);","for(const S of SHL){ S.shadow.mapSize.set(1024,1024); S.shadow.normalBias=.06; S.shadow.bias=-.002; }\nresize(); applyTime(0); requestAnimationFrame(frame);")
+# LOADING (owner, 17 Oct 2026, the live site's first moments: the help panel, the shadows box and "--" showed while the page loaded, its dots
+# garbled): nothing but its line, "I took a trip to The Strangest Flea Market..." (owner: "loading should always say" it), till the game runs (ui.js takes it away); the page's letters read as UTF-8
+head=rp(head,'<div id="hud">','<div id="loading" style="position:fixed;inset:0;display:grid;place-items:center;font:12px Silkscreen,monospace;letter-spacing:2px;color:#8a8f9c;background:#0e1016">I took a trip to The Strangest Flea Market...</div>\n<div id="hud" hidden>')
+head=rp(head,'<div id="stat">--</div>\n<div id="shd">','<div id="stat" hidden>--</div>\n<div id="shd" hidden>')
+head='<meta charset="utf-8">\n'+head
 os.makedirs('dist',exist_ok=True); open('dist/market.html','w').write(head+mod); print('built dist/market.html')

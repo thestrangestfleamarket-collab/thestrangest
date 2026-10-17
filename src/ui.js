@@ -29,7 +29,7 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
   // ---- FREE CAMERA and FLY
   const badge=document.createElement('div'); badge.id='mode'; document.body.appendChild(badge);
   const drawBadge=()=>{ const m=[UI.freeCam&&'FREE CAMERA: '+NAME(keyOf('c'))+' to go back',UI.fly&&'FLY: '+NAME(keyOf('g'))+' to land'].filter(Boolean); badge.textContent=m.join(' · '); badge.hidden=!m.length; };
-  function setFree(on){ UI.freeCam=on; if(on)UI.camT.set(pos.x,py+.9,pos.z); drawBadge(); }
+  function setFree(on){ UI.freeCam=on; if(on)UI.camT.copy(disp); drawBadge(); }   // (from where the view is)
   function setFly(on){ UI.fly=on; if(on){ target=null; } drawBadge(); }
   UI.setFly=setFly; UI.setFree=setFree;
   UI.camStep=(dt,a,up,dn,lf,rt)=>{ if(!UI.freeCam||UI.menuOpen)return; const fx=-Math.sin(a), fz=-Math.cos(a), s=dt*9*PPU/Math.max(4,ppu);   // (as fast across the screen at any zoom)
@@ -39,12 +39,29 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
   UI.flyStep=dt=>{ py+=((keys.has(' ')?1:0)-(keys.has('shift')?1:0))*dt*4; py=Math.max(-5,Math.min(10,py)); pos.x=Math.max(BOUND.x0,Math.min(BOUND.x1,pos.x)); pos.z=Math.max(BOUND.z0,Math.min(BOUND.z1,pos.z)); };
   // ---- TURNING ROUND HIM with any button's drag; a left click that didn't drag walks him there (on his own level); a double click: the view back
   const cv=renderer.domElement; let L=null;
-  cv.addEventListener('pointerdown',e=>{ if(e.button!==0||ED.on)return; if(WE.down(e)){ cv.setPointerCapture(e.pointerId); return; } L={x:e.clientX,y:e.clientY,x0:e.clientX,y0:e.clientY,moved:false}; cv.setPointerCapture(e.pointerId); });
+  // ---- TURNING ROUND ANY POINT, ZOOMING AT THE MOUSE (owner, 17 Oct 2026: "it always zooms back in at my feet", "as the point of x y z"):
+  // where the view looks is his place plus UI.off (or the free camera's own point); a drag turns it round the point under the mouse when
+  // the drag began (the thing there, or else the point level with the view's middle), the wheel draws the point under the mouse no nearer
+  // the middle, so it stays under the mouse; the tilt has no stops (the camera turned by its own angles); 0 (or RESET VIEW) back on him
+  UI.off=new THREE.Vector3(); UI.eul=new THREE.Euler(); const viewV=()=>UI.freeCam?UI.camT:UI.off, piv=new THREE.Vector3(), q0=new THREE.Quaternion(), q1=new THREE.Quaternion(), tv=new THREE.Vector3();
+  const ndc=e=>{ const r=cv.getBoundingClientRect(); return new THREE.Vector2((e.clientX-r.left)/r.width*2-1,-((e.clientY-r.top)/r.height*2-1)); };
+  const shown=o=>{ for(let q=o;q;q=q.parent)if(!q.visible||q===W3.group||q===MUS.g)return false;   // (he and the guitarist are moved on the chip: not where a ray finds them)
+    return o.isMesh&&!(o.material&&o.material.visible===false)&&!(o.material&&o.material.transparent&&o.material.opacity<.05); };
+  UI.grab=e=>{ ray.setFromCamera(ndc(e),cam); const h=ray.intersectObjects(scene.children,true).find(h=>shown(h.object)); if(h)piv.copy(h.point); else ray.ray.closestPointToPoint(disp,piv); };
+  UI.orbit=(dx,dy)=>{ if(ED.on){ yawTo-=dx*0.008; pitchTo=clampP(pitchTo+dy*0.006); return; } q0.setFromEuler(UI.eul.set(-pitch,yaw,0,'YXZ')); yawTo-=dx*0.008; pitchTo+=dy*0.006; yaw=yawTo; pitch=pitchTo; q1.setFromEuler(UI.eul.set(-pitch,yaw,0,'YXZ'));
+    tv.subVectors(disp,piv); const t0=tv.clone(); tv.applyQuaternion(q0.invert()).applyQuaternion(q1); viewV().add(tv.sub(t0)); disp.add(tv);
+    if(!UI.freeCam){ tv.set(0,0,1).applyQuaternion(q1); UI.off.addScaledVector(tv,-UI.off.dot(tv)); } };   // (and kept level with him along the line of sight, where it changes nothing seen)   // (what he looks at swings round the pivot as the view turns)
+  let zAt=null; UI.wheelAt=e=>{ if(ED.on)return; const r=cv.getBoundingClientRect(); zAt={x:e.clientX-r.left-r.width/2,y:r.height/2-(e.clientY-r.top)}; };
+  UI.zk=()=>(cam.right-cam.left)/cv.getBoundingClientRect().width;
+  UI.zoomStep=k0=>{ if(!zAt)return; const k1=UI.zk(); if(Math.abs(k1-k0)<1e-9){ if(Math.abs(ppu/ppuTo-1)<1e-3)zAt=null; return; } const R0=tv.setFromMatrixColumn(cam.matrixWorld,0).clone(), U0=new THREE.Vector3().setFromMatrixColumn(cam.matrixWorld,1);
+    viewV().addScaledVector(R0,zAt.x*(k0-k1)).addScaledVector(U0,zAt.y*(k0-k1)); };
+  UI.home=()=>{ UI.off.set(0,0,0); zAt=null; if(UI.freeCam)setFree(false); };
+  cv.addEventListener('pointerdown',e=>{ if(e.button!==0||ED.on)return; if(WE.down(e)){ cv.setPointerCapture(e.pointerId); return; } L={x:e.clientX,y:e.clientY,x0:e.clientX,y0:e.clientY,moved:false}; UI.grab(e); cv.setPointerCapture(e.pointerId); });
   cv.addEventListener('pointermove',e=>{ if(WE.dragging){ WE.move(e); return; } if(!L)return; if(!L.moved&&Math.hypot(e.clientX-L.x0,e.clientY-L.y0)>5)L.moved=true;
     // (Shift + drag: the view slides across the screen instead, up, down and sideways; the free camera takes over from where it is)
-    if(L.moved&&e.shiftKey){ if(!UI.freeCam)setFree(true); const r=cv.getBoundingClientRect(), k=(cam.right-cam.left)/r.width, R0=new THREE.Vector3().setFromMatrixColumn(cam.matrixWorld,0), U0=new THREE.Vector3().setFromMatrixColumn(cam.matrixWorld,1);
-      UI.camT.addScaledVector(R0,-(e.clientX-L.x)*k).addScaledVector(U0,(e.clientY-L.y)*k); }
-    else if(L.moved){ yawTo-=(e.clientX-L.x)*0.008; pitchTo=clampP(pitchTo+(e.clientY-L.y)*0.006); } L.x=e.clientX; L.y=e.clientY; });
+    if(L.moved&&e.shiftKey){ const r=cv.getBoundingClientRect(), k=(cam.right-cam.left)/r.width, R0=new THREE.Vector3().setFromMatrixColumn(cam.matrixWorld,0), U0=new THREE.Vector3().setFromMatrixColumn(cam.matrixWorld,1);
+      viewV().addScaledVector(R0,-(e.clientX-L.x)*k).addScaledVector(U0,(e.clientY-L.y)*k); }
+    else if(L.moved)UI.orbit(e.clientX-L.x,e.clientY-L.y); L.x=e.clientX; L.y=e.clientY; });
   cv.addEventListener('pointerup',()=>{ WE.up(); L=null; });
   // ---- DOUBLE CLICK (owner, 17 Oct 2026: "take off click to walk. double click to walk. double click on anything to interact with it"):
   // on the ground he walks there; on a thing he walks up to it, turns to it and does what it's for (the THINGS list: a thing joins it with its
@@ -133,7 +150,7 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
     const sh=document.getElementById('shd'); $('#dshd').innerHTML=''; sh.querySelectorAll('button').forEach(b=>{ const c=document.createElement('button'); c.className='btn'; c.textContent=b.textContent; c.setAttribute('aria-pressed',b.getAttribute('aria-pressed')); c.onclick=()=>{ b.click(); drawDisplay(); }; $('#dshd').appendChild(c); }); }
   M.querySelectorAll('[data-sh]').forEach(b=>b.onclick=()=>{ if(+b.dataset.sh<0)RESI=Math.max(0,RESI-1); else if(pxS()>1||vpu()>art())RESI=Math.min(RESL.length-1,RESI+1); resize(); drawDisplay(); });
   $('#dzoom').oninput=e=>{ ppuTo=r2z(+e.target.value); }; $('#dtilt').oninput=e=>{ pitchTo=clampP(PMIN+(+e.target.value)*(PMAX-PMIN)); };
-  $('#dreset').onclick=()=>{ yawTo=VIEW0.yaw; pitchTo=VIEW0.pitch; ppuTo=VIEW0.ppu; drawDisplay(); };
+  $('#dreset').onclick=()=>{ yawTo=VIEW0.yaw; pitchTo=VIEW0.pitch; ppuTo=VIEW0.ppu; UI.home(); drawDisplay(); };
   $('#dhelp').onclick=()=>{ const h=document.getElementById('hud'); h.hidden=!h.hidden; drawDisplay(); }; $('#dstat').onclick=()=>{ const h=document.getElementById('stat'); h.hidden=!h.hidden; drawDisplay(); };
   // THE OUTLINE round him (owner, 17 Oct 2026: "add ability to remove the line from avatar"; off unless turned on, kept in this browser)
   try{ OUTL.on=localStorage.getItem('market-outline')==='1'; }catch(e){ OUTL.on=false; } OUTL.sp.enabled=OUTL.on;
@@ -154,5 +171,5 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
   $('#kreset').onclick=()=>{ BIND={}; try{ localStorage.removeItem('market-keys'); }catch(e){} REV=rev(); drawKeys(); drawBadge(); };
   // NOTHING ON SCREEN BUT THE GAME (owner, 17 Oct 2026: "take off the hud ... the market and controls, shadows etc on screen entire time"):
   // the help panel, the stats and the shadows' buttons start hidden; the menu has them all (DISPLAY: shadows, help, stats; KEYS: every control)
-  for(const id of ['hud','stat','shd'])document.getElementById(id).hidden=true;
+  for(const id of ['hud','stat','shd'])document.getElementById(id).hidden=true; document.getElementById('loading')?.remove();
   drawBadge(); }

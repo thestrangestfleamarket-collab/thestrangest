@@ -38,6 +38,7 @@ function figureMesh(PCS,RB,key){ const NP=PCS.length, PM={value:PCS.map(()=>new 
     else if(/^hand[LR]$/.test(p.n)){ p.bb=around([J['wrist'+p.n.slice(-1)]],4.5); p.step=.2; p.cell=.15; }
     else if(/^pk\d/.test(p.n)){ p.step=.15; p.cell=.1; }
     if(p.on==='prop')p.F0=/^pk\d/.test(p.n)?PNKF[+p.n.slice(2)]:PKBENCH; }   // (a key's rest frame, the bench's: its own, as the guitar's is; moved each frame by pnKeys)
+  for(const P of PCS){ const fine=W3.fine(P); W3.warm(P,P.step||(fine?.5:1),fine,RB); }
   const FM=figureMesh(PCS,RB,'pnm'), g=new THREE.Group(); g.add(FM.me); MAPG.bodega.add(g); PNM.g=g; PNM.at=AT;
   g.position.set(AT.x,AT.y,AT.z); g.rotation.set(0,AT.hd,0); g.scale.set(1/PPU,ZU,1/PPU);
   // HIS PLAYING, each frame you're near (the game's pnStep, here): the piece's clock, his pose from it (his hands over the keys, each finger

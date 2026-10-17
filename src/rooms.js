@@ -11,7 +11,8 @@ const ROOMS={cur:null};
     for(const t of POOLR.ROOMS||[])RL.push(box(POOLR.X,POOLR.Z,t,POOLR.Y(-150),POOLR.Y(POOLR.H)));
     if(BOD.GD)RL.push(box(BOD.X,BOD.Z,BOD.GD.r,-1,BOD.Y(BOD.GD.H)));   // (Ghost Street's dojo: ghostdojo.js)
     for(const R of STORE.rooms)if(R.walls)RL.push(R); };   // (the storeroom's rooms: store.js)
-  ROOMS.boxes=()=>{ if(!RL)build(); return RL; };   // (the rooms, for the lamps: a lamp in one lights only it, map-post.js's LITE)
+  ROOMS.boxes=()=>{ if(!RL)build(); return RL; };
+  ROOMS.reset=()=>{ RL=null; };   // (the stacked rooms, built after the game opens: store.js)   // (the rooms, for the lamps: a lamp in one lights only it, map-post.js's LITE)
   const within=(b,x,z,e=0)=>x>b.x0-e&&x<b.x1+e&&z>b.z0-e&&z<b.z1+e;
   ROOMS.tick=()=>{ if(!RL)build(); let hit=null; if(typeof LOOKS!=='undefined'&&LOOKS.light)LOOKS.light();   // (his own shadow from the light really on him: looks.js)
     if(LVL==='up'&&!UI.freeCam&&!ED.on){

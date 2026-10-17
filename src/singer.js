@@ -22,6 +22,7 @@ const SGM={}; STORE.SGM=SGM;   // (a test's reach)
   for(const p of PCS){ const f=/^fing(\d)(\d)([LR])$/.exec(p.n); if(f){ p.bb=around([J['k'+f[1]+f[2]+f[3]],J['k'+f[1]+(+f[2]+1)+f[3]]],1); p.step=.12; p.cell=.08; }
     else if(/^hand[LR]$/.test(p.n)){ p.bb=around([J['wrist'+p.n.slice(-1)]],4.5); p.step=.2; p.cell=.15; }
     else if(/^mic/.test(p.n)){ p.step=.15; p.cell=.1; p.F0=MIC0; } else if(/^amp/.test(p.n)){ p.step=.25; p.cell=.2; p.F0=SINGF; } }
+  for(const P of PCS){ const fine=W3.fine(P); W3.warm(P,P.step||(fine?.5:1),fine,RB); }
   const FM=figureMesh(PCS,RB,'sgm'), g=new THREE.Group(); g.add(FM.me); MAPG.bodega.add(g); SGM.g=g; SGM.at=AT;
   g.position.set(AT.x,AT.y,AT.z); g.rotation.set(0,AT.hd,0); g.scale.set(1/PPU,ZU,1/PPU);
   // THE CORD: a line of its 52 points, in her own frame (as her pieces are), moved each frame

@@ -11,13 +11,13 @@ POOLR.LX=POOLR.bx1-POOLR.bx0; POOLR.LY=POOLR.by1-POOLR.by0; POOLR.level=-0.16*24
   const sh=(c,f)=>[Math.min(255,c[0]*f),Math.min(255,c[1]*f),Math.min(255,c[2]*f)];
   const P=POOLR, OX=(P.x0+P.x1)/2, OY=(P.y0+P.y1)/2;
   const X=x=>(x-OX)*TILE, Z=y=>(y-OY)*TILE, Y=z=>z*ZU; POOLR.X=X; POOLR.Z=Z; POOLR.Y=Y;
-  const faceTex=(w,h,fn)=>{ w=Math.max(1,Math.round(w)); h=Math.max(1,Math.round(h)); const c=document.createElement('canvas'); c.width=w; c.height=h; const g=c.getContext('2d'), im=g.createImageData(w,h);
-    for(let j=0;j<h;j++)for(let i=0;i<w;i++){ const v=fn(i,j), k=(j*w+i)*4; if(!v)continue; im.data[k]=v[0]; im.data[k+1]=v[1]; im.data[k+2]=v[2]; im.data[k+3]=255; }
-    g.putImageData(im,0,0); const t=new THREE.CanvasTexture(c); t.magFilter=THREE.NearestFilter; t.minFilter=THREE.NearestMipmapNearestFilter; t.colorSpace=THREE.SRGBColorSpace; return {map:t}; };
+  const faceTex=(w,h,fn)=>{ w=Math.max(1,Math.round(w)); h=Math.max(1,Math.round(h)); const im=new ImageData(w,h), d=im.data;   // (faster: straight into an ImageData, as bodega.js)
+    for(let j=0,k=0;j<h;j++)for(let i=0;i<w;i++,k+=4){ const v=fn(i,j); if(!v)continue; d[k]=Math.round(v[0]); d[k+1]=Math.round(v[1]); d[k+2]=Math.round(v[2]); d[k+3]=255; }
+    const t=new THREE.CanvasTexture(im); t.magFilter=THREE.NearestFilter; t.minFilter=THREE.NearestMipmapNearestFilter; t.colorSpace=THREE.SRGBColorSpace; return {map:t}; };
   const mat=(tx,basin)=>{ const m=new THREE.MeshLambertMaterial({map:tx.map,alphaTest:.5,side:THREE.DoubleSide}); if(basin)WATER.caustic(m); return m; };
   const quad=(a,b,c,d,tx,basin)=>{ const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute([...a,...b,...c,...a,...c,...d],3));
     g.setAttribute('uv',new THREE.Float32BufferAttribute([0,0,1,0,1,1,0,0,1,1,0,1],2)); g.computeVertexNormals(); const me=new THREE.Mesh(g,mat(tx,basin)); me.receiveShadow=true; scene.add(me); return me; };
-  const C=v=>v?v.map(x=>Math.max(0,Math.min(255,Math.round(x)))):null;
+  const C=v=>v;   // (faceTex rounds and clamps)
   const floor=(x0,y0,x1,y1,z,col)=>quad([X(x0),Y(z),Z(y1)],[X(x1),Y(z),Z(y1)],[X(x1),Y(z),Z(y0)],[X(x0),Y(z),Z(y0)],faceTex((x1-x0)*24,(y1-y0)*24,(i,j)=>C(col(x0+(i+.5)/24,y0+(j+.5)/24))));
   const bq=(a,b,c,d,tx,basin)=>BATCH.add([...a,...b,...c,...a,...c,...d],[0,0,1,0,1,1,0,0,1,1,0,1],tx.map.image,null,basin?'K':'L');   // (faster: into the batch, batch.js)
   const wallY=(x,y0,y1,z0,z1,paint,basin)=>(basin?bq:quad)([X(x),Y(z0),Z(y0)],[X(x),Y(z0),Z(y1)],[X(x),Y(z1),Z(y1)],[X(x),Y(z1),Z(y0)],faceTex((y1-y0)*24,z1-z0,(i,j)=>C(paint(y0+(i+.5)/24,z1-j-.5))),basin);

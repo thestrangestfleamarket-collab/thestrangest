@@ -33,6 +33,12 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
    line shows.
 6. **Never sharper than the opening** (`RESMAX`).
 7. **Load**: nothing fetched that isn't needed at start (Rapier only when the physics body is switched on); no data for things not in the game.
+   **Never freeze the page while it loads** (17 Oct 2026, the artifact said "isn't responding": one 52 s freeze in the cloud's software
+   graphics): the build puts a breath every 40 ms between the module's statements (`tools/yields.py`: plain blocks, if / for / while bodies and
+   the places' builders, `grab`, now awaited); what isn't needed at the first moment is built after the game runs, a piece a moment (the rooms
+   stacked on the apartments: `STORE.later`, `STORE.ensure` when you go to one first); a face is painted straight into an ImageData and the
+   batch copies it into its atlas (no canvas a face); a Walker-built body samples only round each piece and works each shared corner once.
+   Measure a change with a long-task observer (the longest freeze, the moment the loading line goes).
 8. **At rest, at rest, like a 2D game** ("when something stops it doesnt keep moving slightly and gradually. lets have things rest in place more
    when they stop so not as much stuff is going on"): water goes flat and stops when nothing moves in it; floats and boats stop; he stands still
    the moment he stops; nothing creeps toward a target forever. Only the deliberate stays: characters' idle moves, a flame's flicker.

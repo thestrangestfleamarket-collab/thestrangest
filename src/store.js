@@ -69,7 +69,7 @@
       if(l.r>=3||l.neon){ L.castShadow=true; L.shadow.mapSize.set(256,256); L.shadow.camera.near=.05; L.shadow.camera.far=l.r*TILE*1.3; L.shadow.bias=-.004; L.shadow.normalBias=.06; L.shadow.autoUpdate=false; L.shadow.needsUpdate=true; } }
     const dx=door?(door.w==='f'||door.w==='b'?door.a:door.w==='w'?B.x0-1.2:B.x1+1.2):(B.x0+B.x1)/2, dy=door?(door.w==='f'?B.y1+1.2:door.w==='b'?B.y0-1.2:door.a):B.y1+1.5;
     const R={id,name,B,x0:X(B.x0),x1:X(B.x1),z0:Z(B.y0),z1:Z(B.y1),y0:-1,y1:Y(B.h),walls:!!look.in||!!o.pieceWalls,at:{x:X(dx),z:Z(dy)}}; R.inside=(x,z)=>x>R.x0&&x<R.x1&&z>R.z0&&z<R.z1&&py>R.y0-.3&&py<R.y1;   /* (by your height too: the stacked rooms share their ground) */
-    STORE.rooms.push(R); STORE.places.push([name,R.at.x,R.at.z,'up']); return R; };
+    STORE.rooms.push(R); const pl=STORE.places.find(q=>q[0]===name); if(pl){ pl[1]=R.at.x; pl[2]=R.at.z; pl[3]='up'; } else STORE.places.push([name,R.at.x,R.at.z,'up']); return R; };
 
   // THE DINER: Preset Diner 1 from its room's corner (its west wall at x 0, the bar's back wall at y 0), the room's door in its front
   { const B=B_('ldiner'); room('diner','THE DINER',B,{floor:K.diner.dinerFloorCol,in:K.diner.dinerWall},{w:'f',a:B.x0+9.5,wd:1.56,h:94},B=>{ PRESETS['Preset Diner 1'].forEach(([k,dx,dy,r])=>put(k,B.x0+dx,B.y0+dy,r)); }); }
@@ -104,20 +104,23 @@
   { const O=[69,-45.9]; STORE.shrineO=O;   /* (in Central Park's back-west lawn, owner 17 Oct 2026: XS 68.7-75.3, -42.8 to -25.2) */ room('shrine','THE MOON SHRINE',{x0:O[0],y0:O[1],x1:O[0]+6,y1:O[1]+16,h:0},{floor:grassCol},null,()=>{ PRESETS['Preset Moon Shrine 1'].forEach(([k,dx,dy,r])=>put(k,O[0]+dx,O[1]+dy,r)); },{z:.05});
     STORE.pond={x0:O[0]+.5,y0:O[1]+12.6,x1:O[0]+5.5,y1:O[1]+15.6,z:4}; }
 
+  // (faster opening, 17 Oct 2026: the page froze while all of this was painted. The stacked rooms are built after the game opens, one a
+  // moment, then batched on their own; going to one of them first finishes them at once: STORE.ensure)
+  const STEPS=[]; for(const n of ['THE HERB COTTAGE','THE OCTOPUS TANK','THE KEEP','THE BUTTERFLIES'])STORE.places.push([n,0,0,'up']);
   // THE HERB COTTAGE: every piece where the page put it, from the room's corner (its own floor, walls, roof and door step among them)
-  { const O=[89,-95.5]; lift(152,()=>room('cottage','THE HERB COTTAGE',{x0:O[0],y0:O[1],x1:O[0]+9,y1:O[1]+12,h:96},{floor:grassCol},null,()=>{ PRESETS['Preset Herb Cottage 1'].forEach(([k,dx,dy,r])=>put(k,O[0]+dx,O[1]+dy,r)); },
-      {z:.05,pieceWalls:{'herb cottage wall, west':['w',1,0],'herb cottage wall, east':['e',-1,0],'herb cottage wall, north':['b',0,1],'herb cottage wall, south':['f',0,-1]}})); }   // (its own walls cut to their foot between you and the camera while you're in; its roof hidden then)
+  STEPS.push(()=>{ const O=[89,-95.5]; lift(152,()=>room('cottage','THE HERB COTTAGE',{x0:O[0],y0:O[1],x1:O[0]+9,y1:O[1]+12,h:96},{floor:grassCol},null,()=>{ PRESETS['Preset Herb Cottage 1'].forEach(([k,dx,dy,r])=>put(k,O[0]+dx,O[1]+dy,r)); },
+      {z:.05,pieceWalls:{'herb cottage wall, west':['w',1,0],'herb cottage wall, east':['e',-1,0],'herb cottage wall, north':['b',0,1],'herb cottage wall, south':['f',0,-1]}})); });   // (its own walls cut to their foot between you and the camera while you're in; its roof hidden then)
 
   // THE OCTOPUS TANK'S ROOM: dark blue-grey plaster, a polished concrete floor, no light but the tank's; the tank in the middle, its glow in the
   // room from the lights along the foot of its glass (its water: water3d's third body)
-  { const B={id:'locto',x0:86,y0:-93,x1:101,y1:-86,h:130}, O=K.octo; lift(254,()=>room('octo','THE OCTOPUS TANK',B,{floor:O.octoFloorCol,in:O.octoWall},{w:'f',a:(B.x0+B.x1)/2,wd:1.56,h:94},B=>{ const {LX,LY,Z0,ZT}=O.OCTK, x=B.x0+5.5-LX/2, y=B.y1-2.6-LY/2, p=O.octoTank(x,y); place(p,0);
+  STEPS.push(()=>{ const B={id:'locto',x0:86,y0:-93,x1:101,y1:-86,h:130}, O=K.octo; lift(254,()=>room('octo','THE OCTOPUS TANK',B,{floor:O.octoFloorCol,in:O.octoWall},{w:'f',a:(B.x0+B.x1)/2,wd:1.56,h:94},B=>{ const {LX,LY,Z0,ZT}=O.OCTK, x=B.x0+5.5-LX/2, y=B.y1-2.6-LY/2, p=O.octoTank(x,y); place(p,0);
       for(const [lx,ly,i] of [[x+LX/2,y-.35,0],[x+LX/2,y+LY+.35,1],[x-.35,y+LY/2,2],[x+LX+.35,y+LY/2,3]])LAMPS.push({own:1,room:1,day:true,x:lx,y:ly,z:Z0+4,r:i<2?4.2:3,c:[.5,.72,.95]});
-      STORE.tank={x0:x+.035,y0:y+.035,x1:x+LX-.035,y1:y+LY-.035,z:ZT-4,bed:Z0+1}; })); STORE.tank.dz=254; }
+      STORE.tank={x0:x+.035,y0:y+.035,x1:x+LX-.035,y1:y+LY-.035,z:ZT-4,bed:Z0+1}; })); STORE.tank.dz=254; });
 
   // THE KEEP: the great tower from the archive, as 26-zzzzzzzzz-keep set it out: its walls of dressed stone (keepOutWall), its door in the
   // front, its corner turrets, parapet, pilasters and plinth, the gravel to its door, the well; inside, the dungeon's walls (keepInWall) and
   // cobbles, the cross wall across its middle with its three arches, and the dungeon's things where the walls paint for them
-  { const B=B_('lcastle'), KK=K.keep, KC={door:B.x0+4.75,arches:[B.x0+2.1,B.x0+4.75,B.x0+7.4]}, my=(B.y0+B.y1)/2, lead=(x,y)=>{ const n=grain(x,y,67,1.2); return n<.4?[74,76,80]:n>.7?[90,92,96]:[82,84,88]; };
+  STEPS.push(()=>{ const B=B_('lcastle'), KK=K.keep, KC={door:B.x0+4.75,arches:[B.x0+2.1,B.x0+4.75,B.x0+7.4]}, my=(B.y0+B.y1)/2, lead=(x,y)=>{ const n=grain(x,y,67,1.2); return n<.4?[74,76,80]:n>.7?[90,92,96]:[82,84,88]; };
     lift(390,()=>room('keep','THE KEEP',B,{floor:KK.keepFloorCol,in:KK.keepInWall,out:(nx,ny,Xx,Yy,z,f,cap)=>KK.keepOutWall(B,nx,ny,Xx,Yy,z,f,cap),cope:[184,174,150],roof:lead},{w:'f',a:KC.door,wd:1.4,h:96},B=>{ const M=KK.KMK;
       M.turret(B.x0-T,B.y0-T,-1,-1); M.turret(B.x1+T,B.y0-T,1,-1); M.turret(B.x0-T,B.y1+T,-1,1); M.turret(B.x1+T,B.y1+T,1,1);
       for(const s of ['f','b','l','r'])M.parapet(B,s);
@@ -137,40 +140,53 @@
       M.bars(x1-1.7,y0,x1-1.7,R.my-T);
       CATALOG['mouse run'](x0+.7,y0+.14,x0+3.9,y0+.14); CATALOG['mouse run'](x0+.14,y0+.5,x0+.14,y0+3.6); CATALOG['mouse run'](x1-.14,y0+4.9,x1-.14,y0+8.2); CATALOG['mouse run'](x0+6.9,y1-.14,x0+8.6,y1-.14);
       const o={own:1,room:1,day:true}; LAMPS.push({x:R.cx,y:R.cy,z:70,r:9,c:[.24,.28,.38],...o}); LAMPS.push({x:x0+R.slit.u,y:y0+.4,z:100,r:3,c:[.3,.36,.52],...o}); },
-      {xw:[['x','x',my,B.x0+T,B.x1-T,1,KC.arches.map(a=>({a0:a-.8,a1:a+.8,z0:0,z1:110})),true]]})); }
+      {xw:[['x','x',my,B.x0+T,B.x1-T,1,KC.arches.map(a=>({a0:a-.8,a1:a+.8,z0:0,z1:110})),true]]})); });
 
   // THE BUTTERFLY HOUSE (the living rooms' atrium, 23-w-studio-mood: a mesh cube on a walnut stand, moss, leaves and a flower of nectar) on
   // its own plot; its two butterflies and the flight of the others: butterflies.js
-  { const O=[89.5,-93]; STORE.houseAt=[O[0]+4,O[1]+3.5]; STORE.houseZ=916; lift(916,()=>room('butterflies','THE BUTTERFLIES',{x0:O[0],y0:O[1],x1:O[0]+8,y1:O[1]+7,h:0},{floor:grassCol},null,()=>{ const p=put('butterfly house',O[0]+4,O[1]+3.5); if(p)p.bf=[12,21]; STORE.bfHouse=p; },{z:.05})); }
+  STEPS.push(()=>{ const O=[89.5,-93]; STORE.houseAt=[O[0]+4,O[1]+3.5]; STORE.houseZ=916; lift(916,()=>room('butterflies','THE BUTTERFLIES',{x0:O[0],y0:O[1],x1:O[0]+8,y1:O[1]+7,h:0},{floor:grassCol},null,()=>{ const p=put('butterfly house',O[0]+4,O[1]+3.5); if(p)p.bf=[12,21]; STORE.bfHouse=p; },{z:.05})); });
 
   // THE WATER'S BEDS: the koi pond's, half a metre down, dark mud and its banks; the tank's is its stand's top. The water itself, below, once built
   { const P=STORE.pond, bed=(x,y)=>{ const n=grain(x,y,911,.8); return n<.4?[38,44,30]:n>.7?[58,64,44]:[46,52,36]; }, BK=[52,46,34], zb=-14;
     flat(P.x0,P.y0,P.x1,P.y1,zb,bed,'L');
     for(const [a,b,c,d] of [[P.x0,P.y0,P.x1,P.y0],[P.x1,P.y0,P.x1,P.y1],[P.x1,P.y1,P.x0,P.y1],[P.x0,P.y1,P.x0,P.y0]])bq([X(a),Y(zb),Z(b)],[X(c),Y(zb),Z(d)],[X(c),Y(P.z+1),Z(d)],[X(a),Y(P.z+1),Z(b)],faceTex(Math.hypot(c-a,d-b)*24,P.z+1-zb,(i,j)=>C(sh(BK,.8+.2*hash(i,j,913)))),'L'); }
-  // the storeroom's floor under it all, dark concrete (four sheets, each within the atlas's width)
-  const plateCol=(x,y)=>{ const n=grain(x,y,901,1.6); return speck(n<.34?[44,45,49]:n>.7?[58,58,62]:[51,52,56],x,y,903); };
-  for(let x=PLATE.x0;x<PLATE.x1;x+=30.5)flat(x,PLATE.y0,Math.min(PLATE.x1,x+30.5),PLATE.y1,0,plateCol,'G');
+  // (the storeroom's own floor, far east, is gone: every room now stands on the map, so it held nothing and cost two million pixels to paint)
   // built: each wall's faces their own mesh (cut to its foot when it stands between you and the camera, while you're in its room), each roof
   // its own (hidden while you're in), the rest one; the things throw their lamps' shadows
-  BATCH.cast=true;
+  const bake=()=>{ BATCH.cast=true;
   BATCH.build((k,map,emap)=>{ const pl=planes[k], cp=pl?{clippingPlanes:[pl]}:{};
     if(k==='B')return new THREE.MeshBasicMaterial({map,side:THREE.DoubleSide,alphaTest:.5});
     return new THREE.MeshLambertMaterial({map,alphaTest:.5,side:THREE.DoubleSide,...(emap?{emissiveMap:emap,emissive:0xffffff,emissiveIntensity:1.3}:{}),...cp}); });
   BATCH.cast=false; const M=BATCH.meshes||{}; BATCH.meshes={}; if(M.G)M.G.castShadow=false;
-  for(const c of cuts){ const me=M[c.kind], R=STORE.rooms.find(r=>r.id===c.id); if(me)cutWalls.push({pl:planes[c.kind],nx:c.nx,nz:c.nz,foot:Y(8),me,when:()=>R.inside(pos.x,pos.z)}); }
+  for(const c of cuts.splice(0)){ const me=M[c.kind], R=STORE.rooms.find(r=>r.id===c.id); if(me)cutWalls.push({pl:planes[c.kind],nx:c.nx,nz:c.nz,foot:Y(8),me,when:()=>R.inside(pos.x,pos.z)}); }
   for(const R of STORE.rooms){ const me=M['R'+R.id]; if(me)STORE.roofs.push({me,R}); }
+  return M; };
+  const M=bake();
   STORE.bound={x0:X(PLATE.x0),x1:X(PLATE.x1),z0:Z(PLATE.y0),z1:Z(PLATE.y1)};
   STORE.inStore=(x,z)=>x>STORE.bound.x0&&x<STORE.bound.x1&&z>STORE.bound.z0&&z<STORE.bound.z1;
   STORE.meshes=M; STORE.stats=BATCH.stats; STORE.XYZ={X,Y,Z};   // (a test's reach)
   // THE WATER (the hard rule: real liquids only): the koi pond and the tank, each a body of its own (water3d.js), stepped and seen through while
   // you're near; the tank's glass round its water, four panes you see through (as the bodega's windows)
   { const P=STORE.pond; WATER.body({name:'pond',X0:X(P.x0),X1:X(P.x1),Z0:Z(P.y0),Z1:Z(P.y1),lvl:Y(P.z),GX:120,GY:72,dep:()=>0.6});
-    const Tk=STORE.tank; WATER.body({name:'tank',X0:X(Tk.x0),X1:X(Tk.x1),Z0:Z(Tk.y0),Z1:Z(Tk.y1),lvl:Y(Tk.z+(Tk.dz||0)),GX:110,GY:40,dep:()=>(Tk.z-Tk.bed)/50*1.8});
-    const gm=new THREE.MeshLambertMaterial({color:new THREE.Color(.5,.62,.7),transparent:true,opacity:.18,side:THREE.DoubleSide,depthWrite:false}), gh=Y(Tk.z+4)-Y(Tk.bed), gy=(Y(Tk.z+4)+Y(Tk.bed))/2+Y(Tk.dz||0)-Y(0);
-    for(const [x,z,w,ry] of [[(Tk.x0+Tk.x1)/2,Tk.y0,Tk.x1-Tk.x0,0],[(Tk.x0+Tk.x1)/2,Tk.y1,Tk.x1-Tk.x0,0],[Tk.x0,(Tk.y0+Tk.y1)/2,Tk.y1-Tk.y0,Math.PI/2],[Tk.x1,(Tk.y0+Tk.y1)/2,Tk.y1-Tk.y0,Math.PI/2]]){ const m=new THREE.Mesh(new THREE.PlaneGeometry(w*TILE*BLDK,gh),gm); m.position.set(X(x),gy,Z(z)); m.rotation.y=ry; scene.add(m); } } 
+} 
   // THE BUTTERFLIES (butterflies.js): in the butterfly house its pair (two of the twenty rarest, the game's picks); over the shrine's garden a
   // flight of six of New York's, blossom to fern to lantern to the statue's halo
   { const O=STORE.shrineO, at=(dx,dy,z)=>[X(O[0]+dx),Y(z),Z(O[1]+dy)], PERCH=[at(.55,5.3,16),at(5.45,5.25,16),at(.45,9.6,16),at(2.2,1.4,16),at(5.2,15.25,10),at(.48,6.55,10),at(5.52,6.4,10),at(1.25,7.3,30),at(4.75,7.3,30),at(3,2.7,62)];
     [0,2,4,6,8,10].forEach((k,i)=>{ const b=BF.add(k,PERCH); b.at=b.to=i%PERCH.length; b.g.position.set(...PERCH[b.at]); });
-    const H=STORE.houseAt, hp=(dx,dy,z)=>[X(H[0]+dx),Y(z+(STORE.houseZ||0)),Z(H[1]+dy)], HP=[hp(-.16,-.09,38),hp(-.12,.07,41),hp(.18,.09,37),hp(.13,-.1,35),hp(-.06,0,44),hp(.06,0,44),hp(.08,-.11,32),hp(-.24,0,47),hp(.24,0,47),hp(0,-.17,49)];
-    [12,21].forEach((k,i)=>{ const b=BF.add(k,HP); b.at=b.to=i*4; b.g.position.set(...HP[b.at]); }); } }
+ } 
+  // THE STACKED ROOMS, BUILT AFTER THE GAME OPENS: one room a moment (its painting kept aside), then batched on their own meshes, their
+  // lights given to LITE, their rooms to ROOMS, the tank's water and glass, the butterfly house's pair
+  { const pend=[]; let done=false;
+    const lit=()=>{ if(!LITE.recs.length)return; const nl=[]; scene.traverse(o=>{ if(o.isPointLight&&!o.userData.pool)nl.push(o); }); for(const L of nl){ L.userData.grp=null; L.castShadow=false; L.removeFromParent(); LITE.recs.push(L); } };   // (as LITE.init does: never a new light in the scene, so nothing recompiles)
+    const step=()=>{ STEPS.shift()(); pend.push(...BATCH.items.splice(0)); lit(); };
+    const finish=()=>{ if(done)return; done=true; while(STEPS.length)step(); BATCH.items=pend; Object.assign(STORE.meshes,bake());
+      const Tk=STORE.tank; WATER.body({name:'tank',X0:X(Tk.x0),X1:X(Tk.x1),Z0:Z(Tk.y0),Z1:Z(Tk.y1),lvl:Y(Tk.z+(Tk.dz||0)),GX:110,GY:40,dep:()=>(Tk.z-Tk.bed)/50*1.8});
+    const gm=new THREE.MeshLambertMaterial({color:new THREE.Color(.5,.62,.7),transparent:true,opacity:.18,side:THREE.DoubleSide,depthWrite:false}), gh=Y(Tk.z+4)-Y(Tk.bed), gy=(Y(Tk.z+4)+Y(Tk.bed))/2+Y(Tk.dz||0)-Y(0);
+    for(const [x,z,w,ry] of [[(Tk.x0+Tk.x1)/2,Tk.y0,Tk.x1-Tk.x0,0],[(Tk.x0+Tk.x1)/2,Tk.y1,Tk.x1-Tk.x0,0],[Tk.x0,(Tk.y0+Tk.y1)/2,Tk.y1-Tk.y0,Math.PI/2],[Tk.x1,(Tk.y0+Tk.y1)/2,Tk.y1-Tk.y0,Math.PI/2]]){ const m=new THREE.Mesh(new THREE.PlaneGeometry(w*TILE*BLDK,gh),gm); m.position.set(X(x),gy,Z(z)); m.rotation.y=ry; scene.add(m); } 
+      const H=STORE.houseAt, hp=(dx,dy,z)=>[X(H[0]+dx),Y(z+(STORE.houseZ||0)),Z(H[1]+dy)], HP=[hp(-.16,-.09,38),hp(-.12,.07,41),hp(.18,.09,37),hp(.13,-.1,35),hp(-.06,0,44),hp(.06,0,44),hp(.08,-.11,32),hp(-.24,0,47),hp(.24,0,47),hp(0,-.17,49)];
+    [12,21].forEach((k,i)=>{ const b=BF.add(k,HP); b.at=b.to=i*4; b.g.position.set(...HP[b.at]); });
+      if(ROOMS.reset)ROOMS.reset(); };
+    STORE.ensure=finish;
+    const run=()=>{ if(done)return; if(STEPS.length){ step(); setTimeout(run,60); } else finish(); };
+    STORE.later=()=>setTimeout(run,1500); }   // (started once the game runs: build.py)
+}

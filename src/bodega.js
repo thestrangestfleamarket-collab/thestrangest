@@ -13,12 +13,13 @@ const BOD={meshes:[], walls:{}, lamps:[]};
   // the subway's stairs (MAPSTAIR, the map's: tiles) a hole in the ground; elsewhere the ground's own colour
   const holed=f=>(x,y)=>x>=MAPSTAIR.x0&&x<MAPSTAIR.x1&&y>=MAPSTAIR.y0&&y<MAPSTAIR.y1?null:f(x,y);
   // ---- the painting of a face: fn(i, j) its colour, null (a hole) or glowing (.e, or four long); the colours and the glow as two canvases
-  const C=v=>v?((v.e||v.length>3)?[...v.slice(0,3).map(x=>Math.max(0,Math.min(255,Math.round(x)))),1]:v.map(x=>Math.max(0,Math.min(255,Math.round(x))))):null;
-  const faceTex=(w,h,fn)=>{ w=Math.max(1,Math.round(w)); h=Math.max(1,Math.round(h)); const c=document.createElement('canvas'); c.width=w; c.height=h; const g=c.getContext('2d'), im=g.createImageData(w,h);
-    let ie=null, ge=null;
-    for(let j=0;j<h;j++)for(let i=0;i<w;i++){ const v=fn(i,j), k=(j*w+i)*4; if(!v)continue; im.data[k]=v[0]; im.data[k+1]=v[1]; im.data[k+2]=v[2]; im.data[k+3]=255;
-      if(v.length>3){ if(!ie){ ge=document.createElement('canvas'); ge.width=w; ge.height=h; ie=new ImageData(w,h); } ie.data[k]=v[0]; ie.data[k+1]=v[1]; ie.data[k+2]=v[2]; ie.data[k+3]=255; } }
-    g.putImageData(im,0,0); if(ie)ge.getContext('2d').putImageData(ie,0,0); return {map:{image:c},em:ie?{image:ge}:null}; };
+  // (faster, 17 Oct 2026: no canvas a face and no new colour a pixel: the face's pixels straight into an ImageData, rounded there; the batch
+  // copies them into its atlas. C only marks a glowing colour)
+  const C=v=>v&&v.e&&v.length===3?[v[0],v[1],v[2],1]:v;
+  const faceTex=(w,h,fn)=>{ w=Math.max(1,Math.round(w)); h=Math.max(1,Math.round(h)); const im=new ImageData(w,h), d=im.data; let ie=null, e=null;
+    for(let j=0,k=0;j<h;j++)for(let i=0;i<w;i++,k+=4){ const v=fn(i,j); if(!v)continue; d[k]=Math.round(v[0]); d[k+1]=Math.round(v[1]); d[k+2]=Math.round(v[2]); d[k+3]=255;
+      if(v.length>3){ if(!ie){ ie=new ImageData(w,h); e=ie.data; } e[k]=d[k]; e[k+1]=d[k+1]; e[k+2]=d[k+2]; e[k+3]=255; } }
+    return {map:{image:im},em:ie?{image:ie}:null}; };
   const bq=(a,b,c,d,tx,kind)=>BATCH.add([...a,...b,...c,...a,...c,...d],[0,0,1,0,1,1,0,0,1,1,0,1],tx.map.image,tx.em?tx.em.image:null,kind);
   // ---- ONE OF THE GAME'S BOXES (x, y in tiles, z art px): top(X, Y); fs(nx, ny, X, Y, z from its foot, shade) or fi(Y, z), fj(X, z); else its colour
   function gbox(b,kind='L'){ const {x0,x1,y0,y1,z0,z1}=b; if(b.foot&&z1-z0<.05)return; const k=b.em?2:1, H=Math.max(1,(z1-z0)*k);

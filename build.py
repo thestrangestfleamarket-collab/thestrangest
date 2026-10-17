@@ -1,4 +1,4 @@
-import os
+import os, sys
 # the game's own code, read as data (its objects' makers, colours and layouts): a checkout of bralynnb/tsfm beside this one, or GAME_SRC
 S=os.environ.get('GAME_SRC',os.path.join(os.path.dirname(os.path.abspath(__file__)),'..','tsfm','src'))+'/'
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
@@ -329,7 +329,7 @@ mod=rp(mod,"} for(const N of NPCS)N.tick(dt,pos); if(FIRE)","} NPCS.tick(dt,pos)
 mod=rp(mod,"yaw+=(yawTo-yaw)*ease; pitch+=(pitchTo-pitch)*ease;","yaw=Math.abs(yawTo-yaw)<1e-4?yawTo:yaw+(yawTo-yaw)*ease; pitch=Math.abs(pitchTo-pitch)<1e-4?pitchTo:pitch+(pitchTo-pitch)*ease;")
 mod=rp(mod,"ppu*=Math.pow(ppuTo/ppu,ease); if(pxS()!==SCL)","ppu=Math.abs(ppuTo/ppu-1)<1e-4?ppuTo:ppu*Math.pow(ppuTo/ppu,ease); if(pxS()!==SCL)")
 mod=rp(mod,"const dt=Math.min(0.05,(now-last)/1000); last=now;","const dt=Math.max(0,Math.min(0.05,(now-last)/1000)); last=now;   /* (never backwards: the first frame's time can be older than the page's start) */")
-mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);","""LITE.init();
+mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);","""LITE.init(); STORE.later(); window.__started=true; window.__scene=scene;
 { const t0=performance.now(), PL=[0,1,2,3,4,5].map(()=>new THREE.Plane(new THREE.Vector3(0,1,0),1e6)); renderer.setRenderTarget(composer.readBuffer); renderer.compile(scene,cam);
   renderer.clippingPlanes=PL; renderer.render(new THREE.Scene(),cam); renderer.compile(scene,cam); renderer.clippingPlanes=[]; renderer.setRenderTarget(null);   /* (the empty picture only sets the six planes for the second compile) */
   window.WARMMS=Math.round(performance.now()-t0); }
@@ -340,4 +340,11 @@ resize(); applyTime(0); requestAnimationFrame(frame);""")
 head=rp(head,'<div id="hud">','<div id="loading" style="position:fixed;inset:0;display:grid;place-items:center;font:12px Silkscreen,monospace;letter-spacing:2px;color:#8a8f9c;background:#0e1016">I took a trip to The Strangest Flea Market...</div>\n<div id="hud" hidden>')
 head=rp(head,'<div id="stat">--</div>\n<div id="shd">','<div id="stat" hidden>--</div>\n<div id="shd" hidden>')
 head='<meta charset="utf-8">\n'+head
+# BREATHS WHILE LOADING (owner, 17 Oct 2026, "this artifact isn't responding"): the module script given a moment back to the browser every
+# 40 ms while it builds (tools/yields.py)
+sys.path.insert(0,'tools'); from yields import yields
+import re
+a="const grab=(name,fn)=>{ const n0=scene.children.length; fn();"; assert a in mod; mod=mod.replace(a,"const grab=async(name,fn)=>{ const n0=scene.children.length; await fn();")
+mod,ng=re.subn(r"^grab\('(\w+)',\(\)=>\{",r"await grab('\1',async()=>{",mod,flags=re.M); print('builders awaited:',ng)
+i=mod.index('<script type="module">')+len('<script type="module">'); j=mod.index('</script>',i); body,ny=yields(mod[i:j]); mod=mod[:i]+'\n'+body+mod[j:]; print('breaths:',ny)
 os.makedirs('dist',exist_ok=True); open('dist/market.html','w').write(head+mod); print('built dist/market.html')

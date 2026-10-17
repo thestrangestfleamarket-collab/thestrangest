@@ -92,4 +92,4 @@ for key in KEYS:
         clips[nm]={'dur':round(dur,4),'n':nf,'q':b64(np.round(Q*32000).astype(np.int16)),'p':TR}
     OUT[key]={'rig':rig,'mesh':mesh,'clips':clips,'tall':float(np.round(hi[1]-lo[1],4)),'lo':np.round(lo,4).tolist(),'hi':np.round(hi,4).tolist()}
     print(key,len(P),'points',len(IX)//3,'tris',len(names),'bones; box',np.round(lo,2),np.round(hi,2),'clips',{k:(v['dur'],list(v['p'])) for k,v in clips.items()},'parts',parts)
-open('data/creatures.json','w').write(json.dumps(OUT,separators=(',',':'))); print('data/creatures.json',os.path.getsize('data/creatures.json'),'bytes')
+OUTF=os.environ.get('OUT','data/creatures.json'); open(OUTF,'w').write(json.dumps(OUT,separators=(',',':'))); print(OUTF,os.path.getsize(OUTF),'bytes')   # (OUT=data/x.json: another file, for another pack baked the same way: the UAL mannequin, data/ual.json)

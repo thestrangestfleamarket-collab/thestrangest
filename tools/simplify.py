@@ -12,7 +12,7 @@ import json,base64,os,shutil,sys,numpy as np,fast_simplification as FS
 from collections import defaultdict
 B=lambda s,t:np.frombuffer(base64.b64decode(s),t); E=lambda a:base64.b64encode(np.ascontiguousarray(a).tobytes()).decode()
 BODY,THING=.5,.33
-FILES=['props','forest','kit','creatures','skel','dragon','bear','goldfish']   # (the six figures removed, 17 Oct 2026)
+FILES=['props','forest','kit','creatures','skel','dragon','bear']   # (the goldfish deleted, 17 Oct 2026)   # (the six figures removed, 17 Oct 2026)
 os.makedirs('data/full',exist_ok=True)
 for f in FILES:
     if not os.path.exists(f'data/full/{f}.json'): shutil.copy(f'data/{f}.json',f'data/full/{f}.json')
@@ -132,5 +132,4 @@ d=load('dragon'); hs=headset(d['rig'],lambda nm:nm=='Head')
 for k,M in d['chars'].items(): N=indexed(M,hs,BODY); report('dragon '+k,M['tris'],N['tris']); d['chars'][k]=N
 print('dragon',save('dragon',d))
 d=load('bear'); nm=d['names']; N=soup(d,{i for i,x in enumerate(nm) if x in ('ears','head','muzzle','eyes and nose')},BODY); report('bear',d['tris'],N['tris']); print('bear',save('bear',N))
-d=load('goldfish'); N=soup(d,None,BODY); report('goldfish',d['tris'],N['tris']); print('goldfish',save('goldfish',N))
 print(f'ALL MODELS: {t0} -> {t1} triangles')

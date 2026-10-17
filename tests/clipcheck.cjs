@@ -1,7 +1,7 @@
 // STRICT HITBOXES' CHECK (owner, 17 Oct 2026: "we need to avoid clipping. all objects and characters need hitboxes. strictly"): node tests/clipcheck.cjs
 // loads THE MARKET, finishes the stacked rooms, and lists (CLIP.audit, src/clip.js) every thing standing knee to chest high on a floor whose faces
 // no solid holds, every character standing in a solid or in another, and every spot you could reach before the pass and can't after (a way closed);
-// at the start, then every three seconds over half a minute of the street walking (the goldfish and the mushroom seller watched as a pair: the
+// at the start, then every three seconds over half a minute of the street walking (the droid and the mushroom seller watched as a pair: the
 // owner's screenshot of the one inside the other). Prints what the load's pass found and made solid, and who it moved; exits 1 if anything's left
 const {chromium}=require('playwright');
 (async()=>{ const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader']}); const pg=await b.newPage({viewport:{width:900,height:620}});
@@ -24,15 +24,15 @@ const {chromium}=require('playwright');
       console.log('    by '+(k||'nothing near (cut off behind)')+': '+L.length+' in '+Object.entries(cl).map(([q,P])=>q+' ['+[Math.min(...P.map(p=>p[0])),Math.min(...P.map(p=>p[1])),Math.max(...P.map(p=>p[0])),Math.max(...P.map(p=>p[1]))].map(v=>v.toFixed(1))+'] '+P.length).join('; ')); } } };
   report('at the start',a);
   // the street walking: the characters near the camera move (the far ones are frozen, the budget's rule), so the view is put on the pair
-  const pair=()=>pg.evaluate(()=>{ const N=__dbg.NPCS, f=N.find(n=>n.key==='fish'), m=N.find(n=>n.key==='mushroom'); if(!f||!m)return null;
+  const pair=()=>pg.evaluate(()=>{ const N=__dbg.NPCS, f=N.find(n=>n.key==='droid'), m=N.find(n=>n.key==='mushroom'); if(!f||!m)return null;
     return {d:+Math.hypot(f.st.x-m.st.x,f.st.z-m.st.z).toFixed(2),R:+(f.st.R+m.st.R).toFixed(2),fish:[+f.st.x.toFixed(1),+f.st.z.toFixed(1)],mush:[+m.st.x.toFixed(1),+m.st.z.toFixed(1)],far:[!!f.far,!!m.far]}; });
   let minGap=1e9, walked=0;
   // (the pair sent at each other: the mushroom seller stood three tiles along the street from the goldfish, each told to walk to where the other is, again every three seconds)
-  await pg.evaluate(()=>{ const N=__dbg.NPCS, f=N.find(n=>n.key==='fish'), m=N.find(n=>n.key==='mushroom'); const T=__dbg.cv().TILE; if(f&&m){ for(let k=1.6;k<12;k+=.2){ const x=f.st.x+k*T; if(f.free(x,f.st.z,m.st.R)){ m.st.x=x; m.st.z=f.st.z; m.home=null; break; } } } });
-  for(let t=0;t<10;t++){ await pg.evaluate(()=>{ const N=__dbg.NPCS, f=N.find(n=>n.key==='fish'), m=N.find(n=>n.key==='mushroom'); if(f&&m){ __dbg.UI.setFree(true); __dbg.UI.camT.set(f.st.x,1,f.st.z); f.st.to={x:m.st.x,z:m.st.z}; m.st.to={x:f.st.x,z:f.st.z}; f.st.wait=m.st.wait=0; } });
+  await pg.evaluate(()=>{ const N=__dbg.NPCS, f=N.find(n=>n.key==='droid'), m=N.find(n=>n.key==='mushroom'); const T=__dbg.cv().TILE; if(f&&m){ for(let k=1.6;k<12;k+=.2){ const x=f.st.x+k*T; if(f.free(x,f.st.z,m.st.R)){ m.st.x=x; m.st.z=f.st.z; m.home=null; break; } } } });
+  for(let t=0;t<10;t++){ await pg.evaluate(()=>{ const N=__dbg.NPCS, f=N.find(n=>n.key==='droid'), m=N.find(n=>n.key==='mushroom'); if(f&&m){ __dbg.UI.setFree(true); __dbg.UI.camT.set(f.st.x,1,f.st.z); f.st.to={x:m.st.x,z:m.st.z}; m.st.to={x:f.st.x,z:f.st.z}; f.st.wait=m.st.wait=0; } });
     await pg.waitForTimeout(3000); const r=await pg.evaluate(()=>{ const x=CLIP.audit(); x.things=[]; x.closed=[]; return x; }), p=await pair();
-    if(p){ minGap=Math.min(minGap,p.d-p.R); console.log('  t+'+(t+1)*3+'s goldfish '+p.fish+' mushroom seller '+p.mush+' apart '+p.d+' (their radii '+p.R+')'+(p.far[0]||p.far[1]?' (one frozen far)':'')); }
+    if(p){ minGap=Math.min(minGap,p.d-p.R); console.log('  t+'+(t+1)*3+'s droid '+p.fish+' mushroom seller '+p.mush+' apart '+p.d+' (their radii '+p.R+')'+(p.far[0]||p.far[1]?' (one frozen far)':'')); }
     if(r.chars.length)report('walking, t+'+(t+1)*3+'s',r); walked++; }
-  console.log('goldfish and mushroom seller: closest '+minGap.toFixed(2)+' beyond touching'+(minGap<-.01?' : OVERLAP':''));
+  console.log('droid and mushroom seller: closest '+minGap.toFixed(2)+' beyond touching'+(minGap<-.01?' : OVERLAP':''));
   if(minGap<-.01)bad++;
   console.log('page errors',JSON.stringify(errs)); console.log(bad?'FAIL: '+bad:'PASS'); await b.close(); process.exit(bad?1:0); })();

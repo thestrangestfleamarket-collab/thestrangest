@@ -350,6 +350,11 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
   The Fox on the mat's middle (x 4.51), his radius his depth (.27). Checked by `tests/clipcheck.cjs` (every thing held, every character clear,
   the goldfish and the mushroom seller sent at each other, no room's door closed; spots now walled off listed as notes). `?clip=0` leaves it off.
 
+- **The goldfish deleted** (owner, 17 Oct 2026: "delete the fish raincoat character"): out of the street (`npc-map.js`) and the data (`data/goldfish.json`, `data/full/goldfish.json`); `tools/goldfish-paint.py` stays.
+- **? lists what you can do** (owner, 17 Oct 2026: "pressing ? should give me list of all possible actions and moves for my player"; `UI.moves`, `ui.js`): every key's action as KEYS has them, the fighting moves and their chains, his own moves (ANIMATE), the mouse and the double click's uses.
+- **Resolution for each zoom, his own** (owner, 17 Oct 2026: "shift+r will allow me to set the resolution level for every zoom level as permanent. once i select i will export to you and you will save that as perm for game"): Shift+R's panel sets this zoom band's art (bands a quarter apart, any level of `RESL`), kept in the browser (`market-zres`); EXPORT gives `ZRES {...}`: when he sends it, put it in `ZRES0` in `build.py` (the game's own). A band not set takes the nearest set; none set, the old rule.
+- **The grain, not halftone** (owner, 17 Oct 2026: "i want to avoid these types of shadows and grids half tone, can we do the shadows style i mentioned earlier"): the light's steps broken by a noise fixed to the world's art pixels, on by default (16 steps; `DITH` in `map-pre.js`; GRAPHICS' LIGHT GRAIN: on, strong 12, fine 24, off); no 4x4 ordered (Bayer) grid anywhere: the characters' shading, the see-through and the neon's halo take a grain instead.
+
 ## THE MARKET: the one official map
 
 **THE MARKET** (owner, 17 Oct 2026: "one official MARKET map im gona start filling in") is the game's map here: every place the owner adds goes

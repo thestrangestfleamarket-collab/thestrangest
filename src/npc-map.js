@@ -17,15 +17,28 @@ function makeNPC(D,o){ const N={key:o.key,name:o.name,names:o.names}; const b=s=
   geo.computeBoundingBox(); geo.translate(0,-geo.boundingBox.min.y,0);   // (his feet at the ground)
   const tall=geo.boundingBox.max.y-geo.boundingBox.min.y;
   N.renorm();
+  // the clothes' shadows (owner, 17 Oct 2026, "coat had a shadow on the shirt ... makes look like more depth"): each part has a layer (o.rank:
+  // outer clothes over inner over him), and where an outer layer lies just over an inner one (above it, on its outside) the inner one is in its
+  // shadow; worked out once here, so a frame pays only a check a pixel: two steps, a mid tone, then a dark one right under the edge
+  { const P=geo.attributes.position.array, Nn=geo.attributes.normal.array, n=P.length/3, rk=o.rank, SH=new Float32Array(n), w=tall*.07, grid=new Map(),
+      C=i=>[Math.floor(P[i*3]/w),Math.floor(P[i*3+1]/w),Math.floor(P[i*3+2]/w)];
+    for(let i=0;i<n;i++){ const k=C(i).join(); (grid.get(k)||grid.set(k,[]).get(k)).push(i); }
+    for(let i=0;i<n;i++){ const r=rk[RG[i]]||0, [cx,cy,cz]=C(i); let best=0;
+      for(let a=-1;a<=1;a++)for(let b=-1;b<=1;b++)for(let c=-1;c<=1;c++){ const L=grid.get((cx+a)+','+(cy+b)+','+(cz+c)); if(!L)continue;
+        for(const j of L){ if((rk[RG[j]]||0)<=r)continue; const dx=P[j*3]-P[i*3], dy=P[j*3+1]-P[i*3+1], dz=P[j*3+2]-P[i*3+2], d=Math.hypot(dx,dy,dz);
+          if(d>=w||dy<-w*.25||dx*Nn[i*3]+dy*Nn[i*3+1]+dz*Nn[i*3+2]<-w*.15)continue; best=Math.max(best,1-d/w); } }   // (near, not below, not behind)
+      SH[i]=best; }
+    geo.setAttribute('sh',new THREE.BufferAttribute(SH,1)); }
   N.sm=new THREE.WebGLRenderTarget(256,256); N.sm.depthTexture=new THREE.DepthTexture(256,256); N.smCam=new THREE.OrthographicCamera(-1.8,1.8,1.8,-1.8,.1,14); N.LVP={value:new THREE.Matrix4()};
   const mat=new THREE.ShaderMaterial({side:THREE.DoubleSide,uniforms:{uL:{value:W3.Lw},uTint:{value:W3.tint},uLv:W3.lv,uSM:{value:N.sm.depthTexture},uLVP:N.LVP},
-    vertexShader:`attribute vec3 color; varying vec3 vC,vN,vW; void main(){ vC=pow(color,vec3(2.2)); vN=normalize(mat3(modelMatrix)*normal); vec4 w=modelMatrix*vec4(position,1.); vW=w.xyz; gl_Position=projectionMatrix*viewMatrix*w; }`,
-    fragmentShader:`uniform vec3 uL,uTint; uniform float uLv; uniform sampler2D uSM; uniform mat4 uLVP; varying vec3 vC,vN,vW;
+    vertexShader:`attribute vec3 color; attribute float sh; varying vec3 vC,vN,vW; varying float vS; void main(){ vS=sh; vC=pow(color,vec3(2.2)); vN=normalize(mat3(modelMatrix)*normal); vec4 w=modelMatrix*vec4(position,1.); vW=w.xyz; gl_Position=projectionMatrix*viewMatrix*w; }`,
+    fragmentShader:`uniform vec3 uL,uTint; uniform float uLv; uniform sampler2D uSM; uniform mat4 uLVP; varying vec3 vC,vN,vW; varying float vS;
       void main(){ float l=dot(normalize(vN)*(gl_FrontFacing?1.:-1.),uL); vec3 c0=min(vec3(1.),vC*1.1), c1=vC, c2=vC*.84*vec3(.95,.97,1.04), cd=vC*.7*vec3(.92,.95,1.06), c;
         if(uLv<.5)c=l>-.3?c1:c2;
         else{ int t=l>.55?0:l>.05?1:l>-.4?2:3;
           if(uLv>1.5&&t<2){ vec4 p=uLVP*vec4(vW,1.); vec3 q=p.xyz/p.w*.5+.5; if(q.x>0.&&q.x<1.&&q.y>0.&&q.y<1.&&q.z-.004>texture2D(uSM,q.xy).r)t=2; }
           c=t==0?c0:t==1?c1:t==2?c2:cd; }
+        if(vS>.15)c=vC*.6*vec3(.95,.97,1.05); if(vS>.55)c=vC*.36*vec3(.9,.94,1.12);   // (the clothes' shadows)
         gl_FragColor=vec4(c*uTint,1.); }`});
   N.depthMat=new THREE.MeshDepthMaterial({side:THREE.DoubleSide});
   const me=new THREE.Mesh(geo,mat); me.castShadow=true; N.me=me;
@@ -56,5 +69,5 @@ function makeNPC(D,o){ const N={key:o.key,name:o.name,names:o.names}; const b=s=
     N.LVP.value.multiplyMatrices(N.smCam.projectionMatrix,N.smCam.matrixWorldInverse); const m0=me.material; me.material=N.depthMat; renderer.setRenderTarget(N.sm); renderer.clear(); renderer.render(g,N.smCam); renderer.setRenderTarget(null); me.material=m0; };
   { const s0=W3.shadowPass; W3.shadowPass=r=>{ s0(r); N.shadowPass(r); }; }
   N.g=g; N.st=st; N.body=body; N.H=H; NPCS.push(N); return N; }
-const FISH=makeNPC(GOLDFISH,{key:'fish',name:'GOLDFISH',names:['eyes','eye rims','head','hood','lips','chin','raincoat','fins and tail'],metres:.95,at:-77,radius:.42,speed:.55,stride:9,rock:.14,bob:.05});
-const BEAR=makeNPC(BEARD,{key:'bear',name:'BEAR',names:BEARD.names,metres:1.9,at:-67,radius:.45,speed:.7,stride:5.5,rock:.05,bob:.035});
+const FISH=makeNPC(GOLDFISH,{key:'fish',name:'GOLDFISH',names:['eyes','eye rims','head','hood','lips','chin','raincoat','fins and tail'],metres:.95,rank:[0,0,0,2,0,0,2,0],at:-77,radius:.42,speed:.55,stride:9,rock:.14,bob:.05});
+const BEAR=makeNPC(BEARD,{key:'bear',name:'BEAR',names:BEARD.names,metres:1.9,rank:[0,0,0,0,2,3,0,1,0],at:-67,radius:.45,speed:.7,stride:5.5,rock:.05,bob:.035});

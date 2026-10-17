@@ -345,8 +345,8 @@ mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);","""LITE.init(
 resize(); applyTime(0); requestAnimationFrame(frame);""")
    # (V: the views, owner 17 Oct 2026)
 # LOADING (owner, 17 Oct 2026, the live site's first moments: the help panel, the shadows box and "--" showed while the page loaded, its dots
-# garbled): nothing but its line, "I took a trip to The Strangest Flea Market..." (owner: "loading should always say" it), till the game runs (ui.js takes it away); the page's letters read as UTF-8
-head=rp(head,'<div id="hud">','<div id="loading" style="position:fixed;inset:0;display:grid;place-items:center;font:12px Silkscreen,monospace;letter-spacing:2px;color:#8a8f9c;background:#0e1016">I took a trip to The Strangest Flea Market...</div>\n<div id="hud" hidden>')
+# garbled): nothing but its line (owner, 17 Oct 2026: "slowly fade in, stay for 3 seconds, then fade out": 1.5 s in, 3 s, 1.5 s out; the dark kept till both it and the game are done: ui.js), "I took a trip to The Strangest Flea Market..." (owner: "loading should always say" it), till the game runs (ui.js takes it away); the page's letters read as UTF-8
+head=rp(head,'<div id="hud">','<style>@keyframes ldfade{0%{opacity:0}25%{opacity:1}75%{opacity:1}100%{opacity:0}} #loading span{opacity:0;animation:ldfade 6s ease-in-out forwards} #loading{transition:opacity .5s}</style><script>window.__ld0=performance.now();</script><div id="loading" style="position:fixed;inset:0;display:grid;place-items:center;font:12px Silkscreen,monospace;letter-spacing:2px;color:#8a8f9c;background:#0e1016;z-index:50"><span>I took a trip to The Strangest Flea Market...</span></div>\n<div id="hud" hidden>')
 head=rp(head,'<div id="stat">--</div>\n<div id="shd">','<div id="stat" hidden>--</div>\n<div id="shd" hidden>')
 head='<meta charset="utf-8">\n'+head
 # BREATHS WHILE LOADING (owner, 17 Oct 2026, "this artifact isn't responding"): the module script given a moment back to the browser every

@@ -218,5 +218,5 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
   $('#kreset').onclick=()=>{ BIND={}; try{ localStorage.removeItem('market-keys'); }catch(e){} REV=rev(); drawKeys(); drawBadge(); };
   // NOTHING ON SCREEN BUT THE GAME (owner, 17 Oct 2026: "take off the hud ... the market and controls, shadows etc on screen entire time"):
   // the help panel, the stats and the shadows' buttons start hidden; the menu has them all (DISPLAY: shadows, help, stats; KEYS: every control)
-  for(const id of ['hud','stat','shd'])document.getElementById(id).hidden=true; document.getElementById('loading')?.remove();
+  for(const id of ['hud','stat','shd'])document.getElementById(id).hidden=true; { const L=document.getElementById('loading'); if(L)setTimeout(()=>{ L.style.opacity=0; setTimeout(()=>L.remove(),500); },Math.max(0,6000-(performance.now()-(window.__ld0||0)))); }   /* (the line's fade done first: 1.5 s in, 3 s, 1.5 s out, then the dark lifts) */
   drawBadge(); }

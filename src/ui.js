@@ -52,7 +52,7 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
   UI.grab=e=>{ if(ED.on&&ED.pickW){ const p=ED.pickW(e); if(p){ piv.copy(p); return; } }   // (shaping him: the point of him you grab)
     ray.setFromCamera(ndc(e),cam); const h=ray.intersectObjects(scene.children,true).find(h=>shown(h.object)); if(h)piv.copy(h.point); else ray.ray.closestPointToPoint(disp,piv); };
   UI.orbit=(dx,dy)=>{ if(UI.view==='iso')return;   // (iso: turned only by Q / E, a quarter at a time onto its four angles, owner 17 Oct 2026: "q,e will rotate your angle back and forth, only between 4 isometric angles")
-    if(UI.persp){ yawTo-=dx*.006; pitchTo=UI.clampV(pitchTo+dy*.005); yaw=yawTo; pitch=pitchTo; return; }   // (the near views: turn about him, or look about)
+    if(UI.persp){ yawTo-=dx*.006; pitchTo=UI.clampV(pitchTo+dy*.005); yaw=yawTo; pitch=pitchTo; UI.look={x:pos.x,z:pos.z}; return; }   // (the near views: turn about him, or look about; FREE VIEW in third person and behind, owner 17 Oct 2026, "if in 3rd person view, allow free view": a drag looks round him wherever you like, from under his chin to overhead, and BEHIND only swings back to his back once he walks)
     q0.setFromEuler(UI.eul.set(-pitch,yaw,0,'YXZ')); yawTo-=dx*0.008; pitchTo=clampP(pitchTo+dy*0.006); yaw=yawTo; pitch=pitchTo; q1.setFromEuler(UI.eul.set(-pitch,yaw,0,'YXZ'));
     tv.subVectors(disp,piv); const t0=tv.clone(); tv.applyQuaternion(q0.invert()).applyQuaternion(q1); viewV().add(tv.sub(t0)); disp.add(tv);
     if(!UI.freeCam){ tv.set(0,0,1).applyQuaternion(q1); UI.off.addScaledVector(tv,-UI.off.dot(tv)); } };   // (and kept level with him along the line of sight, where it changes nothing seen)   // (what he looks at swings round the pivot as the view turns)
@@ -73,7 +73,7 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
   // wheel brings it in or out; never lower than three feet off the ground), FIRST PERSON (his eyes: a drag looks about; his body out of the way)
   UI.view='map'; UI.persp=false; UI.dist=7*TILE; let isoAcc=0;
   const HEAD=1.5/.84*TILE, EYE=1.62/.84*TILE, LOW=.9/.84*TILE;   // (his head's height, his eyes', three feet)
-  UI.clampV=v=>UI.view==='first'?Math.max(-1.2,Math.min(1.3,v)):UI.view==='third'||UI.view==='follow'?Math.max(-.35,Math.min(1.4,v)):clampP(v);
+  UI.clampV=v=>UI.view==='first'?Math.max(-1.2,Math.min(1.3,v)):UI.view==='third'||UI.view==='follow'?Math.max(-.6,Math.min(1.5,v)):clampP(v);
   UI.setView=v=>{ UI.view=v; UI.persp=v==='third'||v==='first'||v==='follow'; if(UI.freeCam&&UI.persp)setFree(false);
     if(v==='iso'){ yawTo+=((((-Math.PI/4-yawTo)%(2*Math.PI))+3*Math.PI)%(2*Math.PI))-Math.PI; pitchTo=Math.PI/6; ppuTo=PPU*2.2; UI.off.set(0,0,0); zAt=null; }   // (owner, 17 Oct 2026, his picture: "this should always be the angle when you switch to isometric": the counter up to his left, 2.2 times in; Q / E turn it from there)
     if(v==='follow'){ UI.dist=4*TILE; pitchTo=.2; }   // (owner, 17 Oct 2026, his picture: "when you switch to over shoulder view it should always be at this zoom and angle (you can change once you switch to it)")
@@ -81,10 +81,11 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
   // BEHIND HIM (owner, 17 Oct 2026: "a view that locks on behind, 3rd person view, and autorotates with player"): the third person's camera, turned
   // with him each frame so it stays at his back; R (any view but these two) turns the view a quarter round, onto the four isometric angles
   UI.turn4=()=>{ if(UI.view==='first'||UI.view==='follow')return; if(UI.view==='iso'){ yawTo=Math.round((yawTo-Math.PI/4)/(Math.PI/2))*(Math.PI/2)+Math.PI/4-Math.PI/2; return; } yawTo=Math.round((yawTo-Math.PI/4)/(Math.PI/2))*(Math.PI/2)+Math.PI/4-Math.PI/2; };
-  UI.view3=a=>{ if(UI.view==='follow'&&!RAG.on){ const t=heading+Math.PI; yawTo=yaw+((((t-yaw)%(2*Math.PI))+3*Math.PI)%(2*Math.PI))-Math.PI; }
+  UI.view3=a=>{ if(UI.look&&(Math.hypot(pos.x-UI.look.x,pos.z-UI.look.z)>.05))UI.look=null;   /* (a free look lasts till he walks) */
+    if(UI.view==='follow'&&!RAG.on&&!UI.look){ const t=heading+Math.PI; yawTo=yaw+((((t-yaw)%(2*Math.PI))+3*Math.PI)%(2*Math.PI))-Math.PI; }
     cam=UI.persp?PCAM:OCAM; if(RPASS)RPASS.camera=cam; if(UI.persp&&Math.abs(PCAM.aspect-RW/RH)>1e-3){ PCAM.aspect=RW/RH; PCAM.updateProjectionMatrix(); } };
   UI.view3b=a=>{ W3.group.visible=UI.view!=='first'; if(!UI.persp)return; const sk=W3.SZ||1;
-    if(UI.view==='first'){ cam.position.set(pos.x,py+EYE*sk,pos.z); cam.position.addScaledVector(new THREE.Vector3(-Math.sin(a),0,-Math.cos(a)),.12*TILE); cam.updateMatrixWorld(); return; }
+    if(UI.view==='first'){ if(!(W3.eyeAt&&W3.eyeAt(cam.position))){ cam.position.set(pos.x,py+EYE*sk,pos.z); cam.position.addScaledVector(new THREE.Vector3(-Math.sin(a),0,-Math.cos(a)),.12*TILE); } cam.updateMatrixWorld(); return; }   // (from his own eyes, where his head is this moment: walker3d.js's W3.eyeAt)
     const T=new THREE.Vector3(pos.x,py+HEAD*sk,pos.z), F=new THREE.Vector3(Math.sin(a)*Math.cos(pitch),Math.sin(pitch),Math.cos(a)*Math.cos(pitch));
     cam.position.copy(T).addScaledVector(F,UI.dist); const g=groundY(cam.position.x,cam.position.z)+LOW; if(cam.position.y<g)cam.position.y=g;   // (never under three feet)
     cam.lookAt(T); cam.updateMatrixWorld(); };

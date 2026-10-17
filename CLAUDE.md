@@ -139,8 +139,14 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
 - **The Fox, the bodega's merchant** (owner, 17 Oct 2026: "add the fox back as the bodega merchant"; `src/npc-fox.js`): the old game's Fox (its
   sprite, CHARS[1] in 10-characters.data) made 3D in his parts: a white fox's head with tall ears tan inside, an orange crown patch, the black
   mask and dark-red eyes under fierce brows, a black nose; a blue roll collar, a puffy orange jacket flecked blue and cream, navy gloves, wide
-  cream trousers in folds; some 3,500 triangles. He stands on the counter's mat behind the long counter (the game's spot, `mat-fox`), facing
-  the aisle, and turns to you when you come near; he never wanders.
+  cream trousers in folds; some 3,500 triangles. He stands on the mat behind the long counter (owner: "put behind counter, we need to avoid
+  clipping": this shop's counter, not the game's spot, which was in a shelf), facing the aisle, turning toward you only 35 degrees (the space
+  behind the counter is narrower than he is wide); he never wanders.
+- **Free view and his eyes** (owner, 17 Oct 2026): in THIRD PERSON and BEHIND a drag looks round him freely ("if in 3rd person view, allow free
+  view"), from under his chin to overhead; BEHIND swings back to his back only once he walks (`UI.look`). FIRST PERSON looks from his own eyes
+  where his head is this moment (`W3.eyeAt`: "make sure 1st person view is angle from eyeview of actual avatar").
+- **The mushroom seller white and taller** (owner, 17 Oct 2026: "the mushroom skeleton is white, and taller, and diff char" from the gold
+  skeleton): his bones white, 2.2 m.
 - **Getting around and the menu** (17 Oct 2026, `src/ui.js`): a free camera (C), drag with any button to turn round him (a click still walks; a double click puts the view back), fly through walls (G, Space up, Shift down); Escape opens the menu (MAP: each level from above, click to go there, the places; DISPLAY: sharpness, zoom, tilt, shadows, help and stats; KEYS: every control, changeable). Nothing stays on screen but the game: the help panel, the stats and the shadows box start hidden (the menu has them).
 - **His shape and the outline** (17 Oct 2026, `src/editor.js`): the outline round the Walker is off unless turned on (Display); EDIT HIS SHAPE (Display) gives SIZES (each piece's length, width, thickness), SCULPT (push, pull, smooth, mirrored) and PIECES (move, scale, turn a piece); the skeleton never changes; kept in the browser, DOWNLOAD / LOAD as a file.
 - **Stopping and clicking** (17 Oct 2026): he stops the moment you let go (the rig's snap, no sliding); a single click does nothing; a double click walks there, or on a thing (the `UI.thing` list: so far the goldfish and the bear, who get a wave) walks up to it and interacts.

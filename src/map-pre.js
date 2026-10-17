@@ -17,7 +17,8 @@ THREE.ShaderLib.lambert.fragmentShader=THREE.ShaderLib.lambert.fragmentShader
 // Places in the bodega's tiles (the game's own, its door at the scene's middle); each place built by its own code, moved to its spot ----
 const NEONS=[], SHL=[], cutWalls=[], lamps=[], trees=[], shopGroups=[]; let night=1, nightTo=1; const C1=new THREE.Color(), C2=new THREE.Color(); function applyTime(){}
 const ZU=1/(PPU*Math.cos(Math.PI/6)), TILE=33.9/PPU, QS=new URLSearchParams(location.search), LAMPI=8, LAMPD=1.6;
-const SOL={up:[],down:[]}, FIX={up:[],down:[]}; let solids=SOL.up, fixed=FIX.up, BOUND, groundY, LVL='up', BOD, BODB;
+const SOL={up:[],down:[]}, FIX={up:[],down:[]}, CLIPX=[];   // (CLIPX: the things not in the batch, for the hitboxes' pass: {place, name, P its triangles in the world, or obj its group}: clip.js)
+let solids=SOL.up, fixed=FIX.up, BOUND, groundY, LVL='up', BOD, BODB;
 const STORE={rooms:[],places:[],roofs:[]}, BF={list:[]}; window.STORE=STORE;   // (STORE: the storeroom, store.js; BF: the butterflies, butterflies.js)
 const MAPG={}, MODS={}; let MAPBAKE=0; const OVERHEAD=[]; let RPASS=null, FIRE=null;   // (OVERHEAD: the lights hung over a room, shown only from under them: rooms.js; RPASS: the picture's render pass, its camera the view's: ui.js)
 // a place's own objects gathered in a group of its own (shown and hidden with its level)

@@ -9,7 +9,7 @@
 // (a held one's own place moved with him: N.home) and the console warns, so a placement mistake shows at once (CLIP.moved).
 // (3) A CHARACTER ON THE MOVE keeps out of solids: makeNPC's default free() is CLIP.hit on his floor's list (npc-map.js).
 // Cost: boxes on the plan (some hundreds), looked up through buckets two tiles a side; the pass runs at load only, nothing a frame.
-const CLIP={moved:[],found:[],added:0,boxes:new Set(),done:new Set(),ms:0}; window.CLIP=CLIP;
+const CLIP={moved:[],found:[],added:0,boxes:new Map(),done:new Set(),ms:0}; window.CLIP=CLIP;   // (boxes: each added box and the things it holds)
 { const MH=24*ZU/.84, KNEE=.45*MH, CHEST=1.2*MH, G=TILE/4, E=.04*TILE, GC=2*TILE;   // (MH: a metre of the world's height; G: a sample's step and a cell; E: a sample on a solid's edge is in it)
   // a floor's solids in buckets two tiles a side, so a spot looks only at the boxes near it (built again when its list has grown)
   const GR=new Map(), key=(i,j)=>i*131072+j;
@@ -39,23 +39,36 @@ const CLIP={moved:[],found:[],added:0,boxes:new Set(),done:new Set(),ms:0}; wind
       for(let u=0;u<=nu;u++)for(let v=0;v<=nv;v++){ const s=u/nu, t=v/nv, x=(P[a]*(1-s)+P[b]*s)*(1-t)+(P[d]*(1-s)+P[c]*s)*t, z=(P[a+2]*(1-s)+P[b+2]*s)*(1-t)+(P[d+2]*(1-s)+P[c+2]*s)*t; tot++;
         if(CLIP.hit(W.L,x,z,E)||W.also&&CLIP.hit(W.also,x,z,E))continue; n++; if(miss)miss(W,x,z,yh); } }
     o.clip={tot,miss:n,lvl:W.L===SOL.down?'down':W.L===SOL.up?'up':'room',y0:W.y0}; return o.clip; };
+  // THE THINGS NOT IN THE BATCH (CLIPX: the park's rocks, oaks, bushes, stalls' wares, logs, pots; the kits' pieces on the street): their own
+  // triangles in the world (a group's worked out once); the corners of those reaching above the knee and starting below the chest, over the street's
+  // ground; one a solid doesn't hold, and the thing gets one box round them all. Grass and flowers are waded through (open)
+  const WADE=/grass|flower|daisy|tulip|rose|lily|sunflower|mushroom/, V=new THREE.Vector3();
+  const tris=t=>{ if(t.P)return t.P; const P=[]; t.obj.updateMatrixWorld(true); t.obj.traverse(m=>{ if(!m.isMesh)return; const a=m.geometry.attributes.position, ix=m.geometry.index;
+      const n=ix?ix.count:a.count; for(let k=0;k<n;k++){ V.fromBufferAttribute(a,ix?ix.getX(k):k).applyMatrix4(m.matrixWorld); P.push(V.x,V.y,V.z); } }); return t.P=P; };
+  const scanX=(t,add)=>{ if(WADE.test(t.name))return t.clip={tot:0,miss:0,open:true}; const P=tris(t); let x0=1e9,x1=-1e9,z0=1e9,z1=-1e9,cx=0,cz=0,top=-1e9;
+    for(let q=0;q<P.length;q+=3){ cx+=P[q]; cz+=P[q+2]; } cx/=P.length/3; cz/=P.length/3; const y0=MODS.bodega.ground(cx,cz), lo=y0+KNEE, hi=y0+CHEST; let tot=0, n=0;
+    for(let q=0;q<P.length;q+=9){ const yl=Math.min(P[q+1],P[q+4],P[q+7]), yh=Math.max(P[q+1],P[q+4],P[q+7]); if(yh<=lo||yl>=hi)continue;
+      for(let v=q;v<q+9;v+=3){ tot++; x0=Math.min(x0,P[v]); x1=Math.max(x1,P[v]); z0=Math.min(z0,P[v+2]); z1=Math.max(z1,P[v+2]); top=Math.max(top,P[v+1]); if(!CLIP.hit(SOL.up,P[v],P[v+2],E))n++; } }
+    if(n&&add){ const p=.02*TILE, b=[x0-p,z0-p,x1+p,z1+p]; SOL.up.push(b); FIX.up.push([b[0],b[1],y0,b[2],b[3],top]); CLIP.boxes.set(b,[t.place+' '+t.name]); CLIP.added++; }
+    return t.clip={tot,miss:n,lvl:'up',y0}; };
   // THE PASS: every thing not yet seen (with its faces built), its misses into cells, the cells into boxes on their floor's list
   CLIP.run=()=>{ if(QS.get('clip')==='0')return;   // (?clip=0: the world as its places made it, to compare)
     const t0=performance.now(), C=new Map();   // (C: a floor's list → its cells → the samples' extent and the top)
     for(const o of OBJS){ if(CLIP.done.has(o)||!o.parts.length)continue; CLIP.done.add(o);
-      const c=scan(o,(W,x,z,top)=>{ let m=C.get(W.L); if(!m)C.set(W.L,m={W,c:new Map()}); const i=Math.floor(x/G), j=Math.floor(z/G), k=key(i,j); let e=m.c.get(k);
-        if(!e)m.c.set(k,e={i,j,x0:x,x1:x,z0:z,z1:z,top}); else{ e.x0=Math.min(e.x0,x); e.x1=Math.max(e.x1,x); e.z0=Math.min(e.z0,z); e.z1=Math.max(e.z1,z); e.top=Math.max(e.top,top); } });
+      const nm=o.id+' '+o.name, c=scan(o,(W,x,z,top)=>{ let m=C.get(W.L); if(!m)C.set(W.L,m={W,c:new Map()}); const i=Math.floor(x/G), j=Math.floor(z/G), k=key(i,j); let e=m.c.get(k);
+        if(!e)m.c.set(k,e={i,j,x0:x,x1:x,z0:z,z1:z,top,of:new Set([nm])}); else{ e.of.add(nm); e.x0=Math.min(e.x0,x); e.x1=Math.max(e.x1,x); e.z0=Math.min(e.z0,z); e.z1=Math.max(e.z1,z); e.top=Math.max(e.top,top); } });
       if(c.miss)CLIP.found.push({id:o.id,name:o.name,lvl:c.lvl,miss:c.miss,of:c.tot}); }   // (what had no solid of its own: a test's report)
+    for(const t of CLIPX){ if(CLIP.done.has(t))continue; CLIP.done.add(t); const c=scanX(t,true); if(c.miss)CLIP.found.push({id:t.place,name:t.name,lvl:'up',miss:c.miss,of:c.tot}); }
     // (the cells joined: each row's runs, then a run under one just like it in the row before carried on into it; a box the samples' own extent)
     for(const [L,{W,c}] of C){ const rows=new Map(); for(const e of c.values()){ let r=rows.get(e.j); if(!r)rows.set(e.j,r=[]); r.push(e); }
       let open=new Map(); const out=[], close=bx=>out.push(bx);
       for(const j of [...rows.keys()].sort((p,q)=>p-q)){ const r=rows.get(j).sort((p,q)=>p.i-q.i), now=new Map();
         for(let s=0;s<r.length;){ let t=s; while(t+1<r.length&&r[t+1].i===r[t].i+1)t++; const k=r[s].i+','+r[t].i, run=r.slice(s,t+1);
-          let bx=open.get(k); if(bx&&bx.j===j-1)open.delete(k); else bx={x0:1e9,x1:-1e9,z0:1e9,z1:-1e9,top:-1e9};
-          for(const e of run){ bx.x0=Math.min(bx.x0,e.x0); bx.x1=Math.max(bx.x1,e.x1); bx.z0=Math.min(bx.z0,e.z0); bx.z1=Math.max(bx.z1,e.z1); bx.top=Math.max(bx.top,e.top); } bx.j=j; now.set(k,bx); s=t+1; }
+          let bx=open.get(k); if(bx&&bx.j===j-1)open.delete(k); else bx={x0:1e9,x1:-1e9,z0:1e9,z1:-1e9,top:-1e9,of:new Set()};
+          for(const e of run){ for(const n of e.of)bx.of.add(n); bx.x0=Math.min(bx.x0,e.x0); bx.x1=Math.max(bx.x1,e.x1); bx.z0=Math.min(bx.z0,e.z0); bx.z1=Math.max(bx.z1,e.z1); bx.top=Math.max(bx.top,e.top); } bx.j=j; now.set(k,bx); s=t+1; }
         for(const bx of open.values())close(bx); open=now; }
       for(const bx of open.values())close(bx);
-      for(const bx of out){ const p=.02*TILE; const b=[bx.x0-p,bx.z0-p,bx.x1+p,bx.z1+p]; L.push(b); CLIP.boxes.add(b); if(W.F)W.F.push([bx.x0-p,bx.z0-p,W.y0,bx.x1+p,bx.z1+p,Math.max(W.y0+.05,bx.top)]); } CLIP.added+=out.length; }
+      for(const bx of out){ const p=.02*TILE; const b=[bx.x0-p,bx.z0-p,bx.x1+p,bx.z1+p]; L.push(b); CLIP.boxes.set(b,[...bx.of]); if(W.F)W.F.push([bx.x0-p,bx.z0-p,W.y0,bx.x1+p,bx.z1+p,Math.max(W.y0+.05,bx.top)]); } CLIP.added+=out.length; }
     CLIP.ms+=performance.now()-t0; CLIP.settle(); };
   // THE CHARACTERS: each one standing (not hidden, not in flight, not on his sheet) checked against his floor's solids and those already
   // checked; one in either moved to the nearest clear spot (rings a twentieth of a tile apart, out to eight tiles) where he may stand (his own
@@ -74,6 +87,7 @@ const CLIP={moved:[],found:[],added:0,boxes:new Set(),done:new Set(),ms:0}; wind
   // A TEST'S LOOK (tests/clipcheck.cjs): every thing whose faces some solid doesn't hold (its samples missed), every character in a solid or in another
   CLIP.audit=()=>{ const things=[], chars=[];
     for(const o of OBJS){ if(!o.parts.length)continue; const c=scan(o,null); if(c.miss)things.push({id:o.id,name:o.name,lvl:c.lvl,miss:c.miss,of:c.tot}); }
+    for(const t of CLIPX){ const c=scanX(t,false); if(c.miss)things.push({id:t.place,name:t.name,lvl:'up',miss:c.miss,of:c.tot}); }
     const live=NPCS.filter(N=>!fly(N));
     for(const N of live){ const st=N.st, b=CLIP.hit(SOL[N.lv]||SOL.up,st.x,st.z,st.R*.98), q=live.find(q=>q!==N&&q.lv===N.lv&&Math.hypot(q.st.x-st.x,q.st.z-st.z)<(q.st.R+st.R)*.98);
       if(b||q)chars.push({key:N.key,at:[+st.x.toFixed(2),+st.z.toFixed(2)],R:+st.R.toFixed(2),solid:b?b.map(v=>+v.toFixed(2)):null,other:q?q.key:null}); }
@@ -87,5 +101,5 @@ const CLIP={moved:[],found:[],added:0,boxes:new Set(),done:new Set(),ms:0}; wind
         while(q.length){ const k=q.pop(), i=k%nx, j=(k-i)/nx; for(const [di,dj] of [[1,0],[-1,0],[0,1],[0,-1]]){ const a=i+di, c=j+dj, x=B.x0+a*S, z=B.z0+c*S, kk=c*nx+a; if(a<0||a>=nx||z>B.z1||c<0||seen.has(kk))continue; seen.add(kk); if(ok(x,z))q.push(kk); else seen.add(-kk-1); } }
         return [...seen].filter(k=>k>=0&&!seen.has(-k-1)); };
       const before=flood(true), after=new Set(flood(false));
-      for(const k of before){ if(after.has(k))continue; const i=k%nx, j=(k-i)/nx, x=B.x0+i*S, z=B.z0+j*S; if(!CLIP.hit(L,x,z,r))closed.push([lv,+x.toFixed(2),+z.toFixed(2)]); } }
-    return {things,chars,closed,found:CLIP.found,checked:{things:OBJS.filter(o=>o.parts.length).length,chars:live.length},added:CLIP.added,moved:CLIP.moved,ms:Math.round(CLIP.ms)}; }; }
+      for(const k of before){ if(after.has(k))continue; const i=k%nx, j=(k-i)/nx, x=B.x0+i*S, z=B.z0+j*S; if(!CLIP.hit(L,x,z,r))closed.push([lv,+x.toFixed(2),+z.toFixed(2),[...new Set([...CLIP.boxes].filter(([b])=>L.includes(b)&&Math.hypot(x-Math.max(b[0],Math.min(b[2],x)),z-Math.max(b[1],Math.min(b[3],z)))<r+S).flatMap(([b,n])=>n))].join('; ')]); } }
+    return {things,chars,closed,found:CLIP.found,checked:{things:OBJS.filter(o=>o.parts.length).length+CLIPX.length,chars:live.length},added:CLIP.added,moved:CLIP.moved,ms:Math.round(CLIP.ms)}; }; }

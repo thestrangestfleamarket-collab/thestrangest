@@ -93,8 +93,9 @@ function makeNPC(D,o){ const N={key:o.key,name:o.name,names:o.names,lv:o.lv||'do
       else{ want=Math.atan2(ex,ez); const turn=Math.abs(((want-st.h+Math.PI*3)%(Math.PI*2))-Math.PI);
         if(turn<.5){ const step=Math.min(d,st.v*dt), nx=st.x+ex/d*step, nz=st.z+ez/d*step;
           // (he waits for you, or for the other, to be out of his way; held up long, he goes somewhere else)
+          // (another in the way, standing or walking, is never walked into; a step taking him further from one he's already touching is let through, so two who meet never stay stuck in each other)
           if(!free(nx,nz,st.R)){ st.to=null; st.wait=.5; }   // (something in his way: somewhere else)
-          else if(Math.hypot(you.x-nx,you.z-nz)<st.R+.35||NPCS.some(q=>q!==N&&q.blocks(nx,nz,st.R))){ if((st.held=(st.held||0)+dt)>2){ st.to=null; st.held=0; st.wait=1; } }
+          else if(Math.hypot(you.x-nx,you.z-nz)<st.R+.35||NPCS.some(q=>q!==N&&q.lv===N.lv&&q.key!=='dragon'&&q.mode!=='hidden'&&q.blocks(nx,nz,st.R)&&q.gap(nx,nz)<q.gap(st.x,st.z))){ if((st.held=(st.held||0)+dt)>2){ st.to=null; st.held=0; st.wait=1; } }
           else{ st.x=nx; st.z=nz; moving=true; st.held=0; } } } }
     else{ if(st.face)want=Math.atan2(st.face.x-st.x,st.face.z-st.z); else if(near)want=Math.atan2(dx,dz); if(!st.hold&&(st.wait-=dt)<=0&&!near)pick(); }
     let dh=((want-st.h+Math.PI*3)%(Math.PI*2))-Math.PI; st.h+=dh*Math.min(1,dt*5);
@@ -102,7 +103,7 @@ function makeNPC(D,o){ const N={key:o.key,name:o.name,names:o.names,lv:o.lv||'do
     // the walk: rocking side to side, a bob each step; standing, a slow breath
     const rock=o.skin?0:moving?Math.sin(st.ph)*o.rock:Math.sin(st.ph)*.02, bob=o.skin?0:moving?Math.abs(Math.sin(st.ph))*o.bob:0;   // (a rigged one walks and breathes with his own bones)
     g.position.set(st.x,ground(st.x,st.z)+bob,st.z); g.rotation.set(0,st.h,0); body.rotation.set(0,0,rock); if(!o.skin)body.scale.y=s*ZU*24/TILE*(moving?1:1+Math.sin(st.ph)*.012); if(o.anim)o.anim(dt,moving,st,s); };
-  N.blocks=(x,z,R)=>block(x,z,R);
+  N.blocks=(x,z,R)=>block(x,z,R); N.gap=(x,z)=>Math.hypot(x-st.x,z-st.z);
   // push you out of him (collide's last step)
   N.push=p=>{ const dx=p.x-st.x, dz=p.z-st.z, d=Math.hypot(dx,dz), R=st.R+.3; if(d<R&&d>1e-4){ p.x=st.x+dx/d*R; p.z=st.z+dz/d*R; } };
   // SELF: his depth from his light each frame (only at that level), the camera looking down the light at him

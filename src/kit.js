@@ -17,5 +17,6 @@ const KIT={data:KITD,geos:{},things:[]};
     const gy=o.ground?o.ground(x,z):MODS.bodega.ground(x,z); g.position.set(x,gy+(o.lift||0),z); (o.group||MAPG.bodega).add(g);
     if(o.solid){ const hw=(bb.max.x-bb.min.x)*s/2*(o.solid===true?.8:o.solid), hd=(bb.max.z-bb.min.z)*s/2*(o.solid===true?.8:o.solid), c=Math.abs(Math.cos(g.rotation.y)), sn=Math.abs(Math.sin(g.rotation.y)), ex=hw*c+hd*sn, ez=hw*sn+hd*c;
       SOL.up.push([x-ex,z-ez,x+ex,z+ez]); FIX.up.push([x-ex,z-ez,gy,x+ex,z+ez,gy+tall*s*YS]); }
+    CLIPX.push({place:'kit',name,obj:g});   // (its own faces, for the hitboxes' pass: clip.js)
     if(o.name)KIT.things.push({name:o.name,obj:g,reach:1.2,tall:tall*s*YS,act:()=>{}});   // (named: a double click walks up to it; joined to the menu's list once the page has started: build.py)
     return g; }; }

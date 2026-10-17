@@ -8,7 +8,7 @@ const VIT={hp:1,sta:1,out:0,tired:false,fight:0};
 // them up five seconds; running alone doesn't)
 VIT.inFight=t=>{ VIT.fight=Math.max(VIT.fight,t||5); };
 { const css=document.createElement('style'); css.textContent=`#vit{position:fixed;left:12px;bottom:12px;width:150px;display:grid;gap:4px;z-index:5;pointer-events:none}
-    #vit div{height:7px;background:#0b0d13cc;border:1px solid #2a3040} #vit i{display:block;height:100%}`; document.head.appendChild(css);
+    #vit[hidden]{display:none} #vit div{height:7px;background:#0b0d13cc;border:1px solid #2a3040} #vit i{display:block;height:100%}`; document.head.appendChild(css);
   const B=document.createElement('div'); B.id='vit'; B.hidden=true; B.innerHTML='<div><i id="vhp" style="background:#c84a3a"></i></div><div><i id="vst" style="background:#d8b84a"></i></div>'; document.body.appendChild(B);
   const hpI=B.querySelector('#vhp'), stI=B.querySelector('#vst'); let lx=pos.x, lz=pos.z, seen=0, rest=0;
   VIT.hurt=(d)=>{ if(VIT.out>0)return; VIT.hp=Math.max(0,VIT.hp-d); VIT.inFight(5); if(VIT.hp<=0){ VIT.out=5.5; trip=true; } };

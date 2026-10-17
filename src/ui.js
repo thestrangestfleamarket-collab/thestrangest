@@ -94,7 +94,7 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
   const HEAD=1.5/.84*TILE, EYE=1.62/.84*TILE, LOW=.9/.84*TILE;   // (his head's height, his eyes', three feet)
   UI.clampV=v=>UI.view==='first'?Math.max(-1.2,Math.min(1.3,v)):UI.view==='third'||UI.view==='follow'?Math.max(-.6,Math.min(1.5,v)):clampP(v);
   UI.setView=v=>{ UI.view=v; UI.persp=v==='third'||v==='first'||v==='follow'; if(UI.freeCam&&UI.persp)setFree(false);
-    if(v==='iso'){ yawTo+=((((-Math.PI/4-yawTo)%(2*Math.PI))+3*Math.PI)%(2*Math.PI))-Math.PI; pitchTo=Math.PI/6; ppuTo=PPU*2.2; UI.off.set(0,0,0); zAt=null; }   // (owner, 17 Oct 2026, his picture: "this should always be the angle when you switch to isometric": the counter up to his left, 2.2 times in; Q / E turn it from there)
+    if(v==='iso'){ yawTo+=((((Math.PI*3/4-yawTo)%(2*Math.PI))+3*Math.PI)%(2*Math.PI))-Math.PI; pitchTo=Math.PI/6; ppuTo=PPU*1.5; UI.off.set(0,0,0); zAt=null; }   // (owner, 17 Oct 2026, his picture of the dojo: "i want the game to always start you this distance and at this isometric angle": the half turn from the angle before, 1.5 times in (0.7 of the 2.2 before); Q / E turn it from there)
     if(v==='follow'){ UI.dist=4*TILE; pitchTo=.2; }   // (owner, 17 Oct 2026, his picture: "when you switch to over shoulder view it should always be at this zoom and angle (you can change once you switch to it)")
     if(v==='first')pitchTo=.05; if(v==='third')pitchTo=.3; if(!UI.persp)pitchTo=clampP(pitchTo); try{ localStorage.setItem('market-view',v); }catch(e){} };
   // BEHIND HIM (owner, 17 Oct 2026: "a view that locks on behind, 3rd person view, and autorotates with player"): the third person's camera, turned
@@ -107,7 +107,14 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
   UI.view3b=a=>{ W3.group.visible=UI.view!=='first'; if(!UI.persp)return; const sk=W3.SZ||1;
     if(UI.view==='first'){ if(!(W3.eyeAt&&W3.eyeAt(cam.position))){ cam.position.set(pos.x,py+EYE*sk,pos.z); cam.position.addScaledVector(new THREE.Vector3(-Math.sin(a),0,-Math.cos(a)),.12*TILE); } cam.updateMatrixWorld(); return; }   // (from his own eyes, where his head is this moment: walker3d.js's W3.eyeAt)
     const T=new THREE.Vector3(pos.x,py+HEAD*sk,pos.z), F=new THREE.Vector3(Math.sin(a)*Math.cos(pitch),Math.sin(pitch),Math.cos(a)*Math.cos(pitch));
-    cam.position.copy(T).addScaledVector(F,UI.dist); const g=groundY(cam.position.x,cam.position.z)+LOW; if(cam.position.y<g)cam.position.y=g;   // (never under three feet)
+    cam.position.copy(T).addScaledVector(F,UI.dist);
+    if(UI.view==='follow'){ const k=.45/.84*TILE*sk/Math.hypot(F.x,F.z||1e-6); tv.set(F.z*k,.1/.84*TILE*sk,-F.x*k); cam.position.add(tv); T.add(tv); }   // (over his right shoulder: owner, 17 Oct 2026, "v wlil take you in 3rd person view over their shoulders")
+    // (never behind a wall: walking the line from his head out to the camera through the walls he can't walk through, the camera comes in to just before the first)
+    { const ax=pos.x, az=pos.z, bx=cam.position.x, bz=cam.position.z, L=Math.hypot(bx-ax,bz-az), m=.18*TILE;
+      if(L>1e-3&&typeof solids!=='undefined'){ const x0=Math.min(ax,bx)-m, x1=Math.max(ax,bx)+m, z0=Math.min(az,bz)-m, z1=Math.max(az,bz)+m, near=solids.filter(b=>b[2]>x0&&b[0]<x1&&b[3]>z0&&b[1]<z1);
+        if(near.length){ const n=Math.ceil(L/(.05*TILE)), A=tv.set(pos.x,py+HEAD*sk,pos.z).clone(); for(let i=1;i<=n;i++){ const u=i/n, x=ax+(bx-ax)*u, z=az+(bz-az)*u;
+          if(near.some(b=>x>b[0]-m&&x<b[2]+m&&z>b[1]-m&&z<b[3]+m)){ cam.position.lerpVectors(A,cam.position,Math.max(.04,(i-1)/n)); break; } } } } }
+    const g=groundY(cam.position.x,cam.position.z)+LOW; if(cam.position.y<g)cam.position.y=g;   // (never under three feet)
     cam.lookAt(T); cam.updateMatrixWorld(); };
   UI.setView(new URLSearchParams(location.search).get('view')||'iso');   // (owner, 17 Oct 2026, his picture: "start the game always in this view 1st": ISOMETRIC, every time; ?view= for a test)
   UI.home=()=>{ UI.off.set(0,0,0); zAt=null; if(UI.freeCam)setFree(false); };

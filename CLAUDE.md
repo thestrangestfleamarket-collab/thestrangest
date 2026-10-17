@@ -146,6 +146,15 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
   hollow, the window real glass over three lit shelves of cans (each can its own box, two rows deep), the button panel and buttons raised, the coin
   slot, the pickup flap a real dark hollow under a hanging flap, a lamp in the glass. In a row east of the dojo's door against its front with the
   kit's teal machine (west of the door the bay window juts out), their windows to the street, solid (`STREET` in `bodega.js`).
+- **YOUR LOOKS tidied, the hair alive** (owner, 17 Oct 2026: "have all the colors for things to change in a dropdown not always on screen. add
+  more levels of depth and steps to the scroll bar option. look through hairstyles from multiple angles and clean up, make more realistic, make
+  sure they have real physics"): the six colour rows fold under a COLOURS dropdown (`looks.js`); SHADE STEPS 2 to 12 and SHADOW DEPTH .02 to .98
+  in finer steps (`W3.setShade`, both panels). **The hair** (`walker3d.js`): the long hair a mane over the ears, narrowing as it falls, in locks,
+  its ends uneven; the ponytail a full bundle from its knot, clear of the cap, a tuft at its end; the bun out where it shows, twisted. **Real
+  physics**: the long hair's fall and the ponytail's tail are pieces hung from a pivot on the head and swung each frame as a pendulum in the
+  world (`swing`: gravity, his motion through the pivot, the hair's stiffness back to its hang, drag; never past its most, into his back); a
+  steady walk carries them along with no trail, a start, stop, turn or the bob of a step swings them; at rest they settle and stop. Looked at
+  from four angles, walking and stopped: `tests/hairshot.cjs <out> 0,1,2,3,4`.
 - **The mushroom seller** (owner, 17 Oct 2026, his picture: a felted skeleton in a mottled rust robe, long tan hair, a hat crowned with mushrooms,
   a rope strap and woven bag, a tray of mushrooms held out; "add this is a 3d character in the game"; `src/npc-mushroom.js`): built in code from plain
   shapes (no model file), one mesh of about 2,500 triangles, through `makeNPC` like the rest (lamp-lit, the clothes' shadows, SELF; his sockets, nose
@@ -326,7 +335,7 @@ the owner's call, and merging publishes). The artifact link above is the quick w
   `skin-bake.py`, `skin-bones.py`, `item-bake.py`, `mesh-cut.py` the street's characters and items: `trimesh`, `scipy`, `scikit-image` too;
   `figures-bake.py` the six figures, `forest-bake.py` the park's pack, `props-bake.py` still things from .glb or .obj with a palette, `creatures-bake.py` rigged ones with their clips; the packs' .fbx made .glb with npm's fbx2gltf).
 - **Screenshots of other characters never show his avatar** (owner, 17 Oct 2026: "stop showing my avatar in screenshots of other characters"): a test looking at a character opens the page with `?hideme=1` (the Walker not drawn, `W3.hideMe` in `walker3d.js`).
-- `tests/`: Playwright screenshots (`mapshot.cjs`: the street; `maptour.cjs`: platform, pool, bodega, stairs, a walk down; `skelshot.cjs`: the skeletons, close; `mushshot.cjs`: a character built in parts (the mushroom seller; another with its debug hook's name as the last argument), close, by day or night; `sheet.cjs <key>`: a character's sheet (black void, close, limbs spread, full res: `?sheet=key&fullres=8`; `?npcat=key,field` stands one out on the land); `streetshot.cjs` the
+- `tests/`: Playwright screenshots (`mapshot.cjs`: the street; `maptour.cjs`: platform, pool, bodega, stairs, a walk down; `skelshot.cjs`: the skeletons, close; `hairshot.cjs`: his hairstyles from four angles, walking and stopped; `mushshot.cjs`: a character built in parts (the mushroom seller; another with its debug hook's name as the last argument), close, by day or night; `sheet.cjs <key>`: a character's sheet (black void, close, limbs spread, full res: `?sheet=key&fullres=8`; `?npcat=key,field` stands one out on the land); `streetshot.cjs` the
   street's characters over a few moments; `streetact.cjs` one of them told each move, close up; `figshot.cjs` the six figures over a few moments; `figact.cjs` one told each move; `parkshot.cjs` the park's gate, round and path; `creatshot.cjs` the creatures by day and night; `poolshot.cjs` the boats). The page takes
   `?at=x,z[,height]` to start somewhere, for tests. In a cloud container rendering is software (slow, ~20 fps): run them in the background.
 

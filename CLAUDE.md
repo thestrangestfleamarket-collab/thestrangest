@@ -377,6 +377,16 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
 - **Every room a button** (owner, 17 Oct 2026: "make sure every room and location on map has a button to jump there"; the menu's MAP, `ui.js`): PLACES, then ROOMS (the shop and the back room, the gym, the hallway, the lobby, the office, the dojo, each floor of the apartment house: its only way up now, the top of the subway stairs), then STORED; a jump puts the view back on him.
 
 - **Pixel art, not 3D, on the street** (owner, 17 Oct 2026, of the kit street light's smooth smeared foot: "i dont want things to look so 3d and glitchy, more pixel art vibes"): the street lights and the trash cans built from flat-coloured blocks in `dress.js` (one draw), the kit's models no longer on the street. **Every lamp's pool**: a stepped warm disc on the ground under each street light and lamp post at night ("some dont glow": only 8 lamps light for real). **Clouds never over the street**: the clouds on the camera's side of you are left out (`WX.cloudCut`, weather.js).
+- **The city's spine** (owner, 17 Oct 2026, after the gameplan for a world "fully functional ... police, fire, government, mail and delivery handled
+  by bots": "1 - minimal on map only bare minimum required"; `src/city.js`, `CITY`): the four things every service will need, at their least,
+  nothing drawn. ADDRESSES (`CITY.places()`: each place with the spot a tile before its door: the bodega, the apartments' lobby, the apartment
+  house, the dojo, the park's gate, the castle's gatehouse, the top of the subway stairs, the platform; the stored rooms as stacked, no way on
+  foot). WAYS (`CITY.route(lv,a,b)`: A* over half-tile cells of the level's ground, each cell tested with the hitboxes' own test as first looked
+  at, the found path pulled straight; some 2-20 ms a route). WALKING (`CITY.send(N,spot,{v,then})`: a character without a mind of his own walked
+  along a route by the rig's own steps; out of sight, not drawn, he's moved along it all the same; held up again and again, the way found
+  afresh). THE BOARD (`CITY.post(kind,place|spot,data)`, `CITY.take(kind,by,from)` the nearest open job, `CITY.done`). THE SCHEDULE
+  (`CITY.at(hour,fn)`, each day as the clock passes it). Doors stay doorways. `?errand=villager_m,bodega` (or `CITY.errand(key,place,tiles/s)`)
+  sends a pawn to a door as a look. Checked by `tests/worldcheck.cjs`. Next, on this: residents with routines, then mail and delivery (the plan).
 - **The map editor** (owner, 17 Oct 2026: "build a map editor that allows me to move buildings and land around easily"; `src/mapedit.js`): Shift+M
   (or MAP EDITOR in the menu's MAP tab): the Market from above (a picture of it as built, taken as it opens), each place a labelled box over it:
   drag one to move it (half a tile at a time), the arrows or the arrow keys a tile (Shift five), the park's and the land's edges dragged to size
@@ -418,6 +428,7 @@ the owner's call, and merging publishes). The artifact link above is the quick w
     `bodbuild.js` (built in 3D). `batch.js`: every still face packed into one texture and a few meshes (fast).
   - `musician.js` (the guitarist, and `musBody` / `figureMesh` for every Walker-built musician), `pianist.js`, `singer.js`, `drummer.js`: the bar's
     musicians; `bandstand.js`: their turns on the stage.
+  - `city.js`: the city's spine (addresses, routes over the ground, errands walked, the job board, the clock's schedule; nothing drawn).
   - `npc-map.js`: the goldfish on the street and the bear wandering the platform (and `makeNPC`, every character's maker). `npc-skel.js`: the four skeletons on the far sidewalk, rigged and animated, and the gold skeleton (the Minion gilded).
   - `npc-street.js`: the cyborg and the teddy on the street (bones, moves, bodies in Rapier, minds). `npc-rigged.js`: the six figures made a second way (kept, not built: `npc-figures.js` is used).
   - `npc-dragon.js`: the Dragon on the road. `kit.js` + `dress.js`: the kits' pieces and the few on the street. `apts.js`: the apartment house (in the

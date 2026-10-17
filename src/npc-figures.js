@@ -97,7 +97,7 @@ const FIGFX={};   // (the figures' effects' tick, for the frame loop)
   for(const [key,name,metres,[tx0,tz0],speed,eyeC,stance,own,X] of CH){ const tx=GX[gi], tz=GW, k0=gi++; const M=S[key], rig=rigOf(M.rig), pose=Poser(M.rig,rig,stance), BN={}; rig.bones.forEach(B=>BN[B.name]=B);
     const st2={t:Math.random()*10,ph:Math.random()*6,move:null,wait:3+Math.random()*4,waved:-9,look:0,lookTo:0,vy:0,lift:0,ember:0,tip:null};
     const N=makeNPC(null,{key,name,names:M.parts,lv:'up',group:'bodega',geo:geomOf(M),skin:rig,tall:M.tall,eye:M.eye,eyeC,rank:M.parts.map(p=>/Cape|Cloth|coat|Hat|Veil/.test(p)?2:0),
-      metres,x:BOD.XS(tx),z:BOD.ZS(tz),lane:LANE,free,brain:(dt,you,st)=>{ st.to=null; st.hold=true; st.x=BOD.XS(tx); st.z=BOD.ZS(tz); st.face={x:st.x,z:st.z+5*TILE}; },ground:(x,z)=>MODS.bodega.ground(x,z),radius:.28,speed,stride:0,rock:0,bob:0,
+      metres,x:BOD.X(tx),z:BOD.Z(tz),lane:LANE,free,brain:(dt,you,st)=>{ st.to=null; st.hold=true; st.x=BOD.X(tx); st.z=BOD.Z(tz);   /* (the building's own scale, BLDK: the door's tiles are its) */ st.face={x:st.x,z:st.z+5*TILE}; },ground:(x,z)=>MODS.bodega.ground(x,z),radius:.28,speed,stride:0,rock:0,bob:0,
       anim:(dt,moving,st,sc)=>{ const s2=st2; s2.t+=dt; const run=moving&&st.v>1.2*TILE; s2.ph+=dt*(moving?Math.PI*st.v/(.45*sc):0);   // (a step .45 of his metres; a cycle two steps)
         // what he does standing: a wave back when you wave near, else now and then his own thing, or a hop
         const you=pos, dx=you.x-st.x, dz=you.z-st.z, near=Math.hypot(dx,dz)<3.5*TILE;

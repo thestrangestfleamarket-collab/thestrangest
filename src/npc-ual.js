@@ -18,10 +18,10 @@
   const WALK=1.35, JOG=2.6, SPRINT=5;   // (how far each clip carries him a second at its own pace, in metres: the clips are in place, so his pace sets the clip's)
   const rig=rigOf(D.rig), CL=clipsOf(), mixer=new THREE.AnimationMixer(rig.bones[0]), A={}, act=n=>A[n]||(A[n]=mixer.clipAction(CL[n])); let cur=null;
   const HOLD=QS.get('ualclip');
-  const N=makeNPC(null,{key:'ual',name:'MANNEQUIN',names:D.mesh.parts,lv:'up',group:'bodega',geo:geomOf(D.mesh),skin:rig,tall:D.tall,rank:D.mesh.parts.map(()=>0),metres:1.83,x:BOD.XS(72),z:BOD.ZS(-70),lane:STLANE,free:stfree,ground:(x,z)=>MODS.bodega.ground(x,z),radius:.3,speed:.6,stride:0,rock:0,bob:0,
+  const N=makeNPC(null,{key:'ual',name:'MANNEQUIN',names:D.mesh.parts,lv:'up',group:'bodega',geo:geomOf(D.mesh),skin:rig,tall:D.tall,rank:D.mesh.parts.map(()=>0),metres:1.83,x:BOD.XS(66),z:BOD.ZS(-68.5),lane:STLANE,free:stfree,ground:(x,z)=>MODS.bodega.ground(x,z),radius:.3,speed:.6,stride:0,rock:0,bob:0,
     brain:HOLD?(dt,you,st)=>{ st.to=null; st.hold=true; }:undefined,
     anim:(dt,moving,st,sc)=>{ let want, ts=1;
-      if(N.sheet||HOLD==='T')want='A_TPose'; else if(HOLD)want=HOLD; else{ const run=moving&&st.v>1.2*TILE, sprint=moving&&st.v>2.6*TILE; want=moving?(sprint?'Sprint_Loop':run?'Jog_Fwd_Loop':'Walk_Loop'):'Idle_Loop'; if(moving)ts=Math.max(.6,st.v/((sprint?SPRINT:run?JOG:WALK)*sc)); }
+      if(HOLD&&HOLD!=='T')want=HOLD; else if(N.sheet||HOLD==='T')want='A_TPose'; else{ const run=moving&&st.v>1.2*TILE, sprint=moving&&st.v>2.6*TILE; want=moving?(sprint?'Sprint_Loop':run?'Jog_Fwd_Loop':'Walk_Loop'):'Idle_Loop'; if(moving)ts=Math.max(.6,st.v/((sprint?SPRINT:run?JOG:WALK)*sc)); }
       if(want!==cur){ const a=act(want); a.reset().setLoop(THREE.LoopRepeat,Infinity).fadeIn(.2).play(); if(cur)act(cur).fadeOut(.2); cur=want; }
-      act(cur).timeScale=N.sheet?0:ts; mixer.update(dt); }});
+      act(cur).timeScale=N.sheet&&!HOLD?0:ts; mixer.update(dt); }});
   N.mixer=mixer; window.UALN=N; window.UALCAM=(k=1.5)=>{ UI.setFree(true); UI.camT.set(N.st.x,N.g.position.y+N.H*.5,N.st.z); ppu=ppuTo=PPU*k; }; /* (a test's look: the free camera on his middle) */ window.UALDBG=()=>({key:N.key,x:+N.st.x.toFixed(2),z:+N.st.z.toFixed(2),y:+N.g.position.y.toFixed(2),to:!!N.st.to,vis:N.g.visible,clip:cur,free:stfree(N.st.x+.3,N.st.z,N.st.R),blk:NPCS.filter(q=>q!==N&&q.blocks(N.st.x+.3,N.st.z,N.st.R)).map(q=>q.key),you:[+pos.x.toFixed(1),+pos.z.toFixed(1)],R:+N.st.R.toFixed(2),v:+N.st.v.toFixed(2)}); }

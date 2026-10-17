@@ -1,6 +1,10 @@
-// THE LIGHT IN STEPS (owner, 17 Oct 2026, of a lamp's smooth shine on the bodega's counter: "i dont want the shine to look so, it doesnt match the
-// pixel art style"): every lamp's light on the world falls off in hard steps (two a halving), not a smooth glow; the open air's light as it was
-THREE.ShaderLib.lambert.fragmentShader=THREE.ShaderLib.lambert.fragmentShader.replace('#include <lights_fragment_end>','#include <lights_fragment_end>\n { vec3 dd=reflectedLight.directDiffuse; float L=max(dd.r,max(dd.g,dd.b)); if(L>.002){ float q=exp2(floor(log2(L)*2.+.5)/2.); reflectedLight.directDiffuse=dd*(q/L); } }');
+// THE OLD GAME'S LOOK ON THE WORLD (owner, 17 Oct 2026: "look at the actual old game code and see how it was done", then "go all"; its recipe,
+// docs/OLD-LOOK.md): (1) every face its own fixed shade by the way it faces, whatever the light: a top as its colour, a side facing along x
+// x0.62, along z x0.8 (the old game's rasterBox); (2) the light it gets multiplied in, and its strength cut to 24 even steps (on the
+// brightest of its three colours, so its hue stays; no dither), so a lamp's pool falls off in clear bands, not a smooth glow
+THREE.ShaderLib.lambert.fragmentShader=THREE.ShaderLib.lambert.fragmentShader
+  .replace('#include <map_fragment>','#include <map_fragment>\n { vec3 wn=abs((vec4(normalize(vNormal),0.)*viewMatrix).xyz); diffuseColor.rgb*=wn.y>=max(wn.x,wn.z)?1.:wn.x>wn.z?.62:.8; }')
+  .replace('#include <lights_fragment_end>','#include <lights_fragment_end>\n { vec3 al=max(diffuseColor.rgb,vec3(.02)); vec3 L=(reflectedLight.directDiffuse+reflectedLight.indirectDiffuse)/al*3.14159; float m=max(L.r,max(L.g,L.b)); if(m>.001){ float q=min(floor(min(m,1.7)*24.+.5)/24.,1.7)/m; reflectedLight.directDiffuse*=q; reflectedLight.indirectDiffuse*=q; } }');
 // ---- THE MAP (owner, 16 Oct 2026: "a small map with only the subway, pool and bodega (next to each other for now)", "build the exit to the
 // subway (floor level) and subway underneath"): one street; the bodega and the pool room side by side on its sidewalk; the West End's
 // subway station under the lot west of the bodega, its stairs down from the sidewalk into the station's exit tunnel. Two levels: the street's

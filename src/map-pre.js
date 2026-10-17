@@ -6,7 +6,7 @@
 // up into grain instead of a clean ring)
 const DITH=+(new URLSearchParams(location.search).get('dith')||0);
 if(DITH){ THREE.ShaderLib.lambert.vertexShader='varying vec3 vWP;\n'+THREE.ShaderLib.lambert.vertexShader.replace('#include <project_vertex>','#include <project_vertex>\n vWP=(modelMatrix*vec4(transformed,1.)).xyz;');
-  THREE.ShaderLib.lambert.fragmentShader='varying vec3 vWP;\n'+THREE.ShaderLib.lambert.fragmentShader.replace('#include <lights_fragment_end>','#include <lights_fragment_end>\n vec3 dc=floor(vWP*'+(24/(33.9/30)).toFixed(3)+'+.001); float dh=fract(sin(dot(dc,vec3(12.9898,78.233,37.719)))*43758.5453);'); }
+  THREE.ShaderLib.lambert.fragmentShader='varying vec3 vWP;\n'+THREE.ShaderLib.lambert.fragmentShader.replace('#include <lights_fragment_begin>','#include <lights_fragment_begin>\n vec3 dc=floor(vWP*'+(24/(33.9/30)).toFixed(3)+'+.001); float dh=fract(sin(dot(dc,vec3(12.9898,78.233,37.719)))*43758.5453);'); }
 THREE.ShaderLib.lambert.fragmentShader=THREE.ShaderLib.lambert.fragmentShader
   .replace('#include <map_fragment>','#include <map_fragment>\n { vec3 wn=abs((vec4(normalize(vNormal),0.)*viewMatrix).xyz); diffuseColor.rgb*=wn.y>=max(wn.x,wn.z)?1.:wn.x>wn.z?.62:.8; }')
   .replace('#include <lights_fragment_end>','#include <lights_fragment_end>\n { vec3 al=max(diffuseColor.rgb,vec3(.02)); vec3 L=(reflectedLight.directDiffuse+reflectedLight.indirectDiffuse)/al*3.14159; float m=max(L.r,max(L.g,L.b)); if(m>.001){ float q=min(floor(min(m,1.7)*'+(DITH?DITH+'.+dh':'24.+.5')+')/'+(DITH||24)+'.,1.7)/m; reflectedLight.directDiffuse*=q; reflectedLight.indirectDiffuse*=q; } }');

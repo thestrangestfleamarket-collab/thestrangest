@@ -52,7 +52,7 @@ kit+='BOD.STOREK=STOREK;\n'
 # gatehouse turned to stand out from the wall toward the street (the game's stood out toward +y)
 kc=rq(rd(S+'23-w-dungeon-3-castle-2-pieces.js'),"KMK.gate=(gx,wy,H)=>{ PNAME='gatehouse'; const y0=wy-.5, y1=wy+1.1, w=.65, sd=4800, ps=[];","KMK.gate=(gx,wy,H)=>{ PNAME='gatehouse'; const y0=wy-1.1, y1=wy+.5, w=.65, sd=4800, ps=[];")
 kc=rq(kc,"B.push(sided({x0:gx-w,y0:wy+.36,x1:gx+w,y1:wy+.46,z0:84,z1:104,","B.push(sided({x0:gx-w,y0:wy-.46,x1:gx+w,y1:wy-.36,z0:84,z1:104,")
-kit+='\n// ==== the dungeon and the castle (the game\'s, word for word but the gatehouse\'s side)\n{\n{ const i=LBLD.findIndex(b=>b.id===\'ldungeon\'); if(i>=0)LBLD.splice(i,1); }\nLBLD.push({id:\'ldungeon\',...CASTLE.hall,st:1});\n'+rd(S+'23-w-dungeon-1-room.js')+'\n'+rd(S+'23-w-dungeon-3-castle-1-stone.js')+'\n'+kc+'\n'+rd(S+'23-w-dungeon-2-things.js')+'\nBOD.KC={KMK,KPP,DGN,DGP,LAMPS,dungeonWall,dungeonFloorCol,castleArch,KARCH};\n}\n'
+kit+='\n// ==== the dungeon and the castle (the game\'s, word for word but the gatehouse\'s side)\n{\nconst LBLD=[{id:\'ldungeon\',...CASTLE.hall,st:1}], CATALOG={}, CAT_INFO={}, CAT_DEPTS=[], LAMPS=[];\n'+rd(S+'23-w-dungeon-1-room.js')+'\n'+rd(S+'23-w-dungeon-3-castle-1-stone.js')+'\n'+kc+'\n'+rd(S+'23-w-dungeon-2-things.js')+'\nBOD.KC={KMK,KPP,DGN,DGP,LAMPS,CATALOG,dungeonWall,dungeonFloorCol,castleArch,KARCH};\n}\n'
 bod=rd('src/bodega.js')
 i=bod.index('const BOD={'); bod=bod[i:]
 bod=rq(bod,"const BOD={meshes:[], walls:{}, lamps:[]};","BOD={meshes:[], walls:{}, lamps:[]};").replace('/*GAMEKIT*/',kit).replace('/*GOODS*/',rd('src/goods-defs.js'))

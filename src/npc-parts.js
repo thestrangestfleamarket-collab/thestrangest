@@ -13,16 +13,20 @@ const PARTSNPC={};
   // a limb: a tapered cylinder from a to b (radii r0 at a, r1 at b)
   const limb=(a,b,r0,r1,col,seg=8)=>{ const d=V.set(b[0]-a[0],b[1]-a[1],b[2]-a[2]), L=d.length(); d.normalize(); const g=new THREE.CylinderGeometry(r1,r0,L,seg).toNonIndexed(); g.translate(0,L/2,0); Q.setFromUnitVectors(UP,d); g.applyQuaternion(Q); g.translate(a[0],a[1],a[2]); return shape(g,col); };
   const sph=(r,w=8,h=6)=>new THREE.SphereGeometry(r,w,h), cyl=(r0,r1,h,s=8)=>new THREE.CylinderGeometry(r0,r1,h,s), box=(x,y,z)=>new THREE.BoxGeometry(x,y,z), torus=(r,t,a=6,b=16)=>new THREE.TorusGeometry(r,t,a,b);
+  // rounded shapes (owner, 17 Oct 2026: "not so blocky, more natural shape, rounded"): a capsule (along y), an open curved shell (a cylinder's side
+  // from angle t0 round tl: a jacket's back, a collar; angle 0 at his front), a soft clump (an ellipsoid)
+  const capsule=(r,l,cs=4,rs=10)=>new THREE.CapsuleGeometry(r,l,cs,rs), shell=(r0,r1,h,seg,t0,tl)=>new THREE.CylinderGeometry(r0,r1,h,seg,1,true,t0,tl), blob=(rx,ry,rz,w=12,h=8)=>{ const g=new THREE.SphereGeometry(1,w,h); g.scale(rx,ry,rz); return g; };
   // a value noise, for a cloth's mottling
   const hsh=(x,y,z)=>{ const s=Math.sin(x*127.1+y*311.7+z*74.7)*43758.5453; return s-Math.floor(s); };
   const noise=(x,y,z,k=7)=>{ x*=k; y*=k; z*=k; const x0=Math.floor(x), y0=Math.floor(y), z0=Math.floor(z), fx=x-x0, fy=y-y0, fz=z-z0, s=t=>t*t*(3-2*t), l=(a,b,t)=>a+(b-a)*t, c=(dx,dy,dz)=>hsh(x0+dx,y0+dy,z0+dz);
     return l(l(l(c(0,0,0),c(1,0,0),s(fx)),l(c(0,1,0),c(1,1,0),s(fx)),s(fy)),l(l(c(0,0,1),c(1,0,1),s(fx)),l(c(0,1,1),c(1,1,1),s(fx)),s(fy)),s(fz)); };
-  PARTSNPC.T={shape,limb,sph,cyl,box,torus,noise,D2R};
+  PARTSNPC.T={shape,limb,sph,cyl,box,torus,capsule,shell,blob,noise,D2R};
   // the character: parts [{name, rank, of:[shape,...]}], and makeNPC's options (key, name, metres, where he walks, his pace...)
   PARTSNPC.make=(parts,o)=>{ let n=0; for(const p of parts)for(const c of p.of)n+=c.P.length/3;
     const P=new Float32Array(n*3), C=new Float32Array(n*3), R=new Float32Array(n), ranges={}; let at=0;
-    parts.forEach((p,pi)=>{ const start=at; for(const c of p.of){ P.set(c.P,at*3); C.set(c.C,at*3); at+=c.P.length/3; } R.fill(pi,start,at); ranges[p.name]={start,count:at-start}; });
-    const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.BufferAttribute(P,3)); geo.setAttribute('color',new THREE.BufferAttribute(C,3)); geo.setAttribute('reg',new THREE.BufferAttribute(R,1));
+    const F=new Float32Array(n);
+    parts.forEach((p,pi)=>{ const start=at; for(const c of p.of){ P.set(c.P,at*3); C.set(c.C,at*3); at+=c.P.length/3; } R.fill(pi,start,at); if(p.fab)F.fill(p.fab,start,at); ranges[p.name]={start,count:at-start}; });   // (p.fab: the cloth, 1 denim: the twill woven in the shader, npc-map.js)
+    const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.BufferAttribute(P,3)); geo.setAttribute('color',new THREE.BufferAttribute(C,3)); geo.setAttribute('reg',new THREE.BufferAttribute(R,1)); geo.setAttribute('fab',new THREE.BufferAttribute(F,1));
     const N=makeNPC(null,Object.assign({names:parts.map(p=>p.name),rank:parts.map(p=>p.rank||0),geo},o));
     const base=Float32Array.from(geo.attributes.position.array), baseC=Float32Array.from(C);   // (as made, after makeNPC set his feet on the ground)
     N.parts=ranges; N.tris=n/3;

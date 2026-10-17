@@ -96,7 +96,7 @@ window.MAPDBG=()=>({LVL,cut:MODS.stairCut.constant,vis:Object.fromEntries(Object
 // as the view can reach, the game's own grass (its painter, grassCol: noise cut into tones, tufts at hashed spots), a hair under the street's
 // ground so the street lies on it; open where the ground goes down (the road, the subway's stairs, the pool's basin). One sheet, one texture
 // (thirty-two tiles of grass, mirrored at its edges so it never shows a seam), lit and shadowed as the street is; shown with the street's level
-{ const K=32, N=K*24, c=document.createElement('canvas'); c.width=c.height=N; const g=c.getContext('2d'), im=g.createImageData(N,N), GC=BOD.g.grassCol;
+{ const K=32, N=K*24, c=document.createElement('canvas'); c.width=c.height=N; const g=c.getContext('2d'), im=g.createImageData(N,N), GC=BOD.g.lawnCol;   // (owner, 17 Oct 2026: "the same grass in park to extend everywhere there isnt something else": the park's lawn painter, not the game's grainy grass)
   for(let j=0;j<N;j++)for(let i=0;i<N;i++){ const v=GC((i+.5)/24+200,(j+.5)/24+200), k=(j*N+i)*4; im.data[k]=v[0]; im.data[k+1]=v[1]; im.data[k+2]=v[2]; im.data[k+3]=255; }
   g.putImageData(im,0,0); const t=new THREE.CanvasTexture(c); t.magFilter=t.minFilter=THREE.NearestFilter; t.generateMipmaps=false; t.colorSpace=THREE.SRGBColorSpace;
   t.wrapS=t.wrapT=THREE.MirroredRepeatWrapping; t.repeat.set(1/K,1/K);

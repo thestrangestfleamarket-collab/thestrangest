@@ -7,7 +7,7 @@
 // 2026: "put any new characters that go in the game into the street walking around"), rocking a little under his tray, and turns to face you
 // when you come near ----
 const MUSH={};
-{ const {shape,limb,sph,cyl,box,torus,noise}=PARTSNPC.T;
+{ const {shape,limb,sph,cyl,box,torus,blob,noise}=PARTSNPC.T;
   const CREAM=[.93,.87,.7], BONE=[.96,.91,.75], TAN=[.76,.6,.36], HAT=[.72,.47,.2], HAT2=[.66,.42,.17], CAP=[.74,.5,.22], RUST=[.74,.42,.14], OLIVE=[.47,.43,.18], ROPE=[.58,.42,.2], BAG=[.7,.53,.3], TRAY=[.68,.44,.19], BLACK=[0,0,0];
   const part=(name,rank,of)=>({name,rank,of});
   // a mushroom: a cream stem and a puffy cap (cream or tan), its foot at (x,y,z), h high, the cap r wide; a little lean; into the stems' and the caps' parts
@@ -24,9 +24,9 @@ const MUSH={};
     part('face',0,[ ...[-1,1].map(sx=>shape(cyl(.042,.042,.03,8),BLACK,[sx*.058,1.42,.136],null,[90,0,0])),   // (the sockets)
       shape(box(.036,.036,.03),BLACK,[0,1.345,.145],null,[0,0,45]), shape(box(.12,.012,.025),BLACK,[0,1.29,.128]),   // (the nose, the grin's line)
       ...[-2,-1,0,1,2].map(i=>shape(box(.01,.032,.025),BLACK,[i*.026,1.29,.128])) ]),   // (its teeth)
-    part('skull',2,[ shape(sph(.155,10,7),BONE,[0,1.38,0],[1,1.1,1]), shape(box(.2,.08,.14),BONE,[0,1.27,.02]) ]),
-    part('hair',2,[ ...[-1,1].flatMap(sx=>[shape(box(.09,.5,.2),TAN,[sx*.19,1.17,-.03],null,[0,0,sx*-6]),shape(box(.06,.36,.14),TAN,[sx*.24,.98,0],null,[0,0,sx*-10])]),
-      shape(box(.32,.52,.12),TAN,[0,1.17,-.15]), shape(box(.2,.3,.09),TAN,[0,.92,-.15]) ]),
+    part('skull',2,[ shape(sph(.155,10,7),BONE,[0,1.38,0],[1,1.1,1]), shape(blob(.11,.06,.09,10,6),BONE,[0,1.27,.02]) ]),
+    part('hair',2,[ ...[-1,1].flatMap(sx=>[shape(blob(.06,.27,.12,10,8),TAN,[sx*.19,1.17,-.03],null,[0,0,sx*-6]),shape(blob(.045,.2,.08,8,6),TAN,[sx*.24,.98,0],null,[0,0,sx*-10]),shape(blob(.05,.14,.09,8,6),TAN,[sx*.2,1.35,-.1],null,[0,0,sx*-14])]),
+      shape(blob(.17,.28,.08,12,8),TAN,[0,1.17,-.15]), shape(blob(.11,.17,.06,10,6),TAN,[0,.92,-.15]) ]),   // (soft locks, not blocks: owner, 17 Oct 2026, "rounded")
     part('hat',2,[ shape(cyl(.21,.23,.08,14),HAT,[0,1.565,0]), shape(cyl(.15,.17,.11,12),HAT2,[0,1.66,0]) ]),
     part('hat mushrooms',4,hatCaps), part('hat stems',3,hatStems),
     part('robe',0,[ shape(cyl(.17,.31,1.2,12),mottle,[0,.62,0]), shape(sph(.185,10,5),mottle,[0,1.2,0],[1,.55,1]), shape(cyl(.085,.1,.07,8),RUST,[0,1.255,0]) ]),
@@ -36,6 +36,6 @@ const MUSH={};
     part('tray mushrooms',4,trayCaps), part('tray stems',3,trayStems),
     part('strap',2,[ limb([.12,1.24,.1],[-.22,.72,.13],.02,.02,ROPE,6), limb([.12,1.24,-.06],[-.24,.72,-.06],.02,.02,ROPE,6),
       ...Array.from({length:7},(_,i)=>{ const u=(i+.5)/7; return shape(sph(.024,6,4),[.52,.37,.17],[.12-.34*u,1.24-.52*u,.1+.03*u]); }) ]),   // (its braid's knots)
-    part('bag',1,[ shape(box(.15,.22,.09),BAG,[-.26,.62,.04],null,[0,0,-6]), shape(box(.16,.05,.1),[.62,.46,.25],[-.26,.72,.04],null,[0,0,-6]) ]) ];
+    part('bag',1,[ shape(blob(.08,.12,.05,10,8),BAG,[-.26,.62,.04],null,[0,0,-6]), shape(blob(.085,.03,.055,10,6),[.62,.46,.25],[-.26,.72,.04],null,[0,0,-6]) ]) ];
   const N=PARTSNPC.make(PARTS,Object.assign({key:'mushroom',name:'THE MUSHROOM SELLER',eye:0,eyeC:'0.,0.,0.',metres:1.8,radius:.3,speed:.4,stride:6,rock:.05,bob:.025},PARTSNPC.street(72,-70)));
   MUSH.N=N; window.MUSHDBG=()=>({key:N.key,x:+N.st.x.toFixed(2),z:+N.st.z.toFixed(2),y:+N.g.position.y.toFixed(2),to:!!N.st.to,vis:N.g.visible,tris:N.tris}); }

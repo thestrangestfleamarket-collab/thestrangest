@@ -54,6 +54,16 @@ const FOOT=(x,y,w,d)=>({x0:x,y0:y,x1:x+w,y1:y+d,z0:0,z1:.01,foot:1,top:()=>null,
 
 const GRASSP=[[62,100,50],[76,116,58],[90,132,66],[104,146,74]], GRASSL=[128,168,88], GRASSS=[50,84,42];   // the lawn's four tones, hollow to rise; a tuft's lit blades and its shade
 const GRASSY=[[96,104,54],[110,116,60],[124,128,68],[136,138,76]], GEARTH=[[104,88,64],[118,100,74]], GTROD=.32;
+// THE LAWN (owner, 17 Oct 2026: "make the park grass all green, add sprouts and weeds, make look natural"; then "the same grass in park to
+// extend everywhere there isnt something else"): greens only, a smooth noise field cut into four (no dither at the cuts); at hashed spots fresh
+// sprouts (a light V of two blades), clover-like weeds (a darker four-leaf patch) and now and then a weed's tiny flower, yellow or white. Every
+// grass on the map: the park's lawns, the street's gaps, the land all round, the storeroom's grass
+const LAWN=[[46,86,38],[56,102,44],[66,116,50],[78,130,56]], SPR=[[112,162,72],[94,146,62]], WEED=[[38,70,32],[44,80,36]], BLOOM=[[214,196,84],[228,226,212]];
+function lawnCol(x,y){ const ix=Math.floor(x*24), iy=Math.floor(y*24), n=grain(x,y,301,1.2); let c=LAWN[n<.42?0:n<.5?1:n<.58?2:3];
+  const cx=Math.floor(ix/6), cy=Math.floor(iy/6), h=hash(cx,cy,305), ax=cx*6+1+Math.floor(hash(cx,cy,307)*4), ay=cy*6+1+Math.floor(hash(cx,cy,309)*4), dx=ix-ax, dy=iy-ay;
+  if(h<.2){ if(dx===0&&dy===0)c=SPR[0]; else if(Math.abs(dx)===1&&dy===-1)c=SPR[1]; }   // (a sprout)
+  else if(h<.3){ if(dx>=0&&dx<2&&dy>=0&&dy<2)c=WEED[(dx+dy)&1]; else if(h<.235&&dx===2&&dy===-1)c=BLOOM[h<.215?0:1]; }   // (a weed, and its flower)
+  return c; }
 function grassCol(x,y){ const n=(cvNoise(x/5,y/5,29)*3+cvNoise(x/1.7,y/1.7,31)*2+cvNoise(x*2.3,y*2.3,33))/6+(hash(Math.floor(x*48),Math.floor(y*48),35)-.5)*.07, dz=hash(Math.floor(x*48),Math.floor(y*48),53);
   // the trodden edge: how near the nearest ground that isn't lawn is (four looks, a quarter tile apart)
   let e=1; for(const [a,b] of [[1,0],[-1,0],[0,1],[0,-1]])for(const d of [.08,.16,.24,GTROD]){ const k=landK(x+a*d,y+b*d); if(k&&k!==1){ e=Math.min(e,d/GTROD); break; } }

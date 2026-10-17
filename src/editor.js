@@ -105,7 +105,7 @@ const ED={on:false};
     sel.visible=ED.on&&mode!=='sculpt'&&cur>=0; ring.hidden=!(ED.on&&mode==='sculpt'); }
   P.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{ mode=b.dataset.m; draw(); });
   // more tabs from other files (HIS MOVES: src/animator.js): their pane, their own handling of a press on him; the piece picked, lit up
-  ED.ext={}; ED.mode=()=>mode; ED.redraw=()=>draw(); ED.pick=e=>pick(e); ED.setSel=i=>setSel(i); ED.sel=()=>cur; ED.names=NAMES;
+  ED.ext={}; ED.save=()=>save(); ED.mode=()=>mode; ED.redraw=()=>draw(); ED.pick=e=>pick(e); ED.setSel=i=>setSel(i); ED.sel=()=>cur; ED.names=NAMES;
   ED.addTab=(key,label,pane,h)=>{ const b=document.createElement('button'); b.dataset.m=key; b.textContent=label; b.onclick=()=>{ mode=key; draw(); if(h.show)h.show(); }; P.querySelector('.tabs').appendChild(b);
     pane.classList.add('pane'); pane.dataset.q=key; P.querySelector('.foot').before(pane); ED.ext[key]=h; };
   P.querySelectorAll('[data-b]').forEach(b=>b.onclick=()=>{ B.mode=b.dataset.b; draw(); });

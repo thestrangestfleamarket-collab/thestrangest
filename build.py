@@ -245,7 +245,7 @@ head=rp(head,"w*lerp(16,36,rs)*Math.cos(2*Math.PI*(qq-0.04)))*D","w*lerp(16,36,r
 head=rp(head,"el=(10+w*(lerp(2,64,rs)","el=(10+g.elbow*w*(lerp(2,64,rs)")
 head=rp(head,"  const B=settle(busy||st.up||(st.water&&st.water.in)?clearPose(P,dev):build(P,dev),","  if(OVL.fn)OVL.fn(st,P);   // (his own keys on whatever he's doing: src/animator.js)\n  const B=settle(busy||st.up||(st.water&&st.water.in)?clearPose(P,dev):build(P,dev),")
 head=rp(head,"ell(p,add(H,V(-6.7,-1.8,-1.0)),V(1.3,1.9,1.3)))});","ell(p,add(H,V(-6.7,-1.8,-1.0)),V(1.3,1.9,1.3)),rbox(p,add(H,V(0,-2.6,6.35)),V(0.95,1.75,1.25),0.45))});")   # (A NOSE, owner 17 Oct 2026: "give all playable characters noses")
-head=rp(head,"const MATS=Object.keys(RAMP)","RAMP.sole=['#3a2c22','#30241b','#251b14','#140e0a']; RAMP.eye=['#5a3a26','#4c311f','#3c2618','#24160d']; const MATS=Object.keys(RAMP)")   # (his eyes' colour: the character editor, src/looks.js)
+head=rp(head,"const MATS=Object.keys(RAMP)","RAMP.sole=['#3a2c22','#30241b','#251b14','#140e0a']; RAMP.eye=['#5a3a26','#4c311f','#3c2618','#24160d']; RAMP.eyeW=['#f4f0e8','#e8e2d6','#c8c0b0','#8a8274']; RAMP.pupil=['#2a1c18','#241814','#1c120f','#100a08']; RAMP.lid=['#b4896e','#a67c62','#8e6650','#5e4232']; const MATS=Object.keys(RAMP)")   # (his eyes' colour: the character editor, src/looks.js)
 head=rp(head,"return {restOf,IDF,","return {rbox,ell,rcone,box,OVL,begin,beginUp,legIK,START,mkMove:move,ARMMOVES,fine:v=>{ FINEHAND=!!v; },farOnly:v=>{ FAR=!!v; },restOf,IDF,")
 mod=rp(mod,"B=RIG.pose(st); ragBlend(B);","B=ED.anim?ED.animPose():RIG.pose(st); ragBlend(B);")
 # THE MUSICIAN (owner, 17 Oct 2026): the game's guitarist, its files read from the game as they are (the guitar, its recordings, the tunes,

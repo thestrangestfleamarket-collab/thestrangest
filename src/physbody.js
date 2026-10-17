@@ -41,7 +41,7 @@ const PB={on:false,ready:false,loose:0.5};
     ground.setNextKinematicTranslation({x:x*PPU/W3.SZ,y:gy/ZU/W3.SZ,z:z*PPU/W3.SZ}); acc=Math.min(acc+dt,6/120);
     while(acc>=1/120){ acc-=1/120; drive(1/120,down); world.step(); }
     // his pieces where their parts are (each riding its part as his pose has it); he in the world as his units scaled, not turned (the parts are)
-    W3.group.position.set(0,0,0); W3.group.rotation.set(0,0,0); W3.group.scale.set(W3.SZ/PPU,ZU*W3.SZ,W3.SZ/PPU); W3.L.applyAxisAngle(new THREE.Vector3(0,1,0),hd); W3.G.value.identity();
+    W3.group.position.set(0,0,0); W3.group.rotation.set(0,0,0); W3.group.scale.set(W3.SZ/PPU,ZU*W3.SZ*(W3.BH||1),W3.SZ/PPU); W3.L.applyAxisAngle(new THREE.Vector3(0,1,0),hd); W3.G.value.identity();
     const Fb=KEYS.map((k,i)=>{ const rb=bodies[i], p=rb.translation(), r=rb.rotation(); return new THREE.Matrix4().compose(P.set(p.x,p.y,p.z),Q.set(r.x,r.y,r.z,r.w),Sc.set(1,1,1)); });
     const Bm=KEYS.map(k=>M(R.frameOf(k,B)).invert());
     PCS.forEach((pc,i)=>{ const j=PART[i]; if(j<0)return; const O=new THREE.Matrix4().multiplyMatrices(Bm[j],M(R.frameOf(pc.on||pc.n,B))); const PM=W3.PM.value[i].multiplyMatrices(Fb[j],O);

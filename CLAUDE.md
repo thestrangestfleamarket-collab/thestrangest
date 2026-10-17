@@ -593,6 +593,15 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
   frame but a quarter-second check. Not yet: what cuts a wire in play (a dragon's fireball, the world editor), mending it, the GRAPHICS switch, the
   map editor's handle on the house, smoke from its stacks.
 
+- **You are the mannequin** (owner, 17 Oct 2026: "let me play as the animation model we are using as a framework", "lets make that the main
+  avatar and i will sculpt it how i want"; then "make him look human ... (no face)"; "his base model no clothes just underwear, and then put
+  jeans and shoes and hair on him as sep items"; `src/playas.js`): the UAL1 standard body (data/ual.json, the droids' body) is the player. The
+  game's rig still runs you (keys, moves, physics, camera); he stands where you stand and plays his own clips for what you do (idle, walk,
+  jog, sprint by speed; jump, punch, roll, fall, sit, swim). His base body is skin with briefs, no face; HAIR, SHIRT, JEANS, SHOES are items,
+  each its own skinned mesh made from the body's own faces pushed out by the cloth's thickness and bent by the same bones (`PLAYAS.wear`,
+  `PLAYAS.colour`; GRAPHICS' buttons; kept in the browser, `market-wear`); the body's faces under a worn item aren't drawn. GRAPHICS' AVATAR
+  switches back to the Walker (`?avatar=walker`). The earlier mockups (a dozen soft shapes, the traced sprite) were not taken.
+
 ## THE MARKET: the one official map
 
 **THE MARKET** (owner, 17 Oct 2026: "one official MARKET map im gona start filling in") is the game's map here: every place the owner adds goes

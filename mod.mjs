@@ -6392,7 +6392,7 @@ function gdShape(GS,K,LAMPS){ const G=GS.filter(p=>p.name==='ghost street shop')
     for(const [x,z,w,ry] of [[(Tk.x0+Tk.x1)/2,Tk.y0,Tk.x1-Tk.x0,0],[(Tk.x0+Tk.x1)/2,Tk.y1,Tk.x1-Tk.x0,0],[Tk.x0,(Tk.y0+Tk.y1)/2,Tk.y1-Tk.y0,Math.PI/2],[Tk.x1,(Tk.y0+Tk.y1)/2,Tk.y1-Tk.y0,Math.PI/2]]){ const m=new THREE.Mesh(new THREE.PlaneGeometry(w*TILE*BLDK,gh),gm); m.position.set(X(x),gy,Z(z)); m.rotation.y=ry; scene.add(m); } 
       const H=STORE.houseAt, hp=(dx,dy,z)=>[X(H[0]+dx),Y(z+(STORE.houseZ||0)),Z(H[1]+dy)], HP=[hp(-.16,-.09,38),hp(-.12,.07,41),hp(.18,.09,37),hp(.13,-.1,35),hp(-.06,0,44),hp(.06,0,44),hp(.08,-.11,32),hp(-.24,0,47),hp(.24,0,47),hp(0,-.17,49)];
     [12,21].forEach((k,i)=>{ const b=BF.add(k,HP); b.at=b.to=i*4; b.g.position.set(...HP[b.at]); });
-      if(ROOMS.reset)ROOMS.reset(); if(window.CLIP)window.CLIP.run(); };   // (CLIP: their things made solid on their own floors, as the rest were at load: clip.js)
+      if(ROOMS.reset)ROOMS.reset(); if(window.CLIP)window.CLIP.run(); if(typeof INTERIORS!=='undefined')INTERIORS.build(); };   // (INTERIORS: the new rooms' insides drawn only near their doors: interiors.js)   // (CLIP: their things made solid on their own floors, as the rest were at load: clip.js)
     STORE.ensure=finish;
     const run=()=>{ if(done)return; if(STEPS.length){ step(); setTimeout(run,60); } else finish(); };
     STORE.later=()=>setTimeout(run,1500); }   // (started once the game runs: build.py)
@@ -7539,7 +7539,7 @@ function frame(now){ requestAnimationFrame(frame); const dt=Math.max(0,Math.min(
   for(const w of cutWalls)w.pl.constant=(!UI.persp&&(w.always||Math.sin(a)*w.nx+Math.cos(a)*w.nz<-0.05)&&pitch<1.45&&(!w.when||w.when()))?w.foot:1e6;   // (only the room you're in)
   for(const r of BODB.roof)r.visible=!BODB.inside(); MODS.pool.roof.visible=!MODS.pool.inside(pos.x,pos.z);   // (and its roof off)
   const wOn=LVL==='up'&&(MODS.pool.inside(pos.x,pos.z)||Math.hypot(pos.x-POOLR.X((POOLR.bx0+POOLR.bx1)/2),pos.z-POOLR.Z((POOLR.by0+POOLR.by1)/2))<15*TILE);   /* (the water moves only while you're near it or in its building; its picture of what's under it only while it's shown) */
-  ROOMS.tick(); STORE.tick(); NPCS.cull(true); BF.tick(dt); if(wOn)WATER.step(renderer,dt); WATER.tickAll(renderer,dt,pos); renderer.shadowMap.needsUpdate=true; if(wOn&&WATER.mesh.visible)WATER.under(renderer,scene,cam,lamps); WATER.underAll(renderer,scene,cam,lamps); W3.shadowPass(renderer); if(OUTL.on)OUTL.render(renderer,scene,cam); composer.render(); NPCS.cull(false);   // (the lamps' shadows drawn once a frame, not for every pass)
+  ROOMS.tick(); INTERIORS.tick(); STORE.tick(); NPCS.cull(true); INTERIORS.cull(true); BF.tick(dt); if(wOn)WATER.step(renderer,dt); WATER.tickAll(renderer,dt,pos); renderer.shadowMap.needsUpdate=true; if(wOn&&WATER.mesh.visible)WATER.under(renderer,scene,cam,lamps); WATER.underAll(renderer,scene,cam,lamps); W3.shadowPass(renderer); if(OUTL.on)OUTL.render(renderer,scene,cam); composer.render(); NPCS.cull(false); INTERIORS.cull(false);   // (the lamps' shadows drawn once a frame, not for every pass)
   fpsN++; fpsT+=dt; if(fpsT>0.5){ statEl.textContent=`${Math.round(fpsN/fpsT)} fps · ${RW}×${RH} px · turn ${Math.round(((a*180/Math.PI)%360+360)%360)}° · tilt ${Math.round(pitch*180/Math.PI)}° · zoom ${(SCL*rppu()/V0).toFixed(2)}× · art ${SCL===1&&vpu()<art()?'full':RES()+'×'}`; fpsN=0; fpsT=0; }
 }
 composer=new EffectComposer(renderer);if(performance.now()-__YT>40)await __Y(); composer.setPixelRatio(1);if(performance.now()-__YT>40)await __Y(); composer.addPass(RPASS=new RenderPass(scene,cam));if(performance.now()-__YT>40)await __Y(); { const sp=new ShaderPass(OUTL.pass);if(performance.now()-__YT>40)await __Y(); composer.addPass(sp);if(performance.now()-__YT>40)await __Y(); OUTL.sp=sp;if(performance.now()-__YT>40)await __Y(); sp.enabled=!!OUTL.on;if(performance.now()-__YT>40)await __Y(); OUTL.pass.uniforms=sp.uniforms;if(performance.now()-__YT>40)await __Y(); sp.uniforms.tId.value=OUTL.rt.texture;if(performance.now()-__YT>40)await __Y(); sp.uniforms.tint.value=W3.tint;if(performance.now()-__YT>40)await __Y(); }   // (the pass copies its uniforms and drops a render target's picture: given back, and the tint shared)
@@ -9828,7 +9828,7 @@ function musBox(P){ const [cx,cy,cz,hx,hy,hz]=P.box, F=P.F0, g=new THREE.BoxGeom
 const musScale=(g,bh)=>g.scale.set(W3.SZ/PPU,ZU*W3.SZ*(bh||W3.BH||1),W3.SZ/PPU);if(performance.now()-__YT>40)await __Y();   // (bh: a body's own height, the singer's)
 // WHERE HE PLAYS (owner, 17 Oct 2026: "move the musician into an apartment top floor"; before, the stored bar's stage, STORE.bar.gtr): the
 // apartment house's top floor, in the front living room (the one with the fire escape over the street), the middle of the room, facing its door
-{ const R=RIG, V=R.V, AP=MODS.apts, AA=AP.A, AT={x:BOD.X((AA.x0+AA.x1)/2),z:BOD.Z(AA.y1-1.5),hd:Math.PI,y:AP.SY*4};if(performance.now()-__YT>40)await __Y(); MUS.floor=4;if(performance.now()-__YT>40)await __Y();
+{ const R=RIG, V=R.V, AP=MODS.apts, AA=AP.A, AT={x:BOD.X((AA.x0+AA.x1)/2),z:BOD.Z(AA.y1-1.5),hd:0,y:AP.SY*4};if(performance.now()-__YT>40)await __Y(); MUS.floor=4;if(performance.now()-__YT>40)await __Y();
   // his pieces: the player's (musBody, the shapes shared with the others: share), and the guitar in its own frame
   const PCS=musBody().PCS;if(performance.now()-__YT>40)await __Y();
   PCS.push(Object.assign({},GT.PIECE,{d:GT.SOLID,F0:{o:V(0,0,0),x:V(1,0,0),y:V(0,1,0),z:V(0,0,1)},step:.25,cell:.25}));if(performance.now()-__YT>40)await __Y();   // (the guitar's hull whole: the game's hollow one, thin plates and bracing, breaks up as a mesh)
@@ -11158,7 +11158,7 @@ const WX={hold:null,now:null};if(performance.now()-__YT>40)await __Y();
 // seconds as he moves and when the page is left, and he is put back there the next time the game opens (the stacked rooms finished first if
 // he was in one). A test's start (?at, ?place, ?sheet, ?npcat) wins over it; ?fresh=1 starts on the street and forgets the spot ----
 const WHERE={};if(performance.now()-__YT>40)await __Y();
-{ const KEY='market-where', test=['at','place','sheet','npcat','fresh'].some(k=>QS.get(k)!=null);if(performance.now()-__YT>40)await __Y();
+{ const KEY='market-where', test=['at','place','sheet','npcat'].some(k=>QS.get(k)!=null);if(performance.now()-__YT>40)await __Y();   // (?fresh=1 only forgets the spot: the new one is kept from then on)
   let W=null;if(performance.now()-__YT>40)await __Y(); try{ if(QS.get('fresh')!=null)localStorage.removeItem(KEY); else W=JSON.parse(localStorage.getItem(KEY)||'null');if(performance.now()-__YT>40)await __Y(); }catch(e){}
   const back=()=>{ if(!window.__started){ setTimeout(back,200); return; } const w=W; if(!w||![w.x,w.z,w.y,w.hd].every(Number.isFinite))return;
     if(STORE.inStore&&STORE.inStore(w.x,w.z)&&STORE.ensure)STORE.ensure();   /* (a stacked room is built after the game opens: store.js) */
@@ -11308,7 +11308,53 @@ const CLIP={moved:[],found:[],added:0,boxes:new Map(),done:new Set(),ms:0};if(pe
       for(const k of before){ if(after.has(k))continue; const i=k%nx, j=(k-i)/nx, x=B.x0+i*S, z=B.z0+j*S; if(!CLIP.hit(L,x,z,r))closed.push([lv,+x.toFixed(2),+z.toFixed(2),[...new Set([...CLIP.boxes].filter(([b])=>L.includes(b)&&Math.hypot(x-Math.max(b[0],Math.min(b[2],x)),z-Math.max(b[1],Math.min(b[3],z)))<r+S).flatMap(([b,n])=>n))].join('; ')]); } }
     return {things,chars,closed,found:CLIP.found,checked:{things:OBJS.filter(o=>o.parts.length).length+CLIPX.length,chars:live.length},added:CLIP.added,moved:CLIP.moved,ms:Math.round(CLIP.ms)}; };if(performance.now()-__YT>40)await __Y(); }
 
-CLIP.run();if(performance.now()-__YT>40)await __Y(); STORE.shrineFix&&STORE.shrineFix();if(performance.now()-__YT>40)await __Y(); LITE.init();if(performance.now()-__YT>40)await __Y(); STORE.later();if(performance.now()-__YT>40)await __Y(); window.__started=true;if(performance.now()-__YT>40)await __Y(); window.__scene=scene;if(performance.now()-__YT>40)await __Y(); window.__dbg={OBJS,SOL,FIX,NPCS,CLOCK,WHERE,ROOMS,hd:()=>heading,setHd:h=>{ heading=h; },setRes:i=>{ RESI=i; resize(); },res:()=>RESI,UI,yaw:()=>[yaw,yawTo],px:()=>[SCL,RES(),pxS(),vpu()/art()],cam:(y,p,z,d)=>{ if(y!=null)yawTo=y; if(p!=null)pitchTo=p; if(z!=null)ppuTo=z; if(d!=null)UI.dist=d; },cv:()=>({yaw,pitch,ppu,PPU,dist:UI.dist,TILE,heading,keys:[...keys],look:UI.look}),camO:()=>cam,go:(x,z)=>{ target=new THREE.Vector3(x,py,z); },collide:(x,z)=>{ const p={x,z}; collide(p); return [p.x,p.z]; }};if(performance.now()-__YT>40)await __Y();   // (go: walk him there; collide: where a spot is pushed out of the level's solids: tests/mapedit.cjs)
+// ---- INTERIORS ONLY WHEN YOU'RE NEAR A DOOR (owner, 17 Oct 2026: "only load the parts of the interior that you can see from outside, and only
+// load the interior when you are close enough to enter a door area (ie if you are running by the wall of a place it wont load, but if you're
+// within 5 blocks of any entrance to an interior it starts to load then)"): every still face of the world sits in a few big batched meshes, so
+// a building's inside was drawn from everywhere on the map (the bodega's shelves from the castle). Now each interior (the bodega's shop and back
+// room, the apartment building's rooms, Ghost Street's dojo, the apartment house, the Diner, the Bar, every stored room with walls) owns the
+// faces inside its walls: those within 3 tiles of its door (what you see through it from outside) are always drawn; the rest are put into the
+// meshes' index only while you're within 5 tiles of one of its doors or inside it (a tile more to leave, so the edge doesn't flicker). The
+// outer walls, roofs and the doorway stay as they are. One draw call as before: a mesh's index is rebuilt only when an interior comes or goes
+// (never each frame). The pool's water goes with the pool hall. ?interiors=0 draws everything, as before ----
+const INTERIORS={on:QS.get('interiors')!=='0',list:[],near:5*TILE,seen:3*TILE,water:[]};if(performance.now()-__YT>40)await __Y();
+{ const m=.14*TILE, L=INTERIORS.list;if(performance.now()-__YT>40)await __Y();
+  const box=(X,Z,t,y0,y1)=>{ const a=X(t[0]), b=X(t[2]), c=Z(t[1]), d=Z(t[3]); return {x0:Math.min(a,b),x1:Math.max(a,b),z0:Math.min(c,d),z1:Math.max(c,d),y0,y1}; };if(performance.now()-__YT>40)await __Y();
+  const inBox=(b,x,y,z,e)=>x>b.x0+e&&x<b.x1-e&&z>b.z0+e&&z<b.z1-e&&y>b.y0+.05&&y<b.y1-.05;if(performance.now()-__YT>40)await __Y();
+  const mk=(id,boxes,doors,inside)=>{ if(L.some(I=>I.id===id))return; L.push({id,boxes,doors,inside,meshes:new Set(),walls:[],on:true}); };if(performance.now()-__YT>40)await __Y();
+  // the interiors: each its boxes (the rooms' footprints and heights), its doors (x, z), and whether you're in it
+  const places=()=>{ const B=BOD.B0, mB=(B.x0+B.x1)/2;
+    mk('bodega',[box(BOD.X,BOD.Z,[B.x0,B.y0,B.x1,B.y1],-1,BOD.Y(B.h))],[[BOD.X(mB),BOD.Z(B.y1)]]);
+    if(POOLR.ROOMS)mk('poolbld',POOLR.ROOMS.map(t=>box(POOLR.X,POOLR.Z,t,POOLR.Y(-150),POOLR.Y(POOLR.H))),[[POOLR.X(22.75),POOLR.Z(POOLR.y1)]]);
+    if(BOD.GD)mk('dojo',[box(BOD.X,BOD.Z,BOD.GD.r,-1,BOD.Y(BOD.GD.H))],[[BOD.X(BOD.GD.door[0]),BOD.Z(BOD.GD.door[1])]]);
+    if(MODS.apts){ const A=MODS.apts.A; mk('house',[box(BOD.X,BOD.Z,[A.x0,A.y0,A.x1,A.y1],-1,MODS.apts.SY*5)],[[BOD.X(A.x1-1.0),BOD.Z(A.y1)]],()=>MODS.apts.in); }
+    for(const R of STORE.rooms)if(R.walls)mk('store:'+R.id,[{x0:R.x0,x1:R.x1,z0:R.z0,z1:R.z1,y0:R.y0,y1:R.y1}],[[R.at.x,R.at.z]],()=>R.inside(pos.x,pos.z)); };if(performance.now()-__YT>40)await __Y();
+  const near2=(I,x,z)=>Math.min(...I.doors.map(d=>Math.hypot(x-d[0],z-d[1])));if(performance.now()-__YT>40)await __Y();
+  const owner=(x,y,z)=>{ for(const I of L)for(const b of I.boxes)if(inBox(b,x,y,z,m))return I; return null; };if(performance.now()-__YT>40)await __Y();
+  // the meshes: each batched one (its faces six corners each) gets an index: the faces outside every interior and within sight of a door first,
+  // then each interior's own; a wall mesh of the apartment house (one piece each) is the house's whole if it stands inside
+  const classify=me=>{ const g=me.geometry; if(!g.attributes.aOp||g.index||me.userData.intr===false)return; const p=g.attributes.position.array, nf=Math.floor(p.length/18), al=[], per={}; me.updateMatrixWorld(); const v=new THREE.Vector3();
+    for(let f=0;f<nf;f++){ let x=0,y=0,z=0; for(let q=0;q<6;q++){ x+=p[f*18+q*3]; y+=p[f*18+q*3+1]; z+=p[f*18+q*3+2]; } v.set(x/6,y/6,z/6).applyMatrix4(me.matrixWorld);
+      const I=owner(v.x,v.y,v.z); if(!I||near2(I,v.x,v.z)<INTERIORS.seen)al.push(f); else (per[I.id]||(per[I.id]=[])).push(f); }
+    if(!Object.keys(per).length){ me.userData.intr=false; return; }
+    const arr=fs=>{ const a=new Uint32Array(fs.length*6); fs.forEach((f,i)=>{ for(let q=0;q<6;q++)a[i*6+q]=f*6+q; }); return a; };
+    me.userData.intr={always:arr(al),per:Object.fromEntries(Object.entries(per).map(([k,fs])=>[k,arr(fs)]))}; for(const k in per)L.find(I=>I.id===k).meshes.add(me); reindex(me); };if(performance.now()-__YT>40)await __Y();
+  const reindex=me=>{ const T=me.userData.intr, parts=[T.always]; for(const k in T.per)if(L.find(I=>I.id===k).on)parts.push(T.per[k]); let n=0; for(const a of parts)n+=a.length; const idx=new Uint32Array(n); let o=0; for(const a of parts){ idx.set(a,o); o+=a.length; }
+    me.geometry.setIndex(new THREE.BufferAttribute(idx,1)); };if(performance.now()-__YT>40)await __Y();
+  INTERIORS.build=()=>{ if(!INTERIORS.on)return; places(); scene.traverse(o=>{ if(o.isMesh)classify(o); });
+    const H=L.find(I=>I.id==='house'); if(H&&MODS.apts&&!H.walls.length){ const b=H.boxes[0], bb=new THREE.Box3(), c=new THREE.Vector3(); for(const me of MODS.apts.meshes){ if(me.geometry.attributes.aOp)continue; bb.setFromObject(me); bb.getCenter(c); if(inBox(b,c.x,c.y,c.z,m))H.walls.push(me); } }
+    const W=INTERIORS.water; W.length=0; const P=L.find(I=>I.id==='poolbld'); if(P&&typeof WATER!=='undefined'&&WATER.mesh)W.push([P,WATER.mesh]); for(const w of (typeof WATER!=='undefined'&&WATER.extra)||[])if(w.mesh){ const I=owner(w.mesh.position.x,w.mesh.position.y+.1,w.mesh.position.z); if(I)W.push([I,w.mesh]); }
+    INTERIORS.tick(true); };if(performance.now()-__YT>40)await __Y();
+  // each frame: an interior wanted when you're in it or near a door (the map editor and the free camera see them all); its meshes reindexed only on a change
+  INTERIORS.tick=force=>{ if(!INTERIORS.on)return; const all=(typeof MAPED!=='undefined'&&MAPED.on);
+    for(const I of L){ const d=near2(I,pos.x,pos.z), inn=I.inside?I.inside():I.boxes.some(b=>inBox(b,pos.x,py+.5,pos.z,0)), want=all||inn||d<(I.on?INTERIORS.near+TILE:INTERIORS.near);
+      if(want!==I.on||force){ I.on=want; for(const me of I.meshes)reindex(me); for(const me of I.walls)me.visible=want; } } };if(performance.now()-__YT>40)await __Y();
+  // the water of an interior not loaded: left out of the picture (only round the drawing, so rooms.js's own hiding is never overwritten)
+  INTERIORS.cull=on=>{ for(const [I,me] of INTERIORS.water){ if(on){ if(!I.on&&me.visible){ me.visible=false; me._ic=true; } } else if(me._ic){ me.visible=true; me._ic=false; } } };if(performance.now()-__YT>40)await __Y();
+  INTERIORS.state=()=>L.map(I=>[I.id,I.on,I.meshes.size,I.walls.length,Math.round(near2(I,pos.x,pos.z)/TILE*10)/10]);if(performance.now()-__YT>40)await __Y();   // (a test's look)
+}
+
+CLIP.run();if(performance.now()-__YT>40)await __Y(); STORE.shrineFix&&STORE.shrineFix();if(performance.now()-__YT>40)await __Y(); LITE.init();if(performance.now()-__YT>40)await __Y(); INTERIORS.build();if(performance.now()-__YT>40)await __Y(); STORE.later();if(performance.now()-__YT>40)await __Y(); window.__started=true;if(performance.now()-__YT>40)await __Y(); window.__scene=scene;if(performance.now()-__YT>40)await __Y(); window.__dbg={OBJS,SOL,FIX,NPCS,CLOCK,WHERE,ROOMS,renderer,scene,THREE,camera:cam,MAPG,LITE,lamps,INTERIORS,hd:()=>heading,setHd:h=>{ heading=h; },setRes:i=>{ RESI=i; resize(); },res:()=>RESI,UI,yaw:()=>[yaw,yawTo],px:()=>[SCL,RES(),pxS(),vpu()/art()],cam:(y,p,z,d)=>{ if(y!=null)yawTo=y; if(p!=null)pitchTo=p; if(z!=null)ppuTo=z; if(d!=null)UI.dist=d; },cv:()=>({yaw,pitch,ppu,PPU,dist:UI.dist,TILE,heading,keys:[...keys],look:UI.look}),camO:()=>cam,go:(x,z)=>{ target=new THREE.Vector3(x,py,z); },collide:(x,z)=>{ const p={x,z}; collide(p); return [p.x,p.z]; }};if(performance.now()-__YT>40)await __Y();   // (go: walk him there; collide: where a spot is pushed out of the level's solids: tests/mapedit.cjs)
 { const t0=performance.now(), PL=[0,1,2,3,4,5].map(()=>new THREE.Plane(new THREE.Vector3(0,1,0),1e6));if(performance.now()-__YT>40)await __Y(); renderer.setRenderTarget(composer.readBuffer);if(performance.now()-__YT>40)await __Y(); renderer.compile(scene,cam);if(performance.now()-__YT>40)await __Y();
   renderer.clippingPlanes=PL;if(performance.now()-__YT>40)await __Y(); renderer.render(new THREE.Scene(),cam);if(performance.now()-__YT>40)await __Y(); renderer.compile(scene,cam);if(performance.now()-__YT>40)await __Y(); renderer.clippingPlanes=[];if(performance.now()-__YT>40)await __Y(); renderer.setRenderTarget(null);if(performance.now()-__YT>40)await __Y();   /* (the empty picture only sets the six planes for the second compile) */
   window.WARMMS=Math.round(performance.now()-t0);if(performance.now()-__YT>40)await __Y(); }

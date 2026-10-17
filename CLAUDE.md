@@ -411,6 +411,16 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
   drawing (`NPCS.cull(true)` after `ROOMS.tick`, `NPCS.cull(false)` after the composer), so each one's own visibility (his mind's, rooms.js's, the
   stage's) is never overwritten. The bar's three and the guitarist join through `NPCS.extra`. Measured on the street at noon: 4 of 51 drawn.
 
+- **Interiors only near a door** (owner, 17 Oct 2026: "only load the parts of the interior that you can see from outside, and only load the
+  interior when you are close enough to enter a door area ... within 5 blocks of any entrance"; `src/interiors.js`): every still face sits in a
+  few batched meshes, so a building's inside was drawn from everywhere (the bodega's shelves from the castle: 116K of the 450K triangles in view
+  there). Each interior (the bodega's shop and back room, the apartment building's rooms, the dojo, the apartment house, the Diner, the Bar, every
+  stored room with walls) owns the faces inside its walls: those within 3 tiles of its door always drawn (what shows through it), the rest put
+  into the meshes' index only within 5 tiles of a door or inside (a tile more to leave); the apartment house's inner wall meshes hidden the same
+  way; the pool's water with the pool hall. The index is rebuilt only when an interior comes or goes. `?interiors=0` draws all. Measured at the
+  castle: 1.12M to 0.76M triangles a frame (all passes); the street 1.25M to 0.89M.
+- **`?trees=0`** hides the park's oaks (owner, 17 Oct 2026, for screenshots: "hide all trees on map so you dont get blocked").
+
 ## THE MARKET: the one official map
 
 **THE MARKET** (owner, 17 Oct 2026: "one official MARKET map im gona start filling in") is the game's map here: every place the owner adds goes

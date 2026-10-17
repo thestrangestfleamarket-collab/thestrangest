@@ -32,7 +32,7 @@ const FOX={};
   const AT={x:4.33,z:-6.1}, FACE=-Math.PI/2, TURN=35*Math.PI/180;
   const N=PARTSNPC.make(PARTS,{key:'fox',name:'THE FOX',eye:0,eyeC:'0.,0.,0.',metres:1.6,radius:.3,speed:.4,stride:6,rock:0,bob:.015,lv:'up',group:'bodega',
     x:AT.x,z:AT.z,ground:(x,z)=>MODS.bodega.ground(x,z),
-    brain:(dt,you,st,N)=>{ if(N.sheet)return; st.to=null; st.hold=true; st.x=AT.x; st.z=AT.z;   // (his place: the mat; never wanders)
+    brain:(dt,you,st,N)=>{ if(N.sheet)return; st.to=null; st.hold=true; const H=N.home||AT; st.x=H.x; st.z=H.z;   // (his place: the mat, or where the hitboxes' check moved him, N.home: clip.js; never wanders)
       let a=FACE; if(Math.hypot(you.x-st.x,you.z-st.z)<4.5*TILE){ const w=Math.atan2(you.x-st.x,you.z-st.z), d=((w-FACE+Math.PI*3)%(Math.PI*2))-Math.PI; a=FACE+Math.max(-TURN,Math.min(TURN,d)); }
       st.face={x:st.x+Math.sin(a),z:st.z+Math.cos(a)}; }});   // (toward you when you come near, as far as the space lets him; else the aisle)
   FOX.N=N; window.FOXDBG=()=>{ const w=N.g.getWorldPosition(new THREE.Vector3()), bb=new THREE.Box3().setFromObject(N.g); return {x:+N.st.x.toFixed(2),z:+N.st.z.toFixed(2),y:+N.g.position.y.toFixed(2),vis:N.g.visible,pvis:N.g.parent&&N.g.parent.visible,far:!!N.far,w:[w.x,w.y,w.z].map(v=>+v.toFixed(2)),size:[bb.max.x-bb.min.x,bb.max.y-bb.min.y].map(v=>+v.toFixed(2)),tris:N.tris}; }; }

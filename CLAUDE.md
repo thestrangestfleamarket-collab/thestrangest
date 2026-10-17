@@ -37,6 +37,12 @@ published to its own artifact, **https://claude.ai/artifact/X2Bk8UjQKP8yfLdLtVVn
 new places). A place's code is its own file in `src/`; `map-pre.js` says where each place stands (its offset, its level), `map-post.js` joins
 them (the ground, the levels, what cuts away). Its first places: the bodega, the pool room, the subway station and its stairs.
 
+**On the live website** (owner, 17 Oct 2026): THE MARKET is at **thestrangestfleamarket.com/market**, for logged-in players only (the game's
+door checks the login, as for the game). The live copy lives in the game's repo as `market/market.html`; the game's build publishes it. To
+update it: build here, copy `dist/market.html` over `market/market.html` in `bralynnb/tsfm` (keep the `<!doctype html>` and the note at its
+top), and open a pull request there (the game's rules apply to that repo: set its menu's version to the pull request's number; merging is
+the owner's call, and merging publishes). The artifact link above is the quick way to try a change before that.
+
 ## What's here
 
 - `build.py` builds `dist/market.html` (THE MARKET: one page; three.js r160 from jsdelivr). Run: `python3 build.py` (with `../tsfm` checked out, or

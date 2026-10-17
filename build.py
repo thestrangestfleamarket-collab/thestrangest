@@ -166,4 +166,20 @@ mod=rp(mod,"const cloud=RIG.bake(0.5,1), st=RIG.create();","const cloud=RIG.bake
 mod=rp(mod,"if(UI.freeCam)disp.copy(UI.camT); else disp.set(pos.x,py,pos.z);","if(UI.freeCam)disp.copy(UI.camT); else disp.set(pos.x,py+(ED.on?0.85:0),pos.z);")
 mod=rp(mod,"  marker.visible=!!target;","  UI.goTick();\n  marker.visible=!!target;")
 head=rp(head,'<div><b>Click</b> the ground to walk there</div>','<div><b>Double-click</b> the ground to walk there, or a thing to go to it</div>')
+# THE NEON, REAL (owner, 17 Oct 2026: "the light isnt taking into account its surroundings", "match the style", "totally disappears when diff
+# angles ... just laid on map point at me"): its letters as glowing tubes with depth (a little block for every lit square of the game's
+# lettering) where the flat painted plate was; its light in the window among them, casting shadows, so the walls keep it to the window, the
+# pavement in front and the shop behind; and every glow in the picture stepped and dithered in square blocks, as the game's light is
+mod=rp(mod,"MK.neon=(x,y,z,s,c)=>{ PNAME='neon sign'; const W=tw(s,2)+4, f=face(W,14,null,[[s,c,2,2]],FL(y),x-W/FP/2,z+7,W/FP);\n  const p=prop([WF(x-.3,x+.3,y),Bw(x-W/FP/2,x+W/FP/2,y,-.12,-.04,z-7,z+7,c,{foot:0,em:1,fj:f,fi:()=>null,top:()=>null})]); LAMPS.push({x,y:y+.4*WD(y),z,r:2.2,c:[c[0]/255,c[1]/255,c[2]/255],prop:p}); return p; };",
+"MK.neon=(x,y,z,s,c)=>{ PNAME='neon sign'; const W=tw(s,2)+4, cells=[]; txt((a,b)=>cells.push([a,b]),s,2,2,c,2);\n  const p=prop([WF(x-.3,x+.3,y)]); NEONS.push({x,y,z,W,cells,c}); LAMPS.push({x,y:y+.3*WD(y),z,r:2.2,c:[c[0]/255,c[1]/255,c[2]/255],prop:p,neon:true}); return p; };   // (the tubes and their light: bodbuild.js)")
+mod=rp(mod,"    if(l.r>=3){ L.castShadow=true;","    if(l.r>=3||l.neon){ L.castShadow=true;")
+mod=rp(mod,"  for(const l of BOD.LAMPS){ const cm=Math.max(...l.c);","""  // the neon's tubes: a glowing block for each lit square of its letters (2 art px), a tube's depth, read from both sides of the glass
+  for(const N of NEONS){ const n=N.cells.length/4, k=1/24, geo=new THREE.BoxGeometry(2*k*TILE,Y(2)-Y(0),2*k*TILE*.8), me=new THREE.InstancedMesh(geo,new THREE.MeshBasicMaterial({color:new THREE.Color(N.c[0]/255*1.1,N.c[1]/255*1.1,N.c[2]/255*1.1)}),n), m4=new THREE.Matrix4(); let i=0;
+    for(const [a,b] of N.cells){ if(a%2||b%2)continue; m4.makeTranslation(X(N.x-N.W*k/2+(a+1)*k),Y(N.z+7-(b+1)),Z(N.y-.08)); me.setMatrixAt(i++,m4); }
+    me.count=i; me.castShadow=false; me.receiveShadow=false; scene.add(me); }
+  for(const l of BOD.LAMPS){ const cm=Math.max(...l.c);""")
+mod=rp(mod,"bloom=new UnrealBloomPass(new THREE.Vector2(256,256),1.3,0.6,0.62); composer.addPass(bloom);","""bloom=new UnrealBloomPass(new THREE.Vector2(256,256),1.3,0.6,0.62); composer.addPass(bloom);
+{ const cm=bloom.compositeMaterial; cm.fragmentShader=cm.fragmentShader.replace(/}\\s*$/,`  vec3 bc=gl_FragColor.rgb; float bm=max(bc.r,max(bc.g,bc.b)); ivec2 bq=ivec2(mod(gl_FragCoord.xy,4.));
+    float bt[16]=float[16](0.,8.,2.,10.,12.,4.,14.,6.,3.,11.,1.,9.,15.,7.,13.,5.); float bs=5., bv=bm<0.07?0.:max(1./bs,floor(bm*bs+bt[bq.x+bq.y*4]/16.)/bs); gl_FragColor.rgb=bv>0.?bc/bm*bv:vec3(0.);   // (its faint end cut, not a scatter of dots) }`); cm.needsUpdate=true;
+  bloom.renderTargetsHorizontal[0].texture.magFilter=bloom.renderTargetsHorizontal[0].texture.minFilter=THREE.NearestFilter; }   // (the glow in steps, dithered, in square blocks: the game's light, not a soft haze)""")
 os.makedirs('dist',exist_ok=True); open('dist/market.html','w').write(head+mod); print('built dist/market.html')

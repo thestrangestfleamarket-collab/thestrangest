@@ -3,7 +3,7 @@
 // subway station under the lot west of the bodega, its stairs down from the sidewalk into the station's exit tunnel. Two levels: the street's
 // and the station's (98 art px under it), each its own walls, ground and lights; going down the stairs takes you from one to the other.
 // Places in the bodega's tiles (the game's own, its door at the scene's middle); each place built by its own code, moved to its spot ----
-const SHL=[], cutWalls=[], lamps=[], trees=[], shopGroups=[]; let night=1, nightTo=1; const C1=new THREE.Color(), C2=new THREE.Color(); function applyTime(){}
+const NEONS=[], SHL=[], cutWalls=[], lamps=[], trees=[], shopGroups=[]; let night=1, nightTo=1; const C1=new THREE.Color(), C2=new THREE.Color(); function applyTime(){}
 const ZU=1/(PPU*Math.cos(Math.PI/6)), TILE=33.9/PPU, QS=new URLSearchParams(location.search), LAMPI=8, LAMPD=1.6;
 const SOL={up:[],down:[]}, FIX={up:[],down:[]}; let solids=SOL.up, fixed=FIX.up, BOUND, groundY, LVL='up', BOD, BODB;
 const MAPG={}, MODS={}; let MAPBAKE=0;

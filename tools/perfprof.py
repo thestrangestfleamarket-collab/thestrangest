@@ -10,7 +10,7 @@ a = h.index('function frame(now){'); b = h.index('\n}\n', a) + 3; F = h[a:b]
 SEG = [('trip=false; let B;', 'J0=B.J; J0t=now; }', 'walker rig'),
        ('W3.place(', 'if(ED.on)ED.tick();', 'walker place + physbody'),
        ('phyYouNow(dt);', 'looseDraw();', 'loose physics'),
-       (('if(PERFX.poolNear()){ const px','{ const px=FLOATS.px'), 'FLOATS.pz=pos.z; }', 'floats'),
+       ('{ const px=FLOATS.px', 'FLOATS.pz=pos.z; }', 'floats'),
        ("if(typeof UI!=='undefined'&&UI.freeCam)LITE.tick", 'LITE.tick(dt,pos.x,py+1.2*TILE,pos.z);', 'LITE.tick'),
        ('DRESS.tick(dt,pos);', None, 'DRESS'), ('{ const r=MODS.apts.tick(); if(r)solids=r; }', None, 'apts.tick'),
        ('{ const r2=STORE.stackTick&&STORE.stackTick(); if(r2)solids=r2; }', None, 'STORE.stackTick'),
@@ -18,14 +18,12 @@ SEG = [('trip=false; let B;', 'J0=B.J; J0t=now; }', 'walker rig'),
        ('FLAME.tick(dt,pos);', None, 'FLAME'), ('MUS.tick(dt);', 'STAGE.tick(dt);', 'musicians+stage'),
        ('UI.goTick(); UI.runTick();', None, 'UI'), ('CLOCK.tick(dt);', None, 'CLOCK(+weather)'), ('VIT.tick(dt);', None, 'VIT'),
        ('LOOK.tick();', None, 'LOOK'), ('for(const w of cutWalls)', '?w.foot:1e6;', 'cutWalls'),
-       ('ROOMS.tick();', None, 'ROOMS.tick'), ('STORE.tick();', None, 'STORE.tick'), (('if(PERFX.bfNear())BF.tick(dt);','BF.tick(dt);'), None, 'butterflies'), ('PERFX.tick();', None, 'PERFX.tick'),
+       ('ROOMS.tick();', None, 'ROOMS.tick'), ('STORE.tick();', None, 'STORE.tick'), ('BF.tick(dt);', None, 'butterflies'),
        ('if(wOn)WATER.step(renderer,dt);', None, 'WATER.step'), ('WATER.tickAll(renderer,dt,pos);', None, 'WATER.tickAll'),
        ('if(wOn&&WATER.mesh.visible)WATER.under(renderer,scene,cam,lamps);', None, 'WATER.under'),
        ('WATER.underAll(renderer,scene,cam,lamps);', None, 'WATER.underAll'), ('W3.shadowPass(renderer);', None, 'self-shadow passes'),
        ('if(OUTL.on)OUTL.render(renderer,scene,cam);', None, 'outline'), ('composer.render();', None, 'composer.render')]
 for s, e, n in SEG:
-    if isinstance(s, tuple): s = next(x for x in s if x in F)
-    if 'PERFX' in s and s not in F: continue
     i = F.index(s); F = F[:i] + '__PS();' + F[i:]
     j = F.index(e or s, i + 7) + len(e or s); F = F[:j] + "__PE(%r);" % n + F[j:]
 # the whole frame, and a fresh count of the renderer's work each frame
@@ -37,7 +35,7 @@ h = h[:a] + PRE + F + h[b:]
 # the renderer and the systems, for the test to look into
 EXP = ("window.__R={renderer,composer,scene,get cam(){return cam;},lamps,BATCH,ROOMS,LITE,WATER,MODS,MAPG,STORE,W3,NPCS,"
        "get MUS(){return typeof MUS!=='undefined'?MUS:null;},get PNM(){return typeof PNM!=='undefined'?PNM:null;},get SGM(){return typeof SGM!=='undefined'?SGM:null;},get DRM(){return typeof DRM!=='undefined'?DRM:null;},"
-       "get APTS(){return typeof APTS!=='undefined'?APTS:null;},OUTL,get RW(){return RW;},get RH(){return RH;},get LVL(){return LVL;},get pos(){return pos;},get FLAME(){return typeof FLAME!=='undefined'?FLAME:null;},get FIRE(){return FIRE;},get BODB(){return typeof BODB!=='undefined'?BODB:null;},get PERFX(){return typeof PERFX!=='undefined'?PERFX:null;}};")
+       "get APTS(){return typeof APTS!=='undefined'?APTS:null;},OUTL,get RW(){return RW;},get RH(){return RH;},get LVL(){return LVL;},get pos(){return pos;},get FLAME(){return typeof FLAME!=='undefined'?FLAME:null;},get FIRE(){return FIRE;},get BODB(){return typeof BODB!=='undefined'?BODB:null;}};")
 k = h.index('window.__started=true;'); h = h[:k] + EXP + h[k:]
 open(out, 'w').write(h)
 print('wrote', out, len(SEG), 'segments')

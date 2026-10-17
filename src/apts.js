@@ -106,8 +106,8 @@ const APTS={};
   for(let lv=0;lv<ST;lv++){ SOLS[lv]=[]; const R=rooms(lv), x0=A.x0, yl=R.liv.y0, y1=A.y1, hy=H.y1, bx1=R.bed.x1, k=lv*7;
     for(const f of [1,-1]){ const Yf=y=>f>0?y:2*hm-y;
       // the lights: the living room's (warm), the kitchen's
-      LIGHTS.push({x:X(x0+2.6),y:Y(lv*S+S*.55),z:Z(Yf(y1-1.5)),c:0xffd9a8,i:15},{x:X(x0+1.6),y:Y(lv*S+S*.55),z:Z(Yf(hy+1.2)),c:0xfff2dc,i:9}); }
-    LIGHTS.push({x:X(m),y:Y(lv*S+S*.55),z:Z(hm),c:0xf2ead6,i:12}); }   // (three times what they were, owner 17 Oct 2026 "fix": the hall's one lamp of 3 at 4.9 m lit nothing)
+      LIGHTS.push({x:X(x0+2.6),y:Y(lv*S+S-14),z:Z(Yf(y1-1.5)),c:0xffd9a8,i:9},{x:X(x0+1.6),y:Y(lv*S+S-14),z:Z(Yf(hy+1.2)),c:0xfff2dc,i:6}); }
+    LIGHTS.push({x:X(m),y:Y(lv*S+S-14),z:Z(hm),c:0xf2ead6,i:7},{x:X(x0+1.2),y:Y(lv*S+S-14),z:Z(hm),c:0xf2ead6,i:5},{x:X(A.x1-1.2),y:Y(lv*S+S-14),z:Z(hm),c:0xf2ead6,i:5}); }   // (brighter, and the hall lit end to end: the upper floors were very dark, 17 Oct 2026)
   // ---- built: the batch (the pieces of this house: lit, clipped above the ceiling you're under), its solids (the outer walls but the door; the
   // rooms' walls and what stands in them, floor by floor), its lights (only on while you're inside, but the door's), the cutaway each frame
   BATCH.build((k,map,emap)=>k==='B'?new THREE.MeshBasicMaterial({map,side:THREE.DoubleSide,alphaTest:.5,clippingPlanes:[HP]}):new THREE.MeshLambertMaterial({map,alphaTest:.5,side:THREE.DoubleSide,clippingPlanes:[HP],...(emap?{emissiveMap:emap,emissive:0xffffff,emissiveIntensity:1.3}:{})}));
@@ -118,7 +118,7 @@ const APTS={};
   for(let lv=0;lv<ST;lv++){ const R=rooms(lv), yl=R.liv.y0, seg=(ax,at,a0,a1,holes)=>{ let a=a0; for(const h of [...holes].sort((p,q)=>p.a0-q.a0)){ if(h.a0>a)SOLS[lv].push(ax==='x'?[X(a),Z(at-T),X(h.a0),Z(at+T)]:[X(at-T),Z(a),X(at+T),Z(h.a0)]); a=h.a1; } if(a1>a)SOLS[lv].push(ax==='x'?[X(a),Z(at-T),X(a1),Z(at+T)]:[X(at-T),Z(a),X(at+T),Z(a1)]); };
     const dr=a=>({a0:a-DW,a1:a+DW}); seg('x',H.y1,A.x0,A.x1,[dr(A.x0+1.5),...(R.pass?[dr(A.x1-.75)]:[])]); seg('x',H.y0,A.x0,A.x1,[dr(A.x1-1.5)]);
     for(const f of [1,-1]){ const Yf=y=>f>0?y:2*hm-y, yL=Yf(yl), ya=Math.min(yL,Yf(H.y1)), yb=Math.max(yL,Yf(H.y1)); seg('x',yL,A.x0,R.bed.x1,[dr(A.x0+1.6),dr(A.x0+3.9),dr(A.x0+5.4)]); seg('y',R.kit.x1,ya,yb,[]); seg('y',R.bath.x1,ya,yb,[]); if(R.pass&&f>0)seg('y',R.pass.x0,H.y1,A.y1,[]); } }
-  for(const L of LIGHTS){ const P=new THREE.PointLight(L.c,0,8*TILE,1.6); P.position.set(L.x,L.y,L.z); P.userData.i0=L.i; scene.add(P); L.light=P; }   // (hung at half the storey height, reaching 8 tiles: at the ceiling with a 5.5-tile reach, the floor 4.9 m under got next to nothing)
+  for(const L of LIGHTS){ const P=new THREE.PointLight(L.c,0,6.5*TILE,1.6); P.position.set(L.x,L.y,L.z); P.userData.i0=L.i; P.userData.in=cur=>!!cur&&APTS.in&&P.position.y>cur.y0-.3&&P.position.y<cur.y1-.5; scene.add(P); L.light=P; }   // (in: the whole floor's lamps light your room, not just the one in it: the rooms were dark; map-post.js's LITE)
   // where you stand in it: the floor under you (the flight carries you between floors), which rooms' solids count, the clip above your ceiling
   const SY=Y(S), x0s=X(A.x0), x1s=X(A.x1), z0s=Z(A.y0), z1s=Z(A.y1), sx0=X(STX[0]), sx1=X(STX[1]), sz0=Z(STY[0]), sz1=Z(STY[1]);
   APTS.inside=(x,z)=>x>x0s&&x<x1s&&z>z0s&&z<z1s;

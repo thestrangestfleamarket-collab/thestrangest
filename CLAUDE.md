@@ -365,6 +365,17 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
 - **The goldfish deleted** (owner, 17 Oct 2026: "delete the fish raincoat character"): out of the street (`npc-map.js`) and the data (`data/goldfish.json`, `data/full/goldfish.json`); `tools/goldfish-paint.py` stays.
 - **? lists what you can do** (owner, 17 Oct 2026: "pressing ? should give me list of all possible actions and moves for my player"; `UI.moves`, `ui.js`): every key's action as KEYS has them, the fighting moves and their chains, his own moves (ANIMATE), the mouse and the double click's uses.
 - **Shift+R taken out** (owner, 17 Oct 2026: "resolution is fine as it is, take away shift+r option"): no table of resolution by zoom; the rule above stands (`RESI`, `ZUPX`).
+- **NPC lives** (17 Oct 2026, the paused plan built; `src/lives.js`, after `clip.js` in build.py, `LIVES.init()` after `CLIP.run()`): every street
+  walker who isn't a guard, a troublemaker, a dragon or a creature has a day by the clock (`CLOCK.h`), his hours shifted a little from the next's:
+  asleep at home till seven (the apartment house's hall, the apartment building's lobby or hallway; the skeleton pawns in the dungeon, the gold one on
+  the platform), breakfast at the Diner, work (the bodega, the dojo, the stalls, the park, the castle, the platform), lunch, work, the evening on the
+  street or in the park (the street as full at seven as before), a few to the Bar, home by eleven. **Far** (out of the picture and more than four
+  tiles from you, indoors where you aren't, on a level not shown: `NPCS.tick`, `LIVES.hidden`) a character is neither drawn nor his rig run: his
+  numbers walk him four times a second along the street's lanes and each place's way in (its door, its room), a sidestep round what blocks him,
+  down a stair with his level and group switched halfway; in the picture again his own tick takes over where his numbers are (one state, `st`, no
+  pop). A far one blocks no one (`makeNPC`'s walk, `collide`, `clip.js`). The guards go end to end of their beats when far, the creatures and the
+  bear wander on. Not done: a pose for sitting or sleeping (they stand, idle); the apartment house's upper floors (no stairs); the stacked rooms
+  (no way in on foot). `?lives=1` lists everyone; `?lives=0` the old rule (frozen when far). `tests/livescheck.cjs` (its cost figures at the head of lives.js).
 - **The grain, not halftone** (owner, 17 Oct 2026: "i want to avoid these types of shadows and grids half tone, can we do the shadows style i mentioned earlier"): the light's steps broken by a noise fixed to the world's art pixels, on by default (16 steps; `DITH` in `map-pre.js`; GRAPHICS' LIGHT GRAIN: on, strong 12, fine 24, off); no 4x4 ordered (Bayer) grid anywhere: the characters' shading, the see-through and the neon's halo take a grain instead.
 
 - **Every panel closes and moves** (owner, 17 Oct 2026: "make sure menus have way to exit out, allow all menus to be draggable"; the end of `ui.js`): an X in each panel's corner (the menu, HIS SHAPE, YOUR LOOKS, the world editor, the ? list, Shift+R's, the SHARPEN bar, the help, stats and shadows boxes) and a drag by any plain part of it (not its buttons, sliders, fields or the map). A new panel joins by its id in `PANS`.
@@ -501,6 +512,32 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
   place as it's set out is new code), Cherry Station at the Avenue's north end, characters on the Avenue, the museum's window and the aquarium's,
   the cross street at the west end. **The budget, kept**: everything new is built after the game opens with the four rooms (`STEPS`, `STORE.later`),
   nothing at the loading line; one lamp a shell (LITE's pool); the only-your-room rule covers them.
+- **The paused work finished** (17 Oct 2026, "lets finish those paused ones, go"; the branches in HANDOFF.md, all merged here):
+  **The avatar editor** (Shift+K, DISPLAY's AVATAR EDITOR, a double click on yourself; `src/avatar.js`): one panel, six tabs: BODY (MALE / FEMALE,
+  height, a slider a region, the sides together or apart, the feet and TOES round / pointed / square, the sculpting brush, HIS SHAPE's pieces, moves
+  and animation a button away), LOOK (name, hair, eyes, every colour: five swatches and a picker each), TEXTURES (a pattern woven in his shader on the
+  shirt, the trousers, the shoes: stripes, plaid, denim, knit, camo, dots, its scale and two colours), OUTLINE (on, its colour, 1-4 pixels), SHADING
+  (smooth or stepped, steps, depth, SELF, a rim light, lamps or flat), PRESETS (named looks in the browser, RESET, DOWNLOAD / LOAD). `tests/avshot.cjs`.
+  **The perf fixes** (`src/perf.js`, `docs/perf-audit.md` with the numbers; `?perfx=0` all off, `?perfx=-5` one off): the rooms' insides split off and
+  drawn only from inside, self-shadows for you and the two nearest, real bounds on everything, the lamp's cube 512, the floats and butterflies only
+  near them, the musicians hidden past 18; and fix 5 remade: the Walker indexed to what he wears (57K to 15K triangles), the batches cut into map chunks
+  of 16 tiles for the frustum, the bodega's own mesh split by room, the pool's water not drawn from the street. The street by day: 1.71M to 410K
+  triangles a frame; the main pass 1.60M to 397K. **The trees' look**: the round crown lit in one gradient with soft shadows letting a little light
+  through (`?treelook=3`, now the game's; 0 the old, 1 and 2 the others; `tests/treeshot.cjs`): +4 shader programs, no frame cost measured.
+  **The map editor's next round** (`src/mapedit.js`): every building moves live (the bodega, the apartment house, Ghost Street, the Diner and the Bar
+  carried: their batched faces hidden where they were, a copy with the drag, their unbatched meshes and lamps along, the old spot empty); PLACE keeps a
+  place where it's put and picks up the next, one SAVE (RELOADS) at the end; RAISE / LOWER (a quarter tile, Shift a tile; a stack, the Diner on the
+  Bar) and GROW / SHRINK (5%, about the middle of the front) for the Diner and the Bar only, built lifted as the stacked rooms are (their floor, solids
+  and ground with them; the musicians' stage rides the Bar's lift) and sized (`LAY.h`, `LAY.s` in `map-pre.js`; EXPORT carries them); the bodega, the
+  house and Ghost Street move only (their builders set their own heights and sizes). `tests/mapedit4.cjs`. **The Fox angular**, like his sprite
+  (CHARS[1] in the game's 10-characters.data, read as data): boxy head, wedge muzzle, pyramid ears, a chunky quilted puffer, block mitts, flared legs,
+  588 triangles (was 3,532); `tbox` and a part's `flat` in `npc-parts.js`. **The apartment house lit**: brighter lamps, the hall lit end to end, a
+  floor's lamps light its rooms (`userData.in` on a lamp, LITE in map-post.js); **the cigarette rack** hung 42 px higher, above the Fox's head.
+  **The hitbox-walled spots** (a corner of the Diner between its chairs, behind the bar counter, a strip at the castle's drums) are left as they are:
+  pockets between things, closed by their true boxes, that no one needs.
+- **THE MARKET's artifact, from this account** (17 Oct 2026): X2Bk8UjQKP8yfLdLtVVn3s can't be opened from here, so THE MARKET is published at
+  **https://claude.ai/artifact/PnmQqhkusfewby35tf4zo5** (update that one from here).
+  **This branch's build** (17 Oct 2026, the paused work finished, while other sessions were publishing their own branches to that link): https://claude.ai/artifact/1QpVqQujaY6D6V1F19ZmKy; once the branches are merged, one publish to the link above.
 
 ## THE MARKET: the one official map
 

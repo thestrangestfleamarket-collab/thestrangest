@@ -81,7 +81,7 @@ function makeNPC(D,o){ const N={key:o.key,name:o.name,names:o.names,lv:o.lv||'do
   { const SH=QS.get('sheet'), NA=QS.get('npcat')||(SH&&SH+',field'); if(NA){ const [k,x,z]=NA.split(','); if(k===N.key){ if(x==='field'){ st.x=SH?BOUND.x1-.5*TILE:BOD.XS(BOD.MAP.x1+14); st.z=BOD.ZS((BOD.MAP.y0+BOD.MAP.y1)/2); }   /* (his sheet: just inside the map's east edge, as far as the free camera goes) */ else{ st.x=+x; st.z=+z; } st.hold=true;
     if(SH===N.key){ N.sheet=true; st.face={x:st.x+1,z:st.z+1}; st.h=Math.PI/4; } } } }
   // (where he may stand: his own say, o.free, or else out of every solid of his floor: CLIP, strict hitboxes)
-  const free=N.free=o.free||((x,z,R)=>!CLIP.hit(SOL[N.lv]||SOL.up,x,z,R));
+  const free=N.free=o.free||((x,z,R)=>!CLIP.hit(SOL[N.lv]||SOL.up,x,z,R)); N.ground=ground;   // (N.free, N.ground: his own, and a life's say over them, anywhere on the map: lives.js)
   const pick=()=>{ if(o.pick){ o.pick(st); return; } if(o.roam){ if(!ROAM.pick(st,free)){ st.to=null; st.wait=1; } return; } for(let k=0;k<12;k++){   // (o.pick: where he goes next, his own say: a guard's beat)
     const r=(Math.random()<.5?-1:1)*(2+Math.random()*7)*TILE; st.to=longX?{x:Math.max(LX0,Math.min(LX1,st.x+r)),z:LZ0+Math.random()*(LZ1-LZ0)}:{x:LX0+Math.random()*(LX1-LX0),z:Math.max(LZ0,Math.min(LZ1,st.z+r))}; if(free(st.to.x,st.to.z,st.R))return; } st.to=null; st.wait=1; };   // (o.free: where he may stand, when he has more than a lane: a spot that isn't, picked again)
   const block=(x,z,R)=>Math.hypot(x-st.x,z-st.z)<st.R+R;
@@ -94,15 +94,15 @@ function makeNPC(D,o){ const N={key:o.key,name:o.name,names:o.names,lv:o.lv||'do
         if(turn<.5){ const step=Math.min(d,st.v*dt), nx=st.x+ex/d*step, nz=st.z+ez/d*step;
           // (he waits for you, or for the other, to be out of his way; held up long, he goes somewhere else)
           // (another in the way, standing or walking, is never walked into; a step taking him further from one he's already touching is let through, so two who meet never stay stuck in each other)
-          if(!free(nx,nz,st.R)){ st.to=null; st.wait=.5; }   // (something in his way: somewhere else)
-          else if(Math.hypot(you.x-nx,you.z-nz)<st.R+.35||NPCS.some(q=>q!==N&&q.lv===N.lv&&q.key!=='dragon'&&q.mode!=='hidden'&&q.blocks(nx,nz,st.R)&&q.gap(nx,nz)<q.gap(st.x,st.z))){ if((st.held=(st.held||0)+dt)>2){ st.to=null; st.held=0; st.wait=1; } }
+          if(!N.free(nx,nz,st.R)){ st.to=null; st.wait=.5; }   // (something in his way: somewhere else)
+          else if(Math.hypot(you.x-nx,you.z-nz)<st.R+.35||NPCS.some(q=>q!==N&&!q.far&&q.lv===N.lv&&q.key!=='dragon'&&q.mode!=='hidden'&&q.blocks(nx,nz,st.R)&&q.gap(nx,nz)<q.gap(st.x,st.z))){ if((st.held=(st.held||0)+dt)>2){ st.to=null; st.held=0; st.wait=1; } }
           else{ st.x=nx; st.z=nz; moving=true; st.held=0; } } } }
     else{ if(st.face)want=Math.atan2(st.face.x-st.x,st.face.z-st.z); if(!st.hold&&(st.wait-=dt)<=0)pick(); }
     let dh=((want-st.h+Math.PI*3)%(Math.PI*2))-Math.PI; st.h+=dh*Math.min(1,dt*5);
     st.ph+=dt*(moving?o.stride:1.6);
     // the walk: rocking side to side, a bob each step; standing, a slow breath
     const rock=o.skin?0:moving?Math.sin(st.ph)*o.rock:Math.sin(st.ph)*.02, bob=o.skin?0:moving?Math.abs(Math.sin(st.ph))*o.bob:0;   // (a rigged one walks and breathes with his own bones)
-    g.position.set(st.x,ground(st.x,st.z)+bob,st.z); g.rotation.set(0,st.h,0); body.rotation.set(0,0,rock); if(!o.skin)body.scale.y=s*ZU*24/TILE*(moving?1:1+Math.sin(st.ph)*.012); if(o.anim)o.anim(dt,moving,st,s); };
+    g.position.set(st.x,N.ground(st.x,st.z)+bob,st.z); g.rotation.set(0,st.h,0); body.rotation.set(0,0,rock); if(!o.skin)body.scale.y=s*ZU*24/TILE*(moving?1:1+Math.sin(st.ph)*.012); if(o.anim)o.anim(dt,moving,st,s); };
   N.blocks=(x,z,R)=>block(x,z,R); N.gap=(x,z)=>Math.hypot(x-st.x,z-st.z);
   // push you out of him (collide's last step)
   N.push=p=>{ const dx=p.x-st.x, dz=p.z-st.z, d=Math.hypot(dx,dz), R=st.R+.3; if(d<R&&d>1e-4){ p.x=st.x+dx/d*R; p.z=st.z+dz/d*R; } };
@@ -133,16 +133,20 @@ ROAM.pick=(st,free)=>{ const L=ROAM.L; for(let k=0;k<12;k++){ let to;
 const BEAR=makeNPC(BEARD,{key:'bear',name:'BEAR',names:BEARD.names,metres:1.9,rank:[0,0,0,0,2,3,0,1,0],at:-67,radius:.45,speed:.7,stride:5.5,rock:.05,bob:.035});
 // ONLY WHAT'S NEAR OR SEEN (owner, 17 Oct 2026, the budget: "far characters neither drawn nor moved"; and "dont render anyone not visible (they
 // still exist just dont show them until you must)"): a character out of the picture is not drawn, whoever he is, but he still lives: near you
-// (25 tiles) he is moved and thinks as before; farther than that and out of the picture, or on a level not shown, he is neither moved nor drawn
-// (nor his own shadow made: shadowPass) till he's near or seen again; a troublemaker's mind always runs (it brings him up the subway stairs
-// after dark). The hiding is done only round the picture's drawing (NPCS.cull, the loop), so what each one's own mind, rooms.js or the stage
-// does with his visibility is never overwritten. The bar's musicians and the guitarist join the cull through NPCS.extra (their g and at)
+// he is moved and thinks as before; out of the picture and more than four tiles from you, or on a level not shown, or indoors where you aren't
+// (his life's say: lives.js), he is neither moved nor drawn (nor his own shadow made: shadowPass) till he's near or seen again: his numbers walk
+// him meanwhile (LIVES.tick, four times a second; the hand-off is at the picture's edge, the same state, st, on both sides). ?lives=0: the rule
+// as it was (25 tiles and out of the picture), far ones frozen. A troublemaker's mind always runs (it brings him up the subway stairs after
+// dark). The hiding is done only round the picture's drawing (NPCS.cull, the loop), so what each one's own mind, rooms.js or the stage does
+// with his visibility is never overwritten. The bar's musicians and the guitarist join the cull through NPCS.extra (their g and at)
 { const FR=new THREE.Frustum(), M4=new THREE.Matrix4(), SP=new THREE.Sphere(), V=new THREE.Vector3(); NPCS.extra=[];
-  NPCS.tick=(dt,you)=>{ M4.multiplyMatrices(cam.projectionMatrix,cam.matrixWorldInverse); FR.setFromProjectionMatrix(M4); const R=25*TILE;
-    for(const N of NPCS){ const p=N.g.position, seen=FR.intersectsSphere(SP.set(p,Math.max(2*TILE,N.cullR||0))), far=!('mode' in N)&&!N.sheet&&(!N.g.parent.visible||Math.hypot(p.x-you.x,p.z-you.z)>R&&!seen);
+  NPCS.tick=(dt,you)=>{ M4.multiplyMatrices(cam.projectionMatrix,cam.matrixWorldInverse); FR.setFromProjectionMatrix(M4); const R=25*TILE, LV=LIVES.on;
+    for(const N of NPCS){ const p=N.g.position, d=Math.hypot(p.x-you.x,p.z-you.z), seen=FR.intersectsSphere(SP.set(p,Math.max(2*TILE,N.cullR||0)));
+      const far=LIVES.force==='near'?false:LIVES.force==='half'&&!('mode' in N)?!!(NPCS.indexOf(N)&1):!('mode' in N)&&!N.sheet&&(!N.g.parent.visible||(LV?(LIVES.ready&&LIVES.hidden(N))||d>4*TILE&&!FR.intersectsSphere(SP.set(p,3*TILE)):d>R&&!seen));
       N.far=far; N.hid=!N.sheet&&(far||!seen);
       if(!far)N.tick(dt,you); }
-    for(const X of NPCS.extra){ const a=X.at; X.hid=!!a&&!FR.intersectsSphere(SP.set(V.set(a.x,(a.y||0)+1,a.z),2*TILE)); } };
+    for(const X of NPCS.extra){ const a=X.at; X.hid=!!a&&!FR.intersectsSphere(SP.set(V.set(a.x,(a.y||0)+1,a.z),2*TILE)); }
+    LIVES.tick(dt,you); };
   // round the picture: on, the hidden ones put out of sight; off, each back as he was
   NPCS.cull=on=>{ const one=(o,g)=>{ if(on){ if(o.hid&&g.visible){ g.visible=false; o._cv=true; } } else if(o._cv){ g.visible=true; o._cv=false; } };
     for(const N of NPCS)one(N,N.g); for(const X of NPCS.extra)if(X.g)one(X,X.g); }; }

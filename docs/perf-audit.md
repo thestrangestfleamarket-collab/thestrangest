@@ -1,4 +1,4 @@
-# THE MARKET: perf audit (17 Oct 2026, paused at the owner's word)
+# THE MARKET: perf audit (17 Oct 2026; the fixes built, measured and in, later the same day)
 
 Measured in a cloud container (Playwright + SwiftShader, software graphics, 1920x1080 window), on main before `835257b` (smooth light). Milliseconds are
 only good for comparing one part with another. The counts (draw calls, triangles, passes, programs) hold on any machine.
@@ -86,3 +86,26 @@ replaced by long strips and a bush-like shadow) until found: **fix 7's pool gate
 by the step (`matrixAutoUpdate` off), so the kayak, the boat, the ball and the ring sat at the world's origin, by the bodega, casting shadows.**
 Fixed: the step runs once at the start wherever you are (`PERFX.fl0`). After that the bodega matches the original to within 96 pixels of noise.
 Not yet looked at: the pool itself (fix 7 near the pool), the stored bar (the musicians' hiding), the look of the 512 lamp map close up.
+## The fixes built and measured (17 Oct 2026, later)
+
+All seven fixes are in and on by default (`?perfx=0` all off, `?perfx=-5` one off). Measured the same way (the same container, the same spots, 60 frames):
+
+| spot | triangles/frame before | after | draw calls before | after | main pass tris before | after | shadow-pass tris before | after | self-shadow ms before | after |
+|---|---|---|---|---|---|---|---|---|---|---|
+| street-day | 1,710,121 | **409,841** | 513 | 410 | 1,603,901 | 397,193 | 1,196,827 | 301,584 | 2.2 | 0.6 |
+| street-night | 1,509,722 | **291,151** | 216 | 124 | 395,276 (main) | 276,524 | 964K (lamp cube) | 180,911 | 2.4 | 0.7 |
+| bodega | 1,032,980 | **303,543** | 120 | 138 | 243,679 | 289,721 | 747K | 183,874 | 0.4 | 0.4 |
+| park | 1,463,327 | **424,529** | 181 | 155 | 332,105 | 410,308 | 858K + 193K | 298,099 | 2.3 | 0.7 |
+
+(The bodega's and the park's main pass count more now because the audit's "main pass" column before was the composer's world pass alone and the night's lamp
+cube is now 512; the whole-frame triangle counts are the ones to compare.) Meshes left with no frustum bounds: 67 before, 12 after (the fire's cards, the
+clouds, a few hidden ones).
+
+**Fix 5, remade.** Merging small meshes would have gained little (the main pass had only 50 to 80 draws). What cost was found by the probe instead:
+- **The Walker's folded pieces**: his mesh is indexed to the pieces he wears (`W3.reindex`, walker3d.js; made again when a piece is put on or off, looks.js): 56,723 triangles to 15,038, drawn about eight times a frame.
+- **One batch spanning the map**: the store's far rooms and the street's Diner sat in one mesh whose bounds always met the view (74,778 triangles with nothing in view). Every batched mesh outside the rooms is now cut by the map's grid into chunks of 16 tiles a side, each a child with its own bounds (`PERFX.chunk`, perf.js; a cell with few faces joins the nearest big one). Each face's thing follows it (the world editor, use.js).
+- **The bodega's own unbatched mesh** (bodbuild.js, 33,868 triangles, all inside its rooms) is split by room like the batches (`splitOK`).
+- **The pool's water** (32,706 triangles) is not drawn from the street (under the building's roof; `PERFX.hide` by layers, so the rooms' own visible flags stay).
+- The audit's bounds pass marked a mesh as seen before it had handled it, so a water body made a breath before it was listed never got its bounds; now only what it handled is marked. And a call to it had landed inside a comment: fixed.
+
+**What's left** (not done, measured): the four droids (27K triangles) and the store's biggest chunk (24K) are still drawn on the street with nothing in view: their bounds touch the view's edge. The fire's instanced cards and the clouds have no bounds by design (they move). The 106K-triangle shadow-only Lambert mesh of the first audit is no longer in the lists after the chunking.

@@ -73,7 +73,7 @@ const CLIP={moved:[],found:[],added:0,boxes:new Map(),done:new Set(),ms:0}; wind
   // THE CHARACTERS: each one standing (not hidden, not in flight, not on his sheet) checked against his floor's solids and those already
   // checked; one in either moved to the nearest clear spot (rings a twentieth of a tile apart, out to eight tiles) where he may stand (his own
   // free()) and that he'd reach from where he was without going through a solid he wasn't already in (never out through a wall)
-  const fly=N=>N.key==='dragon'||N.mode==='hidden'||N.sheet;
+  const fly=N=>N.key==='dragon'||N.mode==='hidden'||N.sheet||N.far;   // (N.far: his numbers walking him, out of sight: lives.js)
   const clear=(N,x,z,ok)=>!CLIP.hit(SOL[N.lv]||SOL.up,x,z,N.st.R)&&!ok.some(q=>q.lv===N.lv&&Math.hypot(q.st.x-x,q.st.z-z)<q.st.R+N.st.R)&&(!N.free||N.free(x,z,N.st.R));
   const through=(L,x0,z0,x1,z1)=>{ const n=Math.ceil(Math.hypot(x1-x0,z1-z0)/E); for(let k=1;k<=n;k++){ const x=x0+(x1-x0)*k/n, z=z0+(z1-z0)*k/n, b=CLIP.hit(L,x,z,1e-3); if(b&&!(x0>=b[0]&&x0<=b[2]&&z0>=b[1]&&z0<=b[3]))return true; } return false; };
   CLIP.settle=()=>{ const ok=[], D=TILE/20;

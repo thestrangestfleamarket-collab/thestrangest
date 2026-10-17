@@ -52,9 +52,9 @@ tour scripts in this session's scratchpad (not in the repo): a Playwright page w
 - The yields scanner (`tools/yields.py`) stops the build on an unbalanced bracket: a `//` comment put mid-line swallows the rest of the line.
 
 # Handoff (17 Oct 2026)
+# Handoff (17 Oct 2026, later: the paused work finished)
 
-The owner paused all work here to carry on from his other account. Read `CLAUDE.md` first: it holds every decision he has made.
-This note says what was in progress and where it is.
+Read `CLAUDE.md` first: it holds every decision the owner has made. This note says what is live and what is still open.
 
 ## The sky and the sunset (17 Oct 2026, branch `claude/relaxed-gauss-xerecq`; read the CLAUDE.md entry "The sky and the sunset")
 - **Live** on https://claude.ai/artifact/PnmQqhkusfewby35tf4zo5 (version 12): the sky dome (`src/sky.js`: gradient, sun and moon discs, stars,
@@ -149,6 +149,12 @@ This note says what was in progress and where it is.
 | (none) | The Fox made more angular, like his sprite: its work was cancelled before it pushed | to redo |
 
 A branch may not exist if its work was stopped before it pushed.
+## Live now (branch `claude/admiring-davinci-6bjs2l`, its build at https://claude.ai/artifact/1QpVqQujaY6D6V1F19ZmKy; the shared link PnmQqhkusfewby35tf4zo5 was being published by other sessions' branches at the time: skyline, sky dome, power grid, the city's spine)
+- Everything that was paused in the first handoff is finished and merged here (the entry "The paused work finished" in CLAUDE.md): the avatar
+  editor (Shift+K), the perf fixes measured and fix 5 remade (`docs/perf-audit.md`), the tree look (3, the default), the map editor's next round
+  (live carries, PLACE / SAVE, RAISE / LOWER and GROW / SHRINK for the Diner and the Bar), the angular Fox, NPC lives (`src/lives.js`), the
+  apartment house lit, the cigarette rack above the Fox.
+- The old artifact link (X2Bk8UjQKP8yfLdLtVVn3s) belongs to the first account and can't be opened from this one; the link above is this account's.
 
 ## How the perf work was measured, to carry on (17 Oct 2026)
 - No game source in that container: `git clone` of `bralynnb/tsfm` needs a login there. With it beside this repo, `python3 build.py` builds `dist/market.html` with the fixes (build.py's hooks on `src/perf.js`).
@@ -157,7 +163,8 @@ A branch may not exist if its work was stopped before it pushed.
 - Open for the next: the pool with fix 7 on, the bar with the musicians' hiding, the 512 lamp map's look close up, then a build and the owner's own stats line before and after. Fix 5 (fewer draws) and the Walker's folded hair and eyes (56.7K triangles drawn about 8 times) not started.
 
 ## Known open items
-- The cigarette rack overlaps the Fox's head.
-- Spots cut off by the strict hitboxes: a corner of the Diner, behind the bar counter, a strip of the castle.
-- The apartment house's upper floors are very dark.
+- The droids (27K triangles) and the store's biggest chunk (24K) are still drawn on the street with nothing in view: their bounds touch the view's edge.
+- Hitbox-walled pockets (a corner of the Diner between its chairs, behind the bar counter, a strip at the castle's drums): left as they are, closed by things' true boxes.
+- RAISE / LOWER and GROW / SHRINK apply only to the Diner and the Bar; the bodega, the apartment house and Ghost Street would need their builders
+  rewritten to take a height and a size.
 - The live website (`bralynnb/tsfm`, `market/market.html`) is on 8.0.1. Update it only when he says "go live".

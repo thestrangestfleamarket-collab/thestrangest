@@ -119,7 +119,9 @@ this repo is `bralynnbell/thestrangest`.
   the ball and the ring. **The stalls at the gate** (the flea market's own: a toy stall with the TOYS-Psionic animals, an oddities stall with the
   Psionic crate, gems and gold), **the park's monument** (the terrain collection's ruined pillars), **its flower beds, cedars, a campfire** by a
   sitting log with the game's own smoke and a flickering light (`park.js`). Not fetched (the Drive connection's limit, or .rar files, which
-  nothing here opens): the kenney space kit, Stylized Trees, Laundry, the Village interiors, and everything over 10 MB; the plesiosaur page left.
+  nothing here opens): the kenney space kit, Stylized Trees, Laundry, the Village interiors, and everything over 10 MB. **The plesiosaur skeleton**
+  (his PointNemo pack, three.js code, not a model: `tools/nemo-bake.cjs` builds it once in a headless browser and keeps its faces, cut down) stands
+  on its base between the pillars at the round's north.
 - When a request could mean more than one thing, ask with a couple of options (or a quick mockup) before building.
 
 ## THE MARKET: the one official map

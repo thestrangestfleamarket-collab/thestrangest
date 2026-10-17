@@ -65,6 +65,9 @@ grab('park',()=>{ PARK.x0=BOD.MAP.x0; PARK.x1=BOD.MAP.x1; const X=BOD.XS, Z=BOD.
     PARK.odd=mesh([['crate',g0-4.6,P.y0+2.65,.4,.2,.95],['gem1',g0-3.9,P.y0+2.5,.22,.5,.95],['gem2',g0-3.5,P.y0+2.8,.2,1.5,.95],['gem3',g0-3.1,P.y0+2.5,.24,2.5,.95],['gold',g0-2.6,P.y0+2.7,.08,.8,.95],['gem1',g0-4,P.y0+2.85,.18,3.5,.95]],false,false);
     PARK.camp=mesh([['campfire',82.5,-47.2,.13,0],['woodpile',84,-48.5,.5,.6]],false,true); PARK.fire={x:X(82.5),z:Z(-47.2),y:.3};
     { const L=new THREE.PointLight(new THREE.Color(1,.6,.25),4,5*TILE,1.6); L.position.set(X(82.5),.7,Z(-47.2)); scene.add(L); PARK.fireL=L; }
+    // THE PLESIOSAUR SKELETON (his PointNemo pack, a three.js-code asset: tools/nemo-bake.cjs builds it once and keeps its faces, cut to some
+    // thousands, in data/props.json): the market's strangest find, on its display base between the pillars at the round's north
+    PARK.plesio=mesh([['plesio',72,-40.2,2.4,Math.PI/2]],false,true);
     PARK.more=mesh([['pillar1',66,-41.5,3.2,.3],['pillar2',78,-41.5,2.6,1.2],['sitlog',81,-48,.5,.4],['cedar1',88,-36,18,.7],['cedar2',112,-45,22,1.9],['cedar1',130,-58,16,2.4],
       ['daisy',68.3,-56,.35,0],['tulip',68.3,-54,.4,1],['rose',68.3,-52,.45,2],['sunflower',75.7,-56,.9,.5],['lily',75.7,-54,.4,1.5],['daisy',75.7,-52,.35,2.5],['hbush1',67.5,-58.8,.9,0],['hbush2',76.5,-58.8,.9,1.2]],false,false);
     for(const [x,y,m] of [[66,-41.5,3.2],[78,-41.5,2.6],[88,-36,18],[112,-45,22],[130,-58,16]]){ const r=.35*m/.84*(m>5?.06:.2); SOL.up.push([X(x)-r,Z(y)-r,X(x)+r,Z(y)+r]); FIX.up.push([X(x)-r,Z(y)-r,0,X(x)+r,Z(y)+r,m/.84*TILE]); }   // (the pillars and the cedars stand solid)

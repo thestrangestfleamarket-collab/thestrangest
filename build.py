@@ -139,7 +139,13 @@ const RESL=[.5,.75,1,1.5,2,3,4,6,8,12,16,24,32,48,64], V0=PPU*PXS;   // (past 16
 // CLOSE UP, ONE STEP FINER (owner, 17 Oct 2026: the opening "1 less than it is now, and when you zoom in to this level i want it to be this
 // resolution", his picture at 6 screen pixels a pixel, 1.5x): once a pixel of the chosen art would be 6 screen pixels or more, the art one step
 // finer; zoomed back out, back to the chosen
-const ZUPX=6, RES=()=>RESL[Math.min(RESL.length-1,RESI+(V0*ppu/PPU/(PPU*RESL[RESI])>=ZUPX?1:0))];   // (V0: screen pixels a world unit at zoom 1, as it opened)
+// THE OWNER'S OWN TABLE (17 Oct 2026: "shift+r will allow me to set the resolution level for every zoom level as permanent ... i want to be able
+// to adjust it to any level and save"): the zoom in bands (each a quarter more than the last, ZB); a band he has set keeps its own fineness, any
+// level of RESL; a band he hasn't, the nearest one he has; none set, the rule below. ZRES0 is the game's own (what he exports, saved here for
+// good); his browser's changes go over it (market-zres) until he sends them
+const ZRES0={}, ZB=()=>Math.round(Math.log(ppu/PPU)/Math.log(1.25)), ZRES=(()=>{ let o={}; try{ o=JSON.parse(localStorage.getItem('market-zres')||'{}'); }catch(e){} return Object.assign({},ZRES0,o); })();
+const zres=()=>{ if(FULLRES||RES.hold)return null; const ks=Object.keys(ZRES); if(!ks.length)return null; const b=ZB(); let best=null, bd=1e9; for(const k of ks){ const d=Math.abs(+k-b)+(+k>b?.01:0); if(d<bd){ bd=d; best=ZRES[k]; } } return best; };
+const ZUPX=6, RES=()=>{ const z=zres(); return z!=null?RESL[Math.max(0,Math.min(RESL.length-1,z))]:RESL[Math.min(RESL.length-1,RESI+(V0*ppu/PPU/(PPU*RESL[RESI])>=ZUPX?1:0))]; };   // (V0: screen pixels a world unit at zoom 1, as it opened)
 // NEVER SHARPER ZOOMED OUT (owner, 17 Oct 2026: "when i zoom out i dont want it to get this sharp ... never sharper than this resolution"): a
 // pixel is never smaller on screen than it is at the opening zoom for the sharpness chosen (MINPX); zoomed out past that, each pixel keeps its
 // size and takes in more of the world, instead of the picture getting finer (owner, 17 Oct 2026, his picture: "i dont want zoom getting any
@@ -152,7 +158,7 @@ const MINPX=()=>Math.max(1,Math.round(PXS/RES())), MAXPX=8, ZMAX=PPU*80;
 // (the menu's SHARP, 1.5x, the ceiling; the opening NORMAL, 1x, finer close up: ZUPX)
 const RESMAX=FULLRES?10:3, vpu=()=>V0*ppu/PPU, art=()=>PPU*RES(), pxS=()=>Math.max(MINPX(),Math.round(vpu()/art())), rppu=()=>Math.round(vpu()/art())<MINPX()?vpu()/pxS():art();
 function frustum(){ const u=rppu(); cam.left=-RW/2/u; cam.right=RW/2/u; cam.top=RH/2/u; cam.bottom=-RH/2/u; cam.updateProjectionMatrix(); }""")
-mod=rp(mod,"ppu*=Math.pow(ppuTo/ppu,ease); frustum();","ppu*=Math.pow(ppuTo/ppu,ease); if(pxS()!==SCL)resize(); else frustum();")
+mod=rp(mod,"ppu*=Math.pow(ppuTo/ppu,ease); frustum();","ppu*=Math.pow(ppuTo/ppu,ease); if(pxS()!==SCL)resize(); else frustum(); if(RES()!==RES.was){ RES.was=RES(); resize(); }")
 mod=rp(mod,"zoom ${(ppu/PPU).toFixed(2)}×`","zoom ${(SCL*rppu()/V0).toFixed(2)}× · art ${SCL===1&&vpu()<art()?'full':RES()+'×'}`")
 mod=rp(mod,"if(k==='-'||k==='_'){PXS=Math.min(12,PXS+1);resize();} if(k==='='||k==='+'){PXS=Math.max(1,PXS-1);resize();}",
   "if(k==='-'||k==='_'){RESI=Math.max(0,RESI-1);resize();} if(k==='='||k==='+'){ if(pxS()>1||vpu()>art())RESI=Math.min(RESMAX,RESI+1); resize(); }   // (= finer, back up to the opening's, never past)")
@@ -248,9 +254,9 @@ head=rp(head,'<div><b>Click</b> the ground to walk there</div>','<div><b>Double-
 mod=rp(mod,"MK.neon=(x,y,z,s,c)=>{ PNAME='neon sign'; const W=tw(s,2)+4, f=face(W,14,null,[[s,c,2,2]],FL(y),x-W/FP/2,z+7,W/FP);\n  const p=prop([WF(x-.3,x+.3,y),Bw(x-W/FP/2,x+W/FP/2,y,-.12,-.04,z-7,z+7,c,{foot:0,em:1,fj:f,fi:()=>null,top:()=>null})]); LAMPS.push({x,y:y+.4*WD(y),z,r:2.2,c:[c[0]/255,c[1]/255,c[2]/255],prop:p}); return p; };",
 "MK.neon=(x,y,z,s,c)=>{ PNAME='neon sign'; const W=tw(s,2)+4, cells=[]; txt((a,b)=>cells.push([a,b]),s,2,2,c,2);\n  const p=prop([WF(x-.3,x+.3,y)]); NEONS.push({x,y,z,W,cells,c}); LAMPS.push({x,y:y+.3*WD(y),z,r:2.2,c:[c[0]/255,c[1]/255,c[2]/255],prop:p,neon:true}); return p; };   // (the tubes and their light: bodbuild.js)")
 mod=rp(mod,"  for(const l of BOD.LAMPS){ const cm=Math.max(...l.c);","""  // the neon's tubes: a glowing block for each lit square of its letters (2 art px), a tube's depth, read from both sides of the glass
-  // a halo's picture: an oval of light in three steps (bright, mid, faint), each step's edge dithered (4x4 ordered), in square pixels
+  // a halo's picture: an oval of light in three steps (bright, mid, faint), each step's edge broken by a grain (no halftone grid: owner, 17 Oct 2026), in square pixels
   const HALO=(c,W,H)=>{ const cv=document.createElement('canvas'); cv.width=W; cv.height=H; const g=cv.getContext('2d'), im=g.createImageData(W,H), B=[0,8,2,10,12,4,14,6,3,11,1,9,15,7,13,5];
-    for(let j=0;j<H;j++)for(let i=0;i<W;i++){ const dx=(i+.5)/W*2-1, dy=(j+.5)/H*2-1, d=Math.hypot(dx,dy), t=(B[(j%4)*4+i%4]+.5)/16, s=d<.42+(t-.5)*.12?.5:d<.68+(t-.5)*.14?.26:d<.96+(t-.5)*.12?.1:0, q=(j*W+i)*4;
+    for(let j=0;j<H;j++)for(let i=0;i<W;i++){ const dx=(i+.5)/W*2-1, dy=(j+.5)/H*2-1, d=Math.hypot(dx,dy), t=(s0=>s0-Math.floor(s0))(Math.sin(i*12.9898+j*78.233)*43758.5453), s=d<.42+(t-.5)*.12?.5:d<.68+(t-.5)*.14?.26:d<.96+(t-.5)*.12?.1:0, q=(j*W+i)*4;
       im.data[q]=c[0]; im.data[q+1]=c[1]; im.data[q+2]=c[2]; im.data[q+3]=Math.round(s*255); }
     g.putImageData(im,0,0); const t=new THREE.CanvasTexture(cv); t.magFilter=t.minFilter=THREE.NearestFilter; t.generateMipmaps=false; t.colorSpace=THREE.SRGBColorSpace; return t; };
   for(const N of NEONS){ const n=N.cells.length/4, k=1/24, geo=new THREE.BoxGeometry(2*k*TILE,Y(2)-Y(0),2*k*TILE*.8), me=new THREE.InstancedMesh(geo,new THREE.MeshBasicMaterial({color:new THREE.Color(N.c[0]/255*1.1,N.c[1]/255*1.1,N.c[2]/255*1.1)}),n), m4=new THREE.Matrix4(); let i=0;

@@ -101,7 +101,7 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
   const MOVE=`attribute float pidx; uniform mat4 uPM[${NP}];`, AT=`mat4 PM=uPM[int(pidx+0.5)];`;
   const VS=MOVE+`attribute vec3 c0,c1,c2,cd; varying vec3 vC0,vC1,vC2,vCd,vN,vW; void main(){ `+AT+` vN=mat3(PM)*normal; vC0=c0; vC1=c1; vC2=c2; vCd=cd; vec4 w=modelMatrix*(PM*vec4(position,1.)); vW=w.xyz; gl_Position=projectionMatrix*viewMatrix*w; }`;
   const FS=`uniform vec3 uL,uTint; uniform float uLv; uniform mat4 uLVP; uniform sampler2D uSM; uniform int uLook; uniform mat3 uG; uniform vec3 uLP[2],uLC[2],uCamW; varying vec3 vC0,vC1,vC2,vCd,vN,vW;
-  float bay(vec2 p){ ivec2 q=ivec2(mod(p,4.)); float m[16]=float[16](0.,8.,2.,10.,12.,4.,14.,6.,3.,11.,1.,9.,15.,7.,13.,5.); return m[q.x+q.y*4]/16.; }
+  float bay(vec2 p){ return fract(sin(dot(floor(vW*21.24+.001),vec3(12.9898,78.233,37.719)))*43758.5453); }   /* (owner, 17 Oct 2026: no halftone grids: a grain fixed to the world's art pixels, not a 4x4 pattern on the screen) */
   vec3 room(vec3 nw,out vec3 rimc){ vec3 a=vec3(0.07,0.08,0.11); rimc=vec3(0.); for(int i=0;i<2;i++){ vec3 d=uLP[i]-vW; float k=min(1.,1./(1.+dot(d,d)*0.08)); a+=uLC[i]*max(dot(nw,normalize(d)),0.)*k*3.2; rimc+=uLC[i]*k; } return a; }
   void main(){ float l=dot(normalize(vN),uL); vec3 c;
     if(uLook==1){ float t=l+(bay(gl_FragCoord.xy)-0.5)*0.3; vec3 hi=mix(vC0,vec3(1.,.93,.8)*max(vC0.r,max(vC0.g,vC0.b)),.22), sh=vC2*vec3(.82,.88,1.18);

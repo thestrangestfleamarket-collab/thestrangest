@@ -4,7 +4,10 @@
 // brightest of its three colours, so its hue stays; no dither), so a lamp's pool falls off in clear bands, not a smooth glow
 // (a mockup's choice, ?dith=N: the light in N steps, each pixel's cut moved by a noise fixed to the world's art pixels, so a step's edge breaks
 // up into grain instead of a clean ring)
-const DITH=+(new URLSearchParams(location.search).get('dith')||0);
+// THE GRAIN, FOR GOOD (owner, 17 Oct 2026: "i want to avoid these types of shadows and grids half tone, can we do the shadows style i mentioned
+// earlier with screenshot i shared?", the noise-dithered light he called perfect): on by default, 16 steps; GRAPHICS' LIGHT GRAIN sets it (24 fine,
+// 16, 12 strong, or off: the clean 24 bands), kept in the browser, the page loads again to make it; ?dith=N for a test
+const DITH=(()=>{ const q=new URLSearchParams(location.search).get('dith'); if(q!=null)return +q; let v=null; try{ v=localStorage.getItem('market-grain'); }catch(e){} return v!=null?+v:16; })();
 // THE LIVELIER LOOK (owner, 17 Oct 2026: "how can i get the world to look more dynamic with light, shadows, weather etc without dragging down
 // with lag? this looks too bland"; "let me see mockups of all of those"): ?fx=cs,cool,ao,var,wet,sway,life (or all): the clouds' shadows
 // drifting over the ground (cs), contact shadows where things stand on it (ao), the ground's tones varied in patches (var), wet ground with

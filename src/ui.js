@@ -21,6 +21,8 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
         try{ localStorage.setItem('market-keys',JSON.stringify(BIND)); }catch(err){} REV=rev(); } waiting=null; drawKeys(); e.preventDefault(); return null; }
     if(raw==='escape'){ if(e.type==='keydown'){ if(ED.on)ED.exit(); else if(WE.on)WE.toggle(); else toggleMenu(); } return null; }
     if(e.target&&/^(TEXTAREA|INPUT|SELECT)$/.test(e.target.tagName))return null;   // (typing in a box isn't walking)
+    if(raw==='r'&&e.shiftKey){ if(e.type==='keydown'&&!e.repeat)UI.zresP(); return null; }   // (Shift+R: the fineness for each zoom, his table: below)
+    if(raw==='?'){ if(e.type==='keydown'&&!e.repeat)UI.moves(); return null; }   // (? : every action and move he has, with its key: below)
     if(raw==='e'&&e.shiftKey&&!ED.on&&!UI.menuOpen){ if(e.type==='keydown'&&!e.repeat)WE.toggle(); return null; }   // (Shift+E: edit the world, src/worldedit.js)
     // (isometric: Q / E / R turn it a quarter, before any key of his own choosing: owner 17 Oct 2026, Q / E were changing the view instead)
     if(UI.view==='iso'&&!ED.on&&(raw==='q'||raw==='e'||raw==='r')){ if(e.type==='keydown'&&!e.repeat){ yawTo+=raw==='q'?Math.PI/2:-Math.PI/2; yaw=yawTo; } return null; }   /* (straight to the next angle, no turning: owner, 17 Oct 2026, "q/e should automatically show up at the next angle (jump to) not rotate") */
@@ -28,6 +30,42 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
     if(ED.on){ const a=REV[raw]; return ['q','e','z','x','0','=','-'].includes(a)?a:null; }   // (shaping him: only the view's keys)
     const act=REV[raw]; if(act!==undefined){ if(e.type==='keydown'&&!e.repeat){ if(act==='c')setFree(!UI.freeCam); if(act==='g')setFly(!UI.fly); if(act==='view'){ const V=['iso','follow','first'];   /* (owner, 17 Oct 2026: isometric first, behind second, first person third; map and third person in DISPLAY) */ UI.setView(V[(V.indexOf(UI.view)+1)%V.length]); } if(act==='rot')UI.turn4(); } return act==='view'||act==='rot'?null:act; }
     return ACTS.some(([a])=>a===raw)?'':raw; };   // (a default key now given to nothing)
+  // ---- WHAT HE CAN DO (owner, 17 Oct 2026: "pressing ? should give me list of all possible actions and moves for my player"): a panel listing
+  // every key's action (as KEYS has them now, his own choice of keys included), the fighting moves and what chains from each, his own made
+  // moves (HIS SHAPE's ANIMATE), and what the mouse does; ? or Escape closes it
+  { const P=document.createElement('div'); P.id='movesp'; P.style.cssText='position:fixed;inset:6% 10%;z-index:20;display:none;overflow:auto;padding:16px 20px;background:#0b0d13f2;border:2px solid #2a3040;color:#c9ccd6;font:11px Silkscreen,monospace;letter-spacing:1px;line-height:1.9';
+    document.body.appendChild(P);
+    UI.moves=()=>{ if(P.style.display!=='none'){ P.style.display='none'; return; }
+      const row=(k,t)=>'<div style="display:flex;gap:14px"><b style="min-width:120px;color:#f2c14e">'+k+'</b><span>'+t+'</span></div>', h=t=>'<div style="margin:12px 0 4px;color:#8a8f9c">'+t+'</div>';
+      let o='<div style="display:flex;justify-content:space-between"><b>WHAT YOU CAN DO</b><span style="color:#8a8f9c">? OR ESC CLOSES</span></div>'+h('KEYS (CHANGE THEM IN THE MENU\'S KEYS)');
+      for(const [a,what] of ACTS)o+=row(NAME(keyOf(a)),what.toUpperCase());
+      o+=row('N','NOON / 7 PM')+row('SHIFT + E','EDIT THE WORLD')+row('SHIFT + R','RESOLUTION FOR EACH ZOOM')+row('ESC','THE MENU')+row('?','THIS LIST');
+      const M=RIG.MOVES||{}, fights=Object.keys(M).filter(n=>M[n]&&M[n].combo);
+      if(fights.length){ o+=h('FIGHTING: J PUNCH, K KICK; PRESS AGAIN IN TIME TO CHAIN'); for(const n of fights){ const c=M[n].combo; o+=row(n.replace(/([A-Z])/g,' $1').toUpperCase(),Object.entries(c).map(([k,v])=>k+' → '+v.replace(/([A-Z])/g,' $1').toUpperCase()).join(' · ')); } }
+      const K=RIG.KEYMOVE||{}; if(Object.keys(K).length){ o+=h('YOUR OWN MOVES (HIS SHAPE → ANIMATE)'); for(const [k,n] of Object.entries(K))o+=row(k,n.toUpperCase()); }
+      o+=h('THE MOUSE')+row('DOUBLE CLICK','WALK THERE (RUN IF FAR) · ON A SEAT: SIT · A LAMP: ON / OFF · A FRIDGE: OPEN · THE DRINKS MACHINE: A CAN · THE RADIO: MUSIC · A CHARACTER: GO UP AND GREET · YOURSELF: YOUR LOOKS · THE GUITARIST: WATCH HIS HANDS')
+        +row('LEFT DRAG','MOVE THE VIEW (ISOMETRIC, MAP) · LOOK ROUND (THIRD PERSON, BEHIND, FIRST)')+row('RIGHT DRAG','TURN THE VIEW')+row('WHEEL','ZOOM');
+      P.innerHTML=o; P.style.display='block'; };
+    addEventListener('keydown',e=>{ if(e.key==='Escape'&&P.style.display!=='none'){ P.style.display='none'; e.stopImmediatePropagation(); } },true); }
+  // ---- THE FINENESS FOR EVERY ZOOM (owner, 17 Oct 2026: "shift+r will allow me to set the resolution level for every zoom level as permanent. once
+  // i select i will export to you and you will save that as perm for game. i want to be able to adjust it to any level and save"): a panel that
+  // follows the zoom; its slider sets this zoom band's art to any level of RESL (build.py's ZRES), kept in the browser at once; EXPORT gives
+  // the table to send, which goes into ZRES0 for good
+  { const P=document.createElement('div'); P.style.cssText='position:fixed;right:12px;top:12px;z-index:21;display:none;width:300px;padding:12px 14px;background:#0b0d13f2;border:2px solid #2a3040;color:#c9ccd6;font:11px Silkscreen,monospace;letter-spacing:1px;line-height:1.8';
+    P.innerHTML='<div style="display:flex;justify-content:space-between"><b>RESOLUTION BY ZOOM</b><span style="color:#8a8f9c">SHIFT+R</span></div><div id="zrI"></div>'
+      +'<input id="zrS" type="range" min="0" max="'+(RESL.length-1)+'" step="1" style="width:100%"><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">'
+      +'<button class="btn" id="zrC">COARSER</button><button class="btn" id="zrF">FINER</button><button class="btn" id="zrX">UNSET THIS ZOOM</button><button class="btn" id="zrA">CLEAR ALL</button><button class="btn" id="zrE">EXPORT</button></div>'
+      +'<div id="zrL" style="margin-top:8px;color:#8a8f9c"></div><textarea id="zrT" readonly style="display:none;width:100%;height:70px;margin-top:6px;background:#000;color:#f2c14e;font:11px monospace"></textarea>';
+    document.body.appendChild(P); const q=s=>P.querySelector(s), save=()=>{ try{ localStorage.setItem('market-zres',JSON.stringify(ZRES)); }catch(e){} resize(); show(); };
+    const lv=()=>{ const r=RES(); return RESL.indexOf(r); };
+    const set=i=>{ ZRES[ZB()]=Math.max(0,Math.min(RESL.length-1,i)); save(); };
+    const show=()=>{ const b=ZB(), own=ZRES[b]!=null; q('#zrI').innerHTML='ZOOM '+(ppu/PPU).toFixed(2)+'× (BAND '+b+')<br>ART '+RES()+'× · LEVEL '+lv()+' · '+(own?'<span style="color:#f2c14e">SET HERE</span>':Object.keys(ZRES).length?'FROM THE NEAREST SET':'THE GAME\'S RULE');
+      q('#zrS').value=lv(); const ks=Object.keys(ZRES).map(Number).sort((a,b)=>a-b); q('#zrL').textContent=ks.length?'SET: '+ks.map(k=>Math.pow(1.25,k).toFixed(2)+'×→'+RESL[ZRES[k]]+'×').join('  '):'NOTHING SET YET'; };
+    q('#zrS').oninput=e=>set(+e.target.value); q('#zrC').onclick=()=>set(lv()-1); q('#zrF').onclick=()=>set(lv()+1);
+    q('#zrX').onclick=()=>{ delete ZRES[ZB()]; save(); }; q('#zrA').onclick=()=>{ for(const k in ZRES)delete ZRES[k]; save(); };
+    q('#zrE').onclick=()=>{ const t=q('#zrT'), j=JSON.stringify(ZRES); t.value='ZRES '+j; t.style.display='block'; t.select(); try{ navigator.clipboard.writeText(t.value).then(()=>{ q('#zrE').textContent='COPIED'; setTimeout(()=>q('#zrE').textContent='EXPORT',1500); },()=>{}); }catch(e){} };
+    let iv=0; UI.zresP=()=>{ const on=P.style.display==='none'; P.style.display=on?'block':'none'; clearInterval(iv); if(on){ show(); iv=setInterval(show,250); } };
+    P.addEventListener('keydown',e=>e.stopPropagation()); P.addEventListener('mousedown',e=>e.stopPropagation()); P.addEventListener('wheel',e=>e.stopPropagation()); }
   // ---- FREE CAMERA and FLY
   const badge=document.createElement('div'); badge.id='mode'; document.body.appendChild(badge);
   const drawBadge=()=>{ const m=[UI.freeCam&&'FREE CAMERA: '+NAME(keyOf('c'))+' to go back',UI.fly&&'FLY: '+NAME(keyOf('g'))+' to land'].filter(Boolean); badge.textContent=m.join(' · '); badge.hidden=!m.length; };
@@ -153,7 +191,7 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
     <div class="pane" data-p="graphics">
       <h3>RESOLUTION</h3><div class="row" id="dres"></div><div class="dim" id="dsharp"></div>
       <h3>SHADOWS</h3><div class="row" id="dshd"></div>
-      <h3>LIGHT</h3><div class="row"><button class="btn" id="dlook">GLOW AND NIGHT LOOK</button><button class="btn" id="dlit">LIGHT ON THEM</button><button class="btn" id="doutl">OUTLINE</button></div>
+      <h3>LIGHT</h3><div class="row"><button class="btn" id="dlook">GLOW AND NIGHT LOOK</button><button class="btn" id="dgrain">LIGHT GRAIN</button><button class="btn" id="dlit">LIGHT ON THEM</button><button class="btn" id="doutl">OUTLINE</button></div>
       <div class="row"><span style="width:110px">SHADE STEPS</span><input type="range" id="dsteps" min="2" max="12" step="1"><span style="width:110px">SHADOW DEPTH</span><input type="range" id="ddepth" min="0.02" max="0.98" step="0.005"></div></div>
     <div class="pane" data-p="keys"><div class="dim" style="margin-bottom:8px">click a key, then press the one you want (Escape to keep it)</div><table id="keytab"></table>
       <div class="row" style="margin-top:10px"><button class="btn" id="kreset">ALL BACK AS THEY WERE</button></div></div>
@@ -203,6 +241,8 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
   // characters, the outline, his shading
   const RESN=['COARSEST','COARSE','NORMAL','SHARP'];
   for(let i=0;i<=RESMAX;i++){ const b=document.createElement('button'); b.className='btn'; b.dataset.res=i; b.textContent=RESN[i]||RESL[i]+'×'; b.onclick=()=>{ if(i<RESI)RESI=i; while(RESI<i&&(pxS()>1||vpu()>art()))RESI++; resize(); drawDisplay(); }; $('#dres').appendChild(b); }
+  // LIGHT GRAIN (the noise in the light's steps, map-pre.js's DITH): 16, 12 strong, 24 fine, off; the page loads again to make it
+  { const G=[16,12,24,0], N={16:'ON',12:'STRONG',24:'FINE',0:'OFF'}; $('#dgrain').textContent='LIGHT GRAIN '+N[DITH]; $('#dgrain').onclick=()=>{ const v=G[(G.indexOf(DITH)+1)%G.length]; try{ localStorage.setItem('market-grain',String(v)); }catch(e){} location.reload(); }; }
   $('#dlook').onclick=()=>{ LOOK.on=!LOOK.on; try{ localStorage.setItem('market-look',LOOK.on?'1':'0'); }catch(e){} drawDisplay(); };
   $('#dzoom').oninput=e=>{ ppuTo=r2z(+e.target.value); }; $('#dtilt').oninput=e=>{ pitchTo=clampP(PMIN+(+e.target.value)*(PMAX-PMIN)); };
   M.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>{ UI.setView(b.dataset.view); drawDisplay(); });

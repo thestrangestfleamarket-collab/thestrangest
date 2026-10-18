@@ -9,7 +9,7 @@ const BOD={meshes:[], walls:{}, lamps:[]};
 { // (the map's own names in a scope of their own: the game's files above have some of the same)
   const B0=LBLD[0], B00={...B0}, W=LSEED.walk, CURB=LSEED.street, FAR=LSEED.grass, RD=-4;   // (the road 4 art px below the sidewalk: a kerb you step down)
   const OX=(B00.x0+B00.x1)/2, OY=B00.y1, K=BLDK, X=x=>(x-OX)*TILE*K, Z=y=>(y-OY)*TILE*K, Y=z=>z*ZU*K, XS=x=>(x-OX)*TILE, ZS=y=>(y-OY)*TILE, YS=z=>z*ZU; Object.assign(BOD,{X,Z,Y,XS,ZS,YS,OX,OY,B0});   // (X Z Y: the building, a tenth bigger from its front's middle, BLDK; XS ZS YS: the street, as it was)
-  const MAP={x0:RING.wx0,x1:172+MAINX.e,y0:B00.y0,y1:FAR+6},   /* (x1 70 further east, y1: the far sidewalk 6 tiles deep, was 3; owner 18 Oct 2026, "double the size of the siewalk on the central park side": map-pre.js's MAINX) */ POOLX=82, AV=AVE, RG=RING;   /* (x0: on west to the loop's west street, 17 Oct 2026) */   // (the street's run: on east past the apartment building and the Avenue's mouth, 17 Oct 2026; the pool room's west wall as it was)
+  const MAP={x0:RING.wx0,x1:172+MAINX.e,y0:B00.y0,y1:FAR+12},   /* (x1 70 further east, y1: the far sidewalk 12 tiles deep: 3, then 6, owner 18 Oct 2026, "double the size of the siewalk on the central park side"; 12, the same day, "make sidewalk on central park side 2x bigger": map-pre.js's MAINX, NORTHY) */ POOLX=82, AV=AVE, RG=RING;   /* (x0: on west to the loop's west street, 17 Oct 2026) */   // (the street's run: on east past the apartment building and the Avenue's mouth, 17 Oct 2026; the pool room's west wall as it was)
   // (moved on the map's layout, LAY: the building itself in the game's tiles, the world's middle (OX, OY: its front's middle as it was) and the street staying put; a tenth bigger, so a tile on the map is 1/BLDK of the game's)
   { const o=LAY.o('bodega'); B0.x0+=o.x/K; B0.x1+=o.x/K; B0.y0+=o.y/K; B0.y1+=o.y/K; }
   const BODOFF=B0.y0+3.75; BOD.BODOFF=BODOFF;
@@ -142,14 +142,148 @@ const BOD={meshes:[], walls:{}, lamps:[]};
   // CROSSWALKS (owner, 17 Oct 2026, mockup 1): white bars over the road at the park's gate and across the Avenue's mouth, over the Avenue at its mouth
   // and at the park's east gate; each a run [a0, a1, axis]: the bars across the axis, long along the way people walk, a little worn
   const PCX=(50-MAINX.w+LAY.e('park')[0]+AV.x0+LAY.e('park')[2])/2+LAY.o('park').x, PCY=(MAP.y1+RG.ny0)/2+LAY.o('park').y, GATE=[PCX-3.5,PCX+3.5], EGATE=[PCY-2,PCY+2];   // (the park's middle, its gates: park.js)
-  const zebra=(x,y,runs)=>{ const c=roadCol(x,y,0); for(const [a0,a1,ax,l0,h0] of runs){ const u=ax==='x'?x:y, v=ax==='x'?y:x, lo=l0!=null?l0+.4:ax==='x'?CURB+.4:AV.r0+.4, hi=h0!=null?h0-.4:ax==='x'?FAR-.4:AV.r1-.4;
-      if(u>a0&&u<a1&&v>lo&&v<hi&&(Math.floor((u-a0)/.6)&1)===0){ const n=grain(x,y,39,2.2); return n<.3?[150,148,142]:[196,194,186]; } } return c; };
+  // ---- THE STREET'S WORKS (owner, 18 Oct 2026): "rounded" kerbs at the loop's corners and the Avenue's mouth; "add bike lines"; "make sure
+  // they have curbs and drains and sewers in right spots". All painted into the ground's and the kerbs' pictures (no new faces but the curves'
+  // few, no lights, no programs). The roads in the street's tiles, the four the loop has (groundY's own): the main street, the Avenue, the west
+  // street, the north street; a corner's square of KR tiles either side of it
+  const KR=1.6, RR=[[MAP.x0,CURB,MAP.x1,FAR],[AV.r0,FAR,AV.r1,RG.nr1],[RG.wr0,FAR,RG.wr1,RG.nr1],[RG.wr0,RG.nr0,AV.r1,RG.nr1]];
+  // ROUNDED CORNERS: where two roads meet, the sidewalk's corner a quarter circle of KR (cv: the sidewalk's outer corner, cut back, the road in;
+  // else the sidewalk's inner corner, filled out, the road's corner rounded); s: the way from the corner into its square (the sidewalk's for a cut
+  // corner, the road's for a filled one); C its circle's middle. The six where the loop's inner block and the west street's and the Avenue's mouths
+  // stand on the road, the two the outer sidewalks wrap round at the north street's ends
+  const CORN=[[RG.wr0,FAR,-1,1,1],[RG.wr1,FAR,1,1,1],[AV.r0,FAR,-1,1,1],[AV.r1,FAR,1,1,1],[RG.wr1,RG.nr0,1,-1,1],[AV.r0,RG.nr0,-1,-1,1],[RG.wr0,RG.nr1,1,-1,0],[AV.r1,RG.nr1,-1,-1,0]].map(([x,y,sx,sy,cv])=>({x,y,sx,sy,cv,cx:x+sx*KR,cy:y+sy*KR}));
+  const inQ=(c,x,y)=>{ const u=(x-c.x)*c.sx, v=(y-c.y)*c.sy; return u>=0&&u<=KR&&v>=0&&v<=KR; };
+  // the road (a kerb down) at a spot: the four roads, the corners' curves; groundY's, the pictures', the land's hole all from this one
+  const ROADAT=(x,y)=>{ let r=false; for(const b of RR)if(x>b[0]&&x<b[2]&&y>b[1]&&y<b[3]){ r=true; break; } for(const c of CORN)if(inQ(c,x,y)&&Math.hypot(x-c.cx,y-c.cy)>KR)return !!c.cv; return r; };
+  // the kerb's granite top, the .16 of sidewalk along every edge that meets a road, round the curves too (its joints along the arc): on every
+  // sidewalk's edge, not only where a strip was laid ("make sure they have curbs": the far sidewalk's ends at the west street and the Avenue had none)
+  const KB=.16, NR=RR.map(b=>[b[0]-KR-.3,b[1]-KR-.3,b[2]+KR+.3,b[3]+KR+.3]), KX=kerbCol('x'), KY=kerbCol('y');
+  const kerbAt=(x,y)=>{ if(!NR.some(b=>x>b[0]&&x<b[2]&&y>b[1]&&y<b[3]))return null;
+    for(const c of CORN)if(inQ(c,x,y)){ const d=Math.hypot(x-c.cx,y-c.cy); if(c.cv?d>KR-KB:d<KR+KB)return KX(Math.atan2(y-c.cy,x-c.cx)*KR+c.x*7,y); return null; }
+    if(ROADAT(x+KB,y)||ROADAT(x-KB,y))return KY(x,y); if(ROADAT(x,y+KB)||ROADAT(x,y-KB))return KX(x,y); return null; };
+  const SW=f=>(x,y)=>{ if(ROADAT(x,y)||rampAt(x,y)!=null)return null; const v=f(x,y); return v&&(kerbAt(x,y)||v); };   // (a sidewalk's painter: open over the road, its kerb along it)
+  // THE CROSSINGS (owner, 17 Oct 2026, mockup 1; the bars across the axis, long along the way people walk, a little worn): [a0, a1, axis, the road's
+  // edges across]; those by a rounded corner set back past its curve
+  const XW=[[GATE[0],GATE[1],'x',CURB,FAR],[AV.r1+.3,AV.x1-.3,'x',CURB,FAR],[RG.wx0+.3,RG.wr0-.3,'x',CURB,FAR],
+    [FAR+KR+.3,FAR+KR+1.9,'y',AV.r0,AV.r1],[EGATE[0],EGATE[1],'y',AV.r0,AV.r1],[EGATE[0],EGATE[1],'y',RG.wr0,RG.wr1],[FAR+KR+.3,FAR+KR+1.9,'y',RG.wr0,RG.wr1],
+    [GATE[0],GATE[1],'x',RG.nr0,RG.nr1],[RG.wr0+KR+.2,RG.wr0+KR+1.8,'x',RG.nr0,RG.nr1],[AV.r1-KR-1.8,AV.r1-KR-.2,'x',RG.nr0,RG.nr1]];
+  const inX=(ax,e,a,m)=>XW.some(w=>w[2]===ax&&e>=w[3]-.01&&e<=w[4]+.01&&a>w[0]-m&&a<w[1]+m);
+  // KERB RAMPS (owner, 18 Oct 2026, "go all" to the street's open items: "a kerb ramp at the crossings"): where each crossing meets a kerb, New
+  // York's pedestrian ramp: the kerb cut down to the road in a short slope RPD deep into the sidewalk, as wide as the crossing's middle (2.4 tiles at
+  // most) and only along a straight kerb (a crossing by a curve keeps its ramp off the curve), the yellow warning pad of raised domes at its foot.
+  // The sidewalk's picture and the kerb's face left open there (SW, kerbFaceAt), the slope its own face (bodbuild.js), groundY down it, the land's
+  // sheet holed under it (map-post.js). RP: {ax, e the kerb's line, dir into the sidewalk, u0..u1 along it}
+  const RPD=.75, RP=[];
+  for(const [a0,a1,ax,l0,h0] of XW)for(const [e,dir] of [[l0,-1],[h0,1]]){ const P=(u,w)=>ax==='x'?[u,e+dir*w]:[e+dir*w,u], ok=u=>ROADAT(...P(u,-.05))&&!ROADAT(...P(u,.05))&&!ROADAT(...P(u,RPD+.05));
+    const m=(a0+a1)/2, hw=Math.min((a1-a0)/2-.1,1.2); if(!ok(m))continue; let u0=m, u1=m; while(u0-.05>=m-hw&&ok(u0-.05))u0-=.05; while(u1+.05<=m+hw&&ok(u1+.05))u1+=.05;
+    if(u1-u0>=.8)RP.push({ax,e,dir,u0,u1}); }
+  const rampAt=(x,y)=>{ for(const r of RP){ const u=r.ax==='x'?x:y, w=((r.ax==='x'?y:x)-r.e)*r.dir; if(u>r.u0&&u<r.u1&&w>=0&&w<RPD)return w; } return null; };
+  // the ramp's picture at (u along the kerb from u0, w up the slope from the road): broom-finished concrete, a lit rim at its sides, the warning
+  // pad's domes (safety yellow, a lit texel and its shadow on a three-texel grid) from a hand off the road to a third of a tile up
+  const rampCol=(u,w,W)=>{ const ti=Math.floor(u*24), tj=Math.floor(w*24); if(ti<1||ti>=Math.floor(W*24)-1)return [188,184,174];
+    if(w>.04&&w<.36&&ti>=2&&ti<Math.floor(W*24)-2){ const a=ti%3, b=tj%3; return b===1&&a===1?[246,214,92]:b===1&&a===2||b===2&&a===1?[164,128,30]:[216,178,48]; }
+    const n=grain(u*3.1,w*7.3,631,1.4); return tj%2?(n<.4?[150,147,139]:[162,158,149]):(n<.4?[158,154,146]:[170,166,157]); };
+  BOD.ramps={RP,D:RPD,col:rampCol,at:rampAt};
+  // (NYC's ladder, owner 18 Oct 2026, "use NYC markings": two white rails across the road at the crossing's sides, wide rungs between them along
+  // the traffic, a rung's width apart)
+  const bars=(x,y)=>{ for(const [a0,a1,ax,l0,h0] of XW){ const u=ax==='x'?x:y, v=ax==='x'?y:x; if(u<=a0||u>=a1||v<=l0+.15||v>=h0-.15)continue;
+      const W=()=>{ const n=grain(x,y,39,2.2); return n<.3?[150,148,142]:[196,194,186]; };
+      if(u<a0+.1||u>a1-.1)return W(); if(u>a0+.25&&u<a1-.25&&(Math.floor((v-l0-.15)/.5)&1)===0)return W(); return null; } return null; };
+  // BIKE LANES, NEW YORK'S WAY (owner, 18 Oct 2026: "add bike lines"; then "not green bike lanes. use NYC markings"): along both kerbs of every
+  // road of the loop, bare asphalt from the kerb, 1.44 tiles wide, a solid white line on its road side; every 22 tiles the white bicycle and,
+  // ahead of it, two chevrons pointing the way it runs (traffic's way: the kerb on its right); the line dashed past a side street's mouth,
+  // stopped at the curves and the crossings. [axis, the kerb's line, into the road (+1 / -1), from, to, dashed stretches]
+  const LN=[['x',CURB,1,MAP.x0+.5,MAP.x1-.5,[[RG.wr0,RG.wr1],[AV.r0,AV.r1]]],['x',FAR,-1,RG.wr1+KR,AV.r0-KR],['x',FAR,-1,AV.r1+KR,MAP.x1-.5],
+    ['y',AV.r0,1,FAR+KR,RG.nr0-KR],['y',AV.r1,-1,FAR+KR,RG.nr0],['y',RG.wr0,1,FAR+KR,RG.nr0],['y',RG.wr1,-1,FAR+KR,RG.nr0-KR],
+    ['x',RG.nr0,1,RG.wr1+KR,AV.r0-KR],['x',RG.nr1,-1,RG.wr1,AV.r0]];
+  const sd=(px,py,ax,ay,bx,by)=>{ const dx=bx-ax, dy=by-ay, t=Math.max(0,Math.min(1,((px-ax)*dx+(py-ay)*dy)/(dx*dx+dy*dy))); return Math.hypot(px-ax-t*dx,py-ay-t*dy); };
+  // the stencil: a bicycle (two wheels, its frame, the bars and the saddle) about a tile long, u along the lane, w across it (up toward the road)
+  const BIKE=[[-.27,-.08,0,-.06],[0,-.06,-.08,.12],[-.27,-.08,-.08,.12],[-.08,.12,.17,.12],[.17,.12,0,-.06],[.17,.12,.27,-.08],[.17,.12,.15,.2],[.11,.2,.21,.2],[-.14,.14,-.02,.14]];
+  const bike=(u,w)=>Math.abs(Math.hypot(u+.27,w+.08)-.15)<.035||Math.abs(Math.hypot(u-.27,w+.08)-.15)<.035||BIKE.some(s=>sd(u,w,...s)<.032);
+  const chev=(u,w)=>{ const q=Math.abs(w); return q<.3&&[0,.2].some(c=>Math.abs(u-c+q*.9)<.045); };   // (two chevrons, their points ahead: u the way it runs)
+  const WHITE=(x,y,hp)=>{ const n=grain(x,y,611,1.1); return hp<.05?[170,168,160]:n<.3?[188,186,178]:[212,210,202]; };
+  const lane=(x,y)=>{ for(const [ax,e,dir,a0,a1,dash] of LN){ const a=ax==='x'?x:y, d=((ax==='x'?y:x)-e)*dir; if(d<.12||d>=1.44||a<a0||a>a1)continue;
+      if(inX(ax,e,a,.35))return null;
+      const hp=hash(Math.floor(x*24),Math.floor(y*24),613), worn=cvNoise(x*1.7,y*1.7,615)>.78&&hp<.55;
+      if(d>=1.32)return worn||dash&&dash.some(r=>a>r[0]-.2&&a<r[1]+.2)&&(Math.floor(a/1.2)&1)?null:WHITE(x,y,hp);   // (the line: worn where the tyres run)
+      const t=ax==='x'?dir:-dir, k=Math.round((a-a0-8)/22), sa=a0+8+k*22;
+      if(k>=0&&sa<a1-2){ const u=(a-sa)*t; if(u>-.75&&u<.25&&bike(u+.25,d-.74)||u>.45&&u<1&&chev(u-.6,d-.74))return WHITE(x,y,hp); }
+      return null; } return null; };
+  // THE ROAD'S OWN LINES (NYC): the double yellow down each road's middle (two lines a hand wide, a hand apart), broken at the crossings and through
+  // the junctions; a white stop bar across the half of the road whose traffic comes to a crossing (none just out of a junction)
+  const JX=[[RG.wr0,CURB,RG.wr1,FAR],[AV.r0,CURB,AV.r1,FAR],[RG.wr0,RG.nr0,RG.wr1,RG.nr1],[AV.r0,RG.nr0,AV.r1,RG.nr1]], inJ=(x,y,m)=>JX.some(b=>x>b[0]-m&&x<b[2]+m&&y>b[1]-m&&y<b[3]+m);
+  const YEL=[[190,156,54],[212,176,62]];
+  const marks=(x,y)=>{ const hp=hash(Math.floor(x*24),Math.floor(y*24),617);
+    for(const b of RR){ if(!(x>b[0]&&x<b[2]&&y>b[1]&&y<b[3]))continue; const ax=b[2]-b[0]>b[3]-b[1]?'x':'y', a=ax==='x'?x:y, v=ax==='x'?y:x, m=ax==='x'?(b[1]+b[3])/2:(b[0]+b[2])/2, q=Math.abs(v-m);
+      if(q>.06&&q<.19&&!inJ(x,y,.3)&&!inX(ax,m,a,1.1))return cvNoise(x*1.7,y*1.7,619)>.8&&hp<.5?null:YEL[grain(x,y,621,1.1)<.4?0:1]; break; }
+    for(const [a0,a1,ax,l0,h0] of XW){ const u=ax==='x'?x:y, v=ax==='x'?y:x, m=(l0+h0)/2; if(v<=l0+.12||v>=h0-.12||inJ(x,y,1.5))continue;   // ('x': eastbound in the low half meets it before a0; 'y': northbound in the high half)
+      const lo=ax==='x'; if(u>a0-1.05&&u<a0-.7&&(lo?v<m-.2:v>m+.2)||u>a1+.7&&u<a1+1.05&&(lo?v>m+.2:v<m-.2))return WHITE(x,y,hp); }
+    return null; };
+  // DRAINS AND SEWERS: a storm drain's grate in the gutter where the kerb has its inlet (drain(): the kerb's face, below), every 28 tiles along each
+  // kerb and just before each corner's curve, the water's last stop before it; the sewer's round iron covers in the traffic lanes every 40 tiles and
+  // in the middle of each crossing of two roads. Each a painter over its few tiles, found by a two-tile grid so the road's painting stays quick
+  const IX=new Map(), at2=(x,y)=>Math.floor(x/2)+','+Math.floor(y/2), feat=(x0,y0,x1,y1,f)=>{ for(let i=Math.floor(x0/2);i<=Math.floor(x1/2);i++)for(let j=Math.floor(y0/2);j<=Math.floor(y1/2);j++){ const k=i+','+j; (IX.get(k)||IX.set(k,[]).get(k)).push(f); } };
+  const MH=[], DR=[];
+  const manhole=(cx,cy)=>{ MH.push([cx,cy]); feat(cx-.45,cy-.45,cx+.45,cy+.45,(x,y)=>{ const dx=x-cx, dy=y-cy, r=Math.hypot(dx,dy); if(r>=.42)return null;
+    if(r>.35)return dx+dy<0?[78,76,72]:[40,40,42];   // (the frame: lit toward the top of the picture)
+    if(r>.32)return [26,26,28];   // (the gap round the lid)
+    const rs=hash(Math.floor(cx*7),Math.floor(cy*7),621); if(Math.abs(r-.2)<.022)return [36,36,38]; if(r<.07)return [86,84,80];   // (a ring cast in it, the boss)
+    const q=((Math.floor((dx+1)*24/3)+Math.floor((dy+1)*24/3))&1); let c=q?[98,95,90]:[62,61,59]; if(r>.24&&hash(Math.floor(x*24),Math.floor(y*24),623)<.12+.15*rs)c=[110,76,52];   // (the waffle; rust round its edge)
+    return c; }); };
+  const drain=(ax,e,dir,a)=>{ DR.push({ax,e,a}); const x0=ax==='x'?a-.6:Math.min(e,e+dir*.45), x1=ax==='x'?a+.6:Math.max(e,e+dir*.45), y0=ax==='x'?Math.min(e,e+dir*.45):a-.6, y1=ax==='x'?Math.max(e,e+dir*.45):a+.6;
+    feat(x0,y0,x1,y1,(x,y)=>{ const u=(ax==='x'?x:y)-a, w=((ax==='x'?y:x)-e)*dir; if(Math.abs(u)>=.55||w<0||w>=.42)return null;
+      if(Math.abs(u)>.47||w>.34)return [54,54,56]; return Math.floor((u+.55)*24)%3===0?[18,18,20]:[76,76,78]; }); };   // (an iron frame, bars across the flow)
+  // the kerbs' faces down to the road: straight lengths to each curve, the curves after (KA); the two ends of the main street's road too
+  BOD.kerbs=[{ax:'x',at:CURB,a0:MAP.x0,a1:MAP.x1,n:1},{ax:'x',at:FAR,a0:MAP.x0,a1:RG.wr0-KR,n:-1,e1:1},{ax:'x',at:FAR,a0:RG.wr1+KR,a1:AV.r0-KR,n:-1,e0:1,e1:1},{ax:'x',at:FAR,a0:AV.r1+KR,a1:MAP.x1,n:-1,e0:1},
+    {ax:'y',at:AV.r0,a0:FAR+KR,a1:RG.nr0-KR,n:1,e0:1,e1:1},{ax:'y',at:AV.r1,a0:FAR+KR,a1:RG.nr1-KR,n:-1,e0:1,e1:1},
+    {ax:'y',at:RG.wr0,a0:FAR+KR,a1:RG.nr1-KR,n:1,e0:1,e1:1},{ax:'y',at:RG.wr1,a0:FAR+KR,a1:RG.nr0-KR,n:-1,e0:1,e1:1},
+    {ax:'x',at:RG.nr0,a0:RG.wr1+KR,a1:AV.r0-KR,n:1,e0:1,e1:1},{ax:'x',at:RG.nr1,a0:RG.wr0+KR,a1:AV.r1-KR,n:-1,e0:1,e1:1},
+    {ax:'y',at:MAP.x0,a0:CURB,a1:FAR,n:1},{ax:'y',at:MAP.x1,a0:CURB,a1:FAR,n:-1}].map(k=>({z0:RD,z1:0,...k}));
+  for(const k of BOD.kerbs){ if(k.at===MAP.x0||k.at===MAP.x1)continue; const ds=[]; if(k.e0)ds.push(k.a0+1); if(k.e1)ds.push(k.a1-1);
+    for(let a=k.a0+14;a<k.a1-8;a+=28)if(ds.every(b=>Math.abs(b-a)>10))ds.push(a);
+    for(const a of ds)if(a>k.a0+.6&&a<k.a1-.6&&!inX(k.ax,k.at,a,1.2))drain(k.ax,k.at,k.n,a); }
+  { const yc=(CURB+FAR)/2, xw=(RG.wr0+RG.wr1)/2, xa=(AV.r0+AV.r1)/2, yn=(RG.nr0+RG.nr1)/2, ok=(x,y)=>!XW.some(w=>{ const u=w[2]==='x'?x:y, v=w[2]==='x'?y:x; return u>w[0]-1.2&&u<w[1]+1.2&&v>w[3]&&v<w[4]; });
+    for(const [x,y] of [[xw,yc],[xa,yc],[xw,yn],[xa,yn]])manhole(x,y);   // (in the middle of each crossing of two roads)
+    let k=0; for(let x=MAP.x0+20;x<MAP.x1-4;x+=40,k++)if(ok(x,yc)&&Math.abs(x-xw)>8&&Math.abs(x-xa)>8)manhole(x,yc+(k&1?1.6:-1.6));
+    k=0; for(let y=FAR+20;y<RG.nr0-5;y+=40,k++)for(const xm of [xw,xa])if(ok(xm,y))manhole(xm+(k&1?1.6:-1.6),y);
+    k=0; for(let x=RG.wr1+20;x<AV.r0-5;x+=40,k++)if(ok(x,yn))manhole(x,yn+(k&1?1.6:-1.6)); }
+  // the road's painter: a manhole or a drain's grate, else a crossing's bars, else the bike lane, else the asphalt; nothing off the road
+  const RW=(x,y)=>{ if(!ROADAT(x,y))return null; const L=IX.get(at2(x,y)); if(L)for(const f of L){ const v=f(x,y); if(v)return v; } return bars(x,y)||lane(x,y)||marks(x,y)||roadCol(x,y,0); };
+  // a kerb's face with a drain's inlet: the dark mouth under its lit top, a lip of granite at its foot
+  BOD.kerbFaceAt=(k,a,z,H)=>{ for(const r of RP)if(r.ax===k.ax&&r.e===k.at&&a>r.u0&&a<r.u1)return null;   /* (a kerb ramp's gap: the slope fills it) */
+    for(const d of DR)if(d.ax===k.ax&&d.e===k.at&&Math.abs(a-d.a)<.5){ if(z>=H-1)break; if(Math.abs(a-d.a)>.44)return [96,94,88]; return z<1?[120,116,108]:[14,14,16]; } return kerbFace(a,z,H); };
+  // the curves' faces, KA (each a few straight pieces along its arc, its length along for the granite's joints), the land's holes for the roads
+  // (map-post.js: the main street with the west street's and the Avenue's lengths up to the north street, one outline round their corners'
+  // curves; the north street another, its two filled corners round)
+  const arc=(c,rev,n=6)=>{ const a0=Math.atan2(-c.sy,0), a1=Math.atan2(0,-c.sx); let dl=a1-a0; while(dl>Math.PI)dl-=2*Math.PI; while(dl<-Math.PI)dl+=2*Math.PI;
+    const P=[]; for(let i=0;i<=n;i++){ const t=a0+dl*i/n; P.push([c.cx+Math.cos(t)*KR,c.cy+Math.sin(t)*KR]); } return rev?P.reverse():P; };   // (from its point on the corner's y line to its point on its x line)
+  BOD.kerbArcs=CORN.map(c=>({P:arc(c),z0:RD,z1:0}));
+  { const C=(x,y)=>CORN.find(c=>c.x===x&&c.y===y), M=MAP;
+    BOD.roadPolys=[[[M.x0,CURB],[M.x1,CURB],[M.x1,FAR],...arc(C(AV.r1,FAR)),[AV.r1,RG.nr0],...arc(C(AV.r0,RG.nr0)),...arc(C(AV.r0,FAR),1),...arc(C(RG.wr1,FAR)),...arc(C(RG.wr1,RG.nr0),1),[RG.wr0,RG.nr0],...arc(C(RG.wr0,FAR),1),[M.x0,FAR]],
+      [[RG.wr0,RG.nr0],[AV.r1,RG.nr0],...arc(C(AV.r1,RG.nr1),1),...arc(C(RG.wr0,RG.nr1))]]; }
+  // the corners' squares: a cut corner's the road's picture (its curve's road), a filled corner's the sidewalk's
+  const PATCH=CORN.map(c=>({id:'corner',x0:Math.min(c.x,c.cx),y0:Math.min(c.y,c.cy),x1:Math.max(c.x,c.cx),y1:Math.max(c.y,c.cy),z:c.cv?RD:0,col:c.cv?RW:SW(slabCol),tex:null,rep:2}));
+  // THE STREET'S SIGNS (owner, 18 Oct 2026: "use NYC markings and street signs etc everywhere"; drawn into the street's pictures, bodbuild.js):
+  // at every corner a galvanized post with the two streets' green name blades crossed at its top (and two across the main street from the side
+  // streets' mouths); a STOP sign where the west street and the Avenue come down to the main street; along every kerb every 24 tiles a post with a
+  // NO PARKING plate, every third a SPEED LIMIT 25; each three quarters of a tile in from the kerb (clear of the street lights' feet)
+  const SG=[], NM={main:'MARKET ST',west:'WEST ST',north:'NORTH ST',ave:'THE AVE'}, CN=[['main','west'],['main','west'],['main','ave'],['main','ave'],['north','west'],['north','ave'],['north','west'],['north','ave']];
+  // (at the main street's two junctions the blades ride the traffic light's pole, above its heads, and no STOP: the light rules there, dress.js;
+  // owner, 18 Oct 2026, "go all": "a traffic light")
+  const TLC=[0,3], TK=(KR-.45)/Math.SQRT2;
+  CORN.forEach((c,i)=>{ const k=c.cv?KR-1.2:KR+1.2, t=TLC.includes(i); SG.push({kind:'name',x:t?c.cx-c.sx*TK:c.cx-c.sx*k/Math.SQRT2,y:t?c.cy-c.sy*TK:c.cy-c.sy*k/Math.SQRT2,ax:NM[CN[i][0]],ay:NM[CN[i][1]],np:t}); });
+  SG.push({kind:'name',x:RG.wr1+1,y:CURB-.75,ax:NM.main,ay:NM.west},{kind:'name',x:AV.r0-1,y:CURB-.75,ax:NM.main,ay:NM.ave});
+  // (the STOP signs where the west street and the Avenue come down to the main street: gone, the traffic lights stand there, dress.js)
+  { let q=0; for(const k of BOD.kerbs){ if(k.at===MAP.x0||k.at===MAP.x1)continue; for(let a=k.a0+6;a<k.a1-4;a+=24){ if(inX(k.ax,k.at,a,2)||inJ(k.ax==='x'?a:k.at,k.ax==='x'?k.at:a,2))continue;
+      const p=k.at-k.n*.75; SG.push({kind:q++%3===2?'speed':'nopark',x:k.ax==='x'?a:p,y:k.ax==='x'?p:a,n:k.ax==='x'?[1,0]:[0,1]}); } } }
+  BOD.signs=SG;
+  BOD.road={KR,CORN,RR,at:ROADAT,MH,DR,LN}; window.STREETQ=()=>({...BOD.road,XS:BOD.XS,ZS:BOD.ZS,CURB,FAR,MAP,AV,RG,corner:typeof DRESS!=='undefined'&&DRESS.corner});   // (the corner light and a test's look: dress.js, tests)
   // ---- THE GROUND: the shop's sealed concrete (and the office's), the sidewalk's slabs, the kerb, the street's asphalt, the far kerb and sidewalk, grass in the gaps
   BOD.grounds=[
     {id:'shop',bld:true,x0:B0.x0,y0:B0.y0,x1:B0.x1,y1:B0.y1,z:.15,col:(x,y)=>bodegaFloorCol(x,y),tex:'concrete_floor_worn_001',tint:[112,116,124],rep:3},
     {id:'walk',x0:MAP.x0,y0:W,x1:MAP.x1,y1:CURB-.16,z:0,col:holed(slabCol),tex:'concrete_pavement',tint:[166,161,148],rep:2},
     {id:'kerb',x0:MAP.x0,y0:CURB-.16,x1:MAP.x1,y1:CURB,z:0,col:kerbCol('x'),tex:'concrete_pavement',tint:[178,174,164],rep:2},
-    {id:'road',x0:MAP.x0,y0:CURB,x1:MAP.x1,y1:FAR,z:RD,col:(x,y)=>zebra(x,y,[[GATE[0],GATE[1],'x'],[AV.r1+.3,AV.x1-.3,'x'],[RG.wx0+.3,RG.wr0-.3,'x']]),tex:'asphalt_02',tint:[62,64,68],rep:3},
+    {id:'road',x0:MAP.x0,y0:CURB,x1:MAP.x1,y1:FAR,z:RD,col:RW,tex:'asphalt_02',tint:[62,64,68],rep:3},
     // THE BACK ALLEY (owner, 17 Oct 2026, mockup 1): a service lane behind the whole row, worn asphalt, the fire escapes' side
     {id:'alley',x0:MAP.x0,y0:-101,x1:MAP.x1,y1:-96,z:0,col:(x,y)=>roadCol(x,y,1),tex:'asphalt_02',tint:[86,87,90],rep:3},
     // (the far kerb and sidewalk in two, either side of the Avenue's mouth, where its road runs into the street's; the Avenue's own: its two
@@ -160,7 +294,7 @@ const BOD={meshes:[], walls:{}, lamps:[]};
     {id:'walk2e',x0:AV.r1,y0:FAR+.16,x1:MAP.x1,y1:MAP.y1,z:0,col:slabCol,tex:'concrete_pavement',tint:[166,161,148],rep:2},
     {id:'aveW',x0:AV.x0,y0:MAP.y1,x1:AV.r0-.16,y1:RG.nr0-.16,z:0,col:slabCol,tex:'concrete_pavement',tint:[166,161,148],rep:2},
     {id:'aveKW',x0:AV.r0-.16,y0:MAP.y1,x1:AV.r0,y1:RG.nr0-.16,z:0,col:kerbCol('y'),tex:'concrete_pavement',tint:[178,174,164],rep:2},
-    {id:'aveRoad',x0:AV.r0,y0:FAR,x1:AV.r1,y1:RG.nr0,z:RD,col:(x,y)=>zebra(x,y,[[FAR+.2,FAR+1.8,'y'],[EGATE[0],EGATE[1],'y']]),tex:'asphalt_02',tint:[62,64,68],rep:3},
+    {id:'aveRoad',x0:AV.r0,y0:FAR,x1:AV.r1,y1:RG.nr0,z:RD,col:RW,tex:'asphalt_02',tint:[62,64,68],rep:3},
     {id:'aveKE',x0:AV.r1,y0:MAP.y1,x1:AV.r1+.16,y1:RG.nr1,z:0,col:kerbCol('y'),tex:'concrete_pavement',tint:[178,174,164],rep:2},
     {id:'aveE',x0:AV.r1+.16,y0:MAP.y1,x1:AV.x1,y1:AV.ey1,z:0,col:holed(slabCol),tex:'concrete_pavement',tint:[166,161,148],rep:2},
     // THE WEST STREET and THE NORTH STREET (the loop, 17 Oct 2026): as the Avenue: an outer sidewalk, its kerb, the road a kerb down, the inner
@@ -168,21 +302,17 @@ const BOD={meshes:[], walls:{}, lamps:[]};
     {id:'kerb2w',x0:MAP.x0,y0:FAR,x1:RG.wr0,y1:FAR+.16,z:0,col:kerbCol('x'),tex:'concrete_pavement',tint:[178,174,164],rep:2},
     {id:'wstW',x0:RG.wx0,y0:FAR+.16,x1:RG.wr0-.16,y1:RG.nr1,z:0,col:holed(slabCol),tex:'concrete_pavement',tint:[166,161,148],rep:2},
     {id:'wstKW',x0:RG.wr0-.16,y0:FAR+.16,x1:RG.wr0,y1:RG.nr1,z:0,col:kerbCol('y'),tex:'concrete_pavement',tint:[178,174,164],rep:2},
-    {id:'wstRoad',x0:RG.wr0,y0:FAR,x1:RG.wr1,y1:RG.nr0,z:RD,col:(x,y)=>zebra(x,y,[[EGATE[0],EGATE[1],'y',RG.wr0,RG.wr1],[FAR+.2,FAR+1.8,'y',RG.wr0,RG.wr1]]),tex:'asphalt_02',tint:[62,64,68],rep:3},
+    {id:'wstRoad',x0:RG.wr0,y0:FAR,x1:RG.wr1,y1:RG.nr0,z:RD,col:RW,tex:'asphalt_02',tint:[62,64,68],rep:3},
     {id:'wstKE',x0:RG.wr1,y0:MAP.y1,x1:RG.wr1+.16,y1:RG.nr0-.16,z:0,col:kerbCol('y'),tex:'concrete_pavement',tint:[178,174,164],rep:2},
     {id:'wstE',x0:RG.wr1+.16,y0:MAP.y1,x1:RG.wx1,y1:RG.nr0-.16,z:0,col:slabCol,tex:'concrete_pavement',tint:[166,161,148],rep:2},
     {id:'nthS',x0:RG.wr1,y0:RG.ny0,x1:AV.r0,y1:RG.nr0-.16,z:0,col:slabCol,tex:'concrete_pavement',tint:[166,161,148],rep:2},
     {id:'nthKS',x0:RG.wr1,y0:RG.nr0-.16,x1:AV.r0,y1:RG.nr0,z:0,col:kerbCol('x'),tex:'concrete_pavement',tint:[178,174,164],rep:2},
-    {id:'nthRoad',x0:RG.wr0,y0:RG.nr0,x1:AV.r1,y1:RG.nr1,z:RD,col:(x,y)=>zebra(x,y,[[GATE[0],GATE[1],'x',RG.nr0,RG.nr1],[RG.wr0+.2,RG.wr0+1.8,'x',RG.nr0,RG.nr1],[AV.r1-1.8,AV.r1-.2,'x',RG.nr0,RG.nr1]]),tex:'asphalt_02',tint:[62,64,68],rep:3},
+    {id:'nthRoad',x0:RG.wr0,y0:RG.nr0,x1:AV.r1,y1:RG.nr1,z:RD,col:RW,tex:'asphalt_02',tint:[62,64,68],rep:3},
     {id:'nthKN',x0:RG.wr0,y0:RG.nr1,x1:AV.r1,y1:RG.nr1+.16,z:0,col:kerbCol('x'),tex:'concrete_pavement',tint:[178,174,164],rep:2},
     {id:'nthN',x0:RG.wx0,y0:RG.nr1+.16,x1:AV.r1+.16,y1:RG.ny1,z:0,col:slabCol,tex:'concrete_pavement',tint:[166,161,148],rep:2},
     {id:'ghostst',bld:true,x0:GHOSTK.GSK.o[0]+.2,y0:GHOSTK.GSK.o[1]+8.3*GHOSTK.GSK.s-8.75*4/3,x1:GHOSTK.GSK.o[0]+10.4,y1:GHOSTK.GSK.o[1]+8.3*GHOSTK.GSK.s,z:.1,col:(x,y)=>GHOSTK.gsFloor(x,y)||lawnCol(x,y),tex:null,rep:2},   // (Ghost Street's paving: the kit's own, gsFloor)
-    {id:'grassW',x0:MAP.x0,y0:B00.y0,x1:B0.x0,y1:W,z:0,col:holed(lawnCol),tex:null,rep:2}];   // (the lot west of the bodega, the stairs' hole in it: the park's lawn, as all grass is; the land's sheet lies under every other gap)
+    {id:'grassW',x0:MAP.x0,y0:B00.y0,x1:B0.x0,y1:W,z:0,col:holed(lawnCol),tex:null,rep:2},...PATCH].map(g=>g.id==='corner'||g.bld||g.id==='alley'||g.id==='grassW'||g.col===RW?g:{...g,col:SW(g.col)});   // (every sidewalk and kerb strip its kerb along the road and open over a curve's road: SW)   // (the lot west of the bodega, the stairs' hole in it: the park's lawn, as all grass is; the land's sheet lies under every other gap)
   // the kerbs' faces down to the road
-  BOD.kerbs=[{ax:'x',at:CURB,a0:MAP.x0,a1:MAP.x1,z0:RD,z1:0,n:1},{ax:'x',at:FAR,a0:MAP.x0,a1:RG.wr0,z0:RD,z1:0,n:-1},{ax:'x',at:FAR,a0:RG.wr1,a1:AV.r0,z0:RD,z1:0,n:-1},{ax:'x',at:FAR,a0:AV.r1,a1:MAP.x1,z0:RD,z1:0,n:-1},
-    {ax:'y',at:AV.r0,a0:FAR,a1:RG.nr0,z0:RD,z1:0,n:1},{ax:'y',at:AV.r1,a0:FAR,a1:RG.nr1,z0:RD,z1:0,n:-1},
-    {ax:'y',at:RG.wr0,a0:FAR,a1:RG.nr1,z0:RD,z1:0,n:1},{ax:'y',at:RG.wr1,a0:FAR,a1:RG.nr0,z0:RD,z1:0,n:-1},
-    {ax:'x',at:RG.nr0,a0:RG.wr1,a1:AV.r0,z0:RD,z1:0,n:1},{ax:'x',at:RG.nr1,a0:RG.wr0,a1:AV.r1,z0:RD,z1:0,n:-1}];   // (the loop's: the far kerb open at the west street's and the Avenue's mouths, each side's two kerbs, the north street's)   // (the far kerb open at the Avenue's mouth; the Avenue's two kerbs, and its end)
   // ---- the lights: the game's LAMPS as its objects made them (the tubes, the coolers, the neon, the street light), each a point light here
   BOD.LAMPS=LAMPS.filter(l=>!l.off&&l.r>0);
   // ---- the goods (47-physics-5-goods: their kinds, colours and rows, word for word)
@@ -197,7 +327,7 @@ const BOD={meshes:[], walls:{}, lamps:[]};
     const bs=p.boxes.filter(b=>!b.nb&&b.z0<30&&b.z1-b.z0>3); if(!bs.length)continue; const r={x0:Math.min(...bs.map(b=>b.x0)),y0:Math.min(...bs.map(b=>b.y0)),x1:Math.max(...bs.map(b=>b.x1)),y1:Math.max(...bs.map(b=>b.y1))};
     sol(r.x0,r.y0,r.x1,r.y1,Math.max(...bs.map(b=>b.z1))); }
   BOUND={x0:XS(MAP.x0),x1:XS(MAP.x1),z0:Z(B00.y0),z1:ZS(MAP.y1)};
-  groundY=(x,z)=>{ const gx=x/TILE+OX, gy=z/TILE+OY; return (gy>CURB&&gy<FAR&&gx>MAP.x0&&gx<MAP.x1)||(gx>AV.r0&&gx<AV.r1&&gy>=FAR&&gy<RG.nr1)||(gx>RG.wr0&&gx<RG.wr1&&gy>=FAR&&gy<RG.nr1)||(gy>RG.nr0&&gy<RG.nr1&&gx>RG.wr0&&gx<AV.r1)?YS(RD):(window.HILL?HILL(x,z):0); }   /* (the park's hills: park.js) */;   // (the road a kerb down: the loop's four sides)   // (the road a kerb down: the street's, and the Avenue's north from it)
+  groundY=(x,z)=>{ const gx=x/TILE+OX, gy=z/TILE+OY, rw=rampAt(gx,gy); if(rw!=null)return YS(RD*(1-rw/RPD));   /* (down a kerb ramp's slope) */ return ROADAT(gx,gy)?YS(RD):(window.HILL?HILL(x,z):0); }   /* (the park's hills: park.js) */;   // (the road a kerb down: the loop's four sides, round their corners' curves, so a step down the kerb follows it: ROADAT)   // (the road a kerb down: the street's, and the Avenue's north from it)
   BOD.inside=(x,z)=>{ const gx=x/TILE/K+OX, gy=z/TILE/K+OY; return gx>B0.x0&&gx<B0.x1&&gy>B0.y0&&gy<B0.y1; };
 }
 }

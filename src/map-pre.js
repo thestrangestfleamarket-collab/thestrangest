@@ -10,14 +10,23 @@
 // SMOOTH LIGHT (owner, 17 Oct 2026: "i dont like any of those mockups, they all look like dots everywhere, i want smooth realistic shadows and
 // lighting like gradient radial etc"): the default now: no grain, the light not cut into steps (it falls off in gradients), soft shadow edges
 // (build.py); GRAPHICS' LIGHTING switches back to PIXEL (the steps and the grain), kept in the browser; ?look=pixel|smooth for a test
-const SMOOTH=(()=>{ const q=new URLSearchParams(location.search).get('look'); if(q)return q!=='pixel'; let v=null; try{ v=SAVE.get('lighting'); }catch(e){} return v!=='pixel'; })();
+// CEL, ALWAYS (owner, 18 Oct 2026, his picture of a pixel-art face: "i want this kind of shading at all times ... solid colors, but pixelated, not
+// gradient, i dont want gradients ever in the game"; then of the mockups: "3-5 flat as option in menu - do not use smooth light under any
+// circumstances hard rule"): the light on every face cut into CEL flat bands (3, 4 or 5: GRAPHICS' LIGHT BANDS, the save's 'bands'; 4 the
+// default), no grain, no blend between them, each band down a little cooler and bluer than the one over it (HUE), hard shadow edges. There
+// is no smooth light: SMOOTH stays false for the code that still asks; ?cel=N for a test
+const CEL=(()=>{ const q=+new URLSearchParams(location.search).get('cel'); let v=null; try{ v=+SAVE.get('bands'); }catch(e){} const n=q||v||4; return Math.max(3,Math.min(5,n|0)); })();
+const HUE=(()=>{ const q=new URLSearchParams(location.search).get('hue'); return (q!=null?+q:1).toFixed(3); })();
+const SMOOTH=false;   // (never: the hard rule above)
+// (the haze in steps as well: every material's fog cut into 8 flat bands, no smooth fade into the far)
+THREE.ShaderChunk.fog_fragment=THREE.ShaderChunk.fog_fragment.replace('gl_FragColor.rgb = mix','fogFactor = floor( fogFactor * 8. + .5 ) / 8.;\n\tgl_FragColor.rgb = mix');
 // THE DARKEST A FACE GOES (owner, 18 Oct 2026: "nothing should be black like this even at darkest give it 5-20%"): a face the sun and lamps miss still
 // gets this much of its own colour, so the bricks of a shaded side show; ?floor=N for a test
 const FLOOR=(()=>{ const q=+new URLSearchParams(location.search).get("floor"); return (q>=0&&q<1&&q?q:.2).toFixed(3); })();
 // SOFT STEPS (owner, 18 Oct 2026, "do A-D": everything looked flat under smooth light): the smooth light keeps a few broad bands, each edge
 // eased over a short gradient (no grain, no hard line), so a face's turn from the light reads; ?soft=0 the smooth light alone, ?soft=N N bands
 const SOFT=(()=>{ const q=new URLSearchParams(location.search).get('soft'); return q!=null?Math.max(0,+q|0):7; })();
-const DITH=SMOOTH?0:(()=>{ const q=new URLSearchParams(location.search).get('dith'); if(q!=null)return +q; let v=null; try{ v=SAVE.get('grain'); }catch(e){} return v!=null?+v:16; })();
+const DITH=0&&(()=>{ const q=new URLSearchParams(location.search).get('dith'); if(q!=null)return +q; let v=null; try{ v=SAVE.get('grain'); }catch(e){} return v!=null?+v:16; })();
 // THE LIVELIER LOOK (owner, 17 Oct 2026: "how can i get the world to look more dynamic with light, shadows, weather etc without dragging down
 // with lag? this looks too bland"; "let me see mockups of all of those"): ?fx=cs,cool,ao,var,wet,sway,life (or all): the clouds' shadows
 // drifting over the ground (cs), contact shadows where things stand on it (ao), the ground's tones varied in patches (var), wet ground with
@@ -26,7 +35,7 @@ const DITH=SMOOTH?0:(()=>{ const q=new URLSearchParams(location.search).get('dit
 // motes in the sun (life, lookfx.js)
 const LFX={on:new Set((new URLSearchParams(location.search).get('fx')??'cs,cool').split(',').filter(Boolean))};   /* (the clouds' shadows and the warm sun / cool shade on by default since 18 Oct 2026, owner: "do A-D", the flat midday; ?fx=none all off) */ if(LFX.on.has('all'))['cs','cool','ao','var','wet','sway','life'].forEach(k=>LFX.on.add(k));
 LFX.AO={x0:-45,z0:-40,w:160,h:150,k:6};   // (the contact shadows' map: world units, texels a unit)
-LFX.shade=LFX.on.has('cs')||LFX.on.has('ao')||LFX.on.has('var')||LFX.on.has('wet');
+LFX.shade=true;   // (always, 18 Oct 2026: the weather's wet ground and lying snow are read from it too, below; the ?fx= switches each its own part)
 if(LFX.shade){ LFX.env=new THREE.DataTexture(new Uint8Array(64*64*4),64,64); LFX.env.wrapS=LFX.env.wrapT=THREE.RepeatWrapping; LFX.env.magFilter=LFX.env.minFilter=THREE.LinearFilter; LFX.env.needsUpdate=true;
   const A=LFX.AO; LFX.ao=new THREE.DataTexture(new Uint8Array(A.w*A.k*A.h*A.k).fill(255),A.w*A.k,A.h*A.k,THREE.RedFormat); LFX.ao.magFilter=LFX.ao.minFilter=THREE.LinearFilter; LFX.ao.needsUpdate=true;
   THREE.ShaderLib.lambert.uniforms.tENV={value:LFX.env}; THREE.ShaderLib.lambert.uniforms.tAO={value:LFX.ao}; }
@@ -35,7 +44,17 @@ if(DITH||LFX.shade){ THREE.ShaderLib.lambert.vertexShader='varying vec3 vWP;\n'+
 if(DITH){ THREE.ShaderLib.lambert.fragmentShader=THREE.ShaderLib.lambert.fragmentShader.replace('#include <lights_fragment_begin>','#include <lights_fragment_begin>\n vec3 dc=floor(vWP*'+(24/(33.9/30)).toFixed(3)+'+.001); float dh=fract(sin(dot(dc,vec3(12.9898,78.233,37.719)))*43758.5453);'); }
 THREE.ShaderLib.lambert.fragmentShader=THREE.ShaderLib.lambert.fragmentShader
   .replace('#include <map_fragment>','#include <map_fragment>\n {\n#ifdef FLAT_SHADED\n vec3 nv_=normalize(cross(dFdx(vViewPosition),dFdy(vViewPosition)));\n#else\n vec3 nv_=normalize(vNormal);\n#endif\n vec3 wn=abs((vec4(nv_,0.)*viewMatrix).xyz); diffuseColor.rgb*=wn.y>=max(wn.x,wn.z)?1.:wn.x>wn.z?.62:.8; }')   /* (a flat-shaded Lambert (the boats, the floats) has no vNormal: its face's normal from the screen's slopes; its program failed to compile before, 17 Oct 2026) */
-  .replace('#include <lights_fragment_end>','#include <lights_fragment_end>\n'+(LFX.shade?' { vec3 wN=(vec4(normal,0.)*viewMatrix).xyz; float up=step(.7,wN.y); vec4 P0=texelFetch(tENV,ivec2(0,63),0), P1=texelFetch(tENV,ivec2(1,63),0), P2=texelFetch(tENV,ivec2(2,63),0); float cs=texture2D(tENV,vWP.xz/40.68+P1.rg).r; reflectedLight.directDiffuse*=1.-P0.r*smoothstep(.48,.58,cs)*.45; if(P0.b>.5&&up>0.&&vWP.y<.5){ vec2 au=(vWP.xz-vec2('+LFX.AO.x0+'.,'+LFX.AO.z0+'.))/vec2('+LFX.AO.w+'.,'+LFX.AO.h+'.); float ao=texture2D(tAO,au).r; reflectedLight.directDiffuse*=ao; reflectedLight.indirectDiffuse*=ao; } if(P0.a>.5&&up>0.){ float n=lfn(vWP.xz*.22)*.7+lfn(vWP.xz*.9)*.3, d=lfh(floor(vWP.xz*21.2))-.5, lv=floor(clamp(n*4.+d*.7,0.,3.999))/3.; float t=.84+.28*lv; reflectedLight.directDiffuse*=t; reflectedLight.indirectDiffuse*=t; } if(P0.g>.01&&up>0.){ float m=step(.7,lfn(vWP.xz*1.1+7.)*.75+lfn(vWP.xz*3.3)*.25), k=1.-P0.g*(.3+.25*m); reflectedLight.directDiffuse*=k; reflectedLight.indirectDiffuse*=k; reflectedLight.indirectDiffuse+=P2.rgb*P0.g*m*.12*(.5+.5*lfn(vWP.xz*5.)); } }':'')+'\n { vec3 al=max(diffuseColor.rgb,vec3(.02)); vec3 L0=(reflectedLight.directDiffuse+reflectedLight.indirectDiffuse)/al*3.14159; float m0=max(L0.r,max(L0.g,L0.b)); if(m0<'+FLOOR+') reflectedLight.indirectDiffuse+=al/3.14159*('+FLOOR+'-m0); }\n { vec3 al=max(diffuseColor.rgb,vec3(.02)); vec3 L=(reflectedLight.directDiffuse+reflectedLight.indirectDiffuse)/al*3.14159; float m=max(L.r,max(L.g,L.b)); if('+(SMOOTH&&SOFT?'true':'false')+'&&m>.001){ float f=min(m,1.7)*'+SOFT+'., b=floor(f)+smoothstep(.3,.7,fract(f)), s=(f<1.?f:mix(f,b,.7))/'+SOFT+'.; float q=s/m; reflectedLight.directDiffuse*=q; reflectedLight.indirectDiffuse*=q; }\n if('+(SMOOTH?'false':'true')+'&&m>.001){ float q=min(floor(min(m,1.7)*'+(DITH?DITH+'.+dh':'24.+.5')+')/'+(DITH||24)+'.,1.7)/m; reflectedLight.directDiffuse*=q; reflectedLight.indirectDiffuse*=q; } }');
+  .replace('#include <lights_fragment_end>','#include <lights_fragment_end>\n'+(LFX.shade?' { vec3 wN=(vec4(normal,0.)*viewMatrix).xyz; float up=step(.7,wN.y); vec4 P0=texelFetch(tENV,ivec2(0,63),0), P1=texelFetch(tENV,ivec2(1,63),0), P2=texelFetch(tENV,ivec2(2,63),0); float cs=texture2D(tENV,vWP.xz/40.68+P1.rg).r; reflectedLight.directDiffuse*=1.-P0.r*smoothstep(.48,.58,cs)*.45; if(P0.b>.5&&up>0.&&vWP.y<.5){ vec2 au=(vWP.xz-vec2('+LFX.AO.x0+'.,'+LFX.AO.z0+'.))/vec2('+LFX.AO.w+'.,'+LFX.AO.h+'.); float ao=texture2D(tAO,au).r; reflectedLight.directDiffuse*=ao; reflectedLight.indirectDiffuse*=ao; } if(P0.a>.5&&up>0.){ float n=lfn(vWP.xz*.22)*.7+lfn(vWP.xz*.9)*.3, d=lfh(floor(vWP.xz*21.2))-.5, lv=floor(clamp(n*4.+d*.7,0.,3.999))/3.; float t=.84+.28*lv; reflectedLight.directDiffuse*=t; reflectedLight.indirectDiffuse*=t; }  }':'')+'\n { vec3 al=max(diffuseColor.rgb,vec3(.02)); vec3 L0=(reflectedLight.directDiffuse+reflectedLight.indirectDiffuse)/al*3.14159; float m0=max(L0.r,max(L0.g,L0.b)); if(m0<'+FLOOR+') reflectedLight.indirectDiffuse+=al/3.14159*('+FLOOR+'-m0); }\n { vec3 al=max(diffuseColor.rgb,vec3(.02)); vec3 L=(reflectedLight.directDiffuse+reflectedLight.indirectDiffuse)/al*3.14159; float m=max(L.r,max(L.g,L.b)); if('+(SMOOTH&&SOFT?'true':'false')+'&&m>.001){ float f=min(m,1.7)*'+SOFT+'., b=floor(f)+smoothstep(.3,.7,fract(f)), s=(f<1.?f:mix(f,b,.7))/'+SOFT+'.; float q=s/m; reflectedLight.directDiffuse*=q; reflectedLight.indirectDiffuse*=q; }'+(CEL?'\n if(m>.001){ float b=floor(min(m,1.45)*'+CEL+'.+.5)/'+CEL+'.; b=max(b,'+(.5/CEL).toFixed(3)+'); float sh=clamp(1.-b,0.,1.)*'+HUE+'; vec3 tn=mix(vec3(1.05,1.,.93),vec3(.8,.86,1.22),sh); float q=b/m; reflectedLight.directDiffuse*=q*tn; reflectedLight.indirectDiffuse*=q*tn; }':'')+'\n if('+(SMOOTH||CEL?'false':'true')+'&&m>.001){ float q=min(floor(min(m,1.7)*'+(DITH?DITH+'.+dh':'24.+.5')+')/'+(DITH||24)+'.,1.7)/m; reflectedLight.directDiffuse*=q; reflectedLight.indirectDiffuse*=q; } }');
+// WET GROUND AND LYING SNOW (owner, 18 Oct 2026, "go all": the weather's "not yet: wet ground, snow lying"): read from LFX.env's last row
+// (lookfx.js writes how wet and how snowed on, outdoors only, 0 inside or underground), on every face facing up in the world's one lit shader,
+// before the light is cut into its bands, so both take the cel steps as everything does: WET, the ground a third darker (grass a little), and
+// still puddles on the paving and the road (blobs of a fixed noise, hard-edged, never moving; not on grass, not above knee height) a flat sheet
+// of the sky's colour laid over after the bands; SNOW, white patches growing from a fixed noise as it lies deeper until all is covered, melting
+// back the same way. No new program, no new texture, no light
+if(LFX.shade){ const FN='#ifdef FLAT_SHADED\n vec3 nq=normalize(cross(dFdx(vViewPosition),dFdy(vViewPosition)));\n#else\n vec3 nq=normalize(vNormal);\n#endif\n';
+  THREE.ShaderLib.lambert.fragmentShader=THREE.ShaderLib.lambert.fragmentShader
+  .replace('#include <color_fragment>','#include <color_fragment>\n float lfP=0.;\n { vec4 Q0=texelFetch(tENV,ivec2(0,63),0), Q1=texelFetch(tENV,ivec2(1,63),0);\n if(Q0.g>.01||Q1.b>.01){\n'+FN+' float upq=step(.7,(vec4(nq,0.)*viewMatrix).y); vec3 dc=diffuseColor.rgb; float gr=step(dc.r*1.1,dc.g)*step(dc.b*1.05,dc.g);\n if(Q0.g>.01&&upq>0.){ float w=Q0.g; diffuseColor.rgb*=1.-w*(.34-.22*gr); lfP=w*step(.79,lfn(vWP.xz*.55+3.)*.7+lfn(vWP.xz*1.9+11.)*.3)*(1.-gr)*step(vWP.y,.4); diffuseColor.rgb*=1.-.6*lfP; }\n if(Q1.b>.01&&upq>0.){ float c=step(1.-Q1.b*1.15,lfn(vWP.xz*.8+9.)*.6+lfn(vWP.xz*3.1+5.)*.4); diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.9,.92,.96),c); lfP*=1.-c; } } }')
+  .replace('#include <opaque_fragment>',' if(lfP>0.){ vec3 sk=texelFetch(tENV,ivec2(2,63),0).rgb; outgoingLight=mix(outgoingLight,sk*.46+.015,lfP*.8); }\n#include <opaque_fragment>'); }
 // ---- THE MAP (owner, 16 Oct 2026: "a small map with only the subway, pool and bodega (next to each other for now)", "build the exit to the
 // subway (floor level) and subway underneath"): one street; the bodega and the pool room side by side on its sidewalk; the West End's
 // subway station under the lot west of the bodega, its stairs down from the sidewalk into the station's exit tunnel. Two levels: the street's
@@ -44,7 +63,7 @@ THREE.ShaderLib.lambert.fragmentShader=THREE.ShaderLib.lambert.fragmentShader
 const NEONS=[], SHL=[], cutWalls=[], lamps=[], trees=[], shopGroups=[]; let night=1, nightTo=1; const C1=new THREE.Color(), C2=new THREE.Color(); function applyTime(){}
 const ZU=1/(PPU*Math.cos(Math.PI/6)), TILE=33.9/PPU, QS=new URLSearchParams(location.search), LAMPI=8, LAMPD=1.6;
 const SOL={up:[],down:[]}, FIX={up:[],down:[]}, CLIPX=[];   // (CLIPX: the things not in the batch, for the hitboxes' pass: {place, name, P its triangles in the world, or obj its group}: clip.js)
-let solids=SOL.up, fixed=FIX.up, BOUND, groundY, LVL='up', BOD, BODB;
+let solids=SOL.up, fixed=FIX.up, BOUND, groundY, LVL='up', BOD, BODB, METRO;   // (METRO: the subway, metro.js; undefined while the old station is brought back)
 const STORE={rooms:[],places:[],roofs:[]}, BF={list:[]}; window.STORE=STORE;   // (STORE: the storeroom, store.js; BF: the butterflies, butterflies.js)
 const MAPG={}, MODS={}; let MAPBAKE=0; const OVERHEAD=[]; let RPASS=null, FIRE=null;   // (OVERHEAD: the lights hung over a room, shown only from under them: rooms.js; RPASS: the picture's render pass, its camera the view's: ui.js)
 // a place's own objects gathered in a group of its own (shown and hidden with its level)
@@ -59,7 +78,7 @@ const grab=(name,fn)=>{ const n0=scene.children.length; fn(); const g=new THREE.
 // the subway stairs stand before) | the bodega | the Diner | THE AQUARIUM (the octopus tank's room, a storefront) | the Bar | Ghost Street |
 // the apartment building with its pool at the east end, nothing on its roof; the keep in the castle's bailey; the street run on east past
 // them (BOD.MAP.x1), and THE AVENUE north from its east end along the park's east wall (AVE, below). The moves here in the map's tiles
-const LAYOUT0={bodega:{x:8.75},diner:{x:-24.75},bar:{x:-8},ghost:{x:-8.75},apartments:{x:59},park:{e:[-4,0,0,0]},castle:{x:-70,y:19.5}};   // (castle: to the grown park's back-left corner, 17 Oct 2026; x -70, y +3 since 18 Oct 2026: the street run on 70 tiles west, the far sidewalk 3 tiles deeper)
+const LAYOUT0={bodega:{x:8.75},diner:{x:-24.75},bar:{x:-8},ghost:{x:-8.75},apartments:{x:59},park:{e:[-4,0,0,0]},castle:{x:-70,y:25.5}};   // (castle: to the grown park's back-left corner, 17 Oct 2026; x -70, y +3 since 18 Oct 2026: the street run on 70 tiles west, the far sidewalk 3 tiles deeper; y +6 more the same day, the far sidewalk 12 deep: NORTHY)
 // OFF THE MAP (owner, 18 Oct 2026: "i want main street to only have this building [the apartment house], the bodega and ghost street building on
 // it. put all other buildings that are on main now off map for me to pull from later. i dont want any other buildings or rooms on map"; and of the
 // castle, "the tower shouldnt be inside the castle, it should be off map"): every place named here is kept in the code but not on the map. Most are
@@ -70,7 +89,10 @@ const LAYOUT0={bodega:{x:8.75},diner:{x:-24.75},bar:{x:-8},ghost:{x:-8.75},apart
 // the swimming, the floats and boats), so it's built where no one goes: AWAYLOT tiles east, past the force field, never drawn or reached.
 // To bring one back: ?bring=diner,bar (or ?bring=all) for a look, or take its key out of AWAY0 here for good; the map editor (Shift+M) then
 // moves it as before. The castle and its dungeon stay (half height, for the woodland creatures: castle.js)
-const AWAY0=['apartments','diner','bar','aquarium','garden','avenue','keep','civic','power'], AWAYLOT=1000;
+// THE OLD STATION OFF THE MAP (owner, 18 Oct 2026: "i want to bring the metro into the map and move the current subway station off map"):
+// station: the game's West End station and its stairs (station.js, wsub.js, map-post.js's old stairs), the Metro in their place (metro.js);
+// ?bring=station builds the old one again instead (the two share the subway's spot under the lot, so it's one or the other)
+const AWAY0=['apartments','diner','bar','aquarium','garden','avenue','keep','civic','power','station'], AWAYLOT=1000;
 const AWAY=(()=>{ const s=new Set(AWAY0), q=QS.get('bring'); if(q==='all')s.clear(); else if(q)for(const k of q.split(','))s.delete(k.trim()); return s; })(); window.AWAY=AWAY;   // (castle: to the grown park's back-left corner, 17 Oct 2026)
 const LAY=(()=>{ const q=QS.get('layout'); let o={}; try{ o=q&&q[0]==='{'?JSON.parse(q):q==='0'?{}:JSON.parse(SAVE.get('layout')||'{}')||{}; }catch(e){}
   const L=Object.assign({},LAYOUT0,o); return {L, o:k=>({x:(+(L[k]&&L[k].x)||0)+(k==='apartments'&&AWAY.has(k)?AWAYLOT:0),y:+(L[k]&&L[k].y)||0}), e:k=>(L[k]&&L[k].e||[0,0,0,0]).map(v=>+v||0), h:k=>+(L[k]&&L[k].h)||0, s:k=>+(L[k]&&L[k].s)||1}; })();   // (h: a room's lift in tiles, s: its size, the map editor's RAISE / LOWER and GROW / SHRINK: mapedit.js, store.js)
@@ -89,7 +111,8 @@ const BLDK=1.1;
 // diretions) and double the size of the siewalk on the central park side"): the street run on 70 tiles each way (MAINX: the west street, the park's
 // west wall and the castle 70 west; the Avenue, the park's east wall and the force field's east side 70 east; the park twice as wide between
 // them), the far sidewalk 6 tiles where it was 3 (BOD.MAP.y1 in bodega.js), the park and the north street 3 tiles north with it (NORTHY)
-const MAINX={w:70,e:70}, NORTHY=3;
+// (and again, owner 18 Oct 2026: "make sidewalk on central park side 2x bigger": the far sidewalk 12 tiles, the park and all north of it 9 north, NORTHY)
+const MAINX={w:70,e:70}, NORTHY=9;
 const AVE={x0:152+MAINX.e,x1:166.5+MAINX.e,y1:57.5}; AVE.r0=AVE.x0+3.2; AVE.r1=AVE.x1-3.2;
 // THE LOOP (owner, 17 Oct 2026: "lets loop the street all the way around the park and back again ... use force field to block anyone from leaving
 // outside of the city block loop ... add the hudson behind the buildings on main street, it goes all the way up and down map"): the main street
@@ -98,7 +121,9 @@ const AVE={x0:152+MAINX.e,x1:166.5+MAINX.e,y1:57.5}; AVE.r0=AVE.x0+3.2; AVE.r1=A
 // loop and the buildings on its outer side (ff); the Hudson south of the main street's row and its alley, the land's whole width (river). In the
 // street's tiles (BOD.XS / ZS: y up toward the park)
 const RING={wx0:31.5-MAINX.w,wx1:46-MAINX.w,ny0:12.5+NORTHY,ny1:27+NORTHY}; RING.wr0=RING.wx0+3.2; RING.wr1=RING.wx1-3.2; RING.nr0=RING.ny0+3.2; RING.nr1=RING.ny1-3.2;
-AVE.y1=RING.ny1; AVE.ey1=38.5+NORTHY; RING.stairs=[{x0:RING.wx0+.6,x1:RING.wx0+2.6,y0:-2,y1:4,steps:12,depth:98,dir:-1,leg:'w'},{x0:AVE.r1+.6,x1:AVE.r1+2.6,y0:-2.4,y1:3.6,steps:12,depth:98,dir:-1,leg:'e'}];   /* (the loop's subway: its stairs down, the west street's outer sidewalk and the Avenue's east one, in the gap between its shells: sub.js) */ RING.ff={x0:RING.wx0-1.5,x1:AVE.x1+25.5,y0:-103,y1:40.5+NORTHY}; RING.river={y0:-150,y1:-104};   // (just past the row's back alley)
+{ const x0=(RING.wr0+RING.wr1)/2+2.7, raw=((50-MAINX.w)+AVE.x0)/2+9; RING.mine={x:x0+(Math.floor((raw-x0)/2.5)+.5)*2.5}; }   /* (the deep mines' way in from the loop tunnel, on the mine's grid: mines.js, sub.js) */ AVE.y1=RING.ny1; AVE.ey1=38.5+NORTHY; RING.stairs=[{x0:RING.wx0+.6,x1:RING.wx0+2.6,y0:-2,y1:4,steps:12,depth:98,dir:-1,leg:'w'},{x0:AVE.r1+.6,x1:AVE.r1+2.6,y0:-2.4,y1:3.6,steps:12,depth:98,dir:-1,leg:'e'}];   /* (the loop's subway: its stairs down, the west street's outer sidewalk and the Avenue's east one, in the gap between its shells: sub.js) */ RING.river={y0:-150,y1:-104}; RING.ff={x0:RING.wx0-1.5,x1:AVE.x1+25.5,y0:RING.river.y0-1.5,y1:40.5+NORTHY};   // (the field past the river's far bank: the Hudson in the city, real water to swim in, river.js; owner 18 Oct 2026)   // (just past the row's back alley)
+// THE SUBWAY'S WAY DOWN (the old station's stairs; the Metro's opening fills it in from the kit's railing, metro.js: then has(x, z, lv) says
+// when you're on its stairs or in its exit, ground(x, z, lv) the floor under you there)
 const MAPSTAIR={x0:59,x1:63,y0:-80,y1:-74, steps:12, depth:98, dir:-1};
 { const o=LAY.o('subway'); MAPSTAIR.x0+=o.x; MAPSTAIR.x1+=o.x; MAPSTAIR.y0+=o.y; MAPSTAIR.y1+=o.y; }
 // THE CASTLE (owner, 17 Oct 2026: "the castle on the left back end" of the park, "the dungeon under the castle (only 1 level)"; castle.js): its

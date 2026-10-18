@@ -60,7 +60,8 @@ const waterBody=(WATER,cfg)=>{ const {X0,X1,Z0,Z1,lvl,GX,GY}=cfg, W=X1-X0, D=Z1-
         float fr=0.02+0.98*pow(1.-max(dot(n,V),0.),5.); col=mix(col,uRoom,fr*0.7);
         for(int i=0;i<12;i++){ if(i>=uNL)break; vec3 dl=uLP[i]-vWp; float d=length(dl); vec3 H=normalize(dl/d+V); col+=uLC[i]*pow(max(dot(n,H),0.),70.)*4.5/(1.+d*d*0.12); }
         gl_FragColor=vec4(col,1.); }`});
-  WATER.mesh=new THREE.Mesh(g,WATER.mat); WATER.mesh.position.set(X0+W/2,lvl,Z0+D/2); WATER.mesh.frustumCulled=false; scene.add(WATER.mesh);
+  WATER.mesh=new THREE.Mesh(g,WATER.mat); WATER.mesh.position.set(X0+W/2,lvl,Z0+D/2); scene.add(WATER.mesh);
+  { g.computeBoundingBox(); const B=g.boundingBox; B.min.y-=TILE; B.max.y+=TILE; g.boundingSphere=B.getBoundingSphere(new THREE.Sphere()); }   // (its bounds with room for the waves the shader raises, so the view culls it as any mesh: it was drawn from everywhere, the pool's 32,706 triangles from the park; 18 Oct 2026)
   WATER.t=0; WATER.stir=0; WATER.rb=new Uint16Array(GX*GY*4);
   WATER.spg=new THREE.BufferGeometry(); WATER.spg.setAttribute('position',new THREE.BufferAttribute(new Float32Array(600*3),3)); WATER.spg.setDrawRange(0,0);
   const spm=new THREE.Points(WATER.spg,new THREE.PointsMaterial({color:0xdff3ff,size:2,sizeAttenuation:false})); spm.frustumCulled=false; scene.add(spm);

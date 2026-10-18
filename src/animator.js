@@ -134,4 +134,12 @@
       const [p0]=G[0], p1=G[1]&&G[1][0]; const k=keyHere(); k.d[p0]=(cur[p0]||0)-dy*sc(p0); if(p1)k.d[p1]=(cur[p1]||0)+dx*sc(p1); showSl.forEach(f=>f()); },
     up:()=>{ save(); drawKeys(); }});
   ED.onExit=()=>{ save(); };
+  // ---- HIS STANDING POSE, for the avatar editor's POSE tab (owner, 18 Oct 2026: "the avatar editor needs to have a section where i can pose the
+  // avatar and pull his limbs all around. i want to be able to pick his standing pose"): standing's one key is his pose wherever he stands still
+  R.ANIMX={ stand:()=>OV.stand&&OV.stand[0]?{...OV.stand[0].d}:{},
+    setStand:d=>{ snap(); if(d&&Object.keys(d).length)OV.stand=[{t:0,d:JSON.parse(JSON.stringify(d))}]; else delete OV.stand; save(); },
+    edit:()=>{ clip=clip0='stand'; t=0; play=false; },
+    undo:()=>{ const u=UNDO.pop(); if(u){ OV=JSON.parse(u); save(); } },
+    mirror:(a,b)=>{ clip='stand'; t=0; mirror(a,b); },
+    part:()=>GNAME[grp] };
 }

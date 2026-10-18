@@ -21,7 +21,10 @@ grab('park',()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.ox=PO.x; PARK.o
   const path=(x,y)=>{ const [cx,cy,r]=P.round; return Math.abs(x-cx)<3.6||Math.abs(y-cy)<3.6||Math.hypot(x-cx,y-cy)<r; };
   // the pavers: the park's hexagons (a third of a tile across), each its own grey, a dark seam between, worn here and there
   const hexCol=(x,y)=>{ const s=1/3, w=s*Math.sqrt(3), row=Math.floor(y/(s*1.5)), ox=(row&1)?w/2:0, col=Math.floor((x-ox)/w), cx=(col+.5)*w+ox, cy=row*s*1.5+s;
-    const dx=Math.abs(x-cx), dy=Math.abs(y-cy), e=Math.max(dx/w*2,(dy+dx/Math.sqrt(3))/s), seam=e>.86, n=hash(col,row,71), g=grain(x,y,73,2), c=seam?42+8*n:58+22*n+10*(g-.5); return speck([c,c,c+2],x,y,75); };
+    const dx=Math.abs(x-cx), dy=Math.abs(y-cy), e=Math.max(dx/w*2,(dy+dx/Math.sqrt(3))/s), seam=e>.86, n=hash(col,row,71), g=grain(x,y,73,2), hp=hash(Math.floor(x*24),Math.floor(y*24),77);
+    // (each paver bevelled (lit toward the top of the picture, shaded below), moss and weeds in the seams where a broad noise lets them: owner, 18 Oct 2026, "realistic textures")
+    if(seam){ if(cvNoise(x/2.5,y/2.5,79)>.6&&hp<.65)return [[52,82,40],[66,98,48],[44,70,34]][Math.floor(hash(Math.floor(x*24),Math.floor(y*24),81)*3)]; const c=36+8*n; return [c,c,c+2]; }
+    let c=58+22*n+10*(g-.5); if(e>.74)c*=(y<cy)?1.14:.84; return speck([c,c,c+2],x,y,75); };
   // THE LAWN: lawnCol (gamekit.js: the all-green lawn with its sprouts and weeds, every grass on the map)
   const lawn=BOD.g.lawnCol;
   const CS=(S=>({x0:S.x0-PO.x,x1:S.x1-PO.x,y0:S.y0-PO.y,y1:S.y1-PO.y}))(CASTLE.stair), groundCol=(x,y)=>x>=CS.x0&&x<CS.x1&&y>=CS.y0&&y<CS.y1?null:path(x,y)?hexCol(x,y):lawn(x,y);   // (open where the castle's stair goes down)
@@ -124,7 +127,7 @@ grab('park',()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.ox=PO.x; PARK.o
     SOL.up.push([X(g0-5.2),Z(P.y0+2.2),X(g0-2.2),Z(P.y0+3.1)]); FIX.up.push([X(g0-5.2),Z(P.y0+2.2),0,X(g0-2.2),Z(P.y0+3.1),Y(27)]);
     PARK.odd=mesh([['crate',g0-4.6,P.y0+2.65,.4,.2,.95],['gem1',g0-3.9,P.y0+2.5,.22,.5,.95],['gem2',g0-3.5,P.y0+2.8,.2,1.5,.95],['gem3',g0-3.1,P.y0+2.5,.24,2.5,.95],['gold',g0-2.6,P.y0+2.7,.08,.8,.95],['gem1',g0-4,P.y0+2.85,.18,3.5,.95]],false,false);
     PARK.camp=mesh([['campfire',RX(108),RY(-54.5),.13,0],['woodpile',RX(109.5),RY(-55.6),.5,.6]],false,true); PARK.fire={x:X(RX(108)),z:Z(RY(-54.5)),y:.3};
-    { const L=new THREE.PointLight(new THREE.Color(1,.6,.25),3.6,5*TILE,1.6); L.position.set(X(RX(108)),.7,Z(RY(-54.5))); scene.add(L); PARK.fireL=L;
+    { const L=new THREE.PointLight(new THREE.Color(1,.6,.25),26,9*TILE,1.6); L.position.set(X(RX(108)),.5*TILE,Z(RY(-54.5))); L.userData.fire=1; scene.add(L); PARK.fireL=L;   // (owner, 18 Oct 2026: "isnt causing any lights or shadows": at 3.6 it lit nothing beside the lamps' 6-40; now as strong as a street light, from the flames' middle, and first for the lamp shadow when near: LITE)
       // its fire live (fire.js): a bed of flames on the logs, embers flying up, smoke rising; the light flickering with it
       PARK.flame=FLAME.add({kind:'bed',name:'campfire',x:X(RX(108)),y:.12*TILE,z:Z(RY(-54.5)),w:.78*TILE,h:.95*TILE,embers:4,smoke:2.2,sk:1.3,light:L,seed:5}); }
     // (the plesiosaur skeleton: removed, owner 17 Oct 2026, "remove the dinosaur bones from game")

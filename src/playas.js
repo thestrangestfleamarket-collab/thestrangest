@@ -4,7 +4,7 @@
 // you are, and plays its own clips for what you're doing: standing, walking, jogging, sprinting (by your speed), in the air, a punch, a roll,
 // falling, sitting, swimming. ?avatar=walker (or GRAPHICS' AVATAR) the Walker as before. Cost: 6,872 triangles, one draw, his own shadow ----
 const PLAYAS={on:false}; window.PLAYAS=PLAYAS;
-{ const q=QS.get('avatar'); let v=null; try{ v=localStorage.getItem('market-avatar'); }catch(e){} PLAYAS.on=(q||v||'mannequin')!=='walker';
+{ const q=QS.get('avatar'); let v=null; try{ v=localStorage.getItem('market-avatar2'); }catch(e){} PLAYAS.on=(q||v||'walker')==='mannequin';   /* (the Walker the player again, owner 18 Oct 2026: "stop using avatar im using now and go back to regular new walker"; ?avatar=mannequin the mannequin; the saved pick no longer wins) */
   const K=window.UALK;
   // HIM AS A MAN, DRESSED IN ITEMS (owner, 17 Oct 2026: "make him look human, shoes, blue jeans, real color skin, hair, (no face) shirt";
   // then "lets make his base model no clothes just underwear, and then put jeans and shoes and hair on him as sep items"): the base body is
@@ -146,7 +146,7 @@ const PLAYAS={on:false}; window.PLAYAS=PLAYAS;
       nb.lift=0; nb.tilt=0; };
 
     const g0=document.querySelector('#dgrain'); if(g0){ const b=document.createElement('button'); b.className='btn'; b.id='davatarpick'; const draw=()=>{ b.textContent='AVATAR: '+(PLAYAS.on?'MANNEQUIN':'WALKER'); b.setAttribute('aria-pressed',String(PLAYAS.on)); };
-      b.onclick=()=>{ PLAYAS.on=!PLAYAS.on; try{ localStorage.setItem('market-avatar',PLAYAS.on?'mannequin':'walker'); }catch(e){} draw(); }; g0.parentNode.appendChild(b); draw(); }
+      b.onclick=()=>{ PLAYAS.on=!PLAYAS.on; try{ localStorage.setItem('market-avatar2',PLAYAS.on?'mannequin':'walker'); }catch(e){} draw(); }; g0.parentNode.appendChild(b); draw(); }
     if(g0){ for(const name of ['hair','shirt','jeans','shoes']){ const b=document.createElement('button'); b.className='btn'; const draw=()=>{ const on=PLAYAS.items[name]&&PLAYAS.items[name].visible; b.textContent=name.toUpperCase()+(on?' ON':' OFF'); b.setAttribute('aria-pressed',String(!!on)); }; b.onclick=()=>{ PLAYAS.wear(name); draw(); }; g0.parentNode.appendChild(b); draw(); } }
     window.PLAYCAM=(k=4)=>{ UI.setFree(true); UI.camT.set(pos.x,py+N.H*ZU*24/TILE*.5,pos.z); ppu=ppuTo=PPU*k; };   // (a test's look: the free camera on his middle)
     window.PLAYASDBG=()=>({on:PLAYAS.on,mv:st.move&&st.move.name,base:an.base,ts:+an.ts.toFixed(2),sp:+sp.toFixed(2),x:+N.g.position.x.toFixed(2),z:+N.g.position.z.toFixed(2),vis:N.g.visible}); }

@@ -38,6 +38,7 @@ void main(){
     else{   // a bed of coals (a campfire, a brazier): many tongues side by side, each rising and falling on its own
       float n=fbm(vec3(x*3.,y*2.4-t*2.6,t*.6+s)), n2=fbm(vec3(x*6.2,y*4.6-t*3.9,t+s+9.)), tg=vn(vec3(x*3.6+s,t*.85,2.));
       float xx=x*(1.+.9*y)+(n-.47)*.45*y; heat=(1.-1.6*xx*xx)*(1.1-1.25*y)-max(abs(x)-.75,0.)*4.+(n-.47)*1.2*y+(n2-.47)*.5+(tg-.5)*.8*y;
+      float b=y-.22*x*x+(n2-.47)*.07; heat-=max(-b,0.)*9.;   // (its foot rounded, owner 18 Oct 2026: "the fire is flat at bottom": the sides' flames start higher, ragged, none cut on the card's edge)
       if(heat<th*.25)discard; col=ramp(heat); } }
   else{ vec2 q=(p-.5)*2.; float r=length(q);
     if(vK<3.5){ float n=fbm(vec3(q*2.4+vec2(0.,-t*2.6),t*.8+s)), heat=1.05-r*1.15+(n-.47)*1.1; if(heat<th*.25)discard; col=ramp(heat*1.15); }   // a fireball: a churning ball

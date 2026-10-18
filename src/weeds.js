@@ -6,7 +6,7 @@
 // whatever stands on the map when the game opens, so a place moved or added elsewhere gets its weeds with no one placing them. Cut into map
 // chunks of 32 tiles, each its own draw, so only the ones in the picture are drawn. Cost: some 4 triangles a tuft; no lights, one program ----
 const WEEDS=window.WEEDS={};
-WEEDS.init=()=>{ WEEDS.dbg=f=>f({FIX,SOL,TILE}); const T=TILE, hsh=(a,b,s)=>{ let h=(Math.floor(a)*374761393+Math.floor(b)*668265263+s*1442695041)|0; h=(h^(h>>>13))*1274126177|0; return ((h^(h>>>16))>>>0)/4294967296; };
+WEEDS.init=()=>{ WEEDS.dbg=f=>f({FIX,SOL,TILE,MODS}); const T=TILE, hsh=(a,b,s)=>{ let h=(Math.floor(a)*374761393+Math.floor(b)*668265263+s*1442695041)|0; h=(h^(h>>>13))*1274126177|0; return ((h^(h>>>16))>>>0)/4294967296; };
   const vn=(x,y,s)=>{ const xi=Math.floor(x), yi=Math.floor(y), fx=x-xi, fy=y-yi, u=fx*fx*(3-2*fx), v=fy*fy*(3-2*fy); return (hsh(xi,yi,s)*(1-u)+hsh(xi+1,yi,s)*u)*(1-v)+(hsh(xi,yi+1,s)*(1-u)+hsh(xi+1,yi+1,s)*u)*v; };
   const B=(FIX.up||[]).filter(b=>b[5]-b[2]>.25*T&&b[2]<.6*T), RB=typeof ROOMS!=='undefined'&&ROOMS.boxes?ROOMS.boxes():[];
   const inside=(x,z)=>RB.some(b=>b.y0<1&&x>b.x0&&x<b.x1&&z>b.z0&&z<b.z1)||(MODS.apts&&MODS.apts.inside&&MODS.apts.inside(x,z));
@@ -42,3 +42,55 @@ WEEDS.init=()=>{ WEEDS.dbg=f=>f({FIX,SOL,TILE}); const T=TILE, hsh=(a,b,s)=>{ le
   if(FLOW.length){ const fm=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(.05*T,0),new THREE.MeshLambertMaterial({color:0xf0cc30,emissive:0x2a1c00}),FLOW.length);
     FLOW.forEach(([x,y,z],i)=>{ M.compose(new THREE.Vector3(x,y,z),q.identity(),new THREE.Vector3(1,1,1)); fm.setMatrixAt(i,M); }); fm.computeBoundingSphere(); scene.add(fm); WEEDS.meshes.push(fm); }
   WEEDS.n=TUFT.length; WEEDS.flowers=FLOW.length; };
+// ---- THE LAWN'S TUFTS (owner, 18 Oct 2026: "lets add the tuft grass from grasslab into the game"; the Grass Lab's option 4,
+// https://claude.ai/artifact/VYHdVVsXc5nufH6ptqGg8X): over every lawn you can see (the land's sheet and the park's hills: wherever a ray straight
+// down meets one of them first, so never on a way, a sidewalk, a plaza, a floor or under a building), tufts of grass, each two crossed cards
+// painted with fourteen blades (see-through between), each its own size, turn and green, swaying in the park's wind from the root as the weeds
+// do; lit in the world's flat bands (the Lambert patch, map-pre.js: no smooth light). Made only round you, in chunks of 8 tiles, a chunk a
+// moment as you come (a tiny picture from above says which half-tile squares are lawn and how high, two tufts in each), thrown away 3 chunks off; each chunk one instanced draw
+// with its own bounds, so only those in the picture are drawn. Cost: 8 tufts a tile, 4 triangles a tuft: some 25 chunks round you, the 6-9 in
+// the picture some 15,000-20,000 triangles; one program; no light; building a chunk some 15 ms (measured in the cloud: two small draws and a read back) ----
+WEEDS.lawnInit=()=>{ const T=TILE, CS=8*T, CELL=.5*T, PER=2, hsh=(a,b,s)=>{ let h=(Math.floor(a*97)*374761393+Math.floor(b*89)*668265263+s*1442695041)|0; h=(h^(h>>>13))*1274126177|0; return ((h^(h>>>16))>>>0)/4294967296; };
+  const cv=document.createElement('canvas'); cv.width=cv.height=64; const g=cv.getContext('2d'), id=g.createImageData(64,64), H1=(a,b,s)=>hsh(a/97,b/89,s);
+  for(let k=0;k<14;k++){ const bx=4+k*4.2+Math.sin(k*7)*2, lean=(H1(k,1,41)-.5)*.6, top=Math.floor(64-(30+30*H1(k,2,42)));
+    for(let y=top;y<64;y++){ const yy=63-y, px=bx+lean*yy, t=yy/(64-top||1), w=1.4-yy/64; for(let x=Math.floor(px-w);x<=Math.ceil(px+w);x++){ if(x<0||x>63||Math.abs(x-px)>=w)continue; const i=(y*64+x)*4; id.data[i]=40+50*t; id.data[i+1]=80+70*t; id.data[i+2]=30+20*t; id.data[i+3]=255; } } }
+  g.putImageData(id,0,0); const tx=new THREE.CanvasTexture(cv); tx.colorSpace=THREE.SRGBColorSpace; tx.magFilter=tx.minFilter=THREE.NearestFilter; tx.generateMipmaps=false;
+  const card=new THREE.PlaneGeometry(1,1).translate(0,.5,0), c2=card.clone().rotateY(Math.PI/2), geo=new THREE.BufferGeometry();
+  geo.setAttribute('position',new THREE.Float32BufferAttribute([...card.attributes.position.array,...c2.attributes.position.array],3)); geo.setAttribute('uv',new THREE.Float32BufferAttribute([...card.attributes.uv.array,...c2.attributes.uv.array],2));
+  geo.setAttribute('normal',new THREE.Float32BufferAttribute(new Array(8).fill(0).flatMap(()=>[0,1,0]),3)); geo.setIndex([0,2,1,2,3,1,4,6,5,6,7,5]);
+  const mat=new THREE.MeshLambertMaterial({map:tx,alphaTest:.5,side:THREE.DoubleSide});
+  mat.onBeforeCompile=sh=>{ sh.uniforms.uSw=PARK.sway; sh.uniforms.uWk=PARK.windK; sh.vertexShader='uniform float uSw,uWk;\n'+sh.vertexShader.replace('#include <begin_vertex>',
+    '#include <begin_vertex>\n { vec4 w0=instanceMatrix*vec4(0.,0.,0.,1.); float ph=w0.x*.37+w0.z*.21, h=position.y*position.y, g=(.6+.4*sin(uSw*.4+ph*.3))*uWk; transformed.x+=sin(uSw*2.1+ph)*h*.16*g; transformed.z+=sin(uSw*1.7+ph*1.3)*h*.1*g; }'); };
+  mat.customProgramCacheKey=()=>'weedsway';   // (the weeds' own program: one for both)
+  const M=new THREE.Matrix4(), q=new THREE.Quaternion(), up=new THREE.Vector3(0,1,0), col=new THREE.Color(), V=new THREE.Vector3(), S=new THREE.Vector3();
+  const lawn=o=>o===MODS.land||(typeof POND!=='undefined'&&o===POND.hills);
+  const skip=o=>o.isInstancedMesh||o.isSkinnedMesh||o.isPoints||o.isSprite||o.isLine||(o.material&&(o.material.transparent||o.material.depthWrite===false||o.material.side===THREE.BackSide));
+  const CH=new Map(); WEEDS.chunks=CH; WEEDS.lawnN=0;
+  // (which squares are lawn, and how high: one tiny picture of the chunk from straight above, twice: first everything but the lawn, in black,
+  // its depth kept; then the lawn alone (the land's sheet, the hills: layer 5 for the moment) where it's still the top, its height in the green.
+  // A ray a square tested every triangle under it, 1.3 s a chunk; this is two small draws)
+  const R=CS/CELL, RT=new THREE.WebGLRenderTarget(R,R,{depthBuffer:true}), CAM=new THREE.OrthographicCamera(-CS/2,CS/2,CS/2,-CS/2,.1,80*T), PIX=new Uint8Array(R*R*4);
+  const VS='varying float vY; void main(){ vec4 w=modelMatrix*vec4(position,1.);'+'\n#ifdef USE_INSTANCING\n w=modelMatrix*instanceMatrix*vec4(position,1.);\n#endif\n vY=w.y; gl_Position=projectionMatrix*viewMatrix*w; }';
+  const M0=new THREE.ShaderMaterial({vertexShader:VS,fragmentShader:'varying float vY; void main(){ gl_FragColor=vec4(0.); }',side:THREE.DoubleSide});
+  const M1=new THREE.ShaderMaterial({vertexShader:VS,fragmentShader:'varying float vY; void main(){ gl_FragColor=vec4(1.,clamp((vY+.5)/4.,0.,1.),0.,1.); }',side:THREE.DoubleSide});
+  const build=(cx,cz)=>{ const L=[], x0=cx*CS, z0=cz*CS, LW=[MODS.land,typeof POND!=='undefined'?POND.hills:null].filter(Boolean), hid=[];
+    scene.traverseVisible(o=>{ if((o.isMesh||o.isPoints||o.isLine||o.isSprite)&&skip(o))hid.push(o); }); hid.forEach(o=>o.visible=false);
+    const lm=LW.map(o=>o.layers.mask); LW.forEach(o=>o.layers.set(5));
+    const rt0=renderer.getRenderTarget(), ac=renderer.autoClear, ov=scene.overrideMaterial, cc=renderer.getClearColor(new THREE.Color()), ca=renderer.getClearAlpha(), bg=scene.background, fg=scene.fog;
+    CAM.position.set(x0+CS/2,40*T,z0+CS/2); CAM.up.set(0,0,-1); CAM.lookAt(x0+CS/2,0,z0+CS/2); CAM.updateMatrixWorld();
+    renderer.setRenderTarget(RT); renderer.setClearColor(0,0); scene.background=null; scene.fog=null; renderer.autoClear=false; renderer.clear();
+    CAM.layers.set(0); scene.overrideMaterial=M0; renderer.render(scene,CAM); CAM.layers.set(5); scene.overrideMaterial=M1; renderer.render(scene,CAM);
+    renderer.readRenderTargetPixels(RT,0,0,R,R,PIX);
+    scene.overrideMaterial=ov; renderer.setRenderTarget(rt0); renderer.autoClear=ac; renderer.setClearColor(cc,ca); scene.background=bg; scene.fog=fg;
+    LW.forEach((o,i)=>o.layers.mask=lm[i]); hid.forEach(o=>o.visible=true);
+    for(let r=0;r<R;r++)for(let u=0;u<R;u++){ const k=(r*R+u)*4; if(PIX[k]<128)continue; const x=x0+(u+.5)*CELL, z=z0+CS-(r+.5)*CELL, y=PIX[k+1]/255*4-.5;
+      for(let n=0;n<PER;n++){ const r1=hsh(x,z,n*3+1), r2=hsh(z,x,n*3+2), r3=hsh(x+z,x-z,n*3+3); L.push([x+(r1-.5)*CELL,y,z+(r2-.5)*CELL,(.3+.2*r3)*T,r1*6.28,r2]); } }
+    if(!L.length)return null; const me=new THREE.InstancedMesh(geo,mat,L.length);
+    L.forEach(([x,y,z,s,a,c],i)=>{ M.compose(V.set(x,y,z),q.setFromAxisAngle(up,a),S.set(s,s*(.75+.5*c),s)); me.setMatrixAt(i,M); me.setColorAt(i,col.setHSL(.25+(c-.5)*.07,.42+.15*c,.36+.16*((c*7.3)%1))); });
+    me.computeBoundingSphere(); me.receiveShadow=true; MAPG.bodega.add(me); WEEDS.lawnN+=L.length; return me; };
+  let busy=0; WEEDS.lawnTick=()=>{ if(LVL!=='up'||(ROOMS&&ROOMS.cur))return; const pcx=Math.floor(pos.x/CS), pcz=Math.floor(pos.z/CS);
+    for(const [k,me] of CH){ const [a,b]=k.split(',').map(Number); if(Math.max(Math.abs(a-pcx),Math.abs(b-pcz))>3){ if(me){ MAPG.bodega.remove(me); me.dispose(); WEEDS.lawnN-=me.count; } CH.delete(k); } }
+    // the nearest missing chunk within 2, one a moment
+    let best=null, bd=1e9; for(let b=-2;b<=2;b++)for(let a=-2;a<=2;a++){ const k=(pcx+a)+','+(pcz+b); if(CH.has(k))continue; const d=a*a+b*b; if(d<bd){ bd=d; best=[pcx+a,pcz+b,k]; } }
+    if(best){ const t0=performance.now(); CH.set(best[2],build(best[0],best[1])); busy=performance.now()-t0; WEEDS.busy=busy; } };
+  const t0=CLOCK.tick; CLOCK.tick=dt=>{ t0(dt); WEEDS.lawnTick(); }; };

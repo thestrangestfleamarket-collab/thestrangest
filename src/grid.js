@@ -36,7 +36,7 @@ window.GRID=GRID;
     // (round the loop: each kerb's ring of poles in order round the park's middle, closed on itself, fed from the house at its nearest pole)
     const cx=BOD.XS(PARK.round[0]+PARK.ox), cz=BOD.ZS(PARK.round[1]+PARK.oy);
     for(const ring of ['outer','inner']){ const line=poles.filter(p=>(p.ring||(p.d>0?'outer':'inner'))===ring).sort((p,q)=>Math.atan2(p.z-cz,p.x-cx)-Math.atan2(q.z-cz,q.x-cx)); if(!line.length)continue;
-      const ns=line.map(p=>GRID.node(p.x,p.y,p.z,'pole',{L:p.L||null,h:p.h,d:p.d}));
+      const ns=line.map(p=>GRID.node(p.x,p.y,p.z,'pole',{L:p.L||null,h:p.h,d:p.d,L2:p.L2||null,h2:p.h2}));
       for(let i=0;i<ns.length;i++){ const a=ns[i], b=ns[(i+1)%ns.length]; if(Math.hypot(a.x-b.x,a.z-b.z)<40*TILE)GRID.span(a,b,2); }
       let f=ns[0], fd=1e18; for(const n of ns){ const d=(n.x-src.x)**2+(n.z-src.z)**2; if(d<fd){ fd=d; f=n; } } GRID.span(src,f,3); }
     // THE LAMP POSTS (the park side of the far sidewalk): each hung from the nearest far-kerb pole by one wire
@@ -60,7 +60,7 @@ window.GRID=GRID;
     // WHICH LAMP HANGS ON WHAT: every lamp LITE collected, but a flame's (fire.js: fire burns without wires) and the pool's eight stand-ins; a street
     // light's or a post's own lamp on its node; one in a building's box (or its group) on that service; any other on the nearest pole (fed underground)
     const flames=new Set((typeof FLAME!=='undefined'&&FLAME.src||[]).map(f=>f.light).filter(Boolean)); if(typeof PARK!=='undefined'&&PARK.fireL)flames.add(PARK.fireL);
-    const own=new Map(); for(const n of GRID.nodes)if(n.L)own.set(n.L,n);
+    const own=new Map(); for(const n of GRID.nodes){ if(n.L)own.set(n.L,n); if(n.L2)own.set(n.L2,n); }   // (L2: the corner light's second lamp, dress.js)
     const top=o=>{ while(o&&o.parent&&o.parent!==scene)o=o.parent; return o; };
     for(const L of LITE.recs){ if(flames.has(L)||L.userData.pool)continue; const p=L.position; let on=null;
       if(own.has(L))on=own.get(L); else{ const g=L.userData.grp||top(L); on=GRID.servs.find(s=>(s.grp&&s.grp.includes(g))||(s.box&&inBox(s.box,p,.4*TILE)))||near(p.x,p.z,['pole','source']); }
@@ -90,7 +90,7 @@ window.GRID=GRID;
   GRID.apply=()=>{ GRID.dirty=false; const D=typeof DRESS!=='undefined'?DRESS:{};
     for(const [L,on] of GRID.lamps)setLamp(L,on.pw);
     for(const me of [D.heads,D.lant])if(me&&!me.instanceColor){ me.setColorAt(0,C.setRGB(1,1,1)); me.material.needsUpdate=true; }   // (the first per-head colour: the program made again with it)
-    for(const n of GRID.nodes){ if(n.kind==='pole'&&D.heads&&n.h!=null){ D.heads.setColorAt(n.h,C.setRGB(...(n.pw?[1,1,1]:DIM))); D.heads.instanceColor.needsUpdate=true; }
+    for(const n of GRID.nodes){ if(n.kind==='pole'&&D.heads&&n.h!=null){ D.heads.setColorAt(n.h,C.setRGB(...(n.pw?[1,1,1]:DIM))); if(n.h2!=null)D.heads.setColorAt(n.h2,C.setRGB(...(n.pw?[1,1,1]:DIM))); D.heads.instanceColor.needsUpdate=true; }
       if(n.kind==='post'&&D.lant&&n.i!=null){ D.lant.setColorAt(n.i,C.setRGB(...(n.pw?[1,1,1]:DIM))); D.lant.instanceColor.needsUpdate=true; } }
     for(const s of GRID.servs){ if(s.shown===s.pw)continue; s.shown=s.pw; const seen=new Set();
       for(const [me,f] of s.faces){ const A=me.geometry.attributes.aCol; if(!s.pw){ for(let i=0;i<18;i++)A.array[f*18+i]=DIM[i%3]; } else{ for(let i=0;i<18;i++)A.array[f*18+i]=1; } seen.add(A); }

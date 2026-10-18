@@ -1138,7 +1138,7 @@ const cam=new THREE.OrthographicCamera(-1,1,1,-1,0.1,800);
 // THE FRAME (owner, 18 Oct 2026: "i want the game screen to be in a rounded frame covering 75% of window, black background"): the picture
 // centred in the window, three quarters of its area (.866 of each side), its corners rounded, black round it; ?frame=1 the whole window
 const FRAMEK=(()=>{ const q=+new URLSearchParams(location.search).get('frame'); return q>0&&q<=1?q:.866; })();
-function resize(){ const dpr=devicePixelRatio||1, pw=innerWidth*FRAMEK*dpr, ph=innerHeight*FRAMEK*dpr; document.body.style.background='#000';
+function resize(){ const dpr=devicePixelRatio||1, pw=innerWidth*FRAMEK*dpr, ph=innerHeight*FRAMEK*dpr; document.body.style.background=document.documentElement.style.background='#000';
   RW=Math.ceil(pw/PXS/2)*2; RH=Math.ceil(ph/PXS/2)*2;   // even, so his picture's texels land on whole screen pixels
   renderer.setSize(RW,RH,false);
   const c=renderer.domElement, cw=RW*PXS/dpr, ch=RH*PXS/dpr; c.style.width=cw+'px'; c.style.height=ch+'px';

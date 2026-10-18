@@ -89,9 +89,10 @@ const RIGT={blend:4,start:3.5,moves:1,combo:1};
 // (18 Oct 2026, his pace kept with his feet planted: 2.4 tiles a second walking, 4.9 running, as before, drawn 1.2 times his rig: the walk's
 // step half as long again and nearly twice as quick (206 steps a minute, a short-legged brisk walk: his hips are a third of his height, so at
 // this pace a person his shape is near a jog), the stance a little shorter, as a brisk walk's is; the run's step as it was, quicker. A longer
-// step sinks his hips: 18 drops them 2 of his units at its ends, 24 running 5, a crouch)
-const WALK={cycle:0.583,stance:0.58,stride:18,lean:2},RUN={cycle:0.461,stance:0.4,stride:20,lean:10};
-const GAITV=2;   // (the walk's and run's numbers' version: a MOVES dial saved before them (stride, cycle) is dropped, src/animator.js)
+// step sinks his hips: 18 drops them 2 of his units at its ends, 24 running 5, a crouch). The walk a fifth slower (owner, 18 Oct 2026, of the
+// hips going up and down too fast: "both, a bit of each"): 0.729 s a stride, 165 steps a minute, 1.9 tiles a second
+const WALK={cycle:0.729,stance:0.58,stride:18,lean:2},RUN={cycle:0.461,stance:0.4,stride:20,lean:10};
+const GAITV=3;   // (the walk's and run's numbers' version: a MOVES dial saved before them (stride, cycle) is dropped, src/animator.js)
 function gaitOf(r){ const g={}; for(const k in WALK) g[k]=WALK[k]+(RUN[k]-WALK[k])*r; g.speed=g.stride/(g.stance*g.cycle); return g; }
 const CYCLE=WALK.cycle,SPEED=gaitOf(0).speed;
 const fwv=a=>V(0,Math.sin(a),Math.cos(a)),dnv=a=>V(0,-Math.cos(a),Math.sin(a));   // a foot tilted toe-up by a: along it, and down from the ankle
@@ -463,8 +464,13 @@ function jumpMove(o){ const g=o.g||G,T=(o.v0+Math.sqrt(o.v0*o.v0+2*g*(o.drop||0)
 function topple(){ const tab=[]; let a=3*D,w=0.7,t=0; const h=1/240; while(a<84*D){ w+=G/26*Math.sin(a)*h; a+=w*h; t+=h; tab.push(a); } return {T:t,tab}; }
 const FALL=topple();
 const air=(c)=>c;
+// RECORDED MOTION (owner, 18 Oct 2026: "when jumping make the legs more natural, right now he jumps with both feets in same spot and lands
+// prfectl feet together ... look for motions or presets"; his picks: CMU's free library and Mixamo): data/moves.json, made by tools/mocap-read.py
+// and tools/mocap-rig.cjs from a recording, each key his own pose controls; build.py puts it here. The jump's crouch, flight and landing are a
+// real person's (CMU subject 13's jump), on the rig's own jump (its physics, timing and sliders); the hand-made one below if it's missing
+const MOCAP=/*MOCAP*/null;
 const MOVES={
-  jump:jumpMove({v0:87,t0:0.16,airv:{J:'airPunch',K:'flyingKick'},keys:[
+  jump:MOCAP&&MOCAP.jump?jumpMove({v0:87,t0:MOCAP.jump.t0,airv:{J:'airPunch',K:'flyingKick'},keys:MOCAP.jump.keys}):jumpMove({v0:87,t0:0.16,airv:{J:'airPunch',K:'flyingKick'},keys:[
     [0,{}],[0.1,{root:[0,14.5,0.5],bend:18,nod:6,L:{ua:[-25,30],fa:[-15,30]},R:{ua:[-25,30],fa:[-15,30]}}],   // (the arms swing on up through the take-off: no hand flies a body's width in a frame)
     [0.16,{root:[0,STAND,0],bend:0,nod:0,L:{ua:[60,14],fa:[72,14],th:[0,0],sh:[0,0],foot:-30},R:{ua:[60,14],fa:[72,14],th:[0,0],sh:[0,0],foot:-30}},'in'],
     ['u0.25',{L:{ua:[140,20],fa:[150,20],th:[30,4],sh:[-25,4],foot:-15},R:{ua:[140,20],fa:[150,20],th:[30,4],sh:[-25,4],foot:-15}}],

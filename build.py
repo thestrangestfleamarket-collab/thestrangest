@@ -110,7 +110,7 @@ mod=rp(mod,"lampW=Math.max(lampW,1-d/7);","lampW=Math.max(lampW,1-d/6);")
 mod=rp(mod,"const cut=Math.cos(a)<0?0.14:1; for(const sg of shopGroups)","for(const sg of shopGroups)")
 
 # THE WALKER IN 3D (the subway only): the rig that hands out his resting pose; his pieces as meshes; the card hidden; the outline pass
-rig=open('src/walker-rig-mock.js').read(); i=head.index('// THE WALKER, JOINTED'); j=head.index("if(typeof module!=='undefined') module.exports=RIG;")
+rig=open('src/walker-rig-mock.js').read().replace('/*MOCAP*/null',open('data/moves.json').read().strip()); i=head.index('// THE WALKER, JOINTED'); j=head.index("if(typeof module!=='undefined') module.exports=RIG;")   # (recorded motion: data/moves.json, tools/mocap-rig.cjs)
 head=head[:i]+rig[rig.index('// THE WALKER, JOINTED'):rig.index("if(typeof module!=='undefined') module.exports=RIG;")]+head[j:]
 mod=rp(mod,"import {OutputPass} from 'three/addons/postprocessing/OutputPass.js';","import {OutputPass} from 'three/addons/postprocessing/OutputPass.js';\nimport {ShaderPass} from 'three/addons/postprocessing/ShaderPass.js';")
 mod=rp(mod,"const pos=new THREE.Vector3(-2.2,0,3.2); let heading=0.8, py=0;","const pos=new THREE.Vector3(-2.2,0,3.2); let heading=0.8, py=0; you.visible=false;\n"+open('src/walker3d.js').read()+"\nOUTL.hidden=()=>cutWalls.filter(w=>w.pl.constant<1e5).map(w=>w.me);")
@@ -279,8 +279,8 @@ mod=rp(mod,"W3.place(B,pos.x,py,pos.z,RAG.on?RAG.hd:heading,hdA,ZU); if(ED.on)ED
 # hook where every pose he takes passes on its way to be drawn (his keys added on), and what the editor needs to play a move by itself
 def rpn(s,a,c,n):
     assert s.count(a)==n,(a[:80],s.count(a)); return s.replace(a,c)
-head=rp(head,"const WALK={cycle:0.583,stance:0.58,stride:18,lean:2},RUN={cycle:0.461,stance:0.4,stride:20,lean:10};",
-  "const WALK={cycle:0.583,stance:0.58,stride:18,lean:2,bounce:1,arm:1,elbow:1,sway:1,twist:1,knee:1,width:1},RUN={cycle:0.461,stance:0.4,stride:20,lean:10,bounce:1,arm:1,elbow:1,sway:1,twist:1,knee:1,width:1};   // (bounce...width: the walk's and the run's dials, HIS MOVES: 1 as made)\nconst OVL={fn:null};   // (where his own keys are added onto every pose: src/animator.js)")
+head=rp(head,"const WALK={cycle:0.729,stance:0.58,stride:18,lean:2},RUN={cycle:0.461,stance:0.4,stride:20,lean:10};",
+  "const WALK={cycle:0.729,stance:0.58,stride:18,lean:2,bounce:1,arm:1,elbow:1,sway:1,twist:1,knee:1,width:1},RUN={cycle:0.461,stance:0.4,stride:20,lean:10,bounce:1,arm:1,elbow:1,sway:1,twist:1,knee:1,width:1};   // (bounce...width: the walk's and the run's dials, HIS MOVES: 1 as made)\nconst OVL={fn:null};   // (where his own keys are added onto every pose: src/animator.js)")
 head=rp(head,"P.pyaw=-3*D*sw*(1+0.5*r); P.cyaw=2.5*D*sw*(1+r);","P.pyaw=-3*D*sw*(1+0.5*r)*g.twist; P.cyaw=2.5*D*sw*(1+r)*g.twist;")
 head=rp(head,"const sway=0.9*w*(1-0.6*r)*Math.sin(2*Math.PI*q.L);","const sway=0.9*g.sway*w*(1-0.6*r)*Math.sin(2*Math.PI*q.L);")
 head=rp(head,"P.roll=-4*D*w*(1-0.4*r)*Math.sin(","P.roll=-4*D*g.sway*w*(1-0.4*r)*Math.sin(")

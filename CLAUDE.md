@@ -1533,3 +1533,17 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   changed**: his hips drop 2 pixels and back each step (17, 16, 15, 16, 17) at 3.4 steps a second; a smoother, shallower wave was tried and his
   legs can't reach the ground from it (footLock lowered him back to the same dip): at his pace his short legs need long steps, and long steps
   bring the hips down. A calmer walk is his call: slower and fewer steps, or longer legs.
+- **A recorded jump, and the walk a fifth slower** (owner, 18 Oct 2026: "when jumping make the legs more natural ... look for motions or presets,
+  best way to get all those kinds of animations and movements"; his picks: CMU's free library and Mixamo; of the walk's quick bob, "both, a bit of
+  each"): **recorded motion onto the Walker**: `tools/mocap-read.py` reads a CMU recording (its .asf skeleton and .amc motion, from
+  mocap.cs.cmu.edu: free, some 2,600 clips, over a hundred jumps) into each joint's place a frame; `tools/mocap-rig.cjs` fits his rig to it with the
+  rig's own conventions (the pelvis's turn, the spine, the head's nod, each arm's two angles, each leg's thigh and shin, the foot's tilt; on the
+  ground the ankles handed to his leg solver so the feet plant; sized by his legs against the actor's; arms, pelvis and flying legs fitted to 0
+  degrees off, the legs on the ground within 4) and lays a jump's crouch, flight and landing on the rig's own jump (`jumpMove`: its physics, carried
+  speed, air punches and kicks, dives, the MOVES sliders; the recording's rise left out in the air, the arc his). `data/moves.json` (13 KB: CMU
+  subject 13, trial 39), put into the rig by build.py (`MOCAP`); the hand-made jump stays as the fallback. `node tests/jumpcheck.cjs` (standing and
+  running: no NaN, both feet leave at 0.27 s and land at 0.83 s about hip-width apart, 13.9 units up, still after). Mixamo's clips (his Adobe login)
+  go the same way once a reader for .fbx/.glb is added. **The walk**: 0.729 s a stride (was 0.583), 165 steps a minute, 1.9 tiles a second
+  (`GAITV` 3 drops a saved MOVES dial again). **The legs a quarter longer: not done** (his pick, with the slower walk): his standing hip height, 18,
+  is written into the hand-made moves as a fixed number in 34 places (crouches, the guard, the hang, the climbs), so longer legs mean reworking
+  those; next, at his word.

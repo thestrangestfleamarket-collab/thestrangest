@@ -128,12 +128,9 @@ const BOD={meshes:[], walls:{}, lamps:[]};
     { const K=GHOSTK.GSK, s=K.s; { const o=LAY.o('ghost'); K.o=[131+o.x/BLDK,W-8.3*s+o.y/BLDK]; }   /* (moved east, owner 17 Oct 2026: the Diner and the Bar between it and the apartments) */ const n3=PROPS.length;
       for(const [k,dx,dy] of PRESETS['Preset Ghost Street 1'])if(!/row house|utility pole/.test(k))CATALOG[k](K.o[0]-3.5*s+dx,K.o[1]-.45*s+dy);
       for(const p of PROPS.slice(n3))GHOSTST.push(p); BOD.GHOSTST=GHOSTST; BOD.GSK=K; gdShape(GHOSTST,K,LAMPS);
-      // THE VENDING MACHINES (owner, 17 Oct 2026: "pull in vending machines with real depth from old game, put them in front of ghost street dojo"):
-      // the market lounge's two, white and dark red, built as the real thing (a cabinet of sides, back and top round a hollow; the window real
-      // glass over lit shelves of cans, each can its own box; the pickup flap a real hollow under a hanging flap; a lamp in the glass:
-      // 23-w-y-market-lounge-4-street, word for word, through build.py), in a row east of the dojo's door against its front, beside the kit's teal machine, their windows to the street
-      { const n4=PROPS.length, X0=K.o[0]+.6*s, DX=X0+(95+143)/48, Y1=K.o[1]+3.2*s;   /* (the dojo's door's middle and its front: ghostdojo.js's measures) */
-        CATALOG['vending machine, red'](DX+2.6,Y1+.55,[0,1]); CATALOG['vending machine, white'](DX+3.85,Y1+.55,[0,1]);   /* (a row east of the door with the kit's teal machine: west of it the bay window juts out) */ for(const p of PROPS.slice(n4))STREET.push(p); } }   // (a third taller, its ground floor a dojo you walk into: ghostdojo.js)
+      // (the vending machines that stood before the dojo, the lounge's white and red and the kit's teal: gone, owner 18 Oct 2026, "remoev vending machines
+      // out front, put another window there"; the building made again, ghostdojo.js)
+    }   // (a third taller, its ground floor a dojo you walk into: ghostdojo.js)
     const n2=PROPS.length, R=(f,x,y,z,...a)=>{ const p=f(x,y,z,bo.y1,...a); p.solids=[]; return p; };
     R(M.vent,bo.x0+3,bo.y0+5,bo.h); R(M.antenna,bo.x0+8,bo.y0+3.5,bo.h); R(M.roofac,bo.x0+6,bo.y0+7.5,bo.h); for(const p of PROPS.slice(n2))ROOF.push(p); }
   BOD.O=O; BOD.FRONT=FRONT; BOD.STREET=STREET; BOD.ROOF=ROOF; BOD.MAP=MAP; BOD.RD=RD;
@@ -328,7 +325,7 @@ const BOD={meshes:[], walls:{}, lamps:[]};
     {id:'nthRoad',x0:RG.wr0,y0:RG.nr0,x1:AV.r1,y1:RG.nr1,z:RD,col:RW,tex:'asphalt_02',tint:[62,64,68],rep:3},
     {id:'nthKN',x0:RG.wr0,y0:RG.nr1,x1:AV.r1,y1:RG.nr1+.16,z:0,col:kerbCol('x'),tex:'concrete_pavement',tint:[178,174,164],rep:2},
     {id:'nthN',x0:RG.wx0,y0:RG.nr1+.16,x1:AV.r1+.16,y1:RG.ny1,z:0,col:slabCol,tex:'concrete_pavement',tint:[166,161,148],rep:2},
-    {id:'ghostst',bld:true,x0:GHOSTK.GSK.o[0]+.2,y0:GHOSTK.GSK.o[1]+8.3*GHOSTK.GSK.s-8.75*4/3,x1:GHOSTK.GSK.o[0]+10.4,y1:GHOSTK.GSK.o[1]+8.3*GHOSTK.GSK.s,z:.1,col:(x,y)=>GHOSTK.gsFloor(x,y)||lawnCol(x,y),tex:null,rep:2},   // (Ghost Street's paving: the kit's own, gsFloor)
+    {id:'ghostst',bld:true,x0:BOD.GDK.ground.x0,y0:BOD.GDK.Y0-1.2,x1:BOD.GDK.ground.x1,y1:BOD.GDK.y1e,z:.1,col:BOD.GDK.court,tex:null,rep:2},   // (Ghost Street's forecourt: ghostdojo.js's own, made again 18 Oct 2026)
     {id:'grassW',x0:MAP.x0,y0:B00.y0,x1:B0.x0,y1:W,z:0,col:holed(lawnCol),tex:null,rep:2},...PATCH].map(g=>g.id==='corner'||g.bld||g.id==='alley'||g.id==='grassW'||g.col===RW?g:{...g,col:SW(g.col)});   // (every sidewalk and kerb strip its kerb along the road and open over a curve's road: SW)   // (the lot west of the bodega, the stairs' hole in it: the park's lawn, as all grass is; the land's sheet lies under every other gap)
   // the kerbs' faces down to the road
   // ---- the lights: the game's LAMPS as its objects made them (the tubes, the coolers, the neon, the street light), each a point light here

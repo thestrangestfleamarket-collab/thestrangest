@@ -25,7 +25,7 @@ const WX={hold:null,now:null};
     STORM:{cloud:1,rain:1,snow:0,storm:.8,wind:.9,dir:1,fog:0},SNOW:{cloud:.9,rain:0,snow:.7,storm:0,wind:.2,dir:1,fog:0},FOG:{cloud:.6,rain:0,snow:0,storm:0,wind:0,dir:1,fog:.7}};
   // THE WEATHER HELD (owner, 18 Oct 2026: "i want to set a default time and atmopshere and stay at the time for now"; his pick, "Teal mist + clouds"):
   // CLOUDY from the start (the mist is skyline.js's); ?wx=natural lets the simulation run, ?wx=rain etc. holds another
-  WX.hold='CLOUDY'; { const q=QS.get('wx'); if(q&&q.toUpperCase()==='NATURAL')WX.hold=null; else if(q&&HOLDS[q.toUpperCase()])WX.hold=q.toUpperCase(); }
+  WX.hold='CLOUDY'; { const q=QS.get('wx'); if(q&&q.toUpperCase()==='NATURAL')WX.hold=null; else if(q&&HOLDS[q.toUpperCase()])WX.hold=q.toUpperCase();  else { const v=SAVE.get('wx'); if(v==='NATURAL')WX.hold=null; else if(v&&HOLDS[v])WX.hold=v; } }   // (the menu's choice, kept: the save's 'wx')
   // ---- THE CLOUDS: forty cumulus round the map out toward the horizon, each a heap of a dozen low-poly puffs (flat-bottomed, piled up in the
   // middle), white in the sun, grey-blue in their own shade; as many show as the sky's cloud (a few even on a clear day), greyer in rain, darker in a storm
   const ph=(a,b,c)=>{ const v=Math.sin(a*127.1+b*311.7+c*74.7)*43758.5453; return v-Math.floor(v); }, geos=[], ends=[]; let vc=0;
@@ -78,9 +78,9 @@ const WX={hold:null,now:null};
     const ns=inside?0:Math.round(NS*W.snow); SNOW.visible=ns>0; if(ns){ for(let i=0;i<ns;i++){ let y=ss[i*4+1]-1.1*TILE*dt; if(y<0)y+=RH; ss[i*4+1]=y; const a=ss[i*4+3]+t*.8;
         const x=((ss[i*4]+wx*t/3+Math.sin(a)*.4*TILE)%(2*RB)+3*RB)%(2*RB)-RB+pos.x, z=((ss[i*4+2]+wz*t/3+Math.cos(a*.7)*.4*TILE)%(2*RB)+3*RB)%(2*RB)-RB+pos.z; sp.set([x,py+y,z],i*3); }
       sg.setDrawRange(0,ns); sg.attributes.position.needsUpdate=true; } };
-  // ---- THE MENU's WEATHER (in DISPLAY, under TIME): NATURAL or one held
-  const pane=document.querySelector('#menu [data-p="display"]'), box=document.createElement('div');
+  // ---- THE MENU's WEATHER (ATMOSPHERE's, under the time): NATURAL or one held, kept in the save
+  const pane=document.querySelector('#menu [data-p="atmo"]')||document.querySelector('#menu [data-p="display"]'), box=document.createElement('div');
   box.innerHTML='<h3>WEATHER</h3><div class="row" id="wxrow"></div><div class="dim" id="wxnow"></div>'; pane.insertBefore(box,pane.children[1]||null);
   const row=box.querySelector('#wxrow'), draw=()=>{ row.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String((b.dataset.wx||null)===WX.hold))); const W=WX.now; if(W)box.querySelector('#wxnow').textContent=W.storm>.1?'A STORM':W.snow>.05?'SNOW':W.rain>.05?'RAIN':W.fog>.2?'FOG':W.cloud>.7?'OVERCAST':W.cloud>.35?'SOME CLOUD':'CLEAR'; };
-  for(const k of ['NATURAL',...Object.keys(HOLDS)]){ const b=document.createElement('button'); b.className='btn'; b.textContent=k; if(k!=='NATURAL')b.dataset.wx=k; b.onclick=()=>{ WX.hold=k==='NATURAL'?null:k; ft=0; draw(); }; row.appendChild(b); }
+  for(const k of ['NATURAL',...Object.keys(HOLDS)]){ const b=document.createElement('button'); b.className='btn'; b.textContent=k; if(k!=='NATURAL')b.dataset.wx=k; b.onclick=()=>{ WX.hold=k==='NATURAL'?null:k; ft=0; draw(); try{ SAVE.set('wx',k); }catch(e){} }; row.appendChild(b); }
   WX.draw=draw; window.WX=WX; setInterval(()=>{ if(UI.menuOpen)draw(); },1000); window.WXDBG=()=>WX.now; }

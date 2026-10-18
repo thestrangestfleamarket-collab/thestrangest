@@ -192,7 +192,7 @@ const PLAYAS={on:false}; window.PLAYAS=PLAYAS;
         N.body.scale.set(s0.x*T.h,s0.y*T.h,s0.z*T.h); try{ localStorage.setItem('market-bodytype',PLAYAS.bodyType); }catch(e){} };
       let b0='AVERAGE'; try{ b0=localStorage.getItem('market-bodytype')||'AVERAGE'; }catch(e){} if(b0!=='AVERAGE')PLAYAS.body(b0); else PLAYAS.bodyType='AVERAGE'; }
 
-    const g0=document.querySelector('#dgrain'); if(g0){ const b=document.createElement('button'); b.className='btn'; b.id='davatarpick'; const draw=()=>{ b.textContent='AVATAR: '+(PLAYAS.on?'MANNEQUIN':'WALKER'); b.setAttribute('aria-pressed',String(PLAYAS.on)); };
+    const g0=document.querySelector('#doutl'); if(g0){ const b=document.createElement('button'); b.className='btn'; b.id='davatarpick'; const draw=()=>{ b.textContent='AVATAR: '+(PLAYAS.on?'MANNEQUIN':'WALKER'); b.setAttribute('aria-pressed',String(PLAYAS.on)); };
       b.onclick=()=>{ PLAYAS.on=!PLAYAS.on; try{ localStorage.setItem('market-avatarpick',PLAYAS.on?'mannequin':'walker'); }catch(e){} draw(); }; g0.parentNode.appendChild(b); draw(); }
     if(g0){ for(const name of ['hair','shirt','jeans','shoes']){ const b=document.createElement('button'); b.className='btn'; const draw=()=>{ const on=PLAYAS.items[name]&&PLAYAS.items[name].visible; b.textContent=name.toUpperCase()+(on?' ON':' OFF'); b.setAttribute('aria-pressed',String(!!on)); }; b.onclick=()=>{ PLAYAS.wear(name); draw(); }; g0.parentNode.appendChild(b); draw(); } }
     window.PLAYCAM=(k=4,d,p)=>{ UI.setFree(true); UI.camT.set(pos.x,py+N.H*ZU*24/TILE*.5,pos.z); ppu=ppuTo=PPU*k; if(d!=null)yaw=yawTo=heading+Math.PI+d*Math.PI/180; if(p!=null)pitch=pitchTo=p; };   // (a test's look: the free camera on his middle; d degrees round from his front, p the tilt)

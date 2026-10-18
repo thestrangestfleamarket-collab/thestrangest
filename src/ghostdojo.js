@@ -326,6 +326,6 @@ function gdShape(GS,K,LAMPS){ const s=K.s, o=K.o, SC=1.5, cx=o[0]+4*s, Y1=o[1]+3
       if(st!==step){ step=st; for(const m of SHX){ m.visible=st>=0; m.material.opacity=[.05,.08,.12,.16][Math.max(0,st)]*(m.userData.k||1); } } }};
     window.GSDBG=()=>({X0,X1,Y0,Y1,door:BOD.GD.door,step,shafts:SHX.length,tris:SH.length});
     window.LOOKAT=(x,z,k=1,y=0)=>{ UI.setFree(true); UI.camT.set(x,y,z); ppu=ppuTo=PPU*k; return [x,z]; };   /* (a test's look: the free camera on a spot, k times the opening zoom) */
-    window.LOOKYAW=d=>{ yaw=yawTo=d*Math.PI/180; };
+    window.LOOKYAW=d=>{ yaw=yawTo=d*Math.PI/180; }; window.LOOKPITCH=d=>{ pitch=pitchTo=d*Math.PI/180; return pitch; };
     window.GSLOOK=(dx=0,dy=0,k=.5,d)=>{ if(d!=null)LOOKYAW(d); return LOOKAT(X(X0+W/2+dx),Z(Y1+dy),k); };   /* (the building's front middle, dx, dy tiles off it) */
     window.GSGO=(dx=0,dy=4)=>{ if(window.SUBGO)SUBGO(X(X0+W/2+dx),Z(Y1+dy),'up'); return [X(X0+W/2+dx),Z(Y1+dy)]; }; } }

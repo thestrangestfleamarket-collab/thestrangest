@@ -1564,3 +1564,19 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   skyline hidden there). Cost: the view inside some 59,000 triangles in all; 8 lamp records; one program (the floor's). **No cardboard cutouts** (owner, 18 Oct 2026: "remove the cardboard cutouts from nightclub and game, forget that part"): GoldenEye's flat crowd was built and taken out; don't bring it back. `CLUBDBG()`,
   `CLUBGO(dx,dy)`, `CLUBLOOK(dx,dy,zoom,yaw)`, `CLUB.dropIt()`. **Found on the way**: with the outline on, every frame threw (the shape editor's
   selection undefined: `OUTL.hidden`), fixed in walker3d.js; `tests/datacheck.cjs` still fails the newsstand's `thanks` pool and the save's version, as on main.
+- **The apartment house in stone; ATMOSPHERE in the menu** (owner, 18 Oct 2026, his picture of a dark limestone corner house at night, arched lit
+  windows over a balustrade: "i want the aparmtnet builing to look more like this. also let me change time of day and weather atompsher sttings in
+  menu"; `apts.js`, `clock.js`, `weather.js`, `sky.js`, `ui.js`): **the front** limestone ashlar in place of the brick (`stone`): the ground floor
+  rusticated (deep channels, staggered blocks) under a belt, smooth courses above with a string course each storey, quoins up the corners; each window
+  in a stone architrave with a sill: the 2nd floor's (the cottage) arched, a half-round fanlight over it (lit with the window) in voussoirs and a
+  keystone, the 3rd to 5th under cornice heads, the ground floor's under flat arches; the door under a lit fanlight; the frieze and dentils painted
+  under a projecting cornice; every sash a dark frame with a mullion, a transom and three lights over it (`glass`); the sides blind windows painted
+  the same way, some lit (no holes: the rooms inside keep their walls). In depth (the house's batch): the belt, **the 2nd floor's balustrade** on its
+  ledge and corbels (pedestals between the windows, a baluster every fifth of a tile, its rail), **the cornice** round all four on modillions. The
+  plinth and stoop granite (were brownstone). **The front fire escapes gone** (his picture has none; the back's stay: put back by the `escape(A.y1...`
+  line). Cost: some 220 boxes, about 2,600 triangles; no light, no program. **ATMOSPHERE** (a menu tab of its own, after DISPLAY, which had TIME and
+  WEATHER buried in it): TIME OF DAY (the slider; DAWN, MORNING, NOON, AFTERNOON, GOLDEN HOUR, SUNSET, BLUE HOUR, NIGHT, MIDNIGHT; STOPPED / RUNNING;
+  a day in 2 min to 24 h), WEATHER (NATURAL or one held), SKY's EVENING COLOURS (BY THE DAY, CLEAR, FIRE, SOFT: `SKY.moodHold`), HAZE (DISTANCE HAZE
+  MIST / FAR / OFF and DISTANCE LOOK: they had stopped showing anywhere, GRAPHICS' `#dgrain` they hung on being gone; the mannequin's AVATAR switch
+  with them, now after OUTLINE). All kept in the save (`clock` {h, run, speed}, `wx`, `mood`): the game opens at the hour and weather he chose (the
+  game's own, 5:24 pm stopped and CLOUDY, till he picks); `?hour=`, `?wx=`, `?mood=` still win for a test. `HOUSEAT(dy)` and `LOOKPITCH(deg)` test hooks.

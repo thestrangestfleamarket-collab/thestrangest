@@ -34,6 +34,40 @@ const APTS={};
     const s=z%S; if(z>S-4&&(s<4||s>=S-2)){ const t=sh(STONE,f); return s>=S-2?sh(t,.6):s===3?sh(t,1.12):s===0?sh(t,.8):t; }
     for(const h of holes){ if(u>h.a0-.14&&u<h.a1+.14){ if(z>=h.z1&&z<h.z1+5)return sh(STONE,f*(z===h.z1+4?1.1:.95)); if(z<h.z0&&z>=h.z0-4)return sh(STONE,f*(z===h.z0-1?1.1:.9)); } }
     return sh(tex('brick',Math.floor(u*24),Math.floor(z)),f*(.96+.08*hash(Math.floor(u*24/9),Math.floor(z/5),11))); };
+  // ---- THE STONE FRONT (owner, 18 Oct 2026, his picture of a dark limestone corner house at night: "i want the aparmtnet builing to look more like
+  // this"): the brick gone for limestone ashlar; the ground floor rusticated (deep channels, staggered blocks), a belt over it; above it smooth
+  // courses with a string course each storey; quoins up the corners; each window in a stone architrave with a sill, the 2nd floor's (the cottage,
+  // behind the balustrade) arched with a lit fanlight and voussoirs and a keystone, the 3rd to 5th floors' under cornice heads, the ground floor's under
+  // flat arches; the door under its own fanlight; the frieze, dentils and the crown painted under the projecting cornice (3D, below); the sides blind
+  // windows painted the same way (no holes behind them: the rooms inside keep their walls), some lit. Every glass pixel lit is its own glow.
+  const LS=[150,144,132], GL=[255,214,150], BAR=[30,28,26];
+  const glass=(dx,dz,hw,hh,lit,seed)=>{   // (a sash: dx from the middle, dz up from its foot, in px; a frame, a mullion, a transom, the top's lights in three)
+    const tr=hh*.68, ax=Math.abs(dx); if(ax>hw-1.5||dz<1.5||dz>hh-1.5||ax<1||Math.abs(dz-tr)<1.2||(dz>tr&&Math.abs(ax-hw/2)<.8))return BAR;
+    if(lit){ const n=hash(Math.floor(dx+40),Math.floor(dz/3),seed); return [GL[0],GL[1]*(.94+.06*n),GL[2]*(.9+.12*n),1]; } return (Math.floor(dx)+Math.floor(dz))%7===0?[54,60,70]:[34,38,46]; };
+  const fan=(dx,dz,r,lit,seed)=>{   // (a half-round fanlight: its ring, its spokes)
+    const d=Math.hypot(dx,dz), a=Math.atan2(dz,dx); if(d>r-1.5||dz<1.2||Math.abs(d-r*.45)<.9||Math.abs(Math.sin(a*3))<.12*12/Math.max(d,1))return BAR;
+    return lit?[GL[0],GL[1],GL[2]*.95,1]:[38,42,50]; };
+  const stone=(u,z,f,cap,holes,a0,a1)=>{
+    const ui=u*24, tone=(i,k)=>.94+.1*hash(i,k,19);
+    if(z>=cap-30){ const zz=z-(cap-30); return sh(LS,f*(zz<10?(zz>=9?1.1:.92):zz<16?((Math.floor(ui/3)&1)?.55:1.04):zz>=29?1.14:zz<18?.62:.98)); }   // (the frieze, dentils, the crown's foot)
+    for(const h of holes){ const cx=(h.a0+h.a1)/2, dx=(u-cx)*24, hw=(h.a1-h.a0)*12, ax=Math.abs(dx), lv=Math.floor(h.z0/S);
+      if(h.blind&&ax<hw&&z>=h.z0&&z<h.z1)return glass(dx,z-h.z0,hw,h.z1-h.z0,h.lit,h.seed);
+      if(h.door){ const r=hw, dz=z-h.z1; if(dz>=0&&ax<r+6&&dz<r+7){ const d=Math.hypot(dx,dz); if(d<r)return fan(dx,dz,r,true,7); if(d<r+6){ const sg=Math.atan2(dz,dx)/(Math.PI/9); return ax<3&&d<r+7?sh(LS,f*1.1):sh(LS,f*(sg-Math.floor(sg)<.12?.6:1.02)); } }
+        if(ax>=hw&&ax<hw+5&&z<h.z1)return sh(LS,f*(ax<hw+1?.6:Math.floor(z/13)%2?1.04:.96)); continue; }
+      const arch=lv===1&&!h.blind, dz=z-h.z1;
+      if(arch&&dz>=0&&ax<hw+7&&dz<hw+8){ const d=Math.hypot(dx,dz); if(d<hw)return fan(dx,dz,hw,h.lit,h.seed); if(d<hw+6){ if(ax<3)return sh(LS,f*(d>hw+5?.7:1.12)); const sg=Math.atan2(dz,dx)/(Math.PI/7); return sh(LS,f*(sg-Math.floor(sg)<.14?.62:d>hw+5?.75:1.02)); } }
+      if(ax<hw+4&&z>=h.z0-5&&z<h.z1+(arch?0:3)&&!(ax<hw&&z>=h.z0&&z<h.z1)){ if(z<h.z0)return sh(LS,f*(z===h.z0-1?1.16:z<h.z0-3?.6:.95)); return sh(LS,f*(ax<hw+1?.55:ax>hw+3?.8:1.08)); }   // (the architrave, the sill)
+      if(!arch&&lv>=2&&ax<hw+7&&dz>=3&&dz<10)return sh(LS,f*(dz===9?1.16:dz<5?.55:1));   // (a cornice head)
+      if(!arch&&lv===0&&ax<hw+4&&dz>=0&&dz<9){ if(ax<3)return sh(LS,f*1.1); const sl=(dx*(1+dz/(hw*1.5)))/5; return sh(LS,f*(sl-Math.floor(sl)<.2?.62:1)); }   // (a flat arch)
+      if(ax<hw&&z<h.z0-5&&z>h.z0-50&&hash(Math.floor(ui/2),7,h.seed|0)<.5)f*=.93; }   // (rain's streaks under a sill)
+    const dq=Math.min(u-a0,a1-u), q=Math.floor(z/22);
+    if(z>=S-8&&z<S)return sh(LS,f*(z===S-1?1.15:z===S-8?.6:1.02));   // (the belt over the base)
+    if(dq<((q&1)?.36:.56)){ const qz=z%22; return sh(LS,f*1.06*(qz<2?.58:qz===21?1.12:Math.abs(dq-((q&1)?.36:.56))<.05?.62:tone(q,dq<.2?1:2))); }   // (the quoins)
+    if(z<S-8){ const c=Math.floor(z/13), zz=z%13, p=ui+(c&1)*15; if(zz<2)return sh(LS,f*.5); return sh(LS,f*(zz===12?1.12:p%30<1?.68:tone(Math.floor(p/30),c)*(z<10?.86:1))); }   // (the rusticated base)
+    const s=z%S; if(s>=S-6||s<1)return sh(LS,f*(s===S-6?.66:s===0?1.14:1));   // (each storey's string course)
+    const c=Math.floor(z/11), p=ui+(c&1)*13; if(z%11===0||p%26<1)return sh(LS,f*.84); return sh(LS,f*tone(Math.floor(p/26),c)); };
+  // the sides' blind windows: three a floor where the front has its windows' heights
+  const BLC={}, blinds=(a0,a1,seed)=>{ const o=[]; for(let lv=1;lv<ST;lv++)for(const k of [.22,.5,.78]){ const c=a0+(a1-a0)*k; o.push({a0:c-.55,a1:c+.55,z0:lv*S+42,z1:lv*S+94,blind:true,seed:seed+lv*7+k*10|0,lit:hash(seed,lv,k*10|0)<.4}); } return o; };
   // ---- inside: plaster over a baseboard; tiles to the shoulder in a kitchen or a bath
   const plaster=(u,z,f,tiled)=>{ if(z<6)return sh([96,70,48],f*(z<1?.7:z>4?1.15:1)); if(z>S-10)return sh([200,196,186],f*.9);
     if(tiled&&z<60){ const i=Math.floor(u*24/9), k=Math.floor((z-6)/9), g=(u*24/9-i)<.12||((z-6)/9-k)<.12; return sh(g?[190,188,180]:(i+k)&1?[236,234,226]:[228,226,216],f); }
@@ -58,17 +92,17 @@ const APTS={};
       if(w.cut)wallMesh(pt(w,s,a0,z0),pt(w,s,a1,z0),pt(w,s,a1,z1),pt(w,s,a0,z1),tx,planes); else bq(pt(w,s,a0,z0),pt(w,s,a1,z0),pt(w,s,a1,z1),pt(w,s,a0,z1),tx,'A'); }
     // the holes' edges and the top
     const fr=(P,len,hg,c)=>bq(...P,faceTex(Math.max(1,len*24),Math.max(1,hg),()=>c),'A'), e=(a,z,o)=>w.ax==='x'?[X(a),Y(z),Z(w.at+o)]:[X(w.at+o),Y(z),Z(a)];
-    fr([e(w.a0,w.z1,-T),e(w.a1,w.z1,-T),e(w.a1,w.z1,T),e(w.a0,w.z1,T)],w.a1-w.a0,5,w.cut?STONE:[200,196,186]);
-    for(const h of w.holes){ for(const a of [h.a0,h.a1])fr([e(a,h.z0,-T),e(a,h.z0,T),e(a,h.z1,T),e(a,h.z1,-T)],.2,h.z1-h.z0,h.door?[88,62,44]:FRAME);
-      fr([e(h.a0,h.z1,-T),e(h.a1,h.z1,-T),e(h.a1,h.z1,T),e(h.a0,h.z1,T)],h.a1-h.a0,5,h.door?[88,62,44]:FRAME); if(h.z0>0)fr([e(h.a0,h.z0,-T),e(h.a1,h.z0,-T),e(h.a1,h.z0,T),e(h.a0,h.z0,T)],h.a1-h.a0,5,FRAME); }
+    fr([e(w.a0,w.z1,-T),e(w.a1,w.z1,-T),e(w.a1,w.z1,T),e(w.a0,w.z1,T)],w.a1-w.a0,5,w.cut?LS:[200,196,186]);
+    for(const h of w.holes){ for(const a of [h.a0,h.a1])fr([e(a,h.z0,-T),e(a,h.z0,T),e(a,h.z1,T),e(a,h.z1,-T)],.2,h.z1-h.z0,h.door?[88,62,44]:w.rev||FRAME);
+      fr([e(h.a0,h.z1,-T),e(h.a1,h.z1,-T),e(h.a1,h.z1,T),e(h.a0,h.z1,T)],h.a1-h.a0,5,h.door?[88,62,44]:w.rev||FRAME); if(h.z0>0)fr([e(h.a0,h.z0,-T),e(h.a1,h.z0,-T),e(h.a1,h.z0,T),e(h.a0,h.z0,T)],h.a1-h.a0,5,w.rev||FRAME); }
     if(pl){ const o={pl,foot:Y(w.foot||8),when:()=>APTS.in};
       // (an inner wall has a room on both sides, so its inside is the side you're on: cut when the camera is across it from you; the outer walls keep their one inside)
       if(w.inner){ const at=w.ax==='x'?Z(w.at):X(w.at); if(w.ax==='x'){ o.nx=0; Object.defineProperty(o,'nz',{get:()=>Math.sign(pos.z-at)||1}); } else { o.nz=0; Object.defineProperty(o,'nx',{get:()=>Math.sign(pos.x-at)||1}); } } else { o.nx=w.nx; o.nz=w.nz; }
       cutWalls.push(o); } w.pl=pl; return w; }
   // ---- the glass in a window: a pane lit warm behind curtains where someone is home (glows), else dark with the room's dim behind it
-  const pane=(w,h,lit,seed)=>{ const cur=hash(seed,2,7)<.5, cc=[[220,200,170],[180,120,110],[150,170,200],[230,230,220]][seed%4];
-    bq(pt(w,0,h.a0,h.z0),pt(w,0,h.a1,h.z0),pt(w,0,h.a1,h.z1),pt(w,0,h.a0,h.z1),faceTex((h.a1-h.a0)*24,h.z1-h.z0,(i,j)=>{ const W_=(h.a1-h.a0)*24, u=i/W_, bar=Math.abs(u-.5)<.03||Math.abs(j-(h.z1-h.z0)/2)<1.5;
-      if(bar)return [40,38,36]; if(cur&&(u<.22||u>.78))return lit?[cc[0]*.8,cc[1]*.8,cc[2]*.8,1]:sh(cc,.35); if(lit)return [255,214,150,1]; return (i+j)%7===0?[54,60,70]:[34,38,46]; }),'A'); };
+  const pane=(w,h,lit,seed)=>{ const cur=hash(seed,2,7)<.5, cc=[[220,200,170],[180,120,110],[150,170,200],[230,230,220]][seed%4], hw=(h.a1-h.a0)*12, hh=h.z1-h.z0;
+    bq(pt(w,0,h.a0,h.z0),pt(w,0,h.a1,h.z0),pt(w,0,h.a1,h.z1),pt(w,0,h.a0,h.z1),faceTex(hw*2,hh,(i,j)=>{ const dx=i+.5-hw, g=glass(dx,hh-j-.5,hw,hh,lit,seed);   // (the sash as the stone front's: a dark frame, its lights)
+      if(g===BAR)return g; const u=(i+.5)/(hw*2); if(cur&&(u<.2||u>.8))return lit?[cc[0]*.8,cc[1]*.8,cc[2]*.8,1]:sh(cc,.35); return g; }),'A'); };
   // ---- the fire escape: a platform across the outer windows, its railing, the ladder down to the one below (out: which side of the wall it hangs)
   const steel=[52,54,58], ESC=[];
   const escape=(y,out,z,x0,x1,ladder)=>{ const d=.75, Y0=out>0?y:y-d, Y1=out>0?y+d:y, B=(a,b,c,dd,z0,z1,col)=>gbox({x0:a,y0:c,x1:b,y1:dd,z0,z1,c:col,foot:0,top:(u,v)=>(Math.floor(u*8)&1)?sh(col,.8):col},'A');
@@ -82,10 +116,25 @@ const APTS={};
   holesF.push(door,...[A.x0+1.5,m].map(x=>({a0:x-.55,a1:x+.55,z0:42,z1:94}))); for(let lv=1;lv<ST;lv++)holesF.push(...WIN(lv*S)); for(let lv=0;lv<ST;lv++)holesB.push(...WIN(lv*S));
   // (the ground floor's inside the cottage's: moss-green plaster in its three greens over an oak skirting, the trim's line at the top; HOLLOW only)
   const moss=(u,z,f)=>{ if(z<6)return sh([110,92,58],f*(z<1?.7:z>4?1.15:1)); if(z>S-6)return sh([162,138,90],f*(z>S-2?.8:1)); const n=hash(Math.floor(u*24/3),Math.floor(z/3),37), m2=hash(Math.floor(u*24),Math.floor(z),38); return sh(n<.3?[67,77,36]:n>.8?[102,112,58]:[85,96,47],f*(m2<.05?.9:1)); };
-  const outer=(id,ax,at,a0,a1,holes,inS,nx,nz)=>wall({id,ax,at,a0,a1,z0:0,z1:AH,holes,cut:true,nx,nz,paint:(s,u,z)=>s===inS?(HOLLOW&&z<S?moss(u,z,ax==='x'?.84:.68):plaster(u,z%S,ax==='x'?.84:.68,false)):brick(u,z,ax==='x'?1:.8,AH,holes)});
+  const outer=(id,ax,at,a0,a1,holes,inS,nx,nz)=>wall({id,ax,at,a0,a1,z0:0,z1:AH,holes,cut:true,nx,nz,rev:[120,115,106],paint:(s,u,z)=>s===inS?(HOLLOW&&z<S?moss(u,z,ax==='x'?.84:.68):plaster(u,z%S,ax==='x'?.84:.68,false)):stone(u,z,ax==='x'?1:.8,AH,ax==='x'?holes:(BLC[at]||(BLC[at]=blinds(a0+.3,a1-.3,Math.round(at*10)))),a0+(ax==='y'?T:0),a1-(ax==='y'?T:0))});
+  { let seed=3; for(const h of [...holesF,...holesB])if(!h.door){ h.lit=hash(seed++,1,9)<.55; h.seed=seed; } }   // (which are lit: decided once, for the glass and the fanlight over it)
   outer('front','x',A.y1,A.x0,A.x1,holesF,-1,0,-1); outer('back','x',A.y0,A.x0,A.x1,holesB,1,0,1); outer('west','y',A.x0,A.y0-T,A.y1+T,[],1,1,0); outer('east','y',A.x1,A.y0-T,A.y1+T,[],-1,-1,0);
-  let seed=3; for(const h of holesF)if(!h.door)pane({ax:'x',at:A.y1},h,hash(seed++,1,9)<.55,seed); for(const h of holesB)pane({ax:'x',at:A.y0},h,hash(seed++,1,9)<.55,seed);
-  for(let lv=1;lv<ST;lv++){ escape(A.y1,1,lv*S+38,A.x0+.9,A.x1-.9,lv===1?70:S-36); escape(A.y0,-1,lv*S+38,A.x0+.9,A.x1-.9,lv===1?70:S-36); }
+  for(const h of holesF)if(!h.door)pane({ax:'x',at:A.y1},h,h.lit,h.seed); for(const h of holesB)pane({ax:'x',at:A.y0},h,h.lit,h.seed);
+  for(let lv=1;lv<ST;lv++)escape(A.y0,-1,lv*S+38,A.x0+.9,A.x1-.9,lv===1?70:S-36);   // (the back's only: the stone front has none, as his picture)
+  // THE STONE FRONT IN DEPTH: the belt over the base round three sides, the 2nd floor's balustrade across the front on its ledge and corbels (its
+  // pedestals between the windows, a baluster every fifth of a tile, its rail), the cornice round all four on its modillions. All in the house's
+  // batch; some 220 boxes, no light
+  { const L=LS, ST2=[134,128,118], g=b=>gbox({...b,c:b.c||L},'A'), xa=A.x0, xb=A.x1, yf=A.y1, yb=A.y0;
+    g({x0:xa-.1,x1:xb+.1,y0:yf,y1:yf+.1,z0:S-8,z1:S}); g({x0:xa-.1,x1:xa,y0:yb,y1:yf,z0:S-8,z1:S}); g({x0:xb,x1:xb+.1,y0:yb,y1:yf,z0:S-8,z1:S});
+    const z=S+22; g({x0:xa+.08,x1:xb-.08,y0:yf,y1:yf+.42,z0:z,z1:z+6});
+    for(let x=xa+.4;x<xb-.3;x+=1.2)g({x0:x-.07,x1:x+.07,y0:yf,y1:yf+.32,z0:z-12,z1:z,c:ST2});
+    const peds=[xa+.25,(xa+1.5+m)/2,(m+xb-1.5)/2,xb-.25]; for(const x of peds)g({x0:x-.15,x1:x+.15,y0:yf+.04,y1:yf+.38,z0:z+6,z1:z+34});
+    for(let i=0;i+1<peds.length;i++){ const p0=peds[i]+.15, p1=peds[i+1]-.15, n=Math.max(1,Math.round((p1-p0)/.2)); g({x0:p0,x1:p1,y0:yf+.1,y1:yf+.32,z0:z+6,z1:z+9,c:ST2});
+      for(let k=0;k<n;k++){ const x=p0+(k+.5)*(p1-p0)/n; g({x0:x-.035,x1:x+.035,y0:yf+.17,y1:yf+.25,z0:z+9,z1:z+30,c:ST2}); g({x0:x-.055,x1:x+.055,y0:yf+.15,y1:yf+.27,z0:z+13,z1:z+21,c:ST2}); }
+      g({x0:p0,x1:p1,y0:yf+.08,y1:yf+.34,z0:z+30,z1:z+35}); }
+    const zc=AH-14; g({x0:xa-.4,x1:xb+.4,y0:yf,y1:yf+.4,z0:zc,z1:AH}); g({x0:xa-.4,x1:xb+.4,y0:yb-.4,y1:yb,z0:zc,z1:AH}); g({x0:xa-.4,x1:xa,y0:yb,y1:yf,z0:zc,z1:AH}); g({x0:xb,x1:xb+.4,y0:yb,y1:yf,z0:zc,z1:AH});
+    for(let x=xa-.2;x<=xb+.2;x+=.45)g({x0:x-.05,x1:x+.05,y0:yf,y1:yf+.3,z0:zc-7,z1:zc,c:ST2});
+    for(let y=yb+.2;y<=yf;y+=.45)for(const [x0,x1] of [[xa-.3,xa],[xb,xb+.3]])g({x0,x1,y0:y-.05,y1:y+.05,z0:zc-7,z1:zc,c:ST2}); }
   // ---- the floors (a slab each storey: boards, tiles in the kitchen and bath, lino in the hall; its ceiling under), and the roof
   const boards=(x,y)=>{ const i=Math.floor(y*8), j=Math.floor(x*.7+i*.37), n=hash(j,i,41); return sh([150,112,76],.86+.22*n+(y*8-i<.08?-.2:0)); };
   const lino=(x,y)=>{ const n=hash(Math.floor(x*12),Math.floor(y*12),43); return n<.1?[96,100,96]:[112,116,110]; };
@@ -214,7 +263,7 @@ const APTS={};
   // down to the sidewalk (four equal risers), brownstone with lit noses, a cheek wall each side with an iron railing over it, balusters at each
   // tread, a newel at the foot. APTS.stoop: the ground on it (the steps flat, a step up each); its cheeks solid (below)
   const ST0={x0:door.a0-.25,x1:door.a1+.25,y0:A.y1,land:.85,tr:.42,n:3}; ST0.y1=A.y1+ST0.land+ST0.n*ST0.tr; APTS.ST0=ST0;
-  { const BS=[124,78,64], NO=[150,100,80], CH=[110,68,56], IRN=[28,30,34], top=i=>(RZ+1)*(ST0.n-i)/(ST0.n+1), g=b=>BOD.gbox(b,'A');   // (top(-1): the landing's)
+  { const BS=[98,95,90], NO=[136,131,122], CH=[86,84,80],   /* (granite under the stone front, was brownstone) */ IRN=[28,30,34], top=i=>(RZ+1)*(ST0.n-i)/(ST0.n+1), g=b=>BOD.gbox(b,'A');   // (top(-1): the landing's)
     BOD.gbox({x0:A.x0-.04,x1:A.x1+.04,y0:A.y0-.04,y1:A.y1+.04,z0:0,z1:RZ,c:BS},'A');
     g({x0:ST0.x0,x1:ST0.x1,y0:ST0.y0,y1:ST0.y0+ST0.land,z0:0,z1:RZ+1,c:BS}); g({x0:ST0.x0,x1:ST0.x1,y0:ST0.y0+ST0.land-.06,y1:ST0.y0+ST0.land,z0:RZ-1,z1:RZ+1,c:NO});
     for(let i=0;i<ST0.n;i++){ const y0=ST0.y0+ST0.land+i*ST0.tr, h=top(i); g({x0:ST0.x0,x1:ST0.x1,y0,y1:y0+ST0.tr,z0:0,z1:h,c:BS}); g({x0:ST0.x0,x1:ST0.x1,y0:y0+ST0.tr-.06,y1:y0+ST0.tr,z0:h-2,z1:h,c:NO}); }
@@ -347,6 +396,7 @@ const APTS={};
       F.open=want>F.open?Math.min(1,F.open+dt/.5):Math.max(0,F.open-dt/.7); F.pv.rotation.y=F.rs*1.45*F.open; const g=F.gap; if(F.open>.45){ g[0]=g[2]=1e9; } else { g[0]=F.g0[0]; g[2]=F.g0[2]; } } }
     if(inside!==was||lv!==lvWas){ was=inside; lvWas=lv; HP.constant=inside?R0+SY*lv+SY*.93:1e6; for(const L of LIGHTS)L.light.intensity=inside?L.i:0; return inside?SOL.up.concat(SOLS[lv]):SOL[LVL]||SOL.up; } return null; };   /* (out: the level you're on's: a jump from the house to the Metro by the menu had left the street's solids under the platform, 18 Oct 2026) */   // (what blocks you: this floor's walls and things, or the street's; the loop sets it)
   window.APTS_F=()=>FLATS.map(F=>[F.n,+F.open.toFixed(2),F.gap[0]>1e8?'gap open':'shut']);   // (a test's look at the flats' doors)
+  window.HOUSEAT=(dy=0)=>[BOD.X(m),BOD.Z(A.y1+dy)];   // (a test's: the world spot dy tiles out from the middle of the house's front)
   window.APTSDBG=()=>({in:APTS.in,floor:APTS.floor(),py,pos:[+pos.x.toFixed(2),+pos.z.toFixed(2)],box:[+x0s.toFixed(1),+z0s.toFixed(1),+x1s.toFixed(1),+z1s.toFixed(1)],hall:[+Z(H.y0).toFixed(1),+Z(H.y1).toFixed(1)],door:+X((door.a0+door.a1)/2).toFixed(1)});   // (a test's look)
   APTS.rects=lv=>{ if(LOBBY)return [[A.x0,A.y0,A.x1,A.y1]]; if(HOLLOW)return lv?[]:[[A.x0,A.y0,A.x1,A.y1]]; const R=rooms(lv), Ym=y=>2*hm-y, out=[[A.x0,H.y0,A.x1,H.y1]]; for(const k of ['liv','kit','bath','bed','pass']){ const r=R[k]; if(!r)continue; out.push([r.x0,r.y0,r.x1,r.y1]); if(k!=='pass')out.push([r.x0,Ym(r.y1),r.x1,Ym(r.y0)]); } return out; };   // (its rooms on a floor, for ROOMS)
   MODS.apts=APTS; }

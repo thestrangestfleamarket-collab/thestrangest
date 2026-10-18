@@ -317,7 +317,7 @@ const APTS={};
   // where you stand in it: the floor under you (the flight carries you between floors), which rooms' solids count, the clip above your ceiling
   const SY=Y(S)-Y(0), x0s=X(A.x0), x1s=X(A.x1), z0s=Z(A.y0), z1s=Z(A.y1), sx0=X(STX[0]), sx1=X(STX[1]), sz0=Z(STY[0]), sz1=Z(STY[1]);
   APTS.inside=(x,z)=>x>x0s&&x<x1s&&z>z0s&&z<z1s;
-  APTS.floor=()=>HOLLOW?0:Math.max(0,Math.min(ST-1,Math.floor((py-R0)/SY+.08)));
+  APTS.floor=()=>HOLLOW?0:APTS.lvOf(py);
   // the ground under you: a floor's; on the stairs, the flight's slope (which storey's flight: the one whose height there is nearest yours, so
   // up and down run on smoothly); in the shaft, the cabin's floor
   const tz=v=>Z(A.y0+v), ux=u=>X(A.x0+u), su0=Math.min(ux(0),ux(2.55)), su1=Math.max(ux(0),ux(2.55)), sv0=Math.min(tz(0),tz(4.15)), sv1=Math.max(tz(0),tz(4.15));
@@ -335,6 +335,9 @@ const APTS={};
   APTS.flat=n=>FLATS.find(F=>F.n===n);
   APTS.way=F=>{ const P=[[6.5,13.3],[3.75,11],[3.75,5.0],[2.0,4.6]]; for(let l=0;l<F.lv;l++)P.push([.7,4.6],[.7,1.5],[.7,.75],[2.0,.75],[2.0,4.0],[2.0,4.6]);
     P.push([3.75,5.2],[3.75,(F.v0+F.v1)/2],[F.uh+F.sd*.5,(F.v0+F.v1)/2],[F.home.u,F.home.v]); return P.map(([u,v])=>({x:X(A.x0+u),z:Z(A.y0+v)})); };
+  // ONE MEASURE OF ITS FLOORS (owner, 18 Oct 2026, "fix all 1-8", the seventh: the house stands R0 up on its plinth, and every file that worked a
+  // floor's height or a height's floor added R0 by hand, one forgetting it): lvY(lv) the world height of floor lv, lvOf(y) the floor a height is on
+  APTS.lvY=lv=>R0+lv*SY; APTS.lvOf=y=>Math.max(0,Math.min(ST-1,Math.floor((y-R0)/SY+.08)));
   APTS.SY=SY; APTS.in=false; let was=false, lvWas=-1;   // (SY: a floor's height, for the hitboxes' pass: clip.js)
   let dl=performance.now();
   APTS.tick=()=>{ const inside=APTS.inside(pos.x,pos.z), lv=APTS.floor(); APTS.in=inside; if(ELV)ELV.tick(lv,inside);

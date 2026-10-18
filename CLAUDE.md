@@ -1427,6 +1427,19 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   stands; "blurrier" is detail lost in flat steps. **The oaks** back (`PARK.trees`, lost in the park's reorganization): 24, 12 to 22 m, in the middle
   seven tenths of the park, 12 tiles apart; `?trees=0` hides them. Cost: the skyline some 600 more instances (about 7,000 triangles, one draw), the
   sky's clouds in its one fragment shader, the oaks some 11,000 triangles.
+- **His feet planted** (owner, 18 Oct 2026: "they dont seem to be really walking ... cant we just apply real walking physics ... so there feet are
+  actually moving around realistically?"; "lets just work on our character for now"; his picks: his pace kept with quicker steps, his pose every
+  frame while he moves): the rig had him go 2.4 times as far as his feet carried him walking and 1.46 running (`RIGT.slip0/slip1`, 14 Oct's "he
+  walks too slow"), so a planted foot skated forward half his speed walking, a sixth running. The slip is gone: he goes exactly what his feet
+  carry, times his drawn size (`W3.SZ`, the player's `go` in build.py as the musician's and the bearded Walker's already were); his pace kept
+  (2.4 tiles a second walking, 4.9 running) by his steps: the walk's step 18 (was 14.67), stance .58, 0.583 s a stride (206 steps a minute: his
+  legs are a third of his height, so at this pace a body his shape walks quick and short), the run's 0.461 s (`WALK`, `RUN` in
+  walker-rig-mock.js and build.py's copy). The avatar editor's ANIMATION speed now shortens or lengthens his step instead of sliding him. A MOVES
+  dial saved before (stride, step time) is dropped once (`GAITV`, animator.js). His pose is worked out every frame while he walks or runs (ASTEP's
+  10 a second only standing and in moves). Measured (`node tests/footslip.cjs`, the rig alone, no drawing): the planted foot's slide 32 to 0.3
+  units a second walking, 22.5 to 0.5 running. With it, the musician and the bearded Walker (the same rig) plant their feet too, and walk a sixth
+  slower (they were carried 1.2 times further than the player). Cost: nothing; his pose built every frame while moving (some 0.1 ms).
+  Next, at his word: a lean into turns and a weight shift when he stops; foot locking for the clip-driven characters.
 - **The distance look, his to set** (owner, 18 Oct 2026: "make the buildings more logical, and they shouldnt be as visible, depth of field, blur,
   haze, etc, real distance"; "way too much, needs to look realistic, check other video game references"; "give me mockups of diff styles, with
   ranges i can select and change to get the right look and save it"; `skyline.js`, `sky.js`, map-pre.js's `MISTF`): the skyline laid out by
@@ -1438,3 +1451,25 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   cloud cover and brightness, the sky overhead and at the horizon), live; SAVE keeps them (the save's `farlook`), RESET the game's own, EXPORT
   gives `FARLOOK {...}`: when he sends it, put it in `FL0` in skyline.js. Cost: with blur on, the skyline and the sky drawn again (a few thousand
   triangles) and two blur passes at the picture's size over the coarseness squared.
+- **The menu's map drawn as a map; the root fixes, "fix all 1-8"** (owner, 18 Oct 2026: "the map in menu should show entire map and not the real
+  thing, just map showing where eveything is, map like"; then, of a list of patches made in place of fixing their causes, "fix all 1-8"):
+  **THE MAP** (`plan()` in `ui.js`): the street level drawn as a plan from the places' own measures, the whole loop inside the force field, north
+  (the park) up: the roads (`BOD.road.at`), sidewalks and alley (`BOD.grounds`), the park's lawn and ways (`PARK.path`), the river, the buildings
+  and places as blocks in their colours with their names (none over another), the force field's line; two pixels a tile, painted once; your dot;
+  a click goes there. Underground is still the view from above. `tests/menumap.cjs`. **1, OUT** (`map-pre.js`): one rule for what's out of doors,
+  `OUT.add(thing,'open'|'world')`, checked once a frame after the rooms (rooms.js), in place of each outdoor thing's own `ROOMS.cur` check (the sky,
+  birds, force field, river, roofs' things, lamps' pools, the weather's and haze's reads); hidden by SEEN, so a roof's shadow stays.
+  `tests/outcheck.cjs`. **2, the light on a character in steps** (`looks.js`): its way handed on only after it turns 7 degrees (`?lstep=`); and the
+  player's placement (`W3.place`) no longer set it back to his fixed light every frame (`W3.realL`), which had kept the easing toward a lamp from
+  ever holding. Walking under a street light at night the light on him changed on 6 of 60 steps (60 of 60 before). `tests/lampwalk.cjs`.
+  **3, SHX** (`src/shx.js`, right after three's import): every onBeforeCompile wrapped once; a shader edit whose text isn't in the shader is
+  reported (`SHADER EDIT MISSED`, `SHX.miss`); found one (the batch's glow tint on unlit materials, made explicit). `tests/shxcheck.cjs` (none now).
+  **4**: nothing off the map is built (the pool's removal); `AWAY.has` is the register. **5, a kind on one page** (`batch.js`): each kind's
+  pictures packed together, a new page started before one that won't fit; only the street's ground (bigger than a page) spans two
+  (`BATCH.log`, `tests/batchlog.cjs`). **6**: the oaks (lost in 5b3dd53) came back on main the same day; the dojo's floor painted the right way round; the
+  creatures, dragon and kit had already been cut again (c24f751). **7, the house's floors** (`APTS.lvY(lv)`, `APTS.lvOf(y)`, its plinth in them) for
+  the hitboxes, the drone, the residents, the rooms, the roof and the menu (the same picture, `tests/aptfloors.cjs`). **8, triangles**: not solved; a
+  cull of what lay past a mist round him was built and taken out again when main's mist (the town's outskirts only) came in. `tests/mistcull.cjs`
+  measures one whole frame (every pass). **THE HAZE FADES GRADUALLY** (owner, of the mist's bands: "i dont want hard lines like that, needs to be cel
+  shaded shadows and gardual chanegs in haze tarnspacency"): the fog's 8 flat steps gone, the outskirts' darkening and the skyline's steps smooth;
+  the light and shadows keep their cel bands. `tests/mistviews.cjs`.

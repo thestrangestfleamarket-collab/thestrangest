@@ -20,13 +20,13 @@
   const indoor=(r,way,then)=>{ const N=r.N, A=AP(); CITY.stop(N); N.mode='indoor'; if(!r.k0){ r.k0={free:N.free,ground:N.ground,push:N.push}; } r.y=r.y||0;
     N.free=()=>true; N.ground=(x,z)=>(r.y=A.gnd(x,z,r.y)); N.push=p=>{ if(r.shown)r.k0.push(p); }; r.way=way; r.wi=0; r.then=then; N.st.hold=false; N.st.wait=0; N.st.to=null; N.st.face=null; };
   const outdoor=r=>{ const N=r.N; if(r.k0){ Object.assign(N,r.k0); r.k0=null; } delete N.mode; r.y=0; r.way=null; r.shown=false; N.g.visible=true; };
-  const step=(r,dt)=>{ const N=r.N, st=N.st, A=AP(), f=Math.max(0,Math.floor(r.y/A.SY+.08)); r.shown=!!A.in&&A.floor()===f; N.mode=r.shown?'indoor':'hidden'; N.g.visible=r.shown;
+  const step=(r,dt)=>{ const N=r.N, st=N.st, A=AP(), f=A.lvOf(r.y); r.shown=!!A.in&&A.floor()===f; N.mode=r.shown?'indoor':'hidden'; N.g.visible=r.shown;
     if(!r.way)return; const F=flatOf(r); if(F&&Math.hypot(st.x-F.at.x,st.z-F.at.z)<1.6*T)F.by=.6;   // (his door opens as he comes to it)
     const p=r.way[r.wi]; if(!p){ r.way=null; st.to=null; const th=r.then; r.then=null; th&&th(); return; }
     const dx=p.x-st.x, dz=p.z-st.z, d=Math.hypot(dx,dz); if(d<.1*T){ r.wi++; st.to=null; return; } st.to={x:p.x,z:p.z}; st.wait=0; st.hold=false;
     if(st.held>1){ const k=Math.min(d,st.v*dt); st.x+=dx/d*k; st.z+=dz/d*k; st.h=Math.atan2(dx,dz); } };   // (you in his way in the hall: he squeezes past, nudging you aside)
   const settle=r=>{ const N=r.N, F=flatOf(r); r.state='home'; N.st.hold=true; N.st.to=null; if(F){ const s=F.sd; N.st.face={x:N.st.x+s*BOD.X(1)-s*BOD.X(0),z:N.st.z}; } };   // (home, looking into his flat)
-  const goIn=r=>{ const N=r.N, F=flatOf(r); if(F){ const w=AP().way(F), h=w[w.length-1]; indoor(r,null); N.st.x=h.x; N.st.z=h.z; r.y=F.lv*AP().SY+(AP().R0||0); N.g.position.set(h.x,r.y,h.z); settle(r); return; }   // (home at the start: in his flat already)
+  const goIn=r=>{ const N=r.N, F=flatOf(r); if(F){ const w=AP().way(F), h=w[w.length-1]; indoor(r,null); N.st.x=h.x; N.st.z=h.z; r.y=AP().lvY(F.lv); N.g.position.set(h.x,r.y,h.z); settle(r); return; }   // (home at the start: in his flat already)
     const p=inside(); CITY.stop(N); r.state='home'; N.mode='hidden'; N.g.visible=false; N.st.hold=true; N.st.to=null; if(p){ N.st.x=p.x; N.st.z=p.z; N.g.position.x=p.x; N.g.position.z=p.z; } };
   const goOut=r=>{ const N=r.N, H=HOUSE(); if(!H)return; if(r.state==='home'&&N.mode&&flatOf(r)&&r.k0){ r.state='down'; indoor(r,AP().way(flatOf(r)).reverse().concat([{x:H.door.x,z:H.door.z}]),()=>{ outdoor(r); r.state='home'; goOut2(r); }); return; } goOut2(r); };   // (from his flat: down the stairs and out of the front door first)
   const goOut2=r=>{ const N=r.N, H=HOUSE(); if(!H)return; r.state='out'; delete N.mode; if(r.k0)outdoor(r); N.g.visible=true; N.fv=true; N.st.hold=false; if(Math.hypot(N.st.x-H.door.x,N.st.z-H.door.z)>.5*T){ N.st.x=H.door.x; N.st.z=H.door.z; N.g.position.x=N.st.x; N.g.position.z=N.st.z; N.st.h=Math.PI; }

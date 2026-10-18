@@ -128,6 +128,48 @@ function legIK(P,n,s,A){ const [H,Rb]=hipAt(P,s),d=sub(A,H),dl=Math.min(len(d),T
 // foot on the ground stays planted and the leg reaches it; the pelvis rides as high as the stance leg's knee (bent as the curve bends
 // it) lets it, so he dips as each heel takes his weight; it shifts over the standing foot, the free side's hip drops, the hips turn with
 // the leading leg, the shoulders against them, the head stays level and looks ahead; the arms swing from the shoulder, the elbow trailing.
+// HIS FEET ON THE GROUND, NOT ON HIM (owner, 18 Oct 2026: "are we just patching again instead of fixing root?"; his yes to world-space foot
+// locking): walkPose plants a foot in his own frame, so when he turned a standing foot swung round with him, and stopping or starting snapped
+// it. Here (only for the page's own pose of him: st.world, set by the page each frame; st._lk, set by pose() so the springs' 120-a-second
+// poses in tick don't count) each foot is kept where it is in the world: a heel that lands is locked at its spot and the leg reaches back to
+// it until the foot lifts; a swing starts from where the foot really was and lands where his going puts it; stopped, a foot left out of place
+// takes a short step to stand beside the other, one at a time (st.fstep); every foot on the ground where it stands (stairs, kerbs: W.gnd),
+// his hips lowered as far as a leg needs to reach. A lock the leg can't reach even so is drawn after it (st.fslide counts them). Returns true.
+// st.world: {x,z: where he stands, y: his floor's height (the page's py), hd: his heading, kx, ky: his units a world unit across and up,
+// gnd(x,z): the ground's height there, t: seconds}
+function footLock(st,P,AK,LK,w){ const W=st.world,c=Math.cos(W.hd),s=Math.sin(W.hd),
+    toW=b=>({x:W.x+(b.x*c+b.z*s)/W.kx,z:W.z+(-b.x*s+b.z*c)/W.kx}), toL=p=>{ const dx=(p.x-W.x)*W.kx,dz=(p.z-W.z)*W.kx; return V(dx*c-dz*s,0,dx*s+dz*c); },
+    up=p=>Math.max(-8,((p.y??W.gnd(p.x,p.z))-W.y)*W.ky), at=b=>{ const p=toW(b); p.y=Math.max(...[-1.1,0,3].map(dz=>{ const q=toW(add(b,V(0,0,dz))); return W.gnd(q.x,q.z); })); p.hd=W.hd; return p; },   // (the highest ground under its heel, ankle and toe: a foot over a step's edge rests on it, not in it)
+    FY=50*D, fyOf=f=>{ let d=Math.atan2(Math.sin(f.hd-W.hd),Math.cos(f.hd-W.hd)); if(Math.abs(d)>FY){ d=Math.sign(d)*FY; f.hd=W.hd+d; } return d; };   // (the way a foot on the ground points, against his; past 50 degrees it pivots with him, on its ball)
+  const F=st.fk||(st.fk={}), dt=Math.min(0.1,Math.max(0,W.t-(st.fkT??W.t))); if(W.t-(st.fkT??-9)>0.3) for(const n of 'LR') F[n]=null;   // (back from a move, a jump, a sit, the water, a jump of the menu: afresh)
+  st.fkT=W.t; const stand=w===0&&!st.move;
+  if(stand){ // stopped: each foot where it was; the one further from its place by him steps there first, then the other
+    const S=n=>V((n=='L'?1:-1)*FOOTX,0,0);
+    for(const n of 'LR'){ if(!F[n]) F[n]={...at(S(n)),on:1}; const d=toL(F[n]); if(len(sub(d,S(n)))>14) F[n]={...at(S(n)),on:1}; }
+    const sp=st.fstep; if(sp){ sp.t+=dt/0.2; if(sp.t>=1){ F[sp.n]={...sp.to,on:1}; st.fstep=null; } }
+    if(!st.fstep){ let far=null,fd=0.9; for(const n of 'LR'){ const d=len(sub(toL(F[n]),S(n))); if(d>fd){ fd=d; far=n; } } if(far) st.fstep={n:far,t:0,from:{...F[far]},to:at(S(far))}; }
+    for(const n of 'LR'){ const sp=st.fstep&&st.fstep.n==n?st.fstep:null, off=sub(AK[n],S(n)); let b,y;
+      let fy; if(sp){ const e=smooth(Math.min(1,sp.t)),p={x:lerp(sp.from.x,sp.to.x,e),z:lerp(sp.from.z,sp.to.z,e)}; b=toL(p); y=lerp(up(sp.from),up(sp.to),e)+2.2*Math.sin(Math.PI*e); fy=lerp(fyOf(sp.from),0,e); }
+      else { b=toL(F[n]); y=up(F[n]); fy=fyOf(F[n]); }
+      AK[n]=add(add(b,yaw(off,fy)),V(0,y,0)); P[n].fyaw=fy; } }
+  else { st.fstep=null;
+    for(const n of 'LR'){ const k=LK[n]; if(!k) continue;
+      if(k.on){ // on the ground: locked where it landed
+        const q=F[n]&&F[n].quick?F[n]:null; if(q){ // a quick step back under him (a foot a turn left out of reach): from where it was to where his stride has it now
+          q.t+=dt/0.16; const e=smooth(Math.min(1,q.t)),b1=sub(AK[n],k.off),to=add(AK[n],V(0,up(toW(b1)),0)); AK[n]=add(lerpV(add(toL(q),V(0,q.ly,0)),to,e),V(0,1.5*Math.sin(Math.PI*e),0)); P[n].fyaw=lerp(q.fy,0,e); if(q.t>=1) F[n]=null; continue; }
+        if(!F[n]||!F[n].on){ const b0=sub(AK[n],k.off); F[n]={...at(b0),on:1}; }
+        const fy=F[n].fy=fyOf(F[n]); AK[n]=add(add(toL(F[n]),yaw(k.off,fy)),V(0,up(F[n]),0)); P[n].fyaw=fy; }
+      else { // in the air: from where it really lifted to where his going lands it
+        if(F[n]&&F[n].on) F[n].on=0; const e=smooth(k.e), lift=F[n]?sub(toL(F[n]),k.b0):V(0,0,0), y0=F[n]?up(F[n]):0, y1=up(toW(k.b1));
+        AK[n]=add(add(AK[n],mul(lift,1-e)),V(0,lerp(y0,y1,e)+(y1>y0?2*Math.sin(Math.PI*e):0),0)); P[n].fyaw=lerp(F[n]&&F[n].fy||0,0,e); } } }
+  st.fdn=Math.min(0,...'LR'.split('').map(n=>AK[n].y-ANKLE));   // (the lowest foot under his floor, for settle not to lift him off it)
+  // the hips as low as a leg needs to reach its foot (at most 5 of his units), then a foot still out of reach drawn after him
+  const Lg=THIGH+SHIN-1e-4; let drop=0;
+  for(const s2 of [1,-1]){ const n=s2>0?'L':'R',[H]=hipAt(P,s2),d=sub(AK[n],H),dh=Math.hypot(d.x,d.z); if(len(d)>Lg&&dh<Lg) drop=Math.max(drop,(H.y-AK[n].y)-Math.sqrt(Lg*Lg-dh*dh)); }
+  if(drop>1e-3) P.root=add(P.root,V(0,-Math.min(5,Math.ceil(drop/PX)*PX),0));   // (in whole pixels, as settle keeps his hips: a part of one and settle lifted all of him back up, the planted foot off the ground)
+  for(const s2 of [1,-1]){ const n=s2>0?'L':'R',[H]=hipAt(P,s2),d=sub(AK[n],H); if(len(d)>Lg+0.02){ const v=nrm(d),A=add(H,mul(v,Lg)); st.fslide=(st.fslide||0)+1;
+      if(F[n]&&F[n].on&&!stand&&LK[n]&&LK[n].on){ const p=toW(V(A.x,0,A.z)); st.fquick=(st.fquick||0)+1; F[n]={x:p.x,z:p.z,y:F[n].y,ly:A.y,fy:F[n].fy||0,on:0,quick:1,t:0}; } AK[n]=A; } }   // (on the ground in his stride: it lifts and steps back under him; stopped, it waits for its settling step)
+  return true; }
 function walkPose(st,abd){ const r=st.run||0,rs=r*r,g=gaitOf(r),w=st.w,ST=g.stance,h=g.stride*w/(st.anim||1),q=phases(st.ph),P=neutral(),sw=drive(q.L,w)-drive(q.R,w);
   // (rs: the curves' and the arms' shapes mixed by r squared, so the game's brisk walk keeps a walker's straight knees and loose arms,
   // not a third of a runner's; the timing, g, is mixed by r itself)
@@ -140,9 +182,9 @@ function walkPose(st,abd){ const r=st.run||0,rs=r*r,g=gaitOf(r),w=st.w,ST=g.stan
   // stays a little under standing height (the leg straight at mid-stance only touched it for a frame or two: a one-pixel hop each step)
   const hipOff=s=>yaw(V(s*HIP[0],HIP[1],HIP[2]),P.pyaw),feet={},reachY=(s,A,k)=>{ const o=add(V(sway,0,0),hipOff(s)),L2=THIGH*THIGH+SHIN*SHIN+2*THIGH*SHIN*Math.cos(k);
     return A.y-o.y+Math.sqrt(Math.max(0,L2-(A.x-o.x)**2-(A.z-o.z)**2)); };
-  let py=null; const AK={};   // (AK: where each foot is, for the legs to reach again once a turn's lean or a stop moves his hips)
+  let py=null; const AK={},LK={};   // (AK: where each foot is, for the legs to reach again once a turn's lean or a stop moves his hips)
   for(const s of [1,-1]){ const n=s>0?'L':'R',x=s*FOOTX,qq=q[n];
-    if(qq<ST){ const a=fa(n,qq),A=planted(qq/ST,a,x,h); feet[n]={A,a}; const y=reachY(s,A,kn(qq)); py=py==null?y:Math.min(py,y); } }
+    if(qq<ST){ const a=fa(n,qq),A=planted(qq/ST,a,x,h); feet[n]={A,a,b:V(x,0,(0.5-qq/ST)*h)}; const y=reachY(s,A,kn(qq)); py=py==null?y:Math.min(py,y); } }
   if(py==null){ // in the air between two running steps: from where the last foot left to where the next lands
     const n=q.L<q.R?'L':'R',o=n=='L'?'R':'L',v=((q[n]-ST)/(0.5-ST)),A0=planted(1,fa(n,ST-1e-6),(n=='L'?1:-1)*FOOTX,h),A1=planted(0,fa(o,0),(o=='L'?1:-1)*FOOTX,h);
     py=lerp(reachY(n=='L'?1:-1,A0,kn(ST-1e-6)),reachY(o=='L'?1:-1,A1,kn(0)),clamp(v,0,1)); }
@@ -151,11 +193,11 @@ function walkPose(st,abd){ const r=st.run||0,rs=r*r,g=gaitOf(r),w=st.w,ST=g.stan
   // hips rise and fall about 5 cm a step, his pixel)
   py=Math.min(STAND,py); P.root=V(sway,STAND-Math.max(0,Math.round((STAND-py)/PX))*PX,0);
   for(const s of [1,-1]){ const n=s>0?'L':'R',x=s*FOOTX,qq=q[n];
-    let A,a; if(feet[n]) ({A,a}=feet[n]);
+    let A,a; if(feet[n]){ ({A,a}=feet[n]); LK[n]={on:1,off:sub(A,feet[n].b)}; }
     else { // the swing: from where the toe left to where the heel will land, shaped by the curves (the knee folds, the foot clears the floor)
       const v=(qq-ST)/(1-ST),e=smooth(v),A0=planted(1,fa(n,ST-1e-6),x,h),A1=planted(0,fa(n,0),x,h),H=add(P.root,hipOff(s));
       const F=qq2=>legReach(lab('hip',qq2,ST,rs)*w,kn(qq2)),F0=F(ST),F1=F(1-1e-6),Fv=F(qq);
-      a=fa(n,qq); A=add(lerpV(A0,A1,e),sub(Fv,lerpV(F0,F1,e))); A=V(x,Math.max(A.y,Math.cos(a)*ANKLE+Math.max(Math.sin(a)*1.1,-Math.sin(a)*1.9)+0.1*w),A.z); }   // (its heel and ball clear the floor, as a swinging foot does by a centimetre or two: at full height it scraped, and the floor lifted all of him a pixel)
+      a=fa(n,qq); A=add(lerpV(A0,A1,e),sub(Fv,lerpV(F0,F1,e))); A=V(x,Math.max(A.y,Math.cos(a)*ANKLE+Math.max(Math.sin(a)*1.1,-Math.sin(a)*1.9)+0.1*w),A.z); LK[n]={on:0,e,b0:V(x,0,-0.5*h),b1:V(x,0,0.5*h)}; }   // (its heel and ball clear the floor, as a swinging foot does by a centimetre or two: at full height it scraped, and the floor lifted all of him a pixel)
     legIK(P,n,s,A); AK[n]=A; P[n].foot=a;
     // the arm swings against its leg, a moment behind it; the elbow bends as it comes forward, a moment later still; a runner's stays bent.
     // Walking it swings mostly behind him, 8 degrees forward to 24 back as gait labs measure (owner, 14 Oct 2026: it reached 30 forward,
@@ -171,7 +213,8 @@ function walkPose(st,abd){ const r=st.run||0,rs=r*r,g=gaitOf(r),w=st.w,ST=g.stan
   const so=st.stop; if(so){ const t=so.t,k=so.a*Math.exp(-t/0.3)*Math.cos(2*Math.PI*t/0.8),dip=t<0.3?so.a*Math.sin(Math.PI*t/0.3):0;
     P.bend+=10*D*k; P.nod-=5*D*k; P.root=add(P.root,V(0,-1.5*dip,2.2*k));   // (the dip a pixel: settle keeps his hips on whole pixels)
     for(const n of 'LR'){ P[n].ua=[P[n].ua[0]+10*D*k,P[n].ua[1]]; P[n].fa=[P[n].fa[0]+14*D*k,P[n].fa[1]]; } }
-  if(bk||so) for(const n of 'LR') legIK(P,n,n=='L'?1:-1,AK[n]);   // (the feet where they were)
+  const lk=st._lk&&st.world&&footLock(st,P,AK,LK,w);
+  if(bk||so||lk) for(const n of 'LR') legIK(P,n,n=='L'?1:-1,AK[n]);   // (the feet where they were)
   return P; }
 
 // ---- the stick figure from a pose (dev {L,R}: each hand's lag, a change of direction): every joint where it is, and the turns the pieces need
@@ -181,7 +224,7 @@ function build(P,dev){ const J={},m={},Rb=turn(P.yaw,P.roll,P.pitch),pv=V(0,P.pv
   m.Rb=Rb; m.Ru=cat(Rb,Ru); m.Rh=cat(m.Ru,Rn); m.Rc=cat(m.Ru,turn(P.cyaw,0,0)); m.Rp=cat(Rb,turn(P.pyaw,0,0)); m.foot={}; m.hf={}; m.fist={};
   for(const s of [1,-1]){ const n=s>0?'L':'R',g=P[n];
     const H=J['hip'+n]=W(yaw(V(s*HIP[0],HIP[1],HIP[2]),P.pyaw)),Kn=J['knee'+n]=add(H,mul(app(Rb,limb(g.th[0],g.th[1],s)),THIGH)),A=J['ankle'+n]=add(Kn,mul(app(Rb,limb(Math.min(g.sh[0],g.th[0]),g.sh[1],s)),SHIN));   // (a knee only bends forward: a shin never swings past its thigh)
-    const fw=app(Rb,fwv(g.foot)),dn=app(Rb,dnv(g.foot)); m.foot[n]=M3(Rb.x,mul(dn,-1),fw);
+    const Rf=g.fyaw!=null?turn(g.fyaw,0,0):Rb,fw=app(Rf,fwv(g.foot)),dn=app(Rf,dnv(g.foot)); m.foot[n]=M3(Rf.x,mul(dn,-1),fw);   // (fyaw: a foot on the ground keeping its own way in the world, flat: footLock)
     J['heel'+n]=add(add(A,mul(dn,ANKLE)),mul(fw,-1.1)); J['ball'+n]=add(add(A,mul(dn,ANKLE)),mul(fw,1.9)); J['toe'+n]=add(J['ball'+n],mul(fw,1.1));
     const C=V(...RB.chest),cl=RB.clav,so=RB.shoulder; J['clav'+n]=W(U(add(C,yaw(V(s*cl[0],cl[1],cl[2]),P.cyaw)))); const S=J['shoulder'+n]=W(U(add(C,yaw(V(s*so[0],so[1],so[2]),P.cyaw))));
     const ua=app(m.Ru,limb(g.ua[0],g.ua[1],s)),fa=app(m.Ru,limb(g.fa[0],g.fa[1],s)),E=J['elbow'+n]=add(S,mul(ua,UPPER)); J['wrist'+n]=add(E,mul(fa,FORE));
@@ -814,9 +857,10 @@ function step(st,dt){ if(st.target>0&&!st.went&&st.w<0.3&&!st.move){ st.ph=0; st
 const WSTEP=4.75;
 function pose(st,inPlace){ const busy=st.move||st.out,P=JSON.parse(JSON.stringify(st.last||rawPose(st))),dev={};
   for(const n of 'LR') dev[n]=ZERO;   // (the hands on their forearms: no spring of their own)
-  const swimming=st.water&&st.water.in||!!st.climb||!!st.hang||!!st.ride||!!st.sit;   // (sitting too: its own pose, not the walk's laid over it: use.js) if(!st.move&&!swimming) st.abd=clearArms(st,dev); if(!busy&&!swimming){ Object.assign(P,lift(walkPose(st,st.abd),floorOf(st))); upLayer(st,P); if(st.sign)st.sign(P); }   // (st.sign: signing, his arms and hands put over the walk's: 48-zz-asl)   // (swimming or climbing: their own poses)
+  const swimming=st.water&&st.water.in||!!st.climb||!!st.hang||!!st.ride||!!st.sit;   // (sitting too: its own pose, not the walk's laid over it: use.js)
+  if(!st.move&&!swimming) st.abd=clearArms(st,dev); st.fdn=0; if(!busy&&!swimming){ st._lk=1; Object.assign(P,lift(walkPose(st,st.abd),floorOf(st))); st._lk=0; upLayer(st,P); if(st.sign)st.sign(P); }   // (st.sign: signing, his arms and hands put over the walk's: 48-zz-asl; swimming or climbing: their own poses. 18 Oct 2026: this line had sat inside the comment above since 17 Oct, so his arms weren't kept clear of him and nothing here ran)
   if(st.move&&st.move.def.travel) P.root=V(P.root.x,P.root.y,inPlace?0:P.root.z-(carries(st.move)?st.move.zc||0:0));   // (a roll or a fall carries him off: drawn less the travel that's yours already (tick); the compass keeps him in his square)
-  const B=settle(busy||st.up||(st.water&&st.water.in)?clearPose(P,dev):build(P,dev),st.move&&st.move.base!=null?st.move.base:floorOf(st),busy);   // (climbing out, his legs are still down in the pool; a punch or a wave over the walk is cleared too: its arm swings in from the walk's)
+  const B=settle(busy||st.up||(st.water&&st.water.in)?clearPose(P,dev):build(P,dev),st.move&&st.move.base!=null?st.move.base:floorOf(st)+(busy?0:st.fdn||0),busy);   // (fdn: a foot of his planted on ground lower than his floor, a step down: the floor there, footLock)   // (climbing out, his legs are still down in the pool; a punch or a wave over the walk is cleared too: its arm swings in from the walk's)
   // the head's spring in whole pixels, changing only once it's well past the half (a quarter pixel either side), so near the edge it doesn't flick for a frame
   const hp=st.head.x/PX; if(st.hpx==null||Math.abs(hp-st.hpx)>0.75) st.hpx=Math.round(hp); B.head=add(B.J.head,V(0,st.hpx*PX,0));
   B.lift=0;   // (the hair still)

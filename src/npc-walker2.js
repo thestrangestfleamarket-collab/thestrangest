@@ -25,13 +25,14 @@ const BWK={}; window.BWK=BWK;   // (a test's reach)
   const free=(x,z)=>stfree(x,z,st.R), turn=a=>{ let e=a-st.hd; return Math.atan2(Math.sin(e),Math.cos(e)); };
   if(typeof NPCS!=='undefined'&&NPCS.extra)NPCS.extra.push(BWK);   // (out of the picture, not drawn: NPCS.cull)
   // HIS SHEET (the owner's rule for a new character: out in a black void, close, his limbs spread): the free camera on him, all else hidden
-  if(SHEET){ st.x=BOUND.x1-.5*TILE; st.z=BOD.ZS((BOD.MAP.y0+BOD.MAP.y1)/2); st.hd=Math.PI/4; }
-  const spread=()=>{ const P=R.walkPose({ph:0,w:0},null); P.L.ua=[90,80]; P.R.ua=[90,80]; P.L.fa=[0,0]; P.R.fa=[0,0]; return P; };
+  if(SHEET){ st.x=BOD.XS(100); st.z=BOD.ZS((BOD.MAP.y0+BOD.MAP.y1)/2); st.hd=Math.PI/4; }
+  const BLACK=new THREE.Color(0), spread=()=>{ const P=R.walkPose({ph:0,w:0},null); const D=R.D; P.L.ua=[0,65*D]; P.R.ua=[0,65*D]; P.L.fa=[0,70*D]; P.R.fa=[0,70*D]; P.L.th=[0,12*D]; P.R.th=[0,12*D]; return P; };
   BWK.tick=dt=>{ const near=Math.hypot(pos.x-st.x,pos.z-st.z)<40;   // (as the guitarist's)
     if(SHEET){ R.farOnly(false); const B=R.settle(R.build(spread(),null),0); PCS.forEach((pc,i)=>FM.set(i,R.frameOf(pc.on||pc.n,B)));
       st.y=MODS.bodega.ground(st.x,st.z); g.position.set(st.x,st.y,st.z); g.rotation.y=st.hd; musScale(g,1);
-      if(!BWK.sheetOn){ BWK.sheetOn=true; UI.setFree(true); UI.camT.set(st.x,st.y+g.scale.y*27,st.z); ppu=ppuTo=PPU*4; window.SHEETTURN=d=>{ yaw=yawTo=d*Math.PI/180; };
-        for(const G of Object.values(MAPG))for(const c of G.children)if(c!==g)c.visible=false; const r0=renderer.render.bind(renderer); renderer.render=(s,c)=>{ if(s.background&&s.background.isColor)s.background.set(0); r0(s,c); }; } return; }
+      if(!BWK.sheetOn){ BWK.sheetOn=true; UI.setFree(true); UI.camT.set(st.x,st.y+g.scale.y*27,st.z); ppu=ppuTo=PPU*4; window.SHEETTURN=d=>{ yaw=yawTo=d*Math.PI/180; }; window.SHEETZOOM=k=>{ ppu=ppuTo=PPU*k; };
+        for(const G of Object.values(MAPG))for(const c of G.children)if(c!==g)c.visible=false; for(const c of scene.children)if(!c.isLight&&!c.isCamera&&c!==MAPG.bodega)c.visible=false;   // (the skyline, the sky, the clouds too)
+        const r0=renderer.render.bind(renderer); renderer.render=(s,c)=>{ if(s===scene){ s.background=BLACK; s.fog=null; } r0(s,c); }; } return; }
     if(!free(st.x,st.z)){ for(let k=0;k<80;k++){ const a=k*2.4, r=(k>>2)*.25*TILE; if(free(st.x+Math.sin(a)*r,st.z+Math.cos(a)*r)){ st.x+=Math.sin(a)*r; st.z+=Math.cos(a)*r; break; } } }   // (the street's solids come after the game opens: his spot cleared as it goes)
     // where next: a stroll or a walk across the map (ROAM.pick), a while standing between
     if(!st.to){ S.target=0; st.wait-=dt;

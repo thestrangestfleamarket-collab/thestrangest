@@ -1547,3 +1547,20 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   (`GAITV` 3 drops a saved MOVES dial again). **The legs a quarter longer: not done** (his pick, with the slower walk): his standing hip height, 18,
   is written into the hand-made moves as a fixed number in 34 places (crouches, the guard, the hang, the climbs), so longer legs mean reworking
   those; next, at his word.
+- **The far city baked, no static** (owner, 18 Oct 2026, two shots down the street: "the distant buildings constantly change every pixel every
+  single frame ... likes like static"; "we need to bake the distance into the smallest perm files to use over and over, they dont need to be
+  generated, just small low res that we can view"; "cut it in half and just reuse it tile"; `skyline.js`): the cause, every far front's 16 x 10
+  window pattern read one texel a pixel with nothing averaging it: a storey smaller than a pixel picked a different texel each time the view moved
+  a hair (and his eyes move with his head). **Baked**: every skyline building 40 tiles or more past the land's edge (431 blocks: the far rows, the
+  landmarks, Downtown) is photographed once from the middle of town at a man's eyes, two of the four ways, the band from 2 degrees under the horizon
+  to 30 over, 5 pixels a degree (`node tests/farbake.cjs`, the page's `?farbake=1`, `FAR3.bake`): `data/far-day.png` (900 x 138, 8 KB, at the held
+  5:24 pm), `data/far-night.png` (10 KB, its lit windows; its alpha how far past the town's edge, for the mist), `data/far.json`; build.py puts them
+  in the page (`FARIMG`). Shown on four flat panels round the town just inside where those blocks stood (one draw, 8 triangles, nearest pixels),
+  the two halves each used twice (a building and its double face opposite ways), day and night blended by the clock, the mist over them as over the
+  blocks, in the distance blur's pass as the blocks were. Run the bake again only when the far rows change. `?farbaked=0` the blocks as before.
+  **Kept as blocks**: the nearer rows, the low-rise and the park's own edge (seen near enough that a flat picture would show as he walks), now each
+  front's pattern giving way to its own average colour and its share of lit windows as its texels grow smaller than a pixel (what mipmaps do, by
+  hand: `fwidth` in its shader). Not now: DISTANCE LOOK's window and haze-step dials no longer reach the far panels (the mist's two do); the
+  baked light is the held golden hour's, at noon too. Found on the way: the rooms' near-side cut (`ROOMS.nearAll`, on every material) slices
+  whatever it covers at the knee, the bake included (off for the bake). `tests/farlook4.cjs <out>` (his eyes the four ways, the opening view),
+  `tests/farstatic.cjs <out>` (a hair's turn).

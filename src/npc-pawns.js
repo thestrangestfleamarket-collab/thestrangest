@@ -16,7 +16,7 @@
     BN.forEach((bn,j)=>{ const v=new Float32Array(Cl.n*4); for(let k=0;k<Cl.n;k++)for(let c=0;c<4;c++)v[k*4+c]=Q[(k*BN.length+j)*4+c]/32000; tracks.push(new THREE.QuaternionKeyframeTrack(bn+'.quaternion',T,v)); });
     for(const [bn,p] of Object.entries(Cl.p))if(bn!=='root')tracks.push(new THREE.VectorKeyframeTrack(bn+'.position',T,f32(p)));
     CLIPS[name]=new THREE.AnimationClip(name,Cl.dur,tracks); }
-  const HOLD=QS.get('pawnclip'), WALKC=QS.get('pawnwalk')||'UAL_Walk_Loop', IDLEC=QS.get('pawnidle')||'UAL_Idle_Loop', WALK=1.6, RUNU=5.5;   // (how far the walk and the sprint carry one a second at their own pace, in his units)
+  const HOLD=QS.get('pawnclip'), WALKC=QS.get('pawnwalk')||'UAL_Walk_Loop', IDLEC=QS.get('pawnidle')||'UAL_Idle_Loop', WALK=1.6, RUNU=5.5, STILLC=new Set(['UAL_Idle_Loop','idle_a','idle_b','sit_floor_idle_a']);   /* (the plain breathing idles, standing or sat: held at rest, ASTEP) */   // (how far the walk and the sprint carry one a second at their own pace, in his units)
   const PAWNL=[]; window.PAWNL=PAWNL;
   // THE CITY'S STAFF (owner, 17 Oct 2026, the services run by bots: civic.js): eight of the pawns in uniform, a tint laid over the pack's colours
   // (their shading kept): the officers navy, the firefighters red, the carrier blue, the works crew orange, the clerk grey, the medic white
@@ -54,6 +54,7 @@
         if(HOLD)want=HOLD; else if(N.sheet)want='UAL_A_TPose'; else{ const run=moving&&st.v>(N.gait?2.4:1.2)*TILE; const fast=moving&&N.gaitU>2.5; want=moving?(run&&!fast?'UAL_Sprint_Loop':N.gait||WALKC):N.dwell||N.idle||IDLEC; if(moving)ts=Math.max(.6,Math.min(1.8,st.v/((run&&!fast?RUNU:N.gaitU||WALK)*sc)));   /* (N.gait, N.gaitU, N.idle, N.dwell: his own walk, its pace, his own idle, what he does where he stops: walkers.js) */ }
         if(want!==cur){ const a=act(want); a.reset().setLoop(THREE.LoopRepeat,Infinity).fadeIn(.2).play(); if(cur)act(cur).fadeOut(.2); cur=want; }
         act(cur).timeScale=N.sheet&&!HOLD?0:ts; mixer.update(dt); }});
+    N.restless=()=>!!HOLD||cur===N.dwell&&!STILLC.has(cur)&&(cur!=='UAL_Idle_Talking_Loop'||!!(N.walker&&N.walker.talk));   // (at rest his idle is held (ASTEP, map-pre.js); what he stopped to do goes on: a talk with someone, a cheer, a find)
     N.mixer=mixer; N.kind=kind; PAWNL.push(N); });
   window.PAWNCAM=(i=0,k=1.6)=>{ const N=PAWNL[i]; UI.setFree(true); UI.camT.set(N.st.x,N.g.position.y+N.H*.5,N.st.z); ppu=ppuTo=PPU*k; };   /* (a test's look) */
   window.PAWNDBG=()=>PAWNL.map(N=>({key:N.key,x:+N.st.x.toFixed(1),z:+N.st.z.toFixed(1),to:!!N.st.to,vis:N.g.visible})); }

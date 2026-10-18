@@ -104,8 +104,11 @@ function makeNPC(D,o){ const N={key:o.key,name:o.name,names:o.names,lv:o.lv||'do
     // the walk: rocking side to side, a bob each step; standing, still (owner, 18 Oct 2026, of the mushroom seller at his booth: "the grain shadow
     // ... is constantly glitchy looking beacause it tries to chnge too fast": the standing breath, a degree's sway and a 1% stretch, slid his own
     // shadow's stepped edge over his robe every frame; at rest is at rest)
-    const rock=o.skin?0:moving?Math.sin(st.ph)*o.rock:0, bob=o.skin?0:moving?Math.abs(Math.sin(st.ph))*o.bob:0;   // (a rigged one walks and breathes with his own bones)
-    g.position.set(st.x,N.ground(st.x,st.z)+bob,st.z); g.rotation.set(0,st.h,0); body.rotation.set(0,0,rock); if(!o.skin)body.scale.y=s*ZU*24/TILE; if(o.anim)o.anim(dt,moving,st,s); };
+    // AT REST AND STEPPED (ASTEP, map-pre.js): his clock held standing, his pose worked out ASTEP.fps times a second; where he stands every frame
+    const hold=ASTEP.rest(N,dt,moving), ad=ASTEP.gate(N,dt); if(N.mixer)N.mixer.timeScale=hold?0:1;
+    if(ad){ N._rk=o.skin?0:moving?Math.sin(st.ph)*o.rock:0; N._bb=o.skin?0:moving?Math.abs(Math.sin(st.ph))*o.bob:0; }   // (a rigged one walks and breathes with his own bones)
+    const gy=N.ground(st.x,st.z)+(N._bb||0); g.position.set(st.x,gy,st.z); g.rotation.set(0,st.h,0); body.rotation.set(0,0,N._rk||0); if(!o.skin)body.scale.y=s*ZU*24/TILE;
+    if(ad){ if(o.anim)o.anim(ad,moving,st,s); N._ao=g.position.y-gy; } else if(N._ao)g.position.y+=N._ao; };   // (what his pose set of his height, a flyer's, kept between)
   N.blocks=(x,z,R)=>block(x,z,R); N.gap=(x,z)=>Math.hypot(x-st.x,z-st.z);
   // push you out of him (collide's last step)
   N.push=p=>{ const dx=p.x-st.x, dz=p.z-st.z, d=Math.hypot(dx,dz), R=st.R+.3; if(d<R&&d>1e-4){ p.x=st.x+dx/d*R; p.z=st.z+dz/d*R; } };

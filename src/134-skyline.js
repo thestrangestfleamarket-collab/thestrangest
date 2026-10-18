@@ -41,27 +41,53 @@ const FAR3={};
     if(v===2&&(x===0||x===8))c=c.map(q=>q*.86);
     if(v===4){ if(y===9)c=[22,22,24]; if(y===6&&x%2===0)c=[30,30,32]; if((x+y)%7===0&&y<9&&x>6&&x<11)c=[26,26,28]; }
     atlas[k]=c[0]; atlas[k+1]=c[1]; atlas[k+2]=c[2]; atlas[k+3]=a; }
+  const AVG=[],WIN=[]; for(let v=0;v<NV;v++){ let r=0,g=0,b=0,w=0; for(let i=0;i<FW*FH;i++){ const k=(v*FW*FH+i)*4; r+=atlas[k]; g+=atlas[k+1]; b+=atlas[k+2]; w+=atlas[k+3]>127?1:0; } const n=FW*FH; AVG.push(new THREE.Color().setRGB(r/n/255,g/n/255,b/n/255,THREE.SRGBColorSpace)); WIN.push(w/n); }
   const ftex=new THREE.DataTexture(atlas,FW,FH*NV); ftex.magFilter=ftex.minFilter=THREE.NearestFilter; ftex.colorSpace=THREE.SRGBColorSpace; ftex.flipY=false; ftex.needsUpdate=true;
-  const FU={uMC:{value:new THREE.Color()},uMK:{value:0},uMP:{value:new THREE.Vector3()},uFT:{value:ftex},uLit:{value:0},uAmb:{value:0},uBay:{value:3*TILE},uStorey:{value:3.2*TILE},uY0:{value:-.5*ZU},uTW:{value:0},uBX:{value:MISTB},uTL:{value:TILE},uHN:{value:.2},uHF:{value:.82},uHD:{value:170},uHS:{value:8},uDT:{value:.45}};
-  const geo=new THREE.BoxGeometry(1,1,1).translate(0,.5,0), mat=new THREE.MeshLambertMaterial({color:0xffffff}), me=new THREE.InstancedMesh(geo,mat,B.length), m4=new THREE.Matrix4(), c=new THREE.Color(), y0=-.5*ZU;
-  const aV=new Float32Array(B.length), aS=new Float32Array(B.length);
-  B.forEach(([x,z,sx,sz,h,col,fv],i)=>{ me.setMatrixAt(i,m4.makeScale(sx*TILE,h*TILE,sz*TILE).setPosition(x*TILE,y0,z*TILE)); me.setColorAt(i,c.setRGB(1,1,1)); aV[i]=fv!=null?fv:Math.floor(hs(i,9)*NV); aS[i]=hs(i,11)*97; });
-  geo.setAttribute('aV',new THREE.InstancedBufferAttribute(aV,1)); geo.setAttribute('aS',new THREE.InstancedBufferAttribute(aS,1));
+  const FU={uBake:{value:0},uAvg:{value:AVG},uWin:{value:WIN},uMC:{value:new THREE.Color()},uMK:{value:0},uMP:{value:new THREE.Vector3()},uFT:{value:ftex},uLit:{value:0},uAmb:{value:0},uBay:{value:3*TILE},uStorey:{value:3.2*TILE},uY0:{value:-.5*ZU},uTW:{value:0},uBX:{value:MISTB},uTL:{value:TILE},uHN:{value:.2},uHF:{value:.82},uHD:{value:170},uHS:{value:8},uDT:{value:.45}};
+  const FARIMG={"day": __B64__("data/far-day.png"), "night": __B64__("data/far-night.png"), "meta": {"CX": 33.62, "CZ": -15.82, "EYE": 1.9, "V0": -0.03492, "V1": 0.57735, "N": 450, "dens": 5, "W": 900, "H": 138, "faces": 2}}, BAKE=QS.get('farbake')==='1', FARON=!!FARIMG&&!BAKE&&QS.get('farbaked')!=='0';
+  const outPast=([x,z])=>Math.max(LR.x0-x,x-LR.x1,LR.z0-z,z-LR.z1), BN=B.filter(b=>!(FARON&&outPast(b)>=40)), BF=B.filter(b=>outPast(b)>=40);
+  const geo=new THREE.BoxGeometry(1,1,1).translate(0,.5,0), mat=new THREE.MeshLambertMaterial({color:0xffffff}), m4=new THREE.Matrix4(), c=new THREE.Color(), y0=-.5*ZU;
+  const mk=L=>{ const g=geo.clone(), m=new THREE.InstancedMesh(g,mat,L.length), aV=new Float32Array(L.length), aS=new Float32Array(L.length);
+    L.forEach(([x,z,sx,sz,h,col,fv],i)=>{ const j=B.indexOf(L[i]); m.setMatrixAt(i,m4.makeScale(sx*TILE,h*TILE,sz*TILE).setPosition(x*TILE,y0,z*TILE)); m.setColorAt(i,c.setRGB(1,1,1)); aV[i]=fv!=null?fv:Math.floor(hs(j,9)*NV); aS[i]=hs(j,11)*97; });
+    g.setAttribute('aV',new THREE.InstancedBufferAttribute(aV,1)); g.setAttribute('aS',new THREE.InstancedBufferAttribute(aS,1)); return m; };
+  const me=mk(BN);
   mat.onBeforeCompile=sh=>{ Object.assign(sh.uniforms,FU);
     sh.vertexShader='attribute float aV; attribute float aS; varying float vFV,vFS; varying vec3 vFW,vFN;\n'+sh.vertexShader.replace('#include <project_vertex>','#include <project_vertex>\n vec4 fw=vec4(transformed,1.);\n#ifdef USE_INSTANCING\n fw=instanceMatrix*fw;\n#endif\n fw=modelMatrix*fw; vFW=fw.xyz; vFN=normalize(mat3(modelMatrix)*objectNormal); vFV=aV; vFS=aS;');
-    sh.fragmentShader='uniform vec3 uMC,uMP; uniform float uMK; uniform sampler2D uFT; uniform float uLit,uBay,uStorey,uY0,uAmb,uTW,uTL,uHN,uHF,uHD,uHS,uDT; uniform vec4 uBX; varying float vFV,vFS; varying vec3 vFW,vFN; float fLit=0.;\n float pastK(){ vec2 q=vFW.xz/uTL; float d=max(max(uBX.x/uTL-q.x,q.x-uBX.z/uTL),max(uBX.y/uTL-q.y,q.y-uBX.w/uTL)); return clamp((d-3.)/uHD,0.,1.); }\n'+sh.fragmentShader
+    sh.fragmentShader='uniform vec3 uMC,uMP; uniform float uMK; uniform sampler2D uFT; uniform float uLit,uBay,uStorey,uY0,uAmb,uTW,uTL,uHN,uHF,uHD,uHS,uDT; uniform vec4 uBX; uniform float uBake; uniform vec3 uAvg[8]; uniform float uWin[8]; varying float vFV,vFS; varying vec3 vFW,vFN; float fLit=0.;\n float pastK(){ vec2 q=vFW.xz/uTL; float d=max(max(uBX.x/uTL-q.x,q.x-uBX.z/uTL),max(uBX.y/uTL-q.y,q.y-uBX.w/uTL)); return clamp((d-3.)/uHD,0.,1.); }\n'+sh.fragmentShader
       .replace('#include <color_fragment>',`#include <color_fragment>
  { vec3 an=abs(vFN); if(an.y>.5){ diffuseColor.rgb=vec3(.16,.16,.17); } else {
      float u=(an.x>an.z?vFW.z:vFW.x)/(uBay*2.), v=(vFW.y-uY0)/uStorey; vec2 f=vec2(fract(u),1.-fract(v));
      vec4 t=texture2D(uFT,vec2((floor(f.x*16.)+.5)/16.,(floor(vFV)*10.+floor(f.y*10.)+.5)/80.)); diffuseColor.rgb=t.rgb; float pk=uMK>0.?pastK():0.; if(pk>0.){ vec3 wc=texture2D(uFT,vec2(.5/16.,(floor(vFV)*10.+9.5)/80.)).rgb; diffuseColor.rgb=mix(t.rgb,wc,floor(pk*4.+.5)/4.*.85); t.a*=step(pk,uDT); }
-     if(t.a>.5){ float bay=floor(u*2.+(an.x>an.z?3.:0.)), h=fract(sin(dot(vec3(bay,floor(v),vFS+floor(uTW+fract(bay*.37+floor(v)*.61)*7.)*1.7),vec3(12.9898,78.233,37.719)))*43758.5453); fLit=step(h,uLit); } } }`)
+     if(t.a>.5){ float bay=floor(u*2.+(an.x>an.z?3.:0.)), h=fract(sin(dot(vec3(bay,floor(v),vFS+floor(uTW+fract(bay*.37+floor(v)*.61)*7.)*1.7),vec3(12.9898,78.233,37.719)))*43758.5453); fLit=step(h,uLit); }
+     float tp=max(fwidth(u*16.),fwidth(v*10.)), aa=smoothstep(.4,1.1,tp); int fi=int(floor(vFV)); if(aa>0.){ diffuseColor.rgb=mix(diffuseColor.rgb,uAvg[fi],aa); fLit=mix(fLit,uLit*uWin[fi],aa); } } }`)
       .replace('#include <fog_fragment>',`if(uMK<=0.){
 #include <fog_fragment>
-} else { float fd=distance(vFW.xz,uMP.xz); gl_FragColor.rgb=mix(gl_FragColor.rgb,uMC,mix(uHN,uHF,pastK())); }      `).replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n totalEmissiveRadiance+=fLit*vec3(1.,.82,.5)*.9+diffuseColor.rgb*uAmb;'); };
+} else { float fd=distance(vFW.xz,uMP.xz); gl_FragColor.rgb=mix(gl_FragColor.rgb,uMC,mix(uHN,uHF,pastK())); }      `).replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n totalEmissiveRadiance+=fLit*vec3(1.,.82,.5)*.9+diffuseColor.rgb*uAmb;').replace('#include <dithering_fragment>','#include <dithering_fragment>\n if(uBake>.5) gl_FragColor=vec4(pastK(),0.,0.,1.);'); };
   mat.customProgramCacheKey=()=>'skylinefronts';
-  me.frustumCulled=false; me.visible=on; (MAPG.bodega||scene).add(me); FAR3.mesh=me; FAR3.n=B.length; FAR3.tris=B.length*12; FAR3.FU=FU;
+  me.frustumCulled=false; me.visible=on; (MAPG.bodega||scene).add(me); FAR3.mesh=me; FAR3.n=BN.length; FAR3.tris=BN.length*12; FAR3.FU=FU;
+  const CX=(LR.x0+LR.x1)/2*TILE, CZ=(LR.z0+LR.z1)/2*TILE, EYE=1.9, V0=Math.tan(-2*Math.PI/180), V1=Math.tan(30*Math.PI/180), DIRS=[[0,1],[1,0],[0,-1],[-1,0]];
+  if(BAKE){ const fm=mk(BF); fm.frustumCulled=false; FAR3.farMesh=fm;
+    FAR3.bake=(dens,pk)=>{ const N=Math.round(90*dens), rt=new THREE.WebGLRenderTarget(N,N,{type:THREE.FloatType}), camB=new THREE.PerspectiveCamera(90,1,1,20000), r0=Math.floor((V0+1)/2*N), r1=Math.ceil((V1+1)/2*N), H=r1-r0, out=new Float32Array(N*4*H*4), buf=new Float32Array(N*N*4);
+      const kept=[]; scene.traverse(o=>{ if(o!==scene&&!o.isLight&&o.visible&&o.parent===scene){ kept.push(o); o.visible=false; } }); scene.add(fm); const fog=scene.fog, bg=scene.background, cc=renderer.getClearColor(new THREE.Color()), ca=renderer.getClearAlpha(), mk0=FU.uMK.value;
+      scene.fog=null; scene.background=null; renderer.setClearColor(0,0); FU.uMK.value=0; FU.uBake.value=pk?1:0; const lce=renderer.localClippingEnabled; renderer.localClippingEnabled=false;
+      DIRS.forEach(([dx,dz],f)=>{ camB.position.set(CX,EYE,CZ); camB.up.set(0,1,0); camB.lookAt(CX+dx,EYE,CZ+dz); camB.updateMatrixWorld();
+        renderer.setRenderTarget(rt); renderer.clear(); renderer.render(scene,camB); renderer.readRenderTargetPixels(rt,0,0,N,N,buf);
+        for(let y=0;y<H;y++)for(let x=0;x<N;x++){ const s4=((r0+y)*N+x)*4, d4=((H-1-y)*N*4+f*N+x)*4; for(let k=0;k<4;k++)out[d4+k]=buf[s4+k]; } });
+      renderer.setRenderTarget(null); renderer.localClippingEnabled=lce; scene.remove(fm); kept.forEach(o=>o.visible=true); scene.fog=fog; scene.background=bg; renderer.setClearColor(cc,ca); FU.uMK.value=mk0; FU.uBake.value=0; rt.dispose();
+      return {W:N*4,H,data:Array.from(out),meta:{R:0,CX,CZ,EYE,V0,V1,N,dens}}; }; }
+  let pan=null; if(FARON){ const M=FARIMG.meta, Rr=(Math.min(LR.x1-LR.x0,LR.z1-LR.z0)/2+38)*TILE, pos=[], uv=[], idx=[];
+    DIRS.forEach(([dx,dz],f)=>{ const rx=-dz, rz=dx, b=pos.length/3;
+      for(const [u,v] of [[0,0],[1,0],[1,1],[0,1]]){ const t=(u*2-1), vy=v?M.V1:M.V0; pos.push(M.CX+dx*Rr+rx*t*Rr,EYE+vy*Rr,M.CZ+dz*Rr+rz*t*Rr); uv.push(((f%(M.faces||4))+u)/(M.faces||4),v); }
+      idx.push(b,b+1,b+2,b,b+2,b+3); });
+    const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3)); g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2)); g.setIndex(idx);
+    const tl=new THREE.TextureLoader(), tx=u=>{ const t=tl.load(u); t.magFilter=t.minFilter=THREE.NearestFilter; t.generateMipmaps=false; t.colorSpace=THREE.SRGBColorSpace; return t; }, TD=tx(FARIMG.day), TN=tx(FARIMG.night), PU={uN:{value:TN},uNK:{value:0}};
+    const pm=new THREE.MeshBasicMaterial({map:TD,alphaTest:.5,side:THREE.DoubleSide,fog:true,toneMapped:true});
+    pm.onBeforeCompile=sh=>{ Object.assign(sh.uniforms,PU,{uMC:FU.uMC,uMK:FU.uMK,uHN:FU.uHN,uHF:FU.uHF});
+      sh.fragmentShader='uniform sampler2D uN; uniform float uNK,uMK,uHN,uHF; uniform vec3 uMC;\n'+sh.fragmentShader.replace('#include <map_fragment>','#include <map_fragment>\n diffuseColor.rgb=mix(diffuseColor.rgb,texture2D(uN,vMapUv).rgb,uNK);')
+        .replace('#include <fog_fragment>','if(uMK<=0.){\n#include <fog_fragment>\n} else gl_FragColor.rgb=mix(gl_FragColor.rgb,uMC,mix(uHN,uHF,texture2D(uN,vMapUv).a));'); };
+    pm.customProgramCacheKey=()=>'farpanels'; pan=new THREE.Mesh(g,pm); pan.frustumCulled=false; pan.renderOrder=-1; pan.visible=on; (MAPG.bodega||scene).add(pan); FAR3.panels=pan; FAR3.PU=PU; }
   const tick0=CLOCK.tick; CLOCK.tick=dt=>{ tick0(dt);
-    const up=LVL!=='down', inside=!OUT.open; me.visible=FAR3.on&&up;
+    const up=LVL!=='down', inside=!OUT.open; me.visible=FAR3.on&&up; if(pan){ pan.visible=me.visible; FAR3.PU.uNK.value=Math.max(0,Math.min(1,(FU.uLit.value-FL.wd)/Math.max(1e-3,FL.wn-FL.wd))); }
     FU.uHN.value=FL.hn; FU.uHF.value=FL.hf; FU.uHD.value=FL.hd; FU.uHS.value=Math.round(FL.hs); FU.uDT.value=FL.dt; if(SKY.U.uCov){ SKY.U.uCov.value=FL.cov; SKY.U.uCL.value=FL.cl; SKY.U.uZk.value=FL.zk; SKY.U.uHk.value=FL.hk; }
     FU.uLit.value=FL.wd+(FL.wn-FL.wd)*Math.max(0,Math.min(1,(1-CLOCK.elev())/6)); FU.uTW.value=performance.now()/1000/23;
     FU.uAmb.value=.55*Math.max(0,Math.min(1,(CLOCK.elev()+3)/12));
@@ -76,9 +102,9 @@ const FAR3={};
       vertexShader:'varying vec2 vU; void main(){ vU=uv; gl_Position=vec4(position.xy,0.,1.); }',
       fragmentShader:'uniform sampler2D uT; uniform vec2 uD; varying vec2 vU; void main(){ vec4 c=texture2D(uT,vU)*.2; float w[4]; w[0]=.17; w[1]=.13; w[2]=.08; w[3]=.04; for(int i=1;i<=4;i++){ c+=texture2D(uT,vU+uD*float(i))*w[i-1]+texture2D(uT,vU-uD*float(i))*w[i-1]; } gl_FragColor=c; }'});
     const QS2=new THREE.Scene(), QC=new THREE.OrthographicCamera(-1,1,1,-1,0,1); QS2.add(new THREE.Mesh(new THREE.PlaneGeometry(2,2),BM)); let live=false;
-    FAR3.pre=(renderer,cam)=>{ live=false; if(!on||!(FL.bl>0)||!FAR3.on||!FAR3.mist||!me.visible||scene.fog!==FOG||!SKY.dome.visible){ me.layers.set(0); SKY.dome.layers.set(0); return; }
+    FAR3.pre=(renderer,cam)=>{ live=false; if(!on||!(FL.bl>0)||!FAR3.on||!FAR3.mist||!me.visible||scene.fog!==FOG||!SKY.dome.visible){ me.layers.set(0); if(pan)pan.layers.set(0); SKY.dome.layers.set(0); return; }
       const W=Math.max(2,Math.ceil(RW/FL.br)), H=Math.max(2,Math.ceil(RH/FL.br)); if(A.width!==W||A.height!==H){ A.setSize(W,H); Bt.setSize(W,H); }
-      me.layers.set(LAY); SKY.dome.layers.set(LAY); const mask=cam.layers.mask, nu=renderer.shadowMap.needsUpdate; cam.layers.set(LAY); renderer.shadowMap.needsUpdate=false;
+      me.layers.set(LAY); if(pan)pan.layers.set(LAY); SKY.dome.layers.set(LAY); const mask=cam.layers.mask, nu=renderer.shadowMap.needsUpdate; cam.layers.set(LAY); renderer.shadowMap.needsUpdate=false;
       renderer.setRenderTarget(A); renderer.clear(); renderer.render(scene,cam); cam.layers.mask=mask;
       BM.uniforms.uT.value=A.texture; BM.uniforms.uD.value.set(FL.bl/W,0); renderer.setRenderTarget(Bt); renderer.render(QS2,QC);
       BM.uniforms.uT.value=Bt.texture; BM.uniforms.uD.value.set(0,FL.bl/H); renderer.setRenderTarget(A); renderer.render(QS2,QC);

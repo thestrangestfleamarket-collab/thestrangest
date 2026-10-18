@@ -144,7 +144,7 @@
       const hall=inC&&!at2(LOB)&&!at2(BTH); CLUB.where={d,inside:inC,hall,lobby:inC&&at2(LOB),bath:inC&&at2(BTH)};
       if(CLUB.audio)CLUB.audio(here,CLUB.where);
       if(CLUB.tiles)CLUB.tiles.visible=here;
-      if(window.FAR3&&FAR3.mesh&&here)FAR3.mesh.visible=false;
+      if(window.FAR3&&FAR3.mesh&&here){ FAR3.mesh.visible=false; if(FAR3.panels)FAR3.panels.visible=false; }
       if(here&&!ROOMS.cur){ const dd=-FV.copy(pos).applyMatrix4(cam.matrixWorldInverse).z; MISTE.x=0; FOGC.near=dd+8*TILE; FOGC.far=dd+34*TILE; scene.fog=FOGC; scene.background.copy(FOGC.color); }
       else if(scene.fog===FOGC)scene.fog=null;
       if(!here)return;

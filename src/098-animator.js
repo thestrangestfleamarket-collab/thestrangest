@@ -1,7 +1,7 @@
 { const R=RIG, D=Math.PI/180, ARM=R.ARMMOVES;
   const DIALS=[['stride','STEP LENGTH',5,32,.1],['cycle','STEP TIME',.3,1.8,.01],['lean','LEAN',-15,35,.5],['bounce','BOUNCE',0,3,.05],['arm','ARM SWING',0,3,.05],['elbow','ELBOW BEND',0,2.5,.05],
     ['sway','HIP SWAY',0,3,.05],['twist','TWIST',0,3,.05],['knee','KNEE LIFT',.3,2.5,.05],['width','STANCE WIDTH',.3,2.5,.05]];
-  const W0={...R.WALK}, R0={...R.RUN}, J0={g:289,jh:87*87/(2*289),jT:2*87/289,crouch:.16,rec:.34}, T0={...R.RIGT}; let JT={...J0};
+  const W0={...R.WALK}, R0={...R.RUN}, J0={g:289,jh:87*87/(2*289),jT:2*87/289,crouch:R.MOVES.jump.src.t0,rec:.34}, T0={...R.RIGT}; let JT={...J0};
   const JDIALS=[['jh','HEIGHT',3,60,.5],['jT','TIME IN THE AIR',.2,1.6,.01],['crouch','CROUCH',.04,.6,.01],['rec','LANDING',.08,1,.01],['g','GRAVITY',80,700,1]];
   const SDIALS=[['moves','STRIKE SPEED',.3,3,.05],['combo','COMBO SOONER',.3,1.5,.05],['start','START WALKING',.5,12,.1]];
   let OV={}, CUSTOM=[];

@@ -35,9 +35,9 @@ rigSet(null);
 const rigGet=()=>JSON.parse(JSON.stringify(RIGP)),rigDefault=()=>JSON.parse(JSON.stringify(RIGP0));
 let G=289;
 const RIGT={blend:4,start:3.5,moves:1,combo:1};
-const WALK={cycle:0.583,stance:0.58,stride:18,lean:2,bounce:1,arm:1,elbow:1,sway:1,twist:1,knee:1,width:1},RUN={cycle:0.461,stance:0.4,stride:20,lean:10,bounce:1,arm:1,elbow:1,sway:1,twist:1,knee:1,width:1};
+const WALK={cycle:0.729,stance:0.58,stride:18,lean:2,bounce:1,arm:1,elbow:1,sway:1,twist:1,knee:1,width:1},RUN={cycle:0.461,stance:0.4,stride:20,lean:10,bounce:1,arm:1,elbow:1,sway:1,twist:1,knee:1,width:1};
 const OVL={fn:null};
-const GAITV=2;
+const GAITV=3;
 function gaitOf(r){ const g={}; for(const k in WALK) g[k]=WALK[k]+(RUN[k]-WALK[k])*r; g.speed=g.stride/(g.stance*g.cycle); return g; }
 const CYCLE=WALK.cycle,SPEED=gaitOf(0).speed;
 const fwv=a=>V(0,Math.sin(a),Math.cos(a)),dnv=a=>V(0,-Math.cos(a),Math.sin(a));
@@ -314,8 +314,9 @@ function jumpMove(o){ const g=o.g||G,T=(o.v0+Math.sqrt(o.v0*o.v0+2*g*(o.drop||0)
 function topple(){ const tab=[]; let a=3*D,w=0.7,t=0; const h=1/240; while(a<84*D){ w+=G/26*Math.sin(a)*h; a+=w*h; t+=h; tab.push(a); } return {T:t,tab}; }
 const FALL=topple();
 const air=(c)=>c;
+const MOCAP=__DATA__("data/moves.json");
 const MOVES={
-  jump:jumpMove({v0:87,t0:0.16,airv:{J:'airPunch',K:'flyingKick'},keys:[
+  jump:MOCAP&&MOCAP.jump?jumpMove({v0:87,t0:MOCAP.jump.t0,airv:{J:'airPunch',K:'flyingKick'},keys:MOCAP.jump.keys}):jumpMove({v0:87,t0:0.16,airv:{J:'airPunch',K:'flyingKick'},keys:[
     [0,{}],[0.1,{root:[0,14.5,0.5],bend:18,nod:6,L:{ua:[-25,30],fa:[-15,30]},R:{ua:[-25,30],fa:[-15,30]}}],
     [0.16,{root:[0,STAND,0],bend:0,nod:0,L:{ua:[60,14],fa:[72,14],th:[0,0],sh:[0,0],foot:-30},R:{ua:[60,14],fa:[72,14],th:[0,0],sh:[0,0],foot:-30}},'in'],
     ['u0.25',{L:{ua:[140,20],fa:[150,20],th:[30,4],sh:[-25,4],foot:-15},R:{ua:[140,20],fa:[150,20],th:[30,4],sh:[-25,4],foot:-15}}],

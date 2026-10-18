@@ -41,17 +41,17 @@ THREE.ShaderChunk.fog_fragment=THREE.ShaderChunk.fog_fragment.replace('gl_FragCo
 // view: the town clear wherever you stand, the mist thickening past its edge; the edge of each of the 8 flat steps bent by a noise fixed to the
 // world (two scales), so its bands lie in wavy tongues, never straight lines. The box and the switch are plain objects every fog material's
 // uniforms share by reference (three copies a Vector4, not a plain {x,y,z,w}). Cost: a few instructions a fragment
-const MISTB={x:-1e9,y:-1e9,z:1e9,w:1e9}, MISTE={x:0,y:4,z:26,w:1};   // (MISTB the town's x0,z0,x1,z1 in the world; MISTE: on, where the mist starts and its depth past the edge in tiles, a tile in the world: ring.js)
-for(const k in THREE.ShaderLib){ const u=THREE.ShaderLib[k].uniforms; if(u&&u.fogNear){ u.mistB={value:MISTB}; u.mistE={value:MISTE}; } }
+const MISTB={x:-1e9,y:-1e9,z:1e9,w:1e9}, MISTE={x:0,y:4,z:26,w:1}, MISTF={x:.5,y:70};   // (MISTB the town's x0,z0,x1,z1 in the world; MISTE: on, where the mist starts and its depth past the edge in tiles, a tile in the world: ring.js)
+for(const k in THREE.ShaderLib){ const u=THREE.ShaderLib[k].uniforms; if(u&&u.fogNear){ u.mistB={value:MISTB}; u.mistE={value:MISTE}; u.mistF={value:MISTF}; } }
 THREE.ShaderChunk.fog_pars_vertex=THREE.ShaderChunk.fog_pars_vertex.replace('varying float vFogDepth;','varying float vFogDepth; varying vec3 vFogW;');
 THREE.ShaderChunk.fog_vertex=THREE.ShaderChunk.fog_vertex.replace('vFogDepth = - mvPosition.z;','vFogDepth = - mvPosition.z; vFogW = ( inverse( viewMatrix ) * mvPosition ).xyz;');
-THREE.ShaderChunk.fog_pars_fragment=THREE.ShaderChunk.fog_pars_fragment.replace('varying float vFogDepth;',`varying float vFogDepth; varying vec3 vFogW; uniform vec4 mistB, mistE;
+THREE.ShaderChunk.fog_pars_fragment=THREE.ShaderChunk.fog_pars_fragment.replace('varying float vFogDepth;',`varying float vFogDepth; varying vec3 vFogW; uniform vec4 mistB, mistE; uniform vec2 mistF;
  float mistH(vec2 c){ c=mod(c,256.); return fract(sin(dot(c,vec2(12.9898,78.233)))*43758.5453); }
  float mistN(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.-2.*f); return mix(mix(mistH(i),mistH(i+vec2(1,0)),f.x),mix(mistH(i+vec2(0,1)),mistH(i+vec2(1,1)),f.x),f.y); }`);
 THREE.ShaderChunk.fog_fragment=THREE.ShaderChunk.fog_fragment.replace('fogFactor = floor(',`vec3 mistC=fogColor; if( mistE.x > .5 ){ vec2 q=vFogW.xz/mistE.w;
 		float dx=max(mistB.x/mistE.w-q.x,q.x-mistB.z/mistE.w), dz=max(mistB.y/mistE.w-q.y,q.y-mistB.w/mistE.w), d=max(dx,dz);
 		d+=(mistN(q/9.)-.5)*14.+(mistN(q/3.1+17.)-.5)*5.;   // (the steps' edges bent into tongues)
-		fogFactor=clamp((d-mistE.y)/mistE.z,0.,1.); mistC*=1.-.5*clamp((d-mistE.y-mistE.z)/70.,0.,1.); }   // (darker the further out: owner, "it should get darker further away", in four steps)
+		fogFactor=clamp((d-mistE.y)/mistE.z,0.,1.); mistC*=1.-mistF.x*clamp((d-mistE.y-mistE.z)/mistF.y,0.,1.); }   // (darker the further out: owner, "it should get darker further away"; gradually, as the haze)
 	fogFactor = floor(`).replace('gl_FragColor.rgb, fogColor, fogFactor','gl_FragColor.rgb, mistC, fogFactor')
   .replace('fogFactor = floor( fogFactor * 8. + .5 ) / 8.;','');   // (THE HAZE FADES GRADUALLY, owner 18 Oct 2026, of the mist's bands: "i dont want hard lines like that, needs to be cel shaded shadows and gardual chanegs in haze tarnspacency": the light and shadows keep their cel bands, the fog alone fades smoothly; it was cut into 8 flat steps)
 // THE DARKEST A FACE GOES (owner, 18 Oct 2026: "nothing should be black like this even at darkest give it 5-20%"): a face the sun and lamps miss still

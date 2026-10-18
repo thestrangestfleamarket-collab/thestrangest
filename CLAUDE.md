@@ -1427,6 +1427,17 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   stands; "blurrier" is detail lost in flat steps. **The oaks** back (`PARK.trees`, lost in the park's reorganization): 24, 12 to 22 m, in the middle
   seven tenths of the park, 12 tiles apart; `?trees=0` hides them. Cost: the skyline some 600 more instances (about 7,000 triangles, one draw), the
   sky's clouds in its one fragment shader, the oaks some 11,000 triangles.
+- **The distance look, his to set** (owner, 18 Oct 2026: "make the buildings more logical, and they shouldnt be as visible, depth of field, blur,
+  haze, etc, real distance"; "way too much, needs to look realistic, check other video game references"; "give me mockups of diff styles, with
+  ranges i can select and change to get the right look and save it"; `skyline.js`, `sky.js`, map-pre.js's `MISTF`): the skyline laid out by
+  sense: low near the town, taller further out, the landmarks in their clusters far back (Midtown 75 tiles past the land, Downtown 170). **Blur**
+  (the no-blur rule lifted for the distance only, at his word): the skyline and the sky drawn on their own before the picture, blurred both ways,
+  laid behind everything as the background; the near world sharp; none when BLUR is 0. **GRAPHICS' DISTANCE LOOK** (`FAR3.panel`, `?farlook=1`
+  opens it): five styles (GAME, CLEAR AIR, HAZY, DREAMY, DUSK CITY) and sixteen sliders (where the mist starts and how deep, how much darker far,
+  the buildings' haze near and far and where it's full, its steps, how far windows show, lit windows by night and day, blur and its coarseness,
+  cloud cover and brightness, the sky overhead and at the horizon), live; SAVE keeps them (the save's `farlook`), RESET the game's own, EXPORT
+  gives `FARLOOK {...}`: when he sends it, put it in `FL0` in skyline.js. Cost: with blur on, the skyline and the sky drawn again (a few thousand
+  triangles) and two blur passes at the picture's size over the coarseness squared.
 - **The menu's map drawn as a map; the root fixes, "fix all 1-8"** (owner, 18 Oct 2026: "the map in menu should show entire map and not the real
   thing, just map showing where eveything is, map like"; then, of a list of patches made in place of fixing their causes, "fix all 1-8"):
   **THE MAP** (`plan()` in `ui.js`): the street level drawn as a plan from the places' own measures, the whole loop inside the force field, north

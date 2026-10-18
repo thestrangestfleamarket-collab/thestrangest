@@ -1427,3 +1427,16 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   stands; "blurrier" is detail lost in flat steps. **The oaks** back (`PARK.trees`, lost in the park's reorganization): 24, 12 to 22 m, in the middle
   seven tenths of the park, 12 tiles apart; `?trees=0` hides them. Cost: the skyline some 600 more instances (about 7,000 triangles, one draw), the
   sky's clouds in its one fragment shader, the oaks some 11,000 triangles.
+- **His feet planted** (owner, 18 Oct 2026: "they dont seem to be really walking ... cant we just apply real walking physics ... so there feet are
+  actually moving around realistically?"; "lets just work on our character for now"; his picks: his pace kept with quicker steps, his pose every
+  frame while he moves): the rig had him go 2.4 times as far as his feet carried him walking and 1.46 running (`RIGT.slip0/slip1`, 14 Oct's "he
+  walks too slow"), so a planted foot skated forward half his speed walking, a sixth running. The slip is gone: he goes exactly what his feet
+  carry, times his drawn size (`W3.SZ`, the player's `go` in build.py as the musician's and the bearded Walker's already were); his pace kept
+  (2.4 tiles a second walking, 4.9 running) by his steps: the walk's step 18 (was 14.67), stance .58, 0.583 s a stride (206 steps a minute: his
+  legs are a third of his height, so at this pace a body his shape walks quick and short), the run's 0.461 s (`WALK`, `RUN` in
+  walker-rig-mock.js and build.py's copy). The avatar editor's ANIMATION speed now shortens or lengthens his step instead of sliding him. A MOVES
+  dial saved before (stride, step time) is dropped once (`GAITV`, animator.js). His pose is worked out every frame while he walks or runs (ASTEP's
+  10 a second only standing and in moves). Measured (`node tests/footslip.cjs`, the rig alone, no drawing): the planted foot's slide 32 to 0.3
+  units a second walking, 22.5 to 0.5 running. With it, the musician and the bearded Walker (the same rig) plant their feet too, and walk a sixth
+  slower (they were carried 1.2 times further than the player). Cost: nothing; his pose built every frame while moving (some 0.1 ms).
+  Next, at his word: a lean into turns and a weight shift when he stops; foot locking for the clip-driven characters.

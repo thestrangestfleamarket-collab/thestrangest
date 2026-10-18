@@ -218,6 +218,8 @@ grab('park',()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.ox=PO.x; PARK.o
       if(Math.abs(x-P.round[0]-wobX(y))<3.6+r||Math.abs(y-P.round[1]-wobY(x))<3.6+r)continue; if(KEEP.some(b=>x>b[0]-r&&x<b[2]+r&&y>b[1]-r&&y<b[3]+r))continue; if(out.some(o=>Math.hypot(o[1]-x,o[2]-y)<9))continue;
       out.push(['OakTree'+(1+Math.floor(hash(i,53,13)*3)),+x.toFixed(1),+y.toFixed(1),+m.toFixed(1)]); } return out; })();
   PARK.oaks=TREES.map(([k,x,y,m])=>[X(x),Z(y),m]); window.PARKDBG=()=>({oaks:PARK.oaks,TL,progs:renderer.info.programs.length});   // (a test's: where the oaks are, the look, how many shader programs)   // (where the oaks stand, world units: their falling leaves, lookfx.js)
+  // (the oaks drawn again: the park's reorganization, 5b3dd53, set them out by rule and lost this line, so none stood; found 18 Oct 2026, "fix all 1-8")
+  PARK.trees=mesh(TREES,true,true,true); if(QS.get('trees')==='0')PARK.trees.visible=false;   // (?trees=0: a test's clear view)
   PARK.rocks=mesh([['BigRock3',87.5,-37,2.6,1.8],['BigRock5',126,-41,2.4,.2],['Rock_12',55.5,-41,1,1],['Rock1',111,-41,.6,2],['BigRock1',66,-35,2,1.1]].map(([k,x,y,...r])=>[k,RX(x),RY(y),...r]),false);
   // ---- THE UNDERGROWTH (owner, 17 Oct 2026, "start importing google drive assets based on most recent": his Free Shrubs Flowers and Mushrooms
   // pack and the LowPoly-Psionic pack, tools/props-bake.py → data/props.json): bushes, flowers, grass, mushrooms and stones over the lawn at hashed

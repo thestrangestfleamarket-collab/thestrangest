@@ -21,7 +21,7 @@ const FAR3={};
   // shot's colour at dusk, darker at night, a little paler at high noon. The old far haze is DISTANCE HAZE's FAR (`market-haze` '2'); ?mist=0 the far
   // haze, ?mist=near,far its two distances in tiles for a test. The weather's FOG still takes over when it comes. Cost: nothing (the same fog).
   const mq=QS.get('mist'), mv=(mq||'').split(',').map(Number); let mist=mq!=='0'; try{ if(mq==null&&localStorage.getItem('market-haze2')==='2')mist=false; }catch(e){}
-  const MIST0=mv.length===2&&mv.every(isFinite)?mv[0]:-3, MIST1=mv.length===2&&mv.every(isFinite)?mv[1]:12, MD=new THREE.Color(0x3a6e68), MN=new THREE.Color(0x152d2c), MH=new THREE.Color(0x4a7f79);
+  const MIST0=mv.length===2&&mv.every(isFinite)?mv[0]:7, MIST1=mv.length===2&&mv.every(isFinite)?mv[1]:24,   /* (from him along the ground: clear to 7 tiles round him, the full colour at 24; FOGQ, map-pre.js) */ MD=new THREE.Color(0x3a6e68), MN=new THREE.Color(0x152d2c), MH=new THREE.Color(0x4a7f79);
   FAR3.mist=mist;
   // THE SKYLINE: along each side of the land's square, a back row 4 tiles in from its edge and a front row 16 tiles in, each building a block
   // (a quarter of them a step narrower at the top: a set-back). Laid out once, the same every time (a hash, no Math.random)
@@ -63,7 +63,7 @@ const FAR3={};
      if(t.a>.5){ float bay=floor(u*2.+(an.x>an.z?3.:0.)), h=fract(sin(dot(vec3(bay,floor(v),vFS),vec3(12.9898,78.233,37.719)))*43758.5453); fLit=step(h,uLit); } } }`)
       .replace('#include <fog_fragment>',`if(uMK<=0.){
 #include <fog_fragment>
-} else { float fd=distance(vFW.xz,uMP.xz); gl_FragColor.rgb=mix(gl_FragColor.rgb,uMC,min(.94,uMK+floor(clamp((fd-180.)/240.,0.,1.)*3.)*.05)); }`).replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n totalEmissiveRadiance+=fLit*vec3(1.,.82,.5)*.9+diffuseColor.rgb*uAmb;'); };   /* (uAmb: the whole sky's light on them by day, so the far fronts are seen in the shade too) */
+} else { float fd=distance(vFW.xz,uMP.xz); gl_FragColor.rgb=mix(gl_FragColor.rgb,uMC,min(.94,uMK+clamp((fd-180.)/240.,0.,1.)*.15)); }`).replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n totalEmissiveRadiance+=fLit*vec3(1.,.82,.5)*.9+diffuseColor.rgb*uAmb;'); };   /* (uAmb: the whole sky's light on them by day, so the far fronts are seen in the shade too) */
   mat.customProgramCacheKey=()=>'skylinefronts';
   me.frustumCulled=false; me.visible=on; (MAPG.bodega||scene).add(me); FAR3.mesh=me; FAR3.n=B.length; FAR3.tris=B.length*12; FAR3.FU=FU;
   // each frame, after the clock and the weather have set the sky: the haze from where you stand, out in the open only
@@ -71,9 +71,9 @@ const FAR3={};
     const up=LVL!=='down', inside=!OUT.open; me.visible=FAR3.on&&up;
     FU.uLit.value=.32*Math.max(0,Math.min(1,(1-CLOCK.elev())/6));   // (a third of their windows lit from dusk)
     FU.uAmb.value=.55*Math.max(0,Math.min(1,(CLOCK.elev()+3)/12));
-    FU.uMK.value=0; if(!FAR3.on||inside||(scene.fog&&scene.fog!==FOG)){ if(scene.fog===FOG)scene.fog=null; return; }   // (the weather's own fog, when it comes, is thicker: it has the scene)
+    FU.uMK.value=0; FOGQ.R.y=0; if(!FAR3.on||inside||(scene.fog&&scene.fog!==FOG)){ if(scene.fog===FOG)scene.fog=null; return; }   // (the weather's own fog, when it comes, is thicker: it has the scene)
     const day=Math.max(0,Math.min(1,(CLOCK.elev()+4)/14)), d=-V.copy(pos).applyMatrix4(cam.matrixWorldInverse).z;   // (how deep you stand in the camera's view: the haze starts past you)
-    if(FAR3.mist){ const k=Math.max(0,Math.min(1,(CLOCK.elev()+6)/12)); FOG.color.copy(MN).lerp(MD,k).lerp(MH,Math.max(0,Math.min(1,(CLOCK.elev()-6)/40))); FU.uMC.value.copy(FOG.color); FU.uMK.value=.8; FU.uMP.value.copy(pos); FOG.near=d+MIST0*TILE; FOG.far=d+MIST1*TILE; scene.fog=FOG; SKY.dome.visible=false; scene.background.copy(FOG.color); return; }   // (THE MIST: above; no sky in it, the background the mist's own colour, so the far melts into it)
+    if(FAR3.mist){ const k=Math.max(0,Math.min(1,(CLOCK.elev()+6)/12)); FOG.color.copy(MN).lerp(MD,k).lerp(MH,Math.max(0,Math.min(1,(CLOCK.elev()-6)/40))); FU.uMC.value.copy(FOG.color); FU.uMK.value=.8; FU.uMP.value.copy(pos); FOGQ.P.x=pos.x; FOGQ.P.y=pos.y; FOGQ.P.z=pos.z; FOGQ.R.x=MIST0*TILE; FOGQ.R.y=MIST1*TILE; FOG.near=0; FOG.far=1e6; scene.fog=FOG; SKY.dome.visible=false; scene.background.copy(FOG.color); return; }   // (THE MIST: above; no sky in it, the background the mist's own colour, so the far melts into it)
     FOG.color.copy(SKY.U.uH.value).lerp(SKY.U.uA.value,.4);   /* (the dome's horizon colour, between the sun's side and the side away, so the far fades into the sky it stands against: sky.js, built before this) */ FOG.near=d+HAZE0*TILE; FOG.far=d+HAZE1*TILE; scene.fog=FOG; };
   // GRAPHICS' DISTANCE HAZE, beside LIGHT GRAIN
   const g=document.querySelector('#dgrain'); if(g){ const b=document.createElement('button'); b.className='btn'; b.id='dhaze'; const draw=()=>{ b.textContent='DISTANCE HAZE '+(!FAR3.on?'OFF':FAR3.mist?'MIST':'FAR'); b.setAttribute('aria-pressed',String(FAR3.on)); };

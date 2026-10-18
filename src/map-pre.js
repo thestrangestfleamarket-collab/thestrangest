@@ -33,8 +33,19 @@ const ASTEP=window.ASTEP=(()=>{ const Q=new URLSearchParams(location.search), q=
   A.rest=(o,dt,moving)=>{ if(!A.still||moving||(o.restless&&o.restless())){ o._calm=.5; o._sh=7+Math.random()*8; return false; }
     if((o._calm=(o._calm==null?.5:o._calm)-dt)>0)return false; if((o._sh=(o._sh==null?7:o._sh)-dt)<=0){ o._calm=1.5; o._sh=7+Math.random()*8; return false; } return true; };   // (true: hold his clock)
   return A; })();
-// (the haze in steps as well: every material's fog cut into 8 flat bands, no smooth fade into the far)
-THREE.ShaderChunk.fog_fragment=THREE.ShaderChunk.fog_fragment.replace('gl_FragColor.rgb = mix','fogFactor = floor( fogFactor * 8. + .5 ) / 8.;\n\tgl_FragColor.rgb = mix');
+// (THE HAZE FADES GRADUALLY, owner 18 Oct 2026, of the mist in 8 hard bands: "i dont want hard lines like that, needs to be cel shaded shadows and
+// gardual chanegs in haze tarnspacency": the light and shadows stay in their cel bands, the fog alone fades smoothly; it was cut into 8 flat steps)
+THREE.ShaderChunk.fog_fragment=THREE.ShaderChunk.fog_fragment.replace('gl_FragColor.rgb = mix','if( uFogR.y > 0. ) fogFactor = smoothstep( uFogR.x, uFogR.y, length( vFogW.xz - uFogP.xz ) );\n\tgl_FragColor.rgb = mix');
+// THE MIST BY THE GROUND'S DISTANCE (owner, 18 Oct 2026, of the mist from the overhead view: "this looks terrible"): fog goes by depth along the
+// camera's line, and from the isometric view that's flat bands right across the screen, the nearest over him; while uFogR's far is set (the
+// mist: skyline.js) a face's fog goes instead by how far it stands from him along the ground (FOG.P), clear to uFogR.x, the full colour at
+// uFogR.y, the same in every view. The two are added to every built-in material's own (one shared value, not copied: three passes a plain
+// object by reference), so nothing new is compiled for it
+const FOGP={x:0,y:0,z:0}, FOGR={x:0,y:0}; window.FOGQ={P:FOGP,R:FOGR};
+for(const k in THREE.ShaderLib){ const u=THREE.ShaderLib[k].uniforms; if(u&&u.fogNear){ u.uFogP={value:FOGP}; u.uFogR={value:FOGR}; } }
+THREE.ShaderChunk.fog_pars_vertex=THREE.ShaderChunk.fog_pars_vertex.replace('varying float vFogDepth;','varying float vFogDepth; varying vec3 vFogW;');
+THREE.ShaderChunk.fog_vertex=THREE.ShaderChunk.fog_vertex.replace('vFogDepth = - mvPosition.z;','vFogDepth = - mvPosition.z; vFogW = ( inverse( viewMatrix ) * mvPosition ).xyz;');
+THREE.ShaderChunk.fog_pars_fragment=THREE.ShaderChunk.fog_pars_fragment.replace('varying float vFogDepth;','varying float vFogDepth; varying vec3 vFogW; uniform vec3 uFogP; uniform vec2 uFogR;');
 // THE DARKEST A FACE GOES (owner, 18 Oct 2026: "nothing should be black like this even at darkest give it 5-20%"): a face the sun and lamps miss still
 // gets this much of its own colour, so the bricks of a shaded side show; ?floor=N for a test
 const FLOOR=(()=>{ const q=+new URLSearchParams(location.search).get("floor"); return (q>=0&&q<1&&q?q:.2).toFixed(3); })();

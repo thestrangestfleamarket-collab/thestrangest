@@ -1,0 +1,35 @@
+<!-- THE STRANGEST FLEA MARKET in Godot: the page round the game. No Godot splash, no logo, no progress bar: while it loads, only THE MARKET's
+     line (owner, 17 Oct 2026: "loading should always say"), gone once the first picture is up (main.gd calls __gdReady). The engine's .wasm is
+     shipped gzipped (an artifact's file is at most 15 MB) and unpacked here as it streams in (tools/pack_web.py). -->
+<title>Strangest Market in Godot</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Silkscreen&display=swap">
+<style>
+/* one dark look, the game's loading colours: the night street before the picture comes up */
+:root{--bg:#0e1016;--ink:#8a8f9c;color-scheme:dark}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);overflow:hidden}
+body{box-sizing:border-box;padding-left:max(0px,env(safe-area-inset-left,0px));padding-right:max(0px,env(safe-area-inset-right,0px))}
+#canvas{display:block;margin:0;width:100%;height:100%;outline:none;background:var(--bg)}
+#loading{position:fixed;inset:0;display:grid;place-items:center;padding-block:0;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));text-align:center;font:12px Silkscreen,monospace;letter-spacing:2px;color:var(--ink);background:var(--bg);z-index:50;transition:opacity .5s}
+@media (prefers-reduced-motion:reduce){#loading span{animation:none!important;opacity:1!important}}
+@keyframes ldfade{0%{opacity:0}25%{opacity:1}75%{opacity:1}100%{opacity:.35}}
+#loading span{opacity:0;animation:ldfade 6s ease-in-out forwards}
+</style>
+$GODOT_HEAD_INCLUDE
+<canvas id="canvas" tabindex="0">Your browser can't show this game.</canvas>
+<div id="loading"><span>I took a trip to The Strangest Flea Market...</span></div>
+<script>
+// the gzipped engine and pack (index.wasmgz.wasm, index.pckgz.wasm: named .wasm so an artifact serves them), unpacked as they arrive
+(()=>{ const f0=window.fetch.bind(window);
+  window.fetch=async(u,o)=>{ const s=String(u&&u.url||u);
+    if(/\.(wasm|pck)(\?|$)/.test(s)&&typeof DecompressionStream!=='undefined'){ const r=await f0(s.replace(/\.(wasm|pck)(\?|$)/,'.$1gz.wasm$2'),o);
+      if(r.ok){ const t=/\.wasm/.test(s)?'application/wasm':'application/octet-stream'; return new Response(r.body.pipeThrough(new DecompressionStream('gzip')),{status:200,headers:{'Content-Type':t}}); } }
+    return f0(u,o); }; })();
+</script>
+<script src="$GODOT_URL"></script>
+<script>
+const GODOT_CONFIG = $GODOT_CONFIG;
+const engine = new Engine(GODOT_CONFIG);
+window.__gdReady = () => { const l = document.getElementById('loading'); if (!l) return; l.style.opacity = 0; setTimeout(() => l.remove(), 600); };
+engine.startGame({}).catch((e) => { const s = document.querySelector('#loading span'); if (s) { s.style.animation = 'none'; s.style.opacity = 1; s.textContent = 'The game could not start here: ' + (e && e.message || e); } });
+</script>

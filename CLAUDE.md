@@ -86,7 +86,7 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
   the strumming forearm could only cross it from an upper arm held out level (measured: the elbow at his shoulder's height, 7 of his units ahead).
   Now the guitar hangs lower on its strap, the neck up a little more, the right wrist over the lower bout's upper edge, the elbow down by his side
   (5.7 under the shoulder, 4 ahead, 2 out), his fingertips as near their notes as before (`MUS.hold` in `musician.js`, `GTWR`; `tests/gthold.cjs`).
-- **Ghost Street** (17 Oct 2026, "bring in ghost street from old map"): the old game's own makers of the kit's wooden shop (`23-w-ghost-street.js`, read by build.py, in a block of its own), "Preset Ghost Street 1" without the row houses and the pole: the shop, its upper floor, the tiled roof, the eave with its sign and cooler, the bay window, the door curtain, the drinks machine, the planted beds and lanterns; east of the apartment building, its front and paved forecourt to the street (`GHOSTST` in `bodega.js`). Its six ghosts: to come.
+- **Ghost Street** (17 Oct 2026, "bring in ghost street from old map"): the old game's own makers of the kit's wooden shop (`23-w-ghost-street.js`, read by build.py, in a block of its own), "Preset Ghost Street 1" without the row houses and the pole: the shop, its upper floor, the tiled roof, the eave with its sign and cooler, the bay window, the door curtain, the drinks machine, the planted beds and lanterns; east of the apartment building, its front and paved forecourt to the street (`GHOSTST` in `bodega.js`). Its ghosts: the four sheet ghosts (below, 18 Oct 2026).
 - **The Dragon, calm** (17 Oct 2026: "flying around, and perching on the ledges of buildings. calm"; `src/npc-dragon.js`): he sits a long while on a building's front ledge (the apartment house's, the bodega's, the apartment building's), then lifts off and glides in slow banking turns over the roofs, then settles on another ledge; he snaps at no one.
 - **The apartment house emptied** (17 Oct 2026: "empty out the new building completely of furniture and stairs and items. only leave the building doors and fire escapes"; `src/apts.js`): no furniture, no flights of stairs, nothing on its walls or roof, no stoop; its walls, floors, windows, doors, fire escapes and the rooms' ceiling lights stay.
 - **Only the room you're in** (17 Oct 2026, `src/rooms.js`): inside a building only your room is drawn (six clip planes round it for every material), the rest black, the characters outside it hidden; the pool's water too.
@@ -675,6 +675,24 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
   MOVES and the avatar editor have no DOWNLOAD (LOAD stays). Inside a room the rest is gone: the civic tower is a room (`rooms.js`), and what
   draws with its own shader and so isn't cut by the room's planes hides itself while you're in one (the sky dome already; now the force field,
   the river and its bank, `ring.js`). A doorway still cuts nothing until all of you is half a tile in (17 Oct's rule).
+- **The avatar editor, standalone, on the game's own Walker** (owner, 18 Oct 2026: "create standalone avatar editor have the character have default
+  poses yuo can push button to do, spread all limbs out, etc. allow to sculpt the character, rotate 360, tilt, export, give as many presets as
+  possible"; then, of a first try built from new shapes, "i want it based on our new walker and our game"): `python3 build.py` also makes
+  **`dist/avatar.html`**, a page of its own with the game's own Walker and the game's own editors: the rig lifted from the game page's head exactly
+  as built, `walker3d.js` with the game's own patch (`W3PATCH` in build.py, used for both pages), `save.js`, `editor.js`, `animator.js`, `looks.js`,
+  `avatar.js`, `avmove.js` word for word (the body types' table read from `playas.js`); what they take from the game page stood in for by
+  `src/avatar-pre.js`; `src/avatar-page.html` the shell; `src/avatar-post.js` the rest. The game's avatar editor is open for good at the right (its
+  DONE back to it). At the left: POSE (40 poses as keys of the rig's own, made whole by `RIG.mkMove`, eased between, kept on the floor by the rig's
+  FLOOR radii; SPREAD OUT for the character sheet; a stool to sit on; every part turned by hand, poses kept), MOVES (the rig's own moves on the
+  spot, once or round and round; the walk, the run), VIEW (12 places to look from, a turntable, the game's view or a lens, five pixel sizes, seven
+  backdrops, his shadows), LOOKS (MALE / FEMALE, the six body types, 22 outfits and 7 shadings made of the game's own looks, patterns and outline,
+  laid on with `AV.put`; what an outfit set beyond the clothes undone before the next), FILES (the game's own avatar file, his shape and his moves,
+  each loading in the game's own editor; a posed GLB and OBJ in metres, zipped; a picture; the sheet: front, side, back, spread out on black at full
+  pixels). Turn and tilt all the way round on the foot's sliders, a right drag, Q / E, T the turntable. `AV.whole` / `AV.put` exported from avatar.js
+  for it. Published at **https://claude.ai/artifact/YQSBj2G7oqgHQA2jXohrQi** (its own link, the `downloads` capability). Tests: `tests/avpage.cjs <out>
+  "POSE,move:wave,wear:CAMO,view:FRONT"`, `tests/avposes.cjs <out>` + `tests/avposes.py <out>` (every pose on one sheet), `tests/avpagefunc.cjs <out>`
+  (the game's brush through real drags, every outfit and shading, every file, a file back in, a reload). In the headless shell at phone width, the
+  panel's first paint lingers over the picture (the canvas's own frame is right: seen with `AVE.after`); not seen on a desktop width.
 - **The Hudson, real water** (owner, 18 Oct 2026, of his Deep Water mockup and his picture of it, "exactly liek this, clear, see through, blue", "cmopleteyl fluid dynamics"; `src/river.js`): the river south of the row is water you can see into and swim in: the bed 1.3 m at the walls down to 8 m, its caustics, sea grass, fish, buoys; the quay with its railing, ladders every 20 tiles and a pier on posts at every third; the force field past the far bank. Four ways, four looks to compare: FLAT (the sheet as it was), SWELL (waves on the graphics card, murk by alpha), FLUID (the default: a wave simulation 48 tiles round you, fed by the sea at its open sides, slowed over the shallows, sent back off the quay and round the posts), FULL (waves plus ripples); three waters (HARBOR, OPEN SEA, CLEAR COVE: the default); smooth or 24 steps. **A double click on the water brings the options up** (X closes them). The bed, the quay's wall and its things carry a little light of their own (the row's shade at midday leaves them black otherwise). Cost: some 12,000 triangles, one more scene pass while FLUID or FULL shows the river, no lamps. `tests/rivershot.cjs`.
 ## ONE LINE OF WORK: read before you publish (owner, 18 Oct 2026: "why is everything getting reverted that i fix!?!?")
 
@@ -1114,6 +1132,17 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   golems take morels ($34) and moonglow ($90) too. One purse (INV's); kept in the save (`forage`). Cost: three instanced draws (caps, stems, the
   glowing caps; some 20-40 mushrooms near you, 48 triangles each), an invisible box each to click, no light, nothing a frame but a day check.
   `FORDBG()`. Not yet: a hunger bar outside the pack, ingredients for crafts beyond these, mushrooms indoors or in the cave.
+- **Ghost Street's ghosts: four sheets over invisible basketballs** (owner, 18 Oct 2026: "i want to add ghost in the game just floating sheets,
+  realistic phyics, see through, they hang aruond the ghost street dojo, inside and outside, never strayig too far"; "smaller cuter"; "create the
+  ghost by placing an invisible basketball in the air and the dropping a sheet over it, then let the basketball float around like a ghost - show
+  mockups"; of the mockups https://claude.ai/artifact/JEzpXVT5rSUWGJNcKfva6T: "lets put those 4 ghosts as the main ghosts and keep those names and
+  sizes"; `src/ghosts.js`, `GHOSTS.init()` after the rooftops): THE HAND TOWEL (round, 68 cm), THE PILLOWCASE (round, 104 cm), THE NAPKIN (square,
+  72 cm), THE BEDSHEET (square, 124 cm, its corners trailing on the ground); each an invisible 24 cm ball floating at about half a metre with a
+  real cloth dropped over it as the game opens (Verlet points, threads hard to stretch and easy to bunch, ten passes a step at 120 a second; the
+  cloth grips the ball where it touches, so the ball carries it and the rest trails and swings; the ground stops it; anyone walking through
+  pushes it aside); two dark eyes and a small mouth on the front, a little see-through (the world's Lambert in its bands, opacity .8). They
+  drift between spots in the dojo's hall and its forecourt, bobbing, lingering and peeking your way, through walls if their way runs there; a
+  double click says the name. Simulated only within 45 tiles on the street. Cost: 1,256 triangles the four, one program, no light. `GHOSTDBG()`.
 - **Fishing on the Hudson and a rowboat** (owner, 18 Oct 2026: "lets adding fishing (off the hudson and in boats off shore)"; his picks: UO
   style, a rowboat to rent; `src/fishing.js`): BAIT & BOATS, a self-serve stand (an honesty box) on the quay at the pier nearest the Metro, its
   counter to the walk: a rod $15, a rowboat $5 a trip, and it buys your catch. With a rod, a double click on the river within nine tiles casts
@@ -1152,3 +1181,23 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   before the counter (the four titles, each tier's stacks its share of the stock), five front pages pegged on a line across the window's top (above
   the cat's head), three spare bundles in twine at his feet. No magazines, candy, gum, snacks, drinks cooler, change tray or LOTTO; the stand sells
   the four papers only. Cost: some 1,500 triangles (was 2,100). `tests/newsshot.cjs <out>`.
+  2.5 s to 0.34 s (software rendering). Looked at and **not** taken: recast-navigation for `CITY.route` (the A* there judges each walker's way by
+  his own test of a spot, which a navmesh can't; routes are 2-20 ms already); BatchedMesh's per-object culling (needs three past r160, and
+  map-pre.js patches r160's shader chunks by their text).
+- **The Godot rebuild, its first test** (owner, 18 Oct 2026: "lets start on a rebuild using godot. i dont want any sort of godot splash screen i want
+  it completely hidden. build out a test small game with just one building and my walker on godot. match graphics exactly"; `godot/`, its
+  README): Godot 4.5.1, the Compatibility renderer (the browser's). The bodega and the ground round it, the Walker, the opening isometric view at
+  3:30 pm, all **taken from the running three.js game** (`godot/tools/bake.cjs`: the faces, atlases, lamps (LITE's records), solids, ground
+  heights, the clock's light every half hour; the Walker's mesh and his idle, walk and run sampled from the rig itself); THE MARKET's look ported
+  as shaders (the faces' shades by facing and the soft bands on the light's sum, the lamps lit in the shader as three.js lights them; the
+  Walker's toon gradient and SELF; oldlook.js's grade; the one lamp shadow in its own pass, indoors and at night). No splash: no boot image, the
+  page's only line THE MARKET's loading line. Set beside THE MARKET at the same spots (`tools/refshot.cjs`): the same picture but for what isn't in
+  the test (the street light, the mailbox, the fences, the people). Its own artifact: **https://claude.ai/artifact/A11ZoF3QuZ75dsdbdyQUyh**
+  (`python3 godot/tools/pack_web.py`, the .wasm and .pck gzipped and named .wasm to fit and be served). Found on the way, THE MARKET's own: a
+  room's lamps light only after LITE's next quarter-second pick (a headless screenshot can come before it).
+  **Then** (18 Oct 2026): the park's oaks (three of them, on the lawn past the far sidewalk; THE MARKET's sway and tree look 3, `tree.gdshader`)
+  and **the grass** (owner: "make the grass out of same as trees, just make it cover the ground (it should move an flow, and when you walk through
+  it be disrupetd by your movement natrually)"): one-triangle blades on every lawn texel, each its colour, swaying in the oaks' wind, parted where he
+  walks and springing back (`grass.gdshader`, `_grass` / `_trail` in `main.gd`); the game opens on the park's lawn. **Paused there** (owner, 18 Oct
+  2026: "lets pause the godot rebuild for now"). Found on the way, in THE MARKET itself: **the oaks aren't drawn on `main`** (the park's
+  reorganization, 5b3dd53, kept their places and models but lost `PARK.trees=mesh(TREES...)`); the Godot bake used a private build with it put back.

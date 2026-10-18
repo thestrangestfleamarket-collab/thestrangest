@@ -92,6 +92,6 @@ const GCAVE={ready:false}; window.GCAVE=GCAVE;
     GCAVE.regrow(); setInterval(GCAVE.regrow,5000);   // (picked ones back once the day turns: INV keeps which, gems.js)
     GCAVE.tris=dg.attributes.position.count/3; GCAVE.ready=true;
     // (the golems home from the start: wherever the town set them down, put inside, so none is seen on the street; walkers.js sends them on about the cave)
-    for(const N of (window.PAWNL||[]))if(/_\d$/.test(N.key)){ const p=GCAVE.spot('cave'); if(!p)continue; try{ CITY.stop(N); }catch(e){} N.st.x=p.x; N.st.z=p.z; N.st.to=null; N.g.position.x=p.x; N.g.position.z=p.z; } };
+    for(const N of (window.PAWNL||[]))if(/_\d$/.test(N.key)&&!N.sheet){ const p=GCAVE.spot('cave'); if(!p)continue; try{ CITY.stop(N); }catch(e){} N.st.x=p.x; N.st.z=p.z; N.st.to=null; N.g.position.x=p.x; N.g.position.z=p.z; } };
   const go=()=>{ if(!window.__started||!GCAVE.S||typeof PARK==='undefined'||!PARK.fire)return setTimeout(go,400); setTimeout(()=>{ try{ build(); }catch(e){ console.warn('CAVE: not built',e); } },900); };
   go(); }

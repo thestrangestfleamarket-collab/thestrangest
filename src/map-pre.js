@@ -68,7 +68,7 @@ const grab=(name,fn)=>{ const n0=scene.children.length; fn(); const g=new THREE.
 // the subway stairs stand before) | the bodega | the Diner | THE AQUARIUM (the octopus tank's room, a storefront) | the Bar | Ghost Street |
 // the apartment building with its pool at the east end, nothing on its roof; the keep in the castle's bailey; the street run on east past
 // them (BOD.MAP.x1), and THE AVENUE north from its east end along the park's east wall (AVE, below). The moves here in the map's tiles
-const LAYOUT0={bodega:{x:8.75},diner:{x:-24.75},bar:{x:-8},ghost:{x:-8.75},apartments:{x:59},park:{e:[-4,0,0,0]},castle:{x:-70,y:19.5}};   // (castle: to the grown park's back-left corner, 17 Oct 2026; x -70, y +3 since 18 Oct 2026: the street run on 70 tiles west, the far sidewalk 3 tiles deeper)
+const LAYOUT0={bodega:{x:8.75},diner:{x:-24.75},bar:{x:-8},ghost:{x:-8.75},apartments:{x:59},park:{e:[-4,0,0,0]},castle:{x:-70,y:25.5}};   // (castle: to the grown park's back-left corner, 17 Oct 2026; x -70, y +3 since 18 Oct 2026: the street run on 70 tiles west, the far sidewalk 3 tiles deeper; y +6 more the same day, the far sidewalk 12 deep: NORTHY)
 // OFF THE MAP (owner, 18 Oct 2026: "i want main street to only have this building [the apartment house], the bodega and ghost street building on
 // it. put all other buildings that are on main now off map for me to pull from later. i dont want any other buildings or rooms on map"; and of the
 // castle, "the tower shouldnt be inside the castle, it should be off map"): every place named here is kept in the code but not on the map. Most are
@@ -101,7 +101,8 @@ const BLDK=1.1;
 // diretions) and double the size of the siewalk on the central park side"): the street run on 70 tiles each way (MAINX: the west street, the park's
 // west wall and the castle 70 west; the Avenue, the park's east wall and the force field's east side 70 east; the park twice as wide between
 // them), the far sidewalk 6 tiles where it was 3 (BOD.MAP.y1 in bodega.js), the park and the north street 3 tiles north with it (NORTHY)
-const MAINX={w:70,e:70}, NORTHY=3;
+// (and again, owner 18 Oct 2026: "make sidewalk on central park side 2x bigger": the far sidewalk 12 tiles, the park and all north of it 9 north, NORTHY)
+const MAINX={w:70,e:70}, NORTHY=9;
 const AVE={x0:152+MAINX.e,x1:166.5+MAINX.e,y1:57.5}; AVE.r0=AVE.x0+3.2; AVE.r1=AVE.x1-3.2;
 // THE LOOP (owner, 17 Oct 2026: "lets loop the street all the way around the park and back again ... use force field to block anyone from leaving
 // outside of the city block loop ... add the hudson behind the buildings on main street, it goes all the way up and down map"): the main street

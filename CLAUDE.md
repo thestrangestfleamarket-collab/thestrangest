@@ -875,3 +875,25 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   bands, the avatar editor's SMOOTH button gone); the lamps' pools flat rings; the sky in flat bands; the haze (every material's fog) in 8 flat
   steps; the river's water in its steps only. `SMOOTH` stays in the code as `false` for what still asks it. **Never bring back smooth light,
   soft shadows or gradients without his word.**
+- **The street's works** (owner, 18 Oct 2026: "rounded"; "add bike lines, (if not in already)"; "make sidewalk on central park side 2x bigger";
+  "make sure they have curbs and drains and sewers in right spots"; "put one large tall street light on corner. lighst in both directions, functions
+  correctly"; `bodega.js`'s street works, `bodbuild.js`, `map-post.js`, `dress.js`, `grid.js`): **rounded kerbs**: every corner where two of the
+  loop's roads meet a quarter circle of 1.6 tiles (`KR`, `CORN`): the six where a sidewalk's corner stands out on the road (the main street at the
+  west street's and the Avenue's mouths, both sides; the park's two back corners) cut back, the two where the outer sidewalks wrap round the north
+  street's ends filled out; one test of the road (`ROADAT`) for the pictures, `groundY` (a step down the kerb follows the curve) and the land's
+  holes (two outlines round the curves, `BOD.roadPolys`); the curves' kerb faces six straight pieces each (`BOD.kerbArcs`). **Kerbs everywhere**: the
+  granite top painted along every sidewalk edge that meets a road (`SW`: the far sidewalk's ends at the west street and the Avenue had none), the
+  straight faces trimmed to the curves, the main street's two road ends given faces. **Bike lanes** (there were none): along both kerbs of every
+  road of the loop, green from a hand off the kerb, 1.2 tiles wide, a white line on the road side, a white bike stencilled every 22 tiles; dashed
+  past a side street's mouth, stopped at the curves and the crossings (`LN`). The crossings by a curve set back past it (`XW`). **Drains**: a storm
+  drain every 28 tiles along each kerb and just before each curve (not on a crossing): a grate in the gutter and the inlet's dark mouth in the kerb's
+  face (`BOD.kerbFaceAt`); **sewers**: a round iron cover (frame, waffle, ring, rust) in the traffic lanes every 40 tiles and in the middle of each
+  crossing of two roads (55 drains, 19 covers); all painted into the ground's and kerbs' pictures. **The park-side sidewalk 12 tiles** (`BOD.MAP.y1`
+  FAR+12), the park, the castle (`LAYOUT0.castle` y 25.5), the north street and the force field 6 more north (`NORTHY` 9); the gate, crosswalks and
+  lamp posts follow. **The corner's light**: on the park's corner of the main street and the Avenue, just in from the curve: a cast foot, a pole a third
+  taller than the others, two arms (one over each road) with braces, a head and a lit lamp at each end; two of LITE's lamps (55, 16 tiles), on at dusk
+  with the rest, each its pool; solid at its foot; one pole of the grid's inner ring with both lamps (`L2`, `h2`); no other light within four of it
+  and none on a curve's road. **Cost**: some 110 triangles of kerb curves and corner squares, the light's 16 instanced pieces, 2 lamp records (no new
+  light slot, no shadow, no program); the street's atlas 7,014 to 7,606 rows (the wider sidewalk; the cap is the GPU's texture size, 8,192 in software
+  rendering: little room left there). `STREETQ()` a test's look. Not done: a kerb ramp at the crossings; the NW corner not looked at (a block in the
+  shot's way).

@@ -76,6 +76,19 @@ WEEDS.lawnInit=()=>{ const T=TILE, CS=8*T, CELL=.5*T, PER=1, hsh=(a,b,s)=>{ let 
   const VS='varying float vY; void main(){ vec4 w=modelMatrix*vec4(position,1.);'+'\n#ifdef USE_INSTANCING\n w=modelMatrix*instanceMatrix*vec4(position,1.);\n#endif\n vY=w.y; gl_Position=projectionMatrix*viewMatrix*w; }';
   const M0=new THREE.ShaderMaterial({vertexShader:VS,fragmentShader:'varying float vY; void main(){ gl_FragColor=vec4(0.); }',side:THREE.DoubleSide});
   const M1=new THREE.ShaderMaterial({vertexShader:VS,fragmentShader:'varying float vY; void main(){ gl_FragColor=vec4(1.,clamp((vY+.5)/4.,0.,1.),0.,1.); }',side:THREE.DoubleSide});
+  // THE KINDS, A VARIETY OVER THE LAWNS (owner, 18 Oct 2026: "Imagine way bigger trees", then "Do a variety all over the park"; the mockup's
+  // seven, https://claude.ai/artifact/Mj4zkmdHJhGk6ZKsPsC4Rr): the lawn cut into patches some 24 tiles across (each half-tile square takes its
+  // nearest patch's seed), each patch one kind: the flat canopy, the rolling canopy, little crowns, big crowns, giant crowns, big crowns pressed
+  // flat. A crown kind lays a grid of crowns (each its own spot, size and green), every square's clump domed by how near its crown's middle it is,
+  // its rim a step darker and lower, so the lawn reads as the treetops of a forest seen from high above. Still one clump a square: the cost as before
+  const MT=T/.84, PS=24*T, KINDS=['flat','roll','little','big','giant','bigflat'], CR={little:[.75,.42,.28*MT,.6],big:[4,2.6,.42*MT,1.15],giant:[6.2,4,.7*MT,1.45],bigflat:[4,2.6,.13*MT,1.15]};
+  const patch=(x,z)=>{ const gx=Math.floor(x/PS), gz=Math.floor(z/PS); let best=1e18, kind='flat'; for(let i=-1;i<=1;i++)for(let j=-1;j<=1;j++){ const a=gx+i, b=gz+j, px=(a+hsh(a,b,71))*PS, pz=(b+hsh(b,a,72))*PS, d=(x-px)**2+(z-pz)**2; if(d<best){ best=d; kind=KINDS[Math.floor(hsh(a,b,73)*KINDS.length)]; } } return kind; };
+  const crown=(x,z,st)=>{ const S0=st*T, gx=Math.floor(x/S0), gz=Math.floor(z/S0); let best=1e18, C=null; for(let i=-1;i<=1;i++)for(let j=-1;j<=1;j++){ const a=gx+i, b=gz+j, px=(a+.2+.6*hsh(a,b,81))*S0, pz=(b+.2+.6*hsh(b,a,82))*S0, d=(x-px)**2+(z-pz)**2; if(d<best){ best=d; C={x:px,z:pz,id:hsh(a,b,83),sz:hsh(b,a,84)}; } } C.d=Math.sqrt(best); return C; };
+  const KIND=(x,y,z,n)=>{ const r1=hsh(x,z,n*3+1), r2=hsh(z,x,n*3+2), r3=hsh(x+z,x-z,n*3+3), px=x+(r1-.5)*CELL*.7, pz=z+(r2-.5)*CELL*.7, kind=patch(x,z);
+    if(kind==='flat')return [px,y,pz,(1.05+.35*r3)*T,r1*6.28,r2,.7+.6*((r2*13.7)%1),1];
+    if(kind==='roll')return [px,y+r3*.06*MT,pz,(.95+.3*r3)*T,r1*6.28,r2,1.9+1.6*((r2*13.7)%1),1];
+    const [st,R0,dome,w]=CR[kind], C=crown(x,z,st), R=R0*T*(.8+.4*C.sz), q=Math.min(1,C.d/R), tone=(C.id+(r3<.25?.25:0))%1;   // (most of a crown one green, a quarter of its clumps the next)
+    return [px,y+dome*(1-q*q)-(q>.85?.04*MT:0),pz,w*(.85+.3*r3)*T,r1*6.28,tone,2.2,q>.85?.82:1]; };
   const build=(cx,cz)=>{ const L=[], x0=cx*CS, z0=cz*CS, LW=[MODS.land,typeof POND!=='undefined'?POND.hills:null].filter(Boolean), hid=[];
     scene.traverseVisible(o=>{ if((o.isMesh||o.isPoints||o.isLine||o.isSprite)&&skip(o))hid.push(o); }); for(const g of [W3.group,...NPCS.map(N=>N.g)])if(g&&g.visible)hid.push(g); hid.forEach(o=>o.visible=false);   // (the characters too: whoever stood there left a bare patch)
     const lm=LW.map(o=>o.layers.mask); LW.forEach(o=>o.layers.set(5));
@@ -87,9 +100,9 @@ WEEDS.lawnInit=()=>{ const T=TILE, CS=8*T, CELL=.5*T, PER=1, hsh=(a,b,s)=>{ let 
     scene.overrideMaterial=ov; renderer.setRenderTarget(rt0); renderer.autoClear=ac; renderer.setClearColor(cc,ca); scene.background=bg; scene.fog=fg;
     LW.forEach((o,i)=>o.layers.mask=lm[i]); hid.forEach(o=>o.visible=true);
     for(let r=0;r<R;r++)for(let u=0;u<R;u++){ const k=(r*R+u)*4; if(PIX[k]<128)continue; const x=x0+(u+.5)*CELL, z=z0+CS-(r+.5)*CELL, y=PIX[k+1]/255*4-.5;
-      for(let n=0;n<PER;n++){ const r1=hsh(x,z,n*3+1), r2=hsh(z,x,n*3+2), r3=hsh(x+z,x-z,n*3+3); L.push([x+(r1-.5)*CELL*.7,y,z+(r2-.5)*CELL*.7,(1.05+.35*r3)*T,r1*6.28,r2]); } }   // (a clump a half-tile square, each over twice as wide as its square: they overlap and cover the ground)
+      for(let n=0;n<PER;n++)L.push(KIND(x,y,z,n)); }
     if(!L.length)return null; const me=new THREE.InstancedMesh(geo,mat,L.length);
-    L.forEach(([x,y,z,s,a,c],i)=>{ M.compose(V.set(x,y,z),q.setFromAxisAngle(up,a),S.set(s,s*(.7+.6*((c*13.7)%1)),s)); me.setMatrixAt(i,M); const g1=LG[Math.floor(c*4)%4], g2=LG[Math.floor(c*28)%4]; me.setColorAt(i,col.setRGB((g1[0]+g2[0])/510,(g1[1]+g2[1])/510,(g2[2]+g1[2])/510,THREE.SRGBColorSpace)); });   // (the lawn's own four greens, two mixed)
+    L.forEach(([x,y,z,s,a,c,ys,k],i)=>{ M.compose(V.set(x,y,z),q.setFromAxisAngle(up,a),S.set(s,s*ys,s)); me.setMatrixAt(i,M); const g1=LG[Math.floor(c*4)%4], g2=LG[Math.floor(c*28)%4]; me.setColorAt(i,col.setRGB((g1[0]+g2[0])/510*k,(g1[1]+g2[1])/510*k,(g2[2]+g1[2])/510*k,THREE.SRGBColorSpace)); });   // (the lawn's own four greens, two mixed; a crown's edge a step darker)
     me.computeBoundingSphere(); me.receiveShadow=true; MAPG.bodega.add(me); WEEDS.lawnN+=L.length; return me; };
   let busy=0; WEEDS.lawnTick=()=>{ if(LVL!=='up'||(ROOMS&&ROOMS.cur))return; const pcx=Math.floor(pos.x/CS), pcz=Math.floor(pos.z/CS);
     for(const [k,me] of CH){ const [a,b]=k.split(',').map(Number); if(Math.max(Math.abs(a-pcx),Math.abs(b-pcz))>3){ if(me){ MAPG.bodega.remove(me); me.dispose(); WEEDS.lawnN-=me.count; } CH.delete(k); } }

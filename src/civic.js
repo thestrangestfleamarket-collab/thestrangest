@@ -19,6 +19,11 @@ const CIVIC={row:[],staff:{},log:[],ledger:{treasury:500,day:0,rent:30,tax:10,wa
   const HOUSES=[['firehouse','THE FIREHOUSE',0x9a2b22,0xe8c070],['clinic','THE CLINIC',0xe8e6e0,0xc8302a],['precinct','THE PRECINCT',0x2b3f7a,0x7f9ad8],['post','THE POST OFFICE',0x2f5f9e,0xe8e4d8],['depot','THE DEPOT',0xb86a1e,0x3a2a1a],['hall','CITY HALL',0x8a8478,0xd8c890]];
   const BL=[], blk=(x,y,z,sx,sy,sz,c)=>BL.push([x,y,z,sx,sy,sz,c]), Wd=10*T, D=6*T, FH=3.2*M, NF=HOUSES.length, H=NF*FH, TK=.22*T, STONE=0xb4aea2;
   const cx=BOD.XS(125), zf=BOD.ZS(RING.ny1+.6), zb=zf+D, y=G(cx,zf-.5*T), dw=1.8*T, pw=(Wd-dw)/2, DH=2.6*M;
+  // (THE TOWER OFF THE MAP, owner 18 Oct 2026: "i dont want any other buildings or rooms on map": AWAY in map-pre.js; its six droids then
+  // keep a row on the sidewalk east of the bodega's door, each department's address there, until it's brought back: ?bring=civic)
+  if(AWAY.has('civic')){ const B=BOD.B0, bx=BOD.X(B.x1)+2*T, bz=BOD.Z(B.y1)+2.4*T;
+    HOUSES.forEach(([id,name,col],i)=>{ const sx=bx+i*1.1*T; CIVIC.row.push({id,name,x:sx,z:bz,col,floor:i,at:{x:sx,z:bz},door:{x:sx,z:bz},inside:{x:sx,z:bz},kerb:{x:sx,z:BOD.ZS(BOD.CURB)-.6*T}}); }); }
+  else {
   CIVIC.tower={x0:cx-Wd/2,x1:cx+Wd/2,z0:zf,z1:zb,y,H,FH};
   blk(cx-Wd/2+TK/2,y+H/2,zf+D/2,TK,H,D,STONE); blk(cx+Wd/2-TK/2,y+H/2,zf+D/2,TK,H,D,STONE); blk(cx,y+H/2,zb-TK/2,Wd,H,TK,STONE);   // the sides and the back, all six floors
   blk(cx-Wd/2+pw/2,y+DH/2,zf+TK/2,pw,DH,TK,STONE); blk(cx+Wd/2-pw/2,y+DH/2,zf+TK/2,pw,DH,TK,STONE); blk(cx,y+(DH+H)/2,zf+TK/2,Wd,H-DH,TK,STONE);   // the front round the street doors, and above them
@@ -37,6 +42,7 @@ const CIVIC={row:[],staff:{},log:[],ledger:{treasury:500,day:0,rent:30,tax:10,wa
     const AMB=window.FAR3&&FAR3.FU?FAR3.FU.uAmb:{value:.4}; me.material.onBeforeCompile=sh=>{ sh.uniforms.uAmb=AMB; sh.fragmentShader='uniform float uAmb;\n'+sh.fragmentShader.replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n totalEmissiveRadiance+=diffuseColor.rgb*uAmb*.8;'); }; me.material.customProgramCacheKey=()=>'civictower';
     BL.forEach(([x,y,z,sx,sy,sz,col],i)=>{ me.setMatrixAt(i,m4.compose(new THREE.Vector3(x,y,z),q,new THREE.Vector3(sx,sy,sz))); me.setColorAt(i,c.setHex(col)); }); me.castShadow=me.receiveShadow=true; MAPG.bodega.add(me); CIVIC.mesh=me; CIVIC.tris=BL.length*12; }
   CITY.extra.push({id:'tower',name:'THE CIVIC TOWER',lv:'up',at:{x:cx,z:zf},door:{x:cx,z:zf-.9*T},box:[cx-Wd/2,zf-2*T,cx+Wd/2,zb]});
+  }
   for(const h of CIVIC.row)CITY.extra.push({id:h.id,name:h.name,lv:'up',at:h.at,door:h.door});   // (addresses: the spine's places, all at the tower's doors)
   CIVIC.house=id=>CIVIC.row.find(h=>h.id===id);
   // ---- THE SHOPS: stock, a till and a price; what each sells (food resets a visitor's hunger)
@@ -55,7 +61,7 @@ const CIVIC={row:[],staff:{},log:[],ledger:{treasury:500,day:0,rent:30,tax:10,wa
   CITY.at(18,()=>{ for(const S of Object.values(CIVIC.shops)){ const t=Math.min(S.till,CIVIC.ledger.tax); S.till-=t; CIVIC.ledger.treasury+=t; } CIVIC.note('the shops paid their tax','hall'); },'tax');
   // hunger: a day's worth in about eight hours of the clock, only while the clock runs; hungry and out, his next errand is for food (residents.js asks)
   CIVIC.hungerTick=dt=>{ if(!CLOCK.run)return; const dh=dt*CLOCK.speed/60; for(const r of CITY.residents){ if(r.hunger==null)continue; if(r.state==='home')r.hunger=Math.max(0,r.hunger-dh/6); else r.hunger=Math.min(1,r.hunger+dh/8); } };
-  CIVIC.wants=r=>r.hunger>.6?(Math.random()<.5?'bodega':'store:diner'):null;
+  CIVIC.wants=r=>r.hunger>.6?(Math.random()<.5||AWAY.has('diner')?'bodega':'store:diner'):null;   // (the bodega alone while the Diner is off the map, owner 18 Oct 2026)
   // the residents' names (the pawns' keys read better as people)
   for(const r of CITY.residents)r.name={hero_m:'MR HALE',hero_f:'MS HALE',villager_m:'MR VOSS',villager_f:'MS VOSS'}[r.key]||r.key;
   // ---- THE STAFF: droids, one a department (owner, 17 Oct 2026: "all the jobs for civics will be done by the security drones. (but drone for

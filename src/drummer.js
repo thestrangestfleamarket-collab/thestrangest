@@ -8,7 +8,7 @@
 // he sits, louder as you come near. Here his body's parts (the game's ellipsoids: place, size, turn, colour) are instances of one sphere, set
 // each frame, coloured from his palette, lit by the lamps; while it's his turn on the stage (bandstand.js) ----
 const DRM={}; STORE.DRM=DRM;   // (a test's reach)
-{ const S=STORE.bar, AT={x:BOD.X(S.drums.x),z:BOD.Z(S.drums.y-OCTBK),hd:0,y:BOD.Y(S.stage.z)}, g=new THREE.Group(); MAPG.bodega.add(g); DRM.g=g; DRM.at=AT;
+if(STORE.bar){ const S=STORE.bar, AT={x:BOD.X(S.drums.x),z:BOD.Z(S.drums.y-OCTBK),hd:0,y:BOD.Y(S.stage.z)}, g=new THREE.Group(); MAPG.bodega.add(g); DRM.g=g; DRM.at=AT;
   g.position.set(AT.x,AT.y,AT.z); g.rotation.set(0,AT.hd,0); g.scale.set(1/PPU,ZU,1/PPU);   // (his units the Walker's art px, as the figures')
   // his parts: a pool of instances of one sphere (his frame x forward, y left, z up; here X his left, Y up, Z forward), the dots (the glints on
   // his glasses, the mantle's spots) small ones; a part's colour by its letter in his palette (one painted two ways, the arms' undersides: the first)
@@ -26,3 +26,4 @@ const DRM={}; STORE.DRM=DRM;   // (a test's reach)
     for(const [x,y,z,c] of B.D){ if(n>=CAP)break; place(n++,x,y,z,.7,.7,.7,0,0,0,c); }
     im.count=n; im.instanceMatrix.needsUpdate=true; if(im.instanceColor)im.instanceColor.needsUpdate=true;
     const N=IMX.nodes.get('bar|drum kit'); if(N&&SND.ctx){ const c=SND.ctx, v=new THREE.Vector3(AT.x,1,AT.z).project(cam); N.g.gain.setTargetAtTime(.9*Math.max(0,1-d/14),c.currentTime,.1); N.pan.pan.setTargetAtTime(Math.max(-.8,Math.min(.8,v.x*.8)),c.currentTime,.1); } }; }
+if(!STORE.bar)DRM.tick=()=>{};   // (the Bar off the map, owner 18 Oct 2026, "i dont want any other buildings or rooms on map": no stage, no drummer; AWAY in map-pre.js)

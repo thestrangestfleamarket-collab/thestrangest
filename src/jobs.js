@@ -27,8 +27,8 @@ if(JOBS.on){ const T=TILE, X=BOD.XS, Z=BOD.ZS, rnd=Math.random;
     for(const [id,title,open,close] of WORK){ const S=spotOf(id); if(!S||!free.length)continue; const w=free.shift(), J={w,id,title,open,close,S,state:'',t:0};
       // home: the nearer block of flats if it's near (the house while it has flats to let), else over the work (the park's keeper over the keep)
       const dh=house?d(house.F.at,S.door):1e9, da=apts?d(apts.F.at,S.door):1e9;
-      if(dh<=NEAR&&dh<=da&&hn<roomH){ J.home='house'; hn++; } else if(da<=NEAR){ J.home='apts'; }
-      else { const b=id==='park'?keep:S.b; if(b){ b.up=b.up||[]; const unit=String(b.up.length+2); b.up.push({unit,who:{type:'walker',ref:w,name:null}}); J.home='up'; J.upB=b; J.upUnit=unit; } else J.home='apts'; }
+      if(dh<=NEAR&&dh<=da&&hn<roomH){ J.home='house'; hn++; } else if(apts&&da<=NEAR){ J.home='apts'; }
+      else { const b=id==='park'?keep:S.b; if(b){ b.up=b.up||[]; const unit=String(b.up.length+2); b.up.push({unit,who:{type:'walker',ref:w,name:null}}); J.home='up'; J.upB=b; J.upUnit=unit; } else if(apts)J.home='apts'; else { J.home='house'; hn++; } }   // (the apartments or the keep off the map, owner 18 Oct 2026: the apartment house takes him)
       w.job=J; JOBS.list.push(J); }
     const bod=by('bodega'); if(bod){ bod.up=bod.up||[]; bod.up.push({unit:String(bod.up.length+2),who:{type:'shop',ref:'bodega',name:'THE FOX'}}); }   // (the Fox: over his shop)
     return JOBS.list; };
@@ -43,10 +43,10 @@ if(JOBS.on){ const T=TILE, X=BOD.XS, Z=BOD.ZS, rnd=Math.random;
   const go=(J,to,v,then)=>{ const N=J.w.N; N.st.hold=false; CITY.send(N,to,{v,then}); };
   const bed=J=>Math.min(25,J.close+1+(J.w.N.key.length%3)*.4), wake=J=>J.open-1-(J.w.N.key.length%4)*.15;
   const shouldBe=(J,h)=>{ const b=bed(J)%24, wk=wake(J); const night=b<wk?(h>=b&&h<wk):(h>=b||h<wk); if(night)return 'home'; if(h>=J.open&&h<J.close)return 'work'; return h<J.open?'work':'off'; };
-  const toWork=J=>{ const N=J.w.N, A=homeOf(J), s=workSpot(J); if(J.state==='home'){ hide(N,false); if(A){ const st=A.step; N.st.x=st.x; N.st.z=st.z; N.g.position.x=st.x; N.g.position.z=st.z; } }
+  const toWork=J=>{ const N=J.w.N, A=homeOf(J), s=workSpot(J); if(J.state==='home'){ hide(N,false); if(A&&A.step){ const st=A.step; N.st.x=st.x; N.st.z=st.z; N.g.position.x=st.x; N.g.position.z=st.z; } }
     J.state='commute'; inside(N,true); N.dwell=null; go(J,s,J.w.v||1.2,ok=>{ if(J.state!=='commute')return; if(!ok){ J.state='lost'; J.t=6; inside(N,false); return; } J.state='work'; N.st.hold=true; N.st.to=null; N.st.face=s.face||null; N.dwell=pick(['UAL_Idle_Talking_Loop','idle_a','UAL_Idle_Loop']); }); };
   const offWork=J=>{ const N=J.w.N; J.state='leaving'; N.dwell=null; go(J,J.S.door,J.w.v||1.2,()=>{ if(J.state!=='leaving')return; inside(N,false); J.state='off'; J.w.state='wait'; J.w.t=1; }); };
-  const goHome=J=>{ const N=J.w.N, A=homeOf(J); if(!A){ J.state='off'; return; } const wasIn=J.state==='work'||J.state==='commute'||J.state==='leaving'; J.state='homing'; inside(N,wasIn); N.dwell=null; CITY.stop(N); go(J,A.step,J.w.v||1.2,ok=>{ if(J.state!=='homing')return; if(!ok){ J.state='off'; J.t=20; return; }
+  const goHome=J=>{ const N=J.w.N, A=homeOf(J); if(!A||!A.step){ J.state='off'; return; }   /* (no flat of his: a home off the map) */ const wasIn=J.state==='work'||J.state==='commute'||J.state==='leaving'; J.state='homing'; inside(N,wasIn); N.dwell=null; CITY.stop(N); go(J,A.step,J.w.v||1.2,ok=>{ if(J.state!=='homing')return; if(!ok){ J.state='off'; J.t=20; return; }
       J.state='home'; inside(N,false); hide(N,true); if(window.MAIL&&MAIL.ready)MAIL.take(A.id,N.name); }); };
   const pick=a=>a[Math.floor(rnd()*a.length)];
   // where he should be now, put right twice a second (a jump of the clock too): at work, on his own time, or at home
@@ -56,5 +56,5 @@ if(JOBS.on){ const T=TILE, X=BOD.XS, Z=BOD.ZS, rnd=Math.random;
       else if(want==='off'&&(J.state==='work'||J.state==='commute'))offWork(J);
       else if(want==='off'&&J.state==='')J.state='off';
       else if(want==='home'&&J.state!=='home'&&J.state!=='homing'){ if(J.state==='work'||J.state==='commute'){ J.state='work'; } goHome(J); } } };
-  window.JOBDBG=()=>JOBS.list.map(J=>({who:J.w.N.name,key:J.w.N.key,id:J.id,title:J.title,hours:J.open+'-'+J.close,state:J.state,home:J.w.home&&J.w.home.label,homeTiles:J.w.home?+(Math.hypot(J.w.home.step.x-(J.S.door.x),J.w.home.step.z-J.S.door.z)/T).toFixed(1):null,at:[+(J.w.N.st.x/T+72).toFixed(1),+(J.w.N.st.z/T-77).toFixed(1)],vis:J.w.N.g.visible}));
+  window.JOBDBG=()=>JOBS.list.map(J=>({who:J.w.N.name,key:J.w.N.key,id:J.id,title:J.title,hours:J.open+'-'+J.close,state:J.state,home:J.w.home&&J.w.home.label,homeTiles:J.w.home&&J.w.home.step?+(Math.hypot(J.w.home.step.x-(J.S.door.x),J.w.home.step.z-J.S.door.z)/T).toFixed(1):null,at:[+(J.w.N.st.x/T+72).toFixed(1),+(J.w.N.st.z/T-77).toFixed(1)],vis:J.w.N.g.visible}));
 }

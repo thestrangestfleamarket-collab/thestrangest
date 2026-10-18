@@ -91,7 +91,7 @@ const ED={on:false};
     <div class="pane" id="egen"><div class="row"><span id="ename" class="dim"></span></div><div class="row"><button class="btn" id="eboth">BOTH SIDES</button></div>
       <div class="dim">drag off him moves the view · right-drag (or Shift + drag) turns it round the point you grab · wheel zooms at the mouse · 0 back</div></div>
     <div class="foot"><div class="row"><button class="btn" id="eundo">UNDO</button><button class="btn" id="eall">ALL BACK</button></div>
-      <div class="row"><button class="btn" id="edown">DOWNLOAD</button><button class="btn" id="eload">LOAD</button><button class="btn" id="edone">DONE</button></div></div>`;
+      <div class="row"><button class="btn" id="eload">LOAD</button><button class="btn" id="edone">DONE</button></div></div>`;
   document.body.appendChild(P); const ring=document.createElement('div'); ring.id='ering'; ring.hidden=true; document.body.appendChild(ring);
   const $=s=>P.querySelector(s); let mode='sizes', gmode='move';
   const NICE=n=>n.replace(/([LR])$/,' $1').replace(/([a-z])([A-Z])/g,'$1 $2').replace(/(\d)/g,' $1').toUpperCase();
@@ -130,7 +130,6 @@ const ED={on:false};
     try{ SAVE.set('body',body); }catch(e){} save(); draw(); drawBody(); });
   drawBody();
   $('#eundo').onclick=undo; $('#eall').onclick=()=>{ snap(); W3.E=PCS.map(()=>null); PA.array.set(BASE); NA.array.set(NBASE); PA.needsUpdate=NA.needsUpdate=true; sculpted=false; save(); draw(); };
-  $('#edown').onclick=()=>{ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([JSON.stringify(pack2())],{type:'application/json'})); a.download='walker-shape.json'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1000); };
   $('#eload').onclick=()=>{ const f=document.createElement('input'); f.type='file'; f.accept='.json,application/json'; f.onchange=async()=>{ try{ snap(); if(unpack(JSON.parse(await f.files[0].text()))){ save(); draw(); } }catch(e){} }; f.click(); };
   $('#edone').onclick=()=>ED.exit();
   // ---- ON HIM: a left press picks, brushes or grabs (the right button still turns the view)

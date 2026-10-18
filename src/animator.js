@@ -5,7 +5,7 @@
 //   ANIMATE: any move (standing, the walk, the run, every move he has, and his own): a timeline; at any moment a part of him clicked and
 //   dragged (or its sliders) turns it, and that's a key; his keys are added onto the move wherever he does it, blended smoothly between.
 //   NEW MOVE: a name, a length, a key to do it with; it starts from standing and is his to pose.
-// Kept in this browser; DOWNLOAD MOVES / LOAD MOVES as a file ----
+// Kept in this browser; LOAD MOVES from a file (DOWNLOAD taken out, owner 18 Oct 2026) ----
 { const R=RIG, D=Math.PI/180, ARM=R.ARMMOVES;
   // ---- the dials: each the walk's or the run's own (1 as made; the step's length and time and the lean as numbers)
   const DIALS=[['stride','STEP LENGTH',5,32,.1],['cycle','STEP TIME',.3,1.8,.01],['lean','LEAN',-15,35,.5],['bounce','BOUNCE',0,3,.05],['arm','ARM SWING',0,3,.05],['elbow','ELBOW BEND',0,2.5,.05],
@@ -89,7 +89,7 @@
     <h3 style="font:12px var(--pixel);color:var(--key);margin:12px 0 6px">NEW MOVE</h3>
     <div class="row"><input type="text" id="aname" placeholder="name" size="10"><input type="text" id="alen" value="1.2" size="3"><span class="dim">s</span><input type="text" id="akeych" placeholder="key" size="2" maxlength="1"></div>
     <div class="row"><button class="btn" id="anew">MAKE IT</button><span class="dim">key: B I L M O P T U Y or 1-9</span></div><div class="list" id="acustom"></div>
-    <div class="row"><button class="btn" id="adown">DOWNLOAD MOVES</button><button class="btn" id="aload">LOAD MOVES</button></div>`;
+    <div class="row"><button class="btn" id="aload">LOAD MOVES</button></div>`;
   const $a=s=>PA.querySelector(s);
   function fillClips(){ const sel=$a('#aclip'), names=['stand','walk','run',...Object.keys(R.MOVES).filter(k=>R.MOVES[k]&&R.MOVES[k].k).sort()]; sel.innerHTML='';
     for(const n of names){ const o=document.createElement('option'); o.value=n; o.textContent=(CUSTOM.some(c=>c.name===n)?'★ ':'')+n.toUpperCase()+(OV[n]&&OV[n].length?' ('+OV[n].length+')':''); sel.appendChild(o); } sel.value=clip0; }
@@ -126,7 +126,6 @@
     if(!name||R.MOVES[name]||['stand','walk','run'].includes(name)){ $a('#aname').value=''; $a('#aname').placeholder=name?'taken':'name'; return; }
     if(key&&(!FREE.includes(key)||CUSTOM.some(c=>c.key===key))){ $a('#akeych').value=''; return; }
     const c={name,dur,key:key||''}; makeCustom(c); CUSTOM.push(c); OV[name]=[]; clip=clip0=name; t=0; play=false; save(); drawAnim(); };
-  $a('#adown').onclick=()=>{ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([SAVE.get('moves')||'{}'],{type:'application/json'})); a.download='walker-moves.json'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1000); };
   $a('#aload').onclick=()=>{ const f=document.createElement('input'); f.type='file'; f.accept='.json,application/json'; f.onchange=async()=>{ try{ load(JSON.parse(await f.files[0].text())); save(); drawAnim(); }catch(e){} }; f.click(); };
   ED.addTab('animate','ANIMATE',PA,{show:()=>{ clip=clip0; play=kind(clip)!=='still'; drawAnim(); },
     // a press on him: that part picked; a drag turns it (up and down its first turn, side to side its second)

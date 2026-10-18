@@ -65,7 +65,7 @@ const musScale=(g,bh)=>g.scale.set(W3.SZ/PPU,ZU*W3.SZ*(bh||W3.BH||1),W3.SZ/PPU);
   for(let i=1;i<=6;i++){ const geo=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(GT.sx(i,0),0,GT.sz(0)),new THREE.Vector3(GT.sx(i,GT.S),GT.S,GT.sz(GT.S))]); sg.add(new THREE.Line(geo,new THREE.LineBasicMaterial({color:i<4?0x6a6e72:0x55595c}))); }
   const M=(F,out)=>out.set(F.x.x,F.y.x,F.z.x,F.o.x, F.x.y,F.y.y,F.z.y,F.o.y, F.x.z,F.y.z,F.z.z,F.o.z, 0,0,0,1);
   // where he stands: his mark on the stage, facing the room
-  g.position.set(AT.x,AT.y,AT.z); g.rotation.set(0,AT.hd,0); musScale(g); MUS.at=AT;
+  g.position.set(AT.x,AT.y,AT.z); g.rotation.set(0,AT.hd,0); musScale(g); MUS.at=AT; MUS.on=true; if(typeof NPCS!=='undefined'&&NPCS.extra&&!NPCS.extra.includes(MUS))NPCS.extra.push(MUS);   // (on from the start: bandstand.js, which used to switch him on, is out of the build)
   // HOW HE HOLDS IT (owner, 17 Oct 2026: "fix the guitarist arm", his pick: the strumming elbow lifted). The game's guitar sat high on his
   // chest, its upper edge near his armpit, so the strumming forearm could only cross it from an upper arm held out level; here it hangs on
   // its strap lower (drop: his units), the neck up a little more (tilt), and the right wrist comes to the strings over the lower bout's upper
@@ -83,12 +83,12 @@ const musScale=(g,bh)=>g.scale.set(W3.SZ/PPU,ZU*W3.SZ*(bh||W3.BH||1),W3.SZ/PPU);
   MUS.start=()=>{ song=gtNext(song); gtSet(song); }; MUS.stop=()=>gtHush();   // (a tune from its start, readied; he plays it only when asked: MUS.ask)
   // his walk: the rig's own (its step and pose, as yours), his feet carrying him as far as his stride says; the sidewalk's run, the way
   // ahead tried before each step (STFREE: the stairs' hole, the buildings, the things on the street), turned back where it's blocked
-  const WK={mode:'stop',t:1+Math.random()*3,dir:1,to:AT.x,st:R.create(),d0:0}, X0=BOD.XS(36), X1=BOD.XS(165), Z0=AT.z, RAD=.3*TILE;
+  const WK={mode:'stop',t:1+Math.random()*3,dir:1,to:AT.x,st:R.create(),d0:0}, X0=BOD.XS(36), X1=BOD.XS(165), Z0=AT.z, RAD=.3*TILE; MUS.wk=WK;   // (a test's look)
   const free=(x,z)=>typeof STFREE!=='function'||STFREE(x,z,RAD), turn=hd=>{ let e=hd-AT.hd; e=Math.atan2(Math.sin(e),Math.cos(e)); return e; };
   const pickTo=()=>{ if(Math.random()<.35)WK.dir=-WK.dir; let x=AT.x+WK.dir*(6+Math.random()*22)*TILE; if(x<X0||x>X1){ WK.dir=-WK.dir; x=AT.x+WK.dir*(6+Math.random()*22)*TILE; } WK.to=Math.max(X0,Math.min(X1,x)); };
   MUS.ask=()=>{ WK.mode='play'; WK.st.target=0; AT.hd=Math.atan2(pos.x-AT.x,pos.z-AT.z); g.rotation.y=AT.hd; song=gtNext(song); gtSet(song); };
   const clear=()=>{ for(let k=0;k<160;k++){ const dx=(k>>1)*.25*TILE*(k&1?-1:1); for(const dz of [0,.6,-.6,1.2]){ const x=AT.x+dx, z=AT.z+dz*TILE; if(free(x,z)){ AT.x=x; AT.z=z; return; } } } };   // (his spot clear of what stands on the sidewalk: a mailbox, a lamp's foot)
-  const walkTick=(dt,near)=>{ const S=WK.st; if(!WK.ok){ WK.ok=true; clear(); }
+  const walkTick=(dt,near)=>{ const S=WK.st; if(!free(AT.x,AT.z))clear();   // (the street's solids are added after the game opens: his spot checked as it goes)
     if(WK.mode==='stop'){ S.target=0; WK.t-=dt; if(WK.t<=0){ pickTo(); WK.mode='walk'; } }
     if(WK.mode==='walk'){ const want=WK.to>AT.x?Math.PI/2:-Math.PI/2, e=turn(want); AT.hd+=Math.sign(e)*Math.min(Math.abs(e),dt*4); S.target=Math.abs(e)<.6?1:0;
       if(Math.abs(WK.to-AT.x)<.2*TILE){ WK.mode='stop'; WK.t=3+Math.random()*7; S.target=0; } }

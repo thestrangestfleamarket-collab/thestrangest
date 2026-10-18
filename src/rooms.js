@@ -2,15 +2,18 @@
 // you are in an interior"): inside a building, the room you stand in is all that's drawn; everything past its walls is cut away (six planes round
 // it, for every material at once) and the sky goes black; the characters outside it are hidden. You can still zoom out and turn round it.
 // The rooms: the bodega's shop and its back office, Ghost Street's dojo, the apartment building's (the gym, the core, the hallway, the pool hall, the lobby, the
-// office), the apartment house's on the floor you're on ----
-const ROOMS={cur:null};
+// office), the apartment house's on the floor you're on, the civic tower. (owner, 18 Oct 2026: "anytime someone is in interior rest of world should
+// always vanish": what draws with its own shader, not cut by the planes, hides itself while you're in a room: the sky dome, the force field, the river) ----
+const ROOMS={cur:null}; window.ROOMS=ROOMS;   // (a test's look)
+ROOMS.roofAt=(x,y,z)=>{ const h=new THREE.Raycaster(new THREE.Vector3(x,y,z),new THREE.Vector3(0,1,0),0,12).intersectObjects(scene.children,true).find(i=>{ for(let q=i.object;q;q=q.parent)if(!q.visible)return false; return i.object.isMesh&&!i.object.isSkinnedMesh; }); return h?+h.distance.toFixed(2):null; };   // (a test's: a roof over a spot)
 { const V=THREE.Vector3, PL=[0,1,2,3,4,5].map(()=>new THREE.Plane()), m=.14*TILE; let RL=null;
   const box=(X,Z,t,y0,y1)=>{ const a=X(t[0]), b=X(t[2]), c=Z(t[1]), d=Z(t[3]); return {x0:Math.min(a,b),x1:Math.max(a,b),z0:Math.min(c,d),z1:Math.max(c,d),y0,y1}; };
   const build=()=>{ RL=[]; const B=BOD.B0;
     RL.push(box(BOD.X,BOD.Z,[B.x0,BOD.BODOFF,B.x1,B.y1],-1,BOD.Y(B.h)),box(BOD.X,BOD.Z,[B.x0,B.y0,B.x1,BOD.BODOFF],-1,BOD.Y(B.h)));
     for(const t of POOLR.ROOMS||[])RL.push(box(POOLR.X,POOLR.Z,t,POOLR.Y(-150),POOLR.Y(POOLR.H)));
     if(BOD.GD)RL.push(box(BOD.X,BOD.Z,BOD.GD.r,-1,BOD.Y(BOD.GD.H)));   // (Ghost Street's dojo: ghostdojo.js)
-    for(const R of STORE.rooms)if(R.walls)RL.push(R); };   // (the storeroom's rooms: store.js)
+    for(const R of STORE.rooms)if(R.walls)RL.push(R);
+    if(window.CIVIC&&CIVIC.tower){ const t=CIVIC.tower; RL.push({id:'civic',x0:t.x0,x1:t.x1,z0:t.z0,z1:t.z1,y0:t.y-1,y1:t.y+t.H}); } };   // (the civic tower, one hall all six floors high: civic.js)   // (the storeroom's rooms: store.js)
   ROOMS.boxes=()=>{ if(!RL)build(); return RL; };
   ROOMS.reset=()=>{ RL=null; };   // (the stacked rooms, built after the game opens: store.js)   // (the rooms, for the lamps: a lamp in one lights only it, map-post.js's LITE)
   const within=(b,x,z,e=0)=>x>b.x0-e&&x<b.x1+e&&z>b.z0-e&&z<b.z1+e;

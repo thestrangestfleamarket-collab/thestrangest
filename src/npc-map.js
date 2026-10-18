@@ -107,7 +107,7 @@ function makeNPC(D,o){ const N={key:o.key,name:o.name,names:o.names,lv:o.lv||'do
   // push you out of him (collide's last step)
   N.push=p=>{ const dx=p.x-st.x, dz=p.z-st.z, d=Math.hypot(dx,dz), R=st.R+.3; if(d<R&&d>1e-4){ p.x=st.x+dx/d*R; p.z=st.z+dz/d*R; } };
   // SELF: his depth from his light each frame (only at that level), the camera looking down the light at him
-  N.shadowPass=renderer=>{ if(W3.lv.value<1.5||N.far||!g.visible||!g.parent.visible)return; if(typeof SELFSH!=='undefined'&&!SELFSH.use(N)){ N.LVP.value.copy(SELFSH.off); return; }   /* (his own shadow only for the two nearest you: src/perf.js; the rest none, the map left alone) */   /* (not for one not drawn: far, in another room, on another level) */ const mid=new THREE.Vector3(st.x,g.position.y+H*.45,st.z); N.smCam.position.copy(mid).addScaledVector(W3.Lw,7); N.smCam.lookAt(mid); N.smCam.updateMatrixWorld();
+  N.shadowPass=renderer=>{ if(W3.lv.value<1.5||N.far||!g.visible||!g.parent.visible)return; if(typeof SELFSH!=='undefined'&&!SELFSH.use(N)){ N.LVP.value.copy(SELFSH.off); return; }   /* (his own shadow only for the two nearest you: src/perf.js; the rest none, the map left alone) */   /* (not for one not drawn: far, in another room, on another level) */ const mid=new THREE.Vector3(g.position.x,g.position.y+H*.45,g.position.z); N.smCam.position.copy(mid).addScaledVector(W3.Lw,7); N.smCam.up.set(0,Math.abs(W3.Lw.y)>.6?0:1,Math.abs(W3.Lw.y)>.6?1:0); N.smCam.lookAt(mid);   /* (an up never along the light: walker3d.js) */ N.smCam.updateMatrixWorld();
     N.LVP.value.multiplyMatrices(N.smCam.projectionMatrix,N.smCam.matrixWorldInverse); const ms=[]; g.traverse(o=>{ if(o.isMesh){ ms.push([o,o.material]); o.material=N.depthMat; } });   // (him and what he holds, as depth only)
     renderer.setRenderTarget(N.sm); renderer.clear(); renderer.render(g,N.smCam); renderer.setRenderTarget(null); for(const [o,m] of ms)o.material=m; };
   if(!o.noSelf){ const s0=W3.shadowPass; W3.shadowPass=r=>{ s0(r); N.shadowPass(r); }; }   // (noSelf: no shadow of his own on him: small and many, the dragons)
@@ -149,4 +149,19 @@ ROAM.pick=(st,free)=>{ const L=ROAM.L; for(let k=0;k<12;k++){ let to;
     LIVES.tick(dt,you); };
   // round the picture: on, the hidden ones put out of sight; off, each back as he was
   NPCS.cull=on=>{ const one=(o,g)=>{ if(on){ if(o.hid&&g.visible){ g.visible=false; o._cv=true; } } else if(o._cv){ g.visible=true; o._cv=false; } };
-    for(const N of NPCS)one(N,N.g); for(const X of NPCS.extra)if(X.g)one(X,X.g); }; }
+    for(const N of NPCS)one(N,N.g); for(const X of NPCS.extra)if(X.g)one(X,X.g); PXSNAP(on); }; }
+// ON THE PIXELS, THE CHARACTERS TOO (owner, 18 Oct 2026, walking under a light: "it flickers on your character really glitchy ... its rapidly changing
+// and it looks like stuttering"): the map and isometric views stand the camera on the picture's pixel grid so the ground keeps its pixels, but a
+// character went on gliding between them, so every hard edge of light and shade on him was drawn again a little differently each frame (standing
+// still, nothing changed; moving, a band of pixels on him crawled). Now, just before the picture is drawn, each one shown is moved (less than half a
+// pixel, across and up the screen) onto the same grid, and his own shadow's camera with him; put back after, so nothing he does is changed
+const PXSNAP=on=>{ const L=PXSNAP.L;
+  if(!on){ for(const [o,dx,dy,dz] of L){ o.position.x-=dx; o.position.y-=dy; o.position.z-=dz; } L.length=0; return; }
+  if(UI.persp||!UI.snR)return; const u=rppu(), cr=UI.snR, cu=UI.snU;
+  const snap=(o,cams)=>{ if(!o||!o.visible)return; const p=o.position, x=p.dot(cr), y=p.dot(cu), a=Math.round(x*u)/u-x, b=Math.round(y*u)/u-y, dx=cr.x*a+cu.x*b, dy=cr.y*a+cu.y*b, dz=cr.z*a+cu.z*b;
+    p.x+=dx; p.y+=dy; p.z+=dz; L.push([o,dx,dy,dz]); for(const [c,M] of cams||[]){ c.position.x+=dx; c.position.y+=dy; c.position.z+=dz; L.push([c,dx,dy,dz]); c.updateMatrixWorld(); if(M)M.value.multiplyMatrices(c.projectionMatrix,c.matrixWorldInverse); } };
+  if(typeof W3!=='undefined'&&W3.group)snap(W3.group,[[W3.smCam,W3.LVP]]);
+  for(const N of NPCS)if(!N.far)snap(N.g);   /* (his own shadow's camera is set in his shadow pass from where he's drawn) */
+  if(typeof PLAYAS!=='undefined'&&PLAYAS.N&&!NPCS.includes(PLAYAS.N))snap(PLAYAS.N.g);
+  for(const X of NPCS.extra)if(X.g)snap(X.g); };
+PXSNAP.L=[]; window.PXSNAP=PXSNAP;

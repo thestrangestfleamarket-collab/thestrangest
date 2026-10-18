@@ -8,7 +8,7 @@
 const CLOCK={h:15.5,run:false,speed:1440/600,sunV:new THREE.Vector3(0,1,0),moonV:new THREE.Vector3(0,1,0)};   // (speed: game minutes a real second; a day in ten minutes; sunV, moonV: where they really are, for the sky dome, sky.js)
 { const D=Math.PI/180, sunL=new THREE.DirectionalLight(0xffffff,0), R=22*TILE;
   sunL.castShadow=true; sunL.shadow.mapSize.set(2048,2048); Object.assign(sunL.shadow.camera,{left:-R,right:R,top:R,bottom:-R,near:.5,far:120*TILE}); sunL.shadow.camera.updateProjectionMatrix();
-  sunL.shadow.bias=-.0005; sunL.shadow.normalBias=.04; scene.add(sunL,sunL.target);
+  sunL.shadow.bias=-.0005; sunL.shadow.normalBias=+(QS.get("snb")||.12);   // (.12: at .04 a wall the sun grazes was striped and arced with its own shadow, owner 18 Oct 2026 "glitchy shadows") scene.add(sunL,sunL.target);
   const SNM=new THREE.Matrix4(), SR=new THREE.Vector3(), SU=new THREE.Vector3(), SP=new THREE.Vector3(), ORG=new THREE.Vector3(), UPV=new THREE.Vector3(0,1,0);
   // how high the sun is at an hour (degrees; under the horizon below 0), and which way it is (east at dawn, south at noon, west at dusk)
   const elev=h=>50*Math.cos(2*Math.PI*(h-12.7)/24)-8, azim=h=>2*Math.PI*(h-12.7)/24;

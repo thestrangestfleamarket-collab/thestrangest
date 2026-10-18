@@ -1280,3 +1280,14 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   the picture, the view is put back on him (`UI.follow`, `ui.js`). **The stalls without tents** ("i dont want these stripped tenst ... rows and rows
   of diff mushrooms, standing between three tables in u shape ... show me mockups"): `mockups/market-stalls.html`,
   https://claude.ai/artifact/ET6bXTLDgHdTfyAsyG4MTn (A trays, B stepped tiers, C heaps and overflow); his pick to come.
+- **The roof out of sight, the mist back, the weather held, the old Fox, the sun's stripes** (owner, 18 Oct 2026): **the roof** ("it looks like the
+  roof is vanishes and lets real light ... dont change lighting in interiors jsut beacuse you walk in the room"): a roof hidden while you're in (the
+  bodega's, the stored rooms', the roof bits of rooftops.js) is taken off the camera's layer onto layer 3, which every shadow camera sees (`SEEN` in
+  `map-pre.js`), so it still keeps the sun out: the light inside is the same from in and out. **The mist** ("what happened to the green haze"): his
+  browser had DISTANCE HAZE saved at FAR; the key is now `market-haze2`, so everyone starts in the MIST again. **The skyline in the mist** ("where
+  did the distance skyline of buildings go?"): in the mist it's faint silhouettes (mixed 80% toward the mist's colour, a little more the further,
+  in three steps; its own, not the scene's fog), in FAR as before. **The weather held** ("set a default time and atmosphere and stay at the time";
+  his pick "Teal mist + clouds"): CLOUDY from the start (`WX.hold`, weather.js; `?wx=natural` the simulation); the clock stays STOPPED; the hour
+  his pick from the mockups (https://claude.ai/artifact/FNh426aeu5GPJcdBj4KvqX). **The old Fox** ("use the old fox avatar not the new one"): the
+  rounded one before the angular (`npc-fox.js` from before 1c9b71f), 2 m. **The sun's stripes** ("glitchy shadows": a wall the sun grazes striped
+  and arced with its own shadow): the sun's normalBias .04 to .12 (`clock.js`; `?snb=` a test's).

@@ -414,3 +414,9 @@ avcode='\n'.join([open('src/avatar-pre.js').read(),rp(open('src/walker3d.js').re
 page=open('src/avatar-page.html').read(); assert page.count('/*RIG*/')==1 and page.count('/*CODE*/')==1
 open('dist/avatar.html','w').write(page.replace('/*RIG*/',rigjs).replace('/*CODE*/',avcode)); print('built dist/avatar.html')
 
+# ONLY WHAT RUNS (owner, 18 Oct 2026: "i only want the minimal code that runs the game here, absolutely minimal"): both pages minified, every
+# comment gone (tools/minify.cjs, esbuild from package.json; npm installs it the first time). Work in progress: off unless MIN=1.
+if os.environ.get('MIN','0')=='1':
+  import subprocess
+  if not os.path.exists('node_modules/esbuild'): subprocess.run(['npm','install','--no-audit','--no-fund'],check=True)
+  subprocess.run(['node','tools/minify.cjs','dist/market.html','dist/avatar.html'],check=True)

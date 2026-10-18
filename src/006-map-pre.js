@@ -1,0 +1,73 @@
+const CEL=(()=>{ const q=+new URLSearchParams(location.search).get('cel'); let v=null; try{ v=+SAVE.get('bands'); }catch(e){} const n=q||v||4; return Math.max(3,Math.min(5,n|0)); })();
+const HUE=(()=>{ const q=new URLSearchParams(location.search).get('hue'); return (q!=null?+q:1).toFixed(3); })();
+const SMOOTH=false;
+const ASTEP=window.ASTEP=(()=>{ const Q=new URLSearchParams(location.search), q=Q.get('animfps'); let v=null; try{ v=SAVE.get('animfps'); }catch(e){}
+  const A={fps:q!=null?+q:v!=null?+v:10,still:Q.get('still')!=='0',you:{}};
+  A.gate=(o,dt)=>{ if(!(A.fps>0))return dt; const T=1/A.fps; if(o._ac==null)o._ac=Math.random()*T; o._ac+=dt; if(o._ac<T)return 0; const d=o._ac; o._ac=0; return d; };
+  A.rest=(o,dt,moving)=>{ if(!A.still||moving||(o.restless&&o.restless())){ o._calm=.5; o._sh=7+Math.random()*8; return false; }
+    if((o._calm=(o._calm==null?.5:o._calm)-dt)>0)return false; if((o._sh=(o._sh==null?7:o._sh)-dt)<=0){ o._calm=1.5; o._sh=7+Math.random()*8; return false; } return true; };
+  return A; })();
+THREE.ShaderChunk.fog_fragment=THREE.ShaderChunk.fog_fragment.replace('gl_FragColor.rgb = mix','fogFactor = floor( fogFactor * 8. + .5 ) / 8.;\n\tgl_FragColor.rgb = mix');
+const MISTB={x:-1e9,y:-1e9,z:1e9,w:1e9}, MISTE={x:0,y:4,z:26,w:1}, MISTF={x:.5,y:70};
+for(const k in THREE.ShaderLib){ const u=THREE.ShaderLib[k].uniforms; if(u&&u.fogNear){ u.mistB={value:MISTB}; u.mistE={value:MISTE}; u.mistF={value:MISTF}; } }
+THREE.ShaderChunk.fog_pars_vertex=THREE.ShaderChunk.fog_pars_vertex.replace('varying float vFogDepth;','varying float vFogDepth; varying vec3 vFogW;');
+THREE.ShaderChunk.fog_vertex=THREE.ShaderChunk.fog_vertex.replace('vFogDepth = - mvPosition.z;','vFogDepth = - mvPosition.z; vFogW = ( inverse( viewMatrix ) * mvPosition ).xyz;');
+THREE.ShaderChunk.fog_pars_fragment=THREE.ShaderChunk.fog_pars_fragment.replace('varying float vFogDepth;',`varying float vFogDepth; varying vec3 vFogW; uniform vec4 mistB, mistE; uniform vec2 mistF;
+ float mistH(vec2 c){ c=mod(c,256.); return fract(sin(dot(c,vec2(12.9898,78.233)))*43758.5453); }
+ float mistN(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.-2.*f); return mix(mix(mistH(i),mistH(i+vec2(1,0)),f.x),mix(mistH(i+vec2(0,1)),mistH(i+vec2(1,1)),f.x),f.y); }`);
+THREE.ShaderChunk.fog_fragment=THREE.ShaderChunk.fog_fragment.replace('fogFactor = floor(',`vec3 mistC=fogColor; if( mistE.x > .5 ){ vec2 q=vFogW.xz/mistE.w;
+		float dx=max(mistB.x/mistE.w-q.x,q.x-mistB.z/mistE.w), dz=max(mistB.y/mistE.w-q.y,q.y-mistB.w/mistE.w), d=max(dx,dz);
+		d+=(mistN(q/9.)-.5)*14.+(mistN(q/3.1+17.)-.5)*5.;
+		fogFactor=clamp((d-mistE.y)/mistE.z,0.,1.); mistC*=1.-mistF.x*clamp((d-mistE.y-mistE.z)/mistF.y,0.,1.); }
+	fogFactor = floor(`).replace('gl_FragColor.rgb, fogColor, fogFactor','gl_FragColor.rgb, mistC, fogFactor')
+  .replace('fogFactor = floor( fogFactor * 8. + .5 ) / 8.;','');
+const FLOOR=(()=>{ const q=+new URLSearchParams(location.search).get("floor"); return (q>=0&&q<1&&q?q:.2).toFixed(3); })();
+const SOFT=(()=>{ const q=new URLSearchParams(location.search).get('soft'); return q!=null?Math.max(0,+q|0):7; })();
+const DITH=0&&(()=>{ const q=new URLSearchParams(location.search).get('dith'); if(q!=null)return +q; let v=null; try{ v=SAVE.get('grain'); }catch(e){} return v!=null?+v:16; })();
+const LFX={on:new Set((new URLSearchParams(location.search).get('fx')??'cs,cool').split(',').filter(Boolean))}; if(LFX.on.has('all'))['cs','cool','ao','var','wet','sway','life'].forEach(k=>LFX.on.add(k));
+LFX.AO={x0:-45,z0:-40,w:160,h:150,k:6};
+LFX.shade=true;
+if(LFX.shade){ LFX.env=new THREE.DataTexture(new Uint8Array(64*64*4),64,64); LFX.env.wrapS=LFX.env.wrapT=THREE.RepeatWrapping; LFX.env.magFilter=LFX.env.minFilter=THREE.LinearFilter; LFX.env.needsUpdate=true;
+  const A=LFX.AO; LFX.ao=new THREE.DataTexture(new Uint8Array(A.w*A.k*A.h*A.k).fill(255),A.w*A.k,A.h*A.k,THREE.RedFormat); LFX.ao.magFilter=LFX.ao.minFilter=THREE.LinearFilter; LFX.ao.needsUpdate=true;
+  THREE.ShaderLib.lambert.uniforms.tENV={value:LFX.env}; THREE.ShaderLib.lambert.uniforms.tAO={value:LFX.ao}; }
+if(DITH||LFX.shade){ THREE.ShaderLib.lambert.vertexShader='varying vec3 vWP;\n'+THREE.ShaderLib.lambert.vertexShader.replace('#include <project_vertex>','#include <project_vertex>\n vWP=(modelMatrix*vec4(transformed,1.)).xyz;');
+  THREE.ShaderLib.lambert.fragmentShader='varying vec3 vWP;\n'+(LFX.shade?'#define LFX\nuniform sampler2D tENV,tAO; float lfh(vec2 p){ return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453); } float lfn(vec2 p){ vec2 i=floor(p), f=fract(p), u=f*f*(3.-2.*f); return mix(mix(lfh(i),lfh(i+vec2(1,0)),u.x),mix(lfh(i+vec2(0,1)),lfh(i+vec2(1,1)),u.x),u.y); }\n':'')+THREE.ShaderLib.lambert.fragmentShader; }
+if(DITH){ THREE.ShaderLib.lambert.fragmentShader=THREE.ShaderLib.lambert.fragmentShader.replace('#include <lights_fragment_begin>','#include <lights_fragment_begin>\n vec3 dc=floor(vWP*'+(24/(33.9/30)).toFixed(3)+'+.001); float dh=fract(sin(dot(dc,vec3(12.9898,78.233,37.719)))*43758.5453);'); }
+THREE.ShaderLib.lambert.fragmentShader=THREE.ShaderLib.lambert.fragmentShader
+  .replace('#include <map_fragment>','#include <map_fragment>\n {\n#ifdef FLAT_SHADED\n vec3 nv_=normalize(cross(dFdx(vViewPosition),dFdy(vViewPosition)));\n#else\n vec3 nv_=normalize(vNormal);\n#endif\n vec3 wn=abs((vec4(nv_,0.)*viewMatrix).xyz); diffuseColor.rgb*=wn.y>=max(wn.x,wn.z)?1.:wn.x>wn.z?.62:.8; }')
+  .replace('#include <lights_fragment_end>','#include <lights_fragment_end>\n'+(LFX.shade?' { vec3 wN=(vec4(normal,0.)*viewMatrix).xyz; float up=step(.7,wN.y); vec4 P0=texelFetch(tENV,ivec2(0,63),0), P1=texelFetch(tENV,ivec2(1,63),0), P2=texelFetch(tENV,ivec2(2,63),0); float cs=texture2D(tENV,vWP.xz/40.68+P1.rg).r; reflectedLight.directDiffuse*=1.-P0.r*smoothstep(.48,.58,cs)*.45; if(P0.b>.5&&up>0.&&vWP.y<.5){ vec2 au=(vWP.xz-vec2('+LFX.AO.x0+'.,'+LFX.AO.z0+'.))/vec2('+LFX.AO.w+'.,'+LFX.AO.h+'.); float ao=texture2D(tAO,au).r; reflectedLight.directDiffuse*=ao; reflectedLight.indirectDiffuse*=ao; } if(P0.a>.5&&up>0.){ float n=lfn(vWP.xz*.22)*.7+lfn(vWP.xz*.9)*.3, d=lfh(floor(vWP.xz*21.2))-.5, lv=floor(clamp(n*4.+d*.7,0.,3.999))/3.; float t=.84+.28*lv; reflectedLight.directDiffuse*=t; reflectedLight.indirectDiffuse*=t; }  }':'')+'\n { vec3 al=max(diffuseColor.rgb,vec3(.02)); vec3 L0=(reflectedLight.directDiffuse+reflectedLight.indirectDiffuse)/al*3.14159; float m0=max(L0.r,max(L0.g,L0.b)); if(m0<'+FLOOR+') reflectedLight.indirectDiffuse+=al/3.14159*('+FLOOR+'-m0); }\n { vec3 al=max(diffuseColor.rgb,vec3(.02)); vec3 L=(reflectedLight.directDiffuse+reflectedLight.indirectDiffuse)/al*3.14159; float m=max(L.r,max(L.g,L.b)); if('+(SMOOTH&&SOFT?'true':'false')+'&&m>.001){ float f=min(m,1.7)*'+SOFT+'., b=floor(f)+smoothstep(.3,.7,fract(f)), s=(f<1.?f:mix(f,b,.7))/'+SOFT+'.; float q=s/m; reflectedLight.directDiffuse*=q; reflectedLight.indirectDiffuse*=q; }'+(CEL?'\n if(m>.001){ float b=floor(min(m,1.45)*'+CEL+'.+.5)/'+CEL+'.; b=max(b,'+(.5/CEL).toFixed(3)+'); float sh=clamp(1.-b,0.,1.)*'+HUE+'; vec3 tn=mix(vec3(1.05,1.,.93),vec3(.8,.86,1.22),sh); float q=b/m; reflectedLight.directDiffuse*=q*tn; reflectedLight.indirectDiffuse*=q*tn; }':'')+'\n if('+(SMOOTH||CEL?'false':'true')+'&&m>.001){ float q=min(floor(min(m,1.7)*'+(DITH?DITH+'.+dh':'24.+.5')+')/'+(DITH||24)+'.,1.7)/m; reflectedLight.directDiffuse*=q; reflectedLight.indirectDiffuse*=q; } }');
+if(LFX.shade){ const FN='#ifdef FLAT_SHADED\n vec3 nq=normalize(cross(dFdx(vViewPosition),dFdy(vViewPosition)));\n#else\n vec3 nq=normalize(vNormal);\n#endif\n';
+  THREE.ShaderLib.lambert.fragmentShader=THREE.ShaderLib.lambert.fragmentShader
+  .replace('#include <color_fragment>','#include <color_fragment>\n float lfP=0.;\n { vec4 Q0=texelFetch(tENV,ivec2(0,63),0), Q1=texelFetch(tENV,ivec2(1,63),0);\n if(Q0.g>.01||Q1.b>.01){\n'+FN+' float upq=step(.7,(vec4(nq,0.)*viewMatrix).y); vec3 dc=diffuseColor.rgb; float gr=step(dc.r*1.1,dc.g)*step(dc.b*1.05,dc.g);\n if(Q0.g>.01&&upq>0.){ float w=Q0.g; diffuseColor.rgb*=1.-w*(.34-.22*gr); lfP=w*step(.79,lfn(vWP.xz*.55+3.)*.7+lfn(vWP.xz*1.9+11.)*.3)*(1.-gr)*step(vWP.y,.4); diffuseColor.rgb*=1.-.6*lfP; }\n if(Q1.b>.01&&upq>0.){ float c=step(1.-Q1.b*1.15,lfn(vWP.xz*.8+9.)*.6+lfn(vWP.xz*3.1+5.)*.4); diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.9,.92,.96),c); lfP*=1.-c; } } }')
+  .replace('#include <opaque_fragment>',' if(lfP>0.){ vec3 sk=texelFetch(tENV,ivec2(2,63),0).rgb; outgoingLight=mix(outgoingLight,sk*.46+.015,lfP*.8); }\n#include <opaque_fragment>'); }
+const NEONS=[], SHL=[], cutWalls=[], lamps=[], trees=[], shopGroups=[]; let night=1, nightTo=1; const C1=new THREE.Color(), C2=new THREE.Color(); function applyTime(){}
+const ZU=1/(PPU*Math.cos(Math.PI/6)), TILE=33.9/PPU, QS=new URLSearchParams(location.search), LAMPI=8, LAMPD=1.6;
+const SEEN=(o,show)=>{ if(!SEEN.L){ SEEN.L=1; scene.traverse(c=>{ if(c.isLight&&c.shadow)c.shadow.camera.layers.enable(3); }); }
+  if(o.userData.seen===show)return; o.userData.seen=show; o.traverse(c=>{ if(c.isMesh||c.isLine||c.isPoints){ if(show)c.layers.enable(0); else c.layers.disable(0); c.layers.enable(3); } }); };
+const OUT=window.OUT={L:[],open:true,world:true,up:true,add(o,k='open'){ OUT.L.push({o,k}); SEEN(o,OUT[k]); return o; },
+  tick(){ const up=LVL!=='down', ins=typeof ROOMS!=='undefined'&&!!ROOMS.cur, open=up&&!ins, world=up&&(FREE||!ins); OUT.up=up; if(open===OUT.open&&world===OUT.world)return;
+    OUT.open=open; OUT.world=world; for(const e of OUT.L)SEEN(e.o,OUT[e.k]); }};
+const FREE=QS.get('free')!=='0';
+const SOL={up:[],down:[]}, FIX={up:[],down:[]}, CLIPX=[];
+let solids=SOL.up, fixed=FIX.up, BOUND, groundY, LVL='up', BOD, BODB, METRO;
+const STORE={rooms:[],places:[],roofs:[]}, BF={list:[]}; window.STORE=STORE;
+const MAPG={}, MODS={}; let MAPBAKE=0; const OVERHEAD=[]; let RPASS=null, FIRE=null;
+const grab=async(name,fn)=>{ const n0=scene.children.length; await fn(); const g=new THREE.Group(); g.name=name; for(const o of scene.children.slice(n0))g.add(o); scene.add(g); MAPG[name]=g; return g; };
+const LAYOUT0={bodega:{x:8.75},diner:{x:-24.75},bar:{x:-8},ghost:{x:-8.75},apartments:{x:59},park:{e:[-4,0,0,0]},castle:{x:-70,y:25.5+14}};
+const AWAY0=['apartments','diner','bar','aquarium','garden','avenue','keep','civic','power','station'], AWAYLOT=1000;
+const AWAY=(()=>{ const s=new Set(AWAY0), q=QS.get('bring'); if(q==='all')s.clear(); else if(q)for(const k of q.split(','))s.delete(k.trim()); return s; })(); window.AWAY=AWAY;
+const LAY=(()=>{ const q=QS.get('layout'); let o={}; try{ o=q&&q[0]==='{'?JSON.parse(q):q==='0'?{}:JSON.parse(SAVE.get('layout')||'{}')||{}; }catch(e){}
+  const L=Object.assign({},LAYOUT0,o); return {L, o:k=>({x:(+(L[k]&&L[k].x)||0)+(k==='apartments'&&AWAY.has(k)?AWAYLOT:0),y:+(L[k]&&L[k].y)||0}), e:k=>(L[k]&&L[k].e||[0,0,0,0]).map(v=>+v||0), h:k=>+(L[k]&&L[k].h)||0, s:k=>+(L[k]&&L[k].s)||1}; })();
+const STN={DX:(-11+LAY.o('subway').x)*TILE, DZ:(-35+LAY.o('subway').y)*TILE, DY:-98*ZU};
+const PDX=(10+27.3/2+LAY.o('apartments').x)*TILE, PDZ=(-8.4+LAY.o('apartments').y)*TILE;
+const BLDK=1.1;
+const MAINX={w:70,e:70}, WID=14, NORTHY=9+WID;
+const AVE={x0:152+MAINX.e,x1:166.5+MAINX.e+WID,y1:57.5}; AVE.r0=AVE.x0+3.2; AVE.r1=AVE.x1-3.2;
+const RING={wx0:31.5-MAINX.w-WID,wx1:46-MAINX.w,ny0:12.5+NORTHY,ny1:27+NORTHY+WID}; RING.wr0=RING.wx0+3.2; RING.wr1=RING.wx1-3.2; RING.nr0=RING.ny0+3.2; RING.nr1=RING.ny1-3.2;
+{ const x0=(RING.wr0+RING.wr1)/2+2.7, raw=((50-MAINX.w)+AVE.x0)/2+9; RING.mine={x:x0+(Math.floor((raw-x0)/2.5)+.5)*2.5}; } AVE.y1=RING.ny1; AVE.ey1=RING.ny1+11.5; RING.stairs=[{x0:RING.wx0+.6,x1:RING.wx0+2.6,y0:-2,y1:4,steps:12,depth:98,dir:-1,leg:'w'},{x0:AVE.r1+.6,x1:AVE.r1+2.6,y0:-2.4,y1:3.6,steps:12,depth:98,dir:-1,leg:'e'}]; RING.river={y0:-150,y1:-104}; RING.ff={x0:RING.wx0-1.5,x1:AVE.x1+25.5,y0:RING.river.y0-1.5,y1:40.5+NORTHY};
+const MAPSTAIR={x0:59,x1:63,y0:-80,y1:-74, steps:12, depth:98, dir:-1};
+{ const o=LAY.o('subway'); MAPSTAIR.x0+=o.x; MAPSTAIR.x1+=o.x; MAPSTAIR.y0+=o.y; MAPSTAIR.y1+=o.y; }
+const CASTLE={b:[46,67,-21,-4],gate:58.5,stair:{x0:61.5,x1:63.5,y0:-19.4,y1:-13.4,steps:12,depth:98,dir:1},hall:{x0:51,y0:-20,x1:65,y1:-6.8,h:130}};
+{ const o=LAY.o('castle'), C=CASTLE, S=C.stair, H=C.hall; C.b=[C.b[0]+o.x,C.b[1]+o.x,C.b[2]+o.y,C.b[3]+o.y]; C.gate+=o.x; for(const R of [S,H]){ R.x0+=o.x; R.x1+=o.x; R.y0+=o.y; R.y1+=o.y; } }
+const POOLR={x0:0,y0:0,x1:27.3,y1:16.8,H:150}; Object.assign(POOLR,{bx0:3.5,by0:9.7,bx1:17,by1:15.6,HT:5});
+POOLR.LX=POOLR.bx1-POOLR.bx0; POOLR.LY=POOLR.by1-POOLR.by0; POOLR.level=-0.16*24;

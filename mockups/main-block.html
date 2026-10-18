@@ -1,0 +1,340 @@
+<title>Main Street Block</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Do+Hyeon&family=Silkscreen:wght@400;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* One screen: the block fills it, a plate of controls top-left, names over the places in the plan and isometric views. */
+:root{
+  --ink:#ecebf6; --dim:#a3a0c0; --plate:rgba(16,12,34,.88); --edge:#3a2f66; --hot:#d2307a; --night:#0c0b1e;
+  --mono:"Silkscreen","Courier New",monospace; --body:"IBM Plex Mono",ui-monospace,monospace;
+  color-scheme:dark;
+}
+html,body{height:100%;margin:0;background:var(--night);color:var(--ink);overflow:hidden}
+[hidden]{display:none!important}
+#c{position:fixed;inset:0;width:100%;height:100%;image-rendering:pixelated;image-rendering:crisp-edges;display:block;touch-action:none;cursor:grab}
+#c:active{cursor:grabbing}
+.plate{position:fixed;top:calc(12px + env(safe-area-inset-top,0px));left:max(16px,env(safe-area-inset-left,0px));
+  max-width:min(350px,calc(100vw - 32px));max-height:calc(100% - 40px);overflow:auto;background:var(--plate);border:2px solid var(--edge);padding:10px 12px;
+  font:12px/1.45 var(--body);display:flex;flex-direction:column;gap:8px;z-index:2}
+h1{font:700 15px/1.1 var(--mono);margin:0;letter-spacing:.04em;color:#fff}
+h1 b{color:#ff6fae}
+.tag{font:10px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
+.row{display:flex;flex-wrap:wrap;gap:4px;align-items:center}
+.row span{font:10px var(--mono);letter-spacing:.1em;color:var(--dim);min-width:58px}
+button{font:11px var(--mono);letter-spacing:.06em;background:#1d1838;color:var(--ink);border:1px solid var(--edge);padding:4px 7px;cursor:pointer}
+button[aria-pressed="true"]{background:var(--hot);border-color:#ff9cc8;color:#fff}
+button:focus-visible{outline:2px solid #ffd34d;outline-offset:1px}
+.cost{font:11px/1.5 var(--body);color:var(--dim);font-variant-numeric:tabular-nums}
+.cost b{color:var(--ink);font-weight:500}
+.hint{font-size:11px;color:var(--dim)}
+.opt{font-size:11px;color:var(--ink);border-left:3px solid var(--hot);padding-left:8px}
+#labels{position:fixed;inset:0;pointer-events:none;z-index:1}
+#labels div{position:absolute;transform:translate(-50%,-50%);font:10px var(--mono);letter-spacing:.08em;color:#fff;background:rgba(10,8,24,.78);padding:2px 5px;white-space:nowrap;border:1px solid #3a2f66}
+#labels div.old{border-color:#ff9cc8;color:#ffd0e4}
+#labels div.big{font-size:12px;background:none;border:none;color:#bfe0ff;text-shadow:0 0 0 #000,1px 1px 0 #000}
+#load{position:fixed;inset:0;display:grid;place-items:center;font:12px var(--mono);letter-spacing:.1em;color:var(--dim);pointer-events:none}
+</style>
+
+<canvas id="c" aria-label="Mockup of the main street block: a row of six buildings facing Central Park, a neon alley behind them, a second row of six storefronts facing the Hudson"></canvas>
+<div id="labels"></div>
+<div id="load">LAYING OUT THE BLOCK...</div>
+
+<div class="plate">
+  <div class="tag">Mockup · The Market</div>
+  <h1>MAIN STREET <b>BLOCK</b></h1>
+  <div class="hint">Six buildings facing Central Park (the apartment house, the bodega and Ghost Street kept, three empty fillers), the neon alley behind them, six empty storefronts facing the Hudson, and the river moved out to make room. Drag to turn, wheel to zoom.</div>
+  <div class="row"><span>VIEW</span>
+    <button id="v0" aria-pressed="true">PLAN</button><button id="v1">ISOMETRIC</button><button id="v2">IN THE ALLEY</button></div>
+  <div class="row"><span>MAP</span>
+    <button id="b0">BEFORE</button><button id="b1" aria-pressed="true">AFTER</button></div>
+  <div class="row"><span>BACK ROW</span>
+    <button id="o0" aria-pressed="true">A · BACKS ON ALLEY</button><button id="o1">B · SHOPS BOTH SIDES</button></div>
+  <div class="opt" id="optd"></div>
+  <div class="row"><span>ALLEY</span>
+    <button id="w0">5 WIDE</button><button id="w1" aria-pressed="true">7 WIDE</button><button id="w2">9 WIDE</button></div>
+  <div class="row"><span>SEE IN</span>
+    <button id="c0" aria-pressed="true">WHOLE</button><button id="c1">CUT TO GROUND FLOOR</button></div>
+  <div class="row"><span>SIGNS</span>
+    <button id="s0" aria-pressed="true">HANGUL</button><button id="s1">ENGLISH</button></div>
+  <div class="row"><span>HOUR</span>
+    <button id="h0" aria-pressed="true">NIGHT</button><button id="h1">BLUE HOUR</button></div>
+  <div class="cost" id="cost"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// ---------- small helpers ----------
+let seed=7;const rnd=()=>((seed=(seed*16807)%2147483647)/2147483647);
+const cv=(w,h)=>{const c=document.createElement('canvas');c.width=Math.max(1,w|0);c.height=Math.max(1,h|0);return c};
+const tx=c=>{const t=new THREE.CanvasTexture(c);t.magFilter=THREE.NearestFilter;t.minFilter=THREE.NearestFilter;t.generateMipmaps=false;return t};
+const T=24;                         // texels a metre for walls (the game's 24 a tile, near enough)
+let LANG=0;                         // 0 hangul, 1 english
+const KO='"Black Han Sans","Do Hyeon","Noto Sans KR",sans-serif', KO2='"Do Hyeon","Black Han Sans",sans-serif';
+
+// the light in flat bands, each band down a little cooler and bluer (the game's CEL, 4 bands)
+const bands=(()=>{const d=new Uint8Array([34,36,66,255, 92,92,132,255, 170,166,196,255, 255,250,244,255]);
+  const t=new THREE.DataTexture(d,4,1,THREE.RGBAFormat);t.magFilter=t.minFilter=THREE.NearestFilter;t.needsUpdate=true;return t})();
+const TOON=(o)=>new THREE.MeshToonMaterial(Object.assign({gradientMap:bands},o));
+const BASIC=(o)=>new THREE.MeshBasicMaterial(o);
+
+// ---------- painters ----------
+// a concrete or tiled facade with a window grid; some windows lit (their glow in the emissive map)
+function facade(w,h,o){
+  const c=cv(w*T,h*T),g=c.getContext('2d'),e=cv(w*T,h*T),q=e.getContext('2d');q.fillStyle='#000';q.fillRect(0,0,e.width,e.height);
+  const base=o.base;g.fillStyle=base;g.fillRect(0,0,c.width,c.height);
+  const d=g.getImageData(0,0,c.width,c.height);                         // grain: each texel its tone
+  for(let i=0;i<d.data.length;i+=4){const k=.9+rnd()*.16;d.data[i]*=k;d.data[i+1]*=k;d.data[i+2]*=k}g.putImageData(d,0,0);
+  if(o.tile){g.fillStyle='rgba(0,0,0,.18)';for(let y=0;y<c.height;y+=6)g.fillRect(0,y,c.width,1);for(let x=0;x<c.width;x+=12)g.fillRect(x,0,1,c.height)}
+  // the floor bands (slab edges) and stains running down from them
+  const st=o.storey||3.2;
+  for(let f=1;f*st<h;f++){const y=c.height-(f*st)*T;g.fillStyle='rgba(0,0,0,.28)';g.fillRect(0,y,c.width,3);g.fillStyle='rgba(255,255,255,.06)';g.fillRect(0,y-1,c.width,1);
+    for(let x=0;x<c.width;x+=3+((rnd()*9)|0)){g.fillStyle='rgba(20,18,26,.14)';g.fillRect(x,y+3,1+((rnd()*2)|0),4+((rnd()*30)|0))}}
+  const ww=o.win||1.4,wh=1.5;
+  for(let f=(o.from||1);f*st+wh<h-.3;f++)for(let x=o.wx||.8;x+ww<w-.3;x+=ww+(o.gap||1.1)){
+    const X=x*T,Y=c.height-(f*st+.9+wh)*T,W=ww*T,H=wh*T;
+    g.fillStyle='#55525c';g.fillRect(X-2,Y-2,W+4,H+4);                 // the frame
+    const lit=rnd()<(o.lit||.25),col=lit?['#ffd79a','#f2c27a','#cfe3ff','#ffb2c8'][(rnd()*4)|0]:'#16141f';
+    g.fillStyle=col;g.fillRect(X,Y,W,H);
+    if(lit){q.fillStyle=col;q.fillRect(X,Y,W,H);q.fillStyle='rgba(0,0,0,.35)';q.fillRect(X,Y,W*(.2+rnd()*.5),H);  // a curtain drawn part way
+      g.fillStyle='rgba(0,0,0,.35)';g.fillRect(X,Y,W*(.2+rnd()*.5),H)}
+    else{g.fillStyle='#2a2838';g.fillRect(X+W*.15,Y+2,2,H-4)}
+    g.fillStyle='#55525c';g.fillRect(X+W/2-1,Y,2,H);
+    g.fillStyle='#77737f';g.fillRect(X-3,Y+H+2,W+6,2);                  // the sill
+    if(rnd()<.25){g.fillStyle='#3e3b45';g.fillRect(X+W*.6,Y+H+4,W*.35,10);g.fillStyle='#2b2933';g.fillRect(X+W*.6,Y+H+6,W*.35,1)} // an AC unit's shadow box
+  }
+  return {map:tx(c),em:tx(e)};
+}
+// a plain shape painted on a small canvas, its alpha cut hard (no soft edge: alphaTest)
+function hard(c){const g=c.getContext('2d'),d=g.getImageData(0,0,c.width,c.height);
+  for(let i=3;i<d.data.length;i+=4)d.data[i]=d.data[i]>110?255:0;g.putImageData(d,0,0);return c}
+// the halo round a neon shape: three hard steps, never a blur
+function halo(src,col,r){const p=r*3+2,c=cv(src.width+p*2,src.height+p*2),g=c.getContext('2d');
+  const lv=[[r*3,.16],[r*2,.2],[r,.26]];
+  for(const [rad,a] of lv){const L=cv(c.width,c.height),q=L.getContext('2d');
+    for(let k=0;k<20;k++){const an=k/20*Math.PI*2;for(const s of [rad,rad*.5])q.drawImage(src,p+Math.cos(an)*s,p+Math.sin(an)*s)}
+    q.drawImage(src,p,p);q.globalCompositeOperation='source-in';q.fillStyle=col;q.fillRect(0,0,c.width,c.height);
+    g.globalAlpha=a;g.drawImage(L,0,0)}
+  return {c,p}}
+// text that fits a box (letters stacked when vertical)
+function words(g,s,x,y,w,h,font,vert){
+  g.textAlign='center';g.textBaseline='middle';
+  if(vert){const n=[...s].length,sz=Math.min(w*.92,h/n*.95);g.font=`${sz|0}px ${font}`;[...s].forEach((ch,i)=>g.fillText(ch,x+w/2,y+h/n*(i+.5)));return}
+  let sz=h*.86;g.font=`${sz|0}px ${font}`;const m=g.measureText(s).width;if(m>w*.94){sz*=w*.94/m;g.font=`${sz|0}px ${font}`}
+  g.fillText(s,x+w/2,y+h/2+sz*.04)}
+
+// ---------- the scene ----------
+const cvs=document.getElementById('c');
+const R=new THREE.WebGLRenderer({canvas:cvs,antialias:false});R.localClippingEnabled=true;
+const scene=new THREE.Scene();
+const NIGHT={bg:0x0c0b1e,fog:0x15132c,amb:0x3c3a78,ambK:.62};
+const BLUE={bg:0x1d2754,fog:0x2a3466,amb:0x6a74b0,ambK:.95};
+scene.background=new THREE.Color(NIGHT.bg);
+const amb=new THREE.AmbientLight(NIGHT.amb,NIGHT.ambK);scene.add(amb);
+const moon=new THREE.DirectionalLight(0x8a90d0,.35);moon.position.set(-30,60,-20);scene.add(moon);
+const box=(w,h,d)=>new THREE.BoxGeometry(w,h,d);
+let TARGET=null;                                   // the group things are built into (the signs' makers read it)
+const add=(geo,mat,x,y,z,ry)=>{const m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);if(ry)m.rotation.y=ry;(TARGET||scene).add(m);return m};
+let signs=[],lamps=[];
+function lamp(col,k,dist,x,y,z){const L=new THREE.PointLight(col,k,dist,1.6);L.position.set(x,y,z);(TARGET||scene).add(L);lamps.push(L);return L}
+const cutY=new THREE.Plane(new THREE.Vector3(0,-1,0),1e4);   // the back row cut at its ground floor (SEE IN), one plane shared
+
+// ---------- signs ----------
+// a light box: a lit face (unlit material, it is the light), a dark frame round it
+function lightbox(o){const S=o.res||40,c=cv(o.w*S,o.h*S);const mat=BASIC({map:tx(c)});
+  const g=c.getContext('2d');const sg={paint(){g.clearRect(0,0,c.width,c.height);o.paint(g,c.width,c.height);mat.map.needsUpdate=true}};sg.paint();signs.push(sg);
+  const grp=new THREE.Group();grp.position.set(o.x,o.y,o.z);grp.rotation.y=o.ry||0;(TARGET||scene).add(grp);
+  const fr=new THREE.Mesh(box(o.w+.12,o.h+.12,o.d||.3),TOON({color:o.frame||0x2b2a33}));grp.add(fr);
+  for(const s of (o.two?[1,-1]:[1])){const p=new THREE.Mesh(new THREE.PlaneGeometry(o.w,o.h),mat);p.position.z=s*((o.d||.3)/2+.01);if(s<0)p.rotation.y=Math.PI;grp.add(p)}
+  return grp}
+// neon: the tube shape lit, its dark backing a hand behind for depth, and its halo in three steps
+function neon(o){const S=o.res||32,c=cv(o.w*S,o.h*S),g=c.getContext('2d');
+  const grp=new THREE.Group();grp.position.set(o.x,o.y,o.z);grp.rotation.y=o.ry||0;(TARGET||scene).add(grp);
+  const fm=BASIC({map:tx(c),alphaTest:.5,side:THREE.DoubleSide}),bm=BASIC({color:0x0e0d18,map:tx(c),alphaTest:.5,side:THREE.DoubleSide});
+  let hm=null,hp=null;
+  const sg={paint(){g.clearRect(0,0,c.width,c.height);o.paint(g,c.width,c.height);hard(c);fm.map.needsUpdate=true;bm.map.needsUpdate=true;
+    const h=halo(c,o.glow,o.hr||4);
+    if(!hm){hm=BASIC({map:tx(h.c),transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide});
+      hp=new THREE.Mesh(new THREE.PlaneGeometry(h.c.width/S,h.c.height/S),hm);hp.position.z=-.02;grp.add(hp)}
+    else{hm.map.image=h.c;hm.map.needsUpdate=true}}};
+  sg.paint();signs.push(sg);
+  const f=new THREE.Mesh(new THREE.PlaneGeometry(o.w,o.h),fm);f.position.z=.04;grp.add(f);
+  const b=new THREE.Mesh(new THREE.PlaneGeometry(o.w,o.h),bm);b.position.z=-.03;b.position.x=.03;b.position.y=-.03;grp.add(b);
+  return grp}
+const tube=(g,col,lw)=>{g.strokeStyle=col;g.lineWidth=lw;g.lineCap='round';g.lineJoin='round'};
+
+// THE BLOCK, in tiles (x east along the street; z south: the park at -z, the Hudson at +z).
+// the main street row's fronts on z=0 facing north; its backs at z=14; the alley; the back row; the promenade and the quay; the river.
+const ROW1=[
+  {key:'f1',name:'EMPTY',x0:-62,x1:-48,h:10,base:'#6a6670'},
+  {key:'apts',name:'THE APARTMENT HOUSE',old:1,x0:-46,x1:-30,h:17,base:'#7a3b2e'},
+  {key:'metro',name:'METRO',lot:1,x0:-30,x1:-21},
+  {key:'bodega',name:'THE BODEGA',old:1,x0:-21,x1:-1,h:7.5,base:'#8a5a3c'},
+  {key:'f2',name:'EMPTY',x0:1,x1:13,h:9,base:'#646872'},
+  {key:'ghost',name:'GHOST STREET',old:1,x0:15,x1:29,h:9,base:'#5a4434',roof:1},
+  {key:'f3',name:'EMPTY',x0:31,x1:46,h:11,base:'#6c6660'},
+];
+const D1=14, D2=12;          // the rows' depths
+let AW=7, OPT=0, BEFORE=0;   // the alley's width, the back row's option, before / after
+const labels=[];
+function label(t,x,y,z,cls){labels.push({t,p:new THREE.Vector3(x,y,z),cls})}
+
+// a building: x0..x1, its front at zf facing dir (-1 north, +1 south), d deep, h high
+function building(o,zf,dir,d,back){
+  const L=o.x1-o.x0,cx=(o.x0+o.x1)/2,cz=zf-dir*d/2;   // (it stands behind its front)
+  const f=facade(L,o.h,{base:o.base,lit:o.lit??.3,from:1,storey:o.storey||3.2});
+  const fb=facade(L,o.h,{base:o.base,lit:.35,from:1,storey:o.storey||3.2});
+  const mk=(m)=>{m.clippingPlanes=[cutY];return m};   // (both rows cut to their ground floor with SEE IN)
+  const face=mk(TOON({map:f.map,emissive:0xffffff,emissiveMap:f.em,emissiveIntensity:.9}));
+  const bk=mk(TOON({map:fb.map,emissive:0xffffff,emissiveMap:fb.em,emissiveIntensity:.9}));
+  const side=mk(TOON({color:new THREE.Color(o.base).multiplyScalar(.75)})),roof=mk(TOON({color:0x34323e}));
+  // BoxGeometry's faces +x,-x,+y,-y,+z,-z: the front is -z when it faces north, +z when south
+  const mats=dir<0?[side,side,roof,roof,bk,face]:[side,side,roof,roof,face,bk];
+  add(box(L,o.h,d),mats,cx,o.h/2,cz);
+  add(box(L+.3,.35,.3),mk(TOON({color:0x3e3c48})),cx,o.h+.17,zf+dir*.15);   // the coping over the front
+  return {cx,cz,L,face:zf,back:zf-dir*d,mk}
+}
+// a shopfront on a face at z (facing dir): dark glass, a warm inside, a door, a sign band; shut = a roll-down shutter
+function shopfront(x0,x1,z,dir,o){const L=x1-x0,cx=(x0+x1)/2,zz=z+dir*.06;const mk=o.mk||(m=>m);
+  add(box(L-.6,2.6,.12),mk(TOON({color:o.shut?0x6e7078:0x1c1a26,emissive:o.shut?0:0x22160a})),cx,1.4,zz);
+  if(o.shut){for(let k=0;k<12;k++)add(box(L-.6,.04,.14),mk(TOON({color:0x50525a})),cx,.3+k*.22,zz)}
+  add(box(1.1,2.3,.16),mk(TOON({color:0x2a2622})),x1-1.2,1.15,zz);                           // the door
+  add(box(L-.3,.8,.2),mk(TOON({color:o.band||0x2a2834})),cx,3.2,zz);                          // the sign band, blank for now
+  if(o.awn)add(box(L-.6,.12,1.4),mk(TOON({color:o.awn})),cx,3.75,z+dir*.75);
+}
+
+function build(){
+  if(TARGET){scene.remove(TARGET)}TARGET=new THREE.Group();scene.add(TARGET);signs=[];lamps.length=0;labels.length=0;seed=7;
+  const Z1=D1, Z2=D1+AW, Z3=Z2+D2;                  // the alley between Z1 and Z2; the back row's front at Z3
+  const RIV=BEFORE?Z1+5:Z3+8;                       // the quay's edge: before, just past the old alley; after, past the promenade
+  const X0=-80,X1=64;
+  // the ground: the park's lawn, its sidewalk with the iron railing, the road, the near sidewalk
+  const flat=(x0,x1,z0,z1,col,y=0)=>{const m=add(new THREE.PlaneGeometry(x1-x0,z1-z0),TOON({color:col}),(x0+x1)/2,y,(z0+z1)/2);m.rotation.x=-Math.PI/2;return m};
+  flat(X0,X1,-90,-36.2,0x2f5a2c);flat(X0,X1,-36.2,-24.2,0x8a8a92,.01);flat(X0,X1,-24.2,-3.2,0x2c2c34,-.05);flat(X0,X1,-3.2,0,0x8a8a92,.01);
+  for(let x=X0;x<X1;x+=4)add(box(2,.06,.18),BASIC({color:0xd8b830}),x,0,-13.9),add(box(2,.06,.18),BASIC({color:0xd8b830}),x,0,-13.5);
+  for(let x=X0;x<X1;x+=.5)add(box(.06,1,.06),TOON({color:0x1a1a1e}),x,.5,-36.2);
+  add(box(X1-X0,.08,.08),TOON({color:0x1a1a1e}),(X0+X1)/2,.95,-36.2);
+  for(let k=0;k<9;k++){const x=X0+10+k*16,z=-50-(k%3)*9;add(new THREE.ConeGeometry(3.2,7,6),TOON({color:0x24502a}),x,6,z);add(box(.5,3,.5),TOON({color:0x4a3626}),x,1.5,z)}
+  label('CENTRAL PARK',-8,1,-46,'big');label('MAIN STREET',-8,.2,-13.7,'big');
+  // the street lights along the near kerb (two of the eight lamps)
+  for(const x of [-40,10]){add(box(.2,6.5,.2),TOON({color:0x3a3a42}),x,3.25,-3.6);add(box(.5,.15,.3),BASIC({color:0xffe6b0}),x,6.4,-4.2);lamp(0xffd8a0,1.6,16,x,6,-4.6)}
+  // ROW 1: facing the park
+  for(const o of ROW1){
+    if(o.lot){flat(o.x0,o.x1,0,Z1,0x55535c,.02);add(box(4,.08,6),BASIC({color:0x06050c}),(o.x0+o.x1)/2-1.5,.06,4);   // the Metro's opening
+      for(const s of [-1,1])add(box(.08,1,6),TOON({color:0x2a5a3a}),(o.x0+o.x1)/2-1.5+s*2,.5,4);
+      add(box(2.8,2.3,1.5),TOON({color:0x2f6a3a}),o.x1-2.2,1.15,-1.2);                          // the newsstand
+      label('METRO',(o.x0+o.x1)/2,1,4,'');continue}
+    const b=building(o,0,-1,D1);
+    if(o.key==='apts'){                                                                             // brick, fire escapes, the stoop
+      for(let f=1;f<5;f++){add(box(5,.1,1.2),TOON({color:0x1a1a1e}),b.cx,f*3.3+.4,-.6);add(box(5,1,.05),TOON({color:0x1a1a1e}),b.cx,f*3.3+.9,-1.2)}
+      add(box(3,1,2.4),TOON({color:0x7a6a58}),b.cx,.5,-1.6);shopfront(o.x0+1,o.x0+5,0,-1,{band:0x3a2a20})}
+    else if(o.key==='bodega'){shopfront(o.x0+1,o.x1-1,0,-1,{band:0x1f5a34});
+      neon({w:4,h:.9,x:b.cx,y:3.2,z:-.3,glow:'#ff6a6a',hr:3,paint(g,W,H){g.fillStyle='#ffb0a0';words(g,'BODEGA',0,0,W,H,'"Silkscreen",monospace')}})}
+    else if(o.key==='ghost'){                                                                       // the tiled roof, the noren, two red lanterns
+      const r=add(new THREE.CylinderGeometry(.01,D1*.62,3.4,4,1),TOON({color:0x3a3c44}),b.cx,o.h+1.7,b.cz);r.rotation.y=Math.PI/4;r.scale.set((o.x1-o.x0)/(D1*.88),1,1);
+      shopfront(o.x0+1,o.x1-1,0,-1,{band:0x23264a});add(box(2,1,.05),TOON({color:0x2a3a6a}),b.cx,2.1,-.15);
+      for(const s of [-1,1]){add(box(.5,.7,.5),BASIC({color:0xff5a3a}),b.cx+s*1.6,2.6,-.5)}}
+    else shopfront(o.x0+.8,o.x1-.8,0,-1,{shut:1,band:0x2a2834});
+    label(o.name,b.cx,o.h+2,b.cz,o.old?'old':'');
+  }
+  // ROW 2: six empty storefronts facing the Hudson (A: their backs on the alley; B: a shop on each side)
+  if(!BEFORE){const W2=[17,18,16,18,17,18],gap=1;let x=-62;
+    W2.forEach((w,i)=>{const o={x0:x,x1:x+w,h:[7,9.6,7,10.5,8,7][i],base:['#6a6670','#62666e','#706a62','#5e5a66','#686e6a','#6e6268'][i],cut:1};
+      const b=building(o,Z3,1,D2);
+      shopfront(o.x0+.8,o.x1-.8,Z3,1,{shut:1,awn:[0x7a2a2a,0x2a4a6a,0x2a5a3a,0x6a5a2a,0x4a2a5a,0x2a5a5a][i],mk:b.mk});
+      if(OPT===1)shopfront(o.x0+.8,o.x1-.8,Z2,-1,{shut:0,band:0x2a2834,mk:b.mk});
+      label('EMPTY',b.cx,o.h+2,b.cz,'');x+=w+gap});
+    // the promenade and the quay's railing
+    flat(X0,X1,Z3,RIV,0x8a8a92,.01);for(let x=X0;x<X1;x+=.6)add(box(.05,1,.05),TOON({color:0x1a1a1e}),x,.5,RIV-.2);
+    add(box(X1-X0,.08,.08),TOON({color:0x1a1a1e}),(X0+X1)/2,.98,RIV-.2);
+    label('THE PROMENADE',-8,.2,(Z3+RIV)/2,'big')}
+  // the alley's ground (worn asphalt, its gutter)
+  flat(X0,X1,Z1,Z2,0x3a3a44,.005);add(box(X1-X0,.03,.25),TOON({color:0x22222a}),(X0+X1)/2,.02,(Z1+Z2)/2);
+  label('THE ALLEY',-71,.4,(Z1+Z2)/2,'big');
+  // the Hudson: a quay wall and dark water, further out
+  {const w=add(new THREE.PlaneGeometry(X1-X0,120),TOON({color:0x1c3a5a,emissive:0x0a1828}),(X0+X1)/2,-1,RIV+60);w.rotation.x=-Math.PI/2;
+   add(box(X1-X0,1,.6),TOON({color:0x5a5a62}),(X0+X1)/2,-.5,RIV+.3);label('THE HUDSON',-8,0,RIV+14,'big');
+   if(!BEFORE)label('MOVED '+(Z3+8-(D1+5))+' TILES OUT',-8,0,RIV+20,'')}
+
+  // THE ALLEY'S SIGNS, on the backs of both rows (the photo's): its lamps (six of the eight)
+  const zA=Z1, zB=Z2, mid=(Z1+Z2)/2;
+  // on row 1's backs (facing south, into the alley)
+  lightbox({w:7,h:1.5,x:-12,y:4.2,z:zA+.18,res:36,frame:0x23242c,paint(g,W,H){g.fillStyle='#f3efe6';g.fillRect(0,0,W,H);
+    g.fillStyle='#e0502a';g.beginPath();g.ellipse(W*.1,H*.5,W*.06,H*.24,-.5,0,7);g.fill();g.fillStyle='#d8262e';words(g,LANG?'OCEAN WAVE':'바다의 파도',W*.22,H*.1,W*.74,H*.72,KO);
+    g.fillStyle='#8a8a90';words(g,LANG?'fresh fish':'신선한 해산물',W*.3,H*.76,W*.4,H*.18,KO2)}});
+  add(box(9,.16,2),TOON({color:0x2f2e38}),-12,3.3,zA+1);
+  for(let k=0;k<6;k++)add(box(.9,.05,.08),BASIC({color:0xf4f7ff}),-15.6+k*1.45,3.2,zA+1.4-(k%2)*.4);
+  lamp(0xeef2ff,2.4,9,-12,3,zA+1.6);
+  neon({w:4.4,h:1.1,x:-44,y:5.2,z:zA+.12,glow:'#cfd6ff',hr:3,paint(g,W,H){g.fillStyle='#f4f6ff';words(g,LANG?'SQUID HOUSE':'오징어집',0,0,W,H,KO2)}});
+  lamp(0xd8deff,1.8,9,-44,4.6,zA+1.5);
+  // blades out over the alley (they face along it)
+  const blade=(x,y,z,s,col,ink,ko,en,h)=>{lightbox({w:.8,h,x,y,z:z+s*.6,ry:Math.PI/2,res:40,d:.4,two:1,frame:0x2a2433,
+    paint(g,W,H){g.fillStyle=col;g.fillRect(0,0,W,H);g.fillStyle=ink;words(g,LANG?en:ko,0,H*.04,W,H*.92,KO,true)}});add(box(.08,.08,1.2),TOON({color:0x2a2a30}),x,y+h/2+.1,z+s*.5)};
+  blade(-25,6.5,zA,1,'#f08ac8','#6a1040','도매액세서리','BEADS',3.6);blade(4,6,zA,1,'#f6d02a','#2a2a2a','안경점','GLASSES',3.2);
+  blade(22,5.6,zA,1,'#ff7a3a','#fff','분식','SNACKS',2.2);blade(38,6.2,zA,1,'#5af0ff','#0a2a3a','PC방','PC ROOM',2.4);
+  neon({w:1.5,h:2.1,x:-4,y:5,z:zA+1.3,ry:Math.PI/2,glow:'#ff7ab0',hr:3,res:40,paint(g,W,H){const cx=W/2;g.fillStyle='#ffb6d2';
+    g.beginPath();g.moveTo(cx,H*.04);g.lineTo(cx+W*.24,H*.3);g.lineTo(cx+W*.17,H*.55);g.lineTo(cx-W*.17,H*.55);g.lineTo(cx-W*.24,H*.3);g.closePath();g.fill();
+    g.beginPath();g.ellipse(cx,H*.5,W*.2,H*.14,0,0,7);g.fill();tube(g,'#ffb6d2',5);for(let k=-3;k<=3;k++){g.beginPath();g.moveTo(cx+k*W*.05,H*.6);g.quadraticCurveTo(cx+k*W*.08,H*.78,cx+k*W*.06+(k%2?6:-6),H*.96);g.stroke()}}});
+  lamp(0xff6aa6,2.2,8,-4,4.6,mid);
+  // on row 2's backs (facing north): the chicken bar's tall sign, a karaoke box, the fish-bun neon
+  if(!BEFORE){
+    lightbox({w:1.2,h:1.2,x:-34,y:9.2,z:zB-1.3,ry:Math.PI/2,res:40,d:.4,two:1,frame:0xd8d8e0,paint:chick});
+    neon({w:.85,h:4.4,x:-34,y:6,z:zB-1.3,ry:Math.PI/2,glow:'#fff2c8',hr:3,res:30,paint(g,W,H){g.fillStyle='#fff8e4';words(g,LANG?'CHICKEN':'치킨호프맥주',0,0,W,H,KO,true)}});
+    add(box(.15,10,.15),TOON({color:0x3a3a42}),-34,5,zB-.5);
+    lamp(0xfff0cc,2.2,10,-34,6,mid);
+    blade(14,5.4,zB,-1,'#ff4a6a','#fff','노래방','KARAOKE',2.6);blade(30,5,zB,-1,'#d070ff','#fff','바','BAR',1.6);
+    neon({w:2.2,h:.7,x:-20,y:2.6,z:zB-.12,ry:Math.PI,glow:'#b07aff',hr:3,paint(g,W,H){g.fillStyle='#d6b8ff';words(g,LANG?'FISH BUNS':'붕어빵',W*.18,0,W*.82,H,KO2);g.beginPath();g.ellipse(W*.09,H*.5,W*.07,H*.3,0,0,7);g.fill()}});
+    lamp(0xa070ff,1.6,7,-20,2.4,zB-1.2);
+    lamp(0xff6aa0,1.8,10,22,5,mid);
+    if(OPT===1)for(let k=0;k<6;k++)lightbox({w:3,h:.8,x:-53.5+k*18,y:3.2,z:zB-.25,ry:Math.PI,res:30,d:.16,frame:0x1d1c24,
+      paint(g,W,H){g.fillStyle=['#f6d02a','#f3efe6','#ff8ac8','#5af0ff','#ffa040','#f3efe6'][k];g.fillRect(0,0,W,H);g.fillStyle='#2a2a2a';words(g,LANG?['NOODLES','DUMPLINGS','TEA','RAMEN','GRILL','BAKERY'][k]:['국수','만두','찻집','라멘','고기','빵집'][k],0,0,W,H,KO)}});
+  }
+  // the wires across the alley (lines, a picture pixel wide)
+  {const P=[];const sag=(a,b,dip)=>{for(let i=0;i<10;i++){const t0=i/10,t1=(i+1)/10;for(const t of [t0,t1])P.push(a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t-Math.sin(t*Math.PI)*dip,a[2]+(b[2]-a[2])*t)}};
+    for(let x=-58;x<44;x+=7)sag([x,7.6+(x%3),zA],[x+4,6.8,zB],.6);for(let k=0;k<3;k++)sag([-60,8-k*.5,zA+.3],[44,7.6-k*.4,zA+.3+k*.2],1.4);
+    const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(P,3));TARGET.add(new THREE.LineSegments(g,new THREE.LineBasicMaterial({color:0x08070f})))}
+  // puddles in the alley
+  for(const [x,c] of [[-12,'#f0f2ff'],[-4,'#ff7ab0'],[-34,'#fff0c0'],[-20,'#b07aff'],[22,'#ff6aa0'],[4,'#f6d02a']]){
+    const w=1.4+rnd()*1.2,d=Math.min(AW-2,1.6);const c2=cv(w*12,d*12),g=c2.getContext('2d');g.fillStyle='#22204a';g.beginPath();g.ellipse(c2.width/2,c2.height/2,c2.width*.45,c2.height*.4,0,0,7);g.fill();
+    g.fillStyle=c;g.globalAlpha=.6;g.fillRect(c2.width*.35,0,c2.width*.3,c2.height);hard(c2);
+    const m=add(new THREE.PlaneGeometry(w,d),BASIC({map:tx(c2),alphaTest:.5}),x+1,.03,mid+(rnd()-.5)*(AW-3));m.rotation.x=-Math.PI/2}
+  document.getElementById('optd').textContent=OPT?'B: each back-row shop has a door and sign on the alley too, so the alley is shopfronts on one side and lit signs on both.'
+    :'A: the back row turns its backs on the alley (back doors, signs hung off the walls); its shopfronts face the Hudson promenade.';
+}
+function chick(g,W,H){g.fillStyle='#fff7e0';g.fillRect(0,0,W,H);g.fillStyle='#f2a22a';g.beginPath();g.arc(W*.5,H*.55,W*.3,0,7);g.fill();
+  g.fillStyle='#e3302a';for(let k=0;k<3;k++){g.beginPath();g.arc(W*(.38+k*.12),H*.22,W*.08,0,7);g.fill()}
+  g.fillStyle='#222';g.fillRect(W*.4,H*.48,W*.05,H*.06);g.fillRect(W*.58,H*.48,W*.05,H*.06);
+  g.fillStyle='#ff8a1a';g.beginPath();g.moveTo(W*.44,H*.62);g.lineTo(W*.56,H*.62);g.lineTo(W*.5,H*.72);g.fill()}
+
+// ---------- views ----------
+let VIEW=0,yaw=0,pitch=0,zoom=1;const PX=2;
+const cam=new THREE.PerspectiveCamera(58,1,.1,400),ort=new THREE.OrthographicCamera(-1,1,1,-1,.1,800);
+function fit(){const w=innerWidth,h=innerHeight;R.setPixelRatio(1);R.setSize(Math.ceil(w/PX),Math.ceil(h/PX),false);cam.aspect=w/h;cam.updateProjectionMatrix();
+  const s=(VIEW===0?62:34)/zoom;ort.left=-s*w/h;ort.right=s*w/h;ort.top=s;ort.bottom=-s;ort.updateProjectionMatrix()}
+function place(){const mid=D1+AW/2;
+  if(VIEW===0){const ox=-8-ort.right*.28;ort.position.set(ox,300,BEFORE?0:8);ort.up.set(0,0,-1);ort.lookAt(ox,0,BEFORE?0:8)}
+  else if(VIEW===1){ort.up.set(0,1,0);const a=Math.PI*.82+yaw,t=new THREE.Vector3(-14,0,mid);ort.position.set(t.x+Math.sin(a)*150,140,t.z+Math.cos(a)*150);ort.lookAt(t)}
+  else{cam.position.set(-67,1.65,mid);cam.lookAt(-67+Math.cos(yaw)*10,1.65+1.4+pitch*10,mid+Math.sin(yaw)*10);cam.fov=60/zoom;cam.updateProjectionMatrix()}}
+const lab=document.getElementById('labels');
+function frame(){place();amb.intensity=(VIEW===0?2.2:1)*HK;const C=VIEW===2?cam:ort;cutY.constant=(CUT&&VIEW!==2)?3.6:1e4;R.render(scene,C);
+  const i=R.info.render;document.getElementById('cost').innerHTML=`<b>${i.triangles.toLocaleString()}</b> triangles · <b>${i.calls}</b> draws · <b>${lamps.length}</b> lamps · <b>0</b> shadows`;
+  let html='';if(VIEW!==2)for(const L of labels){const p=L.p.clone().project(C);if(p.z>1||Math.abs(p.x)>1.05||Math.abs(p.y)>1.05)continue;
+    html+=`<div class="${L.cls}" style="left:${(p.x*.5+.5)*innerWidth}px;top:${(-p.y*.5+.5)*innerHeight}px">${L.t}</div>`}
+  lab.innerHTML=html}
+let CUT=0,HK=NIGHT.ambK,dragging=null;
+cvs.addEventListener('pointerdown',e=>{dragging={x:e.clientX,y:e.clientY,yaw,pitch};cvs.setPointerCapture(e.pointerId)});
+cvs.addEventListener('pointermove',e=>{if(!dragging||VIEW===0)return;yaw=dragging.yaw-(e.clientX-dragging.x)*.005;
+  if(VIEW===2)pitch=Math.max(-.5,Math.min(.6,dragging.pitch-(e.clientY-dragging.y)*.003));frame()});
+addEventListener('pointerup',()=>dragging=null);
+cvs.addEventListener('wheel',e=>{e.preventDefault();zoom=Math.max(.5,Math.min(4,zoom*(e.deltaY<0?1.1:1/1.1)));fit();frame()},{passive:false});
+addEventListener('resize',()=>{fit();frame()});
+const group=(ids,fn)=>ids.forEach((id,i)=>document.getElementById(id).onclick=()=>{ids.forEach((j,k)=>document.getElementById(j).setAttribute('aria-pressed',k===i));fn(i);frame()});
+group(['v0','v1','v2'],i=>{VIEW=i;yaw=0;pitch=0;zoom=1;fit()});
+group(['b0','b1'],i=>{BEFORE=i?0:1;build()});
+group(['o0','o1'],i=>{OPT=i;build()});
+group(['w0','w1','w2'],i=>{AW=[5,7,9][i];build()});
+group(['c0','c1'],i=>{CUT=i});
+group(['s0','s1'],i=>{LANG=i;signs.forEach(s=>s.paint())});
+group(['h0','h1'],i=>{const H=i?BLUE:NIGHT;scene.background.setHex(H.bg);amb.color.setHex(H.amb);HK=H.ambK});
+build();fit();frame();
+Promise.race([Promise.all([document.fonts.load('40px "Black Han Sans"','바다'),document.fonts.load('40px "Do Hyeon"','오징'),document.fonts.load('12px Silkscreen','REST')]),new Promise(r=>setTimeout(r,3000))])
+  .then(()=>{signs.forEach(s=>s.paint());frame();document.getElementById('load').hidden=true});
+</script>

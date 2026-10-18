@@ -41,35 +41,12 @@ grab('park',()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.ox=PO.x; PARK.o
   // tilted its own way; chips; moss in the low joints; darker toward the ground and in the band under a cap's overhang, as light reaches less)
   // (owner, 18 Oct 2026: "make the brick colors more varied slightly, uneven bricks, cracks random": each stone's length its own (its joints moved a
   // few texels either way), each a little warmer or cooler, and now and then a hairline crack wandering across stones and joints alike)
-  const vn=(u,v,k)=>{ const i=Math.floor(u), j=Math.floor(v), f=t=>t*t*(3-2*t), a=f(u-i), b=f(v-j); return (hash(i,j,k)*(1-a)+hash(i+1,j,k)*a)*(1-b)+(hash(i,j+1,k)*(1-a)+hash(i+1,j+1,k)*a)*b; };
-  // (owner, 18 Oct 2026, again: "each brick has its own depth, but not so drastic, more subtle, larger posts, smaller bricks, more variety in colors
-  // and shapes, slight subtle differences"; the pixel artists' way: each brick a step lighter or darker than its neighbours and a shade warmer,
-  // cooler or sandier, its top edge lit a texel and its foot a texel in shade, the face between flat with only a soft grain, its corners worn
-  // round now and then, its length its own; no lone bright or dark texels side by side. Courses of 6 texels (5 of stone, 1 of joint), stones
-  // 8 to 12 long)
-  const TINT=[[1,1,1],[1.05,1,.93],[.95,.98,1.05],[1.07,1.02,.88],[.99,.96,.95],[1.02,1.03,.98]];
-  const stone=(i,j,k,H=99,cap=false)=>{ const row=Math.floor(j/6), fy=j-row*6, off=Math.floor(hash(row,k,29)*10), jt=b=>Math.round((hash(b,row,k+31)-.5)*4), e=i+off, b0=Math.floor(e/10), cb=e<b0*10+jt(b0)?b0-1:b0, Lc=cb*10+jt(cb), Wc=(cb+1)*10+jt(cb+1)-Lc, fx=e-Lc,
-      m=fy===5||fx===Wc-1, n=hash(cb,row,k), hp=hash(i,j,k+11), t=j/H;
-    let c, tn=[1,1,1]; if(m){ c=62+8*n; if(t>.6&&hash(Math.floor(i/3),row,k+13)<.4&&hp<.6)return [58+12*hp,80+16*hp,46]; }   // (the joint, and moss low down)
-    else{ const cn=(fx===0||fx===Wc-2)&&(fy===0||fy===4)&&hash(cb,row,k+17)<.45; if(cn)c=70+8*n;   // (a worn corner: the joint shows)
-      else{ c=(108+22*n)*(1+.06*(grain(i/24,j/24,k+1,1.5)-.5)); if(fy===0)c*=1.1; else if(fy===4)c*=.86; if(fx===0)c*=1.04; else if(fx===Wc-2)c*=.93; }
-      tn=TINT[Math.floor(hash(cb,row,k+33)*TINT.length)]; }
-    c*=.84+.16*(1-Math.max(0,Math.min(1,(t-.72)/.28))); if(cap&&j<3)c*=.7+.1*j;
-    if(Math.abs(vn(i/7,j/7,k+40)-.5)<.025&&vn(i/30,j/30,k+41)>.66)c*=.72;   // (a hairline crack)
-    return [c*tn[0],c*tn[1],c*tn[2]]; };
+  const stone=(i,j,k,H=99,cap=false)=>BRICKS.face(i,j,k,H,cap);   // (the town's one brick pattern: gamekit.js's BRICKS)
   const capSide=(i,j,h)=>{ const n=grain(i/24,j/24,91,1.2), c=(j===0?1.2:j>=h-1?.62:1)*(124+20*n); return speck([c,c,c*.96],i/24,j/24,93); };   // (the cap's edge: a lit chamfer on top, the drip's shadow under its lip)
   const face=(a,b,c,d,w,h,fn)=>BOD.bq(a,b,c,d,BOD.faceTex(w,h,(i,j)=>BOD.C(fn(i,j))),'G');
-  // (a post's corners brick by brick, owner, 18 Oct 2026: "you need to be able to see the outline of each separate brick in the shadow lines (instead
-  // of straight up and down in 1 line)", "not so drastic", "youre just doing a straight line across, each brick needs its own shape, up and down":
-  // the post one plain core, and at each of its four corners every course's corner brick a box of its own (long on one face, short on the other,
-  // the other way round the next course up, as quoins are laid), each standing out its own hair (a third to a texel and a bit) and a texel short of
-  // the next, so the corner's edge steps in and out brick by brick with a joint's notch between; each its own tone, lit on top, shaded at its foot)
-  const brick=(sd)=>{ const n=hash(sd,7,3), tn=TINT[Math.floor(hash(sd,9,5)*TINT.length)]; return (i,j,kk,w,h)=>{ let c=(106+24*n)*(1+.05*(grain(i/24,j/24,sd,1.5)-.5)); if(j===0)c*=1.1; else if(j>=h-1)c*=.86; if(i===0||i>=w-1)c*=.8; return [c*tn[0],c*tn[1],c*tn[2]]; }; };
   const block=(x0,y0,x1,y1,z0,z1,k,top,jo=0,HT,SF)=>{ if((top==='post'||top==='cap')&&HT===undefined){ x0-=PG; x1+=PG; y0-=PG; y1+=PG; }   /* (the posts larger: owner, 18 Oct 2026) */
     if(top==='post'&&HT===undefined){ block(x0,y0,x1,y1,z0,z1,k,'post',0,z1-z0);
-      for(let r=0;r*6<z1-z0;r++){ const zt=z1-r*6, zb=Math.max(z0,zt-5); if(zt-zb<2)continue;
-        for(const [cx,sx] of [[x0,-1],[x1,1]])for(const [cy,sy] of [[y0,-1],[y1,1]]){ const sd=k*977+r*31+(sx+1)*5+(sy+1), lx=(r+(sx>0)+(sy>0))&1, L=.38+.08*hash(sd,1,1), S=.2+.06*hash(sd,2,1), pr=.012+.04*hash(sd,3,1), ex=lx?L:S, ey=lx?S:L;
-          const bx0=sx<0?cx-pr:cx-ex, bx1=sx<0?cx+ex:cx+pr, by0=sy<0?cy-pr:cy-ey, by1=sy<0?cy+ey:cy+pr; block(bx0,by0,bx1,by1,zb,zt,k,()=>[92,90,86],0,zt-zb,brick(sd)); } }
+      BRICKS.quoins(x0,y0,x1,y1,z0,z1,k,(bx0,by0,bx1,by1,zb,zt,paint)=>block(bx0,by0,bx1,by1,zb,zt,k,()=>[92,90,86],0,zt-zb,paint));
       return; }
     if(x1-x0>40){ const n=Math.ceil((x1-x0)/40), d=(x1-x0)/n; for(let i=0;i<n;i++)block(x0+i*d,y0,x0+(i+1)*d,y1,z0,z1,k,top); return; }   /* (a long wall in lengths of 40 tiles at most: the atlas's width, 18 Oct 2026, the park twice as wide) */ const [a,b,c,d]=[X(x0),X(x1),Z(y0),Z(y1)], [e,f]=[Y(z0),Y(z1)], w=x1-x0, dp=y1-y0;
     const W=w*24, D=dp*24, H=z1-z0, sideF=SF?SF:top==='cap'?(i,j)=>capSide(i,j,H):(i,j,kk)=>stone(i,j+jo,kk,HT||H,top==='post'||HT!==undefined);

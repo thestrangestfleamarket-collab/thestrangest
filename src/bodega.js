@@ -133,7 +133,7 @@ const BOD={meshes:[], walls:{}, lamps:[]};
   BOD.kindOf=p=>{ if(/fluorescent tube/.test(p.name||''))return 'U'; if(ROOF.includes(p))return 'R';   // (U: hung overhead, seen only from under it)
     if(FRONT.includes(p))return 'Hfront'; if(p.high){ const w=wallOf(p); if(w)return 'H'+w.id; } return 'L'; };
   BOD.paintProps=()=>{ for(const p of [...Object.values(O),...FRONT,...STREET,...ROOF,...GHOSTST]){ const k=BOD.kindOf(p); BATCH.tag=OBJ('bodega',p.name); for(const b of p.boxes)gbox(b,k); } BATCH.tag=null; };   // (each thing tagged: the world editor)
-  BOD.g={bodegaWall,grain,speck,COPE,DTBRICK,hash,grassCol,lawnCol}; BOD.CURB=CURB; BOD.FAR=FAR;   // (the game's painters the look's builder asks for)
+  BOD.g={bodegaWall,grain,speck,COPE,DTBRICK,hash,grassCol,lawnCol,kerbFace,cvNoise}; BOD.CURB=CURB; BOD.FAR=FAR;   // (the game's painters the look's builder asks for)
   BOD.gbox=gbox; BOD.faceTex=faceTex; BOD.bq=bq; BOD.C=C; BOD.facade=facade; BOD.FRAME=FRAME; BOD.place=place; BOD.placeAt=placeAt; BOD.MAP=MAP; BOD.K={MKS,CATALOG,PROPS,STUDIO,LSEED,STORY,sh};   // (place: the apartment house's furniture is set the same way, apts.js)
   // CROSSWALKS (owner, 17 Oct 2026, mockup 1): white bars over the road at the park's gate and across the Avenue's mouth, over the Avenue at its mouth
   // and at the park's east gate; each a run [a0, a1, axis]: the bars across the axis, long along the way people walk, a little worn

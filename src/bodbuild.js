@@ -31,7 +31,7 @@ const BODB={};
   flat(B0.x0,B0.y0,B0.x1,B0.y1,H,roofCol,'R');
   // THE GROUND, and the kerbs' faces down to the street
   for(const g of BOD.grounds)flat(g.x0,g.y0,g.x1,g.y1,g.z,g.col,'G',!g.bld);
-  { const X=BOD.XS, Y=BOD.YS, Z=BOD.ZS; for(const k of BOD.kerbs){ const P=(a,z)=>k.ax==='y'?[X(k.at),Y(z),Z(a)]:[X(a),Y(z),Z(k.at)]; for(let a0=k.a0;a0<k.a1;a0+=80){ const a1=Math.min(k.a1,a0+80), H=k.z1-k.z0; BOD.bq(P(a0,k.z0),P(a1,k.z0),P(a1,k.z1),P(a0,k.z1),BOD.faceTex((a1-a0)*24,H,(i,j)=>kerbFace(a0+(i+.5)/24,H-1-j,H)),'G'); } } }   // (in lengths of 80 tiles at most: the atlas's width; its granite lengths, lit top, grimy foot: gamekit.js)   // (a kerb along x, or along y: the Avenue's)
+  { const X=BOD.XS, Y=BOD.YS, Z=BOD.ZS; for(const k of BOD.kerbs){ const P=(a,z)=>k.ax==='y'?[X(k.at),Y(z),Z(a)]:[X(a),Y(z),Z(k.at)]; for(let a0=k.a0;a0<k.a1;a0+=80){ const a1=Math.min(k.a1,a0+80), H=k.z1-k.z0; BOD.bq(P(a0,k.z0),P(a1,k.z0),P(a1,k.z1),P(a0,k.z1),BOD.faceTex((a1-a0)*24,H,(i,j)=>BOD.g.kerbFace(a0+(i+.5)/24,H-1-j,H)),'G'); } } }   // (in lengths of 80 tiles at most: the atlas's width; its granite lengths, lit top, grimy foot: gamekit.js)   // (a kerb along x, or along y: the Avenue's)
   // THE OBJECTS: every box of every one, painted by the game's own painters, into the atlas
   BOD.paintProps();
   BATCH.cast=true;

@@ -46,8 +46,8 @@ function slabCol(x,y){ const wx=x+(cvNoise(x*1.3,y*1.3,401)-.5)*.08, wy=y+(cvNoi
   const i=Math.floor(wx), j=Math.floor(wy), fx=wx-i, fy=wy-j, ex=Math.min(fx,1-fx), ey=Math.min(fy,1-fy), e=Math.min(ex,ey), n=grain(x,y,301,1.2), px=Math.floor(x*24), py=Math.floor(y*24), hp=hash(px,py,405);
   const ci=Math.round(wx), cj=Math.round(wy), chip=ex<.14&&ey<.14&&hash(ci,cj,411)<.4&&Math.hypot(Math.min(fx,1-fx),Math.min(fy,1-fy))<.07+hash(ci,cj,413)*.07;
   const green=cvNoise(x/2.2,y/2.2,415)+(landK(x+.8,y)===1||landK(x-.8,y)===1||landK(x,y+.8)===1||landK(x,y-.8)===1?.2:0);
-  if(e<.042||chip){ if(green>.62&&hp<.7)return mt('pavement',WEEDS[Math.floor(hash(px,py,417)*4)]); return mt('pavement',hp<.2?sh(GROUT,.86):hp>.9?sh(GROUT,1.1):GROUT); }
-  if(e<.07&&green>.72&&hp<.35)return mt('pavement',WEEDS[Math.floor(hash(px,py,419)*4)]);   // (a tuft spilling out of the seam)
+  if(e<.042||chip){ if(green>.7&&hp<.7)return mt('pavement',WEEDS[Math.floor(hash(px,py,417)*4)]); return mt('pavement',hp<.2?sh(GROUT,.86):hp>.9?sh(GROUT,1.1):GROUT); }
+  if(e<.07&&green>.78&&hp<.35)return mt('pavement',WEEDS[Math.floor(hash(px,py,419)*4)]);   // (a tuft spilling out of the seam)
   if(hash(i,j,305)<.16&&crack(x,y,307,.9,.014,.3)){ if(green>.55&&hp<.5)return mt('pavement',WEEDS[(px+py)&3]); return mt('pavement',sh(GROUT,.95)); }
   if(spot(x,y,309,.25,.025,.07))return mt('pavement',[108,104,98]);
   let c=SLAB[Math.floor(hash(i,j,7)*3)]; const tx=(hash(i,j,421)-.5)*.12, ty=(hash(i,j,423)-.5)*.12; c=sh(c,1+tx*(fx-.5)*2+ty*(fy-.5)*2);

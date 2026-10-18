@@ -23,7 +23,7 @@ grab('park',()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.ox=PO.x; PARK.o
   const hexCol=(x,y)=>{ const s=1/3, w=s*Math.sqrt(3), row=Math.floor(y/(s*1.5)), ox=(row&1)?w/2:0, col=Math.floor((x-ox)/w), cx=(col+.5)*w+ox, cy=row*s*1.5+s;
     const dx=Math.abs(x-cx), dy=Math.abs(y-cy), e=Math.max(dx/w*2,(dy+dx/Math.sqrt(3))/s), seam=e>.86, n=hash(col,row,71), g=grain(x,y,73,2), hp=hash(Math.floor(x*24),Math.floor(y*24),77);
     // (each paver bevelled (lit toward the top of the picture, shaded below), moss and weeds in the seams where a broad noise lets them: owner, 18 Oct 2026, "realistic textures")
-    if(seam){ if(cvNoise(x/2.5,y/2.5,79)>.6&&hp<.65)return [[52,82,40],[66,98,48],[44,70,34]][Math.floor(hash(Math.floor(x*24),Math.floor(y*24),81)*3)]; const c=36+8*n; return [c,c,c+2]; }
+    if(seam){ if(BOD.g.cvNoise(x/2.5,y/2.5,79)>.6&&hp<.65)return [[52,82,40],[66,98,48],[44,70,34]][Math.floor(hash(Math.floor(x*24),Math.floor(y*24),81)*3)]; const c=36+8*n; return [c,c,c+2]; }
     let c=58+22*n+10*(g-.5); if(e>.74)c*=(y<cy)?1.14:.84; return speck([c,c,c+2],x,y,75); };
   // THE LAWN: lawnCol (gamekit.js: the all-green lawn with its sprouts and weeds, every grass on the map)
   const lawn=BOD.g.lawnCol;

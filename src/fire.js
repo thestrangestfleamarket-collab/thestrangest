@@ -89,5 +89,5 @@ void main(){
       P.set([q.x,q.y,q.z,q.k],n*4); S.set([sz,sz,q.sd,a],n*4); n++; }
     for(let i=PT.length-1;i>=0;i--)if(PT[i].t>=PT[i].life)PT.splice(i,1);
     g.instanceCount=n; aP.needsUpdate=n>0; aS.needsUpdate=n>0; me.visible=n>0; FLAME.n=n; };
-  return {add,props,tick,flick,ember,puff,part,src:SRC,pt:PT,me,K}; })();
+  return {add,props,tick,flick,ember,puff,part,src:SRC,pt:PT,me,K}; })(); window.FLAMES=FLAME.src;   // (a test's look: every flame's place)
 window.FLAME=FLAME;   // (a test's look)

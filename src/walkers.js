@@ -21,7 +21,10 @@ if(WALKERS.on){ const T=TILE, X=BOD.XS, Z=BOD.ZS, rnd=Math.random, pick=a=>a[Mat
     shopper:{w:2,gaits:['walk','stroll'],stay:[6,16],idles:['UAL_Idle_Talking_Loop','idle_a','UAL_Idle_Loop'],to:()=>rnd()<.8?'shop':'city'},
     jogger:{w:1,gaits:['jog','jog','run'],stay:[1,3],idles:['UAL_Idle_Loop','idle_b'],to:()=>'lap'},
     loiterer:{w:1,gaits:['stroll'],stay:[15,40],idles:['UAL_Idle_Talking_Loop','idle_b','cheer_idle_a','sit_floor_idle_a'],to:()=>'near'},
-    commuter:{w:2,gaits:['brisk','formal'],stay:[10,22],idles:['UAL_Idle_Loop','idle_a'],to:()=>'commute'}};
+    commuter:{w:2,gaits:['brisk','formal'],stay:[10,22],idles:['UAL_Idle_Loop','idle_a'],to:()=>'commute'},
+    // (the rock golems, owner 18 Oct 2026: "they all hang out together in middle of central park": the twelve townspeople, slow, round the
+    // park's round, long stays, talking, sitting, cheering; never chosen at random for anyone else)
+    golem:{w:0,gaits:['stroll'],stay:[20,60],idles:['UAL_Idle_Talking_Loop','sit_floor_idle_a','idle_b','cheer_idle_a','UAL_Idle_Loop'],to:()=>'round'}};
   const KW=Object.entries(KIND).flatMap(([k,v])=>Array(v.w).fill(k));
   // where to: a spot (free for him) of the kind asked
   const P0=()=>({x0:X(PARK.x0+PARK.ox+2),x1:X(PARK.x1+PARK.ox-2),z0:Z(PARK.y0+PARK.oy+2),z1:Z(PARK.y1+PARK.oy-2)});
@@ -36,6 +39,7 @@ if(WALKERS.on){ const T=TILE, X=BOD.XS, Z=BOD.ZS, rnd=Math.random, pick=a=>a[Mat
       else if(what==='place'){ const P=pick(places()); p=P&&{x:P.door.x+R(-.6,.6)*T,z:P.door.z+R(-.3,.3)*T}; }
       else if(what==='shop'){ const P=CITY.place(pick(SHOPS)); p=P&&{x:P.door.x+R(-1,1)*T,z:P.door.z+R(-.4,.4)*T}; }
       else if(what==='lap'){ W.lap=((W.lap??Math.floor(rnd()*4))+1)%4; const c=CORNERS[W.lap]; p={x:X(c[0])+R(-.4,.4)*T,z:Z(c[1])+R(-.4,.4)*T}; }
+      else if(what==='round'){ const [cx,cy,r]=PARK.round, a=rnd()*Math.PI*2, d=R(.3,1)*(r+1.5); p={x:X(cx+PARK.ox+Math.cos(a)*d),z:Z(cy+PARK.oy+Math.sin(a)*d)}; }
       else if(what==='near'){ p={x:W.home.x+R(-6,6)*T,z:W.home.z+R(-6,6)*T}; }
       else if(what==='mailbox'){ const s=W.home.step||W.home.b.step; p={x:s.x+R(-.3,.3)*T,z:s.z+R(-.2,.2)*T}; }
       else if(what==='commute'){ W.leg^=1; const P=W.ends[W.leg]; p=P&&{x:P.door.x+R(-.6,.6)*T,z:P.door.z+R(-.3,.3)*T}; }
@@ -44,10 +48,10 @@ if(WALKERS.on){ const T=TILE, X=BOD.XS, Z=BOD.ZS, rnd=Math.random, pick=a=>a[Mat
   const next=(N,W)=>{ const K=KIND[W.kind], mail=W.home&&window.MAIL&&MAIL.ready&&MAIL.waiting(W.home)&&rnd()<.6, to=mail?spot(N,W,'mailbox'):spot(N,W,K.to()); W.state='going'; N.dwell=null; W.mail=!!(mail&&to); if(!to){ W.state='wait'; W.t=2; return; }   /* (mail waiting: home to his box first, mail.js) */
     W.where=to; CITY.send(N,to,{v:W.v,then:ok=>{ if(N.errand)return; if(!ok){ W.state='wait'; W.t=1+rnd()*2; return; }   // (no way there: another place soon)
       if(W.mail){ W.mail=false; const got=MAIL.take(W.home.id,N.name); W.state='stay'; W.t=4+got.length*2.5; N.dwell='found_item_idle_a'; N.st.hold=true; N.st.to=null; const F=W.home.b.F; N.st.face={x:N.st.x-F.n.x,z:N.st.z-F.n.z}; return; }   /* (at his box: reading) */
-      W.state='stay'; W.t=R(...K.stay)*(W.kind==='jogger'?1:R(.7,1.3)); N.dwell=inPark(N.st.x,N.st.z)||W.kind!=='parkgoer'?pick(K.idles):'UAL_Idle_Loop'; if(N.dwell==='sit_floor_idle_a'&&!inPark(N.st.x,N.st.z))N.dwell='UAL_Idle_Loop';
+      W.state='stay'; W.t=R(...K.stay)*(W.kind==='jogger'?1:R(.7,1.3)); N.dwell=inPark(N.st.x,N.st.z)||(W.kind!=='parkgoer'&&W.kind!=='golem')?pick(K.idles):'UAL_Idle_Loop'; if(N.dwell==='sit_floor_idle_a'&&!inPark(N.st.x,N.st.z))N.dwell='UAL_Idle_Loop';
       N.st.hold=true; N.st.to=null; const a=rnd()*Math.PI*2; N.st.face={x:N.st.x+Math.sin(a),z:N.st.z+Math.cos(a)}; }}) ; };
   const start=()=>{ const res=new Set((CITY.residents||[]).map(r=>r.key)); let i=0;
-    for(const N of (window.PAWNL||[])){ if(res.has(N.key)||N.staff)continue; const kind=KW[Math.floor(rnd()*KW.length)], K=KIND[kind], g=pick(K.gaits), G=GAIT[g];
+    for(const N of (window.PAWNL||[])){ if(res.has(N.key)||N.staff)continue; const kind=/_\d$/.test(N.key)?'golem':KW[Math.floor(rnd()*KW.length)], K=KIND[kind], g=pick(K.gaits), G=GAIT[g];
       const W={N,kind,gait:g,v:R(...G[2]),state:'wait',t:R(0,4),home:{x:N.st.x,z:N.st.z},leg:0,lap:null};
       if(kind==='loiterer'){ const s=spot(N,W,rnd()<.5?'park':'city'); if(s)W.home=s; }
       if(kind==='commuter'){ const ps=places(); W.ends=[pick(ps),pick(ps)]; }

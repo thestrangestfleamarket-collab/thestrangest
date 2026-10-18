@@ -32,9 +32,23 @@
     const skin=r=>{ const S=sum[r], R_=S[0]/S[3]/255, G_=S[1]/S[3]/255, B_=S[2]/S[3]/255; return R_>.42&&R_>G_&&G_>B_&&R_-B_>.12&&G_/R_>.55&&G_/R_<.92; };
     const turn={}; for(const r in sum)turn[r]=skin(+r)?null:[hs(seed,+r),.75+hs(seed,+r+9)*.5];
     for(let i=0;i<R.length;i++){ const t=turn[R[i]]; if(!t)continue; col.setRGB(c[i*3]/255,c[i*3+1]/255,c[i*3+2]/255); col.getHSL(hsl); col.setHSL((hsl.h+t[0])%1,Math.min(1,hsl.s*1.1+.08),Math.min(.9,hsl.l*t[1])); c[i*3]=col.r*255; c[i*3+1]=col.g*255; c[i*3+2]=col.b*255; } return g; };
+  // THE ROCK GOLEMS (owner, 18 Oct 2026: "i want these people to all be changed to look like rock golems textuer, gray, rock, they all hang out
+  // together in middle of central park"): the twelve townspeople carved in stone: each face of the mesh its own grey from a noise through the
+  // body (four greys, warm and cool), the seams between stones dark, a lit chip on what faces up, a fleck of lichen now and then, darker toward
+  // the feet; the eyes left their own (the darkest part). Their way of life is walkers.js's 'golem': the park's round, together
+  const golem=(g,seed)=>{ g=g.toNonIndexed(); const p=g.attributes.position.array, c=g.attributes.color.array, A=new THREE.Vector3(), B=new THREE.Vector3(), C=new THREE.Vector3(), hy=g.boundingBox||(g.computeBoundingBox(),g.boundingBox);
+    const n3=(x,y,z)=>{ const v=Math.sin(x*12.9898+y*78.233+z*37.719+seed*7.1)*43758.5453; return v-Math.floor(v); }, vn=(x,y,z)=>{ const i=Math.floor(x), j=Math.floor(y), k=Math.floor(z), f=x-i, gg=y-j, e=z-k, s=t=>t*t*(3-2*t), u=s(f), v=s(gg), w=s(e), L=(a,b,t)=>a+(b-a)*t;
+      return L(L(L(n3(i,j,k),n3(i+1,j,k),u),L(n3(i,j+1,k),n3(i+1,j+1,k),u),v),L(L(n3(i,j,k+1),n3(i+1,j,k+1),u),L(n3(i,j+1,k+1),n3(i+1,j+1,k+1),u),v),w); };
+    const ST=[[134,132,128],[112,111,108],[96,97,99],[150,147,140]], h0=hy.min.y, hh=Math.max(1e-6,hy.max.y-hy.min.y), sc=6/hh;
+    for(let t=0;t<p.length/9;t++){ const i=t*9; A.fromArray(p,i); B.fromArray(p,i+3); C.fromArray(p,i+6); const m=[(A.x+B.x+C.x)/3*sc,(A.y+B.y+C.y)/3*sc,(A.z+B.z+C.z)/3*sc], ny=B.clone().sub(A).cross(C.clone().sub(A)).normalize().y;
+      const l0=(c[i]*.3+c[i+1]*.59+c[i+2]*.11)/255; if(l0<.09)continue;   // (the eyes, the darkest: kept)
+      const cell=vn(m[0]*1.3,m[1]*1.3,m[2]*1.3), seam=Math.abs(vn(m[0]*2.1+5,m[1]*2.1,m[2]*2.1)-.5)<.045; let o=ST[Math.floor(cell*3.99)];
+      if(seam)o=[58,57,56]; else if(ny>.55&&n3(t,1,2)<.25)o=[172,170,164]; else if(n3(t,3,4)<.025)o=[96,112,74];
+      const k=(.62+.38*Math.min(1,((A.y+B.y+C.y)/3-h0)/hh*1.5))*(ny<-.4?.75:1); for(let v=0;v<3;v++)for(let j=0;j<3;j++)c[i+v*3+j]=Math.min(255,o[j]*k); }
+    g.attributes.color.needsUpdate=true; return g; };
   const PEOPLE=['hero_m','hero_f','villager_m','villager_f'], ALL=[...Object.keys(PW).map(k=>[k,k,0]),...[1,2,3].flatMap(n=>PEOPLE.map(k=>[k+'_'+n,k,n]))];
   ALL.forEach(([key,kind,copy],i)=>{ const D=PW[kind], rig=rigOf(D.rig), mixer=new THREE.AnimationMixer(rig.bones[0]), A={}, act=n=>A[n]||(A[n]=mixer.clipAction(CLIPS[n])); let cur=null;
-    const N=makeNPC(null,{key,name:key.toUpperCase().replace('_',' '),names:D.mesh.parts,lv:'up',group:'bodega',geo:copy?recloth(geomOf(D.mesh),copy*7+i):dressed(geomOf(D.mesh),UNIFORM[key]),skin:rig,tall:D.tall,rank:D.mesh.parts.map(()=>0),metres:1.35,x:BOD.XS(66+(i%12)*4.4+(copy?1.7*copy:0)),z:BOD.ZS(i%2?-63.2:-73.6),lane:STLANE,free:stfree,roam:true,ground:(x,z)=>MODS.bodega.ground(x,z),radius:.3,speed:.5,stride:0,rock:0,bob:0,
+    const N=makeNPC(null,{key,name:key.toUpperCase().replace('_',' '),names:D.mesh.parts,lv:'up',group:'bodega',geo:copy?golem(geomOf(D.mesh),copy*7+i):dressed(geomOf(D.mesh),UNIFORM[key]),skin:rig,tall:D.tall,rank:D.mesh.parts.map(()=>0),metres:1.35,x:BOD.XS(66+(i%12)*4.4+(copy?1.7*copy:0)),z:BOD.ZS(i%2?-63.2:-73.6),lane:STLANE,free:stfree,roam:true,ground:(x,z)=>MODS.bodega.ground(x,z),radius:.3,speed:.5,stride:0,rock:0,bob:0,
       brain:HOLD?(dt,you,st)=>{ st.to=null; st.hold=true; }:undefined,
       anim:(dt,moving,st,sc)=>{ let want, ts=1;
         if(HOLD)want=HOLD; else if(N.sheet)want='UAL_A_TPose'; else{ const run=moving&&st.v>(N.gait?2.4:1.2)*TILE; const fast=moving&&N.gaitU>2.5; want=moving?(run&&!fast?'UAL_Sprint_Loop':N.gait||WALKC):N.dwell||N.idle||IDLEC; if(moving)ts=Math.max(.6,Math.min(1.8,st.v/((run&&!fast?RUNU:N.gaitU||WALK)*sc)));   /* (N.gait, N.gaitU, N.idle, N.dwell: his own walk, its pace, his own idle, what he does where he stops: walkers.js) */ }

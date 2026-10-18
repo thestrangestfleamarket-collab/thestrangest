@@ -1,7 +1,6 @@
 // ---- THE SECURITY DROIDS (owner, 17 Oct 2026: "make them security droids, they protect the market"): the UAL1 animation library's standard
 // body (his Drive's UAL1_Standard.glb: an Unreal-style rig of 65 bones with its 43 clips, baked as the creatures are, tools/creatures-bake.py
-// with SIMP=0.5 → data/ual.json: 6,872 triangles each, half the file's) made a droid: the body gunmetal, the joints lit cyan (the glowing part,
-// lit by nothing: uEye), no texture. Four of them, each marching a beat (the shops' sidewalk's two halves, the far sidewalk, the road's middle)
+// with SIMP=0.5 → data/ual.json: 6,872 triangles each, half the file's) made a droid: three greys (below), no texture. Four of them, each marching a beat (the shops' sidewalk's two halves, the far sidewalk, the road's middle)
 // at the formal walk, on guard at each end looking one way and the other. A troublemaker on the street (npc-skel.js's, up the subway stairs
 // after dark): every droid near sprints to him and stuns him with a beam from his hand (Spell_Simple_Shoot, a cyan bolt: the guards' shoot),
 // or a jab up close; he falls as the guards' blows fell him; then a word on the radio (Idle_Talking_Loop) and back to the beat.
@@ -18,9 +17,15 @@
       for(const [bn,p] of Object.entries(Cl.p))if(bn!=='root')tracks.push(new THREE.VectorKeyframeTrack(bn+'.position',T,f32(p)));   // (the root's own travel, if any, never: he goes where makeNPC walks him)
       out[name]=new THREE.AnimationClip(name,Cl.dur,tracks); } return out; };
   const CLIPS=clipsOf(), WALK=1.35, RUNU=5;   // (how far the formal walk and the sprint carry him a second at their own pace, in metres: the clips are in place, so his pace sets the clip's)
-  // THE DROID'S COLOURS: the file's body part gunmetal (a blue-grey, a little lighter at the top), its joints the glowing part (cyan, uEye)
-  const GEO=geomOf(D.mesh); { const c=GEO.attributes.color.array, R=GEO.attributes.reg.array, P=GEO.attributes.position.array, JT=D.mesh.parts.indexOf('M_Joints');
-    for(let i=0;i<R.length;i++){ if(R[i]===JT){ c[i*3]=70; c[i*3+1]=230; c[i*3+2]=255; } else{ const k=.9+.25*Math.min(1,Math.max(0,P[i*3+1]/1.83)); c[i*3]=84*k; c[i*3+1]=92*k; c[i*3+2]=104*k; } } }
+  // THE DROID'S COLOURS (owner, 18 Oct 2026: "instead of grey and blue make them 3 shades of grey, more realistic shades and shadows"): his
+  // plates three greys, face by face (the mesh unshared, so each plate keeps a hard edge): a pale grey on what faces up and on his chest and head,
+  // a mid grey on his sides, a dark grey on his joints and what faces down; darker toward his feet (the depth), a plate here and there a step off
+  // its neighbours (worn and replaced); nothing glows
+  const GEO=geomOf(D.mesh).toNonIndexed(); { const c=GEO.attributes.color.array, R=GEO.attributes.reg.array, P=GEO.attributes.position.array, JT=D.mesh.parts.indexOf('M_Joints'), A=new THREE.Vector3(), B=new THREE.Vector3(), C=new THREE.Vector3();
+    const G3=[[176,178,180],[122,124,127],[66,68,71]];
+    for(let t=0;t<R.length/3;t++){ const i=t*9; A.fromArray(P,i); B.fromArray(P,i+3); C.fromArray(P,i+6); const ny=B.clone().sub(A).cross(C.clone().sub(A)).normalize().y, y=(A.y+B.y+C.y)/3/1.83, h=Math.abs(Math.sin(Math.round(A.x*9)*12.9898+Math.round(A.y*9)*78.233+Math.round(A.z*9)*37.719)*43758.5453)%1;
+      let g=R[t*3]===JT?2:ny<-.35?2:ny>.45||(y>.55&&y<.75&&Math.abs(A.x)<.14)?0:1; if(h<.08&&g<2)g++;
+      const k=(.74+.3*Math.min(1,y*1.4))*(ny>.45?1.05:1); for(let v=0;v<3;v++)for(let j=0;j<3;j++)c[i+v*3+j]=Math.min(255,G3[g][j]*k); } }
   // HIS MOVES: every clip an action on his mixer, faded in and out; under it his going (the beat's walk, the sprint, or standing), over it one
   // move at a time (a stun shot, a jab, a word on the radio) played through once (the guards' own way, npc-skel.js)
   const Anim=mixer=>{ const A={}, W={}, act=n=>A[n]||(A[n]=mixer.clipAction(CLIPS[n])); const M={base:'Idle_Loop',ts:1,once:null};
@@ -34,11 +39,14 @@
     return M; };
   const {TROUBLE,shoot,free,SEE,RUN,LANE,T_,Z_,d2}=GUARDX, HOLD=QS.get('ualclip'), DROIDS=[]; window.DROIDS=DROIDS;
   const BEAM=[.35,1,1], STUN={reach:5.5,at:.5,dmg:.55}, JAB={reach:.8,at:.4,dmg:.4};
-  // (name, his beat in bodega tiles: the shops' sidewalk's two halves by the kerb, the far sidewalk, the road's middle)
-  const CH=[['DROID 1',[[53,-74.6],[79,-74.6]]],['DROID 2',[[81,-74.6],[106,-74.6]]],['DROID 3',[[55,-61.7],[104,-61.7]]],['DROID 4',[[52,-69.3],[106,-69.3]]]];
+  // THEIR BEAT (owner, 18 Oct 2026: "they patrol all around the edges of the map"): one round of the loop's outer sidewalks, the four corners
+  // (the shops' sidewalk, the Avenue's east one, the north street's outer one, the west street's outer one: bodega tiles, read from the map's own
+  // numbers so a longer street takes them with it), each droid starting a quarter of the way round from the last, all going the same way
+  const RD=[[RING.wx0+1.6,-74.4],[AVE.x1-1.6,-74.4],[AVE.x1-1.6,RING.ny1-1.6],[RING.wx0+1.6,RING.ny1-1.6]];
+  const CH=[0,1,2,3].map(k=>['DROID '+(k+1),[0,1,2,3].map(j=>RD[(k+j)%4])]);
   CH.forEach(([name,beat],i)=>{ const rig=rigOf(D.rig), mixer=new THREE.AnimationMixer(rig.bones[0]), an=Anim(mixer), G={beat:beat.map(([x,y])=>({x:T_(x),z:Z_(y)})),leg:0,mode:'patrol',cool:0,look:Math.random()*6};
-    const N=makeNPC(null,{key:'droid'+(i+1),name,names:D.mesh.parts,lv:'up',group:'bodega',geo:GEO,skin:rig,tall:D.tall,eye:D.mesh.parts.indexOf('M_Joints'),eyeC:'.27,.9,1.',rank:D.mesh.parts.map(()=>0),metres:1.9,x:G.beat[0].x,z:G.beat[0].z,lane:LANE,free,ground:(x,z)=>MODS.bodega.ground(x,z),radius:.3,speed:.5,stride:0,rock:0,bob:0,
-      pick:st=>{ G.leg^=1; const p=G.beat[G.leg]; st.to={x:p.x,z:p.z+(Math.random()-.5)*.3*TILE}; st.v=G.walkV; },
+    const N=makeNPC(null,{key:'droid'+(i+1),name,names:D.mesh.parts,lv:'up',group:'bodega',geo:GEO,skin:rig,tall:D.tall,eye:-1,rank:D.mesh.parts.map(()=>0),metres:1.9,x:G.beat[0].x,z:G.beat[0].z,lane:LANE,free,ground:(x,z)=>MODS.bodega.ground(x,z),radius:.3,speed:1.05,stride:0,rock:0,bob:0,
+      pick:st=>{ G.leg=(G.leg+1)%G.beat.length; const p=G.beat[G.leg]; st.to={x:p.x,z:p.z+(Math.random()-.5)*.3*TILE}; st.v=G.walkV; },
       brain:(dt,you,st,N)=>{ if(HOLD){ st.to=null; st.hold=true; return; }
         G.walkV=G.walkV||st.v; G.cool-=dt; G.look+=dt;
         const T=TROUBLE.filter(t=>t.mode==='come'||t.mode==='fight').map(t=>[t,d2(t.st,st)]).filter(([,d])=>d<SEE).sort((p,q)=>p[1]-q[1])[0];
@@ -59,5 +67,6 @@
         an.base=moving?(run?'Sprint_Loop':'Walk_Formal_Loop'):'Idle_Loop'; an.ts=moving?st.v/((run?RUNU:WALK)*sc):1; an.update(dt); }});
     N.mixer=mixer; N.an=an; N.guard=G; DROIDS.push(N); });
   window.UALK={D,geomOf,rigOf,CLIPS,Anim};   // (the mannequin's kit, shared: you as him, src/playas.js)
+  window.CAMAT=(x,y,z,k=1.6)=>{ UI.setFree(true); UI.camT.set(x,y,z); ppu=ppuTo=PPU*k; };   /* (a test's look anywhere: the free camera on a point) */
   window.DROIDCAM=(i=0,k=1.6)=>{ const N=DROIDS[i]; UI.setFree(true); UI.camT.set(N.st.x,N.g.position.y+N.H*.5,N.st.z); ppu=ppuTo=PPU*k; };   /* (a test's look: the free camera on one's middle) */
   window.DROIDDBG=()=>DROIDS.map(N=>({key:N.key,mode:N.guard.mode,x:+(N.st.x/TILE).toFixed(1),z:+(N.st.z/TILE).toFixed(1),to:!!N.st.to,act:N.an.once&&N.an.once.n,base:N.an.base,vis:N.g.visible})); }

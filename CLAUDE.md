@@ -665,6 +665,11 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
   lamp comes nearly as near you as the nearest and grows in on the next after the handover (the nearest lamp's light split between its
   shadowed self and an unshadowed copy in the last of the eight slots: `LITE.w`); no new light, no new shadow.
 
+- **No DESCRIBE, no DOWNLOAD; nothing of the world inside** (owner, 18 Oct 2026: "remove describe and download buttons. anytime someone is in
+  interior rest of world should always vanish"): the world editor has no DESCRIBE A CHANGE (no call to Claude, no `sample` capability); HIS SHAPE,
+  MOVES and the avatar editor have no DOWNLOAD (LOAD stays). Inside a room the rest is gone: the civic tower is a room (`rooms.js`), and what
+  draws with its own shader and so isn't cut by the room's planes hides itself while you're in one (the sky dome already; now the force field,
+  the river and its bank, `ring.js`). A doorway still cuts nothing until all of you is half a tile in (17 Oct's rule).
 ## THE MARKET: the one official map
 
 **THE MARKET** (owner, 17 Oct 2026: "one official MARKET map im gona start filling in") is the game's map here: every place the owner adds goes

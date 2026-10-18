@@ -35,16 +35,29 @@ const DRESS={};
       for(let j=0;j<N;j++)for(let i=0;i<N;i++){ const d0=Math.hypot((i+.5)/N*2-1,(j+.5)/N*2-1), d=d0+(SMOOTH?0:(h(i,j)-.5)*.1), a=SMOOTH?Math.max(0,1-d0)**1.6*.24:d<.38?.2:d<.68?.11:d<.96?.05:0, q=(j*N+i)*4; im.data[q]=255; im.data[q+1]=214; im.data[q+2]=150; im.data[q+3]=Math.round(a*255); }
       g.putImageData(im,0,0); const t=new THREE.CanvasTexture(cv); t.magFilter=t.minFilter=SMOOTH?THREE.LinearFilter:THREE.NearestFilter; t.generateMipmaps=false; t.colorSpace=THREE.SRGBColorSpace; return t; })();
     const poolMat=new THREE.MeshBasicMaterial({map:poolTex,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,toneMapped:false,polygonOffset:true,polygonOffsetFactor:-2}), poolGeo=new THREE.PlaneGeometry(2,2).rotateX(-Math.PI/2);
+    // THE CORNER'S LIGHT (owner, 18 Oct 2026: "put one large tall street light on corner. lighst in both directions, functions correctly"): on the
+    // park's corner of the main street and the Avenue, just in from the kerb's curve (bodega.js's rounded corner), so no other light stands within
+    // four of it; every other light only where there's sidewalk (none on a corner's curve of road)
+    const RC=BOD.road.CORN.find(c=>c.x===AVE.r0&&c.y===BOD.FAR), CK=(BOD.road.KR-.45)/Math.SQRT2, CP={x:BOD.XS(RC.cx-RC.sx*CK),z:BOD.ZS(RC.cy-RC.sy*CK)}, ok=(x,z)=>G(x,z)>-.01&&Math.hypot(x-CP.x,z-CP.z)>4*M;
     for(let i=0;i<n;i++){ const x=x0+i*SP;   // (the near kerb's, then the far kerb's half a span along: staggered)
       sl(x,sw-.25*M,1).L=light(x,5.8*M,sw+1.4*M,40,13*TILE); heads.push([x,5.8*M,sw+1.4*M]);
-      const xf=x+SP/2; if(xf<SX1-3&&!(xf>BOD.XS(AVE.r0)-1&&xf<BOD.XS(AVE.r1)+1)&&!(xf>BOD.XS(RING.wr0)-1&&xf<BOD.XS(RING.wr1)+1)){ sl(xf,far+.25*M,-1).L=light(xf,5.8*M,far-1.4*M,40,13*TILE); heads.push([xf,5.8*M,far-1.4*M]); } }
+      const xf=x+SP/2; if(xf<SX1-3&&ok(xf,far+.25*M)&&!(xf>BOD.XS(AVE.r0)-1&&xf<BOD.XS(AVE.r1)+1)&&!(xf>BOD.XS(RING.wr0)-1&&xf<BOD.XS(RING.wr1)+1)){ sl(xf,far+.25*M,-1).L=light(xf,5.8*M,far-1.4*M,40,13*TILE); heads.push([xf,5.8*M,far-1.4*M]); } }
     // THE LOOP'S OTHER THREE SIDES (17 Oct 2026, owner: "have the power lines go around the block"): street lights on both kerbs of the west
     // street, the north street and the Avenue, staggered as the main street's, each arm over its road; the power grid strings them (grid.js)
-    { const XS=BOD.XS, ZS=BOD.ZS, R=RING, A=AVE, put=(x,z,d,ax,ring)=>{ const P=sl(x,z,d,ax,ring), hx=ax==='x'?x+d*1.3*M:x, hz=ax==='x'?z:z+d*1.3*M; P.L=light(hx,5.8*M,hz,40,13*TILE); heads.push([hx,5.8*M,hz]); };
+    { const XS=BOD.XS, ZS=BOD.ZS, R=RING, A=AVE, put=(x,z,d,ax,ring)=>{ if(!ok(x,z))return; const P=sl(x,z,d,ax,ring), hx=ax==='x'?x+d*1.3*M:x, hz=ax==='x'?z:z+d*1.3*M; P.L=light(hx,5.8*M,hz,40,13*TILE); heads.push([hx,5.8*M,hz]); };
       const runZ=(xo,xi,z0,z1)=>{ for(let z=z0,k=0;z<z1;z+=SP/2,k++){ if(k&1)put(xi,z,-1,'x','inner'); else put(xo,z,1,'x','outer'); } };   // (a street along z: outer kerb at xo, its arm +x; inner at xi, -x; or as d says)
       { const xo=XS(R.wr0)-.25*M, xi=XS(R.wr1)+.25*M, z0=ZS(BOD.FAR)+2*M, z1=ZS(R.nr0)-1*M; for(let z=z0,k=0;z<z1;z+=SP/2,k++){ if(k&1)put(xi,z,-1,'x','inner'); else put(xo,z,1,'x','outer'); } }   // (the west street: its outer kerb the west one)
       { const xo=XS(A.r1)+.25*M, xi=XS(A.r0)-.25*M, z0=ZS(BOD.FAR)+2*M, z1=ZS(R.nr0)-1*M; for(let z=z0+SP/4,k=0;z<z1;z+=SP/2,k++){ if(k&1)put(xi,z,1,'x','inner'); else put(xo,z,-1,'x','outer'); } }   // (the Avenue: its outer kerb the east one)
       { const zo=ZS(R.nr1)+.25*M, zi=ZS(R.nr0)-.25*M, x0=XS(R.wr1)+2*M, x1=XS(A.r0)-2*M; for(let x=x0,k=0;x<x1;x+=SP/2,k++){ if(k&1)put(x,zi,1,'z','inner'); else put(x,zo,-1,'z','outer'); } } }   // (the north street: its outer kerb the north one)
+    // (the pole: a stepped cast foot, a collar, a pole a third taller than the others, thinner up top, a finial; two arms at its top, one out over
+    // each road (-z over the main street, +x over the Avenue), each with a brace under it, a long head at its end and the lamp lit under it; two
+    // lamps of LITE's (each its pool, on at dusk with the rest), solid at its foot, one pole of the power grid's inner ring with both its lamps)
+    { const x=CP.x, z=CP.z, y=G(x,z), GR=0x5d6266, DK=0x3f4448, T8=8.2*M, AL=2.7*M, L2=[];
+      cyl(x,y+.35*M,z,.3*M,.7*M,DK); cyl(x,y+.78*M,z,.2*M,.16*M,GR); cyl(x,y+.86*M+2.6*M,z,.12*M,5.2*M,GR); cyl(x,y+6.06*M+1.05*M,z,.09*M,2.1*M,GR); cyl(x,y+T8+.1*M,z,.13*M,.2*M,DK); cyl(x,y+T8+.3*M,z,.05*M,.2*M,DK);
+      for(const [dx,dz] of [[0,-1],[1,0]]){ const ex=x+dx*AL, ez=z+dz*AL, ay=y+T8-.15*M;
+        blk(x+dx*AL/2,ay,z+dz*AL/2,dx?AL:.12*M,.12*M,dz?AL:.12*M,GR); blk(x+dx*AL*.28,ay-.42*M,z+dz*AL*.28,dx?AL*.5:.07*M,.07*M,dz?AL*.5:.07*M,GR); blk(x+dx*.06*M,ay-.22*M,z+dz*.06*M,.1*M,.5*M,.1*M,DK);
+        blk(ex,ay+.02*M,ez,dx?.9*M:.44*M,.2*M,dz?.9*M:.44*M,DK); const h=heads.length, L=light(ex,ay-.25*M,ez,55,16*TILE); heads.push([ex,ay-.06*M,ez]); L2.push([L,h]); }
+      solid(x,z,.3*M,T8); POLES.push({x,z,d:-1,ax:'z',ring:'inner',y:y+T8-.6*M,h:L2[0][1],h2:L2[1][1],L:L2[0][0],L2:L2[1][0],corner:1}); DRESS.corner={x,z,y,lamps:L2.map(q=>q[0])}; }
     // the lamp posts: the far sidewalk's park side (the wall's line, a little in front of it)
     const wz=BOD.ZS(PARK.y0+PARK.oy), pz=far+(wz-far)*.7, g0=BOD.XS(PARK.gate[0]+PARK.ox), g1=BOD.XS(PARK.gate[1]+PARK.ox), pts=[[g0-.9*M,pz],[g1+.9*M,pz]], px1=BOD.XS(PARK.x1+PARK.ox)-2;
     for(let x=g0-14*M;x>BOD.XS(PARK.x0+PARK.ox)+2;x-=14*M)pts.push([x,pz]); for(let x=g1+14*M;x<px1;x+=14*M)pts.push([x,pz]);
@@ -78,5 +91,5 @@ const DRESS={};
     { const me=new THREE.InstancedMesh(new THREE.CylinderGeometry(.5,.5,1,8),new THREE.MeshLambertMaterial({color:0xffffff,flatShading:true}),CY.length), m4=new THREE.Matrix4(), q=new THREE.Quaternion(), c=new THREE.Color();
       CY.forEach(([x,y,z,sx,sy,sz,col],i)=>{ me.setMatrixAt(i,m4.compose(new THREE.Vector3(x,y,z),q,new THREE.Vector3(sx,sy,sz))); me.setColorAt(i,c.setHex(col)); }); me.castShadow=me.receiveShadow=true; scene.add(me); DRESS.rounds=me; }
     { const me=new THREE.InstancedMesh(new THREE.BoxGeometry(1,1,1),new THREE.MeshLambertMaterial({color:0xffffff}),BL.length), m4=new THREE.Matrix4(), q=new THREE.Quaternion(), c=new THREE.Color();
-      BL.forEach(([x,y,z,sx,sy,sz,col],i)=>{ me.setMatrixAt(i,m4.compose(new THREE.Vector3(x,y,z),q,new THREE.Vector3(sx,sy,sz))); me.setColorAt(i,c.setHex(col)); }); me.castShadow=me.receiveShadow=true; scene.add(me); DRESS.blocks=me; } DRESS.posts=xs.length; DRESS.lights=n*2+xs.length; DRESS.poles=POLES; DRESS.lampposts=POSTS; DRESS.heads=hd; DRESS.lant=lant; }   // (the poles, the posts, their lamps' heads: the power grid hangs its wires on them, grid.js)
+      BL.forEach(([x,y,z,sx,sy,sz,col],i)=>{ me.setMatrixAt(i,m4.compose(new THREE.Vector3(x,y,z),q,new THREE.Vector3(sx,sy,sz))); me.setColorAt(i,c.setHex(col)); }); me.castShadow=me.receiveShadow=true; scene.add(me); DRESS.blocks=me; } DRESS.posts=xs.length; DRESS.lights=n*2+xs.length+2; DRESS.poles=POLES; DRESS.lampposts=POSTS; DRESS.heads=hd; DRESS.lant=lant; }   // (the poles, the posts, their lamps' heads: the power grid hangs its wires on them, grid.js)
 }

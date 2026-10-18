@@ -80,18 +80,22 @@ const MINE={ready:false}; window.MINE=MINE;
     for(const e of ent){ const k=K(...e.c); dep[k]=0; floor[k]=Yp(-98); }   // (a lift's foot level with the loop's tunnel)
     return {forb,carved,floor,dep,ent,dist}; };
   // ---- BUILT: the rock, the floors, the lamps, the lifts, the depots, the seams
+  // (the rock between the camera and you cut away above your knee, as a room's near side is: rooms.js's NEAR; owner, 18 Oct 2026, "the walls nearest view go down so you can see yourself")
+  const CUT=[new THREE.Plane(new V3(0,0,1),1e6),new THREE.Plane(new V3(0,-1,0),1e6)];
+  const cutTick=()=>{ if(!MINE.inside(pos.x,pos.z)){ CUT[0].constant=1e6; return; } const dx=cam.position.x-pos.x, dz=cam.position.z-pos.z, l=Math.hypot(dx,dz)||1, nx=dx/l, nz=dz/l;
+    CUT[0].normal.set(-nx,0,-nz); CUT[0].constant=nx*pos.x+nz*pos.z+.6*T; CUT[1].constant=py+.45*T/.84; };
   const sol=[], fix=[], recs=[];
   const build=()=>{ const d=day(); if(built)unbuild(); const M=make(d), {carved,floor,dep}=M; built=M; built.day=d;
     const BX=[], FL=[], m4=new THREE.Matrix4(), q=new THREE.Quaternion(), col=new THREE.Color(), rr=rngOf(331+d), top0=Yp(-12);
     for(let j=0;j<NY;j++)for(let i=0;i<NX;i++){ const k=K(i,j); if(carved[k]){ FL.push([i,j,floor[k],dep[k]]); continue; }
       let lo=1e9; for(let a=-1;a<=1;a++)for(let b=-1;b<=1;b++){ const n=K(i+a,j+b); if(inG(i+a,j+b)&&carved[n])lo=Math.min(lo,floor[n]); } if(lo>1e8)continue;
       let dd=0; for(let a=-1;a<=1;a++)for(let b=-1;b<=1;b++){ const n=K(i+a,j+b); if(inG(i+a,j+b)&&carved[n])dd=Math.max(dd,dep[n]); }
-      BX.push([i,j,lo-Yp(6),top0-rr()*Yp(16),dd,rr()]); }
-    const box=new THREE.BoxGeometry(1,1,1), rock=new THREE.InstancedMesh(box,new THREE.MeshLambertMaterial({flatShading:true}),BX.length), fl=new THREE.InstancedMesh(box,new THREE.MeshLambertMaterial(),FL.length);
+      BX.push([i,j,lo-Yp(6),top0-rr()*Yp(40),dd,rr()]); }
+    const box=new THREE.BoxGeometry(1,1,1), rock=new THREE.InstancedMesh(box,new THREE.MeshLambertMaterial({flatShading:true,clippingPlanes:CUT,clipIntersection:true}),BX.length), fl=new THREE.InstancedMesh(box,new THREE.MeshLambertMaterial(),FL.length);
     BX.forEach(([i,j,lo,hi,dd,r],n)=>{ const s=1+r*.12; m4.compose(new V3(XS(cx(i)),(lo+hi)/2,ZS(cy(j))),q,new V3(CS*T*s,hi-lo,CS*T*s)); rock.setMatrixAt(n,m4);
-      const g=.36-dd*.14+r*.06; rock.setColorAt(n,col.setRGB(g*1.02,g*.96,g*(.92+dd*.3)));   // (bluer and darker the deeper)
+      const g=.4-dd*.14+r*.1, w=rr(); rock.setColorAt(n,col.setRGB(g*(1.12+w*.1),g*(.98+w*.04),g*(.84+dd*.34)));   /* (warm grey-brown, bluer and darker the deeper) */   // (bluer and darker the deeper)
       const x0=XS(cx(i)-CS/2), x1=XS(cx(i)+CS/2), z0=ZS(cy(j)-CS/2), z1=ZS(cy(j)+CS/2), a=[Math.min(x0,x1),Math.min(z0,z1),Math.max(x0,x1),Math.max(z0,z1)]; sol.push(a); fix.push([a[0],a[1],lo,a[2],a[3],hi]); });
-    FL.forEach(([i,j,f,dd],n)=>{ m4.compose(new V3(XS(cx(i)),f-Yp(3),ZS(cy(j))),q,new V3(CS*T*1.01,Yp(6),CS*T*1.01)); fl.setMatrixAt(n,m4); const g=.24-dd*.08+rr()*.03; fl.setColorAt(n,col.setRGB(g*1.05,g,g*.95+dd*.06)); });
+    FL.forEach(([i,j,f,dd],n)=>{ m4.compose(new V3(XS(cx(i)),f-Yp(3),ZS(cy(j))),q,new V3(CS*T*1.01,Yp(6),CS*T*1.01)); fl.setMatrixAt(n,m4); const g=.5-dd*.12+rr()*.05; fl.setColorAt(n,col.setRGB(g*1.08,g*.98,g*.86+dd*.08)); });
     for(const me of [rock,fl]){ me.receiveShadow=true; me.castShadow=me===rock; me.computeBoundingSphere(); G.add(me); } built.rock=rock; built.fl=fl;
     SOL.down.push(...sol); FIX.down.push(...fix);
     // the work lamps: one a stretch, cool white, a glowing fixture on the wall
@@ -177,7 +181,7 @@ const MINE={ready:false}; window.MINE=MINE;
   HUD.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b)return; if(b.dataset.s)MINE.scan(); if(b.dataset.t){ S.tool=b.dataset.t; save(); HUD.draw(); } });
   addEventListener('keydown',e=>{ if(e.repeat||e.ctrlKey||e.metaKey||e.altKey||e.key.toLowerCase()!=='p')return; if(e.target&&e.target.closest&&e.target.closest('input,textarea,select'))return; if(MINE.inside(pos.x,pos.z))MINE.scan(); });
   // ---- EACH FRAME (only while there's something to do) and each second
-  { const t0=CLOCK.tick; CLOCK.tick=dt=>{ t0(dt); rideTick(dt); jobTick(dt); if(scanCD>0)scanCD-=dt;
+  { const t0=CLOCK.tick; CLOCK.tick=dt=>{ t0(dt); rideTick(dt); jobTick(dt); cutTick(); if(scanCD>0)scanCD-=dt;
       if(ringT>=0){ ringT+=dt; const k=Math.min(1,ringT/.7); ring.visible=true; ring.scale.setScalar(Math.max(.01,ringR*k)); ring.position.set(pos.x,ringY,pos.z); if(ringT>.8){ ringT=-1; ring.visible=false; } } }; }
   let lastIn=false; setInterval(()=>{ const inn=MINE.inside(pos.x,pos.z); if(inn!==lastIn){ lastIn=inn; HUD.hidden=!inn; if(inn){ HUD.draw(); say('THE DEEP MINE. P SCANS THE ROCK.','#7ff4ff'); } }
       if(inn){ const e=HUD.querySelector('#mdep'); if(e)e.textContent='MINE · '+Math.round(-py*.84/T)+' M DOWN'; } if(built)syncSeams();
@@ -185,4 +189,4 @@ const MINE={ready:false}; window.MINE=MINE;
   // built a moment after the game runs, once the park and the golems' cave are (the hatch's lawn found by looking down at it)
   { const go=()=>{ if(!window.__started||!(window.GCAVE&&GCAVE.ready)||!PARK.round)return setTimeout(go,1500); try{ build(); }catch(e){ console.warn('MINE',e); } }; setTimeout(go,4000); }
   window.MINEDBG=()=>built?({day:built.day,ent:built.ent.map(e=>[e.k,e.c,e.x!=null?[+e.x.toFixed(1),+e.z.toFixed(1)]:null]),cells:built.carved.reduce((a,b)=>a+b,0),rock:built.rock.count,lamps:built.lamps,seams:built.seams.length,lit:built.cry.count/3,tool:S.tool,inside:MINE.inside(pos.x,pos.z),lifts:LIFTS.map(L=>[L.k,+L.x.toFixed(1),+L.z.toFixed(1),+L.bot.toFixed(2)])}):null;
-  MINE.build=build; MINE.LIFTS=LIFTS; MINE.cellW=(i,j)=>[XS(cx(i)),ZS(cy(j))]; MINE.seams=()=>built?built.seams:[]; }
+  MINE.build=build; MINE.LIFTS=LIFTS; MINE.step=dt=>{ rideTick(dt); jobTick(dt); }; MINE.cellW=(i,j)=>[XS(cx(i)),ZS(cy(j))]; MINE.seams=()=>built?built.seams:[]; }

@@ -29,19 +29,19 @@ const FISHING={}, BOAT={on:false}; window.FISHING=FISHING; window.BOAT=BOAT;
   const PX=RIVER.piers.reduce((b,x)=>Math.abs(x-BOD.XS(61))<Math.abs(b-BOD.XS(61))?x:b,RIVER.piers[0]), SX=PX+2.6*T, SZ=rz1+1.55*T;
   { const BX=[], box=(x,y,z,w,h,d,c)=>BX.push([x,y,z,w,h,d,c]), Y=v=>v*T/.84;   // (metres up)
     const W=2.2*T, D=1.1*T, WOOD=0x6a4a2e, DK=0x3e2a1a, BL=0x2e6aa8, WH=0xe8e4d8;
-    box(SX,Y(.5),SZ-D*.35,W,Y(1),.18*T,WOOD); box(SX,Y(1.02),SZ-D*.35,W+.1*T,Y(.05),.32*T,0x8a6a44);   // (the counter, its top)
-    box(SX,Y(1.2),SZ+D*.45,W,Y(2.4),.1*T,DK); for(const o of [-1,1])box(SX+o*W/2,Y(1.2),SZ,.12*T,Y(2.4),D,DK);   // (the back, the sides)
+    box(SX,Y(.5),SZ+D*.35,W,Y(1),.18*T,WOOD); box(SX,Y(1.02),SZ+D*.35,W+.1*T,Y(.05),.32*T,0x8a6a44);   // (the counter, its top)
+    box(SX,Y(1.2),SZ-D*.45,W,Y(2.4),.1*T,DK); for(const o of [-1,1])box(SX+o*W/2,Y(1.2),SZ,.12*T,Y(2.4),D,DK);   // (the back, the sides)
     for(let i=0;i<8;i++)box(SX-W/2-.1*T+(i+.5)*(W+.2*T)/8,Y(2.42),SZ-.15*T,(W+.2*T)/8,Y(.08),D+.5*T,i&1?WH:BL);   // (the awning, striped)
-    box(SX-.6*T,Y(1.14),SZ-D*.35,.36*T,Y(.22),.24*T,0x2a5a2a); box(SX-.6*T,Y(1.26),SZ-D*.35,.36*T,Y(.03),.24*T,0x3a7a3a);   // (the tackle box)
-    box(SX+.55*T,Y(1.18),SZ-D*.35,.26*T,Y(.3),.26*T,0x8a8e92);   // (the honesty box)
-    for(let i=0;i<4;i++)box(SX-W/2+.3*T+i*.12*T,Y(1.3),SZ+D*.3,.035*T,Y(2.4),.035*T,0x8a6a3a);   // (rods leaning)
-    box(SX+W/2-.4*T,Y(.25),SZ+D*.1,.3*T,Y(.5),.3*T,0x6a7078);   // (the bait bucket)
+    box(SX-.6*T,Y(1.14),SZ+D*.35,.36*T,Y(.22),.24*T,0x2a5a2a); box(SX-.6*T,Y(1.26),SZ+D*.35,.36*T,Y(.03),.24*T,0x3a7a3a);   // (the tackle box)
+    box(SX+.55*T,Y(1.18),SZ+D*.35,.26*T,Y(.3),.26*T,0x8a8e92);   // (the honesty box)
+    for(let i=0;i<4;i++)box(SX-W/2+.3*T+i*.12*T,Y(1.3),SZ-D*.3,.035*T,Y(2.4),.035*T,0x8a6a3a);   // (rods leaning)
+    box(SX+W/2-.4*T,Y(.25),SZ-D*.1,.3*T,Y(.5),.3*T,0x6a7078);   // (the bait bucket)
     const me=new THREE.InstancedMesh(new THREE.BoxGeometry(1,1,1),new THREE.MeshLambertMaterial(),BX.length), m4=new THREE.Matrix4(), q=new THREE.Quaternion(), c=new THREE.Color(), V=THREE.Vector3;
     BX.forEach(([x,y,z,w,h,d,col],i)=>{ me.setMatrixAt(i,m4.compose(new V(x,y,z),q,new V(w,h,d))); me.setColorAt(i,c.setHex(col)); }); me.castShadow=me.receiveShadow=true; MAPG.bodega.add(me);
     // its sign (painted once, its pixels kept square)
     const cv=document.createElement('canvas'); cv.width=96; cv.height=16; const g=cv.getContext('2d'); g.fillStyle='#1f4f86'; g.fillRect(0,0,96,16); g.fillStyle='#f2ead6'; g.font='bold 10px monospace'; g.textAlign='center'; g.fillText('BAIT & BOATS',48,12);
     const tx=new THREE.CanvasTexture(cv); tx.magFilter=tx.minFilter=THREE.NearestFilter; tx.generateMipmaps=false; tx.colorSpace=THREE.SRGBColorSpace;
-    const sg=new THREE.Mesh(new THREE.PlaneGeometry(W*.9,W*.15),new THREE.MeshBasicMaterial({map:tx})); sg.position.set(SX,Y(2.25),SZ-D*.5-.27*T); sg.rotation.y=Math.PI; MAPG.bodega.add(sg);
+    const sg=new THREE.Mesh(new THREE.PlaneGeometry(W*.9,W*.15),new THREE.MeshBasicMaterial({map:tx})); sg.position.set(SX,Y(2.25),SZ+D*.5+.27*T); MAPG.bodega.add(sg);
     SOL.up.push([SX-W/2-.1*T,SZ-D*.5,SX+W/2+.1*T,SZ+D*.55]); FIX.up.push([SX-W/2-.1*T,SZ-D*.5,0,SX+W/2+.1*T,SZ+D*.55,Y(2.4)]);
     const hb=new THREE.Mesh(new THREE.BoxGeometry(W,Y(2.4),D),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(SX,Y(1.2),SZ); MAPG.bodega.add(hb);
     UI.thing({name:'BAIT & BOATS',obj:hb,reach:1.4*T,near:2.2*T,tall:Y(2.6),act:()=>STAND.open()}); }
@@ -81,7 +81,7 @@ const FISHING={}, BOAT={on:false}; window.FISHING=FISHING; window.BOAT=BOAT;
   BOAT.place=()=>{ const h=RIVER.hAt(BOAT.x,BOAT.z); BOAT.py=RB.lv+h+Y(.12); boat.position.set(BOAT.x,RB.lv+h-Y(.05),BOAT.z); boat.rotation.y=BOAT.hd;
     const a=Math.sin(row)*.6; BOAT.oars[0].rotation.y=-a; BOAT.oars[1].rotation.y=a; BOAT.oars[0].rotation.z=.2+.15*Math.cos(row); BOAT.oars[1].rotation.z=-.2-.15*Math.cos(row); };
   BOAT.carry=(st,pos)=>{ pos.x=BOAT.x; pos.z=BOAT.z; st.sit={z:Math.max(2,Y(.3)/(ZU*W3.SZ*(W3.BH||1)))}; if(RIVER.swim)RIVER.swim=false; if(st.water)st.water.in=false; };
-  const HUD=document.createElement('div'); HUD.id='boathud'; HUD.hidden=true; HUD.style.cssText='position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:7;font:11px Silkscreen,monospace;color:#e8e2cc;background:#0b0d13e0;border:2px solid #3a3f4e;padding:6px 10px;display:flex;gap:10px;align-items:center;zoom:var(--uiz,1)';
+  const HUD=document.createElement('div'); HUD.id='boathud'; HUD.hidden=true; { const c=document.createElement('style'); c.textContent='#boathud[hidden],#minehud[hidden],#fjour:empty{display:none!important}'; document.head.appendChild(c); } HUD.style.cssText='position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:7;font:11px Silkscreen,monospace;color:#e8e2cc;background:#0b0d13e0;border:2px solid #3a3f4e;padding:6px 10px;display:flex;gap:10px;align-items:center;zoom:var(--uiz,1)';
   HUD.innerHTML='<span>ROWBOAT · W A S D</span><button style="font:inherit;color:#ece5d3;background:#0e1016;border:2px solid #3a3f4e;padding:2px 8px;cursor:pointer">STEP ASHORE</button>'; document.body.appendChild(HUD);
   HUD.querySelector('button').onclick=()=>BOAT.ashore(); setInterval(()=>{ if(BOAT.on)HUD.querySelector('button').style.opacity=atShore()?1:.45; },400);
   // ---- CASTING (a double click on the water with a rod; else the river's options as before)

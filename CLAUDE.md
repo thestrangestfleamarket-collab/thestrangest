@@ -967,3 +967,27 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   check, so no bare patch where someone stood). Measured in the park at 3:30: some 24,600 triangles in the picture (58,000 in all the chunks
   round you), one program, no light, a chunk 15-18 ms to make. Its leaf mottle hashes cells wrapped to 256 first (far from the middle sin() ran
   out of digits and the mottle drew streaks).
+- **The apartment house's floors, from the old game** (owner, 18 Oct 2026: "bring back entrance lobby elevator stairs and hallway from 1st game
+  and make it fit in new apartment 1st floor"; his pick "cottage on every floor"; `LOBBY` in `src/apts.js`, superseding `HOLLOW`): the ground
+  floor the old lobby (black and white tiles, mailboxes, a bench, a plant, the directory), a hall back to the core; the core at the back-west
+  corner: U stairs (two flights of ten steps a storey, a landing between: `APTS.ground` gives their slope) and the freight elevator in its
+  shaft (a cabin you stand in and ride at a lift's pace, steel leaves on every floor, a call button by each door (double click), the floor
+  buttons in its panel while you're in it with the doors open; `ELV`, `ELVDBG()`); the 2nd floor the herb cottage (everyone's start room, the
+  PC and the drone's window with it: `APTS.cotLv`, `drone.js`); floors 3 to 5 a carpeted hall with two numbered doors each (shut). Fire escapes
+  front and back as before. Cost: some 6,000 triangles the floors and walls, one lamp in the lobby's hall, one in the core and two in each
+  upper hall (LITE's eight nearest), no new program.
+- **The newsstand** (owner, 18 Oct 2026: "Newsstand with newspaper cat character already in game. He runs it. Drones deliver newspapers every
+  morning. Realistic stand with real inventory / NYC style / Give him all the animations he will need"; his pick: by the subway entrance;
+  `src/newsstand.js`): a green New York kiosk (2.6 m) on the main street's sidewalk east of the Metro's opening, its back to the empty lot:
+  NEWS on its lit header, LOTTO, the overhang's tube, the roll-down shutter, papers on a stepped rack (THE DAILY ODDITY, METRO HERALD, THE
+  FLEA TIMES, MORNING BUGLE: each stack as high as its stock), magazines up the posts and on both sides, candy and gum on the counter, snacks
+  on the back shelves, the drinks cooler. THE CAT IN THE RAINCOAT runs it, held on a crate behind the counter (`npc-toons.js`'s `c.extra` and
+  `c.busy`): reads, waves as you come up, serves and counts change, tidies the magazines, stretches, yawns, dozes in the afternoon lull,
+  opens the shutter at 5:45 and pulls it down at 10 pm, dozing behind it at night. At 5:30 two delivery drones bring four bundles; he heaves
+  each up, cuts its twine, a stack grows by 25. A double click: stock, prices, the purse (`DRONE.purse`), BUY; a paper shows its front page.
+  `NEWSDBG()`, `NEWS.deliver()`, `?newsk=8` the drones faster. Cost: some 2,100 triangles, the drones 300 while they fly; no lamp, no program.
+- **The buildings' outsides** (owner, 18 Oct 2026: "realistic exterior like pipes going up on corners, rooftops being realistic"; his pick:
+  all three on main; `src/rooftops.js`, superseding 17 Oct's "nothing on its roof"): leaders up the corners (scupper, leader head, brackets,
+  shoe; the house's dark, the bodega's galvanized, Ghost Street's copper); parapets with coping on the flat roofs; on the house the water tank
+  on its stand, the stair bulkhead, the elevator's machine room, chimneys, vents, soil stacks, a TV antenna; on the bodega an AC unit, an
+  exhaust fan, a skylight, vents. Cost: 2,500 triangles, three instanced draws; no lamp, no program.

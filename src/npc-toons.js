@@ -124,7 +124,7 @@ const TOONS={};
         c.fv+=(-300*c.fy-14*c.fv)*dt; c.fy+=c.fv*dt; if(!moving&&Math.abs(c.fy)<.0005&&Math.abs(c.fv)<.005)c.fy=c.fv=0; B.fork.position.y+=c.fy; B.scooter.position.y+=c.fy*.4;
         B.cape1.rotation.x=.5*Math.min(1,c.spd*2)+Math.sin(c.t*11)*.06*m; B.cape2.rotation.x=.3*Math.min(1,c.spd*2)+Math.sin(c.t*13+1)*.1*m;   // (the wind of his going lifts the cape)
         B.head.rotation.y=c.sheet?0:c.look; } };
-    TOONS.frog=make(def,{key:'frog',name:'THE FROG ON HIS SCOOTER',metres:1.15,radius:.4,speed:1.1,stride:4,at:80},3); }
+    TOONS.frog=make(def,{key:'scooterfrog',name:'THE FROG ON HIS SCOOTER',metres:1.15,radius:.4,speed:1.1,stride:4,at:80},3); }
 
   // ---- THE SHARK: a man in a shark's hood (teal, its fin up on a spring, a yellow eye each side, the jaw open with its teeth; now and then it
   // snaps), a khaki trench coat (a belt; its skirt on a spring), khaki sleeves, teal gloves, grey trousers, brown shoes

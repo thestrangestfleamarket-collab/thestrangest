@@ -412,14 +412,18 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
   pose moves them (walk, idle look round, what he does with his things), then **springs** add the give (what hangs or stands lags behind his
   starts, stops and turns, and swings back; at rest it settles and stops; a bump from you sets them going): no Rapier, no new loads. Some
   700-1,600 triangles each (5,250 the five), no lights, one shadow map each (SELF) as every character. They walk the whole street.
-  `N.reshape` / `N.recolour` by part, `N.B` the bones. `?toonhold=1` stands the five in a row; `tests/toonshot.cjs <out> [hour] [zoom]`.
+  `N.reshape` / `N.recolour` by part, `N.B` the bones. `?toonhold=1` stands the five in a row; `tests/toonshot.cjs <out> [hour] [zoom]`; `tests/toonwalk.cjs <tomato|cat|tv|frog|shark> <out> [zoom]` one walking, the free camera on him. The frog's key is `scooterfrog` (`frog` is the park's creatures').
 
 - **The opening view and V, again** (owner, 17 Oct 2026, his picture of the dojo: "i want the game to always start you this distance and at this
   isometric angle, q & e to rotate, v wlil take you in 3rd person view over their shoulders and they can look around 360 and up and down. press v
   again and in full free view 1st person view"): ISOMETRIC opens at the half turn from the angle before, 1.5 times in (0.7 of the 2.2 before;
   `UI.setView` in `ui.js`); Q / E jump between its four angles; V: BEHIND, the camera over his right shoulder (0.45 m out), a drag looks all round
   and up and down, the camera brought in before any wall between his head and it (the solids he walks into); V again FIRST PERSON (a drag looks
-  anywhere); V again back to isometric. `tests/startshot.cjs <out> [place] [view] [w] [h] [keys]`.
+  anywhere); V again back to isometric. `tests/startshot.cjs <out> [place] [view] [w] [h] [keys]` (`HOUR=13` for day).
+  **Each place its own angle** (owner, 18 Oct 2026, his pick: his dojo angle out of doors put the camera behind the shop row, the buildings' backs
+  over him): out of doors the one facing the shop fronts, in a room (`ROOMS.cur`) his dojo picture's; straight onto it as you go in or out
+  (`UI.isoTo`, `UI.isoPlace`). **Nothing between the camera and the nearest ground on screen** (isometric only: the ortho camera's near plane
+  just past it, `build.py`), so the castle at the park's far end or a building far behind you never stands in front of you.
 
 ## THE MARKET: the one official map
 

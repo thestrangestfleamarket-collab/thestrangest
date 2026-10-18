@@ -1114,3 +1114,28 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   golems take morels ($34) and moonglow ($90) too. One purse (INV's); kept in the save (`forage`). Cost: three instanced draws (caps, stems, the
   glowing caps; some 20-40 mushrooms near you, 48 triangles each), an invisible box each to click, no light, nothing a frame but a day check.
   `FORDBG()`. Not yet: a hunger bar outside the pack, ingredients for crafts beyond these, mushrooms indoors or in the cave.
+- **Fishing on the Hudson and a rowboat** (owner, 18 Oct 2026: "lets adding fishing (off the hudson and in boats off shore)"; his picks: UO
+  style, a rowboat to rent; `src/fishing.js`): BAIT & BOATS, a self-serve stand (an honesty box) on the quay at the pier nearest the Metro, its
+  counter to the walk: a rod $15, a rowboat $5 a trip, and it buys your catch. With a rod, a double click on the river within nine tiles casts
+  (else the river's options as before): the line and the bobber, three to eight seconds, a dip, and FISHING (a new skill, forage.js) decides;
+  what bites goes by the bed's depth under the bobber (`RIVER.depthAt`): sunfish, white perch and blue crabs by the wall, catfish, flounder and
+  shad further out, bluefish and striped bass deep, the Atlantic sturgeon deepest, eels twice as often at night; now and then an old boot, a tin
+  can, a message in a bottle, a sunken chest (a gem and $10-40). Move off and you reel in. Fish dishes by a flame (FISH FRY, SMOKED EEL, GRILLED
+  STRIPED BASS, FISH CHOWDER, STURGEON STEAK); raw fish edible, risky. THE ROWBOAT: you sit at its thwart (the rig's sitting), WASD rows (it turns
+  toward the way you press, glides, stops still), anywhere inside the force field, never through a pier; STEP ASHORE at a ladder or pier (the
+  boat goes back). build.py's three hooks: the steer before the walk, carried instead of swimming, its height for yours (`BOAT`). Cost: the stand
+  some 30 boxes (one draw) and its sign, the boat 14 boxes, the line and bobber while fishing; no lights. `FISHDBG()`.
+- **The deep mines under Central Park** (owner, 18 Oct 2026: "gems and finding them in in deep cave mines"; his picks: on the map, entrances in
+  the park and "like a tunnel you take through the subway tunnel", every layout, every sci-fi tool, no pickaxe; `src/mines.js`): one network on
+  a 2.5-tile grid under the park inside the loop, cut through rock at the loop tunnel's depth and stepping down further in (some 6 m deeper at
+  the far ends). FOUR WAYS IN: a gap in the loop tunnel's inner wall on the main street's leg (`RING.mine`, sub.js; walk in), a steel hatch on the
+  park's lawn east of the round with a lift, a crack in the golems' cave's floor with a stone lift, and THE DAY'S HATCH at the end of that day's
+  deepest branch. The spine joining the fixed ways in is the same every day; eight branches are cut afresh each day (the calendar day's seed),
+  each ending in a cavern. SEAMS of the golems' ten stones hidden in the rock faces, rarer the deeper, unseen till scanned; a mined seam stays
+  mined till the day turns. THE DEPOT (a terminal at each way in's foot) sells the RESONANCE SCANNER $40 (P or SCAN: a ping lights the seams in its
+  reach for a minute, the rarer ones only for a skilled prospector), the CUTTER BEAM $60 (at the seam, a beam and sparks), the SONIC EXTRACTOR $90
+  (a pulse frees every lit seam near you, loose on the floor; some shatter), the EXTRACTION DRONE $150 (sent from up to 14 tiles, the surest).
+  PROSPECTING the skill (forage.js; the cap 400 with six skills). The mine's bar (depth, SCAN, the tool in hand) only down there; the rock nearer
+  the camera than you cut above your knee so you see yourself. Cost (underground only): the rock some 450 boxes and the floors some 490 (one
+  draw each), the lit seams one draw, 26 lamp records, no new light or shadow; built a few seconds after the game runs (nothing at the loading
+  line) and again when the day turns while you're up top. `MINEDBG()`. Not yet: creatures down there, a map of the mine, the golems mining.

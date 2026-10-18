@@ -833,6 +833,13 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   clouds are, so a tower never stands between the camera and you), a searchlight sweeping from the tallest (an additive cone), a plain dark
   ground out to the view's edges. Cost: some 2,500 triangles more, four draws, two programs, two lamps (the neon's). The lot is four pieces round the shop (one piece whose middle fell
   inside it was taken for the interior and drawn only near the door: interiors.js). `tests/vcrshot.cjs <out>` (front, wide, side yard, inside).
+- **The near side's cut fixed to the room** (owner, 18 Oct 2026, two screenshots of a room's things half cut: "why is still vanshing liek this
+  when i walk around?"): the near-side cut (`NEAR` in `rooms.js`) had its line half a tile toward the camera from him, so as he walked it swept
+  through the desk, the sink, the boxes, and they came and went. Now it's the room's own: above his knee and within 1.1 tiles of either of the
+  room's two walls on the camera's side (the walls and what stands against them), fixed while he's in the room; everything else whole wherever
+  he walks. Two near walls make an L, which three's clipping (all planes or any plane) can't hold, so its `clipping_planes_fragment` chunk is
+  patched once in rooms.js: a material's own planes cut where the first says and any one of the rest says (two planes as before). No new
+  program beyond the rooms' own, no cost a frame. `tests/roomwalk.cjs <out> [room]` (three spots in a room, the same things standing in each).
 - **Libraries for what was hand-written** (owner, 18 Oct 2026: "is there another game engine that makes more sense" — no, three.js stays; then
   "lets start installing libraries for thinsg weve hand written"): **three-mesh-bvh** (0.8.3 from jsDelivr, `src/bvh.js`) for every ray (a double
   click, the drag's pivot, the world and map editors' picks): fetched 2.5 s after the game runs, its trees built in the background a mesh a moment

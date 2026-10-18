@@ -41,10 +41,10 @@ const TOONS={};
     const def={ bones:[['root',null,[0,0,0]],['hips','root',[0,.42,0]],['head','hips',[0,.7,0]],['earL','head',[-.14,.98,-.02]],['earR','head',[.14,.98,-.02]],
         ['armL','hips',[-.17,.66,0]],['armR','hips',[.17,.66,0]],['legL','hips',[-.08,.38,0]],['legR','hips',[.08,.38,0]],
         ['paper','root',[0,.6,.22]],['page','paper',[0,.6,.22]],['jar','root',[.22,0,.1]]],
-      parts:[ part('eyes',0,'head',[-1,1].map(sx=>shape(cyl(.03,.03,.02,8),BLACK,[sx*.065,.86,.165],[1,1,.5],[90,0,0]))),
-        part('face',2,'head',[ shape(sph(.14,10,7),FUR,[0,.85,.07],[1,.9,.8]) ]),
-        part('nose',3,'head',[ shape(sph(.02,4,3),PINK,[0,.81,.185]) ]),
-        part('hood',4,'head',[ shape(sph(.19,10,7),YEL,[0,.88,-.01]), shape(cyl(.002,.05,.14,4),YEL2,[0,1.06,0],[2.6,1,1],[-30,0,0]) ]),
+      parts:[ part('eyes',0,'head',[-1,1].map(sx=>shape(cyl(.03,.03,.02,8),BLACK,[sx*.065,.86,.2],[1,1,.5],[90,0,0]))),
+        part('face',2,'head',[ shape(sph(.14,10,7),FUR,[0,.85,.1],[1,.9,.8]) ]),
+        part('nose',3,'head',[ shape(sph(.02,4,3),PINK,[0,.81,.215]) ]),
+        part('hood',4,'head',[ shape(sph(.19,10,7),YEL,[0,.89,-.06]), shape(torus(.135,.03,4,12),YEL,[0,.86,.1],[1,1.05,1]), shape(cyl(.002,.05,.14,4),YEL2,[0,1.06,0],[2.6,1,1],[-30,0,0]) ]),
         ...[['L',-1],['R',1]].map(([s,sx])=>part('ear '+s,3,'ear'+s,[ shape(cyl(.002,.065,.14,4),FUR,[sx*.17,1.02,-.03],[1,1,.45],[0,0,sx*-35]) ])),
         part('coat',1,'hips',[ shape(cyl(.15,.24,.38,10),YEL,[0,.5,0]) ]),
         ...[['L',-1],['R',1]].flatMap(([s,sx])=>[ ...arm(s,sx,[sx*.16,.66,0],[sx*.2,.44,.04],YEL,FUR,YEL2,.05),
@@ -60,7 +60,7 @@ const TOONS={};
         // the paper: under his left arm (folded, along his side), or open before him; its page turned now and then
         const tuck=[-.23,.52,.02], open=[0,.5,.3]; B.paper.position.set(tuck[0]+(open[0]-tuck[0])*r,tuck[1]+(open[1]-tuck[1])*r,tuck[2]+(open[2]-tuck[2])*r);
         B.paper.rotation.set(-.6*r,(Math.PI/2)*(1-r)+.18*r,0); B.page.rotation.y=-Math.PI*(1-r)-.36*r;
-        if(c.sheet){ B.paper.rotation.set(0,.18,0); B.page.rotation.y=-.36; B.paper.position.set(0,.6,.34); }
+        if(c.sheet){ B.paper.rotation.set(0,.18,0); B.page.rotation.y=-.36; B.paper.position.set(0,.6,.27); }
         if(r>.9&&(c.turnT=(c.turnT??5)-dt)<=0){ c.turnT=4+Math.random()*5; c.kick('page','w',-3); }
         // the ink jar: in his right hand, or on the ground by his foot
         c.at('armR',[.2,.38,.05],V); V.y-=.11; const g=[.25,0,.16]; B.jar.position.set(V.x+(g[0]-V.x)*r,V.y+(g[1]-V.y)*r,V.z+(g[2]-V.z)*r); } };
@@ -77,7 +77,7 @@ const TOONS={};
         part('face',3,'eyes',[-1,1].map(sx=>flatEye(.05+sx*.06,.39,.18,.03,WHITE))),
         part('pupils',4,'eyes',[-1,1].map(sx=>flatEye(.05+sx*.06,.388,.186,.015,BLACK))),
         part('moustache',3,'body',[-1,1].map(sx=>shape(box(.04,.01,.006),[.75,.18,.15],[.05+sx*.02,.34,.18],null,[0,0,sx*-20]))),
-        part('ears',3,'body',[-1,1].map(sx=>shape(cyl(.002,.13,.2,4),ORA,[sx*.15,.64,.06],[1,1,.35]))),
+        part('ears',3,'body',[-1,1].map(sx=>shape(cyl(.002,.13,.2,3),ORA,[sx*.15,.64,.06],[1,1,.3]), shape(cyl(.002,.07,.11,3),ORA2,[sx*.15,.62,.075],[1,1,.3]))),
         part('handle',3,'body',[ limb([-.16,.55,-.04],[-.14,.6,-.04],.012,.012,ORA2,5), limb([-.14,.6,-.04],[-.02,.6,-.04],.012,.012,ORA2,5), limb([-.02,.6,-.04],[0,.55,-.04],.012,.012,ORA2,5) ]),
         part('knobs',3,'body',[ flatEye(-.15,.24,.175,.026,CHROME), shape(cyl(.02,.02,.04,6),DARK,[.13,.24,.18],null,[90,0,0]), shape(cyl(.02,.02,.04,6),DARK,[.18,.24,.18],null,[90,0,0]) ]),
         ...[['FL',-1,1],['FR',1,1],['BL',-1,-1],['BR',1,-1]].map(([s,sx,sz])=>part('leg '+s,1,'leg'+s,[ shape(blob(.075,.11,.08,6,4),FUR,[sx*.15,.12,sz*.1]), shape(blob(.075,.04,.09,6,4),FUR2,[sx*.15,.03,sz*.1+.02]) ])),

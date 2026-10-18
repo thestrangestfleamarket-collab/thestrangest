@@ -123,7 +123,8 @@ WATER.underAll=(renderer,scene,cam,lamps)=>{ for(const w of WATER.extra)if(w.on)
 // HIM IN IT (12-walker-rig's water, as 47-pool feeds it): the water's level and the floor under him each frame; in the basin too deep to stand he's
 // in (the rig floats him, treading, the crawl as he's steered, under with Space held); where it's shallow enough he stands and wades; his
 // splashes, strokes and steps push the water
-WATER.feed=(st,pos,dt,go,keys)=>{ const b=POOLR.inBasin(pos.x,pos.z), in0=st.water&&st.water.in;
+WATER.feed=(st,pos,dt,go,keys)=>{ if(!WATER.mesh)return RIG.water(st,{level:null,floor:0});   // (no pool built: owner, 18 Oct 2026, "remove the swimming pool")
+  const b=POOLR.inBasin(pos.x,pos.z), in0=st.water&&st.water.in;
   WATER.rise=in0?0.065/(POOLR.LX*POOLR.LY*0.84*0.84)/WATER.MPU:0; WATER.mesh.position.y=WATER.lvl+WATER.rise;   // (his body in it, some 65 litres, over the pool's 46 square metres: a millimetre and a half)
   const W=RIG.water(st,b?{level:POOLR.level*BLDK+(WATER.hAt(pos.x,pos.z)+WATER.rise)/ZU,floor:POOLR.bedAt(b[0])*BLDK}:{level:null,floor:0});
   W.go=!!go; W.fast=W.in&&(keys.has('k')||keys.has('shift'))?1:0;

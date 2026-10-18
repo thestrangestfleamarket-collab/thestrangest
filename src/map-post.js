@@ -1,5 +1,5 @@
 // ---- THE POOL ROOM FROM OUTSIDE: its brick (the row's, as the bodega's), its door on the sidewalk, its roof; cut with its walls while you're inside ----
-grab('poolout',()=>{ const P=POOLR, X=P.X, Z=P.Z, Y=P.Y, H=P.H, DOOR=[21.97,23.53], cw=MODS.pool.cut;   // (cw: the room's four walls' cuts: west, east, back, front)
+grab('poolout',()=>{ if(AWAY.has('apartments'))return; const P=POOLR, X=P.X, Z=P.Z, Y=P.Y, H=P.H, DOOR=[21.97,23.53], cw=MODS.pool.cut;   // (cw: the room's four walls' cuts: west, east, back, front)
   const face=(pts,w,h,fn,pl)=>{ const c=document.createElement('canvas'); c.width=Math.round(w); c.height=Math.round(h); const g=c.getContext('2d'), im=g.createImageData(c.width,c.height);
     for(let j=0;j<c.height;j++)for(let i=0;i<c.width;i++){ const v=fn(i,j), k=(j*c.width+i)*4; if(!v)continue; im.data[k]=v[0]; im.data[k+1]=v[1]; im.data[k+2]=v[2]; im.data[k+3]=255; } g.putImageData(im,0,0);
     const t=new THREE.CanvasTexture(c); t.magFilter=t.minFilter=THREE.NearestFilter; t.generateMipmaps=false; t.colorSpace=THREE.SRGBColorSpace;

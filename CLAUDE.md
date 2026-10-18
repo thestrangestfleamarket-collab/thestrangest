@@ -788,6 +788,22 @@ with its own copy, so a chat that hadn't taken in the others' work undid it. Eve
   never blended), so the brick photo seen small no longer shimmers into stripes (apts.js).
 - **The cottage's things kept to their floor** (owner, 18 Oct 2026, from the lobby: "shouldnt see things on other floors"): the cottage's pieces had
   gone into the street's batch, unclipped, so they hung over the lobby; now a batch of the house's own under its ceiling cut (apts.js).
+- **Real arms on the pawns** (owner, 18 Oct 2026: "help me improve the avatars for the skeletons and rock golems. right now their arms just float
+  because they dont have arms, lets make sure everyone has real limbs in game"; `armsOf` / `armsSolve` in `src/npc-pawns.js`): the pawns' rig
+  (RigPawn) has free hands and no arm, so all 24 pawns (the townspeople, the twelve rock golems, the four ogres, the four skeleton pawns) get an
+  upper arm and a forearm a side: four bones added to the rig (outside the clips), a tapered six-sided tube a segment with a ball at the shoulder
+  and the elbow, skinned into his one mesh; each time his pose is worked out (ASTEP's steps) the arm is solved from the shoulder on his chest to
+  his hand's wrist, the elbow bending out, down and back by his chest's turn, stretched only if a clip throws the hand past its reach. The upper
+  arm his chest's colour, the forearm his hand's; the skeletons' thin and bone white, the ogres' thick; the golems' carved in stone with the rest.
+  The KayKit skeletons, the gold one and every other character already had arms. `?sheet=` now works for the dungeon's pawns and the golems (they
+  stay out on the land for it). Cost: some 100 triangles a pawn, no light, no program.
+- **The golems in real stone** (owner, 18 Oct 2026: "make the rock golems look like rock texture like boulder, rock, etc? their texture looks like
+  triangles right now"; "avatars dont need to be so strict on triangles, they need to look right is #1"): the stone carved in the shader (`rock`
+  in `npc-map.js`, fab 2.x on a point, its fraction his seed; one branch in the characters' two existing programs, no new one): in his body's own
+  space, so it rides his bones and ignores the faces: boulders (a 3D Voronoi, four greys, warm or cool), dark cracks between them, a grain,
+  lichen on the odd stone, moss low; flat colours. His shape a heap of stones (`boulder` in `npc-pawns.js`): each face cut in four, each piece
+  rounded (Taubin smoothing over welded points) and lumped by a noise along its normal; his arms stone-thick. **Characters may spend
+  triangles to look right** (the owner's word above): some 6,800 a golem (was 1,700), about 82,000 for all twelve together in the cave.
 ## THE MARKET: the one official map
 
 **THE MARKET** (owner, 17 Oct 2026: "one official MARKET map im gona start filling in") is the game's map here: every place the owner adds goes
@@ -1451,6 +1467,16 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   cloud cover and brightness, the sky overhead and at the horizon), live; SAVE keeps them (the save's `farlook`), RESET the game's own, EXPORT
   gives `FARLOOK {...}`: when he sends it, put it in `FL0` in skyline.js. Cost: with blur on, the skyline and the sky drawn again (a few thousand
   triangles) and two blur passes at the picture's size over the coarseness squared.
+- **His body reset and lined up** (owner, 18 Oct 2026: "the shoulders and body seems off at the root"; of the mockups, C, then C1's legs, then S2's
+  shoulders: "it looks like he is wearing shoulder pads for football"; "his arms look too droopy"; "reset his entire body, t pose all side, line up
+  things that dont make sense, completeley fix"; `BODY` in `walker-rig-mock.js`, `S2F` the default, `?body=A|B|C|D|C1|C2|C3|S1|S2|S3|S2F` the
+  mockups): his shoulder joints 7.1 out (6.3 had his upper arms half inside a round chest), the joints 2.5 over the chest so the shoulders slope, the
+  sleeve just over the arm and the bar and collar thin (no pads); the chest flatter front to back (.72) and the waist in; the hips over the feet (3.4
+  out, the legs had slanted in to the ankles), the thighs tapering into the knee, a little calf; flat-soled shoes, high at the heel, low over the toes
+  (`shoeBox`). Standing, his arms eased 6° off his sides and the elbows soft (`walkPose`, at rest only). The save's v3 puts every browser's body,
+  shape, face and body type back to the game's once (his looks and kept poses stay). Not changed: his head (a third of his height) and his legs'
+  length (the moves' keys hold the hips at 18). `tests/tpose.cjs <out> [body] [tag]` (every side, his joints), `tests/bodymock.cjs`,
+  `tests/posemock.cjs`; the sheets in `mockups/body-*.png` (not kept in git).
 - **Into a turn, and the stop** (owner, 18 Oct 2026: "add the lean into turns and weight shift when stopping"; `walkPose` and `tick` in
   walker-rig-mock.js): **the lean**: as he turns (the page hands the rig his heading's turn a second, `st.yr`, build.py) his whole body tips
   over his planted feet toward the turn's middle, as far as a body his speed round that turn would (tan = speed x turn / gravity), at most 9

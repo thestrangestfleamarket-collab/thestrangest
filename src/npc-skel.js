@@ -23,7 +23,7 @@
   // the far sidewalk (bodega tiles: the road's far kerb to the map's edge, the street's whole run), the street's ground under it
   // ON THE STREET, WALKING AROUND (owner, 17 Oct 2026: "the new skeleton characters should be on street walking around"): the whole street, the
   // shops' sidewalk to the far one and the road between, anywhere on it; never into a wall, the subway's stairs, the musician or each other
-  const LANE={x0:BOD.XS(52),x1:BOD.XS(106),z0:BOD.ZS(-76.3),z1:BOD.ZS(-61.2)}, HOLE=[BOD.XS(MAPSTAIR.x0-.6),BOD.ZS(MAPSTAIR.y0),BOD.XS(MAPSTAIR.x1+.6),BOD.ZS(MAPSTAIR.y1+.6)],
+  const LANE={x0:BOD.XS(52),x1:BOD.XS(106),z0:BOD.ZS(-76.3),z1:BOD.ZS(BOD.FAR+2.8)}, HOLE=[BOD.XS(MAPSTAIR.x0-.6),BOD.ZS(MAPSTAIR.y0),BOD.XS(MAPSTAIR.x1+.6),BOD.ZS(MAPSTAIR.y1+.6)],
     free=(x,z,R)=>!(x>HOLE[0]-R&&x<HOLE[2]+R&&z>HOLE[1]-R&&z<HOLE[3]+R)&&!SOL.up.some(b=>x>b[0]-R&&x<b[2]+R&&z>b[1]-R&&z<b[3]+R), WALK=.87;   // (WALK: how far a walk clip carries him a second at its own pace, in his own units: the clips are in place, so his pace sets the clip's)
   // ---- HIS MOVES: every clip an action on his mixer, faded in and out; under it his going (a walk or a run at his pace, or standing: at
   // ease, or on guard), over it one move at a time (a strike, a shot, a spell, a fall, getting up, a cheer) played through once ----
@@ -47,7 +47,7 @@
   const CH=[ ['Warrior','WARRIOR',58,.78,'Walking_A','Idle_A',.55,[['Blade','handslot_r'],['Shield_Large_A','handslot_l']],[[53,-72.3],[79,-72.3]],{hit:'1H_Melee_Attack_Chop',reach:.8,at:.42,dmg:.55}],
              ['Mage','MAGE',69,.75,'Walking_C','Idle_B',.42,[['Staff','handslot_r']],[[52,-67.8],[79,-67.8]],{hit:'Spellcast_Shoot',reach:5,at:.5,bolt:[.8,.4,1.6],dmg:.5}],
              ['Minion','MINION',82,.7,'Walking_B','Idle_A',.6,[],[[81,-66.2],[106,-66.2]],{hit:'Unarmed_Melee_Attack_Punch_A',reach:.65,at:.38,dmg:.35}],
-             ['Rogue','ROGUE',95,.75,'Walking_A','Idle_B',.5,[['Crossbow','handslot_r']],[[55,-62.6],[104,-62.6]],{hit:'1H_Ranged_Shoot',reach:6.5,at:.45,bolt:[1.2,1.1,.8],dmg:.45}] ];
+             ['Rogue','ROGUE',95,.75,'Walking_A','Idle_B',.5,[['Crossbow','handslot_r']],[[55,BOD.FAR+1.4],[104,BOD.FAR+1.4]],{hit:'1H_Ranged_Shoot',reach:6.5,at:.45,bolt:[1.2,1.1,.8],dmg:.45}] ];
   // (their heights in metres: half what they were, owner 17 Oct 2026: "make them 50% smaller")
   const GUARDS=[], TROUBLE=[], BOLTS=[], RUN=1.9*TILE, SEE=18*TILE;
   // THE SPREAD (a character's sheet, npc-map.js): the rig's rest is a T, arms straight out; the arms lifted a little and the legs parted, each
@@ -126,7 +126,7 @@
   // ---- THE GOLD ONE (owner, 17 Oct 2026, his picture of a gilded clockwork skeleton, a white skull face under a gold cap: "put this
   // character in game, use the other skeletons as guides for character design"): the Minion's bones and body, nothing added (gild, above);
   // unarmed; he roams the whole map as the others do, no beat and no fight ----
-  skel('Minion','GOLD SKELETON',1.4,T_(77),Z_(-64),.45,{key:'Gold',walkN:'Walking_A',idleN:'Idle_A',gild:true});   // (he starts on the far sidewalk, clear of the mushroom seller's spot: owner, 17 Oct 2026, seeing the seller's hat and tray over him, "the gold skeleton should not have anything on them like mushrooms")
+  skel('Minion','GOLD SKELETON',1.4,T_(77),Z_(BOD.FAR),.45,{key:'Gold',walkN:'Walking_A',idleN:'Idle_A',gild:true});   // (he starts on the far sidewalk, clear of the mushroom seller's spot: owner, 17 Oct 2026, seeing the seller's hat and tray over him, "the gold skeleton should not have anything on them like mushrooms")
   window.GUARDX={TROUBLE,shoot,free,SEE,RUN,LANE,T_,Z_,d2,GUARDS};   // (for the security droids, npc-droids.js: the same troublemakers, bolts and ground)
   window.GUARDDBG=()=>({guards:GUARDS.map(N=>({k:N.key,mode:N.guard.mode,x:+(N.st.x/TILE).toFixed(1),z:+(N.st.z/TILE).toFixed(1),act:N.an.once&&N.an.once.n})),trouble:TROUBLE.map(N=>({mode:N.mode,x:+(N.st.x/TILE).toFixed(1),z:+(N.st.z/TILE).toFixed(1),act:N.an.once&&N.an.once.n})),next:+next.toFixed(1),dark:CLOCK.dark()});
   window.SKELDBG=()=>NPCS.filter(N=>N.mixer).map(N=>({key:N.key,x:+N.st.x.toFixed(2),z:+N.st.z.toFixed(2),y:+N.g.position.y.toFixed(2),to:!!N.st.to,bones:N.me.skeleton.bones.length})); }

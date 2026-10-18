@@ -788,6 +788,15 @@ with its own copy, so a chat that hadn't taken in the others' work undid it. Eve
   never blended), so the brick photo seen small no longer shimmers into stripes (apts.js).
 - **The cottage's things kept to their floor** (owner, 18 Oct 2026, from the lobby: "shouldnt see things on other floors"): the cottage's pieces had
   gone into the street's batch, unclipped, so they hung over the lobby; now a batch of the house's own under its ceiling cut (apts.js).
+- **Real arms on the pawns** (owner, 18 Oct 2026: "help me improve the avatars for the skeletons and rock golems. right now their arms just float
+  because they dont have arms, lets make sure everyone has real limbs in game"; `armsOf` / `armsSolve` in `src/npc-pawns.js`): the pawns' rig
+  (RigPawn) has free hands and no arm, so all 24 pawns (the townspeople, the twelve rock golems, the four ogres, the four skeleton pawns) get an
+  upper arm and a forearm a side: four bones added to the rig (outside the clips), a tapered six-sided tube a segment with a ball at the shoulder
+  and the elbow, skinned into his one mesh; each time his pose is worked out (ASTEP's steps) the arm is solved from the shoulder on his chest to
+  his hand's wrist, the elbow bending out, down and back by his chest's turn, stretched only if a clip throws the hand past its reach. The upper
+  arm his chest's colour, the forearm his hand's; the skeletons' thin and bone white, the ogres' thick; the golems' carved in stone with the rest.
+  The KayKit skeletons, the gold one and every other character already had arms. `?sheet=` now works for the dungeon's pawns and the golems (they
+  stay out on the land for it). Cost: some 100 triangles a pawn, no light, no program.
 ## THE MARKET: the one official map
 
 **THE MARKET** (owner, 17 Oct 2026: "one official MARKET map im gona start filling in") is the game's map here: every place the owner adds goes

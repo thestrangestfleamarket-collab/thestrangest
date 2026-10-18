@@ -11,6 +11,10 @@ const WHERE={};
     if(STORE.inStore&&STORE.inStore(w.x,w.z)&&STORE.ensure)STORE.ensure();   /* (a stacked room is built after the game opens: store.js) */
     STORE.goTo(w.x,w.z,w.y); heading=w.hd; if(typeof PH!=='undefined')PH.hd=w.hd; };
   if(!test&&W)setTimeout(back,300);
+  // (a new player, nothing kept yet: in the cottage, the apartment house's ground floor; owner, 18 Oct 2026, "make it anyone's cottage who
+  // starts", his pick: the first visit only, after that where you left off)
+  const home=()=>{ if(!window.__started){ setTimeout(home,200); return; } const H=MODS.apts&&MODS.apts.home; if(!H)return; STORE.goTo(H.x,H.z,H.y); heading=H.hd; if(typeof PH!=='undefined')PH.hd=H.hd; };
+  if(!test&&!W)setTimeout(home,300);
   // kept as he goes: every two seconds if he moved, and as the page is left
   let last='', t=0; const save=()=>{ if(test||RAG.on)return; const w={x:+pos.x.toFixed(3),z:+pos.z.toFixed(3),y:+py.toFixed(3),hd:+heading.toFixed(3)}, j=JSON.stringify(w); if(j===last)return; last=j; try{ SAVE.set(KEY,j); }catch(e){} };
   WHERE.tick=dt=>{ if(!window.__started)return; t+=dt; if(t>2){ t=0; save(); } };

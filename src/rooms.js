@@ -19,7 +19,7 @@ ROOMS.roofAt=(x,y,z)=>{ const h=new THREE.Raycaster(new THREE.Vector3(x,y,z),new
   ROOMS.reset=()=>{ RL=null; };   // (the stacked rooms, built after the game opens: store.js)   // (the rooms, for the lamps: a lamp in one lights only it, map-post.js's LITE)
   const within=(b,x,z,e=0)=>x>b.x0-e&&x<b.x1+e&&z>b.z0-e&&z<b.z1+e;
   ROOMS.tick=()=>{ if(!RL)build(); let hit=null; if(typeof LOOKS!=='undefined'&&LOOKS.light)LOOKS.light();   // (his own shadow from the light really on him: looks.js)
-    if(LVL==='up'&&!UI.freeCam&&!ED.on&&!MAPED.on){   // (the map editor sees every place: mapedit.js)
+    if(LVL==='up'&&!UI.freeCam&&!ED.on&&!MAPED.on&&!(window.DRONE&&DRONE.cam)){   // (the map editor sees every place: mapedit.js; the drone's camera the street: drone.js)
       // (owner, 17 Oct 2026: "when i first walk into interior its cutting off the back of my body too"): a room is yours once all of you is in it
       // (half a tile in from its walls); in a doorway, coming or going, nothing is cut
       const IN=-.55*TILE; hit=RL.find(b=>within(b,pos.x,pos.z,IN)&&py>b.y0-.3&&py<b.y1)||null;   /* (and by your height: the rooms stacked on the apartments share their ground) */

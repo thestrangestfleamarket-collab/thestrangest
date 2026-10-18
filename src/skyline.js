@@ -21,7 +21,7 @@ const FAR3={};
   // shot's colour at dusk, darker at night, a little paler at high noon. The old far haze is DISTANCE HAZE's FAR (`market-haze` '2'); ?mist=0 the far
   // haze, ?mist=near,far its two distances in tiles for a test. The weather's FOG still takes over when it comes. Cost: nothing (the same fog).
   const mq=QS.get('mist'), mv=(mq||'').split(',').map(Number); let mist=mq!=='0'; try{ if(mq==null&&localStorage.getItem('market-haze2')==='2')mist=false; }catch(e){}
-  const MIST0=mv.length===2&&mv.every(isFinite)?mv[0]:-3, MIST1=mv.length===2&&mv.every(isFinite)?mv[1]:12, MD=new THREE.Color(0x3a6e68), MN=new THREE.Color(0x152d2c), MH=new THREE.Color(0x4a7f79);
+  const MIST0=mv.length===2&&mv.every(isFinite)?mv[0]:4, MIST1=mv.length===2&&mv.every(isFinite)?mv[1]:26, MD=new THREE.Color(0x3a6e68), MN=new THREE.Color(0x152d2c), MH=new THREE.Color(0x4a7f79);
   FAR3.mist=mist;
   // THE SKYLINE: along each side of the land's square, a back row 4 tiles in from its edge and a front row 16 tiles in, each building a block
   // (a quarter of them a step narrower at the top: a set-back). Laid out once, the same every time (a hash, no Math.random)
@@ -48,19 +48,19 @@ const FAR3={};
     if(v===4){ if(y===9)c=[22,22,24]; if(y===6&&x%2===0)c=[30,30,32]; if((x+y)%7===0&&y<9&&x>6&&x<11)c=[26,26,28]; }   /* (the fire escape: its landing, its rail, the ladder) */
     atlas[k]=c[0]; atlas[k+1]=c[1]; atlas[k+2]=c[2]; atlas[k+3]=a; }
   const ftex=new THREE.DataTexture(atlas,FW,FH*NV); ftex.magFilter=ftex.minFilter=THREE.NearestFilter; ftex.colorSpace=THREE.SRGBColorSpace; ftex.flipY=false; ftex.needsUpdate=true;
-  const FU={uMC:{value:new THREE.Color()},uMK:{value:0},uMP:{value:new THREE.Vector3()},uFT:{value:ftex},uLit:{value:0},uAmb:{value:0},uBay:{value:3*TILE},uStorey:{value:3.2*TILE},uY0:{value:-.5*ZU}};
+  const FU={uMC:{value:new THREE.Color()},uMK:{value:0},uMP:{value:new THREE.Vector3()},uFT:{value:ftex},uLit:{value:0},uAmb:{value:0},uBay:{value:3*TILE},uStorey:{value:3.2*TILE},uY0:{value:-.5*ZU},uTW:{value:0}};
   const geo=new THREE.BoxGeometry(1,1,1).translate(0,.5,0), mat=new THREE.MeshLambertMaterial({color:0xffffff}), me=new THREE.InstancedMesh(geo,mat,B.length), m4=new THREE.Matrix4(), c=new THREE.Color(), y0=-.5*ZU;
   const aV=new Float32Array(B.length), aS=new Float32Array(B.length);
   B.forEach(([x,z,sx,sz,h,col],i)=>{ me.setMatrixAt(i,m4.makeScale(sx*TILE,h*TILE,sz*TILE).setPosition(x*TILE,y0,z*TILE)); me.setColorAt(i,c.setRGB(1,1,1)); aV[i]=Math.floor(hs(i,9)*NV); aS[i]=hs(i,11)*97; });
   geo.setAttribute('aV',new THREE.InstancedBufferAttribute(aV,1)); geo.setAttribute('aS',new THREE.InstancedBufferAttribute(aS,1));
   mat.onBeforeCompile=sh=>{ Object.assign(sh.uniforms,FU);
     sh.vertexShader='attribute float aV; attribute float aS; varying float vFV,vFS; varying vec3 vFW,vFN;\n'+sh.vertexShader.replace('#include <project_vertex>','#include <project_vertex>\n vec4 fw=vec4(transformed,1.);\n#ifdef USE_INSTANCING\n fw=instanceMatrix*fw;\n#endif\n fw=modelMatrix*fw; vFW=fw.xyz; vFN=normalize(mat3(modelMatrix)*objectNormal); vFV=aV; vFS=aS;');
-    sh.fragmentShader='uniform vec3 uMC,uMP; uniform float uMK; uniform sampler2D uFT; uniform float uLit,uBay,uStorey,uY0,uAmb; varying float vFV,vFS; varying vec3 vFW,vFN; float fLit=0.;\n'+sh.fragmentShader
+    sh.fragmentShader='uniform vec3 uMC,uMP; uniform float uMK; uniform sampler2D uFT; uniform float uLit,uBay,uStorey,uY0,uAmb,uTW; varying float vFV,vFS; varying vec3 vFW,vFN; float fLit=0.;\n'+sh.fragmentShader
       .replace('#include <color_fragment>',`#include <color_fragment>
  { vec3 an=abs(vFN); if(an.y>.5){ diffuseColor.rgb=vec3(.16,.16,.17); } else {
      float u=(an.x>an.z?vFW.z:vFW.x)/(uBay*2.), v=(vFW.y-uY0)/uStorey; vec2 f=vec2(fract(u),1.-fract(v));
      vec4 t=texture2D(uFT,vec2((floor(f.x*16.)+.5)/16.,(floor(vFV)*10.+floor(f.y*10.)+.5)/50.)); diffuseColor.rgb=t.rgb;
-     if(t.a>.5){ float bay=floor(u*2.+(an.x>an.z?3.:0.)), h=fract(sin(dot(vec3(bay,floor(v),vFS),vec3(12.9898,78.233,37.719)))*43758.5453); fLit=step(h,uLit); } } }`)
+     if(t.a>.5){ float bay=floor(u*2.+(an.x>an.z?3.:0.)), h=fract(sin(dot(vec3(bay,floor(v),vFS+floor(uTW+fract(bay*.37+floor(v)*.61)*7.)*1.7),vec3(12.9898,78.233,37.719)))*43758.5453); fLit=step(h,uLit); } } }`)
       .replace('#include <fog_fragment>',`if(uMK<=0.){
 #include <fog_fragment>
 } else { float fd=distance(vFW.xz,uMP.xz); gl_FragColor.rgb=mix(gl_FragColor.rgb,uMC,min(.94,uMK+floor(clamp((fd-180.)/240.,0.,1.)*3.)*.05)); }`).replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n totalEmissiveRadiance+=fLit*vec3(1.,.82,.5)*.9+diffuseColor.rgb*uAmb;'); };   /* (uAmb: the whole sky's light on them by day, so the far fronts are seen in the shade too) */
@@ -69,11 +69,11 @@ const FAR3={};
   // each frame, after the clock and the weather have set the sky: the haze from where you stand, out in the open only
   const tick0=CLOCK.tick; CLOCK.tick=dt=>{ tick0(dt);
     const up=LVL!=='down', inside=!!ROOMS.cur||!up; me.visible=FAR3.on&&up;
-    FU.uLit.value=.32*Math.max(0,Math.min(1,(1-CLOCK.elev())/6));   // (a third of their windows lit from dusk)
+    FU.uLit.value=Math.max(.1,.32*Math.max(0,Math.min(1,(1-CLOCK.elev())/6))); FU.uTW.value=performance.now()/1000/23;   // (a tenth lit even by day, each going on and off now and then: life out there, owner "more clouds and life in distance")   // (a third of their windows lit from dusk)
     FU.uAmb.value=.55*Math.max(0,Math.min(1,(CLOCK.elev()+3)/12));
-    FU.uMK.value=0; if(!FAR3.on||inside||(scene.fog&&scene.fog!==FOG)){ if(scene.fog===FOG)scene.fog=null; return; }   // (the weather's own fog, when it comes, is thicker: it has the scene)
+    FU.uMK.value=0; MISTE.x=0; if(!FAR3.on||inside||(scene.fog&&scene.fog!==FOG)){ if(scene.fog===FOG)scene.fog=null; return; }   // (the weather's own fog, when it comes, is thicker: it has the scene)
     const day=Math.max(0,Math.min(1,(CLOCK.elev()+4)/14)), d=-V.copy(pos).applyMatrix4(cam.matrixWorldInverse).z;   // (how deep you stand in the camera's view: the haze starts past you)
-    if(FAR3.mist){ const k=Math.max(0,Math.min(1,(CLOCK.elev()+6)/12)); FOG.color.copy(MN).lerp(MD,k).lerp(MH,Math.max(0,Math.min(1,(CLOCK.elev()-6)/40))); FU.uMC.value.copy(FOG.color); FU.uMK.value=.8; FU.uMP.value.copy(pos); FOG.near=d+MIST0*TILE; FOG.far=d+MIST1*TILE; scene.fog=FOG; SKY.dome.visible=false; scene.background.copy(FOG.color); return; }   // (THE MIST: above; no sky in it, the background the mist's own colour, so the far melts into it)
+    if(FAR3.mist){ const k=Math.max(0,Math.min(1,(CLOCK.elev()+6)/12)); FOG.color.copy(MN).lerp(MD,k).lerp(MH,Math.max(0,Math.min(1,(CLOCK.elev()-6)/40))); FU.uMC.value.copy(FOG.color).multiplyScalar(.62); FU.uMK.value=.8; FU.uMP.value.copy(pos); FOG.near=1e6; FOG.far=2e6; MISTE.x=1; MISTE.y=MIST0; MISTE.z=MIST1; scene.fog=FOG; SKY.dome.visible=false; scene.background.copy(FOG.color).multiplyScalar(.5); if(WX.cloudMist)WX.cloudMist(FOG.color); return; }   // (the farthest the darkest: owner, "it should get darker further away")   // (THE MIST: above; no sky in it, the background the mist's own colour, so the far melts into it)
     FOG.color.copy(SKY.U.uH.value).lerp(SKY.U.uA.value,.4);   /* (the dome's horizon colour, between the sun's side and the side away, so the far fades into the sky it stands against: sky.js, built before this) */ FOG.near=d+HAZE0*TILE; FOG.far=d+HAZE1*TILE; scene.fog=FOG; };
   // GRAPHICS' DISTANCE HAZE, beside LIGHT GRAIN
   const g=document.querySelector('#dgrain'); if(g){ const b=document.createElement('button'); b.className='btn'; b.id='dhaze'; const draw=()=>{ b.textContent='DISTANCE HAZE '+(!FAR3.on?'OFF':FAR3.mist?'MIST':'FAR'); b.setAttribute('aria-pressed',String(FAR3.on)); };

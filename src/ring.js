@@ -9,7 +9,7 @@ const RINGX={};
 { const R=RING, XS=BOD.XS, ZS=BOD.ZS, F=R.ff, T=TILE;
   const x0=XS(F.x0), x1=XS(F.x1), z0=Math.min(ZS(F.y0),ZS(F.y1)), z1=Math.max(ZS(F.y0),ZS(F.y1)), H=26*T;
   // the bound: the field's edges (the station's below the street kept: it lies within)
-  const S=MODS.station.BOUND; BOUND.x0=Math.min(x0,S.x0); BOUND.x1=Math.max(x1,S.x1); BOUND.z0=Math.min(z0,S.z0); BOUND.z1=Math.max(z1,S.z1); RINGX.bound={x0,x1,z0,z1};
+  const S=MODS.station.BOUND; BOUND.x0=Math.min(x0,S.x0); BOUND.x1=Math.max(x1,S.x1); BOUND.z0=Math.min(z0,S.z0); BOUND.z1=Math.max(z1,S.z1); RINGX.bound={x0,x1,z0,z1}; Object.assign(MISTB,{x:x0,y:z0,z:x1,w:z1}); MISTE.w=T;   /* (the mist's town: map-pre.js) */
   // the walls as solids (a fifth of a tile thick)
   const th=.2*T, wall=(a,b,c,d)=>{ SOL.up.push([a,b,c,d]); FIX.up.push([a,b,0,c,d,H]); };
   wall(x0-th,z0,x0,z1); wall(x1,z0,x1+th,z1); wall(x0,z0-th,x1,z0); wall(x0,z1,x1,z1+th);

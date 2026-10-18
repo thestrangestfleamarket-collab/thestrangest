@@ -6,7 +6,7 @@
 // jumps to stands on ground (UI.places); a lamp clicked, a seat sat on and a wave make no page error. Exits 1 if anything fails.
 const {chromium}=require('playwright'), fs=require('fs');
 // the code's references, checked against the tables before the page runs: every SFX.play('x') a recipe in sfx.js, every LINES.say(N,'x') a pool in lines.js
-const SRC=fs.readdirSync('src').filter(f=>f.endsWith('.js')).map(f=>[f,fs.readFileSync('src/'+f,'utf8')]), sfxSrc=fs.readFileSync('src/sfx.js','utf8'), linesSrc=fs.readFileSync('src/lines.js','utf8');
+const SRC=fs.readdirSync('src').filter(f=>f.endsWith('.js')).map(f=>[f,fs.readFileSync('src/'+f,'utf8')]), one=n=>fs.readFileSync('src/'+fs.readdirSync('src').find(f=>new RegExp('^\\d{3}-'+n+'\\.js$').test(f)),'utf8'), sfxSrc=one('sfx'), linesSrc=one('lines');
 const RECIPES=[...sfxSrc.matchAll(/^\s{4}(\w+):\{len:/gm)].map(m=>m[1]), POOLS=[...linesSrc.matchAll(/^\s{4}(\w+):\[/gm)].map(m=>m[1]);
 const refs=[]; for(const [f,s] of SRC){ for(const m of s.matchAll(/SFX\.play\('(\w+)'/g))refs.push(['sound',m[1],f]); for(const m of s.matchAll(/LINES\.say\(\w+,'(\w+)'/g))refs.push(['pool',m[1],f]); }
 (async()=>{ const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader','--autoplay-policy=no-user-gesture-required']}); const pg=await b.newPage({viewport:{width:900,height:620}});

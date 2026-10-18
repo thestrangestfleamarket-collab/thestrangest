@@ -46,7 +46,7 @@ const ANKLE=4.2,FOOTX=2.97,STAND=18;   // STAND: the pelvis's height standing (t
 // he is exactly as he was; rigSet puts a saved table in (the game's clouds are baked again by whoever calls it: the editor)
 // HIS BUILD AT THE ROOT (owner, 18 Oct 2026: "the shoulders and body seems off at the root"): where his shoulder joints sit (so: x out from his
 // middle) and the shirt's torso (sq: its depth to its width; r1, r2: its half width at the waist and at the chest). A: as he was, the arms half
-// inside a round torso. ?body=A|B|C|D for the mockups
+// inside a round torso. ?body=A|B|C|D for the mockups; S2 (C1 with the shoulders sloped) the owner's pick, 18 Oct 2026: the default
 // Legs (owner, of C: "make his legs and hips more proportionate ... his feet need to not be so rounded"): hx the hip joints' x; pel the pelvis's
 // half width top and bottom, hr the round over the hip joints; th the thigh's radius at the hip and the knee; sh the shin's at the knee, the calf,
 // the ankle; shoe: a flat-soled box (r its rounding), or none for the old round capsule. C1-C3 the leg mockups on C

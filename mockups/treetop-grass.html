@@ -26,7 +26,10 @@ button:focus-visible{outline:2px solid var(--acc)}
   <p>The lawn made of the oak crown itself: the same faceted leaf clumps, the same leaf spots (11 cm clumps, bright tips), each clump lit as one round shape, 4 flat bands, cool in the shade, in one smooth wind. Four ways to lay it, with the oak beside them. Drag to turn; CLOSE UP to see the leaves.</p>
   <div class="view"><canvas id="cv"></canvas><div class="tag" id="tag">A</div></div>
   <div class="tabs" id="tabs">
-    <button data-k="T1" aria-pressed="true"><b>1 · FLAT CANOPY (IN GAME NOW)</b><span>Low, wide clumps, overlapping, a sixth as tall as they're wide: the top of a tree from above, flat on the ground.</span></button>
+    <button data-k="T5" aria-pressed="true"><b>5 · BIG CROWNS</b><span>The canopy of huge trees seen from high above: crowns 4-5 m across, each a heap of big leaf clumps domed in the middle, packed together.</span></button>
+    <button data-k="T6"><b>6 · GIANT CROWNS</b><span>Bigger still: crowns 6-8 m across, deeper domes, the lawn a sea of treetops.</span></button>
+    <button data-k="T7"><b>7 · BIG CROWNS, FLAT</b><span>5's crowns pressed nearly flat to the ground: you read the crowns, but it lies like a lawn.</span></button>
+    <button data-k="T1"><b>1 · FLAT CANOPY (IN GAME NOW)</b><span>Low, wide clumps, overlapping, a sixth as tall as they're wide: the top of a tree from above, flat on the ground.</span></button>
     <button data-k="T2"><b>2 · ROLLING CANOPY</b><span>The same clumps a bit taller and mixed in height, so the lawn bulges in soft lumps like a crown's surface.</span></button>
     <button data-k="T3"><b>3 · ONE CANOPY SHEET</b><span>One continuous faceted leafy skin over the ground, gently heaving, no separate clumps at all.</span></button>
     <button data-k="T4"><b>4 · LITTLE CROWNS</b><span>Knee-high crowns, each built exactly like the oak's (several clumps heaped), packed tight edge to edge.</span></button>
@@ -76,6 +79,14 @@ function make(k){ rnd=3; const b=Build(); ground(b,true); oak(b,-4,-3.5);
   const GB=['#5f9238','#6ea042','#7cae4a','#557f33'].map(c=>new THREE.Color(c));
   const lf=(y,ph)=>({leaf:1,sw:.9,foot:y,ph:-1}), GL=['#4c7a30','#588a38','#669a42','#447028'].map(c=>new THREE.Color(c));
   const clump=(px,pz,w,h,col,lift=0)=>{ const y=hill(px,pz)+lift; b.add(ICO,mx(px,y+h*.25,pz,w,h,w,rand()*3),col,{round:V(px,y,pz),ry:w/h*.35,...lf(y)}); };
+  // giant crowns: each a heap of big clumps over a wide round, pressed down near the ground (the canopy of a forest of huge trees seen from far above)
+  const giant=(R0,R1,cl0,cl1,hk,step)=>{ for(let x=-SZ;x<SZ+2;x+=step)for(let z=-SZ;z<SZ+2;z+=step){ const cx=x+(rand()-.5)*step*.5, cz=z+(rand()-.5)*step*.5; if(Math.hypot(cx+4,cz+3.5)<1.2)continue;
+      const R=R0+rand()*(R1-R0), y=hill(cx,cz), c=V(cx,y,cz), tone=(rand()*4)|0, n=Math.round(R*R*5);
+      for(let i=0;i<n;i++){ const a=rand()*6.28, r=Math.sqrt(rand())*R, w=cl0+rand()*(cl1-cl0), px=cx+Math.cos(a)*r, pz=cz+Math.sin(a)*r, dome=(1-(r/R)**2)*hk; if(Math.abs(px)>SZ||Math.abs(pz)>SZ)continue;
+        b.add(ICO,mx(px,hill(px,pz)+dome+w*.12,pz,w,w*.35,w,rand()*3),GL[(tone+(rand()<.3?1:0))%4],{round:V(cx,y-R*.6,cz),ry:1,leaf:1,sw:.5,foot:hill(px,pz),ph:-1}); } } };
+  if(k==='T5')giant(1.8,2.6,.45,.75,.35,3.4);
+  if(k==='T6')giant(2.8,4,.6,1,.6,5.2);
+  if(k==='T7')giant(1.8,2.6,.45,.75,.12,3.4);
   if(k==='T1'){ for(let x=-SZ;x<SZ;x+=.42)for(let z=-SZ;z<SZ;z+=.42){ const px=x+rand()*.3, pz=z+rand()*.3, w=.45+rand()*.15; if(Math.hypot(px+4,pz+3.5)<.4)continue; clump(px,pz,w,w*.17,GL[(rand()*4)|0]); } }
   if(k==='T2'){ for(let x=-SZ;x<SZ;x+=.42)for(let z=-SZ;z<SZ;z+=.42){ const px=x+rand()*.3, pz=z+rand()*.3, w=.4+rand()*.2; if(Math.hypot(px+4,pz+3.5)<.4)continue; clump(px,pz,w,w*(.3+rand()*.35),GL[(rand()*4)|0],rand()*.06); } }
   if(k==='T3'){ const N=60, g=new THREE.PlaneGeometry(SZ*2,SZ*2,N,N).rotateX(-Math.PI/2).toNonIndexed(), P=g.attributes.position;
@@ -87,10 +98,10 @@ function make(k){ rnd=3; const b=Build(); ground(b,true); oak(b,-4,-3.5);
     const cm=new THREE.MeshLambertMaterial({map:tex,alphaTest:.5,side:THREE.DoubleSide}), pg=new THREE.PlaneGeometry(.5,.45).translate(0,.22,0), gr=new THREE.Group(); scene.add(gr);
     const n=1400, im=new THREE.InstancedMesh(pg,cm,n*2); let q=0; for(let i=0;i<n;i++){ const px=(rand()*2-1)*SZ, pz=(rand()*2-1)*SZ, y=hill(px,pz), a=rand()*3; for(const d of [0,1.57])im.setMatrixAt(q++,mx(px,y,pz,1,1,1,a+d)); } im.castShadow=true; im.receiveShadow=true; gr.add(im); sets.Dcards=gr; }
   const me=b.mesh(); scene.add(me); sets[k]=me; }
-['T1','T2','T3','T4'].forEach(make);
-let cur='A'; const show=k=>{ cur=k; for(const s of ['T1','T2','T3','T4'])sets[s].visible=s===k; document.getElementById('tag').textContent={T1:'1 · FLAT CANOPY',T2:'2 · ROLLING CANOPY',T3:'3 · ONE CANOPY SHEET',T4:'4 · LITTLE CROWNS'}[k];
+['T5','T6','T7','T1','T2','T3','T4'].forEach(make);
+let cur='A'; const show=k=>{ cur=k; for(const s of ['T5','T6','T7','T1','T2','T3','T4'])sets[s].visible=s===k; document.getElementById('tag').textContent={T5:'5 · BIG CROWNS',T6:'6 · GIANT CROWNS',T7:'7 · BIG CROWNS, FLAT',T1:'1 · FLAT CANOPY',T2:'2 · ROLLING CANOPY',T3:'3 · ONE CANOPY SHEET',T4:'4 · LITTLE CROWNS'}[k];
   document.querySelectorAll('#tabs button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.k===k)); };
-document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>show(b.dataset.k)); show('T1');
+document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>show(b.dataset.k)); show('T5');
 const setTime=ev=>{ document.getElementById('t1').setAttribute('aria-pressed',!ev); document.getElementById('t2').setAttribute('aria-pressed',ev);
   if(ev){ sun.position.set(-18,5,8); sun.color.set('#ffb070'); sun.intensity=1.6; amb.intensity=.35; amb.color.set('#7a8cc8'); scene.background=new THREE.Color('#2a2f45'); }
   else { sun.position.set(-12,16,10); sun.color.set('#fff0d8'); sun.intensity=2.4; amb.intensity=.55; amb.color.set('#9ec4ff'); scene.background=new THREE.Color('#6d9ad0'); } };

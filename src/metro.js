@@ -66,7 +66,7 @@ METRO=(()=>{ const D=METROD, S=1.15, SURF=11.55, PLAT=1.4;   // (SURF: the kit's
   const flush=(B,grp,o={})=>{ const out=[]; for(const k in B){ const bk=B[k], g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(bk.P,3)); g.setAttribute('uv',new THREE.Float32BufferAttribute(bk.U,2)); g.computeVertexNormals();
       const wall=bk.use[0]==='w', pl=wall?[new THREE.Plane(new THREE.Vector3(0,-1,0),1e6)]:null;
       const me=new THREE.Mesh(g,mat(bk.mi,bk.use,pl)); me.castShadow=!!o.shadow; me.receiveShadow=true; me.frustumCulled=true; grp.add(me); out.push(me);
-      if(bk.use==='ceil'||bk.use==='ceilH'){ g.computeBoundingBox(); OVERHEAD.push({o:me,y:g.boundingBox.min.y+.02}); }
+      if(bk.use.slice(0,4)==='ceil'){ g.computeBoundingBox(); OVERHEAD.push({o:me,y:g.boundingBox.min.y+.02}); }
       if(wall){ const dir={'w+x':[0,-1],'w-x':[0,1],'w+z':[1,0],'w-z':[-1,0]}[bk.use], w={pl:pl[0],nx:dir[0],nz:dir[1],me,when:o.when}; if(o.foot!=null)w.foot=o.foot; else Object.defineProperty(w,'foot',{get:()=>py+.35}); cutWalls.push(w); } }
     return out; };
   // a solid in the kit's space (x0..x1 across, z0..z1 along), its height over its floor, onto a level's lists
@@ -86,9 +86,11 @@ METRO=(()=>{ const D=METROD, S=1.15, SURF=11.55, PLAT=1.4;   // (SURF: the kit's
   quad(B,TT,'w-z',[12.1,PLAT,Z_S],[10.25,PLAT,Z_S],[10.25,6.11,Z_S],[12.1,6.11,Z_S],[0,0,.55,1]);
   quad(B,TT,'w-z',[10.25,4.5,Z_S],[5.66,4.5,Z_S],[5.66,6.64,Z_S],[10.25,6.64,Z_S],[0,0,1.4,.45]);
   quad(B,TT,'w+z',[5.66,0,Z_N],[10.25,0,Z_N],[10.25,6.64,Z_N],[5.66,6.64,Z_N],[0,0,1.4,1.4]);
-  { const ZT=-64, L=Z_S-ZT; quad(B,RR,'body',[10.55,0,Z_S],[5.66,0,Z_S],[5.66,0,ZT],[10.55,0,ZT],[.01,Z_S*.154,.99,ZT*.154]);
-    quad(B,CB,'body',[5.66,0,Z_S],[5.66,0,ZT],[5.66,4.5,ZT],[5.66,4.5,Z_S],[0,0,L/4.7,.96]); quad(B,CB,'body',[10.55,0,ZT],[10.55,0,Z_S],[10.55,4.5,Z_S],[10.55,4.5,ZT],[0,0,L/4.7,.96]);
-    quad(B,CB,'body',[5.66,4.5,Z_S],[10.55,4.5,Z_S],[10.55,4.5,ZT],[5.66,4.5,ZT],[0,0,1.04,L/4.7]); quad(B,CB,'body',[5.66,0,ZT],[10.55,0,ZT],[10.55,4.5,ZT],[5.66,4.5,ZT],[0,0,1.04,.96]); }
+  // (the tunnel's walls and roof their own: while you ride the car through it, its walls are cut to the car's floor as a room's are and its
+  // roof is overhead, so the view from above finds you in the car)
+  const BT={}; { const ZT=-64, L=Z_S-ZT; quad(B,RR,'body',[10.55,0,Z_S],[5.66,0,Z_S],[5.66,0,ZT],[10.55,0,ZT],[.01,Z_S*.154,.99,ZT*.154]);
+    quad(BT,CB,'w-x',[5.66,0,Z_S],[5.66,0,ZT],[5.66,4.5,ZT],[5.66,4.5,Z_S],[0,0,L/4.7,.96]); quad(BT,CB,'w+x',[10.55,0,ZT],[10.55,0,Z_S],[10.55,4.5,Z_S],[10.55,4.5,ZT],[0,0,L/4.7,.96]);
+    quad(BT,CB,'ceilT',[5.66,4.5,Z_S],[10.55,4.5,Z_S],[10.55,4.5,ZT],[5.66,4.5,ZT],[0,0,1.04,L/4.7]); quad(B,CB,'body',[5.66,0,ZT],[10.55,0,ZT],[10.55,4.5,ZT],[5.66,4.5,ZT],[0,0,1.04,.96]); }
   // THE THINGS: columns down the platform's middle; the gates across its end at the corridor's foot (open: their flaps left out, a low tiled
   // filler to the wall and the edge); the ticket machine and the map by the gates, the vending machine, benches, bins and posters along the back
   // wall (each turned to face the platform: its front faces the kit's -z, turned a quarter to face -x; what stands on the floor set on the
@@ -101,17 +103,33 @@ METRO=(()=>{ const D=METROD, S=1.15, SURF=11.55, PLAT=1.4;   // (SURF: the kit's
   const wallThing=(key,z,o={})=>{ const p=D.pieces[key], w=p.hi[0]-p.lo[0], d=p.hi[2]-p.lo[2], cx=(p.lo[0]+p.hi[0])/2, cz=(p.lo[2]+p.hi[2])/2, x=BW-d/2-.03;   // (turned a quarter: its width along z, its depth along x, its back on the wall)
     put(PR,key,{yaw:Math.PI/2,dx:x-cx,dz:z-cz,dy:o.floor?PLAT-p.lo[1]:0,use:o.floor?undefined:'w+x'});   /* (what hangs on the wall cut with it: its back showed dark where the wall was cut away) */ if(o.solid)sol(solids,fixed,x-d/2,z-w/2,BW,z+w/2,p.hi[1]-p.lo[1]); };
   wallThing('ticket_machine',49.2,{solid:true,floor:true}); wallThing('metro_map',47.1); wallThing('Vending_machine',8,{solid:true,floor:true});
-  for(const z of [17,33,41])wallThing('Chair',z,{solid:true,floor:true});
+  // the benches: seats a double click sits him on (use.js, as the old station's were): where each stands, in the world
+  METRO.seats=[]; for(const z of [17,33,41]){ wallThing('Chair',z,{solid:true,floor:true}); const d=D.pieces.Chair.hi[2]-D.pieces.Chair.lo[2], kx=BW-d/2-.03; METRO.seats.push({x:X(kx,z),z:Z(kx,z),y:Y(PLAT),w:S*(D.pieces.Chair.hi[0]-D.pieces.Chair.lo[0]),d:S*d}); }
   for(const z of [4,25,45.5])wallThing('trash_can',z,{solid:true,floor:true});
   { const pairs=[[12,'Poster_01','Poster_05'],[21,'Poster_02','Poster_06'],[30,'Poster_03','Poster_07'],[38,'Poster_04','Poster_08']]; for(const [z,a,c] of pairs){ wallThing(a,z); wallThing(c,z); } }
   const tube=(grp2,kx,kz,ceil,o={})=>{ const p=D.pieces.light, cx=(p.lo[0]+p.hi[0])/2, cz=(p.lo[2]+p.hi[2])/2; put(grp2,'light',{dx:kx-cx,dz:kz-cz,dy:ceil-p.hi[1]-.02}); return lamp(o.grp||scene,kx,ceil-.4,kz,o.i||16,o.reach||10); };   // (as bright as the old station's platform, 18 Oct 2026: 5 left it in the dark)
   for(let z=-2;z<=54;z+=8){ tube(LI,16.9,z,6.11); tube(LI,12.3,z+4,6.11); }
   // the walls' cut: to a hand over the platform's floor; the ceilings over the platform overhead
-  flush(B,grp,{foot:Y(PLAT)+.3}); flush(PR,grp,{shadow:true}); const lm=flush(LI,grp); for(const m of lm)OVERHEAD.push({o:m,y:Y(6.0)});
+  flush(B,grp,{foot:Y(PLAT)+.3}); flush(BT,grp,{foot:Y(PLAT)+.3,when:()=>!!METRO.train.ride}); METRO.things=flush(PR,grp,{shadow:true});   // (things: the benches' faces for use.js's seat finder) const lm=flush(LI,grp); for(const m of lm)OVERHEAD.push({o:m,y:Y(6.0)});
+  // THE WAY OUT SIGNED (owner, 18 Oct 2026, "go all", the Metro's open items: a TO STREET sign): a black sign hung from the ceiling across the
+  // platform before the gates, in the white pixel letters of the street's signs (3x5, a texel each, painted once into a picture the kit's grain
+  // has: 18 texels a metre), TO STREET with an arrow ahead on its platform side, TO TRAINS on the gates' side; two dark rods up to the ceiling.
+  // Its letters lit a little from inside (the picture its own glow). Not overhead (OVERHEAD): it hangs low enough to read from the isometric view
+  { const G={T:'111010010010010',O:'010101101101010',S:'011100010001110',R:'110101110101101',E:'111100110100111',A:'010101111101101',I:'111010010010111',N:'110101101101101','^':'0010001110101010010000100'};
+    const pic=w=>{ const W=49, H=11, c=document.createElement('canvas'); c.width=W; c.height=H; const g=c.getContext('2d'), im=g.createImageData(W,H), D2=im.data;
+      const px=(i,j,r,gg,b)=>{ const k=(j*W+i)*4; D2[k]=r; D2[k+1]=gg; D2[k+2]=b; D2[k+3]=255; };
+      for(let j=0;j<H;j++)for(let i=0;i<W;i++){ const edge=i===0||j===0||i===W-1||j===H-1; edge?px(i,j,70,72,76):px(i,j,18,18,20); }
+      for(let j=0;j<5;j++)for(let i=0;i<5;i++)if(G['^'][j*5+i]==='1')px(3+i,3+j,236,238,232);   // (the arrow: straight ahead)
+      [...w].forEach((ch,n)=>{ const gl=G[ch]; if(gl)for(let j=0;j<5;j++)for(let i=0;i<3;i++)if(gl[j*3+i]==='1')px(11+n*4+i,3+j,236,238,232); });
+      g.putImageData(im,0,0); const t=new THREE.CanvasTexture(c); t.magFilter=THREE.NearestFilter; t.minFilter=THREE.NearestFilter; t.generateMipmaps=false; t.colorSpace=THREE.SRGBColorSpace; return t; };
+    const sm=w=>{ const t=pic(w); return new THREE.MeshLambertMaterial({map:t,emissiveMap:t,emissive:new THREE.Color(1,1,1),emissiveIntensity:.35,alphaTest:.5,side:THREE.DoubleSide}); }, dark=new THREE.MeshLambertMaterial({map:WHITE,color:new THREE.Color(.16,.17,.19),alphaTest:.5,side:THREE.DoubleSide});   // (as the kit's own are made: their programs, no new one)
+    const kx=14.6, kz=46.6, y0=3.85, wm=49/18, hm=11/18, sg=new THREE.Mesh(new THREE.BoxGeometry(.05*S,hm*S,wm*S),[sm('TO STREET'),sm('TO TRAINS'),dark,dark,dark,dark]);
+    sg.position.set(X(kx,kz),Y(y0+hm/2),Z(kx,kz)); sg.receiveShadow=true; grp.add(sg); METRO.sign=sg;   // (its +x face toward the platform: the kit's z runs west, the world's x east)
+    for(const d of [-1,1]){ const rod=new THREE.Mesh(new THREE.BoxGeometry(.03*S,(6.11-y0-hm)*S,.03*S),dark); rod.position.set(X(kx+d*wm*.4,kz),Y((6.11+y0+hm)/2),Z(kx+d*wm*.4,kz)); grp.add(rod); } }
   // where you can't walk: the track (the platform's edge a drop you don't take), the back wall, the ends, the closet, the exit hall's walls
-  sol(solids,fixed,4.5,-70,EDGE,Z_N+1,1.4); sol(solids,fixed,BW,Z_S-1,BW+.6,Z_N,4.7); sol(solids,fixed,EDGE,Z_S-.5,BW+.6,Z_S,4.7); sol(solids,fixed,12.0,Z_S,BW+.6,-1.5,4.7);
+  sol(solids,fixed,4.5,-70,EDGE,Z_N+1,1.4); const TRK=solids[solids.length-1]; sol(solids,fixed,BW,Z_S-1,BW+.6,Z_N,4.7); sol(solids,fixed,EDGE,Z_S-.5,BW+.6,Z_S,4.7); sol(solids,fixed,12.0,Z_S,BW+.6,-1.5,4.7);
   sol(solids,fixed,9.0,Z_N,9.54,79.5,9); sol(solids,fixed,17.89,Z_N,28.9,73.7,9); sol(solids,fixed,9.0,78.64,28.9,79.5,9); sol(solids,fixed,BW,Z_N-.3,BW+.6,Z_N+.5,4.7);
-  BOUND={x0:X(0,79.5),x1:X(0,Z_S-.5),z0:Z(5.0,0),z1:Z(28.9,0)};
+  BOUND={x0:X(0,79.5),x1:X(0,Z_S-.5),z0:Z(5.0,0),z1:Z(28.9,0)}; const BX1=BOUND.x1, BD=BOUND;
   // the station's footprint (its own ground inside it; the loop's tunnel, at its own depth, outside it: map-post's MODS.station)
   METRO.inside=(x,z)=>x>BOUND.x0&&x<BOUND.x1&&z>BOUND.z0&&z<BOUND.z1;
   // THE TRAIN: the kit's car (its doors each their own mesh, sliding apart), at its stop (its platform side half a metre off the platform's edge,
@@ -120,11 +138,33 @@ METRO=(()=>{ const D=METROD, S=1.15, SURF=11.55, PLAT=1.4;   // (SURF: the kit's
   const TR={g:new THREE.Group(),doors:[],state:'stop',t:50,x:0,v:0,open:1}; METRO.train=TR; grp.add(TR.g);
   // (the car cut to its floor, as a wall is, while the camera's on the track's side of you: from there it stood between the view and the
   // platform, 18 Oct 2026; its faces as a wall facing south, kit -x, each with its own plane)
+  const c1=cutWalls.length;
   { const CB2={}, cp=D.pieces.car, cdx=8.1-(cp.lo[0]+cp.hi[0])/2, cdz=25.9-(cp.lo[2]+cp.hi[2])/2, cdy=PLAT-1.44, cut={shadow:true,foot:Y(PLAT)+.3}; put(CB2,'car',{dx:cdx,dz:cdz,dy:cdy,use:'w-x'}); flush(CB2,TR.g,cut);
     // (only the platform's side opens: door6 to door11 and door13; the far side's leaves, door0 to door5 and door12, stay shut)
     const OPEN={door0:0,door1:0,door2:0,door3:0,door4:0,door5:0,door6:-1,door7:1,door8:-1,door9:1,door10:-1,door11:1,door12:0,door13:1};
     for(const k in OPEN){ const DB={}; put(DB,k,{dx:cdx,dz:cdz,dy:cdy,use:'w-x'}); const ms=flush(DB,TR.g,cut); if(OPEN[k])TR.doors.push({ms,k:OPEN[k]}); }
     TR.x0=X(0,25.9); TR.stopX=0; }
+  // RIDING THE CAR (owner, 18 Oct 2026, "go all", the Metro's open items: "riding the car"): standing in it when its doors shut, you go with it:
+  // out into the tunnel and back to the platform (the one station: it comes back out of the dark, slows, opens), carried each frame by its own
+  // move before you walk (build.py runs its clock first in the frame), the car cut to its floor (as a room's walls) and the tunnel's walls
+  // and roof with it, so the view from above finds you in it; a lamp in it, lit only while you ride (one of LITE's eight). Its solids follow
+  // it: with its doors open at the platform the track's box is the track round the car, the car's far side and its platform side between its
+  // three pairs of doors (a gap at each); shut, its platform side whole: in it you can't walk out but through an open door, nor out of it
+  // through a wall; gone, the track whole again. Nothing a frame when it changes nothing (the boxes set only when the car moves or the doors
+  // change)
+  TR.cuts=cutWalls.slice(c1);
+  const CI={x0:6.42,x1:9.8,z0:14.65,z1:35.25}, DOORZ=[[18.15,19.65],[25.15,26.65],[32.12,33.65]], XB=[];   // (the car's inside, in the kit; its doorways on the platform's side)
+  for(let i=0;i<6;i++){ const b=[1e6,1e6,1e6,1e6]; solids.push(b); XB.push(b); }
+  const setB=(b,x0,z0,x1,z1)=>{ const a=X(0,z1), c=X(0,z0), e=Z(x0,0), f=Z(x1,0); b[0]=Math.min(a,c); b[1]=Math.min(e,f); b[2]=Math.max(a,c); b[3]=Math.max(e,f); };
+  const off=b=>{ b[0]=b[1]=b[2]=b[3]=1e6; };
+  let LAY0='';
+  const lay=(mode,dz)=>{ const key=mode+(mode==='ride'?dz.toFixed(3):''); if(key===LAY0)return; LAY0=key; for(const b of XB)off(b);
+    if(mode==='closed'){ setB(TRK,4.5,-70,EDGE,Z_N+1); return; }
+    setB(TRK,4.5,-70,EDGE,CI.z0+dz); setB(XB[0],4.5,CI.z1+dz,EDGE,Z_N+1); setB(XB[1],4.5,CI.z0+dz,CI.x0,CI.z1+dz);   // (the track either side of the car, and its far side)
+    if(mode==='ride'){ setB(XB[2],CI.x1,CI.z0+dz,EDGE,CI.z1+dz); return; }
+    let z=CI.z0; DOORZ.forEach(([a,b],i)=>{ setB(XB[2+i],CI.x1,z,EDGE,a); z=b; }); setB(XB[5],CI.x1,z,EDGE,CI.z1); };   // (open: its side between the doorways)
+  const inCar=(x,z,dz)=>{ const kx=METRO.KX(x,z), kz=METRO.KZ(x,z); return kx>CI.x0-.1&&kx<CI.x1+.2&&kz>CI.z0+dz&&kz<CI.z1+dz; };
+  const RL=lamp(grp,8.1,4.2,25.9,0,6); RL.userData.i0=6; METRO.inCar=(x,z)=>inCar(x,z,-TR.x/S);
   // its sound: a rumble (noise through a low pass) rising and falling with its speed, fading with its distance; a two-note chime as the doors
   // shut; through the page's one AudioContext (SFX's, sfx.js), at its effects' level and only while they're on
   const SNDM={}; const ac=()=>typeof SFX!=='undefined'&&SFX.live?SFX.live():null, lvl=()=>typeof SFX!=='undefined'?(SFX.on===false?0:(SFX.vol??1)):1;
@@ -133,13 +173,19 @@ METRO=(()=>{ const D=METROD, S=1.15, SURF=11.55, PLAT=1.4;   // (SURF: the kit's
     g*=lvl(); if(Math.abs(g-SNDM.r.g)<.002)return; SNDM.r.g=g; SNDM.r.gn.gain.setTargetAtTime(g,c.currentTime,.1); };   // (set only when it changes: at rest, at rest)
   const chime=()=>{ const c=ac(); if(!c)return; const t=c.currentTime, L=lvl(); for(const [f,at] of [[660,0],[520,.3]]){ const o=c.createOscillator(), g=c.createGain(); o.frequency.value=f; o.type='sine'; g.gain.setValueAtTime(0,t+at); g.gain.linearRampToValueAtTime(.12*L+1e-4,t+at+.02); g.gain.exponentialRampToValueAtTime(.0001,t+at+.5); o.connect(g); g.connect(c.destination); o.start(t+at); o.stop(t+at+.55); } };
   TR.tick=(dt,you)=>{ const on=MAPG.down.visible; if(!on){ if(SNDM.r)rumble(0); return; }
-    const T=TR, AMAX=1.3, VMAX=14*S, FAR=78, dt1=Math.min(dt,.1);
-    if(T.state==='stop'){ if((T.t-=dt1)<=0){ T.state='closing'; T.t=1.8; if(Math.hypot(T.x0-you.x,you.z-Z(8.1,0))<40)chime(); } }
+    const T=TR, AMAX=1.3, VMAX=14*S, FAR=78, dt1=Math.min(dt,.1), x0=T.x;
+    if(T.state==='stop'){ if((T.t-=dt1)<=0){ T.state='closing'; T.t=1.8; if(Math.hypot(T.x0-you.x,you.z-Z(8.1,0))<40)chime();
+        if(LVL==='down'&&!(typeof RAG!=='undefined'&&RAG.on)&&inCar(you.x,you.z,0)){ T.ride=true; BD.x1=X(0,-70); RL.intensity=RL.userData.i0; } } }   // (aboard as the doors shut: you ride; the map's bound out along the tunnel with you)
     else if(T.state==='closing'){ T.open=Math.max(0,T.open-dt1/1.6); if((T.t-=dt1)<=0){ T.state='leave'; T.v=0; } }
-    else if(T.state==='leave'){ T.v=Math.min(VMAX,T.v+AMAX*S*dt1); T.x+=T.v*dt1; if(T.x>FAR){ T.state='away'; T.t=45; T.g.visible=false; } }
+    else if(T.state==='leave'){ T.v=Math.min(VMAX,T.v+AMAX*S*dt1); T.x+=T.v*dt1; if(T.x>FAR){ T.x=Math.min(T.x,FAR+2); T.state='away'; T.t=T.ride?6:45; T.v=0; if(!T.ride)T.g.visible=false; } }   // (with you aboard: a short wait in the dark, the car kept)
     else if(T.state==='away'){ if((T.t-=dt1)<=0){ T.state='arrive'; T.x=FAR; T.v=VMAX; T.g.visible=true; } }
     else if(T.state==='arrive'){ const d=Math.max(0,T.x); T.v=Math.min(VMAX,Math.max(.6,Math.sqrt(2*AMAX*S*d))); T.x-=T.v*dt1; if(T.x<=0){ T.x=0; T.v=0; T.state='opening'; T.t=1.8; } }
-    else if(T.state==='opening'){ T.open=Math.min(1,T.open+dt1/1.6); if((T.t-=dt1)<=0){ T.state='stop'; T.t=50; } }
+    else if(T.state==='opening'){ T.open=Math.min(1,T.open+dt1/1.6); if((T.t-=dt1)<=0){ T.state='stop'; T.t=50;
+        if(T.ride){ T.ride=false; BD.x1=BX1; RL.intensity=0; } } }   // (back at the platform, the doors open: off you get)
+    // carried: you go as far as the car went, kept in it (its boxes moved with it); its lamp with it
+    if(T.ride){ you.x+=T.x-x0; if(target)target.x+=T.x-x0;   /* (where a double click sent you in the car goes with it) */ if(!inCar(you.x,you.z,-T.x/S)){ const kx=Math.max(CI.x0+.35,Math.min(CI.x1-.35,METRO.KX(you.x,you.z))), kz=Math.max(CI.z0+.35,Math.min(CI.z1-.35,METRO.KZ(you.x,you.z)+T.x/S))-T.x/S; you.x=X(kx,kz); you.z=Z(kx,kz); } RL.position.set(X(8.1,25.9)+T.x,Y(4.2),Z(8.1,0)); }
+    const see=!!T.ride||LVL==='down'&&inCar(you.x,you.z,-T.x/S); if(see!==T.see){ T.see=see; for(const w of T.cuts)w.always=see; }   // (in the car, riding or not: it's cut to its floor so you see yourself in it)
+    lay(T.ride?'ride':(T.state==='stop'||T.state==='opening'&&T.open>.5)?'open':'closed',-T.x/S);
     T.g.position.x=T.x; const e=T.open<.5?2*T.open*T.open:1-2*(1-T.open)*(1-T.open); for(const d of T.doors)for(const m of d.ms)m.position.x=-S*.86*d.k*e;
     const dist=Math.hypot(T.x0+T.x-you.x,you.z-Z(8.1,0)); rumble(T.g.visible?Math.min(1,T.v/VMAX)*Math.max(0,1-dist/55)*.45:0); };
   // THE PLATFORM'S LANE for the characters who wander it (the bear): along it between the columns and the back wall, in the world; its

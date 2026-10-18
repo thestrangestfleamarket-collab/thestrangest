@@ -67,6 +67,20 @@ ROOFS.init=()=>{ if(typeof BOD==='undefined'||!MODS.apts||!MODS.apts.A)return;
   // ---- GHOST STREET: copper leaders at the dojo's front corners, up to its eave
   if(BOD.GD&&BOD.GD.r){ const [a0,b0,a1,b1]=BOD.GD.r, x0=Math.min(X(a0),X(a1))-.15*MH, x1=Math.max(X(a0),X(a1))+.15*MH, fzz=Math.max(Z(b0),Z(b1))+.15*MH, top=Y(100);
     for(const x of [x0+.12*MH,x1-.12*MH])leader(x,fzz+.1*MH,0,1,top,0x9a6a40); }
+  // ---- GHOST STREET'S TILED ROOF (owner, 18 Oct 2026, "go all": "a vent pipe, a lightning rod, a small chimney with a cap"): read off its own
+  // roof's slices (the shop roof's boxes, as gdShape left them: the ridge along x at the middle of their depth), so each thing stands on the slope
+  // where it is: a brick chimney through the back slope near the east gable, its stone cap and a clay pot; a lead vent pipe up the front slope
+  // west of the middle with its collar and hood; a copper lightning rod on the ridge's west end, its ball and the cable down the gable
+  { const R=(BOD.GHOSTST||[]).find(p=>/shop roof/.test(p.name||p.key||'')); if(R&&R.boxes&&R.boxes.length){ const bs=R.boxes, xa=Math.min(...bs.map(o=>o.x0)), xb=Math.max(...bs.map(o=>o.x1)), ya=Math.min(...bs.map(o=>o.y0)), yb=Math.max(...bs.map(o=>o.y1)), ze=Math.min(...bs.map(o=>o.z0)), zr=Math.max(...bs.map(o=>o.z1));
+    const ym=(ya+yb)/2, half=(yb-ya)/2, zAt=y=>zr-(zr-ze)*Math.min(1,Math.abs(y-ym)/half), back=Z(ya)<Z(yb)?-1:1, yB=y=>ym+(ya<yb?-1:1)*y, yF=y=>ym-(ya<yb?-1:1)*y;   // (zAt: the slope's height over a spot; yB/yF: so far back or toward the street from the ridge)
+    // the chimney: brick from below the slope to over the ridge, its stone cap, a pot
+    { const cx=xb-(xb-xa)*.2, c0=yB(half*.25), c1=yB(half*.25+.5), lo=zAt(Math.max(Math.abs(c0-ym),Math.abs(c1-ym))*(1)+ym)-2, hi=zr+16;
+      box(X(cx-.3),X(cx+.3),Z(c0),Z(c1),Y(lo),Y(hi),0x7a3a2c); box(X(cx-.36),X(cx+.36),Z(c0)-back*.06*MH,Z(c1)+back*.06*MH,Y(hi),Y(hi+2.5),0xa8a296); cyl(X(cx),Y(hi+2.5),(Z(c0)+Z(c1))/2,.12*MH,.35*MV,0xa0563a); }
+    // the vent pipe: up from the front slope, a collar where it goes in, a hood
+    { const vx=xa+(xb-xa)*.38, vy=yF(half*.45), z0=zAt(vy); cyl(X(vx),Y(z0-1),Z(vy),.2*MH,.12*MV,0x4a4c4e); cyl(X(vx),Y(z0-1),Z(vy),.08*MH,.9*MV,0x6a6e70); cyl(X(vx),Y(z0-1)+.9*MV,Z(vy),.17*MH,.15*MV,0x6a6e70,1); }
+    // the lightning rod on the ridge's west end: its foot, the rod, a glass ball, the cable down the gable
+    { const lx=xa+.25; b(X(lx),Y(zr)+.08*MV,Z(ym),.12*MH,.16*MV,.12*MH,0x9a6a40); b(X(lx),Y(zr)+1.1*MV,Z(ym),.03*MH,2*MV,.03*MH,0xb07a48); b(X(lx),Y(zr)+1.6*MV,Z(ym),.14*MH,.14*MV,.14*MH,0x6aa0b0);
+      b(X(xa)-.02*MH,(Y(ze)+Y(zr))/2,Z(ym),.03*MH,Y(zr)-Y(ze),.03*MH,0x9a6a40); } } }
 
   // ---- two instanced draws: the blocks, the rounds (a cone for a lid or a cap)
   const geo=new THREE.BoxGeometry(1,1,1), lam=new THREE.MeshLambertMaterial({color:0xffffff});

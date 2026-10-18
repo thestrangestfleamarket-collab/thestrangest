@@ -305,10 +305,9 @@ gtsrc='''
 const CAST={}, PLAY221={seeking:false,pre:0}, PLAYA={}, GTPHYS={model:false,ok:false}, SND={ctx:null,on:true,out:null}, GTWR={R:[-3.22,3.15,2.06]};
 // (castPose, the cast's poses: the game's own, with the pianist's files below)
 '''
-gtsrc+="const GTMP3='data:audio/mpeg;base64,"+base64.b64encode(open(GA,'rb').read()).decode()+"';\n"
 for f in ['47-play-3-guitar-1-body.js','47-play-3-guitar-samples.data.js','47-play-3-guitar-2-tunes.js','47-play-3-guitar-3-hands.js']:
     t=open(S+f).read()
-    if f.endswith('body.js'): t=rp(t,"fetch('audio/guitar.mp3')","fetch(GTMP3)")
+    if f.endswith('body.js'): t=rp(t,"function gtAudio(){ const c=SND.ctx;","function gtAudio(){ return false; const c=SND.ctx;")   # (no recordings: owner, 18 Oct 2026, "remove any recordings from game for now")
     if f.endswith('hands.js'): t=rp(t,"R:gtAt(-3.22,3.15,2.06)}","R:gtAt(...GTWR.R)}")
     gtsrc+='\n'+t
 # THE PIANIST (owner, 17 Oct 2026, the bar "with all musicians"): the game's 47-play-5-piano (his tuxedo, the bench and the 88 keys as pieces
@@ -316,10 +315,9 @@ for f in ['47-play-3-guitar-1-body.js','47-play-3-guitar-samples.data.js','47-pl
 # 47-play-1-cast (the few lines they need), the recordings embedded; then src/pianist.js seats him at the stored bar's grand
 PA=os.path.join(S,'..','audio','piano.mp3')
 pnsrc="\n// ---- THE CAST'S POSES AND REACH, AS THE PIANIST NEEDS THEM (47-play-1-cast's, word for word) ----\nconst POSES={}, CV=RIG.V; function castStep(){}\n"+body(S+'47-play-1-cast.js','// HIS HANDS WHERE THEY MUST BE','// ---- A PLAYER')
-pnsrc+="const PNMP3='data:audio/mpeg;base64,"+base64.b64encode(open(PA,'rb').read()).decode()+"';\n"
 for f in ['47-play-5-piano-samples.data.js','47-play-5-piano-1-sound.js','47-play-5-piano-2-music.js','47-play-5-piano-3-hands.js']:
     t=open(S+f).read()
-    if f.endswith('sound.js'): t=rp(t,"fetch('audio/piano.mp3')","fetch(PNMP3)")
+    if f.endswith('sound.js'): t=rp(t,"function pnAudio(){ const c=SND.ctx;","function pnAudio(){ return false; const c=SND.ctx;")   # (no recordings)
     pnsrc+='\n'+t
 # THE SINGER (owner, 17 Oct 2026): the game's 47-play-6-woman, 47-play-7-singer and 47-zzz-bar-singer word for word (her voice's loudness and
 # side from where she stands here: SGM, src/singer.js), after the music engine (47-music-1-engine, -2-instruments, -1b-samples: the bar's echo

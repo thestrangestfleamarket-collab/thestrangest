@@ -390,6 +390,8 @@ mod=rp(mod,"  { const px=FLOATS.px??pos.x,","  if(PERFX.poolNear()){ const px=FL
 head=rp(head,'<div id="hud">','<style>@keyframes ldfade{0%{opacity:0}25%{opacity:1}75%{opacity:1}100%{opacity:0}} #loading span{opacity:0;animation:ldfade 6s ease-in-out forwards} #loading{transition:opacity .5s}</style><script>window.__ld0=performance.now();</script><div id="loading" style="position:fixed;inset:0;display:grid;place-items:center;font:12px Silkscreen,monospace;letter-spacing:2px;color:#8a8f9c;background:#0e1016;z-index:50"><span>I took a trip to The Strangest Flea Market...</span></div>\n<div id="hud" hidden>')
 head=rp(head,'<div id="stat">--</div>\n<div id="shd">','<div id="stat" hidden>--</div>\n<div id="shd" hidden>')
 head='<meta charset="utf-8">\n'+head
+# PAST THE MIST NOT DRAWN (owner, 18 Oct 2026, "fix all 1-8", the eighth: the triangles on screen; FAR3.cull, skyline.js) round the picture's drawing, as the characters are
+mod=rp(mod,"NPCS.cull(true);","NPCS.cull(true); FAR3.cull(true);"); mod=rp(mod,"NPCS.cull(false);","NPCS.cull(false); FAR3.cull(false);")
 # BREATHS WHILE LOADING (owner, 17 Oct 2026, "this artifact isn't responding"): the module script given a moment back to the browser every
 # 40 ms while it builds (tools/yields.py)
 sys.path.insert(0,'tools'); from yields import yields

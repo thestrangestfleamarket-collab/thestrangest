@@ -23,6 +23,17 @@ const FAR3={};
   const mq=QS.get('mist'), mv=(mq||'').split(',').map(Number); let mist=mq!=='0'; try{ if(mq==null&&localStorage.getItem('market-haze2')==='2')mist=false; }catch(e){}
   const MIST0=mv.length===2&&mv.every(isFinite)?mv[0]:7, MIST1=mv.length===2&&mv.every(isFinite)?mv[1]:24,   /* (from him along the ground: clear to 7 tiles round him, the full colour at 24; FOGQ, map-pre.js) */ MD=new THREE.Color(0x3a6e68), MN=new THREE.Color(0x152d2c), MH=new THREE.Color(0x4a7f79);
   FAR3.mist=mist;
+  // PAST THE MIST NOT DRAWN (owner, 18 Oct 2026, "fix all 1-8", the eighth: the street drew some 280,000 triangles a frame against the budget's
+  // 100,000): in the mist everything farther from him along the ground than its full colour (MIST1) is the mist's colour, as the background is,
+  // so a mesh lying wholly past it is left out of the camera's picture: just before the picture is drawn it's taken off the camera's layer and
+  // given back after, the shadow cameras still seeing it (layer 3), so its shadow still falls where it reaches. The list of meshes is gathered
+  // again every 2 s (what's built later). Only while the mist is on; ?mistcull=0 off. Characters out of the picture are NPCS.cull's
+  { const L=[], off=[], C=new THREE.Vector3(); let t0=-1e9; const on=QS.get('mistcull')!=='0';
+    const gather=()=>{ L.length=0; scene.traverse(o=>{ if((o.isMesh||o.isPoints||o.isLine)&&o.frustumCulled&&o.geometry&&!o.isSkinnedMesh){ if(!o.geometry.boundingSphere)o.geometry.computeBoundingSphere(); L.push(o); } }); };
+    FAR3.cull=hide=>{ if(!hide){ for(const o of off)o.layers.enable(0); off.length=0; return; } if(!on||!(FOGQ.R.y>0))return; const now=performance.now(); if(now-t0>2000){ t0=now; gather(); }
+      const R=FOGQ.R.y, P=FOGQ.P; for(const o of L){ if(!(o.layers.mask&1))continue; const s=o.geometry.boundingSphere; if(!s||!isFinite(s.radius))continue; C.copy(s.center).applyMatrix4(o.matrixWorld);
+        const r=s.radius*o.matrixWorld.getMaxScaleOnAxis(); if(Math.hypot(C.x-P.x,C.z-P.z)-r>R){ o.layers.disable(0); o.layers.enable(3); off.push(o); } } FAR3.culled=off.length; }; }
+  FAR3.frameTris=()=>new Promise(res=>{ const I=renderer.info; I.autoReset=false; requestAnimationFrame(()=>{ I.reset(); requestAnimationFrame(()=>{ const r={tris:I.render.triangles,calls:I.render.calls,culled:FAR3.culled||0}; I.autoReset=true; res(r); }); }); });   // (a test's: one whole frame's triangles and draws, every pass; tests/mistcull.cjs)
   // THE SKYLINE: along each side of the land's square, a back row 4 tiles in from its edge and a front row 16 tiles in, each building a block
   // (a quarter of them a step narrower at the top: a set-back). Laid out once, the same every time (a hash, no Math.random)
   const LR=MODS.landR, hs=(i,j)=>{ const v=Math.sin(i*12.9898+j*78.233)*43758.5453; return v-Math.floor(v); }, B=[];

@@ -996,3 +996,9 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   edge does), more than twice as wide as its half-tile square so they overlap and no ground shows: the lawn reads as the top of one tree seen
   from above; the wind a gentle lift and slide. The chunk's lawn check now skips invisible hit boxes and toon-lit character pieces (both had
   left a bare patch where you stood). Cost as before: some 19,700 triangles in the picture, one program, no light.
+- **The treetop grass in a variety** (owner, 18 Oct 2026, of the mockup https://claude.ai/artifact/Mj4zkmdHJhGk6ZKsPsC4Rr: "Imagine way bigger
+  trees", then "Do a variety all over the park"; `KIND` in `WEEDS.lawnInit`): the lawns cut into patches some 24 tiles across (each half-tile
+  square takes its nearest patch's seed), each patch one kind: the flat canopy, the rolling canopy, little crowns, big crowns (4-5 m), giant
+  crowns (6-8 m), big crowns pressed flat. A crown kind lays a grid of crowns (each its own place, size and green), every square's clump domed
+  by how near its crown's middle it is, its rim a step darker and lower: the treetops of a forest seen from high above. Every lawn, not only the
+  park's. Still one clump a square, the cost as before (some 20,000-25,000 triangles in the picture), one program, no light.

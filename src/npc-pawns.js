@@ -47,14 +47,18 @@
       const k=(.62+.38*Math.min(1,((A.y+B.y+C.y)/3-h0)/hh*1.5))*(ny<-.4?.75:1); for(let v=0;v<3;v++)for(let j=0;j<3;j++)c[i+v*3+j]=Math.min(255,o[j]*k); }
     g.attributes.color.needsUpdate=true; return g; };
   const PEOPLE=['hero_m','hero_f','villager_m','villager_f'], ALL=[...Object.keys(PW).map(k=>[k,k,0]),...[1,2,3].flatMap(n=>PEOPLE.map(k=>[k+'_'+n,k,n]))];
-  ALL.forEach(([key,kind,copy],i)=>{ const D=PW[kind], rig=rigOf(D.rig), mixer=new THREE.AnimationMixer(rig.bones[0]), A={}, act=n=>A[n]||(A[n]=mixer.clipAction(CLIPS[n])); let cur=null;
-    const N=makeNPC(null,{key,name:key.toUpperCase().replace('_',' '),names:D.mesh.parts,lv:'up',group:'bodega',geo:copy?golem(geomOf(D.mesh),copy*7+i):dressed(geomOf(D.mesh),UNIFORM[key]),skin:rig,tall:D.tall,rank:D.mesh.parts.map(()=>0),metres:1.35,x:BOD.XS(66+(i%12)*4.4+(copy?1.7*copy:0)),z:BOD.ZS(i%2?BOD.FAR+.8:-73.6),lane:STLANE,free:stfree,roam:true,ground:(x,z)=>MODS.bodega.ground(x,z),radius:.3,speed:.5,stride:0,rock:0,bob:0,...(!copy&&/^(skeleton|ogre)/.test(key)&&DUN()||{}),   /* (the four skeletons in the castle's dungeon, owner 18 Oct 2026: npc-map.js's DUN; the four ogres, the armoured knights, with them: "make sure these skel knights are in dungon") */
-      brain:HOLD?(dt,you,st)=>{ st.to=null; st.hold=true; }:undefined,
+  // (MK: one pawn; X a place's own say: its clothes turned round the colour wheel by a seed (X.cloth), and anything of makeNPC's (X.npc): the club's
+  // people, club.js, through PAWNNEW)
+  const MK=([key,kind,copy],i,X={})=>{ const D=PW[kind], rig=rigOf(D.rig), mixer=new THREE.AnimationMixer(rig.bones[0]), A={}, act=n=>A[n]||(A[n]=mixer.clipAction(CLIPS[n])); let cur=null;
+    const N=makeNPC(null,{key,name:key.toUpperCase().replace('_',' '),names:D.mesh.parts,lv:'up',group:'bodega',geo:X.cloth!=null?recloth(geomOf(D.mesh),X.cloth):copy?golem(geomOf(D.mesh),copy*7+i):dressed(geomOf(D.mesh),UNIFORM[key]),skin:rig,tall:D.tall,rank:D.mesh.parts.map(()=>0),metres:1.35,x:BOD.XS(66+(i%12)*4.4+(copy?1.7*copy:0)),z:BOD.ZS(i%2?BOD.FAR+.8:-73.6),lane:STLANE,free:stfree,roam:true,ground:(x,z)=>MODS.bodega.ground(x,z),radius:.3,speed:.5,stride:0,rock:0,bob:0,...(!copy&&/^(skeleton|ogre)/.test(key)&&DUN()||{}),   /* (the four skeletons in the castle's dungeon, owner 18 Oct 2026: npc-map.js's DUN; the four ogres, the armoured knights, with them: "make sure these skel knights are in dungon") */
+      brain:HOLD?(dt,you,st)=>{ st.to=null; st.hold=true; }:undefined,...(X.npc||{}),
       anim:(dt,moving,st,sc)=>{ let want, ts=1;
         if(HOLD)want=HOLD; else if(N.sheet)want='UAL_A_TPose'; else{ const run=moving&&st.v>(N.gait?2.4:1.2)*TILE; const fast=moving&&N.gaitU>2.5; want=moving?(run&&!fast?'UAL_Sprint_Loop':N.gait||WALKC):N.dwell||N.idle||IDLEC; if(moving)ts=Math.max(.6,Math.min(1.8,st.v/((run&&!fast?RUNU:N.gaitU||WALK)*sc)));   /* (N.gait, N.gaitU, N.idle, N.dwell: his own walk, its pace, his own idle, what he does where he stops: walkers.js) */ }
         if(want!==cur){ const a=act(want); a.reset().setLoop(THREE.LoopRepeat,Infinity).fadeIn(.2).play(); if(cur)act(cur).fadeOut(.2); cur=want; }
         act(cur).timeScale=N.sheet&&!HOLD?0:ts; mixer.update(dt); }});
     N.restless=()=>!!HOLD||cur===N.dwell&&!STILLC.has(cur)&&(cur!=='UAL_Idle_Talking_Loop'||!!(N.walker&&N.walker.talk));   // (at rest his idle is held (ASTEP, map-pre.js); what he stopped to do goes on: a talk with someone, a cheer, a find)
-    N.mixer=mixer; N.kind=kind; PAWNL.push(N); });
+    N.mixer=mixer; N.kind=kind; N.act=act; if(!X.npc)PAWNL.push(N); return N; };
+  ALL.forEach((k,i)=>MK(k,i));
+  window.PAWNNEW=(kind,key,X)=>MK([key,kind,0],0,X);
   window.PAWNCAM=(i=0,k=1.6)=>{ const N=PAWNL[i]; UI.setFree(true); UI.camT.set(N.st.x,N.g.position.y+N.H*.5,N.st.z); ppu=ppuTo=PPU*k; };   /* (a test's look) */
   window.PAWNDBG=()=>PAWNL.map(N=>({key:N.key,x:+N.st.x.toFixed(1),z:+N.st.z.toFixed(1),to:!!N.st.to,vis:N.g.visible})); }

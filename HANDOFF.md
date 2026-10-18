@@ -24,8 +24,7 @@ items; nimble: jump, roll, vault, ledges, the playground's bars inside the park'
 mannequin's chest and knee; the force field's pattern draws triangles, not hexagons; the existing SCULPT works only on the old Walker
 (`?avatar=walker`), not on the mannequin the owner wants to sculpt.
 
-**Not pulled in, on purpose**: `claude/amazing-albattani-gn3kp8`, the Metro from his Drive as the subway. Its own handoff says it was never
-looked at and has a shader error open, and it replaces the working subway. Finish it on its branch (its HANDOFF.md has the details), then merge.
+**The Metro** (`claude/amazing-albattani-gn3kp8`): ported onto main on 18 Oct 2026 (branch `metro-work`), the old station off the map; see CLAUDE.md's "THE METRO on the map".
 Older branches (`ice-cream-cat`, `jolly-hawking`, `skeletons`, `admiring-franklin`, the `worktree-agent-*`, the paused `perf-*`, `tree-look`,
 `avatar-editor`, `npc-lives`, `map-editor`, `clouds-mockup`, `gold-skeleton`, `character-sheets`) are superseded by the above or were mockups.
 
@@ -35,7 +34,7 @@ Older branches (`ice-cream-cat`, `jolly-hawking`, `skeletons`, `admiring-frankli
 3. The apartment house's walls batched (600 to 700 draws inside).
 4. The Avenue's buildings turned a quarter to face it (designed step by step in keen-meitner's section below).
 5. The evening's moods and the lamps coming on in turn: built, never looked at (`tests/skyshot.cjs` with `&mood=fire|soft`).
-6. The metro (above).
+6. The metro: done (above).
 7. Publishing with `capabilities: {sample:{}, downloads:{}}` so DESCRIBE A CHANGE and the DOWNLOAD buttons work (load `artifact-capabilities` first).
 8. The open question to the owner: should the mushroom seller lose his mushrooms too ("just the skeleton")?
 

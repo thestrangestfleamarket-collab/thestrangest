@@ -64,7 +64,7 @@ const AV={on:false};
     <div class="pane" data-p="outl"><div class="row"><button class="btn" id="avoon">OUTLINE OFF</button></div>
       <h3>COLOUR</h3><div class="row"><button class="btn" id="avoown">EACH PART'S OWN DARK</button><input type="color" id="avoc"><button class="btn" data-oc="#101014">BLACK</button><button class="btn" data-oc="#f2ead2">LIGHT</button><button class="btn" data-oc="#c8302a">RED</button></div>
       <h3>THICKNESS (PIXELS)</h3><div class="row" id="avow">${[1,2,3,4].map(w=>`<button class="btn" data-w="${w}">${w}</button>`).join('')}</div></div>
-    <div class="pane" data-p="shade"><h3>LIGHT ON HIM</h3><div class="row"><button class="btn" id="avsm">SMOOTH</button><button class="btn" id="avst2">STEPPED</button></div>
+    <div class="pane" data-p="shade"><h3>LIGHT ON HIM</h3><div class="row"><button class="btn" id="avst2">STEPPED</button></div>
       ${sl('avsteps','STEPS',2,12,1)}${sl('avdepth','SHADOW DEPTH',0.02,0.98,0.005)}
       <h3>HIS OWN SHADOW</h3><div class="row"><button class="btn" id="avself">SELF-SHADOW ON</button></div>
       ${sl('avrim','RIM LIGHT',0,1,0.01)}<h3>LIT BY</h3><div class="row"><button class="btn" id="avlit">LAMPS</button></div>
@@ -100,7 +100,7 @@ const AV={on:false};
     P.querySelectorAll('[data-cp]').forEach(i=>i.value=hex(LOOKS.col(i.dataset.cp)));
     P.querySelectorAll('[data-pt]').forEach(b=>press(b,S.pat[+b.dataset.g].t===+b.dataset.pt)); P.querySelectorAll('[data-gs]').forEach(s=>s.value=S.pat[+s.dataset.gs].s); P.querySelectorAll('[data-g2]').forEach(i=>i.value=S.pat[+i.dataset.g2].c2);
     $('#avoon').textContent='OUTLINE '+(OUTL.on?'ON':'OFF'); press($('#avoon'),OUTL.on); press($('#avoown'),!S.oc); $('#avoc').value=S.oc||'#101014'; P.querySelectorAll('[data-oc]').forEach(b=>press(b,S.oc===b.dataset.oc)); P.querySelectorAll('[data-w]').forEach(b=>press(b,+b.dataset.w===S.ow));
-    const sh=W3.shade; press($('#avsm'),sh.smooth); press($('#avst2'),!sh.smooth); $('#avsteps').value=sh.steps; $('#avstepsv').textContent=sh.smooth?'—':sh.steps; $('#avsteps').disabled=sh.smooth; $('#avdepth').value=sh.depth; $('#avdepthv').textContent=sh.depth.toFixed(2);
+    const sh=W3.shade; press($('#avst2'),!sh.smooth); $('#avsteps').value=sh.steps; $('#avstepsv').textContent=sh.smooth?'—':sh.steps; $('#avsteps').disabled=sh.smooth; $('#avdepth').value=sh.depth; $('#avdepthv').textContent=sh.depth.toFixed(2);
     $('#avself').textContent='SELF-SHADOW '+(W3.selfOff?'OFF':'ON'); press($('#avself'),!W3.selfOff); $('#avrim').value=S.rim; $('#avrimv').textContent=S.rim.toFixed(2); $('#avlit').textContent=UI.lit?'LAMPS':'FLAT (HIS OWN LIGHT)'; press($('#avlit'),UI.lit);
     drawPre(); }
   // ---- WHAT EACH CONTROL DOES
@@ -127,7 +127,7 @@ const AV={on:false};
   $('#avoown').onclick=()=>{ S.oc=''; applyS(); save(); draw(); }; $('#avoc').oninput=e=>{ S.oc=e.target.value; outl(true); applyS(); save(); };
   P.querySelectorAll('[data-oc]').forEach(b=>b.onclick=()=>{ S.oc=b.dataset.oc; outl(true); applyS(); save(); draw(); });
   P.querySelectorAll('[data-w]').forEach(b=>b.onclick=()=>{ S.ow=+b.dataset.w; outl(true); applyS(); save(); draw(); });
-  $('#avsm').onclick=()=>{ W3.setShade(W3.shade.steps,W3.shade.depth,true); draw(); }; $('#avst2').onclick=()=>{ W3.setShade(W3.shade.steps,W3.shade.depth,false); draw(); };
+  $('#avst2').onclick=()=>{ W3.setShade(W3.shade.steps,W3.shade.depth,false); draw(); };
   $('#avsteps').oninput=e=>{ W3.setShade(+e.target.value,W3.shade.depth); $('#avstepsv').textContent=e.target.value; }; $('#avdepth').oninput=e=>{ W3.setShade(W3.shade.steps,+e.target.value); $('#avdepthv').textContent=(+e.target.value).toFixed(2); };
   $('#avself').onclick=()=>{ W3.setSelf(!!W3.selfOff); draw(); };
   $('#avrim').oninput=e=>{ S.rim=+e.target.value; applyS(); save(); $('#avrimv').textContent=S.rim.toFixed(2); };
@@ -145,7 +145,7 @@ const AV={on:false};
       const x=document.createElement('button'); x.className='btn'; x.textContent='DELETE'; x.onclick=()=>{ delete PRE[k]; savePre(); drawPre(); }; d.append(n,a,x); l.appendChild(d); } }
   $('#avps').onclick=()=>{ const n=($('#avpn').value||'').trim()||'LOOK '+(Object.keys(PRE).length+1); PRE[n]=whole(); if(!savePre()){ delete PRE[n]; $('#avpl').insertAdjacentHTML('afterbegin','<div class="dim">too big to keep in the browser (a sculpted shape): DOWNLOAD it instead</div>'); return; } $('#avpn').value=''; drawPre(); };
   $('#avreset').onclick=()=>{ ED.snap(); ED.allBack(); for(const k of Object.keys(L))if(k!=='name')delete L[k]; Object.assign(L,{sex:'M',build:0,eyes:0,hair:0,skin:1,hairc:1,eye:0,shirt:0,pants:0,shoes:0,hk:1}); LOOKS.setBuild(0);
-    W3.setShade(4,.78,W3.smooth0); W3.setSelf(true); S=S0(); applyS(); save(); outl(false); try{ localStorage.setItem('market-toe','round'); }catch(e){} draw(); };
+    W3.setShade(typeof CEL!=='undefined'?CEL:4,.72,false); W3.setSelf(true); S=S0(); applyS(); save(); outl(false); try{ localStorage.setItem('market-toe','round'); }catch(e){} draw(); };
   $('#avload').onclick=()=>{ const f=document.createElement('input'); f.type='file'; f.accept='.json,application/json'; f.onchange=async()=>{ try{ put(JSON.parse(await f.files[0].text())); }catch(e){} }; f.click(); };
   // ---- IN AND OUT: HIS SHAPE's mode underneath (its panel hidden, a tab of its own whose drag turns the view round him); the map view while
   // open (the isometric one doesn't turn), the view he had back when it closes

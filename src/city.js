@@ -51,6 +51,7 @@ const CITY={jobs:[],sched:[],day:0,nj:0,extra:[]}; window.CITY=CITY;   // (extra
     if(!found)return null; const cells=[]; for(let k=ke;k!==undefined;k=from.get(k))cells.push(g.at(k%W,Math.floor(k/W))); cells.reverse(); cells[0]={x:a.x,z:a.z}; cells[cells.length-1]={x:b.x,z:b.z};
     const pts=[cells[0]]; let i=0; while(i<cells.length-1){ let j=cells.length-1; while(j>i+1&&!clear(lv,cells[i],cells[j],free))j--; pts.push(cells[j]); i=j; }
     let len=0; for(let k=1;k<pts.length;k++)len+=Math.hypot(pts[k].x-pts[k-1].x,pts[k].z-pts[k-1].z); CITY.ms=performance.now()-t0; return {lv,pts,len,cells:cells.length}; };
+  CITY.bounds=bounds; CITY.clear=clear; CITY.R0=R0;   // (nav.js: the same ground, the same test of a straight way)
   // ---- WALKING: a character sent to a spot (one whose mind is the rig's own: not a guard, a droid, the dragons or the Fox); o.v his pace in tiles a second; o.then when he's there (or false, no way)
   const SENT=[];
   CITY.send=(N,to,o={})=>{ CITY.stop(N); const r=CITY.route(N.lv||'up',{x:N.st.x,z:N.st.z},to,N.free); if(!r){ o.then&&o.then(false); return null; }
@@ -62,7 +63,7 @@ const CITY={jobs:[],sched:[],day:0,nj:0,extra:[]}; window.CITY=CITY;   // (extra
       if(Math.hypot(p.x-st.x,p.z-st.z)<.12*T){ E.i++; const q=E.r.pts[E.i]; if(q){ st.to={x:q.x,z:q.z}; st.wait=0; } else st.to=null; continue; }   // (the next turn at once: never a moment with nowhere to go, which his own wandering would fill)
       // held up by someone standing in his way (the rig's own hold, st.held): a step aside, a tile to the side that's clear, then on
       if(st.to&&st.held>.6&&(E.side=(E.side||0))<6){ const dx=p.x-st.x, dz=p.z-st.z, d=Math.hypot(dx,dz)||1, px=-dz/d, pz=dx/d; for(const k of [1,-1,1.8,-1.8]){ const q={x:st.x+px*k*T+dx/d*.4*T,z:st.z+pz*k*T+dz/d*.4*T}; if(N.free(q.x,q.z,st.R)&&!NPCS.some(o=>o!==N&&o.lv===N.lv&&o.mode!=='hidden'&&o.blocks(q.x,q.z,st.R*1.5))){ E.r.pts.splice(E.i,0,q); E.side++; st.to={x:q.x,z:q.z}; st.held=0; break; } } }
-      if(!st.to){ if(++E.stuck>8){ E.stuck=0; if(++E.re>5){ CITY.stop(N); E.then&&E.then(false); continue; } const dx=p.x-st.x, dz=p.z-st.z, d=Math.hypot(dx,dz)||1; grid(N.lv||'up',N.free).mark(st.x+dx/d*.5*T,st.z+dz/d*.5*T); const r=CITY.route(N.lv||'up',{x:st.x,z:st.z},E.to,N.free); if(!r){ CITY.stop(N); E.then&&E.then(false); continue; } E.r=r; E.i=1; }   // (held up again and again: the spot ahead counted blocked, the way found afresh)
+      if(!st.to){ if(++E.stuck>8){ E.stuck=0; if(++E.re>5){ CITY.stop(N); E.then&&E.then(false); continue; } const dx=p.x-st.x, dz=p.z-st.z, d=Math.hypot(dx,dz)||1; grid(N.lv||'up',N.free).mark(st.x+dx/d*.5*T,st.z+dz/d*.5*T); const r=CITY.route(N.lv||'up',{x:st.x,z:st.z},E.to,N.free,true);   /* (true: the A* itself, which knows the cell just found blocked; nav.js) */ if(!r){ CITY.stop(N); E.then&&E.then(false); continue; } E.r=r; E.i=1; }   // (held up again and again: the spot ahead counted blocked, the way found afresh)
         st.to={x:p.x,z:p.z}; st.wait=0; st.hold=false; if(E.v)st.v=E.v; } }
     // ---- THE SCHEDULE: each entry once as the clock passes its hour (the day's turn counted)
     const h=CLOCK.h, l=CITY.lastH??h; if(h<l-12)CITY.day++;

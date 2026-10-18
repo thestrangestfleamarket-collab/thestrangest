@@ -109,7 +109,12 @@ grab('park',()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.ox=PO.x; PARK.o
       .replace('#include <lights_fragment_begin>','if(vTr.z>.5){ TW=.45; TSH=.7; }\n#include <lights_fragment_begin>')
       .replace('#include <lights_fragment_end>','#include <lights_fragment_end>\n if(vTr.z>.5){ float ao=mix(.42,1.,smoothstep(0.,1.,.62*vTr.x+.38*vTr.y)); reflectedLight.directDiffuse*=mix(1.,ao,.6); reflectedLight.indirectDiffuse*=ao; }');   // (darker underneath and inside: most on the open air's light, some on the sun's)
     sh.fragmentShader=f; };
-  const F=Object.assign({},FOREST,PROPS), mesh=(list,leafy,solid=true,sway=false)=>{ const P3=[], C3=[], SW=[], TR=[], LF=[], RN=[], c=new THREE.Color(); for(const [key,x,y,m,turn,lift] of list){ const p0=P3.length, ph=hash(Math.round(x*7),Math.round(y*7),131)*6.28; const D=F[key], p=f32(D.p), col=b8(D.c), k=b8(D.k), s=m/.84*TILE, ca=Math.cos(turn||0), sa=Math.sin(turn||0), ox=X(x), oz=Z(y), oy=(lift||0)/.84*TILE+P.hill(x,y);   /* (on its hill) */
+  // (each thing its own piece of one BatchedMesh, three.js's: the view and each shadow camera skip the pieces they don't meet, one draw for all;
+  // the park's things spread over 150 tiles were one mesh whose bounds always met the view. ?bm=0 one plain mesh as before. 18 Oct 2026)
+  const BATCHED=(g,RG,mat)=>{ const n=RG.length-1; if(QS.get('bm')==='0'||n<2)return new THREE.Mesh(g,mat); const me=new THREE.BatchedMesh(n,RG[n],0,mat), names=Object.keys(g.attributes), I=new THREE.Matrix4();
+    for(let i=0;i<n;i++){ const a=RG[i], b=RG[i+1]; if(b<=a)continue; const G=new THREE.BufferGeometry(); for(const k of names){ const A=g.attributes[k], z=A.itemSize; G.setAttribute(k,new THREE.BufferAttribute(A.array.slice(a*z,b*z),z,A.normalized)); } me.setMatrixAt(me.addGeometry(G),I); }
+    me.sortObjects=false; return me; };
+  const F=Object.assign({},FOREST,PROPS), mesh=(list,leafy,solid=true,sway=false)=>{ const P3=[], C3=[], SW=[], TR=[], LF=[], RN=[], RG=[], c=new THREE.Color(); for(const [key,x,y,m,turn,lift] of list){ const p0=P3.length; RG.push(p0/3); const ph=hash(Math.round(x*7),Math.round(y*7),131)*6.28; const D=F[key], p=f32(D.p), col=b8(D.c), k=b8(D.k), s=m/.84*TILE, ca=Math.cos(turn||0), sa=Math.sin(turn||0), ox=X(x), oz=Z(y), oy=(lift||0)/.84*TILE+P.hill(x,y);   /* (on its hill) */
       for(let i=0;i<p.length;i+=3){ const px=p[i]*s, py=p[i+1]*s+oy, pz=p[i+2]*s; P3.push(ox+px*ca-pz*sa,py,oz+px*sa+pz*ca); if(sway)SW.push(Math.max(0,p[i+1])*s,ph); if(TL)LF.push(col[i+1]>col[i]*1.08&&col[i+1]>col[i+2]*1.08?1:0); const t=Math.floor(i/9), sh=k[t]===0?.86+.28*hash(t,x*7,y*3):k[t]===2?.9+.2*hash(t,x*5,y*9):.92+.16*hash(t,x*3,y*5);
         c.setRGB(col[i]/255*sh,col[i+1]/255*sh,col[i+2]/255*sh,THREE.SRGBColorSpace); C3.push(c.r,c.g,c.b); }
       // (treelook: each vertex's place in its leaves, the crown's height 0 at its foot to 1 at its top, out from its middle 0 to 1 at its edge, leaf or not)
@@ -127,7 +132,7 @@ grab('park',()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.ox=PO.x; PARK.o
     // 2026, "why arent the trees gently swaying?": it was some 15 cm at a 10 m oak's top over 11 s; now some 35 cm every 4 s, in slow gusts)
     const SWG=sway&&(sway===2?'{ float h=aSw.x, g=(.7+.3*sin(uSw*.23+aSw.y))*uWk; transformed.x+=sin(uSw*2.3+aSw.y)*h*.12*g; transformed.z+=sin(uSw*1.9+aSw.y*1.7)*h*.08*g; }':'{ float h=aSw.x*aSw.x*.1, g=(.7+.3*sin(uSw*.23+aSw.y))*uWk; transformed.x+=sin(uSw*1.6+aSw.y)*h*.035*g; transformed.z+=sin(uSw*1.2+aSw.y*1.7)*h*.025*g; }'), swayV=sh=>{ sh.uniforms.uSw=PARK.sway; sh.uniforms.uWk=PARK.windK; sh.vertexShader='attribute vec2 aSw; uniform float uSw,uWk;\n'+sh.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\n '+SWG); };
     if(sway||TL){ mat.onBeforeCompile=sh=>{ if(TL)treeLook(sh); if(sway)swayV(sh); }; mat.customProgramCacheKey=()=>'oaksway'+sway+'tl'+TL; }
-    const me=new THREE.Mesh(g,mat); me.castShadow=true; me.receiveShadow=TL!==2;
+    RG.push(P3.length/3); const me=BATCHED(g,RG,mat); me.castShadow=true; me.receiveShadow=TL!==2;
     if(sway&&TL)for(const [k,M] of [['customDepthMaterial',new THREE.MeshDepthMaterial({depthPacking:THREE.RGBADepthPacking})],['customDistanceMaterial',new THREE.MeshDistanceMaterial()]]){ M.onBeforeCompile=swayV; M.customProgramCacheKey=()=>'oakswayd'+sway; me[k]=M; }   // (their shadow sways with them)
     scene.add(me); return me; };
   // THE OAKS (owner, 17 Oct 2026: "lets add just trees that look like this back, make them sway gently, vary in size and spread out through the

@@ -62,6 +62,15 @@ if(LFX.shade){ const FN='#ifdef FLAT_SHADED\n vec3 nq=normalize(cross(dFdx(vView
 // Places in the bodega's tiles (the game's own, its door at the scene's middle); each place built by its own code, moved to its spot ----
 const NEONS=[], SHL=[], cutWalls=[], lamps=[], trees=[], shopGroups=[]; let night=1, nightTo=1; const C1=new THREE.Color(), C2=new THREE.Color(); function applyTime(){}
 const ZU=1/(PPU*Math.cos(Math.PI/6)), TILE=33.9/PPU, QS=new URLSearchParams(location.search), LAMPI=8, LAMPD=1.6;
+// FREE (owner, 18 Oct 2026: "lets take off any preloading rules or hiding rules, just let the user run freely around full map. dont render characters
+// or things that are out of sight of player that dont need to be - whatever method you think would reduce lag and let me freely run around n and
+// out of rooms"): no world vanishing inside a room (its six planes and the black, the characters outside hidden, the river and the force field
+// hiding: rooms.js, ring.js, river.js, lives.js); the near-side cut kept but its planes on every material before the first compile (rooms.js's
+// nearAll, at the warm-up: its first use had recompiled every program, the freeze going in); no interior
+// drawn only near its door (interiors.js) or only from inside (perf.js's 1st), so nothing pops or hitches as you come and go. What stays: the walls
+// toward the camera cut to their foot and the roof hidden while you're in (so you see yourself), the map chunks' frustum culling, characters out of
+// the picture not drawn and far ones not run (npc-map.js). ?free=0 the old rules
+const FREE=QS.get('free')!=='0';
 const SOL={up:[],down:[]}, FIX={up:[],down:[]}, CLIPX=[];   // (CLIPX: the things not in the batch, for the hitboxes' pass: {place, name, P its triangles in the world, or obj its group}: clip.js)
 let solids=SOL.up, fixed=FIX.up, BOUND, groundY, LVL='up', BOD, BODB, METRO;   // (METRO: the subway, metro.js; undefined while the old station is brought back)
 const STORE={rooms:[],places:[],roofs:[]}, BF={list:[]}; window.STORE=STORE;   // (STORE: the storeroom, store.js; BF: the butterflies, butterflies.js)

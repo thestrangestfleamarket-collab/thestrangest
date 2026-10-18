@@ -300,7 +300,7 @@ const RIVER={way:'fluid',wi:2,step:false,t:0,on:false};
 
   // ---- EACH FRAME ----
   const F=new THREE.Frustum(), M4=new THREE.Matrix4(), bb=new THREE.Box3();
-  RIVER.tick=(dt,pos)=>{ RIVER.t+=dt; uT0.value=RIVER.t; const ins=typeof ROOMS!=='undefined'&&!!ROOMS.cur, up=LVL==='up'&&!ins, way=RIVER.way;
+  RIVER.tick=(dt,pos)=>{ RIVER.t+=dt; uT0.value=RIVER.t; const ins=!FREE&&typeof ROOMS!=='undefined'&&!!ROOMS.cur, up=LVL==='up'&&!ins, way=RIVER.way;
     // the window on with you
     const cx=snapX(pos.x); if(Math.abs(cx-RIVER.cx)>1){ RIVER.cx=cx; buildBed(); setFlats(); surf.position.set(cx,LV,(rz0+rz1)/2); SU.uWin.value.set(cx-WIN/2,cx+WIN/2,0,0); SU.uBedR.value.set(cx-WIN/2,rz0,WIN,DZ); }
     const real=way!=='flat'; surf.visible=up&&real; bed.visible=up&&real; flatL.visible=flatR.visible=up&&real; flatAll.visible=up&&!real; fishM.visible=junk.visible=grass.visible=up&&real;
@@ -328,7 +328,7 @@ const RIVER={way:'fluid',wi:2,step:false,t:0,on:false};
   // before the picture (the main pass): the ripple field stepped, the scene under the water drawn without it (FULL); the murk round the
   // camera when it's under; after: put back
   const UF=new THREE.Fog(0x000000,0,1), bg0=new THREE.Color(); let fog0=null, uw=false;
-  RIVER.pre=(renderer,scene,cam,dt,pos)=>{ const up=LVL==='up'&&!(typeof ROOMS!=='undefined'&&ROOMS.cur);
+  RIVER.pre=(renderer,scene,cam,dt,pos)=>{ const up=LVL==='up'&&(FREE||!(typeof ROOMS!=='undefined'&&ROOMS.cur));
     // the ripples (FULL): moved on with him, stepped 120 a second, at rest after 6 s of nothing
     const fl=RIVER.way==='fluid'; if((RIVER.way==='full'||fl)&&up&&RIVER.over(pos.x,Math.min(pos.z,rz1-1))&&pos.z<rz1+30*T){ const c=SG/SW, want=[Math.round((pos.x-SW/2)*c)/c,Math.round((Math.max(rz0,Math.min(pos.z,rz1))-SW/2)*c)/c];
       if(SIM.drops.length)SIM.quiet=0; else SIM.quiet+=dt;

@@ -2,10 +2,13 @@
 // lived in"): where anything stands on the ground out of doors (a wall, a post, a building's side, a lamp's pole, a bench: every solid box the
 // map has, FIX), tufts of grass and weeds grow along its foot, a little out from it, thick where a broad noise says the corner is damp and
 // neglected, none where it says swept; now and then a dandelion's yellow head. Each tuft two crossed cards painted with blades (see-through
-// between), swaying in the park's wind from the root (PARK.sway, PARK.windK). Nothing indoors, nothing between two boxes that touch. Derived from
+// between), still till someone walks through them (they part round his feet: WEEDS.PART; owner, 18 Oct 2026, no wind on them). Nothing indoors, nothing between two boxes that touch. Derived from
 // whatever stands on the map when the game opens, so a place moved or added elsewhere gets its weeds with no one placing them. Cut into map
 // chunks of 32 tiles, each its own draw, so only the ones in the picture are drawn. Cost: some 4 triangles a tuft; no lights, one program ----
 const WEEDS=window.WEEDS={};
+// (who's walking through: up to eight near you, you first, each x, z, his reach and on; the weeds and the lawn's grass part round them, still otherwise)
+WEEDS.movers=[...Array(8)].map(()=>new THREE.Vector4(0,0,0,0)); WEEDS.UMV={value:WEEDS.movers};
+WEEDS.PART=(T,k)=>'{ vec4 w0=modelMatrix*instanceMatrix*vec4(transformed,1.); vec3 dw=vec3(0.); for(int i=0;i<8;i++){ vec4 m=uMv[i]; if(m.w<.5)continue; vec2 d=w0.xz-m.xy; float l=length(d), f=1.-l/m.z; if(f<=0.)continue; f=f*f*(3.-2.*f); dw.xz+=d/max(l,.001)*f*'+(.22*T).toFixed(4)+'; dw.y-=f*'+(.05*T).toFixed(4)+'; } transformed+=inverse(mat3(instanceMatrix))*dw*'+k+'; }';
 WEEDS.init=()=>{ WEEDS.dbg=f=>f({FIX,SOL,TILE,MODS}); const T=TILE, hsh=(a,b,s)=>{ let h=(Math.floor(a)*374761393+Math.floor(b)*668265263+s*1442695041)|0; h=(h^(h>>>13))*1274126177|0; return ((h^(h>>>16))>>>0)/4294967296; };
   const vn=(x,y,s)=>{ const xi=Math.floor(x), yi=Math.floor(y), fx=x-xi, fy=y-yi, u=fx*fx*(3-2*fx), v=fy*fy*(3-2*fy); return (hsh(xi,yi,s)*(1-u)+hsh(xi+1,yi,s)*u)*(1-v)+(hsh(xi,yi+1,s)*(1-u)+hsh(xi+1,yi+1,s)*u)*v; };
   const B=(FIX.up||[]).filter(b=>b[5]-b[2]>.25*T&&b[2]<.6*T), RB=typeof ROOMS!=='undefined'&&ROOMS.boxes?ROOMS.boxes():[];
@@ -30,14 +33,13 @@ WEEDS.init=()=>{ WEEDS.dbg=f=>f({FIX,SOL,TILE,MODS}); const T=TILE, hsh=(a,b,s)=
   geo.setAttribute('position',new THREE.Float32BufferAttribute([...card.attributes.position.array,...c2.attributes.position.array],3)); geo.setAttribute('uv',new THREE.Float32BufferAttribute([...card.attributes.uv.array,...c2.attributes.uv.array],2));
   geo.setAttribute('normal',new THREE.Float32BufferAttribute(new Array(16).fill(0).flatMap(()=>[0,1,0]).slice(0,24),3)); geo.setIndex([0,2,1,2,3,1,4,6,5,6,7,5]);
   const mat=new THREE.MeshLambertMaterial({map:tx,alphaTest:.5,side:THREE.DoubleSide});
-  mat.onBeforeCompile=sh=>{ sh.uniforms.uSw=PARK.sway; sh.uniforms.uWk=PARK.windK; sh.vertexShader='uniform float uSw,uWk;\n'+sh.vertexShader.replace('#include <begin_vertex>',
-    '#include <begin_vertex>\n { vec4 w0=instanceMatrix*vec4(0.,0.,0.,1.); float ph=w0.x*.37+w0.z*.21, h=position.y*position.y, g=(.6+.4*sin(uSw*.4+ph*.3))*uWk; transformed.x+=sin(uSw*2.1+ph)*h*.16*g; transformed.z+=sin(uSw*1.7+ph*1.3)*h*.1*g; }'); };
+  mat.onBeforeCompile=sh=>{ sh.uniforms.uMv=WEEDS.UMV; sh.vertexShader='uniform vec4 uMv[8];\n'+sh.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\n '+WEEDS.PART(T,'position.y')); };   // (still till someone walks through: owner, 18 Oct 2026)
   mat.customProgramCacheKey=()=>'weedsway';
   // the tufts by chunk, each chunk its own mesh with its own bounds (drawn only when in the picture)
   const CH=new Map(), cs=32*T; for(const t of TUFT){ const k=Math.floor(t[0]/cs)+','+Math.floor(t[2]/cs); if(!CH.has(k))CH.set(k,[]); CH.get(k).push(t); }
   const M=new THREE.Matrix4(), q=new THREE.Quaternion(), up=new THREE.Vector3(0,1,0), col=new THREE.Color(); WEEDS.meshes=[];
   for(const list of CH.values()){ const me=new THREE.InstancedMesh(geo,mat,list.length);
-    list.forEach(([x,y,z,s,a,c],i)=>{ M.compose(new THREE.Vector3(x,y,z),q.setFromAxisAngle(up,a),new THREE.Vector3(s*1.1,s,s*1.1)); me.setMatrixAt(i,M); me.setColorAt(i,col.setHSL(.24+c*.08,.35+c*.25,.42+c*.2)); });
+    list.forEach(([x,y,z,s,a,c],i)=>{ M.compose(new THREE.Vector3(x,y,z),q.setFromAxisAngle(up,a),new THREE.Vector3(s*1.1,s*.5,s*1.1)); me.setMatrixAt(i,M); me.setColorAt(i,col.setHSL(.24+c*.08,.35+c*.25,.42+c*.2)); });
     me.computeBoundingSphere(); me.receiveShadow=true; scene.add(me); WEEDS.meshes.push(me); }
   if(FLOW.length){ const fm=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(.05*T,0),new THREE.MeshLambertMaterial({color:0xf0cc30,emissive:0x2a1c00}),FLOW.length);
     FLOW.forEach(([x,y,z],i)=>{ M.compose(new THREE.Vector3(x,y,z),q.identity(),new THREE.Vector3(1,1,1)); fm.setMatrixAt(i,M); }); fm.computeBoundingSphere(); scene.add(fm); WEEDS.meshes.push(fm); }
@@ -61,10 +63,26 @@ WEEDS.lawnInit=()=>{ const T=TILE, CS=8*T, CELL=.5*T, PER=1, hsh=(a,b,s)=>{ let 
   const LG=[[62,100,50],[76,116,58],[90,132,66],[104,146,74]];   // (the lawn's four greens, gamekit.js's GRASSP: that one lives in the bodega's scope)
   const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); geo.setAttribute('normal',new THREE.Float32BufferAttribute(NR,3)); geo.setAttribute('aT',new THREE.Float32BufferAttribute(AT,1));
   const mat=new THREE.MeshLambertMaterial({});
-  const SWAY='{ vec4 w0=instanceMatrix*vec4(0.,0.,0.,1.); vec2 q=w0.xz*'+(.84/T).toFixed(5)+'; float g=(.55+.45*sin(dot(q,vec2(.42,.27))-uSw*1.5)+.25*sin(dot(q,vec2(-.17,.31))*1.3-uSw*.9))*uWk; transformed.x+=g*aT*.05; transformed.z+=g*aT*.035; transformed.y+=g*aT*.02; vLw=(modelMatrix*instanceMatrix*vec4(transformed,1.)).xyz; vAt=aT; }';
-  mat.onBeforeCompile=sh=>{ sh.uniforms.uSw=PARK.sway; sh.uniforms.uWk=PARK.windK; sh.vertexShader='attribute float aT; uniform float uSw,uWk; varying vec3 vLw; varying float vAt;\n'+sh.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\n '+SWAY).replace('#include <shadowmap_vertex>',THREE.ShaderChunk.shadowmap_vertex.replace(/(directional|point)LightShadows\[ i \]\.shadowNormalBias/g,'($&+.12)'));   // (held 12 cm further off toward the shadow map, as the crowns' leaves are: no acne)
+  // (still till someone walks through: owner, 18 Oct 2026, "i only want the grass moving when someone is walking through it or disrupting it";
+  // the clumps part round his feet as the weeds do, WEEDS.PART; no wind)
+  const MV=WEEDS.movers, SWAY=WEEDS.PART(T,'aT')+' vLw=(modelMatrix*instanceMatrix*vec4(transformed,1.)).xyz; vAt=aT;';
+  mat.onBeforeCompile=sh=>{ sh.uniforms.uMv=WEEDS.UMV; sh.vertexShader='attribute float aT; uniform vec4 uMv[8]; varying vec3 vLw; varying float vAt;\n'+sh.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\n '+SWAY).replace('#include <shadowmap_vertex>',THREE.ShaderChunk.shadowmap_vertex.replace(/(directional|point)LightShadows\[ i \]\.shadowNormalBias/g,'($&+.12)'));   // (held 12 cm further off toward the shadow map, as the crowns' leaves are: no acne)
     sh.fragmentShader='varying vec3 vLw; varying float vAt;\nfloat lfH(vec3 p){ return fract(sin(dot(p,vec3(127.1,311.7,74.7)))*43758.5453); }\n'+sh.fragmentShader.replace('#include <color_fragment>','#include <color_fragment>\n { float n=lfH(mod(floor(vLw*'+(1/(.11*T)).toFixed(4)+'),256.)), m=lfH(mod(floor(vLw*'+(1/(.035*T)).toFixed(4)+'),256.));   /* (the cells wrapped first: far from the middle sin() lost its digits and the mottle ran in streaks) */ diffuseColor.rgb*=(.74+.42*n+(m>.94?.25:0.)-(m<.06?.18:0.))*(vAt<.25?.78:1.); }'); };   // (the crowns' leaf mottle, park.js's treeLook; the foot a step darker)
   mat.customProgramCacheKey=()=>'lawntree';
+  // (THE TUFTS, one of the kinds too, owner 18 Oct 2026: "lets do tuft too": the Grass Lab's crossed cards painted with fourteen blades, two to a
+  // square, each its own size, turn and green, swaying from the root; the weeds' own program, so nothing new; the lawn's picture shows between)
+  const cvT=document.createElement('canvas'); cvT.width=cvT.height=64; const gT=cvT.getContext('2d'), id=gT.createImageData(64,64), H1T=(a,b,s)=>hsh(a/97,b/89,s);
+  for(let k=0;k<14;k++){ const bx=4+k*4.2+Math.sin(k*7)*2, lean=(H1T(k,1,41)-.5)*.6, top=Math.floor(64-(30+30*H1T(k,2,42)));
+    for(let y=top;y<64;y++){ const yy=63-y, px=bx+lean*yy, t=yy/(64-top||1), w=1.4-yy/64; for(let x=Math.floor(px-w);x<=Math.ceil(px+w);x++){ if(x<0||x>63||Math.abs(x-px)>=w)continue; const i=(y*64+x)*4; id.data[i]=40+50*t; id.data[i+1]=80+70*t; id.data[i+2]=30+20*t; id.data[i+3]=255; } } }
+  gT.putImageData(id,0,0); const tx=new THREE.CanvasTexture(cvT); tx.colorSpace=THREE.SRGBColorSpace; tx.magFilter=tx.minFilter=THREE.NearestFilter; tx.generateMipmaps=false;
+  const card=new THREE.PlaneGeometry(1,1).translate(0,.5,0), c2=card.clone().rotateY(Math.PI/2), geoT=new THREE.BufferGeometry();
+  geoT.setAttribute('position',new THREE.Float32BufferAttribute([...card.attributes.position.array,...c2.attributes.position.array],3)); geoT.setAttribute('uv',new THREE.Float32BufferAttribute([...card.attributes.uv.array,...c2.attributes.uv.array],2));
+  geoT.setAttribute('normal',new THREE.Float32BufferAttribute(new Array(8).fill(0).flatMap(()=>[0,1,0]),3)); geoT.setIndex([0,2,1,2,3,1,4,6,5,6,7,5]);
+  const matT=new THREE.MeshLambertMaterial({map:tx,alphaTest:.5,side:THREE.DoubleSide});
+  matT.onBeforeCompile=sh=>{ sh.uniforms.uMv=WEEDS.UMV; sh.vertexShader='uniform vec4 uMv[8];\n'+sh.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\n '+WEEDS.PART(T,'position.y')); };
+  matT.customProgramCacheKey=()=>'weedsway';   // (the weeds' own program: one for both)
+  const near=[]; WEEDS.moveTick=()=>{ near.length=0; near.push([pos.x,pos.z,0]); if(typeof NPCS!=='undefined')for(const N of NPCS){ if(N.lv!=='up'||N.far||!N.g.visible||!N.st)continue; const d=Math.hypot(N.st.x-pos.x,N.st.z-pos.z); if(d<14*T)near.push([N.st.x,N.st.z,d]); }
+    near.sort((a,b)=>a[2]-b[2]); for(let i=0;i<8;i++){ const n=near[i]; if(n)MV[i].set(n[0],n[1],.55*T,1); else MV[i].w=0; } };
   const M=new THREE.Matrix4(), q=new THREE.Quaternion(), up=new THREE.Vector3(0,1,0), col=new THREE.Color(), V=new THREE.Vector3(), S=new THREE.Vector3();
   const lawn=o=>o===MODS.land||(typeof POND!=='undefined'&&o===POND.hills);
   const skip=o=>o.isInstancedMesh||o.isSkinnedMesh||o.isPoints||o.isSprite||o.isLine||(o.material&&(o.material.visible===false||o.material.isMeshToonMaterial||o.material.transparent||o.material.depthWrite===false||o.material.side===THREE.BackSide));
@@ -81,15 +99,16 @@ WEEDS.lawnInit=()=>{ const T=TILE, CS=8*T, CELL=.5*T, PER=1, hsh=(a,b,s)=>{ let 
   // nearest patch's seed), each patch one kind: the flat canopy, the rolling canopy, little crowns, big crowns, giant crowns, big crowns pressed
   // flat. A crown kind lays a grid of crowns (each its own spot, size and green), every square's clump domed by how near its crown's middle it is,
   // its rim a step darker and lower, so the lawn reads as the treetops of a forest seen from high above. Still one clump a square: the cost as before
-  const MT=T/.84, PS=24*T, KINDS=['flat','roll','little','big','giant','bigflat'], CR={little:[.75,.42,.28*MT,.6],big:[4,2.6,.42*MT,1.15],giant:[6.2,4,.7*MT,1.45],bigflat:[4,2.6,.13*MT,1.15]};
+  const MT=T/.84, PS=24*T, KINDS=['flat','roll','little','big','giant','bigflat','tuft'], CR={little:[.75,.42,.14*MT,.6],big:[4,2.6,.21*MT,1.15],giant:[6.2,4,.35*MT,1.45],bigflat:[4,2.6,.065*MT,1.15]};
   const patch=(x,z)=>{ const gx=Math.floor(x/PS), gz=Math.floor(z/PS); let best=1e18, kind='flat'; for(let i=-1;i<=1;i++)for(let j=-1;j<=1;j++){ const a=gx+i, b=gz+j, px=(a+hsh(a,b,71))*PS, pz=(b+hsh(b,a,72))*PS, d=(x-px)**2+(z-pz)**2; if(d<best){ best=d; kind=KINDS[Math.floor(hsh(a,b,73)*KINDS.length)]; } } return kind; };
   const crown=(x,z,st)=>{ const S0=st*T, gx=Math.floor(x/S0), gz=Math.floor(z/S0); let best=1e18, C=null; for(let i=-1;i<=1;i++)for(let j=-1;j<=1;j++){ const a=gx+i, b=gz+j, px=(a+.2+.6*hsh(a,b,81))*S0, pz=(b+.2+.6*hsh(b,a,82))*S0, d=(x-px)**2+(z-pz)**2; if(d<best){ best=d; C={x:px,z:pz,id:hsh(a,b,83),sz:hsh(b,a,84)}; } } C.d=Math.sqrt(best); return C; };
   const KIND=(x,y,z,n)=>{ const r1=hsh(x,z,n*3+1), r2=hsh(z,x,n*3+2), r3=hsh(x+z,x-z,n*3+3), px=x+(r1-.5)*CELL*.7, pz=z+(r2-.5)*CELL*.7, kind=patch(x,z);
+    if(kind==='tuft')return null;
     if(kind==='flat')return [px,y,pz,(1.05+.35*r3)*T,r1*6.28,r2,.7+.6*((r2*13.7)%1),1];
-    if(kind==='roll')return [px,y+r3*.06*MT,pz,(.95+.3*r3)*T,r1*6.28,r2,1.9+1.6*((r2*13.7)%1),1];
+    if(kind==='roll')return [px,y+r3*.03*MT,pz,(.95+.3*r3)*T,r1*6.28,r2,1.9+1.6*((r2*13.7)%1),1];
     const [st,R0,dome,w]=CR[kind], C=crown(x,z,st), R=R0*T*(.8+.4*C.sz), q=Math.min(1,C.d/R), tone=(C.id+(r3<.25?.25:0))%1;   // (most of a crown one green, a quarter of its clumps the next)
     return [px,y+dome*(1-q*q)-(q>.85?.04*MT:0),pz,w*(.85+.3*r3)*T,r1*6.28,tone,2.2,q>.85?.82:1]; };
-  const build=(cx,cz)=>{ const L=[], x0=cx*CS, z0=cz*CS, LW=[MODS.land,typeof POND!=='undefined'?POND.hills:null].filter(Boolean), hid=[];
+  const build=(cx,cz)=>{ const TU=[], L=[], x0=cx*CS, z0=cz*CS, LW=[MODS.land,typeof POND!=='undefined'?POND.hills:null].filter(Boolean), hid=[];
     scene.traverseVisible(o=>{ if((o.isMesh||o.isPoints||o.isLine||o.isSprite)&&skip(o))hid.push(o); }); for(const g of [W3.group,...NPCS.map(N=>N.g)])if(g&&g.visible)hid.push(g); hid.forEach(o=>o.visible=false);   // (the characters too: whoever stood there left a bare patch)
     const lm=LW.map(o=>o.layers.mask); LW.forEach(o=>o.layers.set(5));
     const rt0=renderer.getRenderTarget(), ac=renderer.autoClear, ov=scene.overrideMaterial, cc=renderer.getClearColor(new THREE.Color()), ca=renderer.getClearAlpha(), bg=scene.background, fg=scene.fog;
@@ -100,13 +119,15 @@ WEEDS.lawnInit=()=>{ const T=TILE, CS=8*T, CELL=.5*T, PER=1, hsh=(a,b,s)=>{ let 
     scene.overrideMaterial=ov; renderer.setRenderTarget(rt0); renderer.autoClear=ac; renderer.setClearColor(cc,ca); scene.background=bg; scene.fog=fg;
     LW.forEach((o,i)=>o.layers.mask=lm[i]); hid.forEach(o=>o.visible=true);
     for(let r=0;r<R;r++)for(let u=0;u<R;u++){ const k=(r*R+u)*4; if(PIX[k]<128)continue; const x=x0+(u+.5)*CELL, z=z0+CS-(r+.5)*CELL, y=PIX[k+1]/255*4-.5;
-      for(let n=0;n<PER;n++)L.push(KIND(x,y,z,n)); }
-    if(!L.length)return null; const me=new THREE.InstancedMesh(geo,mat,L.length);
-    L.forEach(([x,y,z,s,a,c,ys,k],i)=>{ M.compose(V.set(x,y,z),q.setFromAxisAngle(up,a),S.set(s,s*ys,s)); me.setMatrixAt(i,M); const g1=LG[Math.floor(c*4)%4], g2=LG[Math.floor(c*28)%4]; me.setColorAt(i,col.setRGB((g1[0]+g2[0])/510*k,(g1[1]+g2[1])/510*k,(g2[2]+g1[2])/510*k,THREE.SRGBColorSpace)); });   // (the lawn's own four greens, two mixed; a crown's edge a step darker)
-    me.computeBoundingSphere(); me.receiveShadow=true; MAPG.bodega.add(me); WEEDS.lawnN+=L.length; return me; };
+      for(let n=0;n<PER;n++){ const e=KIND(x,y,z,n); if(e)L.push(e); else for(let m=0;m<2;m++){ const r1=hsh(x,z,m*3+1), r2=hsh(z,x,m*3+2), r3=hsh(x+z,x-z,m*3+3); TU.push([x+(r1-.5)*CELL,y,z+(r2-.5)*CELL,(.3+.2*r3)*T,r1*6.28,r2]); } } }
+    if(!L.length&&!TU.length)return null; const grp=new THREE.Group(); grp.count=L.length+TU.length; grp.dispose=()=>grp.children.forEach(m=>m.dispose());   // (a chunk: its clumps and its tufts, each one instanced draw)
+    if(TU.length){ const mt=new THREE.InstancedMesh(geoT,matT,TU.length); TU.forEach(([x,y,z,s,a,c],i)=>{ M.compose(V.set(x,y,z),q.setFromAxisAngle(up,a),S.set(s,s*(.75+.5*c)*.5,s)); mt.setMatrixAt(i,M); mt.setColorAt(i,col.setHSL(.25+(c-.5)*.07,.42+.15*c,.36+.16*((c*7.3)%1))); }); mt.computeBoundingSphere(); mt.receiveShadow=true; grp.add(mt); }
+    if(L.length){ const me=new THREE.InstancedMesh(geo,mat,L.length);
+    L.forEach(([x,y,z,s,a,c,ys,k],i)=>{ M.compose(V.set(x,y,z),q.setFromAxisAngle(up,a),S.set(s,s*ys*.5,s)); me.setMatrixAt(i,M); const g1=LG[Math.floor(c*4)%4], g2=LG[Math.floor(c*28)%4]; me.setColorAt(i,col.setRGB((g1[0]+g2[0])/510*k,(g1[1]+g2[1])/510*k,(g2[2]+g1[2])/510*k,THREE.SRGBColorSpace)); });   // (the lawn's own four greens, two mixed; a crown's edge a step darker)
+    me.computeBoundingSphere(); me.receiveShadow=true; grp.add(me); } MAPG.bodega.add(grp); WEEDS.lawnN+=grp.count; return grp; };
   let busy=0; WEEDS.lawnTick=()=>{ if(LVL!=='up'||(ROOMS&&ROOMS.cur))return; const pcx=Math.floor(pos.x/CS), pcz=Math.floor(pos.z/CS);
     for(const [k,me] of CH){ const [a,b]=k.split(',').map(Number); if(Math.max(Math.abs(a-pcx),Math.abs(b-pcz))>3){ if(me){ MAPG.bodega.remove(me); me.dispose(); WEEDS.lawnN-=me.count; } CH.delete(k); } }
     // the nearest missing chunk within 2, one a moment
     let best=null, bd=1e9; for(let b=-2;b<=2;b++)for(let a=-2;a<=2;a++){ const k=(pcx+a)+','+(pcz+b); if(CH.has(k))continue; const d=a*a+b*b; if(d<bd){ bd=d; best=[pcx+a,pcz+b,k]; } }
     if(best){ const t0=performance.now(); CH.set(best[2],build(best[0],best[1])); busy=performance.now()-t0; WEEDS.busy=busy; } };
-  const t0=CLOCK.tick; CLOCK.tick=dt=>{ t0(dt); WEEDS.lawnTick(); }; };
+  const t0=CLOCK.tick; CLOCK.tick=dt=>{ t0(dt); WEEDS.lawnTick(); WEEDS.moveTick(); }; };

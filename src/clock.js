@@ -9,6 +9,7 @@ const CLOCK={h:15.5,run:false,speed:1440/600,sunV:new THREE.Vector3(0,1,0),moonV
 { const D=Math.PI/180, sunL=new THREE.DirectionalLight(0xffffff,0), R=22*TILE;
   sunL.castShadow=true; sunL.shadow.mapSize.set(2048,2048); Object.assign(sunL.shadow.camera,{left:-R,right:R,top:R,bottom:-R,near:.5,far:120*TILE}); sunL.shadow.camera.updateProjectionMatrix();
   sunL.shadow.bias=-.0005; sunL.shadow.normalBias=.04; scene.add(sunL,sunL.target);
+  const SNM=new THREE.Matrix4(), SR=new THREE.Vector3(), SU=new THREE.Vector3(), SP=new THREE.Vector3(), ORG=new THREE.Vector3(), UPV=new THREE.Vector3(0,1,0);
   // how high the sun is at an hour (degrees; under the horizon below 0), and which way it is (east at dawn, south at noon, west at dusk)
   const elev=h=>50*Math.cos(2*Math.PI*(h-12.7)/24)-8, azim=h=>2*Math.PI*(h-12.7)/24;
   // the sky by the sun's height (what shows past the map's edge: kept dim, a ground's colour by day, so the edge reads as the world's end, not water): [height, sky, the open air's light from above, from the ground, its strength, the sun's colour, its strength]
@@ -39,9 +40,15 @@ const CLOCK={h:15.5,run:false,speed:1440/600,sunV:new THREE.Vector3(0,1,0),moonV
     // where the sun really is (under the horizon too) and where the moon is: the sky dome draws them there (sky.js)
     { const sa=azim(CLOCK.h), se=e*D; CLOCK.sunV.set(Math.sin(sa)*Math.cos(se),Math.sin(se),Math.cos(sa)*Math.cos(se));
       const ma=azim(CLOCK.h+12)*.5+.6, me=48*D; CLOCK.moonV.set(Math.sin(ma)*Math.cos(me),Math.sin(me),Math.cos(ma)*Math.cos(me)); }
-    sunL.target.position.set(pos.x,py,pos.z); sunL.position.copy(sunL.target.position).addScaledVector(dir,60*TILE); sunL.target.updateMatrixWorld();
+    // (the shadow held to its own texel grid, owner, 18 Oct 2026: "the lighting still looks glitchy when i walk, its changing pixels too quick ... needs
+    // smooth shadow movements not so jumpy": the sun's shadow camera followed him to the hair, so its texels slid over the world and every shadow's
+    // edge crawled a texel this way and that each step; now it moves only by whole texels of its map, across the sun's own axes, so the shadows lie
+    // still on the ground as he walks, and it's redrawn every frame, never a frame stale)
+    { const sc=sunL.shadow.camera, tx=(sc.right-sc.left)/sunL.shadow.mapSize.x; SNM.lookAt(dir,ORG,UPV); SR.setFromMatrixColumn(SNM,0); SU.setFromMatrixColumn(SNM,1); SP.set(pos.x,py,pos.z);
+      const a=Math.round(SP.dot(SR)/tx)*tx, b=Math.round(SP.dot(SU)/tx)*tx, c=SP.dot(dir); sunL.target.position.copy(SR).multiplyScalar(a).addScaledVector(SU,b).addScaledVector(dir,c); }
+        sunL.position.copy(sunL.target.position).addScaledVector(dir,60*TILE); sunL.target.updateMatrixWorld();
     // its shadows: every frame while it's strong enough to show them moving; faint (the moon), only when the hour or where you are changes much
-    const strong=sunL.intensity>.3; sunL.shadow.autoUpdate=strong&&(CLOCK.fr=(CLOCK.fr||0)+1)%2===0;   // (every other frame: half the cost, a frame's lag unseen)
+    const strong=sunL.intensity>.3; sunL.shadow.autoUpdate=strong;   // (every frame: every other frame left the shadows a frame behind on alternate frames, a stutter as he walks)
     if(!strong&&(Math.abs(last.h-CLOCK.h)>.05||Math.hypot(last.x-pos.x,last.z-pos.z)>4*TILE||last.lv!==LVL)){ sunL.shadow.needsUpdate=true; last={h:CLOCK.h,x:pos.x,z:pos.z,lv:LVL}; }
     if(typeof WATER!=='undefined')WATER.glowK=(typeof ROOMS!=='undefined'&&ROOMS.cur)||!up?1:Math.max(0,Math.min(1,(3-e)/8));   // (the water's own glow: the pond glowed green at noon)
     if(UI.menuOpen)CLOCK.draw&&CLOCK.draw(); };

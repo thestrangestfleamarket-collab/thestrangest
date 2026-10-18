@@ -99,6 +99,7 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
   // backs over him): out of doors the one facing the shop fronts, in a room his dojo picture's (the half turn from it); straight onto it as you go
   // in or out (ROOMS.cur, rooms.js), as Q / E jump
   UI.isoTo=()=>{ let r=null; try{ r=ROOMS.cur; }catch(e){}   /* (before rooms.js is made, at the start: out of doors) */ const t=r?Math.PI*3/4:-Math.PI/4; yawTo+=((((t-yawTo)%(2*Math.PI))+3*Math.PI)%(2*Math.PI))-Math.PI; yaw=yawTo; };
+  UI.isoTurn=t=>{ yawTo+=((((t-yawTo)%(2*Math.PI))+3*Math.PI)%(2*Math.PI))-Math.PI; yaw=yawTo; };   // (one of the four angles by name: the river's, river.js)
   UI.isoPlace=()=>{};   // (going in or out of a room no longer turns the view: owner, 18 Oct 2026, "when walking into a room dont auto switch view"; the near side is cut instead, rooms.js)
   UI.setView=v=>{ UI.view=v; UI.persp=v==='third'||v==='first'||v==='follow'; if(UI.freeCam&&UI.persp)setFree(false);
     if(v==='iso'){ UI.isoTo(); pitchTo=Math.PI/6; ppuTo=PPU*1.5; UI.off.set(0,0,0); zAt=null; }   // (owner, 17 Oct 2026, his picture of the dojo: "i want the game to always start you this distance and at this isometric angle": 1.5 times in (0.7 of the 2.2 before); Q / E turn it from there)
@@ -145,6 +146,7 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
     let best=null, bd=1e9; if(hits.length){ let o=hits[0].object; const th=live.find(th=>{ let q=o; while(q){ if(q===th.obj)return true; q=q.parent; } return false; }); if(th){ best=th; bd=hits[0].distance; } }
     const u=typeof USE!=='undefined'&&USE.pick(ray); if(u&&u.d<bd)best=u.th;   // (a thing of the world's to use, nearer than any character: use.js)
     if(best){ best.started=false; goal=best; return; }   // (started afresh: a thing used before walks up again)
+    if(window.RIVER&&RIVER.pick&&RIVER.pick(ray.ray,pos))return;   // (a double click on the river's water: its options, river.js)
     goal=null; if(UI.fly)return; gplane.constant=-py; if(ray.ray.intersectPlane(gplane,hit)){ target=hit.clone(); UI.go(Math.hypot(hit.x-pos.x,hit.z-pos.z)); } });
   // HOW FAR, HOW FAST (owner, 17 Oct 2026: "the further away you double click the faster you will go there (far away you will run), few steps
   // you will walk"): past six of the world's units he runs, slowing to a walk for the last stretch; Shift still runs

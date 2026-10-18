@@ -1,0 +1,52 @@
+// ---- THE GEM TRADE (owner, 18 Oct 2026: "make a cave in central park where the golems live, they buy any kind of rare gem or crystal,
+// etc."): a double click on a rock golem or on the trading stone in their cave (cave.js) opens THE GOLEMS BUY: what they pay for each rare
+// gem and crystal, what you carry, SELL and SELL ALL. YOUR POCKETS (INV): your cash is the one your mailbox already keeps (MAIL.you.cash,
+// mail.js: the rent and the bills come out of it; its own $100 here if the post is off, ?mail=0), your gems kept in this browser (the save's
+// `inv`). Where gems come from for now: THE GLINTS on the cave's floor (four; picked, each grows back when the day turns) and THE ODDITIES
+// STALL by the park's gate (a gem of the day, once a day). Rarer ones come less often and fetch more. Nothing drawn but the panel; nothing a
+// frame ----
+const GEMS=[['quartz','QUARTZ CRYSTAL',6,30],['amethyst','AMETHYST',14,22],['geode','GEODE',18,16],['amber','FOSSIL AMBER',24,12],['moonstone','MOONSTONE',30,10],
+  ['opal','OPAL',45,7],['emerald','EMERALD',70,5],['sapphire','SAPPHIRE',85,4],['ruby','RUBY',100,3],['meteor','STAR METEORITE',150,1]];   // (id, its name, what the golems pay, how often it turns up)
+const INV={items:{},picked:{}}; window.INV=INV;
+{ const KEY='inv', W=GEMS.reduce((a,g)=>a+g[3],0), byId=id=>GEMS.find(g=>g[0]===id);
+  const day=()=>window.MAIL&&MAIL.ready?MAIL.day():window.CITY?CITY.day||0:0;
+  try{ const D=JSON.parse(SAVE.get(KEY)||'null'); if(D&&D.v===1){ INV.items=D.items||{}; INV.picked=D.picked||{}; INV.own=D.cash??100; } }catch(e){} if(QS.get('fresh')&&QS.get('keepinv')!=='1'){ INV.items={}; INV.picked={}; } if(INV.own==null)INV.own=100;
+  const save=()=>{ SAVE.set(KEY,JSON.stringify({v:1,items:INV.items,picked:INV.picked,cash:INV.own})); if(window.MAIL&&MAIL.save)MAIL.save(); };
+  // your cash: the mailbox's (one purse), else its own
+  Object.defineProperty(INV,'cash',{get:()=>window.MAIL&&MAIL.on&&MAIL.you?MAIL.you.cash:INV.own,set:v=>{ if(window.MAIL&&MAIL.on&&MAIL.you)MAIL.you.cash=v; else INV.own=v; }});
+  INV.add=(id,n=1)=>{ INV.items[id]=(INV.items[id]||0)+n; save(); TRADE.draw(); };
+  INV.count=()=>Object.values(INV.items).reduce((a,b)=>a+b,0);
+  INV.random=()=>{ let r=Math.random()*W; for(const g of GEMS){ if((r-=g[3])<0)return g[0]; } return GEMS[0][0]; };
+  // a place you find gems at (a glint, the stall): ready again once the day has turned since you last took one there
+  INV.ready=k=>INV.picked[k]==null||INV.picked[k]<day();
+  INV.pick=k=>{ if(!INV.ready(k)){ TRADE.note('NOTHING HERE TODAY. BACK TOMORROW'); return false; } const id=INV.random(), g=byId(id); INV.picked[k]=day(); INV.add(id);
+    TRADE.note('YOU FOUND '+(/^[AEIOU]/.test(g[1])?'AN ':'A ')+g[1]+' · THE GOLEMS PAY $'+g[2]); if(typeof SFX!=='undefined')SFX.play('chirp',{vol:.4}); return true; };
+  INV.sell=(id,n=1)=>{ const g=byId(id), have=INV.items[id]||0; n=Math.min(n,have); if(!g||n<1)return 0; INV.items[id]=have-n; if(!INV.items[id])delete INV.items[id]; INV.cash+=g[2]*n; save();
+    if(window.CIVIC&&CIVIC.note)CIVIC.note('you sold '+n+' '+g[1].toLowerCase()+' to the golems for $'+g[2]*n,'park'); if(typeof SFX!=='undefined')SFX.play('clunk',{vol:.5}); return g[2]*n; }; }
+// ---- THE PANEL: the game's panel look (mail.js's), an X and a drag (ui.js's PANS: 'gemp') ----
+const TRADE={}; window.TRADE=TRADE;
+{ const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;'), btn='class="btn" style="margin:0 0 0 6px;font:inherit;color:#ece5d3;background:#0e1016;border:2px solid #3a3f4e;padding:3px 8px;cursor:pointer"';
+  const panel=()=>{ let P=document.getElementById('gemp'); if(P)return P; P=document.createElement('div'); P.id='gemp'; P.hidden=true;
+    P.style.cssText='position:fixed;left:50%;top:10%;transform:translateX(-50%);width:min(460px,92vw);max-height:80vh;overflow:auto;z-index:21;padding:14px 16px;font:11px Silkscreen,monospace;letter-spacing:.4px;color:#d8dae2;background:#0b0d13f2;border:2px solid #3a3f4e;zoom:var(--uiz,1)';
+    document.body.appendChild(P); P.addEventListener('keydown',e=>e.stopPropagation()); P.addEventListener('keyup',e=>e.stopPropagation());
+    P.addEventListener('click',e=>{ const b=e.target.closest('button[data-s]'); if(!b)return; const id=b.dataset.s, got=INV.sell(id,b.dataset.n==='all'?1e9:1); if(got)TRADE.note('SOLD · +$'+got); TRADE.draw(); }); return P; };
+  // a word at the screen's foot for a moment
+  TRADE.note=t=>{ let n=document.getElementById('gemn'); if(!n){ n=document.createElement('div'); n.id='gemn'; n.style.cssText='position:fixed;left:50%;transform:translateX(-50%);bottom:56px;font:12px Silkscreen,monospace;color:#f2c14e;background:rgba(16,18,26,.88);border:2px solid #2a2e3a;padding:6px 10px;z-index:22;pointer-events:none'; document.body.appendChild(n); }
+    n.textContent=t; n.hidden=false; clearTimeout(TRADE.nt); TRADE.nt=setTimeout(()=>n.hidden=true,3200); };
+  TRADE.draw=()=>{ const P=document.getElementById('gemp'); if(!P||P.hidden)return;
+    let o=`<h3 style="margin:0 0 4px;color:#f2c14e;font:12px Silkscreen,monospace">THE GOLEMS BUY</h3><div style="color:#9b9584;margin-bottom:8px">Rare gems and crystals, any kind. Fair prices, paid in coin.</div>
+      <div style="margin-bottom:8px">YOU HAVE <b style="color:#f2c14e">$${Math.round(INV.cash)}</b> · ${INV.count()} STONE${INV.count()===1?'':'S'}</div><table style="border-collapse:collapse;width:100%">`;
+    for(const [id,name,price] of GEMS){ const n=INV.items[id]||0;
+      o+=`<tr style="border-bottom:1px solid #22252f;${n?'':'color:#7d7a70'}"><td style="padding:4px 2px">${esc(name)}</td><td style="text-align:right;padding:4px 6px">$${price}</td><td style="text-align:right;padding:4px 6px">${n?'x'+n:'-'}</td><td style="text-align:right;white-space:nowrap">${n?`<button ${btn} data-s="${id}">SELL</button>${n>1?`<button ${btn} data-s="${id}" data-n="all">ALL $${price*n}</button>`:''}`:''}</td></tr>`; }
+    o+=`</table><div style="color:#9b9584;margin-top:10px">Find them: the glints on the cave's floor (back each day), the oddities stall by the park's gate (one a day).</div>`;
+    const x=P.querySelector(':scope>.pX'); P.innerHTML=o; if(x)P.appendChild(x); };
+  TRADE.open=N=>{ const P=panel(); P.hidden=false; TRADE.draw();
+    if(N&&N.walker&&N.walker.state==='stay'){ N.walker.t=Math.max(N.walker.t,14); N.st.face={x:pos.x,z:pos.z}; }   // (the golem you're trading with stays and faces you)
+    if(N&&typeof LINES!=='undefined')setTimeout(()=>LINES.say(N,'golem'),60); };
+  TRADE.close=()=>{ const P=document.getElementById('gemp'); if(P)P.hidden=true; };
+  // A ROCK GOLEM DOUBLE CLICKED (editor.js gave every character a wave): the trade instead, for the golems (walkers.js's 'golem')
+  { const isG=N=>N&&N.walker&&N.walker.kind==='golem'; for(const th of UI.things)if(th.npc){ const a0=th.act; th.act=()=>{ if(isG(th.npc))TRADE.open(th.npc); else a0(); }; } }
+  // THE ODDITIES STALL by the gate (park.js's table of the Psionic pack's gems): a gem of the day
+  if(typeof PARK!=='undefined'&&PARK.odd&&PARK.gate){ const P=PARK, x=BOD.XS(P.gate[0]-3.7+P.ox), z=BOD.ZS(P.y0+2.65+P.oy), hb=new THREE.Mesh(new THREE.BoxGeometry(3*TILE,BOD.YS(34),1.2*TILE),new THREE.MeshBasicMaterial({visible:false}));
+    hb.position.set(x,BOD.YS(17),z); (MAPG.park||scene).add(hb); UI.thing({name:'THE ODDITIES STALL',obj:hb,reach:1.5*TILE,near:2.6*TILE,tall:BOD.YS(40),act:()=>INV.pick('stall')}); }
+  window.GEMDBG=()=>({cash:INV.cash,items:INV.items,picked:INV.picked,open:!!(document.getElementById('gemp')&&!document.getElementById('gemp').hidden)}); }

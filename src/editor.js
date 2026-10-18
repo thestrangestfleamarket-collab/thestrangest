@@ -182,6 +182,7 @@ const ED={on:false};
   ED.HEADS={round:{w:1,h:1,d:1,sq:0,tp:0},oval:{w:.94,h:1.08,d:.98,sq:0,tp:0},square:{w:1.03,h:.98,d:1,sq:.85,tp:0},long:{w:.92,h:1.13,d:.96,sq:.2,tp:0},
     wide:{w:1.12,h:.93,d:1.02,sq:.2,tp:0},heart:{w:1.02,h:1.02,d:1,sq:0,tp:.2},pear:{w:1,h:1,d:1,sq:.25,tp:-.18}};
   ED.FACE0={shape:'round',nose:1,noseL:0,jaw:5.6,square:0,chin:0,ears:1,eyes:1}; ED.FACE=Object.assign({},ED.FACE0); try{ Object.assign(ED.FACE,JSON.parse(SAVE.get('face')||'{}')); }catch(e){}
+  window.EDDBG=()=>({ED,W3});   // (a test's reach)
   ED.face=(F,keep)=>{ if(!keep)snap(); Object.assign(ED.FACE,F||{}); F=ED.FACE; try{ SAVE.set('face',JSON.stringify(F)); }catch(e){}
     const ss=(a,b,x)=>{ const t=Math.max(0,Math.min(1,(x-a)/(b-a))); return t*t*(3-2*t); }, kx=F.jaw/5.6;
     const HS=ED.HEADS[F.shape]||ED.HEADS.round;

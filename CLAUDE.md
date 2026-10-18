@@ -1291,4 +1291,24 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   character and then you stat to move again, it should snap back to focus on you"): any frame he moves while the view's slid off him and he's off
   the picture, the view is put back on him (`UI.follow`, `ui.js`). **The stalls without tents** ("i dont want these stripped tenst ... rows and rows
   of diff mushrooms, standing between three tables in u shape ... show me mockups"): `mockups/market-stalls.html`,
+  https://claude.ai/artifact/ET6bXTLDgHdTfyAsyG4MTn (A trays, B stepped tiers, C heaps and overflow); his pick to come.
+- **Standing is still** (owner, 18 Oct 2026, of the mushroom seller at his booth: "the grain shadow on the mushroom merchant is constantly glitchy
+  looking beacause it tries to chnge too fast"; `npc-map.js`): a character made of parts (the mushroom seller, the Fox) had a standing "breath",
+  a sway of a degree and a 1% stretch, that slid his own shadow's stepped edge across his robe every frame; standing he is now still (the walk's
+  rock and bob as before). Measured close on him at his booth (`tests/mushstill.cjs <out>`): 8,580 of his pixels changed a quarter second to 0.
   https://claude.ai/artifact/ET6bXTLDgHdTfyAsyG4MTn (A trays, B stepped tiers, C heaps and overflow); **his pick, "B with C's overflow"**: `src/stalls.js` (`STALL.build`, for both: three plank tables in a U open to the street, the seller in its middle, each table three crate risers stepping up toward him with a row of heaps a step, one kind a heap, a basket now and then on the top step; round it two crates high, baskets on the ground, sacks and pumpkins (his) or a mushroom log (the seller's); the old awnings gone). Cost: some 13,700 triangles the mushroom seller's, 13,100 the tomato's (the goods a third over life size so fewer show as full), six instanced draws each, no light; solid at the tables and the overflow. `tests/stallshot.cjs <out>`.
+- **The roof out of sight, the mist back, the weather held, the old Fox, the sun's stripes** (owner, 18 Oct 2026): **the roof** ("it looks like the
+  roof is vanishes and lets real light ... dont change lighting in interiors jsut beacuse you walk in the room"): a roof hidden while you're in (the
+  bodega's, the stored rooms', the roof bits of rooftops.js) is taken off the camera's layer onto layer 3, which every shadow camera sees (`SEEN` in
+  `map-pre.js`), so it still keeps the sun out: the light inside is the same from in and out. **The mist** ("what happened to the green haze"): his
+  browser had DISTANCE HAZE saved at FAR; the key is now `market-haze2`, so everyone starts in the MIST again. **The skyline in the mist** ("where
+  did the distance skyline of buildings go?"): in the mist it's faint silhouettes (mixed 80% toward the mist's colour, a little more the further,
+  in three steps; its own, not the scene's fog), in FAR as before. **The weather held** ("set a default time and atmosphere and stay at the time";
+  his pick "Teal mist + clouds"): CLOUDY from the start (`WX.hold`, weather.js; `?wx=natural` the simulation); the clock stays STOPPED; the hour
+  his pick from the mockups (https://claude.ai/artifact/FNh426aeu5GPJcdBj4KvqX). **The old Fox** ("use the old fox avatar not the new one"): the
+  rounded one before the angular (`npc-fox.js` from before 1c9b71f), 2 m. **The sun's stripes** ("glitchy shadows": a wall the sun grazes striped
+  and arced with its own shadow): the sun's normalBias .04 to .12 (`clock.js`; `?snb=` a test's).
+- **Every page of the batch's atlas** (18 Oct 2026, found publishing): since the atlas was cut into pages (the roads three times wider), a kind
+  can span pages (its later meshes `k~1`, `k~2`), and only the first page's mesh was hooked up: the bodega's walls on the second page never cut
+  away, its tubes showed from outside, part of its roof stayed. `BATCH.all(M,k)` gives every page's mesh of a kind; bodbuild.js, castle.js, store.js
+  and ghostdojo.js use it for their cut walls, roofs, tubes and shadows.

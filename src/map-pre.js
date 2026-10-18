@@ -62,6 +62,12 @@ if(LFX.shade){ const FN='#ifdef FLAT_SHADED\n vec3 nq=normalize(cross(dFdx(vView
 // Places in the bodega's tiles (the game's own, its door at the scene's middle); each place built by its own code, moved to its spot ----
 const NEONS=[], SHL=[], cutWalls=[], lamps=[], trees=[], shopGroups=[]; let night=1, nightTo=1; const C1=new THREE.Color(), C2=new THREE.Color(); function applyTime(){}
 const ZU=1/(PPU*Math.cos(Math.PI/6)), TILE=33.9/PPU, QS=new URLSearchParams(location.search), LAMPI=8, LAMPD=1.6;
+// A ROOF OUT OF SIGHT, NOT GONE (owner, 18 Oct 2026: "it looks like the roof is vanishes and lets real light, i dont want it to actually vanish
+// just not show up on screen, needs to still look like its inside, dont change lighting in interiors jsut beacuse you walk in the room"): a roof
+// hidden while you're in is taken off the camera's layer (0) onto layer 3, which every shadow-casting light's shadow camera also sees, so it
+// keeps the sun out (and its shadow on the room) exactly as from outside. Rays (layer 0) don't hit it while it's out of sight, as before.
+const SEEN=(o,show)=>{ if(!SEEN.L){ SEEN.L=1; scene.traverse(c=>{ if(c.isLight&&c.shadow)c.shadow.camera.layers.enable(3); }); }
+  if(o.userData.seen===show)return; o.userData.seen=show; o.traverse(c=>{ if(c.isMesh||c.isLine||c.isPoints){ if(show)c.layers.enable(0); else c.layers.disable(0); c.layers.enable(3); } }); };
 // FREE (owner, 18 Oct 2026: "lets take off any preloading rules or hiding rules, just let the user run freely around full map. dont render characters
 // or things that are out of sight of player that dont need to be - whatever method you think would reduce lag and let me freely run around n and
 // out of rooms"): no world vanishing inside a room (its six planes and the black, the characters outside hidden, the river and the force field

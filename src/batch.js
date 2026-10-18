@@ -5,6 +5,8 @@ const BATCH={items:[],tag:null};
 // THE WORLD'S THINGS (for the world editor, src/worldedit.js): each face knows the thing it belongs to (BATCH.tag while a thing is built: its
 // place and name), so a double click finds the thing and its faces can be moved, turned, sized, tinted, faded or taken away
 const OBJS=[]; const OBJ=(place,name)=>{ const o={id:place+':'+OBJS.length,place,name,parts:[]}; OBJS.push(o); return o; };
+// a kind's meshes on every page of the atlas (a kind can span pages: its later ones are kept as k~1, k~2 ...)
+BATCH.all=(M,k)=>Object.keys(M||{}).filter(q=>q===k||q.startsWith(k+'~')).map(q=>M[q]);
 BATCH.add=(pos,uv,cv,ecv,kind)=>{ BATCH.items.push({pos,uv,cv,ecv,kind,obj:BATCH.tag}); };
 BATCH.build=(make)=>{ const it=BATCH.items; if(!it.length)return; const AW=2048;
   for(const o of it)if(o.cv.width+2>AW)console.warn('BATCH: a picture '+o.cv.width+' wide, over the atlas ('+AW+'): split it');   // (it would run over into its next rows: streaks)

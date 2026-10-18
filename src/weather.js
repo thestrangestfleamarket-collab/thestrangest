@@ -23,7 +23,9 @@ const WX={hold:null,now:null};
     return {cloud,rain:cold?0:fall,snow:cold?fall:0,storm,wind,dir,fog,flash:storm>0&&hsh(Math.floor(T*10/7),61)<storm*.15}; };
   const HOLDS={CLEAR:{cloud:.08,rain:0,snow:0,storm:0,wind:.15,dir:1,fog:0},CLOUDY:{cloud:.85,rain:0,snow:0,storm:0,wind:.35,dir:1,fog:0},RAIN:{cloud:.95,rain:.7,snow:0,storm:0,wind:.4,dir:1,fog:0},
     STORM:{cloud:1,rain:1,snow:0,storm:.8,wind:.9,dir:1,fog:0},SNOW:{cloud:.9,rain:0,snow:.7,storm:0,wind:.2,dir:1,fog:0},FOG:{cloud:.6,rain:0,snow:0,storm:0,wind:0,dir:1,fog:.7}};
-  { const q=QS.get('wx'); if(q&&HOLDS[q.toUpperCase()])WX.hold=q.toUpperCase(); }
+  // THE WEATHER HELD (owner, 18 Oct 2026: "i want to set a default time and atmopshere and stay at the time for now"; his pick, "Teal mist + clouds"):
+  // CLOUDY from the start (the mist is skyline.js's); ?wx=natural lets the simulation run, ?wx=rain etc. holds another
+  WX.hold='CLOUDY'; { const q=QS.get('wx'); if(q&&q.toUpperCase()==='NATURAL')WX.hold=null; else if(q&&HOLDS[q.toUpperCase()])WX.hold=q.toUpperCase(); }
   // ---- THE CLOUDS: forty cumulus round the map out toward the horizon, each a heap of a dozen low-poly puffs (flat-bottomed, piled up in the
   // middle), white in the sun, grey-blue in their own shade; as many show as the sky's cloud (a few even on a clear day), greyer in rain, darker in a storm
   const ph=(a,b,c)=>{ const v=Math.sin(a*127.1+b*311.7+c*74.7)*43758.5453; return v-Math.floor(v); }, geos=[], ends=[]; let vc=0;

@@ -130,7 +130,7 @@ const MAPLV=(py,pos)=>{ const lv=py<-1.6?'down':'up', st=inStair(pos.x,pos.z)!=n
 // THE STOREROOM (store.js, off the map): a room's roof hidden while you're in it; the view and his walk bounded by the store while he's
 // there, by the map otherwise (its lamps: LITE's, as any room's: a lamp in a room lights only it)
 { const MB=BOUND; STORE.tick=()=>{ STORE.pos=pos; STORE.cur=ROOMS.cur?ROOMS.cur.id:null; STORE.nl=lamps.length; STORE.lon=LITE.sel.length;
-    for(const r of STORE.roofs)r.me.visible=!r.R.inside(pos.x,pos.z); BOUND=STORE.inStore(pos.x,pos.z)?STORE.bound:MB; }; }
+    for(const r of STORE.roofs)SEEN(r.me,!r.R.inside(pos.x,pos.z)); BOUND=STORE.inStore(pos.x,pos.z)?STORE.bound:MB; }; }
 // (a test's look inside)
 window.MAPDBG=()=>({LVL,cut:MODS.stairCut.constant,vis:Object.fromEntries(Object.entries(MAPG).map(([k,g])=>[k,g.visible])),stairLamp:lamps.filter(L=>L.parent===MAPG.stairs).map(L=>L.intensity),py:typeof py!=='undefined'?py:null,pos:typeof pos!=='undefined'?[pos.x,pos.z]:null});
 

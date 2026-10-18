@@ -28,8 +28,14 @@ const AV={on:false};
     ['LEGS',[['THIGH LENGTH',s=>SIDE('thigh',s),[1]],['THIGH THICKNESS',s=>SIDE('thigh',s),[0,2]],['SHIN LENGTH',s=>SIDE('shin',s),[1]],['SHIN THICKNESS',s=>SIDE('shin',s),[0,2]]],1],
     ['FEET',[['LENGTH',s=>SIDE('shoe',s),[2]],['WIDTH',s=>SIDE('shoe',s),[0]],['HEIGHT',s=>SIDE('shoe',s),[1]]],1]];
   let side='';   // ('' both sides together; 'L' or 'R' one alone)
-  const getR=(f,c)=>{ const i=idx(f(side)[0]), E=i>=0&&W3.E[i]; return E?E.s[c[0]]:1; };
-  const setR=(f,c,v)=>{ for(const n of f(side)){ const i=idx(n); if(i<0)continue; const E=W3.E[i]||(W3.E[i]={s:[1,1,1],o:[0,0,0],q:[0,0,0,1]}); for(const k of c)E.s[k]=v; } };
+  // WHO (owner, 18 Oct 2026: "allow to edit all the face and body properties in editor", his pick: both, with a switch): YOU, or THE BEARDED
+  // WALKER (src/npc-walker2.js: his pieces' sizes BWK.EB, his face BWK.F; held before you while he's being edited)
+  let who='you'; const BW=()=>who==='bwk'&&window.BWK&&BWK.F;
+  const getR=(f,c)=>{ if(BW()){ const ns=f(side); if(ns.includes('head'))return BWK.F.head; const E=BWK.E(ns[0]); return E?E.s[c[0]]:1; } const i=idx(f(side)[0]), E=i>=0&&W3.E[i]; return E?E.s[c[0]]:1; };
+  const setR=(f,c,v)=>{ if(BW()){ const ns=f(side); if(ns.includes('head')){ BWK.F.head=v; BWK.save(); return; } for(const n of ns){ const E=BWK.E(n); if(E)for(const k of c)E.s[k]=v; } BWK.save(); return; } for(const n of f(side)){ const i=idx(n); if(i<0)continue; const E=W3.E[i]||(W3.E[i]={s:[1,1,1],o:[0,0,0],q:[0,0,0,1]}); for(const k of c)E.s[k]=v; } };
+  // HIS FACE's sliders (the same for you and for him: ED.face for you, src/editor.js; BWK.F for him, his head made again on letting go)
+  const FACE=[['nose','NOSE SIZE',.3,1.6,.01],['noseL','NOSE LENGTH',-1,1.5,.01],['jaw','JAW WIDTH',4.4,6.8,.01],['square','JAW SQUARE',0,1,.01],['chin','CHIN',-1,1,.01],['ears','EARS',.4,1.8,.01],['eyes','EYES',.5,1.8,.01]];
+  const faceOf=()=>BW()?BWK.F:ED.FACE;
   // ---- THE PANEL
   const css=document.createElement('style'); css.textContent=`
   #av{position:fixed;right:12px;top:12px;bottom:12px;width:400px;overflow:auto;background:var(--bg,#0b0d13);border:2px solid var(--line,#2a3040);font:12px var(--pixel,monospace);color:var(--fg,#d8dbe4);z-index:21}
@@ -49,13 +55,18 @@ const AV={on:false};
   const sl=(id,lab,min,max,step)=>`<div class="row"><span class="lab">${lab}</span><input type="range" id="${id}" min="${min}" max="${max}" step="${step}"><span class="val" id="${id}v"></span></div>`;
   P.innerHTML=`<h2>AVATAR EDITOR <span class="dim" style="font-size:10px">SHIFT+K · DRAG TO TURN · WHEEL ZOOMS</span></h2>
     <div class="tabs">${TABS.map(([k,l])=>`<button data-t="${k}">${l}</button>`).join('')}</div>
-    <div class="pane" data-p="body"><h3>BUILD</h3><div class="row" id="avbuild"><button class="btn" data-b="0">MALE</button><button class="btn" data-b="1">FEMALE</button></div>
+    <div class="pane" data-p="body"><h3>WHO</h3><div class="row" id="avwho"><button class="btn" data-who="you">YOU</button><button class="btn" data-who="bwk">THE BEARDED WALKER</button></div>
+      <div id="avlooks6" hidden><h3>HIS LOOKS (THE SIX MOCKUPS)</h3><div class="row">${[1,2,3,4,5,6].map(i=>`<button class="btn" data-l6="${i}">${i}</button>`).join('')}</div></div>
+      <div id="avyou"><h3>BUILD</h3></div><div class="row" id="avbuild"><button class="btn" data-b="0">MALE</button><button class="btn" data-b="1">FEMALE</button></div>
       ${sl('avh','HEIGHT',0.8,1.2,0.01)}
+      <h3>HEAD SHAPE</h3><div class="row" id="avshape">${Object.keys(ED.HEADS).map(k=>`<button class="btn" data-hs="${k}">${k.toUpperCase()}</button>`).join('')}</div>
+      <h3>FACE</h3>${FACE.map(([k,l,a,b,st])=>sl('avf_'+k,l,a,b,st)).join('')}
+      <div id="avbeard" hidden><h3>BEARD</h3><div class="row">${['full','boxed','trim','stubble','none'].map(b=>`<button class="btn" data-bd="${b}">${b.toUpperCase()}</button>`).join('')}</div></div>
       <h3>SIDES</h3><div class="row" id="avside"><button class="btn" data-s="">BOTH (MIRRORED)</button><button class="btn" data-s="L">LEFT ONLY</button><button class="btn" data-s="R">RIGHT ONLY</button></div>
       <div id="avreg"></div>
-      <h3>TOES</h3><div class="row" id="avtoe"><button class="btn" data-o="round">ROUND</button><button class="btn" data-o="pointed">POINTED</button><button class="btn" data-o="square">SQUARE</button></div>
+      <div id="avyou2"><h3>TOES</h3><div class="row" id="avtoe"><button class="btn" data-o="round">ROUND</button><button class="btn" data-o="pointed">POINTED</button><button class="btn" data-o="square">SQUARE</button></div>
       <h3>SCULPT (DRAG ON HIM)</h3><div class="row"><button class="btn" id="avsc">SCULPT OFF</button><button class="btn" data-k="push">PUSH OUT</button><button class="btn" data-k="pull">PULL IN</button><button class="btn" data-k="smooth">SMOOTH</button></div>
-      ${sl('avbs','BRUSH SIZE',1,14,0.1)}${sl('avbt','STRENGTH',0.05,1,0.01)}<div class="row"><button class="btn" id="avmir">MIRROR</button></div>
+      ${sl('avbs','BRUSH SIZE',1,14,0.1)}${sl('avbt','STRENGTH',0.05,1,0.01)}<div class="row"><button class="btn" id="avmir">MIRROR</button></div></div>
       <h3>MORE</h3><div class="row"><button class="btn" data-ed="sizes">EVERY PIECE</button><button class="btn" data-ed="pieces">MOVE / TURN PIECES</button><button class="btn" data-ed="moves">MOVES</button><button class="btn" data-ed="animate">ANIMATE</button></div></div>
     <div class="pane" data-p="look"><div class="row"><span class="lab">NAME</span><input type="text" id="avname" maxlength="24" placeholder="your name"></div>
       <div class="row"><span class="lab">HEALTH</span><div class="bar"><i id="avhp" style="background:#c84a3a;width:100%"></i></div></div><div class="row"><span class="lab">STAMINA</span><div class="bar"><i id="avst" style="background:#d8b84a;width:100%"></i></div></div>
@@ -90,7 +101,9 @@ const AV={on:false};
     <div class="row"><span class="lab">COLOURS</span><input type="color" data-cp="${g}" aria-label="${l} colour"><span class="dim">AND</span><input type="color" data-g2="${i}" aria-label="${l} second colour"></div>`).join('');
   const hex=c=>'#'+new THREE.Color(c).getHexString();
   function draw(){ P.querySelectorAll('[data-t]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.t===tab))); P.querySelectorAll('[data-p]').forEach(p=>p.hidden=p.dataset.p!==tab);
-    P.querySelectorAll('#avbuild [data-b]').forEach(b=>press(b,+b.dataset.b===L.build)); $('#avh').value=L.hk||1; $('#avhv').textContent=(L.hk||1).toFixed(2);
+    P.querySelectorAll('#avwho [data-who]').forEach(b=>press(b,b.dataset.who===who)); const bw=!!BW(); $('#avbuild').hidden=$('#avyou').hidden=$('#avyou2').hidden=bw; $('#avbeard').hidden=$('#avlooks6').hidden=!bw;
+    { const F=faceOf(); for(const [k] of FACE){ $('#avf_'+k).value=F[k]; $('#avf_'+k+'v').textContent=(+F[k]).toFixed(2); } P.querySelectorAll('[data-hs]').forEach(b=>press(b,b.dataset.hs===(F.shape||'round'))); if(bw)P.querySelectorAll('[data-bd]').forEach(b=>press(b,b.dataset.bd===BWK.F.beard)); }
+    P.querySelectorAll('#avbuild [data-b]').forEach(b=>press(b,+b.dataset.b===L.build)); { const h=bw?BWK.F.h:(L.hk||1); $('#avh').value=h; $('#avhv').textContent=(+h).toFixed(2); }
     P.querySelectorAll('#avside [data-s]').forEach(b=>press(b,b.dataset.s===side));
     REG.forEach(([,rows,two],gi)=>rows.forEach(([,f,c],ri)=>{ const v=getR(f,c); $(`#avr${gi}_${ri}`).value=v; $(`#avr${gi}_${ri}v`).textContent=v.toFixed(2); }));
     let toe='round'; try{ toe=localStorage.getItem('market-toe')||'round'; }catch(e){} P.querySelectorAll('#avtoe [data-o]').forEach(b=>press(b,b.dataset.o===toe));
@@ -106,7 +119,17 @@ const AV={on:false};
   // ---- WHAT EACH CONTROL DOES
   P.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{ tab=b.dataset.t; if(tab!=='body')setSculpt(false); draw(); });
   P.querySelectorAll('#avbuild [data-b]').forEach(b=>b.onclick=()=>{ ED.snap(); LOOKS.setBuild(+b.dataset.b); LOOKS.height(L.hk||1); draw(); });
-  $('#avh').oninput=e=>{ LOOKS.height(+e.target.value); $('#avhv').textContent=(+e.target.value).toFixed(2); };
+  $('#avh').oninput=e=>{ if(BW()){ BWK.F.h=+e.target.value; BWK.save(); } else LOOKS.height(+e.target.value); $('#avhv').textContent=(+e.target.value).toFixed(2); };
+  // WHO: him held a step to your right as the view stands, facing it, while he's being edited; let go to walk on when you're done or back to YOU
+  const holdB=on=>{ if(!window.BWK)return; if(!on){ BWK.hold=null; return; } const f=new THREE.Vector3(0,0,-1).applyQuaternion(cam.quaternion), r=new THREE.Vector3(1,0,0).applyQuaternion(cam.quaternion); f.y=r.y=0; f.normalize(); r.normalize();
+    BWK.hold={x:pos.x+r.x*1.4*T,z:pos.z+r.z*1.4*T,hd:Math.atan2(-f.x,-f.z)}; };
+  P.querySelectorAll('#avwho [data-who]').forEach(b=>b.onclick=()=>{ who=b.dataset.who==='bwk'&&window.BWK&&BWK.F?'bwk':'you'; holdB(who==='bwk'); if(who==='bwk')setSculpt(false); draw(); });
+  for(const [k] of FACE){ const el=$('#avf_'+k); el.onpointerdown=()=>{ if(!BW())ED.snap(); };
+    el.oninput=()=>{ const v=+el.value; $('#avf_'+k+'v').textContent=v.toFixed(2); if(BW())BWK.F[k]=v; else ED.face({[k]:v},true); };
+    el.onchange=()=>{ if(BW())BWK.remake(); }; }
+  P.querySelectorAll('[data-hs]').forEach(b=>b.onclick=()=>{ if(BW()){ BWK.F.shape=b.dataset.hs; BWK.remake(); } else ED.face({shape:b.dataset.hs}); draw(); });
+  P.querySelectorAll('[data-bd]').forEach(b=>b.onclick=()=>{ if(!BW())return; BWK.F.beard=b.dataset.bd; BWK.remake(); draw(); });
+  P.querySelectorAll('[data-l6]').forEach(b=>b.onclick=()=>{ if(!BW())return; Object.assign(BWK.F,BWK.F0,BWK.LOOKS6[+b.dataset.l6],{h:BWK.F.h}); BWK.remake(); draw(); });
   P.querySelectorAll('#avside [data-s]').forEach(b=>b.onclick=()=>{ side=b.dataset.s; draw(); });
   P.querySelectorAll('#avtoe [data-o]').forEach(b=>b.onclick=()=>{ ED.toe(b.dataset.o); draw(); });
   const setSculpt=on=>{ sculpt=on; if(AV.on)ED.setMode(on?'sculpt':'av'); };
@@ -155,7 +178,7 @@ const AV={on:false};
   let view0=null;
   AV.open=t=>{ if(t)tab=t; if(MAPED.on)MAPED.toggle(); if(WE.on)WE.toggle(); if(!ED.on){ ED.enter(true); view0=UI.view; if(UI.view!=='map'){ UI.setView('map'); pitchTo=clampP(0.22); ppuTo=Math.min(240,PPU*3.2); } } else ED.P.hidden=true;
     AV.on=true; setSculpt(tab==='body'&&sculpt); P.hidden=false; draw(); };
-  const exit0=ED.exit; ED.exit=()=>{ const v=view0; view0=null; AV.on=false; sculpt=false; P.hidden=true; if(v&&UI.view!==v)UI.setView(v); exit0(); };
+  const exit0=ED.exit; ED.exit=()=>{ holdB(false); who='you'; const v=view0; view0=null; AV.on=false; sculpt=false; P.hidden=true; if(v&&UI.view!==v)UI.setView(v); exit0(); };
   AV.toggle=()=>{ if(AV.on&&!P.hidden)ED.exit(); else AV.open(); };
   LOOKS.open=()=>AV.open('look');   // (a double click on yourself, and DISPLAY's YOUR LOOKS: this editor's LOOK)
   { const st0=LOOKS.stats; LOOKS.stats=(hp,st)=>{ st0(hp,st); if(P.hidden)return; $('#avhp').style.width=Math.round(hp*100)+'%'; $('#avst').style.width=Math.round(st*100)+'%'; }; }

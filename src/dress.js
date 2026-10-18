@@ -138,9 +138,9 @@ const DRESS={}, TLX={tick:()=>{}};   // (TLX: the traffic lights, below)
       const tree=(x0,i)=>{ const z=zk-sd*1.05*M; let x=x0; for(let k=0;k<12&&!clear(x,z);k++)x+=(k&1?-1:1)*(k+1)*.6*M; if(!clear(x,z))return; const y=G(x,z), P=1.25*M, SET=0xa8a49c, SOIL=0x3a2c22;
         blk(x,y+.02*M,z,P,.04*M,P,SOIL); for(const [dx,dz,w,d] of [[0,-P/2,P+.16*M,.16*M],[0,P/2,P+.16*M,.16*M],[-P/2,0,.16*M,P],[P/2,0,.16*M,P]])blk(x+dx,y+.05*M,z+dz,w,.1*M,d,SET);   // (the pit, its setts)
         for(let j=0;j<6;j++){ const a=j*1.05+i, r=.3*M+.15*M*hsh(i,j); blk(x+Math.cos(a)*r,y+.12*M,z+Math.sin(a)*r,.2*M,.2*M,.2*M,[0x3e6a34,0x4f7d3c,0x5a5a3a,0x6a8a44][j&3]); }   // (low plants)
-        const TR=0x5a4e44, H=2.3*M+.4*M*hsh(i,7); cyl(x,y+H/2,z,.11*M,H,TR); solid(x,z,.14*M,H);
+        const TR=0x5a4e44, H=1.9*M+.3*M*hsh(i,7); cyl(x,y+H/2,z,.11*M,H,TR); solid(x,z,.14*M,H);
         for(let j=0;j<3;j++){ const a=j*2.1+i*.7, L=.9*M; blk(x+Math.cos(a)*L*.3,y+H+L*.3,z+Math.sin(a)*L*.3,.12*M,L*.75,.12*M,TR); }   // (three limbs, upright)
-        for(let j=0;j<9;j++){ const a=j*2.4+i, r=(j?.55+.5*hsh(i,j+20):0)*M, hy=H+(1.1+.9*hsh(j,i+30))*M, s=(.75+.35*hsh(i+j,40))*M; CR.push([x+Math.cos(a)*r,y+hy,z+Math.sin(a)*r,s*1.15,s*.8,s*1.15,[0x3f6e32,0x4c7c38,0x5a8a40,0x36602c][j&3]]); } };
+        for(let j=0;j<9;j++){ const a=j*2.4+i, r=(j?.55+.5*hsh(i,j+20):0)*M, hy=H+(.8+.7*hsh(j,i+30))*M, s=(.6+.3*hsh(i+j,40))*M; CR.push([x+Math.cos(a)*r,y+hy,z+Math.sin(a)*r,s*1.15,s*.8,s*1.15,[0x3f6e32,0x4c7c38,0x5a8a40,0x36602c][j&3]]); } };
       if(A){ const mx=BOD.X((A.x0+A.x1)/2-1.2); tree(mx,0); tree(mx+22*M,1); tree(mx+48*M,2);
         // the planters: brownstone boxes against the front, west of the door, an iron railing round their top, plants heaped in them
         const zf=BOD.Z(A.y1), sdf=Math.sign(zk-zf)||1, BR=0x7a4c3e, BRD=0x5e3a30, IR=0x1c1e22, dx=BOD.X(A.x1-1)-BOD.X(A.x1-1-2.2);

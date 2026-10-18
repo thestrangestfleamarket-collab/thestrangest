@@ -49,4 +49,4 @@ const BFLY={}; window.BFLY=BFLY;
     FORAGE.take(id,1); FORAGE.take('frame',1); if(use('ento',d-20,d+30)){ FORAGE.give('s_'+k,1); say(`YOU PIN THE ${BF_KINDS[k][0].toUpperCase()} IN ITS FRAME, ITS WINGS SPREAD.`,'#b8f0a0'); } else say('YOU TEAR A WING. THE SPECIMEN IS RUINED.','#c8a090'); };
   FORAGE.ACT.bfree=id=>{ const k=+id.slice(2); FORAGE.take(id,1); const p=W3.group.position, P=[[p.x,p.y+1.2*WU,p.z]]; for(let i=0;i<4;i++){ const a=i*1.7; P.push([p.x+Math.cos(a)*(3+i)*T,p.y+(1+i*.4)*WU,p.z+Math.sin(a)*(3+i)*T]); }
     const b=BF.add(k,P); b.until=0; setTimeout(()=>drop(b),20000); say('YOU LET IT GO. IT FLUTTERS AWAY.','#9fe07f'); };
-  window.BFLYDBG=()=>({near:[...CH.values()].reduce((a,L)=>a+L.length,0),chunks:CH.size,out:BFLY.out,kinds:[...CH.values()].flat().map(b=>BF_KINDS[b.k][0]),ento:FORAGE.sk('ento')}); }
+  BFLY.list=()=>BF.list; window.BFLYDBG=()=>({near:[...CH.values()].reduce((a,L)=>a+L.length,0),chunks:CH.size,out:BFLY.out,kinds:[...CH.values()].flat().map(b=>BF_KINDS[b.k][0]),ento:FORAGE.sk('ento')}); }

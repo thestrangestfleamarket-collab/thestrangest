@@ -770,6 +770,10 @@ with its own copy, so a chat that hadn't taken in the others' work undid it. Eve
   (dress.js). **Not done: the stoop** (the house's door is at the sidewalk; a stoop up to it means raising its ground floor: asked).
 - **The storm drains like his photo** (owner, 18 Oct 2026: "drains in road like this"): the gutter's grate a cast-iron frame, four rows of six long
   black slots, worn and rusty iron, ragged darker asphalt round it with weeds in its cracks, now and then a scrap of paper (bodega.js's `drain`).
+- **The striped wall: the cottage's cabinet through it** (owner, 18 Oct 2026, two pictures of the house's front in vertical stripes with a cabinet on
+  it): the cottage's apothecary cabinet, set against the east wall, reached out through it over the street; now every cottage piece (but the
+  windows' rods and drapes) is slid back inside the walls if it reaches past them, and the house's wall pictures have mip levels (still nearest,
+  never blended), so the brick photo seen small no longer shimmers into stripes (apts.js).
 - **The cottage's things kept to their floor** (owner, 18 Oct 2026, from the lobby: "shouldnt see things on other floors"): the cottage's pieces had
   gone into the street's batch, unclipped, so they hung over the lobby; now a batch of the house's own under its ceiling cut (apts.js).
 ## THE MARKET: the one official map

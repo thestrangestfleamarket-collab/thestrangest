@@ -61,7 +61,8 @@ for fn in sorted(os.listdir(R)):
     key=fn.rsplit('.',1)[0].replace('Meshy_AI_3D_model_of_a_1980s_c_1017024959_texture','eighties')
     try: KIT[key]=piece(os.path.join(R,fn)); print(key,KIT[key]['tris'],KIT[key]['size'])
     except Exception as e: print('SKIP',fn,e)
-os.makedirs('data',exist_ok=True); s=json.dumps(KIT,separators=(',',':')); open('data/kit.json','w').write(s); print('data/kit.json',len(s))
+OUT=os.environ.get('OUT','data/kit.json'); os.makedirs(os.path.dirname(OUT) or '.',exist_ok=True); s=json.dumps(KIT,separators=(',',':')); open(OUT,'w').write(s); print(OUT,len(s))   # (OUT=data/vehicles.json: another folder of pieces, the Drive's car pack and trash)
+if not os.path.exists(os.path.join(R,'Dragon2.glb')): raise SystemExit(0)   # (a folder without the Dragon: the pieces alone)
 # ---- THE DRAGON: its rig, its skin with weights, its clips (as the skeletons' format, one character)
 f=os.path.join(R,'Dragon2.glb'); j,bufs=glb(f); SK=j['skins'][0]; J=SK['joints']; JN=[j['nodes'][i]['name'].replace('.','_') for i in J]; JI={n:k for k,n in enumerate(JN)}
 par={c:i for i,n in enumerate(j['nodes']) for c in n.get('children',[])}

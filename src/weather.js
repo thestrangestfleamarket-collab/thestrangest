@@ -38,9 +38,9 @@ const WX={hold:null,now:null};
   // NEVER BETWEEN YOU AND THE STREET (owner, 17 Oct 2026, his picture of a cloud over the street in the isometric view): the clouds stand low
   // round the map, so seen from above at a slant the ones on the camera's side came over the picture; those are left out where they stand
   // (the half of the sky on the camera's side of where you are, by the camera's way round), the far half stays toward the horizon
-  const CU={uCF:{value:new THREE.Vector3(0,0,1)},uCO:{value:new THREE.Vector3()}};
-  cmat.onBeforeCompile=sh=>{ Object.assign(sh.uniforms,CU); sh.vertexShader='varying vec3 vCW;\n'+sh.vertexShader.replace('#include <project_vertex>','#include <project_vertex>\n vCW=(modelMatrix*vec4(transformed,1.)).xyz;');
-    sh.fragmentShader='varying vec3 vCW; uniform vec3 uCF,uCO;\n'+sh.fragmentShader.replace('void main() {','void main() { if(dot(vCW.xz-uCO.xz,uCF.xz)<12.) discard;'); };
+  const CU={uCF:{value:new THREE.Vector3(0,0,1)},uCO:{value:new THREE.Vector3()},uUnder:{value:new THREE.Color(0,0,0)}}; WX.under=CU.uUnder;   // (uUnder: the sunset on their undersides, set by sky.js)
+  cmat.onBeforeCompile=sh=>{ Object.assign(sh.uniforms,CU); sh.vertexShader='varying vec3 vCW; varying float vCD;\n'+sh.vertexShader.replace('#include <project_vertex>','#include <project_vertex>\n vCW=(modelMatrix*vec4(transformed,1.)).xyz; vCD=clamp(-(modelMatrix*vec4(normal,0.)).y*1.6,0.,1.);');
+    sh.fragmentShader='varying vec3 vCW; varying float vCD; uniform vec3 uCF,uCO,uUnder;\n'+sh.fragmentShader.replace('void main() {','void main() { if(dot(vCW.xz-uCO.xz,uCF.xz)<12.) discard;').replace('#include <lights_fragment_end>','#include <lights_fragment_end>\n reflectedLight.indirectDiffuse+=uUnder*vCD;'); };
   WX.cloudCut=()=>{ const f=new THREE.Vector3(); cam.getWorldDirection(f); f.y=0; if(f.lengthSq()<1e-6)f.set(0,0,1); f.normalize(); CU.uCF.value.copy(f); CU.uCO.value.set(pos.x,0,pos.z); };
   const CL=new THREE.Mesh(cg,cmat); CL.frustumCulled=false; scene.add(CL); WX.clouds=CL;
   // ---- THE RAIN: streaks in a box round you, falling fast, slanting with the wind; as many shown as it rains (one draw, its points moved here)

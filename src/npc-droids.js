@@ -49,7 +49,7 @@
             if(G.cool<=0&&off<.35){ G.cool=1.5+Math.random()*.6; const S=d<JAB.reach*TILE?JAB:STUN;
               an.play(S===JAB?'Punch_Jab':'Spell_Simple_Shoot',{at:[S.at,()=>{ if(S===STUN)shoot(N,t,BEAM,S.dmg); else if(d2(t.st,st)<R*1.5)t.knock(N,S.dmg); }]}); } }
           return; }
-        if(G.mode==='fight'){ G.mode='report'; st.to=null; st.face=null; an.play('Idle_Talking_Loop',{then:()=>{ G.mode='patrol'; st.hold=false; st.wait=.5; N.alert=false; }}); return; }
+        if(G.mode==='fight'){ G.mode='report'; st.to=null; st.face=null; if(typeof LINES!=='undefined')LINES.say(N,'report'); an.play('Idle_Talking_Loop',{then:()=>{ G.mode='patrol'; st.hold=false; st.wait=.5; N.alert=false; }}); return; }
         if(G.mode==='report')return;
         // on his beat: at an end, on guard, looking one way and the other
         N.alert=!st.to; if(st.to)st.h0=null; else{ if(st.h0==null)st.h0=st.h; const a=st.h0+Math.sin(G.look*.7)*1.1; st.face={x:st.x+Math.sin(a),z:st.z+Math.cos(a)}; } },
@@ -58,5 +58,6 @@
         if(N.sheet||HOLD==='T'){ an.base='A_TPose'; an.ts=0; an.update(dt); return; }   // (his sheet: still, the T)
         an.base=moving?(run?'Sprint_Loop':'Walk_Formal_Loop'):'Idle_Loop'; an.ts=moving?st.v/((run?RUNU:WALK)*sc):1; an.update(dt); }});
     N.mixer=mixer; N.an=an; N.guard=G; DROIDS.push(N); });
+  window.UALK={D,geomOf,rigOf,CLIPS,Anim};   // (the mannequin's kit, shared: you as him, src/playas.js)
   window.DROIDCAM=(i=0,k=1.6)=>{ const N=DROIDS[i]; UI.setFree(true); UI.camT.set(N.st.x,N.g.position.y+N.H*.5,N.st.z); ppu=ppuTo=PPU*k; };   /* (a test's look: the free camera on one's middle) */
   window.DROIDDBG=()=>DROIDS.map(N=>({key:N.key,mode:N.guard.mode,x:+(N.st.x/TILE).toFixed(1),z:+(N.st.z/TILE).toFixed(1),to:!!N.st.to,act:N.an.once&&N.an.once.n,base:N.an.base,vis:N.g.visible})); }

@@ -78,7 +78,7 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
   rain's slant, the oaks' sway: `PARK.windK`). Nothing falls indoors or underground. The menu's WEATHER (DISPLAY): NATURAL, or one held (CLEAR,
   CLOUDY, RAIN, STORM, SNOW, FOG); `?wx=rain` for a test. Cost: one draw for the clouds (some 20,000 triangles at most, far off), one for rain,
   one for snow; no new lights. Not yet: wet ground, snow lying.
-- **The clock** (17 Oct 2026, `src/clock.js`): the hour, 7pm when the game opens; the sun over New York in mid-October (its height, its way round, its shadows), the sky and the open air's light by it, the moon at night; DISPLAY's TIME (the hour, STOPPED / RUNNING, a day in 2 min to 24 h); N noon / 7pm.
+- **The clock** (17 Oct 2026, `src/clock.js`): the hour, noon when the game opens (owner, 17 Oct 2026: "day always starts at noon"; 7pm before); the sun over New York in mid-October (its height, its way round, its shadows), the sky and the open air's light by it, the moon at night; DISPLAY's TIME (the hour, STOPPED / RUNNING, a day in 2 min to 24 h); N noon / 7pm.
 - **The guards** (17 Oct 2026: "patrol the streets as guards and really protect us"; his picks: patrol routes, fight threats; `src/npc-skel.js`): each skeleton marches his beat (the Warrior the shops' sidewalk, the Rogue the far one, the Mage and the Minion the road), on guard at each end. **Troublemakers** (small hooded figures: the Rogue gone dark, red eyes) come up the subway stairs after dark, one or two now and then, and go for you on the street (a punch shoves you back, no harm); every guard near comes running and fights his own way (blade, fists, crossbow bolt, spell), the troublemaker falls, gets up and runs back down; a cheer, and back to the beat. The pack's own combat clips (KayKit Skeletons 1.0 on GitHub, CC0: `tools/skeletons-clips.py`).
 - **The apartment building** (17 Oct 2026, his plan from a mockup, "a fifth bigger"; `src/pool.js`, `POOLR` in `map-pre.js`): the pool room's building made the apartments' ground floor, 27.3 x 16.8 tiles: the right third the lobby (the front door) and the office behind it; the left two thirds a hallway through the middle to the stairs and the lift at its far end, the pool in front of it (across, left to right, all one depth, deep, a small diving board at its west end), the gym behind it. Inner walls cut to their foot while you're inside (`always` cut walls). The roof meets the walls' tops.
 - **The land** (17 Oct 2026): flat grass all round the map (`MODS.land` in `map-post.js`), open over the road, the stairs and the pool's basin. **How far out**: the zoom stops at some 34 tiles across (`UI.MAXW`), and the view can't slide far past the map's edges. **Never under the ground**: the tilt stops level with the street.
@@ -365,6 +365,17 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
 - **The goldfish deleted** (owner, 17 Oct 2026: "delete the fish raincoat character"): out of the street (`npc-map.js`) and the data (`data/goldfish.json`, `data/full/goldfish.json`); `tools/goldfish-paint.py` stays.
 - **? lists what you can do** (owner, 17 Oct 2026: "pressing ? should give me list of all possible actions and moves for my player"; `UI.moves`, `ui.js`): every key's action as KEYS has them, the fighting moves and their chains, his own moves (ANIMATE), the mouse and the double click's uses.
 - **Shift+R taken out** (owner, 17 Oct 2026: "resolution is fine as it is, take away shift+r option"): no table of resolution by zoom; the rule above stands (`RESI`, `ZUPX`).
+- **NPC lives** (17 Oct 2026, the paused plan built; `src/lives.js`, after `clip.js` in build.py, `LIVES.init()` after `CLIP.run()`): every street
+  walker who isn't a guard, a troublemaker, a dragon or a creature has a day by the clock (`CLOCK.h`), his hours shifted a little from the next's:
+  asleep at home till seven (the apartment house's hall, the apartment building's lobby or hallway; the skeleton pawns in the dungeon, the gold one on
+  the platform), breakfast at the Diner, work (the bodega, the dojo, the stalls, the park, the castle, the platform), lunch, work, the evening on the
+  street or in the park (the street as full at seven as before), a few to the Bar, home by eleven. **Far** (out of the picture and more than four
+  tiles from you, indoors where you aren't, on a level not shown: `NPCS.tick`, `LIVES.hidden`) a character is neither drawn nor his rig run: his
+  numbers walk him four times a second along the street's lanes and each place's way in (its door, its room), a sidestep round what blocks him,
+  down a stair with his level and group switched halfway; in the picture again his own tick takes over where his numbers are (one state, `st`, no
+  pop). A far one blocks no one (`makeNPC`'s walk, `collide`, `clip.js`). The guards go end to end of their beats when far, the creatures and the
+  bear wander on. Not done: a pose for sitting or sleeping (they stand, idle); the apartment house's upper floors (no stairs); the stacked rooms
+  (no way in on foot). `?lives=1` lists everyone; `?lives=0` the old rule (frozen when far). `tests/livescheck.cjs` (its cost figures at the head of lives.js).
 - **The grain, not halftone** (owner, 17 Oct 2026: "i want to avoid these types of shadows and grids half tone, can we do the shadows style i mentioned earlier"): the light's steps broken by a noise fixed to the world's art pixels, on by default (16 steps; `DITH` in `map-pre.js`; GRAPHICS' LIGHT GRAIN: on, strong 12, fine 24, off); no 4x4 ordered (Bayer) grid anywhere: the characters' shading, the see-through and the neon's halo take a grain instead.
 
 - **Every panel closes and moves** (owner, 17 Oct 2026: "make sure menus have way to exit out, allow all menus to be draggable"; the end of `ui.js`): an X in each panel's corner (the menu, HIS SHAPE, YOUR LOOKS, the world editor, the ? list, Shift+R's, the SHARPEN bar, the help, stats and shadows boxes) and a drag by any plain part of it (not its buttons, sliders, fields or the map). A new panel joins by its id in `PANS`.
@@ -377,6 +388,41 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
 - **Every room a button** (owner, 17 Oct 2026: "make sure every room and location on map has a button to jump there"; the menu's MAP, `ui.js`): PLACES, then ROOMS (the shop and the back room, the gym, the hallway, the lobby, the office, the dojo, each floor of the apartment house: its only way up now, the top of the subway stairs), then STORED; a jump puts the view back on him.
 
 - **Pixel art, not 3D, on the street** (owner, 17 Oct 2026, of the kit street light's smooth smeared foot: "i dont want things to look so 3d and glitchy, more pixel art vibes"): the street lights and the trash cans built from flat-coloured blocks in `dress.js` (one draw), the kit's models no longer on the street. **Every lamp's pool**: a stepped warm disc on the ground under each street light and lamp post at night ("some dont glow": only 8 lamps light for real). **Clouds never over the street**: the clouds on the camera's side of you are left out (`WX.cloudCut`, weather.js).
+- **The city's spine** (owner, 17 Oct 2026, after the gameplan for a world "fully functional ... police, fire, government, mail and delivery handled
+  by bots": "1 - minimal on map only bare minimum required"; `src/city.js`, `CITY`): the four things every service will need, at their least,
+  nothing drawn. ADDRESSES (`CITY.places()`: each place with the spot a tile before its door: the bodega, the apartments' lobby, the apartment
+  house, the dojo, the park's gate, the castle's gatehouse, the top of the subway stairs, the platform; the stored rooms as stacked, no way on
+  foot). WAYS (`CITY.route(lv,a,b)`: A* over half-tile cells of the level's ground, each cell tested with the hitboxes' own test as first looked
+  at, the found path pulled straight; some 2-20 ms a route). WALKING (`CITY.send(N,spot,{v,then})`: a character without a mind of his own walked
+  along a route by the rig's own steps; out of sight, not drawn, he's moved along it all the same; held up again and again, the way found
+  afresh). THE BOARD (`CITY.post(kind,place|spot,data)`, `CITY.take(kind,by,from)` the nearest open job, `CITY.done`). THE SCHEDULE
+  (`CITY.at(hour,fn)`, each day as the clock passes it). Doors stay doorways. `?errand=villager_m,bodega` (or `CITY.errand(key,place,tiles/s)`)
+  sends a pawn to a door as a look. Checked by `tests/worldcheck.cjs`. Next, on this: mail and delivery (the plan).
+- **The residents** (owner, 17 Oct 2026: "2 - residents in the apartment house, bare minimum"; `src/residents.js`, `CITY.residents`): four pawns
+  live in the apartment house, a flat each (hero_m 1A, hero_f 1B, villager_m 2A, villager_f 2B), each with his hours (out 7:30 to 9:18, home
+  18:12 to 20:24, staggered): out of the front door in the morning onto an errand of the day (the bodega, the park's gate, the diner, the bar,
+  Ghost Street, by the spine's routes), a while there, then back to the street walking as the others do; at his hour he walks home and goes
+  in (inside: hidden and still, `N.mode` 'hidden'; no flights of stairs yet, so not up to the flat). Set by the hour at the start (7pm: two
+  home, two about to walk home) and at each of his hours as the clock passes; a jump of the clock put right at the next tick. `RESDBG()`;
+  `tests/rescheck.cjs`.
+- **The city's services, minimal** (owner, 17 Oct 2026: "lets add the rest except for supabase, look in the google drive for assets to use for
+  anything new you add first before making it for yourself. lets do minimal for now to get started"): **from the Drive** (looked first): his
+  Designersoup Low Poly Car Pack (five cars, .fbx; fbx2gltf, `tools/kit-bake.py` with `OUT=data/vehicles.json`, cut to a third by
+  `tools/simplify.py vehicles`) and his trash bag piece; nothing there is a station, a mailbox or a hydrant, so those are built of blocks the
+  street's way. **The civic row** (`src/civic.js`): six block-built station houses on the land past the street's east end (the precinct,
+  the firehouse, the post office, the depot, city hall, the clinic), addresses of the spine, the view's bounds widened to them; no new lights.
+  **The staff**: eight pawns in uniform (a tint, `UNIFORM` in `npc-pawns.js`), at their doors when free. **The vehicles** (`src/vehicles.js`):
+  the patrol car, the fire truck, the works van, the ambulance (the pack's cars tinted, light bars that flash on a call), driving the road's two
+  lanes to an x, a rider hidden aboard and out at the kerb. **The ledger**: the treasury, rent ($30 a day, notices at 8, due at 9), wages at 17,
+  the shops' tax at 18, the shops' stock and tills (a resident buys when he arrives), the residents' cash and hunger (food resets it; hungry, his
+  errand is for food), a log of everything. **The duties** (`src/duties.js`): the mail round at 9:30 (letters are records; your box is the
+  apartments' lobby's, read in the menu); public works (the trash round at 6:30, deliveries when a shop is low, the power crew when lightning
+  trips a stretch of lamps); the fire department (a live flame that grows at a trash can, Ghost Street's forecourt or the park's gate, by
+  lightning, a small chance each hour, or TRY; it burns anyone close; hosed out with steam); the medic (you faint, he brings you round); the
+  police (the two officers on the beat; a troublemaker is a call; taken in or seen off; curfew noted). **The menu's CITY tab**: all of it, with
+  TRY buttons (a fire, an outage, a full can, a letter to you, you faint). Not done: the train's timetable, cells at the precinct, doors, wet
+  roads, the player's own hunger, persistence (Supabase, at his word). `tests/civiccheck.cjs`; `CIVDBG()`, `VEHDBG()`.
+  **This branch's build** (17 Oct 2026, the shared link PnmQ being published by other sessions' branches at the time): https://claude.ai/artifact/HkTZPr3szpVZmu4g2QDsP3; once the branches are merged, one publish to the shared link. **Found on the way**: the pool's boats and floats are flat shaded (`boats.js`, `floats.js`) against the world's Lambert shading patch (`map-pre.js`, which reads `vNormal`), so their program fails to compile whenever the menu's map draws everything at once (a console shader error; weather.js's clouds avoid flatShading for that reason). Not fixed here.
 - **The map editor** (owner, 17 Oct 2026: "build a map editor that allows me to move buildings and land around easily"; then "the shift+m map
   layout editor needs full 360 draggable view to move things. they should snap in place to a very small grid"; `src/mapedit.js`): Shift+M (or MAP
   EDITOR in the menu's MAP tab). In the game's own view: the map view, turned all the way round (a right drag or Shift + drag) and tilted, slid
@@ -395,14 +441,236 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
   game's own layout alone, `?layout={...}` one for a test. Nothing made or run while it's off (its boxes and grid made as it opens, thrown away as it
   closes). Checked by `tests/mapedit3d.cjs` (and `tests/mapedit.cjs`, the plan).
 
+- **The sky and the sunset** (owner, 17 Oct 2026: "look for ideas on how we could do the best sunset / sky", "go"; `src/sky.js`): a dome
+  painted by one shader in place of the one flat colour: a gradient by height (horizon, middle, zenith), the horizon warmed on the sun's side
+  and pinked on the side away from it (the Belt of Venus), its colours by the sun's height in stops close round the horizon (`P` in sky.js), so
+  golden hour, the sunset, the afterglow and the blue hour each look their own; the sun a hard-edged disc (1.6° across high up, 3° at the
+  horizon; deep red-orange low, cream high: `SUN`), a small halo round it, never bloom; the moon a disc; stars fixed to the sky from the end of
+  the blue hour; the weather's grey and the fog laid over it as before (weather.js); the cumulus's undersides lit in the sunset's colour while
+  the sun is low (`uUnder`, weather.js). The clock's light table (`K` in clock.js) has the same stops (10°, 3°, -2°, -6°, -12°), and the clock
+  gives the sun's and the moon's real directions (`CLOCK.sunV`, `CLOCK.moonV`). PIXEL lighting cuts the gradient into 24 bands, SMOOTH leaves
+  it smooth. The distance haze (skyline.js) takes the dome's horizon colour (between its two sides), so the skyline fades into the sky it stands against. Cost: one box of 12 triangles round the camera drawn where nothing covers it, one program, no light. Hidden underground and in a
+  room. Not shown in the isometric and map views (they look down on the land) except past the land's edge. Seen in `tests/skyshot.cjs <out>
+  [hours] [weather]` (first person, toward the sun and away from it, each hour; then from behind him). **The evening's mood** (owner, "1-3"): two more
+  palettes for the stops round the horizon, FIRE (red, pink, magenta) and SOFT (grey-teal, one thin warm line), mixed into the clear one by
+  weights the calendar day sets (`MOOD`, `W0` in sky.js; every evening its own, the same for everyone), SOFT the more the sky is clouded; `?mood=fire|soft|clear`
+  holds one, `?day=N` another day. **The light at dusk**: the lit side warmer, the shade cooler and bluer as the sun drops (oldlook.js's
+  warm-and-cool grade riding the clock, most at 3°, gone by night and high day; outdoors only). **The street lights on one by one** (`dress.js`):
+  each street light and lamp post comes on at its own moment between the sun at 1.5° and 2.5° under (its lamp lit, its light and its pool with
+  it), off again at dawn; by day they're dark and light nothing. The guards keep their beats day and night as before (nothing changed there).
 - **Smooth light, the default now** (owner, 17 Oct 2026, of the grainy cloud and tree mockups: "i dont like any of those mockups, they all look like dots everywhere, i want smooth realistic shadows and lighting like gradient radial etc"; it supersedes the grain and the 24 steps above): `SMOOTH` in `map-pre.js`: no grain, the light not cut into steps, soft shadow edges (PCFSoftShadowMap), the lamps' pools smooth radial gradients; GRAPHICS' LIGHTING switches back to PIXEL (`market-lighting`), `?look=pixel|smooth`.
+
+- **The far** (owner, 17 Oct 2026, his picture of a mountain fading blue into the sky: "how can i make things look realistically far away like
+  this mountain? in my game? (it would be buildings)"; "go"; `src/skyline.js`): what makes the far look far is the air between. **A haze**, always on
+  out in the open: the scene's fog in the horizon's colour (the sky's, bluer and paler by day, the deep navy at night; the weather's own FOG, thicker
+  and grey, takes over when it comes), measured from where he stands (not from the camera, which the map views hold 300 units back): clear to 22
+  tiles out, the full colour at 360; the isometric street barely touched, the far end of the park and the skyline going blue from his eyes. **A
+  skyline**: two rows of flat buildings round the land's edge, silhouettes only (plain blocks, dull blue-greys, no windows, no lights, no shadows,
+  nothing solid), the back row taller with a few towers; one instanced draw, some 3,000 triangles. The world's one lit shader carries the fog (no new
+  program); the water and the characters' own shaders don't fog (they're near). GRAPHICS' DISTANCE HAZE ON / OFF; `?far=0` off, `?far=N` its full
+  distance in tiles; `tests/farshot.cjs <out> [query] [name]` (his eyes down the street by day and at seven, the opening, third person).
+
+- **Everyone roams the whole map, nobody minds you** (owner, 17 Oct 2026: "stop having chars stay around and be interested in player. have them
+  roam around the entire map"; `ROAM` in `npc-map.js`): no character turns to you or waits for you any more (makeNPC's `near` is gone; a mind of
+  its own, a troublemaker's, still may); every free walker (the gold skeleton, the mushroom seller, the twelve pawns) wanders the street's whole
+  run and all of Central Park behind it (`STLANE` is now the whole map, `stfree` keeps them out of the stairs' holes, the solids and every
+  building's inside: ROOMS' boxes, the apartment house, the castle's bailey): mostly a stroll of a few tiles, now and then a walk anywhere on the
+  map, through the park's gate when the wall is between (`st.to` the gate, `st.next` the rest). The guards and the droids keep their beats, the
+  Fox his counter, the bear his platform, the animals their own grounds. **The gold skeleton carries nothing** (owner: "should not have anything
+  on them like mushrooms etc. just the skeleton"): he never did; he and the mushroom seller started on the same tile, so the seller's hat and tray
+  stood over him; he starts on the far sidewalk now (and the pawns' row starts east of the stairs' hole, where one stood stuck in its margin).
+- **Where you left off** (owner, 17 Oct 2026: "leaves off exactly where your character was last"; `src/where.js`): where he stands (x, z, the
+  height of his floor) and the way he faces are kept in the browser (`market-where`) every two seconds as he moves and as the page is left, and
+  he is put back there when the game opens (a stacked room finished first). A test's start (`?at`, `?place`, `?sheet`, `?npcat`) wins over it;
+  `?fresh=1` forgets it. The day still starts at noon.
+- **The guitarist in his apartment** (owner, 17 Oct 2026: "move the musician into an apartment top floor"; `musician.js`): he plays all the
+  time in the apartment house's top-floor front living room (the middle of the room, facing its door), heard as you come near, the room's
+  echo small; shown only from that floor (rooms.js's `show` now takes his height). The bar's stage keeps its turns without him: the pianist, the
+  singer, the drummer (`bandstand.js`).
+- **Nobody drawn who isn't seen** (owner, 17 Oct 2026: "dont render anyone not visible (they still exist just dont show them until you must)";
+  `NPCS.tick` and `NPCS.cull` in `npc-map.js`): every character out of the picture (the camera's frustum) is not drawn, whoever he is, but he still
+  lives: near you he is moved and thinks; farther than 25 tiles and unseen he is neither (as before). The hiding is done only round the picture's
+  drawing (`NPCS.cull(true)` after `ROOMS.tick`, `NPCS.cull(false)` after the composer), so each one's own visibility (his mind's, rooms.js's, the
+  stage's) is never overwritten. The bar's three and the guitarist join through `NPCS.extra`. Measured on the street at noon: 4 of 51 drawn.
+- **The headless simulation and UI SCALE** (owner, 17 Oct 2026: "lets add the headless simulations, use their UI settings"; from the physician game's full_playthrough and verify scripts, and its theme settings): `tests/simrun.cjs` plays THE MARKET by script and checks the budget and the rules as it runs (above, under tests); DISPLAY's ON SCREEN has UI SCALE (SMALL .9, MEDIUM, LARGE 1.1: every panel and label zoomed, the picture untouched; kept in the save). **What the first runs found** (17 Oct 2026, to be dealt with at the owner's word): the street draws some 450,000 triangles in the camera's frustum against the budget's 100,000 (the batch's big meshes are one piece each, never culled: a bodega batch of 116,610, two of 56,723 and 38,400, the pool's 32,706); in the cloud's software rendering the first visit to a room freezes the page 2 to 5 s (shader programs compiled on first use with the room's clip planes).
+- **The sound editor** (owner, 17 Oct 2026: "add a game sound editor to change levels perm"; `src/sndedit.js`): Shift+S, or SOUND EDITOR in DISPLAY's SOUND row: every effect's level (0 to 200%, PLAY to hear it), the ambience's three loops, the gap between its sounds, the voice blips; each change at once and kept for good (the save's `sndmix`); RESET ALL; EXPORT gives the mix as text for `SNDMIX0` in `sfx.js` (the game's own, under the save's).
+- **From the owner's physician game** (17 Oct 2026, his recovered Godot scripts: "take all that apply to my game and can fit in seamlessly"; what
+  fit, rewritten for the page, none of its medical content or Godot UI): **sounds made in code** (`src/sfx.js`: every effect a recipe grown from
+  sines and filtered noise into a buffer the first time it's wanted, no sound file; his footsteps, a lamp's click, the fridge's latch and shut, the
+  can's clunk, a seat's creak, a blow on you, a fireball's boom; quieter with distance, panned to its side); **the ambience** (`src/ambience.js`:
+  a low hush under everything, the rain's hiss and the wind's breath from the weather, muffled indoors, none underground; every 7 to 16 s one
+  small sound by weight, never the same kind twice running, nearer together with company: by day a car passing, a bird, a horn, the subway's
+  rumble, a dog; by night crickets, a dog, a siren; indoors creaks; underground drips, the rumble, a train; thunder after a storm's flash);
+  **what they say** (`src/lines.js`: pools of lines, a blank unfilled drops the line, the last fourteen said set aside, a word typed over the
+  speaker's head with voice blips from a hash of his name; a character waved to answers, a guard cheers, a droid reports, the Fox greets you at
+  his counter, a troublemaker taunts; the hundred last lines logged: the start of TODO.md's talking characters); **one save** (`src/save.js`:
+  everything kept in the browser under `market-save` as {v, name: value}, the old scattered `market-*` keys gathered once; a migrate hook by
+  version; `SAVE.get/set/del`); **a data check** (`tests/datacheck.cjs`: the save's gathering, every sound recipe finite and audible, the
+  ambience's names, the pools' blanks and freshness, every menu place on ground, a wave without error). The menu's DISPLAY has SOUND: EFFECTS,
+  AMBIENCE, VOLUME. Cost: three looping sources, at most two one-shots at a time, 0.007 ms a frame for the ambience's tick; nothing fetched.
+  Not taken: its money and reputation curves (nothing sells yet), its day scheduler (no daily cast), its languages, its blur shader (no blur).
+
+- **Interiors only near a door** (owner, 17 Oct 2026: "only load the parts of the interior that you can see from outside, and only load the
+  interior when you are close enough to enter a door area ... within 5 blocks of any entrance"; `src/interiors.js`): every still face sits in a
+  few batched meshes, so a building's inside was drawn from everywhere (the bodega's shelves from the castle: 116K of the 450K triangles in view
+  there). Each interior (the bodega's shop and back room, the apartment building's rooms, the dojo, the apartment house, the Diner, the Bar, every
+  stored room with walls) owns the faces inside its walls: those within 3 tiles of its door always drawn (what shows through it), the rest put
+  into the meshes' index only within 5 tiles of a door or inside (a tile more to leave); the apartment house's inner wall meshes hidden the same
+  way; the pool's water with the pool hall. The index is rebuilt only when an interior comes or goes. `?interiors=0` draws all. Measured at the
+  castle: 1.12M to 0.76M triangles a frame (all passes); the street 1.25M to 0.89M.
+- **`?trees=0`** hides the park's oaks (owner, 17 Oct 2026, for screenshots: "hide all trees on map so you dont get blocked").
+
+- **The tour's fixes** (owner, 17 Oct 2026, "fix", after a run through twenty spots): the shade by day gets a little sky (`clock.js`, the fill
+  .15 where it was .05: the buildings' backs were black boxes at 1pm; the sun still the light); the apartment house's lights three times as
+  strong, hung at half the storey and reaching 8 tiles (`apts.js`: the hall's one lamp of 3 at the ceiling lit nothing), and its inner walls
+  cut by the side you're on (an inner wall has a room on both sides); the dungeon's torches and fill brighter (`castle.js`); the water's own
+  glow fades with daylight outdoors (`WATER.glowK`, `clock.js`: the pond glowed green at noon); a stored room's menu spot just inside its door
+  (the Diner's stood outside behind a street light), a room without a door at its middle (the shrine's stood behind its wall). Not done: the
+  Walker's 56,700 triangles (every unworn hairstyle folded in his mesh, drawn in every pass) and the apartment house's 600 wall draw calls.
+- **THE MARKET IN ORDER: MOCKUP 1 (owner, 17 Oct 2026: "go through and try to make the map make sense, place things logical, organize the buildings and
+  stacks of rooms in a way that would be logical, keep it on that side of the street"; then "have the street on right side go up and fill the right side
+  of that street with places as well. pull from old game"; of three mockups, "mockup 1"; the mockups: https://claude.ai/artifact/UYDHWQFnYRe3cUMN7YmMVe)**:
+  **one block, shoulder to shoulder**, homes at both ends and the shops between, west to east (`LAYOUT0` in `map-pre.js`, the moves in the map's tiles):
+  the apartment house | THE COMMUNITY GARDEN on the lot the subway stairs stand before (the herb cottage at its west, the butterfly garden at its
+  east, a wooden fence with an open gate on the sidewalk: `STORE.garden` in `store.js`, the fence in `dress.js`; the menu's THE GARDEN) | the bodega
+  (+8.75) | the Diner (-24.75) | THE AQUARIUM (the octopus tank's room, a storefront with its door on the sidewalk, 28.2 to 44.4) | the Bar (-8) | Ghost
+  Street (-8.75) | the apartment building with its pool at the east end (+59), **nothing on its roof** (the stack is gone, and with it `lift`, the
+  stacked floors' ground and solids). **The keep in the castle's bailey** (its west half, behind the dungeon's stairwell, its door toward the
+  gatehouse; the bailey four tiles wider west, `CASTLE.b` 46, the park's west edge with it, its well moved east). **The street runs on east** to x 100
+  (`BOD.MAP.x1` 172), a crosswalk at the park's gate and two at the Avenue's mouth, **a back alley** behind the whole row (worn asphalt, y -101 to -96).
+  **THE AVENUE** (`AVE` in `map-pre.js`: street tiles 152 to 166.5, north to y 49): a cross street north from the main street's east end, the main
+  street's width (two sidewalks of 3.2, a road of 7.7, a kerb down, its own hole in the land), the park's new east wall along its west sidewalk with
+  THE PARK'S EAST GATE opposite the museum (`PARK.egate`), lamp posts up its park side, the lawn north of the park open; its east side **the old game's
+  row, as shells for now** (`AVR` in `store.js`: the row's brick, windows and a door on the Avenue, a plain room under one lamp, a roof), south to north:
+  MARKET · LOUNGE on the corner, MUSEUM OF EARTH facing the gate, LUCKY 7, THE YELLOW AWNING, an alley, MOVIE THEATRE · ARCADE, PLAYHOUSE, 221B BAKER
+  STREET; each in the menu's STORED row. Not yet: the old game's insides of those seven (each built to face the main street: a quarter turn per
+  place as it's set out is new code), Cherry Station at the Avenue's north end, characters on the Avenue, the museum's window and the aquarium's,
+  the cross street at the west end. **The budget, kept**: everything new is built after the game opens with the four rooms (`STEPS`, `STORE.later`),
+  nothing at the loading line; one lamp a shell (LITE's pool); the only-your-room rule covers them.
+- **The paused work finished** (17 Oct 2026, "lets finish those paused ones, go"; the branches in HANDOFF.md, all merged here):
+  **The avatar editor** (Shift+K, DISPLAY's AVATAR EDITOR, a double click on yourself; `src/avatar.js`): one panel, six tabs: BODY (MALE / FEMALE,
+  height, a slider a region, the sides together or apart, the feet and TOES round / pointed / square, the sculpting brush, HIS SHAPE's pieces, moves
+  and animation a button away), LOOK (name, hair, eyes, every colour: five swatches and a picker each), TEXTURES (a pattern woven in his shader on the
+  shirt, the trousers, the shoes: stripes, plaid, denim, knit, camo, dots, its scale and two colours), OUTLINE (on, its colour, 1-4 pixels), SHADING
+  (smooth or stepped, steps, depth, SELF, a rim light, lamps or flat), PRESETS (named looks in the browser, RESET, DOWNLOAD / LOAD). `tests/avshot.cjs`.
+  **The perf fixes** (`src/perf.js`, `docs/perf-audit.md` with the numbers; `?perfx=0` all off, `?perfx=-5` one off): the rooms' insides split off and
+  drawn only from inside, self-shadows for you and the two nearest, real bounds on everything, the lamp's cube 512, the floats and butterflies only
+  near them, the musicians hidden past 18; and fix 5 remade: the Walker indexed to what he wears (57K to 15K triangles), the batches cut into map chunks
+  of 16 tiles for the frustum, the bodega's own mesh split by room, the pool's water not drawn from the street. The street by day: 1.71M to 410K
+  triangles a frame; the main pass 1.60M to 397K. **The trees' look**: the round crown lit in one gradient with soft shadows letting a little light
+  through (`?treelook=3`, now the game's; 0 the old, 1 and 2 the others; `tests/treeshot.cjs`): +4 shader programs, no frame cost measured.
+  **The map editor's next round** (`src/mapedit.js`): every building moves live (the bodega, the apartment house, Ghost Street, the Diner and the Bar
+  carried: their batched faces hidden where they were, a copy with the drag, their unbatched meshes and lamps along, the old spot empty); PLACE keeps a
+  place where it's put and picks up the next, one SAVE (RELOADS) at the end; RAISE / LOWER (a quarter tile, Shift a tile; a stack, the Diner on the
+  Bar) and GROW / SHRINK (5%, about the middle of the front) for the Diner and the Bar only, built lifted as the stacked rooms are (their floor, solids
+  and ground with them; the musicians' stage rides the Bar's lift) and sized (`LAY.h`, `LAY.s` in `map-pre.js`; EXPORT carries them); the bodega, the
+  house and Ghost Street move only (their builders set their own heights and sizes). `tests/mapedit4.cjs`. **The Fox angular**, like his sprite
+  (CHARS[1] in the game's 10-characters.data, read as data): boxy head, wedge muzzle, pyramid ears, a chunky quilted puffer, block mitts, flared legs,
+  588 triangles (was 3,532); `tbox` and a part's `flat` in `npc-parts.js`. **The apartment house lit**: brighter lamps, the hall lit end to end, a
+  floor's lamps light its rooms (`userData.in` on a lamp, LITE in map-post.js); **the cigarette rack** hung 42 px higher, above the Fox's head.
+  **The hitbox-walled spots** (a corner of the Diner between its chairs, behind the bar counter, a strip at the castle's drums) are left as they are:
+  pockets between things, closed by their true boxes, that no one needs.
+- **THE MARKET's artifact, from this account** (17 Oct 2026): X2Bk8UjQKP8yfLdLtVVn3s can't be opened from here, so THE MARKET is published at
+  **https://claude.ai/artifact/PnmQqhkusfewby35tf4zo5** (update that one from here).
+  **This branch's build** (17 Oct 2026, the paused work finished, while other sessions were publishing their own branches to that link): https://claude.ai/artifact/1QpVqQujaY6D6V1F19ZmKy; once the branches are merged, one publish to the link above.
+- **The power grid, built to apply later** (owner, 17 Oct 2026, after a video tracing every wire in Red Dead Redemption 2 to one power plant: "i want to
+  use real power lines in the game"; his picks: "a power house as a new place", "i want it graphed to make real lights work. if the line is broken,
+  that section of the map goes dark", "set it up so that if the map is changing in another chat it wont make you redo everything", "create the
+  system that can be applied later"; `src/grid.js`, after dress.js in build.py): **off until applied** (`?grid=1`, or `market-grid` 1 in the browser; a
+  GRAPHICS switch to come). A graph: THE POWER HOUSE (brick, two stacks, a lamp over its door, the wires leaving by a high window on its east
+  wall) past the street's west end on the near kerb's side (moved by the layout as any place: `LAY.o('power')`); the street lights' poles its
+  nodes, a crossarm with three insulators on each and a transformer can on every third; trunk wires pole to pole along each kerb, both kerbs fed from
+  the house; a wire from the nearest far pole to each lamp post; a service drop from the nearest pole to every building's wall near its roof; the
+  subway fed down the stairs (no wire drawn). **Nothing placed by hand**: when switched on it derives itself from whatever stands on the map then
+  (the poles dress.js made, every building's box from where the layout put it, every lamp LITE collected), so the map moved or added to elsewhere
+  needs nothing redone: a building not yet known gets its drop by its box (`GRID.serve(key,{box})`), an unregistered lamp hangs on the nearest pole.
+  **Power** runs from the house over every whole wire; a node no whole wire reaches is dark, and with it its lamps (left out of LITE, their pools
+  gone, a street light's or post's head dimmed), the buildings it feeds (their lit windows, signs and shelf lamps dimmed: the batch's glowing
+  faces in the box, found by sampling each face's picture), the subway's lamps. A cut wire hangs in two halves from its poles. Flames (candles,
+  torches, the campfire, fireballs) are never on the grid. `GRID.cut(i)`, `GRID.mend(i)`, `GRID.cutNear(x,z)`, `GRID.cutDrop(key)`, `GRID.mendAll()`,
+  `GRID.state()`; `?cut=1,5` for a test; `tests/gridshot.cjs <out> [cuts]`. Cost (on): some 1,000 triangles the wires (one draw, one small program of
+  their own: a wire never thinner than a picture pixel), some 100 the hardware (one instanced draw), one lamp record (the house's door), nothing a
+  frame but a quarter-second check. Not yet: what cuts a wire in play (a dragon's fireball, the world editor), mending it, the GRAPHICS switch, the
+  map editor's handle on the house, smoke from its stacks.
+
+- **You are the mannequin** (owner, 17 Oct 2026: "let me play as the animation model we are using as a framework", "lets make that the main
+  avatar and i will sculpt it how i want"; then "make him look human ... (no face)"; "his base model no clothes just underwear, and then put
+  jeans and shoes and hair on him as sep items"; `src/playas.js`): the UAL1 standard body (data/ual.json, the droids' body) is the player. The
+  game's rig still runs you (keys, moves, physics, camera); he stands where you stand and plays his own clips for what you do (idle, walk,
+  jog, sprint by speed; jump, punch, roll, fall, sit, swim). His base body is skin with briefs, no face; HAIR, SHIRT, JEANS, SHOES are items,
+  each its own skinned mesh made from the body's own faces pushed out by the cloth's thickness and bent by the same bones (`PLAYAS.wear`,
+  `PLAYAS.colour`; GRAPHICS' buttons; kept in the browser, `market-wear`); the body's faces under a worn item aren't drawn. GRAPHICS' AVATAR
+  switches back to the Walker (`?avatar=walker`). The earlier mockups (a dozen soft shapes, the traced sprite) were not taken.
+- **The tomato and his friends** (owner, 17 Oct 2026, his pictures: a tomato-headed mascot in a yellow apron, "simple graphics, like the character
+  on right (the old game's deer sprite), a little more complex but not much": of three mockups (A the sprite's level, B, C) he took C's look; then
+  "lets do the same thing with them. simpel designed characters. each part its own so it can be animated. give it physics and animations for
+  walking, each item separate thing (newspaper, motorcycle) use same style as the tomato guy"; `src/npc-rig.js`, `src/npc-toons.js`): THE TOMATO
+  (freckles, leaves and a curled stem, the apron), THE CAT IN THE RAINCOAT (the newspaper under his arm, opened to read when he stops, its page
+  turned now and then; the ink jar in his hand, set down by his foot while he reads), THE TV CAT (a rusty TV on four furry legs, its screen his
+  face, glowing a little, blinking; the cable trailing), THE FROG ON HIS SCOOTER (the scooter his own: fork on its spring, wheels turning as he
+  rolls, the box on the rack, a lean into turns, the cape lifted by his going), THE SHARK (the hood's fin, its jaw snapping now and then, the trench
+  coat's skirt). **Their complexity** (of a ladder of the tomato at 1 to 5, the owner: "#1 but with #2s arms"): the deer sprite's level (a few
+  plain shapes in flat colours, round things in few faces, flat eyes), only the arms the second level's (a sleeve to the wrist, a glove with its
+  thumb and cuff). Built in code from plain shapes; **every part on a bone of its own** (`RIGNPC.make`: one mesh, one draw, each point carried
+  rigidly by its part's bone), the things they carry their own parts on their own bones. Each frame the bones go back to rest, the character's
+  pose moves them (walk, idle look round, what he does with his things), then **springs** add the give (what hangs or stands lags behind his
+  starts, stops and turns, and swings back; at rest it settles and stops; a bump from you sets them going): no Rapier, no new loads. Some
+  700-1,600 triangles each (5,250 the five), no lights, one shadow map each (SELF) as every character. They walk the whole street.
+  `N.reshape` / `N.recolour` by part, `N.B` the bones. `?toonhold=1` stands the five in a row; `tests/toonshot.cjs <out> [hour] [zoom]`.
+
+- **The opening view and V, again** (owner, 17 Oct 2026, his picture of the dojo: "i want the game to always start you this distance and at this
+  isometric angle, q & e to rotate, v wlil take you in 3rd person view over their shoulders and they can look around 360 and up and down. press v
+  again and in full free view 1st person view"): ISOMETRIC opens at the half turn from the angle before, 1.5 times in (0.7 of the 2.2 before;
+  `UI.setView` in `ui.js`); Q / E jump between its four angles; V: BEHIND, the camera over his right shoulder (0.45 m out), a drag looks all round
+  and up and down, the camera brought in before any wall between his head and it (the solids he walks into); V again FIRST PERSON (a drag looks
+  anywhere); V again back to isometric. `tests/startshot.cjs <out> [place] [view] [w] [h] [keys]`.
+
+- **Nimble** (owner, 17 Oct 2026: "lets make him super nimble, he can run jump roll grab things and swing, full actionable and fun to play";
+  `src/playas.js`'s NIMBLE): he runs a third faster (`PLAYAS.K`); Space is his own jump (about 1.6 m, carrying his run); in the air he
+  catches a bar in reach of his hands and hangs and swings (W / S pump, A / D along it, Space lets go with the swing's speed), or a ledge (the
+  top of a wall or fence a man's height or so, not a post: Space vaults to the far side, S drops); a low thing run at with Space he vaults
+  outright. The camera rises with him. A playground just inside the park's wall west of the gate (monkey bars, a high bar, a low bar) gives
+  him bars to catch. Roll is Y, punch J, kick K (the rig's).
+
+- **The park grown, its ways in the middle** (owner, 17 Oct 2026: "put the paths that cross through central park directly in the middle,
+  expand central park by 25%, space things out logically"; `park.js`): the park's back at y 12.5 (a quarter more lawn, north); the round, the
+  street's gate and the Avenue's gate at its very middle (`P.round` from its bounds); what stood by the old round (rocks, monument, campfire,
+  logs, flower beds) the same way off the new one (`RX`, `RY`); the lamps along both ways every 13 and 16 tiles; the 22 oaks set by rule (clear
+  of the ways, the castle, the shrine, the gate and the playground, 9 tiles apart); the castle moved 16.5 tiles north to the new back-left
+  corner (`LAYOUT0.castle`).
+
+- **The loop, the Hudson, the force field** (owner, 17 Oct 2026: "lets loop the street all the way around the park and back again ... use force
+  field to block anyone from leaving outside of the city block loop ... add the hudson behind the buildings on main street, it goes all the way
+  up and down map"; `RING` in map-pre.js, `bodega.js`'s grounds and kerbs, `src/ring.js`): the main street runs on west to a WEST STREET along
+  the park's west side and a NORTH STREET along its back, both built as the Avenue is (sidewalks, kerbs, the road a kerb down, crosswalks at the
+  park's gates); the Avenue's road ends at the north street (its east sidewalk on to the shells' last door). The park walled on all four sides,
+  a gate where each middle way meets a wall, the castle's own wall its corner. THE FORCE FIELD round the loop and the buildings on its outer
+  side: solid for everyone, the map's walking bound, seen only near (faint cyan). THE HUDSON just past the row's back alley, the land's whole
+  width: a stone bank, a flat surface (not the pool's water) tinted by the sky with drifting glints.
+
+- **The loop's subway and power lines** (owner, 17 Oct 2026: "have the subway follow the same path but underneath", "have the power lines go
+  around the block"; `src/sub.js`, `dress.js`, `grid.js`): a tunnel at the station's depth under the middle of the loop's four roads (cream
+  walls, a track round its middle, a lamp every 18 tiles), a three-car train going round it and stopping by each stair, two stairs down
+  (`RING.stairs`: the west street's outer sidewalk, the Avenue's east one in the gap between its shells, each a short way into the tunnel);
+  underground the background black. Street lights on both kerbs of all four sides; the power grid on by default (`?grid=0` off), each kerb's
+  poles one ring round the loop, fed from the power house.
+- **The civic tower and its droids** (owner, 17 Oct 2026: "take all the civic buildings and stack them on top of each other. all the jobs for civics will be done by the security drones. (but drone for each dept. fire dept drones will shoot water, etc)"; `src/civic.js`, `duties.js`): the six houses one tower of six floors past the north street, east of the park's north gate (map x 120-130, y 27.6-33.6), inside the force field: the firehouse at the street, the clinic, the precinct, the post office, the depot, city hall at the top, each floor's band its colour across the front; one door for all. The staff are UAL droids, one a department, in its colours (the body tinted, the joints lit): the fire droid throws a jet of water onto a fire (`CIVIC.jet`, 60 drops, one draw), the medic a healing beam to you, the police droid patrols the whole city and stuns a troublemaker (the guards' bolt), the mail droid carries the bag, the works droid his crate and kneels at a fault, the clerk keeps the books. The pawns no longer wear uniforms: they walk the city as themselves. Cost: the tower 492 triangles, one draw; six droids at 6,872 each where seen; the jet 720; no new lights. The tower takes the sky's light by day as the skyline does (its front is away from the sun).
+- **A lived-in town** (owner, 17 Oct 2026: "have people walking through park, exploring the city ... i want it to feel lived in. give different characters different walking speeds, types of walks, behaviors, places to be, etc. randomize for now"; `src/walkers.js`, `npc-pawns.js`): twelve more townspeople (three more of each of the four people pawns, each in clothes of his own: every non-skin part turned round the colour wheel); every pawn who isn't a resident drawn a way of life at random as the game opens: PARKGOER (spots in the park, long stays, sitting on the grass), EXPLORER (anywhere in the loop), SHOPPER (the shops' doors, chatting), JOGGER (round the loop's four corners at a jog or a run), LOITERER (a spot of his own and short hops round it), COMMUTER (back and forth between two places); each his own walk (the pack's two walks, the UAL walk, the formal walk, a jog, a run: `N.gait`), his own pace, idle and stay; two who stop near each other turn and talk. Walked by the spine's routes (`CITY.send`), so LIVES leaves them be. `?walkers=0` off; `WALKDBG()`. Cost: about 1,400 triangles a townsperson, only where seen; no lights, no programs.
+
+- **The guitarist walks the street; the lamp shadow handed over gradually** (owner, 18 Oct 2026: "the musician should only play if you ask him
+  to play, walks up and down street stop occasiaonnly"; "shadows completely vanish and appear suddenly once you are in range instead of
+  gradually"): the guitarist (`musician.js`) walks the shops' sidewalk on the rig's own walk, the guitar slung on his back, stopping a few
+  seconds now and then, turned back where `STFREE` says the way is blocked; a double click asks for a tune: he faces you, plays it through (the
+  close-up on his hands as before) and walks on, or as soon as you go. The one lamp shadow (`LITE`, `map-post.js`) thins to nothing as a second
+  lamp comes nearly as near you as the nearest and grows in on the next after the handover (the nearest lamp's light split between its
+  shadowed self and an unshadowed copy in the last of the eight slots: `LITE.w`); no new light, no new shadow.
 
 ## THE MARKET: the one official map
 
 **THE MARKET** (owner, 17 Oct 2026: "one official MARKET map im gona start filling in") is the game's map here: every place the owner adds goes
 into it, on its street or under it (the subway's level), next to what's there; not new separate pages. It's built to `dist/market.html` and
 published to its own artifact, **https://claude.ai/artifact/X2Bk8UjQKP8yfLdLtVVn3s** (update that one, keep its link; don't make new pages for
-new places). (Another session published to PnmQqhkusfewby35tf4zo5 for a while, a link the owner's main session can't open or update: 17 Oct 2026, version 47 back on X2Bk.) A place's code is its own file in `src/`; `map-pre.js` says where each place stands (its offset, its level), `map-post.js` joins
+new places). (Another session published to PnmQqhkusfewby35tf4zo5 for a while, a link the owner's main session can't open or update: 17 Oct 2026, version 47 back on X2Bk.) (17 Oct 2026, later: X2Bk could not be opened from this session's account, so the tomato and his friends and the opening view went to **PnmQqhkusfewby35tf4zo5**, version 15; try X2Bk first, then PnmQ.) A place's code is its own file in `src/`; `map-pre.js` says where each place stands (its offset, its level), `map-post.js` joins
 them (the ground, the levels, what cuts away). Its first places: the bodega, the pool room, the subway station and its stairs.
 
 **Not updated any more** (owner, 17 Oct 2026: "stop updating tsfm im not working there anymore"): nothing goes to `bralynnb/tsfm` from here; the copy there stays as it was last merged (version 8.0.1: at his word, "pull in all merges and go live", [bralynnb/tsfm#801](https://github.com/bralynnb/tsfm/pull/801); before it 8.0.0, [bralynnb/tsfm#800](https://github.com/bralynnb/tsfm/pull/800), 7.9.9, [bralynnb/tsfm#799](https://github.com/bralynnb/tsfm/pull/799), and 7.9.8, [bralynnb/tsfm#798](https://github.com/bralynnb/tsfm/pull/798)); ask before each update there. The artifact link is where THE MARKET is played. What follows is the old way, for the record.
@@ -427,13 +695,16 @@ the owner's call, and merging publishes). The artifact link above is the quick w
     `bodbuild.js` (built in 3D). `batch.js`: every still face packed into one texture and a few meshes (fast).
   - `musician.js` (the guitarist, and `musBody` / `figureMesh` for every Walker-built musician), `pianist.js`, `singer.js`, `drummer.js`: the bar's
     musicians; `bandstand.js`: their turns on the stage.
+  - `city.js`: the city's spine (addresses, routes over the ground, errands walked, the job board, the clock's schedule; nothing drawn).
+  - `residents.js`: the four pawns who live in the apartment house, their hours and errands.
+  - `civic.js`: the civic row, the staff, the ledger, the CITY tab; `duties.js`: the services at work; `vehicles.js`: the Drive's cars as the city's.
   - `npc-map.js`: the goldfish on the street and the bear wandering the platform (and `makeNPC`, every character's maker). `npc-skel.js`: the four skeletons on the far sidewalk, rigged and animated, and the gold skeleton (the Minion gilded).
   - `npc-street.js`: the cyborg and the teddy on the street (bones, moves, bodies in Rapier, minds). `npc-rigged.js`: the six figures made a second way (kept, not built: `npc-figures.js` is used).
   - `npc-dragon.js`: the Dragon on the road. `kit.js` + `dress.js`: the kits' pieces and the few on the street. `apts.js`: the apartment house (in the
     bodega's scope, after `bodbuild.js`).
   - `npc-dragon.js`: the Dragon on the road. `kit.js` + `dress.js`: the kits' pieces and the few on the street. `apts.js`: the apartment house (in the
     bodega's scope, after `bodbuild.js`). `npc-figures.js`: the six figures (KASA, GEKKOU, DRIZZEL, KURENAI, SAMIDALE, SHOGUN) on their Mixamo
-    bones, posed here, and the effects (smoke, the blade's trail, dust). `npc-creatures.js`: the packs' small animals on their own bones and clips. `npc-parts.js`: the parts builder; `npc-mushroom.js`: the mushroom seller, built in code in his parts.
+    bones, posed here, and the effects (smoke, the blade's trail, dust). `npc-creatures.js`: the packs' small animals on their own bones and clips. `npc-parts.js`: the parts builder; `npc-mushroom.js`: the mushroom seller, built in code in his parts. `npc-rig.js`: characters in parts on bones with springs; `npc-toons.js`: the tomato, the cat in the raincoat, the TV cat, the frog on his scooter, the shark.
     `park.js`: Central Park's entrance past the far sidewalk (the wall and gate, the pavers, the lawns, the pack's trees and rocks, the undergrowth,
     the pots, the lamps). `boats.js`: the kayak and the fishing boat afloat in the pool.
 - `data/`: the characters baked from the owner's models (`goldfish.json`, `bear.json`), the skeletons, their gear and clips (`skel.json`), the six figures (`figures.json`), the park's trees and rocks (`forest.json`), the undergrowth, pots and boats (`props.json`), the creatures (`creatures.json`), the Dragon (`dragon.json`), the kits (`kit.json`). `tools/`: the
@@ -442,7 +713,7 @@ the owner's call, and merging publishes). The artifact link above is the quick w
   `figures-bake.py` the six figures, `forest-bake.py` the park's pack, `props-bake.py` still things from .glb or .obj with a palette, `creatures-bake.py` rigged ones with their clips; the packs' .fbx made .glb with npm's fbx2gltf).
 - **Screenshots of other characters never show his avatar** (owner, 17 Oct 2026: "stop showing my avatar in screenshots of other characters"): a test looking at a character opens the page with `?hideme=1` (the Walker not drawn, `W3.hideMe` in `walker3d.js`).
 - `tests/`: Playwright screenshots (`fireshot.cjs`: the live flames close up; `mapshot.cjs`: the street; `maptour.cjs`: platform, pool, bodega, stairs, a walk down; `skelshot.cjs`: the skeletons, close; `mushshot.cjs`: a character built in parts (the mushroom seller; another with its debug hook's name as the last argument), close, by day or night; `hairshot.cjs`: his hairstyles from four angles, walking and stopped; `sheet.cjs <key>`: a character's sheet (black void, close, limbs spread, full res: `?sheet=key&fullres=8`; `?npcat=key,field` stands one out on the land); `streetshot.cjs` the
-  street's characters over a few moments; `streetact.cjs` one of them told each move, close up; `figshot.cjs` the six figures over a few moments; `figact.cjs` one told each move; `parkshot.cjs` the park's gate, round and path; `creatshot.cjs` the creatures by day and night; `poolshot.cjs` the boats; `gtshot.cjs` the guitarist close, `gthold.cjs` his holds tried, `bandshot.cjs` the stage's turns and who is heard, `pnshot.cjs` the pianist or the singer close; `modcheck.cjs` the page's module out for `node --check`; `mapedit.cjs <out>` the map editor's plan: two places moved, their walls and lights with them; `mapedit3d.cjs <out>` the editor in the world: drags from two angles, the grid, the live park, APPLY). The page takes
+  street's characters over a few moments; `streetact.cjs` one of them told each move, close up; `figshot.cjs` the six figures over a few moments; `figact.cjs` one told each move; `parkshot.cjs` the park's gate, round and path; `creatshot.cjs` the creatures by day and night; `poolshot.cjs` the boats; `gtshot.cjs` the guitarist close, `gthold.cjs` his holds tried, `bandshot.cjs` the stage's turns and who is heard, `pnshot.cjs` the pianist or the singer close; `modcheck.cjs` the page's module out for `node --check`; `datacheck.cjs` the data check (the save, the sounds, the lines, the places, the code's names against the tables); `simrun.cjs [minutes]` the headless simulation (the game played through by a script: every place, walking and running, the weather held in turn, the clock at a day a minute then a day in 2 s; the budget and the rules checked every two seconds: triangles on screen, lamps lit, no NaN, vitals, the clock, the level, the save, freezes, the hitboxes' audit; `SIM_TRIS=n` a bar other than 100,000); `citysim.cjs <out>` the civic droids called out and the town's walkers tracked (none stuck); `policesim.cjs` the police droid at night; `trisby.cjs <out> "PLACE|PLACE"` the triangles in the picture by what draws them; `mapedit.cjs <out>` the map editor's plan: two places moved, their walls and lights with them; `mapedit3d.cjs <out>` the editor in the world: drags from two angles, the grid, the live park, APPLY). The page takes
   `?at=x,z[,height]` to start somewhere, for tests. In a cloud container rendering is software (slow, ~20 fps): run them in the background.
 
 ## Where it's going

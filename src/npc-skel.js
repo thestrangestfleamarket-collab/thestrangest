@@ -65,7 +65,7 @@
       for(let t=0;t<ix.length;t+=3)if(part[R[ix[t]]]!=='Cloak')keep.push(ix[t],ix[t+1],ix[t+2]); geo.setIndex(new THREE.BufferAttribute(Uint16Array.from(keep),1)); }
     if(o.dark){ const c=geo.attributes.color.array; for(let i=0;i<c.length;i+=3){ const l=(c[i]+c[i+1]+c[i+2])/3; c[i]=Math.min(255,l*.42+18); c[i+1]=l*.3; c[i+2]=Math.min(255,l*.48+22); } }   // (a troublemaker: the Rogue's hood and bones gone the dark of a bruise)
     const N=makeNPC(null,{key:o.key||key,name,names:M.parts,lv:'up',group:'bodega',geo,skin:rig,tall:2.166,eye:o.gild?-1:M.eye,eyeC:o.eyeC,rank:M.parts.map(p=>/Helmet|Hat|Hood|Cape|Cloak/.test(p)?2:0),
-      metres,x,z,lane:LANE,free,ground:(x,z)=>MODS.bodega.ground(x,z),radius:.25,speed,stride:0,rock:0,bob:0,pick:o.pick,brain:o.brain,
+      metres,x,z,lane:LANE,free:o.pick?free:stfree,roam:!o.pick,ground:(x,z)=>MODS.bodega.ground(x,z),radius:.25,speed,stride:0,rock:0,bob:0,pick:o.pick,brain:o.brain,   /* (no beat of his own: he roams the whole map, ROAM in npc-map.js) */
       anim:(dt,moving,st,sc)=>{ const run=moving&&st.v>1.2*TILE; N.sta=run?Math.max(0,N.sta-dt/14):Math.min(1,N.sta+dt/8); if(N.sta<=0)N.tired=true; if(N.tired&&N.sta>.33)N.tired=false;   // (his stamina: spent running, back at a walk or at rest)
       if(N.sheet){ if(!N.posed){ N.posed=true; spread(rig); } return; }   // (his sheet: still, limbs spread, his clips never run)
       if(QS.get('skelrest'))return; an.base=moving?(run?'Running_A':o.walkN):(N.alert?'Idle_Combat':o.idleN); an.ts=moving?st.v/((run?RUNU:WALK)*sc):1; an.update(dt); }});
@@ -91,7 +91,7 @@
           else{ st.to=null; st.face={x:t.st.x,z:t.st.z}; const off=Math.abs(((Math.atan2(t.st.x-st.x,t.st.z-st.z)-st.h+Math.PI*3)%(Math.PI*2))-Math.PI);
             if(G.cool<=0&&off<.35){ G.cool=1.4+Math.random()*.6; N.an.play(style.hit,{at:[style.at,()=>{ if(style.bolt)shoot(N,t,style.bolt,style.dmg); else if(d2(t.st,st)<R*1.5)t.knock(N,style.dmg); }]}); } }
           return; }
-        if(G.mode==='fight'){ G.mode='cheer'; st.to=null; st.face=null; N.an.play('Cheer',{then:()=>{ G.mode='patrol'; st.hold=false; st.wait=.5; N.alert=false; }}); return; }
+        if(G.mode==='fight'){ G.mode='cheer'; st.to=null; st.face=null; if(typeof LINES!=='undefined')LINES.say(N,'cheer'); N.an.play('Cheer',{then:()=>{ G.mode='patrol'; st.hold=false; st.wait=.5; N.alert=false; }}); return; }
         if(G.mode==='cheer')return;
         // on his beat: at an end, on guard, looking one way and the other
         N.alert=!st.to; if(st.to)st.h0=null; else{ if(st.h0==null)st.h0=st.h; const a=st.h0+Math.sin(G.look*.7)*1.1; st.face={x:st.x+Math.sin(a),z:st.z+Math.cos(a)}; } }});
@@ -115,7 +115,7 @@
         const d=d2(st,you); N.mode=d<.9*TILE?'fight':'come';
         if(N.mode==='come'){ const k=(d-.5*TILE)/d; st.to={x:st.x+(you.x-st.x)*k,z:st.z+(you.z-st.z)*k}; st.v=d>4*TILE&&!N.tired?RUN*.85:st.v0||(st.v0=st.v); st.face=null; }
         else{ st.to=null; st.face={x:you.x,z:you.z};
-          if((N.cool=(N.cool||0)-dt)<=0){ N.cool=2.2; N.an.play('Unarmed_Melee_Attack_Punch_A',{at:[.36,()=>{ VIT.inFight(5); const dx=pos.x-st.x, dz=pos.z-st.z, l=Math.hypot(dx,dz)||1; if(l<1.1*TILE&&onStreet()){ SHOVE.x=dx/l*3.2*TILE; SHOVE.z=dz/l*3.2*TILE; VIT.hurt(.12); } }]}); } } }});
+          if((N.cool=(N.cool||0)-dt)<=0){ N.cool=2.2; if(typeof LINES!=='undefined'&&Math.random()<.5)LINES.say(N,'trouble'); N.an.play('Unarmed_Melee_Attack_Punch_A',{at:[.36,()=>{ VIT.inFight(5); const dx=pos.x-st.x, dz=pos.z-st.z, l=Math.hypot(dx,dz)||1; if(l<1.1*TILE&&onStreet()){ SHOVE.x=dx/l*3.2*TILE; SHOVE.z=dz/l*3.2*TILE; VIT.hurt(.12); } }]}); } } }});
     N.mode='hidden'; N.g.visible=false; N.st.hold=true;
     // down: the fall (pushed back off the blow), a moment on the ground, up again, and away
     N.knock=(from,dmg=.5)=>{ if(N.mode!=='come'&&N.mode!=='fight')return; N.hp-=dmg; if(N.hp>0){ N.an.play('Hit_A'); return; }   // (struck: his health off; while he has some, he staggers)
@@ -125,8 +125,8 @@
     TROUBLE.push(N); }
   // ---- THE GOLD ONE (owner, 17 Oct 2026, his picture of a gilded clockwork skeleton, a white skull face under a gold cap: "put this
   // character in game, use the other skeletons as guides for character design"): the Minion's bones and body, nothing added (gild, above);
-  // unarmed; he strolls the whole street as the others do, no beat and no fight ----
-  skel('Minion','GOLD SKELETON',1.4,T_(72),Z_(-70),.45,{key:'Gold',walkN:'Walking_A',idleN:'Idle_A',gild:true});
+  // unarmed; he roams the whole map as the others do, no beat and no fight ----
+  skel('Minion','GOLD SKELETON',1.4,T_(77),Z_(-64),.45,{key:'Gold',walkN:'Walking_A',idleN:'Idle_A',gild:true});   // (he starts on the far sidewalk, clear of the mushroom seller's spot: owner, 17 Oct 2026, seeing the seller's hat and tray over him, "the gold skeleton should not have anything on them like mushrooms")
   window.GUARDX={TROUBLE,shoot,free,SEE,RUN,LANE,T_,Z_,d2,GUARDS};   // (for the security droids, npc-droids.js: the same troublemakers, bolts and ground)
   window.GUARDDBG=()=>({guards:GUARDS.map(N=>({k:N.key,mode:N.guard.mode,x:+(N.st.x/TILE).toFixed(1),z:+(N.st.z/TILE).toFixed(1),act:N.an.once&&N.an.once.n})),trouble:TROUBLE.map(N=>({mode:N.mode,x:+(N.st.x/TILE).toFixed(1),z:+(N.st.z/TILE).toFixed(1),act:N.an.once&&N.an.once.n})),next:+next.toFixed(1),dark:CLOCK.dark()});
   window.SKELDBG=()=>NPCS.filter(N=>N.mixer).map(N=>({key:N.key,x:+N.st.x.toFixed(2),z:+N.st.z.toFixed(2),y:+N.g.position.y.toFixed(2),to:!!N.st.to,bones:N.me.skeleton.bones.length})); }

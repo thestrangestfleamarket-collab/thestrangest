@@ -50,18 +50,22 @@ if(MAIL.on){ const T=TILE, M=1/.84*T, X=BOD.XS, Z=BOD.ZS, G=(x,z)=>MODS.bodega.g
     if(R.z1<R.z0){ n.z=-n.z; }   /* (a room built with its tiles running the other way) */
     bld(id,name,{at,n,t:{x:-n.z,z:n.x}},kind); };
   MAIL.build=()=>{ if(MAIL.ready)return; const W=(window.WALKERS&&WALKERS.list||[]).filter(w=>w.N&&!w.N.staff);
-    // the apartment house: ten flats; the four residents in 1A-2B, the townspeople after them
+    // the buildings' fronts first (the flats numbered after the plan of who works where: jobs.js)
     const flats=['1A','1B','2A','2B','3A','3B','4A','4B','5A','5B'], RES=CITY.residents||[];
-    const tenants=[...RES.map(r=>({type:'res',ref:r,name:r.name})),...W.map(w=>({type:'walker',ref:w,name:person(w.N.key)}))];
-    let ti=0; const houseUnits=flats.map(f=>{ const r=RES.find(r=>r.flat===f), o=r?{type:'res',ref:r,name:r.name}:tenants[RES.length+ti++]; return {unit:f,who:o||null}; });
-    const left=tenants.slice(RES.length+ti), aptUnits=[{unit:'1',who:{type:'you',name:'YOU'}},...left.map((o,i)=>({unit:String(i+2),who:o}))];
-    fromPlace('house','house','THE APARTMENT HOUSE','flats',houseUnits);
-    fromPlace('apartments','apts','THE APARTMENTS','flats',aptUnits);
+    fromPlace('house','house','THE APARTMENT HOUSE','flats',[]); fromPlace('apartments','apts','THE APARTMENTS','flats',[]);
     fromPlace('bodega','bodega','THE BODEGA','shop'); fromPlace('dojo','dojo','GHOST STREET','shop');
     fromRoom('diner','diner','THE DINER','shop'); fromRoom('bar','bar','THE BAR','shop'); fromRoom('octo','aquarium','THE AQUARIUM','biz');
     for(const R of (STORE.rooms||[]))if(/^av_/.test(R.id))fromRoom(R.id,R.id.slice(3),R.name,'biz');
     fromRoom('keep','keep','THE KEEP','biz'); fromRoom('cottage','cottage','THE HERB COTTAGE','biz');
     { const T0=CITY.place('tower'); if(T0)bld('tower','THE CIVIC TOWER',front(T0.at,T0.door),'flats',(CIVIC.row||[]).map(h=>({unit:h.name,dept:h.id,who:{type:'civic',ref:h.id,name:h.name}}))); }
+    // who works where and lives near it (jobs.js: a flat over the work, b.up, when neither block of flats is near); then the flats let
+    const JB=window.JOBS&&JOBS.plan?JOBS.plan(B,W,RES):[], wk=w=>({type:'walker',ref:w,name:person(w.N.key)});
+    for(const b of B)for(const u of b.up||[])if(u.who&&u.who.type==='walker')u.who.name=person(u.who.ref.N.key);
+    const upW=new Set(JB.filter(J=>J.home==='up').map(J=>J.w)), toHouse=JB.filter(J=>J.home==='house').map(J=>J.w), toApts=JB.filter(J=>J.home==='apts').map(J=>J.w);
+    const rest=W.filter(w=>!upW.has(w)&&!toHouse.includes(w)&&!toApts.includes(w)), hq=[...toHouse,...rest];
+    const houseUnits=flats.map(f=>{ const r=RES.find(r=>r.flat===f); if(r)return {unit:f,who:{type:'res',ref:r,name:r.name}}; const w=hq.shift(); return {unit:f,who:w?wk(w):null}; });
+    const aq=[...toApts,...hq], aptUnits=[{unit:'1',who:{type:'you',name:'YOU'}},...aq.map((w,i)=>({unit:String(i+2),who:wk(w)}))];
+    { const h=B.find(b=>b.id==='house'), a=B.find(b=>b.id==='apts'); if(h)h.units=houseUnits; if(a)a.units=aptUnits; }
     // street and number: along each street in order, odd on the far side of its travel, even on this
     const byS={}; for(const b of B){ b.street=streetOf(b.F); (byS[b.street]=byS[b.street]||[]).push(b); }
     for(const [s,L] of Object.entries(byS)){ L.sort((a,b)=>along(s,a.F)-along(s,b.F)); let last=-1; for(const b of L){ const s0=s==='MARKET STREET'?X(30):s==='THE AVENUE'?Z(-80):s==='NORTH STREET'?X(30):Z(-80);
@@ -70,7 +74,8 @@ if(MAIL.on){ const T=TILE, M=1/.84*T, X=BOD.XS, Z=BOD.ZS, G=(x,z)=>MODS.bodega.g
     for(const b of B){ const line=(b.street==='CENTRAL PARK'?'':b.num+' ')+b.street;
       if(b.units)for(const u of b.units){ const id=b.id+'-'+u.unit.replace(/\s+/g,'').replace(/^THE/,'').toLowerCase(); const A={id,b,unit:u.unit,name:u.who?u.who.name:'OCCUPANT',who:u.who,kind:b.id==='tower'?'civic':'home',label:(b.id==='tower'?u.unit+', ':(b.id==='house'?'FLAT ':'APT ')+u.unit+', ')+line};
           MAIL.addr.push(A); if(u.who&&u.who.type==='walker')u.who.ref.home=A; if(u.who&&u.who.type==='res')u.who.ref.addr=A; if(u.who&&u.who.type==='you')MAIL.mine=A; }
-      else MAIL.addr.push({id:b.id,b,unit:null,name:b.name,who:{type:b.kind,ref:b.id,name:b.name},kind:b.kind,label:b.name+', '+line}); }
+      else MAIL.addr.push({id:b.id,b,unit:null,name:b.name,who:{type:b.kind,ref:b.id,name:b.name},kind:b.kind,label:b.name+', '+line});
+      for(const u of b.up||[]){ const A={id:b.id+'-'+u.unit,b,unit:u.unit,up:true,name:u.who.name,who:u.who,kind:'home',label:'APT '+u.unit+', '+line}; MAIL.addr.push(A); if(u.who.type==='walker')u.who.ref.home=A; } }
     MAIL.office=MAIL.addr.find(a=>a.id==='tower-postoffice')||MAIL.addr.find(a=>/POST/.test(a.unit||''));
     MAIL.hall=MAIL.addr.find(a=>/CITY HALL/.test(a.unit||'')); MAIL.depot=MAIL.addr.find(a=>/DEPOT/.test(a.unit||''));
     for(const w of W)if(w.home){ w.N.name=w.home.name; w.cash=w.cash??60; }
@@ -94,7 +99,15 @@ if(MAIL.on){ const T=TILE, M=1/.84*T, X=BOD.XS, Z=BOD.ZS, G=(x,z)=>MODS.bodega.g
           blk(q.x,q.y,q.z,dx,rh*.8,dz,0x6a5a3a); const A=MAIL.addr.find(a=>a.b===b&&a.unit===u.unit); A.box={x:q.x,y:q.y,z:q.z,F}; A.tick=TK.push({x:q.x+F.n.x*.012*M,y:q.y+rh*.22,z:q.z+F.n.z*.012*M,F,on:false,small:true})-1; });
         const s={x:p.x+F.n.x*.07*M,y:p.y-H/2+.07*M,z:p.z+F.n.z*.07*M}, [ox,oz]=orient(F,W*.6,.02*M); blk(s.x,s.y,s.z,ox,.035*M,oz,0x14161a);   // the OUTGOING slot
         b.slot={x:p.x,y:p.y,z:p.z,F}; b.flag=FL.push({x:p.x+F.t.x*(W/2+.03*M),y:p.y,z:p.z+F.t.z*(W/2+.03*M),F,up:false})-1; for(const A of MAIL.addr)if(A.b===b)A.flag=b.flag; }
-      b.step={x:F.at.x+F.n.x*.55*T+F.t.x*.6*T,z:F.at.z+F.n.z*.55*T+F.t.z*.6*T}; }
+      b.step={x:F.at.x+F.n.x*.55*T+F.t.x*.6*T,z:F.at.z+F.n.z*.55*T+F.t.z*.6*T};
+      // the flats over a shop (jobs.js): a street door of their own on the other side of the shop's, a step, a wall box each
+      if(b.up&&b.up.length){ const off=-(b.id==='dojo'?2.6:1.9)*T, p=place(F,off,1.05*M), [dx,dz]=orient(F,.95*M,.06*T), y0=p.y-1.05*M;
+        blk(p.x,y0+1.08*M,p.z,dx,2.15*M,dz,0x2c4a3a); const [kx,kz]=orient(F,.04*M,.03*T); blk(p.x+F.t.x*.32*M+F.n.x*.05*T,y0+1.05*M,p.z+F.t.z*.32*M+F.n.z*.05*T,kx,.06*M,kz,0xc8a850);   // the door, its knob
+        const [sx2,sz2]=orient(F,1.2*M,.5*T); blk(p.x+F.n.x*.25*T,y0+.05*M,p.z+F.n.z*.25*T,sx2,.1*M,sz2,0x8a8478);   // the step
+        b.upStep={x:F.at.x+F.n.x*.75*T+F.t.x*off,z:F.at.z+F.n.z*.75*T+F.t.z*off};
+        b.up.forEach((u,i)=>{ const q=place(F,off-(.75+i*.5)*T,1.2*M), [bx,bz]=orient(F,.3*M,.16*M); blk(q.x,q.y,q.z,bx,.36*M,bz,0x3c4048); const A=MAIL.addr.find(a=>a.b===b&&a.unit===u.unit&&a.up);
+          A.box={x:q.x,y:q.y,z:q.z,F}; A.flag=FL.push({x:q.x+F.t.x*.17*M,y:q.y,z:q.z+F.t.z*.17*M,F,up:false})-1; A.tick=TK.push({x:q.x+F.n.x*.09*M,y:q.y+.07*M,z:q.z+F.n.z*.09*M,F,on:false})-1; A.step=b.upStep; }); } }
+    for(const A of MAIL.addr)if(!A.step)A.step=A.b.step;
     // the blue collection boxes: on the loop's sidewalks, a clear spot near each wanted one (solid)
     const want=[[70,-73.2],[108,-73.2],[148,-73.2],[99,-63.6],[164.6,-20],[164.6,15],[118,25.4],[60,25.4],[33.2,0],[33.2,-45]], free=window.STFREE||(()=>true);
     for(const [tx,ty] of want){ let s=null; for(let r=0;r<6&&!s;r+=.5)for(let a=0;a<8&&!s;a++){ const x=X(tx)+Math.cos(a*Math.PI/4)*r*T, z=Z(ty)+Math.sin(a*Math.PI/4)*r*T; if(free(x,z,.6*T))s={x,z}; } if(!s)continue;
@@ -111,13 +124,14 @@ if(MAIL.on){ const T=TILE, M=1/.84*T, X=BOD.XS, Z=BOD.ZS, G=(x,z)=>MODS.bodega.g
     // a double click on a box: yours opens; another's says whose; a collection box its pickups
     const hit=(p,w,h,act,name)=>{ const hb=new THREE.Mesh(new THREE.BoxGeometry(w,h,w),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(p.x,p.y,p.z); MAPG.bodega.add(hb); UI.thing({name,obj:hb,reach:1.1*T,near:2.4*T,tall:h+.3*T,act}); };
     for(const b of MAIL.B){ const s=b.units?b.slot:MAIL.addr.find(a=>a.b===b).box; hit(s,.7*M,b.units?.8*M:.6*M,()=>openBox(b),'MAILBOX'); }
+    for(const A of MAIL.addr)if(A.up)hit(A.box,.5*M,.5*M,()=>note(A.label+' · '+A.name+(MAIL.waiting(A)?' · MAIL IN':' · EMPTY')),'MAILBOX');
     for(const cb of MAIL.cboxes)hit({x:cb.x,y:cb.y+.6*M,z:cb.z},.7*M,1.2*M,()=>note('COLLECTION BOX · PICKUPS 9:30 AND 16:00 · '+(cb.in.length?cb.in.length+' INSIDE':'EMPTY')),'COLLECTION BOX');
     draw(); };
   // the flags, the white edges and the parcels drawn as they are now (only when something changes)
   const draw=()=>{ if(!MAIL.meFL)return; const m4=new THREE.Matrix4(), q=new THREE.Quaternion(), e=new THREE.Euler(), V=THREE.Vector3;
     FL.forEach((f,i)=>{ const F=f.F, up=f.up; e.set(0,F.n.x?Math.PI/2:0,0); q.setFromEuler(e); const sx=.03*M, len=.24*M; m4.compose(new V(f.x,f.y+(up?len/2:0),f.z),q,up?new V(sx,len,sx):new V(sx,sx,len*.9)); MAIL.meFL.setMatrixAt(i,m4); });
     TK.forEach((t,i)=>{ const F=t.F, w=t.small?.1*M:.2*M; m4.compose(new V(t.x,t.y+(t.small?0:.03*M),t.z),q.identity(),t.on?new V(F.n.x?.01*M:w,.06*M,F.n.x?w:.01*M):new V(0,0,0)); MAIL.meTK.setMatrixAt(i,m4); });
-    let n=0; for(const A of MAIL.addr){ const k=MAIL.L.filter(l=>l.to===A.id&&l.state==='delivered'&&l.kind==='PARCEL').length, st=A.b.step; for(let j=0;j<k&&n<24;j++,n++){ const y=G(st.x,st.z)+.18*M+j*.36*M; m4.compose(new V(st.x+(n%2)*.1*T,y,st.z),q.identity(),new V(.34*M,.34*M,.3*M)); MAIL.mePC.setMatrixAt(n,m4); } }
+    let n=0; for(const A of MAIL.addr){ const k=MAIL.L.filter(l=>l.to===A.id&&l.state==='delivered'&&l.kind==='PARCEL').length, st=A.step||A.b.step; for(let j=0;j<k&&n<24;j++,n++){ const y=G(st.x,st.z)+.18*M+j*.36*M; m4.compose(new V(st.x+(n%2)*.1*T,y,st.z),q.identity(),new V(.34*M,.34*M,.3*M)); MAIL.mePC.setMatrixAt(n,m4); } }
     MAIL.mePC.count=n; for(const m of [MAIL.meFL,MAIL.meTK,MAIL.mePC])m.instanceMatrix.needsUpdate=true; };
   const refresh=()=>{ if(!MAIL.ready)return; for(const f of FL)f.up=false; for(const t of TK)t.on=false;
     for(const l of MAIL.L){ const A=MAIL.byId(l.to), S=MAIL.byId(l.at);
@@ -228,7 +242,7 @@ if(MAIL.on){ const T=TILE, M=1/.84*T, X=BOD.XS, Z=BOD.ZS, G=(x,z)=>MODS.bodega.g
 
   // ---- THE PEOPLE TAKING THEIR MAIL OUT ----
   CITY.at(9,()=>{ for(const A of MAIL.addr)if(A.kind==='civic')MAIL.take(A.id,A.name); },'the departments read their mail');
-  CITY.at(10,()=>{ for(const A of MAIL.addr)if(A.kind==='shop'||A.kind==='biz')MAIL.take(A.id,A.name); },'the shops read their mail');
+  CITY.at(10,()=>{ for(const A of MAIL.addr)if(A.kind==='shop'||A.kind==='biz'||A.up&&A.who&&A.who.type==='shop')MAIL.take(A.id,A.name); },'the shops read their mail');   /* (the Fox too: his flat over the shop) */
   // a resident as he goes in past his box; a townsperson at his own box (walkers.js asks MAIL.waiting)
   MAIL.waiting=A=>!!A&&MAIL.L.some(l=>l.to===A.id&&l.state==='delivered');
   let acc=0; const t0=CITY.tick; CITY.tick=(dt,you)=>{ t0(dt,you); if(!MAIL.ready)return; if((acc+=dt)<.25)return; acc=0;
@@ -245,7 +259,7 @@ if(MAIL.on){ const T=TILE, M=1/.84*T, X=BOD.XS, Z=BOD.ZS, G=(x,z)=>MODS.bodega.g
   const btn='class="btn" style="margin:2px 4px 2px 0"';
   let view='in', openId=null;
   const openBox=b=>{ const mine=MAIL.mine&&MAIL.mine.b===b;
-    if(!mine){ const As=MAIL.addr.filter(a=>a.b===b), n=As.filter(a=>MAIL.waiting(a)).length, out=MAIL.L.some(l=>l.state==='posted'&&As.some(a=>a.id===l.at));
+    if(!mine){ const As=MAIL.addr.filter(a=>a.b===b&&!a.up), n=As.filter(a=>MAIL.waiting(a)).length, out=MAIL.L.some(l=>l.state==='posted'&&As.some(a=>a.id===l.at));
       note((b.units?b.name+' · '+As.length+' BOXES':As[0].label)+(n?' · MAIL IN '+n:' · EMPTY')+(out?' · FLAG UP':'')); return; }
     MAIL.take(MAIL.mine.id,'you'); view='in'; openId=null; panel().hidden=false; render(); };
   MAIL.open=()=>{ if(MAIL.mine)openBox(MAIL.mine.b); };

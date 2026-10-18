@@ -37,7 +37,7 @@ if(WALKERS.on){ const T=TILE, X=BOD.XS, Z=BOD.ZS, rnd=Math.random, pick=a=>a[Mat
       else if(what==='shop'){ const P=CITY.place(pick(SHOPS)); p=P&&{x:P.door.x+R(-1,1)*T,z:P.door.z+R(-.4,.4)*T}; }
       else if(what==='lap'){ W.lap=((W.lap??Math.floor(rnd()*4))+1)%4; const c=CORNERS[W.lap]; p={x:X(c[0])+R(-.4,.4)*T,z:Z(c[1])+R(-.4,.4)*T}; }
       else if(what==='near'){ p={x:W.home.x+R(-6,6)*T,z:W.home.z+R(-6,6)*T}; }
-      else if(what==='mailbox'){ const s=W.home.b.step; p={x:s.x+R(-.3,.3)*T,z:s.z+R(-.2,.2)*T}; }
+      else if(what==='mailbox'){ const s=W.home.step||W.home.b.step; p={x:s.x+R(-.3,.3)*T,z:s.z+R(-.2,.2)*T}; }
       else if(what==='commute'){ W.leg^=1; const P=W.ends[W.leg]; p=P&&{x:P.door.x+R(-.6,.6)*T,z:P.door.z+R(-.3,.3)*T}; }
       if(ok(p))return p; }
     return null; };
@@ -55,8 +55,8 @@ if(WALKERS.on){ const T=TILE, X=BOD.XS, Z=BOD.ZS, rnd=Math.random, pick=a=>a[Mat
       WALKERS.list.push(W); i++; } };
   setTimeout(start,0);
   // each frame: the stays counted down; once a second, two stopped near each other talk
-  let acc=0; const t0=CITY.tick; CITY.tick=(dt,you)=>{ t0(dt,you); for(const W of WALKERS.list){ const N=W.N; if(W.state==='going'&&!N.errand){ W.state='wait'; W.t=.5; } if(W.state==='going')continue; if((W.t-=dt)<=0){ N.st.face=null; next(N,W); } }
-    if((acc+=dt)<1)return; acc=0; const S=WALKERS.list.filter(W=>W.state==='stay');
+  let acc=0; const t0=CITY.tick; CITY.tick=(dt,you)=>{ t0(dt,you); for(const W of WALKERS.list){ const N=W.N; if(W.job&&W.job.state&&W.job.state!=='off')continue; if(W.state==='going'&&!N.errand){ W.state='wait'; W.t=.5; } if(W.state==='going')continue; if((W.t-=dt)<=0){ N.st.face=null; next(N,W); } }
+    if((acc+=dt)<1)return; acc=0; const S=WALKERS.list.filter(W=>W.state==='stay'&&!(W.job&&W.job.state&&W.job.state!=='off'));
     for(const A of S)for(const B of S){ if(A===B||A.talk||B.talk)continue; const a=A.N.st, b=B.N.st; if(Math.hypot(a.x-b.x,a.z-b.z)<2.2*T&&A.N.dwell!=='sit_floor_idle_a'&&B.N.dwell!=='sit_floor_idle_a'){ A.talk=B.talk=true; A.N.dwell=B.N.dwell='UAL_Idle_Talking_Loop'; a.face={x:b.x,z:b.z}; b.face={x:a.x,z:a.z}; const m=Math.max(A.t,B.t); A.t=B.t=m; } }
     for(const W of WALKERS.list)if(W.state!=='stay')W.talk=false; };
   window.WALKDBG=()=>WALKERS.list.map(W=>({key:W.N.key,kind:W.kind,gait:W.gait,v:+W.v.toFixed(2),state:W.state,dwell:W.N.dwell,x:+(W.N.st.x/T+72).toFixed(1),y:+(W.N.st.z/T-77).toFixed(1),park:inPark(W.N.st.x,W.N.st.z),vis:W.N.g.visible}));

@@ -193,7 +193,7 @@ const BOD={meshes:[], walls:{}, lamps:[]};
     const bs=p.boxes.filter(b=>!b.nb&&b.z0<30&&b.z1-b.z0>3); if(!bs.length)continue; const r={x0:Math.min(...bs.map(b=>b.x0)),y0:Math.min(...bs.map(b=>b.y0)),x1:Math.max(...bs.map(b=>b.x1)),y1:Math.max(...bs.map(b=>b.y1))};
     sol(r.x0,r.y0,r.x1,r.y1,Math.max(...bs.map(b=>b.z1))); }
   BOUND={x0:XS(MAP.x0),x1:XS(MAP.x1),z0:Z(B00.y0),z1:ZS(MAP.y1)};
-  groundY=(x,z)=>{ const gx=x/TILE+OX, gy=z/TILE+OY; return (gy>CURB&&gy<FAR&&gx>MAP.x0&&gx<MAP.x1)||(gx>AV.r0&&gx<AV.r1&&gy>=FAR&&gy<RG.nr1)||(gx>RG.wr0&&gx<RG.wr1&&gy>=FAR&&gy<RG.nr1)||(gy>RG.nr0&&gy<RG.nr1&&gx>RG.wr0&&gx<AV.r1)?YS(RD):0; };   // (the road a kerb down: the loop's four sides)   // (the road a kerb down: the street's, and the Avenue's north from it)
+  groundY=(x,z)=>{ const gx=x/TILE+OX, gy=z/TILE+OY; return (gy>CURB&&gy<FAR&&gx>MAP.x0&&gx<MAP.x1)||(gx>AV.r0&&gx<AV.r1&&gy>=FAR&&gy<RG.nr1)||(gx>RG.wr0&&gx<RG.wr1&&gy>=FAR&&gy<RG.nr1)||(gy>RG.nr0&&gy<RG.nr1&&gx>RG.wr0&&gx<AV.r1)?YS(RD):(window.HILL?HILL(x,z):0); }   /* (the park's hills: park.js) */;   // (the road a kerb down: the loop's four sides)   // (the road a kerb down: the street's, and the Avenue's north from it)
   BOD.inside=(x,z)=>{ const gx=x/TILE/K+OX, gy=z/TILE/K+OY; return gx>B0.x0&&gx<B0.x1&&gy>B0.y0&&gy<B0.y1; };
 }
 }

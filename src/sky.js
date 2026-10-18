@@ -26,11 +26,13 @@ const SKY={};
   const U={uH:{value:new THREE.Color()},uM:{value:new THREE.Color()},uZ:{value:new THREE.Color()},uS:{value:new THREE.Color()},uA:{value:new THREE.Color()},
     uSunDir:{value:new THREE.Vector3(0,1,0)},uSunCol:{value:new THREE.Color()},uSunK:{value:0},uSunR:{value:.04},uSideK:{value:1},
     uMoonDir:{value:new THREE.Vector3(0,1,0)},uMoonK:{value:0},uMoonR:{value:.03},uStar:{value:0},uFogC:{value:new THREE.Color()},uFogK:{value:0},uGrey:{value:new THREE.Color()},uGreyK:{value:0},
-    uBands:{value:CEL?8:SMOOTH?0:24}};
+    uBands:{value:CEL?8:SMOOTH?0:24},uMistK:{value:0},uMistC:{value:new THREE.Color()},uT:{value:0}};
   const mat=new THREE.ShaderMaterial({uniforms:U,side:THREE.BackSide,depthWrite:false,depthTest:true,
     vertexShader:'varying vec3 vD; void main(){ vD=position; vec4 p=projectionMatrix*modelViewMatrix*vec4(position,1.); gl_Position=p.xyww; }',
-    fragmentShader:`uniform vec3 uH,uM,uZ,uS,uA,uSunDir,uSunCol,uMoonDir,uFogC,uGrey; uniform float uSunK,uSunR,uSideK,uMoonK,uMoonR,uStar,uFogK,uGreyK,uBands; varying vec3 vD;
+    fragmentShader:`uniform vec3 uH,uM,uZ,uS,uA,uSunDir,uSunCol,uMoonDir,uFogC,uGrey; uniform float uSunK,uSunR,uSideK,uMoonK,uMoonR,uStar,uFogK,uGreyK,uBands,uMistK,uT; uniform vec3 uMistC; varying vec3 vD;
       float hs(vec2 p){ return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453); }
+      float vn(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.-2.*f); vec2 m=mod(i,256.); return mix(mix(hs(m),hs(mod(m+vec2(1,0),256.)),f.x),mix(hs(mod(m+vec2(0,1),256.)),hs(mod(m+vec2(1,1),256.)),f.x),f.y); }
+      float fbm(vec2 p){ return vn(p)*.55+vn(p*2.1+7.3)*.3+vn(p*4.3+3.1)*.15; }
       void main(){ vec3 d=normalize(vD); float el=max(d.y,0.); vec2 hz=normalize(d.xz+vec2(1e-4,0.)), sh=normalize(uSunDir.xz+vec2(1e-4,0.)); float cs=dot(hz,sh);
         // the gradient, and the two sides
         vec3 c=mix(uH,uM,smoothstep(0.,.3,el)); c=mix(c,uZ,smoothstep(.2,.85,el));
@@ -47,7 +49,16 @@ const SKY={};
           c=mix(c,mix(uSunCol,vec3(1.,.96,.9),.45),halo*uSunK); c=mix(c,uSunCol,disc*uSunK); }
         // the weather: the sky greyed under cloud, the fog closing the horizon
         c=mix(c,uGrey,uGreyK); c=mix(c,uFogC,uFogK*(1.-smoothstep(0.,.4,el)));
-        if(uBands>0.)c=floor(c*uBands+.5)/uBands;
+        // THE MIST'S SKY (owner, 18 Oct 2026: "the sky needs distance in it and depth, it just falls flat after a certain point ... more clouds covering
+        // sky"): in the mist the sky is the mist's own, darkest at the horizon (where the far melts into it), lighter up through it, a deeper teal
+        // overhead; and a deck of clouds over most of it, laid on a plane above (so they crowd and flatten toward the horizon: the depth), each
+        // lit on its upper side and a step darker under, drifting; in the same flat bands as the rest
+        if(uMistK>0.){ vec3 m=mix(uMistC*.5,uMistC*.95,smoothstep(0.,.22,el)); m=mix(m,uMistC*.62,smoothstep(.35,.95,el));
+          vec2 q=d.xz/(max(d.y,0.)+.06)*.9+vec2(uT*.012,uT*.005); float n=fbm(q), cov=step(.47,n), lt=fbm(q+vec2(.05,.09)*2.);
+          vec3 cl=mix(uMistC*.72,uMistC*1.16,step(n,lt+.03)); cl=mix(cl,uMistC*.6,step(.62,n)*.5);
+          m=mix(m,cl,cov*smoothstep(.015,.12,el)); m=mix(m,uMistC*.5,1.-smoothstep(0.,.06,el));
+          c=mix(c,m,uMistK); c=pow(floor(pow(max(c,0.),vec3(1./2.2))*16.+.5)/16.,vec3(2.2)); }   // (its flat bands cut in the screen's colour: in linear the mist's dark teals all fell in one)
+        if(uBands>0.&&uMistK<.5)c=floor(c*uBands+.5)/uBands;
         gl_FragColor=vec4(c,1.); }`});
   const dome=new THREE.Mesh(new THREE.BoxGeometry(2000,2000,2000),mat); dome.frustumCulled=false; dome.renderOrder=900; dome.matrixAutoUpdate=true; scene.add(dome); SKY.dome=dome; OUT.add(dome,'open');
   // (the box round the camera; under the orthographic camera every ray runs the same way, so the box is shrunk to the view's width and the
@@ -60,7 +71,7 @@ const SKY={};
     // THE LIGHT AT DUSK (owner, 17 Oct 2026, "1-3"): the lit side warmer and the shade cooler, bluer, as the sun drops: oldlook.js's warm-and-cool
     // grade (uCool) rides the clock, most round golden hour and the sunset (3°), gone by night and by the high day; outdoors only (?fx=cool keeps its own)
     if(typeof LOOK!=='undefined'&&!(typeof LFX!=='undefined'&&LFX.on&&LFX.on.has&&LFX.on.has('cool')))LOOK.cool.value=dome.visible?.7*cl(1-Math.abs(CLOCK.elev()-3)/10):0;
-    if(!dome.visible)return;
+    U.uT.value+=dt; if(!dome.visible)return;
     const e=CLOCK.elev(); let i=0; while(i<P.length-2&&e>P[i+1][0])i++; const A=P[i], B=P[i+1], t=cl((e-A[0])/(B[0]-A[0]));
     const W=typeof WX!=='undefined'&&WX.now||{cloud:.2,storm:0,fog:0,flash:false}, day=cl((e+4)/14);
     // the evening's mood: the day's weights, SOFT the more it's clouded, FIRE giving way to it

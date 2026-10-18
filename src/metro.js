@@ -214,7 +214,7 @@ METRO=(()=>{ const D=METROD, S=1.15, SURF=11.55, PLAT=1.4;   // (SURF: the kit's
     wx(EW,TT,'w+x',BW,FZ0,FZ1,CEIL,SURF,.18);   // (the back wall's face over the way through: cut as the hall's back wall is)
     // (its walls cut as a room's when you're on it; from the hall below they're cut away whatever the view's angle: from there they stood up
     // over the back wall, outside the hall)
-    const when=()=>LVL==='down'||inStair(pos.x,pos.z)!=null, c1=cutWalls.length; flush(E,scene); flush(EW,scene,{when});
+    const when=()=>LVL==='down'||inStair(pos.x,pos.z)!=null, c1=cutWalls.length, FG=new THREE.Group(); scene.add(FG); METRO.flight=FG; flush(E,FG); flush(EW,FG,{when});   // (the flight its own group: drawn only underground, METRO.door)
     for(const w of cutWalls.slice(c1))Object.defineProperty(w,'always',{get:()=>LVL==='down'&&inStair(pos.x,pos.z)==null});
     // the railing round the opening, at the street: its own group, hidden once you're well down the flight (from the platform it hung in the
     // dark over you, the street round it gone: map-post's UNDER)
@@ -226,3 +226,30 @@ METRO=(()=>{ const D=METROD, S=1.15, SURF=11.55, PLAT=1.4;   // (SURF: the kit's
     // where you can't walk at the top: the railing's three sides, the open end free; its two long sides on the level below too
     for(const [L,F] of [[SOL.up,FIX.up],[SOL.down,FIX.down]]){ sol(L,F,BW-.2,FZ0-.22,FX1+.2,FZ0+.18,1.2); sol(L,F,BW-.2,FZ1-.21,FX1+.2,FZ1+.19,1.2); } sol(SOL.up,FIX.up,BW-.2,FZ0-.22,BW+.2,FZ1+.19,1.2); };
 }
+// ---- INTO THE SUBWAY AND OUT (owner, 18 Oct 2026, of the flight and the hall seen down the opening from the street: "this part shouldnt show. lets
+// not ever load the subway or underground until you enter it. when you go to the stairs of subway you will get a "Entering Subway" or "Leaving
+// Subway" while each loads. try to do as seamless as possible. when you enter the subway you should be in this spot and at this angle as you fade
+// in"; "you should still see the steps down but when you go down a few steps it triggers"): from the street the top of the flight shows, black
+// under it (a lid six treads down; the hall not drawn); three treads down and the screen fades to black with ENTERING SUBWAY, you're set down at the flight's foot on the platform, the view on his
+// picture's isometric angle (the track before you, the stairs rising to the right), what's down there drawn under the black for its first
+// frames (its programs made then, not in view), and it fades in; on the flight going up, five treads up, LEAVING SUBWAY, and you're on the
+// sidewalk before the opening, the street's angle again. Nothing underground is drawn or seen from the street. Cost: one quad (the lid), a div
+{ const M=METRO, {X,Z,Y,KX,KZ,FX0,FX1,FZ0,FZ1,BW,CZ,RUN,SURF}=M;
+  const lid=new THREE.Mesh(new THREE.PlaneGeometry(1,1).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({color:0x000000,fog:false}));
+  { const xa=X(0,FZ0-.2), xb=X(0,FZ1+.2), za=Z(BW-.2,0), zb=Z(FX1+.05,0); lid.scale.set(Math.abs(xb-xa),1,Math.abs(zb-za)); lid.position.set((xa+xb)/2,Y(SURF)+.012,(za+zb)/2); M.lidAt=()=>{ try{ const top=MAPG.bodega&&MAPG.bodega.parent; if(top&&lid.parent!==top)top.add(lid); }catch(e){} try{ lid.position.y=Y(SURF-6*M.RISE);   /* (six treads down: the top of the flight seen from the street, the black under it) */ }catch(e){} }; }   // (at the sidewalk's own height, once it's there)
+  scene.add(lid); M.lid=lid;
+  const el=document.createElement('div'); el.id='subfade';
+  el.style.cssText='position:fixed;inset:0;background:#000;opacity:0;pointer-events:none;transition:opacity .32s steps(4);z-index:60;display:flex;align-items:center;justify-content:center;color:#d8d2c4;font:14px/1 monospace;letter-spacing:3px';
+  document.body.appendChild(el);
+  // where you land: at the flight's foot, a step out onto the platform; his picture's angle (M.YAW, an isometric quarter: ?subyaw=N for a test)
+  M.foot={x:X(FX0-1.1,CZ),z:Z(FX0-1.1,CZ)}; M.street={x:X(0,CZ),z:Z(FX1+1.4,0)};
+  const qy=QS.get('subyaw'); M.YAW=qy!=null?-Math.PI/4+(+qy)*Math.PI/2:-Math.PI/4+Math.PI*1.5;
+  let busy=false; const wait=ms=>new Promise(r=>setTimeout(r,ms)), frames=n=>new Promise(r=>{ const f=()=>--n<=0?r():requestAnimationFrame(f); requestAnimationFrame(f); });
+  const go=async(dir)=>{ busy=true; el.textContent=dir==='in'?'ENTERING SUBWAY':'LEAVING SUBWAY'; el.style.pointerEvents='auto'; el.style.opacity='1'; await wait(340);
+    const p=dir==='in'?M.foot:M.street; UI.goTo(p.x,p.z,dir==='in'?'down':'up'); keys.clear();
+    if(UI.view==='iso'||UI.view==='map'){ if(dir==='in'){ yaw=yawTo=M.YAW; } else if(UI.isoTo){ UI.isoTo(); yaw=yawTo; } }
+    await frames(3); await wait(260); el.style.opacity='0'; el.style.pointerEvents='none'; await wait(360); busy=false; };
+  let lidT=0; M.door=(py,p)=>{ lid.visible=LVL==='up'; if(!lidT++)M.lidAt(); if(busy||UI.freeCam||(typeof RAG!=='undefined'&&RAG.on))return; const h=M.hf(p.x,p.z);
+    if(LVL!=='down'&&h!=null&&h<SURF-2.6*M.RISE)go('in');   // (three treads down: owner, "you should still see the steps down but when you go down a few steps it triggers the subway scene")
+    else if(LVL==='down'&&h!=null&&KX(p.x,p.z)>FX0+5*RUN)go('out'); };
+  M.doorBusy=()=>busy; window.SUBGO=(x,z,lv)=>UI.goTo(x,z,lv); }   // (a test's jump)

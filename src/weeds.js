@@ -113,7 +113,17 @@ WEEDS.lawnInit=()=>{ const T=TILE, CS=8*T, CELL=.5*T, PER=1, hsh=(a,b,s)=>{ let 
   const inPark=(x,z,m=0)=>{ if(typeof PARK==='undefined'||PARK.ox==null)return false; const xa=BOD.XS(PARK.x0+PARK.ox+m), xb=BOD.XS(PARK.x1+PARK.ox-m), za=BOD.ZS(PARK.y0+PARK.oy+m), zb=BOD.ZS(PARK.y1+PARK.oy-m);
     return x>Math.min(xa,xb)&&x<Math.max(xa,xb)&&z>Math.min(za,zb)&&z<Math.max(za,zb); };
   WEEDS.inPark=inPark;
-  const patch=(x,z)=>{ const k=patch0(x,z); return k==='flat'||k==='tuft'||inPark(x,z)?k:(k==='roll'||k==='bigflat'?'flat':'tuft'); };
+  // THE THICK FURTHER IN (owner, 18 Oct 2026, his shot inside the park's wall, crowns from the wall's foot: "the thicker grass should be further back
+  // into the park. tufts and plain grass at start mostly"): how deep a square is in the park (tiles from its nearest wall, the line bent by a
+  // noise so it isn't straight): under 14 only flat and tufts, to 28 the low kinds (rolls, little crowns, crowns pressed flat), past it all of them
+  const deep=(x,z)=>{ if(typeof PARK==='undefined'||PARK.ox==null)return 0; const tx=x/T, tz=z/T, xa=BOD.XS(PARK.x0+PARK.ox)/T, xb=BOD.XS(PARK.x1+PARK.ox)/T, za=BOD.ZS(PARK.y0+PARK.oy)/T, zb=BOD.ZS(PARK.y1+PARK.oy)/T;
+    return Math.min(tx-Math.min(xa,xb),Math.max(xa,xb)-tx,tz-Math.min(za,zb),Math.max(za,zb)-tz)+10*(vn(tx/11,tz/11,97)-.5); };
+  WEEDS.deep=deep;
+  const patch=(x,z)=>{ const k=patch0(x,z); if(k==='flat'||k==='tuft')return k; const d=inPark(x,z)?deep(x,z):0;
+    if(d<14)return k==='roll'||k==='bigflat'?'flat':'tuft'; if(d<28&&(k==='big'||k==='giant'))return k==='big'?'little':'roll'; return k; };
+  // MUSHROOMS IN THEIR SPOTS (owner, same day: "mushrooms shouldnt be everywhere in park, just certain parts they grow"): a broad noise picks the
+  // few places they come up (about a sixth of the lawn, in rings and clusters some 8-20 tiles across); forage.js grows them only there
+  WEEDS.mushAt=(x,z)=>vn(x/T/13,z/T/13,311)>.7;
   const patch0=(x,z)=>{ const tx=x/T, tz=z/T, wx=tx+16*(vn(tx/18,tz/18,91)-.5)+5*(vn(tx/6,tz/6,93)-.5), wz=tz+16*(vn(tx/18,tz/18,92)-.5)+5*(vn(tx/6,tz/6,94)-.5), PSt=PS/T, gx=Math.floor(wx/PSt), gz=Math.floor(wz/PSt);
     let d1=1e18, d2=1e18, k1='flat', k2='flat'; for(let i=-1;i<=1;i++)for(let j=-1;j<=1;j++){ const a=gx+i, b=gz+j, px=(a+hsh(a,b,71))*PSt, pz=(b+hsh(b,a,72))*PSt, d=(wx-px)**2+(wz-pz)**2, k=pickK(hsh(a,b,73));
       if(d<d1){ d2=d1; k2=k1; d1=d; k1=k; } else if(d<d2){ d2=d; k2=k; } }

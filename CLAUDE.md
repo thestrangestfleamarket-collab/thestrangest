@@ -1353,6 +1353,51 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   **The stalls either side of the gate**: the mushroom seller's west of it, the tomato's east; **both sellers 15% bigger** (2.53 m, 1.84 m); the
   stalls their size. Cost: the iron instanced in 16-tile pieces (some 57,000 triangles round the whole park, a few thousand in sight), the
   lanterns' glass one unlit draw; no light, no new program. `tests/gateshot.cjs <out>`.
+- **The mist on the town's outskirts** (owner, 18 Oct 2026, his shot down the street gone teal in straight bands a few tiles off: "the haze should
+  not be straight lines and should be on the outskirts of town", "game is unplayable"; then "it should get darker further away. more clouds and life
+  in distance"; `map-pre.js`'s fog chunks, `skyline.js`, `ring.js`, `weather.js`): the mist goes by how far a point lies past the town's edge (the
+  force field's box, `MISTB`, set by ring.js), not by its depth from the camera: the town clear wherever you stand, the mist starting 4 tiles past the
+  edge and full 26 past it, in the fog's 8 flat steps whose edges a world-fixed noise bends into tongues (never straight lines); further out the
+  mist's colour steps darker (four steps, to half), the background the darkest, the skyline mixed toward a darker mist. The box and the switch
+  (`MISTE`) are plain objects every built-in material's uniforms share; `?mist=near,far` in tiles past the edge. **Clouds**: eighty (the second forty
+  out to 245 tiles), not fogged, tinted half toward the mist while it's on; 19,200 triangles. **Life**: a tenth of the skyline's windows lit even by
+  day, each going on and off now and then. Cost: a few instructions a fragment; the clouds' 9,600 more triangles, far off.
+- **Into the subway and out** (owner, 18 Oct 2026, of the flight and the hall seen down the opening: "this part shouldnt show. lets not ever load the
+  subway or underground until you enter it ... "Entering Subway" or "Leaving Subway" while each loads ... seamless ... when you enter the subway you
+  should be in this spot and at this angle as you fade in"; "you should still see the steps down but when you go down a few steps it triggers the
+  subway scene"; `METRO.door` at the end of `metro.js`, `MAPLV` in map-post.js): from the street the top of the flight shows and a black lid six treads
+  down hides the rest (the hall, its walls and lights not drawn while you're up: `MAPG.down` only on the level below, the Metro's flight excepted);
+  three treads down the screen fades to black with ENTERING SUBWAY, you're set at the flight's foot on the platform, the isometric view on his
+  picture's angle (`METRO.YAW`: the track lower left, the stairs rising to the right; `?subyaw=0..3`), three frames drawn under the black (the
+  hall's programs made then), and it fades in; five treads up the flight, LEAVING SUBWAY, and you're on the sidewalk before the opening at the
+  street's angle. The castle's and the loop's stairs as before. Not done: the hall is still built at the start (in the loading's background), only
+  never drawn till you go down. Cost: one quad, a div. `SUBGO(x,z,lv)` a test's jump.
+- **The game in a frame** (owner, 18 Oct 2026: "i want the game screen to be in a rounded frame covering 75% of window, black background";
+  `FRAMEK` in `flea-market-3d.html`'s resize): the picture centred, .866 of each side (three quarters of the window's area), its corners rounded
+  18 px, black round it; `?frame=1` the whole window.
+- **The thick grass further in, the mushrooms in their spots** (owner, 18 Oct 2026: "the thicker grass should be further back into the park. tufts and
+  plain grass at start mostly. mushrooms shouldnt be everywhere in park, just certain parts they grow"; `weeds.js`, `forage.js`): within 14 tiles of the
+  park's walls (the line bent by a noise) only flat and tufts, to 28 the low kinds, past it all (`WEEDS.deep`); mushrooms only where a broad noise
+  says (about a sixth of the lawn, `WEEDS.mushAt`), four times the odds there.
+- **The ogres to the dungeon, the golems in their cave, his Walker reset** (owner, 18 Oct 2026: "make sure these skel knights are in dungon, and the
+  golems are in the rock cave", his picture of the ogre pawns at the newsstand; "my avatars is bald now and disappearing ... please refresh my new
+  walker back to normal"): the four ogre pawns live in the castle's great hall with the skeletons (`npc-pawns.js`, DUN); the twelve golems are set in
+  the cave once it's built and stay about it day and night (`GCAVE.haunt`, cave.js); the save's version 2 (`save.js`) puts his own Walker back as the
+  game makes him, once: his looks, shape, face, body type, speeds, the avatar editor's settings and the avatar switch.
+- **Posing him, in a void** (owner, 18 Oct 2026: "the avatar editor needs to have a section where i can pose the avatar and pull his limbs all around.
+  i want to be able to pick his standing pose"; then "avatar should not be in game when editing. pull into empty void. full 360 rotate and tilt, full
+  editing. very minimal and inituive GUI"; `src/avatar.js`, `src/studio.js`, `R.ANIMX` in `animator.js`): **the avatar editor's tabs cut to six in
+  one row** (BODY, POSE, LOOK with its patterns, STYLE the outline and shading, SAVE the presets, MOVE the speeds). **POSE**: drag any part of him
+  (an arm, a forearm, a leg, a shin, a foot, his body, his head, his hips; the part named as you grab it) and that's how he stands whenever he
+  stands still in the game (the animator's `stand` overlay, one key); twelve standing poses to start from (RELAXED, HANDS ON HIPS, ARMS CROSSED,
+  HANDS IN POCKETS, HANDS BEHIND, CONFIDENT, WEIGHT ON ONE LEG, SLOUCH, SHY, ONE HAND ON HIP, THINKING, AT EASE), MY POSES (named, kept in the
+  save's `standposes`), mirror either side onto the other, undo. **THE STUDIO** (`STUDIO`): while the editor is open the camera sees only him
+  (his pieces and the editor's highlight on layer 7, the camera on that layer alone) against a plain dark void, no fog, no world, lit by the
+  studio's own sky and sun (on layer 7 only: the world's lamps never reach him there, the studio's never reach the world), no SELF shadow; a drag
+  off him turns him all the way round and tilts from under his feet to over his head, the wheel nearer or further, a double click back before
+  him; him in the middle of what the panel leaves; one line of help at the foot. Closed, the game's view, background and shading come back.
+  Cost: nothing while closed; open, his triangles alone and two lights (his programs made once more for them the first time). `STUDIODBG()`,
+  `STUDIOTURN(yaw,pitch,dist)`, `AVPOSE(name)` (tests).
 - **ONE RULE FOR EVERY CHARACTER: AT REST, AND STEPPED** (owner, 18 Oct 2026: "are you just patching each character or applying an overall fix that
   fixes the root issues?"; of the two parts offered, "both"; `ASTEP` in `map-pre.js`): the root of the crawling shadows is that the light on a
   character is cut in hard bands and his own shadow is hard-edged, so motion under a pixel flips edge pixels every frame. **REST**: standing, every
@@ -1368,3 +1413,17 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   every kind but the deliberate: the wasp's wings, the shark's jaw, the cat's page), `tests/stepcheck.cjs` (walking: the pose every 0.1 s of game
   time, the place every frame; in the cloud's software graphics the page ran 2-3 frames a second, the game's frame capped at 0.05 s, so this is
   game time: not seen at a real frame rate here). Cost: less than before (poses worked out a tenth as often at 60 fps).
+- **The sky's depth, the city on and on, the park's own edge, the oaks back** (owner, 18 Oct 2026: "the sky needs distance in it and depth, it
+  just falls flat after a certain point. more variety of skyline based on real nyc 1980s, more clouds covering sky"; then "the buildings should keep
+  going and going in distance and get blurrier and blurrier the further away they are, lets also add the trees back to the park (large, more towards
+  middle. the closest buildings on other side of park should look more like this", his picture of the pre-war houses over Central Park's trees):
+  **the sky** in the mist is the dome again (`sky.js`, `uMistK`): darkest at the horizon, lighter up through the mist, deeper overhead, and a deck of
+  clouds over most of it on a plane above (so they crowd toward the horizon), lit above and a step darker under, drifting, its flat bands cut in the
+  screen's colour (in linear every dark teal fell in one band). **The skyline** (`skyline.js`): the 1980s landmarks on the park's side (the Twin
+  Towers, the Empire State, the Chrysler, Citicorp, Woolworth, 70s steel slabs, a steel curtain-wall front), low-rise with water towers; four more
+  rows out past the land, further and taller; **the park's own edge** just past the force field: pre-war apartment houses shoulder to shoulder, 12 to
+  24 storeys, limestone, cream and tan brick, set-back tops, twin-towered crowns now and then, water towers. Every front less distinct the further
+  past the town's edge (`pastK`: its windows fade into its wall in four steps, its colour into the mist in six). Not a blur: the no-blur rule
+  stands; "blurrier" is detail lost in flat steps. **The oaks** back (`PARK.trees`, lost in the park's reorganization): 24, 12 to 22 m, in the middle
+  seven tenths of the park, 12 tiles apart; `?trees=0` hides them. Cost: the skyline some 600 more instances (about 7,000 triangles, one draw), the
+  sky's clouds in its one fragment shader, the oaks some 11,000 triangles.

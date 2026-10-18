@@ -214,9 +214,12 @@ grab('park',()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.ox=PO.x; PARK.o
   // (THE OAKS BACK FROM THE STREET, owner 18 Oct 2026: "move the tress back away frmo the street further into the park": none nearer the front wall than TREEY tiles, crown and all)
   const TREEY=12+4.6;
   const TREES=(()=>{ const out=[], KEEP=[[P.round[0]+12.5-6,P.round[1]+11.5-6,P.round[0]+12.5+6,P.round[1]+11.5+6],   /* (the pond, pond.js: kept clear) */[CASTLE.b[0]-3,CASTLE.b[2]-3,CASTLE.b[1]+3,CASTLE.b[3]+3],(o=>[o[0]-3,o[1]-3,o[0]+9,o[1]+19])(STORE.shrineO||[69,-45.9+NORTHY]),[P.gate[0]-16,P.y0,P.gate[1]+8,P.y0+12],[RX(108)-5,RY(-54.5)-5,RX(108)+5,RY(-54.5)+5],[RX(90)-3,RY(-41.5)-3,RX(102)+3,RY(-41.5)+3],...(typeof GCAVE!=='undefined'?GCAVE.keep(P):[])];
-    for(let i=0;i<600&&out.length<22;i++){ const x=P.x0+4+hash(i,41,7)*(P.x1-P.x0-8), y=P.y0+TREEY+hash(i,43,9)*(P.y1-P.y0-TREEY-4), m=6+hash(i,47,11)*5, r=m*.42;
-      if(Math.abs(x-P.round[0]-wobX(y))<3.6+r||Math.abs(y-P.round[1]-wobY(x))<3.6+r)continue; if(KEEP.some(b=>x>b[0]-r&&x<b[2]+r&&y>b[1]-r&&y<b[3]+r))continue; if(out.some(o=>Math.hypot(o[1]-x,o[2]-y)<9))continue;
+    // (THE OAKS BACK, BIG, TOWARD THE MIDDLE, owner 18 Oct 2026: "lets also add the trees back to the park (large, more towards middle": they had
+    // dropped out of the park's reorganization): 24, 12 to 22 m, in the middle seven tenths across and past TREEY+4 in, 12 tiles apart
+    for(let i=0;i<900&&out.length<24;i++){ const x=P.x0+(P.x1-P.x0)*(.15+.7*hash(i,41,7)), y=P.y0+TREEY+4+hash(i,43,9)*(P.y1-P.y0-TREEY-10), m=12+hash(i,47,11)*10, r=m*.42;
+      if(Math.abs(x-P.round[0]-wobX(y))<3.6+r||Math.abs(y-P.round[1]-wobY(x))<3.6+r)continue; if(KEEP.some(b=>x>b[0]-r&&x<b[2]+r&&y>b[1]-r&&y<b[3]+r))continue; if(out.some(o=>Math.hypot(o[1]-x,o[2]-y)<12))continue;
       out.push(['OakTree'+(1+Math.floor(hash(i,53,13)*3)),+x.toFixed(1),+y.toFixed(1),+m.toFixed(1)]); } return out; })();
+  PARK.trees=QS.get('trees')==='0'?null:mesh(TREES,true,true,true);   // (?trees=0 hides them for screenshots)
   PARK.oaks=TREES.map(([k,x,y,m])=>[X(x),Z(y),m]); window.PARKDBG=()=>({oaks:PARK.oaks,TL,progs:renderer.info.programs.length});   // (a test's: where the oaks are, the look, how many shader programs)   // (where the oaks stand, world units: their falling leaves, lookfx.js)
   // (the oaks drawn again: the park's reorganization, 5b3dd53, set them out by rule and lost this line, so none stood; found 18 Oct 2026, "fix all 1-8")
   PARK.trees=mesh(TREES,true,true,true); if(QS.get('trees')==='0')PARK.trees.visible=false;   // (?trees=0: a test's clear view)

@@ -83,13 +83,15 @@ const GCAVE={ready:false}; window.GCAVE=GCAVE;
       const a=Math.random()*Math.PI*2, r=1+Math.random()*2.6; return {x:CX+Math.cos(a)*r*T,z:CZ+Math.sin(a)*r*T}; };
     // where they are (the twelve together): at night in the cave; by day mostly at the round, an hour now and then at the mouth or inside, the
     // same hour for all (by the calendar day and the hour)
-    GCAVE.haunt=()=>{ const h=CLOCK.h; if(h>=21||h<7)return 'cave'; const r=hs(Math.floor(h),(window.MAIL&&MAIL.ready?MAIL.day():0),21); return r<.22?'mouth':r<.34?'cave':'round'; };
+    GCAVE.haunt=()=>{ return 'cave';   /* (owner, 18 Oct 2026: "the golems are in the rock cave": always home) */ const h=CLOCK.h; if(h>=21||h<7)return 'cave'; const r=hs(Math.floor(h),(window.MAIL&&MAIL.ready?MAIL.day():0),21); return r<.22?'mouth':r<.34?'cave':'round'; };
     // THE THINGS YOU DOUBLE CLICK: the trading stone (the gem trade: gems.js), the glints (a gem to keep; each back the next day)
     const hit=(x,z,w,h,o)=>{ const hb=new THREE.Mesh(new THREE.BoxGeometry(w,h,w),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(x,h/2,z); grp.add(hb); o.obj=hb; UI.thing(o); return o; };
     hit(CX+TS[0]*T,CZ,1.4*T,Y(40),{name:'THE TRADING STONE',reach:1.3*T,near:2.4*T,tall:Y(50),act:()=>{ if(window.TRADE)TRADE.open(); }});
     GCAVE.glints=GL.map(([dx,dy],i)=>{ const th=hit(CX+dx*T,CZ+dy*T,.6*T,Y(12),{name:'A GLINT',reach:.7*T,near:1.6*T,tall:Y(20),act:()=>{ if(!window.INV||!INV.pick('cave'+i))return; th.obj.visible=false; glint(i,false); }}); return th; });
     GCAVE.regrow=()=>{ GCAVE.glints.forEach((th,i)=>{ const up=!window.INV||INV.ready('cave'+i); if(up!==th.obj.visible){ th.obj.visible=up; glint(i,up); } }); };
     GCAVE.regrow(); setInterval(GCAVE.regrow,5000);   // (picked ones back once the day turns: INV keeps which, gems.js)
-    GCAVE.tris=dg.attributes.position.count/3; GCAVE.ready=true; };
+    GCAVE.tris=dg.attributes.position.count/3; GCAVE.ready=true;
+    // (the golems home from the start: wherever the town set them down, put inside, so none is seen on the street; walkers.js sends them on about the cave)
+    for(const N of (window.PAWNL||[]))if(/_\d$/.test(N.key)){ const p=GCAVE.spot('cave'); if(!p)continue; try{ CITY.stop(N); }catch(e){} N.st.x=p.x; N.st.z=p.z; N.st.to=null; N.g.position.x=p.x; N.g.position.z=p.z; } };
   const go=()=>{ if(!window.__started||!GCAVE.S||typeof PARK==='undefined'||!PARK.fire)return setTimeout(go,400); setTimeout(()=>{ try{ build(); }catch(e){ console.warn('CAVE: not built',e); } },900); };
   go(); }

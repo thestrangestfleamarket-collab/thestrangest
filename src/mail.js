@@ -51,7 +51,7 @@ if(MAIL.on){ const T=TILE, M=1/.84*T, X=BOD.XS, Z=BOD.ZS, G=(x,z)=>MODS.bodega.g
     bld(id,name,{at,n,t:{x:-n.z,z:n.x}},kind); };
   MAIL.build=()=>{ if(MAIL.ready)return; const W=(window.WALKERS&&WALKERS.list||[]).filter(w=>w.N&&!w.N.staff);
     // the buildings' fronts first (the flats numbered after the plan of who works where: jobs.js)
-    const flats=['1A','1B','2A','2B','3A','3B','4A','4B','5A','5B'], RES=CITY.residents||[];
+    const flats=MODS.apts&&MODS.apts.flats&&MODS.apts.flats.length?MODS.apts.flats.map(F=>F.n):['1A','1B','2A','2B','3A','3B','4A','4B','5A','5B'], RES=CITY.residents||[];
     fromPlace('house','house','THE APARTMENT HOUSE','flats',[]); fromPlace('apartments','apts','THE APARTMENTS','flats',[]);
     fromPlace('bodega','bodega','THE BODEGA','shop'); fromPlace('dojo','dojo','GHOST STREET','shop');
     fromRoom('diner','diner','THE DINER','shop'); fromRoom('bar','bar','THE BAR','shop'); fromRoom('octo','aquarium','THE AQUARIUM','biz');

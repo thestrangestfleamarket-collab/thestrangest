@@ -23,7 +23,7 @@ ROOMS.roofAt=(x,y,z)=>{ const h=new THREE.Raycaster(new THREE.Vector3(x,y,z),new
       // (owner, 17 Oct 2026: "when i first walk into interior its cutting off the back of my body too"): a room is yours once all of you is in it
       // (half a tile in from its walls); in a doorway, coming or going, nothing is cut
       const IN=-.55*TILE; hit=RL.find(b=>within(b,pos.x,pos.z,IN)&&py>b.y0-.3&&py<b.y1)||null;   /* (and by your height: the rooms stacked on the apartments share their ground) */
-      const A=MODS.apts; if(!hit&&A&&A.in){ const lv=A.floor(), S=BOD.K.STORY; for(const t of A.rects(lv)){ const b=box(BOD.X,BOD.Z,t,BOD.Y(lv*S)-.5,BOD.Y((lv+1)*S)); if(within(b,pos.x,pos.z,IN)){ hit=b; break; } } } }
+      const A=MODS.apts; if(!hit&&A&&A.in){ const lv=A.floor(), S=BOD.K.STORY; for(const t of A.rects(lv)){ const b=box(BOD.X,BOD.Z,t,BOD.Y(lv*S)-.5,BOD.Y((lv+1)*S)); if(within(b,pos.x,pos.z,lv>0?0:IN)){ hit=b; break; } } } }   /* (above the ground floor there's no door out, so all of it is the room: the stairs' landing and the lift stand against the back wall) */
     ROOMS.cur=hit; UI.isoPlace(); if(BOD.GD)BOD.GD.tick(); if(MODS.dungeon)MODS.dungeon.tick();   // (the dungeon's torches flicker: castle.js)   // (the dojo's flames: lit only while you're in it)
     // THE LIGHTS OVERHEAD (owner, 17 Oct 2026: "dont show over head lights in any view unless looking up at them"): only from under them
     for(const h of OVERHEAD)h.o.visible=cam.position.y<h.y;
@@ -47,7 +47,7 @@ ROOMS.roofAt=(x,y,z)=>{ const h=new THREE.Raycaster(new THREE.Vector3(x,y,z),new
     else if(renderer.clippingPlanes.length)renderer.clippingPlanes=[];
     // the characters: only those in the room (a troublemaker below ground, hidden by his own mind, left alone)
     const show=(g,x,z,o,y)=>{ const sh=!hit||within(hit,x,z,.4*TILE)&&(y==null||y>hit.y0-.3&&y<hit.y1);   /* (y: his floor, for one in a stacked room or up the apartment house) */ if(!sh){ if(g.visible){ g.visible=false; o._rh=true; } } else if(o._rh){ g.visible=true; o._rh=false; } };
-    for(const N of NPCS){ if(N.lv!=='up'||N.mode==='hidden'||N.hid)continue; show(N.g,N.g.position.x,N.g.position.z,N); }
+    for(const N of NPCS){ if(N.lv!=='up'||N.mode==='hidden'||N.hid)continue; show(N.g,N.g.position.x,N.g.position.z,N,N.g.position.y); }   /* (his height too: a resident up the apartment house's stairs) */
     if(typeof MUS!=='undefined'&&MUS.g)show(MUS.g,MUS.at.x,MUS.at.z,MUS,MUS.at.y); if(typeof PNM!=='undefined'&&PNM.g)show(PNM.g,PNM.at.x,PNM.at.z,PNM); if(typeof SGM!=='undefined'&&SGM.g)show(SGM.g,SGM.at.x,SGM.at.z,SGM); if(typeof DRM!=='undefined'&&DRM.g)show(DRM.g,DRM.at.x,DRM.at.z,DRM);   // (the pianist, the singer and the drummer, in the stored bar: pianist.js, singer.js, drummer.js)
     if(typeof WATER!=='undefined'&&WATER.mesh){ show(WATER.mesh,WATER.mesh.position.x,WATER.mesh.position.z,WATER); for(const w of WATER.extra)if(w.mesh)show(w.mesh,w.mesh.position.x,w.mesh.position.z,w); } };   // (the pool's water, its own shader: shown only from the pool hall; the pond's and the tank's: the store's)
 }

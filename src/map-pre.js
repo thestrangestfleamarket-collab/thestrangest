@@ -93,7 +93,7 @@ const grab=(name,fn)=>{ const n0=scene.children.length; fn(); const g=new THREE.
 // the subway stairs stand before) | the bodega | the Diner | THE AQUARIUM (the octopus tank's room, a storefront) | the Bar | Ghost Street |
 // the apartment building with its pool at the east end, nothing on its roof; the keep in the castle's bailey; the street run on east past
 // them (BOD.MAP.x1), and THE AVENUE north from its east end along the park's east wall (AVE, below). The moves here in the map's tiles
-const LAYOUT0={bodega:{x:8.75},diner:{x:-24.75},bar:{x:-8},ghost:{x:-8.75},apartments:{x:59},park:{e:[-4,0,0,0]},castle:{x:-70,y:25.5}};   // (castle: to the grown park's back-left corner, 17 Oct 2026; x -70, y +3 since 18 Oct 2026: the street run on 70 tiles west, the far sidewalk 3 tiles deeper; y +6 more the same day, the far sidewalk 12 deep: NORTHY)
+const LAYOUT0={bodega:{x:8.75},diner:{x:-24.75},bar:{x:-8},ghost:{x:-8.75},apartments:{x:59},park:{e:[-4,0,0,0]},castle:{x:-70,y:25.5+14}};   // (castle: to the grown park's back-left corner, 17 Oct 2026; x -70, y +3 since 18 Oct 2026: the street run on 70 tiles west, the far sidewalk 3 tiles deeper; y +6 more the same day, the far sidewalk 12 deep: NORTHY)
 // OFF THE MAP (owner, 18 Oct 2026: "i want main street to only have this building [the apartment house], the bodega and ghost street building on
 // it. put all other buildings that are on main now off map for me to pull from later. i dont want any other buildings or rooms on map"; and of the
 // castle, "the tower shouldnt be inside the castle, it should be off map"): every place named here is kept in the code but not on the map. Most are
@@ -127,16 +127,19 @@ const BLDK=1.1;
 // west wall and the castle 70 west; the Avenue, the park's east wall and the force field's east side 70 east; the park twice as wide between
 // them), the far sidewalk 6 tiles where it was 3 (BOD.MAP.y1 in bodega.js), the park and the north street 3 tiles north with it (NORTHY)
 // (and again, owner 18 Oct 2026: "make sidewalk on central park side 2x bigger": the far sidewalk 12 tiles, the park and all north of it 9 north, NORTHY)
-const MAINX={w:70,e:70}, NORTHY=9;
-const AVE={x0:152+MAINX.e,x1:166.5+MAINX.e,y1:57.5}; AVE.r0=AVE.x0+3.2; AVE.r1=AVE.x1-3.2;
+// (THE ROADS THREE TIMES WIDER, owner 18 Oct 2026: "the street lanes are too narrow, need to be 3x wider": every road of the loop WID tiles
+// wider: the main street's road 7 tiles to 21 (its far kerb, LSEED.grass in gamekit.js, 14 north, and all north of it with NORTHY), the west
+// street's 8.1 to 22.1 (its outer edge 14 west), the north street's (its outer edge 14 north), the Avenue's (its outer edge 14 east))
+const MAINX={w:70,e:70}, WID=14, NORTHY=9+WID;
+const AVE={x0:152+MAINX.e,x1:166.5+MAINX.e+WID,y1:57.5}; AVE.r0=AVE.x0+3.2; AVE.r1=AVE.x1-3.2;
 // THE LOOP (owner, 17 Oct 2026: "lets loop the street all the way around the park and back again ... use force field to block anyone from leaving
 // outside of the city block loop ... add the hudson behind the buildings on main street, it goes all the way up and down map"): the main street
 // (south), the Avenue (east), a north street along the park's back and a west street along its west side, each 14.5 tiles (two sidewalks of 3.2,
 // a road of 8.1), the Avenue's road ending at the north street (its east sidewalk on to the last shell's door, AVE.ey1); the force field round the
 // loop and the buildings on its outer side (ff); the Hudson south of the main street's row and its alley, the land's whole width (river). In the
 // street's tiles (BOD.XS / ZS: y up toward the park)
-const RING={wx0:31.5-MAINX.w,wx1:46-MAINX.w,ny0:12.5+NORTHY,ny1:27+NORTHY}; RING.wr0=RING.wx0+3.2; RING.wr1=RING.wx1-3.2; RING.nr0=RING.ny0+3.2; RING.nr1=RING.ny1-3.2;
-{ const x0=(RING.wr0+RING.wr1)/2+2.7, raw=((50-MAINX.w)+AVE.x0)/2+9; RING.mine={x:x0+(Math.floor((raw-x0)/2.5)+.5)*2.5}; }   /* (the deep mines' way in from the loop tunnel, on the mine's grid: mines.js, sub.js) */ AVE.y1=RING.ny1; AVE.ey1=38.5+NORTHY; RING.stairs=[{x0:RING.wx0+.6,x1:RING.wx0+2.6,y0:-2,y1:4,steps:12,depth:98,dir:-1,leg:'w'},{x0:AVE.r1+.6,x1:AVE.r1+2.6,y0:-2.4,y1:3.6,steps:12,depth:98,dir:-1,leg:'e'}];   /* (the loop's subway: its stairs down, the west street's outer sidewalk and the Avenue's east one, in the gap between its shells: sub.js) */ RING.river={y0:-150,y1:-104}; RING.ff={x0:RING.wx0-1.5,x1:AVE.x1+25.5,y0:RING.river.y0-1.5,y1:40.5+NORTHY};   // (the field past the river's far bank: the Hudson in the city, real water to swim in, river.js; owner 18 Oct 2026)   // (just past the row's back alley)
+const RING={wx0:31.5-MAINX.w-WID,wx1:46-MAINX.w,ny0:12.5+NORTHY,ny1:27+NORTHY+WID}; RING.wr0=RING.wx0+3.2; RING.wr1=RING.wx1-3.2; RING.nr0=RING.ny0+3.2; RING.nr1=RING.ny1-3.2;
+{ const x0=(RING.wr0+RING.wr1)/2+2.7, raw=((50-MAINX.w)+AVE.x0)/2+9; RING.mine={x:x0+(Math.floor((raw-x0)/2.5)+.5)*2.5}; }   /* (the deep mines' way in from the loop tunnel, on the mine's grid: mines.js, sub.js) */ AVE.y1=RING.ny1; AVE.ey1=RING.ny1+11.5; RING.stairs=[{x0:RING.wx0+.6,x1:RING.wx0+2.6,y0:-2,y1:4,steps:12,depth:98,dir:-1,leg:'w'},{x0:AVE.r1+.6,x1:AVE.r1+2.6,y0:-2.4,y1:3.6,steps:12,depth:98,dir:-1,leg:'e'}];   /* (the loop's subway: its stairs down, the west street's outer sidewalk and the Avenue's east one, in the gap between its shells: sub.js) */ RING.river={y0:-150,y1:-104}; RING.ff={x0:RING.wx0-1.5,x1:AVE.x1+25.5,y0:RING.river.y0-1.5,y1:40.5+NORTHY};   // (the field past the river's far bank: the Hudson in the city, real water to swim in, river.js; owner 18 Oct 2026)   // (just past the row's back alley)
 // THE SUBWAY'S WAY DOWN (the old station's stairs; the Metro's opening fills it in from the kit's railing, metro.js: then has(x, z, lv) says
 // when you're on its stairs or in its exit, ground(x, z, lv) the floor under you there)
 const MAPSTAIR={x0:59,x1:63,y0:-80,y1:-74, steps:12, depth:98, dir:-1};

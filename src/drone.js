@@ -15,7 +15,7 @@ DRONE.init=()=>{ const H=MODS.apts; if(!H||!H.A||!H.made)return; const A=H.A, T=
   const desk=H.made.find(p=>p.kind==='writing desk with a pink lamp'); if(!desk)return;
   const big=desk.boxes.filter(b=>(b.x1-b.x0)*(b.y1-b.y0)>.4), top=Math.max(...big.map(b=>b.z1)), hi=desk.boxes.filter(b=>b.z0>=top-1), lx=hi.length?hi.reduce((a,b)=>a+(b.x0+b.x1)/2,0)/hi.length:desk.x1;
   const px=lx>(desk.x0+desk.x1)/2?desk.x0+.42:desk.x1-.42, py=(desk.y0+desk.y1)/2, fy=Z(desk.y1)>Z(desk.y0)?1:-1;   // (fy: which way is out from the wall, in the world's z)
-  const CZ=H.cotS||0;   // (the cottage's floor: the 2nd in the lobby plan, apts.js)
+  const CZ=(H.cotS||0)+(H.RZ||0);   /* (+RZ: the house raised for its stoop) */   // (the cottage's floor: the 2nd in the lobby plan, apts.js)
   const PC=new THREE.Group(), BEIGE=lam(0xcfc6a8), DARK=lam(0x6a665a); PC.position.set(X(px),Y(top+CZ),Z(py));
   const u=v=>v*T, h=v=>Y(v)-Y(0);   // (tiles across, the game's px up, in world units)
   const base=bx(u(.6),h(6),u(.42),BEIGE); base.position.set(0,h(3),0);
@@ -67,7 +67,7 @@ DRONE.init=()=>{ const H=MODS.apts; if(!H||!H.A||!H.made)return; const A=H.A, T=
   const hud=document.createElement('div'); hud.id='dhud'; hud.hidden=true; hud.style.cssText='position:fixed;inset:12px;border:2px solid #6cf08a;z-index:14;pointer-events:none;font:12px var(--pixel,monospace);color:#8cf0a8';
   hud.innerHTML='<div style="position:absolute;left:10px;top:8px">DRONE 01 · <span id="dhst"></span></div><div style="position:absolute;right:10px;top:8px">● REC</div><button class="btn" id="dhx" style="position:absolute;right:10px;bottom:8px;pointer-events:auto">LEAVE DRONE CAM</button>';
   document.body.appendChild(hud);
-  DRONE.setCam=on=>{ DRONE.cam=!!on; hud.hidden=!on; if(!on){ UI.setView(UI.view); if(H.HP)H.HP.constant=H.in?H.SY*H.floor()+H.SY*.93:1e6; } };
+  DRONE.setCam=on=>{ DRONE.cam=!!on; hud.hidden=!on; if(!on){ UI.setView(UI.view); if(H.HP)H.HP.constant=H.in?(H.R0||0)+H.SY*H.floor()+H.SY*.93:1e6; } };
   hud.querySelector('#dhx').onclick=()=>DRONE.setCam(false);
   // ---- DRONE LINK, the computer's screen as a panel
   const MENU=[['COFFEE',2],['SODA',2],['WATER',1],['MILK',3],['EGGS',4],['BREAD',3],['CHIPS',2],['CANDY BAR',1],['CEREAL',4],['FISH FOOD',3]];

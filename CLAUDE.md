@@ -1438,3 +1438,13 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   cloud cover and brightness, the sky overhead and at the horizon), live; SAVE keeps them (the save's `farlook`), RESET the game's own, EXPORT
   gives `FARLOOK {...}`: when he sends it, put it in `FL0` in skyline.js. Cost: with blur on, the skyline and the sky drawn again (a few thousand
   triangles) and two blur passes at the picture's size over the coarseness squared.
+- **His body reset and lined up** (owner, 18 Oct 2026: "the shoulders and body seems off at the root"; of the mockups, C, then C1's legs, then S2's
+  shoulders: "it looks like he is wearing shoulder pads for football"; "his arms look too droopy"; "reset his entire body, t pose all side, line up
+  things that dont make sense, completeley fix"; `BODY` in `walker-rig-mock.js`, `S2F` the default, `?body=A|B|C|D|C1|C2|C3|S1|S2|S3|S2F` the
+  mockups): his shoulder joints 7.1 out (6.3 had his upper arms half inside a round chest), the joints 2.5 over the chest so the shoulders slope, the
+  sleeve just over the arm and the bar and collar thin (no pads); the chest flatter front to back (.72) and the waist in; the hips over the feet (3.4
+  out, the legs had slanted in to the ankles), the thighs tapering into the knee, a little calf; flat-soled shoes, high at the heel, low over the toes
+  (`shoeBox`). Standing, his arms eased 6° off his sides and the elbows soft (`walkPose`, at rest only). The save's v3 puts every browser's body,
+  shape, face and body type back to the game's once (his looks and kept poses stay). Not changed: his head (a third of his height) and his legs'
+  length (the moves' keys hold the hips at 18). `tests/tpose.cjs <out> [body] [tag]` (every side, his joints), `tests/bodymock.cjs`,
+  `tests/posemock.cjs`; the sheets in `mockups/body-*.png` (not kept in git).

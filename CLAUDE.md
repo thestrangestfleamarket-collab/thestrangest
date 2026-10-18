@@ -55,3 +55,4 @@ Several chats work at once, each on its own branch, all publishing to the same l
 
 `tests/*.cjs` drive `dist/market.html` in headless Chromium (Playwright; software rendering here, slow: run in the
 background). The page takes `?at=x,z`, `?place=NAME`, `?hour=H`, `?fresh=1` for tests.
+`tools/mocap-rig.cjs` and `tests/jumpcheck.cjs` read the rig out of the built page: build with `MIN=0` first.

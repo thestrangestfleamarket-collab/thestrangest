@@ -1003,3 +1003,24 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   (the weeds' own program, a second instanced draw in the chunk). A crown kind lays a grid of crowns (each its own place, size and green), every square's clump domed
   by how near its crown's middle it is, its rim a step darker and lower: the treetops of a forest seen from high above. Every lawn, not only the
   park's. Still one clump a square, the cost as before (some 20,000-25,000 triangles in the picture), one program, no light.
+- **Mushrooms, foraging and the crafts, UO's way** (owner, 18 Oct 2026: "lets do flat, tuft and the other kinds but spread out more naturally. each
+  type of grass will have better chances of growing certain types of mushrooms. place the mushroom vendor by the main street with his booth of
+  mushrooms. lets start on the crafting and skill system based around mushrooms. i want it basd on UO style"; his picks: FORAGING, ALCHEMY, COOKING,
+  MYCOLOGY; classic UO gains; potions, food, selling, ingredients; the vendor on the park's sidewalk by the gate; `src/forage.js`, after weeds.js):
+  **the grass kinds spread naturally** (`WEEDS.kindAt` in weeds.js: the patches' grid bent by two noises, their borders mingled a few tiles deep, islands
+  of tufts in the other kinds and of flat in the tufts, the commoner kinds more of the lawn). **The mushrooms** come up on the lawns each day (a
+  few a lawn chunk, from the chunk's squares: `WEEDS.onAdd` / `onDrop`), eight kinds, each grass its own odds (`GROWS`): MEADOW BUTTON, PUFFBALL,
+  CHANTERELLE, RED CAP (poison raw), SHAGGY INK CAP, KING BOLETE, MOREL, MOONGLOW (glowing, poison raw); a forager sees one only up to 15 past his
+  skill. A double click walks to one and picks it (FORAGING; a fail may crumble it); MYCOLOGY says what it is, or it's a STRANGE MUSHROOM to
+  IDENTIFY later (half price, eaten at your risk). **The skills** (UO's): 0 to 100 each, tenths, the chance from where the skill stands between a
+  task's min and max, a gain likelier low in the skill and on a task near your level (none from one you can't fail or can't do), 300 the total
+  cap, each skill's arrow ▲ raise / ▼ lower (at the cap a rise takes from these) / ■ locked; the start 20, 20, 20, 15; the journal's lines bottom
+  left ("YOUR SKILL IN FORAGING HAS INCREASED..."). **The crafts**: ALCHEMY anywhere (your mortar and pestle, a bottle a potion: REFRESH, HEAL,
+  STRENGTH, KEEN EYE, CURE, GREATER HEAL), COOKING by a flame (a fire, a candle, a torch: ROASTED MUSHROOMS, PUFFBALL FRITTERS, MUSHROOM SKEWER,
+  BOLETE SOUP, MOREL FRY); a failure loses the mushrooms. **Hunger** falls over some 45 minutes (hungry: stamina back at half; starving: no
+  running); the buffs (poison, strength, keen, swift, regen) with their seconds. **THE PACK** (I; PACK, SKILLS, CRAFT tabs, X and drag: `packp`).
+  **The mushroom seller** (his booth moved out onto the park's sidewalk east of the gate, its front to the street, `npc-mushroom.js`): a double
+  click on him opens his shop (`shopp`): he buys every mushroom (a strange one at half), potion and dish, sells bottles ($2) and a mortar; the
+  golems take morels ($34) and moonglow ($90) too. One purse (INV's); kept in the save (`forage`). Cost: three instanced draws (caps, stems, the
+  glowing caps; some 20-40 mushrooms near you, 48 triangles each), an invisible box each to click, no light, nothing a frame but a day check.
+  `FORDBG()`. Not yet: a hunger bar outside the pack, ingredients for crafts beyond these, mushrooms indoors or in the cave.

@@ -100,7 +100,19 @@ WEEDS.lawnInit=()=>{ const T=TILE, CS=8*T, CELL=.5*T, PER=1, hsh=(a,b,s)=>{ let 
   // flat. A crown kind lays a grid of crowns (each its own spot, size and green), every square's clump domed by how near its crown's middle it is,
   // its rim a step darker and lower, so the lawn reads as the treetops of a forest seen from high above. Still one clump a square: the cost as before
   const MT=T/.84, PS=24*T, KINDS=['flat','roll','little','big','giant','bigflat','tuft'], CR={little:[.75,.42,.14*MT,.6],big:[4,2.6,.21*MT,1.15],giant:[6.2,4,.35*MT,1.45],bigflat:[4,2.6,.065*MT,1.15]};
-  const patch=(x,z)=>{ const gx=Math.floor(x/PS), gz=Math.floor(z/PS); let best=1e18, kind='flat'; for(let i=-1;i<=1;i++)for(let j=-1;j<=1;j++){ const a=gx+i, b=gz+j, px=(a+hsh(a,b,71))*PS, pz=(b+hsh(b,a,72))*PS, d=(x-px)**2+(z-pz)**2; if(d<best){ best=d; kind=KINDS[Math.floor(hsh(a,b,73)*KINDS.length)]; } } return kind; };
+  // SPREAD OUT NATURALLY (owner, 18 Oct 2026: "lets do flat, tuft and the other kinds but spread out more naturally"): the patches' grid bent
+  // by two noises (a broad sweep and a finer wobble), so no patch is a straight-edged cell; along a border the two kinds mingle a few tiles deep,
+  // square by square; islands of tufts come up in the other kinds (and of flat in the tufts); the commoner kinds take more of the lawn
+  const vn=(x,z,s)=>{ const ix=Math.floor(x), iz=Math.floor(z), fx=x-ix, fz=z-iz, u=fx*fx*(3-2*fx), v=fz*fz*(3-2*fz), h=(a,b)=>hsh(a/97,b/89,s);
+    return (h(ix,iz)*(1-u)+h(ix+1,iz)*u)*(1-v)+(h(ix,iz+1)*(1-u)+h(ix+1,iz+1)*u)*v; };
+  const WK=[3,2,2,1.5,1,1.5,3], WS=WK.reduce((a,b)=>a+b,0), pickK=r=>{ r*=WS; for(let i=0;i<WK.length;i++)if((r-=WK[i])<0)return KINDS[i]; return 'flat'; };
+  const patch=(x,z)=>{ const tx=x/T, tz=z/T, wx=tx+16*(vn(tx/18,tz/18,91)-.5)+5*(vn(tx/6,tz/6,93)-.5), wz=tz+16*(vn(tx/18,tz/18,92)-.5)+5*(vn(tx/6,tz/6,94)-.5), PSt=PS/T, gx=Math.floor(wx/PSt), gz=Math.floor(wz/PSt);
+    let d1=1e18, d2=1e18, k1='flat', k2='flat'; for(let i=-1;i<=1;i++)for(let j=-1;j<=1;j++){ const a=gx+i, b=gz+j, px=(a+hsh(a,b,71))*PSt, pz=(b+hsh(b,a,72))*PSt, d=(wx-px)**2+(wz-pz)**2, k=pickK(hsh(a,b,73));
+      if(d<d1){ d2=d1; k2=k1; d1=d; k1=k; } else if(d<d2){ d2=d; k2=k; } }
+    let kind=Math.sqrt(d2)-Math.sqrt(d1)<3.5*hsh(tx*2,tz*2,95)?k2:k1;   // (the border mingled)
+    const isl=vn(tx/2.6,tz/2.6,96); if(isl>.8)kind=kind==='tuft'?'flat':'tuft';   // (islands)
+    return kind; };
+  WEEDS.kindAt=patch;
   const crown=(x,z,st)=>{ const S0=st*T, gx=Math.floor(x/S0), gz=Math.floor(z/S0); let best=1e18, C=null; for(let i=-1;i<=1;i++)for(let j=-1;j<=1;j++){ const a=gx+i, b=gz+j, px=(a+.2+.6*hsh(a,b,81))*S0, pz=(b+.2+.6*hsh(b,a,82))*S0, d=(x-px)**2+(z-pz)**2; if(d<best){ best=d; C={x:px,z:pz,id:hsh(a,b,83),sz:hsh(b,a,84)}; } } C.d=Math.sqrt(best); return C; };
   const KIND=(x,y,z,n)=>{ const r1=hsh(x,z,n*3+1), r2=hsh(z,x,n*3+2), r3=hsh(x+z,x-z,n*3+3), px=x+(r1-.5)*CELL*.7, pz=z+(r2-.5)*CELL*.7, kind=patch(x,z);
     if(kind==='tuft')return null;
@@ -118,16 +130,17 @@ WEEDS.lawnInit=()=>{ const T=TILE, CS=8*T, CELL=.5*T, PER=1, hsh=(a,b,s)=>{ let 
     renderer.readRenderTargetPixels(RT,0,0,R,R,PIX);
     scene.overrideMaterial=ov; renderer.setRenderTarget(rt0); renderer.autoClear=ac; renderer.setClearColor(cc,ca); scene.background=bg; scene.fog=fg;
     LW.forEach((o,i)=>o.layers.mask=lm[i]); hid.forEach(o=>o.visible=true);
-    for(let r=0;r<R;r++)for(let u=0;u<R;u++){ const k=(r*R+u)*4; if(PIX[k]<128)continue; const x=x0+(u+.5)*CELL, z=z0+CS-(r+.5)*CELL, y=PIX[k+1]/255*4-.5;
+    const SQ=[];   // (the lawn's squares, for what grows on it: forage.js)
+    for(let r=0;r<R;r++)for(let u=0;u<R;u++){ const k=(r*R+u)*4; if(PIX[k]<128)continue; const x=x0+(u+.5)*CELL, z=z0+CS-(r+.5)*CELL, y=PIX[k+1]/255*4-.5; SQ.push(x,y,z);
       for(let n=0;n<PER;n++){ const e=KIND(x,y,z,n); if(e)L.push(e); else for(let m=0;m<2;m++){ const r1=hsh(x,z,m*3+1), r2=hsh(z,x,m*3+2), r3=hsh(x+z,x-z,m*3+3); TU.push([x+(r1-.5)*CELL,y,z+(r2-.5)*CELL,(.3+.2*r3)*T,r1*6.28,r2]); } } }
-    if(!L.length&&!TU.length)return null; const grp=new THREE.Group(); grp.count=L.length+TU.length; grp.dispose=()=>grp.children.forEach(m=>m.dispose());   // (a chunk: its clumps and its tufts, each one instanced draw)
+    if(!L.length&&!TU.length)return null; const grp=new THREE.Group(); grp.count=L.length+TU.length; grp.sq=SQ; grp.top=(x,y,z)=>{ const e=KIND(x,y,z,0); return e?e[1]+e[3]*e[6]*.5*.19:y+.2*T; }; grp.dispose=()=>grp.children.forEach(m=>m.dispose());   // (a chunk: its clumps and its tufts, each one instanced draw)
     if(TU.length){ const mt=new THREE.InstancedMesh(geoT,matT,TU.length); TU.forEach(([x,y,z,s,a,c],i)=>{ M.compose(V.set(x,y,z),q.setFromAxisAngle(up,a),S.set(s,s*(.75+.5*c)*.5,s)); mt.setMatrixAt(i,M); mt.setColorAt(i,col.setHSL(.25+(c-.5)*.07,.42+.15*c,.36+.16*((c*7.3)%1))); }); mt.computeBoundingSphere(); mt.receiveShadow=true; grp.add(mt); }
     if(L.length){ const me=new THREE.InstancedMesh(geo,mat,L.length);
     L.forEach(([x,y,z,s,a,c,ys,k],i)=>{ M.compose(V.set(x,y,z),q.setFromAxisAngle(up,a),S.set(s,s*ys*.5,s)); me.setMatrixAt(i,M); const g1=LG[Math.floor(c*4)%4], g2=LG[Math.floor(c*28)%4]; me.setColorAt(i,col.setRGB((g1[0]+g2[0])/510*k,(g1[1]+g2[1])/510*k,(g2[2]+g1[2])/510*k,THREE.SRGBColorSpace)); });   // (the lawn's own four greens, two mixed; a crown's edge a step darker)
     me.computeBoundingSphere(); me.receiveShadow=true; grp.add(me); } MAPG.bodega.add(grp); WEEDS.lawnN+=grp.count; return grp; };
   let busy=0; WEEDS.lawnTick=()=>{ if(LVL!=='up'||(ROOMS&&ROOMS.cur))return; const pcx=Math.floor(pos.x/CS), pcz=Math.floor(pos.z/CS);
-    for(const [k,me] of CH){ const [a,b]=k.split(',').map(Number); if(Math.max(Math.abs(a-pcx),Math.abs(b-pcz))>3){ if(me){ MAPG.bodega.remove(me); me.dispose(); WEEDS.lawnN-=me.count; } CH.delete(k); } }
+    for(const [k,me] of CH){ const [a,b]=k.split(',').map(Number); if(Math.max(Math.abs(a-pcx),Math.abs(b-pcz))>3){ if(me){ MAPG.bodega.remove(me); me.dispose(); WEEDS.lawnN-=me.count; } CH.delete(k); if(WEEDS.onDrop)WEEDS.onDrop(k); } }
     // the nearest missing chunk within 2, one a moment
     let best=null, bd=1e9; for(let b=-2;b<=2;b++)for(let a=-2;a<=2;a++){ const k=(pcx+a)+','+(pcz+b); if(CH.has(k))continue; const d=a*a+b*b; if(d<bd){ bd=d; best=[pcx+a,pcz+b,k]; } }
-    if(best){ const t0=performance.now(); CH.set(best[2],build(best[0],best[1])); busy=performance.now()-t0; WEEDS.busy=busy; } };
+    if(best){ const t0=performance.now(); const gb=build(best[0],best[1]); CH.set(best[2],gb); if(gb&&WEEDS.onAdd)WEEDS.onAdd(best[2],gb); busy=performance.now()-t0; WEEDS.busy=busy; } };
   const t0=CLOCK.tick; CLOCK.tick=dt=>{ t0(dt); WEEDS.lawnTick(); WEEDS.moveTick(); }; };

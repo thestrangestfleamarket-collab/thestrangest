@@ -1620,3 +1620,25 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   a day in 2 min to 24 h), WEATHER (NATURAL or one held), SKY's EVENING COLOURS (BY THE DAY, CLEAR, FIRE, SOFT: `SKY.moodHold`), HAZE (DISTANCE HAZE
   MIST / FAR / OFF and DISTANCE LOOK: they had stopped showing anywhere, GRAPHICS' `#dgrain` they hung on being gone). All kept in the save (`clock` {h, run, speed}, `wx`, `mood`): the game opens at the hour and weather he chose (the
   game's own, 5:24 pm stopped and CLOUDY, till he picks); `?hour=`, `?wx=`, `?mood=` still win for a test. `HOUSEAT(dy)` and `LOOKPITCH(deg)` test hooks.
+- **The block and its neon alley** (owner, 18 Oct 2026, his photo of a Korean alley at dusk: "build an alley in game that looks like this"; then
+  "a row of buildings on main facing central park, (apartments, bodega, dojo) then behind them is an alley that looks liek this. the other side
+  facing the hudson is anotehr row of storefronts. use small filler empty buildings for now. total of 6 buildig on each side (leave ones there now)
+  add etra room and move hudson further away"; of the mockups https://claude.ai/artifact/KW2So2YsHrCFarhBDRHNxX (`mockups/neon-alley.html`) and
+  https://claude.ai/artifact/KFFGpr45Vu5XZFyZdfWD6M (`mockups/main-block.html`), "U call": B (the back row's shops open on the alley too), the
+  alley 7 wide, Hangul; `BLOCK` in `006-map-pre.js`, `src/069a-block.js`): **the main row**: the apartment house, the bodega and Ghost Street as
+  they were, three empty fillers (x 87-101 and 103.5-117.5 between the bodega and Ghost Street, 145.5-159.5 east of it), brick of `BRICKS.face`
+  (two swatches painted once and tiled, a tint each), roll-down shutters, a blank sign band, a few lit windows. **The alley** right behind the row
+  (y -99.4 to -92.4, the 'alley' ground). **The back row**: six empty storefronts (x 48 to 159.5, y -111.4 to -99.4), to the Hudson a shutter and
+  an awning each, to the alley a shopfront (glass between brick piers, a lit counter) under a lit sign (국수, 만두, 찻집, 라멘, 고기, 빵집). **The
+  promenade** (y -119 to -111.4, 'prom') and **the Hudson's bank 15 tiles further out** (`RING.river` from `BLOCK.river`; the force field, the
+  mist's box, the fishing stand and the piers follow it). **The alley's look, after the photo**: the fish restaurant's light box (바다의 파도) with
+  its canopy of bent tube lights and menu boards, the squid house's white neon (오징어집) and REST plate, the pink neon squid on a bracket, blades
+  over the lane (도매액세서리, 안과안경점, 분식, 노래방, PC방, 바), the chicken bar's tall sign on its post (치킨호프맥주, the mascot top and
+  bottom), the fish-bun neon (붕어빵), AC units, crates, a delivery scooter, wires sagging across; neon as cut tubes with a dark backing and a halo
+  in three hard steps; the Hangul in Black Han Sans and Do Hyeon from Google Fonts, fetched as the block is built (painted first in what the page
+  has, again when they come). **Seen from above**: in the isometric and map views, in the alley or on the promenade, everything on the camera's
+  side is cut at your knee as a room's near side is (`BLK.band`, `130-rooms.js`), and the main row's own walls (cutWalls) to their foot. Cost:
+  some 1,500 triangles (nine boxes, 24 signs, two instanced draws of 62 boxes, one line draw), 9 lamp records (LITE's eight nearest light), no
+  shadow lamp, no new program. The fillers are solid boxes, no way in. `BLOCKDBG()`. Not yet: insides, names on the back row's river side,
+  characters walking the alley and the promenade. Found on the way: `build.py`'s glob took only `NNN-` names, so an inserted `NNNa-` file (as
+  CLAUDE.md suggests) was never built; it takes `NNN*-` now.

@@ -19,7 +19,7 @@ ROOMS.roofAt=(x,y,z)=>{ const h=new THREE.Raycaster(new THREE.Vector3(x,y,z),new
   ROOMS.nearAll=()=>{ NEARON=true; const skip=new Set([W3.group,...NPCS.map(N=>N.g)]); for(const o of [typeof MUS!=='undefined'&&MUS.g,typeof PNM!=='undefined'&&PNM.g,typeof SGM!=='undefined'&&SGM.g,typeof DRM!=='undefined'&&DRM.g])if(o)skip.add(o);
         const walk=o=>{ if(skip.has(o)||o.isSkinnedMesh)return; const ms=o.material?(Array.isArray(o.material)?o.material:[o.material]):[]; for(const mt of ms){ if(mt.clippingPlanes===NEAR||(mt.isShaderMaterial&&!mt.clipping)||(mt.clippingPlanes&&mt.clippingPlanes.length))continue; mt.clippingPlanes=NEAR; mt.clipIntersection=true; mt.needsUpdate=true; } for(const c of o.children)walk(c); };
         walk(scene); };
-  ROOMS.tick=()=>{ if(!RL)build(); let hit=null; if(typeof LOOKS!=='undefined'&&LOOKS.light)LOOKS.light();
+  ROOMS.tick=()=>{ if(!RL)build(); let hit=null, bnd=null; if(typeof LOOKS!=='undefined'&&LOOKS.light)LOOKS.light();
     if(LVL==='up'&&!UI.freeCam&&!ED.on&&!MAPED.on&&!(window.DRONE&&DRONE.cam)){
       const IN=-.55*TILE; hit=RL.find(b=>within(b,pos.x,pos.z,IN)&&py>b.y0-.3&&py<b.y1)||null;
       const A=MODS.apts; if(!hit&&A&&A.in){ const lv=A.floor(), S=BOD.K.STORY; for(const t of A.rects(lv)){ const b=box(BOD.X,BOD.Z,t,A.lvY(lv)-.5,A.lvY(lv+1)); if(within(b,pos.x,pos.z,lv>0?0:IN)){ hit=b; break; } } } }
@@ -31,6 +31,9 @@ ROOMS.roofAt=(x,y,z)=>{ const h=new THREE.Raycaster(new THREE.Vector3(x,y,z),new
       NEAR[0].normal.set(0,-1,0); NEAR[0].constant=py+.45*ZU*24/.84;
       if(Math.abs(ux)>.2){ if(ux>0){ NEAR[1].normal.set(-1,0,0); NEAR[1].constant=hit.x1-BAND; } else { NEAR[1].normal.set(1,0,0); NEAR[1].constant=-(hit.x0+BAND); } } else NEAR[1].set(new V(-1,0,0),1e6);
       if(Math.abs(uz)>.2){ if(uz>0){ NEAR[2].normal.set(0,0,-1); NEAR[2].constant=hit.z1-BAND; } else { NEAR[2].normal.set(0,0,1); NEAR[2].constant=-(hit.z0+BAND); } } else NEAR[2].set(new V(0,0,-1),1e6); }
+    else if(!hit&&!UI.persp&&(UI.view==='iso'||UI.view==='map')&&window.BLK&&LVL!=='down'&&(bnd=BLK.band(pos.x,pos.z))&&Math.abs(cam.position.z-pos.z)>.2*Math.hypot(cam.position.x-pos.x,cam.position.z-pos.z)){
+      if(!NEARON||!NEARIN)ROOMS.nearAll(); NEARIN=true; NEAR[0].normal.set(0,-1,0); NEAR[0].constant=py+.45*ZU*24/.84; NEAR[1].set(new V(-1,0,0),1e6);
+      if(cam.position.z>pos.z){ NEAR[2].normal.set(0,0,-1); NEAR[2].constant=bnd.z1-.05*TILE; } else { NEAR[2].normal.set(0,0,1); NEAR[2].constant=-(bnd.z0+.05*TILE); } }
     else { NEARIN=false; if(NEARON&&NEAR[0].constant<1e5){ NEAR[0].constant=NEAR[1].constant=NEAR[2].constant=1e6; } }
     if(hit&&!FREE){ PL[0].set(new V(1,0,0),-(hit.x0-m)); PL[1].set(new V(-1,0,0),hit.x1+m); PL[2].set(new V(0,0,1),-(hit.z0-m)); PL[3].set(new V(0,0,-1),hit.z1+m); PL[4].set(new V(0,1,0),-hit.y0); PL[5].set(new V(0,-1,0),hit.y1+.05);
       renderer.clippingPlanes=PL; scene.background.setRGB(0,0,0); }

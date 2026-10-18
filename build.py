@@ -3,7 +3,7 @@ sys.path.insert(0, 'tools')
 from yields import yields
 
 read = lambda f: open(f).read()
-src = sorted(glob.glob('src/[0-9][0-9][0-9]-*'))
+src = sorted(glob.glob('src/[0-9][0-9][0-9]*-*'))
 one = lambda name: read(next(f for f in src if re.search(r'/\d{3}-' + name + r'\.js$', f)))
 bv = str(int(time.time()))
 b64 = lambda f: json.dumps('data:image/png;base64,' + base64.b64encode(open(f, 'rb').read()).decode())

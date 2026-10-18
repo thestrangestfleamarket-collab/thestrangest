@@ -693,6 +693,7 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
   "POSE,move:wave,wear:CAMO,view:FRONT"`, `tests/avposes.cjs <out>` + `tests/avposes.py <out>` (every pose on one sheet), `tests/avpagefunc.cjs <out>`
   (the game's brush through real drags, every outfit and shading, every file, a file back in, a reload). In the headless shell at phone width, the
   panel's first paint lingers over the picture (the canvas's own frame is right: seen with `AVE.after`); not seen on a desktop width.
+- **The Hudson, real water** (owner, 18 Oct 2026, of his Deep Water mockup and his picture of it, "exactly liek this, clear, see through, blue", "cmopleteyl fluid dynamics"; `src/river.js`): the river south of the row is water you can see into and swim in: the bed 1.3 m at the walls down to 8 m, its caustics, sea grass, fish, buoys; the quay with its railing, ladders every 20 tiles and a pier on posts at every third; the force field past the far bank. Four ways, four looks to compare: FLAT (the sheet as it was), SWELL (waves on the graphics card, murk by alpha), FLUID (the default: a wave simulation 48 tiles round you, fed by the sea at its open sides, slowed over the shallows, sent back off the quay and round the posts), FULL (waves plus ripples); three waters (HARBOR, OPEN SEA, CLEAR COVE: the default); smooth or 24 steps. **A double click on the water brings the options up** (X closes them). The bed, the quay's wall and its things carry a little light of their own (the row's shade at midday leaves them black otherwise). Cost: some 12,000 triangles, one more scene pass while FLUID or FULL shows the river, no lamps. `tests/rivershot.cjs`.
 ## ONE LINE OF WORK: read before you publish (owner, 18 Oct 2026: "why is everything getting reverted that i fix!?!?")
 
 Several chats work on THE MARKET at once, each on its own branch, and all publish to the same link; whichever publishes last replaces the game
@@ -762,7 +763,7 @@ the owner's call, and merging publishes). The artifact link above is the quick w
   - `walker-rig-mock.js` (the game's rig, adapted), `walker3d.js` (the Walker as a 3D mesh, his shading, outline, self shadow).
   - `map-pre.js` / `map-post.js`: **the map**: places, their positions, the two levels (street, underground), ground heights, the
     subway's stairs, the pool's outside, which walls cut away when you're inside.
-  - `station.js` + `wsub.js`: the subway station (the game's West End station). `pool.js` + `water3d.js` + `floats.js`: the pool room,
+  - `metro.js`: the subway (the Metro_PSX kit, data/metro.json). `station.js` + `wsub.js`: the game's West End station, off the map (`?bring=station`). `pool.js` + `water3d.js` + `floats.js`: the pool room,
     its water, its floats. `bodega.js` (the bodega's plan from the game's code, via `gamekit.js` stand-ins and `goods-defs.js`) +
     `bodbuild.js` (built in 3D). `batch.js`: every still face packed into one texture and a few meshes (fast).
   - `musician.js` (the guitarist, and `musBody` / `figureMesh` for every Walker-built musician), `pianist.js`, `singer.js`, `drummer.js`: the bar's
@@ -829,8 +830,50 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
 - **The mushroom seller's booth** (owner, 18 Oct 2026: "give the mushroom skeletong his own booth in the entrance of central park, his table is full
   of mushrooms"; `npc-mushroom.js`): inside the park's gate east of the toy stall, a trestle table under a red and cream striped awning, heaped with
   some 70 mushrooms and three baskets; he stands behind it facing the gate, held there (no roaming, no life of lives.js); built once the park is.
+- **THE METRO on the map, the old station off it** (owner, 18 Oct 2026: "i want to bring the metro into the map and move the current subway station
+  off map"; and from the platform, "there is as building in the subway"): the Metro_PSX kit from his Drive (`src/metro.js`, `data/metro.json` by
+  `tools/metro-bake.py`; the paused branch `claude/amazing-albattani-gn3kp8` ported onto the reorganized street) is THE subway: its railed opening
+  on the lot between the apartment house and the bodega (tiles x 59.4-64.6, its top on the sidewalk's back edge, y -76.9, the whole opening behind
+  it so the sidewalk stays clear), a flight down, the corridor turning and sloping, the ticket gates, a 64 m platform 30 ft down (`METRO.DY`
+  -11.7) running east under the bodega and Ghost Street, the car coming and going (doors on the platform's side only; cut to its floor like a
+  wall when the camera's on the track's side), tube lights (16, LITE's eight nearest), columns, benches, bins, posters, the map, the machines.
+  `MAPSTAIR` is its opening (`has(x,z,lv)`, `ground(x,z,lv)`: the flight and corridor from the kit's height map); `MODS.station` gives its
+  floor inside its footprint and the loop's tunnel depth (`STN.DY`) outside it, and `plat` (THE PLATFORM, the city's address, lives' way in),
+  `path` (the way down for a character), `DY`. **The West End station off the map** (`AWAY0` 'station', map-pre.js): `station.js`, `wsub.js` and the
+  old stairs stay in the page, built only with `?bring=station` (then instead of the Metro: they share the spot). **The loop's tunnel and its two
+  stairs** (sub.js) stay as they were, 8 units higher than the Metro and not joined to it (a ramp between the two depths is not built).
+  **The building in the subway**: things set straight in the scene after the places' groups (the street lights and their pools, the power lines,
+  the land's sheet, what's built after the game opens) were never hidden underground; now every top-level thing lying wholly above the street's
+  depth is taken off the camera's layer while you're more than a unit down (`UNDER` in map-post.js; the places' groups, the stairs, lights,
+  characters and the fire left alone). **Found on the way**: every ground picture was painted mirrored front to back (`flat0` in bodbuild.js
+  painted row 0 at y1, bq lays it at y0), so the holes for the stairs down were in the wrong place (grass over the Metro's flight); fixed, every
+  ground now the right way round. The kit's walls' cut sides were reversed in the branch (fixed: cutWalls take the inward facing). The branch's
+  open shader error (`vNormal`) does not occur on main (its lambert patch already handles flat shading); none seen. Cost: some 22,000 triangles
+  underground (the car 9,200, its doors 2,500), the batch's Lambert program, 21 lamp records and no new light or shadow. `tests/metroshot.cjs <out>`.
+  Not done: sitting on its benches (`use.js` knows the old station's), rats on the platform, a TO STREET sign, riding the car; the bear it
+  names is long deleted.
 - **Guards out of sight walk their beats** (18 Oct 2026, found with the droids standing still): lives.js's far stepper calls `N.pick()`, which
   makeNPC never gave; it does now.
+- **Lightning Fast VCR Repair, off the map** (owner, 18 Oct 2026, his photo: "add this as a new building mockup for game", the mockup
+  https://claude.ai/artifact/RqccsVVLmsmXFPhs4P9NDx (`mockups/vcr-repair.html`), then "off map"; `store.js`): a one-storey block 14 x 10 tiles,
+  270 px high, on its own asphalt lot far east of the map where the storeroom stood (bodega tiles x 380-394, y -92 to -82; the view bounded to
+  the store while you're there); the menu's STORED row has VCR REPAIR. The front speckled tan stucco between brown pilasters (boxes), the band
+  and coping, two white-framed windows, the light box of a sign (glowing; its words painted once from a canvas), the doorway with 3110 over it;
+  sides and back grey concrete block, the gooseneck lamp (lit, the side yard's one light), a camera, the meter; the side yard's chain-link fence
+  and gate with barbed wire (the mesh cut out); the bed along the front, its curb, mulch and five bare shrubs. **Inside** (owner: "yes"): a vinyl
+  checker floor; the counter across the front room (the till's green screen, a deck, a stack of tapes), the way behind it on the door's side; three
+  steel shelving units along the back wall full of VCRs (black, silver, grey, each with its slot and a light, some gaps, some stacked); the repair
+  bench on the west wall (an old TV showing static, a deck open on its green board, the iron, a bench lamp with its own small light), a stool;
+  cardboard boxes, a poster. Some 3,000 triangles in all, three lamps (the room's, the bench's, the gooseneck's), no new program.
+  **Its atmosphere** (owner, 18 Oct 2026, his picture of a rainy magenta night: "can we add atmopshere to it like this"; his picks: the lot
+  only, the haze, the rain, neon, the skyline and wires; `store.js`): while you're out on the lot (not inside, not elsewhere) a purple haze
+  closes in (a third of it already where you stand; lavender by day, deep magenta at night, the sky with it: its own `THREE.Fog`, so the far
+  haze and the weather's fog step aside) and the rain is held on (`WX.at` answers rain there: the streaks, the clouds' grey, the ambience's
+  hiss). VHS in pink neon tubes on the east wall, OPEN in cyan in the second window, each with a coloured lamp on the ground. Towers in the haze
+  with a scatter of lit windows, two wooden poles and sagging cables (one unlit vertex-coloured mesh, cut on the camera's side of you as the
+  clouds are, so a tower never stands between the camera and you), a searchlight sweeping from the tallest (an additive cone), a plain dark
+  ground out to the view's edges. Cost: some 2,500 triangles more, four draws, two programs, two lamps (the neon's). The lot is four pieces round the shop (one piece whose middle fell
+  inside it was taken for the interior and drawn only near the door: interiors.js). `tests/vcrshot.cjs <out>` (front, wide, side yard, inside).
 - **Libraries for what was hand-written** (owner, 18 Oct 2026: "is there another game engine that makes more sense" — no, three.js stays; then
   "lets start installing libraries for thinsg weve hand written"): **three-mesh-bvh** (0.8.3 from jsDelivr, `src/bvh.js`) for every ray (a double
   click, the drag's pivot, the world and map editors' picks): fetched 2.5 s after the game runs, its trees built in the background a mesh a moment
@@ -839,3 +882,5 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   2.5 s to 0.34 s (software rendering). Looked at and **not** taken: recast-navigation for `CITY.route` (the A* there judges each walker's way by
   his own test of a spot, which a navmesh can't; routes are 2-20 ms already); BatchedMesh's per-object culling (needs three past r160, and
   map-pre.js patches r160's shader chunks by their text).
+- **Lived in: weeds, bricks, the dark side, the toys alive** (owner, 18 Oct 2026): **weeds** at the foot of everything solid out of doors (`src/weeds.js`, after `clip.js`: every FIX box's edges sampled every 0.2 tile, thick where a broad noise says neglected, none where swept, now and then a dandelion; crossed cards swaying in the park's wind; chunks of 32 tiles; some 14,000 tufts, 4 triangles each, one program, no lights). **The bushes** sway as the oaks do and their leaves are mottled (`park.js`). **One brick pattern** ("just make a brick pattern that you can reuse": `BRICKS` in `gamekit.js`, global): `BRICKS.face` (courses of 6 texels, stones 8-12 long each its own length, a tone and a warm / cool / sandy tint each, top edge lit, foot shaded, worn corners, hairline cracks, moss low in the joints), `BRICKS.one` a single brick, `BRICKS.quoins` a post's corner bricks each its own box (long and short in turn, each out its own hair, a notch between: the corner's edge steps "up and down" brick by brick); the park's walls and posts use it, the posts a fifth of a tile larger each way. **Nothing black** ("nothing should be black like this even at darkest give it 5-20%"): every world face keeps at least a fifth of its own colour however unlit (`FLOOR` in `map-pre.js`, `?floor=N`). **The toys alive** ("all the toys should be sentient real characters, not objects. get rid of the table"; `src/npc-toys.js`): the stall's table gone; the six toys (bear, monkey, penguin, pig, sheep, bunny) each cut into head, body, arms, legs on bones (RIGNPC), walking the town with a toy's waddle, and standing, now and then a thing of their own (wave, hop, dance, sit, spin, sniff); some 6,700 triangles the six.
+- **The sun's shadows still as he walks** (owner, 18 Oct 2026: "the lighting still looks glitchy when i walk, its changing pixels to quick and too fast. needs smooth shadow movements not so jumpy"; `clock.js`): the sun's shadow camera followed him to the hair, so its texels slid over the world and every shadow's edge crawled as he walked; it now moves only by whole texels of its map along the sun's own axes (the standard texel snap), so the shadows lie still on the ground, and it's redrawn every frame (every other frame had left moving shadows a frame behind on alternate frames). Measured walking east at 3:30 pm, the picture's slide taken out: 7,080 pixels changed a frame to 5,745, the rest the walkers, their shadows and the weeds' sway; at 9 pm the world's light was already still (only the characters change). Cost: the sun's shadow pass every frame instead of every other.

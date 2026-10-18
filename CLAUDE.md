@@ -1058,3 +1058,11 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   **Found on the way** (`apts.js`): leaving the apartment house handed back the street's solids whatever level you were on, so a jump from the
   house to the Metro by the menu (or a fresh start then THE PLATFORM) left the street's solids under the platform: you walked through its
   benches, columns and the car; now the level you're on's.
+- **The grass still till someone walks through it, half as tall** (owner, 18 Oct 2026: "i only want the grass moving when someone is walking
+  through it or disrupting it. make it 50% les tall over all"; `src/weeds.js`): no wind on the lawn's grass or the weeds; up to eight walkers
+  near you (you first, `WEEDS.movers`) part the blades round their feet, tips pushed out and pressed down (`WEEDS.PART`, one loop in the same
+  programs), standing back up behind them. The lawn's blades and the weeds' tufts half as tall; the dandelions lower with them, eight faces each
+  and in the tufts' chunks (they were one mesh of 1,125 twenty-face balls over the whole map, the lots off the map too: nothing's made for
+  what's off the map now). **The clouds** twenty faces a puff (`weather.js`: 38,400 to 9,600). Measured (tests/trisby.cjs, 11 am): the street
+  204,070 to 180,602 triangles in the picture, the park 243,596 to 212,904. **Still over the 100,000**: the walking guitarist 30,300 (his
+  fingers and guitar whole), the player 15,000, the batches' street and buildings, the river 8,100, the oaks 11,000.

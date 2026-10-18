@@ -13,7 +13,7 @@ grab('park',()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.ox=PO.x; PARK.o
   // THE WAYS CROSS IN THE MIDDLE (owner, 17 Oct 2026: "put the paths that cross through central park directly in the middle ... space things out
   // logically"): the round at the park's very middle, the street's gate and the Avenue's gate on its two ways; what stood by the old round
   // (its rocks, the monument, the campfire, the logs, the flower beds) the same way off the new one (RX, RY: from the old round, 96, -47)
-  P.round=[(P.x0+P.x1)/2,(P.y0+P.y1)/2,7]; P.gate=[P.round[0]-3.5,P.round[0]+3.5]; const RX=x=>x-96+P.round[0], RY=y=>y+47+P.round[1];
+  P.round=[(P.x0+P.x1)/2,(P.y0+P.y1)/2,7]; P.gate=[P.round[0]-5,P.round[0]+5];   /* (10 tiles wide, owner 18 Oct 2026: "make central park entrance bigger", A) */ const RX=x=>x-96+P.round[0], RY=y=>y+47+P.round[1];
   // ---- THE PATH: from the gate to the round, the round, and on north-east; the rest lawn
   // (owner, 17 Oct 2026: "wider path"; then "make the path go straight through ... the circle in the middle of the park ... two paths going through
   // the entire park meeting in the middle"): two straight ways 7.2 tiles wide, one from the gate to the back, one from end to end, crossing at
@@ -64,7 +64,7 @@ grab('park',()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.ox=PO.x; PARK.o
     if(top==='post'&&HT===undefined){ block(x0,y0,x1,y1,z0,z1,k,'post',0,z1-z0);
       BRICKS.quoins(x0,y0,x1,y1,z0,z1,k,(bx0,by0,bx1,by1,zb,zt,paint)=>block(bx0,by0,bx1,by1,zb,zt,k,()=>[92,90,86],0,zt-zb,paint));
       return; }
-    if(x1-x0>40){ const n=Math.ceil((x1-x0)/40), d=(x1-x0)/n; for(let i=0;i<n;i++)block(x0+i*d,y0,x0+(i+1)*d,y1,z0,z1,k,top); return; }   /* (a long wall in lengths of 40 tiles at most: the atlas's width, 18 Oct 2026, the park twice as wide) */ const [a,b,c,d]=[X(x0),X(x1),Z(y0),Z(y1)], [e,f]=[Y(z0),Y(z1)], w=x1-x0, dp=y1-y0;
+    if(x1-x0>40){ const n=Math.ceil((x1-x0)/40), d=(x1-x0)/n; for(let i=0;i<n;i++)block(x0+i*d,y0,x0+(i+1)*d,y1,z0,z1,k,top,jo,HT,SF); return; }   /* (a long wall in lengths of 40 tiles at most: the atlas's width, 18 Oct 2026, the park twice as wide) */ const [a,b,c,d]=[X(x0),X(x1),Z(y0),Z(y1)], [e,f]=[Y(z0),Y(z1)], w=x1-x0, dp=y1-y0;
     const W=w*24, D=dp*24, H=z1-z0, sideF=SF?SF:top==='cap'?(i,j)=>capSide(i,j,H):(i,j,kk)=>stone(i,j+jo,kk,HT||H,top==='post'||HT!==undefined);
     face([a,f,d],[b,f,d],[b,f,c],[a,f,c],W,D,typeof top==='function'?top:((i,j)=>{ const n=grain(i/24,j/24,k+5,1.2), ed=Math.min(i,j,W-1-i,D-1-j); let c=118+22*n; if(ed<1)c*=(i<1||j<1)?1.18:.8; else if(ed<2)c*=1.06;
       // (the cope in stones, owner 18 Oct 2026: "need more lines on top of the brick walls too, doesnt look natural": along the wall's length a
@@ -75,23 +75,86 @@ grab('park',()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.ox=PO.x; PARK.o
       return speck([c,c,c*.96],i/24,j/24,k+7); }));
     face([a,e,c],[b,e,c],[b,f,c],[a,f,c],W,H,(i,j)=>sideF(i,j,k,W,H)); face([b,e,d],[a,e,d],[a,f,d],[b,f,d],W,H,(i,j)=>sideF(i,j,k+1,W,H));
     face([a,e,d],[a,e,c],[a,f,c],[a,f,d],D,H,(i,j)=>sideF(i,j,k+2,D,H)); face([b,e,c],[b,e,d],[b,f,d],[b,f,c],D,H,(i,j)=>sideF(i,j,k+3,D,H)); };
-  const WH=32, PH=54, PG=.22, [g0,g1]=P.gate;
-  block(P.x0,P.y0,g0-1,P.y0+.5,0,WH,11); block(g1+1,P.y0,P.x1,P.y0+.5,0,WH,15);
-  for(const [x,k] of [[g0-1,21],[g1,25]]){ block(x,P.y0-.2,x+1,P.y0+.7,0,PH,k,'post'); block(x-.1,P.y0-.3,x+1.1,P.y0+.8,PH,PH+5,k+4,'cap'); }   // (each post, its cap)
-  PARK.look=[X(g1+1.8),Z(P.y0-1.6)];   // (a test's spot: on the sidewalk by the gate's east post)
-  // THE EAST WALL (owner, 17 Oct 2026, the Avenue): the same wall up the park's east side along the Avenue's west sidewalk, its gate (the Avenue's
-  // gate, two posts) opposite the museum; the park's back stays open lawn
+  // THE PARK'S EDGE, A (owner, 18 Oct 2026: "make central park entrance bigger and metal dark gate, styled like real entrance, gate goes all the way
+  // around the park"; of the mockups (mockups/park-gate.html), "A, just make sure it looks natural like the sidewalk, stones, edges, depth, tufts, lived in"):
+  // all the way round, a knee-high wall of grey granite in courses (each stone its own length and tone, its top and left rims lit, its joints dark,
+  // grimed toward the foot, moss in the low joints, lichen spots, ivy here and there where it's been let go) under the cope's stones, and on it a
+  // railing of iron spear pickets (a few rusted, a few leaning, now and then one gone) with a post every 2.4 m; at each gate two granite piers in
+  // big ashlar with a cap and an iron lantern, and two iron gate leaves folded back into the park against the railing
+  const WH=16, PH=91, PG=.22, [g0,g1]=P.gate, RUNS=[], PIERS=[], LEAVES=[];
+  // a granite face: courses ch texels high, stones l0 + up to lv long, rows offset; j counts down from the top
+  const ashlar=(ch,l0,lv,ivy)=>(i,j,k,W,H)=>{ const co=Math.floor(j/ch), w=j-co*ch, u=i+Math.floor(hash(co,k,7)*l0); let s0=0, n=0, len=0; for(;;){ len=l0+Math.floor(lv*hash(n,co,k+3)); if(s0+len>u)break; s0+=len; n++; } const p=u-s0;
+    let c=128+18*grain(i/24,j/24,k,1.2)+(hash(n,co,k+5)-.5)*30, wm=hash(n,co,k+9)-.5;
+    const joint=w===ch-1||p===0; if(joint)c*=.5; else if(w===0)c*=1.16; else if(p===1)c*=1.07; else if(p===len-1||w===ch-2)c*=.86;
+    if(!joint&&hash(i,j,k+11)>.992)c*=.7;   // (a chip)
+    const dn=j/H; c*=1-.28*dn*dn;   // (grimed toward the foot)
+    let col=[c*(1+wm*.06),c,c*(.97-wm*.05)];
+    if(joint&&dn>.55&&hash(i>>1,j,k+13)<.45)col=[58,78,44];   // (moss in the low joints)
+    else if(hash(i>>1,j>>1,k+17)>.988)col=[150,156,108];   // (lichen)
+    if(ivy){ const n2=grain(i/70,j/40,k+40,1); if(n2>.74&&hash(i,j,k+19)>.3){ const g=hash(i,j,k+21); col=g<.4?[46,74,34]:g<.8?[62,96,42]:[88,122,56]; } }
+    return speck(col,i/24,j/24,k+23); };
+  const wallF=ashlar(7,10,8,true), pierF=ashlar(13,15,9,false);
+  const wall=(x0,y0,x1,y1,k)=>{ if(x1-x0<=.05||y1-y0<=.05)return; block(x0,y0,x1,y1,0,WH,k,undefined,0,WH,wallF); RUNS.push([x0,y0,x1,y1,k]); };
+  // a pier: the granite in big blocks (its bounds as the old posts' grown by PG), a plinth course, its cap, the lantern on it (built below)
+  const pier=(x0,y0,x1,y1,k)=>{ x0-=PG; x1+=PG; y0-=PG; y1+=PG; block(x0,y0,x1,y1,0,PH,k,()=>[120,118,112],0,PH,pierF); block(x0-.06,y0-.06,x1+.06,y1+.06,0,8,k+2,undefined,0,8,pierF);
+    block(x0-.12,y0-.12,x1+.12,y1+.12,PH,PH+6,k+4,'cap',0,undefined); PIERS.push([(x0+x1)/2,(y0+y1)/2]); };
+  // the main street's front
+  wall(P.x0,P.y0,g0-1,P.y0+.5,11); wall(g1+1,P.y0,P.x1,P.y0+.5,15);
+  pier(g0-1,P.y0-.2,g0,P.y0+.7,21); pier(g1,P.y0-.2,g1+1,P.y0+.7,25);
+  LEAVES.push([g0,P.y0+1.05,-1,'x',(g1-g0)/2],[g1,P.y0+1.05,1,'x',(g1-g0)/2]);   // (hinged at the opening's edges, folded back along the railing inside)
+  PARK.look=[X(g1+1.8),Z(P.y0-1.6)];   // (a test's spot: on the sidewalk by the gate's east pier)
+  // THE EAST WALL (owner, 17 Oct 2026, the Avenue): the same up the park's east side along the Avenue's west sidewalk, its gate opposite the museum
   const EG=PARK.egate=[P.round[1]-1.5,P.round[1]+1.5], ex=P.x1-.5;
-  block(ex,P.y0+.5,P.x1,EG[0]-1,0,WH,31); block(ex,EG[1]+1,P.x1,P.y1,0,WH,35);
-  for(const [y,k] of [[EG[0]-1,41],[EG[1],45]]){ block(ex-.2,y,P.x1+.2,y+1,0,PH,k,'post'); block(ex-.3,y-.1,P.x1+.3,y+1.1,PH,PH+5,k+4,'cap'); }
-  // THE WEST AND NORTH WALLS (the loop, 17 Oct 2026): the same wall along the west street and the north street, a gate in each where the park's
+  wall(ex,P.y0+.5,P.x1,EG[0]-1,31); wall(ex,EG[1]+1,P.x1,P.y1,35);
+  pier(ex-.2,EG[0]-1,P.x1+.2,EG[0],41); pier(ex-.2,EG[1],P.x1+.2,EG[1]+1,45);
+  LEAVES.push([ex-.55,EG[0],-1,'y',1.5],[ex-.55,EG[1],1,'y',1.5]);
+  // THE WEST AND NORTH WALLS (the loop, 17 Oct 2026): the same along the west street and the north street, a gate in each where the park's
   // middle way meets it; the castle's own curtain wall the park's corner (the walls stop at it)
   const CB=[CASTLE.b[0]-PO.x,CASTLE.b[1]-PO.x,CASTLE.b[2]-PO.y,CASTLE.b[3]-PO.y], wx=P.x0, ny=P.y1-.5, WG=PARK.wgate=[P.round[1]-1.5,P.round[1]+1.5], NG=PARK.ngate=[P.round[0]-3.5,P.round[0]+3.5];
   const wTop=Math.min(P.y1,CB[2]), nLeft=Math.max(P.x0,CB[1]);
-  block(wx,P.y0+.5,wx+.5,WG[0]-1,0,WH,51); block(wx,WG[1]+1,wx+.5,wTop,0,WH,55);
-  for(const [y,k] of [[WG[0]-1,57],[WG[1],61]]){ block(wx-.2,y,wx+.7,y+1,0,PH,k,'post'); block(wx-.3,y-.1,wx+.8,y+1.1,PH,PH+5,k+4,'cap'); }
-  block(nLeft,ny,NG[0]-1,P.y1,0,WH,65); block(NG[1]+1,ny,P.x1-.5,P.y1,0,WH,69);
-  for(const [x,k] of [[NG[0]-1,71],[NG[1],75]]){ block(x,ny-.2,x+1,P.y1+.2,0,PH,k,'post'); block(x-.1,ny-.3,x+1.1,P.y1+.3,PH,PH+5,k+4,'cap'); }
+  wall(wx,P.y0+.5,wx+.5,WG[0]-1,51); wall(wx,WG[1]+1,wx+.5,wTop,55);
+  pier(wx-.2,WG[0]-1,wx+.7,WG[0],57); pier(wx-.2,WG[1],wx+.7,WG[1]+1,61);
+  LEAVES.push([wx+1.05,WG[0],-1,'y',1.5],[wx+1.05,WG[1],1,'y',1.5]);
+  wall(nLeft,ny,NG[0]-1,P.y1,65); wall(NG[1]+1,ny,P.x1-.5,P.y1,69);
+  pier(NG[0]-1,ny-.2,NG[0],P.y1+.2,71); pier(NG[1],ny-.2,NG[1]+1,P.y1+.2,75);
+  LEAVES.push([NG[0],ny-.55,-1,'x',3.5],[NG[1],ny-.55,1,'x',3.5]);
+  // THE IRON: the railing on every run of wall, the gates' leaves, the lanterns; instanced, in pieces of 16 tiles so the camera culls them
+  { const M=TILE/.84, VS=ZU*24/TILE, mv=m=>m*M*VS, top=Y(WH), rnd=(a,b,c)=>hash(a,b,c);
+    // one picket: a square bar 1 unit high with its spear on top (its own tip, shared shape), scaled in height per use
+    const pick=(()=>{ const sh=new THREE.BoxGeometry(.028*M,1,.028*M).translate(0,.5,0).toNonIndexed(), tp=new THREE.ConeGeometry(.034*M,.1,4).rotateY(Math.PI/4).translate(0,1.05,0).toNonIndexed(), g=new THREE.BufferGeometry();
+      for(const a of ['position','normal']){ const A=sh.attributes[a].array, B=tp.attributes[a].array, C=new Float32Array(A.length+B.length); C.set(A); C.set(B,A.length); g.setAttribute(a,new THREE.BufferAttribute(C,3)); } return g; })();
+    const unit=new THREE.BoxGeometry(1,1,1), iron=new THREE.MeshLambertMaterial({color:0xffffff}), glass=new THREE.MeshBasicMaterial({color:0xffffff});
+    const IR=[0x23272a,0x1e2225,0x272b2e,0x2a2420], m4=new THREE.Matrix4(), q=new THREE.Quaternion(), e=new THREE.Euler(), V=THREE.Vector3, col=new THREE.Color();
+    const put=(P_,B_)=>{ if(P_.length){ const me=new THREE.InstancedMesh(pick,iron,P_.length); P_.forEach(([x,y,z,h,lean,ax,c],i)=>{ q.setFromEuler(e.set(ax==='x'?lean:0,0,ax==='x'?0:lean)); me.setMatrixAt(i,m4.compose(new V(x,y,z),q,new V(1,h,1))); me.setColorAt(i,col.setHex(c)); });
+        me.computeBoundingSphere(); me.castShadow=true; me.receiveShadow=true; scene.add(me); PARK.iron=(PARK.iron||0)+P_.length*16; }
+      if(B_.length){ const me=new THREE.InstancedMesh(unit,iron,B_.length); B_.forEach(([x,y,z,sx,sy,sz,c],i)=>{ me.setMatrixAt(i,m4.compose(new V(x,y,z),q.identity(),new V(sx,sy,sz))); me.setColorAt(i,col.setHex(c)); });
+        me.computeBoundingSphere(); me.castShadow=true; me.receiveShadow=true; scene.add(me); PARK.iron=(PARK.iron||0)+B_.length*12; } };
+    const SP=.19, RH=mv(1);   // (a picket every 0.16 m; the railing a metre over the wall's cope)
+    for(const [x0,y0,x1,y1,k] of RUNS){ const ax=x1-x0>=y1-y0?'x':'y', L=ax==='x'?x1-x0:y1-y0, c0=ax==='x'?(y0+y1)/2:(x0+x1)/2, s0=ax==='x'?x0:y0, NP=Math.ceil(L/16);
+      for(let pc=0;pc<NP;pc++){ const a=s0+L*pc/NP, b=s0+L*(pc+1)/NP, Pk=[], Bx=[], at=(u,v)=>ax==='x'?[X(u),Z(v)]:[X(v),Z(u)];
+        for(let u=a+SP/2;u<b;u+=SP){ const n=Math.round(u/SP); if(rnd(n,k,301)<.02)continue;   // (now and then one gone)
+          const [wx_,wz_]=at(u,c0), r=rnd(n,k,303), lean=r<.05?(rnd(n,k,305)-.5)*.35:0; Pk.push([wx_,top,wz_,RH*(r<.03?.82:1),lean,ax==='x'?'z':'x',r<.15?IR[3]:IR[n%3]]); }
+        const [cx,cz]=at((a+b)/2,c0), len=(b-a)*TILE; for(const hh of [.12,.86])Bx.push([cx,top+RH*hh,cz,ax==='x'?len:.03*M,.03*M*VS,ax==='x'?.03*M:len,IR[0]]);   // (the two rails)
+        for(let u=Math.ceil(a/2.857)*2.857;u<b;u+=2.857){ const [px,pz]=at(u,c0); Bx.push([px,top+RH*.52,pz,.06*M,RH*1.04,.06*M,IR[1]],[px,top+RH*1.1,pz,.085*M,.085*M*VS*1.6,.085*M,IR[1]]); }   // (a post every 2.4 m, its knob)
+        put(Pk,Bx); } }
+    // the gates' leaves: pickets 2.2 m, three bars, a stile each end, a ring row near the top; folded back, solid
+    const GP=[], GB=[];
+    for(const [hx,hy,dir,ax,w] of LEAVES){ const at=(u)=>ax==='x'?[X(hx+dir*u),Z(hy)]:[X(hy),Z(hx+dir*u)], H=mv(2.2);
+      for(let u=.08;u<w-.04;u+=.15){ const [x,z]=at(u); GP.push([x,0,z,H,0,'x',IR[(Math.round(u*7))%3]]); }
+      const [cx,cz]=at(w/2), len=w*TILE; for(const hh of [.08,.55,.9])GB.push([cx,H*hh,cz,ax==='x'?len:.04*M,.04*M*VS,ax==='x'?.04*M:len,IR[0]]);
+      for(const u of [0,w]){ const [x,z]=at(u); GB.push([x,H*.5,z,.06*M,H*1.02,.06*M,IR[1]]); }
+      for(let u=.3;u<w-.2;u+=.6){ const [x,z]=at(u); GB.push([x,H*.73,z,ax==='x'?.18*M:.03*M,.18*M*VS,ax==='x'?.03*M:.18*M,IR[2]]); }   // (the ring row, as square iron frames)
+      const [a1,b1]=at(0), [a2,b2]=at(w); SOL.up.push([Math.min(a1,a2)-.06*M,Math.min(b1,b2)-.06*M,Math.max(a1,a2)+.06*M,Math.max(b1,b2)+.06*M]); FIX.up.push([Math.min(a1,a2)-.06*M,Math.min(b1,b2)-.06*M,0,Math.max(a1,a2)+.06*M,Math.max(b1,b2)+.06*M,H]); }
+    put(GP,GB);
+    // the lanterns on the piers: a stem, an iron cage with its glass lit at night (dim by day), a roof, a finial
+    const LB=[], LG=[];
+    for(const [x,y] of PIERS){ const wx_=X(x), wz_=Z(y), t=Y(PH+6);
+      LB.push([wx_,t+mv(.12),wz_,.1*M,mv(.24),.1*M,IR[1]],[wx_,t+mv(.27),wz_,.34*M,mv(.06),.34*M,IR[0]],[wx_,t+mv(.66),wz_,.4*M,mv(.08),.4*M,IR[0]],[wx_,t+mv(.75),wz_,.24*M,mv(.1),.24*M,IR[0]],[wx_,t+mv(.86),wz_,.06*M,mv(.12),.06*M,IR[1]]);
+      for(const [dx,dz] of [[-1,-1],[1,-1],[-1,1],[1,1]])LB.push([wx_+dx*.15*M,t+mv(.46),wz_+dz*.15*M,.04*M,mv(.34),.04*M,IR[0]]);
+      LG.push([wx_,t+mv(.46),wz_,.27*M,mv(.32),.27*M]); }
+    put([],LB);
+    if(LG.length){ const me=new THREE.InstancedMesh(unit,glass,LG.length); LG.forEach(([x,y,z,sx,sy,sz],i)=>me.setMatrixAt(i,m4.compose(new V(x,y,z),q.identity(),new V(sx,sy,sz)))); me.computeBoundingSphere(); scene.add(me); PARK.lanterns=me;
+      const lit=()=>{ let d=false; try{ d=CLOCK.dark(); }catch(_){ } glass.color.setHex(d?0xffd38a:0x6e6656); }; lit(); setInterval(lit,2000);   /* (the clock is made after the park: try till it is) */ } }
   // ---- THE ROCKS: his pack's models, each at its place, its height in metres, turned as it likes; one mesh
   // THE TREES' LOOK, three mockups (owner, 17 Oct 2026, the oaks' crowns striped and toothed by the sun's shadow map, then "i want smooth
   // realistic shadows and lighting like gradient radial etc"), ?treelook=N, off by default (the game as it is). On the park's things (the oaks, the

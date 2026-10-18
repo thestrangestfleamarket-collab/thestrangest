@@ -1341,3 +1341,15 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   vertex range, bodbuild.js). Cost: no triangles, light or program more; the world steps at 120 a second only near the bodega. Not done: the goods
   back on their shelves (a reload puts them back), the Fox or the townspeople pushing them, the coolers' doors opening onto real goods.
   `GOODSDBG()`, `GOODSHIT(k,r)`, `GOODSGRAB()`, `GOODSTHROW(dx,dz)` (tests).
+- **Central Park's edge and gate, A** (owner, 18 Oct 2026: "make central park entrance bigger and metal dark gate, styled like real entrance, gate goes
+  all the way around the park"; "i want the mushroom vendor and tomato vendor on both sides of the entance, make them 15% larger"; of the mockups
+  https://claude.ai/artifact/9wgLdJb3pa59RWxJCRFwFn (`mockups/park-gate.html`), "A, just make sure it looks natural like the sidewalk, stones, edges,
+  depth, tufts, lived in"; `park.js`): the brick walls gone; all the way round a knee-high wall (16 px) of grey granite in courses (`ashlar`: each
+  stone its own length and tone, lit rims, dark joints, grime toward the foot, moss low in the joints, lichen, ivy where it's been let go) under
+  the cope's stones, and on it an iron spear railing a metre high (a picket every 0.16 m, a few rusted, a few leaning, now and then one gone; two
+  rails; a post with a knob every 2.4 m); at each gate two granite piers 3.2 m (big ashlar, a plinth, a cap) with an iron lantern each (its glass lit
+  after dark, dim by day; no lamp record), and two iron gate leaves (2.2 m, three bars, a ring row) folded back inside along the railing, solid. The
+  main street's gate 10 tiles wide (`P.gate`, was 7). The weeds and tufts come up along the wall's foot by themselves (weeds.js reads its solid).
+  **The stalls either side of the gate**: the mushroom seller's west of it, the tomato's east; **both sellers 15% bigger** (2.53 m, 1.84 m); the
+  stalls their size. Cost: the iron instanced in 16-tile pieces (some 57,000 triangles round the whole park, a few thousand in sight), the
+  lanterns' glass one unlit draw; no light, no new program. `tests/gateshot.cjs <out>`.

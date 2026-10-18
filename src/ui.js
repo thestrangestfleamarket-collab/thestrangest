@@ -114,7 +114,7 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
     cam=UI.persp?PCAM:OCAM; if(RPASS)RPASS.camera=cam; if(UI.persp&&Math.abs(PCAM.aspect-RW/RH)>1e-3){ PCAM.aspect=RW/RH; PCAM.updateProjectionMatrix(); } };
   UI.view3b=a=>{ W3.group.visible=UI.view!=='first'; if(!UI.persp)return; const sk=W3.SZ||1;
     if(UI.view==='first'){ if(!(W3.eyeAt&&W3.eyeAt(cam.position))){ cam.position.set(pos.x,py+EYE*sk,pos.z); cam.position.addScaledVector(new THREE.Vector3(-Math.sin(a),0,-Math.cos(a)),.12*TILE); } cam.updateMatrixWorld(); return; }   // (from his own eyes, where his head is this moment: walker3d.js's W3.eyeAt)
-    const T=new THREE.Vector3(pos.x,py+HEAD*sk+(window.PLAYAS&&PLAYAS.on&&PLAYAS.nb?PLAYAS.nb.lift:0),pos.z), F=new THREE.Vector3(Math.sin(a)*Math.cos(pitch),Math.sin(pitch),Math.cos(a)*Math.cos(pitch));
+    const T=new THREE.Vector3(pos.x,py+HEAD*sk,pos.z), F=new THREE.Vector3(Math.sin(a)*Math.cos(pitch),Math.sin(pitch),Math.cos(a)*Math.cos(pitch));
     cam.position.copy(T).addScaledVector(F,UI.dist);
     if(UI.view==='follow'){ const k=.45/.84*TILE*sk/Math.hypot(F.x,F.z||1e-6); tv.set(F.z*k,.1/.84*TILE*sk,-F.x*k); cam.position.add(tv); T.add(tv); }   // (over his right shoulder: owner, 17 Oct 2026, "v wlil take you in 3rd person view over their shoulders")
     // (never behind a wall: walking the line from his head out to the camera through the walls he can't walk through, the camera comes in to just before the first)

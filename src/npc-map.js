@@ -189,6 +189,5 @@ const PXSNAP=on=>{ const L=PXSNAP.L;
     p.x+=dx; p.y+=dy; p.z+=dz; L.push([o,dx,dy,dz]); for(const [c,M] of cams||[]){ c.position.x+=dx; c.position.y+=dy; c.position.z+=dz; L.push([c,dx,dy,dz]); c.updateMatrixWorld(); if(M)M.value.multiplyMatrices(c.projectionMatrix,c.matrixWorldInverse); } };
   if(typeof W3!=='undefined'&&W3.group)snap(W3.group,[[W3.smCam,W3.LVP]]);
   for(const N of NPCS)if(!N.far)snap(N.g);   /* (his own shadow's camera is set in his shadow pass from where he's drawn) */
-  if(typeof PLAYAS!=='undefined'&&PLAYAS.N&&!NPCS.includes(PLAYAS.N))snap(PLAYAS.N.g);
   for(const X of NPCS.extra)if(X.g)snap(X.g); };
 PXSNAP.L=[]; window.PXSNAP=PXSNAP;

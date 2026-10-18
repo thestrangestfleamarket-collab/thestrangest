@@ -189,7 +189,7 @@ print('ok zoom')
 
 # THE OWNER'S CHARACTERS FROM HIS MODELS (owner, 16 Oct 2026): the goldfish and the bear, coloured, wandering the platform; THE SKELETONS (owner,
 # 17 Oct 2026, KayKit's four, rigged and animated) on the far sidewalk: src/npc-skel.js, data/skel.json (tools/skeletons-bake.py)
-mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);","const SKEL="+open('data/skel.json').read()+";\n"+open('src/npc-map.js').read()+"\n"+open('src/npc-skel.js').read()+"\nconst DRAGON="+open('data/dragon.json').read()+";\n"+open('src/npc-dragon.js').read()+"\n"+"\n"+open('src/fx.js').read()+"\n"+open('src/npc-parts.js').read()+"\n"+open('src/stalls.js').read()+"\n"+open('src/npc-mushroom.js').read()+"\n"+open('src/npc-rig.js').read()+"\n"+open('src/npc-toons.js').read()+"\n"+open('src/npc-squirrel.js').read()+"\n"+open('src/npc-fox.js').read()+"\nconst CREATURES="+open('data/creatures.json').read()+";\n"+open('src/npc-creatures.js').read()+"\nconst UAL="+open('data/ual.json').read()+";\n"+open('src/ual-kit.js').read()+"\n"+open('src/playas.js').read()+"\nconst PAWNS="+open('data/pawns.json').read()+";\n"+open('src/npc-pawns.js').read()+"\nresize(); applyTime(0); requestAnimationFrame(frame);")   # (the cyborg and the teddy: deleted, owner 17 Oct 2026, "remove the cyborg + black bear characters"; THE SIX FIGURES, npc-figures.js (their second making, npc-rigged.js with data/<name>.json, kept but not built: the same six twice); the creatures)
+mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);","const SKEL="+open('data/skel.json').read()+";\n"+open('src/npc-map.js').read()+"\n"+open('src/npc-skel.js').read()+"\nconst DRAGON="+open('data/dragon.json').read()+";\n"+open('src/npc-dragon.js').read()+"\n"+"\n"+open('src/fx.js').read()+"\n"+open('src/npc-parts.js').read()+"\n"+open('src/stalls.js').read()+"\n"+open('src/npc-mushroom.js').read()+"\n"+open('src/npc-rig.js').read()+"\n"+open('src/npc-toons.js').read()+"\n"+open('src/npc-squirrel.js').read()+"\n"+open('src/npc-fox.js').read()+"\nconst CREATURES="+open('data/creatures.json').read()+";\n"+open('src/npc-creatures.js').read()+"\nconst PAWNS="+open('data/pawns.json').read()+";\n"+open('src/npc-pawns.js').read()+"\nresize(); applyTime(0); requestAnimationFrame(frame);")   # (the cyborg and the teddy: deleted, owner 17 Oct 2026, "remove the cyborg + black bear characters"; THE SIX FIGURES, npc-figures.js (their second making, npc-rigged.js with data/<name>.json, kept but not built: the same six twice); the creatures)
 mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);",open('src/pond.js').read()+"\nresize(); applyTime(0); requestAnimationFrame(frame);")   # (THE POND in Central Park, owner 18 Oct 2026: src/pond.js)
 mod=rp(mod,"  marker.visible=!!target;","  for(const N of NPCS)N.tick(dt,pos);\n  marker.visible=!!target;")
 mod=rp(mod,"function collide(p){ const r=0.3;","function collide(p){ if(typeof NPCS!=='undefined')for(const N of NPCS)if(N.lv===LVL&&!N.far)N.push(p); const r=0.36;")   # (his reach round him: 0.3, a fifth bigger with him)
@@ -245,7 +245,7 @@ mod=rp(mod,"{ const sp=new ShaderPass(OUTL.pass); composer.addPass(sp);","{ cons
 # STOPPING AT ONCE (owner, 17 Oct 2026: "when i stop walking ... im sliding a little"): the rig's own snap, the game's for you (47-you-jointed);
 # the close view of HIS SHAPE on his middle; the double click's walk to a thing each frame
 mod=rp(mod,"const cloud=RIG.bake(0.5,1), st=RIG.create();","const cloud=RIG.bake(0.5,1), st=RIG.create(); st.snap=true;")
-mod=rp(mod,"if(UI.freeCam)disp.copy(UI.camT); else disp.set(pos.x,py,pos.z);","if(UI.freeCam)disp.copy(UI.camT); else{ UI.follow&&UI.follow(); disp.set(pos.x,py+(ED.on?0.85:0)+(window.PLAYAS&&PLAYAS.on&&PLAYAS.nb?PLAYAS.nb.lift*.7:0),pos.z); disp.add(UI.off); }   /* (the camera up with him off the ground: playas.js) */")
+mod=rp(mod,"if(UI.freeCam)disp.copy(UI.camT); else disp.set(pos.x,py,pos.z);","if(UI.freeCam)disp.copy(UI.camT); else{ UI.follow&&UI.follow(); disp.set(pos.x,py+(ED.on?0.85:0),pos.z); disp.add(UI.off); }   /* (the camera up with him off the ground: playas.js) */")
 mod=rp(mod,"  marker.visible=!!target;","  UI.goTick(); UI.runTick();\n  marker.visible=!!target;")
 head=rp(head,'<div><b>Click</b> the ground to walk there</div>','<div><b>Double-click</b> the ground to walk there, or a thing to go to it</div>')
 # THE NEON, REAL (owner, 17 Oct 2026: "the light isnt taking into account its surroundings", "match the style", "totally disappears when diff
@@ -272,8 +272,8 @@ mod=rp(mod,"  for(const l of BOD.LAMPS){ const cm=Math.max(...l.c);","""  // the
   for(const l of BOD.LAMPS){ const cm=Math.max(...l.c);""")
 # HIS BODY IN A PHYSICS ENGINE (owner, 17 Oct 2026): src/physbody.js, after the rig has placed him each frame
 mod=rp(mod,"heading+=Math.max(-turn,Math.min(turn,dh)); }","const dd=Math.max(-turn,Math.min(turn,dh)); heading+=dd; st.yr=dd/Math.max(dt,1e-3); } else st.yr=0;")   # (how fast he's turning, for the lean into a turn: the rig's st.bank, 18 Oct 2026)
-mod=rp(mod,"const go=(st.dist-before)/PPU;","const go=(st.dist-before)*W3.SZ/PPU*(typeof PLAYAS!=='undefined'&&PLAYAS.on&&PLAYAS.K?PLAYAS.K:1);")   # (NIMBLE: the mannequin runs a third faster, src/playas.js; W3.SZ: his feet carry him as far as they're drawn, 18 Oct 2026, the rig's slip gone)
-mod=rp(mod,"W3.place(B,pos.x,py,pos.z,RAG.on?RAG.hd:heading,hdA,ZU); if(ED.on)ED.tick();","W3.place(B,pos.x,py,pos.z,RAG.on?RAG.hd:heading,hdA,ZU); if(typeof PLAYAS!=='undefined')PLAYAS.tick(dt,B); PB.step(dt,B,pos.x,py,pos.z,RAG.on?RAG.hd:heading,groundY(pos.x,pos.z),RAG.on); if(ED.on)ED.tick();")
+mod=rp(mod,"const go=(st.dist-before)/PPU;","const go=(st.dist-before)*W3.SZ/PPU;")   # (NIMBLE: the mannequin runs a third faster, src/playas.js; W3.SZ: his feet carry him as far as they're drawn, 18 Oct 2026, the rig's slip gone)
+mod=rp(mod,"W3.place(B,pos.x,py,pos.z,RAG.on?RAG.hd:heading,hdA,ZU); if(ED.on)ED.tick();","W3.place(B,pos.x,py,pos.z,RAG.on?RAG.hd:heading,hdA,ZU); PB.step(dt,B,pos.x,py,pos.z,RAG.on?RAG.hd:heading,groundY(pos.x,pos.z),RAG.on); if(ED.on)ED.tick();")
 # HIS MOVES, EDITABLE (owner, 17 Oct 2026: "edit his walk and other movements in the HIS SHAPE editor"; his picks: the walk's and the run's
 # dials, a keyframe editor for every move, new moves of his own): src/animator.js. In the rig: the walk's dials (each 1 as it was), the
 # hook where every pose he takes passes on its way to be drawn (his keys added on), and what the editor needs to play a move by itself
@@ -409,9 +409,7 @@ os.makedirs('dist',exist_ok=True); open('dist/market.html','w').write(head+mod);
 # mesh with the game's own patch, save.js, HIS SHAPE, his moves, his looks, the avatar editor, his speeds and body types word for word; the
 # body types' table read from playas.js (the mannequin itself not built); src/avatar-pre.js before them, src/avatar-post.js after
 a=head.index("<script>\n// the game's own Walker"); b=head.index('</script>',a); rigjs=head[a+len('<script>'):b]
-bt=re.search(r"const BT=(\{.*?\});\s*\n\s*PLAYAS\.BODIES",open('src/playas.js').read(),re.S).group(1)
 avcode='\n'.join([open('src/avatar-pre.js').read(),rp(open('src/walker3d.js').read(),*W3PATCH),open('src/save.js').read(),
-  'window.PLAYAS={BT:'+bt+',bodyType:"AVERAGE",body(){}}; PLAYAS.BODIES=Object.keys(PLAYAS.BT);',
   open('src/editor.js').read(),open('src/animator.js').read(),open('src/looks.js').read(),open('src/avatar.js').read(),open('src/avmove.js').read(),open('src/avatar-post.js').read()])
 page=open('src/avatar-page.html').read(); assert page.count('/*RIG*/')==1 and page.count('/*CODE*/')==1
 open('dist/avatar.html','w').write(page.replace('/*RIG*/',rigjs).replace('/*CODE*/',avcode)); print('built dist/avatar.html')

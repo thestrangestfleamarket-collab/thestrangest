@@ -205,9 +205,9 @@ const AVE={};
     for(const k of ['skin','hairc','eye','shirt','pants','shoes'])L[k]=(Math.random()*5)|0;
     const anyC=()=>'#'+new THREE.Color().setHSL(Math.random(),.35+Math.random()*.4,.25+Math.random()*.45).getHexString(); if(Math.random()<.6)L.cx.shirt=anyC(); if(Math.random()<.4)L.cx.pants=anyC();
     w.av.pat=w.av.pat.map(p=>({...p,t:Math.random()<.45?(1+(Math.random()*6|0)):0,c2:anyC(),s:.7+Math.random()})); delete w.shape; AV.put(w);
-    if(Math.random()<.5)LOOKS.setBuild(Math.random()<.5?0:1); BODYTYPE(pick(PLAYAS.BODIES)); AV.open(); drawAll(); toast('Someone new'); };
+    if(Math.random()<.5)LOOKS.setBuild(Math.random()<.5?0:1); BODYTYPE(pick(Object.keys(BODYTYPES))); AV.open(); drawAll(); toast('Someone new'); };
   $('#p-looks').append(h3('BODY'),el('div',{class:'row'},btn('MALE',()=>{ ED.snap(); LOOKS.setBuild(0); AV.open(); drawAll(); },()=>LOOKS.L.build===0),btn('FEMALE',()=>{ ED.snap(); LOOKS.setBuild(1); AV.open(); drawAll(); },()=>LOOKS.L.build===1)),
-    el('div',{class:'grid'},...PLAYAS.BODIES.map(n=>btn(n,()=>{ ED.snap(); BODYTYPE(n); if(AV.drawBT)AV.drawBT(); drawAll(); },()=>BODYTYPE()===n))),
+    el('div',{class:'grid'},...Object.keys(BODYTYPES).map(n=>btn(n,()=>{ ED.snap(); BODYTYPE(n); if(AV.drawBT)AV.drawBT(); drawAll(); },()=>BODYTYPE()===n))),
     h3('OUTFITS'),dim('his colours, hair, eyes and the patterns woven on him; his body and shape stay'),el('div',{class:'grid'},...Object.keys(OUTFITS).map(n=>btn(n,()=>wear(n)))),
     h3('SHADING'),el('div',{class:'grid'},...Object.keys(SHADES).map(n=>btn(n,()=>shadeAs(n)))),
     h3('ANYONE'),el('div',{class:'row'},btn('SOMEONE NEW',randomize)),

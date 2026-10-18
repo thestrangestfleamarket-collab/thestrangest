@@ -269,7 +269,7 @@ const APTS={};
     const f=APTS.floor(); return SY*f+(f===0?Y(1)-Y(0):0); };
   APTS.SY=SY; APTS.in=false; let was=false, lvWas=-1;   // (SY: a floor's height, for the hitboxes' pass: clip.js)
   APTS.tick=()=>{ const inside=APTS.inside(pos.x,pos.z), lv=APTS.floor(); APTS.in=inside; if(ELV)ELV.tick(lv,inside);
-    if(inside!==was||lv!==lvWas){ was=inside; lvWas=lv; HP.constant=inside?SY*lv+SY*.93:1e6; for(const L of LIGHTS)L.light.intensity=inside?L.i:0; return inside?SOL.up.concat(SOLS[lv]):SOL.up; } return null; };   // (what blocks you: this floor's walls and things, or the street's; the loop sets it)
+    if(inside!==was||lv!==lvWas){ was=inside; lvWas=lv; HP.constant=inside?SY*lv+SY*.93:1e6; for(const L of LIGHTS)L.light.intensity=inside?L.i:0; return inside?SOL.up.concat(SOLS[lv]):SOL[LVL]||SOL.up; } return null; };   /* (out: the level you're on's: a jump from the house to the Metro by the menu had left the street's solids under the platform, 18 Oct 2026) */   // (what blocks you: this floor's walls and things, or the street's; the loop sets it)
   window.APTSDBG=()=>({in:APTS.in,floor:APTS.floor(),py,pos:[+pos.x.toFixed(2),+pos.z.toFixed(2)],box:[+x0s.toFixed(1),+z0s.toFixed(1),+x1s.toFixed(1),+z1s.toFixed(1)],hall:[+Z(H.y0).toFixed(1),+Z(H.y1).toFixed(1)],door:+X((door.a0+door.a1)/2).toFixed(1)});   // (a test's look)
   APTS.rects=lv=>{ if(LOBBY)return [[A.x0,A.y0,A.x1,A.y1]]; if(HOLLOW)return lv?[]:[[A.x0,A.y0,A.x1,A.y1]]; const R=rooms(lv), Ym=y=>2*hm-y, out=[[A.x0,H.y0,A.x1,H.y1]]; for(const k of ['liv','kit','bath','bed','pass']){ const r=R[k]; if(!r)continue; out.push([r.x0,r.y0,r.x1,r.y1]); if(k!=='pass')out.push([r.x0,Ym(r.y1),r.x1,Ym(r.y0)]); } return out; };   // (its rooms on a floor, for ROOMS)
   MODS.apts=APTS; }

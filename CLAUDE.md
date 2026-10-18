@@ -767,7 +767,19 @@ with its own copy, so a chat that hadn't taken in the others' work undid it. Eve
 - **Street trees and the house's planters** (owner, 18 Oct 2026: "add a couple small trees on the apartment side, 1 in front of aparment"; "the
   apartments should have stpes like this , plants in front"): three small street trees in granite-edged pits by the near kerb (one before the
   apartment house, two east), and two brownstone planter boxes under iron railings, heaped with plants and flowers, west of the house's door
-  (dress.js). **Not done: the stoop** (the house's door is at the sidewalk; a stoop up to it means raising its ground floor: asked).
+  (dress.js).
+- **The stoop, the house raised** (owner, 18 Oct 2026: "1 yes raise it"; `apts.js`): the whole apartment house stands 28 art px (about 1 m) up
+  (`APTS.RZ`; `APTS.R0` its height in the world: its `Y` and `gbox` add it, so its floors, walls, stairs, lift, flats, lights and furniture rise
+  together; every height read from it elsewhere adds R0: clip.js, drone.js, residents.js, rooftops.js, rooms.js, ui.js), a brownstone plinth under
+  it, and before the door a stoop: a landing and three steps down to the sidewalk (four equal risers, lit noses), a cheek wall each side (solid)
+  with an iron railing, balusters at each tread and a newel at the foot. The ground on it (`APTS.stoop`, read by map-post.js's `groundY`) steps
+  up to the lobby's floor. Cost: some 70 boxes in the house's batch; no light, no program.
+- **The roads three times wider** (owner, 18 Oct 2026: "the street lanes are too narrow, need to be 3x wider"; `WID` 14 in `map-pre.js`): the main
+  street's road 7 tiles to 21 (its far kerb `LSEED.grass` 14 north, everything north of it with `NORTHY` 23, the castle with it), the west street's,
+  the north street's and the Avenue's each 14 wider outward (`RING.wx0`, `RING.ny1`, `AVE.x1`, the main street's east end `BOD.MAP.x1`); the spots set by
+  number on the far side moved with it (the skeleton guards' lane and beat, the gold skeleton, the pawns' row, the creatures, the joggers' corners,
+  the blue mailboxes). **The batch's atlas in pages** (`batch.js`): a page closes at 8,192 rows (`BATCH.MAXH`) and the rest goes on a new atlas of
+  its own (its meshes `k~1`, ...), so the wider street's pictures no longer overflow what software rendering allows; `BATCH.stats.pages`.
 - **The storm drains like his photo** (owner, 18 Oct 2026: "drains in road like this"): the gutter's grate a cast-iron frame, four rows of six long
   black slots, worn and rusty iron, ragged darker asphalt round it with weeds in its cracks, now and then a scrap of paper (bodega.js's `drain`).
 - **The striped wall: the cottage's cabinet through it** (owner, 18 Oct 2026, two pictures of the house's front in vertical stripes with a cabinet on
@@ -1291,3 +1303,23 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   platform's spot, the way down for characters, the ride all moved with it (`METRO.CZ`, `METRO.plat`, `METRO.Z_S/Z_N`). The data lost the kit's
   cross-sections, gates and the exit's height map (1.03 MB to 0.92 MB). Cost: the hall some 300 triangles where it was some 3,000; the screen
   underground about the same as before (the car the bulk); 11 lamp records (was 22), no new program. `tests/metroshot.cjs <out>`.
+- **Standing is still** (owner, 18 Oct 2026, of the mushroom seller at his booth: "the grain shadow on the mushroom merchant is constantly glitchy
+  looking beacause it tries to chnge too fast"; `npc-map.js`): a character made of parts (the mushroom seller, the Fox) had a standing "breath",
+  a sway of a degree and a 1% stretch, that slid his own shadow's stepped edge across his robe every frame; standing he is now still (the walk's
+  rock and bob as before). Measured close on him at his booth (`tests/mushstill.cjs <out>`): 8,580 of his pixels changed a quarter second to 0.
+  https://claude.ai/artifact/ET6bXTLDgHdTfyAsyG4MTn (A trays, B stepped tiers, C heaps and overflow); **his pick, "B with C's overflow"**: `src/stalls.js` (`STALL.build`, for both: three plank tables in a U open to the street, the seller in its middle, each table three crate risers stepping up toward him with a row of heaps a step, one kind a heap, a basket now and then on the top step; round it two crates high, baskets on the ground, sacks and pumpkins (his) or a mushroom log (the seller's); the old awnings gone). Cost: some 13,700 triangles the mushroom seller's, 13,100 the tomato's (the goods a third over life size so fewer show as full), six instanced draws each, no light; solid at the tables and the overflow. `tests/stallshot.cjs <out>`.
+- **The roof out of sight, the mist back, the weather held, the old Fox, the sun's stripes** (owner, 18 Oct 2026): **the roof** ("it looks like the
+  roof is vanishes and lets real light ... dont change lighting in interiors jsut beacuse you walk in the room"): a roof hidden while you're in (the
+  bodega's, the stored rooms', the roof bits of rooftops.js) is taken off the camera's layer onto layer 3, which every shadow camera sees (`SEEN` in
+  `map-pre.js`), so it still keeps the sun out: the light inside is the same from in and out. **The mist** ("what happened to the green haze"): his
+  browser had DISTANCE HAZE saved at FAR; the key is now `market-haze2`, so everyone starts in the MIST again. **The skyline in the mist** ("where
+  did the distance skyline of buildings go?"): in the mist it's faint silhouettes (mixed 80% toward the mist's colour, a little more the further,
+  in three steps; its own, not the scene's fog), in FAR as before. **The weather held** ("set a default time and atmosphere and stay at the time";
+  his pick "Teal mist + clouds"): CLOUDY from the start (`WX.hold`, weather.js; `?wx=natural` the simulation); the clock stays STOPPED at 5:24 pm
+  (`CLOCK.h` 17.4; his pick of the mockups, https://claude.ai/artifact/FNh426aeu5GPJcdBj4KvqX: "golden hour"). **The old Fox** ("use the old fox avatar not the new one"): the
+  rounded one before the angular (`npc-fox.js` from before 1c9b71f), 2 m. **The sun's stripes** ("glitchy shadows": a wall the sun grazes striped
+  and arced with its own shadow): the sun's normalBias .04 to .12 (`clock.js`; `?snb=` a test's).
+- **Every page of the batch's atlas** (18 Oct 2026, found publishing): since the atlas was cut into pages (the roads three times wider), a kind
+  can span pages (its later meshes `k~1`, `k~2`), and only the first page's mesh was hooked up: the bodega's walls on the second page never cut
+  away, its tubes showed from outside, part of its roof stayed. `BATCH.all(M,k)` gives every page's mesh of a kind; bodbuild.js, castle.js, store.js
+  and ghostdojo.js use it for their cut walls, roofs, tubes and shadows.

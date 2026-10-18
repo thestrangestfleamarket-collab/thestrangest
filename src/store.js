@@ -342,9 +342,9 @@
   BATCH.build((k,map,emap)=>{ const pl=planes[k], cp=pl?{clippingPlanes:[pl]}:{};
     if(k==='B')return new THREE.MeshBasicMaterial({map,side:THREE.DoubleSide,alphaTest:.5});
     return new THREE.MeshLambertMaterial({map,alphaTest:.5,side:THREE.DoubleSide,...(emap?{emissiveMap:emap,emissive:0xffffff,emissiveIntensity:1.3}:{}),...cp}); });
-  BATCH.cast=false; const M=BATCH.meshes||{}; BATCH.meshes={}; if(M.G)M.G.castShadow=false;
-  for(const c of cuts.splice(0)){ const me=M[c.kind], R=STORE.rooms.find(r=>r.id===c.id); if(me)cutWalls.push({pl:planes[c.kind],nx:c.nx,nz:c.nz,foot:Y(8),me,when:()=>R.inside(pos.x,pos.z)}); }
-  for(const R of STORE.rooms){ const me=M['R'+R.id]; if(me)STORE.roofs.push({me,R}); }
+  BATCH.cast=false; const M=BATCH.meshes||{}; BATCH.meshes={}; for(const me of BATCH.all(M,'G'))me.castShadow=false;
+  for(const c of cuts.splice(0)){ const R=STORE.rooms.find(r=>r.id===c.id); for(const me of BATCH.all(M,c.kind))cutWalls.push({pl:planes[c.kind],nx:c.nx,nz:c.nz,foot:Y(8),me,when:()=>R.inside(pos.x,pos.z)}); }
+  for(const R of STORE.rooms)for(const me of BATCH.all(M,'R'+R.id))STORE.roofs.push({me,R});
   return M; };
   const M=bake();
   STORE.bound={x0:X(PLATE.x0),x1:X(PLATE.x1),z0:Z(PLATE.y0),z1:Z(PLATE.y1)};

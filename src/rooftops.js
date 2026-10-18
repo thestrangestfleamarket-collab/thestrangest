@@ -26,7 +26,7 @@ ROOFS.init=()=>{ if(typeof BOD==='undefined'||!MODS.apts||!MODS.apts.A)return;
   const box=(xa,xb,za,zb,ya,yb,c)=>b((xa+xb)/2,(ya+yb)/2,(za+zb)/2,Math.abs(xb-xa),yb-ya,Math.abs(zb-za),c);
 
   // ---- THE APARTMENT HOUSE (its front at A.y1, the street side)
-  { const H=MODS.apts, A=H.A, x0=Math.min(X(A.x0),X(A.x1)), x1=Math.max(X(A.x0),X(A.x1)), z0=Math.min(Z(A.y0),Z(A.y1)), z1=Math.max(Z(A.y0),Z(A.y1)), top=Y(5*BOD.K.STORY);
+  { const H=MODS.apts, A=H.A, x0=Math.min(X(A.x0),X(A.x1)), x1=Math.max(X(A.x0),X(A.x1)), z0=Math.min(Z(A.y0),Z(A.y1)), z1=Math.max(Z(A.y0),Z(A.y1)), top=Y(5*BOD.K.STORY)+(H.R0||0);
     const fz=Z(A.y1)>Z(A.y0)?1:-1, front=fz>0?z1:z0, back=fz>0?z0:z1, BRK=0x7a3a2c, COP=0xb8b2a6, PIPE=0x3e4448;
     parapet(x0,z0,x1,z1,top,1,BRK,COP);
     for(const [x,ox] of [[x0+.25*MH,-1],[x1-.25*MH,1]]){ leader(x,front+fz*.1*MH,0,fz,top,PIPE); leader(x,back-fz*.1*MH,0,-fz,top,PIPE); }
@@ -91,5 +91,5 @@ ROOFS.init=()=>{ if(typeof BOD==='undefined'||!MODS.apts||!MODS.apts.A)return;
   for(const M of [BM,CM,KM]){ M.castShadow=M.receiveShadow=true; scene.add(M); }
   // (gone while you're inside, owner 18 Oct 2026: "the corner tops and roofs should also always vanish when inside a store": the parapets, the
   // leaders, the roof's things are their own draws, not cut by the room's planes, so they're hidden while ROOMS.cur)
-  { const t0=window.RINGX&&RINGX.tick; let was=null; if(t0)RINGX.tick=dt=>{ t0(dt); const ins=typeof ROOMS!=='undefined'&&!!ROOMS.cur; if(ins!==was){ was=ins; for(const M of [BM,CM,KM])M.visible=!ins; } }; }
+  { const t0=window.RINGX&&RINGX.tick; let was=null; if(t0)RINGX.tick=dt=>{ t0(dt); const ins=typeof ROOMS!=='undefined'&&!!ROOMS.cur; if(ins!==was){ was=ins; for(const M of [BM,CM,KM])SEEN(M,!ins); } }; }
   ROOFS.tris=BX.length*12+cy.length*32+co.length*16; window.ROOFSDBG=()=>({boxes:BX.length,rounds:cy.length,cones:co.length,tris:ROOFS.tris}); };

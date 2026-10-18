@@ -63,9 +63,9 @@
       g.attributes.color.needsUpdate=true; return g; }; })();
   const CREATS=[]; window.CREATS=CREATS;
   // (key, name, metres tall, where it starts (bodega tiles), its pace in tiles a second, which way the pack's model faces (a turn))
-  const CH=[['Rat','RAT',.22,[60,-73.5],.9,0],['Rat','RAT',.22,[95,-62.5],.9,0],['Rat','RAT',.22,[110,-50],.9,0],['Frog','FROG',.28,[70,-44],.35,0],['Frog','FROG',.26,[75,-50],.35,0],
-    ['Slime','SLIME',.45,[62,-40],.25,0],['Snake','SNAKE',.42,[90,-47],.3,0],['Spider','SPIDER',.4,[57,-52],.45,0],['Spider','SPIDER',.36,[99,-41],.45,0],
-    ['Bat','BAT',.55,[72,-45],1.1,0],['Bat','BAT',.5,[85,-50],1.1,0],['Bat','BAT',.6,[60,-40],1.1,0],['Wasp','WASP',.22,[64,-55],.8,0],['Wasp','WASP',.2,[80,-57],.8,0],['Wasp','WASP',.2,[102,-44],.8,0]];
+  const CH=[['Rat','RAT',.22,[60,-73.5],.9,0],['Rat','RAT',.22,[95,-39.5],.9,0],['Rat','RAT',.22,[110,-27],.9,0],['Frog','FROG',.28,[70,-21],.35,0],['Frog','FROG',.26,[75,-27],.35,0],
+    ['Slime','SLIME',.45,[62,-17],.25,0],['Snake','SNAKE',.42,[90,-24],.3,0],['Spider','SPIDER',.4,[57,-29],.45,0],['Spider','SPIDER',.36,[99,-18],.45,0],
+    ['Bat','BAT',.55,[72,-22],1.1,0],['Bat','BAT',.5,[85,-27],1.1,0],['Bat','BAT',.6,[60,-17],1.1,0],['Wasp','WASP',.22,[64,-32],.8,0],['Wasp','WASP',.2,[80,-34],.8,0],['Wasp','WASP',.2,[102,-21],.8,0]];   // (the park's and the far sidewalk's spots 23 north: the park 9 and the road 14, owner 18 Oct 2026)
   // THE METRO'S RATS (owner, 18 Oct 2026, "go all", the Metro's open items: rats on the platform): three of the street's rats under it, two over
   // the platform between the track's edge and the back wall, one scurrying the tactile strip along the edge; on the level under the street
   // (its group: drawn only from down there, and neither drawn nor run unseen as every character), their ground the platform's, out of its

@@ -48,7 +48,7 @@ grab('castle',()=>{ const K=BOD.KC, KP=BOD.K.PROPS, X=BOD.XS, Z=BOD.ZS, Y=BOD.YS
   for(const p of made){ BATCH.tag=OBJ('castle',p.name); const kd=sideOf(p); if(kd!=='L'&&!PL[kd])PL[kd]=new THREE.Plane(new THREE.Vector3(0,-1,0),1e6); for(const b of p.boxes)gboxS(b,kd,0,CYS); } BATCH.tag=null;
   BATCH.build((k,map,emap)=>castleMat(k,map,emap,PL[k])); BATCH.cast=false;
   { const M=BATCH.meshes||{}, m=.5*TILE, inB=()=>LVL==='up'&&pos.x>X(bx0)+m&&pos.x<X(bx1)-m&&pos.z>Z(by0)+m&&pos.z<Z(by1)-m; MODS.castleIn=inB;
-    for(const k in PL)if(M[k]){ const s=SIDE[k[1]]; cutWalls.push({pl:PL[k],nx:s[0],nz:s[1],foot:Y(6),me:M[k],when:inB}); } BATCH.meshes={}; }
+    for(const k in PL)for(const me of BATCH.all(M,k)){ const s=SIDE[k[1]]; cutWalls.push({pl:PL[k],nx:s[0],nz:s[1],foot:Y(6),me,when:inB}); } BATCH.meshes={}; }
   for(const p of made)castleSolid('up',p,0,CYS);
   MODS.castle={BOUND:{x0:X(bx0-r),x1:X(bx1+r),z0:Z(by0-r),z1:Z(by1+r)}}; });
 // ---- THE STAIR DOWN: twelve steps from the bailey to the hall (as the subway's, map-post.js, but descending toward the park's back), its side

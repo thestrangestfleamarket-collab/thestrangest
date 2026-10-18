@@ -79,7 +79,7 @@ LITE.tick=(dt,x,y,z)=>{ const P=LITE.pool;
   LITE.t=Math.min(LITE.t-dt,.25); if(!(LITE.t>0)){ LITE.t=.25;   /* (a bad frame's dt, NaN or backwards, never leaves it stuck) */ const R=typeof ROOMS!=='undefined'?ROOMS:null, RB=R&&R.boxes?R.boxes():[], cur=R?R.cur:null, e=.5*TILE;
     const inB=(b,p,m)=>p.x>b.x0-m&&p.x<b.x1+m&&p.z>b.z0-m&&p.z<b.z1+m&&p.y>b.y0-e&&p.y<b.y1+e;
     LITE.sel=LITE.recs.filter(L=>L.intensity>0&&!L.userData.off&&(!L.userData.grp||L.userData.grp.visible)&&(L.userData.in?L.userData.in(cur):L.userData.both||(cur?inB(cur,L.position,e):!RB.some(b=>inB(b,L.position,-e)))))   /* (in: a lamp's own rule for which room it lights: the apartment house's floors, apts.js) */
-      .map(L=>[(L.position.x-x)**2+(L.position.y-y)**2+(L.position.z-z)**2,L]).sort((p,q)=>p[0]-q[0]).slice(0,LITE.N);
+      .map(L=>[((L.position.x-x)**2+(L.position.y-y)**2+(L.position.z-z)**2)*(L.userData.fire?.25:1),L]).sort((p,q)=>p[0]-q[0]).slice(0,LITE.N);
     /* (held, owner 18 Oct 2026, the flicker under a light: the nearest of two lamps flipped as he walked, and with it the lamp whose shadow falls on him; the
        first now changes only for a lamp clearly nearer (a third nearer by distance squared), and every other lamp keeps the slot it had) */
     const S0=LITE.slots||(LITE.slots=[]), want=LITE.sel.map(p=>p[1]), dOf=L=>{ const p=LITE.sel.find(q=>q[1]===L); return p?p[0]:1e18; };

@@ -7,6 +7,7 @@ const BATCH={items:[],tag:null};
 const OBJS=[]; const OBJ=(place,name)=>{ const o={id:place+':'+OBJS.length,place,name,parts:[]}; OBJS.push(o); return o; };
 BATCH.add=(pos,uv,cv,ecv,kind)=>{ BATCH.items.push({pos,uv,cv,ecv,kind,obj:BATCH.tag}); };
 BATCH.build=(make)=>{ const it=BATCH.items; if(!it.length)return; const AW=2048;
+  for(const o of it)if(o.cv.width+2>AW)console.warn('BATCH: a picture '+o.cv.width+' wide, over the atlas ('+AW+'): split it');   // (it would run over into its next rows: streaks)
   // shelves, tallest first
   const order=it.map((o,i)=>i).sort((a,b)=>it[b].cv.height-it[a].cv.height); let x=0, y=0, sh=0;
   for(const i of order){ const o=it[i], w=o.cv.width+2, h=o.cv.height+2; if(x+w>AW){ x=0; y+=sh; sh=0; } o.ax=x; o.ay=y; x+=w; sh=Math.max(sh,h); }

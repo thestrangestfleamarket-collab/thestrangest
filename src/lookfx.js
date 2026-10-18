@@ -22,7 +22,7 @@
       sky.copy(scene.background); E[row+8]=Math.round(sky.r*255); E[row+9]=Math.round(sky.g*255); E[row+10]=Math.round(sky.b*255);
       LFX.env.needsUpdate=true; }; }
   // the warm sun and the cool shade, by day, in the final pass
-  const tick1=LFX.tick||(()=>{}); LFX.tick=()=>{ tick1(); if(F.has('cool')&&typeof LOOK!=='undefined')LOOK.cool.value=LFX.cool??cl((CLOCK.elev()+3)/12)*(LVL==='down'?0:1); };
+  const tick1=LFX.tick||(()=>{}); LFX.tick=()=>{ tick1(); if(F.has('cool')&&typeof LOOK!=='undefined')LOOK.cool.value=LFX.cool??Math.max(.5*cl((CLOCK.elev()+3)/12),.7*cl(1-Math.abs(CLOCK.elev()-3)/10))*(LVL==='down'||ROOMS.cur?0:1); };   // (.5 by day, sky.js's .7 round the sunset; none inside or underground: 18 Oct 2026, on by default)
   // THE LIFE IN THE AIR: a few birds wheeling high over the park, leaves falling under the oaks, motes in the sun; one draw each, tiny
   if(F.has('life')){ const NB=9, NL=60, NM=80;
     const bg=new THREE.BufferGeometry(), bp=new Float32Array(NB*12); bg.setAttribute('position',new THREE.BufferAttribute(bp,3).setUsage(THREE.DynamicDrawUsage));

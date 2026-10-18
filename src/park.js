@@ -6,7 +6,7 @@
 // his pack's models, coloured flat as the pack colours them (tools/forest-bake.py, data/forest.json), one mesh, throwing the sun's and the
 // lamps' shadows. NO TREES (owner, 17 Oct 2026: "remove all the trees from game for now, i want to start clean"): the forest pack's oaks,
 // spruces and dead trees and the terrain collection's cedars are gone from the map and the data. Where you can't walk: the wall, the posts, the rocks, the lamps' poles ----
-const PARK={x0:50,x1:108,y0:-61,y1:12.5,gate:[92.5,99.5],round:[96,-47,7]};   /* (y1 12.5 since 17 Oct 2026, owner: "expand central park by 25%": a quarter more lawn, north) */   // (bodega tiles, x0 and x1 the street's run, set below; the gate's run along the wall; the round's middle and reach; y1: deep enough for the castle in its back-left corner, castle.js)
+const PARK=window.PARK={x0:50,x1:108,y0:-61,y1:12.5,gate:[92.5,99.5],round:[96,-47,7]};   /* (y1 12.5 since 17 Oct 2026, owner: "expand central park by 25%": a quarter more lawn, north) */   // (bodega tiles, x0 and x1 the street's run, set below; the gate's run along the wall; the round's middle and reach; y1: deep enough for the castle in its back-left corner, castle.js)
 PARK.sway={value:0}; PARK.windK={value:1}; /* (windK: the wind's strength on the crowns, weather.js) */ PARK.tick=()=>{ PARK.sway.value=performance.now()/1000; };   // (the oaks' sway: their crowns' clock)
 // (moved and its edges moved on the map's layout, LAY: everything here in the park's own tiles, X and Z carrying the move: PARK.ox, oy; its edges' moves e: west, front (the wall), east, back)
 grab('park',()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.ox=PO.x; PARK.oy=PO.y; PARK.x0=50+PE[0];   /* (not the street's run: it goes on west to the loop's west street) */ PARK.x1=AVE.x0+PE[2];   /* (the park's east edge the Avenue's west side, not the street's end: map-pre.js) */ PARK.y0+=PE[1]; PARK.y1+=PE[3]; const X=x=>BOD.XS(x+PO.x), Z=y=>BOD.ZS(y+PO.y), Y=BOD.YS, {hash,grain,speck,grassCol}=BOD.g, P=PARK, U=TILE/.84, f32=s=>new Float32Array(Uint8Array.from(atob(s),c=>c.charCodeAt(0)).buffer), b8=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
@@ -21,7 +21,10 @@ grab('park',()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.ox=PO.x; PARK.o
   const path=(x,y)=>{ const [cx,cy,r]=P.round; return Math.abs(x-cx)<3.6||Math.abs(y-cy)<3.6||Math.hypot(x-cx,y-cy)<r; };
   // the pavers: the park's hexagons (a third of a tile across), each its own grey, a dark seam between, worn here and there
   const hexCol=(x,y)=>{ const s=1/3, w=s*Math.sqrt(3), row=Math.floor(y/(s*1.5)), ox=(row&1)?w/2:0, col=Math.floor((x-ox)/w), cx=(col+.5)*w+ox, cy=row*s*1.5+s;
-    const dx=Math.abs(x-cx), dy=Math.abs(y-cy), e=Math.max(dx/w*2,(dy+dx/Math.sqrt(3))/s), seam=e>.86, n=hash(col,row,71), g=grain(x,y,73,2), c=seam?42+8*n:58+22*n+10*(g-.5); return speck([c,c,c+2],x,y,75); };
+    const dx=Math.abs(x-cx), dy=Math.abs(y-cy), e=Math.max(dx/w*2,(dy+dx/Math.sqrt(3))/s), seam=e>.86, n=hash(col,row,71), g=grain(x,y,73,2), hp=hash(Math.floor(x*24),Math.floor(y*24),77);
+    // (each paver bevelled (lit toward the top of the picture, shaded below), moss and weeds in the seams where a broad noise lets them: owner, 18 Oct 2026, "realistic textures")
+    if(seam){ if(BOD.g.cvNoise(x/2.5,y/2.5,79)>.6&&hp<.65)return [[52,82,40],[66,98,48],[44,70,34]][Math.floor(hash(Math.floor(x*24),Math.floor(y*24),81)*3)]; const c=36+8*n; return [c,c,c+2]; }
+    let c=58+22*n+10*(g-.5); if(e>.74)c*=(y<cy)?1.14:.84; return speck([c,c,c+2],x,y,75); };
   // THE LAWN: lawnCol (gamekit.js: the all-green lawn with its sprouts and weeds, every grass on the map)
   const lawn=BOD.g.lawnCol;
   const CS=(S=>({x0:S.x0-PO.x,x1:S.x1-PO.x,y0:S.y0-PO.y,y1:S.y1-PO.y}))(CASTLE.stair), groundCol=(x,y)=>x>=CS.x0&&x<CS.x1&&y>=CS.y0&&y<CS.y1?null:path(x,y)?hexCol(x,y):lawn(x,y);   // (open where the castle's stair goes down)
@@ -29,28 +32,38 @@ grab('park',()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.ox=PO.x; PARK.o
   // (in strips, so no one picture is too wide for the atlas)
   for(let x=P.x0;x<P.x1;x+=29)flat(x,P.y0+.5,Math.min(P.x1,x+29),P.y1,0,groundCol);
   // ---- THE WALL: the park's grey stone in courses, its cope; the gate's posts, taller, capped
-  const stone=(i,j,k)=>{ const row=Math.floor(j/9), col=Math.floor((i+(row&1)*7)/14), m=(j%9)>=8||((i+(row&1)*7)%14)>=13, n=hash(col,row,k), g=grain(i/24,j/24,k+1,1.5), c=m?70+10*n:104+34*n+18*(g-.5); return [c,c*.99,c*.95]; };
+  // (its depth, owner 18 Oct 2026, "the pillar looks completely flat and lifeless" beside the pavement's grout and weeds: painted in, as the
+  // pavement's is, no new faces: the mortar a dark recess; each stone bevelled (its top and left rims lit, its bottom and right in shade) and
+  // tilted its own way; chips; moss in the low joints; darker toward the ground and in the band under a cap's overhang, as light reaches less)
+  const stone=(i,j,k,H=99,cap=false)=>{ const row=Math.floor(j/9), off=(row&1)*7, col=Math.floor((i+off)/14), fx=(i+off)%14, fy=j%9, m=fy>=8||fx>=13, n=hash(col,row,k), g=grain(i/24,j/24,k+1,1.5), hp=hash(i,j,k+11), t=j/H;
+    let c; if(m){ c=50+9*n; if(t>.6&&hash(Math.floor(i/3),row,k+13)<.45&&hp<.6)return [56+16*hp,80+20*hp,44]; }   // (the joint, and moss low down)
+    else{ c=104+34*n+18*(g-.5); c*=1+(hash(col,row,k+9)-.5)*.16*((fx/12-.5)+(fy/7-.5)); if(fy===0)c*=1.17; else if(fy===7)c*=.78; if(fx===0)c*=1.08; else if(fx===12)c*=.84;
+      if(hash(Math.floor(i/2),Math.floor(j/2),k+15)<.025)c*=.74; }   // (a chip)
+    c*=.8+.2*(1-Math.max(0,Math.min(1,(t-.72)/.28))); if(cap&&j<4)c*=.62+.09*j; return [c,c*.99,c*.95]; };
+  const capSide=(i,j,h)=>{ const n=grain(i/24,j/24,91,1.2), c=(j===0?1.2:j>=h-1?.62:1)*(124+20*n); return speck([c,c,c*.96],i/24,j/24,93); };   // (the cap's edge: a lit chamfer on top, the drip's shadow under its lip)
   const face=(a,b,c,d,w,h,fn)=>BOD.bq(a,b,c,d,BOD.faceTex(w,h,(i,j)=>BOD.C(fn(i,j))),'G');
   const block=(x0,y0,x1,y1,z0,z1,k,top)=>{ const [a,b,c,d]=[X(x0),X(x1),Z(y0),Z(y1)], [e,f]=[Y(z0),Y(z1)], w=x1-x0, dp=y1-y0;
-    face([a,f,d],[b,f,d],[b,f,c],[a,f,c],w*24,dp*24,top||((i,j)=>{ const n=grain(i/24,j/24,k+5,1.2); const c=118+22*n; return speck([c,c,c*.96],i/24,j/24,k+7); }));
-    face([a,e,c],[b,e,c],[b,f,c],[a,f,c],w*24,z1-z0,(i,j)=>stone(i,j,k)); face([b,e,d],[a,e,d],[a,f,d],[b,f,d],w*24,z1-z0,(i,j)=>stone(i,j,k+1));
-    face([a,e,d],[a,e,c],[a,f,c],[a,f,d],dp*24,z1-z0,(i,j)=>stone(i,j,k+2)); face([b,e,c],[b,e,d],[b,f,d],[b,f,c],dp*24,z1-z0,(i,j)=>stone(i,j,k+3)); };
+    const W=w*24, D=dp*24, H=z1-z0, sideF=top==='cap'?(i,j)=>capSide(i,j,H):(i,j,kk)=>stone(i,j,kk,H,top==='post');
+    face([a,f,d],[b,f,d],[b,f,c],[a,f,c],W,D,typeof top==='function'?top:((i,j)=>{ const n=grain(i/24,j/24,k+5,1.2), ed=Math.min(i,j,W-1-i,D-1-j); let c=118+22*n; if(ed<1)c*=(i<1||j<1)?1.18:.8; else if(ed<2)c*=1.06; return speck([c,c,c*.96],i/24,j/24,k+7); }));
+    face([a,e,c],[b,e,c],[b,f,c],[a,f,c],W,H,(i,j)=>sideF(i,j,k)); face([b,e,d],[a,e,d],[a,f,d],[b,f,d],W,H,(i,j)=>sideF(i,j,k+1));
+    face([a,e,d],[a,e,c],[a,f,c],[a,f,d],D,H,(i,j)=>sideF(i,j,k+2)); face([b,e,c],[b,e,d],[b,f,d],[b,f,c],D,H,(i,j)=>sideF(i,j,k+3)); };
   const WH=32, PH=54, [g0,g1]=P.gate;
   block(P.x0,P.y0,g0-1,P.y0+.5,0,WH,11); block(g1+1,P.y0,P.x1,P.y0+.5,0,WH,15);
-  for(const [x,k] of [[g0-1,21],[g1,25]]){ block(x,P.y0-.2,x+1,P.y0+.7,0,PH,k); block(x-.1,P.y0-.3,x+1.1,P.y0+.8,PH,PH+5,k+4); }   // (each post, its cap)
+  for(const [x,k] of [[g0-1,21],[g1,25]]){ block(x,P.y0-.2,x+1,P.y0+.7,0,PH,k,'post'); block(x-.1,P.y0-.3,x+1.1,P.y0+.8,PH,PH+5,k+4,'cap'); }   // (each post, its cap)
+  PARK.look=[X(g1+1.8),Z(P.y0-1.6)];   // (a test's spot: on the sidewalk by the gate's east post)
   // THE EAST WALL (owner, 17 Oct 2026, the Avenue): the same wall up the park's east side along the Avenue's west sidewalk, its gate (the Avenue's
   // gate, two posts) opposite the museum; the park's back stays open lawn
   const EG=PARK.egate=[P.round[1]-1.5,P.round[1]+1.5], ex=P.x1-.5;
   block(ex,P.y0+.5,P.x1,EG[0]-1,0,WH,31); block(ex,EG[1]+1,P.x1,P.y1,0,WH,35);
-  for(const [y,k] of [[EG[0]-1,41],[EG[1],45]]){ block(ex-.2,y,P.x1+.2,y+1,0,PH,k); block(ex-.3,y-.1,P.x1+.3,y+1.1,PH,PH+5,k+4); }
+  for(const [y,k] of [[EG[0]-1,41],[EG[1],45]]){ block(ex-.2,y,P.x1+.2,y+1,0,PH,k,'post'); block(ex-.3,y-.1,P.x1+.3,y+1.1,PH,PH+5,k+4,'cap'); }
   // THE WEST AND NORTH WALLS (the loop, 17 Oct 2026): the same wall along the west street and the north street, a gate in each where the park's
   // middle way meets it; the castle's own curtain wall the park's corner (the walls stop at it)
   const CB=[CASTLE.b[0]-PO.x,CASTLE.b[1]-PO.x,CASTLE.b[2]-PO.y,CASTLE.b[3]-PO.y], wx=P.x0, ny=P.y1-.5, WG=PARK.wgate=[P.round[1]-1.5,P.round[1]+1.5], NG=PARK.ngate=[P.round[0]-3.5,P.round[0]+3.5];
   const wTop=Math.min(P.y1,CB[2]), nLeft=Math.max(P.x0,CB[1]);
   block(wx,P.y0+.5,wx+.5,WG[0]-1,0,WH,51); block(wx,WG[1]+1,wx+.5,wTop,0,WH,55);
-  for(const [y,k] of [[WG[0]-1,57],[WG[1],61]]){ block(wx-.2,y,wx+.7,y+1,0,PH,k); block(wx-.3,y-.1,wx+.8,y+1.1,PH,PH+5,k+4); }
+  for(const [y,k] of [[WG[0]-1,57],[WG[1],61]]){ block(wx-.2,y,wx+.7,y+1,0,PH,k,'post'); block(wx-.3,y-.1,wx+.8,y+1.1,PH,PH+5,k+4,'cap'); }
   block(nLeft,ny,NG[0]-1,P.y1,0,WH,65); block(NG[1]+1,ny,P.x1-.5,P.y1,0,WH,69);
-  for(const [x,k] of [[NG[0]-1,71],[NG[1],75]]){ block(x,ny-.2,x+1,P.y1+.2,0,PH,k); block(x-.1,ny-.3,x+1.1,P.y1+.3,PH,PH+5,k+4); }
+  for(const [x,k] of [[NG[0]-1,71],[NG[1],75]]){ block(x,ny-.2,x+1,P.y1+.2,0,PH,k,'post'); block(x-.1,ny-.3,x+1.1,P.y1+.3,PH,PH+5,k+4,'cap'); }
   // ---- THE ROCKS: his pack's models, each at its place, its height in metres, turned as it likes; one mesh
   // THE TREES' LOOK, three mockups (owner, 17 Oct 2026, the oaks' crowns striped and toothed by the sun's shadow map, then "i want smooth
   // realistic shadows and lighting like gradient radial etc"), ?treelook=N, off by default (the game as it is). On the park's things (the oaks, the
@@ -124,7 +137,7 @@ grab('park',()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.ox=PO.x; PARK.o
     SOL.up.push([X(g0-5.2),Z(P.y0+2.2),X(g0-2.2),Z(P.y0+3.1)]); FIX.up.push([X(g0-5.2),Z(P.y0+2.2),0,X(g0-2.2),Z(P.y0+3.1),Y(27)]);
     PARK.odd=mesh([['crate',g0-4.6,P.y0+2.65,.4,.2,.95],['gem1',g0-3.9,P.y0+2.5,.22,.5,.95],['gem2',g0-3.5,P.y0+2.8,.2,1.5,.95],['gem3',g0-3.1,P.y0+2.5,.24,2.5,.95],['gold',g0-2.6,P.y0+2.7,.08,.8,.95],['gem1',g0-4,P.y0+2.85,.18,3.5,.95]],false,false);
     PARK.camp=mesh([['campfire',RX(108),RY(-54.5),.13,0],['woodpile',RX(109.5),RY(-55.6),.5,.6]],false,true); PARK.fire={x:X(RX(108)),z:Z(RY(-54.5)),y:.3};
-    { const L=new THREE.PointLight(new THREE.Color(1,.6,.25),3.6,5*TILE,1.6); L.position.set(X(RX(108)),.7,Z(RY(-54.5))); scene.add(L); PARK.fireL=L;
+    { const L=new THREE.PointLight(new THREE.Color(1,.6,.25),26,9*TILE,1.6); L.position.set(X(RX(108)),.5*TILE,Z(RY(-54.5))); L.userData.fire=1; scene.add(L); PARK.fireL=L;   // (owner, 18 Oct 2026: "isnt causing any lights or shadows": at 3.6 it lit nothing beside the lamps' 6-40; now as strong as a street light, from the flames' middle, and first for the lamp shadow when near: LITE)
       // its fire live (fire.js): a bed of flames on the logs, embers flying up, smoke rising; the light flickering with it
       PARK.flame=FLAME.add({kind:'bed',name:'campfire',x:X(RX(108)),y:.12*TILE,z:Z(RY(-54.5)),w:.78*TILE,h:.95*TILE,embers:4,smoke:2.2,sk:1.3,light:L,seed:5}); }
     // (the plesiosaur skeleton: removed, owner 17 Oct 2026, "remove the dinosaur bones from game")

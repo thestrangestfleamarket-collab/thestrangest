@@ -37,5 +37,32 @@ const MUSH={};   // (17 Oct 2026, the owner: "the gold skeleton character is not
     part('strap',2,[ limb([.12,1.24,.1],[-.22,.72,.13],.02,.02,ROPE,6), limb([.12,1.24,-.06],[-.24,.72,-.06],.02,.02,ROPE,6),
       ...Array.from({length:7},(_,i)=>{ const u=(i+.5)/7; return shape(sph(.024,6,4),[.52,.37,.17],[.12-.34*u,1.24-.52*u,.1+.03*u]); }) ]),   // (its braid's knots)
     part('bag',1,[ shape(blob(.08,.12,.05,10,8),BAG,[-.26,.62,.04],null,[0,0,-6]), shape(blob(.085,.03,.055,10,6),[.62,.46,.25],[-.26,.72,.04],null,[0,0,-6]) ]) ];
-  const N=PARTSNPC.make(PARTS,Object.assign({key:'mushroom',name:'THE MUSHROOM SELLER',eye:0,eyeC:'0.,0.,0.',metres:2.2,radius:.3,speed:.4,stride:6,rock:.05,bob:.025},PARTSNPC.street(72,-70)));
-  MUSH.N=N; window.MUSHDBG=()=>({key:N.key,x:+N.st.x.toFixed(2),z:+N.st.z.toFixed(2),y:+N.g.position.y.toFixed(2),to:!!N.st.to,vis:N.g.visible,tris:N.tris}); }
+  // HIS BOOTH (owner, 18 Oct 2026: "i want to give the mushroom skeletong his own booth in the entrance of central park, his table is full of
+  // mushrooms"): inside the park's gate, east of the toy stall: a trestle table under a striped awning on two posts, its top heaped with
+  // mushrooms (red caps, browns, tans, cream, orange chanterelles) and three baskets of them; he stands behind it facing the gate, his tray still
+  // in his hands, rocking a little, never wandering. Blocks and rounds in two instanced draws (some 4,000 triangles), solid at the table; no light
+  const BOOTH=()=>{ const P=PARK, X=x=>BOD.XS(x+(P.ox||0)), Z=y=>BOD.ZS(y+(P.oy||0)), Y=BOD.YS, g1=P.gate[1], x0=g1+6.6, x1=g1+10.2, y0=P.y0+2.2, y1=P.y0+3.2, TP=27;
+    const BX=[], CY=[], box=(a,b,c,d,z0,z1,col)=>BX.push([(X(a)+X(b))/2,(Y(z0)+Y(z1))/2,(Z(c)+Z(d))/2,Math.abs(X(b)-X(a)),Y(z1)-Y(z0),Math.abs(Z(d)-Z(c)),col]);
+    const rnd=(()=>{ let t=7; return ()=>{ t=(t*16807)%2147483647; return t/2147483647; }; })(), WOOD=0x7a5634, DK=0x4e3622;
+    box(x0,x1,y0,y1,TP-2,TP,WOOD); for(const [a,b] of [[x0+.08,y0+.08],[x1-.2,y0+.08],[x0+.08,y1-.2],[x1-.2,y1-.2]])box(a,a+.12,b,b+.12,0,TP-2,DK);   // (the table, its legs)
+    box(x0+.1,x0+.22,y1-.1,y1+.02,0,74,DK); box(x1-.22,x1-.1,y1-.1,y1+.02,0,74,DK);   // (the awning's posts, at the back)
+    for(let i=0;i<9;i++){ const a=x0-.15+i*(x1-x0+.3)/9; box(a,a+(x1-x0+.3)/9,y0-.35,y1+.05,72,75,i&1?0xeee4cc:0xb03a2e); }   // (the awning, striped)
+    const cap=(x,y,z,r,col)=>CY.push([x,y,z,r,col]);
+    const COLS=[0xb8321f,0xc9402a,0x8a5a36,0x6e4a2c,0xc8a878,0xe8dcc0,0xe08a2a,0xd09a52];
+    for(let i=0;i<70;i++){ const x=x0+.15+rnd()*(x1-x0-.3), y=y0+.12+rnd()*(y1-y0-.24), r=.05+rnd()*.07; cap(X(x),Y(TP)+r*TILE*.5,Z(y),r*TILE,COLS[Math.floor(rnd()*COLS.length)]); }
+    for(const bx of [x0+.5,x0+1.8,x1-.6]){ const by=(y0+y1)/2+(rnd()-.5)*.2; box(bx-.28,bx+.28,by-.25,by+.25,TP,TP+7,0x9c7a46); for(let k=0;k<9;k++)cap(X(bx+(rnd()-.5)*.4),Y(TP+7)+.05*TILE*(1+rnd()),Z(by+(rnd()-.5)*.36),(.06+rnd()*.05)*TILE,COLS[Math.floor(rnd()*COLS.length)]); }
+    const m4=new THREE.Matrix4(), q=new THREE.Quaternion(), c=new THREE.Color(), V=THREE.Vector3, grp=(typeof MAPG!=='undefined'&&MAPG.park)||scene;
+    const B=new THREE.InstancedMesh(new THREE.BoxGeometry(1,1,1),new THREE.MeshLambertMaterial({color:0xffffff}),BX.length); BX.forEach(([x,y,z,sx,sy,sz,col],i)=>{ B.setMatrixAt(i,m4.compose(new V(x,y,z),q,new V(sx,sy,sz))); B.setColorAt(i,c.setHex(col)); });
+    const capG=new THREE.SphereGeometry(1,8,4,0,Math.PI*2,0,Math.PI/2).scale(1,.62,1); capG.merge?0:0; const stemG=new THREE.CylinderGeometry(.32,.38,.9,6).translate(0,-.45,0);
+    const C=new THREE.InstancedMesh(capG,new THREE.MeshLambertMaterial({color:0xffffff,flatShading:true}),CY.length), S=new THREE.InstancedMesh(stemG,new THREE.MeshLambertMaterial({color:0xe6dcc4,flatShading:true}),CY.length);
+    CY.forEach(([x,y,z,r,col],i)=>{ C.setMatrixAt(i,m4.compose(new V(x,y,z),q,new V(r,r,r))); C.setColorAt(i,c.setHex(col)); S.setMatrixAt(i,m4.compose(new V(x,y,z),q,new V(r,r,r))); });
+    for(const me of [B,C,S]){ me.castShadow=me.receiveShadow=true; grp.add(me); }
+    SOL.up.push([Math.min(X(x0),X(x1)),Math.min(Z(y0),Z(y1)),Math.max(X(x0),X(x1)),Math.max(Z(y0),Z(y1))]); FIX.up.push([Math.min(X(x0),X(x1)),Math.min(Z(y0),Z(y1)),0,Math.max(X(x0),X(x1)),Math.max(Z(y0),Z(y1)),Y(TP)]);
+    // (him behind it, facing the gate: held there, his mind saying so every frame; LIVES and the roaming leave a held one be)
+    MUSH.booth={x0,x1,y0,y1,hx:X((x0+x1)/2),hz:Z(y1+.75),fz:Z(y0-2)}; };
+  // (built once the park is: its gate and wall where the layout and its growth put them, park.js's builder having run; then he steps behind it)
+
+  const N=PARTSNPC.make(PARTS,Object.assign({key:'mushroom',name:'THE MUSHROOM SELLER',eye:0,eyeC:'0.,0.,0.',metres:2.2,radius:.3,speed:.4,stride:6,rock:.05,bob:.025},PARTSNPC.street(72,-70),
+    {roam:false,brain:(dt,you,st)=>{ const MB=MUSH.booth; st.to=null; st.hold=true; if(MB){ st.x=MB.hx; st.z=MB.hz; st.face={x:MB.hx,z:MB.fz}; } }}));   // (held behind his table, facing the gate)
+  { const wait=()=>{ if(!PARK.fire)return setTimeout(wait,500); BOOTH(); N.st.x=MUSH.booth.hx; N.st.z=MUSH.booth.hz; N.home={x:N.st.x,z:N.st.z}; }; wait(); }
+  MUSH.N=N; window.MUSHDBG=()=>({booth:!!MUSH.booth,life:!!N.life,fire:!!PARK.fire,key:N.key,x:+N.st.x.toFixed(2),z:+N.st.z.toFixed(2),y:+N.g.position.y.toFixed(2),to:!!N.st.to,vis:N.g.visible,tris:N.tris}); }

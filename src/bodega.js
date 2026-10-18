@@ -70,9 +70,15 @@ const BOD={meshes:[], walls:{}, lamps:[]};
     { const s=z%STORY; if(z>STORY-4&&(s<4||s>=STORY-2)){ const t=sh(mt('cope',speck([170,162,148],u,z/24,97)),f); return s>=STORY-2?sh(mt('mortar',sh(c,.6)),f*.6):s===3?sh(t,1.12):s===0?sh(t,.8):t; } }
     if(z<8)return sh(mt('cope',speck([150,146,136],u,z/24,95)),f*(z<1?.8:1));
     if(z<11)return sh(mt('cope',[150,146,136]),f*(z<9?1.1:.9));
-    const k=Math.floor(z/5), zz=z-k*5, uu=u*24/11+(k&1)*.5, bi=Math.floor(uu);
-    if(zz<1||uu-bi<1/11)return rlf(sh(mt('mortar',sh(c,.6)),f),zz<1?2:3);
-    return rlf(sh(mt('brick',sh(c,.9+hash(bi,k,11)*.2)),f),zz>=4?1:0); }
+    // (the brick, real: owner, 18 Oct 2026, "the bricks arent really textured": the mortar set back (a darker joint, the brick over it throwing a
+    // texel of shade on the course below), each brick its own tone and a grain across it, its top lit, a corner chipped now and then, a burnt
+    // dark one or a pale one here and there, grime rising from the foot of the wall)
+    const k=Math.floor(z/5), zz=z-k*5, uu=u*24/11+(k&1)*.5, bi=Math.floor(uu), bx=uu-bi, hb=hash(bi,k,11), hp=hash(Math.floor(u*24),Math.floor(z),13);
+    if(zz<1||bx<1/11)return rlf(sh(mt('mortar',sh(hp<.3?[118,110,100]:[132,124,112],.62)),f),zz<1?2:3);
+    if((zz===4||zz===1)&&(bx<2/11||bx>10/11)&&hash(bi,k,15)<.3)return sh(mt('mortar',[104,96,88]),f*.7);   // (a chipped corner)
+    let b=sh(c,.9+hb*.2); if(hb<.05)b=sh(c,.62); else if(hb>.96)b=sh(c,1.22);
+    b=sh(b,(zz===4?1.1:zz===1?.84:1)*(.94+.12*hp)*(1-.18*Math.max(0,1-(z-11)/60)*cvNoise(u*1.7,z/40,17)));
+    return rlf(sh(mt('brick',b),f),zz>=4?1:0); }
   const FRAME=[70,72,78];
   // ---- THE OBJECTS, as 26-bodega puts them (its keys, kinds, places and turns, word for word)
   const O={}, HUNG=[];
@@ -127,7 +133,7 @@ const BOD={meshes:[], walls:{}, lamps:[]};
   BOD.kindOf=p=>{ if(/fluorescent tube/.test(p.name||''))return 'U'; if(ROOF.includes(p))return 'R';   // (U: hung overhead, seen only from under it)
     if(FRONT.includes(p))return 'Hfront'; if(p.high){ const w=wallOf(p); if(w)return 'H'+w.id; } return 'L'; };
   BOD.paintProps=()=>{ for(const p of [...Object.values(O),...FRONT,...STREET,...ROOF,...GHOSTST]){ const k=BOD.kindOf(p); BATCH.tag=OBJ('bodega',p.name); for(const b of p.boxes)gbox(b,k); } BATCH.tag=null; };   // (each thing tagged: the world editor)
-  BOD.g={bodegaWall,grain,speck,COPE,DTBRICK,hash,grassCol,lawnCol}; BOD.CURB=CURB; BOD.FAR=FAR;   // (the game's painters the look's builder asks for)
+  BOD.g={bodegaWall,grain,speck,COPE,DTBRICK,hash,grassCol,lawnCol,kerbFace,cvNoise}; BOD.CURB=CURB; BOD.FAR=FAR;   // (the game's painters the look's builder asks for)
   BOD.gbox=gbox; BOD.faceTex=faceTex; BOD.bq=bq; BOD.C=C; BOD.facade=facade; BOD.FRAME=FRAME; BOD.place=place; BOD.placeAt=placeAt; BOD.MAP=MAP; BOD.K={MKS,CATALOG,PROPS,STUDIO,LSEED,STORY,sh};   // (place: the apartment house's furniture is set the same way, apts.js)
   // CROSSWALKS (owner, 17 Oct 2026, mockup 1): white bars over the road at the park's gate and across the Avenue's mouth, over the Avenue at its mouth
   // and at the park's east gate; each a run [a0, a1, axis]: the bars across the axis, long along the way people walk, a little worn
@@ -138,33 +144,33 @@ const BOD={meshes:[], walls:{}, lamps:[]};
   BOD.grounds=[
     {id:'shop',bld:true,x0:B0.x0,y0:B0.y0,x1:B0.x1,y1:B0.y1,z:.15,col:(x,y)=>bodegaFloorCol(x,y),tex:'concrete_floor_worn_001',tint:[112,116,124],rep:3},
     {id:'walk',x0:MAP.x0,y0:W,x1:MAP.x1,y1:CURB-.16,z:0,col:holed(slabCol),tex:'concrete_pavement',tint:[166,161,148],rep:2},
-    {id:'kerb',x0:MAP.x0,y0:CURB-.16,x1:MAP.x1,y1:CURB,z:0,col:()=>[178,174,164],tex:'concrete_pavement',tint:[178,174,164],rep:2},
+    {id:'kerb',x0:MAP.x0,y0:CURB-.16,x1:MAP.x1,y1:CURB,z:0,col:kerbCol('x'),tex:'concrete_pavement',tint:[178,174,164],rep:2},
     {id:'road',x0:MAP.x0,y0:CURB,x1:MAP.x1,y1:FAR,z:RD,col:(x,y)=>zebra(x,y,[[GATE[0],GATE[1],'x'],[AV.r1+.3,AV.x1-.3,'x'],[RG.wx0+.3,RG.wr0-.3,'x']]),tex:'asphalt_02',tint:[62,64,68],rep:3},
     // THE BACK ALLEY (owner, 17 Oct 2026, mockup 1): a service lane behind the whole row, worn asphalt, the fire escapes' side
     {id:'alley',x0:MAP.x0,y0:-101,x1:MAP.x1,y1:-96,z:0,col:(x,y)=>roadCol(x,y,1),tex:'asphalt_02',tint:[86,87,90],rep:3},
     // (the far kerb and sidewalk in two, either side of the Avenue's mouth, where its road runs into the street's; the Avenue's own: its two
     // sidewalks, its road a kerb down, its kerb strips, north from the far sidewalk's line to its end; its west sidewalk along the park's east wall)
-    {id:'kerb2',x0:RG.wr1,y0:FAR,x1:AV.r0,y1:FAR+.16,z:0,col:()=>[178,174,164],tex:'concrete_pavement',tint:[178,174,164],rep:2},
+    {id:'kerb2',x0:RG.wr1,y0:FAR,x1:AV.r0,y1:FAR+.16,z:0,col:kerbCol('x'),tex:'concrete_pavement',tint:[178,174,164],rep:2},
     {id:'walk2',x0:RG.wr1,y0:FAR+.16,x1:AV.r0,y1:MAP.y1,z:0,col:slabCol,tex:'concrete_pavement',tint:[166,161,148],rep:2},
-    {id:'kerb2e',x0:AV.r1,y0:FAR,x1:MAP.x1,y1:FAR+.16,z:0,col:()=>[178,174,164],tex:'concrete_pavement',tint:[178,174,164],rep:2},
+    {id:'kerb2e',x0:AV.r1,y0:FAR,x1:MAP.x1,y1:FAR+.16,z:0,col:kerbCol('x'),tex:'concrete_pavement',tint:[178,174,164],rep:2},
     {id:'walk2e',x0:AV.r1,y0:FAR+.16,x1:MAP.x1,y1:MAP.y1,z:0,col:slabCol,tex:'concrete_pavement',tint:[166,161,148],rep:2},
     {id:'aveW',x0:AV.x0,y0:MAP.y1,x1:AV.r0-.16,y1:RG.nr0-.16,z:0,col:slabCol,tex:'concrete_pavement',tint:[166,161,148],rep:2},
-    {id:'aveKW',x0:AV.r0-.16,y0:MAP.y1,x1:AV.r0,y1:RG.nr0-.16,z:0,col:()=>[178,174,164],tex:'concrete_pavement',tint:[178,174,164],rep:2},
+    {id:'aveKW',x0:AV.r0-.16,y0:MAP.y1,x1:AV.r0,y1:RG.nr0-.16,z:0,col:kerbCol('y'),tex:'concrete_pavement',tint:[178,174,164],rep:2},
     {id:'aveRoad',x0:AV.r0,y0:FAR,x1:AV.r1,y1:RG.nr0,z:RD,col:(x,y)=>zebra(x,y,[[FAR+.2,FAR+1.8,'y'],[EGATE[0],EGATE[1],'y']]),tex:'asphalt_02',tint:[62,64,68],rep:3},
-    {id:'aveKE',x0:AV.r1,y0:MAP.y1,x1:AV.r1+.16,y1:RG.nr1,z:0,col:()=>[178,174,164],tex:'concrete_pavement',tint:[178,174,164],rep:2},
+    {id:'aveKE',x0:AV.r1,y0:MAP.y1,x1:AV.r1+.16,y1:RG.nr1,z:0,col:kerbCol('y'),tex:'concrete_pavement',tint:[178,174,164],rep:2},
     {id:'aveE',x0:AV.r1+.16,y0:MAP.y1,x1:AV.x1,y1:AV.ey1,z:0,col:holed(slabCol),tex:'concrete_pavement',tint:[166,161,148],rep:2},
     // THE WEST STREET and THE NORTH STREET (the loop, 17 Oct 2026): as the Avenue: an outer sidewalk, its kerb, the road a kerb down, the inner
     // kerb and sidewalk along the park; the corners' outer squares sidewalk; a crosswalk at each of the park's gates
-    {id:'kerb2w',x0:MAP.x0,y0:FAR,x1:RG.wr0,y1:FAR+.16,z:0,col:()=>[178,174,164],tex:'concrete_pavement',tint:[178,174,164],rep:2},
+    {id:'kerb2w',x0:MAP.x0,y0:FAR,x1:RG.wr0,y1:FAR+.16,z:0,col:kerbCol('x'),tex:'concrete_pavement',tint:[178,174,164],rep:2},
     {id:'wstW',x0:RG.wx0,y0:FAR+.16,x1:RG.wr0-.16,y1:RG.nr1,z:0,col:holed(slabCol),tex:'concrete_pavement',tint:[166,161,148],rep:2},
-    {id:'wstKW',x0:RG.wr0-.16,y0:FAR+.16,x1:RG.wr0,y1:RG.nr1,z:0,col:()=>[178,174,164],tex:'concrete_pavement',tint:[178,174,164],rep:2},
+    {id:'wstKW',x0:RG.wr0-.16,y0:FAR+.16,x1:RG.wr0,y1:RG.nr1,z:0,col:kerbCol('y'),tex:'concrete_pavement',tint:[178,174,164],rep:2},
     {id:'wstRoad',x0:RG.wr0,y0:FAR,x1:RG.wr1,y1:RG.nr0,z:RD,col:(x,y)=>zebra(x,y,[[EGATE[0],EGATE[1],'y',RG.wr0,RG.wr1],[FAR+.2,FAR+1.8,'y',RG.wr0,RG.wr1]]),tex:'asphalt_02',tint:[62,64,68],rep:3},
-    {id:'wstKE',x0:RG.wr1,y0:MAP.y1,x1:RG.wr1+.16,y1:RG.nr0-.16,z:0,col:()=>[178,174,164],tex:'concrete_pavement',tint:[178,174,164],rep:2},
+    {id:'wstKE',x0:RG.wr1,y0:MAP.y1,x1:RG.wr1+.16,y1:RG.nr0-.16,z:0,col:kerbCol('y'),tex:'concrete_pavement',tint:[178,174,164],rep:2},
     {id:'wstE',x0:RG.wr1+.16,y0:MAP.y1,x1:RG.wx1,y1:RG.nr0-.16,z:0,col:slabCol,tex:'concrete_pavement',tint:[166,161,148],rep:2},
     {id:'nthS',x0:RG.wr1,y0:RG.ny0,x1:AV.r0,y1:RG.nr0-.16,z:0,col:slabCol,tex:'concrete_pavement',tint:[166,161,148],rep:2},
-    {id:'nthKS',x0:RG.wr1,y0:RG.nr0-.16,x1:AV.r0,y1:RG.nr0,z:0,col:()=>[178,174,164],tex:'concrete_pavement',tint:[178,174,164],rep:2},
+    {id:'nthKS',x0:RG.wr1,y0:RG.nr0-.16,x1:AV.r0,y1:RG.nr0,z:0,col:kerbCol('x'),tex:'concrete_pavement',tint:[178,174,164],rep:2},
     {id:'nthRoad',x0:RG.wr0,y0:RG.nr0,x1:AV.r1,y1:RG.nr1,z:RD,col:(x,y)=>zebra(x,y,[[GATE[0],GATE[1],'x',RG.nr0,RG.nr1],[RG.wr0+.2,RG.wr0+1.8,'x',RG.nr0,RG.nr1],[AV.r1-1.8,AV.r1-.2,'x',RG.nr0,RG.nr1]]),tex:'asphalt_02',tint:[62,64,68],rep:3},
-    {id:'nthKN',x0:RG.wr0,y0:RG.nr1,x1:AV.r1,y1:RG.nr1+.16,z:0,col:()=>[178,174,164],tex:'concrete_pavement',tint:[178,174,164],rep:2},
+    {id:'nthKN',x0:RG.wr0,y0:RG.nr1,x1:AV.r1,y1:RG.nr1+.16,z:0,col:kerbCol('x'),tex:'concrete_pavement',tint:[178,174,164],rep:2},
     {id:'nthN',x0:RG.wx0,y0:RG.nr1+.16,x1:AV.r1+.16,y1:RG.ny1,z:0,col:slabCol,tex:'concrete_pavement',tint:[166,161,148],rep:2},
     {id:'ghostst',bld:true,x0:GHOSTK.GSK.o[0]+.2,y0:GHOSTK.GSK.o[1]+8.3*GHOSTK.GSK.s-8.75*4/3,x1:GHOSTK.GSK.o[0]+10.4,y1:GHOSTK.GSK.o[1]+8.3*GHOSTK.GSK.s,z:.1,col:(x,y)=>GHOSTK.gsFloor(x,y)||lawnCol(x,y),tex:null,rep:2},   // (Ghost Street's paving: the kit's own, gsFloor)
     {id:'grassW',x0:MAP.x0,y0:B00.y0,x1:B0.x0,y1:W,z:0,col:holed(lawnCol),tex:null,rep:2}];   // (the lot west of the bodega, the stairs' hole in it: the park's lawn, as all grass is; the land's sheet lies under every other gap)

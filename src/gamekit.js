@@ -36,14 +36,29 @@ function speck(c,x,y,k){ const n=hash(Math.floor(x*24),Math.floor(y*24),k); retu
 function grain(x,y,k,s=1){ return (cvNoise(x/(5*s),y/(5*s),k)*3+cvNoise(x/(1.7*s),y/(1.7*s),k+2)*2+cvNoise(x*2.3/s,y*2.3/s,k+4))/6+(hash(Math.floor(x*48),Math.floor(y*48),k+6)-.5)*.07; }
 function crack(x,y,k,s=1.6,w=.007,on=.55){ return cvNoise(x/(s*4),y/(s*4),k+1)>on&&Math.abs(cvNoise(x/s,y/s,k)-.5)<w; }
 function spot(x,y,k,s,r,p){ const i=Math.floor(x/s), j=Math.floor(y/s); if(hash(i,j,k)>p)return false; const cx=(i+.2+hash(i,j,k+1)*.6)*s, cy=(j+.2+hash(i,j,k+2)*.6)*s; return Math.hypot(x-cx,(y-cy))<r; }
-function slabCol(x,y){ const i=Math.floor(x),j=Math.floor(y),fx=x-i,fy=y-j;            // the pavement: its slabs each their own tone, weathered
-  // across them as real pavement is: stains and rain-darkened patches that run over the seams (grain), a hairline crack in some slabs, old
-  // gum pressed flat in dark spots, and the seams grown green where the grass is near
-  const n=grain(x,y,301,1.2), seam=fx<.043||fy<.043;
-  if(seam){ if(n>.6&&landK(x+.6,y)===1||n>.6&&landK(x-.6,y)===1||n>.6&&landK(x,y+.6)===1||n>.6&&landK(x,y-.6)===1)return mt('pavement',hash(Math.floor(x*48),Math.floor(y*48),303)<.5?[96,118,70]:[84,104,62]); return mt('pavement',SEAM); }
-  if(hash(i,j,305)<.14&&crack(x,y,307,.9,.012,.3))return mt('pavement',sh(SEAM,.92));
+// THE PAVEMENT, REAL (owner, 18 Oct 2026: "the tiled sidewalk doesnt have real grout ... there arent any weeds betwen cracks, uneven lines in
+// sidewalk"): each slab a tile, its seams wandering a texel or so off straight (two broad noises bend the grid), the grout two texels wide and
+// dark, the slab's rim bevelled (lit on its top-left, shaded on its bottom-right: the groove reads as cut in), each slab tilted a little its
+// own way (one corner lighter, the far one darker), some corners chipped into the grout, weeds and moss in the seams where a broad noise
+// lets them (greener near the grass), a few slabs cracked with a weed in the crack, stains running over the seams, old gum pressed flat
+const GROUT=[86,82,74], WEEDS=[[70,104,50],[92,128,60],[58,86,42],[112,140,70]];
+function slabCol(x,y){ const wx=x+(cvNoise(x*1.3,y*1.3,401)-.5)*.08, wy=y+(cvNoise(x*1.3+9,y*1.3,403)-.5)*.08;
+  const i=Math.floor(wx), j=Math.floor(wy), fx=wx-i, fy=wy-j, ex=Math.min(fx,1-fx), ey=Math.min(fy,1-fy), e=Math.min(ex,ey), n=grain(x,y,301,1.2), px=Math.floor(x*24), py=Math.floor(y*24), hp=hash(px,py,405);
+  const ci=Math.round(wx), cj=Math.round(wy), chip=ex<.14&&ey<.14&&hash(ci,cj,411)<.4&&Math.hypot(Math.min(fx,1-fx),Math.min(fy,1-fy))<.07+hash(ci,cj,413)*.07;
+  const green=cvNoise(x/2.2,y/2.2,415)+(landK(x+.8,y)===1||landK(x-.8,y)===1||landK(x,y+.8)===1||landK(x,y-.8)===1?.2:0);
+  if(e<.042||chip){ if(green>.7&&hp<.7)return mt('pavement',WEEDS[Math.floor(hash(px,py,417)*4)]); return mt('pavement',hp<.2?sh(GROUT,.86):hp>.9?sh(GROUT,1.1):GROUT); }
+  if(e<.07&&green>.78&&hp<.35)return mt('pavement',WEEDS[Math.floor(hash(px,py,419)*4)]);   // (a tuft spilling out of the seam)
+  if(hash(i,j,305)<.16&&crack(x,y,307,.9,.014,.3)){ if(green>.55&&hp<.5)return mt('pavement',WEEDS[(px+py)&3]); return mt('pavement',sh(GROUT,.95)); }
   if(spot(x,y,309,.25,.025,.07))return mt('pavement',[108,104,98]);
-  const c=SLAB[Math.floor(hash(i,j,7)*3)]; return mt('pavement',speck(n<.3?sh(c,.94):n<.36&&hash(Math.floor(x*48),Math.floor(y*48),311)<.5?sh(c,.94):n>.72?sh(c,1.03):c,x,y,3)); }
+  let c=SLAB[Math.floor(hash(i,j,7)*3)]; const tx=(hash(i,j,421)-.5)*.12, ty=(hash(i,j,423)-.5)*.12; c=sh(c,1+tx*(fx-.5)*2+ty*(fy-.5)*2);
+  if(e<.084)c=sh(c,(fx<.084||fy<.084)?1.08:.86);   // (the bevel: its top-left rim lit, its bottom-right in the groove's shade)
+  return mt('pavement',speck(n<.3?sh(c,.93):n<.36&&hp<.5?sh(c,.94):n>.72?sh(c,1.04):c,x,y,3)); }
+// THE KERB: granite lengths a tile and a half long, their joints, mottled, a chipped pixel here and there; its face down to the road with a lit
+// top edge and grime at its foot (ax: the way it runs)
+function kerbCol(ax){ return (x,y)=>{ const a=ax==='y'?y:x, px=Math.floor(x*24), py=Math.floor(y*24), hp=hash(px,py,431), n=grain(x,y,433,.8);
+  if(((a%1.5)+1.5)%1.5<.042)return mt('kerb',GROUT); const c=sh([178,174,164],.9+.16*n+(hash(Math.floor(a/1.5),0,435)-.5)*.08); return mt('kerb',hp<.03?sh(c,.75):hp>.97?sh(c,1.12):c); }; }
+function kerbFace(a,z,H){ const hp=hash(Math.floor(a*24),z,437), n=grain(a,z/24,439,.8); if(((a%1.5)+1.5)%1.5<.042)return GROUT;
+  let c=sh([150,146,138],.88+.18*n); if(z>=H-1)c=sh(c,1.15); else if(z<1)c=sh(c,.62); else if(z<2)c=sh(c,.8); return hp<.05?sh(c,.8):c; }
 function roadCol(x,y,w){ const c=w?[86,87,90]:[62,64,68], n=grain(x,y,37,1.3), S=LSEED, yc=CITY.yc;
   if(crack(x,y,141,1.5,w?.012:.007,w?.4:.56))return mt('road',sh(c,.7));
   const p=cvNoise(x/3.2,y/3.2,143); if(!w&&p>.76)return mt('road',speck(p<.765?[44,45,48]:[54,55,58],x,y,145));   // a tar patch, its rim
@@ -63,6 +78,10 @@ function lawnCol(x,y){ const ix=Math.floor(x*24), iy=Math.floor(y*24), n=grain(x
   const cx=Math.floor(ix/6), cy=Math.floor(iy/6), h=hash(cx,cy,305), ax=cx*6+1+Math.floor(hash(cx,cy,307)*4), ay=cy*6+1+Math.floor(hash(cx,cy,309)*4), dx=ix-ax, dy=iy-ay;
   if(h<.2){ if(dx===0&&dy===0)c=SPR[0]; else if(Math.abs(dx)===1&&dy===-1)c=SPR[1]; }   // (a sprout)
   else if(h<.3){ if(dx>=0&&dx<2&&dy>=0&&dy<2)c=WEED[(dx+dy)&1]; else if(h<.235&&dx===2&&dy===-1)c=BLOOM[h<.215?0:1]; }   // (a weed, and its flower)
+  // (its depth, owner 18 Oct 2026, "the grass is completely flat": blades a texel and two tall, lit at their tips, a dark texel at their foot,
+  // thicker where the field is lush; darker hollows in a broad noise)
+  else{ const hb=hash(ix,iy,311), hb2=hash(ix,iy+1,311), lush=n; if(hb<.05+lush*.08)c=sh(c,1.18); else if(hb2<.05+lush*.08)c=sh(c,.72); else if(hb>.94)c=sh(c,.88); }
+  const hol=cvNoise(x/3.1,y/3.1,313); if(hol<.3)c=sh(c,.9); else if(hol>.74)c=sh(c,1.06);
   return c; }
 function grassCol(x,y){ const n=(cvNoise(x/5,y/5,29)*3+cvNoise(x/1.7,y/1.7,31)*2+cvNoise(x*2.3,y*2.3,33))/6+(hash(Math.floor(x*48),Math.floor(y*48),35)-.5)*.07, dz=hash(Math.floor(x*48),Math.floor(y*48),53);
   // the trodden edge: how near the nearest ground that isn't lawn is (four looks, a quarter tile apart)

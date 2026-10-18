@@ -24,11 +24,14 @@ const BODB={};
         if(w.ax==='x')m.position.set(X((h.a0+h.a1)/2),Y((h.z0+h.z1)/2),Z(w.at)); else{ m.position.set(X(w.at),Y((h.z0+h.z1)/2),Z((h.a0+h.a1)/2)); m.rotation.y=Math.PI/2; } scene.add(m); } } }
   // THE ROOF (tar, the cope round it), hidden while you're inside
   const roofCol=(x,y)=>{ const n=grain(x,y,61,1.4); return speck(n<.35?[50,50,52]:n>.7?[66,64,62]:[58,57,57],x,y,63); };
-  const flat=(x0,y0,x1,y1,z,col,kind,S)=>{ const X=S?BOD.XS:BOD.X, Y=S?BOD.YS:BOD.Y, Z=S?BOD.ZS:BOD.Z; return BOD.bq([X(x0),Y(z),Z(y1)],[X(x1),Y(z),Z(y1)],[X(x1),Y(z),Z(y0)],[X(x0),Y(z),Z(y0)],BOD.faceTex((x1-x0)*24,(y1-y0)*24,(i,j)=>BOD.C(col(x0+(i+.5)/24,y1-(j+.5)/24))),kind); };   // (S: on the street, its size as it was; else the building's)
+  // (a ground wider or deeper than 80 tiles in pieces: the atlas is 2048 texels across, and a wider picture ran over into its next rows, the
+  // sidewalk in long streaks from where the street was lengthened: owner, 18 Oct 2026, "the sidewalk is long streaks instead of tiles")
+  const flat=(x0,y0,x1,y1,z,col,kind,S)=>{ if(x1-x0>80||y1-y0>80){ for(let a=x0;a<x1;a+=80)for(let b=y0;b<y1;b+=80)flat0(a,b,Math.min(x1,a+80),Math.min(y1,b+80),z,col,kind,S); return; } return flat0(x0,y0,x1,y1,z,col,kind,S); };
+  const flat0=(x0,y0,x1,y1,z,col,kind,S)=>{ const X=S?BOD.XS:BOD.X, Y=S?BOD.YS:BOD.Y, Z=S?BOD.ZS:BOD.Z; return BOD.bq([X(x0),Y(z),Z(y1)],[X(x1),Y(z),Z(y1)],[X(x1),Y(z),Z(y0)],[X(x0),Y(z),Z(y0)],BOD.faceTex((x1-x0)*24,(y1-y0)*24,(i,j)=>BOD.C(col(x0+(i+.5)/24,y1-(j+.5)/24))),kind); };   // (S: on the street, its size as it was; else the building's)
   flat(B0.x0,B0.y0,B0.x1,B0.y1,H,roofCol,'R');
   // THE GROUND, and the kerbs' faces down to the street
   for(const g of BOD.grounds)flat(g.x0,g.y0,g.x1,g.y1,g.z,g.col,'G',!g.bld);
-  { const X=BOD.XS, Y=BOD.YS, Z=BOD.ZS; for(const k of BOD.kerbs){ const P=(a,z)=>k.ax==='y'?[X(k.at),Y(z),Z(a)]:[X(a),Y(z),Z(k.at)]; BOD.bq(P(k.a0,k.z0),P(k.a1,k.z0),P(k.a1,k.z1),P(k.a0,k.z1),BOD.faceTex((k.a1-k.a0)*24,k.z1-k.z0,()=>[150,146,138]),'G'); } }   // (a kerb along x, or along y: the Avenue's)
+  { const X=BOD.XS, Y=BOD.YS, Z=BOD.ZS; for(const k of BOD.kerbs){ const P=(a,z)=>k.ax==='y'?[X(k.at),Y(z),Z(a)]:[X(a),Y(z),Z(k.at)]; for(let a0=k.a0;a0<k.a1;a0+=80){ const a1=Math.min(k.a1,a0+80), H=k.z1-k.z0; BOD.bq(P(a0,k.z0),P(a1,k.z0),P(a1,k.z1),P(a0,k.z1),BOD.faceTex((a1-a0)*24,H,(i,j)=>BOD.g.kerbFace(a0+(i+.5)/24,H-1-j,H)),'G'); } } }   // (in lengths of 80 tiles at most: the atlas's width; its granite lengths, lit top, grimy foot: gamekit.js)   // (a kerb along x, or along y: the Avenue's)
   // THE OBJECTS: every box of every one, painted by the game's own painters, into the atlas
   BOD.paintProps();
   BATCH.cast=true;

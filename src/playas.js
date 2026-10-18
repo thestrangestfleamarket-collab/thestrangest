@@ -4,7 +4,7 @@
 // you are, and plays its own clips for what you're doing: standing, walking, jogging, sprinting (by your speed), in the air, a punch, a roll,
 // falling, sitting, swimming. ?avatar=walker (or GRAPHICS' AVATAR) the Walker as before. Cost: 6,872 triangles, one draw, his own shadow ----
 const PLAYAS={on:false}; window.PLAYAS=PLAYAS;
-{ const q=QS.get('avatar'); let v=null; try{ v=localStorage.getItem('market-avatar'); }catch(e){} PLAYAS.on=(q||v||'mannequin')!=='walker';
+{ const q=QS.get('avatar'); let v=null; try{ v=localStorage.getItem('market-avatarpick'); }catch(e){} PLAYAS.on=(q||v||'walker')==='mannequin';   // (the Walker, MALE or FEMALE, by default again: owner, 18 Oct 2026, "i want to switch back to the regular avatar that has man and woman, make that the default"; ?avatar=mannequin or GRAPHICS' AVATAR the mannequin)
   const K=window.UALK;
   // HIM AS A MAN, DRESSED IN ITEMS (owner, 17 Oct 2026: "make him look human, shoes, blue jeans, real color skin, hair, (no face) shirt";
   // then "lets make his base model no clothes just underwear, and then put jeans and shoes and hair on him as sep items"): the base body is
@@ -75,8 +75,10 @@ const PLAYAS={on:false}; window.PLAYAS=PLAYAS;
       else if(PLAYAS.nb&&PLAYAS.nb.clip){ base=PLAYAS.nb.clip; ts=PLAYAS.nb.ts||1; }
       else if(mv&&MOVE[mv])base=MOVE[mv];
       else if(st.up&&MOVE[st.up.name])base=MOVE[st.up.name];   /* (the punches: the rig's upper-body layer) */
-      else if(sp>.25){ if(sp>3.6){ base='Sprint_Loop'; ts=sp/5; } else if(sp>2){ base='Jog_Fwd_Loop'; ts=sp/3.2; } else { base='Walk_Loop'; ts=sp/1.4; } }
-      an.base=base; an.ts=Math.max(.4,Math.min(2.2,ts)); an.update(dt); if(PLAYAS.nb&&PLAYAS.nb.arms)PLAYAS.armsUp(); };
+      else if(sp>.25){ const sk=(st.wk||1)+((st.rk||1)-(st.wk||1))*st.run, sn=sp/sk;   /* (the clip by his pace as it would be at his own speeds: walking faster is still a walk, its clip quicker) */
+        if(sn>3.6){ base='Sprint_Loop'; ts=sp/5; } else if(sn>2){ base='Jog_Fwd_Loop'; ts=sp/3.2; } else { base='Walk_Loop'; ts=sp/1.4; } }
+      const ak=st.anim||1; an.base=base; an.ts=Math.max(.2,Math.min(4,ts*ak)); an.update(dt*(base==='Idle_Loop'||an.once?ak:1));   /* (the animation's speed: the loops by their pace times it, the moves and the idle by it alone) */
+      PLAYAS.relax(dt,base==='Idle_Loop'&&!an.once&&!RAG.on); if(PLAYAS.nb&&PLAYAS.nb.arms)PLAYAS.armsUp(); };
     // ---- NIMBLE (owner, 17 Oct 2026: "lets make him super nimble, he can run jump roll grab things and swing, full actionable and fun to
     // play"): over the rig's own walking and moves, a layer of his own: he runs a third faster (PLAYAS.K, on the rig's stride); Space is his
     // jump (higher than the rig's, carrying his run); in the air he catches what's in reach of his hands: a bar (the playground's in the park,
@@ -145,9 +147,55 @@ const PLAYAS={on:false}; window.PLAYAS=PLAYAS;
         if(u>=1){ nb.state='ground'; nb.lift=0; an.play('Jump_Land',{speed:1.8}); } return; }
       nb.lift=0; nb.tilt=0; };
 
+    // ---- STANDING EASY (owner, 18 Oct 2026: "make sure the characters regular standing pose is normal standing like the walker and not like
+    // he is ready for battle, this is casual gaming"): the pack's Idle_Loop stands guarded (knees bent, fists up by the waist). Over it, while he
+    // stands, his arms hang by his sides (a little out, the elbows soft), his legs straight under his hips, his back up; his feet keep the
+    // ground (the body lifted by what straightening the knees gained). Eased in and out (rx) so a walk starts from it smoothly
+    let rx=0; const DOWN=new V(0,-1,0), q0=new THREE.Quaternion(), fq=new THREE.Quaternion(), fpq=new THREE.Quaternion(), P1=new V(), P2=new V();
+    const blendAim=(b,c,dir,w)=>{ q0.copy(b.quaternion); aim(b,c,dir); if(w<1){ b.quaternion.slerpQuaternions(q0,b.quaternion.clone(),w); b.updateMatrixWorld(true); } };
+    const outOf=(a,b)=>{ bone(a).getWorldPosition(P1); bone(b).getWorldPosition(P2); P2.sub(P1); P2.y=0; return P2.normalize().clone(); };
+    const footY=()=>{ bone('foot_l').getWorldPosition(P1); bone('foot_r').getWorldPosition(P2); return Math.min(P1.y,P2.y); };
+    PLAYAS.relax=(dt,on)=>{ rx+=((on?1:0)-rx)*Math.min(1,dt*6); if(rx<.01)return; N.g.updateMatrixWorld(true); const f=fwd(), y0=footY();
+      blendAim(bone('spine_02'),bone('neck_01'),new V(0,1,0).addScaledVector(f,.05).normalize(),rx*.7);
+      for(const sd of ['l','r']){ const o=outOf('spine_03','upperarm_'+sd);
+        blendAim(bone('upperarm_'+sd),bone('lowerarm_'+sd),DOWN.clone().addScaledVector(o,.14).addScaledVector(f,.02).normalize(),rx);
+        blendAim(bone('lowerarm_'+sd),bone('hand_'+sd),DOWN.clone().addScaledVector(o,.06).addScaledVector(f,.16).normalize(),rx); }
+      for(const sd of ['l','r']){ const ft=bone('foot_'+sd); ft.getWorldQuaternion(fq); const o=outOf('pelvis','thigh_'+sd);
+        blendAim(bone('thigh_'+sd),bone('calf_'+sd),DOWN.clone().addScaledVector(o,.03).normalize(),rx);
+        blendAim(bone('calf_'+sd),ft,DOWN.clone().addScaledVector(f,-.02).normalize(),rx);
+        ft.parent.getWorldQuaternion(fpq); ft.quaternion.copy(fpq.invert().multiply(fq)); ft.updateMatrixWorld(true); }   /* (the foot flat as the clip had it) */
+      N.g.position.y+=y0-footY(); };
+    // ---- BODY TYPES (owner, 18 Oct 2026: "create preset body types based on the current avatar that you can switch between, add 6 common body
+    // types"): his own body reshaped at its bind pose: each point pushed out from (or in toward) the bone it rides by that region's girth (the
+    // chest and waist by width and depth apart, the belly forward alone, the arms, thighs, calves and neck round), his worn items with him (the
+    // same sums on their points), and his height. AVERAGE is the body as it came. PLAYAS.body(name); kept in the browser (market-bodytype)
+    const BT={AVERAGE:{h:1},SLIM:{h:1.01,chest:[.88,.88],waist:[.84,.84],belly:.84,arm:.82,thigh:.85,calf:.88,neck:.9},
+      ATHLETIC:{h:1.02,chest:[1.16,1.12],waist:[.96,.95],belly:.92,arm:1.22,thigh:1.12,calf:1.08,neck:1.12},
+      HEAVY:{h:1,chest:[1.18,1.25],waist:[1.32,1.36],belly:1.45,arm:1.25,thigh:1.25,calf:1.14,neck:1.2},
+      STOCKY:{h:.9,chest:[1.12,1.1],waist:[1.12,1.12],belly:1.15,arm:1.15,thigh:1.16,calf:1.12,neck:1.15},
+      TALL:{h:1.1,chest:[.96,.95],waist:[.92,.92],belly:.92,arm:.93,thigh:.93,calf:.94,neck:.97}};
+    PLAYAS.BODIES=Object.keys(BT); PLAYAS.BT=BT;   // (the Walker's own take on them: src/avmove.js)
+    { const R=K.D.rig, NM=R.names, PA=R.parent, ibm=new Float32Array(Uint8Array.from(atob(R.ibm),c=>c.charCodeAt(0)).buffer), J=NM.map((_,i)=>new V().setFromMatrixPosition(new THREE.Matrix4().fromArray(ibm,i*16).invert()));
+      const kid=b=>{ const pref={pelvis:'spine_01',spine_03:'neck_01'}[NM[b]]; if(pref)return NM.indexOf(pref); return PA.indexOf(b); };
+      const fz=Math.sign(J[NM.indexOf('ball_l')].z-J[NM.indexOf('foot_l')].z)||1;   /* (which way he faces in his own frame: his toes) */
+      const REGB=NM.map(n=>/^spine_0[23]$|^clavicle/.test(n)?'chest':/^pelvis$|^spine_01$/.test(n)?'waist':/^upperarm|^lowerarm/.test(n)?'arm':/^thigh/.test(n)?'thigh':/^calf/.test(n)?'calf':/^neck/.test(n)?'neck':null);
+      const KID=NM.map((_,b)=>kid(b)), parts=[[geo,geo.attributes.position.array.slice()],...Object.values(PLAYAS.items).map(m=>[m.geometry,m.geometry.attributes.position.array.slice()])], s0=N.body.scale.clone(), A=new V(), D=new V(), C=new V();
+      PLAYAS.body=name=>{ const T=BT[name]||BT.AVERAGE; PLAYAS.bodyType=BT[name]?name:'AVERAGE';
+        for(const [g,P0] of parts){ const P=g.attributes.position.array, SI=g.attributes.skinIndex, SW=g.attributes.skinWeight, n=P.length/3;
+          for(let i=0;i<n;i++){ let ox=0,oy=0,oz=0; const px=P0[i*3],py_=P0[i*3+1],pz=P0[i*3+2];
+            for(let k=0;k<4;k++){ const w=SW.getComponent(i,k); if(w<=0)continue; const b=SI.getComponent(i,k), rg=REGB[b]; if(!rg||T[rg]==null)continue; const c=KID[b]; if(c<0)continue;
+              A.subVectors(J[c],J[b]); const l2=A.lengthSq()||1, t=Math.max(0,Math.min(1,((px-J[b].x)*A.x+(py_-J[b].y)*A.y+(pz-J[b].z)*A.z)/l2)); C.copy(J[b]).addScaledVector(A,t); D.set(px-C.x,py_-C.y,pz-C.z);
+              if(rg==='chest'||rg==='waist'){ const fx=T[rg][0], fd=rg==='waist'&&D.z*fz>0?T.belly:T[rg][1]; ox+=w*D.x*(fx-1); oz+=w*D.z*(fd-1); }
+              else { const f=T[rg]-1; ox+=w*D.x*f; oy+=w*D.y*f; oz+=w*D.z*f; } }
+            P[i*3]=px+ox; P[i*3+1]=py_+oy; P[i*3+2]=pz+oz; }
+          g.attributes.position.needsUpdate=true; if(g.attributes.normal)g.computeVertexNormals(); g.computeBoundingSphere(); }
+        N.body.scale.set(s0.x*T.h,s0.y*T.h,s0.z*T.h); try{ localStorage.setItem('market-bodytype',PLAYAS.bodyType); }catch(e){} };
+      let b0='AVERAGE'; try{ b0=localStorage.getItem('market-bodytype')||'AVERAGE'; }catch(e){} if(b0!=='AVERAGE')PLAYAS.body(b0); else PLAYAS.bodyType='AVERAGE'; }
+
     const g0=document.querySelector('#dgrain'); if(g0){ const b=document.createElement('button'); b.className='btn'; b.id='davatarpick'; const draw=()=>{ b.textContent='AVATAR: '+(PLAYAS.on?'MANNEQUIN':'WALKER'); b.setAttribute('aria-pressed',String(PLAYAS.on)); };
-      b.onclick=()=>{ PLAYAS.on=!PLAYAS.on; try{ localStorage.setItem('market-avatar',PLAYAS.on?'mannequin':'walker'); }catch(e){} draw(); }; g0.parentNode.appendChild(b); draw(); }
+      b.onclick=()=>{ PLAYAS.on=!PLAYAS.on; try{ localStorage.setItem('market-avatarpick',PLAYAS.on?'mannequin':'walker'); }catch(e){} draw(); }; g0.parentNode.appendChild(b); draw(); }
     if(g0){ for(const name of ['hair','shirt','jeans','shoes']){ const b=document.createElement('button'); b.className='btn'; const draw=()=>{ const on=PLAYAS.items[name]&&PLAYAS.items[name].visible; b.textContent=name.toUpperCase()+(on?' ON':' OFF'); b.setAttribute('aria-pressed',String(!!on)); }; b.onclick=()=>{ PLAYAS.wear(name); draw(); }; g0.parentNode.appendChild(b); draw(); } }
-    window.PLAYCAM=(k=4)=>{ UI.setFree(true); UI.camT.set(pos.x,py+N.H*ZU*24/TILE*.5,pos.z); ppu=ppuTo=PPU*k; };   // (a test's look: the free camera on his middle)
+    window.PLAYCAM=(k=4,d,p)=>{ UI.setFree(true); UI.camT.set(pos.x,py+N.H*ZU*24/TILE*.5,pos.z); ppu=ppuTo=PPU*k; if(d!=null)yaw=yawTo=heading+Math.PI+d*Math.PI/180; if(p!=null)pitch=pitchTo=p; };   // (a test's look: the free camera on his middle; d degrees round from his front, p the tilt)
+    window.PLAYVOID=()=>{ pos.x=BOUND.x1-.5*TILE; pos.z=BOD.ZS((BOD.MAP.y0+BOD.MAP.y1)/2); };   // (a test's: him out on the land's east edge, the sheets' black void)
     window.PLAYASDBG=()=>({on:PLAYAS.on,mv:st.move&&st.move.name,base:an.base,ts:+an.ts.toFixed(2),sp:+sp.toFixed(2),x:+N.g.position.x.toFixed(2),z:+N.g.position.z.toFixed(2),vis:N.g.visible}); }
   else PLAYAS.tick=()=>{}; }

@@ -7,6 +7,7 @@
 const ROOMS={cur:null}; window.ROOMS=ROOMS;   // (a test's look)
 ROOMS.roofAt=(x,y,z)=>{ const h=new THREE.Raycaster(new THREE.Vector3(x,y,z),new THREE.Vector3(0,1,0),0,12).intersectObjects(scene.children,true).find(i=>{ for(let q=i.object;q;q=q.parent)if(!q.visible)return false; return i.object.isMesh&&!i.object.isSkinnedMesh; }); return h?+h.distance.toFixed(2):null; };   // (a test's: a roof over a spot)
 { const V=THREE.Vector3, PL=[0,1,2,3,4,5].map(()=>new THREE.Plane()), m=.14*TILE; let RL=null;
+  const NEAR=[new THREE.Plane(new V(0,-1,0),1e6),new THREE.Plane(new V(1,0,0),1e6)]; let NEARON=false;   // (the near side's cut: below)
   const box=(X,Z,t,y0,y1)=>{ const a=X(t[0]), b=X(t[2]), c=Z(t[1]), d=Z(t[3]); return {x0:Math.min(a,b),x1:Math.max(a,b),z0:Math.min(c,d),z1:Math.max(c,d),y0,y1}; };
   const build=()=>{ RL=[]; const B=BOD.B0;
     RL.push(box(BOD.X,BOD.Z,[B.x0,BOD.BODOFF,B.x1,B.y1],-1,BOD.Y(B.h)),box(BOD.X,BOD.Z,[B.x0,B.y0,B.x1,BOD.BODOFF],-1,BOD.Y(B.h)));
@@ -26,6 +27,21 @@ ROOMS.roofAt=(x,y,z)=>{ const h=new THREE.Raycaster(new THREE.Vector3(x,y,z),new
     ROOMS.cur=hit; UI.isoPlace(); if(BOD.GD)BOD.GD.tick(); if(MODS.dungeon)MODS.dungeon.tick();   // (the dungeon's torches flicker: castle.js)   // (the dojo's flames: lit only while you're in it)
     // THE LIGHTS OVERHEAD (owner, 17 Oct 2026: "dont show over head lights in any view unless looking up at them"): only from under them
     for(const h of OVERHEAD)h.o.visible=cam.position.y<h.y;
+    // THE NEAR SIDE DOWN (owner, 18 Oct 2026: "by default the walls nearest view go down so you can see yourself. hide anything that covers the
+    // room view. you shouldnt see anything on this wall when its hidden"): in a room, looked down on (the isometric and map views), whatever
+    // stands between you and the camera is cut at your knee: everything more than a little toward the camera from you AND above knee height
+    // (two planes on each material, clipped only where both say so: clipIntersection), so the near walls, the shelves and counters before you,
+    // what hangs on those walls (the neon and its glow) and anything overhead on that side are gone, the floor kept. The materials get the two
+    // planes the first time a room is entered (their programs are made again then, with the room's own planes); out of a room they stay, set
+    // to cut nothing. Not the characters. Their shadows stay (clipShadows off), so the light in the room doesn't change
+    const cutOn=hit&&!UI.persp&&(UI.view==='iso'||UI.view==='map');
+    if(cutOn){ if(!NEARON){ NEARON=true; const skip=new Set([W3.group,...NPCS.map(N=>N.g)]); for(const o of [window.PLAYAS&&PLAYAS.N&&PLAYAS.N.g,typeof MUS!=='undefined'&&MUS.g,typeof PNM!=='undefined'&&PNM.g,typeof SGM!=='undefined'&&SGM.g,typeof DRM!=='undefined'&&DRM.g])if(o)skip.add(o);
+        const walk=o=>{ if(skip.has(o)||o.isSkinnedMesh)return; const ms=o.material?(Array.isArray(o.material)?o.material:[o.material]):[]; for(const mt of ms){ if(mt.clippingPlanes===NEAR||(mt.isShaderMaterial&&!mt.clipping))continue; mt.clippingPlanes=NEAR; mt.clipIntersection=true; mt.needsUpdate=true; } for(const c of o.children)walk(c); };
+        walk(scene); }
+      const cx=cam.position.x-pos.x, cz=cam.position.z-pos.z, l=Math.hypot(cx,cz)||1, ux=cx/l, uz=cz/l;
+      NEAR[0].normal.set(0,-1,0); NEAR[0].constant=py+.45*ZU*24/.84;   /* (above his knee: 0.45 m) */
+      NEAR[1].normal.set(-ux,0,-uz); NEAR[1].constant=ux*pos.x+uz*pos.z+.6*TILE; }   /* (more than 0.6 tile toward the camera from him) */
+    else if(NEARON&&NEAR[0].constant<1e5){ NEAR[0].constant=NEAR[1].constant=1e6; }
     if(hit){ PL[0].set(new V(1,0,0),-(hit.x0-m)); PL[1].set(new V(-1,0,0),hit.x1+m); PL[2].set(new V(0,0,1),-(hit.z0-m)); PL[3].set(new V(0,0,-1),hit.z1+m); PL[4].set(new V(0,1,0),-hit.y0); PL[5].set(new V(0,-1,0),hit.y1+.05);
       renderer.clippingPlanes=PL; scene.background.setRGB(0,0,0); }
     else if(renderer.clippingPlanes.length)renderer.clippingPlanes=[];

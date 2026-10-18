@@ -1660,3 +1660,12 @@ login gets THE MARKET and it starts, and no file is handed out by itself; `.gith
 request. Still to do, the owner's: the deploy step (Cloudflare token), moving the domain from the `tsfm` worker to `thestrangest`.
 Next after this: the code as ordinary modules (option 3).
 
+**The site in files, like the old game** (owner, 18 Oct 2026: "the page is stlil showing all the source code and is not using any pulls
+from. js or anything else like the old game structure, its insanely large"; chose "split it like the old game"): THE MARKET was one 5.9 MB
+page (1.9 MB compressed: about 4 MB of baked models, 1.9 MB of code). The website now gets `dist/g/`: a 4 KB `market.html`, the rig and
+the game as their own `.js` files, and each model file as its own `.json`, all named by their contents so a browser keeps them until they
+change (an update re-downloads only what changed; the models rarely do). The worker (`worker/door.js`) gives `/g/` files only to a
+checked login (remembered 5 minutes), and nothing to anyone else. The code is still readable by whoever plays: anything a browser runs
+can be opened; minified as before. The game module stays one file (its source files run into each other, one shared scope).
+The artifact keeps the one-page `dist/market.html`. Next: models loaded when first needed (the metro, the creatures), which changes
+the game's code.

@@ -1,6 +1,7 @@
 const es = require('esbuild'), fs = require('fs');
 for (const f of process.argv.slice(2)) {
   const s = fs.readFileSync(f, 'utf8');
+  if (f.endsWith('.js')) { const o = es.transformSync(s, { minify: true, format: /\bimport\b|\bawait\b/.test(s) ? 'esm' : undefined, legalComments: 'none', target: 'es2022', charset: 'utf8' }).code; fs.writeFileSync(f, o); console.log(f, s.length, '->', o.length); continue; }
   let o = s.replace(/<script([^>]*)>([\s\S]*?)<\/script>/g, (all, attr, code) => {
     if (/importmap/.test(attr)) return '<script' + attr + '>' + JSON.stringify(JSON.parse(code)) + '</script>';
     if (!code.trim()) return all;

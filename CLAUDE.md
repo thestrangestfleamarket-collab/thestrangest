@@ -25,7 +25,9 @@ Look there before changing how something looks or behaves, and add a short dated
 
 `python3 build.py`: joins `src/`, puts in the data and the build stamp (`__BUILDV__`), adds the loading breaths
 (`tools/yields.py`), minifies with esbuild (`tools/minify.cjs`; `npm install` once) and writes `dist/market.html` and
-`dist/avatar.html` and `dist/door.html`; it stops if a page has an unclosed `<!--`. `MIN=0 python3 build.py` keeps them readable for debugging.
+`dist/avatar.html` and `dist/door.html`; it stops if a page has an unclosed `<!--`. For the website it also writes `dist/g/`: THE MARKET
+split like the old game (`market.html` a 4 KB shell, `rig.<hash>.js`, `game.<hash>.js`, each `data/*.json` as `<name>.<hash>.json`
+fetched at start); the worker hands `dist/g/` only to a login, cached for good (a new build, new names). The artifact stays `dist/market.html`. `MIN=0 python3 build.py` keeps them readable for debugging.
 
 ## Publishing: one line of work
 

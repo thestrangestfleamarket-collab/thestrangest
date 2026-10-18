@@ -1,7 +1,7 @@
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i, CODE = /^[A-Z0-9-]{6,32}$/, MAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 const json = (o, status = 200) => Response.json(o, { status, headers: { "cache-control": "no-store" } });
 const loopback = ip => !ip || ip === "::1" || ip === "localhost" || /^127\./.test(ip) || /^::ffff:127\./.test(ip);
-const GUESS_MAX = 20, guesses = new Map();
+const GUESS_MAX = 20, guesses = new Map(), passed = new Map(), FILE = /^\/g\/[a-z0-9-]+\.[0-9a-f]{10}\.(js|json)$/;
 function tooMany(ip) { const min = Math.floor(Date.now() / 60000), g = guesses.get(ip);
   if (!g || g.min !== min) { if (guesses.size > 5000) for (const [k, v] of guesses) if (v.min !== min) guesses.delete(k); guesses.set(ip, { n: 1, min }); return false; }
   return ++g.n > GUESS_MAX; }
@@ -10,9 +10,13 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url), p = url.pathname, dev = env.DEV_AUTH === "1" && loopback(request.headers.get("CF-Connecting-IP"));
     if ((request.method === "GET" || request.method === "HEAD") && (p === "/" || p === "/index.html")) {
-      const m = /(?:^|;\s*)tsfm-pass=([^;]+)/.exec(request.headers.get("Cookie") || ""), ok = m && (await pass(env, decodeURIComponent(m[1]), dev)).ok;
-      const out = ok ? await page(env, url, "/market", request, "private, no-cache") : await page(env, url, "/door", request, "no-cache");
+      const ok = await inside(env, request, dev);
+      const out = ok ? await page(env, url, "/g/market", request, "private, no-cache") : await page(env, url, "/door", request, "no-cache");
       out.headers.set("vary", "Cookie"); return out; }
+    if ((request.method === "GET" || request.method === "HEAD") && FILE.test(p)) {
+      if (!(await inside(env, request, dev))) return new Response("not found", { status: 404 });
+      const r = await env.ASSETS.fetch(new Request(url.origin + p)); if (!r.ok) return new Response("not found", { status: 404 });
+      const out = new Response(r.body, r); out.headers.set("cache-control", "private, max-age=31536000, immutable"); out.headers.set("x-robots-tag", "noindex"); return out; }
     if (request.method !== "POST" || !["/enter", "/join/check", "/join"].includes(p)) return new Response("not found", { status: 404 });
     if (request.headers.get("Origin") !== url.origin && !(dev && !request.headers.get("Origin"))) return json({ why: "not from the game's page" }, 403);
     if (tooMany(request.headers.get("CF-Connecting-IP") || "local")) return json({ why: "too many tries, wait a minute" }, 429);
@@ -23,6 +27,14 @@ export default {
     return p === "/join/check" ? json({ ok: true }) : json(await join(env, k, code, body));
   }
 };
+
+async function inside(env, request, dev) {
+  const m = /(?:^|;\s*)tsfm-pass=([^;]+)/.exec(request.headers.get("Cookie") || ""); if (!m) return false;
+  const t = decodeURIComponent(m[1]), now = Date.now(), seen = passed.get(t); if (seen && seen > now) return true;
+  const ok = !!(await pass(env, t, dev)).ok;
+  if (ok) { if (passed.size > 2000) for (const [k, v] of passed) if (v <= now) passed.delete(k); passed.set(t, now + 300000); }
+  return ok;
+}
 
 async function page(env, url, path, request, cache) {
   const h = new Headers(); const inm = request.headers.get("If-None-Match"); if (inm) h.set("If-None-Match", inm);

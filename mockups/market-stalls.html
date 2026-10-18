@@ -1,0 +1,148 @@
+<title>Mushroom and Veggie Stalls</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: a short head, then three options as rows, each with the mushroom seller's stall and the tomato's side by side (stacking on a phone) */
+:root{
+  --bg:#13201c; --panel:#1b2c27; --ink:#e6eee8; --dim:#9fb6ac; --line:#2e4740; --accent:#e0a34a;
+  --display:"Silkscreen","Courier New",monospace; --body:"IBM Plex Sans",system-ui,sans-serif; --mono:"IBM Plex Mono",ui-monospace,monospace;
+  color-scheme:dark;
+}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 40px}
+.wrap{max-width:1180px;margin:0 auto;display:grid;gap:26px}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(22px,3.4vw,34px);letter-spacing:.04em;margin:0;text-wrap:balance}
+.lede{color:var(--dim);margin:0;max-width:70ch;line-height:1.55}
+.opt{display:grid;gap:12px}
+.head{display:grid;gap:4px}
+.tag{font-family:var(--display);color:var(--accent);font-size:14px;letter-spacing:.08em}
+h2{margin:0;font-size:18px;font-weight:600}
+.what{margin:0;color:var(--dim);font-size:14px;line-height:1.5;max-width:90ch}
+.pair{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+figure{margin:0;background:var(--panel);border:1px solid var(--line);min-width:0}
+canvas{display:block;width:100%;aspect-ratio:300/210;image-rendering:pixelated;cursor:grab;touch-action:none;max-width:100%}
+canvas:active{cursor:grabbing}
+figcaption{padding:10px 14px 12px;font-size:13.5px;color:var(--ink);display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+figcaption span{font-family:var(--mono);font-size:12px;color:var(--dim);font-variant-numeric:tabular-nums}
+.foot{color:var(--dim);font-size:13px;line-height:1.5;max-width:85ch;margin:0}
+</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Silkscreen&family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono&display=swap">
+<div class="wrap">
+  <h1>THE TWO STALLS, NO TENTS</h1>
+  <p class="lede">The mushroom seller and the tomato, each standing inside a U of three tables open to the street, with rows of piles and every kind they sell. No awnings or striped tents. Drag a picture to turn it.</p>
+
+  <section class="opt">
+    <div class="head"><div class="tag">A · ROWS OF TRAYS</div><h2>Plain trestle tables, a tray for every kind</h2>
+      <p class="what">Three bare plank tables on trestles. Each tabletop holds rows of shallow wooden trays, one kind to a tray, every tray heaped over its rim. It's neat and easy to read, like a farmers' market.</p></div>
+    <div class="pair">
+      <figure><canvas id="A0" width="300" height="210"></canvas><figcaption>The mushroom seller<span>8 kinds</span></figcaption></figure>
+      <figure><canvas id="A1" width="300" height="210"></canvas><figcaption>The tomato<span>10 kinds</span></figcaption></figure>
+    </div>
+  </section>
+
+  <section class="opt">
+    <div class="head"><div class="tag">B · STEPPED TIERS</div><h2>Each table rises in three steps</h2>
+      <p class="what">The same U, but each table carries three crate risers stepping up toward the seller. The piles climb behind one another, so every row shows from the street, with tall stacks and baskets on the top step.</p></div>
+    <div class="pair">
+      <figure><canvas id="B0" width="300" height="210"></canvas><figcaption>The mushroom seller<span>8 kinds</span></figcaption></figure>
+      <figure><canvas id="B1" width="300" height="210"></canvas><figcaption>The tomato<span>10 kinds</span></figcaption></figure>
+    </div>
+  </section>
+
+  <section class="opt">
+    <div class="head"><div class="tag">C · HEAPS AND OVERFLOW</div><h2>Mounds on the boards, more on the ground</h2>
+      <p class="what">Rough tables with the produce heaped straight onto the boards in big mounds, kinds side by side. The extra spills around the stall: baskets, sacks, crates stacked two high, and pumpkins or a log of mushrooms at the corners. It looks the most lived in.</p></div>
+    <div class="pair">
+      <figure><canvas id="C0" width="300" height="210"></canvas><figcaption>The mushroom seller<span>8 kinds</span></figcaption></figure>
+      <figure><canvas id="C1" width="300" height="210"></canvas><figcaption>The tomato<span>10 kinds</span></figcaption></figure>
+    </div>
+  </section>
+
+  <p class="foot">Each stall is about 3.4 × 2.6 tiles, with tables at counter height (0.8 m) and the seller standing in the middle of the U. Mushrooms: meadow button, puffball, chanterelle, red cap, shaggy ink cap, king bolete, morel, and the glowing moonglow. Vegetables: tomato, bell pepper, carrot, corn, cabbage, eggplant, potato, onion, leafy greens and pumpkin. Drawn the game's way, with flat bands of light, hard shadows and chunky pixels. Pick one, or mix them (for example B's tiers with C's overflow).</p>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+<script>
+(()=>{
+const grad=(()=>{ const d=new Uint8Array([70,130,190,255]); const t=new THREE.DataTexture(d,4,1,THREE.RedFormat); t.minFilter=t.magFilter=THREE.NearestFilter; t.needsUpdate=true; return t; })();
+const M={}, mat=(c,glow)=>{ const k=c+'|'+(glow||0); return M[k]||(M[k]=glow?new THREE.MeshBasicMaterial({color:c}):new THREE.MeshToonMaterial({color:c,gradientMap:grad})); };
+// a seeded random, so each picture is the same every time
+let seed=1; const rnd=()=>{ seed=(seed*16807)%2147483647; return (seed-1)/2147483646; }, R=(a,b)=>a+rnd()*(b-a);
+const GEO={}, geo=(k,f)=>GEO[k]||(GEO[k]=f());
+const put=(G,g,m,x,y,z,sx=1,sy=1,sz=1,rx=0,ry=0,rz=0)=>{ const me=new THREE.Mesh(g,m); me.position.set(x,y,z); me.scale.set(sx,sy,sz); me.rotation.set(rx,ry,rz); me.castShadow=me.receiveShadow=true; G.add(me); return me; };
+const box=(G,w,h,d,x,y,z,c,ry=0)=>put(G,geo('box',()=>new THREE.BoxGeometry(1,1,1)),mat(c),x,y+h/2,z,w,h,d,0,ry);
+const ball=k=>geo('ball'+k,()=>new THREE.IcosahedronGeometry(1,k));
+const cylG=geo('cyl',()=>new THREE.CylinderGeometry(1,1,1,7)), coneG=geo('cone',()=>new THREE.ConeGeometry(1,1,7)), capG=geo('cap',()=>new THREE.SphereGeometry(1,7,3,0,Math.PI*2,0,Math.PI/2));
+// ---- THE GOODS: each kind an item of a few plain shapes, its height off its base (for heaping) ----
+const MUSH={
+  button:{n:'meadow button',s:.035,f:(G,x,y,z,s,r)=>{ put(G,cylG,mat(0xe8e2d4),x,y+s*.4,z,s*.35,s*.8,s*.35); put(G,capG,mat(0xf2ede2),x,y+s*.7,z,s,s*.7,s,0,r); },h:1.2},
+  puffball:{n:'puffball',s:.045,f:(G,x,y,z,s,r)=>{ put(G,ball(0),mat(0xf4f0e6),x,y+s*.8,z,s,s*.85,s,0,r); },h:1.6},
+  chanterelle:{n:'chanterelle',s:.04,f:(G,x,y,z,s,r)=>{ put(G,coneG,mat(0xe0a032),x,y+s*.6,z,s,s*1.2,s,Math.PI,r); },h:1.2},
+  redcap:{n:'red cap',s:.045,f:(G,x,y,z,s,r)=>{ put(G,cylG,mat(0xeee6d6),x,y+s*.5,z,s*.3,s,s*.3); put(G,capG,mat(0xc42a20),x,y+s*.95,z,s,s*.6,s,0,r); for(let k=0;k<3;k++){ const a=r+k*2.1; put(G,ball(0),mat(0xf6f0e0),x+Math.cos(a)*s*.55,y+s*1.3,z+Math.sin(a)*s*.55,s*.16,s*.1,s*.16); } },h:1.6},
+  inkcap:{n:'shaggy ink cap',s:.03,f:(G,x,y,z,s,r,lie)=>{ if(lie){ put(G,cylG,mat(0xe6e0d0),x,y+s*.8,z,s*.8,s*3.4,s*.8,Math.PI/2,r); put(G,cylG,mat(0x2a2624),x+Math.cos(r)*s*1.7,y+s*.8,z-Math.sin(r)*s*1.7,s*.82,s*.4,s*.82,Math.PI/2,r); } else { put(G,cylG,mat(0xe6e0d0),x,y+s*1.7,z,s*.8,s*3.4,s*.8); put(G,cylG,mat(0x2a2624),x,y+s*.2,z,s*.82,s*.4,s*.82); } },h:1.6},
+  bolete:{n:'king bolete',s:.055,f:(G,x,y,z,s,r)=>{ put(G,cylG,mat(0xd8c4a0),x,y+s*.45,z,s*.45,s*.9,s*.45); put(G,capG,mat(0x7a4a24),x,y+s*.85,z,s,s*.55,s,0,r); },h:1.4},
+  morel:{n:'morel',s:.03,f:(G,x,y,z,s,r)=>{ put(G,cylG,mat(0xe2d4b4),x,y+s*.35,z,s*.4,s*.7,s*.4); put(G,coneG,mat(0x6e5232),x,y+s*1.5,z,s*.75,s*1.8,s*.75,0,r); put(G,coneG,mat(0x4a3420),x,y+s*1.55,z,s*.62,s*1.5,s*.62,0,r+.4); },h:2.2},
+  moonglow:{n:'moonglow',s:.035,f:(G,x,y,z,s,r)=>{ put(G,cylG,mat(0x9fe8f0,1),x,y+s*.5,z,s*.3,s,s*.3); put(G,capG,mat(0x48d8f0,1),x,y+s*.9,z,s,s*.6,s,0,r); },h:1.5}};
+const VEG={
+  tomato:{n:'tomato',s:.04,f:(G,x,y,z,s,r)=>{ put(G,ball(1),mat(0xcc3420),x,y+s*.85,z,s,s*.85,s,0,r); put(G,ball(0),mat(0x3e8a2a),x,y+s*1.6,z,s*.35,s*.15,s*.35); },h:1.7},
+  pepper:{n:'bell pepper',s:.045,f:(G,x,y,z,s,r)=>{ put(G,ball(0),mat([0x2f8a2a,0xd8b028,0xc8321e][Math.floor(rnd()*3)]),x,y+s,z,s,s*1.1,s,0,r); put(G,cylG,mat(0x2a5a1a),x,y+s*2.1,z,s*.12,s*.4,s*.12); },h:2},
+  carrot:{n:'carrot',s:.02,f:(G,x,y,z,s,r)=>{ put(G,coneG,mat(0xe0742a),x,y+s,z,s,s*8,s,Math.PI/2,r); put(G,coneG,mat(0x4aa03a),x+Math.cos(r)*s*5,y+s,z-Math.sin(r)*s*5,s*1.4,s*3,s*1.4,-Math.PI/2,r); },h:2},
+  corn:{n:'ear of corn',s:.03,f:(G,x,y,z,s,r)=>{ put(G,cylG,mat(0xe8c84a),x,y+s,z,s,s*6,s,Math.PI/2,r); put(G,coneG,mat(0x9ab04a),x-Math.cos(r)*s*3.8,y+s,z+Math.sin(r)*s*3.8,s*1.3,s*2.5,s*1.3,Math.PI/2,r+Math.PI); },h:2},
+  cabbage:{n:'cabbage',s:.075,f:(G,x,y,z,s,r)=>{ put(G,ball(1),mat(0x8ac05a),x,y+s*.85,z,s,s*.85,s,0,r); put(G,capG,mat(0x6aa040),x,y+s*.5,z,s*1.08,s*.55,s*1.08,Math.PI,r); },h:1.7},
+  eggplant:{n:'eggplant',s:.035,f:(G,x,y,z,s,r)=>{ put(G,ball(1),mat(0x4a2a5a),x,y+s,z,s,s,s*2,0,r); put(G,coneG,mat(0x3a7a2a),x+Math.sin(r)*s*2,y+s,z+Math.cos(r)*s*2,s*.6,s*.8,s*.6,Math.PI/2,r); },h:2},
+  potato:{n:'potato',s:.035,f:(G,x,y,z,s,r)=>{ put(G,ball(0),mat(0xb08a5a),x,y+s*.8,z,s*1.3,s*.8,s,0,r); },h:1.6},
+  onion:{n:'onion',s:.035,f:(G,x,y,z,s,r)=>{ put(G,ball(1),mat(rnd()<.3?0x8a3a5a:0xd8b88a),x,y+s,z,s,s,s,0,r); put(G,coneG,mat(0xa8884a),x,y+s*2.1,z,s*.3,s*.5,s*.3); },h:2},
+  greens:{n:'leafy greens',s:.06,f:(G,x,y,z,s,r)=>{ for(let k=0;k<3;k++)put(G,ball(0),mat(k?0x4a9a3a:0x3a7a2a),x+(k-1)*s*.4,y+s*.4,z,s*.7,s*.35,s*.9,.3*(k-1),r); },h:.8},
+  pumpkin:{n:'pumpkin',s:.12,f:(G,x,y,z,s,r)=>{ put(G,ball(1),mat(0xe0782a),x,y+s*.7,z,s,s*.7,s,0,r); put(G,cylG,mat(0x5a4a24),x,y+s*1.4,z,s*.1,s*.3,s*.1); },h:1.4}};
+// a heap of one kind over a rectangle: items laid in layers, each layer smaller toward the middle, so it mounds up
+const heap=(G,K,cx,y,cz,w,d,n,lie)=>{ let left=n, lay=0; while(left>0&&lay<6){ const k=1-lay*.17, cnt=Math.max(1,Math.round(n*(.34-lay*.05))); for(let i=0;i<cnt&&left>0;i++,left--){ const s=K.s*R(.85,1.15);
+      K.f(G,cx+R(-.5,.5)*w*k,y+lay*K.s*K.h*.8,cz+R(-.5,.5)*d*k,s,R(0,6.28),lie); } lay++; } };
+// a tray: a shallow wooden box, its goods heaped over its rim
+const tray=(G,K,x,y,z,w,d,n,lie)=>{ box(G,w,.012,d,x,y,z,0x8a6238); for(const [dx,dz,ww,dd] of [[0,-d/2,w,.02],[0,d/2,w,.02],[-w/2,0,.02,d],[w/2,0,.02,d]])box(G,ww,.06,dd,x+dx,y,z+dz,0x9a7044); heap(G,K,x,y+.012,z,w*.9,d*.9,n,lie); };
+const basket=(G,K,x,y,z,r,n)=>{ put(G,cylG,mat(0xa8844a),x,y+.09,z,r,.18,r); put(G,cylG,mat(0x7a5a2e),x,y+.185,z,r*1.03,.02,r*1.03); heap(G,K,x,y+.16,z,r*1.3,r*1.3,n); };
+const crate=(G,x,y,z,w,h,d,c=0x9a7044)=>{ box(G,w,h,d,x,y,z,c); box(G,w*1.01,.025,d*1.01,x,y+h*.5,z,0x6e4e2c); };
+const sack=(G,x,z,c=0xc8b080)=>{ put(G,ball(1),mat(c),x,.22,z,.2,.24,.17); put(G,cylG,mat(0x9a8458),x,.47,z,.07,.08,.07); };
+// a table: a plank top on trestles; long along x (or turned) — returns its top's height
+const table=(G,x,z,w,d,rot,rough)=>{ const H=.78, top=rough?0x7a5634:0x9e7a4c, leg=rough?0x5a3e24:0x6e5434, g=new THREE.Group(); g.position.set(x,0,z); g.rotation.y=rot; G.add(g);
+  box(g,w,.05,d,0,H-.05,0,top); for(let k=0;k<Math.round(w/.22);k++)box(g,.006,.052,d,-w/2+(k+.5)*w/Math.round(w/.22),H-.05,0,leg);
+  for(const sx of [-1,1]){ box(g,.05,H-.05,.05,sx*(w/2-.12),0,-d/2+.08,leg); box(g,.05,H-.05,.05,sx*(w/2-.12),0,d/2-.08,leg); box(g,.04,.04,d-.1,sx*(w/2-.12),.25,0,leg); } return {g,H}; };
+// ---- THE TWO SELLERS (stand-ins, as in the game: the white skeleton in his rust robe and mushroom hat; the tomato in his yellow apron) ----
+const seller=(G,which)=>{ const g=new THREE.Group(); g.position.set(0,0,-.15); g.rotation.y=0; G.add(g);
+  if(which==='m'){ put(g,coneG,mat(0x9a4a2a),0,.62,0,.3,1.24,.3); put(g,ball(1),mat(0xb86040),0,1.05,0,.24,.2,.22); put(g,ball(1),mat(0xf0ece2),0,1.42,0,.16,.19,.17);
+    put(g,ball(0),mat(0x101010),-.06,1.44,.14,.035,.04,.02); put(g,ball(0),mat(0x101010),.06,1.44,.14,.035,.04,.02); put(g,coneG,mat(0xc8a878),0,1.32,-.06,.2,.5,.12,Math.PI);
+    put(g,cylG,mat(0x6a4a2a),0,1.58,0,.26,.04,.26); put(g,cylG,mat(0x6a4a2a),0,1.66,0,.16,.14,.16); for(let k=0;k<5;k++){ const a=k*1.25; put(g,capG,mat([0xc42a20,0xe0a032,0xf2ede2][k%3]),Math.cos(a)*.13,1.74,Math.sin(a)*.13,.06,.05,.06); } }
+  else { put(g,cylG,mat(0x3a5a8a),-.08,.25,0,.07,.5,.07); put(g,cylG,mat(0x3a5a8a),.08,.25,0,.07,.5,.07); put(g,cylG,mat(0xf0e8d8),0,.75,0,.2,.5,.16); put(g,box.geo||geo('box',()=>new THREE.BoxGeometry(1,1,1)),mat(0xe8c040),0,.72,.11,.34,.5,.04);
+    put(g,ball(1),mat(0xcc3420),0,1.25,0,.3,.27,.3); for(let k=0;k<5;k++){ const a=k*1.256; put(g,coneG,mat(0x3e8a2a),Math.cos(a)*.12,1.5,Math.sin(a)*.12,.06,.16,.03,Math.cos(a)*.9,0,-Math.sin(a)*.9); }
+    put(g,ball(0),mat(0x101010),-.1,1.3,.27,.04,.05,.02); put(g,ball(0),mat(0x101010),.1,1.3,.27,.04,.05,.02); } };
+// ---- THE THREE WAYS: the U is a back table along x and two side tables along z, open to the street (+z) ----
+const W=2.4, D=.62, SL=1.7;   // back table width, depth; the side tables' length
+const spotsOf=(n,w,d,cols)=>{ const rows=Math.ceil(n/cols), out=[]; for(let i=0;i<n;i++){ const c=i%cols, r=Math.floor(i/cols); out.push([-w/2+(c+.5)*w/cols,-d/2+(r+.5)*d/rows,w/cols,d/rows]); } return out; };
+const BUILD={
+  A:(G,KS)=>{ const ks=Object.values(KS), tabs=[[0,-.95,W,D,0],[-1.42,.2,SL,D,Math.PI/2],[1.42,.2,SL,D,-Math.PI/2]]; let ki=0;
+    for(const [x,z,w,d,rot] of tabs){ const {g,H}=table(G,x,z,w,d,rot); const cols=Math.round(w/.3); for(const [tx,tz,tw,td] of spotsOf(cols*2,w*.94,d*.9,cols)){ const K=ks[ki++%ks.length]; tray(g,K,tx,H,tz,tw*.92,td*.9,Math.round(26*(tw*td)/(.3*.27)*(K.s<.05?1:.55)),true); } } },
+  B:(G,KS)=>{ const ks=Object.values(KS), tabs=[[0,-.95,W,D,0],[-1.42,.2,SL,D,Math.PI/2],[1.42,.2,SL,D,-Math.PI/2]]; let ki=0;
+    for(const [x,z,w,d,rot] of tabs){ const {g,H}=table(G,x,z,w,d,rot); for(let st=0;st<3;st++){ const sd=d/3, sz=d/2-sd*(st+.5), sy=H+st*.12; if(st)crate(g,0,H,sz,w*.98,st*.12,sd*.96,0x8a6238);
+        const cols=Math.round(w/.34); for(const [tx,,tw] of spotsOf(cols,w*.94,sd,cols)){ const K=ks[ki++%ks.length]; if(st===2&&ki%3===0)basket(g,K,tx,sy,sz,.11,14); else heap(g,K,tx,sy,sz,tw*.9,sd*.8,Math.round(18*(K.s<.05?1:.5)),true); } } } },
+  C:(G,KS,veg)=>{ const ks=Object.values(KS), tabs=[[0,-.95,W,D,0],[-1.42,.2,SL,D,Math.PI/2],[1.42,.2,SL,D,-Math.PI/2]]; let ki=0;
+    for(const [x,z,w,d,rot] of tabs){ const {g,H}=table(G,x,z,w,d,rot,true); const cols=Math.round(w/.42); for(const [tx,,tw] of spotsOf(cols,w*.96,d,cols)){ const K=ks[ki++%ks.length]; heap(g,K,tx,H,0,tw*1.05,d*.86,Math.round(44*(K.s<.05?1:.45)),true); } }
+    // the overflow round the stall: crates two high, baskets, sacks, and at the corners pumpkins or a mushroom log
+    const big=veg?KS.pumpkin:KS.bolete; crate(G,-1.95,0,-.9,.42,.3,.32); crate(G,-1.95,.3,-.9,.42,.3,.32); heap(G,ks[2],-1.95,.6,-.9,.36,.26,veg?10:22);
+    crate(G,1.95,0,-.6,.42,.3,.32); heap(G,ks[5],1.95,.3,-.6,.36,.26,veg?10:20); basket(G,ks[0],1.85,0,.75,.16,veg?14:30); basket(G,ks[3],-1.9,0,.55,.15,veg?12:26);
+    if(veg){ sack(G,1.9,.15); sack(G,-1.85,-.2,0xb89a6a); for(let k=0;k<6;k++)KS.pumpkin.f(G,R(-2.1,-1.6),0,R(1,1.35),KS.pumpkin.s*R(.8,1.2),R(0,6)); for(let k=0;k<4;k++)KS.pumpkin.f(G,R(1.6,2.1),0,R(1.05,1.35),KS.pumpkin.s*R(.8,1.1),R(0,6)); }
+    else { put(G,cylG,mat(0x6a4a2e),-1.85,.16,1.15,.16,.8,.16,0,0,Math.PI/2); for(let k=0;k<9;k++)MUSH.chanterelle.f(G,-1.85+R(-.3,.3),.3,1.15+R(-.06,.06),.04,0); put(G,cylG,mat(0x5a3e24),1.85,.2,1.1,.2,.4,.2); for(let k=0;k<7;k++)MUSH.bolete.f(G,1.85+R(-.12,.12),.4,1.1+R(-.12,.12),.05,0); } } };
+function card(id,opt,veg){
+  seed=opt.charCodeAt(0)*31+(veg?7:3);
+  const cv=document.getElementById(id), Rn=new THREE.WebGLRenderer({canvas:cv,antialias:false}); Rn.setPixelRatio(1); Rn.setSize(cv.width,cv.height,false); Rn.shadowMap.enabled=true; Rn.shadowMap.type=THREE.BasicShadowMap;
+  const S=new THREE.Scene(), mist=new THREE.Color(0x3a6e68); S.background=mist; S.fog=new THREE.Fog(mist,11,18);
+  const G=new THREE.Group(); S.add(G); BUILD[opt](G,veg?VEG:MUSH,veg); seller(G,veg?'v':'m');
+  // the park's sidewalk: big pale slabs, the park's brick wall behind
+  const cvs=document.createElement('canvas'); cvs.width=cvs.height=16; const g=cvs.getContext('2d'); g.fillStyle='#a49a88'; g.fillRect(0,0,16,16); g.fillStyle='#6e675a'; g.fillRect(0,0,16,1); g.fillRect(0,0,1,16); g.fillStyle='#b4ab98'; g.fillRect(4,5,3,1); g.fillRect(10,11,2,1); g.fillStyle='#5a8a3a'; g.fillRect(0,7,1,2);
+  const sw=new THREE.CanvasTexture(cvs); sw.magFilter=sw.minFilter=THREE.NearestFilter; sw.colorSpace=THREE.SRGBColorSpace; sw.wrapS=sw.wrapT=THREE.RepeatWrapping; sw.repeat.set(10,10);
+  const gr=new THREE.Mesh(new THREE.PlaneGeometry(14,14),new THREE.MeshToonMaterial({map:sw,gradientMap:grad})); gr.rotation.x=-Math.PI/2; gr.receiveShadow=true; S.add(gr);
+  box(S,14,1.1,.4,0,0,-2.4,0x5a5650); box(S,14,.08,.46,0,1.1,-2.4,0x7a766c);
+  S.add(new THREE.HemisphereLight(0xcfe6e0,0x2a3a38,.9)); const L=new THREE.DirectionalLight(0xfff1d8,2.3); L.position.set(3,6,4); L.castShadow=true; L.shadow.mapSize.set(1024,1024); Object.assign(L.shadow.camera,{left:-4,right:4,top:4,bottom:-4}); S.add(L);
+  const a=cv.width/cv.height, v=1.55, cam=new THREE.OrthographicCamera(-v*a,v*a,v,-v,.1,50); let yaw=.6;
+  const place=()=>{ const r=12, p=.6; cam.position.set(Math.sin(yaw)*Math.cos(p)*r,Math.sin(p)*r,Math.cos(yaw)*Math.cos(p)*r); cam.lookAt(0,.55,0); Rn.render(S,cam); };
+  let drag=null; cv.addEventListener('pointerdown',e=>{ drag=e.clientX; cv.setPointerCapture(e.pointerId); }); cv.addEventListener('pointermove',e=>{ if(drag==null)return; yaw-=(e.clientX-drag)*.012; drag=e.clientX; place(); });
+  cv.addEventListener('pointerup',()=>drag=null); cv.addEventListener('pointercancel',()=>drag=null); place();
+}
+for(const o of 'ABC'){ card(o+'0',o,false); card(o+'1',o,true); }
+})();
+</script>

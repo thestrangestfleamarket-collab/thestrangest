@@ -26,5 +26,16 @@ const POND={}; window.POND=POND;
     { const b=RW*.75; SOL.up.push([WX-b,WZ-b,WX+b,WZ+b]); FIX.up.push([WX-b,WZ-b,0,WX+b,WZ+b,Y(RIM)]); }
     // a spot on its edge to drink at (just outside the stones)
     POND.edge=()=>{ const a=Math.random()*Math.PI*2, r=RW+.95*TILE; return {x:WX+Math.cos(a)*r,z:WZ+Math.sin(a)*r}; };
-    POND.ready=true; };
+    POND.ready=true;
+    // THE HILLS' LAWN (owner, 18 Oct 2026: "the grass is completely flat instead of hills"): a grid over the park a tile and a quarter a cell,
+    // each point at park.js's height (P.hill), only the cells with any rise kept; painted with the land's own lawn picture at the same place on
+    // it (u, v the world's tiles, as the land sheet's), drawn just over the flat sheet where they meet; shaded by the sun and the lamps as the
+    // ground is. Cost: one draw, some 6,000-9,000 triangles where the park is in view
+    if(MODS.land&&P.hill){ const S=1.25, nx=Math.ceil((P.x1-P.x0)/S), ny=Math.ceil((P.y1-P.y0)/S), V=[], U=[], I=[], idx=new Int32Array((nx+1)*(ny+1)).fill(-1), H=new Float32Array((nx+1)*(ny+1));
+      for(let j=0;j<=ny;j++)for(let i=0;i<=nx;i++)H[j*(nx+1)+i]=P.hill(P.x0+i*S,P.y0+j*S);
+      const vi=(i,j)=>{ const k=j*(nx+1)+i; if(idx[k]<0){ const wx=X(P.x0+i*S), wz=Z(P.y0+j*S); idx[k]=V.length/3; V.push(wx,H[k]-.5*ZU+.004,wz); U.push(wx/TILE,-wz/TILE); } return idx[k]; };
+      for(let j=0;j<ny;j++)for(let i=0;i<nx;i++){ const h=Math.max(H[j*(nx+1)+i],H[j*(nx+1)+i+1],H[(j+1)*(nx+1)+i],H[(j+1)*(nx+1)+i+1]); if(h<=.001)continue;
+        const a=vi(i,j), b=vi(i+1,j), c=vi(i+1,j+1), d=vi(i,j+1); I.push(a,d,b,b,d,c); }
+      if(I.length){ const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(V,3)); g.setAttribute('uv',new THREE.Float32BufferAttribute(U,2)); g.setIndex(I); g.computeVertexNormals();
+        const me=new THREE.Mesh(g,new THREE.MeshLambertMaterial({map:MODS.land.material.map,polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-1})); me.receiveShadow=true; me.castShadow=true; grp.add(me); POND.hills=me; POND.hillTris=I.length/3; } } };
   go(); }

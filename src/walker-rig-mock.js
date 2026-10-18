@@ -44,8 +44,13 @@ const ANKLE=4.2,FOOTX=2.97,STAND=18;   // STAND: the pelvis's height standing (t
 // where each joint sits on its parent, the hand's place on the wrist and its size, and each piece's place on its bone (pieces: by name, each
 // {o: offset along its bone's axes, s: size, r: tilt, turn, roll in degrees}; a piece not listed is as made) in one table. At these defaults
 // he is exactly as he was; rigSet puts a saved table in (the game's clouds are baked again by whoever calls it: the editor)
+// HIS BUILD AT THE ROOT (owner, 18 Oct 2026: "the shoulders and body seems off at the root"): where his shoulder joints sit (so: x out from his
+// middle) and the shirt's torso (sq: its depth to its width; r1, r2: its half width at the waist and at the chest). A: as he was, the arms half
+// inside a round torso. ?body=A|B|C|D for the mockups
+const BODYS={A:{so:6.3,sq:.9,r1:5.6,r2:6.1},B:{so:7.4,sq:.9,r1:5.4,r2:5.6},C:{so:7.4,sq:.72,r1:4.9,r2:5.7},D:{so:8,sq:.75,r1:5,r2:6.2}};
+const BODY=BODYS[(typeof location!=='undefined'&&new URLSearchParams(location.search).get('body')||'A').toUpperCase()]||BODYS.A;
 const RIGP0={bones:{thigh:6.9,shin:6.5,upper:7.4,fore:6.3,spine:[0,5,0],chest:[0,10,0],neck:[0,14,0],headBase:[0,16.5,0.4],head:[0,25.2,1.0],headTop:[0,34,0.8],
-  clav:[1.5,3,0],shoulder:[6.3,3.3,0],hip:[4.35,-0.4,0],hand:[0,0,0],handSize:1},pieces:{}};
+  clav:[1.5,3,0],shoulder:[BODY.so,3.3,0],hip:[4.35,-0.4,0],hand:[0,0,0],handSize:1},pieces:{}};
 let RIGP=JSON.parse(JSON.stringify(RIGP0)),RIGGEN=0,THIGH,SHIN,UPPER,FORE,HIPX,HIP;
 function rigSet(o){ const d=JSON.parse(JSON.stringify(RIGP0)); if(o&&o.bones) for(const k in d.bones) if(o.bones[k]!=null) d.bones[k]=o.bones[k]; if(o&&o.pieces) d.pieces=JSON.parse(JSON.stringify(o.pieces));
   RIGP=d; ({thigh:THIGH,shin:SHIN,upper:UPPER,fore:FORE,hip:HIP}=d.bones); HIPX=HIP[0]; if(RIGGEN++){ REST=null; STUDIOC=null; for(const k in POSEC) delete POSEC[k]; } return d; }   // (after the first: what was worked out with the old numbers is dropped: the rest pose, the studio's pieces, the moves' frames; the parts 2 and 3)
@@ -256,7 +261,7 @@ const suitPaint=(p,J)=>{ if(p.z<1.5) return null; const ax=Math.abs(p.x-J.chest.
 // (smin: two shapes joined smoothly, k wide: the collar into the shoulders with no crease, a pit the camera looks into from above)
 const smin=(a,b,k)=>{ const h=Math.max(k-Math.abs(a-b),0)/k; return Math.min(a,b)-h*h*k/4; };
 function bodyPieces(J,suit){ const P=[];
-  P.push({n:'torso',m:'shirt',d:p=>Math.max(smin(Math.min(rcone(sq(p,J.chest,0.9),add(J.pelvis,V(0,1.4,0)),J.chest,5.6,6.1),rcone(p,J.shoulderL,J.shoulderR,2.3,2.3)),Math.min(rcone(p,add(J.neck,V(0,3,-0.8)),J.shoulderL,2.6,2.4),rcone(p,add(J.neck,V(0,3,-0.8)),J.shoulderR,2.6,2.4)),2),J.pelvis.y-0.6-p.y),...(suit?{paint:p=>suitPaint(p,J)}:{})});   // the hem cut flat; the collar up the neck to the shoulders (the trapezius: no sky between the jaw, the hair and the shoulders)
+  P.push({n:'torso',m:'shirt',d:p=>Math.max(smin(Math.min(rcone(sq(p,J.chest,BODY.sq),add(J.pelvis,V(0,1.4,0)),J.chest,BODY.r1,BODY.r2),rcone(p,J.shoulderL,J.shoulderR,2.3,2.3)),Math.min(rcone(p,add(J.neck,V(0,3,-0.8)),J.shoulderL,2.6,2.4),rcone(p,add(J.neck,V(0,3,-0.8)),J.shoulderR,2.6,2.4)),2),J.pelvis.y-0.6-p.y),...(suit?{paint:p=>suitPaint(p,J)}:{})});   // the hem cut flat; the collar up the neck to the shoulders (the trapezius: no sky between the jaw, the hair and the shoulders)
   P.push({n:'hips',m:'pants',d:p=>Math.min(rcone(sq(p,J.pelvis,0.8),add(J.hipL,V(0,0.5,0)),add(J.hipR,V(0,0.5,0)),3.1,3.1),rcone(sq(p,J.pelvis,0.8),add(J.pelvis,V(0,0.6,0)),add(J.pelvis,V(0,-1,0)),5.2,4.6))});
   for(const n of 'LR') P.push({n:'thigh'+n,m:'pants',d:p=>rcone(p,J['hip'+n],J['knee'+n],3.15,3.4)});
   return P; }

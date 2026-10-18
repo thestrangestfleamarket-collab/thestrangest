@@ -154,6 +154,7 @@ const AV={on:false};
   const posing=()=>{ if(!AV.on||sculpt)return; if(tab==='pose'){ RIG.ANIMX.edit(); ED.setMode('animate'); drawPoses(); } else ED.setMode('av'); };
   (typeof renderer!=='undefined'?renderer.domElement:document).addEventListener('pointerup',()=>{ if(AV.on&&tab==='pose'){ $('#avpart').textContent=RIG.ANIMX.part(); drawPoses(); } });
   window.AVPOSE=n=>{ RIG.ANIMX.setStand(SPOSE[n]||{}); return Object.keys(SPOSE); };   // (a test's)
+  window.AVJ=()=>{ const s=RIG.create(); s.snap=true; const B=RIG.pose(s,true), why=[]; RIG.overlaps(B,why); return {J:B.J,why}; };   // (a test's: his joints standing, and what passes through what)
   P.querySelectorAll('#avbuild [data-b]').forEach(b=>b.onclick=()=>{ ED.snap(); LOOKS.setBuild(+b.dataset.b); LOOKS.height(L.hk||1); draw(); });
   $('#avh').oninput=e=>{ if(BW()){ BWK.F.h=+e.target.value; BWK.save(); } else LOOKS.height(+e.target.value); $('#avhv').textContent=(+e.target.value).toFixed(2); };
   // WHO: him held a step to your left as the view stands (clear of the panel), facing it, while he's being edited; let go to walk on when you're done or back to YOU

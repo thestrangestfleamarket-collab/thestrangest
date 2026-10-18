@@ -1353,3 +1353,18 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   **The stalls either side of the gate**: the mushroom seller's west of it, the tomato's east; **both sellers 15% bigger** (2.53 m, 1.84 m); the
   stalls their size. Cost: the iron instanced in 16-tile pieces (some 57,000 triangles round the whole park, a few thousand in sight), the
   lanterns' glass one unlit draw; no light, no new program. `tests/gateshot.cjs <out>`.
+- **ONE RULE FOR EVERY CHARACTER: AT REST, AND STEPPED** (owner, 18 Oct 2026: "are you just patching each character or applying an overall fix that
+  fixes the root issues?"; of the two parts offered, "both"; `ASTEP` in `map-pre.js`): the root of the crawling shadows is that the light on a
+  character is cut in hard bands and his own shadow is hard-edged, so motion under a pixel flips edge pixels every frame. **REST**: standing, every
+  character's animation clock is held (his mixer's timeScale 0: the pawns, the dungeon's skeletons, the animals), after half a second to settle,
+  but for a 1.5 s shift of weight every 7 to 15 s; only what his own file says is deliberate goes on (`N.restless()`: a pawn talking with someone,
+  cheering or finding a thing he stopped for; a guard on alert or mid-blow; a flyer's wings; the dragons). One place, makeNPC's tick (npc-map.js),
+  so a character added later is still at rest without being told. The per-character patches before it are gone (npc-pawns.js keeps only `STILLC`,
+  its plain idles). **STEPPED**: every character's pose is worked out `ASTEP.fps` times a second (10 by default) and held between, as a sprite's
+  frames are; where he stands moves every frame (`ASTEP.gate`; what his pose sets of his height, a flyer's, kept between). In makeNPC's tick for
+  everyone it makes, and in their own frames for you (`ASTEP.you`; your strikes judged from pose to pose, the ragdoll's blend and the animator's
+  pose every frame), the bearded Walker and the guitarist walking (his playing every frame). GRAPHICS' ANIMATION: STEPPED 8 / 10 / 12, EVERY FRAME
+  (the save's `animfps`); `?animfps=N` (0 every frame), `?still=0` the rest rule off. Checked: `tests/stillcheck.cjs` (standing: 0 changed pixels for
+  every kind but the deliberate: the wasp's wings, the shark's jaw, the cat's page), `tests/stepcheck.cjs` (walking: the pose every 0.1 s of game
+  time, the place every frame; in the cloud's software graphics the page ran 2-3 frames a second, the game's frame capped at 0.05 s, so this is
+  game time: not seen at a real frame rate here). Cost: less than before (poses worked out a tenth as often at 60 fps).

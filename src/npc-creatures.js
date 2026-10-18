@@ -94,5 +94,5 @@
     N.g.rotation.order='YXZ'; N.me.rotation.y=turn+(K.turn||0); N.me.position.set(0,0,0);   // (a pack's model that faces another way: turned on its own mesh)
     if(K.fly){ N.blocks=()=>false; N.push=()=>{}; N.st.v=speed*TILE; }
     if(ex)N.g.position.set(N.st.x,ex.ground(N.st.x,N.st.z),N.st.z);   // (where he is from the first: NPCS.tick finds who's near by it, and the Metro's rats start far from the map's middle)
-    N.mixer=mixer; CREATS.push(N); }
+    N.mixer=mixer; N.restless=()=>!!K.fly; CREATS.push(N); }   // (at rest a ground creature's idle held, ASTEP; a flyer's wings go on)
   window.CREATDBG=()=>CREATS.map(N=>({key:N.key,x:+N.st.x.toFixed(1),z:+N.st.z.toFixed(1),y:+N.g.position.y.toFixed(2),to:!!N.st.to,vis:N.g.visible})); }

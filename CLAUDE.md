@@ -86,7 +86,7 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
   the strumming forearm could only cross it from an upper arm held out level (measured: the elbow at his shoulder's height, 7 of his units ahead).
   Now the guitar hangs lower on its strap, the neck up a little more, the right wrist over the lower bout's upper edge, the elbow down by his side
   (5.7 under the shoulder, 4 ahead, 2 out), his fingertips as near their notes as before (`MUS.hold` in `musician.js`, `GTWR`; `tests/gthold.cjs`).
-- **Ghost Street** (17 Oct 2026, "bring in ghost street from old map"): the old game's own makers of the kit's wooden shop (`23-w-ghost-street.js`, read by build.py, in a block of its own), "Preset Ghost Street 1" without the row houses and the pole: the shop, its upper floor, the tiled roof, the eave with its sign and cooler, the bay window, the door curtain, the drinks machine, the planted beds and lanterns; east of the apartment building, its front and paved forecourt to the street (`GHOSTST` in `bodega.js`). Its six ghosts: to come.
+- **Ghost Street** (17 Oct 2026, "bring in ghost street from old map"): the old game's own makers of the kit's wooden shop (`23-w-ghost-street.js`, read by build.py, in a block of its own), "Preset Ghost Street 1" without the row houses and the pole: the shop, its upper floor, the tiled roof, the eave with its sign and cooler, the bay window, the door curtain, the drinks machine, the planted beds and lanterns; east of the apartment building, its front and paved forecourt to the street (`GHOSTST` in `bodega.js`). Its ghosts: the four sheet ghosts (below, 18 Oct 2026).
 - **The Dragon, calm** (17 Oct 2026: "flying around, and perching on the ledges of buildings. calm"; `src/npc-dragon.js`): he sits a long while on a building's front ledge (the apartment house's, the bodega's, the apartment building's), then lifts off and glides in slow banking turns over the roofs, then settles on another ledge; he snaps at no one.
 - **The apartment house emptied** (17 Oct 2026: "empty out the new building completely of furniture and stairs and items. only leave the building doors and fire escapes"; `src/apts.js`): no furniture, no flights of stairs, nothing on its walls or roof, no stoop; its walls, floors, windows, doors, fire escapes and the rooms' ceiling lights stay.
 - **Only the room you're in** (17 Oct 2026, `src/rooms.js`): inside a building only your room is drawn (six clip planes round it for every material), the rest black, the characters outside it hidden; the pool's water too.
@@ -1114,3 +1114,14 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   golems take morels ($34) and moonglow ($90) too. One purse (INV's); kept in the save (`forage`). Cost: three instanced draws (caps, stems, the
   glowing caps; some 20-40 mushrooms near you, 48 triangles each), an invisible box each to click, no light, nothing a frame but a day check.
   `FORDBG()`. Not yet: a hunger bar outside the pack, ingredients for crafts beyond these, mushrooms indoors or in the cave.
+- **Ghost Street's ghosts: four sheets over invisible basketballs** (owner, 18 Oct 2026: "i want to add ghost in the game just floating sheets,
+  realistic phyics, see through, they hang aruond the ghost street dojo, inside and outside, never strayig too far"; "smaller cuter"; "create the
+  ghost by placing an invisible basketball in the air and the dropping a sheet over it, then let the basketball float around like a ghost - show
+  mockups"; of the mockups https://claude.ai/artifact/JEzpXVT5rSUWGJNcKfva6T: "lets put those 4 ghosts as the main ghosts and keep those names and
+  sizes"; `src/ghosts.js`, `GHOSTS.init()` after the rooftops): THE HAND TOWEL (round, 68 cm), THE PILLOWCASE (round, 104 cm), THE NAPKIN (square,
+  72 cm), THE BEDSHEET (square, 124 cm, its corners trailing on the ground); each an invisible 24 cm ball floating at about half a metre with a
+  real cloth dropped over it as the game opens (Verlet points, threads hard to stretch and easy to bunch, ten passes a step at 120 a second; the
+  cloth grips the ball where it touches, so the ball carries it and the rest trails and swings; the ground stops it; anyone walking through
+  pushes it aside); two dark eyes and a small mouth on the front, a little see-through (the world's Lambert in its bands, opacity .8). They
+  drift between spots in the dojo's hall and its forecourt, bobbing, lingering and peeking your way, through walls if their way runs there; a
+  double click says the name. Simulated only within 45 tiles on the street. Cost: 1,256 triangles the four, one program, no light. `GHOSTDBG()`.

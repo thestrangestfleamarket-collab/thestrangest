@@ -46,35 +46,48 @@ WEEDS.init=()=>{ WEEDS.dbg=f=>f({FIX,SOL,TILE,MODS}); const T=TILE, hsh=(a,b,s)=
     for(const f of FLOW){ const k=Math.floor(f[0]/cs)+','+Math.floor(f[2]/cs); if(!FC.has(k))FC.set(k,[]); FC.get(k).push(f); }
     for(const list of FC.values()){ const fm=new THREE.InstancedMesh(fg,fmt,list.length); list.forEach(([x,y,z],i)=>{ M.compose(new THREE.Vector3(x,y,z),q.identity(),new THREE.Vector3(1,1,1)); fm.setMatrixAt(i,M); }); fm.computeBoundingSphere(); scene.add(fm); WEEDS.meshes.push(fm); } }
   WEEDS.n=TUFT.length; WEEDS.flowers=FLOW.length; };
-// ---- THE LAWN'S GRASS: FLAT AND SWAYING (owner, 18 Oct 2026, of the blocky grass mockups https://claude.ai/artifact/WfQ5tdKVCmb1jJEAeAEXL5:
-// "Only swaying smooth", his option 3; never leafy; then "i only want the grass moving when someone is walking through it or disrupting it. make it
-// 50% les tall over all": no wind now, half the height): over every lawn you can see (the land's sheet and the park's hills: wherever a ray straight
-// down meets one of them first, so never on a way, a sidewalk, a plaza, a floor or under a building), long thick blades of flat colour lying nearly
-// down, combed one way, four to a clump, in the lawn's own greens; still till someone walks through (they part round his feet and stand back up behind him); lit in the world's flat bands (no smooth light). Made only
-// round you, in chunks of 8 tiles, a chunk a moment as you come (a tiny picture from above says which half-tile squares are lawn and how high, two
-// clumps in each), thrown away 3 chunks off; each chunk one instanced draw with its own bounds, so only those in the picture are drawn. Cost: 8
-// clumps a tile, 16 triangles a clump (a blade its top and one side: 4); one program; no light; building a chunk some 15 ms (the cloud: two small draws and a read back) ----
-WEEDS.lawnInit=()=>{ const T=TILE, CS=8*T, CELL=.5*T, PER=2, hsh=(a,b,s)=>{ let h=(Math.floor(a*97)*374761393+Math.floor(b*89)*668265263+s*1442695041)|0; h=(h^(h>>>13))*1274126177|0; return ((h^(h>>>16))>>>0)/4294967296; };
-  // a clump in a tile's units: four blades from roots in a small spread, each .75-1.1 long, .14 wide, its tip 6-14 degrees up off the ground, all
-  // pointing within 13 degrees of the comb (+x); aT 0 at the root to 1 at the tip (how far the wind carries it)
-  const P=[], AT=[], H1=(a,b,s)=>hsh(a/97,b/89,s);
-  for(let k=0;k<4;k++){ const ox=(H1(k,1,51)-.6)*.5, oz=(H1(k,2,52)-.5)*.7, L=.75+.35*H1(k,3,53), w=.07, an=(H1(k,4,54)-.5)*.45, up=(6+8*H1(k,5,55))*Math.PI/180, th=.04;
-    const c=Math.cos(an), sn=Math.sin(an), tx=c*L*Math.cos(up), tz=sn*L*Math.cos(up), ty=L*Math.sin(up), nx=-sn*w, nz=c*w;
-    const r0=[ox+nx,th,oz+nz], r1=[ox-nx,th,oz-nz], t0=[ox+tx+nx*.6,ty+th,oz+tz+nz*.6], t1=[ox+tx-nx*.6,ty+th,oz+tz-nz*.6], s0=[ox+nx,0,oz+nz], s1=[ox+tx+nx*.6,ty,oz+tz+nz*.6];
-    for(const [v,t] of [[r0,0],[r1,0],[t0,1],[r1,0],[t1,1],[t0,1],[s0,0],[r0,0],[s1,1],[r0,0],[t0,1],[s1,1]]){ P.push(...v); AT.push(t); } }   // (its top, then its side down to the ground)
+// ---- THE LAWN'S GRASS, MADE LIKE THE TREETOPS (owner, 18 Oct 2026: "Literally make the grass like treetops", his pick of the first grass
+// mockup's LEAF CARPET, https://claude.ai/artifact/WfQ5tdKVCmb1jJEAeAEXL5): over every lawn you can see (the land's sheet and the park's hills:
+// wherever a ray straight down meets one of them first, so never on a way, a sidewalk, a plaza, a floor or under a building), a low carpet of the
+// oaks' own stuff: faceted leaf clumps shoulder to shoulder, each lit as one round shape (its faces turned mostly out from its middle, a fifth
+// their own, as the crowns' are: park.js), the crowns' leaf mottle laid over them in the world (clumps of leaves a tenth of a tile, a few bright
+// tips), a step darker at its foot, in the lawn's own greens; a smooth wind rolls over them in waves (one slow swell and a cross ripple by where
+// each clump stands, the park's wind its strength), the tops leaning, the feet still; lit in the world's flat bands. Made only round you, in chunks
+// of 8 tiles, a chunk a moment as you come (a tiny picture from above says which half-tile squares are lawn and how high, a clump in each), thrown
+// away 3 chunks off; each chunk one instanced draw with its own bounds, so only those in the picture are drawn. Cost: 4 clumps a tile, 20
+// triangles a clump; one program; no light; building a chunk some 15 ms (the cloud: two small draws and a read back) ----
+WEEDS.lawnInit=()=>{ const T=TILE, CS=8*T, CELL=.5*T, PER=1, hsh=(a,b,s)=>{ let h=(Math.floor(a*97)*374761393+Math.floor(b*89)*668265263+s*1442695041)|0; h=(h^(h>>>13))*1274126177|0; return ((h^(h>>>16))>>>0)/4294967296; };
+  // a clump in a tile's units: an icosahedron, flattened, its foot a little under the ground; each corner's normal four fifths out from the
+  // middle, a fifth its face's (one round shape to the light); aT 0 at the foot to 1 at the top (how far the wind leans it; the foot's step darker)
+  const ico=new THREE.IcosahedronGeometry(.5,0), IP=ico.attributes.position.array, IN=ico.attributes.normal.array, P=[], NR=[], AT=[];
+  for(let i=0;i<IP.length;i+=3){ const x=IP[i], y=IP[i+1]*.16+.03, z=IP[i+2], dx=x, dy=(y-.03)*3, dz=z, l=Math.hypot(dx,dy,dz)||1; let nx=dx/l*.8+IN[i]*.2, ny=dy/l*.8+IN[i+1]*.2, nz=dz/l*.8+IN[i+2]*.2; const m=Math.hypot(nx,ny,nz)||1;   // (flat: a canopy's top seen from above, its middle facing up, its rim turning down)
+    P.push(x,y,z); NR.push(nx/m,ny/m,nz/m); AT.push(Math.max(0,Math.min(1,(y+.05)/.16))); }
   const LG=[[62,100,50],[76,116,58],[90,132,66],[104,146,74]];   // (the lawn's four greens, gamekit.js's GRASSP: that one lives in the bodega's scope)
-  const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); geo.setAttribute('aT',new THREE.Float32BufferAttribute(AT,1)); geo.computeVertexNormals();
-  const mat=new THREE.MeshLambertMaterial({side:THREE.DoubleSide});
-  // (still unless someone is in it: up to eight walkers near you (you first), each parting the blades round his feet, their tips pushed out from him and
-  // pressed down, the nearer the more; as he walks on they stand back up where he was. No wind)
-  const MV=WEEDS.movers, SWAY=WEEDS.PART(T,'aT');
-  mat.onBeforeCompile=sh=>{ sh.uniforms.uMv=WEEDS.UMV; sh.vertexShader='attribute float aT; uniform vec4 uMv[8];\n'+sh.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\n '+SWAY); };
+  const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); geo.setAttribute('normal',new THREE.Float32BufferAttribute(NR,3)); geo.setAttribute('aT',new THREE.Float32BufferAttribute(AT,1));
+  const mat=new THREE.MeshLambertMaterial({});
+  // (still till someone walks through: owner, 18 Oct 2026, "i only want the grass moving when someone is walking through it or disrupting it";
+  // the clumps part round his feet as the weeds do, WEEDS.PART; no wind)
+  const MV=WEEDS.movers, SWAY=WEEDS.PART(T,'aT')+' vLw=(modelMatrix*instanceMatrix*vec4(transformed,1.)).xyz; vAt=aT;';
+  mat.onBeforeCompile=sh=>{ sh.uniforms.uMv=WEEDS.UMV; sh.vertexShader='attribute float aT; uniform vec4 uMv[8]; varying vec3 vLw; varying float vAt;\n'+sh.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\n '+SWAY).replace('#include <shadowmap_vertex>',THREE.ShaderChunk.shadowmap_vertex.replace(/(directional|point)LightShadows\[ i \]\.shadowNormalBias/g,'($&+.12)'));   // (held 12 cm further off toward the shadow map, as the crowns' leaves are: no acne)
+    sh.fragmentShader='varying vec3 vLw; varying float vAt;\nfloat lfH(vec3 p){ return fract(sin(dot(p,vec3(127.1,311.7,74.7)))*43758.5453); }\n'+sh.fragmentShader.replace('#include <color_fragment>','#include <color_fragment>\n { float n=lfH(mod(floor(vLw*'+(1/(.11*T)).toFixed(4)+'),256.)), m=lfH(mod(floor(vLw*'+(1/(.035*T)).toFixed(4)+'),256.));   /* (the cells wrapped first: far from the middle sin() lost its digits and the mottle ran in streaks) */ diffuseColor.rgb*=(.74+.42*n+(m>.94?.25:0.)-(m<.06?.18:0.))*(vAt<.25?.78:1.); }'); };   // (the crowns' leaf mottle, park.js's treeLook; the foot a step darker)
+  mat.customProgramCacheKey=()=>'lawntree';
+  // (THE TUFTS, one of the kinds too, owner 18 Oct 2026: "lets do tuft too": the Grass Lab's crossed cards painted with fourteen blades, two to a
+  // square, each its own size, turn and green, swaying from the root; the weeds' own program, so nothing new; the lawn's picture shows between)
+  const cvT=document.createElement('canvas'); cvT.width=cvT.height=64; const gT=cvT.getContext('2d'), id=gT.createImageData(64,64), H1T=(a,b,s)=>hsh(a/97,b/89,s);
+  for(let k=0;k<14;k++){ const bx=4+k*4.2+Math.sin(k*7)*2, lean=(H1T(k,1,41)-.5)*.6, top=Math.floor(64-(30+30*H1T(k,2,42)));
+    for(let y=top;y<64;y++){ const yy=63-y, px=bx+lean*yy, t=yy/(64-top||1), w=1.4-yy/64; for(let x=Math.floor(px-w);x<=Math.ceil(px+w);x++){ if(x<0||x>63||Math.abs(x-px)>=w)continue; const i=(y*64+x)*4; id.data[i]=40+50*t; id.data[i+1]=80+70*t; id.data[i+2]=30+20*t; id.data[i+3]=255; } } }
+  gT.putImageData(id,0,0); const tx=new THREE.CanvasTexture(cvT); tx.colorSpace=THREE.SRGBColorSpace; tx.magFilter=tx.minFilter=THREE.NearestFilter; tx.generateMipmaps=false;
+  const card=new THREE.PlaneGeometry(1,1).translate(0,.5,0), c2=card.clone().rotateY(Math.PI/2), geoT=new THREE.BufferGeometry();
+  geoT.setAttribute('position',new THREE.Float32BufferAttribute([...card.attributes.position.array,...c2.attributes.position.array],3)); geoT.setAttribute('uv',new THREE.Float32BufferAttribute([...card.attributes.uv.array,...c2.attributes.uv.array],2));
+  geoT.setAttribute('normal',new THREE.Float32BufferAttribute(new Array(8).fill(0).flatMap(()=>[0,1,0]),3)); geoT.setIndex([0,2,1,2,3,1,4,6,5,6,7,5]);
+  const matT=new THREE.MeshLambertMaterial({map:tx,alphaTest:.5,side:THREE.DoubleSide});
+  matT.onBeforeCompile=sh=>{ sh.uniforms.uMv=WEEDS.UMV; sh.vertexShader='uniform vec4 uMv[8];\n'+sh.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\n '+WEEDS.PART(T,'position.y')); };
+  matT.customProgramCacheKey=()=>'weedsway';   // (the weeds' own program: one for both)
   const near=[]; WEEDS.moveTick=()=>{ near.length=0; near.push([pos.x,pos.z,0]); if(typeof NPCS!=='undefined')for(const N of NPCS){ if(N.lv!=='up'||N.far||!N.g.visible||!N.st)continue; const d=Math.hypot(N.st.x-pos.x,N.st.z-pos.z); if(d<14*T)near.push([N.st.x,N.st.z,d]); }
     near.sort((a,b)=>a[2]-b[2]); for(let i=0;i<8;i++){ const n=near[i]; if(n)MV[i].set(n[0],n[1],.55*T,1); else MV[i].w=0; } };
-  mat.customProgramCacheKey=()=>'lawnflat';
   const M=new THREE.Matrix4(), q=new THREE.Quaternion(), up=new THREE.Vector3(0,1,0), col=new THREE.Color(), V=new THREE.Vector3(), S=new THREE.Vector3();
   const lawn=o=>o===MODS.land||(typeof POND!=='undefined'&&o===POND.hills);
-  const skip=o=>o.isInstancedMesh||o.isSkinnedMesh||o.isPoints||o.isSprite||o.isLine||(o.material&&(o.material.transparent||o.material.depthWrite===false||o.material.side===THREE.BackSide));
+  const skip=o=>o.isInstancedMesh||o.isSkinnedMesh||o.isPoints||o.isSprite||o.isLine||(o.material&&(o.material.visible===false||o.material.isMeshToonMaterial||o.material.transparent||o.material.depthWrite===false||o.material.side===THREE.BackSide));
   const CH=new Map(); WEEDS.chunks=CH; WEEDS.lawnN=0;
   // (which squares are lawn, and how high: one tiny picture of the chunk from straight above, twice: first everything but the lawn, in black,
   // its depth kept; then the lawn alone (the land's sheet, the hills: layer 5 for the moment) where it's still the top, its height in the green.
@@ -83,8 +96,22 @@ WEEDS.lawnInit=()=>{ const T=TILE, CS=8*T, CELL=.5*T, PER=2, hsh=(a,b,s)=>{ let 
   const VS='varying float vY; void main(){ vec4 w=modelMatrix*vec4(position,1.);'+'\n#ifdef USE_INSTANCING\n w=modelMatrix*instanceMatrix*vec4(position,1.);\n#endif\n vY=w.y; gl_Position=projectionMatrix*viewMatrix*w; }';
   const M0=new THREE.ShaderMaterial({vertexShader:VS,fragmentShader:'varying float vY; void main(){ gl_FragColor=vec4(0.); }',side:THREE.DoubleSide});
   const M1=new THREE.ShaderMaterial({vertexShader:VS,fragmentShader:'varying float vY; void main(){ gl_FragColor=vec4(1.,clamp((vY+.5)/4.,0.,1.),0.,1.); }',side:THREE.DoubleSide});
-  const build=(cx,cz)=>{ const L=[], x0=cx*CS, z0=cz*CS, LW=[MODS.land,typeof POND!=='undefined'?POND.hills:null].filter(Boolean), hid=[];
-    scene.traverseVisible(o=>{ if((o.isMesh||o.isPoints||o.isLine||o.isSprite)&&skip(o))hid.push(o); }); hid.forEach(o=>o.visible=false);
+  // THE KINDS, A VARIETY OVER THE LAWNS (owner, 18 Oct 2026: "Imagine way bigger trees", then "Do a variety all over the park"; the mockup's
+  // seven, https://claude.ai/artifact/Mj4zkmdHJhGk6ZKsPsC4Rr): the lawn cut into patches some 24 tiles across (each half-tile square takes its
+  // nearest patch's seed), each patch one kind: the flat canopy, the rolling canopy, little crowns, big crowns, giant crowns, big crowns pressed
+  // flat. A crown kind lays a grid of crowns (each its own spot, size and green), every square's clump domed by how near its crown's middle it is,
+  // its rim a step darker and lower, so the lawn reads as the treetops of a forest seen from high above. Still one clump a square: the cost as before
+  const MT=T/.84, PS=24*T, KINDS=['flat','roll','little','big','giant','bigflat','tuft'], CR={little:[.75,.42,.14*MT,.6],big:[4,2.6,.21*MT,1.15],giant:[6.2,4,.35*MT,1.45],bigflat:[4,2.6,.065*MT,1.15]};
+  const patch=(x,z)=>{ const gx=Math.floor(x/PS), gz=Math.floor(z/PS); let best=1e18, kind='flat'; for(let i=-1;i<=1;i++)for(let j=-1;j<=1;j++){ const a=gx+i, b=gz+j, px=(a+hsh(a,b,71))*PS, pz=(b+hsh(b,a,72))*PS, d=(x-px)**2+(z-pz)**2; if(d<best){ best=d; kind=KINDS[Math.floor(hsh(a,b,73)*KINDS.length)]; } } return kind; };
+  const crown=(x,z,st)=>{ const S0=st*T, gx=Math.floor(x/S0), gz=Math.floor(z/S0); let best=1e18, C=null; for(let i=-1;i<=1;i++)for(let j=-1;j<=1;j++){ const a=gx+i, b=gz+j, px=(a+.2+.6*hsh(a,b,81))*S0, pz=(b+.2+.6*hsh(b,a,82))*S0, d=(x-px)**2+(z-pz)**2; if(d<best){ best=d; C={x:px,z:pz,id:hsh(a,b,83),sz:hsh(b,a,84)}; } } C.d=Math.sqrt(best); return C; };
+  const KIND=(x,y,z,n)=>{ const r1=hsh(x,z,n*3+1), r2=hsh(z,x,n*3+2), r3=hsh(x+z,x-z,n*3+3), px=x+(r1-.5)*CELL*.7, pz=z+(r2-.5)*CELL*.7, kind=patch(x,z);
+    if(kind==='tuft')return null;
+    if(kind==='flat')return [px,y,pz,(1.05+.35*r3)*T,r1*6.28,r2,.7+.6*((r2*13.7)%1),1];
+    if(kind==='roll')return [px,y+r3*.03*MT,pz,(.95+.3*r3)*T,r1*6.28,r2,1.9+1.6*((r2*13.7)%1),1];
+    const [st,R0,dome,w]=CR[kind], C=crown(x,z,st), R=R0*T*(.8+.4*C.sz), q=Math.min(1,C.d/R), tone=(C.id+(r3<.25?.25:0))%1;   // (most of a crown one green, a quarter of its clumps the next)
+    return [px,y+dome*(1-q*q)-(q>.85?.04*MT:0),pz,w*(.85+.3*r3)*T,r1*6.28,tone,2.2,q>.85?.82:1]; };
+  const build=(cx,cz)=>{ const TU=[], L=[], x0=cx*CS, z0=cz*CS, LW=[MODS.land,typeof POND!=='undefined'?POND.hills:null].filter(Boolean), hid=[];
+    scene.traverseVisible(o=>{ if((o.isMesh||o.isPoints||o.isLine||o.isSprite)&&skip(o))hid.push(o); }); for(const g of [W3.group,...NPCS.map(N=>N.g)])if(g&&g.visible)hid.push(g); hid.forEach(o=>o.visible=false);   // (the characters too: whoever stood there left a bare patch)
     const lm=LW.map(o=>o.layers.mask); LW.forEach(o=>o.layers.set(5));
     const rt0=renderer.getRenderTarget(), ac=renderer.autoClear, ov=scene.overrideMaterial, cc=renderer.getClearColor(new THREE.Color()), ca=renderer.getClearAlpha(), bg=scene.background, fg=scene.fog;
     CAM.position.set(x0+CS/2,40*T,z0+CS/2); CAM.up.set(0,0,-1); CAM.lookAt(x0+CS/2,0,z0+CS/2); CAM.updateMatrixWorld();
@@ -94,10 +121,12 @@ WEEDS.lawnInit=()=>{ const T=TILE, CS=8*T, CELL=.5*T, PER=2, hsh=(a,b,s)=>{ let 
     scene.overrideMaterial=ov; renderer.setRenderTarget(rt0); renderer.autoClear=ac; renderer.setClearColor(cc,ca); scene.background=bg; scene.fog=fg;
     LW.forEach((o,i)=>o.layers.mask=lm[i]); hid.forEach(o=>o.visible=true);
     for(let r=0;r<R;r++)for(let u=0;u<R;u++){ const k=(r*R+u)*4; if(PIX[k]<128)continue; const x=x0+(u+.5)*CELL, z=z0+CS-(r+.5)*CELL, y=PIX[k+1]/255*4-.5;
-      for(let n=0;n<PER;n++){ const r1=hsh(x,z,n*3+1), r2=hsh(z,x,n*3+2), r3=hsh(x+z,x-z,n*3+3); L.push([x+(r1-.5)*CELL*.8,y,z+(r2-.5)*CELL*.8,(.32+.1*r3)*T,.6+(r1-.5)*.4,r2]); } }   // (combed one way, a clump's turn within 23 degrees of it)
-    if(!L.length)return null; const me=new THREE.InstancedMesh(geo,mat,L.length);
-    L.forEach(([x,y,z,s,a,c],i)=>{ M.compose(V.set(x,y,z),q.setFromAxisAngle(up,a),S.set(s,s*.5,s)); me.setMatrixAt(i,M); const g1=LG[Math.floor(c*4)%4], g2=LG[Math.floor(c*28)%4]; me.setColorAt(i,col.setRGB((g1[0]+g2[0])/510,(g1[1]+g2[1])/510,(g2[2]+g1[2])/510,THREE.SRGBColorSpace)); });   // (the lawn's own four greens, two mixed)
-    me.computeBoundingSphere(); me.receiveShadow=true; MAPG.bodega.add(me); WEEDS.lawnN+=L.length; return me; };
+      for(let n=0;n<PER;n++){ const e=KIND(x,y,z,n); if(e)L.push(e); else for(let m=0;m<2;m++){ const r1=hsh(x,z,m*3+1), r2=hsh(z,x,m*3+2), r3=hsh(x+z,x-z,m*3+3); TU.push([x+(r1-.5)*CELL,y,z+(r2-.5)*CELL,(.3+.2*r3)*T,r1*6.28,r2]); } } }
+    if(!L.length&&!TU.length)return null; const grp=new THREE.Group(); grp.count=L.length+TU.length; grp.dispose=()=>grp.children.forEach(m=>m.dispose());   // (a chunk: its clumps and its tufts, each one instanced draw)
+    if(TU.length){ const mt=new THREE.InstancedMesh(geoT,matT,TU.length); TU.forEach(([x,y,z,s,a,c],i)=>{ M.compose(V.set(x,y,z),q.setFromAxisAngle(up,a),S.set(s,s*(.75+.5*c)*.5,s)); mt.setMatrixAt(i,M); mt.setColorAt(i,col.setHSL(.25+(c-.5)*.07,.42+.15*c,.36+.16*((c*7.3)%1))); }); mt.computeBoundingSphere(); mt.receiveShadow=true; grp.add(mt); }
+    if(L.length){ const me=new THREE.InstancedMesh(geo,mat,L.length);
+    L.forEach(([x,y,z,s,a,c,ys,k],i)=>{ M.compose(V.set(x,y,z),q.setFromAxisAngle(up,a),S.set(s,s*ys*.5,s)); me.setMatrixAt(i,M); const g1=LG[Math.floor(c*4)%4], g2=LG[Math.floor(c*28)%4]; me.setColorAt(i,col.setRGB((g1[0]+g2[0])/510*k,(g1[1]+g2[1])/510*k,(g2[2]+g1[2])/510*k,THREE.SRGBColorSpace)); });   // (the lawn's own four greens, two mixed; a crown's edge a step darker)
+    me.computeBoundingSphere(); me.receiveShadow=true; grp.add(me); } MAPG.bodega.add(grp); WEEDS.lawnN+=grp.count; return grp; };
   let busy=0; WEEDS.lawnTick=()=>{ if(LVL!=='up'||(ROOMS&&ROOMS.cur))return; const pcx=Math.floor(pos.x/CS), pcz=Math.floor(pos.z/CS);
     for(const [k,me] of CH){ const [a,b]=k.split(',').map(Number); if(Math.max(Math.abs(a-pcx),Math.abs(b-pcz))>3){ if(me){ MAPG.bodega.remove(me); me.dispose(); WEEDS.lawnN-=me.count; } CH.delete(k); } }
     // the nearest missing chunk within 2, one a moment

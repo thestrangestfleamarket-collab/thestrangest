@@ -946,7 +946,7 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   two more across the main street from the side streets' mouths), STOP where the west street and the Avenue come down to the main street, and along
   every kerb every 24 tiles a NO PARKING plate (every third a SPEED LIMIT 25), each .75 tile in from the kerb, clear of the street lights' feet.
   66 signs. Cost: some 1,600 triangles in the street's batch, no lights, no programs. Not done: a traffic light (the owner took the kit's out).
-- **Never leafy grass** (owner, 18 Oct 2026, of the grass mockups https://claude.ai/artifact/WfQ5tdKVCmb1jJEAeAEXL5: "No leafy grass never"):
+- **(SUPERSEDED the same day: "Literally make the grass like treetops", below)** **Never leafy grass** (owner, 18 Oct 2026, of the grass mockups https://claude.ai/artifact/WfQ5tdKVCmb1jJEAeAEXL5: "No leafy grass never"):
   grass is never made of leaf clumps, little crowns or the trees' leaf mottle. The grass he's weighing is blocky blades: thick straight square
   posts of flat colour (a darker foot, a lit top) flowing in one smooth wind; his picks so far "1 and 2" (short blocks with chunky tufts) and
   a flat one (long blades lying nearly down, swaying in waves). **His pick: "Only swaying smooth"** (the flat one, in the game: below).
@@ -958,6 +958,15 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   no light, a chunk 15-17 ms to make.
 - **Everyone's cottage, the start** (owner, 18 Oct 2026: "make it anyone's cottage who starts ... fill entire floor of apartment"; his picks: one big cottage room, the game's pixel style, the first visit only; `apts.js`, `where.js`): the apartment house's ground floor is the old game's Herb Cottage, its own pieces from its own makers ("Preset Herb Cottage 1": the fig, the tables, the red bookshelf, the long table on its roots with the lamp and candles, the rugs, the writing desk, the wood stove, the stump with pumpkins, the shelves, the garland, the portrait, the clock, the screen, the cabinet...) spread over the floor's 7.5 x 14 tiles (a piece against a wall keeps that wall; the cabinet, the screen, the print, the clock and a shelf moved off the windows and the door), the window's branch rod with its hanging pothos and the green drapes at all five of the floor's windows, the inside walls the cottage's moss plaster, its candles live flames, its six strongest lamps the floor's own (lit only while you're in). A new player (nothing kept in `market-where`, or `?fresh=1`) starts in it (`MODS.apts.home`); after that, where you left off.
 - **The computer and the delivery drone** (owner, 18 Oct 2026: "bring back pc with drone delivery you can view 1st person"; his pick: the bodega's goods; `src/drone.js`): an old beige computer on the cottage's writing desk (its screen green); a double click opens DRONE LINK (the bodega's shelf with prices, your money: the mail's purse; ORDER; DRONE CAM). The drone (a little quadcopter of blocks, its light green at home, red out) is parked on the bodega's door frame, rotors still; an order sends it up over the street to the house's middle front window, where it turns to face in, hovers, and the parcel drops inside on the floor; then home, parked. DRONE CAM looks from just behind it (the room's cut-away and the house's ceiling cut lifted while it's on: rooms.js, `APTS.HP`), the HUD's frame and LEAVE DRONE CAM; a double click on the parcel opens it (the thing left on the floor). The bodega's stock and till take the sale. `?dronek=N` flies it N times as fast (a test's); `DRONEDBG()`. Cost: the computer some 60 triangles, the drone some 150, a parcel 12; no lamp; nothing a frame while it's parked.
+- **The grass made like the treetops** (owner, 18 Oct 2026: "Literally make the grass like treetops", then, asked whether that meant the first
+  mockup's LEAF CARPET over his earlier "no leafy grass never": "Yes, like treetops"; `WEEDS.lawnInit` in `src/weeds.js`, in place of the flat
+  blades): over every lawn in sight a low carpet of the oaks' own stuff: faceted leaf clumps (a flattened icosahedron each, 20 triangles, a half
+  tile square apiece, its own size and turn), each lit as one round shape like a crown (normals four fifths out from its middle), the crowns' leaf
+  mottle in the world over them (park.js's treeLook numbers), a step darker at the foot, the lawn's four greens; a smooth wind rolls over them in
+  waves, the tops leaning, the feet still. Same chunks (8 tiles, made round you, dropped 3 off; the characters left out of the chunk's lawn
+  check, so no bare patch where someone stood). Measured in the park at 3:30: some 24,600 triangles in the picture (58,000 in all the chunks
+  round you), one program, no light, a chunk 15-18 ms to make. Its leaf mottle hashes cells wrapped to 256 first (far from the middle sin() ran
+  out of digits and the mottle drew streaks).
 - **The apartment house's floors, from the old game** (owner, 18 Oct 2026: "bring back entrance lobby elevator stairs and hallway from 1st game
   and make it fit in new apartment 1st floor"; his pick "cottage on every floor"; `LOBBY` in `src/apts.js`, superseding `HOLLOW`): the ground
   floor the old lobby (black and white tiles, mailboxes, a bench, a plant, the directory), a hall back to the core; the core at the back-west
@@ -1066,3 +1075,15 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   what's off the map now). **The clouds** twenty faces a puff (`weather.js`: 38,400 to 9,600). Measured (tests/trisby.cjs, 11 am): the street
   204,070 to 180,602 triangles in the picture, the park 243,596 to 212,904. **Still over the 100,000**: the walking guitarist 30,300 (his
   fingers and guitar whole), the player 15,000, the batches' street and buildings, the river 8,100, the oaks 11,000.
+- **The treetop grass flat** (owner, 18 Oct 2026: "I don't want the grass round ... flat and covering ground. Imagine the treetop exactly";
+  `WEEDS.lawnInit`): each leaf clump a low flat canopy (its height a sixth of its width, the middle facing up, the rim turning down as a crown's
+  edge does), more than twice as wide as its half-tile square so they overlap and no ground shows: the lawn reads as the top of one tree seen
+  from above; the wind a gentle lift and slide. The chunk's lawn check now skips invisible hit boxes and toon-lit character pieces (both had
+  left a bare patch where you stood). Cost as before: some 19,700 triangles in the picture, one program, no light.
+- **The treetop grass in a variety** (owner, 18 Oct 2026, of the mockup https://claude.ai/artifact/Mj4zkmdHJhGk6ZKsPsC4Rr: "Imagine way bigger
+  trees", then "Do a variety all over the park"; `KIND` in `WEEDS.lawnInit`): the lawns cut into patches some 24 tiles across (each half-tile
+  square takes its nearest patch's seed), each patch one kind: the flat canopy, the rolling canopy, little crowns, big crowns (4-5 m), giant
+  crowns (6-8 m), big crowns pressed flat, and (owner: "lets do tuft too") the Grass Lab's card tufts, two to a square, the lawn's picture between
+  (the weeds' own program, a second instanced draw in the chunk). A crown kind lays a grid of crowns (each its own place, size and green), every square's clump domed
+  by how near its crown's middle it is, its rim a step darker and lower: the treetops of a forest seen from high above. Every lawn, not only the
+  park's. Still one clump a square, the cost as before (some 20,000-25,000 triangles in the picture), one program, no light.

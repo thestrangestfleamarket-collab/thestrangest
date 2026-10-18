@@ -19,7 +19,8 @@ grab('poolout',()=>{ const P=POOLR, X=P.X, Z=P.Z, Y=P.Y, H=P.H, DOOR=[21.97,23.5
   const roof=new THREE.Mesh(new THREE.BoxGeometry((P.x1-P.x0+.4)*TILE*BLDK,.08,(P.y1-P.y0+.4)*TILE*BLDK),new THREE.MeshLambertMaterial({color:new THREE.Color(.2,.2,.21)})); roof.position.set(X((P.x0+P.x1)/2),Y(H)+.04,Z((P.y0+P.y1)/2)); scene.add(roof); MODS.pool.roof=roof; });
 // ---- THE SUBWAY'S STAIRS: from the sidewalk (its top at the street's side) twelve steps down to the station's exit tunnel, its side walls, a
 // green rail round the opening (as New York's stairs down have) but at its top, open to the sidewalk ----
-grab('stairs',()=>{ const S=MAPSTAIR, X=x=>(x-72)*TILE, Z=y=>(y+77)*TILE, Y=z=>z*ZU, n=S.steps, rise=S.depth/n, run=(S.y1-S.y0)/n;
+// (THE METRO's exit in their place, owner 18 Oct 2026: its railed opening, flight and corridor, metro.js; these stairs only with the old station brought back)
+grab('stairs',()=>{ if(METRO){ METRO.exit(); return; } const S=MAPSTAIR, X=x=>(x-72)*TILE, Z=y=>(y+77)*TILE, Y=z=>z*ZU, n=S.steps, rise=S.depth/n, run=(S.y1-S.y0)/n;
   const P=[], Cc=[], c3=new THREE.Color();
   const quad=(a,b,c,d,col)=>{ c3.setRGB(col[0]/255,col[1]/255,col[2]/255,THREE.SRGBColorSpace); for(const v of [a,b,c,a,c,d]){ P.push(...v); Cc.push(c3.r,c3.g,c3.b); } };
   const box=(x0,y0,z0,x1,y1,z1,col)=>{ const [a,b,c,d]=[X(x0),X(x1),Z(y0),Z(y1)], [e,f]=[Y(z0),Y(z1)], dk=col.map(v=>v*.8), lt=col.map(v=>Math.min(255,v*1.08));
@@ -49,8 +50,9 @@ grab('stairs',()=>{ const S=MAPSTAIR, X=x=>(x-72)*TILE, Z=y=>(y+77)*TILE, Y=z=>z
   sol('up',S.x0-.2,S.y0-.2,S.x1+.2,S.y0,Y(30)); });
 // ---- ONE GROUND FOR THE MAP: on the stairs, the step under you; underground, the station's floor; on the street, the street's (its road a kerb down)
 // (two stairs down: the subway's from the sidewalk, descending toward the street's back (dir -1); the castle's from its bailey (dir 1): castle.js)
-const STAIRS=[MAPSTAIR,CASTLE.stair,...RING.stairs], inStair=(x,z)=>{ const gx=x/TILE+72, gy=z/TILE-77; for(const S of STAIRS)if(gx>=S.x0&&gx<S.x1&&gy>=S.y0&&gy<S.y1)return {S,gy}; return null; };
-groundY=(x,z)=>{ const s=inStair(x,z); if(s){ const S=s.S, t=S.dir>0?s.gy-S.y0:S.y1-s.gy, k=Math.min(S.steps,Math.max(1,Math.floor(t/((S.y1-S.y0)/S.steps))+1)); return -k*S.depth/S.steps*ZU; }
+// (a stair with its own has(x, z, lv), the Metro's exit, its corridor too: lv the level asked about, yours unless a character's: lives.js)
+const STAIRS=[MAPSTAIR,CASTLE.stair,...RING.stairs], inStair=(x,z,lv)=>{ const gx=x/TILE+72, gy=z/TILE-77; for(const S of STAIRS)if(S.has?S.has(x,z,lv):gx>=S.x0&&gx<S.x1&&gy>=S.y0&&gy<S.y1)return {S,gy}; return null; };
+groundY=(x,z)=>{ const s=inStair(x,z); if(s){ const S=s.S; if(S.ground)return S.ground(x,z); const t=S.dir>0?s.gy-S.y0:S.y1-s.gy, k=Math.min(S.steps,Math.max(1,Math.floor(t/((S.y1-S.y0)/S.steps))+1)); return -k*S.depth/S.steps*ZU; }
   { const st=LVL==='up'&&STORE.stackGround?STORE.stackGround(x,z):null; if(st!=null)return st; }
   { const sg=LVL==='up'&&STORE.shrineGround?STORE.shrineGround(x,z):null; if(sg!=null)return sg; }   // (the Moon Shrine's plaza, steps and terrace: store.js)   // (a floor stacked on the apartments: store.js)
   return LVL==='down'?(MODS.dungeon&&MODS.dungeon.inside(x,z)?MODS.dungeon.ground(x,z):MODS.station.ground(x,z)):MODS.apts&&MODS.apts.inside(x,z)?MODS.apts.ground(x,z):MODS.bodega.ground(x,z); };   // (in the apartment house: its floor under you, its stairs: apts.js)
@@ -103,10 +105,24 @@ LITE.tick=(dt,x,y,z)=>{ const P=LITE.pool;
   if(L0.intensity>0&&typeof NPCS!=='undefined'){ const r=(L0.distance||8*TILE)**2; for(const N of NPCS){ if(!N.g||!N.g.visible||!N.st)continue; const p=N.g.position, dx=p.x-L0.position.x, dz=p.z-L0.position.z; if(dx*dx+dz*dz>r)continue; const k=p.x*7.13+p.z*3.31+p.y*1.7+N.st.h; if(N._lk!==k){ N._lk=k; mv=true; } } }
   L0.shadow.autoUpdate=L0.intensity>0&&mv; };
 scene.background=new THREE.Color(0x050507);
+// NOTHING OF THE STREET UNDERGROUND (owner, 18 Oct 2026, from the platform: "there is as building in the subway", a street building drawn in the
+// dark over the station): the places' own groups hide with their level (MAPLV, below), but what was set straight in the scene after them (the
+// street lights and their pools, the power lines, the river and its bank, the force field, the land's sheet, the skyline, what's built after
+// the game opens) stood there still. Once you're under the street, every one of those that lies wholly above it
+// (its foot no more than a unit under the street) is taken off the camera's layer, all its meshes, and put back as you come up: the level's places, the stairs,
+// the lights' stand-ins, the characters (they hide with their own level), the flames' one mesh (fire.js) and anything reaching underground left as they are. A layer, not
+// visible, so the things that set their own visibility each frame (the sky, the river, the field) keep doing so; checked once per change
+const UNDER=(()=>{ let on=false, hid=[]; const keep=new Set(['down','dungeon','castlestairs','stairs','fire']), bb=new THREE.Box3(), skin=o=>{ let k=false; o.traverse(c=>{ if(c.isSkinnedMesh||c.isLight)k=true; }); return k; };
+  return dn=>{ if(dn===on)return; on=dn;
+    if(dn){ hid=[]; const npc=new Set((typeof NPCS!=='undefined'?NPCS:[]).map(N=>N.g)); for(const o of scene.children){ if(keep.has(o.name)||o.isLight||o.isCamera||npc.has(o)||(typeof W3!=='undefined'&&o===W3.group)||skin(o))continue;
+        if(o.isInstancedMesh){ o.computeBoundingBox(); bb.copy(o.boundingBox).applyMatrix4(o.matrixWorld); } else bb.setFromObject(o); if(bb.isEmpty()||bb.min.y<-1)continue;   /* (an instanced one by its instances' own box) */
+        o.traverse(c=>{ if(c.isMesh||c.isPoints||c.isLine||c.isSprite){ c.layers.disable(0); c.layers.enable(1); hid.push(c); } }); } }
+    else{ for(const c of hid){ c.layers.enable(0); c.layers.disable(1); } hid=[]; } }; })();
 // THE LEVEL YOU'RE ON (from your height): its walls, its ground, its places shown; on the stairs, both
 // (on the stairs: the station shown below you; the street hidden once you're halfway down, as a room's walls are when you're in it)
 const MAPLV=(py,pos)=>{ const lv=py<-1.6?'down':'up', st=inStair(pos.x,pos.z)!=null;
   MAPG.down.visible=lv==='down'||st; if(MAPG.dungeon)MAPG.dungeon.visible=lv==='down'||st; for(const k of ['bodega','pool','poolout','park','castle'])if(MAPG[k])MAPG[k].visible=lv==='up'&&!(st&&py<-1);
+  UNDER(py<-1); if(METRO)METRO.rail.visible=py>-4;   // (the Metro's railing: only from the street and the flight's top half, metro.js)
   MODS.stairCut.constant=st?py+.25:1e6; if(MODS.castleStairCut)MODS.castleStairCut.constant=st?py+.25:1e6;
   if(lv===LVL)return false; LVL=lv; solids=SOL[lv]; fixed=FIX[lv]; HEMI.color.set(lv==='down'?0x8a93a8:0x55607a); HEMI.groundColor.set(lv==='down'?0x1a1814:0x14110e); HEMI.intensity=lv==='down'?.1:.3; return true; };
 
@@ -137,5 +153,6 @@ window.MAPDBG=()=>({LVL,cut:MODS.stairCut.constant,vis:Object.fromEntries(Object
   for(const S of RING.stairs)hole(tt(XS(S.x0)),tt(ZS(S.y0)),tt(XS(S.x1)),tt(ZS(S.y1)));   // (the loop subway's: sub.js)
   { const S=CASTLE.stair; hole(tt(XS(S.x0)),tt(ZS(S.y0)),tt(XS(S.x1)),tt(ZS(S.y1))); }   // (the castle's stair down)
   hole(tt(POOLR.X(POOLR.bx0)),tt(POOLR.Z(POOLR.by0)),tt(POOLR.X(POOLR.bx1)),tt(POOLR.Z(POOLR.by1)));   // (the pool's basin)
+  { const z0=tt(Math.min(ZS(RING.river.y0),ZS(RING.river.y1))), z1=tt(Math.max(ZS(RING.river.y0),ZS(RING.river.y1))); hole(LR.x0+.5,z0,LR.x1-.5,z1); }   // (the Hudson: open down to its bed, river.js)
   const geo=new THREE.ShapeGeometry(sh); geo.rotateX(-Math.PI/2); geo.scale(TILE,1,TILE); geo.translate(0,-.5*ZU,0);
   const m=new THREE.Mesh(geo,new THREE.MeshLambertMaterial({map:t})); m.receiveShadow=true; MAPG.bodega.add(m); MODS.land=m; }

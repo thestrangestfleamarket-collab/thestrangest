@@ -19,7 +19,7 @@ const CITY={jobs:[],sched:[],day:0,nj:0,extra:[]}; window.CITY=CITY;   // (extra
     add('park','CENTRAL PARK',BOD.XS((PARK.gate[0]+PARK.gate[1])/2+PARK.ox),BOD.ZS(PARK.y0+PARK.oy),-T);   // (the gate in the wall, the street before it)
     add('castle','THE CASTLE',BOD.XS(CASTLE.gate),BOD.ZS(CASTLE.b[2]),-1.5*T);   // (the gatehouse, facing the street)
     add('subway','THE SUBWAY',BOD.XS((MAPSTAIR.x0+MAPSTAIR.x1)/2),BOD.ZS(MAPSTAIR.y1),.8*T);   // (the top of the stairs)
-    add('platform','THE PLATFORM',-12.4+LAY.o('subway').x*T,-24.9+LAY.o('subway').y*T,0,'down');
+    add('platform','THE PLATFORM',MODS.station.plat.x,MODS.station.plat.z,0,'down');   // (the Metro's, or the old station's brought back: MODS.station.plat)
     for(const [n,x,z,lv] of STORE.places)if(x||z)add('store:'+n.toLowerCase().replace(/^the /,'').replace(/\s+/g,'-'),n,x,z,0,lv,{inside:true,stacked:typeof lv==='number'});   // (a stored room's spot is just inside its door; one stacked on the apartments (lv its floor's height) has no way to it on foot)
     for(const e of CITY.extra)P.push(e);
     return P; };

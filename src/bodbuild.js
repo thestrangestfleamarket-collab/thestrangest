@@ -27,7 +27,9 @@ const BODB={};
   // (a ground wider or deeper than 80 tiles in pieces: the atlas is 2048 texels across, and a wider picture ran over into its next rows, the
   // sidewalk in long streaks from where the street was lengthened: owner, 18 Oct 2026, "the sidewalk is long streaks instead of tiles")
   const flat=(x0,y0,x1,y1,z,col,kind,S)=>{ if(x1-x0>80||y1-y0>80){ for(let a=x0;a<x1;a+=80)for(let b=y0;b<y1;b+=80)flat0(a,b,Math.min(x1,a+80),Math.min(y1,b+80),z,col,kind,S); return; } return flat0(x0,y0,x1,y1,z,col,kind,S); };
-  const flat0=(x0,y0,x1,y1,z,col,kind,S)=>{ const X=S?BOD.XS:BOD.X, Y=S?BOD.YS:BOD.Y, Z=S?BOD.ZS:BOD.Z; return BOD.bq([X(x0),Y(z),Z(y1)],[X(x1),Y(z),Z(y1)],[X(x1),Y(z),Z(y0)],[X(x0),Y(z),Z(y0)],BOD.faceTex((x1-x0)*24,(y1-y0)*24,(i,j)=>BOD.C(col(x0+(i+.5)/24,y1-(j+.5)/24))),kind); };   // (S: on the street, its size as it was; else the building's)
+  const flat0=(x0,y0,x1,y1,z,col,kind,S)=>{ const X=S?BOD.XS:BOD.X, Y=S?BOD.YS:BOD.Y, Z=S?BOD.ZS:BOD.Z; return BOD.bq([X(x0),Y(z),Z(y1)],[X(x1),Y(z),Z(y1)],[X(x1),Y(z),Z(y0)],[X(x0),Y(z),Z(y0)],BOD.faceTex((x1-x0)*24,(y1-y0)*24,(i,j)=>BOD.C(col(x0+(i+.5)/24,y0+(j+.5)/24))),kind); };   // (S: on the street, its size as it was; else the building's)
+  // (row 0 of the picture at y0, as bq lays it: it was painted from y1, every ground mirrored front to back, and with it the holes for the
+  // stairs down: the Metro's opening drew as grass over the flight and a hole behind it, 18 Oct 2026)
   flat(B0.x0,B0.y0,B0.x1,B0.y1,H,roofCol,'R');
   // THE GROUND, and the kerbs' faces down to the street
   for(const g of BOD.grounds)flat(g.x0,g.y0,g.x1,g.y1,g.z,g.col,'G',!g.bld);

@@ -99,6 +99,7 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
   // backs over him): out of doors the one facing the shop fronts, in a room his dojo picture's (the half turn from it); straight onto it as you go
   // in or out (ROOMS.cur, rooms.js), as Q / E jump
   UI.isoTo=()=>{ let r=null; try{ r=ROOMS.cur; }catch(e){}   /* (before rooms.js is made, at the start: out of doors) */ const t=r?Math.PI*3/4:-Math.PI/4; yawTo+=((((t-yawTo)%(2*Math.PI))+3*Math.PI)%(2*Math.PI))-Math.PI; yaw=yawTo; };
+  UI.isoTurn=t=>{ yawTo+=((((t-yawTo)%(2*Math.PI))+3*Math.PI)%(2*Math.PI))-Math.PI; yaw=yawTo; };   // (one of the four angles by name: the river's, river.js)
   UI.isoPlace=()=>{};   // (going in or out of a room no longer turns the view: owner, 18 Oct 2026, "when walking into a room dont auto switch view"; the near side is cut instead, rooms.js)
   UI.setView=v=>{ UI.view=v; UI.persp=v==='third'||v==='first'||v==='follow'; if(UI.freeCam&&UI.persp)setFree(false);
     if(v==='iso'){ UI.isoTo(); pitchTo=Math.PI/6; ppuTo=PPU*1.5; UI.off.set(0,0,0); zAt=null; }   // (owner, 17 Oct 2026, his picture of the dojo: "i want the game to always start you this distance and at this isometric angle": 1.5 times in (0.7 of the 2.2 before); Q / E turn it from there)
@@ -145,6 +146,7 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
     let best=null, bd=1e9; if(hits.length){ let o=hits[0].object; const th=live.find(th=>{ let q=o; while(q){ if(q===th.obj)return true; q=q.parent; } return false; }); if(th){ best=th; bd=hits[0].distance; } }
     const u=typeof USE!=='undefined'&&USE.pick(ray); if(u&&u.d<bd)best=u.th;   // (a thing of the world's to use, nearer than any character: use.js)
     if(best){ best.started=false; goal=best; return; }   // (started afresh: a thing used before walks up again)
+    if(window.RIVER&&RIVER.pick&&RIVER.pick(ray.ray,pos))return;   // (a double click on the river's water: its options, river.js)
     goal=null; if(UI.fly)return; gplane.constant=-py; if(ray.ray.intersectPlane(gplane,hit)){ target=hit.clone(); UI.go(Math.hypot(hit.x-pos.x,hit.z-pos.z)); } });
   // HOW FAR, HOW FAST (owner, 17 Oct 2026: "the further away you double click the faster you will go there (far away you will run), few steps
   // you will walk"): past six of the world's units he runs, slowing to a walk for the last stretch; Shift still runs
@@ -209,7 +211,7 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
   // the level from straight above (x0..x1, z0..z1 world), roofs off, brighter than the night, W x H pixels: the MAP tab's, the map editor's
   UI.topShot=(R,lv,W,H)=>{ const vis={}; rt.setSize(W,H); for(const k in MAPG)vis[k]=MAPG[k].visible; MAPG.down.visible=lv==='down'; for(const k of ['bodega','pool','poolout','park','castle'])if(MAPG[k])MAPG[k].visible=lv==='up';
     const h0=HEMI.intensity; HEMI.intensity=2.2; W3.group.visible=false; marker.visible=false;
-    const yc=lv==='down'?STN.DY:0; CLP[0].constant=yc+1.5; CLP[1].constant=-(yc-2.2);   // (the slice: from under the tracks to chest height)
+    const yc=lv==='down'?MODS.station.DY:0;   /* (the Metro's platform 30 ft down, or the old station's: map-post's MODS.station) */ CLP[0].constant=yc+1.5; CLP[1].constant=-(yc-2.2);   // (the slice: from under the tracks to chest height)
     top.left=R.x0; top.right=R.x1; top.top=-R.z0; top.bottom=-R.z1; top.position.set(0,yc+60,0); top.up.set(0,0,-1); top.lookAt(0,yc,0); top.near=1; top.far=120; top.updateProjectionMatrix();
     const cp=renderer.clippingPlanes; renderer.getClearColor(cc); const ca=renderer.getClearAlpha(); renderer.clippingPlanes=CLP;
     renderer.setRenderTarget(rt); renderer.setClearColor(0x050507,1); renderer.clear(); renderer.render(scene,top); const px=new Uint8Array(W*H*4); renderer.readRenderTargetPixels(rt,0,0,W,H,px);
@@ -224,7 +226,7 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
   const goTo=(x,z,lv)=>{ pos.set(x,0,z); target=null; py=typeof lv==='number'?lv:lv==='down'?(MODS.dungeon&&MODS.dungeon.inside(x,z)?MODS.dungeon.ground(x,z):MODS.station.ground(x,z)):0;   /* (a number: a stacked floor's height) */ if(UI.freeCam)UI.camT.set(x,py+.9,z); else UI.off.set(0,0,0); if(UI.menuOpen)toggleMenu(); };   /* (the view back on him where he lands) */
   mcv.addEventListener('click',e=>{ const r=mcv.getBoundingClientRect(), R=mapRect(mapLv); goTo(R.x0+(e.clientX-r.left)/r.width*(R.x1-R.x0),R.z0+(e.clientY-r.top)/r.height*(R.z1-R.z0),mapLv); });
   M.querySelectorAll('[data-lv]').forEach(b=>b.onclick=()=>{ mapLv=b.dataset.lv; drawMap(); });
-  const PLACES=[['THE STREET',-2.2,3.2,'up'],['THE BODEGA',BOD.X((BOD.B0.x0+BOD.B0.x1)/2),BOD.Z(BOD.B0.y1)-3.4,'up'],...(AWAY.has('apartments')?[]:[['THE APARTMENTS',POOLR.X(22.75),POOLR.Z(12),'up'],['THE POOL',POOLR.X(10),POOLR.Z(8.9),'up']]),   /* (off the map, owner 18 Oct 2026: no button for a place that isn't there; AWAY, map-pre.js) */['THE PLATFORM',-12.4+LAY.o('subway').x*TILE,-24.9+LAY.o('subway').y*TILE,'down'],['CENTRAL PARK',BOD.XS(PARK.round[0]+PARK.ox),BOD.ZS(PARK.y0+7+PARK.oy),'up'],['GHOST STREET',BOD.X(BOD.GD.door[0]),BOD.Z(BOD.GD.door[1]+4.5),'up'],['THE CASTLE',BOD.XS(CASTLE.gate),BOD.ZS(CASTLE.b[2]-3),'up'],['THE DUNGEON',BOD.XS((CASTLE.hall.x0+CASTLE.hall.x1)/2),BOD.ZS((CASTLE.hall.y0+CASTLE.hall.y1)/2),'down']];
+  const PLACES=[['THE STREET',-2.2,3.2,'up'],['THE BODEGA',BOD.X((BOD.B0.x0+BOD.B0.x1)/2),BOD.Z(BOD.B0.y1)-3.4,'up'],...(AWAY.has('apartments')?[]:[['THE APARTMENTS',POOLR.X(22.75),POOLR.Z(12),'up'],['THE POOL',POOLR.X(10),POOLR.Z(8.9),'up']]),   /* (off the map, owner 18 Oct 2026: no button for a place that isn't there; AWAY, map-pre.js) */['THE PLATFORM',MODS.station.plat.x,MODS.station.plat.z,'down'],['CENTRAL PARK',BOD.XS(PARK.round[0]+PARK.ox),BOD.ZS(PARK.y0+7+PARK.oy),'up'],['GHOST STREET',BOD.X(BOD.GD.door[0]),BOD.Z(BOD.GD.door[1]+4.5),'up'],['THE CASTLE',BOD.XS(CASTLE.gate),BOD.ZS(CASTLE.b[2]-3),'up'],['THE DUNGEON',BOD.XS((CASTLE.hall.x0+CASTLE.hall.x1)/2),BOD.ZS((CASTLE.hall.y0+CASTLE.hall.y1)/2),'down']];
   UI.places=()=>PLACES.concat(STORE.places||[]);   /* (the data check's: tests/datacheck.cjs; goPlace the simulation's: tests/simrun.cjs) */
   const goPlace=n=>{ if(STORE.ensure)STORE.ensure(); const P=PLACES.concat(STORE.places).find(p=>p[0]===n); if(P)goTo(P[1],P[2],P[3]); }; UI.goPlace=goPlace;   // (a stacked room is finished first if it isn't yet: store.js)
   { const q=QS.get('place'); const go=()=>window.__started?goPlace(q.toUpperCase()):setTimeout(go,200); if(q)setTimeout(go,300); }   /* (once the game runs: the page breathes while it loads) */   // (?place=central park: a test's start)

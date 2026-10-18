@@ -48,14 +48,15 @@ const LIVES={on:QS.get('lives')!=='0',ready:false,ms:0,stepMs:0,list:[],force:nu
       // the dungeon: through the bailey to the stair's top, down it (his level switches halfway), to the hall's middle
       const S=C.stair, Hh=C.hall, sx=X((S.x0+S.x1)/2), hm={x:X((Hh.x0+Hh.x1)/2),z:Z((Hh.y0+Hh.y1)/2)};
       place('dungeon',{lv:'down',door:{x:gx,z:ZF},path:[...up,{x:sx,z:Z(S.y0)-.35*T},{x:sx,z:Z(S.y0)+.3*T},{x:sx,z:Z(S.y1)-.3*T,lv:'down'},{x:sx,z:Z(S.y1)+.55*T,lv:'down'},{x:hm.x,z:Z(S.y1)+.55*T,lv:'down'},{...hm,lv:'down'}],box:{x0:X(Hh.x0+1.5),z0:Z(Hh.y0+1.5),x1:X(Hh.x1-1.5),z1:Z(Hh.y1-1.5)},reach:3*T}); }   // (walls: not set: its own group is shown only from below, as its level is)
-    { const S=MAPSTAIR, sx=X((S.x0+S.x1)/2), o=LAY.o('subway'), plat={x:-12.4+o.x*T,z:-24.9+o.y*T};   // (the platform: the menu's spot)
-      place('subway',{lv:'down',door:{x:sx,z:ZS_},path:[{x:sx,z:Z(S.y1)+.5*T},{x:sx,z:Z(S.y1)-.3*T},{x:sx,z:Z(S.y0)+.3*T,lv:'down'},{x:sx,z:Z(S.y0)-1.5*T,lv:'down'},{x:X(S.x0+2),z:Z(S.y0-16),lv:'down'},{...plat,lv:'down'}],reach:4*T}); } };   // (lv on a waypoint: past the stair's foot, for a test's look at the legs)
+    { const S=MAPSTAIR, sx=X((S.x0+S.x1)/2), plat=MODS.station.plat;   // (the platform: the menu's spot)
+      if(MODS.station.path)place('subway',{lv:'down',door:{x:sx,z:ZS_},path:[{x:sx,z:Z(S.y1)+.5*T},...MODS.station.path],reach:4*T});   // (THE METRO's way down, metro.js: the flight, the corridor, the gates, the platform; owner 18 Oct 2026)
+      else place('subway',{lv:'down',door:{x:sx,z:ZS_},path:[{x:sx,z:Z(S.y1)+.5*T},{x:sx,z:Z(S.y1)-.3*T},{x:sx,z:Z(S.y0)+.3*T,lv:'down'},{x:sx,z:Z(S.y0)-1.5*T,lv:'down'},{x:X(S.x0+2),z:Z(S.y0-16),lv:'down'},{...plat,lv:'down'}],reach:4*T}); } };   // (lv on a waypoint: past the stair's foot, for a test's look at the legs)
   // WHERE HE MAY STAND: out of his level's solids (clip.js's boxes), not in the stair hole unless on his way down it; a straight line between two
   // spots sampled every third of a tile
   const freeAt=(N,x,z,stair)=>!CLIP.hit(SOL[N.lv]||SOL.up,x,z,N.st.R)&&(stair||N.lv==='down'||!inHole(x,z));
   const lineFree=(N,a,b)=>{ const n=Math.ceil(d2(a,b)/(.33*T)); for(let k=1;k<=n;k++){ const t=k/n; if(!freeAt(N,a.x+(b.x-a.x)*t,a.z+(b.z-a.z)*t))return false; } return true; };
   // THE GROUND UNDER HIM, wherever he is: the step of a stair he's on (both stairs), else his level's (the dungeon's in it, the station's; the street's)
-  const gnd=(N,x,z)=>{ const s=inStair(x,z); if(s){ const S=s.S, t=S.dir>0?s.gy-S.y0:S.y1-s.gy, k=Math.min(S.steps,Math.max(1,Math.floor(t/((S.y1-S.y0)/S.steps))+1)); return -k*S.depth/S.steps*ZU; }
+  const gnd=(N,x,z)=>{ const s=inStair(x,z,N.lv); if(s){ const S=s.S; if(S.ground)return S.ground(x,z,N.lv); const t=S.dir>0?s.gy-S.y0:S.y1-s.gy, k=Math.min(S.steps,Math.max(1,Math.floor(t/((S.y1-S.y0)/S.steps))+1)); return -k*S.depth/S.steps*ZU; }
     return N.lv==='down'?(MODS.dungeon&&MODS.dungeon.inside(x,z)?MODS.dungeon.ground(x,z):MODS.station.ground(x,z)):MODS.bodega.ground(x,z); };
   // HIS LEVEL from his height (halfway down a stair he's below, as you are: MAPLV), his group with it
   const level=N=>{ const y=gnd(N,N.st.x,N.st.z), lv=y<-1.6?'down':'up'; if(lv!==N.lv){ N.lv=lv; const g=lv==='down'?(MODS.dungeon&&MODS.dungeon.inside(N.st.x,N.st.z)&&MAPG.dungeon?MAPG.dungeon:MAPG.down):MAPG.bodega; if(N.g.parent!==g)g.add(N.g); } return y; };

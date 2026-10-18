@@ -112,8 +112,8 @@ window.MAPDBG=()=>({LVL,cut:MODS.stairCut.constant,vis:Object.fromEntries(Object
   const LO=LAY.o('land'), LE=LAY.e('land'), LR=MODS.landR={x0:cx-R+LO.x+LE[0],z0:cz-R+LO.y+LE[1],x1:cx+R+LO.x+LE[2],z1:cz+R+LO.y+LE[3]};
   const sh=new THREE.Shape([[LR.x0,-LR.z0],[LR.x1,-LR.z0],[LR.x1,-LR.z1],[LR.x0,-LR.z1]].map(p=>new THREE.Vector2(...p)));
   const hole=(x0,z0,x1,z1)=>x0>LR.x0&&x1<LR.x1&&z0>LR.z0&&z1<LR.z1&&sh.holes.push(new THREE.Path([[x0,-z0],[x0,-z1],[x1,-z1],[x1,-z0]].map(p=>new THREE.Vector2(...p))));
-  { const A=AVE, P=[[M.x0,BOD.CURB],[M.x1,BOD.CURB],[M.x1,BOD.FAR],[A.r1,BOD.FAR],[A.r1,A.y1],[A.r0,A.y1],[A.r0,BOD.FAR],[M.x0,BOD.FAR]].map(([x,y])=>[tt(XS(x)),tt(ZS(y))]);   // (the road, a kerb down, and the Avenue's road north from it: one hole)
-    if(P.every(([x,z])=>x>LR.x0&&x<LR.x1&&z>LR.z0&&z<LR.z1))sh.holes.push(new THREE.Path(P.map(([x,z])=>new THREE.Vector2(x,-z)))); }
+  { const A=AVE, R=RING, rect=(x0,y0,x1,y1)=>{ const a=tt(XS(x0)), b=tt(XS(x1)), c=tt(ZS(y0)), d=tt(ZS(y1)); hole(Math.min(a,b),Math.min(c,d),Math.max(a,b),Math.max(c,d)); };   // (the loop's four roads, a kerb down: four holes, none overlapping)
+    rect(M.x0,BOD.CURB,M.x1,BOD.FAR); rect(A.r0,BOD.FAR,A.r1,R.nr0); rect(R.wr0,BOD.FAR,R.wr1,R.nr0); rect(R.wr0,R.nr0,A.r1,R.nr1); }
   hole(tt(XS(MAPSTAIR.x0)),tt(ZS(MAPSTAIR.y0)),tt(XS(MAPSTAIR.x1)),tt(ZS(MAPSTAIR.y1)));   // (the stairs down)
   { const S=CASTLE.stair; hole(tt(XS(S.x0)),tt(ZS(S.y0)),tt(XS(S.x1)),tt(ZS(S.y1))); }   // (the castle's stair down)
   hole(tt(POOLR.X(POOLR.bx0)),tt(POOLR.Z(POOLR.by0)),tt(POOLR.X(POOLR.bx1)),tt(POOLR.Z(POOLR.by1)));   // (the pool's basin)

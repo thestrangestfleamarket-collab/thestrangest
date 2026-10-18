@@ -639,6 +639,15 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
   of the ways, the castle, the shrine, the gate and the playground, 9 tiles apart); the castle moved 16.5 tiles north to the new back-left
   corner (`LAYOUT0.castle`).
 
+- **The loop, the Hudson, the force field** (owner, 17 Oct 2026: "lets loop the street all the way around the park and back again ... use force
+  field to block anyone from leaving outside of the city block loop ... add the hudson behind the buildings on main street, it goes all the way
+  up and down map"; `RING` in map-pre.js, `bodega.js`'s grounds and kerbs, `src/ring.js`): the main street runs on west to a WEST STREET along
+  the park's west side and a NORTH STREET along its back, both built as the Avenue is (sidewalks, kerbs, the road a kerb down, crosswalks at the
+  park's gates); the Avenue's road ends at the north street (its east sidewalk on to the shells' last door). The park walled on all four sides,
+  a gate where each middle way meets a wall, the castle's own wall its corner. THE FORCE FIELD round the loop and the buildings on its outer
+  side: solid for everyone, the map's walking bound, seen only near (faint cyan). THE HUDSON just past the row's back alley, the land's whole
+  width: a stone bank, a flat surface (not the pool's water) tinted by the sky with drifting glints.
+
 ## THE MARKET: the one official map
 
 **THE MARKET** (owner, 17 Oct 2026: "one official MARKET map im gona start filling in") is the game's map here: every place the owner adds goes

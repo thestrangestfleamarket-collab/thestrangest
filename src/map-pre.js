@@ -68,6 +68,14 @@ const BLDK=1.1;
 // side (avenue.js). In the street's tiles (BOD.XS/ZS): x0..x1 its whole width (two sidewalks of 3.2 and a road of 7.7, the main street's), y1
 // how far north it runs (the park's back is -2); its road's kerbs at r0, r1
 const AVE={x0:152,x1:166.5,y1:57.5}; AVE.r0=AVE.x0+3.2; AVE.r1=AVE.x1-3.2;
+// THE LOOP (owner, 17 Oct 2026: "lets loop the street all the way around the park and back again ... use force field to block anyone from leaving
+// outside of the city block loop ... add the hudson behind the buildings on main street, it goes all the way up and down map"): the main street
+// (south), the Avenue (east), a north street along the park's back and a west street along its west side, each 14.5 tiles (two sidewalks of 3.2,
+// a road of 8.1), the Avenue's road ending at the north street (its east sidewalk on to the last shell's door, AVE.ey1); the force field round the
+// loop and the buildings on its outer side (ff); the Hudson south of the main street's row and its alley, the land's whole width (river). In the
+// street's tiles (BOD.XS / ZS: y up toward the park)
+const RING={wx0:31.5,wx1:46,ny0:12.5,ny1:27}; RING.wr0=RING.wx0+3.2; RING.wr1=RING.wx1-3.2; RING.nr0=RING.ny0+3.2; RING.nr1=RING.ny1-3.2;
+AVE.y1=RING.ny1; AVE.ey1=38.5; RING.ff={x0:RING.wx0-1.5,x1:192,y0:-103,y1:40.5}; RING.river={y0:-150,y1:-104};   // (just past the row's back alley)
 const MAPSTAIR={x0:59,x1:63,y0:-80,y1:-74, steps:12, depth:98, dir:-1};
 { const o=LAY.o('subway'); MAPSTAIR.x0+=o.x; MAPSTAIR.x1+=o.x; MAPSTAIR.y0+=o.y; MAPSTAIR.y1+=o.y; }
 // THE CASTLE (owner, 17 Oct 2026: "the castle on the left back end" of the park, "the dungeon under the castle (only 1 level)"; castle.js): its

@@ -79,10 +79,21 @@ LITE.tick=(dt,x,y,z)=>{ const P=LITE.pool;
   LITE.t=Math.min(LITE.t-dt,.25); if(!(LITE.t>0)){ LITE.t=.25;   /* (a bad frame's dt, NaN or backwards, never leaves it stuck) */ const R=typeof ROOMS!=='undefined'?ROOMS:null, RB=R&&R.boxes?R.boxes():[], cur=R?R.cur:null, e=.5*TILE;
     const inB=(b,p,m)=>p.x>b.x0-m&&p.x<b.x1+m&&p.z>b.z0-m&&p.z<b.z1+m&&p.y>b.y0-e&&p.y<b.y1+e;
     LITE.sel=LITE.recs.filter(L=>L.intensity>0&&!L.userData.off&&(!L.userData.grp||L.userData.grp.visible)&&(L.userData.in?L.userData.in(cur):L.userData.both||(cur?inB(cur,L.position,e):!RB.some(b=>inB(b,L.position,-e)))))   /* (in: a lamp's own rule for which room it lights: the apartment house's floors, apts.js) */
-      .map(L=>[(L.position.x-x)**2+(L.position.y-y)**2+(L.position.z-z)**2,L]).sort((p,q)=>p[0]-q[0]).slice(0,LITE.N).map(p=>p[1]); }
-  for(let i=0;i<P.length;i++){ const S=P[i], L=LITE.sel[i]; if(!L||!(L.intensity>0)){ S.intensity=0; continue; } S.position.copy(L.position); S.color.copy(L.color); S.intensity=L.intensity; S.distance=L.distance; S.decay=L.decay; }
+      .map(L=>[(L.position.x-x)**2+(L.position.y-y)**2+(L.position.z-z)**2,L]).sort((p,q)=>p[0]-q[0]).slice(0,LITE.N);
+    /* (held, owner 18 Oct 2026, the flicker under a light: the nearest of two lamps flipped as he walked, and with it the lamp whose shadow falls on him; the
+       first now changes only for a lamp clearly nearer (a third nearer by distance squared), and every other lamp keeps the slot it had) */
+    const S0=LITE.slots||(LITE.slots=[]), want=LITE.sel.map(p=>p[1]), dOf=L=>{ const p=LITE.sel.find(q=>q[1]===L); return p?p[0]:1e18; };
+    let first=want[0]; if(S0[0]&&want.includes(S0[0])&&dOf(S0[0])<=dOf(first)*1.35)first=S0[0];
+    const slots=new Array(LITE.N).fill(null); slots[0]=first||null; for(let i=1;i<LITE.N;i++)if(S0[i]&&S0[i]!==first&&want.includes(S0[i]))slots[i]=S0[i];
+    for(const L of want){ if(slots.includes(L))continue; const i=slots.indexOf(null,1); if(i<0)break; slots[i]=L; }
+    LITE.slots=slots; LITE.sel=slots.filter(Boolean); }
+  for(let i=0;i<P.length;i++){ const S=P[i], L=(LITE.slots||LITE.sel)[i]; if(!L||!(L.intensity>0)){ S.intensity=0; continue; } S.position.copy(L.position); S.color.copy(L.color); S.intensity=L.intensity; S.distance=L.distance; S.decay=L.decay; }
   // its shadow drawn only while it lights something, every other frame (half the cost, a frame's lag unseen), and at once when it moves to another lamp
-  const moved=LITE.at!==LITE.sel[0]; LITE.at=LITE.sel[0]; P[0].shadow.autoUpdate=P[0].intensity>0&&(moved||(++LITE.f&1)===0); };
+  /* (its shadow drawn again every frame something moves near it, never every other frame: a stale map on alternate frames made his shadow on himself
+     stutter as he walked; when nothing near moves, not at all: at rest, at rest) */
+  const L0=P[0], first=(LITE.slots||LITE.sel)[0]; let mv=LITE.at!==first||Math.abs(x-LITE.px)+Math.abs(y-LITE.py)+Math.abs(z-LITE.pz)>1e-4; LITE.at=first; LITE.px=x; LITE.py=y; LITE.pz=z;
+  if(L0.intensity>0&&typeof NPCS!=='undefined'){ const r=(L0.distance||8*TILE)**2; for(const N of NPCS){ if(!N.g||!N.g.visible||!N.st)continue; const p=N.g.position, dx=p.x-L0.position.x, dz=p.z-L0.position.z; if(dx*dx+dz*dz>r)continue; const k=p.x*7.13+p.z*3.31+p.y*1.7+N.st.h; if(N._lk!==k){ N._lk=k; mv=true; } } }
+  L0.shadow.autoUpdate=L0.intensity>0&&mv; };
 scene.background=new THREE.Color(0x050507);
 // THE LEVEL YOU'RE ON (from your height): its walls, its ground, its places shown; on the stairs, both
 // (on the stairs: the station shown below you; the street hidden once you're halfway down, as a room's walls are when you're in it)

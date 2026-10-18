@@ -47,7 +47,7 @@ if(JOBS.on){ const T=TILE, X=BOD.XS, Z=BOD.ZS, rnd=Math.random;
     J.state='commute'; inside(N,true); N.dwell=null; go(J,s,J.w.v||1.2,ok=>{ if(J.state!=='commute')return; if(!ok){ J.state='lost'; J.t=6; inside(N,false); return; } J.state='work'; N.st.hold=true; N.st.to=null; N.st.face=s.face||null; N.dwell=pick(['UAL_Idle_Talking_Loop','idle_a','UAL_Idle_Loop']); }); };
   const offWork=J=>{ const N=J.w.N; J.state='leaving'; N.dwell=null; go(J,J.S.door,J.w.v||1.2,()=>{ if(J.state!=='leaving')return; inside(N,false); J.state='off'; J.w.state='wait'; J.w.t=1; }); };
   const goHome=J=>{ const N=J.w.N, A=homeOf(J); if(!A){ J.state='off'; return; } const wasIn=J.state==='work'||J.state==='commute'||J.state==='leaving'; J.state='homing'; inside(N,wasIn); N.dwell=null; CITY.stop(N); go(J,A.step,J.w.v||1.2,ok=>{ if(J.state!=='homing')return; if(!ok){ J.state='off'; J.t=20; return; }
-      J.state='home'; inside(N,false); hide(N,true); if(window.MAIL)MAIL.take(A.id,N.name); }); };
+      J.state='home'; inside(N,false); hide(N,true); if(window.MAIL&&MAIL.ready)MAIL.take(A.id,N.name); }); };
   const pick=a=>a[Math.floor(rnd()*a.length)];
   // where he should be now, put right twice a second (a jump of the clock too): at work, on his own time, or at home
   let acc=0; const t0=CITY.tick; CITY.tick=(dt,you)=>{ t0(dt,you); if((acc+=dt)<.5)return; acc=.0; const h=CLOCK.h;

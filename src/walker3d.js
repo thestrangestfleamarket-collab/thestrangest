@@ -201,7 +201,7 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
       W3.LC.value[i].set(S.color.r,S.color.g,S.color.b).multiplyScalar(Math.min(1.5,S.intensity/2)*k); });   // (looks C, D: the two lamps nearest him)
     if(typeof cam!=='undefined')cam.getWorldDirection(W3.CamW.value);
     // his light in the scene (as a ray turns with him and his verticals), and the camera that looks down it at him, for SELF
-    W3.Lw.set(L.x/PPU,L.y*ZY,L.z/PPU).applyAxisAngle(new THREE.Vector3(0,1,0),hd).normalize();
+    if(!W3.realL||!(W3.Lw.lengthSq()>.5))W3.Lw.set(L.x/PPU,L.y*ZY,L.z/PPU).applyAxisAngle(new THREE.Vector3(0,1,0),hd).normalize();   // (once the real light's way is kept, looks.js's, it's that one: this was setting it back each frame, so the easing toward a lamp never held)
     const mid=new THREE.Vector3(x,y+1.25,z); W3.smCam.position.copy(mid).addScaledVector(W3.Lw,6); W3.smCam.up.set(0,Math.abs(W3.Lw.y)>.6?0:1,Math.abs(W3.Lw.y)>.6?1:0); W3.smCam.lookAt(mid);   /* (owner, 18 Oct 2026, walking under a light: "it flickers on your character really glitchy": a lamp overhead put the light along the camera's up, and its roll spun frame to frame) */ W3.smCam.updateMatrixWorld();
     W3.LVP.value.multiplyMatrices(W3.smCam.projectionMatrix,W3.smCam.matrixWorldInverse);
     PCS.forEach((P,i)=>{ const F=R.frameOf(P.on||P.n,B); W3.PM.value[i].set(F.x.x,F.y.x,F.z.x,F.o.x, F.x.y,F.y.y,F.z.y,F.o.y, F.x.z,F.y.z,F.z.z,F.o.z, 0,0,0,1); }); };
@@ -253,3 +253,4 @@ OUTL.render=(renderer,scene,cam)=>{ const w=renderer.domElement.width, h=rendere
 // SELF: his own depth from his light, his pieces alone (each frame, before the scene)
 W3.shadowPass=renderer=>{ if(W3.lv.value<1.5)return; if(W3.selfOff){ if(!W3.smClr){ W3.smClr=true; renderer.setRenderTarget(W3.sm); renderer.clear(); renderer.setRenderTarget(null); } return; } const m0=W3.mesh.material; W3.mesh.material=W3.depthMat;
   renderer.setRenderTarget(W3.sm); renderer.clear(); renderer.render(W3.group,W3.smCam); renderer.setRenderTarget(null); W3.mesh.material=m0; };
+window.W3=W3;   // (a test's reach: tests/lampwalk.cjs)

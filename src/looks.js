@@ -88,9 +88,13 @@ const LOOKS={};
   // night (not his fixed one), on a finer map, a little deeper by default
   // (eased, owner 18 Oct 2026, walking under a light: "its rapidly changing and it looks like stuttering": the way to a lamp overhead swings a long
   // way in a step, and the nearer of two lamps flipped; now the light is LITE's held first lamp, and its way turns toward the new at a rate)
-  const LT=new THREE.Vector3(); let lt0=performance.now();
+  const LT=new THREE.Vector3(), LS=new THREE.Vector3(), LSTEP=+(QS.get('lstep')??7)*Math.PI/180; let lt0=performance.now();   // (?lstep=0: every frame)
   LOOKS.light=()=>{ const now=performance.now(), k=1-Math.exp(-Math.min(.1,(now-lt0)/1000)*7); lt0=now; const sun=CLOCK.sun;
     if(sun&&sun.intensity>.3&&LVL==='up')LT.copy(sun.position).sub(sun.target.position).normalize();
     else{ const best=SHL.find(S=>S.intensity>0); if(!best)return; LT.set(best.position.x-pos.x,Math.max(.25*TILE,best.position.y-(py+1.2*TILE)),best.position.z-pos.z).normalize(); }
-    if(!(W3.Lw.lengthSq()>.5))W3.Lw.copy(LT); else W3.Lw.lerp(LT,k).normalize(); };
+    if(!(LS.lengthSq()>.5))LS.copy(LT); else LS.lerp(LT,k).normalize();
+    // (IN STEPS, owner 18 Oct 2026, "fix all 1-8", the second: the light's way on a character, his shading's and his own shadow's, turned a little
+    // every frame as he walked under a lamp, and every hard band and shadow edge on him crept a pixel a frame; it's handed on only when it has
+    // turned LSTEP from the last given, so the light on him holds still and moves in steps, as his poses do, ASTEP)
+    if(!W3.realL||!(W3.Lw.lengthSq()>.5)||W3.Lw.angleTo(LS)>LSTEP)W3.Lw.copy(LS); W3.realL=true; };
   apply(); }

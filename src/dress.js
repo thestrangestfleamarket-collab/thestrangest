@@ -1,7 +1,7 @@
 // ---- THE STREET DRESSED (owner, 17 Oct 2026: "start fleshing it out with our available assets to make it come to life"; then: "delete
 // everything you added except for the new building, street lights, and trash can and bus stop"): the city kit's pieces (kit.js) that stay:
 // trash cans at the kerb, street lights and lamp posts, all built here from blocks (the bus stop and its bench removed) ----
-const DRESS={}, TLX={tick:()=>{}};   // (TLX: the traffic lights, below)
+const DRESS=window.DRESS={}, TLX={tick:()=>{}};   // (TLX: the traffic lights, below)
 { const G=MODS.bodega.ground, xm=(BOUND.x0+BOUND.x1)/2; let zc=null, zf=null; for(let z=BOUND.z0;z<BOUND.z1;z+=0.02){ const g=G(xm,z); if(zc==null&&g<-.01)zc=z; if(zc!=null&&zf==null&&g>-.01&&z>zc)zf=z; }
   const sw=zc-.5, far=zf+.6, AX=BOD.X(MODS.apts.A.x1), AX0=BOD.X(MODS.apts.A.x0), BX0=BOD.X(BOD.B0.x0);   // the kerb, the far kerb; the house's east wall, the bodega's west wall
   DRESS.kerb={sw,far}; DRESS.cans=[];   // (the kerb lines and the cans: the city's vehicles and its trash round, vehicles.js, duties.js)

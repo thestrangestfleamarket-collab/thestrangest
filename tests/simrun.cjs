@@ -41,7 +41,7 @@ const MIN=+(process.argv[2]||3), OUT=process.argv[3], TRIS=+(process.env.SIM_TRI
   const end=Date.now()+MIN*60000; let i=0, lastAudit=0;
   while(Date.now()<end){ const name=places[i%places.length], wx=WX[i%WX.length]; i++;
     await pg.evaluate(([n,w])=>{ __dbg.UI.goPlace(n); if(window.WX)WX.hold=w; },[name,wx]); await pg.waitForTimeout(900);
-    const r0=await sample(name+' (arrived)'); const down=/PLATFORM|DUNGEON|SUBWAY/.test(name); if(down&&r0.lvl!=='down')fails.push(name+': level '+r0.lvl+', should be down'); if(!down&&r0.lvl!=='up'&&!/STAIRS/.test(name))notes.push(name+': level '+r0.lvl);
+    const r0=await sample(name+' (arrived)'); const down=/PLATFORM|DUNGEON|SUBWAY/.test(name)&&!/SUBWAY STAIRS/.test(name);   /* (the stairs' menu spot is their top, on the street) */ if(down&&r0.lvl!=='down')fails.push(name+': level '+r0.lvl+', should be down'); if(!down&&r0.lvl!=='up'&&!/STAIRS/.test(name))notes.push(name+': level '+r0.lvl);
     seen[name]=(seen[name]||0)+1;
     await pg.mouse.dblclick(480+(i%3-1)*120,420); await pg.waitForTimeout(1500); await sample(name+' (walking)');
     await pg.keyboard.down('Shift'); await pg.keyboard.down('w'); await pg.waitForTimeout(1500); await sample(name+' (running)'); await pg.keyboard.up('w'); await pg.keyboard.up('Shift'); await pg.waitForTimeout(400);

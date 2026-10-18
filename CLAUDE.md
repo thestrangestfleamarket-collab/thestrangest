@@ -788,6 +788,22 @@ with its own copy, so a chat that hadn't taken in the others' work undid it. Eve
   never blended), so the brick photo seen small no longer shimmers into stripes (apts.js).
 - **The cottage's things kept to their floor** (owner, 18 Oct 2026, from the lobby: "shouldnt see things on other floors"): the cottage's pieces had
   gone into the street's batch, unclipped, so they hung over the lobby; now a batch of the house's own under its ceiling cut (apts.js).
+- **Real arms on the pawns** (owner, 18 Oct 2026: "help me improve the avatars for the skeletons and rock golems. right now their arms just float
+  because they dont have arms, lets make sure everyone has real limbs in game"; `armsOf` / `armsSolve` in `src/npc-pawns.js`): the pawns' rig
+  (RigPawn) has free hands and no arm, so all 24 pawns (the townspeople, the twelve rock golems, the four ogres, the four skeleton pawns) get an
+  upper arm and a forearm a side: four bones added to the rig (outside the clips), a tapered six-sided tube a segment with a ball at the shoulder
+  and the elbow, skinned into his one mesh; each time his pose is worked out (ASTEP's steps) the arm is solved from the shoulder on his chest to
+  his hand's wrist, the elbow bending out, down and back by his chest's turn, stretched only if a clip throws the hand past its reach. The upper
+  arm his chest's colour, the forearm his hand's; the skeletons' thin and bone white, the ogres' thick; the golems' carved in stone with the rest.
+  The KayKit skeletons, the gold one and every other character already had arms. `?sheet=` now works for the dungeon's pawns and the golems (they
+  stay out on the land for it). Cost: some 100 triangles a pawn, no light, no program.
+- **The golems in real stone** (owner, 18 Oct 2026: "make the rock golems look like rock texture like boulder, rock, etc? their texture looks like
+  triangles right now"; "avatars dont need to be so strict on triangles, they need to look right is #1"): the stone carved in the shader (`rock`
+  in `npc-map.js`, fab 2.x on a point, its fraction his seed; one branch in the characters' two existing programs, no new one): in his body's own
+  space, so it rides his bones and ignores the faces: boulders (a 3D Voronoi, four greys, warm or cool), dark cracks between them, a grain,
+  lichen on the odd stone, moss low; flat colours. His shape a heap of stones (`boulder` in `npc-pawns.js`): each face cut in four, each piece
+  rounded (Taubin smoothing over welded points) and lumped by a noise along its normal; his arms stone-thick. **Characters may spend
+  triangles to look right** (the owner's word above): some 6,800 a golem (was 1,700), about 82,000 for all twelve together in the cave.
 ## THE MARKET: the one official map
 
 **THE MARKET** (owner, 17 Oct 2026: "one official MARKET map im gona start filling in") is the game's map here: every place the owner adds goes
@@ -1439,7 +1455,7 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   10 a second only standing and in moves). Measured (`node tests/footslip.cjs`, the rig alone, no drawing): the planted foot's slide 32 to 0.3
   units a second walking, 22.5 to 0.5 running. With it, the musician and the bearded Walker (the same rig) plant their feet too, and walk a sixth
   slower (they were carried 1.2 times further than the player). Cost: nothing; his pose built every frame while moving (some 0.1 ms).
-  Next, at his word: a lean into turns and a weight shift when he stops; foot locking for the clip-driven characters.
+  Next, at his word: foot locking for the clip-driven characters.
 - **The distance look, his to set** (owner, 18 Oct 2026: "make the buildings more logical, and they shouldnt be as visible, depth of field, blur,
   haze, etc, real distance"; "way too much, needs to look realistic, check other video game references"; "give me mockups of diff styles, with
   ranges i can select and change to get the right look and save it"; `skyline.js`, `sky.js`, map-pre.js's `MISTF`): the skyline laid out by
@@ -1461,6 +1477,16 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   shape, face and body type back to the game's once (his looks and kept poses stay). Not changed: his head (a third of his height) and his legs'
   length (the moves' keys hold the hips at 18). `tests/tpose.cjs <out> [body] [tag]` (every side, his joints), `tests/bodymock.cjs`,
   `tests/posemock.cjs`; the sheets in `mockups/body-*.png` (not kept in git).
+- **Into a turn, and the stop** (owner, 18 Oct 2026: "add the lean into turns and weight shift when stopping"; `walkPose` and `tick` in
+  walker-rig-mock.js): **the lean**: as he turns (the page hands the rig his heading's turn a second, `st.yr`, build.py) his whole body tips
+  over his planted feet toward the turn's middle, as far as a body his speed round that turn would (tan = speed x turn / gravity), at most 9
+  degrees walking and 18 running, eased in and out (`st.bank`), the hips carried in and a little lower so the outside leg still reaches its foot,
+  the shoulders tipping with him, the head a little nearer level; at nothing exactly once he's straight. **The stop**: let go from a walk or a
+  run, his weight carries on once: the body tips forward (10 degrees, more from a run), the hips go 2 units ahead and dip a pixel as the weight
+  lands, the arms swing on, then it comes back a little past upright and settles; over at 1 s, exactly at rest (`st.stop`), anything else (a
+  step, a move) ends it. His pose is worked out every frame through it (ASTEP). The same for every Walker on the rig (the musician and the bearded
+  Walker stop the same way; they don't lean, nothing hands them a turn). Checked: `node tests/turnstop.cjs` (the lean's size, the feet still
+  planted leaning, the stop's curve, 0 frames changing after it); in the page, turning one way tips his head that way. Cost: nothing.
 - **The menu's map drawn as a map; the root fixes, "fix all 1-8"** (owner, 18 Oct 2026: "the map in menu should show entire map and not the real
   thing, just map showing where eveything is, map like"; then, of a list of patches made in place of fixing their causes, "fix all 1-8"):
   **THE MAP** (`plan()` in `ui.js`): the street level drawn as a plan from the places' own measures, the whole loop inside the force field, north

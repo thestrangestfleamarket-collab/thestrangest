@@ -14,7 +14,21 @@ const NPCS=[];
 // through along them, a faint slub now and then; no picture, the game's rule (no photo textures)
 const DENIM_GLSL=`vec3 denim(vec3 c,vec3 p){ float u=(p.x+p.z)*0.7071+p.y*0.5, v=(p.x-p.z)*0.7071-p.y*0.5;
   float rib=step(0.5,fract(u*170.)), weft=step(0.55,fract(v*240.)), slub=step(0.93,fract(sin(dot(floor(vec2(u,v)*300.),vec2(12.9898,78.233)))*43758.5));
-  vec3 warp=c*vec3(1.22,1.18,1.1), weftc=c*0.78; vec3 o=mix(weftc,warp,rib*0.55+weft*0.25); return mix(o,c*1.3,slub*0.5); }`;
+  vec3 warp=c*vec3(1.22,1.18,1.1), weftc=c*0.78; vec3 o=mix(weftc,warp,rib*0.55+weft*0.25); return mix(o,c*1.3,slub*0.5); }
+// ROCK (owner, 18 Oct 2026, the golems: "make the rock golems look like rock texture like boulder, rock, etc? their texture looks like
+// triangles right now"; fab 2 and up, its fraction a seed of his own): carved in the shader in his body's own space, so it rides his bones and
+// pays no heed to the mesh's faces: boulders (cells of a 3D Voronoi, each its own of four greys, warm or cool), dark cracks where two meet, a
+// grain of flecks, the odd stone's top lichened, moss low toward his feet; flat colours, no gradient
+vec3 rkh(vec3 p){ p=vec3(dot(p,vec3(127.1,311.7,74.7)),dot(p,vec3(269.5,183.3,246.1)),dot(p,vec3(113.5,271.9,124.6))); return fract(sin(p)*43758.5453); }
+vec3 rock(vec3 c,vec3 p0,float sd){ vec3 p=p0*3.+sd*17.3, i=floor(p), f=fract(p), id=i; float d1=9., d2=9.;
+  for(int x=-1;x<=1;x++)for(int y=-1;y<=1;y++)for(int z=-1;z<=1;z++){ vec3 g=vec3(x,y,z), r=g+rkh(i+g)*.85-f; float d=dot(r,r); if(d<d1){ d2=d1; d1=d; id=i+g; } else if(d<d2)d2=d; }
+  vec3 h=rkh(id+3.1); float edge=sqrt(d2)-sqrt(d1), tone=.72+.16*floor(h.x*4.);
+  vec3 o=c*tone*(h.y<.5?vec3(1.05,1.,.92):vec3(.95,.98,1.04));
+  float g=rkh(floor(p*13.)).x; o*=g<.14?.78:g>.9?1.16:1.;   // (the grain)
+  float ls=rkh(floor(p*4.)+7.).z; if(h.z<.22&&ls<.4)o=c*vec3(.62,.78,.5)*(g<.5?.9:1.);   // (lichen on a stone now and then)
+  if(p0.y<.55&&ls<.3+(.55-p0.y)*.6)o=c*vec3(.45,.6,.38)*(g<.5?.85:1.);   // (moss low)
+  if(edge<.07)o=c*(edge<.035?.3:.5);   // (the cracks between the stones)
+  return o; }`;
 function makeNPC(D,o){ const N={key:o.key,name:o.name,names:o.names,lv:o.lv||'down',hp:1,sta:1}; /* (hp, sta: every character's health and stamina, src/vitals.js) */ const b=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0)), geo=o.geo||new THREE.BufferGeometry();
   if(!o.geo){ const P=new Float32Array(b(D.p).buffer); geo.setAttribute('position',new THREE.BufferAttribute(P,3)); geo.setAttribute('color',new THREE.BufferAttribute(b(D.c),3,true)); geo.setAttribute('reg',new THREE.BufferAttribute(Float32Array.from(b(D.r)),1)); }
   const RG=geo.attributes.reg.array; geo.computeVertexNormals();
@@ -50,7 +64,7 @@ function makeNPC(D,o){ const N={key:o.key,name:o.name,names:o.names,lv:o.lv||'do
         vN=normalize(mat3(modelMatrix)*objectNormal); vec4 w=modelMatrix*vec4(transformed,1.); vW=w.xyz; gl_Position=projectionMatrix*viewMatrix*w; }`,
     fragmentShader:`uniform vec3 uL,uTint,uEyeC; uniform float uLv,uEye; uniform sampler2D uSM; uniform mat4 uLVP; varying vec3 vC,vN,vW,vO; varying float vS,vR,vF;
       ${DENIM_GLSL}
-      void main(){ if(abs(vR-uEye)<.5){ gl_FragColor=vec4(uEyeC,1.); return; } vec3 vC=vF>.5?denim(vC,vO):vC; float l=dot(normalize(vN)*(gl_FrontFacing?1.:-1.),uL); vec3 c0=min(vec3(1.),vC*1.1), c1=vC, c2=vC*.84*vec3(.95,.97,1.04), cd=vC*.7*vec3(.92,.95,1.06), c;
+      void main(){ if(abs(vR-uEye)<.5){ gl_FragColor=vec4(uEyeC,1.); return; } vec3 vC=vF>1.5?rock(vC,vO,fract(vF)):vF>.5?denim(vC,vO):vC; float l=dot(normalize(vN)*(gl_FrontFacing?1.:-1.),uL); vec3 c0=min(vec3(1.),vC*1.1), c1=vC, c2=vC*.84*vec3(.95,.97,1.04), cd=vC*.7*vec3(.92,.95,1.06), c;
         if(uLv<.5)c=l>-.3?c1:c2;
         else{ int t=l>.55?0:l>.05?1:l>-.4?2:3;
           if(uLv>1.5&&t<2){ vec4 p=uLVP*vec4(vW,1.); vec3 q=p.xyz/p.w*.5+.5; if(q.x>0.&&q.x<1.&&q.y>0.&&q.y<1.&&q.z-.004>texture2D(uSM,q.xy).r)t=2; }
@@ -65,7 +79,7 @@ function makeNPC(D,o){ const N={key:o.key,name:o.name,names:o.names,lv:o.lv||'do
     s.uniforms.uLv=W3.lv; s.uniforms.uLVP=N.LVP; s.uniforms.uSM={value:N.sm.depthTexture}; s.uniforms.uSelf=W3.uSelf; s.uniforms.uMine={value:o.noSelf?0:1};
     s.vertexShader='varying vec3 vWW;\n'+s.vertexShader.replace('#include <project_vertex>','#include <project_vertex>\n vWW=(modelMatrix*vec4(transformed,1.)).xyz;');
     s.fragmentShader='uniform float uLv,uSelf,uMine; uniform mat4 uLVP; uniform sampler2D uSM; varying vec3 vWW;\n'+s.fragmentShader.replace('#include <opaque_fragment>','#include <opaque_fragment>\n if(uLv>1.5&&uMine>.5){ vec4 sp=uLVP*vec4(vWW,1.); vec3 q=sp.xyz/sp.w*0.5+0.5; if(q.x>0.&&q.x<1.&&q.y>0.&&q.y<1.&&q.z-0.006>texture2D(uSM,q.xy).r) gl_FragColor.rgb*=uSelf; }');   /* (SELF: his own shadow on him, as yours on you) */
-    s.fragmentShader='uniform float uEye; uniform vec3 uEyeC; varying float vS,vR,vF; varying vec3 vO;\n'+DENIM_GLSL+'\n'+s.fragmentShader.replace('#include <color_fragment>','#include <color_fragment>\n if(vF>.5)diffuseColor.rgb=denim(diffuseColor.rgb,vO); diffuseColor.rgb*=vS>.55?.36:vS>.15?.6:1.;').replace('#include <normal_fragment_begin>','float faceDirection=1.0; vec3 normal=normalize(vNormal); vec3 nonPerturbedNormal=normal;')
+    s.fragmentShader='uniform float uEye; uniform vec3 uEyeC; varying float vS,vR,vF; varying vec3 vO;\n'+DENIM_GLSL+'\n'+s.fragmentShader.replace('#include <color_fragment>','#include <color_fragment>\n if(vF>1.5)diffuseColor.rgb=rock(diffuseColor.rgb,vO,fract(vF)); else if(vF>.5)diffuseColor.rgb=denim(diffuseColor.rgb,vO); diffuseColor.rgb*=vS>.55?.36:vS>.15?.6:1.;').replace('#include <normal_fragment_begin>','float faceDirection=1.0; vec3 normal=normalize(vNormal); vec3 nonPerturbedNormal=normal;')
       .replace('#include <opaque_fragment>','#include <opaque_fragment>\n if(abs(vR-uEye)<.5)gl_FragColor=vec4(uEyeC,1.);').replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n totalEmissiveRadiance+=diffuseColor.rgb*0.025;'); };
   toon.customProgramCacheKey=()=>'npctoon';   // (one program for every character: which part glows and its colour are uniforms; o.eyeC: his eyes' glow, '1.,.2,.1' red; yellow if none)
   const me=o.skin?new THREE.SkinnedMesh(geo,mat):new THREE.Mesh(geo,mat); me.castShadow=true; me.receiveShadow=true; N.me=me; N.flat=mat; N.toon=toon; if(o.skin){ me.add(o.skin.bones[0]); me.bind(o.skin.skeleton); me.frustumCulled=false; }

@@ -97,7 +97,7 @@ const LIVES={on:QS.get('lives')!=='0',ready:false,ms:0,stepMs:0,list:[],force:nu
     if(i%4===1&&has('bar'))L.night='bar';   // (a few to the Bar of an evening; the rest on the street as they always were at seven)
     return L; };
   const resident=N=>!!(window.CITY&&CITY.residents&&CITY.residents.some(r=>r.key===N.key));   // (the apartment house's residents have their own hours and errands: residents.js, the city's spine; not two lives at once)
-  const livesFor=N=>!('mode' in N)&&!N.guard&&!N.sheet&&!N.st.hold&&N.lv==='up'&&!(window.CREATS&&CREATS.includes(N))&&N.key!=='fox'&&N.key!=='bear'&&!resident(N)&&!N.errand;
+  const livesFor=N=>!('mode' in N)&&!N.guard&&!N.sheet&&!N.st.hold&&N.lv==='up'&&!(window.CREATS&&CREATS.includes(N))&&N.key!=='fox'&&N.key!=='bear'&&!resident(N)&&!N.errand&&!N.walker;   /* (the town's walkers live by walkers.js) */
   // ---- INIT (after the hitboxes' pass, clip.js): the places, each life, and everyone put where his day has him at this hour ----
   LIVES.init=()=>{ if(!LIVES.on)return; LIVES.build(); let i=0; for(const N of NPCS)N.v0=N.st.v;
     for(const N of NPCS){ if(!livesFor(N))continue; const L=N.life=lifeOf(N,i++); N.st.hold=true; N.st.to=null;

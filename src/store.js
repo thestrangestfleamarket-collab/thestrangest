@@ -276,7 +276,60 @@
       const cb=[176,136,92], tape=(nx,ny,P,Q,z,s)=>Math.abs(z-6)<1||Math.abs((nx?Q:P)%1-.5)<.04?[206,180,130]:sh(cb,s);
       thing('cardboard boxes',[bx(B.x1-1.3,B.y0+2,B.x1-.15,B.y0+3,0,26,cb,{fs:tape,top:(x,y)=>Math.abs(y-(B.y0+2.5))<.05?[206,180,130]:cb}),bx(B.x1-1.2,B.y0+2.1,B.x1-.3,B.y0+2.9,26,46,sh(cb,.92),{fs:tape})]);
       thing('poster',[bx(B.x1-.13,B.y1-6.2,B.x1-.11,B.y1-5,50,96,[30,60,150],{fs:(nx,ny,P,Q,z)=>z>36?[220,40,50]:z>30?[245,240,230]:[30,60,150]})],{high:1});
-      LAMPS.push({own:1,room:1,day:true,x:(B.x0+B.x1)/2,y:(B.y0+B.y1)/2,z:H-40,r:13,c:[1,.92,.8]}); }); });
+      // THE NEON (owner, 18 Oct 2026, his picture of a rainy magenta night: "can we add atmopshere to it like this"; his picks: the lot only, the
+      // haze, the rain, neon, the skyline and wires): VHS in pink tubes big on the east wall over the side yard, OPEN in cyan in the second window;
+      // each a 5 x 7 of glowing tube blocks, each with its own coloured lamp spilling on the ground (LITE's; outside, so lighting the lot)
+      const GL={V:'10001100011000110001100010101000100',H:'10001100011000111111100011000110001',S:'01111100001000001110000010000111110',O:'01110100011000110001100011000101110',P:'11110100011000111110100001000010000',E:'11111100001000011110100001000011111',N:'10001110011010110011100011000110001'};
+      const neonW=(word,cell,at,zc,col)=>{ const bs=[], c=Object.assign(col.slice(),{e:1}); [...word].forEach((ch,i)=>{ const g=GL[ch]; for(let r=0;r<7;r++)for(let q=0;q<5;q++)if(g[r*5+q]==='1')bs.push(at(i*6+q,cell,zc-(r+1)*cell.z,c)); }); return bs; };
+      thing('neon VHS',neonW('VHS',{a:.32,z:13},(k,cl,z,c)=>bx(ex,B.y1-3-(k+1)*cl.a+.03,ex+.07,B.y1-3-k*cl.a-.03,z+1.5,z+cl.z-1.5,c,{em:1}),214,[255,96,206]),{high:1});
+      thing('neon OPEN',neonW('OPEN',{a:.1,z:8},(k,cl,z,c)=>bx(B.x0+5.25+k*cl.a+.01,B.y1+.23,B.x0+5.25+(k+1)*cl.a-.01,B.y1+.27,z+1,z+cl.z-1,c,{em:1}),110,[90,230,255]),{high:1});
+      LAMPS.push({own:1,x:ex+1.4,y:B.y1-5.9,z:150,r:12,c:[1,.32,.82]}); LAMPS.push({own:1,x:B.x0+6.4,y:B.y1+1.2,z:70,r:6,c:[.32,.88,1]});
+      LAMPS.push({own:1,room:1,day:true,x:(B.x0+B.x1)/2,y:(B.y0+B.y1)/2,z:H-40,r:13,c:[1,.92,.8]}); });
+    // THE LOT'S ATMOSPHERE (the same ask): the city round it and the air over it, only while you're out on the lot. Silhouettes of towers in the
+    // haze with a scatter of lit windows (pink, cyan, amber), two wooden poles and sagging cables (shop to pole, pole to pole, pole to tower), all
+    // one mesh in flat colours, unlit, the haze over them (one draw, one program); a searchlight sweeping slowly from the tallest tower (an open
+    // cone, added over what's behind, faint; one draw); and each frame, after the clock, the weather and the far haze: a purple haze closing in
+    // round you (lavender by day, deep magenta at night; the sky goes with it) and the weather's rain held on (WX.at answers rain while you're here,
+    // so its streaks, the clouds' grey and the ambience's hiss all come). Cost: some 2,500 triangles, two draws, two programs, no light (the neon's
+    // two lamps above); nothing drawn or done off the lot
+    { const LOT={x0:X(B.x0-12),x1:X(B.x1+14),z0:Z(B.y0-8),z1:Z(B.y1+10)}, on=()=>LVL==='up'&&pos.x>LOT.x0&&pos.x<LOT.x1&&pos.z>LOT.z0&&pos.z<LOT.z1;
+      const P_=[], C_=[], q=(a,b,c_,d,col)=>{ for(const v of [a,b,c_,a,c_,d]){ P_.push(...v); C_.push(...col); } };
+      const box3=(x0,y0,x1,y1,z0,z1,col)=>{ const a=X(x0),b=X(x1),f=Z(y1),k=Z(y0),lo=Y(z0),hi=Y(z1), dk=col.map(v=>v*.8);
+        q([a,lo,f],[b,lo,f],[b,hi,f],[a,hi,f],col); q([b,lo,k],[a,lo,k],[a,hi,k],[b,hi,k],dk); q([a,lo,k],[a,lo,f],[a,hi,f],[a,hi,k],dk); q([b,lo,f],[b,lo,k],[b,hi,k],[b,hi,f],dk); q([a,hi,f],[b,hi,f],[b,hi,k],[a,hi,k],col.map(v=>v*.7)); };
+      const WC=[[1,.4,.85],[.4,.9,1],[1,.75,.4]], TW=[[358,-118,368,-106,520],[371,-124,381,-110,760],[384,-116,393,-106,420],[397,-126,409,-112,920],[412,-116,421,-104,600],[350,-101,360,-89,480],[349,-86,358,-77,340],[413,-99,423,-88,540],[418,-85,427,-76,380]];
+      TW.forEach(([x0,y0,x1,y1,h],ti)=>{ box3(x0,y0,x1,y1,0,h,[.17,.14,.22]);
+        for(let zz=30;zz<h-20;zz+=22)for(let u=x0+.6;u<x1-.4;u+=1.1){ const r=hash(ti*97+Math.round(u*10),zz,830); if(r>.16)continue; const c=WC[Math.floor(r*61)%3], fy=Z(y1)+.02, a=X(u), b=X(u+.5);
+          q([a,Y(zz),fy],[b,Y(zz),fy],[b,Y(zz+9),fy],[a,Y(zz+9),fy],c); }
+        for(const xs of [x0,x1])for(let zz=30;zz<h-20;zz+=22)for(let u=y0+.6;u<y1-.4;u+=1.1){ const r=hash(ti*53+Math.round(u*10),zz+(xs===x0?1:2),831); if(r>.1)continue; const c=WC[Math.floor(r*71)%3], fx=X(xs)+(xs===x0?-.02:.02);
+          q([fx,Y(zz),Z(u)],[fx,Y(zz),Z(u+.5)],[fx,Y(zz+9),Z(u+.5)],[fx,Y(zz+9),Z(u)],c); } });
+      // the poles (in the batch, lit), and the cables: each a sagging run of thin flat strips, seen from any side (two crossed)
+      const PA=[B.x1+11,B.y1+1.6], PB=[B.x0-6,B.y1+1.6], PH=360, wood=[78,60,46];
+      for(const [px_,py_] of [PA,PB]){ BATCH.tag=OBJ('store:vcr','pole'); gbox({x0:px_-.12,y0:py_-.12,x1:px_+.12,y1:py_+.12,z0:0,z1:PH,c:wood}); gbox({x0:px_-1,y0:py_-.06,x1:px_+1,y1:py_+.06,z0:PH-24,z1:PH-18,c:wood});
+        solids.push([X(px_-.15),Z(py_-.15),X(px_+.15),Z(py_+.15)]); } BATCH.tag=null;
+      const cable=(a,b,sag)=>{ const N=18, w=.025*TILE; let pr=null; for(let i=0;i<=N;i++){ const t=i/N, p=[X(a[0]+(b[0]-a[0])*t),Y(a[2]+(b[2]-a[2])*t)-sag*TILE*4*t*(1-t),Z(a[1]+(b[1]-a[1])*t)];
+          if(pr){ const col=[.07,.05,.09]; q([pr[0],pr[1]-w,pr[2]],[p[0],p[1]-w,p[2]],[p[0],p[1]+w,p[2]],[pr[0],pr[1]+w,pr[2]],col); q([pr[0]-w,pr[1],pr[2]-w],[p[0]-w,p[1],p[2]-w],[p[0]+w,p[1],p[2]+w],[pr[0]+w,pr[1],pr[2]+w],col); } pr=p; } };
+      cable([B.x1,B.y1-.4,H],[PA[0]-.9,PA[1],PH-18],1.1); cable([PB[0]+.9,PB[1],PH-18],[PA[0]-.9,PA[1],PH-18],2.6); cable([PB[0]-.9,PB[1],PH-18],[PA[0]+.9,PA[1],PH-18],3.2);
+      cable([PA[0]+.9,PA[1],PH-18],[403,-112,700],2); cable([PB[0]-.9,PB[1],PH-18],[365,-106,420],1.6); cable([B.x0,B.y0+.5,H],[376,-110,560],1.4);
+      const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(P_,3)); g.setAttribute('color',new THREE.Float32BufferAttribute(C_,3));
+      const CU={uCF:{value:new THREE.Vector3(0,0,1)},uCO:{value:new THREE.Vector3()}}, cmat=new THREE.MeshBasicMaterial({vertexColors:true,side:THREE.DoubleSide});   // (cut on the camera's side of you, as the clouds are: turned round, a tower never stands between the camera and you)
+      cmat.onBeforeCompile=sh=>{ Object.assign(sh.uniforms,CU); sh.vertexShader='varying vec3 vCW;\n'+sh.vertexShader.replace('#include <project_vertex>','#include <project_vertex>\n vCW=(modelMatrix*vec4(transformed,1.)).xyz;');
+        sh.fragmentShader='varying vec3 vCW; uniform vec3 uCF,uCO;\n'+sh.fragmentShader.replace('void main() {','void main() { if(dot(vCW.xz-uCO.xz,uCF.xz)<-'+(3*TILE).toFixed(3)+') discard;'); };
+      cmat.customProgramCacheKey=()=>'vcrcity';
+      const city=new THREE.Mesh(g,cmat); city.frustumCulled=false; city.visible=false; scene.add(city);
+      // the ground out to the view's edges: one plain dark plane under the lot (no picture: past the lot's painted asphalt there was nothing)
+      const gnd=new THREE.Mesh(new THREE.PlaneGeometry(220*TILE,140*TILE).rotateX(-Math.PI/2),new THREE.MeshLambertMaterial({color:0x2c2b30})); gnd.position.set(X((B.x0+B.x1)/2),Y(.02),Z(B.y1)); gnd.receiveShadow=true; scene.add(gnd);
+      const BH=60*TILE, beam=new THREE.Mesh(new THREE.ConeGeometry(4.5*TILE,BH,14,1,true).translate(0,-BH/2,0),new THREE.MeshBasicMaterial({color:0xd8c8ff,transparent:true,opacity:.07,blending:THREE.AdditiveBlending,depthWrite:false,fog:false,side:THREE.DoubleSide}));
+      beam.position.set(X(403),Y(930),Z(-119)); beam.rotation.order='YXZ'; beam.visible=false; scene.add(beam);
+      const FOGV=new THREE.Fog(0x4a1c55,2,200), cN=new THREE.Color(.40,.11,.44), cD=new THREE.Color(.66,.54,.72), V3=new THREE.Vector3(); let was=false;
+      if(window.WX){ const at0=WX.at; WX.at=t=>{ const w=at0(t); return on()?Object.assign({},w,{cloud:1,rain:.72,storm:0,snow:0,fog:0,wind:Math.max(.3,w.wind||0)}):w; }; }
+      const tick0=CLOCK.tick; CLOCK.tick=dt=>{ tick0(dt); const here=on(), inside=!!ROOMS.cur;
+        city.visible=beam.visible=here&&!inside;
+        if(!here||inside){ if(was){ was=false; if(scene.fog===FOGV)scene.fog=null; } return; } was=true;
+        const n=Math.max(0,Math.min(1,(4-CLOCK.elev())/10)), t=performance.now()/1000, d=-V3.copy(pos).applyMatrix4(cam.matrixWorldInverse).z;
+        FOGV.color.copy(cD).lerp(cN,n); FOGV.near=d-(11+6*n)*TILE; FOGV.far=d+(40-10*n)*TILE;   /* (a third of the haze already where you stand, as in his picture; the far all of it) */ scene.fog=FOGV; scene.background.lerp(FOGV.color,.85);
+        cam.getWorldDirection(V3); V3.y=0; if(V3.lengthSq()<1e-6)V3.set(0,0,1); CU.uCF.value.copy(V3.normalize()); CU.uCO.value.set(pos.x,0,pos.z);
+        beam.rotation.y=Math.sin(t*.13)*1.1+.4; beam.rotation.x=2.35+Math.sin(t*.21)*.12; beam.material.opacity=.03+.06*n; }; }
+  });
 
   // THE WATER'S BEDS: the koi pond's, half a metre down, dark mud and its banks; the tank's is its stand's top. The water itself, below, once built
   { const P=STORE.pond, bed=(x,y)=>{ const n=grain(x,y,911,.8); return n<.4?[38,44,30]:n>.7?[58,64,44]:[46,52,36]; }, BK=[52,46,34], zb=-14;

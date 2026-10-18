@@ -823,7 +823,15 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   checker floor; the counter across the front room (the till's green screen, a deck, a stack of tapes), the way behind it on the door's side; three
   steel shelving units along the back wall full of VCRs (black, silver, grey, each with its slot and a light, some gaps, some stacked); the repair
   bench on the west wall (an old TV showing static, a deck open on its green board, the iron, a bench lamp with its own small light), a stool;
-  cardboard boxes, a poster. Some 3,000 triangles in all, three lamps (the room's, the bench's, the gooseneck's), no new program. The lot is four pieces round the shop (one piece whose middle fell
+  cardboard boxes, a poster. Some 3,000 triangles in all, three lamps (the room's, the bench's, the gooseneck's), no new program.
+  **Its atmosphere** (owner, 18 Oct 2026, his picture of a rainy magenta night: "can we add atmopshere to it like this"; his picks: the lot
+  only, the haze, the rain, neon, the skyline and wires; `store.js`): while you're out on the lot (not inside, not elsewhere) a purple haze
+  closes in (a third of it already where you stand; lavender by day, deep magenta at night, the sky with it: its own `THREE.Fog`, so the far
+  haze and the weather's fog step aside) and the rain is held on (`WX.at` answers rain there: the streaks, the clouds' grey, the ambience's
+  hiss). VHS in pink neon tubes on the east wall, OPEN in cyan in the second window, each with a coloured lamp on the ground. Towers in the haze
+  with a scatter of lit windows, two wooden poles and sagging cables (one unlit vertex-coloured mesh, cut on the camera's side of you as the
+  clouds are, so a tower never stands between the camera and you), a searchlight sweeping from the tallest (an additive cone), a plain dark
+  ground out to the view's edges. Cost: some 2,500 triangles more, four draws, two programs, two lamps (the neon's). The lot is four pieces round the shop (one piece whose middle fell
   inside it was taken for the interior and drawn only near the door: interiors.js). `tests/vcrshot.cjs <out>` (front, wide, side yard, inside).
 - **Libraries for what was hand-written** (owner, 18 Oct 2026: "is there another game engine that makes more sense" — no, three.js stays; then
   "lets start installing libraries for thinsg weve hand written"): **three-mesh-bvh** (0.8.3 from jsDelivr, `src/bvh.js`) for every ray (a double

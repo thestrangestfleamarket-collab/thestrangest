@@ -35,7 +35,7 @@ ROOMS.roofAt=(x,y,z)=>{ const h=new THREE.Raycaster(new THREE.Vector3(x,y,z),new
       // (owner, 17 Oct 2026: "when i first walk into interior its cutting off the back of my body too"): a room is yours once all of you is in it
       // (half a tile in from its walls); in a doorway, coming or going, nothing is cut
       const IN=-.55*TILE; hit=RL.find(b=>within(b,pos.x,pos.z,IN)&&py>b.y0-.3&&py<b.y1)||null;   /* (and by your height: the rooms stacked on the apartments share their ground) */
-      const A=MODS.apts; if(!hit&&A&&A.in){ const lv=A.floor(), S=BOD.K.STORY; for(const t of A.rects(lv)){ const b=box(BOD.X,BOD.Z,t,BOD.Y(lv*S)-.5+(A.R0||0),BOD.Y((lv+1)*S)+(A.R0||0)); if(within(b,pos.x,pos.z,lv>0?0:IN)){ hit=b; break; } } } }   /* (above the ground floor there's no door out, so all of it is the room: the stairs' landing and the lift stand against the back wall) */
+      const A=MODS.apts; if(!hit&&A&&A.in){ const lv=A.floor(), S=BOD.K.STORY; for(const t of A.rects(lv)){ const b=box(BOD.X,BOD.Z,t,A.lvY(lv)-.5,A.lvY(lv+1)); if(within(b,pos.x,pos.z,lv>0?0:IN)){ hit=b; break; } } } }   /* (above the ground floor there's no door out, so all of it is the room: the stairs' landing and the lift stand against the back wall) */
     ROOMS.cur=hit; UI.isoPlace(); if(BOD.GD)BOD.GD.tick(); if(MODS.dungeon)MODS.dungeon.tick();   // (the dungeon's torches flicker: castle.js)   // (the dojo's flames: lit only while you're in it)
     // THE LIGHTS OVERHEAD (owner, 17 Oct 2026: "dont show over head lights in any view unless looking up at them"): only from under them
     for(const h of OVERHEAD)h.o.visible=cam.position.y<h.y;

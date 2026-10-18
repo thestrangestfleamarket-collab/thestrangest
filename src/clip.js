@@ -24,7 +24,7 @@ const CLIP={moved:[],found:[],added:0,boxes:new Map(),done:new Set(),ms:0}; wind
   const where=(o,cx,cz,ylo)=>{ const p=o.place;
     if(p==='station')return {L:SOL.down,F:FIX.down,y0:MODS.station.ground(cx,cz)};
     if(p==='dungeon')return {L:SOL.down,F:FIX.down,y0:MODS.dungeon.ground(cx,cz)};
-    if(p==='apartments'&&MODS.apts&&MODS.apts.SY){ const A=MODS.apts, lv=Math.max(0,Math.round((ylo-(A.R0||0))/A.SY)); return {L:A.sol[lv],also:SOL.up,F:null,y0:lv*A.SY+(A.R0||0)}; }
+    if(p==='apartments'&&MODS.apts&&MODS.apts.SY){ const A=MODS.apts, lv=Math.max(0,Math.round((ylo-A.R0)/A.SY)); return {L:A.sol[lv],also:SOL.up,F:null,y0:A.lvY(lv)}; }
     if(p.startsWith('store:')){ const R=STORE.rooms.find(r=>r.id===p.slice(6)); if(R&&R.solids)return {L:R.solids,F:FIX.up,y0:R.fy}; }
     return {L:SOL.up,F:FIX.up,y0:MODS.bodega.ground(cx,cz)}; };
   // one thing's faces sampled: each sample no solid holds handed to miss(x, z, top); its count of samples and of misses kept on it (o.clip)

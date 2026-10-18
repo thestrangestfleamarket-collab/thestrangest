@@ -279,7 +279,7 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
     add('THE SHOP',...mid(BOD.X,BOD.Z,[B.x0,BOD.BODOFF,B.x1,B.y1]),'up'); add('THE BACK ROOM',...mid(BOD.X,BOD.Z,[B.x0,B.y0,B.x1,BOD.BODOFF]),'up');
     const R=AWAY.has('apartments')?[]:POOLR.ROOMS||[]; [['THE GYM',0],['THE HALLWAY',3],['THE LOBBY',5],['THE OFFICE',6]].forEach(([n,i])=>R[i]&&add(n,...mid(POOLR.X,POOLR.Z,R[i]),'up'));
     if(BOD.GD)add('THE DOJO',...mid(BOD.X,BOD.Z,BOD.GD.r),'up');
-    if(MODS.apts){ const A=MODS.apts.A, H=MODS.apts.H; for(let f=0;f<(MODS.apts.floors||5);f++)add('APARTMENT HOUSE '+(f?'FLOOR '+(f+1):'GROUND'),BOD.X((A.x0+A.x1)/2),BOD.Z((H.y0+H.y1)/2),f?MODS.apts.SY*f+(MODS.apts.R0||0):'up'); }
+    if(MODS.apts){ const A=MODS.apts.A, H=MODS.apts.H; for(let f=0;f<(MODS.apts.floors||5);f++)add('APARTMENT HOUSE '+(f?'FLOOR '+(f+1):'GROUND'),BOD.X((A.x0+A.x1)/2),BOD.Z((H.y0+H.y1)/2),f?MODS.apts.lvY(f):'up'); }
     add('THE SUBWAY STAIRS',BOD.XS((MAPSTAIR.x0+MAPSTAIR.x1)/2),BOD.ZS(MAPSTAIR.y1+1.2),'up'); }
   // THE STOREROOM (owner, 17 Oct 2026: the game's rooms brought back, "dont add them to the map yet"): off the map, each a place to go and look
   if(STORE.places.length){ const h=document.createElement('h3'); h.textContent='MORE PLACES';   /* (the rooms store.js sets out: the Moon Shrine, and any brought back from off the map, ?bring=; owner 18 Oct 2026) */ $('#places').parentNode.appendChild(h); const row=document.createElement('div'); row.className='row'; row.id='stored'; $('#places').parentNode.appendChild(row);

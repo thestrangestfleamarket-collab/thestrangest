@@ -22,7 +22,7 @@ grab('park',()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.ox=PO.x; PARK.o
   // again where it meets a gate and at the round, so the gates and crosswalks stay where they were; wobX: the north-south way's x off its line
   // at a y, wobY: the east-west way's y off its line at an x)
   const WA=3, wobX=y=>WA*Math.sin(2*Math.PI*(y-P.y0)/(P.y1-P.y0)), wobY=x=>WA*Math.sin(2*Math.PI*(x-P.x0)/(P.x1-P.x0)); P.wobX=wobX; P.wobY=wobY;
-  const path=(x,y)=>{ const [cx,cy,r]=P.round; return Math.abs(x-cx-wobX(y))<3.6||Math.abs(y-cy-wobY(x))<3.6||Math.hypot(x-cx,y-cy)<r; };
+  const path=(x,y)=>{ const [cx,cy,r]=P.round; return Math.abs(x-cx-wobX(y))<3.6||Math.abs(y-cy-wobY(x))<3.6||Math.hypot(x-cx,y-cy)<r; };   P.path=path;   // (the menu's drawn map: ui.js)
   // THE HILLS (owner, 18 Oct 2026: "the grass is completely flat instead of hills"; his pick: gentle rolling hills in the park, the paths and
   // buildings flat): a height over the lawn from two octaves of noise, mounds up to some 1.6 tiles (1.3 m), eased to nothing within six tiles of a way,
   // the round, the walls, the gate's front (the stalls, the booth, the playground), the castle, the shrine, the pond, the campfire and the

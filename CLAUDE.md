@@ -1461,3 +1461,25 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   step, a move) ends it. His pose is worked out every frame through it (ASTEP). The same for every Walker on the rig (the musician and the bearded
   Walker stop the same way; they don't lean, nothing hands them a turn). Checked: `node tests/turnstop.cjs` (the lean's size, the feet still
   planted leaning, the stop's curve, 0 frames changing after it); in the page, turning one way tips his head that way. Cost: nothing.
+- **The menu's map drawn as a map; the root fixes, "fix all 1-8"** (owner, 18 Oct 2026: "the map in menu should show entire map and not the real
+  thing, just map showing where eveything is, map like"; then, of a list of patches made in place of fixing their causes, "fix all 1-8"):
+  **THE MAP** (`plan()` in `ui.js`): the street level drawn as a plan from the places' own measures, the whole loop inside the force field, north
+  (the park) up: the roads (`BOD.road.at`), sidewalks and alley (`BOD.grounds`), the park's lawn and ways (`PARK.path`), the river, the buildings
+  and places as blocks in their colours with their names (none over another), the force field's line; two pixels a tile, painted once; your dot;
+  a click goes there. Underground is still the view from above. `tests/menumap.cjs`. **1, OUT** (`map-pre.js`): one rule for what's out of doors,
+  `OUT.add(thing,'open'|'world')`, checked once a frame after the rooms (rooms.js), in place of each outdoor thing's own `ROOMS.cur` check (the sky,
+  birds, force field, river, roofs' things, lamps' pools, the weather's and haze's reads); hidden by SEEN, so a roof's shadow stays.
+  `tests/outcheck.cjs`. **2, the light on a character in steps** (`looks.js`): its way handed on only after it turns 7 degrees (`?lstep=`); and the
+  player's placement (`W3.place`) no longer set it back to his fixed light every frame (`W3.realL`), which had kept the easing toward a lamp from
+  ever holding. Walking under a street light at night the light on him changed on 6 of 60 steps (60 of 60 before). `tests/lampwalk.cjs`.
+  **3, SHX** (`src/shx.js`, right after three's import): every onBeforeCompile wrapped once; a shader edit whose text isn't in the shader is
+  reported (`SHADER EDIT MISSED`, `SHX.miss`); found one (the batch's glow tint on unlit materials, made explicit). `tests/shxcheck.cjs` (none now).
+  **4**: nothing off the map is built (the pool's removal); `AWAY.has` is the register. **5, a kind on one page** (`batch.js`): each kind's
+  pictures packed together, a new page started before one that won't fit; only the street's ground (bigger than a page) spans two
+  (`BATCH.log`, `tests/batchlog.cjs`). **6**: the oaks (lost in 5b3dd53) came back on main the same day; the dojo's floor painted the right way round; the
+  creatures, dragon and kit had already been cut again (c24f751). **7, the house's floors** (`APTS.lvY(lv)`, `APTS.lvOf(y)`, its plinth in them) for
+  the hitboxes, the drone, the residents, the rooms, the roof and the menu (the same picture, `tests/aptfloors.cjs`). **8, triangles**: not solved; a
+  cull of what lay past a mist round him was built and taken out again when main's mist (the town's outskirts only) came in. `tests/mistcull.cjs`
+  measures one whole frame (every pass). **THE HAZE FADES GRADUALLY** (owner, of the mist's bands: "i dont want hard lines like that, needs to be cel
+  shaded shadows and gardual chanegs in haze tarnspacency"): the fog's 8 flat steps gone, the outskirts' darkening and the skyline's steps smooth;
+  the light and shadows keep their cel bands. `tests/mistviews.cjs`.

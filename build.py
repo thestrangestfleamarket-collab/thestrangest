@@ -89,6 +89,7 @@ a=mod.index('const crate=(x,z,s,y=0)=>'); b=mod.index('looseDraw();\nlet looseAc
 mod=mod[:a]+mod[b:]
 mod=rp(mod,"const pos=new THREE.Vector3(0,0,14); let heading=0.8, py=0;","const pos=new THREE.Vector3(-2.2,0,3.2); let heading=0.8, py=0;")
 mod=rp(mod,"import * as THREE from 'three';","""import * as THREE from 'three';
+"""+rd('src/shx.js')+"""
 import {EffectComposer} from 'three/addons/postprocessing/EffectComposer.js';
 import {RenderPass} from 'three/addons/postprocessing/RenderPass.js';
 import {OutputPass} from 'three/addons/postprocessing/OutputPass.js';""")

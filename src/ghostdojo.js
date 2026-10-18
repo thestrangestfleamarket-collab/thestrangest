@@ -52,7 +52,7 @@ function gdShape(GS,K,LAMPS){ const G=GS.filter(p=>p.name==='ghost street shop')
       wbox('front',X0,Y1-T,dx0,Y1,0,H),wbox('front',dx1,Y1-T,X1,Y1,0,H),wbox('front',dx0,Y1-T,dx1,Y1,DH,H)];
     BATCH.tag=OBJ('bodega','ghost street shop'); for(const b of WB)gbox(b,'GD'+b.id);
     // the ground floor's roof (the kit's, at the new height): over the whole building, seen from outside (cut away inside with the room above)
-    const flat=(x0,y0,x1,y1,z,col,kind)=>bq([X(x0),Y(z),Z(y1)],[X(x1),Y(z),Z(y1)],[X(x1),Y(z),Z(y0)],[X(x0),Y(z),Z(y0)],faceTex((x1-x0)*24,(y1-y0)*24,(i,j)=>C(col(x0+(i+.5)/24,y1-(j+.5)/24))),kind);
+    const flat=(x0,y0,x1,y1,z,col,kind)=>bq([X(x0),Y(z),Z(y1)],[X(x1),Y(z),Z(y1)],[X(x1),Y(z),Z(y0)],[X(x0),Y(z),Z(y0)],faceTex((x1-x0)*24,(y1-y0)*24,(i,j)=>C(col(x0+(i+.5)/24,y0+(j+.5)/24))),kind);   // (row 0 at y0, as bq lays it: it was painted from y1, the floor mirrored front to back, as every ground was till 18 Oct 2026)
     flat(X0,Y0,X1,Y1,H+.5,GK.top,'GDL');   // (a hair over the walls' tops)
     // THE FLOOR: polished boards round the walls, tatami (pale straw, woven along the mat, dark cloth down its long sides) in the old pattern
     // (no four corners meeting): across the room a mat each way in turn, 1 + 2 + 1 + 2 + 1 tiles; the cushion (zabuton) in the middle; a sill

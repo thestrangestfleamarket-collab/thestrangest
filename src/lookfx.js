@@ -15,7 +15,7 @@
       for(let j=H-1;j>=0;j--)for(let i=W-1;i>=0;i--){ const k=j*W+i; if(i<W-1)D[k]=Math.min(D[k],D[k+1]+1); if(j<H-1)D[k]=Math.min(D[k],D[k+W]+1,i<W-1?D[k+W+1]+1.41:1e9,i?D[k+W-1]+1.41:1e9); }
       const R=.42*TILE*A.k, O=LFX.ao.image.data; for(let k=0;k<W*H;k++)O[k]=Math.round(255*(.62+.38*cl(D[k]/R))); LFX.ao.needsUpdate=true; },200);
     const sky=new THREE.Color(); let t0=performance.now(); const WS={wet:null,snow:0,h:null,t:t0}; window.WETQ=o=>{ if(o)Object.assign(WS,o); return {...WS}; };   // (a test's look)
-    LFX.tick=()=>{ const day=cl((CLOCK.elev()+3)/12), W=typeof WX!=='undefined'&&WX.now||{cloud:.3,wind:.3,rain:0}, inside=!!ROOMS.cur||LVL==='down', t=(performance.now()-t0)/1000, row=63*64*4;
+    LFX.tick=()=>{ const day=cl((CLOCK.elev()+3)/12), W=typeof WX!=='undefined'&&WX.now||{cloud:.3,wind:.3,rain:0}, inside=!OUT.open, t=(performance.now()-t0)/1000, row=63*64*4;
       E[row]=F.has('cs')&&!inside?Math.round(255*day*(.55+.45*cl(W.cloud*1.4))):0;   // (strength: by day, more under a cloudier sky)
       // HOW WET, HOW SNOWED ON (owner, 18 Oct 2026, "go all": wet ground after rain, snow lying): wet in half a minute of rain, dry again over
       // four minutes or two of the clock's hours, whichever's sooner; snow lies over a minute and a half and melts over five (or three hours;
@@ -42,8 +42,8 @@
     const MOTES=new THREE.Points(mg,new THREE.PointsMaterial({size:1.5,sizeAttenuation:false,color:0xfff2c8,transparent:true,opacity:.7})); MOTES.frustumCulled=false; scene.add(MOTES);
     const LC=[[.42,.55,.18],[.62,.6,.2],[.78,.48,.16],[.6,.3,.12]]; for(let i=0;i<NL;i++){ ls.push({o:i%16,t:Math.random()*8,ph:Math.random()*6}); lc.set(LC[i%4],i*3); }
     for(let i=0;i<NM;i++)ms.push([(Math.random()-.5)*14*TILE,Math.random()*3*TILE,(Math.random()-.5)*14*TILE,Math.random()*6]);
+    for(const o of [BIRDS,LEAVES,MOTES])OUT.add(o,'open');
     const tick2=LFX.tick; LFX.tick=()=>{ tick2(); const t=performance.now()/1000, dt=1/60, up=LVL!=='down', day=cl((CLOCK.elev()+3)/12), park=typeof PARK!=='undefined'&&PARK.oaks;
-      BIRDS.visible=LEAVES.visible=MOTES.visible=up&&!ROOMS.cur;
       // the birds: a loose flock wheeling over the park, each a little V that beats
       const cx=BOD.XS(96+PARK.ox), cz=BOD.ZS(-40+PARK.oy); for(let i=0;i<NB;i++){ const a=t*.18+i*.35, r=(14+i*1.3)*TILE, x=cx+Math.cos(a)*r, z=cz+Math.sin(a)*r*.7, y=(9+Math.sin(i*2.1+t*.5))*TILE, w=.35*TILE, f=Math.sin(t*9+i)*.18*TILE, dx=-Math.sin(a), dz=Math.cos(a)*.7;
         bp.set([x-dz*w,y+f,z+dx*w, x,y,z, x,y,z, x+dz*w,y+f,z-dx*w],i*12); } bg.attributes.position.needsUpdate=true;

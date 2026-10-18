@@ -1175,6 +1175,9 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   (the skyline gone in it). The shot's teal at dusk (0x3a6e68), a little paler at high noon, dark at night. GRAPHICS' DISTANCE HAZE: MIST, FAR (the
   old far haze and the sky), OFF; `?mist=0` the far haze, `?mist=near,far` in tiles. The weather's FOG takes over when it comes; nothing indoors or
   underground. Cost: none (the same fog). Not taken: the shots' autumn treetops and the embers / fireflies. `tests/mistshot.cjs`.
+  2.5 s to 0.34 s (software rendering). Looked at and **not** taken: recast-navigation for `CITY.route` (the A* there judges each walker's way by
+  his own test of a spot, which a navmesh can't; routes are 2-20 ms already); BatchedMesh's per-object culling (needs three past r160, and
+  map-pre.js patches r160's shader chunks by their text).
 - **The Godot rebuild, its first test** (owner, 18 Oct 2026: "lets start on a rebuild using godot. i dont want any sort of godot splash screen i want
   it completely hidden. build out a test small game with just one building and my walker on godot. match graphics exactly"; `godot/`, its
   README): Godot 4.5.1, the Compatibility renderer (the browser's). The bodega and the ground round it, the Walker, the opening isometric view at

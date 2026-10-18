@@ -161,6 +161,7 @@ const AV={on:false};
   const put=o=>{ if(!o||o.v!==1)return; ED.snap(); if(o.looks){ for(const k of Object.keys(L))if(k!=='name')delete L[k]; Object.assign(L,o.looks); LOOKS.apply(); W3.BH=LOOKS.BUILDS[L.build|0][1]*(L.hk||1); }
     if(o.shape)ED.unpack(o.shape); if(o.shade)W3.setShade(o.shade.steps,o.shade.depth,o.shade.smooth); if(o.self!=null)W3.setSelf(o.self);
     if(o.av){ S=Object.assign(S0(),o.av); applyS(); save(); } if(o.outline!=null)outl(o.outline); if(o.lit!=null)UI.setLit(o.lit); try{ localStorage.setItem('market-toe',o.toe||'round'); }catch(e){} draw(); };
+  AV.whole=whole; AV.put=put;   // (the whole of him as data and back: the standalone avatar editor's outfits and files, src/avatar-post.js)
   let PRE={}; try{ PRE=JSON.parse(localStorage.getItem('market-avpresets')||'{}')||{}; }catch(e){}
   const savePre=()=>{ try{ localStorage.setItem('market-avpresets',JSON.stringify(PRE)); return true; }catch(e){ return false; } };
   function drawPre(){ const l=$('#avpl'), ks=Object.keys(PRE); l.innerHTML=ks.length?'':'<div class="dim">no looks saved yet</div>';

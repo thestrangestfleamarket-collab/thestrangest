@@ -759,3 +759,13 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   things' shadows (asked, not reproduced cleanly here); hills, curved paths and rounded kerbs; the main street's reorganization, the doubled
   street, the castle at half height with its walls cut inside and the keep off map (a helper on it); the Metro in place of the station; a pond in
   the park.
+- **A new version, said** (owner, 18 Oct 2026: "when youre playing it hsould check for new versions and let you knwo when one is vailable so you can
+  refresh"; `src/version.js`): every build carries its moment (`BUILDV`, build.py); THE MARKET's artifact declares the `db` capability, keeps the
+  newest build opened in `meta/build` (`{v}`), and an open page newer than it writes it; every open page listens and, when a newer build is
+  there, shows A NEW VERSION IS READY with REFRESH at the screen's foot. **After every publish**: `ArtifactData set meta/build {v: <BUILDV of the
+  build published>}` (grep `const BUILDV=` in dist/market.html), so open copies hear of it at once; publish without `capabilities` to keep `db`.
+- **The mushroom seller's booth** (owner, 18 Oct 2026: "give the mushroom skeletong his own booth in the entrance of central park, his table is full
+  of mushrooms"; `npc-mushroom.js`): inside the park's gate east of the toy stall, a trestle table under a red and cream striped awning, heaped with
+  some 70 mushrooms and three baskets; he stands behind it facing the gate, held there (no roaming, no life of lives.js); built once the park is.
+- **Guards out of sight walk their beats** (18 Oct 2026, found with the droids standing still): lives.js's far stepper calls `N.pick()`, which
+  makeNPC never gave; it does now.

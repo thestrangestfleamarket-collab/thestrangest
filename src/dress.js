@@ -66,7 +66,7 @@ const DRESS={};
     pole.castShadow=true; scene.add(pole,lant);
     // THE COMMUNITY GARDEN'S FENCE (owner, 17 Oct 2026, mockup 1): a low wooden fence along the lot's front between the apartment house and the
     // bodega, posts every two tiles, two rails, its gate open between the cottage and the butterfly garden; solid but for the gate
-    { const z=-.35*TILE, x0=AX+.15, x1=BX0-.15, gx0=-5.6*TILE, gx1=-3.6*TILE, sx0=BOD.XS(MAPSTAIR.x0)-.3, sx1=BOD.XS(MAPSTAIR.x1)+.3, WD=0x4a3b2a, RL=0x6b573f, H=1.05*M;   // (on the lot's line, a hair behind the sidewalk; open where the subway stairs' well cuts the line)
+    if(!AWAY.has('garden')){ const z=-.35*TILE, x0=AX+.15, x1=BX0-.15,   /* (only with the garden on the map: AWAY, map-pre.js, owner 18 Oct 2026) */ gx0=-5.6*TILE, gx1=-3.6*TILE, sx0=BOD.XS(MAPSTAIR.x0)-.3, sx1=BOD.XS(MAPSTAIR.x1)+.3, WD=0x4a3b2a, RL=0x6b573f, H=1.05*M;   // (on the lot's line, a hair behind the sidewalk; open where the subway stairs' well cuts the line)
       const post=(x,h)=>{ const y=G(x,z); blk(x,y+h/2,z,.09*M,h,.09*M,WD); };
       const runs=[[x0,sx0],[sx1,gx0],[gx1,x1]];
       for(const [a,b] of runs){ for(let x=a;x<b-.5;x+=2*TILE)post(x,H); post(b,H); } post(gx0,H*1.2); post(gx1,H*1.2);

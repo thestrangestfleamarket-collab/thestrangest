@@ -63,7 +63,8 @@ if(MAIL.on){ const T=TILE, M=1/.84*T, X=BOD.XS, Z=BOD.ZS, G=(x,z)=>MODS.bodega.g
     for(const b of B)for(const u of b.up||[])if(u.who&&u.who.type==='walker')u.who.name=person(u.who.ref.N.key);
     const upW=new Set(JB.filter(J=>J.home==='up').map(J=>J.w)), toHouse=JB.filter(J=>J.home==='house').map(J=>J.w), toApts=JB.filter(J=>J.home==='apts').map(J=>J.w);
     const rest=W.filter(w=>!upW.has(w)&&!toHouse.includes(w)&&!toApts.includes(w)), hq=[...toHouse,...rest];
-    const houseUnits=flats.map(f=>{ const r=RES.find(r=>r.flat===f); if(r)return {unit:f,who:{type:'res',ref:r,name:r.name}}; const w=hq.shift(); return {unit:f,who:w?wk(w):null}; });
+    const noApts=!B.some(b=>b.id==='apts'); let youIn=false;   /* (your box: the apartments' lobby's, or with the apartment building off the map (owner, 18 Oct 2026) the apartment house's first free flat) */
+    const houseUnits=flats.map(f=>{ const r=RES.find(r=>r.flat===f); if(r)return {unit:f,who:{type:'res',ref:r,name:r.name}}; if(noApts&&!youIn){ youIn=true; return {unit:f,who:{type:'you',name:'YOU'}}; } const w=hq.shift(); return {unit:f,who:w?wk(w):null}; });
     const aq=[...toApts,...hq], aptUnits=[{unit:'1',who:{type:'you',name:'YOU'}},...aq.map((w,i)=>({unit:String(i+2),who:wk(w)}))];
     { const h=B.find(b=>b.id==='house'), a=B.find(b=>b.id==='apts'); if(h)h.units=houseUnits; if(a)a.units=aptUnits; }
     // street and number: along each street in order, odd on the far side of its travel, even on this

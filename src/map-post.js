@@ -54,7 +54,8 @@ groundY=(x,z)=>{ const s=inStair(x,z); if(s){ const S=s.S, t=S.dir>0?s.gy-S.y0:S
   { const st=LVL==='up'&&STORE.stackGround?STORE.stackGround(x,z):null; if(st!=null)return st; }
   { const sg=LVL==='up'&&STORE.shrineGround?STORE.shrineGround(x,z):null; if(sg!=null)return sg; }   // (the Moon Shrine's plaza, steps and terrace: store.js)   // (a floor stacked on the apartments: store.js)
   return LVL==='down'?(MODS.dungeon&&MODS.dungeon.inside(x,z)?MODS.dungeon.ground(x,z):MODS.station.ground(x,z)):MODS.apts&&MODS.apts.inside(x,z)?MODS.apts.ground(x,z):MODS.bodega.ground(x,z); };   // (in the apartment house: its floor under you, its stairs: apts.js)
-BOUND={x0:Math.min(MODS.bodega.BOUND.x0,MODS.station.BOUND.x0),x1:Math.max(MODS.bodega.BOUND.x1,MODS.pool.BOUND.x1),z0:Math.min(MODS.station.BOUND.z0,MODS.pool.BOUND.z0),z1:Math.max(MODS.bodega.BOUND.z1,MODS.park.BOUND.z1)};   // (the park past the far sidewalk: park.js)
+{ const PB=AWAY.has('apartments')?MODS.bodega.BOUND:MODS.pool.BOUND;   /* (the apartment building in the far lot while it's off the map: not in the view's bounds, owner 18 Oct 2026) */
+  BOUND={x0:Math.min(MODS.bodega.BOUND.x0,MODS.station.BOUND.x0),x1:Math.max(MODS.bodega.BOUND.x1,PB.x1),z0:Math.min(MODS.station.BOUND.z0,PB.z0),z1:Math.max(MODS.bodega.BOUND.z1,MODS.park.BOUND.z1)}; }   // (the park past the far sidewalk: park.js)
 // (and every place the map's layout moved, wherever it put it, so the view can reach it: the bodega, the apartment house, the castle, Ghost Street,
 // the Diner and the Bar; src/mapedit.js. Only a moved one: the street lights are spaced from these edges, dress.js)
 { const g=(k,x0,z0,x1,z1)=>{ if(!LAY.L[k])return; BOUND.x0=Math.min(BOUND.x0,x0); BOUND.z0=Math.min(BOUND.z0,z0); BOUND.x1=Math.max(BOUND.x1,x1); BOUND.z1=Math.max(BOUND.z1,z1); }, B=BOD.B0, A=MODS.apts.A, C=CASTLE.b, G=BOD.grounds.find(q=>q.id==='ghostst');

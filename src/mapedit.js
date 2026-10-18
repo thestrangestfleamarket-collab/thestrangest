@@ -33,14 +33,15 @@ const MAPED={on:false};
     castle:()=>{ const b=CASTLE.b; return [BOD.XS(b[0]),BOD.ZS(b[2]),BOD.XS(b[1]),BOD.ZS(b[3])]; },
     subway:()=>{ const S=MAPSTAIR; return [BOD.XS(S.x0),BOD.ZS(S.y0),BOD.XS(S.x1),BOD.ZS(S.y1)]; },
     land:()=>{ const L=MODS.landR; return [L.x0*T,L.z0*T,L.x1*T,L.z1*T]; }};
-  const HIGH={bodega:()=>BOD.Y(BOD.B0.h),house:()=>BOD.Y(5*BOD.K.STORY),apartments:()=>POOLR.Y(POOLR.H),ghost:()=>BOD.Y(280),diner:()=>BOD.Y(130),bar:()=>BOD.Y(130),park:()=>BOD.YS(54),castle:()=>BOD.YS(200),subway:()=>BOD.YS(30),land:()=>.05};
+  for(const k of AWAY)delete BOX[k];   // (a place off the map isn't the editor's to move: AWAY, map-pre.js; owner 18 Oct 2026)
+  const HIGH={bodega:()=>BOD.Y(BOD.B0.h),house:()=>BOD.Y(5*BOD.K.STORY),apartments:()=>POOLR.Y(POOLR.H),ghost:()=>BOD.Y(280),diner:()=>BOD.Y(130),bar:()=>BOD.Y(130),park:()=>BOD.YS(54),castle:()=>BOD.YS(200*CYS),subway:()=>BOD.YS(30),land:()=>.05};
   const KEYS=Object.keys(BOX), BUILT=JSON.parse(JSON.stringify(LAY.L)), q4=v=>Math.round(v/G)*G, q20=v=>Math.round(v*20)/20, clean=o=>{ const r={}; for(const k in o){ const v=o[k]||{}, e=(v.e||[0,0,0,0]).map(q4), q={};
       if(q4(v.x||0))q.x=q4(v.x); if(q4(v.y||0))q.y=q4(v.y); if(e.some(n=>n))q.e=e; if(q4(v.h||0))q.h=q4(v.h); if(v.s&&q20(v.s)!==1)q.s=q20(v.s); if(Object.keys(q).length)r[k]=q; } return r; };
   let WORK=clean(BUILT), sel='bodega', V=null, act=null, PH=null, d3=null, OV=null, was=null;
   const ent=k=>WORK[k]||(WORK[k]={}), off=(L,k)=>{ const v=L[k]||{}; return {x:v.x||0,y:v.y||0,e:v.e||[0,0,0,0],h:v.h||0,s:v.s||1}; };
   const LIFTS={diner:1,bar:1};   // (the ones that RAISE / LOWER and GROW / SHRINK)
   // a place's box as the editor has it now: as built, moved by what changed since (and its edges)
-  const boxOf=k=>{ const b=BOX[k](); if(!b)return null; const a=off(BUILT,k), w=off(WORK,k), dx=(w.x-a.x)*T, dz=(w.y-a.y)*T;
+  const boxOf=k=>{ const b=BOX[k]&&BOX[k](); if(!b)return null; const a=off(BUILT,k), w=off(WORK,k), dx=(w.x-a.x)*T, dz=(w.y-a.y)*T;
     const r=[b[0]+dx+(w.e[0]-a.e[0])*T,b[1]+dz+(w.e[1]-a.e[1])*T,b[2]+dx+(w.e[2]-a.e[2])*T,b[3]+dz+(w.e[3]-a.e[3])*T], sc=w.s/a.s; if(sc!==1){ const m=(r[0]+r[2])/2, f=r[3]; r[0]=m+(r[0]-m)*sc; r[2]=m+(r[2]-m)*sc; r[1]=f+(r[1]-f)*sc; } return r; };
   const liftOf=k=>(off(WORK,k).h-off(BUILT,k).h)*T, built=k=>off(BUILT,k).h*T;   // (its lift from where it was built; where it was built, in the world)
   // ---- THE PANEL: a small plan, the places, the buttons

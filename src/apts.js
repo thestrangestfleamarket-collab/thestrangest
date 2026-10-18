@@ -77,7 +77,11 @@ const APTS={};
   // the rooms of the front apartment (the back's are its mirror in y about the hall's middle); lv 0's bedroom gives up the passage to the door
   const rooms=lv=>{ const x0=A.x0, x1=A.x1, yl=A.y1-3, bx1=lv===0?A.x1-1.5:A.x1; return {liv:{x0,x1:bx1,y0:yl,y1:A.y1},kit:{x0,x1:x0+3.2,y0:H.y1,y1:yl},bath:{x0:x0+3.2,x1:x0+4.6,y0:H.y1,y1:yl},bed:{x0:x0+4.6,x1:bx1,y0:H.y1,y1:yl},pass:lv===0?{x0:bx1,x1,y0:H.y1,y1:A.y1}:null}; };
   const STX=[A.x0+.5,A.x1-.5], STY=[H.y0+.1,H.y0+1.3];   // the flight: along the hall's back, the whole width; up toward +x on even floors
-  for(let lv=0;lv<ST;lv++){ const z=lv*S, R=rooms(lv), Ym=y=>2*hm-y;
+  // THE MAIN APARTMENT BUILDING, HOLLOW (owner, 18 Oct 2026: "i want this to be the main apartment building. the inside is completely empty (no
+  // walls, furn, doors etc)"): its outer walls, windows, fire escapes and front door as they were; inside one floor of boards over the whole of it,
+  // no rooms' walls, no doors, no floors or ceilings above, two lamps so it isn't black (HOLLOW false: the floors and rooms as they were)
+  const HOLLOW=true; APTS.floors=HOLLOW?1:ST;
+  for(let lv=0;lv<ST;lv++){ if(HOLLOW){ if(lv===0)flat(A.x0,A.y0,A.x1,A.y1,1,boards); continue; } const z=lv*S, R=rooms(lv), Ym=y=>2*hm-y;
     { const zf=lv>0?z:1; for(const [r,col] of [[R.liv,boards],[R.bed,boards],[R.kit,tiles],[R.bath,tiles]]){ flat(r.x0,r.y0,r.x1,r.y1,zf,col); flat(r.x0,Ym(r.y1),r.x1,Ym(r.y0),zf,col); }
       flat(A.x0,H.y0,A.x1,H.y1,lv>0?z:1,lino);   // (the hall's floor whole: no flight, owner 17 Oct 2026)   // (the hall, but over the flight below; the ground floor's a hair up, over the lot's grass)
       if(R.pass)flat(R.pass.x0,R.pass.y0,R.pass.x1,R.pass.y1,zf,lino); }
@@ -103,7 +107,7 @@ const APTS={};
     const bs=p.boxes.filter(b=>!b.nb&&b.z0<30&&b.z1-b.z0>3); if(bs.length&&sol!==false){ const r={x0:Math.min(...bs.map(b=>b.x0)),y0:Math.min(...bs.map(b=>b.y0)),x1:Math.max(...bs.map(b=>b.x1)),y1:Math.max(...bs.map(b=>b.y1))}; SOLS[lv].push([X(r.x0),Z(r.y0),X(r.x1),Z(r.y1)]); }
     PROPS.length=n0; return p; };
   // (the furniture: gone, owner, 17 Oct 2026; the rooms' ceiling lights stay)
-  for(let lv=0;lv<ST;lv++){ SOLS[lv]=[]; const R=rooms(lv), x0=A.x0, yl=R.liv.y0, y1=A.y1, hy=H.y1, bx1=R.bed.x1, k=lv*7;
+  for(let lv=0;lv<ST;lv++){ SOLS[lv]=[]; if(HOLLOW){ if(lv===0)for(const [fx,i] of [[.3,8],[.7,8]])LIGHTS.push({x:X(A.x0+(A.x1-A.x0)*fx),y:Y(S-14),z:Z(hm),c:0xf2ead6,i}); continue; } const R=rooms(lv), x0=A.x0, yl=R.liv.y0, y1=A.y1, hy=H.y1, bx1=R.bed.x1, k=lv*7;
     for(const f of [1,-1]){ const Yf=y=>f>0?y:2*hm-y;
       // the lights: the living room's (warm), the kitchen's
       LIGHTS.push({x:X(x0+2.6),y:Y(lv*S+S-14),z:Z(Yf(y1-1.5)),c:0xffd9a8,i:9},{x:X(x0+1.6),y:Y(lv*S+S-14),z:Z(Yf(hy+1.2)),c:0xfff2dc,i:6}); }
@@ -115,18 +119,18 @@ const APTS={};
   const sol=(x0,y0,x1,y1,zt)=>{ solids.push([X(x0),Z(y0),X(x1),Z(y1)]); fixed.push([X(x0),Z(y0),0,X(x1),Z(y1),Math.max(.05,Y(zt))]); };
   sol(A.x0-T,A.y1-T,door.a0,A.y1+T,AH); sol(door.a1,A.y1-T,A.x1+T,A.y1+T,AH); sol(A.x0-T,A.y0-T,A.x1+T,A.y0+T,AH); sol(A.x0-T,A.y0,A.x0+T,A.y1,AH); sol(A.x1-T,A.y0,A.x1+T,A.y1,AH);
   // the rooms' walls as solids on their floor (their doors left open)
-  for(let lv=0;lv<ST;lv++){ const R=rooms(lv), yl=R.liv.y0, seg=(ax,at,a0,a1,holes)=>{ let a=a0; for(const h of [...holes].sort((p,q)=>p.a0-q.a0)){ if(h.a0>a)SOLS[lv].push(ax==='x'?[X(a),Z(at-T),X(h.a0),Z(at+T)]:[X(at-T),Z(a),X(at+T),Z(h.a0)]); a=h.a1; } if(a1>a)SOLS[lv].push(ax==='x'?[X(a),Z(at-T),X(a1),Z(at+T)]:[X(at-T),Z(a),X(at+T),Z(a1)]); };
+  for(let lv=0;lv<ST;lv++){ if(HOLLOW)continue; const R=rooms(lv), yl=R.liv.y0, seg=(ax,at,a0,a1,holes)=>{ let a=a0; for(const h of [...holes].sort((p,q)=>p.a0-q.a0)){ if(h.a0>a)SOLS[lv].push(ax==='x'?[X(a),Z(at-T),X(h.a0),Z(at+T)]:[X(at-T),Z(a),X(at+T),Z(h.a0)]); a=h.a1; } if(a1>a)SOLS[lv].push(ax==='x'?[X(a),Z(at-T),X(a1),Z(at+T)]:[X(at-T),Z(a),X(at+T),Z(a1)]); };
     const dr=a=>({a0:a-DW,a1:a+DW}); seg('x',H.y1,A.x0,A.x1,[dr(A.x0+1.5),...(R.pass?[dr(A.x1-.75)]:[])]); seg('x',H.y0,A.x0,A.x1,[dr(A.x1-1.5)]);
     for(const f of [1,-1]){ const Yf=y=>f>0?y:2*hm-y, yL=Yf(yl), ya=Math.min(yL,Yf(H.y1)), yb=Math.max(yL,Yf(H.y1)); seg('x',yL,A.x0,R.bed.x1,[dr(A.x0+1.6),dr(A.x0+3.9),dr(A.x0+5.4)]); seg('y',R.kit.x1,ya,yb,[]); seg('y',R.bath.x1,ya,yb,[]); if(R.pass&&f>0)seg('y',R.pass.x0,H.y1,A.y1,[]); } }
   for(const L of LIGHTS){ const P=new THREE.PointLight(L.c,0,6.5*TILE,1.6); P.position.set(L.x,L.y,L.z); P.userData.i0=L.i; P.userData.in=cur=>!!cur&&APTS.in&&P.position.y>cur.y0-.3&&P.position.y<cur.y1-.5; scene.add(P); L.light=P; }   // (in: the whole floor's lamps light your room, not just the one in it: the rooms were dark; map-post.js's LITE)
   // where you stand in it: the floor under you (the flight carries you between floors), which rooms' solids count, the clip above your ceiling
   const SY=Y(S), x0s=X(A.x0), x1s=X(A.x1), z0s=Z(A.y0), z1s=Z(A.y1), sx0=X(STX[0]), sx1=X(STX[1]), sz0=Z(STY[0]), sz1=Z(STY[1]);
   APTS.inside=(x,z)=>x>x0s&&x<x1s&&z>z0s&&z<z1s;
-  APTS.floor=()=>Math.max(0,Math.min(ST-1,Math.floor(py/SY+.08)));
+  APTS.floor=()=>HOLLOW?0:Math.max(0,Math.min(ST-1,Math.floor(py/SY+.08)));
   APTS.ground=()=>SY*APTS.floor();   // (no flight now: the floor you're on)
   APTS.SY=SY; APTS.in=false; let was=false, lvWas=-1;   // (SY: a floor's height, for the hitboxes' pass: clip.js)
   APTS.tick=()=>{ const inside=APTS.inside(pos.x,pos.z), lv=APTS.floor(); APTS.in=inside;
     if(inside!==was||lv!==lvWas){ was=inside; lvWas=lv; HP.constant=inside?SY*lv+SY*.93:1e6; for(const L of LIGHTS)L.light.intensity=inside?L.i:0; return inside?SOL.up.concat(SOLS[lv]):SOL.up; } return null; };   // (what blocks you: this floor's walls and things, or the street's; the loop sets it)
   window.APTSDBG=()=>({in:APTS.in,floor:APTS.floor(),py,pos:[+pos.x.toFixed(2),+pos.z.toFixed(2)],box:[+x0s.toFixed(1),+z0s.toFixed(1),+x1s.toFixed(1),+z1s.toFixed(1)],hall:[+Z(H.y0).toFixed(1),+Z(H.y1).toFixed(1)],door:+X((door.a0+door.a1)/2).toFixed(1)});   // (a test's look)
-  APTS.rects=lv=>{ const R=rooms(lv), Ym=y=>2*hm-y, out=[[A.x0,H.y0,A.x1,H.y1]]; for(const k of ['liv','kit','bath','bed','pass']){ const r=R[k]; if(!r)continue; out.push([r.x0,r.y0,r.x1,r.y1]); if(k!=='pass')out.push([r.x0,Ym(r.y1),r.x1,Ym(r.y0)]); } return out; };   // (its rooms on a floor, for ROOMS)
+  APTS.rects=lv=>{ if(HOLLOW)return lv?[]:[[A.x0,A.y0,A.x1,A.y1]]; const R=rooms(lv), Ym=y=>2*hm-y, out=[[A.x0,H.y0,A.x1,H.y1]]; for(const k of ['liv','kit','bath','bed','pass']){ const r=R[k]; if(!r)continue; out.push([r.x0,r.y0,r.x1,r.y1]); if(k!=='pass')out.push([r.x0,Ym(r.y1),r.x1,Ym(r.y0)]); } return out; };   // (its rooms on a floor, for ROOMS)
   MODS.apts=APTS; }

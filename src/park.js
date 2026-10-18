@@ -66,7 +66,13 @@ grab('park',()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.ox=PO.x; PARK.o
       return; }
     if(x1-x0>40){ const n=Math.ceil((x1-x0)/40), d=(x1-x0)/n; for(let i=0;i<n;i++)block(x0+i*d,y0,x0+(i+1)*d,y1,z0,z1,k,top); return; }   /* (a long wall in lengths of 40 tiles at most: the atlas's width, 18 Oct 2026, the park twice as wide) */ const [a,b,c,d]=[X(x0),X(x1),Z(y0),Z(y1)], [e,f]=[Y(z0),Y(z1)], w=x1-x0, dp=y1-y0;
     const W=w*24, D=dp*24, H=z1-z0, sideF=SF?SF:top==='cap'?(i,j)=>capSide(i,j,H):(i,j,kk)=>stone(i,j+jo,kk,HT||H,top==='post'||HT!==undefined);
-    face([a,f,d],[b,f,d],[b,f,c],[a,f,c],W,D,typeof top==='function'?top:((i,j)=>{ const n=grain(i/24,j/24,k+5,1.2), ed=Math.min(i,j,W-1-i,D-1-j); let c=118+22*n; if(ed<1)c*=(i<1||j<1)?1.18:.8; else if(ed<2)c*=1.06; return speck([c,c,c*.96],i/24,j/24,k+7); }));
+    face([a,f,d],[b,f,d],[b,f,c],[a,f,c],W,D,typeof top==='function'?top:((i,j)=>{ const n=grain(i/24,j/24,k+5,1.2), ed=Math.min(i,j,W-1-i,D-1-j); let c=118+22*n; if(ed<1)c*=(i<1||j<1)?1.18:.8; else if(ed<2)c*=1.06;
+      // (the cope in stones, owner 18 Oct 2026: "need more lines on top of the brick walls too, doesnt look natural": along the wall's length a
+      // joint every 14-22 texels, each stone's own length; the joint a dark recess, the stone's near rim after it lit, its far rim before it shaded;
+      // each stone its own tone; a hairline crack across one now and then)
+      else if(top===undefined){ const L=W>=D?W:D, u=W>=D?i:j, v=W>=D?j:i, DV=W>=D?D:W; let s0=0, n0=0, len=0; for(;;){ len=14+Math.floor(9*hash(n0,k,131)); if(s0+len>u)break; s0+=len; n0++; } const p=u-s0;
+        if(p===0)c*=.55; else if(p===1)c*=1.1; else if(p===len-1)c*=.86; c*=.93+.14*hash(n0,k,133); if(hash(n0,k,135)<.18&&Math.abs(p-len*.5+(v-DV/2)*.6)<.6)c*=.72; }
+      return speck([c,c,c*.96],i/24,j/24,k+7); }));
     face([a,e,c],[b,e,c],[b,f,c],[a,f,c],W,H,(i,j)=>sideF(i,j,k,W,H)); face([b,e,d],[a,e,d],[a,f,d],[b,f,d],W,H,(i,j)=>sideF(i,j,k+1,W,H));
     face([a,e,d],[a,e,c],[a,f,c],[a,f,d],D,H,(i,j)=>sideF(i,j,k+2,D,H)); face([b,e,c],[b,e,d],[b,f,d],[b,f,c],D,H,(i,j)=>sideF(i,j,k+3,D,H)); };
   const WH=32, PH=54, PG=.22, [g0,g1]=P.gate;

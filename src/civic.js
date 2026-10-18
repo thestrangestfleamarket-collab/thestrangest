@@ -80,11 +80,14 @@ const CIVIC={row:[],staff:{},log:[],ledger:{treasury:500,day:0,rent:30,tax:10,wa
       anim:(dt,moving,st,sc)=>{ const S=N.staff, run=moving&&st.v>1.2*T, w=!moving&&S&&S.pose; if(N.sheet){ an.base='A_TPose'; an.ts=0; an.update(dt); return; }
         an.base=w?WORKP[w]:moving?(run?'Sprint_Loop':'Walk_Formal_Loop'):'Idle_Loop'; an.ts=moving?st.v/((run?5:1.35)*sc):1; an.update(dt); }});
     N.mixer=mixer; N.an=an; N.glow=glow; const S={id,name,key:N.key,N,house,state:'free',job:null,busy:0,pose:null}; N.staff=S; CIVIC.staff[id]=S;
-    N.st.h=Math.PI; N.st.hold=true; N.st.to=null; N.home={x:h.door.x,z:h.door.z}; }
+    N.st.h=Math.PI; N.st.hold=true; N.st.to=null; N.home={x:h.door.x,z:h.door.z}; CIVIC.park(S); }
+  // (NOT STANDING IN A ROW, owner 18 Oct 2026, of the six in a row east of the bodega: "why are these guys still in game?": while the tower is off
+  // the map a droid at his post is out of the game, hidden and still, and seen only while he's out on a call)
+  CIVIC.park=S=>{ if(!AWAY.has('civic'))return; S.N.mode='hidden'; S.N.g.visible=false; };
   CIVIC.free=id=>{ const S=CIVIC.staff[id]; return S&&S.state==='free'; };
   // a staff member sent somewhere, hurrying; home again after (then: when he's there, or false)
-  CIVIC.go=(S,to,then,v=2)=>{ S.N.st.hold=false; CITY.send(S.N,to,{v,then}); };
-  CIVIC.home=S=>{ S.state='returning'; S.job=null; CIVIC.go(S,S.N.home,()=>{ S.state='free'; S.N.st.hold=true; S.N.st.h=Math.PI; S.N.st.to=null; S.N.st.face=null; },1.4); };
+  CIVIC.go=(S,to,then,v=2)=>{ if(S.N.mode==='hidden'){ delete S.N.mode; S.N.g.visible=true; } S.N.st.hold=false; CITY.send(S.N,to,{v,then}); };
+  CIVIC.home=S=>{ S.state='returning'; S.job=null; CIVIC.go(S,S.N.home,()=>{ S.state='free'; S.N.st.hold=true; S.N.st.h=Math.PI; S.N.st.to=null; S.N.st.face=null; CIVIC.park(S); },1.4); };
   // a thing in his hands while he carries it (a crate, a bag, a tool box): a small box over his shoulder
   CIVIC.carry=(S,col)=>{ if(S.item){ S.N.g.remove(S.item); S.item=null; } if(col==null)return; const m=new THREE.Mesh(new THREE.BoxGeometry(.28*T,.22*T,.28*T),new THREE.MeshLambertMaterial({color:col})); m.position.set(.18*T,S.N.H*.75,.1*T); m.castShadow=true; S.N.g.add(m); S.item=m; };
   // ---- THE MENU'S CITY TAB

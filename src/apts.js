@@ -238,6 +238,10 @@ const APTS={};
     if(LOBBY){ for(const [u,v] of [[2,4],[5.5,4],[3.75,7.5]])LIGHTS.push({x:X(A.x0+u),y:Y(S+S-14),z:Z(CY0+v),c:0xffd2a0,i:6}); } else for(const L of LIGHTS){ L.c=0xffd2a0; L.i=6; }
     K.LAMPS.slice(n0).filter(l=>!l.off&&l.r>0&&Math.max(...l.c)>0).sort((a,b)=>b.r-a.r).slice(0,6).forEach(l=>{ const cm=Math.max(...l.c); LIGHTS.push({x:X(l.x),y:Y(l.z+CL*S),z:Z(l.y),c:new THREE.Color(l.c[0]/cm,l.c[1]/cm,l.c[2]/cm).getHex(),i:5*cm*Math.min(1.2,l.r/5),flame:1}); });
     K.LAMPS.length=n0; APTS.made=MADE;
+    // (its own batch, clipped above the ceiling you're under as the house's is, owner 18 Oct 2026, from the lobby: "shouldnt see things on other
+    // floors": its pieces had gone into the street's batch, so the cottage's rugs, table and plants hung over the lobby)
+    BATCH.build((k,map,emap)=>k==='B'?new THREE.MeshBasicMaterial({map,side:THREE.DoubleSide,alphaTest:.5,clippingPlanes:[HP]}):new THREE.MeshLambertMaterial({map,alphaTest:.5,side:THREE.DoubleSide,clippingPlanes:[HP],...(emap?{emissiveMap:emap,emissive:0xffffff,emissiveIntensity:1.3}:{})}));
+    { const CM=Object.values(BATCH.meshes); BATCH.meshes={}; for(const me of CM){ me.castShadow=true; me.receiveShadow=true; } APTS.meshes=APTS.meshes.concat(CM); }
     // where a new player first stands: in the middle of the cottage, facing the front windows
     APTS.home={x:X(A.x0+WX*.42),z:Z(CY0+WY*.55),y:Y(CL*S)-Y(0),hd:0}; }
   for(const L of LIGHTS){ const P=new THREE.PointLight(L.c,0,(L.flame?4:6.5)*TILE,1.6); P.position.set(L.x,L.y,L.z); P.userData.i0=L.i; P.userData.in=cur=>!!cur&&APTS.in&&P.position.y>cur.y0-.3&&P.position.y<cur.y1-.5; scene.add(P); L.light=P; }   // (in: the whole floor's lamps light your room, not just the one in it: the rooms were dark; map-post.js's LITE)

@@ -10,4 +10,12 @@
   const go=async()=>{ const c=window.claude; if(!c||!c.use)return; const db=await c.use('db').catch(()=>null); if(!db)return; const ref=db.doc('meta/build');
     try{ const s=await ref.get(); const v=s.exists?+(s.data().v||0):0; if(BUILDV>v)await ref.set({v:BUILDV}); }catch(e){}   // (this one newer than any opened: it's the newest now)
     ref.onSnapshot(s=>{ const v=s.exists?+(s.data().v||0):0; if(v>BUILDV)show(); },()=>{}); };
-  setTimeout(()=>{ go().catch(()=>{}); },3000); window.NEWVER=show; }   /* (a test's look) */
+  // WITHOUT THE STORE (owner, 18 Oct 2026: "it DOESNT GIVE THAT DAMN MESSAGE EVER AND HASNT IN DAYS"): opened in a tab of its own the page gets
+  // no store (claude.use resolves null there), so it heard of nothing. Now it also reads the published page itself, only its first few KB (the
+  // build's moment is in a meta near the top: build.py), every 90 s and whenever its tab comes back into view; a newer one, the note
+  const peek=async()=>{ if(document.getElementById('newver'))return; try{ const r=await fetch(location.href.split('#')[0],{cache:'no-store'}); if(!r.ok||!r.body)return;
+      const rd=r.body.getReader(), dec=new TextDecoder(); let s='';
+      while(s.length<65536){ const {value,done}=await rd.read(); if(done)break; s+=dec.decode(value,{stream:true}); const m=/name="market-build" content="(\d+)"/.exec(s); if(m){ rd.cancel().catch(()=>{}); NEWVER.seen=+m[1]; if(+m[1]>BUILDV)show(); return; } }
+      rd.cancel().catch(()=>{}); }catch(e){} };
+  setTimeout(()=>{ go().catch(()=>{}); peek(); },3000); setInterval(peek,90000); document.addEventListener('visibilitychange',()=>{ if(!document.hidden)peek(); });
+  window.NEWVER=show; NEWVER.peek=peek; }   /* (a test's look) */   /* (a test's look) */

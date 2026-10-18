@@ -1175,6 +1175,13 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   the camera than you cut above your knee so you see yourself. Cost (underground only): the rock some 450 boxes and the floors some 490 (one
   draw each), the lit seams one draw, 26 lamp records, no new light or shadow; built a few seconds after the game runs (nothing at the loading
   line) and again when the day turns while you're up top. `MINEDBG()`. Not yet: creatures down there, a map of the mine, the golems mining.
+- **The swimming pool removed, the whole room** (owner, 18 Oct 2026: "when i jump into the hudson it puts me in the swimming pool? lets remoev the
+  swimming pool from the game for now entire room"): while `apartments` is in `AWAY0` the apartment building is no longer built at all (not
+  even at the far lot): no room, no pool, no pool water, no floats, no outside (`build.py`'s `wrap('pool')` sets only `POOLR`'s measures,
+  empty `ROOMS`, `inBasin` null; `poolout` in `map-post.js`, `floats.js`, `WATER.feed`, the roof and the interiors all skip it). **The cause**:
+  swimming, the page held you inside the pool's box whenever the river didn't claim you that frame (the moment a jump lands, before
+  `RIVER.swim` turns on), and the pool stood 1000 tiles east; that clamp now needs you over the pool's basin. To bring the pool back: take
+  `apartments` out of `AWAY0`.
 - **The mist, the whole game's look** (owner, 18 Oct 2026, his picture of a misty autumn forest: "show me screenshots of how my game could look
   like this"; of the shots (`tests/moodshot.cjs`), the park by the cave at 5:24 pm, low: "i like the exact look entier game (no fireflies) just the
   foggyh misty haze ... in distance, perfect"; `FAR3.mist` in `src/skyline.js`): out of doors a teal mist, starting 3 tiles before him (toward the
@@ -1182,6 +1189,12 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   (the skyline gone in it). The shot's teal at dusk (0x3a6e68), a little paler at high noon, dark at night. GRAPHICS' DISTANCE HAZE: MIST, FAR (the
   old far haze and the sky), OFF; `?mist=0` the far haze, `?mist=near,far` in tiles. The weather's FOG takes over when it comes; nothing indoors or
   underground. Cost: none (the same fog). Not taken: the shots' autumn treetops and the embers / fireflies. `tests/mistshot.cjs`.
+- **The newsstand smaller, newspapers only** (owner, 18 Oct 2026: "smaller newspaper booth, only real newspaper items inside, nothing else. show me
+  mockups"; of `mockups/newsstand-small.html` (https://claude.ai/artifact/Dat98V8RVP9Ddx7xXkKSzh), "1": THE GREEN BOX; `src/newsstand.js`): the kiosk
+  cut to 2.8 x 1.5 tiles and 2.3 m (was 4.8 x 2, 2.6 m), the same green steel, NEWS header, counter and shutter; the papers on three stepped tiers
+  before the counter (the four titles, each tier's stacks its share of the stock), five front pages pegged on a line across the window's top (above
+  the cat's head), three spare bundles in twine at his feet. No magazines, candy, gum, snacks, drinks cooler, change tray or LOTTO; the stand sells
+  the four papers only. Cost: some 1,500 triangles (was 2,100). `tests/newsshot.cjs <out>`.
   2.5 s to 0.34 s (software rendering). Looked at and **not** taken: recast-navigation for `CITY.route` (the A* there judges each walker's way by
   his own test of a spot, which a navmesh can't; routes are 2-20 ms already); BatchedMesh's per-object culling (needs three past r160, and
   map-pre.js patches r160's shader chunks by their text).

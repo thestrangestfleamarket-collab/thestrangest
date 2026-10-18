@@ -3,8 +3,8 @@
 // it pushes aside (Archimedes: 1000 kg a cubic metre), so it sits as deep as it weighs, rights itself, tilts with the swell and slides down the
 // waves' slopes; slowed by the water's drag; pushing the water back where it moves in it, and throwing spray where it falls in hard; you push
 // it swimming, or kick it from the deck ----
-const FLOATS={bodies:[], D:6, acc:0};
-{ const P=POOLR, D=FLOATS.D, gx=x=>x/TL, gy=z=>-z/TL, toZ=y=>y/TL+D, RHO=1000*0.84**3;   // (water a tile cubed: 593 kg)
+const FLOATS={bodies:[], D:6, acc:0, step:()=>{}};   // (step: nothing while no pool is built)
+if(!AWAY.has('apartments')){ const P=POOLR, D=FLOATS.D, gx=x=>x/TL, gy=z=>-z/TL, toZ=y=>y/TL+D, RHO=1000*0.84**3;   // (water a tile cubed: 593 kg)
   const st=[], X0=P.X(P.bx0), X1=P.X(P.bx1), Z0=P.Z(P.by0), Z1=P.Z(P.by1);
   // the deck round the basin (its walls are the deck's edges), and the bed under the water in quarter-tile strips
   const box=(xa,za,xb,zb,top)=>st.push([gx(Math.min(xa,xb)),gy(Math.max(za,zb)),0,gx(Math.max(xa,xb)),gy(Math.min(za,zb)),top]);

@@ -33,7 +33,39 @@ const BODB={};
   flat(B0.x0,B0.y0,B0.x1,B0.y1,H,roofCol,'R');
   // THE GROUND, and the kerbs' faces down to the street
   for(const g of BOD.grounds)flat(g.x0,g.y0,g.x1,g.y1,g.z,g.col,'G',!g.bld);
-  { const X=BOD.XS, Y=BOD.YS, Z=BOD.ZS; for(const k of BOD.kerbs){ const P=(a,z)=>k.ax==='y'?[X(k.at),Y(z),Z(a)]:[X(a),Y(z),Z(k.at)]; for(let a0=k.a0;a0<k.a1;a0+=80){ const a1=Math.min(k.a1,a0+80), H=k.z1-k.z0; BOD.bq(P(a0,k.z0),P(a1,k.z0),P(a1,k.z1),P(a0,k.z1),BOD.faceTex((a1-a0)*24,H,(i,j)=>BOD.g.kerbFace(a0+(i+.5)/24,H-1-j,H)),'G'); } } }   // (in lengths of 80 tiles at most: the atlas's width; its granite lengths, lit top, grimy foot: gamekit.js)   // (a kerb along x, or along y: the Avenue's)
+  { const X=BOD.XS, Y=BOD.YS, Z=BOD.ZS; for(const k of BOD.kerbs){ const P=(a,z)=>k.ax==='y'?[X(k.at),Y(z),Z(a)]:[X(a),Y(z),Z(k.at)]; for(let a0=k.a0;a0<k.a1;a0+=80){ const a1=Math.min(k.a1,a0+80), H=k.z1-k.z0; BOD.bq(P(a0,k.z0),P(a1,k.z0),P(a1,k.z1),P(a0,k.z1),BOD.faceTex((a1-a0)*24,H,(i,j)=>BOD.kerbFaceAt(k,a0+(i+.5)/24,H-1-j,H)),'G'); } }   // (a drain's inlet where it has one: bodega.js)
+    // (the rounded corners' curves, owner 18 Oct 2026, "rounded": each a few straight pieces along its arc, the granite's joints carried round it)
+    for(const k of BOD.kerbArcs){ const H=k.z1-k.z0; let s=0; for(let i=0;i+1<k.P.length;i++){ const [x0,y0]=k.P[i], [x1,y1]=k.P[i+1], L=Math.hypot(x1-x0,y1-y0), s0=s; s+=L;
+      BOD.bq([X(x0),Y(k.z0),Z(y0)],[X(x1),Y(k.z0),Z(y1)],[X(x1),Y(k.z1),Z(y1)],[X(x0),Y(k.z1),Z(y0)],BOD.faceTex(L*24,H,(ii,j)=>BOD.g.kerbFace(k.P[0][0]*7+s0+(ii+.5)/24,H-1-j,H)),'G'); } } }   // (in lengths of 80 tiles at most: the atlas's width; its granite lengths, lit top, grimy foot: gamekit.js)   // (a kerb along x, or along y: the Avenue's)
+  // THE STREET'S SIGNS (bodega.js's BOD.signs; owner, 18 Oct 2026, "NYC markings and street signs"): thin boxes in the street's tiles (z art
+  // px), every face painted: a blade's or a plate's words in a 3x5 pixel letter, read left to right from either side (the way along a face, r, is
+  // its normal turned a quarter: (ny, -nx), as the game's boxes read); a texel left empty is cut out (the batch's alpha test: the STOP octagon)
+  { const X=BOD.XS, Y=BOD.YS, Z=BOD.ZS, G3={A:'010101111101101',B:'110101110101110',C:'011100100100011',D:'110101101101110',E:'111100110100111',F:'111100110100100',
+      G:'011100101101011',H:'101101111101101',I:'111010010010111',K:'101101110101101',L:'100100100100111',M:'101111111101101',N:'110101101101101',O:'010101101101010',
+      P:'110101110100100',R:'110101110101101',S:'011100010001110',T:'111010010010010',U:'101101101101111',V:'101101101101010',W:'101101111111101',Y:'101101010010010',
+      2:'110001010100111',5:'111100110001110'};
+    const txt=(s,i,j,sc=1)=>{ i=Math.floor(i/sc); j=Math.floor(j/sc); const c=Math.floor(i/4), g=G3[s[c]]; return !!g&&i%4<3&&j>=0&&j<5&&g[j*3+i%4]==='1'; }, tw=(s,sc=1)=>(s.length*4-1)*sc;
+    const sbox=(x0,y0,x1,y1,z0,z1,face,c)=>{ const H=Math.max(1,Math.round(z1-z0)), F=(nx,ny,w)=>(i,j)=>face?face(nx,ny,i,j,Math.max(1,Math.round(w*24)),H):c;
+      for(const nx of [-1,1]){ const x=nx<0?x0:x1; BOD.bq([X(x),Y(z0),Z(nx<0?y1:y0)],[X(x),Y(z0),Z(nx<0?y0:y1)],[X(x),Y(z1),Z(nx<0?y0:y1)],[X(x),Y(z1),Z(nx<0?y1:y0)],BOD.faceTex((y1-y0)*24,H,F(nx,0,y1-y0)),'L'); }
+      for(const ny of [-1,1]){ const y=ny<0?y0:y1; BOD.bq([X(ny<0?x0:x1),Y(z0),Z(y)],[X(ny<0?x1:x0),Y(z0),Z(y)],[X(ny<0?x1:x0),Y(z1),Z(y)],[X(ny<0?x0:x1),Y(z1),Z(y)],BOD.faceTex((x1-x0)*24,H,F(0,ny,x1-x0)),'L'); }
+      BOD.bq([X(x0),Y(z1),Z(y1)],[X(x1),Y(z1),Z(y1)],[X(x1),Y(z1),Z(y0)],[X(x0),Y(z1),Z(y0)],BOD.faceTex((x1-x0)*24,(y1-y0)*24,()=>c),'L'); };
+    // the column from the reader's left on a face (gbox lays column 0 at the far end of r): i counts from that end, so turn it round
+    const GALV=[150,154,158], pole=(x,y,h)=>sbox(x-.04,y-.04,x+.04,y+.04,0,h,(nx,ny,i,j,w,H)=>j<3?[120,124,128]:H-j<6?[110,112,114]:i===0?[172,176,180]:GALV,GALV);
+    // a plate along the axis whose normal is n ([1,0]: the plate across x, its faces to +x and -x), w tiles wide, z0..z1; paint(u, row, W, H) both faces
+    const plate=(x,y,n,w,z0,z1,paint)=>{ const t=.02, edge=[96,100,104], P=(nx,ny,i,j,W,H)=>(n[0]&&nx||n[1]&&ny)?paint(W-1-i,j,W,H):edge;
+      n[0]?sbox(x-t,y-w/2,x+t,y+w/2,z0,z1,P,edge):sbox(x-w/2,y-t,x+w/2,y+t,z0,z1,P,edge); };
+    const GRN=[22,104,62], WH=[236,238,232], RED=[196,36,40], BLK=[24,24,26];
+    const blade=s=>(u,j,W,H)=>{ if(j===0||j===H-1||u===0||u===W-1)return WH; const o=Math.floor((W-tw(s))/2); return txt(s,u-o,j-1-Math.floor((H-7)/2))&&u>=o?WH:GRN; };
+    BATCH.tag=OBJ('street','street signs');
+    for(const g of BOD.signs){ const {x,y}=g;
+      if(g.kind==='name'){ pole(x,y,124); plate(x,y,[0,1],1.75,104,113,blade(g.ax)); plate(x,y,[1,0],1.75,114,123,blade(g.ay)); sbox(x-.05,y-.05,x+.05,y+.05,124,127,null,GALV); }
+      else if(g.kind==='stop'){ pole(x,y,82); plate(x,y,g.n,.8,82,103,(u,j,W,H)=>{ const cx=(W-1)/2, cy=(H-1)/2, dx=Math.abs(u-cx)/cx, dy=Math.abs(j-cy)/cy; if(dx+dy>1.45)return null; if(dx>.9||dy>.9||dx+dy>1.3)return WH;
+          const o=Math.floor((W-tw('STOP'))/2); return txt('STOP',u-o,j-Math.floor((H-5)/2))&&u>=o?WH:RED; }); }
+      else if(g.kind==='nopark'){ pole(x,y,88); plate(x,y,g.n,.55,70,88,(u,j,W,H)=>{ if(u===0||j===0||u===W-1||j===H-1)return RED; const cx=(W-1)/2, cy=(H-1)/2, r=Math.hypot((u-cx)*1.2,j-cy);
+          if(r>4.6&&r<6.2||r<6.2&&Math.abs((u-cx)*1.2+(j-cy))<1.1)return RED; return txt('P',u-Math.floor(cx-1),j-Math.floor(cy-2))&&u>=Math.floor(cx-1)?BLK:WH; }); }
+      else if(g.kind==='speed'){ pole(x,y,92); plate(x,y,g.n,1,62,92,(u,j,W,H)=>{ if(u===0||j===0||u===W-1||j===H-1)return BLK; if(u===1||j===1||u===W-2||j===H-2)return WH;
+          for(const [s,r,sc] of [['SPEED',3,1],['LIMIT',9,1],['25',16,2]]){ const o=Math.floor((W-tw(s,sc))/2); if(u>=o&&txt(s,u-o,j-r,sc))return BLK; } return WH; }); } }
+    BATCH.tag=null; }
   // THE OBJECTS: every box of every one, painted by the game's own painters, into the atlas
   BOD.paintProps();
   BATCH.cast=true;

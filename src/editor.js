@@ -173,6 +173,32 @@ const ED={on:false};
         else if(k==='square'){ const a=Math.abs(x-xm); x=xm+Math.sign(x-xm)*Math.min(hw*.92,a+(hw*.92-a)*e*.8); z=Math.min(z,z1-.9)+(z>z1-.9?(z-(z1-.9))*.25:0); }
         PA.array[i*3]=x; PA.array[i*3+1]=y; PA.array[i*3+2]=z; } }
     sculpted=true; normals(); save(); draw(); try{ localStorage.setItem('market-toe',k); }catch(e){} };
+  // HIS FACE (owner, 18 Oct 2026: "allow to edit all the face and body properties in editor"; the avatar editor's FACE): his head and eyes made
+  // again from their first shape, in the head's own frame (x across, y up, z forward, from its middle): the nose's size and how far it stands
+  // out, the jaw's width (5.6 as made) and how square, the chin down and forward, the ears' and eyes' sizes; in his shape as a sculpt is (kept,
+  // undone, a file); the head's size is HEAD's SIZE (its pieces' sizes). F: ED.FACE, kept in the save ('face')
+  // HIS HEAD'S SHAPE (owner, 18 Oct 2026: "need diff head shapes"): w, h, d its width, height and depth; tp wider at the top (a heart) or the jaw
+  // (a pear); sq its corners squared; the head, its hair and eyes all together (and the bearded walker's: src/npc-walker2.js)
+  ED.HEADS={round:{w:1,h:1,d:1,sq:0,tp:0},oval:{w:.94,h:1.08,d:.98,sq:0,tp:0},square:{w:1.03,h:.98,d:1,sq:.85,tp:0},long:{w:.92,h:1.13,d:.96,sq:.2,tp:0},
+    wide:{w:1.12,h:.93,d:1.02,sq:.2,tp:0},heart:{w:1.02,h:1.02,d:1,sq:0,tp:.2},pear:{w:1,h:1,d:1,sq:.25,tp:-.18}};
+  ED.FACE0={shape:'round',nose:1,noseL:0,jaw:5.6,square:0,chin:0,ears:1,eyes:1}; ED.FACE=Object.assign({},ED.FACE0); try{ Object.assign(ED.FACE,JSON.parse(SAVE.get('face')||'{}')); }catch(e){}
+  window.EDDBG=()=>({ED,W3});   // (a test's reach)
+  ED.face=(F,keep)=>{ if(!keep)snap(); Object.assign(ED.FACE,F||{}); F=ED.FACE; try{ SAVE.set('face',JSON.stringify(F)); }catch(e){}
+    const ss=(a,b,x)=>{ const t=Math.max(0,Math.min(1,(x-a)/(b-a))); return t*t*(3-2*t); }, kx=F.jaw/5.6;
+    const HS=ED.HEADS[F.shape]||ED.HEADS.round;
+    for(const [pi,n] of NAMES.entries()){ const hd=n==='head', ey=/^eyes\d$/.test(n), hr=/^hair(Pony|Long|Bun)?$/.test(n); if(!hd&&!ey&&!hr)continue;
+      for(let i=0;i<NV;i++){ if((PI.array[i]|0)!==pi)continue; let x=BASE[i*3],y=BASE[i*3+1],z=BASE[i*3+2];
+        if(ey){ const cx=Math.sign(x)*2.35; x=cx+(x-cx)*F.eyes; y=.7+(y-.7)*F.eyes; }
+        else{ const t=ss(-2,-6,y);   // (the lower face)
+          { const w=1-ss(1.3,2.6,Math.hypot(x,y+2.6,z-6.5)); if(w>0&&z>5){ const c=[0,-2.6,6.0], k=1+(F.nose-1)*w; x=c[0]+(x-c[0])*k; y=c[1]+(y-c[1])*k; z=c[2]+(z-c[2])*k+F.noseL*w*1.2; } }   // (the nose)
+          { const ex=Math.sign(x)*6.8, w=1-ss(1.5,2.8,Math.hypot(x-ex,y+1.8,z+1)); if(w>0&&Math.abs(x)>5.4){ const k=1+(F.ears-1)*w; x=ex+(x-ex)*k; y=-1.8+(y+1.8)*k; z=-1+(z+1)*k; } }   // (the ears)
+          x*=1+(kx-1)*t;   // (the jaw's width)
+          if(F.square>0&&t>0){ const cz=.8, dz=z-cz, r=Math.hypot(x,dz), a=Math.atan2(dz,x), f=Math.min(1.3,1/Math.max(Math.abs(Math.cos(a)),Math.abs(Math.sin(a)))), k=1+(f-1)*F.square*t*.55; x*=k; z=cz+dz*k; }   // (round to square)
+          if(F.chin){ const w=ss(-5,-9,y)*ss(1,4,z); z+=F.chin*1.2*w; y-=F.chin*.7*w; } }   // (the chin)
+        { y*=HS.h; x*=HS.w*(1+HS.tp*y/8); z*=HS.d;   // (the head's shape: its sizes, then its corners)
+          if(HS.sq){ const t=ss(-5,-2,y), cz=-.2, dz=z-cz, a=Math.atan2(dz,x), f=Math.min(1.25,1/Math.max(Math.abs(Math.cos(a)),Math.abs(Math.sin(a)))), k=1+(f-1)*HS.sq*t*.5; x*=k; z=cz+dz*k; } }
+        PA.array[i*3]=x; PA.array[i*3+1]=y; PA.array[i*3+2]=z; } }
+    sculpted=true; normals(); save(); draw(); };
   ED.exit=()=>{ if(ED.onExit)ED.onExit(); ED.on=false; P.hidden=true; sel.visible=false; ring.hidden=true; drag=null; if(V0){ yawTo=V0.yaw; pitchTo=V0.pitch; ppuTo=V0.ppu; UI.off.copy(V0.off); } save(); };
   // each frame while open: the selected piece's picture where he is, his light as a lamp's, his new normals once a frame while brushing
   ED.tick=()=>{ W3.group.updateMatrixWorld(); sel.matrix.copy(W3.group.matrixWorld); sel.matrixWorldNeedsUpdate=true; if(dirty){ dirty=false; normals(); } };

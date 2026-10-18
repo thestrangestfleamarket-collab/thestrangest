@@ -458,7 +458,7 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
   warm-and-cool grade riding the clock, most at 3°, gone by night and high day; outdoors only). **The street lights on one by one** (`dress.js`):
   each street light and lamp post comes on at its own moment between the sun at 1.5° and 2.5° under (its lamp lit, its light and its pool with
   it), off again at dawn; by day they're dark and light nothing. The guards keep their beats day and night as before (nothing changed there).
-- **Smooth light, the default now** (owner, 17 Oct 2026, of the grainy cloud and tree mockups: "i dont like any of those mockups, they all look like dots everywhere, i want smooth realistic shadows and lighting like gradient radial etc"; it supersedes the grain and the 24 steps above): `SMOOTH` in `map-pre.js`: no grain, the light not cut into steps, soft shadow edges (PCFSoftShadowMap), the lamps' pools smooth radial gradients; GRAPHICS' LIGHTING switches back to PIXEL (`market-lighting`), `?look=pixel|smooth`.
+- **(SUPERSEDED 18 Oct 2026 by CEL, ALWAYS below: no smooth light ever)** **Smooth light, the default now** (owner, 17 Oct 2026, of the grainy cloud and tree mockups: "i dont like any of those mockups, they all look like dots everywhere, i want smooth realistic shadows and lighting like gradient radial etc"; it supersedes the grain and the 24 steps above): `SMOOTH` in `map-pre.js`: no grain, the light not cut into steps, soft shadow edges (PCFSoftShadowMap), the lamps' pools smooth radial gradients; GRAPHICS' LIGHTING switches back to PIXEL (`market-lighting`), `?look=pixel|smooth`.
 
 - **The far** (owner, 17 Oct 2026, his picture of a mountain fading blue into the sky: "how can i make things look realistically far away like
   this mountain? in my game? (it would be buildings)"; "go"; `src/skyline.js`): what makes the far look far is the air between. **A haze**, always on
@@ -866,3 +866,140 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   map-pre.js patches r160's shader chunks by their text).
 - **Lived in: weeds, bricks, the dark side, the toys alive** (owner, 18 Oct 2026): **weeds** at the foot of everything solid out of doors (`src/weeds.js`, after `clip.js`: every FIX box's edges sampled every 0.2 tile, thick where a broad noise says neglected, none where swept, now and then a dandelion; crossed cards swaying in the park's wind; chunks of 32 tiles; some 14,000 tufts, 4 triangles each, one program, no lights). **The bushes** sway as the oaks do and their leaves are mottled (`park.js`). **One brick pattern** ("just make a brick pattern that you can reuse": `BRICKS` in `gamekit.js`, global): `BRICKS.face` (courses of 6 texels, stones 8-12 long each its own length, a tone and a warm / cool / sandy tint each, top edge lit, foot shaded, worn corners, hairline cracks, moss low in the joints), `BRICKS.one` a single brick, `BRICKS.quoins` a post's corner bricks each its own box (long and short in turn, each out its own hair, a notch between: the corner's edge steps "up and down" brick by brick); the park's walls and posts use it, the posts a fifth of a tile larger each way. **Nothing black** ("nothing should be black like this even at darkest give it 5-20%"): every world face keeps at least a fifth of its own colour however unlit (`FLOOR` in `map-pre.js`, `?floor=N`). **The toys alive** ("all the toys should be sentient real characters, not objects. get rid of the table"; `src/npc-toys.js`): the stall's table gone; the six toys (bear, monkey, penguin, pig, sheep, bunny) each cut into head, body, arms, legs on bones (RIGNPC), walking the town with a toy's waddle, and standing, now and then a thing of their own (wave, hop, dance, sit, spin, sniff); some 6,700 triangles the six.
 - **The sun's shadows still as he walks** (owner, 18 Oct 2026: "the lighting still looks glitchy when i walk, its changing pixels to quick and too fast. needs smooth shadow movements not so jumpy"; `clock.js`): the sun's shadow camera followed him to the hair, so its texels slid over the world and every shadow's edge crawled as he walked; it now moves only by whole texels of its map along the sun's own axes (the standard texel snap), so the shadows lie still on the ground, and it's redrawn every frame (every other frame had left moving shadows a frame behind on alternate frames). Measured walking east at 3:30 pm, the picture's slide taken out: 7,080 pixels changed a frame to 5,745, the rest the walkers, their shadows and the weeds' sway; at 9 pm the world's light was already still (only the characters change). Cost: the sun's shadow pass every frame instead of every other.
+- **The bearded Walker** (owner, 18 Oct 2026, the old game's Walker sprite in six turns: "lets add this to the game as a new walker, 3d"; then "make
+  his feet flat, give him hands and fingers, normal size nose, smaller head, jawline, normal posture", "give me 6 mockups of possible", "allow to
+  edit all the face and body properties in editor" (his pick: both, with a switch), "need diff head shapes"; `src/npc-walker2.js`, `BWK`): a Walker
+  built as the guitarist is (the player's shapes, `figureMesh`), in the sprite's colours (materials of his own, `bw_*`, so YOUR LOOKS never change
+  him), short hair, a beard (the one Walker that wears one: the sprite has it), round eyes, the player's hands and fingers, flat soles, his head sat
+  back over his neck; he roams the whole map on the rig's walk (`ROAM.pick`, `stfree`). His face and body are `BWK.F` and `BWK.EB`, kept in the save
+  (`bwk`), his head made again from them (`BWK.remake`). **The avatar editor edits both** (`src/avatar.js`): BODY's WHO (YOU / THE BEARDED WALKER;
+  him held a step to your left, facing the view, while he's edited), HEAD SHAPE (ROUND, OVAL, SQUARE, LONG, WIDE, HEART, PEAR: `ED.HEADS` in
+  `editor.js`, the head, hair and eyes together), FACE (nose size and length, jaw width and square, chin, ears, eyes), BEARD and the six mockups' looks
+  (his only), HEIGHT and every region slider. Yours: `ED.face` reshapes your head and eyes from their first shape as a sculpt does (kept, undone;
+  the save's `face`). The mockups: `?bwk=1..6`. His sheet: `?sheet=walker2`. Cost: some 17,000 triangles, one draw a pass, no lights, no new program.
+- **CEL, ALWAYS: NO SMOOTH LIGHT, A HARD RULE** (owner, 18 Oct 2026, his picture of a pixel-art face: "i want this kind of shading at all times ...
+  solid colors, but pixelated, not gradient, i dont want gradients ever in the game beacuse it stops looking pixelated"; of the mockups,
+  https://claude.ai/artifact/1epa3LR2QUYZmCWyfmyUjz: "3-5 flat as option in menu - do not use smooth light under any circumstances hard rule"):
+  every face's light cut into 3, 4 or 5 flat bands (`CEL` in `map-pre.js`; GRAPHICS' LIGHT BANDS, the save's `bands`, 4 the default; `?cel=N`),
+  no grain, no blend; each band down a little cooler and bluer (`HUE`, the warm-lit, cool-shadow shift of his picture); hard shadow edges
+  (`BasicShadowMap`, always); the characters' light in the same flat steps with the same cool shadows (`W3.setShade` never smooth, its steps the
+  bands, the avatar editor's SMOOTH button gone); the lamps' pools flat rings; the sky in flat bands; the haze (every material's fog) in 8 flat
+  steps; the river's water in its steps only. `SMOOTH` stays in the code as `false` for what still asks it. **Never bring back smooth light,
+  soft shadows or gradients without his word.**
+- **The street's works** (owner, 18 Oct 2026: "rounded"; "add bike lines, (if not in already)"; "make sidewalk on central park side 2x bigger";
+  "make sure they have curbs and drains and sewers in right spots"; "put one large tall street light on corner. lighst in both directions, functions
+  correctly"; `bodega.js`'s street works, `bodbuild.js`, `map-post.js`, `dress.js`, `grid.js`): **rounded kerbs**: every corner where two of the
+  loop's roads meet a quarter circle of 1.6 tiles (`KR`, `CORN`): the six where a sidewalk's corner stands out on the road (the main street at the
+  west street's and the Avenue's mouths, both sides; the park's two back corners) cut back, the two where the outer sidewalks wrap round the north
+  street's ends filled out; one test of the road (`ROADAT`) for the pictures, `groundY` (a step down the kerb follows the curve) and the land's
+  holes (two outlines round the curves, `BOD.roadPolys`); the curves' kerb faces six straight pieces each (`BOD.kerbArcs`). **Kerbs everywhere**: the
+  granite top painted along every sidewalk edge that meets a road (`SW`: the far sidewalk's ends at the west street and the Avenue had none), the
+  straight faces trimmed to the curves, the main street's two road ends given faces. **Bike lanes** (there were none): along both kerbs of every
+  road of the loop, green from a hand off the kerb, 1.2 tiles wide, a white line on the road side, a white bike stencilled every 22 tiles; dashed
+  past a side street's mouth, stopped at the curves and the crossings (`LN`). The crossings by a curve set back past it (`XW`). **Drains**: a storm
+  drain every 28 tiles along each kerb and just before each curve (not on a crossing): a grate in the gutter and the inlet's dark mouth in the kerb's
+  face (`BOD.kerbFaceAt`); **sewers**: a round iron cover (frame, waffle, ring, rust) in the traffic lanes every 40 tiles and in the middle of each
+  crossing of two roads (55 drains, 19 covers); all painted into the ground's and kerbs' pictures. **The park-side sidewalk 12 tiles** (`BOD.MAP.y1`
+  FAR+12), the park, the castle (`LAYOUT0.castle` y 25.5), the north street and the force field 6 more north (`NORTHY` 9); the gate, crosswalks and
+  lamp posts follow. **The corner's light**: on the park's corner of the main street and the Avenue, just in from the curve: a cast foot, a pole a third
+  taller than the others, two arms (one over each road) with braces, a head and a lit lamp at each end; two of LITE's lamps (55, 16 tiles), on at dusk
+  with the rest, each its pool; solid at its foot; one pole of the grid's inner ring with both lamps (`L2`, `h2`); no other light within four of it
+  and none on a curve's road. **Cost**: some 110 triangles of kerb curves and corner squares, the light's 16 instanced pieces, 2 lamp records (no new
+  light slot, no shadow, no program); the street's atlas 7,014 to 7,606 rows (the wider sidewalk; the cap is the GPU's texture size, 8,192 in software
+  rendering: little room left there). `STREETQ()` a test's look. Not done: a kerb ramp at the crossings; the NW corner not looked at (a block in the
+  shot's way).
+- **The lawn's tufts** (owner, 18 Oct 2026: "lets add the tuft grass from grasslab into the game"; the Grass Lab's option 4, https://claude.ai/artifact/VYHdVVsXc5nufH6ptqGg8X; `WEEDS.lawnInit` in `src/weeds.js`): over every lawn in sight (the land's sheet and the park's hills, only where one of them is the top surface: never on a way, sidewalk, plaza or floor), tufts of two crossed cards painted with fourteen blades, each its own size, turn and green, swaying in the park's wind, lit in the flat bands. Made only round you in chunks of 8 tiles (a tiny top-down picture of the chunk says which half-tile squares are lawn and their height: two draws and a read back, some 15 ms a chunk, one a moment), dropped 3 chunks off; each chunk one instanced draw with its own bounds. Measured: 25 chunks round you, 6,548 tufts (4 triangles each); the whole screen 48,100 triangles in the park.
+- **The golems' cave and the gem trade** (owner, 18 Oct 2026: "make a cave in central park where the golems live, they buy any kind of rare gem
+  or crystal, etc."; `src/cave.js`, `src/gems.js`): a rocky outcrop on the park's north-west lawn (21 tiles west and 15 north of the round, clear of
+  the ways, the shrine, the castle, the pond and the park's big rock; placed from PARK at run time, `GCAVE.keep`, which park.js's hills, oaks and
+  bushes keep off), its mouth east toward the round: a low dome of rough grey stone on a rounded-square footprint (10 x 10 tiles, 3.7 m high,
+  every face its own grey, moss low, lichen), boulders round its foot, jambs and a lintel at the mouth. Inside: a dark stone floor, crystal clusters
+  glowing violet, cyan and rose along the walls (unlit, they're the light), THE TRADING STONE at the back, four sitting stones, beds of moss, a heap
+  of geodes; its light one lamp record (LITE, `userData.both`: it lights the cave and spills out of the mouth at night). Its own room for rooms.js
+  (only the cave drawn inside; its crown above the room's top cut so you see in). Built a moment after the game runs. **The golems live there**
+  (walkers.js's `golem`: `GCAVE.haunt`): all twelve together, in the cave at night (21:00 to 7:00), by day mostly at the round, an hour now and
+  then at the mouth or inside (the same hour for all); the cave's box is theirs (every other walker keeps out of a room). **THE GOLEMS BUY**: a
+  double click on a golem or on the trading stone opens the panel (X, drag: `gemp` in PANS): ten stones and their prices (quartz crystal $6,
+  amethyst $14, geode $18, fossil amber $24, moonstone $30, opal $45, emerald $70, sapphire $85, ruby $100, star meteorite $150), what you carry,
+  SELL and SELL ALL. **Your pockets** (`INV`): your cash is your mailbox's (`MAIL.you.cash`, one purse with the rent and the bills; its own $100
+  with `?mail=0`), your gems in the save (`inv`). **Where gems come from for now**: the four glints on the cave's floor (a double click: a gem at
+  random, the rarer the less often; each back when the day turns) and THE ODDITIES STALL by the gate (a gem of the day). The golems' lines
+  (`golem` in lines.js). Cost: the dome some 310 triangles, its boulders and stones about 50 instances of 36 (one draw), the crystals and glints
+  about 50 of 8 (one draw, one unlit instanced program), the floor 120; one lamp record, no shadow, no new light. `GEMDBG()`.
+- **The squirrel's tower and its knight** (owner, 18 Oct 2026: "remove the tower from the dungeon/castle area, make it 3x small put it in corner
+  of central park near main, small squirel in knight armor with sword on top"; `src/tower.js`, `src/npc-squirrel.js`): the keep stays off the map
+  (nothing of it in the castle; `?bring=keep` still sets the full one in the bailey for a look); in the park's front-left corner, inside the walls
+  by the main street, the keep made again at a third of its size: 3.2 x 3 tiles, 173 px (5 m), its four corner turrets a little higher, a
+  crenellated parapet round its lead roof, its faces the keep's own painter (keepOutWall) read three of its pixels to one (the darkest of three,
+  so the mortar, slits, windows and string courses stay), its door a squirrel's; solid, no way in. **THE SQUIRREL KNIGHT** on its roof, 0.55 m,
+  built in parts on bones in the tomato's style (npc-rig.js): grey-brown fur, cream muzzle, ears up through a steel helmet, its visor on a hinge
+  (lifted now and then), a red plume on a spring, breastplate, pauldrons, a belt, a small sword held up before him, his bushy tail in three
+  pieces on springs; on guard, turning to look out over the street, the corners or the park every 6 to 15 s, his head looking about between.
+  `?sheet=squirrel`; `SQDBG()`. The menu's MORE PLACES has THE GOLEMS' CAVE and THE SQUIRREL'S TOWER. Cost: the tower some 120 faces in its own
+  batch (one draw), the squirrel some 1,660 triangles, his own shadow map as every character; no light.
+- **New York's markings and signs** (owner, 18 Oct 2026: "Not green bike lanes. Use NYC markings and steermt signs etc everywhere"; `bodega.js`'s
+  street works, `bodbuild.js`): **the bike lanes** bare asphalt (no green anywhere), the solid white line, every 22 tiles the white bicycle with two
+  chevrons ahead of it pointing traffic's way; **the double yellow** down every road's middle, broken at crossings and junctions; **stop bars**
+  across the half of the road whose traffic comes to each crossing; **the crossings** NYC's ladder (two rails across the road, wide rungs along the
+  traffic). **The signs** (`BOD.signs`, drawn into the street's pictures as thin boxes, words in a 3x5 pixel letter read from either side, cut out by
+  the batch's alpha test): a galvanized post at every corner with the two streets' green name blades crossed (MARKET ST, WEST ST, NORTH ST, THE AVE;
+  two more across the main street from the side streets' mouths), STOP where the west street and the Avenue come down to the main street, and along
+  every kerb every 24 tiles a NO PARKING plate (every third a SPEED LIMIT 25), each .75 tile in from the kerb, clear of the street lights' feet.
+  66 signs. Cost: some 1,600 triangles in the street's batch, no lights, no programs. Not done: a traffic light (the owner took the kit's out).
+- **(SUPERSEDED the same day: "Literally make the grass like treetops", below)** **Never leafy grass** (owner, 18 Oct 2026, of the grass mockups https://claude.ai/artifact/WfQ5tdKVCmb1jJEAeAEXL5: "No leafy grass never"):
+  grass is never made of leaf clumps, little crowns or the trees' leaf mottle. The grass he's weighing is blocky blades: thick straight square
+  posts of flat colour (a darker foot, a lit top) flowing in one smooth wind; his picks so far "1 and 2" (short blocks with chunky tufts) and
+  a flat one (long blades lying nearly down, swaying in waves). **His pick: "Only swaying smooth"** (the flat one, in the game: below).
+- **The lawn's grass flat and swaying** (owner, 18 Oct 2026: "Only swaying smooth"; `WEEDS.lawnInit` in `src/weeds.js`, in place of the card
+  tufts): over every lawn in sight, clumps of four long thick blades of flat colour lying nearly down (tips 6-14 degrees up), combed one way, in
+  the lawn's own four greens; one smooth wind rolls over them in waves (a slow swell and a cross ripple by where each clump stands, `PARK.windK`
+  its strength), sliding and lifting the tips, the roots still. Same chunks as before (8 tiles, made round you, dropped 3 off). Measured in the
+  park at 3:30: 39,840 triangles in the picture (93,440 in all the chunks round you; the old tufts some 15-20,000 in the picture), one program,
+  no light, a chunk 15-17 ms to make.
+- **Everyone's cottage, the start** (owner, 18 Oct 2026: "make it anyone's cottage who starts ... fill entire floor of apartment"; his picks: one big cottage room, the game's pixel style, the first visit only; `apts.js`, `where.js`): the apartment house's ground floor is the old game's Herb Cottage, its own pieces from its own makers ("Preset Herb Cottage 1": the fig, the tables, the red bookshelf, the long table on its roots with the lamp and candles, the rugs, the writing desk, the wood stove, the stump with pumpkins, the shelves, the garland, the portrait, the clock, the screen, the cabinet...) spread over the floor's 7.5 x 14 tiles (a piece against a wall keeps that wall; the cabinet, the screen, the print, the clock and a shelf moved off the windows and the door), the window's branch rod with its hanging pothos and the green drapes at all five of the floor's windows, the inside walls the cottage's moss plaster, its candles live flames, its six strongest lamps the floor's own (lit only while you're in). A new player (nothing kept in `market-where`, or `?fresh=1`) starts in it (`MODS.apts.home`); after that, where you left off.
+- **The computer and the delivery drone** (owner, 18 Oct 2026: "bring back pc with drone delivery you can view 1st person"; his pick: the bodega's goods; `src/drone.js`): an old beige computer on the cottage's writing desk (its screen green); a double click opens DRONE LINK (the bodega's shelf with prices, your money: the mail's purse; ORDER; DRONE CAM). The drone (a little quadcopter of blocks, its light green at home, red out) is parked on the bodega's door frame, rotors still; an order sends it up over the street to the house's middle front window, where it turns to face in, hovers, and the parcel drops inside on the floor; then home, parked. DRONE CAM looks from just behind it (the room's cut-away and the house's ceiling cut lifted while it's on: rooms.js, `APTS.HP`), the HUD's frame and LEAVE DRONE CAM; a double click on the parcel opens it (the thing left on the floor). The bodega's stock and till take the sale. `?dronek=N` flies it N times as fast (a test's); `DRONEDBG()`. Cost: the computer some 60 triangles, the drone some 150, a parcel 12; no lamp; nothing a frame while it's parked.
+- **The grass made like the treetops** (owner, 18 Oct 2026: "Literally make the grass like treetops", then, asked whether that meant the first
+  mockup's LEAF CARPET over his earlier "no leafy grass never": "Yes, like treetops"; `WEEDS.lawnInit` in `src/weeds.js`, in place of the flat
+  blades): over every lawn in sight a low carpet of the oaks' own stuff: faceted leaf clumps (a flattened icosahedron each, 20 triangles, a half
+  tile square apiece, its own size and turn), each lit as one round shape like a crown (normals four fifths out from its middle), the crowns' leaf
+  mottle in the world over them (park.js's treeLook numbers), a step darker at the foot, the lawn's four greens; a smooth wind rolls over them in
+  waves, the tops leaning, the feet still. Same chunks (8 tiles, made round you, dropped 3 off; the characters left out of the chunk's lawn
+  check, so no bare patch where someone stood). Measured in the park at 3:30: some 24,600 triangles in the picture (58,000 in all the chunks
+  round you), one program, no light, a chunk 15-18 ms to make. Its leaf mottle hashes cells wrapped to 256 first (far from the middle sin() ran
+  out of digits and the mottle drew streaks).
+- **The apartment house's floors, from the old game** (owner, 18 Oct 2026: "bring back entrance lobby elevator stairs and hallway from 1st game
+  and make it fit in new apartment 1st floor"; his pick "cottage on every floor"; `LOBBY` in `src/apts.js`, superseding `HOLLOW`): the ground
+  floor the old lobby (black and white tiles, mailboxes, a bench, a plant, the directory), a hall back to the core; the core at the back-west
+  corner: U stairs (two flights of ten steps a storey, a landing between: `APTS.ground` gives their slope) and the freight elevator in its
+  shaft (a cabin you stand in and ride at a lift's pace, steel leaves on every floor, a call button by each door (double click), the floor
+  buttons in its panel while you're in it with the doors open; `ELV`, `ELVDBG()`); the 2nd floor the herb cottage (everyone's start room, the
+  PC and the drone's window with it: `APTS.cotLv`, `drone.js`); floors 3 to 5 a carpeted hall with two numbered doors each (shut). Fire escapes
+  front and back as before. Cost: some 6,000 triangles the floors and walls, one lamp in the lobby's hall, one in the core and two in each
+  upper hall (LITE's eight nearest), no new program.
+- **The newsstand** (owner, 18 Oct 2026: "Newsstand with newspaper cat character already in game. He runs it. Drones deliver newspapers every
+  morning. Realistic stand with real inventory / NYC style / Give him all the animations he will need"; his pick: by the subway entrance;
+  `src/newsstand.js`): a green New York kiosk (2.6 m) on the main street's sidewalk east of the Metro's opening, its back to the empty lot:
+  NEWS on its lit header, LOTTO, the overhang's tube, the roll-down shutter, papers on a stepped rack (THE DAILY ODDITY, METRO HERALD, THE
+  FLEA TIMES, MORNING BUGLE: each stack as high as its stock), magazines up the posts and on both sides, candy and gum on the counter, snacks
+  on the back shelves, the drinks cooler. THE CAT IN THE RAINCOAT runs it, held on a crate behind the counter (`npc-toons.js`'s `c.extra` and
+  `c.busy`): reads, waves as you come up, serves and counts change, tidies the magazines, stretches, yawns, dozes in the afternoon lull,
+  opens the shutter at 5:45 and pulls it down at 10 pm, dozing behind it at night. At 5:30 two delivery drones bring four bundles; he heaves
+  each up, cuts its twine, a stack grows by 25. A double click: stock, prices, the purse (`DRONE.purse`), BUY; a paper shows its front page.
+  `NEWSDBG()`, `NEWS.deliver()`, `?newsk=8` the drones faster. Cost: some 2,100 triangles, the drones 300 while they fly; no lamp, no program.
+- **The buildings' outsides** (owner, 18 Oct 2026: "realistic exterior like pipes going up on corners, rooftops being realistic"; his pick:
+  all three on main; `src/rooftops.js`, superseding 17 Oct's "nothing on its roof"): leaders up the corners (scupper, leader head, brackets,
+  shoe; the house's dark, the bodega's galvanized, Ghost Street's copper); parapets with coping on the flat roofs; on the house the water tank
+  on its stand, the stair bulkhead, the elevator's machine room, chimneys, vents, soil stacks, a TV antenna; on the bodega an AC unit, an
+  exhaust fan, a skylight, vents. Cost: 2,500 triangles, three instanced draws; no lamp, no program.
+- **The treetop grass flat** (owner, 18 Oct 2026: "I don't want the grass round ... flat and covering ground. Imagine the treetop exactly";
+  `WEEDS.lawnInit`): each leaf clump a low flat canopy (its height a sixth of its width, the middle facing up, the rim turning down as a crown's
+  edge does), more than twice as wide as its half-tile square so they overlap and no ground shows: the lawn reads as the top of one tree seen
+  from above; the wind a gentle lift and slide. The chunk's lawn check now skips invisible hit boxes and toon-lit character pieces (both had
+  left a bare patch where you stood). Cost as before: some 19,700 triangles in the picture, one program, no light.
+- **The treetop grass in a variety** (owner, 18 Oct 2026, of the mockup https://claude.ai/artifact/Mj4zkmdHJhGk6ZKsPsC4Rr: "Imagine way bigger
+  trees", then "Do a variety all over the park"; `KIND` in `WEEDS.lawnInit`): the lawns cut into patches some 24 tiles across (each half-tile
+  square takes its nearest patch's seed), each patch one kind: the flat canopy, the rolling canopy, little crowns, big crowns (4-5 m), giant
+  crowns (6-8 m), big crowns pressed flat, and (owner: "lets do tuft too") the Grass Lab's card tufts, two to a square, the lawn's picture between
+  (the weeds' own program, a second instanced draw in the chunk). A crown kind lays a grid of crowns (each its own place, size and green), every square's clump domed
+  by how near its crown's middle it is, its rim a step darker and lower: the treetops of a forest seen from high above. Every lawn, not only the
+  park's. Still one clump a square, the cost as before (some 20,000-25,000 triangles in the picture), one program, no light.

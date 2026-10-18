@@ -37,7 +37,7 @@ const TOONS={};
   // yellow coat and trousers, black boots; yellow sleeves, cream paws. His things, each its own: the newspaper (two pages on a fold, the page its
   // own bone), under his arm as he walks and opened before him to read when he stops, its page turned now and then; the ink jar in his hand, set
   // down by his foot while he reads
-  { const YEL=[.95,.78,.16], YEL2=[.82,.64,.1], FUR=[.92,.86,.68], FUR2=[.8,.72,.52], PINK=[.9,.6,.55], BOOT=[.12,.11,.1], PAPER=[.88,.86,.8], INK=[.95,.92,.82], LID=[.15,.15,.17], HEAD=[.75,.2,.18];
+  { const YEL=[.95,.78,.16], YEL2=[.82,.64,.1], FUR=[.92,.86,.68], FUR2=[.8,.72,.52], PINK=[.9,.6,.55], BOOT=[.12,.11,.1], PAPER=[.88,.86,.8], INK=[.95,.92,.82], LID=[.15,.15,.17], HEAD=[.75,.2,.18], INKP=[.45,.45,.45];
     const def={ bones:[['root',null,[0,0,0]],['hips','root',[0,.42,0]],['head','hips',[0,.7,0]],['earL','head',[-.14,.98,-.02]],['earR','head',[.14,.98,-.02]],
         ['armL','hips',[-.17,.66,0]],['armR','hips',[.17,.66,0]],['legL','hips',[-.08,.38,0]],['legR','hips',[.08,.38,0]],
         ['paper','root',[0,.6,.22]],['page','paper',[0,.6,.22]],['jar','root',[.22,0,.1]]],
@@ -49,8 +49,8 @@ const TOONS={};
         part('coat',1,'hips',[ shape(cyl(.15,.24,.38,10),YEL,[0,.5,0]) ]),
         ...[['L',-1],['R',1]].flatMap(([s,sx])=>[ ...arm(s,sx,[sx*.16,.66,0],[sx*.2,.44,.04],YEL,FUR,YEL2,.05),
           part('leg '+s,0,'leg'+s,[ shape(cyl(.065,.065,.3,8),YEL,[sx*.08,.23,0]) ]), part('boot '+s,1,'leg'+s,[ shape(blob(.07,.06,.1,6,4),BOOT,[sx*.08,.05,.04]) ]) ]),
-        part('newspaper',2,'paper',[ shape(box(.22,.3,.006),PAPER,[-.11,.6,.22]), shape(box(.2,.04,.008),HEAD,[-.11,.72,.22]) ]),
-        part('page',2,'page',[ shape(box(.22,.3,.006),PAPER,[.11,.6,.22]), shape(box(.2,.04,.008),HEAD,[.11,.72,.22]) ]),
+        part('newspaper',2,'paper',[ shape(box(.22,.3,.006),PAPER,[-.11,.6,.22]), shape(box(.2,.04,.008),HEAD,[-.11,.72,.22]), shape(box(.09,.08,.008),INKP,[-.11-.045,.645,.22]), ...[.66,.63,.6,.55,.52,.49,.46].map((y,k)=>shape(box(k<3?.08:.18,.008,.008),INKP,[-.11+(k<3?.05:0),y,.22])) ]),
+        part('page',2,'page',[ shape(box(.22,.3,.006),PAPER,[.11,.6,.22]), shape(box(.2,.04,.008),HEAD,[.11,.72,.22]), shape(box(.09,.08,.008),INKP,[.11-.045,.645,.22]), ...[.66,.63,.6,.55,.52,.49,.46].map((y,k)=>shape(box(k<3?.08:.18,.008,.008),INKP,[.11+(k<3?.05:0),y,.22])) ]),
         part('ink jar',1,'jar',[ shape(cyl(.04,.04,.09,8),INK,[.22,.045,.1]), shape(cyl(.037,.037,.025,8),LID,[.22,.1,.1]) ]) ],
       springs:{ earL:{f:-.15,s:.12,k:70,c:6,lim:.4}, earR:{f:-.15,s:.12,k:70,c:6,lim:.4}, head:{f:-.04,s:.04,k:90,c:9,lim:.12}, page:{y:.3,k:30,c:3,lim:.5} },
       pose:(c,dt)=>{ const B=c.B, V=c.v||(c.v=new THREE.Vector3());
@@ -99,8 +99,9 @@ const TOONS={};
     const def={ bones:[['root',null,[0,0,0]],['scooter','root',[0,.15,0]],['fork','scooter',[0,.56,.3]],['wheelF','fork',[0,.17,.38]],['wheelR','scooter',[0,.13,-.24]],['box','scooter',[0,.36,-.38]],
         ['frog','scooter',[0,.62,-.02]],['head','frog',[0,.88,0]],['armL','frog',[-.16,.82,-.02]],['armR','frog',[.16,.82,-.02]],['cape1','frog',[0,.87,-.12]],['cape2','cape1',[0,.64,-.24]]],
       parts:[ part('eyes',0,'head',[-1,1].map(sx=>shape(sph(.055,6,4),BLACK,[sx*.1,1.0,.13]))),
-        part('head',2,'head',[ shape(sph(.18,10,7),GRN,[0,.95,.07],[1.1,.72,.95]) ]),
-        part('helmet',3,'head',[ shape(new THREE.SphereGeometry(.21,10,5,0,Math.PI*2,0,Math.PI/2),HEL,[0,1.0,0],[1,.9,1.05]),
+        part('head',2,'head',[ shape(sph(.18,10,7),GRN,[0,.95,.07],[1.05,.72,.95]) ]),
+        part('helmet',3,'head',[ shape(new THREE.SphereGeometry(.2,10,5,0,Math.PI*2,0,Math.PI/2),HEL,[0,.99,0],[1,1.05,1.05]), shape(cyl(.205,.205,.035,10),[.82,.8,.72],[0,1.0,0],[1,1,1.05]),
+          shape(new THREE.TorusGeometry(.205,.012,4,10,Math.PI),[.82,.8,.72],[0,.99,0],[1,1.05,1.05],[0,90,0]),   // (its rim and the seam over its top)
           ...[-1,1].flatMap(sx=>[ shape(cyl(.06,.06,.07,8),HEL,[sx*.21,.98,.02],null,[0,0,90]), shape(cyl(.035,.035,.075,6),[.8,.45,.2],[sx*.215,.98,.02],null,[0,0,90]) ]) ]),
         part('torso',1,'frog',[ shape(sph(.15,8,6),ORA2,[0,.74,-.02]) ]),
         part('scarf',2,'frog',[ shape(torus(.13,.04,4,10),ORA,[0,.86,0],null,[90,0,0]) ]),
@@ -135,7 +136,7 @@ const TOONS={};
         part('teeth',3,'head',Array.from({length:5},(_,i)=>{ const u=(i-2)/2; return shape(cyl(.002,.025,.05,4),WHITE,[u*.13,1.5,.42-u*u*.1],null,[180,0,0]); })),
         part('eyes',3,'head',[-1,1].map(sx=>flatEye(sx*.19,1.66,.2,.04,EYE,[0,0,90]))), part('pupils',4,'head',[-1,1].map(sx=>flatEye(sx*.2,1.66,.2,.018,BLACK,[0,0,90]))),
         part('jaw',2,'jaw',[ shape(sph(.15,8,5),BELLY,[0,1.43,.2],[1,.4,1.8]) ]),
-        part('fin',3,'fin',[ shape(cyl(.002,.12,.3,4),TEAL,[0,1.95,-.1],[.25,1,1],[-28,0,0]) ]),
+        part('fin',3,'fin',[ shape(cyl(.002,.14,.38,4),TEAL,[0,1.98,-.12],[.45,1,1],[-28,0,0]) ]),
         part('coat',1,'hips',[ shape(cyl(.2,.22,.48,10),COAT,[0,1.18,0]), shape(torus(.215,.02,4,10),COAT2,[0,.97,0],null,[90,0,0]) ]),
         part('skirt',1,'skirt',[ shape(shell(.22,.31,.55,10,.25,Math.PI*2-.5),COAT,[0,.68,0]) ]),
         ...[['L',-1],['R',1]].flatMap(([s,sx])=>[ ...arm(s,sx,[sx*.23,1.36,0],[sx*.29,1.0,.06],COAT,TEAL,COAT2,.07),

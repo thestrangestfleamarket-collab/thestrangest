@@ -140,7 +140,7 @@ function walkPose(st,abd){ const r=st.run||0,rs=r*r,g=gaitOf(r),w=st.w,ST=g.stan
   // stays a little under standing height (the leg straight at mid-stance only touched it for a frame or two: a one-pixel hop each step)
   const hipOff=s=>yaw(V(s*HIP[0],HIP[1],HIP[2]),P.pyaw),feet={},reachY=(s,A,k)=>{ const o=add(V(sway,0,0),hipOff(s)),L2=THIGH*THIGH+SHIN*SHIN+2*THIGH*SHIN*Math.cos(k);
     return A.y-o.y+Math.sqrt(Math.max(0,L2-(A.x-o.x)**2-(A.z-o.z)**2)); };
-  let py=null;
+  let py=null; const AK={};   // (AK: where each foot is, for the legs to reach again once a turn's lean or a stop moves his hips)
   for(const s of [1,-1]){ const n=s>0?'L':'R',x=s*FOOTX,qq=q[n];
     if(qq<ST){ const a=fa(n,qq),A=planted(qq/ST,a,x,h); feet[n]={A,a}; const y=reachY(s,A,kn(qq)); py=py==null?y:Math.min(py,y); } }
   if(py==null){ // in the air between two running steps: from where the last foot left to where the next lands
@@ -156,12 +156,22 @@ function walkPose(st,abd){ const r=st.run||0,rs=r*r,g=gaitOf(r),w=st.w,ST=g.stan
       const v=(qq-ST)/(1-ST),e=smooth(v),A0=planted(1,fa(n,ST-1e-6),x,h),A1=planted(0,fa(n,0),x,h),H=add(P.root,hipOff(s));
       const F=qq2=>legReach(lab('hip',qq2,ST,rs)*w,kn(qq2)),F0=F(ST),F1=F(1-1e-6),Fv=F(qq);
       a=fa(n,qq); A=add(lerpV(A0,A1,e),sub(Fv,lerpV(F0,F1,e))); A=V(x,Math.max(A.y,Math.cos(a)*ANKLE+Math.max(Math.sin(a)*1.1,-Math.sin(a)*1.9)+0.1*w),A.z); }   // (its heel and ball clear the floor, as a swinging foot does by a centimetre or two: at full height it scraped, and the floor lifted all of him a pixel)
-    legIK(P,n,s,A); P[n].foot=a;
+    legIK(P,n,s,A); AK[n]=A; P[n].foot=a;
     // the arm swings against its leg, a moment behind it; the elbow bends as it comes forward, a moment later still; a runner's stays bent.
     // Walking it swings mostly behind him, 8 degrees forward to 24 back as gait labs measure (owner, 14 Oct 2026: it reached 30 forward,
     // his hands creeping out in front); standing it hangs 3 forward
     const sh=(lerp(-8,9,rs)*w+3*(1-w)-w*lerp(16,36,rs)*Math.cos(2*Math.PI*(qq-0.04)))*D,el=(10+w*(lerp(2,64,rs)+lerp(20,24,rs)*(0.5+0.5*Math.cos(2*Math.PI*(qq-0.62)))))*D,b=abd?abd[n]:0;
     P[n].ua=[sh,b]; P[n].fa=[sh+el,b]; }
+  // INTO A TURN (owner, 18 Oct 2026: "add the lean into turns and weight shift when stopping"): st.bank, his whole body tipped over his feet
+  // toward the turn's middle (tick), the pelvis carried that way as far as the tilt takes it from the ankles and a little lower (so the outside
+  // leg still reaches its foot), the legs reaching their planted feet from there; the head kept a little nearer level
+  const bk=st.bank||0; if(bk){ const L=STAND-ANKLE; P.roll+=bk; P.root=add(P.root,V(L*Math.sin(bk),-L*(1-Math.cos(bk))-2*FOOTX*Math.abs(Math.sin(bk)),0)); P.side-=0.3*bk; }
+  // THE STOP (st.stop, tick): his weight carried on over his feet and back, once, and still: the body tips forward and comes back a little past
+  // upright, the hips dip as the weight lands, the arms swing on and back; over at 1 s, where it's back at nothing, then nothing moves
+  const so=st.stop; if(so){ const t=so.t,k=so.a*Math.exp(-t/0.3)*Math.cos(2*Math.PI*t/0.8),dip=t<0.3?so.a*Math.sin(Math.PI*t/0.3):0;
+    P.bend+=10*D*k; P.nod-=5*D*k; P.root=add(P.root,V(0,-1.5*dip,2.2*k));   // (the dip a pixel: settle keeps his hips on whole pixels)
+    for(const n of 'LR'){ P[n].ua=[P[n].ua[0]+10*D*k,P[n].ua[1]]; P[n].fa=[P[n].fa[0]+14*D*k,P[n].fa[1]]; } }
+  if(bk||so) for(const n of 'LR') legIK(P,n,n=='L'?1:-1,AK[n]);   // (the feet where they were)
   return P; }
 
 // ---- the stick figure from a pose (dev {L,R}: each hand's lag, a change of direction): every joint where it is, and the turns the pieces need
@@ -777,7 +787,15 @@ function tick(st,h){ st.run+=(st.runTarget-st.run)*Math.min(1,h*RIGT.blend); con
     if(st.move&&st.move.def.air){ const a=st.move.def.air; if(st.move.t>a.t0+a.T){ if(!st.move.down){ st.move.down=1; st.mv=st.mvw||0; } st.mv*=Math.exp(-14*h); } } else if(st.move) st.mv*=Math.exp(-(st.move.def.stop||1.2)*h); else st.mv=0;   // (on the ground a move's speed eases off; landed, the jump's own push is spent: only the speed he came with, easing off. stop: how fast (owner, 15 Oct 2026, what stops you: a kick or a sweep plants a foot, the speed gone in a sixth of a second; a crouch stops you, no gliding; a punch, a block or a wave never does; a jump, a flip or a roll keeps it)
     if(carries(st.move)){ const zn=moveAt(st).root.z, zc=st.move.zc||0; st.dist+=zn-zc; st.move.zc=zn; } }   // (a roll or a fall carries you along as it goes, not all at once at its end: the world jumped most of a tile in a frame when a roll ended; zc: how far of its travel is yours already)
   else { if(st.out) st.out.t+=h; if(st.out&&st.out.t>(st.out.T||0.2)) st.out=null; }
+  const w0=st.w;
   st.w+=(st.target-st.w)*Math.min(1,h*RIGT.start); if(Math.abs(st.w-st.target)<1e-3||st.snap&&!st.move) st.w=st.target;   // (snap: at once, as the old Walker stopped and went: you and the other players, 47-you-jointed, 48-online)   // (the walk's own weight goes on through a move: let go and he'll have stopped when it ends)
+  // the stop's weight shift (walkPose): from a walk or a run let go, once, its size by how fast he was going; anything else ends it. The turn's
+  // lean: toward how far a body going his speed round his turn tips (tan = speed x turn / gravity: st.yr, his heading's turn a second, set by the
+  // page), at most 9 degrees walking and 18 running, eased in and out, and at nothing exactly once it's gone
+  if(w0>0.3&&st.target===0&&!st.move&&!(st.water&&st.water.in)) st.stop={t:0,a:Math.min(1,w0)*(0.7+0.5*st.run)};
+  if(st.stop){ st.stop.t+=h; if(st.stop.t>=1||st.target>0||st.move) st.stop=null; }
+  { const v=g.speed*st.w*((st.wk||1)+((st.rk||1)-(st.wk||1))*st.run), mx=(9+9*st.run)*D, to=st.move||st.target===0?0:Math.max(-mx,Math.min(mx,Math.atan(v*(st.yr||0)/G)));
+    st.bank=(st.bank||0)+(to-(st.bank||0))*Math.min(1,h*7); if(to===0&&Math.abs(st.bank)<0.05*D) st.bank=0; }
   if(st.water) st.water.load=st.move&&st.move.def.load&&st.move.t<st.move.def.air.t0?keyAt(st.move.def.load,st.move.t):0;   // (how hard he's pressing the board)
   waterTick(st,h);
   const sk=(st.wk||1)+((st.rk||1)-(st.wk||1))*st.run,   /* (st.wk, st.rk: how fast he walks and runs, times his own; st.anim: how fast his limbs move: yours from the avatar editor's SPEED, src/avmove.js) */ walked=st.move?0:g.speed*st.w*h*sk; st.wd=(st.wd||0)+walked;   // (wd: how far he's walked since he set off, for the old Walker's frame: pose)

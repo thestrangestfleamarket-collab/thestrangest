@@ -1448,7 +1448,7 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   10 a second only standing and in moves). Measured (`node tests/footslip.cjs`, the rig alone, no drawing): the planted foot's slide 32 to 0.3
   units a second walking, 22.5 to 0.5 running. With it, the musician and the bearded Walker (the same rig) plant their feet too, and walk a sixth
   slower (they were carried 1.2 times further than the player). Cost: nothing; his pose built every frame while moving (some 0.1 ms).
-  Next, at his word: a lean into turns and a weight shift when he stops; foot locking for the clip-driven characters.
+  Next, at his word: foot locking for the clip-driven characters.
 - **The distance look, his to set** (owner, 18 Oct 2026: "make the buildings more logical, and they shouldnt be as visible, depth of field, blur,
   haze, etc, real distance"; "way too much, needs to look realistic, check other video game references"; "give me mockups of diff styles, with
   ranges i can select and change to get the right look and save it"; `skyline.js`, `sky.js`, map-pre.js's `MISTF`): the skyline laid out by
@@ -1460,6 +1460,16 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   cloud cover and brightness, the sky overhead and at the horizon), live; SAVE keeps them (the save's `farlook`), RESET the game's own, EXPORT
   gives `FARLOOK {...}`: when he sends it, put it in `FL0` in skyline.js. Cost: with blur on, the skyline and the sky drawn again (a few thousand
   triangles) and two blur passes at the picture's size over the coarseness squared.
+- **Into a turn, and the stop** (owner, 18 Oct 2026: "add the lean into turns and weight shift when stopping"; `walkPose` and `tick` in
+  walker-rig-mock.js): **the lean**: as he turns (the page hands the rig his heading's turn a second, `st.yr`, build.py) his whole body tips
+  over his planted feet toward the turn's middle, as far as a body his speed round that turn would (tan = speed x turn / gravity), at most 9
+  degrees walking and 18 running, eased in and out (`st.bank`), the hips carried in and a little lower so the outside leg still reaches its foot,
+  the shoulders tipping with him, the head a little nearer level; at nothing exactly once he's straight. **The stop**: let go from a walk or a
+  run, his weight carries on once: the body tips forward (10 degrees, more from a run), the hips go 2 units ahead and dip a pixel as the weight
+  lands, the arms swing on, then it comes back a little past upright and settles; over at 1 s, exactly at rest (`st.stop`), anything else (a
+  step, a move) ends it. His pose is worked out every frame through it (ASTEP). The same for every Walker on the rig (the musician and the bearded
+  Walker stop the same way; they don't lean, nothing hands them a turn). Checked: `node tests/turnstop.cjs` (the lean's size, the feet still
+  planted leaning, the stop's curve, 0 frames changing after it); in the page, turning one way tips his head that way. Cost: nothing.
 - **The menu's map drawn as a map; the root fixes, "fix all 1-8"** (owner, 18 Oct 2026: "the map in menu should show entire map and not the real
   thing, just map showing where eveything is, map like"; then, of a list of patches made in place of fixing their causes, "fix all 1-8"):
   **THE MAP** (`plan()` in `ui.js`): the street level drawn as a plan from the places' own measures, the whole loop inside the force field, north

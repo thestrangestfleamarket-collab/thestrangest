@@ -336,6 +336,9 @@ mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);",open('src/clo
 # ONLY THE ROOM YOU'RE IN (owner, 17 Oct 2026): src/rooms.js, set just before the picture's drawn
 mod=rp(mod,"if(wOn)WATER.step(renderer,dt); renderer.shadowMap.needsUpdate=true;","ROOMS.tick(); STORE.tick(); BF.tick(dt); if(wOn)WATER.step(renderer,dt); WATER.tickAll(renderer,dt,pos); renderer.shadowMap.needsUpdate=true;")   # (STORE: the storeroom's roofs and bound, map-post.js)
 mod=rp(mod,"  UI.goTick(); UI.runTick();","  UI.goTick(); UI.runTick(); CLOCK.tick(dt); VIT.tick(dt); AMB.tick(dt); LINES.tick(dt);")   # (AMB: the ambience, LINES: what they say: src/ambience.js, src/lines.js)   # (VIT: your health and stamina, src/vitals.js)
+# A NEW VERSION, SAID (src/version.js): the build's moment, BUILDV, and the page's note when a newer one is out (owner, 18 Oct 2026)
+import time as _t
+mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);","const BUILDV="+str(int(_t.time()))+";\n"+open('src/version.js').read()+"\nresize(); applyTime(0); requestAnimationFrame(frame);")
 # THE OLD GAME'S FINAL TOUCH (src/oldlook.js): one pass after the picture's colours, its night and glow set each frame
 mod=rp(mod,"CLOCK.tick(dt); VIT.tick(dt);","CLOCK.tick(dt); VIT.tick(dt); LOOK.tick(); WHERE.tick(dt);")
 mod=rp(mod,"resize(); applyTime(0); requestAnimationFrame(frame);",open('src/oldlook.js').read()+"\nLOOK.sp=new ShaderPass(LOOK.shader); composer.addPass(LOOK.sp); LOOK.sp.uniforms.uNight=LOOK.night; LOOK.sp.uniforms.uCool=LOOK.cool; LOOK.sp.uniforms.uGlowK=LOOK.glowK;\nresize(); applyTime(0); requestAnimationFrame(frame);")   # (VIT: your health and stamina, src/vitals.js)

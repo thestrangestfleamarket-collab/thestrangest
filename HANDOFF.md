@@ -14,6 +14,16 @@ The owner made this chat the main one and asked for every chat's work pulled in.
 Built, syntax-checked, loaded clean (no page errors, by day, at 7pm, and with `?grid=1`); published to
 https://claude.ai/artifact/PnmQqhkusfewby35tf4zo5. `main` has not moved: this branch is ready to be merged into it at the owner's word.
 
+**Since then, the owner's queue ("go all in queue"), all done and published (version 18 of PnmQqhkusfewby35tf4zo5)**: the bear, the boats and
+the vehicles gone; the haze thinned and the skyline given pixel-art fronts; the park 25% bigger with its ways crossing in its middle; the street
+looped round the park (west and north streets, the Avenue), the Hudson behind main street, a force field round the loop; the subway's ring
+tunnel and train under the loop; the power lines round the block (on by default); the civic houses one tower past the north street, a droid a
+department (the fire droid's water jet, the medic's beam, the police droid's stun); a lived-in town (`walkers.js`: twelve more townspeople,
+each a random way of life, walk and pace); YOU are the UAL mannequin (`playas.js`: underwear base, hair, shirt, jeans and shoes as separate
+items; nimble: jump, roll, vault, ledges, the playground's bars inside the park's west gate). Each is a CLAUDE.md entry. Open: a faint seam on the
+mannequin's chest and knee; the force field's pattern draws triangles, not hexagons; the existing SCULPT works only on the old Walker
+(`?avatar=walker`), not on the mannequin the owner wants to sculpt.
+
 **Not pulled in, on purpose**: `claude/amazing-albattani-gn3kp8`, the Metro from his Drive as the subway. Its own handoff says it was never
 looked at and has a shader error open, and it replaces the working subway. Finish it on its branch (its HANDOFF.md has the details), then merge.
 Older branches (`ice-cream-cat`, `jolly-hawking`, `skeletons`, `admiring-franklin`, the `worktree-agent-*`, the paused `perf-*`, `tree-look`,

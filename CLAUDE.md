@@ -675,12 +675,25 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
   MOVES and the avatar editor have no DOWNLOAD (LOAD stays). Inside a room the rest is gone: the civic tower is a room (`rooms.js`), and what
   draws with its own shader and so isn't cut by the room's planes hides itself while you're in one (the sky dome already; now the force field,
   the river and its bank, `ring.js`). A doorway still cuts nothing until all of you is half a tile in (17 Oct's rule).
+## ONE LINE OF WORK: read before you publish (owner, 18 Oct 2026: "why is everything getting reverted that i fix!?!?")
+
+Several chats work on THE MARKET at once, each on its own branch, and all publish to the same link; whichever publishes last replaces the game
+with its own copy, so a chat that hadn't taken in the others' work undid it. Every session, every time:
+
+1. **Start from `main`** (`git fetch origin main` and branch from it, or merge it into your branch first).
+2. **Just before you build to publish**, `git fetch origin` and merge `origin/main` into your branch; build and publish only from that.
+3. **The link is https://claude.ai/artifact/PnmQqhkusfewby35tf4zo5** (X2Bk8UjQKP8yfLdLtVVn3s is the first account's: this account can't open or
+   update it, and it stays at 17 Oct). If the publish is refused because another session published newer, don't overwrite it: merge that
+   session's branch (the newest pushed `claude/*` branch) into yours, rebuild, publish.
+4. **Right after you publish**, push and open a pull request to `main` with the same work, and say so to the owner: the next chat starts from
+   `main`, so work left on a side branch gets lost to it. Never leave a published change only on a side branch.
+
 ## THE MARKET: the one official map
 
 **THE MARKET** (owner, 17 Oct 2026: "one official MARKET map im gona start filling in") is the game's map here: every place the owner adds goes
 into it, on its street or under it (the subway's level), next to what's there; not new separate pages. It's built to `dist/market.html` and
-published to its own artifact, **https://claude.ai/artifact/X2Bk8UjQKP8yfLdLtVVn3s** (update that one, keep its link; don't make new pages for
-new places). (Another session published to PnmQqhkusfewby35tf4zo5 for a while, a link the owner's main session can't open or update: 17 Oct 2026, version 47 back on X2Bk.) (17 Oct 2026, later: X2Bk could not be opened from this session's account, so the tomato and his friends and the opening view went to **PnmQqhkusfewby35tf4zo5**, version 15; try X2Bk first, then PnmQ.) A place's code is its own file in `src/`; `map-pre.js` says where each place stands (its offset, its level), `map-post.js` joins
+published to its own artifact, **https://claude.ai/artifact/PnmQqhkusfewby35tf4zo5** (18 Oct 2026: the one link; update that one, keep its link;
+don't make new pages for new places; the old X2Bk8UjQKP8yfLdLtVVn3s can't be updated from this account). (Another session published to PnmQqhkusfewby35tf4zo5 for a while, a link the owner's main session can't open or update: 17 Oct 2026, version 47 back on X2Bk.) (17 Oct 2026, later: X2Bk could not be opened from this session's account, so the tomato and his friends and the opening view went to **PnmQqhkusfewby35tf4zo5**, version 15; try X2Bk first, then PnmQ.) A place's code is its own file in `src/`; `map-pre.js` says where each place stands (its offset, its level), `map-post.js` joins
 them (the ground, the levels, what cuts away). Its first places: the bodega, the pool room, the subway station and its stairs.
 
 **Not updated any more** (owner, 17 Oct 2026: "stop updating tsfm im not working there anymore"): nothing goes to `bralynnb/tsfm` from here; the copy there stays as it was last merged (version 8.0.2, the reorganized map, at his word "go live" on 18 Oct 2026: [bralynnb/tsfm#802](https://github.com/bralynnb/tsfm/pull/802), his to merge; before it 8.0.1: at his word, "pull in all merges and go live", [bralynnb/tsfm#801](https://github.com/bralynnb/tsfm/pull/801); before it 8.0.0, [bralynnb/tsfm#800](https://github.com/bralynnb/tsfm/pull/800), 7.9.9, [bralynnb/tsfm#799](https://github.com/bralynnb/tsfm/pull/799), and 7.9.8, [bralynnb/tsfm#798](https://github.com/bralynnb/tsfm/pull/798)); ask before each update there. The artifact link is where THE MARKET is played. What follows is the old way, for the record.

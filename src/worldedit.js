@@ -2,8 +2,7 @@
 // change it (size, direction, shape, color, opaque, etc) ... let me also type something in a box to describe the change and you do it").
 // Shift+E in and out. A double click on a thing (the shop's things, the station's benches, columns, signs, signals, the train) picks it, lit
 // by a box; then: drag it along the ground, the arrows and UP / DOWN, TURN, SIZE (all of it, or its width, height, depth), COLOUR (a tint),
-// SEE-THROUGH (dithered, the pixel art's way), DELETE, back as it was. (DESCRIBE taken out, owner 18 Oct 2026)
-// Kept in this browser; what he bumps into stays where it was (for now) ----
+// SEE-THROUGH (dithered, the pixel art's way), DELETE, back as it was. (DESCRIBE, a change in words for Claude: taken out, owner 18 Oct 2026.) Kept in this browser; what he bumps into stays where it was (for now) ----
 const WE={on:false};
 { const T=TILE, ST={}; let sel=null, box=null, drag=null;
   // a thing's faces: where they were made, their middle; its edit: moved (t), turned (r, degrees about up), sized (s), tint (col), see-through (op), gone (del)
@@ -45,7 +44,7 @@ const WE={on:false};
       <div class="row"><span class="lab">COLOUR</span><input type="color" id="wcol"><button class="btn" id="wcol0">NONE</button></div>
       <div class="row"><span class="lab">SEE-THROUGH</span><input type="range" id="wop" min="0" max="0.9" step="0.01"></div>
       <div class="row"><button class="btn" id="wdel">DELETE</button><button class="btn" id="wback">BACK AS IT WAS</button></div>
-      </div>
+</div>
     <div class="row" style="margin-top:10px"><button class="btn" id="wall">EVERYTHING BACK</button><button class="btn" id="wout">DONE (SHIFT+E)</button></div>
     <div class="dim">what he bumps into stays where it was, for now</div></div>`;
   document.body.appendChild(P); const $=s=>P.querySelector(s);

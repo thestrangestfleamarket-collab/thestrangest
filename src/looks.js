@@ -86,7 +86,11 @@ const LOOKS={};
   // HIS SHADOWS, REAL (owner, 17 Oct 2026: "i should see more shadows on the person, make it realistic, all his body cast shadow, his right arm
   // should cast shadow on his body"): his own shadow on him falls from the light that's really on him: the sun by day, the nearest lamp at
   // night (not his fixed one), on a finer map, a little deeper by default
-  LOOKS.light=()=>{ const sun=CLOCK.sun; if(sun&&sun.intensity>.3&&LVL==='up'){ W3.Lw.copy(sun.position).sub(sun.target.position).normalize(); return; }
-    let best=null, bd=1e9; for(const S of SHL){ if(!(S.intensity>0))continue; const d=S.position.distanceTo(new THREE.Vector3(pos.x,py+1.2*TILE,pos.z)); if(d<bd){ bd=d; best=S; } }
-    if(best)W3.Lw.set(best.position.x-pos.x,best.position.y-(py+1.2*TILE),best.position.z-pos.z).normalize(); };
+  // (eased, owner 18 Oct 2026, walking under a light: "its rapidly changing and it looks like stuttering": the way to a lamp overhead swings a long
+  // way in a step, and the nearer of two lamps flipped; now the light is LITE's held first lamp, and its way turns toward the new at a rate)
+  const LT=new THREE.Vector3(); let lt0=performance.now();
+  LOOKS.light=()=>{ const now=performance.now(), k=1-Math.exp(-Math.min(.1,(now-lt0)/1000)*7); lt0=now; const sun=CLOCK.sun;
+    if(sun&&sun.intensity>.3&&LVL==='up')LT.copy(sun.position).sub(sun.target.position).normalize();
+    else{ const best=SHL.find(S=>S.intensity>0); if(!best)return; LT.set(best.position.x-pos.x,Math.max(.25*TILE,best.position.y-(py+1.2*TILE)),best.position.z-pos.z).normalize(); }
+    if(!(W3.Lw.lengthSq()>.5))W3.Lw.copy(LT); else W3.Lw.lerp(LT,k).normalize(); };
   apply(); }

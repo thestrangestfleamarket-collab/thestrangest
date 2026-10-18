@@ -14,6 +14,7 @@
 const APTS={};
 { const {X,Y,Z,gbox,faceTex,bq,C,facade,FRAME,place}=BOD, {speck,hash}=BOD.g, {MKS,CATALOG,PROPS,STUDIO,LSEED,STORY,sh}=BOD.K, S=STORY, ST=5, AH=ST*S, W=LSEED.walk, T=.1;
   const A=(o=>({x0:50.4+o.x/BLDK,x1:57.9+o.x/BLDK,y0:W-14+o.y/BLDK,y1:W+o.y/BLDK}))(LAY.o('house')), m=(A.x0+A.x1)/2, H={y0:A.y0+5.6,y1:A.y0+8.4}, hm=(H.y0+H.y1)/2, DW=.78, DH=94;   // the lot, the hall, the doors 1.56 x 94 as the bodega's
+  const HOLLOW=true;   // (the main apartment building's one floor: below)
   APTS.A=A; APTS.H=H; const TEX={}; for(const k in TEXTURES)TEX[k]={w:TEXTURES[k].w,h:TEXTURES[k].h,c:Uint8Array.from(atob(TEXTURES[k].c),c=>c.charCodeAt(0))};   // (the owner's textures, their bytes)
   const tex=(nm,i,j)=>{ const t=TEX[nm], k=(((j%t.h)+t.h)%t.h)*t.w+(((i%t.w)+t.w)%t.w), c=t.c; return [c[k*3],c[k*3+1],c[k*3+2]]; };
   // ---- the outside: the owner's brick, a concrete plinth, a stone band each storey, the cornice; round a hole its lintel and sill
@@ -64,7 +65,9 @@ const APTS={};
   const WIN=(z)=>[A.x0+1.5,m,A.x1-1.5].map(x=>({a0:x-.55,a1:x+.55,z0:z+42,z1:z+94})), holesF=[], holesB=[];
   const door={a0:A.x1-1.0-DW,a1:A.x1-1.0+DW,z0:0,z1:DH,door:true};
   holesF.push(door,...[A.x0+1.5,m].map(x=>({a0:x-.55,a1:x+.55,z0:42,z1:94}))); for(let lv=1;lv<ST;lv++)holesF.push(...WIN(lv*S)); for(let lv=0;lv<ST;lv++)holesB.push(...WIN(lv*S));
-  const outer=(id,ax,at,a0,a1,holes,inS,nx,nz)=>wall({id,ax,at,a0,a1,z0:0,z1:AH,holes,cut:true,nx,nz,paint:(s,u,z)=>s===inS?plaster(u,z%S,ax==='x'?.84:.68,false):brick(u,z,ax==='x'?1:.8,AH,holes)});
+  // (the ground floor's inside the cottage's: moss-green plaster in its three greens over an oak skirting, the trim's line at the top; HOLLOW only)
+  const moss=(u,z,f)=>{ if(z<6)return sh([110,92,58],f*(z<1?.7:z>4?1.15:1)); if(z>S-6)return sh([162,138,90],f*(z>S-2?.8:1)); const n=hash(Math.floor(u*24/3),Math.floor(z/3),37), m2=hash(Math.floor(u*24),Math.floor(z),38); return sh(n<.3?[67,77,36]:n>.8?[102,112,58]:[85,96,47],f*(m2<.05?.9:1)); };
+  const outer=(id,ax,at,a0,a1,holes,inS,nx,nz)=>wall({id,ax,at,a0,a1,z0:0,z1:AH,holes,cut:true,nx,nz,paint:(s,u,z)=>s===inS?(HOLLOW&&z<S?moss(u,z,ax==='x'?.84:.68):plaster(u,z%S,ax==='x'?.84:.68,false)):brick(u,z,ax==='x'?1:.8,AH,holes)});
   outer('front','x',A.y1,A.x0,A.x1,holesF,-1,0,-1); outer('back','x',A.y0,A.x0,A.x1,holesB,1,0,1); outer('west','y',A.x0,A.y0-T,A.y1+T,[],1,1,0); outer('east','y',A.x1,A.y0-T,A.y1+T,[],-1,-1,0);
   let seed=3; for(const h of holesF)if(!h.door)pane({ax:'x',at:A.y1},h,hash(seed++,1,9)<.55,seed); for(const h of holesB)pane({ax:'x',at:A.y0},h,hash(seed++,1,9)<.55,seed);
   for(let lv=1;lv<ST;lv++){ escape(A.y1,1,lv*S+38,A.x0+.9,A.x1-.9,lv===1?70:S-36); escape(A.y0,-1,lv*S+38,A.x0+.9,A.x1-.9,lv===1?70:S-36); }
@@ -80,7 +83,7 @@ const APTS={};
   // THE MAIN APARTMENT BUILDING, HOLLOW (owner, 18 Oct 2026: "i want this to be the main apartment building. the inside is completely empty (no
   // walls, furn, doors etc)"): its outer walls, windows, fire escapes and front door as they were; inside one floor of boards over the whole of it,
   // no rooms' walls, no doors, no floors or ceilings above, two lamps so it isn't black (HOLLOW false: the floors and rooms as they were)
-  const HOLLOW=true; APTS.floors=HOLLOW?1:ST;
+  APTS.floors=HOLLOW?1:ST;
   for(let lv=0;lv<ST;lv++){ if(HOLLOW){ if(lv===0)flat(A.x0,A.y0,A.x1,A.y1,1,boards); continue; } const z=lv*S, R=rooms(lv), Ym=y=>2*hm-y;
     { const zf=lv>0?z:1; for(const [r,col] of [[R.liv,boards],[R.bed,boards],[R.kit,tiles],[R.bath,tiles]]){ flat(r.x0,r.y0,r.x1,r.y1,zf,col); flat(r.x0,Ym(r.y1),r.x1,Ym(r.y0),zf,col); }
       flat(A.x0,H.y0,A.x1,H.y1,lv>0?z:1,lino);   // (the hall's floor whole: no flight, owner 17 Oct 2026)   // (the hall, but over the flight below; the ground floor's a hair up, over the lot's grass)
@@ -122,7 +125,31 @@ const APTS={};
   for(let lv=0;lv<ST;lv++){ if(HOLLOW)continue; const R=rooms(lv), yl=R.liv.y0, seg=(ax,at,a0,a1,holes)=>{ let a=a0; for(const h of [...holes].sort((p,q)=>p.a0-q.a0)){ if(h.a0>a)SOLS[lv].push(ax==='x'?[X(a),Z(at-T),X(h.a0),Z(at+T)]:[X(at-T),Z(a),X(at+T),Z(h.a0)]); a=h.a1; } if(a1>a)SOLS[lv].push(ax==='x'?[X(a),Z(at-T),X(a1),Z(at+T)]:[X(at-T),Z(a),X(at+T),Z(a1)]); };
     const dr=a=>({a0:a-DW,a1:a+DW}); seg('x',H.y1,A.x0,A.x1,[dr(A.x0+1.5),...(R.pass?[dr(A.x1-.75)]:[])]); seg('x',H.y0,A.x0,A.x1,[dr(A.x1-1.5)]);
     for(const f of [1,-1]){ const Yf=y=>f>0?y:2*hm-y, yL=Yf(yl), ya=Math.min(yL,Yf(H.y1)), yb=Math.max(yL,Yf(H.y1)); seg('x',yL,A.x0,R.bed.x1,[dr(A.x0+1.6),dr(A.x0+3.9),dr(A.x0+5.4)]); seg('y',R.kit.x1,ya,yb,[]); seg('y',R.bath.x1,ya,yb,[]); if(R.pass&&f>0)seg('y',R.pass.x0,H.y1,A.y1,[]); } }
-  for(const L of LIGHTS){ const P=new THREE.PointLight(L.c,0,6.5*TILE,1.6); P.position.set(L.x,L.y,L.z); P.userData.i0=L.i; P.userData.in=cur=>!!cur&&APTS.in&&P.position.y>cur.y0-.3&&P.position.y<cur.y1-.5; scene.add(P); L.light=P; }   // (in: the whole floor's lamps light your room, not just the one in it: the rooms were dark; map-post.js's LITE)
+  // ---- THE COTTAGE, EVERYONE'S START (owner, 18 Oct 2026: "i want this to be the default room people start in ... the one with the fire
+  // escapes"; "make it anyone's cottage who starts ... fill entire floor of apartment"; his picks: one big cottage room, in the game's pixel style):
+  // the old game's Herb Cottage, its own pieces from its own makers ("Preset Herb Cottage 1", the page rooms' kit), set out over the whole ground
+  // floor (7.5 x 14 tiles where the cottage was 9 x 12): each piece that stood against a wall still against the same wall, the rest spread with
+  // the room; its walls, roof, floor, ivy and door step left out (the house has its own); its window's branch rod with the hanging pothos and its
+  // green drapes at every one of the floor's five windows, narrowed to them; the cabinet and the folding screen moved where they'd block nothing
+  // (a window, the door). Its candles live flames (fire.js), its lamps the floor's own (lit only while you're in). All in the batch (drawn only
+  // near the door: interiors.js)
+  if(HOLLOW){ const K=BOD.STOREK, CAT=K.CATALOG, PRE=K.PRESETS['Preset Herb Cottage 1']||[], WX=A.x1-A.x0, WY=A.y1-A.y0, E=1.1, n0=K.LAMPS.length, MADE=[];
+    const mu=(c,h,L,W)=>c-h<E?c:c+h>L-E?W-(L-c):E+(c-E)*(W-2*E)/(L-2*E);   // (a wall's piece keeps its distance from that wall; the rest spread)
+    const put=(k,x,y,rot=0,sx=1)=>{ const f=CAT[k]; if(!f)return null; const p=f(+x.toFixed(3),+y.toFixed(3)); if(!p)return null;
+      if(sx!==1){ const sc=v=>x+(v-x)*sx; for(const b of p.boxes){ b.x0=sc(b.x0); b.x1=sc(b.x1); } p.x0=sc(p.x0); p.x1=sc(p.x1); if(p.solids)for(const b of p.solids){ b.x0=sc(b.x0); b.x1=sc(b.x1); } }
+      p.kind=k; place(p,rot); BATCH.tag=OBJ('apartments','cottage: '+k); for(const b of p.boxes)gbox(b,'A'); BATCH.tag=null; MADE.push(p); return p; };
+    const SKIP=/herb cottage (floor|wall|roof)|ivy along|door step|window sill and branch rod|green drapes/, MOVE={'apothecary cabinet':[A.x1-.06,A.y0+9.8,1],'folding screen':[A.x1-.2,A.y0+11.9,1],'framed flower print':[A.x0+2.62,A.y0+.03,0],'cottage wall clock':[A.x0+2.62,A.y1-.04,0],'shelf with jars and a candle':[A.x0+5,A.y1-.15,0]};
+    for(const [k,x,y] of PRE){ if(SKIP.test(k))continue; if(MOVE[k]){ put(k,...MOVE[k]); continue; } const f=CAT[k]; if(!f)continue; const p0=f(0,0); if(!p0)continue; put(k,A.x0+mu(x,(p0.x1-p0.x0)/2,9,WX),A.y0+mu(y,(p0.y1-p0.y0)/2,12,WY)); }
+    // the windows' greenery: the branch rod and its pothos, the drapes, each narrowed to its window (back: as made; front: turned to face in)
+    for(const [x,back] of [[A.x0+1.5,1],[m,1],[A.x1-1.5,1],[A.x0+1.5,0],[m,0]]){ const y=back?A.y0:A.y1; put('window sill and branch rod',x,back?y+.08:y-.08,back?0:2,.56); put('green drapes',x,back?y+.045:y-.045,back?0:2,.6); }
+    // the floor's own light warmer for a cottage; its candles' and lamps' light, the strongest six, lit only while you're in
+    for(const L of LIGHTS){ L.c=0xffd2a0; L.i=6; }
+    K.LAMPS.slice(n0).filter(l=>!l.off&&l.r>0&&Math.max(...l.c)>0).sort((a,b)=>b.r-a.r).slice(0,6).forEach(l=>{ const cm=Math.max(...l.c); LIGHTS.push({x:X(l.x),y:Y(l.z),z:Z(l.y),c:new THREE.Color(l.c[0]/cm,l.c[1]/cm,l.c[2]/cm).getHex(),i:5*cm*Math.min(1.2,l.r/5),flame:1}); });
+    K.LAMPS.length=n0; APTS.made=MADE;
+    // where a new player first stands: in the middle of the cottage, facing the front windows
+    APTS.home={x:X(A.x0+WX*.42),z:Z(A.y0+WY*.55),y:0,hd:0}; }
+  for(const L of LIGHTS){ const P=new THREE.PointLight(L.c,0,(L.flame?4:6.5)*TILE,1.6); P.position.set(L.x,L.y,L.z); P.userData.i0=L.i; P.userData.in=cur=>!!cur&&APTS.in&&P.position.y>cur.y0-.3&&P.position.y<cur.y1-.5; scene.add(P); L.light=P; }   // (in: the whole floor's lamps light your room, not just the one in it: the rooms were dark; map-post.js's LITE)
+  if(HOLLOW&&APTS.made&&typeof FLAME!=='undefined'&&FLAME.props)FLAME.props(APTS.made,X,Y,Z,LIGHTS.filter(L=>L.flame).map(L=>L.light));   // (the cottage's candles' flames, live, each flickering with its own light)
   // where you stand in it: the floor under you (the flight carries you between floors), which rooms' solids count, the clip above your ceiling
   const SY=Y(S), x0s=X(A.x0), x1s=X(A.x1), z0s=Z(A.y0), z1s=Z(A.y1), sx0=X(STX[0]), sx1=X(STX[1]), sz0=Z(STY[0]), sz1=Z(STY[1]);
   APTS.inside=(x,z)=>x>x0s&&x<x1s&&z>z0s&&z<z1s;

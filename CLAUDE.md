@@ -782,3 +782,11 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   some 70 mushrooms and three baskets; he stands behind it facing the gate, held there (no roaming, no life of lives.js); built once the park is.
 - **Guards out of sight walk their beats** (18 Oct 2026, found with the droids standing still): lives.js's far stepper calls `N.pick()`, which
   makeNPC never gave; it does now.
+- **Libraries for what was hand-written** (owner, 18 Oct 2026: "is there another game engine that makes more sense" — no, three.js stays; then
+  "lets start installing libraries for thinsg weve hand written"): **three-mesh-bvh** (0.8.3 from jsDelivr, `src/bvh.js`) for every ray (a double
+  click, the drag's pivot, the world and map editors' picks): fetched 2.5 s after the game runs, its trees built in the background a mesh a moment
+  ('indirect', so faceIndex and interiors.js's index swaps stay as they were; a mesh that keeps changing keeps three's own), and a hidden mesh (or
+  one in a hidden group) no longer looked at by any ray. `?bvh=0` the old rays. `tests/bvhcheck.cjs`: 169 rays over the street, every hit the same,
+  2.5 s to 0.34 s (software rendering). Looked at and **not** taken: recast-navigation for `CITY.route` (the A* there judges each walker's way by
+  his own test of a spot, which a navmesh can't; routes are 2-20 ms already); BatchedMesh's per-object culling (needs three past r160, and
+  map-pre.js patches r160's shader chunks by their text).

@@ -19,9 +19,15 @@ open('dist/market.html', 'w').write(page)
 
 code = '\n'.join([read('src/avatar/pre.js')] + [one(n) for n in ['walker3d', 'save', 'editor', 'animator', 'looks', 'avatar', 'avmove']] + [read('src/avatar/post.js')])
 open('dist/avatar.html', 'w').write(data(read('src/avatar/page.html').replace('__RIG__', one('rig')).replace('__CODE__', code)))
+open('dist/door.html', 'w').write(read('src/door/door.html'))
+pages = ['dist/market.html', 'dist/avatar.html', 'dist/door.html']
 
 if os.environ.get('MIN', '1') != '0':
     if not os.path.exists('node_modules/esbuild'):
         subprocess.run(['npm', 'install', '--no-audit', '--no-fund'], check=True)
-    subprocess.run(['node', 'tools/minify.cjs', 'dist/market.html', 'dist/avatar.html'], check=True)
-print('built dist/market.html, dist/avatar.html', len(src), 'files,', ny, 'breaths')
+    subprocess.run(['node', 'tools/minify.cjs'] + pages, check=True)
+for f in pages:
+    t = read(f)
+    if t.count('<!--') != t.count('-->') or not t.startswith('<') or t.startswith('<!--'):
+        sys.exit(f + ': broken page (an unclosed <!-- or no page at the top)')
+print('built', ', '.join(pages), len(src), 'files,', ny, 'breaths')

@@ -1644,3 +1644,19 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   shadow lamp, no new program. The fillers are solid boxes, no way in. `BLOCKDBG()`. Not yet: insides, names on the back row's river side,
   characters walking the alley and the promenade. Found on the way: `build.py`'s glob took only `NNN-` names, so an inserted `NNNa-` file (as
   CLAUDE.md suggests) was never built; it takes `NNN*-` now.
+
+## The website moves here (18 Oct 2026)
+
+**The white screen** (owner, 18 Oct 2026: "https://thestrangestfleamarket.com/ is just shownig white screen now"): the copy of THE MARKET
+in `bralynnb/tsfm` (`market/market.html`, from [bralynnb/tsfm#808](https://github.com/bralynnb/tsfm/pull/808)) had a note pasted on top that
+opened `<!--` and never closed it, so the whole page was a comment. Our `dist/market.html` was fine; the hand copy broke it.
+
+**One repo for the site** (owner, 18 Oct 2026: "i want to change the framwork completely", then "1. go 3. after"): this repo becomes the
+whole website, so nothing is copied by hand. The door page (`src/door/door.html`, from `tsfm/door/door.html`, comments taken out) and
+the door's server (`worker/door.js`: `/`, `/enter`, `/join/check`, `/join`, from `tsfm/worker/door.js`; the multiplayer room and the
+sound files left behind, THE MARKET uses neither) live here, with `wrangler.jsonc` (a new Cloudflare worker, `thestrangest`). `build.py`
+writes `dist/door.html` too and stops on an unclosed `<!--`. `tests/site.cjs` runs the real worker locally and checks the door shows, a
+login gets THE MARKET and it starts, and no file is handed out by itself; `.github/workflows/site.yml` runs it on every push and pull
+request. Still to do, the owner's: the deploy step (Cloudflare token), moving the domain from the `tsfm` worker to `thestrangest`.
+Next after this: the code as ordinary modules (option 3).
+

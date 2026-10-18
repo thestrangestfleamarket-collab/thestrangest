@@ -13,6 +13,7 @@ Look there before changing how something looks or behaves, and add a short dated
   of the file before or after it. `000`/`002`/`end` are the page's HTML, `001-rig.js` the Walker's rig, the rest the game's
   module. `game-*.js` are the old game's own makers, copied in (the build no longer reads `bralynnb/tsfm`).
   `main*.js` are the page's own glue code between places. `src/avatar/` holds the standalone avatar editor's own three files.
+  `src/door/door.html` is the website's door (invite code, login); `worker/door.js` the website's server (`wrangler.jsonc`).
 - **No comments anywhere in `src/`**: not in code, not in shader text, not in HTML or CSS. Keep code short; history goes in
   `docs/HISTORY.md` and in git, never in the source.
 - `data/*.json`: baked models, clips and textures, put in where the code says `__DATA__("data/x.json")`.
@@ -24,7 +25,7 @@ Look there before changing how something looks or behaves, and add a short dated
 
 `python3 build.py`: joins `src/`, puts in the data and the build stamp (`__BUILDV__`), adds the loading breaths
 (`tools/yields.py`), minifies with esbuild (`tools/minify.cjs`; `npm install` once) and writes `dist/market.html` and
-`dist/avatar.html`. `MIN=0 python3 build.py` keeps them readable for debugging.
+`dist/avatar.html` and `dist/door.html`; it stops if a page has an unclosed `<!--`. `MIN=0 python3 build.py` keeps them readable for debugging.
 
 ## Publishing: one line of work
 
@@ -35,6 +36,12 @@ Several chats work at once, each on its own branch, all publishing to the same l
 4. Right after publishing, push and open a pull request to `main`, and tell the owner.
 5. After every publish: `ArtifactData set meta/build {v: <BUILDV>}` (grep `market-build` in `dist/market.html`), and publish
    without `capabilities` so the page keeps `db` (open copies show A NEW VERSION IS READY).
+
+## The website (thestrangestfleamarket.com)
+
+Moving here from `bralynnb/tsfm` (owner, 18 Oct 2026). This repo is the whole site: `worker/door.js` serves `/` (THE MARKET to a
+checked login, the door to anyone else) from `dist/`. `.github/workflows/site.yml` builds and runs `tests/site.cjs` (the real worker
+under `wrangler dev`: the door shows, THE MARKET starts) on every push and pull request. Never copy `market.html` anywhere by hand.
 
 ## The rules (the owner's; details and the rest in docs/HISTORY.md)
 

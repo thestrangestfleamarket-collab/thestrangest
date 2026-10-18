@@ -25,6 +25,7 @@ var sun: DirectionalLight3D
 var env: Environment
 var mats: Array[ShaderMaterial] = []
 var lamps: Array = []
+var oak_at: Array = []
 var lamp_key := ""
 var lamp_sh: OmniLight3D
 var walker: MeshInstance3D
@@ -63,6 +64,9 @@ var keys := {}
 var noshadow := false
 var shd := ""
 var shot_at := 40
+var zoom0 := 1.0
+var seq := ""
+var release_at := -1
 
 func _ready() -> void:
 	var args := OS.get_cmdline_user_args()
@@ -77,6 +81,9 @@ func _ready() -> void:
 		if a.begins_with("--hold="):   # (a test's: keys held from the start, as "w,shift")
 			for k in a.substr(7).split(","): keys[k] = true
 		if a.begins_with("--frames="): shot_at = int(a.substr(9))
+		if a.begins_with("--seq="): seq = a.substr(6)   # (a test's: every 2nd frame saved into this folder until the shot)
+		if a.begins_with("--release="): release_at = int(a.substr(10))   # (a test's: the held keys let go at this frame)
+		if a.begins_with("--zoom="): zoom0 = float(a.substr(7))   # (a test's: the opening zoom times this)
 		if a.begins_with("--at="):
 			var p := a.substr(5).split(",")
 			pos = Vector3(float(p[0]), 0.0, float(p[1]))
@@ -85,11 +92,10 @@ func _ready() -> void:
 	_build_view()
 	_build_world()
 	_build_walker()
-	if pos == Vector3.ZERO:
-		var s: Array = W.start.pos
-		pos = Vector3(s[0], s[1], s[2])
+	if pos == Vector3.ZERO:   # (the opening: in the park among the oaks, in the grass (owner, 18 Oct 2026: "let me see"); the bodega over the wall, its gate east; ?at=9.9,1.6 its front)
+		pos = Vector3(-1.0, 0.0, 31.0)
 		heading = W.start.hd
-	ppu = W.cv.ppu
+	ppu = W.cv.ppu * zoom0
 	ppu_to = ppu
 	_set_hour(hour)
 	lamp_key = ""
@@ -170,11 +176,13 @@ func _f32(b: PackedByteArray, off: int, n: int) -> PackedFloat32Array:
 
 func _build_world() -> void:
 	var bin := FileAccess.get_file_as_bytes("res://data/world.bin")
+	bound = W.R
 	var tex := []
 	for t in W.tex:
 		var img := Image.new()
 		img.load_png_from_buffer(FileAccess.get_file_as_bytes("res://data/tex%d.pngdata" % int(t.i)))
 		tex.append(ImageTexture.create_from_image(img))
+		tex_img.append(img)
 	var SH := {
 		"lit": load("res://shaders/world.gdshader"), "lit_glass": load("res://shaders/world_glass.gdshader"),
 		"unlit": load("res://shaders/world_unlit.gdshader"), "unlit_glass": load("res://shaders/world_unlit_glass.gdshader"),
@@ -229,6 +237,36 @@ func _build_world() -> void:
 			mi.material_override = m
 			mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_DOUBLE_SIDED if G.get("cs", true) and not glass and not add else GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 			vp.add_child(mi)
+	_grass(bin)
+	# THE OAKS (park.js): three of the park's, on the lawn past the far sidewalk across from the bodega (in THE MARKET they stand deeper in the
+	# park); each sways and is lit as THE MARKET's (shaders/tree.gdshader); their trunks solid
+	var om := ShaderMaterial.new()
+	om.shader = load("res://shaders/tree.gdshader")
+	mats.append(om)
+	var spots := [Vector2(5.0, 27.0), Vector2(12.5, 29.5), Vector2(21.0, 26.5)]
+	for k in mini(W.get("oaks", []).size(), spots.size()):
+		var O: Dictionary = W.oaks[k]
+		var n := int(O.n)
+		var P := _f32(bin, int(O.pos), n * 3); var N := _f32(bin, int(O.nrm), n * 3); var C := _f32(bin, int(O.col), n * 3)
+		var SW := _f32(bin, int(O.sw), n * 2); var TR := _f32(bin, int(O.tr), n * 3)
+		var vv := PackedVector3Array(); var nn := PackedVector3Array(); var cc := PackedColorArray(); var c0 := PackedFloat32Array(); var c1 := PackedFloat32Array()
+		for t in range(n / 3):
+			for v in [t * 3, t * 3 + 2, t * 3 + 1]:   # (the winding turned, as the world's)
+				vv.append(Vector3(P[v * 3], P[v * 3 + 1], P[v * 3 + 2])); nn.append(Vector3(N[v * 3], N[v * 3 + 1], N[v * 3 + 2]))
+				cc.append(Color(C[v * 3], C[v * 3 + 1], C[v * 3 + 2])); c0.append_array([SW[v * 2], SW[v * 2 + 1]]); c1.append_array([TR[v * 3], TR[v * 3 + 1], TR[v * 3 + 2]])
+		var arr := []
+		arr.resize(Mesh.ARRAY_MAX)
+		arr[Mesh.ARRAY_VERTEX] = vv; arr[Mesh.ARRAY_NORMAL] = nn; arr[Mesh.ARRAY_COLOR] = cc; arr[Mesh.ARRAY_CUSTOM0] = c0; arr[Mesh.ARRAY_CUSTOM1] = c1
+		var am := ArrayMesh.new()
+		am.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arr, [], {}, (Mesh.ARRAY_CUSTOM_RG_FLOAT << Mesh.ARRAY_FORMAT_CUSTOM0_SHIFT) | (Mesh.ARRAY_CUSTOM_RGB_FLOAT << Mesh.ARRAY_FORMAT_CUSTOM1_SHIFT))
+		var mi := MeshInstance3D.new()
+		mi.mesh = am
+		mi.material_override = om
+		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_DOUBLE_SIDED
+		mi.extra_cull_margin = 1.0   # (the sway carries the crown a little past its box)
+		var sp: Vector2 = spots[k]
+		vp.add_child(mi)
+		oak_at.append([mi, sp])
 	# the lamps: records (LITE's), lit in the shaders (world.gdshaderinc, walker.gdshader)
 	for L in W.lamps:
 		lamps.append({"p": Vector3(L.p[0], L.p[1], L.p[2]), "c": Vector3(L.c[0], L.c[1], L.c[2]) * float(L.i), "d": float(L.d), "dec": float(L.dec),
@@ -242,8 +280,114 @@ func _build_world() -> void:
 	vp.add_child(lamp_sh)
 	# the ground's height and the solids
 	gnd = FileAccess.get_file_as_bytes("res://data/ground.bin").to_float32_array()
-	solids = W.sol
+	solids = W.sol.duplicate()
 	bound = W.R
+	for o in oak_at:   # (on the ground where they stand; their trunks solid)
+		var sp: Vector2 = o[1]
+		o[0].position = Vector3(sp.x, _ground(sp.x, sp.y), sp.y)
+		solids.append([sp.x - 0.35, sp.y - 0.35, sp.x + 0.35, sp.y + 0.35])
+
+# THE GRASS: blades over every lawn face, some 28 a square metre, each its lawn's colour a little varied, a single
+# tapered triangle (in the pixels, a blade a pixel or two wide and some 8 to 12 tall), lighter at its tip; one MultiMesh, one draw
+var grass_mat: ShaderMaterial
+var tex_img: Array[Image] = []
+var trail: Array = []   # (where he was: [x, z, seconds since])
+var trail_t := 0.0
+func _grass(bin: PackedByteArray) -> void:
+	# (the lawn is painted into the atlases: every face lying flat whose picture is green under it grows blades, each the colour of the texel it stands on)
+	var rng := RandomNumberGenerator.new(); rng.seed = 7
+	var xs := []
+	var taken := {}   # (one blade a cell of a fifth of a unit: even, and none twice where two faces lie over each other)
+	for G in W.groups:
+		if not G.lit or int(G.tex) < 0 or float(G.get("op", 1.0)) < 0.999: continue
+		var img: Image = tex_img[int(G.tex)]
+		var iw := img.get_width(); var ih := img.get_height()
+		var n := int(G.n)
+		var P := _f32(bin, int(G.pos), n * 3); var N := _f32(bin, int(G.nrm), n * 3); var U := _f32(bin, int(G.uv), n * 2)
+		for t in range(n / 3):
+			var i := t * 9
+			if absf(N[i + 1]) < 0.8 or P[i + 1] > 1.5: continue
+			var a := Vector3(P[i], P[i + 1], P[i + 2]); var b := Vector3(P[i + 3], P[i + 4], P[i + 5]); var c := Vector3(P[i + 6], P[i + 7], P[i + 8])
+			var ua := Vector2(U[t * 6], U[t * 6 + 1]); var ub := Vector2(U[t * 6 + 2], U[t * 6 + 3]); var uc := Vector2(U[t * 6 + 4], U[t * 6 + 5])
+			# (points scattered over where the face and the test's region overlap, kept if they fall in the face: the ground's faces are big)
+			var x0 := maxf(minf(a.x, minf(b.x, c.x)), float(bound.x0)); var x1 := minf(maxf(a.x, maxf(b.x, c.x)), float(bound.x1))
+			var z0 := maxf(minf(a.z, minf(b.z, c.z)), float(bound.z0)); var z1 := minf(maxf(a.z, maxf(b.z, c.z)), float(bound.z1))
+			if x1 <= x0 or z1 <= z0: continue
+			var e1 := Vector2(b.x - a.x, b.z - a.z); var e2 := Vector2(c.x - a.x, c.z - a.z); var det := e1.x * e2.y - e1.y * e2.x
+			if absf(det) < 1e-6: continue
+			var k := (x1 - x0) * (z1 - z0) * 28.0
+			var cnt := int(k) + (1 if rng.randf() < k - int(k) else 0)
+			for j in cnt:
+				var q := Vector2(rng.randf_range(x0, x1) - a.x, rng.randf_range(z0, z1) - a.z)
+				var u := (q.x * e2.y - q.y * e2.x) / det; var v := (e1.x * q.y - e1.y * q.x) / det
+				if u < 0.0 or v < 0.0 or u + v > 1.0: continue
+				var uv := ua + (ub - ua) * u + (uc - ua) * v
+				var px := img.get_pixel(clampi(int(fposmod(uv.x, 1.0) * iw), 0, iw - 1), clampi(int(fposmod(uv.y, 1.0) * ih), 0, ih - 1))
+				if px.a < 0.5 or not (px.g > px.r * 1.25 and px.g > px.b * 1.25): continue   # (the lawn's green only, not the moss in the paving's seams)
+				var p := a + (b - a) * u + (c - a) * v
+				var cell := Vector2i(floori(p.x * 5.0), floori(p.z * 5.0))
+				if taken.has(cell): continue
+				taken[cell] = true
+				var inside := false
+				for s in W.sol:
+					if p.x > s[0] and p.x < s[2] and p.z > s[1] and p.z < s[3]: inside = true; break
+				if inside: continue
+				xs.append([p, px.srgb_to_linear() * rng.randf_range(0.85, 1.12), rng.randf_range(0.0, TAU), rng.randf_range(0.26, 0.48), rng.randf_range(0.0, TAU)])
+	# the blade: one tapered triangle, its normal up so it takes the light as the lawn does, lighter at its tip
+	var arr := []
+	arr.resize(Mesh.ARRAY_MAX)
+	arr[Mesh.ARRAY_VERTEX] = PackedVector3Array([Vector3(-0.045, 0, 0), Vector3(0.0, 1.0, 0.0), Vector3(0.045, 0, 0)])
+	arr[Mesh.ARRAY_NORMAL] = PackedVector3Array([Vector3.UP, Vector3.UP, Vector3.UP])
+	arr[Mesh.ARRAY_COLOR] = PackedColorArray([Color(0.78, 0.78, 0.78), Color(1.3, 1.3, 1.15), Color(0.78, 0.78, 0.78)])
+	var am := ArrayMesh.new()
+	am.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arr)
+	grass_mat = ShaderMaterial.new()
+	grass_mat.shader = load("res://shaders/grass.gdshader")
+	mats.append(grass_mat)
+	# (in pieces of 8 units, each left out when off the picture: only the grass in view is drawn)
+	var parts := {}
+	for X in xs:
+		var key := Vector2i(floori(X[0].x / 8.0), floori(X[0].z / 8.0))
+		if not parts.has(key): parts[key] = []
+		parts[key].append(X)
+	for key in parts:
+		var L: Array = parts[key]
+		var mm := MultiMesh.new()
+		mm.transform_format = MultiMesh.TRANSFORM_3D
+		mm.use_colors = true
+		mm.use_custom_data = true
+		mm.mesh = am
+		mm.instance_count = L.size()
+		for k in L.size():
+			var X: Array = L[k]
+			var H: float = X[3]
+			mm.set_instance_transform(k, Transform3D(Basis(Vector3.UP, X[4]).scaled(Vector3(1.0, H, 1.0)), X[0]))
+			mm.set_instance_color(k, X[1])
+			mm.set_instance_custom_data(k, Color(X[2], H, 0, 0))
+		var mi := MultiMeshInstance3D.new()
+		mi.multimesh = mm
+		mi.material_override = grass_mat
+		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		mi.extra_cull_margin = 0.6   # (the sway and his parting carry blades a little past the piece's box)
+		vp.add_child(mi)
+	grass_n = xs.size()
+	print("grass blades: ", grass_n)
+
+var grass_n := 0
+# where he walked: a point every tenth of a second he moves (the blades there part and spring back), [0] where he stands
+func _trail(dt: float) -> void:
+	if grass_mat == null: return
+	for e in trail: e[2] += dt
+	trail = trail.filter(func(e): return e[2] < 3.0)
+	trail_t -= dt
+	if moving and trail_t <= 0.0:
+		trail_t = 0.1
+		trail.push_front([pos.x, pos.z, 0.0])
+		if trail.size() > 15: trail.resize(15)
+	var a := PackedVector4Array(); a.resize(16)
+	a[0] = Vector4(pos.x, pos.z, 0.0, 1.0)
+	for k in trail.size(): a[k + 1] = Vector4(trail[k][0], trail[k][1], trail[k][2], 1.0)
+	grass_mat.set_shader_parameter("trail", a)
 
 func _ground(x: float, z: float) -> float:
 	var g: Dictionary = W.ground
@@ -493,12 +637,17 @@ func _process(dt: float) -> void:
 	wmat.set_shader_parameter("self_vp", svp)
 	self_mat.set_shader_parameter("self_vp", svp)
 	_lamps(dt)
+	_trail(dt)
 	_rooms()
 	for m in mats:
 		m.set_shader_parameter("player", pos)
 		m.set_shader_parameter("main_cam", cam.global_position)
 	if shot != "":
 		shot_frames += 1
+		if shot_frames == release_at: keys.clear()
+		if seq != "" and shot_frames >= 10 and shot_frames % 2 == 0:
+			await RenderingServer.frame_post_draw
+			get_viewport().get_texture().get_image().save_png(seq + "/f%04d.png" % shot_frames)
 		if shot_frames == shot_at:
 			await RenderingServer.frame_post_draw
 			get_viewport().get_texture().get_image().save_png(shot)

@@ -832,3 +832,9 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   the test (the street light, the mailbox, the fences, the people). Its own artifact: **https://claude.ai/artifact/A11ZoF3QuZ75dsdbdyQUyh**
   (`python3 godot/tools/pack_web.py`, the .wasm and .pck gzipped and named .wasm to fit and be served). Found on the way, THE MARKET's own: a
   room's lamps light only after LITE's next quarter-second pick (a headless screenshot can come before it).
+  **Then** (18 Oct 2026): the park's oaks (three of them, on the lawn past the far sidewalk; THE MARKET's sway and tree look 3, `tree.gdshader`)
+  and **the grass** (owner: "make the grass out of same as trees, just make it cover the ground (it should move an flow, and when you walk through
+  it be disrupetd by your movement natrually)"): one-triangle blades on every lawn texel, each its colour, swaying in the oaks' wind, parted where he
+  walks and springing back (`grass.gdshader`, `_grass` / `_trail` in `main.gd`); the game opens on the park's lawn. **Paused there** (owner, 18 Oct
+  2026: "lets pause the godot rebuild for now"). Found on the way, in THE MARKET itself: **the oaks aren't drawn on `main`** (the park's
+  reorganization, 5b3dd53, kept their places and models but lost `PARK.trees=mesh(TREES...)`); the Godot bake used a private build with it put back.

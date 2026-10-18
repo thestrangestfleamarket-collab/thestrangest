@@ -2,8 +2,7 @@
 // change it (size, direction, shape, color, opaque, etc) ... let me also type something in a box to describe the change and you do it").
 // Shift+E in and out. A double click on a thing (the shop's things, the station's benches, columns, signs, signals, the train) picks it, lit
 // by a box; then: drag it along the ground, the arrows and UP / DOWN, TURN, SIZE (all of it, or its width, height, depth), COLOUR (a tint),
-// SEE-THROUGH (dithered, the pixel art's way), DELETE, back as it was. DESCRIBE: a change in words, Claude turns it into these same edits
-// (on the artifact page, where the page may ask Claude). Kept in this browser; what he bumps into stays where it was (for now) ----
+// SEE-THROUGH (dithered, the pixel art's way), DELETE, back as it was. (DESCRIBE, a change in words for Claude: taken out, owner 18 Oct 2026.) Kept in this browser; what he bumps into stays where it was (for now) ----
 const WE={on:false};
 { const T=TILE, ST={}; let sel=null, box=null, drag=null;
   // a thing's faces: where they were made, their middle; its edit: moved (t), turned (r, degrees about up), sized (s), tint (col), see-through (op), gone (del)
@@ -45,8 +44,7 @@ const WE={on:false};
       <div class="row"><span class="lab">COLOUR</span><input type="color" id="wcol"><button class="btn" id="wcol0">NONE</button></div>
       <div class="row"><span class="lab">SEE-THROUGH</span><input type="range" id="wop" min="0" max="0.9" step="0.01"></div>
       <div class="row"><button class="btn" id="wdel">DELETE</button><button class="btn" id="wback">BACK AS IT WAS</button></div>
-      <div class="dim" style="margin-top:10px">DESCRIBE A CHANGE</div><textarea id="wsay" placeholder="e.g. make it twice as tall and dark red, turn it to face the door"></textarea>
-      <div class="row"><button class="btn" id="wdo">DO IT</button><span class="dim" id="wans"></span></div></div>
+</div>
     <div class="row" style="margin-top:10px"><button class="btn" id="wall">EVERYTHING BACK</button><button class="btn" id="wout">DONE (SHIFT+E)</button></div>
     <div class="dim">what he bumps into stays where it was, for now</div></div>`;
   document.body.appendChild(P); const $=s=>P.querySelector(s);
@@ -68,23 +66,6 @@ const WE={on:false};
   $('#wback').onclick=()=>change(e=>{ Object.assign(e,E0()); });
   $('#wall').onclick=()=>{ if(!confirm('Put everything back as it was?'))return; for(const o of OBJS)if(ST[o.id]){ ST[o.id]=E0(); apply(o); delete ST[o.id]; } settle(); save(); frame(); draw(); };
   $('#wout').onclick=()=>WE.toggle();
-  // DESCRIBE: the words, the thing and where it stands to Claude; back, the same edits as the buttons make
-  let sample=null; if(window.claude&&window.claude.use)window.claude.use('sample').then(s=>{ sample=s; }).catch(()=>{});   // (null away from the artifact page)
-  $('#wdo').onclick=async()=>{ const say=$('#wsay').value.trim(); if(!sel||!say)return; if(!sample){ $('#wans').textContent='only on the artifact page (it asks Claude)'; return; }
-    const e=stOf(sel), b=new THREE.Box3(); for(const p of sel.parts){ const a=p.me.geometry.attributes.position.array; for(let i=0;i<6;i++)b.expandByPoint(v.fromArray(a,(p.v0+i)*3)); } const sz=b.getSize(new THREE.Vector3()).divideScalar(T);
-    const near=[...new Set(OBJS.filter(o=>o!==sel&&o.place===sel.place&&o.c&&o.c.distanceTo(sel.c||o.c)<6*T).map(o=>o.name))].slice(0,12);
-    $('#wans').textContent='thinking…'; $('#wdo').disabled=true;
-    try{ const r=await sample.json(`You edit one object in a small 3D pixel-art game world. Units: tiles (a tile is 84 cm), angles in degrees, +y is up.
-The object: "${sel.name}" in the ${sel.place}. Its size now: ${sz.x.toFixed(2)} wide (x), ${sz.y.toFixed(2)} tall (y), ${sz.z.toFixed(2)} deep (z) tiles.
-Its edit so far: moved ${JSON.stringify(e.t.map(x=>+(x/T).toFixed(2)))} tiles, turned ${e.r} degrees, scaled ${JSON.stringify(e.s)}, tint ${e.col}, opacity ${e.op}.
-Things near it: ${near.join(', ')||'none'}.
-The owner asks: "${say}"
-Answer with JSON only, the change to make relative to now (leave out what doesn't change): {"move":[x,y,z] tiles,"turn":degrees,"scale":[x,y,z] multipliers,"color":"#rrggbb" tint or "#ffffff" for none,"opacity":0.1-1,"delete":true|false,"reply":"one short line saying what you did"}. If it can't be done with these, say so in reply and change nothing.`,{modelTier:'quick'});
-      change(st=>{ if(Array.isArray(r.move))for(let k=0;k<3;k++)st.t[k]+=(+r.move[k]||0)*T; if(r.turn)st.r=(st.r+ +r.turn)%360; if(Array.isArray(r.scale))for(let k=0;k<3;k++)st.s[k]=Math.max(.05,Math.min(10,st.s[k]*(+r.scale[k]||1)));
-        if(typeof r.color==='string'&&/^#[0-9a-f]{6}$/i.test(r.color))st.col=r.color; if(r.opacity!=null)st.op=Math.max(.1,Math.min(1,+r.opacity)); if(r.delete===true)st.del=true; });
-      if(r.delete===true){ sel=null; frame(); draw(); } $('#wans').textContent=r.reply||'done'; }
-    catch(err){ $('#wans').textContent=err&&err.code==='rate_limited'?'too many at once: try again in a moment':'that didn\'t work'+(err&&err.code?' ('+err.code+')':''); }
-    $('#wdo').disabled=false; };
   // ---- IN AND OUT; PICKING (a double click); DRAGGING the picked thing along the ground
   WE.toggle=()=>{ WE.on=!WE.on; P.hidden=!WE.on; if(!WE.on){ sel=null; frame(); } draw(); UI.badge&&UI.badge(); };
   const ray=new THREE.Raycaster(), meshes=()=>[...new Set(OBJS.flatMap(o=>o.parts.map(p=>p.me)))].filter(m=>{ let q=m; while(q){ if(!q.visible)return false; q=q.parent; } return true; });

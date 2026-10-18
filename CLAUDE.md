@@ -198,7 +198,7 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
 - **The glow, his pick** (17 Oct 2026: "the light looks like a bubble"): GLOW in Display: OFF, SOFT (the default, the smooth glow), STEPPED (the stepped one). The neon's stepped-glow rule above is now the STEPPED option.
 - **The physics body keeps up** (17 Oct 2026, "my body behind my legs when i walk"): every part is handed his walk's speed, and pulled to its place, so only the give lags.
 - **How far, how fast** (17 Oct 2026): a double click more than six units away, he runs, walking the last stretch; nearer, he walks.
-- **Edit the world** (17 Oct 2026, `src/worldedit.js`): Shift+E; a double click picks a thing (every face is tagged with its thing as it's built: `BATCH.tag`, `OBJS` in `batch.js`; so far the shop's things and the station's benches, columns, signs, signals, train); move (drag, arrows, up/down), turn, size (all, width, height, depth), colour tint, see-through (dithered), delete, back as it was; DESCRIBE A CHANGE asks Claude through the artifact's `sample` capability (publish with `capabilities: {sample:{}}`) and applies the same edits. Kept in the browser. Not yet: lamps and what he bumps into follow a moved thing.
+- **Edit the world** (17 Oct 2026, `src/worldedit.js`): Shift+E; a double click picks a thing (every face is tagged with its thing as it's built: `BATCH.tag`, `OBJS` in `batch.js`; so far the shop's things and the station's benches, columns, signs, signals, train); move (drag, arrows, up/down), turn, size (all, width, height, depth), colour tint, see-through (dithered), delete, back as it was; (DESCRIBE A CHANGE, asking Claude through the artifact's `sample` capability: taken out, owner 18 Oct 2026, "delete".) Kept in the browser. Not yet: lamps and what he bumps into follow a moved thing.
 - **Using things** (owner, 17 Oct 2026: "double click on things uses them or activates", his pick "common things first"; `src/use.js`): a double
   click on a thing of the world walks him up to it and it does what it's for (the first face along the ray: `BATCH.tag`'s things, a cut-away
   wall's faces not counted; the nearer of it and a character wins). Seats (the station's benches, the office chair, the diner's and the bar's
@@ -616,14 +616,18 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
   pose moves them (walk, idle look round, what he does with his things), then **springs** add the give (what hangs or stands lags behind his
   starts, stops and turns, and swings back; at rest it settles and stops; a bump from you sets them going): no Rapier, no new loads. Some
   700-1,600 triangles each (5,250 the five), no lights, one shadow map each (SELF) as every character. They walk the whole street.
-  `N.reshape` / `N.recolour` by part, `N.B` the bones. `?toonhold=1` stands the five in a row; `tests/toonshot.cjs <out> [hour] [zoom]`.
+  `N.reshape` / `N.recolour` by part, `N.B` the bones. `?toonhold=1` stands the five in a row; `tests/toonshot.cjs <out> [hour] [zoom]`; `tests/toonwalk.cjs <tomato|cat|tv|frog|shark> <out> [zoom]` one walking, the free camera on him. The frog's key is `scooterfrog` (`frog` is the park's creatures').
 
 - **The opening view and V, again** (owner, 17 Oct 2026, his picture of the dojo: "i want the game to always start you this distance and at this
   isometric angle, q & e to rotate, v wlil take you in 3rd person view over their shoulders and they can look around 360 and up and down. press v
   again and in full free view 1st person view"): ISOMETRIC opens at the half turn from the angle before, 1.5 times in (0.7 of the 2.2 before;
   `UI.setView` in `ui.js`); Q / E jump between its four angles; V: BEHIND, the camera over his right shoulder (0.45 m out), a drag looks all round
   and up and down, the camera brought in before any wall between his head and it (the solids he walks into); V again FIRST PERSON (a drag looks
-  anywhere); V again back to isometric. `tests/startshot.cjs <out> [place] [view] [w] [h] [keys]`.
+  anywhere); V again back to isometric. `tests/startshot.cjs <out> [place] [view] [w] [h] [keys]` (`HOUR=13` for day).
+  **Each place its own angle** (owner, 18 Oct 2026, his pick: his dojo angle out of doors put the camera behind the shop row, the buildings' backs
+  over him): out of doors the one facing the shop fronts, in a room (`ROOMS.cur`) his dojo picture's; straight onto it as you go in or out
+  (`UI.isoTo`, `UI.isoPlace`). **Nothing between the camera and the nearest ground on screen** (isometric only: the ortho camera's near plane
+  just past it, `build.py`), so the castle at the park's far end or a building far behind you never stands in front of you.
 
 - **Nimble** (owner, 17 Oct 2026: "lets make him super nimble, he can run jump roll grab things and swing, full actionable and fun to play";
   `src/playas.js`'s NIMBLE): he runs a third faster (`PLAYAS.K`); Space is his own jump (about 1.6 m, carrying his run); in the air he

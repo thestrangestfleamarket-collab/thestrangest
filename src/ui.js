@@ -95,8 +95,13 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
   UI.view='map'; UI.persp=false; UI.dist=7*TILE; let isoAcc=0;
   const HEAD=1.5/.84*TILE, EYE=1.62/.84*TILE, LOW=.9/.84*TILE;   // (his head's height, his eyes', three feet)
   UI.clampV=v=>UI.view==='first'?Math.max(-1.2,Math.min(1.3,v)):UI.view==='third'||UI.view==='follow'?Math.max(-.6,Math.min(1.5,v)):clampP(v);
+  // EACH PLACE ITS OWN ANGLE (owner, 18 Oct 2026, his pick: his dojo picture's angle looked at the street from behind the shop row, the buildings'
+  // backs over him): out of doors the one facing the shop fronts, in a room his dojo picture's (the half turn from it); straight onto it as you go
+  // in or out (ROOMS.cur, rooms.js), as Q / E jump
+  UI.isoTo=()=>{ let r=null; try{ r=ROOMS.cur; }catch(e){}   /* (before rooms.js is made, at the start: out of doors) */ const t=r?Math.PI*3/4:-Math.PI/4; yawTo+=((((t-yawTo)%(2*Math.PI))+3*Math.PI)%(2*Math.PI))-Math.PI; yaw=yawTo; };
+  let isoIn=null; UI.isoPlace=()=>{ const i=!!ROOMS.cur; if(i!==isoIn){ if(isoIn!==null&&UI.view==='iso')UI.isoTo(); isoIn=i; } };
   UI.setView=v=>{ UI.view=v; UI.persp=v==='third'||v==='first'||v==='follow'; if(UI.freeCam&&UI.persp)setFree(false);
-    if(v==='iso'){ yawTo+=((((Math.PI*3/4-yawTo)%(2*Math.PI))+3*Math.PI)%(2*Math.PI))-Math.PI; pitchTo=Math.PI/6; ppuTo=PPU*1.5; UI.off.set(0,0,0); zAt=null; }   // (owner, 17 Oct 2026, his picture of the dojo: "i want the game to always start you this distance and at this isometric angle": the half turn from the angle before, 1.5 times in (0.7 of the 2.2 before); Q / E turn it from there)
+    if(v==='iso'){ UI.isoTo(); pitchTo=Math.PI/6; ppuTo=PPU*1.5; UI.off.set(0,0,0); zAt=null; }   // (owner, 17 Oct 2026, his picture of the dojo: "i want the game to always start you this distance and at this isometric angle": 1.5 times in (0.7 of the 2.2 before); Q / E turn it from there)
     if(v==='follow'){ UI.dist=4*TILE; pitchTo=.2; }   // (owner, 17 Oct 2026, his picture: "when you switch to over shoulder view it should always be at this zoom and angle (you can change once you switch to it)")
     if(v==='first')pitchTo=.05; if(v==='third')pitchTo=.3; if(!UI.persp)pitchTo=clampP(pitchTo); try{ SAVE.set('view',v); }catch(e){} };
   // BEHIND HIM (owner, 17 Oct 2026: "a view that locks on behind, 3rd person view, and autorotates with player"): the third person's camera, turned

@@ -39,6 +39,6 @@ const RINGX={};
         vec3 deep=vec3(.06,.16,.2)*(.35+.65*uDay), c=mix(deep,uSky*.55,.32)+band*.025; c+=g*(.28+.4*uDay)*vec3(.85,.95,1.); gl_FragColor=vec4(c,1.); }`});
   const water=new THREE.Mesh(new THREE.PlaneGeometry(rx1-rx0,rz1-rz0).rotateX(-Math.PI/2),wm); water.position.set((rx0+rx1)/2,wy,(rz0+rz1)/2); scene.add(water); RINGX.water=water;
   // each frame: the field's light round you, the water's drift and the sky on it
-  RINGX.tick=dt=>{ const up=LVL!=='down'; if(!up)scene.background.setRGB(0,0,0);   /* (underground: black round it, not the last sky) */ field.visible=up; water.visible=bank.visible=up; U.uP.value.set(pos.x,py,pos.z); U.uT.value+=dt; WU.uT.value+=dt;
+  RINGX.tick=dt=>{ const up=LVL!=='down'; if(!up)scene.background.setRGB(0,0,0);   /* (underground: black round it, not the last sky) */ const ins=typeof ROOMS!=='undefined'&&!!ROOMS.cur; field.visible=up&&!ins; water.visible=bank.visible=up&&!ins;   /* (inside a room: nothing of the world past its walls, owner 18 Oct 2026: their own shaders aren't cut by the room's planes) */ U.uP.value.set(pos.x,py,pos.z); U.uT.value+=dt; WU.uT.value+=dt;
     if(window.SKY&&SKY.U)WU.uSky.value.copy(SKY.U.uH.value); WU.uDay.value=Math.max(.15,Math.min(1,(CLOCK.elev()+4)/14)); };
   window.RINGX=RINGX; }

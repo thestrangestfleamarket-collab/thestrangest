@@ -71,7 +71,7 @@ const AV={on:false};
       <div class="dim">(the patterns and the rim show lit by the lamps; FLAT is his old fixed light. Steps and depth are everyone's: all the characters are shaded as you are)</div></div>
     <div class="pane" data-p="pre"><div class="row"><input type="text" id="avpn" maxlength="24" placeholder="a name for this look"><button class="btn" id="avps">SAVE</button></div>
       <div id="avpl"></div><h3>ALL</h3><div class="row"><button class="btn" id="avreset">RESET EVERYTHING</button></div>
-      <div class="row"><button class="btn" id="avdown">DOWNLOAD</button><button class="btn" id="avload">LOAD A FILE</button></div></div>
+      <div class="row"><button class="btn" id="avload">LOAD A FILE</button></div></div>
     <div class="foot"><div class="row"><button class="btn" id="avundo">UNDO SHAPE</button><button class="btn" id="avdone" style="margin-left:auto">DONE</button></div></div>`;
   document.body.appendChild(P);
   const $=s=>P.querySelector(s), press=(el,on)=>el.setAttribute('aria-pressed',String(!!on)), L=LOOKS.L;
@@ -146,7 +146,6 @@ const AV={on:false};
   $('#avps').onclick=()=>{ const n=($('#avpn').value||'').trim()||'LOOK '+(Object.keys(PRE).length+1); PRE[n]=whole(); if(!savePre()){ delete PRE[n]; $('#avpl').insertAdjacentHTML('afterbegin','<div class="dim">too big to keep in the browser (a sculpted shape): DOWNLOAD it instead</div>'); return; } $('#avpn').value=''; drawPre(); };
   $('#avreset').onclick=()=>{ ED.snap(); ED.allBack(); for(const k of Object.keys(L))if(k!=='name')delete L[k]; Object.assign(L,{sex:'M',build:0,eyes:0,hair:0,skin:1,hairc:1,eye:0,shirt:0,pants:0,shoes:0,hk:1}); LOOKS.setBuild(0);
     W3.setShade(4,.78,W3.smooth0); W3.setSelf(true); S=S0(); applyS(); save(); outl(false); try{ localStorage.setItem('market-toe','round'); }catch(e){} draw(); };
-  $('#avdown').onclick=()=>{ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([JSON.stringify(whole())],{type:'application/json'})); a.download='avatar.json'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1000); };
   $('#avload').onclick=()=>{ const f=document.createElement('input'); f.type='file'; f.accept='.json,application/json'; f.onchange=async()=>{ try{ put(JSON.parse(await f.files[0].text())); }catch(e){} }; f.click(); };
   // ---- IN AND OUT: HIS SHAPE's mode underneath (its panel hidden, a tab of its own whose drag turns the view round him); the map view while
   // open (the isometric one doesn't turn), the view he had back when it closes

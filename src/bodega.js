@@ -168,11 +168,15 @@ const BOD={meshes:[], walls:{}, lamps:[]};
     [FAR+KR+.3,FAR+KR+1.9,'y',AV.r0,AV.r1],[EGATE[0],EGATE[1],'y',AV.r0,AV.r1],[EGATE[0],EGATE[1],'y',RG.wr0,RG.wr1],[FAR+KR+.3,FAR+KR+1.9,'y',RG.wr0,RG.wr1],
     [GATE[0],GATE[1],'x',RG.nr0,RG.nr1],[RG.wr0+KR+.2,RG.wr0+KR+1.8,'x',RG.nr0,RG.nr1],[AV.r1-KR-1.8,AV.r1-KR-.2,'x',RG.nr0,RG.nr1]];
   const inX=(ax,e,a,m)=>XW.some(w=>w[2]===ax&&e>=w[3]-.01&&e<=w[4]+.01&&a>w[0]-m&&a<w[1]+m);
-  const bars=(x,y)=>{ for(const [a0,a1,ax,l0,h0] of XW){ const u=ax==='x'?x:y, v=ax==='x'?y:x; if(u>a0&&u<a1&&v>l0+.4&&v<h0-.4&&(Math.floor((u-a0)/.6)&1)===0){ const n=grain(x,y,39,2.2); return n<.3?[150,148,142]:[196,194,186]; } } return null; };
-  // BIKE LANES ("add bike lines, (if not in already)": they weren't): along both kerbs of every road of the loop, New York's way: the lane
-  // painted green from a hand's breadth off the kerb, 1.2 tiles wide (a metre), a solid white line on its road side, the bike stencilled in white
-  // every 22 tiles; dashed where it runs past a side street's mouth, stopped at the corners' curves and at the crossings. [axis, the kerb's line,
-  // into the road (+1 / -1), from, to, dashed stretches]
+  // (NYC's ladder, owner 18 Oct 2026, "use NYC markings": two white rails across the road at the crossing's sides, wide rungs between them along
+  // the traffic, a rung's width apart)
+  const bars=(x,y)=>{ for(const [a0,a1,ax,l0,h0] of XW){ const u=ax==='x'?x:y, v=ax==='x'?y:x; if(u<=a0||u>=a1||v<=l0+.15||v>=h0-.15)continue;
+      const W=()=>{ const n=grain(x,y,39,2.2); return n<.3?[150,148,142]:[196,194,186]; };
+      if(u<a0+.1||u>a1-.1)return W(); if(u>a0+.25&&u<a1-.25&&(Math.floor((v-l0-.15)/.5)&1)===0)return W(); return null; } return null; };
+  // BIKE LANES, NEW YORK'S WAY (owner, 18 Oct 2026: "add bike lines"; then "not green bike lanes. use NYC markings"): along both kerbs of every
+  // road of the loop, bare asphalt from the kerb, 1.44 tiles wide, a solid white line on its road side; every 22 tiles the white bicycle and,
+  // ahead of it, two chevrons pointing the way it runs (traffic's way: the kerb on its right); the line dashed past a side street's mouth,
+  // stopped at the curves and the crossings. [axis, the kerb's line, into the road (+1 / -1), from, to, dashed stretches]
   const LN=[['x',CURB,1,MAP.x0+.5,MAP.x1-.5,[[RG.wr0,RG.wr1],[AV.r0,AV.r1]]],['x',FAR,-1,RG.wr1+KR,AV.r0-KR],['x',FAR,-1,AV.r1+KR,MAP.x1-.5],
     ['y',AV.r0,1,FAR+KR,RG.nr0-KR],['y',AV.r1,-1,FAR+KR,RG.nr0],['y',RG.wr0,1,FAR+KR,RG.nr0],['y',RG.wr1,-1,FAR+KR,RG.nr0-KR],
     ['x',RG.nr0,1,RG.wr1+KR,AV.r0-KR],['x',RG.nr1,-1,RG.wr1,AV.r0]];
@@ -180,13 +184,25 @@ const BOD={meshes:[], walls:{}, lamps:[]};
   // the stencil: a bicycle (two wheels, its frame, the bars and the saddle) about a tile long, u along the lane, w across it (up toward the road)
   const BIKE=[[-.27,-.08,0,-.06],[0,-.06,-.08,.12],[-.27,-.08,-.08,.12],[-.08,.12,.17,.12],[.17,.12,0,-.06],[.17,.12,.27,-.08],[.17,.12,.15,.2],[.11,.2,.21,.2],[-.14,.14,-.02,.14]];
   const bike=(u,w)=>Math.abs(Math.hypot(u+.27,w+.08)-.15)<.035||Math.abs(Math.hypot(u-.27,w+.08)-.15)<.035||BIKE.some(s=>sd(u,w,...s)<.032);
-  const GREEN=[[58,118,72],[64,128,78],[70,136,84]];
+  const chev=(u,w)=>{ const q=Math.abs(w); return q<.3&&[0,.2].some(c=>Math.abs(u-c+q*.9)<.045); };   // (two chevrons, their points ahead: u the way it runs)
+  const WHITE=(x,y,hp)=>{ const n=grain(x,y,611,1.1); return hp<.05?[170,168,160]:n<.3?[188,186,178]:[212,210,202]; };
   const lane=(x,y)=>{ for(const [ax,e,dir,a0,a1,dash] of LN){ const a=ax==='x'?x:y, d=((ax==='x'?y:x)-e)*dir; if(d<.12||d>=1.44||a<a0||a>a1)continue;
-      if(inX(ax,e,a,.35)||dash&&dash.some(r=>a>r[0]-.2&&a<r[1]+.2)&&(Math.floor(a/1.2)&1))return null;
-      const n=grain(x,y,611,1.1), hp=hash(Math.floor(x*24),Math.floor(y*24),613), worn=cvNoise(x*1.7,y*1.7,615)>.78&&hp<.55;
-      if(d>=1.32)return worn?null:n<.3?[176,174,166]:[204,202,194];   // (the line: worn where the tyres run)
-      const k=Math.round((a-a0-8)/22), sa=a0+8+k*22; if(k>=0&&sa<a1-2&&Math.abs(a-sa)<.5&&bike((a-sa)*dir,d-.74))return hp<.06?[170,168,160]:[214,212,204];
-      return worn?null:sh(GREEN[n<.33?0:n<.7?1:2],hp<.04?.9:hp>.97?1.08:1); } return null; };
+      if(inX(ax,e,a,.35))return null;
+      const hp=hash(Math.floor(x*24),Math.floor(y*24),613), worn=cvNoise(x*1.7,y*1.7,615)>.78&&hp<.55;
+      if(d>=1.32)return worn||dash&&dash.some(r=>a>r[0]-.2&&a<r[1]+.2)&&(Math.floor(a/1.2)&1)?null:WHITE(x,y,hp);   // (the line: worn where the tyres run)
+      const t=ax==='x'?dir:-dir, k=Math.round((a-a0-8)/22), sa=a0+8+k*22;
+      if(k>=0&&sa<a1-2){ const u=(a-sa)*t; if(u>-.75&&u<.25&&bike(u+.25,d-.74)||u>.45&&u<1&&chev(u-.6,d-.74))return WHITE(x,y,hp); }
+      return null; } return null; };
+  // THE ROAD'S OWN LINES (NYC): the double yellow down each road's middle (two lines a hand wide, a hand apart), broken at the crossings and through
+  // the junctions; a white stop bar across the half of the road whose traffic comes to a crossing (none just out of a junction)
+  const JX=[[RG.wr0,CURB,RG.wr1,FAR],[AV.r0,CURB,AV.r1,FAR],[RG.wr0,RG.nr0,RG.wr1,RG.nr1],[AV.r0,RG.nr0,AV.r1,RG.nr1]], inJ=(x,y,m)=>JX.some(b=>x>b[0]-m&&x<b[2]+m&&y>b[1]-m&&y<b[3]+m);
+  const YEL=[[190,156,54],[212,176,62]];
+  const marks=(x,y)=>{ const hp=hash(Math.floor(x*24),Math.floor(y*24),617);
+    for(const b of RR){ if(!(x>b[0]&&x<b[2]&&y>b[1]&&y<b[3]))continue; const ax=b[2]-b[0]>b[3]-b[1]?'x':'y', a=ax==='x'?x:y, v=ax==='x'?y:x, m=ax==='x'?(b[1]+b[3])/2:(b[0]+b[2])/2, q=Math.abs(v-m);
+      if(q>.06&&q<.19&&!inJ(x,y,.3)&&!inX(ax,m,a,1.1))return cvNoise(x*1.7,y*1.7,619)>.8&&hp<.5?null:YEL[grain(x,y,621,1.1)<.4?0:1]; break; }
+    for(const [a0,a1,ax,l0,h0] of XW){ const u=ax==='x'?x:y, v=ax==='x'?y:x, m=(l0+h0)/2; if(v<=l0+.12||v>=h0-.12||inJ(x,y,1.5))continue;   // ('x': eastbound in the low half meets it before a0; 'y': northbound in the high half)
+      const lo=ax==='x'; if(u>a0-1.05&&u<a0-.7&&(lo?v<m-.2:v>m+.2)||u>a1+.7&&u<a1+1.05&&(lo?v>m+.2:v<m-.2))return WHITE(x,y,hp); }
+    return null; };
   // DRAINS AND SEWERS: a storm drain's grate in the gutter where the kerb has its inlet (drain(): the kerb's face, below), every 28 tiles along each
   // kerb and just before each corner's curve, the water's last stop before it; the sewer's round iron covers in the traffic lanes every 40 tiles and
   // in the middle of each crossing of two roads. Each a painter over its few tiles, found by a two-tile grid so the road's painting stays quick
@@ -216,7 +232,7 @@ const BOD={meshes:[], walls:{}, lamps:[]};
     k=0; for(let y=FAR+20;y<RG.nr0-5;y+=40,k++)for(const xm of [xw,xa])if(ok(xm,y))manhole(xm+(k&1?1.6:-1.6),y);
     k=0; for(let x=RG.wr1+20;x<AV.r0-5;x+=40,k++)if(ok(x,yn))manhole(x,yn+(k&1?1.6:-1.6)); }
   // the road's painter: a manhole or a drain's grate, else a crossing's bars, else the bike lane, else the asphalt; nothing off the road
-  const RW=(x,y)=>{ if(!ROADAT(x,y))return null; const L=IX.get(at2(x,y)); if(L)for(const f of L){ const v=f(x,y); if(v)return v; } return bars(x,y)||lane(x,y)||roadCol(x,y,0); };
+  const RW=(x,y)=>{ if(!ROADAT(x,y))return null; const L=IX.get(at2(x,y)); if(L)for(const f of L){ const v=f(x,y); if(v)return v; } return bars(x,y)||lane(x,y)||marks(x,y)||roadCol(x,y,0); };
   // a kerb's face with a drain's inlet: the dark mouth under its lit top, a lip of granite at its foot
   BOD.kerbFaceAt=(k,a,z,H)=>{ for(const d of DR)if(d.ax===k.ax&&d.e===k.at&&Math.abs(a-d.a)<.5){ if(z>=H-1)break; if(Math.abs(a-d.a)>.44)return [96,94,88]; return z<1?[120,116,108]:[14,14,16]; } return kerbFace(a,z,H); };
   // the curves' faces, KA (each a few straight pieces along its arc, its length along for the granite's joints), the land's holes for the roads
@@ -230,6 +246,17 @@ const BOD={meshes:[], walls:{}, lamps:[]};
       [[RG.wr0,RG.nr0],[AV.r1,RG.nr0],...arc(C(AV.r1,RG.nr1),1),...arc(C(RG.wr0,RG.nr1))]]; }
   // the corners' squares: a cut corner's the road's picture (its curve's road), a filled corner's the sidewalk's
   const PATCH=CORN.map(c=>({id:'corner',x0:Math.min(c.x,c.cx),y0:Math.min(c.y,c.cy),x1:Math.max(c.x,c.cx),y1:Math.max(c.y,c.cy),z:c.cv?RD:0,col:c.cv?RW:SW(slabCol),tex:null,rep:2}));
+  // THE STREET'S SIGNS (owner, 18 Oct 2026: "use NYC markings and street signs etc everywhere"; drawn into the street's pictures, bodbuild.js):
+  // at every corner a galvanized post with the two streets' green name blades crossed at its top (and two across the main street from the side
+  // streets' mouths); a STOP sign where the west street and the Avenue come down to the main street; along every kerb every 24 tiles a post with a
+  // NO PARKING plate, every third a SPEED LIMIT 25; each three quarters of a tile in from the kerb (clear of the street lights' feet)
+  const SG=[], NM={main:'MARKET ST',west:'WEST ST',north:'NORTH ST',ave:'THE AVE'}, CN=[['main','west'],['main','west'],['main','ave'],['main','ave'],['north','west'],['north','ave'],['north','west'],['north','ave']];
+  CORN.forEach((c,i)=>{ const k=c.cv?KR-1.2:KR+1.2; SG.push({kind:'name',x:c.cx-c.sx*k/Math.SQRT2,y:c.cy-c.sy*k/Math.SQRT2,ax:NM[CN[i][0]],ay:NM[CN[i][1]]}); });
+  SG.push({kind:'name',x:RG.wr1+1,y:CURB-.75,ax:NM.main,ay:NM.west},{kind:'name',x:AV.r0-1,y:CURB-.75,ax:NM.main,ay:NM.ave});
+  for(const i of [0,2]){ const c=CORN[i]; SG.push({kind:'stop',x:c.x+c.sx*.75,y:c.y+c.sy*(KR+2.4),n:[0,1]}); }   // (facing the traffic coming south)
+  { let q=0; for(const k of BOD.kerbs){ if(k.at===MAP.x0||k.at===MAP.x1)continue; for(let a=k.a0+6;a<k.a1-4;a+=24){ if(inX(k.ax,k.at,a,2)||inJ(k.ax==='x'?a:k.at,k.ax==='x'?k.at:a,2))continue;
+      const p=k.at-k.n*.75; SG.push({kind:q++%3===2?'speed':'nopark',x:k.ax==='x'?a:p,y:k.ax==='x'?p:a,n:k.ax==='x'?[1,0]:[0,1]}); } } }
+  BOD.signs=SG;
   BOD.road={KR,CORN,RR,at:ROADAT,MH,DR,LN}; window.STREETQ=()=>({...BOD.road,XS:BOD.XS,ZS:BOD.ZS,CURB,FAR,MAP,AV,RG,corner:typeof DRESS!=='undefined'&&DRESS.corner});   // (the corner light and a test's look: dress.js, tests)
   // ---- THE GROUND: the shop's sealed concrete (and the office's), the sidewalk's slabs, the kerb, the street's asphalt, the far kerb and sidewalk, grass in the gaps
   BOD.grounds=[

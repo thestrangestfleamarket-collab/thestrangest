@@ -111,7 +111,7 @@ const LIVES={on:QS.get('lives')!=='0',ready:false,ms:0,stepMs:0,list:[],force:nu
     LIVES.ready=true; };
   // IS HE HIDDEN BY HIS LIFE: indoors where you aren't (in a room with walls while you're outside it or in another), so neither drawn nor run
   const within=(b,x,z,e)=>x>b.x0-e&&x<b.x1+e&&z>b.z0-e&&z<b.z1+e;
-  LIVES.hidden=N=>{ const L=N.life; if(!L)return false; const cur=ROOMS.cur; if(cur)return !within(cur,N.st.x,N.st.z,.4*T);
+  LIVES.hidden=N=>{ const L=N.life; if(!L)return false; const cur=ROOMS.cur; if(cur&&!FREE)return !within(cur,N.st.x,N.st.z,.4*T);
     const inn=L.inside?P[L.inside]:null; return !!(inn&&inn.walls&&(N.lv!=='down'||LVL==='down')); };   // (underground while you're up: his group's already hidden)
   // ---- ONE STEP OF A FAR CHARACTER'S NUMBERS (dt a quarter second): along his route, a sidestep round what blocks him, else stuck a while and on
   const passed=(N,g)=>{ const L=N.life; if(L.tmp){ L.tmp=null; return; } L.i++; L.inside=g.in; L.at=g.in||'street';

@@ -27,5 +27,5 @@ const RINGX={};
   const field=new THREE.Mesh(box,fm); field.frustumCulled=false; field.renderOrder=5; scene.add(field); RINGX.field=field;
   // THE HUDSON: its own file now, real water (src/river.js)
   // each frame: the field's light round you, the water's drift and the sky on it
-  RINGX.tick=dt=>{ const up=LVL!=='down'; if(!up)scene.background.setRGB(0,0,0);   /* (underground: black round it, not the last sky) */ const ins=typeof ROOMS!=='undefined'&&!!ROOMS.cur; field.visible=up&&!ins;    /* (inside a room: nothing of the world past its walls, owner 18 Oct 2026: their own shaders aren't cut by the room's planes; the river's in river.js) */ U.uP.value.set(pos.x,py,pos.z); U.uT.value+=dt; };
+  RINGX.tick=dt=>{ const up=LVL!=='down'; if(!up)scene.background.setRGB(0,0,0);   /* (underground: black round it, not the last sky) */ const ins=typeof ROOMS!=='undefined'&&!!ROOMS.cur; field.visible=up&&(FREE||!ins);    /* (inside a room: nothing of the world past its walls, owner 18 Oct 2026: their own shaders aren't cut by the room's planes; the river's in river.js) */ U.uP.value.set(pos.x,py,pos.z); U.uT.value+=dt; };
   window.RINGX=RINGX; }

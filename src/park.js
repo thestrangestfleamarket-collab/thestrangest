@@ -166,10 +166,8 @@ grab('park',()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.ox=PO.x; PARK.o
     // (the plants in the wind as the oaks are, always (owner, 18 Oct 2026: "make sure all the bushes move like the trees, flowing"); the stones, logs, fence and mushrooms still)
     const isPlant=k=>/^(bush|flower|grass)/.test(k);
     PARK.under=mesh(list.filter(e=>isPlant(e[0])),false,false,2); PARK.underStill=mesh(list.filter(e=>!isPlant(e[0])),false,false,false);
-    // THE TOYS (his TOYS-Psionic pack: the bear, the monkey, the penguin, the pig, the sheep, the bunny): no stall now (owner, 18 Oct 2026: "all the
-    // toys should be sentient real characters, not objects. get rid of the table they are on and let them walk around and do things"): their
-    // models handed to npc-toys.js, which cuts each into parts on bones and walks them about the park from here
-    PARK.toyRaw=k=>{ const D=F[k]; return D&&{p:f32(D.p),c:b8(D.c),k:b8(D.k)}; }; PARK.toyAt=[X(g1+3.5),Z(P.y0+3)];
+    // (THE TOYS, the bear, the monkey, the penguin, the pig, the sheep and the bunny of his TOYS-Psionic pack: deleted, owner 18 Oct 2026,
+    // "remove the toy charcters from ame completely"; their models out of data/props.json too)
     // the park's own monument, a pair of ruined pillars by the round, a sitting log, flower beds along the path
     // THE ODDITIES STALL west of the gate (the Psionic pack's crate, gems and gold), and THE CAMPFIRE east of the round by a sitting log and a
     // wood pile (the terrain collection's), its fire live, embers and smoke going up (fire.js), its light flickering with it

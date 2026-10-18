@@ -80,12 +80,12 @@ const BODB={};
     if(k==='B')return new THREE.MeshBasicMaterial({map,side:THREE.DoubleSide,alphaTest:.5,...cp});
     return new THREE.MeshLambertMaterial({map,alphaTest:.5,side:THREE.DoubleSide,...(emap?{emissiveMap:emap,emissive:0xffffff,emissiveIntensity:1.4}:{}),...cp}); });
   BATCH.cast=false; Object.assign(KINDS,BATCH.meshes); BATCH.meshes={};
-  if(KINDS.G)KINDS.G.castShadow=false;
-  if(KINDS.U){ const O=BOD.O, zs=Object.values(O).filter(p=>/fluorescent tube/.test(p.name||'')).flatMap(p=>p.boxes.map(b=>b.z0)); OVERHEAD.push({o:KINDS.U,y:BOD.Y(Math.min(...zs))}); }   // (the tubes: shown only from under them)
-  BODB.roof=[KINDS.R].filter(Boolean);
+  for(const me of BATCH.all(KINDS,'G'))me.castShadow=false;
+  for(const U of BATCH.all(KINDS,'U')){ const O=BOD.O, zs=Object.values(O).filter(p=>/fluorescent tube/.test(p.name||'')).flatMap(p=>p.boxes.map(b=>b.z0)); OVERHEAD.push({o:U,y:BOD.Y(Math.min(...zs))}); }   // (the tubes: shown only from under them)
+  BODB.roof=BATCH.all(KINDS,'R');   /* (every page's: the batch's atlas in pages) */
   // the cutaway: each wall (and what hangs on it) cut to its foot when it stands between you and the camera, while you're inside
   const NRM={front:[0,-1],back:[0,1],west:[1,0],east:[-1,0],office:[0,1]};
-  for(const w of BOD.WALLS){ const me=KINDS['W'+w.id]; if(me)cutWalls.push({pl:planes[w.id],nx:NRM[w.id][0],nz:NRM[w.id][1],foot:Y(8),me,when:inside}); }
+  for(const w of BOD.WALLS)for(const me of BATCH.all(KINDS,'W'+w.id))cutWalls.push({pl:planes[w.id],nx:NRM[w.id][0],nz:NRM[w.id][1],foot:Y(8),me,when:inside});   // (every page's piece of the wall: a wall's picture on the atlas's second page was never cut, 18 Oct 2026)
   // THE GOODS ON THE SHELVES (47-physics-5-goods' rows: along each fixture from one end, at its front, on each shelf; the counter's), one mesh
   { const {GOOD,GLAY}=BOD, O=BOD.O, list=[];
     const row=(p,f,zpx,items)=>{ const along=f[0]?1:0, a1=along?p.y1:p.x1, yaw=Math.atan2(-f[0],f[1]); let a=(along?p.y0:p.x0)+.08, last=null;

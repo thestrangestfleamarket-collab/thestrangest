@@ -1303,3 +1303,7 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   his pick from the mockups (https://claude.ai/artifact/FNh426aeu5GPJcdBj4KvqX). **The old Fox** ("use the old fox avatar not the new one"): the
   rounded one before the angular (`npc-fox.js` from before 1c9b71f), 2 m. **The sun's stripes** ("glitchy shadows": a wall the sun grazes striped
   and arced with its own shadow): the sun's normalBias .04 to .12 (`clock.js`; `?snb=` a test's).
+- **Every page of the batch's atlas** (18 Oct 2026, found publishing): since the atlas was cut into pages (the roads three times wider), a kind
+  can span pages (its later meshes `k~1`, `k~2`), and only the first page's mesh was hooked up: the bodega's walls on the second page never cut
+  away, its tubes showed from outside, part of its roof stayed. `BATCH.all(M,k)` gives every page's mesh of a kind; bodbuild.js, castle.js, store.js
+  and ghostdojo.js use it for their cut walls, roofs, tubes and shadows.

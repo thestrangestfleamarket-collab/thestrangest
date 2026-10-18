@@ -65,7 +65,7 @@ ROOFS.init=()=>{ if(typeof BOD==='undefined'||!MODS.apts||!MODS.apts.A)return;
     vent(x0+3*MH,top,z1-2.5*MH); stack(x1-1.6*MH,top,z0+1.5*MH); stack(mx+1.8*MH,top,mz-2*MH); }
 
   // ---- GHOST STREET: copper leaders at the dojo's front corners, up to its eave
-  if(BOD.GD&&BOD.GD.r){ const [a0,b0,a1,b1]=BOD.GD.r, x0=Math.min(X(a0),X(a1))-.15*MH, x1=Math.max(X(a0),X(a1))+.15*MH, fzz=Math.max(Z(b0),Z(b1))+.15*MH, top=Y(100);
+  if(BOD.GD&&BOD.GD.r){ const [a0,b0,a1,b1]=BOD.GD.r, x0=Math.min(X(a0),X(a1))-.15*MH, x1=Math.max(X(a0),X(a1))+.15*MH, fzz=Math.max(Z(b0),Z(b1))+.15*MH, top=Y(BOD.GD.eave||100);
     for(const x of [x0+.12*MH,x1-.12*MH])leader(x,fzz+.1*MH,0,1,top,0x9a6a40); }
   // ---- GHOST STREET'S TILED ROOF (owner, 18 Oct 2026, "go all": "a vent pipe, a lightning rod, a small chimney with a cap"): read off its own
   // roof's slices (the shop roof's boxes, as gdShape left them: the ridge along x at the middle of their depth), so each thing stands on the slope

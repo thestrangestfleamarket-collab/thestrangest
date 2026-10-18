@@ -129,7 +129,7 @@
 
   // (faster opening, 17 Oct 2026: the page froze while all of this was painted. These four rooms are built after the game opens, one a
   // moment, then batched on their own; going to one of them first finishes them at once: STORE.ensure)
-  const STEPS=[]; for(const [n,k] of [['THE HERB COTTAGE','garden'],['THE AQUARIUM','aquarium'],['THE KEEP','keep'],['THE BUTTERFLIES','garden']])if(!AWAY.has(k))STORE.places.push([n,0,0,'up']);
+  const STEPS=[]; STORE.kit={room,flat,put,sol,STEPS,PLATE};   /* (for the rooms in their own files: club.js) */ for(const [n,k] of [['THE HERB COTTAGE','garden'],['THE AQUARIUM','aquarium'],['THE KEEP','keep'],['THE BUTTERFLIES','garden']])if(!AWAY.has(k))STORE.places.push([n,0,0,'up']);
   // THE HERB COTTAGE: every piece where the page put it, from the room's corner (its own floor, walls, roof and door step among them)
   // THE COMMUNITY GARDEN (owner, 17 Oct 2026, mockup 1): the lot between the apartment house and the bodega, the subway stairs on the sidewalk
   // before it (no door behind them): the herb cottage at its west, the butterfly garden beside it at its east; its fence and gate: dress.js

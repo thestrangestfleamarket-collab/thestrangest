@@ -1526,3 +1526,10 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   the line that keeps his arms clear of his body, lays the walk fresh and puts signing over it had sat inside a comment and never ran; out again.
   Not done: the foot's own turn on the knee (the knee still points his way when a foot is turned); the clip-driven characters (pawns, skeletons:
   their own foot lock is the next at his word); a pivot on the ball (the pivot is about the ground under the ankle). Cost: some 0.05 ms a frame.
+- **His walk even frame to frame** (owner, 18 Oct 2026: "test the walk to see if its smooth, right now its super choppy and jumpy"; `step` in
+  walker-rig-mock.js): the rig stepped in fixed 1/120 s ticks and carried the rest of a frame's time to the next, so a frame moved him one tick
+  and the next two: at 144 Hz his speed swung 45% frame to frame, 23% with uneven frames. Now each frame's whole time is cut into even steps of
+  at most 1/120 s: 0% at 60, 144, uneven and 30 Hz (`node tests/walksmooth.cjs [run]`, which also counts his hips' jolts). **Found, not
+  changed**: his hips drop 2 pixels and back each step (17, 16, 15, 16, 17) at 3.4 steps a second; a smoother, shallower wave was tried and his
+  legs can't reach the ground from it (footLock lowered him back to the same dip): at his pace his short legs need long steps, and long steps
+  bring the hips down. A calmer walk is his call: slower and fewer steps, or longer legs.

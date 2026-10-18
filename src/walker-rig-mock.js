@@ -878,7 +878,7 @@ function tick(st,h){ st.run+=(st.runTarget-st.run)*Math.min(1,h*RIGT.blend); con
   const acc=(B.J.head.y-2*H.a1+H.a0)/(h*h); H.a0=H.a1; H.a1=B.J.head.y;   // how hard the head's anchor speeds up or slows
   { const s=st.head,[k,c]=SPR.head; s.v+=(-k*s.x-c*s.v-acc)*h; s.x=clamp(s.x+s.v*h,-1.5,1.5); } }
 function step(st,dt){ if(st.target>0&&!st.went&&st.w<0.3&&!st.move){ st.ph=0; st.wd=0; } st.went=st.target>0;   // (from a stop a walk starts at its first frame, as the old Walker's did)
-  st.acc=Math.min(st.acc+dt,0.25); while(st.acc>=1/120){ st.acc-=1/120; tick(st,1/120); } return st; }
+  const T=Math.min(dt,0.25),n=Math.ceil(T*120-1e-6); for(let i=0;i<n;i++) tick(st,T/n); return st; }   // (the frame's whole time in even steps of at most 1/120 s: a fixed 1/120 with the rest carried over moved him 1 tick one frame and 2 the next, 45% uneven at 144 Hz; owner, 18 Oct 2026, "super choppy and jumpy")
 // the pose to draw: the springs applied (the head and the hair in whole pixels), the arms cleared of the body while walking, the
 // floor under him; inPlace: without the moves' own steps (the compass keeps him where he is)
 // HIS FEET STAY PUT (owner, 15 Oct 2026: "lets nail" the walk; his pick, faster steps): the old Walker's frame goes by how far he's walked, one

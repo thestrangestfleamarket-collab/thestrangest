@@ -68,7 +68,9 @@
       metres,x,z,lane:LANE,free:o.pick?free:stfree,roam:!o.pick,ground:(x,z)=>MODS.bodega.ground(x,z),radius:.25,speed,stride:0,rock:0,bob:0,pick:o.pick,brain:o.brain,...(o.dun||{}),   /* (no beat of his own: he roams the whole map, ROAM in npc-map.js) */
       anim:(dt,moving,st,sc)=>{ const run=moving&&st.v>1.2*TILE; N.sta=run?Math.max(0,N.sta-dt/14):Math.min(1,N.sta+dt/8); if(N.sta<=0)N.tired=true; if(N.tired&&N.sta>.33)N.tired=false;   // (his stamina: spent running, back at a walk or at rest)
       if(N.sheet){ if(!N.posed){ N.posed=true; spread(rig); } return; }   // (his sheet: still, limbs spread, his clips never run)
-      if(QS.get('skelrest'))return; an.base=moving?(run?'Running_A':o.walkN):(N.alert?'Idle_Combat':o.idleN); an.ts=moving?st.v/((run?RUNU:WALK)*sc):1; an.update(dt); }});
+      if(QS.get('skelrest'))return; const nb=moving?(run?'Running_A':o.walkN):(N.alert?'Idle_Combat':o.idleN); if(nb!==an.base){ st.calm=.4; st.shift=7+Math.random()*8; } an.base=nb; an.ts=moving?st.v/((run?RUNU:WALK)*sc):1;
+      if(!moving&&!N.alert&&!an.once&&(st.calm-=dt)<=0){ if((st.shift-=dt)<=0){ st.calm=1.5; st.shift=7+Math.random()*8; } else an.ts=0; }   // (standing still: the pack's breathing idle held between a shift of weight every 7 to 15 s, as the pawns', npc-pawns.js; a guard's alert stance and his blows as before)
+      an.update(dt); }});
     for(const [gn,slot] of o.gear||[]){ const m=new THREE.Mesh(geomOf(S.gear[gn],false),N.me.material); m.castShadow=true; rig.bones[JI[slot]].add(m); }
     N.mixer=mixer; N.an=an; return N; };
   // a shot (the Rogue's bolt, the Mage's spell): a little glowing block flying at the troublemaker; on him, he's down

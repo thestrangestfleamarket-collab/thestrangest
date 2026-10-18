@@ -198,7 +198,7 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
 - **The glow, his pick** (17 Oct 2026: "the light looks like a bubble"): GLOW in Display: OFF, SOFT (the default, the smooth glow), STEPPED (the stepped one). The neon's stepped-glow rule above is now the STEPPED option.
 - **The physics body keeps up** (17 Oct 2026, "my body behind my legs when i walk"): every part is handed his walk's speed, and pulled to its place, so only the give lags.
 - **How far, how fast** (17 Oct 2026): a double click more than six units away, he runs, walking the last stretch; nearer, he walks.
-- **Edit the world** (17 Oct 2026, `src/worldedit.js`): Shift+E; a double click picks a thing (every face is tagged with its thing as it's built: `BATCH.tag`, `OBJS` in `batch.js`; so far the shop's things and the station's benches, columns, signs, signals, train); move (drag, arrows, up/down), turn, size (all, width, height, depth), colour tint, see-through (dithered), delete, back as it was; DESCRIBE A CHANGE asks Claude through the artifact's `sample` capability (publish with `capabilities: {sample:{}}`) and applies the same edits. Kept in the browser. Not yet: lamps and what he bumps into follow a moved thing.
+- **Edit the world** (17 Oct 2026, `src/worldedit.js`): Shift+E; a double click picks a thing (every face is tagged with its thing as it's built: `BATCH.tag`, `OBJS` in `batch.js`; so far the shop's things and the station's benches, columns, signs, signals, train); move (drag, arrows, up/down), turn, size (all, width, height, depth), colour tint, see-through (dithered), delete, back as it was; (DESCRIBE A CHANGE, asking Claude through the artifact's `sample` capability: taken out, owner 18 Oct 2026, "delete".) Kept in the browser. Not yet: lamps and what he bumps into follow a moved thing.
 - **Using things** (owner, 17 Oct 2026: "double click on things uses them or activates", his pick "common things first"; `src/use.js`): a double
   click on a thing of the world walks him up to it and it does what it's for (the first face along the ray: `BATCH.tag`'s things, a cut-away
   wall's faces not counted; the nearer of it and a character wins). Seats (the station's benches, the office chair, the diner's and the bar's
@@ -616,14 +616,18 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
   pose moves them (walk, idle look round, what he does with his things), then **springs** add the give (what hangs or stands lags behind his
   starts, stops and turns, and swings back; at rest it settles and stops; a bump from you sets them going): no Rapier, no new loads. Some
   700-1,600 triangles each (5,250 the five), no lights, one shadow map each (SELF) as every character. They walk the whole street.
-  `N.reshape` / `N.recolour` by part, `N.B` the bones. `?toonhold=1` stands the five in a row; `tests/toonshot.cjs <out> [hour] [zoom]`.
+  `N.reshape` / `N.recolour` by part, `N.B` the bones. `?toonhold=1` stands the five in a row; `tests/toonshot.cjs <out> [hour] [zoom]`; `tests/toonwalk.cjs <tomato|cat|tv|frog|shark> <out> [zoom]` one walking, the free camera on him. The frog's key is `scooterfrog` (`frog` is the park's creatures').
 
 - **The opening view and V, again** (owner, 17 Oct 2026, his picture of the dojo: "i want the game to always start you this distance and at this
   isometric angle, q & e to rotate, v wlil take you in 3rd person view over their shoulders and they can look around 360 and up and down. press v
   again and in full free view 1st person view"): ISOMETRIC opens at the half turn from the angle before, 1.5 times in (0.7 of the 2.2 before;
   `UI.setView` in `ui.js`); Q / E jump between its four angles; V: BEHIND, the camera over his right shoulder (0.45 m out), a drag looks all round
   and up and down, the camera brought in before any wall between his head and it (the solids he walks into); V again FIRST PERSON (a drag looks
-  anywhere); V again back to isometric. `tests/startshot.cjs <out> [place] [view] [w] [h] [keys]`.
+  anywhere); V again back to isometric. `tests/startshot.cjs <out> [place] [view] [w] [h] [keys]` (`HOUR=13` for day).
+  **Each place its own angle** (owner, 18 Oct 2026, his pick: his dojo angle out of doors put the camera behind the shop row, the buildings' backs
+  over him): out of doors the one facing the shop fronts, in a room (`ROOMS.cur`) his dojo picture's; straight onto it as you go in or out
+  (`UI.isoTo`, `UI.isoPlace`). **Nothing between the camera and the nearest ground on screen** (isometric only: the ortho camera's near plane
+  just past it, `build.py`), so the castle at the park's far end or a building far behind you never stands in front of you.
 
 - **Nimble** (owner, 17 Oct 2026: "lets make him super nimble, he can run jump roll grab things and swing, full actionable and fun to play";
   `src/playas.js`'s NIMBLE): he runs a third faster (`PLAYAS.K`); Space is his own jump (about 1.6 m, carrying his run); in the air he
@@ -664,7 +668,13 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
   close-up on his hands as before) and walks on, or as soon as you go. The one lamp shadow (`LITE`, `map-post.js`) thins to nothing as a second
   lamp comes nearly as near you as the nearest and grows in on the next after the handover (the nearest lamp's light split between its
   shadowed self and an unshadowed copy in the last of the eight slots: `LITE.w`); no new light, no new shadow.
+- **No flicker on a character under a light** (owner, 18 Oct 2026, his screenshot under a lamp at night: "record yourself walking under a light and you wil see it flickers on your character really glitchy ... its rapidly changing and it looks like stuttering"): recorded sliding under a street light (old build against new). Standing still nothing changed; moving, the hard edges of light and shade on him crawled a pixel every frame, because the map and isometric views hold the camera on the picture's pixel grid but the characters glided between its pixels. **The characters on the pixel grid** (`PXSNAP` in `npc-map.js`): just before the picture is drawn, every character shown (you, the mannequin, the street's, the musicians) is moved less than half a pixel onto the grid, his own shadow's camera with him, and put back after (measured: the light on him changing between frames about a third less, steady stretches at nearly nothing). With it: the self-shadow cameras never aim along their up (a lamp overhead spun their roll), the light on him eased toward a new lamp, LITE's lamps held in their slots (the shadow's lamp changes only for one a third nearer, merged with the other session's gradual handover), and its shadow map redrawn every frame something moves near it (it was every other frame, stale on alternate frames) and not at all at rest. The perspective views (BEHIND, FIRST PERSON) aren't on a pixel grid, so not snapped.
 
+- **No DESCRIBE, no DOWNLOAD; nothing of the world inside** (owner, 18 Oct 2026: "remove describe and download buttons. anytime someone is in
+  interior rest of world should always vanish"): the world editor has no DESCRIBE A CHANGE (no call to Claude, no `sample` capability); HIS SHAPE,
+  MOVES and the avatar editor have no DOWNLOAD (LOAD stays). Inside a room the rest is gone: the civic tower is a room (`rooms.js`), and what
+  draws with its own shader and so isn't cut by the room's planes hides itself while you're in one (the sky dome already; now the force field,
+  the river and its bank, `ring.js`). A doorway still cuts nothing until all of you is half a tile in (17 Oct's rule).
 ## THE MARKET: the one official map
 
 **THE MARKET** (owner, 17 Oct 2026: "one official MARKET map im gona start filling in") is the game's map here: every place the owner adds goes
@@ -673,7 +683,7 @@ published to its own artifact, **https://claude.ai/artifact/X2Bk8UjQKP8yfLdLtVVn
 new places). (Another session published to PnmQqhkusfewby35tf4zo5 for a while, a link the owner's main session can't open or update: 17 Oct 2026, version 47 back on X2Bk.) (17 Oct 2026, later: X2Bk could not be opened from this session's account, so the tomato and his friends and the opening view went to **PnmQqhkusfewby35tf4zo5**, version 15; try X2Bk first, then PnmQ.) A place's code is its own file in `src/`; `map-pre.js` says where each place stands (its offset, its level), `map-post.js` joins
 them (the ground, the levels, what cuts away). Its first places: the bodega, the pool room, the subway station and its stairs.
 
-**Not updated any more** (owner, 17 Oct 2026: "stop updating tsfm im not working there anymore"): nothing goes to `bralynnb/tsfm` from here; the copy there stays as it was last merged (version 8.0.1: at his word, "pull in all merges and go live", [bralynnb/tsfm#801](https://github.com/bralynnb/tsfm/pull/801); before it 8.0.0, [bralynnb/tsfm#800](https://github.com/bralynnb/tsfm/pull/800), 7.9.9, [bralynnb/tsfm#799](https://github.com/bralynnb/tsfm/pull/799), and 7.9.8, [bralynnb/tsfm#798](https://github.com/bralynnb/tsfm/pull/798)); ask before each update there. The artifact link is where THE MARKET is played. What follows is the old way, for the record.
+**Not updated any more** (owner, 17 Oct 2026: "stop updating tsfm im not working there anymore"): nothing goes to `bralynnb/tsfm` from here; the copy there stays as it was last merged (version 8.0.2, the reorganized map, at his word "go live" on 18 Oct 2026: [bralynnb/tsfm#802](https://github.com/bralynnb/tsfm/pull/802), his to merge; before it 8.0.1: at his word, "pull in all merges and go live", [bralynnb/tsfm#801](https://github.com/bralynnb/tsfm/pull/801); before it 8.0.0, [bralynnb/tsfm#800](https://github.com/bralynnb/tsfm/pull/800), 7.9.9, [bralynnb/tsfm#799](https://github.com/bralynnb/tsfm/pull/799), and 7.9.8, [bralynnb/tsfm#798](https://github.com/bralynnb/tsfm/pull/798)); ask before each update there. The artifact link is where THE MARKET is played. What follows is the old way, for the record.
 
 **On the live website** (owner, 17 Oct 2026, stopped since): THE MARKET is at **thestrangestfleamarket.com/market**, for logged-in players only (the game's
 door checks the login, as for the game). The live copy lives in the game's repo as `market/market.html`; the game's build publishes it. To

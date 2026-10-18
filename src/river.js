@@ -1,7 +1,6 @@
 // ---- THE HUDSON, REAL WATER (owner, 18 Oct 2026, of his Deep Water mockup, "how real can we get the water? can we do this?"; then "give me
 // mockups of diff ways of doing it, build a artifact of this game using that exact water system with options etc. but in my game"): the
-// mockup's water in the game, three ways side by side, switched live in its panel (THE HUDSON, top left; X to close, H... no key: the panel's
-// own buttons):
+// mockup's water in the game, three ways side by side, switched live in its panel (THE HUDSON: a double click on the water brings it up, X closes it):
 //   FLAT  the river as it was (one painted sheet, 2 triangles, glints drifting), but you can swim in it.
 //   SWELL the mockup's Gerstner waves (the swell and the chop: each point goes round as a wave passes, so crests sharpen), lit, the sky in it
 //         at a glance (Fresnel), the sun's and the lamps' glints, foam where the crests pinch; the water's murk laid over the bed by its depth
@@ -133,7 +132,7 @@ const RIVER={way:'fluid',wi:2,step:false,t:0,on:false};
     uScene:{value:RT.texture},uDepth:{value:RT.depthTexture},uRes:{value:new THREE.Vector2(4,4)},uNear:{value:.1},uFar:{value:800},uMode:{value:0},uBed:{value:bedTex},uBedR:{value:new THREE.Vector4()},
     uSig:{value:new THREE.Vector3()},uScat:{value:new THREE.Vector3()},uFoam:{value:0},uRefr:{value:1},uLv:{value:LV},uBank:{value:new THREE.Vector2(rz0,rz1)},
     uSunD:uSunD,uSunC:{value:new THREE.Color()},uAmb:{value:new THREE.Color()},uSkyH:{value:new THREE.Color()},uSkyZ:{value:new THREE.Color()},uCamD:{value:new THREE.Vector3()},
-    uLP:{value:Array.from({length:8},()=>new THREE.Vector3())},uLC:{value:Array.from({length:8},()=>new THREE.Vector3())},uStep:{value:0},uDbg:{value:0}};
+    uLP:{value:Array.from({length:8},()=>new THREE.Vector3())},uLC:{value:Array.from({length:8},()=>new THREE.Vector3())},uStep:{value:0}};
   const surfMat=new THREE.ShaderMaterial({uniforms:SU,side:THREE.DoubleSide,fog:false,
     vertexShader:`uniform float uT,uAmp,uRT,uRipOn,uMode; uniform vec4 uWA[${NW}],uWB[${NW}],uWin,uRect; uniform int uNW; uniform sampler2D uRip; uniform vec2 uBank;
       varying vec3 vW; varying vec2 vP0; varying float vVz, vH;
@@ -145,7 +144,7 @@ const RIVER={way:'fluid',wi:2,step:false,t:0,on:false};
         d*=fe; vec2 ru=(p-uRect.xy)/uRect.zw; if(uRipOn>0.&&ru.x>0.&&ru.y>0.&&ru.x<1.&&ru.y<1.)d.y+=texture2D(uRip,ru).r;
         w.xyz+=d; vW=w.xyz; vH=d.y; vec4 mv=viewMatrix*w; vVz=mv.z; gl_Position=projectionMatrix*mv; }`,
     fragmentShader:`#include <packing>
-      uniform float uT,uAmp,uRT,uRipOn,uNear,uFar,uMode,uFoam,uRefr,uLv,uStep,uDbg; uniform vec4 uWA[${NW}],uWB[${NW}],uWin,uRect,uBedR; uniform int uNW; uniform vec2 uRes,uBank;
+      uniform float uT,uAmp,uRT,uRipOn,uNear,uFar,uMode,uFoam,uRefr,uLv,uStep; uniform vec4 uWA[${NW}],uWB[${NW}],uWin,uRect,uBedR; uniform int uNW; uniform vec2 uRes,uBank;
       uniform sampler2D uRip,uScene,uDepth,uBed; uniform vec3 uSig,uScat,uSunD,uSunC,uAmb,uSkyH,uSkyZ,uCamD,uLP[8],uLC[8];
       varying vec3 vW; varying vec2 vP0; varying float vVz, vH;
       ${GLN}
@@ -184,7 +183,6 @@ const RIVER={way:'fluid',wi:2,step:false,t:0,on:false};
           if(fo>.25+.5*rf(floor(vW.xz/${(T/12).toFixed(4)})*.37+uT*.15)){ col=mix(col,.93*(uAmb+uSunC*.8),.85); alpha=1.; }
         }
         if(uStep>0.)col=floor(col*24.+.5)/24.;
-        if(uDbg>.5){ vec2 s=gl_FragCoord.xy/uRes; float th=vVz-vz(texture2D(uDepth,s).r); col=uDbg<1.5?texture2D(uScene,s).rgb:uDbg<2.5?vec3(clamp(th*.02,0.,1.),clamp(-th*.02,0.,1.),0.):vec3(texture2D(uDepth,s).r); }
         gl_FragColor=vec4(col,alpha); }`});
   const surf=new THREE.Mesh(surfG,surfMat); surf.frustumCulled=false; scene.add(surf);
   // FLAT, and past the window: the sheet as it was (dark teal tinted by the sky, glints drifting downstream)
@@ -359,31 +357,31 @@ const RIVER={way:'fluid',wi:2,step:false,t:0,on:false};
     #rvpan{position:fixed;left:12px;top:12px;z-index:30;width:300px;background:#0e1016;border:2px solid #3a3f4e;padding:10px 12px 12px;font:12px Silkscreen,monospace;color:#cfd6e4;max-height:calc(100vh - 24px);overflow:auto}
     #rvpan h3{margin:0 30px 2px 0;font:14px Silkscreen,monospace;color:#f2c14e} #rvpan .d{color:#8a8f9c;margin:2px 0 8px;line-height:1.45;font-size:11px;font-family:ui-sans-serif,system-ui,sans-serif}
     #rvpan .r{display:flex;flex-wrap:wrap;gap:4px;margin:4px 0} #rvpan .l{color:#8a8f9c;margin-top:8px} #rvpan button{font:11px Silkscreen,monospace;color:#cfd6e4;background:#161a24;border:2px solid #3a3f4e;padding:5px 7px;cursor:pointer}
-    #rvpan button.on{border-color:#8fe3d6;color:#8fe3d6;background:#1b2b30} #rvpan button:hover{border-color:#f2c14e} #rvopen{position:fixed;left:12px;top:12px;z-index:29;font:11px Silkscreen,monospace;color:#f2c14e;background:#0e1016;border:2px solid #3a3f4e;padding:5px 8px;cursor:pointer;display:none}`;
+    #rvpan button.on{border-color:#8fe3d6;color:#8fe3d6;background:#1b2b30} #rvpan button:hover{border-color:#f2c14e}`;
   document.head.appendChild(css);
   const hud=document.createElement('div'); hud.id='rvhud'; hud.innerHTML='depth <b id="rvd">0.0 m</b> &nbsp;bed <span id="rvb">0.0 m</span><div class="air" id="rva"><i id="rvai"></i></div>'; document.body.appendChild(hud);
-  const pan=document.createElement('div'); pan.id='rvpan'; document.body.appendChild(pan); const opn=document.createElement('button'); opn.id='rvopen'; opn.textContent='THE HUDSON'; document.body.appendChild(opn);
-  opn.onclick=()=>{ pan.hidden=false; opn.style.display='none'; };
-  const WAYS=[['flat','FLAT','The river as it was: one painted sheet, glints drifting. You can still swim. 2 triangles.'],
+  const pan=document.createElement('div'); pan.id='rvpan'; document.body.appendChild(pan);   const WAYS=[['flat','FLAT','The river as it was: one painted sheet, glints drifting. You can still swim. 2 triangles.'],
     ['swell','SWELL','Waves on the graphics card (the mockup\'s swell and chop), the sky and the sun in them, foam on the crests; the murk laid over the bed by its depth. ~8,000 triangles, no extra pass.'],
     ['fluid','FLUID','Completely fluid: the water round you (48 tiles) is a wave simulation. The sea\'s waves come in at its open sides, slow over the shallows, bend, steepen, come back off the quay and round the pier\'s posts, and meet your splashes and wakes; seen through, bent, coloured by the depth; caustics on the bed. ~8,000 triangles + one extra scene pass.'],
     ['full','FULL','All of the mockup: the waves, ripples round you (splashes, wakes, back off the wall), the bed and you seen through it, bent and coloured by the depth, caustics on the bed. ~8,000 triangles + one extra scene pass while it shows.']];
   const HOURS=[['DAY',13],['DUSK',18.2],['NIGHT',22.5]];
   RIVER.panel=()=>{ const Wt=WATERS[RIVER.wi], wy=WAYS.find(w=>w[0]===RIVER.way)||WAYS[2];
-    pan.innerHTML=`<h3>THE HUDSON · REAL WATER</h3><div class="d">Ways of doing the river, side by side. Walk off the quay (or jump) to swim; SPACE dives, SPACE at a ladder climbs out.</div>
+    pan.innerHTML=`<h3>THE HUDSON · REAL WATER</h3><div class="d">Ways of doing the river, side by side (double click the water to bring this back). Walk off the quay (or jump) to swim; SPACE dives, SPACE at a ladder climbs out.</div>
       <div class="l">WAY</div><div class="r">${WAYS.map(w=>`<button data-w="${w[0]}" class="${w[0]===RIVER.way?'on':''}">${w[1]}</button>`).join('')}</div><div class="d">${wy[2]}</div>
       <div class="l">WATER</div><div class="r">${WATERS.map((w,i)=>`<button data-i="${i}" class="${i===RIVER.wi?'on':''}">${w.name}</button>`).join('')}</div><div class="d">${Wt.desc}</div>
       <div class="l">LOOK</div><div class="r"><button data-s="0" class="${RIVER.step?'':'on'}">SMOOTH</button><button data-s="1" class="${RIVER.step?'on':''}">24 STEPS</button></div>
       <div class="l">TIME</div><div class="r">${HOURS.map(h=>`<button data-h="${h[1]}">${h[0]}</button>`).join('')}</div>
       <div class="r" style="margin-top:10px"><button data-go="1">GO TO THE RIVER</button><button data-go="2">INTO THE WATER</button></div>`;
-    const x=document.createElement('button'); x.className='pX'; x.textContent='X'; x.onclick=()=>{ pan.hidden=true; opn.style.display='block'; }; pan.appendChild(x);
+    const x=document.createElement('button'); x.className='pX'; x.textContent='X'; x.onclick=()=>{ pan.hidden=true; }; pan.appendChild(x);
     pan.querySelectorAll('[data-w]').forEach(b=>b.onclick=()=>RIVER.set({way:b.dataset.w}));
     pan.querySelectorAll('[data-i]').forEach(b=>b.onclick=()=>RIVER.set({wi:+b.dataset.i}));
     pan.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>RIVER.set({step:b.dataset.s==='1'}));
     pan.querySelectorAll('[data-h]').forEach(b=>b.onclick=()=>{ CLOCK.h=+b.dataset.h; });
     pan.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{ const x=cl(pos.x,fx0+12*T,fx1-12*T), lx=PIERS.reduce((a,c)=>Math.abs(c-x)<Math.abs(a-x)?c:a,PIERS[0]);
       if(b.dataset.go==='1')STORE.goTo(lx-3*T,rz1+1.6*T,'up'); else STORE.goTo(lx-3*T,rz1-4*T,'up'); if(UI.view==='iso'&&UI.isoTurn)UI.isoTurn(Math.PI*3/4); }); };   // (the isometric view turned to look over the river from its far side: the row behind it)
-  RIVER.panel(); if(QSr.get('rvpanel')==='0'){ pan.hidden=true; opn.style.display='block'; }
+  RIVER.panel(); pan.hidden=QSr.get('rvpanel')!=='1';   // (hidden till you double click the water, owner 18 Oct 2026: "if i duble click the wter i want all the options to come up")
+  const pl=new THREE.Plane(new THREE.Vector3(0,1,0),-LV), ph=new THREE.Vector3();
+  RIVER.pick=(ray,pos)=>{ if(LVL!=='up'||!ray.intersectPlane(pl,ph)||!RIVER.over(ph.x,ph.z)||onPier(ph.x,ph.z)||Math.hypot(ph.x-pos.x,ph.z-pos.z)>40*T)return false; pan.hidden=false; return true; };
   RIVER.hud=()=>{ if(!RIVER.swim){ hud.style.display='none'; return; } hud.style.display='block'; document.getElementById('rvd').textContent=RIVER.dep.toFixed(1)+' m'; document.getElementById('rvb').textContent=RIVER.bot.toFixed(1)+' m';
     document.getElementById('rvai').style.width=(RIVER.air*100).toFixed(0)+'%'; document.getElementById('rva').classList.toggle('low',RIVER.air<.3); };
   RIVER.U={SU,uCau,uRipOn,SIM,surf,bed,grass,kit:RIVER.kit}; RIVER.on=true; window.RIVER=RIVER; }

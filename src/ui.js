@@ -146,6 +146,7 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
     let best=null, bd=1e9; if(hits.length){ let o=hits[0].object; const th=live.find(th=>{ let q=o; while(q){ if(q===th.obj)return true; q=q.parent; } return false; }); if(th){ best=th; bd=hits[0].distance; } }
     const u=typeof USE!=='undefined'&&USE.pick(ray); if(u&&u.d<bd)best=u.th;   // (a thing of the world's to use, nearer than any character: use.js)
     if(best){ best.started=false; goal=best; return; }   // (started afresh: a thing used before walks up again)
+    if(window.RIVER&&RIVER.pick&&RIVER.pick(ray.ray,pos))return;   // (a double click on the river's water: its options, river.js)
     goal=null; if(UI.fly)return; gplane.constant=-py; if(ray.ray.intersectPlane(gplane,hit)){ target=hit.clone(); UI.go(Math.hypot(hit.x-pos.x,hit.z-pos.z)); } });
   // HOW FAR, HOW FAST (owner, 17 Oct 2026: "the further away you double click the faster you will go there (far away you will run), few steps
   // you will walk"): past six of the world's units he runs, slowing to a walk for the last stretch; Shift still runs

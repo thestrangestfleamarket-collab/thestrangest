@@ -396,6 +396,8 @@ import re
 a="const grab=(name,fn)=>{ const n0=scene.children.length; fn();"; assert a in mod; mod=mod.replace(a,"const grab=async(name,fn)=>{ const n0=scene.children.length; await fn();")
 mod,ng=re.subn(r"^grab\('(\w+)',\(\)=>\{",r"await grab('\1',async()=>{",mod,flags=re.M); print('builders awaited:',ng)
 i=mod.index('<script type="module">')+len('<script type="module">'); j=mod.index('</script>',i); body,ny=yields(mod[i:j]); mod=mod[:i]+'\n'+body+mod[j:]; print('breaths:',ny)
+mod=rp(mod,"RIVER.pre(renderer,scene,cam,dt,pos);","RIVER.pre(renderer,scene,cam,dt,pos); FAR3.pre(renderer,cam);")   # (the distance out of focus: skyline.js)
+mod=rp(mod,"composer.render(); RIVER.post(scene);","composer.render(); RIVER.post(scene); FAR3.post();")
 os.makedirs('dist',exist_ok=True); open('dist/market.html','w').write(head+mod); print('built dist/market.html')
 
 # THE AVATAR EDITOR, STANDALONE (owner, 18 Oct 2026: "create standalone avatar editor ... default poses ... spread all limbs out ... sculpt ...

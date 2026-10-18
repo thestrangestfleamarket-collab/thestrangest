@@ -109,6 +109,21 @@ METRO=(()=>{ const D=METROD, S=1.15, SURF=11.55, PLAT=1.4;   // (SURF: the kit's
   for(let z=-2;z<=54;z+=8){ tube(LI,16.9,z,6.11); tube(LI,12.3,z+4,6.11); }
   // the walls' cut: to a hand over the platform's floor; the ceilings over the platform overhead
   flush(B,grp,{foot:Y(PLAT)+.3}); METRO.things=flush(PR,grp,{shadow:true});   // (things: the benches' faces for use.js's seat finder) const lm=flush(LI,grp); for(const m of lm)OVERHEAD.push({o:m,y:Y(6.0)});
+  // THE WAY OUT SIGNED (owner, 18 Oct 2026, "go all", the Metro's open items: a TO STREET sign): a black sign hung from the ceiling across the
+  // platform before the gates, in the white pixel letters of the street's signs (3x5, a texel each, painted once into a picture the kit's grain
+  // has: 18 texels a metre), TO STREET with an arrow ahead on its platform side, TO TRAINS on the gates' side; two dark rods up to the ceiling.
+  // Its letters lit a little from inside (the picture its own glow). Not overhead (OVERHEAD): it hangs low enough to read from the isometric view
+  { const G={T:'111010010010010',O:'010101101101010',S:'011100010001110',R:'110101110101101',E:'111100110100111',A:'010101111101101',I:'111010010010111',N:'110101101101101','^':'0010001110101010010000100'};
+    const pic=w=>{ const W=49, H=11, c=document.createElement('canvas'); c.width=W; c.height=H; const g=c.getContext('2d'), im=g.createImageData(W,H), D2=im.data;
+      const px=(i,j,r,gg,b)=>{ const k=(j*W+i)*4; D2[k]=r; D2[k+1]=gg; D2[k+2]=b; D2[k+3]=255; };
+      for(let j=0;j<H;j++)for(let i=0;i<W;i++){ const edge=i===0||j===0||i===W-1||j===H-1; edge?px(i,j,70,72,76):px(i,j,18,18,20); }
+      for(let j=0;j<5;j++)for(let i=0;i<5;i++)if(G['^'][j*5+i]==='1')px(3+i,3+j,236,238,232);   // (the arrow: straight ahead)
+      [...w].forEach((ch,n)=>{ const gl=G[ch]; if(gl)for(let j=0;j<5;j++)for(let i=0;i<3;i++)if(gl[j*3+i]==='1')px(11+n*4+i,3+j,236,238,232); });
+      g.putImageData(im,0,0); const t=new THREE.CanvasTexture(c); t.magFilter=THREE.NearestFilter; t.minFilter=THREE.NearestFilter; t.generateMipmaps=false; t.colorSpace=THREE.SRGBColorSpace; return t; };
+    const sm=w=>{ const t=pic(w); return new THREE.MeshLambertMaterial({map:t,emissiveMap:t,emissive:new THREE.Color(1,1,1),emissiveIntensity:.35,alphaTest:.5,side:THREE.DoubleSide}); }, dark=new THREE.MeshLambertMaterial({map:WHITE,color:new THREE.Color(.16,.17,.19),alphaTest:.5,side:THREE.DoubleSide});   // (as the kit's own are made: their programs, no new one)
+    const kx=14.6, kz=46.6, y0=3.85, wm=49/18, hm=11/18, sg=new THREE.Mesh(new THREE.BoxGeometry(.05*S,hm*S,wm*S),[sm('TO STREET'),sm('TO TRAINS'),dark,dark,dark,dark]);
+    sg.position.set(X(kx,kz),Y(y0+hm/2),Z(kx,kz)); sg.receiveShadow=true; grp.add(sg); METRO.sign=sg;   // (its +x face toward the platform: the kit's z runs west, the world's x east)
+    for(const d of [-1,1]){ const rod=new THREE.Mesh(new THREE.BoxGeometry(.03*S,(6.11-y0-hm)*S,.03*S),dark); rod.position.set(X(kx+d*wm*.4,kz),Y((6.11+y0+hm)/2),Z(kx+d*wm*.4,kz)); grp.add(rod); } }
   // where you can't walk: the track (the platform's edge a drop you don't take), the back wall, the ends, the closet, the exit hall's walls
   sol(solids,fixed,4.5,-70,EDGE,Z_N+1,1.4); sol(solids,fixed,BW,Z_S-1,BW+.6,Z_N,4.7); sol(solids,fixed,EDGE,Z_S-.5,BW+.6,Z_S,4.7); sol(solids,fixed,12.0,Z_S,BW+.6,-1.5,4.7);
   sol(solids,fixed,9.0,Z_N,9.54,79.5,9); sol(solids,fixed,17.89,Z_N,28.9,73.7,9); sol(solids,fixed,9.0,78.64,28.9,79.5,9); sol(solids,fixed,BW,Z_N-.3,BW+.6,Z_N+.5,4.7);

@@ -992,3 +992,7 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   mottled fur) under it: two over the platform between the track's edge and the back wall, one along the tactile strip at the edge; on the level
   under the street (its group: drawn only from down there; unseen, neither drawn nor run, as every character), on the platform's ground, out of its
   solids, never past the gates or over the edge. Cost: 2,196 triangles a rat where seen, no light, no program.
+- **The Metro's way out signed** (owner, 18 Oct 2026, "go all"; `metro.js`): a black sign hung from the platform's ceiling before the gates,
+  TO STREET with an arrow ahead on its platform side and TO TRAINS on the gates' side, in the street signs' white 3x5 pixel letters (painted once
+  into a 49 x 11 picture, the kit's 18 texels a metre, lit a little from inside), on two dark rods; not overhead-hidden, so it reads from the
+  isometric view. Cost: 36 triangles, two small pictures, materials made as the kit's (no new program), no light.

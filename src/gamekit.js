@@ -95,3 +95,30 @@ function grassCol(x,y){ const n=(cvNoise(x/5,y/5,29)*3+cvNoise(x/1.7,y/1.7,31)*2
     if(q<.12){ if(ax===0&&ay===0)return mt('grass',[236,200,64]); if(Math.abs(ax)+Math.abs(ay)===1)return mt('grass',[238,238,230]); }   // a daisy
     else if(ax===0&&ay===0||ax===1&&ay===0||ax===0&&ay===1)return mt('grass',sh(GRASSP[0],.86)); } }   // a clover leaf
   return mt('grass',c); }
+
+// ---- THE BRICK, one pattern for the whole town (owner, 18 Oct 2026: "just make a brick pattern that you can reuse"): BRICK.face(i,j,k,H,cap) paints
+// any wall's face, texel by texel (i across, j down from its top, k its seed, H its height in texels, cap: shaded under a coping); BRICK.one(seed)
+// paints one brick standing on its own (i,j,k,w,h); BRICK.quoins(x0,y0,x1,y1,z0,z1,k,box) lays a post's or a wall end's corner bricks, each its
+// own box (box(x0,y0,x1,y1,z0,z1,painter) the caller's maker, in its own units: tiles across, texels up) ----
+const BRICKS=window.BRICKS={};
+// (owner, 18 Oct 2026: "each brick has its own depth, but not so drastic, more subtle, larger posts, smaller bricks, more variety in colors
+// and shapes, slight subtle differences"; the pixel artists' way: each brick a step lighter or darker than its neighbours and a shade warmer,
+// cooler or sandier, its top edge lit a texel and its foot a texel in shade, the face between flat with only a soft grain, its corners worn
+// round now and then, its length its own; no lone bright or dark texels side by side. Courses of 6 texels (5 of stone, 1 of joint), stones
+// 8 to 12 long)
+BRICKS.TINT=[[1,1,1],[1.05,1,.93],[.95,.98,1.05],[1.07,1.02,.88],[.99,.96,.95],[1.02,1.03,.98]];
+BRICKS.face=(i,j,k,H=99,cap=false)=>{ const row=Math.floor(j/6), fy=j-row*6, off=Math.floor(hash(row,k,29)*10), jt=b=>Math.round((hash(b,row,k+31)-.5)*4), e=i+off, b0=Math.floor(e/10), cb=e<b0*10+jt(b0)?b0-1:b0, Lc=cb*10+jt(cb), Wc=(cb+1)*10+jt(cb+1)-Lc, fx=e-Lc,
+    m=fy===5||fx===Wc-1, n=hash(cb,row,k), hp=hash(i,j,k+11), t=j/H;
+  let c, tn=[1,1,1]; if(m){ c=62+8*n; if(t>.6&&hash(Math.floor(i/3),row,k+13)<.4&&hp<.6)return [58+12*hp,80+16*hp,46]; }   // (the joint, and moss low down)
+  else{ const cn=(fx===0||fx===Wc-2)&&(fy===0||fy===4)&&hash(cb,row,k+17)<.45; if(cn)c=70+8*n;   // (a worn corner: the joint shows)
+    else{ c=(108+22*n)*(1+.06*(grain(i/24,j/24,k+1,1.5)-.5)); if(fy===0)c*=1.1; else if(fy===4)c*=.86; if(fx===0)c*=1.04; else if(fx===Wc-2)c*=.93; }
+    tn=BRICKS.TINT[Math.floor(hash(cb,row,k+33)*BRICKS.TINT.length)]; }
+  c*=.84+.16*(1-Math.max(0,Math.min(1,(t-.72)/.28))); if(cap&&j<3)c*=.7+.1*j;
+  if(Math.abs(cvNoise(i/7,j/7,k+40)-.5)<.025&&cvNoise(i/30,j/30,k+41)>.66)c*=.72;   // (a hairline crack)
+  return [c*tn[0],c*tn[1],c*tn[2]]; };
+// (the corners: every course's corner brick its own box at each of the four corners, long on one face and short on the other, the other way the
+// next course up, as quoins are laid; each out its own hair and a texel short of the next, so the edge steps brick by brick with a notch between)
+BRICKS.one=sd=>{ const n=hash(sd,7,3), tn=BRICKS.TINT[Math.floor(hash(sd,9,5)*BRICKS.TINT.length)]; return (i,j,kk,w,h)=>{ let c=(106+24*n)*(1+.05*(grain(i/24,j/24,sd,1.5)-.5)); if(j===0)c*=1.1; else if(j>=h-1)c*=.86; if(i===0||i>=w-1)c*=.8; return [c*tn[0],c*tn[1],c*tn[2]]; }; };
+BRICKS.quoins=(x0,y0,x1,y1,z0,z1,k,box)=>{ for(let r=0;r*6<z1-z0;r++){ const zt=z1-r*6, zb=Math.max(z0,zt-5); if(zt-zb<2)continue;
+  for(const [cx,sx] of [[x0,-1],[x1,1]])for(const [cy,sy] of [[y0,-1],[y1,1]]){ const sd=k*977+r*31+(sx+1)*5+(sy+1), lx=(r+(sx>0)+(sy>0))&1, L=.38+.08*hash(sd,1,1), S=.2+.06*hash(sd,2,1), pr=.012+.04*hash(sd,3,1), ex=lx?L:S, ey=lx?S:L;
+    box(sx<0?cx-pr:cx-ex,sy<0?cy-pr:cy-ey,sx<0?cx+ex:cx+pr,sy<0?cy+ey:cy+pr,zb,zt,BRICKS.one(sd)); } } };

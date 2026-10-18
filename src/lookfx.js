@@ -14,7 +14,7 @@
       for(let j=0;j<H;j++)for(let i=0;i<W;i++){ const k=j*W+i; if(i)D[k]=Math.min(D[k],D[k-1]+1); if(j)D[k]=Math.min(D[k],D[k-W]+1,i?D[k-W-1]+1.41:1e9,i<W-1?D[k-W+1]+1.41:1e9); }   // (the distance, two sweeps)
       for(let j=H-1;j>=0;j--)for(let i=W-1;i>=0;i--){ const k=j*W+i; if(i<W-1)D[k]=Math.min(D[k],D[k+1]+1); if(j<H-1)D[k]=Math.min(D[k],D[k+W]+1,i<W-1?D[k+W+1]+1.41:1e9,i?D[k+W-1]+1.41:1e9); }
       const R=.42*TILE*A.k, O=LFX.ao.image.data; for(let k=0;k<W*H;k++)O[k]=Math.round(255*(.62+.38*cl(D[k]/R))); LFX.ao.needsUpdate=true; },200);
-    const sky=new THREE.Color(); let t0=performance.now(); const WS={wet:null,snow:0,h:null,t:t0}; window.WETQ=()=>({...WS});   // (a test's look)
+    const sky=new THREE.Color(); let t0=performance.now(); const WS={wet:null,snow:0,h:null,t:t0}; window.WETQ=o=>{ if(o)Object.assign(WS,o); return {...WS}; };   // (a test's look)
     LFX.tick=()=>{ const day=cl((CLOCK.elev()+3)/12), W=typeof WX!=='undefined'&&WX.now||{cloud:.3,wind:.3,rain:0}, inside=!!ROOMS.cur||LVL==='down', t=(performance.now()-t0)/1000, row=63*64*4;
       E[row]=F.has('cs')&&!inside?Math.round(255*day*(.55+.45*cl(W.cloud*1.4))):0;   // (strength: by day, more under a cloudier sky)
       // HOW WET, HOW SNOWED ON (owner, 18 Oct 2026, "go all": wet ground after rain, snow lying): wet in half a minute of rain, dry again over
@@ -24,7 +24,9 @@
       if(WS.wet==null&&typeof WX!=='undefined'&&WX.now){ if(WX.hold){ WS.wet=W.rain>.05?1:0; WS.snow=W.snow>.05?1:0; } else { const Tm=Math.floor(Date.now()/86400000)*1440+CLOCK.h*60; WS.wet=WS.snow=0; for(let k=0;k<=180;k+=10){ const p=WX.at(Tm-k); if(p.rain>.05)WS.wet=Math.max(WS.wet,1-k/120); if(p.snow>.05)WS.snow=Math.max(WS.snow,1-k/180); } } }
       if(WS.wet==null){} else if(W.rain>.05)WS.wet=Math.min(1,WS.wet+dt/25*(.5+W.rain)); else WS.wet=Math.max(0,WS.wet-Math.max(dt/240,dh/2));
       if(WS.wet==null){} else if(W.snow>.05)WS.snow=Math.min(1,WS.snow+dt/90*(.5+W.snow)); else WS.snow=Math.max(0,WS.snow-Math.max(dt/(W.rain>.05?60:300),dh/3));
-      E[row+1]=inside?0:Math.round(255*(F.has('wet')?1:WS.wet||0)); E[row+6]=inside?0:Math.round(255*WS.snow); LFX.ws=WS; E[row+2]=F.has('ao')?255:0; E[row+3]=F.has('var')?255:0;
+      E[row+1]=inside?0:Math.round(255*(F.has('wet')?1:WS.wet||0)); E[row+6]=inside?0:Math.round(255*WS.snow); LFX.ws=WS;
+      if(typeof WEEDS!=='undefined'){ const v=inside||WS.snow<.6; if(!v||WS.bv===false){ WS.bv=v; if(WEEDS.meshes)for(const m of WEEDS.meshes)m.visible=v; if(WEEDS.chunks)for(const m of WEEDS.chunks.values())if(m)m.visible=v; } }   // (the grass and the weeds under the snow once it's deep)
+      E[row+2]=F.has('ao')?255:0; E[row+3]=F.has('var')?255:0;
       const sp=.004+W.wind*.02; E[row+4]=Math.round(((t*sp)%1)*255); E[row+5]=Math.round(((t*sp*.6)%1)*255);   // (the drift, with the wind)
       sky.copy(scene.background); E[row+8]=Math.round(sky.r*255); E[row+9]=Math.round(sky.g*255); E[row+10]=Math.round(sky.b*255);
       LFX.env.needsUpdate=true; }; }

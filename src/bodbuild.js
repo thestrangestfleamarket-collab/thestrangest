@@ -41,7 +41,8 @@ const BODB={};
   // sidewalk RPD in, its picture the ramp's (the warning pad at its foot), and the two triangles of kerb face closing its sides
   { const X=BOD.XS, Y=BOD.YS, Z=BOD.ZS, {RP,D,col}=BOD.ramps, RD=BOD.RD, H=-RD;
     for(const r of RP){ const P=(u,w,z)=>{ const q=r.ax==='x'?[u,r.e+r.dir*w]:[r.e+r.dir*w,u]; return [X(q[0]),Y(z),Z(q[1])]; }, W=r.u1-r.u0;
-      BOD.bq(P(r.u0,0,RD),P(r.u1,0,RD),P(r.u1,D,0),P(r.u0,D,0),BOD.faceTex(W*24,D*24,(i,j)=>col((i+.5)/24,D-(j+.5)/24,W)),'G');   // (row 0 along the top edge, as bq lays it)
+      const a=P(r.u0,0,RD), b=P(r.u1,0,RD), c=P(r.u1,D,0), d=P(r.u0,D,0), up=(b[2]-a[2])*(c[0]-a[0])-(b[0]-a[0])*(c[2]-a[2])>0, tx=BOD.faceTex(W*24,D*24,(i,j)=>col((i+.5)/24,D-(j+.5)/24,W));   // (row 0 along the top edge, as bq lays it)
+      if(up)BOD.bq(a,b,c,d,tx,'G'); else BOD.bq(b,a,d,c,tx,'G');   // (wound so its normal is up, as the ground's: the lying snow reads it, map-pre.js)
       for(const u of [r.u0,r.u1])BOD.bq(P(u,0,RD),P(u,D,0),P(u,D,0),P(u,0,0),BOD.faceTex(D*24,H,(i,j)=>BOD.g.kerbFace(u*7+i/24,H-1-j,H)),'G'); } }
   // THE STREET'S SIGNS (bodega.js's BOD.signs; owner, 18 Oct 2026, "NYC markings and street signs"): thin boxes in the street's tiles (z art
   // px), every face painted: a blade's or a plate's words in a 3x5 pixel letter, read left to right from either side (the way along a face, r, is

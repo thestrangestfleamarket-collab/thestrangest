@@ -1030,3 +1030,31 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   cable down the gable. **Cost**: the flats some 5,000 triangles on the 5th floor's screen (136K to 141K there, already over the 100K before them),
   12 lamp records, 12 leaves and knobs (one program); the roof's bits about 20 more instances; a resident indoors his rig as before. Not done: the
   lift for residents (they take the stairs); sitting or sleeping in the flats; a resident reading a paper he bought (he looks it over standing).
+- **The Metro's benches are seats** (owner, 18 Oct 2026, "go all", the Metro's open items; `metro.js`, `use.js`): a double click on one of the
+  platform's three benches walks him up and sits him on it, facing the platform, till a key or a walk gets him up (the kit's benches aren't the
+  batch's, so each has a hidden box to be clicked by, in the level under the street's group, and its seat found from the kit's faces round it,
+  as the park's sitting log's: `METRO.seats`, `METRO.things`). Cost: three invisible boxes, nothing a frame. **Found on the way** (`rooms.js`):
+  the first room entered (a fresh start is in the cottage) gave every material the near-side cut's two planes in place of its own, so every cut
+  wall (the Metro's, the castle's, the stored rooms') stopped cutting for good; a material with planes of its own now keeps them.
+- **Rats in the Metro** (owner, 18 Oct 2026, "go all"; `npc-creatures.js`): three of the street's rats (the pack's rat, its clips and its
+  mottled fur) under it: two over the platform between the track's edge and the back wall, one along the tactile strip at the edge; on the level
+  under the street (its group: drawn only from down there; unseen, neither drawn nor run, as every character), on the platform's ground, out of its
+  solids, never past the gates or over the edge. Cost: 2,196 triangles a rat where seen, no light, no program.
+- **The Metro's way out signed** (owner, 18 Oct 2026, "go all"; `metro.js`): a black sign hung from the platform's ceiling before the gates,
+  TO STREET with an arrow ahead on its platform side and TO TRAINS on the gates' side, in the street signs' white 3x5 pixel letters (painted once
+  into a 49 x 11 picture, the kit's 18 texels a metre, lit a little from inside), on two dark rods; not overhead-hidden, so it reads from the
+  isometric view. Cost: 36 triangles, two small pictures, materials made as the kit's (no new program), no light.
+- **Riding the Metro's car** (owner, 18 Oct 2026, "go all"; `metro.js`, `build.py`): standing in the car (through its open doors on the
+  platform's side) when its doors shut, you ride: it pulls out east into the tunnel, waits a few seconds in the dark (6 s with you aboard, 45
+  without), comes back out, slows to the platform and opens; you walk out through a door. Carried by the car's own move each frame, before you
+  walk and are drawn (the train's clock now runs first in the frame); a double click's spot goes with the car. Its solids follow it (`lay`): at
+  the stop with doors open, the track's box round the car, its far side, its platform side between the three pairs of doors (a gap each); shut,
+  its side whole; gone, the track whole again; the map's bound reaches along the tunnel only while you ride. Inside it (riding or not) the car is
+  cut to its floor as a room's walls are, and while riding the tunnel's walls cut and its roof overhead, so the isometric view finds you; the
+  perspective views see the car's inside (seats, poles, windows). A lamp in it lit only while you ride (one of LITE's eight). Tested in the
+  headless page: walked in, rode out and back, couldn't walk through either long side while moving, walked out through a door at the stop.
+  Not done: its seats and poles aren't solid (you walk through them), no sitting in it; the cab door stays shut. Cost: 2 tunnel quads now their
+  own meshes, 6 solid boxes reused, one lamp record; nothing a frame but the boxes set when the car moves or its doors change.
+  **Found on the way** (`apts.js`): leaving the apartment house handed back the street's solids whatever level you were on, so a jump from the
+  house to the Metro by the menu (or a fresh start then THE PLATFORM) left the street's solids under the platform: you walked through its
+  benches, columns and the car; now the level you're on's.

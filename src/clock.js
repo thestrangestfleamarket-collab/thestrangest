@@ -3,9 +3,9 @@
 // down a little after six), one light from it with its shadows; the sky's colour, the open air's light and the moon's follow how high (or
 // how far under) the sun is: day, the gold of a low sun, sunset, the blue hour, night. Underground none of it reaches. The menu's TIME:
 // the hour (a slider), STOPPED or RUNNING, and how fast a day goes; N jumps between noon and seven in the evening. The game opens at noon
-// (owner, 17 Oct 2026: "day always starts at noon"; before that 7pm); half past four since 18 Oct 2026 ("do A-D": noon's overhead sun
+// (owner, 17 Oct 2026: "day always starts at noon"; before that 7pm); half past three since 18 Oct 2026 ("do A-D": noon's overhead sun
 // flattened everything; the late afternoon's long shadows and lower light) ----
-const CLOCK={h:16.5,run:false,speed:1440/600,sunV:new THREE.Vector3(0,1,0),moonV:new THREE.Vector3(0,1,0)};   // (speed: game minutes a real second; a day in ten minutes; sunV, moonV: where they really are, for the sky dome, sky.js)
+const CLOCK={h:15.5,run:false,speed:1440/600,sunV:new THREE.Vector3(0,1,0),moonV:new THREE.Vector3(0,1,0)};   // (speed: game minutes a real second; a day in ten minutes; sunV, moonV: where they really are, for the sky dome, sky.js)
 { const D=Math.PI/180, sunL=new THREE.DirectionalLight(0xffffff,0), R=22*TILE;
   sunL.castShadow=true; sunL.shadow.mapSize.set(2048,2048); Object.assign(sunL.shadow.camera,{left:-R,right:R,top:R,bottom:-R,near:.5,far:120*TILE}); sunL.shadow.camera.updateProjectionMatrix();
   sunL.shadow.bias=-.0005; sunL.shadow.normalBias=.04; scene.add(sunL,sunL.target);
@@ -25,7 +25,7 @@ const CLOCK={h:16.5,run:false,speed:1440/600,sunV:new THREE.Vector3(0,1,0),moonV
   // light in the shade, 2 the sun alone by day (the shade lit only by lamps and what the sun bounces); the clouds below)
   const SKYV=QS.get('sky')!=null?+QS.get('sky'):2;   // (the blue sky and the sun alone by day: the default since 17 Oct 2026, "go"; ?sky=0 the old dim day, ?sky=1 with a little sky fill)
   if(SKYV){ const F=SKYV===2?.09:.3, G=SKYV===2?.08:.28, at=(e,v)=>{ K[K.findIndex(k=>k[0]===e)]=v; };
-    at(6,[6,0x9fb8d8,0xf0c8a0,0x4a3a2a,F,0xffb070,1.9]); at(10,[10,0x86aadc,0xf0d4b0,0x54442e,F,0xffd4a0,2.6]); at(14,[14,0x6a9fe0,0xbfdcff,0x5b4a35,G,0xfff1d6,3.1]); at(90,[90,0x4f8ee0,0xbfdcff,0x5b4a35,G,0xfff1d6,3.4]); }   // (the shade's sky fill .08 since 18 Oct 2026, between .05 (the backs black boxes by day) and .15 (everything flat); the sun still the light)
+    at(6,[6,0x9fb8d8,0xf0c8a0,0x4a3a2a,F,0xffb070,1.9]); at(10,[10,0x86aadc,0xf0d4b0,0x54442e,F,0xffd4a0,2.6]); at(14,[14,0x6a9fe0,0xbfdcff,0x5b4a35,G,0xfff1d6,3.5]); at(90,[90,0x4f8ee0,0xbfdcff,0x5b4a35,G,0xfff1d6,3.8]); }   // (the shade's sky fill .08 since 18 Oct 2026, between .05 (the backs black boxes by day) and .15 (everything flat); the sun still the light)
   const ca=new THREE.Color(), cb=new THREE.Color(), mixC=(a,b,t,out)=>out.copy(ca.setHex(a)).lerp(cb.setHex(b),t);
   let last={h:-1,x:0,z:0,lv:''};
   CLOCK.tick=dt=>{ if(CLOCK.run)CLOCK.h=(CLOCK.h+dt*CLOCK.speed/60)%24;

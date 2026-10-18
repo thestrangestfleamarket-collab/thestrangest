@@ -69,11 +69,16 @@
   for(const [key,name,metres,[tx,tz],speed,turn] of CH){ const D=C[key], K=KIND[key], rig=rigOf(D.rig), CL=clipsOf(D), mixer=new THREE.AnimationMixer(rig.bones[0]), A={}, act=n=>A[n]||(A[n]=mixer.clipAction(CL[n]));
     const st2={fly:K.fly?K.fly[0]+Math.random()*(K.fly[1]-K.fly[0]):0,hid:false,t:Math.random()*10}; let cur=null;
     const N=makeNPC(null,{key:key.toLowerCase(),name,names:D.mesh.parts,lv:'up',group:'bodega',geo:PAINT(key,geomOf(D.mesh)),skin:rig,tall:D.tall,rank:D.mesh.parts.map(()=>0),metres,x:X(tx),z:Z(tz),lane:K.lane,free,ground:(x,z)=>MODS.bodega.ground(x,z),radius:.12,speed,stride:0,rock:0,bob:0,
-      pick:K.fly?st=>{ const L=K.lane; st.to={x:L.x0+Math.random()*(L.x1-L.x0),z:L.z0+Math.random()*(L.z1-L.z0)}; st2.fly=K.fly[0]+Math.random()*(K.fly[1]-K.fly[0]); }:undefined,
+      pick:K.fly?st=>{ const L=K.lane; st.to={x:L.x0+Math.random()*(L.x1-L.x0),z:L.z0+Math.random()*(L.z1-L.z0)}; st2.fly=K.fly[0]+Math.random()*(K.fly[1]-K.fly[0]); }
+        // (THE WATERING HOLE, owner 18 Oct 2026: "the toads and other life will drink from it": a walker of the park, now and then, to the pond's edge
+        // to drink (st2.drink: there, facing the water, a long while); else a spot of its own ground)
+        :st=>{ const P=window.POND, L=K.lane; st2.drink=false; st.face=null; if(P&&P.ready&&K.lane===PARKL&&Math.random()<.4){ const e=P.edge(); if(free(e.x,e.z,.12*TILE)){ st.to=e; st2.drink=true; return; } }
+          for(let k=0;k<12;k++){ const p={x:L.x0+Math.random()*(L.x1-L.x0),z:L.z0+Math.random()*(L.z1-L.z0)}; if(free(p.x,p.z,.12*TILE)){ st.to=p; return; } } st.to=null; st.wait=1; },
       anim:(dt,moving,st,sc)=>{ st2.t+=dt;
         // out by day or by night: a bat sleeps the day away, a wasp the night (gone from sight, kept still); a rat is out more after dark
         const dark=CLOCK.dark(), out=K.night===1?dark:K.day?!dark:true; if(out===st2.hid){ st2.hid=!out; N.g.visible=out; st.hold=!out; if(!out)st.to=null; }
         if(!out)return;
+        if(st2.drink&&!st.to&&window.POND&&POND.c){ st.face={x:POND.c.x,z:POND.c.z}; st.wait=Math.max(st.wait||0,6); st2.drink=false; }   // (at the water: facing it, a long drink)
         const run=K.run&&moving&&st.v>1.2*TILE, want=moving?(run?K.run:K.walk):K.idle; if(want!==cur){ const a=act(want); a.reset().setLoop(THREE.LoopRepeat,Infinity).fadeIn(.2).play(); if(cur)act(cur).fadeOut(.2); cur=want; }
         if(K.hop){ const a=act(cur), ph=(a.time/a.getClip().duration)%1, air=moving&&ph>K.hop[0]&&ph<K.hop[1]; st.v=speed*TILE*(air?1/(K.hop[1]-K.hop[0]):.004); a.timeScale=1; }   // (a hopper: still on the ground, its whole way in the air)
         else act(cur).timeScale=moving?Math.max(.6,st.v/(K.pace*sc)):1; mixer.update(dt);

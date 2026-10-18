@@ -26,3 +26,18 @@ The owner's list of features to build, newest last. Each line is his ask; the no
   - a way to match a moment to a line already said (what was asked, by whom, the mood), so reuse sounds right;
   - on the artifact page, the AI part can run through the page's own "ask Claude" (as the world editor's DESCRIBE does); the voices need the
     server either way.
+
+## A fountain terrace and a big lake in the park (owner, 18 Oct 2026)
+
+> "I want to add a large fountain in the top right area of central park on the current map. use this entrance exactly. and put a large lake
+> towards the top (map doesnt have full lake in it just the bottom part), show me some mockups of possibel layouts" ... "queue that"
+
+- **His three photos**: the entrance is Central Park's Mall gate: two tall carved brownstone piers with urn finials, carved shield panels on
+  each face, low stone walls running off to the sides, two black bollards in the opening, a paved path straight in between black iron railings
+  and lawns, under big elms. The fountain is Bethesda: a round stone basin with a two-tier bronze fountain and a winged angel on top, on a
+  wide brick-paved terrace laid in rings, low balustrade walls at the back, the lake right behind it. The lake: wide, still green water with
+  grey rocks at the near shore, thick trees all round, towers rising behind.
+- **Where**: the fountain terrace in the park's top-right area, entered through that gate; a large lake towards the top of the park
+  (today only its bottom part is on the map), the terrace's back wall on its shore.
+- **First step: mockups** of a few possible layouts (where the gate, the path, the terrace and the lake go) for him to pick, before building.
+- Built the game's way: CEL light, the game's own painters and colours, no photo textures; it states its cost (triangles, lamps, ms).

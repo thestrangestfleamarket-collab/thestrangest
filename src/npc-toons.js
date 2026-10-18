@@ -54,7 +54,7 @@ const TOONS={};
         part('ink jar',1,'jar',[ shape(cyl(.04,.04,.09,8),INK,[.22,.045,.1]), shape(cyl(.037,.037,.025,8),LID,[.22,.1,.1]) ]) ],
       springs:{ earL:{f:-.15,s:.12,k:70,c:6,lim:.4}, earR:{f:-.15,s:.12,k:70,c:6,lim:.4}, head:{f:-.04,s:.04,k:90,c:9,lim:.12}, page:{y:.3,k:30,c:3,lim:.5} },
       pose:(c,dt)=>{ const B=c.B, V=c.v||(c.v=new THREE.Vector3());
-        c.read=Math.max(0,Math.min(1,(c.read||0)+(c.still>.4&&!c.sheet?dt:-dt)*2.5)); const r=c.read*c.read*(3-2*c.read);   // (reading: the paper opened before him, the jar set down)
+        c.read=Math.max(0,Math.min(1,(c.read||0)+(c.still>.4&&!c.sheet&&!c.busy?dt:-dt)*2.5)); const r=c.read*c.read*(3-2*c.read);   // (reading: the paper opened before him, the jar set down)
         RIGNPC.walk(c,{arm:.4,leg:.55,bob:.02,rock:.05}); B.head.rotation.y=c.look*(1-r); B.head.rotation.x=r*.25;
         if(!c.sheet){ B.armL.rotation.x=B.armL.rotation.x*(1-r)-1.05*r; B.armR.rotation.x=B.armR.rotation.x*(1-r)-1.05*r; B.armL.rotation.z=-.2*(1-r)+.32*r; B.armR.rotation.z=.08*(1-r)-.32*r; }   // (the left arm out a little round the paper under it)
         // the paper: under his left arm (folded, along his side), or open before him; its page turned now and then
@@ -63,7 +63,8 @@ const TOONS={};
         if(c.sheet){ B.paper.rotation.set(0,.18,0); B.page.rotation.y=-.36; B.paper.position.set(0,.6,.27); }
         if(r>.9&&(c.turnT=(c.turnT??5)-dt)<=0){ c.turnT=4+Math.random()*5; c.kick('page','w',-3); }
         // the ink jar: in his right hand, or on the ground by his foot
-        c.at('armR',[.2,.38,.05],V); V.y-=.11; const g=[.25,0,.16]; B.jar.position.set(V.x+(g[0]-V.x)*r,V.y+(g[1]-V.y)*r,V.z+(g[2]-V.z)*r); } };
+        c.at('armR',[.2,.38,.05],V); V.y-=.11; const g=[.25,0,.16]; B.jar.position.set(V.x+(g[0]-V.x)*r,V.y+(g[1]-V.y)*r,V.z+(g[2]-V.z)*r);
+        if(c.extra)c.extra(c,dt,r); } };   // (c.extra: what his newsstand has him do: newsstand.js)
     TOONS.cat=make(def,{key:'raincat',name:'THE CAT IN THE RAINCOAT',metres:1.1,radius:.25,speed:.32,stride:8,at:66},1); }
 
   // ---- THE TV CAT: an orange television on four furry legs, a cat's ears on its lid, its handle, the screen its face (glowing a little: white

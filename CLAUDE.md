@@ -949,4 +949,10 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
 - **Never leafy grass** (owner, 18 Oct 2026, of the grass mockups https://claude.ai/artifact/WfQ5tdKVCmb1jJEAeAEXL5: "No leafy grass never"):
   grass is never made of leaf clumps, little crowns or the trees' leaf mottle. The grass he's weighing is blocky blades: thick straight square
   posts of flat colour (a darker foot, a lit top) flowing in one smooth wind; his picks so far "1 and 2" (short blocks with chunky tufts) and
-  a flat one (long blades lying nearly down, swaying in waves). Not built into the game yet: his choice between them first.
+  a flat one (long blades lying nearly down, swaying in waves). **His pick: "Only swaying smooth"** (the flat one, in the game: below).
+- **The lawn's grass flat and swaying** (owner, 18 Oct 2026: "Only swaying smooth"; `WEEDS.lawnInit` in `src/weeds.js`, in place of the card
+  tufts): over every lawn in sight, clumps of four long thick blades of flat colour lying nearly down (tips 6-14 degrees up), combed one way, in
+  the lawn's own four greens; one smooth wind rolls over them in waves (a slow swell and a cross ripple by where each clump stands, `PARK.windK`
+  its strength), sliding and lifting the tips, the roots still. Same chunks as before (8 tiles, made round you, dropped 3 off). Measured in the
+  park at 3:30: 39,840 triangles in the picture (93,440 in all the chunks round you; the old tufts some 15-20,000 in the picture), one program,
+  no light, a chunk 15-17 ms to make.

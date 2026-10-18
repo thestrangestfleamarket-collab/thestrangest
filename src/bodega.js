@@ -235,9 +235,22 @@ const BOD={meshes:[], walls:{}, lamps:[]};
     const rs=hash(Math.floor(cx*7),Math.floor(cy*7),621); if(Math.abs(r-.2)<.022)return [36,36,38]; if(r<.07)return [86,84,80];   // (a ring cast in it, the boss)
     const q=((Math.floor((dx+1)*24/3)+Math.floor((dy+1)*24/3))&1); let c=q?[98,95,90]:[62,61,59]; if(r>.24&&hash(Math.floor(x*24),Math.floor(y*24),623)<.12+.15*rs)c=[110,76,52];   // (the waffle; rust round its edge)
     return c; }); };
-  const drain=(ax,e,dir,a)=>{ DR.push({ax,e,a}); const x0=ax==='x'?a-.6:Math.min(e,e+dir*.45), x1=ax==='x'?a+.6:Math.max(e,e+dir*.45), y0=ax==='x'?Math.min(e,e+dir*.45):a-.6, y1=ax==='x'?Math.max(e,e+dir*.45):a+.6;
-    feat(x0,y0,x1,y1,(x,y)=>{ const u=(ax==='x'?x:y)-a, w=((ax==='x'?y:x)-e)*dir; if(Math.abs(u)>=.55||w<0||w>=.42)return null;
-      if(Math.abs(u)>.47||w>.34)return [54,54,56]; return Math.floor((u+.55)*24)%3===0?[18,18,20]:[76,76,78]; }); };   // (an iron frame, bars across the flow)
+  // (THE GRATE LIKE HIS PHOTO, owner 18 Oct 2026: "drains in road like this": a cast-iron storm grate in the gutter, a tile and a quarter along the
+  // kerb and nearly a tile out, its heavy frame lit on the side toward the light; four rows of six long slots, black down into the drain; the
+  // iron worn pale on the bars' tops and rusty here and there; round it the asphalt patched darker and cracked, weeds coming up in the cracks and
+  // along the kerb; now and then a scrap of paper caught on it)
+  const drain=(ax,e,dir,a)=>{ DR.push({ax,e,a}); const HL=.62, OUT=.82, R=.22, x0=ax==='x'?a-HL-R:Math.min(e,e+dir*(OUT+R)), x1=ax==='x'?a+HL+R:Math.max(e,e+dir*(OUT+R)), y0=ax==='x'?Math.min(e,e+dir*(OUT+R)):a-HL-R, y1=ax==='x'?Math.max(e,e+dir*(OUT+R)):a+HL+R;
+    const sd=hash(Math.floor(a*7),Math.floor(e*7),631);
+    feat(x0,y0,x1,y1,(x,y)=>{ const u=(ax==='x'?x:y)-a, w=((ax==='x'?y:x)-e)*dir, px=Math.floor(x*24), py=Math.floor(y*24), hp=hash(px,py,633); if(w<0)return null;
+      const ou=Math.abs(u)-HL, ow=w-OUT, out=Math.max(ou,ow);
+      if(out>=0){ if(out>=R*(.6+.4*hash(Math.floor(u*6),Math.floor(w*6),635)))return null;   // (the patched asphalt round it, ragged)
+        if(hp<.16+(w<.12?.3:0))return [[62,92,44],[80,112,52],[50,76,38]][Math.floor(hash(px,py,637)*3)];   // (weeds in its cracks, thickest by the kerb)
+        return hp>.9?[30,30,32]:[50,50,53]; }
+      if(sd<.35&&Math.hypot(u-(sd-.17)*3,w-OUT*.8)<.1)return hp<.5?[236,232,226]:[206,202,214];   // (a scrap of paper caught on it)
+      if(Math.abs(u)>HL-.08||w>OUT-.08||w<.06){ const lit=(u<0)!==(dir<0); return Math.abs(u)>HL-.03||w>OUT-.03?(lit?[118,114,108]:[58,56,54]):[86,84,80]; }   // (the frame)
+      const fu=(u+HL-.08)/((HL-.08)*2), fw=(w-.06)/(OUT-.14), cu=fu*4-Math.floor(fu*4), cw=fw*6-Math.floor(fw*6);
+      if(cu>.1&&cu<.9&&cw>.24&&cw<.82)return cw<.34||cu<.18?[26,24,24]:[10,10,12];   // (a slot: black down into the drain, its near lip a shade)
+      return hash(Math.floor(fu*4),Math.floor(fw*6),639)<.25&&hp<.5?[112,78,54]:hp<.3?[104,102,98]:[78,77,75]; }); };   // (the iron: worn pale, rust here and there)
   // the kerbs' faces down to the road: straight lengths to each curve, the curves after (KA); the two ends of the main street's road too
   BOD.kerbs=[{ax:'x',at:CURB,a0:MAP.x0,a1:MAP.x1,n:1},{ax:'x',at:FAR,a0:MAP.x0,a1:RG.wr0-KR,n:-1,e1:1},{ax:'x',at:FAR,a0:RG.wr1+KR,a1:AV.r0-KR,n:-1,e0:1,e1:1},{ax:'x',at:FAR,a0:AV.r1+KR,a1:MAP.x1,n:-1,e0:1},
     {ax:'y',at:AV.r0,a0:FAR+KR,a1:RG.nr0-KR,n:1,e0:1,e1:1},{ax:'y',at:AV.r1,a0:FAR+KR,a1:RG.nr1-KR,n:-1,e0:1,e1:1},

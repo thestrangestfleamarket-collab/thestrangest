@@ -39,7 +39,7 @@ const APTS={};
   const HP=new THREE.Plane(new THREE.Vector3(0,-1,0),1e6); APTS.HP=HP; const WALLM=[];
   const pt=(w,s,a,z)=>w.ax==='x'?[X(a),Y(z),Z(w.at+s*T)]:[X(w.at+s*T),Y(z),Z(a)];
   const wallMesh=(a,b,c,d,tx,planes)=>{ const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute([...a,...b,...c,...a,...c,...d],3)); g.setAttribute('uv',new THREE.Float32BufferAttribute([0,0,1,0,1,1,0,0,1,1,0,1],2)); g.computeVertexNormals();
-    const mk=cv=>{ const t=new THREE.CanvasTexture(cv); t.magFilter=THREE.NearestFilter; t.minFilter=THREE.NearestFilter; t.colorSpace=THREE.SRGBColorSpace; return t; };
+    const mk=cv=>{ const t=new THREE.CanvasTexture(cv); t.magFilter=THREE.NearestFilter; t.minFilter=THREE.NearestMipmapNearestFilter; t.generateMipmaps=true;   /* (its mip levels: the brick photo seen small shimmered into vertical stripes, owner 18 Oct 2026; still nearest, never blended) */ t.colorSpace=THREE.SRGBColorSpace; return t; };
     const mat=new THREE.MeshLambertMaterial({map:mk(tx.map.image),alphaTest:.5,side:THREE.DoubleSide,clippingPlanes:planes,...(tx.em?{emissiveMap:mk(tx.em.image),emissive:0xffffff,emissiveIntensity:1.2}:{})});
     const me=new THREE.Mesh(g,mat); me.receiveShadow=true; me.castShadow=true; scene.add(me); WALLM.push(me); return me; };
   function wall(w){ const as=new Set([w.a0,w.a1]), zs=new Set([w.z0,w.z1]); for(const h of w.holes){ as.add(Math.max(w.a0,h.a0)); as.add(Math.min(w.a1,h.a1)); zs.add(h.z0); zs.add(h.z1); }
@@ -229,7 +229,13 @@ const APTS={};
     const mu=(c,h,L,W)=>c-h<E?c:c+h>L-E?W-(L-c):E+(c-E)*(W-2*E)/(L-2*E);   // (a wall's piece keeps its distance from that wall; the rest spread)
     const put=(k,x,y,rot=0,sx=1)=>{ const f=CAT[k]; if(!f)return null; const p=f(+x.toFixed(3),+y.toFixed(3)); if(!p)return null;
       if(sx!==1){ const sc=v=>x+(v-x)*sx; for(const b of p.boxes){ b.x0=sc(b.x0); b.x1=sc(b.x1); } p.x0=sc(p.x0); p.x1=sc(p.x1); if(p.solids)for(const b of p.solids){ b.x0=sc(b.x0); b.x1=sc(b.x1); } }
-      p.kind=k; place(p,rot); const add0=BATCH.add; if(dz)BATCH.add=(ps,...r)=>{ for(let i=1;i<18;i+=3)ps[i]+=dz; add0(ps,...r); }; BATCH.tag=OBJ('apartments','cottage: '+k); try{ for(const b of p.boxes)gbox(b,'A'); }finally{ BATCH.add=add0; BATCH.tag=null; } MADE.push(p); return p; };
+      p.kind=k; place(p,rot);
+      // (kept inside the walls, owner 18 Oct 2026, his picture of the cottage's cabinet standing out of the house's east wall over the street: each
+      // piece but the windows' rods and drapes slid back in if it reaches past the walls' inner faces)
+      if(!/window sill|drapes/.test(k)&&p.boxes.length){ const m0=.12, bx0=Math.min(...p.boxes.map(b=>b.x0)), bx1=Math.max(...p.boxes.map(b=>b.x1)), by0=Math.min(...p.boxes.map(b=>b.y0)), by1=Math.max(...p.boxes.map(b=>b.y1));
+        const dx=bx1>A.x1-m0?A.x1-m0-bx1:bx0<A.x0+m0?A.x0+m0-bx0:0, dy=by1>A.y1-m0?A.y1-m0-by1:by0<A.y0+m0?A.y0+m0-by0:0;
+        if(dx||dy){ for(const b of [...p.boxes,...(p.solids||[])]){ b.x0+=dx; b.x1+=dx; b.y0+=dy; b.y1+=dy; } p.x0+=dx; p.x1+=dx; p.y0+=dy; p.y1+=dy; } }
+      const add0=BATCH.add; if(dz)BATCH.add=(ps,...r)=>{ for(let i=1;i<18;i+=3)ps[i]+=dz; add0(ps,...r); }; BATCH.tag=OBJ('apartments','cottage: '+k); try{ for(const b of p.boxes)gbox(b,'A'); }finally{ BATCH.add=add0; BATCH.tag=null; } MADE.push(p); return p; };
     const SKIP=/herb cottage (floor|wall|roof)|ivy along|door step|window sill and branch rod|green drapes/, MOVE=LOBBY?{'apothecary cabinet':[A.x1-.06,CY0+5.2,1],'folding screen':[A.x1-.2,A.y1-2.1,1],'framed flower print':[A.x0+1.4,CY0+.03,0],'cottage wall clock':[A.x0+2.62,A.y1-.04,0],'shelf with jars and a candle':[A.x0+5,A.y1-.15,0],'writing desk with a pink lamp':[A.x0+5.6,CY0+.5,0]}:{'apothecary cabinet':[A.x1-.06,A.y0+9.8,1],'folding screen':[A.x1-.2,A.y0+11.9,1],'framed flower print':[A.x0+2.62,A.y0+.03,0],'cottage wall clock':[A.x0+2.62,A.y1-.04,0],'shelf with jars and a candle':[A.x0+5,A.y1-.15,0]};
     for(const [k,x,y] of PRE){ if(SKIP.test(k))continue; if(MOVE[k]){ put(k,...MOVE[k]); continue; } const f=CAT[k]; if(!f)continue; const p0=f(0,0); if(!p0)continue; const cx=A.x0+mu(x,(p0.x1-p0.x0)/2,9,WX), cy=CY0+mu(y,(p0.y1-p0.y0)/2,12,WY); if(LOBBY&&cx>A.x0+2.9&&cx<A.x0+4.6&&cy<CY0+1.6)continue; put(k,cx,cy); }   // (in the lobby plan nothing in the way of the door from the core)
     // the windows' greenery: the branch rod and its pothos, the drapes, each narrowed to its window (back: as made; front: turned to face in)
@@ -238,6 +244,10 @@ const APTS={};
     if(LOBBY){ for(const [u,v] of [[2,4],[5.5,4],[3.75,7.5]])LIGHTS.push({x:X(A.x0+u),y:Y(S+S-14),z:Z(CY0+v),c:0xffd2a0,i:6}); } else for(const L of LIGHTS){ L.c=0xffd2a0; L.i=6; }
     K.LAMPS.slice(n0).filter(l=>!l.off&&l.r>0&&Math.max(...l.c)>0).sort((a,b)=>b.r-a.r).slice(0,6).forEach(l=>{ const cm=Math.max(...l.c); LIGHTS.push({x:X(l.x),y:Y(l.z+CL*S),z:Z(l.y),c:new THREE.Color(l.c[0]/cm,l.c[1]/cm,l.c[2]/cm).getHex(),i:5*cm*Math.min(1.2,l.r/5),flame:1}); });
     K.LAMPS.length=n0; APTS.made=MADE;
+    // (its own batch, clipped above the ceiling you're under as the house's is, owner 18 Oct 2026, from the lobby: "shouldnt see things on other
+    // floors": its pieces had gone into the street's batch, so the cottage's rugs, table and plants hung over the lobby)
+    BATCH.build((k,map,emap)=>k==='B'?new THREE.MeshBasicMaterial({map,side:THREE.DoubleSide,alphaTest:.5,clippingPlanes:[HP]}):new THREE.MeshLambertMaterial({map,alphaTest:.5,side:THREE.DoubleSide,clippingPlanes:[HP],...(emap?{emissiveMap:emap,emissive:0xffffff,emissiveIntensity:1.3}:{})}));
+    { const CM=Object.values(BATCH.meshes); BATCH.meshes={}; for(const me of CM){ me.castShadow=true; me.receiveShadow=true; } APTS.meshes=APTS.meshes.concat(CM); }
     // where a new player first stands: in the middle of the cottage, facing the front windows
     APTS.home={x:X(A.x0+WX*.42),z:Z(CY0+WY*.55),y:Y(CL*S)-Y(0),hd:0}; }
   for(const L of LIGHTS){ const P=new THREE.PointLight(L.c,0,(L.flame?4:6.5)*TILE,1.6); P.position.set(L.x,L.y,L.z); P.userData.i0=L.i; P.userData.in=cur=>!!cur&&APTS.in&&P.position.y>cur.y0-.3&&P.position.y<cur.y1-.5; scene.add(P); L.light=P; }   // (in: the whole floor's lamps light your room, not just the one in it: the rooms were dark; map-post.js's LITE)

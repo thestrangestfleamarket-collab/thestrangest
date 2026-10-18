@@ -108,7 +108,13 @@ WEEDS.lawnInit=()=>{ const T=TILE, CS=8*T, CELL=.5*T, PER=1, hsh=(a,b,s)=>{ let 
   const vn=(x,z,s)=>{ const ix=Math.floor(x), iz=Math.floor(z), fx=x-ix, fz=z-iz, u=fx*fx*(3-2*fx), v=fz*fz*(3-2*fz), h=(a,b)=>hsh(a/97,b/89,s);
     return (h(ix,iz)*(1-u)+h(ix+1,iz)*u)*(1-v)+(h(ix,iz+1)*(1-u)+h(ix+1,iz+1)*u)*v; };
   const WK=[3,2,2,1.5,1,1.5,3], WS=WK.reduce((a,b)=>a+b,0), pickK=r=>{ r*=WS; for(let i=0;i<WK.length;i++)if((r-=WK[i])<0)return KINDS[i]; return 'flat'; };
-  const patch=(x,z)=>{ const tx=x/T, tz=z/T, wx=tx+16*(vn(tx/18,tz/18,91)-.5)+5*(vn(tx/6,tz/6,93)-.5), wz=tz+16*(vn(tx/18,tz/18,92)-.5)+5*(vn(tx/6,tz/6,94)-.5), PSt=PS/T, gx=Math.floor(wx/PSt), gz=Math.floor(wz/PSt);
+  // ONLY FLAT AND TUFTS OUTSIDE THE PARK (owner, 18 Oct 2026: "i want just flat and tufts on the main side street, only the lush grass is in central
+  // park"): the crowns and rolls only inside the park's walls (WEEDS.inPark, a margin in tiles in from them); elsewhere the patch's kind folded to flat or tuft
+  const inPark=(x,z,m=0)=>{ if(typeof PARK==='undefined'||PARK.ox==null)return false; const xa=BOD.XS(PARK.x0+PARK.ox+m), xb=BOD.XS(PARK.x1+PARK.ox-m), za=BOD.ZS(PARK.y0+PARK.oy+m), zb=BOD.ZS(PARK.y1+PARK.oy-m);
+    return x>Math.min(xa,xb)&&x<Math.max(xa,xb)&&z>Math.min(za,zb)&&z<Math.max(za,zb); };
+  WEEDS.inPark=inPark;
+  const patch=(x,z)=>{ const k=patch0(x,z); return k==='flat'||k==='tuft'||inPark(x,z)?k:(k==='roll'||k==='bigflat'?'flat':'tuft'); };
+  const patch0=(x,z)=>{ const tx=x/T, tz=z/T, wx=tx+16*(vn(tx/18,tz/18,91)-.5)+5*(vn(tx/6,tz/6,93)-.5), wz=tz+16*(vn(tx/18,tz/18,92)-.5)+5*(vn(tx/6,tz/6,94)-.5), PSt=PS/T, gx=Math.floor(wx/PSt), gz=Math.floor(wz/PSt);
     let d1=1e18, d2=1e18, k1='flat', k2='flat'; for(let i=-1;i<=1;i++)for(let j=-1;j<=1;j++){ const a=gx+i, b=gz+j, px=(a+hsh(a,b,71))*PSt, pz=(b+hsh(b,a,72))*PSt, d=(wx-px)**2+(wz-pz)**2, k=pickK(hsh(a,b,73));
       if(d<d1){ d2=d1; k2=k1; d1=d; k1=k; } else if(d<d2){ d2=d; k2=k; } }
     let kind=Math.sqrt(d2)-Math.sqrt(d1)<3.5*hsh(tx*2,tz*2,95)?k2:k1;   // (the border mingled)

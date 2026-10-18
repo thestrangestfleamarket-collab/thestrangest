@@ -67,7 +67,7 @@ DRONE.init=()=>{ const H=MODS.apts; if(!H||!H.A||!H.made)return; const A=H.A, T=
   const hud=document.createElement('div'); hud.id='dhud'; hud.hidden=true; hud.style.cssText='position:fixed;inset:12px;border:2px solid #6cf08a;z-index:14;pointer-events:none;font:12px var(--pixel,monospace);color:#8cf0a8';
   hud.innerHTML='<div style="position:absolute;left:10px;top:8px">DRONE 01 · <span id="dhst"></span></div><div style="position:absolute;right:10px;top:8px">● REC</div><button class="btn" id="dhx" style="position:absolute;right:10px;bottom:8px;pointer-events:auto">LEAVE DRONE CAM</button>';
   document.body.appendChild(hud);
-  DRONE.setCam=on=>{ DRONE.cam=!!on; hud.hidden=!on; if(!on){ UI.setView(UI.view); if(H.HP)H.HP.constant=H.in?(H.R0||0)+H.SY*H.floor()+H.SY*.93:1e6; } };
+  DRONE.setCam=on=>{ DRONE.cam=!!on; hud.hidden=!on; if(!on){ UI.setView(UI.view); if(H.HP)H.HP.constant=H.in?H.lvY(H.floor())+H.SY*.93:1e6; } };
   hud.querySelector('#dhx').onclick=()=>DRONE.setCam(false);
   // ---- DRONE LINK, the computer's screen as a panel
   const MENU=[['COFFEE',2],['SODA',2],['WATER',1],['MILK',3],['EGGS',4],['BREAD',3],['CHIPS',2],['CANDY BAR',1],['CEREAL',4],['FISH FOOD',3]];

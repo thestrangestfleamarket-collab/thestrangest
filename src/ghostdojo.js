@@ -202,7 +202,7 @@ function gdShape(GS,K,LAMPS){ const s=K.s, o=K.o, SC=1.5, cx=o[0]+4*s, Y1=o[1]+3
     for(const [a,b,c_,d] of PL)gbox({x0:a,x1:b,y0:c_,y1:d,z0:0,z1:12,c:[130,126,118],fs:stone,top:(x,y)=>sh([150,146,138],.95+.08*hs(Math.floor(x*24),Math.floor(y*24),714))},'GDL');
     gbox({x0:X0+DOOR.a0-.2,x1:X0+DOOR.a1+.2,y0:Y1,y1:Y1+.55,z0:0,z1:5,c:[140,136,128],fs:stone,top:(x,y)=>sh([156,152,146],(x*24)%26<1?.7:.95+.08*hs(Math.floor(x*24),Math.floor(y*24),715))},'GDL');
     // the ground floor's ceiling (seen from nowhere but over the hall: hidden while you're in)
-    const flat=(x0,y0,x1,y1,z,col,kind)=>bq([X(x0),Y(z),Z(y1)],[X(x1),Y(z),Z(y1)],[X(x1),Y(z),Z(y0)],[X(x0),Y(z),Z(y0)],faceTex((x1-x0)*24,(y1-y0)*24,(i,j)=>C(col(x0+(i+.5)/24,y1-(j+.5)/24))),kind);
+    const flat=(x0,y0,x1,y1,z,col,kind)=>bq([X(x0),Y(z),Z(y1)],[X(x1),Y(z),Z(y1)],[X(x1),Y(z),Z(y0)],[X(x0),Y(z),Z(y0)],faceTex((x1-x0)*24,(y1-y0)*24,(i,j)=>C(col(x0+(i+.5)/24,y0+(j+.5)/24))),kind);   // (row 0 at y0, as bq lays it: main's fix, 18 Oct 2026)
     flat(X0,Y0,X1,Y1,H+.5,(x,y)=>sh([92,62,48],.9+.1*hs(Math.floor(x*24/7),3,716)),'GDR');
     // ---- THE DOOR'S CURTAIN (noren): four strips of indigo, a white crest across them, hung in the doorway's top; its lanterns, red paper, lit,
     // hung from the pent roof's rafters either side

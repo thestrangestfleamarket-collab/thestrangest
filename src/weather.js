@@ -57,7 +57,7 @@ const WX={hold:null,now:null};
   // each frame, after the clock has set the sky and the sun by the hour: the weather laid over them
   const tick0=CLOCK.tick; CLOCK.tick=dt=>{ tick0(dt);
     if((ft-=dt)<=0){ ft=.5; WX.now=WX.hold?Object.assign({flash:WX.hold==='STORM'&&Math.random()<.04},HOLDS[WX.hold]):WX.at(T()); }   // (the simulation twice a second: it moves over minutes)
-    const W=WX.now, up=LVL!=='down', inside=!!(ROOMS.cur)||!up, day=cl((CLOCK.elev()+4)/14), t=performance.now()/1000;
+    const W=WX.now, up=LVL!=='down', inside=!OUT.open, day=cl((CLOCK.elev()+4)/14), t=performance.now()/1000;
     // the clouds: how many, their colour, their drift with the wind
     WX.cloudCut(); const show=Math.round(6+W.cloud*74); CL.geometry.setDrawRange(0,ends[Math.min(79,show-1)]); CL.visible=up;
     cmat.color.setRGB(1,1,1).multiplyScalar(1-.35*W.rain-.35*W.storm); cmat.emissive.setRGB(.16,.2,.27).multiplyScalar(.4+.6*day);

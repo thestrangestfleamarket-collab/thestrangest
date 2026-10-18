@@ -1,7 +1,7 @@
 // ---- THE STREET DRESSED (owner, 17 Oct 2026: "start fleshing it out with our available assets to make it come to life"; then: "delete
 // everything you added except for the new building, street lights, and trash can and bus stop"): the city kit's pieces (kit.js) that stay:
 // trash cans at the kerb, street lights and lamp posts, all built here from blocks (the bus stop and its bench removed) ----
-const DRESS={}, TLX={tick:()=>{}};   // (TLX: the traffic lights, below)
+const DRESS=window.DRESS={}, TLX={tick:()=>{}};   // (TLX: the traffic lights, below)
 { const G=MODS.bodega.ground, xm=(BOUND.x0+BOUND.x1)/2; let zc=null, zf=null; for(let z=BOUND.z0;z<BOUND.z1;z+=0.02){ const g=G(xm,z); if(zc==null&&g<-.01)zc=z; if(zc!=null&&zf==null&&g>-.01&&z>zc)zf=z; }
   const sw=zc-.5, far=zf+.6, AX=BOD.X(MODS.apts.A.x1), AX0=BOD.X(MODS.apts.A.x0), BX0=BOD.X(BOD.B0.x0);   // the kerb, the far kerb; the house's east wall, the bodega's west wall
   DRESS.kerb={sw,far}; DRESS.cans=[];   // (the kerb lines and the cans: the city's vehicles and its trash round, vehicles.js, duties.js)
@@ -77,7 +77,7 @@ const DRESS={}, TLX={tick:()=>{}};   // (TLX: the traffic lights, below)
     // 1.5° up and 2.5° under: some twenty minutes of the evening), its lamp lit (the head's or the lantern's colour), its light and its pool with it;
     // off again as the sun comes up. By day they're dark and light nothing
     const LIT=new THREE.Color(0xffe4b0), DIM=new THREE.Color(0x4a4238);
-    DRESS.tick=()=>{ TLX.tick(); const e=CLOCK.elev(), k=Math.max(0,Math.min(1,(3-e)/8)), up=LVL!=='down'&&!ROOMS.cur; poolMat.opacity=k;
+    DRESS.tick=()=>{ TLX.tick(); const e=CLOCK.elev(), k=Math.max(0,Math.min(1,(3-e)/8)), up=OUT.world; poolMat.opacity=k;
       pools.forEach((P,j)=>{ const [L,,,,me]=P, on=e<P.on; if(on!==P.lit){ P.lit=on; L.intensity=on?L.userData.i0:0; const c=on?LIT:DIM; if(j<heads.length){ hd.setColorAt(j,c); hd.instanceColor.needsUpdate=true; } else { lant.setColorAt(j-heads.length,c); lant.instanceColor.needsUpdate=true; } }
         me.visible=up&&k>0&&on&&!L.userData.off; }); };
     // THE TRAFFIC LIGHTS (owner, 18 Oct 2026, "go all": "a traffic light"; the kit's was taken out, so this one is blocks, the street's way): New

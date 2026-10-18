@@ -19,11 +19,7 @@
   const K=DRESS.kerb, PATROL=null, TRUCK=null, VAN=null, AMB=null;   // (the vehicles: removed)
   // ---- THE MAIL
   const MAILTO=to=>CITY.residents.find(r=>r.key===to)?'house':to==='you'?'apartments':CIVIC.shops[to]?to:to;   // (where a letter goes: the residents' house, your box in the lobby, a shop's door)
-  CITY.at(9.5,()=>{ const S=S_.carrier; if(!S||S.state!=='free'||!CIVIC.mail.bag.length)return; const bag=CIVIC.mail.bag.splice(0); S.state='on the round'; S.job={kind:'mail',n:bag.length}; CIVIC.carry(S,0x3a6ac8); log('the carrier left with '+bag.length+' letter'+(bag.length>1?'s':''),'post');
-    const stops=[...new Set(bag.map(l=>MAILTO(l.to)))]; const next=()=>{ const id=stops.shift(); if(!id){ CIVIC.carry(S,null); log('the carrier\'s round is done','post'); back(S,null); return; } const P=CITY.place(id); if(!P||P.stacked){ next(); return; }
-      CIVIC.go(S,P.door,ok=>{ for(const l of bag)if(MAILTO(l.to)===id){ l.state='delivered'; CIVIC.box(l.to).push(l); } log('mail delivered at '+P.name.toLowerCase(),id); S.N.st.wait=1.5; setTimeout(next,1500); },1.8); }; next(); },'the mail round');
-  // a resident reads his letters once home (the owed rent he knows of)
-  const r0=CITY.tick; CITY.tick=(dt,you)=>{ r0(dt,you); for(const r of CITY.residents)if(r.state==='home'){ const B=CIVIC.box(r.key); for(const l of B)if(l.state==='delivered'){ l.state='read'; } } };
+  /* (the mail round: mail.js, the postal system's own) */
   // ---- PUBLIC WORKS: the cans, the trash round, deliveries, the power crew; one crew, one job at a time
   const bagGeo=(()=>{ const M=VEHD.trashbag; if(!M)return null; const b=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0)), q=new Int16Array(b(M.p).buffer), P=new Float32Array(q.length); for(let i=0;i<q.length;i++)P[i]=(q[i]+32500)*M.sc+M.lo[i%3];
     const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(P,3)); g.setAttribute('color',new THREE.BufferAttribute(b(M.c),3,true)); g.setIndex(new THREE.BufferAttribute(new Uint16Array(b(M.i).buffer),1)); g.computeVertexNormals(); g.computeBoundingBox(); return g; })();
@@ -34,7 +30,7 @@
   CIVIC.emptyCan=c=>{ c.fill=0; if(c.heap)c.heap.visible=false; for(const j of CITY.open('trash'))if(j.data.can===c.id)CITY.done(j); };
   CIVIC.tryCan=()=>{ const c=CIVIC.cans[0]; if(c)CIVIC.fillCan(c,4); };
   const worksJob=()=>{ const S=S_.works; if(!S||S.state!=='free')return; const j=CITY.take('restock',S.id,S.N.st)||CITY.take('trash',S.id,S.N.st)||CITY.take('power',S.id,S.N.st); if(!j)return; S.job=j;
-    if(j.kind==='restock'){ const P=CITY.place(j.place); CIVIC.carry(S,0x8a6a3a); dispatch(S,VAN,P.door,ok=>{ if(ok){ const Sh=CIVIC.shops[j.place]; Sh.stock+=12; Sh.low=Sh.stock<8; log('a crate delivered to '+j.place+' (stock '+Sh.stock+')',j.place); } CITY.done(j); CIVIC.carry(S,null); back(S,VAN); }); }
+    if(j.kind==='restock'){ const P=CITY.place(j.place); CIVIC.carry(S,0x8a6a3a); dispatch(S,VAN,P.door,ok=>{ if(ok){ const Sh=CIVIC.shops[j.place]; Sh.stock+=12; Sh.low=Sh.stock<8; log('a crate delivered to '+j.place+' (stock '+Sh.stock+')',j.place); if(CIVIC.restocked)CIVIC.restocked(j.place); } CITY.done(j); CIVIC.carry(S,null); back(S,VAN); }); }
     else if(j.kind==='trash'){ const c=CIVIC.cans.find(c=>c.id===j.data.can); dispatch(S,VAN,{x:c.x,z:c.z-.9*T},ok=>{ if(ok){ CIVIC.emptyCan(c); log('a can emptied','street'); } CITY.done(j); back(S,VAN); }); }
     else if(j.kind==='power'){ CIVIC.carry(S,0xd8b030); dispatch(S,VAN,j.at,ok=>{ S.busy=8; S.after=()=>{ CIVIC.power(true,j.data.x0,j.data.x1); log('power back on','street'); CITY.done(j); CIVIC.carry(S,null); back(S,VAN); }; }); } };
   CITY.at(6.5,()=>{ const S=S_.works; if(!S||S.state!=='free'||!CIVIC.cans.length)return; S.state='on the round'; S.job={kind:'trash round'}; log('the trash round began','depot'); const cans=CIVIC.cans.slice();

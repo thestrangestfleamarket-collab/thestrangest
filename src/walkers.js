@@ -37,11 +37,13 @@ if(WALKERS.on){ const T=TILE, X=BOD.XS, Z=BOD.ZS, rnd=Math.random, pick=a=>a[Mat
       else if(what==='shop'){ const P=CITY.place(pick(SHOPS)); p=P&&{x:P.door.x+R(-1,1)*T,z:P.door.z+R(-.4,.4)*T}; }
       else if(what==='lap'){ W.lap=((W.lap??Math.floor(rnd()*4))+1)%4; const c=CORNERS[W.lap]; p={x:X(c[0])+R(-.4,.4)*T,z:Z(c[1])+R(-.4,.4)*T}; }
       else if(what==='near'){ p={x:W.home.x+R(-6,6)*T,z:W.home.z+R(-6,6)*T}; }
+      else if(what==='mailbox'){ const s=W.home.b.step; p={x:s.x+R(-.3,.3)*T,z:s.z+R(-.2,.2)*T}; }
       else if(what==='commute'){ W.leg^=1; const P=W.ends[W.leg]; p=P&&{x:P.door.x+R(-.6,.6)*T,z:P.door.z+R(-.3,.3)*T}; }
       if(ok(p))return p; }
     return null; };
-  const next=(N,W)=>{ const K=KIND[W.kind], to=spot(N,W,K.to()); W.state='going'; N.dwell=null; if(!to){ W.state='wait'; W.t=2; return; }
+  const next=(N,W)=>{ const K=KIND[W.kind], mail=W.home&&window.MAIL&&MAIL.waiting(W.home)&&rnd()<.6, to=mail?spot(N,W,'mailbox'):spot(N,W,K.to()); W.state='going'; N.dwell=null; W.mail=!!(mail&&to); if(!to){ W.state='wait'; W.t=2; return; }   /* (mail waiting: home to his box first, mail.js) */
     W.where=to; CITY.send(N,to,{v:W.v,then:ok=>{ if(N.errand)return; if(!ok){ W.state='wait'; W.t=1+rnd()*2; return; }   // (no way there: another place soon)
+      if(W.mail){ W.mail=false; const got=MAIL.take(W.home.id,N.name); W.state='stay'; W.t=4+got.length*2.5; N.dwell='found_item_idle_a'; N.st.hold=true; N.st.to=null; const F=W.home.b.F; N.st.face={x:N.st.x-F.n.x,z:N.st.z-F.n.z}; return; }   /* (at his box: reading) */
       W.state='stay'; W.t=R(...K.stay)*(W.kind==='jogger'?1:R(.7,1.3)); N.dwell=inPark(N.st.x,N.st.z)||W.kind!=='parkgoer'?pick(K.idles):'UAL_Idle_Loop'; if(N.dwell==='sit_floor_idle_a'&&!inPark(N.st.x,N.st.z))N.dwell='UAL_Idle_Loop';
       N.st.hold=true; N.st.to=null; const a=rnd()*Math.PI*2; N.st.face={x:N.st.x+Math.sin(a),z:N.st.z+Math.cos(a)}; }}) ; };
   const start=()=>{ const res=new Set((CITY.residents||[]).map(r=>r.key)); let i=0;

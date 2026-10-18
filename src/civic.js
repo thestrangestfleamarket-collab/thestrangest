@@ -50,8 +50,7 @@ const CIVIC={row:[],staff:{},log:[],ledger:{treasury:500,day:0,rent:30,tax:10,wa
   CIVIC.send=(to,from,subject,body)=>{ const L={id:(CIVIC.mail.n=(CIVIC.mail.n||0)+1),to,from,subject,body:body||'',day:CITY.day,t:CLOCK.h,state:'posted'}; CIVIC.mail.bag.push(L); return L; };
   CIVIC.box=to=>CIVIC.mail.boxes[to]||(CIVIC.mail.boxes[to]=[]);
   // ---- THE CLERK'S DAY: rent notices at 8, rent due at 9 (paid from cash, or owed), wages at 17 to those who were out, the shops' tax at 18
-  CITY.at(8,()=>{ for(const r of CITY.residents)CIVIC.send(r.key,'CITY HALL','RENT DUE','Rent of $'+CIVIC.ledger.rent+' for flat '+r.flat+' is due today.'); CIVIC.send('you','CITY HALL','WELCOME','The Market is open. Rent is $'+CIVIC.ledger.rent+' a day. Curfew '+CIVIC.ledger.curfew[0]+':00 to '+CIVIC.ledger.curfew[1]+':00.'); CIVIC.note('rent notices posted','hall'); },'rent notices');
-  CITY.at(9,()=>{ for(const r of CITY.residents){ const due=CIVIC.ledger.rent+(r.owed||0); if(r.cash>=due){ r.cash-=due; CIVIC.ledger.treasury+=due; r.owed=0; CIVIC.note(r.name+' paid rent $'+due,'hall'); } else { r.owed=due; CIVIC.note(r.name+' owes rent $'+due,'hall'); } } },'rent');
+  /* (the rent notices and the morning's rent: by mail now, city hall's bills at 8 every third day, paid when read: mail.js) */
   CITY.at(17,()=>{ for(const r of CITY.residents)if(r.state!=='home'){ r.cash+=40; CIVIC.note(r.name+' was paid $40','street'); } let w=0; for(const k in CIVIC.staff)w+=CIVIC.ledger.wage; CIVIC.ledger.treasury-=w; CIVIC.note('the city paid its staff $'+w,'hall'); },'wages');
   CITY.at(18,()=>{ for(const S of Object.values(CIVIC.shops)){ const t=Math.min(S.till,CIVIC.ledger.tax); S.till-=t; CIVIC.ledger.treasury+=t; } CIVIC.note('the shops paid their tax','hall'); },'tax');
   // hunger: a day's worth in about eight hours of the clock, only while the clock runs; hungry and out, his next errand is for food (residents.js asks)
@@ -84,7 +83,7 @@ const CIVIC={row:[],staff:{},log:[],ledger:{treasury:500,day:0,rent:30,tax:10,wa
   CIVIC.carry=(S,col)=>{ if(S.item){ S.N.g.remove(S.item); S.item=null; } if(col==null)return; const m=new THREE.Mesh(new THREE.BoxGeometry(.28*T,.22*T,.28*T),new THREE.MeshLambertMaterial({color:col})); m.position.set(.18*T,S.N.H*.75,.1*T); m.castShadow=true; S.N.g.add(m); S.item=m; };
   // ---- THE MENU'S CITY TAB
   { const Mn=document.getElementById('menu'), tabs=Mn.querySelector('.tabs'), bt=document.createElement('button'); bt.setAttribute('role','tab'); bt.dataset.t='city'; bt.textContent='CITY'; tabs.insertBefore(bt,tabs.querySelector('[data-t="keys"]'));
-    const pane=document.createElement('div'); pane.className='pane'; pane.dataset.p='city'; pane.hidden=true; pane.innerHTML='<div id="civ" style="font:11px Silkscreen,monospace;letter-spacing:.4px;max-height:60vh;overflow:auto"></div><h3>TRY</h3><div class="row"><button class="btn" id="cvfire">A FIRE</button><button class="btn" id="cvout">AN OUTAGE</button><button class="btn" id="cvcan">A FULL CAN</button><button class="btn" id="cvmail">A LETTER TO YOU</button><button class="btn" id="cvfaint">YOU FAINT</button></div>';
+    const pane=document.createElement('div'); pane.className='pane'; pane.dataset.p='city'; pane.hidden=true; pane.innerHTML='<div id="civ" style="font:11px Silkscreen,monospace;letter-spacing:.4px;max-height:60vh;overflow:auto"></div><h3>TRY</h3><div class="row"><button class="btn" id="cvfire">A FIRE</button><button class="btn" id="cvout">AN OUTAGE</button><button class="btn" id="cvcan">A FULL CAN</button><button class="btn" id="cvmail">GO TO YOUR MAILBOX</button><button class="btn" id="cvfaint">YOU FAINT</button></div>';
     Mn.querySelector('.foot').before(pane); const show=t=>{ Mn.querySelectorAll('[data-t]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.t===t))); Mn.querySelectorAll('[data-p]').forEach(p=>p.hidden=p.dataset.p!==t); if(t==='city')CIVIC.draw(); };
     bt.onclick=()=>show('city'); Mn.querySelectorAll('[data-t]').forEach(b=>{ if(b!==bt){ const f=b.onclick; b.onclick=e=>{ f&&f(e); show(b.dataset.t); }; } });
     const fmt=h=>{ const m=Math.floor(h*60)%60, hh=Math.floor(h)%24; return hh+':'+(m<10?'0':'')+m; }, esc=s=>String(s).replace(/</g,'&lt;');
@@ -94,12 +93,12 @@ const CIVIC={row:[],staff:{},log:[],ledger:{treasury:500,day:0,rent:30,tax:10,wa
       o+='<h3>SHOPS</h3>'+Object.values(CIVIC.shops).map(S=>row(S.id,'stock '+S.stock+' · till $'+S.till+' · sold '+S.sold)).join('');
       o+='<h3>SERVICES</h3>'+Object.values(CIVIC.staff).map(S=>row(S.name,S.state+(S.job?' · '+S.job.kind+(S.job.place?' at '+S.job.place:''):''))).join('');
       o+='<h3>OPEN JOBS</h3>'+(CITY.open().map(j=>row(j.kind,(j.place||'')+' · posted '+fmt(j.posted))).join('')||row('none',''));
-      const my=CIVIC.box('you'); o+='<h3>YOUR MAILBOX (THE APARTMENTS\' LOBBY)</h3>'+(my.slice(-5).reverse().map(l=>row(l.from+': '+l.subject,esc(l.body))).join('')||row('nothing yet','the carrier comes at 9:30'));
+      if(window.MAIL&&MAIL.ready){ const st=MAIL.L.reduce((a,l)=>(a[l.state]=(a[l.state]||0)+1,a),{}), mine=MAIL.mine?MAIL.L.filter(l=>l.to===MAIL.mine.id&&l.state==='delivered').length:0; o+='<h3>THE POST</h3>'+row(MAIL.addr.length+' addresses · '+MAIL.cboxes.length+' collection boxes','sort 8:00 · round 9:30 · collection 16:00')+row('in the boxes to go '+(st.posted||0)+' · collected '+(st.collected||0)+' · sorted '+(st.sorted||0)+' · out '+(st.out||0)+' · held '+(st.held||0),'delivered '+(st.delivered||0)+' · read '+(st.read||0)+' · dead '+(st.dead||0))+row('YOUR BOX: '+(MAIL.mine?esc(MAIL.mine.label):''),mine?mine+' waiting':'empty')+row('YOUR MONEY','$'+MAIL.you.cash); }
       o+='<h3>THE LOG</h3>'+CIVIC.log.slice(0,14).map(e=>row('DAY '+e.day+' '+fmt(e.t),esc(e.what))).join('');
       pane.querySelector('#civ').innerHTML=o; };
     setInterval(()=>{ if(UI.menuOpen)CIVIC.draw(); },1000);
     pane.querySelector('#cvfire').onclick=()=>CIVIC.tryFire&&CIVIC.tryFire(); pane.querySelector('#cvout').onclick=()=>CIVIC.tryOutage&&CIVIC.tryOutage(); pane.querySelector('#cvcan').onclick=()=>CIVIC.tryCan&&CIVIC.tryCan(); pane.querySelector('#cvfaint').onclick=()=>{ CIVIC.tryFaint&&CIVIC.tryFaint(); UI.toggleMenu(); };
-    pane.querySelector('#cvmail').onclick=()=>{ CIVIC.send('you','THE MARKET','HELLO','A letter for you, in the bag till the carrier\'s round.'); CIVIC.draw(); }; }
+    pane.querySelector('#cvmail').onclick=()=>{ if(window.MAIL&&MAIL.mine){ const b=MAIL.mine.b.step; STORE.goTo(b.x,b.z,'up'); UI.toggleMenu&&UI.toggleMenu(); } }; }
   // each frame: the vehicles, hunger
   const t0=CITY.tick; CITY.tick=(dt,you)=>{ t0(dt,you); CIVIC.hungerTick(dt); };
   CIVIC.note('the city opened','hall');

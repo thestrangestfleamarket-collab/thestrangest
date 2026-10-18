@@ -5,7 +5,7 @@
 // walks home and goes in (inside he is hidden and still: the house has no flights of stairs yet, so the flats themselves aren't walked to).
 // The game opens at 7pm with the clock stopped: two are home, two on their way; RUN the clock (the menu's TIME) and the day turns. Nothing
 // drawn that wasn't; one home costs nothing a frame. CITY.residents lists them; RESDBG() a test's look ----
-{ const T=TILE, HOUSE=()=>CITY.place('house'), OUT=['bodega','park','store:diner','store:bar','dojo'];
+{ const T=TILE, HOUSE=()=>CITY.place('house'), OUT0=['bodega','park','store:diner','store:bar','dojo'], OUT=OUT0.filter(id=>!/^store:/.test(id)||!AWAY.has(id.slice(6)));   // (not to a place off the map, owner 18 Oct 2026: AWAY, map-pre.js)
   const R=[['hero_m','1A',7.5,18.2],['hero_f','1B',8.1,19.0],['villager_m','2A',8.7,19.6],['villager_f','2B',9.3,20.4]].map(([key,flat,leave,home])=>({key,flat,leave,home,state:'',N:null}));
   CITY.residents=R;
   const inside=()=>{ const H=HOUSE(); return H&&{x:H.at.x,z:H.at.z-1.3*T}; };   // (just inside the door, in the entrance passage)

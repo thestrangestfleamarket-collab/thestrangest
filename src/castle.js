@@ -10,7 +10,8 @@
 // pictures don't run); the mice and the dust in the air (moving pictures) are left out. Underground only the dungeon and the station are drawn ----
 // a box of the game's painted in the street's frame (as gbox, bodega.js, but at the street's own size, not the buildings' tenth bigger; dy lifts
 // it to the dungeon's depth)
-const gboxS=(b,kind='L',dy=0)=>{ const X=BOD.XS, Z=BOD.ZS, Y=z=>BOD.YS(z)+dy, {faceTex,bq,C}=BOD, {x0,x1,y0,y1,z0,z1}=b; if(b.foot&&z1-z0<.05)return; const k=b.em?2:1, H=Math.max(1,(z1-z0)*k);
+// (ys: its height squeezed, the castle's half: each side's picture half as many rows, each row a strip of two of the painter's, so its pixels stay square)
+const gboxS=(b,kind='L',dy=0,ys=1)=>{ const X=BOD.XS, Z=BOD.ZS, Y=z=>BOD.YS(z*ys)+dy, {faceTex,bq,C}=BOD, {x0,x1,y0,y1,z0,z1}=b; if(b.foot&&z1-z0<.05)return; const k=(b.em?2:1)*ys, H=Math.max(1,Math.round((z1-z0)*k));
   if(b.em&&kind==='L')kind='B';
   const side=(nx,ny,P,Q,z)=>C(b.fs?b.fs(nx,ny,P,Q,z-z0,nx?.68:.84):nx&&b.fi?b.fi(Q,z):ny&&b.fj?b.fj(P,z):b.c);
   if(z1-z0>=.5){
@@ -20,11 +21,17 @@ const gboxS=(b,kind='L',dy=0)=>{ const X=BOD.XS, Z=BOD.ZS, Y=z=>BOD.YS(z)+dy, {f
       faceTex((x1-x0)*24*k,H,(i,j)=>{ const t=(i+.5)/((x1-x0)*24*k); return side(0,ny,ny<0?x0+t*(x1-x0):x1-t*(x1-x0),y,z1-(j+.5)/k); }),kind); } }
   if(x1-x0>.004&&y1-y0>.004)bq([X(x0),Y(z1),Z(y1)],[X(x1),Y(z1),Z(y1)],[X(x1),Y(z1),Z(y0)],[X(x0),Y(z1),Z(y0)],
     faceTex((x1-x0)*24,(y1-y0)*24,(i,j)=>C(b.top?b.top(x0+(i+.5)/24,y0+(j+.5)/24):b.c)),kind); };
-const castleMat=(k,map,emap)=>new THREE.MeshLambertMaterial({map,emissiveMap:emap||null,emissive:emap?new THREE.Color(1,1,1):new THREE.Color(0,0,0),alphaTest:.5,side:THREE.DoubleSide});
+const castleMat=(k,map,emap,pl)=>new THREE.MeshLambertMaterial({map,emissiveMap:emap||null,emissive:emap?new THREE.Color(1,1,1):new THREE.Color(0,0,0),alphaTest:.5,side:THREE.DoubleSide,clippingPlanes:pl?[pl]:[]});
 // where a thing stands solid: its own solids, else its footprint (base: the level's floor)
-const castleSolid=(lv,p,base)=>{ const X=BOD.XS, Z=BOD.ZS, Y=BOD.YS; if(p.walk)return; const h=Math.max(...p.boxes.map(b=>b.z1));
+const castleSolid=(lv,p,base,ys=1)=>{ const X=BOD.XS, Z=BOD.ZS, Y=z=>BOD.YS(z*ys); if(p.walk)return; const h=Math.max(...p.boxes.map(b=>b.z1));
   for(const s of p.solids||[p]){ SOL[lv].push([X(s.x0),Z(s.y0),X(s.x1),Z(s.y1)]); FIX[lv].push([X(s.x0),Z(s.y0),base,X(s.x1),Z(s.y1),base+Math.max(.05,Y(h))]); } };
 // ---- THE CASTLE on the park's lawn
+// HALF HEIGHT (owner, 18 Oct 2026: "the castle should be half height. it is for the woodlan creatuers who live here, not normal size charaters"):
+// its footprint as it was, every piece built at half its height (CYS: the curtain, the drums, the gatehouse and its arch, the rim, the well), its
+// solids with it; the stair down and the dungeon under it as they were. ITS WALLS FALL TO THEIR FOOT WHEN YOU'RE IN THE BAILEY (owner: "same rulse
+// apply for the castle, when you walk in the walls fall at bottom so you can see yuorself"): each side's pieces (its curtain, its drums, the
+// gatehouse with the front) a mesh of its own, cut to its foot as the bodega's walls are while you're half a tile inside the bailey
+const CYS=.5;
 grab('castle',()=>{ const K=BOD.KC, KP=BOD.K.PROPS, X=BOD.XS, Z=BOD.ZS, Y=BOD.YS, [bx0,bx1,by0,by1]=CASTLE.b, H=200, r=1.4, gx=CASTLE.gate, wy=by0, S=CASTLE.stair, n0=KP.length;
   const run=(a,b,fn)=>{ const n=Math.max(1,Math.round((b-a)/4)), s=(b-a)/n; for(let i=0;i<n;i++)fn(a+i*s,a+(i+1)*s); };
   run(bx0+r,bx1-r,(a,b)=>K.KMK.curtain(a,by1,b,by1,H,'y+')); run(by0+r,by1-r,(a,b)=>K.KMK.curtain(bx0,a,bx0,b,H,'x-')); run(by0+r,by1-r,(a,b)=>K.KMK.curtain(bx1,a,bx1,b,H,'x+'));
@@ -35,9 +42,14 @@ grab('castle',()=>{ const K=BOD.KC, KP=BOD.K.PROPS, X=BOD.XS, Z=BOD.ZS, Y=BOD.YS
   K.KMK.rim(S.x0-.3,S.y1,S.x1+.3,S.y1+.3); K.KMK.rim(S.x0-.3,S.y0,S.x0,S.y1); K.KMK.rim(S.x1,S.y0,S.x1+.3,S.y1);
   K.KMK.gravel(gx-.65,wy+.6,S.x1+.6,S.y0-.2); K.KMK.gravel(gx-.65,wy-.3,gx+.65,wy+.6); K.KMK.well(bx1-3,by1-4);   /* (east of the stairwell: the keep stands in the bailey's west half, store.js) */
   const made=KP.slice(n0); BATCH.cast=true;
-  for(const p of made){ BATCH.tag=OBJ('castle',p.name); for(const b of p.boxes)gboxS(b,'L'); } BATCH.tag=null;
-  BATCH.build(castleMat); BATCH.cast=false;
-  for(const p of made)castleSolid('up',p,0);
+  // (each piece to its side by where it stands: the nearest of the four walls' lines within a drum's reach, else the bailey's own, never cut)
+  const SIDE={f:[0,1],b:[0,-1],w:[1,0],e:[-1,0]}, PL={}, sideOf=p=>{ const bs=p.boxes; if(!bs.length)return 'L'; const cx=(Math.min(...bs.map(b=>b.x0))+Math.max(...bs.map(b=>b.x1)))/2, cy=(Math.min(...bs.map(b=>b.y0))+Math.max(...bs.map(b=>b.y1)))/2;
+    const d={f:Math.abs(cy-by0),b:Math.abs(cy-by1),w:Math.abs(cx-bx0),e:Math.abs(cx-bx1)}; let k=null; for(const s in d)if(d[s]<r+.8&&(!k||d[s]<d[k]))k=s; return k?'K'+k:'L'; };
+  for(const p of made){ BATCH.tag=OBJ('castle',p.name); const kd=sideOf(p); if(kd!=='L'&&!PL[kd])PL[kd]=new THREE.Plane(new THREE.Vector3(0,-1,0),1e6); for(const b of p.boxes)gboxS(b,kd,0,CYS); } BATCH.tag=null;
+  BATCH.build((k,map,emap)=>castleMat(k,map,emap,PL[k])); BATCH.cast=false;
+  { const M=BATCH.meshes||{}, m=.5*TILE, inB=()=>LVL==='up'&&pos.x>X(bx0)+m&&pos.x<X(bx1)-m&&pos.z>Z(by0)+m&&pos.z<Z(by1)-m; MODS.castleIn=inB;
+    for(const k in PL)if(M[k]){ const s=SIDE[k[1]]; cutWalls.push({pl:PL[k],nx:s[0],nz:s[1],foot:Y(6),me:M[k],when:inB}); } BATCH.meshes={}; }
+  for(const p of made)castleSolid('up',p,0,CYS);
   MODS.castle={BOUND:{x0:X(bx0-r),x1:X(bx1+r),z0:Z(by0-r),z1:Z(by1+r)}}; });
 // ---- THE STAIR DOWN: twelve steps from the bailey to the hall (as the subway's, map-post.js, but descending toward the park's back), its side
 // walls (both levels), a lamp over it; seen from both levels, cut down to your feet while you're on it

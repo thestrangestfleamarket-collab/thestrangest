@@ -30,7 +30,7 @@ if(WALKERS.on){ const T=TILE, X=BOD.XS, Z=BOD.ZS, rnd=Math.random, pick=a=>a[Mat
   const P0=()=>({x0:X(PARK.x0+PARK.ox+2),x1:X(PARK.x1+PARK.ox-2),z0:Z(PARK.y0+PARK.oy+2),z1:Z(PARK.y1+PARK.oy-2)});
   const inPark=(x,z)=>{ const p=P0(); return x>p.x0&&x<p.x1&&z>p.z0&&z<p.z1; };
   const places=()=>CITY.places().filter(p=>p.lv==='up'&&!p.stacked&&p.door);
-  const SHOPS=['bodega','store:diner','store:bar','dojo','park'];
+  const SHOPS=['bodega','store:diner','store:bar','dojo','park'].filter(id=>!/^store:/.test(id)||!AWAY.has(id.slice(6)));   // (not to a place off the map, owner 18 Oct 2026)
   const CORNERS=[[RING.wx0+1.6,-63.4],[RING.wx0+1.6,RING.ny1-1.4],[AVE.x1-1.6,RING.ny1-1.4],[AVE.x1-1.6,-63.4]];
   const spot=(N,W,what)=>{ const st=N.st, ok=p=>p&&N.free(p.x,p.z,st.R);
     for(let k=0;k<16;k++){ let p=null;

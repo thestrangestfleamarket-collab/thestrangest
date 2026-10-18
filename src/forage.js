@@ -28,14 +28,14 @@ const FORAGE={}; window.FORAGE=FORAGE;
     ['f_roast','ROASTED MUSHROOMS','cooking',[0,40],{button:3},'fills a third'],['f_fritter','PUFFBALL FRITTERS','cooking',[10,55],{puffball:2,button:1},'fills a third, stamina back'],
     ['f_skewer','MUSHROOM SKEWER','cooking',[15,60],{chanterelle:2,button:1},'fills two fifths, mends you a minute'],['f_soup','BOLETE SOUP','cooking',[35,80],{bolete:1,button:2},'fills more than half, some health'],
     ['f_morel','MOREL FRY','cooking',[55,100],{morel:2},'fills two fifths, quicker on your feet 3 min']];
-  const DO={p_refresh:()=>{ VIT.sta=1; VIT.tired=false; },p_heal:()=>{ VIT.hp=Math.min(1,VIT.hp+.5); },p_str:()=>buff('str',180),p_keen:()=>buff('keen',300),p_cure:()=>{ delete S.fx.poison; },
+  const iid=m=>m.includes('_')?m:'m_'+m; FORAGE.RC=RC; const DO={p_refresh:()=>{ VIT.sta=1; VIT.tired=false; },p_heal:()=>{ VIT.hp=Math.min(1,VIT.hp+.5); },p_str:()=>buff('str',180),p_keen:()=>buff('keen',300),p_cure:()=>{ delete S.fx.poison; },
     p_gheal:()=>{ VIT.hp=1; buff('regen',60); },f_roast:()=>feed(.33),f_fritter:()=>{ feed(.33); VIT.sta=1; },f_skewer:()=>{ feed(.4); buff('regen',60); },f_soup:()=>{ feed(.6); VIT.hp=Math.min(1,VIT.hp+.3); },f_morel:()=>{ feed(.4); buff('swift',180); }};
-  const PRICE={p_refresh:12,p_heal:20,p_str:28,p_keen:28,p_cure:40,p_gheal:110,f_roast:8,f_fritter:10,f_skewer:16,f_soup:30,f_morel:56,bottle:2};
-  const NAME=id=>id==='bottle'?'EMPTY BOTTLE':id==='mortar'?'MORTAR AND PESTLE':id.startsWith('m_')?MU[id.slice(2)][0]:id.startsWith('u_')?'STRANGE MUSHROOM ('+['','PALE','PUFFY','ORANGE','RED','SHAGGY','BROWN','PITTED','GLOWING'][MK.indexOf(id.slice(2))+1]+')':(RC.find(r=>r[0]===id)||[0,id])[1];
+  const PRICE=FORAGE.PRICE={p_refresh:12,p_heal:20,p_str:28,p_keen:28,p_cure:40,p_gheal:110,f_roast:8,f_fritter:10,f_skewer:16,f_soup:30,f_morel:56,bottle:2};
+  const NM=FORAGE.NM={}, NAME=id=>NM[id]?NM[id]:id==='bottle'?'EMPTY BOTTLE':id==='mortar'?'MORTAR AND PESTLE':id.startsWith('m_')?MU[id.slice(2)][0]:id.startsWith('u_')?'STRANGE MUSHROOM ('+['','PALE','PUFFY','ORANGE','RED','SHAGGY','BROWN','PITTED','GLOWING'][MK.indexOf(id.slice(2))+1]+')':(RC.find(r=>r[0]===id)||[0,id])[1];
   // ---- YOU: the four skills (tenths, 0 to 1000), their arrows, the cap; your hunger; what's on you; picked today
-  const SK=[['forage','FORAGING'],['alchemy','ALCHEMY'],['cooking','COOKING'],['myco','MYCOLOGY']], CAP=3000;
-  const S={v:1,sk:{forage:200,alchemy:200,cooking:200,myco:150},lock:{forage:'up',alchemy:'up',cooking:'up',myco:'up'},food:.8,fx:{},picked:{},pd:-1};
-  try{ const D=JSON.parse(SAVE.get(KEY)||'null'); if(D&&D.v===1)Object.assign(S,D); }catch(e){} if(QS.get('fresh')&&QS.get('keepinv')!=='1'){ S.picked={}; }
+  const SK=[['forage','FORAGING'],['alchemy','ALCHEMY'],['cooking','COOKING'],['myco','MYCOLOGY'],['fish','FISHING'],['prosp','PROSPECTING']], CAP=4000;   // (FISHING and PROSPECTING, owner 18 Oct 2026: fishing.js, mines.js; the cap 400 with six)
+  const S={v:1,sk:{forage:200,alchemy:200,cooking:200,myco:150,fish:150,prosp:100},lock:{forage:'up',alchemy:'up',cooking:'up',myco:'up',fish:'up',prosp:'up'},food:.8,fx:{},picked:{},pd:-1};
+  try{ const D=JSON.parse(SAVE.get(KEY)||'null'); if(D&&D.v===1){ const sk0={...S.sk}, lk0={...S.lock}; Object.assign(S,D); S.sk={...sk0,...S.sk}; S.lock={...lk0,...S.lock}; } }catch(e){} if(QS.get('fresh')&&QS.get('keepinv')!=='1'){ S.picked={}; }
   if(!INV.items.mortar&&!S.given){ INV.items.mortar=1; INV.items.bottle=(INV.items.bottle||0)+3; S.given=1; }   // (UO gave you your tools: a mortar and pestle, three bottles)
   let saveT=0; const save=()=>{ SAVE.set(KEY,JSON.stringify(S)); }, saveSoon=()=>{ clearTimeout(saveT); saveT=setTimeout(save,800); };
   FORAGE.S=S; const day=()=>window.MAIL&&MAIL.ready?MAIL.day():window.CITY?CITY.day||0:0;
@@ -45,7 +45,10 @@ const FORAGE={}; window.FORAGE=FORAGE;
   // ---- THE JOURNAL: UO's system lines, bottom left, a few at a time, fading
   const J=document.createElement('div'); J.id='fjour'; J.style.cssText='position:fixed;left:12px;bottom:44px;z-index:6;pointer-events:none;font:11px Silkscreen,monospace;letter-spacing:.3px;display:grid;gap:2px;zoom:var(--uiz,1)'; document.body.appendChild(J);
   const say=(t,c='#e8e2cc')=>{ const d=document.createElement('div'); d.textContent=t; d.style.cssText=`color:${c};text-shadow:1px 1px 0 #000,-1px 0 0 #000`; J.appendChild(d); while(J.children.length>5)J.firstChild.remove(); setTimeout(()=>d.remove(),6500); };
-  FORAGE.say=say;
+  FORAGE.say=say; FORAGE.RAW={}; FORAGE.has=id=>have(id); FORAGE.take=(id,n=1)=>{ take(id,n); saveSoon(); }; FORAGE.give=(id,n=1)=>give(id,n); FORAGE.sk=k=>sk(k); FORAGE.draw=()=>PACK.draw();
+  // (other crafts add their own: names, recipes, what they do, prices; fishing.js, mines.js)
+  FORAGE.add=(o)=>{ Object.assign(NM,o.names||{}); Object.assign(FORAGE.RAW,o.raw||{}); Object.assign(PRICE,o.prices||{}); Object.assign(DO,o.does||{}); if(o.recipes)RC.push(...o.recipes); };
+  FORAGE.feed=f=>feed(f); FORAGE.buff=(k,s)=>buff(k,s);
   // ---- A SKILL USED (UO's way): the chance to succeed from where the skill stands between the task's min and max; a gain more likely low in the
   // skill and on a task near your level (none from one you can't fail or can't do); at the total cap a gain only by taking from a skill set down
   const sk=k=>S.sk[k]/10, tot=()=>Object.values(S.sk).reduce((a,b)=>a+b,0);
@@ -100,16 +103,17 @@ const FORAGE={}; window.FORAGE=FORAGE;
   // ---- EATING, IDENTIFYING, CRAFTING
   FORAGE.eat=id=>{ if(!have(id))return; take(id,1); let k=id.slice(2);
     if(id.startsWith('m_')||id.startsWith('u_')){ const [, , , food,harm]=MU[k]; if(harm){ S.fx.poison=Math.max(S.fx.poison||0,40); say('YOU FEEL VERY ILL. YOU HAVE BEEN POISONED!','#9fe07f'); if(typeof SFX!=='undefined')SFX.play('cough',{vol:.6}); } else { feed(food); say('YOU EAT IT. NOT BAD.'); } }
+    else if(FORAGE.RAW[id]){ const [food,harm]=FORAGE.RAW[id]; if(harm&&Math.random()<harm){ S.fx.poison=Math.max(S.fx.poison||0,25); say('IT DISAGREES WITH YOU. YOU HAVE BEEN POISONED!','#9fe07f'); } else { feed(food); say('YOU EAT IT RAW. CHEWY.'); } }
     else if(DO[id]){ DO[id](); say(id[0]==='p'?'YOU DRINK THE '+NAME(id)+'.':'YOU EAT THE '+NAME(id)+'.','#b8f0a0'); if(id[0]==='p')give('bottle',1); }
     saveSoon(); INV.add('x',0); delete INV.items.x; PACK.draw(); };
   FORAGE.ident=id=>{ const k=id.slice(2), d=MU[k][1]; if(use('myco',d-30,d+20)){ const n=have(id); take(id,n); give('m_'+k,n); say(`IT IS A ${MU[k][0]}.`,'#c8b0ff'); } else say('YOU CANNOT TELL WHAT IT IS.','#c8a090'); PACK.draw(); };
   const fire=()=>{ if(typeof FLAME==='undefined')return null; const w=new V3(); for(const s of FLAME.src){ if(s.k<0||s.k>2)continue; let o=s.a, vis=true; for(;o;o=o.parent)if(!o.visible){ vis=false; break; } if(!vis)continue; s.a.getWorldPosition(w); if(Math.hypot(w.x-pos.x,w.z-pos.z)<3*T&&Math.abs(w.y-py)<3*T)return s; } return null; };
   FORAGE.fire=fire;
   FORAGE.craft=rid=>{ const r=RC.find(x=>x[0]===rid); if(!r)return; const [id,nm,k,[mn,mx],ins]=r;
-    for(const m in ins)if(have('m_'+m)<ins[m])return say('YOU DO NOT HAVE WHAT IT TAKES.','#c8a090');
+    for(const m in ins)if(have(iid(m))<ins[m])return say('YOU DO NOT HAVE WHAT IT TAKES.','#c8a090');
     if(k==='alchemy'){ if(!have('mortar'))return say('YOU NEED A MORTAR AND PESTLE.','#c8a090'); if(!have('bottle'))return say('YOU NEED AN EMPTY BOTTLE.','#c8a090'); }
     if(k==='cooking'&&!fire())return say('YOU NEED A FLAME TO COOK OVER: A FIRE, A CANDLE, A TORCH.','#c8a090');
-    for(const m in ins)take('m_'+m,ins[m]); if(typeof SFX!=='undefined')SFX.play(k==='alchemy'?'clunk':'drip',{vol:.5});
+    for(const m in ins)take(iid(m),ins[m]); if(typeof SFX!=='undefined')SFX.play(k==='alchemy'?'clunk':'drip',{vol:.5});
     if(use(k,mn,mx)){ if(k==='alchemy')take('bottle',1); give(id,1); say(k==='alchemy'?`YOU POUR THE POTION INTO A BOTTLE: ${nm}.`:`YOU COOK ${nm}.`,'#b8f0a0'); }
     else say(k==='alchemy'?'YOU TOSS THE FAILED MIXTURE FROM THE MORTAR.':'YOU BURN IT TO A CRISP.','#c8a090');
     saveSoon(); PACK.draw(); };
@@ -127,15 +131,15 @@ const FORAGE={}; window.FORAGE=FORAGE;
     if(PACK.tab==='pack'){ o+=`<div id="pbars" style="display:grid;gap:3px;margin-bottom:8px">${bars()}</div><div style="margin-bottom:6px">$${Math.round(INV.cash)}</div><table style="border-collapse:collapse;width:100%">`;
       const ids=Object.keys(INV.items).filter(id=>INV.items[id]>0&&!GEMS.some(g=>g[0]===id&&!id.startsWith('m_'))).sort();
       if(!ids.length)o+='<tr><td style="color:#7d7a70">NOTHING. FIND MUSHROOMS ON THE LAWNS: A DOUBLE CLICK PICKS ONE.</td></tr>';
-      for(const id of ids){ const eat=id.startsWith('m_')||id.startsWith('u_')||id.startsWith('f_')||id.startsWith('p_');
+      for(const id of ids){ const eat=id.startsWith('m_')||id.startsWith('u_')||id.startsWith('f_')||id.startsWith('p_')||!!FORAGE.RAW[id];
         o+=`<tr style="border-bottom:1px solid #22252f"><td style="padding:4px 2px;${id.startsWith('u_')?'color:#c8b0ff':''}">${esc(NAME(id))}</td><td style="text-align:right;padding:4px 6px">x${INV.items[id]}</td><td style="text-align:right;white-space:nowrap">${eat?`<button ${B} data-eat="${id}">${id.startsWith('p_')?'DRINK':'EAT'}</button>`:''}${id.startsWith('u_')?`<button ${B} data-id="${id}">IDENTIFY</button>`:''}</td></tr>`; }
       o+=`</table><div style="color:#7d7a70;margin-top:8px">${INV.count()} gem${INV.count()===1?'':'s'} too (the golems' panel). I opens and closes this.</div>`; }
     else if(PACK.tab==='skills'){ o+=`<table style="border-collapse:collapse;width:100%">`;
       for(const [k,n] of SK){ const L=S.lock[k], g=L==='up'?'▲':L==='down'?'▼':'■'; o+=`<tr style="border-bottom:1px solid #22252f"><td style="padding:5px 2px">${n}</td><td style="text-align:right;padding:5px 8px;color:#f2c14e">${(S.sk[k]/10).toFixed(1)}</td><td style="text-align:right"><button ${B} data-lock="${k}" title="raise, lower, locked">${g}</button></td></tr>`; }
       o+=`</table><div style="margin-top:8px">TOTAL ${(tot()/10).toFixed(1)} / ${CAP/10}</div><div style="color:#9b9584;margin-top:8px;line-height:1.5">A skill rises as you use it, most on what you can just about do. ▲ raise · ▼ lower (at the cap, rising skills take from these) · ■ locked.<br>FORAGING finds and picks (and sees the rarer ones). MYCOLOGY knows them. ALCHEMY: potions, anywhere (a mortar, a bottle each). COOKING: by a flame.</div>`; }
     else { const fl=fire(); o+=`<div style="color:#9b9584;margin-bottom:6px">${have('mortar')?'MORTAR AND PESTLE':'NO MORTAR'} · ${have('bottle')} BOTTLE${have('bottle')===1?'':'S'} · ${fl?'<span style="color:#f2a04e">BY A FLAME</span>':'NO FLAME NEAR (COOKING NEEDS ONE)'}</div><table style="border-collapse:collapse;width:100%">`;
-      for(const [id,nm,k,[mn,mx],ins,txt] of RC){ const can=Object.entries(ins).every(([m,n])=>have('m_'+m)>=n), c=Math.max(0,Math.min(1,(sk(k)-mn)/(mx-mn)));
-        o+=`<tr style="border-bottom:1px solid #22252f;${can?'':'color:#7d7a70'}"><td style="padding:4px 2px">${nm}<div style="color:#8a8676;font-size:10px">${Object.entries(ins).map(([m,n])=>n+' '+MU[m][0]).join(', ')} · ${txt}</div></td><td style="text-align:right;padding:4px 6px;white-space:nowrap">${k==='alchemy'?'ALCH':'COOK'} ${Math.round(c*100)}%</td><td style="text-align:right">${can?`<button ${B} data-craft="${id}">MAKE</button>`:''}</td></tr>`; }
+      for(const [id,nm,k,[mn,mx],ins,txt] of RC){ const can=Object.entries(ins).every(([m,n])=>have(iid(m))>=n), c=Math.max(0,Math.min(1,(sk(k)-mn)/(mx-mn)));
+        o+=`<tr style="border-bottom:1px solid #22252f;${can?'':'color:#7d7a70'}"><td style="padding:4px 2px">${nm}<div style="color:#8a8676;font-size:10px">${Object.entries(ins).map(([m,n])=>n+' '+NAME(iid(m))).join(', ')} · ${txt}</div></td><td style="text-align:right;padding:4px 6px;white-space:nowrap">${k==='alchemy'?'ALCH':'COOK'} ${Math.round(c*100)}%</td><td style="text-align:right">${can?`<button ${B} data-craft="${id}">MAKE</button>`:''}</td></tr>`; }
       o+='</table>'; }
     const x=P.querySelector(':scope>.pX'); P.innerHTML=o; if(x)P.appendChild(x); };
   const pk=panel('packp','right:16px;top:12%;width:min(420px,92vw)');

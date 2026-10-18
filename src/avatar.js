@@ -38,22 +38,23 @@ const AV={on:false};
   const faceOf=()=>BW()?BWK.F:ED.FACE;
   // ---- THE PANEL
   const css=document.createElement('style'); css.textContent=`
-  #av{position:fixed;right:12px;top:12px;bottom:12px;width:400px;overflow:auto;background:var(--bg,#0b0d13);border:2px solid var(--line,#2a3040);font:12px var(--pixel,monospace);color:var(--fg,#d8dbe4);z-index:21}
-  #av[hidden]{display:none} #av h2{font:13px var(--pixel,monospace);color:var(--key,#f2c14e);margin:0;padding:12px 14px;border-bottom:2px solid var(--line,#2a3040)}
-  #av .tabs{display:flex;flex-wrap:wrap;border-bottom:2px solid var(--line,#2a3040)} #av .tabs button{flex:1 1 30%;font:inherit;color:var(--dim,#8a8f9c);background:transparent;border:0;border-right:2px solid var(--line,#2a3040);border-bottom:2px solid var(--line,#2a3040);padding:11px 4px;cursor:pointer}
+  #av{position:fixed;right:12px;top:12px;bottom:12px;width:340px;overflow:auto;background:var(--bg,#0b0d13);border:2px solid var(--line,#2a3040);font:12px var(--pixel,monospace);color:var(--fg,#d8dbe4);z-index:21}
+  #av[hidden]{display:none} #av h2{font:13px var(--pixel,monospace);color:var(--key,#f2c14e);margin:0;padding:10px 14px;border-bottom:2px solid var(--line,#2a3040)}
+  #av .tabs{display:flex;border-bottom:2px solid var(--line,#2a3040)} #av .tabs button{flex:1 1 0;font:inherit;color:var(--dim,#8a8f9c);background:transparent;border:0;border-right:2px solid var(--line,#2a3040);border-bottom:2px solid var(--line,#2a3040);padding:10px 2px;cursor:pointer;border-bottom:0} #av .tabs button:last-child{border-right:0}
   #av .tabs button[aria-selected="true"]{color:var(--key,#f2c14e);background:var(--panel,#151924)} #av .pane{padding:8px 14px} #av .pane[hidden]{display:none}
   #av h3{font:11px var(--pixel,monospace);color:var(--dim,#8a8f9c);margin:12px 0 4px;letter-spacing:1px}
   #av .row{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:5px 0} #av .btn{font:inherit;color:var(--fg,#d8dbe4);background:#0e1016;border:2px solid #3a3f4e;padding:7px 10px;cursor:pointer}
-  #av .btn[aria-pressed="true"]{color:var(--key,#f2c14e);border-color:var(--key,#f2c14e)} #av .lab{width:120px} #av input[type=range]{flex:1;min-width:120px;height:22px} #av .val{width:38px;text-align:right;color:var(--dim,#8a8f9c)}
+  #av .btn[aria-pressed="true"]{color:var(--key,#f2c14e);border-color:var(--key,#f2c14e)} #av .lab{width:96px} #av input[type=range]{flex:1;min-width:120px;height:22px} #av .val{width:38px;text-align:right;color:var(--dim,#8a8f9c)}
   #av .sw{width:30px;height:26px;padding:0;border:2px solid #3a3f4e;cursor:pointer} #av .sw[aria-pressed="true"]{border-color:#fff} #av input[type=color]{width:40px;height:28px;padding:0;border:2px solid #3a3f4e;background:#0e1016;cursor:pointer}
   #av input[type=text]{font:inherit;background:#0e1016;color:inherit;border:2px solid #3a3f4e;padding:6px;flex:1} #av .dim{color:var(--dim,#8a8f9c)} #av .grid{display:grid;grid-template-columns:110px 1fr auto;gap:6px 8px;align-items:center}
   #av .bar{height:10px;background:#0e1016;border:1px solid #3a3f4e;flex:1} #av .bar i{display:block;height:100%}
   #av .foot{padding:10px 14px;border-top:2px solid var(--line,#2a3040);position:sticky;bottom:0;background:var(--bg,#0b0d13)} #av .pl{display:flex;gap:6px;align-items:center;margin:4px 0} #av .pl span{flex:1}`;
   document.head.appendChild(css);
   const P=document.createElement('div'); P.id='av'; P.hidden=true; P.setAttribute('role','dialog'); P.setAttribute('aria-label','Avatar editor');
-  const TABS=[['body','BODY'],['look','LOOK'],['tex','TEXTURES'],['outl','OUTLINE'],['shade','SHADING'],['pre','PRESETS']];
+  const TABS=[['body','BODY'],['pose','POSE'],['look','LOOK'],['style','STYLE'],['pre','SAVE']];   // (a few plain tabs, owner 18 Oct 2026: "very minimal and inituive GUI": LOOK takes the patterns, STYLE the outline and the shading)
+  const TABG={look:['look','tex'],style:['outl','shade']};
   const sl=(id,lab,min,max,step)=>`<div class="row"><span class="lab">${lab}</span><input type="range" id="${id}" min="${min}" max="${max}" step="${step}"><span class="val" id="${id}v"></span></div>`;
-  P.innerHTML=`<h2>AVATAR EDITOR <span class="dim" style="font-size:10px">SHIFT+K · DRAG TO TURN · WHEEL ZOOMS</span></h2>
+  P.innerHTML=`<h2>AVATAR</h2>
     <div class="tabs">${TABS.map(([k,l])=>`<button data-t="${k}">${l}</button>`).join('')}</div>
     <div class="pane" data-p="body"><h3>WHO</h3><div class="row" id="avwho"><button class="btn" data-who="you">YOU</button><button class="btn" data-who="bwk">THE BEARDED WALKER</button></div>
       <div id="avlooks6" hidden><h3>HIS LOOKS (THE SIX MOCKUPS)</h3><div class="row">${[1,2,3,4,5,6].map(i=>`<button class="btn" data-l6="${i}">${i}</button>`).join('')}</div></div>
@@ -68,11 +69,16 @@ const AV={on:false};
       <h3>SCULPT (DRAG ON HIM)</h3><div class="row"><button class="btn" id="avsc">SCULPT OFF</button><button class="btn" data-k="push">PUSH OUT</button><button class="btn" data-k="pull">PULL IN</button><button class="btn" data-k="smooth">SMOOTH</button></div>
       ${sl('avbs','BRUSH SIZE',1,14,0.1)}${sl('avbt','STRENGTH',0.05,1,0.01)}<div class="row"><button class="btn" id="avmir">MIRROR</button></div></div>
       <h3>MORE</h3><div class="row"><button class="btn" data-ed="sizes">EVERY PIECE</button><button class="btn" data-ed="pieces">MOVE / TURN PIECES</button><button class="btn" data-ed="moves">MOVES</button><button class="btn" data-ed="animate">ANIMATE</button></div></div>
+    <div class="pane" data-p="pose"><div class="dim">drag any part of him to pose it (up and down, side to side): an arm, a forearm, a leg, a shin, a foot, his body, his head, his hips. This is how he stands whenever he stands still in the game.</div>
+      <div class="row"><span class="lab">PART</span><span id="avpart" class="dim">click a part of him</span></div>
+      <h3>STANDING POSES</h3><div class="row" id="avsp"></div>
+      <h3>MY POSES</h3><div class="row"><input type="text" id="avspn" maxlength="24" placeholder="a name for this pose"><button class="btn" id="avspk">KEEP</button></div><div class="row" id="avspl"></div>
+      <h3>TIDY</h3><div class="row"><button class="btn" id="avspm1">MIRROR LEFT ONTO RIGHT</button><button class="btn" id="avspm2">MIRROR RIGHT ONTO LEFT</button><button class="btn" id="avspu">UNDO POSE</button></div></div>
     <div class="pane" data-p="look"><div class="row"><span class="lab">NAME</span><input type="text" id="avname" maxlength="24" placeholder="your name"></div>
       <div class="row"><span class="lab">HEALTH</span><div class="bar"><i id="avhp" style="background:#c84a3a;width:100%"></i></div></div><div class="row"><span class="lab">STAMINA</span><div class="bar"><i id="avst" style="background:#d8b84a;width:100%"></i></div></div>
       <h3>HAIR</h3><div class="row" id="avhair"></div><h3>EYES</h3><div class="row" id="aveyes"></div><h3>COLOURS</h3><div class="grid" id="avcols"></div></div>
-    <div class="pane" data-p="tex"><div class="dim">a pattern woven in his shader: on the shirt and sleeves, the trousers, the shoes</div><div id="avtex"></div></div>
-    <div class="pane" data-p="outl"><div class="row"><button class="btn" id="avoon">OUTLINE OFF</button></div>
+    <div class="pane" data-p="tex"><h3>PATTERNS</h3><div class="dim">a pattern woven in his shader: on the shirt and sleeves, the trousers, the shoes</div><div id="avtex"></div></div>
+    <div class="pane" data-p="outl"><h3>OUTLINE</h3><div class="row"><button class="btn" id="avoon">OUTLINE OFF</button></div>
       <h3>COLOUR</h3><div class="row"><button class="btn" id="avoown">EACH PART'S OWN DARK</button><input type="color" id="avoc"><button class="btn" data-oc="#101014">BLACK</button><button class="btn" data-oc="#f2ead2">LIGHT</button><button class="btn" data-oc="#c8302a">RED</button></div>
       <h3>THICKNESS (PIXELS)</h3><div class="row" id="avow">${[1,2,3,4].map(w=>`<button class="btn" data-w="${w}">${w}</button>`).join('')}</div></div>
     <div class="pane" data-p="shade"><h3>LIGHT ON HIM</h3><div class="row"><button class="btn" id="avst2">STEPPED</button></div>
@@ -100,7 +106,7 @@ const AV={on:false};
     <div class="row"><span class="lab">SCALE</span><input type="range" data-gs="${i}" min="0.3" max="3" step="0.05"></div>
     <div class="row"><span class="lab">COLOURS</span><input type="color" data-cp="${g}" aria-label="${l} colour"><span class="dim">AND</span><input type="color" data-g2="${i}" aria-label="${l} second colour"></div>`).join('');
   const hex=c=>'#'+new THREE.Color(c).getHexString();
-  function draw(){ P.querySelectorAll('[data-t]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.t===tab))); P.querySelectorAll('[data-p]').forEach(p=>p.hidden=p.dataset.p!==tab);
+  function draw(){ P.querySelectorAll('[data-t]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.t===tab))); P.querySelectorAll('[data-p]').forEach(p=>p.hidden=!(TABG[tab]||[tab]).includes(p.dataset.p));
     P.querySelectorAll('#avwho [data-who]').forEach(b=>press(b,b.dataset.who===who)); const bw=!!BW(); $('#avbuild').hidden=$('#avyou').hidden=$('#avyou2').hidden=bw; $('#avbeard').hidden=$('#avlooks6').hidden=!bw;
     { const F=faceOf(); for(const [k] of FACE){ $('#avf_'+k).value=F[k]; $('#avf_'+k+'v').textContent=(+F[k]).toFixed(2); } P.querySelectorAll('[data-hs]').forEach(b=>press(b,b.dataset.hs===(F.shape||'round'))); if(bw)P.querySelectorAll('[data-bd]').forEach(b=>press(b,b.dataset.bd===BWK.F.beard)); }
     P.querySelectorAll('#avbuild [data-b]').forEach(b=>press(b,+b.dataset.b===L.build)); { const h=bw?BWK.F.h:(L.hk||1); $('#avh').value=h; $('#avhv').textContent=(+h).toFixed(2); }
@@ -117,7 +123,37 @@ const AV={on:false};
     $('#avself').textContent='SELF-SHADOW '+(W3.selfOff?'OFF':'ON'); press($('#avself'),!W3.selfOff); $('#avrim').value=S.rim; $('#avrimv').textContent=S.rim.toFixed(2); $('#avlit').textContent=UI.lit?'LAMPS':'FLAT (HIS OWN LIGHT)'; press($('#avlit'),UI.lit);
     drawPre(); }
   // ---- WHAT EACH CONTROL DOES
-  P.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{ tab=b.dataset.t; if(tab!=='body')setSculpt(false); draw(); });
+  P.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{ tab=b.dataset.t; if(tab!=='body')setSculpt(false); posing(); draw(); });
+  // POSE (owner, 18 Oct 2026: "the avatar editor needs to have a section where i can pose the avatar and pull his limbs all around. i want to be
+  // able to pick his standing pose"): his standing pose is the animator's standing key (src/animator.js, RIG.ANIMX), so it's him wherever he
+  // stands still; on this tab a press on a part of him and a drag turns it (the animator's own drag), the presets set it whole. Changes from his
+  // rig's standing, in degrees (ua / fa: an upper arm's, a forearm's way [forward, out]; th / sh: a thigh's, a shin's; root in his units)
+  const SIDES2=(d,a)=>{ const o={...d}; for(const k in a){ o['L.'+k]=a[k]; o['R.'+k]=a[k]; } return o; };
+  const SPOSE={
+    'RELAXED':{},
+    'HANDS ON HIPS':SIDES2({},{ua0:-12,ua1:38,fa0:-30,fa1:-100}),
+    'ARMS CROSSED':SIDES2({},{ua0:16,ua1:6,fa0:62,fa1:-80}),
+    'HANDS IN POCKETS':SIDES2({},{ua0:-4,ua1:6,fa0:-8,fa1:-22,fist:.7}),
+    'HANDS BEHIND':SIDES2({},{ua0:-26,ua1:12,fa0:-40,fa1:-70}),
+    'CONFIDENT':SIDES2({bend:-6,nod:-6},{ua1:10,th1:6}),
+    'WEIGHT ON ONE LEG':{'root.x':1.5,side:4,'L.th1':5,'R.th0':8,'R.sh0':-18,'R.th1':-2},
+    'SLOUCH':SIDES2({bend:14,nod:12,'root.y':-.6},{ua0:8}),
+    'SHY':SIDES2({nod:14},{ua0:12,ua1:-4,fa0:30,fa1:-55,th1:-3}),
+    'ONE HAND ON HIP':{'R.ua0':-12,'R.ua1':38,'R.fa0':-30,'R.fa1':-100,look:12},
+    'THINKING':{'R.ua0':26,'R.ua1':10,'R.fa0':128,'R.fa1':-34,'L.ua0':18,'L.fa0':64,'L.fa1':-78,nod:8},
+    'AT EASE':SIDES2({},{ua0:-14,ua1:4,fa0:-16,fa1:-30,th1:4}) };
+  const keptPoses=()=>{ try{ return JSON.parse(SAVE.get('standposes')||'{}'); }catch(e){ return {}; } };
+  const drawPoses=()=>{ const cur=JSON.stringify(RIG.ANIMX.stand()), kp=keptPoses();
+    $('#avsp').innerHTML=Object.keys(SPOSE).map(n=>`<button class="btn" data-sp="${n}" aria-pressed="${JSON.stringify(SPOSE[n])===cur}">${n}</button>`).join('');
+    $('#avspl').innerHTML=Object.keys(kp).map(n=>`<button class="btn" data-kp="${n}" aria-pressed="${JSON.stringify(kp[n])===cur}">${n}</button><button class="btn" data-kx="${n}" aria-label="forget ${n}">✕</button>`).join('')||'<span class="dim">none kept yet</span>';
+    P.querySelectorAll('[data-sp]').forEach(b=>b.onclick=()=>{ RIG.ANIMX.setStand(SPOSE[b.dataset.sp]); drawPoses(); });
+    P.querySelectorAll('[data-kp]').forEach(b=>b.onclick=()=>{ RIG.ANIMX.setStand(keptPoses()[b.dataset.kp]); drawPoses(); });
+    P.querySelectorAll('[data-kx]').forEach(b=>b.onclick=()=>{ const k=keptPoses(); delete k[b.dataset.kx]; try{ SAVE.set('standposes',JSON.stringify(k)); }catch(e){} drawPoses(); }); };
+  $('#avspk').onclick=()=>{ const n=($('#avspn').value||'').trim().toUpperCase()||'POSE '+(Object.keys(keptPoses()).length+1), k=keptPoses(); k[n]=RIG.ANIMX.stand(); try{ SAVE.set('standposes',JSON.stringify(k)); }catch(e){} $('#avspn').value=''; drawPoses(); };
+  $('#avspm1').onclick=()=>{ RIG.ANIMX.mirror('L','R'); drawPoses(); }; $('#avspm2').onclick=()=>{ RIG.ANIMX.mirror('R','L'); drawPoses(); }; $('#avspu').onclick=()=>{ RIG.ANIMX.undo(); drawPoses(); };
+  const posing=()=>{ if(!AV.on||sculpt)return; if(tab==='pose'){ RIG.ANIMX.edit(); ED.setMode('animate'); drawPoses(); } else ED.setMode('av'); };
+  (typeof renderer!=='undefined'?renderer.domElement:document).addEventListener('pointerup',()=>{ if(AV.on&&tab==='pose'){ $('#avpart').textContent=RIG.ANIMX.part(); drawPoses(); } });
+  window.AVPOSE=n=>{ RIG.ANIMX.setStand(SPOSE[n]||{}); return Object.keys(SPOSE); };   // (a test's)
   P.querySelectorAll('#avbuild [data-b]').forEach(b=>b.onclick=()=>{ ED.snap(); LOOKS.setBuild(+b.dataset.b); LOOKS.height(L.hk||1); draw(); });
   $('#avh').oninput=e=>{ if(BW()){ BWK.F.h=+e.target.value; BWK.save(); } else LOOKS.height(+e.target.value); $('#avhv').textContent=(+e.target.value).toFixed(2); };
   // WHO: him held a step to your left as the view stands (clear of the panel), facing it, while he's being edited; let go to walk on when you're done or back to YOU
@@ -177,8 +213,8 @@ const AV={on:false};
   { const b=document.querySelector('#ed .tabs [data-m="av"]'); if(b)b.hidden=true; }
   { const b=document.createElement('button'); b.className='btn'; b.textContent='AVATAR EDITOR'; b.onclick=()=>AV.open(); const r=document.querySelector('#ed .foot .row'); if(r)r.appendChild(b); }
   let view0=null;
-  AV.open=t=>{ if(t)tab=t; if(MAPED.on)MAPED.toggle(); if(WE.on)WE.toggle(); if(!ED.on){ ED.enter(true); view0=UI.view; if(UI.view!=='map'){ UI.setView('map'); pitchTo=clampP(0.22); ppuTo=Math.min(240,PPU*3.2); } } else ED.P.hidden=true;
-    AV.on=true; setSculpt(tab==='body'&&sculpt); P.hidden=false; draw(); };
+  AV.open=t=>{ if(t)tab=t==='tex'?'look':t==='outl'||t==='shade'?'style':t; if(MAPED.on)MAPED.toggle(); if(WE.on)WE.toggle(); if(!ED.on){ ED.enter(true); view0=UI.view; if(UI.view!=='map'){ UI.setView('map'); pitchTo=clampP(0.22); ppuTo=Math.min(240,PPU*3.2); } } else ED.P.hidden=true;
+    AV.on=true; setSculpt(tab==='body'&&sculpt); posing(); P.hidden=false; draw(); };
   const exit0=ED.exit; ED.exit=()=>{ holdB(false); who='you'; const v=view0; view0=null; AV.on=false; sculpt=false; P.hidden=true; if(v&&UI.view!==v)UI.setView(v); exit0(); };
   AV.toggle=()=>{ if(AV.on&&!P.hidden)ED.exit(); else AV.open(); };
   LOOKS.open=()=>AV.open('look');   // (a double click on yourself, and DISPLAY's YOUR LOOKS: this editor's LOOK)

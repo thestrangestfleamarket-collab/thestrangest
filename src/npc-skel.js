@@ -70,7 +70,7 @@
       if(N.sheet){ if(!N.posed){ N.posed=true; spread(rig); } return; }   // (his sheet: still, limbs spread, his clips never run)
       if(QS.get('skelrest'))return; an.base=moving?(run?'Running_A':o.walkN):(N.alert?'Idle_Combat':o.idleN); an.ts=moving?st.v/((run?RUNU:WALK)*sc):1; an.update(dt); }});
     for(const [gn,slot] of o.gear||[]){ const m=new THREE.Mesh(geomOf(S.gear[gn],false),N.me.material); m.castShadow=true; rig.bones[JI[slot]].add(m); }
-    N.mixer=mixer; N.an=an; return N; };
+    N.mixer=mixer; N.an=an; N.restless=()=>!!N.alert||!!an.once; return N; };   // (at rest his idle held, ASTEP; on alert or mid-blow he goes on)
   // a shot (the Rogue's bolt, the Mage's spell): a little glowing block flying at the troublemaker; on him, he's down
   const shoot=(G,T,col,dmg)=>{ let b=BOLTS.find(b=>!b.on); if(!b){ b={m:new THREE.Mesh(new THREE.BoxGeometry(.05*TILE,.05*TILE,.3*TILE),new THREE.MeshBasicMaterial({color:0xffffff,toneMapped:false}))}; MAPG.bodega.add(b.m); BOLTS.push(b); }
     b.m.material.color.setRGB(...col); b.on=true; b.T=T; b.from=G; b.dmg=dmg; b.m.visible=true; b.m.position.set(G.st.x,G.g.position.y+G.H*.55,G.st.z); };

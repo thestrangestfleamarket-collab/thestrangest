@@ -1323,6 +1323,14 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   can span pages (its later meshes `k~1`, `k~2`), and only the first page's mesh was hooked up: the bodega's walls on the second page never cut
   away, its tubes showed from outside, part of its roof stayed. `BATCH.all(M,k)` gives every page's mesh of a kind; bodbuild.js, castle.js, store.js
   and ghostdojo.js use it for their cut walls, roofs, tubes and shadows.
+- **Every character checked standing still** (owner, 18 Oct 2026: "now check other characters"; `tests/stillcheck.cjs <out> [keys] [query]`: one of
+  each brought beside you and held, 12 frames a quarter second apart, the pixels in his box that change): still already, the cat in the raincoat,
+  the TV cat, the frog on his scooter, the bearded Walker (0), the shark but for his jaw's snap; **the pawns** (the townspeople, the ogres, the golems,
+  the skeleton pawns) 2-3% of their pixels a frame on their breathing idle (`UAL_Idle_Loop`, `idle_a`, `idle_b`, `sit_floor_idle_a`): now held still,
+  playing only into its fade and for a 1.5 s shift of weight every 7 to 15 s (`STILLC`, npc-pawns.js), the talking, cheering and found-it idles as
+  before; measured 0 between shifts. **The dungeon's KayKit skeletons** the same on their pack's idle (npc-skel.js; the guard's alert stance and his
+  blows as before; not seen close in the check, the dungeon's walls in the camera's way). **Left moving** (deliberate, to ask): the animals' idles
+  (the wasp's hover, the bat's wings, the slime's wobble, the spider's, the frog's, the rat's, the snake's), 1-4% of their pixels a frame.
 - **The bodega's goods, real** (owner, 18 Oct 2026: "did you take away the phsyics from the game? i want every item in the bodega to be real";
   the old game had them as bodies, 47-physics-5-goods; `src/goodsphys.js`, `GPH`): all 208 goods on the shelves, in the coolers and on the counter
   are rigid bodies in Rapier (physbody.js's build, fetched only once you're within 4 tiles of the bodega). Each starts asleep where its shelf put it;
@@ -1345,3 +1353,32 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   **The stalls either side of the gate**: the mushroom seller's west of it, the tomato's east; **both sellers 15% bigger** (2.53 m, 1.84 m); the
   stalls their size. Cost: the iron instanced in 16-tile pieces (some 57,000 triangles round the whole park, a few thousand in sight), the
   lanterns' glass one unlit draw; no light, no new program. `tests/gateshot.cjs <out>`.
+- **Posing him, in a void** (owner, 18 Oct 2026: "the avatar editor needs to have a section where i can pose the avatar and pull his limbs all around.
+  i want to be able to pick his standing pose"; then "avatar should not be in game when editing. pull into empty void. full 360 rotate and tilt, full
+  editing. very minimal and inituive GUI"; `src/avatar.js`, `src/studio.js`, `R.ANIMX` in `animator.js`): **the avatar editor's tabs cut to six in
+  one row** (BODY, POSE, LOOK with its patterns, STYLE the outline and shading, SAVE the presets, MOVE the speeds). **POSE**: drag any part of him
+  (an arm, a forearm, a leg, a shin, a foot, his body, his head, his hips; the part named as you grab it) and that's how he stands whenever he
+  stands still in the game (the animator's `stand` overlay, one key); twelve standing poses to start from (RELAXED, HANDS ON HIPS, ARMS CROSSED,
+  HANDS IN POCKETS, HANDS BEHIND, CONFIDENT, WEIGHT ON ONE LEG, SLOUCH, SHY, ONE HAND ON HIP, THINKING, AT EASE), MY POSES (named, kept in the
+  save's `standposes`), mirror either side onto the other, undo. **THE STUDIO** (`STUDIO`): while the editor is open the camera sees only him
+  (his pieces and the editor's highlight on layer 7, the camera on that layer alone) against a plain dark void, no fog, no world, lit by the
+  studio's own sky and sun (on layer 7 only: the world's lamps never reach him there, the studio's never reach the world), no SELF shadow; a drag
+  off him turns him all the way round and tilts from under his feet to over his head, the wheel nearer or further, a double click back before
+  him; him in the middle of what the panel leaves; one line of help at the foot. Closed, the game's view, background and shading come back.
+  Cost: nothing while closed; open, his triangles alone and two lights (his programs made once more for them the first time). `STUDIODBG()`,
+  `STUDIOTURN(yaw,pitch,dist)`, `AVPOSE(name)` (tests).
+- **ONE RULE FOR EVERY CHARACTER: AT REST, AND STEPPED** (owner, 18 Oct 2026: "are you just patching each character or applying an overall fix that
+  fixes the root issues?"; of the two parts offered, "both"; `ASTEP` in `map-pre.js`): the root of the crawling shadows is that the light on a
+  character is cut in hard bands and his own shadow is hard-edged, so motion under a pixel flips edge pixels every frame. **REST**: standing, every
+  character's animation clock is held (his mixer's timeScale 0: the pawns, the dungeon's skeletons, the animals), after half a second to settle,
+  but for a 1.5 s shift of weight every 7 to 15 s; only what his own file says is deliberate goes on (`N.restless()`: a pawn talking with someone,
+  cheering or finding a thing he stopped for; a guard on alert or mid-blow; a flyer's wings; the dragons). One place, makeNPC's tick (npc-map.js),
+  so a character added later is still at rest without being told. The per-character patches before it are gone (npc-pawns.js keeps only `STILLC`,
+  its plain idles). **STEPPED**: every character's pose is worked out `ASTEP.fps` times a second (10 by default) and held between, as a sprite's
+  frames are; where he stands moves every frame (`ASTEP.gate`; what his pose sets of his height, a flyer's, kept between). In makeNPC's tick for
+  everyone it makes, and in their own frames for you (`ASTEP.you`; your strikes judged from pose to pose, the ragdoll's blend and the animator's
+  pose every frame), the bearded Walker and the guitarist walking (his playing every frame). GRAPHICS' ANIMATION: STEPPED 8 / 10 / 12, EVERY FRAME
+  (the save's `animfps`); `?animfps=N` (0 every frame), `?still=0` the rest rule off. Checked: `tests/stillcheck.cjs` (standing: 0 changed pixels for
+  every kind but the deliberate: the wasp's wings, the shark's jaw, the cat's page), `tests/stepcheck.cjs` (walking: the pose every 0.1 s of game
+  time, the place every frame; in the cloud's software graphics the page ran 2-3 frames a second, the game's frame capped at 0.05 s, so this is
+  game time: not seen at a real frame rate here). Cost: less than before (poses worked out a tenth as often at 60 fps).

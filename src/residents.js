@@ -20,10 +20,11 @@
   const indoor=(r,way,then)=>{ const N=r.N, A=AP(); CITY.stop(N); N.mode='indoor'; if(!r.k0){ r.k0={free:N.free,ground:N.ground,push:N.push}; } r.y=r.y||0;
     N.free=()=>true; N.ground=(x,z)=>(r.y=A.gnd(x,z,r.y)); N.push=p=>{ if(r.shown)r.k0.push(p); }; r.way=way; r.wi=0; r.then=then; N.st.hold=false; N.st.wait=0; N.st.to=null; N.st.face=null; };
   const outdoor=r=>{ const N=r.N; if(r.k0){ Object.assign(N,r.k0); r.k0=null; } delete N.mode; r.y=0; r.way=null; r.shown=false; N.g.visible=true; };
-  const step=r=>{ const N=r.N, st=N.st, A=AP(), f=Math.max(0,Math.floor(r.y/A.SY+.08)); r.shown=!!A.in&&A.floor()===f; N.mode=r.shown?'indoor':'hidden'; N.g.visible=r.shown;
+  const step=(r,dt)=>{ const N=r.N, st=N.st, A=AP(), f=Math.max(0,Math.floor(r.y/A.SY+.08)); r.shown=!!A.in&&A.floor()===f; N.mode=r.shown?'indoor':'hidden'; N.g.visible=r.shown;
     if(!r.way)return; const F=flatOf(r); if(F&&Math.hypot(st.x-F.at.x,st.z-F.at.z)<1.6*T)F.by=.6;   // (his door opens as he comes to it)
     const p=r.way[r.wi]; if(!p){ r.way=null; st.to=null; const th=r.then; r.then=null; th&&th(); return; }
-    if(Math.hypot(p.x-st.x,p.z-st.z)<.1*T){ r.wi++; st.to=null; return; } st.to={x:p.x,z:p.z}; st.wait=0; st.hold=false; };
+    const dx=p.x-st.x, dz=p.z-st.z, d=Math.hypot(dx,dz); if(d<.1*T){ r.wi++; st.to=null; return; } st.to={x:p.x,z:p.z}; st.wait=0; st.hold=false;
+    if(st.held>1){ const k=Math.min(d,st.v*dt); st.x+=dx/d*k; st.z+=dz/d*k; st.h=Math.atan2(dx,dz); } };   // (you in his way in the hall: he squeezes past, nudging you aside)
   const settle=r=>{ const N=r.N, F=flatOf(r); r.state='home'; N.st.hold=true; N.st.to=null; if(F){ const s=F.sd; N.st.face={x:N.st.x+s*BOD.X(1)-s*BOD.X(0),z:N.st.z}; } };   // (home, looking into his flat)
   const goIn=r=>{ const N=r.N, F=flatOf(r); if(F){ const w=AP().way(F), h=w[w.length-1]; indoor(r,null); N.st.x=h.x; N.st.z=h.z; r.y=F.lv*AP().SY; N.g.position.set(h.x,r.y,h.z); settle(r); return; }   // (home at the start: in his flat already)
     const p=inside(); CITY.stop(N); r.state='home'; N.mode='hidden'; N.g.visible=false; N.st.hold=true; N.st.to=null; if(p){ N.st.x=p.x; N.st.z=p.z; N.g.position.x=p.x; N.g.position.z=p.z; } };
@@ -37,6 +38,6 @@
       CITY.at(r.leave,()=>{ if(r.state!=='out')goOut(r); },r.key+' leaves'); CITY.at(r.home,()=>{ if(r.state==='out')goHome(r); },r.key+' home'); } };
   setTimeout(start,0);
   // a jump of the clock past both hours at once (the slider, N): put right at the next tick
-  const t0=CITY.tick; CITY.tick=(dt,you)=>{ t0(dt,you); for(const r of R){ if(!r.N)continue; if(r.k0)step(r); if(r.again>0&&(r.again-=dt)>0)continue; if(r.back>0&&(r.back-=dt)<=0&&r.state==='out'&&!r.N.errand)street(r.N); const out=isOut(r,CLOCK.h); if(out&&r.state==='home')goOut(r); else if(!out&&r.state==='out'&&!r.N.errand)goHome(r); } };
+  const t0=CITY.tick; CITY.tick=(dt,you)=>{ t0(dt,you); for(const r of R){ if(!r.N)continue; if(r.k0)step(r,dt); if(r.again>0&&(r.again-=dt)>0)continue; if(r.back>0&&(r.back-=dt)<=0&&r.state==='out'&&!r.N.errand)street(r.N); const out=isOut(r,CLOCK.h); if(out&&r.state==='home')goOut(r); else if(!out&&r.state==='out'&&!r.N.errand)goHome(r); } };
   window.RESDBG=()=>R.map(r=>({key:r.key,flat:r.flat,state:r.state,floor:r.k0?Math.floor((r.y||0)/AP().SY+.08):null,wi:r.way?r.wi+'/'+r.way.length:null,vis:r.N&&r.N.g.visible,mode:r.N&&r.N.mode,x:r.N&&+(r.N.st.x/T).toFixed(1),z:r.N&&+(r.N.st.z/T).toFixed(1),errand:!!(r.N&&r.N.errand)}));
 }

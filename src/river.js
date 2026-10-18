@@ -291,7 +291,7 @@ const RIVER={way:'fluid',wi:2,step:false,t:0,on:false};
 
   // ---- THE CHOICES (the panel; kept in the browser; ?river=flat|swell|full, ?water=a|b|c) ----
   const save=()=>{ try{ SAVE.set('river',JSON.stringify({way:RIVER.way,wi:RIVER.wi,step:RIVER.step})); }catch(e){} };
-  try{ const s=JSON.parse(SAVE.get('river')||'null'); if(s){ RIVER.way=s.way||RIVER.way; RIVER.wi=s.wi|0; RIVER.step=!!s.step; } }catch(e){}
+  try{ const s=JSON.parse(SAVE.get('river')||'null'); if(s){ RIVER.way=s.way||RIVER.way; RIVER.wi=s.wi|0; } }catch(e){} RIVER.step=true;   // (always in steps: no smooth light, owner 18 Oct 2026)
   if(QSr.get('river'))RIVER.way=QSr.get('river'); if(QSr.get('water'))RIVER.wi=Math.max(0,'abc'.indexOf(QSr.get('water')));
   const applyWater=()=>{ const Wt=WATERS[RIVER.wi]; setWaves(); SU.uNW.value=WV.length; SU.uSig.value.set(...Wt.sig); SU.uScat.value.set(...Wt.scat); SU.uFoam.value=Wt.foam; SU.uRefr.value=Wt.refr; uBedK.value=Wt.bed;
     uCau.value=Wt.bed===0?.35:Wt.bed===1?.7:1; RIVER.cx=1e9; seedFish(); seedJunk(); };
@@ -369,7 +369,7 @@ const RIVER={way:'fluid',wi:2,step:false,t:0,on:false};
     pan.innerHTML=`<h3>THE HUDSON · REAL WATER</h3><div class="d">Ways of doing the river, side by side (double click the water to bring this back). Walk off the quay (or jump) to swim; SPACE dives, SPACE at a ladder climbs out.</div>
       <div class="l">WAY</div><div class="r">${WAYS.map(w=>`<button data-w="${w[0]}" class="${w[0]===RIVER.way?'on':''}">${w[1]}</button>`).join('')}</div><div class="d">${wy[2]}</div>
       <div class="l">WATER</div><div class="r">${WATERS.map((w,i)=>`<button data-i="${i}" class="${i===RIVER.wi?'on':''}">${w.name}</button>`).join('')}</div><div class="d">${Wt.desc}</div>
-      <div class="l">LOOK</div><div class="r"><button data-s="0" class="${RIVER.step?'':'on'}">SMOOTH</button><button data-s="1" class="${RIVER.step?'on':''}">24 STEPS</button></div>
+      <div class="l">LOOK</div><div class="r"><button data-s="1" class="${RIVER.step?'on':''}">24 STEPS</button></div>
       <div class="l">TIME</div><div class="r">${HOURS.map(h=>`<button data-h="${h[1]}">${h[0]}</button>`).join('')}</div>
       <div class="r" style="margin-top:10px"><button data-go="1">GO TO THE RIVER</button><button data-go="2">INTO THE WATER</button></div>`;
     const x=document.createElement('button'); x.className='pX'; x.textContent='X'; x.onclick=()=>{ pan.hidden=true; }; pan.appendChild(x);

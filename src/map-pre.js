@@ -10,19 +10,23 @@
 // SMOOTH LIGHT (owner, 17 Oct 2026: "i dont like any of those mockups, they all look like dots everywhere, i want smooth realistic shadows and
 // lighting like gradient radial etc"): the default now: no grain, the light not cut into steps (it falls off in gradients), soft shadow edges
 // (build.py); GRAPHICS' LIGHTING switches back to PIXEL (the steps and the grain), kept in the browser; ?look=pixel|smooth for a test
-// CEL (owner, 18 Oct 2026, his picture of a pixel-art face: "i want this kind of shading at all times ... solid colors, but pixelated, not gradient,
-// i dont want gradients ever in the game"): the light on every face cut into CEL flat bands, no grain, no blend between them, each band down a
-// little cooler and bluer than the one over it (HUE: the shadows' hue shift), hard shadow edges; ?look=cel (&cel=N bands, &hue=K, 0 none)
-const CEL=(()=>{ const P=new URLSearchParams(location.search), q=P.get('look'); let v=null; try{ v=SAVE.get('lighting'); }catch(e){} return (q||v)==='cel'?Math.max(2,+(P.get('cel')||4)):0; })();
+// CEL, ALWAYS (owner, 18 Oct 2026, his picture of a pixel-art face: "i want this kind of shading at all times ... solid colors, but pixelated, not
+// gradient, i dont want gradients ever in the game"; then of the mockups: "3-5 flat as option in menu - do not use smooth light under any
+// circumstances hard rule"): the light on every face cut into CEL flat bands (3, 4 or 5: GRAPHICS' LIGHT BANDS, the save's 'bands'; 4 the
+// default), no grain, no blend between them, each band down a little cooler and bluer than the one over it (HUE), hard shadow edges. There
+// is no smooth light: SMOOTH stays false for the code that still asks; ?cel=N for a test
+const CEL=(()=>{ const q=+new URLSearchParams(location.search).get('cel'); let v=null; try{ v=+SAVE.get('bands'); }catch(e){} const n=q||v||4; return Math.max(3,Math.min(5,n|0)); })();
 const HUE=(()=>{ const q=new URLSearchParams(location.search).get('hue'); return (q!=null?+q:1).toFixed(3); })();
-const SMOOTH=(()=>{ const q=new URLSearchParams(location.search).get('look'); if(CEL)return false; if(q)return q!=='pixel'; let v=null; try{ v=SAVE.get('lighting'); }catch(e){} return v!=='pixel'; })();
+const SMOOTH=false;   // (never: the hard rule above)
+// (the haze in steps as well: every material's fog cut into 8 flat bands, no smooth fade into the far)
+THREE.ShaderChunk.fog_fragment=THREE.ShaderChunk.fog_fragment.replace('gl_FragColor.rgb = mix','fogFactor = floor( fogFactor * 8. + .5 ) / 8.;\n\tgl_FragColor.rgb = mix');
 // THE DARKEST A FACE GOES (owner, 18 Oct 2026: "nothing should be black like this even at darkest give it 5-20%"): a face the sun and lamps miss still
 // gets this much of its own colour, so the bricks of a shaded side show; ?floor=N for a test
 const FLOOR=(()=>{ const q=+new URLSearchParams(location.search).get("floor"); return (q>=0&&q<1&&q?q:.2).toFixed(3); })();
 // SOFT STEPS (owner, 18 Oct 2026, "do A-D": everything looked flat under smooth light): the smooth light keeps a few broad bands, each edge
 // eased over a short gradient (no grain, no hard line), so a face's turn from the light reads; ?soft=0 the smooth light alone, ?soft=N N bands
 const SOFT=(()=>{ const q=new URLSearchParams(location.search).get('soft'); return q!=null?Math.max(0,+q|0):7; })();
-const DITH=SMOOTH||CEL?0:(()=>{ const q=new URLSearchParams(location.search).get('dith'); if(q!=null)return +q; let v=null; try{ v=SAVE.get('grain'); }catch(e){} return v!=null?+v:16; })();
+const DITH=0&&(()=>{ const q=new URLSearchParams(location.search).get('dith'); if(q!=null)return +q; let v=null; try{ v=SAVE.get('grain'); }catch(e){} return v!=null?+v:16; })();
 // THE LIVELIER LOOK (owner, 17 Oct 2026: "how can i get the world to look more dynamic with light, shadows, weather etc without dragging down
 // with lag? this looks too bland"; "let me see mockups of all of those"): ?fx=cs,cool,ao,var,wet,sway,life (or all): the clouds' shadows
 // drifting over the ground (cs), contact shadows where things stand on it (ao), the ground's tones varied in patches (var), wet ground with

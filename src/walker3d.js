@@ -147,18 +147,18 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
   // HIS SHADING (owner, 17 Oct 2026: "i have self shadow enabled but i cant see them. add a scroll bar to allow levels of shadows and depth, 2-5
   // options of shadowing your own avatar"): his own steps of light (2 to 5) and how dark the darkest goes (DEPTH), and SELF on him lit by the
   // lamps too: where his own body stands between the light and a part of him (his shadow pass), that part a step darker
-  W3.celHue=new URLSearchParams(location.search).get('look')==='cel'?+(new URLSearchParams(location.search).get('hue')??1):0; const GP=new THREE.DataTexture(new Uint8Array(48),12,1,THREE.RGBAFormat); GP.magFilter=GP.minFilter=THREE.NearestFilter; W3.GP=GP; W3.uSelf={value:.7};
+  W3.celHue=+(new URLSearchParams(location.search).get('hue')??1); const GP=new THREE.DataTexture(new Uint8Array(48),12,1,THREE.RGBAFormat); GP.magFilter=GP.minFilter=THREE.NearestFilter; W3.GP=GP; W3.uSelf={value:.7};
   // SMOOTH OR STEPPED (owner, 17 Oct 2026, the avatar editor: "shadows"; smooth the default with the smooth light, map-pre.js's SMOOTH): smooth,
   // the light on him a gradient from the darkest to full (32 texels, filtered); stepped, n hard steps. The texture remade at its new size
   // (dispose: the graphics card's copy made again), so every character on W3.GP follows (everyone shaded as you are)
-  W3.setShade=(n,dp,sm)=>{ n=Math.max(2,Math.min(12,Math.round(n))); dp=Math.max(.02,Math.min(.98,dp));   /* (steps to twelve, the depth finer: owner, 17 Oct 2026, "add more levels of depth and steps") */ if(sm==null)sm=W3.shade?W3.shade.smooth:W3.smooth0; W3.shade={steps:n,depth:dp,smooth:!!sm};
+  W3.setShade=(n,dp,sm)=>{ sm=false;   /* (never smooth: owner, 18 Oct 2026, the hard rule) */ n=Math.max(2,Math.min(12,Math.round(n))); dp=Math.max(.02,Math.min(.98,dp));   /* (steps to twelve, the depth finer: owner, 17 Oct 2026, "add more levels of depth and steps") */ if(sm==null)sm=W3.shade?W3.shade.smooth:W3.smooth0; W3.shade={steps:n,depth:dp,smooth:false,cel:1};
     const w=sm?32:n, f=sm?THREE.LinearFilter:THREE.NearestFilter, d=new Uint8Array(w*4); for(let i=0;i<w;i++){ const v=255*((1-dp)+dp*i/(w-1)), k=W3.celHue*(1-i/(w-1)); d.set([Math.round(v*(1-.18*k)),Math.round(v*(1-.1*k)),Math.min(255,Math.round(v*(1+.2*k))),255],i*4); }
     if((GP.image&&GP.image.width)!==w||GP.magFilter!==f)GP.dispose(); GP.magFilter=GP.minFilter=f; GP.image={data:d,width:w,height:1}; GP.needsUpdate=true; W3.uSelf.value=W3.selfOff?1:1-dp*.55; try{ localStorage.setItem('market-shade',JSON.stringify(W3.shade)); }catch(e){} };
-  W3.smooth0=(()=>{ const q=new URLSearchParams(location.search).get('look'); let v=null; try{ v=localStorage.getItem('market-lighting'); }catch(e){} return !/pixel|cel/.test(q||v||'smooth'); })();   // (map-pre.js's SMOOTH, read the same way: it is made later)
+  W3.smooth0=false;   // (map-pre.js's SMOOTH, read the same way: it is made later)
   // SELF ON OR OFF (the avatar editor): off, his own shadow pass isn't drawn (its map cleared once) and nothing of him is darkened by it
   W3.selfOff=false; try{ W3.selfOff=localStorage.getItem('market-self')==='0'; }catch(e){}
   W3.setSelf=on=>{ W3.selfOff=!on; W3.smClr=false; W3.uSelf.value=on?1-W3.shade.depth*.55:1; try{ localStorage.setItem('market-self',on?'1':'0'); }catch(e){} };
-  { let s0={steps:4,depth:.78}; try{ const v=localStorage.getItem('market-shade'); if(v)s0=JSON.parse(v); }catch(e){} const P=new URLSearchParams(location.search); if(P.get('look')==='cel'){ s0={steps:+(P.get('cel')||4),depth:.72,smooth:false}; } W3.setShade(s0.steps,s0.depth,s0.smooth); }
+  { let s0={steps:4,depth:.78}; try{ const v=localStorage.getItem('market-shade'); if(v)s0=JSON.parse(v); }catch(e){} const P=new URLSearchParams(location.search); let bd=null; try{ bd=+SAVE.get('bands'); }catch(e){} if(!s0.cel){ s0={steps:Math.max(3,Math.min(5,+(P.get('cel')||bd||4))),depth:.72,cel:1}; } W3.setShade(s0.steps,s0.depth,false); }
   // HIS CLOTHES' PATTERNS AND HIS RIM (owner, 17 Oct 2026: "edit my characters avatar by adding outlines, shadows, textures"; src/avatar.js): made
   // in his toon shader from where each point sits in its own piece (so a pattern rides him as he moves), no picture: per garment (shirt,
   // trousers, shoes) its kind (0 plain, 1 stripes, 2 plaid, 3 denim twill, 4 knit, 5 camo, 6 dots), its scale and its stuff's index, and a second

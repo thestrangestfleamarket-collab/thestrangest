@@ -458,7 +458,7 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
   warm-and-cool grade riding the clock, most at 3°, gone by night and high day; outdoors only). **The street lights on one by one** (`dress.js`):
   each street light and lamp post comes on at its own moment between the sun at 1.5° and 2.5° under (its lamp lit, its light and its pool with
   it), off again at dawn; by day they're dark and light nothing. The guards keep their beats day and night as before (nothing changed there).
-- **Smooth light, the default now** (owner, 17 Oct 2026, of the grainy cloud and tree mockups: "i dont like any of those mockups, they all look like dots everywhere, i want smooth realistic shadows and lighting like gradient radial etc"; it supersedes the grain and the 24 steps above): `SMOOTH` in `map-pre.js`: no grain, the light not cut into steps, soft shadow edges (PCFSoftShadowMap), the lamps' pools smooth radial gradients; GRAPHICS' LIGHTING switches back to PIXEL (`market-lighting`), `?look=pixel|smooth`.
+- **(SUPERSEDED 18 Oct 2026 by CEL, ALWAYS below: no smooth light ever)** **Smooth light, the default now** (owner, 17 Oct 2026, of the grainy cloud and tree mockups: "i dont like any of those mockups, they all look like dots everywhere, i want smooth realistic shadows and lighting like gradient radial etc"; it supersedes the grain and the 24 steps above): `SMOOTH` in `map-pre.js`: no grain, the light not cut into steps, soft shadow edges (PCFSoftShadowMap), the lamps' pools smooth radial gradients; GRAPHICS' LIGHTING switches back to PIXEL (`market-lighting`), `?look=pixel|smooth`.
 
 - **The far** (owner, 17 Oct 2026, his picture of a mountain fading blue into the sky: "how can i make things look realistically far away like
   this mountain? in my game? (it would be buildings)"; "go"; `src/skyline.js`): what makes the far look far is the air between. **A haze**, always on
@@ -745,7 +745,7 @@ the owner's call, and merging publishes). The artifact link above is the quick w
   - `walker-rig-mock.js` (the game's rig, adapted), `walker3d.js` (the Walker as a 3D mesh, his shading, outline, self shadow).
   - `map-pre.js` / `map-post.js`: **the map**: places, their positions, the two levels (street, underground), ground heights, the
     subway's stairs, the pool's outside, which walls cut away when you're inside.
-  - `station.js` + `wsub.js`: the subway station (the game's West End station). `pool.js` + `water3d.js` + `floats.js`: the pool room,
+  - `metro.js`: the subway (the Metro_PSX kit, data/metro.json). `station.js` + `wsub.js`: the game's West End station, off the map (`?bring=station`). `pool.js` + `water3d.js` + `floats.js`: the pool room,
     its water, its floats. `bodega.js` (the bodega's plan from the game's code, via `gamekit.js` stand-ins and `goods-defs.js`) +
     `bodbuild.js` (built in 3D). `batch.js`: every still face packed into one texture and a few meshes (fast).
   - `musician.js` (the guitarist, and `musBody` / `figureMesh` for every Walker-built musician), `pianist.js`, `singer.js`, `drummer.js`: the bar's
@@ -812,6 +812,28 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
 - **The mushroom seller's booth** (owner, 18 Oct 2026: "give the mushroom skeletong his own booth in the entrance of central park, his table is full
   of mushrooms"; `npc-mushroom.js`): inside the park's gate east of the toy stall, a trestle table under a red and cream striped awning, heaped with
   some 70 mushrooms and three baskets; he stands behind it facing the gate, held there (no roaming, no life of lives.js); built once the park is.
+- **THE METRO on the map, the old station off it** (owner, 18 Oct 2026: "i want to bring the metro into the map and move the current subway station
+  off map"; and from the platform, "there is as building in the subway"): the Metro_PSX kit from his Drive (`src/metro.js`, `data/metro.json` by
+  `tools/metro-bake.py`; the paused branch `claude/amazing-albattani-gn3kp8` ported onto the reorganized street) is THE subway: its railed opening
+  on the lot between the apartment house and the bodega (tiles x 59.4-64.6, its top on the sidewalk's back edge, y -76.9, the whole opening behind
+  it so the sidewalk stays clear), a flight down, the corridor turning and sloping, the ticket gates, a 64 m platform 30 ft down (`METRO.DY`
+  -11.7) running east under the bodega and Ghost Street, the car coming and going (doors on the platform's side only; cut to its floor like a
+  wall when the camera's on the track's side), tube lights (16, LITE's eight nearest), columns, benches, bins, posters, the map, the machines.
+  `MAPSTAIR` is its opening (`has(x,z,lv)`, `ground(x,z,lv)`: the flight and corridor from the kit's height map); `MODS.station` gives its
+  floor inside its footprint and the loop's tunnel depth (`STN.DY`) outside it, and `plat` (THE PLATFORM, the city's address, lives' way in),
+  `path` (the way down for a character), `DY`. **The West End station off the map** (`AWAY0` 'station', map-pre.js): `station.js`, `wsub.js` and the
+  old stairs stay in the page, built only with `?bring=station` (then instead of the Metro: they share the spot). **The loop's tunnel and its two
+  stairs** (sub.js) stay as they were, 8 units higher than the Metro and not joined to it (a ramp between the two depths is not built).
+  **The building in the subway**: things set straight in the scene after the places' groups (the street lights and their pools, the power lines,
+  the land's sheet, what's built after the game opens) were never hidden underground; now every top-level thing lying wholly above the street's
+  depth is taken off the camera's layer while you're more than a unit down (`UNDER` in map-post.js; the places' groups, the stairs, lights,
+  characters and the fire left alone). **Found on the way**: every ground picture was painted mirrored front to back (`flat0` in bodbuild.js
+  painted row 0 at y1, bq lays it at y0), so the holes for the stairs down were in the wrong place (grass over the Metro's flight); fixed, every
+  ground now the right way round. The kit's walls' cut sides were reversed in the branch (fixed: cutWalls take the inward facing). The branch's
+  open shader error (`vNormal`) does not occur on main (its lambert patch already handles flat shading); none seen. Cost: some 22,000 triangles
+  underground (the car 9,200, its doors 2,500), the batch's Lambert program, 21 lamp records and no new light or shadow. `tests/metroshot.cjs <out>`.
+  Not done: sitting on its benches (`use.js` knows the old station's), rats on the platform, a TO STREET sign, riding the car; the bear it
+  names is long deleted.
 - **Guards out of sight walk their beats** (18 Oct 2026, found with the droids standing still): lives.js's far stepper calls `N.pick()`, which
   makeNPC never gave; it does now.
 - **Lightning Fast VCR Repair, off the map** (owner, 18 Oct 2026, his photo: "add this as a new building mockup for game", the mockup
@@ -855,3 +877,12 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   `editor.js`, the head, hair and eyes together), FACE (nose size and length, jaw width and square, chin, ears, eyes), BEARD and the six mockups' looks
   (his only), HEIGHT and every region slider. Yours: `ED.face` reshapes your head and eyes from their first shape as a sculpt does (kept, undone;
   the save's `face`). The mockups: `?bwk=1..6`. His sheet: `?sheet=walker2`. Cost: some 17,000 triangles, one draw a pass, no lights, no new program.
+- **CEL, ALWAYS: NO SMOOTH LIGHT, A HARD RULE** (owner, 18 Oct 2026, his picture of a pixel-art face: "i want this kind of shading at all times ...
+  solid colors, but pixelated, not gradient, i dont want gradients ever in the game beacuse it stops looking pixelated"; of the mockups,
+  https://claude.ai/artifact/1epa3LR2QUYZmCWyfmyUjz: "3-5 flat as option in menu - do not use smooth light under any circumstances hard rule"):
+  every face's light cut into 3, 4 or 5 flat bands (`CEL` in `map-pre.js`; GRAPHICS' LIGHT BANDS, the save's `bands`, 4 the default; `?cel=N`),
+  no grain, no blend; each band down a little cooler and bluer (`HUE`, the warm-lit, cool-shadow shift of his picture); hard shadow edges
+  (`BasicShadowMap`, always); the characters' light in the same flat steps with the same cool shadows (`W3.setShade` never smooth, its steps the
+  bands, the avatar editor's SMOOTH button gone); the lamps' pools flat rings; the sky in flat bands; the haze (every material's fog) in 8 flat
+  steps; the river's water in its steps only. `SMOOTH` stays in the code as `false` for what still asks it. **Never bring back smooth light,
+  soft shadows or gradients without his word.**

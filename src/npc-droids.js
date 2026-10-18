@@ -37,6 +37,18 @@
         if(W[n]>.01){ if(!a.isRunning()&&n!==(M.once&&M.once.n)){ a.setLoop(THREE.LoopRepeat,Infinity); a.play(); } a.setEffectiveWeight(W[n]); } else{ a.stop(); delete W[n]; } }
       mixer.update(dt); };
     return M; };
+  // STANDING EASY (as the mannequin's, playas.js): the pack's Idle_Loop stands guarded, fists up and knees bent; over it, while he stands, his
+  // arms hang by his sides, his legs straight under him, his back up, his feet kept on the ground; eased in and out
+  const Relax=(N,rig)=>{ const V=THREE.Vector3, bone=n=>rig.bones[D.rig.names.indexOf(n)], wq=new THREE.Quaternion(), pq=new THREE.Quaternion(), dq=new THREE.Quaternion(), q0=new THREE.Quaternion(), fq=new THREE.Quaternion(), A=new V(), B=new V(), P1=new V(), P2=new V(), DOWN=new V(0,-1,0);
+    const aim=(b,c,dir)=>{ b.getWorldPosition(A); c.getWorldPosition(B); dq.setFromUnitVectors(B.sub(A).normalize(),dir); b.getWorldQuaternion(wq); b.parent.getWorldQuaternion(pq); b.quaternion.copy(pq.invert().multiply(dq.multiply(wq))); b.updateMatrixWorld(true); };
+    const blend=(b,c,dir,w)=>{ q0.copy(b.quaternion); aim(b,c,dir); if(w<1){ b.quaternion.slerpQuaternions(q0,b.quaternion.clone(),w); b.updateMatrixWorld(true); } };
+    const out=(a,b)=>{ bone(a).getWorldPosition(P1); bone(b).getWorldPosition(P2); P2.sub(P1); P2.y=0; return P2.normalize().clone(); }, footY=()=>{ bone('foot_l').getWorldPosition(P1); bone('foot_r').getWorldPosition(P2); return Math.min(P1.y,P2.y); };
+    let rx=0; return (dt,on)=>{ rx+=((on?1:0)-rx)*Math.min(1,dt*6); if(rx<.01)return; N.g.updateMatrixWorld(true); const f=new V(Math.sin(N.st.h),0,Math.cos(N.st.h)), y0=footY();
+      blend(bone('spine_02'),bone('neck_01'),new V(0,1,0).addScaledVector(f,.05).normalize(),rx*.7);
+      for(const sd of ['l','r']){ const o=out('spine_03','upperarm_'+sd); blend(bone('upperarm_'+sd),bone('lowerarm_'+sd),DOWN.clone().addScaledVector(o,.14).addScaledVector(f,.02).normalize(),rx); blend(bone('lowerarm_'+sd),bone('hand_'+sd),DOWN.clone().addScaledVector(o,.06).addScaledVector(f,.16).normalize(),rx); }
+      for(const sd of ['l','r']){ const ft=bone('foot_'+sd); ft.getWorldQuaternion(fq); const o=out('pelvis','thigh_'+sd); blend(bone('thigh_'+sd),bone('calf_'+sd),DOWN.clone().addScaledVector(o,.03).normalize(),rx); blend(bone('calf_'+sd),ft,DOWN.clone().addScaledVector(f,-.02).normalize(),rx);
+        ft.parent.getWorldQuaternion(pq); ft.quaternion.copy(pq.invert().multiply(fq)); ft.updateMatrixWorld(true); }
+      N.g.position.y+=y0-footY(); }; };
   const {TROUBLE,shoot,free,SEE,RUN,LANE,T_,Z_,d2}=GUARDX, HOLD=QS.get('ualclip'), DROIDS=[]; window.DROIDS=DROIDS;
   const BEAM=[.35,1,1], STUN={reach:5.5,at:.5,dmg:.55}, JAB={reach:.8,at:.4,dmg:.4};
   // THEIR BEAT (owner, 18 Oct 2026: "they patrol all around the edges of the map"): one round of the loop's outer sidewalks, the four corners
@@ -44,9 +56,12 @@
   // numbers so a longer street takes them with it), each droid starting a quarter of the way round from the last, all going the same way
   const RD=[[RING.wx0+1.6,-74.4],[AVE.x1-1.6,-74.4],[AVE.x1-1.6,RING.ny1-1.6],[RING.wx0+1.6,RING.ny1-1.6]];
   const CH=[0,1,2,3].map(k=>['DROID '+(k+1),[0,1,2,3].map(j=>RD[(k+j)%4])]);
-  CH.forEach(([name,beat],i)=>{ const rig=rigOf(D.rig), mixer=new THREE.AnimationMixer(rig.bones[0]), an=Anim(mixer), G={beat:beat.map(([x,y])=>({x:T_(x),z:Z_(y)})),leg:0,mode:'patrol',cool:0,look:Math.random()*6};
+  CH.forEach(([name,beat],i)=>{ let relax=()=>{}; const rig=rigOf(D.rig), mixer=new THREE.AnimationMixer(rig.bones[0]), an=Anim(mixer), G={beat:beat.map(([x,y])=>({x:T_(x),z:Z_(y)})),leg:0,mode:'patrol',cool:0,look:Math.random()*6,hold:performance.now()/1000+180,going:false};
     const N=makeNPC(null,{key:'droid'+(i+1),name,names:D.mesh.parts,lv:'up',group:'bodega',geo:GEO,skin:rig,tall:D.tall,eye:-1,rank:D.mesh.parts.map(()=>0),metres:1.9,x:G.beat[0].x,z:G.beat[0].z,lane:LANE,free,ground:(x,z)=>MODS.bodega.ground(x,z),radius:.3,speed:1.05,stride:0,rock:0,bob:0,
-      pick:st=>{ G.leg=(G.leg+1)%G.beat.length; const p=G.beat[G.leg]; st.to={x:p.x,z:p.z+(Math.random()-.5)*.3*TILE}; st.v=G.walkV; },
+      // (owner, 18 Oct 2026: "all be on diff corners of map patrolling. stop at corner for 3 mins, then switch to other corner. repeat": each at his
+      // own corner, three minutes there looking about, then all four move on round the loop to the next, so they're always on four corners)
+      pick:st=>{ const now=performance.now()/1000; if(G.going){ G.going=false; G.hold=now+180; } if(G.hold>now){ st.to=null; st.wait=G.hold-now; return; }
+        G.leg=(G.leg+1)%G.beat.length; G.going=true; const p=G.beat[G.leg]; st.to={x:p.x,z:p.z+(Math.random()-.5)*.3*TILE}; st.v=G.walkV; },
       brain:(dt,you,st,N)=>{ if(HOLD){ st.to=null; st.hold=true; return; }
         G.walkV=G.walkV||st.v; G.cool-=dt; G.look+=dt;
         const T=TROUBLE.filter(t=>t.mode==='come'||t.mode==='fight').map(t=>[t,d2(t.st,st)]).filter(([,d])=>d<SEE).sort((p,q)=>p[1]-q[1])[0];
@@ -64,8 +79,8 @@
       anim:(dt,moving,st,sc)=>{ const run=moving&&st.v>1.2*TILE; N.sta=run?Math.max(0,N.sta-dt/14):Math.min(1,N.sta+dt/8); if(N.sta<=0)N.tired=true; if(N.tired&&N.sta>.33)N.tired=false;
         if(HOLD&&HOLD!=='T'){ an.base=HOLD; an.ts=1; an.update(dt); return; }
         if(N.sheet||HOLD==='T'){ an.base='A_TPose'; an.ts=0; an.update(dt); return; }   // (his sheet: still, the T)
-        an.base=moving?(run?'Sprint_Loop':'Walk_Formal_Loop'):'Idle_Loop'; an.ts=moving?st.v/((run?RUNU:WALK)*sc):1; an.update(dt); }});
-    N.mixer=mixer; N.an=an; N.guard=G; DROIDS.push(N); });
+        an.base=moving?(run?'Sprint_Loop':'Walk_Loop'):'Idle_Loop'; an.ts=moving?st.v/((run?RUNU:WALK)*sc):1; an.update(dt); relax(dt,!moving&&!an.once); }});   // (a plain walk and standing easy, owner 18 Oct 2026: "the cyborgs should all stand normal. walk normla")
+    relax=Relax(N,rig); N.mixer=mixer; N.an=an; N.guard=G; DROIDS.push(N); });
   window.UALK={D,geomOf,rigOf,CLIPS,Anim};   // (the mannequin's kit, shared: you as him, src/playas.js)
   window.SCN=()=>({scene,pos,W3,THREE}); window.SUNV=()=>CLOCK.sunV;   /* (a test's reach into the page) */
   window.CAMAT=(x,y,z,k=1.6)=>{ UI.setFree(true); UI.camT.set(x,y,z); ppu=ppuTo=PPU*k; };   /* (a test's look anywhere: the free camera on a point) */

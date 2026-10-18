@@ -189,7 +189,7 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
     <div class="pane" data-p="graphics">
       <h3>RESOLUTION</h3><div class="row" id="dres"></div><div class="dim" id="dsharp"></div>
       <h3>SHADOWS</h3><div class="row" id="dshd"></div>
-      <h3>LIGHT</h3><div class="row"><button class="btn" id="dlook">GLOW AND NIGHT LOOK</button><button class="btn" id="dsmooth">LIGHTING</button><button class="btn" id="dgrain">LIGHT GRAIN</button><button class="btn" id="dlit">LIGHT ON THEM</button><button class="btn" id="doutl">OUTLINE</button></div>
+      <h3>LIGHT</h3><div class="row"><button class="btn" id="dlook">GLOW AND NIGHT LOOK</button><button class="btn" id="dsmooth">LIGHT BANDS</button><button class="btn" id="dlit">LIGHT ON THEM</button><button class="btn" id="doutl">OUTLINE</button></div>
       <div class="row"><span style="width:110px">SHADE STEPS</span><input type="range" id="dsteps" min="2" max="12" step="1"><span style="width:110px">SHADOW DEPTH</span><input type="range" id="ddepth" min="0.02" max="0.98" step="0.005"></div></div>
     <div class="pane" data-p="sound"><h3>SOUND</h3><div class="row"><button class="btn" id="dsfx">EFFECTS</button><button class="btn" id="damb">AMBIENCE</button><span style="width:60px">VOLUME</span><input type="range" id="dvol" min="0" max="1" step="0.01"></div><div id="dsndin"></div></div>
     <div class="pane" data-p="keys"><div class="dim" style="margin-bottom:8px">click a key, then press the one you want (Escape to keep it)</div><table id="keytab"></table>
@@ -211,7 +211,7 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
   // the level from straight above (x0..x1, z0..z1 world), roofs off, brighter than the night, W x H pixels: the MAP tab's, the map editor's
   UI.topShot=(R,lv,W,H)=>{ const vis={}; rt.setSize(W,H); for(const k in MAPG)vis[k]=MAPG[k].visible; MAPG.down.visible=lv==='down'; for(const k of ['bodega','pool','poolout','park','castle'])if(MAPG[k])MAPG[k].visible=lv==='up';
     const h0=HEMI.intensity; HEMI.intensity=2.2; W3.group.visible=false; marker.visible=false;
-    const yc=lv==='down'?STN.DY:0; CLP[0].constant=yc+1.5; CLP[1].constant=-(yc-2.2);   // (the slice: from under the tracks to chest height)
+    const yc=lv==='down'?MODS.station.DY:0;   /* (the Metro's platform 30 ft down, or the old station's: map-post's MODS.station) */ CLP[0].constant=yc+1.5; CLP[1].constant=-(yc-2.2);   // (the slice: from under the tracks to chest height)
     top.left=R.x0; top.right=R.x1; top.top=-R.z0; top.bottom=-R.z1; top.position.set(0,yc+60,0); top.up.set(0,0,-1); top.lookAt(0,yc,0); top.near=1; top.far=120; top.updateProjectionMatrix();
     const cp=renderer.clippingPlanes; renderer.getClearColor(cc); const ca=renderer.getClearAlpha(); renderer.clippingPlanes=CLP;
     renderer.setRenderTarget(rt); renderer.setClearColor(0x050507,1); renderer.clear(); renderer.render(scene,top); const px=new Uint8Array(W*H*4); renderer.readRenderTargetPixels(rt,0,0,W,H,px);
@@ -226,7 +226,7 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
   const goTo=(x,z,lv)=>{ pos.set(x,0,z); target=null; py=typeof lv==='number'?lv:lv==='down'?(MODS.dungeon&&MODS.dungeon.inside(x,z)?MODS.dungeon.ground(x,z):MODS.station.ground(x,z)):0;   /* (a number: a stacked floor's height) */ if(UI.freeCam)UI.camT.set(x,py+.9,z); else UI.off.set(0,0,0); if(UI.menuOpen)toggleMenu(); };   /* (the view back on him where he lands) */
   mcv.addEventListener('click',e=>{ const r=mcv.getBoundingClientRect(), R=mapRect(mapLv); goTo(R.x0+(e.clientX-r.left)/r.width*(R.x1-R.x0),R.z0+(e.clientY-r.top)/r.height*(R.z1-R.z0),mapLv); });
   M.querySelectorAll('[data-lv]').forEach(b=>b.onclick=()=>{ mapLv=b.dataset.lv; drawMap(); });
-  const PLACES=[['THE STREET',-2.2,3.2,'up'],['THE BODEGA',BOD.X((BOD.B0.x0+BOD.B0.x1)/2),BOD.Z(BOD.B0.y1)-3.4,'up'],...(AWAY.has('apartments')?[]:[['THE APARTMENTS',POOLR.X(22.75),POOLR.Z(12),'up'],['THE POOL',POOLR.X(10),POOLR.Z(8.9),'up']]),   /* (off the map, owner 18 Oct 2026: no button for a place that isn't there; AWAY, map-pre.js) */['THE PLATFORM',-12.4+LAY.o('subway').x*TILE,-24.9+LAY.o('subway').y*TILE,'down'],['CENTRAL PARK',BOD.XS(PARK.round[0]+PARK.ox),BOD.ZS(PARK.y0+7+PARK.oy),'up'],['GHOST STREET',BOD.X(BOD.GD.door[0]),BOD.Z(BOD.GD.door[1]+4.5),'up'],['THE CASTLE',BOD.XS(CASTLE.gate),BOD.ZS(CASTLE.b[2]-3),'up'],['THE DUNGEON',BOD.XS((CASTLE.hall.x0+CASTLE.hall.x1)/2),BOD.ZS((CASTLE.hall.y0+CASTLE.hall.y1)/2),'down']];
+  const PLACES=[['THE STREET',-2.2,3.2,'up'],['THE BODEGA',BOD.X((BOD.B0.x0+BOD.B0.x1)/2),BOD.Z(BOD.B0.y1)-3.4,'up'],...(AWAY.has('apartments')?[]:[['THE APARTMENTS',POOLR.X(22.75),POOLR.Z(12),'up'],['THE POOL',POOLR.X(10),POOLR.Z(8.9),'up']]),   /* (off the map, owner 18 Oct 2026: no button for a place that isn't there; AWAY, map-pre.js) */['THE PLATFORM',MODS.station.plat.x,MODS.station.plat.z,'down'],['CENTRAL PARK',BOD.XS(PARK.round[0]+PARK.ox),BOD.ZS(PARK.y0+7+PARK.oy),'up'],['GHOST STREET',BOD.X(BOD.GD.door[0]),BOD.Z(BOD.GD.door[1]+4.5),'up'],['THE CASTLE',BOD.XS(CASTLE.gate),BOD.ZS(CASTLE.b[2]-3),'up'],['THE DUNGEON',BOD.XS((CASTLE.hall.x0+CASTLE.hall.x1)/2),BOD.ZS((CASTLE.hall.y0+CASTLE.hall.y1)/2),'down']];
   UI.places=()=>PLACES.concat(STORE.places||[]);   /* (the data check's: tests/datacheck.cjs; goPlace the simulation's: tests/simrun.cjs) */
   const goPlace=n=>{ if(STORE.ensure)STORE.ensure(); const P=PLACES.concat(STORE.places).find(p=>p[0]===n); if(P)goTo(P[1],P[2],P[3]); }; UI.goPlace=goPlace;   // (a stacked room is finished first if it isn't yet: store.js)
   { const q=QS.get('place'); const go=()=>window.__started?goPlace(q.toUpperCase()):setTimeout(go,200); if(q)setTimeout(go,300); }   /* (once the game runs: the page breathes while it loads) */   // (?place=central park: a test's start)
@@ -255,10 +255,9 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
   // characters, the outline, his shading
   const RESN=['COARSEST','COARSE','NORMAL','SHARP'];
   for(let i=0;i<=RESMAX;i++){ const b=document.createElement('button'); b.className='btn'; b.dataset.res=i; b.textContent=RESN[i]||RESL[i]+'×'; b.onclick=()=>{ if(i<RESI)RESI=i; while(RESI<i&&(pxS()>1||vpu()>art()))RESI++; resize(); drawDisplay(); }; $('#dres').appendChild(b); }
-  // LIGHT GRAIN (the noise in the light's steps, map-pre.js's DITH): 16, 12 strong, 24 fine, off; the page loads again to make it
-  // LIGHTING: SMOOTH (gradients, soft shadows: the default) or PIXEL (the light in steps, the grain, hard shadows); the page loads again to make it
-  $('#dsmooth').textContent='LIGHTING '+(SMOOTH?'SMOOTH':'PIXEL'); $('#dsmooth').onclick=()=>{ try{ SAVE.set('lighting',SMOOTH?'pixel':'smooth'); }catch(e){} location.reload(); }; if(SMOOTH)$('#dgrain').hidden=true;
-  { const G=[16,12,24,0], N={16:'ON',12:'STRONG',24:'FINE',0:'OFF'}; $('#dgrain').textContent='LIGHT GRAIN '+N[DITH]; $('#dgrain').onclick=()=>{ const v=G[(G.indexOf(DITH)+1)%G.length]; try{ SAVE.set('grain',String(v)); }catch(e){} location.reload(); }; }
+  // LIGHT BANDS (owner, 18 Oct 2026: "3-5 flat as option in menu - do not use smooth light under any circumstances hard rule"): how many flat bands
+  // of light, 3, 4 or 5 (map-pre.js's CEL; the characters' steps with it); the page loads again to make it. There is no smooth lighting to pick
+  $('#dsmooth').textContent='LIGHT BANDS '+CEL; $('#dsmooth').onclick=()=>{ const n=CEL>=5?3:CEL+1; try{ SAVE.set('bands',String(n)); localStorage.removeItem('market-shade'); }catch(e){} location.reload(); };
   $('#dlook').onclick=()=>{ LOOK.on=!LOOK.on; try{ SAVE.set('look',LOOK.on?'1':'0'); }catch(e){} drawDisplay(); };
   $('#dzoom').oninput=e=>{ ppuTo=r2z(+e.target.value); }; $('#dtilt').oninput=e=>{ pitchTo=clampP(PMIN+(+e.target.value)*(PMAX-PMIN)); };
   M.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>{ UI.setView(b.dataset.view); drawDisplay(); });

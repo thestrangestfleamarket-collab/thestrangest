@@ -18,6 +18,21 @@
 const CEL=(()=>{ const q=+new URLSearchParams(location.search).get('cel'); let v=null; try{ v=+SAVE.get('bands'); }catch(e){} const n=q||v||4; return Math.max(3,Math.min(5,n|0)); })();
 const HUE=(()=>{ const q=new URLSearchParams(location.search).get('hue'); return (q!=null?+q:1).toFixed(3); })();
 const SMOOTH=false;   // (never: the hard rule above)
+// ---- EVERY CHARACTER AT REST, AND STEPPED (owner, 18 Oct 2026, after the mushroom seller's crawling shadow and "now check other characters":
+// "are you just patching each character or applying an overall fix that fixes the root issues?"; "both"): the light on a character is cut into
+// hard flat bands and his own shadow is hard-edged, so any motion smaller than a pixel (a breathing loop, a sway) flips edge pixels every frame.
+// One rule for everyone, in the one place each goes through (makeNPC's tick, npc-map.js; the Walker-built ones and you in their own frames):
+// REST: standing, a character's animation clock is held (his mixer's timeScale 0), after half a second to settle and but for a shift of weight
+// of 1.5 s every 7 to 15 s; only what his own file calls deliberate goes on (`N.restless()`: a talk, a cheer, a guard's alert, a blow, wings).
+// STEPPED: his pose is worked out ASTEP.fps times a second (10 by default, the time between handed over in one go), held between, as a sprite's
+// frames are; where he stands moves smoothly every frame. GRAPHICS' ANIMATION: STEPPED 8 / 10 / 12, EVERY FRAME (the save's 'animfps', 0 every
+// frame); ?animfps=N, ?still=0 the rest rule off.
+const ASTEP=window.ASTEP=(()=>{ const Q=new URLSearchParams(location.search), q=Q.get('animfps'); let v=null; try{ v=SAVE.get('animfps'); }catch(e){}
+  const A={fps:q!=null?+q:v!=null?+v:10,still:Q.get('still')!=='0',you:{}};
+  A.gate=(o,dt)=>{ if(!(A.fps>0))return dt; const T=1/A.fps; if(o._ac==null)o._ac=Math.random()*T; o._ac+=dt; if(o._ac<T)return 0; const d=o._ac; o._ac=0; return d; };   // (0: hold this frame; else the time since the last pose)
+  A.rest=(o,dt,moving)=>{ if(!A.still||moving||(o.restless&&o.restless())){ o._calm=.5; o._sh=7+Math.random()*8; return false; }
+    if((o._calm=(o._calm==null?.5:o._calm)-dt)>0)return false; if((o._sh=(o._sh==null?7:o._sh)-dt)<=0){ o._calm=1.5; o._sh=7+Math.random()*8; return false; } return true; };   // (true: hold his clock)
+  return A; })();
 // (the haze in steps as well: every material's fog cut into 8 flat bands, no smooth fade into the far)
 THREE.ShaderChunk.fog_fragment=THREE.ShaderChunk.fog_fragment.replace('gl_FragColor.rgb = mix','fogFactor = floor( fogFactor * 8. + .5 ) / 8.;\n\tgl_FragColor.rgb = mix');
 // THE MIST ON THE TOWN'S OUTSKIRTS (owner, 18 Oct 2026, his shot down the street, the road gone teal in straight bands a few tiles from him: "the

@@ -102,7 +102,7 @@
       D.turn=ease(D.turn,turn,Math.min(1,dt*2)); D.climb=ease(D.climb,(D.y-y0)/Math.max(dt,1e-3)/TI,Math.min(1,dt*2));
       D.bank=ease(D.bank,Math.max(-.5,Math.min(.5,-turn*1.4)),Math.min(1,dt*1.5));
       N.g.position.set(st.x,D.y,st.z); N.g.rotation.set(D.mode==='perch'?0:-Math.max(-.3,Math.min(.3,D.climb*.5)),st.h,D.mode==='perch'?0:D.bank); };   // (nose up climbing, down sinking; banked into a turn)
-    N.mixer=mixer; N.D=D; return N; };
+    N.mixer=mixer; N.D=D; N.restless=()=>true; return N; };   // (wings, perched or flying: never held; his pose stepped, ASTEP)
   const DR=[]; for(let i=0;i<10;i++)DR.push(make(i));
   window.DRAGONDBG=()=>DR.map(N=>({mode:N.D.mode,x:+N.st.x.toFixed(1),y:+N.D.y.toFixed(1),z:+N.st.z.toFixed(1)}));   // (a test's look)
 }

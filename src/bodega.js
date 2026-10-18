@@ -73,11 +73,15 @@ const BOD={meshes:[], walls:{}, lamps:[]};
     // (the brick, real: owner, 18 Oct 2026, "the bricks arent really textured": the mortar set back (a darker joint, the brick over it throwing a
     // texel of shade on the course below), each brick its own tone and a grain across it, its top lit, a corner chipped now and then, a burnt
     // dark one or a pale one here and there, grime rising from the foot of the wall)
-    const k=Math.floor(z/5), zz=z-k*5, uu=u*24/11+(k&1)*.5, bi=Math.floor(uu), bx=uu-bi, hb=hash(bi,k,11), hp=hash(Math.floor(u*24),Math.floor(z),13);
+    // (owner, 18 Oct 2026: "more varied slightly, uneven bricks, cracks random": each brick's length its own, its joints moved up to a texel and a
+    // half either way; a little warmer or cooler brick to brick; a hairline crack now and then stepping down through the joints and bricks)
+    const k=Math.floor(z/5), zz=z-k*5, e=u*24/11+(k&1)*.5, jt=q=>(hash(q,k,37)-.5)*.26, b0=Math.floor(e), bi=e<b0+jt(b0)?b0-1:b0, l=bi+jt(bi), uu=e, bx=(e-l)/(1+jt(bi+1)-jt(bi)), hb=hash(bi,k,11), hp=hash(Math.floor(u*24),Math.floor(z),13);
     if(zz<1||bx<1/11)return rlf(sh(mt('mortar',sh(hp<.3?[118,110,100]:[132,124,112],.62)),f),zz<1?2:3);
     if((zz===4||zz===1)&&(bx<2/11||bx>10/11)&&hash(bi,k,15)<.3)return sh(mt('mortar',[104,96,88]),f*.7);   // (a chipped corner)
     let b=sh(c,.9+hb*.2); if(hb<.05)b=sh(c,.62); else if(hb>.96)b=sh(c,1.22);
     b=sh(b,(zz===4?1.1:zz===1?.84:1)*(.94+.12*hp)*(1-.18*Math.max(0,1-(z-11)/60)*cvNoise(u*1.7,z/40,17)));
+    if(Math.abs(cvNoise(u*24/8,z/8,41)-.5)<.025&&cvNoise(u*24/34,z/34,43)>.66)b=sh(b,.6);   // (a crack)
+    const w=(hash(bi,k,39)-.5)*.12; b=[b[0]*(1+w),b[1],b[2]*(1-w)];
     return rlf(sh(mt('brick',b),f),zz>=4?1:0); }
   const FRAME=[70,72,78];
   // ---- THE OBJECTS, as 26-bodega puts them (its keys, kinds, places and turns, word for word)

@@ -10,7 +10,7 @@ const SRC=fs.readdirSync('src').filter(f=>f.endsWith('.js')).map(f=>[f,fs.readFi
 const RECIPES=[...sfxSrc.matchAll(/^\s{4}(\w+):\{len:/gm)].map(m=>m[1]), POOLS=[...linesSrc.matchAll(/^\s{4}(\w+):\[/gm)].map(m=>m[1]);
 const refs=[]; for(const [f,s] of SRC){ for(const m of s.matchAll(/SFX\.play\('(\w+)'/g))refs.push(['sound',m[1],f]); for(const m of s.matchAll(/LINES\.say\(\w+,'(\w+)'/g))refs.push(['pool',m[1],f]); }
 (async()=>{ const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader','--autoplay-policy=no-user-gesture-required']}); const pg=await b.newPage({viewport:{width:900,height:620}});
-  const errs={}; pg.on('pageerror',e=>{ errs[e.message]=(errs[e.message]||0)+1; });
+  const errs={}; pg.on('pageerror',e=>{ const k=e.message+(process.env.STACK?' @ '+(e.stack||'').split('\n').slice(1,3).join(' '):''); errs[k]=(errs[k]||0)+1; });
   const url='file://'+process.cwd()+'/dist/market.html?hour=21&hideme=1';
   // the old keys planted before the page runs (a browser that played before this save existed)
   await pg.addInitScript(()=>{ if(!localStorage.getItem('market-save')&&!localStorage.getItem('planted')){ localStorage.setItem('planted','1'); localStorage.setItem('market-looks',JSON.stringify({name:'TESTER',sex:'M'})); localStorage.setItem('market-outline','1'); localStorage.setItem('market-grain','12'); localStorage.setItem('market-keys',JSON.stringify({v:'p'})); } });

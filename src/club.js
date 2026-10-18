@@ -1,15 +1,13 @@
 // ---- CLUB STATIC, OFF THE MAP (owner, 18 Oct 2026, after a video tour of video game nightclubs, "any thing we could use?", then "lets try to build a
 // nightclub off map following all these rules"): a one-storey club on the dark lot east of the VCR repair shop (bodega tiles x 432 to 456, the
 // store's bound widened to it), out of sight of the map; the menu's MORE PLACES has CLUB STATIC. What the video's clubs taught, each here:
-//  - GOLDENEYE'S CARDBOARD CROWD: the dance floor packed with flat black cutouts (pixel figures, six frames of dancing and jumping, each its own
-//    phase and build, a rim of the floor's colour), always facing you: some 160 people for 2 triangles each, one draw, one program.
-//  - SLEEPING DOGS' REAL PEOPLE: among them real townspeople (the pawns, their clothes their own), dancing (the pack's dance, stepped as every
-//    character is), talking at the bar and the high tables; a coat-check girl in the lobby.
+//  - SLEEPING DOGS' REAL PEOPLE: real townspeople (the pawns, their clothes their own), dancing (the pack's dance, stepped as every
+//    character is), talking at the bar and the high tables; the coat check's attendant in the lobby.
 //  - HITMAN'S QUEUE: a line of people along the front behind a red rope, a bouncer at the door; now and then the first goes in and another comes
 //    to the back of the line. HITMAN'S SOUND: the music made here (a kick, hats, a clap, a bass, a stab; 124 a minute, nothing fetched) dull and
 //    bassy through the walls, opening up as you come into the hall; and just after each kick, the RATTLE of something loose (the lobby's sign,
 //    the bathroom's mirror and glass), louder where the music is muffled. HITMAN'S DJ FINALE: a double click on the DJ booth: two bars of riser,
-//    then the drop (the floor strobing white, the crowd jumping, a cheer).
+//    then the drop (the floor strobing white, the dancers quicker, a cheer).
 //  - CYBERPUNK'S DANCE BUTTON: U dances (two bars of the rig's own, again and again while you press it).
 //  - COLOUR BY LIGHT, NOT A FILTER: the hall's lamps magenta, cyan, violet, amber by the bar, the walls their own painted colours; the floor's
 //    tiles lit in the beat's patterns (flat colours, stepped, never a glow).
@@ -18,8 +16,8 @@
 // The building: black-painted brick (the red showing where it's chipped, tags, posters, grime), the steel door under STATIC in pink tubes, a
 // light over it, the rope line; inside, the hall (the dance floor before the DJ's booth on the back wall, speaker stacks, the bar down the west
 // wall, sofas in the east), the lobby at the front (its coat check), the bathroom in the back corner. Cost: the room some 4,000 triangles, the
-// crowd 320, the floor 96, its people some 1,400 each where seen; 6 lamp records (LITE's eight nearest, lit only while you're in but the door's),
-// two programs (the crowd's, the floor's MeshBasic), nothing a frame while you're elsewhere (the music stops beyond 60 tiles) ----
+// the floor 96, its people some 1,400 each where seen; 6 lamp records (LITE's eight nearest, lit only while you're in but the door's),
+// one program (the floor's MeshBasic), nothing a frame while you're elsewhere (the music stops beyond 60 tiles) ----
 { const K=STORE.kit, {room,STEPS}=K, {X,Y,Z}=BOD, {hash,grain}=BOD.g, sh=BOD.K.sh, {PROPS,LAMPS}=BOD.STOREK, hs=hash;
   const B={id:'lclub',x0:432,y0:-98,x1:456,y1:-80,h:230}, W=B.x1-B.x0, D=B.y1-B.y0;
   // its parts (tiles from its corner): the lobby at the front east, the bathroom at the back east, the bar down the west, the booth on the back
@@ -123,42 +121,10 @@
       LAMPS.push({own:1,x:dX,y:fy+1,z:100,r:10,c:[1,.5,.85]},{own:1,x:B.x0-1,y:y0+9,z:120,r:9,c:[1,.66,.32]});   // (the door's pink, the fire exit's sodium wall light)
       thing('wall light',[bx(B.x0-.3,y0+8.8,B.x0,y0+9.2,120,126,[50,50,54]),bx(B.x0-.26,y0+8.84,B.x0-.02,y0+9.16,116,120,[255,190,110],{em:1})],{high:1});
       CLUB.spots={x0,y0,dX,fy,cX,stools:stools.map(s=>({x:(s.x0+s.x1)/2,y:(s.y0+s.y1)/2}))}; },{xw}); const hook=()=>{ try{ CLOCK.tick; }catch(e){ setTimeout(hook,400); return; } CLUB.hook(); }; hook(); });   // (the clock may not be made yet: a jump here while the page still loads)
-  // ---- WHAT RUNS: built a moment after the room is (its spots set), when the store's rooms are batched: the crowd, the floor, the people, the
+  // ---- WHAT RUNS: built a moment after the room is (its spots set), when the store's rooms are batched: the floor, the people, the
   // music, the DJ's booth to click; then each frame (after the clock): only while you're within 60 tiles
   const BPM=124, BEAT=60/BPM, PAL=[[255,40,180],[40,210,255],[150,60,255],[255,170,40]];
   const init=()=>{ if(CLUB.ready||!CLUB.spots)return; CLUB.ready=true; const S=CLUB.spots, x0=S.x0, y0=S.y0;
-    // THE CARDBOARD CROWD: a picture of six frames (four of dancing, two of jumping) in two builds, each a figure 24 x 48 px: its body near black,
-    // its rim (the edge facing the light) lit; one instanced quad each, turned to the camera round the upright
-    const cv=document.createElement('canvas'); cv.width=144; cv.height=96; const g=cv.getContext('2d');
-    const fig=(f,v)=>{ const ox=f*24, oy=v*48, P=(x,y,w,h)=>g.fillRect(ox+Math.round(x),oy+Math.round(y),Math.max(1,Math.round(w)),Math.max(1,Math.round(h)));
-      const ln=(ax,ay,bx_,by,t)=>{ for(let i=0;i<=14;i++){ const s=i/14; P(ax+(bx_-ax)*s-t/2,ay+(by-ay)*s-t/2,t,t); } };
-      const jump=f>=4?5:0, bob=f%2?1:0, hx=12+(f===2?-1:f===3?1:0), top=3+bob-jump+5;
-      g.fillStyle='#fff';
-      P(hx-3.5,top,8,8); P(hx-2.5,top-1,6,1);   // the head
-      if(v){ P(hx-4.5,top-1,9,4); P(hx+3,top+2,2,9); } else P(hx-4,top-1,9,3);   // long hair over a shoulder, or a cap
-      P(hx-1.5,top+8,4,2);   // the neck
-      P(hx-5-v,top+10,11+v,9); P(hx-4-v*1.5,top+19,9+v*3,6);   // the chest, the hips (wider)
-      const sh_=top+11, hip=top+24;
-      const arms=[[[-3,10],[3,10]],[[-6,-11],[6,-11]],[[-8,-9],[5,9]],[[-5,3],[5,3]],[[-7,-12],[7,-12]],[[-10,-6],[10,-6]]][f];
-      for(const [s,[ax,ay]] of [[-1,arms[0]],[1,arms[1]]]){ const sx=hx+s*(5+v*.5), ex=sx+ax*.5+s*1.5, ey=sh_+(ay<0?ay*.55:ay*.6); ln(sx,sh_+1,ex,ey,3.2); ln(ex,ey,sx+ax+s,sh_+ay,2.8); P(sx+ax+s-1.5,sh_+ay-1.5,3,3); }
-      const kick=f===2?[-3,0]:f===3?[0,3]:[0,0]; for(const [i,s] of [[0,-1],[1,1]]){ const fx=hx+s*(3.5+(f>=4?2.5:1))+(i?kick[1]:kick[0]), fy=Math.min(46,hip+19-(f>=4?3:0)-(i&&f===2?3:0)); ln(hx+s*2.5,hip,hx+s*3+(fx-hx-s*3)*.4,hip+10,4.4); ln(hx+s*3+(fx-hx-s*3)*.4,hip+10,fx,fy,3.6); P(fx-2+s,fy-1,5,2); } };
-    for(let v=0;v<2;v++)for(let f=0;f<6;f++)fig(f,v);
-    const im=g.getImageData(0,0,144,96), d=im.data; for(let y=0;y<96;y++)for(let x=0;x<144;x++){ const k=(y*144+x)*4; if(!d[k+3])continue; const up=y%48>0&&d[k-144*4+3]===0&&y%48<20; d[k]=up?255:30;   /* (lit only along the head's and the shoulders' tops) */ d[k+1]=d[k+2]=0; d[k+3]=255; }
-    g.putImageData(im,0,0); const tex=new THREE.CanvasTexture(cv); tex.magFilter=tex.minFilter=THREE.NearestFilter; tex.generateMipmaps=false;
-    const spots=[]; for(let i=0;i<300&&spots.length<96;i++){ const fl=spots.length<80, x=fl?x0+FLR.x0+.3+hs(i,1,960)*(FLR.x1-FLR.x0-.6):x0+3.6+hs(i,1,960)*11.5, y=fl?y0+FLR.y0+.3+hs(i,2,961)*(FLR.y1-FLR.y0-.6):y0+12+hs(i,2,961)*5.4;
-      if(spots.some(p=>Math.hypot(p[0]-x,p[1]-y)<.62))continue; if((CLUB.real||[]).some(p=>Math.hypot(p[0]-x,p[1]-y)<.7))continue; spots.push([x,y,hs(i,3,962),hs(i,4,963)<.5?0:1,.74+hs(i,5,964)*.16]); }
-    const N=spots.length, geo=new THREE.InstancedBufferGeometry(); geo.setAttribute('position',new THREE.Float32BufferAttribute([-.5,0,0,.5,0,0,.5,1,0,-.5,0,0,.5,1,0,-.5,1,0],3)); geo.instanceCount=N;
-    const ip=new Float32Array(N*3), isd=new Float32Array(N*3); spots.forEach(([x,y,ph,v,sc],i)=>{ ip.set([X(x),Y(.5),Z(y)],i*3); isd.set([ph,v,sc],i*3); });
-    geo.setAttribute('iPos',new THREE.InstancedBufferAttribute(ip,3)); geo.setAttribute('iSd',new THREE.InstancedBufferAttribute(isd,3));
-    geo.boundingSphere=new THREE.Sphere(new THREE.Vector3(X(x0+10),Y(40),Z(y0+10)),12*TILE);
-    const U={uTex:{value:tex},uBeat:{value:0},uJump:{value:0},uR:{value:new THREE.Vector3(1,0,0)},uW:{value:TILE*24/24*1.0},uH:{value:Y(48)-Y(0)},uRim:{value:new THREE.Color(1,.2,.8)},uBody:{value:new THREE.Color(.004,.004,.008)}};
-    const mat=new THREE.ShaderMaterial({uniforms:U,vertexShader:`attribute vec3 iPos,iSd; uniform float uBeat,uJump,uW,uH; uniform vec3 uR; varying vec2 vUv;
-        void main(){ float f=mod(floor(uBeat*2.+iSd.x*8.),4.); if(uJump>.5)f=4.+mod(floor(uBeat*2.+iSd.x*2.),2.); else if(uJump<-.5)f=1.;
-          vUv=vec2((position.x+.5+f)/6.,(position.y+iSd.y)/2.); float s=iSd.z; vec3 w=iPos+uR*position.x*uW*s+vec3(0.,1.,0.)*position.y*uH*s; gl_Position=projectionMatrix*viewMatrix*vec4(w,1.); }`,
-      fragmentShader:`uniform sampler2D uTex; uniform vec3 uRim,uBody; varying vec2 vUv; void main(){ vec4 t=texture2D(uTex,vUv); if(t.a<.5)discard; gl_FragColor=vec4(t.r>.5?uRim*.35:uBody,1.); }`,side:THREE.DoubleSide});
-    // (the canvas's rows run top down; the quad's v up: flip)
-    tex.flipY=true;
-    const crowd=new THREE.Mesh(geo,mat); crowd.frustumCulled=true; scene.add(crowd); CLUB.crowd=crowd; CLUB.U=U;
     // THE FLOOR'S TILES: 10 x 7, each its colour by the beat's pattern (MeshBasic, its own colours: no light, never a glow)
     const TL=new THREE.InstancedMesh(new THREE.PlaneGeometry(TILE*.92,TILE*.92).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({color:0xffffff}),70), m4=new THREE.Matrix4(), col=new THREE.Color();
     for(let j=0;j<7;j++)for(let i=0;i<10;i++){ m4.makeTranslation(X(x0+FLR.x0+i+.5),Y(.6),Z(y0+FLR.y0+j+.5)); TL.setMatrixAt(j*10+i,m4); TL.setColorAt(j*10+i,col.setRGB(.1,.05,.12)); }
@@ -220,14 +186,14 @@
       if(!here){ next=Math.max(next,ct+.1); return; } while(next<ct+.3){ beat(c,next,n); n++; next+=BEAT; } CLUB.n=n; CLUB.tn=next; };
     CLUB.beatNow=()=>{ const c=A.c; if(c&&c.state==='running'&&CLUB.tn)return n-(CLUB.tn-c.currentTime)/BEAT; return performance.now()/1000/BEAT; }; };
   CLUB.dropIt=()=>{ const b=Math.ceil(CLUB.n||CLUB.beatNow()), r0=Math.ceil(b/4)*4; CLUB.drop={r0,n0:r0+8,n1:r0+8+16}; };
-  // ---- EACH FRAME (after the clock): where you are, the music, the beat on the floor, the lamps, the crowd, the queue
+  // ---- EACH FRAME (after the clock): where you are, the music, the beat on the floor, the lamps, the queue
   const FOGC=new THREE.Fog(0x161020,2,200), FV=new THREE.Vector3();
   CLUB.hook=()=>{ let recs=null, nRec=-1; const tick0=CLOCK.tick; CLOCK.tick=dt=>{ tick0(dt); if(!CLUB.spots)return; if(!CLUB.ready)init();
       const x=pos.x, z=pos.z, cx=X(B.x0+W/2), cz=Z(B.y0+D/2), d=Math.hypot(x-cx,z-cz), here=LVL==='up'&&d<60*TILE;
       const inC=x>X(B.x0)&&x<X(B.x1)&&Math.min(Z(B.y0),Z(B.y1))<z&&z<Math.max(Z(B.y0),Z(B.y1)), gx=x/TILE, at2=r=>{ const p=[[X(B.x0+r.x0),X(B.x0+r.x1)],[Z(B.y0+r.y0),Z(B.y0+r.y1)]]; return x>Math.min(...p[0])&&x<Math.max(...p[0])&&z>Math.min(...p[1])&&z<Math.max(...p[1]); };
       const hall=inC&&!at2(LOB)&&!at2(BTH); CLUB.where={d,inside:inC,hall,lobby:inC&&at2(LOB),bath:inC&&at2(BTH)};
       if(CLUB.audio)CLUB.audio(here,CLUB.where);
-      const vis=here; if(CLUB.crowd){ CLUB.crowd.visible=vis; CLUB.tiles.visible=vis; }
+      if(CLUB.tiles)CLUB.tiles.visible=here;
       // (out here, past the town's edge, the town's mist would swallow it all: its own night air instead, as the VCR's lot has: a deep violet haze
       // from a few tiles past you, the far all of it)
       if(window.FAR3&&FAR3.mesh&&here)FAR3.mesh.visible=false;   // (the skyline's rows stand out here, past the town: not while you're at the club)
@@ -235,7 +201,6 @@
       else if(scene.fog===FOGC)scene.fog=null;
       if(!here)return;
       let bt=CLUB.beatNow(); if(!isFinite(bt)||bt<0)bt=performance.now()/1000/BEAT; const bi=Math.floor(bt), dr=CLUB.drop, dropping=dr&&bi>=dr.n0&&bi<dr.n1, rising=dr&&bi>=dr.r0&&bi<dr.n0; if(dr&&bi>=dr.n1)CLUB.drop=null;
-      CLUB.U.uBeat.value=Math.floor(bt*2)/2; CLUB.U.uJump.value=dropping?1:rising?-1:0; cam.getWorldDirection(CLUB.U.uR.value); CLUB.U.uR.value.set(-CLUB.U.uR.value.z,0,CLUB.U.uR.value.x).normalize();
       // the floor: a pattern a bar (a checker, rings from the middle, a sweep, a scatter), its colours the beat's; the drop strobes it white
       const h8=Math.floor(bt*2); if(h8!==CLUB.h8){ CLUB.h8=h8; const bar=Math.floor(bi/4), q=bi%4, col=new THREE.Color(), dim=[.08,.04,.1];
         for(let j=0;j<7;j++)for(let i=0;i<10;i++){ let c=dim, P=PAL[(((bar+q)%4)+4)%4]||PAL[0], m=((bar%4)+4)%4;
@@ -243,7 +208,7 @@
           else if(m===0)c=(i+j+q)%2?P.map(v=>v/255):dim; else if(m===1)c=Math.round(Math.hypot(i-4.5,j-3))%4===q?P.map(v=>v/255):dim;
           else if(m===2)c=(i+q*3)%10<3||(i+q*3)%10===9?P.map(v=>v/255):dim; else c=hs(i,j,bi)<.4?PAL[Math.floor(hs(i,j,bi+7)*4)].map(v=>v/255):dim;
           CLUB.tiles.setColorAt(j*10+i,col.setRGB(...c)); } CLUB.tiles.instanceColor.needsUpdate=true;
-        const P=PAL[(((bar+q)%4)+4)%4]||PAL[0]; CLUB.U.uRim.value.setRGB(...(dropping&&h8%2?[1,1,1]:P.map(v=>v/255)));
+        const P=PAL[(((bar+q)%4)+4)%4]||PAL[0];
         // the lamps: the floor's the beat's colour, the booth's a flash on the beat; white in the drop
         if(LITE.recs.length!==nRec){ nRec=LITE.recs.length; recs=LITE.recs.filter(L=>{ const p=L.position; return p.x>X(B.x0)-1&&p.x<X(B.x1)+1&&Math.abs(p.z-cz)<D*TILE/2; }); CLUB.recs=recs;
           for(const L of recs){ L.userData.c0=L.color.clone(); L.userData.ci=L.intensity; } }
@@ -252,6 +217,6 @@
           else if(bo)L.intensity=L.userData.ci*(h8%2?.6:1.5); } }
       if(CLUB.qStep)CLUB.qStep(dt);
       for(const N of CLUB.dancers||[])if(N&&N.mixer){ const a=N.act&&N.act('UAL_Dance_Loop'); if(a)a.timeScale=dropping?1.5:1; } }; };
-  window.CLUBDBG=()=>({mv:st.move&&st.move.name,cur:ROOMS.cur&&ROOMS.cur.id,recsI:(CLUB.recs||[]).map(L=>+L.intensity.toFixed(1)),ready:!!CLUB.ready,where:CLUB.where,beat:CLUB.beatNow&&+CLUB.beatNow().toFixed(2),drop:CLUB.drop,people:(CLUB.people||[]).length,crowd:CLUB.crowd&&CLUB.crowd.geometry.instanceCount,recs:(CLUB.recs||[]).length,audio:!!(CLUB.A&&CLUB.A.c)});
+  window.CLUBDBG=()=>({mv:st.move&&st.move.name,cur:ROOMS.cur&&ROOMS.cur.id,recsI:(CLUB.recs||[]).map(L=>+L.intensity.toFixed(1)),ready:!!CLUB.ready,where:CLUB.where,beat:CLUB.beatNow&&+CLUB.beatNow().toFixed(2),drop:CLUB.drop,people:(CLUB.people||[]).length,recs:(CLUB.recs||[]).length,audio:!!(CLUB.A&&CLUB.A.c)});
   window.CLUBLOOK=(dx=12,dy=9,k=.5,d)=>{ if(d!=null)LOOKYAW(d); return LOOKAT(X(B.x0+dx),Z(B.y0+dy),k); };
   window.CLUBGO=(dx=10,dy=13)=>{ if(STORE.ensure)STORE.ensure(); if(window.SUBGO)SUBGO(X(B.x0+dx),Z(B.y0+dy),'up'); return CLUBDBG(); }; }

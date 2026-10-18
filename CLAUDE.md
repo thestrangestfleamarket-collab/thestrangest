@@ -909,3 +909,40 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   rendering: little room left there). `STREETQ()` a test's look. Not done: a kerb ramp at the crossings; the NW corner not looked at (a block in the
   shot's way).
 - **The lawn's tufts** (owner, 18 Oct 2026: "lets add the tuft grass from grasslab into the game"; the Grass Lab's option 4, https://claude.ai/artifact/VYHdVVsXc5nufH6ptqGg8X; `WEEDS.lawnInit` in `src/weeds.js`): over every lawn in sight (the land's sheet and the park's hills, only where one of them is the top surface: never on a way, sidewalk, plaza or floor), tufts of two crossed cards painted with fourteen blades, each its own size, turn and green, swaying in the park's wind, lit in the flat bands. Made only round you in chunks of 8 tiles (a tiny top-down picture of the chunk says which half-tile squares are lawn and their height: two draws and a read back, some 15 ms a chunk, one a moment), dropped 3 chunks off; each chunk one instanced draw with its own bounds. Measured: 25 chunks round you, 6,548 tufts (4 triangles each); the whole screen 48,100 triangles in the park.
+- **The golems' cave and the gem trade** (owner, 18 Oct 2026: "make a cave in central park where the golems live, they buy any kind of rare gem
+  or crystal, etc."; `src/cave.js`, `src/gems.js`): a rocky outcrop on the park's north-west lawn (21 tiles west and 15 north of the round, clear of
+  the ways, the shrine, the castle, the pond and the park's big rock; placed from PARK at run time, `GCAVE.keep`, which park.js's hills, oaks and
+  bushes keep off), its mouth east toward the round: a low dome of rough grey stone on a rounded-square footprint (10 x 10 tiles, 3.7 m high,
+  every face its own grey, moss low, lichen), boulders round its foot, jambs and a lintel at the mouth. Inside: a dark stone floor, crystal clusters
+  glowing violet, cyan and rose along the walls (unlit, they're the light), THE TRADING STONE at the back, four sitting stones, beds of moss, a heap
+  of geodes; its light one lamp record (LITE, `userData.both`: it lights the cave and spills out of the mouth at night). Its own room for rooms.js
+  (only the cave drawn inside; its crown above the room's top cut so you see in). Built a moment after the game runs. **The golems live there**
+  (walkers.js's `golem`: `GCAVE.haunt`): all twelve together, in the cave at night (21:00 to 7:00), by day mostly at the round, an hour now and
+  then at the mouth or inside (the same hour for all); the cave's box is theirs (every other walker keeps out of a room). **THE GOLEMS BUY**: a
+  double click on a golem or on the trading stone opens the panel (X, drag: `gemp` in PANS): ten stones and their prices (quartz crystal $6,
+  amethyst $14, geode $18, fossil amber $24, moonstone $30, opal $45, emerald $70, sapphire $85, ruby $100, star meteorite $150), what you carry,
+  SELL and SELL ALL. **Your pockets** (`INV`): your cash is your mailbox's (`MAIL.you.cash`, one purse with the rent and the bills; its own $100
+  with `?mail=0`), your gems in the save (`inv`). **Where gems come from for now**: the four glints on the cave's floor (a double click: a gem at
+  random, the rarer the less often; each back when the day turns) and THE ODDITIES STALL by the gate (a gem of the day). The golems' lines
+  (`golem` in lines.js). Cost: the dome some 310 triangles, its boulders and stones about 50 instances of 36 (one draw), the crystals and glints
+  about 50 of 8 (one draw, one unlit instanced program), the floor 120; one lamp record, no shadow, no new light. `GEMDBG()`.
+- **The squirrel's tower and its knight** (owner, 18 Oct 2026: "remove the tower from the dungeon/castle area, make it 3x small put it in corner
+  of central park near main, small squirel in knight armor with sword on top"; `src/tower.js`, `src/npc-squirrel.js`): the keep stays off the map
+  (nothing of it in the castle; `?bring=keep` still sets the full one in the bailey for a look); in the park's front-left corner, inside the walls
+  by the main street, the keep made again at a third of its size: 3.2 x 3 tiles, 173 px (5 m), its four corner turrets a little higher, a
+  crenellated parapet round its lead roof, its faces the keep's own painter (keepOutWall) read three of its pixels to one (the darkest of three,
+  so the mortar, slits, windows and string courses stay), its door a squirrel's; solid, no way in. **THE SQUIRREL KNIGHT** on its roof, 0.55 m,
+  built in parts on bones in the tomato's style (npc-rig.js): grey-brown fur, cream muzzle, ears up through a steel helmet, its visor on a hinge
+  (lifted now and then), a red plume on a spring, breastplate, pauldrons, a belt, a small sword held up before him, his bushy tail in three
+  pieces on springs; on guard, turning to look out over the street, the corners or the park every 6 to 15 s, his head looking about between.
+  `?sheet=squirrel`; `SQDBG()`. The menu's MORE PLACES has THE GOLEMS' CAVE and THE SQUIRREL'S TOWER. Cost: the tower some 120 faces in its own
+  batch (one draw), the squirrel some 1,660 triangles, his own shadow map as every character; no light.
+- **New York's markings and signs** (owner, 18 Oct 2026: "Not green bike lanes. Use NYC markings and steermt signs etc everywhere"; `bodega.js`'s
+  street works, `bodbuild.js`): **the bike lanes** bare asphalt (no green anywhere), the solid white line, every 22 tiles the white bicycle with two
+  chevrons ahead of it pointing traffic's way; **the double yellow** down every road's middle, broken at crossings and junctions; **stop bars**
+  across the half of the road whose traffic comes to each crossing; **the crossings** NYC's ladder (two rails across the road, wide rungs along the
+  traffic). **The signs** (`BOD.signs`, drawn into the street's pictures as thin boxes, words in a 3x5 pixel letter read from either side, cut out by
+  the batch's alpha test): a galvanized post at every corner with the two streets' green name blades crossed (MARKET ST, WEST ST, NORTH ST, THE AVE;
+  two more across the main street from the side streets' mouths), STOP where the west street and the Avenue come down to the main street, and along
+  every kerb every 24 tiles a NO PARKING plate (every third a SPEED LIMIT 25), each .75 tile in from the kerb, clear of the street lights' feet.
+  66 signs. Cost: some 1,600 triangles in the street's batch, no lights, no programs. Not done: a traffic light (the owner took the kit's out).

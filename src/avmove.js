@@ -9,7 +9,7 @@
   const SP0={wk:1,rk:1,anim:1}; let SP={...SP0}; try{ Object.assign(SP,JSON.parse(localStorage.getItem('market-speed')||'{}')); }catch(e){}
   const apply=()=>{ st.wk=SP.wk; st.rk=SP.rk; st.anim=SP.anim; try{ localStorage.setItem('market-speed',JSON.stringify(SP)); }catch(e){} };
   apply(); window.SPEED=(o)=>{ if(o){ Object.assign(SP,o); apply(); } return {...SP,x:pos.x,z:pos.z,run:st.run}; };   // (a test's or the console's: SPEED({wk:1.5}); where he is with it)
-  if(P){ const tabs=P.querySelector('.tabs'), b=document.createElement('button'); b.dataset.t='speed'; b.textContent='SPEED'; tabs.appendChild(b); b.onclick=()=>AV.open('speed');
+  if(P){ const tabs=P.querySelector('.tabs'), b=document.createElement('button'); b.dataset.t='speed'; b.textContent='MOVE'; tabs.appendChild(b); b.onclick=()=>AV.open('speed');
     const sl=(id,lab)=>`<div class="row"><span class="lab">${lab}</span><input type="range" id="${id}" min="0.25" max="3" step="0.05"><span class="val" id="${id}v"></span></div>`;
     const pane=document.createElement('div'); pane.className='pane'; pane.dataset.p='speed'; pane.hidden=true;
     pane.innerHTML=`<h3>HOW FAST HE GOES</h3>${sl('avwk','WALK SPEED')}${sl('avrk','RUN SPEED')}

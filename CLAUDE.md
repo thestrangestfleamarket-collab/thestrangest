@@ -1345,3 +1345,17 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   **The stalls either side of the gate**: the mushroom seller's west of it, the tomato's east; **both sellers 15% bigger** (2.53 m, 1.84 m); the
   stalls their size. Cost: the iron instanced in 16-tile pieces (some 57,000 triangles round the whole park, a few thousand in sight), the
   lanterns' glass one unlit draw; no light, no new program. `tests/gateshot.cjs <out>`.
+- **Posing him, in a void** (owner, 18 Oct 2026: "the avatar editor needs to have a section where i can pose the avatar and pull his limbs all around.
+  i want to be able to pick his standing pose"; then "avatar should not be in game when editing. pull into empty void. full 360 rotate and tilt, full
+  editing. very minimal and inituive GUI"; `src/avatar.js`, `src/studio.js`, `R.ANIMX` in `animator.js`): **the avatar editor's tabs cut to six in
+  one row** (BODY, POSE, LOOK with its patterns, STYLE the outline and shading, SAVE the presets, MOVE the speeds). **POSE**: drag any part of him
+  (an arm, a forearm, a leg, a shin, a foot, his body, his head, his hips; the part named as you grab it) and that's how he stands whenever he
+  stands still in the game (the animator's `stand` overlay, one key); twelve standing poses to start from (RELAXED, HANDS ON HIPS, ARMS CROSSED,
+  HANDS IN POCKETS, HANDS BEHIND, CONFIDENT, WEIGHT ON ONE LEG, SLOUCH, SHY, ONE HAND ON HIP, THINKING, AT EASE), MY POSES (named, kept in the
+  save's `standposes`), mirror either side onto the other, undo. **THE STUDIO** (`STUDIO`): while the editor is open the camera sees only him
+  (his pieces and the editor's highlight on layer 7, the camera on that layer alone) against a plain dark void, no fog, no world, lit by the
+  studio's own sky and sun (on layer 7 only: the world's lamps never reach him there, the studio's never reach the world), no SELF shadow; a drag
+  off him turns him all the way round and tilts from under his feet to over his head, the wheel nearer or further, a double click back before
+  him; him in the middle of what the panel leaves; one line of help at the foot. Closed, the game's view, background and shading come back.
+  Cost: nothing while closed; open, his triangles alone and two lights (his programs made once more for them the first time). `STUDIODBG()`,
+  `STUDIOTURN(yaw,pitch,dist)`, `AVPOSE(name)` (tests).

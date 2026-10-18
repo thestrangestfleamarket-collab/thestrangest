@@ -1312,3 +1312,11 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   can span pages (its later meshes `k~1`, `k~2`), and only the first page's mesh was hooked up: the bodega's walls on the second page never cut
   away, its tubes showed from outside, part of its roof stayed. `BATCH.all(M,k)` gives every page's mesh of a kind; bodbuild.js, castle.js, store.js
   and ghostdojo.js use it for their cut walls, roofs, tubes and shadows.
+- **Every character checked standing still** (owner, 18 Oct 2026: "now check other characters"; `tests/stillcheck.cjs <out> [keys] [query]`: one of
+  each brought beside you and held, 12 frames a quarter second apart, the pixels in his box that change): still already, the cat in the raincoat,
+  the TV cat, the frog on his scooter, the bearded Walker (0), the shark but for his jaw's snap; **the pawns** (the townspeople, the ogres, the golems,
+  the skeleton pawns) 2-3% of their pixels a frame on their breathing idle (`UAL_Idle_Loop`, `idle_a`, `idle_b`, `sit_floor_idle_a`): now held still,
+  playing only into its fade and for a 1.5 s shift of weight every 7 to 15 s (`STILLC`, npc-pawns.js), the talking, cheering and found-it idles as
+  before; measured 0 between shifts. **The dungeon's KayKit skeletons** the same on their pack's idle (npc-skel.js; the guard's alert stance and his
+  blows as before; not seen close in the check, the dungeon's walls in the camera's way). **Left moving** (deliberate, to ask): the animals' idles
+  (the wasp's hover, the bat's wings, the slime's wobble, the spider's, the frog's, the rat's, the snake's), 1-4% of their pixels a frame.

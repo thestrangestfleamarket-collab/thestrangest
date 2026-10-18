@@ -41,7 +41,7 @@ THREE.ShaderLib.lambert.fragmentShader=THREE.ShaderLib.lambert.fragmentShader
 const NEONS=[], SHL=[], cutWalls=[], lamps=[], trees=[], shopGroups=[]; let night=1, nightTo=1; const C1=new THREE.Color(), C2=new THREE.Color(); function applyTime(){}
 const ZU=1/(PPU*Math.cos(Math.PI/6)), TILE=33.9/PPU, QS=new URLSearchParams(location.search), LAMPI=8, LAMPD=1.6;
 const SOL={up:[],down:[]}, FIX={up:[],down:[]}, CLIPX=[];   // (CLIPX: the things not in the batch, for the hitboxes' pass: {place, name, P its triangles in the world, or obj its group}: clip.js)
-let solids=SOL.up, fixed=FIX.up, BOUND, groundY, LVL='up', BOD, BODB;
+let solids=SOL.up, fixed=FIX.up, BOUND, groundY, LVL='up', BOD, BODB, METRO;   // (METRO: the subway, metro.js; undefined while the old station is brought back)
 const STORE={rooms:[],places:[],roofs:[]}, BF={list:[]}; window.STORE=STORE;   // (STORE: the storeroom, store.js; BF: the butterflies, butterflies.js)
 const MAPG={}, MODS={}; let MAPBAKE=0; const OVERHEAD=[]; let RPASS=null, FIRE=null;   // (OVERHEAD: the lights hung over a room, shown only from under them: rooms.js; RPASS: the picture's render pass, its camera the view's: ui.js)
 // a place's own objects gathered in a group of its own (shown and hidden with its level)
@@ -67,7 +67,10 @@ const LAYOUT0={bodega:{x:8.75},diner:{x:-24.75},bar:{x:-8},ghost:{x:-8.75},apart
 // the swimming, the floats and boats), so it's built where no one goes: AWAYLOT tiles east, past the force field, never drawn or reached.
 // To bring one back: ?bring=diner,bar (or ?bring=all) for a look, or take its key out of AWAY0 here for good; the map editor (Shift+M) then
 // moves it as before. The castle and its dungeon stay (half height, for the woodland creatures: castle.js)
-const AWAY0=['apartments','diner','bar','aquarium','garden','avenue','keep','civic','power'], AWAYLOT=1000;
+// THE OLD STATION OFF THE MAP (owner, 18 Oct 2026: "i want to bring the metro into the map and move the current subway station off map"):
+// station: the game's West End station and its stairs (station.js, wsub.js, map-post.js's old stairs), the Metro in their place (metro.js);
+// ?bring=station builds the old one again instead (the two share the subway's spot under the lot, so it's one or the other)
+const AWAY0=['apartments','diner','bar','aquarium','garden','avenue','keep','civic','power','station'], AWAYLOT=1000;
 const AWAY=(()=>{ const s=new Set(AWAY0), q=QS.get('bring'); if(q==='all')s.clear(); else if(q)for(const k of q.split(','))s.delete(k.trim()); return s; })(); window.AWAY=AWAY;   // (castle: to the grown park's back-left corner, 17 Oct 2026)
 const LAY=(()=>{ const q=QS.get('layout'); let o={}; try{ o=q&&q[0]==='{'?JSON.parse(q):q==='0'?{}:JSON.parse(SAVE.get('layout')||'{}')||{}; }catch(e){}
   const L=Object.assign({},LAYOUT0,o); return {L, o:k=>({x:(+(L[k]&&L[k].x)||0)+(k==='apartments'&&AWAY.has(k)?AWAYLOT:0),y:+(L[k]&&L[k].y)||0}), e:k=>(L[k]&&L[k].e||[0,0,0,0]).map(v=>+v||0), h:k=>+(L[k]&&L[k].h)||0, s:k=>+(L[k]&&L[k].s)||1}; })();   // (h: a room's lift in tiles, s: its size, the map editor's RAISE / LOWER and GROW / SHRINK: mapedit.js, store.js)
@@ -96,6 +99,8 @@ const AVE={x0:152+MAINX.e,x1:166.5+MAINX.e,y1:57.5}; AVE.r0=AVE.x0+3.2; AVE.r1=A
 // street's tiles (BOD.XS / ZS: y up toward the park)
 const RING={wx0:31.5-MAINX.w,wx1:46-MAINX.w,ny0:12.5+NORTHY,ny1:27+NORTHY}; RING.wr0=RING.wx0+3.2; RING.wr1=RING.wx1-3.2; RING.nr0=RING.ny0+3.2; RING.nr1=RING.ny1-3.2;
 AVE.y1=RING.ny1; AVE.ey1=38.5+NORTHY; RING.stairs=[{x0:RING.wx0+.6,x1:RING.wx0+2.6,y0:-2,y1:4,steps:12,depth:98,dir:-1,leg:'w'},{x0:AVE.r1+.6,x1:AVE.r1+2.6,y0:-2.4,y1:3.6,steps:12,depth:98,dir:-1,leg:'e'}];   /* (the loop's subway: its stairs down, the west street's outer sidewalk and the Avenue's east one, in the gap between its shells: sub.js) */ RING.ff={x0:RING.wx0-1.5,x1:AVE.x1+25.5,y0:-103,y1:40.5+NORTHY}; RING.river={y0:-150,y1:-104};   // (just past the row's back alley)
+// THE SUBWAY'S WAY DOWN (the old station's stairs; the Metro's opening fills it in from the kit's railing, metro.js: then has(x, z, lv) says
+// when you're on its stairs or in its exit, ground(x, z, lv) the floor under you there)
 const MAPSTAIR={x0:59,x1:63,y0:-80,y1:-74, steps:12, depth:98, dir:-1};
 { const o=LAY.o('subway'); MAPSTAIR.x0+=o.x; MAPSTAIR.x1+=o.x; MAPSTAIR.y0+=o.y; MAPSTAIR.y1+=o.y; }
 // THE CASTLE (owner, 17 Oct 2026: "the castle on the left back end" of the park, "the dungeon under the castle (only 1 level)"; castle.js): its

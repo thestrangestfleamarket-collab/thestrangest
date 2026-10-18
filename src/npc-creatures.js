@@ -69,10 +69,10 @@
   // THE METRO'S RATS (owner, 18 Oct 2026, "go all", the Metro's open items: rats on the platform): three of the street's rats under it, two over
   // the platform between the track's edge and the back wall, one scurrying the tactile strip along the edge; on the level under the street
   // (its group: drawn only from down there, and neither drawn nor run unseen as every character), their ground the platform's, out of its
-  // solids (the columns, benches, bins, the gates), never past the gates or over the edge
-  if(typeof METRO!=='undefined'&&METRO&&METRO.X){ const MX=METRO.X, MZ=METRO.Z, ln=(a,b,c,d)=>({x0:MX(0,d),x1:MX(0,c),z0:MZ(a,0),z1:MZ(b,0)}), PL=ln(10.45,18.5,-5.2,51), ED=ln(10.45,11.05,-5.2,51);
+  // solids (the columns, benches, bins, the stairs' parapets), never past the hall's ends or over the edge
+  if(typeof METRO!=='undefined'&&METRO&&METRO.X){ const MX=METRO.X, MZ=METRO.Z, ln=(a,b,c,d)=>({x0:MX(0,d),x1:MX(0,c),z0:MZ(a,0),z1:MZ(b,0)}), PL=ln(10.45,METRO.BW,METRO.Z_S+.6,METRO.Z_N-.6), ED=ln(10.45,11.05,METRO.Z_S+.6,METRO.Z_N-.6);
     const mfree=(x,z,R)=>x>PL.x0&&x<PL.x1&&z>PL.z0-.01&&z<PL.z1&&!SOL.down.some(b=>x>b[0]-R&&x<b[2]+R&&z>b[1]-R&&z<b[3]+R), mg=(x,z)=>MODS.station.ground(x,z);
-    for(const [L,kx,kz] of [[PL,16.2,12],[PL,13,38],[ED,10.7,28]]){ const p=METRO.at(kx,kz); CH.push(['Rat','RAT',.22,null,.9,0,{lv:'down',group:'down',lane:L,free:mfree,ground:mg,x:p.x,z:p.z}]); } }
+    for(const [L,kx,kz] of [[PL,16.2,METRO.CZ-20],[PL,13,METRO.CZ+18],[ED,10.7,METRO.CZ-6]]){ const p=METRO.at(kx,kz); CH.push(['Rat','RAT',.22,null,.9,0,{lv:'down',group:'down',lane:L,free:mfree,ground:mg,x:p.x,z:p.z}]); } }
   for(const [key,name,metres,tp,speed,turn,ex] of CH){ const D=C[key], K=Object.assign({},KIND[key],ex&&{lane:ex.lane}), rig=rigOf(D.rig), CL=clipsOf(D), mixer=new THREE.AnimationMixer(rig.bones[0]), A={}, act=n=>A[n]||(A[n]=mixer.clipAction(CL[n])), free=ex?ex.free:FREE, [tx,tz]=tp||[0,0];
     const st2={fly:K.fly?K.fly[0]+Math.random()*(K.fly[1]-K.fly[0]):0,hid:false,t:Math.random()*10}; let cur=null;
     const N=makeNPC(null,{key:key.toLowerCase(),name,names:D.mesh.parts,lv:ex?ex.lv:'up',group:ex?ex.group:'bodega',geo:PAINT(key,geomOf(D.mesh)),skin:rig,tall:D.tall,rank:D.mesh.parts.map(()=>0),metres,x:ex?ex.x:X(tx),z:ex?ex.z:Z(tz),lane:K.lane,free,ground:ex?ex.ground:(x,z)=>MODS.bodega.ground(x,z),radius:.12,speed,stride:0,rock:0,bob:0,

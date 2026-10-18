@@ -1440,3 +1440,14 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   units a second walking, 22.5 to 0.5 running. With it, the musician and the bearded Walker (the same rig) plant their feet too, and walk a sixth
   slower (they were carried 1.2 times further than the player). Cost: nothing; his pose built every frame while moving (some 0.1 ms).
   Next, at his word: a lean into turns and a weight shift when he stops; foot locking for the clip-driven characters.
+- **The distance look, his to set** (owner, 18 Oct 2026: "make the buildings more logical, and they shouldnt be as visible, depth of field, blur,
+  haze, etc, real distance"; "way too much, needs to look realistic, check other video game references"; "give me mockups of diff styles, with
+  ranges i can select and change to get the right look and save it"; `skyline.js`, `sky.js`, map-pre.js's `MISTF`): the skyline laid out by
+  sense: low near the town, taller further out, the landmarks in their clusters far back (Midtown 75 tiles past the land, Downtown 170). **Blur**
+  (the no-blur rule lifted for the distance only, at his word): the skyline and the sky drawn on their own before the picture, blurred both ways,
+  laid behind everything as the background; the near world sharp; none when BLUR is 0. **GRAPHICS' DISTANCE LOOK** (`FAR3.panel`, `?farlook=1`
+  opens it): five styles (GAME, CLEAR AIR, HAZY, DREAMY, DUSK CITY) and sixteen sliders (where the mist starts and how deep, how much darker far,
+  the buildings' haze near and far and where it's full, its steps, how far windows show, lit windows by night and day, blur and its coarseness,
+  cloud cover and brightness, the sky overhead and at the horizon), live; SAVE keeps them (the save's `farlook`), RESET the game's own, EXPORT
+  gives `FARLOOK {...}`: when he sends it, put it in `FL0` in skyline.js. Cost: with blur on, the skyline and the sky drawn again (a few thousand
+  triangles) and two blur passes at the picture's size over the coarseness squared.

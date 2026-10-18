@@ -97,7 +97,8 @@ const musScale=(g,bh)=>g.scale.set(W3.SZ/PPU,ZU*W3.SZ*(bh||W3.BH||1),W3.SZ/PPU);
       if(side!=null){ AT.x=nx; AT.z=nz+side*TILE*Math.min(1,go*8); } else { WK.mode='stop'; WK.t=1+Math.random()*2; WK.dir=-WK.dir; } }
     if(WK.mode==='walk'&&Math.abs(AT.z-Z0)>.05*TILE&&free(AT.x,AT.z+Math.sign(Z0-AT.z)*.02*TILE))AT.z+=Math.sign(Z0-AT.z)*Math.min(Math.abs(Z0-AT.z),dt*.3*TILE);   // (back to his line once by)
     AT.y=MODS.bodega.ground(AT.x,AT.z); g.position.set(AT.x,AT.y,AT.z); g.rotation.y=AT.hd;
-    if(!near)return null; R.farOnly(false); const B=R.pose(S,true); return B; };
+    if(!near)return null; if(MUS.wB&&!ASTEP.gate(WK,dt))return MUS.wB;   // (his walk's pose stepped, ASTEP in map-pre.js; his playing as before)
+    R.farOnly(false); const B=R.pose(S,true); MUS.wB=B; return B; };
   // the guitar on his back while he walks: its frame turned half round his middle
   const BACK={}; const backOf=()=>{ for(const k of ['x','y','z'])BACK[k]={x:-GTF[k].x,y:GTF[k].y,z:-GTF[k].z}; BACK.o={x:-GTF.o.x,y:GTF.o.y+2,z:-GTF.o.z-1}; return BACK; };
   MUS.tick=dt=>{ if(MUS.watch&&!UI.freeCam){ MUS.watch=false; SHB.hidden=true; SHB.style.display='none'; if(MUS.res0!=null){ RESI=MUS.res0; MUS.res0=null; resize(); } } const d=Math.hypot(pos.x-AT.x,pos.z-AT.z);

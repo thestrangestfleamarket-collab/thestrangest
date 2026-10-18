@@ -79,5 +79,6 @@ const BWK={}; window.BWK=BWK;   // (a test's reach)
       if(free(nx,nz)){ st.x=nx; st.z=nz; } else { st.to=null; st.next=null; st.wait=.5+Math.random(); } }   // (blocked: stop, then somewhere else)
     st.y=MODS.bodega.ground(st.x,st.z); g.position.set(st.x,st.y,st.z); g.rotation.y=st.hd; headE(); musScale(g,F.h);
     if(!near||!MAPG.bodega.visible||BWK.hid)return;   // (far or unseen: moved, not posed)
+    if(BWK.B&&!ASTEP.gate(BWK,dt))return;   // (his pose stepped, ASTEP in map-pre.js)
     R.farOnly(false); const B=R.pose(S,true); BWK.B=B; PCS.forEach((pc,i)=>FM.set(i,R.frameOf(pc.on||pc.n,B))); };
 }

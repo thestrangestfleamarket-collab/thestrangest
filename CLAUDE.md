@@ -1312,3 +1312,13 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   can span pages (its later meshes `k~1`, `k~2`), and only the first page's mesh was hooked up: the bodega's walls on the second page never cut
   away, its tubes showed from outside, part of its roof stayed. `BATCH.all(M,k)` gives every page's mesh of a kind; bodbuild.js, castle.js, store.js
   and ghostdojo.js use it for their cut walls, roofs, tubes and shadows.
+- **The bodega's goods, real** (owner, 18 Oct 2026: "did you take away the phsyics from the game? i want every item in the bodega to be real";
+  the old game had them as bodies, 47-physics-5-goods; `src/goodsphys.js`, `GPH`): all 208 goods on the shelves, in the coolers and on the counter
+  are rigid bodies in Rapier (physbody.js's build, fetched only once you're within 4 tiles of the bodega). Each starts asleep where its shelf put it;
+  the fixtures' boxes are solid to them (but a box a good stands inside, the coolers' cases), the floor and the walls (doorways open). You push
+  what you walk into (your body a capsule); a punch or a kick (J, K and their kin) sends what's before you flying (never through the shop's walls);
+  a double click on a good walks you up and takes it in your hand (the rig's carry), and holding one a double click anywhere throws it there.
+  Still for a third of a second, a good sleeps where it lies. A moving good rewrites only its own corners in the goods mesh (`BOD.goods`, its
+  vertex range, bodbuild.js). Cost: no triangles, light or program more; the world steps at 120 a second only near the bodega. Not done: the goods
+  back on their shelves (a reload puts them back), the Fox or the townspeople pushing them, the coolers' doors opening onto real goods.
+  `GOODSDBG()`, `GOODSHIT(k,r)`, `GOODSGRAB()`, `GOODSTHROW(dx,dz)` (tests).

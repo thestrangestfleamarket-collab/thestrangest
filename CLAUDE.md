@@ -1164,3 +1164,20 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   (the skyline gone in it). The shot's teal at dusk (0x3a6e68), a little paler at high noon, dark at night. GRAPHICS' DISTANCE HAZE: MIST, FAR (the
   old far haze and the sky), OFF; `?mist=0` the far haze, `?mist=near,far` in tiles. The weather's FOG takes over when it comes; nothing indoors or
   underground. Cost: none (the same fog). Not taken: the shots' autumn treetops and the embers / fireflies. `tests/mistshot.cjs`.
+- **The Godot rebuild, its first test** (owner, 18 Oct 2026: "lets start on a rebuild using godot. i dont want any sort of godot splash screen i want
+  it completely hidden. build out a test small game with just one building and my walker on godot. match graphics exactly"; `godot/`, its
+  README): Godot 4.5.1, the Compatibility renderer (the browser's). The bodega and the ground round it, the Walker, the opening isometric view at
+  3:30 pm, all **taken from the running three.js game** (`godot/tools/bake.cjs`: the faces, atlases, lamps (LITE's records), solids, ground
+  heights, the clock's light every half hour; the Walker's mesh and his idle, walk and run sampled from the rig itself); THE MARKET's look ported
+  as shaders (the faces' shades by facing and the soft bands on the light's sum, the lamps lit in the shader as three.js lights them; the
+  Walker's toon gradient and SELF; oldlook.js's grade; the one lamp shadow in its own pass, indoors and at night). No splash: no boot image, the
+  page's only line THE MARKET's loading line. Set beside THE MARKET at the same spots (`tools/refshot.cjs`): the same picture but for what isn't in
+  the test (the street light, the mailbox, the fences, the people). Its own artifact: **https://claude.ai/artifact/A11ZoF3QuZ75dsdbdyQUyh**
+  (`python3 godot/tools/pack_web.py`, the .wasm and .pck gzipped and named .wasm to fit and be served). Found on the way, THE MARKET's own: a
+  room's lamps light only after LITE's next quarter-second pick (a headless screenshot can come before it).
+  **Then** (18 Oct 2026): the park's oaks (three of them, on the lawn past the far sidewalk; THE MARKET's sway and tree look 3, `tree.gdshader`)
+  and **the grass** (owner: "make the grass out of same as trees, just make it cover the ground (it should move an flow, and when you walk through
+  it be disrupetd by your movement natrually)"): one-triangle blades on every lawn texel, each its colour, swaying in the oaks' wind, parted where he
+  walks and springing back (`grass.gdshader`, `_grass` / `_trail` in `main.gd`); the game opens on the park's lawn. **Paused there** (owner, 18 Oct
+  2026: "lets pause the godot rebuild for now"). Found on the way, in THE MARKET itself: **the oaks aren't drawn on `main`** (the park's
+  reorganization, 5b3dd53, kept their places and models but lost `PARK.trees=mesh(TREES...)`); the Godot bake used a private build with it put back.

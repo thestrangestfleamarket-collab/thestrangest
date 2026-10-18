@@ -120,9 +120,9 @@ const AV={on:false};
   P.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{ tab=b.dataset.t; if(tab!=='body')setSculpt(false); draw(); });
   P.querySelectorAll('#avbuild [data-b]').forEach(b=>b.onclick=()=>{ ED.snap(); LOOKS.setBuild(+b.dataset.b); LOOKS.height(L.hk||1); draw(); });
   $('#avh').oninput=e=>{ if(BW()){ BWK.F.h=+e.target.value; BWK.save(); } else LOOKS.height(+e.target.value); $('#avhv').textContent=(+e.target.value).toFixed(2); };
-  // WHO: him held a step to your right as the view stands, facing it, while he's being edited; let go to walk on when you're done or back to YOU
+  // WHO: him held a step to your left as the view stands (clear of the panel), facing it, while he's being edited; let go to walk on when you're done or back to YOU
   const holdB=on=>{ if(!window.BWK)return; if(!on){ BWK.hold=null; return; } const f=new THREE.Vector3(0,0,-1).applyQuaternion(cam.quaternion), r=new THREE.Vector3(1,0,0).applyQuaternion(cam.quaternion); f.y=r.y=0; f.normalize(); r.normalize();
-    BWK.hold={x:pos.x+r.x*1.4*T,z:pos.z+r.z*1.4*T,hd:Math.atan2(-f.x,-f.z)}; };
+    BWK.hold={x:pos.x-r.x*1.4*T,z:pos.z-r.z*1.4*T,hd:Math.atan2(-f.x,-f.z)}; };
   P.querySelectorAll('#avwho [data-who]').forEach(b=>b.onclick=()=>{ who=b.dataset.who==='bwk'&&window.BWK&&BWK.F?'bwk':'you'; holdB(who==='bwk'); if(who==='bwk')setSculpt(false); draw(); });
   for(const [k] of FACE){ const el=$('#avf_'+k); el.onpointerdown=()=>{ if(!BW())ED.snap(); };
     el.oninput=()=>{ const v=+el.value; $('#avf_'+k+'v').textContent=v.toFixed(2); if(BW())BWK.F[k]=v; else ED.face({[k]:v},true); };

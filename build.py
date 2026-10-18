@@ -231,7 +231,8 @@ mod=rp(mod,"  disp.set(pos.x,py,pos.z); F.set(","  if(UI.freeCam)disp.copy(UI.ca
 head=rp(head,'<div><b>Right-drag</b> or <b>Q</b> / <b>E</b>, <b>Z</b> / <b>X</b> turn and tilt</div>','<div><b>Drag</b> move the map · <b>Right-drag</b> (or <b>Shift</b> + drag), <b>Q</b> / <b>E</b>, <b>Z</b> / <b>X</b> turn and tilt · <b>0</b> back on him</div>\n  <div><b>C</b> free camera · <b>G</b> fly through walls (<b>Space</b> up, <b>Shift</b> down)</div>')
 head=rp(head,'<div class="dim"><b>H</b> hide this</div>','<div class="dim"><b>Esc</b> menu: map, display, keys · <b>H</b> hide this</div>')
 # HIS SHAPE and THE OUTLINE (owner, 17 Oct 2026): src/editor.js; each piece's change on its frame; the outline pass off unless turned on
-mod=rp(mod,"0,0,0,1); }); };","0,0,0,1); if(W3.E&&W3.E[i])W3.applyE(W3.PM.value[i],W3.E[i],F.o); if(W3.HIDE[i])W3.PM.value[i].makeScale(0,0,0); }); };   // (his shape as edited: src/editor.js)")
+W3PATCH=("0,0,0,1); }); };","0,0,0,1); if(W3.E&&W3.E[i])W3.applyE(W3.PM.value[i],W3.E[i],F.o); if(W3.HIDE[i])W3.PM.value[i].makeScale(0,0,0); }); };   // (his shape as edited: src/editor.js)")
+mod=rp(mod,*W3PATCH)
 mod=rp(mod,"W3.place(B,pos.x,py,pos.z,RAG.on?RAG.hd:heading,hdA,ZU);","W3.place(B,pos.x,py,pos.z,RAG.on?RAG.hd:heading,hdA,ZU); if(ED.on)ED.tick();")
 mod=rp(mod,"W3.tint.setRGB(.58,.6,.66).lerp(C2.setRGB(1,1,1),Math.max(0,lampW)*0.9);","W3.tint.setRGB(.58,.6,.66).lerp(C2.setRGB(1,1,1),Math.max(0,lampW)*0.9); if(ED.on)W3.tint.setRGB(1,1,1);   // (shaping him: in full light)")
 mod=rp(mod,"W3.shadowPass(renderer); OUTL.render(renderer,scene,cam); composer.render();","W3.shadowPass(renderer); if(OUTL.on)OUTL.render(renderer,scene,cam); composer.render();")
@@ -380,3 +381,17 @@ a="const grab=(name,fn)=>{ const n0=scene.children.length; fn();"; assert a in m
 mod,ng=re.subn(r"^grab\('(\w+)',\(\)=>\{",r"await grab('\1',async()=>{",mod,flags=re.M); print('builders awaited:',ng)
 i=mod.index('<script type="module">')+len('<script type="module">'); j=mod.index('</script>',i); body,ny=yields(mod[i:j]); mod=mod[:i]+'\n'+body+mod[j:]; print('breaths:',ny)
 os.makedirs('dist',exist_ok=True); open('dist/market.html','w').write(head+mod); print('built dist/market.html')
+
+# THE AVATAR EDITOR, STANDALONE (owner, 18 Oct 2026: "create standalone avatar editor ... default poses ... spread all limbs out ... sculpt ...
+# rotate 360, tilt, export ... as many presets as possible"; then "i want it based on our new walker and our game"): dist/avatar.html, the game's
+# own Walker and the game's own editors on a page of their own: the rig exactly as built above (its script lifted from the game page's head), his
+# mesh with the game's own patch, save.js, HIS SHAPE, his moves, his looks, the avatar editor, his speeds and body types word for word; the
+# body types' table read from playas.js (the mannequin itself not built); src/avatar-pre.js before them, src/avatar-post.js after
+a=head.index("<script>\n// the game's own Walker"); b=head.index('</script>',a); rigjs=head[a+len('<script>'):b]
+bt=re.search(r"const BT=(\{.*?\});\s*\n\s*PLAYAS\.BODIES",open('src/playas.js').read(),re.S).group(1)
+avcode='\n'.join([open('src/avatar-pre.js').read(),rp(open('src/walker3d.js').read(),*W3PATCH),open('src/save.js').read(),
+  'window.PLAYAS={BT:'+bt+',bodyType:"AVERAGE",body(){}}; PLAYAS.BODIES=Object.keys(PLAYAS.BT);',
+  open('src/editor.js').read(),open('src/animator.js').read(),open('src/looks.js').read(),open('src/avatar.js').read(),open('src/avmove.js').read(),open('src/avatar-post.js').read()])
+page=open('src/avatar-page.html').read(); assert page.count('/*RIG*/')==1 and page.count('/*CODE*/')==1
+open('dist/avatar.html','w').write(page.replace('/*RIG*/',rigjs).replace('/*CODE*/',avcode)); print('built dist/avatar.html')
+

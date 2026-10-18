@@ -1146,3 +1146,9 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   (the skyline gone in it). The shot's teal at dusk (0x3a6e68), a little paler at high noon, dark at night. GRAPHICS' DISTANCE HAZE: MIST, FAR (the
   old far haze and the sky), OFF; `?mist=0` the far haze, `?mist=near,far` in tiles. The weather's FOG takes over when it comes; nothing indoors or
   underground. Cost: none (the same fog). Not taken: the shots' autumn treetops and the embers / fireflies. `tests/mistshot.cjs`.
+- **The newsstand smaller, newspapers only** (owner, 18 Oct 2026: "smaller newspaper booth, only real newspaper items inside, nothing else. show me
+  mockups"; of `mockups/newsstand-small.html` (https://claude.ai/artifact/Dat98V8RVP9Ddx7xXkKSzh), "1": THE GREEN BOX; `src/newsstand.js`): the kiosk
+  cut to 2.8 x 1.5 tiles and 2.3 m (was 4.8 x 2, 2.6 m), the same green steel, NEWS header, counter and shutter; the papers on three stepped tiers
+  before the counter (the four titles, each tier's stacks its share of the stock), five front pages pegged on a line across the window's top (above
+  the cat's head), three spare bundles in twine at his feet. No magazines, candy, gum, snacks, drinks cooler, change tray or LOTTO; the stand sells
+  the four papers only. Cost: some 1,500 triangles (was 2,100). `tests/newsshot.cjs <out>`.

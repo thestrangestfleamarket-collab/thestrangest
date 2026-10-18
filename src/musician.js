@@ -3,9 +3,9 @@
 // from the game: 47-play-3-guitar-1-body, -samples.data, -2-tunes, -3-hands): the classical guitar at its real size with its real recorded
 // notes, the book of tunes (the Romance fingerpicked, four songs strummed, in turn), his hands solved every frame onto each note (each finger to
 // its fret, the thumb on the bass, the strums; solid against the wood and each other; arms and fingers with weight). Here he's a second Walker
-// with his fingers, in 3D (the player's own body: musBody, below), lit by the lamps, in the apartment house's top-floor front living room (AT, below),
-// facing the room; louder as you come near, from his side, with the room's echo. A double click on him: the camera comes close on his hands
-// (C to go back). He plays all the time up there (the bar's three take turns on its stage without him: src/bandstand.js) ----
+// with his fingers, in 3D (the player's own body: musBody, below), lit by the lamps, walking the shops' sidewalk (AT, below, 18 Oct 2026; before, the apartment
+// house's top floor); louder as you come near, from his side. A double click on him: he plays you a tune and the camera comes close on his
+// hands (C to go back); otherwise he only walks (the bar's three take turns on its stage without him: src/bandstand.js) ----
 const MUS={}; STORE.MUS=MUS;   // (a test's reach)
 // THE PLAYER'S OWN BODY, FOR A MUSICIAN (owner, 17 Oct 2026: "reset all npcs to same exact avatar as main player", his pick: the people): the
 // pieces walker3d.js made the player of (W3.pcs: his shell, his nose, the eyes and the hair he wears, his soles; no brows, mouth or beard), in
@@ -50,7 +50,10 @@ function musBox(P){ const [cx,cy,cz,hx,hy,hz]=P.box, F=P.F0, g=new THREE.BoxGeom
 const musScale=(g,bh)=>g.scale.set(W3.SZ/PPU,ZU*W3.SZ*(bh||W3.BH||1),W3.SZ/PPU);   // (bh: a body's own height, the singer's)
 // WHERE HE PLAYS (owner, 17 Oct 2026: "move the musician into an apartment top floor"; before, the stored bar's stage, STORE.bar.gtr): the
 // apartment house's top floor, in the front living room (the one with the fire escape over the street), the middle of the room, facing its door
-{ const R=RIG, V=R.V, AP=MODS.apts, AA=AP.A, AT={x:BOD.X((AA.x0+AA.x1)/2),z:BOD.Z(AA.y1-1.5),hd:0,y:AP.SY*4}; MUS.floor=4;
+// HE WALKS THE STREET (owner, 18 Oct 2026: "the musician should only play if you ask him to play, walks up and down street stop occasiaonnly"):
+// up and down the shops' sidewalk, the guitar slung on his back, a stop now and then; a double click on him asks for a tune, he turns to
+// you, plays it through and walks on (or as soon as you go)
+{ const R=RIG, V=R.V, AT={x:BOD.XS(70),z:BOD.ZS(-73),hd:Math.PI/2,y:0};
   // his pieces: the player's (musBody, the shapes shared with the others: share), and the guitar in its own frame
   const PCS=musBody().PCS;
   PCS.push(Object.assign({},GT.PIECE,{d:GT.SOLID,F0:{o:V(0,0,0),x:V(1,0,0),y:V(0,1,0),z:V(0,0,1)},step:.25,cell:.25}));   // (the guitar's hull whole: the game's hollow one, thin plates and bracing, breaks up as a mesh)
@@ -76,10 +79,32 @@ const musScale=(g,bh)=>g.scale.set(W3.SZ/PPU,ZU*W3.SZ*(bh||W3.BH||1),W3.SZ/PPU);
   MUS.elbow=()=>MUS.B&&['shoulderR','elbowR','wristR','shoulderL','elbowL','wristL'].map(k=>{ const p=MUS.B.J[k]; return k+' '+[p.x,p.y,p.z].map(v=>v.toFixed(1)).join(','); });   // (a test's: his arms' joints, his units)
   // HIS PLAYING, each frame he's on the stage and you're near (the game's gtStep, here): the tune's clock, his pose solved onto its notes, his
   // arms and fingers with weight, a breath and a nod with the beat; at a tune's end, a moment's rest, the next in the book
-  const a={t:0}; let song=0, rest=0;
-  MUS.start=()=>{ rest=0; song=gtNext(song); gtSet(song); }; MUS.stop=()=>gtHush();   // (his turn on the stage: a tune from its start; off it, silent)
-  MUS.tick=dt=>{ if(MUS.watch&&!UI.freeCam){ MUS.watch=false; SHB.hidden=true; SHB.style.display='none'; if(MUS.res0!=null){ RESI=MUS.res0; MUS.res0=null; resize(); } } const d=Math.hypot(pos.x-AT.x,pos.z-AT.z); if(!MUS.on||!MAPG.bodega.visible||d>18&&!MUS.watch){ gtHush(); return; }
-    if(GTS.t>GTEND+1.5){ rest+=dt; if(rest>2.5){ rest=0; song=gtNext(song); gtSet(song); } }
+  const a={t:0}; let song=0;
+  MUS.start=()=>{ song=gtNext(song); gtSet(song); }; MUS.stop=()=>gtHush();   // (a tune from its start, readied; he plays it only when asked: MUS.ask)
+  // his walk: the rig's own (its step and pose, as yours), his feet carrying him as far as his stride says; the sidewalk's run, the way
+  // ahead tried before each step (STFREE: the stairs' hole, the buildings, the things on the street), turned back where it's blocked
+  const WK={mode:'stop',t:1+Math.random()*3,dir:1,to:AT.x,st:R.create(),d0:0}, X0=BOD.XS(36), X1=BOD.XS(165), Z0=AT.z, RAD=.3*TILE;
+  const free=(x,z)=>typeof STFREE!=='function'||STFREE(x,z,RAD), turn=hd=>{ let e=hd-AT.hd; e=Math.atan2(Math.sin(e),Math.cos(e)); return e; };
+  const pickTo=()=>{ if(Math.random()<.35)WK.dir=-WK.dir; let x=AT.x+WK.dir*(6+Math.random()*22)*TILE; if(x<X0||x>X1){ WK.dir=-WK.dir; x=AT.x+WK.dir*(6+Math.random()*22)*TILE; } WK.to=Math.max(X0,Math.min(X1,x)); };
+  MUS.ask=()=>{ WK.mode='play'; WK.st.target=0; AT.hd=Math.atan2(pos.x-AT.x,pos.z-AT.z); g.rotation.y=AT.hd; song=gtNext(song); gtSet(song); };
+  const clear=()=>{ for(let k=0;k<160;k++){ const dx=(k>>1)*.25*TILE*(k&1?-1:1); for(const dz of [0,.6,-.6,1.2]){ const x=AT.x+dx, z=AT.z+dz*TILE; if(free(x,z)){ AT.x=x; AT.z=z; return; } } } };   // (his spot clear of what stands on the sidewalk: a mailbox, a lamp's foot)
+  const walkTick=(dt,near)=>{ const S=WK.st; if(!WK.ok){ WK.ok=true; clear(); }
+    if(WK.mode==='stop'){ S.target=0; WK.t-=dt; if(WK.t<=0){ pickTo(); WK.mode='walk'; } }
+    if(WK.mode==='walk'){ const want=WK.to>AT.x?Math.PI/2:-Math.PI/2, e=turn(want); AT.hd+=Math.sign(e)*Math.min(Math.abs(e),dt*4); S.target=Math.abs(e)<.6?1:0;
+      if(Math.abs(WK.to-AT.x)<.2*TILE){ WK.mode='stop'; WK.t=3+Math.random()*7; S.target=0; } }
+    const d0=S.dist; R.step(S,dt); const go=(S.dist-d0)*W3.SZ/PPU;
+    if(go>0){ const nx=AT.x+Math.sin(AT.hd)*go, nz=AT.z+Math.cos(AT.hd)*go, side=[0,.5,-.5,1,-1].find(o=>free(nx,nz+o*TILE*Math.min(1,go*8)));   // (round what's in his way, a little to the side, else back the other way)
+      if(side!=null){ AT.x=nx; AT.z=nz+side*TILE*Math.min(1,go*8); } else { WK.mode='stop'; WK.t=1+Math.random()*2; WK.dir=-WK.dir; } }
+    if(WK.mode==='walk'&&Math.abs(AT.z-Z0)>.05*TILE&&free(AT.x,AT.z+Math.sign(Z0-AT.z)*.02*TILE))AT.z+=Math.sign(Z0-AT.z)*Math.min(Math.abs(Z0-AT.z),dt*.3*TILE);   // (back to his line once by)
+    AT.y=MODS.bodega.ground(AT.x,AT.z); g.position.set(AT.x,AT.y,AT.z); g.rotation.y=AT.hd;
+    if(!near)return null; R.farOnly(false); const B=R.pose(S,true); return B; };
+  // the guitar on his back while he walks: its frame turned half round his middle
+  const BACK={}; const backOf=()=>{ for(const k of ['x','y','z'])BACK[k]={x:-GTF[k].x,y:GTF[k].y,z:-GTF[k].z}; BACK.o={x:-GTF.o.x,y:GTF.o.y+2,z:-GTF.o.z-1}; return BACK; };
+  MUS.tick=dt=>{ if(MUS.watch&&!UI.freeCam){ MUS.watch=false; SHB.hidden=true; SHB.style.display='none'; if(MUS.res0!=null){ RESI=MUS.res0; MUS.res0=null; resize(); } } const d=Math.hypot(pos.x-AT.x,pos.z-AT.z);
+    if(WK.mode==='play'&&(d>18&&!MUS.watch||GTS.t>GTEND+1.5)){ WK.mode='stop'; WK.t=1.5+Math.random()*2; }   // (the tune done, or you gone: on his way)
+    if(WK.mode!=='play'){ gtHush(); const B=MUS.on?walkTick(dt,MAPG.bodega.visible&&d<40):null; if(!B)return; MUS.B=B; const F=backOf();
+      PCS.forEach((pc,i)=>{ if(pc.n==='guitar')FM.set(i,F); else FM.set(i,R.frameOf(pc.on||pc.n,B)); }); M(F,sg.matrix); sg.matrixWorldNeedsUpdate=true; musScale(g); return; }
+    if(!MUS.on||!MAPG.bodega.visible){ gtHush(); return; }
     R.farOnly(false); GTS.t+=dt; const t=GTS.t, P=gtPose(t); npcSpring(a,P,dt,NPCARMS); gtFing(P,RIG.build(P,null),P._T); npcSpring(a,P,dt,NPCFING); a.t+=dt;
     P.nod+=Math.sin(a.t*1.6)*0.6*R.D+Math.sin(t/GTBEAT*Math.PI)*0.8*R.D; a.P=P; musScale(g);
     const B=R.settle(R.build(P,null),0); MUS.B=B;
@@ -98,7 +123,7 @@ const musScale=(g,bh)=>g.scale.set(W3.SZ/PPU,ZU*W3.SZ*(bh||W3.BH||1),W3.SZ/PPU);
   addEventListener('pointerdown',wake); addEventListener('keydown',wake);
   // A DOUBLE CLICK ON HIM: walk up, then the camera close on his hands (the free camera, there; C goes back)
   const hitBox=new THREE.Mesh(new THREE.BoxGeometry(22,58,24),new THREE.MeshBasicMaterial({visible:false})); hitBox.position.set(0,29,2); g.add(hitBox);   // (what a double click finds: him, roughly)
-  UI.thing({name:'THE GUITARIST',obj:hitBox,reach:1.6,tall:1.9,act:()=>{ const p=new THREE.Vector3().setFromMatrixPosition(new THREE.Matrix4().multiplyMatrices(g.matrixWorld,new THREE.Matrix4().makeTranslation(GTF.o.x,GTF.o.y,GTF.o.z)));
+  UI.thing({name:'THE GUITARIST',obj:hitBox,reach:1.6,tall:1.9,act:()=>{ MUS.ask(); const p=new THREE.Vector3().setFromMatrixPosition(new THREE.Matrix4().multiplyMatrices(g.matrixWorld,new THREE.Matrix4().makeTranslation(GTF.o.x,GTF.o.y,GTF.o.z)));
     UI.setFree(true); UI.camT.copy(p); ppuTo=PPU*16; MUS.watch=true; MUS.res0=RESI; RESI=MUS.sharp(); resize(); SHB.show(); }});   // (owner, 17 Oct 2026: "when you watch the guitarist zoom in all the way and add a sharpen bar to adjust to the level i want": all the way in that still shows his hands and the guitar, the wheel closer still; and the SHARPEN bar)
   // THE SHARPEN BAR (while you watch him): the art's fineness from the coarsest to one screen pixel each (past the menu's ceiling, here only), the
   // level kept in this browser for the next time; back as it was when you leave

@@ -88,6 +88,13 @@ LITE.tick=(dt,x,y,z)=>{ const P=LITE.pool;
     for(const L of want){ if(slots.includes(L))continue; const i=slots.indexOf(null,1); if(i<0)break; slots[i]=L; }
     LITE.slots=slots; LITE.sel=slots.filter(Boolean); }
   for(let i=0;i<P.length;i++){ const S=P[i], L=(LITE.slots||LITE.sel)[i]; if(!L||!(L.intensity>0)){ S.intensity=0; continue; } S.position.copy(L.position); S.color.copy(L.color); S.intensity=L.intensity; S.distance=L.distance; S.decay=L.decay; }
+  // THE SHADOW HANDED OVER GRADUALLY (owner, 18 Oct 2026: "shadows completely vanish and appear suddenly once you are in range instead of
+  // gradually"): the one lamp shadow goes to the lamp nearest you; as another comes nearly as near, the nearest's light is split between
+  // its shadowed self and an unshadowed copy in the last slot (still eight lights), so its shadows thin to nothing by the handover and the
+  // next lamp's grow in after it (w: 0 at an even distance, 1 a tile and a half clear)
+  const H0=(LITE.slots||LITE.sel)[0], H1=LITE.sel.filter(L=>L!==H0).sort((p,q)=>p.position.distanceToSquared(new THREE.Vector3(x,y,z))-q.position.distanceToSquared(new THREE.Vector3(x,y,z)))[0]; LITE.w=1;   /* (with the held slots: the shadow's lamp and the nearest other) */
+  if(H0&&H1&&P[0].intensity>0){ const dd=L=>Math.hypot(L.position.x-x,L.position.y-y,L.position.z-z); let w=Math.min(1,Math.max(0,(dd(H1)-dd(H0))/(1.5*TILE))); w=w*w*(3-2*w); LITE.w=w;
+    if(w<1){ const S=P[0], E=P[P.length-1]; E.position.copy(S.position); E.color.copy(S.color); E.distance=S.distance; E.decay=S.decay; E.intensity=S.intensity*(1-w); S.intensity*=w; } }
   // its shadow drawn only while it lights something, every other frame (half the cost, a frame's lag unseen), and at once when it moves to another lamp
   /* (its shadow drawn again every frame something moves near it, never every other frame: a stale map on alternate frames made his shadow on himself
      stutter as he walked; when nothing near moves, not at all: at rest, at rest) */

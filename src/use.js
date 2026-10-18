@@ -107,6 +107,12 @@ const USE={seat:null}; window.USE=USE;   // (a test's look)
   for(const th of (typeof KIT!=='undefined'?KIT.things:[]))if(th.name==='BENCH'){ th.act=()=>{ const se=seatOf(tris(th.obj)); if(se)sitOn(se,th); }; th.reach=1.5; th.near=1.5+1.2*T; }
   if(typeof PARK!=='undefined'&&PARK.sitlog&&PARK.more){ const [x,z]=PARK.sitlog, hb=new THREE.Mesh(new THREE.BoxGeometry(1.4*T,.6*T,1.4*T),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(x,.3*T,z); scene.add(hb);
     let se=null; const th={name:'SITTING LOG',obj:hb,reach:1.3*T,near:2.5*T,tall:.8*T,act:()=>{ se=se||seatOf(tris(PARK.more,[x,z,.9*T])); if(se)sitOn(se,th); }}; UI.thing(th); }
+  // ---- THE METRO'S BENCHES (owner, 18 Oct 2026, "go all": the Metro's open items; metro.js): the kit's three benches along the platform's back
+  // wall are its own meshes, not the batch's, so each gets a hidden box to be clicked by (in the level under the street's group: found only from
+  // down there) and its seat found from the kit's faces round it, as the sitting log's
+  if(typeof METRO!=='undefined'&&METRO&&METRO.seats&&MAPG.down){ const all={updateWorldMatrix(){},traverse:f=>METRO.things.forEach(f)};
+    for(const s of METRO.seats){ const hb=new THREE.Mesh(new THREE.BoxGeometry(s.w,1.1,s.d+.1),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(s.x,s.y+.55,s.z); MAPG.down.add(hb);
+      let se=null; const th={name:'BENCH',obj:hb,reach:s.d/2+.55*T,near:s.d/2+1.8*T,tall:1.1,act:()=>{ se=se||seatOf(tris(all,[s.x,s.z,s.w*.6])); if(se)sitOn(se,th); }}; UI.thing(th); } }
   // ---- EACH FRAME (after ui.js's own: a hook on UI.goTick): up again at a walk, a key or a move; the doors swinging; the cans falling; the
   // machine's blink; the radio. Nothing at all while nothing moves
   const sitKeys=new Set(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright',' ','f','j','k','n','b','x','shift']);

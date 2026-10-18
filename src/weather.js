@@ -28,7 +28,7 @@ const WX={hold:null,now:null};
   // middle), white in the sun, grey-blue in their own shade; as many show as the sky's cloud (a few even on a clear day), greyer in rain, darker in a storm
   const ph=(a,b,c)=>{ const v=Math.sin(a*127.1+b*311.7+c*74.7)*43758.5453; return v-Math.floor(v); }, geos=[], ends=[]; let vc=0;
   for(let n=0;n<40;n++){ const ang=ph(n,1,2)*Math.PI*2, dist=(55+ph(n,3,4)*75)*TILE, cx=Math.sin(ang)*dist, cz=Math.cos(ang)*dist, cy=(7+ph(n,5,6)*7)*TILE, w=(7+ph(n,7,8)*10)*TILE;
-    for(let k=0;k<12;k++){ const u=ph(n,k,9)-.5, v=ph(n,k,10)-.5, r=w*(.22+.18*(1-Math.abs(u)*2)*ph(n,k,11)), g=new THREE.IcosahedronGeometry(r,1);
+    for(let k=0;k<12;k++){ const u=ph(n,k,9)-.5, v=ph(n,k,10)-.5, r=w*(.22+.18*(1-Math.abs(u)*2)*ph(n,k,11)), g=new THREE.IcosahedronGeometry(r,0);   /* (twenty faces a puff: 9,600 the forty clouds, 18 Oct 2026; was 38,400) */
       g.scale(1,.75,1); const P=g.attributes.position; for(let i=0;i<P.count;i++)if(P.getY(i)<-r*.15)P.setY(i,-r*.15);   // (the cumulus's flat foot)
       g.translate(cx+u*w*1.6,cy+r*.3+(1-Math.abs(u)*2)*w*.18,cz+v*w*.7); geos.push(g); vc+=P.count; }
     ends.push(vc); }

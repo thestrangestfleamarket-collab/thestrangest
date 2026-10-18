@@ -1,7 +1,7 @@
 // ---- THE STREET DRESSED (owner, 17 Oct 2026: "start fleshing it out with our available assets to make it come to life"; then: "delete
 // everything you added except for the new building, street lights, and trash can and bus stop"): the city kit's pieces (kit.js) that stay:
 // trash cans at the kerb, street lights and lamp posts, all built here from blocks (the bus stop and its bench removed) ----
-const DRESS={};
+const DRESS={}, TLX={tick:()=>{}};   // (TLX: the traffic lights, below)
 { const G=MODS.bodega.ground, xm=(BOUND.x0+BOUND.x1)/2; let zc=null, zf=null; for(let z=BOUND.z0;z<BOUND.z1;z+=0.02){ const g=G(xm,z); if(zc==null&&g<-.01)zc=z; if(zc!=null&&zf==null&&g>-.01&&z>zc)zf=z; }
   const sw=zc-.5, far=zf+.6, AX=BOD.X(MODS.apts.A.x1), AX0=BOD.X(MODS.apts.A.x0), BX0=BOD.X(BOD.B0.x0);   // the kerb, the far kerb; the house's east wall, the bodega's west wall
   DRESS.kerb={sw,far}; DRESS.cans=[];   // (the kerb lines and the cans: the city's vehicles and its trash round, vehicles.js, duties.js)
@@ -76,9 +76,46 @@ const DRESS={};
     // 1.5° up and 2.5° under: some twenty minutes of the evening), its lamp lit (the head's or the lantern's colour), its light and its pool with it;
     // off again as the sun comes up. By day they're dark and light nothing
     const LIT=new THREE.Color(0xffe4b0), DIM=new THREE.Color(0x4a4238);
-    DRESS.tick=()=>{ const e=CLOCK.elev(), k=Math.max(0,Math.min(1,(3-e)/8)), up=LVL!=='down'&&!ROOMS.cur; poolMat.opacity=k;
+    DRESS.tick=()=>{ TLX.tick(); const e=CLOCK.elev(), k=Math.max(0,Math.min(1,(3-e)/8)), up=LVL!=='down'&&!ROOMS.cur; poolMat.opacity=k;
       pools.forEach((P,j)=>{ const [L,,,,me]=P, on=e<P.on; if(on!==P.lit){ P.lit=on; L.intensity=on?L.userData.i0:0; const c=on?LIT:DIM; if(j<heads.length){ hd.setColorAt(j,c); hd.instanceColor.needsUpdate=true; } else { lant.setColorAt(j-heads.length,c); lant.instanceColor.needsUpdate=true; } }
         me.visible=up&&k>0&&on&&!L.userData.off; }); };
+    // THE TRAFFIC LIGHTS (owner, 18 Oct 2026, "go all": "a traffic light"; the kit's was taken out, so this one is blocks, the street's way): New
+    // York's at the main street's two junctions, the west street's mouth and the Avenue's, each on the outer corner by both crossings (bodega.js's
+    // rounded corner, just in from its curve, clear of the kerb ramps): a grey pole, a mast arm out over the main street with two heads back to
+    // back (one for each way along it), a head on the pole up the side street, and two WALK / DON'T WALK signals (the orange hand, the white
+    // walking man) across the two crossings. The lit lamp a bright unlit block, the others dark (no light of their own: LITE's lamps untouched);
+    // red, amber, green in turn, the main street and the side street by turns, the people's signals in step (the crossing beside the moving
+    // traffic WALK, its hand flashing before the change). Nothing drives the roads now (the city's vehicles are gone), so nothing stops for it.
+    // Cost: some 70 blocks of pole and housings in the street's block draw, about 110 lamp and glyph blocks in one instanced draw (some 1,300
+    // triangles in all), no light, no program (MeshBasic, the lanterns'); the colours rewritten only when a lamp changes
+    { const RD=BOD.road, CK=(RD.KR-.45)/Math.SQRT2, HS=0x2b3036, GR=0x5d6266, TL=[], SIG=[], sq=(f,cx,cy,cz,w,h,d)=>f[0]?[cx,cy,cz,d,h,w]:[cx,cy,cz,w,h,d];
+      const lampAt=(x,y,z,f,w,h,grp,k)=>{ SIG.push({p:sq(f,x+f[0]*.02*M,y,z+f[1]*.02*M,w,h,.05*M),grp,k}); };
+      // a three-lamp head facing f: housing, each lamp (red top) and its visor; grp the road it serves ('m' the main street, 's' the side street)
+      const head=(x,y,z,f,grp)=>{ blk(...sq(f,x,y,z,.36*M,1*M,.26*M),HS); blk(...sq(f,x-f[0]*.2*M,y,z-f[1]*.2*M,.5*M,1.16*M,.04*M),HS);   // (the housing, its backplate)
+        ['r','y','g'].forEach((k,i)=>{ const ly=y+(1-i)*.3*M, fx=x+f[0]*.13*M, fz=z+f[1]*.13*M; lampAt(fx,ly,fz,f,.2*M,.2*M,grp,k); blk(...sq(f,fx+f[0]*.06*M,ly+.12*M,fz+f[1]*.06*M,.24*M,.03*M,.14*M),HS); }); };
+      // a WALK / DON'T WALK head facing f: the hand on the left, the man on the right, each a 5 x 7 glyph of blocks (a row's run one block)
+      const HAND=['#.#.#','#.#.#','#####','#####','#####','.###.','.###.'], MAN=['..#..','.###.','#.#.#','..#..','.#.#.','.#..#','#...#'];
+      const ped=(x,y,z,f,grp)=>{ blk(...sq(f,x,y,z,.62*M,.42*M,.24*M),HS); const r=[f[1],-f[0]], px=.04*M, fx=x+f[0]*.12*M, fz=z+f[1]*.12*M;
+        for(const [G,k,o] of [[HAND,'h',-.15*M],[MAN,'w',.15*M]])G.forEach((row,j)=>{ for(let i=0;i<5;){ if(row[i]!=='#'){ i++; continue; } let n=0; while(row[i+n]==='#')n++;
+          const u=o+(i+n/2-2.5)*px, ly=y+(3-j)*px; lampAt(fx+r[0]*u,ly,fz+r[1]*u,f,n*px,px,grp,k); i+=n; } }); };
+      for(const c of [RD.CORN.find(c=>c.x===RING.wr0&&c.y===BOD.FAR),RD.CORN.find(c=>c.x===AVE.r1&&c.y===BOD.FAR)]){ if(!c)continue;
+        const x=BOD.XS(c.cx-c.sx*CK), z=BOD.ZS(c.cy-c.sy*CK), y=G(x,z), T=5.6*M, AL=3.4*M, sx=c.sx;   // (sx: which way the side street's crossing lies, away from the corner)
+        cyl(x,y+.25*M,z,.2*M,.5*M,0x3f4448); cyl(x,y+T/2,z,.09*M,T,GR); cyl(x,y+T+.06*M,z,.11*M,.12*M,0x3f4448);
+        blk(x,y+T-.3*M,z-AL/2,.12*M,.14*M,AL,GR); blk(x,y+T-.75*M,z-AL*.22,.06*M,.06*M,AL*.44,GR); blk(x,y+T-.5*M,z-.08*M,.08*M,.5*M,.08*M,GR);   // (the mast arm over the main street, its brace)
+        head(x+.2*M,y+T-.95*M,z-AL+.3*M,[1,0],'m'); head(x-.2*M,y+T-.95*M,z-AL+.3*M,[-1,0],'m');   // (back to back under the arm's end)
+        head(x,y+3.2*M,z+.22*M,[0,1],'s');   // (up the side street, on the pole)
+        ped(x,y+2.3*M,z-.2*M,[0,-1],'xm'); ped(x-sx*.2*M,y+2.3*M,z,[-sx,0],'xs');   // (across the main street; across the side street)
+        solid(x,z,.22*M,T); TL.push({x,z}); }
+      const ON={r:0xff3b2a,y:0xffb020,g:0x44f2a0,h:0xff7a1a,w:0xf2f2ea}, OFF={r:0x3a1410,y:0x3a2a10,g:0x0f3324,h:0x2e1a0c,w:0x202224};
+      const sm=new THREE.InstancedMesh(new THREE.BoxGeometry(1,1,1),new THREE.MeshBasicMaterial({color:0xffffff}),Math.max(1,SIG.length)), m4=new THREE.Matrix4(), q=new THREE.Quaternion(), cc=new THREE.Color();
+      SIG.forEach((s,i)=>{ const [x,y,z,a,b,d]=s.p; sm.setMatrixAt(i,m4.compose(new THREE.Vector3(x,y,z),q,new THREE.Vector3(a,b,d))); sm.setColorAt(i,cc.setHex(OFF[s.k])); }); scene.add(sm);
+      // the cycle, 44 s: the main street green 18, amber 3, all red 2; the side street green 16, amber 3, all red 2. The people beside the green WALK
+      // two thirds of it, then the hand flashes (half a second on, half off) till the change, else the hand
+      const CY=44, phase=t=>{ const m=t<18?'g':t<21?'y':'r', sd=t>=23&&t<39?'g':t>=39&&t<42?'y':'r', fl=Math.floor(t*2)&1, p=(a,b)=>t>=a&&t<a+(b-a)*2/3?'w':t>=a&&t<b&&fl?'h':t>=a&&t<b?'-':'h';
+        return {m,s:sd,xs:p(0,18),xm:p(23,39)}; };
+      let last=''; TLX.tick=()=>{ const t=(performance.now()/1000)%CY, P=phase(t), key=P.m+P.s+P.xs+P.xm; if(key===last)return; last=key;
+        SIG.forEach((s,i)=>{ sm.setColorAt(i,cc.setHex(P[s.grp]===s.k?ON[s.k]:OFF[s.k])); }); sm.instanceColor.needsUpdate=true; };
+      TLX.phase=phase; TLX.at=TL; TLX.mesh=sm; window.TLX=TLX; }
     pole.castShadow=true; scene.add(pole,lant);
     // THE COMMUNITY GARDEN'S FENCE (owner, 17 Oct 2026, mockup 1): a low wooden fence along the lot's front between the apartment house and the
     // bodega, posts every two tiles, two rails, its gate open between the cottage and the butterfly garden; solid but for the gate

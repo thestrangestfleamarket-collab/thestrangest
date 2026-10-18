@@ -812,6 +812,8 @@ published to its own artifact, **https://claude.ai/artifact/PnmQqhkusfewby35tf4z
 don't make new pages for new places; the old X2Bk8UjQKP8yfLdLtVVn3s can't be updated from this account). (Another session published to PnmQqhkusfewby35tf4zo5 for a while, a link the owner's main session can't open or update: 17 Oct 2026, version 47 back on X2Bk.) (17 Oct 2026, later: X2Bk could not be opened from this session's account, so the tomato and his friends and the opening view went to **PnmQqhkusfewby35tf4zo5**, version 15; try X2Bk first, then PnmQ.) A place's code is its own file in `src/`; `map-pre.js` says where each place stands (its offset, its level), `map-post.js` joins
 them (the ground, the levels, what cuts away). Its first places: the bodega, the pool room, the subway station and its stairs.
 
+**No more tsfm** (owner, 18 Oct 2026: "ok lets not use /tsfm anymore", then "merge 803, then stop"): [bralynnb/tsfm#803](https://github.com/bralynnb/tsfm/pull/803) was already merged (15:36, by him), so THE MARKET is live at thestrangestfleamarket.com/ as version 8.0.3. After that, nothing from here reads, copies to or opens pull requests on `bralynnb/tsfm`; the copy there stays as it is. (A website run from this repo itself, its own `thestrangest` worker, is a separate step.)
+
 **The live website, again** (owner, 18 Oct 2026: "lets publish the site to thestrangestfleamarket.com"; "i dont want to use /play or /market, just have the game at the root domain"): THE MARKET goes to the game's repo as `market/market.html` by pull request ([bralynnb/tsfm#803](https://github.com/bralynnb/tsfm/pull/803), version 8.0.3, his to merge: merging publishes), and its door (`worker/door.js`) now serves it at **thestrangestfleamarket.com/** itself to a checked login, the door (login or code) to anyone else; `/play` and `/market` send on to `/`. What follows is how it stood before.
 
 **Not updated any more** (owner, 17 Oct 2026: "stop updating tsfm im not working there anymore"): nothing goes to `bralynnb/tsfm` from here; the copy there stays as it was last merged (version 8.0.2, the reorganized map, at his word "go live" on 18 Oct 2026: [bralynnb/tsfm#802](https://github.com/bralynnb/tsfm/pull/802), his to merge; before it 8.0.1: at his word, "pull in all merges and go live", [bralynnb/tsfm#801](https://github.com/bralynnb/tsfm/pull/801); before it 8.0.0, [bralynnb/tsfm#800](https://github.com/bralynnb/tsfm/pull/800), 7.9.9, [bralynnb/tsfm#799](https://github.com/bralynnb/tsfm/pull/799), and 7.9.8, [bralynnb/tsfm#798](https://github.com/bralynnb/tsfm/pull/798)); ask before each update there. The artifact link is where THE MARKET is played. What follows is the old way, for the record.
@@ -1658,3 +1660,12 @@ login gets THE MARKET and it starts, and no file is handed out by itself; `.gith
 request. Still to do, the owner's: the deploy step (Cloudflare token), moving the domain from the `tsfm` worker to `thestrangest`.
 Next after this: the code as ordinary modules (option 3).
 
+**The site in files, like the old game** (owner, 18 Oct 2026: "the page is stlil showing all the source code and is not using any pulls
+from. js or anything else like the old game structure, its insanely large"; chose "split it like the old game"): THE MARKET was one 5.9 MB
+page (1.9 MB compressed: about 4 MB of baked models, 1.9 MB of code). The website now gets `dist/g/`: a 4 KB `market.html`, the rig and
+the game as their own `.js` files, and each model file as its own `.json`, all named by their contents so a browser keeps them until they
+change (an update re-downloads only what changed; the models rarely do). The worker (`worker/door.js`) gives `/g/` files only to a
+checked login (remembered 5 minutes), and nothing to anyone else. The code is still readable by whoever plays: anything a browser runs
+can be opened; minified as before. The game module stays one file (its source files run into each other, one shared scope).
+The artifact keeps the one-page `dist/market.html`. Next: models loaded when first needed (the metro, the creatures), which changes
+the game's code.

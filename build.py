@@ -1,4 +1,4 @@
-import base64, glob, json, os, re, subprocess, sys, time
+import base64, glob, hashlib, json, os, re, shutil, subprocess, sys, time
 sys.path.insert(0, 'tools')
 from yields import yields
 
@@ -13,21 +13,46 @@ page = ''.join(read(f) for f in src).replace('__BUILDV__', bv)
 i = page.index('<script type="module">') + len('<script type="module">')
 j = page.rindex('</script>')
 body, ny = yields(page[i:j])
-page = data(page[:i] + body + page[j:])
+raw, page = page, data(page[:i] + body + page[j:])
 os.makedirs('dist', exist_ok=True)
 open('dist/market.html', 'w').write(page)
+
+shutil.rmtree('dist/g', ignore_errors=True)
+os.makedirs('dist/g')
+k = raw[:i].rindex('<script>')
+used = sorted(set(re.findall(r'__DATA__\("([^"]+)"\)', body)))
+for f in used:
+    shutil.copy(f, 'dist/g/' + os.path.basename(f))
+pre = 'const __DP=Object.fromEntries([' + ','.join(json.dumps(os.path.basename(f)) for f in used) + '].map(n=>[n,fetch("/g/"+n).then(r=>{ if(!r.ok)throw new Error(n+" "+r.status); return r.json(); })]));\n'
+game = pre + re.sub(r'__DATA__\("([^"]+)"\)', lambda m: '(await __DP[' + json.dumps(os.path.basename(m.group(1))) + '])', body)
+open('dist/g/game.js', 'w').write(data(game))
+seg = raw[k + 8:i - len('<script type="module">')]
+open('dist/g/rig.js', 'w').write(data(seg[:seg.index('</script>')]))
+imap = seg[seg.index('</script>') + 9:]
+open('dist/g/market.html', 'w').write(data(raw[:k]) + '<script src="/g/__RIG__"></script>' + imap + '<script type="module" src="/g/__GAME__"></script>' + raw[j + 9:])
 
 code = '\n'.join([read('src/avatar/pre.js')] + [one(n) for n in ['walker3d', 'save', 'editor', 'animator', 'looks', 'avatar', 'avmove']] + [read('src/avatar/post.js')])
 open('dist/avatar.html', 'w').write(data(read('src/avatar/page.html').replace('__RIG__', one('rig')).replace('__CODE__', code)))
 open('dist/door.html', 'w').write(read('src/door/door.html'))
-pages = ['dist/market.html', 'dist/avatar.html', 'dist/door.html']
+pages = ['dist/market.html', 'dist/avatar.html', 'dist/door.html', 'dist/g/market.html', 'dist/g/rig.js', 'dist/g/game.js']
 
 if os.environ.get('MIN', '1') != '0':
     if not os.path.exists('node_modules/esbuild'):
         subprocess.run(['npm', 'install', '--no-audit', '--no-fund'], check=True)
     subprocess.run(['node', 'tools/minify.cjs'] + pages, check=True)
+def hashed(f):
+    n = f[:-len(os.path.splitext(f)[1])] + '.' + hashlib.sha256(open(f, 'rb').read()).hexdigest()[:10] + os.path.splitext(f)[1]
+    os.replace(f, n)
+    return os.path.basename(n)
+g = read('dist/g/game.js')
+for f in used:
+    g = g.replace(json.dumps(os.path.basename(f)), json.dumps(hashed('dist/g/' + os.path.basename(f))))
+open('dist/g/game.js', 'w').write(g)
+m = read('dist/g/market.html').replace('__RIG__', hashed('dist/g/rig.js')).replace('__GAME__', hashed('dist/g/game.js'))
+open('dist/g/market.html', 'w').write(m)
+pages = pages[:4]
 for f in pages:
     t = read(f)
     if t.count('<!--') != t.count('-->') or not t.startswith('<') or t.startswith('<!--'):
         sys.exit(f + ': broken page (an unclosed <!-- or no page at the top)')
-print('built', ', '.join(pages), len(src), 'files,', ny, 'breaths')
+print('built', ', '.join(pages), '+', len(os.listdir('dist/g')) - 1, 'files in dist/g,', len(src), 'files,', ny, 'breaths')

@@ -1,7 +1,7 @@
 # The Strangest Flea Market in 3D (three.js)
 
 The owner (Bralynn) is rebuilding The Strangest Flea Market in three.js, one piece at a time. This repo is `bralynnbell/thestrangest`.
-It is not the live game (`bralynnb/tsfm`); nothing goes there unless the owner asks. The game is THE MARKET, one page,
+It is not the live game (`bralynnb/tsfm`); since 18 Oct 2026 (after tsfm#803) nothing here reads it or goes there. The game is THE MARKET, one page,
 published at **https://claude.ai/artifact/PnmQqhkusfewby35tf4zo5** (always update that link, never make a new one).
 
 Every decision the owner has made, with his words and dates, is in `docs/HISTORY.md` (large: search it, don't read it whole).
@@ -25,7 +25,9 @@ Look there before changing how something looks or behaves, and add a short dated
 
 `python3 build.py`: joins `src/`, puts in the data and the build stamp (`__BUILDV__`), adds the loading breaths
 (`tools/yields.py`), minifies with esbuild (`tools/minify.cjs`; `npm install` once) and writes `dist/market.html` and
-`dist/avatar.html` and `dist/door.html`; it stops if a page has an unclosed `<!--`. `MIN=0 python3 build.py` keeps them readable for debugging.
+`dist/avatar.html` and `dist/door.html`; it stops if a page has an unclosed `<!--`. For the website it also writes `dist/g/`: THE MARKET
+split like the old game (`market.html` a 4 KB shell, `rig.<hash>.js`, `game.<hash>.js`, each `data/*.json` as `<name>.<hash>.json`
+fetched at start); the worker hands `dist/g/` only to a login, cached for good (a new build, new names). The artifact stays `dist/market.html`. `MIN=0 python3 build.py` keeps them readable for debugging.
 
 ## Publishing: one line of work
 

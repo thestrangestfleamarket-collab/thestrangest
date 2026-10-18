@@ -109,8 +109,8 @@ def heightmap(keys,x0,x1,z0,z1,step=.2,ymin=1.3):
             if not len(y): continue
             H[jz,ix]=int(round(min(254,max(0,(y.min()-1.4)/10.2*250))))
     return {'x0':x0,'z0':z0,'step':step,'nx':len(xs),'nz':len(zs),'h':b64(H)}
-HF=heightmap(['St_03'],9.0,28.6,54.5,79.2)
-hh=np.frombuffer(base64.b64decode(HF['h']),np.uint8).reshape(HF['nz'],HF['nx']); print('heightmap',hh.shape,'floor cells',(hh<255).sum())
-for r in hh[::6]: print(''.join('.' if v==255 else chr(48+min(9,v//26)) for v in r[::2]))
-OUT={'mats':MATS,'tex':TEX,'pieces':PIECES,'hf':HF}
+# (the station's hall, its flight and its tunnels are laid out by the page now, owner 18 Oct 2026: "simplify the subway station layout": the
+# kit's cross-sections, its exit, its gates and the exit's height map aren't needed, so they're left out of the data)
+DROP={'St','St_01','St_02','St_03','gate','gate_flap'}
+OUT={'mats':MATS,'tex':TEX,'pieces':{k:v for k,v in PIECES.items() if k not in DROP}}
 os.makedirs('data',exist_ok=True); s=json.dumps(OUT,separators=(',',':')); open('data/metro.json','w').write(s); print('data/metro.json',len(s))

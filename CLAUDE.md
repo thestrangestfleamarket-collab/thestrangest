@@ -1292,6 +1292,17 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   the picture, the view is put back on him (`UI.follow`, `ui.js`). **The stalls without tents** ("i dont want these stripped tenst ... rows and rows
   of diff mushrooms, standing between three tables in u shape ... show me mockups"): `mockups/market-stalls.html`,
   https://claude.ai/artifact/ET6bXTLDgHdTfyAsyG4MTn (A trays, B stepped tiers, C heaps and overflow); his pick to come.
+- **The Metro made plain** (owner, 18 Oct 2026: "simplify the subway station layout, stairs go down to the platform, one big room with tunnels,
+  etc. too many random walls and things going on"; `src/metro.js`): the kit's four cross-sections, its exit corridor, the gates, the staff closet
+  and the lower ceilings are gone; the station is laid out in the page from plain quads in the kit's own textures: **one hall** 84 m long (the
+  track down its south side, the platform 8 m deep along it, a tiled back wall and far wall, one ceiling), **one straight flight** of 24 tiled
+  steps from the railed opening on the lot (where it was) down through the back wall onto the platform's middle (its walls rising to the street
+  under the opening, a low parapet each side in the hall), and **the tunnels**: the track out of each end wall into the dark (60 m east, the car's
+  way out and back, 40 m west). The car stops opposite the stairs; one row of columns (none before the stairs), the ticket machine and map by the
+  stairs, the vending machine, four benches (seats), two bins, four pairs of posters, eight tube lights, a TO STREET sign each side. The rats, the
+  platform's spot, the way down for characters, the ride all moved with it (`METRO.CZ`, `METRO.plat`, `METRO.Z_S/Z_N`). The data lost the kit's
+  cross-sections, gates and the exit's height map (1.03 MB to 0.92 MB). Cost: the hall some 300 triangles where it was some 3,000; the screen
+  underground about the same as before (the car the bulk); 11 lamp records (was 22), no new program. `tests/metroshot.cjs <out>`.
 - **Standing is still** (owner, 18 Oct 2026, of the mushroom seller at his booth: "the grain shadow on the mushroom merchant is constantly glitchy
   looking beacause it tries to chnge too fast"; `npc-map.js`): a character made of parts (the mushroom seller, the Fox) had a standing "breath",
   a sway of a degree and a 1% stretch, that slid his own shadow's stepped edge across his robe every frame; standing he is now still (the walk's
@@ -1312,3 +1323,13 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   can span pages (its later meshes `k~1`, `k~2`), and only the first page's mesh was hooked up: the bodega's walls on the second page never cut
   away, its tubes showed from outside, part of its roof stayed. `BATCH.all(M,k)` gives every page's mesh of a kind; bodbuild.js, castle.js, store.js
   and ghostdojo.js use it for their cut walls, roofs, tubes and shadows.
+- **The bodega's goods, real** (owner, 18 Oct 2026: "did you take away the phsyics from the game? i want every item in the bodega to be real";
+  the old game had them as bodies, 47-physics-5-goods; `src/goodsphys.js`, `GPH`): all 208 goods on the shelves, in the coolers and on the counter
+  are rigid bodies in Rapier (physbody.js's build, fetched only once you're within 4 tiles of the bodega). Each starts asleep where its shelf put it;
+  the fixtures' boxes are solid to them (but a box a good stands inside, the coolers' cases), the floor and the walls (doorways open). You push
+  what you walk into (your body a capsule); a punch or a kick (J, K and their kin) sends what's before you flying (never through the shop's walls);
+  a double click on a good walks you up and takes it in your hand (the rig's carry), and holding one a double click anywhere throws it there.
+  Still for a third of a second, a good sleeps where it lies. A moving good rewrites only its own corners in the goods mesh (`BOD.goods`, its
+  vertex range, bodbuild.js). Cost: no triangles, light or program more; the world steps at 120 a second only near the bodega. Not done: the goods
+  back on their shelves (a reload puts them back), the Fox or the townspeople pushing them, the coolers' doors opening onto real goods.
+  `GOODSDBG()`, `GOODSHIT(k,r)`, `GOODSGRAB()`, `GOODSTHROW(dx,dz)` (tests).

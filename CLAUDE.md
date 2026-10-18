@@ -675,6 +675,24 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
   MOVES and the avatar editor have no DOWNLOAD (LOAD stays). Inside a room the rest is gone: the civic tower is a room (`rooms.js`), and what
   draws with its own shader and so isn't cut by the room's planes hides itself while you're in one (the sky dome already; now the force field,
   the river and its bank, `ring.js`). A doorway still cuts nothing until all of you is half a tile in (17 Oct's rule).
+- **The avatar editor, standalone, on the game's own Walker** (owner, 18 Oct 2026: "create standalone avatar editor have the character have default
+  poses yuo can push button to do, spread all limbs out, etc. allow to sculpt the character, rotate 360, tilt, export, give as many presets as
+  possible"; then, of a first try built from new shapes, "i want it based on our new walker and our game"): `python3 build.py` also makes
+  **`dist/avatar.html`**, a page of its own with the game's own Walker and the game's own editors: the rig lifted from the game page's head exactly
+  as built, `walker3d.js` with the game's own patch (`W3PATCH` in build.py, used for both pages), `save.js`, `editor.js`, `animator.js`, `looks.js`,
+  `avatar.js`, `avmove.js` word for word (the body types' table read from `playas.js`); what they take from the game page stood in for by
+  `src/avatar-pre.js`; `src/avatar-page.html` the shell; `src/avatar-post.js` the rest. The game's avatar editor is open for good at the right (its
+  DONE back to it). At the left: POSE (40 poses as keys of the rig's own, made whole by `RIG.mkMove`, eased between, kept on the floor by the rig's
+  FLOOR radii; SPREAD OUT for the character sheet; a stool to sit on; every part turned by hand, poses kept), MOVES (the rig's own moves on the
+  spot, once or round and round; the walk, the run), VIEW (12 places to look from, a turntable, the game's view or a lens, five pixel sizes, seven
+  backdrops, his shadows), LOOKS (MALE / FEMALE, the six body types, 22 outfits and 7 shadings made of the game's own looks, patterns and outline,
+  laid on with `AV.put`; what an outfit set beyond the clothes undone before the next), FILES (the game's own avatar file, his shape and his moves,
+  each loading in the game's own editor; a posed GLB and OBJ in metres, zipped; a picture; the sheet: front, side, back, spread out on black at full
+  pixels). Turn and tilt all the way round on the foot's sliders, a right drag, Q / E, T the turntable. `AV.whole` / `AV.put` exported from avatar.js
+  for it. Published at **https://claude.ai/artifact/YQSBj2G7oqgHQA2jXohrQi** (its own link, the `downloads` capability). Tests: `tests/avpage.cjs <out>
+  "POSE,move:wave,wear:CAMO,view:FRONT"`, `tests/avposes.cjs <out>` + `tests/avposes.py <out>` (every pose on one sheet), `tests/avpagefunc.cjs <out>`
+  (the game's brush through real drags, every outfit and shading, every file, a file back in, a reload). In the headless shell at phone width, the
+  panel's first paint lingers over the picture (the canvas's own frame is right: seen with `AVE.after`); not seen on a desktop width.
 - **The Hudson, real water** (owner, 18 Oct 2026, of his Deep Water mockup and his picture of it, "exactly liek this, clear, see through, blue", "cmopleteyl fluid dynamics"; `src/river.js`): the river south of the row is water you can see into and swim in: the bed 1.3 m at the walls down to 8 m, its caustics, sea grass, fish, buoys; the quay with its railing, ladders every 20 tiles and a pier on posts at every third; the force field past the far bank. Four ways, four looks to compare: FLAT (the sheet as it was), SWELL (waves on the graphics card, murk by alpha), FLUID (the default: a wave simulation 48 tiles round you, fed by the sea at its open sides, slowed over the shallows, sent back off the quay and round the posts), FULL (waves plus ripples); three waters (HARBOR, OPEN SEA, CLEAR COVE: the default); smooth or 24 steps. **A double click on the water brings the options up** (X closes them). The bed, the quay's wall and its things carry a little light of their own (the row's shade at midday leaves them black otherwise). Cost: some 12,000 triangles, one more scene pass while FLUID or FULL shows the river, no lamps. `tests/rivershot.cjs`.
 ## ONE LINE OF WORK: read before you publish (owner, 18 Oct 2026: "why is everything getting reverted that i fix!?!?")
 

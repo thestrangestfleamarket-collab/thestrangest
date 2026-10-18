@@ -13,7 +13,7 @@
 const SMOOTH=(()=>{ const q=new URLSearchParams(location.search).get('look'); if(q)return q!=='pixel'; let v=null; try{ v=SAVE.get('lighting'); }catch(e){} return v!=='pixel'; })();
 // THE DARKEST A FACE GOES (owner, 18 Oct 2026: "nothing should be black like this even at darkest give it 5-20%"): a face the sun and lamps miss still
 // gets this much of its own colour, so the bricks of a shaded side show; ?floor=N for a test
-const FLOOR=(()=>{ const q=+new URLSearchParams(location.search).get("floor"); return (q>=0&&q<1&&q?q:.16).toFixed(3); })();
+const FLOOR=(()=>{ const q=+new URLSearchParams(location.search).get("floor"); return (q>=0&&q<1&&q?q:.2).toFixed(3); })();
 // SOFT STEPS (owner, 18 Oct 2026, "do A-D": everything looked flat under smooth light): the smooth light keeps a few broad bands, each edge
 // eased over a short gradient (no grain, no hard line), so a face's turn from the light reads; ?soft=0 the smooth light alone, ?soft=N N bands
 const SOFT=(()=>{ const q=new URLSearchParams(location.search).get('soft'); return q!=null?Math.max(0,+q|0):7; })();

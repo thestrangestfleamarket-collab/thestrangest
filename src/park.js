@@ -18,7 +18,23 @@ grab('park',()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.ox=PO.x; PARK.o
   // (owner, 17 Oct 2026: "wider path"; then "make the path go straight through ... the circle in the middle of the park ... two paths going through
   // the entire park meeting in the middle"): two straight ways 7.2 tiles wide, one from the gate to the back, one from end to end, crossing at
   // the round (7 tiles across) in the park's middle; the gate moved along the wall to meet it
-  const path=(x,y)=>{ const [cx,cy,r]=P.round; return Math.abs(x-cx)<3.6||Math.abs(y-cy)<3.6||Math.hypot(x-cx,y-cy)<r; };
+  // (CURVED, owner 18 Oct 2026: "curves" (his pick: curved park paths): each way bends one way then the other, three tiles at most, straight
+  // again where it meets a gate and at the round, so the gates and crosswalks stay where they were; wobX: the north-south way's x off its line
+  // at a y, wobY: the east-west way's y off its line at an x)
+  const WA=3, wobX=y=>WA*Math.sin(2*Math.PI*(y-P.y0)/(P.y1-P.y0)), wobY=x=>WA*Math.sin(2*Math.PI*(x-P.x0)/(P.x1-P.x0)); P.wobX=wobX; P.wobY=wobY;
+  const path=(x,y)=>{ const [cx,cy,r]=P.round; return Math.abs(x-cx-wobX(y))<3.6||Math.abs(y-cy-wobY(x))<3.6||Math.hypot(x-cx,y-cy)<r; };
+  // THE HILLS (owner, 18 Oct 2026: "the grass is completely flat instead of hills"; his pick: gentle rolling hills in the park, the paths and
+  // buildings flat): a height over the lawn from two octaves of noise, mounds up to some 1.6 tiles (1.3 m), eased to nothing within six tiles of a way,
+  // the round, the walls, the gate's front (the stalls, the booth, the playground), the castle, the shrine, the pond, the campfire and the
+  // monument; P.hill(x,y) in the park's tiles gives world units: the ground under you and every character (bodega.js's ground), what stands on
+  // the lawn lifted onto it (mesh()), the lawn's own hills mesh (pond.js)
+  const HK=[[P.round[0]+12.5-6,P.round[1]+11.5-6,P.round[0]+12.5+6,P.round[1]+11.5+6],[CASTLE.b[0]-PO.x-3,CASTLE.b[2]-PO.y-3,CASTLE.b[1]-PO.x+3,CASTLE.b[3]-PO.y+3],(o=>[o[0]-3,o[1]-3,o[0]+9,o[1]+19])(STORE.shrineO||[69,-45.9+NORTHY]),[RX(108)-5,RY(-54.5)-5,RX(108)+5,RY(-54.5)+5],[RX(90)-3,RY(-41.5)-3,RX(102)+3,RY(-41.5)+3]];
+  const ss=(a,b,v)=>{ const t=Math.max(0,Math.min(1,(v-a)/(b-a))); return t*t*(3-2*t); }, cvn=BOD.g.cvNoise;
+  P.hill=(x,y)=>{ if(x<P.x0||x>P.x1||y<P.y0||y>P.y1)return 0; const [cx,cy,r]=P.round;
+    let d=Math.min(Math.abs(x-cx-wobX(y))-3.6,Math.abs(y-cy-wobY(x))-3.6,Math.hypot(x-cx,y-cy)-r,x-P.x0,P.x1-x,y-P.y0-9,P.y1-y); if(d<=0)return 0;
+    for(const b of HK){ const e=Math.max(b[0]-x,x-b[2],b[1]-y,y-b[3]); if(e<d)d=e; if(d<=0)return 0; }
+    const n=cvn(x/12,y/12,501)*.7+cvn(x/5,y/5,503)*.3; return 1.6*TILE*ss(0,6,d)*Math.max(0,(n-.33)/.67); };
+  window.HILL=(wx,wz)=>{ const g=window.PARK; return g&&g.hill?g.hill(wx/TILE+72-(g.ox||0),wz/TILE-77-(g.oy||0)):0; };   /* (world units in and out; 72, 77: the street's tiles from the world's, bodega.js's OX, OY) */
   // the pavers: the park's hexagons (a third of a tile across), each its own grey, a dark seam between, worn here and there
   const hexCol=(x,y)=>{ const s=1/3, w=s*Math.sqrt(3), row=Math.floor(y/(s*1.5)), ox=(row&1)?w/2:0, col=Math.floor((x-ox)/w), cx=(col+.5)*w+ox, cy=row*s*1.5+s;
     const dx=Math.abs(x-cx), dy=Math.abs(y-cy), e=Math.max(dx/w*2,(dy+dx/Math.sqrt(3))/s), seam=e>.86, n=hash(col,row,71), g=grain(x,y,73,2), hp=hash(Math.floor(x*24),Math.floor(y*24),77);
@@ -33,7 +49,7 @@ grab('park',()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.ox=PO.x; PARK.o
   // (ONLY THE WAYS PAINTED, 18 Oct 2026: the park twice as wide would have made its lawn's picture some 10 million pixels, past the atlas's 8192
   // rows; its lawn is the land's sheet under it instead, the same painter (lawnCol, map-post.js), so only the two ways and the round are painted,
   // the lawn between them left open, so the pavers' edge lies straight on the land's grass and no seam shows between two paintings)
-  { const [cx,cy,r]=P.round, w=4, R=r+1, wayCol=(x,y)=>path(x,y)?groundCol(x,y):null, strips=(x0,y0,x1,y1)=>{ for(let x=x0;x<x1;x+=29)flat(x,y0,Math.min(x1,x+29),y1,0,wayCol); };
+  { const [cx,cy,r]=P.round, w=4+WA, R=r+1, wayCol=(x,y)=>path(x,y)?groundCol(x,y):null, strips=(x0,y0,x1,y1)=>{ for(let x=x0;x<x1;x+=29)flat(x,y0,Math.min(x1,x+29),y1,0,wayCol); };
     strips(P.x0,cy-w,cx-R,cy+w); strips(cx+R,cy-w,P.x1,cy+w); strips(cx-R,cy-R,cx+R,cy+R); strips(cx-w,P.y0+.5,cx+w,cy-R); strips(cx-w,cy+R,cx+w,P.y1); }
   // ---- THE WALL: the park's grey stone in courses, its cope; the gate's posts, taller, capped
   // (its depth, owner 18 Oct 2026, "the pillar looks completely flat and lifeless" beside the pavement's grout and weeds: painted in, as the
@@ -88,7 +104,7 @@ grab('park',()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.ox=PO.x; PARK.o
       .replace('#include <lights_fragment_begin>','if(vTr.z>.5){ TW=.45; TSH=.7; }\n#include <lights_fragment_begin>')
       .replace('#include <lights_fragment_end>','#include <lights_fragment_end>\n if(vTr.z>.5){ float ao=mix(.42,1.,smoothstep(0.,1.,.62*vTr.x+.38*vTr.y)); reflectedLight.directDiffuse*=mix(1.,ao,.6); reflectedLight.indirectDiffuse*=ao; }');   // (darker underneath and inside: most on the open air's light, some on the sun's)
     sh.fragmentShader=f; };
-  const F=Object.assign({},FOREST,PROPS), mesh=(list,leafy,solid=true,sway=false)=>{ const P3=[], C3=[], SW=[], TR=[], LF=[], RN=[], c=new THREE.Color(); for(const [key,x,y,m,turn,lift] of list){ const p0=P3.length, ph=hash(Math.round(x*7),Math.round(y*7),131)*6.28; const D=F[key], p=f32(D.p), col=b8(D.c), k=b8(D.k), s=m/.84*TILE, ca=Math.cos(turn||0), sa=Math.sin(turn||0), ox=X(x), oz=Z(y), oy=(lift||0)/.84*TILE;
+  const F=Object.assign({},FOREST,PROPS), mesh=(list,leafy,solid=true,sway=false)=>{ const P3=[], C3=[], SW=[], TR=[], LF=[], RN=[], c=new THREE.Color(); for(const [key,x,y,m,turn,lift] of list){ const p0=P3.length, ph=hash(Math.round(x*7),Math.round(y*7),131)*6.28; const D=F[key], p=f32(D.p), col=b8(D.c), k=b8(D.k), s=m/.84*TILE, ca=Math.cos(turn||0), sa=Math.sin(turn||0), ox=X(x), oz=Z(y), oy=(lift||0)/.84*TILE+P.hill(x,y);   /* (on its hill) */
       for(let i=0;i<p.length;i+=3){ const px=p[i]*s, py=p[i+1]*s+oy, pz=p[i+2]*s; P3.push(ox+px*ca-pz*sa,py,oz+px*sa+pz*ca); if(sway)SW.push(Math.max(0,p[i+1])*s,ph); if(TL)LF.push(col[i+1]>col[i]*1.08&&col[i+1]>col[i+2]*1.08?1:0); const t=Math.floor(i/9), sh=k[t]===0?.86+.28*hash(t,x*7,y*3):k[t]===2?.9+.2*hash(t,x*5,y*9):.92+.16*hash(t,x*3,y*5);
         c.setRGB(col[i]/255*sh,col[i+1]/255*sh,col[i+2]/255*sh,THREE.SRGBColorSpace); C3.push(c.r,c.g,c.b); }
       // (treelook: each vertex's place in its leaves, the crown's height 0 at its foot to 1 at its top, out from its middle 0 to 1 at its edge, leaf or not)
@@ -120,7 +136,7 @@ grab('park',()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.ox=PO.x; PARK.o
   const TREEY=12+4.6;
   const TREES=(()=>{ const out=[], KEEP=[[P.round[0]+12.5-6,P.round[1]+11.5-6,P.round[0]+12.5+6,P.round[1]+11.5+6],   /* (the pond, pond.js: kept clear) */[CASTLE.b[0]-3,CASTLE.b[2]-3,CASTLE.b[1]+3,CASTLE.b[3]+3],(o=>[o[0]-3,o[1]-3,o[0]+9,o[1]+19])(STORE.shrineO||[69,-45.9+NORTHY]),[P.gate[0]-16,P.y0,P.gate[1]+8,P.y0+12],[RX(108)-5,RY(-54.5)-5,RX(108)+5,RY(-54.5)+5],[RX(90)-3,RY(-41.5)-3,RX(102)+3,RY(-41.5)+3]];
     for(let i=0;i<600&&out.length<22;i++){ const x=P.x0+4+hash(i,41,7)*(P.x1-P.x0-8), y=P.y0+TREEY+hash(i,43,9)*(P.y1-P.y0-TREEY-4), m=6+hash(i,47,11)*5, r=m*.42;
-      if(Math.abs(x-P.round[0])<3.6+r||Math.abs(y-P.round[1])<3.6+r)continue; if(KEEP.some(b=>x>b[0]-r&&x<b[2]+r&&y>b[1]-r&&y<b[3]+r))continue; if(out.some(o=>Math.hypot(o[1]-x,o[2]-y)<9))continue;
+      if(Math.abs(x-P.round[0]-wobX(y))<3.6+r||Math.abs(y-P.round[1]-wobY(x))<3.6+r)continue; if(KEEP.some(b=>x>b[0]-r&&x<b[2]+r&&y>b[1]-r&&y<b[3]+r))continue; if(out.some(o=>Math.hypot(o[1]-x,o[2]-y)<9))continue;
       out.push(['OakTree'+(1+Math.floor(hash(i,53,13)*3)),+x.toFixed(1),+y.toFixed(1),+m.toFixed(1)]); } return out; })();
   PARK.oaks=TREES.map(([k,x,y,m])=>[X(x),Z(y),m]); window.PARKDBG=()=>({oaks:PARK.oaks,TL,progs:renderer.info.programs.length});   // (a test's: where the oaks are, the look, how many shader programs)   // (where the oaks stand, world units: their falling leaves, lookfx.js)
   PARK.rocks=mesh([['BigRock3',87.5,-37,2.6,1.8],['BigRock5',126,-41,2.4,.2],['Rock_12',55.5,-41,1,1],['Rock1',111,-41,.6,2],['BigRock1',66,-35,2,1.1]].map(([k,x,y,...r])=>[k,RX(x),RY(y),...r]),false);
@@ -154,7 +170,7 @@ grab('park',()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.ox=PO.x; PARK.o
   // ---- THE LAMPS: the park's, a pole and a lantern, along the path; each a warm light at night (the clock's)
   // (owner, 17 Oct 2026: "lights taller and smaller in park"): a thin pole 7 tiles high and a small lantern, along the edges of the way in, round
   // the round and up the way on
-  const LP=[]; { const [cx,cy]=P.round; for(let y=P.y0+4;y<P.y1-2;y+=13)if(Math.abs(y-cy)>9)LP.push([cx+(LP.length%2?4.2:-4.2),y]); for(let x=P.x0+6;x<P.x1-4;x+=16)if(Math.abs(x-cx)>9)LP.push([x,cy+(LP.length%2?4.2:-4.2)]); }   // (along both ways' edges, every 13 and 16 tiles, side to side)
+  const LP=[]; { const [cx,cy]=P.round; for(let y=P.y0+4;y<P.y1-2;y+=13)if(Math.abs(y-cy)>9)LP.push([cx+wobX(y)+(LP.length%2?4.2:-4.2),y]); for(let x=P.x0+6;x<P.x1-4;x+=16)if(Math.abs(x-cx)>9)LP.push([x,cy+wobY(x)+(LP.length%2?4.2:-4.2)]); }   // (along both ways' edges, every 13 and 16 tiles, side to side)
   for(const [x,y] of LP){ const h0=170, h1=179, w=.17; BATCH.tag=OBJ('park','park lamp'); block(x-.07,y-.07,x+.07,y+.07,0,h0,31,()=>[40,40,44]); block(x-w-.04,y-w-.04,x+w+.04,y+w+.04,h1,h1+3,35,()=>[48,46,44]);
     for(const [a,b,c,d] of [[[X(x-w),Y(h0),Z(y+w)],[X(x+w),Y(h0),Z(y+w)],[X(x+w),Y(h1),Z(y+w)],[X(x-w),Y(h1),Z(y+w)]],[[X(x+w),Y(h0),Z(y-w)],[X(x-w),Y(h0),Z(y-w)],[X(x-w),Y(h1),Z(y-w)],[X(x+w),Y(h1),Z(y-w)]],
         [[X(x-w),Y(h0),Z(y-w)],[X(x-w),Y(h0),Z(y+w)],[X(x-w),Y(h1),Z(y+w)],[X(x-w),Y(h1),Z(y-w)]],[[X(x+w),Y(h0),Z(y+w)],[X(x+w),Y(h0),Z(y-w)],[X(x+w),Y(h1),Z(y-w)],[X(x+w),Y(h1),Z(y+w)]]])

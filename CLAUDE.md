@@ -1280,3 +1280,7 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   the picture, the view is put back on him (`UI.follow`, `ui.js`). **The stalls without tents** ("i dont want these stripped tenst ... rows and rows
   of diff mushrooms, standing between three tables in u shape ... show me mockups"): `mockups/market-stalls.html`,
   https://claude.ai/artifact/ET6bXTLDgHdTfyAsyG4MTn (A trays, B stepped tiers, C heaps and overflow); his pick to come.
+- **Standing is still** (owner, 18 Oct 2026, of the mushroom seller at his booth: "the grain shadow on the mushroom merchant is constantly glitchy
+  looking beacause it tries to chnge too fast"; `npc-map.js`): a character made of parts (the mushroom seller, the Fox) had a standing "breath",
+  a sway of a degree and a 1% stretch, that slid his own shadow's stepped edge across his robe every frame; standing he is now still (the walk's
+  rock and bob as before). Measured close on him at his booth (`tests/mushstill.cjs <out>`): 8,580 of his pixels changed a quarter second to 0.

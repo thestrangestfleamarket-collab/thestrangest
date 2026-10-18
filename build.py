@@ -72,7 +72,7 @@ MAPST=('const TEXTURES='+rd('data/textures.json')+';\nconst KITD='+rd('data/kit.
   +wrap('bodega',bod+'\n'+bb+'\n'+rd('src/apts.js')+'\n'+rd('src/ghostdojo.js')+'\n'+rd('src/butterflies.js')+'\n'+rd('src/store.js')+'\n'+rd('src/club.js'),"MODS.bodega={BOUND,ground:groundY};","()=>BODB.inside()")
   +wrap('pool',"if(!AWAY.has('apartments')){\n"+pool+"\nWATER.build();\n} else { const P=POOLR, OX=(P.x0+P.x1)/2, OY=(P.y0+P.y1)/2; P.X=x=>(x-OX)*BLDK*TILE+PDX; P.Z=y=>((y-OY)*BLDK+(P.y1-OY)*(1-BLDK))*TILE+PDZ; P.Y=z=>z*ZU*BLDK; P.ROOMS=[]; P.inBasin=()=>null; P.bedAt=()=>0; BOUND={x0:1e9,x1:-1e9,z0:1e9,z1:-1e9}; }","MODS.pool={BOUND,cut:cutWalls.slice(c0),inside:(x,z)=>x>POOLR.X(POOLR.x0)&&x<POOLR.X(POOLR.x1)&&z>POOLR.Z(POOLR.y0)&&z<POOLR.Z(POOLR.y1)};","()=>MODS.pool.inside(pos.x,pos.z)")
   +"const FOREST="+rd('data/forest.json')+";\nconst PROPS="+rd('data/props.json')+";\n"+rd('src/cave.js')+'\n'+rd('src/park.js')+'\n'+rd('src/castle.js')+'\n'+rd('src/tower.js')+'\n'   # (CENTRAL PARK'S ENTRANCE, owner 17 Oct 2026: park.js, data/forest.json; THE CASTLE and its dungeon in it: castle.js)
-  +rd('src/map-post.js')+'\n'+rd('src/ring.js')+'\n'+rd('src/river.js')+'\n'+rd('src/sub.js')+'\n'+rd('src/kit.js')+'\n'+rd('src/dress.js')+'\n'+rd('src/grid.js'))   # (the kits placed, the pigeons: after the map)
+  +rd('src/map-post.js')+'\n'+rd('src/ring.js')+'\n'+rd('src/river.js')+'\n'+rd('src/sub.js')+'\n'+rd('src/kit.js')+'\n'+rd('src/dress.js')+'\n'+rd('src/block.js')+'\n'+rd('src/grid.js'))   # (the kits placed, the pigeons: after the map)
 f=open('src/flea-market-3d.html').read()  # (carries the simpler Walker)
 st=MAPST
 i=f.index('<script type="module">'); head,mod=f[:i],f[i:]

@@ -1564,3 +1564,24 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   skyline hidden there). Cost: the view inside some 59,000 triangles in all; 8 lamp records; one program (the floor's). **No cardboard cutouts** (owner, 18 Oct 2026: "remove the cardboard cutouts from nightclub and game, forget that part"): GoldenEye's flat crowd was built and taken out; don't bring it back. `CLUBDBG()`,
   `CLUBGO(dx,dy)`, `CLUBLOOK(dx,dy,zoom,yaw)`, `CLUB.dropIt()`. **Found on the way**: with the outline on, every frame threw (the shape editor's
   selection undefined: `OUTL.hidden`), fixed in walker3d.js; `tests/datacheck.cjs` still fails the newsstand's `thanks` pool and the save's version, as on main.
+- **The block and its neon alley** (owner, 18 Oct 2026, his photo of a Korean alley at dusk, neon and light-box signs: "build an alley in game that
+  looks like this"; then "a row of buildings on main facing central park, (apartments, bodega, dojo) then behind them is an alley that looks liek
+  this. the other side facing the hudson is anotehr row of storefronts. use small filler empty buildings for now. total of 6 buildig on each side
+  (leave ones there now) add etra room and move hudson further away"; of the mockups https://claude.ai/artifact/KW2So2YsHrCFarhBDRHNxX
+  (`mockups/neon-alley.html`) and https://claude.ai/artifact/KFFGpr45Vu5XZFyZdfWD6M (`mockups/main-block.html`), "U call": B, the alley 7 wide,
+  Hangul; `BLOCK` in `map-pre.js`, `src/block.js`): **the main row**: the apartment house, the bodega and Ghost Street as they were, three empty
+  fillers (x 87-101, 103.5-117.5 between the bodega and Ghost Street; 145.5-159.5 east of it), brick of `BRICKS.face` (two swatches painted once,
+  tiled, a tint each), roll-down shutters and a blank sign band, a few lit windows. **The alley** right behind the row (y -99.4 to -92.4, bodega.js's
+  'alley' ground). **The back row**: six empty storefronts (x 48 to 159.5, y -111.4 to -99.4): to the Hudson a shutter and an awning each, to the
+  alley a second shopfront (glass between brick piers, a lit counter) under a lit sign (국수, 만두, 찻집, 라멘, 고기, 빵집). **The promenade** (y -119
+  to -111.4, 'prom' ground) and **the Hudson's bank moved 15 tiles out** (`RING.river` from `BLOCK.river`; the force field, the mist's box, the
+  fishing stand and the piers follow it). **The alley's look, after the photo**: the fish restaurant's light box (바다의 파도) with its canopy of
+  bent tube lights and menu boards, the squid house's white neon (오징어집) and its REST plate, the pink neon squid hung out on a bracket, blades over
+  the lane (도매액세서리, 안과안경점, 분식, 노래방, PC방, 바), the chicken bar's tall sign on its post (치킨호프맥주, the mascot top and bottom), the
+  fish-bun neon (붕어빵) low on the wall, AC units, crates, a delivery scooter, wires sagging across; neon as cut tubes with a dark backing and a
+  halo in three hard steps; the Hangul in Black Han Sans and Do Hyeon from Google Fonts, fetched as the block is built (painted first in what the
+  page has, again when they come). **Seen from above**: in the isometric and map views, in the alley or on the promenade, everything on the
+  camera's side is cut at your knee as a room's near side is (`BLK.band`, `rooms.js`), and the main row's own walls (cutWalls) to their foot.
+  Cost: some 1,500 triangles (nine boxes, 24 signs, two instanced draws of 62 boxes, one line draw), 9 lamp records (LITE's eight nearest), no
+  shadow lamp, no new program. Fillers are solid boxes (no way in). `BLOCKDBG()`. Not yet: insides, the back row's names on its Hudson side,
+  characters walking the alley and the promenade (their lanes are the street and the park).

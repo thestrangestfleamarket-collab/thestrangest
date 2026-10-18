@@ -759,9 +759,9 @@ function act(st,key){ const W=st.water;
   else if(name=='jump'&&!a) st.next='jump'; }   // (Space in a kick, a sweep or a crouch: the jump as it ends; it was dropped)
 function release(st,key){ if(key=='carry'){ if(st.up&&st.up.name=='carry') st.up.held=false; return; } if(st.move&&KEYMOVE[key]==st.move.name) st.move.held=false; if(st.up&&KEYMOVE[key]==st.up.name) st.up.held=false; }
 function tick(st,h){ st.run+=(st.runTarget-st.run)*Math.min(1,h*RIGT.blend); const g=gaitOf(st.run);
-  if(st.up){ const u=st.up,d=u.def; if(!(d.hold&&u.held&&u.t+h>=d.hold)) u.t+=h*RIGT.moves; else u.t=d.hold; if(st.upNext&&d.window&&u.t>=d.window[0]*RIGT.combo) beginUp(st,st.upNext); else if(u.t>=d.dur){ st.up=null; if(st.upNext) beginUp(st,st.upNext); } }
+  if(st.up){ const u=st.up,d=u.def; if(!(d.hold&&u.held&&u.t+h>=d.hold)) u.t+=h*RIGT.moves*(st.anim||1); else u.t=d.hold; if(st.upNext&&d.window&&u.t>=d.window[0]*RIGT.combo) beginUp(st,st.upNext); else if(u.t>=d.dur){ st.up=null; if(st.upNext) beginUp(st,st.upNext); } }
   if(st.move){ const mv=st.move,d=mv.def;
-    if(!(d.hold&&mv.held&&mv.t+h>=d.hold)) mv.t+=d.air?h:h*RIGT.moves; else mv.t=d.hold;   // (moves: a punch's or a kick's speed, the Movement tab's; a jump keeps gravity's time)
+    if(!(d.hold&&mv.held&&mv.t+h>=d.hold)) mv.t+=d.air?h:h*RIGT.moves*(st.anim||1); else mv.t=d.hold;   // (moves: a punch's or a kick's speed, the Movement tab's; a jump keeps gravity's time)
     if(st.next&&d.window&&mv.t>=d.window[0]*RIGT.combo) begin(st,st.next);
     else if(d.air&&st.water&&(d.entry||st.water.level!=null&&st.water.floor<st.water.level-30)&&mv.t>=d.air.t0+d.air.T){ // in: the dive becomes swimming, carrying its speed down; a splash for the water (any jump whose flight ends over deep water goes in the same way, as it lands: owner, 15 Oct 2026, "i freeze on top for a second, then i fall in (delayed)")
       const M=lift(moveAt(st),mv.floor),W=st.water,vy=d.air.v0-d.air.g*d.air.T; st.out={pose:JSON.parse(JSON.stringify(M)),t:0,T:0.9};
@@ -773,8 +773,8 @@ function tick(st,h){ st.run+=(st.runTarget-st.run)*Math.min(1,h*RIGT.blend); con
   st.w+=(st.target-st.w)*Math.min(1,h*RIGT.start); if(Math.abs(st.w-st.target)<1e-3||st.snap&&!st.move) st.w=st.target;   // (snap: at once, as the old Walker stopped and went: you and the other players, 47-you-jointed, 48-online)   // (the walk's own weight goes on through a move: let go and he'll have stopped when it ends)
   if(st.water) st.water.load=st.move&&st.move.def.load&&st.move.t<st.move.def.air.t0?keyAt(st.move.def.load,st.move.t):0;   // (how hard he's pressing the board)
   waterTick(st,h);
-  const walked=st.move?0:g.speed*st.w*h*Math.max(.05,RIGT.slip0+(RIGT.slip1-RIGT.slip0)*st.run); st.wd=(st.wd||0)+walked;   // (wd: how far he's walked since he set off, for the old Walker's frame: pose)
-  st.ph=(st.ph+h/g.cycle)%1; st.dist+=walked+(st.move&&st.move.def.air&&st.move.t<st.move.def.air.t0?(st.move.def.entry?0:st.mvw||0):st.mv)*h;   // (a jump's crouch: only the speed he came with, its own push from the take-off; a dive's run-up presses the board where it is)
+  const sk=(st.wk||1)+((st.rk||1)-(st.wk||1))*st.run,   /* (st.wk, st.rk: how fast he walks and runs, times his own; st.anim: how fast his limbs move: yours from the avatar editor's SPEED, src/avmove.js) */ walked=st.move?0:g.speed*st.w*h*sk*Math.max(.05,RIGT.slip0+(RIGT.slip1-RIGT.slip0)*st.run); st.wd=(st.wd||0)+walked;   // (wd: how far he's walked since he set off, for the old Walker's frame: pose)
+  st.ph=(st.ph+h*sk*(st.anim||1)/g.cycle)%1;   /* (his legs as quick as his going, times the animation's speed) */ st.dist+=walked+(st.move&&st.move.def.air&&st.move.t<st.move.def.air.t0?(st.move.def.entry?0:st.mvw||0):st.mv)*h;   // (a jump's crouch: only the speed he came with, its own push from the take-off; a dive's run-up presses the board where it is)
   const P=rawPose(st); st.last=P; const B=build(P,null),H=st.head;
   if(H.a0==null){ H.a0=H.a1=B.J.head.y; }
   const acc=(B.J.head.y-2*H.a1+H.a0)/(h*h); H.a0=H.a1; H.a1=B.J.head.y;   // how hard the head's anchor speeds up or slows

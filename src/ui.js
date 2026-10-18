@@ -78,11 +78,12 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
     tv.subVectors(disp,piv); const t0=tv.clone(); tv.applyQuaternion(q0.invert()).applyQuaternion(q1); viewV().add(tv.sub(t0)); disp.add(tv);
     if(!UI.freeCam){ tv.set(0,0,1).applyQuaternion(q1); UI.off.addScaledVector(tv,-UI.off.dot(tv)); } };   // (and kept level with him along the line of sight, where it changes nothing seen)   // (what he looks at swings round the pivot as the view turns)
   // HOW FAR OUT (owner, 17 Oct 2026: "lets limit the zoom out to this far", his picture some thirty tiles across): no further out than MAXW across
-  UI.MAXW=34*TILE;
+  UI.MAXW=19*TILE; UI.NEARH=6.6/.84*TILE; window.CAMW=()=>(cam.right-cam.left)/TILE;   // (CAMW: a test's, the tiles across now)   // (NEARH: the tallest thing on the street kept whole at the screen's foot in isometric, a street light's pole and wires, 6.6 m: build.py's near plane)
+  // (owner, 18 Oct 2026, his third picture: "make this 3rd pic the max zoom out level": the mailbox some 90 screen pixels wide across his 1906: about 19 tiles across; was 34)
   let zAt=null; UI.wheelAt=e=>{ if(UI.persp){ ppuTo=ppu; if(UI.view==='third'||UI.view==='follow')UI.dist=Math.max(1.2*TILE,Math.min(22*TILE,UI.dist*Math.pow(1.0015,e.deltaY))); return; }   // (third person: the wheel brings the camera in and out; first: nothing)
-    if(e.deltaY>0&&cam.right-cam.left>=UI.MAXW){ ppuTo=Math.max(ppuTo,ppu); return; } const r=cv.getBoundingClientRect(); zAt={x:e.clientX-r.left-r.width/2,y:r.height/2-(e.clientY-r.top)}; };
+    if(e.deltaY>0){ const w=cam.right-cam.left; ppuTo=Math.max(ppuTo,ppu*w/UI.MAXW); if(w>=UI.MAXW)return; } const r=cv.getBoundingClientRect(); zAt={x:e.clientX-r.left-r.width/2,y:r.height/2-(e.clientY-r.top)}; };   // (the wheel never aims past MAXW across, however fast it spins: it ran on past it while the zoom eased)
   UI.zk=()=>(cam.right-cam.left)/cv.getBoundingClientRect().width;
-  UI.zoomStep=k0=>{ if(cam.right-cam.left>UI.MAXW&&ppuTo<ppu)ppuTo=ppu;   // (the menu's zoom held to it too)
+  UI.zoomStep=k0=>{ const w0=cam.right-cam.left; if(w0>UI.MAXW*1.002)ppuTo=Math.max(ppuTo,ppu*w0/UI.MAXW);   // (the menu's zoom held to it too)
     if(!zAt)return; const k1=UI.zk(); if(Math.abs(k1-k0)<1e-9){ if(Math.abs(ppu/ppuTo-1)<1e-3)zAt=null; return; } const R0=tv.setFromMatrixColumn(cam.matrixWorld,0).clone(), U0=new THREE.Vector3().setFromMatrixColumn(cam.matrixWorld,1);
     viewV().addScaledVector(R0,zAt.x*(k0-k1)).addScaledVector(U0,zAt.y*(k0-k1)); };
   UI.pan=(dx,dy)=>{ const r=cv.getBoundingClientRect(), k=(cam.right-cam.left)/r.width, R0=new THREE.Vector3().setFromMatrixColumn(cam.matrixWorld,0), U0=new THREE.Vector3().setFromMatrixColumn(cam.matrixWorld,1);
@@ -99,7 +100,7 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
   // backs over him): out of doors the one facing the shop fronts, in a room his dojo picture's (the half turn from it); straight onto it as you go
   // in or out (ROOMS.cur, rooms.js), as Q / E jump
   UI.isoTo=()=>{ let r=null; try{ r=ROOMS.cur; }catch(e){}   /* (before rooms.js is made, at the start: out of doors) */ const t=r?Math.PI*3/4:-Math.PI/4; yawTo+=((((t-yawTo)%(2*Math.PI))+3*Math.PI)%(2*Math.PI))-Math.PI; yaw=yawTo; };
-  let isoIn=null; UI.isoPlace=()=>{ const i=!!ROOMS.cur; if(i!==isoIn){ if(isoIn!==null&&UI.view==='iso')UI.isoTo(); isoIn=i; } };
+  UI.isoPlace=()=>{};   // (going in or out of a room no longer turns the view: owner, 18 Oct 2026, "when walking into a room dont auto switch view"; the near side is cut instead, rooms.js)
   UI.setView=v=>{ UI.view=v; UI.persp=v==='third'||v==='first'||v==='follow'; if(UI.freeCam&&UI.persp)setFree(false);
     if(v==='iso'){ UI.isoTo(); pitchTo=Math.PI/6; ppuTo=PPU*1.5; UI.off.set(0,0,0); zAt=null; }   // (owner, 17 Oct 2026, his picture of the dojo: "i want the game to always start you this distance and at this isometric angle": 1.5 times in (0.7 of the 2.2 before); Q / E turn it from there)
     if(v==='follow'){ UI.dist=4*TILE; pitchTo=.2; }   // (owner, 17 Oct 2026, his picture: "when you switch to over shoulder view it should always be at this zoom and angle (you can change once you switch to it)")

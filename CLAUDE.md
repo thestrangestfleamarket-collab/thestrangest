@@ -1353,3 +1353,34 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   **The stalls either side of the gate**: the mushroom seller's west of it, the tomato's east; **both sellers 15% bigger** (2.53 m, 1.84 m); the
   stalls their size. Cost: the iron instanced in 16-tile pieces (some 57,000 triangles round the whole park, a few thousand in sight), the
   lanterns' glass one unlit draw; no light, no new program. `tests/gateshot.cjs <out>`.
+- **The mist on the town's outskirts** (owner, 18 Oct 2026, his shot down the street gone teal in straight bands a few tiles off: "the haze should
+  not be straight lines and should be on the outskirts of town", "game is unplayable"; then "it should get darker further away. more clouds and life
+  in distance"; `map-pre.js`'s fog chunks, `skyline.js`, `ring.js`, `weather.js`): the mist goes by how far a point lies past the town's edge (the
+  force field's box, `MISTB`, set by ring.js), not by its depth from the camera: the town clear wherever you stand, the mist starting 4 tiles past the
+  edge and full 26 past it, in the fog's 8 flat steps whose edges a world-fixed noise bends into tongues (never straight lines); further out the
+  mist's colour steps darker (four steps, to half), the background the darkest, the skyline mixed toward a darker mist. The box and the switch
+  (`MISTE`) are plain objects every built-in material's uniforms share; `?mist=near,far` in tiles past the edge. **Clouds**: eighty (the second forty
+  out to 245 tiles), not fogged, tinted half toward the mist while it's on; 19,200 triangles. **Life**: a tenth of the skyline's windows lit even by
+  day, each going on and off now and then. Cost: a few instructions a fragment; the clouds' 9,600 more triangles, far off.
+- **Into the subway and out** (owner, 18 Oct 2026, of the flight and the hall seen down the opening: "this part shouldnt show. lets not ever load the
+  subway or underground until you enter it ... "Entering Subway" or "Leaving Subway" while each loads ... seamless ... when you enter the subway you
+  should be in this spot and at this angle as you fade in"; "you should still see the steps down but when you go down a few steps it triggers the
+  subway scene"; `METRO.door` at the end of `metro.js`, `MAPLV` in map-post.js): from the street the top of the flight shows and a black lid six treads
+  down hides the rest (the hall, its walls and lights not drawn while you're up: `MAPG.down` only on the level below, the Metro's flight excepted);
+  three treads down the screen fades to black with ENTERING SUBWAY, you're set at the flight's foot on the platform, the isometric view on his
+  picture's angle (`METRO.YAW`: the track lower left, the stairs rising to the right; `?subyaw=0..3`), three frames drawn under the black (the
+  hall's programs made then), and it fades in; five treads up the flight, LEAVING SUBWAY, and you're on the sidewalk before the opening at the
+  street's angle. The castle's and the loop's stairs as before. Not done: the hall is still built at the start (in the loading's background), only
+  never drawn till you go down. Cost: one quad, a div. `SUBGO(x,z,lv)` a test's jump.
+- **The game in a frame** (owner, 18 Oct 2026: "i want the game screen to be in a rounded frame covering 75% of window, black background";
+  `FRAMEK` in `flea-market-3d.html`'s resize): the picture centred, .866 of each side (three quarters of the window's area), its corners rounded
+  18 px, black round it; `?frame=1` the whole window.
+- **The thick grass further in, the mushrooms in their spots** (owner, 18 Oct 2026: "the thicker grass should be further back into the park. tufts and
+  plain grass at start mostly. mushrooms shouldnt be everywhere in park, just certain parts they grow"; `weeds.js`, `forage.js`): within 14 tiles of the
+  park's walls (the line bent by a noise) only flat and tufts, to 28 the low kinds, past it all (`WEEDS.deep`); mushrooms only where a broad noise
+  says (about a sixth of the lawn, `WEEDS.mushAt`), four times the odds there.
+- **The ogres to the dungeon, the golems in their cave, his Walker reset** (owner, 18 Oct 2026: "make sure these skel knights are in dungon, and the
+  golems are in the rock cave", his picture of the ogre pawns at the newsstand; "my avatars is bald now and disappearing ... please refresh my new
+  walker back to normal"): the four ogre pawns live in the castle's great hall with the skeletons (`npc-pawns.js`, DUN); the twelve golems are set in
+  the cave once it's built and stay about it day and night (`GCAVE.haunt`, cave.js); the save's version 2 (`save.js`) puts his own Walker back as the
+  game makes him, once: his looks, shape, face, body type, speeds, the avatar editor's settings and the avatar switch.

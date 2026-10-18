@@ -29,21 +29,21 @@ const WX={hold:null,now:null};
   // ---- THE CLOUDS: forty cumulus round the map out toward the horizon, each a heap of a dozen low-poly puffs (flat-bottomed, piled up in the
   // middle), white in the sun, grey-blue in their own shade; as many show as the sky's cloud (a few even on a clear day), greyer in rain, darker in a storm
   const ph=(a,b,c)=>{ const v=Math.sin(a*127.1+b*311.7+c*74.7)*43758.5453; return v-Math.floor(v); }, geos=[], ends=[]; let vc=0;
-  for(let n=0;n<40;n++){ const ang=ph(n,1,2)*Math.PI*2, dist=(55+ph(n,3,4)*75)*TILE, cx=Math.sin(ang)*dist, cz=Math.cos(ang)*dist, cy=(7+ph(n,5,6)*7)*TILE, w=(7+ph(n,7,8)*10)*TILE;
+  for(let n=0;n<80;n++){ const ang=ph(n,1,2)*Math.PI*2, dist=(55+ph(n,3,4)*(n<40?75:190))*TILE,   /* (eighty, the second forty further out: owner, 18 Oct 2026, "more clouds and life in distance"; 19,200 triangles) */ cx=Math.sin(ang)*dist, cz=Math.cos(ang)*dist, cy=(7+ph(n,5,6)*7)*TILE, w=(7+ph(n,7,8)*10)*TILE;
     for(let k=0;k<12;k++){ const u=ph(n,k,9)-.5, v=ph(n,k,10)-.5, r=w*(.22+.18*(1-Math.abs(u)*2)*ph(n,k,11)), g=new THREE.IcosahedronGeometry(r,0);   /* (twenty faces a puff: 9,600 the forty clouds, 18 Oct 2026; was 38,400) */
       g.scale(1,.75,1); const P=g.attributes.position; for(let i=0;i<P.count;i++)if(P.getY(i)<-r*.15)P.setY(i,-r*.15);   // (the cumulus's flat foot)
       g.translate(cx+u*w*1.6,cy+r*.3+(1-Math.abs(u)*2)*w*.18,cz+v*w*.7); geos.push(g); vc+=P.count; }
     ends.push(vc); }
   const CP=new Float32Array(vc*3); { let o=0; for(const g of geos){ CP.set(g.attributes.position.array,o); o+=g.attributes.position.array.length; } }
   const cg=new THREE.BufferGeometry(); cg.setAttribute('position',new THREE.BufferAttribute(CP,3)); cg.computeVertexNormals();
-  const cmat=new THREE.MeshLambertMaterial({color:0xffffff,emissive:0x2a3346});   // (flat-faced as made: no flatShading, which the world's shading patch can't take: map-pre.js)
+  const cmat=new THREE.MeshLambertMaterial({color:0xffffff,emissive:0x2a3346,fog:false});   // (no fog: they stand out over the mist, tinted toward it by uCM instead)   // (flat-faced as made: no flatShading, which the world's shading patch can't take: map-pre.js)
   // NEVER BETWEEN YOU AND THE STREET (owner, 17 Oct 2026, his picture of a cloud over the street in the isometric view): the clouds stand low
   // round the map, so seen from above at a slant the ones on the camera's side came over the picture; those are left out where they stand
   // (the half of the sky on the camera's side of where you are, by the camera's way round), the far half stays toward the horizon
-  const CU={uCF:{value:new THREE.Vector3(0,0,1)},uCO:{value:new THREE.Vector3()},uUnder:{value:new THREE.Color(0,0,0)}}; WX.under=CU.uUnder;   // (uUnder: the sunset on their undersides, set by sky.js)
+  const CU={uCF:{value:new THREE.Vector3(0,0,1)},uCO:{value:new THREE.Vector3()},uUnder:{value:new THREE.Color(0,0,0)},uCM:{value:new THREE.Vector4(0,0,0,0)}}; WX.cloudMist=c=>{ CU.uCM.value.set(c.r,c.g,c.b,.5); mistT=2; }; let mistT=0; WX.under=CU.uUnder;   // (uUnder: the sunset on their undersides, set by sky.js)
   cmat.onBeforeCompile=sh=>{ Object.assign(sh.uniforms,CU); sh.vertexShader='varying vec3 vCW; varying float vCD;\n'+sh.vertexShader.replace('#include <project_vertex>','#include <project_vertex>\n vCW=(modelMatrix*vec4(transformed,1.)).xyz; vCD=clamp(-(modelMatrix*vec4(normal,0.)).y*1.6,0.,1.);');
-    sh.fragmentShader='varying vec3 vCW; varying float vCD; uniform vec3 uCF,uCO,uUnder;\n'+sh.fragmentShader.replace('void main() {','void main() { if(dot(vCW.xz-uCO.xz,uCF.xz)<12.) discard;').replace('#include <lights_fragment_end>','#include <lights_fragment_end>\n reflectedLight.indirectDiffuse+=uUnder*vCD;'); };
-  WX.cloudCut=()=>{ const f=new THREE.Vector3(); cam.getWorldDirection(f); f.y=0; if(f.lengthSq()<1e-6)f.set(0,0,1); f.normalize(); CU.uCF.value.copy(f); CU.uCO.value.set(pos.x,0,pos.z); };
+    sh.fragmentShader='varying vec3 vCW; varying float vCD; uniform vec3 uCF,uCO,uUnder; uniform vec4 uCM;\n'+sh.fragmentShader.replace('void main() {','void main() { if(dot(vCW.xz-uCO.xz,uCF.xz)<12.) discard;').replace('#include <lights_fragment_end>','#include <lights_fragment_end>\n reflectedLight.indirectDiffuse+=uUnder*vCD;').replace('#include <dithering_fragment>','#include <dithering_fragment>\n gl_FragColor.rgb=mix(gl_FragColor.rgb,uCM.rgb,uCM.a);'); };
+  WX.cloudCut=()=>{ if(mistT>0&&--mistT<=0)CU.uCM.value.w=0; const f=new THREE.Vector3(); cam.getWorldDirection(f); f.y=0; if(f.lengthSq()<1e-6)f.set(0,0,1); f.normalize(); CU.uCF.value.copy(f); CU.uCO.value.set(pos.x,0,pos.z); };
   const CL=new THREE.Mesh(cg,cmat); CL.frustumCulled=false; scene.add(CL); WX.clouds=CL;
   // ---- THE RAIN: streaks in a box round you, falling fast, slanting with the wind; as many shown as it rains (one draw, its points moved here)
   const NR=1800, RB=16*TILE, RH=14*TILE, rp=new Float32Array(NR*6), rs=new Float32Array(NR*3); for(let i=0;i<NR;i++){ rs[i*3]=(Math.random()-.5)*2*RB; rs[i*3+1]=Math.random()*RH; rs[i*3+2]=(Math.random()-.5)*2*RB; }
@@ -59,7 +59,7 @@ const WX={hold:null,now:null};
     if((ft-=dt)<=0){ ft=.5; WX.now=WX.hold?Object.assign({flash:WX.hold==='STORM'&&Math.random()<.04},HOLDS[WX.hold]):WX.at(T()); }   // (the simulation twice a second: it moves over minutes)
     const W=WX.now, up=LVL!=='down', inside=!!(ROOMS.cur)||!up, day=cl((CLOCK.elev()+4)/14), t=performance.now()/1000;
     // the clouds: how many, their colour, their drift with the wind
-    WX.cloudCut(); const show=Math.round(3+W.cloud*37); CL.geometry.setDrawRange(0,ends[Math.min(39,show-1)]); CL.visible=up;
+    WX.cloudCut(); const show=Math.round(6+W.cloud*74); CL.geometry.setDrawRange(0,ends[Math.min(79,show-1)]); CL.visible=up;
     cmat.color.setRGB(1,1,1).multiplyScalar(1-.35*W.rain-.35*W.storm); cmat.emissive.setRGB(.16,.2,.27).multiplyScalar(.4+.6*day);
     CL.position.set(pos.x+((t*(.3+W.wind*1.5)*TILE)%(40*TILE)),0,pos.z);
     // the sky greys and the sun dims under cloud; a storm's sky darker still; lightning a flash of white for a moment

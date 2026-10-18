@@ -68,7 +68,7 @@ MAPST=('const TEXTURES='+rd('data/textures.json')+';\nconst KITD='+rd('data/kit.
   +wrap('bodega',bod+'\n'+bb+'\n'+rd('src/apts.js')+'\n'+rd('src/ghostdojo.js')+'\n'+rd('src/butterflies.js')+'\n'+rd('src/store.js'),"MODS.bodega={BOUND,ground:groundY};","()=>BODB.inside()")
   +wrap('pool',pool+'\nWATER.build();',"MODS.pool={BOUND,cut:cutWalls.slice(c0),inside:(x,z)=>x>POOLR.X(POOLR.x0)&&x<POOLR.X(POOLR.x1)&&z>POOLR.Z(POOLR.y0)&&z<POOLR.Z(POOLR.y1)};","()=>MODS.pool.inside(pos.x,pos.z)")
   +"const FOREST="+rd('data/forest.json')+";\nconst PROPS="+rd('data/props.json')+";\n"+rd('src/park.js')+'\n'+rd('src/castle.js')+'\n'   # (CENTRAL PARK'S ENTRANCE, owner 17 Oct 2026: park.js, data/forest.json; THE CASTLE and its dungeon in it: castle.js)
-  +rd('src/map-post.js')+'\n'+rd('src/ring.js')+'\n'+rd('src/sub.js')+'\n'+rd('src/kit.js')+'\n'+rd('src/dress.js')+'\n'+rd('src/grid.js'))   # (the kits placed, the pigeons: after the map)
+  +rd('src/map-post.js')+'\n'+rd('src/ring.js')+'\n'+rd('src/river.js')+'\n'+rd('src/sub.js')+'\n'+rd('src/kit.js')+'\n'+rd('src/dress.js')+'\n'+rd('src/grid.js'))   # (the kits placed, the pigeons: after the map)
 f=open('src/flea-market-3d.html').read()  # (carries the simpler Walker)
 st=MAPST
 i=f.index('<script type="module">'); head,mod=f[:i],f[i:]
@@ -353,6 +353,12 @@ mod=rp(mod,"} for(const N of NPCS)N.tick(dt,pos); if(FIRE)","} CITY.tick(dt,pos)
 # NOT DRAWN UNLESS SEEN (owner, 17 Oct 2026: "dont render anyone not visible"): the characters out of the picture put out of sight only round its drawing (NPCS.cull, npc-map.js)
 mod=rp(mod,"ROOMS.tick(); STORE.tick(); BF.tick(dt);","ROOMS.tick(); INTERIORS.tick(); STORE.tick(); NPCS.cull(true); INTERIORS.cull(true); BF.tick(dt);")   # (INTERIORS: an interior drawn only near its door, src/interiors.js; owner, 17 Oct 2026)
 mod=rp(mod,"if(OUTL.on)OUTL.render(renderer,scene,cam); composer.render();","if(OUTL.on)OUTL.render(renderer,scene,cam); composer.render(); NPCS.cull(false); INTERIORS.cull(false);")
+# THE HUDSON, REAL WATER (owner, 18 Oct 2026: the Deep Water mockup's water in the game, three ways side by side: src/river.js): its ripples and the
+# scene under it before the picture, the murk round a camera under it put back after; him in it (the pool's way: the level and the bed each frame)
+mod=rp(mod,"W3.shadowPass(renderer); if(OUTL.on)OUTL.render(renderer,scene,cam); composer.render(); NPCS.cull(false);","RIVER.pre(renderer,scene,cam,dt,pos); W3.shadowPass(renderer); if(OUTL.on)OUTL.render(renderer,scene,cam); composer.render(); RIVER.post(scene); NPCS.cull(false);")
+mod=rp(mod,"RINGX.tick(dt);","RINGX.tick(dt); RIVER.tick(dt,pos); RIVER.hud();")
+mod=rp(mod,"WATER.feed(st,pos,dt,ml>0,keys);","if(!RIVER.feed(st,pos,dt,ml>0,keys))WATER.feed(st,pos,dt,ml>0,keys);")
+mod=rp(mod,"if(st.water&&st.water.in){ const m=0.3;","if(st.water&&st.water.in&&RIVER.swim)RIVER.clamp(pos); else if(st.water&&st.water.in){ const m=0.3;")
 # AT REST AT ONCE (owner, 17 Oct 2026: "when something stops it doesnt keep moving slightly and gradually"): the view's turn, tilt and zoom reach their mark and stop
 mod=rp(mod,"yaw+=(yawTo-yaw)*ease; pitch+=(pitchTo-pitch)*ease;","yaw=Math.abs(yawTo-yaw)<1e-4?yawTo:yaw+(yawTo-yaw)*ease; pitch=Math.abs(pitchTo-pitch)<1e-4?pitchTo:pitch+(pitchTo-pitch)*ease;")
 mod=rp(mod,"ppu*=Math.pow(ppuTo/ppu,ease); if(pxS()!==SCL)","ppu=Math.abs(ppuTo/ppu-1)<1e-4?ppuTo:ppu*Math.pow(ppuTo/ppu,ease); if(pxS()!==SCL)")

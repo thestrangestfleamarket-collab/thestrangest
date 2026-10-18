@@ -1291,6 +1291,11 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   character and then you stat to move again, it should snap back to focus on you"): any frame he moves while the view's slid off him and he's off
   the picture, the view is put back on him (`UI.follow`, `ui.js`). **The stalls without tents** ("i dont want these stripped tenst ... rows and rows
   of diff mushrooms, standing between three tables in u shape ... show me mockups"): `mockups/market-stalls.html`,
+  https://claude.ai/artifact/ET6bXTLDgHdTfyAsyG4MTn (A trays, B stepped tiers, C heaps and overflow); his pick to come.
+- **Standing is still** (owner, 18 Oct 2026, of the mushroom seller at his booth: "the grain shadow on the mushroom merchant is constantly glitchy
+  looking beacause it tries to chnge too fast"; `npc-map.js`): a character made of parts (the mushroom seller, the Fox) had a standing "breath",
+  a sway of a degree and a 1% stretch, that slid his own shadow's stepped edge across his robe every frame; standing he is now still (the walk's
+  rock and bob as before). Measured close on him at his booth (`tests/mushstill.cjs <out>`): 8,580 of his pixels changed a quarter second to 0.
   https://claude.ai/artifact/ET6bXTLDgHdTfyAsyG4MTn (A trays, B stepped tiers, C heaps and overflow); **his pick, "B with C's overflow"**: `src/stalls.js` (`STALL.build`, for both: three plank tables in a U open to the street, the seller in its middle, each table three crate risers stepping up toward him with a row of heaps a step, one kind a heap, a basket now and then on the top step; round it two crates high, baskets on the ground, sacks and pumpkins (his) or a mushroom log (the seller's); the old awnings gone). Cost: some 13,700 triangles the mushroom seller's, 13,100 the tomato's (the goods a third over life size so fewer show as full), six instanced draws each, no light; solid at the tables and the overflow. `tests/stallshot.cjs <out>`.
 - **The roof out of sight, the mist back, the weather held, the old Fox, the sun's stripes** (owner, 18 Oct 2026): **the roof** ("it looks like the
   roof is vanishes and lets real light ... dont change lighting in interiors jsut beacuse you walk in the room"): a roof hidden while you're in (the

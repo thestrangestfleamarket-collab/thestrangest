@@ -9,7 +9,7 @@
 // FEMALE build, in her red gown, standing at the stored bar's microphone mark (STORE.bar.singer) facing the room; the cord a line; heard louder as
 // you come near, while it's her turn (bandstand.js) ----
 const SGM={}; STORE.SGM=SGM;   // (a test's reach)
-{ const R=RIG, V=R.V, S=STORE.bar, AT={x:BOD.X(S.singer.x),z:BOD.Z(S.singer.y),hd:0,y:BOD.Y(S.stage.z)};
+if(STORE.bar){ const R=RIG, V=R.V, S=STORE.bar, AT={x:BOD.X(S.singer.x),z:BOD.Z(S.singer.y),hd:0,y:BOD.Y(S.stage.z)};
   // her look's colours (the game's, for the strapless gown), four tones each (light to dark), as materials of her own (sg_...)
   const D=WOMAN.DESIGNS[2], LOOK={...D.look,metal:'#d6d8de',tie:'#1a181c',cover:'#2c2620',linen:'#ece4cc',ember:'#ff3a28',hole:'#2a282e'};
   const tones=h=>{ const c=new THREE.Color(h); return [1.14,1,.72,.46].map(k=>c.clone().multiplyScalar(k)); };
@@ -45,3 +45,4 @@ const SGM={}; STORE.SGM=SGM;   // (a test's reach)
     PCS.forEach((pc,i)=>FM.set(i,pc.on==='prop'?B.props[pc.n]:R.frameOf(pc.on||pc.n,B)));
     const q=cg.attributes.position.array; a.cord.forEach((c,i)=>{ q[i*3]=c.p.x; q[i*3+1]=c.p.y; q[i*3+2]=c.p.z; }); cg.attributes.position.needsUpdate=true;
     if(SND.ctx&&SND.ctx.state==='running')voxStep(dt,performance.now()); }; }
+if(!STORE.bar)SGM.tick=()=>{};   // (the Bar off the map, owner 18 Oct 2026, "i dont want any other buildings or rooms on map": no stage, no singer; AWAY in map-pre.js)

@@ -69,14 +69,16 @@
     STORE.rooms.push(R); const pl=STORE.places.find(q=>q[0]===name); if(pl){ pl[1]=R.at.x; pl[2]=R.at.z; pl[3]='up'; } else STORE.places.push([name,R.at.x,R.at.z,'up']); return R; };
 
   // THE DINER: Preset Diner 1 from its room's corner (its west wall at x 0, the bar's back wall at y 0), the room's door in its front
-  { const B=B_('ldiner'), sc=B.s||1; laid('diner',()=>room('diner','THE DINER',B,{floor:K.diner.dinerFloorCol,in:K.diner.dinerWall},{w:'f',a:B.x0+9.5*sc,wd:1.56,h:94},B=>{ PRESETS['Preset Diner 1'].forEach(([k,dx,dy,r])=>put(k,B.x0+dx*sc,B.y0+dy*sc,r)); })); }
+  // (off the map, owner 18 Oct 2026: "i dont want any other buildings or rooms on map": the Diner, the Bar, the Aquarium, the community garden, the
+  // keep and the Avenue's shells are built only when brought back, AWAY in map-pre.js; ?bring=diner,bar for a look)
+  if(!AWAY.has('diner')){ const B=B_('ldiner'), sc=B.s||1; laid('diner',()=>room('diner','THE DINER',B,{floor:K.diner.dinerFloorCol,in:K.diner.dinerWall},{w:'f',a:B.x0+9.5*sc,wd:1.56,h:94},B=>{ PRESETS['Preset Diner 1'].forEach(([k,dx,dy,r])=>put(k,B.x0+dx*sc,B.y0+dy*sc,r)); })); }
 
   // THE BAR, as 26-zzz-bar sets it out: the bar down the left wall, the back bar and soffit, five stools, the fridge, the stage in the back
   // right corner under LIVE with its cloth, the grand (turned to the room) and the drum kit on it, the sofa, the armchairs and the tables
   // along the right wall, posters, the TV, two fans, a palm by the door, the wall lights, the spot over the stage; then AT NIGHT
   // (26-zzzzzzzzzzzzzzzz-bar-night): every light off but the tables' candles and the exit sign, faint; three candles on the counter, the
   // console TV, the smoker's ember. Where the musicians go: STORE.bar (the stage, the piano's keys, the drums, the singer, the guitarist)
-  { const B=B_('lbodega2'); laid('bar',()=>room('bar','THE BAR',B,{floor:K.bar.barFloorCol,in:K.bar.barWall},{w:'f',a:(B.x0+B.x1)/2,wd:1.56,h:94},(B,l0)=>{ const L=B.x0+T, R=B.x1-T, Kb=B.y0+T, F=B.y1-T, m=(B.x0+B.x1)/2, yE=F-1.35, along=x=>yE-(x-1.84);
+  if(!AWAY.has('bar')){ const B=B_('lbodega2'); laid('bar',()=>room('bar','THE BAR',B,{floor:K.bar.barFloorCol,in:K.bar.barWall},{w:'f',a:(B.x0+B.x1)/2,wd:1.56,h:94},(B,l0)=>{ const L=B.x0+T, R=B.x1-T, Kb=B.y0+T, F=B.y1-T, m=(B.x0+B.x1)/2, yE=F-1.35, along=x=>yE-(x-1.84);
       put('back bar',L+.42,along(5.2),3); put('bar soffit',L+1.5,along(4.5),3); put('neon sign: BAR',L+.08,Kb+2.3,0);
       put('bar round end',L+2.56,yE,3); put('bar counter: ashtray',L+2.66,along(3.3),3); put('bar counter: bottle',L+2.66,along(5.1),3); put('bar counter: glass',L+2.66,along(6.9),3); put('bar corner',L+1.6,along(8.26),3);
       const stools=[2.7,3.85,5,6.15,7.3].map(x=>{ put('bar stool',L+3.62,along(x)); return {x:L+3.62,y:along(x)}; });
@@ -98,7 +100,7 @@
       STORE.bar={B,stage:{x:SX,y:SY,z:14+LAY.h('bar')*TILE/ZU/BLDK},piano:{x:PX,y:PY,keys:PY-1.736},drums:{x:SX+.35,y:Kb+1.25},gtr:{x:SX-.35,y:Kb+2.35},singer:{x:SX+.8,y:Kb+2.4},stools}; })); }
 
   // THE MOON SHRINE: Preset Moon Shrine 1 from its back corner, on grass (the pond's kerb here; its water: water3d's second body)
-  { const O=[69+LAY.o('park').x/BLDK,-45.9+LAY.o('park').y/BLDK]; STORE.shrineO=O;   /* (in Central Park's back-west lawn, owner 17 Oct 2026: XS 68.7-75.3, -42.8 to -25.2) */ room('shrine','THE MOON SHRINE',{x0:O[0],y0:O[1],x1:O[0]+6,y1:O[1]+16,h:0},{floor:grassCol},null,()=>{ PRESETS['Preset Moon Shrine 1'].forEach(([k,dx,dy,r])=>put(k,O[0]+dx,O[1]+dy,r)); },{z:.05});
+  { const O=[69+LAY.o('park').x/BLDK,-45.9+(LAY.o('park').y+NORTHY)/BLDK];   /* (+NORTHY: with the park, 18 Oct 2026) */ STORE.shrineO=O;   /* (in Central Park's back-west lawn, owner 17 Oct 2026: XS 68.7-75.3, -42.8 to -25.2) */ room('shrine','THE MOON SHRINE',{x0:O[0],y0:O[1],x1:O[0]+6,y1:O[1]+16,h:0},{floor:grassCol},null,()=>{ PRESETS['Preset Moon Shrine 1'].forEach(([k,dx,dy,r])=>put(k,O[0]+dx,O[1]+dy,r)); },{z:.05});
     STORE.pond={x0:O[0]+.5,y0:O[1]+12.6,x1:O[0]+5.5,y1:O[1]+15.6,z:4}; }
   // THE SHRINE OPENED (owner, 17 Oct 2026: "steps and gap", when its parapets, solid since the hitboxes, closed it): a gap in the east parapet,
   // its middle piece taken away (toward the park's round), and the terrace climbed by its steps: the plaza, the steps and the terrace are
@@ -127,12 +129,12 @@
 
   // (faster opening, 17 Oct 2026: the page froze while all of this was painted. These four rooms are built after the game opens, one a
   // moment, then batched on their own; going to one of them first finishes them at once: STORE.ensure)
-  const STEPS=[]; for(const n of ['THE HERB COTTAGE','THE AQUARIUM','THE KEEP','THE BUTTERFLIES'])STORE.places.push([n,0,0,'up']);
+  const STEPS=[]; for(const [n,k] of [['THE HERB COTTAGE','garden'],['THE AQUARIUM','aquarium'],['THE KEEP','keep'],['THE BUTTERFLIES','garden']])if(!AWAY.has(k))STORE.places.push([n,0,0,'up']);
   // THE HERB COTTAGE: every piece where the page put it, from the room's corner (its own floor, walls, roof and door step among them)
   // THE COMMUNITY GARDEN (owner, 17 Oct 2026, mockup 1): the lot between the apartment house and the bodega, the subway stairs on the sidewalk
   // before it (no door behind them): the herb cottage at its west, the butterfly garden beside it at its east; its fence and gate: dress.js
   const GARDEN=STORE.garden={cottage:[72-15/BLDK,-77-14.6/BLDK],house:[72-4.6/BLDK,-77-9.2/BLDK]};   // (the game's tiles: the cottage 9 x 12 from its corner, the butterfly plot 8 x 7)
-  STEPS.push(()=>{ const O=GARDEN.cottage, R=room('cottage','THE HERB COTTAGE',{x0:O[0],y0:O[1],x1:O[0]+9,y1:O[1]+12,h:96},{floor:grassCol},null,()=>{ PRESETS['Preset Herb Cottage 1'].forEach(([k,dx,dy,r])=>put(k,O[0]+dx,O[1]+dy,r)); },
+  if(!AWAY.has('garden'))STEPS.push(()=>{ const O=GARDEN.cottage, R=room('cottage','THE HERB COTTAGE',{x0:O[0],y0:O[1],x1:O[0]+9,y1:O[1]+12,h:96},{floor:grassCol},null,()=>{ PRESETS['Preset Herb Cottage 1'].forEach(([k,dx,dy,r])=>put(k,O[0]+dx,O[1]+dy,r)); },
       {z:.05,pieceWalls:{'herb cottage wall, west':['w',1,0],'herb cottage wall, east':['e',-1,0],'herb cottage wall, north':['b',0,1],'herb cottage wall, south':['f',0,-1]}});
     R.at={x:-4.6*TILE,z:1.6*TILE}; const pl=STORE.places.find(q=>q[0]===R.name); if(pl){ pl[1]=R.at.x; pl[2]=R.at.z; } });   // (its menu spot the garden's gate on the sidewalk, not the front's middle: the subway stairs' hole is there)   // (its own walls cut to their foot between you and the camera while you're in; its roof hidden then)
 
@@ -140,7 +142,7 @@
   // room from the lights along the foot of its glass (its water: water3d's third body)
   // THE AQUARIUM (owner, 17 Oct 2026, mockup 1): the octopus tank's room a storefront on the street between the Diner and the Bar, its door on
   // the sidewalk (the game's tiles 97.6 to 112.4, 14.8 wide, its front the row's line)
-  STEPS.push(()=>{ const B={id:'locto',x0:97.6,y0:-84,x1:112.4,y1:-77,h:130}, O=K.octo; room('octo','THE AQUARIUM',B,{floor:O.octoFloorCol,in:O.octoWall},{w:'f',a:(B.x0+B.x1)/2,wd:1.56,h:94},B=>{ const {LX,LY,Z0,ZT}=O.OCTK, x=B.x0+5.5-LX/2, y=B.y1-2.6-LY/2, p=O.octoTank(x,y); place(p,0);
+  if(!AWAY.has('aquarium'))STEPS.push(()=>{ const B={id:'locto',x0:97.6,y0:-84,x1:112.4,y1:-77,h:130}, O=K.octo; room('octo','THE AQUARIUM',B,{floor:O.octoFloorCol,in:O.octoWall},{w:'f',a:(B.x0+B.x1)/2,wd:1.56,h:94},B=>{ const {LX,LY,Z0,ZT}=O.OCTK, x=B.x0+5.5-LX/2, y=B.y1-2.6-LY/2, p=O.octoTank(x,y); place(p,0);
       for(const [lx,ly,i] of [[x+LX/2,y-.35,0],[x+LX/2,y+LY+.35,1],[x-.35,y+LY/2,2],[x+LX+.35,y+LY/2,3]])LAMPS.push({own:1,room:1,day:true,x:lx,y:ly,z:Z0+4,r:i<2?4.2:3,c:[.5,.72,.95]});
       STORE.tank={x0:x+.035,y0:y+.035,x1:x+LX-.035,y1:y+LY-.035,z:ZT-4,bed:Z0+1}; }); STORE.tank.dz=0; });
 
@@ -150,7 +152,7 @@
   // THE KEEP IN THE CASTLE'S BAILEY (owner, 17 Oct 2026, mockup 1: "the keep goes to the castle's bailey across the street, where a keep belongs"):
   // in the bailey's west half, behind the dungeon's stairwell, its door toward the gatehouse (the bailey's front, the smaller y); it goes with the
   // castle on the map's layout. Its box the game's (lcastle, 9.5 x 9, 520 tall), set here in the game's tiles from the bailey's street tiles
-  STEPS.push(()=>{ const B=B_('lcastle'), [cx,cy]=LG('castle'); Object.assign(B,{x0:51.09+cx,x1:60.59+cx,y0:-22.9+cy,y1:-13.9+cy});   /* (world: x -23 to -12.5, z 59.5 to 69.4, its turrets a tile out; the stairwell east of it at x -10.5) */
+  if(!AWAY.has('keep'))STEPS.push(()=>{ const B=B_('lcastle'), [cx,cy]=LG('castle'); Object.assign(B,{x0:51.09+cx,x1:60.59+cx,y0:-22.9+cy,y1:-13.9+cy});   /* (world: x -23 to -12.5, z 59.5 to 69.4, its turrets a tile out; the stairwell east of it at x -10.5) */
     const KK=K.keep, KC={door:B.x0+4.75,arches:[B.x0+2.1,B.x0+4.75,B.x0+7.4]}, my=(B.y0+B.y1)/2, lead=(x,y)=>{ const n=grain(x,y,67,1.2); return n<.4?[74,76,80]:n>.7?[90,92,96]:[82,84,88]; };
     room('keep','THE KEEP',B,{floor:KK.keepFloorCol,in:KK.keepInWall,out:(nx,ny,Xx,Yy,z,f,cap)=>KK.keepOutWall(B,nx,ny,Xx,Yy,z,f,cap),cope:[184,174,150],roof:lead},{w:'b',a:KC.door,wd:1.4,h:96},B=>{ const M=KK.KMK;
       M.turret(B.x0-T,B.y0-T,-1,-1); M.turret(B.x1+T,B.y0-T,1,-1); M.turret(B.x0-T,B.y1+T,-1,1); M.turret(B.x1+T,B.y1+T,1,1);
@@ -175,7 +177,7 @@
 
   // THE BUTTERFLY HOUSE (the living rooms' atrium, 23-w-studio-mood: a mesh cube on a walnut stand, moss, leaves and a flower of nectar) on
   // its own plot; its two butterflies and the flight of the others: butterflies.js
-  STEPS.push(()=>{ const O=GARDEN.house; STORE.houseAt=[O[0]+4,O[1]+3.5]; STORE.houseZ=0; room('butterflies','THE BUTTERFLIES',{x0:O[0],y0:O[1],x1:O[0]+8,y1:O[1]+7,h:0},{floor:grassCol},null,()=>{ const p=put('butterfly house',O[0]+4,O[1]+3.5); if(p)p.bf=[12,21]; STORE.bfHouse=p; },{z:.05}); });   // (the community garden's east plot, beside the cottage)
+  if(!AWAY.has('garden'))STEPS.push(()=>{ const O=GARDEN.house; STORE.houseAt=[O[0]+4,O[1]+3.5]; STORE.houseZ=0; room('butterflies','THE BUTTERFLIES',{x0:O[0],y0:O[1],x1:O[0]+8,y1:O[1]+7,h:0},{floor:grassCol},null,()=>{ const p=put('butterfly house',O[0]+4,O[1]+3.5); if(p)p.bf=[12,21]; STORE.bfHouse=p; },{z:.05}); });   // (the community garden's east plot, beside the cottage)
 
   // THE AVENUE'S ROW (owner, 17 Oct 2026: "have the street on right side go up and fill the right side of that street with places as well. pull
   // from old game and map and logically think what we need there"; his pick, mockup 1): the old game's buildings along the Avenue's east side,
@@ -188,7 +190,7 @@
   const AVR=[['market','MARKET · LOUNGE',17.6,33.6,16,230],['museum','MUSEUM OF EARTH',33.6,59.6,26,210],['lucky','LUCKY 7',59.6,70.6,11,200],['yellow','THE YELLOW AWNING',70.6,81.6,11,200],
     ['theatre','MOVIE THEATRE · ARCADE',87.6,103.6,16,260],['playhouse','PLAYHOUSE',103.6,115.6,12,220],['baker','221B BAKER STREET',115.6,126,12,230]];   // (id, name, its run along the Avenue in the map's tiles from the street's building line, its depth, its height in art px)
   { const AX=72+(AVE.x1-72)/BLDK, plaster=(B,nx,ny,Xw,Yw,z,f)=>sh(z<8?[118,112,102]:[168,160,146],f*(z<8?.9:1)), conc=(x,y)=>{ const n=grain(x,y,71,1.3); return n<.4?[92,90,86]:n>.7?[104,102,98]:[98,96,92]; };   // (AX: the east sidewalk's edge, the street's tile 166.5, in the game's tiles)
-    for(const [id,name,z0,z1,d,h] of AVR){ STORE.places.push([name,0,0,'up']);
+    if(!AWAY.has('avenue'))for(const [id,name,z0,z1,d,h] of AVR){ STORE.places.push([name,0,0,'up']);
       STEPS.push(()=>{ const B={id:'lav_'+id,x0:AX,y0:-77+z0/BLDK+.1,x1:AX+d,y1:-77+z1/BLDK-.1,h}; room('av_'+id,name,B,{floor:conc,in:plaster},{w:'w',a:(B.y0+B.y1)/2,wd:1.56,h:94},(B,l0)=>{ LAMPS.push({own:1,room:1,day:true,x:(B.x0+B.x1)/2,y:(B.y0+B.y1)/2,z:Math.min(h-20,120),r:Math.max(6,.75*Math.max(d,(z1-z0)/BLDK)),c:[1,.9,.75]}); }); }); } }   // (its one lamp's reach by the room's size: the museum is 26 tiles across)
 
   // LIGHTNING FAST VCR REPAIR (owner, 18 Oct 2026, his photo: "add this as a new building mockup for game", then "off map"; the mockup:
@@ -275,12 +277,12 @@
   { const pend=[]; let done=false;
     const lit=()=>{ if(!LITE.recs.length)return; const nl=[]; scene.traverse(o=>{ if(o.isPointLight&&!o.userData.pool)nl.push(o); }); for(const L of nl){ L.userData.grp=null; L.castShadow=false; L.removeFromParent(); LITE.recs.push(L); } };   // (as LITE.init does: never a new light in the scene, so nothing recompiles)
     const step=()=>{ STEPS.shift()(); pend.push(...BATCH.items.splice(0)); lit(); };
-    const finish=()=>{ if(done)return; done=true; while(STEPS.length)step(); BATCH.items=pend; Object.assign(STORE.meshes,bake());
-      const Tk=STORE.tank; WATER.body({name:'tank',X0:X(Tk.x0),X1:X(Tk.x1),Z0:Z(Tk.y0),Z1:Z(Tk.y1),lvl:Y(Tk.z+(Tk.dz||0)),GX:110,GY:40,dep:()=>(Tk.z-Tk.bed)/50*1.8});
+    const finish=()=>{ if(done)return; done=true; while(STEPS.length)step(); if(!pend.length)return; BATCH.items=pend; Object.assign(STORE.meshes,bake());   /* (nothing to bake when every one of them is off the map) */
+      const Tk=STORE.tank; if(Tk){ WATER.body({name:'tank',X0:X(Tk.x0),X1:X(Tk.x1),Z0:Z(Tk.y0),Z1:Z(Tk.y1),lvl:Y(Tk.z+(Tk.dz||0)),GX:110,GY:40,dep:()=>(Tk.z-Tk.bed)/50*1.8});
     const gm=new THREE.MeshLambertMaterial({color:new THREE.Color(.5,.62,.7),transparent:true,opacity:.18,side:THREE.DoubleSide,depthWrite:false}), gh=Y(Tk.z+4)-Y(Tk.bed), gy=(Y(Tk.z+4)+Y(Tk.bed))/2+Y(Tk.dz||0)-Y(0);
-    for(const [x,z,w,ry] of [[(Tk.x0+Tk.x1)/2,Tk.y0,Tk.x1-Tk.x0,0],[(Tk.x0+Tk.x1)/2,Tk.y1,Tk.x1-Tk.x0,0],[Tk.x0,(Tk.y0+Tk.y1)/2,Tk.y1-Tk.y0,Math.PI/2],[Tk.x1,(Tk.y0+Tk.y1)/2,Tk.y1-Tk.y0,Math.PI/2]]){ const m=new THREE.Mesh(new THREE.PlaneGeometry(w*TILE*BLDK,gh),gm); m.position.set(X(x),gy,Z(z)); m.rotation.y=ry; scene.add(m); } 
-      const H=STORE.houseAt, hp=(dx,dy,z)=>[X(H[0]+dx),Y(z+(STORE.houseZ||0)),Z(H[1]+dy)], HP=[hp(-.16,-.09,38),hp(-.12,.07,41),hp(.18,.09,37),hp(.13,-.1,35),hp(-.06,0,44),hp(.06,0,44),hp(.08,-.11,32),hp(-.24,0,47),hp(.24,0,47),hp(0,-.17,49)];
-    [12,21].forEach((k,i)=>{ const b=BF.add(k,HP); b.at=b.to=i*4; b.g.position.set(...HP[b.at]); });
+    for(const [x,z,w,ry] of [[(Tk.x0+Tk.x1)/2,Tk.y0,Tk.x1-Tk.x0,0],[(Tk.x0+Tk.x1)/2,Tk.y1,Tk.x1-Tk.x0,0],[Tk.x0,(Tk.y0+Tk.y1)/2,Tk.y1-Tk.y0,Math.PI/2],[Tk.x1,(Tk.y0+Tk.y1)/2,Tk.y1-Tk.y0,Math.PI/2]]){ const m=new THREE.Mesh(new THREE.PlaneGeometry(w*TILE*BLDK,gh),gm); m.position.set(X(x),gy,Z(z)); m.rotation.y=ry; scene.add(m); }  }
+      if(STORE.houseAt){ const H=STORE.houseAt, hp=(dx,dy,z)=>[X(H[0]+dx),Y(z+(STORE.houseZ||0)),Z(H[1]+dy)], HP=[hp(-.16,-.09,38),hp(-.12,.07,41),hp(.18,.09,37),hp(.13,-.1,35),hp(-.06,0,44),hp(.06,0,44),hp(.08,-.11,32),hp(-.24,0,47),hp(.24,0,47),hp(0,-.17,49)];
+    [12,21].forEach((k,i)=>{ const b=BF.add(k,HP); b.at=b.to=i*4; b.g.position.set(...HP[b.at]); }); }
       if(ROOMS.reset)ROOMS.reset(); if(window.CLIP)window.CLIP.run(); if(typeof INTERIORS!=='undefined')INTERIORS.build(); };   // (INTERIORS: the new rooms' insides drawn only near their doors: interiors.js)   // (CLIP: their things made solid on their own floors, as the rest were at load: clip.js)
     STORE.ensure=finish;
     const run=()=>{ if(done)return; if(STEPS.length){ step(); setTimeout(run,60); } else finish(); };

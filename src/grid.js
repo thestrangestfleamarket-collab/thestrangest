@@ -11,7 +11,7 @@
 // its lamps hang on the nearest pole. Off until applied: ?grid=1 (or market-grid=1 in the browser; a menu switch to come). ?cut=2,5 cuts spans.
 // Cost (switched on): some 3,000-4,500 triangles the wires (one draw, a flat dark material), some 600 the crossarms, cans and the power house
 // (one instanced draw), no new lights, no new shader program, nothing run a frame unless something changed.
-const GRID={on:(()=>{ const q=QS.get('grid'); if(q!=null)return q!=='0'; let v=null; try{ v=localStorage.getItem('market-grid'); }catch(e){} return v!=='0'; })(),   /* (on by default since 17 Oct 2026, owner: "have the power lines go around the block"; ?grid=0 off) */
+const GRID={on:(()=>{ if(AWAY.has('power'))return false;   /* (the power house off the map, owner 18 Oct 2026: no source, so no grid; ?bring=power brings both back: AWAY, map-pre.js) */ const q=QS.get('grid'); if(q!=null)return q!=='0'; let v=null; try{ v=localStorage.getItem('market-grid'); }catch(e){} return v!=='0'; })(),   /* (on by default since 17 Oct 2026, owner: "have the power lines go around the block"; ?grid=0 off) */
   nodes:[], spans:[], drops:[], servs:[], lamps:new Map(), ready:false, dirty:false, built:false};
 window.GRID=GRID;
 { const M=1/.84*TILE, V3=THREE.Vector3;
@@ -46,7 +46,7 @@ window.GRID=GRID;
     const B=typeof BOD!=='undefined'?BOD:null, bx=(x0,y0,x1,y1,S)=>({x0:(S?B.XS:B.X)(x0),z0:(S?B.ZS:B.Z)(y0),x1:(S?B.XS:B.X)(x1),z1:(S?B.ZS:B.Z)(y1),y0:-1,y1:40});
     if(B&&B.B0)GRID.serve('bodega',{box:bx(B.B0.x0,B.B0.y0,B.B0.x1,B.B0.y1)});
     if(B&&typeof MODS!=='undefined'&&MODS.apts&&MODS.apts.A){ const A=MODS.apts.A; GRID.serve('house',{box:bx(A.x0,A.y0,A.x1,A.y1)}); }
-    if(typeof POOLR!=='undefined'&&POOLR.X)GRID.serve('apartments',{box:{x0:POOLR.X(POOLR.x0),z0:POOLR.Z(POOLR.y0),x1:POOLR.X(POOLR.x1),z1:POOLR.Z(POOLR.y1),y0:-1,y1:60}});
+    if(typeof POOLR!=='undefined'&&POOLR.X&&!AWAY.has('apartments'))GRID.serve('apartments',{box:{x0:POOLR.X(POOLR.x0),z0:POOLR.Z(POOLR.y0),x1:POOLR.X(POOLR.x1),z1:POOLR.Z(POOLR.y1),y0:-1,y1:60}});
     if(B&&B.grounds){ const g=B.grounds.find(q=>q.id==='ghostst'); if(g)GRID.serve('ghost',{box:bx(g.x0,g.y0,g.x1,g.y1)}); }
     if(typeof STORE!=='undefined')for(const R of STORE.rooms||[]){ const cx=(R.x0+R.x1)/2, cz=(R.z0+R.z1)/2; if(cx<BOUND.x0||cx>BOUND.x1||cz<BOUND.z0||cz>BOUND.z1)continue;   // (only a room on the map, not the storeroom's far east)
       GRID.serve(R.id,{box:{x0:R.x0,z0:R.z0,x1:R.x1,z1:R.z1,y0:(R.y0??0)-1,y1:(R.y0??0)+40}}); }

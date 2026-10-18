@@ -688,6 +688,37 @@ with its own copy, so a chat that hadn't taken in the others' work undid it. Eve
 4. **Right after you publish**, push and open a pull request to `main` with the same work, and say so to the owner: the next chat starts from
    `main`, so work left on a side branch gets lost to it. Never leave a published change only on a side branch.
 
+- **Main street: three buildings, the rest off the map** (owner, 18 Oct 2026: "i want this to be the main apartment building. the inside is
+  completely empty (no walls, furn, doors etc) - i want main street to only have this building, the bodega and ghost street building on it. put all
+  other buildings that are on main now off map for me to pull from later. i dont want any other buildings or rooms on map"; of the castle, "the
+  tower shouldnt be inside the castle, it should be off map"): on the main street only **the apartment house** (`apts.js`, now THE main
+  apartment building: `HOLLOW`, its brick, windows, fire escapes and front door as they were, inside one floor of boards and two lamps, no rooms'
+  walls, doors, upper floors or ceilings; the menu's ROOMS has its ground only), **the bodega** and **Ghost Street** (its dojo and the vending
+  machines). **Off the map, kept in the code** (`AWAY0` / `AWAY` in `map-pre.js`): `apartments` (the apartment building with the pool: too woven
+  into the page to leave out, so built `AWAYLOT` 1000 tiles east, past the force field, never reached or drawn), `diner`, `bar` (and its band:
+  the pianist, the singer, the drummer not built; the guitarist still walks the street), `aquarium`, `garden` (the herb cottage, the butterfly
+  house, its fence), `avenue` (the seven shells), `keep`, `civic` (the tower; its six droids keep a row on the sidewalk east of the bodega, their
+  departments' addresses there), `power` (the power house, and with it the grid off). Each place's own code asks `AWAY.has(key)` where it's set
+  out; whatever leans on one skips it (lives, residents, walkers, jobs, mail: your box a flat in the apartment house; the menu's buttons, the map
+  editor, the dragons' ledges, the view's bounds). **To bring one back**: `?bring=diner,bar` (or `?bring=all`) for a look; for good, take its key
+  out of `AWAY0`; the map editor then moves it as before. The Moon Shrine stays in the park (the menu's MORE PLACES).
+- **The castle for the woodland creatures** (owner, 18 Oct 2026: "the castle should be half height. it is for the woodlan creatuers who live
+  here, not normal size charaters"; "same rulse apply for the castle, when you walk in the walls fall at bottom so you can see yuorself"):
+  `castle.js` builds every piece at half its height (`CYS` .5: the curtain, the drums, the gatehouse and its arch, the rim, the well; each side's
+  picture half the rows, so its pixels stay square; the solids with it), its footprint as it was; the stair down and the dungeon as they were.
+  Each side's pieces (its curtain, its drums, the gatehouse with the front) are a mesh of their own, cut to their foot while you're half a tile
+  inside the bailey (`cutWalls`, `MODS.castleIn`). The keep is off the map (above).
+- **The main street twice as long, its far sidewalk twice as deep** (owner, 18 Oct 2026: "double th size of the street of main (left and right
+  diretions) and double the size of the siewalk on the central park side. move the tress back away frmo the street further into the park"):
+  `MAINX` in `map-pre.js`: the street run on 70 tiles each way (`BOD.MAP` x -38.5 to 242), the west street, the park's west wall and the castle
+  70 west (`LAYOUT0.castle` x -70), the Avenue, the park's east wall and the force field's east side 70 east; the park twice as wide between them
+  (its round, ways, gates and crosswalks at its new middle); the far sidewalk 6 tiles (`BOD.MAP.y1` FAR+6), the park, the north street and the
+  force field's north side 3 north with it (`NORTHY`); the three buildings where they were. **The oaks** no nearer the park's front wall than 12
+  tiles, crowns and all (`TREEY`, `park.js`). **The park's lawn is the land's sheet** (the same painter, `lawnCol`): only its two ways and the
+  round are painted (twice as wide, the lawn's picture would have passed the atlas's 8192 rows), and its long walls are built in 40-tile lengths.
+- **Found on the way** (18 Oct 2026): the page had stopped loading (`kerbFace is not defined`, then `cvNoise`: two of the game kit's painters
+  used outside the bodega's scope, `bodbuild.js`'s kerbs and `park.js`'s pavers); both now through `BOD.g`. `tests/clipcheck.cjs` fails the
+  same 8 Moon Shrine things it failed before this change (its parapets, terrace, gate and blossoms, after `STORE.shrineFix`): not fixed here.
 ## THE MARKET: the one official map
 
 **THE MARKET** (owner, 17 Oct 2026: "one official MARKET map im gona start filling in") is the game's map here: every place the owner adds goes
@@ -791,3 +822,11 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   and gate with barbed wire (the mesh cut out); the bed along the front, its curb, mulch and five bare shrubs. Inside a plain room under one lamp
   (its insides to come). Some 1,500 triangles, two lamps, no new program. The lot is four pieces round the shop (one piece whose middle fell
   inside it was taken for the interior and drawn only near the door: interiors.js). `tests/vcrshot.cjs <out>` (front, wide, side yard, inside).
+- **Libraries for what was hand-written** (owner, 18 Oct 2026: "is there another game engine that makes more sense" — no, three.js stays; then
+  "lets start installing libraries for thinsg weve hand written"): **three-mesh-bvh** (0.8.3 from jsDelivr, `src/bvh.js`) for every ray (a double
+  click, the drag's pivot, the world and map editors' picks): fetched 2.5 s after the game runs, its trees built in the background a mesh a moment
+  ('indirect', so faceIndex and interiors.js's index swaps stay as they were; a mesh that keeps changing keeps three's own), and a hidden mesh (or
+  one in a hidden group) no longer looked at by any ray. `?bvh=0` the old rays. `tests/bvhcheck.cjs`: 169 rays over the street, every hit the same,
+  2.5 s to 0.34 s (software rendering). Looked at and **not** taken: recast-navigation for `CITY.route` (the A* there judges each walker's way by
+  his own test of a spot, which a navmesh can't; routes are 2-20 ms already); BatchedMesh's per-object culling (needs three past r160, and
+  map-pre.js patches r160's shader chunks by their text).

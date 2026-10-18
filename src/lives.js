@@ -32,7 +32,7 @@ const LIVES={on:QS.get('lives')!=='0',ready:false,ms:0,stepMs:0,list:[],force:nu
     { const B=BOD.B0, dx=XB((B.x0+B.x1)/2); place('bodega',{walls:true,door:{x:dx,z:ZS_},path:[{x:dx,z:ZB(B.y1)+.6*T},{x:dx,z:ZB(B.y1)-3.4}],box:bx(XB,ZB,[B.x0+1,BOD.BODOFF+1,B.x1-1,B.y1-1]),reach:2.5*T}); }
     if(MODS.apts&&MODS.apts.A){ const A=MODS.apts.A, H=MODS.apts.H, dx=XB(A.x1-1.0), hm=(H.y0+H.y1)/2;
       place('apthouse',{walls:true,door:{x:dx,z:ZS_},path:[{x:dx,z:ZB(A.y1)+.6*T},{x:dx,z:ZB(A.y1)-1.2},{x:XB(A.x1-.75),z:ZB(hm)},{x:XB((A.x0+A.x1)/2),z:ZB(hm)}],box:bx(XB,ZB,[A.x0+.7,H.y0+.4,A.x1-.7,H.y1-.4]),reach:3*T}); }
-    { const Rm=POOLR.ROOMS||[], dx=POOLR.X(22.75), HY=(6.24+8.28)/2;
+    if(!AWAY.has('apartments')){ const Rm=POOLR.ROOMS||[], dx=POOLR.X(22.75), HY=(6.24+8.28)/2;   // (the apartment building off the map, owner 18 Oct 2026: AWAY, map-pre.js)
       place('lobby',{walls:true,door:{x:dx,z:ZS_},path:[{x:dx,z:POOLR.Z(16.8)+.6*T},{x:dx,z:POOLR.Z(15.6)},{x:dx,z:POOLR.Z(12)}],box:Rm[5]&&bx(POOLR.X,POOLR.Z,[Rm[5][0]+.8,Rm[5][1]+.8,Rm[5][2]-.8,Rm[5][3]-.8]),reach:2.5*T});
       place('hallway',{walls:true,door:{x:dx,z:ZS_},path:[{x:dx,z:POOLR.Z(16.8)+.6*T},{x:dx,z:POOLR.Z(15.6)},{x:dx,z:POOLR.Z(HY)},{x:POOLR.X(27.3*2/3-1),z:POOLR.Z(HY)},{x:POOLR.X(11),z:POOLR.Z(HY)}],box:Rm[3]&&bx(POOLR.X,POOLR.Z,[Rm[3][0]+.6,Rm[3][1]+.4,Rm[3][2]-.6,Rm[3][3]-.4]),reach:4*T}); }
     if(BOD.GD){ const G=BOD.GD, dx=XB(G.door[0]); place('dojo',{walls:true,door:{x:dx,z:ZS_},path:[{x:dx,z:ZB(G.door[1])+.8*T},{x:dx,z:ZB(G.door[1])-1.5*T},mid(XB,ZB,G.r)],box:bx(XB,ZB,[G.r[0]+1.2,G.r[1]+1.2,G.r[2]-1.2,G.r[3]-1.2]),reach:3*T}); }
@@ -87,7 +87,7 @@ const LIVES={on:QS.get('lives')!=='0',ready:false,ms:0,stepMs:0,list:[],force:nu
   // work, meal, evening and night by what he is (the skeleton pawns the castle's, asleep in its dungeon; the ogres at the dojo; the villagers
   // the bodega's; the heroes the park's; the mushroom seller at the stalls; the gold one the platform's)
   const lifeOf=(N,i)=>{ const k=N.key, pick=(a,b)=>i%2?a:b, s=((i*7)%9-4)*.2, has=id=>!!P[id];
-    const L={s,home:has('apthouse')&&i%3!==2?'apthouse':pick('lobby','hallway'),meal:has('diner')?'diner':'street',work:'bodega',eve:pick('park','street'),night:'street',at:null,k:0,wp:null,i:0,state:'standing',to:null,wt:0};
+    const L={s,home:has('apthouse')&&(i%3!==2||!has('lobby'))?'apthouse':has('lobby')?pick('lobby','hallway'):'street',meal:has('diner')?'diner':'street',work:'bodega',eve:pick('park','street'),night:'street',at:null,k:0,wp:null,i:0,state:'standing',to:null,wt:0};
     if(/^skeleton/.test(k)){ L.work='castle'; L.home=has('dungeon')?'dungeon':L.home; L.eve='park'; }
     else if(/^ogre/.test(k)){ L.work=has('dojo')?'dojo':'street'; }
     else if(/^hero/.test(k)){ L.work='park'; L.eve='stalls'; }

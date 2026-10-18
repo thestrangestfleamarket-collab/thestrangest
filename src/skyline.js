@@ -15,6 +15,14 @@ const FAR3={};
   const HAZE0=26, HAZE1=q&&+q>0?+q:560;   /* (thinner since 17 Oct 2026, owner: "decrease the haze a little bit closer to city so we can see a little bit of the details of the buildings through it") */   // (tiles: clear to here, the full colour there; the skyline stands at some 205-220)
   const FOG=new THREE.Fog(0x8fa3c0,1,2), fc=new THREE.Color(), pale=new THREE.Color(.74,.84,.98), navy=new THREE.Color(.08,.1,.17), V=new THREE.Vector3();
   FAR3.on=on; FAR3.fog=FOG;
+  // THE MIST (owner, 18 Oct 2026, of a shot from tests/moodshot.cjs, the park at 5:24 pm in a teal mist: "i like the exact look entier game (no
+  // fireflies) just the foggyh misty haze ... in distance, perfect"): the haze made a mist, the default: teal, starting 3 tiles before you
+  // (toward the camera) and the full colour 12 past you, so the near is clear and the far melts into it in the fog's flat steps (CEL), no sky dome (the background the mist); the
+  // shot's colour at dusk, darker at night, a little paler at high noon. The old far haze is DISTANCE HAZE's FAR (`market-haze` '2'); ?mist=0 the far
+  // haze, ?mist=near,far its two distances in tiles for a test. The weather's FOG still takes over when it comes. Cost: nothing (the same fog).
+  const mq=QS.get('mist'), mv=(mq||'').split(',').map(Number); let mist=mq!=='0'; try{ if(mq==null&&localStorage.getItem('market-haze')==='2')mist=false; }catch(e){}
+  const MIST0=mv.length===2&&mv.every(isFinite)?mv[0]:-3, MIST1=mv.length===2&&mv.every(isFinite)?mv[1]:12, MD=new THREE.Color(0x3a6e68), MN=new THREE.Color(0x152d2c), MH=new THREE.Color(0x4a7f79);
+  FAR3.mist=mist;
   // THE SKYLINE: along each side of the land's square, a back row 4 tiles in from its edge and a front row 16 tiles in, each building a block
   // (a quarter of them a step narrower at the top: a set-back). Laid out once, the same every time (a hash, no Math.random)
   const LR=MODS.landR, hs=(i,j)=>{ const v=Math.sin(i*12.9898+j*78.233)*43758.5453; return v-Math.floor(v); }, B=[];
@@ -63,8 +71,9 @@ const FAR3={};
     FU.uAmb.value=.55*Math.max(0,Math.min(1,(CLOCK.elev()+3)/12));
     if(!FAR3.on||inside||(scene.fog&&scene.fog!==FOG)){ if(scene.fog===FOG)scene.fog=null; return; }   // (the weather's own fog, when it comes, is thicker: it has the scene)
     const day=Math.max(0,Math.min(1,(CLOCK.elev()+4)/14)), d=-V.copy(pos).applyMatrix4(cam.matrixWorldInverse).z;   // (how deep you stand in the camera's view: the haze starts past you)
+    if(FAR3.mist){ const k=Math.max(0,Math.min(1,(CLOCK.elev()+6)/12)); FOG.color.copy(MN).lerp(MD,k).lerp(MH,Math.max(0,Math.min(1,(CLOCK.elev()-6)/40))); FOG.near=d+MIST0*TILE; FOG.far=d+MIST1*TILE; scene.fog=FOG; SKY.dome.visible=false; scene.background.copy(FOG.color); return; }   // (THE MIST: above; no sky in it, the background the mist's own colour, so the far melts into it)
     FOG.color.copy(SKY.U.uH.value).lerp(SKY.U.uA.value,.4);   /* (the dome's horizon colour, between the sun's side and the side away, so the far fades into the sky it stands against: sky.js, built before this) */ FOG.near=d+HAZE0*TILE; FOG.far=d+HAZE1*TILE; scene.fog=FOG; };
   // GRAPHICS' DISTANCE HAZE, beside LIGHT GRAIN
-  const g=document.querySelector('#dgrain'); if(g){ const b=document.createElement('button'); b.className='btn'; b.id='dhaze'; const draw=()=>{ b.textContent='DISTANCE HAZE '+(FAR3.on?'ON':'OFF'); b.setAttribute('aria-pressed',String(FAR3.on)); };
-    b.onclick=()=>{ FAR3.on=!FAR3.on; try{ localStorage.setItem('market-haze',FAR3.on?'1':'0'); }catch(e){} draw(); }; g.after(b); draw(); }
+  const g=document.querySelector('#dgrain'); if(g){ const b=document.createElement('button'); b.className='btn'; b.id='dhaze'; const draw=()=>{ b.textContent='DISTANCE HAZE '+(!FAR3.on?'OFF':FAR3.mist?'MIST':'FAR'); b.setAttribute('aria-pressed',String(FAR3.on)); };
+    b.onclick=()=>{ if(!FAR3.on){ FAR3.on=true; FAR3.mist=true; } else if(FAR3.mist)FAR3.mist=false; else FAR3.on=false; try{ localStorage.setItem('market-haze',!FAR3.on?'0':FAR3.mist?'1':'2'); }catch(e){} draw(); }; g.after(b); draw(); }   // (MIST, FAR, OFF in turn)
   window.FAR3=FAR3; }

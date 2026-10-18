@@ -1509,6 +1509,30 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   measures one whole frame (every pass). **THE HAZE FADES GRADUALLY** (owner, of the mist's bands: "i dont want hard lines like that, needs to be cel
   shaded shadows and gardual chanegs in haze tarnspacency"): the fog's 8 flat steps gone, the outskirts' darkening and the skyline's steps smooth;
   the light and shadows keep their cel bands. `tests/mistviews.cjs`.
+- **His feet on the ground, not on him** (owner, 18 Oct 2026: "are we just patching again instead of fixing root? or maybe we are handwriting
+  something that is already available"; his yes to world-space foot locking; `footLock` in walker-rig-mock.js, build.py's three hooks):
+  the rig had planted a foot only in his own frame, so a standing foot swung round with him as he turned (up to 540 degrees a second), and
+  starting and stopping snapped both feet to their places. Now, for the player (`st.world`, set by the page before his pose; the musician and
+  the bearded Walker as before): a heel that lands is locked at its spot in the world, and its way (`fyaw`, the foot kept flat and pointing where
+  it landed; past 50 degrees from him it pivots with him on the spot), and the leg reaches back to it till the foot lifts; a swing starts from
+  where the foot really was and lands where his going puts it; a foot a fast turn leaves out of reach takes a quick step back under him (0.16 s);
+  stopped, a foot left out of its place takes a short settling step (0.2 s) to stand by the other, one at a time (`st.fstep`); every foot on the
+  ground where it stands, the highest under its heel, ankle and toe (stairs, kerbs, the stoop: `W.gnd` is the page's groundY), his floor no higher
+  than a foot he has on the ground (the page's py) and the rig's settle told of a lower one (`st.fdn`), his hips lowered in whole pixels as far as a
+  leg needs. Measured (`node tests/footworld.cjs`: the rig played as the page plays him through eleven cases, no drawing): a foot on the ground
+  moves 0 in the world walking, running, round a circle, stopping, starting and on stairs up and down; a quarter turn 0.67 (hundredths of a world
+  unit a second, one quick step), a U-turn 3.2 (its pivots); on flat ground and stairs a planted foot within about a pixel of its ground. In the
+  page: no errors, and after a stop every piece of him the same frame to frame. **Found on the way** (`pose()`): since 17 Oct (the sitting change)
+  the line that keeps his arms clear of his body, lays the walk fresh and puts signing over it had sat inside a comment and never ran; out again.
+  Not done: the foot's own turn on the knee (the knee still points his way when a foot is turned); the clip-driven characters (pawns, skeletons:
+  their own foot lock is the next at his word); a pivot on the ball (the pivot is about the ground under the ankle). Cost: some 0.05 ms a frame.
+- **His walk even frame to frame** (owner, 18 Oct 2026: "test the walk to see if its smooth, right now its super choppy and jumpy"; `step` in
+  walker-rig-mock.js): the rig stepped in fixed 1/120 s ticks and carried the rest of a frame's time to the next, so a frame moved him one tick
+  and the next two: at 144 Hz his speed swung 45% frame to frame, 23% with uneven frames. Now each frame's whole time is cut into even steps of
+  at most 1/120 s: 0% at 60, 144, uneven and 30 Hz (`node tests/walksmooth.cjs [run]`, which also counts his hips' jolts). **Found, not
+  changed**: his hips drop 2 pixels and back each step (17, 16, 15, 16, 17) at 3.4 steps a second; a smoother, shallower wave was tried and his
+  legs can't reach the ground from it (footLock lowered him back to the same dip): at his pace his short legs need long steps, and long steps
+  bring the hips down. A calmer walk is his call: slower and fewer steps, or longer legs.
 - **Ghost Street made again** (owner, 18 Oct 2026: "lets make the building realistic like we did sidewalks with natural shapes, edges, depth, lived in,
   ivy growing around it, make sure the outside matches inside layout, make it 1.5 bigger, remoev vending machines out front, put another window
   there, lights shining out strong, rays, reflections, etc moody"; `src/ghostdojo.js`, superseding the kit's shop pieces and the vending machines):

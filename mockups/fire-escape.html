@@ -1,0 +1,123 @@
+<title>Fire Escape View</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: the scene fills the frame; one control strip pinned to the foot, the game's own dark panel look */
+:root{ --night:#07090d; --panel:#0e1016ee; --line:#3a3f4e; --fg:#d8dbe4; --dim:#8a8f9c; --key:#f2c14e;
+  --pixel:"Silkscreen","Courier New",monospace; color-scheme:dark }
+html,body{height:100%}
+body{background:var(--night);color:var(--fg);font:12px var(--pixel);overflow:hidden}
+#cv{position:fixed;inset:0;width:100%;height:100%;image-rendering:pixelated;display:block}
+.bar{position:fixed;left:0;right:0;bottom:0;display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;
+  padding-block:10px calc(10px + env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  background:var(--panel);border-top:2px solid var(--line)}
+.grp{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.lab{color:var(--dim);letter-spacing:.06em}
+button{font:inherit;color:var(--fg);background:#0b0d13;border:2px solid var(--line);padding:5px 9px;cursor:pointer}
+button[aria-pressed="true"]{color:var(--key);border-color:var(--key)}
+button:focus-visible,input:focus-visible{outline:2px solid var(--key);outline-offset:2px}
+input[type=range]{width:min(220px,40vw);accent-color:var(--key)}
+#hr{min-width:5ch;font-variant-numeric:tabular-nums;color:var(--key)}
+.note{position:fixed;top:calc(12px + env(safe-area-inset-top,0px));left:max(16px,env(safe-area-inset-left,0px));right:max(16px,env(safe-area-inset-right,0px));
+  color:var(--dim);max-width:62ch;line-height:1.5;text-shadow:0 1px 0 #000}
+.note b{color:var(--fg)}
+</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Silkscreen&display=swap">
+<canvas id="cv"></canvas>
+<div class="note"><b>FIRE ESCAPE, MOCKUP.</b> The view from your landing on the apartment house: its own little map, the street not loaded. Pick a cloud look, scrub the hour, climb the ladders.</div>
+<div class="bar">
+  <div class="grp"><span class="lab">CLOUDS</span><button id="cA" aria-pressed="true">A PIXEL</button><button id="cB" aria-pressed="false">B LOW-POLY</button><button id="cC" aria-pressed="false">C SOFT</button></div>
+  <div class="grp"><label class="lab" for="hour">HOUR</label><input id="hour" type="range" min="0" max="24" step="0.05" value="17.5"><span id="hr">17:30</span></div>
+  <div class="grp"><span class="lab">FLOOR</span><button id="fdn">DOWN</button><span id="fl" style="color:var(--key)">3</span><button id="fup">UP</button></div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(()=>{ const cv=document.getElementById('cv'), R=new THREE.WebGLRenderer({canvas:cv,antialias:false}); R.setPixelRatio(1);
+  const PX=3; // (screen pixels a picture pixel: the game's chunky look)
+  const scene=new THREE.Scene(), cam=new THREE.PerspectiveCamera(46,1,.1,3000);
+  const rnd=(()=>{ let t=11; return ()=>{ t=(t*16807)%2147483647; return t/2147483647; }; })();
+  // ---- THE WALL: the tenement's brick, painted a texel at a time (11 x 5 bricks, set-back mortar, grime low down), the side wall in shade
+  const FLOORS=6, FH=3.4, W=9, D=7;
+  const brick=(w,h)=>{ const c=document.createElement('canvas'); c.width=w; c.height=h; const g=c.getContext('2d'), im=g.createImageData(w,h);
+    for(let y=0;y<h;y++)for(let x=0;x<w;x++){ const k=Math.floor(y/5), zz=y%5, uu=(x+(k&1)*5.5)/11, bi=Math.floor(uu), hb=Math.abs(Math.sin(bi*12.9+k*78.2)*43758.5)%1, hp=Math.abs(Math.sin(x*3.1+y*7.7)*9999)%1;
+      let r=132,gg=74,b=58; if(zz===0||uu-bi<1/11){ r=72;gg=60;b=54; } else { const f=(.88+hb*.22)*(zz===4?1.08:zz===1?.86:1)*(.95+.1*hp)*(1-.25*Math.max(0,1-y/(h*.25))*0); r*=f; gg*=f; b*=f; if(hb<.05){ r*=.65; gg*=.65; b*=.65; } }
+      const i=(y*w+x)*4; im.data[i]=r; im.data[i+1]=gg; im.data[i+2]=b; im.data[i+3]=255; }
+    g.putImageData(im,0,0); const t=new THREE.CanvasTexture(c); t.magFilter=t.minFilter=THREE.NearestFilter; t.wrapS=t.wrapT=THREE.RepeatWrapping; return t; };
+  const bt=brick(132,160); const front=new THREE.MeshLambertMaterial({map:bt}), side=new THREE.MeshLambertMaterial({map:bt,color:0x9a9aa6,emissive:0x120c0a});
+  { const tF=bt.clone(); tF.needsUpdate=true; tF.repeat.set(W/2.2,FLOORS*FH/2.6); front.map=tF; const tS=bt.clone(); tS.needsUpdate=true; tS.repeat.set(D/2.2,FLOORS*FH/2.6); side.map=tS; }
+  const bld=new THREE.Group(); scene.add(bld);
+  const box=(w,h,d,m,x,y,z)=>{ const me=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m); me.position.set(x,y,z); bld.add(me); return me; };
+  box(W,FLOORS*FH,D,[side,side,new THREE.MeshLambertMaterial({color:0x3a3330}),new THREE.MeshLambertMaterial({color:0x222}),front,front],0,FLOORS*FH/2,-D/2);
+  // the cornice and each floor's stone band
+  const stone=new THREE.MeshLambertMaterial({color:0x8e8676}); for(let f=1;f<=FLOORS;f++)box(W+.12,.12,.12,stone,0,f*FH-.2,.06); box(W+.5,.5,.5,stone,0,FLOORS*FH+.1,.15);
+  // windows: two a floor, lit by night (warm), the sky's colour by day
+  const WIN=[]; for(let f=0;f<FLOORS;f++)for(const x of [-2.2,2.2]){ const m=new THREE.MeshBasicMaterial({color:0xfff2b8}), w=box(1.25,1.8,.06,m,x,f*FH+1.55,.03); const fr=new THREE.MeshLambertMaterial({color:0x2a2622});
+    box(1.4,.1,.12,fr,x,f*FH+.62,.06); box(1.4,.08,.1,fr,x,f*FH+2.48,.05); box(.08,1.8,.1,fr,x,f*FH+1.55,.06); box(1.3,.06,.08,fr,x,f*FH+1.85,.06); WIN.push({m,f,x,on:rnd()<.7}); }
+  // ---- THE FIRE ESCAPES: a grated landing a floor (from the 2nd up), railings of bars, a ladder up through a hatch to the next
+  const IRON=new THREE.MeshLambertMaterial({color:0x1d1f22}), GRATE=new THREE.MeshLambertMaterial({color:0x2a2c30});
+  for(let f=1;f<FLOORS;f++){ const y=f*FH+.42, x0=-3.6, x1=3.6, dz=1.25;
+    box(x1-x0,.06,dz,GRATE,0,y,dz/2); for(let i=0;i<14;i++)box(.04,.08,dz,IRON,x0+.25+i*.5,y-.02,dz/2);
+    box(x1-x0,.05,.05,IRON,0,y+1,dz); box(.05,.05,dz,IRON,x0,y+1,dz/2); box(.05,.05,dz,IRON,x1,y+1,dz/2);
+    for(let i=0;i<=24;i++)box(.035,1,.035,IRON,x0+i*(x1-x0)/24,y+.5,dz); for(let i=0;i<=4;i++){ box(.035,1,.035,IRON,x0,y+.5,i*dz/4); box(.035,1,.035,IRON,x1,y+.5,i*dz/4); }
+    if(f<FLOORS-1){ const lx=x1-.55; for(const s of [-.22,.22])box(.05,FH,.05,IRON,lx+s,y+FH/2,dz*.55); for(let r=1;r<11;r++)box(.48,.04,.04,IRON,lx,y+r*FH/11,dz*.55); } }
+  // ---- THE FAR CITY: two rows of flat blocks round the horizon, the haze taking them (the scene's fog in the sky's horizon colour)
+  const city=new THREE.Group(); scene.add(city); const cm=new THREE.MeshLambertMaterial({color:0x4a5260}), cw=new THREE.MeshBasicMaterial({color:0xffd890});
+  for(let i=0;i<140;i++){ const a=-1.5+i/140*3, r=520+rnd()*600, h=30+rnd()*(r>800?170:90), w=18+rnd()*30, x=Math.sin(a)*r, z=-Math.cos(a)*r;
+    const b=new THREE.Mesh(new THREE.BoxGeometry(w,h,w),cm); b.position.set(x,h/2-30,z); b.lookAt(0,h/2-30,0); city.add(b);
+    for(let k=0;k<6;k++){ if(rnd()<.5)continue; const l=new THREE.Mesh(new THREE.PlaneGeometry(1.2,1.6),cw); l.position.set(x*.985,(rnd()*.8+.1)*h-30,z*.985); l.scale.setScalar(3); l.lookAt(0,l.position.y,0); l.userData.win=1; city.add(l); } }
+  
+  // ---- THE SKY: a dome painted by the hour (the game's stops: night, dawn, day, golden hour, sunset, blue hour) with the sun's disc
+  const skyU={top:{value:new THREE.Color()},mid:{value:new THREE.Color()},hor:{value:new THREE.Color()},sun:{value:new THREE.Vector3()},sunC:{value:new THREE.Color()},star:{value:0}};
+  const sky=new THREE.Mesh(new THREE.SphereGeometry(1500,32,16),new THREE.ShaderMaterial({side:THREE.BackSide,depthWrite:false,uniforms:skyU,
+    vertexShader:'varying vec3 vD; void main(){ vD=normalize(position); gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.); }',
+    fragmentShader:'uniform vec3 top,mid,hor,sun,sunC; uniform float star; varying vec3 vD; float h(vec3 p){ return fract(sin(dot(p,vec3(12.9,78.2,37.7)))*43758.5); } void main(){ float y=max(vD.y,0.); vec3 c=mix(hor,mid,smoothstep(0.,.18,y)); c=mix(c,top,smoothstep(.18,.7,y)); float s=dot(vD,normalize(sun)); c+=sunC*smoothstep(.9988,.9992,s)+sunC*.18*smoothstep(.96,1.,s); vec3 q=floor(vD*420.); c+=star*step(.9975,h(q))*vec3(.9); gl_FragColor=vec4(c,1.); }'}));
+  scene.add(sky);
+  const STOPS=[ // (sun height in degrees: zenith, middle, horizon, sun colour, sun light, fill)
+    [-90,0x05070f,0x0a0e1e,0x141a30,0x000000,0,.18],[-12,0x05070f,0x10162c,0x1e2446,0x000000,0,.2],[-6,0x101634,0x2a2c5a,0x6a4a6a,0xff7a4a,0,.26],[-2,0x1c2450,0x5a4a7a,0xe07a5a,0xff8a5a,.15,.32],
+    [3,0x2a4a8a,0x6a7ab0,0xffa86a,0xffa060,.7,.42],[10,0x3a6ab8,0x7aa0d8,0xf0c8a0,0xffd4a0,1.4,.5],[30,0x3070c8,0x6aa0e0,0xbfdcff,0xfff1d6,1.9,.55],[90,0x2a68c8,0x5a98e0,0xb0d4ff,0xfff1d6,2,.55]];
+  const elev=h=>50*Math.cos(2*Math.PI*(h-12.7)/24)-8, azim=h=>2*Math.PI*(h-12.7)/24;
+  const look=e=>{ let i=0; while(i<STOPS.length-2&&STOPS[i+1][0]<e)i++; const a=STOPS[i], b=STOPS[i+1], t=Math.max(0,Math.min(1,(e-a[0])/(b[0]-a[0]))), C=(x,y)=>new THREE.Color(x).lerp(new THREE.Color(y),t); return {top:C(a[1],b[1]),mid:C(a[2],b[2]),hor:C(a[3],b[3]),sunC:C(a[4],b[4]),sunI:a[5]+(b[5]-a[5])*t,fill:a[6]+(b[6]-a[6])*t}; };
+  const sun=new THREE.DirectionalLight(0xffffff,1), hemi=new THREE.HemisphereLight(0xbfdcff,0x3a3028,.5); scene.add(sun,hemi);
+  const lamp=new THREE.PointLight(0xffd090,0,9,1.6); scene.add(lamp);
+  scene.fog=new THREE.Fog(0x000000,60,520);
+  // ---- THE CLOUDS, three looks: big and slow far behind the building, smaller drifting past just behind it and just in front of you
+  const CL={A:[],B:[],C:[]};
+  const pixTex=(soft)=>{ const N=64, c=document.createElement('canvas'); c.width=c.height=N; const g=c.getContext('2d'), im=g.createImageData(N,N);
+    const blobs=Array.from({length:7},(_,i)=>[.2+i*.1+rnd()*.06,.55-Math.sin(i/6*Math.PI)*.18+rnd()*.05,.14+Math.sin(i/6*Math.PI)*.12]);
+    for(let y=0;y<N;y++)for(let x=0;x<N;x++){ const u=(x+.5)/N, v=(y+.5)/N; let d=0; for(const [bx,by,br] of blobs)d=Math.max(d,1-Math.hypot(u-bx,(v-by)*1.3)/br); if(v>.66)d=Math.min(d,(.72-v)*12);
+      const i=(y*N+x)*4, lit=1-v; let a=soft?Math.max(0,Math.min(1,d*2.2)):d>.06?1:0, sh=soft?.62+.38*lit:(lit>.55?1:lit>.4?.82:.64);
+      im.data[i]=255*sh; im.data[i+1]=250*sh; im.data[i+2]=244*sh; im.data[i+3]=255*a; }
+    g.putImageData(im,0,0); const t=new THREE.CanvasTexture(c); t.magFilter=t.minFilter=soft?THREE.LinearFilter:THREE.NearestFilter; return t; };
+  const tA=pixTex(false), tC=pixTex(true);
+  const layers=[[26,-1300,-600,260,1.2],[14,-300,-80,60,3],[8,-6,8,12,5]];   // (count, z from, z to, size, drift: far and slow, behind the building, in front of you)
+  for(const [n,z0,z1,s,v] of layers)for(let i=0;i<n;i++){ const z=z0+rnd()*(z1-z0), x=(rnd()-.5)*Math.abs(z)*2.4+((z>0)?(rnd()-.5)*30:0), y=(z>-10?FH*2+rnd()*FH*3:30+rnd()*Math.abs(z)*.12), sc=s*(.6+rnd()*.8);
+    const a=new THREE.Sprite(new THREE.SpriteMaterial({map:tA,transparent:true,alphaTest:.5,fog:false})); a.scale.set(sc*1.8,sc,1); a.position.set(x,y,z); a.userData={v,x0:x}; scene.add(a); CL.A.push(a);
+    const c=new THREE.Sprite(new THREE.SpriteMaterial({map:tC,transparent:true,depthWrite:false,fog:false,opacity:z>0?.55:.9})); c.scale.set(sc*1.8,sc,1); c.position.set(x,y,z); c.userData={v,x0:x}; scene.add(c); CL.C.push(c);
+    const g=new THREE.Group(), m=new THREE.MeshLambertMaterial({color:0xffffff,flatShading:true,fog:false,emissive:0x8a8a90}); for(let k=0;k<7;k++){ const r=sc*(.18+rnd()*.14)*(k===3?1.4:1); const p=new THREE.Mesh(new THREE.IcosahedronGeometry(r,0),m); p.position.set((k-3)*sc*.16,Math.sin(k/6*Math.PI)*sc*.12,(rnd()-.5)*sc*.15); g.add(p); }
+    g.position.set(x,y,z); g.userData={v,x0:x}; scene.add(g); CL.B.push(g); }
+  let style='A'; const setStyle=s=>{ style=s; for(const k in CL)for(const o of CL[k])o.visible=k===s; for(const k of 'ABC')document.getElementById('c'+k).setAttribute('aria-pressed',String(k===s)); };
+  for(const k of 'ABC')document.getElementById('c'+k).onclick=()=>setStyle(k); setStyle('A');
+  // ---- THE HOUR and YOUR FLOOR
+  let hour=17.5, floor=3, camY=floor*FH+2; const hr=document.getElementById('hour'), hrl=document.getElementById('hr');
+  const setHour=h=>{ hour=h; hrl.textContent=String(Math.floor(h)).padStart(2,'0')+':'+String(Math.floor(h%1*60)).padStart(2,'0'); };
+  hr.oninput=()=>setHour(+hr.value); setHour(17.5);
+  const fl=document.getElementById('fl'); const setFloor=f=>{ floor=Math.max(2,Math.min(FLOORS-1,f)); fl.textContent=floor; };
+  document.getElementById('fup').onclick=()=>setFloor(floor+1); document.getElementById('fdn').onclick=()=>setFloor(floor-1);
+  addEventListener('keydown',e=>{ if(e.key==='ArrowUp'||e.key==='w')setFloor(floor+1); if(e.key==='ArrowDown'||e.key==='s')setFloor(floor-1); });
+  // ---- EACH FRAME
+  const size=()=>{ const w=innerWidth, h=innerHeight; R.setSize(Math.ceil(w/PX),Math.ceil(h/PX),false); cam.aspect=w/h; cam.updateProjectionMatrix(); }; addEventListener('resize',size); size();
+  const still=matchMedia('(prefers-reduced-motion: reduce)').matches; let t0=performance.now();
+  const frame=now=>{ const dt=Math.min(.05,(now-t0)/1000); t0=now;
+    const e=elev(hour), a=azim(hour), L=look(e); skyU.top.value.copy(L.top); skyU.mid.value.copy(L.mid); skyU.hor.value.copy(L.hor); skyU.sunC.value.copy(L.sunC); skyU.star.value=Math.max(0,Math.min(1,(-6-e)/6));
+    const sv=new THREE.Vector3(Math.sin(a)*Math.cos(e*Math.PI/180),Math.sin(e*Math.PI/180),-Math.cos(a)*Math.cos(e*Math.PI/180)*-1); skyU.sun.value.copy(sv);
+    sun.position.copy(sv).multiplyScalar(50); sun.intensity=L.sunI; sun.color.copy(L.sunC.clone().lerp(new THREE.Color(1,1,1),.4)); hemi.intensity=L.fill; hemi.color.copy(L.mid);
+    scene.fog.color.copy(L.hor).lerp(L.mid,.3); const dark=e<-1;
+    for(const w of WIN)w.m.color.set(dark&&w.on?0xfff2b8:new THREE.Color(L.mid).lerp(new THREE.Color(0x101418),.55));
+    for(const o of city.children)if(o.userData.win)o.visible=dark&&rnd()<1;
+    lamp.position.set(-2.2,floor*FH+1.6,.8); lamp.intensity=dark?2.2:0;
+    const cc=L.sunC.clone().lerp(new THREE.Color(1,1,1),.5).lerp(L.mid,dark?.75:.15), sh=dark?.35:1;
+    for(const k in CL)for(const o of CL[k]){ if(!still)o.position.x+=o.userData.v*dt*.6; if(o.position.x>o.userData.x0+Math.abs(o.position.z)*.6+60)o.position.x-=Math.abs(o.position.z)*1.2+120;
+      if(o.isSprite)o.material.color.copy(cc).multiplyScalar(sh); else{ o.children[0].material.color.copy(cc).multiplyScalar(sh*.6); o.children[0].material.emissive.copy(cc).multiplyScalar(sh*.45); } }
+    camY+=(floor*FH+2-camY)*Math.min(1,dt*4); cam.position.set(-10.5,camY+1.2,10.5); cam.lookAt(-1,camY+1.8,-6);
+    R.render(scene,cam); requestAnimationFrame(frame); };
+  requestAnimationFrame(frame); })();
+</script>

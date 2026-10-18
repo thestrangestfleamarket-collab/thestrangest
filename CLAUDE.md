@@ -1268,3 +1268,15 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   the batches' map chunks culled by the camera, characters out of the picture not drawn and far ones not run. Measured (tests/trisby.cjs,
   11 am, all on screen): the street 165,000 to 284,000 triangles (the bodega's shelves seen through its windows), the shop 141,000 to 288,000,
   the park 172,000 to 128,000. `tests/freewalk.cjs <out> [query]`, `tests/vegshot.cjs <out>`.
+- **The skeletons in the dungeon; one mailbox a street; the street light whole; the view back on you; the stalls' mockups** (owner, 18 Oct 2026):
+  **The skeletons** ("i want all the skeleton warriors and skeletons to be underneath the castle in the dungeon"): the four KayKit guards (their
+  street beats left), the gold skeleton and the four skeleton pawns (mage, reaper, guard light and heavy) live in the castle's great hall, walking
+  about it (`DUN()` in `npc-map.js`: the level under the street, the dungeon's group and floor, its solids; out of walkers.js's and lives.js's ways
+  of life). The troublemakers (the Rogue gone dark: skeletons too) don't come up the stairs any more (`?trouble=1` brings them back). The
+  mushroom seller, a skeleton, stays at his stall. **The collection boxes** ("lets only have 1 mail box per street"): four, one on each road's
+  park-side kerb clear of the gates (`mail.js`). **The street light** ("the lamppost doesnt connect"): its arm had floated a third of a metre over
+  the pole's top; the pole now runs up to it under a cap (`dress.js`). **Back on you** ("anytime youve scrolled away off screen from your
+  character and then you stat to move again, it should snap back to focus on you"): any frame he moves while the view's slid off him and he's off
+  the picture, the view is put back on him (`UI.follow`, `ui.js`). **The stalls without tents** ("i dont want these stripped tenst ... rows and rows
+  of diff mushrooms, standing between three tables in u shape ... show me mockups"): `mockups/market-stalls.html`,
+  https://claude.ai/artifact/ET6bXTLDgHdTfyAsyG4MTn (A trays, B stepped tiers, C heaps and overflow); his pick to come.

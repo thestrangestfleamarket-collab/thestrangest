@@ -999,6 +999,7 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
 - **The treetop grass in a variety** (owner, 18 Oct 2026, of the mockup https://claude.ai/artifact/Mj4zkmdHJhGk6ZKsPsC4Rr: "Imagine way bigger
   trees", then "Do a variety all over the park"; `KIND` in `WEEDS.lawnInit`): the lawns cut into patches some 24 tiles across (each half-tile
   square takes its nearest patch's seed), each patch one kind: the flat canopy, the rolling canopy, little crowns, big crowns (4-5 m), giant
-  crowns (6-8 m), big crowns pressed flat. A crown kind lays a grid of crowns (each its own place, size and green), every square's clump domed
+  crowns (6-8 m), big crowns pressed flat, and (owner: "lets do tuft too") the Grass Lab's card tufts, two to a square, the lawn's picture between
+  (the weeds' own program, a second instanced draw in the chunk). A crown kind lays a grid of crowns (each its own place, size and green), every square's clump domed
   by how near its crown's middle it is, its rim a step darker and lower: the treetops of a forest seen from high above. Every lawn, not only the
   park's. Still one clump a square, the cost as before (some 20,000-25,000 triangles in the picture), one program, no light.

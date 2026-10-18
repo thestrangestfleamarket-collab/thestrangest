@@ -819,8 +819,11 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   the store while you're there); the menu's STORED row has VCR REPAIR. The front speckled tan stucco between brown pilasters (boxes), the band
   and coping, two white-framed windows, the light box of a sign (glowing; its words painted once from a canvas), the doorway with 3110 over it;
   sides and back grey concrete block, the gooseneck lamp (lit, the side yard's one light), a camera, the meter; the side yard's chain-link fence
-  and gate with barbed wire (the mesh cut out); the bed along the front, its curb, mulch and five bare shrubs. Inside a plain room under one lamp
-  (its insides to come). Some 1,500 triangles, two lamps, no new program. The lot is four pieces round the shop (one piece whose middle fell
+  and gate with barbed wire (the mesh cut out); the bed along the front, its curb, mulch and five bare shrubs. **Inside** (owner: "yes"): a vinyl
+  checker floor; the counter across the front room (the till's green screen, a deck, a stack of tapes), the way behind it on the door's side; three
+  steel shelving units along the back wall full of VCRs (black, silver, grey, each with its slot and a light, some gaps, some stacked); the repair
+  bench on the west wall (an old TV showing static, a deck open on its green board, the iron, a bench lamp with its own small light), a stool;
+  cardboard boxes, a poster. Some 3,000 triangles in all, three lamps (the room's, the bench's, the gooseneck's), no new program. The lot is four pieces round the shop (one piece whose middle fell
   inside it was taken for the interior and drawn only near the door: interiors.js). `tests/vcrshot.cjs <out>` (front, wide, side yard, inside).
 - **Libraries for what was hand-written** (owner, 18 Oct 2026: "is there another game engine that makes more sense" — no, three.js stays; then
   "lets start installing libraries for thinsg weve hand written"): **three-mesh-bvh** (0.8.3 from jsDelivr, `src/bvh.js`) for every ray (a double

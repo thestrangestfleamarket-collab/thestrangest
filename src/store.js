@@ -199,8 +199,8 @@
   // between brown pilasters (boxes, standing out of it), the band under the coping, two white-framed windows, the light box of a sign (its words
   // painted once from a canvas), the door with its little 3110; its sides and back grey concrete block, a gooseneck lamp and a camera by the
   // front corner, the meter; a chain-link fence and gate across the side yard, barbed wire on top (its mesh cut out: the batch's alphaTest);
-  // the bed along the front, its curb, mulch and five bare shrubs. The sign a lit box (glowing, the batch's own); inside a plain room under one lamp (its own insides
-  // to come). Some 1,500 triangles, two lamps (LITE's: the room's, the gooseneck's), no new program; built after the game opens with the rooms above
+  // the bed along the front, its curb, mulch and five bare shrubs. The sign a lit box (glowing, the batch's own); inside the repair shop (below). Some
+  // 3,000 triangles, three lamps (LITE's: the room's, the bench's, the gooseneck's), no new program; built after the game opens with the rooms above
   STORE.places.push(['VCR REPAIR',0,0,'up']);
   STEPS.push(()=>{ const B={id:'lvcr',x0:380,y0:-92,x1:394,y1:-82,h:270}, H=B.h, hs=hash, P=[.2,2.5,4.95,7.9,10.05], WIN=[[.45,2.2],[5.2,7.6]], WZ=[42,118];
     const sto=(i,j)=>{ const r=hs(i,j,811); return r<.34?[214,200,182]:r<.56?[230,220,206]:r<.72?[186,164,142]:r<.82?[150,124,102]:r<.92?[246,242,234]:[112,94,80]; };
@@ -222,8 +222,10 @@
     const SD=g.getImageData(0,0,sw,shh).data, sig=(x,z)=>{ const i=Math.max(0,Math.min(sw-1,Math.floor((x-SX0)*24))), j=Math.max(0,Math.min(shh-1,Math.floor(SZ1-z))), k=(j*sw+i)*4; return [SD[k],SD[k+1],SD[k+2]]; };
     const conc=(x,y)=>{ const n=grain(x,y,814,1.2); return n<.4?[170,168,160]:n>.7?[186,184,176]:[178,176,168]; }, asph=(x,y)=>{ const r=hs(Math.floor(x*24),Math.floor(y*24),815); return r<.03?[118,118,122]:sh([66,67,71],.94+r*.12); };
     const mulchC=(x,y)=>{ const r=hs(Math.floor(x*24),Math.floor(y*24),816); return r<.4?[150,92,52]:r<.7?[118,70,40]:r<.88?[176,118,70]:[84,56,36]; };
-    for(const [a,b,c,d] of [[B.x0-8,B.y1,B.x1+10,B.y1+8],[B.x0-8,B.y0-4,B.x1+10,B.y0],[B.x0-8,B.y0,B.x0,B.y1],[B.x1,B.y0,B.x1+10,B.y1]])flat(a,b,c,d,.1,asph,'L');   // (the lot in four round the shop: one piece's middle inside it was an interior's, drawn only near the door: interiors.js) flat(B.x0+8,B.y1,B.x1+.5,B.y1+2.2,.6,conc,'L'); flat(B.x1,B.y0,B.x1+2,B.y1,.6,conc,'L');
-    room('vcr','VCR REPAIR',B,{floor:conc,in:(B,nx,ny,Xw,Yw,z,f)=>sh(z<8?[118,112,102]:[200,196,186],f*(z<8?.9:1)),out,cope:[88,82,78]},{w:'f',a:B.x0+10.85,wd:1.56,h:94},(B,l0)=>{
+    for(const [a,b,c,d] of [[B.x0-8,B.y1,B.x1+10,B.y1+8],[B.x0-8,B.y0-4,B.x1+10,B.y0],[B.x0-8,B.y0,B.x0,B.y1],[B.x1,B.y0,B.x1+10,B.y1]])flat(a,b,c,d,.1,asph,'L');   // (the lot in four round the shop: one piece's middle inside it was an interior's, drawn only near the door: interiors.js)
+    flat(B.x0+8,B.y1,B.x1+.5,B.y1+2.2,.6,conc,'L'); flat(B.x1,B.y0,B.x1+2,B.y1,.6,conc,'L');   // (the concrete aprons: before the door, along the side)
+    const vinyl=(x,y)=>{ const i=Math.floor(x*2), j=Math.floor(y*2), r=hs(Math.floor(x*24),Math.floor(y*24),820); return sh((i+j)&1?[150,152,150]:[196,196,190],r<.04?.9:1); };   // (the shop's floor: vinyl tiles, half a tile each, scuffed)
+    room('vcr','VCR REPAIR',B,{floor:vinyl,in:(B,nx,ny,Xw,Yw,z,f)=>sh(z<8?[118,112,102]:[200,196,186],f*(z<8?.9:1)),out,cope:[88,82,78]},{w:'f',a:B.x0+10.85,wd:1.56,h:94},(B,l0)=>{
       const thing=(name,boxes,o={})=>PROPS.push({kind:name,name,boxes,...o}), bx=(x0,y0,x1,y1,z0,z1,c,more={})=>({x0,y0,x1,y1,z0,z1,c,...more});
       thing('pilasters',P.map(u=>bx(B.x0+u-.22,B.y1,B.x0+u+.22,B.y1+.16,0,H-12,[138,104,88])),{walk:1});
       thing('sign',[bx(SX0-.08,B.y1,SX1+.08,B.y1+.22,SZ0-4,SZ1+4,[198,204,212]),bx(SX0,B.y1+.22,SX1,B.y1+.26,SZ0,SZ1,[238,240,244],{em:1,fs:(nx,ny,X_,Y_,z,s)=>ny>0?sig(X_,SZ0+z):sh([198,204,212],s)})],{high:1});
@@ -242,6 +244,38 @@
       thing('planter',[bx(bx0,by0,bx1,by1,0,6,[185,183,176],{top:(x,y)=>x>bx0+.15&&x<bx1-.15&&y>by0+.1&&y<by1-.15?mulchC(x,y):[185,183,176]})],{walk:1});
       const tws=[]; for(const [cx,s] of [[.7,.9],[1.9,1.1],[3.4,1.3],[4.9,.8],[6.3,1]])for(let i=0;i<8;i++){ const x=bx0+cx+(hs(i,cx*10,817)-.5)*.9*s, y=by0+.95+(hs(i,cx*10,818)-.5)*.7*s, h=(18+hs(i,cx*10,819)*22)*s; tws.push(bx(x-.025,y-.025,x+.025,y+.025,6,6+h,tw)); }
       thing('bare shrubs',tws,{walk:1});
+      // INSIDE (owner, 18 Oct 2026: "yes", to a counter and shelves of VCRs): the counter across the front room with the till, a deck being looked
+      // at and a stack of tapes; three steel shelving units along the back wall full of VCRs waiting (black, silver, grey, a slot and a light each,
+      // some gaps); the repair bench along the west wall with an old TV showing static, a deck open on its green board, the iron in its stand and
+      // a bench lamp, a stool before it; cardboard boxes by the east wall; a poster. Its own solids from its boxes (room's rule); no new program
+      const vcr=(x,y,z,c,led)=>bx(x,y,x+.72,y+.6,z,z+11,c,{top:()=>sh(c,1.12),fs:(nx,ny,P,Q,zz,s)=>{ if(ny<=0)return sh(c,s); const u=(P-x)/.72;
+        if(zz>4&&zz<6.5&&u>.18&&u<.66)return [18,18,20]; if(led&&zz>6&&zz<8&&u>.8&&u<.86)return led; if(zz<1.5)return sh(c,.7); return c; }});
+      const VC=[[34,34,38],[158,160,164],[74,74,80],[40,38,44],[132,128,120]], LED=[[90,220,120],[230,80,60],null];
+      const steel=[118,124,130], SL=[4,38,72,106,140,174], sy0=B.y0+.12, sy1=B.y0+1.02;
+      for(let k=0;k<3;k++){ const sx0=B.x0+.4+k*4.45, sx1=sx0+4.25, bs=[bx(sx0,sy0,sx0+.08,sy1,0,180,steel),bx(sx1-.08,sy0,sx1,sy1,0,180,steel),bx(sx0,sy0,sx1,sy0+.05,0,180,[96,100,106])];
+        for(const z of SL)bs.push(bx(sx0,sy0,sx1,sy1,z-3,z,steel));
+        for(let si=0;si<SL.length-1;si++)for(let n=0;n<5;n++){ const r=hs(k*31+si,n,821); if(r<.12)continue; const x=sx0+.18+n*.8+(r-.5)*.06; bs.push(vcr(x,sy1-.68,SL[si],VC[Math.floor(r*97)%VC.length],LED[Math.floor(r*53)%LED.length]));
+          if(r>.8&&si<SL.length-2)bs.push(vcr(x+.02,sy1-.66,SL[si]+11,VC[Math.floor(r*41)%VC.length],null)); }   // (now and then one stacked on another)
+        thing('shelving of VCRs',bs); }
+      // the counter: wood-panelled front, a laminate top; on it the till, a deck, tapes
+      const cy0=B.y1-4.6, cy1=B.y1-3.9, cx0=B.x0+1.6, cx1=B.x0+8.6, wood=[112,80,54];
+      thing('counter',[bx(cx0,cy0,cx1,cy1,0,40,wood,{top:()=>[200,194,180],fs:(nx,ny,P,Q,z,s)=>sh(z>37?[200,194,180]:(Math.floor((nx?Q:P)*24)%12===0)?[84,58,40]:wood,s)})]);
+      thing('till',[bx(cx1-1.2,cy0+.1,cx1-.55,cy1-.1,40,50,[58,58,62]),bx(cx1-1.1,cy0+.2,cx1-.65,cy0+.32,50,57,[40,40,44]),bx(cx1-1.06,cy0+.33,cx1-.69,cy0+.35,51,56,[110,230,140],{em:1})],{high:1});
+      thing('deck on the counter',[vcr(cx0+2.4,cy0+.06,40,[150,150,154],[90,220,120])],{high:1});
+      const tp=[]; for(let i=0;i<6;i++)tp.push(bx(cx0+.3+(i%2)*.05,cy0+.15,cx0+.75+(i%2)*.05,cy0+.4,40+i*3,43+i*3,[26,26,28],{fs:(nx,ny,P,Q,z,s)=>nx===0&&z>.8&&z<2.2?[236,232,220]:sh([26,26,28],s)})); thing('tapes',tp,{high:1});
+      // the repair bench along the west wall, the TV, the open deck, the iron, the lamp; the stool
+      const wx0=B.x0+.12, wx1=B.x0+1.2, wy0=B.y0+1.8, wy1=B.y0+7, tvy=wy0+.9;
+      thing('repair bench',[bx(wx0,wy0,wx1,wy1,0,36,[92,74,58],{top:()=>[132,108,84]})]);
+      thing('old TV',[bx(wx0+.05,tvy-.45,wx0+.9,tvy+.45,36,60,[72,66,60]),bx(wx0+.9,tvy-.34,wx0+.94,tvy+.34,40,57,[140,160,200],{em:1,fs:(nx,ny,P,Q,z)=>{ const r=hs(Math.floor(Q*48),Math.floor(z*2),822); return r<.3?[60,70,96]:r<.7?[140,156,196]:[214,222,236]; }})],{high:1});
+      thing('open deck',[bx(wx0+.15,wy0+2,wx0+.85,wy0+2.75,36,40,[150,150,154],{top:(x,y)=>{ const r=hs(Math.floor(x*24),Math.floor(y*24),823); return r<.12?[200,180,90]:r<.2?[40,40,40]:[46,112,64]; }})],{high:1});
+      thing('iron and stand',[bx(wx0+.3,wy0+3.3,wx0+.55,wy0+3.55,36,39,[60,60,64]),bx(wx0+.38,wy0+3.38,wx0+.47,wy0+3.47,39,50,[180,60,40])],{high:1});
+      thing('bench lamp',[bx(wx0+.1,wy0+4.2,wx0+.3,wy0+4.4,36,38,[50,52,56]),bx(wx0+.17,wy0+4.27,wx0+.23,wy0+4.33,38,62,[50,52,56]),bx(wx0+.15,wy0+4.25,wx0+.75,wy0+4.35,60,62,[50,52,56]),bx(wx0+.55,wy0+4.1,wx0+.85,wy0+4.5,54,60,[66,120,96])],{high:1});
+      LAMPS.push({own:1,room:1,day:true,x:wx0+.7,y:wy0+4.3,z:52,r:4,c:[1,.85,.6]});   // (the bench lamp's pool on the work)
+      thing('stool',[bx(wx1+.45,wy0+2.1,wx1+.85,wy0+2.5,0,28,[60,60,66],{top:()=>[150,40,36]})]);
+      // boxes by the east wall, a poster beside the door
+      const cb=[176,136,92], tape=(nx,ny,P,Q,z,s)=>Math.abs(z-6)<1||Math.abs((nx?Q:P)%1-.5)<.04?[206,180,130]:sh(cb,s);
+      thing('cardboard boxes',[bx(B.x1-1.3,B.y0+2,B.x1-.15,B.y0+3,0,26,cb,{fs:tape,top:(x,y)=>Math.abs(y-(B.y0+2.5))<.05?[206,180,130]:cb}),bx(B.x1-1.2,B.y0+2.1,B.x1-.3,B.y0+2.9,26,46,sh(cb,.92),{fs:tape})]);
+      thing('poster',[bx(B.x1-.13,B.y1-6.2,B.x1-.11,B.y1-5,50,96,[30,60,150],{fs:(nx,ny,P,Q,z)=>z>36?[220,40,50]:z>30?[245,240,230]:[30,60,150]})],{high:1});
       LAMPS.push({own:1,room:1,day:true,x:(B.x0+B.x1)/2,y:(B.y0+B.y1)/2,z:H-40,r:13,c:[1,.92,.8]}); }); });
 
   // THE WATER'S BEDS: the koi pond's, half a metre down, dark mud and its banks; the tank's is its stand's top. The water itself, below, once built

@@ -1,4 +1,4 @@
-// LIGHTNING FAST VCR REPAIR off the map: node tests/vcrshot.cjs <out> (writes <out>-a/-b/-c.png: its front, a half turn round, inside; HOUR=22 for night)
+// LIGHTNING FAST VCR REPAIR off the map: node tests/vcrshot.cjs <out> (writes <out>-a/-w/-b/-c/-i.png: its front, wide, the side yard, inside from the back, inside from the front; HOUR=22 for night)
 const {chromium}=require('playwright');
 (async()=>{ const out=process.argv[2]; const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader']});
   const pg=await b.newPage({viewport:{width:1095,height:765}}); const errs={}; pg.on('pageerror',e=>{ errs[e.message]=1; }); pg.on('console',m=>{ if(/store|CLIP|error/i.test(m.text()))console.log('C',m.text().slice(0,200)); });
@@ -8,5 +8,5 @@ const {chromium}=require('playwright');
   await pg.evaluate(()=>{ const X=STORE.XYZ; STORE.pos.set(X.X(388),0,X.Z(-78)); }); await pg.mouse.move(547,380); for(let i=0;i<12;i++){ await pg.mouse.wheel(0,400); await pg.waitForTimeout(150); } await pg.waitForTimeout(5000);
   await pg.screenshot({path:out+'-a.png'}); await pg.evaluate(()=>{ const X=STORE.XYZ; CAMAT(X.X(388),2,X.Z(-84),.55); }); await pg.waitForTimeout(5000); await pg.screenshot({path:out+'-w.png'});
   await pg.keyboard.press('c'); await pg.waitForTimeout(800); await pg.evaluate(()=>{ const X=STORE.XYZ; STORE.pos.set(X.X(397),0,X.Z(-84)); }); await pg.waitForTimeout(1500); for(const k of 'qq'){ await pg.keyboard.press(k); await pg.waitForTimeout(600); } await pg.waitForTimeout(2500); await pg.screenshot({path:out+'-b.png'});
-  await pg.evaluate(()=>{ const X=STORE.XYZ; STORE.pos.set(X.X(387),0,X.Z(-85)); }); await pg.waitForTimeout(4000); await pg.screenshot({path:out+'-c.png'});
+  await pg.evaluate(()=>{ const X=STORE.XYZ; STORE.pos.set(X.X(387),0,X.Z(-85)); }); await pg.waitForTimeout(4000); await pg.screenshot({path:out+'-c.png'}); for(const k of 'qq'){ await pg.keyboard.press(k); await pg.waitForTimeout(600); } await pg.waitForTimeout(3000); await pg.screenshot({path:out+'-i.png'});
   console.log('errors',Object.keys(errs)); await b.close(); })();

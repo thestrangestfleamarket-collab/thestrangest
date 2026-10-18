@@ -1564,3 +1564,34 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   baked light is the held golden hour's, at noon too. Found on the way: the rooms' near-side cut (`ROOMS.nearAll`, on every material) slices
   whatever it covers at the knee, the bake included (off for the bake). `tests/farlook4.cjs <out>` (his eyes the four ways, the opening view),
   `tests/farstatic.cjs <out>` (a hair's turn).
+- **Ghost Street made again** (owner, 18 Oct 2026: "lets make the building realistic like we did sidewalks with natural shapes, edges, depth, lived in,
+  ivy growing around it, make sure the outside matches inside layout, make it 1.5 bigger, remoev vending machines out front, put another window
+  there, lights shining out strong, rays, reflections, etc moody"; `src/ghostdojo.js`, superseding the kit's shop pieces and the vending machines):
+  the whole building drawn there, half as big again about the middle of its front (13.6 x 6 tiles; the ground floor 168 art px, the floor above to
+  300, the tiled roof to about 400): a stone plinth, weathered cedar boards (each board its own width, tone, grain, knots, nails at the rail,
+  rain-dark at the foot, moss), dark posts and beams standing out of them, the floor above lime plaster (stains, a crack, a patch to the lath) with lit
+  lattice windows and the indigo signboard with gold characters, a pent roof on rafters over the front, the main roof in clay tile courses (moss,
+  lichen, a broken tile), its gables set in under the overhang, the ridge and end tiles. Ivy from roots at the corners and the west side, painted and in
+  clumps standing out. The front as the inside is: the bay window (lit pink) west of the door, the door with its noren and two red lanterns, a lattice
+  window east of it where the machines stood; the round windows lit outside where the hall has them. Its light out: five lamp records before the
+  openings (always on), light shafts down onto the forecourt through each gap (flat additive quads, two steps along each, stronger toward night, hidden
+  while you're in), the puddles under the windows with streaks of their colour. The forecourt its own painter (`BOD.GDK.court`): raked gravel with moss,
+  a drip edge of dark pebbles, granite flags to the door, puddles. Lived in: fire buckets, an umbrella stand, a broom, glazed pots, a bench under the
+  window (a seat), crates of empties, a rain barrel, three planted beds with lanterns (the kit's beds were only soil in 3D). Inside, the dojo half as
+  big again (10 x 4 mats, three cushions), its walls' windows where the outside's are. The floor above, the roofs and the ceiling hidden while you're
+  in (SEEN). Cost: some 1,200 triangles more in the street's view, 5 lamp records, the shafts some 40 quads in 4 draws (MeshBasic), no new shader.
+  `GSDBG()`, `GSLOOK(dx,dy,zoom,yaw)`, `GSGO(dx,dy)`; `LOOKAT(x,z,zoom)` and `LOOKYAW(deg)` a test's camera anywhere; `tests/lookshot.cjs`.
+- **CLUB STATIC, off the map** (owner, 18 Oct 2026, after a video on video game nightclubs: "lets try to build a nightclub off map following all
+  these rules"; `src/club.js`, after store.js, its room through `STORE.kit`): a one-storey club on the dark lot east of the VCR shop (bodega tiles x
+  432-456, y -98 to -80; the store's bound to x 472); MORE PLACES has CLUB STATIC. Real townspeople (`PAWNNEW` in npc-pawns.js:
+  dancers on the pack's dance, talkers at the bar and high tables, the coat check); Hitman's queue behind a red rope with a bouncer (the first goes in
+  now and then, another joins the back); its music made in code (124 a minute: kick, hats, clap, bass, a stab), muffled through the walls and
+  outside, open in the hall, the RATTLE just after each kick louder where it's muffled; a double click on the DJ booth: two bars of riser, then the
+  drop (the floor strobing white, the dancers quicker, a crash and cheers); U dances (the rig's own, `RIG.MOVES.dance`); the floor's 70 tiles lit in the
+  beat's patterns, the lamps magenta, cyan, violet, amber by the bar (LITE's records recoloured, not a filter). Inside: the DJ's riser, booth, light
+  wall and speaker stacks, the bar down the west wall with its lit back bar and eight stools (seats), sofas, high tables, glasses and bottles on every
+  top, the lobby's coat check, the bathroom's stalls, sinks and cracked mirror; outside black-painted brick chipped to the red, tags, posters, STATIC
+  in pink tubes, CLUB in cyan, the door's light, a fire exit, a dumpster. Its own night air while you're near (the town's mist would swallow it; the
+  skyline hidden there). Cost: the view inside some 59,000 triangles in all; 8 lamp records; one program (the floor's). **No cardboard cutouts** (owner, 18 Oct 2026: "remove the cardboard cutouts from nightclub and game, forget that part"): GoldenEye's flat crowd was built and taken out; don't bring it back. `CLUBDBG()`,
+  `CLUBGO(dx,dy)`, `CLUBLOOK(dx,dy,zoom,yaw)`, `CLUB.dropIt()`. **Found on the way**: with the outline on, every frame threw (the shape editor's
+  selection undefined: `OUTL.hidden`), fixed in walker3d.js; `tests/datacheck.cjs` still fails the newsstand's `thanks` pool and the save's version, as on main.

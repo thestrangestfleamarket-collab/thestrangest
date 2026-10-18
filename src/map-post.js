@@ -149,6 +149,7 @@ window.MAPDBG=()=>({LVL,cut:MODS.stairCut.constant,vis:Object.fromEntries(Object
   const hole=(x0,z0,x1,z1)=>x0>LR.x0&&x1<LR.x1&&z0>LR.z0&&z1<LR.z1&&sh.holes.push(new THREE.Path([[x0,-z0],[x0,-z1],[x1,-z1],[x1,-z0]].map(p=>new THREE.Vector2(...p))));
   // (the loop's roads, a kerb down: two outlines round their rounded corners, bodega.js's BOD.roadPolys; owner 18 Oct 2026, "rounded")
   for(const P of BOD.roadPolys){ const Q=P.map(([x,y])=>[tt(XS(x)),tt(ZS(y))]); if(Q.every(([x,z])=>x>LR.x0&&x<LR.x1&&z>LR.z0&&z<LR.z1))sh.holes.push(new THREE.Path(Q.map(([x,z])=>new THREE.Vector2(x,-z)))); }
+  for(const r of BOD.ramps.RP){ const a=r.e+r.dir*.01, b=r.e+r.dir*BOD.ramps.D, P=r.ax==='x'?[r.u0,Math.min(a,b),r.u1,Math.max(a,b)]:[Math.min(a,b),r.u0,Math.max(a,b),r.u1]; hole(tt(XS(P[0])),tt(ZS(P[1])),tt(XS(P[2])),tt(ZS(P[3]))); }   // (the kerb ramps' slopes: bodega.js)
   hole(tt(XS(MAPSTAIR.x0)),tt(ZS(MAPSTAIR.y0)),tt(XS(MAPSTAIR.x1)),tt(ZS(MAPSTAIR.y1)));   // (the stairs down)
   for(const S of RING.stairs)hole(tt(XS(S.x0)),tt(ZS(S.y0)),tt(XS(S.x1)),tt(ZS(S.y1)));   // (the loop subway's: sub.js)
   { const S=CASTLE.stair; hole(tt(XS(S.x0)),tt(ZS(S.y0)),tt(XS(S.x1)),tt(ZS(S.y1))); }   // (the castle's stair down)

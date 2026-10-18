@@ -161,13 +161,29 @@ const BOD={meshes:[], walls:{}, lamps:[]};
   const kerbAt=(x,y)=>{ if(!NR.some(b=>x>b[0]&&x<b[2]&&y>b[1]&&y<b[3]))return null;
     for(const c of CORN)if(inQ(c,x,y)){ const d=Math.hypot(x-c.cx,y-c.cy); if(c.cv?d>KR-KB:d<KR+KB)return KX(Math.atan2(y-c.cy,x-c.cx)*KR+c.x*7,y); return null; }
     if(ROADAT(x+KB,y)||ROADAT(x-KB,y))return KY(x,y); if(ROADAT(x,y+KB)||ROADAT(x,y-KB))return KX(x,y); return null; };
-  const SW=f=>(x,y)=>{ if(ROADAT(x,y))return null; const v=f(x,y); return v&&(kerbAt(x,y)||v); };   // (a sidewalk's painter: open over the road, its kerb along it)
+  const SW=f=>(x,y)=>{ if(ROADAT(x,y)||rampAt(x,y)!=null)return null; const v=f(x,y); return v&&(kerbAt(x,y)||v); };   // (a sidewalk's painter: open over the road, its kerb along it)
   // THE CROSSINGS (owner, 17 Oct 2026, mockup 1; the bars across the axis, long along the way people walk, a little worn): [a0, a1, axis, the road's
   // edges across]; those by a rounded corner set back past its curve
   const XW=[[GATE[0],GATE[1],'x',CURB,FAR],[AV.r1+.3,AV.x1-.3,'x',CURB,FAR],[RG.wx0+.3,RG.wr0-.3,'x',CURB,FAR],
     [FAR+KR+.3,FAR+KR+1.9,'y',AV.r0,AV.r1],[EGATE[0],EGATE[1],'y',AV.r0,AV.r1],[EGATE[0],EGATE[1],'y',RG.wr0,RG.wr1],[FAR+KR+.3,FAR+KR+1.9,'y',RG.wr0,RG.wr1],
     [GATE[0],GATE[1],'x',RG.nr0,RG.nr1],[RG.wr0+KR+.2,RG.wr0+KR+1.8,'x',RG.nr0,RG.nr1],[AV.r1-KR-1.8,AV.r1-KR-.2,'x',RG.nr0,RG.nr1]];
   const inX=(ax,e,a,m)=>XW.some(w=>w[2]===ax&&e>=w[3]-.01&&e<=w[4]+.01&&a>w[0]-m&&a<w[1]+m);
+  // KERB RAMPS (owner, 18 Oct 2026, "go all" to the street's open items: "a kerb ramp at the crossings"): where each crossing meets a kerb, New
+  // York's pedestrian ramp: the kerb cut down to the road in a short slope RPD deep into the sidewalk, as wide as the crossing's middle (2.4 tiles at
+  // most) and only along a straight kerb (a crossing by a curve keeps its ramp off the curve), the yellow warning pad of raised domes at its foot.
+  // The sidewalk's picture and the kerb's face left open there (SW, kerbFaceAt), the slope its own face (bodbuild.js), groundY down it, the land's
+  // sheet holed under it (map-post.js). RP: {ax, e the kerb's line, dir into the sidewalk, u0..u1 along it}
+  const RPD=.75, RP=[];
+  for(const [a0,a1,ax,l0,h0] of XW)for(const [e,dir] of [[l0,-1],[h0,1]]){ const P=(u,w)=>ax==='x'?[u,e+dir*w]:[e+dir*w,u], ok=u=>ROADAT(...P(u,-.05))&&!ROADAT(...P(u,.05))&&!ROADAT(...P(u,RPD+.05));
+    const m=(a0+a1)/2, hw=Math.min((a1-a0)/2-.1,1.2); if(!ok(m))continue; let u0=m, u1=m; while(u0-.05>=m-hw&&ok(u0-.05))u0-=.05; while(u1+.05<=m+hw&&ok(u1+.05))u1+=.05;
+    if(u1-u0>=.8)RP.push({ax,e,dir,u0,u1}); }
+  const rampAt=(x,y)=>{ for(const r of RP){ const u=r.ax==='x'?x:y, w=((r.ax==='x'?y:x)-r.e)*r.dir; if(u>r.u0&&u<r.u1&&w>=0&&w<RPD)return w; } return null; };
+  // the ramp's picture at (u along the kerb from u0, w up the slope from the road): broom-finished concrete, a lit rim at its sides, the warning
+  // pad's domes (safety yellow, a lit texel and its shadow on a three-texel grid) from a hand off the road to a third of a tile up
+  const rampCol=(u,w,W)=>{ const ti=Math.floor(u*24), tj=Math.floor(w*24); if(ti<1||ti>=Math.floor(W*24)-1)return [188,184,174];
+    if(w>.04&&w<.36&&ti>=2&&ti<Math.floor(W*24)-2){ const a=ti%3, b=tj%3; return b===1&&a===1?[246,214,92]:b===1&&a===2||b===2&&a===1?[164,128,30]:[216,178,48]; }
+    const n=grain(u*3.1,w*7.3,631,1.4); return tj%2?(n<.4?[150,147,139]:[162,158,149]):(n<.4?[158,154,146]:[170,166,157]); };
+  BOD.ramps={RP,D:RPD,col:rampCol,at:rampAt};
   // (NYC's ladder, owner 18 Oct 2026, "use NYC markings": two white rails across the road at the crossing's sides, wide rungs between them along
   // the traffic, a rung's width apart)
   const bars=(x,y)=>{ for(const [a0,a1,ax,l0,h0] of XW){ const u=ax==='x'?x:y, v=ax==='x'?y:x; if(u<=a0||u>=a1||v<=l0+.15||v>=h0-.15)continue;
@@ -234,7 +250,8 @@ const BOD={meshes:[], walls:{}, lamps:[]};
   // the road's painter: a manhole or a drain's grate, else a crossing's bars, else the bike lane, else the asphalt; nothing off the road
   const RW=(x,y)=>{ if(!ROADAT(x,y))return null; const L=IX.get(at2(x,y)); if(L)for(const f of L){ const v=f(x,y); if(v)return v; } return bars(x,y)||lane(x,y)||marks(x,y)||roadCol(x,y,0); };
   // a kerb's face with a drain's inlet: the dark mouth under its lit top, a lip of granite at its foot
-  BOD.kerbFaceAt=(k,a,z,H)=>{ for(const d of DR)if(d.ax===k.ax&&d.e===k.at&&Math.abs(a-d.a)<.5){ if(z>=H-1)break; if(Math.abs(a-d.a)>.44)return [96,94,88]; return z<1?[120,116,108]:[14,14,16]; } return kerbFace(a,z,H); };
+  BOD.kerbFaceAt=(k,a,z,H)=>{ for(const r of RP)if(r.ax===k.ax&&r.e===k.at&&a>r.u0&&a<r.u1)return null;   /* (a kerb ramp's gap: the slope fills it) */
+    for(const d of DR)if(d.ax===k.ax&&d.e===k.at&&Math.abs(a-d.a)<.5){ if(z>=H-1)break; if(Math.abs(a-d.a)>.44)return [96,94,88]; return z<1?[120,116,108]:[14,14,16]; } return kerbFace(a,z,H); };
   // the curves' faces, KA (each a few straight pieces along its arc, its length along for the granite's joints), the land's holes for the roads
   // (map-post.js: the main street with the west street's and the Avenue's lengths up to the north street, one outline round their corners'
   // curves; the north street another, its two filled corners round)
@@ -251,9 +268,12 @@ const BOD={meshes:[], walls:{}, lamps:[]};
   // streets' mouths); a STOP sign where the west street and the Avenue come down to the main street; along every kerb every 24 tiles a post with a
   // NO PARKING plate, every third a SPEED LIMIT 25; each three quarters of a tile in from the kerb (clear of the street lights' feet)
   const SG=[], NM={main:'MARKET ST',west:'WEST ST',north:'NORTH ST',ave:'THE AVE'}, CN=[['main','west'],['main','west'],['main','ave'],['main','ave'],['north','west'],['north','ave'],['north','west'],['north','ave']];
-  CORN.forEach((c,i)=>{ const k=c.cv?KR-1.2:KR+1.2; SG.push({kind:'name',x:c.cx-c.sx*k/Math.SQRT2,y:c.cy-c.sy*k/Math.SQRT2,ax:NM[CN[i][0]],ay:NM[CN[i][1]]}); });
+  // (at the main street's two junctions the blades ride the traffic light's pole, above its heads, and no STOP: the light rules there, dress.js;
+  // owner, 18 Oct 2026, "go all": "a traffic light")
+  const TLC=[0,3], TK=(KR-.45)/Math.SQRT2;
+  CORN.forEach((c,i)=>{ const k=c.cv?KR-1.2:KR+1.2, t=TLC.includes(i); SG.push({kind:'name',x:t?c.cx-c.sx*TK:c.cx-c.sx*k/Math.SQRT2,y:t?c.cy-c.sy*TK:c.cy-c.sy*k/Math.SQRT2,ax:NM[CN[i][0]],ay:NM[CN[i][1]],np:t}); });
   SG.push({kind:'name',x:RG.wr1+1,y:CURB-.75,ax:NM.main,ay:NM.west},{kind:'name',x:AV.r0-1,y:CURB-.75,ax:NM.main,ay:NM.ave});
-  for(const i of [0,2]){ const c=CORN[i]; SG.push({kind:'stop',x:c.x+c.sx*.75,y:c.y+c.sy*(KR+2.4),n:[0,1]}); }   // (facing the traffic coming south)
+  // (the STOP signs where the west street and the Avenue come down to the main street: gone, the traffic lights stand there, dress.js)
   { let q=0; for(const k of BOD.kerbs){ if(k.at===MAP.x0||k.at===MAP.x1)continue; for(let a=k.a0+6;a<k.a1-4;a+=24){ if(inX(k.ax,k.at,a,2)||inJ(k.ax==='x'?a:k.at,k.ax==='x'?k.at:a,2))continue;
       const p=k.at-k.n*.75; SG.push({kind:q++%3===2?'speed':'nopark',x:k.ax==='x'?a:p,y:k.ax==='x'?p:a,n:k.ax==='x'?[1,0]:[0,1]}); } } }
   BOD.signs=SG;
@@ -307,7 +327,7 @@ const BOD={meshes:[], walls:{}, lamps:[]};
     const bs=p.boxes.filter(b=>!b.nb&&b.z0<30&&b.z1-b.z0>3); if(!bs.length)continue; const r={x0:Math.min(...bs.map(b=>b.x0)),y0:Math.min(...bs.map(b=>b.y0)),x1:Math.max(...bs.map(b=>b.x1)),y1:Math.max(...bs.map(b=>b.y1))};
     sol(r.x0,r.y0,r.x1,r.y1,Math.max(...bs.map(b=>b.z1))); }
   BOUND={x0:XS(MAP.x0),x1:XS(MAP.x1),z0:Z(B00.y0),z1:ZS(MAP.y1)};
-  groundY=(x,z)=>{ const gx=x/TILE+OX, gy=z/TILE+OY; return ROADAT(gx,gy)?YS(RD):(window.HILL?HILL(x,z):0); }   /* (the park's hills: park.js) */;   // (the road a kerb down: the loop's four sides, round their corners' curves, so a step down the kerb follows it: ROADAT)   // (the road a kerb down: the street's, and the Avenue's north from it)
+  groundY=(x,z)=>{ const gx=x/TILE+OX, gy=z/TILE+OY, rw=rampAt(gx,gy); if(rw!=null)return YS(RD*(1-rw/RPD));   /* (down a kerb ramp's slope) */ return ROADAT(gx,gy)?YS(RD):(window.HILL?HILL(x,z):0); }   /* (the park's hills: park.js) */;   // (the road a kerb down: the loop's four sides, round their corners' curves, so a step down the kerb follows it: ROADAT)   // (the road a kerb down: the street's, and the Avenue's north from it)
   BOD.inside=(x,z)=>{ const gx=x/TILE/K+OX, gy=z/TILE/K+OY; return gx>B0.x0&&gx<B0.x1&&gy>B0.y0&&gy<B0.y1; };
 }
 }

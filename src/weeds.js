@@ -16,13 +16,13 @@ WEEDS.init=()=>{ WEEDS.dbg=f=>f({FIX,SOL,TILE,MODS}); const T=TILE, hsh=(a,b,s)=
   const solidAt=(x,z)=>B.some(b=>x>b[0]&&x<b[3]&&z>b[1]&&z<b[4]);
   const gy=(x,z)=>MODS.bodega&&MODS.bodega.ground?MODS.bodega.ground(x,z):0;
   const TUFT=[], FLOW=[]; WEEDS.drop=[0,0,0];
-  for(const b of B){ const [x0,z0,,x1,z1]=b, edges=[[x0,z0,x1,z0,0,-1],[x1,z0,x1,z1,1,0],[x1,z1,x0,z1,0,1],[x0,z1,x0,z0,-1,0]];
+  for(const b of B){ const [x0,z0,,x1,z1]=b; if(x1<BOUND.x0||x0>BOUND.x1||z1<BOUND.z0||z0>BOUND.z1)continue; const edges=[[x0,z0,x1,z0,0,-1],[x1,z0,x1,z1,1,0],[x1,z1,x0,z1,0,1],[x0,z1,x0,z0,-1,0]];
     for(const [ax,az,bx,bz,nx,nz] of edges){ const L=Math.hypot(bx-ax,bz-az), n=Math.max(1,Math.round(L/(.2*T)));
       for(let i=0;i<n;i++){ const t=(i+hsh(ax*7+i,az*3,11))/n, ex=ax+(bx-ax)*t, ez=az+(bz-az)*t, wild=vn(ex/(3*T),ez/(3*T),13);
         if(wild<.3||hsh(ex*13,ez*17,15)>wild*1.7){ WEEDS.drop[0]++; continue; }   // (swept here, neglected there)
         const out=(.03+hsh(ex*5,ez*9,17)*.12)*T, x=ex+nx*out, z=ez+nz*out; if(inside(x,z)){ WEEDS.drop[1]++; continue; } if(solidAt(x,z)){ WEEDS.drop[2]++; continue; }
         const s=(.28+hsh(ex*3,ez*11,19)*.34)*T*(.7+.6*wild); TUFT.push([x,gy(x,z),z,s,hsh(ex,ez,21)*3.14,hsh(ez,ex,23)]);
-        if(hsh(ex*19,ez*23,25)<.07)FLOW.push([x+(hsh(ex,ez,27)-.5)*.1*T,gy(x,z)+s*.75,z]); } } }
+        if(hsh(ex*19,ez*23,25)<.07)FLOW.push([x+(hsh(ex,ez,27)-.5)*.1*T,gy(x,z)+s*.4,z]); } } }
   if(!TUFT.length)return;
   // the tuft's picture: nine blades, each its own lean and height, darker at the root, lit at the tip, see-through between
   const cv=document.createElement('canvas'); cv.width=cv.height=48; const g=cv.getContext('2d'), id=g.createImageData(48,48);
@@ -41,8 +41,10 @@ WEEDS.init=()=>{ WEEDS.dbg=f=>f({FIX,SOL,TILE,MODS}); const T=TILE, hsh=(a,b,s)=
   for(const list of CH.values()){ const me=new THREE.InstancedMesh(geo,mat,list.length);
     list.forEach(([x,y,z,s,a,c],i)=>{ M.compose(new THREE.Vector3(x,y,z),q.setFromAxisAngle(up,a),new THREE.Vector3(s*1.1,s*.5,s*1.1)); me.setMatrixAt(i,M); me.setColorAt(i,col.setHSL(.24+c*.08,.35+c*.25,.42+c*.2)); });
     me.computeBoundingSphere(); me.receiveShadow=true; scene.add(me); WEEDS.meshes.push(me); }
-  if(FLOW.length){ const fm=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(.05*T,0),new THREE.MeshLambertMaterial({color:0xf0cc30,emissive:0x2a1c00}),FLOW.length);
-    FLOW.forEach(([x,y,z],i)=>{ M.compose(new THREE.Vector3(x,y,z),q.identity(),new THREE.Vector3(1,1,1)); fm.setMatrixAt(i,M); }); fm.computeBoundingSphere(); scene.add(fm); WEEDS.meshes.push(fm); }
+  // the dandelions: eight faces each, by the tufts' chunks (each its own bounds, drawn only in the picture)
+  if(FLOW.length){ const fg=new THREE.OctahedronGeometry(.05*T,0), fmt=new THREE.MeshLambertMaterial({color:0xf0cc30,emissive:0x2a1c00}), FC=new Map();
+    for(const f of FLOW){ const k=Math.floor(f[0]/cs)+','+Math.floor(f[2]/cs); if(!FC.has(k))FC.set(k,[]); FC.get(k).push(f); }
+    for(const list of FC.values()){ const fm=new THREE.InstancedMesh(fg,fmt,list.length); list.forEach(([x,y,z],i)=>{ M.compose(new THREE.Vector3(x,y,z),q.identity(),new THREE.Vector3(1,1,1)); fm.setMatrixAt(i,M); }); fm.computeBoundingSphere(); scene.add(fm); WEEDS.meshes.push(fm); } }
   WEEDS.n=TUFT.length; WEEDS.flowers=FLOW.length; };
 // ---- THE LAWN'S GRASS, MADE LIKE THE TREETOPS (owner, 18 Oct 2026: "Literally make the grass like treetops", his pick of the first grass
 // mockup's LEAF CARPET, https://claude.ai/artifact/WfQ5tdKVCmb1jJEAeAEXL5): over every lawn you can see (the land's sheet and the park's hills:
@@ -100,7 +102,19 @@ WEEDS.lawnInit=()=>{ const T=TILE, CS=8*T, CELL=.5*T, PER=1, hsh=(a,b,s)=>{ let 
   // flat. A crown kind lays a grid of crowns (each its own spot, size and green), every square's clump domed by how near its crown's middle it is,
   // its rim a step darker and lower, so the lawn reads as the treetops of a forest seen from high above. Still one clump a square: the cost as before
   const MT=T/.84, PS=24*T, KINDS=['flat','roll','little','big','giant','bigflat','tuft'], CR={little:[.75,.42,.14*MT,.6],big:[4,2.6,.21*MT,1.15],giant:[6.2,4,.35*MT,1.45],bigflat:[4,2.6,.065*MT,1.15]};
-  const patch=(x,z)=>{ const gx=Math.floor(x/PS), gz=Math.floor(z/PS); let best=1e18, kind='flat'; for(let i=-1;i<=1;i++)for(let j=-1;j<=1;j++){ const a=gx+i, b=gz+j, px=(a+hsh(a,b,71))*PS, pz=(b+hsh(b,a,72))*PS, d=(x-px)**2+(z-pz)**2; if(d<best){ best=d; kind=KINDS[Math.floor(hsh(a,b,73)*KINDS.length)]; } } return kind; };
+  // SPREAD OUT NATURALLY (owner, 18 Oct 2026: "lets do flat, tuft and the other kinds but spread out more naturally"): the patches' grid bent
+  // by two noises (a broad sweep and a finer wobble), so no patch is a straight-edged cell; along a border the two kinds mingle a few tiles deep,
+  // square by square; islands of tufts come up in the other kinds (and of flat in the tufts); the commoner kinds take more of the lawn
+  const vn=(x,z,s)=>{ const ix=Math.floor(x), iz=Math.floor(z), fx=x-ix, fz=z-iz, u=fx*fx*(3-2*fx), v=fz*fz*(3-2*fz), h=(a,b)=>hsh(a/97,b/89,s);
+    return (h(ix,iz)*(1-u)+h(ix+1,iz)*u)*(1-v)+(h(ix,iz+1)*(1-u)+h(ix+1,iz+1)*u)*v; };
+  const WK=[3,2,2,1.5,1,1.5,3], WS=WK.reduce((a,b)=>a+b,0), pickK=r=>{ r*=WS; for(let i=0;i<WK.length;i++)if((r-=WK[i])<0)return KINDS[i]; return 'flat'; };
+  const patch=(x,z)=>{ const tx=x/T, tz=z/T, wx=tx+16*(vn(tx/18,tz/18,91)-.5)+5*(vn(tx/6,tz/6,93)-.5), wz=tz+16*(vn(tx/18,tz/18,92)-.5)+5*(vn(tx/6,tz/6,94)-.5), PSt=PS/T, gx=Math.floor(wx/PSt), gz=Math.floor(wz/PSt);
+    let d1=1e18, d2=1e18, k1='flat', k2='flat'; for(let i=-1;i<=1;i++)for(let j=-1;j<=1;j++){ const a=gx+i, b=gz+j, px=(a+hsh(a,b,71))*PSt, pz=(b+hsh(b,a,72))*PSt, d=(wx-px)**2+(wz-pz)**2, k=pickK(hsh(a,b,73));
+      if(d<d1){ d2=d1; k2=k1; d1=d; k1=k; } else if(d<d2){ d2=d; k2=k; } }
+    let kind=Math.sqrt(d2)-Math.sqrt(d1)<3.5*hsh(tx*2,tz*2,95)?k2:k1;   // (the border mingled)
+    const isl=vn(tx/2.6,tz/2.6,96); if(isl>.8)kind=kind==='tuft'?'flat':'tuft';   // (islands)
+    return kind; };
+  WEEDS.kindAt=patch;
   const crown=(x,z,st)=>{ const S0=st*T, gx=Math.floor(x/S0), gz=Math.floor(z/S0); let best=1e18, C=null; for(let i=-1;i<=1;i++)for(let j=-1;j<=1;j++){ const a=gx+i, b=gz+j, px=(a+.2+.6*hsh(a,b,81))*S0, pz=(b+.2+.6*hsh(b,a,82))*S0, d=(x-px)**2+(z-pz)**2; if(d<best){ best=d; C={x:px,z:pz,id:hsh(a,b,83),sz:hsh(b,a,84)}; } } C.d=Math.sqrt(best); return C; };
   const KIND=(x,y,z,n)=>{ const r1=hsh(x,z,n*3+1), r2=hsh(z,x,n*3+2), r3=hsh(x+z,x-z,n*3+3), px=x+(r1-.5)*CELL*.7, pz=z+(r2-.5)*CELL*.7, kind=patch(x,z);
     if(kind==='tuft')return null;
@@ -118,16 +132,17 @@ WEEDS.lawnInit=()=>{ const T=TILE, CS=8*T, CELL=.5*T, PER=1, hsh=(a,b,s)=>{ let 
     renderer.readRenderTargetPixels(RT,0,0,R,R,PIX);
     scene.overrideMaterial=ov; renderer.setRenderTarget(rt0); renderer.autoClear=ac; renderer.setClearColor(cc,ca); scene.background=bg; scene.fog=fg;
     LW.forEach((o,i)=>o.layers.mask=lm[i]); hid.forEach(o=>o.visible=true);
-    for(let r=0;r<R;r++)for(let u=0;u<R;u++){ const k=(r*R+u)*4; if(PIX[k]<128)continue; const x=x0+(u+.5)*CELL, z=z0+CS-(r+.5)*CELL, y=PIX[k+1]/255*4-.5;
+    const SQ=[];   // (the lawn's squares, for what grows on it: forage.js)
+    for(let r=0;r<R;r++)for(let u=0;u<R;u++){ const k=(r*R+u)*4; if(PIX[k]<128)continue; const x=x0+(u+.5)*CELL, z=z0+CS-(r+.5)*CELL, y=PIX[k+1]/255*4-.5; SQ.push(x,y,z);
       for(let n=0;n<PER;n++){ const e=KIND(x,y,z,n); if(e)L.push(e); else for(let m=0;m<2;m++){ const r1=hsh(x,z,m*3+1), r2=hsh(z,x,m*3+2), r3=hsh(x+z,x-z,m*3+3); TU.push([x+(r1-.5)*CELL,y,z+(r2-.5)*CELL,(.3+.2*r3)*T,r1*6.28,r2]); } } }
-    if(!L.length&&!TU.length)return null; const grp=new THREE.Group(); grp.count=L.length+TU.length; grp.dispose=()=>grp.children.forEach(m=>m.dispose());   // (a chunk: its clumps and its tufts, each one instanced draw)
+    if(!L.length&&!TU.length)return null; const grp=new THREE.Group(); grp.count=L.length+TU.length; grp.sq=SQ; grp.top=(x,y,z)=>{ const e=KIND(x,y,z,0); return e?e[1]+e[3]*e[6]*.5*.19:y+.2*T; }; grp.dispose=()=>grp.children.forEach(m=>m.dispose());   // (a chunk: its clumps and its tufts, each one instanced draw)
     if(TU.length){ const mt=new THREE.InstancedMesh(geoT,matT,TU.length); TU.forEach(([x,y,z,s,a,c],i)=>{ M.compose(V.set(x,y,z),q.setFromAxisAngle(up,a),S.set(s,s*(.75+.5*c)*.5,s)); mt.setMatrixAt(i,M); mt.setColorAt(i,col.setHSL(.25+(c-.5)*.07,.42+.15*c,.36+.16*((c*7.3)%1))); }); mt.computeBoundingSphere(); mt.receiveShadow=true; grp.add(mt); }
     if(L.length){ const me=new THREE.InstancedMesh(geo,mat,L.length);
     L.forEach(([x,y,z,s,a,c,ys,k],i)=>{ M.compose(V.set(x,y,z),q.setFromAxisAngle(up,a),S.set(s,s*ys*.5,s)); me.setMatrixAt(i,M); const g1=LG[Math.floor(c*4)%4], g2=LG[Math.floor(c*28)%4]; me.setColorAt(i,col.setRGB((g1[0]+g2[0])/510*k,(g1[1]+g2[1])/510*k,(g2[2]+g1[2])/510*k,THREE.SRGBColorSpace)); });   // (the lawn's own four greens, two mixed; a crown's edge a step darker)
     me.computeBoundingSphere(); me.receiveShadow=true; grp.add(me); } MAPG.bodega.add(grp); WEEDS.lawnN+=grp.count; return grp; };
   let busy=0; WEEDS.lawnTick=()=>{ if(LVL!=='up'||(ROOMS&&ROOMS.cur))return; const pcx=Math.floor(pos.x/CS), pcz=Math.floor(pos.z/CS);
-    for(const [k,me] of CH){ const [a,b]=k.split(',').map(Number); if(Math.max(Math.abs(a-pcx),Math.abs(b-pcz))>3){ if(me){ MAPG.bodega.remove(me); me.dispose(); WEEDS.lawnN-=me.count; } CH.delete(k); } }
+    for(const [k,me] of CH){ const [a,b]=k.split(',').map(Number); if(Math.max(Math.abs(a-pcx),Math.abs(b-pcz))>3){ if(me){ MAPG.bodega.remove(me); me.dispose(); WEEDS.lawnN-=me.count; } CH.delete(k); if(WEEDS.onDrop)WEEDS.onDrop(k); } }
     // the nearest missing chunk within 2, one a moment
     let best=null, bd=1e9; for(let b=-2;b<=2;b++)for(let a=-2;a<=2;a++){ const k=(pcx+a)+','+(pcz+b); if(CH.has(k))continue; const d=a*a+b*b; if(d<bd){ bd=d; best=[pcx+a,pcz+b,k]; } }
-    if(best){ const t0=performance.now(); CH.set(best[2],build(best[0],best[1])); busy=performance.now()-t0; WEEDS.busy=busy; } };
+    if(best){ const t0=performance.now(); const gb=build(best[0],best[1]); CH.set(best[2],gb); if(gb&&WEEDS.onAdd)WEEDS.onAdd(best[2],gb); busy=performance.now()-t0; WEEDS.busy=busy; } };
   const t0=CLOCK.tick; CLOCK.tick=dt=>{ t0(dt); WEEDS.lawnTick(); WEEDS.moveTick(); }; };

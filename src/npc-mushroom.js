@@ -38,10 +38,10 @@ const MUSH={};   // (17 Oct 2026, the owner: "the gold skeleton character is not
       ...Array.from({length:7},(_,i)=>{ const u=(i+.5)/7; return shape(sph(.024,6,4),[.52,.37,.17],[.12-.34*u,1.24-.52*u,.1+.03*u]); }) ]),   // (its braid's knots)
     part('bag',1,[ shape(blob(.08,.12,.05,10,8),BAG,[-.26,.62,.04],null,[0,0,-6]), shape(blob(.085,.03,.055,10,6),[.62,.46,.25],[-.26,.72,.04],null,[0,0,-6]) ]) ];
   // HIS BOOTH (owner, 18 Oct 2026: "i want to give the mushroom skeletong his own booth in the entrance of central park, his table is full of
-  // mushrooms"): inside the park's gate, east of the toy stall: a trestle table under a striped awning on two posts, its top heaped with
-  // mushrooms (red caps, browns, tans, cream, orange chanterelles) and three baskets of them; he stands behind it facing the gate, his tray still
+  // mushrooms"; then, the same day, "place the mushroom vendor by the main street": out on the park's sidewalk east of the gate, its front to the street): a trestle table under a striped awning on two posts, its top heaped with
+  // mushrooms (red caps, browns, tans, cream, orange chanterelles) and three baskets of them; he stands behind it facing the street, his tray still
   // in his hands, rocking a little, never wandering. Blocks and rounds in two instanced draws (some 4,000 triangles), solid at the table; no light
-  const BOOTH=()=>{ const P=PARK, X=x=>BOD.XS(x+(P.ox||0)), Z=y=>BOD.ZS(y+(P.oy||0)), Y=BOD.YS, g1=P.gate[1], x0=g1+6.6, x1=g1+10.2, y0=P.y0+2.2, y1=P.y0+3.2, TP=27;
+  const BOOTH=()=>{ const P=PARK, X=x=>BOD.XS(x+(P.ox||0)), Z=y=>BOD.ZS(y+(P.oy||0)), Y=BOD.YS, g1=P.gate[1], x0=g1+4, x1=g1+7.6, y0=P.y0-7, y1=P.y0-6, TP=27;   /* (on the park's sidewalk by the gate, facing the street: owner, 18 Oct 2026, "place the mushroom vendor by the main street with his booth") */
     const BX=[], CY=[], box=(a,b,c,d,z0,z1,col)=>BX.push([(X(a)+X(b))/2,(Y(z0)+Y(z1))/2,(Z(c)+Z(d))/2,Math.abs(X(b)-X(a)),Y(z1)-Y(z0),Math.abs(Z(d)-Z(c)),col]);
     const rnd=(()=>{ let t=7; return ()=>{ t=(t*16807)%2147483647; return t/2147483647; }; })(), WOOD=0x7a5634, DK=0x4e3622;
     box(x0,x1,y0,y1,TP-2,TP,WOOD); for(const [a,b] of [[x0+.08,y0+.08],[x1-.2,y0+.08],[x0+.08,y1-.2],[x1-.2,y1-.2]])box(a,a+.12,b,b+.12,0,TP-2,DK);   // (the table, its legs)

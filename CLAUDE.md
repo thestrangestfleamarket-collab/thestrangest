@@ -1304,8 +1304,8 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   browser had DISTANCE HAZE saved at FAR; the key is now `market-haze2`, so everyone starts in the MIST again. **The skyline in the mist** ("where
   did the distance skyline of buildings go?"): in the mist it's faint silhouettes (mixed 80% toward the mist's colour, a little more the further,
   in three steps; its own, not the scene's fog), in FAR as before. **The weather held** ("set a default time and atmosphere and stay at the time";
-  his pick "Teal mist + clouds"): CLOUDY from the start (`WX.hold`, weather.js; `?wx=natural` the simulation); the clock stays STOPPED; the hour
-  his pick from the mockups (https://claude.ai/artifact/FNh426aeu5GPJcdBj4KvqX). **The old Fox** ("use the old fox avatar not the new one"): the
+  his pick "Teal mist + clouds"): CLOUDY from the start (`WX.hold`, weather.js; `?wx=natural` the simulation); the clock stays STOPPED at 5:24 pm
+  (`CLOCK.h` 17.4; his pick of the mockups, https://claude.ai/artifact/FNh426aeu5GPJcdBj4KvqX: "golden hour"). **The old Fox** ("use the old fox avatar not the new one"): the
   rounded one before the angular (`npc-fox.js` from before 1c9b71f), 2 m. **The sun's stripes** ("glitchy shadows": a wall the sun grazes striped
   and arced with its own shadow): the sun's normalBias .04 to .12 (`clock.js`; `?snb=` a test's).
 - **Every page of the batch's atlas** (18 Oct 2026, found publishing): since the atlas was cut into pages (the roads three times wider), a kind

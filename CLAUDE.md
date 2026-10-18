@@ -1413,3 +1413,17 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   every kind but the deliberate: the wasp's wings, the shark's jaw, the cat's page), `tests/stepcheck.cjs` (walking: the pose every 0.1 s of game
   time, the place every frame; in the cloud's software graphics the page ran 2-3 frames a second, the game's frame capped at 0.05 s, so this is
   game time: not seen at a real frame rate here). Cost: less than before (poses worked out a tenth as often at 60 fps).
+- **The sky's depth, the city on and on, the park's own edge, the oaks back** (owner, 18 Oct 2026: "the sky needs distance in it and depth, it
+  just falls flat after a certain point. more variety of skyline based on real nyc 1980s, more clouds covering sky"; then "the buildings should keep
+  going and going in distance and get blurrier and blurrier the further away they are, lets also add the trees back to the park (large, more towards
+  middle. the closest buildings on other side of park should look more like this", his picture of the pre-war houses over Central Park's trees):
+  **the sky** in the mist is the dome again (`sky.js`, `uMistK`): darkest at the horizon, lighter up through the mist, deeper overhead, and a deck of
+  clouds over most of it on a plane above (so they crowd toward the horizon), lit above and a step darker under, drifting, its flat bands cut in the
+  screen's colour (in linear every dark teal fell in one band). **The skyline** (`skyline.js`): the 1980s landmarks on the park's side (the Twin
+  Towers, the Empire State, the Chrysler, Citicorp, Woolworth, 70s steel slabs, a steel curtain-wall front), low-rise with water towers; four more
+  rows out past the land, further and taller; **the park's own edge** just past the force field: pre-war apartment houses shoulder to shoulder, 12 to
+  24 storeys, limestone, cream and tan brick, set-back tops, twin-towered crowns now and then, water towers. Every front less distinct the further
+  past the town's edge (`pastK`: its windows fade into its wall in four steps, its colour into the mist in six). Not a blur: the no-blur rule
+  stands; "blurrier" is detail lost in flat steps. **The oaks** back (`PARK.trees`, lost in the park's reorganization): 24, 12 to 22 m, in the middle
+  seven tenths of the park, 12 tiles apart; `?trees=0` hides them. Cost: the skyline some 600 more instances (about 7,000 triangles, one draw), the
+  sky's clouds in its one fragment shader, the oaks some 11,000 triangles.

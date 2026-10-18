@@ -89,6 +89,7 @@ a=mod.index('const crate=(x,z,s,y=0)=>'); b=mod.index('looseDraw();\nlet looseAc
 mod=mod[:a]+mod[b:]
 mod=rp(mod,"const pos=new THREE.Vector3(0,0,14); let heading=0.8, py=0;","const pos=new THREE.Vector3(-2.2,0,3.2); let heading=0.8, py=0;")
 mod=rp(mod,"import * as THREE from 'three';","""import * as THREE from 'three';
+"""+rd('src/shx.js')+"""
 import {EffectComposer} from 'three/addons/postprocessing/EffectComposer.js';
 import {RenderPass} from 'three/addons/postprocessing/RenderPass.js';
 import {OutputPass} from 'three/addons/postprocessing/OutputPass.js';""")
@@ -270,15 +271,15 @@ mod=rp(mod,"  for(const l of BOD.LAMPS){ const cm=Math.max(...l.c);","""  // the
       m.onBeforeRender=(r,s,c)=>{ m.quaternion.copy(c.quaternion); c.getWorldDirection(f); m.position.copy(at).addScaledVector(f,-.3); m.updateMatrixWorld(); }; scene.add(m); } }
   for(const l of BOD.LAMPS){ const cm=Math.max(...l.c);""")
 # HIS BODY IN A PHYSICS ENGINE (owner, 17 Oct 2026): src/physbody.js, after the rig has placed him each frame
-mod=rp(mod,"const go=(st.dist-before)/PPU;","const go=(st.dist-before)/PPU*(typeof PLAYAS!=='undefined'&&PLAYAS.on&&PLAYAS.K?PLAYAS.K:1);")   # (NIMBLE: the mannequin runs a third faster, src/playas.js)
+mod=rp(mod,"const go=(st.dist-before)/PPU;","const go=(st.dist-before)*W3.SZ/PPU*(typeof PLAYAS!=='undefined'&&PLAYAS.on&&PLAYAS.K?PLAYAS.K:1);")   # (NIMBLE: the mannequin runs a third faster, src/playas.js; W3.SZ: his feet carry him as far as they're drawn, 18 Oct 2026, the rig's slip gone)
 mod=rp(mod,"W3.place(B,pos.x,py,pos.z,RAG.on?RAG.hd:heading,hdA,ZU); if(ED.on)ED.tick();","W3.place(B,pos.x,py,pos.z,RAG.on?RAG.hd:heading,hdA,ZU); if(typeof PLAYAS!=='undefined')PLAYAS.tick(dt,B); PB.step(dt,B,pos.x,py,pos.z,RAG.on?RAG.hd:heading,groundY(pos.x,pos.z),RAG.on); if(ED.on)ED.tick();")
 # HIS MOVES, EDITABLE (owner, 17 Oct 2026: "edit his walk and other movements in the HIS SHAPE editor"; his picks: the walk's and the run's
 # dials, a keyframe editor for every move, new moves of his own): src/animator.js. In the rig: the walk's dials (each 1 as it was), the
 # hook where every pose he takes passes on its way to be drawn (his keys added on), and what the editor needs to play a move by itself
 def rpn(s,a,c,n):
     assert s.count(a)==n,(a[:80],s.count(a)); return s.replace(a,c)
-head=rp(head,"const WALK={cycle:0.929,stance:0.6,stride:14.67,lean:2},RUN={cycle:0.56,stance:0.4,stride:20,lean:10};",
-  "const WALK={cycle:0.929,stance:0.6,stride:14.67,lean:2,bounce:1,arm:1,elbow:1,sway:1,twist:1,knee:1,width:1},RUN={cycle:0.56,stance:0.4,stride:20,lean:10,bounce:1,arm:1,elbow:1,sway:1,twist:1,knee:1,width:1};   // (bounce...width: the walk's and the run's dials, HIS MOVES: 1 as made)\nconst OVL={fn:null};   // (where his own keys are added onto every pose: src/animator.js)")
+head=rp(head,"const WALK={cycle:0.583,stance:0.58,stride:18,lean:2},RUN={cycle:0.461,stance:0.4,stride:20,lean:10};",
+  "const WALK={cycle:0.583,stance:0.58,stride:18,lean:2,bounce:1,arm:1,elbow:1,sway:1,twist:1,knee:1,width:1},RUN={cycle:0.461,stance:0.4,stride:20,lean:10,bounce:1,arm:1,elbow:1,sway:1,twist:1,knee:1,width:1};   // (bounce...width: the walk's and the run's dials, HIS MOVES: 1 as made)\nconst OVL={fn:null};   // (where his own keys are added onto every pose: src/animator.js)")
 head=rp(head,"P.pyaw=-3*D*sw*(1+0.5*r); P.cyaw=2.5*D*sw*(1+r);","P.pyaw=-3*D*sw*(1+0.5*r)*g.twist; P.cyaw=2.5*D*sw*(1+r)*g.twist;")
 head=rp(head,"const sway=0.9*w*(1-0.6*r)*Math.sin(2*Math.PI*q.L);","const sway=0.9*g.sway*w*(1-0.6*r)*Math.sin(2*Math.PI*q.L);")
 head=rp(head,"P.roll=-4*D*w*(1-0.4*r)*Math.sin(","P.roll=-4*D*g.sway*w*(1-0.4*r)*Math.sin(")
@@ -291,7 +292,7 @@ head=rp(head,"  const B=settle(busy||st.up||(st.water&&st.water.in)?clearPose(P,
 head=rp(head,"ell(p,add(H,V(-6.7,-1.8,-1.0)),V(1.3,1.9,1.3)))});","ell(p,add(H,V(-6.7,-1.8,-1.0)),V(1.3,1.9,1.3)),rbox(p,add(H,V(0,-2.6,6.35)),V(0.95,1.75,1.25),0.45))});")   # (A NOSE, owner 17 Oct 2026: "give all playable characters noses")
 head=rp(head,"const MATS=Object.keys(RAMP)","RAMP.sole=['#3a2c22','#30241b','#251b14','#140e0a']; RAMP.eye=['#5a3a26','#4c311f','#3c2618','#24160d']; RAMP.eyeW=['#f4f0e8','#e8e2d6','#c8c0b0','#8a8274']; RAMP.pupil=['#2a1c18','#241814','#1c120f','#100a08']; RAMP.lid=['#b4896e','#a67c62','#8e6650','#5e4232']; const MATS=Object.keys(RAMP)")   # (his eyes' colour: the character editor, src/looks.js)
 head=rp(head,"return {restOf,IDF,","return {rbox,ell,rcone,box,OVL,begin,beginUp,legIK,START,mkMove:move,ARMMOVES,fine:v=>{ FINEHAND=!!v; },farOnly:v=>{ FAR=!!v; },restOf,IDF,")
-mod=rp(mod,"B=RIG.pose(st); ragBlend(B); ragStrikes(B,J0,J0t?(now-J0t)/1000:0); J0=B.J; J0t=now; }","if(!ASTEP.you.B||RAG.blend||ED.anim||ASTEP.gate(ASTEP.you,dt)){ B=ED.anim?ED.animPose():RIG.pose(st); ragBlend(B); ragStrikes(B,J0,J0t?(now-J0t)/1000:0); J0=B.J; J0t=now; ASTEP.you.B=B; } else { B=ASTEP.you.B; PHYOU.strikes=[]; } }")   # (your pose stepped as everyone's: ASTEP, map-pre.js; the strikes judged only from pose to pose; a blend out of the ragdoll and the animator every frame)
+mod=rp(mod,"B=RIG.pose(st); ragBlend(B); ragStrikes(B,J0,J0t?(now-J0t)/1000:0); J0=B.J; J0t=now; }","if(!ASTEP.you.B||RAG.blend||ED.anim||st.w>0.01||st.target>0||ASTEP.gate(ASTEP.you,dt)){ B=ED.anim?ED.animPose():RIG.pose(st); ragBlend(B); ragStrikes(B,J0,J0t?(now-J0t)/1000:0); J0=B.J; J0t=now; ASTEP.you.B=B; } else { B=ASTEP.you.B; PHYOU.strikes=[]; } }")   # (your pose stepped as everyone's: ASTEP, map-pre.js, but every frame while he walks or runs (owner, 18 Oct 2026, his pick: a planted foot hopped forward between poses); the strikes judged only from pose to pose; a blend out of the ragdoll and the animator every frame)
 # THE MUSICIAN (owner, 17 Oct 2026): the game's guitarist, its files read from the game as they are (the guitar, its recordings, the tunes,
 # his hands), the few things they take from the game's cast and sound stood in for here; then src/musician.js puts him on the bar's stage
 # (owner, 17 Oct 2026: "move him to the bar"); his right wrist's place on the guitar a number of ours (GTWR: "fix the guitarist arm")

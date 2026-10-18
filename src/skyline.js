@@ -27,6 +27,7 @@ const FAR3={};
   // save it"): every number of the far look in one place, FL, with five styles to start from; the panel below (GRAPHICS' DISTANCE LOOK) moves
   // them live, SAVE keeps them in the browser (the save's 'farlook'), EXPORT gives them as text to make the game's own (FL0)
   const FL0={m0:MIST0,m1:MIST1,md:.5,hn:.2,hf:.82,hd:170,hs:8,dt:.45,wn:.12,wd:.02,bl:.6,br:1,cov:.47,cl:1.16,zk:.62,hk:.5}, FL={...FL0}; try{ Object.assign(FL,JSON.parse(SAVE.get('farlook')||'{}')); }catch(e){} FAR3.FL=FL; FAR3.FL0=FL0;
+  FAR3.frameTris=()=>new Promise(res=>{ const I=renderer.info; I.autoReset=false; requestAnimationFrame(()=>{ I.reset(); requestAnimationFrame(()=>{ const r={tris:I.render.triangles,calls:I.render.calls,culled:0}; I.autoReset=true; res(r); }); }); });   // (a test's: one whole frame's triangles and draws, every pass; tests/mistcull.cjs)
   // THE SKYLINE: along each side of the land's square, a back row 4 tiles in from its edge and a front row 16 tiles in, each building a block
   // (a quarter of them a step narrower at the top: a set-back). Laid out once, the same every time (a hash, no Math.random)
   const LR=MODS.landR, hs=(i,j)=>{ const v=Math.sin(i*12.9898+j*78.233)*43758.5453; return v-Math.floor(v); }, B=[];
@@ -96,12 +97,12 @@ const FAR3={};
      if(t.a>.5){ float bay=floor(u*2.+(an.x>an.z?3.:0.)), h=fract(sin(dot(vec3(bay,floor(v),vFS+floor(uTW+fract(bay*.37+floor(v)*.61)*7.)*1.7),vec3(12.9898,78.233,37.719)))*43758.5453); fLit=step(h,uLit); } } }`)
       .replace('#include <fog_fragment>',`if(uMK<=0.){
 #include <fog_fragment>
-} else { float fd=distance(vFW.xz,uMP.xz); gl_FragColor.rgb=mix(gl_FragColor.rgb,uMC,mix(uHN,uHF,floor(pastK()*uHS+.5)/uHS)); }   /* (less visible: owner, "they shouldnt be as visible ... haze ... real distance") */   /* (into the mist by how far past the town's edge: the park's own edge plain, the far rows going, in six steps) */`).replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n totalEmissiveRadiance+=fLit*vec3(1.,.82,.5)*.9+diffuseColor.rgb*uAmb;'); };   /* (uAmb: the whole sky's light on them by day, so the far fronts are seen in the shade too) */
+} else { float fd=distance(vFW.xz,uMP.xz); gl_FragColor.rgb=mix(gl_FragColor.rgb,uMC,mix(uHN,uHF,pastK())); }   /* (less visible: owner, "they shouldnt be as visible ... haze ... real distance") */   /* (into the mist by how far past the town's edge: the park's own edge plain, the far rows going, in six steps) */`).replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n totalEmissiveRadiance+=fLit*vec3(1.,.82,.5)*.9+diffuseColor.rgb*uAmb;'); };   /* (uAmb: the whole sky's light on them by day, so the far fronts are seen in the shade too) */
   mat.customProgramCacheKey=()=>'skylinefronts';
   me.frustumCulled=false; me.visible=on; (MAPG.bodega||scene).add(me); FAR3.mesh=me; FAR3.n=B.length; FAR3.tris=B.length*12; FAR3.FU=FU;
   // each frame, after the clock and the weather have set the sky: the haze from where you stand, out in the open only
   const tick0=CLOCK.tick; CLOCK.tick=dt=>{ tick0(dt);
-    const up=LVL!=='down', inside=!!ROOMS.cur||!up; me.visible=FAR3.on&&up;
+    const up=LVL!=='down', inside=!OUT.open; me.visible=FAR3.on&&up;
     FU.uHN.value=FL.hn; FU.uHF.value=FL.hf; FU.uHD.value=FL.hd; FU.uHS.value=Math.round(FL.hs); FU.uDT.value=FL.dt; if(SKY.U.uCov){ SKY.U.uCov.value=FL.cov; SKY.U.uCL.value=FL.cl; SKY.U.uZk.value=FL.zk; SKY.U.uHk.value=FL.hk; }
     FU.uLit.value=FL.wd+(FL.wn-FL.wd)*Math.max(0,Math.min(1,(1-CLOCK.elev())/6)); FU.uTW.value=performance.now()/1000/23;   // (a tenth lit even by day, each going on and off now and then: life out there, owner "more clouds and life in distance")   // (a third of their windows lit from dusk)
     FU.uAmb.value=.55*Math.max(0,Math.min(1,(CLOCK.elev()+3)/12));

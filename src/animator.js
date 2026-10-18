@@ -34,10 +34,10 @@
     else if(!(st.water&&st.water.in)&&!st.climb&&!st.hang&&!st.ride&&!st.sit){ const w=st.w||0, r=st.run||0; addOn(P,deltaAt('stand',0),1-w); addOn(P,deltaAt('walk',st.ph),w*(1-r)); addOn(P,deltaAt('run',st.ph),w*r); }
     if(st.up)addOn(P,deltaAt(st.up.name,st.up.t),1); };
   // ---- KEPT (in this browser)
-  const save=()=>{ try{ SAVE.set('moves',JSON.stringify({walk:pick(R.WALK),run:pick(R.RUN),jump:JT,rigt:{moves:R.RIGT.moves,combo:R.RIGT.combo,start:R.RIGT.start},ov:OV,custom:CUSTOM})); }catch(e){} };
+  const save=()=>{ try{ SAVE.set('moves',JSON.stringify({gait:R.GAITV,walk:pick(R.WALK),run:pick(R.RUN),jump:JT,rigt:{moves:R.RIGT.moves,combo:R.RIGT.combo,start:R.RIGT.start},ov:OV,custom:CUSTOM})); }catch(e){} };
   const pick=o=>{ const q={}; for(const [k] of DIALS)q[k]=o[k]; return q; };
   function makeCustom(c){ R.MOVES[c.name]=R.mkMove({keys:[[0,{}],[c.dur,{}]]}); if(c.key){ MOVEK[c.key]=c.key.toUpperCase(); R.KEYMOVE[c.key.toUpperCase()]=c.name; } }
-  function load(o){ if(!o)return; Object.assign(R.WALK,o.walk||{}); Object.assign(R.RUN,o.run||{}); if(o.jump){ JT={...J0,...o.jump}; R.tune(JT); } if(o.rigt)Object.assign(R.RIGT,o.rigt);
+  function load(o){ if(!o)return; if(o.gait!==R.GAITV)for(const g of [o.walk,o.run])if(g){ delete g.stride; delete g.cycle; }   /* (saved before the planted walk, 18 Oct 2026: its step length and time made him skate again) */ Object.assign(R.WALK,o.walk||{}); Object.assign(R.RUN,o.run||{}); if(o.jump){ JT={...J0,...o.jump}; R.tune(JT); } if(o.rigt)Object.assign(R.RIGT,o.rigt);
     for(const c of o.custom||[])if(!R.MOVES[c.name]){ makeCustom(c); } CUSTOM=o.custom||[]; OV=o.ov||{}; }
   try{ load(JSON.parse(SAVE.get('moves')||'null')); }catch(e){}
   // ---- THE PREVIEW: in these two tabs he does the move on his own, in place (or stands frozen at the moment chosen)

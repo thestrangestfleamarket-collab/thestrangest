@@ -51,8 +51,9 @@ THREE.ShaderChunk.fog_pars_fragment=THREE.ShaderChunk.fog_pars_fragment.replace(
 THREE.ShaderChunk.fog_fragment=THREE.ShaderChunk.fog_fragment.replace('fogFactor = floor(',`vec3 mistC=fogColor; if( mistE.x > .5 ){ vec2 q=vFogW.xz/mistE.w;
 		float dx=max(mistB.x/mistE.w-q.x,q.x-mistB.z/mistE.w), dz=max(mistB.y/mistE.w-q.y,q.y-mistB.w/mistE.w), d=max(dx,dz);
 		d+=(mistN(q/9.)-.5)*14.+(mistN(q/3.1+17.)-.5)*5.;   // (the steps' edges bent into tongues)
-		fogFactor=clamp((d-mistE.y)/mistE.z,0.,1.); mistC*=1.-mistF.x*floor(clamp((d-mistE.y-mistE.z)/mistF.y,0.,1.)*4.)/4.; }   // (darker the further out: owner, "it should get darker further away", in four steps)
-	fogFactor = floor(`).replace('gl_FragColor.rgb, fogColor, fogFactor','gl_FragColor.rgb, mistC, fogFactor');
+		fogFactor=clamp((d-mistE.y)/mistE.z,0.,1.); mistC*=1.-mistF.x*clamp((d-mistE.y-mistE.z)/mistF.y,0.,1.); }   // (darker the further out: owner, "it should get darker further away"; gradually, as the haze)
+	fogFactor = floor(`).replace('gl_FragColor.rgb, fogColor, fogFactor','gl_FragColor.rgb, mistC, fogFactor')
+  .replace('fogFactor = floor( fogFactor * 8. + .5 ) / 8.;','');   // (THE HAZE FADES GRADUALLY, owner 18 Oct 2026, of the mist's bands: "i dont want hard lines like that, needs to be cel shaded shadows and gardual chanegs in haze tarnspacency": the light and shadows keep their cel bands, the fog alone fades smoothly; it was cut into 8 flat steps)
 // THE DARKEST A FACE GOES (owner, 18 Oct 2026: "nothing should be black like this even at darkest give it 5-20%"): a face the sun and lamps miss still
 // gets this much of its own colour, so the bricks of a shaded side show; ?floor=N for a test
 const FLOOR=(()=>{ const q=+new URLSearchParams(location.search).get("floor"); return (q>=0&&q<1&&q?q:.2).toFixed(3); })();
@@ -101,6 +102,15 @@ const ZU=1/(PPU*Math.cos(Math.PI/6)), TILE=33.9/PPU, QS=new URLSearchParams(loca
 // keeps the sun out (and its shadow on the room) exactly as from outside. Rays (layer 0) don't hit it while it's out of sight, as before.
 const SEEN=(o,show)=>{ if(!SEEN.L){ SEEN.L=1; scene.traverse(c=>{ if(c.isLight&&c.shadow)c.shadow.camera.layers.enable(3); }); }
   if(o.userData.seen===show)return; o.userData.seen=show; o.traverse(c=>{ if(c.isMesh||c.isLine||c.isPoints){ if(show)c.layers.enable(0); else c.layers.disable(0); c.layers.enable(3); } }); };
+// ONE RULE FOR WHAT'S OUT OF DOORS (owner, 18 Oct 2026, "fix all 1-8", the first: each outdoor thing had hidden itself indoors with its own
+// check, 18 files of them, and one forgotten showed through the walls): a thing of the open air joins once, OUT.add(thing, kind), and this says
+// for all of them, once a frame after the rooms (rooms.js), whether it's seen: 'open' (the sky, the clouds, the birds, the roofs' things: only
+// out of doors, on the street's level) or 'world' (the river, the force field, the lamps' pools: the street's level, and inside a room too
+// while FREE lets the world be seen from in). Hidden by SEEN, so what casts a shadow (a roof) still keeps the sun out. OUT.open, OUT.world and
+// OUT.up for whoever needs to know (a river's sim, the weather's rain).
+const OUT=window.OUT={L:[],open:true,world:true,up:true,add(o,k='open'){ OUT.L.push({o,k}); SEEN(o,OUT[k]); return o; },
+  tick(){ const up=LVL!=='down', ins=typeof ROOMS!=='undefined'&&!!ROOMS.cur, open=up&&!ins, world=up&&(FREE||!ins); OUT.up=up; if(open===OUT.open&&world===OUT.world)return;
+    OUT.open=open; OUT.world=world; for(const e of OUT.L)SEEN(e.o,OUT[e.k]); }};
 // FREE (owner, 18 Oct 2026: "lets take off any preloading rules or hiding rules, just let the user run freely around full map. dont render characters
 // or things that are out of sight of player that dont need to be - whatever method you think would reduce lag and let me freely run around n and
 // out of rooms"): no world vanishing inside a room (its six planes and the black, the characters outside hidden, the river and the force field

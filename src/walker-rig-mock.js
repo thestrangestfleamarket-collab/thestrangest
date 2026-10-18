@@ -76,15 +76,22 @@ const rigGet=()=>JSON.parse(JSON.stringify(RIGP)),rigDefault=()=>JSON.parse(JSON
 let G=289;   // gravity in his units: he stands 52 tall, about 1.75 m, so 9.81 m/s² is 289 a second a second (let: the Movement tab's tuning, tune in 12-walker-rig-3)
 // THE MOVEMENT TAB'S NUMBERS (David, 14 Oct 2026; 50-menu-7-movement): how fast he goes between walking and running (blend) and gets going
 // and stops (start), every punch's and kick's speed (moves), how soon a combo's next move cuts in (combo: window[0] times this), and
-// slip: how much further he goes than his feet carry him, walking (0) to running (1), for speeds past his longest, quickest stride
-// (owner, 14 Oct 2026: "he walks too slow": the old Walker's 2.4 tiles a second walking, 81 of his units, his 8 frames still 10 a second; a
-// run 1.6 times that: slip0 2.424, slip1 1.458 at the Movement tab's mix, .35)
-const RIGT={blend:4,start:3.5,moves:1,combo:1,slip0:2.424,slip1:1.458};
+// (no slip: he goes exactly as far as his planted feet carry him, owner 18 Oct 2026: "they dont seem to be really walking ... cant we just
+// apply real walking physics ... so there feet are actually moving around realistically?". Before, he went 2.4 times as far as his feet
+// walking and 1.46 times running (slip0, slip1: "he walks too slow", 14 Oct), and his planted feet skated forward half his speed. His pace
+// is kept, his steps longer and quicker instead (his pick): WALK and RUN below; the world carries him his distance times his drawn size,
+// W3.SZ, as it carries the musician and the bearded Walker)
+const RIGT={blend:4,start:3.5,moves:1,combo:1};
 // the game's walk (the Movement tab's mix, .35, a third of the way to running) is the old Walker's 8 frames at 10 a second (owner, 14 Oct
 // 2026: "new walk must match exactly"; walking he is drawn as them, 12-walker-rig-3), at the speed it always had (39 a second); running
 // (Shift) is quicker and longer, with a moment in the air each step. A foot on the ground slides back under him exactly as fast as he goes,
 // so it stays put.
-const WALK={cycle:0.929,stance:0.6,stride:14.67,lean:2},RUN={cycle:0.56,stance:0.4,stride:20,lean:10};
+// (18 Oct 2026, his pace kept with his feet planted: 2.4 tiles a second walking, 4.9 running, as before, drawn 1.2 times his rig: the walk's
+// step half as long again and nearly twice as quick (206 steps a minute, a short-legged brisk walk: his hips are a third of his height, so at
+// this pace a person his shape is near a jog), the stance a little shorter, as a brisk walk's is; the run's step as it was, quicker. A longer
+// step sinks his hips: 18 drops them 2 of his units at its ends, 24 running 5, a crouch)
+const WALK={cycle:0.583,stance:0.58,stride:18,lean:2},RUN={cycle:0.461,stance:0.4,stride:20,lean:10};
+const GAITV=2;   // (the walk's and run's numbers' version: a MOVES dial saved before them (stride, cycle) is dropped, src/animator.js)
 function gaitOf(r){ const g={}; for(const k in WALK) g[k]=WALK[k]+(RUN[k]-WALK[k])*r; g.speed=g.stride/(g.stance*g.cycle); return g; }
 const CYCLE=WALK.cycle,SPEED=gaitOf(0).speed;
 const fwv=a=>V(0,Math.sin(a),Math.cos(a)),dnv=a=>V(0,-Math.cos(a),Math.sin(a));   // a foot tilted toe-up by a: along it, and down from the ankle
@@ -143,7 +150,7 @@ function legIK(P,n,s,A){ const [H,Rb]=hipAt(P,s),d=sub(A,H),dl=Math.min(len(d),T
 // foot on the ground stays planted and the leg reaches it; the pelvis rides as high as the stance leg's knee (bent as the curve bends
 // it) lets it, so he dips as each heel takes his weight; it shifts over the standing foot, the free side's hip drops, the hips turn with
 // the leading leg, the shoulders against them, the head stays level and looks ahead; the arms swing from the shoulder, the elbow trailing.
-function walkPose(st,abd){ const r=st.run||0,rs=r*r,g=gaitOf(r),w=st.w,ST=g.stance,h=g.stride*w,q=phases(st.ph),P=neutral(),sw=drive(q.L,w)-drive(q.R,w);
+function walkPose(st,abd){ const r=st.run||0,rs=r*r,g=gaitOf(r),w=st.w,ST=g.stance,h=g.stride*w/(st.anim||1),q=phases(st.ph),P=neutral(),sw=drive(q.L,w)-drive(q.R,w);
   // (rs: the curves' and the arms' shapes mixed by r squared, so the game's brisk walk keeps a walker's straight knees and loose arms,
   // not a third of a runner's; the timing, g, is mixed by r itself)
   const fa=(n,qq)=>lab('foot',qq,ST,rs)*w,kn=(qq)=>lab('knee',qq,ST,rs)*w;
@@ -803,7 +810,7 @@ function tick(st,h){ st.run+=(st.runTarget-st.run)*Math.min(1,h*RIGT.blend); con
   st.w+=(st.target-st.w)*Math.min(1,h*RIGT.start); if(Math.abs(st.w-st.target)<1e-3||st.snap&&!st.move) st.w=st.target;   // (snap: at once, as the old Walker stopped and went: you and the other players, 47-you-jointed, 48-online)   // (the walk's own weight goes on through a move: let go and he'll have stopped when it ends)
   if(st.water) st.water.load=st.move&&st.move.def.load&&st.move.t<st.move.def.air.t0?keyAt(st.move.def.load,st.move.t):0;   // (how hard he's pressing the board)
   waterTick(st,h);
-  const sk=(st.wk||1)+((st.rk||1)-(st.wk||1))*st.run,   /* (st.wk, st.rk: how fast he walks and runs, times his own; st.anim: how fast his limbs move: yours from the avatar editor's SPEED, src/avmove.js) */ walked=st.move?0:g.speed*st.w*h*sk*Math.max(.05,RIGT.slip0+(RIGT.slip1-RIGT.slip0)*st.run); st.wd=(st.wd||0)+walked;   // (wd: how far he's walked since he set off, for the old Walker's frame: pose)
+  const sk=(st.wk||1)+((st.rk||1)-(st.wk||1))*st.run,   /* (st.wk, st.rk: how fast he walks and runs, times his own; st.anim: how fast his limbs move: yours from the avatar editor's SPEED, src/avmove.js) */ walked=st.move?0:g.speed*st.w*h*sk; st.wd=(st.wd||0)+walked;   // (wd: how far he's walked since he set off, for the old Walker's frame: pose)
   st.ph=(st.ph+h*sk*(st.anim||1)/g.cycle)%1;   /* (his legs as quick as his going, times the animation's speed) */ st.dist+=walked+(st.move&&st.move.def.air&&st.move.t<st.move.def.air.t0?(st.move.def.entry?0:st.mvw||0):st.mv)*h;   // (a jump's crouch: only the speed he came with, its own push from the take-off; a dive's run-up presses the board where it is)
   const P=rawPose(st); st.last=P; const B=build(P,null),H=st.head;
   if(H.a0==null){ H.a0=H.a1=B.J.head.y; }
@@ -1111,7 +1118,7 @@ function tune(o){ G=o.g;
   for(const k in MOVES){ const s=MOVES[k].src; if(!s)continue; if(k!=='jump'){ MOVES[k]=jumpMove(s); continue; }
     const v0=4*o.jh/o.jT, g=8*o.jh/(o.jT*o.jT), keys=JUMP0.keys.map(([t,c,e])=>[typeof t=='string'?t:t>=100?100+(t-100)*o.rec/.34:t*o.crouch/JUMP0.t0,c,e]);
     MOVES.jump=jumpMove({...JUMP0,v0,g,t0:o.crouch,keys}); } }
-return {restOf,IDF,viewPitch:v=>{ VPITCH=v; },far:v=>{ FAR=!!v; DIGC.clear(); },create,step,pose,act,release,beginUp,tune,WPX,V8,wpal,wpxGet,wpxPack,studioAnims,studioBase,RIGT,WALK,RUN,G:()=>G,water,travel,handed,bake,baker,draw,depth:N=>BUF[N]&&BUF[N].dep,pid:N=>BUF[N]&&BUF[N].id,tint,ramp32,project,overlaps,build,walkPose,shell,MOVES,KEYMOVE,gaitOf,BONES,PIECES,RAMP,SPEED,CYCLE,PX,V,D,
+return {restOf,IDF,viewPitch:v=>{ VPITCH=v; },far:v=>{ FAR=!!v; DIGC.clear(); },create,step,pose,act,release,beginUp,tune,WPX,V8,wpal,wpxGet,wpxPack,studioAnims,studioBase,RIGT,WALK,RUN,G:()=>G,water,travel,handed,bake,baker,draw,depth:N=>BUF[N]&&BUF[N].dep,pid:N=>BUF[N]&&BUF[N].id,tint,ramp32,project,overlaps,build,walkPose,shell,MOVES,GAITV,KEYMOVE,gaitOf,BONES,PIECES,RAMP,SPEED,CYCLE,PX,V,D,
   apply,STANDK,RIDEG,mix,clearPose,settle,rcone,ell,box,rbox,add,sub,mul,nrm,cross,dot,len,STAND,ANKLE,FOOTX,frameOf,MATS,
   DIG,digitBase,digitFK,fgOf,hand,yaw,get THIGH(){ return THIGH; },get SHIN(){ return SHIN; },get UPPER(){ return UPPER; },get FORE(){ return FORE; },get HIPX(){ return HIPX; },   // (the bones' lengths as the table has them now)
   get RIGP(){ return RIGP; },get RIGGEN(){ return RIGGEN; },rigSet,rigGet,rigDefault,refit,fitPts,frameAt,rawBake:v=>{ RAWBAKE=!!v; },cam,K,shade:n=>{ if(n!=null)SHADE=n; return SHADE; },style:s=>{ const o=STY; if(s!==undefined)STY=s||{}; return o; },soft:v=>{ if(v!==undefined)SOFT=v; return SOFT; },outline:o=>{ if(o){ Object.assign(OUTS,o); OUTL=OUTS.w>0; try{ localStorage.setItem('isowalk-outline2',JSON.stringify(OUTS)); }catch(e){} } return OUTS; }};   // (his fingers placed: 47-play-3-guitar)   // (the rest: for the players of a scene, 47-play-1-cast)

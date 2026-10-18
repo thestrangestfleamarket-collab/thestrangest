@@ -982,3 +982,27 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   shoe; the house's dark, the bodega's galvanized, Ghost Street's copper); parapets with coping on the flat roofs; on the house the water tank
   on its stand, the stair bulkhead, the elevator's machine room, chimneys, vents, soil stacks, a TV antenna; on the bodega an AC unit, an
   exhaust fan, a skylight, vents. Cost: 2,500 triangles, three instanced draws; no lamp, no program.
+- **The apartment house tried and lived in** (owner, 18 Oct 2026, "go all" to the open items; `apts.js`, `residents.js`, `newsstand.js`, `rooftops.js`):
+  **Tried**: the lift ridden from the 2nd floor to the 5th and walked out of; the U stairs climbed from the 2nd to the 5th and into a flat (both fine).
+  **Found and fixed**: on the stairs' landing and in the lift (against the back wall, inside a room's half-tile margin) you weren't "in a room", so
+  the whole world and the river drew round you: above the ground floor the house is all one room to its walls (`rooms.js`); a character on
+  another floor held up a walker under him (makeNPC's "you're in my way" now counts your height, `npc-map.js`); the cottage's candles weren't live
+  flames (the call was HOLLOW's only: 19 flames to 46). **One quad a wall side**: every wall that cuts away is one picture a side with its holes
+  clear (the alpha test), where it was a piece between every hole: the house's draws on the 5th floor 651 to 245. **THE FLATS**: twelve on the 3rd
+  to 5th floors (3A-5D: A and B west of the hall, C and D east, the back one first; a wall between each side's two), each a small studio from the
+  game's studio set (`put`, the catalog): fridge and sink and counter along its back wall with a shelf and a plant, a table and a stool, the single
+  bed along the outer wall under a poster, the wardrobe by the door's wall, a floor lamp, a vacuum in some, a TV in the long east-back ones; a warm
+  lamp record each (LITE's eight nearest, lit only while you're in). Its door a leaf on its hinge with a knob, a brass number over it on the hall's
+  side: it swings in as you come up to it (or one who lives there), a double click holds it open (`UI.thing` DOOR 3A ...), the doorway blocks while
+  it's shut (`APTS.flats`, `APTS_F()`). The mail's flats are these twelve (`mail.js`). **THE RESIDENTS GO UP**: hero_m 3B, hero_f 3D, villager_m 4A,
+  villager_f 5C; home in the evening he walks in at the front door, through the lobby and hall, up the U stairs a storey at a time, along his hall,
+  through his door, and stands in his flat (`APTS.way`, `APTS.gnd`: the floor at his own height); in the morning the same way down and out to his
+  errand; a home at the game's start is in his flat already. Seen only while you're in the house on his floor (`N.mode` 'indoor' / 'hidden'); you in
+  his way in a hall, he squeezes past. **NEWSSTAND CUSTOMERS** (`NEWS.call`, `NEWS.customer`): a few times an hour while it's open (six an hour
+  before ten, two and a half after) one of the town's walkers standing about within thirty tiles (not a golem, not on a job) comes to the
+  counter's front, the cat serves him and counts his change, a paper off its stack, he looks it over a moment and walks on (`NEWSDBG().sold`).
+  **GHOST STREET'S ROOF** (`rooftops.js`, read off its roof's own slices): a brick chimney with a stone cap and a pot through the back slope by the
+  east gable, a lead vent pipe with its collar and hood on the front slope, a copper lightning rod with a glass ball on the ridge's west end, its
+  cable down the gable. **Cost**: the flats some 5,000 triangles on the 5th floor's screen (136K to 141K there, already over the 100K before them),
+  12 lamp records, 12 leaves and knobs (one program); the roof's bits about 20 more instances; a resident indoors his rig as before. Not done: the
+  lift for residents (they take the stairs); sitting or sleeping in the flats; a resident reading a paper he bought (he looks it over standing).

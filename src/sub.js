@@ -18,7 +18,7 @@ const SUBX={};
   // the ring's outer and inner walls (the outer one cut where the stairs' ways come in)
   const o={x0:xW-HW,x1:xE+HW,y0:yS-HW,y1:yN+HW}, n={x0:xW+HW,x1:xE-HW,y0:yS+HW,y1:yN-HW};
   wall('x',o.y0,o.x0,o.x1,[]); wall('x',o.y1,o.x0,o.x1,[]); wall('y',o.x0,o.y0,o.y1,gaps.filter(g=>g.side==='wO')); wall('y',o.x1,o.y0,o.y1,gaps.filter(g=>g.side==='eO'));
-  wall('x',n.y0,n.x0,n.x1,[]); wall('x',n.y1,n.x0,n.x1,[]); wall('y',n.x0,n.y0,n.y1,[]); wall('y',n.x1,n.y0,n.y1,[]);
+  wall('x',n.y0,n.x0,n.x1,R.mine?[{a:R.mine.x-1.25,b:R.mine.x+1.25}]:[]);   /* (the gap into the deep mines: mines.js) */ wall('x',n.y1,n.x0,n.x1,[]); wall('y',n.x0,n.y0,n.y1,[]); wall('y',n.x1,n.y0,n.y1,[]);
   // the floor: the four legs
   for(const [x0,y0,x1,y1] of [[o.x0,o.y0,o.x1,n.y0],[o.x0,n.y1,o.x1,o.y1],[o.x0,n.y0,n.x0,n.y1],[n.x1,n.y0,o.x1,n.y1]])blk(x0,y0,-2,x1,y1,0,FLOOR);
   // the stairs' ways at their feet: floor and side walls

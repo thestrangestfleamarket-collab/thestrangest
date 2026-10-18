@@ -24,8 +24,8 @@ const RINGX={};
         float pulse=.55+.45*sin(uT*2.+vW.y*.6+q.x*.3); if(near<.01)discard; gl_FragColor=vec4(vec3(.25,.85,1.)*(line*.42+.03)*near*pulse,1.); }`});
   const box=new THREE.BoxGeometry(x1-x0,H,z1-z0,1,1,1); box.translate((x0+x1)/2,H/2-.5,(z0+z1)/2);
   { const I=box.index.array, keep=[]; for(let f=0;f<I.length;f+=6){ const n=box.attributes.normal.array, v=I[f]; if(Math.abs(n[v*3+1])<.5)keep.push(...Array.from(I.slice(f,f+6))); } box.setIndex(keep); }   // (its sides only)
-  const field=new THREE.Mesh(box,fm); field.frustumCulled=false; field.renderOrder=5; scene.add(field); RINGX.field=field;
+  const field=new THREE.Mesh(box,fm); field.frustumCulled=false; field.renderOrder=5; scene.add(field); RINGX.field=field; OUT.add(field,'world');
   // THE HUDSON: its own file now, real water (src/river.js)
   // each frame: the field's light round you, the water's drift and the sky on it
-  RINGX.tick=dt=>{ const up=LVL!=='down'; if(!up)scene.background.setRGB(0,0,0);   /* (underground: black round it, not the last sky) */ const ins=typeof ROOMS!=='undefined'&&!!ROOMS.cur; field.visible=up&&(FREE||!ins);    /* (inside a room: nothing of the world past its walls, owner 18 Oct 2026: their own shaders aren't cut by the room's planes; the river's in river.js) */ U.uP.value.set(pos.x,py,pos.z); U.uT.value+=dt; };
+  RINGX.tick=dt=>{ const up=LVL!=='down'; if(!up)scene.background.setRGB(0,0,0);   /* (underground: black round it, not the last sky) */ /* (inside a room: OUT, map-pre.js) */ U.uP.value.set(pos.x,py,pos.z); U.uT.value+=dt; };
   window.RINGX=RINGX; }

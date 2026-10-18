@@ -65,3 +65,4 @@ ROOMS.roofAt=(x,y,z)=>{ const h=new THREE.Raycaster(new THREE.Vector3(x,y,z),new
     if(typeof MUS!=='undefined'&&MUS.g)show(MUS.g,MUS.at.x,MUS.at.z,MUS,MUS.at.y); if(typeof PNM!=='undefined'&&PNM.g)show(PNM.g,PNM.at.x,PNM.at.z,PNM); if(typeof SGM!=='undefined'&&SGM.g)show(SGM.g,SGM.at.x,SGM.at.z,SGM); if(typeof DRM!=='undefined'&&DRM.g)show(DRM.g,DRM.at.x,DRM.at.z,DRM);   // (the pianist, the singer and the drummer, in the stored bar: pianist.js, singer.js, drummer.js)
     if(typeof WATER!=='undefined'&&WATER.mesh){ show(WATER.mesh,WATER.mesh.position.x,WATER.mesh.position.z,WATER); for(const w of WATER.extra)if(w.mesh)show(w.mesh,w.mesh.position.x,w.mesh.position.z,w); } };   // (the pool's water, its own shader: shown only from the pool hall; the pond's and the tank's: the store's)
 }
+{ const t=ROOMS.tick; ROOMS.tick=()=>{ t(); OUT.tick(); }; }   // (what's out of doors seen or not, once the room you're in is known: OUT, map-pre.js)

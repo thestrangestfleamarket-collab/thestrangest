@@ -49,14 +49,14 @@ const SKY={};
         c=mix(c,uGrey,uGreyK); c=mix(c,uFogC,uFogK*(1.-smoothstep(0.,.4,el)));
         if(uBands>0.)c=floor(c*uBands+.5)/uBands;
         gl_FragColor=vec4(c,1.); }`});
-  const dome=new THREE.Mesh(new THREE.BoxGeometry(2000,2000,2000),mat); dome.frustumCulled=false; dome.renderOrder=900; dome.matrixAutoUpdate=true; scene.add(dome); SKY.dome=dome;
+  const dome=new THREE.Mesh(new THREE.BoxGeometry(2000,2000,2000),mat); dome.frustumCulled=false; dome.renderOrder=900; dome.matrixAutoUpdate=true; scene.add(dome); SKY.dome=dome; OUT.add(dome,'open');
   // (the box round the camera; under the orthographic camera every ray runs the same way, so the box is shrunk to the view's width and the
   // directions to its faces spread across the screen as a sky does: lower toward the bottom, higher toward the top)
   dome.onBeforeRender=(r,s,c)=>{ dome.position.copy(c.position); dome.scale.setScalar(c.isOrthographicCamera?Math.max(1,(c.right-c.left)*1.2/2000):1); dome.updateMatrixWorld(); };
   const ca=new THREE.Color(), cb=new THREE.Color(), mixC=(a,b,t,out)=>out.copy(ca.setHex(a)).lerp(cb.setHex(b),t), D=Math.PI/180;
   // each frame, after the clock and the weather
   const tick0=CLOCK.tick; CLOCK.tick=dt=>{ tick0(dt);
-    const up=LVL!=='down', inside=!!(typeof ROOMS!=='undefined'&&ROOMS.cur); dome.visible=up&&!inside;
+    const up=LVL!=='down'; 
     // THE LIGHT AT DUSK (owner, 17 Oct 2026, "1-3"): the lit side warmer and the shade cooler, bluer, as the sun drops: oldlook.js's warm-and-cool
     // grade (uCool) rides the clock, most round golden hour and the sunset (3°), gone by night and by the high day; outdoors only (?fx=cool keeps its own)
     if(typeof LOOK!=='undefined'&&!(typeof LFX!=='undefined'&&LFX.on&&LFX.on.has&&LFX.on.has('cool')))LOOK.cool.value=dome.visible?.7*cl(1-Math.abs(CLOCK.elev()-3)/10):0;

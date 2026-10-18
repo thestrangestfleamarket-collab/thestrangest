@@ -68,7 +68,7 @@ const FAR3={};
   me.frustumCulled=false; me.visible=on; (MAPG.bodega||scene).add(me); FAR3.mesh=me; FAR3.n=B.length; FAR3.tris=B.length*12; FAR3.FU=FU;
   // each frame, after the clock and the weather have set the sky: the haze from where you stand, out in the open only
   const tick0=CLOCK.tick; CLOCK.tick=dt=>{ tick0(dt);
-    const up=LVL!=='down', inside=!!ROOMS.cur||!up; me.visible=FAR3.on&&up;
+    const up=LVL!=='down', inside=!OUT.open; me.visible=FAR3.on&&up;
     FU.uLit.value=.32*Math.max(0,Math.min(1,(1-CLOCK.elev())/6));   // (a third of their windows lit from dusk)
     FU.uAmb.value=.55*Math.max(0,Math.min(1,(CLOCK.elev()+3)/12));
     FU.uMK.value=0; if(!FAR3.on||inside||(scene.fog&&scene.fog!==FOG)){ if(scene.fog===FOG)scene.fog=null; return; }   // (the weather's own fog, when it comes, is thicker: it has the scene)

@@ -91,5 +91,5 @@ ROOFS.init=()=>{ if(typeof BOD==='undefined'||!MODS.apts||!MODS.apts.A)return;
   for(const M of [BM,CM,KM]){ M.castShadow=M.receiveShadow=true; scene.add(M); }
   // (gone while you're inside, owner 18 Oct 2026: "the corner tops and roofs should also always vanish when inside a store": the parapets, the
   // leaders, the roof's things are their own draws, not cut by the room's planes, so they're hidden while ROOMS.cur)
-  { const t0=window.RINGX&&RINGX.tick; let was=null; if(t0)RINGX.tick=dt=>{ t0(dt); const ins=typeof ROOMS!=='undefined'&&!!ROOMS.cur; if(ins!==was){ was=ins; for(const M of [BM,CM,KM])SEEN(M,!ins); } }; }
+  for(const M of [BM,CM,KM])OUT.add(M,'open');   // (OUT, map-pre.js)
   ROOFS.tris=BX.length*12+cy.length*32+co.length*16; window.ROOFSDBG=()=>({boxes:BX.length,rounds:cy.length,cones:co.length,tris:ROOFS.tris}); };

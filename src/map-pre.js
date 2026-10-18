@@ -68,6 +68,15 @@ const ZU=1/(PPU*Math.cos(Math.PI/6)), TILE=33.9/PPU, QS=new URLSearchParams(loca
 // keeps the sun out (and its shadow on the room) exactly as from outside. Rays (layer 0) don't hit it while it's out of sight, as before.
 const SEEN=(o,show)=>{ if(!SEEN.L){ SEEN.L=1; scene.traverse(c=>{ if(c.isLight&&c.shadow)c.shadow.camera.layers.enable(3); }); }
   if(o.userData.seen===show)return; o.userData.seen=show; o.traverse(c=>{ if(c.isMesh||c.isLine||c.isPoints){ if(show)c.layers.enable(0); else c.layers.disable(0); c.layers.enable(3); } }); };
+// ONE RULE FOR WHAT'S OUT OF DOORS (owner, 18 Oct 2026, "fix all 1-8", the first: each outdoor thing had hidden itself indoors with its own
+// check, 18 files of them, and one forgotten showed through the walls): a thing of the open air joins once, OUT.add(thing, kind), and this says
+// for all of them, once a frame after the rooms (rooms.js), whether it's seen: 'open' (the sky, the clouds, the birds, the roofs' things: only
+// out of doors, on the street's level) or 'world' (the river, the force field, the lamps' pools: the street's level, and inside a room too
+// while FREE lets the world be seen from in). Hidden by SEEN, so what casts a shadow (a roof) still keeps the sun out. OUT.open, OUT.world and
+// OUT.up for whoever needs to know (a river's sim, the weather's rain).
+const OUT=window.OUT={L:[],open:true,world:true,up:true,add(o,k='open'){ OUT.L.push({o,k}); SEEN(o,OUT[k]); return o; },
+  tick(){ const up=LVL!=='down', ins=typeof ROOMS!=='undefined'&&!!ROOMS.cur, open=up&&!ins, world=up&&(FREE||!ins); OUT.up=up; if(open===OUT.open&&world===OUT.world)return;
+    OUT.open=open; OUT.world=world; for(const e of OUT.L)SEEN(e.o,OUT[e.k]); }};
 // FREE (owner, 18 Oct 2026: "lets take off any preloading rules or hiding rules, just let the user run freely around full map. dont render characters
 // or things that are out of sight of player that dont need to be - whatever method you think would reduce lag and let me freely run around n and
 // out of rooms"): no world vanishing inside a room (its six planes and the black, the characters outside hidden, the river and the force field

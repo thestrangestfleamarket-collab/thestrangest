@@ -5,7 +5,9 @@
 const WHERE={};
 { const KEY='where', test=['at','place','sheet','npcat'].some(k=>QS.get(k)!=null);   // (?fresh=1 only forgets the spot: the new one is kept from then on)
   let W=null; try{ if(QS.get('fresh')!=null)SAVE.del(KEY); else W=JSON.parse(SAVE.get(KEY)||'null'); }catch(e){}
-  const back=()=>{ if(!window.__started){ setTimeout(back,200); return; } const w=W; if(!w||![w.x,w.z,w.y,w.hd].every(Number.isFinite))return;
+  const back=()=>{ if(!window.__started){ setTimeout(back,200); return; } let w=W; if(!w||![w.x,w.z,w.y,w.hd].every(Number.isFinite))return;
+    /* (a spot kept underground that's no floor now, the old station's platform since the Metro took its place, owner 18 Oct 2026: the Metro's platform instead) */
+    if(w.y<-1.6&&!(MODS.dungeon&&MODS.dungeon.inside(w.x,w.z))&&(Math.abs(MODS.station.ground(w.x,w.z)-w.y)>.5||CLIP.hit(SOL.down,w.x,w.z,.3*TILE))){ const p=MODS.station.plat; w={x:p.x,z:p.z,y:MODS.station.ground(p.x,p.z),hd:w.hd}; }
     if(STORE.inStore&&STORE.inStore(w.x,w.z)&&STORE.ensure)STORE.ensure();   /* (a stacked room is built after the game opens: store.js) */
     STORE.goTo(w.x,w.z,w.y); heading=w.hd; if(typeof PH!=='undefined')PH.hd=w.hd; };
   if(!test&&W)setTimeout(back,300);

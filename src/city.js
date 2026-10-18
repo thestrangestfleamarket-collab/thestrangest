@@ -13,7 +13,7 @@ const CITY={jobs:[],sched:[],day:0,nj:0,extra:[]}; window.CITY=CITY;   // (extra
   // ---- ADDRESSES: id, name, the level, the spot a tile before the door (door), the door's own place (at)
   CITY.places=()=>{ const P=[], add=(id,name,x,z,dz,lv='up',o={})=>P.push(Object.assign({id,name,lv,at:{x,z},door:{x,z:z+dz}},o));
     { const B=BOD.B0; add('bodega','THE BODEGA',BOD.X((B.x0+B.x1)/2),BOD.Z(B.y1),T); }
-    add('apartments','THE APARTMENTS',POOLR.X((21.97+23.53)/2),POOLR.Z(POOLR.y1),T);   // (the lobby's front door: pool.js's D_)
+    if(!AWAY.has('apartments'))add('apartments','THE APARTMENTS',POOLR.X((21.97+23.53)/2),POOLR.Z(POOLR.y1),T);   // (the lobby's front door: pool.js's D_)
     if(MODS.apts&&MODS.apts.A){ const A=MODS.apts.A; add('house','APARTMENT HOUSE',BOD.X(A.x1-1.0),BOD.Z(A.y1),T); }
     if(BOD.GD)add('dojo','GHOST STREET',BOD.X(BOD.GD.door[0]),BOD.Z(BOD.GD.door[1]),T);
     add('park','CENTRAL PARK',BOD.XS((PARK.gate[0]+PARK.gate[1])/2+PARK.ox),BOD.ZS(PARK.y0+PARK.oy),-T);   // (the gate in the wall, the street before it)

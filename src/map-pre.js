@@ -56,9 +56,21 @@ const grab=(name,fn)=>{ const n0=scene.children.length; fn(); const g=new THREE.
 // the subway stairs stand before) | the bodega | the Diner | THE AQUARIUM (the octopus tank's room, a storefront) | the Bar | Ghost Street |
 // the apartment building with its pool at the east end, nothing on its roof; the keep in the castle's bailey; the street run on east past
 // them (BOD.MAP.x1), and THE AVENUE north from its east end along the park's east wall (AVE, below). The moves here in the map's tiles
-const LAYOUT0={bodega:{x:8.75},diner:{x:-24.75},bar:{x:-8},ghost:{x:-8.75},apartments:{x:59},park:{e:[-4,0,0,0]},castle:{y:16.5}};   // (castle: to the grown park's back-left corner, 17 Oct 2026)
+const LAYOUT0={bodega:{x:8.75},diner:{x:-24.75},bar:{x:-8},ghost:{x:-8.75},apartments:{x:59},park:{e:[-4,0,0,0]},castle:{x:-70,y:19.5}};   // (castle: to the grown park's back-left corner, 17 Oct 2026; x -70, y +3 since 18 Oct 2026: the street run on 70 tiles west, the far sidewalk 3 tiles deeper)
+// OFF THE MAP (owner, 18 Oct 2026: "i want main street to only have this building [the apartment house], the bodega and ghost street building on
+// it. put all other buildings that are on main now off map for me to pull from later. i dont want any other buildings or rooms on map"; and of the
+// castle, "the tower shouldnt be inside the castle, it should be off map"): every place named here is kept in the code but not on the map. Most are
+// simply not built (each one's own code asks AWAY.has(its key) where it's set out, and whatever leans on it skips a place that isn't there): the
+// Diner (diner), the Bar and its band (bar), the Aquarium (aquarium), the community garden with the herb cottage, the butterfly house and its
+// fence (garden), the Avenue's seven shells (avenue), the keep (keep), the civic tower (civic: its droids then keep the bodega's door), the power
+// house (power: the grid off with it). The apartment building with its pool (apartments) is too woven into the page to leave out (its water,
+// the swimming, the floats and boats), so it's built where no one goes: AWAYLOT tiles east, past the force field, never drawn or reached.
+// To bring one back: ?bring=diner,bar (or ?bring=all) for a look, or take its key out of AWAY0 here for good; the map editor (Shift+M) then
+// moves it as before. The castle and its dungeon stay (half height, for the woodland creatures: castle.js)
+const AWAY0=['apartments','diner','bar','aquarium','garden','avenue','keep','civic','power'], AWAYLOT=1000;
+const AWAY=(()=>{ const s=new Set(AWAY0), q=QS.get('bring'); if(q==='all')s.clear(); else if(q)for(const k of q.split(','))s.delete(k.trim()); return s; })(); window.AWAY=AWAY;   // (castle: to the grown park's back-left corner, 17 Oct 2026)
 const LAY=(()=>{ const q=QS.get('layout'); let o={}; try{ o=q&&q[0]==='{'?JSON.parse(q):q==='0'?{}:JSON.parse(SAVE.get('layout')||'{}')||{}; }catch(e){}
-  const L=Object.assign({},LAYOUT0,o); return {L, o:k=>({x:+(L[k]&&L[k].x)||0,y:+(L[k]&&L[k].y)||0}), e:k=>(L[k]&&L[k].e||[0,0,0,0]).map(v=>+v||0), h:k=>+(L[k]&&L[k].h)||0, s:k=>+(L[k]&&L[k].s)||1}; })();   // (h: a room's lift in tiles, s: its size, the map editor's RAISE / LOWER and GROW / SHRINK: mapedit.js, store.js)
+  const L=Object.assign({},LAYOUT0,o); return {L, o:k=>({x:(+(L[k]&&L[k].x)||0)+(k==='apartments'&&AWAY.has(k)?AWAYLOT:0),y:+(L[k]&&L[k].y)||0}), e:k=>(L[k]&&L[k].e||[0,0,0,0]).map(v=>+v||0), h:k=>+(L[k]&&L[k].h)||0, s:k=>+(L[k]&&L[k].s)||1}; })();   // (h: a room's lift in tiles, s: its size, the map editor's RAISE / LOWER and GROW / SHRINK: mapedit.js, store.js)
 // where each place goes: the station (its platform 98 px down, its exit tunnel's end 3 tiles behind the sidewalk, 11 tiles west of the
 // bodega's door), the pool room (its west wall 10 tiles east of the bodega's door, its front on the sidewalk), the stairs (bodega tiles)
 const STN={DX:(-11+LAY.o('subway').x)*TILE, DZ:(-35+LAY.o('subway').y)*TILE, DY:-98*ZU};   // (the subway: the station and its stairs move together)
@@ -70,15 +82,20 @@ const BLDK=1.1;
 // game"): a cross street north from the main street's east end, the park's east wall its west side, a row of the old game's places its east
 // side (avenue.js). In the street's tiles (BOD.XS/ZS): x0..x1 its whole width (two sidewalks of 3.2 and a road of 7.7, the main street's), y1
 // how far north it runs (the park's back is -2); its road's kerbs at r0, r1
-const AVE={x0:152,x1:166.5,y1:57.5}; AVE.r0=AVE.x0+3.2; AVE.r1=AVE.x1-3.2;
+// THE MAIN STREET TWICE AS LONG, ITS FAR SIDEWALK TWICE AS DEEP (owner, 18 Oct 2026: "double th size of the street of main (left and right
+// diretions) and double the size of the siewalk on the central park side"): the street run on 70 tiles each way (MAINX: the west street, the park's
+// west wall and the castle 70 west; the Avenue, the park's east wall and the force field's east side 70 east; the park twice as wide between
+// them), the far sidewalk 6 tiles where it was 3 (BOD.MAP.y1 in bodega.js), the park and the north street 3 tiles north with it (NORTHY)
+const MAINX={w:70,e:70}, NORTHY=3;
+const AVE={x0:152+MAINX.e,x1:166.5+MAINX.e,y1:57.5}; AVE.r0=AVE.x0+3.2; AVE.r1=AVE.x1-3.2;
 // THE LOOP (owner, 17 Oct 2026: "lets loop the street all the way around the park and back again ... use force field to block anyone from leaving
 // outside of the city block loop ... add the hudson behind the buildings on main street, it goes all the way up and down map"): the main street
 // (south), the Avenue (east), a north street along the park's back and a west street along its west side, each 14.5 tiles (two sidewalks of 3.2,
 // a road of 8.1), the Avenue's road ending at the north street (its east sidewalk on to the last shell's door, AVE.ey1); the force field round the
 // loop and the buildings on its outer side (ff); the Hudson south of the main street's row and its alley, the land's whole width (river). In the
 // street's tiles (BOD.XS / ZS: y up toward the park)
-const RING={wx0:31.5,wx1:46,ny0:12.5,ny1:27}; RING.wr0=RING.wx0+3.2; RING.wr1=RING.wx1-3.2; RING.nr0=RING.ny0+3.2; RING.nr1=RING.ny1-3.2;
-AVE.y1=RING.ny1; AVE.ey1=38.5; RING.stairs=[{x0:RING.wx0+.6,x1:RING.wx0+2.6,y0:-2,y1:4,steps:12,depth:98,dir:-1,leg:'w'},{x0:AVE.r1+.6,x1:AVE.r1+2.6,y0:-2.4,y1:3.6,steps:12,depth:98,dir:-1,leg:'e'}];   /* (the loop's subway: its stairs down, the west street's outer sidewalk and the Avenue's east one, in the gap between its shells: sub.js) */ RING.ff={x0:RING.wx0-1.5,x1:192,y0:-103,y1:40.5}; RING.river={y0:-150,y1:-104};   // (just past the row's back alley)
+const RING={wx0:31.5-MAINX.w,wx1:46-MAINX.w,ny0:12.5+NORTHY,ny1:27+NORTHY}; RING.wr0=RING.wx0+3.2; RING.wr1=RING.wx1-3.2; RING.nr0=RING.ny0+3.2; RING.nr1=RING.ny1-3.2;
+AVE.y1=RING.ny1; AVE.ey1=38.5+NORTHY; RING.stairs=[{x0:RING.wx0+.6,x1:RING.wx0+2.6,y0:-2,y1:4,steps:12,depth:98,dir:-1,leg:'w'},{x0:AVE.r1+.6,x1:AVE.r1+2.6,y0:-2.4,y1:3.6,steps:12,depth:98,dir:-1,leg:'e'}];   /* (the loop's subway: its stairs down, the west street's outer sidewalk and the Avenue's east one, in the gap between its shells: sub.js) */ RING.ff={x0:RING.wx0-1.5,x1:AVE.x1+25.5,y0:-103,y1:40.5+NORTHY}; RING.river={y0:-150,y1:-104};   // (just past the row's back alley)
 const MAPSTAIR={x0:59,x1:63,y0:-80,y1:-74, steps:12, depth:98, dir:-1};
 { const o=LAY.o('subway'); MAPSTAIR.x0+=o.x; MAPSTAIR.x1+=o.x; MAPSTAIR.y0+=o.y; MAPSTAIR.y1+=o.y; }
 // THE CASTLE (owner, 17 Oct 2026: "the castle on the left back end" of the park, "the dungeon under the castle (only 1 level)"; castle.js): its

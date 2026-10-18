@@ -26,7 +26,7 @@
     g.setAttribute('color',new THREE.BufferAttribute(arr,3,true)); return g; };
   const B0=BOD.B0, TI=TILE, PER=[
     {x:BOD.X(MODS.apts.A.x0+3.7),z:BOD.Z(MODS.apts.A.y1)-.6*TI,y:BOD.Y(650),h:0},{x:BOD.X((B0.x0+B0.x1)/2),z:BOD.Z(B0.y1)-.6*TI,y:BOD.Y(B0.h),h:0},
-    {x:POOLR.X(8),z:POOLR.Z(POOLR.y1)-.6*TI,y:POOLR.Y(POOLR.H),h:0},{x:POOLR.X(21),z:POOLR.Z(POOLR.y1)-.6*TI,y:POOLR.Y(POOLR.H),h:0}];
+    ...(AWAY.has('apartments')?[]:[{x:POOLR.X(8),z:POOLR.Z(POOLR.y1)-.6*TI,y:POOLR.Y(POOLR.H),h:0},{x:POOLR.X(21),z:POOLR.Z(POOLR.y1)-.6*TI,y:POOLR.Y(POOLR.H),h:0}])];   // (not the apartment building's ledges while it's off the map, owner 18 Oct 2026)
   // where they fly: the park (the green behind the row and past the far sidewalk) mostly, the street now and then
   const sky=()=>{ const r=Math.random(), x=BOUND.x0+Math.random()*(BOUND.x1-BOUND.x0);
     return r<.4?{x,z:BOUND.z0-(4+Math.random()*22)*TI}:r<.75?{x,z:BOUND.z1+(3+Math.random()*20)*TI}:{x,z:BOUND.z0+Math.random()*(BOUND.z1-BOUND.z0)}; };

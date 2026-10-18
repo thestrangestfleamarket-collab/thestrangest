@@ -1,0 +1,139 @@
+<title>Central Park Gates</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: a short head, then the three gates as wide picture cards one under another, each with what it is and its sizes */
+:root{
+  --bg:#141c1a; --panel:#1c2725; --ink:#e6eee8; --dim:#9fb3aa; --line:#2f4240; --accent:#c9a45a;
+  --display:"Silkscreen","Courier New",monospace; --body:"IBM Plex Sans",system-ui,sans-serif; --mono:"IBM Plex Mono",ui-monospace,monospace;
+  color-scheme:dark;
+}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 40px}
+.wrap{max-width:1120px;margin:0 auto;display:grid;gap:26px}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(22px,3.4vw,34px);letter-spacing:.04em;margin:0;text-wrap:balance}
+.lede{color:var(--dim);margin:0;max-width:72ch;line-height:1.55}
+figure{margin:0;background:var(--panel);border:1px solid var(--line);min-width:0;display:grid}
+canvas{display:block;width:100%;aspect-ratio:400/210;image-rendering:pixelated;cursor:grab;touch-action:none;max-width:100%}
+canvas:active{cursor:grabbing}
+figcaption{padding:12px 16px 16px;display:grid;gap:6px}
+.tag{font-family:var(--display);color:var(--accent);font-size:14px;letter-spacing:.08em}
+h2{margin:0;font-size:18px;font-weight:600}
+.what{margin:0;color:var(--dim);font-size:14px;line-height:1.5;max-width:95ch}
+.size{font-family:var(--mono);font-size:12.5px;color:var(--dim);font-variant-numeric:tabular-nums}
+.foot{color:var(--dim);font-size:13px;line-height:1.5;max-width:90ch;margin:0}
+</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Silkscreen&family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono&display=swap">
+<div class="wrap">
+  <h1>CENTRAL PARK'S GATE</h1>
+  <p class="lede">Three ways to build a bigger entrance with a dark iron gate, the same fence running all the way around the park in place of the brick wall. The mushroom seller and the tomato have their stalls on either side of the entrance, and both are 15% bigger. Drag a picture to turn it.</p>
+
+  <figure><canvas id="A" width="400" height="210"></canvas><figcaption><div class="tag">A · STONE AND RAILING</div><h2>A low stone wall with an iron railing on top</h2>
+    <p class="what">This is the classic New York park edge: a knee-high stone wall with spear-topped iron railings along it. The entrance has two square granite piers with iron lanterns on top, and two tall iron gates folded back against the railing, open all day.</p>
+    <div class="size">entrance 10 tiles wide (7 now) · railing 1.6 m · piers 3.2 m</div></figcaption></figure>
+
+  <figure><canvas id="B" width="400" height="210"></canvas><figcaption><div class="tag">B · TALL IRON FENCE, ARCHED GATE</div><h2>Spear pickets all round, an iron arch over the way in</h2>
+    <p class="what">A tall black fence straight from the ground, pickets close together with gold-tipped spears and a post every few metres. At the entrance, brick piers carry an iron arch with CENTRAL PARK on it. The two big gate leaves rise to a curve in the middle and stand open.</p>
+    <div class="size">entrance 9 tiles wide · fence 2.2 m · arch 5 m</div></figcaption></figure>
+
+  <figure><canvas id="C" width="400" height="210"></canvas><figcaption><div class="tag">C · THE GRAND ENTRANCE</div><h2>Three gates: a wide middle one and a smaller one each side</h2>
+    <p class="what">The biggest of the three. Four stone piers topped with urns frame a wide central gate, with a smaller walk-through gate on each side. The fence on a stone plinth has scrolls between the pickets. All three gates stand open.</p>
+    <div class="size">entrance 14 tiles wide · fence 1.9 m on a 0.4 m plinth · piers 3.6 m</div></figcaption></figure>
+
+  <p class="foot">The stalls are the ones already in the game (three tables in a U, stepped and heaped, the overflow around them), each on its own side of the entrance with its front to the street. Both sellers are 15% bigger (the mushroom seller 2.5 m, the tomato a little over 1.5 m); the stalls stay their size. Drawn the game's way, with flat bands of light, hard shadows and chunky pixels. Pick one, or mix them (for example A's railing with C's three gates).</p>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+<script>
+(()=>{
+const grad=(()=>{ const d=new Uint8Array([70,130,190,255]); const t=new THREE.DataTexture(d,4,1,THREE.RedFormat); t.minFilter=t.magFilter=THREE.NearestFilter; t.needsUpdate=true; return t; })();
+const MT={}, mat=(c,glow)=>{ const k=c+'|'+(glow||0); return MT[k]||(MT[k]=glow?new THREE.MeshBasicMaterial({color:c}):new THREE.MeshToonMaterial({color:c,gradientMap:grad})); };
+let seed=1; const rnd=()=>{ seed=(seed*16807)%2147483647; return (seed-1)/2147483646; }, R=(a,b)=>a+rnd()*(b-a);
+const GEO={box:new THREE.BoxGeometry(1,1,1),ball0:new THREE.IcosahedronGeometry(1,0),ball1:new THREE.IcosahedronGeometry(1,1),cyl:new THREE.CylinderGeometry(1,1,1,7),cone:new THREE.ConeGeometry(1,1,7),cap:new THREE.SphereGeometry(1,7,3,0,Math.PI*2,0,Math.PI/2)};
+const put=(G,g,m,x,y,z,sx=1,sy=1,sz=1,rx=0,ry=0,rz=0)=>{ const me=new THREE.Mesh(GEO[g],m); me.position.set(x,y,z); me.scale.set(sx,sy,sz); me.rotation.set(rx,ry,rz); me.castShadow=me.receiveShadow=true; G.add(me); return me; };
+const box=(G,w,h,d,x,y,z,c,ry=0)=>put(G,'box',mat(c),x,y+h/2,z,w,h,d,0,ry);
+// ---- THE GOODS, as in the game's stalls (stalls.js) ----
+const MUSH=[[.035,1.2,(G,x,y,z,s)=>{ put(G,'cyl',mat(0xe8e2d4),x,y+s*.4,z,s*.35,s*.8,s*.35); put(G,'cap',mat(0xf2ede2),x,y+s*.7,z,s,s*.7,s); }],[.045,1.6,(G,x,y,z,s)=>put(G,'ball0',mat(0xf4f0e6),x,y+s*.8,z,s,s*.85,s)],
+  [.04,1.2,(G,x,y,z,s)=>put(G,'cone',mat(0xe0a032),x,y+s*.6,z,s,s*1.2,s,Math.PI)],[.045,1.6,(G,x,y,z,s)=>{ put(G,'cyl',mat(0xeee6d6),x,y+s*.5,z,s*.3,s,s*.3); put(G,'cap',mat(0xc42a20),x,y+s*.95,z,s,s*.6,s); }],
+  [.03,1.6,(G,x,y,z,s,r)=>put(G,'cyl',mat(0xe6e0d0),x,y+s*.8,z,s*.8,s*3.4,s*.8,Math.PI/2,r)],[.055,1.4,(G,x,y,z,s)=>{ put(G,'cyl',mat(0xd8c4a0),x,y+s*.45,z,s*.45,s*.9,s*.45); put(G,'cap',mat(0x7a4a24),x,y+s*.85,z,s,s*.55,s); }],
+  [.03,2.2,(G,x,y,z,s)=>{ put(G,'cyl',mat(0xe2d4b4),x,y+s*.35,z,s*.4,s*.7,s*.4); put(G,'cone',mat(0x5e4428),x,y+s*1.5,z,s*.75,s*1.8,s*.75); }],[.035,1.5,(G,x,y,z,s)=>{ put(G,'cyl',mat(0x9fe8f0,1),x,y+s*.5,z,s*.3,s,s*.3); put(G,'cap',mat(0x48d8f0,1),x,y+s*.9,z,s,s*.6,s); }]];
+const VEG=[[.04,1.7,(G,x,y,z,s)=>put(G,'ball1',mat(0xcc3420),x,y+s*.85,z,s,s*.85,s)],[.045,2,(G,x,y,z,s)=>put(G,'ball0',mat([0x2f8a2a,0xd8b028,0xc8321e][Math.floor(rnd()*3)]),x,y+s,z,s,s*1.1,s)],
+  [.02,2,(G,x,y,z,s,r)=>put(G,'cone',mat(0xe0742a),x,y+s,z,s,s*8,s,Math.PI/2,r)],[.03,2,(G,x,y,z,s,r)=>put(G,'cyl',mat(0xe8c84a),x,y+s,z,s,s*6,s,Math.PI/2,r)],[.075,1.7,(G,x,y,z,s)=>put(G,'ball1',mat(0x8ac05a),x,y+s*.85,z,s,s*.85,s)],
+  [.035,2,(G,x,y,z,s,r)=>put(G,'ball1',mat(0x4a2a5a),x,y+s,z,s,s,s*2,0,r)],[.035,1.6,(G,x,y,z,s,r)=>put(G,'ball0',mat(0xb08a5a),x,y+s*.8,z,s*1.3,s*.8,s,0,r)],[.035,2,(G,x,y,z,s)=>put(G,'ball1',mat(0xd8b88a),x,y+s,z,s,s,s)],
+  [.06,.8,(G,x,y,z,s,r)=>put(G,'ball0',mat(0x4a9a3a),x,y+s*.4,z,s*.9,s*.35,s*.9,0,r)],[.12,1.4,(G,x,y,z,s)=>put(G,'ball1',mat(0xe0782a),x,y+s*.7,z,s,s*.7,s)]];
+const heap=(G,K,cx,y,cz,w,d,n)=>{ let left=n, lay=0; const [S0,H0,f]=K; while(left>0&&lay<6){ const k=1-lay*.17, cnt=Math.max(1,Math.round(n*(.34-lay*.05))); for(let i=0;i<cnt&&left>0;i++,left--){ const s=S0*1.3*R(.85,1.15); f(G,cx+R(-.5,.5)*w*k,y+lay*S0*1.3*H0*.8,cz+R(-.5,.5)*d*k,s,R(0,6.28)); } lay++; } };
+const crate=(G,x,y,z,w,h,d)=>{ box(G,w,h,d,x,y,z,0x9a7044); box(G,w*1.01,.025,d*1.01,x,y+h*.5,z,0x6e4e2c); };
+const basket=(G,K,x,y,z,r,n)=>{ put(G,'cyl',mat(0xa8844a),x,y+.09,z,r,.18,r); heap(G,K,x,y+.16,z,r*1.3,r*1.3,n); };
+// THE STALL (the game's): three tables in a U open to +z, three steps rising toward the seller, the overflow round it
+const stall=(G0,cx,veg)=>{ const G=new THREE.Group(); G.position.set(cx,0,0); G0.add(G); const KS=veg?VEG:MUSH, W=3.7, D=2.5, TD=.67, H=.8; let ki=0;
+  const table=(x0,x1,z0,z1,rise)=>{ box(G,x1-x0,.05,z1-z0,(x0+x1)/2,H-.05,(z0+z1)/2,0x9e7a4c); for(const [x,z] of [[x0+.1,z0+.1],[x1-.1,z0+.1],[x0+.1,z1-.1],[x1-.1,z1-.1]])box(G,.1,H-.05,.1,x,0,z,0x6e5434);
+    const along=rise==='z'?'x':'z', len=along==='x'?x1-x0:z1-z0, cols=Math.max(1,Math.round(len/.4));
+    for(let st=0;st<3;st++){ const sh=H+st*.1; let a=x0,b=x1,c=z0,d=z1; if(rise==='z'){ c=z1-(z1-z0)*(st+1)/3; d=z1-(z1-z0)*st/3; } else if(rise==='+x'){ a=x0+(x1-x0)*st/3; b=x0+(x1-x0)*(st+1)/3; } else { b=x1-(x1-x0)*st/3; a=x1-(x1-x0)*(st+1)/3; }
+      if(st)box(G,b-a-.02,sh-H,d-c-.02,(a+b)/2,H,(c+d)/2,0x8a6238);
+      for(let k=0;k<cols;k++){ const K=KS[ki++%KS.length]; let pa,pb,pc,pd; if(along==='x'){ pa=x0+len*k/cols; pb=x0+len*(k+1)/cols; pc=c; pd=d; } else { pc=z0+len*k/cols; pd=z0+len*(k+1)/cols; pa=a; pb=b; }
+        if(st===2&&ki%3===0)basket(G,K,(pa+pb)/2,sh,(pc+pd)/2,.09,6); else heap(G,K,(pa+pb)/2,sh,(pc+pd)/2,(pb-pa)*.9,(pd-pc)*.82,K[0]<.05?8:4); } } };
+  table(-W/2,W/2,-D/2,-D/2+TD,'z'); table(-W/2,-W/2+TD,-D/2+TD+.03,D/2,'+x'); table(W/2-TD,W/2,-D/2+TD+.03,D/2,'-x');
+  crate(G,-W/2-.4,0,-D/2+.25,.44,.3,.36); crate(G,-W/2-.4,.3,-D/2+.25,.44,.3,.36); heap(G,KS[2],-W/2-.4,.6,-D/2+.25,.36,.28,veg?6:10); crate(G,W/2+.4,0,-D/2+.25,.44,.3,.36); heap(G,KS[5],W/2+.4,.3,-D/2+.25,.36,.28,veg?6:10);
+  basket(G,KS[0],W/2+.35,0,D/2-.4,.13,veg?7:12); basket(G,KS[3],-W/2-.35,0,D/2-.6,.12,veg?6:11);
+  if(veg)for(let k=0;k<5;k++)VEG[9][2](G,R(-W/2-.6,-W/2-.1),0,R(D/2-.1,D/2+.3),.12*R(.8,1.2),0); else { put(G,'cyl',mat(0x6a4a2e),-W/2-.4,.14,D/2,.14,.7,.14,Math.PI/2,Math.PI/2,0); put(G,'cyl',mat(0x5a3e24),W/2+.4,.18,D/2,.17,.36,.17); }
+  // the seller, 15% bigger, in the U's middle facing the street (+z)
+  const g=new THREE.Group(); g.position.set(0,0,-.2); g.scale.setScalar(1.15); G.add(g);
+  if(!veg){ put(g,'cone',mat(0x9a4a2a),0,.62,0,.3,1.24,.3); put(g,'ball1',mat(0xb86040),0,1.05,0,.24,.2,.22); put(g,'ball1',mat(0xf0ece2),0,1.42,0,.16,.19,.17); put(g,'ball0',mat(0x101010),-.06,1.44,.14,.035,.04,.02); put(g,'ball0',mat(0x101010),.06,1.44,.14,.035,.04,.02);
+    put(g,'cyl',mat(0x6a4a2a),0,1.58,0,.26,.04,.26); put(g,'cyl',mat(0x6a4a2a),0,1.66,0,.16,.14,.16); for(let k=0;k<5;k++){ const a=k*1.25; put(g,'cap',mat([0xc42a20,0xe0a032,0xf2ede2][k%3]),Math.cos(a)*.13,1.74,Math.sin(a)*.13,.06,.05,.06); } }
+  else { put(g,'cyl',mat(0x3a5a8a),-.08,.25,0,.07,.5,.07); put(g,'cyl',mat(0x3a5a8a),.08,.25,0,.07,.5,.07); put(g,'cyl',mat(0xf0e8d8),0,.75,0,.2,.5,.16); box(g,.34,.5,.04,0,.47,.12,0xe8c040); put(g,'ball1',mat(0xcc3420),0,1.25,0,.3,.27,.3);
+    for(let k=0;k<5;k++){ const a=k*1.256; put(g,'cone',mat(0x3e8a2a),Math.cos(a)*.12,1.5,Math.sin(a)*.12,.06,.16,.03); } put(g,'ball0',mat(0x101010),-.1,1.3,.27,.04,.05,.02); put(g,'ball0',mat(0x101010),.1,1.3,.27,.04,.05,.02); } };
+// ---- THE IRON: pickets with spears, rails, posts with balls, gate leaves, lanterns, urns ----
+const IRON=0x1c2022, GILT=0xb89040, STONE=0x8a8478, STONEL=0x9c968a, BRICK=0x7a3e2e;
+const picket=(G,x,y0,h,z,gilt,w=.03)=>{ box(G,w,h,w,x,y0,z,IRON); put(G,'cone',mat(gilt?GILT:IRON),x,y0+h+.06,z,w*1.4,.12,w*1.4); };
+// a run of fence along x from a to b at depth z: pickets every sp, two rails, a post every 2.4 m
+const fence=(G,a,b,z,y0,h,sp,o={})=>{ for(let x=a+sp/2;x<b;x+=sp)picket(G,x,y0,h,z,o.gilt); box(G,b-a,.04,.04,(a+b)/2,y0+.12,z,IRON); box(G,b-a,.04,.04,(a+b)/2,y0+h-.18,z,IRON);
+  if(o.scroll)for(let x=a+sp;x<b;x+=sp*2){ const t=new THREE.Mesh(new THREE.TorusGeometry(.06,.01,4,8),mat(IRON)); t.position.set(x,y0+h-.35,z); G.add(t); }
+  for(let x=a;x<=b+.01;x+=2.4){ box(G,.09,h+.1,.09,x,y0,z,IRON); put(G,'ball0',mat(o.gilt?GILT:IRON),x,y0+h+.17,z,.07,.07,.07); } };
+// a gate leaf (width w) hinged at hx, swung by ang (0 shut across the way, about pi/2 folded back), its top rising to a curve toward the middle
+const leaf=(G,hx,z,w,h,dir,ang,arch,gilt)=>{ const g=new THREE.Group(); g.position.set(hx,0,z); g.rotation.y=dir*ang; G.add(g); const n=Math.round(w/.13);
+  for(let i=0;i<n;i++){ const u=(i+.5)/n, x=dir*u*w, hh=h+(arch?arch*Math.sin(u*Math.PI/2):0); picket(g,x,.05,hh,0,gilt,.035); }
+  box(g,w,.06,.06,dir*w/2,.12,0,IRON); box(g,w,.06,.06,dir*w/2,h*.55,0,IRON); box(g,w,.05,.05,dir*w/2,h-.12,0,IRON);
+  for(let i=1;i<4;i++){ const t=new THREE.Mesh(new THREE.TorusGeometry(.1,.015,4,10),mat(IRON)); t.position.set(dir*i*w/4,h*.78,0); g.add(t); }
+  box(g,.08,h+.1,.08,0,0,0,IRON); };
+const pier=(G,x,z,w,h,col,top)=>{ box(G,w,h,w,x,0,z,col); box(G,w+.14,.14,w+.14,x,h,z,STONEL); box(G,w+.06,.12,w+.06,x,.0,z,STONEL);
+  if(top==='lantern'){ box(G,.14,.25,.14,x,h+.14,z,IRON); box(G,.28,.36,.28,x,h+.39,z,IRON); box(G,.2,.28,.2,x,h+.43,z,0xffd88a); put(G,'cone',mat(IRON),x,h+.85,z,.22,.18,.22); }
+  if(top==='urn'){ put(G,'cyl',mat(STONEL),x,h+.2,z,.12,.2,.12); put(G,'ball1',mat(STONEL),x,h+.48,z,.26,.24,.26); put(G,'cyl',mat(STONEL),x,h+.72,z,.2,.06,.2); }
+  if(top==='ball')put(G,'ball1',mat(STONEL),x,h+.38,z,.24,.24,.24); };
+const plaque=(G,x,y,z,w,h)=>{ const cv=document.createElement('canvas'); cv.width=72; cv.height=10; const g=cv.getContext('2d'); g.fillStyle='#1c2022'; g.fillRect(0,0,72,10); g.fillStyle='#d8b050'; g.font='bold 8px monospace'; g.textBaseline='middle'; g.textAlign='center'; g.fillText('CENTRAL PARK',36,5.5);
+  const t=new THREE.CanvasTexture(cv); t.magFilter=t.minFilter=THREE.NearestFilter; t.colorSpace=THREE.SRGBColorSpace; const m=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshBasicMaterial({map:t})); m.position.set(x,y,z+.03); G.add(m); };
+const SPAN=26, Z=0;   // the park's edge along x at z 0; the park behind (-z), the sidewalk and the street in front (+z)
+const GATES={
+  A:G=>{ const half=4.2; for(const [a,b] of [[-SPAN/2,-half-.5],[half+.5,SPAN/2]]){ box(G,b-a,.5,.5,(a+b)/2,0,Z,STONE); box(G,b-a,.08,.58,(a+b)/2,.5,Z,STONEL); fence(G,a,b,Z,.58,1.0,.14); }
+    pier(G,-half-.25,Z,.8,3.2,STONE,'lantern'); pier(G,half+.25,Z,.8,3.2,STONE,'lantern'); leaf(G,-half+.1,Z-.1,2.6,2.2,1,1.45,0,false); leaf(G,half-.1,Z-.1,2.6,2.2,-1,1.45,0,false); },
+  B:G=>{ const half=3.8; for(const [a,b] of [[-SPAN/2,-half-.5],[half+.5,SPAN/2]])fence(G,a,b,Z,0,2.2,.15,{gilt:true});
+    pier(G,-half-.3,Z,.75,3.1,BRICK,'ball'); pier(G,half+.3,Z,.75,3.1,BRICK,'ball');
+    for(let i=0;i<=24;i++){ const a=Math.PI*i/24, x=-half*Math.cos(a), y=3.6+1.4*Math.sin(a); box(G,.09,.09,.09,x,y,Z,IRON); if(i%3===0&&i>0&&i<24)box(G,.03,y-3.6,.03,x,3.6,Z,IRON); }
+    box(G,half*2,.07,.07,0,3.6,Z,IRON); plaque(G,0,4.55,Z,2.6,.36); put(G,'ball0',mat(GILT),0,5.15,Z,.1,.1,.1);
+    leaf(G,-half,Z-.1,3.6,2.4,1,1.35,.7,true); leaf(G,half,Z-.1,3.6,2.4,-1,1.35,.7,true); },
+  C:G=>{ const mid=3.6, side=1.4, pw=.85, x1=mid+pw, x2=x1+side+pw;
+    for(const [a,b] of [[-SPAN/2,-x2-pw/2],[x2+pw/2,SPAN/2]]){ box(G,b-a,.4,.45,(a+b)/2,0,Z,STONE); box(G,b-a,.06,.5,(a+b)/2,.4,Z,STONEL); fence(G,a,b,Z,.46,1.5,.14,{scroll:true}); }
+    for(const x of [-x2,-mid-pw/2,mid+pw/2,x2])pier(G,x,Z,pw,3.6,STONE,'urn');
+    leaf(G,-mid,Z-.1,mid,2.6,1,1.4,.8,true); leaf(G,mid,Z-.1,mid,2.6,-1,1.4,.8,true);
+    for(const s of [-1,1]){ const hx=s*(mid+pw); leaf(G,hx,Z-.1,side,2.1,s,1.45,.25,false); }
+    box(G,2*mid,.1,.1,0,3.3,Z,IRON); plaque(G,0,3.7,Z,2.4,.34); for(let i=0;i<=16;i++){ const a=Math.PI*i/16; box(G,.07,.07,.07,-mid*Math.cos(a),3.35+.55*Math.sin(a),Z,IRON); } } };
+const WIDE={A:9.2,B:8.4,C:12};
+function card(id){
+  seed=id.charCodeAt(0)*17+5;
+  const cv=document.getElementById(id), Rn=new THREE.WebGLRenderer({canvas:cv,antialias:false}); Rn.setPixelRatio(1); Rn.setSize(cv.width,cv.height,false); Rn.shadowMap.enabled=true; Rn.shadowMap.type=THREE.BasicShadowMap;
+  const S=new THREE.Scene(), mist=new THREE.Color(0x3a6e68); S.background=mist; S.fog=new THREE.Fog(mist,30,52);
+  const G=new THREE.Group(); S.add(G); GATES[id](G);
+  // the stalls either side of the way in, on the sidewalk, fronts to the street
+  const off=WIDE[id]/2+3.2; stall(G,-off,false); G.children[G.children.length-1].position.z=3.2; stall(G,off,true); G.children[G.children.length-1].position.z=3.2;
+  // the ground: the park's lawn behind, the way in through the gate, the sidewalk's big slabs in front, the kerb and the road
+  const tex=(f,rep)=>{ const c=document.createElement('canvas'); c.width=c.height=16; f(c.getContext('2d')); const t=new THREE.CanvasTexture(c); t.magFilter=t.minFilter=THREE.NearestFilter; t.colorSpace=THREE.SRGBColorSpace; t.wrapS=t.wrapT=THREE.RepeatWrapping; t.repeat.set(...rep); return t; };
+  const plane=(w,d,x,z,t,c=0xffffff)=>{ const m=new THREE.Mesh(new THREE.PlaneGeometry(w,d),new THREE.MeshToonMaterial({color:c,map:t,gradientMap:grad})); m.rotation.x=-Math.PI/2; m.position.set(x,.001,z); m.receiveShadow=true; S.add(m); };
+  plane(34,12,0,-6,tex(g=>{ g.fillStyle='#4a7a3a'; g.fillRect(0,0,16,16); g.fillStyle='#3e6a30'; for(let i=0;i<10;i++)g.fillRect((i*7)%16,(i*5)%16,2,1); g.fillStyle='#5a8a44'; g.fillRect(3,9,1,2); g.fillRect(12,3,1,2); },[17,6]));
+  plane(WIDE[id],12,0,-6.01+.0,tex(g=>{ g.fillStyle='#a49a88'; g.fillRect(0,0,16,16); g.fillStyle='#7e7566'; g.fillRect(0,0,16,1); g.fillRect(0,8,16,1); g.fillRect(8,0,1,8); g.fillRect(0,8,1,8); },[WIDE[id]/1.2,10]),0xffffff); S.children[S.children.length-1].position.y=.003;
+  plane(34,7,0,3.5,tex(g=>{ g.fillStyle='#a49a88'; g.fillRect(0,0,16,16); g.fillStyle='#6e675a'; g.fillRect(0,0,16,1); g.fillRect(0,0,1,16); g.fillStyle='#b4ab98'; g.fillRect(4,5,3,1); g.fillRect(10,11,2,1); g.fillStyle='#5a8a3a'; g.fillRect(0,7,1,2); },[17,3.5]));
+  box(S,34,.14,.3,0,-.14,7.15,0x8a867c); plane(34,6,0,10.3,null,0x343638); S.children[S.children.length-1].position.y=-.14;
+  S.add(new THREE.HemisphereLight(0xcfe6e0,0x2a3a38,.9)); const L=new THREE.DirectionalLight(0xfff1d8,2.3); L.position.set(5,8,6); L.castShadow=true; L.shadow.mapSize.set(2048,2048); Object.assign(L.shadow.camera,{left:-14,right:14,top:12,bottom:-12}); S.add(L);
+  const a=cv.width/cv.height, v=6.4, cam=new THREE.OrthographicCamera(-v*a,v*a,v,-v,.1,80); let yaw=.32;
+  const place=()=>{ const r=34, p=.6; cam.position.set(Math.sin(yaw)*Math.cos(p)*r,Math.sin(p)*r,Math.cos(yaw)*Math.cos(p)*r+1.5); cam.lookAt(0,1,1.8); Rn.render(S,cam); };
+  let drag=null; cv.addEventListener('pointerdown',e=>{ drag=e.clientX; cv.setPointerCapture(e.pointerId); }); cv.addEventListener('pointermove',e=>{ if(drag==null)return; yaw-=(e.clientX-drag)*.01; drag=e.clientX; place(); });
+  cv.addEventListener('pointerup',()=>drag=null); cv.addEventListener('pointercancel',()=>drag=null); place();
+}
+for(const id of 'ABC')card(id);
+})();
+</script>

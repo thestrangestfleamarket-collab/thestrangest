@@ -1292,6 +1292,17 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   the picture, the view is put back on him (`UI.follow`, `ui.js`). **The stalls without tents** ("i dont want these stripped tenst ... rows and rows
   of diff mushrooms, standing between three tables in u shape ... show me mockups"): `mockups/market-stalls.html`,
   https://claude.ai/artifact/ET6bXTLDgHdTfyAsyG4MTn (A trays, B stepped tiers, C heaps and overflow); his pick to come.
+- **The Metro made plain** (owner, 18 Oct 2026: "simplify the subway station layout, stairs go down to the platform, one big room with tunnels,
+  etc. too many random walls and things going on"; `src/metro.js`): the kit's four cross-sections, its exit corridor, the gates, the staff closet
+  and the lower ceilings are gone; the station is laid out in the page from plain quads in the kit's own textures: **one hall** 84 m long (the
+  track down its south side, the platform 8 m deep along it, a tiled back wall and far wall, one ceiling), **one straight flight** of 24 tiled
+  steps from the railed opening on the lot (where it was) down through the back wall onto the platform's middle (its walls rising to the street
+  under the opening, a low parapet each side in the hall), and **the tunnels**: the track out of each end wall into the dark (60 m east, the car's
+  way out and back, 40 m west). The car stops opposite the stairs; one row of columns (none before the stairs), the ticket machine and map by the
+  stairs, the vending machine, four benches (seats), two bins, four pairs of posters, eight tube lights, a TO STREET sign each side. The rats, the
+  platform's spot, the way down for characters, the ride all moved with it (`METRO.CZ`, `METRO.plat`, `METRO.Z_S/Z_N`). The data lost the kit's
+  cross-sections, gates and the exit's height map (1.03 MB to 0.92 MB). Cost: the hall some 300 triangles where it was some 3,000; the screen
+  underground about the same as before (the car the bulk); 11 lamp records (was 22), no new program. `tests/metroshot.cjs <out>`.
 - **Standing is still** (owner, 18 Oct 2026, of the mushroom seller at his booth: "the grain shadow on the mushroom merchant is constantly glitchy
   looking beacause it tries to chnge too fast"; `npc-map.js`): a character made of parts (the mushroom seller, the Fox) had a standing "breath",
   a sway of a degree and a 1% stretch, that slid his own shadow's stepped edge across his robe every frame; standing he is now still (the walk's
@@ -1304,8 +1315,8 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   browser had DISTANCE HAZE saved at FAR; the key is now `market-haze2`, so everyone starts in the MIST again. **The skyline in the mist** ("where
   did the distance skyline of buildings go?"): in the mist it's faint silhouettes (mixed 80% toward the mist's colour, a little more the further,
   in three steps; its own, not the scene's fog), in FAR as before. **The weather held** ("set a default time and atmosphere and stay at the time";
-  his pick "Teal mist + clouds"): CLOUDY from the start (`WX.hold`, weather.js; `?wx=natural` the simulation); the clock stays STOPPED; the hour
-  his pick from the mockups (https://claude.ai/artifact/FNh426aeu5GPJcdBj4KvqX). **The old Fox** ("use the old fox avatar not the new one"): the
+  his pick "Teal mist + clouds"): CLOUDY from the start (`WX.hold`, weather.js; `?wx=natural` the simulation); the clock stays STOPPED at 5:24 pm
+  (`CLOCK.h` 17.4; his pick of the mockups, https://claude.ai/artifact/FNh426aeu5GPJcdBj4KvqX: "golden hour"). **The old Fox** ("use the old fox avatar not the new one"): the
   rounded one before the angular (`npc-fox.js` from before 1c9b71f), 2 m. **The sun's stripes** ("glitchy shadows": a wall the sun grazes striped
   and arced with its own shadow): the sun's normalBias .04 to .12 (`clock.js`; `?snb=` a test's).
 - **Every page of the batch's atlas** (18 Oct 2026, found publishing): since the atlas was cut into pages (the roads three times wider), a kind
@@ -1320,3 +1331,13 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   before; measured 0 between shifts. **The dungeon's KayKit skeletons** the same on their pack's idle (npc-skel.js; the guard's alert stance and his
   blows as before; not seen close in the check, the dungeon's walls in the camera's way). **Left moving** (deliberate, to ask): the animals' idles
   (the wasp's hover, the bat's wings, the slime's wobble, the spider's, the frog's, the rat's, the snake's), 1-4% of their pixels a frame.
+- **The bodega's goods, real** (owner, 18 Oct 2026: "did you take away the phsyics from the game? i want every item in the bodega to be real";
+  the old game had them as bodies, 47-physics-5-goods; `src/goodsphys.js`, `GPH`): all 208 goods on the shelves, in the coolers and on the counter
+  are rigid bodies in Rapier (physbody.js's build, fetched only once you're within 4 tiles of the bodega). Each starts asleep where its shelf put it;
+  the fixtures' boxes are solid to them (but a box a good stands inside, the coolers' cases), the floor and the walls (doorways open). You push
+  what you walk into (your body a capsule); a punch or a kick (J, K and their kin) sends what's before you flying (never through the shop's walls);
+  a double click on a good walks you up and takes it in your hand (the rig's carry), and holding one a double click anywhere throws it there.
+  Still for a third of a second, a good sleeps where it lies. A moving good rewrites only its own corners in the goods mesh (`BOD.goods`, its
+  vertex range, bodbuild.js). Cost: no triangles, light or program more; the world steps at 120 a second only near the bodega. Not done: the goods
+  back on their shelves (a reload puts them back), the Fox or the townspeople pushing them, the coolers' doors opening onto real goods.
+  `GOODSDBG()`, `GOODSHIT(k,r)`, `GOODSGRAB()`, `GOODSTHROW(dx,dz)` (tests).

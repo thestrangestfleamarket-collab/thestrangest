@@ -23,7 +23,7 @@ const VEG={}; window.VEG=VEG;
   // ---- THE STAND: built once the park is (its gate where the layout put it), beside the mushroom seller's booth
   // (no awning or crates in a row now, owner 18 Oct 2026, of the mockups, "B with C's overflow": three tables in a U, stepped, heaped, the overflow round it: stalls.js)
   const STAND=()=>{ const P=PARK, X=x=>BOD.XS(x+(P.ox||0)), Z=y=>BOD.ZS(y+(P.oy||0)), g1=P.gate[1];
-    VEG.stand=STALL.build({X,Z,x0:g1+9.2,x1:g1+13.6,y0:P.y0-8.2,y1:P.y0-5.2,veg:true,seed:11});
+    VEG.stand=STALL.build({X,Z,x0:g1+1.8,x1:g1+6.2,   /* (east of the gate, owner 18 Oct 2026) */ y0:P.y0-8.2,y1:P.y0-5.2,veg:true,seed:11});
     // THE TOMATO behind it, facing the street: his life and roaming left off, held there every tick (his head still looks about)
     const N=TOONS.tomato; if(!N)return; N.life=null; N.roam=false; N.home={x:VEG.stand.hx,z:VEG.stand.hz};
     const hold=st=>{ st.to=null; st.next=null; st.hold=true; st.x=VEG.stand.hx; st.z=VEG.stand.hz; st.face={x:VEG.stand.hx,z:VEG.stand.fz}; }, tk=N.tick; N.tick=(dt,you)=>{ hold(N.st); tk(dt,you); hold(N.st); }; hold(N.st);

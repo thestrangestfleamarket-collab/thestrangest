@@ -31,7 +31,7 @@ const TOONS={};
         ...arm('L',-1,[-.15,.8,0],[-.27,.52,.07],WHITE,WHITE,GLOVE), ...arm('R',1,[.15,.8,0],[.27,.52,.07],WHITE,WHITE,GLOVE) ],
       springs:{ head:{f:-.03,s:.03,k:90,c:9,lim:.15}, leaves:{f:-.12,s:.12,k:55,c:5,lim:.4}, stem:{f:-.2,s:.2,k:40,c:4,lim:.6} },
       pose:(c)=>{ RIGNPC.walk(c,{legs:[],arm:.5,bob:.03,rock:.05}); c.B.head.rotation.y=c.look; c.B.head.rotation.z=Math.sin(c.st.ph*2)*.03*c.mv; } };
-    TOONS.tomato=make(def,{key:'tomato',name:'THE TOMATO',metres:1.6,radius:.32,speed:.45,stride:6.5,at:60},0); }
+    TOONS.tomato=make(def,{key:'tomato',name:'THE TOMATO',metres:1.84,   /* (15% bigger, owner 18 Oct 2026) */ radius:.32,speed:.45,stride:6.5,at:60},0); }
 
   // ---- THE CAT IN THE RAINCOAT: a cream face (half-shut eyes, a pink nose) in a yellow hood with a peak, his ears through it on springs, a
   // yellow coat and trousers, black boots; yellow sleeves, cream paws. His things, each its own: the newspaper (two pages on a fold, the page its

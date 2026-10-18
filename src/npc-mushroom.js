@@ -41,11 +41,11 @@ const MUSH={};   // (17 Oct 2026, the owner: "the gold skeleton character is not
   // mushrooms"; "place the mushroom vendor by the main street": on the park's sidewalk east of the gate, its front to the street); he stands in its
   // middle facing the street, his tray still in his hands, rocking a little, never wandering
   // (no awning now, owner 18 Oct 2026, "i dont want these stripped tenst": three tables in a U, stepped and heaped, the overflow round it: stalls.js)
-  const BOOTH=()=>{ const P=PARK, X=x=>BOD.XS(x+(P.ox||0)), Z=y=>BOD.ZS(y+(P.oy||0)), g1=P.gate[1];
-    MUSH.booth=STALL.build({X,Z,x0:g1+3,x1:g1+7.4,y0:P.y0-8.2,y1:P.y0-5.2,veg:false,seed:7}); };
+  const BOOTH=()=>{ const P=PARK, X=x=>BOD.XS(x+(P.ox||0)), Z=y=>BOD.ZS(y+(P.oy||0)), g0=P.gate[0];   /* (west of the gate, the tomato's east of it: owner 18 Oct 2026, "on both sides of the entance") */
+    MUSH.booth=STALL.build({X,Z,x0:g0-6.2,x1:g0-1.8,y0:P.y0-8.2,y1:P.y0-5.2,veg:false,seed:7}); };
   // (built once the park is: its gate and wall where the layout and its growth put them, park.js's builder having run; then he steps behind it)
 
-  const N=PARTSNPC.make(PARTS,Object.assign({key:'mushroom',name:'THE MUSHROOM SELLER',eye:0,eyeC:'0.,0.,0.',metres:2.2,radius:.3,speed:.4,stride:6,rock:.05,bob:.025},PARTSNPC.street(72,-70),
+  const N=PARTSNPC.make(PARTS,Object.assign({key:'mushroom',name:'THE MUSHROOM SELLER',eye:0,eyeC:'0.,0.,0.',metres:2.53,   /* (15% bigger, owner 18 Oct 2026) */ radius:.3,speed:.4,stride:6,rock:.05,bob:.025},PARTSNPC.street(72,-70),
     {roam:false,brain:(dt,you,st)=>{ const MB=MUSH.booth; st.to=null; st.hold=true; if(MB){ st.x=MB.hx; st.z=MB.hz; st.face={x:MB.hx,z:MB.fz}; } }}));   // (held behind his table, facing the gate)
   { const wait=()=>{ if(!PARK.fire)return setTimeout(wait,500); BOOTH(); N.st.x=MUSH.booth.hx; N.st.z=MUSH.booth.hz; N.home={x:N.st.x,z:N.st.z}; }; wait(); }
   MUSH.N=N; window.MUSHDBG=()=>({booth:!!MUSH.booth,life:!!N.life,fire:!!PARK.fire,key:N.key,x:+N.st.x.toFixed(2),z:+N.st.z.toFixed(2),y:+N.g.position.y.toFixed(2),to:!!N.st.to,vis:N.g.visible,tris:N.tris}); }

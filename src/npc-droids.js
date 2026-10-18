@@ -67,6 +67,7 @@
         an.base=moving?(run?'Sprint_Loop':'Walk_Formal_Loop'):'Idle_Loop'; an.ts=moving?st.v/((run?RUNU:WALK)*sc):1; an.update(dt); }});
     N.mixer=mixer; N.an=an; N.guard=G; DROIDS.push(N); });
   window.UALK={D,geomOf,rigOf,CLIPS,Anim};   // (the mannequin's kit, shared: you as him, src/playas.js)
+  window.SCN=()=>({scene,pos,W3,THREE}); window.SUNV=()=>CLOCK.sunV;   /* (a test's reach into the page) */
   window.CAMAT=(x,y,z,k=1.6)=>{ UI.setFree(true); UI.camT.set(x,y,z); ppu=ppuTo=PPU*k; };   /* (a test's look anywhere: the free camera on a point) */
   window.DROIDCAM=(i=0,k=1.6)=>{ const N=DROIDS[i]; UI.setFree(true); UI.camT.set(N.st.x,N.g.position.y+N.H*.5,N.st.z); ppu=ppuTo=PPU*k; };   /* (a test's look: the free camera on one's middle) */
   window.DROIDDBG=()=>DROIDS.map(N=>({key:N.key,mode:N.guard.mode,x:+(N.st.x/TILE).toFixed(1),z:+(N.st.z/TILE).toFixed(1),to:!!N.st.to,act:N.an.once&&N.an.once.n,base:N.an.base,vis:N.g.visible})); }

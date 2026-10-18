@@ -11,7 +11,7 @@
 // its lamps hang on the nearest pole. Off until applied: ?grid=1 (or market-grid=1 in the browser; a menu switch to come). ?cut=2,5 cuts spans.
 // Cost (switched on): some 3,000-4,500 triangles the wires (one draw, a flat dark material), some 600 the crossarms, cans and the power house
 // (one instanced draw), no new lights, no new shader program, nothing run a frame unless something changed.
-const GRID={on:(()=>{ const q=QS.get('grid'); if(q!=null)return q!=='0'; let v=null; try{ v=localStorage.getItem('market-grid'); }catch(e){} return v==='1'; })(),
+const GRID={on:(()=>{ const q=QS.get('grid'); if(q!=null)return q!=='0'; let v=null; try{ v=localStorage.getItem('market-grid'); }catch(e){} return v!=='0'; })(),   /* (on by default since 17 Oct 2026, owner: "have the power lines go around the block"; ?grid=0 off) */
   nodes:[], spans:[], drops:[], servs:[], lamps:new Map(), ready:false, dirty:false, built:false};
 window.GRID=GRID;
 { const M=1/.84*TILE, V3=THREE.Vector3;
@@ -33,8 +33,12 @@ window.GRID=GRID;
     const PH={w:6*TILE,d:5*TILE,h:5.2*M, x:BOUND.x0-4.6*TILE+o.x*TILE, z:(sw?sw.z:BOUND.z0+2*TILE)+o.y*TILE+1.6*TILE};
     PH.y=G(PH.x,PH.z); GRID.house=PH; const src=GRID.node(PH.x+PH.w/2,PH.y+PH.h-.6*M,PH.z-.4*TILE,'source',{house:PH});
     // THE POLES: the street lights, each kerb its own trunk west to east, both fed from the house
-    for(const d of [1,-1]){ const line=poles.filter(p=>p.d===d).sort((p,q)=>p.x-q.x); let prev=src;
-      for(const p of line){ const n=GRID.node(p.x,p.y,p.z,'pole',{L:p.L||null,h:p.h,d}); GRID.span(prev,n,prev===src?3:2); prev=n; } }
+    // (round the loop: each kerb's ring of poles in order round the park's middle, closed on itself, fed from the house at its nearest pole)
+    const cx=BOD.XS(PARK.round[0]+PARK.ox), cz=BOD.ZS(PARK.round[1]+PARK.oy);
+    for(const ring of ['outer','inner']){ const line=poles.filter(p=>(p.ring||(p.d>0?'outer':'inner'))===ring).sort((p,q)=>Math.atan2(p.z-cz,p.x-cx)-Math.atan2(q.z-cz,q.x-cx)); if(!line.length)continue;
+      const ns=line.map(p=>GRID.node(p.x,p.y,p.z,'pole',{L:p.L||null,h:p.h,d:p.d}));
+      for(let i=0;i<ns.length;i++){ const a=ns[i], b=ns[(i+1)%ns.length]; if(Math.hypot(a.x-b.x,a.z-b.z)<40*TILE)GRID.span(a,b,2); }
+      let f=ns[0], fd=1e18; for(const n of ns){ const d=(n.x-src.x)**2+(n.z-src.z)**2; if(d<fd){ fd=d; f=n; } } GRID.span(src,f,3); }
     // THE LAMP POSTS (the park side of the far sidewalk): each hung from the nearest far-kerb pole by one wire
     for(const p of (D.lampposts||[])){ const n=GRID.node(p.x,p.y,p.z,'post',{L:p.L||null,i:p.i}), f=near(p.x,p.z,['pole']); if(f)GRID.span(f,n,1); }
     // THE BUILDINGS: every place that stands on the map, by its box in the world (each read from where the layout put it; a place not here yet

@@ -18,10 +18,11 @@ const DRESS={};
   // them, the tall street lights at both kerbs, staggered, about every 30 m (built of blocks, its arm over the road), each a light at its head; the
   // old cast-iron lamp posts (a post and a lantern, built here) along the park's side of the far sidewalk, a pair at the gate; each lamp a light
   // (LITE lights the 8 nearest you, the rest only glow), solid at its foot. Cost: some 2,000 triangles the lights, 130 the posts, no shadows of their own
-  { const M=1/.84*TILE, SP=26*M, n=Math.floor((BOUND.x1-BOUND.x0-8)/SP)+1, x0=(BOUND.x0+BOUND.x1)/2-(n-1)*SP/2, warm=new THREE.Color(1,.88,.68);
+  { const M=1/.84*TILE, SP=26*M, SX0=BOD.XS(BOD.MAP.x0), SX1=BOD.XS(BOD.MAP.x1), n=Math.floor((SX1-SX0-8)/SP)+1, x0=(SX0+SX1)/2-(n-1)*SP/2,   /* (the street's own run, not the bound: the force field's is wider) */ warm=new THREE.Color(1,.88,.68);
     // a street light: a stepped foot, the grey pole, the arm out over the road (d: which way), the head at its end (the lit lamp under it: heads)
-    const sl=(x,z,d)=>{ const y=G(x,z), GR=0x5d6266, DK=0x3f4448; blk(x,y+.3*M,z,.34*M,.6*M,.34*M,DK); blk(x,y+.66*M,z,.24*M,.14*M,.24*M,GR); blk(x,y+3.05*M,z,.15*M,4.7*M,.15*M,GR);
-      blk(x,y+5.45*M,z,.12*M,.14*M,.12*M,DK); blk(x,y+5.86*M,z+d*.55*M,.1*M,.1*M,1.1*M,GR); blk(x,y+5.98*M,z+d*1.3*M,.36*M,.16*M,.62*M,DK); solid(x,z,.18*M,6*M); const P={x,z,d,y:y+5.45*M,h:heads.length}; POLES.push(P); return P; };   // (the pole's top, for the power grid: grid.js)
+    const sl=(x,z,d,ax='z',ring)=>{ const y=G(x,z), GR=0x5d6266, DK=0x3f4448, X_=ax==='x'; blk(x,y+.3*M,z,.34*M,.6*M,.34*M,DK); blk(x,y+.66*M,z,.24*M,.14*M,.24*M,GR); blk(x,y+3.05*M,z,.15*M,4.7*M,.15*M,GR);
+      blk(x,y+5.45*M,z,.12*M,.14*M,.12*M,DK); if(X_){ blk(x+d*.55*M,y+5.86*M,z,1.1*M,.1*M,.1*M,GR); blk(x+d*1.3*M,y+5.98*M,z,.62*M,.16*M,.36*M,DK); } else { blk(x,y+5.86*M,z+d*.55*M,.1*M,.1*M,1.1*M,GR); blk(x,y+5.98*M,z+d*1.3*M,.36*M,.16*M,.62*M,DK); }
+      solid(x,z,.18*M,6*M); const P={x,z,d,ax,ring:ring||(d>0?'outer':'inner'),y:y+5.45*M,h:heads.length}; POLES.push(P); return P; };   // (ax: the way its arm reaches; ring: the loop's outer kerb or its inner one, for the power grid's two rings)   // (the pole's top, for the power grid: grid.js)
     const heads=[], pools=[], POLES=[], POSTS=[], hsh=n=>{ const v=Math.sin(n*12.9898+78.233)*43758.5453; return v-Math.floor(v); },
       light=(x,y,z,i,r)=>{ const L=new THREE.PointLight(warm,i,r,1.6); L.position.set(x,y,z); L.userData.i0=i; scene.add(L); const P=[L,x,z,r*.2]; P.on=1.5-hsh(pools.length)*4; pools.push(P); return L; };   // (P.on: the sun's height at which this one comes on)
     // EVERY LAMP'S POOL (owner, 17 Oct 2026, his picture: "some dont glow"): only the 8 lamps nearest you light the world (the budget), so every
@@ -33,10 +34,17 @@ const DRESS={};
     const poolMat=new THREE.MeshBasicMaterial({map:poolTex,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,toneMapped:false,polygonOffset:true,polygonOffsetFactor:-2}), poolGeo=new THREE.PlaneGeometry(2,2).rotateX(-Math.PI/2);
     for(let i=0;i<n;i++){ const x=x0+i*SP;   // (the near kerb's, then the far kerb's half a span along: staggered)
       sl(x,sw-.25*M,1).L=light(x,5.8*M,sw+1.4*M,40,13*TILE); heads.push([x,5.8*M,sw+1.4*M]);
-      const xf=x+SP/2; if(xf<BOUND.x1-3&&!(xf>BOD.XS(AVE.r0)-1&&xf<BOD.XS(AVE.r1)+1)){ sl(xf,far+.25*M,-1).L=light(xf,5.8*M,far-1.4*M,40,13*TILE); heads.push([xf,5.8*M,far-1.4*M]); } }
+      const xf=x+SP/2; if(xf<SX1-3&&!(xf>BOD.XS(AVE.r0)-1&&xf<BOD.XS(AVE.r1)+1)&&!(xf>BOD.XS(RING.wr0)-1&&xf<BOD.XS(RING.wr1)+1)){ sl(xf,far+.25*M,-1).L=light(xf,5.8*M,far-1.4*M,40,13*TILE); heads.push([xf,5.8*M,far-1.4*M]); } }
+    // THE LOOP'S OTHER THREE SIDES (17 Oct 2026, owner: "have the power lines go around the block"): street lights on both kerbs of the west
+    // street, the north street and the Avenue, staggered as the main street's, each arm over its road; the power grid strings them (grid.js)
+    { const XS=BOD.XS, ZS=BOD.ZS, R=RING, A=AVE, put=(x,z,d,ax,ring)=>{ const P=sl(x,z,d,ax,ring), hx=ax==='x'?x+d*1.3*M:x, hz=ax==='x'?z:z+d*1.3*M; P.L=light(hx,5.8*M,hz,40,13*TILE); heads.push([hx,5.8*M,hz]); };
+      const runZ=(xo,xi,z0,z1)=>{ for(let z=z0,k=0;z<z1;z+=SP/2,k++){ if(k&1)put(xi,z,-1,'x','inner'); else put(xo,z,1,'x','outer'); } };   // (a street along z: outer kerb at xo, its arm +x; inner at xi, -x; or as d says)
+      { const xo=XS(R.wr0)-.25*M, xi=XS(R.wr1)+.25*M, z0=ZS(BOD.FAR)+2*M, z1=ZS(R.nr0)-1*M; for(let z=z0,k=0;z<z1;z+=SP/2,k++){ if(k&1)put(xi,z,-1,'x','inner'); else put(xo,z,1,'x','outer'); } }   // (the west street: its outer kerb the west one)
+      { const xo=XS(A.r1)+.25*M, xi=XS(A.r0)-.25*M, z0=ZS(BOD.FAR)+2*M, z1=ZS(R.nr0)-1*M; for(let z=z0+SP/4,k=0;z<z1;z+=SP/2,k++){ if(k&1)put(xi,z,1,'x','inner'); else put(xo,z,-1,'x','outer'); } }   // (the Avenue: its outer kerb the east one)
+      { const zo=ZS(R.nr1)+.25*M, zi=ZS(R.nr0)-.25*M, x0=XS(R.wr1)+2*M, x1=XS(A.r0)-2*M; for(let x=x0,k=0;x<x1;x+=SP/2,k++){ if(k&1)put(x,zi,1,'z','inner'); else put(x,zo,-1,'z','outer'); } } }   // (the north street: its outer kerb the north one)
     // the lamp posts: the far sidewalk's park side (the wall's line, a little in front of it)
     const wz=BOD.ZS(PARK.y0+PARK.oy), pz=far+(wz-far)*.7, g0=BOD.XS(PARK.gate[0]+PARK.ox), g1=BOD.XS(PARK.gate[1]+PARK.ox), pts=[[g0-.9*M,pz],[g1+.9*M,pz]], px1=BOD.XS(PARK.x1+PARK.ox)-2;
-    for(let x=g0-14*M;x>BOUND.x0+2;x-=14*M)pts.push([x,pz]); for(let x=g1+14*M;x<px1;x+=14*M)pts.push([x,pz]);
+    for(let x=g0-14*M;x>BOD.XS(PARK.x0+PARK.ox)+2;x-=14*M)pts.push([x,pz]); for(let x=g1+14*M;x<px1;x+=14*M)pts.push([x,pz]);
     // (and up the Avenue's west sidewalk, the park's side, from its mouth to its end: owner, 17 Oct 2026)
     { const ax=BOD.XS(AVE.x0)+(BOD.XS(AVE.r0)-BOD.XS(AVE.x0))*.35, z0=BOD.ZS(BOD.MAP.y1)+5*M, z1=BOD.ZS(AVE.y1)-2; for(let z=z0;z<z1;z+=14*M)pts.push([ax,z]); }
     const xs=pts.map(p=>p[0]);

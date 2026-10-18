@@ -14,7 +14,7 @@ const BOD={meshes:[], walls:{}, lamps:[]};
   { const o=LAY.o('bodega'); B0.x0+=o.x/K; B0.x1+=o.x/K; B0.y0+=o.y/K; B0.y1+=o.y/K; }
   const BODOFF=B0.y0+3.75; BOD.BODOFF=BODOFF;
   // the subway's stairs (MAPSTAIR, the map's: tiles) a hole in the ground; elsewhere the ground's own colour
-  const holed=f=>(x,y)=>x>=MAPSTAIR.x0&&x<MAPSTAIR.x1&&y>=MAPSTAIR.y0&&y<MAPSTAIR.y1?null:f(x,y);
+  const holed=f=>(x,y)=>[MAPSTAIR,...RING.stairs].some(S=>x>=S.x0&&x<S.x1&&y>=S.y0&&y<S.y1)?null:f(x,y);   /* (and the loop subway's stairs: sub.js) */
   // ---- the painting of a face: fn(i, j) its colour, null (a hole) or glowing (.e, or four long); the colours and the glow as two canvases
   // (faster, 17 Oct 2026: no canvas a face and no new colour a pixel: the face's pixels straight into an ImageData, rounded there; the batch
   // copies them into its atlas. C only marks a glowing colour)
@@ -152,11 +152,11 @@ const BOD={meshes:[], walls:{}, lamps:[]};
     {id:'aveKW',x0:AV.r0-.16,y0:MAP.y1,x1:AV.r0,y1:RG.nr0-.16,z:0,col:()=>[178,174,164],tex:'concrete_pavement',tint:[178,174,164],rep:2},
     {id:'aveRoad',x0:AV.r0,y0:FAR,x1:AV.r1,y1:RG.nr0,z:RD,col:(x,y)=>zebra(x,y,[[FAR+.2,FAR+1.8,'y'],[EGATE[0],EGATE[1],'y']]),tex:'asphalt_02',tint:[62,64,68],rep:3},
     {id:'aveKE',x0:AV.r1,y0:MAP.y1,x1:AV.r1+.16,y1:RG.nr1,z:0,col:()=>[178,174,164],tex:'concrete_pavement',tint:[178,174,164],rep:2},
-    {id:'aveE',x0:AV.r1+.16,y0:MAP.y1,x1:AV.x1,y1:AV.ey1,z:0,col:slabCol,tex:'concrete_pavement',tint:[166,161,148],rep:2},
+    {id:'aveE',x0:AV.r1+.16,y0:MAP.y1,x1:AV.x1,y1:AV.ey1,z:0,col:holed(slabCol),tex:'concrete_pavement',tint:[166,161,148],rep:2},
     // THE WEST STREET and THE NORTH STREET (the loop, 17 Oct 2026): as the Avenue: an outer sidewalk, its kerb, the road a kerb down, the inner
     // kerb and sidewalk along the park; the corners' outer squares sidewalk; a crosswalk at each of the park's gates
     {id:'kerb2w',x0:MAP.x0,y0:FAR,x1:RG.wr0,y1:FAR+.16,z:0,col:()=>[178,174,164],tex:'concrete_pavement',tint:[178,174,164],rep:2},
-    {id:'wstW',x0:RG.wx0,y0:FAR+.16,x1:RG.wr0-.16,y1:RG.nr1,z:0,col:slabCol,tex:'concrete_pavement',tint:[166,161,148],rep:2},
+    {id:'wstW',x0:RG.wx0,y0:FAR+.16,x1:RG.wr0-.16,y1:RG.nr1,z:0,col:holed(slabCol),tex:'concrete_pavement',tint:[166,161,148],rep:2},
     {id:'wstKW',x0:RG.wr0-.16,y0:FAR+.16,x1:RG.wr0,y1:RG.nr1,z:0,col:()=>[178,174,164],tex:'concrete_pavement',tint:[178,174,164],rep:2},
     {id:'wstRoad',x0:RG.wr0,y0:FAR,x1:RG.wr1,y1:RG.nr0,z:RD,col:(x,y)=>zebra(x,y,[[EGATE[0],EGATE[1],'y',RG.wr0,RG.wr1],[FAR+.2,FAR+1.8,'y',RG.wr0,RG.wr1]]),tex:'asphalt_02',tint:[62,64,68],rep:3},
     {id:'wstKE',x0:RG.wr1,y0:MAP.y1,x1:RG.wr1+.16,y1:RG.nr0-.16,z:0,col:()=>[178,174,164],tex:'concrete_pavement',tint:[178,174,164],rep:2},

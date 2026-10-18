@@ -648,6 +648,13 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
   side: solid for everyone, the map's walking bound, seen only near (faint cyan). THE HUDSON just past the row's back alley, the land's whole
   width: a stone bank, a flat surface (not the pool's water) tinted by the sky with drifting glints.
 
+- **The loop's subway and power lines** (owner, 17 Oct 2026: "have the subway follow the same path but underneath", "have the power lines go
+  around the block"; `src/sub.js`, `dress.js`, `grid.js`): a tunnel at the station's depth under the middle of the loop's four roads (cream
+  walls, a track round its middle, a lamp every 18 tiles), a three-car train going round it and stopping by each stair, two stairs down
+  (`RING.stairs`: the west street's outer sidewalk, the Avenue's east one in the gap between its shells, each a short way into the tunnel);
+  underground the background black. Street lights on both kerbs of all four sides; the power grid on by default (`?grid=0` off), each kerb's
+  poles one ring round the loop, fed from the power house.
+
 ## THE MARKET: the one official map
 
 **THE MARKET** (owner, 17 Oct 2026: "one official MARKET map im gona start filling in") is the game's map here: every place the owner adds goes

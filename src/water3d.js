@@ -110,7 +110,7 @@ WATER.spray=dt=>{ const S=WATER.SP, g=9.81/WATER.MPU; let k=0; dt=Math.min(dt,1/
   S.n=k; const a=WATER.spg.attributes.position; a.array.set(S.p.subarray(0,k*3)); a.needsUpdate=true; WATER.spg.setDrawRange(0,k); };
 // before the frame: the scene without the water (what's seen through it), its lamps' glints, the camera's way
 WATER.under=(renderer,scene,cam,lamps)=>{ const w=renderer.domElement.width, h=renderer.domElement.height; if(WATER.rt.width!==w||WATER.rt.height!==h)WATER.rt.setSize(w,h);
-  const u=WATER.mat.uniforms; u.uRes.value.set(w,h); u.uNear.value=cam.near; u.uFar.value=cam.far; cam.getWorldDirection(u.uCam.value);
+  const u=WATER.mat.uniforms; u.uRes.value.set(w,h); u.uGlow.value.setRGB(.02,.16,.18).multiplyScalar(WATER.glowK==null?1:WATER.glowK);   /* (its glow by the dark: full in a room or at night, none in the noon sun: clock.js) */ u.uNear.value=cam.near; u.uFar.value=cam.far; cam.getWorldDirection(u.uCam.value);
   lamps.slice(0,12).forEach((L,i)=>{ u.uLP.value[i].copy(L.position); u.uLC.value[i].set(L.color.r,L.color.g,L.color.b).multiplyScalar(Math.min(1,(L.userData.i0||L.intensity)/3)); }); u.uNL.value=Math.min(12,lamps.length);
   const v0=WATER.mesh.visible; WATER.mesh.visible=false; renderer.setRenderTarget(WATER.rt); renderer.render(scene,cam); renderer.setRenderTarget(null); WATER.mesh.visible=v0; };   // (left as it was: hidden while you're in another room)
 };

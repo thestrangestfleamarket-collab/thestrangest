@@ -81,47 +81,72 @@ function makeNPC(D,o){ const N={key:o.key,name:o.name,names:o.names,lv:o.lv||'do
   { const SH=QS.get('sheet'), NA=QS.get('npcat')||(SH&&SH+',field'); if(NA){ const [k,x,z]=NA.split(','); if(k===N.key){ if(x==='field'){ st.x=SH?BOUND.x1-.5*TILE:BOD.XS(BOD.MAP.x1+14); st.z=BOD.ZS((BOD.MAP.y0+BOD.MAP.y1)/2); }   /* (his sheet: just inside the map's east edge, as far as the free camera goes) */ else{ st.x=+x; st.z=+z; } st.hold=true;
     if(SH===N.key){ N.sheet=true; st.face={x:st.x+1,z:st.z+1}; st.h=Math.PI/4; } } } }
   // (where he may stand: his own say, o.free, or else out of every solid of his floor: CLIP, strict hitboxes)
-  const free=N.free=o.free||((x,z,R)=>!CLIP.hit(SOL[N.lv]||SOL.up,x,z,R));
-  const pick=()=>{ if(o.pick){ o.pick(st); return; } for(let k=0;k<12;k++){   // (o.pick: where he goes next, his own say: a guard's beat)
+  const free=N.free=o.free||((x,z,R)=>!CLIP.hit(SOL[N.lv]||SOL.up,x,z,R)); N.ground=ground;   // (N.free, N.ground: his own, and a life's say over them, anywhere on the map: lives.js)
+  const pick=()=>{ if(o.pick){ o.pick(st); return; } if(o.roam){ if(!ROAM.pick(st,free)){ st.to=null; st.wait=1; } return; } for(let k=0;k<12;k++){   // (o.pick: where he goes next, his own say: a guard's beat)
     const r=(Math.random()<.5?-1:1)*(2+Math.random()*7)*TILE; st.to=longX?{x:Math.max(LX0,Math.min(LX1,st.x+r)),z:LZ0+Math.random()*(LZ1-LZ0)}:{x:LX0+Math.random()*(LX1-LX0),z:Math.max(LZ0,Math.min(LZ1,st.z+r))}; if(free(st.to.x,st.to.z,st.R))return; } st.to=null; st.wait=1; };   // (o.free: where he may stand, when he has more than a lane: a spot that isn't, picked again)
   const block=(x,z,R)=>Math.hypot(x-st.x,z-st.z)<st.R+R;
   N.tick=(dt,you)=>{ if(N.sheet&&!N.sheetOn){ N.sheetOn=true; UI.setFree(true); UI.camT.set(st.x,g.position.y+tall*s*ZU*24/TILE*.5,st.z); ppu=ppuTo=PPU*4; window.SHEETTURN=d=>{ yaw=yawTo=d*Math.PI/180; };   // (his sheet: the camera on his middle, close; a test turns it round him by degrees)
       for(const G of Object.values(MAPG))for(const c of G.children)if(c!==g)c.visible=false; const r0=renderer.render.bind(renderer); renderer.render=(s,c)=>{ if(s.background&&s.background.isColor)s.background.set(0); r0(s,c); }; }   // (the void: nothing else, black behind him whatever the hour)
     if(o.brain)o.brain(dt,you,st,N);   // (o.brain: his mind each frame, setting where he goes (st.to), how fast (st.v), what he faces (st.face), whether he stays put (st.hold))
-    const dx=you.x-st.x, dz=you.z-st.z, near=!o.brain&&Math.hypot(dx,dz)<3.5*TILE; let want=st.h, moving=false;
-    if(st.to){ const ex=st.to.x-st.x, ez=st.to.z-st.z, d=Math.hypot(ex,ez); if(d<.05){ st.to=null; st.wait=1.5+Math.random()*4; }
+    let want=st.h, moving=false;   // (no character takes an interest in you any more, owner 17 Oct 2026: "stop having chars stay around and be interested in player": nobody turns to you or waits for you; a mind of his own (o.brain) still may)
+    if(st.to){ const ex=st.to.x-st.x, ez=st.to.z-st.z, d=Math.hypot(ex,ez); if(d<.05){ st.to=st.next||null; st.next=null; st.wait=st.to?0:1.5+Math.random()*4; }   /* (st.next: the second leg of a way through the park's gate: ROAM) */
       else{ want=Math.atan2(ex,ez); const turn=Math.abs(((want-st.h+Math.PI*3)%(Math.PI*2))-Math.PI);
         if(turn<.5){ const step=Math.min(d,st.v*dt), nx=st.x+ex/d*step, nz=st.z+ez/d*step;
           // (he waits for you, or for the other, to be out of his way; held up long, he goes somewhere else)
           // (another in the way, standing or walking, is never walked into; a step taking him further from one he's already touching is let through, so two who meet never stay stuck in each other)
-          if(!free(nx,nz,st.R)){ st.to=null; st.wait=.5; }   // (something in his way: somewhere else)
-          else if(Math.hypot(you.x-nx,you.z-nz)<st.R+.35||NPCS.some(q=>q!==N&&q.lv===N.lv&&q.key!=='dragon'&&q.mode!=='hidden'&&q.blocks(nx,nz,st.R)&&q.gap(nx,nz)<q.gap(st.x,st.z))){ if((st.held=(st.held||0)+dt)>2){ st.to=null; st.held=0; st.wait=1; } }
+          if(!N.free(nx,nz,st.R)){ st.to=null; st.wait=.5; }   // (something in his way: somewhere else)
+          else if(Math.hypot(you.x-nx,you.z-nz)<st.R+.35||NPCS.some(q=>q!==N&&!q.far&&q.lv===N.lv&&q.key!=='dragon'&&q.mode!=='hidden'&&q.blocks(nx,nz,st.R)&&q.gap(nx,nz)<q.gap(st.x,st.z))){ if((st.held=(st.held||0)+dt)>2){ st.to=null; st.held=0; st.wait=1; } }
           else{ st.x=nx; st.z=nz; moving=true; st.held=0; } } } }
-    else{ if(st.face)want=Math.atan2(st.face.x-st.x,st.face.z-st.z); else if(near)want=Math.atan2(dx,dz); if(!st.hold&&(st.wait-=dt)<=0&&!near)pick(); }
+    else{ if(st.face)want=Math.atan2(st.face.x-st.x,st.face.z-st.z); if(!st.hold&&(st.wait-=dt)<=0)pick(); }
     let dh=((want-st.h+Math.PI*3)%(Math.PI*2))-Math.PI; st.h+=dh*Math.min(1,dt*5);
     st.ph+=dt*(moving?o.stride:1.6);
     // the walk: rocking side to side, a bob each step; standing, a slow breath
     const rock=o.skin?0:moving?Math.sin(st.ph)*o.rock:Math.sin(st.ph)*.02, bob=o.skin?0:moving?Math.abs(Math.sin(st.ph))*o.bob:0;   // (a rigged one walks and breathes with his own bones)
-    g.position.set(st.x,ground(st.x,st.z)+bob,st.z); g.rotation.set(0,st.h,0); body.rotation.set(0,0,rock); if(!o.skin)body.scale.y=s*ZU*24/TILE*(moving?1:1+Math.sin(st.ph)*.012); if(o.anim)o.anim(dt,moving,st,s); };
+    g.position.set(st.x,N.ground(st.x,st.z)+bob,st.z); g.rotation.set(0,st.h,0); body.rotation.set(0,0,rock); if(!o.skin)body.scale.y=s*ZU*24/TILE*(moving?1:1+Math.sin(st.ph)*.012); if(o.anim)o.anim(dt,moving,st,s); };
   N.blocks=(x,z,R)=>block(x,z,R); N.gap=(x,z)=>Math.hypot(x-st.x,z-st.z);
   // push you out of him (collide's last step)
   N.push=p=>{ const dx=p.x-st.x, dz=p.z-st.z, d=Math.hypot(dx,dz), R=st.R+.3; if(d<R&&d>1e-4){ p.x=st.x+dx/d*R; p.z=st.z+dz/d*R; } };
   // SELF: his depth from his light each frame (only at that level), the camera looking down the light at him
-  N.shadowPass=renderer=>{ if(W3.lv.value<1.5||N.far||!g.visible||!g.parent.visible)return;   /* (not for one not drawn: far, in another room, on another level) */ const mid=new THREE.Vector3(st.x,g.position.y+H*.45,st.z); N.smCam.position.copy(mid).addScaledVector(W3.Lw,7); N.smCam.lookAt(mid); N.smCam.updateMatrixWorld();
+  N.shadowPass=renderer=>{ if(W3.lv.value<1.5||N.far||!g.visible||!g.parent.visible)return; if(typeof SELFSH!=='undefined'&&!SELFSH.use(N)){ N.LVP.value.copy(SELFSH.off); return; }   /* (his own shadow only for the two nearest you: src/perf.js; the rest none, the map left alone) */   /* (not for one not drawn: far, in another room, on another level) */ const mid=new THREE.Vector3(st.x,g.position.y+H*.45,st.z); N.smCam.position.copy(mid).addScaledVector(W3.Lw,7); N.smCam.lookAt(mid); N.smCam.updateMatrixWorld();
     N.LVP.value.multiplyMatrices(N.smCam.projectionMatrix,N.smCam.matrixWorldInverse); const ms=[]; g.traverse(o=>{ if(o.isMesh){ ms.push([o,o.material]); o.material=N.depthMat; } });   // (him and what he holds, as depth only)
     renderer.setRenderTarget(N.sm); renderer.clear(); renderer.render(g,N.smCam); renderer.setRenderTarget(null); for(const [o,m] of ms)o.material=m; };
   if(!o.noSelf){ const s0=W3.shadowPass; W3.shadowPass=r=>{ s0(r); N.shadowPass(r); }; }   // (noSelf: no shadow of his own on him: small and many, the dragons)
   N.g=g; N.st=st; N.body=body; N.H=H; NPCS.push(N); return N; }
-// THE STREET'S LANE: where a walker of the whole street may go (the sidewalks and the road, not the subway's stair hole or a solid)
-const STLANE={x0:BOD.XS(BOD.MAP.x0+2),x1:BOD.XS(BOD.MAP.x1-2),z0:BOD.ZS(-76.3),z1:BOD.ZS(-61.2)}, STHOLE=[BOD.XS(MAPSTAIR.x0-.6),BOD.ZS(MAPSTAIR.y0),BOD.XS(MAPSTAIR.x1+.6),BOD.ZS(MAPSTAIR.y1+.6)],
-  stfree=(x,z,R)=>!(x>STHOLE[0]-R&&x<STHOLE[2]+R&&z>STHOLE[1]-R&&z<STHOLE[3]+R)&&!SOL.up.some(b=>x>b[0]-R&&x<b[2]+R&&z>b[1]-R&&z<b[3]+R);
+// THE WHOLE MAP (owner, 17 Oct 2026: "have them roam around the entire map"): where a walker of the map may go: the street's whole run (the shops'
+// sidewalk, the road, the far sidewalk) and all of Central Park behind it, to its back; never a hole (the subway's stairs, the castle's), a solid,
+// or the inside of a building (the bodega, the apartment building, the dojo, the apartment house, the castle's bailey: ROOMS' boxes and the rest).
+// ROAM.pick: where he goes next: mostly a few tiles on (a stroll), now and then anywhere on the map at all (a walk across it); the park's wall
+// between the street and the park has one gate, so a way from one side to the other goes through the gate first (st.to), then on (st.next)
+const STLANE={x0:BOD.XS(BOD.MAP.x0+2),x1:BOD.XS(BOD.MAP.x1-2),z0:BOD.ZS(-76.3),z1:BOD.ZS(RING.ny1-1)},   /* (the whole loop: its north street too) */ STHOLE=[BOD.XS(MAPSTAIR.x0-.6),BOD.ZS(MAPSTAIR.y0),BOD.XS(MAPSTAIR.x1+.6),BOD.ZS(MAPSTAIR.y1+.6)],
+  CSHOLE=[BOD.XS(CASTLE.stair.x0-.6),BOD.ZS(CASTLE.stair.y0-.6),BOD.XS(CASTLE.stair.x1+.6),BOD.ZS(CASTLE.stair.y1+.6)], CSB=[BOD.XS(CASTLE.b[0]-.5),BOD.ZS(CASTLE.b[2]-.5),BOD.XS(CASTLE.b[1]+.5),BOD.ZS(CASTLE.b[3]+.5)],
+  inBox=(b,x,z,R)=>x>b[0]-R&&x<b[2]+R&&z>b[1]-R&&z<b[3]+R,
+  inBuilding=(x,z,R)=>ROOMS.boxes().some(b=>b.y0<1&&x>b.x0-R&&x<b.x1+R&&z>b.z0-R&&z<b.z1+R)||(MODS.apts&&MODS.apts.inside&&MODS.apts.inside(x,z))||inBox(CSB,x,z,R),
+  stfree=(x,z,R)=>!inBox(STHOLE,x,z,R)&&!inBox(CSHOLE,x,z,R)&&!inBuilding(x,z,R)&&!SOL.up.some(b=>x>b[0]-R&&x<b[2]+R&&z>b[1]-R&&z<b[3]+R);
+const ROAM={L:STLANE,wallZ:BOD.ZS(PARK.y0+PARK.oy),gate:[BOD.XS(PARK.gate[0]+PARK.ox+.8),BOD.XS(PARK.gate[1]+PARK.ox-.8)]};
+window.ROAMDBG=()=>ROAM; window.STFREE=stfree;
+ROAM.pick=(st,free)=>{ const L=ROAM.L; for(let k=0;k<12;k++){ let to;
+    if(Math.random()<.25)to={x:L.x0+Math.random()*(L.x1-L.x0),z:L.z0+Math.random()*(L.z1-L.z0)};   // (anywhere at all)
+    else{ const a=Math.random()*Math.PI*2, r=(2+Math.random()*7)*TILE; to={x:Math.max(L.x0,Math.min(L.x1,st.x+Math.sin(a)*r)),z:Math.max(L.z0,Math.min(L.z1,st.z+Math.cos(a)*r))}; }
+    if(!free(to.x,to.z,st.R))continue;
+    if((st.z<ROAM.wallZ)!==(to.z<ROAM.wallZ)){ st.next=to; st.to={x:ROAM.gate[0]+Math.random()*(ROAM.gate[1]-ROAM.gate[0]),z:ROAM.wallZ}; } else{ st.to=to; st.next=null; } return true; } return false; };
 // (the goldfish in his raincoat: deleted, owner 17 Oct 2026, "delete the fish raincoat character"; STLANE and stfree stay for the street's walkers)
-const BEAR=makeNPC(BEARD,{key:'bear',name:'BEAR',names:BEARD.names,metres:1.9,rank:[0,0,0,0,2,3,0,1,0],at:-67,radius:.45,speed:.7,stride:5.5,rock:.05,bob:.035});
-// ONLY WHAT'S NEAR OR SEEN (owner, 17 Oct 2026, the budget: "far characters neither drawn nor moved"): a character more than 25 tiles from you
-// and out of the picture, or on a level not shown, is neither moved nor drawn (nor his own shadow made: shadowPass) till he's near or seen again;
-// a troublemaker's mind always runs (it brings him up the subway stairs after dark)
-{ const FR=new THREE.Frustum(), M4=new THREE.Matrix4(), SP=new THREE.Sphere();
-  NPCS.tick=(dt,you)=>{ M4.multiplyMatrices(cam.projectionMatrix,cam.matrixWorldInverse); FR.setFromProjectionMatrix(M4); const R=25*TILE;
-    for(const N of NPCS){ const p=N.g.position, far=!('mode' in N)&&!N.sheet&&(!N.g.parent.visible||Math.hypot(p.x-you.x,p.z-you.z)>R&&!FR.intersectsSphere(SP.set(p,2*TILE)));
-      if(far!==!!N.far){ N.far=far; if(far){ N.fv=N.g.visible; N.g.visible=false; } else N.g.visible=N.fv; }
-      if(!far)N.tick(dt,you); } }; }
+// (the bear: deleted, owner 17 Oct 2026, "delete the fish raincoat and bear from game")
+// ONLY WHAT'S NEAR OR SEEN (owner, 17 Oct 2026, the budget: "far characters neither drawn nor moved"; and "dont render anyone not visible (they
+// still exist just dont show them until you must)"): a character out of the picture is not drawn, whoever he is, but he still lives: near you
+// he is moved and thinks as before; out of the picture and more than four tiles from you, or on a level not shown, or indoors where you aren't
+// (his life's say: lives.js), he is neither moved nor drawn (nor his own shadow made: shadowPass) till he's near or seen again: his numbers walk
+// him meanwhile (LIVES.tick, four times a second; the hand-off is at the picture's edge, the same state, st, on both sides). ?lives=0: the rule
+// as it was (25 tiles and out of the picture), far ones frozen. A troublemaker's mind always runs (it brings him up the subway stairs after
+// dark). The hiding is done only round the picture's drawing (NPCS.cull, the loop), so what each one's own mind, rooms.js or the stage does
+// with his visibility is never overwritten. The bar's musicians and the guitarist join the cull through NPCS.extra (their g and at)
+{ const FR=new THREE.Frustum(), M4=new THREE.Matrix4(), SP=new THREE.Sphere(), V=new THREE.Vector3(); NPCS.extra=[];
+  NPCS.tick=(dt,you)=>{ M4.multiplyMatrices(cam.projectionMatrix,cam.matrixWorldInverse); FR.setFromProjectionMatrix(M4); const R=25*TILE, LV=LIVES.on;
+    for(const N of NPCS){ const p=N.g.position, d=Math.hypot(p.x-you.x,p.z-you.z), seen=FR.intersectsSphere(SP.set(p,Math.max(2*TILE,N.cullR||0)));
+      const far=LIVES.force==='near'?false:LIVES.force==='half'&&!('mode' in N)?!!(NPCS.indexOf(N)&1):!('mode' in N)&&!N.sheet&&(!N.g.parent.visible||(LV?(LIVES.ready&&LIVES.hidden(N))||d>4*TILE&&!FR.intersectsSphere(SP.set(p,3*TILE)):d>R&&!seen));
+      N.far=far; N.hid=!N.sheet&&(far||!seen);
+      if(!far)N.tick(dt,you); }
+    for(const X of NPCS.extra){ const a=X.at; X.hid=!!a&&!FR.intersectsSphere(SP.set(V.set(a.x,(a.y||0)+1,a.z),2*TILE)); }
+    LIVES.tick(dt,you); };
+  // round the picture: on, the hidden ones put out of sight; off, each back as he was
+  NPCS.cull=on=>{ const one=(o,g)=>{ if(on){ if(o.hid&&g.visible){ g.visible=false; o._cv=true; } } else if(o._cv){ g.visible=true; o._cv=false; } };
+    for(const N of NPCS)one(N,N.g); for(const X of NPCS.extra)if(X.g)one(X,X.g); }; }

@@ -9,12 +9,12 @@ const BOD={meshes:[], walls:{}, lamps:[]};
 { // (the map's own names in a scope of their own: the game's files above have some of the same)
   const B0=LBLD[0], B00={...B0}, W=LSEED.walk, CURB=LSEED.street, FAR=LSEED.grass, RD=-4;   // (the road 4 art px below the sidewalk: a kerb you step down)
   const OX=(B00.x0+B00.x1)/2, OY=B00.y1, K=BLDK, X=x=>(x-OX)*TILE*K, Z=y=>(y-OY)*TILE*K, Y=z=>z*ZU*K, XS=x=>(x-OX)*TILE, ZS=y=>(y-OY)*TILE, YS=z=>z*ZU; Object.assign(BOD,{X,Z,Y,XS,ZS,YS,OX,OY,B0});   // (X Z Y: the building, a tenth bigger from its front's middle, BLDK; XS ZS YS: the street, as it was)
-  const MAP={x0:50,x1:152,y0:B00.y0,y1:FAR+3}, POOLX=82;   // (the street's run; the pool room's west wall)
+  const MAP={x0:RING.wx0,x1:172,y0:B00.y0,y1:FAR+3}, POOLX=82, AV=AVE, RG=RING;   /* (x0: on west to the loop's west street, 17 Oct 2026) */   // (the street's run: on east past the apartment building and the Avenue's mouth, 17 Oct 2026; the pool room's west wall as it was)
   // (moved on the map's layout, LAY: the building itself in the game's tiles, the world's middle (OX, OY: its front's middle as it was) and the street staying put; a tenth bigger, so a tile on the map is 1/BLDK of the game's)
   { const o=LAY.o('bodega'); B0.x0+=o.x/K; B0.x1+=o.x/K; B0.y0+=o.y/K; B0.y1+=o.y/K; }
   const BODOFF=B0.y0+3.75; BOD.BODOFF=BODOFF;
   // the subway's stairs (MAPSTAIR, the map's: tiles) a hole in the ground; elsewhere the ground's own colour
-  const holed=f=>(x,y)=>x>=MAPSTAIR.x0&&x<MAPSTAIR.x1&&y>=MAPSTAIR.y0&&y<MAPSTAIR.y1?null:f(x,y);
+  const holed=f=>(x,y)=>[MAPSTAIR,...RING.stairs].some(S=>x>=S.x0&&x<S.x1&&y>=S.y0&&y<S.y1)?null:f(x,y);   /* (and the loop subway's stairs: sub.js) */
   // ---- the painting of a face: fn(i, j) its colour, null (a hole) or glowing (.e, or four long); the colours and the glow as two canvases
   // (faster, 17 Oct 2026: no canvas a face and no new colour a pixel: the face's pixels straight into an ImageData, rounded there; the batch
   // copies them into its atlas. C only marks a glowing colour)
@@ -36,7 +36,10 @@ const BOD={meshes:[], walls:{}, lamps:[]};
     if(x1-x0>.004&&y1-y0>.004)bq([X(x0),Y(z1),Z(y1)],[X(x1),Y(z1),Z(y1)],[X(x1),Y(z1),Z(y0)],[X(x0),Y(z1),Z(y0)],
       faceTex((x1-x0)*24,(y1-y0)*24,(i,j)=>C(b.top?b.top(x0+(i+.5)/24,y0+(j+.5)/24):b.c)),kind); }
   // ---- placing a thing as the game's placeProp does (22-props-layers-1-props): turned a quarter at a time round its middle, its paint and its lights with it
-  function place(p,rot){ const o={boxes:p.boxes,x0:p.x0,y0:p.y0,x1:p.x1,y1:p.y1,solids:p.solids}, r=((rot%4)+4)%4, cx=(o.x0+o.x1)/2, cy=(o.y0+o.y1)/2, ncx=cx, ncy=cy;
+  // (placeAt: the same turn about a given middle (cx, cy) onto another (ncx, ncy): a whole room's things turned together, store.js's turned rooms;
+  // place: a thing turned about its own middle, as the game's placeProp does)
+  function place(p,rot){ const o={boxes:p.boxes,x0:p.x0,y0:p.y0,x1:p.x1,y1:p.y1,solids:p.solids}; placeAt(p,rot,(o.x0+o.x1)/2,(o.y0+o.y1)/2,(o.x0+o.x1)/2,(o.y0+o.y1)/2,true); }
+  function placeAt(p,rot,cx,cy,ncx,ncy,own){ const o={boxes:p.boxes,x0:p.x0,y0:p.y0,x1:p.x1,y1:p.y1,solids:p.solids}, r=((rot%4)+4)%4;
     const fw=(x,y)=>{ let dx=x-cx, dy=y-cy; for(let k=0;k<r;k++)[dx,dy]=[-dy,dx]; return [ncx+dx,ncy+dy]; };
     const bw=(x,y)=>{ let dx=x-ncx, dy=y-ncy; for(let k=0;k<r;k++)[dx,dy]=[dy,-dx]; return [cx+dx,cy+dy]; };
     const rect=b=>{ const a=fw(b.x0,b.y0), c=fw(b.x1,b.y1); return {x0:Math.min(a[0],c[0]),x1:Math.max(a[0],c[0]),y0:Math.min(a[1],c[1]),y1:Math.max(a[1],c[1])}; };
@@ -44,8 +47,8 @@ const BOD={meshes:[], walls:{}, lamps:[]};
       if(b.top)nb.top=(x,y)=>b.top(...bw(x,y));
       if(b.fs){ nb.fs=(nx,ny,x,y,z,k)=>{ for(let q=0;q<r;q++)[nx,ny]=[ny,-nx]; return b.fs(nx,ny,...bw(x,y),z,k); }; return sided(nb); }
       nb.fi=(y,z)=>{ const [ox,oy]=bw(ncx,y); return fi0(r&1?ox:oy,z); }; nb.fj=(x,z)=>{ const [ox,oy]=bw(x,ncy); return fj0(r&1?oy:ox,z); }; return nb; });
-    Object.assign(p,rect(o)); if(o.solids&&r)p.solids=o.solids.map(b=>({...b,...rect(b)}));
-    for(const l of LAMPS)if(l.prop===p){ l.at0=l.at0||[l.x,l.y]; [l.x,l.y]=fw(...l.at0); } }
+    Object.assign(p,rect(o)); if(o.solids&&(r||cx!==ncx||cy!==ncy))p.solids=o.solids.map(b=>({...b,...rect(b)}));
+    if(own)for(const l of LAMPS)if(l.prop===p){ l.at0=l.at0||[l.x,l.y]; [l.x,l.y]=fw(...l.at0); } }   // (a thing's own turn carries its lamps; a room's turn moves every lamp once, itself)
   // ---- THE WALLS (21-world-map-3-walls, -5-land): .2 thick on the building's edge (its inside face .1 in), STORY high; the front's shop windows
   // and glass door (shop(): the door 1.2 wide in the middle, a window each side from .35 in, 16 to 94 up); the back office's wall across behind
   // the shop, its doorway behind the counter. Each wall's faces in pieces round its holes, the edges of its holes (frames) too
@@ -61,7 +64,7 @@ const BOD={meshes:[], walls:{}, lamps:[]};
   BOD.WALLS=WALLS;
   // ---- the game's painting of a wall: inside, the bodega's painted cinder block (bodegaWall); outside, the row's brick (22's facadeCol: the plinth,
   // its water table, the courses, the cornice and its cope)
-  function facade(nx,ny,X_,Y_,z,f,cap){ const u=nx?Y_:X_, c=DTBRICK;
+  function facade(nx,ny,X_,Y_,z,f,cap,brick){ const u=nx?Y_:X_, c=brick||DTBRICK;   // (brick: a building's own colour, else the row's)
     if(z>=cap-4)return sh(mt('cope',COPE),z<cap-3?f*.72:f);
     if(z>=cap-20){ const r=cap-4-z, t=sh(mt('cope',COPE),f); if(r<3)return sh(t,1.08); if(r<5)return sh(t,.62); if(r<10)return (Math.floor(u*24/3)&1)?sh(t,.95):sh(t,.55); if(r<12)return sh(t,.7); if(r<15)return t; }
     { const s=z%STORY; if(z>STORY-4&&(s<4||s>=STORY-2)){ const t=sh(mt('cope',speck([170,162,148],u,z/24,97)),f); return s>=STORY-2?sh(mt('mortar',sh(c,.6)),f*.6):s===3?sh(t,1.12):s===0?sh(t,.8):t; } }
@@ -80,7 +83,7 @@ const BOD={meshes:[], walls:{}, lamps:[]};
   for(const [i,dy] of [[1,1.0],[2,1.95],[3,2.9]])put('fridge'+i,'drinks fridge',B.x0+.5,B.y0+dy);
   put('wl1','shop shelf',B.x0+.36,B.y0+4.45,3); put('wl2','shop shelf',B.x0+.36,B.y0+6.55,3);
   put('wr1','shop shelf',B.x1-.36,B.y0+2.2,1);
-  put('counter','long counter',B.x1-1.05,B.y0+5.4,1); put('cigs','cigarette rack',B.x1-.22,B.y0+5.0,1,1); put('radio','radio',B.x1-.24,B.y0+4.0,1,1);
+  put('counter','long counter',B.x1-1.05,B.y0+5.4,1); put('cigs','cigarette rack',B.x1-.22,B.y0+5.0,1,1); O.cigs.boxes=O.cigs.boxes.map(b=>b.foot?b:zShift(b,42));   // (hung higher, 42 px: it sat over the Fox's head behind the counter, 17 Oct 2026) put('radio','radio',B.x1-.24,B.y0+4.0,1,1);
   put('lotto','lottery machine',B.x1-1.05,B.y0+4.15,1); put('jar','candy jar',B.x1-1.05,B.y0+4.62); put('bags','paper bags',B.x1-.5,B.y0+7.3); put('phone','wall phone',B.x1-.15,B.y0+7.3,0,1);
   put('clock','wall clock',B.x0+3.1,B.y0+.14,0,1); put('mirror','convex mirror',B.x0+.42,B.y0+.15,0,1); put('calendar','calendar',B.x0+.11,B.y0+1.95,0,1); put('cord','extension cord',B.x0+.11,B.y0+.12,0,1);
   put('tube1','fluorescent tube',m,B.y0+2.5); put('tube2','fluorescent tube',m,B.y0+6.5);
@@ -125,20 +128,51 @@ const BOD={meshes:[], walls:{}, lamps:[]};
     if(FRONT.includes(p))return 'Hfront'; if(p.high){ const w=wallOf(p); if(w)return 'H'+w.id; } return 'L'; };
   BOD.paintProps=()=>{ for(const p of [...Object.values(O),...FRONT,...STREET,...ROOF,...GHOSTST]){ const k=BOD.kindOf(p); BATCH.tag=OBJ('bodega',p.name); for(const b of p.boxes)gbox(b,k); } BATCH.tag=null; };   // (each thing tagged: the world editor)
   BOD.g={bodegaWall,grain,speck,COPE,DTBRICK,hash,grassCol,lawnCol}; BOD.CURB=CURB; BOD.FAR=FAR;   // (the game's painters the look's builder asks for)
-  BOD.gbox=gbox; BOD.faceTex=faceTex; BOD.bq=bq; BOD.C=C; BOD.facade=facade; BOD.FRAME=FRAME; BOD.place=place; BOD.MAP=MAP; BOD.K={MKS,CATALOG,PROPS,STUDIO,LSEED,STORY,sh};   // (place: the apartment house's furniture is set the same way, apts.js)
+  BOD.gbox=gbox; BOD.faceTex=faceTex; BOD.bq=bq; BOD.C=C; BOD.facade=facade; BOD.FRAME=FRAME; BOD.place=place; BOD.placeAt=placeAt; BOD.MAP=MAP; BOD.K={MKS,CATALOG,PROPS,STUDIO,LSEED,STORY,sh};   // (place: the apartment house's furniture is set the same way, apts.js)
+  // CROSSWALKS (owner, 17 Oct 2026, mockup 1): white bars over the road at the park's gate and across the Avenue's mouth, over the Avenue at its mouth
+  // and at the park's east gate; each a run [a0, a1, axis]: the bars across the axis, long along the way people walk, a little worn
+  const PCX=(50+LAY.e('park')[0]+AV.x0+LAY.e('park')[2])/2+LAY.o('park').x, PCY=(FAR+3+RG.ny0)/2+LAY.o('park').y, GATE=[PCX-3.5,PCX+3.5], EGATE=[PCY-2,PCY+2];   // (the park's middle, its gates: park.js)
+  const zebra=(x,y,runs)=>{ const c=roadCol(x,y,0); for(const [a0,a1,ax,l0,h0] of runs){ const u=ax==='x'?x:y, v=ax==='x'?y:x, lo=l0!=null?l0+.4:ax==='x'?CURB+.4:AV.r0+.4, hi=h0!=null?h0-.4:ax==='x'?FAR-.4:AV.r1-.4;
+      if(u>a0&&u<a1&&v>lo&&v<hi&&(Math.floor((u-a0)/.6)&1)===0){ const n=grain(x,y,39,2.2); return n<.3?[150,148,142]:[196,194,186]; } } return c; };
   // ---- THE GROUND: the shop's sealed concrete (and the office's), the sidewalk's slabs, the kerb, the street's asphalt, the far kerb and sidewalk, grass in the gaps
   BOD.grounds=[
     {id:'shop',bld:true,x0:B0.x0,y0:B0.y0,x1:B0.x1,y1:B0.y1,z:.15,col:(x,y)=>bodegaFloorCol(x,y),tex:'concrete_floor_worn_001',tint:[112,116,124],rep:3},
     {id:'walk',x0:MAP.x0,y0:W,x1:MAP.x1,y1:CURB-.16,z:0,col:holed(slabCol),tex:'concrete_pavement',tint:[166,161,148],rep:2},
     {id:'kerb',x0:MAP.x0,y0:CURB-.16,x1:MAP.x1,y1:CURB,z:0,col:()=>[178,174,164],tex:'concrete_pavement',tint:[178,174,164],rep:2},
-    {id:'road',x0:MAP.x0,y0:CURB,x1:MAP.x1,y1:FAR,z:RD,col:(x,y)=>roadCol(x,y,0),tex:'asphalt_02',tint:[62,64,68],rep:3},
-    {id:'kerb2',x0:MAP.x0,y0:FAR,x1:MAP.x1,y1:FAR+.16,z:0,col:()=>[178,174,164],tex:'concrete_pavement',tint:[178,174,164],rep:2},
-    {id:'walk2',x0:MAP.x0,y0:FAR+.16,x1:MAP.x1,y1:MAP.y1,z:0,col:slabCol,tex:'concrete_pavement',tint:[166,161,148],rep:2},
+    {id:'road',x0:MAP.x0,y0:CURB,x1:MAP.x1,y1:FAR,z:RD,col:(x,y)=>zebra(x,y,[[GATE[0],GATE[1],'x'],[AV.r1+.3,AV.x1-.3,'x'],[RG.wx0+.3,RG.wr0-.3,'x']]),tex:'asphalt_02',tint:[62,64,68],rep:3},
+    // THE BACK ALLEY (owner, 17 Oct 2026, mockup 1): a service lane behind the whole row, worn asphalt, the fire escapes' side
+    {id:'alley',x0:MAP.x0,y0:-101,x1:MAP.x1,y1:-96,z:0,col:(x,y)=>roadCol(x,y,1),tex:'asphalt_02',tint:[86,87,90],rep:3},
+    // (the far kerb and sidewalk in two, either side of the Avenue's mouth, where its road runs into the street's; the Avenue's own: its two
+    // sidewalks, its road a kerb down, its kerb strips, north from the far sidewalk's line to its end; its west sidewalk along the park's east wall)
+    {id:'kerb2',x0:RG.wr1,y0:FAR,x1:AV.r0,y1:FAR+.16,z:0,col:()=>[178,174,164],tex:'concrete_pavement',tint:[178,174,164],rep:2},
+    {id:'walk2',x0:RG.wr1,y0:FAR+.16,x1:AV.r0,y1:MAP.y1,z:0,col:slabCol,tex:'concrete_pavement',tint:[166,161,148],rep:2},
+    {id:'kerb2e',x0:AV.r1,y0:FAR,x1:MAP.x1,y1:FAR+.16,z:0,col:()=>[178,174,164],tex:'concrete_pavement',tint:[178,174,164],rep:2},
+    {id:'walk2e',x0:AV.r1,y0:FAR+.16,x1:MAP.x1,y1:MAP.y1,z:0,col:slabCol,tex:'concrete_pavement',tint:[166,161,148],rep:2},
+    {id:'aveW',x0:AV.x0,y0:MAP.y1,x1:AV.r0-.16,y1:RG.nr0-.16,z:0,col:slabCol,tex:'concrete_pavement',tint:[166,161,148],rep:2},
+    {id:'aveKW',x0:AV.r0-.16,y0:MAP.y1,x1:AV.r0,y1:RG.nr0-.16,z:0,col:()=>[178,174,164],tex:'concrete_pavement',tint:[178,174,164],rep:2},
+    {id:'aveRoad',x0:AV.r0,y0:FAR,x1:AV.r1,y1:RG.nr0,z:RD,col:(x,y)=>zebra(x,y,[[FAR+.2,FAR+1.8,'y'],[EGATE[0],EGATE[1],'y']]),tex:'asphalt_02',tint:[62,64,68],rep:3},
+    {id:'aveKE',x0:AV.r1,y0:MAP.y1,x1:AV.r1+.16,y1:RG.nr1,z:0,col:()=>[178,174,164],tex:'concrete_pavement',tint:[178,174,164],rep:2},
+    {id:'aveE',x0:AV.r1+.16,y0:MAP.y1,x1:AV.x1,y1:AV.ey1,z:0,col:holed(slabCol),tex:'concrete_pavement',tint:[166,161,148],rep:2},
+    // THE WEST STREET and THE NORTH STREET (the loop, 17 Oct 2026): as the Avenue: an outer sidewalk, its kerb, the road a kerb down, the inner
+    // kerb and sidewalk along the park; the corners' outer squares sidewalk; a crosswalk at each of the park's gates
+    {id:'kerb2w',x0:MAP.x0,y0:FAR,x1:RG.wr0,y1:FAR+.16,z:0,col:()=>[178,174,164],tex:'concrete_pavement',tint:[178,174,164],rep:2},
+    {id:'wstW',x0:RG.wx0,y0:FAR+.16,x1:RG.wr0-.16,y1:RG.nr1,z:0,col:holed(slabCol),tex:'concrete_pavement',tint:[166,161,148],rep:2},
+    {id:'wstKW',x0:RG.wr0-.16,y0:FAR+.16,x1:RG.wr0,y1:RG.nr1,z:0,col:()=>[178,174,164],tex:'concrete_pavement',tint:[178,174,164],rep:2},
+    {id:'wstRoad',x0:RG.wr0,y0:FAR,x1:RG.wr1,y1:RG.nr0,z:RD,col:(x,y)=>zebra(x,y,[[EGATE[0],EGATE[1],'y',RG.wr0,RG.wr1],[FAR+.2,FAR+1.8,'y',RG.wr0,RG.wr1]]),tex:'asphalt_02',tint:[62,64,68],rep:3},
+    {id:'wstKE',x0:RG.wr1,y0:MAP.y1,x1:RG.wr1+.16,y1:RG.nr0-.16,z:0,col:()=>[178,174,164],tex:'concrete_pavement',tint:[178,174,164],rep:2},
+    {id:'wstE',x0:RG.wr1+.16,y0:MAP.y1,x1:RG.wx1,y1:RG.nr0-.16,z:0,col:slabCol,tex:'concrete_pavement',tint:[166,161,148],rep:2},
+    {id:'nthS',x0:RG.wr1,y0:RG.ny0,x1:AV.r0,y1:RG.nr0-.16,z:0,col:slabCol,tex:'concrete_pavement',tint:[166,161,148],rep:2},
+    {id:'nthKS',x0:RG.wr1,y0:RG.nr0-.16,x1:AV.r0,y1:RG.nr0,z:0,col:()=>[178,174,164],tex:'concrete_pavement',tint:[178,174,164],rep:2},
+    {id:'nthRoad',x0:RG.wr0,y0:RG.nr0,x1:AV.r1,y1:RG.nr1,z:RD,col:(x,y)=>zebra(x,y,[[GATE[0],GATE[1],'x',RG.nr0,RG.nr1],[RG.wr0+.2,RG.wr0+1.8,'x',RG.nr0,RG.nr1],[AV.r1-1.8,AV.r1-.2,'x',RG.nr0,RG.nr1]]),tex:'asphalt_02',tint:[62,64,68],rep:3},
+    {id:'nthKN',x0:RG.wr0,y0:RG.nr1,x1:AV.r1,y1:RG.nr1+.16,z:0,col:()=>[178,174,164],tex:'concrete_pavement',tint:[178,174,164],rep:2},
+    {id:'nthN',x0:RG.wx0,y0:RG.nr1+.16,x1:AV.r1+.16,y1:RG.ny1,z:0,col:slabCol,tex:'concrete_pavement',tint:[166,161,148],rep:2},
     {id:'ghostst',bld:true,x0:GHOSTK.GSK.o[0]+.2,y0:GHOSTK.GSK.o[1]+8.3*GHOSTK.GSK.s-8.75*4/3,x1:GHOSTK.GSK.o[0]+10.4,y1:GHOSTK.GSK.o[1]+8.3*GHOSTK.GSK.s,z:.1,col:(x,y)=>GHOSTK.gsFloor(x,y)||lawnCol(x,y),tex:null,rep:2},   // (Ghost Street's paving: the kit's own, gsFloor)
-    {id:'grassW',x0:MAP.x0,y0:B00.y0,x1:B00.x0,y1:W,z:0,col:holed(lawnCol),tex:null,rep:2},
-    {id:'grassE',x0:B00.x1,y0:B00.y0,x1:POOLX,y1:W,z:0,col:lawnCol,tex:null,rep:2}];   // (the gaps' grass: the park's lawn, as all grass is)
+    {id:'grassW',x0:MAP.x0,y0:B00.y0,x1:B0.x0,y1:W,z:0,col:holed(lawnCol),tex:null,rep:2}];   // (the lot west of the bodega, the stairs' hole in it: the park's lawn, as all grass is; the land's sheet lies under every other gap)
   // the kerbs' faces down to the road
-  BOD.kerbs=[{ax:'x',at:CURB,a0:MAP.x0,a1:MAP.x1,z0:RD,z1:0,n:1},{ax:'x',at:FAR,a0:MAP.x0,a1:MAP.x1,z0:RD,z1:0,n:-1}];
+  BOD.kerbs=[{ax:'x',at:CURB,a0:MAP.x0,a1:MAP.x1,z0:RD,z1:0,n:1},{ax:'x',at:FAR,a0:MAP.x0,a1:RG.wr0,z0:RD,z1:0,n:-1},{ax:'x',at:FAR,a0:RG.wr1,a1:AV.r0,z0:RD,z1:0,n:-1},{ax:'x',at:FAR,a0:AV.r1,a1:MAP.x1,z0:RD,z1:0,n:-1},
+    {ax:'y',at:AV.r0,a0:FAR,a1:RG.nr0,z0:RD,z1:0,n:1},{ax:'y',at:AV.r1,a0:FAR,a1:RG.nr1,z0:RD,z1:0,n:-1},
+    {ax:'y',at:RG.wr0,a0:FAR,a1:RG.nr1,z0:RD,z1:0,n:1},{ax:'y',at:RG.wr1,a0:FAR,a1:RG.nr0,z0:RD,z1:0,n:-1},
+    {ax:'x',at:RG.nr0,a0:RG.wr1,a1:AV.r0,z0:RD,z1:0,n:1},{ax:'x',at:RG.nr1,a0:RG.wr0,a1:AV.r1,z0:RD,z1:0,n:-1}];   // (the loop's: the far kerb open at the west street's and the Avenue's mouths, each side's two kerbs, the north street's)   // (the far kerb open at the Avenue's mouth; the Avenue's two kerbs, and its end)
   // ---- the lights: the game's LAMPS as its objects made them (the tubes, the coolers, the neon, the street light), each a point light here
   BOD.LAMPS=LAMPS.filter(l=>!l.off&&l.r>0);
   // ---- the goods (47-physics-5-goods: their kinds, colours and rows, word for word)
@@ -153,7 +187,7 @@ const BOD={meshes:[], walls:{}, lamps:[]};
     const bs=p.boxes.filter(b=>!b.nb&&b.z0<30&&b.z1-b.z0>3); if(!bs.length)continue; const r={x0:Math.min(...bs.map(b=>b.x0)),y0:Math.min(...bs.map(b=>b.y0)),x1:Math.max(...bs.map(b=>b.x1)),y1:Math.max(...bs.map(b=>b.y1))};
     sol(r.x0,r.y0,r.x1,r.y1,Math.max(...bs.map(b=>b.z1))); }
   BOUND={x0:XS(MAP.x0),x1:XS(MAP.x1),z0:Z(B00.y0),z1:ZS(MAP.y1)};
-  groundY=(x,z)=>{ const gy=z/TILE+OY; return gy>CURB&&gy<FAR?YS(RD):0; };
+  groundY=(x,z)=>{ const gx=x/TILE+OX, gy=z/TILE+OY; return (gy>CURB&&gy<FAR&&gx>MAP.x0&&gx<MAP.x1)||(gx>AV.r0&&gx<AV.r1&&gy>=FAR&&gy<RG.nr1)||(gx>RG.wr0&&gx<RG.wr1&&gy>=FAR&&gy<RG.nr1)||(gy>RG.nr0&&gy<RG.nr1&&gx>RG.wr0&&gx<AV.r1)?YS(RD):0; };   // (the road a kerb down: the loop's four sides)   // (the road a kerb down: the street's, and the Avenue's north from it)
   BOD.inside=(x,z)=>{ const gx=x/TILE/K+OX, gy=z/TILE/K+OY; return gx>B0.x0&&gx<B0.x1&&gy>B0.y0&&gy<B0.y1; };
 }
 }

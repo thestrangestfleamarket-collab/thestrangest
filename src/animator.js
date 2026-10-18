@@ -34,12 +34,12 @@
     else if(!(st.water&&st.water.in)&&!st.climb&&!st.hang&&!st.ride&&!st.sit){ const w=st.w||0, r=st.run||0; addOn(P,deltaAt('stand',0),1-w); addOn(P,deltaAt('walk',st.ph),w*(1-r)); addOn(P,deltaAt('run',st.ph),w*r); }
     if(st.up)addOn(P,deltaAt(st.up.name,st.up.t),1); };
   // ---- KEPT (in this browser)
-  const save=()=>{ try{ localStorage.setItem('market-moves',JSON.stringify({walk:pick(R.WALK),run:pick(R.RUN),jump:JT,rigt:{moves:R.RIGT.moves,combo:R.RIGT.combo,start:R.RIGT.start},ov:OV,custom:CUSTOM})); }catch(e){} };
+  const save=()=>{ try{ SAVE.set('moves',JSON.stringify({walk:pick(R.WALK),run:pick(R.RUN),jump:JT,rigt:{moves:R.RIGT.moves,combo:R.RIGT.combo,start:R.RIGT.start},ov:OV,custom:CUSTOM})); }catch(e){} };
   const pick=o=>{ const q={}; for(const [k] of DIALS)q[k]=o[k]; return q; };
   function makeCustom(c){ R.MOVES[c.name]=R.mkMove({keys:[[0,{}],[c.dur,{}]]}); if(c.key){ MOVEK[c.key]=c.key.toUpperCase(); R.KEYMOVE[c.key.toUpperCase()]=c.name; } }
   function load(o){ if(!o)return; Object.assign(R.WALK,o.walk||{}); Object.assign(R.RUN,o.run||{}); if(o.jump){ JT={...J0,...o.jump}; R.tune(JT); } if(o.rigt)Object.assign(R.RIGT,o.rigt);
     for(const c of o.custom||[])if(!R.MOVES[c.name]){ makeCustom(c); } CUSTOM=o.custom||[]; OV=o.ov||{}; }
-  try{ load(JSON.parse(localStorage.getItem('market-moves')||'null')); }catch(e){}
+  try{ load(JSON.parse(SAVE.get('moves')||'null')); }catch(e){}
   // ---- THE PREVIEW: in these two tabs he does the move on his own, in place (or stands frozen at the moment chosen)
   let clip='walk', t=0, play=true, last=performance.now();
   Object.defineProperty(ED,'anim',{get:()=>ED.on&&(ED.mode()==='moves'||ED.mode()==='animate')});
@@ -126,7 +126,7 @@
     if(!name||R.MOVES[name]||['stand','walk','run'].includes(name)){ $a('#aname').value=''; $a('#aname').placeholder=name?'taken':'name'; return; }
     if(key&&(!FREE.includes(key)||CUSTOM.some(c=>c.key===key))){ $a('#akeych').value=''; return; }
     const c={name,dur,key:key||''}; makeCustom(c); CUSTOM.push(c); OV[name]=[]; clip=clip0=name; t=0; play=false; save(); drawAnim(); };
-  $a('#adown').onclick=()=>{ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([localStorage.getItem('market-moves')||'{}'],{type:'application/json'})); a.download='walker-moves.json'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1000); };
+  $a('#adown').onclick=()=>{ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([SAVE.get('moves')||'{}'],{type:'application/json'})); a.download='walker-moves.json'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1000); };
   $a('#aload').onclick=()=>{ const f=document.createElement('input'); f.type='file'; f.accept='.json,application/json'; f.onchange=async()=>{ try{ load(JSON.parse(await f.files[0].text())); save(); drawAnim(); }catch(e){} }; f.click(); };
   ED.addTab('animate','ANIMATE',PA,{show:()=>{ clip=clip0; play=kind(clip)!=='still'; drawAnim(); },
     // a press on him: that part picked; a drag turns it (up and down its first turn, side to side its second)

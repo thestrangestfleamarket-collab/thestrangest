@@ -18,18 +18,20 @@ const LOOKS={};
   LOOKS.BUILDS=BUILDS;   // (the bodies, for others built on his: the singer wears the FEMALE one, src/singer.js)
   const ALLN=[...new Set(BUILDS.flatMap(b=>Object.keys(b[2])))];
   const L={name:'',sex:'M',build:0,eyes:0,hair:0,skin:1,hairc:1,eye:0,shirt:0,pants:0,shoes:0};
-  try{ const o=JSON.parse(localStorage.getItem('market-looks')||'{}'); o.build=o.sex==='F'||o.build>=6?1:0; Object.assign(L,o);   /* (a looks saved with the old eight builds: its sex keeps) */ }catch(e){}
-  const save=()=>{ try{ localStorage.setItem('market-looks',JSON.stringify(L)); }catch(e){} };
+  try{ const o=JSON.parse(SAVE.get('looks')||'{}'); o.build=o.sex==='F'||o.build>=6?1:0; Object.assign(L,o);   /* (a looks saved with the old eight builds: its sex keeps) */ }catch(e){}
+  const save=()=>{ try{ SAVE.set('looks',JSON.stringify(L)); }catch(e){} };
   // a colour's four tones (light, mid, shade, the deepest), as his ramps have them
   const tones=h=>{ const c=new THREE.Color(h); return [1,.9,.7,.42].map(k=>c.clone().multiplyScalar(k)); };
   const recolor=()=>{ const g=W3.mesh.geometry, A=g.attributes, mt=A.mat.array, n=mt.length;
     for(let i=0;i<n;i++){ const r=W3.ramp[mt[i]|0]; if(!r)continue; A.c0.setXYZ(i,r[0].r,r[0].g,r[0].b); A.c1.setXYZ(i,r[1].r,r[1].g,r[1].b); A.c2.setXYZ(i,r[2].r,r[2].g,r[2].b); A.cd.setXYZ(i,(r[2].r+r[3].r)/2,(r[2].g+r[3].g)/2,(r[2].b+r[3].b)/2); if(A.color)A.color.setXYZ(i,r[1].r,r[1].g,r[1].b); }
     for(const k of ['c0','c1','c2','cd','color'])if(A[k])A[k].needsUpdate=true; };
+  // (a colour of his own choosing, the avatar editor's pickers: L.cx, in place of the five; src/avatar.js)
+  const col=(k,i)=>(L.cx&&L.cx[k])||PAL[k][i]; LOOKS.col=k=>col(k,L[k==='hair'?'hairc':k]);
   const apply=()=>{ const set=(m,h)=>{ const i=MATS.indexOf(m); if(i>=0)W3.ramp[i]=tones(h); };
-    set('skin',PAL.skin[L.skin]); set('hair',PAL.hair[L.hairc]); set('eye',PAL.eye[L.eye]); set('shirt',PAL.shirt[L.shirt]); set('pants',PAL.pants[L.pants]); set('shoes',PAL.shoes[L.shoes]); { const i=MATS.indexOf('lid'); if(i>=0)W3.ramp[i]=tones(PAL.skin[L.skin]).map(c=>c.multiplyScalar(.78)); } recolor();
+    set('skin',col('skin',L.skin)); set('hair',col('hair',L.hairc)); set('eye',col('eye',L.eye)); set('shirt',col('shirt',L.shirt)); set('pants',col('pants',L.pants)); set('shoes',col('shoes',L.shoes)); { const i=MATS.indexOf('lid'); if(i>=0)W3.ramp[i]=tones(col('skin',L.skin)).map(c=>c.multiplyScalar(.78)); } recolor();
     if(!(L.hair>=0&&L.hair<HAIRS.length))L.hair=0; for(const [,ns] of HAIRS)for(const n of ns){ const i=W3.idx(n); if(i>=0)W3.HIDE[i]=true; }
     for(const n of HAIRS[L.hair][1]){ const i=W3.idx(n); if(i>=0)W3.HIDE[i]=false; }
-    if(!(L.eyes>=0&&L.eyes<6))L.eyes=0; for(let k=0;k<6;k++){ const i=W3.idx('eyes'+k); if(i>=0)W3.HIDE[i]=k!==L.eyes; } };
+    if(!(L.eyes>=0&&L.eyes<6))L.eyes=0; for(let k=0;k<6;k++){ const i=W3.idx('eyes'+k); if(i>=0)W3.HIDE[i]=k!==L.eyes; } if(W3.reindex)W3.reindex(); };   // (his index: only what he wears, drawn)
   // THE PANEL
   const css=document.createElement('style'); css.textContent=`#looks{position:fixed;right:12px;top:12px;width:330px;max-height:calc(100vh - 24px);overflow:auto;background:var(--panel,#10131b);border:2px solid var(--line,#2a3040);color:var(--fg,#d8dbe4);font:11px var(--pixel,monospace);padding:12px;z-index:30}
     #looks h2{margin:0 0 8px;font-size:13px;color:#ffd27a;letter-spacing:1px} #looks h3{margin:10px 0 4px;font-size:10px;color:var(--dim,#8a8f9c);letter-spacing:1px}
@@ -52,7 +54,7 @@ const LOOKS={};
     $('#lsteps').value=W3.shade.steps; $('#lstepsv').textContent=W3.shade.steps; $('#ldepth').value=W3.shade.depth; };
   P.addEventListener('click',e=>{ const b=e.target.closest('button[data-i]'); if(!b)return; const k=b.parentElement.dataset.k, i=+b.dataset.i;
     if(k==='build'){ L.build=i; const f=BUILDS[i][3]; if(f&&L.sex!=='F'&&L.hair===0)L.hair=1; L.sex=f?'F':'M'; build(true); }
-    else L[k]=i; apply(); save(); draw(); });
+    else{ L[k]=i; if(L.cx)delete L.cx[k==='hairc'?'hair':k]; } apply(); save(); draw(); });
   $('#lname').oninput=e=>{ L.name=e.target.value; save(); };
   $('#lname').addEventListener('keydown',e=>e.stopPropagation());
   $('#lclose').onclick=()=>{ P.hidden=true; };
@@ -66,10 +68,14 @@ const LOOKS={};
   // HIS BUILD (owner, 17 Oct 2026: "make his hips a little less wide. gain 5 pounds"; then the eight body types of the mockup, "use all"): each
   // a set of his pieces' sizes (across, along, deep) and his height (W3.BH, from his feet), the skeleton his. HIM is his own (the hips a little
   // narrower, a touch fuller). Picked here, it sets those pieces (what's sculpted in HIS SHAPE stays); on load, only pieces not shaped there
-  function build(force){ if(!(L.build>=0&&L.build<BUILDS.length))L.build=0; const B=BUILDS[L.build]; W3.BH=B[1]; W3.E=W3.E||[];
+  function build(force){ if(!(L.build>=0&&L.build<BUILDS.length))L.build=0; const B=BUILDS[L.build]; W3.BH=B[1]*(L.hk||1);   // (hk: his height, the avatar editor's) W3.E=W3.E||[];
     for(const n of ALLN){ const i=W3.idx(n); if(i<0)continue; const v=B[2][n]; if(force||!W3.E[i])W3.E[i]=v?{s:v.slice(),o:[0,0,0],q:[0,0,0,1]}:null; }
     if(force&&typeof ED!=='undefined'&&ED.save)ED.save(); }
   build(false);
+  // (for the avatar editor, src/avatar.js)
+  LOOKS.PAL=PAL; LOOKS.HAIRS=HAIRS; LOOKS.apply=()=>{ apply(); save(); }; LOOKS.save=save; LOOKS.redraw=()=>draw();
+  LOOKS.setBuild=i=>{ L.build=i; const f=BUILDS[i][3]; if(f&&L.sex!=='F'&&L.hair===0)L.hair=1; L.sex=f?'F':'M'; build(true); apply(); save(); };
+  LOOKS.height=k=>{ L.hk=k; W3.BH=BUILDS[L.build][1]*k; save(); };
   // LOOKING ABOUT (owner, 17 Oct 2026: "look around idle"; then "stands still except for idle animations like look around, every once in a
   // while"): standing, he's still; every six to fourteen seconds he turns his head one way (now and then down a little), holds, and turns back
   { const R=RIG, f0=R.OVL.fn; let idle=0, next=4+Math.random()*6, lk=null;

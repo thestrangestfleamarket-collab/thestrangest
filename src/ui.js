@@ -12,17 +12,19 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
     ['view','change the view (map, third person, behind, first person, isometric)'],['rot','turn the view a quarter (four angles)'],['j','punch'],['k','kick'],['r','roll'],['v','wave'],['f','fall'],['q','turn left'],['e','turn right'],['z','tilt down'],['x','tilt up'],['0','reset the view'],
     ['c','free camera'],['g','fly (through walls)'],['=','sharper'],['-','coarser'],['h','hide the help']];
   const NAME=k=>k===' '?'SPACE':k.length===1?k.toUpperCase():k.toUpperCase();
-  let BIND={}; try{ BIND=JSON.parse(localStorage.getItem('market-keys')||'{}')||{}; }catch(e){}
+  let BIND={}; try{ BIND=JSON.parse(SAVE.get('keys')||'{}')||{}; }catch(e){}
   const DEF={view:'v',v:'b',rot:'r',r:'y'},   /* (R turns the view, owner 17 Oct 2026; so the roll's on Y) */ keyOf=a=>BIND[a]??DEF[a]??a,   /* (V changes the view, owner 17 Oct 2026; so the wave's on B) */ rev=()=>{ const r={}; for(const [a] of ACTS)r[keyOf(a)]=a; return r; };
   let REV=rev(), waiting=null;
   // a pressed key to the action the game's code knows (null: not for the game: the menu has it, or a key moved to another action)
   UI.key=e=>{ const raw=e.key.toLowerCase();
     if(waiting){ if(raw!=='escape'){ const old=keyOf(waiting); for(const [a] of ACTS)if(a!==waiting&&keyOf(a)===raw)BIND[a]=old; BIND[waiting]=raw;   // (the key it had goes to the other action)
-        try{ localStorage.setItem('market-keys',JSON.stringify(BIND)); }catch(err){} REV=rev(); } waiting=null; drawKeys(); e.preventDefault(); return null; }
+        try{ SAVE.set('keys',JSON.stringify(BIND)); }catch(err){} REV=rev(); } waiting=null; drawKeys(); e.preventDefault(); return null; }
     if(raw==='escape'){ if(e.type==='keydown'){ if(ED.on)ED.exit(); else if(WE.on)WE.toggle(); else toggleMenu(); } return null; }
     if(e.target&&/^(TEXTAREA|INPUT|SELECT)$/.test(e.target.tagName))return null;   // (typing in a box isn't walking)
     if(raw==='?'){ if(e.type==='keydown'&&!e.repeat)UI.moves(); return null; }   // (? : every action and move he has, with its key: below)
     if(raw==='m'&&e.shiftKey&&!ED.on){ if(e.type==='keydown'&&!e.repeat)MAPED.toggle(); return null; }   // (Shift+M: the map editor, src/mapedit.js)
+    if(raw==='s'&&e.shiftKey&&!ED.on&&!UI.menuOpen){ if(e.type==='keydown'&&!e.repeat)SNDED.toggle(); return null; }   // (Shift+S: the sound editor, src/sndedit.js)
+    if(raw==='k'&&e.shiftKey&&!MAPED.on){ if(e.type==='keydown'&&!e.repeat)AV.toggle(); return null; }   // (Shift+K: the avatar editor, src/avatar.js)
     if(raw==='e'&&e.shiftKey&&!ED.on&&!UI.menuOpen){ if(e.type==='keydown'&&!e.repeat)WE.toggle(); return null; }   // (Shift+E: edit the world, src/worldedit.js)
     // (isometric: Q / E / R turn it a quarter, before any key of his own choosing: owner 17 Oct 2026, Q / E were changing the view instead)
     if(UI.view==='iso'&&!ED.on&&(raw==='q'||raw==='e'||raw==='r')){ if(e.type==='keydown'&&!e.repeat){ yawTo+=raw==='q'?Math.PI/2:-Math.PI/2; yaw=yawTo; } return null; }   /* (straight to the next angle, no turning: owner, 17 Oct 2026, "q/e should automatically show up at the next angle (jump to) not rotate") */
@@ -39,7 +41,7 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
       const row=(k,t)=>'<div style="display:flex;gap:14px"><b style="min-width:120px;color:#f2c14e">'+k+'</b><span>'+t+'</span></div>', h=t=>'<div style="margin:12px 0 4px;color:#8a8f9c">'+t+'</div>';
       let o='<div style="display:flex;justify-content:space-between"><b>WHAT YOU CAN DO</b><span style="color:#8a8f9c">? OR ESC CLOSES</span></div>'+h('KEYS (CHANGE THEM IN THE MENU\'S KEYS)');
       for(const [a,what] of ACTS)o+=row(NAME(keyOf(a)),what.toUpperCase());
-      o+=row('N','NOON / 7 PM')+row('SHIFT + E','EDIT THE WORLD')+row('SHIFT + M','MAP EDITOR: MOVE THE PLACES AND THE LAND')+row('ESC','THE MENU')+row('?','THIS LIST');
+      o+=row('N','NOON / 7 PM')+row('SHIFT + S','THE SOUND EDITOR')+row('SHIFT + E','EDIT THE WORLD')+row('SHIFT + M','MAP EDITOR: MOVE THE PLACES AND THE LAND')+row('SHIFT + K','AVATAR EDITOR: BODY, LOOK, TEXTURES, OUTLINE, SHADING, PRESETS')+row('ESC','THE MENU')+row('?','THIS LIST');
       const M=RIG.MOVES||{}, fights=Object.keys(M).filter(n=>M[n]&&M[n].combo);
       if(fights.length){ o+=h('FIGHTING: J PUNCH, K KICK; PRESS AGAIN IN TIME TO CHAIN'); for(const n of fights){ const c=M[n].combo; o+=row(n.replace(/([A-Z])/g,' $1').toUpperCase(),Object.entries(c).map(([k,v])=>k+' → '+v.replace(/([A-Z])/g,' $1').toUpperCase()).join(' · ')); } }
       const K=RIG.KEYMOVE||{}; if(Object.keys(K).length){ o+=h('YOUR OWN MOVES (HIS SHAPE → ANIMATE)'); for(const [k,n] of Object.entries(K))o+=row(k,n.toUpperCase()); }
@@ -101,7 +103,7 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
   UI.setView=v=>{ UI.view=v; UI.persp=v==='third'||v==='first'||v==='follow'; if(UI.freeCam&&UI.persp)setFree(false);
     if(v==='iso'){ UI.isoTo(); pitchTo=Math.PI/6; ppuTo=PPU*1.5; UI.off.set(0,0,0); zAt=null; }   // (owner, 17 Oct 2026, his picture of the dojo: "i want the game to always start you this distance and at this isometric angle": 1.5 times in (0.7 of the 2.2 before); Q / E turn it from there)
     if(v==='follow'){ UI.dist=4*TILE; pitchTo=.2; }   // (owner, 17 Oct 2026, his picture: "when you switch to over shoulder view it should always be at this zoom and angle (you can change once you switch to it)")
-    if(v==='first')pitchTo=.05; if(v==='third')pitchTo=.3; if(!UI.persp)pitchTo=clampP(pitchTo); try{ localStorage.setItem('market-view',v); }catch(e){} };
+    if(v==='first')pitchTo=.05; if(v==='third')pitchTo=.3; if(!UI.persp)pitchTo=clampP(pitchTo); try{ SAVE.set('view',v); }catch(e){} };
   // BEHIND HIM (owner, 17 Oct 2026: "a view that locks on behind, 3rd person view, and autorotates with player"): the third person's camera, turned
   // with him each frame so it stays at his back; R (any view but these two) turns the view a quarter round, onto the four isometric angles
   UI.turn4=()=>{ if(UI.view==='first'||UI.view==='follow')return; if(UI.view==='iso'){ yawTo=Math.round((yawTo-Math.PI/4)/(Math.PI/2))*(Math.PI/2)+Math.PI/4-Math.PI/2; return; } yawTo=Math.round((yawTo-Math.PI/4)/(Math.PI/2))*(Math.PI/2)+Math.PI/4-Math.PI/2; };
@@ -111,7 +113,7 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
     cam=UI.persp?PCAM:OCAM; if(RPASS)RPASS.camera=cam; if(UI.persp&&Math.abs(PCAM.aspect-RW/RH)>1e-3){ PCAM.aspect=RW/RH; PCAM.updateProjectionMatrix(); } };
   UI.view3b=a=>{ W3.group.visible=UI.view!=='first'; if(!UI.persp)return; const sk=W3.SZ||1;
     if(UI.view==='first'){ if(!(W3.eyeAt&&W3.eyeAt(cam.position))){ cam.position.set(pos.x,py+EYE*sk,pos.z); cam.position.addScaledVector(new THREE.Vector3(-Math.sin(a),0,-Math.cos(a)),.12*TILE); } cam.updateMatrixWorld(); return; }   // (from his own eyes, where his head is this moment: walker3d.js's W3.eyeAt)
-    const T=new THREE.Vector3(pos.x,py+HEAD*sk,pos.z), F=new THREE.Vector3(Math.sin(a)*Math.cos(pitch),Math.sin(pitch),Math.cos(a)*Math.cos(pitch));
+    const T=new THREE.Vector3(pos.x,py+HEAD*sk+(window.PLAYAS&&PLAYAS.on&&PLAYAS.nb?PLAYAS.nb.lift:0),pos.z), F=new THREE.Vector3(Math.sin(a)*Math.cos(pitch),Math.sin(pitch),Math.cos(a)*Math.cos(pitch));
     cam.position.copy(T).addScaledVector(F,UI.dist);
     if(UI.view==='follow'){ const k=.45/.84*TILE*sk/Math.hypot(F.x,F.z||1e-6); tv.set(F.z*k,.1/.84*TILE*sk,-F.x*k); cam.position.add(tv); T.add(tv); }   // (over his right shoulder: owner, 17 Oct 2026, "v wlil take you in 3rd person view over their shoulders")
     // (never behind a wall: walking the line from his head out to the camera through the walls he can't walk through, the camera comes in to just before the first)
@@ -152,11 +154,12 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
   // (or stopped short by something in the way, but within its near: a lamp over a counter, a seat behind a table; use.js)
   UI.goTick=()=>{ if(!goal)return; const p=thAt(goal), d=Math.hypot(p.x-pos.x,p.z-pos.z), reach=goal.reach||1;
     const stuck=!target&&goal.started; if(d>reach&&!(stuck&&d<(goal.near||0))){ if(stuck)goal=null; else { const k=(d-reach*0.8)/d; target=new THREE.Vector3(pos.x+(p.x-pos.x)*k,py,pos.z+(p.z-pos.z)*k); if(!goal.started)UI.go(d); goal.started=true; } return; }
-    target=null; heading=Math.atan2(p.x-pos.x,p.z-pos.z); const g=goal; goal=null; g.act(); say(g.name,p.clone().setY(p.y+(g.tall||1.6))); };
+    target=null; heading=Math.atan2(p.x-pos.x,p.z-pos.z); const g=goal; goal=null; g.act(); if(g.npc&&typeof LINES!=='undefined')LINES.say(g.npc,'greet'); else say(g.name,p.clone().setY(p.y+(g.tall||1.6))); };   // (a character waved to answers with a line of his own: lines.js)
   // ---- THE MENU
   const css=document.createElement('style'); css.textContent=`
   #mode{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(12px + env(safe-area-inset-bottom,0px));font:12px var(--pixel);color:var(--key);background:var(--panel);border:2px solid var(--line);padding:6px 10px;z-index:15}
   #mode[hidden],#shd[hidden],#said[hidden]{display:none}
+  #menu .box,#ed,#looks,#we,#movesp,#maped,#snded,#shbar,#hud,#stat,#shd,#said,.said2,#vit,#moves{zoom:var(--uiz,1)}
   #said{position:fixed;transform:translate(-50%,-100%);font:12px var(--pixel);color:var(--key);background:var(--panel);border:2px solid var(--line);padding:4px 8px;pointer-events:none;z-index:14}
   #menu{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(5,6,10,.55);z-index:30}
   #menu[hidden]{display:none}
@@ -178,9 +181,10 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
       <h3>VIEW</h3><div class="row"><span style="width:60px">ZOOM</span><input type="range" id="dzoom" min="0" max="1" step="0.001"></div>
       <div class="row"><span style="width:60px">TILT</span><input type="range" id="dtilt" min="0" max="1" step="0.001"><button class="btn" id="dreset">RESET THE VIEW</button></div>
       <h3>VIEW</h3><div class="row" id="dview"><button class="btn" data-view="map">MAP VIEW</button><button class="btn" data-view="iso">ISOMETRIC</button><button class="btn" data-view="third">THIRD PERSON</button><button class="btn" data-view="follow">BEHIND</button><button class="btn" data-view="first">FIRST PERSON</button></div>
-      <h3>HIM</h3><div class="row"><button class="btn" id="dshape">EDIT HIS SHAPE</button><button class="btn" id="dlooks">YOUR LOOKS</button></div>
+      <h3>HIM</h3><div class="row"><button class="btn" id="davatar">AVATAR EDITOR (SHIFT+K)</button><button class="btn" id="dshape">EDIT HIS SHAPE</button><button class="btn" id="dlooks">YOUR LOOKS</button></div>
       <div class="row"><button class="btn" id="dbody">PHYSICS BODY</button><span style="width:60px">LOOSE</span><input type="range" id="dloose" min="0" max="1" step="0.01"></div>
-      <h3>ON SCREEN</h3><div class="row"><button class="btn" id="dhelp">HELP PANEL</button><button class="btn" id="dstat">STATS</button></div></div>
+      <h3>SOUND</h3><div class="row"><button class="btn" id="dsfx">EFFECTS</button><button class="btn" id="damb">AMBIENCE</button><span style="width:60px">VOLUME</span><input type="range" id="dvol" min="0" max="1" step="0.01"><button class="btn" id="dsnded">SOUND EDITOR</button></div>
+      <h3>ON SCREEN</h3><div class="row"><button class="btn" id="dhelp">HELP PANEL</button><button class="btn" id="dstat">STATS</button><span style="width:70px;margin-left:8px">UI SCALE</span><button class="btn" data-ui="small">SMALL</button><button class="btn" data-ui="medium">MEDIUM</button><button class="btn" data-ui="large">LARGE</button></div></div>
     <div class="pane" data-p="graphics">
       <h3>RESOLUTION</h3><div class="row" id="dres"></div><div class="dim" id="dsharp"></div>
       <h3>SHADOWS</h3><div class="row" id="dshd"></div>
@@ -220,7 +224,8 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
   mcv.addEventListener('click',e=>{ const r=mcv.getBoundingClientRect(), R=mapRect(mapLv); goTo(R.x0+(e.clientX-r.left)/r.width*(R.x1-R.x0),R.z0+(e.clientY-r.top)/r.height*(R.z1-R.z0),mapLv); });
   M.querySelectorAll('[data-lv]').forEach(b=>b.onclick=()=>{ mapLv=b.dataset.lv; drawMap(); });
   const PLACES=[['THE STREET',-2.2,3.2,'up'],['THE BODEGA',BOD.X((BOD.B0.x0+BOD.B0.x1)/2),BOD.Z(BOD.B0.y1)-3.4,'up'],['THE APARTMENTS',POOLR.X(22.75),POOLR.Z(12),'up'],['THE POOL',POOLR.X(10),POOLR.Z(8.9),'up'],['THE PLATFORM',-12.4+LAY.o('subway').x*TILE,-24.9+LAY.o('subway').y*TILE,'down'],['CENTRAL PARK',BOD.XS(96+PARK.ox),BOD.ZS(-54+PARK.oy),'up'],['GHOST STREET',BOD.X(BOD.GD.door[0]),BOD.Z(BOD.GD.door[1]+4.5),'up'],['THE CASTLE',BOD.XS(CASTLE.gate),BOD.ZS(CASTLE.b[2]-3),'up'],['THE DUNGEON',BOD.XS((CASTLE.hall.x0+CASTLE.hall.x1)/2),BOD.ZS((CASTLE.hall.y0+CASTLE.hall.y1)/2),'down']];
-  const goPlace=n=>{ if(STORE.ensure)STORE.ensure(); const P=PLACES.concat(STORE.places).find(p=>p[0]===n); if(P)goTo(P[1],P[2],P[3]); };   // (a stacked room is finished first if it isn't yet: store.js)
+  UI.places=()=>PLACES.concat(STORE.places||[]);   /* (the data check's: tests/datacheck.cjs; goPlace the simulation's: tests/simrun.cjs) */
+  const goPlace=n=>{ if(STORE.ensure)STORE.ensure(); const P=PLACES.concat(STORE.places).find(p=>p[0]===n); if(P)goTo(P[1],P[2],P[3]); }; UI.goPlace=goPlace;   // (a stacked room is finished first if it isn't yet: store.js)
   { const q=QS.get('place'); const go=()=>window.__started?goPlace(q.toUpperCase()):setTimeout(go,200); if(q)setTimeout(go,300); }   /* (once the game runs: the page breathes while it loads) */   // (?place=central park: a test's start)
   for(const [n,x,z,lv] of PLACES){ const b=document.createElement('button'); b.className='btn'; b.textContent=n; b.onclick=()=>goTo(x,z,lv); $('#places').appendChild(b); }
   // EVERY ROOM A BUTTON (owner, 17 Oct 2026: "make sure every room and location on map has a button to jump there"): the bodega's two rooms, the
@@ -239,7 +244,7 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
     for(const [n] of STORE.places){ const b=document.createElement('button'); b.className='btn'; b.textContent=n; b.onclick=()=>goPlace(n); row.appendChild(b); } }
   // DISPLAY
   const zMin=3, zMax=ZMAX, z2r=v=>Math.log(v/zMin)/Math.log(zMax/zMin), r2z=r=>zMin*Math.pow(zMax/zMin,r);
-  function drawDisplay(){ M.querySelectorAll('[data-res]').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.res===RESI))); $('#dlook').setAttribute('aria-pressed',String(LOOK.on)); $('#dlook').textContent='GLOW AND NIGHT LOOK '+(LOOK.on?'ON':'OFF'); $('#dsteps').value=W3.shade.steps; $('#ddepth').value=W3.shade.depth; M.querySelectorAll('[data-view]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.view===UI.view))); $('#dsharp').textContent=(SCL===1&&vpu()<art()?'full':RES()+'×')+' the game\'s detail'; $('#dzoom').value=z2r(ppuTo); $('#dtilt').value=(pitchTo-PMIN)/(PMAX-PMIN);
+  function drawDisplay(){ $('#dsfx').textContent='EFFECTS '+(SFX.on?'ON':'OFF'); $('#dsfx').setAttribute('aria-pressed',String(SFX.on)); $('#damb').textContent='AMBIENCE '+(AMB.on?'ON':'OFF'); $('#damb').setAttribute('aria-pressed',String(AMB.on)); $('#dvol').value=SFX.vol; M.querySelectorAll('[data-res]').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.res===RESI))); $('#dlook').setAttribute('aria-pressed',String(LOOK.on)); $('#dlook').textContent='GLOW AND NIGHT LOOK '+(LOOK.on?'ON':'OFF'); $('#dsteps').value=W3.shade.steps; $('#ddepth').value=W3.shade.depth; M.querySelectorAll('[data-view]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.view===UI.view))); $('#dsharp').textContent=(SCL===1&&vpu()<art()?'full':RES()+'×')+' the game\'s detail'; $('#dzoom').value=z2r(ppuTo); $('#dtilt').value=(pitchTo-PMIN)/(PMAX-PMIN);
     $('#dlit').textContent='LIGHT ON THEM: '+(UI.lit?'LAMPS':'FLAT'); $('#dlit').setAttribute('aria-pressed',String(UI.lit)); $('#dbody').setAttribute('aria-pressed',String(PB.on)); $('#dbody').textContent='PHYSICS BODY '+(PB.on?'ON':'OFF'); $('#dloose').value=PB.loose; $('#doutl').setAttribute('aria-pressed',String(OUTL.on)); $('#doutl').textContent='OUTLINE '+(OUTL.on?'ON':'OFF'); $('#dhelp').setAttribute('aria-pressed',String(!document.getElementById('hud').hidden)); $('#dstat').setAttribute('aria-pressed',String(!document.getElementById('stat').hidden));
     const sh=document.getElementById('shd'); $('#dshd').innerHTML=''; sh.querySelectorAll('button').forEach(b=>{ const c=document.createElement('button'); c.className='btn'; c.textContent=b.textContent; c.setAttribute('aria-pressed',b.getAttribute('aria-pressed')); c.onclick=()=>{ b.click(); drawDisplay(); }; $('#dshd').appendChild(c); }); }
   // GRAPHICS (owner, 17 Oct 2026: "add resolution and other graphics settings into menu"): the resolution's levels by name (the art's pixels a
@@ -249,28 +254,33 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
   for(let i=0;i<=RESMAX;i++){ const b=document.createElement('button'); b.className='btn'; b.dataset.res=i; b.textContent=RESN[i]||RESL[i]+'×'; b.onclick=()=>{ if(i<RESI)RESI=i; while(RESI<i&&(pxS()>1||vpu()>art()))RESI++; resize(); drawDisplay(); }; $('#dres').appendChild(b); }
   // LIGHT GRAIN (the noise in the light's steps, map-pre.js's DITH): 16, 12 strong, 24 fine, off; the page loads again to make it
   // LIGHTING: SMOOTH (gradients, soft shadows: the default) or PIXEL (the light in steps, the grain, hard shadows); the page loads again to make it
-  $('#dsmooth').textContent='LIGHTING '+(SMOOTH?'SMOOTH':'PIXEL'); $('#dsmooth').onclick=()=>{ try{ localStorage.setItem('market-lighting',SMOOTH?'pixel':'smooth'); }catch(e){} location.reload(); }; if(SMOOTH)$('#dgrain').hidden=true;
-  { const G=[16,12,24,0], N={16:'ON',12:'STRONG',24:'FINE',0:'OFF'}; $('#dgrain').textContent='LIGHT GRAIN '+N[DITH]; $('#dgrain').onclick=()=>{ const v=G[(G.indexOf(DITH)+1)%G.length]; try{ localStorage.setItem('market-grain',String(v)); }catch(e){} location.reload(); }; }
-  $('#dlook').onclick=()=>{ LOOK.on=!LOOK.on; try{ localStorage.setItem('market-look',LOOK.on?'1':'0'); }catch(e){} drawDisplay(); };
+  $('#dsmooth').textContent='LIGHTING '+(SMOOTH?'SMOOTH':'PIXEL'); $('#dsmooth').onclick=()=>{ try{ SAVE.set('lighting',SMOOTH?'pixel':'smooth'); }catch(e){} location.reload(); }; if(SMOOTH)$('#dgrain').hidden=true;
+  { const G=[16,12,24,0], N={16:'ON',12:'STRONG',24:'FINE',0:'OFF'}; $('#dgrain').textContent='LIGHT GRAIN '+N[DITH]; $('#dgrain').onclick=()=>{ const v=G[(G.indexOf(DITH)+1)%G.length]; try{ SAVE.set('grain',String(v)); }catch(e){} location.reload(); }; }
+  $('#dlook').onclick=()=>{ LOOK.on=!LOOK.on; try{ SAVE.set('look',LOOK.on?'1':'0'); }catch(e){} drawDisplay(); };
   $('#dzoom').oninput=e=>{ ppuTo=r2z(+e.target.value); }; $('#dtilt').oninput=e=>{ pitchTo=clampP(PMIN+(+e.target.value)*(PMAX-PMIN)); };
   M.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>{ UI.setView(b.dataset.view); drawDisplay(); });
   $('#dlooks').onclick=()=>{ toggleMenu(); LOOKS.open(); }; $('#dsteps').oninput=e=>W3.setShade(+e.target.value,W3.shade.depth); $('#ddepth').oninput=e=>W3.setShade(W3.shade.steps,+e.target.value);   // (his shading: the steps of light on him, how deep his shadows)
   $('#dreset').onclick=()=>{ yawTo=VIEW0.yaw; pitchTo=VIEW0.pitch; ppuTo=VIEW0.ppu; UI.home(); drawDisplay(); };
+  // UI SCALE (17 Oct 2026, the physician game's settings: SMALL .9, MEDIUM 1, LARGE 1.1; kept in the save): every panel, label and bar zoomed by it, the game's picture untouched
+  const UIS={small:.9,medium:1,large:1.1}; UI.setScale=k=>{ if(!UIS[k])k='medium'; UI.scale=k; document.documentElement.style.setProperty('--uiz',UIS[k]); SAVE.set('uiscale',k); M.querySelectorAll('[data-ui]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.ui===k))); };
+  UI.setScale(SAVE.get('uiscale')||'medium'); M.querySelectorAll('[data-ui]').forEach(b=>b.onclick=()=>UI.setScale(b.dataset.ui));
   $('#dhelp').onclick=()=>{ const h=document.getElementById('hud'); h.hidden=!h.hidden; drawDisplay(); }; $('#dstat').onclick=()=>{ const h=document.getElementById('stat'); h.hidden=!h.hidden; drawDisplay(); };
   // THE OUTLINE round him (owner, 17 Oct 2026: "add ability to remove the line from avatar"; off unless turned on, kept in this browser)
-  try{ OUTL.on=localStorage.getItem('market-outline')==='1'; }catch(e){ OUTL.on=false; } OUTL.sp.enabled=OUTL.on;
-  $('#doutl').onclick=()=>{ OUTL.on=!OUTL.on; OUTL.sp.enabled=OUTL.on; try{ localStorage.setItem('market-outline',OUTL.on?'1':'0'); }catch(e){} drawDisplay(); };
-  $('#dshape').onclick=()=>ED.enter();
+  try{ OUTL.on=SAVE.get('outline')==='1'; }catch(e){ OUTL.on=false; } OUTL.sp.enabled=OUTL.on;
+  $('#doutl').onclick=()=>{ OUTL.on=!OUTL.on; OUTL.sp.enabled=OUTL.on; try{ SAVE.set('outline',OUTL.on?'1':'0'); }catch(e){} drawDisplay(); };
+  $('#dshape').onclick=()=>AV.open('body'); $('#davatar').onclick=()=>AV.open();   // (the avatar editor, src/avatar.js: HIS SHAPE's pieces, moves and animation a button in it)
   // LIGHT ON THEM: the Walker, the goldfish and the bear lit by the lamps (walker3d.js, npc-map.js), or each by its own fixed light (FLAT)
-  UI.setLit=on=>{ UI.lit=on; W3.mesh.material=on?W3.toon:W3.flat; for(const N of NPCS)N.me.material=on?N.toon:N.flat; try{ localStorage.setItem('market-avlight',on?'1':'0'); }catch(e){} };
-  { let v='1'; try{ v=localStorage.getItem('market-avlight')||'1'; }catch(e){} UI.setLit(v==='1'); }
+  UI.setLit=on=>{ UI.lit=on; W3.mesh.material=on?W3.toon:W3.flat; for(const N of NPCS)N.me.material=on?N.toon:N.flat; try{ SAVE.set('avlight',on?'1':'0'); }catch(e){} };
+  { let v='1'; try{ v=SAVE.get('avlight')||'1'; }catch(e){} UI.setLit(v==='1'); }
   $('#dlit').onclick=()=>{ UI.setLit(!UI.lit); drawDisplay(); };
-  $('#dbody').onclick=()=>{ PB.set(!PB.on); drawDisplay(); }; $('#dloose').oninput=e=>{ PB.loose=+e.target.value; try{ localStorage.setItem('market-loose',String(PB.loose)); }catch(err){} };
+  // SOUND (17 Oct 2026: the effects made in code, the ambience; both kept in the save): src/sfx.js, src/ambience.js
+  $('#dsfx').onclick=()=>{ SFX.set(!SFX.on,null); drawDisplay(); }; $('#damb').onclick=()=>{ AMB.set(!AMB.on); drawDisplay(); }; $('#dvol').oninput=e=>SFX.set(null,+e.target.value); $('#dsnded').onclick=()=>{ toggleMenu(); SNDED.open(); };   // (every level, kept for good: src/sndedit.js)
+  $('#dbody').onclick=()=>{ PB.set(!PB.on); drawDisplay(); }; $('#dloose').oninput=e=>{ PB.loose=+e.target.value; try{ SAVE.set('loose',String(PB.loose)); }catch(err){} };
   // KEYS
   function drawKeys(){ const t=$('#keytab'); t.innerHTML=''; for(const [a,what] of ACTS){ const tr=document.createElement('tr'), b=document.createElement('button'); b.className='btn'; b.textContent=waiting===a?'PRESS A KEY…':NAME(keyOf(a)); b.setAttribute('aria-pressed',String(waiting===a)); b.onclick=()=>{ waiting=a; drawKeys(); };
       const td1=document.createElement('td'); td1.textContent=what.toUpperCase(); const td2=document.createElement('td'); td2.appendChild(b); tr.append(td1,td2); t.appendChild(tr); }
     const e=document.createElement('tr'); e.innerHTML='<td>MENU</td><td><span class="dim">ESC</span></td>'; t.appendChild(e); }
-  $('#kreset').onclick=()=>{ BIND={}; try{ localStorage.removeItem('market-keys'); }catch(e){} REV=rev(); drawKeys(); drawBadge(); };
+  $('#kreset').onclick=()=>{ BIND={}; try{ SAVE.del('keys'); }catch(e){} REV=rev(); drawKeys(); drawBadge(); };
   // NOTHING ON SCREEN BUT THE GAME (owner, 17 Oct 2026: "take off the hud ... the market and controls, shadows etc on screen entire time"):
   // the help panel, the stats and the shadows' buttons start hidden; the menu has them all (DISPLAY: shadows, help, stats; KEYS: every control)
   for(const id of ['hud','stat','shd'])document.getElementById(id).hidden=true; { const L=document.getElementById('loading'); if(L)setTimeout(()=>{ L.style.opacity=0; setTimeout(()=>L.remove(),500); },Math.max(0,6000-(performance.now()-(window.__ld0||0)))); }   /* (the line's fade done first: 1.5 s in, 3 s, 1.5 s out, then the dark lifts) */
@@ -278,7 +288,7 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
 // ---- EVERY PANEL CLOSES AND MOVES (owner, 17 Oct 2026: "make sure menus have way to exit out, allow all menus to be draggable"): each panel gets
 // an X in its corner (what Escape or its own key would do) and is dragged by any of its plain parts (not its buttons, sliders, fields or the map);
 // panels made later, or whose insides are rewritten (the ? list), get their X back on the next look round (a few times a second, cheap)
-{ const PANS=[['menu',()=>UI.toggleMenu(),'.box'],['ed',()=>ED.exit()],['looks',el=>{ el.hidden=true; }],['we',()=>WE.toggle()],['movesp'],['maped',()=>MAPED.toggle()],['shbar'],['hud'],['stat'],['shd']];
+{ const PANS=[['menu',()=>UI.toggleMenu(),'.box'],['ed',()=>ED.exit()],['av',()=>ED.exit()],['looks',el=>{ el.hidden=true; }],['we',()=>WE.toggle()],['movesp'],['maped',()=>MAPED.toggle()],['snded',()=>SNDED.close()],['shbar'],['hud'],['stat'],['shd'],['mailp']];
   const css=document.createElement('style'); css.textContent='.pX{position:absolute;right:4px;top:4px;z-index:2;font:12px Silkscreen,monospace;color:#f2c14e;background:#0e1016;border:2px solid #3a3f4e;width:24px;height:24px;line-height:18px;padding:0;cursor:pointer} .pDrag{cursor:move}'; document.head.appendChild(css);
   const hide=el=>{ el.hidden=true; if(el.style.display)el.style.display='none'; };
   const NOPE='button,input,select,textarea,a,label,canvas,option,.pX';

@@ -9,6 +9,13 @@
 // faces, solids, lights, rooms, ground, stairs and lanes with it), EXPORT (the table to send, which goes into LAYOUT0 for good). Turning a place
 // a quarter: not here (every place is built on walls along the map's axes). Nothing made or run while it's off: its boxes and grid are made as
 // it opens and thrown away as it closes ----
+// THE NEXT ROUND (17 Oct 2026, the owner's list): every building moves live (the bodega, the apartment house, Ghost Street, the Diner and the Bar
+// are in the shared batches: their faces inside the place's box are hidden where they were (the batch's own per-face opacity, aOp 0) and a copy of
+// them carried with the drag, with the unbatched meshes standing in the box (walls, roofs) and the lamps in it; the old spot empty); PLACE keeps
+// a place where it's put and lets go of it, so the next is picked up with no reload; one SAVE (RELOADS) at the end. RAISE / LOWER (a quarter
+// tile a press, Shift a tile; a stack: the Diner on the Bar) and GROW / SHRINK (5% a press, about the middle of the front) for the Diner and
+// the Bar, the rooms built as the stacked rooms are (store.js: the floor, the solids and the ground go with the lift; a sized room's box and its
+// things' spacing with the size); the bodega, the apartment house and Ghost Street move only (their builders set their own heights and sizes)
 const MAPED={on:false};
 { const T=TILE, G=.25, LBL={bodega:'THE BODEGA',house:'APARTMENT HOUSE',apartments:'APARTMENTS + POOL',ghost:'GHOST STREET + DOJO',diner:'THE DINER',bar:'THE BAR',park:'CENTRAL PARK',castle:'THE CASTLE + DUNGEON',subway:'SUBWAY STAIRS + STATION',land:'THE LAND (GRASS)'};
   const COL={bodega:'#a0503e',house:'#8c4a3c',apartments:'#5a6f8c',ghost:'#8a6a3e',diner:'#b04a44',bar:'#8a6040',park:'#3f7a3a',castle:'#8c8678',subway:'#3f7a5a',land:'#1d3420'};
@@ -27,13 +34,15 @@ const MAPED={on:false};
     subway:()=>{ const S=MAPSTAIR; return [BOD.XS(S.x0),BOD.ZS(S.y0),BOD.XS(S.x1),BOD.ZS(S.y1)]; },
     land:()=>{ const L=MODS.landR; return [L.x0*T,L.z0*T,L.x1*T,L.z1*T]; }};
   const HIGH={bodega:()=>BOD.Y(BOD.B0.h),house:()=>BOD.Y(5*BOD.K.STORY),apartments:()=>POOLR.Y(POOLR.H),ghost:()=>BOD.Y(280),diner:()=>BOD.Y(130),bar:()=>BOD.Y(130),park:()=>BOD.YS(54),castle:()=>BOD.YS(200),subway:()=>BOD.YS(30),land:()=>.05};
-  const KEYS=Object.keys(BOX), BUILT=JSON.parse(JSON.stringify(LAY.L)), q4=v=>Math.round(v/G)*G, clean=o=>{ const r={}; for(const k in o){ const v=o[k]||{}, e=(v.e||[0,0,0,0]).map(q4), q={};
-      if(q4(v.x||0))q.x=q4(v.x); if(q4(v.y||0))q.y=q4(v.y); if(e.some(n=>n))q.e=e; if(Object.keys(q).length)r[k]=q; } return r; };
+  const KEYS=Object.keys(BOX), BUILT=JSON.parse(JSON.stringify(LAY.L)), q4=v=>Math.round(v/G)*G, q20=v=>Math.round(v*20)/20, clean=o=>{ const r={}; for(const k in o){ const v=o[k]||{}, e=(v.e||[0,0,0,0]).map(q4), q={};
+      if(q4(v.x||0))q.x=q4(v.x); if(q4(v.y||0))q.y=q4(v.y); if(e.some(n=>n))q.e=e; if(q4(v.h||0))q.h=q4(v.h); if(v.s&&q20(v.s)!==1)q.s=q20(v.s); if(Object.keys(q).length)r[k]=q; } return r; };
   let WORK=clean(BUILT), sel='bodega', V=null, act=null, PH=null, d3=null, OV=null, was=null;
-  const ent=k=>WORK[k]||(WORK[k]={}), off=(L,k)=>{ const v=L[k]||{}; return {x:v.x||0,y:v.y||0,e:v.e||[0,0,0,0]}; };
+  const ent=k=>WORK[k]||(WORK[k]={}), off=(L,k)=>{ const v=L[k]||{}; return {x:v.x||0,y:v.y||0,e:v.e||[0,0,0,0],h:v.h||0,s:v.s||1}; };
+  const LIFTS={diner:1,bar:1};   // (the ones that RAISE / LOWER and GROW / SHRINK)
   // a place's box as the editor has it now: as built, moved by what changed since (and its edges)
   const boxOf=k=>{ const b=BOX[k](); if(!b)return null; const a=off(BUILT,k), w=off(WORK,k), dx=(w.x-a.x)*T, dz=(w.y-a.y)*T;
-    return [b[0]+dx+(w.e[0]-a.e[0])*T,b[1]+dz+(w.e[1]-a.e[1])*T,b[2]+dx+(w.e[2]-a.e[2])*T,b[3]+dz+(w.e[3]-a.e[3])*T]; };
+    const r=[b[0]+dx+(w.e[0]-a.e[0])*T,b[1]+dz+(w.e[1]-a.e[1])*T,b[2]+dx+(w.e[2]-a.e[2])*T,b[3]+dz+(w.e[3]-a.e[3])*T], sc=w.s/a.s; if(sc!==1){ const m=(r[0]+r[2])/2, f=r[3]; r[0]=m+(r[0]-m)*sc; r[2]=m+(r[2]-m)*sc; r[1]=f+(r[1]-f)*sc; } return r; };
+  const liftOf=k=>(off(WORK,k).h-off(BUILT,k).h)*T, built=k=>off(BUILT,k).h*T;   // (its lift from where it was built; where it was built, in the world)
   // ---- THE PANEL: a small plan, the places, the buttons
   const P=document.createElement('div'); P.id='maped'; P.style.cssText='position:fixed;right:12px;top:12px;z-index:22;display:none;width:340px;max-width:calc(100vw - 24px);padding:10px 12px;background:#0b0d13f2;border:2px solid #2a3040;color:#c9ccd6;font:10px Silkscreen,monospace;letter-spacing:.5px';
   P.innerHTML='<div style="display:flex;justify-content:space-between;padding-right:28px"><b>MAP EDITOR</b><span style="color:#8a8f9c">SHIFT+M</span></div>'
@@ -42,8 +51,10 @@ const MAPED={on:false};
     +'<div id="meL" style="display:flex;gap:3px;flex-wrap:wrap;margin-top:6px"></div><div id="meI" style="margin-top:6px;color:#f2c14e;min-height:12px"></div>'
     +'<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:6px;align-items:center">VIEW <button class="btn" data-v="turnL">⟲ TURN</button><button class="btn" data-v="turnR">TURN ⟳</button><button class="btn" data-v="up">TILT UP</button><button class="btn" data-v="down">TILT DOWN</button><button class="btn" data-v="top">TOP</button><button class="btn" data-v="side">SIDE</button></div>'
     +'<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:6px;align-items:center"><button class="btn" data-n="-1,0">◀</button><button class="btn" data-n="0,-1">▲</button><button class="btn" data-n="0,1">▼</button><button class="btn" data-n="1,0">▶</button>'
-    +'<button class="btn" id="meR">RESET THIS</button><button class="btn" id="meRA">RESET ALL</button><button class="btn" id="meA" style="color:#f2c14e">APPLY (RELOADS)</button><button class="btn" id="meE">EXPORT</button></div>'
-    +'<div style="margin-top:6px;color:#8a8f9c;line-height:1.5">ARROWS ¼ TILE, SHIFT A TILE. NO TURNING (WALLS RUN ALONG THE MAP). THE SHRINE GOES WITH THE PARK, THE DUNGEON THE CASTLE, THE STACKED ROOMS THE APARTMENTS, THE STATION ITS STAIRS</div>'
+    +'<button class="btn" id="meR">RESET THIS</button><button class="btn" id="meRA">RESET ALL</button></div>'
+    +'<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:6px;align-items:center"><button class="btn" data-h="1">RAISE</button><button class="btn" data-h="-1">LOWER</button><button class="btn" data-s="1">GROW</button><button class="btn" data-s="-1">SHRINK</button><span id="meHS" style="color:#8a8f9c"></span></div>'
+    +'<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:6px;align-items:center"><button class="btn" id="meP">PLACE (KEEP, NEXT)</button><button class="btn" id="meA" style="color:#f2c14e">SAVE (RELOADS)</button><button class="btn" id="meE">EXPORT</button></div>'
+    +'<div style="margin-top:6px;color:#8a8f9c;line-height:1.5">ARROWS ¼ TILE, SHIFT A TILE. RAISE / LOWER ¼ TILE (SHIFT A TILE) AND GROW / SHRINK 5%: THE DINER AND THE BAR. EVERY BUILDING MOVES LIVE; PLACE KEEPS IT AND LETS GO. NO TURNING (WALLS RUN ALONG THE MAP). THE SHRINE GOES WITH THE PARK, THE DUNGEON THE CASTLE, THE STACKED ROOMS THE APARTMENTS, THE STATION ITS STAIRS</div>'
     +'<textarea id="meT" readonly style="display:none;width:100%;height:60px;margin-top:6px;background:#000;color:#f2c14e;font:10px monospace"></textarea>';
   document.body.appendChild(P); const q=s=>P.querySelector(s), cv2=q('#meC'), g=cv2.getContext('2d');
   P.querySelectorAll('button.btn').forEach(b=>Object.assign(b.style,{font:'10px Silkscreen,monospace',padding:'4px 6px',color:b.style.color||'#ece5d3',background:'#0e1016',border:'2px solid #3a3f4e',cursor:'pointer'}));
@@ -65,7 +76,8 @@ const MAPED={on:false};
     info(); };
   const n_=(v,a,b)=>v?(v>0?'+'+v+' '+a:v+' '+b):'';
   const info=()=>{ const w=off(WORK,sel), chg=JSON.stringify(clean(WORK))!==JSON.stringify(clean(BUILT));
-    q('#meI').textContent=LBL[sel]+': '+([n_(w.x,'E','W'),n_(w.y,'S','N')].filter(Boolean).join(', ')||'AS MADE')+(w.e.some(Boolean)?' · EDGES '+w.e.join(' '):'')+' TILES'+(chg?' · APPLY TO BUILD':'');
+    q('#meI').textContent=LBL[sel]+': '+([n_(w.x,'E','W'),n_(w.y,'S','N')].filter(Boolean).join(', ')||'AS MADE')+(w.e.some(Boolean)?' · EDGES '+w.e.join(' '):'')+(w.h?' · UP '+w.h:'')+' TILES'+(w.s!==1?' · SIZE '+Math.round(w.s*100)+'%':'')+(chg?' · SAVE TO BUILD':'');
+    q('#meHS').textContent=LIFTS[sel]?'':'(MOVE ONLY)'; P.querySelectorAll('[data-h],[data-s]').forEach(b=>b.disabled=!LIFTS[sel]);
     q('#meL').querySelectorAll('button').forEach(b=>{ const on=b.dataset.k===sel; b.style.color=on?'#f2c14e':'#ece5d3'; b.style.borderColor=on?'#6b6f80':'#3a3f4e'; }); };
   for(const k of KEYS){ const b=document.createElement('button'); b.dataset.k=k; b.textContent=LBL[k]; Object.assign(b.style,{font:'9px Silkscreen,monospace',padding:'3px 5px',color:'#ece5d3',background:'#0e1016',border:'2px solid #3a3f4e',cursor:'pointer'}); b.onclick=()=>{ sel=k; changed(); }; q('#meL').appendChild(b); }
   // ---- IN THE WORLD: a box round every place (the one chosen bright, where it was built faint while it's moved), a grid of quarter tiles under
@@ -74,9 +86,9 @@ const MAPED={on:false};
   const boxLines=(b,y0,y1)=>{ const [x0,z0,x1,z1]=b, P_=[], c=[[x0,z0],[x1,z0],[x1,z1],[x0,z1]]; for(let i=0;i<4;i++){ const [a,bq]=[c[i],c[(i+1)%4]]; for(const y of [y0,y1])P_.push(a[0],y,a[1],bq[0],y,bq[1]); P_.push(a[0],y0,a[1],a[0],y1,a[1]); } return P_; };
   const seg=(P_,m)=>{ const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.Float32BufferAttribute(P_,3)); const l=new THREE.LineSegments(geo,m); l.renderOrder=999; l.frustumCulled=false; return l; };
   const overlay=()=>{ if(!OV)return; for(const c of OV.children.slice()){ c.geometry.dispose(); OV.remove(c); }
-    const y=.03, others=[]; for(const k of KEYS){ if(k===sel||k==='land')continue; const b=boxOf(k); if(b)others.push(...boxLines(b,y,HIGH[k]())); } OV.add(seg(others,OV.userData.dim));
-    const b=boxOf(sel), b0=BOX[sel](), h=HIGH[sel](); if(b0&&b0.some((v,i)=>Math.abs(v-b[i])>1e-4))OV.add(seg(boxLines(b0,y,h),OV.userData.was));
-    OV.add(seg(boxLines(b,y,h),OV.userData.hi));
+    const y=.03, others=[]; for(const k of KEYS){ if(k===sel||k==='land')continue; const b=boxOf(k); if(b){ const l=built(k)+liftOf(k); others.push(...boxLines(b,y+l,HIGH[k]()*off(WORK,k).s/off(BUILT,k).s+l)); } } OV.add(seg(others,OV.userData.dim));
+    const b=boxOf(sel), b0=BOX[sel](), h=HIGH[sel](), l0=built(sel), l=l0+liftOf(sel); if(b0&&(b0.some((v,i)=>Math.abs(v-b[i])>1e-4)||Math.abs(l-l0)>1e-4))OV.add(seg(boxLines(b0,y+l0,h+l0),OV.userData.was));
+    OV.add(seg(boxLines(b,y+l,h*off(WORK,sel).s/off(BUILT,sel).s+l),OV.userData.hi));
     // the grid: quarter tiles from where it was built (so its corners land on the lines), round it, at most some 48 tiles a side round the box's middle (round the edge held, for the land)
     const at=d3&&d3.t==='edge'&&d3.g?d3.g:{x:(b[0]+b[2])/2,z:(b[1]+b[3])/2}, ox=b0?b0[0]:0, oz=b0?b0[1]:0, H=Math.min(24*T,Math.max(b[2]-b[0],b[3]-b[1])/2+3*T), L=[];
     const i0=Math.floor((at.x-H-ox)/(G*T)), i1=Math.ceil((at.x+H-ox)/(G*T)), j0=Math.floor((at.z-H-oz)/(G*T)), j1=Math.ceil((at.z+H-oz)/(G*T)), xa=ox+i0*G*T, xb=ox+i1*G*T, za=oz+j0*G*T, zb=oz+j1*G*T;
@@ -86,14 +98,17 @@ const MAPED={on:false};
     live(); };
   const live=(reset)=>{ for(const k in LIVE){ const a=off(BUILT,k), w=off(WORK,k); for(const nm of LIVE[k]){ const gr=MAPG[nm]; if(gr)gr.position.set(reset?0:(w.x-a.x)*T,0,reset?0:(w.y-a.y)*T); } }
     if(MODS.land){ const a=off(BUILT,'land'), w=off(WORK,'land'); MODS.land.position.set(reset?0:(w.x-a.x)*T,MODS.land.position.y,reset?0:(w.y-a.y)*T); } };
-  const changed=()=>{ overlay(); draw(); };
+  const changed=()=>{ overlay(); carry(); draw(); };
   const nudge=(dx,dy)=>{ const e=ent(sel); e.x=q4((e.x||0)+dx); e.y=q4((e.y||0)+dy); WORK=clean(WORK); changed(); };
   // THE VIEW'S OWN BUTTONS (owner, 17 Oct 2026: "how do i view sideview? nothing is letting me drag it"): turn an eighth, tilt, straight down, from the side
   const VIEW={turnL:()=>UI.orbit(-Math.PI/4/.008,0),turnR:()=>UI.orbit(Math.PI/4/.008,0),up:()=>UI.orbit(0,40),down:()=>UI.orbit(0,-40),top:()=>UI.orbit(0,1e4),side:()=>UI.orbit(0,-1e4)};
   P.querySelectorAll('[data-v]').forEach(b=>b.onclick=()=>VIEW[b.dataset.v]());
   P.querySelectorAll('[data-n]').forEach(b=>b.onclick=ev=>{ const [x,y]=b.dataset.n.split(',').map(Number), m=ev.shiftKey?1:G; nudge(x*m,y*m); });
   q('#meR').onclick=()=>{ delete WORK[sel]; changed(); }; q('#meRA').onclick=()=>{ WORK={}; changed(); };
-  q('#meA').onclick=()=>{ try{ localStorage.setItem('market-layout',JSON.stringify(clean(WORK))); }catch(e){} location.reload(); };
+  P.querySelectorAll('[data-h]').forEach(b=>b.onclick=ev=>{ if(!LIFTS[sel])return; const e=ent(sel); e.h=Math.max(0,q4((e.h||0)+(+b.dataset.h)*(ev.shiftKey?1:G))); WORK=clean(WORK); changed(); });
+  P.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>{ if(!LIFTS[sel])return; const e=ent(sel); e.s=Math.min(2,Math.max(.5,q20((e.s||1)+(+b.dataset.s)*.05))); WORK=clean(WORK); changed(); });
+  q('#meP').onclick=()=>{ WORK=clean(WORK); const i=KEYS.indexOf(sel); sel=KEYS[(i+1)%KEYS.length]; if(sel==='land')sel=KEYS[0]; changed(); };   // (PLACE: it stays where it's put (its carry stays), the next place is up)
+  q('#meA').onclick=()=>{ try{ SAVE.set('layout',JSON.stringify(clean(WORK))); }catch(e){} location.reload(); };
   q('#meE').onclick=()=>{ const t=q('#meT'); t.value='LAYOUT '+JSON.stringify(clean(WORK)); t.style.display='block'; t.select(); try{ navigator.clipboard.writeText(t.value); }catch(e){} };
   // ---- dragging: a place moves by whole grid steps from where the drag began; an edge of the park or the land the same
   const moveBy=(k,s,dx,dz)=>{ const o=ent(k); o.x=q4(s.x+dx); o.y=q4(s.y+dz); };
@@ -137,7 +152,7 @@ const MAPED={on:false};
     if(MAPED.on){ if(UI.menuOpen)UI.toggleMenu(); was={view:UI.view,maxw:UI.MAXW}; UI.MAXW=240*T; if(UI.view!=='map')UI.setView('map');
       OV=new THREE.Group(); OV.userData={hi:LM(0xf2c14e,1),was:LM(0xc9ccd6,.55),dim:LM(0x8a8f9c,.35),grid:LM(0xf2c14e,.18)}; OV.userData.grid.depthTest=true; scene.add(OV);   /* (the grid on the ground, under what stands on it; the boxes seen through everything) */
       fit(); if(!PH)shoot(); changed(); }
-    else { live(true); d3=null; if(OV){ for(const c of OV.children)c.geometry.dispose(); for(const k in OV.userData)OV.userData[k].dispose(); scene.remove(OV); OV=null; }
+    else { live(true); carryOff(); d3=null; if(OV){ for(const c of OV.children)c.geometry.dispose(); for(const k in OV.userData)OV.userData[k].dispose(); scene.remove(OV); OV=null; }
       if(was){ UI.MAXW=was.maxw; if(was.view!==UI.view)UI.setView(was.view); was=null; } } };
   // (the picture from above: the street's level over the places as built and a margin, some 6 pixels a tile, no more than 1200 across)
   const shoot=()=>{ let x0=1e9,z0=1e9,x1=-1e9,z1=-1e9; for(const k of KEYS){ if(k==='land')continue; const b=BOX[k](); if(!b)continue; x0=Math.min(x0,b[0]); z0=Math.min(z0,b[1]); x1=Math.max(x1,b[2]); z1=Math.max(z1,b[3]); }
@@ -145,8 +160,38 @@ const MAPED={on:false};
     live(true); try{ const c=document.createElement('canvas'); c.width=W; c.height=H; c.getContext('2d').putImageData(UI.topShot(R_,'up',W,H),0,0); PH={c,R:R_}; }catch(e){ console.warn('map editor: no picture',e); } };
   // (the menu's MAP tab has a way in too)
   { const row=document.querySelector('#menu [data-p="map"] .row'); if(row){ const b=document.createElement('button'); b.className='btn'; b.textContent='MAP EDITOR (SHIFT+M)'; b.onclick=()=>MAPED.toggle(); row.appendChild(b); } }
+  // ---- THE BUILDINGS CARRIED LIVE: a batched place (the bodega, the apartment house, Ghost Street, the Diner, the Bar) moved, lifted or sized has
+  // its faces inside its built box hidden where they are (aOp 0: the batch's dither leaves every pixel out) and a copy of them in a group that
+  // follows the drag; the unbatched meshes standing wholly in the box (walls, roofs, sills) and the lamps in it go along; all put back when
+  // the place is reset or the editor closes. Made once a place first moves (a scan of every batch's faces, a moment), kept while it's open
+  const CAR={}; const CARRIED={bodega:1,house:1,ghost:1,diner:1,bar:1};
+  const npcGroups=()=>{ const S=new Set(); if(typeof NPCS!=='undefined')for(const N of NPCS)if(N.g)S.add(N.g); if(typeof W3!=='undefined'&&W3.group)S.add(W3.group); for(const k of ['MUS','PNM','SGM','DRM']){ const M=window[k]; if(M&&M.g)S.add(M.g); } return S; };
+  const under=(o,S)=>{ const is=S instanceof Set?p=>S.has(p):p=>p===S; for(let p=o;p;p=p.parent)if(is(p))return true; return false; };
+  const makeCarry=k=>{ const b=BOX[k](); if(!b)return null; const l0=built(k), hi=HIGH[k](), m=.35*T, inBox=(x,y,z)=>x>b[0]-m&&x<b[2]+m&&z>b[1]-m&&z<b[3]+m&&y>l0-.6&&y<l0+hi+3*T;
+    const C={k,g:new THREE.Group(),faces:[],meshes:[],lights:[],pivot:{x:(b[0]+b[2])/2,z:b[3]}}, NG=npcGroups(), M4=new THREE.Matrix4(), v=new THREE.Vector3();
+    scene.traverse(o=>{ if(!o.isMesh||o.isSkinnedMesh||o.isInstancedMesh||under(o,NG)||(OV&&under(o,OV)))return; for(const q in CAR)if(under(o,CAR[q].g))return;
+      const g=o.geometry, A=g.attributes; o.updateWorldMatrix(true,false); M4.copy(o.matrixWorld);
+      if(A.aOp&&A.position&&!g.index){ const P=A.position.array, nF=P.length/18, keep=[]; for(let f=0;f<nF;f++){ let x=0,y=0,z=0; for(let q=0;q<6;q++){ v.fromArray(P,(f*6+q)*3).applyMatrix4(M4); x+=v.x; y+=v.y; z+=v.z; } if(inBox(x/6,y/6,z/6))keep.push(f); }
+        if(!keep.length)return; const G=new THREE.BufferGeometry(); for(const n of Object.keys(A)){ const S=A[n], sz=S.itemSize, src=S.array, dst=new src.constructor(keep.length*6*sz); keep.forEach((f,i)=>dst.set(src.subarray(f*6*sz,(f+1)*6*sz),i*6*sz)); G.setAttribute(n,new THREE.BufferAttribute(dst,sz,S.normalized)); }
+        { const Q=G.attributes.position.array; for(let i=0;i<Q.length;i+=3){ v.fromArray(Q,i).applyMatrix4(M4); Q[i]=v.x; Q[i+1]=v.y; Q[i+2]=v.z; } } G.computeBoundingSphere();   // (in the world's frame: the group alone moves it)
+        const me=new THREE.Mesh(G,o.material); me.castShadow=o.castShadow; me.receiveShadow=o.receiveShadow; me.renderOrder=o.renderOrder; C.g.add(me);
+        const O=A.aOp.array; for(const f of keep)for(let q=0;q<6;q++)O[f*6+q]=0; A.aOp.needsUpdate=true; C.faces.push({A:A.aOp,keep}); return; }
+      if(o.userData.objOf||o.userData.chunkOf||o.userData.inner)return; const B3=new THREE.Box3().setFromObject(o); if(B3.isEmpty())return;
+      if(B3.min.x>b[0]-m&&B3.max.x<b[2]+m&&B3.min.z>b[1]-m&&B3.max.z<b[3]+m&&B3.min.y>l0-.6&&B3.max.y<l0+hi+3*T)C.meshes.push({o,p:o.position.clone(),s:o.scale.clone(),par:o.parent}); });
+    for(const {o} of C.meshes){ o.userData.carPos=o.position.clone(); } for(const {o} of C.meshes)C.g.attach(o);   // (attach: its place in the world kept, the group moving it)
+    if(typeof LITE!=='undefined')for(const L of LITE.recs){ const p=L.position; if(inBox(p.x,p.y,p.z))C.lights.push({L,p:p.clone()}); }
+    scene.add(C.g); return C; };
+  const carrySet=C=>{ const a=off(BUILT,C.k), w=off(WORK,C.k), dx=(w.x-a.x)*T, dz=(w.y-a.y)*T, dy=(w.h-a.h)*T, sc=w.s/a.s, px=C.pivot.x, pz=C.pivot.z;
+    C.g.scale.set(sc,sc,sc); C.g.position.set(px*(1-sc)+dx,dy,pz*(1-sc)+dz);
+    for(const {L,p} of C.lights){ L.position.set(px+(p.x-px)*sc+dx,p.y+dy,pz+(p.z-pz)*sc+dz); L.distance=(L.userData.d0||(L.userData.d0=L.distance))*sc; } };
+  const carryDrop=C=>{ for(const {A,keep} of C.faces){ const O=A.array; for(const f of keep)for(let q=0;q<6;q++)O[f*6+q]=1; A.needsUpdate=true; }
+    for(const {o,p,s,par} of C.meshes){ par.attach(o); o.position.copy(p); o.scale.copy(s); } for(const {L,p} of C.lights){ L.position.copy(p); if(L.userData.d0)L.distance=L.userData.d0; }
+    for(const c of C.g.children.slice())if(c.isMesh){ c.geometry.dispose(); C.g.remove(c); } scene.remove(C.g); };
+  const moved=k=>{ const a=off(BUILT,k), w=off(WORK,k); return a.x!==w.x||a.y!==w.y||a.h!==w.h||a.s!==w.s; };
+  const carry=()=>{ if(!MAPED.on)return; for(const k in CARRIED){ const m=moved(k); if(m&&!CAR[k]){ const C=makeCarry(k); if(C)CAR[k]=C; } else if(!m&&CAR[k]){ carryDrop(CAR[k]); delete CAR[k]; } if(CAR[k])carrySet(CAR[k]); } };
+  const carryOff=()=>{ for(const k in CAR){ carryDrop(CAR[k]); delete CAR[k]; } };
   // (a test's reach: the layout being made, a place's box, a world point on the screen, the plan's point on the screen)
   window.MAPED=MAPED; MAPED.work=()=>WORK; MAPED.box=boxOf; MAPED.high=k=>HIGH[k](); MAPED.sel=k=>{ if(k){ sel=k; changed(); } return sel; };
   MAPED.scr=(x,y,z)=>{ const v=new THREE.Vector3(x,y,z).project(cam), r=renderer.domElement.getBoundingClientRect(); return [r.left+(v.x+1)/2*r.width,r.top+(1-v.y)/2*r.height]; };
   MAPED.px=(x,z)=>{ const r=cv2.getBoundingClientRect(); return [r.left+sx(x)*r.width/cv2.width,r.top+sz(z)*r.height/cv2.height]; }; MAPED.k=()=>V.k*cv2.getBoundingClientRect().width/cv2.width;
-  MAPED.grp=n=>MAPG[n]&&MAPG[n].position.toArray(); MAPED.ov=()=>OV&&{n:OV.children.length,vis:OV.visible,inScene:!!OV.parent}; }
+  MAPED.grp=n=>MAPG[n]&&MAPG[n].position.toArray(); MAPED.car=k=>{ const C=CAR[k]; return C&&{faces:C.faces.reduce((a,f)=>a+f.keep.length,0),meshes:C.meshes.length,lights:C.lights.length,pos:C.g.position.toArray(),scale:C.g.scale.x,tris:C.g.children.reduce((a,c)=>a+(c.geometry?c.geometry.attributes.position.count/3:0),0)}; }; MAPED.lift=(k,h)=>{ ent(k).h=h; WORK=clean(WORK); changed(); }; MAPED.size=(k,s)=>{ ent(k).s=s; WORK=clean(WORK); changed(); }; MAPED.ov=()=>OV&&{n:OV.children.length,vis:OV.visible,inScene:!!OV.parent}; }

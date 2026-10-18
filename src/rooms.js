@@ -27,8 +27,8 @@ const ROOMS={cur:null};
       renderer.clippingPlanes=PL; scene.background.setRGB(0,0,0); }
     else if(renderer.clippingPlanes.length)renderer.clippingPlanes=[];
     // the characters: only those in the room (a troublemaker below ground, hidden by his own mind, left alone)
-    const show=(g,x,z,o)=>{ const sh=!hit||within(hit,x,z,.4*TILE); if(!sh){ if(g.visible){ g.visible=false; o._rh=true; } } else if(o._rh){ g.visible=true; o._rh=false; } };
-    for(const N of NPCS){ if(N.lv!=='up'||N.mode==='hidden'||N.far)continue; show(N.g,N.g.position.x,N.g.position.z,N); }
-    if(typeof MUS!=='undefined'&&MUS.g)show(MUS.g,MUS.at.x,MUS.at.z,MUS); if(typeof PNM!=='undefined'&&PNM.g)show(PNM.g,PNM.at.x,PNM.at.z,PNM); if(typeof SGM!=='undefined'&&SGM.g)show(SGM.g,SGM.at.x,SGM.at.z,SGM); if(typeof DRM!=='undefined'&&DRM.g)show(DRM.g,DRM.at.x,DRM.at.z,DRM);   // (the pianist, the singer and the drummer, in the stored bar: pianist.js, singer.js, drummer.js)
+    const show=(g,x,z,o,y)=>{ const sh=!hit||within(hit,x,z,.4*TILE)&&(y==null||y>hit.y0-.3&&y<hit.y1);   /* (y: his floor, for one in a stacked room or up the apartment house) */ if(!sh){ if(g.visible){ g.visible=false; o._rh=true; } } else if(o._rh){ g.visible=true; o._rh=false; } };
+    for(const N of NPCS){ if(N.lv!=='up'||N.mode==='hidden'||N.hid)continue; show(N.g,N.g.position.x,N.g.position.z,N); }
+    if(typeof MUS!=='undefined'&&MUS.g)show(MUS.g,MUS.at.x,MUS.at.z,MUS,MUS.at.y); if(typeof PNM!=='undefined'&&PNM.g)show(PNM.g,PNM.at.x,PNM.at.z,PNM); if(typeof SGM!=='undefined'&&SGM.g)show(SGM.g,SGM.at.x,SGM.at.z,SGM); if(typeof DRM!=='undefined'&&DRM.g)show(DRM.g,DRM.at.x,DRM.at.z,DRM);   // (the pianist, the singer and the drummer, in the stored bar: pianist.js, singer.js, drummer.js)
     if(typeof WATER!=='undefined'&&WATER.mesh){ show(WATER.mesh,WATER.mesh.position.x,WATER.mesh.position.z,WATER); for(const w of WATER.extra)if(w.mesh)show(w.mesh,w.mesh.position.x,w.mesh.position.z,w); } };   // (the pool's water, its own shader: shown only from the pool hall; the pond's and the tank's: the store's)
 }

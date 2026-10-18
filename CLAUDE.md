@@ -632,6 +632,13 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
   outright. The camera rises with him. A playground just inside the park's wall west of the gate (monkey bars, a high bar, a low bar) gives
   him bars to catch. Roll is Y, punch J, kick K (the rig's).
 
+- **The park grown, its ways in the middle** (owner, 17 Oct 2026: "put the paths that cross through central park directly in the middle,
+  expand central park by 25%, space things out logically"; `park.js`): the park's back at y 12.5 (a quarter more lawn, north); the round, the
+  street's gate and the Avenue's gate at its very middle (`P.round` from its bounds); what stood by the old round (rocks, monument, campfire,
+  logs, flower beds) the same way off the new one (`RX`, `RY`); the lamps along both ways every 13 and 16 tiles; the 22 oaks set by rule (clear
+  of the ways, the castle, the shrine, the gate and the playground, 9 tiles apart); the castle moved 16.5 tiles north to the new back-left
+  corner (`LAYOUT0.castle`).
+
 ## THE MARKET: the one official map
 
 **THE MARKET** (owner, 17 Oct 2026: "one official MARKET map im gona start filling in") is the game's map here: every place the owner adds goes

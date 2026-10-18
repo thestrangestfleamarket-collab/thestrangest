@@ -1150,3 +1150,10 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   the camera than you cut above your knee so you see yourself. Cost (underground only): the rock some 450 boxes and the floors some 490 (one
   draw each), the lit seams one draw, 26 lamp records, no new light or shadow; built a few seconds after the game runs (nothing at the loading
   line) and again when the day turns while you're up top. `MINEDBG()`. Not yet: creatures down there, a map of the mine, the golems mining.
+- **The mist, the whole game's look** (owner, 18 Oct 2026, his picture of a misty autumn forest: "show me screenshots of how my game could look
+  like this"; of the shots (`tests/moodshot.cjs`), the park by the cave at 5:24 pm, low: "i like the exact look entier game (no fireflies) just the
+  foggyh misty haze ... in distance, perfect"; `FAR3.mist` in `src/skyline.js`): out of doors a teal mist, starting 3 tiles before him (toward the
+  camera) and the full colour 12 past him, in the fog's flat steps; no sky dome in it, the background the mist's own colour, so the far melts away
+  (the skyline gone in it). The shot's teal at dusk (0x3a6e68), a little paler at high noon, dark at night. GRAPHICS' DISTANCE HAZE: MIST, FAR (the
+  old far haze and the sky), OFF; `?mist=0` the far haze, `?mist=near,far` in tiles. The weather's FOG takes over when it comes; nothing indoors or
+  underground. Cost: none (the same fog). Not taken: the shots' autumn treetops and the embers / fireflies. `tests/mistshot.cjs`.

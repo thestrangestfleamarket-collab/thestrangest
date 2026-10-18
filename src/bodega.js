@@ -268,9 +268,12 @@ const BOD={meshes:[], walls:{}, lamps:[]};
   // streets' mouths); a STOP sign where the west street and the Avenue come down to the main street; along every kerb every 24 tiles a post with a
   // NO PARKING plate, every third a SPEED LIMIT 25; each three quarters of a tile in from the kerb (clear of the street lights' feet)
   const SG=[], NM={main:'MARKET ST',west:'WEST ST',north:'NORTH ST',ave:'THE AVE'}, CN=[['main','west'],['main','west'],['main','ave'],['main','ave'],['north','west'],['north','ave'],['north','west'],['north','ave']];
-  CORN.forEach((c,i)=>{ const k=c.cv?KR-1.2:KR+1.2; SG.push({kind:'name',x:c.cx-c.sx*k/Math.SQRT2,y:c.cy-c.sy*k/Math.SQRT2,ax:NM[CN[i][0]],ay:NM[CN[i][1]]}); });
+  // (at the main street's two junctions the blades ride the traffic light's pole, above its heads, and no STOP: the light rules there, dress.js;
+  // owner, 18 Oct 2026, "go all": "a traffic light")
+  const TLC=[0,3], TK=(KR-.45)/Math.SQRT2;
+  CORN.forEach((c,i)=>{ const k=c.cv?KR-1.2:KR+1.2, t=TLC.includes(i); SG.push({kind:'name',x:t?c.cx-c.sx*TK:c.cx-c.sx*k/Math.SQRT2,y:t?c.cy-c.sy*TK:c.cy-c.sy*k/Math.SQRT2,ax:NM[CN[i][0]],ay:NM[CN[i][1]],np:t}); });
   SG.push({kind:'name',x:RG.wr1+1,y:CURB-.75,ax:NM.main,ay:NM.west},{kind:'name',x:AV.r0-1,y:CURB-.75,ax:NM.main,ay:NM.ave});
-  for(const i of [0,2]){ const c=CORN[i]; SG.push({kind:'stop',x:c.x+c.sx*.75,y:c.y+c.sy*(KR+2.4),n:[0,1]}); }   // (facing the traffic coming south)
+  // (the STOP signs where the west street and the Avenue come down to the main street: gone, the traffic lights stand there, dress.js)
   { let q=0; for(const k of BOD.kerbs){ if(k.at===MAP.x0||k.at===MAP.x1)continue; for(let a=k.a0+6;a<k.a1-4;a+=24){ if(inX(k.ax,k.at,a,2)||inJ(k.ax==='x'?a:k.at,k.ax==='x'?k.at:a,2))continue;
       const p=k.at-k.n*.75; SG.push({kind:q++%3===2?'speed':'nopark',x:k.ax==='x'?a:p,y:k.ax==='x'?p:a,n:k.ax==='x'?[1,0]:[0,1]}); } } }
   BOD.signs=SG;

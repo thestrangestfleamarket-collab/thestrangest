@@ -64,7 +64,7 @@ const BODB={};
     const blade=s=>(u,j,W,H)=>{ if(j===0||j===H-1||u===0||u===W-1)return WH; const o=Math.floor((W-tw(s))/2); return txt(s,u-o,j-1-Math.floor((H-7)/2))&&u>=o?WH:GRN; };
     BATCH.tag=OBJ('street','street signs');
     for(const g of BOD.signs){ const {x,y}=g;
-      if(g.kind==='name'){ pole(x,y,124); plate(x,y,[0,1],1.75,104,113,blade(g.ax)); plate(x,y,[1,0],1.75,114,123,blade(g.ay)); sbox(x-.05,y-.05,x+.05,y+.05,124,127,null,GALV); }
+      if(g.kind==='name'){ const o=g.np?48:0; if(!g.np){ pole(x,y,124); sbox(x-.05,y-.05,x+.05,y+.05,124,127,null,GALV); } plate(x,y,[0,1],1.75,104+o,113+o,blade(g.ax)); plate(x,y,[1,0],1.75,114+o,123+o,blade(g.ay)); }   // (np: on the traffic light's pole, higher, dress.js)
       else if(g.kind==='stop'){ pole(x,y,82); plate(x,y,g.n,.8,82,103,(u,j,W,H)=>{ const cx=(W-1)/2, cy=(H-1)/2, dx=Math.abs(u-cx)/cx, dy=Math.abs(j-cy)/cy; if(dx+dy>1.45)return null; if(dx>.9||dy>.9||dx+dy>1.3)return WH;
           const o=Math.floor((W-tw('STOP'))/2); return txt('STOP',u-o,j-Math.floor((H-5)/2))&&u>=o?WH:RED; }); }
       else if(g.kind==='nopark'){ pole(x,y,88); plate(x,y,g.n,.55,70,88,(u,j,W,H)=>{ if(u===0||j===0||u===W-1||j===H-1)return RED; const cx=(W-1)/2, cy=(H-1)/2, r=Math.hypot((u-cx)*1.2,j-cy);

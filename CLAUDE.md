@@ -782,3 +782,12 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   some 70 mushrooms and three baskets; he stands behind it facing the gate, held there (no roaming, no life of lives.js); built once the park is.
 - **Guards out of sight walk their beats** (18 Oct 2026, found with the droids standing still): lives.js's far stepper calls `N.pick()`, which
   makeNPC never gave; it does now.
+- **Lightning Fast VCR Repair, off the map** (owner, 18 Oct 2026, his photo: "add this as a new building mockup for game", the mockup
+  https://claude.ai/artifact/RqccsVVLmsmXFPhs4P9NDx (`mockups/vcr-repair.html`), then "off map"; `store.js`): a one-storey block 14 x 10 tiles,
+  270 px high, on its own asphalt lot far east of the map where the storeroom stood (bodega tiles x 380-394, y -92 to -82; the view bounded to
+  the store while you're there); the menu's STORED row has VCR REPAIR. The front speckled tan stucco between brown pilasters (boxes), the band
+  and coping, two white-framed windows, the light box of a sign (glowing; its words painted once from a canvas), the doorway with 3110 over it;
+  sides and back grey concrete block, the gooseneck lamp (lit, the side yard's one light), a camera, the meter; the side yard's chain-link fence
+  and gate with barbed wire (the mesh cut out); the bed along the front, its curb, mulch and five bare shrubs. Inside a plain room under one lamp
+  (its insides to come). Some 1,500 triangles, two lamps, no new program. The lot is four pieces round the shop (one piece whose middle fell
+  inside it was taken for the interior and drawn only near the door: interiors.js). `tests/vcrshot.cjs <out>` (front, wide, side yard, inside).

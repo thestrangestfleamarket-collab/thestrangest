@@ -191,6 +191,57 @@
     for(const [id,name,z0,z1,d,h] of AVR){ STORE.places.push([name,0,0,'up']);
       STEPS.push(()=>{ const B={id:'lav_'+id,x0:AX,y0:-77+z0/BLDK+.1,x1:AX+d,y1:-77+z1/BLDK-.1,h}; room('av_'+id,name,B,{floor:conc,in:plaster},{w:'w',a:(B.y0+B.y1)/2,wd:1.56,h:94},(B,l0)=>{ LAMPS.push({own:1,room:1,day:true,x:(B.x0+B.x1)/2,y:(B.y0+B.y1)/2,z:Math.min(h-20,120),r:Math.max(6,.75*Math.max(d,(z1-z0)/BLDK)),c:[1,.9,.75]}); }); }); } }   // (its one lamp's reach by the room's size: the museum is 26 tiles across)
 
+  // LIGHTNING FAST VCR REPAIR (owner, 18 Oct 2026, his photo: "add this as a new building mockup for game", then "off map"; the mockup:
+  // https://claude.ai/artifact/RqccsVVLmsmXFPhs4P9NDx): a one-storey block on its own asphalt lot far east of the map, where the storeroom stood,
+  // out of sight of it (the view bounded to the store while you're there); the menu's STORED row takes you in. Its front speckled tan stucco
+  // between brown pilasters (boxes, standing out of it), the band under the coping, two white-framed windows, the light box of a sign (its words
+  // painted once from a canvas), the door with its little 3110; its sides and back grey concrete block, a gooseneck lamp and a camera by the
+  // front corner, the meter; a chain-link fence and gate across the side yard, barbed wire on top (its mesh cut out: the batch's alphaTest);
+  // the bed along the front, its curb, mulch and five bare shrubs. The sign a lit box (glowing, the batch's own); inside a plain room under one lamp (its own insides
+  // to come). Some 1,500 triangles, two lamps (LITE's: the room's, the gooseneck's), no new program; built after the game opens with the rooms above
+  STORE.places.push(['VCR REPAIR',0,0,'up']);
+  STEPS.push(()=>{ const B={id:'lvcr',x0:380,y0:-92,x1:394,y1:-82,h:270}, H=B.h, hs=hash, P=[.2,2.5,4.95,7.9,10.05], WIN=[[.45,2.2],[5.2,7.6]], WZ=[42,118];
+    const sto=(i,j)=>{ const r=hs(i,j,811); return r<.34?[214,200,182]:r<.56?[230,220,206]:r<.72?[186,164,142]:r<.82?[150,124,102]:r<.92?[246,242,234]:[112,94,80]; };
+    const blk=(u,z)=>{ const r=Math.floor(z/5), i=Math.floor(u*24+(r&1)*5), c=Math.floor(i/10); if(i%10===9||Math.floor(z)%5===4)return [160,161,161]; const v=196+hs(c,r,812)*14; return [v,v,v-3]; };
+    const front=(x,z,f)=>{ const u=x-B.x0;
+      if(z>=H-5)return sh([88,82,78],f); if(z>=H-12)return sh([138,104,88],f);
+      for(const [a,b] of WIN)if(u>a&&u<b&&z>WZ[0]&&z<WZ[1]){ const fr=u<a+.09||u>b-.09||z<WZ[0]+3||z>WZ[1]-3||Math.abs(u-(a+b)/2)<.04; if(fr)return sh([240,240,236],f);
+        return sh((u-a)*24+(WZ[1]-z)*.5>8&&(u-a)*24+(WZ[1]-z)*.5<12?[104,114,124]:[58,65,72],f); }
+      if(Math.abs(u-10.85)<.32&&z>104&&z<112)return sh(z>106&&z<110&&hs(Math.floor(x*24),Math.floor(z),813)<.45?[50,50,50]:[233,230,223],f);   // (3110)
+      const s=sto(Math.floor(x*24),Math.floor(z)); return sh(z<10?sh(s,.8+.02*z):s,f); };
+    const out=(nx,ny,Xw,Yw,z,f,cap)=>ny>0?front(Xw,z,f):sh(z<20?sh(blk(nx?Yw:Xw,z),.82+.009*z):blk(nx?Yw:Xw,z),f);
+    // the sign's face: painted once, sampled by the box's front
+    const SX0=B.x0+3.1, SX1=B.x0+8.5, SZ0=146, SZ1=246, sw=Math.round((SX1-SX0)*24), shh=SZ1-SZ0, cvs=document.createElement('canvas'); cvs.width=sw; cvs.height=shh;
+    const g=cvs.getContext('2d'); g.fillStyle='#eef1f4'; g.fillRect(0,0,sw,shh);
+    g.save(); g.translate(sw*.54,shh*.22); g.rotate(-.12); g.transform(1,0,-.22,1,0,0); g.textAlign='center'; g.textBaseline='middle'; g.font='900 25px Impact,"Arial Black",sans-serif';
+    g.lineWidth=3; g.strokeStyle='#0d1c55'; g.strokeText('LIGHTNING',0,0); g.fillStyle='#2547b8'; g.fillText('LIGHTNING',0,0); g.strokeText('FAST',18,25); g.fillText('FAST',18,25); g.restore();
+    g.save(); g.translate(sw*.3,shh*.78); g.rotate(-.12); g.fillStyle='#111'; g.fillRect(-30,-14,62,24); g.fillStyle='#e6e6e6'; g.fillRect(-25,-10,15,10);
+    g.fillStyle='#c8202a'; g.fillRect(-22,4,104,16); g.fillStyle='#fff'; g.font='bold 12px "Arial Black",Arial,sans-serif'; g.textAlign='center'; g.textBaseline='middle'; g.fillText('VCR REPAIR',30,12); g.restore();
+    const SD=g.getImageData(0,0,sw,shh).data, sig=(x,z)=>{ const i=Math.max(0,Math.min(sw-1,Math.floor((x-SX0)*24))), j=Math.max(0,Math.min(shh-1,Math.floor(SZ1-z))), k=(j*sw+i)*4; return [SD[k],SD[k+1],SD[k+2]]; };
+    const conc=(x,y)=>{ const n=grain(x,y,814,1.2); return n<.4?[170,168,160]:n>.7?[186,184,176]:[178,176,168]; }, asph=(x,y)=>{ const r=hs(Math.floor(x*24),Math.floor(y*24),815); return r<.03?[118,118,122]:sh([66,67,71],.94+r*.12); };
+    const mulchC=(x,y)=>{ const r=hs(Math.floor(x*24),Math.floor(y*24),816); return r<.4?[150,92,52]:r<.7?[118,70,40]:r<.88?[176,118,70]:[84,56,36]; };
+    for(const [a,b,c,d] of [[B.x0-8,B.y1,B.x1+10,B.y1+8],[B.x0-8,B.y0-4,B.x1+10,B.y0],[B.x0-8,B.y0,B.x0,B.y1],[B.x1,B.y0,B.x1+10,B.y1]])flat(a,b,c,d,.1,asph,'L');   // (the lot in four round the shop: one piece's middle inside it was an interior's, drawn only near the door: interiors.js) flat(B.x0+8,B.y1,B.x1+.5,B.y1+2.2,.6,conc,'L'); flat(B.x1,B.y0,B.x1+2,B.y1,.6,conc,'L');
+    room('vcr','VCR REPAIR',B,{floor:conc,in:(B,nx,ny,Xw,Yw,z,f)=>sh(z<8?[118,112,102]:[200,196,186],f*(z<8?.9:1)),out,cope:[88,82,78]},{w:'f',a:B.x0+10.85,wd:1.56,h:94},(B,l0)=>{
+      const thing=(name,boxes,o={})=>PROPS.push({kind:name,name,boxes,...o}), bx=(x0,y0,x1,y1,z0,z1,c,more={})=>({x0,y0,x1,y1,z0,z1,c,...more});
+      thing('pilasters',P.map(u=>bx(B.x0+u-.22,B.y1,B.x0+u+.22,B.y1+.16,0,H-12,[138,104,88])),{walk:1});
+      thing('sign',[bx(SX0-.08,B.y1,SX1+.08,B.y1+.22,SZ0-4,SZ1+4,[198,204,212]),bx(SX0,B.y1+.22,SX1,B.y1+.26,SZ0,SZ1,[238,240,244],{em:1,fs:(nx,ny,X_,Y_,z,s)=>ny>0?sig(X_,SZ0+z):sh([198,204,212],s)})],{high:1});
+      thing('window sills',WIN.map(([a,b])=>bx(B.x0+a-.1,B.y1,B.x0+b+.1,B.y1+.22,WZ[0]-4,WZ[0],[208,208,202])),{high:1});
+      const ex=B.x1, ez=B.y1-1.4, arm=[112,116,120];   // the gooseneck, the camera, the meter on the east wall by the front corner
+      thing('gooseneck lamp',[bx(ex,ez-.06,ex+.12,ez+.06,H-24,H-14,arm),bx(ex,ez-.04,ex+1,ez+.04,H-14,H-11,arm),bx(ex+.92,ez-.04,ex+1,ez+.04,H-24,H-11,arm),bx(ex+.74,ez-.22,ex+1.18,ez+.22,H-32,H-24,[93,98,102])],{high:1});
+      LAMPS.push({own:1,x:ex+.96,y:ez,z:H-36,r:15,c:[1,.86,.62]});   // (the gooseneck's light on the side yard: the one lamp outside)
+      thing('camera',[bx(ex,ez-1.2,ex+.3,ez-.9,H-80,H-72,[226,226,223])],{high:1});
+      thing('meter',[bx(ex,B.y0+4.2,ex+.22,B.y0+4.7,30,46,[63,110,168])],{high:1});
+      // the side yard's fence: posts, the top rail, the mesh (a diamond cut out), the gate's middle post, barbed wire
+      const fy=B.y0+4.6, fx0=B.x1, fx1=B.x1+9, post=[169,173,177], mesh=(nx,ny,X_,Y_,z)=>{ const a=Math.floor(X_*24)+Math.floor(z), b=Math.floor(X_*24)-Math.floor(z); return (((a%6)+6)%6===0||((b%6)+6)%6===0)?[195,199,203]:null; };
+      thing('chain-link fence',[...[fx0+.05,fx0+4,fx1].map(x=>bx(x-.06,fy-.06,x+.06,fy+.06,0,74,post)),bx(fx0,fy-.03,fx1,fy+.03,64,67,post),bx(fx0,fy-.01,fx1,fy+.01,2,64,post,{fs:mesh}),
+        ...[70,75,80].map(z=>bx(fx0,fy-.05,fx1,fy-.04,z,z+.6,[120,122,124]))],{solids:[{x0:fx0,y0:fy-.1,x1:fx1,y1:fy+.1}]});
+      // the bed along the front: its curb, the mulch, five bare shrubs of upright twigs
+      const by0=B.y1+.16, by1=B.y1+2.1, bx0=B.x0, bx1=B.x0+7.4, tw=[90,68,54];
+      thing('planter',[bx(bx0,by0,bx1,by1,0,6,[185,183,176],{top:(x,y)=>x>bx0+.15&&x<bx1-.15&&y>by0+.1&&y<by1-.15?mulchC(x,y):[185,183,176]})],{walk:1});
+      const tws=[]; for(const [cx,s] of [[.7,.9],[1.9,1.1],[3.4,1.3],[4.9,.8],[6.3,1]])for(let i=0;i<8;i++){ const x=bx0+cx+(hs(i,cx*10,817)-.5)*.9*s, y=by0+.95+(hs(i,cx*10,818)-.5)*.7*s, h=(18+hs(i,cx*10,819)*22)*s; tws.push(bx(x-.025,y-.025,x+.025,y+.025,6,6+h,tw)); }
+      thing('bare shrubs',tws,{walk:1});
+      LAMPS.push({own:1,room:1,day:true,x:(B.x0+B.x1)/2,y:(B.y0+B.y1)/2,z:H-40,r:13,c:[1,.92,.8]}); }); });
+
   // THE WATER'S BEDS: the koi pond's, half a metre down, dark mud and its banks; the tank's is its stand's top. The water itself, below, once built
   { const P=STORE.pond, bed=(x,y)=>{ const n=grain(x,y,911,.8); return n<.4?[38,44,30]:n>.7?[58,64,44]:[46,52,36]; }, BK=[52,46,34], zb=-14;
     flat(P.x0,P.y0,P.x1,P.y1,zb,bed,'L');

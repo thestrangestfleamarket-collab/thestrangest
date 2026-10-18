@@ -625,6 +625,13 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
   and up and down, the camera brought in before any wall between his head and it (the solids he walks into); V again FIRST PERSON (a drag looks
   anywhere); V again back to isometric. `tests/startshot.cjs <out> [place] [view] [w] [h] [keys]`.
 
+- **Nimble** (owner, 17 Oct 2026: "lets make him super nimble, he can run jump roll grab things and swing, full actionable and fun to play";
+  `src/playas.js`'s NIMBLE): he runs a third faster (`PLAYAS.K`); Space is his own jump (about 1.6 m, carrying his run); in the air he
+  catches a bar in reach of his hands and hangs and swings (W / S pump, A / D along it, Space lets go with the swing's speed), or a ledge (the
+  top of a wall or fence a man's height or so, not a post: Space vaults to the far side, S drops); a low thing run at with Space he vaults
+  outright. The camera rises with him. A playground just inside the park's wall west of the gate (monkey bars, a high bar, a low bar) gives
+  him bars to catch. Roll is Y, punch J, kick K (the rig's).
+
 ## THE MARKET: the one official map
 
 **THE MARKET** (owner, 17 Oct 2026: "one official MARKET map im gona start filling in") is the game's map here: every place the owner adds goes

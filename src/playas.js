@@ -3,7 +3,7 @@
 // is you now. The game's rig still runs you (your keys, your moves, the physics, the camera); the mannequin stands where you stand, turned as
 // you are, and plays its own clips for what you're doing: standing, walking, jogging, sprinting (by your speed), in the air, a punch, a roll,
 // falling, sitting, swimming. ?avatar=walker (or GRAPHICS' AVATAR) the Walker as before. Cost: 6,872 triangles, one draw, his own shadow ----
-const PLAYAS={on:false};
+const PLAYAS={on:false}; window.PLAYAS=PLAYAS;
 { const q=QS.get('avatar'); let v=null; try{ v=localStorage.getItem('market-avatar'); }catch(e){} PLAYAS.on=(q||v||'mannequin')!=='walker';
   const K=window.UALK;
   // HIM AS A MAN, DRESSED IN ITEMS (owner, 17 Oct 2026: "make him look human, shoes, blue jeans, real color skin, hair, (no face) shirt";
@@ -65,17 +65,86 @@ const PLAYAS={on:false};
       for(const k in PLAYAS.items){ const me=PLAYAS.items[k]; if(me.material!==N.me.material)me.material=N.me.material; }   // (the items drawn as his body is: LAMPS or FLAT)
       if(!dt)return;
       const d=Math.hypot(pos.x-lx,pos.z-lz)/M/dt; lx=pos.x; lz=pos.z; sp+=(Math.min(d,9)-sp)*Math.min(1,dt*8);   // (his speed, metres a second, smoothed)
-      let lift=0; const mv=st.move&&st.move.name;
-      if(mv&&/jump|flip/.test(mv)&&B&&B.J&&B.J.pelvis)lift=Math.max(0,B.J.pelvis.y-18)*ZU*(W3.SZ||1)*(W3.BH||1);
-      g.position.set(pos.x,py+lift,pos.z); g.rotation.set(0,RAG.on?RAG.hd:heading,0);
+      PLAYAS.nimble(dt); let lift=nb.lift; const mv=st.move&&st.move.name;
+      if(nb.state==='ground'&&mv&&/jump|flip/.test(mv)&&B&&B.J&&B.J.pelvis)lift=Math.max(0,B.J.pelvis.y-18)*ZU*(W3.SZ||1)*(W3.BH||1);
+      g.position.set(pos.x,py+lift,pos.z); g.rotation.set(nb.state==='swing'?-(nb.tilt||0):0,RAG.on?RAG.hd:heading,0,'YXZ');
       let base='Idle_Loop', ts=1;
       if(RAG.on)base='Death01';
       else if(st.water&&st.water.in)base=sp>.3?'Swim_Fwd_Loop':'Swim_Idle_Loop';
       else if(st.sit)base='Sitting_Idle_Loop';
+      else if(PLAYAS.nb&&PLAYAS.nb.clip){ base=PLAYAS.nb.clip; ts=PLAYAS.nb.ts||1; }
       else if(mv&&MOVE[mv])base=MOVE[mv];
+      else if(st.up&&MOVE[st.up.name])base=MOVE[st.up.name];   /* (the punches: the rig's upper-body layer) */
       else if(sp>.25){ if(sp>3.6){ base='Sprint_Loop'; ts=sp/5; } else if(sp>2){ base='Jog_Fwd_Loop'; ts=sp/3.2; } else { base='Walk_Loop'; ts=sp/1.4; } }
-      an.base=base; an.ts=Math.max(.4,Math.min(2.2,ts)); an.update(dt); };
-    // GRAPHICS' AVATAR: the mannequin or the Walker, kept in the browser
+      an.base=base; an.ts=Math.max(.4,Math.min(2.2,ts)); an.update(dt); if(PLAYAS.nb&&PLAYAS.nb.arms)PLAYAS.armsUp(); };
+    // ---- NIMBLE (owner, 17 Oct 2026: "lets make him super nimble, he can run jump roll grab things and swing, full actionable and fun to
+    // play"): over the rig's own walking and moves, a layer of his own: he runs a third faster (PLAYAS.K, on the rig's stride); Space is his
+    // jump (higher than the rig's, carrying his run); in the air he catches what's in reach of his hands: a bar (the playground's in the park,
+    // PLAYAS.grabs) to hang and swing from (W / S pump, A / D along the bar, Space lets go with the swing's speed: from bar to bar), or a ledge
+    // (the top of a wall, a fence, a counter: the level's solid boxes) to hang from (Space vaults over to the far side, S drops); a low thing in
+    // his way, run at with Space, he vaults outright. The camera stays on the ground; his height is his own (lift). Roll (Y), punches (J),
+    // kick (K) as the rig has them
+    PLAYAS.K=1.35;
+    const MX=TILE/.84, Hm=1.85*(W3.SZ||1), HY=N.H*ZU*24/TILE, MY=HY/Hm, G=9.8*MY, JV=Math.sqrt(2*9.8*1.6)*MY;   // (MX, MY: world units a metre across and up; HY his height up)
+    const nb={state:'ground',lift:0,vy:0,vx:0,vz:0,t:0,clip:null,arms:false}; PLAYAS.nb=nb;
+    const V=THREE.Vector3, fwd=()=>new V(Math.sin(heading),0,Math.cos(heading));
+    const solidAt=(x,z)=>!!CLIP.hit(SOL[LVL]||SOL.up,x,z,.3*TILE);
+    // the bars: a playground just inside the park's wall, west of the gate (posts solid, bars to catch)
+    PLAYAS.grabs=[];
+    { const gx=BOD.XS(PARK.gate[0]+PARK.ox-9), gz=BOD.ZS(PARK.y0+PARK.oy+4.5), y0=MODS.bodega.ground(gx,gz), BL=[], blk=(x,y,z,sx,sy,sz,c)=>BL.push([x,y,z,sx,sy,sz,c]), T=TILE, post=.09*T, MET=0x3a6a8a, RUNG=0xb8bcc0;
+      const bar=(x0,z0,x1,z1,y)=>{ PLAYAS.grabs.push({a:new V(x0,y,z0),b:new V(x1,y,z1)}); const dx=x1-x0, dz=z1-z0, l=Math.hypot(dx,dz); blk((x0+x1)/2,y,(z0+z1)/2,Math.abs(dx)>Math.abs(dz)?l:.06*T,.06*T,Math.abs(dx)>Math.abs(dz)?.06*T:l,RUNG); };
+      const pole=(x,z,h)=>{ blk(x,y0+h/2,z,post,h,post,MET); SOL.up.push([x-post,z-post,x+post,z+post]); FIX.up.push([x-post,z-post,y0,x+post,z+post,y0+h]); };
+      // the monkey bars: two rails 6 tiles long, a rung every 0.8 tile
+      const mh=y0+HY*1.33, mx=gx, mz0=gz, mz1=gz+6*T, w=.9*T;
+      for(const s of [-1,1]){ pole(mx+s*w/2,mz0,mh-y0); pole(mx+s*w/2,mz1,mh-y0); blk(mx+s*w/2,mh+.04*T,(mz0+mz1)/2,.07*T,.07*T,mz1-mz0,MET); }
+      for(let z=mz0+.4*T;z<mz1-.2*T;z+=.8*T)bar(mx-w/2,z,mx+w/2,z,mh);
+      // the high bar, and a lower one, side by side
+      for(const [ox,hk] of [[-3.2,1.42],[-5.2,1.22]]){ const hx=gx+ox*T, hy=y0+HY*hk; pole(hx,gz+1.5*T,hy-y0); pole(hx,gz+3.5*T,hy-y0); bar(hx,gz+1.5*T,hx,gz+3.5*T,hy); }
+      const me=new THREE.InstancedMesh(new THREE.BoxGeometry(1,1,1),new THREE.MeshLambertMaterial(),BL.length), m4=new THREE.Matrix4(), c=new THREE.Color(), q=new THREE.Quaternion();
+      BL.forEach(([x,y,z,sx,sy,sz,col],i)=>{ me.setMatrixAt(i,m4.compose(new V(x,y,z),q,new V(sx,sy,sz))); me.setColorAt(i,c.setHex(col)); }); me.castShadow=me.receiveShadow=true; MAPG.park?MAPG.park.add(me):scene.add(me); PLAYAS.playground={x:gx,z:gz}; }
+    // the arms up over his head (hanging): each arm bone turned so its next bone is straight up from it, after his clip has posed him
+    const UP=new V(0,1,0), wq=new THREE.Quaternion(), pq=new THREE.Quaternion(), dq=new THREE.Quaternion(), A=new V(), B2=new V();
+    const bone=n=>rig.bones[K.D.rig.names.indexOf(n)], aim=(b,c,dir)=>{ b.getWorldPosition(A); c.getWorldPosition(B2); const cur=B2.sub(A).normalize(); dq.setFromUnitVectors(cur,dir); b.getWorldQuaternion(wq); b.parent.getWorldQuaternion(pq); b.quaternion.copy(pq.invert().multiply(dq.multiply(wq))); b.updateMatrixWorld(true); };
+    PLAYAS.armsUp=()=>{ N.g.updateMatrixWorld(true); for(const s of ['l','r']){ aim(bone('upperarm_'+s),bone('lowerarm_'+s),UP); aim(bone('lowerarm_'+s),bone('hand_'+s),UP); } };
+    // what his hands can catch, in the air: a bar, or a ledge
+    const hands=()=>py+nb.lift+HY*1.12;
+    const catchBar=()=>{ const hy=hands(); let best=null; for(const G_ of PLAYAS.grabs){ const ab=new V().subVectors(G_.b,G_.a), l2=ab.x*ab.x+ab.z*ab.z, t=Math.max(0,Math.min(1,((pos.x-G_.a.x)*ab.x+(pos.z-G_.a.z)*ab.z)/l2)), px=G_.a.x+ab.x*t, pz=G_.a.z+ab.z*t, d=Math.hypot(pos.x-px,pos.z-pz);
+        if(d<.45*TILE&&Math.abs(hy-G_.a.y)<HY*.22&&(!best||d<best.d))best={G:G_,t,d,p:new V(px,G_.a.y,pz)}; } return best; };
+    const catchLedge=()=>{ const hy=hands(), f=fwd(); for(const b of FIX[LVL]||FIX.up){ const top=b[5], gy=MODS.bodega.ground((b[0]+b[3])/2,(b[1]+b[4])/2); if(top-gy<HY*.45||top-gy>HY*1.7)continue; if(Math.max(b[3]-b[0],b[4]-b[1])<.35*TILE)continue;   /* (a post or a pole is no ledge) */ if(hy<top-HY*.3||hy>top+HY*.3)continue;
+        const nx=Math.max(b[0],Math.min(b[3],pos.x)), nz=Math.max(b[1],Math.min(b[4],pos.z)), dx=nx-pos.x, dz=nz-pos.z, d=Math.hypot(dx,dz); if(d>.6*TILE||d<1e-4||(dx*f.x+dz*f.z)/d<.5)continue;
+        return {b,top,n:new V(dx/d,0,dz/d),at:new V(nx-dx/d*.32*TILE,top,nz-dz/d*.32*TILE)}; } return null; };
+    const over=L=>{ const b=L.b, n=L.n; let t=0; for(let k=.3;k<4.5;k+=.15){ const x=L.at.x+n.x*k*TILE, z=L.at.z+n.z*k*TILE; if(x<b[0]-.3*TILE||x>b[3]+.3*TILE||z<b[1]-.3*TILE||z>b[4]+.3*TILE){ if(!solidAt(x,z)){ t=k; break; } } } return t?new V(L.at.x+n.x*(t+.2)*TILE,0,L.at.z+n.z*(t+.2)*TILE):null; };
+    const jump=()=>{ if(st.water&&st.water.in)return false;
+      if(nb.state==='swing'){ const v=nb.w*1.25, c=Math.cos(nb.th), s_=Math.sin(nb.th); nb.vx=nb.n.x*c*v*MX; nb.vz=nb.n.z*c*v*MX; nb.vy=(Math.max(0,s_*v*Math.sign(nb.w||1))+2.2)*MY; heading=Math.atan2(nb.n.x*Math.sign(nb.w||1),nb.n.z*Math.sign(nb.w||1)); nb.state='air'; nb.t=0; nb.cool=.35; return true; }
+      if(nb.state==='ledge'){ const to=over(nb.L); if(to){ nb.state='vault'; nb.t=0; nb.from=new V(pos.x,0,pos.z); nb.to=to; nb.top=nb.L.top; } else { nb.state='air'; nb.vy=0; } return true; }
+      if(nb.state!=='ground')return true;
+      const L=catchLowVault(); if(L){ nb.state='vault'; nb.t=0; nb.from=new V(pos.x,0,pos.z); nb.to=L.to; nb.top=L.top; return true; }
+      const f=fwd(), v=sp*MX*(sp>3?.45:.2); nb.state='air'; nb.t=0; nb.vy=JV; nb.vx=f.x*v; nb.vz=f.z*v; return true; };
+    const catchLowVault=()=>{ if(sp<1.2)return null; const f=fwd(); for(const b of FIX[LVL]||FIX.up){ const top=b[5], gy=MODS.bodega.ground((b[0]+b[3])/2,(b[1]+b[4])/2); if(top-gy>HY*.55||top-gy<HY*.12)continue;
+        const nx=Math.max(b[0],Math.min(b[3],pos.x)), nz=Math.max(b[1],Math.min(b[4],pos.z)), dx=nx-pos.x, dz=nz-pos.z, d=Math.hypot(dx,dz); if(d>.9*TILE||d<1e-4||(dx*f.x+dz*f.z)/d<.6)continue;
+        const L={b,top,n:new V(dx/d,0,dz/d),at:new V(pos.x,top,pos.z)}, to=over(L); if(to)return {to,top}; } return null; };
+    addEventListener('keydown',e=>{ if(!PLAYAS.on||e.key!==' '||e.repeat||UI.menuOpen||UI.freeCam||UI.fly||(typeof ED!=='undefined'&&ED.on)||(typeof MAPED!=='undefined'&&MAPED.on)||RAG.on)return; if(e.target&&/^(TEXTAREA|INPUT|SELECT)$/.test(e.target.tagName))return;
+      if(jump()){ e.stopImmediatePropagation(); e.preventDefault(); } },true);
+    // each frame, after the rig has walked him: his own height and what he's holding
+    PLAYAS.nimble=dt=>{ nb.clip=null; nb.arms=false; nb.cool=Math.max(0,(nb.cool||0)-dt); const k=n=>typeof keys!=='undefined'&&keys.has(n);
+      if(nb.state==='air'){ nb.t+=dt; pos.x+=nb.vx*dt; pos.z+=nb.vz*dt; collide(pos); const dk=Math.max(0,1-dt*.8); nb.vx*=dk; nb.vz*=dk;
+        nb.vy-=G*dt; nb.lift+=nb.vy*dt; nb.clip=nb.t<.18&&nb.vy>0?'Jump_Start':'Jump_Loop';
+        if(!nb.cool){ const c=catchBar(); if(c){ const ab=new V().subVectors(c.G.b,c.G.a); ab.y=0; ab.normalize(); let n=new V(-ab.z,0,ab.x); if(n.dot(fwd())<0)n.negate();
+            nb.state='swing'; nb.G=c.G; nb.t=c.t; nb.p=c.p; nb.u=ab; nb.n=n; nb.th=Math.max(-.6,Math.min(.6,Math.atan2(Math.hypot(nb.vx,nb.vz)/MX,4)*Math.sign(nb.vx*n.x+nb.vz*n.z))); nb.w=Math.hypot(nb.vx,nb.vz)/MX*.6; nb.vx=nb.vz=0; return; }
+          if(nb.vy<JV*.5){ const L=catchLedge(); if(L){ nb.state='ledge'; nb.L=L; nb.vx=nb.vz=nb.vy=0; return; } } }
+        if(nb.lift<=0){ nb.lift=0; nb.state='ground'; nb.vx=nb.vz=0; an.play('Jump_Land',{speed:1.6}); } return; }
+      if(nb.state==='swing'){ const L=1.25, pump=(k('w')||k('arrowup')?1:0)-(k('s')||k('arrowdown')?1:0);
+        nb.w+=(-(9.8/L)*Math.sin(nb.th)+pump*3.2*Math.cos(nb.th)-nb.w*.35)*dt; nb.th+=nb.w*dt; nb.th=Math.max(-1.45,Math.min(1.45,nb.th));
+        const sh=((k('d')||k('arrowright')?1:0)-(k('a')||k('arrowleft')?1:0)); if(sh){ const ab=new V().subVectors(nb.G.b,nb.G.a), l=Math.hypot(ab.x,ab.z)||1; nb.t=Math.max(0,Math.min(1,nb.t+sh*dt*1.2*TILE/l*(nb.u.dot(new V(Math.cos(heading),0,-Math.sin(heading)))>0?1:-1))); nb.p.set(nb.G.a.x+ab.x*nb.t,nb.G.a.y,nb.G.a.z+ab.z*nb.t); }
+        pos.x=nb.p.x+nb.n.x*Math.sin(nb.th)*L*MX; pos.z=nb.p.z+nb.n.z*Math.sin(nb.th)*L*MX; heading=Math.atan2(nb.n.x,nb.n.z);
+        nb.lift=nb.p.y-HY*1.12-py+(1-Math.cos(nb.th))*L*MY; nb.clip='Jump_Loop'; nb.arms=true; nb.tilt=nb.th; return; }
+      if(nb.state==='ledge'){ pos.x=nb.L.at.x; pos.z=nb.L.at.z; heading=Math.atan2(nb.L.n.x,nb.L.n.z); nb.lift=nb.L.top-HY*1.12-py; nb.clip='Jump_Loop'; nb.arms=true;
+        if(k('s')||k('arrowdown')){ nb.state='air'; nb.vy=0; nb.cool=.4; } return; }
+      if(nb.state==='vault'){ nb.t+=dt; const T=.55, u=Math.min(1,nb.t/T); pos.x=nb.from.x+(nb.to.x-nb.from.x)*u; pos.z=nb.from.z+(nb.to.z-nb.from.z)*u; heading=Math.atan2(nb.to.x-nb.from.x,nb.to.z-nb.from.z);
+        const g0=MODS.bodega.ground(pos.x,pos.z); nb.lift=Math.max(0,(nb.top+HY*.08-g0)*Math.sin(Math.PI*Math.min(1,u*1.15))); nb.clip=u<.5?'Jump_Start':'Jump_Loop'; nb.ts=1.4;
+        if(u>=1){ nb.state='ground'; nb.lift=0; an.play('Jump_Land',{speed:1.8}); } return; }
+      nb.lift=0; nb.tilt=0; };
+
     const g0=document.querySelector('#dgrain'); if(g0){ const b=document.createElement('button'); b.className='btn'; b.id='davatarpick'; const draw=()=>{ b.textContent='AVATAR: '+(PLAYAS.on?'MANNEQUIN':'WALKER'); b.setAttribute('aria-pressed',String(PLAYAS.on)); };
       b.onclick=()=>{ PLAYAS.on=!PLAYAS.on; try{ localStorage.setItem('market-avatar',PLAYAS.on?'mannequin':'walker'); }catch(e){} draw(); }; g0.parentNode.appendChild(b); draw(); }
     if(g0){ for(const name of ['hair','shirt','jeans','shoes']){ const b=document.createElement('button'); b.className='btn'; const draw=()=>{ const on=PLAYAS.items[name]&&PLAYAS.items[name].visible; b.textContent=name.toUpperCase()+(on?' ON':' OFF'); b.setAttribute('aria-pressed',String(!!on)); }; b.onclick=()=>{ PLAYAS.wear(name); draw(); }; g0.parentNode.appendChild(b); draw(); } }

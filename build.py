@@ -238,7 +238,7 @@ mod=rp(mod,"{ const sp=new ShaderPass(OUTL.pass); composer.addPass(sp);","{ cons
 # STOPPING AT ONCE (owner, 17 Oct 2026: "when i stop walking ... im sliding a little"): the rig's own snap, the game's for you (47-you-jointed);
 # the close view of HIS SHAPE on his middle; the double click's walk to a thing each frame
 mod=rp(mod,"const cloud=RIG.bake(0.5,1), st=RIG.create();","const cloud=RIG.bake(0.5,1), st=RIG.create(); st.snap=true;")
-mod=rp(mod,"if(UI.freeCam)disp.copy(UI.camT); else disp.set(pos.x,py,pos.z);","if(UI.freeCam)disp.copy(UI.camT); else{ disp.set(pos.x,py+(ED.on?0.85:0),pos.z); disp.add(UI.off); }")
+mod=rp(mod,"if(UI.freeCam)disp.copy(UI.camT); else disp.set(pos.x,py,pos.z);","if(UI.freeCam)disp.copy(UI.camT); else{ disp.set(pos.x,py+(ED.on?0.85:0)+(window.PLAYAS&&PLAYAS.on&&PLAYAS.nb?PLAYAS.nb.lift*.7:0),pos.z); disp.add(UI.off); }   /* (the camera up with him off the ground: playas.js) */")
 mod=rp(mod,"  marker.visible=!!target;","  UI.goTick(); UI.runTick();\n  marker.visible=!!target;")
 head=rp(head,'<div><b>Click</b> the ground to walk there</div>','<div><b>Double-click</b> the ground to walk there, or a thing to go to it</div>')
 # THE NEON, REAL (owner, 17 Oct 2026: "the light isnt taking into account its surroundings", "match the style", "totally disappears when diff
@@ -264,6 +264,7 @@ mod=rp(mod,"  for(const l of BOD.LAMPS){ const cm=Math.max(...l.c);","""  // the
       m.onBeforeRender=(r,s,c)=>{ m.quaternion.copy(c.quaternion); c.getWorldDirection(f); m.position.copy(at).addScaledVector(f,-.3); m.updateMatrixWorld(); }; scene.add(m); } }
   for(const l of BOD.LAMPS){ const cm=Math.max(...l.c);""")
 # HIS BODY IN A PHYSICS ENGINE (owner, 17 Oct 2026): src/physbody.js, after the rig has placed him each frame
+mod=rp(mod,"const go=(st.dist-before)/PPU;","const go=(st.dist-before)/PPU*(typeof PLAYAS!=='undefined'&&PLAYAS.on&&PLAYAS.K?PLAYAS.K:1);")   # (NIMBLE: the mannequin runs a third faster, src/playas.js)
 mod=rp(mod,"W3.place(B,pos.x,py,pos.z,RAG.on?RAG.hd:heading,hdA,ZU); if(ED.on)ED.tick();","W3.place(B,pos.x,py,pos.z,RAG.on?RAG.hd:heading,hdA,ZU); if(typeof PLAYAS!=='undefined')PLAYAS.tick(dt,B); PB.step(dt,B,pos.x,py,pos.z,RAG.on?RAG.hd:heading,groundY(pos.x,pos.z),RAG.on); if(ED.on)ED.tick();")
 # HIS MOVES, EDITABLE (owner, 17 Oct 2026: "edit his walk and other movements in the HIS SHAPE editor"; his picks: the walk's and the run's
 # dials, a keyframe editor for every move, new moves of his own): src/animator.js. In the rig: the walk's dials (each 1 as it was), the

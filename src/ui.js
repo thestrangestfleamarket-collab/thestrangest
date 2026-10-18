@@ -126,6 +126,11 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
     cam.lookAt(T); cam.updateMatrixWorld(); };
   UI.setView(new URLSearchParams(location.search).get('view')||'iso');   // (owner, 17 Oct 2026, his picture: "start the game always in this view 1st": ISOMETRIC, every time; ?view= for a test)
   UI.home=()=>{ UI.off.set(0,0,0); zAt=null; if(UI.freeCam)setFree(false); };
+  // BACK ON HIM WHEN HE MOVES (owner, 18 Oct 2026: "anytime youve scrolled away off screen from your character and then you stat to move again,
+  // it should snap back to focus on you"): each frame he moves while the view's slid off him and he's off the picture, the view is put back on him
+  let fx=null, fz=null; const fv=new THREE.Vector3();
+  UI.follow=()=>{ const mv=fx!=null&&Math.hypot(pos.x-fx,pos.z-fz)>1e-4; fx=pos.x; fz=pos.z; if(!mv||UI.off.lengthSq()<1e-8)return;
+    fv.set(pos.x,py+.9,pos.z).project(cam); if(Math.abs(fv.x)>.92||Math.abs(fv.y)>.92){ UI.off.set(0,0,0); zAt=null; } };
   cv.addEventListener('pointerdown',e=>{ if(e.button!==0||ED.on)return; if(MAPED.down(e)||WE.down(e)){ cv.setPointerCapture(e.pointerId); return; }   /* (the map editor's drag of a place first: mapedit.js) */ L={x:e.clientX,y:e.clientY,x0:e.clientX,y0:e.clientY,moved:false}; UI.grab(e); cv.setPointerCapture(e.pointerId); });
   cv.addEventListener('pointermove',e=>{ if(MAPED.dragging){ MAPED.move(e); return; } if(WE.dragging){ WE.move(e); return; } if(!L)return; if(!L.moved&&Math.hypot(e.clientX-L.x0,e.clientY-L.y0)>5)L.moved=true;
     // DRAGGING THE MAP (owner, 17 Oct 2026: "you should be able to drag the map and change your focal point, its still too hard to navigate"):

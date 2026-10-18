@@ -110,8 +110,8 @@ if(MAIL.on){ const T=TILE, M=1/.84*T, X=BOD.XS, Z=BOD.ZS, G=(x,z)=>MODS.bodega.g
           A.box={x:q.x,y:q.y,z:q.z,F}; A.flag=FL.push({x:q.x+F.t.x*.17*M,y:q.y,z:q.z+F.t.z*.17*M,F,up:false})-1; A.tick=TK.push({x:q.x+F.n.x*.09*M,y:q.y+.07*M,z:q.z+F.n.z*.09*M,F,on:false})-1; A.step=b.upStep; }); } }
     for(const A of MAIL.addr)if(!A.step)A.step=A.b.step;
     // the blue collection boxes: on the loop's sidewalks, a clear spot near each wanted one (solid)
-    // (the gate's box east of its crossing: its kerb ramp, 18 Oct 2026)
-    const want=[[70,-73.2],[108,-73.2],[148,-73.2],[PARK.gate[1]+PARK.ox+3.5,BOD.FAR+.6],[AVE.r1+1.6,RING.ny0-30],[AVE.r1+1.6,RING.ny0-5],[118,RING.nr1+1.6],[60,RING.nr1+1.6],[RING.wr0-1.6,RING.ny0-25],[RING.wr0-1.6,BOD.FAR+20]],   /* (by the loop's own measures: the roads three times wider, 18 Oct 2026) */ free=window.STFREE||(()=>true);
+    // (one a street, owner 18 Oct 2026: "lets only have 1 mail box per street": by the kerb of each road's park side, clear of the gates)
+    const pm=(PARK.x0+PARK.x1)/2, py=(PARK.y0+PARK.y1)/2, want=[[pm+6,BOD.FAR+.9],[RING.wr1+.9,py+7],[pm+9,RING.nr0-.9],[AVE.r0-.9,py-7]], free=window.STFREE||(()=>true);
     for(const [tx,ty] of want){ let s=null; for(let r=0;r<6&&!s;r+=.5)for(let a=0;a<8&&!s;a++){ const x=X(tx)+Math.cos(a*Math.PI/4)*r*T, z=Z(ty)+Math.sin(a*Math.PI/4)*r*T; if(free(x,z,.6*T))s={x,z}; } if(!s)continue;
       const y=G(s.x,s.z), w=.55*M, d=.5*M; for(const [lx,lz] of [[-1,-1],[1,-1],[-1,1],[1,1]])blk(s.x+lx*w*.38,y+.08*M,s.z+lz*d*.38,.06*M,.16*M,.06*M,0x1a2440);
       blk(s.x,y+.6*M,s.z,w,.88*M,d,0x24448c); blk(s.x,y+1.08*M,s.z,w*.9,.12*M,d*.9,0x2a4e9c); blk(s.x,y+.8*M,s.z,w+.01*M,.08*M,d+.01*M,0xe8e8e0); blk(s.x,y+.96*M,s.z+d/2+.005*M,w*.6,.04*M,.02*M,0x101420);

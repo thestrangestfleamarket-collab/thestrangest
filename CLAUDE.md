@@ -1250,23 +1250,11 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   2.5 s to 0.34 s (software rendering). Looked at and **not** taken: recast-navigation for `CITY.route` (the A* there judges each walker's way by
   his own test of a spot, which a navmesh can't; routes are 2-20 ms already); BatchedMesh's per-object culling (needs three past r160, and
   map-pre.js patches r160's shader chunks by their text).
-- **The Godot rebuild, its first test** (owner, 18 Oct 2026: "lets start on a rebuild using godot. i dont want any sort of godot splash screen i want
-  it completely hidden. build out a test small game with just one building and my walker on godot. match graphics exactly"; `godot/`, its
-  README): Godot 4.5.1, the Compatibility renderer (the browser's). The bodega and the ground round it, the Walker, the opening isometric view at
-  3:30 pm, all **taken from the running three.js game** (`godot/tools/bake.cjs`: the faces, atlases, lamps (LITE's records), solids, ground
-  heights, the clock's light every half hour; the Walker's mesh and his idle, walk and run sampled from the rig itself); THE MARKET's look ported
-  as shaders (the faces' shades by facing and the soft bands on the light's sum, the lamps lit in the shader as three.js lights them; the
-  Walker's toon gradient and SELF; oldlook.js's grade; the one lamp shadow in its own pass, indoors and at night). No splash: no boot image, the
-  page's only line THE MARKET's loading line. Set beside THE MARKET at the same spots (`tools/refshot.cjs`): the same picture but for what isn't in
-  the test (the street light, the mailbox, the fences, the people). Its own artifact: **https://claude.ai/artifact/A11ZoF3QuZ75dsdbdyQUyh**
-  (`python3 godot/tools/pack_web.py`, the .wasm and .pck gzipped and named .wasm to fit and be served). Found on the way, THE MARKET's own: a
-  room's lamps light only after LITE's next quarter-second pick (a headless screenshot can come before it).
-  **Then** (18 Oct 2026): the park's oaks (three of them, on the lawn past the far sidewalk; THE MARKET's sway and tree look 3, `tree.gdshader`)
-  and **the grass** (owner: "make the grass out of same as trees, just make it cover the ground (it should move an flow, and when you walk through
-  it be disrupetd by your movement natrually)"): one-triangle blades on every lawn texel, each its colour, swaying in the oaks' wind, parted where he
-  walks and springing back (`grass.gdshader`, `_grass` / `_trail` in `main.gd`); the game opens on the park's lawn. **Paused there** (owner, 18 Oct
-  2026: "lets pause the godot rebuild for now"). Found on the way, in THE MARKET itself: **the oaks aren't drawn on `main`** (the park's
-  reorganization, 5b3dd53, kept their places and models but lost `PARK.trees=mesh(TREES...)`); the Godot bake used a private build with it put back.
+- **The Godot rebuild: archived, not part of the game** (owner, 18 Oct 2026: "i want to remove the godot test for now - archive it not part of
+  this game at all"): the Godot 4.5.1 test (the bodega, the Walker, the oaks and the grass baked from THE MARKET; its artifact
+  https://claude.ai/artifact/A11ZoF3QuZ75dsdbdyQUyh) is out of `main`; the whole of it, `godot/` and its README, kept on the branch
+  **`archive/godot-test`**. Nothing in THE MARKET's build ever read it. Don't bring it back without his word. Found on the way, still open in
+  THE MARKET: the oaks aren't drawn on `main` (the park's reorganization, 5b3dd53, lost `PARK.trees=mesh(TREES...)`).
 - **The toys and the droids deleted; the tomato's veggie stand; the Fox and his counter; the menu; running freely** (owner, 18 Oct 2026):
   **The toys** ("remove the toy charcters from ame completely"): the six (bear, monkey, penguin, pig, sheep, bunny) out of the game and the data
   (`src/npc-toys.js` gone, their models out of `data/props.json` and `data/full/props.json`, park.js's hand-off, the newsstand's headline).
@@ -1292,3 +1280,15 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   the batches' map chunks culled by the camera, characters out of the picture not drawn and far ones not run. Measured (tests/trisby.cjs,
   11 am, all on screen): the street 165,000 to 284,000 triangles (the bodega's shelves seen through its windows), the shop 141,000 to 288,000,
   the park 172,000 to 128,000. `tests/freewalk.cjs <out> [query]`, `tests/vegshot.cjs <out>`.
+- **The skeletons in the dungeon; one mailbox a street; the street light whole; the view back on you; the stalls' mockups** (owner, 18 Oct 2026):
+  **The skeletons** ("i want all the skeleton warriors and skeletons to be underneath the castle in the dungeon"): the four KayKit guards (their
+  street beats left), the gold skeleton and the four skeleton pawns (mage, reaper, guard light and heavy) live in the castle's great hall, walking
+  about it (`DUN()` in `npc-map.js`: the level under the street, the dungeon's group and floor, its solids; out of walkers.js's and lives.js's ways
+  of life). The troublemakers (the Rogue gone dark: skeletons too) don't come up the stairs any more (`?trouble=1` brings them back). The
+  mushroom seller, a skeleton, stays at his stall. **The collection boxes** ("lets only have 1 mail box per street"): four, one on each road's
+  park-side kerb clear of the gates (`mail.js`). **The street light** ("the lamppost doesnt connect"): its arm had floated a third of a metre over
+  the pole's top; the pole now runs up to it under a cap (`dress.js`). **Back on you** ("anytime youve scrolled away off screen from your
+  character and then you stat to move again, it should snap back to focus on you"): any frame he moves while the view's slid off him and he's off
+  the picture, the view is put back on him (`UI.follow`, `ui.js`). **The stalls without tents** ("i dont want these stripped tenst ... rows and rows
+  of diff mushrooms, standing between three tables in u shape ... show me mockups"): `mockups/market-stalls.html`,
+  https://claude.ai/artifact/ET6bXTLDgHdTfyAsyG4MTn (A trays, B stepped tiers, C heaps and overflow); his pick to come.

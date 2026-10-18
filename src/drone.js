@@ -15,7 +15,8 @@ DRONE.init=()=>{ const H=MODS.apts; if(!H||!H.A||!H.made)return; const A=H.A, T=
   const desk=H.made.find(p=>p.kind==='writing desk with a pink lamp'); if(!desk)return;
   const big=desk.boxes.filter(b=>(b.x1-b.x0)*(b.y1-b.y0)>.4), top=Math.max(...big.map(b=>b.z1)), hi=desk.boxes.filter(b=>b.z0>=top-1), lx=hi.length?hi.reduce((a,b)=>a+(b.x0+b.x1)/2,0)/hi.length:desk.x1;
   const px=lx>(desk.x0+desk.x1)/2?desk.x0+.42:desk.x1-.42, py=(desk.y0+desk.y1)/2, fy=Z(desk.y1)>Z(desk.y0)?1:-1;   // (fy: which way is out from the wall, in the world's z)
-  const PC=new THREE.Group(), BEIGE=lam(0xcfc6a8), DARK=lam(0x6a665a); PC.position.set(X(px),Y(top),Z(py));
+  const CZ=H.cotS||0;   // (the cottage's floor: the 2nd in the lobby plan, apts.js)
+  const PC=new THREE.Group(), BEIGE=lam(0xcfc6a8), DARK=lam(0x6a665a); PC.position.set(X(px),Y(top+CZ),Z(py));
   const u=v=>v*T, h=v=>Y(v)-Y(0);   // (tiles across, the game's px up, in world units)
   const base=bx(u(.6),h(6),u(.42),BEIGE); base.position.set(0,h(3),0);
   const mon=bx(u(.46),h(17),u(.38),BEIGE); mon.position.set(0,h(6+8.5),-fy*u(.02));
@@ -26,7 +27,7 @@ DRONE.init=()=>{ const H=MODS.apts; if(!H||!H.A||!H.made)return; const A=H.A, T=
   { const cv=document.createElement('canvas'); cv.width=32; cv.height=24; const g=cv.getContext('2d'); g.fillStyle='#1d4a2e'; g.fillRect(0,0,32,24); g.fillStyle='#8cf0a8';
     for(const [x,y,w] of [[3,4,18],[3,8,12],[3,12,22],[3,16,8]])g.fillRect(x,y,w,1); g.fillRect(12,16,2,2);
     const t=new THREE.CanvasTexture(cv); t.magFilter=t.minFilter=THREE.NearestFilter; t.generateMipmaps=false; t.colorSpace=THREE.SRGBColorSpace; scr.material=new THREE.MeshBasicMaterial({map:t}); }
-  const hit=bx(u(.9),h(30),u(.8),new THREE.MeshBasicMaterial({visible:false})); hit.position.set(X(px),Y(top+12),Z(py)); MAPG.bodega.add(hit);
+  const hit=bx(u(.9),h(30),u(.8),new THREE.MeshBasicMaterial({visible:false})); hit.position.set(X(px),Y(top+CZ+12),Z(py)); MAPG.bodega.add(hit);
   // ---- the drone: a body, four arms, four rotors (two-bladed bars), its light, the parcel it carries
   const D=new THREE.Group(), GREY=lam(0x3a3d44), LIGHT=lam(0x9aa0aa), body=bx(.3,.08,.3,GREY); D.add(body);
   const rot=[]; for(const [sx,sz] of [[1,1],[1,-1],[-1,1],[-1,-1]]){ const arm=bx(.22,.03,.04,GREY); arm.position.set(sx*.13,0,sz*.13); arm.rotation.y=Math.atan2(sz,sx)*-1; D.add(arm);
@@ -36,7 +37,7 @@ DRONE.init=()=>{ const H=MODS.apts; if(!H||!H.A||!H.made)return; const A=H.A, T=
   D.scale.setScalar(T/1.13); MAPG.bodega.add(D);
   // home: on the bodega's door frame, a little out from its front; the window it delivers to: the house's middle front one
   const B=BOD.B0, out=Z(B.y1)>Z(B.y0)?1:-1, HOME=new THREE.Vector3(X((B.x0+B.x1)/2+.9),Y(97),Z(B.y1)+out*.35*T), hout=Z(A.y1)>Z(A.y0)?1:-1;
-  const WIN=new THREE.Vector3(X((A.x0+A.x1)/2),Y(70),Z(A.y1)+hout*.75*T), DROP=new THREE.Vector3(X((A.x0+A.x1)/2),Y(0)+.02,Z(A.y1)-hout*.9*T), CRUISE=9;
+  const WIN=new THREE.Vector3(X((A.x0+A.x1)/2),Y(CZ+70),Z(A.y1)+hout*1.5*T), DROP=new THREE.Vector3(X((A.x0+A.x1)/2),Y(CZ)+.02,Z(A.y1)-hout*.9*T), CRUISE=9;   // (out past the fire escape's platform)
   D.position.copy(HOME); D.rotation.y=Math.atan2(WIN.x-HOME.x,WIN.z-HOME.z);
   DRONE.mesh=D; DRONE.pc=PC;
   // ---- the flight: a list of legs, each to a point at its own pace (up and down slower than along; a leg may say which way to face: down to

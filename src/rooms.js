@@ -36,7 +36,7 @@ ROOMS.roofAt=(x,y,z)=>{ const h=new THREE.Raycaster(new THREE.Vector3(x,y,z),new
     // to cut nothing. Not the characters. Their shadows stay (clipShadows off), so the light in the room doesn't change
     const cutOn=hit&&!UI.persp&&(UI.view==='iso'||UI.view==='map');
     if(cutOn){ if(!NEARON){ NEARON=true; const skip=new Set([W3.group,...NPCS.map(N=>N.g)]); for(const o of [window.PLAYAS&&PLAYAS.N&&PLAYAS.N.g,typeof MUS!=='undefined'&&MUS.g,typeof PNM!=='undefined'&&PNM.g,typeof SGM!=='undefined'&&SGM.g,typeof DRM!=='undefined'&&DRM.g])if(o)skip.add(o);
-        const walk=o=>{ if(skip.has(o)||o.isSkinnedMesh)return; const ms=o.material?(Array.isArray(o.material)?o.material:[o.material]):[]; for(const mt of ms){ if(mt.clippingPlanes===NEAR||(mt.isShaderMaterial&&!mt.clipping))continue; mt.clippingPlanes=NEAR; mt.clipIntersection=true; mt.needsUpdate=true; } for(const c of o.children)walk(c); };
+        const walk=o=>{ if(skip.has(o)||o.isSkinnedMesh)return; const ms=o.material?(Array.isArray(o.material)?o.material:[o.material]):[]; for(const mt of ms){ if(mt.clippingPlanes===NEAR||(mt.isShaderMaterial&&!mt.clipping)||(mt.clippingPlanes&&mt.clippingPlanes.length))continue;   /* (a cut wall keeps its own plane: given NEAR in its place, every wall's cut to its foot stopped for good once any room was entered, the Metro's, the castle's, 18 Oct 2026) */ mt.clippingPlanes=NEAR; mt.clipIntersection=true; mt.needsUpdate=true; } for(const c of o.children)walk(c); };
         walk(scene); }
       const cx=cam.position.x-pos.x, cz=cam.position.z-pos.z, l=Math.hypot(cx,cz)||1, ux=cx/l, uz=cz/l;
       NEAR[0].normal.set(0,-1,0); NEAR[0].constant=py+.45*ZU*24/.84;   /* (above his knee: 0.45 m) */

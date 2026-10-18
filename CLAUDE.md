@@ -982,3 +982,9 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   shoe; the house's dark, the bodega's galvanized, Ghost Street's copper); parapets with coping on the flat roofs; on the house the water tank
   on its stand, the stair bulkhead, the elevator's machine room, chimneys, vents, soil stacks, a TV antenna; on the bodega an AC unit, an
   exhaust fan, a skylight, vents. Cost: 2,500 triangles, three instanced draws; no lamp, no program.
+- **The Metro's benches are seats** (owner, 18 Oct 2026, "go all", the Metro's open items; `metro.js`, `use.js`): a double click on one of the
+  platform's three benches walks him up and sits him on it, facing the platform, till a key or a walk gets him up (the kit's benches aren't the
+  batch's, so each has a hidden box to be clicked by, in the level under the street's group, and its seat found from the kit's faces round it,
+  as the park's sitting log's: `METRO.seats`, `METRO.things`). Cost: three invisible boxes, nothing a frame. **Found on the way** (`rooms.js`):
+  the first room entered (a fresh start is in the cottage) gave every material the near-side cut's two planes in place of its own, so every cut
+  wall (the Metro's, the castle's, the stored rooms') stopped cutting for good; a material with planes of its own now keeps them.

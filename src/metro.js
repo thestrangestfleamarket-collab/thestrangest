@@ -101,13 +101,14 @@ METRO=(()=>{ const D=METROD, S=1.15, SURF=11.55, PLAT=1.4;   // (SURF: the kit's
   const wallThing=(key,z,o={})=>{ const p=D.pieces[key], w=p.hi[0]-p.lo[0], d=p.hi[2]-p.lo[2], cx=(p.lo[0]+p.hi[0])/2, cz=(p.lo[2]+p.hi[2])/2, x=BW-d/2-.03;   // (turned a quarter: its width along z, its depth along x, its back on the wall)
     put(PR,key,{yaw:Math.PI/2,dx:x-cx,dz:z-cz,dy:o.floor?PLAT-p.lo[1]:0,use:o.floor?undefined:'w+x'});   /* (what hangs on the wall cut with it: its back showed dark where the wall was cut away) */ if(o.solid)sol(solids,fixed,x-d/2,z-w/2,BW,z+w/2,p.hi[1]-p.lo[1]); };
   wallThing('ticket_machine',49.2,{solid:true,floor:true}); wallThing('metro_map',47.1); wallThing('Vending_machine',8,{solid:true,floor:true});
-  for(const z of [17,33,41])wallThing('Chair',z,{solid:true,floor:true});
+  // the benches: seats a double click sits him on (use.js, as the old station's were): where each stands, in the world
+  METRO.seats=[]; for(const z of [17,33,41]){ wallThing('Chair',z,{solid:true,floor:true}); const d=D.pieces.Chair.hi[2]-D.pieces.Chair.lo[2], kx=BW-d/2-.03; METRO.seats.push({x:X(kx,z),z:Z(kx,z),y:Y(PLAT),w:S*(D.pieces.Chair.hi[0]-D.pieces.Chair.lo[0]),d:S*d}); }
   for(const z of [4,25,45.5])wallThing('trash_can',z,{solid:true,floor:true});
   { const pairs=[[12,'Poster_01','Poster_05'],[21,'Poster_02','Poster_06'],[30,'Poster_03','Poster_07'],[38,'Poster_04','Poster_08']]; for(const [z,a,c] of pairs){ wallThing(a,z); wallThing(c,z); } }
   const tube=(grp2,kx,kz,ceil,o={})=>{ const p=D.pieces.light, cx=(p.lo[0]+p.hi[0])/2, cz=(p.lo[2]+p.hi[2])/2; put(grp2,'light',{dx:kx-cx,dz:kz-cz,dy:ceil-p.hi[1]-.02}); return lamp(o.grp||scene,kx,ceil-.4,kz,o.i||16,o.reach||10); };   // (as bright as the old station's platform, 18 Oct 2026: 5 left it in the dark)
   for(let z=-2;z<=54;z+=8){ tube(LI,16.9,z,6.11); tube(LI,12.3,z+4,6.11); }
   // the walls' cut: to a hand over the platform's floor; the ceilings over the platform overhead
-  flush(B,grp,{foot:Y(PLAT)+.3}); flush(PR,grp,{shadow:true}); const lm=flush(LI,grp); for(const m of lm)OVERHEAD.push({o:m,y:Y(6.0)});
+  flush(B,grp,{foot:Y(PLAT)+.3}); METRO.things=flush(PR,grp,{shadow:true});   // (things: the benches' faces for use.js's seat finder) const lm=flush(LI,grp); for(const m of lm)OVERHEAD.push({o:m,y:Y(6.0)});
   // where you can't walk: the track (the platform's edge a drop you don't take), the back wall, the ends, the closet, the exit hall's walls
   sol(solids,fixed,4.5,-70,EDGE,Z_N+1,1.4); sol(solids,fixed,BW,Z_S-1,BW+.6,Z_N,4.7); sol(solids,fixed,EDGE,Z_S-.5,BW+.6,Z_S,4.7); sol(solids,fixed,12.0,Z_S,BW+.6,-1.5,4.7);
   sol(solids,fixed,9.0,Z_N,9.54,79.5,9); sol(solids,fixed,17.89,Z_N,28.9,73.7,9); sol(solids,fixed,9.0,78.64,28.9,79.5,9); sol(solids,fixed,BW,Z_N-.3,BW+.6,Z_N+.5,4.7);

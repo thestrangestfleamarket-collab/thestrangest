@@ -11,7 +11,7 @@ const DRESS={};
   const BL=[], blk=(x,y,z,sx,sy,sz,c)=>BL.push([x,y,z,sx,sy,sz,c]), solid=(x,z,r,h)=>{ SOL.up.push([x-r,z-r,x+r,z+r]); FIX.up.push([x-r,z-r,G(x,z),x+r,z+r,G(x,z)+h]); };
   // (owner, 17 Oct 2026, after the first dressing: "delete everything you added except for the new building, street lights, and trash can and
   // bus stop", "dont remove the dragon either"): the cans at the kerb, the bus stop with its bench, the street light; nothing else of the kit
-  { const M=1/.84*TILE; for(const [x,c] of [[BX0-1.2,0x2f4a3a],[AX0-1.5,0x2f4a3a],[BOUND.x1-2.2,0x2f4a3a]]){ const z=sw-.25*M, y=G(x,z), w=.56*M, h=.9*M; DRESS.cans.push({x,z});   // (the corner's wire basket: dark green, a darker band at its rim and foot, rubbish heaped in it)
+  { const M=1/.84*TILE; for(const [x,c] of [[BX0-1.2,0x2f4a3a],[AX0-1.5,0x2f4a3a],[BOD.XS(AVE.x0)-2.2,0x2f4a3a]]){ const z=sw-.25*M, y=G(x,z), w=.56*M, h=.9*M; DRESS.cans.push({x,z});   // (the corner's wire basket: dark green, a darker band at its rim and foot, rubbish heaped in it)
     blk(x,y+.05*M,z,w*.86,.1*M,w*.86,0x1c2a22); blk(x,y+h/2,z,w,h*.8,w,c); blk(x,y+h-.04*M,z,w*1.04,.08*M,w*1.04,0x1c2a22); blk(x-.05*M,y+h+.03*M,z+.04*M,w*.7,.1*M,w*.6,0x8a8478); blk(x+.1*M,y+h+.07*M,z-.08*M,w*.3,.08*M,w*.35,0xb8452f); solid(x,z,w/2,h); } }
   // (the bus stop and its bench: removed, owner 17 Oct 2026, "remove the bus stop and bus bench")
   // STREET LIGHTS AND LAMP POSTS (owner, 17 Oct 2026: "lets add a street light and lamp posts where they would go"): as a New York street has

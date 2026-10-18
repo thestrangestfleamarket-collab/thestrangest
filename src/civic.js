@@ -11,21 +11,33 @@
 const CIVIC={row:[],staff:{},log:[],ledger:{treasury:500,day:0,rent:30,tax:10,wage:20,curfew:[23,5]},shops:{},mail:{bag:[],boxes:{}},fires:[],cans:[]}; window.CIVIC=CIVIC;
 { const T=TILE, M=1/.84*T, YS=ZU*24/TILE, G=(x,z)=>MODS.bodega.ground(x,z);
   CIVIC.note=(what,where)=>{ CIVIC.log.unshift({t:CLOCK.h,day:CITY.day,what,where:where||''}); if(CIVIC.log.length>80)CIVIC.log.length=80; };
-  // ---- THE ROW: six houses east of the street's end, fronts on the building line (z 0), 3 tiles wide, 3 deep, 2.6 m high, a doorway in the front
-  const HOUSES=[['precinct','THE PRECINCT',0x2b3f7a,0x7f9ad8],['firehouse','THE FIREHOUSE',0x9a2b22,0xe8c070],['post','THE POST OFFICE',0x2f5f9e,0xe8e4d8],['depot','THE DEPOT',0xb86a1e,0x3a2a1a],['hall','CITY HALL',0x8c8678,0x3a3630],['clinic','THE CLINIC',0xd8d8d0,0xc8302a]];
-  const BL=[], blk=(x,y,z,sx,sy,sz,c)=>BL.push([x,y,z,sx,sy,sz,c]), X0=BOUND.x1+4*T, GAP=5.5*T, Wd=3*T, D=3*T, H=2.6*M, TK=.22*T;
-  HOUSES.forEach(([id,name,col,sign],i)=>{ const cx=X0+i*GAP+Wd/2, zf=0, zb=-D, y=G(cx,zf), dk=(c=>{ const r=(c>>16)*.6|0, g=((c>>8)&255)*.6|0, b=(c&255)*.6|0; return (r<<16)|(g<<8)|b; })(col);
-    blk(cx-Wd/2+TK/2,y+H/2,zb+D/2,TK,H,D,col); blk(cx+Wd/2-TK/2,y+H/2,zb+D/2,TK,H,D,col); blk(cx,y+H/2,zb+TK/2,Wd,H,TK,col);   // the sides and the back
-    const dw=1.3*T, pw=(Wd-dw)/2; blk(cx-Wd/2+pw/2,y+H/2,zf-TK/2,pw,H,TK,col); blk(cx+Wd/2-pw/2,y+H/2,zf-TK/2,pw,H,TK,col); blk(cx,y+H-.25*M,zf-TK/2,dw,.5*M,TK,col);   // the front round its doorway (the lintel)
-    blk(cx,y+H+.08*M,zb+D/2,Wd+.2*T,.16*M,D+.2*T,dk); blk(cx,y+H+.5*M,zf+.02*T,Wd*.8,.6*M,.12*T,sign); blk(cx,y+H+.5*M,zf+.08*T,Wd*.3,.14*M,.06*T,0xf4f0e8);   // the roof slab, the sign over the door, its white stripe
-    if(id==='clinic'){ blk(cx,y+H+.5*M,zf+.1*T,.14*M,.5*M,.06*T,0xc8302a); blk(cx,y+H+.5*M,zf+.1*T,.5*M,.14*M,.06*T,0xc8302a); }   // the cross
-    if(id==='firehouse')blk(cx,y+H+1.0*M,zb+.6*T,.3*M,.9*M,.3*M,0x6a2a22);   // a bell tower stub
-    for(const bx of [[cx-Wd/2,zb,cx-Wd/2+TK,zf],[cx+Wd/2-TK,zb,cx+Wd/2,zf],[cx-Wd/2,zb,cx+Wd/2,zb+TK],[cx-Wd/2,zf-TK,cx-Wd/2+pw,zf],[cx+Wd/2-pw,zf-TK,cx+Wd/2,zf]]){ SOL.up.push(bx); FIX.up.push([bx[0],bx[1],y,bx[2],bx[3],y+H]); }
-    CIVIC.row.push({id,name,x:cx,z:zf,col,at:{x:cx,z:zf},door:{x:cx,z:zf+T},inside:{x:cx,z:zb+D/2},kerb:{x:cx,z:(DRESS.kerb?DRESS.kerb.sw:zf+3*T)-.6*T}}); });
+  // ---- THE CIVIC TOWER (owner, 17 Oct 2026: "i want to take all the civic buildings and stack them on top of each other"): the six houses one
+  // tower on the land past the north street, inside the force field, its front on the north street's outer sidewalk (map tiles x 120-130, y 27.6-33.6: east of the park's north gate, clear of the castle),
+  // a department a floor, the firehouse at the street (its doors the tower's), the clinic, the precinct, the post office, the depot, city hall at
+  // the top; each floor's band its department's colour across the front, its sign at the band's middle, three windows a floor; the roof's parapet
+  // and the firehouse's bell stub on it. One door for all of them (each department's spot a step along it). Flat-coloured blocks, one draw, no lights
+  const HOUSES=[['firehouse','THE FIREHOUSE',0x9a2b22,0xe8c070],['clinic','THE CLINIC',0xe8e6e0,0xc8302a],['precinct','THE PRECINCT',0x2b3f7a,0x7f9ad8],['post','THE POST OFFICE',0x2f5f9e,0xe8e4d8],['depot','THE DEPOT',0xb86a1e,0x3a2a1a],['hall','CITY HALL',0x8a8478,0xd8c890]];
+  const BL=[], blk=(x,y,z,sx,sy,sz,c)=>BL.push([x,y,z,sx,sy,sz,c]), Wd=10*T, D=6*T, FH=3.2*M, NF=HOUSES.length, H=NF*FH, TK=.22*T, STONE=0xb4aea2;
+  const cx=BOD.XS(125), zf=BOD.ZS(RING.ny1+.6), zb=zf+D, y=G(cx,zf-.5*T), dw=1.8*T, pw=(Wd-dw)/2, DH=2.6*M;
+  CIVIC.tower={x0:cx-Wd/2,x1:cx+Wd/2,z0:zf,z1:zb,y,H,FH};
+  blk(cx-Wd/2+TK/2,y+H/2,zf+D/2,TK,H,D,STONE); blk(cx+Wd/2-TK/2,y+H/2,zf+D/2,TK,H,D,STONE); blk(cx,y+H/2,zb-TK/2,Wd,H,TK,STONE);   // the sides and the back, all six floors
+  blk(cx-Wd/2+pw/2,y+DH/2,zf+TK/2,pw,DH,TK,STONE); blk(cx+Wd/2-pw/2,y+DH/2,zf+TK/2,pw,DH,TK,STONE); blk(cx,y+(DH+H)/2,zf+TK/2,Wd,H-DH,TK,STONE);   // the front round the street doors, and above them
+  blk(cx,y+H+.08*M,zf+D/2,Wd+.2*T,.16*M,D+.2*T,0x4a4844); for(const [a,b,sx,sz] of [[0,-D/2,Wd,.14*T],[0,D/2,Wd,.14*T],[-Wd/2,0,.14*T,D],[Wd/2,0,.14*T,D]])blk(cx+a,y+H+.45*M,zf+D/2+b,sx,.6*M,sz,STONE);   // the roof and its parapet
+  HOUSES.forEach(([id,name,col,sign],i)=>{ const fy=y+i*FH;
+    blk(cx,fy+FH-.3*M,zf-.03*T,Wd+.04*T,.6*M,.08*T,col); blk(cx,fy+FH-.3*M,zf-.08*T,Wd*.34,.4*M,.04*T,sign);   // the floor's band and its sign
+    if(i>0)for(const k of [-1,0,1])blk(cx+k*Wd*.32,fy+FH*.48,zf-.03*T,Wd*.16,FH*.42,.06*T,0x26303c);   // its windows
+    if(id==='clinic'){ blk(cx,fy+FH-.22*M,zf-.11*T,.12*M,.3*M,.03*T,0xf4f0e8); blk(cx,fy+FH-.22*M,zf-.11*T,.3*M,.12*M,.03*T,0xf4f0e8); }   // the cross
+    const sx=cx+(i-(NF-1)/2)*1.1*T, dz=zf-1.1*T;   // (each department's spot along the street doors)
+    CIVIC.row.push({id,name,x:sx,z:zf,col,floor:i,at:{x:sx,z:zf},door:{x:sx,z:dz},inside:{x:sx,z:zf+D/2},kerb:{x:sx,z:BOD.ZS(RING.nr1)+.6*T}}); });
+  blk(cx-Wd*.3,y+H+1.0*M,zb-.6*T,.3*M,.9*M,.3*M,0x6a2a22);   // the firehouse's bell, on the roof
+  for(const bx of [[cx-Wd/2,zf,cx-Wd/2+TK,zb],[cx+Wd/2-TK,zf,cx+Wd/2,zb],[cx-Wd/2,zb-TK,cx+Wd/2,zb],[cx-Wd/2,zf,cx-Wd/2+pw,zf+TK],[cx+Wd/2-pw,zf,cx+Wd/2,zf+TK]]){ SOL.up.push(bx); FIX.up.push([bx[0],bx[1],y,bx[2],bx[3],y+H]); }
+  FIX.up.push([cx-Wd/2+pw,zf,y+DH,cx+Wd/2-pw,zf+TK,y+H]);   // (over the doors: a ledge to climb from)
   { const geo=new THREE.BoxGeometry(1,1,1), me=new THREE.InstancedMesh(geo,new THREE.MeshLambertMaterial(),BL.length), m4=new THREE.Matrix4(), q=new THREE.Quaternion(), c=new THREE.Color();
+    /* (the sky's light on it by day, as the far skyline has (skyline.js's uAmb): its front faces the park, away from the sun, and the shade here is lit by lamps alone, so without it the departments' colours read black all day) */
+    const AMB=window.FAR3&&FAR3.FU?FAR3.FU.uAmb:{value:.4}; me.material.onBeforeCompile=sh=>{ sh.uniforms.uAmb=AMB; sh.fragmentShader='uniform float uAmb;\n'+sh.fragmentShader.replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n totalEmissiveRadiance+=diffuseColor.rgb*uAmb*.8;'); }; me.material.customProgramCacheKey=()=>'civictower';
     BL.forEach(([x,y,z,sx,sy,sz,col],i)=>{ me.setMatrixAt(i,m4.compose(new THREE.Vector3(x,y,z),q,new THREE.Vector3(sx,sy,sz))); me.setColorAt(i,c.setHex(col)); }); me.castShadow=me.receiveShadow=true; MAPG.bodega.add(me); CIVIC.mesh=me; CIVIC.tris=BL.length*12; }
-  BOUND.x1=X0+HOUSES.length*GAP+2*T;   // (the view and the free camera reach the row)
-  for(const h of CIVIC.row)CITY.extra.push({id:h.id,name:h.name,lv:'up',at:h.at,door:h.door,box:[h.x-Wd/2,-D,h.x+Wd/2,T]});   // (addresses: the spine's places, and its walk grid's reach)
+  CITY.extra.push({id:'tower',name:'THE CIVIC TOWER',lv:'up',at:{x:cx,z:zf},door:{x:cx,z:zf-.9*T},box:[cx-Wd/2,zf-2*T,cx+Wd/2,zb]});
+  for(const h of CIVIC.row)CITY.extra.push({id:h.id,name:h.name,lv:'up',at:h.at,door:h.door});   // (addresses: the spine's places, all at the tower's doors)
   CIVIC.house=id=>CIVIC.row.find(h=>h.id===id);
   // ---- THE SHOPS: stock, a till and a price; what each sells (food resets a visitor's hunger)
   for(const [id,stock,price,food] of [['bodega',20,4,true],['store:diner',16,7,true],['store:bar',16,6,false],['dojo',12,3,false]])CIVIC.shops[id]={id,stock,price,food,till:0,sold:0,low:false};
@@ -47,14 +59,27 @@ const CIVIC={row:[],staff:{},log:[],ledger:{treasury:500,day:0,rent:30,tax:10,wa
   CIVIC.wants=r=>r.hunger>.6?(Math.random()<.5?'bodega':'store:diner'):null;
   // the residents' names (the pawns' keys read better as people)
   for(const r of CITY.residents)r.name={hero_m:'MR HALE',hero_f:'MS HALE',villager_m:'MR VOSS',villager_f:'MS VOSS'}[r.key]||r.key;
-  // ---- THE STAFF: the pawns in uniform at their houses (npc-pawns.js tints them); each knows his house, stands at its door when free
-  const ROLE={ogre_guard_light:['officer1','OFFICER REED','precinct'],ogre_guard_heavy:['officer2','OFFICER CRUZ','precinct'],ogre:['fire1','FIREFIGHTER OKAFOR','firehouse'],ogre_mage:['fire2','FIREFIGHTER LIND','firehouse'],skeleton_mage:['carrier','THE MAIL CARRIER','post'],skeleton_reaper:['works','THE WORKS CREW','depot'],skeleton_guard_light:['clerk','THE CLERK','hall'],skeleton_guard_heavy:['medic','THE MEDIC','clinic']};
-  for(const [key,[id,name,house]] of Object.entries(ROLE)){ const N=NPCS.find(n=>n.key===key); if(!N)continue; N.name=name; const S={id,name,key,N,house,state:'free',job:null,busy:0}; CIVIC.staff[id]=S;
-    const h=CIVIC.house(house); if(h){ N.st.x=h.door.x+(id.endsWith('2')?.7*T:id.endsWith('1')?-.7*T:0); N.st.z=h.door.z; N.g.position.x=N.st.x; N.g.position.z=N.st.z; N.st.h=0; N.st.hold=true; N.st.to=null; N.home={x:N.st.x,z:N.st.z}; } }
+  // ---- THE STAFF: droids, one a department (owner, 17 Oct 2026: "all the jobs for civics will be done by the security drones. (but drone for
+  // each dept. fire dept drones will shoot water, etc)"): the security droids' body (UAL1, npc-droids.js), each in his department's colours
+  // (the body tinted, the joints lit in its glow), at the tower's doors when not on a call. Their tools (duties.js): the fire droid a jet of water
+  // from his hands, the police droid the stun beam, the medic a healing beam, the carrier his bag, the works droid his crate and his kneel at a
+  // fault; the clerk keeps the books. Six droids, 6,872 triangles each where seen (only the near ones drawn); the shapes shared, one program
+  const K=window.UALK, JT=K?K.D.mesh.parts.indexOf('M_Joints'):-1, BASE=K?K.geomOf(K.D.mesh):null;
+  const ROLE=[['fire1','FIRE DROID','firehouse',[.62,.16,.12],[1,.62,.15]],['medic','MEDIC DROID','clinic',[.86,.86,.84],[1,.25,.22]],['officer1','POLICE DROID','precinct',[.18,.24,.46],[.35,.6,1]],['carrier','MAIL DROID','post',[.22,.4,.7],[.95,.95,.85]],['works','WORKS DROID','depot',[.8,.46,.14],[1,.85,.2]],['clerk','CLERK DROID','hall',[.5,.48,.44],[.9,.8,.45]]];
+  const tinted=(body,glow)=>{ const g=new THREE.BufferGeometry(); for(const [n,a] of Object.entries(BASE.attributes))g.setAttribute(n,n==='color'?a.clone():a); g.setIndex(BASE.index);
+    const c=g.attributes.color.array, R=g.attributes.reg.array, P=g.attributes.position.array;
+    for(let i=0;i<R.length;i++){ if(R[i]===JT){ for(let j=0;j<3;j++)c[i*3+j]=glow[j]*255; } else{ const k=.85+.3*Math.min(1,Math.max(0,P[i*3+1]/1.83)); for(let j=0;j<3;j++)c[i*3+j]=Math.min(255,(70*.45+body[j]*255*.55)*k); } } return g; };
+  const WORKP={hosing:'Pistol_Aim_Neutral',beam:'Spell_Simple_Idle_Loop',kneel:'Fixing_Kneeling',hand:'Interact'};
+  if(K)for(const [id,name,house,body,glow] of ROLE){ const h=CIVIC.house(house); if(!h)continue; const rig=K.rigOf(K.D.rig), mixer=new THREE.AnimationMixer(rig.bones[0]), an=K.Anim(mixer), gc=glow.map(v=>v.toFixed(2)).join(',');
+    const N=makeNPC(null,{key:'civ_'+id,name,names:K.D.mesh.parts,lv:'up',group:'bodega',geo:tinted(body,glow),skin:rig,tall:K.D.tall,eye:JT,eyeC:gc,rank:K.D.mesh.parts.map(()=>0),metres:1.9,x:h.door.x,z:h.door.z,roam:true,free:window.STFREE,ground:(x,z)=>G(x,z),radius:.3,speed:.5,stride:0,rock:0,bob:0,
+      anim:(dt,moving,st,sc)=>{ const S=N.staff, run=moving&&st.v>1.2*T, w=!moving&&S&&S.pose; if(N.sheet){ an.base='A_TPose'; an.ts=0; an.update(dt); return; }
+        an.base=w?WORKP[w]:moving?(run?'Sprint_Loop':'Walk_Formal_Loop'):'Idle_Loop'; an.ts=moving?st.v/((run?5:1.35)*sc):1; an.update(dt); }});
+    N.mixer=mixer; N.an=an; N.glow=glow; const S={id,name,key:N.key,N,house,state:'free',job:null,busy:0,pose:null}; N.staff=S; CIVIC.staff[id]=S;
+    N.st.h=Math.PI; N.st.hold=true; N.st.to=null; N.home={x:h.door.x,z:h.door.z}; }
   CIVIC.free=id=>{ const S=CIVIC.staff[id]; return S&&S.state==='free'; };
   // a staff member sent somewhere, hurrying; home again after (then: when he's there, or false)
   CIVIC.go=(S,to,then,v=2)=>{ S.N.st.hold=false; CITY.send(S.N,to,{v,then}); };
-  CIVIC.home=S=>{ S.state='returning'; S.job=null; CIVIC.go(S,S.N.home,()=>{ S.state='free'; S.N.st.hold=true; S.N.st.h=0; S.N.st.to=null; S.N.st.face=null; },1.4); };
+  CIVIC.home=S=>{ S.state='returning'; S.job=null; CIVIC.go(S,S.N.home,()=>{ S.state='free'; S.N.st.hold=true; S.N.st.h=Math.PI; S.N.st.to=null; S.N.st.face=null; },1.4); };
   // a thing in his hands while he carries it (a crate, a bag, a tool box): a small box over his shoulder
   CIVIC.carry=(S,col)=>{ if(S.item){ S.N.g.remove(S.item); S.item=null; } if(col==null)return; const m=new THREE.Mesh(new THREE.BoxGeometry(.28*T,.22*T,.28*T),new THREE.MeshLambertMaterial({color:col})); m.position.set(.18*T,S.N.H*.75,.1*T); m.castShadow=true; S.N.g.add(m); S.item=m; };
   // ---- THE MENU'S CITY TAB

@@ -44,8 +44,30 @@ const ANKLE=4.2,FOOTX=2.97,STAND=18;   // STAND: the pelvis's height standing (t
 // where each joint sits on its parent, the hand's place on the wrist and its size, and each piece's place on its bone (pieces: by name, each
 // {o: offset along its bone's axes, s: size, r: tilt, turn, roll in degrees}; a piece not listed is as made) in one table. At these defaults
 // he is exactly as he was; rigSet puts a saved table in (the game's clouds are baked again by whoever calls it: the editor)
+// HIS BUILD AT THE ROOT (owner, 18 Oct 2026: "the shoulders and body seems off at the root"): where his shoulder joints sit (so: x out from his
+// middle) and the shirt's torso (sq: its depth to its width; r1, r2: its half width at the waist and at the chest). A: as he was, the arms half
+// inside a round torso. ?body=A|B|C|D for the mockups; S2 (C1 with the shoulders sloped) the owner's pick, 18 Oct 2026: the default
+// Legs (owner, of C: "make his legs and hips more proportionate ... his feet need to not be so rounded"): hx the hip joints' x; pel the pelvis's
+// half width top and bottom, hr the round over the hip joints; th the thigh's radius at the hip and the knee; sh the shin's at the knee, the calf,
+// the ankle; shoe: a flat-soled box (r its rounding), or none for the old round capsule. C1-C3 the leg mockups on C
+// the shoulders' top (owner, of C1: "it looks like he is wearing shoulder pads for football"): sy the joints' height over the chest, bar the round
+// across them, col the collar's radius at the neck and at the shoulder, slv the sleeve's at the shoulder and down the arm
+const LEG0={hx:4.35,pel:[5.2,4.6],hr:3.1,th:[3.15,3.4],sh:[3.34,3.2,3.07],shoe:null,sy:3.3,bar:2.3,col:[2.6,2.4],slv:[2.9,2.8]};
+const BODYS={A:{so:6.3,sq:.9,r1:5.6,r2:6.1},B:{so:7.4,sq:.9,r1:5.4,r2:5.6},C:{so:7.4,sq:.72,r1:4.9,r2:5.7},D:{so:8,sq:.75,r1:5,r2:6.2},
+  C1:{so:7.4,sq:.72,r1:4.9,r2:5.7,hx:3.9,pel:[4.9,4.5],hr:3,th:[3.45,2.75],sh:[2.7,2.85,2.1],shoe:{r:.5}},
+  S1:{so:7.4,sq:.72,r1:4.9,r2:5.7,hx:3.9,pel:[4.9,4.5],hr:3,th:[3.45,2.75],sh:[2.7,2.85,2.1],shoe:{r:.5},bar:1.9,col:[2.6,2.0],slv:[2.66,2.6]},
+  S2:{so:7.1,sq:.72,r1:4.9,r2:5.7,hx:3.9,pel:[4.9,4.5],hr:3,th:[3.45,2.75],sh:[2.7,2.85,2.1],shoe:{r:.5},sy:2.5,bar:1.8,col:[2.7,1.9],slv:[2.64,2.58]},
+  // S2 lined up (owner, 18 Oct 2026: "reset his entire body, t pose all side, line up things that dont make sense, completeley fix"): the hips over
+  // the feet (3.4 out to the feet's 2.97: the legs had slanted in to the ankle), the thigh tapering into the knee and the calf only a touch fuller
+  // (the jeans had ballooned under the knee), the pelvis to the hips' width
+  S2F:{so:7.1,sq:.72,r1:4.9,r2:5.7,hx:3.4,pel:[4.8,4.4],hr:2.9,th:[3.35,2.7],sh:[2.62,2.66,2.05],shoe:{r:.5},sy:2.5,bar:1.8,col:[2.7,1.9],slv:[2.64,2.58]},
+  S3:{so:7.0,sq:.72,r1:4.9,r2:5.7,hx:3.9,pel:[4.9,4.5],hr:3,th:[3.45,2.75],sh:[2.7,2.85,2.1],shoe:{r:.5},sy:2.2,bar:1.5,col:[2.9,1.8],slv:[2.6,2.55],r2:5.5},
+
+  C2:{so:7.4,sq:.72,r1:4.9,r2:5.7,hx:3.7,pel:[4.8,4.3],hr:2.8,th:[3.2,2.5],sh:[2.45,2.6,1.9],shoe:{r:.3}},
+  C3:{so:7.4,sq:.72,r1:4.9,r2:5.7,hx:4.0,pel:[5,4.6],hr:3.1,th:[3.7,2.85],sh:[2.75,3.1,2.15],shoe:{r:.4}}};
+const BODY={...LEG0,...(BODYS[(typeof location!=='undefined'&&new URLSearchParams(location.search).get('body')||'S2F').toUpperCase()]||BODYS.S2F)};
 const RIGP0={bones:{thigh:6.9,shin:6.5,upper:7.4,fore:6.3,spine:[0,5,0],chest:[0,10,0],neck:[0,14,0],headBase:[0,16.5,0.4],head:[0,25.2,1.0],headTop:[0,34,0.8],
-  clav:[1.5,3,0],shoulder:[6.3,3.3,0],hip:[4.35,-0.4,0],hand:[0,0,0],handSize:1},pieces:{}};
+  clav:[1.5,3,0],shoulder:[BODY.so,BODY.sy,0],hip:[BODY.hx,-0.4,0],hand:[0,0,0],handSize:1},pieces:{}};
 let RIGP=JSON.parse(JSON.stringify(RIGP0)),RIGGEN=0,THIGH,SHIN,UPPER,FORE,HIPX,HIP;
 function rigSet(o){ const d=JSON.parse(JSON.stringify(RIGP0)); if(o&&o.bones) for(const k in d.bones) if(o.bones[k]!=null) d.bones[k]=o.bones[k]; if(o&&o.pieces) d.pieces=JSON.parse(JSON.stringify(o.pieces));
   RIGP=d; ({thigh:THIGH,shin:SHIN,upper:UPPER,fore:FORE,hip:HIP}=d.bones); HIPX=HIP[0]; if(RIGGEN++){ REST=null; STUDIOC=null; for(const k in POSEC) delete POSEC[k]; } return d; }   // (after the first: what was worked out with the old numbers is dropped: the rest pose, the studio's pieces, the moves' frames; the parts 2 and 3)
@@ -128,6 +150,48 @@ function legIK(P,n,s,A){ const [H,Rb]=hipAt(P,s),d=sub(A,H),dl=Math.min(len(d),T
 // foot on the ground stays planted and the leg reaches it; the pelvis rides as high as the stance leg's knee (bent as the curve bends
 // it) lets it, so he dips as each heel takes his weight; it shifts over the standing foot, the free side's hip drops, the hips turn with
 // the leading leg, the shoulders against them, the head stays level and looks ahead; the arms swing from the shoulder, the elbow trailing.
+// HIS FEET ON THE GROUND, NOT ON HIM (owner, 18 Oct 2026: "are we just patching again instead of fixing root?"; his yes to world-space foot
+// locking): walkPose plants a foot in his own frame, so when he turned a standing foot swung round with him, and stopping or starting snapped
+// it. Here (only for the page's own pose of him: st.world, set by the page each frame; st._lk, set by pose() so the springs' 120-a-second
+// poses in tick don't count) each foot is kept where it is in the world: a heel that lands is locked at its spot and the leg reaches back to
+// it until the foot lifts; a swing starts from where the foot really was and lands where his going puts it; stopped, a foot left out of place
+// takes a short step to stand beside the other, one at a time (st.fstep); every foot on the ground where it stands (stairs, kerbs: W.gnd),
+// his hips lowered as far as a leg needs to reach. A lock the leg can't reach even so is drawn after it (st.fslide counts them). Returns true.
+// st.world: {x,z: where he stands, y: his floor's height (the page's py), hd: his heading, kx, ky: his units a world unit across and up,
+// gnd(x,z): the ground's height there, t: seconds}
+function footLock(st,P,AK,LK,w){ const W=st.world,c=Math.cos(W.hd),s=Math.sin(W.hd),
+    toW=b=>({x:W.x+(b.x*c+b.z*s)/W.kx,z:W.z+(-b.x*s+b.z*c)/W.kx}), toL=p=>{ const dx=(p.x-W.x)*W.kx,dz=(p.z-W.z)*W.kx; return V(dx*c-dz*s,0,dx*s+dz*c); },
+    up=p=>Math.max(-8,((p.y??W.gnd(p.x,p.z))-W.y)*W.ky), at=b=>{ const p=toW(b); p.y=Math.max(...[-1.1,0,3].map(dz=>{ const q=toW(add(b,V(0,0,dz))); return W.gnd(q.x,q.z); })); p.hd=W.hd; return p; },   // (the highest ground under its heel, ankle and toe: a foot over a step's edge rests on it, not in it)
+    FY=50*D, fyOf=f=>{ let d=Math.atan2(Math.sin(f.hd-W.hd),Math.cos(f.hd-W.hd)); if(Math.abs(d)>FY){ d=Math.sign(d)*FY; f.hd=W.hd+d; } return d; };   // (the way a foot on the ground points, against his; past 50 degrees it pivots with him, on its ball)
+  const F=st.fk||(st.fk={}), dt=Math.min(0.1,Math.max(0,W.t-(st.fkT??W.t))); if(W.t-(st.fkT??-9)>0.3) for(const n of 'LR') F[n]=null;   // (back from a move, a jump, a sit, the water, a jump of the menu: afresh)
+  st.fkT=W.t; const stand=w===0&&!st.move;
+  if(stand){ // stopped: each foot where it was; the one further from its place by him steps there first, then the other
+    const S=n=>V((n=='L'?1:-1)*FOOTX,0,0);
+    for(const n of 'LR'){ if(!F[n]) F[n]={...at(S(n)),on:1}; const d=toL(F[n]); if(len(sub(d,S(n)))>14) F[n]={...at(S(n)),on:1}; }
+    const sp=st.fstep; if(sp){ sp.t+=dt/0.2; if(sp.t>=1){ F[sp.n]={...sp.to,on:1}; st.fstep=null; } }
+    if(!st.fstep){ let far=null,fd=0.9; for(const n of 'LR'){ const d=len(sub(toL(F[n]),S(n))); if(d>fd){ fd=d; far=n; } } if(far) st.fstep={n:far,t:0,from:{...F[far]},to:at(S(far))}; }
+    for(const n of 'LR'){ const sp=st.fstep&&st.fstep.n==n?st.fstep:null, off=sub(AK[n],S(n)); let b,y;
+      let fy; if(sp){ const e=smooth(Math.min(1,sp.t)),p={x:lerp(sp.from.x,sp.to.x,e),z:lerp(sp.from.z,sp.to.z,e)}; b=toL(p); y=lerp(up(sp.from),up(sp.to),e)+2.2*Math.sin(Math.PI*e); fy=lerp(fyOf(sp.from),0,e); }
+      else { b=toL(F[n]); y=up(F[n]); fy=fyOf(F[n]); }
+      AK[n]=add(add(b,yaw(off,fy)),V(0,y,0)); P[n].fyaw=fy; } }
+  else { st.fstep=null;
+    for(const n of 'LR'){ const k=LK[n]; if(!k) continue;
+      if(k.on){ // on the ground: locked where it landed
+        const q=F[n]&&F[n].quick?F[n]:null; if(q){ // a quick step back under him (a foot a turn left out of reach): from where it was to where his stride has it now
+          q.t+=dt/0.16; const e=smooth(Math.min(1,q.t)),b1=sub(AK[n],k.off),to=add(AK[n],V(0,up(toW(b1)),0)); AK[n]=add(lerpV(add(toL(q),V(0,q.ly,0)),to,e),V(0,1.5*Math.sin(Math.PI*e),0)); P[n].fyaw=lerp(q.fy,0,e); if(q.t>=1) F[n]=null; continue; }
+        if(!F[n]||!F[n].on){ const b0=sub(AK[n],k.off); F[n]={...at(b0),on:1}; }
+        const fy=F[n].fy=fyOf(F[n]); AK[n]=add(add(toL(F[n]),yaw(k.off,fy)),V(0,up(F[n]),0)); P[n].fyaw=fy; }
+      else { // in the air: from where it really lifted to where his going lands it
+        if(F[n]&&F[n].on) F[n].on=0; const e=smooth(k.e), lift=F[n]?sub(toL(F[n]),k.b0):V(0,0,0), y0=F[n]?up(F[n]):0, y1=up(toW(k.b1));
+        AK[n]=add(add(AK[n],mul(lift,1-e)),V(0,lerp(y0,y1,e)+(y1>y0?2*Math.sin(Math.PI*e):0),0)); P[n].fyaw=lerp(F[n]&&F[n].fy||0,0,e); } } }
+  st.fdn=Math.min(0,...'LR'.split('').map(n=>AK[n].y-ANKLE));   // (the lowest foot under his floor, for settle not to lift him off it)
+  // the hips as low as a leg needs to reach its foot (at most 5 of his units), then a foot still out of reach drawn after him
+  const Lg=THIGH+SHIN-1e-4; let drop=0;
+  for(const s2 of [1,-1]){ const n=s2>0?'L':'R',[H]=hipAt(P,s2),d=sub(AK[n],H),dh=Math.hypot(d.x,d.z); if(len(d)>Lg&&dh<Lg) drop=Math.max(drop,(H.y-AK[n].y)-Math.sqrt(Lg*Lg-dh*dh)); }
+  if(drop>1e-3) P.root=add(P.root,V(0,-Math.min(5,Math.ceil(drop/PX)*PX),0));   // (in whole pixels, as settle keeps his hips: a part of one and settle lifted all of him back up, the planted foot off the ground)
+  for(const s2 of [1,-1]){ const n=s2>0?'L':'R',[H]=hipAt(P,s2),d=sub(AK[n],H); if(len(d)>Lg+0.02){ const v=nrm(d),A=add(H,mul(v,Lg)); st.fslide=(st.fslide||0)+1;
+      if(F[n]&&F[n].on&&!stand&&LK[n]&&LK[n].on){ const p=toW(V(A.x,0,A.z)); st.fquick=(st.fquick||0)+1; F[n]={x:p.x,z:p.z,y:F[n].y,ly:A.y,fy:F[n].fy||0,on:0,quick:1,t:0}; } AK[n]=A; } }   // (on the ground in his stride: it lifts and steps back under him; stopped, it waits for its settling step)
+  return true; }
 function walkPose(st,abd){ const r=st.run||0,rs=r*r,g=gaitOf(r),w=st.w,ST=g.stance,h=g.stride*w/(st.anim||1),q=phases(st.ph),P=neutral(),sw=drive(q.L,w)-drive(q.R,w);
   // (rs: the curves' and the arms' shapes mixed by r squared, so the game's brisk walk keeps a walker's straight knees and loose arms,
   // not a third of a runner's; the timing, g, is mixed by r itself)
@@ -140,9 +204,9 @@ function walkPose(st,abd){ const r=st.run||0,rs=r*r,g=gaitOf(r),w=st.w,ST=g.stan
   // stays a little under standing height (the leg straight at mid-stance only touched it for a frame or two: a one-pixel hop each step)
   const hipOff=s=>yaw(V(s*HIP[0],HIP[1],HIP[2]),P.pyaw),feet={},reachY=(s,A,k)=>{ const o=add(V(sway,0,0),hipOff(s)),L2=THIGH*THIGH+SHIN*SHIN+2*THIGH*SHIN*Math.cos(k);
     return A.y-o.y+Math.sqrt(Math.max(0,L2-(A.x-o.x)**2-(A.z-o.z)**2)); };
-  let py=null;
+  let py=null; const AK={},LK={};   // (AK: where each foot is, for the legs to reach again once a turn's lean or a stop moves his hips)
   for(const s of [1,-1]){ const n=s>0?'L':'R',x=s*FOOTX,qq=q[n];
-    if(qq<ST){ const a=fa(n,qq),A=planted(qq/ST,a,x,h); feet[n]={A,a}; const y=reachY(s,A,kn(qq)); py=py==null?y:Math.min(py,y); } }
+    if(qq<ST){ const a=fa(n,qq),A=planted(qq/ST,a,x,h); feet[n]={A,a,b:V(x,0,(0.5-qq/ST)*h)}; const y=reachY(s,A,kn(qq)); py=py==null?y:Math.min(py,y); } }
   if(py==null){ // in the air between two running steps: from where the last foot left to where the next lands
     const n=q.L<q.R?'L':'R',o=n=='L'?'R':'L',v=((q[n]-ST)/(0.5-ST)),A0=planted(1,fa(n,ST-1e-6),(n=='L'?1:-1)*FOOTX,h),A1=planted(0,fa(o,0),(o=='L'?1:-1)*FOOTX,h);
     py=lerp(reachY(n=='L'?1:-1,A0,kn(ST-1e-6)),reachY(o=='L'?1:-1,A1,kn(0)),clamp(v,0,1)); }
@@ -151,17 +215,29 @@ function walkPose(st,abd){ const r=st.run||0,rs=r*r,g=gaitOf(r),w=st.w,ST=g.stan
   // hips rise and fall about 5 cm a step, his pixel)
   py=Math.min(STAND,py); P.root=V(sway,STAND-Math.max(0,Math.round((STAND-py)/PX))*PX,0);
   for(const s of [1,-1]){ const n=s>0?'L':'R',x=s*FOOTX,qq=q[n];
-    let A,a; if(feet[n]) ({A,a}=feet[n]);
+    let A,a; if(feet[n]){ ({A,a}=feet[n]); LK[n]={on:1,off:sub(A,feet[n].b)}; }
     else { // the swing: from where the toe left to where the heel will land, shaped by the curves (the knee folds, the foot clears the floor)
       const v=(qq-ST)/(1-ST),e=smooth(v),A0=planted(1,fa(n,ST-1e-6),x,h),A1=planted(0,fa(n,0),x,h),H=add(P.root,hipOff(s));
       const F=qq2=>legReach(lab('hip',qq2,ST,rs)*w,kn(qq2)),F0=F(ST),F1=F(1-1e-6),Fv=F(qq);
-      a=fa(n,qq); A=add(lerpV(A0,A1,e),sub(Fv,lerpV(F0,F1,e))); A=V(x,Math.max(A.y,Math.cos(a)*ANKLE+Math.max(Math.sin(a)*1.1,-Math.sin(a)*1.9)+0.1*w),A.z); }   // (its heel and ball clear the floor, as a swinging foot does by a centimetre or two: at full height it scraped, and the floor lifted all of him a pixel)
-    legIK(P,n,s,A); P[n].foot=a;
+      a=fa(n,qq); A=add(lerpV(A0,A1,e),sub(Fv,lerpV(F0,F1,e))); A=V(x,Math.max(A.y,Math.cos(a)*ANKLE+Math.max(Math.sin(a)*1.1,-Math.sin(a)*1.9)+0.1*w),A.z); LK[n]={on:0,e,b0:V(x,0,-0.5*h),b1:V(x,0,0.5*h)}; }   // (its heel and ball clear the floor, as a swinging foot does by a centimetre or two: at full height it scraped, and the floor lifted all of him a pixel)
+    legIK(P,n,s,A); AK[n]=A; P[n].foot=a;
     // the arm swings against its leg, a moment behind it; the elbow bends as it comes forward, a moment later still; a runner's stays bent.
     // Walking it swings mostly behind him, 8 degrees forward to 24 back as gait labs measure (owner, 14 Oct 2026: it reached 30 forward,
     // his hands creeping out in front); standing it hangs 3 forward
     const sh=(lerp(-8,9,rs)*w+3*(1-w)-w*lerp(16,36,rs)*Math.cos(2*Math.PI*(qq-0.04)))*D,el=(10+w*(lerp(2,64,rs)+lerp(20,24,rs)*(0.5+0.5*Math.cos(2*Math.PI*(qq-0.62)))))*D,b=abd?abd[n]:0;
-    P[n].ua=[sh,b]; P[n].fa=[sh+el,b]; }
+    // (standing, his arms eased off his sides and the elbows soft, as a man at ease holds them: owner, 18 Oct 2026, "his arms look too droopy")
+    P[n].ua=[sh,b+6*D*(1-w)]; P[n].fa=[sh+el+8*D*(1-w),b+3*D*(1-w)]; }
+  // INTO A TURN (owner, 18 Oct 2026: "add the lean into turns and weight shift when stopping"): st.bank, his whole body tipped over his feet
+  // toward the turn's middle (tick), the pelvis carried that way as far as the tilt takes it from the ankles and a little lower (so the outside
+  // leg still reaches its foot), the legs reaching their planted feet from there; the head kept a little nearer level
+  const bk=st.bank||0; if(bk){ const L=STAND-ANKLE; P.roll+=bk; P.root=add(P.root,V(L*Math.sin(bk),-L*(1-Math.cos(bk))-2*FOOTX*Math.abs(Math.sin(bk)),0)); P.side-=0.3*bk; }
+  // THE STOP (st.stop, tick): his weight carried on over his feet and back, once, and still: the body tips forward and comes back a little past
+  // upright, the hips dip as the weight lands, the arms swing on and back; over at 1 s, where it's back at nothing, then nothing moves
+  const so=st.stop; if(so){ const t=so.t,k=so.a*Math.exp(-t/0.3)*Math.cos(2*Math.PI*t/0.8),dip=t<0.3?so.a*Math.sin(Math.PI*t/0.3):0;
+    P.bend+=10*D*k; P.nod-=5*D*k; P.root=add(P.root,V(0,-1.5*dip,2.2*k));   // (the dip a pixel: settle keeps his hips on whole pixels)
+    for(const n of 'LR'){ P[n].ua=[P[n].ua[0]+10*D*k,P[n].ua[1]]; P[n].fa=[P[n].fa[0]+14*D*k,P[n].fa[1]]; } }
+  const lk=st._lk&&st.world&&footLock(st,P,AK,LK,w);
+  if(bk||so||lk) for(const n of 'LR') legIK(P,n,n=='L'?1:-1,AK[n]);   // (the feet where they were)
   return P; }
 
 // ---- the stick figure from a pose (dev {L,R}: each hand's lag, a change of direction): every joint where it is, and the turns the pieces need
@@ -171,7 +247,7 @@ function build(P,dev){ const J={},m={},Rb=turn(P.yaw,P.roll,P.pitch),pv=V(0,P.pv
   m.Rb=Rb; m.Ru=cat(Rb,Ru); m.Rh=cat(m.Ru,Rn); m.Rc=cat(m.Ru,turn(P.cyaw,0,0)); m.Rp=cat(Rb,turn(P.pyaw,0,0)); m.foot={}; m.hf={}; m.fist={};
   for(const s of [1,-1]){ const n=s>0?'L':'R',g=P[n];
     const H=J['hip'+n]=W(yaw(V(s*HIP[0],HIP[1],HIP[2]),P.pyaw)),Kn=J['knee'+n]=add(H,mul(app(Rb,limb(g.th[0],g.th[1],s)),THIGH)),A=J['ankle'+n]=add(Kn,mul(app(Rb,limb(Math.min(g.sh[0],g.th[0]),g.sh[1],s)),SHIN));   // (a knee only bends forward: a shin never swings past its thigh)
-    const fw=app(Rb,fwv(g.foot)),dn=app(Rb,dnv(g.foot)); m.foot[n]=M3(Rb.x,mul(dn,-1),fw);
+    const Rf=g.fyaw!=null?turn(g.fyaw,0,0):Rb,fw=app(Rf,fwv(g.foot)),dn=app(Rf,dnv(g.foot)); m.foot[n]=M3(Rf.x,mul(dn,-1),fw);   // (fyaw: a foot on the ground keeping its own way in the world, flat: footLock)
     J['heel'+n]=add(add(A,mul(dn,ANKLE)),mul(fw,-1.1)); J['ball'+n]=add(add(A,mul(dn,ANKLE)),mul(fw,1.9)); J['toe'+n]=add(J['ball'+n],mul(fw,1.1));
     const C=V(...RB.chest),cl=RB.clav,so=RB.shoulder; J['clav'+n]=W(U(add(C,yaw(V(s*cl[0],cl[1],cl[2]),P.cyaw)))); const S=J['shoulder'+n]=W(U(add(C,yaw(V(s*so[0],so[1],so[2]),P.cyaw))));
     const ua=app(m.Ru,limb(g.ua[0],g.ua[1],s)),fa=app(m.Ru,limb(g.fa[0],g.fa[1],s)),E=J['elbow'+n]=add(S,mul(ua,UPPER)); J['wrist'+n]=add(E,mul(fa,FORE));
@@ -263,14 +339,21 @@ const suitPaint=(p,J)=>{ if(p.z<1.5) return null; const ax=Math.abs(p.x-J.chest.
 // (smin: two shapes joined smoothly, k wide: the collar into the shoulders with no crease, a pit the camera looks into from above)
 const smin=(a,b,k)=>{ const h=Math.max(k-Math.abs(a-b),0)/k; return Math.min(a,b)-h*h*k/4; };
 function bodyPieces(J,suit){ const P=[];
-  P.push({n:'torso',m:'shirt',d:p=>Math.max(smin(Math.min(rcone(sq(p,J.chest,0.9),add(J.pelvis,V(0,1.4,0)),J.chest,5.6,6.1),rcone(p,J.shoulderL,J.shoulderR,2.3,2.3)),Math.min(rcone(p,add(J.neck,V(0,3,-0.8)),J.shoulderL,2.6,2.4),rcone(p,add(J.neck,V(0,3,-0.8)),J.shoulderR,2.6,2.4)),2),J.pelvis.y-0.6-p.y),...(suit?{paint:p=>suitPaint(p,J)}:{})});   // the hem cut flat; the collar up the neck to the shoulders (the trapezius: no sky between the jaw, the hair and the shoulders)
-  P.push({n:'hips',m:'pants',d:p=>Math.min(rcone(sq(p,J.pelvis,0.8),add(J.hipL,V(0,0.5,0)),add(J.hipR,V(0,0.5,0)),3.1,3.1),rcone(sq(p,J.pelvis,0.8),add(J.pelvis,V(0,0.6,0)),add(J.pelvis,V(0,-1,0)),5.2,4.6))});
-  for(const n of 'LR') P.push({n:'thigh'+n,m:'pants',d:p=>rcone(p,J['hip'+n],J['knee'+n],3.15,3.4)});
+  P.push({n:'torso',m:'shirt',d:p=>Math.max(smin(Math.min(rcone(sq(p,J.chest,BODY.sq),add(J.pelvis,V(0,1.4,0)),J.chest,BODY.r1,BODY.r2),rcone(p,J.shoulderL,J.shoulderR,BODY.bar,BODY.bar)),Math.min(rcone(p,add(J.neck,V(0,3,-0.8)),J.shoulderL,BODY.col[0],BODY.col[1]),rcone(p,add(J.neck,V(0,3,-0.8)),J.shoulderR,BODY.col[0],BODY.col[1])),2),J.pelvis.y-0.6-p.y),...(suit?{paint:p=>suitPaint(p,J)}:{})});   // the hem cut flat; the collar up the neck to the shoulders (the trapezius: no sky between the jaw, the hair and the shoulders)
+  P.push({n:'hips',m:'pants',d:p=>Math.min(rcone(sq(p,J.pelvis,0.8),add(J.hipL,V(0,0.5,0)),add(J.hipR,V(0,0.5,0)),BODY.hr,BODY.hr),rcone(sq(p,J.pelvis,0.8),add(J.pelvis,V(0,0.6,0)),add(J.pelvis,V(0,-1,0)),BODY.pel[0],BODY.pel[1]))});
+  for(const n of 'LR') P.push({n:'thigh'+n,m:'pants',d:p=>rcone(p,J['hip'+n],J['knee'+n],BODY.th[0],BODY.th[1])});
   return P; }
+// the calf's fullest a third down the shin; a shoe with a flat sole (BODY.shoe): along the foot from behind the heel to past the toe, its sole at
+// the floor, high at the heel and lower over the toes, widest at the ball, its edges rounded by r
+const calf=(J,n)=>add(J['knee'+n],mul(sub(J['ankle'+n],J['knee'+n]),0.32));
+function shoeBox(p,J,n,r){ const H=J['heel'+n],T=J['toe'+n],f=nrm(sub(T,H)),u=nrm(sub(V(0,1,0),mul(f,f.y))),w=cross(f,u),d=sub(p,H),a=dot(d,f),b=dot(d,w),c=dot(d,u);
+  const a0=-1.9,a1=len(sub(T,H))+1.7,t=Math.max(0,Math.min(1,(a-a0)/(a1-a0))),hw=t<.6?2.05+.45*t/.6:2.5-.5*(t-.6)/.4,top=3.6-1.5*t,c0=-0.6;
+  const q=[Math.abs(a-(a0+a1)/2)-((a1-a0)/2-r),Math.abs(b)-(hw-r),Math.abs(c-(c0+top)/2)-((top-c0)/2-r)];
+  return Math.hypot(Math.max(q[0],0),Math.max(q[1],0),Math.max(q[2],0))+Math.min(Math.max(q[0],q[1],q[2]),0)-r; }
 function shell(J,lift,mouth,suit){ const fine=FINEHAND, P=headPieces(J.head,lift||0,mouth).concat(bodyPieces(J,suit));   // (fine: read as the shapes are made; they ask their points later, when the baker has put the switch back)
   P.push({n:'neck',m:'skin',d:p=>rcone(p,J.neck,J.headBase,2.9,2.2)});   // (wide at its base: no sky between the jaw, the hair and the shoulders)
   for(const n of 'LR'){ const S=J['shoulder'+n],E=J['elbow'+n],W=J['wrist'+n];
-    P.push({n:'sleeve'+n,m:'shirt',d:p=>rcone(p,S,add(S,mul(sub(E,S),0.3)),2.9,2.8)});
+    P.push({n:'sleeve'+n,m:'shirt',d:p=>rcone(p,S,add(S,mul(sub(E,S),0.3)),BODY.slv[0],BODY.slv[1])});
     P.push({n:'upperArm'+n,m:suit?'shirt':'skin',d:p=>rcone(p,S,E,2.58,2.4)});
     P.push({n:'forearm'+n,m:suit?'shirt':'skin',d:p=>rcone(p,E,W,2.4,fine?0.85:2.1)});   // (baked fine: tapered to a real wrist, 5.7 cm; owner, 15 Oct 2026, the hands mockup's bottom row)
     if(FAR&&!fine){ const Wh=J['handO'+n]||W, tip=J['fingers'+n]; P.push({n:'hand'+n,m:'skin',d:p=>Math.min(rcone(p,add(Wh,mul(sub(tip,Wh),0.3)),tip,2.3,2.0),rcone(p,Wh,add(Wh,mul(sub(tip,Wh),0.3)),0.95,2.3))}); }
@@ -279,9 +362,9 @@ function shell(J,lift,mouth,suit){ const fine=FINEHAND, P=headPieces(J.head,lift
     const K2=k(2,0),ha=nrm(sub(K2,Wh)),hb0=sub(k(4,0),k(1,0)),hn=nrm(cross(ha,hb0)),hb=cross(hn,ha),hc=add(add(Wh,mul(sub(K2,Wh),0.5)),mul(ha,0.2)),hl=len(sub(K2,Wh))/2+0.5,palm=p=>{ const d=sub(p,hc),qx=Math.abs(dot(d,ha))-hl,qy=Math.abs(dot(d,hb))-0.8,qz=Math.abs(dot(d,hn))-0.25; return Math.hypot(Math.max(qx,0),Math.max(qy,0),Math.max(qz,0))+Math.min(Math.max(qx,qy,qz),0)-0.2; };   // REAL HANDS, BAKED FINE (owner, 15 Oct 2026: "compare with 3d models and vectors to make our hands look more realistic"): a palm 6.7 cm across, 3 cm thick (2.0 by 0.9 of his units, a unit 3.3 cm; the owner's pick D of four sizes, 15 Oct 2026: "his hand is too big"), from the wrist to the knuckles, the fingers standing out of it; at his own size the one full shape as before
     P.push({n:'hand'+n,m:'skin',d:p=>Math.min(fine?palm(p):rcone(p,add(Wh,mul(sub(k(2,0),Wh),0.3)),tip,2.3,2.0),rcone(p,Wh,H0,0.85,0.85),...[1,2,3,4].map(i=>rcone(p,add(Wh,mul(sub(k(i,0),Wh),0.2)),k(i,0),0.72,DIG[i][4][0]+0.04)),rcone(p,H0,k(0,1),0.8,DIG[0][4][1]))});   // the palm: a fan from the wrist to the knuckles (and as full as the old Walker's hand, one shape about four pixels across from the wrist over the fingers: owner, 15 Oct 2026, "double check each part"; it was under two, all outline at his size, the fingers loose specks), the heel of the thumb
     for(let i=0;i<5;i++) for(let j=0;j<3;j++){ const r=DIG[i][4]; P.push({n:'fing'+i+j+n,m:'skin',d:p=>rcone(p,k(i,j),k(i,j+1),r[j]*(fine?0.68:1),r[j+1]*(fine?0.68:1))}); } }   // each bone of each digit (baked fine: a real finger's thickness, 2 cm, a third under his own)
-    P.push({n:'shin'+n,m:'pants',d:p=>Math.max(rcone(p,J['knee'+n],J['ankle'+n],3.34,3.07),J['ankle'+n].y-1.6-p.y)});   // the hem of the jeans (low enough to meet the shoe however the foot tilts)
+    P.push({n:'shin'+n,m:'pants',d:p=>Math.max(BODY.shoe?smin(rcone(p,J['knee'+n],calf(J,n),BODY.sh[0],BODY.sh[1]),rcone(p,calf(J,n),J['ankle'+n],BODY.sh[1],BODY.sh[2]),1):rcone(p,J['knee'+n],J['ankle'+n],3.34,3.07),J['ankle'+n].y-1.6-p.y)});   // the hem of the jeans (low enough to meet the shoe however the foot tilts)
     const up=k=>add(J[k+n],V(0,1.9,0));
-    P.push({n:'shoe'+n,m:'shoes',d:p=>Math.min(rcone(p,up('heel'),add(J['toe'+n],V(0,1.5,0)),2.535,2.08),rcone(p,J['ankle'+n],up('heel'),2.86,2.535))}); }   // (one piece, heel to toe; its collar round the ankle it turns on, under the jeans' hem however the foot points)
+    P.push({n:'shoe'+n,m:'shoes',d:BODY.shoe?p=>Math.min(shoeBox(p,J,n,BODY.shoe.r),rcone(p,J['ankle'+n],up('heel'),BODY.sh[2]+.3,2.2)):p=>Math.min(rcone(p,up('heel'),add(J['toe'+n],V(0,1.5,0)),2.535,2.08),rcone(p,J['ankle'+n],up('heel'),2.86,2.535))}); }   // (one piece, heel to toe; its collar round the ankle it turns on, under the jeans' hem however the foot points)
   return P; }
 
 // ---- each piece's frame: the bone it hangs on (origin and three axes); its shape never changes within it
@@ -777,7 +860,15 @@ function tick(st,h){ st.run+=(st.runTarget-st.run)*Math.min(1,h*RIGT.blend); con
     if(st.move&&st.move.def.air){ const a=st.move.def.air; if(st.move.t>a.t0+a.T){ if(!st.move.down){ st.move.down=1; st.mv=st.mvw||0; } st.mv*=Math.exp(-14*h); } } else if(st.move) st.mv*=Math.exp(-(st.move.def.stop||1.2)*h); else st.mv=0;   // (on the ground a move's speed eases off; landed, the jump's own push is spent: only the speed he came with, easing off. stop: how fast (owner, 15 Oct 2026, what stops you: a kick or a sweep plants a foot, the speed gone in a sixth of a second; a crouch stops you, no gliding; a punch, a block or a wave never does; a jump, a flip or a roll keeps it)
     if(carries(st.move)){ const zn=moveAt(st).root.z, zc=st.move.zc||0; st.dist+=zn-zc; st.move.zc=zn; } }   // (a roll or a fall carries you along as it goes, not all at once at its end: the world jumped most of a tile in a frame when a roll ended; zc: how far of its travel is yours already)
   else { if(st.out) st.out.t+=h; if(st.out&&st.out.t>(st.out.T||0.2)) st.out=null; }
+  const w0=st.w;
   st.w+=(st.target-st.w)*Math.min(1,h*RIGT.start); if(Math.abs(st.w-st.target)<1e-3||st.snap&&!st.move) st.w=st.target;   // (snap: at once, as the old Walker stopped and went: you and the other players, 47-you-jointed, 48-online)   // (the walk's own weight goes on through a move: let go and he'll have stopped when it ends)
+  // the stop's weight shift (walkPose): from a walk or a run let go, once, its size by how fast he was going; anything else ends it. The turn's
+  // lean: toward how far a body going his speed round his turn tips (tan = speed x turn / gravity: st.yr, his heading's turn a second, set by the
+  // page), at most 9 degrees walking and 18 running, eased in and out, and at nothing exactly once it's gone
+  if(w0>0.3&&st.target===0&&!st.move&&!(st.water&&st.water.in)) st.stop={t:0,a:Math.min(1,w0)*(0.7+0.5*st.run)};
+  if(st.stop){ st.stop.t+=h; if(st.stop.t>=1||st.target>0||st.move) st.stop=null; }
+  { const v=g.speed*st.w*((st.wk||1)+((st.rk||1)-(st.wk||1))*st.run), mx=(9+9*st.run)*D, to=st.move||st.target===0?0:Math.max(-mx,Math.min(mx,Math.atan(v*(st.yr||0)/G)));
+    st.bank=(st.bank||0)+(to-(st.bank||0))*Math.min(1,h*7); if(to===0&&Math.abs(st.bank)<0.05*D) st.bank=0; }
   if(st.water) st.water.load=st.move&&st.move.def.load&&st.move.t<st.move.def.air.t0?keyAt(st.move.def.load,st.move.t):0;   // (how hard he's pressing the board)
   waterTick(st,h);
   const sk=(st.wk||1)+((st.rk||1)-(st.wk||1))*st.run,   /* (st.wk, st.rk: how fast he walks and runs, times his own; st.anim: how fast his limbs move: yours from the avatar editor's SPEED, src/avmove.js) */ walked=st.move?0:g.speed*st.w*h*sk; st.wd=(st.wd||0)+walked;   // (wd: how far he's walked since he set off, for the old Walker's frame: pose)
@@ -787,7 +878,7 @@ function tick(st,h){ st.run+=(st.runTarget-st.run)*Math.min(1,h*RIGT.blend); con
   const acc=(B.J.head.y-2*H.a1+H.a0)/(h*h); H.a0=H.a1; H.a1=B.J.head.y;   // how hard the head's anchor speeds up or slows
   { const s=st.head,[k,c]=SPR.head; s.v+=(-k*s.x-c*s.v-acc)*h; s.x=clamp(s.x+s.v*h,-1.5,1.5); } }
 function step(st,dt){ if(st.target>0&&!st.went&&st.w<0.3&&!st.move){ st.ph=0; st.wd=0; } st.went=st.target>0;   // (from a stop a walk starts at its first frame, as the old Walker's did)
-  st.acc=Math.min(st.acc+dt,0.25); while(st.acc>=1/120){ st.acc-=1/120; tick(st,1/120); } return st; }
+  const T=Math.min(dt,0.25),n=Math.ceil(T*120-1e-6); for(let i=0;i<n;i++) tick(st,T/n); return st; }   // (the frame's whole time in even steps of at most 1/120 s: a fixed 1/120 with the rest carried over moved him 1 tick one frame and 2 the next, 45% uneven at 144 Hz; owner, 18 Oct 2026, "super choppy and jumpy")
 // the pose to draw: the springs applied (the head and the hair in whole pixels), the arms cleared of the body while walking, the
 // floor under him; inPlace: without the moves' own steps (the compass keeps him where he is)
 // HIS FEET STAY PUT (owner, 15 Oct 2026: "lets nail" the walk; his pick, faster steps): the old Walker's frame goes by how far he's walked, one
@@ -796,9 +887,10 @@ function step(st,dt){ if(st.target>0&&!st.went&&st.w<0.3&&!st.move){ st.ph=0; st
 const WSTEP=4.75;
 function pose(st,inPlace){ const busy=st.move||st.out,P=JSON.parse(JSON.stringify(st.last||rawPose(st))),dev={};
   for(const n of 'LR') dev[n]=ZERO;   // (the hands on their forearms: no spring of their own)
-  const swimming=st.water&&st.water.in||!!st.climb||!!st.hang||!!st.ride||!!st.sit;   // (sitting too: its own pose, not the walk's laid over it: use.js) if(!st.move&&!swimming) st.abd=clearArms(st,dev); if(!busy&&!swimming){ Object.assign(P,lift(walkPose(st,st.abd),floorOf(st))); upLayer(st,P); if(st.sign)st.sign(P); }   // (st.sign: signing, his arms and hands put over the walk's: 48-zz-asl)   // (swimming or climbing: their own poses)
+  const swimming=st.water&&st.water.in||!!st.climb||!!st.hang||!!st.ride||!!st.sit;   // (sitting too: its own pose, not the walk's laid over it: use.js)
+  if(!st.move&&!swimming) st.abd=clearArms(st,dev); st.fdn=0; if(!busy&&!swimming){ st._lk=1; Object.assign(P,lift(walkPose(st,st.abd),floorOf(st))); st._lk=0; upLayer(st,P); if(st.sign)st.sign(P); }   // (st.sign: signing, his arms and hands put over the walk's: 48-zz-asl; swimming or climbing: their own poses. 18 Oct 2026: this line had sat inside the comment above since 17 Oct, so his arms weren't kept clear of him and nothing here ran)
   if(st.move&&st.move.def.travel) P.root=V(P.root.x,P.root.y,inPlace?0:P.root.z-(carries(st.move)?st.move.zc||0:0));   // (a roll or a fall carries him off: drawn less the travel that's yours already (tick); the compass keeps him in his square)
-  const B=settle(busy||st.up||(st.water&&st.water.in)?clearPose(P,dev):build(P,dev),st.move&&st.move.base!=null?st.move.base:floorOf(st),busy);   // (climbing out, his legs are still down in the pool; a punch or a wave over the walk is cleared too: its arm swings in from the walk's)
+  const B=settle(busy||st.up||(st.water&&st.water.in)?clearPose(P,dev):build(P,dev),st.move&&st.move.base!=null?st.move.base:floorOf(st)+(busy?0:st.fdn||0),busy);   // (fdn: a foot of his planted on ground lower than his floor, a step down: the floor there, footLock)   // (climbing out, his legs are still down in the pool; a punch or a wave over the walk is cleared too: its arm swings in from the walk's)
   // the head's spring in whole pixels, changing only once it's well past the half (a quarter pixel either side), so near the edge it doesn't flick for a frame
   const hp=st.head.x/PX; if(st.hpx==null||Math.abs(hp-st.hpx)>0.75) st.hpx=Math.round(hp); B.head=add(B.J.head,V(0,st.hpx*PX,0));
   B.lift=0;   // (the hair still)

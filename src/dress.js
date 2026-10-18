@@ -24,7 +24,7 @@ const DRESS={}, TLX={tick:()=>{}};   // (TLX: the traffic lights, below)
   { const M=1/.84*TILE, SP=26*M, SX0=BOD.XS(BOD.MAP.x0), SX1=BOD.XS(BOD.MAP.x1), n=Math.floor((SX1-SX0-8)/SP)+1, x0=(SX0+SX1)/2-(n-1)*SP/2,   /* (the street's own run, not the bound: the force field's is wider) */ warm=new THREE.Color(1,.88,.68);
     // a street light: a stepped foot, the grey pole, the arm out over the road (d: which way), the head at its end (the lit lamp under it: heads)
     const sl=(x,z,d,ax='z',ring)=>{ const y=G(x,z), GR=0x5d6266, DK=0x3f4448, X_=ax==='x'; cyl(x,y+.3*M,z,.17*M,.6*M,DK); cyl(x,y+.66*M,z,.12*M,.14*M,GR); cyl(x,y+3.05*M,z,.075*M,4.7*M,GR);
-      cyl(x,y+5.45*M,z,.06*M,.14*M,DK); if(X_){ blk(x+d*.55*M,y+5.86*M,z,1.1*M,.1*M,.1*M,GR); blk(x+d*1.3*M,y+5.98*M,z,.62*M,.16*M,.36*M,DK); } else { blk(x,y+5.86*M,z+d*.55*M,.1*M,.1*M,1.1*M,GR); blk(x,y+5.98*M,z+d*1.3*M,.36*M,.16*M,.62*M,DK); }
+      cyl(x,y+5.66*M,z,.065*M,.52*M,GR); cyl(x,y+5.96*M,z,.075*M,.1*M,DK);   /* (the pole up to the arm and a cap over it: the arm had floated a third of a metre over the pole's top, owner 18 Oct 2026, "the lamppost doesnt connect") */ if(X_){ blk(x+d*.55*M,y+5.86*M,z,1.1*M,.1*M,.1*M,GR); blk(x+d*1.3*M,y+5.98*M,z,.62*M,.16*M,.36*M,DK); } else { blk(x,y+5.86*M,z+d*.55*M,.1*M,.1*M,1.1*M,GR); blk(x,y+5.98*M,z+d*1.3*M,.36*M,.16*M,.62*M,DK); }
       solid(x,z,.18*M,6*M); const P={x,z,d,ax,ring:ring||(d>0?'outer':'inner'),y:y+5.45*M,h:heads.length}; POLES.push(P); return P; };   // (ax: the way its arm reaches; ring: the loop's outer kerb or its inner one, for the power grid's two rings)   // (the pole's top, for the power grid: grid.js)
     const heads=[], pools=[], POLES=[], POSTS=[], hsh=n=>{ const v=Math.sin(n*12.9898+78.233)*43758.5453; return v-Math.floor(v); },
       light=(x,y,z,i,r)=>{ const L=new THREE.PointLight(warm,i,r,1.6); L.position.set(x,y,z); L.userData.i0=i; scene.add(L); const P=[L,x,z,r*.2]; P.on=1.5-hsh(pools.length)*4; pools.push(P); return L; };   // (P.on: the sun's height at which this one comes on)
@@ -59,10 +59,11 @@ const DRESS={}, TLX={tick:()=>{}};   // (TLX: the traffic lights, below)
         blk(ex,ay+.02*M,ez,dx?.9*M:.44*M,.2*M,dz?.9*M:.44*M,DK); const h=heads.length, L=light(ex,ay-.25*M,ez,55,16*TILE); heads.push([ex,ay-.06*M,ez]); L2.push([L,h]); }
       solid(x,z,.3*M,T8); POLES.push({x,z,d:-1,ax:'z',ring:'inner',y:y+T8-.6*M,h:L2[0][1],h2:L2[1][1],L:L2[0][0],L2:L2[1][0],corner:1}); DRESS.corner={x,z,y,lamps:L2.map(q=>q[0])}; }
     // the lamp posts: the far sidewalk's park side (the wall's line, a little in front of it)
-    const wz=BOD.ZS(PARK.y0+PARK.oy), pz=far+(wz-far)*.7, g0=BOD.XS(PARK.gate[0]+PARK.ox), g1=BOD.XS(PARK.gate[1]+PARK.ox), pts=[[g0-.9*M,pz],[g1+.9*M,pz]], px1=BOD.XS(PARK.x1+PARK.ox)-2;
+    const wz=BOD.ZS(PARK.y0+PARK.oy), pz=far+.95*M,   /* (at the kerb, owner 18 Oct 2026: "lamps and light posts only near curbs": not out by the park's wall across the wide sidewalk) */ g0=BOD.XS(PARK.gate[0]+PARK.ox), g1=BOD.XS(PARK.gate[1]+PARK.ox), pts=[[g0-.9*M,pz],[g1+.9*M,pz]], px1=BOD.XS(PARK.x1+PARK.ox)-2;
     for(let x=g0-14*M;x>BOD.XS(PARK.x0+PARK.ox)+2;x-=14*M)pts.push([x,pz]); for(let x=g1+14*M;x<px1;x+=14*M)pts.push([x,pz]);
     // (and up the Avenue's west sidewalk, the park's side, from its mouth to its end: owner, 17 Oct 2026)
-    { const ax=BOD.XS(AVE.x0)+(BOD.XS(AVE.r0)-BOD.XS(AVE.x0))*.35, z0=BOD.ZS(BOD.MAP.y1)+5*M, z1=BOD.ZS(AVE.y1)-2; for(let z=z0;z<z1;z+=14*M)pts.push([ax,z]); }
+    { const ax=BOD.XS(AVE.r0)-.95*M, z0=BOD.ZS(BOD.MAP.y1)+5*M, z1=BOD.ZS(AVE.y1)-2; for(let z=z0;z<z1;z+=14*M)pts.push([ax,z]); }
+    { const clear=([x,z])=>heads.every(([hx,,hz])=>Math.hypot(hx-x,hz-z)>2.6*M); for(let i=pts.length-1;i>=0;i--)if(!clear(pts[i]))pts.splice(i,1); }   // (none crowding a street light's pole at the kerb)
     const xs=pts.map(p=>p[0]);
     const H=4.2*M, pole=new THREE.InstancedMesh(new THREE.CylinderGeometry(.055*M,.07*M,H,8).translate(0,H/2,0),new THREE.MeshLambertMaterial({color:0x22262b,flatShading:true}),xs.length*2),
       lant=new THREE.InstancedMesh(new THREE.BoxGeometry(.34*M,.5*M,.34*M),new THREE.MeshBasicMaterial({color:0xffe4b0}),xs.length), m4=new THREE.Matrix4(), y0=G(xs[0],pz);
@@ -125,6 +126,34 @@ const DRESS={}, TLX={tick:()=>{}};   // (TLX: the traffic lights, below)
       for(const [a,b] of runs){ for(let x=a;x<b-.5;x+=2*TILE)post(x,H); post(b,H); } post(gx0,H*1.2); post(gx1,H*1.2);
       const rail=(a,b)=>{ const y=G((a+b)/2,z); for(const h of [.42*M,.9*M])blk((a+b)/2,y+h,z,b-a,.06*M,.05*M,RL); SOL.up.push([a,z-.06*M,b,z+.06*M]); FIX.up.push([a,z-.06*M,y,b,z+.06*M,y+H]); };
       for(const [a,b] of runs)rail(a,b); }
+    // STREET TREES AND THE HOUSE'S PLANTERS (owner, 18 Oct 2026: "add a couple small trees on the apartment side, 1 in front of aparment"; "the
+    // apartments should have stpes like this , plants in front", his photo of a brownstone row): small street trees in their pits by the near kerb
+    // (a square of dark soil edged in granite setts, a few low plants in it, a grey-brown trunk forking into three limbs, a crown of a few faceted
+    // clumps in the lawn's greens), one before the apartment house's middle and two further east, each clear of the street lights, signs and the
+    // Metro's opening; before the house, west of its door, two brownstone planter boxes under a low iron railing, heaped with plants and a few
+    // pink and red flowers. Cost: some 60 blocks and 30 trunk pieces in the street's draws, the crowns one draw (about 40 clumps, 20 triangles
+    // each); no light, no program; the trunks and the planters solid
+    { const M=1/.84*TILE, CR=[], A=MODS.apts&&MODS.apts.A, zk=BOD.ZS(BOD.CURB), sd=Math.sign(zk)||1, hsh=(a,b)=>{ const v=Math.sin(a*12.9898+b*78.233)*43758.5453; return v-Math.floor(v); };
+      const clear=(x,z)=>!(window.MAPSTAIR&&MAPSTAIR.has&&MAPSTAIR.has(x,z,'up'))&&(DRESS.pools||[]).every(P=>Math.hypot(P[1]-x,P[2]-z)>2.4*M)&&!SOL.up.some(b=>x>b[0]-.9*M&&x<b[2]+.9*M&&z>b[1]-.9*M&&z<b[3]+.9*M);
+      const tree=(x0,i)=>{ const z=zk-sd*1.05*M; let x=x0; for(let k=0;k<12&&!clear(x,z);k++)x+=(k&1?-1:1)*(k+1)*.6*M; if(!clear(x,z))return; const y=G(x,z), P=1.25*M, SET=0xa8a49c, SOIL=0x3a2c22;
+        blk(x,y+.02*M,z,P,.04*M,P,SOIL); for(const [dx,dz,w,d] of [[0,-P/2,P+.16*M,.16*M],[0,P/2,P+.16*M,.16*M],[-P/2,0,.16*M,P],[P/2,0,.16*M,P]])blk(x+dx,y+.05*M,z+dz,w,.1*M,d,SET);   // (the pit, its setts)
+        for(let j=0;j<6;j++){ const a=j*1.05+i, r=.3*M+.15*M*hsh(i,j); blk(x+Math.cos(a)*r,y+.12*M,z+Math.sin(a)*r,.2*M,.2*M,.2*M,[0x3e6a34,0x4f7d3c,0x5a5a3a,0x6a8a44][j&3]); }   // (low plants)
+        const TR=0x5a4e44, H=1.9*M+.3*M*hsh(i,7); cyl(x,y+H/2,z,.11*M,H,TR); solid(x,z,.14*M,H);
+        for(let j=0;j<3;j++){ const a=j*2.1+i*.7, L=.9*M; blk(x+Math.cos(a)*L*.3,y+H+L*.3,z+Math.sin(a)*L*.3,.12*M,L*.75,.12*M,TR); }   // (three limbs, upright)
+        for(let j=0;j<9;j++){ const a=j*2.4+i, r=(j?.55+.5*hsh(i,j+20):0)*M, hy=H+(.8+.7*hsh(j,i+30))*M, s=(.6+.3*hsh(i+j,40))*M; CR.push([x+Math.cos(a)*r,y+hy,z+Math.sin(a)*r,s*1.15,s*.8,s*1.15,[0x3f6e32,0x4c7c38,0x5a8a40,0x36602c][j&3]]); } };
+      if(A){ const mx=BOD.X((A.x0+A.x1)/2-1.2); tree(mx,0); tree(mx+22*M,1); tree(mx+48*M,2);
+        // the planters: brownstone boxes against the front, west of the door, an iron railing round their top, plants heaped in them
+        const zf=BOD.Z(A.y1), sdf=Math.sign(zk-zf)||1, BR=0x7a4c3e, BRD=0x5e3a30, IR=0x1c1e22, dx=BOD.X(A.x1-1)-BOD.X(A.x1-1-2.2);
+        for(const [k,cx] of [[0,BOD.X(A.x1-1)-dx*1.05],[1,BOD.X(A.x1-1)-dx*1.9]]){ const L=1.7*M, D=.8*M, h=.62*M, cz=zf+sdf*(D/2+.05*M), y=G(cx,cz);
+          blk(cx,y+h/2,cz,L,h,D,BR); blk(cx,y+h+.03*M,cz,L+.08*M,.06*M,D+.08*M,BRD); blk(cx,y+.04*M,cz,L+.04*M,.08*M,D+.04*M,BRD);   // (the box, its coping, its plinth)
+          for(const o of [-1,1])blk(cx,y+h+.42*M,cz+o*(D/2),L,.04*M,.04*M,IR); blk(cx-L/2,y+h+.42*M,cz,.04*M,.04*M,D,IR); blk(cx+L/2,y+h+.42*M,cz,.04*M,.04*M,D,IR);   // (the railing's top rail)
+          for(let t=0;t<=12;t++){ const u=-L/2+t*L/12; for(const o of [-1,1])blk(cx+u,y+h+.22*M,cz+o*(D/2),.025*M,.4*M,.025*M,IR); }   // (its pickets, front and back)
+          for(let j=0;j<10;j++){ const u=(hsh(k,j)-.5)*L*.85, v=(hsh(j,k+3)-.5)*D*.7, s=(.28+.18*hsh(k+j,9))*M; CR.push([cx+u,y+h+s*.6,cz+v,s*1.2,s,s*1.2,[0x3e6a34,0x4f7d3c,0x2f5a2c,0x5a8a40][j&3]]);
+            if(j%3===0)blk(cx+u,y+h+s*1.1,cz+v,.1*M,.08*M,.1*M,j%2?0xd84a7a:0xc8302a); }   // (a flower here and there)
+          SOL.up.push([cx-L/2,cz-D/2,cx+L/2,cz+D/2]); FIX.up.push([cx-L/2,cz-D/2,y,cx+L/2,cz+D/2,y+h]); } }
+      const cm=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(.5,0),new THREE.MeshLambertMaterial({color:0xffffff,flatShading:true}),Math.max(1,CR.length)), m4=new THREE.Matrix4(), q=new THREE.Quaternion(), c=new THREE.Color();
+      CR.forEach(([x,y,z,a,b,d,col],i)=>{ q.setFromEuler(new THREE.Euler(0,i*1.3,0)); cm.setMatrixAt(i,m4.compose(new THREE.Vector3(x,y,z),q,new THREE.Vector3(a,b,d))); cm.setColorAt(i,c.setHex(col)); }); cm.count=CR.length;
+      cm.castShadow=cm.receiveShadow=true; scene.add(cm); DRESS.trees=cm; }
     { const me=new THREE.InstancedMesh(new THREE.CylinderGeometry(.5,.5,1,8),new THREE.MeshLambertMaterial({color:0xffffff,flatShading:true}),CY.length), m4=new THREE.Matrix4(), q=new THREE.Quaternion(), c=new THREE.Color();
       CY.forEach(([x,y,z,sx,sy,sz,col],i)=>{ me.setMatrixAt(i,m4.compose(new THREE.Vector3(x,y,z),q,new THREE.Vector3(sx,sy,sz))); me.setColorAt(i,c.setHex(col)); }); me.castShadow=me.receiveShadow=true; scene.add(me); DRESS.rounds=me; }
     { const me=new THREE.InstancedMesh(new THREE.BoxGeometry(1,1,1),new THREE.MeshLambertMaterial({color:0xffffff}),BL.length), m4=new THREE.Matrix4(), q=new THREE.Quaternion(), c=new THREE.Color();

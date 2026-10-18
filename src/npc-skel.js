@@ -65,7 +65,7 @@
       for(let t=0;t<ix.length;t+=3)if(part[R[ix[t]]]!=='Cloak')keep.push(ix[t],ix[t+1],ix[t+2]); geo.setIndex(new THREE.BufferAttribute(Uint16Array.from(keep),1)); }
     if(o.dark){ const c=geo.attributes.color.array; for(let i=0;i<c.length;i+=3){ const l=(c[i]+c[i+1]+c[i+2])/3; c[i]=Math.min(255,l*.42+18); c[i+1]=l*.3; c[i+2]=Math.min(255,l*.48+22); } }   // (a troublemaker: the Rogue's hood and bones gone the dark of a bruise)
     const N=makeNPC(null,{key:o.key||key,name,names:M.parts,lv:'up',group:'bodega',geo,skin:rig,tall:2.166,eye:o.gild?-1:M.eye,eyeC:o.eyeC,rank:M.parts.map(p=>/Helmet|Hat|Hood|Cape|Cloak/.test(p)?2:0),
-      metres,x,z,lane:LANE,free:o.pick?free:stfree,roam:!o.pick,ground:(x,z)=>MODS.bodega.ground(x,z),radius:.25,speed,stride:0,rock:0,bob:0,pick:o.pick,brain:o.brain,   /* (no beat of his own: he roams the whole map, ROAM in npc-map.js) */
+      metres,x,z,lane:LANE,free:o.pick?free:stfree,roam:!o.pick,ground:(x,z)=>MODS.bodega.ground(x,z),radius:.25,speed,stride:0,rock:0,bob:0,pick:o.pick,brain:o.brain,...(o.dun||{}),   /* (no beat of his own: he roams the whole map, ROAM in npc-map.js) */
       anim:(dt,moving,st,sc)=>{ const run=moving&&st.v>1.2*TILE; N.sta=run?Math.max(0,N.sta-dt/14):Math.min(1,N.sta+dt/8); if(N.sta<=0)N.tired=true; if(N.tired&&N.sta>.33)N.tired=false;   // (his stamina: spent running, back at a walk or at rest)
       if(N.sheet){ if(!N.posed){ N.posed=true; spread(rig); } return; }   // (his sheet: still, limbs spread, his clips never run)
       if(QS.get('skelrest'))return; an.base=moving?(run?'Running_A':o.walkN):(N.alert?'Idle_Combat':o.idleN); an.ts=moving?st.v/((run?RUNU:WALK)*sc):1; an.update(dt); }});
@@ -80,8 +80,9 @@
   const SHOVE={x:0,z:0}; const shove=dt=>{ if(Math.abs(SHOVE.x)+Math.abs(SHOVE.z)<1e-3)return; pos.x+=SHOVE.x*dt; pos.z+=SHOVE.z*dt; const k=Math.max(0,1-dt*7); SHOVE.x*=k; SHOVE.z*=k; collide(pos); };
   const onStreet=()=>LVL==='up'&&!BODB.inside()&&!MODS.pool.inside(pos.x,pos.z);
   for(const [key,name,tx,metres,walkN,idleN,speed,gear,beat,style] of CH){ const G={beat:beat.map(([x,y])=>({x:T_(x),z:Z_(y)})),leg:0,mode:'patrol',cool:0,look:Math.random()*6,style};
-    const N=skel(key,name,metres,T_(tx),Z_({58:-67,69:-65.5,82:-68.5,95:-66}[tx]),speed*.9,{walkN,idleN,gear,
-      pick:st=>{ G.leg^=1; const p=G.beat[G.leg]; st.to={x:p.x,z:p.z+(Math.random()-.5)*.3*TILE}; st.v=G.walkV; },
+    const DN=DUN();   // (in the dungeon under the castle, owner 18 Oct 2026: "all the skeleton warriors and skeletons ... in the dungeon"; their beats on the street left)
+    const N=skel(key,name,metres,DN?DN.x:T_(tx),DN?DN.z:Z_({58:-67,69:-65.5,82:-68.5,95:-66}[tx]),speed*.9,{walkN,idleN,gear,dun:DN,
+      pick:DN?undefined:st=>{ G.leg^=1; const p=G.beat[G.leg]; st.to={x:p.x,z:p.z+(Math.random()-.5)*.3*TILE}; st.v=G.walkV; },
       brain:(dt,you,st,N)=>{ if(N===GUARDS[0]){ bolts(dt); shove(dt); }
         G.walkV=G.walkV||st.v; G.cool-=dt; G.look+=dt;
         const T=TROUBLE.filter(t=>t.mode==='come'||t.mode==='fight').map(t=>[t,d2(t.st,st)]).filter(([,d])=>d<SEE).sort((p,q)=>p[1]-q[1])[0];
@@ -102,7 +103,8 @@
   // the stairs. Day breaks: they're gone ----
   const TOP={x:T_((MAPSTAIR.x0+MAPSTAIR.x1)/2),z:Z_(MAPSTAIR.y1+1.2)}, AWAY={x:T_(MAPSTAIR.x0+2),z:Z_(MAPSTAIR.y0-16)};   // (down the stairs and along: where the map's layout put them)
   let next=QS.get('trouble')?3:30+Math.random()*40;
-  for(let i=0;i<2;i++){ const N=skel('Rogue','TROUBLEMAKER',.6,AWAY.x,AWAY.z,.6,{walkN:'Walking_B',idleN:'Idle_Combat',eyeC:'1.,.18,.1',dark:true,
+  // (none now: the troublemakers are the Rogue gone dark, skeletons too, and the skeletons all live in the dungeon, owner 18 Oct 2026; ?trouble=1 brings them back)
+  for(let i=0;i<(MODS.dungeon&&!QS.get('trouble')?0:2);i++){ const N=skel('Rogue','TROUBLEMAKER',.6,AWAY.x,AWAY.z,.6,{walkN:'Walking_B',idleN:'Idle_Combat',eyeC:'1.,.18,.1',dark:true,
       pick:st=>{ st.to=null; st.wait=1; },
       brain:(dt,you,st,N)=>{ if(N.mode==='hidden'){ N.g.visible=false; st.x=AWAY.x; st.z=AWAY.z+i*TILE; st.to=null; st.hold=true;
           if(i===TROUBLE.filter(t=>t.mode!=='hidden').length&&CLOCK.dark()&&(next-=dt)<=0){ next=40+Math.random()*70; N.mode='come'; N.hp=1; N.sta=1; N.g.visible=true; st.x=TOP.x+(i-.5)*.6*TILE; st.z=TOP.z; st.h=Math.PI; N.an.clear(); N.an.play('Taunt'); }
@@ -126,7 +128,7 @@
   // ---- THE GOLD ONE (owner, 17 Oct 2026, his picture of a gilded clockwork skeleton, a white skull face under a gold cap: "put this
   // character in game, use the other skeletons as guides for character design"): the Minion's bones and body, nothing added (gild, above);
   // unarmed; he roams the whole map as the others do, no beat and no fight ----
-  skel('Minion','GOLD SKELETON',1.4,T_(77),Z_(-64),.45,{key:'Gold',walkN:'Walking_A',idleN:'Idle_A',gild:true});   // (he starts on the far sidewalk, clear of the mushroom seller's spot: owner, 17 Oct 2026, seeing the seller's hat and tray over him, "the gold skeleton should not have anything on them like mushrooms")
+  { const DN=DUN(); skel('Minion','GOLD SKELETON',1.4,DN?DN.x:T_(77),DN?DN.z:Z_(-64),.45,{key:'Gold',walkN:'Walking_A',idleN:'Idle_A',gild:true,dun:DN}); }   // (in the dungeon with the rest, 18 Oct 2026)   // (he starts on the far sidewalk, clear of the mushroom seller's spot: owner, 17 Oct 2026, seeing the seller's hat and tray over him, "the gold skeleton should not have anything on them like mushrooms")
   window.GUARDX={TROUBLE,shoot,free,SEE,RUN,LANE,T_,Z_,d2,GUARDS};   // (for the security droids, npc-droids.js: the same troublemakers, bolts and ground)
   window.GUARDDBG=()=>({guards:GUARDS.map(N=>({k:N.key,mode:N.guard.mode,x:+(N.st.x/TILE).toFixed(1),z:+(N.st.z/TILE).toFixed(1),act:N.an.once&&N.an.once.n})),trouble:TROUBLE.map(N=>({mode:N.mode,x:+(N.st.x/TILE).toFixed(1),z:+(N.st.z/TILE).toFixed(1),act:N.an.once&&N.an.once.n})),next:+next.toFixed(1),dark:CLOCK.dark()});
   window.SKELDBG=()=>NPCS.filter(N=>N.mixer).map(N=>({key:N.key,x:+N.st.x.toFixed(2),z:+N.st.z.toFixed(2),y:+N.g.position.y.toFixed(2),to:!!N.st.to,bones:N.me.skeleton.bones.length})); }

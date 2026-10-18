@@ -738,6 +738,44 @@ with its own copy, so a chat that hadn't taken in the others' work undid it. Eve
 - **Found on the way** (18 Oct 2026): the page had stopped loading (`kerbFace is not defined`, then `cvNoise`: two of the game kit's painters
   used outside the bodega's scope, `bodbuild.js`'s kerbs and `park.js`'s pavers); both now through `BOD.g`. `tests/clipcheck.cjs` fails the
   same 8 Moon Shrine things it failed before this change (its parapets, terrace, gate and blossoms, after `STORE.shrineFix`): not fixed here.
+- **The version notice, mended** (owner, 18 Oct 2026: "it DOESNT GIVE THAT DAMN MESSAGE EVER AND HASNT IN DAYS"): the artifact's `db` is null when the
+  page is opened on its own (not inside claude.ai's viewer), so `meta/build` was never heard. Every build now also writes its moment into the page's
+  head (`<meta name="market-build">`, build.py), and every open page reads the first bytes of its own address every 90 s and when the tab comes back
+  (`peek` in `version.js`): a newer build there shows A NEW VERSION IS READY. The `db` way stays as well.
+- **The grass by place, the mushrooms deeper** (owner, 18 Oct 2026: "i want just flat and tufts on the main side street, only the lush grass is in
+  central park, the mushrooms hsould be deeper into the park and more rare in harder lpaces to find"): outside the park's walls the lawn's kinds are
+  folded to FLAT and TUFT only (`WEEDS.inPark`, weeds.js); the crowns and rolls only inside. Mushrooms come up only 10 tiles or more in from the
+  park's walls, at two fifths the odds (forage.js).
+- **The roofs' things gone indoors** (owner, 18 Oct 2026: "the corner tops and roofs should also always vanish when inside a store"): rooftops.js's
+  three draws (parapets, leaders, the roofs' things) hidden while `ROOMS.cur`.
+- **The park wall's cope in stones** (owner, 18 Oct 2026: "need more lines on top of the brick walls too, doesnt look natural"): the top of the
+  park's walls painted as coping stones, a joint every 14-22 texels, each stone's own tone, rims lit and shaded, a crack now and then (park.js).
+- **Butterflies and ENTOMOLOGY** (owner, 18 Oct 2026: "add butterflies to the game (look in old game for crafting and butterflies info) lets
+  implement all of hat ( in line with our current mushrooms, fishing, gems, etc)"; `src/bfly.js`): the old game's (its archive's 47-butterflies:
+  New York's twelve by how often seen, one of the world's twenty rarest now and then deep in the park; a net for one on the wing, hands for one
+  settled; caught it's unknown till known). By day, over the lawns round you (weeds.js's chunks), most in Central Park, a few outside, the rare ones
+  10 tiles or more inside; afresh every two hours of the clock; roosting at night, in rain, snow or a gale. A double click walks up and tries
+  (ENTOMOLOGY, a seventh skill: the cap 450). THE MUSHROOM SELLER sells the BUTTERFLY NET $12 and SPECIMEN FRAMES $4 and buys butterflies
+  ($3-14 common, $40-250 rare, unknown at half, a mounted one 2.5 times); in THE PACK: IDENTIFY, MOUNT (a frame), RELEASE. The old game's own
+  crafting design (DECISIONS.md: 1985 New York skills, items and prices the owner's) was on the shelf; this follows the town's UO way instead.
+  `BFLYDBG()`. Cost: some 10-25 butterflies near you, 4 triangles each, an invisible box each; no light, no program.
+- **The sidewalk's slabs twice as big** (owner, 18 Oct 2026, his photos of New York sidewalks: "make the sidewalk look more like this (bigger
+  squares) keep same stylishing of grout and tufts, grass, etc."): each slab two tiles square, each row slid along its own amount (`SLB`,
+  `slabCol` in gamekit.js); the grout, bevels, weeds and cracks as before.
+- **Lamp posts at the kerb** (owner, 18 Oct 2026: "lamps and light posts only near curbs"): the park side's lamp posts and the Avenue's moved from
+  out by the wall to the kerb (0.95 m in), none within 2.6 m of a street light (dress.js).
+- **Street trees and the house's planters** (owner, 18 Oct 2026: "add a couple small trees on the apartment side, 1 in front of aparment"; "the
+  apartments should have stpes like this , plants in front"): three small street trees in granite-edged pits by the near kerb (one before the
+  apartment house, two east), and two brownstone planter boxes under iron railings, heaped with plants and flowers, west of the house's door
+  (dress.js). **Not done: the stoop** (the house's door is at the sidewalk; a stoop up to it means raising its ground floor: asked).
+- **The storm drains like his photo** (owner, 18 Oct 2026: "drains in road like this"): the gutter's grate a cast-iron frame, four rows of six long
+  black slots, worn and rusty iron, ragged darker asphalt round it with weeds in its cracks, now and then a scrap of paper (bodega.js's `drain`).
+- **The striped wall: the cottage's cabinet through it** (owner, 18 Oct 2026, two pictures of the house's front in vertical stripes with a cabinet on
+  it): the cottage's apothecary cabinet, set against the east wall, reached out through it over the street; now every cottage piece (but the
+  windows' rods and drapes) is slid back inside the walls if it reaches past them, and the house's wall pictures have mip levels (still nearest,
+  never blended), so the brick photo seen small no longer shimmers into stripes (apts.js).
+- **The cottage's things kept to their floor** (owner, 18 Oct 2026, from the lobby: "shouldnt see things on other floors"): the cottage's pieces had
+  gone into the street's batch, unclipped, so they hung over the lobby; now a batch of the house's own under its ceiling cut (apts.js).
 ## THE MARKET: the one official map
 
 **THE MARKET** (owner, 17 Oct 2026: "one official MARKET map im gona start filling in") is the game's map here: every place the owner adds goes
@@ -1230,3 +1268,15 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   the batches' map chunks culled by the camera, characters out of the picture not drawn and far ones not run. Measured (tests/trisby.cjs,
   11 am, all on screen): the street 165,000 to 284,000 triangles (the bodega's shelves seen through its windows), the shop 141,000 to 288,000,
   the park 172,000 to 128,000. `tests/freewalk.cjs <out> [query]`, `tests/vegshot.cjs <out>`.
+- **The skeletons in the dungeon; one mailbox a street; the street light whole; the view back on you; the stalls' mockups** (owner, 18 Oct 2026):
+  **The skeletons** ("i want all the skeleton warriors and skeletons to be underneath the castle in the dungeon"): the four KayKit guards (their
+  street beats left), the gold skeleton and the four skeleton pawns (mage, reaper, guard light and heavy) live in the castle's great hall, walking
+  about it (`DUN()` in `npc-map.js`: the level under the street, the dungeon's group and floor, its solids; out of walkers.js's and lives.js's ways
+  of life). The troublemakers (the Rogue gone dark: skeletons too) don't come up the stairs any more (`?trouble=1` brings them back). The
+  mushroom seller, a skeleton, stays at his stall. **The collection boxes** ("lets only have 1 mail box per street"): four, one on each road's
+  park-side kerb clear of the gates (`mail.js`). **The street light** ("the lamppost doesnt connect"): its arm had floated a third of a metre over
+  the pole's top; the pole now runs up to it under a cap (`dress.js`). **Back on you** ("anytime youve scrolled away off screen from your
+  character and then you stat to move again, it should snap back to focus on you"): any frame he moves while the view's slid off him and he's off
+  the picture, the view is put back on him (`UI.follow`, `ui.js`). **The stalls without tents** ("i dont want these stripped tenst ... rows and rows
+  of diff mushrooms, standing between three tables in u shape ... show me mockups"): `mockups/market-stalls.html`,
+  https://claude.ai/artifact/ET6bXTLDgHdTfyAsyG4MTn (A trays, B stepped tiers, C heaps and overflow); his pick to come.

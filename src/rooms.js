@@ -7,7 +7,13 @@
 const ROOMS={cur:null}; window.ROOMS=ROOMS;   // (a test's look)
 ROOMS.roofAt=(x,y,z)=>{ const h=new THREE.Raycaster(new THREE.Vector3(x,y,z),new THREE.Vector3(0,1,0),0,12).intersectObjects(scene.children,true).find(i=>{ for(let q=i.object;q;q=q.parent)if(!q.visible)return false; return i.object.isMesh&&!i.object.isSkinnedMesh; }); return h?+h.distance.toFixed(2):null; };   // (a test's: a roof over a spot)
 { const V=THREE.Vector3, PL=[0,1,2,3,4,5].map(()=>new THREE.Plane()), m=.14*TILE; let RL=null;
-  const NEAR=[new THREE.Plane(new V(0,-1,0),1e6),new THREE.Plane(new V(1,0,0),1e6)]; let NEARON=false;   // (the near side's cut: below)
+  const NEAR=[new THREE.Plane(new V(0,-1,0),1e6),new THREE.Plane(new V(1,0,0),1e6),new THREE.Plane(new V(0,0,1),1e6)]; let NEARON=false;   // (the near side's cut: below)
+  // (a material's own planes, clipIntersection on, now cut where the FIRST says AND any one of the rest says: above the knee and in the band of
+  // either near wall. three's own chunk can only ask all of them, which can't hold an L of two walls; two planes behave as before)
+  { const C=THREE.ShaderChunk, k='clipping_planes_fragment', a0='clipped = ( dot( vClipPosition, plane.xyz ) > plane.w ) && clipped;', a1='if ( clipped ) discard;';
+    if(C[k].includes(a0)&&C[k].includes(a1))C[k]=C[k].replace('bool clipped = true;','bool clipped = true; bool cfirst = true; bool cany = ( NUM_CLIPPING_PLANES - UNION_CLIPPING_PLANES ) < 2;')
+      .replace(a0,'{ bool c = dot( vClipPosition, plane.xyz ) > plane.w; if ( cfirst ) { clipped = c; cfirst = false; } else cany = cany || c; }').replace(a1,'if ( clipped && cany ) discard;');
+    else console.warn('ROOMS: three\'s clipping chunk not as expected; the near side cuts as before'); }
   const box=(X,Z,t,y0,y1)=>{ const a=X(t[0]), b=X(t[2]), c=Z(t[1]), d=Z(t[3]); return {x0:Math.min(a,b),x1:Math.max(a,b),z0:Math.min(c,d),z1:Math.max(c,d),y0,y1}; };
   const build=()=>{ RL=[]; const B=BOD.B0;
     RL.push(box(BOD.X,BOD.Z,[B.x0,BOD.BODOFF,B.x1,B.y1],-1,BOD.Y(B.h)),box(BOD.X,BOD.Z,[B.x0,B.y0,B.x1,BOD.BODOFF],-1,BOD.Y(B.h)));
@@ -38,10 +44,14 @@ ROOMS.roofAt=(x,y,z)=>{ const h=new THREE.Raycaster(new THREE.Vector3(x,y,z),new
     if(cutOn){ if(!NEARON){ NEARON=true; const skip=new Set([W3.group,...NPCS.map(N=>N.g)]); for(const o of [window.PLAYAS&&PLAYAS.N&&PLAYAS.N.g,typeof MUS!=='undefined'&&MUS.g,typeof PNM!=='undefined'&&PNM.g,typeof SGM!=='undefined'&&SGM.g,typeof DRM!=='undefined'&&DRM.g])if(o)skip.add(o);
         const walk=o=>{ if(skip.has(o)||o.isSkinnedMesh)return; const ms=o.material?(Array.isArray(o.material)?o.material:[o.material]):[]; for(const mt of ms){ if(mt.clippingPlanes===NEAR||(mt.isShaderMaterial&&!mt.clipping)||(mt.clippingPlanes&&mt.clippingPlanes.length))continue;   /* (a cut wall keeps its own plane: given NEAR in its place, every wall's cut to its foot stopped for good once any room was entered, the Metro's, the castle's, 18 Oct 2026) */ mt.clippingPlanes=NEAR; mt.clipIntersection=true; mt.needsUpdate=true; } for(const c of o.children)walk(c); };
         walk(scene); }
-      const cx=cam.position.x-pos.x, cz=cam.position.z-pos.z, l=Math.hypot(cx,cz)||1, ux=cx/l, uz=cz/l;
+      // (owner, 18 Oct 2026: "why is still vanshing liek this when i walk around?": the cut followed him, so a desk or a sink came and went as he
+      // walked. Now it's the room's: only a band along each of its two walls on the camera's side, the walls and what stands against them, fixed
+      // while he's in the room, whatever he does; the rest of the room whole)
+      const cx=cam.position.x-pos.x, cz=cam.position.z-pos.z, l=Math.hypot(cx,cz)||1, ux=cx/l, uz=cz/l, BAND=1.1*TILE;
       NEAR[0].normal.set(0,-1,0); NEAR[0].constant=py+.45*ZU*24/.84;   /* (above his knee: 0.45 m) */
-      NEAR[1].normal.set(-ux,0,-uz); NEAR[1].constant=ux*pos.x+uz*pos.z+.6*TILE; }   /* (more than 0.6 tile toward the camera from him) */
-    else if(NEARON&&NEAR[0].constant<1e5){ NEAR[0].constant=NEAR[1].constant=1e6; }
+      if(Math.abs(ux)>.2){ if(ux>0){ NEAR[1].normal.set(-1,0,0); NEAR[1].constant=hit.x1-BAND; } else { NEAR[1].normal.set(1,0,0); NEAR[1].constant=-(hit.x0+BAND); } } else NEAR[1].set(new V(-1,0,0),1e6);   /* (the x wall on the camera's side) */
+      if(Math.abs(uz)>.2){ if(uz>0){ NEAR[2].normal.set(0,0,-1); NEAR[2].constant=hit.z1-BAND; } else { NEAR[2].normal.set(0,0,1); NEAR[2].constant=-(hit.z0+BAND); } } else NEAR[2].set(new V(0,0,-1),1e6); }   /* (and the z wall) */
+    else if(NEARON&&NEAR[0].constant<1e5){ NEAR[0].constant=NEAR[1].constant=NEAR[2].constant=1e6; }
     if(hit){ PL[0].set(new V(1,0,0),-(hit.x0-m)); PL[1].set(new V(-1,0,0),hit.x1+m); PL[2].set(new V(0,0,1),-(hit.z0-m)); PL[3].set(new V(0,0,-1),hit.z1+m); PL[4].set(new V(0,1,0),-hit.y0); PL[5].set(new V(0,-1,0),hit.y1+.05);
       renderer.clippingPlanes=PL; scene.background.setRGB(0,0,0); }
     else if(renderer.clippingPlanes.length)renderer.clippingPlanes=[];

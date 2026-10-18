@@ -991,3 +991,8 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   shoe; the house's dark, the bodega's galvanized, Ghost Street's copper); parapets with coping on the flat roofs; on the house the water tank
   on its stand, the stair bulkhead, the elevator's machine room, chimneys, vents, soil stacks, a TV antenna; on the bodega an AC unit, an
   exhaust fan, a skylight, vents. Cost: 2,500 triangles, three instanced draws; no lamp, no program.
+- **The treetop grass flat** (owner, 18 Oct 2026: "I don't want the grass round ... flat and covering ground. Imagine the treetop exactly";
+  `WEEDS.lawnInit`): each leaf clump a low flat canopy (its height a sixth of its width, the middle facing up, the rim turning down as a crown's
+  edge does), more than twice as wide as its half-tile square so they overlap and no ground shows: the lawn reads as the top of one tree seen
+  from above; the wind a gentle lift and slide. The chunk's lawn check now skips invisible hit boxes and toon-lit character pieces (both had
+  left a bare patch where you stood). Cost as before: some 19,700 triangles in the picture, one program, no light.

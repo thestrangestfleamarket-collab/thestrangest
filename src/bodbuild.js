@@ -37,6 +37,12 @@ const BODB={};
     // (the rounded corners' curves, owner 18 Oct 2026, "rounded": each a few straight pieces along its arc, the granite's joints carried round it)
     for(const k of BOD.kerbArcs){ const H=k.z1-k.z0; let s=0; for(let i=0;i+1<k.P.length;i++){ const [x0,y0]=k.P[i], [x1,y1]=k.P[i+1], L=Math.hypot(x1-x0,y1-y0), s0=s; s+=L;
       BOD.bq([X(x0),Y(k.z0),Z(y0)],[X(x1),Y(k.z0),Z(y1)],[X(x1),Y(k.z1),Z(y1)],[X(x0),Y(k.z1),Z(y0)],BOD.faceTex(L*24,H,(ii,j)=>BOD.g.kerbFace(k.P[0][0]*7+s0+(ii+.5)/24,H-1-j,H)),'G'); } } }   // (in lengths of 80 tiles at most: the atlas's width; its granite lengths, lit top, grimy foot: gamekit.js)   // (a kerb along x, or along y: the Avenue's)
+  // THE KERB RAMPS (bodega.js's BOD.ramps; owner, 18 Oct 2026, "go all"): each a slope from the road's level at the kerb's line up to the
+  // sidewalk RPD in, its picture the ramp's (the warning pad at its foot), and the two triangles of kerb face closing its sides
+  { const X=BOD.XS, Y=BOD.YS, Z=BOD.ZS, {RP,D,col}=BOD.ramps, RD=BOD.RD, H=-RD;
+    for(const r of RP){ const P=(u,w,z)=>{ const q=r.ax==='x'?[u,r.e+r.dir*w]:[r.e+r.dir*w,u]; return [X(q[0]),Y(z),Z(q[1])]; }, W=r.u1-r.u0;
+      BOD.bq(P(r.u0,0,RD),P(r.u1,0,RD),P(r.u1,D,0),P(r.u0,D,0),BOD.faceTex(W*24,D*24,(i,j)=>col((i+.5)/24,D-(j+.5)/24,W)),'G');   // (row 0 along the top edge, as bq lays it)
+      for(const u of [r.u0,r.u1])BOD.bq(P(u,0,RD),P(u,D,0),P(u,D,0),P(u,0,0),BOD.faceTex(D*24,H,(i,j)=>BOD.g.kerbFace(u*7+i/24,H-1-j,H)),'G'); } }
   // THE STREET'S SIGNS (bodega.js's BOD.signs; owner, 18 Oct 2026, "NYC markings and street signs"): thin boxes in the street's tiles (z art
   // px), every face painted: a blade's or a plate's words in a 3x5 pixel letter, read left to right from either side (the way along a face, r, is
   // its normal turned a quarter: (ny, -nx), as the game's boxes read); a texel left empty is cut out (the batch's alpha test: the STOP octagon)

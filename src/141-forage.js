@@ -44,10 +44,9 @@ const FORAGE={}; window.FORAGE=FORAGE;
   const feed=f=>{ S.food=Math.min(1,S.food+f); saveSoon(); }, buff=(k,s)=>{ S.fx[k]=Math.max(S.fx[k]||0,s); if(k==='swift')swift(); };
   let base=null; const swift=()=>{ if(base==null)base=[st.wk||1,st.rk||1]; st.wk=base[0]*1.25; st.rk=base[1]*1.25; };
   FORAGE.keen=()=>S.fx.keen?20:0;
-  { const t0=VIT.tick; let sta0=1, warn=1, acc=0; VIT.tick=dt=>{ sta0=VIT.sta; t0(dt); if(S.fx.str&&VIT.sta<sta0)VIT.sta=sta0;
-      if(S.food<.25&&VIT.sta>sta0)VIT.sta=sta0+(VIT.sta-sta0)*.5; if(S.food<=0){ VIT.tired=true; st.runTarget=0; }
+  { const t0=VIT.tick; let sta0=1, acc=0; VIT.tick=dt=>{ sta0=VIT.sta; t0(dt); if(S.fx.str&&VIT.sta<sta0)VIT.sta=sta0;
       if(S.fx.poison)VIT.hp=Math.max(.05,VIT.hp-dt/50); if(S.fx.regen)VIT.hp=Math.min(1,VIT.hp+dt/30);
-      S.food=Math.max(0,S.food-dt/2700); if(S.food<.25&&warn>=.25)say('YOU ARE GETTING HUNGRY.','#f2c14e'); if(S.food<=0&&warn>0)say('YOU ARE STARVING. YOU CANNOT RUN.','#ff8a6a'); warn=S.food;
+      S.food=1;
       for(const k in S.fx){ S.fx[k]-=dt; if(S.fx[k]<=0){ delete S.fx[k]; say({str:'YOUR STRENGTH FADES.',keen:'YOUR EYE IS ORDINARY AGAIN.',swift:'YOUR STEP SLOWS.',regen:'THE MENDING STOPS.',poison:'THE POISON HAS WORN OFF.'}[k]||'',k==='poison'?'#9fe07f':'#c8c2b0'); if(k==='swift'&&base){ st.wk=base[0]; st.rk=base[1]; base=null; } if(k==='keen')FORAGE.sync(); } }
       if((acc+=dt)>5){ acc=0; saveSoon(); } if(PACK.open&&(PACK.t=(PACK.t||0)+dt)>1){ PACK.t=0; PACK.bars(); } }; }
   const CH=new Map(), capG=new THREE.SphereGeometry(1,8,4,0,Math.PI*2,0,Math.PI/2), stemG=new THREE.CylinderGeometry(.32,.38,1,6).translate(0,.5,0), NMX=420;

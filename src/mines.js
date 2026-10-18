@@ -91,7 +91,7 @@ const MINE={ready:false}; window.MINE=MINE;
       let lo=1e9; for(let a=-1;a<=1;a++)for(let b=-1;b<=1;b++){ const n=K(i+a,j+b); if(inG(i+a,j+b)&&carved[n])lo=Math.min(lo,floor[n]); } if(lo>1e8)continue;
       let dd=0; for(let a=-1;a<=1;a++)for(let b=-1;b<=1;b++){ const n=K(i+a,j+b); if(inG(i+a,j+b)&&carved[n])dd=Math.max(dd,dep[n]); }
       BX.push([i,j,lo-Yp(6),top0-rr()*Yp(40),dd,rr()]); }
-    const box=new THREE.BoxGeometry(1,1,1), rock=new THREE.InstancedMesh(box,new THREE.MeshLambertMaterial({flatShading:true,clippingPlanes:CUT,clipIntersection:true}),BX.length), fl=new THREE.InstancedMesh(box,new THREE.MeshLambertMaterial(),FL.length);
+    const box=new THREE.BoxGeometry(1,1,1), rock=new THREE.InstancedMesh(box,new THREE.MeshLambertMaterial({flatShading:true,side:THREE.DoubleSide,clippingPlanes:CUT,clipIntersection:true}),BX.length), fl=new THREE.InstancedMesh(box,new THREE.MeshLambertMaterial(),FL.length);
     BX.forEach(([i,j,lo,hi,dd,r],n)=>{ const s=1+r*.12; m4.compose(new V3(XS(cx(i)),(lo+hi)/2,ZS(cy(j))),q,new V3(CS*T*s,hi-lo,CS*T*s)); rock.setMatrixAt(n,m4);
       const g=.4-dd*.14+r*.1, w=rr(); rock.setColorAt(n,col.setRGB(g*(1.12+w*.1),g*(.98+w*.04),g*(.84+dd*.34)));   /* (warm grey-brown, bluer and darker the deeper) */   // (bluer and darker the deeper)
       const x0=XS(cx(i)-CS/2), x1=XS(cx(i)+CS/2), z0=ZS(cy(j)-CS/2), z1=ZS(cy(j)+CS/2), a=[Math.min(x0,x1),Math.min(z0,z1),Math.max(x0,x1),Math.max(z0,z1)]; sol.push(a); fix.push([a[0],a[1],lo,a[2],a[3],hi]); });

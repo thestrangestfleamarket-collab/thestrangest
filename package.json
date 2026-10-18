@@ -1,7 +1,6 @@
 {
   "private": true,
   "devDependencies": {
-    "acorn": "8.14.0",
     "esbuild": "0.24.0"
   }
 }

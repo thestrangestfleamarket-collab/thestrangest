@@ -988,3 +988,7 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   as the park's sitting log's: `METRO.seats`, `METRO.things`). Cost: three invisible boxes, nothing a frame. **Found on the way** (`rooms.js`):
   the first room entered (a fresh start is in the cottage) gave every material the near-side cut's two planes in place of its own, so every cut
   wall (the Metro's, the castle's, the stored rooms') stopped cutting for good; a material with planes of its own now keeps them.
+- **Rats in the Metro** (owner, 18 Oct 2026, "go all"; `npc-creatures.js`): three of the street's rats (the pack's rat, its clips and its
+  mottled fur) under it: two over the platform between the track's edge and the back wall, one along the tactile strip at the edge; on the level
+  under the street (its group: drawn only from down there; unseen, neither drawn nor run, as every character), on the platform's ground, out of its
+  solids, never past the gates or over the edge. Cost: 2,196 triangles a rat where seen, no light, no program.

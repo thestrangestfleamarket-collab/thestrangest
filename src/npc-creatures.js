@@ -19,7 +19,7 @@
       out[name]=new THREE.AnimationClip(name,Cl.dur,tracks); } return out; };
   // the grounds they keep to: the park's lawn, the whole street and the park; where they may stand (not in a wall, a trunk, a rock, the stairs)
   const M=BOD.MAP, X=BOD.XS, Z=BOD.ZS, PARKL={x0:X(PARK.x0+PARK.ox+2),x1:X(PARK.x1+PARK.ox-2),z0:Z(PARK.y0+PARK.oy+1.5),z1:Z(PARK.y1+PARK.oy-1)}, ALL={x0:X(M.x0+2),x1:X(M.x1-2),z0:Z(-76.3),z1:Z(PARK.y1+PARK.oy-1)},   /* (the park as the map's layout has it: park.js) */
-    HOLE=[X(MAPSTAIR.x0-.6),Z(MAPSTAIR.y0),X(MAPSTAIR.x1+.6),Z(MAPSTAIR.y1+.6)], free=(x,z,R)=>!(x>HOLE[0]-R&&x<HOLE[2]+R&&z>HOLE[1]-R&&z<HOLE[3]+R)&&!SOL.up.some(b=>x>b[0]-R&&x<b[2]+R&&z>b[1]-R&&z<b[3]+R);
+    HOLE=[X(MAPSTAIR.x0-.6),Z(MAPSTAIR.y0),X(MAPSTAIR.x1+.6),Z(MAPSTAIR.y1+.6)], FREE=(x,z,R)=>!(x>HOLE[0]-R&&x<HOLE[2]+R&&z>HOLE[1]-R&&z<HOLE[3]+R)&&!SOL.up.some(b=>x>b[0]-R&&x<b[2]+R&&z>b[1]-R&&z<b[3]+R);
   // each kind: its clips for going and standing, its pace (its own units a second at the clip's own pace), the height it keeps (a flyer), when it's out
   const KIND={Rat:{walk:'Rat_Walk',run:'Rat_Run',idle:'Rat_Idle',pace:3,lane:ALL,night:.6},Frog:{walk:'Frog_Jump',idle:'Frog_Idle',pace:2.4,lane:PARKL,hop:[.33,.78]},Slime:{walk:'Slime_Walk',idle:'Slime_Idle',pace:1.2,lane:PARKL,turn:-Math.PI/2},
     Snake:{walk:'Snake_Walk',idle:'Snake_Idle',pace:2,lane:PARKL},Spider:{walk:'Spider_Walk',idle:'Spider_Idle',pace:3,lane:PARKL},Bat:{walk:'Bat_Flying',idle:'Bat_Flying',pace:3,lane:PARKL,fly:[6,13],night:1},Wasp:{walk:'Wasp_Flying',idle:'Wasp_Flying',pace:3,lane:PARKL,fly:[1,2.5],day:1,turn:-Math.PI/2}};   // (hop: the part of the jump's clip it's in the air, the only time it moves; turn: a model that faces its pack's x, not forward)
@@ -66,9 +66,16 @@
   const CH=[['Rat','RAT',.22,[60,-73.5],.9,0],['Rat','RAT',.22,[95,-62.5],.9,0],['Rat','RAT',.22,[110,-50],.9,0],['Frog','FROG',.28,[70,-44],.35,0],['Frog','FROG',.26,[75,-50],.35,0],
     ['Slime','SLIME',.45,[62,-40],.25,0],['Snake','SNAKE',.42,[90,-47],.3,0],['Spider','SPIDER',.4,[57,-52],.45,0],['Spider','SPIDER',.36,[99,-41],.45,0],
     ['Bat','BAT',.55,[72,-45],1.1,0],['Bat','BAT',.5,[85,-50],1.1,0],['Bat','BAT',.6,[60,-40],1.1,0],['Wasp','WASP',.22,[64,-55],.8,0],['Wasp','WASP',.2,[80,-57],.8,0],['Wasp','WASP',.2,[102,-44],.8,0]];
-  for(const [key,name,metres,[tx,tz],speed,turn] of CH){ const D=C[key], K=KIND[key], rig=rigOf(D.rig), CL=clipsOf(D), mixer=new THREE.AnimationMixer(rig.bones[0]), A={}, act=n=>A[n]||(A[n]=mixer.clipAction(CL[n]));
+  // THE METRO'S RATS (owner, 18 Oct 2026, "go all", the Metro's open items: rats on the platform): three of the street's rats under it, two over
+  // the platform between the track's edge and the back wall, one scurrying the tactile strip along the edge; on the level under the street
+  // (its group: drawn only from down there, and neither drawn nor run unseen as every character), their ground the platform's, out of its
+  // solids (the columns, benches, bins, the gates), never past the gates or over the edge
+  if(typeof METRO!=='undefined'&&METRO&&METRO.X){ const MX=METRO.X, MZ=METRO.Z, ln=(a,b,c,d)=>({x0:MX(0,d),x1:MX(0,c),z0:MZ(a,0),z1:MZ(b,0)}), PL=ln(10.45,18.5,-5.2,51), ED=ln(10.45,11.05,-5.2,51);
+    const mfree=(x,z,R)=>x>PL.x0&&x<PL.x1&&z>PL.z0-.01&&z<PL.z1&&!SOL.down.some(b=>x>b[0]-R&&x<b[2]+R&&z>b[1]-R&&z<b[3]+R), mg=(x,z)=>MODS.station.ground(x,z);
+    for(const [L,kx,kz] of [[PL,16.2,12],[PL,13,38],[ED,10.7,28]]){ const p=METRO.at(kx,kz); CH.push(['Rat','RAT',.22,null,.9,0,{lv:'down',group:'down',lane:L,free:mfree,ground:mg,x:p.x,z:p.z}]); } }
+  for(const [key,name,metres,tp,speed,turn,ex] of CH){ const D=C[key], K=Object.assign({},KIND[key],ex&&{lane:ex.lane}), rig=rigOf(D.rig), CL=clipsOf(D), mixer=new THREE.AnimationMixer(rig.bones[0]), A={}, act=n=>A[n]||(A[n]=mixer.clipAction(CL[n])), free=ex?ex.free:FREE, [tx,tz]=tp||[0,0];
     const st2={fly:K.fly?K.fly[0]+Math.random()*(K.fly[1]-K.fly[0]):0,hid:false,t:Math.random()*10}; let cur=null;
-    const N=makeNPC(null,{key:key.toLowerCase(),name,names:D.mesh.parts,lv:'up',group:'bodega',geo:PAINT(key,geomOf(D.mesh)),skin:rig,tall:D.tall,rank:D.mesh.parts.map(()=>0),metres,x:X(tx),z:Z(tz),lane:K.lane,free,ground:(x,z)=>MODS.bodega.ground(x,z),radius:.12,speed,stride:0,rock:0,bob:0,
+    const N=makeNPC(null,{key:key.toLowerCase(),name,names:D.mesh.parts,lv:ex?ex.lv:'up',group:ex?ex.group:'bodega',geo:PAINT(key,geomOf(D.mesh)),skin:rig,tall:D.tall,rank:D.mesh.parts.map(()=>0),metres,x:ex?ex.x:X(tx),z:ex?ex.z:Z(tz),lane:K.lane,free,ground:ex?ex.ground:(x,z)=>MODS.bodega.ground(x,z),radius:.12,speed,stride:0,rock:0,bob:0,
       pick:K.fly?st=>{ const L=K.lane; st.to={x:L.x0+Math.random()*(L.x1-L.x0),z:L.z0+Math.random()*(L.z1-L.z0)}; st2.fly=K.fly[0]+Math.random()*(K.fly[1]-K.fly[0]); }
         // (THE WATERING HOLE, owner 18 Oct 2026: "the toads and other life will drink from it": a walker of the park, now and then, to the pond's edge
         // to drink (st2.drink: there, facing the water, a long while); else a spot of its own ground)
@@ -86,5 +93,6 @@
         if(K.fly){ N.g.position.y+=st2.fly*TILE/.84*.5+Math.sin(st2.t*2.1)*.15; N.body.rotation.z=moving?Math.sin(st2.t*1.3)*.15:0; } }});
     N.g.rotation.order='YXZ'; N.me.rotation.y=turn+(K.turn||0); N.me.position.set(0,0,0);   // (a pack's model that faces another way: turned on its own mesh)
     if(K.fly){ N.blocks=()=>false; N.push=()=>{}; N.st.v=speed*TILE; }
+    if(ex)N.g.position.set(N.st.x,ex.ground(N.st.x,N.st.z),N.st.z);   // (where he is from the first: NPCS.tick finds who's near by it, and the Metro's rats start far from the map's middle)
     N.mixer=mixer; CREATS.push(N); }
   window.CREATDBG=()=>CREATS.map(N=>({key:N.key,x:+N.st.x.toFixed(1),z:+N.st.z.toFixed(1),y:+N.g.position.y.toFixed(2),to:!!N.st.to,vis:N.g.visible})); }

@@ -83,16 +83,19 @@ const musScale=(g,bh)=>g.scale.set(W3.SZ/PPU,ZU*W3.SZ*(bh||W3.BH||1),W3.SZ/PPU);
   MUS.start=()=>{ song=gtNext(song); gtSet(song); }; MUS.stop=()=>gtHush();   // (a tune from its start, readied; he plays it only when asked: MUS.ask)
   // his walk: the rig's own (its step and pose, as yours), his feet carrying him as far as his stride says; the sidewalk's run, the way
   // ahead tried before each step (STFREE: the stairs' hole, the buildings, the things on the street), turned back where it's blocked
-  const WK={mode:'stop',t:1+Math.random()*3,dir:1,to:AT.x,st:R.create(),d0:0}, X0=BOD.XS(36), X1=BOD.XS(165), RAD=.3*TILE;
+  const WK={mode:'stop',t:1+Math.random()*3,dir:1,to:AT.x,st:R.create(),d0:0}, X0=BOD.XS(36), X1=BOD.XS(165), Z0=AT.z, RAD=.3*TILE;
   const free=(x,z)=>typeof STFREE!=='function'||STFREE(x,z,RAD), turn=hd=>{ let e=hd-AT.hd; e=Math.atan2(Math.sin(e),Math.cos(e)); return e; };
   const pickTo=()=>{ if(Math.random()<.35)WK.dir=-WK.dir; let x=AT.x+WK.dir*(6+Math.random()*22)*TILE; if(x<X0||x>X1){ WK.dir=-WK.dir; x=AT.x+WK.dir*(6+Math.random()*22)*TILE; } WK.to=Math.max(X0,Math.min(X1,x)); };
   MUS.ask=()=>{ WK.mode='play'; WK.st.target=0; AT.hd=Math.atan2(pos.x-AT.x,pos.z-AT.z); g.rotation.y=AT.hd; song=gtNext(song); gtSet(song); };
-  const walkTick=(dt,near)=>{ const S=WK.st;
+  const clear=()=>{ for(let k=0;k<160;k++){ const dx=(k>>1)*.25*TILE*(k&1?-1:1); for(const dz of [0,.6,-.6,1.2]){ const x=AT.x+dx, z=AT.z+dz*TILE; if(free(x,z)){ AT.x=x; AT.z=z; return; } } } };   // (his spot clear of what stands on the sidewalk: a mailbox, a lamp's foot)
+  const walkTick=(dt,near)=>{ const S=WK.st; if(!WK.ok){ WK.ok=true; clear(); }
     if(WK.mode==='stop'){ S.target=0; WK.t-=dt; if(WK.t<=0){ pickTo(); WK.mode='walk'; } }
     if(WK.mode==='walk'){ const want=WK.to>AT.x?Math.PI/2:-Math.PI/2, e=turn(want); AT.hd+=Math.sign(e)*Math.min(Math.abs(e),dt*4); S.target=Math.abs(e)<.6?1:0;
       if(Math.abs(WK.to-AT.x)<.2*TILE){ WK.mode='stop'; WK.t=3+Math.random()*7; S.target=0; } }
     const d0=S.dist; R.step(S,dt); const go=(S.dist-d0)*W3.SZ/PPU;
-    if(go>0){ const nx=AT.x+Math.sin(AT.hd)*go, nz=AT.z+Math.cos(AT.hd)*go; if(free(nx,nz)){ AT.x=nx; AT.z=nz; } else { WK.mode='stop'; WK.t=1+Math.random()*2; WK.dir=-WK.dir; } }
+    if(go>0){ const nx=AT.x+Math.sin(AT.hd)*go, nz=AT.z+Math.cos(AT.hd)*go, side=[0,.5,-.5,1,-1].find(o=>free(nx,nz+o*TILE*Math.min(1,go*8)));   // (round what's in his way, a little to the side, else back the other way)
+      if(side!=null){ AT.x=nx; AT.z=nz+side*TILE*Math.min(1,go*8); } else { WK.mode='stop'; WK.t=1+Math.random()*2; WK.dir=-WK.dir; } }
+    if(WK.mode==='walk'&&Math.abs(AT.z-Z0)>.05*TILE&&free(AT.x,AT.z+Math.sign(Z0-AT.z)*.02*TILE))AT.z+=Math.sign(Z0-AT.z)*Math.min(Math.abs(Z0-AT.z),dt*.3*TILE);   // (back to his line once by)
     AT.y=MODS.bodega.ground(AT.x,AT.z); g.position.set(AT.x,AT.y,AT.z); g.rotation.y=AT.hd;
     if(!near)return null; R.farOnly(false); const B=R.pose(S,true); return B; };
   // the guitar on his back while he walks: its frame turned half round his middle

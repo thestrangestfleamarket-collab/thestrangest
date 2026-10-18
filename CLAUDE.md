@@ -767,7 +767,19 @@ with its own copy, so a chat that hadn't taken in the others' work undid it. Eve
 - **Street trees and the house's planters** (owner, 18 Oct 2026: "add a couple small trees on the apartment side, 1 in front of aparment"; "the
   apartments should have stpes like this , plants in front"): three small street trees in granite-edged pits by the near kerb (one before the
   apartment house, two east), and two brownstone planter boxes under iron railings, heaped with plants and flowers, west of the house's door
-  (dress.js). **Not done: the stoop** (the house's door is at the sidewalk; a stoop up to it means raising its ground floor: asked).
+  (dress.js).
+- **The stoop, the house raised** (owner, 18 Oct 2026: "1 yes raise it"; `apts.js`): the whole apartment house stands 28 art px (about 1 m) up
+  (`APTS.RZ`; `APTS.R0` its height in the world: its `Y` and `gbox` add it, so its floors, walls, stairs, lift, flats, lights and furniture rise
+  together; every height read from it elsewhere adds R0: clip.js, drone.js, residents.js, rooftops.js, rooms.js, ui.js), a brownstone plinth under
+  it, and before the door a stoop: a landing and three steps down to the sidewalk (four equal risers, lit noses), a cheek wall each side (solid)
+  with an iron railing, balusters at each tread and a newel at the foot. The ground on it (`APTS.stoop`, read by map-post.js's `groundY`) steps
+  up to the lobby's floor. Cost: some 70 boxes in the house's batch; no light, no program.
+- **The roads three times wider** (owner, 18 Oct 2026: "the street lanes are too narrow, need to be 3x wider"; `WID` 14 in `map-pre.js`): the main
+  street's road 7 tiles to 21 (its far kerb `LSEED.grass` 14 north, everything north of it with `NORTHY` 23, the castle with it), the west street's,
+  the north street's and the Avenue's each 14 wider outward (`RING.wx0`, `RING.ny1`, `AVE.x1`, the main street's east end `BOD.MAP.x1`); the spots set by
+  number on the far side moved with it (the skeleton guards' lane and beat, the gold skeleton, the pawns' row, the creatures, the joggers' corners,
+  the blue mailboxes). **The batch's atlas in pages** (`batch.js`): a page closes at 8,192 rows (`BATCH.MAXH`) and the rest goes on a new atlas of
+  its own (its meshes `k~1`, ...), so the wider street's pictures no longer overflow what software rendering allows; `BATCH.stats.pages`.
 - **The storm drains like his photo** (owner, 18 Oct 2026: "drains in road like this"): the gutter's grate a cast-iron frame, four rows of six long
   black slots, worn and rusty iron, ragged darker asphalt round it with weeds in its cracks, now and then a scrap of paper (bodega.js's `drain`).
 - **The striped wall: the cottage's cabinet through it** (owner, 18 Oct 2026, two pictures of the house's front in vertical stripes with a cabinet on
@@ -1279,4 +1291,4 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   character and then you stat to move again, it should snap back to focus on you"): any frame he moves while the view's slid off him and he's off
   the picture, the view is put back on him (`UI.follow`, `ui.js`). **The stalls without tents** ("i dont want these stripped tenst ... rows and rows
   of diff mushrooms, standing between three tables in u shape ... show me mockups"): `mockups/market-stalls.html`,
-  https://claude.ai/artifact/ET6bXTLDgHdTfyAsyG4MTn (A trays, B stepped tiers, C heaps and overflow); his pick to come.
+  https://claude.ai/artifact/ET6bXTLDgHdTfyAsyG4MTn (A trays, B stepped tiers, C heaps and overflow); **his pick, "B with C's overflow"**: `src/stalls.js` (`STALL.build`, for both: three plank tables in a U open to the street, the seller in its middle, each table three crate risers stepping up toward him with a row of heaps a step, one kind a heap, a basket now and then on the top step; round it two crates high, baskets on the ground, sacks and pumpkins (his) or a mushroom log (the seller's); the old awnings gone). Cost: some 13,700 triangles the mushroom seller's, 13,100 the tomato's (the goods a third over life size so fewer show as full), six instanced draws each, no light; solid at the tables and the overflow. `tests/stallshot.cjs <out>`.

@@ -21,27 +21,9 @@ const VEG={}; window.VEG=VEG;
       ['f_stuffpep','STUFFED PEPPER','cooking',[25,70],{v_pepper:1,m_button:2},'fills two fifths, mends you a minute'],['f_psoup','PUMPKIN SOUP','cooking',[40,85],{v_pumpkin:1,v_onion:1},'fills more than half, strong 2 min']],
     does:{f_corn:()=>FORAGE.feed(.2),f_vstew:()=>{ FORAGE.feed(.4); VIT.hp=Math.min(1,VIT.hp+.2); },f_stuffpep:()=>{ FORAGE.feed(.4); FORAGE.buff('regen',60); },f_psoup:()=>{ FORAGE.feed(.6); FORAGE.buff('str',120); }}});
   // ---- THE STAND: built once the park is (its gate where the layout put it), beside the mushroom seller's booth
-  const STAND=()=>{ const P=PARK, X=x=>BOD.XS(x+(P.ox||0)), Z=y=>BOD.ZS(y+(P.oy||0)), Y=BOD.YS, g1=P.gate[1], x0=g1+9, x1=g1+12.4, y0=P.y0-7, y1=P.y0-6, TP=26;
-    const BX=[], RD=[], box=(a,b,c,d,z0,z1,col)=>BX.push([(X(a)+X(b))/2,(Y(z0)+Y(z1))/2,(Z(c)+Z(d))/2,Math.abs(X(b)-X(a)),Y(z1)-Y(z0),Math.abs(Z(d)-Z(c)),col]);
-    const rnd=(()=>{ let t=11; return ()=>{ t=(t*16807)%2147483647; return t/2147483647; }; })(), GRN=0x3e6a3a, DK=0x2a4a28, WOOD=0x9a7a4e;
-    box(x0,x1,y0,y1,TP-2,TP,GRN); box(x0+.04,x1-.04,y0,y0+.06,4,TP-2,GRN); for(const [a,b] of [[x0+.06,y0+.06],[x1-.18,y0+.06],[x0+.06,y1-.18],[x1-.18,y1-.18]])box(a,a+.12,b,b+.12,0,TP-2,DK);   // (the stand, its front panel, its legs)
-    box(x0+.08,x0+.2,y1-.1,y1+.02,0,74,DK); box(x1-.2,x1-.08,y1-.1,y1+.02,0,74,DK);   // (the awning's posts, at the back)
-    for(let i=0;i<8;i++){ const a=x0-.15+i*(x1-x0+.3)/8; box(a,a+(x1-x0+.3)/8,y0-.35,y1+.05,72,75,i&1?0xeee4cc:0x3a7a3a); }   // (the awning, striped green and cream)
-    box(x1-.75,x1-.15,y1-.06,y1-.02,TP+8,TP+26,0x2a2c2e); box(x1-.78,x1-.12,y1-.07,y1-.01,TP+7,TP+8,WOOD);   // (the slate of prices on its stand, at the back)
-    // three crates in a row along the front, each tilted toward the street (a step down front to back), heaped with three kinds each
-    const CR=[[x0+.12,x0+1.18,[0,1,8]],[x0+1.22,x0+2.28,[2,3,5]],[x0+2.32,x1-.12,[4,6,7]]];
-    for(const [a,b,kinds] of CR){ box(a,b,y0+.1,y1-.32,TP,TP+3,WOOD); box(a,b,y1-.34,y1-.24,TP,TP+7,WOOD);
-      kinds.forEach((k,j)=>{ const v=V[k], ka=a+(b-a)*j/3, kb=a+(b-a)*(j+1)/3; for(let n=0;n<10;n++){ const x=ka+.05+rnd()*(kb-ka-.1), y=y0+.15+rnd()*(y1-y0-.55), r=v[6][0], h=v[6][1];
-        RD.push([X(x),Y(TP+3)+h*T*.45+((y-y0)/(y1-y0))*Y(4),Z(y),r*T,h*T,v[5],v[7],rnd()*6.3]); } }); }
-    for(const [x,y] of [[x0+.3,y0-.25],[x0+.75,y0-.3]]){ const v=V[9]; RD.push([X(x),v[6][1]*T*.5,Z(y),v[6][0]*T,v[6][1]*T,v[5],1,rnd()*6.3]); }   // (pumpkins at its foot)
-    const m4=new THREE.Matrix4(), q=new THREE.Quaternion(), e=new THREE.Euler(), c=new THREE.Color(), V3=THREE.Vector3, grp=(typeof MAPG!=='undefined'&&MAPG.park)||scene;
-    const B=new THREE.InstancedMesh(new THREE.BoxGeometry(1,1,1),new THREE.MeshLambertMaterial({color:0xffffff}),BX.length); BX.forEach(([x,y,z,sx,sy,sz,col],i)=>{ B.setMatrixAt(i,m4.compose(new V3(x,y,z),q,new V3(sx,sy,sz))); B.setColorAt(i,c.setHex(col)); });
-    // (a round one a squashed ball; a long one, a carrot or an ear of corn, a ball stretched and laid along the crate)
-    const R=new THREE.InstancedMesh(new THREE.SphereGeometry(.5,7,5),new THREE.MeshLambertMaterial({color:0xffffff,flatShading:true}),RD.length);
-    RD.forEach(([x,y,z,r,h,col,round,a],i)=>{ q.setFromEuler(e.set(round?0:Math.PI/2,a,0)); R.setMatrixAt(i,m4.compose(new V3(x,y,z),q,round?new V3(r*2,h*2,r*2):new V3(r*2,h*2,r*2))); R.setColorAt(i,c.setHex(col)); });
-    q.identity(); for(const me of [B,R]){ me.castShadow=me.receiveShadow=true; grp.add(me); }
-    SOL.up.push([Math.min(X(x0),X(x1)),Math.min(Z(y0),Z(y1)),Math.max(X(x0),X(x1)),Math.max(Z(y0),Z(y1))]); FIX.up.push([Math.min(X(x0),X(x1)),Math.min(Z(y0),Z(y1)),0,Math.max(X(x0),X(x1)),Math.max(Z(y0),Z(y1)),Y(TP)]);
-    VEG.stand={x0,x1,y0,y1,hx:X((x0+x1)/2),hz:Z(y1+.7),fz:Z(y0-2)};
+  // (no awning or crates in a row now, owner 18 Oct 2026, of the mockups, "B with C's overflow": three tables in a U, stepped, heaped, the overflow round it: stalls.js)
+  const STAND=()=>{ const P=PARK, X=x=>BOD.XS(x+(P.ox||0)), Z=y=>BOD.ZS(y+(P.oy||0)), g1=P.gate[1];
+    VEG.stand=STALL.build({X,Z,x0:g1+9.2,x1:g1+13.6,y0:P.y0-8.2,y1:P.y0-5.2,veg:true,seed:11});
     // THE TOMATO behind it, facing the street: his life and roaming left off, held there every tick (his head still looks about)
     const N=TOONS.tomato; if(!N)return; N.life=null; N.roam=false; N.home={x:VEG.stand.hx,z:VEG.stand.hz};
     const hold=st=>{ st.to=null; st.next=null; st.hold=true; st.x=VEG.stand.hx; st.z=VEG.stand.hz; st.face={x:VEG.stand.hx,z:VEG.stand.fz}; }, tk=N.tick; N.tick=(dt,you)=>{ hold(N.st); tk(dt,you); hold(N.st); }; hold(N.st);

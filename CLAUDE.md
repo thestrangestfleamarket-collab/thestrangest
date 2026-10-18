@@ -946,3 +946,7 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   two more across the main street from the side streets' mouths), STOP where the west street and the Avenue come down to the main street, and along
   every kerb every 24 tiles a NO PARKING plate (every third a SPEED LIMIT 25), each .75 tile in from the kerb, clear of the street lights' feet.
   66 signs. Cost: some 1,600 triangles in the street's batch, no lights, no programs. Not done: a traffic light (the owner took the kit's out).
+- **Never leafy grass** (owner, 18 Oct 2026, of the grass mockups https://claude.ai/artifact/WfQ5tdKVCmb1jJEAeAEXL5: "No leafy grass never"):
+  grass is never made of leaf clumps, little crowns or the trees' leaf mottle. The grass he's weighing is blocky blades: thick straight square
+  posts of flat colour (a darker foot, a lit top) flowing in one smooth wind; his picks so far "1 and 2" (short blocks with chunky tufts) and
+  a flat one (long blades lying nearly down, swaying in waves). Not built into the game yet: his choice between them first.

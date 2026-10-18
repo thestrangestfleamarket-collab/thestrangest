@@ -982,3 +982,27 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   shoe; the house's dark, the bodega's galvanized, Ghost Street's copper); parapets with coping on the flat roofs; on the house the water tank
   on its stand, the stair bulkhead, the elevator's machine room, chimneys, vents, soil stacks, a TV antenna; on the bodega an AC unit, an
   exhaust fan, a skylight, vents. Cost: 2,500 triangles, three instanced draws; no lamp, no program.
+- **Kerb ramps at the crossings** (owner, 18 Oct 2026, "go all" to the street's open items; `bodega.js`'s street works, `bodbuild.js`, `map-post.js`):
+  where each crossing (`XW`) meets a kerb, New York's pedestrian ramp: the kerb cut down to the road in a slope 0.75 tile into the sidewalk, as wide
+  as the crossing's middle (2.4 tiles at most) and only along a straight kerb (beside a curve it keeps off the curve), the yellow warning pad of
+  raised domes at its foot (`BOD.ramps`: 18 of them). The sidewalk's picture and the kerb's face open there, the slope its own face (wound up, so
+  snow lies on it), two triangles of kerb face its sides, `groundY` down it (no step), the land's sheet holed under it. The gate's blue collection
+  box moved east off its ramp (`mail.js`). Cost: 18 slopes, 36 side triangles in the street's batch; no light, no program.
+- **The traffic lights** (owner, 18 Oct 2026, "go all": "a traffic light"; `dress.js`'s `TLX`): at the main street's two junctions (the west
+  street's mouth and the Avenue's), each on the outer corner by both crossings, of blocks the street's way: a grey pole, a mast arm over the main
+  street with two heads back to back, a head up the side street on the pole, two WALK / DON'T WALK signals (the orange hand, the white walking man,
+  5 x 7 glyphs of blocks) across the two crossings. The lit lamp a bright unlit block, the others dark (no real light); a 44 s cycle, the main
+  street green 18, amber 3, all red 2, the side street 16, 3, 2; the people beside the moving traffic WALK, the hand flashing before the change.
+  The corner's street-name blades now ride its pole above the heads, and the two STOP signs at those junctions are gone (the light rules there).
+  Nothing drives the roads now (the city's vehicles are gone), so nothing stops for it. `TLX.phase(t)`, `TLX.at`. Cost: some 70 blocks in the
+  street's block draw, about 110 lamp and glyph blocks in one instanced draw (MeshBasic, the lanterns' program), some 1,300 triangles; colours
+  rewritten only when a lamp changes.
+- **Wet ground and lying snow** (owner, 18 Oct 2026, "go all": the weather's "not yet: wet ground, snow lying"; `map-pre.js`, `lookfx.js`): how wet
+  and how snowed on (`lookfx.js`: wet in half a minute of rain, dry over four minutes or two of the clock's hours; snow lies over a minute and a
+  half, melts over five or three hours, rain melts it in one; at the start what the last three hours' weather left, `WX.at`; 0 inside or
+  underground) go to LFX.env's last row, and the world's one lit shader reads them on every face facing up, before the cel bands: WET, a third
+  darker (grass less) with still puddles (fixed hard-edged blobs on paving and road, not on grass, not above knee height) of the sky's colour laid
+  flat over after the bands; SNOW, white patches growing from a fixed noise till all is covered, roofs and the tops of things too, melting back
+  the same way; the lawn's grass and the weeds hidden while it's deep. `LFX.shade` is now always on (the ?fx= switches each their own part; the
+  old `?fx=wet` look replaced by this). `?wx=rain`, `?wx=snow`; `WETQ({wet,snow})` a test's look and set. Cost: no program, no texture, no light; a
+  few instructions a fragment. Not done: puddles on floors seen through a doorway from outside can show (they're under 0.4 m and face up).

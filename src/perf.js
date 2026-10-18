@@ -2,7 +2,7 @@
 // already. render rooms only when going in 1st time"; his list from the audit, approved): what's drawn and run is only what can be seen.
 // ?perfx=0 turns all of it off (a test's before), ?perfx=-1,-4 one or more of them (1 interiors, 2 self-shadows, 4 bounds, 6 shadow maps, 7 sims) ----
 const PERFX={on:{}, inner:[], gen:0};
-{ const q=QS.get('perfx'); for(const k of [1,2,4,5,6,7])PERFX.on[k]=q!=='0'&&!(q||'').split(',').includes('-'+k); }
+{ const q=QS.get('perfx'); for(const k of [1,2,4,5,6,7])PERFX.on[k]=q!=='0'&&!(q||'').split(',').includes('-'+k); if(FREE&&!(q||'').split(',').includes('+1'))PERFX.on[1]=false; }   // (FREE, map-pre.js: the rooms' insides drawn from outside too)
 // 1. THE ROOMS' INSIDES: every batched face inside a room's box (its things, its inner walls, its ceiling; not its floor, not the walls round
 // it, not its roof) moved to a mesh of that room's own, a child of the batch it came from (so it moves, lifts and hides with it); drawn only
 // while you're in that room or at its door, never from the street; its buffers go to the graphics card the first time it's drawn, the first

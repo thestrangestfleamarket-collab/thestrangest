@@ -1,7 +1,7 @@
 // node tests/trisby.cjs <out> "PLACE|PLACE": what draws the triangles: at each menu place given, every visible mesh in the picture grouped by what it is
 const {chromium}=require('playwright'); const S=process.argv[2], PL=(process.argv[3]||'THE STREET').split('|');
 (async()=>{ const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader']}); const pg=await b.newPage({viewport:{width:960,height:640}});
-  await pg.goto('file://'+process.cwd()+'/dist/market.html?fresh=1&hour=11'); for(let i=0;i<200&&!(await pg.evaluate(()=>!!window.__started).catch(()=>false));i++)await pg.waitForTimeout(1000); await pg.waitForTimeout(6000);
+  await pg.goto('file://'+process.cwd()+'/dist/market.html?fresh=1&hour=11'+(process.env.Q?'&'+process.env.Q:'')); for(let i=0;i<200&&!(await pg.evaluate(()=>!!window.__started).catch(()=>false));i++)await pg.waitForTimeout(1000); await pg.waitForTimeout(6000);
   for(const name of PL){ await pg.evaluate(n=>{ __dbg.UI.goPlace(n); },name); await pg.waitForTimeout(8000);
     const r=await pg.evaluate(()=>{ const sc=__scene, cam=__dbg.camera||null; const D=__dbg; const F=new D.THREE.Frustum(); let C=null; sc.traverse(o=>{ if(o.isCamera&&!C)C=o; });
       const out={}; let tot=0; const camO=D.camera||C; const M=new D.THREE.Matrix4().multiplyMatrices(camO.projectionMatrix,camO.matrixWorldInverse); F.setFromProjectionMatrix(M);

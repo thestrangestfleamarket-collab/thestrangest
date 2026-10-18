@@ -64,23 +64,9 @@ const CIVIC={row:[],staff:{},log:[],ledger:{treasury:500,day:0,rent:30,tax:10,wa
   CIVIC.wants=r=>r.hunger>.6?(Math.random()<.5||AWAY.has('diner')?'bodega':'store:diner'):null;   // (the bodega alone while the Diner is off the map, owner 18 Oct 2026)
   // the residents' names (the pawns' keys read better as people)
   for(const r of CITY.residents)r.name={hero_m:'MR HALE',hero_f:'MS HALE',villager_m:'MR VOSS',villager_f:'MS VOSS'}[r.key]||r.key;
-  // ---- THE STAFF: droids, one a department (owner, 17 Oct 2026: "all the jobs for civics will be done by the security drones. (but drone for
-  // each dept. fire dept drones will shoot water, etc)"): the security droids' body (UAL1, npc-droids.js), each in his department's colours
-  // (the body tinted, the joints lit in its glow), at the tower's doors when not on a call. Their tools (duties.js): the fire droid a jet of water
-  // from his hands, the police droid the stun beam, the medic a healing beam, the carrier his bag, the works droid his crate and his kneel at a
-  // fault; the clerk keeps the books. Six droids, 6,872 triangles each where seen (only the near ones drawn); the shapes shared, one program
-  const K=window.UALK, JT=K?K.D.mesh.parts.indexOf('M_Joints'):-1, BASE=K?K.geomOf(K.D.mesh):null;
-  const ROLE=[['fire1','FIRE DROID','firehouse',[.62,.16,.12],[1,.62,.15]],['medic','MEDIC DROID','clinic',[.86,.86,.84],[1,.25,.22]],['officer1','POLICE DROID','precinct',[.18,.24,.46],[.35,.6,1]],['carrier','MAIL DROID','post',[.22,.4,.7],[.95,.95,.85]],['works','WORKS DROID','depot',[.8,.46,.14],[1,.85,.2]],['clerk','CLERK DROID','hall',[.5,.48,.44],[.9,.8,.45]]];
-  const tinted=(body,glow)=>{ const g=new THREE.BufferGeometry(); for(const [n,a] of Object.entries(BASE.attributes))g.setAttribute(n,n==='color'?a.clone():a); g.setIndex(BASE.index);
-    const c=g.attributes.color.array, R=g.attributes.reg.array, P=g.attributes.position.array;
-    for(let i=0;i<R.length;i++){ if(R[i]===JT){ for(let j=0;j<3;j++)c[i*3+j]=glow[j]*255; } else{ const k=.85+.3*Math.min(1,Math.max(0,P[i*3+1]/1.83)); for(let j=0;j<3;j++)c[i*3+j]=Math.min(255,(70*.45+body[j]*255*.55)*k); } } return g; };
-  const WORKP={hosing:'Pistol_Aim_Neutral',beam:'Spell_Simple_Idle_Loop',kneel:'Fixing_Kneeling',hand:'Interact'};
-  if(K)for(const [id,name,house,body,glow] of ROLE){ const h=CIVIC.house(house); if(!h)continue; const rig=K.rigOf(K.D.rig), mixer=new THREE.AnimationMixer(rig.bones[0]), an=K.Anim(mixer), gc=glow.map(v=>v.toFixed(2)).join(',');
-    const N=makeNPC(null,{key:'civ_'+id,name,names:K.D.mesh.parts,lv:'up',group:'bodega',geo:tinted(body,glow),skin:rig,tall:K.D.tall,eye:JT,eyeC:gc,rank:K.D.mesh.parts.map(()=>0),metres:1.9,x:h.door.x,z:h.door.z,roam:true,free:window.STFREE,ground:(x,z)=>G(x,z),radius:.3,speed:.5,stride:0,rock:0,bob:0,
-      anim:(dt,moving,st,sc)=>{ const S=N.staff, run=moving&&st.v>1.2*T, w=!moving&&S&&S.pose; if(N.sheet){ an.base='A_TPose'; an.ts=0; an.update(dt); return; }
-        an.base=w?WORKP[w]:moving?(run?'Sprint_Loop':'Walk_Formal_Loop'):'Idle_Loop'; an.ts=moving?st.v/((run?5:1.35)*sc):1; an.update(dt); }});
-    N.mixer=mixer; N.an=an; N.glow=glow; const S={id,name,key:N.key,N,house,state:'free',job:null,busy:0,pose:null}; N.staff=S; CIVIC.staff[id]=S;
-    N.st.h=Math.PI; N.st.hold=true; N.st.to=null; N.home={x:h.door.x,z:h.door.z}; }
+  // ---- THE STAFF: none now (owner, 18 Oct 2026: "remoev these droids from game completely"). The six department droids (fire, medic, police,
+  // mail, works, clerk) are gone; CIVIC.staff stays empty, and every duty asks for its staff member and does nothing without him (duties.js,
+  // mail.js): a fire burns itself out in four minutes, the post and the works' jobs wait on the board, a faint comes round by itself
   CIVIC.free=id=>{ const S=CIVIC.staff[id]; return S&&S.state==='free'; };
   // a staff member sent somewhere, hurrying; home again after (then: when he's there, or false)
   CIVIC.go=(S,to,then,v=2)=>{ S.N.st.hold=false; CITY.send(S.N,to,{v,then}); };

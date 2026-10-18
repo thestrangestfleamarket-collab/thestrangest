@@ -1217,3 +1217,28 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   walks and springing back (`grass.gdshader`, `_grass` / `_trail` in `main.gd`); the game opens on the park's lawn. **Paused there** (owner, 18 Oct
   2026: "lets pause the godot rebuild for now"). Found on the way, in THE MARKET itself: **the oaks aren't drawn on `main`** (the park's
   reorganization, 5b3dd53, kept their places and models but lost `PARK.trees=mesh(TREES...)`); the Godot bake used a private build with it put back.
+- **The toys and the droids deleted; the tomato's veggie stand; the Fox and his counter; the menu; running freely** (owner, 18 Oct 2026):
+  **The toys** ("remove the toy charcters from ame completely"): the six (bear, monkey, penguin, pig, sheep, bunny) out of the game and the data
+  (`src/npc-toys.js` gone, their models out of `data/props.json` and `data/full/props.json`, park.js's hand-off, the newsstand's headline).
+  **The droids** ("remoev these droids from game completely"): the four security droids (`npc-droids.js` gone) and the six civic department
+  droids (`civic.js`'s staff: none now); the UAL body's kit kept as `src/ual-kit.js` (`UALK`) for the playable mannequin only. Every duty waits
+  without its droid: a fire burns itself out in four minutes, the post and the works' jobs wait, a faint comes round by itself.
+  **THE TOMATO'S VEGGIE STAND** ("give the tomato merchant his own veggie stand by the mushroom vendor, he buys and sells veggies"; `src/veggies.js`):
+  on the park's sidewalk just east of the mushroom booth, its front to the street: a green stand, three tilted crates heaped with nine vegetables,
+  pumpkins at its foot, a green and cream awning, a slate; the tomato held behind it (his roaming and life off). A double click on him: his shop
+  (`vegp`): ten vegetables to buy, any of yours bought back at a little over half; one purse (INV's). Raw food each; four dishes by a flame (ROAST
+  CORN, VEGETABLE STEW, STUFFED PEPPER, PUMPKIN SOUP: forage.js's COOKING). Two instanced draws, some 2,600 triangles, no light. `VEGDBG()`.
+  **The Fox a quarter taller** ("fox should be 25% taller": `metres` 2.0), **the counter a quarter lower** ("counter should be 25%shorter": its
+  boxes at three quarters of their heights, the lottery machine and the candy jar brought down with its top; `bodega.js`); the shop's radio,
+  which had slipped into a comment and wasn't placed, back on the counter's end. **The menu's map** ("map cant be seen in menu"): framed on the
+  street when the apartment building is off the map (it was a strip reaching 1,000 tiles east to it). **GO TO** ("make all the locations to jump
+  to in 1 dropdown"): one dropdown of every place, room and more place under the map (the old button rows still made, hidden, for the tests).
+  **Every dragged panel stays in the window and scrolls** ("i cant see all the items in menu": a drag let the avatar editor's bottom go).
+  **FREE** ("lets take off any preloading rules or hiding rules, just let the user run freely around full map ... let me freely run around n and out
+  of rooms"; `FREE` in `map-pre.js`, `?free=0` the old rules): no world vanishing inside a room (no room clip planes, no black, the characters,
+  river and force field outside it kept), no interior drawn only near its door (`interiors.js` off unless `?interiors=1`) or only from inside
+  (`perf.js`'s 1st off unless `?perfx=+1`); the near-side cut kept (you're seen inside) but its planes put on every material at the warm-up
+  (`ROOMS.nearAll`), so walking in moves them and never recompiles. Kept: walls toward the camera cut to their foot, the roof hidden while in,
+  the batches' map chunks culled by the camera, characters out of the picture not drawn and far ones not run. Measured (tests/trisby.cjs,
+  11 am, all on screen): the street 165,000 to 284,000 triangles (the bodega's shelves seen through its windows), the shop 141,000 to 288,000,
+  the park 172,000 to 128,000. `tests/freewalk.cjs <out> [query]`, `tests/vegshot.cjs <out>`.

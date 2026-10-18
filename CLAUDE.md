@@ -675,6 +675,17 @@ graphics the game should ever look" (his screenshot: the pool room at night, dar
   MOVES and the avatar editor have no DOWNLOAD (LOAD stays). Inside a room the rest is gone: the civic tower is a room (`rooms.js`), and what
   draws with its own shader and so isn't cut by the room's planes hides itself while you're in one (the sky dome already; now the force field,
   the river and its bank, `ring.js`). A doorway still cuts nothing until all of you is half a tile in (17 Oct's rule).
+- **The Avatar Workbench, standalone** (owner, 18 Oct 2026: "create standalone avatar editor have the character have default poses yuo can push button to do, spread
+  all limbs out, etc. allow to sculpt the character, rotate 360, tilt, export, give as many presets as possible"; `avatar/avatar-editor.html`, its own page, not
+  built by build.py, needs nothing from the game): one SkinnedMesh on 18 bones, each part a closed seamless shape built in code and named (sculpt and paint
+  are kept per part, so they survive slider changes); BODY (MALE / FEMALE, 24 body types, 18 proportion and 8 face sliders), LOOK (24 outfits, 11 hairstyles,
+  8 hats, 7 eyes, 6 mouths, glasses, sleeves, trousers / shorts / skirt, mittens or fingers, every colour), POSE (40 poses with SPREAD OUT for a sheet, 15
+  moves, each joint by sliders or a click on the body, mirror, flip, kept on the floor, poses saved), SCULPT (pull, push, inflate, deflate, smooth, flatten,
+  pinch, grab, paint, restore; mirrored in X, any pose; eight quick sculpts; undo), VIEW (turn, tilt, zoom, turntable, nine camera spots, seven backdrops,
+  toon steps / smooth / faceted / clay, pixel size, outline), EXPORT (GLB rigged and OBJ posed, each zipped as the artifact's downloads allow; PNG; a
+  front-side-back sheet; the avatar file, pasted or opened). Kept in the browser. Published at **https://claude.ai/artifact/YQSBj2G7oqgHQA2jXohrQi** (its own
+  link; the `downloads` capability). `tests/avedit.cjs <out> "Pose,Pose,anim:Walk"` screenshots, `tests/avfunc.cjs <out>` drives the brushes, every style
+  and the exports.
 ## ONE LINE OF WORK: read before you publish (owner, 18 Oct 2026: "why is everything getting reverted that i fix!?!?")
 
 Several chats work on THE MARKET at once, each on its own branch, and all publish to the same link; whichever publishes last replaces the game

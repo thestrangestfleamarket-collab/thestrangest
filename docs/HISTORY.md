@@ -1855,30 +1855,40 @@ so he looked shrugged. You are now his mannequin (`data/full/humanoid.fbx`, Blen
 A-pose, so the skeleton's arms are lowered to it before binding; each corner weighted in code to its nearest one or two bones. One flat
 light colour, cel-shaded, casting a shadow; the same clips. 402 triangles.
 
-## 19 Oct 2026: the fountain terrace and the lake in the park's top-right
+## 19 Oct 2026: the park's north edge pushed out, the fountain terrace and the lake
 **The fountain and the lake** (owner, 18 Oct 2026: "I want to add a large fountain in the top right area of central park on the current map ...
 and put a large lake towards the top (map doesnt have full lake in it just the bottom part)"; of three layout mockups he picked **A**: the terrace in
-the park's top-right, the lake in the corner behind it running off into the mist; "no walkway to fountain yet, make it 20% smaller"; his Bethesda
-photos): `src/060a-fount.js` (`FOUNT`), hooked into `061-park.js`, `064-map-post.js`, `075-main-13.js`.
-- **Where** (park tiles): the terrace's middle at x 156, y 8 (three quarters of the way east across the walkable corner, 30% down from its north
-  edge), 6.4 tiles across (the mockup's 8, a fifth smaller), on the lawn with no path to it. The lake: a long curve of shore from x 125 at the
-  corner's north edge round to y 5 at its east edge, 1-2 tiles behind the terrace's back wall; past the corner's edges it runs on into the mist
-  (to the park's hidden walls). The land has a hole the lake's shape; the park's hills, oaks and undergrowth keep off the terrace and the lake.
-- **The terrace**: brick in rings with a lighter stone band every tile, a stone kerb round the edge, mortar mossy where worn (painted in the park's
-  batch); a low stone balustrade round its back half toward the lake (eight posts, rails, turned balusters); two of the park's lamp posts at its
-  front. **The fountain**: a round stone basin, a two-tier bronze fountain (verdigris here and there) and an original winged figure on top (robed,
-  one arm raised, a lily in the other hand, wings swept up behind), all simple turned and flat parts. Water falls in sheets from both tiers' rims
-  and a crown of little jets spouts under the figure (drops moved along their arcs each frame, only within 48 tiles); the basin's and the bowls'
-  water ripples in rings where it lands. The basin and the balustrade are solid. You walk onto the terrace on the park's ground.
+the park's top-right, the lake in the corner behind it running off into the mist; "no walkway to fountain yet, make it 20% smaller"; then of the
+size: "like the mockup, -20%" (the mockup's terrace a quarter of the corner's width, so 46 tiles across); and as it would not fit north of the
+path with a lake behind it: "push the mist edge north"; his Bethesda photos): `src/060a-fount.js` (`FOUNT`), hooked into `061-park.js`,
+`064-map-post.js`, `075-main-13.js`.
+- **The north edge 36 tiles further north** (`NORTHX` in `006-map-pre.js`, the whole north side): the park's back wall, the north street, the
+  force field and the walkable edge (`RING.cf`, the invisible wall, the mist box) all 36 tiles north; the round, both middle paths and the gates
+  stay where they were (`PARK.round` leaves `NORTHX` out, as does the east gate's crossing in `050-main-8.js`); the north-south path runs on to
+  the new back wall with its lamp posts. The castle no longer reaches the park's back corner, so the west wall runs on from its back to the new
+  corner. The old oaks and undergrowth stay where they were; up to ten more oaks on the new strip of lawn. 22 tiles (the first ask) left no room
+  for the lake behind a 46-tile terrace; 36 does.
+- **Where** (park tiles): the terrace's middle at x 183, y 29, 46 tiles across (y 6 to 52), 3.5 tiles clear of the east-west path's lamp posts and
+  8 of the corner's east edge, on the lawn with no path to it. The lake wraps round its back half 1.5 tiles behind the balustrade, from x 109 in
+  the west round to the corner's east edge, and runs on into the mist past the walkable edge (y 63.5) to the park's hidden walls. The land has a
+  hole the lake's shape; the park's hills, oaks and undergrowth keep off both.
+- **The terrace**: brick in rings (an eighth of a tile each) with a stone band every 2 tiles, 16 stone spokes from the basin to the edge, a
+  stone apron round the basin and a stone kerb round the edge, mortar mossy where worn (painted in the park's batch, in 11.5-tile pieces); a low
+  stone balustrade round the back half toward the lake (26 posts about 2.6 tiles apart, rails, turned balusters); six of the park's lamp posts
+  round the front edge. **The fountain**: a round stone basin 17 tiles across (0.37 of the terrace), a two-tier bronze fountain (verdigris here and
+  there) and an original winged figure on top (robed, one arm raised, a lily in the other hand, wings swept up behind), all simple turned and flat
+  parts, some 10.5 m to the wing tips, seen from far off. Water falls in sheets from both tiers' rims and a crown of jets spouts under the figure
+  (drops moved along their arcs each frame, only within 80 tiles); the basin's and the bowls' water rings where it lands. The basin and the
+  balustrade are solid. You walk onto the terrace on the park's ground.
 - **The lake**: still green water in flat bands (its ripples in three steps, deeper water darker and more opaque), a few glints by day; its bed
-  shelves from the shore (mud, then darker) to 3.5 m; grey rocks along the near shore (the bigger ones solid). You wade in and swim as in the
-  Hudson (the rig's water; out again where it shoals), the water ringing round you. Eight more oaks along the shore (none over the terrace or
-  the ways). Townspeople and creatures keep out of the water (`FOUNT.wet` in their free tests and the navmesh). The menu map shows both;
+  shelves from the shore (mud, then darker) to 3.5 m; grey rocks along the shore (the bigger ones solid). You wade in and swim as in the Hudson
+  (the rig's water; out again where it shoals), the water ringing round you. More oaks along the shore (none over the terrace or the ways).
+  Townspeople and creatures keep out of the water (`FOUNT.wet` in their free tests, the lake's strips in the navmesh). The menu map shows both;
   PLACES has THE FOUNTAIN; the fountain splashes (the rain sound, filtered, louder as you come near).
-- **Cost**: triangles: the fountain and figure 1,628, the balustrade 1,296, the falling water 2,224, the three water discs 84, the shore rocks
-  3,852, the lake bed 5,516 and its water 1,460 (in 16-tile pieces, drawn only when seen), the oaks some 1,600. At the terrace (zoomed out):
-  174,157 triangles in view against 179,304 before (the lawn's tufts gone where the lake is); 2 more lamp records (LITE's eight nearest still
-  light); 2 more shader programs (the water's, one for the lake and the fountain's water; 123 to 125); 25 more draw calls; the fountain's own
-  work 0.03 ms a frame; a whole frame the same as before in the cloud's software rendering (474 ms against 507, noise).
-  `tests/fountshot.cjs <out> [page] [stats]`.
+- **Cost**: triangles: the fountain and figure 2,824, the basin and balustrade 8,136, the falling water 4,480, the three water discs 120, the
+  shore rocks 3,456, the lake bed 6,950 and its water 1,814 (in 16-tile pieces, drawn only when seen), the oaks some 200 each. In front of the
+  terrace (zoomed out): 184,197 triangles in view against 172,840 on the same spot before; 12 more lamp records (6 on the terrace, 6 on the
+  longer north-south path; LITE's eight nearest still light); 2 more shader programs (123 to 125; the water's, one for the lake and the
+  fountain's water); 5 fewer draw calls there; the fountain's own work 0.05 ms a frame; a whole frame the same as before in the cloud's
+  software rendering (596 ms against 631, noise). `tests/fountshot.cjs <out> [page] [stats]` (CLEAR weather, `?wx=clear`).
 - **Not yet**: the walkway to the terrace and the Mall gate entrance (they come together later); no underwater view in the lake.

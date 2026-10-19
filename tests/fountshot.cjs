@@ -7,7 +7,7 @@ const {chromium}=require('playwright'), fs=require('fs');
   const errs={}; pg.on('pageerror',e=>{ errs[e.message]=1; }); pg.on('console',m=>{ if(m.type()==='error'&&!/Fetch API|file:/.test(m.text()))errs[m.text().slice(0,300)]=1; });
   const C=[183,29], RT=23, W=(x,y)=>[+((x-72)*1.13).toFixed(2),+((y+77)*1.13).toFixed(2)], front=W(C[0],C[1]-RT-1.5);
   await pg.goto('file://'+require('path').resolve(page)+'?fresh=1&hour=14&wx=clear&at='+front.join(','),{timeout:180000});
-  await pg.waitForFunction(()=>window.__started&&window.PARK&&PARK.fire,{timeout:400000}); await pg.waitForTimeout(9000);
+  await pg.waitForFunction(()=>window.__started&&window.PARK&&PARK.fire,null,{timeout:400000}); await pg.waitForTimeout(9000);
   const zoom=async n=>{ for(let k=0;k<Math.abs(n);k++){ await pg.mouse.move(550,380); await pg.mouse.wheel(0,n<0?-250:250); await pg.waitForTimeout(150); } await pg.waitForTimeout(1500); };
   const turn=async n=>{ for(let i=0;i<n;i++){ await pg.evaluate(()=>__dbg.UI.isoStep(1)); await pg.waitForTimeout(300); } await pg.waitForTimeout(2000); };
   const shot=async n=>{ await pg.screenshot({path:`${out}/${n}.png`}); console.log('shot',n); };
@@ -30,6 +30,6 @@ const {chromium}=require('playwright'), fs=require('fs');
   const sw=await pg.evaluate(()=>({swim:FOUNT.swim,lake:+FOUNT.lake(__dbg.pos()[0]/1.13+72,__dbg.pos()[2]/1.13-77).toFixed(2)})); console.log('into the lake',p,JSON.stringify(sw),sw.swim?'ok (swimming)':'NOT');
   await shot('big-swim');
   p=await at(C[0]+RT+3,C[1]-5,300); const sw2=await pg.evaluate(()=>FOUNT.swim); console.log('out again',p,'swim',sw2,!sw2?'ok':'NOT');
-  await pg.goto('file://'+require('path').resolve(page)+'?fresh=1&hour=14&wx=clear&at='+W(60,60).join(','),{timeout:180000}); await pg.waitForFunction(()=>window.__started&&window.FOUNT&&FOUNT.ready,{timeout:400000}); await pg.waitForTimeout(9000);
+  await pg.goto('file://'+require('path').resolve(page)+'?fresh=1&hour=14&wx=clear&at='+W(60,60).join(','),{timeout:180000}); await pg.waitForFunction(()=>window.__started&&window.FOUNT&&FOUNT.ready,null,{timeout:400000}); await pg.waitForTimeout(9000);
   await zoom(10); for(let i=0;i<4;i++){ await shot('big-north-'+i); await turn(1); }
   console.log('errors',Object.keys(errs)); await b.close(); })();

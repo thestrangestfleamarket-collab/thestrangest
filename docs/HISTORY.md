@@ -1748,3 +1748,17 @@ FIXED, NO, each report with its words, where, PICTURE and GO THERE (puts you at 
 For now nothing is fixed on its own: every report waits in NEW for the owner to APPROVE. A session asked to "work the queue" takes the
 APPROVED ones (see CLAUDE.md), fixes each, and marks it FIXED. The 16 reports already in `bug_reports` are from the old 2D game.
 `tests/bugcheck.cjs art|site` sends one with a stand-in store and approves it.
+
+## 19 Oct 2026: you are a stick figure
+
+**The avatars gone, you a stick figure for now** (owner, 19 Oct 2026: "lets get rid of player avatars completely. keep the physics and
+animations and just make the character play as a stick figure for now"; his picks: delete it all, just you (the street's Walkers, pawns
+and creatures as they were), solid 3D sticks, the current clips): you are a stick figure built in code (`087a-avatars.js`): round sticks
+for the spine, neck, shoulders, arms, hips and legs, small balls at the joints and hands, a ball head, all in one dark colour, cel-shaded
+and casting a shadow like the rest; on the standard skeleton, playing the same clips as before (standing easy, walk / jog / sprint by your
+pace, jump, punches, roll, crouch, sit, swim, dance, falling). The game's rig still moves you (the physics unchanged). 644 triangles (the
+Walker on clips was 14,870). Gone: WALKER / MANNEQUIN / VROID and GRAPHICS' AVATAR row, the menu's AVATAR tab, the avatar editor (its
+shape, looks, animate, speed and body-type tabs, the posing void) and the standalone `avatar.html`; `data/hybrid.json`, `data/vroid.json`
+(and `full/vroid.vrm`), the mannequin's mesh out of `data/ual.json` (its skeleton and clips kept), their bake tools and tests. Clicking
+yourself opens YOU: your name, health and stamina. The hand-made Walker still runs unseen under you (his rig is the physics) and the
+bearded Walker keeps the head shapes he borrowed from the editor (`ED.HEADS`, `097-editor.js`).

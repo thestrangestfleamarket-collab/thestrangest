@@ -13,7 +13,7 @@
     VIT.dead=false; VIT.hp=1; VIT.out=0; gh=0; rise=-1; W3.GH.value=0; look(false); try{ SAVE.del('dead'); }catch(e){} LOOKS.robe(true);
     await frames(3); await wait(260); if(f){ f.style.opacity='0'; f.style.pointerEvents='none'; } note('You feel refreshed.',5); busy=false; };
   const t0=VIT.tick; VIT.tick=dt=>{ t0(dt); if(!VIT.dead||busy)return; VIT.hp=0;
-    if(rise<0){ gh=Math.min(1,gh+dt/1.5); if(gh>=1&&VIT.out<=0&&BOD.GD&&LVL==='up'&&py<2*T&&BOD.GD.inside())rise=0; }
+    if(gh>=1&&!RAG.on&&st.move&&st.move.name==='fall'&&st.move.held)RIG.release(st,'F'); if(rise<0){ gh=Math.min(1,gh+dt/1.5); if(gh>=1&&VIT.out<=0&&BOD.GD&&LVL==='up'&&py<2*T&&BOD.GD.inside())rise=0; }
     else{ rise+=dt; keys.clear(); target=null; gh=1+Math.min(1,rise/3); if(rise>=3.2)back(); }
     W3.GH.value=gh; W3.group.position.y+=(Math.min(gh,1)*(.16+.04*Math.sin(performance.now()/1000*1.6))+(rise>0?.6*rise*rise:0))*T; };
   window.KILLME=()=>VIT.die();

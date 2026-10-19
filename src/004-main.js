@@ -70,4 +70,3 @@ function plane(x0,z0,x1,z1,y,t,color=0xffffff){ const w=x1-x0,d=z1-z0,g=new THRE
 
 const TEXTURES=__DATA__("data/textures.json");
 const KITD=__DATA__("data/kit.json");
-const METROD=__DATA__("data/metro.json");

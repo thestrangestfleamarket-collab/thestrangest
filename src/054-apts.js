@@ -59,14 +59,14 @@ const APTS={};
   const plaster=(u,z,f,tiled)=>{ if(z<6)return sh([96,70,48],f*(z<1?.7:z>4?1.15:1)); if(z>S-10)return sh([200,196,186],f*.9);
     if(tiled&&z<60){ const i=Math.floor(u*24/9), k=Math.floor((z-6)/9), g=(u*24/9-i)<.12||((z-6)/9-k)<.12; return sh(g?[190,188,180]:(i+k)&1?[236,234,226]:[228,226,216],f); }
     const n=hash(Math.floor(u*24),Math.floor(z),33); return sh(n<.04?[206,200,186]:n>.97?[224,218,206]:[214,208,196],f); };
-  const HP=new THREE.Plane(new THREE.Vector3(0,-1,0),1e6); APTS.HP=HP; const WALLM=[];
+  const HP=new THREE.Plane(new THREE.Vector3(0,-1,0),1e6), LP=new THREE.Plane(new THREE.Vector3(0,1,0),1e6); APTS.HP=HP; APTS.LP=LP; const WALLM=[];
   const pt=(w,s,a,z)=>w.ax==='x'?[X(a),Y(z),Z(w.at+s*T)]:[X(w.at+s*T),Y(z),Z(a)];
   const wallMesh=(a,b,c,d,tx,planes)=>{ const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute([...a,...b,...c,...a,...c,...d],3)); g.setAttribute('uv',new THREE.Float32BufferAttribute([0,0,1,0,1,1,0,0,1,1,0,1],2)); g.computeVertexNormals();
     const mk=cv=>{ const t=new THREE.CanvasTexture(cv); t.magFilter=THREE.NearestFilter; t.minFilter=THREE.NearestMipmapNearestFilter; t.generateMipmaps=true; t.colorSpace=THREE.SRGBColorSpace; return t; };
     const mat=new THREE.MeshLambertMaterial({map:mk(tx.map.image),alphaTest:.5,side:THREE.DoubleSide,clippingPlanes:planes,...(tx.em?{emissiveMap:mk(tx.em.image),emissive:0xffffff,emissiveIntensity:1.2}:{})});
     const me=new THREE.Mesh(g,mat); me.receiveShadow=true; me.castShadow=true; scene.add(me); WALLM.push(me); return me; };
   function wall(w){ const as=new Set([w.a0,w.a1]), zs=new Set([w.z0,w.z1]); for(const h of w.holes){ as.add(Math.max(w.a0,h.a0)); as.add(Math.min(w.a1,h.a1)); zs.add(h.z0); zs.add(h.z1); }
-    const Aa=[...as].sort((p,q)=>p-q), Zs=[...zs].sort((p,q)=>p-q), pl=w.cut?new THREE.Plane(new THREE.Vector3(0,-1,0),1e6):null, planes=pl?[pl,HP]:[HP];
+    const Aa=[...as].sort((p,q)=>p-q), Zs=[...zs].sort((p,q)=>p-q), pl=w.cut?new THREE.Plane(new THREE.Vector3(0,-1,0),1e6):null, planes=pl?[pl,HP,LP]:[HP,LP];
     if(w.cut)for(const s of [-1,1]){ const W_=(w.a1-w.a0)*24, tx=faceTex(W_,w.z1-w.z0,(ii,jj)=>{ const u=w.a0+(ii+.5)/24, z=w.z1-jj-.5; for(const h of w.holes)if(u>h.a0&&u<h.a1&&z>h.z0&&z<h.z1)return null; return C(w.paint(s,u,z)); });
       wallMesh(pt(w,s,w.a0,w.z0),pt(w,s,w.a1,w.z0),pt(w,s,w.a1,w.z1),pt(w,s,w.a0,w.z1),tx,planes); }
     else for(const s of [-1,1])for(let i=0;i+1<Aa.length;i++)for(let j=0;j+1<Zs.length;j++){ const a0=Aa[i], a1=Aa[i+1], z0=Zs[j], z1=Zs[j+1];
@@ -174,7 +174,7 @@ const APTS={};
       put('single bed',...P(2.05,v1-1.2),tw,0,lv); put('poster',...P(2.52,v1-1.2),tw,0,lv); put('wardrobe',...P(.4,v1-.75),out,0,lv); put('floor lamp',...P(.3,v0+1.0),null,0,lv);
       if(k%3===1)put('vacuum',...P(1.1,v1-.35),'N',0,lv); if(back&&F.uh>3)put('TV on a low stand',...P(2.25,v0+2.8),tw,0,lv);
       L(lv,F.uh+s*1.3,(v0+v1)/2,0xffd9a8,6); }
-    const lh=Y(DH-1)-Y(0), DMs=new Map(), dmat=pl=>{ if(!DMs.has(pl))DMs.set(pl,[new THREE.MeshLambertMaterial({color:0x7a5236,clippingPlanes:[pl,HP]}),new THREE.MeshLambertMaterial({color:0xc8a050,clippingPlanes:[pl,HP]})]); return DMs.get(pl); };
+    const lh=Y(DH-1)-Y(0), DMs=new Map(), dmat=pl=>{ if(!DMs.has(pl))DMs.set(pl,[new THREE.MeshLambertMaterial({color:0x7a5236,clippingPlanes:[pl,HP,LP]}),new THREE.MeshLambertMaterial({color:0xc8a050,clippingPlanes:[pl,HP,LP]})]); return DMs.get(pl); };
     for(const F of FLATS){ const [m0,m1]=dmat(F.pl), x=X(U(F.uh)), z0=Z(V(F.v0)), len=Z(V(F.v1))-z0, pv=new THREE.Group(), leaf=new THREE.Mesh(new THREE.BoxGeometry(.06,lh,Math.abs(len)*.96),m0), kb=new THREE.Mesh(new THREE.BoxGeometry(.16,Y(4)-Y(0),.08),m1);
       leaf.position.set(0,lh/2,len*.5); kb.position.set(0,Y(46)-Y(0),len*.86); pv.add(leaf,kb); pv.position.set(x,Y(F.lv*S),z0); scene.add(pv); leaf.castShadow=leaf.receiveShadow=true;
       F.pv=pv; F.rs=F.sd*Math.sign(len)*Math.sign(X(A.x0+1)-X(A.x0)); F.open=0; F.keep=0; F.by=0; F.g0=F.gap.slice(); F.at={x,z:z0+len/2};
@@ -197,7 +197,7 @@ const APTS={};
   { const ix=x=>x/(TILE*BLDK)+BOD.OX, iy=z=>z/(TILE*BLDK)+BOD.OY;
     APTS.stoop=(x,z)=>{ const u=ix(x), v=iy(z); if(u<ST0.x0||u>ST0.x1||v<ST0.y0||v>=ST0.y1)return null; const t=v-ST0.y0; if(t<ST0.land)return Y(1);
       const i=Math.floor((t-ST0.land)/ST0.tr); return BOD.Y((RZ+1)*(ST0.n-i)/(ST0.n+1)); }; }
-  BATCH.build((k,map,emap)=>k==='B'?new THREE.MeshBasicMaterial({map,side:THREE.DoubleSide,alphaTest:.5,clippingPlanes:[HP]}):new THREE.MeshLambertMaterial({map,alphaTest:.5,side:THREE.DoubleSide,clippingPlanes:[HP],...(emap?{emissiveMap:emap,emissive:0xffffff,emissiveIntensity:1.3}:{})}));
+  BATCH.build((k,map,emap)=>k==='B'?new THREE.MeshBasicMaterial({map,side:THREE.DoubleSide,alphaTest:.5,clippingPlanes:[HP,LP]}):new THREE.MeshLambertMaterial({map,alphaTest:.5,side:THREE.DoubleSide,clippingPlanes:[HP,LP],...(emap?{emissiveMap:emap,emissive:0xffffff,emissiveIntensity:1.3}:{})}));
   const AM=Object.values(BATCH.meshes); BATCH.meshes={}; APTS.meshes=AM.concat(WALLM); for(const me of AM){ me.castShadow=true; me.receiveShadow=true; }
   const sol=(x0,y0,x1,y1,zt)=>{ solids.push([X(x0),Z(y0),X(x1),Z(y1)]); fixed.push([X(x0),Z(y0),0,X(x1),Z(y1),Math.max(.05,Y(zt))]); };
   sol(A.x0-T,A.y1-T,door.a0,A.y1+T,AH); sol(door.a1,A.y1-T,A.x1+T,A.y1+T,AH); sol(A.x0-T,A.y0-T,A.x1+T,A.y0+T,AH); sol(A.x0-T,A.y0,A.x0+T,A.y1,AH); sol(A.x1-T,A.y0,A.x1+T,A.y1,AH);
@@ -221,18 +221,18 @@ const APTS={};
     if(LOBBY){ for(const [u,v] of [[2,4],[5.5,4],[3.75,7.5]])LIGHTS.push({x:X(A.x0+u),y:Y(S+S-14),z:Z(CY0+v),c:0xffd2a0,i:6}); } else for(const L of LIGHTS){ L.c=0xffd2a0; L.i=6; }
     K.LAMPS.slice(n0).filter(l=>!l.off&&l.r>0&&Math.max(...l.c)>0).sort((a,b)=>b.r-a.r).slice(0,6).forEach(l=>{ const cm=Math.max(...l.c); LIGHTS.push({x:X(l.x),y:Y(l.z+CL*S),z:Z(l.y),c:new THREE.Color(l.c[0]/cm,l.c[1]/cm,l.c[2]/cm).getHex(),i:5*cm*Math.min(1.2,l.r/5),flame:1}); });
     K.LAMPS.length=n0; APTS.made=MADE;
-    BATCH.build((k,map,emap)=>k==='B'?new THREE.MeshBasicMaterial({map,side:THREE.DoubleSide,alphaTest:.5,clippingPlanes:[HP]}):new THREE.MeshLambertMaterial({map,alphaTest:.5,side:THREE.DoubleSide,clippingPlanes:[HP],...(emap?{emissiveMap:emap,emissive:0xffffff,emissiveIntensity:1.3}:{})}));
+    BATCH.build((k,map,emap)=>k==='B'?new THREE.MeshBasicMaterial({map,side:THREE.DoubleSide,alphaTest:.5,clippingPlanes:[HP,LP]}):new THREE.MeshLambertMaterial({map,alphaTest:.5,side:THREE.DoubleSide,clippingPlanes:[HP,LP],...(emap?{emissiveMap:emap,emissive:0xffffff,emissiveIntensity:1.3}:{})}));
     { const CM=Object.values(BATCH.meshes); BATCH.meshes={}; for(const me of CM){ me.castShadow=true; me.receiveShadow=true; } APTS.meshes=APTS.meshes.concat(CM); }
     APTS.home={x:X(A.x0+WX*.42),z:Z(CY0+WY*.55),y:Y(CL*S),hd:0}; }
   for(const L of LIGHTS){ const P=new THREE.PointLight(L.c,0,(L.flame?4:6.5)*TILE,1.6); P.position.set(L.x,L.y,L.z); P.userData.i0=L.i; P.userData.in=cur=>!!cur&&APTS.in&&P.position.y>cur.y0-.3&&P.position.y<cur.y1-.5; scene.add(P); L.light=P; }
   if((HOLLOW||LOBBY)&&APTS.made&&typeof FLAME!=='undefined'&&FLAME.props)FLAME.props(APTS.made,X,z=>Y(z+(APTS.cotS||0)),Z,LIGHTS.filter(L=>L.flame).map(L=>L.light));
   let ELV=null;
-  if(LOBBY){ const U=APTS.U, V=APTS.V, mat=c=>new THREE.MeshLambertMaterial({color:c,clippingPlanes:[HP]}), bx=(w,h,d,m)=>new THREE.Mesh(new THREE.BoxGeometry(Math.abs(w),Math.abs(h),Math.abs(d)),m);
+  if(LOBBY){ const U=APTS.U, V=APTS.V, mat=c=>new THREE.MeshLambertMaterial({color:c,clippingPlanes:[HP,LP]}), bx=(w,h,d,m)=>new THREE.Mesh(new THREE.BoxGeometry(Math.abs(w),Math.abs(h),Math.abs(d)),m);
     const STEEL=mat(0x8c9098), DARKS=mat(0x5a5e66), cx=(X(U(5.05))+X(U(7.35)))/2, cz=(Z(V(.2))+Z(V(2.5)))/2, W=Math.abs(X(U(7.35))-X(U(5.05))), D=Math.abs(Z(V(2.5))-Z(V(.2))), fz=Math.sign(Z(V(2.5))-Z(V(.2)))||1, HH=Y(S-16)-Y(0), th=Y(3)-Y(0);
     const cab=new THREE.Group(); const fl=bx(W,th,D,STEEL); fl.position.y=th/2; const bk=bx(W,HH,.04,DARKS); bk.position.set(0,HH/2,-fz*D/2);
     const sl=bx(.04,HH,D,DARKS); sl.position.set(-W/2,HH/2,0); const sr=sl.clone(); sr.position.x=W/2; const cl=bx(W,.04,D,STEEL); cl.position.y=HH;
     const pnl=bx(.03,Y(26)-Y(0),.18,mat(0x2a2c30)); pnl.position.set(W/2-.03,Y(48)-Y(0),fz*D/2-.25);
-    for(let i=0;i<ST;i++){ const b=bx(.035,.05,.05,new THREE.MeshBasicMaterial({color:0xffd27a,clippingPlanes:[HP]})); b.position.set(W/2-.05,Y(38+i*5)-Y(0),fz*D/2-.25); cab.add(b); }
+    for(let i=0;i<ST;i++){ const b=bx(.035,.05,.05,new THREE.MeshBasicMaterial({color:0xffd27a,clippingPlanes:[HP,LP]})); b.position.set(W/2-.05,Y(38+i*5)-Y(0),fz*D/2-.25); cab.add(b); }
     cab.add(fl,bk,sl,sr,cl,pnl); cab.position.set(cx,Y(1),cz); scene.add(cab);
     const dx0=X(U(5.3)), dx1=X(U(7.2)), lw=Math.abs(dx1-dx0)/2, dzl=Z(V(2.55)), leaves=[], gaps=[];
     for(let lv=0;lv<ST;lv++){ const a=bx(lw,Y(DH)-Y(0),.05,STEEL), b=bx(lw,Y(DH)-Y(0),.05,STEEL), y=Y(lv*S+DH/2)+(lv?0:Y(1)-Y(0)); a.position.set(Math.min(dx0,dx1)+lw/2,y,dzl); b.position.set(Math.max(dx0,dx1)-lw/2,y,dzl); scene.add(a,b); leaves.push([a,b]);
@@ -282,7 +282,7 @@ const APTS={};
     { const now=performance.now(), dt=Math.min(.1,(now-dl)/1000); dl=now; for(const F of FLATS){ if(F.keep>0)F.keep-=dt; if(F.by>0)F.by-=dt;
       const want=F.keep>0||F.by>0||inside&&lv===F.lv&&Math.hypot(pos.x-F.at.x,pos.z-F.at.z)<1.5*TILE?1:0; if(want===F.open)continue;
       F.open=want>F.open?Math.min(1,F.open+dt/.5):Math.max(0,F.open-dt/.7); F.pv.rotation.y=F.rs*1.45*F.open; const g=F.gap; if(F.open>.45){ g[0]=g[2]=1e9; } else { g[0]=F.g0[0]; g[2]=F.g0[2]; } } }
-    if(inside!==was||lv!==lvWas){ was=inside; lvWas=lv; HP.constant=inside?R0+SY*lv+SY*.93:1e6; for(const L of LIGHTS)L.light.intensity=inside?L.i:0; return inside?SOL.up.concat(SOLS[lv]):SOL[LVL]||SOL.up; } return null; };
+    if(inside!==was||lv!==lvWas){ was=inside; lvWas=lv; HP.constant=inside?R0+SY*lv+SY*.93:1e6; LP.constant=inside&&lv>0?-(R0+SY*lv-.02):1e6; for(const L of LIGHTS)L.light.intensity=inside?L.i:0; return inside?SOL.up.concat(SOLS[lv]):SOL[LVL]||SOL.up; } return null; };
   window.APTS_F=()=>FLATS.map(F=>[F.n,+F.open.toFixed(2),F.gap[0]>1e8?'gap open':'shut']);
   window.HOUSEAT=(dy=0)=>[BOD.X(m),BOD.Z(A.y1+dy)];
   window.APTSDBG=()=>({in:APTS.in,floor:APTS.floor(),py,pos:[+pos.x.toFixed(2),+pos.z.toFixed(2)],box:[+x0s.toFixed(1),+z0s.toFixed(1),+x1s.toFixed(1),+z1s.toFixed(1)],hall:[+Z(H.y0).toFixed(1),+Z(H.y1).toFixed(1)],door:+X((door.a0+door.a1)/2).toFixed(1)});

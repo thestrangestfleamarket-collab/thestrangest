@@ -18,20 +18,10 @@ const THFRONT=(()=>{ let f=null; const build=()=>{ const W=480, H=392, a=new Arr
   for(const c of [U(6.8),U(8.75),U(12.05),U(13.8)])box(c-1,30,c+1,66,[236,236,232]);
   box(U(8.8),0,U(12.05),3,[200,204,210]);
   brick(U(4.73),92,U(16.1),152);
-  box(U(6.03),72,U(14.9),88,[112,124,156]); for(const [a,b] of [[6.4,9.2],[9.4,11.6],[11.8,14.5]]){ box(U(a),75,U(b),85,[56,62,80]); box(U(a)+4,79,U(a)+30,80,[150,156,176]); box(U(b)-26,81,U(b)-4,82,[150,156,176]); }
-  box(U(5.8),88,U(15.1),98,CREAM); box(U(5.8),88,U(15.1),89,CREAMD);
+  brick(U(4.73),66,U(16.1),98);
   box(U(6.1),98,U(14.4),134,[74,80,98]); box(U(6.1),132,U(14.4),134,[96,102,122]); box(U(6.1),98,U(14.4),100,[56,60,76]);
-  for(const [a,b] of [[6.3,8.3],[12.4,14.3]]){ box(U(a),103,U(b),129,[48,52,66]); for(let z=105;z<127;z+=4)for(let c=Math.floor(U(a)/2)*2+2;c<U(b)-2;c+=4)box(c,z,c+2,z+2,lit([255,244,206])); }
   box(U(8.5),106,U(12.1),131,[250,248,240]); box(U(8.5)+2,108,U(12.1)-2,129,[252,250,244]); text('CINEMA',U(8.5)+7,111,2,lit([246,186,44]),lit([206,70,40]));
   box(U(4.4),152,U(16.1),168,CREAM); box(U(4.4),152,U(16.1),154,CREAMD); box(U(4.4),166,U(16.1),168,[246,242,228]);
-  for(const [a,b] of [[7.0,8.0],[12.74,13.7]]){ brick(U(a),168,U(b),229); for(let z=196;z<222;z+=6)for(let c=Math.floor(U(a)/2)*2+4;c<U(b)-4;c+=6)box(c,z,c+2,z+2,[246,238,222]); box(U(a),227,U(b),229,CREAM); }
-  for(const [a,b,s] of [[8.0,8.95,1],[11.89,12.74,-1]]){
-    for(let c=U(a);c<U(b);c++){ const f=s>0?(c-U(a))/(U(b)-U(a)):(U(b)-c)/(U(b)-U(a)), top=262+Math.floor(f*4)*8; for(let z=134;z<top;z++)px(c,z,(c-U(a))%6===3?[204,210,224]:GREY); for(let z=top-2;z<top;z++)px(c,z,[150,158,178]); } }
-  for(const [a,b,s] of [[8.95,9.9,1],[11.04,11.89,-1]]){ for(let c=U(a);c<U(b);c++){ const f=s>0?(c-U(a))/(U(b)-U(a)):(U(b)-c)/(U(b)-U(a)), top=338+Math.floor(f*22);
-      for(let z=134;z<top;z++){ const e=c===U(a)||c===U(b)-1, m=Math.abs((c-(U(a)+U(b))/2))*0.8; px(c,z,e?[110,34,28]:Math.abs((z-m)%12)<2?[244,234,224]:[204,66,50]); } } }
-  box(U(9.9),139,U(11.04),388,[200,204,212]); box(U(9.9)+2,141,U(11.04)-2,384,[28,28,32]);
-  'ART HOUSE'.split('').forEach((ch,i)=>text(ch,U(9.9)+8,372-i*25-14,2,lit([244,192,62]),null));
-  box(U(9.8),384,U(11.14),392,[170,176,188]);
   brick(0,0,U(4.73),99); box(0,99,U(4.73),111,CREAM); box(0,99,U(4.73),100,CREAMD);
   box(U(.56),45,U(4.3),96,[236,220,160]); box(U(.56)+3,48,U(4.3)-3,93,[214,216,218]); box(U(.56)+3,84,U(4.3)-3,93,[150,152,158]); text('BIG PREMIERE',U(.56)+7,85,1,[250,250,250],null);
   for(let k=0;k<4;k++)box(U(.56)+6+k*6,74,U(.56)+10+k*6,78,[90,94,100]); for(let k=0;k<5;k++)box(U(.56)+6,52+k*4,U(.56)+40,54+k*4,[96,100,108]);
@@ -39,34 +29,17 @@ const THFRONT=(()=>{ let f=null; const build=()=>{ const W=480, H=392, a=new Arr
   box(U(.56),4,U(2.6),39,[236,220,160]); box(U(.56)+3,7,U(2.6)-3,36,[52,66,96]); disc(U(.56)+16,26,6,[150,164,190]); disc(U(.56)+16,26,4,[52,66,96]); box(U(.56)+20,14,U(.56)+22,22,[150,164,190]); disc(U(.56)+34,18,2,[230,232,236]);
   box(U(2.8),4,U(4.3),39,[236,220,160]); box(U(2.8)+3,7,U(4.3)-3,36,[244,154,92]); disc(U(2.8)+18,24,5,[252,206,120]); for(let c=U(2.8)+3;c<U(4.3)-3;c++){ const h=7+Math.abs(((c*7)%22)-11); box(c,7,c+1,7+h,[132,80,62]); }
   brick(U(16.1),0,480,99); box(U(16.1),99,480,111,CREAM); box(U(16.1),99,480,100,CREAMD);
-  box(U(16.9),80,U(19.2),95,[230,140,60]); box(U(16.9)+2,82,U(19.2)-2,93,[244,226,170]); text('TICKETS',U(16.9)+7,84,1,[200,50,40],null);
-  for(let c=U(16.6);c<U(19.5);c++){ const s=Math.floor((c-U(16.6))/6)&1; box(c,s?63:65,c+1,76,s?[246,240,232]:[212,52,50]); }
-  box(U(16.8),0,U(19.3),63,CREAM); box(U(16.8)+3,3,U(19.3)-3,58,[244,240,222]); box(U(16.8),0,U(19.3),3,[210,204,184]);
   return (u,z)=>{ const c=Math.floor(u*24), q=Math.floor(z); return c>=0&&c<W&&q>=0&&q<H?a[q*W+c]:null; }; }; return (u,z)=>(f||(f=build()))(u,z); })();
 let THX0=0, THY=0; const THX=u=>THX0-u, thAt=(x,y)=>{ THX0=x; THY=y; };
 function thOut(parts,o,more=[]){ PNAME='theatre front'; const x0=THX0; return prop([...parts.map(([u0,u1,z0,z1,d,side,top,foot])=>sided({x0:THX(u1),x1:THX(u0),y0:THY-d,y1:THY,z0,z1,c:side,foot:foot?1:0,top:()=>top||side,
   fs:(nx,ny,X,Y,z,k)=>{ if(ny<0){ const c=THFRONT(x0-X,z+z0); if(c)return c.e?c:sh(c,k); } return sh(side,k); }})),...more],null,o); }
 const thb=(u0,u1,d0,d1,z0,z1,c,fs,o)=>sided({x0:THX(u1),x1:THX(u0),y0:THY-d1,y1:THY-d0,z0,z1,c,top:()=>c,fs:fs?(nx,ny,X,Y,z,k)=>fs(nx,ny,X,Y,z+z0,k):(nx,ny,X,Y,z,k)=>sh(c,k),...o});
-const thBooth=()=>{ const x0=THX0, TX=u=>x0-u, CR=[234,228,206], PN=[244,240,222], RD=[196,56,44], D=.58, t=.06, cu=(17.1+20/24+17.1)/2, wa=18.2, wb=19.1;
-  const front=(nx,ny,X,Y,z,k)=>{ if(ny<0){ const c=THFRONT(x0-X,z); if(c)return sh(c,k); } return sh(ny>0?PN:CR,k); };
-  const B=[], F=(u0,u1,z0,z1)=>B.push(thb(u0,u1,D-t,D,z0,z1,CR,front)), du=17.1+20/24;
-  F(16.8,17.1,0,63); F(du,wa,0,63); F(wb,19.3,0,63); F(17.1,du,50,63); F(wa,wb,0,30); F(wa,wb,50,63);
-  F(wa,wa+2/24,30,50); F(wb-2/24,wb,30,50); F(wa,wb,48,50);
-  B.push(thb(16.8,19.3,0,D,60,63,CR),thb(16.8,16.86,0,D-t,0,60,CR,(nx,ny,X,Y,z,k)=>sh(nx?(X>TX(16.83)?CR:PN):CR,k)),thb(19.24,19.3,0,D-t,0,60,CR,(nx,ny,X,Y,z,k)=>sh(nx?(X<TX(19.27)?CR:PN):CR,k)));
-  B.push(thb(17.1,du,D-t,D-.04,3,50,RD,(nx,ny,X,Y,z,k)=>{ if(ny){ const dx=(x0-X-cu)*24, dz=z-38, r=dx*dx+dz*dz; if(r<9)return null; if(r<25)return sh([40,50,90],k); } return sh(z>=48?[150,40,32]:RD,k); }),
-    thb(17.1+15/24,17.1+17/24,D-.04,D-.01,23,25,[240,210,120],null,{nb:1}));
-  const wm=(wa+wb)/2; B.push(thb(wa,wb,D-t-.01,D+.04,30,31,CR,null,{nb:1}),thb(wa+2/24,wb-2/24,D-.035,D-.02,39,41,CR,null,{nb:1}),thb(wm-1/24,wm+1/24,D-.035,D-.02,32,48,CR,null,{nb:1}),
-    thb(16.86,19.24,D-t-.16,D-t,27,29,[200,192,170],null,{nb:1}),thb(18.98,19.02,D-t-.14,D-t-.1,0,27,[150,146,130],null,{nb:1}));
-  B.push(thb(18.55,18.8,.12,.34,16,18,[150,40,32]),thb(18.66,18.7,.21,.25,0,16,[120,124,130],null,{nb:1}),thb(18.58,18.78,.14,.32,0,1,[120,124,130],null,{nb:1}),
-    thb(18.32,18.66,D-t-.15,D-t-.02,29,34,[96,98,100],(nx,ny,X,Y,z,k)=>sh(ny&&z>31&&z<33?[80,200,140]:[96,98,100],k)),thb(18.75,18.86,D-t-.12,D-t-.04,29,32,[230,120,150]));
-  return B; };
-const thFront=(clip,booth)=>{ const RB=[164,58,48], CR=[234,228,206], GR=[112,122,144], SL=[74,80,98], C=L=>L.map(p=>clip(p)).filter(Boolean);
+const thFront=clip=>{ const RB=[164,58,48], CR=[234,228,206], GR=[112,122,144], SL=[74,80,98], C=L=>L.map(p=>clip(p)).filter(Boolean);
   for(const [L,o,m] of [[[[0,4.73,0,99,.5,RB,[150,52,44],1],[0,4.83,99,111,.62,CR,[246,242,228]]]],[[[16.1,20,0,99,.5,RB,[150,52,44],1],[16,20,99,111,.62,CR,[246,242,228]]]],
-    [[[16.6,19.5,63,76,1.05,[212,52,50],[226,90,84]],[16.9,19.2,80,95,.6,[230,140,60],[244,226,170]]],undefined,booth?thBooth():[]],
-    [[[6.03,14.9,72,88,1.3,[112,124,156],[96,106,134],1],[5.8,15.1,88,98,1.45,CR,[246,242,228]],[6.1,14.4,98,134,.5,SL,[96,102,122]],[8.5,12.1,106,131,.6,[250,248,240],[250,248,240]]],{walk:true}],
-    [[[4.73,16.1,92,152,.2,RB,[150,52,44],1],[4.4,16.1,152,168,.42,CR,[246,242,228]],[7.0,8.0,168,229,.28,RB,CR],[12.74,13.7,168,229,.28,RB,CR]],{walk:true}],
-    [[[8.0,8.95,134,294,.36,GR,[150,158,178],1],[11.89,12.74,134,294,.36,GR,[150,158,178]],[8.95,9.9,134,360,.46,[204,66,50],[220,90,74]],[11.04,11.89,134,360,.46,[204,66,50],[220,90,74]],
-      [9.9,11.04,139,388,.72,[200,204,212],[170,176,188]]],{walk:true}],[[[8.4,12.5,0,2,.35,[200,204,210],[214,218,222],1]],{walk:true}]]){ const ps=C(L); if(ps.length||(m&&m.length))thOut(ps,o,m); } };
+    
+    [[[6.1,14.4,98,134,.15,SL,[96,102,122]],[8.5,12.1,106,131,.2,[250,248,240],[250,248,240]]],{walk:true}],
+    [[[4.73,16.1,92,152,.2,RB,[150,52,44],1],[4.4,16.1,152,168,.42,CR,[246,242,228]]],{walk:true}],
+    [[[8.4,12.5,0,2,.35,[200,204,210],[214,218,222],1]],{walk:true}]]){ const ps=C(L); if(ps.length||(m&&m.length))thOut(ps,o,m); } };
 function theatreScreen(S){ PNAME='cinema screen'; const b=S.m/24, y0=S.y-.06, Bk=[12,10,12], bk={c:Bk,top:()=>Bk,fi:()=>Bk,fj:()=>Bk,foot:0};
   const film=(x,z)=>{ const f=filmFrame(30), i=Math.min(FILMW-1,Math.max(0,Math.floor((x-S.x0)/(S.x1-S.x0)*FILMW))), j=Math.min(FILMH-1,Math.max(0,Math.floor((S.z1-z)/(S.z1-S.z0)*FILMH))), q=(j*FILMW+i)*3; return [f[q],f[q+1],f[q+2]]; };
   return prop([{x0:S.x0,y0,x1:S.x1,y1:S.y,z0:S.z0,z1:S.z1,foot:1,em:1,c:[200,200,196],top:()=>Bk,fi:()=>Bk,fj:film},

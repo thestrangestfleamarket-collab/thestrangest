@@ -10,7 +10,7 @@ const DRESS=window.DRESS={}, TLX={tick:()=>{}};
       return j<9&&hs(Math.floor(i/4),Math.floor(j/3)+9)<.35?LIT[Math.floor(hs(Math.floor(i/4),j>>2)*5)]:[18,22,18]; }), top=tex(16,16,(i,j)=>{ const r=hs(Math.floor(i/3),Math.floor(j/3)); return r<.3?LIT[0]:r<.42?LIT[1]:r<.6?LIT[2]:r<.72?[30,30,32]:r<.8?LIT[3]:[200,196,184]; });
     const prof=[[.2,0],[.215,.02],[.235,.3],[.255,.6],[.27,.86],[.28,.9]].map(([r,h])=>new THREE.Vector2(r*M,h*M)), parts=[[new THREE.LatheGeometry(prof,12),new THREE.MeshLambertMaterial({map:wire,side:THREE.DoubleSide})],[new THREE.TorusGeometry(.285*M,.025*M,4,12).rotateX(Math.PI/2).translate(0,.9*M,0),new THREE.MeshLambertMaterial({color:0x26402c})],[new THREE.CircleGeometry(.26*M,10).rotateX(-Math.PI/2).translate(0,.8*M,0),new THREE.MeshLambertMaterial({map:top})]], m4=new THREE.Matrix4(), q=new THREE.Quaternion();
     for(const [g,mt] of parts){ const me=new THREE.InstancedMesh(g,mt,CN.length); CN.forEach(([x,y,z],i)=>me.setMatrixAt(i,m4.compose(new THREE.Vector3(x,y,z),q.setFromAxisAngle(new THREE.Vector3(0,1,0),i*2.1),new THREE.Vector3(1,1,1)))); me.castShadow=me.receiveShadow=true; scene.add(me); } }
-  { const M=1/.84*TILE, SP=26*M, SX0=BOD.XS(BOD.MAP.x0), SX1=BOD.XS(BOD.MAP.x1), n=Math.floor((SX1-SX0-8)/SP)+1, x0=(SX0+SX1)/2-(n-1)*SP/2, warm=new THREE.Color(1,.88,.68);
+  { const M=1/.84*TILE, SP=46*M, SX0=BOD.XS(BOD.MAP.x0), SX1=BOD.XS(BOD.MAP.x1), n=Math.floor((SX1-SX0-8)/SP)+1, x0=(SX0+SX1)/2-(n-1)*SP/2, warm=new THREE.Color(1,.88,.68);
     const sl=(x,z,d,ax='z',ring)=>{ const y=G(x,z);
       solid(x,z,.18*M,6*M); const P={x,z,d,ax,ring:ring||(d>0?'outer':'inner'),y:y+5.45*M,h:heads.length}; POLES.push(P); return P; };
     const heads=[], pools=[], POLES=[], POSTS=[], hsh=n=>{ const v=Math.sin(n*12.9898+78.233)*43758.5453; return v-Math.floor(v); },
@@ -24,16 +24,16 @@ const DRESS=window.DRESS={}, TLX={tick:()=>{}};
       sl(x,sw-.25*M,1).L=light(x,5.8*M,sw+1.4*M,40,13*TILE); heads.push([x,5.8*M,sw+1.4*M]);
       const xf=x+SP/2; if(xf<SX1-3&&ok(xf,far+.25*M)&&!(xf>BOD.XS(AVE.r0)-1&&xf<BOD.XS(AVE.r1)+1)&&!(xf>BOD.XS(RING.wr0)-1&&xf<BOD.XS(RING.wr1)+1)){ sl(xf,far+.25*M,-1).L=light(xf,5.8*M,far-1.4*M,40,13*TILE); heads.push([xf,5.8*M,far-1.4*M]); } }
     { const XS=BOD.XS, ZS=BOD.ZS, R=RING, A=AVE, put=(x,z,d,ax,ring)=>{ if(!ok(x,z))return; const P=sl(x,z,d,ax,ring), hx=ax==='x'?x+d*1.3*M:x, hz=ax==='x'?z:z+d*1.3*M; P.L=light(hx,5.8*M,hz,40,13*TILE); heads.push([hx,5.8*M,hz]); };
-      const runZ=(xo,xi,z0,z1)=>{ for(let z=z0,k=0;z<z1;z+=SP/2,k++){ if(k&1)put(xi,z,-1,'x','inner'); else put(xo,z,1,'x','outer'); } };
-      { const xo=XS(R.wr0)-.25*M, xi=XS(R.wr1)+.25*M, z0=ZS(BOD.FAR)+2*M, z1=ZS(R.nr0)-1*M; for(let z=z0,k=0;z<z1;z+=SP/2,k++){ if(k&1)put(xi,z,-1,'x','inner'); else put(xo,z,1,'x','outer'); } }
-      { const xo=XS(A.r1)+.25*M, xi=XS(A.r0)-.25*M, z0=ZS(BOD.FAR)+2*M, z1=ZS(R.nr0)-1*M; for(let z=z0+SP/4,k=0;z<z1;z+=SP/2,k++){ if(k&1)put(xi,z,1,'x','inner'); else put(xo,z,-1,'x','outer'); } }
-      { const zo=ZS(R.nr1)+.25*M, zi=ZS(R.nr0)-.25*M, x0=XS(R.wr1)+2*M, x1=XS(A.r0)-2*M; for(let x=x0,k=0;x<x1;x+=SP/2,k++){ if(k&1)put(x,zi,1,'z','inner'); else put(x,zo,-1,'z','outer'); } } }
+      const runZ=(xo,xi,z0,z1)=>{ for(let z=z0,k=0;z<z1;z+=26*M,k++){ if(k&1)put(xi,z,-1,'x','inner'); else put(xo,z,1,'x','outer'); } };
+      { const xo=XS(R.wr0)-.25*M, xi=XS(R.wr1)+.25*M, z0=ZS(BOD.FAR)+2*M, z1=ZS(R.nr0)-1*M; for(let z=z0,k=0;z<z1;z+=26*M,k++){ if(k&1)put(xi,z,-1,'x','inner'); else put(xo,z,1,'x','outer'); } }
+      { const xo=XS(A.r1)+.25*M, xi=XS(A.r0)-.25*M, z0=ZS(BOD.FAR)+2*M, z1=ZS(R.nr0)-1*M; for(let z=z0+13*M,k=0;z<z1;z+=26*M,k++){ if(k&1)put(xi,z,1,'x','inner'); else put(xo,z,-1,'x','outer'); } }
+      { const zo=ZS(R.nr1)+.25*M, zi=ZS(R.nr0)-.25*M, x0=XS(R.wr1)+2*M, x1=XS(A.r0)-2*M; for(let x=x0,k=0;x<x1;x+=26*M,k++){ if(k&1)put(x,zi,1,'z','inner'); else put(x,zo,-1,'z','outer'); } } }
     { const x=CP.x, z=CP.z, y=G(x,z), T8=8.2*M, AL=2.7*M, L2=[];
       for(const [dx,dz] of [[0,-1],[1,0]]){ const ex=x+dx*AL, ez=z+dz*AL, ay=y+T8-.15*M, h=heads.length, L=light(ex,ay-.25*M,ez,55,16*TILE); heads.push([ex,ay-.06*M,ez]); L2.push([L,h]); }
       solid(x,z,.3*M,T8); POLES.push({x,z,d:-1,ax:'z',ring:'inner',y:y+T8-.6*M,h:L2[0][1],h2:L2[1][1],L:L2[0][0],L2:L2[1][0],corner:1}); DRESS.corner={x,z,y,lamps:L2.map(q=>q[0])}; }
     const wz=BOD.ZS(PARK.y0+PARK.oy), pz=far+.95*M, g0=BOD.XS(PARK.gate[0]+PARK.ox), g1=BOD.XS(PARK.gate[1]+PARK.ox), pts=[[g0-.9*M,pz],[g1+.9*M,pz]], px1=BOD.XS(PARK.x1+PARK.ox)-2;
-    for(let x=g0-14*M;x>BOD.XS(PARK.x0+PARK.ox)+2;x-=14*M)pts.push([x,pz]); for(let x=g1+14*M;x<px1;x+=14*M)pts.push([x,pz]);
-    { const ax=BOD.XS(AVE.r0)-.95*M, z0=BOD.ZS(BOD.MAP.y1)+5*M, z1=BOD.ZS(AVE.y1)-2; for(let z=z0;z<z1;z+=14*M)pts.push([ax,z]); }
+    for(let x=g0-28*M;x>BOD.XS(PARK.x0+PARK.ox)+2;x-=28*M)pts.push([x,pz]); for(let x=g1+28*M;x<px1;x+=28*M)pts.push([x,pz]);
+    { const ax=BOD.XS(AVE.r0)-.95*M, z0=BOD.ZS(BOD.MAP.y1)+5*M, z1=BOD.ZS(AVE.y1)-2; for(let z=z0;z<z1;z+=28*M)pts.push([ax,z]); }
     { const clear=([x,z])=>heads.every(([hx,,hz])=>Math.hypot(hx-x,hz-z)>2.6*M); for(let i=pts.length-1;i>=0;i--)if(!clear(pts[i]))pts.splice(i,1); }
     const xs=pts.map(p=>p[0]);
     const H=4.2*M, pole=new THREE.InstancedMesh(new THREE.CylinderGeometry(.055*M,.07*M,H,8).translate(0,H/2,0),new THREE.MeshLambertMaterial({color:0x22262b,flatShading:true}),xs.length*2),
@@ -108,20 +108,7 @@ const DRESS=window.DRESS={}, TLX={tick:()=>{}};
           const pr=[[0,0],[.15,0],[.15,.05],[.12,.06],[.1,.1],[.1,.48],[.13,.5],[.13,.54],[.11,.56],[.1,.64],[.07,.7],[.04,.72],[.04,.76],[0,.77]].map(([r,h])=>new THREE.Vector2(r*M,h*M));
           const parts=[[new THREE.LatheGeometry(pr,10),new THREE.MeshLambertMaterial({map:tx})],[new THREE.CylinderGeometry(.055*M,.06*M,.32*M,8).rotateZ(Math.PI/2).translate(0,.4*M,0),new THREE.MeshLambertMaterial({color:0xa8acaa})],[new THREE.CylinderGeometry(.075*M,.075*M,.1*M,6).rotateX(Math.PI/2).translate(0,.38*M,.13*M),new THREE.MeshLambertMaterial({color:0x2a2c2e})],[new THREE.BoxGeometry(.012*M,.12*M,.012*M).translate(.17*M,.33*M,.03*M),new THREE.MeshLambertMaterial({color:0x4a4846})]], m4=new THREE.Matrix4(), q=new THREE.Quaternion();
           for(const [g,mt] of parts){ const me=new THREE.InstancedMesh(g,mt,HY.length); HY.forEach(([x,y,z,sd],i)=>me.setMatrixAt(i,m4.compose(new THREE.Vector3(x,y,z),q.setFromAxisAngle(new THREE.Vector3(0,1,0),(sd>0?0:Math.PI)+i*.4),new THREE.Vector3(1,1,1)))); me.castShadow=me.receiveShadow=true; scene.add(me); } } }
-      if(PARK.mesh){ if(OAK.length){ DRESS.trees=PARK.mesh(OAK,true,true,true); const {P:PP,LF:LL}=DRESS.trees.userData; if(LL&&LL.length){ const idx=[]; for(let v=0;v<LL.length;v++)if(LL[v])idx.push(v);
-        const TC=OAK.map(([,px,py,m])=>{ const x=BOD.XS(px+PARK.ox), z=BOD.ZS(py+PARK.oy); return [x,G(x,z)+.66*m*M,z,m]; }), N=16, cv=document.createElement('canvas'); cv.width=cv.height=N; const gx=cv.getContext('2d'), im=gx.createImageData(N,N);
-        for(let k=0;k<14;k++){ const cx=2+hsh(k,1)*12, cy=2+hsh(k,2)*12, a=hsh(k,3)*3.14, ca=Math.cos(a), sa=Math.sin(a), sh=[[46,82,38],[62,104,48],[84,128,58],[36,64,32]][Math.floor(hsh(k,4)*4)];
-          for(let j=0;j<N;j++)for(let i=0;i<N;i++){ const dx=i+.5-cx, dy=j+.5-cy, u=dx*ca+dy*sa, w=-dx*sa+dy*ca; if(u*u/5.5+w*w/1.6>1)continue; const q=(j*N+i)*4, c=w<-.6?[sh[0]*1.25,sh[1]*1.2,sh[2]*1.15]:sh; im.data[q]=c[0]; im.data[q+1]=c[1]; im.data[q+2]=c[2]; im.data[q+3]=255; } }
-        gx.putImageData(im,0,0); const tx=new THREE.CanvasTexture(cv); tx.magFilter=tx.minFilter=THREE.NearestFilter; tx.generateMipmaps=false; tx.colorSpace=THREE.SRGBColorSpace;
-        const V3=THREE.Vector3, pos=[], nor=[], uv=[], col=[], up=new V3(0,1,0), n=new V3(), t=new V3(), b=new V3(), p0=new V3();
-        for(let k=0;k<OAK.length*260;k++){ const v=idx[Math.floor(hsh(k,77)*idx.length)]; p0.set(PP[v*3],PP[v*3+1],PP[v*3+2]); let tc=TC[0]; for(const c of TC)if(Math.hypot(c[0]-p0.x,c[2]-p0.z)<Math.hypot(tc[0]-p0.x,tc[2]-p0.z))tc=c;
-          n.set(p0.x-tc[0],(p0.y-tc[1])*1.4,p0.z-tc[2]).normalize(); t.crossVectors(n,up); if(t.lengthSq()<1e-4)t.set(1,0,0); t.normalize(); b.crossVectors(t,n).normalize();
-          const sz=(.55+.5*hsh(k,5))*M*(tc[3]/8), r=hsh(k,6)*6.28, tn=hsh(k,8)*.25+.85, cc=[tn,tn*(.96+.08*hsh(k,9)),tn*.92];
-          for(const rot of [r,r+1.2]){ const ca=Math.cos(rot)*sz/2, sa=Math.sin(rot)*sz/2, ax=t.clone().multiplyScalar(ca).addScaledVector(b,sa), ay=t.clone().multiplyScalar(-sa).addScaledVector(b,ca).addScaledVector(n,.25*sz), o=p0.clone().addScaledVector(n,.08*M);
-            const C=[o.clone().sub(ax).sub(ay),o.clone().add(ax).sub(ay),o.clone().add(ax).add(ay),o.clone().sub(ax).add(ay)];
-            for(const [vi,u2,v2] of [[0,0,0],[1,1,0],[2,1,1],[0,0,0],[2,1,1],[3,0,1]]){ pos.push(C[vi].x,C[vi].y,C[vi].z); nor.push(n.x,n.y,n.z); uv.push(u2,v2); col.push(...cc); } } }
-        const fg=new THREE.BufferGeometry(); fg.setAttribute('position',new THREE.Float32BufferAttribute(pos,3)); fg.setAttribute('normal',new THREE.Float32BufferAttribute(nor,3)); fg.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2)); fg.setAttribute('color',new THREE.Float32BufferAttribute(col,3));
-        const fm=new THREE.Mesh(fg,new THREE.MeshLambertMaterial({map:tx,alphaTest:.5,side:THREE.DoubleSide,vertexColors:true})); fm.castShadow=true; fm.userData.cull=1; fm.customDepthMaterial=new THREE.MeshDepthMaterial({map:tx,alphaTest:.5,depthPacking:THREE.RGBADepthPacking}); scene.add(fm); DRESS.fluff=fm; } } if(PL.length)DRESS.plants=PARK.mesh(PL,false,false,2); }
+      if(PARK.mesh){ if(OAK.length)DRESS.trees=PARK.mesh(OAK,true,true,true); if(PL.length)DRESS.plants=PARK.mesh(PL,false,false,2); }
       if(PITS.length){ const N=40, cv=document.createElement('canvas'); cv.width=cv.height=N; const gx=cv.getContext('2d'), im=gx.createImageData(N,N), SO=[[58,44,34],[70,54,40],[48,36,28],[96,72,48]], LF=[[44,74,36],[60,98,46],[84,124,58],[36,58,30]];
         for(let j=0;j<N;j++)for(let i=0;i<N;i++){ const n=hsh(Math.floor(i/5),Math.floor(j/5))*.6+hsh(Math.floor(i/3)+40,Math.floor(j/3))*.4, d=hsh(i,j), e=Math.min(i,j,N-1-i,N-1-j);
           let c=n>.52-.04*Math.max(0,4-e)?LF[d<.18?3:d<.55?0:d<.88?1:2]:SO[d<.5?0:d<.8?1:d<.96?2:3]; if(hsh(i+3,j*7)<.012)c=[150,112,52]; if(hsh(i*5,j+1)<.004)c=[226,220,206];

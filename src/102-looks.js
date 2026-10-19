@@ -20,11 +20,11 @@ const LOOKS={};
   document.head.appendChild(css);
   const P=document.createElement('div'); P.id='looks'; P.hidden=true; P.setAttribute('role','dialog'); P.setAttribute('aria-label','Your character');
   P.innerHTML=`<h2>YOU</h2><div class="row"><input type="text" id="lname" maxlength="24" placeholder="your name"><button id="lclose">CLOSE</button></div>
-    <h3>BODY</h3><div class="row" id="lbody"></div>
+    
     <h3>STATS</h3><div class="row"><span style="width:70px">HEALTH</span><div class="bar"><i id="lhp" style="background:#c84a3a;width:100%"></i></div></div>
     <div class="row" style="margin-top:4px"><span style="width:70px">STAMINA</span><div class="bar"><i id="lst" style="background:#d8b84a;width:100%"></i></div></div>`;
   document.body.appendChild(P);
-  const draw=()=>{ $('#lname').value=L.name; if(window.AVS&&AVS.into)AVS.into($('#lbody')); };
+  const draw=()=>{ $('#lname').value=L.name; };
   $('#lname').oninput=e=>{ L.name=e.target.value; save(); };
   $('#lname').addEventListener('keydown',e=>e.stopPropagation());
   $('#lclose').onclick=()=>{ P.hidden=true; };

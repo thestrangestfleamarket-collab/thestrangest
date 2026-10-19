@@ -89,7 +89,9 @@ WATER.under=(renderer,scene,cam,lamps)=>{ const w=renderer.domElement.width, h=r
 WATER.build=()=>{ const P=POOLR; waterBody(WATER,{X0:P.X(P.bx0),X1:P.X(P.bx1),Z0:P.Z(P.by0),Z1:P.Z(P.by1),lvl:P.Y(P.level),GX:208,GY:80,dep:u=>Math.max(0.02,(P.level-P.bedAt(u*P.LX))/24*0.84)}); };
 WATER.extra=[]; WATER.body=cfg=>{ const W={drops:[],uH:{value:null},uWB:{value:new THREE.Vector4()},uLevel:{value:0},uGrid:{value:new THREE.Vector2()},mats:[],name:cfg.name}; waterBody(W,cfg); WATER.extra.push(W); return W; };
 WATER.tickAll=(renderer,dt,pos)=>{ for(const w of WATER.extra){ w.on=LVL==='up'&&Math.hypot(pos.x-(w.X0+w.W/2),pos.z-(w.Z0+w.D/2))<14*TILE; if(w.on)w.step(renderer,dt); } };
-WATER.underAll=(renderer,scene,cam,lamps)=>{ for(const w of WATER.extra)if(w.on)w.under(renderer,scene,cam,lamps); };
+WATER.FR=new THREE.Frustum(); WATER.PM=new THREE.Matrix4();
+WATER.seen=(m,cam)=>{ if(!m||!m.visible)return false; if(!m.userData.bb)m.userData.bb=new THREE.Box3().setFromObject(m); WATER.PM.multiplyMatrices(cam.projectionMatrix,cam.matrixWorldInverse); WATER.FR.setFromProjectionMatrix(WATER.PM); return WATER.FR.intersectsBox(m.userData.bb); };
+WATER.underAll=(renderer,scene,cam,lamps)=>{ for(const w of WATER.extra)if(w.on&&WATER.seen(w.mesh,cam))w.under(renderer,scene,cam,lamps); };
 WATER.feed=(st,pos,dt,go,keys)=>{ if(!WATER.mesh)return RIG.water(st,{level:null,floor:0});
   const b=POOLR.inBasin(pos.x,pos.z), in0=st.water&&st.water.in;
   WATER.rise=in0?0.065/(POOLR.LX*POOLR.LY*0.84*0.84)/WATER.MPU:0; WATER.mesh.position.y=WATER.lvl+WATER.rise;

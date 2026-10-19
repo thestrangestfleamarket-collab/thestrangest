@@ -145,7 +145,7 @@ await grab('park',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.ox=P
       for(const [x,y,z] of HL){ const s=new THREE.Sprite(hm); s.position.set(x,y,z); s.scale.set(2.6*M,2.6*M,1); s.renderOrder=2; s.visible=false; scene.add(s); SPR.push(s);
         const L=new THREE.PointLight(new THREE.Color(1,.8,.52),12,9*TILE,1.6); L.position.set(x,y,z); L.userData.i0=12; L.intensity=0; scene.add(L); lamps.push(L); LL.push(L); }
       const lit=()=>{ let d=false; try{ d=CLOCK.dark(); }catch(_){ } glass.color.setHex(d?0xffc978:0x6e6656); core.color.setHex(d?0xfff6dc:0x8a7e66); for(const s of SPR)s.visible=d; for(const L of LL)L.intensity=d?L.userData.i0:0; }; lit(); setInterval(lit,2000); } }
-  const TL=[0,1,2,3].includes(+QS.get('treelook'))&&QS.get('treelook')!==null?+QS.get('treelook'):3;
+  const TL=[0,1,2,3].includes(+QS.get('treelook'))&&QS.get('treelook')!==null?+QS.get('treelook'):0;
   const treeLook=sh=>{ sh.vertexShader='attribute vec3 aTr; varying vec3 vTr; varying vec3 vLw;\n'+sh.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\n vTr=aTr; vLw=transformed;')
       .replace('#include <shadowmap_vertex>',THREE.ShaderChunk.shadowmap_vertex.replace(/(directional|point)LightShadows\[ i \]\.shadowNormalBias/g,'($&+aTr.z*.12)'));
     let f='varying vec3 vTr; varying vec3 vLw; float TW=0., TSH=1.;\nfloat lfH(vec3 p){ return fract(sin(dot(p,vec3(127.1,311.7,74.7)))*43758.5453); }\n'+sh.fragmentShader.replace('#include <color_fragment>','#include <color_fragment>\n if(vTr.z>.5){ vec3 q=floor(vLw*'+(1/(.11*TILE)).toFixed(4)+'); float n=lfH(q), m=lfH(floor(vLw*'+(1/(.035*TILE)).toFixed(4)+')); diffuseColor.rgb*=.74+.42*n+(m>.94?.25:0.)-(m<.06?.18:0.); }')

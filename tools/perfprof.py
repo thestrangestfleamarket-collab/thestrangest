@@ -20,7 +20,7 @@ SEG = [('trip=false; let B;', 'J0=B.J; J0t=now; }', 'walker rig'),
        ('LOOK.tick();', None, 'LOOK'), ('for(const w of cutWalls)', '?w.foot:1e6;', 'cutWalls'),
        ('ROOMS.tick();', None, 'ROOMS.tick'), ('STORE.tick();', None, 'STORE.tick'), ('BF.tick(dt);', None, 'butterflies'),
        ('if(wOn)WATER.step(renderer,dt);', None, 'WATER.step'), ('WATER.tickAll(renderer,dt,pos);', None, 'WATER.tickAll'),
-       ('if(wOn&&WATER.mesh.visible)WATER.under(renderer,scene,cam,lamps);', None, 'WATER.under'),
+       ('if(wOn&&WATER.seen(WATER.mesh,cam))WATER.under(renderer,scene,cam,lamps);', None, 'WATER.under'),
        ('WATER.underAll(renderer,scene,cam,lamps);', None, 'WATER.underAll'), ('W3.shadowPass(renderer);', None, 'self-shadow passes'),
        ('if(OUTL.on)OUTL.render(renderer,scene,cam);', None, 'outline'), ('composer.render();', None, 'composer.render')]
 for s, e, n in SEG:

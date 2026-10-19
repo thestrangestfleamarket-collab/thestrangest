@@ -8,15 +8,13 @@ function gdShape(GS,K,LAMPS){ const s=K.s, o=K.o, SC=1.5, cx=o[0]+4*s, Y1=o[1]+3
     const wet=G.puddles.some(([pcx,pcy,rx,ry])=>{ const u=(x-pcx)/rx, v=(y-pcy)/ry; return u*u+v*v+(grain(x*3,y*3,611,.6)-.5)*.5<1; });
     let c;
     if(dEave<.42){ const cx_=Math.floor(px/3), cy_=Math.floor(py/3), h=hash(cx_,cy_,612), ix=px-cx_*3, iy=py-cy_*3;
-      c=h<.1?[30,30,34]:ix+iy===0?[128,130,138]:[[62,64,72],[74,76,84],[54,56,62],[86,86,92]][Math.floor(h*4)]; }
+      c=[66,68,76]; }
     else if(Math.abs(x-(X0+W/2))<1.35&&y>Y1){ const row=Math.floor((y-Y1-.42)/.82), off=hash(row,3,613)*.9, col=Math.floor((x-X0-W/2+1.35+off)/1.05), fu=((x-X0-W/2+1.35+off)/1.05)%1, fv=((y-Y1-.42)/.82)%1;
       const j=fu<.05||fv<.06, bev=fu<.1||fv<.11?1.1:fu>.93||fv>.92?.84:1, t=hash(col,row,614);
       if(j)c=grain(x*2,y*2,615,.5)>.55?[66,88,50]:[46,44,46];
       else c=sh([[132,130,128],[118,118,120],[146,142,136],[124,120,116]][Math.floor(t*4)],bev*(.95+.08*hash(px,py,616)));
       if(!j&&hash(px>>1,py>>1,617)<.02)c=sh(c,.8); }
-    else{ const g=hash(px,py,618), row=Math.floor((y-Y1)*24/3);
-      c=[[148,144,136],[132,128,122],[164,160,150],[112,108,104]][Math.floor(g*4)]; if(y>Y1&&row%2)c=sh(c,.9); if(g>.97)c=[188,184,176];
-      const m=grain(x*1.4,y*1.4,619,.8); if(m>.66)c=g<.5?[78,98,58]:[96,116,66]; else if(m>.6&&g<.3)c=[88,104,62]; }
+    else{ c=grain(x*.3,y*.3,618,.8)>.6?[124,120,114]:[136,132,126]; if(grain(x*.5,y*.5,619,.8)>.7)c=[90,108,64]; }
     if(y>G.y1e-.22)c=sh([150,148,144],y>G.y1e-.06?.8:1.05+.05*hash(px,0,620));
     if(wet)c=sh(c.map((v,i)=>v*[.68,.72,.84][i]),hash(px>>1,py,621)<.1?1.15:1);
     return c; };

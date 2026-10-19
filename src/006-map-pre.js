@@ -22,7 +22,7 @@ THREE.ShaderChunk.fog_fragment=THREE.ShaderChunk.fog_fragment.replace('fogFactor
 #ifdef PFAR
 		fogFactor=min(fogFactor,.52+.4*clamp((d-8.)/130.,0.,1.));
 #else
-		if(max(dx,dz)>6.&&q.x<pfar.z/mistE.w&&q.y<pfar.w/mistE.w&&((q.x>pfar.x/mistE.w&&q.y>mistB.w/mistE.w)||(q.y>pfar.y/mistE.w&&q.x>mistB.z/mistE.w)))discard;
+		if(max(dx,dz)>40.&&q.x<pfar.z/mistE.w&&q.y<pfar.w/mistE.w&&((q.x>pfar.x/mistE.w&&q.y>mistB.w/mistE.w)||(q.y>pfar.y/mistE.w&&q.x>mistB.z/mistE.w)))discard;
 #endif
 		mistC*=1.-mistF.x*clamp((d-mistE.y-mistE.z)/mistF.y,0.,1.); }
 	fogFactor = floor(`).replace('gl_FragColor.rgb, fogColor, fogFactor','gl_FragColor.rgb, mistC, fogFactor')

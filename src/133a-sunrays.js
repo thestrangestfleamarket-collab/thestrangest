@@ -30,5 +30,5 @@ const RAYS={};
       BM.instanceMatrix.needsUpdate=true; bm.opacity=.03*k; }
     else for(const b of LFX.sunB)b.set(0,-1e5,0,0);
     U.uK.value=0; if(out&&cam.isPerspectiveCamera&&e>-1){ depthFit(); sp.copy(cam.position).addScaledVector(sv,400).project(cam);
-      cam.getWorldDirection(sc); if(sc.dot(sv)>0&&sp.z<1){ U.uSun.value.set(sp.x*.5+.5,sp.y*.5+.5); const off=Math.max(Math.abs(sp.x),Math.abs(sp.y)); U.uK.value=cl((e+1)/5)*(1-cl((W.cloud-.85)/.15))*cl((2.2-off)/1.2); U.uAsp.value=cam.aspect||1; } } };
+      cam.getWorldDirection(sc); if(sc.dot(sv)>0&&sp.z<1){ U.uSun.value.set(sp.x*.5+.5,sp.y*.5+.5); const off=Math.max(Math.abs(sp.x),Math.abs(sp.y)); U.uK.value=cl((e+1)/5)*(1-cl((W.cloud-.85)/.15))*cl((2.2-off)/1.2); U.uAsp.value=cam.aspect||1; } } P.enabled=U.uK.value>0; };
   window.RAYS=RAYS; }

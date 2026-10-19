@@ -2956,3 +2956,7 @@ building until you go inside"; `054-apts.js`, `075-main-13.js`)
   walkers, beard walkers, etc from the game"): creatures (`CREATS`) on the tall grass are hidden and only part it in a small trail
   (0.3 tiles, lighter); anything off the ground (flying) doesn't touch the grass. The townsfolk walkers are off (`?walkers=1` brings
   them back) and so is the bearded walker (`?bwk` brings him back).
+- **Cartwheel slower, ground only, held repeats** (owner, 19 Oct 2026: "you should cart wheel 25% slower, you cant start a cartwheel
+  unless your feet on currently on ground, if you hold down cartwheel button you can just keep doing them in a row"): the cartwheel
+  plays at 0.75 speed; U does nothing in the air, on a ladder or a ledge (no more mid-air cartwheel spin); holding U chains
+  cartwheels back to back until it is let go.

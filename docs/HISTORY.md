@@ -1854,3 +1854,7 @@ so he looked shrugged. You are now his mannequin (`data/full/humanoid.fbx`, Blen
 `data/humanoid.json`, 6 KB), sized to the UAL skeleton (it matches it: height, hips, shoulders, arm length within 3 cm). It stands in an
 A-pose, so the skeleton's arms are lowered to it before binding; each corner weighted in code to its nearest one or two bones. One flat
 light colour, cel-shaded, casting a shadow; the same clips. 402 triangles.
+- **The old game's crafting design stays out** (owner, 19 Oct 2026, after seeing its mockups from tsfm's `mockups-archive`, gathered at
+  https://claude.ai/artifact/Qjpy4SZ6oftjgt4zfhyyTm: "lets not pull any of that back in"): none of the old game's crafting design (its skills
+  list, benches, the Eye's network prices, porters, the passport's skill pick, the black market) comes into THE MARKET. Crafting stays the
+  town's UO way built on foraging, fishing and butterflies (`141-forage.js`, `142-fishing.js`, `143-bfly.js`).

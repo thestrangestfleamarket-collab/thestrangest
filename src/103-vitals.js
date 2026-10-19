@@ -7,7 +7,7 @@ VIT.inFight=t=>{ VIT.fight=Math.max(VIT.fight,t||5); };
   VIT.hurt=(d)=>{ if(VIT.out>0)return; if(typeof SFX!=='undefined')SFX.play('thud',{vol:.7,vary:.2}); VIT.hp=Math.max(0,VIT.hp-d); VIT.inFight(5); if(VIT.hp<=0){ VIT.out=5.5; trip=true; } };
   VIT.tick=dt=>{ const sp=Math.hypot(pos.x-lx,pos.z-lz)/Math.max(dt,1e-3); lx=pos.x; lz=pos.z; const running=st.run>.55&&sp>.6*TILE&&!UI.fly&&!UI.freeCam;
     if(running){ VIT.sta=Math.max(0,VIT.sta-dt/12); rest=0; } else if((rest+=dt)>.8)VIT.sta=Math.min(1,VIT.sta+dt/7);
-    if(VIT.sta<=0)VIT.tired=true; if(VIT.tired&&VIT.sta>.33)VIT.tired=false; if(VIT.tired)st.runTarget=0;
+    VIT.tired=false;
     if(VIT.out>0){ VIT.out-=dt; keys.clear(); target=null; if(VIT.out<=0)VIT.hp=Math.max(VIT.hp,.4); } else VIT.hp=Math.min(1,VIT.hp+dt/90);
     VIT.fight=Math.max(0,VIT.fight-dt); const show=VIT.fight>0||VIT.out>0; if(B.hidden===show)B.hidden=!show;
     if(show){ hpI.style.width=(VIT.hp*100).toFixed(0)+'%'; stI.style.width=(VIT.sta*100).toFixed(0)+'%'; }

@@ -1669,3 +1669,15 @@ checked login (remembered 5 minutes), and nothing to anyone else. The code is st
 can be opened; minified as before. The game module stays one file (its source files run into each other, one shared scope).
 The artifact keeps the one-page `dist/market.html`. Next: models loaded when first needed (the metro, the creatures), which changes
 the game's code.
+
+**Straight in** (owner, 18 Oct 2026: "remove the start up message of game and fade in text, delays, etc. just start game as soon as can"):
+the game's loading line ("I took a trip to The Strangest Flea Market...") and its 6 s hold and fade are gone (`000-page.html`,
+`094-ui.js`): a plain dark screen until the world is built, then the game at once. The door shows at once too (no font wait, no 1.6 s fade).
+
+**Hunger off for now** (owner, 18 Oct 2026: "turn off hunger and running being disabled ever for now"): food stays full, no hungry or
+starving messages, and nothing stops you running (`141-forage.js`; `103-vitals.js`: tired never stops a run).
+
+**Old saves cleared once** (owner, 19 Oct 2026, his avatar vanishing a few steps in on his own browser only, not for another player:
+"its just beacuse something is cached"): `SAVE` goes to version 4 (`005-save.js`); the first time a browser opens it, everything the game
+kept there from older versions (`market-*`, `isowalk-*`: the saved game, its settings, recorded moves, the look) is cleared and it starts
+clean. The login is kept.

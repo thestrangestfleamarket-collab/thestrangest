@@ -27,10 +27,10 @@ const CLOCK={h:17.4,run:false,speed:1440/600,sunV:new THREE.Vector3(0,1,0),moonV
       const a=Math.round(SP.dot(SR)/tx)*tx, b=Math.round(SP.dot(SU)/tx)*tx, c=SP.dot(dir); L.target.position.copy(SR).multiplyScalar(a).addScaledVector(SU,b).addScaledVector(dir,c);
       L.position.copy(L.target.position).addScaledVector(dir,60*TILE); L.target.updateMatrixWorld(); L.updateMatrixWorld(); };
     const strong=sunL.intensity>.3, now=performance.now();
-    const stale=SC.d.dot(dir)<Math.cos(.4*D)||Math.hypot(SC.c.x-pos.x,SC.c.z-pos.z)>8*TILE||SC.lv!==LVL||Math.abs((cam.right-cam.left)-SC.w)>.1*SC.w||now-SC.t>(strong?4000:15000);
+    const stale=SC.d.dot(dir)<Math.cos(.4*D)||Math.hypot(SC.c.x-pos.x,SC.c.z-pos.z)>12*TILE||SC.lv!==LVL||Math.abs((cam.right-cam.left)-SC.w)>.1*SC.w||now-SC.t>(strong?10000:20000);
     if(stale){ aim(sunL); SC.c.set(pos.x,py,pos.z); SC.d.copy(dir); SC.lv=LVL; SC.t=now; SC.w=cam.right-cam.left; sunL.shadow.needsUpdate=true; }
     sunD.intensity=0;
-    if(sunL.intensity>0&&(now-lastS>(strong?40:200)||stale)){ aim(sunD); sunD.shadow.needsUpdate=true; lastS=now; }
+    if(sunL.intensity>0&&(strong||now-lastS>100||stale)){ aim(sunD); sunD.shadow.needsUpdate=true; lastS=now; }
     if(typeof WATER!=='undefined')WATER.glowK=(typeof ROOMS!=='undefined'&&ROOMS.cur)||!up?1:Math.max(0,Math.min(1,(3-e)/8));
     if(UI.menuOpen)CLOCK.draw&&CLOCK.draw(); };
   CLOCK.set=h=>{ CLOCK.h=((h%24)+24)%24; };

@@ -107,7 +107,7 @@ function footLock(st,P,AK,LK,w){ const W=st.world,c=Math.cos(W.hd),s=Math.sin(W.
   const Lg=THIGH+SHIN-1e-4; let drop=0;
   for(const s2 of [1,-1]){ const n=s2>0?'L':'R',[H]=hipAt(P,s2),d=sub(AK[n],H),dh=Math.hypot(d.x,d.z); if(len(d)>Lg&&dh<Lg) drop=Math.max(drop,(H.y-AK[n].y)-Math.sqrt(Lg*Lg-dh*dh)); }
   if(drop>1e-3) P.root=add(P.root,V(0,-Math.min(5,st.smooth?drop:Math.ceil(drop/PX)*PX),0));
-  if(st.smooth&&st.world){ const t=st.world.t, y=P.root.y; if(st.rT!=null&&t>st.rT&&t-st.rT<.2){ st.rY=y<st.rY?y:st.rY+(y-st.rY)*(1-Math.exp(-(t-st.rT)*14)); P.root=V(P.root.x,st.rY,P.root.z); } else st.rY=y; st.rT=t; }
+  if(st.smooth&&st.world){ const t=st.world.t, y=P.root.y; if(st.rT!=null&&t>st.rT&&t-st.rT<.2){ st.rY+=(y-st.rY)*(1-Math.exp(-(t-st.rT)*(y<st.rY?30:14))); P.root=V(P.root.x,st.rY,P.root.z); } else st.rY=y; st.rT=t; }
   for(const s2 of [1,-1]){ const n=s2>0?'L':'R',[H]=hipAt(P,s2),d=sub(AK[n],H); if(len(d)>Lg+0.02){ const v=nrm(d),A=add(H,mul(v,Lg)); st.fslide=(st.fslide||0)+1;
       if(F[n]&&F[n].on&&!stand&&LK[n]&&LK[n].on){ const p=toW(V(A.x,0,A.z)); st.fquick=(st.fquick||0)+1; F[n]={x:p.x,z:p.z,y:F[n].y,ly:A.y,fy:F[n].fy||0,on:0,quick:1,t:0}; } AK[n]=A; } }
   return true; }
@@ -124,7 +124,7 @@ function walkPose(st,abd){ const r=st.run||0,rs=r*r,g=gaitOf(r); if(st.smooth){ 
     if(qq<ST){ const a=fa(n,qq),A=planted(qq/ST,a,x,h); feet[n]={A,a,b:V(x,0,(0.5-qq/ST)*h)}; const y=reachY(s,A,kn(qq)); py=py==null?y:Math.min(py,y); } }
   if(py==null){
     const n=q.L<q.R?'L':'R',o=n=='L'?'R':'L',v=((q[n]-ST)/(0.5-ST)),A0=planted(1,fa(n,ST-1e-6),(n=='L'?1:-1)*FOOTX,h),A1=planted(0,fa(o,0),(o=='L'?1:-1)*FOOTX,h);
-    py=lerp(reachY(n=='L'?1:-1,A0,kn(ST-1e-6)),reachY(o=='L'?1:-1,A1,kn(0)),clamp(v,0,1)); if(st.smooth&&st.pyS!=null)py=st.pyS+.8*Math.sin(Math.PI*clamp(v,0,1)); } else if(st.smooth)st.pyS=py;
+    const vv=clamp(v,0,1), yB=reachY(o=='L'?1:-1,A1,kn(0)); py=st.smooth&&st.pyS!=null?lerp(st.pyS,yB,vv)+.8*Math.sin(Math.PI*vv):lerp(reachY(n=='L'?1:-1,A0,kn(ST-1e-6)),yB,vv); } else if(st.smooth)st.pyS=py;
   py=Math.min(STAND,py); P.root=V(sway,STAND-Math.max(0,st.smooth?(STAND-py)*g.bounce:Math.round((STAND-py)*g.bounce/PX)*PX),0);
   for(const s of [1,-1]){ const n=s>0?'L':'R',x=s*FOOTX*g.width,qq=q[n];
     let A,a; if(feet[n]){ ({A,a}=feet[n]); LK[n]={on:1,off:sub(A,feet[n].b)}; }

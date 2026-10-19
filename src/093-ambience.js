@@ -14,11 +14,11 @@ const AMB={on:true};
   const tgt=(p,v,c,k=.4)=>p.setTargetAtTime(v,c.currentTime,k);
   AMB.set=on=>{ AMB.on=on; SAVE.set('amb',on?'1':'0'); };
   AMB.tick=dt=>{ const c=SFX.live(); if(!c)return; const B=bus(c); B.gain.value=AMB.on&&SFX.on?SFX.vol:0; if(!AMB.on||!SFX.on)return;
-    if(!loops||loops.hum.s.context!==c)loops={hum:mk(c,'hum',500),rain:mk(c,'rain',3200),wind:mk(c,'wind',600)};
+    if(!loops||loops.hum.s.context!==c)loops={hum:mk(c,'hum',500),rain:mk(c,'rain',3200),wind:mk(c,'wind',600),fount:mk(c,'rain',1400)};
     const w=where(), W=typeof WX!=='undefined'&&WX.now, out=w==='day'||w==='night', ins=w==='inside';
     const LM=k=>SFX.mix.loops[k]==null?1:+SFX.mix.loops[k]; tgt(loops.hum.G.gain,(w==='down'?.05:ins?.02:.035)*LM('hum'),c); tgt(loops.hum.F.frequency,w==='down'?160:ins?260:500,c);
     const rain=W&&w!=='down'?(W.rain+W.snow*.15)*WX_RAIN.vol*(ins?WX_RAIN.inside:1):0, wind=W&&w!=='down'?W.wind*WX_WIND.vol*(ins?WX_WIND.inside:1):0;
-    tgt(loops.rain.G.gain,rain*LM('rain'),c); tgt(loops.rain.F.frequency,ins?900:3200,c); tgt(loops.wind.G.gain,wind*LM('wind'),c);
+    tgt(loops.rain.G.gain,rain*LM('rain'),c); tgt(loops.rain.F.frequency,ins?900:3200,c); tgt(loops.wind.G.gain,wind*LM('wind'),c); tgt(loops.fount.G.gain,FOUNT.hear?FOUNT.hear(pos)*.07:0,c);
     if(W&&W.flash&&out&&!AMB.thun){ AMB.thun=true; SFX.play('thunder',{vol:.5,delay:.6+Math.random()*1.6,pan:Math.random()*1.2-.6,bus:B}); setTimeout(()=>AMB.thun=false,4000); }
     const now=c.currentTime; if(now<next)return;
     let near=0; for(const N of NPCS)if(!N.far&&N.lv===LVL&&N.g.visible&&Math.hypot(N.st.x-pos.x,N.st.z-pos.z)<10*T)near++; mul=1.8+(1-1.8)*Math.min(1,near/6);

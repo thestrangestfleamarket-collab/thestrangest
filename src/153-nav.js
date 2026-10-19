@@ -3,7 +3,7 @@ const NAV=window.NAV={on:QS.get('nav')!=='0', ready:false, lib:null, M:{}, n:{na
   const T=TILE, CORE='https://cdn.jsdelivr.net/npm/@recast-navigation/core@0.43.1/+esm', GEN='https://cdn.jsdelivr.net/npm/@recast-navigation/generators@0.43.1/+esm';
   const CS=CITY.R0/2, CH=.1*T, BH=2*T;
   const rects=(lv,street)=>{ const R=(SOL[lv]||[]).map(b=>[b[0],b[1],b[2],b[3]]); if(lv!=='up')return R;
-    if(typeof STHOLE!=='undefined')R.push(STHOLE.slice(0,4)); if(!street)return R;
+    if(typeof STHOLE!=='undefined')R.push(STHOLE.slice(0,4)); if(FOUNT.S)R.push(...FOUNT.S.strips); if(!street)return R;
     if(typeof CSHOLE!=='undefined')R.push(CSHOLE.slice(0,4)); if(typeof CSB!=='undefined')R.push(CSB.slice(0,4));
     for(const b of ROOMS.boxes())if(b.y0<1)R.push([b.x0,b.z0,b.x1,b.z1]);
     if(MODS.apts&&MODS.apts.A){ const A=MODS.apts.A; R.push([BOD.X(A.x0),BOD.Z(A.y0),BOD.X(A.x1),BOD.Z(A.y1)]); }

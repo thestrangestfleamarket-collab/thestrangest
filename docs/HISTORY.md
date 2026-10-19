@@ -1854,7 +1854,68 @@ so he looked shrugged. You are now his mannequin (`data/full/humanoid.fbx`, Blen
 `data/humanoid.json`, 6 KB), sized to the UAL skeleton (it matches it: height, hips, shoulders, arm length within 3 cm). It stands in an
 A-pose, so the skeleton's arms are lowered to it before binding; each corner weighted in code to its nearest one or two bones. One flat
 light colour, cel-shaded, casting a shadow; the same clips. 402 triangles.
+
+## 19 Oct 2026: the park's north edge pushed out, the fountain terrace and the lake
+**The fountain and the lake** (owner, 18 Oct 2026: "I want to add a large fountain in the top right area of central park on the current map ...
+and put a large lake towards the top (map doesnt have full lake in it just the bottom part)"; of three layout mockups he picked **A**: the terrace in
+the park's top-right, the lake in the corner behind it running off into the mist; "no walkway to fountain yet, make it 20% smaller"; then of the
+size: "like the mockup, -20%" (the mockup's terrace a quarter of the corner's width, so 46 tiles across); and as it would not fit north of the
+path with a lake behind it: "push the mist edge north"; his Bethesda photos): `src/060a-fount.js` (`FOUNT`), hooked into `061-park.js`,
+`064-map-post.js`, `075-main-13.js`.
+- **The north edge 36 tiles further north** (`NORTHX` in `006-map-pre.js`, the whole north side): the park's back wall, the north street, the
+  force field and the walkable edge (`RING.cf`, the invisible wall, the mist box) all 36 tiles north; the round, both middle paths and the gates
+  stay where they were (`PARK.round` leaves `NORTHX` out, as does the east gate's crossing in `050-main-8.js`); the north-south path runs on to
+  the new back wall with its lamp posts. The castle no longer reaches the park's back corner, so the west wall runs on from its back to the new
+  corner. The old oaks and undergrowth stay where they were; up to ten more oaks on the new strip of lawn. 22 tiles (the first ask) left no room
+  for the lake behind a 46-tile terrace; 36 does.
+- **Where** (park tiles): the terrace's middle at x 183, y 29, 46 tiles across (y 6 to 52), 3.5 tiles clear of the east-west path's lamp posts and
+  8 of the corner's east edge, on the lawn with no path to it. The lake wraps round its back half 1.5 tiles behind the balustrade, from x 109 in
+  the west round to the corner's east edge, and runs on into the mist past the walkable edge (y 63.5) to the park's hidden walls. The land has a
+  hole the lake's shape; the park's hills, oaks and undergrowth keep off both.
+- **The terrace**: brick in rings (an eighth of a tile each) with a stone band every 2 tiles, 16 stone spokes from the basin to the edge, a
+  stone apron round the basin and a stone kerb round the edge, mortar mossy where worn (painted in the park's batch, in 11.5-tile pieces); a low
+  stone balustrade round the back half toward the lake (26 posts about 2.6 tiles apart, rails, turned balusters); six of the park's lamp posts
+  round the front edge. **The fountain**: a round stone basin 17 tiles across (0.37 of the terrace), a two-tier bronze fountain (verdigris here and
+  there) and an original winged figure on top (robed, one arm raised, a lily in the other hand, wings swept up behind), all simple turned and flat
+  parts, some 10.5 m to the wing tips, seen from far off. Water falls in sheets from both tiers' rims and a crown of jets spouts under the figure
+  (drops moved along their arcs each frame, only within 80 tiles); the basin's and the bowls' water rings where it lands. The basin and the
+  balustrade are solid. You walk onto the terrace on the park's ground.
+- **The lake**: still green water in flat bands (its ripples in three steps, deeper water darker and more opaque), a few glints by day; its bed
+  shelves from the shore (mud, then darker) to 3.5 m; grey rocks along the shore (the bigger ones solid). You wade in and swim as in the Hudson
+  (the rig's water; out again where it shoals), the water ringing round you. More oaks along the shore (none over the terrace or the ways).
+  Townspeople and creatures keep out of the water (`FOUNT.wet` in their free tests, the lake's strips in the navmesh). The menu map shows both;
+  PLACES has THE FOUNTAIN; the fountain splashes (the rain sound, filtered, louder as you come near).
+- **Cost**: triangles: the fountain and figure 2,824, the basin and balustrade 8,136, the falling water 4,480, the three water discs 120, the
+  shore rocks 3,456, the lake bed 6,950 and its water 1,814 (in 16-tile pieces, drawn only when seen), the oaks some 200 each. In front of the
+  terrace (zoomed out): 184,197 triangles in view against 172,840 on the same spot before; 12 more lamp records (6 on the terrace, 6 on the
+  longer north-south path; LITE's eight nearest still light); 2 more shader programs (123 to 125; the water's, one for the lake and the
+  fountain's water); 5 fewer draw calls there; the fountain's own work 0.05 ms a frame; a whole frame the same as before in the cloud's
+  software rendering (596 ms against 631, noise). `tests/fountshot.cjs <out> [page] [stats]` (CLEAR weather, `?wx=clear`).
+- **Not yet**: the walkway to the terrace and the Mall gate entrance (they come together later); no underwater view in the lake.
+
+## 19 Oct 2026: flowers, birds and book restoration
 - **The old game's crafting design stays out** (owner, 19 Oct 2026, after seeing its mockups from tsfm's `mockups-archive`, gathered at
   https://claude.ai/artifact/Qjpy4SZ6oftjgt4zfhyyTm: "lets not pull any of that back in"): none of the old game's crafting design (its skills
   list, benches, the Eye's network prices, porters, the passport's skill pick, the black market) comes into THE MARKET. Crafting stays the
   town's UO way built on foraging, fishing and butterflies (`141-forage.js`, `142-fishing.js`, `143-bfly.js`).
+- **GARDENING, BIRDING, BOOKBINDING** (owner, 19 Oct 2026: "lets add flowers, birds, book restoration (whatever those ksills are called)"; his
+  picks: flowers both picked wild and grown, birds watched, tamed and caught ("all"), books both found and bought, birds seen everywhere; the
+  bird sheet shown first, then "Go"). Three new skills (`141-forage.js`'s list; the total cap 450 → 600 for ten skills; each starts at 10).
+  **Flowers** (`144a-garden.js`): eight wildflowers on every lawn each day in drifts, each grass its own odds (`WILD`), the PINK LADY'S SLIPPER
+  only 10 tiles or more into the park; a double click picks. THE TOMATO sells seeds (marigold, zinnia, tulip bulb, sunflower, rose cutting;
+  `VEG.add` in veggies.js) and buys every flower and bouquet; PLANT (THE PACK) on any lawn, sprout → bud → bloom in one market day, twelve at
+  most, a double click cuts them (2-3 flowers, sometimes a seed back). Seven bouquets in CRAFT (posy $14 … orchid corsage $120). Cost: up to
+  400 flowers in four instanced draws (stem, leaf, head, centre), some 45 triangles each, 60-80 near you; no light, no new program.
+  **Birds** (`144b-birds.js`): thirteen of New York's (sparrow, pigeon, starling, robin, mourning dove, blue jay, cardinal, chickadee,
+  mockingbird, red-winged blackbird; rare: Baltimore oriole, scarlet tanager, red-tailed hawk), each made in parts (body, breast, head, cap,
+  crest, mask, beak, eyes, tail, legs, two wings with their bars) and coloured by kind, 1.5 times life size like the butterflies. By day in
+  fair weather: flocks on the lawns (most in the park), pigeons and sparrows on the sidewalks by the kerb, a pigeon, starling or the hawk on a
+  lamp post; they hop, walk, peck, fly between spots, take off if you run at them; roost at night, in rain, snow or a gale. A double click:
+  WATCH (the journal, a BIRDS tab in THE PACK; a rare one's first sighting pays $40-80), TAME (birdseed; it follows you and sits on your
+  shoulder; one at a time), CATCH (a bird net and a cage; caged birds sell to the mushroom seller, or TAME / RELEASE in the pack); SCATTER
+  seed and stand still to bring them near. The mushroom seller sells birdseed $1, the net $20, cages $5. Cost: some 340 triangles a bird,
+  20-40 near you, 16 instanced draws, one material; an invisible box each to click. `BIRDDBG()`; `tests/birdsheet.cjs` the sheet.
+  **Books** (`144c-books.js`): seven worn books (paperback … ruined first edition) found in the street's trash cans (each once a day), on a
+  line in the river, sometimes in a sunken chest; THE ODDITIES STALL is now a self-serve book stall (today's box of worn books, a binder's
+  kit, glue, thread, bookcloth, calf leather; it buys books back mended, $6-220; the gem of the day a button on it). Restored in CRAFT with
+  the kit; a failure wastes the supplies but keeps the book. Not at the newsstand (newspapers only). `BOOKDBG()`; `tests/natshot.cjs` all three.

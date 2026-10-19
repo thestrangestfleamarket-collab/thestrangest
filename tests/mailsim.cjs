@@ -6,7 +6,7 @@ const {chromium}=require('playwright'); const OUT=process.argv[2]||'.';
 (async()=>{ const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader']}); const ctx=await b.newContext({viewport:{width:960,height:640}}); let pg=await ctx.newPage(); const errs={};
   const watch=p=>p.on('pageerror',e=>{ const k=e.message.slice(0,160); errs[k]=(errs[k]||0)+1; }); watch(pg);
   const R=[]; const rec=(n,ok,i)=>{ R.push([n,ok]); console.log((ok?'PASS ':'FAIL ')+n+(i?'  · '+i:'')); };
-  const up=async(q)=>{ await pg.goto('file://'+process.cwd()+'/dist/market.html?hour=12&bring=all'+q); for(let i=0;i<240&&!(await pg.evaluate(()=>!!window.__started&&window.MAIL&&MAIL.ready).catch(()=>false));i++)await pg.waitForTimeout(1000); await pg.evaluate(()=>{ __dbg.CLOCK.run=false; MAIL.v=5; MAIL.stopMs=300; MAIL.replyP=1; }); };
+  const up=async(q)=>{ await pg.goto('file://'+process.cwd()+'/dist/market.html?city=1&hour=12&bring=all'+q); for(let i=0;i<240&&!(await pg.evaluate(()=>!!window.__started&&window.MAIL&&MAIL.ready).catch(()=>false));i++)await pg.waitForTimeout(1000); await pg.evaluate(()=>{ __dbg.CLOCK.run=false; MAIL.v=5; MAIL.stopMs=300; MAIL.replyP=1; }); };
   const hour=async h=>{ await pg.evaluate(h=>CITY.setHour(h),h); await pg.waitForTimeout(1500); };
   const passMidnight=async()=>{ await hour(23.9); await hour(.05); };
   await up('&fresh=1');

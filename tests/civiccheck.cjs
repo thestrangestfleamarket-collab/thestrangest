@@ -7,7 +7,7 @@
 const {chromium}=require('playwright');
 (async()=>{ const out=process.argv[2]||'.', b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader']}), pg=await b.newPage({viewport:{width:1280,height:820}}), errs=[];
   pg.on('pageerror',e=>{ errs.push(e.message); console.log('pageerror:',e.message); });
-  await pg.goto('file://'+process.cwd()+'/dist/market.html?npcwait=99&hour=13&hideme=1',{timeout:180000});
+  await pg.goto('file://'+process.cwd()+'/dist/market.html?city=1&npcwait=99&hour=13&hideme=1',{timeout:180000});
   for(let i=0;i<150;i++){ await pg.waitForTimeout(1000); if(await pg.evaluate(()=>!!window.__started).catch(()=>false))break; } await pg.waitForTimeout(4000);
   const T=await pg.evaluate(()=>__dbg.cv().TILE), dbg=()=>pg.evaluate(()=>CIVDBG()), until=async(f,ms,step=2000)=>{ let t=0; for(;t<ms;t+=step){ await pg.waitForTimeout(step); if(await pg.evaluate(f))return t; } return -1; };
   const P=await pg.evaluate(()=>CITY.places().filter(p=>['precinct','firehouse','post','depot','hall','clinic'].includes(p.id)).map(p=>p.id+'@'+(p.door.x/__dbg.cv().TILE).toFixed(0)+','+(p.door.z/__dbg.cv().TILE).toFixed(0)));

@@ -1,5 +1,5 @@
 const VEHD=__DATA__("data/trashbag.json");
-{ const T=TILE, S_=CIVIC.staff, H_=CIVIC.house, log=CIVIC.note, G=(x,z)=>MODS.bodega.ground(x,z);
+if(CITY.on){ const T=TILE, S_=CIVIC.staff, H_=CIVIC.house, log=CIVIC.note, G=(x,z)=>MODS.bodega.ground(x,z);
   const far=(a,b)=>Math.hypot(a.x-b.x,a.z-b.z)>18*T;
   const dispatch=(S,veh,spot,then,v)=>{ S.state='on a call'; CIVIC.go(S,spot,then,(v||2.2)*(far(S.N.st,spot)?1.5:1)); };
   const back=(S,veh)=>CIVIC.home(S);

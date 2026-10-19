@@ -204,7 +204,7 @@ function gdShape(GS,K,LAMPS){ const s=K.s, o=K.o, SC=1.5, cx=o[0]+4*s, Y1=o[1]+3
     BATCH.cast=true;
     const MKG=(k,map,emap)=>{ const pl=PLN[k.slice(2)], cp=pl?{clippingPlanes:[pl]}:{};
       if(k==='B')return new THREE.MeshBasicMaterial({map,side:THREE.DoubleSide,alphaTest:.5});
-      return new THREE.MeshLambertMaterial({map,alphaTest:.5,side:THREE.DoubleSide,...(emap?{emissiveMap:emap,emissive:0xffffff,emissiveIntensity:1.3}:{}),...cp}); };
+      return new THREE.MeshLambertMaterial({map,alphaTest:.5,side:k==='GDP'?THREE.FrontSide:THREE.DoubleSide,...(emap?{emissiveMap:emap,emissive:0xffffff,emissiveIntensity:1.3}:{}),...cp}); };
     BATCH.build(MKG);
     BATCH.cast=false; const KM=BATCH.meshes; BATCH.meshes={}; for(const me of BATCH.all(KM,'B'))me.castShadow=false;
     const ix0=X(xi0), ix1=X(xi1), iz0=Z(yi0), iz1=Z(yi1), inBox=()=>pos.x>Math.min(ix0,ix1)&&pos.x<Math.max(ix0,ix1)&&pos.z>Math.min(iz0,iz1)&&pos.z<Math.max(iz0,iz1), inside=()=>inBox()||!!(window.ROOMS&&ROOMS.cur&&ROOMS.cur.lz==='bath');
@@ -227,8 +227,8 @@ function gdShape(GS,K,LAMPS){ const s=K.s, o=K.o, SC=1.5, cx=o[0]+4*s, Y1=o[1]+3
       for(const [name,boxes] of LATER){ BATCH.tag=OBJ('bodega',name); for(const b of boxes)gbox(b,'GDL'); }
       BATCH.tag=OBJ('bodega','bath house'); flat(xi0,yE,xi1,yi1,.4,floorCol,'GDL');
       BATCH.tag=OBJ('bodega','healing pool'); flat(xi0,yi0,xi1,yL,BD,(x,y)=>bot(x,y,1),'GDL'); flat(xi0,yL,xi1,yR,BS,(x,y)=>bot(x,y,0),'GDL');
-      { const wq=(a,b,c_,d,z0,z1)=>bq([X(a),Y(z0),Z(b)],[X(c_),Y(z0),Z(d)],[X(c_),Y(z1),Z(d)],[X(a),Y(z1),Z(b)],faceTex(Math.hypot(c_-a,d-b)*24,z1-z0,(i,j)=>C(bw((i+.5)/24,z1-j-.5))),'GDL');
-        wq(xi0,yi0,xi1,yi0,BD,0); wq(xi0,yi0,xi0,yL,BD,0); wq(xi1,yi0,xi1,yL,BD,0); wq(xi0,yL,xi0,yR,BS,0); wq(xi1,yL,xi1,yR,BS,0); wq(xi0,yL,xi1,yL,BD,BS); }
+      { const wq=(a,b,c_,d,z0,z1)=>bq([X(a),Y(z0),Z(b)],[X(c_),Y(z0),Z(d)],[X(c_),Y(z1),Z(d)],[X(a),Y(z1),Z(b)],faceTex(Math.hypot(c_-a,d-b)*24,z1-z0,(i,j)=>C(bw((i+.5)/24,z1-j-.5))),'GDP');
+        wq(xi0,yi0,xi1,yi0,BD,0); wq(xi0,yL,xi0,yi0,BD,0); wq(xi1,yi0,xi1,yL,BD,0); wq(xi0,yR,xi0,yL,BS,0); wq(xi1,yL,xi1,yR,BS,0); wq(xi0,yL,xi1,yL,BD,BS); }
       { const SK=BOD.STOREK, SR=SK.shrine, n0=SK.PROPS.length, l0=SK.LAMPS.length, P=[];
         P.push({name:'pool coping',boxes:[...COP.map(([a,b])=>SR.msStone(a,yR,b,yE,BS,7)),...[0,1,2].map(k=>SR.msStone(cx-GAP,yE-(k+1)*.7/3,cx+GAP,yE-k*.7/3,BS,-5-5*k))]},{name:'stone island',boxes:ISL.map(([a,b,c_,d,zt])=>SR.msStone(a,b,c_,d,BD,zt))});
         P.push(SR.msGate(cx,yE-.16,7),SR.msStatue(cx,yi0+.62,5),SR.msToro(xi0+.75,yi0+.7,-4),SR.msToro(xi1-.75,yi0+.7,-4),SR.msBlossom(xi0+2.25,yi0+.55,3,.34,12),SR.msBlossom(xi1-2.25,yi0+.55,3,.34,12),
@@ -249,7 +249,7 @@ function gdShape(GS,K,LAMPS){ const s=K.s, o=K.o, SC=1.5, cx=o[0]+4*s, Y1=o[1]+3
           q.fragmentShader='uniform float uT; uniform vec4 uP; varying vec3 vQ;\n'+q.fragmentShader.replace('#include <color_fragment>',`#include <color_fragment>
  { vec2 p=vQ.xz/${TT}; float h=sin(p.x*1.9+p.y*.7+uT*.9)+sin(p.y*2.6-p.x*.8-uT*.7)+.5*sin((p.x-p.y)*3.4+uT*1.3);
    if(uP.z>0.){ float d=length(vQ.xz-uP.xy)/${TT}; h+=uP.z*2.6*sin(d*7.-uT*5.)*exp(-d*.6); }
-   float b=floor(clamp(h*.17+.5,0.,.999)*4.); diffuseColor.rgb=b>2.5?vec3(.86,1.,.97):b>1.5?vec3(.5,.93,.9):vec3(.36,.84,.84); diffuseColor.a=b>2.5?.5:b>1.5?.24:.15; }`); };
+   float b=floor(clamp(h*.16+.5,0.,.999)*6.); diffuseColor.rgb=b>4.5?vec3(.8,1.,.96):b>2.5?vec3(.46,.92,.9):vec3(.34,.82,.84); diffuseColor.a=b>4.5?.42:b>2.5?.2:.13; }`); };
         const me=new THREE.Mesh(g,m); me.position.set((X(xi0)+X(xi1))/2,Y(WL),(Z(yi0)+Z(yE))/2); me.renderOrder=2; me.raycast=()=>{}; (MAPG.bodega||scene).add(me); PW.me=me; }
       if(window.BF&&BF.add){ const at=(x,y,z)=>[X(x),Y(z),Z(y)], PER=[at(cx-.6,yi0+1,19),at(cx+.62,yi0+.95,17),at(xi0+2.25,yi0+.55,29),at(xi1-2.25,yi0+.55,29),at(cx-2.38,yE-.16,152),at(cx+2.15,yE-.16,152),at(cx,yi0+.62,132),at(xi0+.45,yE-.16,20)];
         [0,2,4,6,8,10].forEach((k,i)=>{ const b=BF.add(k,PER); b.at=b.to=i%PER.length; b.g.position.set(...PER[b.at]); }); }

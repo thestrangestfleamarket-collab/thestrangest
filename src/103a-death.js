@@ -25,6 +25,6 @@
     if(Math.hypot(to.x-b.x,to.z-b.z)>2||Math.abs(to.y-b.y)>2){ S.ball=to; S.drop(); }
     GHOSTS.run(S,dt,to,[],MH,S.MV); const a=gh<=1?gh:2-gh; S.mat.opacity=.5*a; S.em.opacity=.85*a;
     const fx=Math.sin(heading), fz=Math.cos(heading); S.eyes.forEach((e,k)=>{ const sd=k?1:-1, ex=to.x+fx*(S.BR+.05)+fz*sd*.09, ey=to.y+.03, ez=to.z+fz*(S.BR+.05)-fx*sd*.09; e.position.set(ex*MH,ey*S.MV,ez*MH); e.lookAt(V.set((ex+fx)*MH,ey*S.MV,(ez+fz)*MH)); }); };
-  window.KILLME=()=>VIT.die();
+  window.KILLME=()=>VIT.die(); window.DEADDBG=()=>({gh,rise,busy,out:VIT.out,lvl:LVL,py,sheet:!!S,pool:!!(BOD.GD&&BOD.GD.inPool&&BOD.GD.inPool(pos.x,pos.z))});
   if(SAVE.get('dead')==='1'){ VIT.dead=true; VIT.hp=0; note(DEAD); }
   if(QS.get('die')){ const go=()=>window.__started?VIT.die():setTimeout(go,200); setTimeout(go,300); } }

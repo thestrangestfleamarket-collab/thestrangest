@@ -21,13 +21,13 @@ process.on('unhandledRejection',e=>{ errs.push('TEST '+String(e&&e.message||e).s
   await shot('night',()=>{ window.DN&&DN.set&&DN.set('night'); TP(__B.cx,__B.f[3]-.6); return ST(); },4000); await pg.evaluate(()=>window.DN&&DN.set&&DN.set('day'));
   await pg.evaluate(()=>KILLME()); for(let i=0;i<60;i++){ await pg.waitForTimeout(1000); if(await pg.evaluate(()=>!(window.RAGON&&RAGON())))break; }
   await shot('ghost-in',()=>{ TP(__B.cx,__B.yE+.45); return ST(); },3000);
-  rep.walk=await pg.evaluate(async()=>{ const B=__dbg.MAPK.BOD, tx=B.X(__B.cx), tz=B.Z(__B.yE-1.4), d=()=>Math.hypot(__dbg.you().x-tx,__dbg.you().z-tz), out=[];
-    const k=key=>new Promise(r=>{ dispatchEvent(new KeyboardEvent('keydown',{key})); setTimeout(()=>{ dispatchEvent(new KeyboardEvent('keyup',{key})); r(); },350); });
-    let best=null, bd=1e9; for(const key of ['w','a','s','d']){ TP(__B.cx,__B.yE+.45); await new Promise(r=>setTimeout(r,300)); const d0=d(); await k(key); const g=d0-d(); out.push(key+':'+g.toFixed(2)); if(g>0&&d0-g<bd){ bd=d0-g; best=key; } }
-    TP(__B.cx,__B.yE+.45); await new Promise(r=>setTimeout(r,300)); window.__wk=best; return {best,out}; });
-  if(rep.walk.best){ await pg.keyboard.down(rep.walk.best); for(let i=0;i<40;i++){ await pg.waitForTimeout(150); if(await pg.evaluate(()=>ST().inPool))break; } await pg.keyboard.up(rep.walk.best); }
+  rep.walk={out:[]}; { let bd=-1e9; for(const key of ['w','a','s','d']){ const d0=await pg.evaluate(()=>{ TP(__B.cx,__B.yE+.45); return 0; }); await pg.waitForTimeout(400);
+      const a=await pg.evaluate(()=>{ const B=__dbg.MAPK.BOD; return Math.hypot(__dbg.you().x-B.X(__B.cx),__dbg.you().z-B.Z(__B.yE-1.4)); }); await pg.keyboard.down(key); await pg.waitForTimeout(400); await pg.keyboard.up(key);
+      const c=await pg.evaluate(()=>{ const B=__dbg.MAPK.BOD; return Math.hypot(__dbg.you().x-B.X(__B.cx),__dbg.you().z-B.Z(__B.yE-1.4)); }); rep.walk.out.push(key+':'+(a-c).toFixed(2)); if(a-c>bd){ bd=a-c; rep.walk.best=key; } }
+    await pg.evaluate(()=>TP(__B.cx,__B.yE+.45)); await pg.waitForTimeout(400); }
+  if(rep.walk.best){ await pg.keyboard.down(rep.walk.best); for(let i=0;i<40;i++){ await pg.waitForTimeout(150); if(await pg.evaluate(()=>ST().inPool))break; } await pg.waitForTimeout(300); await pg.keyboard.up(rep.walk.best); }
   rep.afterWalk=await pg.evaluate(()=>ST()); if(!rep.afterWalk.inPool){ await pg.evaluate(()=>TP(__B.cx-1.8,__B.yE-1.5)); rep.teleportedIn=true; }
-  for(let i=0;i<4;i++){ await pg.waitForTimeout(700); await pg.screenshot({path:path.join(OUT,'sink'+i+'.png')}); }
+  rep.dd=[]; for(let i=0;i<4;i++){ await pg.waitForTimeout(700); rep.dd.push(await pg.evaluate(()=>window.DEADDBG&&DEADDBG())); await pg.screenshot({path:path.join(OUT,'sink'+i+'.png')}); }
   await pg.waitForTimeout(400); await pg.screenshot({path:path.join(OUT,'refreshed.png')});
   rep.during=await pg.evaluate(()=>({...ST(),fade:document.getElementById('subfade').textContent}));
   await shot('outside',null,5000); rep.after=await pg.evaluate(()=>({...ST(),hp:__dbg.VIT.hp,sta:__dbg.VIT.sta}));

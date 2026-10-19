@@ -6,9 +6,10 @@ process.on('unhandledRejection',e=>{ errs.push('TEST '+String(e&&e.message||e).s
   const open=async q=>{ const pg=await b.newPage({viewport:{width:960,height:540}}); pg.setDefaultTimeout(900000); pg.on('pageerror',e=>errs.push(e.message.slice(0,300))); pg.on('console',m=>{ if(m.type()==='error')errs.push(m.text().slice(0,300)); });
     await pg.goto('file://'+PAGE+'?fresh=1&hour=13&wx=CLEAR'+q,{waitUntil:'commit'}); for(let i=0;i<900;i++){ await pg.waitForTimeout(500); if(await pg.evaluate(()=>!!window.__dbg))break; } await pg.waitForTimeout(5000); return pg; };
   const pg=await open('');
-  const shot=async(n,f,w=3000)=>{ try{ if(f)rep[n]=await pg.evaluate(f); await pg.waitForTimeout(w); rep[n+'_stat']=await pg.evaluate(()=>PEEK.stat()); await pg.screenshot({path:path.join(OUT,n+'.png')}); }catch(e){ errs.push(n+': '+e.message.slice(0,200)); } };
+  const shot=async(n,f,w=3000,a)=>{ try{ if(f)rep[n]=await pg.evaluate(f,a); await pg.waitForTimeout(w); rep[n+'_stat']=await pg.evaluate(()=>PEEK.stat()); await pg.screenshot({path:path.join(OUT,n+'.png')}); }catch(e){ errs.push(n+': '+e.message.slice(0,200)); } };
   const behindTree=()=>{ const d=PEEK.ray.direction, h=Math.hypot(d.x,d.z)||1, T=Math.abs(__dbg.MAPK.BOD.XS(1)-__dbg.MAPK.BOD.XS(0)); const P=__dbg.MAPK.PARK, oaks=P.oaks.slice().sort((a,b)=>b[2]-a[2]); const o=oaks[0], it=P.trees.userData.items.find(q=>Math.hypot(q.x-o[0],q.z-o[1])<.5)||{r:3*T};
     STORE.goTo(o[0]-d.x/h*(.8*T+it.r*.45),o[1]-d.z/h*(.8*T+it.r*.45),'up'); const y=__dbg.you(); return {tree:o,r:it.r,you:[y.x,y.z]}; };
+  const behindTrunk=()=>{ const T=Math.abs(__dbg.MAPK.BOD.XS(1)-__dbg.MAPK.BOD.XS(0)), P=__dbg.MAPK.PARK, o=P.oaks.slice().sort((a,b)=>b[2]-a[2])[1], a=Math.atan2(o[0]-P.oaks[0][0],o[1]-P.oaks[0][1]); __dbg.face(a); STORE.goTo(o[0]-Math.sin(a)*1.8*T,o[1]-Math.cos(a)*1.8*T,'up'); __dbg.face(a); const y=__dbg.you(); return {tree:o,a,you:[y.x,y.z]}; };
   const behindWall=(k)=>{ const d=PEEK.ray.direction, h=Math.hypot(d.x,d.z)||1, T=Math.abs(__dbg.MAPK.BOD.XS(1)-__dbg.MAPK.BOD.XS(0)), L=(window.BLK&&BLK.blds||[]).filter(q=>q.mesh&&!q.cheap).concat((window.BLK&&BLK.blds||[]).filter(q=>q.mesh&&q.cheap)); const out=[];
     for(const q of L){ const E=PEEK.boxes.find(e=>e.me===q.mesh); if(!E)continue; const bb=E.b, c={x:(bb.min.x+bb.max.x)/2,z:(bb.min.z+bb.max.z)/2}, s={x:bb.max.x-bb.min.x,y:bb.max.y-bb.min.y,z:bb.max.z-bb.min.z}, dep=Math.abs(d.x/h)*s.x/2+Math.abs(d.z/h)*s.z/2;
       const tx=c.x-d.x/h*(dep+.6*T), tz=c.z-d.z/h*(dep+.6*T); STORE.goTo(tx,tz,'up'); const y=__dbg.you(); if(Math.hypot(y.x-tx,y.z-tz)<.6*T){ out.push([tx,tz]); if(out.length>k)return {at:[tx,tz],size:[s.x,s.y,s.z]}; } }
@@ -18,13 +19,13 @@ process.on('unhandledRejection',e=>{ errs.push('TEST '+String(e&&e.message||e).s
   await pg.evaluate(()=>{ PEEK.on=false; }); await shot('tree-iso-off',null,1500); await pg.evaluate(()=>{ PEEK.on=true; });
   rep.ease=await pg.evaluate(async()=>{ PEEK.on=false; await new Promise(r=>setTimeout(r,800)); PEEK.on=true; const s=[]; const t0=performance.now(); while(performance.now()-t0<600){ s.push([Math.round(performance.now()-t0),+PEEK.k.toFixed(2)]); await new Promise(r=>requestAnimationFrame(r)); } return s; });
   rep.tickMs=await pg.evaluate(()=>{ const t0=performance.now(); for(let i=0;i<500;i++)PEEK.tick(0); return (performance.now()-t0)/500; });
-  await shot('wall-iso',()=>behindWall(0),4000);
+  await shot('wall-iso',behindWall,4000,0);
   await pg.evaluate(()=>{ PEEK.on=false; }); await shot('wall-iso-off',null,1500); await pg.evaluate(()=>{ PEEK.on=true; });
-  await shot('wall-iso-2',()=>behindWall(2),4000);
+  await shot('wall-iso-2',behindWall,4000,2);
   await pg.keyboard.press('v'); await pg.waitForTimeout(1500);
-  await shot('tree-behind',behindTree,4000);
+  await shot('tree-behind',behindTrunk,4000);
   await pg.evaluate(()=>{ PEEK.on=false; }); await shot('tree-behind-off',null,1500); await pg.evaluate(()=>{ PEEK.on=true; });
-  await shot('wall-behind',()=>behindWall(0),4000);
+  await shot('wall-behind',behindWall,4000,0);
   await pg.keyboard.press('v'); await pg.waitForTimeout(1500);
   await shot('first',behindTree,3000);
   await pg.keyboard.press('v'); await pg.waitForTimeout(1500);

@@ -22,7 +22,7 @@ const CIVIC={row:[],staff:{},log:[],ledger:{treasury:500,day:0,tax:10,wage:20,cu
   FIX.up.push([cx-Wd/2+pw,zf,y+DH,cx+Wd/2-pw,zf+TK,y+H]);
   { const geo=new THREE.BoxGeometry(1,1,1), me=new THREE.InstancedMesh(geo,new THREE.MeshLambertMaterial(),BL.length), m4=new THREE.Matrix4(), q=new THREE.Quaternion(), c=new THREE.Color();
     const AMB=window.FAR3&&FAR3.FU?FAR3.FU.uAmb:{value:.4}; me.material.onBeforeCompile=sh=>{ sh.uniforms.uAmb=AMB; sh.fragmentShader='uniform float uAmb;\n'+sh.fragmentShader.replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n totalEmissiveRadiance+=diffuseColor.rgb*uAmb*.8;'); }; me.material.customProgramCacheKey=()=>'civictower';
-    BL.forEach(([x,y,z,sx,sy,sz,col],i)=>{ me.setMatrixAt(i,m4.compose(new THREE.Vector3(x,y,z),q,new THREE.Vector3(sx,sy,sz))); me.setColorAt(i,c.setHex(col)); }); me.castShadow=me.receiveShadow=true; MAPG.bodega.add(me); CIVIC.mesh=me; PEEK.whole(me,[me.material]); CIVIC.tris=BL.length*12; }
+    BL.forEach(([x,y,z,sx,sy,sz,col],i)=>{ me.setMatrixAt(i,m4.compose(new THREE.Vector3(x,y,z),q,new THREE.Vector3(sx,sy,sz))); me.setColorAt(i,c.setHex(col)); }); me.castShadow=me.receiveShadow=true; MAPG.bodega.add(me); CIVIC.mesh=me; PEEK.whole(me); CIVIC.tris=BL.length*12; }
   CITY.extra.push({id:'tower',name:'THE CIVIC TOWER',lv:'up',at:{x:cx,z:zf},door:{x:cx,z:zf-.9*T},box:[cx-Wd/2,zf-2*T,cx+Wd/2,zb]});
   }
   for(const h of CIVIC.row)CITY.extra.push({id:h.id,name:h.name,lv:'up',at:h.at,door:h.door});

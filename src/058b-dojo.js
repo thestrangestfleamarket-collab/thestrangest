@@ -25,7 +25,7 @@
     BATCH.tag=OBJ('store:dojogate','dojo gate'); for(const q of bs)gbox(q,q.em?'B':'L'); BATCH.tag=null;
     for(const s of [-1,1])sol(GX+s*.8-(s>0?0:.16),GY,GX+s*.8+(s>0?.16:0),GY+.2,DH);
     sol(GX-1.5,GY,GX-1.02,GY+.08,DH); });
-  K.offmap('THE DOJO',[752,-108,788,-80],()=>{
+  K.offmap('THE DOJO HALL',[752,-108,788,-80],()=>{
     const WD=J.DJWOOD, PAP=J.DJPAP, PLA=J.DJPLA, wd=(k,f=1)=>sh(WD,k*f), WARM=[255,206,128];
     const RW={b:[DA-5.2,DA+5.2],w:[(B.y0+B.y1)/2],e:[(B.y0+B.y1)/2]}, RZ=74, RR=26;
     const shoji=(wall,a,z,f)=>{ const pa=((a%2)+2)%2;
@@ -46,7 +46,7 @@
       const u=x-(B.x0+.9), v=y-(B.y0+.9), bi=Math.floor(u/2), bj=Math.floor(v/2), across=(bi+bj)&1, p=across?u-bi*2:v-bj*2, q=across?v-bj*2:u-bi*2;
       const pm=((p%1)+1)%1, edge=pm<.035||pm>.965, end=q<.02||q>1.98, w=hs(Math.floor(pm*30),Math.floor(q*9),703);
       return edge?[64,58,40]:end?sh(J.DJTAT,.8):sh(J.DJTAT,(Math.floor(pm*30)&1?.94:1)*(.96+.06*w)); };
-    room(DOJO.id,'THE DOJO',B,{floor,in:inner,out:outer,cope:[50,36,30],roof:(x,y)=>Math.floor(x*24)%5===0?[30,30,36]:[54,54,62]},{w:'f',a:DA,wd:1.6,h:DH},()=>{
+    room(DOJO.id,'THE DOJO HALL',B,{floor,in:inner,out:outer,cope:[50,36,30],roof:(x,y)=>Math.floor(x*24)%5===0?[30,30,36]:[54,54,62]},{w:'f',a:DA,wd:1.6,h:DH},()=>{
       const thing=(name,boxes,o={})=>PROPS.push({kind:name,name,boxes,...o}), bx=(x0,y0,x1,y1,z0,z1,c,o={})=>({x0,y0,x1,y1,z0,z1,c,...o});
       J.setDJ({H:B.h}); J.djTokonoma(DA-2.2,B.y0+.12,DA+2.2);
       J.djBokkenRack(B.x0+.38,B.y0+3,B.y0+5.2);

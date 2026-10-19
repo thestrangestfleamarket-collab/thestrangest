@@ -6,7 +6,7 @@
   let busy=false;
   const fade=async(txt,fn)=>{ busy=true; const el=document.getElementById('subfade'); el.textContent=txt; el.style.pointerEvents='auto'; el.style.opacity='1'; if(keys.clear)keys.clear(); target=null; await wait(340);
     fn(); await frames(3); await wait(260); el.style.opacity='0'; el.style.pointerEvents='none'; await wait(360); busy=false; };
-  D.enter=()=>{ if(!busy)fade('ENTERING THE DOJO',()=>{ STORE.offGo('THE DOJO'); UI.goTo(IX,IZ-1.6*T,'up'); heading=Math.PI; }); };
+  D.enter=()=>{ if(!busy)fade('ENTERING THE DOJO',()=>{ STORE.offGo('THE DOJO HALL'); UI.goTo(IX,IZ-1.6*T,'up'); heading=Math.PI; }); };
   D.leave=()=>{ if(!busy)fade('LEAVING THE DOJO',()=>{ TR.stop(); UI.goTo(GX,GZ+1.4*T,'up'); heading=0; }); };
   { const hb=new THREE.Mesh(new THREE.BoxGeometry(1.8*T,2.6*T,.5*T),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(GX,1.3*T,GZ+.3*T); scene.add(hb);
     UI.thing({name:'THE DOJO',ghost:1,obj:hb,reach:1.2*T,near:2.4*T,tall:2.8*T,act:()=>D.enter()}); }
@@ -41,7 +41,7 @@
     else if((TR.ph==='good'||TR.ph==='miss')&&TR.t>1.4){ TR.n++; if(TR.n>=TR.list.length){ TR.ph='end'; TR.t=0; show('TRAINING DONE: '+TR.ok+' OF '+TR.list.length,'MARTIAL ARTS '+(FORAGE.S.sk.fight/10).toFixed(1),'#f2c14e'); }
       else { TR.ph='intro'; TR.t=1.2; } }
     else if(TR.ph==='end'&&TR.t>2.8)TR.stop(); };
-  const mk=()=>{ if(N)return; const MT=R.MATS; if(!MT.includes('ninja')){ MT.push('ninja'); W3.ramp.push(['#6c6e7e','#474959','#2d2e3a','#16161d'].map(h=>new THREE.Color(h))); }
+  const mk=()=>{ if(N)return; const MT=R.MATS; if(!MT.includes('ninja')){ MT.push('ninja'); W3.ramp.push(['#585a6c','#36374a','#22232e','#111117'].map(h=>new THREE.Color(h))); }
     const NB=MT.indexOf('ninja'), keep=new Set(['eye','eyeW','pupil'].map(n=>MT.indexOf(n)).filter(i=>i>=0)), LID=MT.indexOf('lid'), SKN=MT.indexOf('skin');
     const {PCS}=musBody(); for(const p of PCS)p.recol=m=>keep.has(m)?m:m===LID?SKN:NB;
     for(const P of PCS)if(!MUSGEO.has(P.share||P)){ const fine=W3.fine(P); W3.warm(P,P.step||(fine?.5:1),fine,null); }
@@ -62,8 +62,8 @@
     if(R.ARMMOVES.has(k)){ const u=S.up; return !u||u.name!==k||!!(u.def.window&&u.t>=u.def.window[1]*CB()); }
     const m=S.move; return !m||m.name!==k&&!(k==='jump'&&m.name==='runJump')||!!(m.def.window&&m.t>=m.def.window[1]); };
   const ntick=dt=>{ if(!N)return; const S=N.S, here=inD()||Math.hypot(pos.x-N.x,pos.z-N.z)<30*T; N.g.visible=here; if(!here)return;
-    if(!N.cur){ const s=N.q?N.q.shift():KATA[N.ki++%KATA.length]; if(s)begin(s); }
     if(N.cur&&done(dt))N.cur=null;
+    if(!N.cur){ const s=N.q?N.q.shift():KATA[N.ki++%KATA.length]; if(s)begin(s); }
     if(TR.on&&!(N.cur&&(N.cur.k==='c'||N.cur.k==='t')))N.to=Math.atan2(pos.x-N.x,pos.z-N.z);
     const e=dang(N.to,N.hd); N.hd+=Math.sign(e)*Math.min(Math.abs(e),dt*(TR.on?6:4.5));
     S.target=0; const d0=S.dist; R.step(S,dt); const go=(S.dist-d0)*W3.SZ/PPU;

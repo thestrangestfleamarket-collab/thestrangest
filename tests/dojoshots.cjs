@@ -11,9 +11,9 @@ process.on('unhandledRejection',e=>{ errs.push('TEST '+String(e&&e.message||e).s
   const dbg=()=>pg.evaluate(()=>DOJODBG()); 
   await pg.evaluate(()=>STORE.ensure&&STORE.ensure());
   rep.d0=await dbg();
-  await shot('gate',()=>{ const d=DOJODBG(); STORE.goTo(d.gate[0]*d.tile,(d.gate[1]+3)*d.tile,'up'); },5000);
+  await shot('gate',()=>{ const d=DOJODBG(); STORE.goTo((d.gate[0]-1.3)*d.tile,(d.gate[1]+1.3)*d.tile,'up'); },5000);
   await pg.mouse.move(480,270); for(let i=0;i<3;i++){ await pg.mouse.wheel(0,300); await pg.waitForTimeout(150); }
-  await shot('gate-wide',null,2500);
+  await shot('gate-wide',null,2500); for(let i=0;i<3;i++){ await pg.mouse.wheel(0,-300); await pg.waitForTimeout(150); } await shot('gate-close',null,2500);
   await pg.evaluate(()=>DOJOWALK('in'));
   for(let i=0;i<200;i++){ if((await dbg()).busy)break; await pg.waitForTimeout(50); }
   rep.atFade=await dbg(); await shot('fade-in',null,120);
@@ -21,7 +21,7 @@ process.on('unhandledRejection',e=>{ errs.push('TEST '+String(e&&e.message||e).s
   await shot('inside',null,1500); rep.d1=await dbg();
   rep.render=await pg.evaluate(()=>{ try{ const r=RENDERLIST(); return {head:r.head||r.totals||null}; }catch(e){ return 'ERR '+e.message; } });
   await pg.mouse.wheel(0,-300); await pg.waitForTimeout(800); const frames=[]; for(let i=0;i<10;i++){ await shot('ninja'+i,null,0); frames.push((await dbg()).ninja); await pg.waitForTimeout(380); } rep.frames=frames;
-  await pg.keyboard.press('v'); await shot('behind',()=>{ const n=DOJONINJA(), y=__dbg.you(); __dbg.face(Math.atan2(n.x-y.x,n.z-y.z)+Math.PI); },2500);
+  await pg.evaluate(()=>{ const n=DOJONINJA(), d=DOJODBG(); STORE.goTo(n.x,n.z+2.4*d.tile,'up'); }); await pg.keyboard.press('v'); await shot('behind',()=>{ const n=DOJONINJA(), y=__dbg.you(); __dbg.face(Math.atan2(n.x-y.x,n.z-y.z)+Math.PI); },2500);
   for(let i=0;i<5;i++){ await shot('behind'+i,null,0); await pg.waitForTimeout(450); }
   await pg.keyboard.press('v'); await pg.keyboard.press('v'); await pg.waitForTimeout(800);
   rep.fight0=(await dbg()).fight;
@@ -43,5 +43,5 @@ process.on('unhandledRejection',e=>{ errs.push('TEST '+String(e&&e.message||e).s
   await pg.evaluate(()=>__UI.isoTo()); await shot('outside',null,2500); rep.d2=await dbg();
   rep.bath=await pg.evaluate(()=>{ const G=__dbg.MAPK.BOD.GDK, D=window.DOJO; return G&&{X0:G.X0,X1:G.X1,ground:G.ground,gate:D.gate}; });
   rep.placesBefore=await pg.evaluate(()=>__UI.places().filter(p=>/DOJO/.test(p[0])));
-  await shot('menu-jump',()=>__UI.goPlace('THE DOJO'),300); rep.d3=await dbg(); await shot('menu-jump2',null,2500); rep.d4=await dbg();
+  await shot('menu-jump',()=>__UI.goPlace('THE DOJO HALL'),300); rep.d3=await dbg(); await shot('menu-jump2',null,2500); rep.d4=await dbg();
   fin(); await b.close(); })();

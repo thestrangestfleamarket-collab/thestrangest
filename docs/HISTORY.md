@@ -1754,3 +1754,15 @@ FIXED, NO, each report with its words, where, PICTURE and GO THERE (puts you at 
 For now nothing is fixed on its own: every report waits in NEW for the owner to APPROVE. A session asked to "work the queue" takes the
 APPROVED ones (see CLAUDE.md), fixes each, and marks it FIXED. The 16 reports already in `bug_reports` are from the old 2D game.
 `tests/bugcheck.cjs art|site` sends one with a stand-in store and approves it.
+
+**The website's page down to one line** (owner, 19 Oct 2026: "the smallest we could have the game page html code look ... i want the
+actually source code of the game to show very minimal"; offered three ways, "yes" to the third: "i want to waste minimal tokens and have
+maximium rendering speed for my game"): on the website `dist/g/market.html` is now one line (161 bytes): the doctype, the build stamp
+(`market-build`, which the update check and `tests/site.cjs` read), the title, a dark body and one `<script type=module>`. The game module
+puts in the page's CSS, its markup (#stage, #loading, #hud, #stat, #shd, the Silkscreen link) and the rig (its own file, loaded as before as a
+plain script) before anything reads them. three.js 0.160.0 with its postprocessing passes is bundled by esbuild (`tools/bundle.cjs`; the
+packages in `package.json` at the versions the code names, and `build.py` stops if a CDN link in the code names another), so the website asks
+nothing of cdn.jsdelivr.net: three is its own file (cached for good, it never changes), and three-vrm, GLTFLoader, three-mesh-bvh, rapier and
+recast are files of their own fetched only when the game first wants them, as before. Start-up: 5 same-origin files, about 874 KB
+compressed (was 1 page, the game, the rig and 9 files from jsdelivr, about 971 KB); the game's code ran about 1 s sooner locally.
+The claude.ai page (`dist/market.html`) is unchanged: one page, three from the CDN.

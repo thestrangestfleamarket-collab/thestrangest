@@ -7,7 +7,7 @@ const {chromium}=require('playwright'), out=process.argv[2]||'.';
   const T=await pg.evaluate(()=>{ const D=PARKDBG(); return D.trees.map((t,i)=>[t[0],t[1],t[2],t[3],D.oaks[i][0],D.oaks[i][1]]); });
   const n={}; for(const t of T)n[t[0]]=(n[t[0]]||0)+1; console.log('trees',T.length,JSON.stringify(n));
   for(const t of T.filter(t=>!/^(Oak|Elder)/.test(t[0])))console.log(t[0],'at',t[1],t[2],'size',t[3]);
-  const shot=async(name,x,z,zoom)=>{ await pg.evaluate(([x,z,zoom])=>{ __dbg.UI.off.set(x-__dbg.cv().pos[0],0,z-__dbg.cv().pos[1]); __dbg.cam(0.6,0.35,__dbg.cv().PPU*zoom); },[x,z,zoom]); await pg.waitForTimeout(7000); await pg.screenshot({path:`${out}/${name}.png`}); console.log(name,await pg.textContent('#stat').catch(()=>'')); };
+  const shot=async(name,x,z)=>{ await pg.evaluate(([x,z])=>STORE.goTo(x,z+6,'up'),[x,z]); await pg.waitForTimeout(7000); await pg.screenshot({path:`${out}/${name}.png`}); console.log(name); };
   for(const k of ['Willow1','Giant1','Spruce1']){ const t=T.find(t=>t[0]===k); if(t)await shot(k,t[4],t[5],.7); }
   const e=T.find(t=>/^Elder/.test(t[0])); if(e)await shot('common',e[4],e[5],.55);
   await shot('overview',T.reduce((a,t)=>a+t[4],0)/T.length,T.reduce((a,t)=>a+t[5],0)/T.length,.25);

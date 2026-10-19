@@ -1,5 +1,5 @@
-const UAL=__DATA__("data/ual.json"), HYB=__DATA__("data/hybrid.json"), VROID=__LAZY__("data/vroid.json");
-const AVS={kind:'walker',KINDS:['walker','clips','mannequin','vroid'],NAME:{walker:'WALKER',clips:'WALKER ON CLIPS',mannequin:'MANNEQUIN',vroid:'VROID'},C:{}};
+const UAL=__DATA__("data/ual.json"), VROID=__LAZY__("data/vroid.json");
+const AVS={kind:'walker',KINDS:['walker','mannequin','vroid'],NAME:{walker:'WALKER',mannequin:'MANNEQUIN',vroid:'VROID'},C:{}};
 window.AVS=AVS;
 { const D=UAL.ual, RG=D.rig, BN=RG.names, PAR=RG.parent, BI=Object.fromEntries(BN.map((n,i)=>[n,i])), V=THREE.Vector3, Q=THREE.Quaternion;
   const b=s=>{ const t=atob(s), u=new Uint8Array(t.length); for(let i=0;i<t.length;i++)u[i]=t.charCodeAt(i); return u; }, f32=s=>new Float32Array(b(s).buffer), i16=s=>new Int16Array(b(s).buffer), u16=s=>new Uint16Array(b(s).buffer);
@@ -39,9 +39,33 @@ window.AVS=AVS;
   const npcOf=(geo,rig,tall,names)=>{ const N=makeNPC(null,{key:'me',name:'YOU',names,eye:-1,lv:'up',group:'bodega',geo,skin:rig,tall,rank:names.map(()=>0),metres:1.85*(W3.SZ||1),x:pos.x,z:pos.z,radius:.3,speed:0,stride:0,rock:0,bob:0});
     NPCS.splice(NPCS.indexOf(N),1); if(N.g.parent)N.g.parent.remove(N.g); scene.add(N.g); NPCS.extra.push({g:N.g}); return N; };
   const BUILD={};
-  BUILD.clips=()=>{ const n=f32(HYB.p).length/3, J=b(HYB.j), si=new Uint8Array(n*4), sw=new Uint8Array(n*4); for(let i=0;i<n;i++){ si[i*4]=J[i]; sw[i*4]=255; }
-    const rig=rigOf(HYB.t), N=npcOf(geoOf(f32(HYB.p),b(HYB.c),si,sw,u16(HYB.i)),rig,HYB.tall,['walker']), bone=x=>rig.bones[BI[x]];
-    return {g:N.g,N,an:Anim(new THREE.AnimationMixer(rig.bones[0]),clipsFor(HYB.kp)),relax:relaxer(bone,N.g,fwd),tris:HYB.tris}; };
+  const walkerRig=()=>{ const R=RIG, C={g:new THREE.Group(),sig:''}, M4=THREE.Matrix4;
+    const fit=()=>{ const B0=R.build(R.walkPose({ph:0,w:0},null),null), J={}; for(const k in B0.J)J[k]=new V(B0.J[k].x,B0.J[k].y,B0.J[k].z);
+      const sig=['hipL','kneeL','ankleL','shoulderL','elbowL','wristL','neck','headBase','k23L'].map(k=>J[k]?J[k].toArray().map(v=>v.toFixed(2)).join():'').join(); if(sig===C.sig)return; C.sig=sig; C.B0=B0;
+      const r0=rigOf(RG.t); r0.bones[0].updateMatrixWorld(true); const P0=n=>new V().setFromMatrixPosition(r0.bones[BI[n]].matrixWorld);
+      const T=RG.t.map(t=>new V().fromArray(t)), len=(n,l)=>T[BI[n]].setLength(l), d=(a,c)=>J[a].distanceTo(J[c]);
+      const ksp=d('neck','pelvis')/P0('neck_01').distanceTo(P0('pelvis')), kh=J.hipL.y/P0('thigh_l').y;
+      T[BI.pelvis].multiplyScalar(kh); for(const n of ['spine_01','spine_02','spine_03','neck_01','clavicle_l','clavicle_r'])T[BI[n]].multiplyScalar(ksp);
+      len('Head',d('headBase','neck'));
+      for(const [s,S] of [['l','L'],['r','R']]){ len('upperarm_'+s,d('shoulder'+S,'clav'+S)); len('lowerarm_'+s,d('elbow'+S,'shoulder'+S)); len('hand_'+s,d('wrist'+S,'elbow'+S));
+        const kf=J['fingers'+S].distanceTo(J['wrist'+S])/P0('middle_04_leaf_'+s).distanceTo(P0('hand_'+s)); BN.forEach((n,i)=>{ if(n.endsWith('_'+s)&&/^(index|middle|pinky|ring|thumb)/.test(n))T[i].multiplyScalar(kf); });
+        len('thigh_'+s,d('hip'+S,'pelvis')); len('calf_'+s,d('knee'+S,'hip'+S)); len('foot_'+s,d('ankle'+S,'knee'+S)); len('ball_'+s,d('ball'+S,'ankle'+S)); len('ball_leaf_'+s,Math.max(.5,d('toe'+S,'ball'+S))); }
+      if(C.rig)C.g.remove(C.rig.bones[0]); const rig=rigOf(T.map(v=>v.toArray())); C.rig=rig; C.g.position.set(0,0,0); C.g.add(rig.bones[0]); C.g.updateMatrixWorld(true);
+      const Pb=n=>new V().setFromMatrixPosition(rig.bones[BI[n]].matrixWorld), bone=n=>rig.bones[BI[n]];
+      const basis=(dv,h)=>{ const x=dv.clone().normalize(), y=h.clone().addScaledVector(x,-h.dot(x)).normalize(); return new M4().makeBasis(x,y,new V().crossVectors(x,y)); };
+      const al=(b_,ws,we,us,ue,o)=>{ const a=new V().subVectors(J[we],J[ws]), c=new V().subVectors(Pb(ue),Pb(us)), h=Math.abs(a.clone().normalize().z)<.7?new V(0,0,1):new V(0,1,0);
+        const Rm=basis(c,h).multiply(basis(a,h).transpose()), A=new M4().makeTranslation(...Pb(o?o[1]:us).toArray()).multiply(Rm).multiply(new M4().makeTranslation(...J[o?o[0]:ws].clone().negate().toArray()));
+        return {b:bone(b_),K:bone(b_).matrixWorld.clone().invert().multiply(A)}; };
+      const head=al('Head','neck','headBase','neck_01','Head',['headBase','Head']), MAP={hips:al('pelvis','pelvis','spine','pelvis','spine_01'),torso:al('spine_03','chest','neck','spine_03','neck_01'),neck:al('neck_01','neck','headBase','neck_01','Head')};
+      for(const [s,S] of [['l','L'],['r','R']]){ MAP['upperArm'+S]=MAP['sleeve'+S]=al('upperarm_'+s,'shoulder'+S,'elbow'+S,'upperarm_'+s,'lowerarm_'+s); MAP['forearm'+S]=al('lowerarm_'+s,'elbow'+S,'wrist'+S,'lowerarm_'+s,'hand_'+s);
+        MAP['hand'+S]=al('hand_'+s,'wrist'+S,'fingers'+S,'hand_'+s,'middle_04_leaf_'+s); MAP['thigh'+S]=al('thigh_'+s,'hip'+S,'knee'+S,'thigh_'+s,'calf_'+s); MAP['shin'+S]=al('calf_'+s,'knee'+S,'ankle'+S,'calf_'+s,'foot_'+s); MAP['shoe'+S]=al('foot_'+s,'ankle'+S,'ball'+S,'foot_'+s,'ball_'+s); }
+      C.P=W3.pcs.map(P=>{ const n=P.on||P.n, F=R.frameOf(n,B0), m=/^fing\d\d([LR])$/.exec(n);
+        return {M:new M4().set(F.x.x,F.y.x,F.z.x,F.o.x,F.x.y,F.y.y,F.z.y,F.o.y,F.x.z,F.y.z,F.z.z,F.o.z,0,0,0,1),o:F.o,L:m?MAP['hand'+m[1]]:/^(head|hair|beard|ear|eyes)/.test(n)?head:MAP[n]}; });
+      C.an=Anim(new THREE.AnimationMixer(rig.bones[0]),clipsFor(kh)); C.relax=relaxer(bone,C.g,()=>new V(0,0,1)); };
+    const t4=new M4(), e4=new M4();
+    C.fit=fit; C.pose=(dt,base,ts,lift)=>{ C.an.base=base; C.an.ts=ts; C.g.position.y=lift; C.an.update(dt*(base==='Idle_Loop'?st.anim||1:1)); if(C.relax)C.relax(dt,base==='Idle_Loop'); C.g.updateMatrixWorld(true);
+      C.P.forEach((p,i)=>{ const PM=W3.PM.value[i]; if(!p.L||W3.HIDE[i]){ if(W3.HIDE[i])PM.makeScale(0,0,0); return; } e4.copy(p.M); if(W3.E&&W3.E[i]&&W3.applyE)W3.applyE(e4,W3.E[i],p.o); PM.multiplyMatrices(p.L.b.matrixWorld,t4.multiplyMatrices(p.L.K,e4)); }); };
+    fit(); return C; };
   BUILD.mannequin=()=>{ const M=D.mesh, q=i16(M.p), P=new Float32Array(q.length); for(let i=0;i<q.length;i++)P[i]=(q[i]+32500)*M.sc+M.lo[i%3];
     const geo=geoOf(P,b(M.c),b(M.j),b(M.w),u16(M.i),Float32Array.from(b(M.r))), rig=rigOf(RG.t), N=npcOf(geo,rig,D.tall,M.parts), bone=x=>rig.bones[BI[x]];
     const C={g:N.g,N,an:Anim(new THREE.AnimationMixer(rig.bones[0]),clipsFor(1)),relax:relaxer(bone,N.g,fwd),tris:M.tris,items:{}};
@@ -102,26 +126,30 @@ window.AVS=AVS;
     legSweep:'Crouch_Idle_Loop',fall:'Death01',roll:'Roll',block:'Spell_Simple_Idle_Loop',guard:'Spell_Simple_Idle_Loop',crouch:'Crouch_Idle_Loop',flinch:'Hit_Chest',wave:'Interact',dance:'Dance_Loop'};
   const MPS=TILE/.84; let lx=null, lz=null, sp=0;
   AVS.set=k=>{ if(!AVS.KINDS.includes(k))k='walker'; AVS.kind=k; if(k!=='walker'&&!AVS.C[k])AVS.C[k]=BUILD[k](); try{ SAVE.set('avatar',k); }catch(e){} if(AVS.draw)AVS.draw(); };
-  AVS.tick=(dt,B)=>{ const k=AVS.kind, C=AVS.C[k], first=typeof UI!=='undefined'&&UI.view==='first', mine=k!=='walker'&&!!C&&!C.wait&&!C.err;
-    for(const n in AVS.C){ const c=AVS.C[n]; if(c.g)c.g.visible=mine&&n===k&&!first&&!W3.hideMeQ; }
-    if(!W3.hideMeQ&&W3.hideMe!==mine){ W3.hideMe=mine; if(!mine)W3.group.traverse(o=>{ if(o.isMesh)o.visible=true; }); }
-    if(!mine||!dt)return;
-    if(lx===null){ lx=pos.x; lz=pos.z; } const d=Math.hypot(pos.x-lx,pos.z-lz)/MPS/dt; lx=pos.x; lz=pos.z; sp+=(Math.min(d,9)-sp)*Math.min(1,dt*8);
-    if(C.N&&C.items)for(const n in C.items)if(C.items[n].material!==C.N.me.material)C.items[n].material=C.N.me.material;
-    const mv=st.move&&st.move.name, lift=mv&&/jump|flip/.test(mv)&&B&&B.J&&B.J.pelvis?Math.max(0,B.J.pelvis.y-18)*ZU*(W3.SZ||1)*(W3.BH||1):0;
-    C.g.position.set(pos.x,py+lift,pos.z); C.g.rotation.set(0,RAG.on?RAG.hd:heading,0);
-    let base='Idle_Loop', ts=1;
-    if(RAG.on)base='Death01';
-    else if(st.water&&st.water.in)base=sp>.3?'Swim_Fwd_Loop':'Swim_Idle_Loop';
+  const pick=()=>{ const mv=st.move&&st.move.name; let base='Idle_Loop', ts=1;
+    if(st.water&&st.water.in)base=sp>.3?'Swim_Fwd_Loop':'Swim_Idle_Loop';
     else if(st.sit)base='Sitting_Idle_Loop';
-    else if(mv&&MOVE[mv])base=MOVE[mv];
+    else if(mv)base=MOVE[mv]||null;
     else if(st.up&&MOVE[st.up.name])base=MOVE[st.up.name];
     else if(sp>.25){ const sk=(st.wk||1)+((st.rk||1)-(st.wk||1))*(st.run||0), sn=sp/sk;
       if(sn>3.6){ base='Sprint_Loop'; ts=sp/5; } else if(sn>2){ base='Jog_Fwd_Loop'; ts=sp/3.2; } else { base='Walk_Loop'; ts=sp/1.4; } }
-    const ak=st.anim||1; C.an.base=base; C.an.ts=Math.max(.2,Math.min(4,ts*ak)); C.an.update(dt*(base==='Idle_Loop'?ak:1));
-    if(C.relax)C.relax(dt,base==='Idle_Loop'&&!RAG.on); if(C.vrm)C.vrm.update(dt); };
+    return [base,Math.max(.2,Math.min(4,ts*(st.anim||1)))]; };
+  const jumpY=B=>{ const mv=st.move&&st.move.name; return mv&&/jump|flip/.test(mv)&&B&&B.J&&B.J.pelvis?Math.max(0,B.J.pelvis.y-18):0; };
+  let fitT=0;
+  AVS.tick=(dt,B)=>{ const k=AVS.kind, C=AVS.C[k], first=typeof UI!=='undefined'&&UI.view==='first', mine=k!=='walker'&&!!C&&!C.wait&&!C.err;
+    for(const n in AVS.C){ const c=AVS.C[n]; if(c.g)c.g.visible=mine&&n===k&&!first&&!W3.hideMeQ; }
+    if(!W3.hideMeQ&&W3.hideMe!==mine){ W3.hideMe=mine; if(!mine)W3.group.traverse(o=>{ if(o.isMesh)o.visible=true; }); }
+    if(!dt)return;
+    if(lx===null){ lx=pos.x; lz=pos.z; } const d=Math.hypot(pos.x-lx,pos.z-lz)/MPS/dt; lx=pos.x; lz=pos.z; sp+=(Math.min(d,9)-sp)*Math.min(1,dt*8);
+    const [base,ts]=pick();
+    if(k==='walker'){ if(!W3.pcs||RAG.on||(typeof ED!=='undefined'&&ED.on)||!base)return; if(!AVS.W)AVS.W=walkerRig(); if((fitT+=dt)>2){ fitT=0; AVS.W.fit(); } AVS.W.pose(dt,base,ts,jumpY(B)); return; }
+    if(!mine)return;
+    if(C.N&&C.items)for(const n in C.items)if(C.items[n].material!==C.N.me.material)C.items[n].material=C.N.me.material;
+    C.g.position.set(pos.x,py+jumpY(B)*ZU*(W3.SZ||1)*(W3.BH||1),pos.z); C.g.rotation.set(0,RAG.on?RAG.hd:heading,0);
+    const b0=RAG.on?'Death01':base||'Idle_Loop'; C.an.base=b0; C.an.ts=ts; C.an.update(dt*(b0==='Idle_Loop'?st.anim||1:1));
+    if(C.relax)C.relax(dt,b0==='Idle_Loop'&&!RAG.on); if(C.vrm)C.vrm.update(dt); };
   AVS.draw=()=>document.querySelectorAll('[data-av]').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.av===AVS.kind)));
   AVS.menu=()=>{ for(const row of document.querySelectorAll('#davpick'))if(!row.children.length){ row.innerHTML=AVS.KINDS.map(k=>`<button class="btn" data-av="${k}">${AVS.NAME[k]}</button>`).join('');
       row.onclick=e=>{ const x=e.target.closest('[data-av]'); if(x){ e.stopPropagation(); AVS.set(x.dataset.av); } }; } AVS.draw(); };
-  window.AVSDBG=()=>{ const C=AVS.C[AVS.kind]; return {kind:AVS.kind,ready:!!C&&!C.wait,err:C&&C.err||null,base:C&&C.an&&C.an.base,tris:C?Math.round(C.tris):W3.tris,sp:+sp.toFixed(2),vis:!!C&&!!C.g&&C.g.visible}; };
-  let k0=QS.get('avatar'); if(!k0)try{ k0=SAVE.get('avatar'); }catch(e){} if(k0&&k0!=='walker')AVS.set(k0); }
+  window.AVSDBG=()=>{ const C=AVS.kind==='walker'?AVS.W:AVS.C[AVS.kind]; return {kind:AVS.kind,ready:!!C&&!C.wait,err:C&&C.err||null,base:C&&C.an&&C.an.base,tris:C&&C.tris?Math.round(C.tris):W3.tris,sp:+sp.toFixed(2),vis:!!C&&!!C.g&&C.g.visible}; };
+  let k0=QS.get('avatar'); if(!k0)try{ k0=SAVE.get('avatar'); }catch(e){} if(k0&&AVS.KINDS.includes(k0)&&k0!=='walker')AVS.set(k0); }

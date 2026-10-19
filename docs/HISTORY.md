@@ -1701,3 +1701,10 @@ baked in for all three.
   bump maps and thumbnail, textures to 512 px → `data/vroid.json`, 2.5 MB). Loaded only when first chosen (`__LAZY__` in build.py:
   inline in the artifact, fetched on demand on the website), with three-vrm from the CDN. 36,470 triangles, its own toon shading.
 - The library's clips trimmed to the 17 the code names, at 12 fps (`tools/trim-clips.py`).
+
+**The Walker on clips replaces the Walker** (owner, 19 Oct 2026: "can you send this avatar shape to the main game?"; his picks: WALKER ON
+CLIPS, "Replace the Walker"): you are the Walker as before (his own mesh, looks, editor, body types, shadows), but his pose now comes from
+the standard animation library's clips on the standard skeleton, sized each time to his own joints (`walkerRig` in `087a-avatars.js`: each
+of his pieces rides its bone, written straight into `W3.PM`). The old hand-animated Walker is gone from the menu (AVATAR: WALKER, MANNEQUIN,
+VROID). Where no clip fits yet (a move without one, the avatar editor's posing, the ragdoll fall) his own rig still poses him. The frozen
+copy (`data/hybrid.json`, its probe and bake) is removed. No new triangles.

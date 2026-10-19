@@ -1901,10 +1901,11 @@ running). Planted feet: under 1 cm a second (walk, run, circles, stops, stairs).
 ## 19 Oct 2026: lighter skeletons for a pixel game
 
 **The heaviest characters cut** (owner, 19 Oct 2026: "since we are do a pixel style game do we really need such high quality chracter
-mesh?"; his pick 1 of three: cut only the outliers, aiming at about 1,000-1,200 triangles). By `tools/simplify.py skel pawns`, the
-heads kept exactly as they are (17 Oct) and the rest of the body to a fifth, so they land a little above the aim: the four skeleton
-pawns 4,128/3,478/3,252/3,816 → 2,334/1,684/1,458/2,022 (mage, reaper, guard light, guard heavy), the four KayKit skeletons
-3,706/2,784/2,982/3,218 → 2,364/1,698/1,596/1,986 (Warrior, Mage, Minion, Rogue; theirs from `data/full/skel.json`). The pawns are made
-of coloured parts: each part kept its own (so the guard's dark eye sockets and the belts keep their colour and edge) and the small ones
-(belts, buckles, pads: under a fifth of the faces) kept whole; cut to a fifth they broke. Checked side by side on their sheets.
-The pawns' full meshes now kept in `data/full/pawns.json`. `data/pawns.json` 1.62 MB → 0.96 MB, `data/skel.json` 375 → 274 KB.
+mesh?"; his pick 1 of three: cut only the outliers, to about 1,000-1,200 triangles; then, shown that keeping the heads whole left them at
+1,500-2,300, "go": cut the heads too). By `tools/simplify.py skel pawns`: the body to a fifth, the head to half with its eyes kept (this
+relaxes 17 Oct's "leave the faces as complex as they are" for these eight). The four skeleton pawns 4,128/3,478/3,252/3,816 →
+1,822/1,238/1,288/1,494 (mage, reaper, guard light, guard heavy), the four KayKit skeletons 3,706/2,784/2,982/3,218 →
+1,638/1,204/1,264/1,416 (Warrior, Mage, Minion, Rogue). The pawns are made of coloured parts: each part kept its own (or the guard's dark
+eye sockets and the belts lose their colour), the small ones (belts, buckles, pads, eyes: under 250 faces) kept whole and the middling ones
+(the mage's hat, the reaper's cloak, the breastplates) to half; cut to a fifth they broke. Checked side by side on their sheets. The
+pawns' full meshes now kept in `data/full/pawns.json`. `data/pawns.json` 1.62 MB → 0.93 MB, `data/skel.json` 375 → 232 KB.

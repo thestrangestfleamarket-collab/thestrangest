@@ -58,7 +58,6 @@ const STALL=(()=>{ const M=TILE/.84, VS=ZU*24/TILE, mv=m=>m*M*VS;
     row(RW[0],xa+.08,xb-.08,ya+.06,yb-.06,RH[0],.45); row(RW[1],xa+.04,xb-.04,ya+.03,yb-.52,RH[1],.8); row(RW[2],xa+.04,xb-.04,yb-.48,yb-.04,RH[2],.8); row(RW[3],xa+.04,xb-.04,yb-.28,yb-.04,RH[3],.9);
     solid(xa,xb,ya,yb,1.8);
     const CK=veg?[KS.carrot,KS.pepper,KS.corn,KS.onion,KS.greens,KS.tomato]:[KS.button,KS.bolete,KS.inkcap,KS.morel,KS.redcap,KS.chanterelle];
-    table(x0,x1,CY0,CY1,'y',CK); table(x0,x0+.72,CY1+.02,CY1+.82,'+x',CK); table(x1-.72,x1,CY1+.02,CY1+.82,'-x',CK);
     const fx=(u0,u1)=>[Math.min(xo+fo*u0,xo+fo*u1),Math.max(xo+fo*u0,xo+fo*u1)];
     if(veg){ const SK=[KS.tomato,KS.cabbage,KS.pepper,KS.onion,KS.potato,KS.eggplant,KS.carrot,KS.corn]; let n=0;
       for(const [u0,u1] of [[.12,.66],[.7,1.24]])for(const [c,d,hi] of [[wy-.5,yb,3],[wy-.98,wy-.52,2],[wy-1.46,wy-1,1]]){ const [a,b]=fx(u0,u1), dh=.28+RR(-.02,.02), sh=RR(-.02,.02);
@@ -78,7 +77,7 @@ const STALL=(()=>{ const M=TILE/.84, VS=ZU*24/TILE, mv=m=>m*M*VS;
     const W=(x,y)=>({x:X(x),z:Z(y)}), HY=(CY1+ya)/2, sg=gate, far=wy-9, zone=[BX[0]-.7*TILE,Math.min(Z(CY0-1.4),Z(wy+.5)),BX[2]+.7*TILE,Math.max(Z(CY0-1.4),Z(wy+.5))];
     zones.push(zone); if(window.WEEDS&&WEEDS.clear)WEEDS.clear(zone);
     const S={x0,x1,y0:CY0,y1:yb,wy,veg,hx:X(xm),hz:Z(HY),fz:Z(far),tris:Math.round(tris),items:Object.values(I).reduce((a,L)=>a+L.length,0),zone,
-      home:W(xm,HY), face:W(xm,far), shelf:[xa+.9,xm,xb-.9].map(x=>W(x,ya-.72)), shelfF:[xa+.9,xm,xb-.9].map(x=>W(x,wy+4)), counter:[x0+1.25,xm,x1-1.25].map(x=>W(x,CY1+.7)),
+      home:W(xm,ya-.75), face:W(xm,far), shelf:[xa+.9,xm,xb-.9].map(x=>W(x,ya-.72)), shelfF:[xa+.9,xm,xb-.9].map(x=>W(x,wy+4)), counter:[x0+1.25,xm,x1-1.25].map(x=>W(x,CY1+.7)),
       wing:[[x0+1.45,-1],[x1-1.45,1]].map(([x,s])=>({p:W(x,CY1+.5),f:W(x+s*5,CY1+.5)})), broom:{p:W(xg-sg*.85,wy-1.35),f:W(xg+sg*.3,wy)},
       sweepIn:[W(xm+.9,HY+.1),W(xm-.9,HY+.1),W(xm,HY-.25),W(xg-sg*.85,wy-1.35)],
       sweepOut:[W(xg-sg*.85,wy-1.35),W(xg+sg*.85,wy-1.35),W(xg+sg*.85,CY0-.9),W(xm,CY0-.9),W(xo-sg*.3,CY0-.9),W(xm+sg*.4,CY0-.95),W(xg+sg*.85,CY0-.9),W(xg+sg*.85,wy-1.35),W(xg-sg*.85,wy-1.35)],
@@ -93,6 +92,7 @@ const STALL=(()=>{ const M=TILE/.84, VS=ZU*24/TILE, mv=m=>m*M*VS;
     const plans={
       tidy:()=>{ const i=Math.floor(Math.random()*S.shelf.length); return [...off(),go(S.shelf[i]),act('reach',S.shelfF[i],1.9,{row:Math.floor(Math.random()*4),mid:{item:1}}),go(pick(S.counter)),act('put',S.face,1.3,{mid:{item:0}}),act('pat',S.face,2.6),go(S.home),...on()]; },
       pat:()=>[act('pat',S.face,2.5+Math.random()*2.5)],
+      look:()=>[],
       wing:()=>{ const w=pick(S.wing); return [...off(),go(w.p),act('pat',w.f,3.2),go(S.home),...on()]; },
       sweep:()=>{ const P=Math.random()<.5?S.sweepIn:S.sweepOut, L=[...off(),go(S.broom.p),act('reach',S.broom.f,1.2,{row:1,mid:{broom:1}})], m=Math.floor(P.length/2);
         P.forEach((p,i)=>{ L.push(go(p,.5,1)); if(i===m)L.push(act('sweep',S.face,2.5+Math.random()*2)); });

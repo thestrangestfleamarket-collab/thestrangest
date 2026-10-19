@@ -54,6 +54,6 @@ KMK.dblock=(x0,y0,x1,y1,z0,z1,arch,walk)=>{ PNAME='dungeon stone'; const H=126, 
     const c=dgnRidge(u,z,H)||dgnFoot(u,z,sd); return sh(c||dgnStone(u,z,sd),k*(c?1:dgnDamp(u,z,sd,H))); }});
   return prop([b],null,walk?{walk:1}:{}); };
 KMK.gravel=(x0,y0,x1,y1)=>{ PNAME='gravel'; const G=[[120,114,104],[134,128,118],[108,102,94],[96,92,86]];
-  const top=(X,Y)=>{ const e=Math.min(X-x0,x1-X,Y-y0,y1-Y), n=hash(Math.floor(X*24),Math.floor(Y*24),4951); if(e<.12&&n<.5-e*3)return null; return G[n<.08?3:n<.3?2:n>.85?1:0]; };
+  const top=(X,Y)=>{ const n=hash(Math.floor(X*1.5),Math.floor(Y*1.5),4951); return G[n<.18?2:0]; };
   return prop([{x0,y0,x1,y1,z0:0,z1:1,c:G[0],foot:1,nb:1,top,fi:()=>null,fj:()=>null}],null,{walk:true}); };
 })();

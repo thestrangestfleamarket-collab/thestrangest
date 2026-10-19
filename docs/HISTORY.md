@@ -2539,3 +2539,58 @@ it and are reflected in a Gerstner-wave sea with clear shallows, caustics, shore
 wet at the swash line; a stilt hut of woven bamboo under reed thatch; six palms made in code that sway; a striped hammock that is real
 cloth (verlet); a canoe that rides the swell on a rope; fish schooling in the shallows; gulls; coconuts with physics (fall, roll, float
 and wash ashore). No sound. WebXR on a headset: teleport arc, snap turn, grab and throw. About 300,000 triangles, one shadowed sun.
+
+## 19 Oct 2026: the Walker back, plainer street, lighter park (the owner's list of the morning)
+- **The Walker is you again** (owner: "lets switch back to the walker avatar, make the ghost with guitar an npc who plays guitar"): the
+  player's ghost body and the body picker are gone (`087a-avatars.js`, `110a-ghostme.js`, `tests/ghostme.cjs`, YOU's BODY row); the
+  ghost with the guitar is the street musician (`110-musician.js`, already a sheet ghost who walks the street and plays). `data/ual.json`
+  and `data/humanoid.json` no longer load.
+- **Nothing vanishes walking past** ("objects should not vanish when you walk past them"): the telephone poles no longer dissolve
+  between the camera and you (`069b-poles.js`).
+- **No grainy ground** ("i dont want any textures like this that are just grainy and messy"): the Ghost Dojo's forecourt gravel and
+  the castle's gravel are flat colours with a few large patches and flat moss, no per-pixel speckle (`055-ghostdojo.js`, `KMK.gravel`).
+- **The zoom stops dead at its limit** ("when i try to zoom out further past limit it skips frame ... needs to be hard stop"): a wheel
+  out at the widest view now does nothing, and the last step stops exactly at the limit (`075-main-13.js`), so there is no resize.
+- **Fewer lamps and posts** ("too many lamps and posts on road"): main street lights 46 m apart (were 26), the ring roads' every 26
+  (were 13), the park-side and Avenue posts every 28 (were 14) (`069-dress.js`).
+- **The movie theatre plainer** ("remove ticket booth and the top part of marquee ... more plain", "lose the awning"): no TICKETS
+  booth or its striped awning, no ART HOUSE blade or its tower and wings, no projecting canopy or its bulbs; CINEMA's panel stays,
+  almost flat on brick; the three lamps they had gone (`044a-game-theatre-arcade.js`, `057a-mainstreet.js`).
+- **Simpler trees** ("simplify trees none of these kinds with tufts"): the street trees' leaf cards gone (`069-dress.js`), the trees'
+  leaf speckle off by default (`?treelook=3` brings it back).
+- **The street arcade empty** ("empty out the arcade leave the building, no posters or arcade machines"): the room keeps its walls,
+  door, a plain floor and one lamp; no cabinets, pinballs, tables, claw, prizes, posters, or lit cabinets in the window; the ARCADE
+  neon stays on the front. (THE ARCADE off the map is untouched.)
+- **A closed door in every doorway** ("make sure all buildings have a front door that you cant see into"): `room()` (`057-store.js`)
+  puts a solid wooden door (frame, two panels, brass knob) in each room's door hole, both faces; you still walk through it.
+  Not yet: the bodega's glass door and the Ghost Dojo's curtain are their own builders.
+- **An empty stage** ("nothing blocking stage just completely empty stage"): the playhouse's proscenium, masking legs, candles and
+  every set (the fireplace, the hall, the moor) are gone, with their lamps; the play no longer runs (`044b-game-playhouse.js`).
+- **The holodeck a phone booth** ("should be a small booth size of phone booth, when you walk inside its bigger (50% size it is
+  now)"): outside a 2 x 2 tile booth by the kerb, the door 1 tile wide, HOLODECK in small neon over it; inside the hall is 16 x 16
+  tiles (was 32 x 32), lamps moved in (`057a-mainstreet.js`).
+- **No speed limit signs** ("lets get rid of speed limit signs"): their kerb slots are left empty (`050-main-8.js`).
+- **The map's edge open** ("remove the fog barrier, and the tufts, should look open path but forcefield blocks you"): the mist starts
+  40 tiles past the edge (was at it, full by 8) and the far cut on the park side follows it; no weeds along the invisible edge walls
+  (`134-skyline.js`, `006-map-pre.js`, `065-ring.js`, `140-weeds.js`). The walls still stop you; nothing shows when you touch them.
+- **No drain steam** ("remove steam from drains"): `148b-drains.js` keeps the grates.
+- **Lag** ("is the water in the park still being generated? ... really laggy especially at start"): the small waters (the Moon
+  Shrine's pond, the park pond, the tank) and the pool re-drew the whole scene for their reflections every frame within 14 tiles,
+  seen or not; now only when on screen (`WATER.seen`, `009-water3d.js`). The weeds build a lawn chunk at most every 120 ms (or three
+  times its own cost) instead of every frame at the start (`140-weeds.js`). The sun-ray pass is switched off when there are no rays
+  (`133a-sunrays.js`). `tests/startprof.cjs` measures the start and the park's south-west before and after.
+- **The mushroom seller stays put** (owner: "the mushroom merchants should always stay in same spot, no sweeping, make his hair thinner
+  and more in the back, flowing, real skull face, looks around"): his booth work is only `look` now (`STALL.work` jobs; a new empty
+  plan in `081-stalls.js`): he stands at his place, every 2-5 s glancing at whoever passes or off to the sides. His twelve locks
+  hang from the back half of his head only (-104 to 104 degrees from the back, were round to the temples), about half as thick and
+  a little longer, still on their springs; the face is a skull's: deep round sockets, a split nose hole, a dark mouth slot with five
+  teeth, cheekbones, a narrower jaw (`083a-npc-mushroom.js`).
+- **The two merchants stand in front of their stalls** (owner: "the tomato and mushroom vendors should only have tables behind them, no
+  tables in front, they stand directly in front of their booth and wait. they are the main merchants who buy and sell needed supplies
+  for game"): the front counter and its two side wings are gone from `STALL.build` (`081-stalls.js`); the back shelf and the crates,
+  sacks, logs and baskets beside it stay. Each merchant's place is just in front of the shelf, facing the street; both only stand and
+  look about now (the tomato's `STALL.work` as the mushroom seller's, `144-veggies.js`). Their trade (FORAGE, VEG) is unchanged.
+- **Measured** (`tests/startprof.cjs`, the cloud's software rendering, before and after on one machine, twice each): time to start
+  31.6 s against 32.3-33.7 s; the longest freeze after the start 7.1 s against 7.4-7.6 s; triangles drawn at the opening 222,000
+  against 268,000-275,000; the park's south-west, the slowest frames (95th percentile) 49-51 ms against 52-59 ms.
+  `tools/cireport.py` turns a run's results into one GitHub annotation (for sessions that can't download logs).

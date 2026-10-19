@@ -120,7 +120,7 @@ KMK.bars=(x0,y0,x1,y1)=>{ PNAME='iron bars'; const X=y0===y1, t=.03, h=96, I=DGP
   for(const [z0,c] of [[0,DGP.rust],[44,I],[h-4,I]])B.push(X?ib(x0,y0-t*1.6,x1,y0+t*1.6,z0,z0+4,c):ib(x0-t*1.6,y0,x0+t*1.6,y1,z0,z0+4,c));
   return prop(B,null,{solids:[X?{x0,y0:y0-.06,x1,y1:y0+.06}:{x0:x0-.06,y0,x1:x0+.06,y1}]}); };
 KMK.gravel=(x0,y0,x1,y1)=>{ PNAME='gravel'; const G=[[120,114,104],[134,128,118],[108,102,94],[96,92,86]];
-  const top=(X,Y)=>{ const e=Math.min(X-x0,x1-X,Y-y0,y1-Y), n=hash(Math.floor(X*24),Math.floor(Y*24),4951); if(e<.12&&n<.5-e*3)return null; return G[n<.08?3:n<.3?2:n>.85?1:0]; };
+  const top=(X,Y)=>{ const n=hash(Math.floor(X*1.5),Math.floor(Y*1.5),4951); return G[n<.18?2:0]; };
   return prop([{x0,y0,x1,y1,z0:0,z1:1,c:G[0],foot:1,nb:1,top,fi:()=>null,fj:()=>null}],null,{walk:true,lift:1}); };
 })();
 

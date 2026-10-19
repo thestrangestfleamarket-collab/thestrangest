@@ -79,7 +79,7 @@ const WIRES=window.WIRES={perch:[],poles:[],tick:()=>{}};
         wg.attributes.position.needsUpdate=true; }
       if(near){ you.set(P.x,(P.y||0)+.9*M,P.z).project(cam); cam.getWorldDirection(nd); cam0.copy(cam.position);
         WIRES.poles.forEach((pl,i)=>{ q.set(pl.x,pl.y0+1*M,pl.z).project(cam); q2.copy(pl.top).project(cam); const dy=Math.abs(q.x-q2.x), w=Math.abs(q.x-you.x)<.07+dy, yy=you.y>Math.min(q.y,q2.y)&&you.y<Math.max(q.y,q2.y);
-          const behind=new V3(P.x,0,P.z).sub(cam0).dot(nd)>new V3(pl.x,0,pl.z).sub(cam0).dot(nd)+.3*M, k=['x','y','z','w'][i], want=w&&yy&&behind?.3:1; uF.value[k]+=(want-uF.value[k])*Math.min(1,dt*6); if(Math.abs(uF.value[k]-want)<.01)uF.value[k]=want; }); } };
+          const behind=new V3(P.x,0,P.z).sub(cam0).dot(nd)>new V3(pl.x,0,pl.z).sub(cam0).dot(nd)+.3*M, k=['x','y','z','w'][i], want=1; uF.value[k]+=(want-uF.value[k])*Math.min(1,dt*6); if(Math.abs(uF.value[k]-want)<.01)uF.value[k]=want; }); } };
     WIRES.tick(0,{x:xm,z:zp,y:0});
     WIRES.cost={tris:Pp.length/9+NV/3,spans:spans.length};
     const t0=DRESS.tick; DRESS.tick=(dt,p)=>{ t0(dt,p); WIRES.tick(dt||0,p||pos); }; }

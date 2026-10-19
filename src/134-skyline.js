@@ -4,9 +4,9 @@ const FAR3={};
   const FOG=new THREE.Fog(0x8fa3c0,1,2), fc=new THREE.Color(), pale=new THREE.Color(.74,.84,.98), navy=new THREE.Color(.08,.1,.17), V=new THREE.Vector3();
   FAR3.on=on; FAR3.fog=FOG;
   const mq=QS.get('mist'), mv=(mq||'').split(',').map(Number); let mist=mq!=='0'; try{ if(mq==null&&localStorage.getItem('market-haze2')==='2')mist=false; }catch(e){}
-  const MIST0=mv.length===2&&mv.every(isFinite)?mv[0]:0, MIST1=mv.length===2&&mv.every(isFinite)?mv[1]:8, MD=new THREE.Color(0x3a6e68), MN=new THREE.Color(0x152d2c), MH=new THREE.Color(0x4a7f79);
+  const MIST0=mv.length===2&&mv.every(isFinite)?mv[0]:40, MIST1=mv.length===2&&mv.every(isFinite)?mv[1]:20, MD=new THREE.Color(0x3a6e68), MN=new THREE.Color(0x152d2c), MH=new THREE.Color(0x4a7f79);
   FAR3.mist=mist;
-  const FL0={corner:1,m0:MIST0,m1:MIST1,md:.5,hn:.2,hf:.82,hd:170,hs:8,dt:.45,wn:.12,wd:.02,bl:.6,br:1,cov:.47,cl:1.16,zk:.62,hk:.5}, FL={...FL0}; try{ const s=JSON.parse(SAVE.get('farlook')||'{}'); if(!s.corner){ delete s.m0; delete s.m1; } Object.assign(FL,s); }catch(e){} FAR3.FL=FL; FAR3.FL0=FL0;
+  const FL0={corner:2,m0:MIST0,m1:MIST1,md:.5,hn:.2,hf:.82,hd:170,hs:8,dt:.45,wn:.12,wd:.02,bl:.6,br:1,cov:.47,cl:1.16,zk:.62,hk:.5}, FL={...FL0}; try{ const s=JSON.parse(SAVE.get('farlook')||'{}'); if(s.corner!==2){ delete s.m0; delete s.m1; s.corner=2; } Object.assign(FL,s); }catch(e){} FAR3.FL=FL; FAR3.FL0=FL0;
   FAR3.frameTris=()=>new Promise(res=>{ const I=renderer.info; I.autoReset=false; requestAnimationFrame(()=>{ I.reset(); requestAnimationFrame(()=>{ const r={tris:I.render.triangles,calls:I.render.calls,culled:0}; I.autoReset=true; res(r); }); }); });
   const LR=MODS.landR, hs=(i,j)=>{ const v=Math.sin(i*12.9898+j*78.233)*43758.5453; return v-Math.floor(v); }, B=[];
   const row=(inset,hmin,hmax,wmin,wmax,tower,k)=>{ const x0=LR.x0+inset, x1=LR.x1-inset, z0=LR.z0+inset, z1=LR.z1-inset; let n=0;

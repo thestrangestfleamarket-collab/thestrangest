@@ -7,7 +7,7 @@ out = sys.argv[2] if len(sys.argv) > 2 else 'dist/market-prof.html'
 h = open(src).read()
 a = h.index('function frame(now){'); b = h.index('\n}\n', a) + 3; F = h[a:b]
 # (start, end, name): the frame's systems, each timed from its first text to the end of its last
-SEG = [('trip=false; let B;', 'J0=B.J; J0t=now; }', 'walker rig'),
+SEG = [('trip=false; let B;', 'J0=B.J; J0t=now; ASTEP.you.B=B; }', 'walker rig'),
        ('W3.place(', 'if(ED.on)ED.tick();', 'walker place + physbody'),
        ('phyYouNow(dt);', 'looseDraw();', 'loose physics'),
        ('{ const px=FLOATS.px', 'FLOATS.pz=pos.z; }', 'floats'),
@@ -20,10 +20,12 @@ SEG = [('trip=false; let B;', 'J0=B.J; J0t=now; }', 'walker rig'),
        ('LOOK.tick();', None, 'LOOK'), ('for(const w of cutWalls)', '?w.foot:1e6;', 'cutWalls'),
        ('ROOMS.tick();', None, 'ROOMS.tick'), ('STORE.tick();', None, 'STORE.tick'), ('BF.tick(dt);', None, 'butterflies'),
        ('if(wOn)WATER.step(renderer,dt);', None, 'WATER.step'), ('WATER.tickAll(renderer,dt,pos);', None, 'WATER.tickAll'),
-       ('if(wOn&&WATER.mesh.visible)WATER.under(renderer,scene,cam,lamps);', None, 'WATER.under'),
+       ('if(wOn&&WATER.seen(WATER.mesh,cam))WATER.under(renderer,scene,cam,lamps);', None, 'WATER.under'),
        ('WATER.underAll(renderer,scene,cam,lamps);', None, 'WATER.underAll'), ('W3.shadowPass(renderer);', None, 'self-shadow passes'),
        ('if(OUTL.on)OUTL.render(renderer,scene,cam);', None, 'outline'), ('composer.render();', None, 'composer.render')]
 for s, e, n in SEG:
+    if s not in F or (e and e not in F[F.index(s):]):
+        print('perfprof: skipped', n); continue
     i = F.index(s); F = F[:i] + '__PS();' + F[i:]
     j = F.index(e or s, i + 7) + len(e or s); F = F[:j] + "__PE(%r);" % n + F[j:]
 # the whole frame, and a fresh count of the renderer's work each frame

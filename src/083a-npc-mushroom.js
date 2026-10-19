@@ -13,20 +13,20 @@ const MUSH={};
   { let seed=3; const rnd=()=>{ seed=(seed*16807)%2147483647; return seed/2147483647; };
     for(let i=0;i<13;i++){ const a=rnd()*Math.PI*2, r=.05+rnd()*.15, big=rnd()<.5; mush(trayStems,trayCaps,Math.sin(a)*r,1.0,.33+Math.cos(a)*r,big?.1:.07,big?.045:.032,rnd()<.45?CAP:CREAM,[(rnd()-.5)*20,0,(rnd()-.5)*20]); } }
   for(const [x,z,c] of [[.1,.3,CAP],[.15,.27,[.77,.17,.12]],[.12,.33,CREAM]])mush(held,held,x,.9,z,.07,.04,c);
-  const SA=[-140,-115,-90,-64,-38,-13,12,37,62,88,114,138], HB=[], HP=[], HS={}, ST=[];
-  SA.forEach((d,i)=>{ const a=d*Math.PI/180, sx=Math.sin(a), cz=-Math.cos(a), side=Math.abs(d)/180, y3=.74+.22*side, col=HAIR[i%3];
+  const SA=[-104,-84,-64,-46,-28,-10,10,28,46,64,84,104], HB=[], HP=[], HS={}, ST=[];
+  SA.forEach((d,i)=>{ const a=d*Math.PI/180, sx=Math.sin(a), cz=-Math.cos(a), side=Math.abs(d)/180, y3=.66+.2*side, col=HAIR[i%3];
     const p=[[sx*.165,1.5,cz*.165],[sx*.22,1.27,cz*.22],[sx*.25,1.02+.05*side,cz*.25],[sx*.255,y3,cz*.25]], nm=['a','b','c'].map(k=>'h'+i+k);
-    nm.forEach((n,k)=>{ HB.push([n,k?nm[k-1]:'head',p[k]]); HP.push(part('hair '+n,2,n,[ limb(p[k],p[k+1],[.05,.044,.034][k],[.044,.034,.02][k],col,5) ]));
+    nm.forEach((n,k)=>{ HB.push([n,k?nm[k-1]:'head',p[k]]); HP.push(part('hair '+n,2,n,[ limb(p[k],p[k+1],[.028,.024,.018][k],[.024,.018,.01][k],col,5) ]));
       HS[n]={f:[.06,.1,.14][k],s:-[.06,.1,.14][k],k:[46,32,24][k],c:[4.5,3.2,2.4][k],lim:[.45,.6,.75][k]}; });
     ST.push([nm,p[0][0],p[0][2]]); });
   const scalp=new THREE.SphereGeometry(.168,10,6,Math.PI,Math.PI,0,Math.PI*.62);
   const def={ bones:[['root',null,[0,0,0]],['hips','root',[0,.6,0]],['head','hips',[0,1.26,0]],['hat','head',[0,1.56,0]],['armL','hips',[-.17,1.17,.02]],['armR','hips',[.17,1.17,.02]],
       ['held','armR',[.12,.96,.25]],['tray','hips',[0,.99,.33]],['broom','hips',[0,1.0,.3]],...HB],
     parts:[
-      part('face',0,'head',[ ...[-1,1].map(sx=>shape(cyl(.042,.042,.03,8),BLACK,[sx*.058,1.42,.136],null,[90,0,0])),
-        shape(box(.036,.036,.03),BLACK,[0,1.345,.145],null,[0,0,45]), shape(box(.12,.012,.025),BLACK,[0,1.29,.128]),
-        ...[-2,-1,0,1,2].map(i=>shape(box(.01,.032,.025),BLACK,[i*.026,1.29,.128])) ]),
-      part('skull',2,'head',[ shape(sph(.155,10,7),BONE,[0,1.38,0],[1,1.1,1]), shape(blob(.11,.06,.09,10,6),BONE,[0,1.27,.02]) ]),
+      part('face',0,'head',[ ...[-1,1].map(sx=>shape(sph(.052,8,6),BLACK,[sx*.06,1.405,.118],[1,1.12,.7])),
+        ...[-1,1].map(sx=>shape(box(.022,.04,.03),BLACK,[sx*.013,1.335,.142],null,[0,0,sx*-20])), shape(box(.1,.03,.03),BLACK,[0,1.285,.122]),
+        ...[-2,-1,0,1,2].map(i=>shape(box(.016,.026,.02),BONE,[i*.02,1.29,.134])), ...[-1,1].map(sx=>shape(box(.03,.05,.02),[.8,.8,.78],[sx*.11,1.33,.105],null,[0,sx*30,0])) ]),
+      part('skull',2,'head',[ shape(sph(.155,10,7),BONE,[0,1.38,0],[1,1.1,1]), shape(blob(.085,.055,.085,10,6),BONE,[0,1.27,.03]) ]),
       part('scalp',3,'head',[ shape(scalp,HAIR[0],[0,1.4,-.005],[1,1.1,1]) ]),
       ...HP,
       part('hat',2,'hat',[ shape(cyl(.21,.23,.08,14),HAT,[0,1.565,0]), shape(cyl(.15,.17,.11,12),HAT2,[0,1.66,0]) ]),
@@ -49,5 +49,5 @@ const MUSH={};
   const BOOTH=()=>{ const P=PARK, X=x=>BOD.XS(x+(P.ox||0)), Z=y=>BOD.ZS(y+(P.oy||0)), g0=P.gate[0];
     MUSH.booth=STALL.build({X,Z,x0:g0-7.8,x1:g0-3,y:P.y0,veg:false,seed:7,gate:1}); };
   const N=RIGNPC.make(def,Object.assign({key:'mushroom',name:'THE MUSHROOM SELLER',eye:0,eyeC:'0.,0.,0.',metres:3.16, radius:.3,speed:.4,stride:6},PARTSNPC.street(72,-70),{roam:false}));
-  { const wait=()=>{ if(!PARK.fire||!MODS.park)return setTimeout(wait,500); BOOTH(); if(!N.sheet)STALL.work(N,MUSH.booth,{tray:1}); }; wait(); }
+  { const wait=()=>{ if(!PARK.fire||!MODS.park)return setTimeout(wait,500); BOOTH(); if(!N.sheet)STALL.work(N,MUSH.booth,{tray:1,jobs:['look'],wait:()=>2+Math.random()*3}); }; wait(); }
   MUSH.N=N; window.MUSHDBG=()=>({booth:!!MUSH.booth,life:!!N.life,fire:!!PARK.fire,key:N.key,x:+N.st.x.toFixed(2),z:+N.st.z.toFixed(2),y:+N.g.position.y.toFixed(2),to:!!N.st.to,vis:N.g.visible,tris:N.tris,job:N.rig.job&&N.rig.job.k}); }

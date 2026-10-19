@@ -19,8 +19,7 @@
       for(const [x,n] of [[B.x0+T,[1,0]],[B.x1-T,[-1,0]]])for(const y of [2.4,6].map(d=>B.y1-d)){ SK.bar.theatreSconce(x,y,n); LAMPS.push({x:x+n[0]*.35,y,z:68,r:3.4,c:[1,.62,.34]}); }
       LAMPS.push({x:cx,y:S.y-2.5,z:110,r:8,c:[.62,.66,.78]},{x:cx,y:B.y0+2.3,z:100,r:5,c:[1,.86,.6]});
       TH.theatreAisleLights([rx0-.35,rx0+4*w+.35],rows.map(y=>y-.45)); TH.theatreExit(odx,oL+.1); TH.theatrePort(odx,oL+.1,190);
-      for(const [a,b,o] of SEG){ TH.thAt(B.x1-o,B.y0); TH.thFront(p=>{ const u0=Math.max(p[0],a), u1=Math.min(p[1],b); return u1-u0>.01?[u0,u1,...p.slice(2)]:null; },a<17&&b>17); }
-      LAMPS.push(...[[7.2,66,5,[1.1,.88,.58]],[13.8,66,5,[1.1,.88,.58]],[10.47,250,3.2,[1,.76,.36]]].map(([u,z,r,c])=>({x:B.x1+6-u,y:B.y0-.9,z,r,c})));
+      for(const [a,b,o] of SEG){ TH.thAt(B.x1-o,B.y0); TH.thFront(p=>{ const u0=Math.max(p[0],a), u1=Math.min(p[1],b); return u1-u0>.01?[u0,u1,...p.slice(2)]:null; }); }
       turn(B,n0,l0); },{xw:[['lobby','x',LOB,B.x0+T,B.x1-T,-1,[{a0:door-.8,a1:door+.8,z0:0,z1:96}],true]]});
     const tx=new THREE.DataTexture(new Uint8Array(TH.FILMW*TH.FILMH*4),TH.FILMW,TH.FILMH); tx.magFilter=tx.minFilter=THREE.NearestFilter; tx.colorSpace=THREE.SRGBColorSpace;
     const fm=new THREE.Mesh(new THREE.PlaneGeometry(X(S.x1)-X(S.x0),Y(S.z1)-Y(S.z0)),new THREE.MeshBasicMaterial({map:tx})); fm.position.set(X(cx),Y((S.z0+S.z1)/2),Z(B.y0+T+.075)); fm.visible=false; scene.add(fm);
@@ -29,61 +28,23 @@
   STEPS.push(()=>{ const B=lot('arcade',200), W=B.x1-B.x0, cx=(B.x0+B.x1)/2, A=TH.ARC, k=6, c0=Math.floor((W*24-35*k)/2), on=word('ARCADE',c0,118,k);
     const front=(u,z,f)=>{ const c=Math.floor(u*24);
       if(z<8)return sh([44,34,52],f);
-      if(z<96&&u>.5&&u<W-.5){ const m=(u-.5)%2.1; if(m<.08||z<11||z>93)return sh([58,40,70],f); const q=Math.floor(u*1.25), e=u*1.25-q, r=hs(q,7,977);
-        if(r<.45&&e>.25&&e<.75&&z>46&&z<62)return lit([[236,70,160],[60,206,230],[110,220,80]][Math.floor(r*13)%3]); if(z>=11&&z<13)return lit([120,40,110]); return ((c+Math.floor(z))%64)<3?sh([44,40,66],f):sh([20,16,32],f); }
+      if(z<96&&u>.5&&u<W-.5){ const m=(u-.5)%2.1; return m<.08||z<11||z>93?sh([58,40,70],f):sh([20,16,32],f); }
       if(z>=98&&z<102)return lit([236,64,160]); if(z>=104&&z<106)return lit([60,206,230]);
       if(z>=110&&z<170&&c>=c0-8&&c<c0+35*k+8)return neon(on,c,z,k,[255,80,200],f)||sh([24,16,32],f);
       return null; };
     const out=(nx,ny,Xw,Yw,z,f,cap)=>{ if(ny>0){ const c=front(Xw-B.x0,z,f); if(c)return c; } return facade(nx,ny,Xw,Yw,z,f,cap,[96,58,80]); };
-    const x0=B.x0, y0=B.y0, x1=B.x1, y1=B.y1, GLOW=[], bx=(a,b,c,d,z0,z1,col,o={})=>({x0:a,y0:b,x1:c,y1:d,z0,z1,c:col,...o}), dk=(c,k=.55)=>c.map(v=>v*k);
-    const txt=(s,c0,z0)=>(c,z)=>{ const i=c-c0, r=6-(z-z0); if(i<0||r<0||r>6||i>=s.length*6-1)return false; const g=FONT[s[Math.floor(i/6)]]; return i%6<5&&!!g&&g[r*5+i%6]==='#'; };
-    const SCR=[(u,v,h)=>v<.35?[40,30,90]:Math.abs(u-.5)<(v-.35)*.75?(Math.abs(u-.5)<.03&&(v*20|0)%2?[250,240,200]:[90,90,100]):[40,140,60],
-      (u,v,h)=>Math.abs(u-.45-.12*Math.sin(v*14))<.04&&v<.8?[240,250,255]:h<.08?[120,160,255]:[20,30,80], (u,v,h)=>h<.07?[255,255,255]:Math.hypot(u-.5,v-.62)<.18?[255,120,230]:[50,20,80],
-      (u,v,h)=>Math.abs(v-.75+u*.6)<.05&&u<.7?[255,170,60]:Math.hypot(u-.72,v-.32)<.07?[255,240,200]:h<.05?[220,220,255]:[8,8,16], (u,v,h)=>((u*14|0)%3===0||(v*10|0)%3===0)?[60,220,90]:[10,30,14],
-      (u,v,h)=>((u*12|0)%4===0&&v>.2&&v<.8)||((v*9|0)%3===0&&u>.1&&u<.9)?[50,70,230]:h<.25?[255,230,90]:[6,6,20]];
-    const MAKES=[['TURBO',[190,36,40],[255,210,60]],['STORM',[36,56,150],[120,200,255]],['MAGIC',[96,36,140],[255,120,230]],['COMET',[26,26,34],[255,150,60]],['ROBOT',[50,110,64],[160,255,140]],['GHOST',[28,28,86],[255,240,120]]];
-    const upright=(cx_,m)=>{ const [nm,body,acc]=MAKES[m], w=.62, a=cx_-w, b=cx_+w, yb=y0+.15, yf=y0+1.1, on=txt(nm,(w*48-29)/2|0,2);
-      const side=(nx,ny,X_,Y_,z,k)=>ny>0?null:sh((Y_-yb+z/40)%.5<.12?acc:body,k);
-      const front=(f)=>(nx,ny,X_,Y_,z,k)=>ny>0?f(Math.floor((X_-a)*24),z,k):side(nx,ny,X_,Y_,z,k);
-      thing('arcade cabinet',[bx(a,yb,b,yf,0,40,body,{fs:front((c,z,k)=>z<7?[24,22,28]:z>14&&z<30&&c>12&&c<18?(z%4<2?lit([255,150,60]):[40,36,40]):sh(body,k))}),
-        bx(a,yf-.05,b,yf+.3,34,40,[40,40,48],{top:(X_,Y_)=>{ const c=(X_-a)*24|0, r=(Y_-yf)*24|0; return (c===8||c===9)&&r>2&&r<6?[200,30,30]:r>3&&r<6&&c>16&&c%3===0?lit([acc,[255,255,255],[60,200,255]][c%9/3|0]):[40,40,48]; }}),
-        bx(a,yb,b,yf-.25,40,74,body,{fs:front((c,z,k)=>{ const u=(c-3)/(w*48-6), v=(70-z)/26; if(u>=0&&u<=1&&v>=0&&v<=1)return lit(SCR[m](u,v,hs(c,z|0,991+m))); if(u>-.08&&u<1.08&&v>-.1&&v<1.1)return lit(dk(acc,.5)); return sh([22,20,26],k); })}),
-        bx(a,yb,b,yf-.08,74,88,body,{fs:front((c,z,k)=>on(c,z-77)?lit([255,255,255]):lit(acc))})]); GLOW.push([cx_,yf+.4,acc]); };
-    const pinball=(cy_,m)=>{ const [nm,body,acc]=MAKES[m], a=x0+.25, b=x0+1.45, ya=cy_-.3, yb2=cy_+.3, BB=[];
-      for(const [lx,ly] of [[a+.25,ya+.05],[a+.25,yb2-.1],[b-.1,ya+.05],[b-.1,yb2-.1]])BB.push(bx(lx,ly,lx+.05,ly+.05,0,22,[30,30,34]));
-      BB.push(bx(a+.2,ya,b,yb2,22,32,body,{top:(X_,Y_)=>{ const u=(X_-a-.2)/(b-a-.2), v=(Y_-ya)/(yb2-ya), d=[[.35,.3],[.35,.7],[.6,.5]].map(([p,q])=>Math.hypot(u-p,(v-q)*.6)); return u<.04||u>.96||v<.06||v>.94?[180,180,190]:Math.min(...d)<.05?lit([255,255,255]):Math.min(...d)<.08?lit(acc):Math.abs(v-.5)<.03&&u>.82?lit([255,80,80]):lit(dk(acc,.45)); },fs:(nx,ny,X_,Y_,z,k)=>sh((X_+Y_)%.4<.1?acc:body,k)}));
-      BB.push(bx(a,ya-.02,a+.2,yb2+.02,22,58,body,{fs:(nx,ny,X_,Y_,z,k)=>nx>0&&z>10&&z<32?((nm.length&&txt(nm,1,18)(Math.floor((yb2+.02-Y_)*24),z))?lit([255,255,255]):lit(acc)):sh(body,k)}));
-      thing('pinball machine',BB); GLOW.push([b+.4,cy_,acc]); };
-    const AW=TH.arcadeWallOf(TH.arcadeLights(B)), thing=(name,boxes,o={})=>PROPS.push({kind:name,name,boxes,...o});
-    MS.arcade={R:room('arcade','ARCADE',B,{floor:(x,yq)=>{ const y=y0+y1-yq; let c=TH.arcadeFloor(x,yq); if(Math.abs(x-cx)<1.1&&y>y0+2||y>y0+1.5&&y<y0+2.4)c=sh([62,52,70],.88+.24*hs(x*24|0,y*24|0,995)); for(const [gx,gy,col] of GLOW){ const d=Math.hypot(x-gx,(y-gy)*1.3); if(d<1.3){ const k=d<.45?.42:d<.85?.24:.12; return lit(c.map((v,i)=>v*(1-k)+col[i]*k)); } } return c; },
-      in:(q,nx,ny,X_,Y_,z,f)=>{ const u=nx?Y_:X_; if(nx&&z>=70&&z<112){ const k=Math.floor((u-y0-1)/2.6), uu=u-y0-1-k*2.6; if(k>=0&&k<4&&uu>.2&&uu<1.1){ const c=Math.floor((uu-.2)*24), r=Math.floor(z-70), P=MAKES[(k+(nx>0?0:3))%6]; return c<1||c>20||r<1||r>40?sh([230,226,214],f):r>30?sh(P[2],f):Math.hypot(c-10.5,r-16)<7?sh(P[2],f):sh(P[1],f); } } return AW(q,nx,ny,X_,Y_,z,f); },
+    const y0=B.y0, y1=B.y1;
+    MS.arcade={R:room('arcade','ARCADE',B,{floor:(x,yq)=>sh([46,40,54],.94+.12*hs(x*2|0,yq*2|0,995)),in:(q,nx,ny,X_,Y_,z,f)=>z<3?sh([30,24,36],f):sh([70,60,82],f),
       out,cope:[60,44,70]},{w:'f',a:cx,wd:1.56,h:94},()=>{
-      MAKES.forEach((_,m)=>upright(x0+.95+m*1.42,m)); TH.grProp('arcade machine',TH.GRM.arcade(),x0+.95+6*1.42-.58,y0+.2,0,{}); GLOW.push([x0+.95+6*1.42,y0+1.5,[255,214,70]]);
-      pinball(y0+3.4,2); pinball(y0+4.9,0);
-      A.arcade(cx-.85,y0+5.6,[0,1],0); A.arcade(cx+.85,y0+5.6,[0,1],1); A.redStool(cx-.85,y0+7); A.redStool(cx+.85,y0+7); GLOW.push([cx-.85,y0+6.5,[236,70,160]],[cx+.85,y0+6.5,[110,220,80]]);
-      { const ax=cx-1.05, ay=y0+8.7, ex=ax+2.1, ey=ay+1.15, BB=[]; for(const [lx,ly] of [[ax+.15,ay+.15],[ex-.25,ay+.15],[ax+.15,ey-.25],[ex-.25,ey-.25]])BB.push(bx(lx,ly,lx+.1,ly+.1,0,20,[40,40,48]));
-        BB.push(bx(ax,ay,ex,ey,20,26,[240,240,244],{top:(X_,Y_)=>{ const u=(X_-ax)/2.1, v=(Y_-ay)/1.15; return u<.03||u>.97||v<.06||v>.94?[30,30,36]:Math.abs(u-.5)<.006?lit([230,40,50]):(u<.06||u>.94)&&Math.abs(v-.5)<.2?lit([40,90,230]):Math.abs(Math.hypot((u-.5)*2.1,(v-.5)*1.15)-.22)<.015?lit([40,90,230]):(X_*24|0)%4===0&&(Y_*24|0)%4===0?[200,200,206]:lit([236,236,242]); },fs:(nx,ny,X_,Y_,z,k)=>sh(z>3?[40,90,230]:[30,30,36],k)}),
-          bx(cx-.08,ay+.5,cx+.08,ay+.65,26,27,[230,40,50]),bx(ax+.3,ay+.48,ax+.48,ay+.66,26,30,[230,40,50]),bx(ex-.48,ay+.48,ex-.3,ay+.66,26,30,[40,90,230])); thing('air hockey table',BB); GLOW.push([cx,ay+.58,[220,230,255]]); }
-      { const BB=[bx(x1-1.3,y0+2.8,x1-.2,y0+3.9,0,30,[200,40,60],{fs:(nx,ny,X_,Y_,z,k)=>nx<0&&z>6&&z<20&&Math.abs(Y_-(y0+3.35))<.25?[20,20,24]:sh([200,40,60],k)}),
-          bx(x1-1.3,y0+2.8,x1-.2,y0+3.9,30,78,[255,255,255],{fs:(nx,ny,X_,Y_,z,k)=>{ const u=nx?Y_:X_; if(z<14)return lit([[255,120,180],[120,200,255],[255,230,90],[140,240,140]][Math.floor(hs(u*10|0,z/6|0,996)*4)]); if(z>40&&z<46&&Math.abs(u-(nx?y0+3.35:x1-.75))<.06)return [200,200,210]; return (u*24|0)%22===0?[190,190,200]:z>6?null:[40,40,48]; },top:()=>[200,40,60],nb:0}),
-          bx(x1-1.3,y0+2.8,x1-.2,y0+3.9,78,90,[200,40,60],{fs:(nx,ny,X_,Y_,z,k)=>nx<0?(txt('CLAW',3,3)(Math.floor((Y_-y0-2.8)*24),z)?lit([255,255,255]):lit([255,90,140])):sh([200,40,60],k)}),
-          bx(x1-.82,y0+3.3,x1-.68,y0+3.4,58,78,[200,200,210])]; thing('claw machine',BB); GLOW.push([x1-1.7,y0+3.35,[255,120,180]]); }
-      thing('change machine',[bx(x1-.42,y0+5.5,x1-.1,y0+6.2,18,74,[150,154,160],{fs:(nx,ny,X_,Y_,z,k)=>nx<0?(z>56&&z<68?(txt('CHANGE',1,59)(Math.floor((Y_-y0-5.5)*24),z)?lit([255,255,255]):lit([60,180,90])):z>34&&z<38&&Math.abs(Y_-(y0+5.85))<.12?[20,20,24]:sh([150,154,160],k)):sh([150,154,160],k)})],{high:true});
-      { const p=TH.vrStation(x1-.9,y0+7.6); BOD.place(p,1); }
-      { const cx0=x0+1.5, a=y0+8.6, b=y0+11.6, BB=[bx(cx0,a,cx0+.65,b,0,32,[60,40,70],{top:(X_,Y_)=>(Y_*24|0)%30<2?[170,180,190]:lit([200,220,235]),fs:(nx,ny,X_,Y_,z,k)=>nx>0&&z>8&&z<29?(z>26?[180,190,200]:lit([[255,120,180],[120,200,255],[255,230,90],[140,240,140],[240,240,240]][Math.floor(hs(Y_*8|0,z/7|0,997)*5)])):sh([60,40,70],k)})];
-        for(let k=0;k<3;k++)BB.push(bx(x0+.12,a,x0+.5,b,24+k*30,26+k*30,[120,90,60]));
-        for(let i=0;i<14;i++){ const yy=a+.2+(i%7)*.4, zz=26+Math.floor(i/7)*30, c=[[255,140,190],[140,200,255],[255,220,90],[150,230,140],[220,160,255]][i%5]; BB.push(bx(x0+.18,yy,x0+.44,yy+.26,zz,zz+12+hs(i,1,998)*6,c,{top:()=>sh(c,1.1)})); }
-        BB.push(bx(x0+.1,a+.6,x0+.14,b-.6,96,112,[255,210,60],{fs:(nx,ny,X_,Y_,z,k)=>nx>0?(txt('PRIZES',2,100)(Math.floor((b-.6-Y_)*24),z)?lit([255,255,255]):lit([230,60,150])):sh([255,210,60],k)}));
-        thing('prize counter',BB); }
-      LAMPS.push({x:cx,y:y0+4,z:120,r:10,c:[1.05,.88,1.2]},{x:cx,y:y1-4,z:120,r:10,c:[1.05,.88,1.2]},{x:cx,y:y1+1,z:140,r:5,c:[1,.3,.75]}); })}; unplace('ARCADE'); });
+      LAMPS.push({x:cx,y:(y0+y1)/2,z:120,r:10,c:[1,.92,1.05]},{x:cx,y:y1+1,z:140,r:5,c:[1,.3,.75]}); })}; unplace('ARCADE'); });
 
   STEPS.push(()=>{ const B=lot('play',130), cx=(B.x0+B.x1)/2, cy=(B.y0+B.y1)/2, P=PY.PLAYK(B), mx=x=>2*cx-x, my=y=>2*cy-y, L=[];
     const out=(nx,ny,Xw,Yw,z,f,cap)=>{ if(ny>0){ const c=P.playFront(Xw,z,f); if(c)return c; } return facade(nx,ny,Xw,Yw,z,f,cap,[118,50,44]); };
     const R=room('playhouse','PLAYHOUSE',B,{floor:(x,y)=>P.playFloorCol(mx(x),y),in:(q,nx,ny,X_,Y_,z,f)=>P.playWall(q,-nx,-ny,mx(X_),my(Y_),z,f),out,cope:[226,214,186]},{w:'f',a:cx,wd:1.56,h:94},(B_,l0)=>{
       const n0=PROPS.length, S=P.PLS, lam=(k,x,y,z,r,c)=>{ const l={x,y,z,r,c}; LAMPS.push(l); L.push([k,l,null]); };
       P.props();
-      for(const s of [-1,1]){ lam('house',P.PLMID+s*2.4,S.SY-3.2,110,7,[1,.86,.62]); lam('wall',s<0?B.x0+T+.35:B.x1-T-.35,S.SY-3.1,68,3.2,[.8,.52,.26]); lam('candle',P.PLMID+s*2.5,S.SY+.25,S.SZ+20,3.6,[.9,.6,.28]); lam('front',P.PLMID+s*1.3,B.y0-.9,74,4,[1.1,.9,.62]); }
-      lam('lobby',P.PLMID,B.y0+.8,90,4.5,[1,.86,.62]); lam('prac',P.PLPRAC.baker[0],P.PLPRAC.baker[1],30,3.4,[1.2,.6,.24]);
+      for(const s of [-1,1]){ lam('house',P.PLMID+s*2.4,S.SY-3.2,110,7,[1,.86,.62]); lam('wall',s<0?B.x0+T+.35:B.x1-T-.35,S.SY-3.1,68,3.2,[.8,.52,.26]); lam('front',P.PLMID+s*1.3,B.y0-.9,74,4,[1.1,.9,.62]); }
+      lam('lobby',P.PLMID,B.y0+.8,90,4.5,[1,.86,.62]);
       turn(B,n0,l0); });
     const PAT={books:(c,r)=>{ const s=Math.floor(r/16); if(r%16<2)return [96,58,36]; return [[120,30,30],[40,60,90],[60,80,50],[140,110,60],[80,40,70]][Math.floor(hs(Math.floor((c+s*7)/3),s,91)*5)]; },
       window:(c,r)=>c%22<3||r%26<3||c<4||r<4?[226,220,206]:[40,52,78], panel:(c,r)=>c%30<3||r%34<3?[46,30,20]:sh([64,44,30],.95+.1*hs(c>>3,r>>2,31)),
@@ -101,19 +62,19 @@
       m.position.set(X(cx),Y(P.PLS.SZ+20),Z(my(P.PLS.CY+.9+i*1.4))); m.visible=false; scene.add(m); return m; });
     unplace('PLAYHOUSE'); MS.play={R,P,B,cx,cy,mx,my,L,SETM,fog,SH:{t0:null,cue:null,set:null,lv:-1,from:null,to:null,tc:0,step:-1,last:-1,cap:''},FIG:{},hound:null,up:0}; });
 
-  STEPS.push(()=>{ const B=lot('holo',190), W=B.x1-B.x0, door=(B.x0+B.x1)/2, k=4, c0=Math.floor((W*24-47*k)/2), on=word('HOLODECK',c0,118,k), H={x0:520,y0:-104,x1:552,y1:-72,h:156}, hx=(H.x0+H.x1)/2;
+  STEPS.push(()=>{ const L=lot('holo',0), bc=(L.x0+L.x1)/2, B={x0:bc-1,x1:bc+1,y0:L.y1-2,y1:L.y1,h:116}, W=B.x1-B.x0, door=bc, k=1, c0=Math.floor((W*24-47*k)/2), on=word('HOLODECK',c0,100,k), H={x0:520,y0:-88,x1:536,y1:-72,h:120}, hx=(H.x0+H.x1)/2;
     const front=(u,z,f)=>{ const c=Math.floor(u*24), d=Math.abs(B.x0+u-door);
-      if(d<.9&&z<100&&(d>.78||z>=94))return HO.HOLOL; if(z<3)return HO.HOLOM;
-      if(z>=110&&z<154&&c>=c0-8&&c<c0+47*k+8)return neon(on,c,z,k,[96,200,255],f)||sh([10,12,18],f);
+      if(d<.62&&z<100&&(d>.5||z>=94))return HO.HOLOL; if(z<3)return HO.HOLOM;
+      if(z>=98&&z<110)return neon(on,c,z,k,[96,200,255],f)||sh([10,12,18],f);
       const a=u-Math.floor(u); return a<.03||a>.97||z%24<1?sh([30,40,56],f):sh(HO.HOLOK,f); };
     const pan=(q,nx,ny,X_,Y_,z,f)=>HO.holoWall(f)(nx?Y_:X_,z);
-    const F=room('holofront','HOLODECK',B,{floor:HO.holoFloor,in:pan,out:(nx,ny,Xw,Yw,z,f,cap)=>ny>0?front(Xw-B.x0,z,f):sh(HO.HOLOK,f),cope:[20,24,32],roof:()=>[18,20,26]},{w:'f',a:door,wd:1.56,h:94},()=>{
-      LAMPS.push({x:door,y:B.y1+1,z:110,r:5,c:[.4,.8,1]},{x:door,y:B.y1-2.5,z:120,r:6,c:[.4,.8,1]}); });
+    const F=room('holofront','HOLODECK',B,{floor:HO.holoFloor,in:pan,out:(nx,ny,Xw,Yw,z,f,cap)=>ny>0?front(Xw-B.x0,z,f):sh(HO.HOLOK,f),cope:[20,24,32],roof:()=>[18,20,26]},{w:'f',a:door,wd:1,h:94},()=>{
+      LAMPS.push({x:door,y:B.y1+1,z:104,r:4,c:[.4,.8,1]}); });
     STORE.bound.x1=Math.max(STORE.bound.x1,X(H.x1+10)); STORE.bound.z0=Math.min(STORE.bound.z0,Z(H.y0-10)); STORE.bound.z1=Math.max(STORE.bound.z1,Z(H.y1+10));
     const R=room('holodeck','HOLODECK HALL',H,{floor:HO.holoFloor,in:pan,out:(nx,ny,Xw,Yw,z,f)=>sh(HO.HOLOK,f),cope:[20,24,32],roof:()=>[18,20,26]},{w:'f',a:hx,wd:3,h:96},()=>{
-      LAMPS.push({x:hx-8,y:(H.y0+H.y1)/2,z:140,r:16,c:[.55,.75,1]},{x:hx+8,y:(H.y0+H.y1)/2,z:140,r:16,c:[.55,.75,1]}); });
+      LAMPS.push({x:hx-4,y:(H.y0+H.y1)/2,z:108,r:10,c:[.55,.75,1]},{x:hx+4,y:(H.y0+H.y1)/2,z:108,r:10,c:[.55,.75,1]}); });
     unplace('HOLODECK'); unplace('HOLODECK HALL');
-    const gnd=new THREE.Mesh(new THREE.PlaneGeometry(80*TILE*BLDK,80*TILE*BLDK).rotateX(-Math.PI/2),new THREE.MeshLambertMaterial({color:0x0a0b10})); gnd.position.set(X(hx),Y(.02),Z((H.y0+H.y1)/2)); scene.add(gnd);
+    const gnd=new THREE.Mesh(new THREE.PlaneGeometry(40*TILE*BLDK,40*TILE*BLDK).rotateX(-Math.PI/2),new THREE.MeshLambertMaterial({color:0x0a0b10})); gnd.position.set(X(hx),Y(.02),Z((H.y0+H.y1)/2)); scene.add(gnd);
     MS.holo={F,R,B,H,door,hx,busy:false}; });
 
   STEPS.push(()=>{ const V=new THREE.Vector3(), MAT={}, mat=c=>MAT[c]||(MAT[c]=new THREE.MeshLambertMaterial({color:new THREE.Color(c)}));
@@ -146,7 +107,7 @@
       if(inside&&USE.seat&&!(SH.t0!=null&&(now-SH.t0)/1000<LL))SH.t0=now;
       const t=window.PLAYAT!=null?+window.PLAYAT:SH.t0!=null&&(now-SH.t0)/1000<LL?(now-SH.t0)/1000:-1, st=P.plState(t);
       const sets=n=>{ for(const k in M.SETM)for(const me of M.SETM[k])me.visible=k===(n==='fog'?'moor':n); };
-      if(!inside){ sets('baker'); for(const f of Object.values(M.FIG))if(f){ f.N.g.visible=false; f.hat.visible=false; } if(M.hound)M.hound.g.visible=false; for(const f of M.fog)f.visible=false; cap.style.display='none'; SH.last=-1; return; }
+      { sets('baker'); for(const f of Object.values(M.FIG))if(f){ f.N.g.visible=false; f.hat.visible=false; } if(M.hound)M.hound.g.visible=false; for(const f of M.fog)f.visible=false; cap.style.display='none'; SH.last=-1; return; }
       cue(M,st.lt,st.set,st.si===-1?1:Math.round(st.c*4)/4,now); sets(st.set);
       const TR=st.si>=0?P.PLTR[st.si]:st.si===-2?P.PLCALL:null, seen=new Set();
       if(TR&&st.c>0)for(const [w,a] of Object.entries(TR.A)){ const p=P.plPlayer(a,t,TR); if(!p)continue; const F=w in M.FIG?M.FIG[w]:(M.FIG[w]=mkFig(w,M)); if(!F)continue; seen.add(w);

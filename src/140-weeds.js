@@ -102,6 +102,7 @@ WEEDS.lawnInit=()=>{ const T=TILE, CS=8*T, N=32, CELL=CS/N, W=N+2, hsh=(a,b,s)=>
     geo.setIndex(IX); geo.computeVertexNormals(); const me=new THREE.Mesh(geo,mat); me.receiveShadow=true; me.tri=IX.length/3; me.sq=SQ; me.top=(x,y,z)=>y+hgt(x,z); me.dispose=()=>geo.dispose();
     MAPG.bodega.add(me); WEEDS.lawnN+=me.tri; return me; };
   const drop=k=>{ const me=CH.get(k); if(me){ MAPG.bodega.remove(me); me.dispose(); WEEDS.lawnN-=me.tri; } CH.delete(k); if(WEEDS.onDrop)WEEDS.onDrop(k); };
+  { const RC=new THREE.Raycaster(), DN=new THREE.Vector3(0,-1,0), O=new THREE.Vector3(); WEEDS.top=(x,z)=>{ const k=Math.floor(x/CS)+','+Math.floor(z/CS); if(!CH.has(k))return undefined; const me=CH.get(k); if(!me)return null; RC.set(O.set(x,60*T,z),DN); const h=RC.intersectObject(me,false)[0]; return h?h.point.y:null; }; }
   WEEDS.lawnDrop=r=>{ for(const k of [...CH.keys()]){ const [a,b]=k.split(',').map(Number); if(r[2]>a*CS-CELL&&r[0]<(a+1)*CS+CELL&&r[3]>b*CS-CELL&&r[1]<(b+1)*CS+CELL)drop(k); } };
   let busy=0, next=0; WEEDS.lawnTick=()=>{ if(LVL!=='up'||(ROOMS&&ROOMS.cur))return; const pcx=Math.floor(pos.x/CS), pcz=Math.floor(pos.z/CS);
     for(const k of [...CH.keys()]){ const [a,b]=k.split(',').map(Number); if(Math.max(Math.abs(a-pcx),Math.abs(b-pcz))>3)drop(k); }

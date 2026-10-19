@@ -47,8 +47,12 @@ BOD.KC={KMK,KPP,DGN,DGP,LAMPS,CATALOG,dungeonWall,dungeonFloorCol,castleArch,KAR
     wall('office','x',BODOFF,B.x0+T,B.x1-T,B.h-4,[d(B.x1-.95)],1,-1,false); }
   BOD.WALLS=WALLS;
   function facade(nx,ny,X_,Y_,z,f,cap,brick){ const u=nx?Y_:X_, c=brick||DTBRICK;
-    if(z>=cap-4)return sh(mt('cope',COPE),z<cap-3?f*.72:f);
-    if(z>=cap-20){ const r=cap-4-z, t=sh(mt('cope',COPE),f); if(r<3)return sh(t,1.08); if(r<5)return sh(t,.62); if(r<10)return (Math.floor(u*24/3)&1)?sh(t,.95):sh(t,.55); if(r<12)return sh(t,.7); if(r<15)return t; }
+    if(z>=cap-20){ const r=cap-4-z, px=Math.floor(u*24), pn=Math.floor(u/1.7+hash(Math.floor(u/1.7),3,199)*.4), hp=hash(px,Math.floor(z),203), rs=hash(px>>1,pn,205)<.06&&r>2-8*hash(px>>1,pn,207);
+      let t=sh(mt('cope',COPE),f*(.9+.16*hash(pn,7,201))); if(cvNoise(u*3,z/5,209)>.7)t=sh(t,1.1); if(rs)t=[t[0]*.84+16,t[1]*.7+6,t[2]*.6];
+      if(r<0)return sh(t,z<cap-3?.72:1+.06*hp); if(r<3)return sh(t,hp<.1?.9:1.08); if(r<5)return sh(t,.6);
+      if(r<10){ const e=u*24/5+.9*(cvNoise(u*1.3,3,213)-.5), b=Math.floor(e), on=e-b<.5+.18*(hash(b,pn,215)-.5)&&hash(b,9,217)>.05&&!(r<3+3*hash(b,4,219)&&hash(b,5,221)<.12); return on?sh(t,(e-b<.12?1.04:.95)*(.94+.1*hp)):sh(t,.5+.08*hp); }
+      if(r<12)return sh(t,.7); if(r<15)return sh(t,.96+.08*hp); }
+    if(z>=cap-34&&hash(Math.floor(u*24),Math.floor(u/1.7),223)<.05&&cap-20-z<14*hash(Math.floor(u*24),1,225)&&z>STORY)return sh(mt('mortar',[86,62,50]),f);
     { const s=z%STORY; if(z>STORY-4&&(s<4||s>=STORY-2)){ const t=sh(mt('cope',speck([170,162,148],u,z/24,97)),f); return s>=STORY-2?sh(mt('mortar',sh(c,.6)),f*.6):s===3?sh(t,1.12):s===0?sh(t,.8):t; } }
     if(z<8)return sh(mt('cope',speck([150,146,136],u,z/24,95)),f*(z<1?.8:1));
     if(z<11)return sh(mt('cope',[150,146,136]),f*(z<9?1.1:.9));
@@ -96,7 +100,7 @@ BOD.KC={KMK,KPP,DGN,DGP,LAMPS,CATALOG,dungeonWall,dungeonFloorCol,castleArch,KAR
       for(const p of PROPS.slice(n3))GHOSTST.push(p); BOD.GHOSTST=GHOSTST; BOD.GSK=K; gdShape(GHOSTST,K,LAMPS);
     }
     const n2=PROPS.length, R=(f,x,y,z,...a)=>{ const p=f(x,y,z,bo.y1,...a); p.solids=[]; return p; };
-    R(M.vent,bo.x0+3,bo.y0+5,bo.h); R(M.antenna,bo.x0+8,bo.y0+3.5,bo.h); R(M.roofac,bo.x0+6,bo.y0+7.5,bo.h); for(const p of PROPS.slice(n2))ROOF.push(p); }
+    R(M.antenna,bo.x0+8,bo.y0+3.5,bo.h); for(const p of PROPS.slice(n2))ROOF.push(p); }
   BOD.O=O; BOD.FRONT=FRONT; BOD.STREET=STREET; BOD.ROOF=ROOF; BOD.MAP=MAP; BOD.RD=RD;
   const wallOf=p=>{ const cx=(p.x0+p.x1)/2, cy=(p.y0+p.y1)/2; let best=null, bd=.5; for(const w of WALLS){ const a=w.ax==='x'?cx:cy, d=Math.abs((w.ax==='x'?cy:cx)-w.at); if(a>=w.a0-.2&&a<=w.a1+.2&&d<bd){ bd=d; best=w; } } return best; };
   BOD.kindOf=p=>{ if(/fluorescent tube/.test(p.name||''))return 'U'; if(ROOF.includes(p))return 'R';

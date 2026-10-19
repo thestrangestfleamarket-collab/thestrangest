@@ -18,10 +18,50 @@ BODB={};
       fr([pt(h.a0,h.z1,-.1),pt(h.a1,h.z1,-.1),pt(h.a1,h.z1,.1),pt(h.a0,h.z1,.1)],h.a1-h.a0,5,BOD.FRAME); if(h.z0>0)fr([pt(h.a0,h.z0,-.1),pt(h.a1,h.z0,-.1),pt(h.a1,h.z0,.1),pt(h.a0,h.z0,.1)],h.a1-h.a0,5,BOD.FRAME);
       if(h.glass&&!h.door){ const m=new THREE.Mesh(new THREE.PlaneGeometry((h.a1-h.a0)*TILE,Y(h.z1)-Y(h.z0)),glassMat.clone()); m.material.clippingPlanes=[planes[w.id]];
         if(w.ax==='x')m.position.set(X((h.a0+h.a1)/2),Y((h.z0+h.z1)/2),Z(w.at)); else{ m.position.set(X(w.at),Y((h.z0+h.z1)/2),Z((h.a0+h.a1)/2)); m.rotation.y=Math.PI/2; } scene.add(m); } } }
-  const roofCol=(x,y)=>{ const n=grain(x,y,61,1.4); return speck(n<.35?[50,50,52]:n>.7?[66,64,62]:[58,57,57],x,y,63); };
+  const {cvNoise}=BOD.g, sh=BOD.K.sh, RW=B0.x1-B0.x0, RH=B0.y1-B0.y0, PATCH=[[1.2,2.5,3.6,4.4,0],[4.6,8.2,7.1,9.6,0],[2.1,10.6,3.4,11.5,1],[5.3,1.1,6.9,2.3,2],[.7,6.4,1.7,8.8,2],[5.9,5.2,6.6,5.9,0]], POND=[[3.2,6.3,1.2,.8],[6.2,12.1,.9,.6],[1.5,12.7,.7,.5],[4.5,3.4,.5,.4]];
+  const roofCol=(x,y)=>{ const u=x-B0.x0, v=y-B0.y0, i=Math.floor(x*24), j=Math.floor(y*24), h1=hash(i,j,71), sN=Math.floor(v/1.45), sv=v-sN*1.45, wob=(cvNoise(u*3,sN,73)-.5)*.07;
+    let c=sh([[50,50,52],[57,56,56],[45,45,48],[54,53,50]][Math.floor(hash(sN,1,75)*4)],.9+.2*grain(x,y,61,1.4));
+    if(h1<.16)c=sh(c,1.38); else if(h1<.22)c=[c[0]*1.24,c[1]*1.14,c[2]]; else if(h1>.97)c=sh(c,.7);
+    if(Math.abs(sv-.05-wob)<.03)c=sh(c,.6); else if(Math.abs(sv-.11-wob)<.03&&cvNoise(u*2,sN,77)>.45)c=sh(c,1.3);
+    for(const [a,b,c2,d,k] of PATCH){ const e=.07*(cvNoise(u*4,v*4,79)-.5); if(u>a+e&&u<c2-e&&v>b+e&&v<d-e){ const ed=Math.min(u-a-e,c2-e-u,v-b-e,d-e-v); c=k===1?(h1<.3?[124,126,124]:h1<.55?[158,160,156]:[144,146,144]):k===2?[40,37,36]:[33,33,36]; if(k!==1&&h1<.08)c=sh(c,1.7); if(ed<.06)c=sh(c,k===1?.78:1.5); } }
+    for(const [cu,cv,ru,rv] of POND){ const d=Math.hypot((u-cu)/ru,(v-cv)/rv)+cvNoise(u*1.6,v*1.6,81)*.5-.25; if(d<1.05){ if(d>.95||Math.abs(d-.78)<.03||Math.abs(d-.55)<.025)c=[108,102,90]; else c=sh(c,.76); } }
+    { const dx=u-(RW*.5+1.4), dy=v-(RH*.55+.3); if(dx>-.2&&dx<1.6&&dy>-.1&&dy<.9){ const rr=cvNoise(u*3,v*3,89); if(rr>.4)c=[86+30*rr,64+16*rr,44]; } }
+    const ed=Math.min(u,RW-u,v,RH-v); if(ed<.55){ if(hash(i>>1,j>>1,83)<.3*(1-ed/.55))c=hash(i,j,85)<.55?[60,78,44]:[96,78,52]; else c=sh(c,.86); }
+    if(hash(i,j,87)<.003)c=[214,212,204]; if(hash(i>>2,j>>2,91)<.004)c=[150,120,70];
+    return c; };
   const flat=(x0,y0,x1,y1,z,col,kind,S)=>{ if(x1-x0>80||y1-y0>80){ for(let a=x0;a<x1;a+=80)for(let b=y0;b<y1;b+=80)flat0(a,b,Math.min(x1,a+80),Math.min(y1,b+80),z,col,kind,S); return; } return flat0(x0,y0,x1,y1,z,col,kind,S); };
   const flat0=(x0,y0,x1,y1,z,col,kind,S)=>{ const X=S?BOD.XS:BOD.X, Y=S?BOD.YS:BOD.Y, Z=S?BOD.ZS:BOD.Z; return BOD.bq([X(x0),Y(z),Z(y1)],[X(x1),Y(z),Z(y1)],[X(x1),Y(z),Z(y0)],[X(x0),Y(z),Z(y0)],BOD.faceTex((x1-x0)*24,(y1-y0)*24,(i,j)=>BOD.C(col(x0+(i+.5)/24,y0+(j+.5)/24))),kind); };
   flat(B0.x0,B0.y0,B0.x1,B0.y1,H,roofCol,'R');
+  { const gb=b=>BOD.gbox(b,'R'), t=.36, PH=23, red=(i,j,k)=>{ const c=BRICKS.face(i,j,k,PH), m=c[0]<84; return m?[c[0]*1.25,c[1]*1.2,c[2]*1.12]:[c[0]*1.22,c[1]*.58,c[2]*.48]; };
+    const wall=(x0,y0,x1,y1)=>gb({x0,y0,x1,y1,z0:H,z1:H+PH,c:[120,60,48],fs:(nx,ny,P,Q,z,k)=>{ const u=nx?Q:P, i=Math.floor(u*24), j=Math.floor(PH-z), o=(nx>0&&x0>B0.x0+RW/2)||(nx<0&&x0<B0.x0+RW/2)||(ny>0&&y0>B0.y0+RH/2)||(ny<0&&y0<B0.y0+RH/2);
+      if(!o&&z<6+3*cvNoise(u*2,0,231))return sh([34,34,36],k*(hash(i,j,233)<.1?1.4:1)); let c=red(i,j,(nx+2)*7+(ny+2)*3);
+      if(j<5&&cvNoise(u*1.5,j/4,235)>.55)c=[c[0]*.6+76,c[1]*.6+72,c[2]*.6+66]; if(hash(i>>1,Math.floor(u/.9),237)<.07&&j<4+20*hash(i>>1,2,239))c=sh(c,.68);
+      if(o&&cvNoise(u/1.2,z/12,241)>.74&&c[0]<110)c=[c[0]*.7+40,c[1]*.7+40,c[2]*.7+38]; return sh(c,k); }});
+    const X0=B0.x0, X1=B0.x1, Y0=B0.y0, Y1=B0.y1; wall(X0,Y1-t,X1,Y1); wall(X0,Y0,X1,Y0+t); wall(X0,Y0+t,X0+t,Y1-t); wall(X1-t,Y0+t,X1,Y1-t);
+    let sd=0; const cope=(ax,a0,a1,at)=>{ for(let a=a0;a<a1-.05;){ const L=Math.min(a1-a,.55+.35*hash(sd,1,243)), dz=hash(sd,2,245)*.8, sh0=(hash(sd,3,247)-.5)*.03, tn=.88+.18*hash(sd,4,249), cr=hash(sd,5,251)<.18, k0=sd++;
+      const col=(P,Q)=>{ const w=ax==='x'?P-a:Q-a, i=Math.floor(w*24), hp=hash(Math.floor(P*24),Math.floor(Q*24),253); if(w<.03||L-w<.03)return [70,68,64]; if(cr&&Math.abs(w-L*.4-(ax==='x'?Q:P)*.6)<.02)return [80,78,74];
+        if(cvNoise(P*5,Q*5,k0+255)>.72)return hp<.5?[150,152,108]:[176,174,150]; if(hp<.012)return [232,230,224]; return sh([168*tn,162*tn,150*tn],.94+.1*hp); };
+      const c0=ax==='x'?{x0:a,x1:a+L,y0:at-t/2-.05+sh0,y1:at+t/2+.05+sh0}:{y0:a,y1:a+L,x0:at-t/2-.05+sh0,x1:at+t/2+.05+sh0};
+      gb({...c0,z0:H+PH,z1:H+PH+3.4+dz,c:[160,154,144],top:col,fs:(nx,ny,P,Q,z,k)=>z<1?sh(col(P,Q),k*.62):sh(col(P,Q),k*(z>2.6?1.06:.94))}); a+=L; } };
+    cope('x',X0,X1,Y1-t/2); cope('x',X0,X1,Y0+t/2); cope('y',Y0+t,Y1-t,X0+t/2); cope('y',Y0+t,Y1-t,X1-t/2);
+    { const ax0=X0+RW*.5-.6, ax1=ax0+1.9, ay0=Y0+RH*.55-.55, ay1=ay0+1.3, AH=22, Z0=H+2.2, beige=[176,172,160];
+      for(const yy of [ay0+.15,ay1-.25])gb({x0:ax0-.15,x1:ax1+.15,y0:yy,y1:yy+.1,z0:H,z1:Z0,c:[92,74,56],fs:(nx,ny,P,Q,z,k)=>sh(hash(Math.floor((nx?Q:P)*24),Math.floor(z),261)<.3?[70,56,44]:[96,78,58],k),top:(P,Q)=>hash(Math.floor(P*24),Math.floor(Q*24),263)<.25?[78,62,46]:[104,86,64]});
+      const acs=(nx,ny,P,Q,z,k)=>{ const u=nx?Q-ay0:P-ax0, L=nx?ay1-ay0:ax1-ax0, w=Math.min(u,L-u), i=Math.floor(u*24), hp=hash(i,Math.floor(z),265), zr=AH-z;
+        let c=beige; if(w<.07)c=sh(beige,u<.035||L-u<.035?.8:1.05); else if(zr<3)c=sh(beige,zr<1?1.12:1); else if(z<2)c=sh(beige,.7);
+        else if(nx>0&&u>.3&&u<L-.3&&z>4&&z<16){ c=sh(beige,1.04); if(u<.33||u>L-.33||z<4.5||z>15.5)c=sh(beige,.72); if(Math.abs(u-.4)<.03&&(Math.floor(z)===6||Math.floor(z)===14))c=[60,60,58]; if(u>L*.5-.2&&u<L*.5+.2&&z>11&&z<14)c=hash(i,Math.floor(z*2),267)<.5?[230,228,220]:[40,40,48]; }
+        else { c=(Math.floor(z)&1)?sh(beige,.5):sh(beige,.98); if(hash(i>>1,Math.floor(z/2),269)<.05)c=sh(beige,.4); }
+        if(hash(i>>1,3,271)<.12&&z<4+10*hash(i>>1,5,273))c=[c[0]*.78+22,c[1]*.62+8,c[2]*.5]; return sh(c,k*(.95+.08*hp)); };
+      const fcx=ax0+.55, fcy=(ay0+ay1)/2;
+      gb({x0:ax0,x1:ax1,y0:ay0,y1:ay1,z0:Z0,z1:Z0+AH,c:beige,fs:acs,top:(P,Q)=>{ const d=Math.hypot(P-fcx,Q-fcy), a=Math.atan2(Q-fcy,P-fcx), hp=hash(Math.floor(P*24),Math.floor(Q*24),275);
+        if(d<.46){ if(d<.07)return [96,96,94]; if(d>.42)return sh(beige,.62); if(Math.abs(((a/(Math.PI/2))%1+1)%1-.5)<.06/Math.max(.1,d))return [118,118,114]; return Math.floor(d*24)%3===0?[104,104,100]:[30,30,32]; }
+        if(Math.abs(P-(ax0+1.1))<.02||Math.min(P-ax0,ax1-P,Q-ay0,ay1-Q)<.04)return sh(beige,.8); if(hp<.006)return [226,224,218]; if(cvNoise(P*4,Q*4,277)>.74)return [126,120,104]; return sh(beige,.96+.08*hp); }});
+      gb({x0:ax1,x1:ax1+.38,y0:ay0+.35,y1:ay0+.75,z0:H,z1:H+12,c:[170,172,170],fs:(nx,ny,P,Q,z,k)=>sh(Math.floor(z)%4===0?[120,122,120]:hash(Math.floor((nx?Q:P)*24),Math.floor(z),279)<.2?[196,198,196]:[166,168,166],k),top:()=>[150,152,150]});
+      gb({x0:ax1+.38,x1:X1-t,y0:ay0+.5,y1:ay0+.56,z0:H,z1:H+.9,c:[120,122,124]}); }
+    { const sx0=X0+1.3, sx1=sx0+1.1, sy0=Y0+3.1, sy1=sy0+1.25, CH=7, gal=[146,148,146];
+      gb({x0:sx0,x1:sx1,y0:sy0,y1:sy1,z0:H,z1:H+CH,c:gal,fs:(nx,ny,P,Q,z,k)=>{ const i=Math.floor((nx?Q:P)*24); if(z<2.4+cvNoise((nx?Q:P)*3,1,281))return sh([36,36,38],k); let c=hash(i>>2,Math.floor(z/3),283)<.15?[120,98,80]:sh(gal,.94+.1*hash(i,Math.floor(z),285)); if(z>CH-1.2)c=sh(c,1.12); return sh(c,k); },top:()=>gal});
+      gb({x0:sx0+.05,x1:sx1-.05,y0:sy0+.05,y1:sy1-.05,z0:H+CH,z1:H+CH+1.4,c:[70,88,96],fs:(nx,ny,P,Q,z,k)=>sh([96,98,98],k),top:(P,Q)=>{ const u=P-sx0, v=Q-sy0, hp=hash(Math.floor(P*24),Math.floor(Q*24),287), e=Math.min(u-.05,sx1-.05-P,v-.05,sy1-.05-Q);
+        if(e<.05||Math.abs(u-(sx1-sx0)/2)<.025||Math.abs(v-(sy1-sy0)/2)<.025)return [92,94,94]; if(Math.abs(((u+v)*24/5)%1-.5)<.1||Math.abs(((u-v)*24/5+100)%1-.5)<.1)return [104,118,124];
+        if(e<.14&&hp<.6)return [60,62,56]; if(Math.abs(v-.3-u*.5)<.015&&u>.6)return [150,170,176]; if(cvNoise(u*5,v*5,289)>.76)return hp<.5?[96,82,48]:[70,86,46]; return hp<.5?[62,80,90]:[56,72,82]; }}); } }
   for(const g of BOD.grounds)flat(g.x0,g.y0,g.x1,g.y1,g.z,g.col,'G',!g.bld);
   { const X=BOD.XS, Y=BOD.YS, Z=BOD.ZS; for(const k of BOD.kerbs){ const P=(a,z)=>k.ax==='y'?[X(k.at),Y(z),Z(a)]:[X(a),Y(z),Z(k.at)]; for(let a0=k.a0;a0<k.a1;a0+=80){ const a1=Math.min(k.a1,a0+80), H=k.z1-k.z0; BOD.bq(P(a0,k.z0),P(a1,k.z0),P(a1,k.z1),P(a0,k.z1),BOD.faceTex((a1-a0)*24,H,(i,j)=>BOD.kerbFaceAt(k,a0+(i+.5)/24,H-1-j,H)),'G'); } }
     for(const k of BOD.kerbArcs){ const H=k.z1-k.z0; let s=0; for(let i=0;i+1<k.P.length;i++){ const [x0,y0]=k.P[i], [x1,y1]=k.P[i+1], L=Math.hypot(x1-x0,y1-y0), s0=s; s+=L;

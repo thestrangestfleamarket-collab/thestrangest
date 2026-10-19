@@ -36,14 +36,11 @@ ROOFS.init=()=>{ if(typeof BOD==='undefined'||!MODS.apts||!MODS.apts.A)return;
 
   { const B=BOD.B0, x0=Math.min(X(B.x0),X(B.x1)), x1=Math.max(X(B.x0),X(B.x1)), z0=Math.min(Z(B.y0),Z(B.y1)), z1=Math.max(Z(B.y0),Z(B.y1)), top=Y(B.h||130);
     const fz=Z(B.y1)>Z(B.y0)?1:-1, front=fz>0?z1:z0, GALV=0x8a8e92, mx=(x0+x1)/2, mz=(z0+z1)/2;
-    parapet(x0,z0,x1,z1,top,.8,0x8a4636,0xa8a296);
-    for(const x of [x0+.22*MH,x1-.22*MH])leader(x,front+fz*.1*MH,0,fz,top,GALV);
-    box(mx-1.2*MH,mx+.6*MH,mz-.8*MH,mz+.6*MH,top,top+.12*MV,0x4a4c4e); box(mx-1.1*MH,mx+.5*MH,mz-.7*MH,mz+.5*MH,top+.12*MV,top+1.2*MV,0xb4b8b6);
-    for(let k=0;k<5;k++)box(mx-1.1*MH,mx+.5*MH,mz+.5*MH,mz+.52*MH,top+.3*MV+k*.18*MV,top+.36*MV+k*.18*MV,0x7a7e80);
-    cyl(mx-.3*MH,top+1.2*MV,mz-.1*MH,.5*MH,.06*MV,0x2a2c2e); cyl(mx-.3*MH,top+1.26*MV,mz-.1*MH,.12*MH,.05*MV,0x8a8e90);
-    box(x0+1.4*MH,x0+2.2*MH,z0+1.6*MH,z0+2.4*MH,top,top+.5*MV,0x9a9ea0); cyl(x0+1.8*MH,top+.5*MV,z0+2*MH,.38*MH,.3*MV,0x8a8e90,1);
-    box(x1-2.6*MH,x1-1.2*MH,mz+1*MH,mz+2.2*MH,top,top+.45*MV,0xa8a296); box(x1-2.5*MH,x1-1.3*MH,mz+1.1*MH,mz+2.1*MH,top+.45*MV,top+.52*MV,0x8ab8c8);
-    vent(x0+3*MH,top,z1-2.5*MH); stack(x1-1.6*MH,top,z0+1.5*MH); stack(mx+1.8*MH,top,mz-2*MH); }
+    for(const x of [x0+.22*MH,x1-.22*MH])leader(x,front+fz*.1*MH,0,fz,top+.8*MV,GALV);
+    const turb=(x,z)=>{ cyl(x,top,z,.2*MH,.25*MV,0x2a2a2c); cyl(x,top+.25*MV,z,.14*MH,.5*MV,0x8a8e90); for(let k=0;k<4;k++)cyl(x,top+.75*MV+k*.09*MV,z,(.3-k*.035)*MH,.09*MV,k&1?0x6e7274:0xa4a8aa); cyl(x,top+1.11*MV,z,.12*MH,.1*MV,0x7a7e80,1); };
+    const soil=(x,z,h)=>{ cyl(x,top,z,.16*MH,.08*MV,0x2c2c2e); cyl(x,top+.08*MV,z,.1*MH,.22*MV,0x5a5c5c); cyl(x,top+.08*MV,z,.065*MH,h*MV,0x3a3634); cyl(x,top+(.08+h)*MV,z,.075*MH,.05*MV,0x6a4a3a); };
+    turb(x0+2.6*MH,z1-2.4*MH); soil(x1-1.6*MH,z0+1.5*MH,.7); soil(mx+1.8*MH,mz-2*MH,.45); soil(x0+1.2*MH,mz+3.2*MH,.55);
+    { const gx=x0+1.6*MH, gz=z0+2.1*MH; cyl(gx,top,gz,.22*MH,.1*MV,0x2c2c2e); cyl(gx,top+.1*MV,gz,.12*MH,.75*MV,0x8a8e8a); b(gx+.1*MH,top+.85*MV,gz,.34*MH,.24*MV,.26*MH,0x8a8e8a); b(gx+.26*MH,top+.72*MV,gz,.08*MH,.2*MV,.3*MH,0x6a6e6a); } }
 
   if(BOD.GD&&BOD.GD.r){ const [a0,b0,a1,b1]=BOD.GD.r, x0=Math.min(X(a0),X(a1))-.15*MH, x1=Math.max(X(a0),X(a1))+.15*MH, fzz=Math.max(Z(b0),Z(b1))+.15*MH, top=Y(BOD.GD.eave||100);
     for(const x of [x0+.12*MH,x1-.12*MH])leader(x,fzz+.1*MH,0,1,top,0x9a6a40); }

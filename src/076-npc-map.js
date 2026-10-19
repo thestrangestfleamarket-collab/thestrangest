@@ -125,11 +125,12 @@ ROAM.pick=(st,free)=>{ const L=ROAM.L; for(let k=0;k<12;k++){ let to;
   NPCS.cull=on=>{ const one=(o,g)=>{ if(on){ if(o.hid&&g.visible){ g.visible=false; o._cv=true; } } else if(o._cv){ g.visible=true; o._cv=false; } };
     for(const N of NPCS)one(N,N.g); for(const X of NPCS.extra)if(X.g)one(X,X.g); PXSNAP(on); }; }
 const PXSNAP=on=>{ const L=PXSNAP.L;
-  if(!on){ for(const [o,dx,dy,dz] of L){ o.position.x-=dx; o.position.y-=dy; o.position.z-=dz; } L.length=0; return; }
-  if(UI.persp||!UI.snR)return; const u=rppu(), cr=UI.snR, cu=UI.snU;
-  const snap=(o,cams,D)=>{ if(!o||!o.visible)return; const p=o.position, x=p.dot(cr), y=p.dot(cu), a=Math.round(x*u)/u-x, b=Math.round(y*u)/u-y, dx=D?D.x:cr.x*a+cu.x*b, dy=D?D.y:cr.y*a+cu.y*b, dz=D?D.z:cr.z*a+cu.z*b;
-    p.x+=dx; p.y+=dy; p.z+=dz; L.push([o,dx,dy,dz]); for(const [c,M] of cams||[]){ c.position.x+=dx; c.position.y+=dy; c.position.z+=dz; L.push([c,dx,dy,dz]); c.updateMatrixWorld(); if(M)M.value.multiplyMatrices(c.projectionMatrix,c.matrixWorldInverse); } };
-  if(typeof W3!=='undefined'&&W3.group)snap(W3.group,[[W3.smCam,W3.LVP]],UI.snD);
-  for(const N of NPCS)if(!N.far)snap(N.g);
-  for(const X of NPCS.extra)if(X.g)snap(X.g); };
+  if(!on){ for(let i=0;i<L.length;i+=4){ const p=L[i].position; p.x-=L[i+1]; p.y-=L[i+2]; p.z-=L[i+3]; } L.length=0; return; }
+  if(UI.persp||!UI.snR)return; PXSNAP.u=rppu(); const one=PXSNAP.one;
+  if(typeof W3!=='undefined'&&W3.group&&one(W3.group,UI.snD)){ const c=W3.smCam, M=W3.LVP, n=L.length, dx=L[n-3], dy=L[n-2], dz=L[n-1];
+    c.position.x+=dx; c.position.y+=dy; c.position.z+=dz; L.push(c,dx,dy,dz); c.updateMatrixWorld(); if(M)M.value.multiplyMatrices(c.projectionMatrix,c.matrixWorldInverse); }
+  for(const N of NPCS)if(!N.far)one(N.g);
+  for(const X of NPCS.extra)if(X.g)one(X.g); };
+PXSNAP.one=(o,D)=>{ if(!o||!o.visible)return false; const u=PXSNAP.u, cr=UI.snR, cu=UI.snU, p=o.position, x=p.dot(cr), y=p.dot(cu), a=Math.round(x*u)/u-x, b=Math.round(y*u)/u-y, dx=D?D.x:cr.x*a+cu.x*b, dy=D?D.y:cr.y*a+cu.y*b, dz=D?D.z:cr.z*a+cu.z*b;
+  p.x+=dx; p.y+=dy; p.z+=dz; PXSNAP.L.push(o,dx,dy,dz); return true; };
 PXSNAP.L=[]; window.PXSNAP=PXSNAP;

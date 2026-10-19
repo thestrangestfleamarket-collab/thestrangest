@@ -28,3 +28,33 @@ jobs:
         run: python3 build.py
       - name: Check the site opens (door, then THE MARKET)
         run: node tests/site.cjs
+  budget:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: npm ci --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium
+      - name: Build the base and this pull request (readable, with the profiling copy)
+        run: |
+          git fetch --depth=1 origin ${{ github.base_ref }}
+          git worktree add ../base FETCH_HEAD
+          ln -s "$PWD/node_modules" ../base/node_modules
+          (cd ../base && MIN=0 python3 build.py && python3 tools/perfprof.py)
+          MIN=0 python3 build.py && python3 tools/perfprof.py
+      - name: Measure both (start, street, park)
+        run: |
+          node tests/startprof.cjs out/base.json ../base/dist/market-prof.html
+          node tests/startprof.cjs out/head.json dist/market-prof.html
+      - name: Compare against the budget
+        run: node tests/budget.cjs out/base.json out/head.json
+      - name: The lost picture comes back
+        run: node tests/ctxloss.cjs dist/market.html

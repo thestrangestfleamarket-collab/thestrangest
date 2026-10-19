@@ -14,23 +14,9 @@ const LAC={tile:[226,224,216],tileL:[240,239,234],tileD:[204,202,194],joint:[182
   pot:[230,208,140],stalk:[196,160,110],bloom:[208,68,54]};
 const lauLit=c=>Object.assign([...c],{e:1});
 const LAUWIN={u0:38,u1:84,z0:30,z1:78};
-function laundryFloorCol(x,y){ const c=LAC, bw=.3, i=Math.floor((x-LAU.x0)/bw), u=(x-LAU.x0)-i*bw, L=1.6, o=hash(i,0,1601)*L, j=Math.floor((y-LAU.y0+o)/L), v=(y-LAU.y0+o)-j*L;
-  if(u<.04||v<.04)return mt('wood',c.seam);
-  const n=hash(i,j,1603), b=n<.4?c.board:n<.75?c.boardL:c.boardD, g=hash(Math.floor(x*24),Math.floor(y*8),1605);
-  return mt('wood',g<.03?sh(b,.9):g>.97?sh(b,1.08):b); }
 function laundryTile(u,z,f){ const c=LAC; if(z<3)return sh(c.skirt,f); const uu=((u%24)+24)%24, zz=(((z-3)%26)+26)%26;
   if(uu<1||zz<1)return sh(c.joint,f); const b=uu<2.5||zz>=23.5?c.tileL:uu>=22.5||zz<2.5?c.tileD:c.tile, s=hash(Math.floor(u),Math.floor(z),1607);
   return sh(s<.02?sh(b,.95):b,f); }
-function laundryWall(q,nx,ny,X,Y,z,f){ const R=LAU, c=LAC, e=.06;
-  if(z<0)return sh(c.skirt,f); if(z>=R.H-2)return sh(c.tileD,f);
-  if(nx>0&&Math.abs(X-R.x0)<e){ const u=(Y-R.y0)*24, W=LAUWIN;
-    if(u>=W.u0&&u<W.u1&&z>=W.z0&&z<W.z1){ const a=u-W.u0, b=z-W.z0, w=W.u1-W.u0, h=W.z1-W.z0;
-      if(a<2||a>=w-2||b<2||b>=h-2)return sh(c.frame,f);
-      if(b>=h-18){ if(b>=h-6)return sh(c.valance,f); if(Math.abs(a-(w-6))<.6)return sh(c.cord,f); return sh(Math.floor(b/3)%2?c.blind:c.blindD,f); }
-      if(((a-2)%14)<2||((b-2)%7.5)<1.5)return sh(c.mull,f);
-      return lauLit(c.pane); }
-    return laundryTile(u,z,f); }
-  return laundryTile(nx?(Y-R.y0)*24:(X-R.x0)*24,z,f); }
 (()=>{ const {FP,rect,fb,worn,metal}=STUDIO.kit, c=LAC, hi={foot:1};
 function washerDryer(x,y,f=[1,0]){ PNAME='stacked washer and dryer'; const r=rect(x,y,f,.8,.75), B=[];
   const machine=(z0,h,seed)=>{ const PZ=h-7;

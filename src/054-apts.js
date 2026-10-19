@@ -2,7 +2,7 @@ const APTS={EMPTY:true};
 { const {X,Z,faceTex,bq,C,facade,FRAME,place}=BOD,
   RZ=APTS.RZ=28, Y=z=>BOD.Y(z+RZ), gbox=(b,k)=>BOD.gbox({...b,z0:b.z0+RZ,z1:b.z1+RZ},k), R0=APTS.R0=BOD.Y(RZ)-BOD.Y(0), {speck,hash}=BOD.g, {MKS,CATALOG,PROPS,STUDIO,LSEED,STORY,sh}=BOD.K, S=STORY, ST=3, AH=ST*S, W=LSEED.walk, T=.1;
   const A=(o=>({x0:50.4+o.x/BLDK,x1:76.4+o.x/BLDK,y0:W-14+o.y/BLDK,y1:W+o.y/BLDK}))(LAY.o('house')), m=(A.x0+A.x1)/2, H={y0:A.y0+5.6,y1:A.y0+8.4}, DW=.78, DH=94;
-  APTS.A=A; APTS.H=H; const TEX={}; for(const k in TEXTURES)TEX[k]={w:TEXTURES[k].w,h:TEXTURES[k].h,c:B64(TEXTURES[k].c)};
+  APTS.A=A; APTS.H=H; const TEX={}; for(const k in TEXTURES)TEX[k]={w:TEXTURES[k].w,h:TEXTURES[k].h,c:B64(BY(TEXTURES[k],'c'))};
   const tex=(nm,i,j)=>{ const t=TEX[nm], k=(((j%t.h)+t.h)%t.h)*t.w+(((i%t.w)+t.w)%t.w), c=t.c; return [c[k*3],c[k*3+1],c[k*3+2]]; };
   const STONE=[176,168,152], brick=(u,z,f,cap,holes)=>{ if(z>=cap-20)return facade(0,1,u,0,z,f,cap);
     if(z<10)return sh(speck(tex('concrete',Math.floor(u*24),Math.floor(z)),u,z/24,95),f*(z<1?.8:1));

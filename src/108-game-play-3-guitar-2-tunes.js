@@ -73,7 +73,6 @@ const GTS={t:0,i:0,sent:0,env:[0,0,0,0,0,0]};
 function gtSet(i){ const T=GTBOOK[i], c=gtCompile(T); GTSONG=i; GTTUNE=c.tune; GTSTRUM=c.strum; GTBAR=c.bars; GTLH=c.lh; GTPOS=c.pos; GTDAMP=c.damp; GTEND=c.len; GTPRE=Math.ceil(GTEND)+0.6; GTEV=c.ev; GTBEAT=T.beat;
   GTS.t=0; GTS.i=0; GTS.sent=0; GTS.env.fill(0); }
 const gtNext=i=>{ do i=(i+1)%GTBOOK.length; while(GTBOOK[i].kept); return i; };
-const gtFret=(s,t)=>GTLH.reduce((m,q)=>q.s===s&&q.t0<=t&&t<q.t1?Math.max(m,q.k):m,0);
 for(const T of GTBOOK)gtCompile(T); gtSet(0);
 const gtPosAt=t=>{ let a=GTPOS[0]; for(const q of GTPOS){ if(q.t-0.15>t)break; a=q; } const i=GTPOS.indexOf(a), pv=i>0?GTPOS[i-1]:a, u=Math.max(0,Math.min(1,(t-(a.t-0.15))/0.13)); return pv.p+(a.p-pv.p)*u*u*(3-2*u); };
 

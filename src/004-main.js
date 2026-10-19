@@ -8,6 +8,8 @@ const stage=document.getElementById('stage'), statEl=document.getElementById('st
 const renderer=new THREE.WebGLRenderer({antialias:false,powerPreference:'high-performance'}); renderer.info.autoReset=false;
 renderer.setPixelRatio(1); renderer.localClippingEnabled=true; renderer.shadowMap.autoUpdate=false; renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.BasicShadowMap;
 stage.appendChild(renderer.domElement);
+renderer.domElement.addEventListener('webglcontextlost',e=>{ e.preventDefault(); let d=document.getElementById('ctxlost'); if(!d){ d=document.createElement('div'); d.id='ctxlost'; d.style.cssText='position:fixed;inset:0;place-items:center;font:12px Silkscreen,monospace;letter-spacing:2px;color:#8a8f9c;background:#0e1016;z-index:60'; d.textContent='THE PICTURE WAS LOST, BRINGING IT BACK'; document.body.append(d); } d.style.display='grid'; });
+renderer.domElement.addEventListener('webglcontextrestored',()=>{ renderer.shadowMap.needsUpdate=true; const d=document.getElementById('ctxlost'); if(d)d.style.display='none'; });
 const scene=new THREE.Scene();
 let composer=null;
 const PPU=30;
@@ -53,7 +55,6 @@ const earthT=tex(S,S,(x,y)=>{ const s=hash(x>>1,y>>1,41); if(s<.03)return hash(x
   return tone(nz(x,y,40),x,y,[0x6e5337,0x7a5e3e,0x866947,0x917352]); });
 const grainT=tex(64,64,(x,y)=>hash(x,y,51)<.03?0xc4c4c4:tone(fbm(x/16,y/16,4,4,50),x,y,[0xd2d2d2,0xe0e0e0,0xeeeeee,0xffffff]));
 const woodT=tex(64,64,(x,y)=>tone(fbm(x/32,y/5,2,13,60),x,y,[0xb9b9b9,0xcfcfcf,0xe4e4e4,0xf6f6f6]));
-const stripeT=(a,b)=>tex(16,16,(x,y)=>(x>>2&1)?a:b);
 
 const grad=new THREE.DataTexture(new Uint8Array([70,140,205,255]),4,1,THREE.RedFormat); grad.magFilter=grad.minFilter=THREE.NearestFilter; grad.needsUpdate=true;
 const mcache={};

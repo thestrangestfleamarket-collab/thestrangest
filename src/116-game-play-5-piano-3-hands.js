@@ -53,10 +53,6 @@ function pnPose(t){ const {V,add,mul,sub}=RIG, T={L:pnFingers('L',t),R:pnFingers
   P._T=T; return P; }
 const pnFing=(P,B,T)=>{ for(const n of 'LR'){ const s=n==='L'?1:-1; P[n].fg=[0,1,2,3,4].map(i=>gtReach(RIG.digitBase(B.m.hf[n],s,i),i,T[n][i+1])); } };
 function pnKeys(t){ const pr=Object.assign({},PNKF); for(const n of PNS.c.notes){ if(n.t0-0.05>t)break; if(n.t1+0.06<t)continue; const u=pkDown(n,t); if(u>0)pr['pk'+n.m]=pkFrame(n.m,u); } pr.bench=pr.benchTop=PKBENCH; return pr; }
-function pnStep(a,dt,now){ if(!a.playing){ castStep(a,dt,now); if(a.B)a.B.props=Object.assign(a.B.props||{},PNKF,{bench:PKBENCH,benchTop:PKBENCH},a.watch?PNCASEF:{}); return; }
-  PNS.t+=dt; const t=PNS.t, P=pnPose(t); npcSpring(a,P,dt,NPCARMS); pnFing(P,RIG.build(P,null),P._T); npcSpring(a,P,dt,NPCFING); a.t+=dt;
-  a.P=P; a.pose='piano'; a.to='piano'; const B=RIG.settle(RIG.build(P,null),0); B.head=B.J.head; B.props=pnKeys(t); if(a.watch)Object.assign(B.props,PNCASEF); a.B=B;
-  pnSound(a,t); }
 function pnSound(a,t){ if(!pnAudio())return; const c=SND.ctx, ct=c.currentTime, when=x=>ct+Math.max(0,x-t)+0.03, ns=PNS.c.notes;
   const d=Math.hypot(a.x-P.x,a.y-P.y); PNA.g.gain.setTargetAtTime(SND.on?0.5*Math.max(0.2,1-d/10):0,ct,0.05);
   { const [sx]=toS(...vw(a.x,a.y)), [px]=toS(...vw(P.x,P.y)); PNA.pan.pan.setTargetAtTime(Math.max(-0.8,Math.min(0.8,(sx-px)/120)),ct,0.1); }

@@ -30,12 +30,6 @@ function octSoloStep(bar,i){ const b=bar%8, out=[], acc=i%4===0;
   else if(b===6){ out.push([[2,2,2,3,3,3,3,4,4,4,4,4,1,1,1,1][i],i%2?'L':'R',acc?.95:.66]); if(i===0)out.push([6,'A',1]); if(i%4===0)out.push([0,'K',.75]); }
   else{ if(i===0||i===6||i===12)out.push([6,'A',1],[7,'B',.95],[1,'L',1],[0,'K',1]); if(i===14||i===15)out.push([1,i===14?'R':'L',.8]); }
   return out; }
-function octLead(){ const L=BARP.lead;
-  if(L==='g'&&GTSONG!=null&&GTBOOK[GTSONG]){ const T=GTBOOK[GTSONG], beats=T.beats||(T.per===9?3:4), t=GTS.t; if(GTS.t>GTEND)return {rest:true};
-    return {g:T.tab?(beats===3?'ballad3':'ballad'):beats===3?'waltz':'pop',beat:T.beat,beats,t}; }
-  if(L==='p'&&PNS.c){ const T=PNBOOK[PNS.song]||PNBOOK[0], beats=T.bar%3?4:3, beat=T.q*T.bar/beats, t=PNS.t-(T.pickup||0)*T.q; if(PNS.t>PNS.c.len)return {rest:true};
-    return {g:beats===3?'ballad3':'ballad',beat,beats,t}; }
-  return null; }
 function octStep(dt,now){ const N=imxNode('bar','drum kit');
   if(OCT.src!=='alone'){ OCT.t=0; OCT.last=-1; OCT.g=0; OCT.src='alone'; }
   let E=OCTSET[OCT.g%OCTSET.length], G=OCTG[E.g]; OCT.mood=E.m; let spb=60/G.bpm/G.sub; OCT.t+=dt; const t=OCT.t;
@@ -83,10 +77,3 @@ function octPic(now,may){ may=may&&now-(OCT.paintAt||0)>=50; const p=octPose(now
     g.putImageData(im,0,0); it={c,K:rr,ax:(o.ax+m)/rr,ay:(o.ay+m)/rr,w:w/rr,h:h/rr,key:'octo|'+key}; OCT.pics.set(key,it); PERF.add('the bar: the drummer painted (a new pose)',performance.now()-t0); }
   OCT.cur=it; return it; }
 function octLight(x,y,now){ if(now-OCT.lightAt<=1000)return; OCT.lightAt=now; const env=envNear(x,y), L=env?lightAt(env,x,y,(BAR.stage.z+26)/24,null).map(v=>Math.max(Math.round(v*12)/12,CHARMIN)):[1,1,1]; OCT.L=L; OCT.lk=L.join(); }
-function octDraw(draw,now){ const x=BAR.drums.x, y=BAR.drums.y-OCTBK; octLight(x,y,now);
-  { const dt=OCT.dAt?Math.min(.05,(now-OCT.dAt)/1000):0; OCT.dAt=now; octHabits(now); const k=octUp(octPh(OCT.sip,now)); octSlosh(dt,-15*OCTS+(15*OCTS-5.2)*k);
-    const pf=octUp(octPh(OCT.puff,now)), cg=[1+8.4*pf,15*OCTS-(15*OCTS-2.6)*pf,OCTSEAT+9+1*pf], a=[.5-.05*pf,1,.55-.5*pf], l=Math.hypot(...a), e=cg.map((v,j)=>v+a[j]/l*7.8);
-    OCT.cig=[x-e[1]/24,y+e[0]/24,BAR.stage.z+e[2]]; }
-  const it=octPic(now,true); if(!it)return;
-  const [sx,sy]=toS(...vw(x,y)), X=Math.round(sx*S)/S-it.ax, Y=Math.round(sy*S)/S-it.ay-BAR.stage.z, [u,v]=vw(x,y);
-  draw.push({cv:it.c,key:it.key,u,v,box:[X,Y,X+it.w,Y+it.h],K:it.K,b:OCT.b}); }

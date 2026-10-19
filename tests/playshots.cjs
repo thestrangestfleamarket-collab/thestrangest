@@ -16,11 +16,12 @@ process.on('unhandledRejection',e=>{ errs.push('TEST '+String(e&&e.message||e).s
   await pg.evaluate(()=>STORE.enter('playhouse',true)); await pg.waitForTimeout(3000);
   const at=`const M=STORE.main.play, B=__dbg.MAPK.BOD, tx=B.X(M.cx), tz=B.Z(M.B.y0+3.4), px=B.X(M.cx+.0), pz=B.Z(M.B.y0+10.6);`;
   await pg.evaluate(new Function(at+'STORE.goTo(px,pz,"up");')); await pg.waitForTimeout(2000);
+  await pg.mouse.move(480,270); for(let i=0;i<6;i++){ await pg.mouse.wheel(0,600); await pg.waitForTimeout(150); }
   rep.info=await pg.evaluate(()=>{ const M=STORE.main.play, n=[]; let t=0; for(const m of M.spot||[])t+=m.geometry.attributes.position.count/3; return {built:!!M.spot,drapeTris:M.rigN,spotTris:t,lite:LITE.sel.length,tris:__dbg.info?__dbg.info():null,main:window.MAINDBG?MAINDBG().tris:null}; });
   await pg.evaluate(()=>window.DN&&DN.set&&DN.set('day'));
   await shot('day-iso',null,4000);
   await pg.keyboard.press('q'); await pg.keyboard.press('q'); await shot('day-iso-rev',null,4000); await pg.keyboard.press('e'); await pg.keyboard.press('e');
-  await pg.keyboard.press('v');
+  await pg.keyboard.press('v'); for(let i=0;i<6;i++){ await pg.mouse.wheel(0,600); await pg.waitForTimeout(150); }
   await shot('day-behind-a',new Function(at+'__dbg.face(Math.atan2(tx-px,tz-pz));'),4000);
   await shot('day-behind-b',new Function(at+'__dbg.face(Math.atan2(px-tx,pz-tz));'),4000);
   await pg.evaluate(()=>window.DN&&DN.set&&DN.set('night'));

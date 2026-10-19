@@ -1,8 +1,10 @@
-const PNM={}; STORE.PNM=PNM;
-if(STORE.bar){ const R=RIG, V=R.V, S=STORE.bar, AT={x:BOD.X(S.piano.x),z:BOD.Z(S.piano.keys-PK.Z/33.9),hd:0,y:BOD.Y(S.stage.z)};
+const PNM={tick:()=>{}}; STORE.PNM=PNM;
+if(!AWAY.has('bar')){ const R=RIG;
   const ADD={tux:['#3a3a40','#2c2c31','#1d1d21','#111114'],linen:['#f4f2ea','#e6e3da','#c9c6bc','#8a887f'],tie:['#26262a','#1c1c20','#121214','#0a0a0c'],vest:['#4a4a52','#3a3a42','#28282e','#161619'],
     wood:['#6a4a30','#573a24','#3f2a19','#261810'],cover:['#2e2a2a','#232020','#181616','#0e0d0d'],paper:['#f6f1e2','#e9e3d2','#cfc9b8','#8f8a7c'],hole:['#2a2a2c','#1c1c1e','#111112','#070708'],gold:['#d9b24a','#c49a38','#946f22','#5a4212']};
   for(const m in ADD)if(!R.MATS.includes(m)){ R.MATS.push(m); W3.ramp.push(ADD[m].map(h=>new THREE.Color(h))); }
+}
+PNM.make=()=>{ if(!STORE.bar)return; const R=RIG, V=R.V, S=STORE.bar, AT={x:BOD.X(S.piano.x),z:BOD.Z(S.piano.keys-PK.Z/33.9),hd:0,y:BOD.Y(S.stage.z)};
   const body=musBody(), base=body.PCS, PCS=PNPIECES(body.J,base).filter(p=>!/^pn(Case|Desk|Bed|Legs)$/.test(p.n)), MI=n=>R.MATS.indexOf(n), SH=MI('shirt'), PA=MI('pants'), SO=MI('shoes'), TUX=MI('tux'), TIE=MI('tie');
   for(const p of PCS){ if(!base.includes(p))delete p.share;
     p.recol=m=>m===SH||m===PA?TUX:m===SO?TIE:undefined;
@@ -21,8 +23,7 @@ if(STORE.bar){ const R=RIG, V=R.V, S=STORE.bar, AT={x:BOD.X(S.piano.x),z:BOD.Z(S
     PNA.g.gain.setTargetAtTime(0.5*Math.max(0,1-d/14),ct,0.05);
     const v=new THREE.Vector3(AT.x,1,AT.z).project(cam); PNA.pan.pan.setTargetAtTime(Math.max(-0.8,Math.min(0.8,v.x*0.8)),ct,0.1);
     while(PNS.sent<ns.length&&ns[PNS.sent].t0<=t+0.1){ const n=ns[PNS.sent++]; if(n.t0<t-0.05)continue; pnPlay(n.m,when(n.t0),when(n.off),n.vel); } }
-  function pnHush(){ if(PNA.g&&SND.ctx)PNA.g.gain.setTargetAtTime(0,SND.ctx.currentTime,0.2); } }
-if(!STORE.bar)PNM.tick=()=>{};
+  function pnHush(){ if(PNA.g&&SND.ctx)PNA.g.gain.setTargetAtTime(0,SND.ctx.currentTime,0.2); } };
 
 const IMV={on:false}, ONLINE={others:new Map()}, BARM={on:false}, LEVEL=0; const IMKITBAR={k:1.1,sp:1.35};
 

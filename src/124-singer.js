@@ -1,8 +1,10 @@
-const SGM={}; STORE.SGM=SGM;
-if(STORE.bar){ const R=RIG, V=R.V, S=STORE.bar, AT={x:BOD.X(S.singer.x),z:BOD.Z(S.singer.y),hd:0,y:BOD.Y(S.stage.z)};
+const SGM={tick:()=>{}}; STORE.SGM=SGM;
+if(!AWAY.has('bar')){ const R=RIG;
   const D=WOMAN.DESIGNS[2], LOOK={...D.look,metal:'#d6d8de',tie:'#1a181c',cover:'#2c2620',linen:'#ece4cc',ember:'#ff3a28',hole:'#2a282e'};
   const tones=h=>{ const c=new THREE.Color(h); return [1.14,1,.72,.46].map(k=>c.clone().multiplyScalar(k)); };
   for(const m in LOOK){ const n='sg_'+m; if(!R.MATS.includes(n)){ R.MATS.push(n); W3.ramp.push(tones(LOOK[m])); } }
+}
+SGM.make=()=>{ if(!STORE.bar)return; const R=RIG, V=R.V, S=STORE.bar, AT={x:BOD.X(S.singer.x),z:BOD.Z(S.singer.y),hd:0,y:BOD.Y(S.stage.z)};
   const own=p=>{ const q=Object.assign({},p), pm=p.paint; q.m='sg_'+(p.m||'skin'); if(pm)q.paint=x=>{ const r=pm(x); return r?'sg_'+r:null; }; return q; };
   const B0=R.settle(R.build(castPose('singA'),null),0), MIC0=singMic(B0), MI=n=>R.MATS.indexOf(n), SH=MI('shirt'), PA=MI('pants'), SO=MI('shoes'), SK=MI('skin'), RED=MI('sg_shirt'), SRED=MI('sg_shoes');
   const FEM=(LOOKS.BUILDS||[]).find(b=>b[3])||['',1,{}], GS=WOMAN.SKIRT.gown, top=22.4, bare=WOMAN.NECK.strapless;
@@ -25,8 +27,7 @@ if(STORE.bar){ const R=RIG, V=R.V, S=STORE.bar, AT={x:BOD.X(S.singer.x),z:BOD.Z(
     const B=R.settle(R.build(P,null),0); B.props={}; a.B=B; singStep(a,dt);
     PCS.forEach((pc,i)=>FM.set(i,pc.on==='prop'?B.props[pc.n]:R.frameOf(pc.on||pc.n,B)));
     const q=cg.attributes.position.array; a.cord.forEach((c,i)=>{ q[i*3]=c.p.x; q[i*3+1]=c.p.y; q[i*3+2]=c.p.z; }); cg.attributes.position.needsUpdate=true;
-    if(SND.ctx&&SND.ctx.state==='running')voxStep(dt,performance.now()); }; }
-if(!STORE.bar)SGM.tick=()=>{};
+    if(SND.ctx&&SND.ctx.state==='running')voxStep(dt,performance.now()); }; };
 
 const E=(x,y,z,rx,ry,rz,c,yaw=0,pit=0,rol=0,grp)=>[x,y,z,rx,ry,rz,yaw,pit,rol,c,grp]; const pupPaint=()=>null; const BARP={lead:'d'};
 

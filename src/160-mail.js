@@ -25,7 +25,7 @@ if(MAIL.on){ const T=TILE, M=1/.84*T, X=BOD.XS, Z=BOD.ZS, G=(x,z)=>MODS.bodega.g
     const flats=MODS.apts&&MODS.apts.flats&&MODS.apts.flats.length?MODS.apts.flats.map(F=>F.n):['1A','1B','2A','2B','3A','3B','4A','4B','5A','5B'], RES=CITY.residents||[];
     fromPlace('house','house','THE APARTMENT HOUSE','flats',[]); fromPlace('apartments','apts','THE APARTMENTS','flats',[]);
     fromPlace('bodega','bodega','THE BODEGA','shop'); fromPlace('dojo','dojo','GHOST STREET','shop');
-    fromRoom('diner','diner','THE DINER','shop'); fromRoom('bar','bar','THE BAR','shop'); fromRoom('octo','aquarium','THE AQUARIUM','biz');
+    fromRoom('diner','diner','THE DINER','shop'); fromRoom('bar','bar','THE BAR','shop'); fromRoom('octo','aquarium','THE AQUARIUM','biz'); fromRoom('museum','museum','MUSEUM OF EARTH','biz');
     for(const R of (STORE.rooms||[]))if(/^av_/.test(R.id))fromRoom(R.id,R.id.slice(3),R.name,'biz');
     fromRoom('keep','keep','THE KEEP','biz'); fromRoom('cottage','cottage','THE HERB COTTAGE','biz');
     { const T0=CITY.place('tower'); if(T0)bld('tower','THE CIVIC TOWER',front(T0.at,T0.door),'flats',(CIVIC.row||[]).map(h=>({unit:h.name,dept:h.id,who:{type:'civic',ref:h.id,name:h.name}}))); }

@@ -11,7 +11,7 @@ BOD.KC={KMK,KPP,DGN,DGP,LAMPS,CATALOG,dungeonWall,dungeonFloorCol,castleArch,KAR
   const holed=f=>(x,y)=>[MAPSTAIR,...RING.stairs].some(S=>x>=S.x0&&x<S.x1&&y>=S.y0&&y<S.y1)?null:f(x,y);
   const C=v=>v&&v.e&&v.length===3?[v[0],v[1],v[2],1]:v;
   const faceTex=(w,h,fn)=>{ w=Math.max(1,Math.round(w)); h=Math.max(1,Math.round(h)); const im=new ImageData(w,h), d=im.data; let ie=null, e=null;
-    for(let j=0,k=0;j<h;j++)for(let i=0;i<w;i++,k+=4){ const v=fn(i,j); if(!v)continue; d[k]=Math.round(v[0]); d[k+1]=Math.round(v[1]); d[k+2]=Math.round(v[2]); d[k+3]=255;
+    for(let j=0,k=0;j<h;j++)for(let i=0;i<w;i++,k+=4){ const v=fn(i,j); if(!v||v.h)continue; d[k]=Math.round(v[0]); d[k+1]=Math.round(v[1]); d[k+2]=Math.round(v[2]); d[k+3]=255;
       if(v.length>3){ if(!ie){ ie=new ImageData(w,h); e=ie.data; } e[k]=d[k]; e[k+1]=d[k+1]; e[k+2]=d[k+2]; e[k+3]=255; } }
     return {map:{image:im},em:ie?{image:ie}:null}; };
   const bq=(a,b,c,d,tx,kind)=>BATCH.add([...a,...b,...c,...a,...c,...d],[0,0,1,0,1,1,0,0,1,1,0,1],tx.map.image,tx.em?tx.em.image:null,kind);
@@ -165,7 +165,7 @@ BOD.KC={KMK,KPP,DGN,DGP,LAMPS,CATALOG,dungeonWall,dungeonFloorCol,castleArch,KAR
     const rs=hash(Math.floor(cx*7),Math.floor(cy*7),621); if(Math.abs(r-.2)<.022)return [36,36,38]; if(r<.07)return [86,84,80];
     const q=((Math.floor((dx+1)*24/3)+Math.floor((dy+1)*24/3))&1); let c=q?[98,95,90]:[62,61,59]; if(r>.24&&hash(Math.floor(x*24),Math.floor(y*24),623)<.12+.15*rs)c=[110,76,52];
     return c; }); };
-  const drain=(ax,e,dir,a)=>{ DR.push({ax,e,a}); const HL=.62, OUT=.82, R=.22, x0=ax==='x'?a-HL-R:Math.min(e,e+dir*(OUT+R)), x1=ax==='x'?a+HL+R:Math.max(e,e+dir*(OUT+R)), y0=ax==='x'?Math.min(e,e+dir*(OUT+R)):a-HL-R, y1=ax==='x'?Math.max(e,e+dir*(OUT+R)):a+HL+R;
+  const HOLE=[0,0,0]; HOLE.h=1; const drain=(ax,e,dir,a)=>{ DR.push({ax,e,a,dir}); const HL=.62, OUT=.82, R=.22, x0=ax==='x'?a-HL-R:Math.min(e,e+dir*(OUT+R)), x1=ax==='x'?a+HL+R:Math.max(e,e+dir*(OUT+R)), y0=ax==='x'?Math.min(e,e+dir*(OUT+R)):a-HL-R, y1=ax==='x'?Math.max(e,e+dir*(OUT+R)):a+HL+R;
     const sd=hash(Math.floor(a*7),Math.floor(e*7),631);
     feat(x0,y0,x1,y1,(x,y)=>{ const u=(ax==='x'?x:y)-a, w=((ax==='x'?y:x)-e)*dir, px=Math.floor(x*24), py=Math.floor(y*24), hp=hash(px,py,633); if(w<0)return null;
       const ou=Math.abs(u)-HL, ow=w-OUT, out=Math.max(ou,ow);
@@ -175,7 +175,7 @@ BOD.KC={KMK,KPP,DGN,DGP,LAMPS,CATALOG,dungeonWall,dungeonFloorCol,castleArch,KAR
       if(sd<.35&&Math.hypot(u-(sd-.17)*3,w-OUT*.8)<.1)return hp<.5?[236,232,226]:[206,202,214];
       if(Math.abs(u)>HL-.08||w>OUT-.08||w<.06){ const lit=(u<0)!==(dir<0); return Math.abs(u)>HL-.03||w>OUT-.03?(lit?[118,114,108]:[58,56,54]):[86,84,80]; }
       const fu=(u+HL-.08)/((HL-.08)*2), fw=(w-.06)/(OUT-.14), cu=fu*4-Math.floor(fu*4), cw=fw*6-Math.floor(fw*6);
-      if(cu>.1&&cu<.9&&cw>.24&&cw<.82)return cw<.34||cu<.18?[26,24,24]:[10,10,12];
+      if(cu>.1&&cu<.9&&cw>.24&&cw<.82)return cw<.34||cu<.18?[26,24,24]:HOLE;
       return hash(Math.floor(fu*4),Math.floor(fw*6),639)<.25&&hp<.5?[112,78,54]:hp<.3?[104,102,98]:[78,77,75]; }); };
   BOD.kerbs=[{ax:'x',at:CURB,a0:MAP.x0,a1:MAP.x1,n:1},{ax:'x',at:FAR,a0:MAP.x0,a1:RG.wr0-KR,n:-1,e1:1},{ax:'x',at:FAR,a0:RG.wr1+KR,a1:AV.r0-KR,n:-1,e0:1,e1:1},{ax:'x',at:FAR,a0:AV.r1+KR,a1:MAP.x1,n:-1,e0:1},
     {ax:'y',at:AV.r0,a0:FAR+KR,a1:RG.nr0-KR,n:1,e0:1,e1:1},{ax:'y',at:AV.r1,a0:FAR+KR,a1:RG.nr1-KR,n:-1,e0:1,e1:1},

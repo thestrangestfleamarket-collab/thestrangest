@@ -5,6 +5,7 @@ const {chromium}=require('playwright'); const fs=require('fs'), path=require('pa
 const OUT=process.argv[2]||'/tmp/tricount', PAGE=path.resolve(process.argv[3]||path.resolve(__dirname,'../dist/market.html')), ONLY=process.argv[4]?process.argv[4].split(','):null;
 const SPOTS=[['bodega','()=>[12,3]'],['inbodega','()=>[9.9,-3.4]'],['parkgate','()=>{ const P=PARK,B=__dbg.MAPK.BOD; return [B.XS(P.round[0]+(P.ox||0)),B.ZS(P.y0+(P.oy||0))-1.2]; }'],['mainrow','()=>[33,2.5]'],
   ['barmuseum','()=>[-57,2.5]'],['holodeck','()=>[118.6,2.5]'],['parkmid','()=>{ const P=PARK,B=__dbg.MAPK.BOD; return [B.XS(P.round[0]+(P.ox||0))+4,B.ZS(P.round[1]+(P.oy||0))]; }'],
+  ['fountain','()=>{ const P=PARK,B=__dbg.MAPK.BOD,S=FOUNT.S; return [B.XS(S.C.x+(P.ox||0)),B.ZS(S.C.y-S.R-1.5+(P.oy||0))]; }'],['parknorth','()=>{ const P=PARK,B=__dbg.MAPK.BOD; return [B.XS(P.round[0]+(P.ox||0))+4,B.ZS(P.y1-12+(P.oy||0))]; }'],
   ['barinside','()=>[-69.9,-8]'],['night','()=>(__dbg.CLOCK.set(22),[12,3])']].filter(s=>!ONLY||ONLY.includes(s[0]));
 (async()=>{ const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist']}); const pg=await b.newPage({viewport:{width:1920,height:1080}}); pg.setDefaultTimeout(600000);
   pg.on('pageerror',e=>console.log('ERR',e.message.slice(0,200)));

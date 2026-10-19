@@ -30,17 +30,16 @@ process.on('unhandledRejection',e=>{ errs.push('TEST '+String(e&&e.message||e).s
       g.putImageData(o,0,0); return {n,noisy:m,png:c.toDataURL('image/png').split(',')[1]}; },R);
     fs.writeFileSync(path.join(OUT,n+'.png'),Buffer.from(r.png,'base64')); return {n:r.n,noisy:r.noisy}; };
   await pg.keyboard.press('v'); await pg.waitForTimeout(1500);
-  const E=-Math.PI/2, Wd=Math.PI/2;
-  rep.walk=[]; for(let k=0;k<13;k++){ const x=150+4*k; await at(x,E,2500); await shot('walk-'+String(k).padStart(2,'0')); rep.walk.push([x,(await pg.evaluate(()=>window.SUNDBG&&SUNDBG().still))]); }
-  const cset=()=>pg.evaluate(()=>{ const m={}; __scene.traverseVisible(o=>{ if(o.isMesh&&o.castShadow){ const k=(o.name||o.type)+'<'+((o.parent&&(o.parent.name||o.parent.type))||'')+'<'+((o.parent&&o.parent.parent&&(o.parent.parent.name||o.parent.parent.type))||''); m[k]=(m[k]||0)+1; } }); return m; });
-  await at(110,E); const c1=await cset(); await at(190,E); const c2=await cset(); rep.casterDiff=Object.keys({...c1,...c2}).filter(k=>(c1[k]||0)!==(c2[k]||0)).map(k=>[k,c1[k]||0,c2[k]||0]).slice(0,40);
-  rep.ab={}; for(const [P,yaw,tag] of [[110,E,'E110'],[150,Wd,'W150'],[190,Wd,'W190'],[230,E,'E230']]){
-    await at(P+11,yaw); await at(P,yaw); const a=await shot('ab-'+tag+'-a'); await pg.waitForTimeout(1500); const a2=await shot('ab-'+tag+'-a2');
-    await at(P-11,yaw); await at(P,yaw); const b2=await shot('ab-'+tag+'-b');
-    rep.ab[tag]=await diffm(a,b2,a2,'abd-'+tag); }
+  const E=-Math.PI/2, Wd=Math.PI/2, cen=()=>pg.evaluate(()=>window.SUNDBG&&SUNDBG().still);
+  rep.recentre={}; for(const [P,yaw,tag] of [[130,E,'E130'],[170,E,'E170'],[150,Wd,'W150'],[190,Wd,'W190'],[220,Wd,'W220']]){
+    await at(P-40,yaw,2500); await at(P-11,yaw); await at(P,yaw); const a=await shot('rc-'+tag+'-a'); await pg.waitForTimeout(1500); const a2=await shot('rc-'+tag+'-a2'); const n1=await cen();
+    await at(P+40,yaw,2500); await at(P,yaw); const b2=await shot('rc-'+tag+'-b'); const n2=await cen();
+    rep.recentre[tag]={...(await diffm(a,b2,a2,'rcd-'+tag)),redraws:[n1,n2]}; }
+  rep.walk=[]; for(let k=0;k<16;k++){ const x=128+3*k; await at(x,E,1500); await shot('walk-'+String(k).padStart(2,'0')); rep.walk.push([x,await cen()]); }
   await pg.keyboard.press('v'); await pg.keyboard.press('v'); await pg.waitForTimeout(1500);
   await at(150,-Math.PI/4); await pg.mouse.move(480,270);
-  rep.zoom=[]; const z0=await shot('iso-z0'); for(let i=1;i<=4;i++){ await pg.mouse.wheel(0,i<3?400:-400); await pg.waitForTimeout(2500); const zz=await shot('iso-z'+i); rep.zoom.push([await pg.evaluate(()=>window.CAMW&&CAMW()),await pg.evaluate(()=>window.SUNDBG&&SUNDBG().still)]); }
+  rep.zoom=[]; const z0=await shot('iso-z0'); for(let i=1;i<=4;i++){ await pg.mouse.wheel(0,i<3?400:-400); await pg.waitForTimeout(2500); await shot('iso-z'+i); rep.zoom.push([await pg.evaluate(()=>window.CAMW&&CAMW()),await cen()]); }
   await pg.waitForTimeout(1500); const zb=await shot('iso-zback'); await pg.waitForTimeout(1500); const zb2=await shot('iso-zback2'); rep.zoomBack=await diffm(z0,zb,zb2,'isod-zoom');
+  const t0=await pg.evaluate(()=>SUNLOG.length); await pg.waitForTimeout(30000); rep.idle30=await pg.evaluate(t0=>SUNLOG.slice(t0),t0);
   rep.sun=await pg.evaluate(()=>window.SUNDBG&&SUNDBG()); rep.sunlog=await pg.evaluate(()=>window.SUNLOG);
   fin(); await b.close(); })();

@@ -2940,3 +2940,14 @@ building until you go inside"; `054-apts.js`, `075-main-13.js`)
   Fairy rings (`141b-fairy.js`): every 70-160 s, up to 3 at a time, a ring of 9-14 mushrooms (four kinds: red, white, brown, glowing
   blue) pops up on a park lawn 8-24 tiles from you, stays 4-6 minutes and fades; double-click to gather it (morels, or moonglows from a
   blue ring). `FAIRYAT()` makes one.
+- **The tall grass in soft tussocks, swaying, marked by how you move** (owner, 19 Oct 2026: "i like the grass. it looks too blocky. can
+  you make it a little more crasslike and sway like the trees, give me mockups. also diferent ways walking through it might affect it";
+  of the mockups he picked A, SOFT TUSSOCKS; `WEEDS.lawnInit` in `140-weeds.js`): the same solid mass, its top broken into rounded clumps
+  (lumps some 0.8 tiles apart over the slow roll), its edge no longer a hedge wall: the last tile or so slopes down in a rounded shoulder
+  whose width wobbles, the outline jittered, only a low lip at the ground. Lit by its own faces in the flat bands; no blades, no grain. It
+  sways in the park trees' own wind (`PARK.sway`, `PARK.windK`), more at the top, gusts rolling across. How you move leaves its own mark
+  (from the rig's state): walking a narrow parted path (0.7 tiles, back up in some 3 s); running a wider wake (1.05) pushed outward with
+  a short rustling ripple, back in 1.5 s; crouching barely brushes the tops (0.5, shallow, 1 s); a jump nothing in the air and a round
+  flattened patch where you land (1.5, 3 s); a roll, fall or lying down a long crushed lane (1.15, 5 s). The walkers near you still press
+  it. `WEEDS.pressAt(x,z)` says how pressed it is at a point (0 to 1). Cost about as before: at most 2,048 top triangles a chunk plus its
+  low lips, one program, no light.

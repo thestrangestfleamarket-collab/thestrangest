@@ -4,7 +4,7 @@ const fin=()=>{ rep.errors=errs.slice(0,40); fs.writeFileSync(path.join(OUT,'rep
 process.on('unhandledRejection',e=>{ errs.push('TEST '+String(e&&e.message||e).slice(0,400)); fin(); process.exit(1); });
 (async()=>{ fs.mkdirSync(OUT,{recursive:true}); const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist']});
   const pg=await b.newPage({viewport:{width:960,height:540}}); pg.setDefaultTimeout(900000); pg.on('pageerror',e=>errs.push(e.message.slice(0,300))); pg.on('console',m=>{ if(m.type()==='error')errs.push(m.text().slice(0,300)); });
-  await pg.goto('file://'+PAGE+'?fresh=1&hour=13&wx=CLEAR',{waitUntil:'commit'});
+  await pg.goto('file://'+PAGE+'?fresh=1&wx=CLEAR',{waitUntil:'commit'});
   for(let i=0;i<900;i++){ await pg.waitForTimeout(500); if(await pg.evaluate(()=>!!window.__started&&!!window.__dbg))break; }
   await pg.waitForTimeout(6000);
   await pg.evaluate(()=>{ window.SUNLOG=[]; window.DN&&DN.set('day'); });
@@ -22,18 +22,23 @@ process.on('unhandledRejection',e=>{ errs.push('TEST '+String(e&&e.message||e).s
       const o=g.createImageData(c.width,c.height); let n=0; for(let i=0;i<da.data.length;i+=4){ const d=Math.abs(da.data[i]-db.data[i])+Math.abs(da.data[i+1]-db.data[i+1])+Math.abs(da.data[i+2]-db.data[i+2]); const on=d>30; if(on)n++; o.data[i]=on?255:da.data[i]*.3; o.data[i+1]=on?0:da.data[i+1]*.3; o.data[i+2]=on?0:da.data[i+2]*.3; o.data[i+3]=255; }
       g.putImageData(o,0,0); return {n,pct:+(100*n/(c.width*c.height)).toFixed(2),png:c.toDataURL('image/png').split(',')[1]}; },[A,Bb]);
     fs.writeFileSync(path.join(OUT,n+'.png'),Buffer.from(r.png,'base64')); return {n:r.n,pct:r.pct}; };
+  const diffm=async(a,b2,a2,n)=>{ const R=[a,b2,a2].map(f=>fs.readFileSync(f).toString('base64'));
+    const r=await pg.evaluate(async R=>{ const ld=s=>new Promise(r=>{ const i=new Image(); i.onload=()=>r(i); i.src='data:image/png;base64,'+s; }); const I=await Promise.all(R.map(ld)), c=document.createElement('canvas'); c.width=I[0].width; c.height=I[0].height; const g=c.getContext('2d'), W=c.width, H=c.height;
+      const D=I.map(i=>{ g.drawImage(i,0,0); return g.getImageData(0,0,W,H).data; }), df=(p,q,i)=>Math.abs(p[i]-q[i])+Math.abs(p[i+1]-q[i+1])+Math.abs(p[i+2]-q[i+2])>30;
+      const nz=new Uint8Array(W*H); for(let y=0;y<H;y++)for(let x=0;x<W;x++)if(df(D[0],D[2],(y*W+x)*4))for(let v=-3;v<=3;v++)for(let u=-3;u<=3;u++){ const X=x+u, Y=y+v; if(X>=0&&Y>=0&&X<W&&Y<H)nz[Y*W+X]=1; }
+      const o=g.createImageData(W,H); let n=0, m=0; for(let i=0;i<W*H;i++){ const k=i*4, d=df(D[0],D[1],k), on=d&&!nz[i]; if(on)n++; if(d&&nz[i])m++; o.data[k]=on?255:d?255:D[0][k]*.35; o.data[k+1]=on?0:d?220:D[0][k+1]*.35; o.data[k+2]=on?0:d?0:D[0][k+2]*.35; o.data[k+3]=255; }
+      g.putImageData(o,0,0); return {n,noisy:m,png:c.toDataURL('image/png').split(',')[1]}; },R);
+    fs.writeFileSync(path.join(OUT,n+'.png'),Buffer.from(r.png,'base64')); return {n:r.n,noisy:r.noisy}; };
   await pg.keyboard.press('v'); await pg.waitForTimeout(1500);
-  const E=-Math.PI/2;
-  rep.walk=[]; for(let k=0;k<12;k++){ const x=46+4*k; await at(x,E,2500); await shot('walk-'+String(k).padStart(2,'0')); rep.walk.push([x,(await pg.evaluate(()=>window.SUNDBG&&SUNDBG().still))]); }
-  rep.ab={}; for(const [P,yaw,tag] of [[60,E,'behindE'],[80,Math.PI/2,'behindW']]){
-    await at(P+11,yaw); await at(P,yaw); const a=await shot('ab-'+tag+'-a');
+  const E=-Math.PI/2, Wd=Math.PI/2;
+  rep.walk=[]; for(let k=0;k<13;k++){ const x=150+4*k; await at(x,E,2500); await shot('walk-'+String(k).padStart(2,'0')); rep.walk.push([x,(await pg.evaluate(()=>window.SUNDBG&&SUNDBG().still))]); }
+  rep.ab={}; for(const [P,yaw,tag] of [[110,E,'E110'],[150,Wd,'W150'],[190,E,'E190'],[230,Wd,'W230']]){
+    await at(P+11,yaw); await at(P,yaw); const a=await shot('ab-'+tag+'-a'); await pg.waitForTimeout(1500); const a2=await shot('ab-'+tag+'-a2');
     await at(P-11,yaw); await at(P,yaw); const b2=await shot('ab-'+tag+'-b');
-    await at(P,yaw,9000); const c=await shot('ab-'+tag+'-c');
-    rep.ab[tag]={ab:await diff(a,b2,'abd-'+tag+'-ab'),ac:await diff(a,c,'abd-'+tag+'-ac')}; }
+    rep.ab[tag]=await diffm(a,b2,a2,'abd-'+tag); }
   await pg.keyboard.press('v'); await pg.keyboard.press('v'); await pg.waitForTimeout(1500);
-  await at(70,-Math.PI/4); await pg.mouse.move(480,270);
-  rep.zoom=[]; const z0=await shot('iso-z0'); for(let i=1;i<=4;i++){ await pg.mouse.wheel(0,i<3?500:-500); await pg.waitForTimeout(2500); await shot('iso-z'+i); rep.zoom.push(await pg.evaluate(()=>window.CAMW&&CAMW())); }
-  await pg.mouse.wheel(0,-2000); await pg.waitForTimeout(2500); const zb=await shot('iso-zback'); rep.zoomBack=await diff(z0,zb,'isod-zoom');
-  await at(70+11,-Math.PI/4); await at(70,-Math.PI/4); const ia=await shot('iso-a'); await at(70-11,-Math.PI/4); await at(70,-Math.PI/4); const ib=await shot('iso-b'); rep.isoAB=await diff(ia,ib,'isod-ab');
+  await at(150,-Math.PI/4); await pg.mouse.move(480,270);
+  rep.zoom=[]; const z0=await shot('iso-z0'); for(let i=1;i<=4;i++){ await pg.mouse.wheel(0,i<3?400:-400); await pg.waitForTimeout(2500); const zz=await shot('iso-z'+i); rep.zoom.push([await pg.evaluate(()=>window.CAMW&&CAMW()),await pg.evaluate(()=>window.SUNDBG&&SUNDBG().still)]); }
+  await pg.waitForTimeout(1500); const zb=await shot('iso-zback'); await pg.waitForTimeout(1500); const zb2=await shot('iso-zback2'); rep.zoomBack=await diffm(z0,zb,zb2,'isod-zoom');
   rep.sun=await pg.evaluate(()=>window.SUNDBG&&SUNDBG()); rep.sunlog=await pg.evaluate(()=>window.SUNLOG);
   fin(); await b.close(); })();

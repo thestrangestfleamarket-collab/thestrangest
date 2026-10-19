@@ -55,7 +55,7 @@ function frame(now){ requestAnimationFrame(frame); renderer.info.reset(); const 
     if(!ASTEP.you.B||RAG.blend||ED.anim||st.w>0.01||st.target>0||st.stop||st.bank||st.fstep||ASTEP.gate(ASTEP.you,dt)){ st.world=RAG.on?null:{x:pos.x,z:pos.z,y:py,hd:heading,kx:1/W3.group.scale.x,ky:1/W3.group.scale.y,gnd:groundY,t:now/1000}; B=ED.anim?ED.animPose():RIG.pose(st); ragBlend(B); ragStrikes(B,J0,J0t?(now-J0t)/1000:0); J0=B.J; J0t=now; ASTEP.you.B=B; } else { B=ASTEP.you.B; PHYOU.strikes=[]; } }
   const hdA=(RAG.on?RAG.hd:heading)-a;
   if(loose.length||FLOATS.bodies.some(b=>Math.hypot(b.x[0]*TL-pos.x,-b.x[1]*TL-pos.z)<2.5))RIG.draw(B,cloud,hdA,uimg,PW,PICH,AX,AY,1,false);
-  W3.place(B,pos.x,py,pos.z,RAG.on?RAG.hd:heading,hdA,ZU); PB.step(dt,B,pos.x,py,pos.z,RAG.on?RAG.hd:heading,groundY(pos.x,pos.z),RAG.on); if(ED.on)ED.tick();
+  W3.place(B,pos.x,py,pos.z,RAG.on?RAG.hd:heading,hdA,ZU); if(window.AVS)AVS.tick(dt,B); PB.step(dt,B,pos.x,py,pos.z,RAG.on?RAG.hd:heading,groundY(pos.x,pos.z),RAG.on); if(ED.on)ED.tick();
   phyYouNow(dt); looseAcc+=dt; let nst=0; while(looseAcc>=PHH&&nst<6){ looseAcc-=PHH; nst++; phyStep(loose,STATIC,PHH,null,null); } if(nst>=6)looseAcc=0; looseDraw();
   if(PERFX.poolNear()){ const px=FLOATS.px??pos.x, pz=FLOATS.pz??pos.z, k=1/Math.max(dt,1e-3); FLOATS.step(dt,{inWater:!!(st.water&&st.water.in),x:pos.x,z:pos.z,vx:(pos.x-px)*k,vz:(pos.z-pz)*k}); FLOATS.px=pos.x; FLOATS.pz=pos.z; }
   if(typeof UI!=='undefined'&&UI.freeCam)LITE.tick(dt,UI.camT.x,UI.camT.y,UI.camT.z); else LITE.tick(dt,pos.x,py+1.2*TILE,pos.z);

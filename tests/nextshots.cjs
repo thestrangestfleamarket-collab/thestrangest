@@ -50,5 +50,8 @@ process.on('unhandledRejection',e=>{ errs.push('TEST '+String(e&&e.message||e).s
   rep.spots=await pg.evaluate(()=>window.RAYS&&RAYS.spots&&RAYS.spots.map(s=>({x:+s.x.toFixed(1),z:+s.z.toFixed(1),o:!!s.o})));
   await pg.keyboard.press('m'); await pg.waitForTimeout(1500); rep.mush=await pg.evaluate(()=>window.MUSHDBG&&MUSHDBG());
   await shot('escape',()=>{ const M=__dbg.MAPK, a=M.MODS.apts.A, B=M.BOD, zs=B.ZS((B.CURB+B.FAR)/2), z0=B.Z(a.y0), z1=B.Z(a.y1), zf=Math.abs(z0-zs)<Math.abs(z1-zs)?z0:z1, t=Math.abs(B.ZS(1)-B.ZS(0)); STORE.goTo(B.X(a.x0+11.9),zf+Math.sign(zs-zf)*3*t,'up'); },4000);
+  await shot('street-hold',()=>{ const B=__dbg.MAPK.BOD; STORE.goTo(B.XS(99),B.ZS((B.CURB+B.FAR)/2),'up'); },3000);
+  await pg.keyboard.press('1'); await pg.mouse.move(600,300); await pg.waitForTimeout(800); await shot('hold-aim',null,0); await pg.mouse.down(); await pg.waitForTimeout(120); await pg.mouse.up(); await pg.waitForTimeout(150); await shot('hold-swing',null,0); await pg.keyboard.press('1'); await pg.keyboard.press('1'); await pg.keyboard.press('1');
+  rep.bodegaIn=await pg.evaluate(async()=>{ try{ STORE.enter('bodega'); }catch(e){ return 'enter: '+e.message; } await new Promise(r=>setTimeout(r,7000)); return window.INTDBG?INTDBG():'no INTDBG'; }); await shot('bodega-in',null,1500);
   rep.frog=await pg.evaluate(()=>{ const N=__dbg.npcs().find(n=>n.key==='scooterfrog'); return N&&{x:N.st.x,z:N.st.z,to:N.st.to,wait:N.st.wait,hold:N.st.hold,far:N.far,mode:N.mode,life:!!N.life,free:N.st.to?N.free(N.st.to.x,N.st.to.z,N.st.R):null,freeHere:N.free(N.st.x,N.st.z,N.st.R)}; });
   fin(); await b.close(); })();

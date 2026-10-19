@@ -23,24 +23,23 @@ jobs:
           python-version: '3.12'
       - run: npm ci --no-audit --no-fund
       - run: npx playwright install --with-deps chromium
-      - name: Build
-        run: python3 build.py
-      - name: Profiling copy
-        run: python3 tools/perfprof.py
-      - name: Site opens
-        run: node tests/site.cjs
-        continue-on-error: true
-      - name: Start and park cost
-        run: node tests/startprof.cjs out/startprof.json
-        continue-on-error: true
-      - name: Screenshots
-        run: node tests/batchshots.cjs out/shots
-        continue-on-error: true
+      - name: Build, site, profile, shots
+        run: |
+          mkdir -p out; set +e
+          python3 build.py > out/log.txt 2>&1; echo "build $?" >> out/status.txt
+          node tests/site.cjs >> out/log.txt 2>&1; echo "site $?" >> out/status.txt
+          MIN=0 python3 build.py >> out/log.txt 2>&1 && python3 tools/perfprof.py >> out/log.txt 2>&1; echo "prof $?" >> out/status.txt
+          node tests/startprof.cjs out/startprof.json > out/startprof.log 2>&1; echo "startprof $?" >> out/status.txt
+          node tests/batchshots.cjs out/shots >> out/log.txt 2>&1; echo "shots $?" >> out/status.txt
+          true
+      - name: Report
+        if: always()
+        run: python3 tools/cireport.py out
       - name: Publish results to a branch
         if: always()
         run: |
           git config user.name ci; git config user.email ci@example.com
-          mkdir -p out; D=$(mktemp -d); cp -r out "$D/"; git checkout --orphan "ci-out-$JOB" && git rm -rqf . && cp -r "$D/out" . && git add -f out && git commit -qm "results $GITHUB_SHA" && git push -f origin "HEAD:refs/heads/ci-out-$JOB"
+          D=$(mktemp -d); cp -r out "$D/"; git checkout -q --orphan "ci-out-$JOB" && git rm -rqf . && cp -r "$D/out" . && git add -f out && git commit -qm "results $GITHUB_SHA" && git push -f origin "HEAD:refs/heads/ci-out-$JOB" > push.log 2>&1 || { echo "::error title=push::$(tr '\n' ' ' < push.log | cut -c1-900)"; exit 1; }
         env:
           JOB: ${{ github.job }}
   base:
@@ -62,14 +61,12 @@ jobs:
           python-version: '3.12'
       - run: npm ci --no-audit --no-fund
       - run: npx playwright install --with-deps chromium
-      - run: cp new/tests/startprof.cjs tests/ && cp new/tools/perfprof.py tools/ && python3 build.py && python3 tools/perfprof.py
-      - name: Start and park cost before
-        run: node tests/startprof.cjs out/startprof-before.json
-        continue-on-error: true
-      - name: Publish results to a branch
-        if: always()
+      - name: Profile main
         run: |
-          git config user.name ci; git config user.email ci@example.com
-          mkdir -p out; D=$(mktemp -d); cp -r out "$D/"; git checkout --orphan "ci-out-$JOB" && git rm -rqf . && cp -r "$D/out" . && git add -f out && git commit -qm "results $GITHUB_SHA" && git push -f origin "HEAD:refs/heads/ci-out-$JOB"
-        env:
-          JOB: ${{ github.job }}
+          mkdir -p out; set +e; cp new/tests/startprof.cjs tests/; cp new/tools/perfprof.py new/tools/cireport.py tools/
+          MIN=0 python3 build.py > out/log.txt 2>&1 && python3 tools/perfprof.py >> out/log.txt 2>&1; echo "prof $?" >> out/status.txt
+          node tests/startprof.cjs out/startprof.json > out/startprof.log 2>&1; echo "startprof $?" >> out/status.txt
+          true
+      - name: Report
+        if: always()
+        run: python3 tools/cireport.py out

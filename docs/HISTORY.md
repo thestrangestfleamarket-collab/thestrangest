@@ -1885,3 +1885,15 @@ U-turn, a running circle, jump, running jump, roll, kick). Found and fixed:
 - **Turns snapping**: your heading eases to where you steer (two thirds of the way in about 80 ms), at most 540 degrees a second as before.
 The lean into turns is the rig's own: 15 degrees round a running circle (he leans 14). Measured: a planted foot moves 1 to 4 cm a second
 (walk, run, circles, stops, stairs), 4 through a sharp quarter turn.
+
+**Built like the Walker; knees only bend forward** (owner, 19 Oct 2026: "run left and right and see how it looks (not good)"; then "make
+him built more like shape of the other avatar, short, stocky, bigger head, less realistic"; then, of a running frame, "legs bending
+backwards?"): the mannequin is reshaped, once, when he is made, to the Walker's own rest skeleton (`RIG.restOf()`): each joint where the
+Walker's is (short legs, the hips at his, the arms to mid-thigh), each bone's flesh carried with it, stretched along the bone to its new
+length and thickened across it (legs 1.5, arms 1.4, hands and feet 1.35, neck 1.5, body 1.25); the bones re-bound there. His own head is
+folded away inside a round one the Walker's size (an icosphere, 320 triangles, smooth, on the head bone). With the rig's proportions his
+moves fit him: the run, the reversals left and right, the jump. Also: the run's flight (both feet a little up) no longer counts as being
+off his feet (only more than 6 of the rig's units does), so he no longer drops to a kneel after a reversal; moving, only 15% of the rig's
+extra hip dip is passed on (all of it standing: sitting, crouching); the run's elbows are the rig's again. **Knees**: the rig itself
+bends a knee backwards in some run frames (37 in 4 s); each knee now bends toward the way his hips face (none backwards, walking or
+running). Planted feet: under 1 cm a second (walk, run, circles, stops, stairs). 722 triangles.

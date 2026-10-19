@@ -4,7 +4,7 @@ const GPH=window.GPH={ms:0,n:0};
     [/wardrobe|fridge|bookshelf|cabinet|bed$|dumpster|speaker|shelving|garden lantern|long table|stump|chest|repair bench|planter|sofa|desk|TV on|brazier/i,70],
     [/chair|stool|table|bench|barrel|screen|floor lamp|rope line|newspaper rack|^bin$|box fan|bokken|umbrella|vacuum|andon|ground lantern|gooseneck|iron and|buckets|trash can/i,28],
     [/crate|box|bags|bottle|empties|jar|candle|incense|radio|computer|camera|tapes|glasses|till|lottery|pot|fern|fig|lily|lilac|broom|bone|skull|old TV|books/i,120]];
-  let R=null, world=null, gm=null, P0=null, N0=null, you=null, fb=null, held=null, acc=0, lastHit=null, ready=false, zt=0, shade=0, hooks=null, eq=null, zn=0, picks=[], LIGHTS=null, lk=null, fxL=null, fxM=null, lx=0, lz=0, ly=0, live=0;
+  let R=null, world=null, gm=null, P0=null, N0=null, you=null, fb=null, held=null, acc=0, lastHit=null, ready=false, zt=0, shade=0, hooks=null, eq=null, zn=0, picks=[], cat=false, want=null, pre=new Set(), pt=0, LIGHTS=null, lk=null, fxL=null, fxM=null, lx=0, lz=0, ly=0, live=0;
   const items=[], act=new Set(), stat=new Map(), owned=new Set(), byB=new Map(), SKIP=new Map(), FXR=new Map();
   const V=new THREE.Vector3(), Q=new THREE.Quaternion(), M4=new THREE.Matrix4(), M5=new THREE.Matrix4(), S1=new THREE.Vector3(1,1,1);
   const SPLIT=/boxes|crates|glasses|empties|tapes|bones|bottles/i, cls=n=>{ for(const [r,d] of CLS)if(r.test(n))return d; return 0; };
@@ -19,7 +19,7 @@ const GPH=window.GPH={ms:0,n:0};
     for(let go=1;go;){ go=0; for(let i=0;i<C.length&&!go;i++)for(let j=i+1;j<C.length;j++)if(joins(C[i],C[j])){ const p=C[i], q=C.splice(j,1)[0]; p.L.push(...q.L); for(let k=0;k<3;k++){ p.a[k]=Math.min(p.a[k],q.a[k]); p.b[k]=Math.max(p.b[k],q.b[k]); } go=1; break; } }
     return C; };
   const ov=(p,q,e)=>p.a[0]<q.b[0]-e&&q.a[0]<p.b[0]-e&&p.a[1]<q.b[1]-e&&q.a[1]<p.b[1]-e&&p.a[2]<q.b[2]-e&&q.a[2]<p.b[2]-e;
-  function catalog(){ gm=BOD.goodsMesh;
+  function catalog(){ if(cat)return; cat=true; gm=BOD.goodsMesh;
     if(gm&&BOD.goods){ const g=gm.geometry, pa=g.attributes.position; pa.setUsage(THREE.DynamicDrawUsage); g.attributes.normal.setUsage(THREE.DynamicDrawUsage); P0=pa.array.slice(); N0=g.attributes.normal.array.slice();
       for(const G of BOD.goods){ const a=[1e9,1e9,1e9], b=[-1e9,-1e9,-1e9]; for(let v=G.v0;v<G.v1;v++)for(let k=0;k<3;k++){ const q=P0[v*3+k]; if(q<a[k])a[k]=q; if(q>b[k])b[k]=q; } items.push(mk(null,'v',a,b,{name:G.k,m:G.m,v0:G.v0,v1:G.v1})); }
       g._bvhDyn=true; g.computeBoundingSphere(); g.boundingSphere.radius+=30*T; g.boundingBox=null; gm.frustumCulled=false; }
@@ -68,7 +68,7 @@ const GPH=window.GPH={ms:0,n:0};
     for(const it of act)if(it.rest)add(it,[it.a[0],it.a[1]-.06*T,it.a[2],it.b[0],it.a[1],it.b[2]],true);
     for(const [key,s] of stat)if(!W.has(key)){ for(const c of s.cs)world.removeCollider(c,false); stat.delete(key); }
     for(const [key,b] of W)if(!stat.has(key))stat.set(key,{b,cs:(Array.isArray(b[0])?b:[b]).map(q=>world.createCollider(R.ColliderDesc.cuboid((q[3]-q[0])/2,(q[4]-q[1])/2,(q[5]-q[2])/2).setTranslation((q[0]+q[3])/2,(q[1]+q[4])/2,(q[2]+q[5])/2).setFriction(.8).setCollisionGroups(G0),fb))}); };
-  const pickList=()=>{ const S=new Set(); for(const it of act){ if(it.k==='v')S.add(gm); else if(it.k==='i')for(const q of it.inst)S.add(q[0]); else for(const p of it.parts)S.add(p.me); } picks=[...S]; };
+  const pickList=(A=act)=>{ const S=new Set(); for(const it of A){ if(it.k==='v')S.add(gm); else if(it.k==='i')for(const q of it.inst)S.add(q[0]); else for(const p of it.parts)S.add(p.me); } picks=[...S]; };
   const zone=()=>{ if(++zn%40===0)LIGHTS=null; more(); const lo=py-1.1*T, hi=py+2.4*T;
     for(const it of items){ const t=it.rb?it.rb.translation():it.t, d=Math.hypot(t.x-pos.x,t.z-pos.z), b=t.y-it.h[1], inL=b>lo&&b<hi;
       if(!it.rb){ if(d<RS&&inL)on(it); } else if(it!==held&&(d>RF||!inL)&&it.rb.isSleeping())off(it); }
@@ -112,8 +112,12 @@ const GPH=window.GPH={ms:0,n:0};
   const grab=it=>{ if(held||!it.rb)return; held=it; it.rb.setBodyType(R.RigidBodyType.KinematicPositionBased,true); it.rb.collider(0).setCollisionGroups(GH); RIG.act(st,'carry'); };
   const throwTo=(it,g)=>{ held=null; RIG.release(st,'carry'); it.rb.setBodyType(R.RigidBodyType.Dynamic,true); it.rb.collider(0).setCollisionGroups(GI); const h=hand(), dx=g.x-h.x, dz=g.z-h.z, d=Math.max(.5,Math.hypot(dx,dz)), sp=Math.min(9,3+d*.9)*Math.min(1,Math.sqrt(8/Math.max(8,it.m)));
     it.rb.setLinvel({x:dx/d*sp,y:2.6+d*.25,z:dz/d*sp},true); it.rb.setAngvel({x:(Math.random()-.5)*6,y:(Math.random()-.5)*6,z:(Math.random()-.5)*6},true); };
-  GPH.tick=dt=>{ if(!ready){ if(PB.R)build(); else if(!PB.loading)PB.load(); return; } const t0=performance.now();
-    if((zt-=dt)<=0){ zt=.25; zone(); } strike();
+  const wake=()=>{ if((pt-=1)>0)return false; pt=6; catalog(); more(); const lo=py-1.1*T, hi=py+2.4*T; pre.clear();
+      for(const it of items){ const t=it.t, b=t.y-it.h[1]; if(Math.hypot(t.x-pos.x,t.z-pos.z)<RS&&b>lo&&b<hi)pre.add(it); } pickList(pre); return true; };
+  const asks=()=>{ if(want)return true; const s=(st.up&&STRIKE.test(st.up.name))||(st.move&&STRIKE.test(st.move.name)), I=intent(), mv=I[0]||I[1];
+    if(!s&&!mv)return false; for(const it of pre){ const t=it.t, r=Math.max(it.h[0],it.h[2]), d=Math.hypot(t.x-pos.x,t.z-pos.z)-r; if(s?d<1.1*T:!it.heavy&&d<.45*T&&(t.x-pos.x)*I[0]+(t.z-pos.z)*I[1]>0)return true; } return false; };
+  GPH.tick=dt=>{ if(!ready){ if(PB.R)build(); else if(!PB.loading){ wake(); if(asks()||QS.get('physics'))PB.load(); } return; } const t0=performance.now();
+    if((zt-=dt)<=0){ zt=.25; zone(); } strike(); if(want&&want.rb){ grab(want); want=null; }
     if(held){ const h=holdAt(held); held.rb.setNextKinematicTranslation(h); held.rb.setNextKinematicRotation({x:0,y:Math.sin(heading/2),z:0,w:Math.cos(heading/2)}); }
     const I=intent(), mv=I[0]||I[1]||Math.abs(pos.x-lx)+Math.abs(pos.z-lz)+Math.abs(py-ly)>1e-4; lx=pos.x; lz=pos.z; ly=py;
     if(mv||held||live){ acc=Math.min(acc+dt,3*DT); while(acc>=DT){ drive(I,DT); world.step(eq,hooks||undefined); acc-=DT; } } else acc=0;
@@ -122,10 +126,13 @@ const GPH=window.GPH={ms:0,n:0};
       const v=it.rb.linvel(), w=it.rb.angvel(); if(v.x*v.x+v.y*v.y+v.z*v.z<.0225&&w.x*w.x+w.y*w.y+w.z*w.z<.16){ if((it.still+=dt)>.33){ it.rb.sleep(); it.still=0; shade=0; } } else it.still=0; }
     if((live||shade===0)&&(shade-=dt)<=0){ shade=.25; reshade(); }
     GPH.ms=GPH.ms*.95+(performance.now()-t0)*.05; };
-  const itemOf=h=>{ const m=h.object; if(m===gm){ const v=h.face.a; return items.find(q=>q.k==='v'&&v>=q.v0&&v<q.v1); } if(m.userData.loose)return m.userData.loose;
-    if(h.instanceId!=null)return [...act].find(q=>q.k==='i'&&q.inst.some(z=>z[0]===m&&z[1]===h.instanceId));
-    const o=m.userData.objOf&&m.userData.objOf[Math.floor(h.faceIndex/2)]; let b=null, bd=1e9; if(o)for(const it of act){ if(it.o!==o||it.dm)continue; const t=it.rb.translation(), d=Math.hypot(t.x-h.point.x,t.y-h.point.y,t.z-h.point.z); if(d<bd){ bd=d; b=it; } } return b; };
-  GPH.pick=ray=>{ if(!ready)return null;
+  const at=it=>it.rb?it.rb.translation():it.t;
+  const itemOf=(h,A=act)=>{ const m=h.object; if(m===gm){ const v=h.face.a; return items.find(q=>q.k==='v'&&v>=q.v0&&v<q.v1); } if(m.userData.loose)return m.userData.loose;
+    if(h.instanceId!=null)return [...A].find(q=>q.k==='i'&&q.inst.some(z=>z[0]===m&&z[1]===h.instanceId));
+    const o=m.userData.objOf&&m.userData.objOf[Math.floor(h.faceIndex/2)]; let b=null, bd=1e9; if(o)for(const it of A){ if(it.o!==o||it.dm)continue; const t=at(it), d=Math.hypot(t.x-h.point.x,t.y-h.point.y,t.z-h.point.z); if(d<bd){ bd=d; b=it; } } return b; };
+  GPH.pick=ray=>{ if(!ready){ if(!cat||held)return null; const h=ray.intersectObjects(picks,false)[0], it=h&&itemOf(h,pre); if(!it||it.m>CARRY||it.o&&USE.test&&USE.test.kindOf(it.o)&&!keys.has('shift'))return null;
+      const o=new THREE.Object3D(), r=Math.max(it.h[0],it.h[2]); o.position.set(it.t.x,it.t.y-it.h[1],it.t.z);
+      return {d:h.distance,th:{name:(it.name||'').replace(/^cottage: /,'').toUpperCase(),obj:o,reach:.85*T+r,near:1.6*T+r,tall:Math.max(.4*T,it.h[1]*2),act:()=>{ want=it; }}}; }
     if(held){ const pl=new THREE.Plane(new THREE.Vector3(0,1,0),-py), g=new THREE.Vector3(); if(!ray.ray.intersectPlane(pl,g))return null; const it=held, o=new THREE.Object3D(); o.position.copy(g);
       return {d:0,th:{name:'THROW',obj:o,reach:1e9,act:()=>throwTo(it,g)}}; }
     const h=ray.intersectObjects(picks,false)[0]; if(!h)return null; const it=itemOf(h); if(!it||!it.rb||it.m>CARRY)return null; if(it.o&&USE.test&&USE.test.kindOf(it.o)&&!keys.has('shift'))return null;
@@ -133,7 +140,7 @@ const GPH=window.GPH={ms:0,n:0};
     return {d:h.distance,th:{name:(it.name||'').replace(/^cottage: /,'').toUpperCase(),obj:o,reach:.85*T+r,near:1.6*T+r,tall:Math.max(.4*T,it.h[1]*2),act:()=>grab(it)}}; };
   GPH.init=()=>{ if(typeof USE==='undefined'){ setTimeout(GPH.init,500); return; } const p0=USE.pick; USE.pick=ray=>{ const a=p0(ray), b=GPH.pick(ray); return b&&(!a||b.d<=a.d)?b:a; };
     const t0=CLOCK.tick; CLOCK.tick=dt=>{ t0(dt); GPH.tick(dt); }; };
-  const nearest=f=>{ let b=null, bd=1e9; for(const it of act){ if(!f(it))continue; const p=it.rb.translation(), d=Math.hypot(p.x-pos.x,p.z-pos.z); if(d<bd){ bd=d; b=it; } } return b; };
+  const nearest=f=>{ let b=null, bd=1e9; for(const it of ready?act:pre){ if(!f(it))continue; const p=at(it), d=Math.hypot(p.x-pos.x,p.z-pos.z); if(d<bd){ bd=d; b=it; } } return b; };
   const rx=s=>s instanceof RegExp?s:new RegExp(s||'.','i');
   window.GOODSGRAB=(n)=>{ const b=nearest(it=>it.m<=CARRY&&(n?rx(n).test(it.name):it.k==='v')); if(!b)return null; grab(b); return b.name; };
   window.GOODSTHROW=(dx,dz)=>{ if(!held)return false; throwTo(held,new THREE.Vector3(pos.x+dx,py,pos.z+dz)); return true; };
@@ -142,6 +149,6 @@ const GPH=window.GPH={ms:0,n:0};
   window.GOODSHIT=(k=4,r=3,n)=>{ let c=0; for(const it of act){ const p=it.rb.translation(); if(Math.hypot(p.x-pos.x,p.z-pos.z)<r*T&&(!n||rx(n).test(it.name))){ c++; it.rb.wakeUp(); it.rb.applyImpulse({x:(Math.random()-.5)*k*it.rb.mass(),y:k*.5*it.rb.mass(),z:(Math.random()-.5)*k*it.rb.mass()},true); } } return c; };
   window.LOOSE={list:(all)=>(all?items:[...act]).map(it=>({name:it.name,k:it.k,m:+it.m.toFixed(1),heavy:it.heavy,sol:it.sol.length,active:!!it.rb,awake:!!it.rb&&!it.rb.isSleeping(),at:(it.rb?[it.rb.translation()]:[it.t]).map(p=>[p.x,p.y,p.z].map(v=>+v.toFixed(3)))[0],c:it.c.map(v=>+v.toFixed(3)),h:it.h.map(v=>+v.toFixed(3)),sols:it.sol.map(([r])=>r.slice())})),
     push:(n,x,y,z)=>{ const it=nearest(q=>rx(n).test(q.name)); if(!it)return null; it.rb.wakeUp(); it.rb.applyImpulse({x:x*it.rb.mass(),y:y*it.rb.mass(),z:z*it.rb.mass()},true); return it.name; },
-    nearest:n=>{ const it=nearest(q=>rx(n).test(q.name)); return it&&{name:it.name,m:it.m,heavy:it.heavy,awake:it===held||!it.rb.isSleeping(),at:(p=>[p.x,p.y,p.z])(it.rb.translation()),sols:it.sol.map(([r])=>r.slice()),dm:!!it.dm}; },
+    nearest:n=>{ const it=nearest(q=>rx(n).test(q.name)); return it&&{name:it.name,m:it.m,heavy:it.heavy,awake:it===held||!!it.rb&&!it.rb.isSleeping(),at:(p=>[p.x,p.y,p.z])(at(it)),h:it.h,sols:it.sol.map(([r])=>r.slice()),dm:!!it.dm}; },
     pickAt:(n)=>{ const it=nearest(q=>rx(n).test(q.name)); if(!it)return null; const p=it.rb.translation(), rc=new THREE.Raycaster(); rc.setFromCamera(new THREE.Vector2().copy(new THREE.Vector3(p.x,p.y,p.z).project(cam)),cam); const r=USE.pick(rc); return r&&r.th.name; }};
 }

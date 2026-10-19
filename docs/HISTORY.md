@@ -1985,5 +1985,9 @@ improvements"; of the list, 2-13 "do it", and "i want dungeon to be a 'loading w
   objects made each frame now kept and reused. The river's extra picture of the scene left as is (halving it would change the water).
 - **Tidy**: the tests of removed things gone (figact, figshot, tpose, bodymock; civiccheck's vehicles line); `data/ual.json` (only a
   bake input) moved to `data/full/`.
-- **Physics**: Rapier stays for now (his pick that morning). He asked whether so big an engine is needed: Rapier is about 690 KB
-  compressed, cannon-es about 77 KB; options put to him.
+- **Physics only when wanted** (he asked whether so big an engine is needed: Rapier about 690 KB compressed, cannon-es about 77 KB;
+  of A load it later, B switch to cannon-es, C load it only when first used, "C"): Rapier is no longer fetched at the start. The
+  loose things are known without it (`150-loose.js`), and the first push into a light one, punch or kick near one, or click to pick
+  one up fetches it (the pick-up done once it's in); your physics body (still on by default) comes alive then too, and the DISPLAY
+  button fetches it at once. `?physics=1` fetches it at the start (`tests/loosecheck.cjs` uses it); `tests/physlater.cjs` checks
+  the wait and the first push.

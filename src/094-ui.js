@@ -268,7 +268,7 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
   { let v='1'; try{ v=SAVE.get('avlight')||'1'; }catch(e){} UI.setLit(v==='1'); }
   $('#dlit').onclick=()=>{ UI.setLit(!UI.lit); drawDisplay(); };
   $('#dsfx').onclick=()=>{ SFX.set(!SFX.on,null); drawDisplay(); }; $('#damb').onclick=()=>{ AMB.set(!AMB.on); drawDisplay(); }; $('#dvol').oninput=e=>SFX.set(null,+e.target.value);
-  $('#dbody').onclick=()=>{ PB.set(!PB.on); drawDisplay(); }; $('#dloose').oninput=e=>{ PB.loose=+e.target.value; try{ SAVE.set('loose',String(PB.loose)); }catch(err){} };
+  $('#dbody').onclick=()=>{ PB.set(!PB.on,true); drawDisplay(); }; $('#dloose').oninput=e=>{ PB.loose=+e.target.value; try{ SAVE.set('loose',String(PB.loose)); }catch(err){} };
   function drawKeys(){ const t=$('#keytab'); t.innerHTML=''; for(const [a,what] of ACTS){ const tr=document.createElement('tr'), b=document.createElement('button'); b.className='btn'; b.textContent=waiting===a?'PRESS A KEY…':NAME(keyOf(a)); b.setAttribute('aria-pressed',String(waiting===a)); b.onclick=()=>{ waiting=a; drawKeys(); };
       const td1=document.createElement('td'); td1.textContent=what.toUpperCase(); const td2=document.createElement('td'); td2.appendChild(b); tr.append(td1,td2); t.appendChild(tr); }
     const e=document.createElement('tr'); e.innerHTML='<td>MENU</td><td><span class="dim">ESC</span></td>'; t.appendChild(e); if(UI.padKeys)UI.padKeys(t); }

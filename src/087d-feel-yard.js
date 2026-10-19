@@ -1,0 +1,41 @@
+{ const MH=FEEL.MH, MV=FEEL.MV, R=22;
+  const Y=FEEL.yard={bvh:null,mesh:null,o:null};
+  const org=()=>Y.o||(Y.o={x:(STORE.bound.x1+900)/MH,z:(STORE.bound.z0+STORE.bound.z1)/2/MH});
+  Y.in=(x,z)=>{ const o=org(); return Math.abs(x-o.x)<R&&Math.abs(z-o.z)<R; };
+  const SP=[['SPAWN',0,0,12,Math.PI],['LONG WALL',-6,0,-9,Math.PI],['CORNERS',4,0,-1,Math.PI],['PASSAGE',-7.35,0,3,Math.PI],['RAMP 14°',9.5,0,10,Math.PI],
+    ['RAMP 40° / 55°',-10,0,13,Math.PI],['STEPS',-6,0,6,Math.PI/2],['LOW CEILING',-2,0,2.5,Math.PI],['LEDGE',11,1.5,-1,Math.PI],['GAP',11,1.5,-3.2,Math.PI]];
+  Y.spots=()=>{ const o=org(); return SP.map(([n,x,y,z,h])=>({n,x:x+o.x,y,z:z+o.z,h})); };
+  Object.defineProperty(Y,'spawn',{get:()=>Y.spots()[0]});
+  Y.go=i=>{ const s=Y.spots()[i]; pos.x=s.x*MH; pos.z=s.z*MH; py=s.y*MV; heading=s.h; target=null; FEEL.S.sync=true; if(typeof UI!=='undefined'&&UI.off)UI.off.set(0,0,0); };
+  Y.build=()=>{ if(Y.bvh||!FEEL.ready)return; const o=org(), P=[], VP=[], VC=[], C=new THREE.Color(), a=new THREE.Vector3(), b=new THREE.Vector3(), n=new THREE.Vector3();
+    const tri=(p,q,r,col,vis=true)=>{ const pts=[p,q,r].map(v=>[v[0]+o.x,v[1],v[2]+o.z]); for(const v of pts)P.push(...v); if(!vis)return; C.set(col); for(const v of pts){ VP.push(...v); VC.push(C.r,C.g,C.b); } };
+    const quad=(p,q,r,s,col,vis)=>{ tri(p,q,r,col,vis); tri(p,r,s,col,vis); };
+    const box=(x0,x1,y0,y1,z0,z1,col,top=col)=>{ quad([x0,y1,z1],[x1,y1,z1],[x1,y1,z0],[x0,y1,z0],top); quad([x0,y0,z1],[x1,y0,z1],[x1,y1,z1],[x0,y1,z1],col); quad([x1,y0,z0],[x0,y0,z0],[x0,y1,z0],[x1,y1,z0],col);
+      quad([x0,y0,z0],[x0,y0,z1],[x0,y1,z1],[x0,y1,z0],col); quad([x1,y0,z1],[x1,y0,z0],[x1,y1,z0],[x1,y1,z1],col); quad([x0,y0,z0],[x1,y0,z0],[x1,y0,z1],[x0,y0,z1],col,false); };
+    const wedge=(x0,x1,z0,z1,h,col,side)=>{ quad([x0,0,z1],[x1,0,z1],[x1,h,z0],[x0,h,z0],col); quad([x1,0,z0],[x0,0,z0],[x0,h,z0],[x1,h,z0],side);
+      tri([x0,0,z0],[x0,0,z1],[x0,h,z0],side); tri([x1,0,z1],[x1,0,z0],[x1,h,z0],side); };
+    const FL=['#5f6b5a','#56614f'];
+    for(let i=-R;i<R;i+=2)for(let j=-R;j<R;j+=2)quad([i,0,j+2],[i+2,0,j+2],[i+2,0,j],[i,0,j],FL[((i+j)/2&1)]);
+    box(-R,R,-1,-.01,-R,R,'#3c4238');
+    const WL='#b9a58a', WT='#cdb999', RIM='#7d7466';
+    box(-R,R,0,1.4,-R,-R+.5,RIM); box(-R,R,0,1.4,R-.5,R,RIM); box(-R,-R+.5,0,1.4,-R,R,RIM); box(R-.5,R,0,1.4,-R,R,RIM);
+    box(-14,2,0,2.5,-12,-11.6,WL,WT); box(-14,-13.6,0,2.5,-11.6,-2,WL,WT);
+    box(3,6,0,2.5,-6,-3,'#a3907a','#bba78f');
+    box(-8.2,-7.8,0,2.5,-6,1,'#9a8bb0','#ad9fc2'); box(-6.9,-6.5,0,2.5,-6,1,'#9a8bb0','#ad9fc2');
+    const PLT='#8b6f5a', PTOP='#a5876d';
+    wedge(8,11,2,8,1.5,'#7f9c8c','#6b8577'); box(8,14,0,1.5,-4,2,PLT,PTOP); box(8,14,0,1.5,-9.5,-6,PLT,PTOP);
+    wedge(-11.5,-8.5,8,10,2*Math.tan(40*Math.PI/180),'#8fa37a','#76875f'); wedge(-16,-13,8,10,2*Math.tan(55*Math.PI/180),'#a35a4a','#874a3d');
+    for(let i=0;i<6;i++)box(-4+.45*i,-1,0,.2*(i+1),5,7,i&1?'#c9b27c':'#bba46f');
+    box(.5,1.6,0,.45,5,7,'#c0714f','#d0835f');
+    const hc=FEEL.hgt()+.3;
+    for(const [x,z] of [[-4,-4],[-.3,-4],[-4,-.3],[-.3,-.3]])box(x,x+.3,0,hc,z,z+.3,'#5a6f8f');
+    box(-4,0,hc,hc+.2,-4,0,'#5a6f8f','#6c82a3');
+    const sp=SP[0]; for(let k=0;k<12;k++){ const t0=k/12*Math.PI*2, t1=(k+1)/12*Math.PI*2; tri([sp[1],.02,sp[3]],[sp[1]+Math.cos(t1)*.8,.02,sp[3]+Math.sin(t1)*.8],[sp[1]+Math.cos(t0)*.8,.02,sp[3]+Math.sin(t0)*.8],'#f2c14e'); P.splice(P.length-9,9); }
+    const cg=new THREE.BufferGeometry(); cg.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); Y.geo=cg; Y.bvh=new FEEL.lib.MeshBVH(cg);
+    const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(VP,3)); g.setAttribute('color',new THREE.Float32BufferAttribute(VC,3)); g.computeVertexNormals();
+    const me=Y.mesh=new THREE.Mesh(g,M(0xffffff,null,{vertexColors:true})); me.scale.set(MH,MV,MH); me.castShadow=me.receiveShadow=true; scene.add(me); Y.tris=VP.length/9; };
+  Y.tick=()=>{ if(!Y.mesh)return; const o=org(), x=pos.x/MH, z=pos.z/MH, inY=Y.in(x,z); Y.mesh.visible=Math.abs(x-o.x)<R*3&&Math.abs(z-o.z)<R*3;
+    if(inY&&!Y.mb){ Y.mb={...MISTB}; Object.assign(MISTB,{x:(o.x-R)*MH,y:(o.z-R)*MH,z:(o.x+R)*MH,w:(o.z+R)*MH}); } else if(!inY&&Y.mb){ Object.assign(MISTB,Y.mb); Y.mb=null; } };
+  const add=()=>{ if(!STORE.places)STORE.places=[]; const o=org(), s=SP[0]; if(!STORE.places.some(p=>p[0]==='FEEL LAB'))STORE.places.push(['FEEL LAB',(o.x+s[1])*MH,(o.z+s[3])*MH,0]); };
+  add();
+}

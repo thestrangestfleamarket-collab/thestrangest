@@ -53,7 +53,7 @@ window.AVS=AVS;
       const [k0,d0]=d[0], [k1,d1]=d.find(x=>x[0]!==k0), w0=1/Math.pow(d0+.01,4), w1=d1<d0*1.6?1/Math.pow(d1+.01,4):0, w=Math.round(255*w0/(w0+w1));
       si[i*4]=k0; sw[i*4]=w; si[i*4+1]=k1; sw[i*4+1]=255-w; }
     const N=npcOf(geoOf(P,new Uint8Array(n*3).map((_,i)=>[206,196,182][i%3]),si,sw,I),rig,D.tall,['body']);
-    return {g:N.g,N,an:Anim(new THREE.AnimationMixer(B[0]),clipsFor(1)),relax:relaxer(bone,N.g,fwd),tris:HUM.tris}; };
+    const mx=new THREE.AnimationMixer(B[0]), CL=clipsFor(1); return {g:N.g,N,mx,CL,an:Anim(mx,CL),relax:relaxer(bone,N.g,fwd),tris:HUM.tris}; };
   const MOVE={jump:'Jump_Loop',backflip:'Jump_Loop',frontflip:'Jump_Loop',jab:'Punch_Jab',cross:'Punch_Cross',hook:'Punch_Cross',uppercut:'Punch_Cross',slap:'Punch_Jab',frontKick:'Punch_Cross',roundhouse:'Punch_Cross',
     legSweep:'Crouch_Idle_Loop',fall:'Death01',roll:'Roll',block:'Spell_Simple_Idle_Loop',guard:'Spell_Simple_Idle_Loop',crouch:'Crouch_Idle_Loop',flinch:'Hit_Chest',wave:'Interact',dance:'Dance_Loop'};
   const MPS=TILE/.84; let lx=null, lz=null, sp=0;
@@ -69,6 +69,7 @@ window.AVS=AVS;
   AVS.tick=(dt,B)=>{ const C=AVS.C.me||(AVS.C.me=body()), first=typeof UI!=='undefined'&&UI.view==='first';
     C.g.visible=!first&&!W3.hideMeQ; if(!W3.hideMeQ)W3.hideMe=true;
     if(!dt)return;
+    if(FEEL.take()){ FEEL.anim(dt,C); return; } if(FEEL.A.C)FEEL.release();
     if(lx===null){ lx=pos.x; lz=pos.z; } const d=Math.hypot(pos.x-lx,pos.z-lz)/MPS/dt; lx=pos.x; lz=pos.z; sp+=(Math.min(d,9)-sp)*Math.min(1,dt*8);
     const [base,ts]=pick();
     C.g.position.set(pos.x,py+jumpY(B)*ZU*(W3.SZ||1)*(W3.BH||1),pos.z); C.g.rotation.set(0,RAG.on?RAG.hd:heading,0);

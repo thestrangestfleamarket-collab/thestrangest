@@ -1846,3 +1846,35 @@ eased); the wires are thin and high. **Perches**: the four pole tops and a point
 riding the sway. The game has no other perching creature (the bats fly, the pigeons aren't on the map). `WIRESDBG()`,
 `DRAGONPERCH(i,k)` for a test. Cost: some 1,700 triangles the poles (one draw), 1,150 the wires (one draw, rebuilt only near and
 moving, under 0.1 ms), one small program (the poles' Lambert with its dissolve), no light; the sun's shadow from the poles.
+## 19 Oct 2026: Central Park's wall, gates, trees
+
+**The park's wall three times over, ivy, the railing and gates half again** (owner, 19 Oct 2026, of the park's low wall and its black railing:
+"make the brick wall 3x thick, 3x as high, covered in ivy in places, natural patterns. metal gates 1.5 taller, 1.5x thick. sharper at top. all
+the way waroudn (except for entrance)"; `park.js`): the wall 48 px high (was 16) and 1.5 tiles thick (was 0.5), thickened inward so its street
+face stays where it was; all the way round as before (front, both sides, back, the castle's own wall its corner), open only at the four gates
+(the main street's 10 tiles, the east, west and north gates). The stone weathered and uneven: each stone its own tone (wider spread), chipped
+corners, broad stains and warm patches, rain streaks down from the cope, grime to the foot, moss in the low joints. **Ivy** painted onto
+both faces and over the cope (`ivyAt`: a broad noise along the wall says where it has been let go, climbing from the foot to a ragged height,
+here and there trailing down from the top and over the cope; long bare stretches between, never a repeat), and on the painted ivy a few
+thousand flat leaf clumps (octahedra, four greens) standing off the face for depth, instanced per stretch. **The railing** 1.5 m (was 1 m),
+its pickets, rails and posts half again as thick, each picket a collar and a tall four-sided spear point (sharper than the old cap), each
+post a knob and a point; the gate leaves 3.3 m (were 2.2), their bars half again as thick. The solids follow the wall (`RUNS`, `PIERS`);
+the town's routes still come in by the gates (NAV and A* read the solids); the creatures' park bound keeps 2.2 tiles off the walls.
+**The gate piers** (owner, 19 Oct 2026, of a pier and its lantern: "live in, non unifrom, ivy, way bigger, regal, ridges, glow realistic
+light (all lights, all glow, no fake)"): 2.4 tiles square, 150 px to the cornice (were 1 tile, 91 px): a plinth, banded rustication (deep
+lit-and-shaded grooves every course, blocks staggered, each its tone, streaks and grime, ivy climbing some faces), a string course, a
+moulded cornice in four stepped ridges; on it an iron lantern (a pedestal, plates, four corner posts, a glazing bar, glass panes, a bulb
+inside, a roof in five steps and a spike), 1.4 times the old size. After dark the glass and bulb lit, a halo of hard steps round it
+(a bright core, three dithered rings, additive, one sprite each), and a real warm light at the bulb in the lamps' records (LITE's 8
+nearest: it lights the cap, the pier and the ground in the CEL bands); by day the light off (no slot taken).
+**The oddities stall removed** (owner, 19 Oct 2026, of it inside the railing by the gate: "remove from game"): it was THE ODDITIES STALL,
+a stone block with a plank top, a crate, three gems and a gold nugget (data/props.json's `crate`, `gem1-3`, `gold`), a gem a day for a
+double click (`gems.js`); all of it gone, the gems now only from the cave's glints. **The potted plants removed** (owner, 19 Oct 2026: "no
+potted plants in centrtal park"): the four pots by the main gate's piers (bird of paradise, sansevieria, calathea), and the pots' data
+(`pot1-5`, `paradise*`, `calathea`, `sanseveria`). **The big trees further in** (owner, 19 Oct 2026: "move the bigger trees more in the
+center of park and away from paths so they dont block views"): the oaks drawn about the middle of each quarter's lawn, 3 tiles more clear
+of the ways (crown and all), 8 clear of the back walls and 10 of the side walls, and away from the round; fewer fit (12 of 24).
+Cost: the iron some 94,000 triangles round the whole park (was 57,000), instanced per 16 tiles, a few thousand in sight; the ivy's leaves
+some 50,000 triangles round the park (6,300 clumps of 8), one instanced draw per stretch of wall (36 tiles at most; culled: a few
+thousand triangles and 1-3 draws in sight), no shadow cast; the walls' textures three times the area (painted once at the start); 8 lantern lights in the lamps' records
+(none by day), 8 halo sprites (one program); no new shadow light. Under 1 ms a frame.

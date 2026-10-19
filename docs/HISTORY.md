@@ -1765,3 +1765,7 @@ residents "Remove all of it", "No sign"): `054-apts.js`:
   noise, `vn`/`gr`/`ck`). The stoop, its cheek walls, the house's base, the cornice and balustrade in jointed, grained stone (`rock`), the
   treads worn paler down the middle. The two planters built of brownstone blocks, each its own shade (`069-dress.js`).
 - **The start**: someone new starts in Central Park (`135-where.js`, `UI.goPlace`); everyone else where they logged off, as before.
+- **No homes in the house** (his pick, "Remove all of it"): the four residents are gone (`154-residents.js` removed; their pawns walk
+  the street like the others); your mailbox, its panel, the welcome letter and the rent every third day are gone, and rent, the
+  RESIDENTS list and GO TO YOUR MAILBOX are off the CITY tab. Workers live only over their own workplace; with none they stay out at night;
+  nobody sleeps in the house. Your money (`MAIL.you`), the shops' and the tower's mail and the street's mailboxes stay.

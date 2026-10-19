@@ -1664,6 +1664,10 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   BEHIND no longer swings back to his back when he walks (the 17 Oct "swings back once he walks" is gone): the camera stays where you
   turned it. FIRST PERSON never swung on its own; it stays as it was. Entering a place still sets that place's own angle.
 
+- **The avatar editor in its own menu tab** (owner, 19 Oct 2026: "get rid of shortcut for avater editor, just put it in tab in menu"):
+  Shift+K no longer does anything; the menu has an AVATAR tab (before KEYS) with OPEN THE AVATAR EDITOR, EDIT HIS SHAPE and YOUR
+  LOOKS (moved there from DISPLAY's HIM row). A double click on yourself still opens your looks.
+
 ## The website moves here (18 Oct 2026)
 
 **The white screen** (owner, 18 Oct 2026: "https://thestrangestfleamarket.com/ is just shownig white screen now"): the copy of THE MARKET

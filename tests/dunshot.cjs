@@ -17,7 +17,7 @@ process.on('unhandledRejection',e=>{ errs.push('TEST '+String(e&&e.message||e).s
     await pg.keyboard.up(best[0]); await pg.waitForTimeout(80); await shot(tag+'-fade'); await st(tag+'-fade'); const L=rep.steps[rep.steps.length-1]; L.key=best; L.hit=hit; await pg.waitForTimeout(1800); return !!hit; };
   rep.TILE=await pg.evaluate(()=>window.TILE);
   await pg.evaluate(()=>{ const M=__dbg.MAPK, S=M.CASTLE.stair, B=M.BOD; STORE.goTo(B.XS((S.x0+S.x1)/2),B.ZS(S.y0-.45),'up'); }); await pg.waitForTimeout(2500); await shot('castle-top'); await st('castle-top');
-  if(!await walk(()=>{ const M=__dbg.MAPK, S=M.CASTLE.stair, B=M.BOD; return {x:B.XS((S.x0+S.x1)/2),z:B.ZS(S.y0-.45),lv:'up',dir:1}; },'castle')){ await pg.evaluate(()=>{ const M=__dbg.MAPK, S=M.CASTLE.stair, B=M.BOD; STORE.goTo(B.XS((S.x0+S.x1)/2),B.ZS(S.y0+.15),'up'); }); await pg.waitForTimeout(200); await shot('castle-fade2'); await pg.waitForTimeout(1600); }
+  if(!await walk(()=>{ const M=__dbg.MAPK, S=M.CASTLE.stair, B=M.BOD; return {x:((S.x0+S.x1)/2-72)*1.13,z:(S.y0-.45+77)*1.13,lv:'up',dir:1}; },'castle')){ await pg.evaluate(()=>{ const M=__dbg.MAPK, S=M.CASTLE.stair, B=M.BOD; STORE.goTo(B.XS((S.x0+S.x1)/2),B.ZS(S.y0+.15),'up'); }); await pg.waitForTimeout(200); await shot('castle-fade2'); await pg.waitForTimeout(1600); }
   await pg.waitForTimeout(1500); await shot('L1'); await st('L1');
   for(let n=1;n<5;n++){ await pg.evaluate(()=>{ const M=__dbg.MAPK.MODS.dungeon, L=M.lay(DUNGEON.level), B=__dbg.MAPK.BOD; STORE.goTo(B.XS((L.dn.x0+L.dn.x1)/2),B.ZS(L.dn.y0-.45),'down'); }); await pg.waitForTimeout(1200);
     if(n===1)await shot('L1-at-down');

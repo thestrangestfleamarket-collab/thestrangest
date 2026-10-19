@@ -1762,3 +1762,10 @@ shape, looks, animate, speed and body-type tabs, the posing void) and the standa
 (and `full/vroid.vrm`), the mannequin's mesh out of `data/ual.json` (its skeleton and clips kept), their bake tools and tests. Clicking
 yourself opens YOU: your name, health and stamina. The hand-made Walker still runs unseen under you (his rig is the physics) and the
 bearded Walker keeps the head shapes he borrowed from the editor (`ED.HEADS`, `097-editor.js`).
+
+**His mannequin, not the stick** (owner, 19 Oct 2026, his shot of the stick figure: "why is he standing like that? ... he has his
+shoulders lifted high"; then his `Humanoid.fbx`, "make it my body"): the stick's shoulder bars ran up from mid-chest to the shoulders,
+so he looked shrugged. You are now his mannequin (`data/full/humanoid.fbx`, Blender, no bones: `tools/humanoid-bake.cjs` →
+`data/humanoid.json`, 6 KB), sized to the UAL skeleton (it matches it: height, hips, shoulders, arm length within 3 cm). It stands in an
+A-pose, so the skeleton's arms are lowered to it before binding; each corner weighted in code to its nearest one or two bones. One flat
+light colour, cel-shaded, casting a shadow; the same clips. 402 triangles.

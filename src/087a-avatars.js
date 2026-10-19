@@ -1,4 +1,4 @@
-const UAL=__DATA__("data/ual.json");
+const UAL=__DATA__("data/ual.json"), HUM=__DATA__("data/humanoid.json");
 const AVS={C:{}};
 window.AVS=AVS;
 { const D=UAL.ual, RG=D.rig, BN=RG.names, PAR=RG.parent, BI=Object.fromEntries(BN.map((n,i)=>[n,i])), V=THREE.Vector3, Q=THREE.Quaternion;
@@ -38,19 +38,22 @@ window.AVS=AVS;
   const fwd=()=>new V(Math.sin(heading),0,Math.cos(heading));
   const npcOf=(geo,rig,tall,names)=>{ const N=makeNPC(null,{key:'me',name:'YOU',names,eye:-1,lv:'up',group:'bodega',geo,skin:rig,tall,rank:names.map(()=>0),metres:1.85*(W3.SZ||1),x:pos.x,z:pos.z,radius:.3,speed:0,stride:0,rock:0,bob:0});
     NPCS.splice(NPCS.indexOf(N),1); if(N.g.parent)N.g.parent.remove(N.g); scene.add(N.g); NPCS.extra.push({g:N.g}); return N; };
-  const stick=()=>{ const ibm=f32(RG.ibm), JP=BN.map((_,i)=>new V().setFromMatrixPosition(new THREE.Matrix4().fromArray(ibm,i*16).invert())), P=[], I=[], J=[], T=D.tall;
-    const add=(g,j)=>{ const p=g.attributes.position.array, o=P.length/3; for(const x of p)P.push(x); for(const x of g.index.array)I.push(x+o); for(let k=0;k<p.length/3;k++)J.push(j); };
-    const seg=(a,c,r)=>{ const A=JP[BI[a]], C=JP[BI[c]], d=new V().subVectors(C,A), g=new THREE.CylinderGeometry(r,r,d.length(),6,1,true);
-      g.applyQuaternion(new Q().setFromUnitVectors(new V(0,1,0),d.clone().normalize())); g.translate((A.x+C.x)/2,(A.y+C.y)/2,(A.z+C.z)/2); add(g,BI[a]); };
-    const ball=(n,r,dy=0)=>{ const g=new THREE.IcosahedronGeometry(r,n==='Head'?2:0), A=JP[BI[n]]; g.translate(A.x,A.y+dy,A.z); g.setIndex([...Array(g.attributes.position.count).keys()]); add(g,BI[n]); };
-    const r=T*.016;
-    seg('pelvis','spine_02',r); seg('spine_02','neck_01',r); seg('neck_01','Head',r);
-    for(const s of ['l','r']){ seg('spine_03','upperarm_'+s,r); seg('upperarm_'+s,'lowerarm_'+s,r); seg('lowerarm_'+s,'hand_'+s,r); seg('pelvis','thigh_'+s,r); seg('thigh_'+s,'calf_'+s,r); seg('calf_'+s,'foot_'+s,r); seg('foot_'+s,'ball_'+s,r);
-      for(const n of ['upperarm_','lowerarm_','thigh_','calf_','foot_'])ball(n+s,r); ball('hand_'+s,r*1.6); }
-    ball('pelvis',r); ball('Head',T*.065,T*.05);
-    const n=P.length/3, si=new Uint8Array(n*4), sw=new Uint8Array(n*4), cc=new Uint8Array(n*3).fill(46); for(let i=0;i<n;i++){ si[i*4]=J[i]; sw[i*4]=255; }
-    const rig=rigOf(RG.t), N=npcOf(geoOf(new Float32Array(P),cc,si,sw,new Uint32Array(I)),rig,T,['stick']), bone=x=>rig.bones[BI[x]];
-    return {g:N.g,N,an:Anim(new THREE.AnimationMixer(rig.bones[0]),clipsFor(1)),relax:relaxer(bone,N.g,fwd),tris:I.length/3}; };
+  const body=()=>{ const rig=rigOf(RG.t), B=rig.bones, bone=x=>B[BI[x]], A=new V(), C=new V(), wq=new Q(), pq=new Q();
+    B[0].updateMatrixWorld(true);
+    for(const [sd,x] of [['l',1],['r',-1]]){ const u=bone('upperarm_'+sd); u.getWorldPosition(A); bone('hand_'+sd).getWorldPosition(C);
+      const dq=new Q().setFromUnitVectors(C.sub(A).normalize(),new V(.63*x,-.41,0).normalize()); u.getWorldQuaternion(wq); u.parent.getWorldQuaternion(pq); u.quaternion.copy(pq.invert().multiply(dq.multiply(wq))); B[0].updateMatrixWorld(true); }
+    rig.skeleton.calculateInverses();
+    const J=B.map(b=>b.getWorldPosition(new V())), up=J[BI.Head].clone().add(new V(0,.25,0)), SEG=[];
+    const sg=(a,c,n=a)=>SEG.push([BI[n],J[BI[a]],typeof c==='string'?J[BI[c]]:c]);
+    sg('pelvis','spine_01'); sg('spine_01','spine_02'); sg('spine_02','spine_03'); sg('spine_03','neck_01'); sg('neck_01','Head'); sg('Head',up);
+    for(const s of ['l','r']){ sg('pelvis','thigh_'+s); sg('clavicle_'+s,'upperarm_'+s); sg('upperarm_'+s,'lowerarm_'+s); sg('lowerarm_'+s,'hand_'+s); sg('hand_'+s,'middle_04_leaf_'+s);
+      sg('thigh_'+s,'calf_'+s); sg('calf_'+s,'foot_'+s); sg('foot_'+s,'ball_'+s); sg('ball_'+s,'ball_leaf_'+s); }
+    const P=f32(HUM.p), I=new Uint16Array(b(HUM.i).buffer), n=P.length/3, si=new Uint8Array(n*4), sw=new Uint8Array(n*4), Pv=new V(), G=new V(), E=new V();
+    for(let i=0;i<n;i++){ Pv.fromArray(P,i*3); const d=SEG.map(([k,a,c])=>{ G.subVectors(c,a); const t=Math.max(0,Math.min(1,E.subVectors(Pv,a).dot(G)/G.lengthSq())); return [k,Pv.distanceTo(E.copy(a).addScaledVector(G,t))]; }).sort((x,y)=>x[1]-y[1]);
+      const [k0,d0]=d[0], [k1,d1]=d.find(x=>x[0]!==k0), w0=1/Math.pow(d0+.01,4), w1=d1<d0*1.6?1/Math.pow(d1+.01,4):0, w=Math.round(255*w0/(w0+w1));
+      si[i*4]=k0; sw[i*4]=w; si[i*4+1]=k1; sw[i*4+1]=255-w; }
+    const N=npcOf(geoOf(P,new Uint8Array(n*3).map((_,i)=>[206,196,182][i%3]),si,sw,I),rig,D.tall,['body']);
+    return {g:N.g,N,an:Anim(new THREE.AnimationMixer(B[0]),clipsFor(1)),relax:relaxer(bone,N.g,fwd),tris:HUM.tris}; };
   const MOVE={jump:'Jump_Loop',backflip:'Jump_Loop',frontflip:'Jump_Loop',jab:'Punch_Jab',cross:'Punch_Cross',hook:'Punch_Cross',uppercut:'Punch_Cross',slap:'Punch_Jab',frontKick:'Punch_Cross',roundhouse:'Punch_Cross',
     legSweep:'Crouch_Idle_Loop',fall:'Death01',roll:'Roll',block:'Spell_Simple_Idle_Loop',guard:'Spell_Simple_Idle_Loop',crouch:'Crouch_Idle_Loop',flinch:'Hit_Chest',wave:'Interact',dance:'Dance_Loop'};
   const MPS=TILE/.84; let lx=null, lz=null, sp=0;
@@ -63,7 +66,7 @@ window.AVS=AVS;
       if(sn>3.6){ base='Sprint_Loop'; ts=sp/5; } else if(sn>2){ base='Jog_Fwd_Loop'; ts=sp/3.2; } else { base='Walk_Loop'; ts=sp/1.4; } }
     return [base,Math.max(.2,Math.min(4,ts*(st.anim||1)))]; };
   const jumpY=B=>{ const mv=st.move&&st.move.name; return mv&&/jump|flip/.test(mv)&&B&&B.J&&B.J.pelvis?Math.max(0,B.J.pelvis.y-18):0; };
-  AVS.tick=(dt,B)=>{ const C=AVS.C.me||(AVS.C.me=stick()), first=typeof UI!=='undefined'&&UI.view==='first';
+  AVS.tick=(dt,B)=>{ const C=AVS.C.me||(AVS.C.me=body()), first=typeof UI!=='undefined'&&UI.view==='first';
     C.g.visible=!first&&!W3.hideMeQ; if(!W3.hideMeQ)W3.hideMe=true;
     if(!dt)return;
     if(lx===null){ lx=pos.x; lz=pos.z; } const d=Math.hypot(pos.x-lx,pos.z-lz)/MPS/dt; lx=pos.x; lz=pos.z; sp+=(Math.min(d,9)-sp)*Math.min(1,dt*8);

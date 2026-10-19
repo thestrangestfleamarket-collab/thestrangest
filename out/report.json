@@ -1,0 +1,928 @@
+{
+ "steps": [
+  {
+   "D": {
+    "level": 0,
+    "lv": "up",
+    "busy": false,
+    "lot": 0,
+    "objs": 0,
+    "lights": 0,
+    "sol": 0,
+    "tris": 0,
+    "skel": false
+   },
+   "lvl": 0,
+   "you": {
+    "x": -89.835,
+    "y": 0,
+    "z": 109.2145,
+    "h": 0.8,
+    "sx": 0.004355188515547368
+   },
+   "fade": "0",
+   "txt": "",
+   "cs": {
+    "gx": -7.5,
+    "gy": 19.65,
+    "S": [
+     -8.5,
+     -6.5,
+     20.1,
+     26.1
+    ]
+   },
+   "tag": "castle-top"
+  },
+  {
+   "D": {
+    "level": 1,
+    "lv": "down",
+    "busy": false,
+    "lot": 1,
+    "objs": 10,
+    "lights": 5,
+    "sol": 9,
+    "tris": 494,
+    "skel": false
+   },
+   "lvl": 1,
+   "you": {
+    "x": 939.369,
+    "y": -3.772021758705555,
+    "z": 68.591,
+    "h": 0,
+    "sx": -0.0013729716587493447
+   },
+   "fade": "0.2",
+   "txt": "ENTERING DUNGEON — LEVEL 1",
+   "cs": {
+    "gx": 903.3,
+    "gy": -16.3,
+    "S": [
+     -8.5,
+     -6.5,
+     20.1,
+     26.1
+    ]
+   },
+   "tag": "castle-fade",
+   "key": [
+    "s",
+    0
+   ],
+   "hit": null
+  },
+  {
+   "D": {
+    "level": 1,
+    "lv": "down",
+    "busy": false,
+    "lot": 1,
+    "objs": 10,
+    "lights": 5,
+    "sol": 9,
+    "tris": 494,
+    "skel": false
+   },
+   "lvl": 1,
+   "you": {
+    "x": 939.369,
+    "y": -3.772021758705555,
+    "z": 68.591,
+    "h": 0,
+    "sx": -0.0013729716587493447
+   },
+   "fade": "0",
+   "txt": "ENTERING DUNGEON — LEVEL 1",
+   "cs": {
+    "gx": 903.3,
+    "gy": -16.3,
+    "S": [
+     -8.5,
+     -6.5,
+     20.1,
+     26.1
+    ]
+   },
+   "tag": "L1"
+  },
+  {
+   "D": {
+    "level": 2,
+    "lv": "down",
+    "busy": false,
+    "lot": 2,
+    "objs": 10,
+    "lights": 5,
+    "sol": 9,
+    "tris": 494,
+    "skel": false
+   },
+   "lvl": 2,
+   "you": {
+    "x": 992.9309999999998,
+    "y": -3.772021758705555,
+    "z": 68.591,
+    "h": 0,
+    "sx": -0.007901995495415624
+   },
+   "fade": "0",
+   "txt": "DUNGEON — LEVEL 2",
+   "cs": {
+    "gx": 950.7,
+    "gy": -16.3,
+    "S": [
+     -8.5,
+     -6.5,
+     20.1,
+     26.1
+    ]
+   },
+   "tag": "down1-fade",
+   "key": [
+    "s",
+    0
+   ],
+   "hit": {
+    "ms": 3286,
+    "dist": 0.67
+   }
+  },
+  {
+   "D": {
+    "level": 2,
+    "lv": "down",
+    "busy": false,
+    "lot": 2,
+    "objs": 10,
+    "lights": 5,
+    "sol": 9,
+    "tris": 494,
+    "skel": false
+   },
+   "lvl": 2,
+   "you": {
+    "x": 992.9309999999998,
+    "y": -3.772021758705555,
+    "z": 68.591,
+    "h": 0,
+    "sx": -0.007901995495415624
+   },
+   "fade": "0",
+   "txt": "DUNGEON — LEVEL 2",
+   "cs": {
+    "gx": 950.7,
+    "gy": -16.3,
+    "S": [
+     -8.5,
+     -6.5,
+     20.1,
+     26.1
+    ]
+   },
+   "tag": "L2"
+  },
+  {
+   "D": {
+    "level": 3,
+    "lv": "down",
+    "busy": false,
+    "lot": 3,
+    "objs": 10,
+    "lights": 5,
+    "sol": 9,
+    "tris": 494,
+    "skel": false
+   },
+   "lvl": 3,
+   "you": {
+    "x": 1029.769,
+    "y": -3.772021758705555,
+    "z": 68.591,
+    "h": 0,
+    "sx": 0.004315587159417064
+   },
+   "fade": "0",
+   "txt": "DUNGEON — LEVEL 3",
+   "cs": {
+    "gx": 983.3,
+    "gy": -16.3,
+    "S": [
+     -8.5,
+     -6.5,
+     20.1,
+     26.1
+    ]
+   },
+   "tag": "down2-fade",
+   "key": [
+    "s",
+    0
+   ],
+   "hit": {
+    "ms": 3393,
+    "dist": 0.67
+   }
+  },
+  {
+   "D": {
+    "level": 3,
+    "lv": "down",
+    "busy": false,
+    "lot": 3,
+    "objs": 10,
+    "lights": 5,
+    "sol": 9,
+    "tris": 494,
+    "skel": false
+   },
+   "lvl": 3,
+   "you": {
+    "x": 1029.769,
+    "y": -3.772021758705555,
+    "z": 68.591,
+    "h": 0,
+    "sx": 0.004315587159417064
+   },
+   "fade": "0",
+   "txt": "DUNGEON — LEVEL 3",
+   "cs": {
+    "gx": 983.3,
+    "gy": -16.3,
+    "S": [
+     -8.5,
+     -6.5,
+     20.1,
+     26.1
+    ]
+   },
+   "tag": "L3"
+  },
+  {
+   "D": {
+    "level": 4,
+    "lv": "down",
+    "busy": false,
+    "lot": 4,
+    "objs": 10,
+    "lights": 5,
+    "sol": 9,
+    "tris": 494,
+    "skel": false
+   },
+   "lvl": 4,
+   "you": {
+    "x": 1083.331,
+    "y": -3.772021758705555,
+    "z": 68.591,
+    "h": 0,
+    "sx": -0.0022134366772492147
+   },
+   "fade": "0",
+   "txt": "DUNGEON — LEVEL 4",
+   "cs": {
+    "gx": 1030.7,
+    "gy": -16.3,
+    "S": [
+     -8.5,
+     -6.5,
+     20.1,
+     26.1
+    ]
+   },
+   "tag": "down3-fade",
+   "key": [
+    "s",
+    0
+   ],
+   "hit": {
+    "ms": 3281,
+    "dist": 0.67
+   }
+  },
+  {
+   "D": {
+    "level": 4,
+    "lv": "down",
+    "busy": false,
+    "lot": 4,
+    "objs": 10,
+    "lights": 5,
+    "sol": 9,
+    "tris": 494,
+    "skel": false
+   },
+   "lvl": 4,
+   "you": {
+    "x": 1083.331,
+    "y": -3.772021758705555,
+    "z": 68.591,
+    "h": 0,
+    "sx": -0.0022134366772492147
+   },
+   "fade": "0",
+   "txt": "DUNGEON — LEVEL 4",
+   "cs": {
+    "gx": 1030.7,
+    "gy": -16.3,
+    "S": [
+     -8.5,
+     -6.5,
+     20.1,
+     26.1
+    ]
+   },
+   "tag": "L4"
+  },
+  {
+   "D": {
+    "level": 5,
+    "lv": "down",
+    "busy": false,
+    "lot": 5,
+    "objs": 10,
+    "lights": 5,
+    "sol": 6,
+    "tris": 426,
+    "skel": false
+   },
+   "lvl": 5,
+   "you": {
+    "x": 1120.1689999999999,
+    "y": -3.772021758705555,
+    "z": 68.591,
+    "h": 0,
+    "sx": 0.002147403964694817
+   },
+   "fade": "0",
+   "txt": "DUNGEON — LEVEL 5",
+   "cs": {
+    "gx": 1063.3,
+    "gy": -16.3,
+    "S": [
+     -8.5,
+     -6.5,
+     20.1,
+     26.1
+    ]
+   },
+   "tag": "down4-fade",
+   "key": [
+    "s",
+    0
+   ],
+   "hit": {
+    "ms": 3376,
+    "dist": 0.67
+   }
+  },
+  {
+   "D": {
+    "level": 5,
+    "lv": "down",
+    "busy": false,
+    "lot": 5,
+    "objs": 10,
+    "lights": 5,
+    "sol": 6,
+    "tris": 426,
+    "skel": false
+   },
+   "lvl": 5,
+   "you": {
+    "x": 1120.1689999999999,
+    "y": -3.772021758705555,
+    "z": 68.591,
+    "h": 0,
+    "sx": 0.002147403964694817
+   },
+   "fade": "0",
+   "txt": "DUNGEON — LEVEL 5",
+   "cs": {
+    "gx": 1063.3,
+    "gy": -16.3,
+    "S": [
+     -8.5,
+     -6.5,
+     20.1,
+     26.1
+    ]
+   },
+   "tag": "L5"
+  },
+  {
+   "D": {
+    "level": 4,
+    "lv": "down",
+    "busy": false,
+    "lot": 4,
+    "objs": 10,
+    "lights": 5,
+    "sol": 9,
+    "tris": 494,
+    "skel": false
+   },
+   "lvl": 4,
+   "you": {
+    "x": 1074.969,
+    "y": -3.772021758705555,
+    "z": 71.303,
+    "h": 3.141592653589793,
+    "sx": -0.00417715574388007
+   },
+   "fade": "0",
+   "txt": "DUNGEON — LEVEL 4",
+   "cs": {
+    "gx": 1023.3,
+    "gy": -13.9,
+    "S": [
+     -8.5,
+     -6.5,
+     20.1,
+     26.1
+    ]
+   },
+   "tag": "up5-fade",
+   "key": [
+    "w",
+    0
+   ],
+   "hit": null
+  },
+  {
+   "D": {
+    "level": 3,
+    "lv": "down",
+    "busy": false,
+    "lot": 3,
+    "objs": 10,
+    "lights": 5,
+    "sol": 9,
+    "tris": 494,
+    "skel": false
+   },
+   "lvl": 3,
+   "you": {
+    "x": 1038.1309999999999,
+    "y": -3.772021758705555,
+    "z": 71.303,
+    "h": 3.141592653589793,
+    "sx": -0.0006812543724531137
+   },
+   "fade": "0",
+   "txt": "DUNGEON — LEVEL 3",
+   "cs": {
+    "gx": 990.7,
+    "gy": -13.9,
+    "S": [
+     -8.5,
+     -6.5,
+     20.1,
+     26.1
+    ]
+   },
+   "tag": "back-to-4"
+  },
+  {
+   "D": {
+    "level": 2,
+    "lv": "down",
+    "busy": false,
+    "lot": 2,
+    "objs": 10,
+    "lights": 5,
+    "sol": 9,
+    "tris": 494,
+    "skel": false
+   },
+   "lvl": 2,
+   "you": {
+    "x": 984.5689999999998,
+    "y": -3.772021758705555,
+    "z": 71.303,
+    "h": 3.141592653589793,
+    "sx": 0.0058477694644141365
+   },
+   "fade": "0",
+   "txt": "DUNGEON — LEVEL 2",
+   "cs": {
+    "gx": 943.3,
+    "gy": -13.9,
+    "S": [
+     -8.5,
+     -6.5,
+     20.1,
+     26.1
+    ]
+   },
+   "tag": "up4-fade",
+   "key": [
+    "w",
+    0
+   ],
+   "hit": {
+    "ms": 3959,
+    "dist": 0.67
+   }
+  },
+  {
+   "D": {
+    "level": 2,
+    "lv": "down",
+    "busy": false,
+    "lot": 2,
+    "objs": 10,
+    "lights": 5,
+    "sol": 9,
+    "tris": 494,
+    "skel": false
+   },
+   "lvl": 2,
+   "you": {
+    "x": 984.5689999999998,
+    "y": -3.772021758705555,
+    "z": 71.303,
+    "h": 3.141592653589793,
+    "sx": 0.0058477694644141365
+   },
+   "fade": "0",
+   "txt": "DUNGEON — LEVEL 2",
+   "cs": {
+    "gx": 943.3,
+    "gy": -13.9,
+    "S": [
+     -8.5,
+     -6.5,
+     20.1,
+     26.1
+    ]
+   },
+   "tag": "back-to-3"
+  },
+  {
+   "D": {
+    "level": 1,
+    "lv": "down",
+    "busy": false,
+    "lot": 1,
+    "objs": 10,
+    "lights": 5,
+    "sol": 9,
+    "tris": 494,
+    "skel": false
+   },
+   "lvl": 1,
+   "you": {
+    "x": 947.731,
+    "y": -3.772021758705555,
+    "z": 71.303,
+    "h": 3.141592653589793,
+    "sx": -0.006369813190900883
+   },
+   "fade": "0",
+   "txt": "DUNGEON — LEVEL 1",
+   "cs": {
+    "gx": 910.7,
+    "gy": -13.9,
+    "S": [
+     -8.5,
+     -6.5,
+     20.1,
+     26.1
+    ]
+   },
+   "tag": "up3-fade",
+   "key": [
+    "w",
+    0
+   ],
+   "hit": {
+    "ms": 3468,
+    "dist": 0.67
+   }
+  },
+  {
+   "D": {
+    "level": 1,
+    "lv": "down",
+    "busy": false,
+    "lot": 1,
+    "objs": 10,
+    "lights": 5,
+    "sol": 9,
+    "tris": 494,
+    "skel": false
+   },
+   "lvl": 1,
+   "you": {
+    "x": 947.731,
+    "y": -3.772021758705555,
+    "z": 71.303,
+    "h": 3.141592653589793,
+    "sx": -0.006369813190900883
+   },
+   "fade": "0",
+   "txt": "DUNGEON — LEVEL 1",
+   "cs": {
+    "gx": 910.7,
+    "gy": -13.9,
+    "S": [
+     -8.5,
+     -6.5,
+     20.1,
+     26.1
+    ]
+   },
+   "tag": "back-to-2"
+  },
+  {
+   "D": {
+    "level": 0,
+    "lv": "up",
+    "busy": false,
+    "lot": 0,
+    "objs": 0,
+    "lights": 0,
+    "sol": 0,
+    "tris": 0,
+    "skel": false
+   },
+   "lvl": 0,
+   "you": {
+    "x": -89.835,
+    "y": 0,
+    "z": 109.15799999999999,
+    "h": 3.141592653589793,
+    "sx": 0.0019724624759933857
+   },
+   "fade": "0",
+   "txt": "LEAVING DUNGEON",
+   "cs": {
+    "gx": -7.5,
+    "gy": 19.6,
+    "S": [
+     -8.5,
+     -6.5,
+     20.1,
+     26.1
+    ]
+   },
+   "tag": "up2-fade",
+   "key": [
+    "w",
+    0
+   ],
+   "hit": {
+    "ms": 3886,
+    "dist": 0.67
+   }
+  },
+  {
+   "D": {
+    "level": 0,
+    "lv": "up",
+    "busy": false,
+    "lot": 0,
+    "objs": 0,
+    "lights": 0,
+    "sol": 0,
+    "tris": 0,
+    "skel": false
+   },
+   "lvl": 0,
+   "you": {
+    "x": -89.835,
+    "y": 0,
+    "z": 109.15799999999999,
+    "h": 3.141592653589793,
+    "sx": 0.0019724624759933857
+   },
+   "fade": "0",
+   "txt": "LEAVING DUNGEON",
+   "cs": {
+    "gx": -7.5,
+    "gy": 19.6,
+    "S": [
+     -8.5,
+     -6.5,
+     20.1,
+     26.1
+    ]
+   },
+   "tag": "back-to-1"
+  },
+  {
+   "D": {
+    "level": 0,
+    "lv": "down",
+    "busy": false,
+    "lot": 0,
+    "objs": 0,
+    "lights": 0,
+    "sol": 0,
+    "tris": 0,
+    "skel": false
+   },
+   "lvl": 0,
+   "you": {
+    "x": 160.45999999999998,
+    "y": -3.772021758705555,
+    "z": 66.08506078244503,
+    "h": 2.3561944902907856,
+    "sx": 0.0020783144569990037
+   },
+   "fade": "0",
+   "txt": "LEAVING DUNGEON",
+   "cs": {
+    "gx": 214,
+    "gy": -18.52,
+    "S": [
+     -8.5,
+     -6.5,
+     20.1,
+     26.1
+    ]
+   },
+   "tag": "up1-fade",
+   "key": [
+    "w",
+    0
+   ],
+   "hit": null
+  },
+  {
+   "D": {
+    "level": 0,
+    "lv": "down",
+    "busy": false,
+    "lot": 0,
+    "objs": 0,
+    "lights": 0,
+    "sol": 0,
+    "tris": 0,
+    "skel": false
+   },
+   "lvl": 0,
+   "you": {
+    "x": 902.5309999999998,
+    "y": -3.772021758705555,
+    "z": 67.7435,
+    "h": 2.3561944902907856,
+    "sx": -0.0021909928279018106
+   },
+   "fade": "0",
+   "txt": "LEAVING DUNGEON",
+   "cs": {
+    "gx": 870.7,
+    "gy": -17.05,
+    "S": [
+     -8.5,
+     -6.5,
+     20.1,
+     26.1
+    ]
+   },
+   "tag": "back-to-0"
+  },
+  {
+   "D": {
+    "level": 3,
+    "lv": "down",
+    "busy": false,
+    "lot": 3,
+    "objs": 10,
+    "lights": 5,
+    "sol": 9,
+    "tris": 494,
+    "skel": false
+   },
+   "lvl": 3,
+   "you": {
+    "x": 1029.769,
+    "y": -3.772021758705555,
+    "z": 68.591,
+    "h": 0,
+    "sx": 0.004315587159417064
+   },
+   "fade": "0",
+   "txt": "ENTERING DUNGEON — LEVEL 3",
+   "cs": {
+    "gx": 983.3,
+    "gy": -16.3,
+    "S": [
+     -8.5,
+     -6.5,
+     20.1,
+     26.1
+    ]
+   },
+   "tag": "go3"
+  },
+  {
+   "D": {
+    "level": 1,
+    "lv": "down",
+    "busy": false,
+    "lot": 1,
+    "objs": 10,
+    "lights": 5,
+    "sol": 9,
+    "tris": 494,
+    "skel": false
+   },
+   "lvl": 1,
+   "you": {
+    "x": 939.369,
+    "y": -3.772021758705555,
+    "z": 68.591,
+    "h": 0,
+    "sx": -0.0013729716587493447
+   },
+   "fade": "0",
+   "txt": "DUNGEON — LEVEL 1",
+   "cs": {
+    "gx": 903.3,
+    "gy": -16.3,
+    "S": [
+     -8.5,
+     -6.5,
+     20.1,
+     26.1
+    ]
+   },
+   "tag": "menu-L1"
+  },
+  {
+   "D": {
+    "level": 0,
+    "lv": "up",
+    "busy": false,
+    "lot": 0,
+    "objs": 0,
+    "lights": 0,
+    "sol": 0,
+    "tris": 0,
+    "skel": false
+   },
+   "lvl": 0,
+   "you": {
+    "x": -94.35499999999999,
+    "y": 0,
+    "z": 104.52499999999999,
+    "h": 0,
+    "sx": 0.007437094829327328
+   },
+   "fade": "0",
+   "txt": "DUNGEON — LEVEL 1",
+   "cs": {
+    "gx": -11.5,
+    "gy": 15.5,
+    "S": [
+     -8.5,
+     -6.5,
+     20.1,
+     26.1
+    ]
+   },
+   "tag": "menu-castle"
+  }
+ ],
+ "render": {
+  "fps": 0,
+  "ms": 0,
+  "calls": 116,
+  "tris": 143286,
+  "points": 90,
+  "lines": 437,
+  "programs": 196,
+  "progsOnScreen": 37,
+  "geometries": 362,
+  "textures": 90,
+  "lightsInScene": 11,
+  "lightsLit": 8,
+  "shadows": [
+   "Point 512x6",
+   "Directional 3072",
+   "Directional 2048"
+  ],
+  "lvl": "up",
+  "place": "",
+  "at": [
+   -83.5,
+   92.5
+  ],
+  "drawnObjs": 93,
+  "drawnTris": 106185,
+  "fog": 1769912,
+  "loadedTris": 901849,
+  "geoBytes": 69664132,
+  "texBytes": 440925544
+ },
+ "errors": [
+  "Fetch API cannot load file:///home/runner/work/thestrangest/thestrangest/dist/market.html?fresh=1&hour=13&wx=CLEAR. URL scheme \"file\" is not supported.",
+  "THREE.Sprite: \"Raycaster.camera\" needs to be set in order to raycast against sprites.",
+  "Fetch API cannot load file:///home/runner/work/thestrangest/thestrangest/dist/market.html?fresh=1&hour=13&wx=CLEAR. URL scheme \"file\" is not supported.",
+  "Fetch API cannot load file:///home/runner/work/thestrangest/thestrangest/dist/market.html?fresh=1&hour=13&wx=CLEAR. URL scheme \"file\" is not supported."
+ ]
+}

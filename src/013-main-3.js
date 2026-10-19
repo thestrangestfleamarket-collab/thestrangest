@@ -41,7 +41,7 @@
   for(const a of [3.46,8.83,13.7,19.3]){ const x=TW-7.72-.33, p=W.bench(x,SY0+a); BATCH.tag=OBJ('station','bench'); p.boxes.forEach(b=>gbox(b)); solid(x,SY0+a,x+.66,SY0+a+2.8,24); }
   BATCH.tag=OBJ('station','sign'); W.litSign(AVE+3,SY1-.9,'TO STREET ^').boxes.forEach(b=>gbox(b,-UH));
   BATCH.tag=OBJ('station','signal'); W.signal(TUN0+.35,SY0-1.4,1).boxes.forEach(b=>gbox(b,-UH-32)); BATCH.tag=OBJ('station','signal'); W.signal(TUN0+.35,SY1+1.4,0).boxes.forEach(b=>gbox(b,-UH-32));
-  BATCH.tag=OBJ('station','train car'); W.carBoxes(0,0).forEach(b=>gbox(b,-UH-32,W.TRACKS[0],W.D1Y,true)); BATCH.tag=null;
+  BATCH.tag=OBJ('station','train car'); W.carBoxes(0,0).forEach(b=>gbox(b,-UH-32,W.TRACKS[0],W.D1Y,true)); BATCH.tag=null; solid(W.TRACKS[0]-W.CARW,W.D1Y-W.CARL/2,W.TRACKS[0]+W.CARW,W.D1Y+W.CARL/2,96-32);
   for(let y=SY0+3.2;y<SY1;y+=6.4)for(const x of [AVE+2.6,AVE+8.4]){ const L=new THREE.PointLight(new THREE.Color(.5,.54,.64),LAMPI,10*TILE,LAMPD); L.position.set(X(x),Y(SZ+88),Z(y)); scene.add(L); lamps.push(L); }
   solid(AVE-1,SY0-12,AVE,END,UH); solid(TW,SY0-12,TW+1,SY1+12,UH); solid(AVE,SY0-1,PLAT,SY0,UH); solid(AVE,END,-29,END+1,UH); solid(-25,END,PLAT,END+1,UH);
   solid(PLAT,SY1,PLAT+.1,END,UH); solid(TUN0-1,SY0-12,TUN0,SY0,UH); solid(TUN0-1,SY1,TUN0,SY1+12,UH);

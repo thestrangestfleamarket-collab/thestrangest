@@ -2846,3 +2846,12 @@ fsomeone dies insomewhere they have to float back as a ghost to get resed. when 
   running on), hands and feet stay put on the ground where they land. Footstep sounds are quiet during moves. Checked in node (the
   rig out of the built page, 60 a second): run, jump, cartwheel, roll, run with no stop, no NaN, speed held over 39 units a second
   (the run is 108). Cost: none a frame (the cartwheel's 25 poses are made once at load).
+- **Light shafts that find things; fairy rings** (owner, 19 Oct 2026: "the sun beams should come more from above, have them slowly
+  moves around the park to diferent spots. they should shine on thinsg that are rare like mushrooms, buttefly, birds, have them move
+  around slowly to new spots. add mushromo circles that pop up randomly."): the four shafts no longer start from cloud gaps along the
+  sun's slant; they come down nearly straight (the sun's direction tilted 70% toward overhead), drift slowly (about 25 s to arrive)
+  and every 35-65 s each picks a new spot within 28 tiles: mostly a rare thing (a fairy ring first, then mushrooms, butterflies,
+  birds that aren't flying), following it if it moves, else a sunny lawn spot; never under a roof, never across the camera's line.
+  Fairy rings (`141b-fairy.js`): every 70-160 s, up to 3 at a time, a ring of 9-14 mushrooms (four kinds: red, white, brown, glowing
+  blue) pops up on a park lawn 8-24 tiles from you, stays 4-6 minutes and fades; double-click to gather it (morels, or moonglows from a
+  blue ring). `FAIRYAT()` makes one.

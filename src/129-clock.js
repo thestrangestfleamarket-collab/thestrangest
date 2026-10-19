@@ -2,7 +2,7 @@ const CLOCK={h:17.4,run:false,speed:1440/600,sunV:new THREE.Vector3(0,1,0),moonV
 { const D=Math.PI/180, sunL=new THREE.DirectionalLight(0xffffff,0), sunD=new THREE.DirectionalLight(0xffffff,0), R=32*TILE, RD=20*TILE;
   for(const [L,r,m] of [[sunL,R,3072],[sunD,RD,2048]]){ L.castShadow=true; L.shadow.mapSize.set(m,m); Object.assign(L.shadow.camera,{left:-r,right:r,top:r,bottom:-r,near:.5,far:120*TILE}); L.shadow.camera.updateProjectionMatrix();
     L.shadow.bias=-.0005; L.shadow.normalBias=+(QS.get("snb")||.12); L.shadow.autoUpdate=false; scene.add(L,L.target); }
-  const SC={c:new THREE.Vector3(1e9,0,0),d:new THREE.Vector3(),lv:'',t:0,root:{visible:true,layers:new THREE.Layers(),children:[]},n:0,nd:0};
+  const SC={c:new THREE.Vector3(1e9,0,0),d:new THREE.Vector3(),lv:'',t:0,w:0,root:{visible:true,layers:new THREE.Layers(),children:[]},n:0,nd:0};
   const SNM=new THREE.Matrix4(), SR=new THREE.Vector3(), SU=new THREE.Vector3(), SP=new THREE.Vector3(), ORG=new THREE.Vector3(), UPV=new THREE.Vector3(0,1,0);
   const elev=h=>50*Math.cos(2*Math.PI*(h-12.7)/24)-8, azim=h=>2*Math.PI*(h-12.7)/24;
   const K=[[-90,0x050507,0x55607a,0x14110e,.13,0x6f86c9,.14],[-18,0x050507,0x55607a,0x14110e,.13,0x6f86c9,.14],[-12,0x0a0e22,0x4a5a8a,0x15121a,.18,0x6f86c9,.1],
@@ -27,8 +27,8 @@ const CLOCK={h:17.4,run:false,speed:1440/600,sunV:new THREE.Vector3(0,1,0),moonV
       const a=Math.round(SP.dot(SR)/tx)*tx, b=Math.round(SP.dot(SU)/tx)*tx, c=SP.dot(dir); L.target.position.copy(SR).multiplyScalar(a).addScaledVector(SU,b).addScaledVector(dir,c);
       L.position.copy(L.target.position).addScaledVector(dir,60*TILE); L.target.updateMatrixWorld(); L.updateMatrixWorld(); };
     const strong=sunL.intensity>.3, now=performance.now();
-    const stale=SC.d.dot(dir)<Math.cos(.4*D)||Math.hypot(SC.c.x-pos.x,SC.c.z-pos.z)>8*TILE||SC.lv!==LVL||now-SC.t>(strong?4000:15000);
-    if(stale){ aim(sunL); SC.c.set(pos.x,py,pos.z); SC.d.copy(dir); SC.lv=LVL; SC.t=now; sunL.shadow.needsUpdate=true; }
+    const stale=SC.d.dot(dir)<Math.cos(.4*D)||Math.hypot(SC.c.x-pos.x,SC.c.z-pos.z)>8*TILE||SC.lv!==LVL||Math.abs((cam.right-cam.left)-SC.w)>.1*SC.w||now-SC.t>(strong?4000:15000);
+    if(stale){ aim(sunL); SC.c.set(pos.x,py,pos.z); SC.d.copy(dir); SC.lv=LVL; SC.t=now; SC.w=cam.right-cam.left; sunL.shadow.needsUpdate=true; }
     sunD.intensity=0;
     if(sunL.intensity>0&&(now-lastS>(strong?40:200)||stale)){ aim(sunD); sunD.shadow.needsUpdate=true; lastS=now; }
     if(typeof WATER!=='undefined')WATER.glowK=(typeof ROOMS!=='undefined'&&ROOMS.cur)||!up?1:Math.max(0,Math.min(1,(3-e)/8));
@@ -37,10 +37,11 @@ const CLOCK={h:17.4,run:false,speed:1440/600,sunV:new THREE.Vector3(0,1,0),moonV
   CLOCK.dark=()=>elev(CLOCK.h)<-2;
   const DYN=()=>{ const out=new Set(); if(window.W3&&W3.group)out.add(W3.group); for(const N of NPCS)if(N.g)out.add(N.g); for(const x of NPCS.extra||[])if(x&&x.g)out.add(x.g);
     if(window.CREATS)for(const N of CREATS)if(N.g)out.add(N.g); for(const k of ['BOAT','DRONE'])if(window[k]&&window[k].g)out.add(window[k].g); return out; };
-  CLOCK.shadowPass=()=>{ const SM=renderer.shadowMap; if(!SM.enabled)return;
-    if(sunL.shadow.needsUpdate){ const hid=[]; for(const o of DYN())if(o.visible){ o.visible=false; hid.push(o); } SM.needsUpdate=true; SM.render([sunL],scene,cam); for(const o of hid)o.visible=true; SC.n++; }
-    if(sunD.shadow.needsUpdate){ const ch=SC.root.children; ch.length=0; for(const o of DYN())if(o.visible&&o.parent){ o.updateMatrixWorld(); ch.push(o); } SM.needsUpdate=true; SM.render([sunD],SC.root,cam); SC.nd++; }
-    SM.needsUpdate=true; };
+  { const SM=renderer.shadowMap, orig=SM.render;
+    SM.render=(lights,sc,camera)=>{ if(sc!==scene)return orig(lights,sc,camera); const rest=lights.filter(L=>L!==sunL&&L!==sunD);
+      if(lights.includes(sunL)&&sunL.shadow.needsUpdate){ const hid=[]; for(const o of DYN())if(o.visible){ o.visible=false; hid.push(o); } SM.needsUpdate=true; orig([sunL],sc,camera); for(const o of hid)o.visible=true; SC.n++; }
+      if(lights.includes(sunD)&&sunD.shadow.needsUpdate){ const ch=SC.root.children; ch.length=0; for(const o of DYN())if(o.visible&&o.parent)ch.push(o); SM.needsUpdate=true; orig([sunD],SC.root,camera); SC.nd++; }
+      SM.needsUpdate=true; orig(rest,sc,camera); }; }
   window.SUNDBG=()=>({still:SC.n,moving:SC.nd,dyn:DYN().size,maps:[sunL.shadow.mapSize.x,sunD.shadow.mapSize.x],patch:THREE.ShaderChunk.lights_fragment_begin.includes('NUM_DIR_LIGHT_SHADOWS > 1')});
   CLOCK.sun=sunL; CLOCK.sunD=sunD; CLOCK.elev=()=>elev(CLOCK.h); CLOCK.SKYV=SKYV;
   const pane=document.querySelector('#menu [data-p="atmo"]')||document.querySelector('#menu [data-p="display"]'), box=document.createElement('div');

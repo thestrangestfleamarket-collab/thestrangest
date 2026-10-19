@@ -7,7 +7,7 @@ out = sys.argv[2] if len(sys.argv) > 2 else 'dist/market-prof.html'
 h = open(src).read()
 a = h.index('function frame(now){'); b = h.index('\n}\n', a) + 3; F = h[a:b]
 # (start, end, name): the frame's systems, each timed from its first text to the end of its last
-SEG = [('CLOCK.shadowPass();', None, 'sun shadow passes'), ('trip=false; let B;', 'J0=B.J; J0t=now; ASTEP.you.B=B; }', 'walker rig'),
+SEG = [('trip=false; let B;', 'J0=B.J; J0t=now; ASTEP.you.B=B; }', 'walker rig'),
        ('W3.place(', 'if(ED.on)ED.tick();', 'walker place + physbody'),
        ('phyYouNow(dt);', 'looseDraw();', 'loose physics'),
        ('{ const px=FLOATS.px', 'FLOATS.pz=pos.z; }', 'floats'),

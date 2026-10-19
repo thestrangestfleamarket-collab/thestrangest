@@ -2846,3 +2846,7 @@ fsomeone dies insomewhere they have to float back as a ghost to get resed. when 
   running on), hands and feet stay put on the ground where they land. Footstep sounds are quiet during moves. Checked in node (the
   rig out of the built page, 60 a second): run, jump, cartwheel, roll, run with no stop, no NaN, speed held over 39 units a second
   (the run is 108). Cost: none a frame (the cartwheel's 25 poses are made once at load).
+- **Watching birds trains BIRDING** (owner, 19 Oct 2026: "when you watch a bird if you can stay within a radius around them you will
+  gain skill"): after a good look (WATCH), you settle in to watch; while you stay within 3.5 tiles and the bird stays, every 8 s of
+  watching is another BIRDING check (a gain chance, UO style), time counting fully while you stand still or walk slowly, a little
+  bonus for standing quite still; go farther or let it fly and you lose sight of it.

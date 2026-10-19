@@ -7,8 +7,7 @@ const DRESS=window.DRESS={}, TLX={tick:()=>{}};
   { const M=1/.84*TILE; for(const [x,c] of [[BX0-1.2,0x2f4a3a],[AX0-1.5,0x2f4a3a],[BOD.XS(AVE.x0)-2.2,0x2f4a3a]]){ const z=sw-.25*M, y=G(x,z), w=.56*M, h=.9*M; DRESS.cans.push({x,z});
     cyl(x,y+.05*M,z,w*.43,.1*M,0x1c2a22); cyl(x,y+h/2,z,w/2,h*.8,c); cyl(x,y+h-.04*M,z,w*.52,.08*M,0x1c2a22); blk(x-.05*M,y+h+.03*M,z+.04*M,w*.7,.1*M,w*.6,0x8a8478); blk(x+.1*M,y+h+.07*M,z-.08*M,w*.3,.08*M,w*.35,0xb8452f); solid(x,z,w/2,h); } }
   { const M=1/.84*TILE, SP=26*M, SX0=BOD.XS(BOD.MAP.x0), SX1=BOD.XS(BOD.MAP.x1), n=Math.floor((SX1-SX0-8)/SP)+1, x0=(SX0+SX1)/2-(n-1)*SP/2, warm=new THREE.Color(1,.88,.68);
-    const sl=(x,z,d,ax='z',ring)=>{ const y=G(x,z), GR=0x5d6266, DK=0x3f4448, X_=ax==='x'; cyl(x,y+.3*M,z,.17*M,.6*M,DK); cyl(x,y+.66*M,z,.12*M,.14*M,GR); cyl(x,y+3.05*M,z,.075*M,4.7*M,GR);
-      cyl(x,y+5.66*M,z,.065*M,.52*M,GR); cyl(x,y+5.96*M,z,.075*M,.1*M,DK); if(X_){ blk(x+d*.55*M,y+5.86*M,z,1.1*M,.1*M,.1*M,GR); blk(x+d*1.3*M,y+5.98*M,z,.62*M,.16*M,.36*M,DK); } else { blk(x,y+5.86*M,z+d*.55*M,.1*M,.1*M,1.1*M,GR); blk(x,y+5.98*M,z+d*1.3*M,.36*M,.16*M,.62*M,DK); }
+    const sl=(x,z,d,ax='z',ring)=>{ const y=G(x,z);
       solid(x,z,.18*M,6*M); const P={x,z,d,ax,ring:ring||(d>0?'outer':'inner'),y:y+5.45*M,h:heads.length}; POLES.push(P); return P; };
     const heads=[], pools=[], POLES=[], POSTS=[], hsh=n=>{ const v=Math.sin(n*12.9898+78.233)*43758.5453; return v-Math.floor(v); },
       light=(x,y,z,i,r)=>{ const L=new THREE.PointLight(warm,i,r,1.6); L.position.set(x,y,z); L.userData.i0=i; scene.add(L); const P=[L,x,z,r*.2]; P.on=1.5-hsh(pools.length)*4; pools.push(P); return L; };
@@ -25,11 +24,8 @@ const DRESS=window.DRESS={}, TLX={tick:()=>{}};
       { const xo=XS(R.wr0)-.25*M, xi=XS(R.wr1)+.25*M, z0=ZS(BOD.FAR)+2*M, z1=ZS(R.nr0)-1*M; for(let z=z0,k=0;z<z1;z+=SP/2,k++){ if(k&1)put(xi,z,-1,'x','inner'); else put(xo,z,1,'x','outer'); } }
       { const xo=XS(A.r1)+.25*M, xi=XS(A.r0)-.25*M, z0=ZS(BOD.FAR)+2*M, z1=ZS(R.nr0)-1*M; for(let z=z0+SP/4,k=0;z<z1;z+=SP/2,k++){ if(k&1)put(xi,z,1,'x','inner'); else put(xo,z,-1,'x','outer'); } }
       { const zo=ZS(R.nr1)+.25*M, zi=ZS(R.nr0)-.25*M, x0=XS(R.wr1)+2*M, x1=XS(A.r0)-2*M; for(let x=x0,k=0;x<x1;x+=SP/2,k++){ if(k&1)put(x,zi,1,'z','inner'); else put(x,zo,-1,'z','outer'); } } }
-    { const x=CP.x, z=CP.z, y=G(x,z), GR=0x5d6266, DK=0x3f4448, T8=8.2*M, AL=2.7*M, L2=[];
-      cyl(x,y+.35*M,z,.3*M,.7*M,DK); cyl(x,y+.78*M,z,.2*M,.16*M,GR); cyl(x,y+.86*M+2.6*M,z,.12*M,5.2*M,GR); cyl(x,y+6.06*M+1.05*M,z,.09*M,2.1*M,GR); cyl(x,y+T8+.1*M,z,.13*M,.2*M,DK); cyl(x,y+T8+.3*M,z,.05*M,.2*M,DK);
-      for(const [dx,dz] of [[0,-1],[1,0]]){ const ex=x+dx*AL, ez=z+dz*AL, ay=y+T8-.15*M;
-        blk(x+dx*AL/2,ay,z+dz*AL/2,dx?AL:.12*M,.12*M,dz?AL:.12*M,GR); blk(x+dx*AL*.28,ay-.42*M,z+dz*AL*.28,dx?AL*.5:.07*M,.07*M,dz?AL*.5:.07*M,GR); blk(x+dx*.06*M,ay-.22*M,z+dz*.06*M,.1*M,.5*M,.1*M,DK);
-        blk(ex,ay+.02*M,ez,dx?.9*M:.44*M,.2*M,dz?.9*M:.44*M,DK); const h=heads.length, L=light(ex,ay-.25*M,ez,55,16*TILE); heads.push([ex,ay-.06*M,ez]); L2.push([L,h]); }
+    { const x=CP.x, z=CP.z, y=G(x,z), T8=8.2*M, AL=2.7*M, L2=[];
+      for(const [dx,dz] of [[0,-1],[1,0]]){ const ex=x+dx*AL, ez=z+dz*AL, ay=y+T8-.15*M, h=heads.length, L=light(ex,ay-.25*M,ez,55,16*TILE); heads.push([ex,ay-.06*M,ez]); L2.push([L,h]); }
       solid(x,z,.3*M,T8); POLES.push({x,z,d:-1,ax:'z',ring:'inner',y:y+T8-.6*M,h:L2[0][1],h2:L2[1][1],L:L2[0][0],L2:L2[1][0],corner:1}); DRESS.corner={x,z,y,lamps:L2.map(q=>q[0])}; }
     const wz=BOD.ZS(PARK.y0+PARK.oy), pz=far+.95*M, g0=BOD.XS(PARK.gate[0]+PARK.ox), g1=BOD.XS(PARK.gate[1]+PARK.ox), pts=[[g0-.9*M,pz],[g1+.9*M,pz]], px1=BOD.XS(PARK.x1+PARK.ox)-2;
     for(let x=g0-14*M;x>BOD.XS(PARK.x0+PARK.ox)+2;x-=14*M)pts.push([x,pz]); for(let x=g1+14*M;x<px1;x+=14*M)pts.push([x,pz]);
@@ -102,5 +98,5 @@ const DRESS=window.DRESS={}, TLX={tick:()=>{}};
     { const me=new THREE.InstancedMesh(new THREE.CylinderGeometry(.5,.5,1,8),new THREE.MeshLambertMaterial({color:0xffffff,flatShading:true}),CY.length), m4=new THREE.Matrix4(), q=new THREE.Quaternion(), c=new THREE.Color();
       CY.forEach(([x,y,z,sx,sy,sz,col],i)=>{ me.setMatrixAt(i,m4.compose(new THREE.Vector3(x,y,z),q,new THREE.Vector3(sx,sy,sz))); me.setColorAt(i,c.setHex(col)); }); me.castShadow=me.receiveShadow=true; scene.add(me); DRESS.rounds=me; }
     { const me=new THREE.InstancedMesh(new THREE.BoxGeometry(1,1,1),new THREE.MeshLambertMaterial({color:0xffffff}),BL.length), m4=new THREE.Matrix4(), q=new THREE.Quaternion(), c=new THREE.Color();
-      BL.forEach(([x,y,z,sx,sy,sz,col],i)=>{ me.setMatrixAt(i,m4.compose(new THREE.Vector3(x,y,z),q,new THREE.Vector3(sx,sy,sz))); me.setColorAt(i,c.setHex(col)); }); me.castShadow=me.receiveShadow=true; scene.add(me); DRESS.blocks=me; } DRESS.posts=xs.length; DRESS.lights=n*2+xs.length+2; DRESS.poles=POLES; DRESS.lampposts=POSTS; DRESS.heads=hd; DRESS.lant=lant; }
+      BL.forEach(([x,y,z,sx,sy,sz,col],i)=>{ me.setMatrixAt(i,m4.compose(new THREE.Vector3(x,y,z),q,new THREE.Vector3(sx,sy,sz))); me.setColorAt(i,c.setHex(col)); }); me.castShadow=me.receiveShadow=true; scene.add(me); DRESS.blocks=me; } DRESS.posts=xs.length; DRESS.lights=n*2+xs.length+2; DRESS.poles=POLES; DRESS.lampposts=POSTS; DRESS.heads=hd; DRESS.lant=lant; DRESS.pole=pole; }
 }

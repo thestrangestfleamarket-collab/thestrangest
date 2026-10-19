@@ -73,7 +73,7 @@ const BLK={blds:[],signs:[],band:()=>null}; window.BLK=BLK;
     const sg={paint(){ g.clearRect(0,0,c.width,c.height); o.paint(g,c.width,c.height); hard(c); fm.map.needsUpdate=true; const h=halo(c,o.glow,3);
       if(!hm){ hm=new THREE.MeshBasicMaterial({map:tex(h.c),transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}); const hp=new THREE.Mesh(new THREE.PlaneGeometry(h.c.width/24*T,h.c.height/24*T),hm); hp.position.z=-.02*T; hp.renderOrder=4; grp.add(hp); }
       else { hm.map.image=h.c; hm.map.needsUpdate=true; } }};
-    sg.paint(); BLK.signs.push(sg); return grp; }
+    sg.paint(); BLK.signs.push(Object.assign(sg,{fm,grp,o})); return grp; }
   const TU=T/ZU;
   const lamp=(col,k,reach,x,up,y)=>{ const L=new THREE.PointLight(new THREE.Color(col),k,reach*T,1.6); L.position.set(XS(x),YP(up),ZS(y)); L.userData.i0=k; scene.add(L); lamps.push(L); return L; };
   const blade=(x,y,f,up,h,col,ink,t,frame)=>{ const s1=f==='S'?-1:1; lightbox({x,y:y+s1*.75,up,w:.85,h,f:'E',d:.4,frame:frame||0x2a2433,paint(g,W,H){ g.fillStyle=col; g.fillRect(0,0,W,H); g.fillStyle=ink; words(g,t,0,H*.04,W,H*.92,KO,true); }});

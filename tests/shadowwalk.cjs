@@ -40,11 +40,11 @@ process.on('unhandledRejection',e=>{ errs.push('TEST '+String(e&&e.message||e).s
     rep.sigd=await pg.evaluate(()=>SIGD); rep.sunlog=await pg.evaluate(()=>window.SUNLOG); fin(); await b.close(); return; }
   await pg.keyboard.press('v'); await pg.waitForTimeout(1500);
   const E=-Math.PI/2, Wd=Math.PI/2, cen=()=>pg.evaluate(()=>window.SUNDBG&&SUNDBG().still);
-  rep.recentre={}; for(const [P,yaw,tag] of [[130,E,'E130'],[170,E,'E170'],[150,Wd,'W150'],[190,Wd,'W190'],[220,Wd,'W220']]){
-    await at(P-40,yaw,2500); await at(P-11,yaw); await at(P,yaw); const a=await shot('rc-'+tag+'-a'); await pg.waitForTimeout(1500); const a2=await shot('rc-'+tag+'-a2'); const n1=await cen();
-    await at(P+40,yaw,2500); await at(P,yaw); const b2=await shot('rc-'+tag+'-b'); const n2=await cen();
+  rep.recentre={}; for(const [P,yaw,tag] of [[20,E,'E20'],[60,E,'E60'],[100,E,'E100'],[140,E,'E140'],[40,Wd,'W40'],[80,Wd,'W80'],[120,Wd,'W120']]){
+    await at(P-40,yaw,2500); await at(P-11,yaw,1200); await at(P,yaw,1200); const a=await shot('rc-'+tag+'-a'); await pg.waitForTimeout(1500); const a2=await shot('rc-'+tag+'-a2'); const n1=await cen();
+    await at(P+40,yaw,2500); await at(P,yaw,1200); const b2=await shot('rc-'+tag+'-b'); const n2=await cen();
     rep.recentre[tag]={...(await diffm(a,b2,a2,'rcd-'+tag)),redraws:[n1,n2]}; }
-  rep.walk=[]; for(let k=0;k<16;k++){ const x=128+3*k; await at(x,E,1500); await shot('walk-'+String(k).padStart(2,'0')); rep.walk.push([x,await cen()]); }
+  rep.walk=[]; for(let k=0;k<16;k++){ const x=30+3*k; await at(x,E,1500); await shot('walk-'+String(k).padStart(2,'0')); rep.walk.push([x,await cen()]); }
   await pg.keyboard.press('v'); await pg.keyboard.press('v'); await pg.waitForTimeout(1500);
   await at(150,-Math.PI/4); await pg.mouse.move(480,270);
   rep.zoom=[]; const z0=await shot('iso-z0'); for(let i=1;i<=4;i++){ await pg.mouse.wheel(0,i<3?400:-400); await pg.waitForTimeout(2500); await shot('iso-z'+i); rep.zoom.push([await pg.evaluate(()=>window.CAMW&&CAMW()),await cen()]); }

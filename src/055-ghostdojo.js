@@ -2,8 +2,9 @@ function gdShape(GS,K,LAMPS){ const s=K.s, o=K.o, SC=1.5, cx=o[0]+4*s, Y1=o[1]+3
   for(let i=GS.length-1;i>=0;i--){ const p=GS[i]; for(let j=LAMPS.length-1;j>=0;j--)if(LAMPS[j].prop===p)LAMPS.splice(j,1); GS.splice(i,1); }
   const G=BOD.GDK={o,s,SC,X0,X1,Y0,Y1,W,D,cx,y1e:o[1]+8.3*s};
   G.ground={x0:X0-1.6,x1:X1+1.6};
+  G.pool=[X0+.22,Y0+.22,X1-.22,(Y0+Y1)/2+.15];
   G.court=(x,y)=>{ const {hash,grain}=BOD.g, sh=BOD.K.sh, px=Math.floor(x*24), py=Math.floor(y*24);
-    const out=x<X0||x>X1||y<Y0||y>Y1; if(!out)return [96,90,84];
+    const out=x<X0||x>X1||y<Y0||y>Y1; if(!out)return x>G.pool[0]&&x<G.pool[2]&&y>G.pool[1]&&y<G.pool[3]?null:[96,90,84];
     const dEave=Math.max(X0-x,x-X1,Y0-y,y-Y1);
     const wet=G.puddles.some(([pcx,pcy,rx,ry])=>{ const u=(x-pcx)/rx, v=(y-pcy)/ry; return u*u+v*v+(grain(x*3,y*3,611,.6)-.5)*.5<1; });
     let c;
@@ -74,8 +75,12 @@ function gdShape(GS,K,LAMPS){ const s=K.s, o=K.o, SC=1.5, cx=o[0]+4*s, Y1=o[1]+3
       for(const h of holes||[])if(a>h[0]-.14&&a<h[1]+.14&&z>h[2]-5&&z<h[3]+5)return wood(z<h[2]?.8:1.05);
       if(z>=147)return sh(J.DJPLA,.94+.06*hash(Math.floor(a*20),Math.floor(z/2),721));
       if(z>=139)return wood(z<140.5?.8:1.12);
-      if(alc&&a>alc[0]&&a<alc[1]){ const u=(a-alc[0])*24, L=(alc[1]-alc[0])*24, m=118-Math.abs(u-L*.55)*1.1; if(z<10||z>134||u<2||u>L-2)return wood(z<10?.7:1);
-        if(z<44)return ((u+4*Math.sin(z*.5))%14<2&&z%10>6)?[226,236,240]:[44,96,150]; if(z<m)return z>m-22+4*Math.sin(u*.7)?[240,242,246]:[70,96,140]; return z>110?[168,206,230]:[150,196,224]; }
+      if(alc&&a>alc[0]&&a<alc[1]){ const u=(a-alc[0])*24, L=(alc[1]-alc[0])*24, du=u-L/2, dz=z-98, r=Math.hypot(du,dz); if(z<10||z>134||u<2||u>L-2)return wood(z<10?.7:1);
+        if(r<22)return Math.hypot(du+7,dz-5)<5||Math.hypot(du-6,dz+8)<3.5||Math.hypot(du-9,dz-9)<2.5?lit([222,210,172]):lit([252,240,204]);
+        if(r<25.5)return r<23.5?[34,44,86]:lit([150,184,200]);
+        if(z<42){ const w=Math.abs(du+2.5*Math.sin(z*1.3))<10-z*.12&&z%5>1.5; return w?lit([236,228,196]):z%9<1.2?[52,82,130]:[30,52,98]; }
+        if(z<52)return Math.abs(du+16-z*.6)<20&&z>44?[60,64,70]:[40,48,92];
+        return hs(Math.floor(u),Math.floor(z),724)<.012?lit([240,240,250]):Math.abs(z-64-3*Math.sin(u*.08))<2.5&&Math.abs(du)>30?[70,78,120]:[24,30,66]; }
       for(const w of win){ const r=Math.hypot((a-w)*24,z-RZc); if(r<RR+2.5){ if(r>=RR)return wood(); return ((a-w)*24+40)%7<1.3||(z+40)%7<1.3?wood(1.2):lit(WARM); } }
       if(pa<.09||pa>sp-.09||a<.09||a>L-.09)return wood();
       if(z<12)return wood(z<1?.6:(a*6)%1<.08?.75:1.05);
@@ -85,7 +90,7 @@ function gdShape(GS,K,LAMPS){ const s=K.s, o=K.o, SC=1.5, cx=o[0]+4*s, Y1=o[1]+3
       back:{n:[0,1],ax:'x',at0:Y0,at1:Y0+T,o:X0,L:W,inA:a=>a-T,inL:xi1-xi0,win:RND.back.map(m=>m-T),alc:null},
       west:{n:[1,0],ax:'y',at0:X0,at1:X0+T,o:Y0,L:D,inA:a=>a-T,inL:yi1-yi0,win:RND.west.map(m=>m-T),s0:T,s1:D-T},
       east:{n:[-1,0],ax:'y',at0:X1-T,at1:X1,o:Y0,L:D,inA:a=>a-T,inL:yi1-yi0,win:[],s0:T,s1:D-T}};
-    const TK=[xi0+7.8,xi0+11.6];
+    const TK=[cx-1.9,cx+1.9];
     WALLS.back.alc=[TK[0]-xi0-.12,TK[1]-xi0];
     const strips=(L,holes,s0=0,s1=L)=>{ const cuts=new Set([s0,s1]); for(const h of holes){ cuts.add(h.a0); cuts.add(h.a1); } const A=[...cuts].sort((p,q)=>p-q), out=[];
       for(let i=0;i+1<A.length;i++){ const u0=A[i], u1=A[i+1], m=(u0+u1)/2, hh=holes.filter(h=>m>h.a0&&m<h.a1).sort((p,q)=>p.z0-q.z0); let z=0;
@@ -174,18 +179,23 @@ function gdShape(GS,K,LAMPS){ const s=K.s, o=K.o, SC=1.5, cx=o[0]+4*s, Y1=o[1]+3
     bed('long planted bed',X0-1.45,Y1+1.4,X0-.55,Y1+5.2,[[X0-1,Y1+3.3]],760);
     bed('small planted bed',X1+.25,Y1+.25,X1+1.15,Y1+1.1,[],770);
     BATCH.tag=null;
-    const floorCol=(x,y)=>{ const e=Math.min(x-xi0,xi1-x,y-yi0,yi1-y), i=Math.floor(x*4), j=Math.floor(y*4); if(x*4-i<.08||y*4-j<.08)return [138,146,150];
+    const [,,,yE]=GK.pool, yR=yE-.32, yS=yE-.7, yL=yE-1.1, WL=-3, BS=-20, BD=-64, GAP=1.5;
+    const floorCol=(x,y)=>{ const e=Math.min(x-xi0,xi1-x,y-yE,yi1-y), i=Math.floor(x*4), j=Math.floor(y*4); if(x*4-i<.08||y*4-j<.08)return [138,146,150];
       return sh(e<.5?[66,112,150]:hash(i,j,701)<.14?[110,160,186]:[206,214,216],.95+.08*hash(i,j,702)); };
-    const PX0=cx-3.3, PX1=cx+3.3, PY0=cy-1.2, PY1=cy+1.2, HN=[184,146,100], hoop=(nx,ny,x,y,z,k)=>sh(z%4<1?[70,64,60]:HN,k);
-    thing('bath pool',[bk(PX0,PY0,PX1,PY0+.2,0,12,HN,{fs:pw(HN)}),bk(PX0,PY1-.2,PX1,PY1,0,12,HN,{fs:pw(HN)}),bk(PX0,PY0+.2,PX0+.2,PY1-.2,0,12,HN,{fs:pw(HN)}),bk(PX1-.2,PY0+.2,PX1,PY1-.2,0,12,HN,{fs:pw(HN)}),
-      bk(PX0+.2,PY0+.2,PX1-.2,PY1-.2,0,8,[74,158,180],{top:(x,y)=>(Math.floor(x*24+3*Math.sin(y*9))%9===0&&hash(Math.floor(x*3),Math.floor(y*6),703)<.5)?lit([170,226,236]):[74,158,180]})],true,1);
-    for(const [x0,x1] of [[xi0+.1,xi0+.55],[xi1-.55,xi1-.1]])thing('wooden bench',[bk(x0,cy-1.5,x1,cy+1.5,13,17,HN,{top:(x,y)=>Math.floor(y*24)%5===0?[120,90,60]:sh(HN,1.06)}),bk(x0+.05,cy-1.4,x1-.05,cy-1.25,0,13,[120,90,60]),bk(x0+.05,cy+1.25,x1-.05,cy+1.4,0,13,[120,90,60])],true,1);
-    for(const [x,y] of [[cx-2.7,PY1+.3],[cx-2.25,PY1+.35],[cx+2.4,PY1+.3]])thing('wooden bucket',[bk(x,y,x+.3,y+.3,0,9,HN,{fs:hoop,top:()=>[90,140,160]})],false,1);
-    for(const [x,y] of [[cx-1.6,PY1+.3],[cx+1.7,PY1+.3]])thing('bath stool',[bk(x,y,x+.36,y+.3,6,8,HN),bk(x+.03,y+.03,x+.08,y+.27,0,6,[120,90,60]),bk(x+.28,y+.03,x+.33,y+.27,0,6,[120,90,60])],false,1);
+    const HN=[184,146,100], hoop=(nx,ny,x,y,z,k)=>sh(z%4<1?[70,64,60]:HN,k), ya=yE+.45, yb=yi1-.9;
+    for(const [x0,x1] of [[xi0+.1,xi0+.55],[xi1-.55,xi1-.1]])thing('wooden bench',[bk(x0,ya,x1,yb,13,17,HN,{top:(x,y)=>Math.floor(y*24)%5===0?[120,90,60]:sh(HN,1.06)}),bk(x0+.05,ya+.1,x1-.05,ya+.25,0,13,[120,90,60]),bk(x0+.05,yb-.25,x1-.05,yb-.1,0,13,[120,90,60])],true,1);
+    for(const [x,y] of [[cx-2.7,yE+.4],[cx-2.25,yE+.45],[cx+2.4,yE+.4]])thing('wooden bucket',[bk(x,y,x+.3,y+.3,0,9,HN,{fs:hoop,top:()=>[90,140,160]})],false,1);
+    for(const [x,y] of [[cx-3.7,yE+.4],[cx+3.3,yE+.4]])thing('bath stool',[bk(x,y,x+.36,y+.3,6,8,HN),bk(x+.03,y+.03,x+.08,y+.27,0,6,[120,90,60]),bk(x+.28,y+.03,x+.33,y+.27,0,6,[120,90,60])],false,1);
+    const COP=[[xi0,cx-GAP],[cx+GAP,xi1]], ISL=[[cx-.75,yi0+.02,cx+.75,yi0+1.25,5],[xi0+.4,yi0+.35,xi0+1.1,yi0+1.05,-4],[xi1-1.1,yi0+.35,xi1-.4,yi0+1.05,-4],[xi0+1.9,yi0+.2,xi0+2.6,yi0+.9,3],[xi1-2.6,yi0+.2,xi1-1.9,yi0+.9,3]];
+    const PB=[[150,196,198],[138,186,190],[162,206,204],[146,190,196]], SEAM=[70,196,190];
+    const bot=(x,y,deep)=>{ const u=x-xi0, v=y-yi0, row=Math.floor(v/.5), off=hs(row,9,780)*.6, col=Math.floor((u+off)/.7), fu=(u+off)/.7-col, fv=v/.5-row;
+      if(deep)for(const m of [cx-3.4,cx+3.4]){ const dx=x-m, dy=y-(yi0+yL)/2, r=Math.hypot(dx,dy); if(r<.56&&Math.hypot(dx-.22,dy+.1)>.46)return lit([240,214,130]); if(r>.72&&r<.78)return lit(SEAM); if(r<.8)return sh(PB[2],1.04); }
+      if(fu<.05||fv<.06)return lit(SEAM); return sh(PB[Math.floor(hs(col,row,781)*4)],.94+.08*hs(Math.floor(x*24),Math.floor(y*24),782)); };
+    const bw=(a,z)=>{ const row=Math.floor(-z/10), q=a*24+hs(row,3,783)*14; if(z>WL-2)return [70,84,86]; if(-z%10<1||q%16<1)return lit(SEAM); return sh(PB[Math.floor(hs(Math.floor(q/16),row,784)*4)],.84); };
     BATCH.tag=null;
     flat(X0+DOOR.a0,Y1-T,X0+DOOR.a1,Y1,.4,(x,y)=>sh(J.DJBRD,(x*5)%1<.1?.72:1),'GDL');
     flat(X0+BAY.a0,Y1-T,X0+BAY.a1,Y1+BAY.out,BAY.z0+.3,(x,y)=>sh(J.DJBRD,(x*5)%1<.1?.72:1),'GDfront');
-    const ITEMS=[], CAND=[[xi0+.5,yi0+.5],[xi1-.5,yi0+.5],[xi0+.5,yi1-.5],[xi1-.5,yi1-.5]], AND=[[X0+DOOR.a0-.6,yi1-.45],[X0+DOOR.a1+.6,yi1-.45]];
+    const ITEMS=[], CAND=[[xi0+.5,yi1-.5],[xi1-.5,yi1-.5]], AND=[[X0+DOOR.a0-.6,yi1-.45],[X0+DOOR.a1+.6,yi1-.45]];
     const WAX=[226,214,186], WG=[236,184,120], E=c=>Object.assign(c,{e:1}), wax=p=>{ for(const b of p.boxes)if(!b.life)for(const f of ['fs','fi','fj','top']){ const g=b[f]; if(g)b[f]=(...a)=>{ const c=g(...a); if(!c)return c; if(!c.e)return f==='fs'?E(sh(WG,.28)):c;
         const k=Math.max(0,Math.min(1,(c[0]/240-.3)/1.07)); return f==='top'?E(sh(WG,.62)):E(sh(WG,.3+.34*k*k)); }; }
       const fb=p.boxes.find(b=>b.life), x=(fb.x0+fb.x1)/2, y=(fb.y0+fb.y1)/2; p.boxes.push({x0:x-.012,y0:y-.012,x1:x+.012,y1:y+.012,z0:30,z1:32.5,c:[26,22,20],foot:0,nb:1}); return p; };
@@ -209,18 +219,41 @@ function gdShape(GS,K,LAMPS){ const s=K.s, o=K.o, SC=1.5, cx=o[0]+4*s, Y1=o[1]+3
     for(const t of THINGS)if(t.solid)sol(Math.min(...t.boxes.map(b=>b.x0)),Math.min(...t.boxes.map(b=>b.y0)),Math.max(...t.boxes.map(b=>b.x1)),Math.max(...t.boxes.map(b=>b.y1)),Math.max(...t.boxes.map(b=>b.z1)));
     for(const p of ITEMS){ const bs=p.boxes.filter(b=>b.z0<30&&b.z1-b.z0>3); if(!bs.length||/incense/.test(p.name))continue;
       sol(Math.min(...bs.map(b=>b.x0)),Math.min(...bs.map(b=>b.y0)),Math.max(...bs.map(b=>b.x1)),Math.max(...bs.map(b=>b.y1)),Math.max(...bs.map(b=>b.z1))); }
+    for(const [a,b] of COP)sol(a,yR,b,yE,7); for(const px of [cx-1.75,cx+1.75])sol(px-.17,yE-.33,px+.17,yE+.01,129); for(const [a,b,c_,d] of ISL)sol(a,b,c_,d,140);
     const LT=[];
     const light=(x,y,z,c,r,fl)=>{ const cm=Math.max(...c), L=new THREE.PointLight(new THREE.Color(c[0]/cm,c[1]/cm,c[2]/cm),0,r*TILE*1.25,1.6); L.position.set(X(x),Y(z),Z(y)); if(LITE.recs.length){ L.userData.grp=MAPG.bodega||null; LITE.recs.push(L); } else (MAPG.bodega||scene).add(L); LT.push({L,i:7*cm*Math.min(1.2,r/5),fl,s:Math.round(x*7+y*13)}); return LT[LT.length-1]; };
     let built=false; const build=()=>{ if(built)return; built=true; const keep=BATCH.items.splice(0), m0=BATCH.meshes; BATCH.meshes={};
       for(const b of WB)gbox({...b,skf:(nx,ny)=>!((nx||ny)&&nx===WALLS[b.id].n[0]&&ny===WALLS[b.id].n[1])},'GD'+b.id);
       for(const [name,boxes] of LATER){ BATCH.tag=OBJ('bodega',name); for(const b of boxes)gbox(b,'GDL'); }
-      BATCH.tag=OBJ('bodega','bath house'); flat(xi0,yi0,xi1,yi1,.4,floorCol,'GDL');
+      BATCH.tag=OBJ('bodega','bath house'); flat(xi0,yE,xi1,yi1,.4,floorCol,'GDL');
+      BATCH.tag=OBJ('bodega','healing pool'); flat(xi0,yi0,xi1,yL,BD,(x,y)=>bot(x,y,1),'GDL'); flat(xi0,yL,xi1,yR,BS,(x,y)=>bot(x,y,0),'GDL');
+      { const wq=(a,b,c_,d,z0,z1)=>bq([X(a),Y(z0),Z(b)],[X(c_),Y(z0),Z(d)],[X(c_),Y(z1),Z(d)],[X(a),Y(z1),Z(b)],faceTex(Math.hypot(c_-a,d-b)*24,z1-z0,(i,j)=>C(bw((i+.5)/24,z1-j-.5))),'GDL');
+        wq(xi0,yi0,xi1,yi0,BD,0); wq(xi0,yi0,xi0,yL,BD,0); wq(xi1,yi0,xi1,yL,BD,0); wq(xi0,yL,xi0,yR,BS,0); wq(xi1,yL,xi1,yR,BS,0); wq(xi0,yL,xi1,yL,BD,BS); }
+      { const SK=BOD.STOREK, SR=SK.shrine, n0=SK.PROPS.length, l0=SK.LAMPS.length, P=[];
+        P.push({name:'pool coping',boxes:[...COP.map(([a,b])=>SR.msStone(a,yR,b,yE,BS,7)),...[0,1,2].map(k=>SR.msStone(cx-GAP,yE-(k+1)*.7/3,cx+GAP,yE-k*.7/3,BS,-5-5*k))]},{name:'stone island',boxes:ISL.map(([a,b,c_,d,zt])=>SR.msStone(a,b,c_,d,BD,zt))});
+        P.push(SR.msGate(cx,yE-.16,7),SR.msStatue(cx,yi0+.62,5),SR.msToro(xi0+.75,yi0+.7,-4),SR.msToro(xi1-.75,yi0+.7,-4),SR.msBlossom(xi0+2.25,yi0+.55,3,.34,12),SR.msBlossom(xi1-2.25,yi0+.55,3,.34,12),
+          SR.msBlossom(cx-.6,yi0+1,5,.16,7),SR.msBlossom(cx+.62,yi0+.95,5,.15,6),SR.msFern(xi0+.45,yE-.16,7,.3,9),SR.msFern(xi1-.45,yE-.16,7,.3,9));
+        for(const [x,y] of [[cx-3.1,yL-.35],[cx+2.9,yL-.6],[cx-4.9,yL+.3],[cx+4.8,yL+.2]])P.push(SR.msFloatingLantern(x,y,WL-.5));
+        SK.PROPS.splice(n0); SK.LAMPS.splice(l0);
+        for(const p of P.flat()){ if(!p||!p.boxes)continue; BATCH.tag=OBJ('bodega',p.name||'healing pool'); for(const b of p.boxes)gbox(b,b.em?'B':'GDL'); } }
       for(const p of ITEMS){ BATCH.tag=OBJ('bodega',p.name); for(const b of p.boxes)gbox(b,'GDL'); } BATCH.tag=null;
       BATCH.cast=true; BATCH.build(MKG); BATCH.cast=false; const M=BATCH.meshes||{}; BATCH.meshes=m0; BATCH.items=keep;
       for(const k in M){ (MAPG.bodega||scene).add(M[k]); if(k==='B')M[k].castShadow=false; } cuts(M);
       for(const [x,y] of CAND)light(x,y,34,[.85,.42,.17],5,1); FLAME.props(ITEMS,X,Y,Z);
-      for(const [i,sx] of [cx-2.3,cx-.8,cx+.7,cx+2.2].entries())FLAME.add({kind:'none',x:X(sx),y:Y(9),z:Z(cy+(i%2?.3:-.3)),w:.6*TILE,smoke:.8,steam:1,sk:1.5,seed:i});
-      for(const [x,y] of AND)light(x,y,20,[.66,.34,.14],5.5,0); was=null;
+      for(const [i,sx] of [cx-4.2,cx-1.6,cx+1.6,cx+4.2].entries())FLAME.add({kind:'none',x:X(sx),y:Y(WL+2),z:Z(yL-.4+(i%2?.3:-.3)),w:.6*TILE,smoke:.8,steam:1,sk:1.5,seed:i});
+      for(const [x,y] of AND)light(x,y,20,[.66,.34,.14],5.5,0);
+      for(const x of [xi0+.75,xi1-.75])light(x,yi0+.7,42,[1,.7,.36],3.6,1); light(cx,(yi0+yE)/2,10,[.3,.95,.88],8,0); light(cx,yi0+.45,97,[1,.85,.5],2.8,0);
+      { const g=new THREE.PlaneGeometry(Math.abs(X(xi1)-X(xi0)),Math.abs(Z(yE)-Z(yi0))).rotateX(-Math.PI/2), m=new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,depthWrite:false,side:THREE.DoubleSide}), TT=TILE.toFixed(3);
+        m.onBeforeCompile=q=>{ Object.assign(q.uniforms,{uT:PW.uT,uP:PW.uP});
+          q.vertexShader='varying vec3 vQ;\n'+q.vertexShader.replace('#include <project_vertex>','#include <project_vertex>\n vQ=(modelMatrix*vec4(transformed,1.)).xyz;');
+          q.fragmentShader='uniform float uT; uniform vec4 uP; varying vec3 vQ;\n'+q.fragmentShader.replace('#include <color_fragment>',`#include <color_fragment>
+ { vec2 p=vQ.xz/${TT}; float h=sin(p.x*1.9+p.y*.7+uT*.9)+sin(p.y*2.6-p.x*.8-uT*.7)+.5*sin((p.x-p.y)*3.4+uT*1.3);
+   if(uP.z>0.){ float d=length(vQ.xz-uP.xy)/${TT}; h+=uP.z*2.6*sin(d*7.-uT*5.)*exp(-d*.6); }
+   float b=floor(clamp(h*.17+.5,0.,.999)*4.); diffuseColor.rgb=b>2.5?vec3(.86,1.,.97):b>1.5?vec3(.5,.93,.9):vec3(.36,.84,.84); diffuseColor.a=b>2.5?.5:b>1.5?.24:.15; }`); };
+        const me=new THREE.Mesh(g,m); me.position.set((X(xi0)+X(xi1))/2,Y(WL),(Z(yi0)+Z(yE))/2); me.renderOrder=2; me.raycast=()=>{}; (MAPG.bodega||scene).add(me); PW.me=me; }
+      if(window.BF&&BF.add){ const at=(x,y,z)=>[X(x),Y(z),Z(y)], PER=[at(cx-.6,yi0+1,19),at(cx+.62,yi0+.95,17),at(xi0+2.25,yi0+.55,29),at(xi1-2.25,yi0+.55,29),at(cx-2.38,yE-.16,152),at(cx+2.15,yE-.16,152),at(cx,yi0+.62,132),at(xi0+.45,yE-.16,20)];
+        [0,2,4,6,8,10].forEach((k,i)=>{ const b=BF.add(k,PER); b.at=b.to=i%PER.length; b.g.position.set(...PER[b.at]); }); }
+      was=null;
       if(window.ROOMS&&ROOMS.lazy.bath)ROOMS.lazy.bath.done=true; if(window.ROOMS)ROOMS.reset(); if(window.CLIP)CLIP.run(); };
     const OUTL=[[X0+(BAY.a0+BAY.a1)/2,Y1+1.4,70,[1,.6,.56],7],[X0+(EW.a0+EW.a1)/2,Y1+1.3,74,[1,.74,.42],7.5],[X0+W/2,Y1+1.2,90,[1,.66,.4],6],[X0+W/2,Y1+.9,H+60,[1,.72,.44],6],[X0-1.1,Y0+D/2,80,[1,.76,.5],5]];
     for(const [x,y,z,c,r] of OUTL){ const cm=Math.max(...c), L=new THREE.PointLight(new THREE.Color(c[0]/cm,c[1]/cm,c[2]/cm),9*cm*Math.min(1.3,r/5),r*TILE*1.25,1.6); L.position.set(X(x),Y(z),Z(y)); L.userData.i0=L.intensity; scene.add(L); }
@@ -241,8 +274,16 @@ function gdShape(GS,K,LAMPS){ const s=K.s, o=K.o, SC=1.5, cx=o[0]+4*s, Y1=o[1]+3
         const a=[X(x),Y(.7),Z(y0)], b=[X(x+w),Y(.7),Z(y0)], c=[X(x+w),Y(.7),Z(y0+l)], d=[X(x),Y(.7),Z(y0+l)]; pos.push(...a,...b,...c,...a,...c,...d); } }
       const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3)); g.computeBoundingSphere();
       const m=new THREE.Mesh(g,new THREE.MeshBasicMaterial({color:0xffc890,transparent:true,opacity:.2,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide,fog:false})); m.renderOrder=3; m.userData.k=2.4; scene.add(m); SHX.push(m); }
-    let was=null, hid=null, step=-1;
-    BOD.GD={r:[xi0,yi0,xi1,yi1],door:[X0+W/2,Y1],dw:DOOR.a1-DOOR.a0,H:H+2,eave:H,inside:inBox,build,tick(){ const t=performance.now()/1000, inn=inside();
+    let was=null, hid=null, step=-1, wIn=false;
+    const PW={uT:{value:0},uP:{value:new THREE.Vector4()},me:null}, KT=TILE*BLDK, tx=x=>x/KT+BOD.OX, ty=z=>z/KT+BOD.OY, inPool=(x,z)=>{ const a=tx(x), b=ty(z); return a>xi0&&a<xi1&&b>yi0&&b<yR-.1; };
+    const poke=(x,z,k=1)=>{ PW.uP.value.set(x,z,Math.max(PW.uP.value.z,k),0); };
+    BOD.GD={r:[xi0,yi0,xi1,yi1],floor:[xi0,yE+.3,xi1,yi1],door:[X0+W/2,Y1],dw:DOOR.a1-DOOR.a0,H:H+2,eave:H,y0:Y(BD-6),deep:Y(BD),inside:inBox,build,inPool,poke,
+      ground(x,z){ const a=tx(x), b=ty(z); if(a<=xi0||a>=xi1||b<=yi0||b>=yE)return null; if(b>yS)return Math.abs(a-cx)<GAP?Y(BS*(yE-b)/(yE-yS)):b<yR?Y(BS):null; return Y(BS); },
+      feed(st,pos,dt,go,keys){ if(LVL!=='up'||!built||VIT.dead||!inPool(pos.x,pos.z)){ if(wIn){ wIn=false; if(st.water)st.water.in=false; } return false; }
+        const b=ty(pos.z), W=RIG.water(st,{level:(Y(WL)-py)/ZU,floor:(Y(b<yL?BD:BS)-py)/ZU}); W.go=!!go; W.fast=W.in&&(keys.has('k')||keys.has('shift'))?1:0;
+        if(W.in&&W.floor>=W.level-30&&!st.move&&!W.dive){ W.in=false; if(st.last)st.out={pose:JSON.parse(JSON.stringify(st.last)),t:0,T:.4}; }
+        for(const e of W.events)if(e.k==='splash')poke(pos.x,pos.z,Math.min(1.4,.4+e.v*.01)); W.events.length=0; if(!wIn)poke(pos.x,pos.z,1); wIn=true; if(go)poke(pos.x,pos.z,W.in?.6:.4); return true; },
+      tick(){ const t=performance.now()/1000, inn=inside(); if(PW.me&&inn){ const dt=Math.min(.1,t-(PW.t||t)); PW.uT.value+=dt; PW.uP.value.z=Math.max(0,PW.uP.value.z-dt*.5); } PW.t=t;
       for(const l of LT){ const k=l.fl?FLAME.flick(l.s,t):1; if(inn||was!==inn)l.L.intensity=inn?l.i*k:0; } was=inn;
       if(hid!==inn){ hid=inn; for(const me of HIDE)SEEN(me,!inn); }
       const e=typeof CLOCK!=='undefined'&&CLOCK.elev?CLOCK.elev():0, n=Math.max(0,Math.min(1,(12-e)/22)), st=inn?-1:Math.round(n*3);

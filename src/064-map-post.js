@@ -17,7 +17,7 @@ await grab('stairs',async()=>METRO.exit());
 const STAIRS=[MAPSTAIR,CASTLE.stair,...RING.stairs], inStair=(x,z,lv)=>{ const gx=x/TILE+72, gy=z/TILE-77; for(const S of STAIRS)if(S.has?S.has(x,z,lv):gx>=S.x0&&gx<S.x1&&gy>=S.y0&&gy<S.y1)return {S,gy}; return null; };
 groundY=(x,z)=>{ const s=inStair(x,z); if(s){ const S=s.S; if(S.ground)return S.ground(x,z); const t=S.dir>0?s.gy-S.y0:S.y1-s.gy, k=Math.min(S.steps,Math.max(1,Math.floor(t/((S.y1-S.y0)/S.steps))+1)); return -k*S.depth/S.steps*ZU; }
   { const st=LVL==='up'&&STORE.stackGround?STORE.stackGround(x,z):null; if(st!=null)return st; }
-  { const sg=LVL==='up'&&STORE.shrineGround?STORE.shrineGround(x,z):null; if(sg!=null)return sg; }
+  { const bg=LVL==='up'&&BOD.GD&&BOD.GD.ground?BOD.GD.ground(x,z):null; if(bg!=null)return bg; }
   { const sp=LVL==='up'&&MODS.apts&&MODS.apts.stoop?MODS.apts.stoop(x,z):null; if(sp!=null)return sp; }
   return LVL==='down'?(MODS.dungeon&&MODS.dungeon.inside(x,z)?MODS.dungeon.ground(x,z):MODS.station.ground(x,z)):MODS.apts&&MODS.apts.inside(x,z)?MODS.apts.ground(x,z):MODS.bodega.ground(x,z); };
 { const PB=AWAY.has('apartments')?MODS.bodega.BOUND:MODS.pool.BOUND;

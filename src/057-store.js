@@ -103,25 +103,6 @@
         mp('terracotta warriors',(C.x0+C.x1)/2,C.y1-.9,2); mp('jade burial suit',C.x1-.55,C.y0+2.4,1); mp('the Sutton Hoo helmet',C.x0+.6,C.y0+1,3); mp('clay tablets',C.x0+.35,C.y0+3.4,3); mp('the Antikythera mechanism',(C.x0+C.x1)/2,C.y0+2.9,2);
         L(M.humansR,2,[1.5,1.08,.7],90,9); L(M.earthR,1,sp,96,9); L(M.closedR,1,sp,96,9); })); }
 
-  { const O=[69+LAY.o('park').x/BLDK,-45.9+(LAY.o('park').y+NORTHY)/BLDK]; STORE.shrineO=O; room('shrine','THE MOON SHRINE',{x0:O[0],y0:O[1],x1:O[0]+6,y1:O[1]+16,h:0},{floor:grassCol},null,()=>{ PRESETS['Preset Moon Shrine 1'].forEach(([k,dx,dy,r])=>put(k,O[0]+dx,O[1]+dy,r)); },{z:.05});
-    STORE.pond={x0:O[0]+.5,y0:O[1]+12.6,x1:O[0]+5.5,y1:O[1]+15.6,z:4}; }
-  STORE.shrineFix=()=>{ const bb=o=>{ const lo=[1e9,1e9,1e9], hi=[-1e9,-1e9,-1e9]; for(const p of o.parts){ const P=p.me.geometry.attributes.position.array; for(let v=p.v0;v<p.v0+6;v++)for(let a=0;a<3;a++){ lo[a]=Math.min(lo[a],P[v*3+a]); hi[a]=Math.max(hi[a],P[v*3+a]); } } return {o,lo,hi}; };
-    const all=OBJS.filter(o=>/^store:shrine/.test(o.id||'')&&o.parts.length).map(bb), one=n=>all.find(b=>b.o.name===n); if(!all.length)return;
-    const cut=(x0,z0,x1,z1)=>{ const sub=(L,get,make)=>{ for(let i=L.length-1;i>=0;i--){ const [a0,c0,a1,c1]=get(L[i]); if(a1<=x0||a0>=x1||c1<=z0||c0>=z1)continue; const f=L[i]; L.splice(i,1);
-        if(a0<x0)L.push(make(f,a0,c0,x0,c1)); if(a1>x1)L.push(make(f,x1,c0,a1,c1)); if(c0<z0)L.push(make(f,Math.max(a0,x0),c0,Math.min(a1,x1),z0)); if(c1>z1)L.push(make(f,Math.max(a0,x0),z1,Math.min(a1,x1),c1)); } };
-      sub(SOL.up,b=>b,(f,a0,c0,a1,c1)=>[a0,c0,a1,c1]); sub(FIX.up,f=>[f[0],f[1],f[3],f[4]],(f,a0,c0,a1,c1)=>[a0,c0,f[2],a1,c1,f[5]]); };
-    const sol=(x0,z0,x1,z1,h)=>{ SOL.up.push([x0,z0,x1,z1]); FIX.up.push([x0,z0,0,x1,z1,h]); };
-    const east=all.filter(b=>b.o.name==='mossy parapet'&&b.lo[0]>0&&b.hi[2]-b.lo[2]>3).sort((a,b)=>a.lo[2]-b.lo[2]), mid=east[1];
-    if(mid){ for(const p of mid.o.parts){ const A=p.me.geometry.attributes.aOp; if(!A)continue; for(let v=p.v0;v<p.v0+6;v++)A.setX(v,0); A.needsUpdate=true; }
-      const g0=east[0].hi[2], g1=east[2]?east[2].lo[2]:mid.hi[2]; cut(mid.lo[0]-.3,g0+.01,mid.hi[0]+.3,g1-.01); STORE.shrineGap=[mid.lo[0],g0,mid.hi[0],g1]; }
-    const ter=one('stone terrace'), st=one('mossy steps'), pl=one('spiral stone plaza'); if(!ter||!st||!pl)return;
-    cut(ter.lo[0],ter.lo[2],ter.hi[0],ter.hi[2]); cut(st.lo[0],st.lo[2],st.hi[0],st.hi[2]);
-    { const g=one('moon shrine gate'); if(g){ cut(g.lo[0],g.lo[2],g.hi[0],g.hi[2]); sol(g.lo[0],g.lo[2],g.lo[0]+.45,g.hi[2],g.hi[1]); sol(g.hi[0]-.45,g.lo[2],g.hi[0],g.hi[2],g.hi[1]); } }
-    for(const b of all){ if(b===ter||b===st||b===pl||/parapet|pond|walkway|fern|blossom|shrine gate/.test(b.o.name))continue; const cx=(b.lo[0]+b.hi[0])/2, cz=(b.lo[2]+b.hi[2])/2;
-      if(cx>ter.lo[0]&&cx<ter.hi[0]&&cz>ter.lo[2]&&cz<ter.hi[2]+.6&&b.hi[1]-b.lo[1]>.4)sol(b.lo[0],b.lo[2],b.hi[0],b.hi[2],b.hi[1]); }
-    const e=.12; sol(ter.lo[0],ter.hi[2]-e,st.lo[0],ter.hi[2]+e,ter.hi[1]); sol(st.hi[0],ter.hi[2]-e,ter.hi[0],ter.hi[2]+e,ter.hi[1]);
-    const T=ter.hi[1], S0=pl.hi[1], in_=(b,x,z)=>x>=b.lo[0]&&x<=b.hi[0]&&z>=b.lo[2]&&z<=b.hi[2];
-    STORE.shrineGround=(x,z)=>{ if(in_(ter,x,z))return T; if(in_(st,x,z))return S0+(T-S0)*Math.max(0,Math.min(1,(st.hi[2]-z)/(st.hi[2]-st.lo[2]))); if(in_(pl,x,z))return S0; return null; }; };
 
   const OFF=STORE.off={}, offmap=(name,lot,fn)=>{ OFF[name]={lot,fn}; STORE.places.push([name,0,0,'up','off']); }; STORE.kit={room,rec,flat,put,sol,STEPS,PLATE,offmap,planes}; for(const [n,k] of [['THE HERB COTTAGE','garden'],['THE AQUARIUM','aquarium'],['THE KEEP','keep'],['THE BUTTERFLIES','garden']])if(!AWAY.has(k))STORE.places.push([n,0,0,'up']);
   const GARDEN=STORE.garden={cottage:[72-15/BLDK,-77-14.6/BLDK],house:[72-4.6/BLDK,-77-9.2/BLDK]};
@@ -271,9 +252,6 @@
         beam.rotation.y=Math.sin(t*.13)*1.1+.4; beam.rotation.x=2.35+Math.sin(t*.21)*.12; beam.material.opacity=.03+.06*n; }; }
   });
 
-  { const P=STORE.pond, bed=(x,y)=>{ const n=grain(x,y,911,.8); return n<.4?[38,44,30]:n>.7?[58,64,44]:[46,52,36]; }, BK=[52,46,34], zb=-14;
-    flat(P.x0,P.y0,P.x1,P.y1,zb,bed,'L');
-    for(const [a,b,c,d] of [[P.x0,P.y0,P.x1,P.y0],[P.x1,P.y0,P.x1,P.y1],[P.x1,P.y1,P.x0,P.y1],[P.x0,P.y1,P.x0,P.y0]])bq([X(a),Y(zb),Z(b)],[X(c),Y(zb),Z(d)],[X(c),Y(P.z+1),Z(d)],[X(a),Y(P.z+1),Z(b)],faceTex(Math.hypot(c-a,d-b)*24,P.z+1-zb,(i,j)=>C(sh(BK,.8+.2*hash(i,j,913)))),'L'); }
   const bake=()=>{ BATCH.cast=true;
   BATCH.build((k,map,emap)=>{ const pl=planes[k], cp=pl?{clippingPlanes:[pl]}:{};
     if(k==='B')return new THREE.MeshBasicMaterial({map,side:THREE.DoubleSide,alphaTest:.5});
@@ -286,11 +264,6 @@
   STORE.bound={x0:X(PLATE.x0),x1:X(PLATE.x1),z0:Z(PLATE.y0),z1:Z(PLATE.y1)};
   STORE.inStore=(x,z)=>x>STORE.bound.x0&&x<STORE.bound.x1&&z>STORE.bound.z0&&z<STORE.bound.z1;
   STORE.meshes=M; STORE.stats=BATCH.stats; STORE.XYZ={X,Y,Z};
-  { const P=STORE.pond; WATER.body({name:'pond',X0:X(P.x0),X1:X(P.x1),Z0:Z(P.y0),Z1:Z(P.y1),lvl:Y(P.z),GX:120,GY:72,dep:()=>0.6});
-} 
-  { const O=STORE.shrineO, at=(dx,dy,z)=>[X(O[0]+dx),Y(z),Z(O[1]+dy)], PERCH=[at(.55,5.3,16),at(5.45,5.25,16),at(.45,9.6,16),at(2.2,1.4,16),at(5.2,15.25,10),at(.48,6.55,10),at(5.52,6.4,10),at(1.25,7.3,30),at(4.75,7.3,30),at(3,2.7,62)];
-    [0,2,4,6,8,10].forEach((k,i)=>{ const b=BF.add(k,PERCH); b.at=b.to=i%PERCH.length; b.g.position.set(...PERCH[b.at]); });
- } 
   { const pend=[]; let done=false;
     const lit=()=>{ if(!LITE.recs.length)return; const nl=[]; scene.traverse(o=>{ if(o.isPointLight&&!o.userData.pool)nl.push(o); }); for(const L of nl){ L.userData.grp=null; L.castShadow=false; L.removeFromParent(); LITE.recs.push(L); } };
     const step=()=>{ STEPS.shift()(); pend.push(...BATCH.items.splice(0)); lit(); STORE.doorThings(); };

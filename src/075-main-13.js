@@ -48,11 +48,11 @@ function frame(now){ requestAnimationFrame(frame); renderer.info.reset(); const 
   if(RAG.on)B=ragPose();
   else{
     if(window.BOAT&&BOAT.on){ BOAT.steer(dt,mx,mz); mx=0; mz=0; target=null; } const ml=Math.hypot(mx,mz), busy=st.move;
-    if(FT){ st.yr=0; if(!RIVER.feed(st,pos,dt,ml>0,keys)&&!(FOUNT.feed&&FOUNT.feed(st,pos,dt,ml>0,keys)))WATER.feed(st,pos,dt,ml>0,keys); st.target=0; RIG.step(st,dt); FEEL.step(dt,mx,mz); }
+    if(FT){ st.yr=0; if(!RIVER.feed(st,pos,dt,ml>0,keys)&&!(FOUNT.feed&&FOUNT.feed(st,pos,dt,ml>0,keys))&&!(BOD.GD&&BOD.GD.feed&&BOD.GD.feed(st,pos,dt,ml>0,keys)))WATER.feed(st,pos,dt,ml>0,keys); st.target=0; RIG.step(st,dt); FEEL.step(dt,mx,mz); }
     else{
     if(window.WIELD)WIELD.pre(dt);
     if(ml>0&&!(busy&&busy.def.below!=null)){ const tk=busy?.5:1; let dh=Math.atan2(mx,mz)-heading; dh=Math.atan2(Math.sin(dh),Math.cos(dh)); const turn=3*Math.PI*dt*tk; const dd=Math.max(-turn,Math.min(turn,dh*(1-Math.exp(-dt*12*tk)))); heading+=dd; st.yr=dd/Math.max(dt,1e-3); } else st.yr=0;
-    if(window.BOAT&&BOAT.on){ BOAT.carry(st,pos); heading=BOAT.hd; } else if(!RIVER.feed(st,pos,dt,ml>0,keys)&&!(FOUNT.feed&&FOUNT.feed(st,pos,dt,ml>0,keys)))WATER.feed(st,pos,dt,ml>0,keys); st.target=ml>0?1:0; const before=st.dist; RIG.step(st,dt); const go=(st.dist-before)*W3.SZ/PPU*(VIT.dead&&NPCS.some(N=>N.lv===LVL&&!N.far&&N.mode!=='hidden'&&N.blocks(pos.x,pos.z,.3*TILE))?.75:1); if(typeof SFX!=='undefined')SFX.steps(st,go);
+    if(window.BOAT&&BOAT.on){ BOAT.carry(st,pos); heading=BOAT.hd; } else if(!RIVER.feed(st,pos,dt,ml>0,keys)&&!(FOUNT.feed&&FOUNT.feed(st,pos,dt,ml>0,keys))&&!(BOD.GD&&BOD.GD.feed&&BOD.GD.feed(st,pos,dt,ml>0,keys)))WATER.feed(st,pos,dt,ml>0,keys); st.target=ml>0?1:0; const before=st.dist; RIG.step(st,dt); const go=(st.dist-before)*W3.SZ/PPU*(VIT.dead&&NPCS.some(N=>N.lv===LVL&&!N.far&&N.mode!=='hidden'&&N.blocks(pos.x,pos.z,.3*TILE))?.75:1); if(typeof SFX!=='undefined')SFX.steps(st,go);
     if(go){ const ox=pos.x,oz=pos.z; pos.x+=Math.sin(heading)*go; pos.z+=Math.cos(heading)*go; if(UI.fly)UI.flyStep(0); else collide(pos); if(st.water&&st.water.in&&RIVER.swim)RIVER.clamp(pos); else if(st.water&&st.water.in&&POOLR.inBasin(pos.x,pos.z)){ const m=0.3; pos.x=Math.max(WATER.X0+m,Math.min(WATER.X0+WATER.W-m,pos.x)); pos.z=Math.max(WATER.Z0+m,Math.min(WATER.Z0+WATER.D-m,pos.z)); }
     if(target&&Math.hypot(pos.x-ox,pos.z-oz)<go*0.2)target=null; }
     if(UI.fly)UI.flyStep(dt); else if(window.BOAT&&BOAT.on)py=BOAT.py; else { let g=groundY(pos.x,pos.z); if(st.fk)for(const n of 'LR'){ const f=st.fk[n]; if(f&&f.on&&Math.hypot(f.x-pos.x,f.z-pos.z)<1)g=Math.min(g,f.y); } py+=(g-py)*Math.min(1,dt*20); } }

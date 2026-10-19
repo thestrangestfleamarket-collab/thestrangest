@@ -10,18 +10,18 @@
   const V=new THREE.Vector3();
   VIT.die=()=>{ if(VIT.dead)return; VIT.dead=true; VIT.hp=0; VIT.out=2.4; trip=true; gh=0; rise=-1; try{ SAVE.set('dead','1'); }catch(e){} note(DEAD); };
   const back=async()=>{ busy=true; const f=document.getElementById('subfade');
-    if(f){ f.textContent='LOADING…'; f.style.pointerEvents='auto'; f.style.opacity='1'; } await wait(1800);
+    if(f){ f.textContent='REFRESHED'; f.style.pointerEvents='auto'; f.style.opacity='1'; } await wait(1800);
     const G=BOD.GD, K=BOD.GDK, dx=G.door[0], oy=K?K.y1e+.6:G.door[1]+3;
     STORE.goTo(BOD.X(dx),BOD.Z(oy),'up'); heading=BOD.Z(oy+1)>BOD.Z(oy)?0:Math.PI; if(typeof PH!=='undefined')PH.hd=heading; keys.clear(); target=null;
-    VIT.dead=false; VIT.hp=1; VIT.out=0; gh=0; rise=-1; look(false); try{ SAVE.del('dead'); }catch(e){} LOOKS.robe(true);
+    VIT.dead=false; VIT.hp=1; VIT.sta=1; VIT.out=0; gh=0; rise=-1; look(false); try{ SAVE.del('dead'); }catch(e){} LOOKS.robe(true);
     await frames(3); await wait(260); if(f){ f.style.opacity='0'; f.style.pointerEvents='none'; } note('You feel refreshed.',5); busy=false; };
   const t0=VIT.tick; VIT.tick=dt=>{ t0(dt); if(!VIT.dead||busy)return; VIT.hp=0;
     if(gh>=1&&!RAG.on&&st.move&&st.move.name==='fall'&&st.move.held)RIG.release(st,'F');
     if(VIT.out>0||!sheet())return;
     if(!gh){ look(true); S.ball={x:pos.x/MH,y:py/S.MV+1.5,z:pos.z/MH}; S.drop(); }
-    if(rise<0){ gh=Math.min(1,gh+dt); if(gh>=1&&BOD.GD&&LVL==='up'&&py<2*T&&BOD.GD.inside())rise=0; }
-    else{ rise+=dt; keys.clear(); target=null; gh=1+Math.min(1,rise/3); if(rise>=3.2)back(); }
-    const b=S.ball, to={x:pos.x/MH,y:py/S.MV+1.5+.05*Math.sin(performance.now()/1000*1.6)+(rise>0?.7*rise*rise:0),z:pos.z/MH}; S.gnd=py/S.MV;
+    if(rise<0){ gh=Math.min(1,gh+dt); if(gh>=1&&BOD.GD&&LVL==='up'&&py<2*T&&(BOD.GD.inPool?BOD.GD.inPool(pos.x,pos.z):BOD.GD.inside())){ rise=0; if(BOD.GD.poke)BOD.GD.poke(pos.x,pos.z,1.4); } }
+    else{ rise+=dt; keys.clear(); target=null; gh=1+Math.max(0,(rise-2.2)/1); if(BOD.GD.poke&&rise<2)BOD.GD.poke(pos.x,pos.z,.5); if(rise>=3.2)back(); }
+    const dn=BOD.GD&&BOD.GD.deep!=null?BOD.GD.deep/S.MV+.45:py/S.MV, y0=py/S.MV+1.5, e=rise>0?Math.min(1,rise/2.6):0, b=S.ball, to={x:pos.x/MH,y:y0+.05*Math.sin(performance.now()/1000*1.6)*(1-e)+(dn-y0)*e*e*(3-2*e),z:pos.z/MH}; S.gnd=rise>0?dn-.5:py/S.MV;
     if(Math.hypot(to.x-b.x,to.z-b.z)>2||Math.abs(to.y-b.y)>2){ S.ball=to; S.drop(); }
     GHOSTS.run(S,dt,to,[],MH,S.MV); const a=gh<=1?gh:2-gh; S.mat.opacity=.5*a; S.em.opacity=.85*a;
     const fx=Math.sin(heading), fz=Math.cos(heading); S.eyes.forEach((e,k)=>{ const sd=k?1:-1, ex=to.x+fx*(S.BR+.05)+fz*sd*.09, ey=to.y+.03, ez=to.z+fz*(S.BR+.05)-fx*sd*.09; e.position.set(ex*MH,ey*S.MV,ez*MH); e.lookAt(V.set((ex+fx)*MH,ey*S.MV,(ez+fz)*MH)); }); };

@@ -12,7 +12,8 @@ vec3 rock(vec3 c,vec3 p0,float sd){ vec3 p=p0*3.+sd*17.3, i=floor(p), f=fract(p)
   if(p0.y<.55&&ls<.3+(.55-p0.y)*.6)o=c*vec3(.45,.6,.38)*(g<.5?.85:1.);
   if(edge<.07)o=c*(edge<.035?.3:.5);
   return o; }`;
-function makeNPC(D,o){ const N={key:o.key,name:o.name,names:o.names,lv:o.lv||'down',hp:1,sta:1}; const b=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0)), geo=o.geo||new THREE.BufferGeometry();
+const NPCMID=new THREE.Vector3();
+function makeNPC(D,o){ const N={key:o.key,name:o.name,names:o.names,lv:o.lv||'down',hp:1,sta:1}; const b=B64, geo=o.geo||new THREE.BufferGeometry();
   if(!o.geo){ const P=new Float32Array(b(D.p).buffer); geo.setAttribute('position',new THREE.BufferAttribute(P,3)); geo.setAttribute('color',new THREE.BufferAttribute(b(D.c),3,true)); geo.setAttribute('reg',new THREE.BufferAttribute(Float32Array.from(b(D.r)),1)); }
   const RG=geo.attributes.reg.array; geo.computeVertexNormals();
   N.renorm=()=>{ geo.computeVertexNormals(); const P=geo.attributes.position.array, Nn=geo.attributes.normal.array, acc=new Map(), key=i=>Math.round(P[i]*2e3)+','+Math.round(P[i+1]*2e3)+','+Math.round(P[i+2]*2e3);
@@ -72,6 +73,7 @@ function makeNPC(D,o){ const N={key:o.key,name:o.name,names:o.names,lv:o.lv||'do
   N.tick=(dt,you)=>{ if(N.sheet&&!N.sheetOn){ N.sheetOn=true; UI.setFree(true); UI.camT.set(st.x,g.position.y+tall*s*ZU*24/TILE*.5,st.z); ppu=ppuTo=PPU*4; window.SHEETTURN=d=>{ yaw=yawTo=d*Math.PI/180; };
       for(const G of Object.values(MAPG))for(const c of G.children)if(c!==g)c.visible=false; const r0=renderer.render.bind(renderer); renderer.render=(s,c)=>{ if(s.background&&s.background.isColor)s.background.set(0); r0(s,c); }; }
     if(o.brain)o.brain(dt,you,st,N);
+    if(N.mode==='hidden'&&!g.visible)return;
     if(st.sx||st.sz){ const nx=st.x+st.sx*dt, nz=st.z+st.sz*dt; if(N.free(nx,nz,st.R)){ st.x=nx; st.z=nz; } const k=Math.max(0,1-dt*6); st.sx*=k; st.sz*=k; if(Math.abs(st.sx)+Math.abs(st.sz)<.01)st.sx=st.sz=0; }
     let want=st.h, moving=false;
     if(st.to){ const ex=st.to.x-st.x, ez=st.to.z-st.z, d=Math.hypot(ex,ez); if(d<.05){ st.to=st.next||null; st.next=null; st.wait=st.to?0:1.5+Math.random()*4; }
@@ -91,7 +93,7 @@ function makeNPC(D,o){ const N={key:o.key,name:o.name,names:o.names,lv:o.lv||'do
   N.push=p=>{ const dx=p.x-st.x, dz=p.z-st.z, d=Math.hypot(dx,dz), R=st.R+.3; if(!(d<R&&d>1e-4))return;
     const ux=dx/d, uz=dz/d, sp=Math.hypot(p.x-pos.x,p.z-pos.z), k=Math.min(.75,.4+sp*3/TILE), nx=st.x-ux*(R-d)*k, nz=st.z-uz*(R-d)*k;
     if(N.free(nx,nz,st.R)){ st.x=nx; st.z=nz; } if(sp>.05*TILE&&!(st.sx||st.sz)){ const v=Math.min(sp,.12*TILE)*28; st.sx=-ux*v; st.sz=-uz*v; } p.x=st.x+ux*R; p.z=st.z+uz*R; };
-  N.shadowPass=renderer=>{ if(W3.lv.value<1.5||N.far||!g.visible||!g.parent.visible)return; if(typeof SELFSH!=='undefined'&&!SELFSH.use(N)){ N.LVP.value.copy(SELFSH.off); return; } const mid=new THREE.Vector3(g.position.x,g.position.y+H*.45,g.position.z); N.smCam.position.copy(mid).addScaledVector(W3.Lw,7); N.smCam.up.set(0,Math.abs(W3.Lw.y)>.6?0:1,Math.abs(W3.Lw.y)>.6?1:0); N.smCam.lookAt(mid); N.smCam.updateMatrixWorld();
+  N.shadowPass=renderer=>{ if(W3.lv.value<1.5||N.far||!g.visible||!g.parent.visible)return; if(typeof SELFSH!=='undefined'&&!SELFSH.use(N)){ N.LVP.value.copy(SELFSH.off); return; } const mid=NPCMID.set(g.position.x,g.position.y+H*.45,g.position.z); N.smCam.position.copy(mid).addScaledVector(W3.Lw,7); N.smCam.up.set(0,Math.abs(W3.Lw.y)>.6?0:1,Math.abs(W3.Lw.y)>.6?1:0); N.smCam.lookAt(mid); N.smCam.updateMatrixWorld();
     N.LVP.value.multiplyMatrices(N.smCam.projectionMatrix,N.smCam.matrixWorldInverse); const ms=[]; g.traverse(o=>{ if(o.isMesh){ ms.push([o,o.material]); o.material=N.depthMat; } });
     renderer.setRenderTarget(N.sm); renderer.clear(); renderer.render(g,N.smCam); renderer.setRenderTarget(null); for(const [o,m] of ms)o.material=m; };
   if(!o.noSelf){ const s0=W3.shadowPass; W3.shadowPass=r=>{ s0(r); N.shadowPass(r); }; }

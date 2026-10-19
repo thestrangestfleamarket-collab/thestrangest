@@ -1,12 +1,12 @@
 // LOOSE THINGS (src/150-loose.js, owner 19 Oct 2026 "push and throw things"): on the street, in the bodega, in an apartment and in the
 // dungeon the loose things near you become bodies; a shove moves one, it falls and sleeps; one is picked up and thrown; walking into a
 // light one pushes it and its old place no longer blocks; a heavy one barely moves; ms a frame with many awake. No page errors.
-// node tests/loosecheck.cjs   (software rendering: a few minutes)
+// node tests/loosecheck.cjs   (software rendering: a few minutes; ?physics=1 loads the physics at the start, as it waits for a first push otherwise)
 const {chromium}=require('playwright');
 let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
 const wait=(pg,ms)=>pg.waitForTimeout(ms);
 const open=async(b,q)=>{ const pg=await b.newPage({viewport:{width:960,height:640}}), errs=[]; pg.on('pageerror',e=>errs.push(e.message));
-  await pg.goto('file://'+process.cwd()+'/dist/market.html?fresh=1&hour=14&'+q,{timeout:180000});
+  await pg.goto('file://'+process.cwd()+'/dist/market.html?fresh=1&hour=14&physics=1&'+q,{timeout:180000});
   for(let i=0;i<200&&!await pg.evaluate(()=>!!window.__started).catch(()=>false);i++)await wait(pg,1000);
   for(let i=0;i<60&&!await pg.evaluate(()=>GOODSDBG().built&&GOODSDBG().active>0).catch(()=>false);i++)await wait(pg,1000);
   await wait(pg,1500); pg.errs=errs; return pg; };

@@ -3,7 +3,7 @@ const FISHING={}, BOAT={on:false}; window.FISHING=FISHING; window.BOAT=BOAT;
   const FI=[['x_sunfish','SUNFISH',0,3,0,4,5,.07],['x_perch','WHITE PERCH',5,4,0,5,5,.08],['x_crab','BLUE CRAB',15,8,0,4,2,.06],['x_eel','AMERICAN EEL',20,9,0,9,3,.08],
     ['x_catfish','CHANNEL CATFISH',25,10,2,9,3,.1],['x_flounder','FLOUNDER',30,12,3,9,2,.1],['x_shad','AMERICAN SHAD',35,11,3,9,2,.09],['x_bluefish','BLUEFISH',45,16,4,9,2,.12],
     ['x_bass','STRIPED BASS',50,20,4,9,3,.14],['x_sturgeon','ATLANTIC STURGEON',75,60,6,9,.6,.2]];
-  const JUNK=[['x_boot','OLD BOOT',0,1,0,9,1.2],['x_can','TIN CAN',0,1,0,9,.9],['x_note','MESSAGE IN A BOTTLE',40,5,2,9,.3],['chest','SUNKEN CHEST',70,0,5,9,.25]];
+  const JUNK=[['x_boot','OLD BOOT',0,1,0,9,1.2],['x_can','TIN CAN',0,1,0,9,.9],['x_note','MESSAGE IN A BOTTLE',40,5,2,9,.3],['bk_novel','WATER-STAINED NOVEL',10,1,0,9,.5],['chest','SUNKEN CHEST',70,0,5,9,.25]];
   FORAGE.add({names:Object.fromEntries([...FI,...JUNK].map(f=>[f[0],f[1]]).concat([['rod','FISHING ROD']])),raw:Object.fromEntries(FI.map(f=>[f[0],[f[7],.3]])),
     prices:{f_fishfry:12,f_grillbass:34,f_chowder:30,f_smokeeel:22,f_sturgeon:90},
     recipes:[['f_fishfry','FISH FRY','cooking',[10,50],{x_perch:2},'fills a third'],['f_smokeeel','SMOKED EEL','cooking',[25,70],{x_eel:2},'fills two fifths, strong 2 min'],
@@ -80,7 +80,7 @@ const FISHING={}, BOAT={on:false}; window.FISHING=FISHING; window.BOAT=BOAT;
     const h=RIVER.hAt(F.x,F.z); F.t-=dt; if(F.t<0)F.dip+=dt; bob.position.set(F.x,RB.lv+h+.02*T-(F.dip>0?.08*T*Math.abs(Math.sin(F.dip*14)):0),F.z);
     const a=line.geometry.attributes.position; a.setXYZ(0,pos.x+Math.sin(heading)*.5*T,py+Y(1.6),pos.z+Math.cos(heading)*.5*T); a.setXYZ(1,bob.position.x,bob.position.y,bob.position.z); a.needsUpdate=true;
     if(F.dip>.7){ const f=pickFish(RIVER.depthAt(F.x,F.z)), d=f[2]; FISHING.reel();
-      if(FORAGE.use('fish',d-25,d+25)){ if(f[0]==='chest'){ const g=INV.random(), c=10+Math.floor(Math.random()*31); INV.add(g); INV.cash+=c; say(`A SUNKEN CHEST! INSIDE: $${c} AND A ${GEMS.find(x=>x[0]===g)[1]}.`,'#f2c14e'); }
+      if(FORAGE.use('fish',d-25,d+25)){ if(f[0]==='chest'){ const g=INV.random(), c=10+Math.floor(Math.random()*31); INV.add(g); INV.cash+=c; say(`A SUNKEN CHEST! INSIDE: $${c} AND A ${GEMS.find(x=>x[0]===g)[1]}.`,'#f2c14e');  if(window.BOOKS&&Math.random()<.4)BOOKS.chest(); }
         else { FORAGE.give(f[0]); say(`YOU PULL OUT ${/^[AEIOU]/.test(f[1])?'AN':'A'} ${f[1]}!`,f[0].match(/boot|can/)?'#c8c2b0':'#b8f0a0'); } if(typeof SFX!=='undefined')SFX.play('drip',{vol:.6}); }
       else say('THE FISH GOT AWAY.','#c8a090'); FORAGE.draw(); } };
   { const t0=CLOCK.tick; CLOCK.tick=dt=>{ t0(dt); FISHING.tick(dt); }; }

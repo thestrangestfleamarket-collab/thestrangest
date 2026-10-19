@@ -24,20 +24,23 @@ const SKY={};
       void main(){ vec3 d=normalize(vD); float el=max(d.y,0.); vec2 hz=normalize(d.xz+vec2(1e-4,0.)), sh=normalize(uSunDir.xz+vec2(1e-4,0.)); float cs=dot(hz,sh);
         vec3 c=mix(uH,uM,smoothstep(0.,.3,el)); c=mix(c,uZ,smoothstep(.2,.85,el));
         c=mix(c,uS,pow(max(cs,0.),3.)*exp(-el*5.)*uSideK); c=mix(c,uA,pow(max(-cs,0.),2.)*exp(-el*6.)*uSideK*.7);
-        c*=1.-clamp(-d.y*2.,0.,1.)*.5;
+        c*=1.-clamp(-d.y*2.,0.,1.)*.5; vec3 mwc=vec3(0.), st=vec3(0.); float cvr=0.;
         if(uStar>0.){ vec3 a=abs(d); vec2 uv; float f; if(a.x>=a.y&&a.x>=a.z){ uv=d.yz/a.x; f=d.x>0.?0.:1.; } else if(a.y>=a.z){ uv=d.xz/a.y; f=d.y>0.?2.:3.; } else { uv=d.xy/a.z; f=d.z>0.?4.:5.; }
-          vec2 g=(uv*.5+.5)*44.; vec2 id=floor(g)+f*100.; float h=hs(id); if(h<.14){ vec2 o=vec2(hs(id+3.1),hs(id+7.3))*.6+.2; float r=length(fract(g)-o);
-            float br=(.35+.65*hs(id+1.7))*step(r,.05+.07*hs(id+9.1)); c+=vec3(.82,.88,1.)*br*uStar*smoothstep(0.,.12,el); } }
+          float gb=dot(d,normalize(vec3(.42,.55,-.72))), nw=.5*vn(d.xy*4.+3.)+.5*vn(d.zx*4.+11.), nc=.5*vn(d.yz*2.6+5.)+.5*vn(d.xy*2.6+17.);
+          float w=exp(-gb*gb/(.008+.008*nw)), mw=w*(.55+.9*nw)*(1.-.8*step(.62,nc)*step(abs(gb),.06));
+          mwc=vec3(.011,.013,.022)*(step(.38,mw)+step(.7,mw)+step(1.,mw))*step(.5,uStar)*step(.08,el);
+          vec2 g=(uv*.5+.5)*44.; vec2 id=floor(g)+f*100.; float h=hs(id); if(h<.14*(.25+1.6*nc*nc)+.16*w){ vec2 o=vec2(hs(id+3.1),hs(id+7.3))*.6+.2; float r=length(fract(g)-o);
+            float br=(.35+.65*hs(id+1.7))*step(r,.05+.07*hs(id+9.1)); st=vec3(.82,.88,1.)*br*uStar*smoothstep(0.,.12,el); c+=st; } }
         { float ang=acos(clamp(dot(d,uMoonDir),-1.,1.)); float disc=1.-step(uMoonR,ang); c=mix(c,vec3(.86,.89,.95),disc*uMoonK); }
         { float ang=acos(clamp(dot(d,uSunDir),-1.,1.)); float disc=1.-step(uSunR,ang); float halo=(1.-smoothstep(uSunR,uSunR*4.,ang))*.45; if(uBands>0.)halo=floor(halo*3.)/3.*.45;
           c=mix(c,mix(uSunCol,vec3(1.,.96,.9),.45),halo*uSunK); c=mix(c,uSunCol,disc*uSunK); }
         c=mix(c,uGrey,uGreyK); c=mix(c,uFogC,uFogK*(1.-smoothstep(0.,.4,el)));
         if(uMistK>0.){ vec3 m=mix(uMistC*uHk,uMistC*.95,smoothstep(0.,.22,el)); m=mix(m,uMistC*uZk,smoothstep(.35,.95,el));
-          vec2 q=d.xz/(max(d.y,0.)+.06)*.9+vec2(uT*.012,uT*.005); float n=fbm(q), cov=step(uCov,n), lt=fbm(q+vec2(.05,.09)*2.);
+          vec2 q=d.xz/(max(d.y,0.)+.06)*.9+vec2(uT*.012,uT*.005); float n=fbm(q), cov=step(uCov,n); cvr=cov; float lt=fbm(q+vec2(.05,.09)*2.);
           vec3 cl=mix(uMistC*.72,uMistC*uCL,step(n,lt+.03)); cl=mix(cl,uMistC*.6,step(.62,n)*.5);
-          m=mix(m,cl,cov*smoothstep(.015,.12,el)); m=mix(m,uMistC*uHk,1.-smoothstep(0.,.06,el));
+          m=mix(m,cl,cov*smoothstep(.015,.12,el)); m=mix(m,uMistC*uHk,1.-smoothstep(0.,.06,el)); m+=st*(1.-cov)*step(.08,el);
           c=mix(c,m,uMistK); c=pow(floor(pow(max(c,0.),vec3(1./2.2))*16.+.5)/16.,vec3(2.2)); }
-        if(uBands>0.&&uMistK<.5)c=floor(c*uBands+.5)/uBands;
+        if(uBands>0.&&uMistK<.5)c=floor(c*uBands+.5)/uBands; c+=mwc*(1.-uGreyK)*(1.-uFogK)*(1.-cvr*uMistK);
         gl_FragColor=vec4(c,1.); }`});
   const dome=new THREE.Mesh(new THREE.BoxGeometry(2000,2000,2000),mat); dome.frustumCulled=false; dome.renderOrder=900; dome.matrixAutoUpdate=true; scene.add(dome); SKY.dome=dome; OUT.add(dome,'open');
   dome.onBeforeRender=(r,s,c)=>{ dome.position.copy(c.position); dome.scale.setScalar(c.isOrthographicCamera?Math.max(1,(c.right-c.left)*1.2/2000):1); dome.updateMatrixWorld(); };

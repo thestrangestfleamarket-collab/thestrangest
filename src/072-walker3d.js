@@ -140,32 +140,32 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
   W3.hideMe=W3.hideMeQ=!!QS.get('hideme');
   W3.place=(B,x,y,z,hd,yawA,ZY)=>{ if(W3.hideMe)W3.group.traverse(o=>{ if(o.isMesh)o.visible=false; }); W3.group.position.set(x,y,z); W3.group.rotation.set(0,hd,0); W3.group.scale.set(W3.SZ/PPU,ZY*W3.SZ*(W3.BH||1),W3.SZ/PPU);
     const L=R.yaw(LIGHT,-yawA); W3.L.set(L.x,L.y,L.z);
-    W3.G.value.setFromMatrix4(new THREE.Matrix4().makeRotationY(hd)); if(typeof SHL!=='undefined')SHL.forEach((S,i)=>{ W3.LP.value[i].copy(S.position);
+    W3.G.value.set(Math.cos(hd),0,Math.sin(hd),0,1,0,-Math.sin(hd),0,Math.cos(hd)); if(typeof SHL!=='undefined')SHL.forEach((S,i)=>{ W3.LP.value[i].copy(S.position);
       const wl=typeof POOLR!=='undefined'?POOLR.Y(POOLR.level):-1e9, under=S.position.y<wl, k=!under?1:POOLR.inBasin(x,z)?(y<wl?0.6:0.25):0;
       W3.LC.value[i].set(S.color.r,S.color.g,S.color.b).multiplyScalar(Math.min(1.5,S.intensity/2)*k); });
     if(typeof cam!=='undefined')cam.getWorldDirection(W3.CamW.value);
     if(!W3.realL||!(W3.Lw.lengthSq()>.5))W3.Lw.set(L.x/PPU,L.y*ZY,L.z/PPU).applyAxisAngle(new THREE.Vector3(0,1,0),hd).normalize();
-    const mid=new THREE.Vector3(x,y+1.25,z); W3.smCam.position.copy(mid).addScaledVector(W3.Lw,6); W3.smCam.up.set(0,Math.abs(W3.Lw.y)>.6?0:1,Math.abs(W3.Lw.y)>.6?1:0); W3.smCam.lookAt(mid); W3.smCam.updateMatrixWorld();
+    const mid=(W3.MID||(W3.MID=new THREE.Vector3())).set(x,y+1.25,z); W3.smCam.position.copy(mid).addScaledVector(W3.Lw,6); W3.smCam.up.set(0,Math.abs(W3.Lw.y)>.6?0:1,Math.abs(W3.Lw.y)>.6?1:0); W3.smCam.lookAt(mid); W3.smCam.updateMatrixWorld();
     W3.LVP.value.multiplyMatrices(W3.smCam.projectionMatrix,W3.smCam.matrixWorldInverse);
     PCS.forEach((P,i)=>{ const F=R.frameOf(P.on||P.n,B); W3.PM.value[i].set(F.x.x,F.y.x,F.z.x,F.o.x, F.x.y,F.y.y,F.z.y,F.o.y, F.x.z,F.y.z,F.z.z,F.o.z, 0,0,0,1); if(W3.E&&W3.E[i])W3.applyE(W3.PM.value[i],W3.E[i],F.o); if(W3.HIDE[i])W3.PM.value[i].makeScale(0,0,0); }); };
   { const place0=W3.place; W3.place=(...a)=>{ place0(...a); W3.group.updateMatrixWorld(true); const now=performance.now(), hdt=Math.min(.05,(now-(W3.hairT||now))/1000); W3.hairT=now;
       PCS.forEach((P,i)=>{ if(P.swing&&!W3.HIDE[i])swing(P,i,hdt); }); }; }
-  const SW={pW:new THREE.Vector3(),rest:new THREE.Vector3(),m:new THREE.Vector3(),v:new THREE.Vector3(),d:new THREE.Vector3(),q:new THREE.Quaternion(),M1:new THREE.Matrix4(),M2:new THREE.Matrix4(),inv:new THREE.Matrix3(),G:new THREE.Vector3()};
+  const SW={pv:new THREE.Vector3(),ax:new THREE.Vector3(),p:new THREE.Vector3(),M3:new THREE.Matrix4(),pW:new THREE.Vector3(),rest:new THREE.Vector3(),m:new THREE.Vector3(),v:new THREE.Vector3(),d:new THREE.Vector3(),q:new THREE.Quaternion(),M1:new THREE.Matrix4(),M2:new THREE.Matrix4(),inv:new THREE.Matrix3(),G:new THREE.Vector3()};
   function swing(P,i,dt){ const S=P.swing, st=P.sw||(P.sw={m:null,pm:new THREE.Vector3()}), PM=W3.PM.value[i], GW=W3.group.matrixWorld;
     SW.inv.setFromMatrix4(GW).invert(); const sy=W3.group.scale.y, L=S.len*sy;
     SW.pW.set(S.pivot[0],S.pivot[1],S.pivot[2]).applyMatrix4(PM).applyMatrix4(GW);
     SW.rest.set(S.rest[0],S.rest[1],S.rest[2]).transformDirection(PM).transformDirection(GW);
     if(!st.m||dt<=0){ st.m=SW.m.copy(SW.pW).addScaledVector(SW.rest,L).clone(); st.pm.copy(st.m); st.pp=SW.pW.clone(); return; }
-    const pv=st.pp?SW.G.subVectors(SW.pW,st.pp).clone():new THREE.Vector3(); (st.pp||(st.pp=new THREE.Vector3())).copy(SW.pW);
+    const pv=st.pp?SW.pv.subVectors(SW.pW,st.pp):SW.pv.set(0,0,0); (st.pp||(st.pp=new THREE.Vector3())).copy(SW.pW);
     SW.v.subVectors(st.m,st.pm).sub(pv).multiplyScalar(Math.max(0,1-4.5*dt)).add(pv); st.pm.copy(st.m);
     SW.G.copy(SW.pW).addScaledVector(SW.rest,L).sub(st.m).multiplyScalar(S.k*dt*dt); st.m.add(SW.v).add(SW.G); st.m.y-=7*dt*dt;
     SW.d.subVectors(st.m,SW.pW); if(SW.d.lengthSq()<1e-9)SW.d.copy(SW.rest); SW.d.normalize();
-    const a=SW.d.angleTo(SW.rest); if(a>S.max){ SW.q.setFromUnitVectors(SW.rest,SW.d); const ax=new THREE.Vector3().crossVectors(SW.rest,SW.d).normalize(); SW.d.copy(SW.rest).applyAxisAngle(ax,S.max); }
+    const a=SW.d.angleTo(SW.rest); if(a>S.max){ SW.q.setFromUnitVectors(SW.rest,SW.d); const ax=SW.ax.crossVectors(SW.rest,SW.d).normalize(); SW.d.copy(SW.rest).applyAxisAngle(ax,S.max); }
     st.m.copy(SW.pW).addScaledVector(SW.d,L);
     if(a<.004&&SW.v.lengthSq()<1e-8){ st.m.copy(SW.pW).addScaledVector(SW.rest,L); st.pm.copy(st.m); return; }
     const dl=SW.d.clone().applyMatrix3(SW.inv).normalize(), rl=SW.rest.clone().applyMatrix3(SW.inv).normalize(); SW.q.setFromUnitVectors(rl,dl);
-    const p=new THREE.Vector3(S.pivot[0],S.pivot[1],S.pivot[2]).applyMatrix4(PM);
-    SW.M1.makeTranslation(p.x,p.y,p.z).multiply(SW.M2.makeRotationFromQuaternion(SW.q)).multiply(new THREE.Matrix4().makeTranslation(-p.x,-p.y,-p.z)); PM.premultiply(SW.M1); }
+    const p=SW.p.set(S.pivot[0],S.pivot[1],S.pivot[2]).applyMatrix4(PM);
+    SW.M1.makeTranslation(p.x,p.y,p.z).multiply(SW.M2.makeRotationFromQuaternion(SW.q)).multiply(SW.M3.makeTranslation(-p.x,-p.y,-p.z)); PM.premultiply(SW.M1); }
 }
 const OUTL={rt:new THREE.WebGLRenderTarget(4,4,{type:THREE.FloatType,format:THREE.RGBAFormat,minFilter:THREE.NearestFilter,magFilter:THREE.NearestFilter}),
   occ:new THREE.ShaderMaterial({vertexShader:`varying float vd; void main(){ vec4 mv=modelViewMatrix*vec4(position,1.); vd=-mv.z; gl_Position=projectionMatrix*mv; }`,fragmentShader:`varying float vd; void main(){ gl_FragColor=vec4(-1.,0.,0.,vd); }`,side:THREE.DoubleSide})};

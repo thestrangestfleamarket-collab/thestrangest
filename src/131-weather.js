@@ -14,7 +14,7 @@ const WX={hold:null,now:null};
   const HOLDS={CLEAR:{cloud:.08,rain:0,snow:0,storm:0,wind:.15,dir:1,fog:0},CLOUDY:{cloud:.85,rain:0,snow:0,storm:0,wind:.35,dir:1,fog:0},RAIN:{cloud:.95,rain:.7,snow:0,storm:0,wind:.4,dir:1,fog:0},
     STORM:{cloud:1,rain:1,snow:0,storm:.8,wind:.9,dir:1,fog:0},SNOW:{cloud:.9,rain:0,snow:.7,storm:0,wind:.2,dir:1,fog:0},FOG:{cloud:.6,rain:0,snow:0,storm:0,wind:0,dir:1,fog:.7}};
   { const q=(QS.get('wx')||'').toUpperCase(); if(q==='NATURAL')WX.nat=1; else if(HOLDS[q])WX.hold=q; }
-  const ph=(a,b,c)=>{ const v=Math.sin(a*127.1+b*311.7+c*74.7)*43758.5453; return v-Math.floor(v); }, CLD=WX.cld=[], NC=240, PF=[], ends=[], CSPH=[], CC={x:0,z:0};
+  const ph=(a,b,c)=>{ const v=Math.sin(a*127.1+b*311.7+c*74.7)*43758.5453; return v-Math.floor(v); }, CLD=WX.cld=[], NC=240, PF=[], CCA=[], ends=[], CSPH=[], CC={x:0,z:0};
   const SHP=[[[0,2,3.2],[-1,3.5,3],[1.2,.5,2.2],[1.4,-1.5,1.6],[1.8,-3.2,2],[.8,-4.6,.8,.5,-6.4,.25],[2.7,-4.6,.8,3,-6.4,.25],[2,3.5,1,2.2,5.6,.9],[-3.6,4.8,1,-6,3.8,.9],[-6,3.8,.9,-6.8,1.6,.8],[-6.8,1.6,.8,-6.2,-.4,.7]],
     [[-2,0,3.2],[1,0,3.4],[3.5,.3,2.8],[-3.6,2.5,1,-3.6,6,.9],[-1.2,2.5,1,-1.2,6,.9],[1.8,2.5,1,1.8,6,.9],[4.1,2.5,.9,4.1,6,.8],[5,-1,1.6,7,-4,1.1],[7,-4,1.1,8,-7,.9],[8.9,-7.6,1.1],[9.9,-7.3,.7],[-5,.5,2,-8,1.5,1.2],[-8,1.5,1.2,-11,1.5,.6],[-11,1.5,.6,-13,.8,.3]],
     [[0,1,3],[-1.2,2,2.8],[1.6,-.8,1.6],[2.5,-2.2,1.8],[2,-3.8,.9,1.2,-7.5,.7],[3,-3.8,.9,3.6,-7.3,.7],[-3.8,1.2,1.2],[2.3,3.2,.8,2.9,3.9,.7],[-1,4.2,1,1.5,4.4,.8]],
@@ -22,7 +22,7 @@ const WX={hold:null,now:null};
     [[0,0,2.8],[-2,.5,2.4],[-3.5,.8,2,-9,2.5,.4],[2,-2,1.6],[3.5,-3.8,1.8],[5.2,-3.6,1.3],[5,-2.6,.9],[2.8,0,.45,3.8,.6,.35],[0,2,1.8,.6,4.6,1],[.6,4.6,1,1.8,6,.8],[-1.8,2,1.6,-1.6,5,.9],[-1.6,5,.9,-.4,6.2,.7]],
     [[-.5,-1,3.2],[-4,2.3,1,5,2.3,1.1],[5,.7,1.1],[5,0,.4,5.6,-2.5,.3],[5.7,-2.8,.55],[4.4,0,.4,4.1,-2.3,.3],[4,-2.6,.5]]];
   const SPOT=[[-13,-15],[13,-15],[-14,3],[14,3],[-12,21],[13,21]], sunAt=h=>{ const e=Math.max(12,50*Math.cos(2*Math.PI*(h-12.7)/24)-8)*Math.PI/180, a=2*Math.PI*(h-12.7)/24; return [Math.sin(a)/Math.tan(e),Math.cos(a)/Math.tan(e)]; };
-  const build=()=>{ const P=window.PARK, B=window.BOD; if(P&&B&&B.XS){ CC.x=B.XS(P.round[0]+(P.ox||0)); CC.z=B.ZS(P.round[1]+(P.oy||0)); }
+  const build=()=>{ const P=window.PARK, B=typeof BOD!=='undefined'?BOD:null; if(P&&B&&B.XS){ CC.x=B.XS(P.round[0]+(P.ox||0)); CC.z=B.ZS(P.round[1]+(P.oy||0)); }
     const T=TILE, hy=2*(WX.cy||0), [sx,sz]=sunAt(window.DN&&DN.S?DN.S.day.h:15.5), tg=SPOT.map(g=>[g[0]*T,g[1]*T]);
     for(let n=0;n<NC;n++){ const a0=PF.length;
       if(n<SHP.length){ const h=(70+ph(n,5,6)*8)*T, cx=tg[n][0]+(h+hy)*sx, cz=tg[n][1]+(h+hy)*sz, j=(ph(n,3,4)-.5)*.5, co=Math.cos(j), si=Math.sin(j), s=1.15*T, C=[];
@@ -36,16 +36,16 @@ const WX={hold:null,now:null};
         for(let k=0;k<26;k++){ const u=ph(n,k,9)-.5, v=ph(n,k,10)-.5, e=1-Math.abs(u)*2, r=w*(.07+.07*e+.05*ph(n,k,11)), a=u*w*1.3, b=v*w*.55*(.4+.6*e); PF.push(cx+a*co-b*si,cy+r*.5+e*w*.1*ph(n,k,14),cz+a*si+b*co,r); }
         CLD.push([cx,cy,cz,w]); }
       const Bx=new THREE.Box3(), V=new THREE.Vector3(); for(let i=a0;i<PF.length;i+=4){ V.set(PF[i],PF[i+1],PF[i+2]); Bx.expandByPoint(V.clone().addScalar(PF[i+3])); Bx.expandByPoint(V.addScalar(-PF[i+3])); }
-      CSPH.push(Bx.getBoundingSphere(new THREE.Sphere())); ends.push(PF.length/4); }
-    cg.setAttribute('pf',new THREE.InstancedBufferAttribute(new Float32Array(PF),4)); };
+      const S=Bx.getBoundingSphere(new THREE.Sphere()); CSPH.push(S); for(let i=a0;i<PF.length;i+=4)CCA.push(S.center.x,S.center.y,S.center.z,S.radius); ends.push(PF.length/4); }
+    cg.setAttribute('pf',new THREE.InstancedBufferAttribute(new Float32Array(PF),4)); cg.setAttribute('cc',new THREE.InstancedBufferAttribute(new Float32Array(CCA),4)); };
   const cg=new THREE.InstancedBufferGeometry(); cg.setAttribute('position',new THREE.BufferAttribute(new Float32Array([-1,-1,0,1,-1,0,1,1,0,-1,1,0]),3)); cg.setIndex([0,1,2,0,2,3]); cg.instanceCount=0;
   const CU={uCF:{value:new THREE.Vector3(0,0,1)},uCO:{value:new THREE.Vector3()},uUnder:{value:new THREE.Color(0,0,0)},uCM:{value:new THREE.Vector4(0,0,0,0)},uCol:{value:new THREE.Color(1,1,1)},uEm:{value:new THREE.Color()},uSunC:{value:new THREE.Color()},uSunD:{value:new THREE.Vector3(0,1,0)},uSky:{value:new THREE.Color()},uGnd:{value:new THREE.Color()}};
   WX.cloudMist=c=>{ CU.uCM.value.set(c.r,c.g,c.b,.5); mistT=2; }; let mistT=0; WX.under=CU.uUnder;
   const cmat=new THREE.ShaderMaterial({uniforms:CU,
-    vertexShader:'attribute vec4 pf; varying vec2 vQ; varying vec3 vCW; void main(){ vQ=position.xy; vec4 c=modelMatrix*vec4(pf.xyz,1.); vCW=c.xyz; vec4 m=viewMatrix*c; m.xy+=position.xy*pf.w; gl_Position=projectionMatrix*m; }',
-    fragmentShader:`uniform vec3 uCF,uCO,uUnder,uCol,uEm,uSunC,uSunD,uSky,uGnd; uniform vec4 uCM; varying vec2 vQ; varying vec3 vCW;
-      void main(){ float q=dot(vQ,vQ); if(q>1.||dot(vCW.xz-uCO.xz,uCF.xz)<12.)discard; vec3 n=normalize(vec3(vQ,sqrt(1.-q))*mat3(viewMatrix));
-        float d=dot(n,normalize(uSunD)), b=d>.5?1.:d>.12?.7:d>-.3?.42:.2; vec3 h=n.y>.3?uSky:n.y>-.3?(uSky+uGnd)*.5:uGnd;
+    vertexShader:'attribute vec4 pf,cc; varying vec2 vQ; varying vec3 vCW,vG; varying float vR; void main(){ vQ=position.xy; vG=(pf.xyz-cc.xyz)/cc.w; vR=pf.w/cc.w; vec4 c=modelMatrix*vec4(pf.xyz,1.); vCW=c.xyz; vec4 m=viewMatrix*c; m.xy+=position.xy*pf.w; gl_Position=projectionMatrix*m; }',
+    fragmentShader:`uniform vec3 uCF,uCO,uUnder,uCol,uEm,uSunC,uSunD,uSky,uGnd; uniform vec4 uCM; varying vec2 vQ; varying vec3 vCW,vG; varying float vR;
+      void main(){ float q=dot(vQ,vQ); if(q>1.||dot(vCW.xz-uCO.xz,uCF.xz)<12.)discard; vec3 n=normalize(vec3(vQ,sqrt(1.-q))*mat3(viewMatrix)), g=vG+n*vR; g.y*=3.; n=normalize(n*.45+normalize(g));
+        float d=dot(n,normalize(uSunD)), b=d>.45?1.:d>.05?.78:d>-.35?.58:.42; vec3 h=n.y>.3?uSky:n.y>-.3?(uSky+uGnd)*.5:uGnd;
         vec3 c=uCol*(uSunC*b+h)*.3183+uEm+uUnder*step(.4,-n.y); gl_FragColor=vec4(mix(c,uCM.rgb,uCM.a),1.);
         #include <colorspace_fragment>
       }`});

@@ -1705,6 +1705,33 @@ starving messages, and nothing stops you running (`141-forage.js`; `103-vitals.j
 kept there from older versions (`market-*`, `isowalk-*`: the saved game, its settings, recorded moves, the look) is cleared and it starts
 clean. The login is kept.
 
+## 19 Oct 2026: three new avatars on standard bones
+
+**Three new avatars, the Walker untouched** (owner, 19 Oct 2026: "is there a total package we could use that gives me the character,
+movements, etc all in one?"; his mockups, https://claude.ai/artifact/9938S4GnmWdHACvY5PmAMG; "lets make all 3 options in game";
+"dont change the current avatar, add those as 3 new ones"): GRAPHICS gets an AVATAR row: WALKER (the default, as he was), WALKER ON CLIPS,
+MANNEQUIN, VROID; `?avatar=clips|mannequin|vroid`; kept in the save (`avatar`). `src/087a-avatars.js`. Each new one is its own body
+standing where you stand (the Walker hidden while it's chosen, nothing of his changed); the game's rig still moves you, and the body plays
+the standard animation library's clips for what you're doing (standing easy, walk / jog / sprint by your pace, a jump, the punches, roll,
+crouch, sit, swim, dance, falling). All three share one skeleton layout, so any clip library made for it (Mixamo, Quaternius, CMU) can be
+baked in for all three.
+- **WALKER ON CLIPS**: a copy of the Walker as the game draws him (his pieces and paint, read out of the built page by
+  `tools/hybrid-probe.cjs`, `tools/hybrid-bake.py` → `data/hybrid.json`) set on the standard skeleton sized to his proportions. A copy:
+  the avatar editor's changes reach him only when re-baked. 14,870 triangles (as the Walker).
+- **MANNEQUIN**: the animation library's own body (`data/ual.json`, back from 18 Oct), in skin, briefs, jeans, shirt, shoes and hair as
+  on 17 Oct. About 7,000 triangles.
+- **VROID**: a VRoid Studio character (pixiv's free sample, `data/full/vroid.vrm`; `tools/vrm-bake.py` drops the face expressions,
+  bump maps and thumbnail, textures to 512 px → `data/vroid.json`, 2.5 MB). Loaded only when first chosen (`__LAZY__` in build.py:
+  inline in the artifact, fetched on demand on the website), with three-vrm from the CDN. 36,470 triangles, its own toon shading.
+- The library's clips trimmed to the 17 the code names, at 12 fps (`tools/trim-clips.py`).
+
+**The Walker on clips replaces the Walker** (owner, 19 Oct 2026: "can you send this avatar shape to the main game?"; his picks: WALKER ON
+CLIPS, "Replace the Walker"; then, his shot of his own bald, plainer Walker on the clips: "I sill look like this"): you are the WALKER ON
+CLIPS body itself, the copy of the default Walker with his hair and paint (`data/hybrid.json`, `BUILD.walker` in `087a-avatars.js`), on
+the standard skeleton and its clips, from the start; the hand-animated Walker is hidden (still drawn while the avatar editor is open, so
+the editor has someone to show). AVATAR: WALKER, MANNEQUIN, VROID. The avatar editor's looks don't reach this body until it is baked again
+(`node tools/hybrid-probe.cjs && python3 tools/hybrid-bake.py`, after a `MIN=0` build). 14,870 triangles, as the Walker.
+
 ## 19 Oct 2026: REPORT A BUG and the owner's queue
 
 **Report a bug** (owner, 19 Oct 2026: "add a report bug feature that lets users report a bug and send screen shot and it autotmatically

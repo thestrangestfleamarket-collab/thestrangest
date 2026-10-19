@@ -1854,3 +1854,17 @@ so he looked shrugged. You are now his mannequin (`data/full/humanoid.fbx`, Blen
 `data/humanoid.json`, 6 KB), sized to the UAL skeleton (it matches it: height, hips, shoulders, arm length within 3 cm). It stands in an
 A-pose, so the skeleton's arms are lowered to it before binding; each corner weighted in code to its nearest one or two bones. One flat
 light colour, cel-shaded, casting a shadow; the same clips. 402 triangles.
+
+**A stream through Central Park** (owner, 19 Oct 2026, his night picture of a rocky stream: "can we get a running stream like this with
+rocks and realistic shape and flow ?"; his picks: through Central Park, cel water, wade and stepping stones): a brook (`PARK.brook`,
+`061-park.js`; drawn in `089a-brook.js`) from a spring among boulders in the park's north-east, about 185 tiles west, under the north
+way and into a still pool east of the castle. Its channel is cut into the lawn (a hole in the land, `064-map-post.js`; the ground's
+height `HILL` follows its banks, so you walk down into it): banks of earth and pebbles, the water 0.3 to 0.55 m under the grass and
+about knee deep, dropping a few centimetres at six riffles. The water is one flat sheet in cel bands (no gradients): dark, a
+sky-tinted band and glints that run downstream at about 0.6 m/s, faster and foaming over the riffles, slow in the pool; foam round
+every rock with a broken wake behind it, and rings round your legs when you wade (with a splash and a babble made in code, `sfx`
+rules). Rocks: rounded boulders along the banks and round the spring and pool (solid), smaller ones breaking the surface, three rows of
+stepping stones you can stand on, pebbles at the waterline. The north way crosses on a stone bridge: the path humps 0.55 m over an
+arch, parapets each side. Trees, plants and the way's lamps keep off it; the menu's map draws it. Cost: about 25,000 triangles in
+all, cut into sections so a view draws only its part (measured: +0.8K at the cave, none at the gate, the bridge view 9K lower than
+before as hills and trees left the channel); up to 3 more draws; one new shader program (the water) and one bank variant; no lamps.

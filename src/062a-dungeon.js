@@ -25,7 +25,7 @@ await grab('dungeon',async()=>{});
     for(const t of R.torches){ const [x,y]=t.w==='l'?[R.x0+.16,R.y0+t.u]:[R.x1-.16,R.y0+t.u]; Kc['wall torch'](x,y,t.w); }
     const made=KP.slice(n0); KP.length=n0; BATCH.meshes={}; BATCH.cast=true; for(const [k,b] of WB)gboxS(b,k,dy); for(const p of made)for(const b of p.boxes)gboxS(b,'L',dy);
     BATCH.build((k,map,emap)=>castleMat(k,map,emap,PL[k])); BATCH.cast=false;
-    for(const k in PL)for(const me of BATCH.all(BATCH.meshes,k)){ const s=SIDE[k[1]], w={pl:PL[k],nx:s[0],nz:s[1],foot:Y(6),me,when:()=>LVL==='down'&&cur>0}; cutWalls.push(w); M.cuts.push(w); } BATCH.meshes={}; BATCH.items=keep;
+    for(const k in PL)for(const me of BATCH.all(BATCH.meshes,k)){ const s=SIDE[k[1]], w={pl:PL[k],nx:s[0],nz:s[1],foot:dy+Y(6),me,when:()=>LVL==='down'&&cur>0}; cutWalls.push(w); M.cuts.push(w); } BATCH.meshes={}; BATCH.items=keep;
     const P=[], Cc=[], c3=new THREE.Color(), ST=[88,84,78], ST2=[74,70,66];
     const quad=(a,b,c,d,col)=>{ c3.setRGB(col[0]/255,col[1]/255,col[2]/255,THREE.SRGBColorSpace); for(const v of [a,b,c,a,c,d]){ P.push(...v); Cc.push(c3.r,c3.g,c3.b); } };
     const box=(x0,y0,z0,x1,y1,z1,col)=>{ const [a,b,c,d]=[X(x0),X(x1),Z(y0),Z(y1)], [e,f]=[Y(z0)+dy,Y(z1)+dy], dk=col.map(v=>v*.8), lt=col.map(v=>Math.min(255,v*1.08));

@@ -106,11 +106,12 @@ function footLock(st,P,AK,LK,w){ const W=st.world,c=Math.cos(W.hd),s=Math.sin(W.
   st.fdn=Math.min(0,...'LR'.split('').map(n=>AK[n].y-ANKLE));
   const Lg=THIGH+SHIN-1e-4; let drop=0;
   for(const s2 of [1,-1]){ const n=s2>0?'L':'R',[H]=hipAt(P,s2),d=sub(AK[n],H),dh=Math.hypot(d.x,d.z); if(len(d)>Lg&&dh<Lg) drop=Math.max(drop,(H.y-AK[n].y)-Math.sqrt(Lg*Lg-dh*dh)); }
-  if(drop>1e-3) P.root=add(P.root,V(0,-Math.min(5,Math.ceil(drop/PX)*PX),0));
+  if(drop>1e-3) P.root=add(P.root,V(0,-Math.min(5,st.smooth?drop:Math.ceil(drop/PX)*PX),0));
+  if(st.smooth&&st.world){ const t=st.world.t, y=P.root.y; if(st.rT!=null&&t>st.rT&&t-st.rT<.2){ st.rY=y<st.rY?y:st.rY+(y-st.rY)*(1-Math.exp(-(t-st.rT)*14)); P.root=V(P.root.x,st.rY,P.root.z); } else st.rY=y; st.rT=t; }
   for(const s2 of [1,-1]){ const n=s2>0?'L':'R',[H]=hipAt(P,s2),d=sub(AK[n],H); if(len(d)>Lg+0.02){ const v=nrm(d),A=add(H,mul(v,Lg)); st.fslide=(st.fslide||0)+1;
       if(F[n]&&F[n].on&&!stand&&LK[n]&&LK[n].on){ const p=toW(V(A.x,0,A.z)); st.fquick=(st.fquick||0)+1; F[n]={x:p.x,z:p.z,y:F[n].y,ly:A.y,fy:F[n].fy||0,on:0,quick:1,t:0}; } AK[n]=A; } }
   return true; }
-function walkPose(st,abd){ const r=st.run||0,rs=r*r,g=gaitOf(r),w=st.w,ST=g.stance,h=g.stride*w/(st.anim||1),q=phases(st.ph),P=neutral(),sw=drive(q.L,w)-drive(q.R,w);
+function walkPose(st,abd){ const r=st.run||0,rs=r*r,g=gaitOf(r); if(st.smooth){ const s2=g.stance-.1*r; g.stride*=s2/g.stance; g.stance=s2; } const w=st.w,ST=g.stance,h=g.stride*w/(st.anim||1),q=phases(st.ph),P=neutral(),sw=drive(q.L,w)-drive(q.R,w);
   const fa=(n,qq)=>lab('foot',qq,ST,rs)*w,kn=(qq)=>lab('knee',qq,ST,rs)*w;
   P.pyaw=-3*D*sw*(1+0.5*r)*g.twist; P.cyaw=2.5*D*sw*(1+r)*g.twist; P.look=-0.7*P.cyaw;
   P.bend=(g.lean+1.2*Math.sin(4*Math.PI*(q.L-0.05)))*D*w; P.nod=-0.6*P.bend;
@@ -123,17 +124,22 @@ function walkPose(st,abd){ const r=st.run||0,rs=r*r,g=gaitOf(r),w=st.w,ST=g.stan
     if(qq<ST){ const a=fa(n,qq),A=planted(qq/ST,a,x,h); feet[n]={A,a,b:V(x,0,(0.5-qq/ST)*h)}; const y=reachY(s,A,kn(qq)); py=py==null?y:Math.min(py,y); } }
   if(py==null){
     const n=q.L<q.R?'L':'R',o=n=='L'?'R':'L',v=((q[n]-ST)/(0.5-ST)),A0=planted(1,fa(n,ST-1e-6),(n=='L'?1:-1)*FOOTX,h),A1=planted(0,fa(o,0),(o=='L'?1:-1)*FOOTX,h);
-    py=lerp(reachY(n=='L'?1:-1,A0,kn(ST-1e-6)),reachY(o=='L'?1:-1,A1,kn(0)),clamp(v,0,1)); }
-  py=Math.min(STAND,py); P.root=V(sway,STAND-Math.max(0,Math.round((STAND-py)*g.bounce/PX))*PX,0);
+    py=lerp(reachY(n=='L'?1:-1,A0,kn(ST-1e-6)),reachY(o=='L'?1:-1,A1,kn(0)),clamp(v,0,1)); if(st.smooth&&st.pyS!=null)py=st.pyS+.8*Math.sin(Math.PI*clamp(v,0,1)); } else if(st.smooth)st.pyS=py;
+  py=Math.min(STAND,py); P.root=V(sway,STAND-Math.max(0,st.smooth?(STAND-py)*g.bounce:Math.round((STAND-py)*g.bounce/PX)*PX),0);
   for(const s of [1,-1]){ const n=s>0?'L':'R',x=s*FOOTX*g.width,qq=q[n];
     let A,a; if(feet[n]){ ({A,a}=feet[n]); LK[n]={on:1,off:sub(A,feet[n].b)}; }
     else {
       const v=(qq-ST)/(1-ST),e=smooth(v),A0=planted(1,fa(n,ST-1e-6),x,h),A1=planted(0,fa(n,0),x,h),H=add(P.root,hipOff(s));
       const F=qq2=>legReach(lab('hip',qq2,ST,rs)*w*g.knee,kn(qq2)*g.knee),F0=F(ST),F1=F(1-1e-6),Fv=F(qq);
-      a=fa(n,qq); A=add(lerpV(A0,A1,e),sub(Fv,lerpV(F0,F1,e))); A=V(x,Math.max(A.y,Math.cos(a)*ANKLE+Math.max(Math.sin(a)*1.1,-Math.sin(a)*1.9)+0.1*w),A.z); LK[n]={on:0,e,b0:V(x,0,-0.5*h),b1:V(x,0,0.5*h)}; }
+      a=fa(n,qq); A=add(lerpV(A0,A1,e),sub(Fv,lerpV(F0,F1,e))); A=V(x,Math.max(A.y,Math.cos(a)*ANKLE+Math.max(Math.sin(a)*1.1,-Math.sin(a)*1.9)+0.1*w),A.z); LK[n]={on:0,e,b0:V(x,0,-0.5*h),b1:V(x,0,0.5*h)};
+      if(st.smooth&&typeof GAIT!=='undefined'){ const lg=(G,f)=>GK(G,(n=='L'?0:0.5)+G.st+(1-G.st)*v,f)*D, th=[0,1].map(j=>lg(GAIT.walk,c=>c[n].th[j])*(1-rs)+lg(GAIT.run,c=>c[n].th[j])*rs), sh=[0,1].map(j=>lg(GAIT.walk,c=>c[n].sh[j])*(1-rs)+lg(GAIT.run,c=>c[n].sh[j])*rs);
+        const Am=add(add(H,mul(limb(th[0],th[1],s),THIGH)),mul(limb(Math.min(sh[0],th[0]),sh[1],s),SHIN)), k=Math.sin(Math.PI*v)**2*w; A=V(x,Math.max(A.y,lerp(A.y,Am.y,k)),lerp(A.z,lerp(A.z,Am.z,k),1)); } }
     legIK(P,n,s,A); AK[n]=A; P[n].foot=a;
     const sh=(lerp(-8,9,rs)*w+3*(1-w)-w*lerp(16,36,rs)*g.arm*Math.cos(2*Math.PI*(qq-0.04)))*D,el=(10+g.elbow*w*(lerp(2,64,rs)+lerp(20,24,rs)*(0.5+0.5*Math.cos(2*Math.PI*(qq-0.62)))))*D,b=abd?abd[n]:0;
     P[n].ua=[sh,b+6*D*(1-w)]; P[n].fa=[sh+el+8*D*(1-w),b+3*D*(1-w)]; }
+  if(st.smooth&&typeof GAIT!=='undefined'){ const u=q.L, m=f=>gv(u,rs,f)*D, mx=(x,y)=>x+(y-x)*w;
+    for(const k of ['yaw','roll','pitch','side','bend','cyaw','nod'])P[k]=mx(P[k],m(c=>c[k])); P.pyaw=mx(P.pyaw,0); P.look=mx(P.look,-0.5*P.cyaw);
+    for(const n of 'LR'){ const b=abd?abd[n]:0; P[n].ua=[mx(P[n].ua[0],m(c=>c[n].ua[0])),mx(P[n].ua[1],m(c=>c[n].ua[1])+b)]; P[n].fa=[mx(P[n].fa[0],m(c=>c[n].fa[0])),mx(P[n].fa[1],m(c=>c[n].fa[1])+b)]; } }
   const bk=st.bank||0; if(bk){ const L=STAND-ANKLE; P.roll+=bk; P.root=add(P.root,V(L*Math.sin(bk),-L*(1-Math.cos(bk))-2*FOOTX*Math.abs(Math.sin(bk)),0)); P.side-=0.3*bk; }
   const so=st.stop; if(so){ const t=so.t,k=so.a*Math.exp(-t/0.3)*Math.cos(2*Math.PI*t/0.8),dip=t<0.3?so.a*Math.sin(Math.PI*t/0.3):0;
     P.bend+=10*D*k; P.nod-=5*D*k; P.root=add(P.root,V(0,-1.5*dip,2.2*k));
@@ -258,9 +264,9 @@ const FLOOR=[['head',8.6],
   ['headTop',1],['chest',5.4],['spine',5.2],['pelvis',4.4],['neck',2.3]];
 for(const n of 'LR') FLOOR.push(['shoulder'+n,2.4],['elbow'+n,2.0],['wrist'+n,1.7],['palm'+n,1.6],['knee'+n,3.0],['ankle'+n,2.6],['heel'+n,0],['ball'+n,0],['toe'+n,-0.6],['fingers'+n,0.4]);
 for(const n of 'LR') for(let i=0;i<5;i++) if(i!=2) FLOOR.push(['k'+i+'3'+n,0.3]);
-function settle(B,fl,drop){ fl=fl||0; let lift=0; for(const [k,r] of FLOOR) if(B.J[k]) lift=Math.max(lift,r-(B.J[k].y-fl));
-  const y=B.J.pelvis.y+lift-fl; let dy=STAND+Math.ceil((y-STAND)/PX-0.05)*PX-y+lift;
-  if(drop){ let g=1e9; for(const [k,r] of FLOOR) if(B.J[k]) g=Math.min(g,B.J[k].y+dy-r-fl); if(g>0&&g<PX) dy-=g; }
+function settle(B,fl,drop,sm){ fl=fl||0; let lift=0; for(const [k,r] of FLOOR) if(B.J[k]) lift=Math.max(lift,r-(B.J[k].y-fl));
+  const y=B.J.pelvis.y+lift-fl; let dy=sm?lift:STAND+Math.ceil((y-STAND)/PX-0.05)*PX-y+lift;
+  if(drop&&!sm){ let g=1e9; for(const [k,r] of FLOOR) if(B.J[k]) g=Math.min(g,B.J[k].y+dy-r-fl); if(g>0&&g<PX) dy-=g; }
   if(dy){ for(const k in B.J) B.J[k]=add(B.J[k],V(0,dy,0)); if(B.m&&B.m.hf) for(const s in B.m.hf) B.m.hf[s]={...B.m.hf[s],o:add(B.m.hf[s].o,V(0,dy,0))}; } return B; }
 
 function armPoints(J,n){ const E=J['elbow'+n],W=J['wrist'+n];
@@ -315,6 +321,7 @@ function topple(){ const tab=[]; let a=3*D,w=0.7,t=0; const h=1/240; while(a<84*
 const FALL=topple();
 const air=(c)=>c;
 const MOCAP=__DATA__("data/moves.json");
+const GAIT=__DATA__("data/gait.json"), GK=(G,u,f)=>{ const k=G.keys,n=k.length,x=(((u%1)+1)%1)*n,i=Math.floor(x),t=x-i,a=f(k[i]),b=f(k[(i+1)%n]); return a+(b-a)*t; }, gv=(u,r,f)=>GK(GAIT.walk,u,f)*(1-r)+GK(GAIT.run,u,f)*r;
 const MOVES={
   jump:MOCAP&&MOCAP.jump?jumpMove({v0:87,t0:MOCAP.jump.t0,airv:{J:'airPunch',K:'flyingKick'},keys:MOCAP.jump.keys}):jumpMove({v0:87,t0:0.16,airv:{J:'airPunch',K:'flyingKick'},keys:[
     [0,{}],[0.1,{root:[0,14.5,0.5],bend:18,nod:6,L:{ua:[-25,30],fa:[-15,30]},R:{ua:[-25,30],fa:[-15,30]}}],
@@ -643,8 +650,8 @@ function pose(st,inPlace){ const busy=st.move||st.out,P=JSON.parse(JSON.stringif
   if(!st.move&&!swimming) st.abd=clearArms(st,dev); st.fdn=0; if(!busy&&!swimming){ st._lk=1; Object.assign(P,lift(walkPose(st,st.abd),floorOf(st))); st._lk=0; upLayer(st,P); if(st.sign)st.sign(P); }
   if(st.move&&st.move.def.travel) P.root=V(P.root.x,P.root.y,inPlace?0:P.root.z-(carries(st.move)?st.move.zc||0:0));
   if(OVL.fn)OVL.fn(st,P);
-  const B=settle(busy||st.up||(st.water&&st.water.in)?clearPose(P,dev):build(P,dev),st.move&&st.move.base!=null?st.move.base:floorOf(st)+(busy?0:st.fdn||0),busy);
-  const hp=st.head.x/PX; if(st.hpx==null||Math.abs(hp-st.hpx)>0.75) st.hpx=Math.round(hp); B.head=add(B.J.head,V(0,st.hpx*PX,0));
+  const B=settle(busy||st.up||(st.water&&st.water.in)?clearPose(P,dev):build(P,dev),st.move&&st.move.base!=null?st.move.base:floorOf(st)+(busy?0:st.fdn||0),busy,st.smooth);
+  const hp=st.head.x/PX; if(st.smooth)st.hpx=hp; else if(st.hpx==null||Math.abs(hp-st.hpx)>0.75) st.hpx=Math.round(hp); B.head=add(B.J.head,V(0,st.hpx*PX,0));
   B.lift=0;
   if(!busy&&!swimming&&!st.up&&!st.sit) B.walkF=st.w>0.05&&st.target>0?Math.floor((st.wd||0)/WSTEP)%8:-1;
   const m=st.move; B.anim=swimming||st.sit?null:m?(!m.variant&&STUDIO.includes(m.name)?m.name+'/'+Math.floor(m.t*10):null):st.up&&!st.out?(st.w<0.05&&STUDIO.includes(st.up.name)?st.up.name+'/'+Math.floor(st.up.t*10):null):B.walkF!=null?(B.walkF<0?'stand/0':'walk/'+B.walkF):null;

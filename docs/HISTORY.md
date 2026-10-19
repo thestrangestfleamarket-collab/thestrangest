@@ -2701,3 +2701,7 @@ not have windows, make sure buildings are only as tall as they need to be"; then
   lighting is btter"): your figure's own self-shadow (the hard band from whichever light is strongest, which jumped as lights changed)
   is off by default (DISPLAY can turn it back on); the park's lanterns and lamp posts light at 24 (were 12 and 6) out to 12 tiles, the
   street globe lamps at 28 (were 18) out to 12; outdoors at night a lamp near you lights your figure up to 70% (35% indoors).
+- **Trees in clean cel bands** (owner, 19 Oct 2026, of a tree crown's face: "these types of shadows shouldnt look like that", "they
+  should look more like celshading", "not line or dot art"): the crowns' per-voxel speckle is gone, their soft inner darkening is two
+  flat steps, and they no longer shadow themselves in stripes (the shadow map draws their back faces, and the leaves' shadow offset is
+  0.35, was 0.12).

@@ -8,10 +8,10 @@ process.on('unhandledRejection',e=>{ errs.push('TEST '+String(e&&e.message||e).s
   for(let i=0;i<900;i++){ await pg.waitForTimeout(500); if(await pg.evaluate(()=>!!window.__dbg&&!!window.DOJODBG))break; }
   await pg.waitForTimeout(5000);
   const shot=async(n,f,w=0)=>{ try{ if(f)await pg.evaluate(f); if(w)await pg.waitForTimeout(w); await pg.screenshot({path:path.join(OUT,n+'.png')}); }catch(e){ errs.push(n+': '+e.message.slice(0,200)); } };
-  const dbg=()=>pg.evaluate(()=>DOJODBG()); const T=await pg.evaluate(()=>TILE);
+  const dbg=()=>pg.evaluate(()=>DOJODBG()); 
   await pg.evaluate(()=>STORE.ensure&&STORE.ensure());
   rep.d0=await dbg();
-  await shot('gate',()=>{ const d=DOJODBG(); STORE.goTo(d.gate[0]*TILE,(d.gate[1]+3)*TILE,'up'); },5000);
+  await shot('gate',()=>{ const d=DOJODBG(); STORE.goTo(d.gate[0]*d.tile,(d.gate[1]+3)*d.tile,'up'); },5000);
   await pg.mouse.move(480,270); for(let i=0;i<4;i++){ await pg.mouse.wheel(0,-500); await pg.waitForTimeout(150); }
   await shot('gate-near',null,2500);
   await pg.evaluate(()=>DOJOWALK('in'));
@@ -25,7 +25,7 @@ process.on('unhandledRejection',e=>{ errs.push('TEST '+String(e&&e.message||e).s
   for(let i=0;i<5;i++){ await shot('behind'+i,null,0); await pg.waitForTimeout(450); }
   await pg.keyboard.press('v'); await pg.keyboard.press('v'); await pg.waitForTimeout(800);
   rep.fight0=(await dbg()).fight;
-  await pg.evaluate(()=>{ const n=DOJONINJA(), d=DOJODBG(); STORE.goTo(n.x,n.z+2.2*TILE,'up'); }); await pg.waitForTimeout(800);
+  await pg.evaluate(()=>{ const n=DOJONINJA(), d=DOJODBG(); STORE.goTo(n.x,n.z+2.2*d.tile,'up'); }); await pg.waitForTimeout(800);
   await pg.evaluate(()=>DOJOTRAIN());
   const log=[]; let seen={}, n=0;
   for(let i=0;i<500;i++){ const d=await dbg(); if(!d.tr.on)break; const key=d.tr.ph+d.tr.n;

@@ -75,7 +75,7 @@
       if(!ins&&Math.abs(pos.x-GX)<.85*T&&pos.z>GZ-.2*T&&pos.z<GZ+.62*T)D.enter();
       else if(ins&&Math.abs(pos.x-IX)<.9*T&&pos.z>IZ-.55*T)D.leave(); }
     ntick(dt); TR.tick(dt); };
-  window.DOJODBG=()=>({built:D.built,inside:inD(),busy,gate:[+(GX/T).toFixed(2),+(GZ/T).toFixed(2)],door:[+(IX/T).toFixed(2),+(IZ/T).toFixed(2)],you:[+(pos.x/T).toFixed(2),+(pos.z/T).toFixed(2)],
+  window.DOJODBG=()=>({tile:T,built:D.built,inside:inD(),busy,gate:[+(GX/T).toFixed(2),+(GZ/T).toFixed(2)],door:[+(IX/T).toFixed(2),+(IZ/T).toFixed(2)],you:[+(pos.x/T).toFixed(2),+(pos.z/T).toFixed(2)],
     ninja:N&&{x:+(N.x/T).toFixed(2),z:+(N.z/T).toFixed(2),hd:+N.hd.toFixed(2),step:N.cur&&N.cur.k,mv:N.S.move&&N.S.move.name,up:N.S.up&&N.S.up.name,tris:N.tris},
     tr:{on:TR.on,ph:TR.ph,n:TR.n,ok:TR.ok,drill:TR.d&&TR.d.n,keys:TR.d&&TR.d.k},fight:FORAGE.S.sk.fight/10});
   window.DOJOWALK=k=>{ const P=k==='out'?[IX,IZ+.4*T]:[GX,GZ-.4*T]; target=new THREE.Vector3(P[0],py,P[1]); UI.go(3); };

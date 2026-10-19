@@ -30,7 +30,7 @@
   TR.start=()=>{ if(TR.on||!N)return; const pick=[0,1]; while(pick.length<5){ const i=2+Math.floor(Math.random()*6); if(!pick.includes(i))pick.push(i); }
     TR.list=pick.sort((a,b)=>a-b).map(i=>DR[i]); TR.on=true; TR.ph='intro'; TR.t=0; TR.n=0; TR.ok=0; TR.lu=st.up; TR.lm=st.move; N.q=[]; show('THE NINJA BOWS','WATCH, THEN DO AS HE DOES'); };
   TR.tick=dt=>{ if(!TR.on)return; TR.t+=dt; const far=!inD()||Math.hypot(pos.x-N.x,pos.z-N.z)>7*T;
-    if(far&&TR.ph!=='end'){ TR.ph='end'; TR.t=0; show('THE NINJA RETURNS TO HIS KATA','COME BACK WHEN YOU ARE READY','#c8a090'); }
+    if(far&&TR.ph!=='end'){ TR.why=[inD(),+(Math.hypot(pos.x-N.x,pos.z-N.z)/T).toFixed(2),+(pos.x/T).toFixed(2),+(pos.z/T).toFixed(2),+(N.x/T).toFixed(2),+(N.z/T).toFixed(2)]; TR.ph='end'; TR.t=0; show('THE NINJA RETURNS TO HIS KATA','COME BACK WHEN YOU ARE READY','#c8a090'); }
     const seen=[]; if(st.up&&st.up!==TR.lu)seen.push(st.up.name); if(st.move&&st.move.def&&st.move!==TR.lm)seen.push(st.move.name); TR.lu=st.up; TR.lm=st.move;
     const d=TR.d, keyTxt=d?d.k.map(keyName).join(' '):'';
     if(TR.ph==='intro'&&TR.t>1.8){ TR.ph='demo'; TR.t=0; TR.d=TR.list[TR.n]; N.q=TR.d.demo.map(s=>s.slice()); show('DRILL '+(TR.n+1)+' OF '+TR.list.length,'WATCH: '+TR.d.n); }
@@ -81,7 +81,7 @@
     ntick(dt); TR.tick(dt); };
   window.DOJODBG=()=>({tile:T,built:D.built,inside:inD(),busy,gate:[+(GX/T).toFixed(2),+(GZ/T).toFixed(2)],door:[+(IX/T).toFixed(2),+(IZ/T).toFixed(2)],you:[+(pos.x/T).toFixed(2),+(pos.z/T).toFixed(2)],
     ninja:N&&{x:+(N.x/T).toFixed(2),z:+(N.z/T).toFixed(2),hd:+N.hd.toFixed(2),step:N.cur&&N.cur.k,mv:N.S.move&&N.S.move.name,up:N.S.up&&N.S.up.name,tris:N.tris},
-    tr:{on:TR.on,ph:TR.ph,n:TR.n,ok:TR.ok,drill:TR.d&&TR.d.n,keys:TR.d&&TR.d.k},fight:FORAGE.S.sk.fight/10});
+    tr:{why:TR.why,on:TR.on,ph:TR.ph,n:TR.n,ok:TR.ok,drill:TR.d&&TR.d.n,keys:TR.d&&TR.d.k},fight:FORAGE.S.sk.fight/10});
   window.DOJOWALK=k=>{ const P=k==='out'?[IX,IZ+.4*T]:[GX,GZ-.4*T]; target=new THREE.Vector3(P[0],py,P[1]); UI.go(3); };
   window.DOJOTRAIN=()=>TR.start(); window.DOJONINJA=()=>N&&{x:N.x,z:N.z};
 }

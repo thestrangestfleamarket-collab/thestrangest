@@ -2127,3 +2127,62 @@ ghost / mannequin, `AVS.BUILD.mannequin` is main's body, `AVS.into(row)` fills Y
 and `package.json` (nothing loads it). Also kept from both sides: main's Day 1 station (`'station'` no longer away) and this branch's
 bar on the main row (the old `bar` layout entry and its `AWAY` place gone); the hotel's door keeps its porch light; the poles keep
 clear of the station's stairs where main moved them (`MAPSTAIR`).
+## 19 Oct 2026: the main street made real
+
+The owner, of his shots of the street before the bodega: "lets make the tree bigger and thicker. extend the sidewalk 1 more tile wide";
+"lets do the same thing we did for the sidwalk/gate/bricks etc and make this all look realistic. look at real photos of roofs bodega, etc nyc
+and fill it out with textuers and style that match. dont do any uniform stuff like this taht looks fake. anywhere there is a repeat pattern
+create anatural ooking patternsa nd textures"; "i dont want anything in game looking like minecraft, fake blocks , make it look natural and
+lived in like the grass in central park"; of the drain: "i want there be real depth underneath so slight faint steam can escape. always use
+real dynamics. and physics"; of the newsstand: "dont have any roofs that make it hard to see characters in isometric view ... only have
+newspaper stacks. these look fake"; "delete whatever this (these) are"; of the bodega's front: "remove debri around front. fix door. shuld
+be bodega style clear door on frame ... delet egreen soor. clear windows. drones come ut of hole in ceiling ... a box on roof drone can go
+up and down out of bodega and roof. the box on roof opens and drone flies in and out. this is how all drone devliery works in beuildings";
+"put a gate betwen all gaps between buidlings on main. (cant short cut to alley)"; "make the tree bigger and fluffier in front of hotel";
+"make all look realistic. go through all of main. take liberties. i trust you." Done the way the sidewalk, gate and bricks were: painted
+pixel detail, each piece its own, nothing repeated evenly, CEL light. Before / after: `mockups/*-before.png`, `*-after.png`.
+- **The sidewalk one tile wider**: the shop side's kerb `LSEED.street` -71 to -70 (the road 20 tiles); kerbs, lamps, drains, ramps,
+  crossings, bike lanes and trees follow it.
+- **Street trees** (`dress.js`): the park's oak (`PARK.mesh`, OakTree2) grown slender, 7-8 m, the trunk twice as thick; the one before
+  the apartment house 9.5 m; leaf clusters (alpha-cut cards, normals out from the crown) break the crown's facets; the pits a painted
+  ground cover (ivy, mulch, a butt, a cap, dead leaves) under a low iron guard on three sides (bent and rusty pickets), the park's grass
+  props in them; the house's planters the park's shrubs and flowers. Cost: some 4,600 triangles, 4 draws, one program (the cards).
+- **Litter baskets**: New York's green wire basket (a turned body painted with its mesh, litter showing through, rust), a rim, rubbish on top.
+  230 triangles each.
+- **The bodega's roof** (`bodbuild.js`): tar and gravel roll roofing in laps (seams, tar bleed), patches (fresh black, silver, mastic),
+  ponding stains with a silt edge, grime and moss at the edges, droppings; the parapet its own weathered brick (efflorescence, drip stains,
+  tar flashing inside) under coping stones each its own length, height, tone, lichen and crack; a packaged AC unit on wood sleepers
+  (louvres, service panel, fan grille, rust, duct, conduit), a wired-glass skylight on a tarred curb; turbine, soil and gooseneck vents
+  (`rooftops.js`); the kit's box AC and vent gone. **The cornice** (`facade` in `main-8.js`, every building that uses it): the dentils
+  uneven in spacing and width, a few missing or dented, panels in different repaints, rust streaks, drips onto the brick. Cost: some 80
+  boxes into the roof's batch, no draw more.
+- **The bodega's front**: an aluminium storefront door with clear glass, push bar, kick plate and stickers, that swings open when
+  someone comes up and closes behind (`BODB.tick`); a glass sidelight and transom; decals on both windows. Removed: the green door and its
+  step before the upstairs mailboxes (`mail.js`), the drone flap in the front wall, the outside mat, the moss. 4 draws.
+- **Drones through roof boxes** (`drone.js`, `DRONE.roofBox(x,z,y)` for any building): a galvanized box on the roof with a hinged lid and
+  a light; the bodega's drone lives under its box on the shop's ceiling (now with a duct up through the roof), climbs out as the lid
+  swings open (amber), flies to the apartment house's roof box, sinks into it, the parcel arrives at your window as before, and comes back
+  the same way; eased climbs and descents, a slight wobble and tilt. 2 boxes, 3 draws each.
+- **Gates between the buildings** (`148a-gates.js`): every gap between the main row's buildings found from their footprints (`BLK.blds`,
+  the map editor's boxes; THE BAR, MUSEUM, THEATRE, ARCADE, PLAYHOUSE, HOLODECK are picked up by name when they come) gets a wrought-iron
+  gate at the row's front, a picket every 13 cm with spear tips, a few rusty or short, the middle stile with a latch and lock; solid to
+  you and to every route. The lot with the subway's stairs is closed at its back instead, the stairs left open. Today's gaps (tiles x):
+  56.5-76.4 (back), 85.2-87, 101-103.5, 117.5-124.8, 143.3-145.5. About 6,900 triangles for the row, 2 draws.
+- **Storm drains with depth** (`148b-drains.js`): the grate's slots are holes now; under each a catch basin (walls stained in bands,
+  dark water, leaves, a bottle). **Steam**: from about half of them, only the four nearest within 20 tiles: puffs that rise while warm,
+  cool and slow, drift with the weather's wind once above the gutter, swirl, grow and fade in hard steps (additive, faint, dimmer by day).
+  Basins 2,240 triangles in one draw; steam at most 96 quads, one draw, one program.
+- **The newsstand only stacks** (`newsstand.js`): no kiosk, roof or header; papers on a low wire rack in three tiers, bundles tied with
+  twine on a pallet and stacked behind (one held down by a brick), a blue milk crate, a stray sheet on the ground, the cat on his crate;
+  at night a blue tarp is pulled over the rack. **The grey box** by its back was the twelve empty bundle slots drawn at the street's
+  origin (an instanced mesh whose count was never set); gone. About 1,100 triangles.
+- **The collection boxes** (`mail.js`): domed top, pull-down chute and handle, four legs, eagle, pickup plate, the lettered band,
+  stickers, a tag, scuffs, facing the road. **Manholes**: worn rings and spokes on a patched asphalt cut, rust, a pick hole.
+  **Hydrants**: four, New York style (turned body, caps, chain, chipped silver paint).
+- Measured beside the bodega (`__dbg.tris()`, everything in the view's frustum): 360,800 to 382,700 triangles; programs 180 to 190;
+  draws 195 to 280 (with shadow passes). No lamps added. The door, drone and steam run under 0.1 ms a frame.
+
+**And the main street made real** (the street-furniture branch of 19 Oct, merged here too): its gates (`148a-gates.js`) now also find
+the bar and the museum (`WROW`) and the theatre, arcade, playhouse and holodeck (`BLOCK.lots`), so the gaps beside them are
+closed as well; the street trees, hydrants and planters keep clear of the main street places' doors (`069-dress.js`); the bodega keeps
+this branch's street signs (`BOD.streetSigns`) and gets the glass door.

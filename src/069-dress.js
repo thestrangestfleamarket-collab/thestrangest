@@ -4,8 +4,12 @@ const DRESS=window.DRESS={}, TLX={tick:()=>{}};
   DRESS.kerb={sw,far}; DRESS.cans=[];
   const CY=[], cyl=(x,y,z,r,h,c)=>CY.push([x,y,z,r*2,h,r*2,c]);
   const BL=[], blk=(x,y,z,sx,sy,sz,c)=>BL.push([x,y,z,sx,sy,sz,c]), solid=(x,z,r,h)=>{ SOL.up.push([x-r,z-r,x+r,z+r]); FIX.up.push([x-r,z-r,G(x,z),x+r,z+r,G(x,z)+h]); };
-  { const M=1/.84*TILE; for(const [x,c] of [[BX0-1.2,0x2f4a3a],[AX0-1.5,0x2f4a3a],[BOD.XS(AVE.x0)-2.2,0x2f4a3a]]){ const z=sw-.25*M, y=G(x,z), w=.56*M, h=.9*M; DRESS.cans.push({x,z});
-    cyl(x,y+.05*M,z,w*.43,.1*M,0x1c2a22); cyl(x,y+h/2,z,w/2,h*.8,c); cyl(x,y+h-.04*M,z,w*.52,.08*M,0x1c2a22); blk(x-.05*M,y+h+.03*M,z+.04*M,w*.7,.1*M,w*.6,0x8a8478); blk(x+.1*M,y+h+.07*M,z-.08*M,w*.3,.08*M,w*.35,0xb8452f); solid(x,z,w/2,h); } }
+  { const M=1/.84*TILE, CN=[], hs=(a,b)=>{ const v=Math.sin(a*12.9898+b*78.233)*43758.5453; return v-Math.floor(v); }; for(const x of [BX0-1.2,AX0-1.5,BOD.XS(AVE.x0)-2.2]){ const z=sw-.25*M, y=G(x,z); DRESS.cans.push({x,z}); CN.push([x,y,z]); solid(x,z,.28*M,.9*M); }
+    const tex=(W,H,f)=>{ const cv=document.createElement('canvas'); cv.width=W; cv.height=H; const g=cv.getContext('2d'), im=g.createImageData(W,H); for(let j=0;j<H;j++)for(let i=0;i<W;i++){ const c=f(i,j), q=(j*W+i)*4; im.data[q]=c[0]; im.data[q+1]=c[1]; im.data[q+2]=c[2]; im.data[q+3]=255; } g.putImageData(im,0,0); const t=new THREE.CanvasTexture(cv); t.magFilter=t.minFilter=THREE.NearestFilter; t.generateMipmaps=false; t.colorSpace=THREE.SRGBColorSpace; return t; };
+    const LIT=[[226,222,210],[196,48,40],[150,120,80],[60,110,170],[40,40,44]], wire=tex(48,24,(i,j)=>{ const r=hs(i,j); if(j<2)return r<.1?[120,80,50]:[44,84,52]; if(j>21)return [38,70,44]; if(i%3===0||j%3===0)return r<.06?[126,84,52]:r<.2?[64,104,66]:[48,88,56];
+      return j<9&&hs(Math.floor(i/4),Math.floor(j/3)+9)<.35?LIT[Math.floor(hs(Math.floor(i/4),j>>2)*5)]:[18,22,18]; }), top=tex(16,16,(i,j)=>{ const r=hs(Math.floor(i/3),Math.floor(j/3)); return r<.3?LIT[0]:r<.42?LIT[1]:r<.6?LIT[2]:r<.72?[30,30,32]:r<.8?LIT[3]:[200,196,184]; });
+    const prof=[[.2,0],[.215,.02],[.235,.3],[.255,.6],[.27,.86],[.28,.9]].map(([r,h])=>new THREE.Vector2(r*M,h*M)), parts=[[new THREE.LatheGeometry(prof,12),new THREE.MeshLambertMaterial({map:wire,side:THREE.DoubleSide})],[new THREE.TorusGeometry(.285*M,.025*M,4,12).rotateX(Math.PI/2).translate(0,.9*M,0),new THREE.MeshLambertMaterial({color:0x26402c})],[new THREE.CircleGeometry(.26*M,10).rotateX(-Math.PI/2).translate(0,.8*M,0),new THREE.MeshLambertMaterial({map:top})]], m4=new THREE.Matrix4(), q=new THREE.Quaternion();
+    for(const [g,mt] of parts){ const me=new THREE.InstancedMesh(g,mt,CN.length); CN.forEach(([x,y,z],i)=>me.setMatrixAt(i,m4.compose(new THREE.Vector3(x,y,z),q.setFromAxisAngle(new THREE.Vector3(0,1,0),i*2.1),new THREE.Vector3(1,1,1)))); me.castShadow=me.receiveShadow=true; scene.add(me); } }
   { const M=1/.84*TILE, SP=26*M, SX0=BOD.XS(BOD.MAP.x0), SX1=BOD.XS(BOD.MAP.x1), n=Math.floor((SX1-SX0-8)/SP)+1, x0=(SX0+SX1)/2-(n-1)*SP/2, warm=new THREE.Color(1,.88,.68);
     const sl=(x,z,d,ax='z',ring)=>{ const y=G(x,z);
       solid(x,z,.18*M,6*M); const P={x,z,d,ax,ring:ring||(d>0?'outer':'inner'),y:y+5.45*M,h:heads.length}; POLES.push(P); return P; };
@@ -75,26 +79,57 @@ const DRESS=window.DRESS={}, TLX={tick:()=>{}};
       for(const [a,b] of runs){ for(let x=a;x<b-.5;x+=2*TILE)post(x,H); post(b,H); } post(gx0,H*1.2); post(gx1,H*1.2);
       const rail=(a,b)=>{ const y=G((a+b)/2,z); for(const h of [.42*M,.9*M])blk((a+b)/2,y+h,z,b-a,.06*M,.05*M,RL); SOL.up.push([a,z-.06*M,b,z+.06*M]); FIX.up.push([a,z-.06*M,y,b,z+.06*M,y+H]); };
       for(const [a,b] of runs)rail(a,b); }
-    { const M=1/.84*TILE, CR=[], A=MODS.apts&&MODS.apts.A, zk=BOD.ZS(BOD.CURB), sd=Math.sign(zk)||1, hsh=(a,b)=>{ const v=Math.sin(a*12.9898+b*78.233)*43758.5453; return v-Math.floor(v); };
+    { const M=1/.84*TILE, A=MODS.apts&&MODS.apts.A, zk=BOD.ZS(BOD.CURB), sd=Math.sign(zk)||1, hsh=(a,b)=>{ const v=Math.sin(a*12.9898+b*78.233)*43758.5453; return v-Math.floor(v); };
       const clear=(x,z)=>!(window.MAPSTAIR&&MAPSTAIR.has&&MAPSTAIR.has(x,z,'up'))&&(DRESS.pools||[]).every(P=>Math.hypot(P[1]-x,P[2]-z)>2.4*M)&&!SOL.up.some(b=>x>b[0]-.9*M&&x<b[2]+.9*M&&z>b[1]-.9*M&&z<b[3]+.9*M)&&(STORE.main?STORE.main.doors:[]).every(d=>Math.abs(d[1]-x)>2*M);
-      const tree=(x0,i)=>{ const z=zk-sd*1.05*M; let x=x0; for(let k=0;k<12&&!clear(x,z);k++)x+=(k&1?-1:1)*(k+1)*.6*M; if(!clear(x,z))return; const y=G(x,z), P=1.25*M, SET=0xa8a49c, SOIL=0x3a2c22;
-        blk(x,y+.02*M,z,P,.04*M,P,SOIL); for(const [dx,dz,w,d] of [[0,-P/2,P+.16*M,.16*M],[0,P/2,P+.16*M,.16*M],[-P/2,0,.16*M,P],[P/2,0,.16*M,P]])blk(x+dx,y+.05*M,z+dz,w,.1*M,d,SET);
-        for(let j=0;j<6;j++){ const a=j*1.05+i, r=.3*M+.15*M*hsh(i,j); blk(x+Math.cos(a)*r,y+.12*M,z+Math.sin(a)*r,.2*M,.2*M,.2*M,[0x3e6a34,0x4f7d3c,0x5a5a3a,0x6a8a44][j&3]); }
-        const TR=0x5a4e44, H=1.9*M+.3*M*hsh(i,7); cyl(x,y+H/2,z,.11*M,H,TR); solid(x,z,.14*M,H);
-        for(let j=0;j<3;j++){ const a=j*2.1+i*.7, L=.9*M; blk(x+Math.cos(a)*L*.3,y+H+L*.3,z+Math.sin(a)*L*.3,.12*M,L*.75,.12*M,TR); }
-        for(let j=0;j<9;j++){ const a=j*2.4+i, r=(j?.55+.5*hsh(i,j+20):0)*M, hy=H+(.8+.7*hsh(j,i+30))*M, s=(.6+.3*hsh(i+j,40))*M; CR.push([x+Math.cos(a)*r,y+hy,z+Math.sin(a)*r,s*1.15,s*.8,s*1.15,[0x3f6e32,0x4c7c38,0x5a8a40,0x36602c][j&3]]); } };
-      if(A){ const mx=BOD.X((A.x0+A.x1)/2-1.2); tree(mx,0); tree(mx+22*M,1); tree(mx+48*M,2);
+      const OAK=[], PL=[], PITS=[], tp=(x,z)=>[x/TILE+BOD.OX-PARK.ox,z/TILE+BOD.OY-PARK.oy];
+      const tree=(x0,i,big)=>{ const z=zk-sd*1.05*M; let x=x0; for(let k=0;k<12&&!clear(x,z);k++)x+=(k&1?-1:1)*(k+1)*.6*M; if(!clear(x,z))return; const y=G(x,z), P=(big?1.6:1.35)*M, SET=0xa8a49c, IRN=0x1e2824, g=P/2-.05*M, gh=.42*M;
+        [[0,-P/2,P+.16*M,.16*M],[0,P/2,P+.16*M,.16*M],[-P/2,0,.16*M,P],[P/2,0,.16*M,P]].forEach(([dx,dz,w,d],j)=>blk(x+dx,y+.035*M+.01*M*hsh(i,j),z+dz,w,.07*M,d,[SET,0x9c9890,0xb0aca2,0xa4a096][j]));
+        PITS.push([x,y+.025*M,z,P,i]);
+        const zb=z-sd*g; for(const [cx,cz,lx,lz] of [[x,zb,2*g,0],[x-g,z,0,2*g],[x+g,z,0,2*g]]){ const L=lx||lz, n=Math.round(L/(.14*M));
+          for(const h of [.07*M,gh])blk(cx,y+h,cz,lx||.03*M,.03*M,lz||.03*M,IRN);
+          for(let t=1;t<n;t++){ const u=-L/2+t*L/n, hh=gh*(hsh(i*7+t,L)<.12?.82:1); blk(cx+(lx?u:0),y+hh/2,cz+(lz?u:0),.025*M,hh,.025*M,hsh(t,i+L)<.2?0x4a3426:IRN); } }
+        for(const [cx,cz] of [[x-g,zb],[x+g,zb],[x-g,z+sd*g],[x+g,z+sd*g]])blk(cx,y+(gh+.06*M)/2,cz,.05*M,gh+.06*M,.05*M,IRN);
+        OAK.push(['OakTree2',...tp(x,z),big?9.5:7+hsh(i,5),hsh(i,9)*6.28]);
+        for(let j=0;j<4;j++){ const a=j*1.7+i, r=(.22+.2*hsh(i,j+40))*P; PL.push([['grass1','grass2','grass1','grass2'][j],...tp(x+Math.cos(a)*r,z+Math.sin(a)*r),.25+.12*hsh(j,i),a]); } };
+      if(A){ const mx=BOD.X((A.x0+A.x1)/2-1.2); tree(mx,0,1); tree(mx+22*M,1); tree(mx+48*M,2);
         const zf=BOD.Z(A.y1), sdf=Math.sign(zk-zf)||1, BR=0x7a4c3e, BRD=0x5e3a30, IR=0x1c1e22, dx=BOD.X(A.x1-1)-BOD.X(A.x1-1-2.2);
         for(const [k,cx] of [[0,BOD.X(A.x1-1)-dx*1.05],[1,BOD.X(A.x1-1)-dx*1.9]]){ const L=1.7*M, D=.8*M, h=.62*M, cz=zf+sdf*(D/2+.05*M), y=G(cx,cz);
           blk(cx,y+h/2,cz,L-.02*M,h-.01*M,D-.02*M,0x2e221c); for(let r=0;r<3;r++)for(let c=0;c<5;c++){ const w=L/5, hh=h/3, n=hsh(k*31+r,c), col=new THREE.Color(BR).multiplyScalar(.82+.3*n).offsetHSL((hsh(c,r+k)-.5)*.03,0,0).getHex(); blk(cx-L/2+w*(c+.5)+(r&1?w*.15:0)*(c<4?1:0),y+hh*(r+.5),cz,w-.012*M,hh-.012*M,D,col); } blk(cx,y+h+.03*M,cz,L+.08*M,.06*M,D+.08*M,BRD); blk(cx,y+.04*M,cz,L+.04*M,.08*M,D+.04*M,BRD);
           for(const o of [-1,1])blk(cx,y+h+.42*M,cz+o*(D/2),L,.04*M,.04*M,IR); blk(cx-L/2,y+h+.42*M,cz,.04*M,.04*M,D,IR); blk(cx+L/2,y+h+.42*M,cz,.04*M,.04*M,D,IR);
           for(let t=0;t<=12;t++){ const u=-L/2+t*L/12; for(const o of [-1,1])blk(cx+u,y+h+.22*M,cz+o*(D/2),.025*M,.4*M,.025*M,IR); }
-          for(let j=0;j<10;j++){ const u=(hsh(k,j)-.5)*L*.85, v=(hsh(j,k+3)-.5)*D*.7, s=(.28+.18*hsh(k+j,9))*M; CR.push([cx+u,y+h+s*.6,cz+v,s*1.2,s,s*1.2,[0x3e6a34,0x4f7d3c,0x2f5a2c,0x5a8a40][j&3]]);
-            if(j%3===0)blk(cx+u,y+h+s*1.1,cz+v,.1*M,.08*M,.1*M,j%2?0xd84a7a:0xc8302a); }
+          blk(cx,y+h+.005*M,cz,L-.1*M,.02*M,D-.1*M,0x3a2c22);
+          for(let j=0;j<7;j++){ const u=(hsh(k,j)-.5)*L*.8, v=(hsh(j,k+3)-.5)*D*.5; PL.push([['bush2','bush1','flower2','bush3','flower4','grass2','flower6'][j],...tp(cx+u,cz+v),[.55,.6,.45,.5,.5,.4,.45][j]*(.85+.3*hsh(k,j+9)),hsh(j,k)*6.28,h/M]); }
           SOL.up.push([cx-L/2,cz-D/2,cx+L/2,cz+D/2]); FIX.up.push([cx-L/2,cz-D/2,y,cx+L/2,cz+D/2,y+h]); } }
-      const cm=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(.5,0),new THREE.MeshLambertMaterial({color:0xffffff,flatShading:true}),Math.max(1,CR.length)), m4=new THREE.Matrix4(), q=new THREE.Quaternion(), c=new THREE.Color();
-      CR.forEach(([x,y,z,a,b,d,col],i)=>{ q.setFromEuler(new THREE.Euler(0,i*1.3,0)); cm.setMatrixAt(i,m4.compose(new THREE.Vector3(x,y,z),q,new THREE.Vector3(a,b,d))); cm.setColorAt(i,c.setHex(col)); }); cm.count=CR.length;
-      cm.castShadow=cm.receiveShadow=true; scene.add(cm); DRESS.trees=cm; }
+      { const HY=[], hyd=(tx,ty,side)=>{ let x=BOD.XS(tx), z=BOD.ZS(ty); for(let k=0;k<10&&!clear(x,z);k++)x+=(k&1?-1:1)*(k+1)*.5*M; if(!clear(x,z))return; HY.push([x,G(x,z),z,side]); solid(x,z,.16*M,.8*M); };
+        hyd(92,BOD.CURB-.55,1); hyd(64.5,BOD.CURB-.55,1); hyd(118,BOD.FAR+.55,-1); hyd(78,BOD.FAR+.55,-1);
+        if(HY.length){ const N=24, H=20, cv=document.createElement('canvas'); cv.width=N; cv.height=H; const gx=cv.getContext('2d'), im=gx.createImageData(N,H);
+          for(let j=0;j<H;j++)for(let i=0;i<N;i++){ const r=hsh(i,j+50); let c=j<5?[34,36,38]:j>16?[150,154,152]:[178,182,180]; if(j>=5&&r<.08)c=[120,84,56]; else if(j>=5&&r>.93)c=[214,218,214]; if(j>14&&hsh(i>>1,7)<.4)c=[96,72,52]; if(j>=8&&j<11&&i>=3&&i<7)c=[226,190,40];
+            const q=(j*N+i)*4; im.data[q]=c[0]; im.data[q+1]=c[1]; im.data[q+2]=c[2]; im.data[q+3]=255; } gx.putImageData(im,0,0); const tx=new THREE.CanvasTexture(cv); tx.magFilter=tx.minFilter=THREE.NearestFilter; tx.generateMipmaps=false; tx.colorSpace=THREE.SRGBColorSpace;
+          const pr=[[0,0],[.15,0],[.15,.05],[.12,.06],[.1,.1],[.1,.48],[.13,.5],[.13,.54],[.11,.56],[.1,.64],[.07,.7],[.04,.72],[.04,.76],[0,.77]].map(([r,h])=>new THREE.Vector2(r*M,h*M));
+          const parts=[[new THREE.LatheGeometry(pr,10),new THREE.MeshLambertMaterial({map:tx})],[new THREE.CylinderGeometry(.055*M,.06*M,.32*M,8).rotateZ(Math.PI/2).translate(0,.4*M,0),new THREE.MeshLambertMaterial({color:0xa8acaa})],[new THREE.CylinderGeometry(.075*M,.075*M,.1*M,6).rotateX(Math.PI/2).translate(0,.38*M,.13*M),new THREE.MeshLambertMaterial({color:0x2a2c2e})],[new THREE.BoxGeometry(.012*M,.12*M,.012*M).translate(.17*M,.33*M,.03*M),new THREE.MeshLambertMaterial({color:0x4a4846})]], m4=new THREE.Matrix4(), q=new THREE.Quaternion();
+          for(const [g,mt] of parts){ const me=new THREE.InstancedMesh(g,mt,HY.length); HY.forEach(([x,y,z,sd],i)=>me.setMatrixAt(i,m4.compose(new THREE.Vector3(x,y,z),q.setFromAxisAngle(new THREE.Vector3(0,1,0),(sd>0?0:Math.PI)+i*.4),new THREE.Vector3(1,1,1)))); me.castShadow=me.receiveShadow=true; scene.add(me); } } }
+      if(PARK.mesh){ if(OAK.length){ DRESS.trees=PARK.mesh(OAK,true,true,true); const {P:PP,LF:LL}=DRESS.trees.userData; if(LL&&LL.length){ const idx=[]; for(let v=0;v<LL.length;v++)if(LL[v])idx.push(v);
+        const TC=OAK.map(([,px,py,m])=>{ const x=BOD.XS(px+PARK.ox), z=BOD.ZS(py+PARK.oy); return [x,G(x,z)+.66*m*M,z,m]; }), N=16, cv=document.createElement('canvas'); cv.width=cv.height=N; const gx=cv.getContext('2d'), im=gx.createImageData(N,N);
+        for(let k=0;k<14;k++){ const cx=2+hsh(k,1)*12, cy=2+hsh(k,2)*12, a=hsh(k,3)*3.14, ca=Math.cos(a), sa=Math.sin(a), sh=[[46,82,38],[62,104,48],[84,128,58],[36,64,32]][Math.floor(hsh(k,4)*4)];
+          for(let j=0;j<N;j++)for(let i=0;i<N;i++){ const dx=i+.5-cx, dy=j+.5-cy, u=dx*ca+dy*sa, w=-dx*sa+dy*ca; if(u*u/5.5+w*w/1.6>1)continue; const q=(j*N+i)*4, c=w<-.6?[sh[0]*1.25,sh[1]*1.2,sh[2]*1.15]:sh; im.data[q]=c[0]; im.data[q+1]=c[1]; im.data[q+2]=c[2]; im.data[q+3]=255; } }
+        gx.putImageData(im,0,0); const tx=new THREE.CanvasTexture(cv); tx.magFilter=tx.minFilter=THREE.NearestFilter; tx.generateMipmaps=false; tx.colorSpace=THREE.SRGBColorSpace;
+        const V3=THREE.Vector3, pos=[], nor=[], uv=[], col=[], up=new V3(0,1,0), n=new V3(), t=new V3(), b=new V3(), p0=new V3();
+        for(let k=0;k<OAK.length*260;k++){ const v=idx[Math.floor(hsh(k,77)*idx.length)]; p0.set(PP[v*3],PP[v*3+1],PP[v*3+2]); let tc=TC[0]; for(const c of TC)if(Math.hypot(c[0]-p0.x,c[2]-p0.z)<Math.hypot(tc[0]-p0.x,tc[2]-p0.z))tc=c;
+          n.set(p0.x-tc[0],(p0.y-tc[1])*1.4,p0.z-tc[2]).normalize(); t.crossVectors(n,up); if(t.lengthSq()<1e-4)t.set(1,0,0); t.normalize(); b.crossVectors(t,n).normalize();
+          const sz=(.55+.5*hsh(k,5))*M*(tc[3]/8), r=hsh(k,6)*6.28, tn=hsh(k,8)*.25+.85, cc=[tn,tn*(.96+.08*hsh(k,9)),tn*.92];
+          for(const rot of [r,r+1.2]){ const ca=Math.cos(rot)*sz/2, sa=Math.sin(rot)*sz/2, ax=t.clone().multiplyScalar(ca).addScaledVector(b,sa), ay=t.clone().multiplyScalar(-sa).addScaledVector(b,ca).addScaledVector(n,.25*sz), o=p0.clone().addScaledVector(n,.08*M);
+            const C=[o.clone().sub(ax).sub(ay),o.clone().add(ax).sub(ay),o.clone().add(ax).add(ay),o.clone().sub(ax).add(ay)];
+            for(const [vi,u2,v2] of [[0,0,0],[1,1,0],[2,1,1],[0,0,0],[2,1,1],[3,0,1]]){ pos.push(C[vi].x,C[vi].y,C[vi].z); nor.push(n.x,n.y,n.z); uv.push(u2,v2); col.push(...cc); } } }
+        const fg=new THREE.BufferGeometry(); fg.setAttribute('position',new THREE.Float32BufferAttribute(pos,3)); fg.setAttribute('normal',new THREE.Float32BufferAttribute(nor,3)); fg.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2)); fg.setAttribute('color',new THREE.Float32BufferAttribute(col,3));
+        const fm=new THREE.Mesh(fg,new THREE.MeshLambertMaterial({map:tx,alphaTest:.5,side:THREE.DoubleSide,vertexColors:true})); fm.castShadow=true; fm.customDepthMaterial=new THREE.MeshDepthMaterial({map:tx,alphaTest:.5,depthPacking:THREE.RGBADepthPacking}); scene.add(fm); DRESS.fluff=fm; } } if(PL.length)DRESS.plants=PARK.mesh(PL,false,false,2); }
+      if(PITS.length){ const N=40, cv=document.createElement('canvas'); cv.width=cv.height=N; const gx=cv.getContext('2d'), im=gx.createImageData(N,N), SO=[[58,44,34],[70,54,40],[48,36,28],[96,72,48]], LF=[[44,74,36],[60,98,46],[84,124,58],[36,58,30]];
+        for(let j=0;j<N;j++)for(let i=0;i<N;i++){ const n=hsh(Math.floor(i/5),Math.floor(j/5))*.6+hsh(Math.floor(i/3)+40,Math.floor(j/3))*.4, d=hsh(i,j), e=Math.min(i,j,N-1-i,N-1-j);
+          let c=n>.52-.04*Math.max(0,4-e)?LF[d<.18?3:d<.55?0:d<.88?1:2]:SO[d<.5?0:d<.8?1:d<.96?2:3]; if(hsh(i+3,j*7)<.012)c=[150,112,52]; if(hsh(i*5,j+1)<.004)c=[226,220,206];
+          const q=(j*N+i)*4; im.data[q]=c[0]; im.data[q+1]=c[1]; im.data[q+2]=c[2]; im.data[q+3]=255; }
+        for(const [i,j,c] of [[9,30,[236,232,220]],[10,30,[214,120,60]],[31,8,[196,40,36]],[22,17,[150,112,52]],[23,17,[130,96,44]]]){ const q=(j*N+i)*4; im.data[q]=c[0]; im.data[q+1]=c[1]; im.data[q+2]=c[2]; }
+        gx.putImageData(im,0,0); const tx=new THREE.CanvasTexture(cv); tx.magFilter=tx.minFilter=THREE.NearestFilter; tx.generateMipmaps=false; tx.colorSpace=THREE.SRGBColorSpace;
+        const pm=new THREE.InstancedMesh(new THREE.PlaneGeometry(1,1).rotateX(-Math.PI/2),new THREE.MeshLambertMaterial({map:tx}),PITS.length), m4=new THREE.Matrix4(), q=new THREE.Quaternion();
+        PITS.forEach(([x,y,z,P,i],k)=>pm.setMatrixAt(k,m4.compose(new THREE.Vector3(x,y,z),q.setFromAxisAngle(new THREE.Vector3(0,1,0),(i%4)*Math.PI/2),new THREE.Vector3(P-.1*M,1,P-.1*M)))); pm.receiveShadow=true; scene.add(pm); DRESS.pits=pm; } }
     { const me=new THREE.InstancedMesh(new THREE.CylinderGeometry(.5,.5,1,8),new THREE.MeshLambertMaterial({color:0xffffff,flatShading:true}),CY.length), m4=new THREE.Matrix4(), q=new THREE.Quaternion(), c=new THREE.Color();
       CY.forEach(([x,y,z,sx,sy,sz,col],i)=>{ me.setMatrixAt(i,m4.compose(new THREE.Vector3(x,y,z),q,new THREE.Vector3(sx,sy,sz))); me.setColorAt(i,c.setHex(col)); }); me.castShadow=me.receiveShadow=true; scene.add(me); DRESS.rounds=me; }
     { const me=new THREE.InstancedMesh(new THREE.BoxGeometry(1,1,1),new THREE.MeshLambertMaterial({color:0xffffff}),BL.length), m4=new THREE.Matrix4(), q=new THREE.Quaternion(), c=new THREE.Color();

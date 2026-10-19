@@ -11,7 +11,7 @@ BOD.KC={KMK,KPP,DGN,DGP,LAMPS,CATALOG,dungeonWall,dungeonFloorCol,castleArch,KAR
   const holed=f=>(x,y)=>[MAPSTAIR,...RING.stairs].some(S=>x>=S.x0&&x<S.x1&&y>=S.y0&&y<S.y1)?null:f(x,y);
   const C=v=>v&&v.e&&v.length===3?[v[0],v[1],v[2],1]:v;
   const faceTex=(w,h,fn)=>{ w=Math.max(1,Math.round(w)); h=Math.max(1,Math.round(h)); const im=new ImageData(w,h), d=im.data; let ie=null, e=null;
-    for(let j=0,k=0;j<h;j++)for(let i=0;i<w;i++,k+=4){ const v=fn(i,j); if(!v)continue; d[k]=Math.round(v[0]); d[k+1]=Math.round(v[1]); d[k+2]=Math.round(v[2]); d[k+3]=255;
+    for(let j=0,k=0;j<h;j++)for(let i=0;i<w;i++,k+=4){ const v=fn(i,j); if(!v||v.h)continue; d[k]=Math.round(v[0]); d[k+1]=Math.round(v[1]); d[k+2]=Math.round(v[2]); d[k+3]=255;
       if(v.length>3){ if(!ie){ ie=new ImageData(w,h); e=ie.data; } e[k]=d[k]; e[k+1]=d[k+1]; e[k+2]=d[k+2]; e[k+3]=255; } }
     return {map:{image:im},em:ie?{image:ie}:null}; };
   const bq=(a,b,c,d,tx,kind)=>BATCH.add([...a,...b,...c,...a,...c,...d],[0,0,1,0,1,1,0,0,1,1,0,1],tx.map.image,tx.em?tx.em.image:null,kind);
@@ -47,8 +47,12 @@ BOD.KC={KMK,KPP,DGN,DGP,LAMPS,CATALOG,dungeonWall,dungeonFloorCol,castleArch,KAR
     wall('office','x',BODOFF,B.x0+T,B.x1-T,B.h-4,[d(B.x1-.95)],1,-1,false); }
   BOD.WALLS=WALLS;
   function facade(nx,ny,X_,Y_,z,f,cap,brick){ const u=nx?Y_:X_, c=brick||DTBRICK;
-    if(z>=cap-4)return sh(mt('cope',COPE),z<cap-3?f*.72:f);
-    if(z>=cap-20){ const r=cap-4-z, t=sh(mt('cope',COPE),f); if(r<3)return sh(t,1.08); if(r<5)return sh(t,.62); if(r<10)return (Math.floor(u*24/3)&1)?sh(t,.95):sh(t,.55); if(r<12)return sh(t,.7); if(r<15)return t; }
+    if(z>=cap-20){ const r=cap-4-z, px=Math.floor(u*24), pn=Math.floor(u/1.7+hash(Math.floor(u/1.7),3,199)*.4), hp=hash(px,Math.floor(z),203), rs=hash(px>>1,pn,205)<.06&&r>2-8*hash(px>>1,pn,207);
+      let t=sh(mt('cope',COPE),f*(.9+.16*hash(pn,7,201))); if(cvNoise(u*3,z/5,209)>.7)t=sh(t,1.1); if(rs)t=[t[0]*.84+16,t[1]*.7+6,t[2]*.6];
+      if(r<0)return sh(t,z<cap-3?.72:1+.06*hp); if(r<3)return sh(t,hp<.1?.9:1.08); if(r<5)return sh(t,.6);
+      if(r<10){ const e=u*24/5+.9*(cvNoise(u*1.3,3,213)-.5), b=Math.floor(e), on=e-b<.5+.18*(hash(b,pn,215)-.5)&&hash(b,9,217)>.05&&!(r<3+3*hash(b,4,219)&&hash(b,5,221)<.12); return on?sh(t,(e-b<.12?1.04:.95)*(.94+.1*hp)):sh(t,.5+.08*hp); }
+      if(r<12)return sh(t,.7); if(r<15)return sh(t,.96+.08*hp); }
+    if(z>=cap-34&&hash(Math.floor(u*24),Math.floor(u/1.7),223)<.05&&cap-20-z<14*hash(Math.floor(u*24),1,225)&&z>STORY)return sh(mt('mortar',[86,62,50]),f);
     { const s=z%STORY; if(z>STORY-4&&(s<4||s>=STORY-2)){ const t=sh(mt('cope',speck([170,162,148],u,z/24,97)),f); return s>=STORY-2?sh(mt('mortar',sh(c,.6)),f*.6):s===3?sh(t,1.12):s===0?sh(t,.8):t; } }
     if(z<8)return sh(mt('cope',speck([150,146,136],u,z/24,95)),f*(z<1?.8:1));
     if(z<11)return sh(mt('cope',[150,146,136]),f*(z<9?1.1:.9));
@@ -77,26 +81,26 @@ BOD.KC={KMK,KPP,DGN,DGP,LAMPS,CATALOG,dungeonWall,dungeonFloorCol,castleArch,KAR
   put('clock','wall clock',B.x0+3.1,B.y0+.14,0,1); put('mirror','convex mirror',B.x0+.42,B.y0+.15,0,1); put('calendar','calendar',B.x0+.11,B.y0+1.95,0,1); put('cord','extension cord',B.x0+.11,B.y0+.12,0,1);
   put('tube1','fluorescent tube',m,B.y0+2.5); put('tube2','fluorescent tube',m,B.y0+6.5);
   put('fan','box fan',B.x0+5.1,B.y0+.36); put('fly','fly strip',m-.8,B.y0+4.5); put('bell','door bell',m,B.y1-.24);
-  put('news','newspaper rack',B.x0+.6,B.y1-.5); put('dock','drone box',B.x1-.45,B.y0+.45); put('flap','drone flap',B.x1-1.1,B.y1);
+  put('news','newspaper rack',B.x0+.6,B.y1-.5); put('dock','drone box',B.x1-.85,B.y0+.85); O.dock.boxes.push({x0:B.x1-1.05,y0:B.y0+.65,x1:B.x1-.65,y1:B.y0+1.05,z0:114,z1:B0.h,c:[120,122,122],fi:(v,z)=>Math.floor(z)%6===0?[96,98,98]:[124,126,126],fj:(u,z)=>Math.floor(z)%6===0?[96,98,98]:[124,126,126]});
   put('wl3','shop shelf',B.x0+.36,B.y0+8.5,3);
   put('mat-fox','counter mat',B.x1-.42,B.y0+5.3); put('mat-run','rubber mat',B.x1-1.75,B.y0+5.3,1);
   { const y0=B0.y0, x0=B0.x0; put('of-desk','desk',x0+1.4,y0+.75); put('of-chair','office chair',x0+1.4,y0+1.6); put('of-pc','home computer',x0+1.4,y0+.6);
     put('of-shelf','shelves with boxes',x0+4.6,y0+.5); put('of-boxes','cardboard boxes',x0+6.6,y0+.7); put('of-sink','utility sink',x0+.55,y0+2.6,3);
     put('of-clock','wall clock',x0+3.2,y0+.29); put('of-tube','fluorescent tube',x0+3.6,y0+1.9); }
   BOD.food={x:B.x1-1.05,y:B.y0+6.3};
-  put('mat-out','door mat',m,B0.y1+.75); }
+  }
   const FRONT=[], ROOF=[], STREET=[], GHOSTST=[];
   { const M=MKS, bo=B0, bm=(bo.x0+bo.x1)/2, n0=PROPS.length;
     M.pipe(bo.x0+.2,bo.y1,bo.h-6);
     M.neon(bo.x0+1.5,bo.y1,64,'OPEN',[255,90,110]); M.signbox(bo.x0+.45,bo.x0+2.3,bo.y1,36,48,[250,250,246],[40,80,200],'LOTTO',false);
-    M.gatebox(bo.x0+.2,bo.x1-.2,bo.y1,114); M.bell(bm,bo.y1,98); M.meterbox(bo.x0+.9,bo.y1,30); M.number(bo.x0+1.6,bo.y1,82,'66'); M.moss(bo.x0+.3,bo.x0+3,bo.y1);
+    M.gatebox(bo.x0+.2,bo.x1-.2,bo.y1,114); M.bell(bm,bo.y1,98); M.meterbox(bo.x0+.9,bo.y1,30); M.number(bo.x0+1.6,bo.y1,82,'66');
     for(const p of PROPS.slice(n0))FRONT.push(p);
     { const K=GHOSTK.GSK, s=K.s; { const o=LAY.o('ghost'); K.o=[131+o.x/BLDK,W-8.3*s+o.y/BLDK]; } const n3=PROPS.length;
       for(const [k,dx,dy] of PRESETS['Preset Ghost Street 1'])if(!/row house|utility pole/.test(k))CATALOG[k](K.o[0]-3.5*s+dx,K.o[1]-.45*s+dy);
       for(const p of PROPS.slice(n3))GHOSTST.push(p); BOD.GHOSTST=GHOSTST; BOD.GSK=K; gdShape(GHOSTST,K,LAMPS);
     }
     const n2=PROPS.length, R=(f,x,y,z,...a)=>{ const p=f(x,y,z,bo.y1,...a); p.solids=[]; return p; };
-    R(M.vent,bo.x0+3,bo.y0+5,bo.h); R(M.antenna,bo.x0+8,bo.y0+3.5,bo.h); R(M.roofac,bo.x0+6,bo.y0+7.5,bo.h); for(const p of PROPS.slice(n2))ROOF.push(p); }
+    R(M.antenna,bo.x0+8,bo.y0+3.5,bo.h); for(const p of PROPS.slice(n2))ROOF.push(p); }
   BOD.O=O; BOD.FRONT=FRONT; BOD.STREET=STREET; BOD.ROOF=ROOF; BOD.MAP=MAP; BOD.RD=RD;
   const wallOf=p=>{ const cx=(p.x0+p.x1)/2, cy=(p.y0+p.y1)/2; let best=null, bd=.5; for(const w of WALLS){ const a=w.ax==='x'?cx:cy, d=Math.abs((w.ax==='x'?cy:cx)-w.at); if(a>=w.a0-.2&&a<=w.a1+.2&&d<bd){ bd=d; best=w; } } return best; };
   BOD.kindOf=p=>{ if(/fluorescent tube/.test(p.name||''))return 'U'; if(ROOF.includes(p))return 'R';
@@ -155,13 +159,14 @@ BOD.KC={KMK,KPP,DGN,DGP,LAMPS,CATALOG,dungeonWall,dungeonFloorCol,castleArch,KAR
     return null; };
   const IX=new Map(), at2=(x,y)=>Math.floor(x/2)+','+Math.floor(y/2), feat=(x0,y0,x1,y1,f)=>{ for(let i=Math.floor(x0/2);i<=Math.floor(x1/2);i++)for(let j=Math.floor(y0/2);j<=Math.floor(y1/2);j++){ const k=i+','+j; (IX.get(k)||IX.set(k,[]).get(k)).push(f); } };
   const MH=[], DR=[];
-  const manhole=(cx,cy)=>{ MH.push([cx,cy]); feat(cx-.45,cy-.45,cx+.45,cy+.45,(x,y)=>{ const dx=x-cx, dy=y-cy, r=Math.hypot(dx,dy); if(r>=.42)return null;
-    if(r>.35)return dx+dy<0?[78,76,72]:[40,40,42];
-    if(r>.32)return [26,26,28];
-    const rs=hash(Math.floor(cx*7),Math.floor(cy*7),621); if(Math.abs(r-.2)<.022)return [36,36,38]; if(r<.07)return [86,84,80];
-    const q=((Math.floor((dx+1)*24/3)+Math.floor((dy+1)*24/3))&1); let c=q?[98,95,90]:[62,61,59]; if(r>.24&&hash(Math.floor(x*24),Math.floor(y*24),623)<.12+.15*rs)c=[110,76,52];
+  const manhole=(cx,cy)=>{ MH.push([cx,cy]); const rs=hash(Math.floor(cx*7),Math.floor(cy*7),621), pa=.5+.12*rs; feat(cx-.7,cy-.7,cx+.7,cy+.7,(x,y)=>{ const dx=x-cx, dy=y-cy, r=Math.hypot(dx,dy), px=Math.floor(x*24), py=Math.floor(y*24), hp=hash(px,py,625);
+    if(r>=.42){ const e=Math.max(Math.abs(dx),Math.abs(dy))+(cvNoise(x*6,y*6,627)-.5)*.12; if(e>pa)return null; if(e>pa-.03)return [30,30,32]; return hp<.1?[58,58,60]:[44,44,47]; }
+    if(r>.35)return dx+dy<0?[80,78,74]:[40,40,42]; if(r>.32)return [24,24,26];
+    const a=Math.atan2(dy,dx), wr=Math.cos(a-rs*6.3)>.55&&r>.1, sp=Math.abs(((a/(Math.PI/4))%1+1)%1-.5)<.05/Math.max(.08,r);
+    let c; if(r<.09)c=Math.abs(dy)<.02&&Math.abs(dx)<.07&&(px&1)?[40,40,42]:[90,88,84]; else if(sp)c=[56,55,53]; else { const ring=((r*24/1.1)%1+1)%1; c=ring<.45?(dx+dy<0?[106,103,98]:[74,72,69]):[52,51,49]; if(wr)c=[c[0]*.6+46,c[1]*.6+45,c[2]*.6+43]; }
+    if(r>.2&&cvNoise(x*9,y*9,629)>.68)c=[112,74,50]; if(hash(px>>1,py>>1,631)<.02)c=[22,22,24]; if(Math.abs(r-.27)<.02&&Math.abs(a-rs*5)<.12)c=[16,16,18];
     return c; }); };
-  const drain=(ax,e,dir,a)=>{ DR.push({ax,e,a}); const HL=.62, OUT=.82, R=.22, x0=ax==='x'?a-HL-R:Math.min(e,e+dir*(OUT+R)), x1=ax==='x'?a+HL+R:Math.max(e,e+dir*(OUT+R)), y0=ax==='x'?Math.min(e,e+dir*(OUT+R)):a-HL-R, y1=ax==='x'?Math.max(e,e+dir*(OUT+R)):a+HL+R;
+  const HOLE=[0,0,0]; HOLE.h=1; const drain=(ax,e,dir,a)=>{ DR.push({ax,e,a,dir}); const HL=.62, OUT=.82, R=.22, x0=ax==='x'?a-HL-R:Math.min(e,e+dir*(OUT+R)), x1=ax==='x'?a+HL+R:Math.max(e,e+dir*(OUT+R)), y0=ax==='x'?Math.min(e,e+dir*(OUT+R)):a-HL-R, y1=ax==='x'?Math.max(e,e+dir*(OUT+R)):a+HL+R;
     const sd=hash(Math.floor(a*7),Math.floor(e*7),631);
     feat(x0,y0,x1,y1,(x,y)=>{ const u=(ax==='x'?x:y)-a, w=((ax==='x'?y:x)-e)*dir, px=Math.floor(x*24), py=Math.floor(y*24), hp=hash(px,py,633); if(w<0)return null;
       const ou=Math.abs(u)-HL, ow=w-OUT, out=Math.max(ou,ow);
@@ -171,7 +176,7 @@ BOD.KC={KMK,KPP,DGN,DGP,LAMPS,CATALOG,dungeonWall,dungeonFloorCol,castleArch,KAR
       if(sd<.35&&Math.hypot(u-(sd-.17)*3,w-OUT*.8)<.1)return hp<.5?[236,232,226]:[206,202,214];
       if(Math.abs(u)>HL-.08||w>OUT-.08||w<.06){ const lit=(u<0)!==(dir<0); return Math.abs(u)>HL-.03||w>OUT-.03?(lit?[118,114,108]:[58,56,54]):[86,84,80]; }
       const fu=(u+HL-.08)/((HL-.08)*2), fw=(w-.06)/(OUT-.14), cu=fu*4-Math.floor(fu*4), cw=fw*6-Math.floor(fw*6);
-      if(cu>.1&&cu<.9&&cw>.24&&cw<.82)return cw<.34||cu<.18?[26,24,24]:[10,10,12];
+      if(cu>.1&&cu<.9&&cw>.24&&cw<.82)return cw<.34||cu<.18?[26,24,24]:HOLE;
       return hash(Math.floor(fu*4),Math.floor(fw*6),639)<.25&&hp<.5?[112,78,54]:hp<.3?[104,102,98]:[78,77,75]; }); };
   BOD.kerbs=[{ax:'x',at:CURB,a0:MAP.x0,a1:MAP.x1,n:1},{ax:'x',at:FAR,a0:MAP.x0,a1:RG.wr0-KR,n:-1,e1:1},{ax:'x',at:FAR,a0:RG.wr1+KR,a1:AV.r0-KR,n:-1,e0:1,e1:1},{ax:'x',at:FAR,a0:AV.r1+KR,a1:MAP.x1,n:-1,e0:1},
     {ax:'y',at:AV.r0,a0:FAR+KR,a1:RG.nr0-KR,n:1,e0:1,e1:1},{ax:'y',at:AV.r1,a0:FAR+KR,a1:RG.nr1-KR,n:-1,e0:1,e1:1},

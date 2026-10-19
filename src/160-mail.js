@@ -43,7 +43,7 @@ if(MAIL.on){ const T=TILE, M=1/.84*T, X=BOD.XS, Z=BOD.ZS, G=(x,z)=>MODS.bodega.g
     B.sort((a,b)=>ORD[a.street][0]-ORD[b.street][0]||ORD[a.street][1]*(along(a.street,a.F)-along(b.street,b.F)));
     MAIL.B=B; boxes(); MAIL.ready=true; restore(); log('the post office opened: '+MAIL.addr.length+' addresses'); };
 
-  const BL=[], blk=(x,y,z,sx,sy,sz,c,tag)=>BL.push([x,y,z,sx,sy,sz,c]);
+  const BL=[], UB=[], blk=(x,y,z,sx,sy,sz,c,tag)=>BL.push([x,y,z,sx,sy,sz,c]);
   const FL=[], TK=[], PC=[];
   const place=(F,off,h)=>({x:F.at.x+F.t.x*off+F.n.x*.1*T,z:F.at.z+F.t.z*off+F.n.z*.1*T,y:G(F.at.x+F.n.x*.6*T,F.at.z+F.n.z*.6*T)+h});
   const orient=(F,w,d)=>F.n.x?[d,w]:[w,d];
@@ -58,19 +58,30 @@ if(MAIL.on){ const T=TILE, M=1/.84*T, X=BOD.XS, Z=BOD.ZS, G=(x,z)=>MODS.bodega.g
         const s={x:p.x+F.n.x*.07*M,y:p.y-H/2+.07*M,z:p.z+F.n.z*.07*M}, [ox,oz]=orient(F,W*.6,.02*M); blk(s.x,s.y,s.z,ox,.035*M,oz,0x14161a);
         b.slot={x:p.x,y:p.y,z:p.z,F}; b.flag=FL.push({x:p.x+F.t.x*(W/2+.03*M),y:p.y,z:p.z+F.t.z*(W/2+.03*M),F,up:false})-1; for(const A of MAIL.addr)if(A.b===b)A.flag=b.flag; }
       b.step={x:F.at.x+F.n.x*.55*T+F.t.x*.6*T,z:F.at.z+F.n.z*.55*T+F.t.z*.6*T};
-      if(b.up&&b.up.length){ const off=-(b.id==='dojo'?2.6:1.9)*T, p=place(F,off,1.05*M), [dx,dz]=orient(F,.95*M,.06*T), y0=p.y-1.05*M;
-        blk(p.x,y0+1.08*M,p.z,dx,2.15*M,dz,0x2c4a3a); const [kx,kz]=orient(F,.04*M,.03*T); blk(p.x+F.t.x*.32*M+F.n.x*.05*T,y0+1.05*M,p.z+F.t.z*.32*M+F.n.z*.05*T,kx,.06*M,kz,0xc8a850);
-        const [sx2,sz2]=orient(F,1.2*M,.5*T); blk(p.x+F.n.x*.25*T,y0+.05*M,p.z+F.n.z*.25*T,sx2,.1*M,sz2,0x8a8478);
+      if(b.up&&b.up.length){ const off=-(b.id==='dojo'?2.6:1.9)*T;
         b.upStep={x:F.at.x+F.n.x*.75*T+F.t.x*off,z:F.at.z+F.n.z*.75*T+F.t.z*off};
         b.up.forEach((u,i)=>{ const q=place(F,off-(.75+i*.5)*T,1.2*M), [bx,bz]=orient(F,.3*M,.16*M); blk(q.x,q.y,q.z,bx,.36*M,bz,0x3c4048); const A=MAIL.addr.find(a=>a.b===b&&a.unit===u.unit&&a.up);
           A.box={x:q.x,y:q.y,z:q.z,F}; A.flag=FL.push({x:q.x+F.t.x*.17*M,y:q.y,z:q.z+F.t.z*.17*M,F,up:false})-1; A.tick=TK.push({x:q.x+F.n.x*.09*M,y:q.y+.07*M,z:q.z+F.n.z*.09*M,F,on:false})-1; A.step=b.upStep; }); } }
     for(const A of MAIL.addr)if(!A.step)A.step=A.b.step;
     const pm=(PARK.x0+PARK.x1)/2, py=(PARK.y0+PARK.y1)/2, want=[[pm+6,BOD.FAR+.9],[RING.wr1+.9,py+7],[pm+9,RING.nr0-.9],[AVE.r0-.9,py-7]], free=window.STFREE||(()=>true);
     for(const [tx,ty] of want){ let s=null; for(let r=0;r<6&&!s;r+=.5)for(let a=0;a<8&&!s;a++){ const x=X(tx)+Math.cos(a*Math.PI/4)*r*T, z=Z(ty)+Math.sin(a*Math.PI/4)*r*T; if(free(x,z,.6*T))s={x,z}; } if(!s)continue;
-      const y=G(s.x,s.z), w=.55*M, d=.5*M; for(const [lx,lz] of [[-1,-1],[1,-1],[-1,1],[1,1]])blk(s.x+lx*w*.38,y+.08*M,s.z+lz*d*.38,.06*M,.16*M,.06*M,0x1a2440);
-      blk(s.x,y+.6*M,s.z,w,.88*M,d,0x24448c); blk(s.x,y+1.08*M,s.z,w*.9,.12*M,d*.9,0x2a4e9c); blk(s.x,y+.8*M,s.z,w+.01*M,.08*M,d+.01*M,0xe8e8e0); blk(s.x,y+.96*M,s.z+d/2+.005*M,w*.6,.04*M,.02*M,0x101420);
+      const y=G(s.x,s.z), w=.55*M, d=.5*M, rd=[[0,1],[1,0],[0,-1],[-1,0]].map(([a,b])=>[a,b,[1,2,3,4].findIndex(k=>BOD.road.at(tx+a*k,ty+b*k))]).filter(v=>v[2]>=0).sort((p,q)=>p[2]-q[2])[0]||[0,1];
+      UB.push({x:s.x,y,z:s.z,r:Math.atan2(X(tx+rd[0])-X(tx),Z(ty+rd[1])-Z(ty)),k:UB.length});
       SOL.up.push([s.x-w/2-.05*T,s.z-d/2-.05*T,s.x+w/2+.05*T,s.z+d/2+.05*T]); FIX.up.push([s.x-w/2,s.z-d/2,y,s.x+w/2,s.z+d/2,y+1.15*M]);
       MAIL.cboxes.push({id:'cb'+MAIL.cboxes.length,x:s.x,z:s.z,y,in:[],name:'COLLECTION BOX'}); }
+    if(UB.length){ const W=.55*M, D=.5*M, Hb=.8*M, y0=.16*M, BL=[36,66,138], tx=(w,h,f)=>{ const c=document.createElement('canvas'); c.width=w; c.height=h; const g=c.getContext('2d'), im=g.createImageData(w,h); for(let j=0;j<h;j++)for(let i=0;i<w;i++){ const v=f(i,j), q=(j*w+i)*4; im.data[q]=v[0]; im.data[q+1]=v[1]; im.data[q+2]=v[2]; im.data[q+3]=255; } g.putImageData(im,0,0); const t=new THREE.CanvasTexture(c); t.magFilter=t.minFilter=THREE.NearestFilter; t.generateMipmaps=false; t.colorSpace=THREE.SRGBColorSpace; return t; };
+      const hh=(i,j,k)=>hs(i+':'+j+':'+k), base=(i,j,k)=>{ const r=hh(i,j,k); if(j>36&&r<.5)return [26,40,80]; if(r<.05)return [70,98,170]; if(r>.985)return [140,150,170]; return j>33&&hh(i,0,k)<.3?[88,62,44]:BL; };
+      const EAG=['..#..#..','.######.','##.##.##','..####..','...##...'], TXT=['##.#.###.###.#.##','#..#.#.#.#...#.#.','##.#.##..##.#.##.'];
+      const front=tx(24,40,(i,j)=>{ if(j>=14&&j<19&&i>=8&&i<16&&EAG[j-14][i-8]==='#')return [236,236,232]; if(j>=22&&j<27&&i>=6&&i<18)return j===22||j===26||i===6||i===17?[150,150,150]:(i+j)%3?[226,224,216]:[90,90,96]; if(j>=29&&j<32&&i>=15&&i<20)return [240,200,40]; if(j>=2&&j<4)return [30,52,110]; return base(i,j,1); });
+      const side=tx(22,40,(i,j)=>{ if(j>=5&&j<10)return j>=6&&j<9&&i>=2&&i<19&&TXT[j-6][i-2]==='#'?[36,66,138]:[232,232,226]; if(j>=20&&j<25&&i>=4&&i<9)return [200,40,40]; if(j>=21&&j<24&&i>=11&&i<17)return [236,236,236]; return base(i,j,2); });
+      const back=tx(24,40,(i,j)=>{ const t=Math.abs(Math.sin(i*.7+3)*5+20-j)<1.2&&i>3&&i<20; if(t)return [200,200,210]; if(Math.abs(i-12+(j-24)*.4)<.7&&j>18&&j<30)return [230,60,120]; return base(i,j,3); });
+      const plain=new THREE.MeshLambertMaterial({color:new THREE.Color().setRGB(BL[0]/255,BL[1]/255,BL[2]/255,THREE.SRGBColorSpace)}), L=t=>new THREE.MeshLambertMaterial({map:t});
+      const mkI=(geo,mat,n)=>{ const me=new THREE.InstancedMesh(geo,mat,n); me.castShadow=me.receiveShadow=true; MAPG.bodega.add(me); return me; }, m4=new THREE.Matrix4(), q=new THREE.Quaternion(), up=new THREE.Vector3(0,1,0), V=THREE.Vector3;
+      const body=mkI(new THREE.BoxGeometry(W,Hb,D).translate(0,y0+Hb/2,0),[L(side),L(side),plain,plain,L(front),L(back)],UB.length), dome=mkI(new THREE.CylinderGeometry(D/2,D/2,W,10,1,false,0,Math.PI).rotateZ(Math.PI/2).translate(0,y0+Hb,0),plain,UB.length);
+      const chute=mkI(new THREE.BoxGeometry(W*.62,.2*M,.05*M).rotateX(-.5).translate(0,y0+Hb-.02*M,D/2+.05*M),new THREE.MeshLambertMaterial({color:0x2a4c96}),UB.length), handle=mkI(new THREE.BoxGeometry(W*.3,.03*M,.04*M).translate(0,y0+Hb-.1*M,D/2+.11*M),new THREE.MeshLambertMaterial({color:0x8a8e94}),UB.length);
+      const legs=mkI(new THREE.BoxGeometry(.06*M,y0,.06*M).translate(0,y0/2,0),new THREE.MeshLambertMaterial({color:0x1a2440}),UB.length*4);
+      UB.forEach((b,i)=>{ q.setFromAxisAngle(up,b.r); const P=new V(b.x,b.y,b.z); for(const me of [body,dome,chute,handle])me.setMatrixAt(i,m4.compose(P,q,new V(1,1,1)));
+        [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([a,c],k)=>legs.setMatrixAt(i*4+k,m4.compose(new V(a*W*.4,0,c*D*.4).applyQuaternion(q).add(P),q,new V(1,1,1)))); }); }
     const geo=new THREE.BoxGeometry(1,1,1), mk=(n,mat)=>{ const me=new THREE.InstancedMesh(geo,mat,Math.max(1,n)); me.castShadow=true; me.receiveShadow=true; MAPG.bodega.add(me); return me; };
     const me=mk(BL.length,new THREE.MeshLambertMaterial()), m4=new THREE.Matrix4(), q=new THREE.Quaternion(), c=new THREE.Color();
     BL.forEach(([x,y,z,sx,sy,sz,col],i)=>{ me.setMatrixAt(i,m4.compose(new THREE.Vector3(x,y,z),q,new THREE.Vector3(sx,sy,sz))); me.setColorAt(i,c.setHex(col)); }); me.frustumCulled=false;

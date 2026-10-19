@@ -1833,3 +1833,16 @@ so he looked shrugged. You are now his mannequin (`data/full/humanoid.fbx`, Blen
 `data/humanoid.json`, 6 KB), sized to the UAL skeleton (it matches it: height, hips, shoulders, arm length within 3 cm). It stands in an
 A-pose, so the skeleton's arms are lowered to it before binding; each corner weighted in code to its nearest one or two bones. One flat
 light colour, cel-shaded, casting a shadow; the same clips. 402 triangles.
+
+**His mannequin moved by his own rig** (owner, 19 Oct 2026: "is this using all the other techniques we added earlier where he is actually
+touching ground, can run in circles, lean, etc."; his pick of two: drive the mannequin from the rig): the clips are gone from you; every
+time the rig works out his pose (`ASTEP`), each of the mannequin's bones takes the turn of the rig's piece it stands for (hips, torso, neck,
+head, upper arm, forearm, hand, thigh, shin, foot: the piece's axis from its joints, its twist from the piece's own frame), measured from
+the rig's rest to the mannequin standing the same way. His hips go where the rig's go, as high as the rig's are of theirs; each leg
+reaches (two-bone) for where the rig's ball of the foot is in the world, so a locked foot stays locked. So he has all of it: feet planted
+in the world (straight, running, round a circle, turning, stopping, the settling steps, stairs), the lean into turns, the weight carried
+on at a stop, the jump, the moves, sitting, swimming and the ragdoll (`ragPose`). Not followed: the PHYSICS BODY option's own jiggle
+(it moves the old Walker's pieces, not the pose). Measured (in the page, the rig played as `tests/footworld.cjs` plays it, 60 fps): a
+planted foot moves under 1 cm a second walking, running, round a circle, stopping and on stairs (2.8 through a sharp quarter turn, where
+the rig's own pivots); flat on its ground within half a centimetre (3-4 on stairs). The page no longer carries `data/ual.json` (its
+skeleton now in `data/humanoid.json`, 16 KB): 260 KB less. Cost: some 60 bones set when his pose changes, a fraction of a millisecond.

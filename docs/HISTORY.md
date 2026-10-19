@@ -2585,3 +2585,8 @@ and wash ashore). No sound. WebXR on a headset: teleport arc, snap turn, grab an
   hang from the back half of his head only (-104 to 104 degrees from the back, were round to the temples), about half as thick and
   a little longer, still on their springs; the face is a skull's: deep round sockets, a split nose hole, a dark mouth slot with five
   teeth, cheekbones, a narrower jaw (`083a-npc-mushroom.js`).
+- **The two merchants stand in front of their stalls** (owner: "the tomato and mushroom vendors should only have tables behind them, no
+  tables in front, they stand directly in front of their booth and wait. they are the main merchants who buy and sell needed supplies
+  for game"): the front counter and its two side wings are gone from `STALL.build` (`081-stalls.js`); the back shelf and the crates,
+  sacks, logs and baskets beside it stay. Each merchant's place is just in front of the shelf, facing the street; both only stand and
+  look about now (the tomato's `STALL.work` as the mushroom seller's, `144-veggies.js`). Their trade (FORAGE, VEG) is unchanged.

@@ -1,6 +1,6 @@
 
 looseDraw();
-let looseAcc=0, J0=null, J0t=0, trip=false;
+let looseAcc=0, J0=null, J0t=0, trip=false; const SUNG={t:0,lit:0,k:0,rc:new THREE.Raycaster(),o:new THREE.Vector3(),hit:[]};
 
 const keys=new Set(), PAD={mv:null,n:0}; let target=null;
 const VIEW0={yaw:Math.PI/4,pitch:Math.PI/6,ppu:PPU}; let yaw=VIEW0.yaw, pitch=VIEW0.pitch, yawTo=yaw, pitchTo=pitch, ppuTo=ppu;
@@ -64,7 +64,10 @@ function frame(now){ requestAnimationFrame(frame); renderer.info.reset(); const 
   if(PERFX.poolNear()){ const px=FLOATS.px??pos.x, pz=FLOATS.pz??pos.z, k=1/Math.max(dt,1e-3); FLOATS.step(dt,{inWater:!!(st.water&&st.water.in),x:pos.x,z:pos.z,vx:(pos.x-px)*k,vz:(pos.z-pz)*k}); FLOATS.px=pos.x; FLOATS.pz=pos.z; }
   if(typeof UI!=='undefined'&&UI.freeCam)LITE.tick(dt,UI.camT.x,UI.camT.y,UI.camT.z); else LITE.tick(dt,pos.x,py+1.2*TILE,pos.z);
   let lampW=0; for(const L of lamps){ if(!L.visible||!(L.intensity>0)||!L.parent)continue; const d=Math.hypot(L.position.x-pos.x,L.position.z-pos.z); if(d<6)lampW=Math.max(lampW,(1-d/6)*Math.min(1,L.intensity/(L.userData.i0||L.intensity))); }
-  W3.tint.setRGB(.58,.6,.66).lerp(C2.setRGB(1,1,1),Math.max(0,lampW)*0.35); if(ED.on)W3.tint.setRGB(1,1,1);
+  { const G=SUNG, sun=CLOCK.sun, out=LVL==='up'&&!ROOMS.cur&&sun&&sun.intensity>.6&&CLOCK.dir&&CLOCK.dir.y>.05; if((G.t-=dt)<=0){ G.t=.15; G.lit=0; if(out){ G.rc.set(G.o.set(pos.x,py+1.1*TILE,pos.z),CLOCK.dir); G.rc.far=40*TILE; G.hit.length=0; let blk=false;
+      for(const h of G.rc.intersectObjects(scene.children,true,G.hit)){ const o=h.object, m=Array.isArray(o.material)?o.material[0]:o.material; let v=true; for(let q=o;q;q=q.parent)if(!q.visible||q===W3.group){ v=false; break; } if(!v||!m||m.transparent||m.depthWrite===false||o.isPoints||o.isSprite||o.isLine)continue; blk=true; break; }
+      G.lit=blk?0:Math.min(1,(sun.intensity-.6)/1.4); } } G.k+=(G.lit-G.k)*Math.min(1,dt*4); }
+  W3.tint.setRGB(.58,.6,.66).lerp(C2.setRGB(1,1,1),Math.max(Math.max(0,lampW)*0.35,SUNG.k*.9)); if(ED.on)W3.tint.setRGB(1,1,1);
   DRESS.tick(dt,pos); RINGX.tick(dt); RIVER.tick(dt,pos); FOUNT.tick&&FOUNT.tick(dt,pos); RIVER.hud(); if(window.BROOK&&BROOK.tick)BROOK.tick(dt,pos); SUBX.tick(dt); { const r=MODS.apts.tick(); if(r)solids=r; } { const r2=STORE.stackTick&&STORE.stackTick(); if(r2)solids=r2; } CITY.tick(dt,pos); NPCS.tick(dt,pos); if(FIRE)FIRE.tick(dt); FIGFX.tick(dt,pos); FLAME.tick(dt,pos); MUS.tick(dt); BWK.tick(dt); PNM.tick(dt); SGM.tick(dt); DRM.tick(dt); STAGE.tick(dt);
   UI.goTick(); UI.runTick(); CLOCK.tick(dt); VIT.tick(dt); LOOK.tick(); WHERE.tick(dt); AMB.tick(dt); LINES.tick(dt);
   marker.visible=!!target; if(target){ marker.position.set(target.x,groundY(target.x,target.z)+0.03,target.z); marker.material.opacity=0.5+0.4*Math.sin(t*8); }

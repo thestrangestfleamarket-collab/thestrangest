@@ -2670,3 +2670,6 @@ not have windows, make sure buildings are only as tall as they need to be"; then
 - **No glow on you indoors** (owner, 19 Oct 2026: "whats cauasing this glow on my char? ... it only does it inside"): your figure was
   brightened toward white by any lamp within 6 tiles (90%), and rooms are full of lamps; now only lit lamps count, by their strength,
   and at most 35%.
+- **The glow in the sun** (owner, 19 Oct 2026: "i want that glow to happen in the direct sunlight it looks cool"): outdoors by day a
+  ray goes from your chest toward the sun (every 0.15 s, 40 tiles, solid things only); when nothing blocks it your figure brightens
+  toward white (up to 90%, by the sun's strength), easing in and out over a quarter second as you step in and out of shade.

@@ -2846,3 +2846,58 @@ fsomeone dies insomewhere they have to float back as a ghost to get resed. when 
   running on), hands and feet stay put on the ground where they land. Footstep sounds are quiet during moves. Checked in node (the
   rig out of the built page, 60 a second): run, jump, cartwheel, roll, run with no stop, no NaN, speed held over 39 units a second
   (the run is 108). Cost: none a frame (the cartwheel's 25 poses are made once at load).
+
+## 19 Oct 2026: dragons live in the trees; real fires; fire drones on the block's corners
+(owner: "i want dragons to live in trees." and "setup the fire drones on each corner of block. if fire starts they come put it out
+automatically. dragon balls of fire can start real fires. spread very slow. leavwe burn marks.")
+- **Dragons in the trees** (`078-npc-dragon.js`): each of the ten has a home tree (the park's oaks and the street trees, read from
+  `PARK.mesh`'s new `userData.items`: each piece's place, foot, top and crown radius). At home it sits in the crown curled up (the idle
+  clip with the tail wrapped round and the head down), every 8-24 s pokes out to the crown's edge for 3-8 s and looks about, then goes
+  back in. After 50-120 s it lifts off: to another tree within 40 tiles for a while, or glides down to the lawn beside its tree
+  (sitting on the tall grass's top) and back up, or a loop over the town as before; it comes home nine times in ten (the ledges and
+  wires a tenth). They start at home. Look, clips and the flight unchanged. `DRAGONHOME(i)`.
+- **Fireballs start real fires** (`151-blaze.js`, `BLAZE`): a dragon now spits rarely (every 2.5-6 minutes each, from flight or while
+  peeking out of its tree) and never where the ball would land within 4 tiles of you. Where one lands on something that burns (the
+  lawn, under a tree's crown, by a bush, the park's logs and woodpile; never a path, water or the road) it starts a fire six times in
+  ten: the campfire's flames (`FLAME` 'bed'), growing over 6 s, burning 70-130 s; every 20-40 s a fire may catch a spot about a tile
+  away (very slow; at most 12 burning, `?fires=N`). Each leaves a **burn mark**: a flat scorched patch with a ragged edge (three dark
+  bands), darkening as it burns, then kept 4 minutes and fading away over 6 (dithered, no blending). On the park's tall grass the
+  flames and marks sit on its top. One fire lamp follows the fire nearest you (a lamp record like the campfire's, so still 8 at most).
+- **Fire drones**: a dock on each of the four corners of the block the ring roads go round (Market St's north kerb at the west road
+  and the avenue, and the north road's two corners), mid-sidewalk: a red post 2.8 m high with a landing pad (red rim, white cross), a
+  red box on the post, a green lamp. On it a red and white quad-rotor with a water tank and a nozzle. When a fire starts, the nearest
+  drone at home (or flying home) climbs, flies over the trees to it (eased, banking and pitching with its turns), hovers 2.6 m over it
+  to one side, sprays (white and blue drops, falling) until it is out in steam (3.2 s of water), takes the next fire within 12 tiles
+  and goes home and lands when none are left; several drones for several fires. Its lamp flashes red and blue while out (green
+  parked); the dock's lamp goes amber while its drone is away. Independent of the city sim (`?city`), its civic fires untouched.
+- Tests: `FIREAT(x,z)` starts a fire anywhere; `?fire=1` one beside you at the start; `BLAZEDBG()`.
+- Cost: the four docks 576 triangles, one draw; the drones 4 x 216 + blades 16 x 12 + lamps 8 x 12 (three draws, still and unchanged
+  while parked); the spray at most 140 drops, one draw, only while spraying; the burn marks 64 at most x 80 triangles, one draw, one
+  new program (`burnmark`); the flames in the fire's one existing draw; one lamp record; well under 0.1 ms a frame with nothing burning.
+
+## 19 Oct 2026: ten bushes and ten flowers in the park; birds and butterflies use them
+(owner: "add 10 types of bushes , 10 flowers, and make the birds and butterflys act acccordingly.")
+- **The plants** (`142a-flora.js`, `FLORA`): ten bushes (boxwood, hydrangea in blue bloom, rhododendron, holly with berries, juniper
+  cone, berry bush, lilac, forsythia, fern clump, rose bush) and ten flowers (tulip, daisy, sunflower, lavender, poppy, iris, marigold,
+  bluebell, foxglove, cosmos), each made of a few flat-coloured low-poly pieces (CEL Lambert, flat shading, vertex colours), one
+  instanced draw per kind. Set by rule (fixed hashes, the same every load) in the park: two-row beds along both ways every 10.5 tiles
+  (one side or the other) with a low hedge behind some; four quarter-beds and a rose bush with two boxwoods round the round; beds and
+  bushes in a ring just outside the fountain's terrace; rhododendron, hydrangea, holly and ferns round the oaks with bluebells and
+  foxgloves in their shade; junipers, forsythia, lilac and berry bushes along the inside of the walls with sunflowers between; drifts
+  of daisies, poppies and cosmos on the open lawns; lavender and iris round the two pillars; flowers in three corners of each tree pit
+  on Market St. Never on the ways, the terrace, the lake, the brook, the pond, the castle, the shrine, the cave or the campfire, never
+  within 6 tiles of a gate (3.5 for flowers) or on anything solid. Bushes are solid (except the fern) and cast shadows; flowers can be
+  walked through, bend away from you as the lawn does, and sway with the park's wind; they cast none. Kept apart from the lawn's
+  own code. `FLORADBG()` gives the counts.
+- **Butterflies** (`143-bfly.js`, `056-butterflies.js`): by day each flower bed within 24 tiles may hold one or two, which flit
+  between its blooms, the next beds' and any flowering bush near (hydrangea, rhododendron, lilac, forsythia, rose) and land on the
+  flower heads; at rest their wings open and close slowly (open, half, shut, half, about 3.6 s round) instead of snapping. The
+  park's lawns make half as many of their own now that there are beds. Catching is unchanged (`BFLY.catch`).
+- **Birds** (`144b-birds.js`): small birds come to bushes near you (hopping on the ground round them, now and then one on top) and
+  to flower beds (pecking more among the flowers); bush-top birds fly down and back. Startled, a small bird (not pigeons, doves or
+  the hawk) mostly dives into the nearest bush away from you instead of flying off, hides there (it can't be clicked) and comes back
+  out when you are 3.5 tiles off and not running. Watching, taming and catching are unchanged.
+- **Cost**: bushes 26-80 triangles each (fern 56, rose 68, juniper 26), flowers 22-46 (tulip 22, foxglove 46); an estimated 700-900
+  flowers and 120-160 bushes over the whole park, some 25,000-30,000 triangles in all, split by `CULL` into 10-tile pieces so only
+  what is on screen draws (a few thousand in a usual view); 20 draws, 2 new shader programs (bushes; flowers with the bend), no
+  lights; bushes in the sun's still shadow. Not yet measured in the page (`tests/tricount.cjs`).

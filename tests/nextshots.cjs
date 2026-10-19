@@ -32,11 +32,16 @@ process.on('unhandledRejection',e=>{ errs.push('TEST '+String(e&&e.message||e).s
   await shot('grass',()=>{ const M=__dbg.MAPK, P=M.PARK; STORE.goTo(M.BOD.XS(P.round[0]+(P.ox||0)+9),M.BOD.ZS(P.round[1]+(P.oy||0)+6),'up'); });
   await pg.keyboard.down('w'); await pg.waitForTimeout(2500); await pg.keyboard.up('w'); await shot('grass-trail',null,800);
   rep.lawn=await pg.evaluate(()=>window.WEEDS&&{n:WEEDS.lawnN,chunks:WEEDS.chunks&&WEEDS.chunks.size});
-  await pg.evaluate(()=>window.KILLME&&KILLME()); await shot('ghost',null,12000);
+  await pg.evaluate(()=>window.KILLME&&KILLME()); for(let i=0;i<60;i++){ await pg.waitForTimeout(1000); if(await pg.evaluate(()=>{ const W=__dbg.W3; return !(window.RAGON&&RAGON()); }))break; } await shot('ghost',null,3000);
   rep.dead=await pg.evaluate(()=>!!(__dbg.VIT.dead));
   await shot('bath-in',()=>{ const M=__dbg.MAPK, G=M.BOD.GD, r=G.r; let best=null; for(const X of [M.BOD.X,M.BOD.XS])for(const Z of [M.BOD.Z,M.BOD.ZS]){ STORE.goTo(X((r[0]+r[2])/2),Z((r[1]+r[3])/2),'up'); if(G.inside()){ best=1; break; } } window.__bathPick=best; },2500);
   await shot('bath-rise',null,2500); await shot('bath-back',null,7000);
   rep.alive=await pg.evaluate(()=>!(__dbg.VIT.dead)); rep.bathIn=await pg.evaluate(()=>{ const M=__dbg.MAPK; return {pick:window.__bathPick,inside:M.BOD.GD.inside(),y:__dbg.you().y,r:M.BOD.GD.r}; });
   rep.render=await pg.evaluate(()=>{ try{ const r=RENDERLIST(); return {head:r.head||r.totals||null,top:(r.rows||r.drawn||[]).slice(0,12),hidden:(r.notDrawn||r.loaded||[]).slice(0,8)}; }catch(e){ return 'ERR '+e.message; } });
+  await shot('flora',()=>{ const M=__dbg.MAPK, P=M.PARK; STORE.goTo(M.BOD.XS(P.round[0]+(P.ox||0)+5),M.BOD.ZS(P.round[1]+(P.oy||0)+5),'up'); },4000);
+  rep.flora=await pg.evaluate(()=>window.FLORADBG&&FLORADBG());
+  await shot('fire',()=>{ const y=__dbg.you(); window.FIREAT&&FIREAT(y.x+2,y.z+2); },3000); await shot('fire-drone',null,12000); await shot('fire-out',null,15000);
+  rep.blaze=await pg.evaluate(()=>window.BLAZEDBG&&BLAZEDBG());
+  await shot('dragon',()=>{ window.DRAGONHOME&&DRAGONHOME(0); },3000);
   rep.frog=await pg.evaluate(()=>{ const N=__dbg.npcs().find(n=>n.key==='scooterfrog'); return N&&{x:N.st.x,z:N.st.z,to:N.st.to,wait:N.st.wait,hold:N.st.hold,far:N.far,mode:N.mode,life:!!N.life,free:N.st.to?N.free(N.st.to.x,N.st.to.z,N.st.R):null,freeHere:N.free(N.st.x,N.st.z,N.st.R)}; });
   fin(); await b.close(); })();

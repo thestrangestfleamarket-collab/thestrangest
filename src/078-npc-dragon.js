@@ -9,6 +9,10 @@
   const B0=BOD.B0, TI=TILE, PER=[
     {x:BOD.X(MODS.apts.A.x0+3.7),z:BOD.Z(MODS.apts.A.y1)-.6*TI,y:BOD.Y(650),h:0},{x:BOD.X((B0.x0+B0.x1)/2),z:BOD.Z(B0.y1)-.6*TI,y:BOD.Y(B0.h),h:0},
     ...(AWAY.has('apartments')?[]:[{x:POOLR.X(8),z:POOLR.Z(POOLR.y1)-.6*TI,y:POOLR.Y(POOLR.H),h:0},{x:POOLR.X(21),z:POOLR.Z(POOLR.y1)-.6*TI,y:POOLR.Y(POOLR.H),h:0}]),...WIRES.perch];
+  const gy=(x,z)=>{ const t=window.WEEDS&&WEEDS.top&&WEEDS.top(x,z); return typeof t==='number'?t:MODS.bodega.ground(x,z); };
+  const TREES=[PARK.trees,DRESS.trees].filter(Boolean).flatMap(m=>m.userData.items||[]).filter(o=>o.top-o.y>2*TI&&o.r>.5*TI);
+  const spot=(o,a,k)=>({x:o.x+Math.sin(a)*o.r*k,z:o.z+Math.cos(a)*o.r*k,y:o.y+(o.top-o.y)*(k>.8?.58:.64),h:a,tree:o});
+  const HOMES=TREES.map((o,i)=>[Math.sin(i*91.7+o.x)*43758.5%1,o]).sort((a,b)=>a[0]-b[0]).map(q=>q[1]);
   const sky=()=>{ const r=Math.random(), x=BOUND.x0+Math.random()*(BOUND.x1-BOUND.x0);
     return r<.4?{x,z:BOUND.z0-(4+Math.random()*22)*TI}:r<.75?{x,z:BOUND.z1+(3+Math.random()*20)*TI}:{x,z:BOUND.z0+Math.random()*(BOUND.z1-BOUND.z0)}; };
   const ease=(a,b,k)=>a+(b-a)*k, turnTo=(h,want,max)=>{ let d=((want-h+Math.PI*3)%(Math.PI*2))-Math.PI; d=Math.max(-max,Math.min(max,d)); return [h+d,d]; };
@@ -24,13 +28,13 @@
   const spark=(p,v,life)=>FLAME.part(4,p.x,p.y,p.z,v.x,v.y,v.z,life,.11*TI,undefined,G*1.6);
   const burst=p=>{ if(typeof SFX!=='undefined')SFX.play('boom',{at:p,far:40*TI,vol:.9,vary:.2}); for(let k=0;k<18;k++){ const a=Math.random()*Math.PI*2, u=Math.random(); spark(p,new THREE.Vector3(Math.cos(a)*u*3*TI,(1+Math.random()*2.5)*TI,Math.sin(a)*u*3*TI),.6+Math.random()*.6); }
     for(let k=0;k<4;k++)FLAME.puff(p.x+(Math.random()-.5)*.5*TI,p.y+.2*TI,p.z+(Math.random()-.5)*.5*TI,2.2);
-    const hit=(x,z)=>Math.hypot(x-p.x,z-p.z)<1.3*TI; if(LVL==='up'&&hit(pos.x,pos.z))VIT.hurt(.25); for(const N of NPCS)if(N.lv==='up'&&N.key!=='dragon'&&N.g.visible&&hit(N.st.x,N.st.z))N.hp=Math.max(0,N.hp-.25); };
+    if(window.BLAZE)BLAZE.land(p); const hit=(x,z)=>Math.hypot(x-p.x,z-p.z)<1.3*TI; if(LVL==='up'&&hit(pos.x,pos.z))VIT.hurt(.25); for(const N of NPCS)if(N.lv==='up'&&N.key!=='dragon'&&N.g.visible&&hit(N.st.x,N.st.z))N.hp=Math.max(0,N.hp-.25); };
   const G=9.8/.84*TI*.35;
   FIRE={tick:dt=>{ let li=0;
     for(const f of FB){ if(!f.on)continue; f.t+=dt; f.v.y-=G*dt; f.g.position.addScaledVector(f.v,dt); const q=f.g.position; f.fl.x=q.x; f.fl.y=q.y; f.fl.z=q.z;
       if(Math.random()<dt*30)spark(q,new THREE.Vector3((Math.random()-.5)*.6*TI,.4*TI,(Math.random()-.5)*.6*TI),.4);
       if(li<2){ FL[li].position.copy(f.g.position); FL[li].intensity=6; li++; }
-      const gy=MODS.bodega.ground(f.g.position.x,f.g.position.z); if(f.g.position.y<=gy+.2*TI||f.t>6){ f.on=f.fl.on=false; f.g.visible=false; burst(f.g.position.clone().setY(gy+.1)); } }
+      const gg=gy(f.g.position.x,f.g.position.z); if(f.g.position.y<=gg+.2*TI||f.t>6){ f.on=f.fl.on=false; f.g.visible=false; burst(f.g.position.clone().setY(gg+.1)); } }
     for(;li<2;li++)FL[li].intensity=0;
   }};
   const GLIDE=(()=>{ const r=rigOf(), mx=new THREE.AnimationMixer(r.bones[0]), a=mx.clipAction(CLIPS.Flying_loop); a.play(); const g=new THREE.Group(); g.add(r.bones[0]);
@@ -41,35 +45,52 @@
   const make=(i)=>{ const rig=rigOf(), mixer=new THREE.AnimationMixer(rig.bones[0]), act=n=>mixer.clipAction(CLIPS[n]);
     const idle=act('Idle_loop'), fly=act('Flying_loop'), lift=act('GroundToFly'), attack=act('Attack');
     idle.play(); fly.play(); fly.time=Math.random()*CLIPS.Flying_loop.duration; lift.setLoop(THREE.LoopOnce); lift.clampWhenFinished=true;
-    const D={mode:'fly',p:PER[i%PER.length],t:0,y:0,bank:0,pitch:0,v:.8*TI,to:sky(),fly:60+Math.random()*100,cruise:BOD.Y(240+Math.random()*420),breath:6+Math.random()*14,snap:0,style:'flap',bt:Math.random()*3,gl:0,turn:0,climb:0,tw:0}; D.y=D.cruise;
+    const D={mode:'fly',p:PER[i%PER.length],t:0,y:0,bank:0,pitch:0,v:.8*TI,to:sky(),fly:60+Math.random()*100,cruise:BOD.Y(240+Math.random()*420),breath:40+Math.random()*200,pw:0,peek:false,pk:5,next:null,snap:0,style:'flap',bt:Math.random()*3,gl:0,turn:0,climb:0,tw:0}; D.y=D.cruise;
     const BN_=n=>rig.bones.find(b=>b.name===n), TAIL=['Tail','Tail_001','Tail_002','Tail_003','Tail_004'].map(BN_), NECK=['Head','Head_001','Head_002'].map(BN_), FW=new THREE.Vector3(), RT=new THREE.Vector3();
-    let wI=0, wF=1, wL=0; const s0=sky();
+    let wI=0, wF=1, wL=0; const s0=sky(), HT0=HOMES.length?HOMES[i%HOMES.length]:null, ha=i*2.4+1;
+    if(HT0){ D.home=spot(HT0,ha,.42); D.p=D.home; }
+    const nearTree=o=>{ const c=TREES.filter(q=>q!==o&&Math.hypot(q.x-o.x,q.z-o.z)<40*TI); return c.length?c[Math.floor(Math.random()*c.length)]:null; };
+    const nextOf=()=>{ const P=D.p, r=Math.random();
+      if(!D.home||P!==D.home)return D.home&&Math.random()<.9?D.home:null;
+      if(r<.4){ const o=nearTree(P.tree); if(o)return spot(o,Math.random()*6.28,.5); }
+      if(r<.75){ const o=P.tree, a=Math.random()*6.28, d=o.r*(1.1+Math.random()*.6)+.5*TI, x=o.x+Math.sin(a)*d, z=o.z+Math.cos(a)*d; if(MODS.bodega.ground(x,z)>-.01)return {x,z,y:gy(x,z),h:a,ground:1}; }
+      return null; };
+    const spit=(hp,v)=>{ const vy=v.y, h=Math.max(0,hp.y-gy(hp.x,hp.z)), t=(vy+Math.sqrt(vy*vy+2*G*h))/G, lx=hp.x+v.x*t, lz=hp.z+v.z*t;
+      if(LVL==='up'&&Math.hypot(lx-pos.x,lz-pos.z)<4*TI)return false; D.snap=.6; fire(hp,v); return true; };
     const N=makeNPC(null,{key:'dragon',name:'A DRAGON',names:M.parts,lv:'up',group:'bodega',geo:greenGeo(),skin:rig,tall:M.tall,eye:-1,rank:[0],metres:.64,x:s0.x,z:s0.z,lane:{x0:s0.x,x1:s0.x,z0:s0.z,z1:s0.z},ground:()=>0,radius:.3,speed:0,stride:0,rock:0,bob:0,noSelf:true,
       anim:(dt)=>{ const k=Math.min(1,dt*3); wI=ease(wI,D.mode==='perch'?1:0,k); wF=ease(wF,D.mode==='fly'||D.mode==='come'?1:0,k); wL=ease(wL,D.mode==='lift'?1:0,Math.min(1,dt*8));
         idle.setEffectiveWeight(wI); fly.setEffectiveWeight(wF); lift.setEffectiveWeight(wL); attack.setEffectiveWeight(D.snap>0?1:0);
         D.gl+=((D.style==='glide'&&D.mode==='fly'?1:0)-D.gl)*Math.min(1,dt*1.5); fly.timeScale=(D.mode==='come'?.5:.62)*(1-D.gl);
         if(D.gl>.02){ const L=CLIPS.Flying_loop.duration; let dd=GLIDE-fly.time; dd-=Math.round(dd/L)*L; fly.time+=dd*Math.min(1,dt*2.5*D.gl); }
         mixer.update(dt);
+        if(D.mode==='perch'&&D.p.tree){ const c=1-D.pw; RT.set(Math.cos(st.h),0,-Math.sin(st.h)); TAIL.forEach(b=>bend(b,UP,.34*c)); NECK.forEach(b=>bend(b,RT,.2*c)); }
         if(D.mode!=='perch'){ FW.set(Math.sin(st.h),0,Math.cos(st.h)); RT.set(Math.cos(st.h),0,-Math.sin(st.h)); D.tw+=dt;
           TAIL.forEach((b,k)=>{ bend(b,UP,-D.turn*.18*(k+1)/3+Math.sin(D.tw*1.1+k*.7)*.05*(1+D.gl)); bend(b,RT,D.climb*.08); });
           NECK.forEach((b,k)=>bend(b,UP,D.turn*.12)); } } });
     N.push=()=>{}; N.blocks=()=>false;
-    const tick0=N.tick, st=N.st; st.hold=true; st.h=Math.random()*6; N.g.rotation.order='YXZ';
+    const tick0=N.tick, st=N.st; st.hold=true; st.h=Math.random()*6; N.g.rotation.order='YXZ'; if(D.home){ D.mode='perch'; D.t=5+Math.random()*80; st.x=D.home.x; st.z=D.home.z; D.y=D.home.y; wI=1; wF=0; }
     N.tick=(dt,you)=>{ st.to=null; st.face=null; tick0(dt,you); let turn=0; D.snap-=dt;
       { const g=CLOCK.dark()?.35:0; N.toon.emissive.lerp(GLC.setRGB(.04*g,.2*g,.06*g),Math.min(1,dt*.5)); }
       const y0=D.y;
-      if(D.mode==='perch'){ st.x=D.p.x; st.z=D.p.z; st.h=ease(st.h,D.p.h,Math.min(1,dt*2)); D.y=ease(D.y,D.p.y,Math.min(1,dt*4)); D.v=0;
-        if((D.t-=dt)<=0){ D.p.on=0; D.mode='lift'; lift.reset(); lift.play(); D.t=0; } }
-      else if(D.mode==='lift'){ D.t+=dt; D.y+=dt*.6*TI; D.v=ease(D.v,.5*TI,dt); if(D.t>CLIPS.GroundToFly.duration){ D.mode='fly'; D.to=sky(); D.fly=75+Math.random()*90; lift.stop(); } }
+      D.breath-=dt;
+      if(D.mode==='perch'){ const P=D.p; let x=P.x, z=P.z, y=P.y, h=P.h;
+        if(P.tree){ if((D.pk-=dt)<=0){ D.peek=!D.peek; D.pk=D.peek?3+Math.random()*5:8+Math.random()*16; } D.pw=ease(D.pw,D.peek?1:0,Math.min(1,dt*1.2));
+          const o=P.tree, a=P.h, k=.42+(.95-.42)*D.pw; x=o.x+Math.sin(a)*o.r*k; z=o.z+Math.cos(a)*o.r*k; y=P.y-(o.top-o.y)*.06*D.pw; h=a+(1-D.pw)*1.9+D.pw*Math.sin(D.t*.6)*.5;
+          if(D.breath<=0&&D.pw>.85){ const fw=new THREE.Vector3(Math.sin(st.h),0,Math.cos(st.h)); D.breath=spit(new THREE.Vector3(st.x,D.y+.15*TI,st.z).addScaledVector(fw,.4*TI),fw.multiplyScalar(2.4*TI).add(new THREE.Vector3(0,-.5*TI,0)))?150+Math.random()*210:12; } }
+        else D.pw=0;
+        st.x=ease(st.x,x,Math.min(1,dt*3)); st.z=ease(st.z,z,Math.min(1,dt*3)); st.h=turnTo(st.h,h,dt*1.5)[0]; D.y=ease(D.y,y,Math.min(1,dt*4)); D.v=0;
+        if((D.t-=dt)<=0&&D.pw<.3){ P.on=0; D.next=nextOf(); D.mode='lift'; lift.reset(); lift.play(); D.t=0; } }
+      else if(D.mode==='lift'){ D.t+=dt; D.y+=dt*.6*TI; D.v=ease(D.v,.5*TI,dt); if(D.t>CLIPS.GroundToFly.duration){ lift.stop(); if(D.next){ D.p=D.next; D.next=null; D.mode='come'; } else{ D.mode='fly'; D.to=sky(); D.fly=40+Math.random()*60; } } }
       else if(D.mode==='fly'){ D.fly-=dt; D.v=ease(D.v,(D.style==='glide'?.95:.8)*TI,dt*.5); const want=Math.atan2(D.to.x-st.x,D.to.z-st.z), r=turnTo(st.h,want,.28*dt); st.h=r[0]; turn=r[1]/Math.max(dt,1e-3);
         if((D.bt-=dt)<=0||D.style==='glide'&&D.y<D.cruise-1.6*TI){ D.style=D.style==='flap'?'glide':'flap'; D.bt=D.style==='glide'?4+Math.random()*7:2.5+Math.random()*3; }
         D.y+=(D.style==='flap'?.22:-.16)*TI*dt; D.y=ease(D.y,Math.max(D.cruise-1.8*TI,Math.min(D.cruise+1.8*TI,D.y)),dt); if(Math.hypot(D.to.x-st.x,D.to.z-st.z)<3*TI)D.to=sky();
-        if((D.breath-=dt)<=0){ D.breath=8+Math.random()*18; D.snap=.6; const fw=new THREE.Vector3(Math.sin(st.h),0,Math.cos(st.h)), hp=new THREE.Vector3(st.x,D.y+.2*TI,st.z).addScaledVector(fw,.5*TI);
-          fire(hp,fw.multiplyScalar(4.5*TI).add(new THREE.Vector3(0,-1.2*TI,0))); }
-        if(D.fly<=0){ const fr=PER.filter(p=>!p.on); D.p=fr[Math.floor(Math.random()*fr.length)]||PER[0]; D.mode='come'; D.style='flap'; } }
+        if(D.breath<=0){ const fw=new THREE.Vector3(Math.sin(st.h),0,Math.cos(st.h)), hp=new THREE.Vector3(st.x,D.y+.2*TI,st.z).addScaledVector(fw,.5*TI);
+          D.breath=spit(hp,fw.multiplyScalar(4.5*TI).add(new THREE.Vector3(0,-1.2*TI,0)))?150+Math.random()*210:10; }
+        if(D.fly<=0){ const fr=PER.filter(p=>!p.on); D.p=D.home&&(Math.random()<.9||!fr.length)?D.home:fr[Math.floor(Math.random()*fr.length)]||PER[0]; D.mode='come'; D.style='flap'; } }
       else if(D.mode==='come'){ const dx=D.p.x-st.x, dz=D.p.z-st.z, d=Math.hypot(dx,dz);
         if(d>.2*TI){ const r=turnTo(st.h,Math.atan2(dx,dz),(d<3*TI?.7:.3)*dt); st.h=r[0]; turn=r[1]/Math.max(dt,1e-3); D.v=ease(D.v,d<3*TI?Math.max(.15*TI,d*.25):.8*TI,dt*1.2); D.y=ease(D.y,D.p.y+Math.min(d,5*TI)*.3,dt*.8); }
-        else{ D.mode='perch'; D.p.on=1; D.t=40+Math.random()*70; } }
+        else{ D.mode='perch'; D.p.on=1; D.pw=0; D.peek=false; D.pk=6+Math.random()*10; D.t=D.p===D.home?50+Math.random()*70:D.p.tree?20+Math.random()*25:D.p.ground?8+Math.random()*12:40+Math.random()*70; } }
+      if(D.mode==='come'&&D.p.ground&&Math.hypot(D.p.x-st.x,D.p.z-st.z)<3*TI&&!D.p.ok){ D.p.ok=1; D.p.y=gy(D.p.x,D.p.z); }
       if(D.mode!=='perch'){ st.x+=Math.sin(st.h)*D.v*dt; st.z+=Math.cos(st.h)*D.v*dt; }
       D.turn=ease(D.turn,turn,Math.min(1,dt*2)); D.climb=ease(D.climb,(D.y-y0)/Math.max(dt,1e-3)/TI,Math.min(1,dt*2));
       D.bank=ease(D.bank,Math.max(-.5,Math.min(.5,-turn*1.4)),Math.min(1,dt*1.5));
@@ -77,5 +98,6 @@
     N.mixer=mixer; N.D=D; N.restless=()=>true; return N; };
   const DR=[]; for(let i=0;i<10;i++)DR.push(make(i));
   window.DRAGONPERCH=(i,k)=>{ const N=DR[i], D=N.D; D.p=PER[k]; D.p.on=1; D.mode='perch'; D.t=999; N.st.x=D.p.x; N.st.z=D.p.z; D.y=D.p.y; return PER.length; };
-  window.DRAGONDBG=()=>DR.map(N=>({mode:N.D.mode,x:+N.st.x.toFixed(1),y:+N.D.y.toFixed(1),z:+N.st.z.toFixed(1)}));
+  window.DRAGONHOME=i=>{ const N=DR[i], D=N.D; if(!D.home)return null; D.p=D.home; D.mode='perch'; D.t=999; N.st.x=D.p.x; N.st.z=D.p.z; D.y=D.p.y; return {x:D.p.x,z:D.p.z,y:D.p.y}; };
+  window.DRAGONDBG=()=>DR.map(N=>({mode:N.D.mode,tree:!!N.D.p.tree,ground:!!N.D.p.ground,peek:+N.D.pw.toFixed(2),breath:Math.round(N.D.breath),x:+N.st.x.toFixed(1),y:+N.D.y.toFixed(1),z:+N.st.z.toFixed(1)}));
 }

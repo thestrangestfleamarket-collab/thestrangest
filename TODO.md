@@ -41,3 +41,5 @@ The owner's list of features to build, newest last. Each line is his ask; the no
   (today only its bottom part is on the map), the terrace's back wall on its shore.
 - **First step: mockups** of a few possible layouts (where the gate, the path, the terrace and the lake go) for him to pick, before building.
 - Built the game's way: CEL light, the game's own painters and colours, no photo textures; it states its cost (triangles, lamps, ms).
+- **Done 19 Oct 2026** (his pick A, "no walkway to fountain yet, make it 20% smaller"): the terrace, the fountain and the lake are in
+  (`src/060a-fount.js`, see docs/HISTORY.md). **Still to do**: the walkway to the terrace and the Mall gate entrance (the gate from his photo).

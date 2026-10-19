@@ -2901,3 +2901,15 @@ automatically. dragon balls of fire can start real fires. spread very slow. leav
   flowers and 120-160 bushes over the whole park, some 25,000-30,000 triangles in all, split by `CULL` into 10-tile pieces so only
   what is on screen draws (a few thousand in a usual view); 20 draws, 2 new shader programs (bushes; flowers with the bend), no
   lights; bushes in the sun's still shadow. Not yet measured in the page (`tests/tricount.cjs`).
+
+**The ghost is a sheet** (owner, 19 Oct 2026: "when you are dead you should look like the sheet ghost, be 50% transparent, be able to
+walk through people but at 75% speed (they slow you down a little) you cant walk through walls or othings things are alll"):
+- Dead, your Walker is hidden once you have fallen and a bedsheet drops over an invisible ball where your head was (`103a-death.js`, the
+  cloth of Ghost Street's ghosts, `GHOSTS.cloth` / `GHOSTS.run` in `149-ghosts.js`, now shared): a square sheet 2.3 m across on a 24 cm
+  ball floating at 1.5 m with a slow bob, the hem and corners trailing and swinging as you move, the ground under you stopping it, two
+  black eyes facing where you head. Half see-through (opacity .5), in bands (toon, your own gradient). Going in to the bath house the
+  ball rises faster and faster and the sheet trails up after it, fading out. Back alive, the sheet goes and the Walker returns.
+- You pass through people (no pushing them or being pushed: `collide()` in `075-main-13.js`; they no longer wait for you either,
+  `076-npc-map.js`), moving at 75% while you overlap one; walls, buildings and things stop you as before.
+- The pale see-through Walker of the first version is gone (`072-walker3d.js` as it was). Cost: 512 triangles and 289 cloth points
+  (10 passes a step at 120 a second) while dead, one new program (the sheet's toon), no light.

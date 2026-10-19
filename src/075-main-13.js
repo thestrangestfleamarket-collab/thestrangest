@@ -21,7 +21,7 @@ addEventListener('blur',()=>{ keys.clear(); st.runTarget=0; FEEL.IN.press=0; });
 const ray=new THREE.Raycaster(), gplane=new THREE.Plane(new THREE.Vector3(0,1,0),0), hit=new THREE.Vector3();
 const marker=new THREE.Mesh(new THREE.PlaneGeometry(0.5,0.5).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({color:0xf2c14e,transparent:true,opacity:0.8})); marker.visible=false; scene.add(marker);
 
-function collide(p){ if(typeof NPCS!=='undefined')for(const N of NPCS)if(N.lv===LVL&&!N.far)N.push(p); const r=0.36; p.x=Math.max(BOUND.x0,Math.min(BOUND.x1,p.x)); p.z=Math.max(BOUND.z0,Math.min(BOUND.z1,p.z));
+function collide(p){ if(typeof NPCS!=='undefined'&&!VIT.dead)for(const N of NPCS)if(N.lv===LVL&&!N.far)N.push(p); const r=0.36; p.x=Math.max(BOUND.x0,Math.min(BOUND.x1,p.x)); p.z=Math.max(BOUND.z0,Math.min(BOUND.z1,p.z));
   for(const [x0,z0,x1,z1] of solids){ const cx=Math.max(x0,Math.min(x1,p.x)), cz=Math.max(z0,Math.min(z1,p.z)), dx=p.x-cx, dz=p.z-cz, d2=dx*dx+dz*dz;
     if(d2>=r*r)continue; if(d2>1e-8){ const d=Math.sqrt(d2); p.x=cx+dx/d*r; p.z=cz+dz/d*r; }
     else { const o=[p.x-x0+r,x1-p.x+r,p.z-z0+r,z1-p.z+r], m=Math.min(...o); if(m===o[0])p.x=x0-r; else if(m===o[1])p.x=x1+r; else if(m===o[2])p.z=z0-r; else p.z=z1+r; } } }
@@ -50,7 +50,7 @@ function frame(now){ requestAnimationFrame(frame); renderer.info.reset(); const 
     if(FT){ st.yr=0; if(!RIVER.feed(st,pos,dt,ml>0,keys))WATER.feed(st,pos,dt,ml>0,keys); st.target=0; RIG.step(st,dt); FEEL.step(dt,mx,mz); }
     else{
     if(ml>0&&!(busy&&busy.def.below!=null)){ const tk=busy?.5:1; let dh=Math.atan2(mx,mz)-heading; dh=Math.atan2(Math.sin(dh),Math.cos(dh)); const turn=3*Math.PI*dt*tk; const dd=Math.max(-turn,Math.min(turn,dh*(1-Math.exp(-dt*12*tk)))); heading+=dd; st.yr=dd/Math.max(dt,1e-3); } else st.yr=0;
-    if(window.BOAT&&BOAT.on){ BOAT.carry(st,pos); heading=BOAT.hd; } else if(!RIVER.feed(st,pos,dt,ml>0,keys)&&!(FOUNT.feed&&FOUNT.feed(st,pos,dt,ml>0,keys)))WATER.feed(st,pos,dt,ml>0,keys); st.target=ml>0?1:0; const before=st.dist; RIG.step(st,dt); const go=(st.dist-before)*W3.SZ/PPU; if(typeof SFX!=='undefined')SFX.steps(st,go);
+    if(window.BOAT&&BOAT.on){ BOAT.carry(st,pos); heading=BOAT.hd; } else if(!RIVER.feed(st,pos,dt,ml>0,keys)&&!(FOUNT.feed&&FOUNT.feed(st,pos,dt,ml>0,keys)))WATER.feed(st,pos,dt,ml>0,keys); st.target=ml>0?1:0; const before=st.dist; RIG.step(st,dt); const go=(st.dist-before)*W3.SZ/PPU*(VIT.dead&&NPCS.some(N=>N.lv===LVL&&!N.far&&N.mode!=='hidden'&&N.blocks(pos.x,pos.z,.3*TILE))?.75:1); if(typeof SFX!=='undefined')SFX.steps(st,go);
     if(go){ const ox=pos.x,oz=pos.z; pos.x+=Math.sin(heading)*go; pos.z+=Math.cos(heading)*go; if(UI.fly)UI.flyStep(0); else collide(pos); if(st.water&&st.water.in&&RIVER.swim)RIVER.clamp(pos); else if(st.water&&st.water.in&&POOLR.inBasin(pos.x,pos.z)){ const m=0.3; pos.x=Math.max(WATER.X0+m,Math.min(WATER.X0+WATER.W-m,pos.x)); pos.z=Math.max(WATER.Z0+m,Math.min(WATER.Z0+WATER.D-m,pos.z)); }
     if(target&&Math.hypot(pos.x-ox,pos.z-oz)<go*0.2)target=null; }
     if(UI.fly)UI.flyStep(dt); else if(window.BOAT&&BOAT.on)py=BOAT.py; else { let g=groundY(pos.x,pos.z); if(st.fk)for(const n of 'LR'){ const f=st.fk[n]; if(f&&f.on&&Math.hypot(f.x-pos.x,f.z-pos.z)<1)g=Math.min(g,f.y); } py+=(g-py)*Math.min(1,dt*20); } }

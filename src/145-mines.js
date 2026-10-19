@@ -117,7 +117,7 @@ const MINE={ready:false}; window.MINE=MINE;
     if(S.tool==='cutter')job={k:'cut',s,t:2.2}; else if(S.tool==='mdrone')job={k:'drone',s,t:0,ph:0,from:new V3(pos.x,py+Yp(60),pos.z)}; else { job={k:'sonic',t:.8}; ringT=0; ringR=2.6*T; ringY=py+.05*T; if(typeof SFX!=='undefined')SFX.play('boom',{vol:.25}); }
     HUD.draw(); };
   const loose=[]; const drop=(s)=>{ const m=new THREE.Mesh(new THREE.OctahedronGeometry(.1*T,0),new THREE.MeshBasicMaterial({color:GEMC[s.gem]||0xffffff})); const x=s.x+(pos.x-s.x)*.3, z=s.z+(pos.z-s.z)*.3; m.position.set(x,groundY(x,z)+.08*T,z); G.add(m);
-    const th={name:'A LOOSE '+s.name,obj:m,reach:.8*T,near:1.4*T,tall:.3*T,act:()=>{ INV.add(s.gem); say('YOU PICK UP THE '+s.name+'.','#f2c14e'); m.removeFromParent(); const i=UI.things.indexOf(th); if(i>=0)UI.things.splice(i,1); FORAGE.draw(); }}; UI.thing(th); things.push(th); };
+    const th={name:'A LOOSE '+s.name,pick:true,obj:m,reach:.8*T,near:1.4*T,tall:.3*T,act:()=>{ INV.add(s.gem); say('YOU PICK UP THE '+s.name+'.','#f2c14e'); m.removeFromParent(); const i=UI.things.indexOf(th); if(i>=0)UI.things.splice(i,1); FORAGE.draw(); }}; UI.thing(th); things.push(th); };
   const jobTick=dt=>{ if(!job)return; job.t-=dt;
     if(job.k==='cut'){ const s=job.s, hx=pos.x, hy=py+Yp(48), hz=pos.z, L=Math.hypot(s.x-hx,s.y-hy,s.z-hz); beam.visible=true; beam.scale.set(.025*T,.025*T,L); beam.position.set((s.x+hx)/2,(s.y+hy)/2,(s.z+hz)/2); beam.lookAt(s.x,s.y,s.z);
       if(typeof FLAME!=='undefined'&&Math.random()<dt*25)FLAME.ember(s.x,s.y,s.z,.5); if(Math.hypot(pos.x-s.x,pos.z-s.z)>1.8*T){ job=null; beam.visible=false; return say('YOU STEP AWAY. THE BEAM CUTS OUT.','#c8a090'); }

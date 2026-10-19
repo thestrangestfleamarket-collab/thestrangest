@@ -37,10 +37,11 @@ function museumFloorCol(x,y){ const c=MUC, k=musRoom(x,y), M=MUS;
   return mt('wood',g<.05?sh(b,.92):g>.96?sh(b,1.06):b); }
 const MUP=(()=>{ let o=null; const mk=(nx,ny,at,a0,a1,z0,H,draw)=>{ const u=(a)=>(nx?-a*nx:a*ny)*24, ua=u(a0), ub=u(a1), u0=Math.min(ua,ub), W=Math.round(Math.abs(ub-ua)), a=new Array(W*H).fill(null);
     draw((c,z,col)=>{ c=Math.floor(c); z=Math.floor(z); if(col&&c>=0&&c<W&&z>=0&&z<H)a[z*W+c]=col; },W,H); return {nx,ny,at,u0,z0,W,H,a}; };
-  const build=()=>{ const M=MUS, c=MUC, B=M.b, out=[];
-    const title=(nx,ny,at,a0,a1,num,name,k)=>{ const h=k*7+16, z0=M.archZ+10; out.push(mk(nx,ny,at,a0,a1,z0,h,(put,W)=>{ const w=Math.max(muTW(name,k),muTW(num,1))+16, l=Math.floor((W-w)/2);
+  const TT=out=>(nx,ny,at,a0,a1,num,name,k)=>{ const M=MUS, c=MUC, h=k*7+16, z0=M.archZ+10; out.push(mk(nx,ny,at,a0,a1,z0,h,(put,W)=>{ const w=Math.max(muTW(name,k),muTW(num,1))+16, l=Math.floor((W-w)/2);
       for(let z=0;z<h;z++)for(let q=l;q<l+w;q++)put(q,z,z<1||z>=h-1||q===l||q===l+w-1?c.giltD:c.stoneL);
       muText(put,num,Math.floor((W-muTW(num,1))/2),h-11,1,c.giltD); muText(put,name,Math.floor((W-muTW(name,k))/2),3,k,c.gilt); })); };
+  const bank=()=>{ const M=MUS, B=M.b, out=[]; TT(out)(0,1,B.y0+T,M.hall.x0,M.hall.x1,'SAVINGS · LOANS','THE BANK',2); return out; };
+  const build=()=>{ const M=MUS, c=MUC, B=M.b, out=[], title=TT(out);
     title(0,1,B.y0+T,M.hall.x0,M.hall.x1,'THE GREAT HALL','MUSEUM OF EARTH',2);
     title(1,0,M.hx0+T,M.west.y0,M.by,'GALLERY 1','ANCIENT EGYPT',2); title(-1,0,M.hx1-T,M.east.y0,M.by,'GALLERY 2','AFRICA, CRADLE OF HUMANS',2);
     title(0,-1,M.by-T,M.hall.x0,M.hall.x1,'GALLERY 3','CAVE PEOPLE · ICE AGE',2); title(0,-1,M.by-T,M.west.x0,M.west.x1,'GALLERY 4','EARTH BEFORE US',1);
@@ -71,7 +72,7 @@ const MUP=(()=>{ let o=null; const mk=(nx,ny,at,a0,a1,z0,H,draw)=>{ const u=(a)=
       ammo(6+sw/2,H/2,Math.min(sw,H)/2-8); trilo(6+sw+6+sw*.3,H*.62,15); trilo(6+sw+6+sw*.72,H*.36,11); ammo(6+sw+6+sw*.7,H*.75,9); ammo(6+sw+6+sw*.28,H*.26,7);
       for(let i=0;i<5;i++)ammo(6+2*(sw+6)+sw*(.25+.5*hash(i,1,1751)),H*(.15+i*.17),5+hash(i,2,1753)*6); trilo(6+2*(sw+6)+sw*.7,H*.55,9); }));
     return out; };
-  return {get all(){ return o||(o=build()); }}; })();
+  let ob=null; return {get all(){ return o||(o=build()); },get bank(){ return ob||(ob=bank()); }}; })();
 const MUEG=(()=>{ const g={ankh:['.###.','#...#','#...#','.###.','#####','..#..','..#..','..#..'],eye:['.###...','#####..','#.#.##.','.###..#','..#...#','..#..#.'],
     owl:['.##..','####.','#.##.','####.','.###.','.###.','.#.#.','##.##'],water:['#...#...','.#.#.#.#','..#...#.'],reed:['..#','.##','.##','###','###','.##','.#.','.#.'],
     bread:['.###.','#####'],man:['.##..','.##..','.#...','####.','.###.','.####','#####']};
@@ -83,8 +84,8 @@ function muEgypt(u,z){ const c=MUC, H=MUS.H; if(z>=H-24&&z<H-12){ const a=((Math
     if(b>=0&&b<G.length&&a>=0&&a<G[b].length&&G[b][a]==='#')return [c.egBlue,c.egRed,c.egGreen,c.ink][ci]; return null; }
   if(z<36)return z>=33?c.egRed:z>=8?c.ink:null;
   return null; }
-function museumWall(q,nx,ny,X,Y,z,f){ const M=MUS, c=MUC, at=nx?X:Y, u=(X*ny-Y*nx)*24, k=musRoom(X+nx*.2,Y+ny*.2);
-  for(const P of MUP.all)if(P.nx===nx&&P.ny===ny&&Math.abs(at-P.at)<.05){ const cc=Math.floor(u-P.u0), zz=Math.floor(z-P.z0); if(cc>=0&&cc<P.W&&zz>=0&&zz<P.H){ const o=P.a[zz*P.W+cc]; if(o)return o.e?o:sh(o,f); } }
+function museumWall(q,nx,ny,X,Y,z,f,o){ const M=MUS, c=MUC, at=nx?X:Y, u=(X*ny-Y*nx)*24, k=o&&o.k||musRoom(X+nx*.2,Y+ny*.2);
+  for(const P of o&&o.P||MUP.all)if(P.nx===nx&&P.ny===ny&&Math.abs(at-P.at)<.05){ const cc=Math.floor(u-P.u0), zz=Math.floor(z-P.z0); if(cc>=0&&cc<P.W&&zz>=0&&zz<P.H){ const o=P.a[zz*P.W+cc]; if(o)return o.e?o:sh(o,f); } }
   if(ny>0&&Math.abs(Y-M.b.y0-T)<.05){ const d=muDoor(X-M.mid,z); if(d)return sh(d,f); }
   if(z<6)return sh(c.skirt,f);
   const along=nx?Y:X, sur=(a0,a1)=>z<M.archZ+8&&along>a0-.3&&along<a1+.3&&(z>=M.archZ||along<a0+.02||along>a1-.02);
@@ -116,7 +117,7 @@ function muDoor(u,z){ const c=MUC, a=Math.abs(u); if(z>=82||a>1.5)return null; i
   if(a<.03)return [40,30,20]; const p=a%1.2, q=z%36; if(p<.08||p>1.12||q<3||z>=74)return [96,72,40]; if(Math.abs(p-.2)<.04&&Math.abs(z-38)<3)return [200,166,90]; return q<5||q>31?[118,90,50]:[136,104,58]; }
 function museumOutside(b,nx,ny,X,Y,z,f,cap){ const c=MUC, u=(X*ny-Y*nx)*24, sx=b.id==='lmuscopy'?b.x0-MUS.f.x0:0;
   if((b.id==='lmusfront'||b.id==='lmuscopy')&&ny<0&&Math.abs(Y-b.y0)<.2){ const d=muDoor(X-(b.x0+b.x1)/2,z); if(d)return sh(d,f); }
-  if(ny<0&&Math.abs(Y-b.y0)<.2)for(const n of MUBAN.all){ const cc=Math.floor((n.x+sx-X)*24+n.W/2), zz=Math.floor(z-n.z0); if(cc>=0&&cc<n.W&&zz>=0&&zz<n.H){ const o=n.a[zz*n.W+cc]; if(o)return sh(o,f); } }
+  if(!b.plain&&ny<0&&Math.abs(Y-b.y0)<.2)for(const n of MUBAN.all){ const cc=Math.floor((n.x+sx-X)*24+n.W/2), zz=Math.floor(z-n.z0); if(cc>=0&&cc<n.W&&zz>=0&&zz<n.H){ const o=n.a[zz*n.W+cc]; if(o)return sh(o,f); } }
   if(z>=cap-4)return null;
   if(z<10)return sh(z<1?sh(c.granite,.8):speck(c.granite,u/24,z/24,1771),f);
   if(z>=cap-18)return sh(z>=cap-8?c.stoneL:z<cap-14?c.stoneD:Math.floor(u/5)%2?c.stoneD:c.stone,f);

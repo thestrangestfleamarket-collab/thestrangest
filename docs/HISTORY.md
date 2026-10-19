@@ -2903,3 +2903,226 @@ automatically. dragon balls of fire can start real fires. spread very slow. leav
   lights; bushes in the sun's still shadow. Not yet measured in the page (`tests/tricount.cjs`).
 - **Black underground** (owner, 19 Oct 2026, a picture of the subway with lavender sky round the station): below the street the sky
   dome is hidden and the background is black, whatever the day/night settings do.
+
+## 19 Oct 2026: the fire escapes' ladder to the roof; outside stays outside
+(owner, of the apartment house's fire escapes: "the fire escape shouldnt have stairs, it hsould have a ladder that goes straight up and
+through the fireescapes all thew ay to roof.. also this view is mesed up when i was on fireescape, should still only see exterior of
+building until you go inside"; `054-apts.js`, `075-main-13.js`)
+- **The ladder**: the stair between the landings is gone. Each fire escape has one straight iron ladder (two rails, a rung every 12 px)
+  from the 2nd-floor landing up through a hatch in the 3rd-floor landing's grating, past the cornice and over the parapet onto the roof
+  (a gooseneck), front 11.9 and back 9.4 from the west corner. Stand at its foot (or at its head on the roof) and hold up or down, or double
+  click it: you hold on (the rig's climbing pose, facing the wall) and go straight up or down; step off at a landing with left/right or a
+  click, off the top onto the roof, off the bottom onto the 2nd-floor landing. The counterweighted drop stair to the sidewalk and the alley
+  stays.
+- **The roof walkable**: on the roof you walk the flat inside the parapet; the machine room, the water tower and the chimneys are solid.
+- **Outside is outside**: on the fire escape, the ladder or the roof the house counts as outside (`APTS.in` only between its walls and
+  under its roof): no cutaway, its roof and walls drawn, no inside lamps; only stepping in through a French window shows the inside.
+- **Mushrooms under the tall grass, barefoot foraging** (owner, 19 Oct 2026: "mushrooms should be mostly under the tall grass and
+  should only be revealed when you walk over it. if you are barefoot you dont risk stepping on it, but if you are waering shoes you
+  can crush them. playes should take off their shoes and go barefoot when looking for mushrooms"; `141-forage.js`, `102-looks.js`,
+  `094-ui.js`): the mushrooms now stand on the ground under the grass. Four in five are hidden (not drawn, not clickable) until the
+  grass over them is pressed down (you or a walker within 0.8 tiles: `WEEDS.pressAt` when the grass gives it, else your own last
+  3.5 s of steps and the walkers near you); then they stay out while it is pressed and 20 s after, and hide again. One in five has a
+  tall stem and peeks out over the grass top. **SHOES** (YOU panel: SHOES ON / BAREFOOT; key M, rebindable in KEYS; saved in `looks`):
+  taking them off or on is a short crouch and "YOU TAKE OFF YOUR SHOES." / "YOU PUT YOUR SHOES BACK ON."; barefoot, your shoes are
+  skin. With shoes on, stepping onto a mushroom (hidden or out) may crush it: walking 35%, running 70%, crouching or creeping 10%;
+  "SQUISH.", it lies flat and dark for 90 s and is gone for the day. Barefoot never crushes. The first time in the park with shoes on
+  and mushrooms near: "TAKE OFF YOUR SHOES TO FORAGE SAFELY." (once, saved). `MUSHDBG()` gives hidden, revealed, peek, crushed, picked,
+  barefoot. Cost: no new draws or triangles (the same three instanced draws; fewer shown), a check of the near mushrooms 8 times a second.
+- **Watching birds trains BIRDING** (owner, 19 Oct 2026: "when you watch a bird if you can stay within a radius around them you will
+  gain skill"): after a good look (WATCH), you settle in to watch; while you stay within 3.5 tiles and the bird stays, every 8 s of
+  watching is another BIRDING check (a gain chance, UO style), time counting fully while you stand still or walk slowly, a little
+  bonus for standing quite still; go farther or let it fly and you lose sight of it.
+- **Light shafts that find things; fairy rings** (owner, 19 Oct 2026: "the sun beams should come more from above, have them slowly
+  moves around the park to diferent spots. they should shine on thinsg that are rare like mushrooms, buttefly, birds, have them move
+  around slowly to new spots. add mushromo circles that pop up randomly."): the four shafts no longer start from cloud gaps along the
+  sun's slant; they come down nearly straight (the sun's direction tilted 70% toward overhead), drift slowly (about 25 s to arrive)
+  and every 35-65 s each picks a new spot within 28 tiles: mostly a rare thing (a fairy ring first, then mushrooms, butterflies,
+  birds that aren't flying), following it if it moves, else a sunny lawn spot; never under a roof, never across the camera's line.
+  Fairy rings (`141b-fairy.js`): every 70-160 s, up to 3 at a time, a ring of 9-14 mushrooms (four kinds: red, white, brown, glowing
+  blue) pops up on a park lawn 8-24 tiles from you, stays 4-6 minutes and fades; double-click to gather it (morels, or moonglows from a
+  blue ring). `FAIRYAT()` makes one.
+- **The tall grass in soft tussocks, swaying, marked by how you move** (owner, 19 Oct 2026: "i like the grass. it looks too blocky. can
+  you make it a little more crasslike and sway like the trees, give me mockups. also diferent ways walking through it might affect it";
+  of the mockups he picked A, SOFT TUSSOCKS; `WEEDS.lawnInit` in `140-weeds.js`): the same solid mass, its top broken into rounded clumps
+  (lumps some 0.8 tiles apart over the slow roll), its edge no longer a hedge wall: the last tile or so slopes down in a rounded shoulder
+  whose width wobbles, the outline jittered, only a low lip at the ground. Lit by its own faces in the flat bands; no blades, no grain. It
+  sways in the park trees' own wind (`PARK.sway`, `PARK.windK`), more at the top, gusts rolling across. How you move leaves its own mark
+  (from the rig's state): walking a narrow parted path (0.7 tiles, back up in some 3 s); running a wider wake (1.05) pushed outward with
+  a short rustling ripple, back in 1.5 s; crouching barely brushes the tops (0.5, shallow, 1 s); a jump nothing in the air and a round
+  flattened patch where you land (1.5, 3 s); a roll, fall or lying down a long crushed lane (1.15, 5 s). The walkers near you still press
+  it. `WEEDS.pressAt(x,z)` says how pressed it is at a point (0 to 1). Cost about as before: at most 2,048 top triangles a chunk plus its
+  low lips, one program, no light.
+- **Small things hide in the tall grass; no walkers** (owner, 19 Oct 2026: "small creatures shouldnt be seen (you can see a small
+  trail where they are walking but they are too short to b seen. flying things dont cause the grass to move" and "remove all other npc
+  walkers, beard walkers, etc from the game"): creatures (`CREATS`) on the tall grass are hidden and only part it in a small trail
+  (0.3 tiles, lighter); anything off the ground (flying) doesn't touch the grass. The townsfolk walkers are off (`?walkers=1` brings
+  them back) and so is the bearded walker (`?bwk` brings him back).
+- **Cartwheel slower, ground only, held repeats** (owner, 19 Oct 2026: "you should cart wheel 25% slower, you cant start a cartwheel
+  unless your feet on currently on ground, if you hold down cartwheel button you can just keep doing them in a row"): the cartwheel
+  plays at 0.75 speed; U does nothing in the air, on a ladder or a ledge (no more mid-air cartwheel spin); holding U chains
+  cartwheels back to back until it is let go.
+- **Sun beams brighter, softer, swaying** (owner, 19 Oct 2026: "the sun rays need to be 50% more opaque, more glowing, slowly swaying
+  like the trees, soft edges, slowly moving, 25-50% larger"): beams 50% more opaque with a brighter core, soft sides that fade
+  out toward their edges (his ask; an exception to the hard cel bands, like the distance blur), the top of each beam sways slowly
+  like the tree crowns, beams ~37% wider; they still drift slowly between spots.
+- **Grass rises back when you stand still** (owner, 19 Oct 2026: "once you stop in grass the grass wlil come back up around your
+  feet"): about half a second after you stop, the flattened patch shrinks over two seconds to a small ring at your feet.
+- **Lighter, crisper shading on the figures** (owner, 19 Oct 2026, of his figure in a shadow: "the shadows are still too dark on avatar,
+  lets erstrict how dark shadows can get and make the cel shaded a little more"): on you and the walker-built figures, light below
+  full is stepped in quarters (harder cel bands) and never darker than half the figure's own colour by day (about a quarter at
+  night), whatever the shadow or band. Same material, no new program cost.
+- **No dots on the figures** (owner, 19 Oct 2026, after a mockup of three looks: "i dont want dots", "i want B"): shadows falling on you
+  and the walker-built figures are looked up a little off their surface (normal offset +0.18), so they no longer speckle the figure
+  with dots; with the half-light floor and quarter bands above, a shadow on a figure is one clean flat band with a clean edge.
+- **Zoomed in, pixels stop growing** (owner, 19 Oct 2026, of a close zoom where his figure's face was a few huge blocks: "is it
+  possible to keep same resolution even when zooming in super close?", of two options "B"): zooming in, the art's pixels grow only
+  up to their size at the opening view (`PCAP`, the opening's screen pixels per art pixel); past that the picture gets finer instead
+  of blockier. This replaces "zoomed in the art's pixels only grow" (17 Oct) for close zooms; the opening and zoomed-out views are
+  unchanged, and nothing is ever finer on screen than the opening's pixel size.
+- **Black underground** (owner, 19 Oct 2026, a picture of the subway with lavender sky round the station): below the street the sky
+  dome is hidden and the background is black, whatever the day/night settings do.
+
+## 19 Oct 2026: every inside loads when you go in, only that room is seen, doors you can't see into
+(owner: "has the update gone in that is suppoed to only show the interiors and nothign else and not load nteriors at al until you go
+in? you should get a loading screen", of the BODEGA seen lit and open from the sidewalk; "when you enter anything like this it should go
+black everywhere else, even other floors on same interior. also it shouldnt cut off the part of your body not full inside"; earlier: "I
+want to make the interior of all buildinsg not load until you go into them then you get a "Entering..." message while it loads. i want it
+to be seamless.", "anytime you are in interior you should only see black around you except for the only room you are in.", "make sure
+all buildings have a front door that you cant see into")
+- **The BODEGA and THE BATH HOUSE built on entry** (`053-bodbuild.js` `BODB.build`, `055-ghostdojo.js` `BOD.GD.build`): at the start
+  only their shells (outer wall faces, roof, signs, front, door, the bath house's porch things and lights outside); the inner wall faces,
+  the shop's floor, shelves, counter, goods, office and its wall, the tubes and the lamps inside, and the bath's floor, pool, benches,
+  buckets, stools, candles, andon and steam are built the first time you go in, under ENTERING THE BODEGA / ENTERING THE BATH HOUSE on
+  the black `#subfade` (as `STORE.enter`). Their solids, `BOD.O`, `BOD.GD`'s box and door stay from the start (jobs, walkers, ghosts, the
+  bath's coming back are unchanged). `gbox` takes `skf(nx,ny)` to leave faces out.
+- **Doors you can't see into**: the BODEGA's windows, door and side lights are dark glass (no longer see-through); a black card stands
+  just inside the BODEGA's and the bath house's doorways (only while you're outside), so an open door shows dark. Double-click either
+  door to go in (`STORE.xth`), or walk in: a strip half a tile deep before every door (`band` on each room in `ROOMS`) counts as in.
+- **Only the room you're in, black round it** (`130-rooms.js`, `ROOMS.iv`): the black cover that drew wrong is gone. Inside any room
+  (`ROOMS.cur`: the BODEGA's shop or office, the bath house, the store rooms, the pool rooms, the civic tower, each apartment floor)
+  everything not in its box (and its door strip) is made invisible: whole objects that lie outside are hidden, a baked batch that straddles
+  it draws only its faces inside (an index of those faces), other floors of the same building included; the characters outside it are
+  hidden; the background is black. Kept each frame until you step out (`ROOMS.hold`, before the draw), then put back as it was. Going in or
+  out is one step under the black (two frames, then the fade back), so you're never half in. Lists made once per room (on a new build they're
+  made again). The sun's shadow maps are not redrawn while you're inside (the still map stays as it was outside); the lamp's is redrawn on
+  the way out.
+- **Your body never cut**: your figure's materials are never given the rooms' near-side cut (`ROOMS.nearAll` leaves out every material
+  the walker or the characters use, and takes it off again if one was shared); stepping into the door strip lowers the room's walls and
+  hides its roof at once, so no wall or jamb stands across you in the doorway.
+- **Cost**: nothing per frame but a loop over the hidden list; the two insides' faces, goods and lamps no longer baked at the start (not
+  yet measured); entering a room the first time takes one scan of the scene (under the black). `INTDBG()`: `{inside, built, hidden}`.
+- **Picking things up; a sword and nets in your hand** (owner, 19 Oct 2026: "can we add a picking something off ground animation, and
+  using something in your hand, like a sword or net (would work the same, move it with your mouse)"; `001-rig.js` `pickMove`/`aimLayer`,
+  `146a-wield.js`): **picking up** is a move of its own: he walks to within half a tile, bends and crouches as low as he must (the rig
+  finds the crouch and arm that put his right hand on the thing, once per height) or just reaches out for something high, closes his
+  hand at 0.3 s, and only then is it taken (the thing vanishes as his hand gets there); 0.6 s, cut short or into anything like his other
+  moves. It plays for mushrooms, flowers and your garden, loose gems in the mines, the drone's parcel, a trash can's rummage, the drinks
+  machine (a reach to its slot) and loose things you pick up to carry. **Held things**: 1 cycles a SWORD (every player is given one), the
+  BUTTERFLY NET and the BIRD NET (if you have them) and empty hands; the pack has HOLD / PUT AWAY on each. Holding one, his right arm
+  points it where the mouse is (the mouse on a plane at his waist), easing after it, so moving the mouse fast is a swing; a left click
+  is a slash across (alternating sides, 0.3 s); standing, he turns to face where you aim. Double click no longer walks while you hold
+  something (the keys do; the right drag still turns the view); put it away for the usual clicks. Fast swings leave a flat pale swoosh
+  (the last 0.12 s of the blade). The butterfly net catches a butterfly its hoop passes through mid-swing, the bird net a bird (the
+  usual skill checks, cage and all); a low sword swing parts the grass. Cost: the item (a sword 48 triangles, a net about 130) and the
+  swoosh (14), only while held; under 0.1 ms a frame.
+## 19 Oct 2026: under the park's lake
+- **Under the lake looks like under water** (owner, 19 Oct 2026, of his screenshot diving in the park's lake by the fountain, the
+  screen pale sky bands, a dark strip at the horizon and himself a black shape in a void: "when i go under the pond"; `060a-fount.js`,
+  `094-ui.js`, `075-main-13.js`): the lake had no underwater view at all (its "Not yet" above): its water was drawn from above only,
+  the sky showed through it from below, and nothing kept the camera out of the ground under the bed. Now, as in the Hudson, when the
+  camera is under the lake's surface the scene takes on murky green water (`FOUNT.pre`/`FOUNT.post`, fog from 0.4 to 6 tiles, darker at
+  night), the sky dome is hidden so the murk is all you see beyond a few tiles, and the water's surface is seen from below (the lake's
+  water drawn on both sides). The bed, its slopes up to the shore (the basin's walls) and the shore rocks show through the murk.
+  **The camera**: BEHIND follows you down as you dive (its aim slides from above your head to just over your head under water), and goes
+  under with you; it never goes lower than a quarter metre over the bed (`FOUNT.bedAt`) and, out of a dive, keeps its old height over the
+  ground. FIRST PERSON (your eyes) never goes into or under the bed either. ISOMETRIC is unchanged (it looks down through the water).
+  With the NEW CONTROLLER on, walking into the lake now starts swimming as in the Hudson (it walked on the water before).
+  Cost: no triangles, no lights, no shader programs more (the lake's and the fountain's water share one, now two-sided); a few
+  numbers a frame. Not yet: light rays under water, weeds on the bed.
+**The ghost is a sheet** (owner, 19 Oct 2026: "when you are dead you should look like the sheet ghost, be 50% transparent, be able to
+walk through people but at 75% speed (they slow you down a little) you cant walk through walls or othings things are alll"):
+- Dead, your Walker is hidden once you have fallen and a bedsheet drops over an invisible ball where your head was (`103a-death.js`, the
+  cloth of Ghost Street's ghosts, `GHOSTS.cloth` / `GHOSTS.run` in `149-ghosts.js`, now shared): a square sheet 2.3 m across on a 24 cm
+  ball floating at 1.5 m with a slow bob, the hem and corners trailing and swinging as you move, the ground under you stopping it, two
+  black eyes facing where you head. Half see-through (opacity .5), in bands (toon, your own gradient). Going in to the bath house the
+  ball rises faster and faster and the sheet trails up after it, fading out. Back alive, the sheet goes and the Walker returns.
+- You pass through people (no pushing them or being pushed: `collide()` in `075-main-13.js`; they no longer wait for you either,
+  `076-npc-map.js`), moving at 75% while you overlap one; walls, buildings and things stop you as before.
+- The pale see-through Walker of the first version is gone (`072-walker3d.js` as it was). Cost: 512 triangles and 289 cloth points
+  (10 passes a step at 120 a second) while dead, one new program (the sheet's toon), no light.
+- **Diving in the stream no longer puts you underground** (owner, 19 Oct 2026: "when i jumped in the pool the game turned black",
+  "it was the stream", "i think it was all black beacuse it put me underground when i jumped in stream"): the level switch took
+  any height under -1.6 for the underground (`MAPLV`); in the stream (`BROOK.over`), the park's lake (`FOUNT.wet`) or any water
+  you're in, you stay above ground however deep you go.
+- **Tall grass in facets like the trees** (owner, 19 Oct 2026, of the tall grass's flat top and straight walls next to a tree crown:
+  "make the grass look more like tree triangle shapes on tops and sides not so uniform straight lines"): the tall grass is built of
+  bigger triangles (half-tile cells, was a quarter), each corner a different height, flat-shaded facet by facet like the crowns; its
+  sides lean out at uneven angles instead of standing as straight walls. Fewer triangles than before.
+- **Black underground** (owner, 19 Oct 2026, a picture of the subway with lavender sky round the station): below the street the sky
+  dome is hidden and the background is black, whatever the day/night settings do.
+
+## 19 Oct 2026: BANK ST runs west off West St at the castle; THE BANK on its far corner
+(owner, with the menu map's THE STREET tab, his marker on West St by the castle: "I want to extend the street this way and put the bank
+on the corner, make it look like the museum front and lobby inside for now."; asked which way and where: "West, off the left edge",
+"Far end of the new part")
+- **The street** (`RING.bank` in `006-map-pre.js`, map tiles): off West St's west side at the castle's latitude, west to x −96: road
+  y 17 to 37 (20 wide, like Market St), the south sidewalk 6.7 to 17 (wide, the bank's portico on it), the north one 37 to 44, an end
+  sidewalk −102.5 to −96. Road, kerbs, rounded corners, drains, two manholes, bike lanes, the double yellow line and a crosswalk with
+  ramps across its mouth on West St's sidewalk line all come from `050-main-8.js`'s own lists (`RR`, `CORN`, `LN`, `XW`, `JX`,
+  `BOD.kerbs`, `roadPolys`); West St's edge line is dashed across the mouth. Its sign name is BANK ST (street signs stay off).
+- **Walkable**: the town's west wall opens at the mouth and walls go round the new part (`065-ring.js`, `RINGX.pocket`); `BOUND.x0`
+  goes out to −102.5. The far mist has a second box (`MISTB2`, one more `min` in the fog chunk) so the street isn't misted; the
+  skyline's boxes and the band of trees keep 10 tiles clear of it.
+- **THE BANK** (`057b-bank.js`) on the south-west corner, facing north like the museum: the museum's width (26 bodega units), 16
+  deep, its front made by the museum's own makers (the stone, its painted door, the portico steps, four columns, entablature and
+  pediment) with BANK in gilt, lit letters on the entablature (`'bank entablature'`, painted on both its faces: the museum's own
+  MUSEUM OF EARTH is painted only on the face toward its wall, the old game's side, so it never shows) and no banners. Inside one marble lobby like the
+  museum's great hall: the hall's walls and verde-bordered marble floor, THE BANK and SAVINGS · LOANS over the door inside, six hall
+  columns, the information desk at the back, two benches, three hall lamps. Its door works like the museum's (ENTERING THE BANK; the
+  inside is built only then). In MORE PLACES as THE BANK and on the map.
+- **Round it** (`069a-block.js`, fake and cheap like the Hudson side's): shops a storey and a half high east of the bank, one-storey
+  shops on the north side (low, so they hide little of the street in the isometric view) and a taller blank block closing the west end.
+- **Lamps**: three globe posts (two on the south sidewalk 33 tiles apart, one on the north between them).
+- Cost: the bank about the museum's front (walls, portico, roof) plus 6 columns, a desk and 2 benches inside once entered; the five
+  fake blocks 24 triangles each; 3 street lamps and 3 lobby lamp records (LITE still lights 8 at most); no new shader program.
+  Measured in CI: 71,711 triangles on screen at the junction, 86,278 before the bank, 55,115 in its lobby.
+
+## 19 Oct 2026: two campfires only (the lake, the golems' cave); gold grass where the rare mushrooms grow
+(owner: "let put a campfire by the lake and inside the cave with golems, nowhere else. lets add some of the gold style grass (3-4 diff
+versions) and put them in random spots in park and thats where specific mushrooms will grow"; `061-park.js`, `060-cave.js`,
+`140-weeds.js`, `141-forage.js`, `142a-flora.js`, `151-blaze.js`)
+- **The campfires**: the park's old campfire by the round is gone. One now stands on the lake's shore (`PARK.campAt`: the shore point
+  nearest the round that is 2.8 tiles off the water, off the ways, the terrace, the brook and the shore rocks; the lake oaks within 10
+  tiles of it left out), with its woodpile beside it and the sitting log on the land side facing the fire and the water (still a seat).
+  The other is inside the golems' cave, on the floor between its middle and the mouth (`GCAVE.fire`), the sitting stones round it; the
+  golems' spots in the cave keep off it. Each is the same fire as before (`FLAME` 'bed', smoke, embers) with one lamp record (the park's
+  26 strong to 9 tiles, the cave's 22 to 7, lighting inside and out of the mouth), so the 8-lamp pool is unchanged and the nearest fire
+  still takes the one lamp shadow. Both count as a flame for COOKING. Hills, oaks, bushes, flowers and the underbrush keep off the new
+  spot; the blaze (`BLAZE`) no longer counts a campfire or its woodpile as brush and never starts a wildfire within 2 tiles of one, and
+  the fire drones leave them alone.
+- **Gold grass** (`WEEDS.gold`, `WEEDS.goldAt`): sixteen patches (four of each kind), 1.5-2.6 tiles across with wobbly edges, at fixed
+  random spots on the park's lawns (the same every load), off the ways, water, brook, terrace, gates, the castle, shrine, cave and
+  campfire, anything solid, stalls and well clear of the oaks' crowns. They are part of the tall grass itself (same mass, same sway,
+  pressed and trailed the same way, one colour each with a hard edge): **GOLDEN WHEAT** (pale straw, an even top about a tile high,
+  dense wheat ears), **GOLDEN TUSSOCK** (amber, big round mounds with a few pale blades), **DRY GOLD REEDS** (ochre, tallest and
+  ragged, thin reed stems with cream plumes), **GILDED GRASS** (bright gold, low, with glints that twinkle and flecks of light). Flowers
+  and bushes keep off them.
+- **Their mushrooms**: MOREL only in the wheat, CHANTERELLE only in the tussocks, KING BOLETE only in the reeds, MOONGLOW only in the
+  gilded grass (`FORAGE.GOLD`; about one square in twenty a day, some three to five a patch); the plain lawns now grow the others
+  (button, puffball, ink cap, red cap). They hide under the gold grass like the rest (one in five peeks out; walking through shows
+  them; shoes may crush them, barefoot never). Fairy rings still give morels and moonglows. `GOLDDBG()` lists the patches and their
+  mushrooms; `MUSHDBG()` now counts gold and lawn kinds.
+- **Cost**: the gold grass adds no draws, lights or programs (the grass program replaced, `tallgrass3`); the ears, blades, stems and glints some
+  150-700 triangles a patch in the lawn chunk that holds it (8-16 each); the cave's fire one lamp record, its pile ~100 triangles.
+- **The park's trees: elders and oaks in bunches, one each of three landmarks** (owner, 19 Oct 2026: "add 2, 5, and 6 but only 1 each
+  in diff parts of the park. use 4 and the current tree as common trees in park, different sizes, bunches, etc"; built in another
+  chat, `tools/trees-bake.py`): new trees in `data/forest.json`, Elder1 and Elder2 (gnarled, kinked trunks, 354 triangles each),
+  Spruce1 (160), Willow1 (310), Giant1 (367). Oaks and elders are the common trees, sizes 9 to 24; about 45% stand with one or two
+  smaller companions; about a third of the lake-shore oaks are elders. One spruce, one willow (by the lake) and one giant each stand
+  in a different quarter. A few thousand more triangles, no new lights or shader programs. They keep clear of the lake campfire.
+- **Every mushroom shows; skill decides the picking** (owner, 19 Oct 2026, of the gold-grass mushrooms hidden below a skill: "i want
+  them to show up but you cant pick them without the skill level (like before)", "mushrooms"): all mushrooms are seen whatever your
+  FORAGING; one above your reach (its difficulty over your skill + 15, the keen-eye potion counting) never comes away: as before,
+  YOU FAIL TO PICK IT CLEANLY, or now and then IT CRUMBLES IN YOUR HAND (owner: "no use the old verbiage about how you fail to pick
+  it cleanly or soemthing").

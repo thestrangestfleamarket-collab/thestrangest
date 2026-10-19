@@ -69,6 +69,10 @@
     if(K.fly){ N.blocks=()=>false; N.push=()=>{}; N.st.v=speed*TILE; }
     if(ex)N.g.position.set(N.st.x,ex.ground(N.st.x,N.st.z),N.st.z);
     N.mixer=mixer; N.restless=()=>!!K.fly; CREATS.push(N); }
+  window.CREATNEW=(key,id,metres,X={})=>{ const D=C[key], K=KIND[key], rig=rigOf(D.rig), CL=clipsOf(D), mixer=new THREE.AnimationMixer(rig.bones[0]), A={}, act=n=>A[n]||(A[n]=mixer.clipAction(CL[n])); let cur=null;
+    const N=makeNPC(null,{key:id,name:id.toUpperCase(),names:D.mesh.parts,lv:'up',group:'bodega',geo:X.paint?X.paint(geomOf(D.mesh)):PAINT(key,geomOf(D.mesh)),skin:rig,tall:D.tall,rank:D.mesh.parts.map(()=>0),metres,x:0,z:0,lane:K.lane,free:()=>true,radius:.12,speed:1,stride:0,rock:0,bob:0,...X.npc,
+      anim:(dt)=>{ const want=N.clip||K.idle; if(want!==cur){ const a=act(want); a.reset().setLoop(THREE.LoopRepeat,Infinity).fadeIn(.15).play(); if(cur)act(cur).fadeOut(.15); cur=want; } act(cur).timeScale=N.clipK||1; mixer.update(dt); }});
+    N.g.rotation.order='YXZ'; N.me.rotation.y=K.turn||0; N.me.position.set(0,0,0); N.mixer=mixer; return N; };
   window.CREATDBG=()=>CREATS.map(N=>({key:N.key,x:+N.st.x.toFixed(1),z:+N.st.z.toFixed(1),y:+N.g.position.y.toFixed(2),to:!!N.st.to,vis:N.g.visible})); }
 
 const PAWNS=__DATA__("data/pawns.json");

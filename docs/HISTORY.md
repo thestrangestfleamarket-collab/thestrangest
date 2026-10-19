@@ -1937,3 +1937,20 @@ the park side's lamp post with its flat tan hexagon: "make all look realistic. g
   triangles in the picture against 302,958 before, the blocks they replace gone); the glows 2 triangles each, 264 in one draw;
   6 porch lamp records (LITE's eight nearest, no new light, no shadow); 2 new shader programs (the glows, the wet reflection);
   about 18 more draws on the main street; SHINE.tick 0.08 ms a frame (headless). `SHINEDBG()`.
+- **The players real, the arcade full** (19 Oct 2026, the block figures and the four machines against "i dont want anything in game looking
+  like minecraft, fake blocks, make it look natural and lived in"): the six players are the game's own rigged people (`PAWNNEW`: hero and
+  villager bodies on the standard clips), each recoloured to his costume (shoes, trousers, coat and hair by the body's own parts) with his
+  hat (deerstalker, bowler, top, wide, straw) riding his head bone; they walk their marks on the formal walk clip, talk on the talking
+  idle, and the old show's gestures are clips (wave: cheer, crouch and fall: sit, block: found item). The hound is the game's rat body
+  (`CREATNEW` in `087-npc-creatures.js`, a small factory of the creatures' own) at a hound's size, black, its mouth, ears and paws in the
+  phosphorus glow (the NPC shader's glowing part), on its run and idle clips. Made the first time the show plays, drawn only inside during
+  it: about 3,000 triangles a player, 6 at most on stage, the hound about 1,500; their own self-shadow passes as every NPC's.
+  **The arcade** (the coordinator's list: "a row of upright cabinets of different makes ..., a pinball machine or two, a claw machine, air
+  hockey, a change machine, a prize counter, posters, worn carpet paths"): a back row of six uprights of invented makes (TURBO, STORM,
+  MAGIC, COMET, ROBOT, GHOST: lit marquees, a game on each screen ringed in a dimmer glow, control panels with lit buttons) and the old
+  ARCADE upright, two pinballs on the west wall (lit playfields and backglasses), the two candy cabinets back in the middle with their
+  stools, an air hockey table, the claw machine (glass you see through, the prize heap lit), the change machine, the VR station, the prize
+  counter (a lit glass case, shelves of plush, PRIZES), posters on the side walls, a worn grey path up the middle and along the cabinets.
+  The screens light the carpet in front of them in three hard steps of their colour (painted into the floor: no lamp each); LITE records
+  stay at 6 (the room's two, the candy cabinets' two, the VR's, the neon's). All in the store's one batch: about 1,000 triangles, no new
+  program. Found on the way: the store's floors are painted mirrored front to back (`flat`); the playhouse and arcade floors allow for it.

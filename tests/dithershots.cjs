@@ -13,8 +13,8 @@ process.on('unhandledRejection',e=>{ errs.push('TEST '+String(e&&e.message||e).s
   for(let i=0;i<4;i++){ const d=await pg.evaluate(()=>{ PEEK.tick(0); return [PEEK.ray.direction.x,PEEK.ray.direction.z]; }); rep['turn'+i]=d; if(d[1]<-.3)break; await pg.keyboard.press('e'); await pg.waitForTimeout(1500); }
   const behindTree=()=>{ const d=PEEK.ray.direction, h=Math.hypot(d.x,d.z)||1, T=__dbg.MAPK.BOD.XS(1)-__dbg.MAPK.BOD.XS(0); const P=__dbg.MAPK.PARK, o=P.oaks.slice().sort((a,b)=>b[2]-a[2])[0], it=P.trees.userData.items.find(q=>Math.hypot(q.x-o[0],q.z-o[1])<.5)||{r:3*T};
     STORE.goTo(o[0]-d.x/h*(.8*T+it.r*.45),o[1]-d.z/h*(.8*T+it.r*.45),'up'); const y=__dbg.you(); return {tree:o,r:it.r,you:[y.x,y.z]}; };
-  const atRow=([x,y])=>{ const B=__dbg.MAPK.BOD, ins=(X,Z)=>!!(STORE.inStore&&STORE.inStore(X,Z)), L=[]; let was=false, Y=null; for(let v=-95;v<-40;v+=.5){ const i=ins(B.XS(x),B.ZS(v)); L.push(i?1:0); if(was&&!i){ Y=v+(y||1.2); break; } was=was||i; }
-    if(Y==null)return {none:1,L:L.join('')}; STORE.goTo(B.XS(x),B.ZS(Y),'up'); const u=__dbg.you(); return {Y,want:[B.XS(x),B.ZS(Y)],you:[u.x,u.z],inside:ins(u.x,u.z)}; };
+  const atRow=([x,y])=>{ const B=__dbg.MAPK.BOD, X=B.XS(x); let Y=null, hit=null; for(let v=-45;v>-95;v-=.1){ const Z=B.ZS(v), q=__dbg.collide(X,Z), dx=q[0]-X, dz=q[1]-Z; if(Math.abs(dz)>.01&&Math.abs(dz)>2*Math.abs(dx)&&(dz>0)===(B.ZS(1)>B.ZS(0))){ hit=v; Y=v+(y||1.2); break; } }
+    if(Y==null)return {none:1}; STORE.goTo(X,B.ZS(Y),'up'); const u=__dbg.you(); return {hit,Y,want:[X,B.ZS(Y)],you:[u.x,u.z]}; };
   await shot('tree-iso',behindTree,4000); await off('tree-iso-off');
   rep.ease=await pg.evaluate(async()=>{ PEEK.on=false; await new Promise(r=>setTimeout(r,800)); PEEK.on=true; const s=[]; const t0=performance.now(); while(performance.now()-t0<600){ s.push([Math.round(performance.now()-t0),+PEEK.k.toFixed(2)]); await new Promise(r=>requestAnimationFrame(r)); } return s; });
   rep.tickMs=await pg.evaluate(()=>{ const t0=performance.now(); for(let i=0;i<500;i++)PEEK.tick(0); return (performance.now()-t0)/500; });

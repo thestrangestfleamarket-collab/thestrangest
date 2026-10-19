@@ -6,27 +6,28 @@ process.on('unhandledRejection',e=>{ errs.push('TEST '+String(e&&e.message||e).s
   const open=async q=>{ const pg=await b.newPage({viewport:{width:960,height:540}}); pg.setDefaultTimeout(900000); pg.on('pageerror',e=>errs.push(e.message.slice(0,300))); pg.on('console',m=>{ if(m.type()==='error')errs.push(m.text().slice(0,300)); });
     await pg.goto('file://'+PAGE+'?fresh=1&hour=13&wx=CLEAR'+q,{waitUntil:'commit'}); for(let i=0;i<900;i++){ await pg.waitForTimeout(500); if(await pg.evaluate(()=>!!window.__dbg))break; } await pg.waitForTimeout(5000); return pg; };
   const pg=await open('');
-  const st=()=>pg.evaluate(()=>({...PEEK.stat(),view:__dbg.UI.view,dir:[PEEK.ray.direction.x,PEEK.ray.direction.z].map(v=>+v.toFixed(2)),P:{...PEEK.uDP},K:{...PEEK.uDK},cam:__dbg.camO().position.toArray().map(v=>+v.toFixed(1)),you:__dbg.pos().map(v=>+v.toFixed(1))}));
+  const st=()=>pg.evaluate(()=>({...PEEK.stat(),view:__dbg.UI.view,dir:[PEEK.ray.direction.x,PEEK.ray.direction.z].map(v=>+v.toFixed(2)),P:{...PEEK.uDP},K:{...PEEK.uDK},cam:[__dbg.camO().position.x,__dbg.camO().position.y,__dbg.camO().position.z].map(v=>+(+v).toFixed(1)),W:[PEEK.W.x,PEEK.W.y].map(v=>+v.toFixed(2)),you:__dbg.pos().map(v=>+v.toFixed(1))}));
   const shot=async(n,f,w=3000,a)=>{ try{ if(f)rep[n]=await pg.evaluate(f,a); await pg.waitForTimeout(w); rep[n+'_stat']=await st(); await pg.screenshot({path:path.join(OUT,n+'.png')}); }catch(e){ errs.push(n+': '+e.message.slice(0,200)); } };
   const off=async n=>{ await pg.evaluate(()=>{ PEEK.on=false; }); await shot(n,null,1500); await pg.evaluate(()=>{ PEEK.on=true; }); };
   await pg.evaluate(()=>window.DN&&DN.set&&DN.set('day'));
   for(let i=0;i<4;i++){ const d=await pg.evaluate(()=>{ PEEK.tick(0); return [PEEK.ray.direction.x,PEEK.ray.direction.z]; }); rep['turn'+i]=d; if(d[1]<-.3)break; await pg.keyboard.press('e'); await pg.waitForTimeout(1500); }
   const behindTree=()=>{ const d=PEEK.ray.direction, h=Math.hypot(d.x,d.z)||1, T=__dbg.MAPK.BOD.XS(1)-__dbg.MAPK.BOD.XS(0); const P=__dbg.MAPK.PARK, o=P.oaks.slice().sort((a,b)=>b[2]-a[2])[0], it=P.trees.userData.items.find(q=>Math.hypot(q.x-o[0],q.z-o[1])<.5)||{r:3*T};
     STORE.goTo(o[0]-d.x/h*(.8*T+it.r*.45),o[1]-d.z/h*(.8*T+it.r*.45),'up'); const y=__dbg.you(); return {tree:o,r:it.r,you:[y.x,y.z]}; };
-  const atRow=(x,y)=>{ const B=__dbg.MAPK.BOD; STORE.goTo(B.XS(x),B.ZS(y),'up'); const u=__dbg.you(); return {want:[B.XS(x),B.ZS(y)],you:[u.x,u.z]}; };
+  const atRow=([x,y])=>{ const B=__dbg.MAPK.BOD; STORE.goTo(B.XS(x),B.ZS(y),'up'); const u=__dbg.you(); return {want:[B.XS(x),B.ZS(y)],you:[u.x,u.z]}; };
   await shot('tree-iso',behindTree,4000); await off('tree-iso-off');
   rep.ease=await pg.evaluate(async()=>{ PEEK.on=false; await new Promise(r=>setTimeout(r,800)); PEEK.on=true; const s=[]; const t0=performance.now(); while(performance.now()-t0<600){ s.push([Math.round(performance.now()-t0),+PEEK.k.toFixed(2)]); await new Promise(r=>requestAnimationFrame(r)); } return s; });
   rep.tickMs=await pg.evaluate(()=>{ const t0=performance.now(); for(let i=0;i<500;i++)PEEK.tick(0); return (performance.now()-t0)/500; });
-  await shot('wall-iso-apts',atRow,4000,130); await off('wall-iso-apts-off');
+  await shot('wall-iso-apts',atRow,4000,[130,-78.3]); await off('wall-iso-apts-off');
   await shot('wall-iso-museum',()=>{ const B=__dbg.MAPK.BOD; STORE.goTo(B.XS(0),B.ZS(-78.3),'up'); return __dbg.pos(); },4000);
   await shot('wall-iso-theatre',()=>{ const B=__dbg.MAPK.BOD; STORE.goTo(B.XS(180),B.ZS(-78.3),'up'); return __dbg.pos(); },4000);
   await pg.keyboard.press('v'); await pg.waitForTimeout(2000);
   rep['tree-behind']=await pg.evaluate(async()=>{ const raf=()=>new Promise(r=>requestAnimationFrame(r)), T=__dbg.MAPK.BOD.XS(1)-__dbg.MAPK.BOD.XS(0), P=__dbg.MAPK.PARK, oaks=P.oaks.slice().sort((a,b)=>b[2]-a[2]).slice(0,6), tried=[];
-    for(const o of oaks)for(const d of [3,5,7])for(const s of [1.5,-1.5,2.5,-2.5,0]){ const c=__dbg.camO().position, y=__dbg.you(), ux=c.x-y.x, uz=c.z-y.z, h=Math.hypot(ux,uz)||1, nx=ux/h, nz=uz/h;
-      STORE.goTo(o[0]-nx*d*T-nz*s*T,o[1]-nz*d*T+nx*s*T,'up'); for(let i=0;i<4;i++)await raf(); tried.push(PEEK.cov?1:0); if(PEEK.cov)return {o,d,s,tried:tried.length}; }
+    for(const o of oaks)for(const d of [2,3,4,5,7])for(const s of [2,-2,3,-3,1.2,-1.2]){ const c=__dbg.camO().position, y=__dbg.you(), ux=c.x-y.x, uz=c.z-y.z, h=Math.hypot(ux,uz)||1, nx=ux/h, nz=uz/h;
+      STORE.goTo(o[0]-nx*d*T-nz*s*T,o[1]-nz*d*T+nx*s*T,'up'); for(let i=0;i<4;i++)await raf(); const W=PEEK.W; tried.push(PEEK.cov?1:0); if(PEEK.cov&&Math.abs(W.x)<.7&&Math.abs(W.y)<.7)return {o,d,s,tried:tried.length}; }
     return {none:1,tried}; });
   await shot('tree-behind',null,3000); await off('tree-behind-off');
-  await shot('wall-behind',atRow,4000,130);
+  await shot('wall-behind',a=>{ __dbg.face(Math.PI); const r=(([x,y])=>{ const B=__dbg.MAPK.BOD; STORE.goTo(B.XS(x),B.ZS(y),'up'); return __dbg.pos(); })(a); __dbg.face(Math.PI); return r; },4000,[130,-76]);
+  await shot('wall-behind-2',a=>{ __dbg.face(0); const B=__dbg.MAPK.BOD; STORE.goTo(B.XS(a[0]),B.ZS(a[1]),'up'); __dbg.face(0); return __dbg.pos(); },4000,[130,-76]);
   await pg.keyboard.press('v'); await pg.waitForTimeout(2000);
   await shot('first',behindTree,3000);
   await pg.keyboard.press('v'); await pg.waitForTimeout(1500);

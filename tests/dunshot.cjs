@@ -8,7 +8,7 @@ process.on('unhandledRejection',e=>{ errs.push('TEST '+String(e&&e.message||e).s
   for(let i=0;i<900;i++){ await pg.waitForTimeout(500); if(await pg.evaluate(()=>!!window.__dbg))break; }
   await pg.waitForTimeout(6000);
   const shot=async n=>{ try{ await pg.screenshot({path:path.join(OUT,n+'.png')}); }catch(e){ errs.push(n+': '+e.message.slice(0,200)); } };
-  const st=async tag=>{ const d=await pg.evaluate(()=>({D:DUNDBG(),lvl:window.DUNGEON.level,you:__dbg.you(),fade:getComputedStyle(document.getElementById('subfade')).opacity,txt:document.getElementById('subfade').textContent})); d.tag=tag; rep.steps.push(d); return d; };
+  const st=async tag=>{ const d=await pg.evaluate(()=>({D:DUNDBG(),lvl:window.DUNGEON.level,you:__dbg.you(),fade:getComputedStyle(document.getElementById('subfade')).opacity,txt:document.getElementById('subfade').textContent,cs:(()=>{ const y=__dbg.you(), S=__dbg.MAPK.CASTLE.stair; return {gx:+(y.x/1.13+72).toFixed(2),gy:+(y.z/1.13-77).toFixed(2),S:[S.x0,S.x1,S.y0,S.y1]}; })()})); d.tag=tag; rep.steps.push(d); return d; };
   const walk=async(spot,tag)=>{ const sp=await pg.evaluate(spot); let best=null;
     best=[sp.dir>0?'s':'w',0];
     await pg.evaluate(s=>{ STORE.goTo(s.x,s.z,s.lv); },sp); await pg.waitForTimeout(1200);

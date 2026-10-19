@@ -58,7 +58,7 @@ const LIVES={on:QS.get('lives')!=='0',ready:false,ms:0,stepMs:0,list:[],force:nu
     else if(k==='Gold'){ L.work='subway'; L.home='subway'; L.eve='street'; }
     if(i%4===1&&has('bar'))L.night='bar';
     return L; };
-  const livesFor=N=>!('mode' in N)&&!N.guard&&!N.sheet&&!N.st.hold&&N.lv==='up'&&!(window.CREATS&&CREATS.includes(N))&&N.key!=='fox'&&N.key!=='mushroom'&&N.key!=='bear'&&!N.errand&&!N.walker;
+  const livesFor=N=>!('mode' in N)&&!N.guard&&!N.sheet&&!N.st.hold&&N.lv==='up'&&!(window.CREATS&&CREATS.includes(N))&&N.key!=='fox'&&N.key!=='scooterfrog'&&N.key!=='mushroom'&&N.key!=='bear'&&!N.errand&&!N.walker;
   LIVES.init=()=>{ if(!LIVES.on)return; LIVES.build(); let i=0; for(const N of NPCS)N.v0=N.st.v;
     for(const N of NPCS){ if(!livesFor(N))continue; const L=N.life=lifeOf(N,i++); N.st.hold=true; N.st.to=null;
       N.free=(x,z,R)=>freeAt(N,x,z,true); N.ground=(x,z)=>gnd(N,x,z);

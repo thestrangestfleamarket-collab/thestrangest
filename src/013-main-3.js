@@ -1,5 +1,5 @@
 
-  const W=WSUB, {AVE,PLAT,TW,SY0,SY1,TUN0,TUN1}=W, T=.25, OY=W.D1Y, SZ=-UH, SM=MAPSTAIR, HW=(SM.x1-SM.x0)/2, A0=OY-HW, A1=OY+HW, TE=12;
+  const W=WSUB, {AVE,PLAT,TW,SY0,SY1,TUN0,TUN1}=W, T=.25, OY=W.D1Y, SZ=-UH, SM=MAPSTAIR, HW=(SM.x1-SM.x0)/2, A0=OY-HW, A1=OY+HW, TE=36, H2=2*UH;
   const XC=((SM.x0+SM.x1)/2-72)*TILE, ZB=(SM.y0+77)*TILE, Y=z=>(z-SZ)*ZU+STN.DY, V=(x,y,z)=>[XC+(y-OY)*TILE,Y(z),ZB-(x-AVE)*TILE];
   const faceTex=(w,h,fn)=>{ w=Math.max(1,Math.round(w)); h=Math.max(1,Math.round(h)); const im=new ImageData(w,h), d=im.data; let ie=null, e=null;
     for(let j=0,k=0;j<h;j++)for(let i=0;i<w;i++,k+=4){ const v=fn(i,j); if(!v)continue; d[k]=Math.round(v[0]); d[k+1]=Math.round(v[1]); d[k+2]=Math.round(v[2]); d[k+3]=255;
@@ -30,23 +30,28 @@
   floor(AVE,SY0,PLAT,SY1,0,W.platformCol);
   wallY(PLAT,SY0,SY1,-32,0,(u,z)=>W.platEdge(u,z));
   floor(PLAT,SY0-TE,TW,SY1+TE,-32,W.tracksCol);
-  for(const [a,b] of [[SY0,A0],[A1,SY1]])cutaway(wallY(AVE,a,b,0,UH,(u,z)=>stile(1,0,AVE,u,z)),1,0,8,PB);
-  cutaway(wallY(TW,SY0,SY1,-32,UH,(u,z)=>tubeP(-1,0,TW,u,z)),-1,0,-24);
+  for(const [a,b] of [[SY0,A0],[A1,SY1]])cutaway(wallY(AVE,a,b,0,H2,(u,z)=>stile(1,0,AVE,u,z)),1,0,8,PB); cutaway(wallY(AVE,A0,A1,UH,H2,(u,z)=>stile(1,0,AVE,u,z)),1,0,8,PB);
+  cutaway(wallY(TW,SY0,SY1,-32,H2,(u,z)=>tubeP(-1,0,TW,u,z)),-1,0,-24);
   const c0=(TUN0+TUN1)/2, half=(TUN1-TUN0)/2, inArch=(u,z)=>{ const d=Math.abs(u-c0)/half; return d<1&&z+32<40+88*Math.sqrt(1-d*d); };
-  for(const y of [SY0,SY1]){ const n=y===SY0?1:-1; cutaway(wallX(y,AVE,PLAT,0,UH,(u,z)=>stile(0,n,u,y,z)),0,n,8); cutaway(wallX(y,PLAT,TW+2*T,-32,UH,(u,z)=>inArch(u,z)?null:stile(0,n,u,y,z)),0,n,-24); }
-  for(const [a,b] of [[SY0-TE,SY0],[SY1,SY1+TE]])for(const x of [TUN0,TUN1])cutaway(wallY(x,a,b,-32,56,conc),x===TUN0?1:-1,0,-24);
-  for(const y of [SY0-TE,SY1+TE])cutaway(wallX(y,TUN0,TUN1,-32,56,dark),0,y<SY0?1:-1,-24);
+  for(const y of [SY0,SY1]){ const n=y===SY0?1:-1; cutaway(wallX(y,AVE,PLAT,0,H2,(u,z)=>stile(0,n,u,y,z)),0,n,8); cutaway(wallX(y,PLAT,TW+2*T,-32,H2,(u,z)=>inArch(u,z)?null:stile(0,n,u,y,z)),0,n,-24); }
+  const tun=(u,z)=>sh(concreteCol(u,z/24),.34);
+  for(const [a,b] of [[SY0-TE,SY0],[SY1,SY1+TE]])for(const x of [TUN0,TUN1])cutaway(wallY(x,a,b,-32,96,tun),x===TUN0?1:-1,0,-24);
+  for(const y of [SY0-TE,SY1+TE])cutaway(wallX(y,TUN0,TUN1,-32,96,dark),0,y<SY0?1:-1,-24);
   for(const [a,b] of W.TSTEPS)for(let k=0;k<3;k++){ const c=[150,146,138]; gbox({x0:PLAT+k*.25,x1:PLAT+(k+1)*.25,y0:a,y1:b,z0:-UH-32,z1:-UH-8*(k+1),c,top:()=>c,fi:()=>sh(c,.62),fj:()=>sh(c,.8)}); }
   const CX=TW-8.03, BX=TW-8.05;
-  for(const r of [-7.75,7.05]){ put(W.column(CX,OY+r),'column',0); solid(CX,OY+r,CX+.7,OY+r+.7,UH); }
+  for(const r of [-7.75,7.05]){ const cl=W.column(CX,OY+r); cl.boxes[0]={...cl.boxes[0],z1:cl.boxes[0].z1+UH}; put(cl,'column',0); solid(CX,OY+r,CX+.7,OY+r+.7,H2); }
   for(const r of [-11.2,-6.5,4,8.4]){ put(W.bench(BX,OY+r),'bench',0); solid(BX,OY+r,BX+.66,OY+r+2.8,24); }
   const MX=AVE+.08, MY=OY+2.5; put(W.mach(MX,MY),'passport machine'); solid(AVE,MY,MX+.54,MY+.7,46);
   for(const r of [-12,12]){ put(W.bin(BX+.3,OY+r),'trash bin'); solid(BX+.05,OY+r-.25,BX+.55,OY+r+.25,30); }
   put(W.litSign(AVE+1.6,OY,'TO STREET ^'),'sign');
   put(W.gate(AVE+3,SY0,1),'no entry gate'); put(W.gate(AVE+3,SY1,0),'no entry gate');
   put(W.signal(TUN0+.35,SY0-1.4,1),'signal',-UH-32); put(W.signal(TUN0+.35,SY1+1.4,0),'signal',-UH-32);
-  BATCH.tag=OBJ('station','train car'); W.carBoxes(0,0).forEach(b=>gbox(b,-UH-32,W.TRACKS[0],OY,true)); BATCH.tag=null; solid(W.TRACKS[0]-W.CARW,OY-W.CARL/2,W.TRACKS[0]+W.CARW,OY+W.CARL/2,96-32);
-  for(let y=SY0+3.2;y<SY1;y+=6.4)for(const x of [AVE+2.6,AVE+8.4]){ const L=new THREE.PointLight(new THREE.Color(.5,.54,.64),LAMPI,10*TILE,LAMPD); L.position.set(...V(x,y,SZ+88)); scene.add(L); lamps.push(L); }
+  BATCH.tag=OBJ('station','train car'); W.carBoxes(0,0).map(b=>({...b,z0:b.z0*1.5,z1:b.z1*1.5,fs:(nx,ny,P,Q,z,f)=>b.fs(nx,ny,P,Q,z/1.5,f)})).forEach(b=>gbox(b,-UH-32,W.TRACKS[0],OY,true)); BATCH.tag=null; solid(W.TRACKS[0]-W.CARW,OY-W.CARL/2,W.TRACKS[0]+W.CARW,OY+W.CARL/2,144-32);
+  for(let y=SY0+3.2;y<SY1;y+=6.4)for(const x of [AVE+2.6,AVE+8.4]){ const L=new THREE.PointLight(new THREE.Color(.5,.54,.64),LAMPI*1.3,14*TILE,LAMPD); L.position.set(...V(x,y,SZ+H2-14)); scene.add(L); lamps.push(L); }
+  { const lid=(x0,y0,x1,y1,z,c)=>{ const g=new THREE.BufferGeometry(), p=[V(x0,y0,z+SZ),V(x1,y0,z+SZ),V(x1,y1,z+SZ),V(x0,y1,z+SZ)]; g.setAttribute('position',new THREE.Float32BufferAttribute([...p[0],...p[1],...p[2],...p[0],...p[2],...p[3]],3)); g.computeVertexNormals();
+      if(g.attributes.normal.getY(0)>0){ g.index=null; const a=g.attributes.position.array; for(let i=0;i<a.length;i+=9)for(let k=0;k<3;k++){ const t=a[i+3+k]; a[i+3+k]=a[i+6+k]; a[i+6+k]=t; } g.computeVertexNormals(); }
+      const me=new THREE.Mesh(g,new THREE.MeshLambertMaterial({color:c,clippingPlanes:[new THREE.Plane(new THREE.Vector3(0,-1,0),1e6)]})); me.receiveShadow=true; scene.add(me); return me; };
+    lid(AVE,SY0,TW,SY1,H2,0x8a8e96); lid(TUN0,SY0-TE,TUN1,SY0,96,0x141416); lid(TUN0,SY1,TUN1,SY1+TE,96,0x141416); lid(AVE-(SM.y1-SM.y0)-1,A0,AVE,A1,UH-.5,0x000000); }
   solid(AVE-1,SY0-1,AVE,A0,UH); solid(AVE-1,A1,AVE,SY1+1,UH); solid(AVE,SY0-1,PLAT,SY0,UH); solid(AVE,SY1,PLAT,SY1+1,UH);
   solid(TW,SY0-TE,TW+1,SY1+TE,UH); solid(TUN0-1,SY0-TE,TUN0,SY0,UH); solid(TUN0-1,SY1,TUN0,SY1+TE,UH); solid(TUN0,SY0-TE-1,TUN1,SY0-TE,UH); solid(TUN0,SY1+TE,TUN1,SY1+TE+1,UH);
   { let y=SY0; for(const [a,b] of W.TSTEPS){ if(a>y)solid(PLAT-.05,y,PLAT+.05,a,0); y=b; } if(y<SY1)solid(PLAT-.05,y,PLAT+.05,SY1,0); }

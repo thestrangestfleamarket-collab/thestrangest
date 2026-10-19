@@ -29,6 +29,14 @@ process.on('unhandledRejection',e=>{ errs.push('TEST '+String(e&&e.message||e).s
       const o=g.createImageData(W,H); let n=0, m=0; for(let i=0;i<W*H;i++){ const k=i*4, d=df(D[0],D[1],k)&&i>=W*200, on=d&&!nz[i]; if(on)n++; if(d&&nz[i])m++; o.data[k]=on?255:d?255:D[0][k]*.35; o.data[k+1]=on?0:d?220:D[0][k+1]*.35; o.data[k+2]=on?0:d?0:D[0][k+2]*.35; o.data[k+3]=255; }
       g.putImageData(o,0,0); return {n,noisy:m,png:c.toDataURL('image/png').split(',')[1]}; },R);
     fs.writeFileSync(path.join(OUT,n+'.png'),Buffer.from(r.png,'base64')); return {n:r.n,noisy:r.noisy}; };
+  const vset=()=>pg.evaluate(()=>{ const m={}, V=__dbg.camO().position.constructor, T=33.9/30; __scene.traverseVisible(o=>{ if(!o.isMesh||!o.castShadow)return; const pth=[]; let q=o; while(q&&q!==__scene&&pth.length<5){ pth.push(q.name||q.type); q=q.parent; } const b=new (V.prototype.constructor)(); o.getWorldPosition(b); m[o.uuid]=[pth.join('<'),+(b.x/T).toFixed(0),+(b.z/T).toFixed(0),o.isInstancedMesh?o.count:1]; }); return m; });
+  const sdiff=(A,B)=>({gone:Object.keys(A).filter(k=>!B[k]).map(k=>A[k]).slice(0,30),came:Object.keys(B).filter(k=>!A[k]).map(k=>B[k]).slice(0,30),nA:Object.keys(A).length,nB:Object.keys(B).length});
+  if(process.argv[3]==='diag'){ await pg.keyboard.press('v'); await pg.waitForTimeout(1500); rep.vd={};
+    await at(150,-Math.PI/2); const e150=await vset(); await at(150,Math.PI/2); const w150=await vset(); rep.vd.turn=sdiff(e150,w150);
+    await at(150,-Math.PI/2); const e150b=await vset(); rep.vd.same=sdiff(e150,e150b);
+    await at(140,-Math.PI/2); const e140=await vset(); await at(146,-Math.PI/2); const e146=await vset(); rep.vd.walk=sdiff(e140,e146);
+    await pg.keyboard.press('v'); await pg.keyboard.press('v'); await pg.waitForTimeout(1500); await at(150,-Math.PI/4); const iso=await vset(); rep.vd.iso=sdiff(e150,iso);
+    rep.sunlog=await pg.evaluate(()=>window.SUNLOG); fin(); await b.close(); return; }
   await pg.keyboard.press('v'); await pg.waitForTimeout(1500);
   const E=-Math.PI/2, Wd=Math.PI/2, cen=()=>pg.evaluate(()=>window.SUNDBG&&SUNDBG().still);
   rep.recentre={}; for(const [P,yaw,tag] of [[130,E,'E130'],[170,E,'E170'],[150,Wd,'W150'],[190,Wd,'W190'],[220,Wd,'W220']]){

@@ -2978,3 +2978,7 @@ building until you go inside"; `054-apts.js`, `075-main-13.js`)
   up to their size at the opening view (`PCAP`, the opening's screen pixels per art pixel); past that the picture gets finer instead
   of blockier. This replaces "zoomed in the art's pixels only grow" (17 Oct) for close zooms; the opening and zoomed-out views are
   unchanged, and nothing is ever finer on screen than the opening's pixel size.
+- **Diving in the stream no longer puts you underground** (owner, 19 Oct 2026: "when i jumped in the pool the game turned black",
+  "it was the stream", "i think it was all black beacuse it put me underground when i jumped in stream"): the level switch took
+  any height under -1.6 for the underground (`MAPLV`); in the stream (`BROOK.over`), the park's lake (`FOUNT.wet`) or any water
+  you're in, you stay above ground however deep you go.

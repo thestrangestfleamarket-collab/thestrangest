@@ -2901,6 +2901,8 @@ automatically. dragon balls of fire can start real fires. spread very slow. leav
   flowers and 120-160 bushes over the whole park, some 25,000-30,000 triangles in all, split by `CULL` into 10-tile pieces so only
   what is on screen draws (a few thousand in a usual view); 20 draws, 2 new shader programs (bushes; flowers with the bend), no
   lights; bushes in the sun's still shadow. Not yet measured in the page (`tests/tricount.cjs`).
+- **Black underground** (owner, 19 Oct 2026, a picture of the subway with lavender sky round the station): below the street the sky
+  dome is hidden and the background is black, whatever the day/night settings do.
 
 ## 19 Oct 2026: the fire escapes' ladder to the roof; outside stays outside
 (owner, of the apartment house's fire escapes: "the fire escape shouldnt have stairs, it hsould have a ladder that goes straight up and
@@ -3059,3 +3061,68 @@ walk through people but at 75% speed (they slow you down a little) you cant walk
   sides lean out at uneven angles instead of standing as straight walls. Fewer triangles than before.
 - **Black underground** (owner, 19 Oct 2026, a picture of the subway with lavender sky round the station): below the street the sky
   dome is hidden and the background is black, whatever the day/night settings do.
+
+## 19 Oct 2026: BANK ST runs west off West St at the castle; THE BANK on its far corner
+(owner, with the menu map's THE STREET tab, his marker on West St by the castle: "I want to extend the street this way and put the bank
+on the corner, make it look like the museum front and lobby inside for now."; asked which way and where: "West, off the left edge",
+"Far end of the new part")
+- **The street** (`RING.bank` in `006-map-pre.js`, map tiles): off West St's west side at the castle's latitude, west to x −96: road
+  y 17 to 37 (20 wide, like Market St), the south sidewalk 6.7 to 17 (wide, the bank's portico on it), the north one 37 to 44, an end
+  sidewalk −102.5 to −96. Road, kerbs, rounded corners, drains, two manholes, bike lanes, the double yellow line and a crosswalk with
+  ramps across its mouth on West St's sidewalk line all come from `050-main-8.js`'s own lists (`RR`, `CORN`, `LN`, `XW`, `JX`,
+  `BOD.kerbs`, `roadPolys`); West St's edge line is dashed across the mouth. Its sign name is BANK ST (street signs stay off).
+- **Walkable**: the town's west wall opens at the mouth and walls go round the new part (`065-ring.js`, `RINGX.pocket`); `BOUND.x0`
+  goes out to −102.5. The far mist has a second box (`MISTB2`, one more `min` in the fog chunk) so the street isn't misted; the
+  skyline's boxes and the band of trees keep 10 tiles clear of it.
+- **THE BANK** (`057b-bank.js`) on the south-west corner, facing north like the museum: the museum's width (26 bodega units), 16
+  deep, its front made by the museum's own makers (the stone, its painted door, the portico steps, four columns, entablature and
+  pediment) with BANK in gilt, lit letters on the entablature (`'bank entablature'`, painted on both its faces: the museum's own
+  MUSEUM OF EARTH is painted only on the face toward its wall, the old game's side, so it never shows) and no banners. Inside one marble lobby like the
+  museum's great hall: the hall's walls and verde-bordered marble floor, THE BANK and SAVINGS · LOANS over the door inside, six hall
+  columns, the information desk at the back, two benches, three hall lamps. Its door works like the museum's (ENTERING THE BANK; the
+  inside is built only then). In MORE PLACES as THE BANK and on the map.
+- **Round it** (`069a-block.js`, fake and cheap like the Hudson side's): shops a storey and a half high east of the bank, one-storey
+  shops on the north side (low, so they hide little of the street in the isometric view) and a taller blank block closing the west end.
+- **Lamps**: three globe posts (two on the south sidewalk 33 tiles apart, one on the north between them).
+- Cost: the bank about the museum's front (walls, portico, roof) plus 6 columns, a desk and 2 benches inside once entered; the five
+  fake blocks 24 triangles each; 3 street lamps and 3 lobby lamp records (LITE still lights 8 at most); no new shader program.
+  Measured in CI: 71,711 triangles on screen at the junction, 86,278 before the bank, 55,115 in its lobby.
+
+## 19 Oct 2026: two campfires only (the lake, the golems' cave); gold grass where the rare mushrooms grow
+(owner: "let put a campfire by the lake and inside the cave with golems, nowhere else. lets add some of the gold style grass (3-4 diff
+versions) and put them in random spots in park and thats where specific mushrooms will grow"; `061-park.js`, `060-cave.js`,
+`140-weeds.js`, `141-forage.js`, `142a-flora.js`, `151-blaze.js`)
+- **The campfires**: the park's old campfire by the round is gone. One now stands on the lake's shore (`PARK.campAt`: the shore point
+  nearest the round that is 2.8 tiles off the water, off the ways, the terrace, the brook and the shore rocks; the lake oaks within 10
+  tiles of it left out), with its woodpile beside it and the sitting log on the land side facing the fire and the water (still a seat).
+  The other is inside the golems' cave, on the floor between its middle and the mouth (`GCAVE.fire`), the sitting stones round it; the
+  golems' spots in the cave keep off it. Each is the same fire as before (`FLAME` 'bed', smoke, embers) with one lamp record (the park's
+  26 strong to 9 tiles, the cave's 22 to 7, lighting inside and out of the mouth), so the 8-lamp pool is unchanged and the nearest fire
+  still takes the one lamp shadow. Both count as a flame for COOKING. Hills, oaks, bushes, flowers and the underbrush keep off the new
+  spot; the blaze (`BLAZE`) no longer counts a campfire or its woodpile as brush and never starts a wildfire within 2 tiles of one, and
+  the fire drones leave them alone.
+- **Gold grass** (`WEEDS.gold`, `WEEDS.goldAt`): sixteen patches (four of each kind), 1.5-2.6 tiles across with wobbly edges, at fixed
+  random spots on the park's lawns (the same every load), off the ways, water, brook, terrace, gates, the castle, shrine, cave and
+  campfire, anything solid, stalls and well clear of the oaks' crowns. They are part of the tall grass itself (same mass, same sway,
+  pressed and trailed the same way, one colour each with a hard edge): **GOLDEN WHEAT** (pale straw, an even top about a tile high,
+  dense wheat ears), **GOLDEN TUSSOCK** (amber, big round mounds with a few pale blades), **DRY GOLD REEDS** (ochre, tallest and
+  ragged, thin reed stems with cream plumes), **GILDED GRASS** (bright gold, low, with glints that twinkle and flecks of light). Flowers
+  and bushes keep off them.
+- **Their mushrooms**: MOREL only in the wheat, CHANTERELLE only in the tussocks, KING BOLETE only in the reeds, MOONGLOW only in the
+  gilded grass (`FORAGE.GOLD`; about one square in twenty a day, some three to five a patch); the plain lawns now grow the others
+  (button, puffball, ink cap, red cap). They hide under the gold grass like the rest (one in five peeks out; walking through shows
+  them; shoes may crush them, barefoot never). Fairy rings still give morels and moonglows. `GOLDDBG()` lists the patches and their
+  mushrooms; `MUSHDBG()` now counts gold and lawn kinds.
+- **Cost**: the gold grass adds no draws, lights or programs (the grass program replaced, `tallgrass3`); the ears, blades, stems and glints some
+  150-700 triangles a patch in the lawn chunk that holds it (8-16 each); the cave's fire one lamp record, its pile ~100 triangles.
+- **The park's trees: elders and oaks in bunches, one each of three landmarks** (owner, 19 Oct 2026: "add 2, 5, and 6 but only 1 each
+  in diff parts of the park. use 4 and the current tree as common trees in park, different sizes, bunches, etc"; built in another
+  chat, `tools/trees-bake.py`): new trees in `data/forest.json`, Elder1 and Elder2 (gnarled, kinked trunks, 354 triangles each),
+  Spruce1 (160), Willow1 (310), Giant1 (367). Oaks and elders are the common trees, sizes 9 to 24; about 45% stand with one or two
+  smaller companions; about a third of the lake-shore oaks are elders. One spruce, one willow (by the lake) and one giant each stand
+  in a different quarter. A few thousand more triangles, no new lights or shader programs. They keep clear of the lake campfire.
+- **Every mushroom shows; skill decides the picking** (owner, 19 Oct 2026, of the gold-grass mushrooms hidden below a skill: "i want
+  them to show up but you cant pick them without the skill level (like before)", "mushrooms"): all mushrooms are seen whatever your
+  FORAGING; one above your reach (its difficulty over your skill + 15, the keen-eye potion counting) never comes away: as before,
+  YOU FAIL TO PICK IT CLEANLY, or now and then IT CRUMBLES IN YOUR HAND (owner: "no use the old verbiage about how you fail to pick
+  it cleanly or soemthing").

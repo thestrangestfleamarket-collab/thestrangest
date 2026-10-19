@@ -2986,3 +2986,5 @@ building until you go inside"; `054-apts.js`, `075-main-13.js`)
   "make the grass look more like tree triangle shapes on tops and sides not so uniform straight lines"): the tall grass is built of
   bigger triangles (half-tile cells, was a quarter), each corner a different height, flat-shaded facet by facet like the crowns; its
   sides lean out at uneven angles instead of standing as straight walls. Fewer triangles than before.
+- **Black underground** (owner, 19 Oct 2026, a picture of the subway with lavender sky round the station): below the street the sky
+  dome is hidden and the background is black, whatever the day/night settings do.

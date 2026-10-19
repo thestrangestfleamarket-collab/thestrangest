@@ -13,9 +13,8 @@ const VEG={}; window.VEG=VEG;
       ['f_stuffpep','STUFFED PEPPER','cooking',[25,70],{v_pepper:1,m_button:2},'fills two fifths, mends you a minute'],['f_psoup','PUMPKIN SOUP','cooking',[40,85],{v_pumpkin:1,v_onion:1},'fills more than half, strong 2 min']],
     does:{f_corn:()=>FORAGE.feed(.2),f_vstew:()=>{ FORAGE.feed(.4); VIT.hp=Math.min(1,VIT.hp+.2); },f_stuffpep:()=>{ FORAGE.feed(.4); FORAGE.buff('regen',60); },f_psoup:()=>{ FORAGE.feed(.6); FORAGE.buff('str',120); }}});
   const STAND=()=>{ const P=PARK, X=x=>BOD.XS(x+(P.ox||0)), Z=y=>BOD.ZS(y+(P.oy||0)), g1=P.gate[1];
-    VEG.stand=STALL.build({X,Z,x0:g1+1.8,x1:g1+6.2, y0:P.y0-8.2,y1:P.y0-5.2,veg:true,seed:11});
-    const N=TOONS.tomato; if(!N)return; N.life=null; N.roam=false; N.home={x:VEG.stand.hx,z:VEG.stand.hz};
-    const hold=st=>{ st.to=null; st.next=null; st.hold=true; st.x=VEG.stand.hx; st.z=VEG.stand.hz; st.face={x:VEG.stand.hx,z:VEG.stand.fz}; }, tk=N.tick; N.tick=(dt,you)=>{ hold(N.st); tk(dt,you); hold(N.st); }; hold(N.st);
+    VEG.stand=STALL.build({X,Z,x0:g1+3,x1:g1+7.8,y:P.y0,veg:true,seed:11,gate:-1});
+    const N=TOONS.tomato; if(!N)return; N.life=null; N.roam=false; if(!N.sheet)STALL.work(N,VEG.stand);
     for(const th of UI.things)if(th.npc&&th.npc===N){ th.act=()=>SHOP.open(); th.reach=2.2*T; th.near=3*T; }
   };
   { const wait=()=>{ if(!PARK.fire||typeof MUSH==='undefined'||!MUSH.booth||typeof TOONS==='undefined'||!TOONS.tomato)return setTimeout(wait,500); STAND(); }; wait(); }

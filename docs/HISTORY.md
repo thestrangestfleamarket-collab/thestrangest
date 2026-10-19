@@ -1668,6 +1668,12 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   Shift+K no longer does anything; the menu has an AVATAR tab (before KEYS) with OPEN THE AVATAR EDITOR, EDIT HIS SHAPE and YOUR
   LOOKS (moved there from DISPLAY's HIM row). A double click on yourself still opens your looks.
 
+- **The four people pawns gone** (owner, 19 Oct 2026, his screenshot of a dressed pawn walking the street at night: "these characters
+  shouldnt exist they were turned into the rock golems"): the golems were made from the townspeople's copies, but the four originals
+  (hero_m, hero_f, villager_m, villager_f: the apartment house's residents) were still made and walked. They're not made now
+  (`npc-pawns.js`: only for their own `?sheet=`); every other pawn keeps its number, so the golems look as they did. The residents'
+  rounds (`residents.js`) find no one and do nothing; the mail to their flats has no reader.
+
 ## The website moves here (18 Oct 2026)
 
 **The white screen** (owner, 18 Oct 2026: "https://thestrangestfleamarket.com/ is just shownig white screen now"): the copy of THE MARKET
@@ -1813,6 +1819,260 @@ For now nothing is fixed on its own: every report waits in NEW for the owner to 
 APPROVED ones (see CLAUDE.md), fixes each, and marks it FIXED. The 16 reports already in `bug_reports` are from the old 2D game.
 `tests/bugcheck.cjs art|site` sends one with a stand-in store and approves it.
 
+**The website's page down to one line** (owner, 19 Oct 2026: "the smallest we could have the game page html code look ... i want the
+actually source code of the game to show very minimal"; offered three ways, "yes" to the third: "i want to waste minimal tokens and have
+maximium rendering speed for my game"): on the website `dist/g/market.html` is now one line (161 bytes): the doctype, the build stamp
+(`market-build`, which the update check and `tests/site.cjs` read), the title, a dark body and one `<script type=module>`. The game module
+puts in the page's CSS, its markup (#stage, #loading, #hud, #stat, #shd, the Silkscreen link) and the rig (its own file, loaded as before as a
+plain script) before anything reads them. three.js 0.160.0 with its postprocessing passes is bundled by esbuild (`tools/bundle.cjs`; the
+packages in `package.json` at the versions the code names, and `build.py` stops if a CDN link in the code names another), so the website asks
+nothing of cdn.jsdelivr.net: three is its own file (cached for good, it never changes), and three-vrm, GLTFLoader, three-mesh-bvh, rapier and
+recast are files of their own fetched only when the game first wants them, as before. Start-up: 5 same-origin files, about 874 KB
+compressed (was 1 page, the game, the rig and 9 files from jsdelivr, about 971 KB); the game's code ran about 1 s sooner locally.
+The claude.ai page (`dist/market.html`) is unchanged: one page, three from the CDN.
+
+- **The guitarist is a sheet ghost** (owner, 19 Oct 2026: "make the musician guitarist a ghost with sheet body, but fingers made of sheet too,
+  same playing skill and phyiscs. just change avatar and make it work (white sheet arms)"; `musician.js`): only his look changed; his rig, walk,
+  tunes, hands solved onto every note and the guitar are as they were. Drawn of him now: his arms, hands and every finger bone, in white sheet
+  (`sheet`, a little greyer than the sheet so the fretting and strumming read against it), and the guitar; his head, hair, body and legs are not
+  drawn. Over him a bedsheet with real cloth (Verlet, as Ghost Street's ghosts): a fitted bell of 161 points (a dome over the head, a hem with
+  points to the ground), dropped on him and gripping his head, held out by his shoulders, chest, hips, knees and ankles (so his walk swings
+  the hem), kept behind the guitar's body and behind both hands (the hands always show), stopped by the ground, simulated in his own frame so
+  turning and walking swing it; two eye holes on the sheet over his face, following his head. One mesh, his own material (no new program),
+  casting his shadow; `?sheet=guitarist` his sheet (black void, limbs spread; `sheetView`/`spreadPose` now shared with the bearded Walker's).
+  Cost: 22,674 triangles where he's seen (was 30,150: the hidden head, body and legs pay for the sheet's 320); one more draw; no lights;
+  the cloth some 1 ms a frame measured headless on software rendering (his own playing there 2-13 ms), only while he's posed (near and
+  drawn). `tests/ghostgt.cjs <out> play|walk [hour] [extra]`. Pictures: `mockups/ghost-guitarist-sheet.png`, `-street.png`, `-hands.png`,
+  `-walking.png`.
+## 19 Oct 2026: the arcade, the movie theatre, the playhouse and the holodeck on main street
+
+**Back from the old game, in the row's empty spots** (owner, 19 Oct 2026: "lets put the arcade, movie theater, playhouse, holodeck, back
+into the game. put them on main street, using the empty building spots. make the movie theatre smaller than in original map."; his pick of
+the mockups https://claude.ai/artifact/Hn7uCZXHTpjgfqwvnZLQFa (`mockups/main-street-places.html`): "A"). The three fillers are gone from
+`069a-block.js`; the lots are `BLOCK.lots` (`006-map-pre.js`), the rooms `src/057a-mainstreet.js`, built after the game opens as the
+other shells (`STORE.kit`'s `room()`, one step each), the old makers copied in: `044a-game-theatre-arcade.js` (26-theatre-front,
+26-y-theatre-inside, 23-w-arcade, the lounge's candy cabinets and the gamer room's upright, the VR station), `044b-game-playhouse.js`
+(26-z-the-playhouse, 47-playhouse-1-script and -times, 47-playhouse-2-show's timeline), `044c-game-holodeck.js`. Every old room faced the
+street from its -y side; here each is set out in the old frame and turned a half turn about its middle (`turn`: `BOD.placeAt` and the lamps).
+- **THE MOVIE THEATRE** (x 87-101): the art-house front fitted to 14 tiles (its middle as drawn, the ticket booth and the sunset poster
+  beside it, the posters wing left out; the tower and the ART HOUSE blade stand over the roof), a lobby in the front third, the hall: 12 red
+  seats (three rows of four, sittable), the screen between its drapes with the old film playing (a 64 x 36 picture on the screen, 8 frames a
+  second, only when you're in or by the door), the amber shell lights, the aisle lights, EXIT and the projection port over the lobby's doorway.
+- **THE ARCADE** (x 103.5-117.5): the old carpet with its neon shapes, plum walls with the pink and blue stripes and the wall lights, one of
+  every machine the old game had (the pink and the green candy cabinets with red stools, the upright ARCADE machine, the VR headset station),
+  a front of plum brick, a dark shop window with the screens glowing in it, the stripes and a pink neon ARCADE.
+- **THE PLAYHOUSE** (x 145.5-159.5): the old Victorian front (its PLAYHOUSE board, the Hound's name, the posters, the lit windows), 12.7 x 14
+  (the old 12 x 16, one row fewer: five rows of seven red velvet seats, sittable), the stage with its candles (real flames), the proscenium,
+  the masking legs and the cyclorama. **The show** as the old game ran it: sitting down starts THE HOUND OF THE BASKERVILLES, its five
+  scenes on the old timetable, the scenery swapped in the dark (Baker Street, the Hall, the moor, the fog), the players (block figures in
+  their costumes and hats) walking to their marks, the hound's run, leap and flight, the lights' cues. No recordings: each line is shown
+  as a caption, the old sound cues are the game's own sounds (door, creak, bark, drip...). `window.PLAYAT=t` shows the moment t (tests).
+- **THE HOLODECK** (a new lot, x 162-192): a dark front of panels, its door ringed in light, HOLODECK in cyan tubes. Walking in takes you
+  (a fade, as the subway's) to the old hall, 32 x 32 tiles, dark panels and the glowing grid, off the map (x 520, `STORE.bound` widened);
+  out through its door puts you back on the sidewalk. The old free turn only inside no longer applies: the view turns freely everywhere now.
+- Each is in the menu's PLACES (outside its door); walls near you cut as every room's, and in the alley the row's lane cut (`BLK.lane`).
+- **Costs** (`MAINDBG()`): triangles in the batch: the theatre about 1,300, the arcade 320 (its machines are pictures on few faces), the
+  playhouse 2,450 and its scenery 900 (one set shown at a time), the holodeck's front and hall about 50 each; the film one plane (2), the
+  players about 130 each and the hound 170 (drawn only inside during the show). Lamps: records only, LITE's eight nearest as ever: the
+  theatre 9, the arcade 5, the playhouse 10 (dimmed by the show's cues), the holodeck 2 + 2. Programs: none new (Lambert and Basic with or
+  without a map, the flames' own). A frame: nothing while outside and away; inside the theatre a 64 x 36 copy every 125 ms; inside the
+  playhouse during the show the players' few boxes. Nothing at the loading line.
+- Fixed on the way: the old letter A (`THFONT`) was a pixel short and drew as a 9 (PL9YHOUSE).
+## 19 Oct 2026: the street signs, the telephone poles and their wires
+
+**The street signs** (owner, 19 Oct 2026, of the NO PARKING sign on the main street's sidewalk, its grey pole across its face: "make sure
+metal pole isnt blocking signs. make signs 2x bigger, use realistic texture, shines, textures, shapes, lived in"; `052a-signs.js`, called
+from `bodbuild.js` where the old signs were drawn): every sign (`BOD.signs`: the corners' name blades, NO PARKING, SPEED LIMIT 25, STOP;
+the map has no bus stop or one way sign) twice as big, **the post always behind the plate**: NO PARKING back to back on its post (one plate
+each side, the post between them), SPEED LIMIT and STOP on the post's far side from the opening view, the name blades on a cap at the top
+of the post (on the traffic lights' poles, above their top). Posts are galvanized U-channel with its row of holes (the blades' a round
+post), rusty at the foot, now and then a flyer band; a post in four leans a little. Plates in 48 texels a tile: a 5x7 letter (NO PARKING /
+8AM-6PM / EXC SUN, the P in its red ring and slash, NO STANDING ANYTIME, SPEED LIMIT 25, STOP on its octagon, MARKET ST and the rest),
+the rolled edge (lit top and left, dark bottom and right), rounded corners, two bolts with rust running down from them, the reflective
+sheeting's glint (two hard diagonal bands, no gradient), the red or green faded to a different degree on each, stickers, a scribbled tag,
+grime along the foot; one plate in five bent at its middle; the backs bare aluminium stencilled NYC DOT. The SPEED LIMIT posts stand 1.3
+tiles in from the kerb (the plate no longer over the road), NO PARKING .8. Cost: about 20 triangles a plate and 10 a post, some 2,600 in
+all in the street's batch (no new draw, no light, no program); the atlas some 1 M texels more.
+
+**Telephone poles back, on the apartment side only** (owner, same day: "add telephone poles back. jsut on main apartment side. 4 poles and
+long black thick wires (only2) very realistic. try nto to have them block view. wires and poles are common perch areas fro creatures that
+perch. like dragons."; `069b-poles.js`). They went with the power grid when the power house was put off the map (18 Oct, main street
+only); the grid (`grid.js`) stays off. Four creosoted wooden poles (8 m, eight-sided, tapered) at the kerb edge of the main street's
+apartment-house sidewalk, spread over `BLOCK.x0`..`BLOCK.x1` and each moved to the nearest spot clear of the street lights, the signs, the
+bins, the trees and the doors (the bodega's, the apartment house's, Ghost Street's, the subway stair); read from `DRESS.kerb`, so a wider
+sidewalk moves them. Each: grain, checks (cracks), a darker foot and a greyer weathered top, staples and torn flyers (tear-off tabs) at
+eye height, an aluminium tag, galvanized climbing steps from 2.6 m, a wooden crossarm across the street with two braces, green glass
+insulators, a lean on some; the second pole carries a transformer can. **Two thick black wires** run the length on the crossarms' ends,
+in real catenary curves (sag 2.4% of the span), swaying gently with the weather's wind (still when there's none). **Not in the way**: a
+pole standing between the camera and you (on screen over you, nearer the camera) dissolves to a third (the batch's random see-through,
+eased); the wires are thin and high. **Perches**: the four pole tops and a point on each span (`WIRES.perch`) join the dragons' ledges
+(`078-npc-dragon.js`); a dragon picks a free one, and the wire sags a little under it (16 cm, a V to the dragon) while it sits, the dragon
+riding the sway. The game has no other perching creature (the bats fly, the pigeons aren't on the map). `WIRESDBG()`,
+`DRAGONPERCH(i,k)` for a test. Cost: some 1,700 triangles the poles (one draw), 1,150 the wires (one draw, rebuilt only near and
+moving, under 0.1 ms), one small program (the poles' Lambert with its dissolve), no light; the sun's shadow from the poles.
+## 19 Oct 2026: Central Park's wall, gates, trees
+
+**The park's wall three times over, ivy, the railing and gates half again** (owner, 19 Oct 2026, of the park's low wall and its black railing:
+"make the brick wall 3x thick, 3x as high, covered in ivy in places, natural patterns. metal gates 1.5 taller, 1.5x thick. sharper at top. all
+the way waroudn (except for entrance)"; `park.js`): the wall 48 px high (was 16) and 1.5 tiles thick (was 0.5), thickened inward so its street
+face stays where it was; all the way round as before (front, both sides, back, the castle's own wall its corner), open only at the four gates
+(the main street's 10 tiles, the east, west and north gates). The stone weathered and uneven: each stone its own tone (wider spread), chipped
+corners, broad stains and warm patches, rain streaks down from the cope, grime to the foot, moss in the low joints. **Ivy** painted onto
+both faces and over the cope (`ivyAt`: a broad noise along the wall says where it has been let go, climbing from the foot to a ragged height,
+here and there trailing down from the top and over the cope; long bare stretches between, never a repeat), and on the painted ivy a few
+thousand flat leaf clumps (octahedra, four greens) standing off the face for depth, instanced per stretch. **The railing** 1.5 m (was 1 m),
+its pickets, rails and posts half again as thick, each picket a collar and a tall four-sided spear point (sharper than the old cap), each
+post a knob and a point; the gate leaves 3.3 m (were 2.2), their bars half again as thick. The solids follow the wall (`RUNS`, `PIERS`);
+the town's routes still come in by the gates (NAV and A* read the solids); the creatures' park bound keeps 2.2 tiles off the walls.
+**The gate piers** (owner, 19 Oct 2026, of a pier and its lantern: "live in, non unifrom, ivy, way bigger, regal, ridges, glow realistic
+light (all lights, all glow, no fake)"): 2.4 tiles square, 150 px to the cornice (were 1 tile, 91 px): a plinth, banded rustication (deep
+lit-and-shaded grooves every course, blocks staggered, each its tone, streaks and grime, ivy climbing some faces), a string course, a
+moulded cornice in four stepped ridges; on it an iron lantern (a pedestal, plates, four corner posts, a glazing bar, glass panes, a bulb
+inside, a roof in five steps and a spike), 1.4 times the old size. After dark the glass and bulb lit, a halo of hard steps round it
+(a bright core, three dithered rings, additive, one sprite each), and a real warm light at the bulb in the lamps' records (LITE's 8
+nearest: it lights the cap, the pier and the ground in the CEL bands); by day the light off (no slot taken).
+**The oddities stall removed** (owner, 19 Oct 2026, of it inside the railing by the gate: "remove from game"): it was THE ODDITIES STALL,
+a stone block with a plank top, a crate, three gems and a gold nugget (data/props.json's `crate`, `gem1-3`, `gold`), a gem a day for a
+double click (`gems.js`); all of it gone, the gems now only from the cave's glints. **The potted plants removed** (owner, 19 Oct 2026: "no
+potted plants in centrtal park"): the four pots by the main gate's piers (bird of paradise, sansevieria, calathea), and the pots' data
+(`pot1-5`, `paradise*`, `calathea`, `sanseveria`). **The big trees further in** (owner, 19 Oct 2026: "move the bigger trees more in the
+center of park and away from paths so they dont block views"): the oaks drawn about the middle of each quarter's lawn, 3 tiles more clear
+of the ways (crown and all), 8 clear of the back walls and 10 of the side walls, and away from the round; fewer fit (12 of 24).
+Cost: the iron some 94,000 triangles round the whole park (was 57,000), instanced per 16 tiles, a few thousand in sight; the ivy's leaves
+some 50,000 triangles round the park (6,300 clumps of 8), one instanced draw per stretch of wall (36 tiles at most; culled: a few
+thousand triangles and 1-3 draws in sight), no shadow cast; the walls' textures three times the area (painted once at the start); 8 lantern lights in the lamps' records
+(none by day), 8 halo sprites (one program); no new shadow light. Under 1 ms a frame.
+## 19 Oct 2026: THE BAR and the MUSEUM OF EARTH on the main row
+
+**The bar, exactly as it was, and the museum, back, west of the apartment house** (owner, 19 Oct 2026: "lets add the bar, exactly as it
+was, the museum, also back, on main street on other side of hotel"; "hotel = apartment"; plan A of https://claude.ai/artifact/Hn7uCZXHTpjgfqwvnZLQFa):
+- **Where** (`WROW` in `006-map-pre.js`, building units; tiles are 72 + (u - 72) x 1.1): THE BAR at x 10.8-20.8 (tiles 4.9-15.9), its door on
+  the main street as before; MUSEUM OF EARTH at x 22.6-48.6 (tiles 17.7-46.3), its front 3 back from the sidewalk with the portico (steps,
+  four columns, the entablature and pediment) between it and the sidewalk. Gaps of about 2 tiles to each other and to the apartment house
+  (for the gates). The museum is 21 deep (to tile y -103.4): deeper than the row, over the alley's asphalt where the alley has no buildings
+  (west of x 48); the alley there ends at its east wall.
+- **The bar**: `'bar'` out of `AWAY0`; the room, its stage and the band (pianist, singer, drummer one at a time; the guitarist untouched, on
+  the street) as they were, the same code. Its lives, walkers, residents, BARKEEP and the menu's entry come back with it. The map editor moves it.
+- **The museum**: the old game's own makers copied in (`044b-f-game-x-museum-*`: the stone, the floors, the walls' pictures (the titles, Egypt's
+  frieze, the Lascaux wall, the fossil wall), the banners, the bronze doors' surround, the portico, the hall's columns, the desk, the bench and
+  every exhibit; its plan `MUS` from the land file, `044a`), set out as the old game placed them, the whole turned a half turn so the front
+  faces the main street (`placeAt`). The doors are a real doorway now (2.5 wide), into the great hall; the galleries through the arches. The
+  T. rex (out since 16 Oct), the rope and the khipu (never placed) and the plaques' texts (no card shows them here) not copied. The mammoth's
+  scan in blocks three times coarser (`data/museum.json`, `tools/scan-trim.py` from `data/full/museum-scans.json`): 1,021 boxes, not 12,267.
+  CURATOR its job. MORE PLACES: THE BAR, MUSEUM OF EARTH.
+- **The room rules**: each its own room (`store.js`'s `room`): near walls cut to the foot, only your room drawn from inside; the museum's
+  inner walls cut on your side of them (`dyn`: the wall's side follows where you stand). `rec()` makes a room's record and menu entry before
+  it is built, so the menu, lives and walkers know it from the start.
+- **Cost**: the museum about 18,000 triangles (the mammoth 10,000 of them), the bar's room about 30,000 and one musician at a time (at most
+  27,500); 13 lamp records for the museum, the bar's as before, all in LITE's pool (its 8 nearest, from inside only), no new shadow lamp, no
+  new shader program. Nothing at the loading line: both are built after the game opens (`STEPS`), the museum in seven steps, the band after
+  the bar (before, the bar and the band were built at the loading line).
+## 19 Oct 2026: the lamps redone, porch lights, live neon
+
+**Real lamps, real light** (owner, 19 Oct 2026, his shot of a main-street lamp at night, a plain pole, a dark box head and a flat tan
+rectangle for its light: "lamps need to be redone. make light look super eralistic (cel shading) but real ophsiycs, glow, rays, light,
+shien, etc. bulb shape, tuft around. edges, ridges, etc."; then "glow realistic light (all lights, all glow, no fake)"; and, his crop of
+the park side's lamp post with its flat tan hexagon: "make all look realistic. go through all of main. take liberties. i trust you.";
+`069b-shine.js`, `SHINE`):
+- **The street lights** (both kerbs, the loop's roads): a cast-iron base with a flared foot and stepped ridges, a fluted tapered pole
+  with a collar, a cap, the curved davit arm and its scroll brace, the luminaire (a teardrop housing with its rim and ribs) and a glass
+  bowl lens under it, the light in the bowl (moved under the head; its pool with it). **The corner light**: the same, taller, two arms.
+  **The park side's lamp posts**: the cast base, a fluted post, a capital, a cup, an acorn globe (the light) and a crown on top.
+  Built once, instanced in chunks of 36 m so only what's on screen is drawn.
+- **The light, CEL and physical**: the lens a bright core; a stepped halo round it (four flat bands, the core near white); a faint
+  stepped cone of light from the lens to the ground, stronger in fog, rain and snow; the ground's pool cut in flat bands where a
+  point light's real fall-off (distance to the power 1.6, its reach, the cosine on the ground) crosses 72%, 45%, 22% and 9%, so a
+  far lamp's painted pool looks like a near one's real light; a lamp LITE is lighting for real shows no painted pool (never both).
+  **Wet ground** (the game's wetness, `LFX.ws.wet`): each lamp shows a stepped streak in the wet ground, mirrored where a puddle
+  would show it, broken by moving ripples. **Moths**: three or four round each of the three nearest lit lamps at night.
+  On at dusk, off at dawn as before (`DRESS.tick`); a cut wire darkens halo, cone and pool with the lamp.
+- **Porch lights** (owner: "front needs a porch light. all buildisng do."): a jelly-jar sconce (wall plate, arm, cap, glass jar,
+  cage of four bars and two rings) beside every front door on the main street: the bodega, the apartment house (left of the stoop),
+  Ghost Street, the three shuttered fronts (19 Oct, after the main row's new lots: the arcade, the playhouse and the holodeck at
+  their doors, the bar; the museum a larger pair, one either side of its doors; the theatre none, its canopy's downlights light its door); a warm lamp record each (LITE's eight nearest), its halo, cone and pool, on at its own
+  moment after sunset.
+- **The traffic lights**: each lit signal lamp a coloured stepped halo, following the signal's phase.
+- **The bodega's OPEN sign, live neon** (owner, of the mockups' section 4, https://claude.ai/artifact/Hn7uCZXHTpjgfqwvnZLQFa: "B & C"):
+  B, LIVE NEON: the gas hums (a faint flutter), now and then one letter stutters off and catches again; its lamp record flutters with it;
+  a stepped pool in its colour on the sidewalk. C, WET NIGHT: when the ground is wet the sign shows again in it, upside down, in hard
+  steps, broken by ripples where drops land; dry nights look like B. The alley's neon signs (`069a-block.js`) the same.
+- Not changed: lit windows (already their own light); the park's gate lanterns (the park's own session).
+- **Cost**: a street light 660 triangles (432 iron, 148 head, 80 lens; it was about 180), a lamp post about 450 and its globe 80, a sconce 212 and its
+  jar 64; 36,700 in all over the map but in 36 m chunks, only those on screen drawn (the main street at night, measured: 300,186
+  triangles in the picture against 302,958 before, the blocks they replace gone); the glows 2 triangles each, 264 in one draw;
+  6 porch lamp records (LITE's eight nearest, no new light, no shadow); 2 new shader programs (the glows, the wet reflection);
+  about 18 more draws on the main street; SHINE.tick 0.08 ms a frame (headless). `SHINEDBG()`.
+- **The players real, the arcade full** (19 Oct 2026, the block figures and the four machines against "i dont want anything in game looking
+  like minecraft, fake blocks, make it look natural and lived in"): the six players are the game's own rigged people (`PAWNNEW`: hero and
+  villager bodies on the standard clips), each recoloured to his costume (shoes, trousers, coat and hair by the body's own parts) with his
+  hat (deerstalker, bowler, top, wide, straw) riding his head bone; they walk their marks on the formal walk clip, talk on the talking
+  idle, and the old show's gestures are clips (wave: cheer, crouch and fall: sit, block: found item). The hound is the game's rat body
+  (`CREATNEW` in `087-npc-creatures.js`, a small factory of the creatures' own) at a hound's size, black, its mouth, ears and paws in the
+  phosphorus glow (the NPC shader's glowing part), on its run and idle clips. Made the first time the show plays, drawn only inside during
+  it: about 3,000 triangles a player, 6 at most on stage, the hound about 1,500; their own self-shadow passes as every NPC's.
+  **The arcade** (the coordinator's list: "a row of upright cabinets of different makes ..., a pinball machine or two, a claw machine, air
+  hockey, a change machine, a prize counter, posters, worn carpet paths"): a back row of six uprights of invented makes (TURBO, STORM,
+  MAGIC, COMET, ROBOT, GHOST: lit marquees, a game on each screen ringed in a dimmer glow, control panels with lit buttons) and the old
+  ARCADE upright, two pinballs on the west wall (lit playfields and backglasses), the two candy cabinets back in the middle with their
+  stools, an air hockey table, the claw machine (glass you see through, the prize heap lit), the change machine, the VR station, the prize
+  counter (a lit glass case, shelves of plush, PRIZES), posters on the side walls, a worn grey path up the middle and along the cabinets.
+  The screens light the carpet in front of them in three hard steps of their colour (painted into the floor: no lamp each); LITE records
+  stay at 6 (the room's two, the candy cabinets' two, the VR's, the neon's). All in the store's one batch: about 1,000 triangles, no new
+  program. Found on the way: the store's floors are painted mirrored front to back (`flat`); the playhouse and arcade floors allow for it.
+- **Clear of the doors** (19 Oct 2026, after the merge with the bar, the museum, the poles and the lamps): the street trees (`069-dress.js`)
+  and the telephone poles (`069b-poles.js`) now keep away from the four places' doors as they do from the others'. The places, as every
+  stored room, appear only when the store's steps are all done (built after the game opens, baked once at the end: the museum's steps
+  come before them); a slow headless run can look before that, so checks call `STORE.ensure()` or wait for `STORE.kit.STEPS.length===0`.
+- **The sellers' booths on the wall, at work** (owner, 19 Oct 2026, of the mushroom seller: "the mushrom skeleton should look around when idle,
+  the yellow blobs should be flowing hair. make him 25% taller. his entire booth should be backed into the central park brick wall, (facing main).
+  give him one table behind him that has shelves and stacks of colored mushroom (each row a dif mushroom). no grass around him."; of the tomato:
+  "same with tomato merchant, but with veggies. add stacks of veggies of boxes too. idle animations. also they need to be working at their booth.
+  occaisonaly sweeping, organizing things."; `stalls.js`, `083a-npc-mushroom.js` (moved after the rig it now uses), `npc-toons.js`, `veggies.js`, `weeds.js`): **the booths** sit flush on
+  the park wall's street face, read from the wall's own solid (`STALL.face`: the outermost FIX box spanning the booth near `PARK.y0`, so a thicker
+  wall moves them with it), the mushroom seller's west of the gate, the tomato's east, each 4.8 tiles wide and 3.6 deep, a little further from
+  the gate's piers so there's a way round: in front a plank counter with its three stepped risers and two short wings (a U open toward the wall),
+  the seller between it and **a shelf table** against the wall (a shelf under the top, the top, two shelves above stepping back, a back board),
+  each row heaped with one kind (his: puffballs, chanterelles, redcaps, moonglow; the tomato's: potatoes, cabbages, tomatoes, eggplants); beside
+  the tomato's two **stacks of vegetable crates** stepped up to the wall (three, two, one high, the top of each heaped), pumpkins and sacks; beside
+  his a mushroom log along the wall, a stump of boletes, baskets; a broom leaning on the wall at the gate end. **No weeds** in a booth's ground
+  (they grew from the tables' and the wall's own solids: weeds.js now skips `STALL.zones` and `WEEDS.clear` takes out any already grown).
+  **The mushroom seller** a quarter taller (3.16 m) and on bones now (npc-rig.js, like the tomato): his yellow lumps are **long hair**, twelve
+  locks of three pieces from under the hat to his shoulder blades, each piece on a spring (lagging when he starts, stops or turns, swinging
+  past when he stops; a turn of his head flicks them the other way; in wind, gusts by `PARK.windK`, still on a calm day); his tray on its own
+  bone. **At work** (`STALL.work`, both): standing he looks about (at you or anyone passing within 7 tiles in front of him, else down the
+  street one way or the other, or down at his goods), his body and hair still between glances; every 9-25 seconds he takes up a job: **tidying**
+  (to the shelf, reaches for a row by its height, carries a handful/crate of it in his hand to the counter, sets it down and pats the heaps
+  straight), **arranging** the counter or a wing in place, or **sweeping** (takes the broom from the wall, sweeps the booth's floor with
+  strokes side to side, or goes out round the gate end and sweeps the pavement in front of the counter, then puts the broom back); the
+  mushroom seller sets his tray down first and picks it up after. Cost: the booths some 16,700 and 16,200 triangles (were 13,700 and
+  13,100), the same six instanced draws each, no light; the mushroom seller some 5,200 triangles (was some 2,500) on 39 bones (one skinned draw, as the
+  tomato), the hair's springs a few hundred multiplies a step at the 10-a-second animation; nothing new a frame when far. `STALL.made[i].N.job('sweep'|'tidy'|'pat'|'wing')` (tests).
+
+- **You can be the ghost** (owner, 19 Oct 2026: "amazing. lets make the ghost playable by players too as the main avatar. can float and
+  use arms, put guitar on their back too, you can take off and paly"; `110a-ghostme.js`, the sheet shared from `musician.js`):
+  - **GHOST** is the first choice of AVATAR (the AVATAR row moved from GRAPHICS to the menu's AVATAR tab, above the editor's buttons) and
+    the avatar a new player starts as; a save that already has a pick keeps it (`avatar`). `?avatar=ghost|walker|mannequin|vroid`.
+  - The guitarist's own sheet, not a copy: `sheetFig(g)` in `musician.js` makes the white sheet arms, hands and finger bones, the guitar
+    and its strings, and the cloth bedsheet with eye holes, for him and for you (one geometry, his material and programs). The cloth now
+    takes the ground's height under it, and comes back over the head if it is ever left behind (a fall, a teleport).
+  - **Floating**: no legs; it glides about 0.15 m above the ground with a slow bob (1.4 rad/s, 3 cm), leaning into its speed and banking on
+    turns; the hem trails, swings round on turns and swings forward when it stops (the cloth in the world, not in his frame). Running is a
+    faster glide. A jump lifts it and lets it settle back over about a second. On stairs, slopes and the stacked floors it follows the ground
+    as you do (your own height, `py`). In the Hudson it stands in the water to the hem while you swim, and sinks with you when you dive (the
+    sheet billowing up). Its shadow is the sheet's and the arms'.
+  - **Arms**: every move you make with your arms (punches, the slap, block, wave, reaching and grabbing, carrying) is the Walker's own move
+    put on its sheet arms, eased in and out; kicks, climbing and falling move the body under the sheet. At rest its arms hang a little
+    forward and trail back as it speeds up.
+  - **The guitar on its back**: slung diagonally, neck up past the left shoulder, on a leather strap round the right side, across the chest
+    and over the shoulder (laid over the sheet). **T** (KEYS: "the ghost's guitar"; the controller's D-PAD LEFT; both in the `?` list) takes it
+    off: it swings round the right side to the front on a spring (the guitar's weight: about half a second, overshooting a little and settling), the right hand helping it
+    round, and it plays the guitarist's tunes with his playing system (the same tunes, both hands solved onto every note, the same sound:
+    silent while the recordings are out). The guitarist stops while you play. T again, moving, a move, the water or sitting swing it back.
+  - Things at rest: hovering idle it only bobs and the sheet sways with the bob (headless: no jitter frame to frame).
+  - Cost: 22,716 triangles (the guitarist's 22,674 and the strap's 42; the Walker on clips was 14,870), 9 draws (the figure, the
+    sheet, the strap, the six strings), no lights, no new programs; about 2.5 ms a frame headless on software
+    rendering (the cloth, the strap, the arms), and the guitarist's solver while playing (12 ms there). `tests/ghostme.cjs`; pictures
+    `mockups/ghost-player-*.png`.
 ## 19 Oct 2026: the apartment house becomes an empty hotel
 
 **The hotel** (owner, 19 Oct 2026, his picture of the house's corner and stoop at night: "make the texture and depth style, etc more
@@ -1855,6 +2115,139 @@ so he looked shrugged. You are now his mannequin (`data/full/humanoid.fbx`, Blen
 A-pose, so the skeleton's arms are lowered to it before binding; each corner weighted in code to its nearest one or two bones. One flat
 light colour, cel-shaded, casting a shadow; the same clips. 402 triangles.
 
+## 19 Oct 2026: the ghost is you, the mannequin the one other body (merge of main into claude/sharp-fermi-sfsl7x)
+
+**The ghost by default, his mannequin a toggle** (owner, 19 Oct 2026, after main had made you his mannequin: "lets make the ghost
+playable by players too as the main avatar. can float and use arms, put guitar on their back too, you can take off and paly"): you
+start as the sheet ghost (`110a-ghostme.js`: floating, the arms, the guitar on the back, **T** / the pad's D-PAD LEFT to play); the
+owner's mannequin (`data/humanoid.json`, main's) is the one other body. Clicking yourself opens YOU, which now has a BODY row,
+GHOST / MANNEQUIN; the pick is saved (`avatar`; `?avatar=ghost|mannequin`). No WALKER or VROID, no avatar editor, no AVATAR tab
+(main's removals kept; this branch's move of the avatar row into the AVATAR tab dropped). `087a-avatars.js`: `AVS.KINDS`
+ghost / mannequin, `AVS.BUILD.mannequin` is main's body, `AVS.into(row)` fills YOU's row. `@pixiv/three-vrm` out of the import map
+and `package.json` (nothing loads it). Also kept from both sides: main's Day 1 station (`'station'` no longer away) and this branch's
+bar on the main row (the old `bar` layout entry and its `AWAY` place gone); the hotel's door keeps its porch light; the poles keep
+clear of the station's stairs where main moved them (`MAPSTAIR`).
+## 19 Oct 2026: the main street made real
+
+The owner, of his shots of the street before the bodega: "lets make the tree bigger and thicker. extend the sidewalk 1 more tile wide";
+"lets do the same thing we did for the sidwalk/gate/bricks etc and make this all look realistic. look at real photos of roofs bodega, etc nyc
+and fill it out with textuers and style that match. dont do any uniform stuff like this taht looks fake. anywhere there is a repeat pattern
+create anatural ooking patternsa nd textures"; "i dont want anything in game looking like minecraft, fake blocks , make it look natural and
+lived in like the grass in central park"; of the drain: "i want there be real depth underneath so slight faint steam can escape. always use
+real dynamics. and physics"; of the newsstand: "dont have any roofs that make it hard to see characters in isometric view ... only have
+newspaper stacks. these look fake"; "delete whatever this (these) are"; of the bodega's front: "remove debri around front. fix door. shuld
+be bodega style clear door on frame ... delet egreen soor. clear windows. drones come ut of hole in ceiling ... a box on roof drone can go
+up and down out of bodega and roof. the box on roof opens and drone flies in and out. this is how all drone devliery works in beuildings";
+"put a gate betwen all gaps between buidlings on main. (cant short cut to alley)"; "make the tree bigger and fluffier in front of hotel";
+"make all look realistic. go through all of main. take liberties. i trust you." Done the way the sidewalk, gate and bricks were: painted
+pixel detail, each piece its own, nothing repeated evenly, CEL light. Before / after: `mockups/*-before.png`, `*-after.png`.
+- **The sidewalk one tile wider**: the shop side's kerb `LSEED.street` -71 to -70 (the road 20 tiles); kerbs, lamps, drains, ramps,
+  crossings, bike lanes and trees follow it.
+- **Street trees** (`dress.js`): the park's oak (`PARK.mesh`, OakTree2) grown slender, 7-8 m, the trunk twice as thick; the one before
+  the apartment house 9.5 m; leaf clusters (alpha-cut cards, normals out from the crown) break the crown's facets; the pits a painted
+  ground cover (ivy, mulch, a butt, a cap, dead leaves) under a low iron guard on three sides (bent and rusty pickets), the park's grass
+  props in them; the house's planters the park's shrubs and flowers. Cost: some 4,600 triangles, 4 draws, one program (the cards).
+- **Litter baskets**: New York's green wire basket (a turned body painted with its mesh, litter showing through, rust), a rim, rubbish on top.
+  230 triangles each.
+- **The bodega's roof** (`bodbuild.js`): tar and gravel roll roofing in laps (seams, tar bleed), patches (fresh black, silver, mastic),
+  ponding stains with a silt edge, grime and moss at the edges, droppings; the parapet its own weathered brick (efflorescence, drip stains,
+  tar flashing inside) under coping stones each its own length, height, tone, lichen and crack; a packaged AC unit on wood sleepers
+  (louvres, service panel, fan grille, rust, duct, conduit), a wired-glass skylight on a tarred curb; turbine, soil and gooseneck vents
+  (`rooftops.js`); the kit's box AC and vent gone. **The cornice** (`facade` in `main-8.js`, every building that uses it): the dentils
+  uneven in spacing and width, a few missing or dented, panels in different repaints, rust streaks, drips onto the brick. Cost: some 80
+  boxes into the roof's batch, no draw more.
+- **The bodega's front**: an aluminium storefront door with clear glass, push bar, kick plate and stickers, that swings open when
+  someone comes up and closes behind (`BODB.tick`); a glass sidelight and transom; decals on both windows. Removed: the green door and its
+  step before the upstairs mailboxes (`mail.js`), the drone flap in the front wall, the outside mat, the moss. 4 draws.
+- **Drones through roof boxes** (`drone.js`, `DRONE.roofBox(x,z,y)` for any building): a galvanized box on the roof with a hinged lid and
+  a light; the bodega's drone lives under its box on the shop's ceiling (now with a duct up through the roof), climbs out as the lid
+  swings open (amber), flies to the apartment house's roof box, sinks into it, the parcel arrives at your window as before, and comes back
+  the same way; eased climbs and descents, a slight wobble and tilt. 2 boxes, 3 draws each.
+- **Gates between the buildings** (`148a-gates.js`): every gap between the main row's buildings found from their footprints (`BLK.blds`,
+  the map editor's boxes; THE BAR, MUSEUM, THEATRE, ARCADE, PLAYHOUSE, HOLODECK are picked up by name when they come) gets a wrought-iron
+  gate at the row's front, a picket every 13 cm with spear tips, a few rusty or short, the middle stile with a latch and lock; solid to
+  you and to every route. The lot with the subway's stairs is closed at its back instead, the stairs left open. Today's gaps (tiles x):
+  56.5-76.4 (back), 85.2-87, 101-103.5, 117.5-124.8, 143.3-145.5. About 6,900 triangles for the row, 2 draws.
+- **Storm drains with depth** (`148b-drains.js`): the grate's slots are holes now; under each a catch basin (walls stained in bands,
+  dark water, leaves, a bottle). **Steam**: from about half of them, only the four nearest within 20 tiles: puffs that rise while warm,
+  cool and slow, drift with the weather's wind once above the gutter, swirl, grow and fade in hard steps (additive, faint, dimmer by day).
+  Basins 2,240 triangles in one draw; steam at most 96 quads, one draw, one program.
+- **The newsstand only stacks** (`newsstand.js`): no kiosk, roof or header; papers on a low wire rack in three tiers, bundles tied with
+  twine on a pallet and stacked behind (one held down by a brick), a blue milk crate, a stray sheet on the ground, the cat on his crate;
+  at night a blue tarp is pulled over the rack. **The grey box** by its back was the twelve empty bundle slots drawn at the street's
+  origin (an instanced mesh whose count was never set); gone. About 1,100 triangles.
+- **The collection boxes** (`mail.js`): domed top, pull-down chute and handle, four legs, eagle, pickup plate, the lettered band,
+  stickers, a tag, scuffs, facing the road. **Manholes**: worn rings and spokes on a patched asphalt cut, rust, a pick hole.
+  **Hydrants**: four, New York style (turned body, caps, chain, chipped silver paint).
+- Measured beside the bodega (`__dbg.tris()`, everything in the view's frustum): 360,800 to 382,700 triangles; programs 180 to 190;
+  draws 195 to 280 (with shadow passes). No lamps added. The door, drone and steam run under 0.1 ms a frame.
+
+**And the main street made real** (the street-furniture branch of 19 Oct, merged here too): its gates (`148a-gates.js`) now also find
+the bar and the museum (`WROW`) and the theatre, arcade, playhouse and holodeck (`BLOCK.lots`), so the gaps beside them are
+closed as well; the street trees, hydrants and planters keep clear of the main street places' doors (`069-dress.js`); the bodega keeps
+this branch's street signs (`BOD.streetSigns`) and gets the glass door.
+**A stream through Central Park** (owner, 19 Oct 2026, his night picture of a rocky stream: "can we get a running stream like this with
+rocks and realistic shape and flow ?"; his picks: through Central Park, cel water, wade and stepping stones): a brook (`PARK.brook`,
+`061-park.js`; drawn in `089a-brook.js`) from a spring among boulders in the park's north-east, about 185 tiles west, under the north
+way and into a still pool east of the castle. Its channel is cut into the lawn (a hole in the land, `064-map-post.js`; the ground's
+height `HILL` follows its banks, so you walk down into it): banks of earth and pebbles, the water 0.3 to 0.55 m under the grass and
+about knee deep, dropping a few centimetres at six riffles. The water is one flat sheet in cel bands (no gradients): dark, a
+sky-tinted band and glints that run downstream at about 0.6 m/s, faster and foaming over the riffles, slow in the pool; foam round
+every rock with a broken wake behind it, and rings round your legs when you wade (with a splash and a babble made in code, `sfx`
+rules). Rocks: rounded boulders along the banks and round the spring and pool (solid), smaller ones breaking the surface, three rows of
+stepping stones you can stand on, pebbles at the waterline. The north way crosses on a stone bridge: the path humps 0.55 m over an
+arch, parapets each side. Trees, plants and the way's lamps keep off it; the menu's map draws it. Cost: about 25,000 triangles in
+all, cut into sections so a view draws only its part (measured: +0.8K at the cave, none at the gate, the bridge view 9K lower than
+before as hills and trees left the channel); up to 3 more draws; one new shader program (the water) and one bank variant; no lamps.
+
+## 19 Oct 2026: the triangle budget kept (the picture under 100,000)
+
+The owner, 19 Oct 2026: "go" (to bringing THE MARKET under his rule of 17 Oct, "under 100,000 triangles on screen": "i dont want to
+render a bunch of needless stuff and not even use it"). Nothing he asked for removed; nothing looks different at the opening view.
+- **Measured first** (`tests/tricount.cjs`: 1920x1080, `?fresh=1&hideme=1&hour=13`, the opening ISOMETRIC zoom, `STORE.ensure()`, one frame
+  at each spot counted draw by draw through `renderBufferDirect`, the main picture apart from the shadow passes and the river's pre-pass,
+  its top 25 owners and how much of each was inside the view at all). **What was wrong**: most of what was drawn was off the screen
+  (typically 0 to 10% of an owner's triangles in the view): instanced meshes laid over the whole map (gates, roofs, lamp heads, signals,
+  hydrants, the park railing's gate leaves, the river's kit) are one mesh each, so one corner on screen drew all of it; the clouds, the
+  goods (frustum culling off), the river and the far skyline had culling off; the park's hills were one mesh 280 m across; and **the
+  whole picture was drawn twice** on the main street: the river's refraction pre-pass (the scene behind its water) ran whenever a box
+  17 m deep round the river touched the view's frustum, a loose test that passed all along the street with no water on screen.
+- **Before → after**, main picture (draws), the river pre-pass, shadow passes (sun + the one shadow lamp, six faces):
+
+  | spot | main before | river pre-pass before | main after | shadows before | shadows after |
+  |---|---|---|---|---|---|
+  | beside the bodega (12, 3) | 187,114 (126) | 185,792 | 80,888 (113) | 149,817 | 104,301 |
+  | inside the bodega (9.9, -3.4) | 170,936 (138) | 162,840 | 62,066-84,420 (124) | 472,768 (lamp 356,920) | 143,874 (lamp 75,334) |
+  | park main gate (30.5, 42.9) | 207,851 (119) | 6,776 | 68,419 (109) | 555,092 (lamp 427,604) | 183,606 (lamp 107,938) |
+  | main row, theatre/arcade (33, 2.5) | 153,810 (117) | 152,488 | 22,062 (94) | 112,973 | 70,565 |
+  | bar / museum (-57, 2.5) | 162,636 (87) | 161,314 | 38,826 (65) | 112,140 | 63,604 |
+  | east end, holodeck (118.6, 2.5) | 136,742 (83) | 135,420 | 17,116 (59) | 66,000 | 18,532 |
+  | middle of Central Park (34.5, 85.6) | 167,146 (97) | 6,776 | 34,600 (91) | 110,483 | 48,875 |
+  | inside the bar (-69.9, -8) | 199,052 (83) | 190,956 | 70,990 (58) | 121,606 | 72,504 |
+  | main street at night, 22:00 (12, 3) | 187,150 (130) | 185,828 | 58,252-80,930 (117) | 0 | 0 |
+
+  (The earlier "383,000 in view" was `__dbg.tris()`, everything inside the frustum: about the main picture and the pre-pass together.
+  The ranges are two runs: the walking guitarist, 22,400, in the view or not.) Frame time, headless software graphics, same machine,
+  20 frames' median, three runs each: beside the bodega 1,300-1,400 ms to 783-900, the park gate 1,117-1,250 to 767-917, inside the bar
+  1,650-1,700 to 867-967 (a comparison only; real numbers come from a real GPU).
+- **What was cut, and why it doesn't show**:
+  - `161a-cull.js` (`CULL`): an instanced mesh spread wider than 10 tiles is drawn as pieces of 10 tiles (11.3 m), and three draws only
+    the pieces inside each camera (the main view and every shadow camera, so shadows from off screen still fall). Same geometry, material,
+    colours, layers and shadows; the original stays the record (rays, editors, colour changes, `count` and `visible` are its own and copied
+    in each frame between `CULL.begin()` and `CULL.end()`, round the frame's drawing like `NPCS.cull`); a mesh that changes every frame
+    gives up and draws as before. Plain meshes marked `userData.cull`: the park's hills, the drains, the poles, the street trees' fluff.
+  - The river: its surface, bed, fish, junk and weed drawn and its pre-pass run only when its water is on screen (the exact on-screen
+    test of the water's box, not the 17 m-deep one; under water as before).
+  - The clouds (none on screen at the opening view: they are 60 m off and the shader already hides those in front) and the far skyline's
+    boxes: drawn only when one is on screen (`CULL.seen`, exact for the isometric camera, the frustum for the others).
+  - The goods: culled again (their bounds now follow a thrown good); a side of one colour is one quad, not 18 (the same colours; 33,868 to
+    24,076 triangles). The batches' far scraps (`PERFX.chunk`) their own pieces, not a 186 m-wide piece's tail. The park railing's
+    pickets lose the faces inside the wall, the collar and the finial (36 to 28 triangles; never visible from any view).
+- **Shown**: before/after screenshots at every spot with the same camera (`mockups/tri/sbs_*.png`, with `?fx=cool` so the drifting cloud
+  shadows don't differ): changed pixels 0.0-2.7%, all of them moving things (walkers, the tree's sway and its shadow, the drain's steam).
+- **Still the most**: the walking guitarist (22,400, his fingers and guitar whole by the owner's word), the goods (24,100) and the
+  pianist (22,500) inside their rooms, the bar's room (about 29,000), the two veg stalls at the park gate (about 31,000: round veg of
+  20 faces); the shadow lamp's six faces at the park gate (108,000, the stalls' veg again).
 ## 19 Oct 2026: the park's north edge pushed out, the fountain terrace and the lake
 **The fountain and the lake** (owner, 18 Oct 2026: "I want to add a large fountain in the top right area of central park on the current map ...
 and put a large lake towards the top (map doesnt have full lake in it just the bottom part)"; of three layout mockups he picked **A**: the terrace in

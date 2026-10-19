@@ -1,0 +1,221 @@
+<title>Main Street Places</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<style>
+/* layout: one column of plates (plan, fronts, glow), each a dark street-at-night panel with captions under it */
+:root{
+  --ink:#0d0e14; --panel:#16171f; --line:#2c2d3a; --fg:#e9e4d8; --dim:#9a97a6; --amber:#f2b54a; --neon:#ff4f7a; --cyan:#59d6e8;
+  --disp:"Silkscreen",ui-monospace,monospace; --body:"Atkinson Hyperlegible",system-ui,sans-serif;
+  color-scheme:dark;
+}
+body{background:var(--ink);color:var(--fg);font:15px/1.55 var(--body);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 60px}
+main{max-width:1080px;margin:0 auto;display:grid;gap:44px}
+h1,h2,h3{font-family:var(--disp);font-weight:700;letter-spacing:.04em;text-wrap:balance;margin:0}
+h1{font-size:clamp(22px,4vw,34px);color:var(--amber)}
+h2{font-size:18px;color:var(--fg)}
+h3{font-size:13px;color:var(--amber)}
+p{margin:0;max-width:68ch;color:var(--fg)}
+.dim{color:var(--dim)}
+section{display:grid;gap:14px}
+.plate{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:14px;display:grid;gap:12px;min-width:0}
+.scroll{overflow-x:auto}
+.tabs{display:flex;gap:8px;flex-wrap:wrap}
+.tabs button{font:12px var(--disp);background:transparent;color:var(--dim);border:1px solid var(--line);border-radius:4px;padding:6px 10px;cursor:pointer}
+.tabs button[aria-pressed="true"]{color:var(--ink);background:var(--amber);border-color:var(--amber)}
+.tabs button:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.card{display:grid;gap:8px;min-width:0}
+.card svg,.card canvas{width:100%;height:auto;display:block;image-rendering:pixelated;border-radius:4px;background:#07080c}
+.cost{font:11px/1.5 var(--disp);color:var(--cyan);letter-spacing:.03em}
+.q{border-left:3px solid var(--amber);padding:8px 12px;background:#1d1a14}
+ul{margin:0;padding-left:18px;display:grid;gap:4px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font:11px var(--disp);color:var(--dim)}
+.two{grid-template-columns:repeat(auto-fill,minmax(min(100%,400px),1fr))}
+.sw{display:inline-block;width:10px;height:10px;margin-right:5px;vertical-align:-1px}
+</style>
+<main>
+<header style="display:grid;gap:10px">
+  <h1>MAIN STREET PLACES</h1>
+  <p>The arcade, the movie theatre, the playhouse and the holodeck back from the old game, on main street's empty spots; the bar and the Museum of Earth next to the apartment house. Plus four ways to make the bodega's OPEN sign glow. Mockups only: nothing is built yet.</p>
+</header>
+
+<section>
+  <h2>1 · WHERE THEY GO</h2>
+  <p class="dim">Drawn to scale from the game (1 tile = 4 px). The main row has three empty spots, each 14 × 15.4 tiles. Open lots: west of the apartment house, the gap by Ghost Street, and east of the last spot.</p>
+  <div class="plate">
+    <div class="tabs" role="group" aria-label="Plan option">
+      <button id="pa" aria-pressed="true">A · EACH ITS OWN</button>
+      <button id="pb" aria-pressed="false">B · AS THE OLD GAME PAIRED THEM</button>
+    </div>
+    <div class="scroll"><svg id="plan" viewBox="0 0 1180 300" width="1180" height="300" style="background:#07080c;border-radius:4px;max-width:none"></svg></div>
+    <div class="legend"><span><i class="sw" style="background:#6a5a52"></i>THERE NOW</span><span><i class="sw" style="background:#f2b54a"></i>NEW / BACK</span><span><i class="sw" style="background:#3a3a46"></i>BACK ROW (ALLEY SHOPS)</span></div>
+    <div id="plantext"></div>
+  </div>
+  <p class="q">"The other side of the hotel": I read the hotel as <b>the apartment house</b>, so the bar and the museum stand west of it. If you meant another building, tell me which.</p>
+</section>
+
+<section>
+  <h2>2 · THE FRONTS</h2>
+  <p class="dim">Each front facing the park, as the old game drew it, cut down to its spot. Height in the game's art pixels.</p>
+  <div class="grid" id="fronts"></div>
+</section>
+
+<section>
+  <h2>3 · THE THEATRE, SMALLER</h2>
+  <div class="grid two">
+    <div class="card plate"><h3>OLD GAME · 20 × 11 TILES · 20 SEATS</h3><svg id="th0" viewBox="0 0 220 140"></svg></div>
+    <div class="card plate"><h3>NEW · 14 × 15.4 SPOT · 12 SEATS</h3><svg id="th1" viewBox="0 0 220 140"></svg><p class="dim">Three rows of four, the screen between its red drapes, the amber shell lights along the side walls, the film still playing. The front third is the lobby with the ticket window. In plan B the arcade's machines fill the lobby.</p></div>
+  </div>
+</section>
+
+<section>
+  <h2>4 · THE GLOW</h2>
+  <p class="dim">The bodega's OPEN sign, four ways. Each one stays CEL: hard steps of light, no smooth blur. Pick one, or mix (say "B with C's wet street").</p>
+  <div class="grid two" id="glows"></div>
+</section>
+</main>
+
+<script>
+const $=id=>document.getElementById(id), NS='http://www.w3.org/2000/svg';
+const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const S=4, X=x=>(x+40)*S, Y=y=>(y+120)*S*-1+0;
+const yy=y=>(-60-y)*S+20;
+const rect=(x0,x1,y0,y1,f,lab,st)=>`<rect x="${X(x0)}" y="${yy(y1)}" width="${(x1-x0)*S}" height="${(y1-y0)*S}" fill="${f}" ${st||''}/>`+(lab?`<text x="${(X(x0)+X(x1))/2}" y="${(yy(y1)+yy(y0))/2+3}" fill="${f==='#f2b54a'?'#0d0e14':'#e9e4d8'}" font-family="Silkscreen" font-size="${(x1-x0)<13?7:8}" text-anchor="middle">${lab}</text>`:'');
+function lines(t,x,y){ return t.split('|').map((s,i)=>`<tspan x="${x}" dy="${i?9:0}">${s}</tspan>`).join(''); }
+const NEW='#f2b54a', OLD='#6a5a52', BACK='#3a3a46';
+const PLANS={
+ a:{items:[[4,18,'THE|BAR'],[20,46,'MUSEUM OF|EARTH'],[87,101,'MOVIE|THEATRE'],[103.5,117.5,'ARCADE'],[145.5,159.5,'PLAY-|HOUSE'],[162,192,'HOLODECK']],
+    text:`<ul><li><b>Movie theatre</b> in the first spot (x 87–101): small, 12 seats.</li><li><b>Arcade</b> in the second (x 103.5–117.5): the old carpet with neon shapes, plum walls, one of every machine.</li><li><b>Playhouse</b> in the third (x 145.5–159.5): the old one was 12 × 16, so it fits almost as it was.</li><li><b>Holodeck</b> on a new lot east of the row (x 162–192): 30 × 15.4, about half its old floor. Or keep it 32 × 32 inside: it's a holodeck, so it can be bigger inside than out.</li><li><b>The bar</b> as it was, and <b>the museum</b>, west of the apartment house.</li></ul>`},
+ b:{items:[[4,18,'THE|BAR'],[20,46,'MUSEUM OF|EARTH'],[87,101,'THEATRE·|ARCADE'],[103.5,117.5,'PLAY-|HOUSE'],[145.5,159.5,'HOLO-|DECK']],
+    text:`<ul><li><b>Theatre · Arcade</b> as one building, as in the old game since 16 Oct: the arcade is the lobby on the street, the small cinema behind it through a door.</li><li><b>Playhouse</b> in the second spot.</li><li><b>Holodeck</b> in the third: a plain dark front with a glowing door; inside, the old 32 × 32 hall with its grid, bigger than the building.</li><li>The lot east of the row stays open for later.</li><li><b>The bar</b> and <b>the museum</b> west of the apartment house, the same as A.</li></ul>`}};
+function plan(k){ const P=PLANS[k]; let s='';
+  s+=`<rect x="0" y="0" width="1180" height="${yy(-56)}" fill="#1f3a22"/><text x="${X(100)}" y="14" fill="#7fae7a" font-family="Silkscreen" font-size="9" text-anchor="middle">CENTRAL PARK</text>`;
+  s+=rect(-40,245,-72,-56,'#22232c')+`<text x="${X(100)}" y="${yy(-64)+3}" fill="#6a6a78" font-family="Silkscreen" font-size="8" text-anchor="middle">MARKET ST</text>`;
+  s+=rect(-40,245,-77,-72,'#4a4a52');
+  s+=rect(-40,245,-99.4,-92.4,'#191a22')+`<text x="${X(-30)}" y="${yy(-96)+3}" fill="#6a6a78" font-family="Silkscreen" font-size="7">ALLEY</text>`;
+  [[48,65.5],[66.1,84.6],[85.2,102.2],[102.8,121.8],[122.4,140.4],[141,159.5]].forEach(([a,b])=>s+=rect(a,b,-111.4,-99.4,BACK,'',`stroke="#07080c"`));
+  s+=rect(-40,245,-119,-111.4,'#3c3d44')+rect(-40,245,-150,-119,'#1c3550');
+  s+=`<text x="${X(100)}" y="${yy(-125)+3}" fill="#5c86ad" font-family="Silkscreen" font-size="8" text-anchor="middle">HUDSON</text>`;
+  [[47,55,'APTS'],[58.6,63,'SUB'],[76,85,'BOD'],[126,145,'GHOST ST']].forEach(([a,b,l])=>s+=rect(a,b,-92.4,-77,OLD,'')+`<text x="${(X(a)+X(b))/2}" y="${yy(-84)+3}" fill="#e9e4d8" font-family="Silkscreen" font-size="7" text-anchor="middle">${l}</text>`);
+  P.items.forEach(([a,b,l])=>{ s+=rect(a,b,-92.4,-77,NEW,'',`stroke="#fff3" stroke-width="1"`); const n=l.split('|').length; s+=`<text y="${(yy(-77)+yy(-92.4))/2+3-(n-1)*4.5}" fill="#0d0e14" font-family="Silkscreen" font-size="${b-a<15?7:8}" text-anchor="middle">${lines(l,(X(a)+X(b))/2,0)}</text>`; });
+  [[0,'0'],[50,'50'],[100,'100'],[150,'150'],[200,'200']].forEach(([x,l])=>s+=`<text x="${X(x)}" y="296" fill="#555463" font-family="Silkscreen" font-size="7" text-anchor="middle">x ${l}</text>`);
+  $('plan').innerHTML=s; $('plantext').innerHTML=P.text; $('pa').setAttribute('aria-pressed',k==='a'); $('pb').setAttribute('aria-pressed',k==='b'); }
+$('pa').onclick=()=>plan('a'); $('pb').onclick=()=>plan('b'); plan('a');
+
+const F=[
+ ['MOVIE THEATRE','14 tiles · 300 px · art-house front',`
+  <rect x="0" y="20" width="280" height="180" fill="#7a3a2c"/><rect x="0" y="20" width="280" height="6" fill="#3a2a26"/>
+  ${Array.from({length:30},(_,i)=>`<rect x="${(i%6)*48+(i/6|0)%2*20}" y="${30+(i/6|0)*28}" width="16" height="3" fill="#5e2a20"/>`).join('')}
+  <rect x="95" y="0" width="90" height="60" fill="#8f9096"/>${[0,1,2,3,4].map(i=>`<rect x="${102+i*16}" y="4" width="6" height="52" fill="#b8412e"/>`).join('')}
+  <rect x="128" y="0" width="24" height="56" fill="#111"/><text x="140" y="16" fill="#f2b54a" font-family="Silkscreen" font-size="6" text-anchor="middle">A</text><text x="140" y="28" fill="#f2b54a" font-family="Silkscreen" font-size="6" text-anchor="middle">R</text><text x="140" y="40" fill="#f2b54a" font-family="Silkscreen" font-size="6" text-anchor="middle">T</text>
+  <rect x="40" y="70" width="200" height="46" fill="#1a1414"/><rect x="48" y="78" width="184" height="30" fill="#f1ead8"/>
+  <text x="140" y="98" fill="#1a1414" font-family="Silkscreen" font-weight="700" font-size="17" text-anchor="middle">CINEMA</text>
+  ${Array.from({length:26},(_,i)=>`<circle cx="${44+i*7.7}" cy="74" r="1.6" fill="#ffd98a"/><circle cx="${44+i*7.7}" cy="112" r="1.6" fill="#ffd98a"/>`).join('')}
+  <rect x="30" y="126" width="220" height="8" fill="#2a1e1a"/>
+  ${[0,1,2,3].map(i=>`<rect x="${70+i*36}" y="140" width="30" height="60" fill="#203038"/><rect x="${70+i*36}" y="140" width="30" height="60" fill="none" stroke="#c9a65a" stroke-width="2"/>`).join('')}
+  <rect x="8" y="140" width="40" height="56" fill="#e8e0c8"/><text x="28" y="164" fill="#7a3a2c" font-family="Silkscreen" font-size="6" text-anchor="middle">BIG</text><text x="28" y="174" fill="#7a3a2c" font-family="Silkscreen" font-size="6" text-anchor="middle">PREMIERE</text>
+  <rect x="232" y="140" width="40" height="60" fill="#3a2a26"/><rect x="238" y="150" width="28" height="18" fill="#f2b54a"/><text x="252" y="162" fill="#3a2a26" font-family="Silkscreen" font-size="5" text-anchor="middle">TICKETS</text>`],
+ ['ARCADE','14 tiles · 370 px · neon over a roll-up',`
+  <rect x="0" y="0" width="280" height="200" fill="#2b2238"/>${Array.from({length:40},(_,i)=>`<rect x="${(i%8)*36+(i/8|0)%2*16}" y="${8+(i/8|0)*22}" width="14" height="3" fill="#221a2e"/>`).join('')}
+  <rect x="30" y="18" width="220" height="44" fill="#120d1a"/>
+  <text x="140" y="50" fill="#ff4f7a" font-family="Silkscreen" font-weight="700" font-size="26" text-anchor="middle" stroke="#ff9cb4" stroke-width=".6">ARCADE</text>
+  <rect x="30" y="66" width="220" height="4" fill="#59d6e8"/>
+  ${[0,1,2,3,4,5].map(i=>`<rect x="${34+i*36}" y="84" width="28" height="44" fill="#120d1a"/><rect x="${38+i*36}" y="90" width="20" height="14" fill="${['#59d6e8','#ff4f7a','#f2e04a','#64dc64','#aa5cec','#59d6e8'][i]}"/>`).join('')}
+  <rect x="20" y="140" width="240" height="60" fill="#151019"/><rect x="24" y="144" width="232" height="56" fill="#1c2a34"/>
+  ${[0,1,2,3,4].map(i=>`<rect x="${34+i*46}" y="160" width="22" height="40" fill="#0c0c12"/><rect x="${37+i*46}" y="164" width="16" height="10" fill="${['#ff4f7a','#59d6e8','#f2e04a','#64dc64','#aa5cec'][i]}"/>`).join('')}`],
+ ['PLAYHOUSE','14 tiles · 250 px · one storey, Victorian',`
+  <rect x="0" y="40" width="280" height="160" fill="#7a322c"/>${Array.from({length:24},(_,i)=>`<rect x="${(i%6)*48+(i/6|0)%2*20}" y="${50+(i/6|0)*26}" width="16" height="3" fill="#5e241e"/>`).join('')}
+  <rect x="0" y="30" width="280" height="16" fill="#e2d6b8"/><rect x="0" y="30" width="280" height="3" fill="#f4ecd4"/>
+  <path d="M100 30 Q140 0 180 30Z" fill="#e2d6b8"/>
+  <rect x="80" y="56" width="120" height="40" fill="#1a1210"/><rect x="86" y="62" width="108" height="28" fill="#f4ecd4"/>
+  <text x="140" y="81" fill="#7a322c" font-family="Silkscreen" font-weight="700" font-size="13" text-anchor="middle">PLAYHOUSE</text>
+  ${Array.from({length:18},(_,i)=>`<circle cx="${82+i*6.8}" cy="59" r="1.4" fill="#ffd98a"/><circle cx="${82+i*6.8}" cy="93" r="1.4" fill="#ffd98a"/>`).join('')}
+  <path d="M70 118 L210 118 L200 128 L80 128Z" fill="#26262c"/>
+  ${[0,1].map(i=>`<rect x="${104+i*40}" y="132" width="32" height="68" fill="#3a1e18"/><rect x="${110+i*40}" y="140" width="20" height="24" fill="#d8b86a"/>`).join('')}
+  ${[24,224].map(x=>`<rect x="${x}" y="120" width="32" height="48" fill="#f4ecd4"/><rect x="${x+4}" y="124" width="24" height="40" fill="#2a3a5a"/><text x="${x+16}" y="146" fill="#f4ecd4" font-family="Silkscreen" font-size="5" text-anchor="middle">HOUND</text>`).join('')}`],
+ ['HOLODECK','30 tiles (A) or 14 (B) · 156 px walls',`
+  <rect x="0" y="40" width="280" height="160" fill="#0e1016"/>
+  ${Array.from({length:12},(_,i)=>`<rect x="${i*24}" y="40" width="1" height="160" fill="#2a5c84"/>`).join('')}${Array.from({length:7},(_,i)=>`<rect x="0" y="${40+i*24}" width="280" height="1" fill="#2a5c84"/>`).join('')}
+  <rect x="0" y="40" width="280" height="3" fill="#60c8ff"/>
+  <rect x="112" y="120" width="56" height="80" fill="#08090d"/><rect x="112" y="120" width="56" height="80" fill="none" stroke="#60c8ff" stroke-width="3"/>
+  <rect x="122" y="130" width="36" height="70" fill="#15344a"/>
+  <text x="140" y="96" fill="#60c8ff" font-family="Silkscreen" font-weight="700" font-size="16" text-anchor="middle">HOLODECK</text>
+  <text x="140" y="112" fill="#2a5c84" font-family="Silkscreen" font-size="7" text-anchor="middle">PROGRAM: OPEN</text>`],
+ ['THE BAR','as it was · two storeys',`
+  <rect x="0" y="0" width="280" height="200" fill="#3a2a22"/>${Array.from({length:40},(_,i)=>`<rect x="${(i%8)*36+(i/8|0)%2*16}" y="${6+(i/8|0)*22}" width="14" height="3" fill="#2c1e18"/>`).join('')}
+  ${[0,1,2,3].map(i=>`<rect x="${30+i*60}" y="20" width="36" height="44" fill="#f2c27a"/><rect x="${46+i*60}" y="20" width="3" height="44" fill="#3a2a22"/>`).join('')}
+  <rect x="40" y="84" width="200" height="26" fill="#120c0a"/><text x="140" y="103" fill="#f2b54a" font-family="Silkscreen" font-weight="700" font-size="15" text-anchor="middle">THE BAR</text>
+  <rect x="30" y="124" width="160" height="76" fill="#1a1210"/><rect x="36" y="130" width="148" height="50" fill="#4a2c18"/>
+  ${[0,1,2,3,4].map(i=>`<circle cx="${52+i*28}" cy="160" r="3" fill="#ffcf6a"/>`).join('')}
+  <rect x="206" y="128" width="40" height="72" fill="#24160f"/><circle cx="238" cy="166" r="2" fill="#c9a65a"/>`],
+ ['MUSEUM OF EARTH','26 tiles · 210 px · stone',`
+  <rect x="0" y="40" width="280" height="160" fill="#cec6b4"/>${Array.from({length:6},(_,i)=>`<rect x="0" y="${60+i*24}" width="280" height="1" fill="#b2a994"/>`).join('')}
+  <path d="M60 40 L140 4 L220 40Z" fill="#ddd5c2"/><path d="M76 36 L140 10 L204 36Z" fill="#b2a994"/>
+  <rect x="56" y="40" width="168" height="12" fill="#e6dfce"/>
+  <text x="140" y="49" fill="#5a5444" font-family="Silkscreen" font-size="8" text-anchor="middle">MUSEUM OF EARTH</text>
+  ${[0,1,2,3,4,5].map(i=>`<rect x="${66+i*30}" y="52" width="12" height="120" fill="#e6dfce"/><rect x="${66+i*30}" y="52" width="3" height="120" fill="#f4eee0"/>`).join('')}
+  <rect x="122" y="120" width="36" height="52" fill="#3a3428"/>
+  <rect x="40" y="172" width="200" height="9" fill="#bdb49f"/><rect x="30" y="181" width="220" height="9" fill="#ada48f"/><rect x="20" y="190" width="240" height="10" fill="#9d947f"/>`]];
+$('fronts').innerHTML=F.map(([n,c,s])=>`<div class="card plate"><h3>${n}</h3><svg viewBox="0 0 280 200" role="img" aria-label="${n} front">${s}</svg><p class="dim">${c}</p></div>`).join('');
+
+function seats(id,rows,cols,w,lobby){ let s=`<rect x="10" y="10" width="${w}" height="120" fill="#4a1e22"/>`;
+  s+=`<rect x="${10+w*.15}" y="14" width="${w*.7}" height="10" fill="#e8e0d0"/><rect x="${10+w*.1}" y="12" width="${w*.06}" height="16" fill="#9a1e26"/><rect x="${10+w*.84}" y="12" width="${w*.06}" height="16" fill="#9a1e26"/>`;
+  const top=36, bot=lobby?86:120; for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){ const x=10+w*.2+(w*.6)*(c+.5)/cols, y=top+(bot-top)*(r+.5)/rows; s+=`<rect x="${x-5}" y="${y-4}" width="10" height="8" rx="2" fill="#c0303a"/>`; }
+  [40,70,100].forEach(y=>{ s+=`<circle cx="13" cy="${y}" r="2" fill="#ffb05c"/><circle cx="${7+w}" cy="${y}" r="2" fill="#ffb05c"/>`; });
+  if(lobby){ s+=`<rect x="10" y="94" width="${w}" height="36" fill="#2a1a1c"/><rect x="10" y="92" width="${w}" height="3" fill="#120c0c"/><rect x="${10+w/2-6}" y="92" width="12" height="3" fill="#5a3a20"/><rect x="${10+w-30}" y="104" width="22" height="12" fill="#f2b54a"/><text x="${10+w/2}" y="118" fill="#9a97a6" font-family="Silkscreen" font-size="6" text-anchor="middle">LOBBY</text>`; }
+  $(id).innerHTML=s; }
+seats('th0',4,5,200,false); seats('th1',3,4,140,true);
+
+const GW=200, GH=125, FLOOR=86;
+const mask=(()=>{ const c=document.createElement('canvas'); c.width=GW; c.height=GH; const g=c.getContext('2d'); g.strokeStyle='#fff'; g.lineWidth=2.4; g.lineCap=g.lineJoin='round';
+  const L=[[[62,30],[62,52],[76,52],[76,30],[62,30]],[[86,52],[86,30],[98,30],[98,41],[86,41]],[[122,30],[108,30],[108,52],[122,52]],[[108,41],[118,41]],[[132,52],[132,30],[146,52],[146,30]]];
+  L.forEach(p=>{ g.beginPath(); p.forEach(([x,y],i)=>i?g.lineTo(x,y):g.moveTo(x,y)); g.stroke(); });
+  const d=g.getImageData(0,0,GW,GH).data, m=new Int8Array(GW*GH).fill(-1);
+  for(let i=0;i<GW*GH;i++)if(d[i*4+3]>100){ const x=i%GW; m[i]=x<80?0:x<102?1:x<125?2:3; } return m; })();
+const DF=[0,1,2,3].map(l=>{ const pts=[]; for(let i=0;i<GW*GH;i++)if(mask[i]===l)pts.push([i%GW,i/GW|0]); const d=new Float32Array(GW*GH).fill(99);
+  for(let y=0;y<GH;y++)for(let x=0;x<GW;x++){ let b=99; for(const [px,py] of pts){ const dx=x-px, dy=y-py; if(Math.abs(dx)<16&&Math.abs(dy)<16){ const q=dx*dx+dy*dy; if(q<b)b=q; } } d[y*GW+x]=Math.sqrt(b); } return d; });
+function hash(x,y){ let h=x*374761393+y*668265263; h=(h^(h>>13))*1274126177; return ((h^(h>>16))>>>0)/4294967295; }
+const BASE=new Float32Array(GW*GH*3);
+for(let y=0;y<GH;y++)for(let x=0;x<GW;x++){ const o=(y*GW+x)*3; let c;
+  if(y>=FLOOR){ const u=(x+ (y-FLOOR)*1.6)%26, v=(y-FLOOR)%9; c=(u<1||v<1)?[34,34,42]:[54+hash(x>>3,y>>2)*8,54,62]; }
+  else if(x>=44&&x<156&&y>=14&&y<70){ c=(x<46||x>153||y<16||y>67)?[30,30,36]:[16,18,26]; if(y>58&&y<67&&x>60&&x<140)c=[36,30,26]; }
+  else { const row=y>>2, off=row%2?5:0, bx=(x+off)%10, by=y%4; c=(bx===0||by===0)?[36,22,22]:[70+hash((x+off)/10|0,row)*18,30,28]; }
+  if(y>=FLOOR-2&&y<FLOOR)c=[24,22,26]; BASE[o]=c[0]; BASE[o+1]=c[1]; BASE[o+2]=c[2]; }
+const NC=[255,70,110], STEP=[[0,0],[1,.9],[3,.55],[6,.3],[10,.14]];
+function lvl(d,I){ if(d<.9)return 0; for(let k=1;k<STEP.length;k++)if(d<=STEP[k][0]*I+.5)return k; return 9; }
+const MOTE=Array.from({length:44},()=>({x:40+Math.random()*120,y:12+Math.random()*70,vx:0,vy:0}));
+const DROPS=[]; const RAIN=Array.from({length:60},()=>({x:Math.random()*GW,y:Math.random()*GH,s:2+Math.random()}));
+const G=[
+ ['A · STEPPED HALO','The tube and three hard rings of colour round it, steady. The look of the alley signs now.','0 lights · 1 quad · ~0.01 ms'],
+ ['B · LIVE NEON','The gas hums: a faint flutter, and now and then one letter stutters off and catches again. Its light falls on the window frame and in a pool on the sidewalk, in hard steps.','1 of the 8 lamp slots (no shadow) · flicker in a uniform · ~0.05 ms'],
+ ['C · WET NIGHT','On rain, the sign shows again in the wet sidewalk, broken up by ripples where drops land. Dry days look like B.','2 quads, reflection drawn only when wet · ~0.1 ms'],
+ ['D · GLASS AND AIR','A white-hot core in each tube, a streak of light on the shop glass, and dust in the air: lit only where the glow reaches, drifting and rising in the sign\'s warm air.','44 points moved on the CPU · ~0.03 ms'],
+];
+$('glows').innerHTML=G.map((g,i)=>`<div class="card plate"><h3>${g[0]}</h3><canvas id="gc${i}" width="${GW}" height="${GH}" aria-label="${g[0]}"></canvas><p class="dim">${g[1]}</p><span class="cost">${g[2]}</span></div>`).join('');
+const CT=[0,1,2,3].map(i=>{ const c=$('gc'+i), g=c.getContext('2d'); return {g,im:g.createImageData(GW,GH)}; });
+function render(k,t){ const {g,im}=CT[k], D=im.data, I=[1,1,1,1];
+  if(k>0){ const hum=1+(hash(t*30|0,k)-.5)*.08; for(let l=0;l<4;l++)I[l]=hum; const cyc=t%7; if(cyc>5&&cyc<5.6){ I[2]=hash(t*24|0,3)>.45?.15:hum; } }
+  const lit=k>0?(I[0]+I[1]+I[2]+I[3])/4:1;
+  for(let y=0;y<GH;y++)for(let x=0;x<GW;x++){ const i=y*GW+x, o=i*3; let r=BASE[o], gg=BASE[o+1], b=BASE[o+2]; let best=9, core=false;
+    if(y<FLOOR){ for(let l=0;l<4;l++){ if(I[l]<.3){ if(mask[i]===l){ r=90;gg=60;b=70; } continue; } const L=lvl(DF[l][i],I[l]); if(L<best)best=L; }
+      if(best===0){ core=true; r=NC[0];gg=NC[1];b=NC[2]; if(k===3){ const m=[DF[0][i],DF[1][i],DF[2][i],DF[3][i]]; r=255;gg=200;b=215; } }
+      else if(best<9){ const a=STEP[best][1]; r+=NC[0]*a; gg+=NC[1]*a; b+=NC[2]*a; }
+      if(k>0&&best===9&&((x>=44&&x<47)||(x>152&&x<156))&&y>14&&y<70){ const d=Math.abs(y-41); if(d<28){ const a=d<10?.35:d<20?.2:.1; r+=NC[0]*a*lit; gg+=NC[1]*a*lit; b+=NC[2]*a*lit; } }
+      if(k===3&&x>=46&&x<154&&y>=16&&y<68){ const s=(x-y*1.2)%60; if(s>4&&s<9){ r+=18;gg+=18;b+=24; } } }
+    else if(k>0){ const dx=(x-104)/62, dy=(y-FLOOR)/16, e=dx*dx+dy*dy; const a=e<.25?.32:e<.6?.18:e<1?.08:0; r+=NC[0]*a*lit; gg+=NC[1]*a*lit; b+=NC[2]*a*lit;
+      if(k===2){ let sx=x, ry=2*FLOOR-1-(y-FLOOR)*1.4|0; for(const d of DROPS){ const q=Math.hypot((x-d.x)*.5,y-d.y), rr=(t-d.t)*9; if(Math.abs(q-rr)<1.2&&rr<6)sx+=q>rr?1:-1; } sx+=Math.round(Math.sin(y*1.7+t*3)*.6);
+        if(ry>0&&ry<FLOOR&&sx>=0&&sx<GW){ const j=ry*GW+sx; let L=9; for(let l=0;l<4;l++){ if(I[l]<.3)continue; const q=lvl(DF[l][j],I[l]); if(q<L)L=q; } if(L<9){ const a=L===0?.55:STEP[L][1]*.5; r+=NC[0]*a; gg+=NC[1]*a; b+=NC[2]*a; } }
+        r*=.85; gg*=.88; b*=1.05; } }
+    const p=i*4; D[p]=Math.min(255,r); D[p+1]=Math.min(255,gg); D[p+2]=Math.min(255,b); D[p+3]=255; }
+  if(k===2){ for(const d of RAIN){ for(let s=0;s<3;s++){ const x=(d.x-s*.5|0), y=(d.y-s*2|0); if(x>=0&&x<GW&&y>=0&&y<GH){ const p=(y*GW+x)*4; D[p]+=30; D[p+1]+=34; D[p+2]+=44; } } } }
+  if(k===3){ for(const m of MOTE){ const x=m.x|0, y=m.y|0; if(x<0||x>=GW||y<0||y>=FLOOR)continue; let L=9; for(let l=0;l<4;l++){ const q=lvl(DF[l][y*GW+x],I[l]*1.6); if(q<L)L=q; } if(L<9){ const p=(y*GW+x)*4, a=L<=1?1:L<=3?.7:.4; D[p]=Math.min(255,D[p]+180*a); D[p+1]=Math.min(255,D[p+1]+120*a); D[p+2]=Math.min(255,D[p+2]+150*a); } } }
+  g.putImageData(im,0,0); }
+function step(dt,t){ for(const m of MOTE){ const near=Math.max(0,1-Math.hypot(m.x-104,m.y-41)/50); m.vx+=(Math.random()-.5)*6*dt-m.vx*.8*dt; m.vy+=(Math.random()-.5)*6*dt-m.vy*.8*dt-near*3*dt; m.x+=m.vx*dt*8; m.y+=m.vy*dt*8; if(m.y<10||m.x<38||m.x>162||m.y>84){ m.x=50+Math.random()*100; m.y=80; m.vx=m.vy=0; } }
+  for(const d of RAIN){ d.y+=d.s*dt*60; d.x-=d.s*dt*15; if(d.y>=FLOOR+4+((d.x*7)%36)){ if(d.y<GH)DROPS.push({x:d.x,y:d.y,t}); d.y=-4; d.x=Math.random()*GW*1.1; } }
+  while(DROPS.length&&t-DROPS[0].t>.7)DROPS.shift(); }
+let t0=performance.now(), last=t0, vis=[true,true,true,true];
+const io=new IntersectionObserver(es=>es.forEach(e=>vis[+e.target.id.slice(2)]=e.isIntersecting)); [0,1,2,3].forEach(i=>io.observe($('gc'+i)));
+[0,1,2,3].forEach(k=>render(k,1));
+if(!RM){ let acc=0; (function loop(now){ const dt=Math.min(.05,(now-last)/1000); last=now; acc+=dt; const t=(now-t0)/1000; step(dt,t); if(acc>1/15){ acc=0; for(let k=0;k<4;k++)if(vis[k])render(k,t); } requestAnimationFrame(loop); })(t0); }
+</script>

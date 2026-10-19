@@ -17,7 +17,7 @@
     g.setAttribute('color',new THREE.BufferAttribute(arr,3,true)); return g; };
   const B0=BOD.B0, TI=TILE, PER=[
     {x:BOD.X(MODS.apts.A.x0+3.7),z:BOD.Z(MODS.apts.A.y1)-.6*TI,y:BOD.Y(650),h:0},{x:BOD.X((B0.x0+B0.x1)/2),z:BOD.Z(B0.y1)-.6*TI,y:BOD.Y(B0.h),h:0},
-    ...(AWAY.has('apartments')?[]:[{x:POOLR.X(8),z:POOLR.Z(POOLR.y1)-.6*TI,y:POOLR.Y(POOLR.H),h:0},{x:POOLR.X(21),z:POOLR.Z(POOLR.y1)-.6*TI,y:POOLR.Y(POOLR.H),h:0}])];
+    ...(AWAY.has('apartments')?[]:[{x:POOLR.X(8),z:POOLR.Z(POOLR.y1)-.6*TI,y:POOLR.Y(POOLR.H),h:0},{x:POOLR.X(21),z:POOLR.Z(POOLR.y1)-.6*TI,y:POOLR.Y(POOLR.H),h:0}]),...WIRES.perch];
   const sky=()=>{ const r=Math.random(), x=BOUND.x0+Math.random()*(BOUND.x1-BOUND.x0);
     return r<.4?{x,z:BOUND.z0-(4+Math.random()*22)*TI}:r<.75?{x,z:BOUND.z1+(3+Math.random()*20)*TI}:{x,z:BOUND.z0+Math.random()*(BOUND.z1-BOUND.z0)}; };
   const ease=(a,b,k)=>a+(b-a)*k, turnTo=(h,want,max)=>{ let d=((want-h+Math.PI*3)%(Math.PI*2))-Math.PI; d=Math.max(-max,Math.min(max,d)); return [h+d,d]; };
@@ -68,22 +68,23 @@
       { const g=CLOCK.dark()?.35:0; N.toon.emissive.lerp(GLC.setRGB(.04*g,.2*g,.06*g),Math.min(1,dt*.5)); }
       const y0=D.y;
       if(D.mode==='perch'){ st.x=D.p.x; st.z=D.p.z; st.h=ease(st.h,D.p.h,Math.min(1,dt*2)); D.y=ease(D.y,D.p.y,Math.min(1,dt*4)); D.v=0;
-        if((D.t-=dt)<=0){ D.mode='lift'; lift.reset(); lift.play(); D.t=0; } }
+        if((D.t-=dt)<=0){ D.p.on=0; D.mode='lift'; lift.reset(); lift.play(); D.t=0; } }
       else if(D.mode==='lift'){ D.t+=dt; D.y+=dt*.6*TI; D.v=ease(D.v,.5*TI,dt); if(D.t>CLIPS.GroundToFly.duration){ D.mode='fly'; D.to=sky(); D.fly=75+Math.random()*90; lift.stop(); } }
       else if(D.mode==='fly'){ D.fly-=dt; D.v=ease(D.v,(D.style==='glide'?.95:.8)*TI,dt*.5); const want=Math.atan2(D.to.x-st.x,D.to.z-st.z), r=turnTo(st.h,want,.28*dt); st.h=r[0]; turn=r[1]/Math.max(dt,1e-3);
         if((D.bt-=dt)<=0||D.style==='glide'&&D.y<D.cruise-1.6*TI){ D.style=D.style==='flap'?'glide':'flap'; D.bt=D.style==='glide'?4+Math.random()*7:2.5+Math.random()*3; }
         D.y+=(D.style==='flap'?.22:-.16)*TI*dt; D.y=ease(D.y,Math.max(D.cruise-1.8*TI,Math.min(D.cruise+1.8*TI,D.y)),dt); if(Math.hypot(D.to.x-st.x,D.to.z-st.z)<3*TI)D.to=sky();
         if((D.breath-=dt)<=0){ D.breath=8+Math.random()*18; D.snap=.6; const fw=new THREE.Vector3(Math.sin(st.h),0,Math.cos(st.h)), hp=new THREE.Vector3(st.x,D.y+.2*TI,st.z).addScaledVector(fw,.5*TI);
           fire(hp,fw.multiplyScalar(4.5*TI).add(new THREE.Vector3(0,-1.2*TI,0))); }
-        if(D.fly<=0){ D.p=PER[Math.floor(Math.random()*PER.length)]; D.mode='come'; D.style='flap'; } }
+        if(D.fly<=0){ const fr=PER.filter(p=>!p.on); D.p=fr[Math.floor(Math.random()*fr.length)]||PER[0]; D.mode='come'; D.style='flap'; } }
       else if(D.mode==='come'){ const dx=D.p.x-st.x, dz=D.p.z-st.z, d=Math.hypot(dx,dz);
         if(d>.2*TI){ const r=turnTo(st.h,Math.atan2(dx,dz),(d<3*TI?.7:.3)*dt); st.h=r[0]; turn=r[1]/Math.max(dt,1e-3); D.v=ease(D.v,d<3*TI?Math.max(.15*TI,d*.25):.8*TI,dt*1.2); D.y=ease(D.y,D.p.y+Math.min(d,5*TI)*.3,dt*.8); }
-        else{ D.mode='perch'; D.t=40+Math.random()*70; } }
+        else{ D.mode='perch'; D.p.on=1; D.t=40+Math.random()*70; } }
       if(D.mode!=='perch'){ st.x+=Math.sin(st.h)*D.v*dt; st.z+=Math.cos(st.h)*D.v*dt; }
       D.turn=ease(D.turn,turn,Math.min(1,dt*2)); D.climb=ease(D.climb,(D.y-y0)/Math.max(dt,1e-3)/TI,Math.min(1,dt*2));
       D.bank=ease(D.bank,Math.max(-.5,Math.min(.5,-turn*1.4)),Math.min(1,dt*1.5));
       N.g.position.set(st.x,D.y,st.z); N.g.rotation.set(D.mode==='perch'?0:-Math.max(-.3,Math.min(.3,D.climb*.5)),st.h,D.mode==='perch'?0:D.bank); };
     N.mixer=mixer; N.D=D; N.restless=()=>true; return N; };
   const DR=[]; for(let i=0;i<10;i++)DR.push(make(i));
+  window.DRAGONPERCH=(i,k)=>{ const N=DR[i], D=N.D; D.p=PER[k]; D.p.on=1; D.mode='perch'; D.t=999; N.st.x=D.p.x; N.st.z=D.p.z; D.y=D.p.y; return PER.length; };
   window.DRAGONDBG=()=>DR.map(N=>({mode:N.D.mode,x:+N.st.x.toFixed(1),y:+N.D.y.toFixed(1),z:+N.st.z.toFixed(1)}));
 }

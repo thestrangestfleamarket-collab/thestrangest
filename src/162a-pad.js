@@ -12,8 +12,8 @@
     g.fillStyle=col; for(let j=0;j<25;j++)if(gl[j]==='#')g.fillRect(2+j%5,2+(j/5|0),1,1); return IC[k]=c.toDataURL(); };
   const bhtml=i=>i>=0&&i<4?'<img class="padi" src="'+icon(i)+'" alt="'+bn(i)+'" title="'+bn(i)+'"> '+bn(i):bn(i);
   const ACTS=[['jump','jump · dive · yes'],['back','back · close'],['use','use what you face (when nothing, punch)'],['punch','punch'],['kick','kick'],['turnL','turn the view left'],['turnR','turn the view right'],
-    ['roll','roll'],['run','run (held) · with d-pad up / down: zoom'],['moves','what you can do'],['menu','the menu'],['view','change the view'],['reset','reset the view'],['pack','your pack'],['wave','wave'],['fall','fall']];
-  const B0={jump:0,back:1,use:2,punch:2,kick:3,turnL:4,turnR:5,roll:6,run:7,moves:8,menu:9,view:10,reset:11,pack:15,wave:-1,fall:-1};
+    ['roll','roll'],['run','run (held) · with d-pad up / down: zoom'],['moves','what you can do'],['menu','the menu'],['view','change the view'],['reset','reset the view'],['pack','your pack'],['wave','wave'],['fall','fall'],['guitar','the ghost\'s guitar: play · back on']];
+  const B0={jump:0,back:1,use:2,punch:2,kick:3,turnL:4,turnR:5,roll:6,run:7,moves:8,menu:9,view:10,reset:11,pack:15,wave:-1,fall:-1,guitar:14};
   const BIND=Object.assign({},B0); try{ const o=JSON.parse(SAVE.get('padkeys')||'{}'); for(const a in o)if(a in BIND&&Number.isInteger(o[a]))BIND[a]=o[a]; }catch(e){}
   const save=()=>{ try{ SAVE.set('padkeys',JSON.stringify(BIND)); }catch(e){} };
   const SHARE={use:'punch',punch:'use'};
@@ -68,7 +68,7 @@
     if(!PAD.useX&&hit(b('use'))&&UI.useNear())PAD.useX=true; else if(PAD.useX&&!on(b('use')))PAD.useX=false;
     hold('A',on(b('jump'))&&!PAD.aWait?K(' '):null); hold('X',on(b('punch'))&&!PAD.useX?K('j'):null); hold('Y',on(b('kick'))?K('k'):null);
     const run=(Bv[b('run')]||0)>.3; hold('RT',run?K('shift'):null); hold('LB',on(b('turnL'))?K('q'):null); hold('RB',on(b('turnR'))?K('e'):null);
-    hold('LT',on(b('roll'))?K('r'):null); hold('W',on(b('wave'))?K('v'):null); if(hit(b('fall')))tap(K('f'));
+    hold('LT',on(b('roll'))?K('r'):null); hold('W',on(b('wave'))?K('v'):null); hold('GT',on(b('guitar'))?K('t'):null); if(hit(b('fall')))tap(K('f'));
     if(hit(b('view')))tap(K('view')); if(hit(b('reset')))tap(K('0')); if(hit(b('moves')))tap('?'); if(hit(b('pack')))tap('i');
     if(run){ if(rep('zu',on(12)))zoom(1); if(rep('zd',on(13)))zoom(-1); } else { rep('zu',false); rep('zd',false); }
     if(hit(b('back'))&&(FORAGE.PACK.open||document.getElementById('movesp')?.style.display==='block'))back(); if(hit(b('menu')))tap('Escape'); };

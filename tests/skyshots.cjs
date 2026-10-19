@@ -2,10 +2,11 @@
 // errors (shader errors among them) listed in report.json.
 const {chromium}=require('playwright'); const fs=require('fs'), path=require('path');
 const OUT=process.argv[2]||'skyout', PAGE=path.resolve(__dirname,'../dist/market.html');
+const errs=[]; process.on('unhandledRejection',e=>{ errs.push('TEST '+String(e&&e.message||e).slice(0,400)); try{ fs.writeFileSync(path.join(OUT,'report.json'),JSON.stringify({errors:errs},null,1)); }catch(_){} console.log(JSON.stringify(errs)); process.exit(1); });
 (async()=>{ fs.mkdirSync(OUT,{recursive:true}); const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist']});
-  const pg=await b.newPage({viewport:{width:960,height:540}}); pg.setDefaultTimeout(900000); const errs=[], rep={}; pg.on('pageerror',e=>errs.push(e.message.slice(0,300))); pg.on('console',m=>{ if(m.type()==='error'||/Shader Error|ERROR:/.test(m.text()))errs.push(m.text().slice(0,600)); });
+  const pg=await b.newPage({viewport:{width:960,height:540}}); pg.setDefaultTimeout(900000); const rep={}; pg.on('pageerror',e=>errs.push(e.message.slice(0,300))); pg.on('console',m=>{ if(m.type()==='error'||/Shader Error|ERROR:/.test(m.text()))errs.push(m.text().slice(0,600)); });
   await pg.goto('file://'+PAGE+'?fresh=1&hour=16&wx=CLEAR',{waitUntil:'commit'});
-  for(let i=0;i<900;i++){ await pg.waitForTimeout(500); if(await pg.evaluate(()=>!!window.__started))break; }
+  for(let i=0;i<900;i++){ await pg.waitForTimeout(500); if(await pg.evaluate(()=>!!window.__dbg))break; }
   await pg.waitForTimeout(5000);
   await pg.evaluate(()=>{ const B=__dbg.MAPK.BOD; STORE.goTo(B.XS(40),B.ZS((B.CURB+B.FAR)/2),'up'); });
   await pg.waitForTimeout(3000); await pg.screenshot({path:path.join(OUT,'iso-16.png')});

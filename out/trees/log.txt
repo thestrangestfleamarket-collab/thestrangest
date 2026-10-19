@@ -1,0 +1,9 @@
+trees 28 {"Willow1":1,"Giant1":1,"Spruce1":1,"OakTree2":4,"Elder2":3,"Elder1":7,"OakTree1":4,"OakTree3":7}
+Willow1 at 118.7 37 size 19
+Giant1 at 37.1 37.1 size 34
+Spruce1 at 146.8 -17 size 28
+Willow1
+Giant1
+Spruce1
+common
+overview

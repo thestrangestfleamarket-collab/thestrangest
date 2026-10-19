@@ -1,5 +1,5 @@
 const UAL=__DATA__("data/ual.json"), HYB=__DATA__("data/hybrid.json"), VROID=__LAZY__("data/vroid.json");
-const AVS={kind:'walker',KINDS:['walker','mannequin','vroid'],NAME:{walker:'WALKER',mannequin:'MANNEQUIN',vroid:'VROID'},C:{}};
+const AVS={kind:'ghost',KINDS:['ghost','walker','mannequin','vroid'],NAME:{ghost:'GHOST',walker:'WALKER',mannequin:'MANNEQUIN',vroid:'VROID'},C:{}};
 window.AVS=AVS;
 { const D=UAL.ual, RG=D.rig, BN=RG.names, PAR=RG.parent, BI=Object.fromEntries(BN.map((n,i)=>[n,i])), V=THREE.Vector3, Q=THREE.Quaternion;
   const b=s=>{ const t=atob(s), u=new Uint8Array(t.length); for(let i=0;i<t.length;i++)u[i]=t.charCodeAt(i); return u; }, f32=s=>new Float32Array(b(s).buffer), i16=s=>new Int16Array(b(s).buffer), u16=s=>new Uint16Array(b(s).buffer);
@@ -38,7 +38,7 @@ window.AVS=AVS;
   const fwd=()=>new V(Math.sin(heading),0,Math.cos(heading));
   const npcOf=(geo,rig,tall,names)=>{ const N=makeNPC(null,{key:'me',name:'YOU',names,eye:-1,lv:'up',group:'bodega',geo,skin:rig,tall,rank:names.map(()=>0),metres:1.85*(W3.SZ||1),x:pos.x,z:pos.z,radius:.3,speed:0,stride:0,rock:0,bob:0});
     NPCS.splice(NPCS.indexOf(N),1); if(N.g.parent)N.g.parent.remove(N.g); scene.add(N.g); NPCS.extra.push({g:N.g}); return N; };
-  const BUILD={};
+  const BUILD=AVS.BUILD={};
   BUILD.walker=()=>{ const n=f32(HYB.p).length/3, J=b(HYB.j), si=new Uint8Array(n*4), sw=new Uint8Array(n*4); for(let i=0;i<n;i++){ si[i*4]=J[i]; sw[i*4]=255; }
     const rig=rigOf(HYB.t), N=npcOf(geoOf(f32(HYB.p),b(HYB.c),si,sw,u16(HYB.i)),rig,HYB.tall,['walker']), bone=x=>rig.bones[BI[x]];
     return {g:N.g,N,an:Anim(new THREE.AnimationMixer(rig.bones[0]),clipsFor(HYB.kp)),relax:relaxer(bone,N.g,fwd),tris:HYB.tris}; };
@@ -101,7 +101,7 @@ window.AVS=AVS;
   const MOVE={jump:'Jump_Loop',backflip:'Jump_Loop',frontflip:'Jump_Loop',jab:'Punch_Jab',cross:'Punch_Cross',hook:'Punch_Cross',uppercut:'Punch_Cross',slap:'Punch_Jab',frontKick:'Punch_Cross',roundhouse:'Punch_Cross',
     legSweep:'Crouch_Idle_Loop',fall:'Death01',roll:'Roll',block:'Spell_Simple_Idle_Loop',guard:'Spell_Simple_Idle_Loop',crouch:'Crouch_Idle_Loop',flinch:'Hit_Chest',wave:'Interact',dance:'Dance_Loop'};
   const MPS=TILE/.84; let lx=null, lz=null, sp=0;
-  AVS.set=k=>{ if(!AVS.KINDS.includes(k))k='walker'; AVS.kind=k; if(!AVS.C[k])AVS.C[k]=BUILD[k](); try{ SAVE.set('avatar',k); }catch(e){} if(AVS.draw)AVS.draw(); };
+  AVS.set=k=>{ if(!AVS.KINDS.includes(k))k='ghost'; for(const n in AVS.C)if(n!==k&&AVS.C[n].off)AVS.C[n].off(); AVS.kind=k; if(!AVS.C[k]&&BUILD[k])AVS.C[k]=BUILD[k](); try{ SAVE.set('avatar',k); }catch(e){} if(AVS.draw)AVS.draw(); };
   const pick=()=>{ const mv=st.move&&st.move.name; let base='Idle_Loop', ts=1;
     if(st.water&&st.water.in)base=sp>.3?'Swim_Fwd_Loop':'Swim_Idle_Loop';
     else if(st.sit)base='Sitting_Idle_Loop';
@@ -117,7 +117,7 @@ window.AVS=AVS;
     if(!dt)return;
     if(lx===null){ lx=pos.x; lz=pos.z; } const d=Math.hypot(pos.x-lx,pos.z-lz)/MPS/dt; lx=pos.x; lz=pos.z; sp+=(Math.min(d,9)-sp)*Math.min(1,dt*8);
     const [base,ts]=pick();
-    if(!mine)return;
+    if(!mine)return; if(C.tick)return C.tick(dt,B);
     if(C.N&&C.items)for(const n in C.items)if(C.items[n].material!==C.N.me.material)C.items[n].material=C.N.me.material;
     C.g.position.set(pos.x,py+jumpY(B)*ZU*(W3.SZ||1)*(W3.BH||1),pos.z); C.g.rotation.set(0,RAG.on?RAG.hd:heading,0);
     const b0=RAG.on?'Death01':base||'Idle_Loop'; C.an.base=b0; C.an.ts=ts; C.an.update(dt*(b0==='Idle_Loop'?st.anim||1:1));
@@ -125,5 +125,5 @@ window.AVS=AVS;
   AVS.draw=()=>document.querySelectorAll('[data-av]').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.av===AVS.kind)));
   AVS.menu=()=>{ for(const row of document.querySelectorAll('#davpick'))if(!row.children.length){ row.innerHTML=AVS.KINDS.map(k=>`<button class="btn" data-av="${k}">${AVS.NAME[k]}</button>`).join('');
       row.onclick=e=>{ const x=e.target.closest('[data-av]'); if(x){ e.stopPropagation(); AVS.set(x.dataset.av); } }; } AVS.draw(); };
-  window.AVSDBG=()=>{ const C=AVS.C[AVS.kind]; return {kind:AVS.kind,ready:!!C&&!C.wait,err:C&&C.err||null,base:C&&C.an&&C.an.base,tris:C&&C.tris?Math.round(C.tris):W3.tris,sp:+sp.toFixed(2),vis:!!C&&!!C.g&&C.g.visible}; };
-  let k0=QS.get('avatar'); if(!k0)try{ k0=SAVE.get('avatar'); }catch(e){} AVS.set(AVS.KINDS.includes(k0)?k0:'walker'); }
+  window.AVSDBG=()=>{ const C=AVS.C[AVS.kind]; return {kind:AVS.kind,ready:!!C&&!C.wait,err:C&&C.err||null,base:C&&C.an&&C.an.base,tris:C&&C.tris?Math.round(C.tris):W3.tris,sp:+sp.toFixed(2),vis:!!C&&!!C.g&&C.g.visible,ghost:C&&C.state?C.state():undefined}; };
+  let k0=QS.get('avatar'); if(!k0)try{ k0=SAVE.get('avatar'); }catch(e){} AVS.set(AVS.KINDS.includes(k0)?k0:'ghost'); }

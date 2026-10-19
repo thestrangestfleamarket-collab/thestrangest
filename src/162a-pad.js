@@ -64,7 +64,7 @@
     if(Math.hypot(lx,ly)>.2){ const s=(Math.round(Math.atan2(ly,lx)/(Math.PI/4))+8)%8; h=s===0||s===1||s===7?'d':s>=3&&s<=5?'a':null; v=s>=1&&s<=3?'s':s>=5?'w':null; }
     hold('h',h&&K(h)); hold('v',v&&K(v)); PAD.mv=(h&&keys.has(h))||(v&&keys.has(v))?[lx,ly]:null;
     const rx=ax[2]||0, ry=ax[3]||0, rr=Math.hypot(rx,ry);
-    if(rr>.2&&!UI.menuOpen){ const k=(rr-.2)/.8/rr; if(UI.persp)UI.orbit(rx*k*dt*420,ry*k*dt*300); else UI.pan(-rx*k*dt*700,-ry*k*dt*700); }
+    if(rr>.2&&!UI.menuOpen){ const k=(rr-.2)/.8/rr; if(UI.persp)UI.orbit(rx*k*dt*420,ry*k*dt*300); else UI.orbit(rx*k*dt*420,0); }
     if(!PAD.useX&&hit(b('use'))&&UI.useNear())PAD.useX=true; else if(PAD.useX&&!on(b('use')))PAD.useX=false;
     hold('A',on(b('jump'))&&!PAD.aWait?K(' '):null); hold('X',on(b('punch'))&&!PAD.useX?K('j'):null); hold('Y',on(b('kick'))?K('k'):null);
     const run=(Bv[b('run')]||0)>.3; hold('RT',run?K('shift'):null); hold('LB',on(b('turnL'))?K('q'):null); hold('RB',on(b('turnR'))?K('e'):null);
@@ -77,7 +77,7 @@
   addEventListener('pointerdown',e=>{ if(e.isTrusted&&PAD.n){ mark(null); PAD.mouse=true; } },true);
   addEventListener('pointermove',e=>{ if(PAD.cur&&e.isTrusted&&(e.movementX||e.movementY)){ PAD.cur=false; document.body.classList.remove('padcur'); } },true);
   addEventListener('blur',()=>letGo());
-  UI.padMoves=(row,h)=>{ if(!PAD.n)return ''; let o=h('THE CONTROLLER (CHANGE ITS BUTTONS IN THE MENU\'S KEYS)')+row('LEFT STICK','WALK, ANY WAY')+row('RIGHT STICK','LOOK ROUND (BEHIND, FIRST) · MOVE THE VIEW (ISOMETRIC)');
+  UI.padMoves=(row,h)=>{ if(!PAD.n)return ''; let o=h('THE CONTROLLER (CHANGE ITS BUTTONS IN THE MENU\'S KEYS)')+row('LEFT STICK','WALK, ANY WAY')+row('RIGHT STICK','LOOK ROUND (BEHIND, FIRST) · SPIN THE VIEW (ISOMETRIC)');
     for(const [a,w] of ACTS)if(BIND[a]>=0)o+=row(bhtml(BIND[a]),w.toUpperCase()); return o+row('IN A MENU OR A BOX','STICK OR D-PAD MOVES, '+bn(0)+' PRESSES, '+bn(4)+' / '+bn(5)+' THE TABS, '+bn(1)+' BACK'); };
   let waiting=null;
   UI.padKeys=t=>{ t=t||document.getElementById('keytab'); if(!t||!PAD.n)return; [...t.querySelectorAll('.padrow')].forEach(r=>r.remove());

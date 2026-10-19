@@ -5,7 +5,7 @@ const {chromium}=require('playwright'); const OUT=process.argv[2]||'.';
 (async()=>{ const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader']}); const pg=await b.newPage({viewport:{width:960,height:640}}); const errs={};
   pg.on('pageerror',e=>{ const k=e.message.slice(0,160); errs[k]=(errs[k]||0)+1; });
   const R=[]; const rec=(n,ok,i)=>{ R.push([n,ok]); console.log((ok?'PASS ':'FAIL ')+n+(i?'  · '+i:'')); };
-  await pg.goto('file://'+process.cwd()+'/dist/market.html?hour=6&fresh=1&bring=all'); for(let i=0;i<240&&!(await pg.evaluate(()=>!!window.__started&&window.MAIL&&MAIL.ready).catch(()=>false));i++)await pg.waitForTimeout(1000);
+  await pg.goto('file://'+process.cwd()+'/dist/market.html?city=1&hour=6&fresh=1&bring=all'); for(let i=0;i<240&&!(await pg.evaluate(()=>!!window.__started&&window.MAIL&&MAIL.ready).catch(()=>false));i++)await pg.waitForTimeout(1000);
   await pg.evaluate(()=>{ __dbg.CLOCK.run=false; }); await pg.waitForTimeout(2000);
   const J=()=>pg.evaluate(()=>JOBDBG());
   let j=await J(); console.log('the jobs:'); for(const x of j)console.log('  '+x.title.padEnd(14)+' '+x.id.padEnd(9)+' '+x.hours.padEnd(10)+' '+x.who.padEnd(14)+' home '+x.home+' ('+x.homeTiles+' tiles)');

@@ -11,10 +11,10 @@ process.on('unhandledRejection',e=>{ errs.push('TEST '+String(e&&e.message||e).s
   await pg.waitForTimeout(5000);
   const shot=async(n,f,w=5000)=>{ try{ if(f)await pg.evaluate(f); await pg.waitForTimeout(w); await pg.screenshot({path:path.join(OUT,n+'.png')}); }catch(e){ errs.push(n+': '+e.message.slice(0,200)); } };
   const A=()=>{ const M=__dbg.MAPK, a=M.MODS.apts.A; return {a,X:M.BOD.X,Z:M.BOD.Z}; };
-  await shot('apts-front',()=>{ const {a,X,Z}=(()=>{ const M=__dbg.MAPK, a=M.MODS.apts.A; return {a,X:M.BOD.X,Z:M.BOD.Z}; })(); const B=__dbg.MAPK.BOD; STORE.goTo(X((a.x0+a.x1)/2),B.ZS((B.CURB+B.FAR)/2),'up'); });
+  await shot('apts-front',()=>{ const M=__dbg.MAPK, a=M.MODS.apts.A, B=M.BOD, zs=B.ZS((B.CURB+B.FAR)/2), z0=B.Z(a.y0), z1=B.Z(a.y1), zf=Math.abs(z0-zs)<Math.abs(z1-zs)?z0:z1, t=B.ZS(1)-B.ZS(0); STORE.goTo(B.X((a.x0+a.x1)/2),zf+Math.sign(zs-zf)*2.2*Math.abs(t),'up'); });
   await pg.mouse.move(480,270); for(let i=0;i<8;i++){ await pg.mouse.wheel(0,600); await pg.waitForTimeout(150); }
   await shot('street-wide',null,4000);
-  for(let i=0;i<8;i++){ await pg.mouse.wheel(0,-600); await pg.waitForTimeout(150); }
+  await pg.keyboard.press('0'); await pg.waitForTimeout(800);
   await shot('apts-lobby',()=>{ const M=__dbg.MAPK, a=M.MODS.apts.A; STORE.goTo(M.BOD.X((a.x0+a.x1)/2),M.BOD.Z(a.y0+(a.y1-a.y0)*.6),'up'); });
   rep.elv=await pg.evaluate(()=>window.ELVDBG&&ELVDBG());
   await shot('apts-back',()=>{ const M=__dbg.MAPK, a=M.MODS.apts.A, z0=M.BOD.Z(a.y0), z1=M.BOD.Z(a.y1), zb=Math.abs(z0-M.BOD.ZS((M.BOD.CURB+M.BOD.FAR)/2))>Math.abs(z1-M.BOD.ZS((M.BOD.CURB+M.BOD.FAR)/2))?z0:z1; STORE.goTo(M.BOD.X((a.x0+a.x1)/2),zb+(zb>(z0+z1)/2?3:-3)*(M.BOD.ZS(1)-M.BOD.ZS(0)),'up'); });
@@ -31,7 +31,7 @@ process.on('unhandledRejection',e=>{ errs.push('TEST '+String(e&&e.message||e).s
   rep.dead=await pg.evaluate(()=>!!(__dbg.VIT.dead));
   await shot('bath-in',()=>{ const M=__dbg.MAPK, r=M.BOD.GD.r; STORE.goTo(M.BOD.X((r[0]+r[2])/2),M.BOD.Z((r[1]+r[3])/2),'up'); },2500);
   await shot('bath-rise',null,2500); await shot('bath-back',null,7000);
-  rep.alive=await pg.evaluate(()=>!(__dbg.VIT.dead));
+  rep.alive=await pg.evaluate(()=>!(__dbg.VIT.dead)); rep.bathIn=await pg.evaluate(()=>{ const M=__dbg.MAPK; return {inside:M.BOD.GD.inside(),y:__dbg.you().y}; });
   rep.render=await pg.evaluate(()=>{ try{ const r=RENDERLIST(); return {head:r.head||r.totals||null,top:(r.rows||r.drawn||[]).slice(0,12),hidden:(r.notDrawn||r.loaded||[]).slice(0,8)}; }catch(e){ return 'ERR '+e.message; } });
   rep.frog=await pg.evaluate(()=>{ const N=__dbg.npcs().find(n=>n.key==='scooterfrog'); return N&&{x:N.st.x,z:N.st.z,to:N.st.to,wait:N.st.wait,hold:N.st.hold,far:N.far,mode:N.mode,life:!!N.life,free:N.st.to?N.free(N.st.to.x,N.st.to.z,N.st.R):null,freeHere:N.free(N.st.x,N.st.z,N.st.R)}; });
   fin(); await b.close(); })();

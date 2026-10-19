@@ -2788,3 +2788,17 @@ fsomeone dies insomewhere they have to float back as a ghost to get resed. when 
   lighting is btter"): your figure's own self-shadow (the hard band from whichever light is strongest, which jumped as lights changed)
   is off by default (DISPLAY can turn it back on); the park's lanterns and lamp posts light at 24 (were 12 and 6) out to 12 tiles, the
   street globe lamps at 28 (were 18) out to 12; outdoors at night a lamp near you lights your figure up to 70% (35% indoors).
+- **The city's play off for now** (owner, 19 Oct 2026: "lets remoev all of the city functions an gameplay out of game for now"): one
+  switch, `CITY.on` (`?city=1` brings it all back; `152-city.js`). Off by default: the CITY tab and its pane (the ledger, shops, services,
+  open jobs, the post, your money, the log, the TRY buttons with YOU FAINT), the shops' stock and tills, wages and tax (`155-civic.js`),
+  the fires, outages, full cans, trash rounds, patrols and medics (`156-duties.js`), the daily lives (`LIVES.on`), the jobs (`JOBS.on`)
+  and the post (`MAIL.on`); each also takes its own `?lives=1`, `?jobs=1`, `?mail=1`. Kept: the code, the civic tower's building,
+  `CITY.places`/`CITY.send` (the walkers still wander the park and the street, the vendors stay at their stands), the bath house, death
+  and VIT. Your money is `INV.cash` alone (the drone's purse too).
+- **No sound** (owner, 19 Oct 2026: "remove all sounds from game"): no AudioContext is made (`SOUND`, `?sound=1` brings it back;
+  `091-sfx.js`, `100-use.js`, `110-musician.js`), so no effects, footsteps, ambience, club, brook, river, radio or music; the musicians
+  play on silently. The SOUND tab is hidden.
+- **Four lamps at the park's crossing** (owner, 19 Oct 2026: "the four corners spot in central park needs to have 4 lamps ."): the park's
+  own lamp (black post, lantern) at each corner of the round where the two ways cross, 4.2 tiles off both ways' middles like the other
+  park lamps, clear of the pillars; each its point light in `lamps` and a solid post (`061-park.js`). Cost: about 130 triangles, 4 lamps
+  for the light picker (still at most 8 lit).

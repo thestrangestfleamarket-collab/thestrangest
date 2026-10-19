@@ -1,4 +1,4 @@
-const MAIL={on:QS.get('mail')!=='0',addr:[],L:[],nid:0,day0:0,you:{cash:100},cboxes:[],ready:false}; window.MAIL=MAIL;
+const MAIL={on:QS.has('mail')?QS.get('mail')!=='0':CITY.on,addr:[],L:[],nid:0,day0:0,you:{cash:100},cboxes:[],ready:false}; window.MAIL=MAIL;
 if(MAIL.on){ const T=TILE, M=1/.84*T, X=BOD.XS, Z=BOD.ZS, G=(x,z)=>MODS.bodega.ground(x,z), rnd=Math.random, pick=a=>a[Math.floor(rnd()*a.length)], log=(w,p)=>CIVIC.note(w,p||'post');
   const hs=s=>{ let h=2166136261; for(const c of String(s))h=Math.imul(h^c.charCodeAt(0),16777619); return (h>>>0)/4294967296; };
   const FIRST=['ADA','BEN','CORA','DEV','EDIE','FINN','GUS','HAZEL','IVO','JUNE','KAI','LENA','MILO','NELL','OTIS','PIA','QUINN','ROSA','SAUL','TESS','URI','VERA','WES','YARA','ZEKE'];

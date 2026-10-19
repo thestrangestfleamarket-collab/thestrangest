@@ -1,4 +1,4 @@
-const JOBS={on:QS.get('jobs')!=='0',list:[],plan:null}; window.JOBS=JOBS;
+const JOBS={on:QS.has('jobs')?QS.get('jobs')!=='0':CITY.on,list:[],plan:null}; window.JOBS=JOBS;
 if(JOBS.on){ const T=TILE, X=BOD.XS, Z=BOD.ZS, rnd=Math.random;
   const WORK=[['diner','COOK',7,15],['bar','BARKEEP',16,23.5],['aquarium','AQUARIST',10,18],['dojo','BATH ATTENDANT',9,17],['market','LOUNGE HOST',11,22],['museum','CURATOR',10,17],
     ['lucky','DEALER',12,22.5],['yellow','BARISTA',7.5,15.5],['theatre','PROJECTIONIST',13,23],['playhouse','STAGE MANAGER',14,22],['baker','LANDLADY',9,17],['cottage','GARDENER',8,16],

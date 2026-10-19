@@ -27,18 +27,18 @@ const CIVIC={row:[],staff:{},log:[],ledger:{treasury:500,day:0,tax:10,wage:20,cu
   }
   for(const h of CIVIC.row)CITY.extra.push({id:h.id,name:h.name,lv:'up',at:h.at,door:h.door});
   CIVIC.house=id=>CIVIC.row.find(h=>h.id===id);
-  for(const [id,stock,price,food] of [['bodega',20,4,true],['store:diner',16,7,true],['store:bar',16,6,false],['dojo',12,3,false]])CIVIC.shops[id]={id,stock,price,food,till:0,sold:0,low:false};
+  if(CITY.on){ for(const [id,stock,price,food] of [['bodega',20,4,true],['store:diner',16,7,true],['store:bar',16,6,false],['dojo',12,3,false]])CIVIC.shops[id]={id,stock,price,food,till:0,sold:0,low:false};
   CIVIC.buy=(who,id)=>{ const S=CIVIC.shops[id]; if(!S)return false; if(S.stock<=0){ CIVIC.note(who.name+' found the shelves empty',id); return false; } if((who.cash||0)<S.price){ CIVIC.note(who.name+' had no money for '+id,id); return false; }
     S.stock--; S.sold++; S.till+=S.price; who.cash-=S.price; if(S.food&&who.hunger!=null)who.hunger=0; CIVIC.note(who.name+' bought something at '+id+' ($'+S.price+')',id); if(S.stock<8&&!S.low){ S.low=true; CITY.post('restock',id,{shop:id}); CIVIC.note(id+' is low on stock: a delivery asked for',id); } return true; };
   CIVIC.send=(to,from,subject,body)=>{ const L={id:(CIVIC.mail.n=(CIVIC.mail.n||0)+1),to,from,subject,body:body||'',day:CITY.day,t:CLOCK.h,state:'posted'}; CIVIC.mail.bag.push(L); return L; };
   CIVIC.box=to=>CIVIC.mail.boxes[to]||(CIVIC.mail.boxes[to]=[]);
   CITY.at(17,()=>{ let w=0; for(const k in CIVIC.staff)w+=CIVIC.ledger.wage; CIVIC.ledger.treasury-=w; CIVIC.note('the city paid its staff $'+w,'hall'); },'wages');
-  CITY.at(18,()=>{ for(const S of Object.values(CIVIC.shops)){ const t=Math.min(S.till,CIVIC.ledger.tax); S.till-=t; CIVIC.ledger.treasury+=t; } CIVIC.note('the shops paid their tax','hall'); },'tax');
+  CITY.at(18,()=>{ for(const S of Object.values(CIVIC.shops)){ const t=Math.min(S.till,CIVIC.ledger.tax); S.till-=t; CIVIC.ledger.treasury+=t; } CIVIC.note('the shops paid their tax','hall'); },'tax'); }
   CIVIC.free=id=>{ const S=CIVIC.staff[id]; return S&&S.state==='free'; };
   CIVIC.go=(S,to,then,v=2)=>{ S.N.st.hold=false; CITY.send(S.N,to,{v,then}); };
   CIVIC.home=S=>{ S.state='returning'; S.job=null; CIVIC.go(S,S.N.home,()=>{ S.state='free'; S.N.st.hold=true; S.N.st.h=Math.PI; S.N.st.to=null; S.N.st.face=null; },1.4); };
   CIVIC.carry=(S,col)=>{ if(S.item){ S.N.g.remove(S.item); S.item=null; } if(col==null)return; const m=new THREE.Mesh(new THREE.BoxGeometry(.28*T,.22*T,.28*T),new THREE.MeshLambertMaterial({color:col})); m.position.set(.18*T,S.N.H*.75,.1*T); m.castShadow=true; S.N.g.add(m); S.item=m; };
-  { const Mn=document.getElementById('menu'), tabs=Mn.querySelector('.tabs'), bt=document.createElement('button'); bt.setAttribute('role','tab'); bt.dataset.t='city'; bt.textContent='CITY'; tabs.insertBefore(bt,tabs.querySelector('[data-t="keys"]'));
+  if(CITY.on){ const Mn=document.getElementById('menu'), tabs=Mn.querySelector('.tabs'), bt=document.createElement('button'); bt.setAttribute('role','tab'); bt.dataset.t='city'; bt.textContent='CITY'; tabs.insertBefore(bt,tabs.querySelector('[data-t="keys"]'));
     const pane=document.createElement('div'); pane.className='pane'; pane.dataset.p='city'; pane.hidden=true; pane.innerHTML='<div id="civ" style="font:11px Silkscreen,monospace;letter-spacing:.4px;max-height:60vh;overflow:auto"></div><h3>TRY</h3><div class="row"><button class="btn" id="cvfire">A FIRE</button><button class="btn" id="cvout">AN OUTAGE</button><button class="btn" id="cvcan">A FULL CAN</button><button class="btn" id="cvfaint">YOU FAINT</button></div>';
     Mn.querySelector('.foot').before(pane); const show=t=>{ Mn.querySelectorAll('[data-t]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.t===t))); Mn.querySelectorAll('[data-p]').forEach(p=>p.hidden=p.dataset.p!==t); if(t==='city')CIVIC.draw(); };
     bt.onclick=()=>show('city'); Mn.querySelectorAll('[data-t]').forEach(b=>{ if(b!==bt){ const f=b.onclick; b.onclick=e=>{ f&&f(e); show(b.dataset.t); }; } });

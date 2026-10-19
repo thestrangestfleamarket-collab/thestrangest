@@ -2652,3 +2652,6 @@ not have windows, make sure buildings are only as tall as they need to be"; then
   diff kinds, some glow at night"): the log, the stump and the two baskets on the ground are gone; the stand's back rises to 2.58 with
   two more shelves (2.0, 2.4) of new kinds: ghost caps (violet, glowing), amethyst violets, embers (orange, glowing), oysters and
   sulphur shelf. The glowing caps are dim by day and bright after dark.
+- **The far buildings steady** (owner, 19 Oct 2026: "thedark spots on buildings shift every frame so it just looks glitchy"): the far
+  skyline's window pattern turns to its even average colour sooner (when a window cell is a third of a pixel, was a full pixel), so the
+  small windows no longer crawl as the view moves.

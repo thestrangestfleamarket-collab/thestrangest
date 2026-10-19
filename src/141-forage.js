@@ -85,8 +85,8 @@ const FORAGE={}; window.FORAGE=FORAGE;
       if(near&&shod&&up&&!S.shoeHint&&WEEDS.inPark&&WEEDS.inPark(pos.x,pos.z)){ S.shoeHint=1; say('TAKE OFF YOUR SHOES TO FORAGE SAFELY.','#f2c14e'); saveSoon(); }
       if(ch)FORAGE.sync(); };
     window.MUSHDBG=()=>{ const now=performance.now()/1e3, o={hidden:0,revealed:0,peek:0,crushed:0,picked:0,barefoot:!shod0(),gold:{},lawn:{}}; for(const arr of CH.values())for(const m of arr){ const gk=m.g?WEEDS.GV[m.g]+': '+m.k:m.k, gb=m.g?o.gold:o.lawn; gb[gk]=(gb[gk]||0)+1; if(m.cr>now)o.crushed++; else if(S.picked[m.id])o.picked++; else if(m.pk)o.peek++; else if(m.rv>now)o.revealed++; else o.hidden++; } return o; }; }
-  FORAGE.pick=m=>{ const [nm,d]=MU[m.k], kb=FORAGE.keen(); if(d>sk('forage')+15+kb){ say(`YOU NEED FORAGING ${Math.ceil(d-15)} TO PICK THIS MUSHROOM.`,'#c8a090'); return; } if(typeof SFX!=='undefined')SFX.play('step',{vol:.5});
-    if(use('forage',d-25,d+25,kb)){ S.picked[m.id]=1; const n=1+(sk('forage')+kb>d+20&&Math.random()<.4?1:0), known=d<10||use('myco',d-30,d+20);
+  FORAGE.pick=m=>{ const [nm,d]=MU[m.k], kb=FORAGE.keen(); if(typeof SFX!=='undefined')SFX.play('step',{vol:.5});
+    if(d<=sk('forage')+15+kb&&use('forage',d-25,d+25,kb)){ S.picked[m.id]=1; const n=1+(sk('forage')+kb>d+20&&Math.random()<.4?1:0), known=d<10||use('myco',d-30,d+20);
       give((known?'m_':'u_')+m.k,n); say(known?`YOU PICK ${n>1?n+' ':'A '}${nm}${n>1?'S':''}.`:`YOU PICK ${n>1?n:'A'} MUSHROOM${n>1?'S':''} YOU DON'T KNOW.`,known?'#e8e2cc':'#c8b0ff'); }
     else if(Math.random()<.3){ S.picked[m.id]=1; say('IT CRUMBLES IN YOUR HAND.','#c8a090'); } else say('YOU FAIL TO PICK IT CLEANLY.','#c8a090');
     saveSoon(); FORAGE.sync(); PACK.draw(); };

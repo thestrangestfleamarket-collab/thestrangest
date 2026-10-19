@@ -3123,5 +3123,6 @@ versions) and put them in random spots in park and thats where specific mushroom
   in a different quarter. A few thousand more triangles, no new lights or shader programs. They keep clear of the lake campfire.
 - **Every mushroom shows; skill decides the picking** (owner, 19 Oct 2026, of the gold-grass mushrooms hidden below a skill: "i want
   them to show up but you cant pick them without the skill level (like before)", "mushrooms"): all mushrooms are seen whatever your
-  FORAGING; one above your reach (its difficulty over your skill + 15, the keen-eye potion counting) can't be picked: YOU NEED
-  FORAGING N TO PICK THIS MUSHROOM.
+  FORAGING; one above your reach (its difficulty over your skill + 15, the keen-eye potion counting) never comes away: as before,
+  YOU FAIL TO PICK IT CLEANLY, or now and then IT CRUMBLES IN YOUR HAND (owner: "no use the old verbiage about how you fail to pick
+  it cleanly or soemthing").

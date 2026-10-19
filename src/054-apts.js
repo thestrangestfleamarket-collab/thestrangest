@@ -217,6 +217,7 @@ const APTS={EMPTY:true};
   const DL=DLV.map(o=>{ const x0=X(U(o.d.c-.55)), x1=X(U(o.d.c+.55)), w=Math.abs(x1-x0), z=Z(V(o.v)), pv=new THREE.Group(), leaf=bx(w*.96,lh,.05,WOOD), kb=bx(.05,Y(4)-Y(0),.1,BRASS);
     leaf.position.set(w*.48,lh/2,0); kb.position.set(w*.86,Y(46)-Y(0),0); pv.add(leaf,kb); pv.position.set(Math.min(x0,x1),Y(o.lv*S),z); scene.add(pv); leaf.castShadow=leaf.receiveShadow=true;
     return {...o,pv,a:0,at:{x:(x0+x1)/2,z},sg:-o.s*(Math.sign(Z(V(1))-Z(V(0)))||1)}; });
+  const lpt=(F,d)=>[X(U(F.lx)),Z(F.yf+F.o*d)];
   for(const F of ESC)for(const y of LS_){ const [x,z]=lpt(F,y===AH?-.6:1.1), hb=bx(.5*TILE,Y(60)-Y(0),.5*TILE,HIT); hb.position.set(x,Y(y+30),z); scene.add(hb);
     reg({name:'FIRE ESCAPE LADDER',obj:hb,reach:.6*TILE,near:2.2*TILE,tall:1*TILE,act:()=>{ if(!LAD.F&&Math.abs(py-Y(y))<SY*.3)lgo(F,y); }}); }
   const DROP=ESC.map(F=>{ const xt=X(U(F.d1)), L=Math.abs(xt-X(U(F.d0))), Hh=Y(S)-Y(-RZ), w=Math.abs(Z(F.yf+F.o*DO)-Z(F.yf+F.o*DI))-.04, th_=Math.atan2(Hh,L), len=Math.hypot(L,Hh), g=new THREE.Group(), n=15;
@@ -232,7 +233,7 @@ const APTS={EMPTY:true};
     const f=Math.max(0,Math.min(ST-1,Math.floor((yy-R0)/SY+.08))); return R0+SY*f+(f===0?Y(1)-Y(0):0); };
   const RS=[[10.4,0,15.6,2.75],[3.8,1.2,6.2,3.6],[.25,5.9,1.35,7],[.25,10.4,1.35,11.5],[24.65,5.9,25.75,7],[24.65,10.4,25.75,11.5]].map(r=>{ const a=[X(U(r[0])),Z(V(r[1])),X(U(r[2])),Z(V(r[3]))]; return [Math.min(a[0],a[2]),Math.min(a[1],a[3]),Math.max(a[0],a[2]),Math.max(a[1],a[3])]; });
   RS.push([X(door.a0),Math.min(Z(A.y1-T),Z(A.y1+T)),X(door.a1),Math.max(Z(A.y1-T),Z(A.y1+T))]);
-  const lpt=(F,d)=>[X(U(F.lx)),Z(F.yf+F.o*d)], lpos=F=>{ const [x,z]=lpt(F,1.3); pos.x=x; pos.z=z; heading=Math.atan2(0,Math.sign(Z(F.yf)-z)||1); };
+  const lpos=F=>{ const [x,z]=lpt(F,1.3); pos.x=x; pos.z=z; heading=Math.atan2(0,Math.sign(Z(F.yf)-z)||1); };
   const lgo=(F,y)=>{ LAD.F=F; LAD.y=y; lpos(F); st.climb={z:0,slide:true}; target=null; };
   const loff=top=>{ const F=LAD.F, [x,z]=lpt(F,top?-1:.45); LAD.F=null; st.climb=null; pos.x=x; pos.z=z; };
   APTS.lad=(dt,up,dn,off)=>{ if(!window.POSOK||LVL!=='up')return false;

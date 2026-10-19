@@ -2951,3 +2951,8 @@ building until you go inside"; `054-apts.js`, `075-main-13.js`)
   flattened patch where you land (1.5, 3 s); a roll, fall or lying down a long crushed lane (1.15, 5 s). The walkers near you still press
   it. `WEEDS.pressAt(x,z)` says how pressed it is at a point (0 to 1). Cost about as before: at most 2,048 top triangles a chunk plus its
   low lips, one program, no light.
+- **Small things hide in the tall grass; no walkers** (owner, 19 Oct 2026: "small creatures shouldnt be seen (you can see a small
+  trail where they are walking but they are too short to b seen. flying things dont cause the grass to move" and "remove all other npc
+  walkers, beard walkers, etc from the game"): creatures (`CREATS`) on the tall grass are hidden and only part it in a small trail
+  (0.3 tiles, lighter); anything off the ground (flying) doesn't touch the grass. The townsfolk walkers are off (`?walkers=1` brings
+  them back) and so is the bearded walker (`?bwk` brings him back).

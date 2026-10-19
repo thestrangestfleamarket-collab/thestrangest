@@ -59,8 +59,9 @@ WEEDS.lawnInit=()=>{ const T=TILE, CS=8*T, N=32, CELL=CS/N, MG=4, W=N+2*MG, hsh=
     for(let i=0;i<NT;i++){ const a=TR[i]; if(a.w<=0)continue; c(Math.hypot(x-a.x,z-a.y)-a.z,a.w); const b=TR[i+1]; if(b&&b.w>0){ const [l,t]=seg(x,z,a.x,a.y,b.x,b.y); c(l-(a.z+(b.z-a.z)*t),a.w+(b.w-a.w)*t); } } return k; };
   let air0=false; const modeNow=()=>{ const m=st.move, nm=m&&m.name, a=m&&m.def&&m.def.air; if(RAG.on||nm==='roll'||nm==='fall')return 4; if(UI.fly||a&&m.t>=a.t0&&m.t<a.t0+a.T)return -1; if(nm==='crouch')return 2; return st.target>0&&st.run>.5?1:0; };
   const push=(md,now)=>{ for(let i=NT-1;i>1;i--){ TR[i].copy(TR[i-1]); TT[i]=TT[i-1]; TM[i]=TM[i-1]; } TR[1].set(pos.x,pos.z,0,0); TT[1]=now; TM[1]=md; };
-  const near=[]; WEEDS.moveTick=()=>{ near.length=0; near.push([pos.x,pos.z,0]); if(typeof NPCS!=='undefined')for(const N of NPCS){ if(N.lv!=='up'||N.far||!N.g.visible||!N.st)continue; const d=Math.hypot(N.st.x-pos.x,N.st.z-pos.z); if(d<14*T)near.push([N.st.x,N.st.z,d]); }
-    near.sort((a,b)=>a[2]-b[2]); for(let i=0;i<8;i++){ const n=near[i]; if(n)MV[i].set(n[0],n[1],.55*T,1); else MV[i].w=0; }
+  const near=[]; WEEDS.moveTick=()=>{ near.length=0; near.push([pos.x,pos.z,0]); if(typeof NPCS!=='undefined')for(const N of NPCS){ if(N.lv!=='up'||N.far||!N.st)continue; const small=!!(window.CREATS&&CREATS.includes(N)), gy=N.ground?N.ground(N.st.x,N.st.z):0, fly=N.g.position.y-gy>.35*T, tp=small&&!fly&&WEEDS.top?WEEDS.top(N.st.x,N.st.z):null, hide=tp!=null&&isFinite(tp);
+      if(hide!==!!N._ing){ N._ing=hide; N.g.visible=!hide; } if(fly||!N.g.visible&&!hide)continue; const d=Math.hypot(N.st.x-pos.x,N.st.z-pos.z); if(d<14*T)near.push([N.st.x,N.st.z,d,small]); }
+    near.sort((a,b)=>a[2]-b[2]); for(let i=0;i<8;i++){ const n=near[i]; if(n)MV[i].set(n[0],n[1],n[3]?.3*T:.55*T,n[3]?.6:1); else MV[i].w=0; }
     const now=performance.now()/1e3, up=LVL==='up', md=up?modeNow():-1, air=md<0&&!!(st.move&&st.move.def&&st.move.def.air);
     if(Math.hypot(pos.x-TR[0].x,pos.z-TR[0].y)>3*T||!up)TT.fill(-1e9);
     if(air0&&!air&&up)push(3,now); else if(md>=0&&(Math.hypot(pos.x-TR[1].x,pos.z-TR[1].y)>.5*T||TT[1]<0||TM[1]!==md&&TM[1]!==3))push(md,now); air0=air;

@@ -41,9 +41,11 @@
     else if((TR.ph==='good'||TR.ph==='miss')&&TR.t>1.4){ TR.n++; if(TR.n>=TR.list.length){ TR.ph='end'; TR.t=0; show('TRAINING DONE: '+TR.ok+' OF '+TR.list.length,'MARTIAL ARTS '+(FORAGE.S.sk.fight/10).toFixed(1),'#f2c14e'); }
       else { TR.ph='intro'; TR.t=1.2; } }
     else if(TR.ph==='end'&&TR.t>2.8)TR.stop(); };
-  const mk=()=>{ if(N)return; const MT=R.MATS; if(!MT.includes('ninja')){ MT.push('ninja'); W3.ramp.push(['#585a6c','#36374a','#22232e','#111117'].map(h=>new THREE.Color(h))); }
+  const mk=()=>{ if(N)return; const MT=R.MATS; if(!MT.includes('ninja')){ MT.push('ninja'); W3.ramp.push(['#4a4c5c','#2e2f3c','#1d1e27','#0e0e14'].map(h=>new THREE.Color(h))); }
     const NB=MT.indexOf('ninja'), keep=new Set(['eye','eyeW','pupil'].map(n=>MT.indexOf(n)).filter(i=>i>=0)), LID=MT.indexOf('lid'), SKN=MT.indexOf('skin');
-    const {PCS}=musBody(); for(const p of PCS)p.recol=m=>keep.has(m)?m:m===LID?SKN:NB;
+    const {PCS,J}=musBody(), H=J.head; for(const p of PCS)p.recol=m=>keep.has(m)?m:m===LID?SKN:NB;
+    const hp=PCS.find(p=>p.n==='head'); if(hp)PCS.push({n:'ninjaband',on:'head',m:'skin',e:hp.e,bb:[H.x-5.5,H.x+5.5,H.y-1.5,H.y+3.5,H.z+1,H.z+12],step:.18,cell:.14,recol:m=>m,
+      d:p=>Math.max(hp.d(p)-.1,Math.abs(p.x-H.x)-4.3,Math.abs(p.y-H.y-.9)-1.6,H.z+2-p.z)});
     for(const P of PCS)if(!MUSGEO.has(P.share||P)){ const fine=W3.fine(P); W3.warm(P,P.step||(fine?.5:1),fine,null); }
     const FM=figureMesh(PCS,'ninja'), g=new THREE.Group(); g.add(FM.me); scene.add(g);
     const S=R.create(); S.smooth=true; const hb=new THREE.Mesh(new THREE.BoxGeometry(1.1*T,2.3*T,1.1*T),new THREE.MeshBasicMaterial({visible:false})); scene.add(hb);
@@ -67,7 +69,7 @@
     if(TR.on&&!(N.cur&&(N.cur.k==='c'||N.cur.k==='t')))N.to=Math.atan2(pos.x-N.x,pos.z-N.z);
     const e=dang(N.to,N.hd); N.hd+=Math.sign(e)*Math.min(Math.abs(e),dt*(TR.on?6:4.5));
     S.target=0; const d0=S.dist; R.step(S,dt); const go=(S.dist-d0)*W3.SZ/PPU;
-    if(go){ N.x+=Math.sin(N.hd)*go; N.z+=Math.cos(N.hd)*go; } N.x=Math.max(MX0,Math.min(MX1,N.x)); N.z=Math.max(MZ0,Math.min(MZ1,N.z));
+    if(go){ N.x+=Math.sin(N.hd)*go; N.z+=Math.cos(N.hd)*go; } { const dx=N.x-pos.x, dz=N.z-pos.z, dd=Math.hypot(dx,dz), mn=1.3*T; if(inD()&&dd<mn&&dd>1e-3){ N.x=pos.x+dx/dd*mn; N.z=pos.z+dz/dd*mn; } } N.x=Math.max(MX0,Math.min(MX1,N.x)); N.z=Math.max(MZ0,Math.min(MZ1,N.z));
     N.g.position.set(N.x,0,N.z); N.g.rotation.y=N.hd; musScale(N.g); N.hb.position.set(N.x,1.15*T,N.z);
     R.farOnly(false); const B=R.pose(S,true); N.PCS.forEach((pc,i)=>N.FM.set(i,R.frameOf(pc.on||pc.n,B))); };
   const tick0=CLOCK.tick; CLOCK.tick=dt=>{ tick0(dt); dt=Math.min(dt,.1);

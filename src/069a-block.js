@@ -30,22 +30,22 @@ const BLK={blds:[],signs:[],band:()=>null}; window.BLK=BLK;
         g.fillStyle='rgba(255,255,255,.1)'; for(let k=0;k<6;k++)g.fillRect(x0+4+k,gt+4+k*2,1,6);
         g.fillStyle='#2c2a30'; g.fillRect(x0+Math.round(gw/2)-1,gt,2,gb-gt); g.fillStyle='#3a3842'; g.fillRect(x0,gb,gw,bot-gb); } }
     if(o.shop){ g.fillStyle=o.band||'#24222c'; g.fillRect(4,py(124),w-8,py(100)-py(124)); g.fillStyle='rgba(255,255,255,.08)'; g.fillRect(4,py(124),w-8,1); }
-    { const dx=o.door==='l'?14:w-14-38; g.fillStyle='#2e2a26'; g.fillRect(dx,py(94),38,h-py(94)); g.fillStyle='#4a443c'; g.fillRect(dx+2,py(92),34,h-py(92)-1); g.fillStyle='#c8b070'; g.fillRect(dx+30,py(46),3,3); }
+    for(const dx of o.doors?Array.from({length:o.doors},(_,k)=>Math.round((k+.5)*w/o.doors)-19):[o.door==='l'?14:w-14-38]){ g.fillStyle='#2e2a26'; g.fillRect(dx,py(94),38,h-py(94)); g.fillStyle='#4a443c'; g.fillRect(dx+2,py(92),34,h-py(92)-1); g.fillStyle='#c8b070'; g.fillRect(dx+30,py(46),3,3); }
     g.fillStyle='rgba(20,18,16,.35)'; g.fillRect(0,h-4,w,4);
     return {map:tex(c),em:tex(e)}; }
   const roofM=new THREE.MeshLambertMaterial({color:0x3a3840}), sideCache={};
   function building(o){ const W=o.x1-o.x0, D=o.y1-o.y0, H=YP(o.h);
-    const fr=face(W,o.h,{k:o.k,tint:o.tint,lit:o.lit,shop:o.front,door:'r'}), bk=face(W,o.h,{k:o.k+50,tint:o.tint,lit:o.lit,shop:o.back,door:'l'});
+    const fr=face(W,o.h,{k:o.k,tint:o.tint,lit:o.lit,shop:o.front,door:'r',doors:o.doors,blank:o.blankFace}), bk=face(W,o.h,{k:o.k+50,tint:o.tint,lit:o.lit,shop:o.back,door:'l',doors:o.doors,blank:o.blankFace});
     const sd=face(D,o.h,{k:o.k+90,tint:o.tint,lit:.1,blank:o.blankSide});
     const L=(f)=>new THREE.MeshLambertMaterial({map:f.map,emissive:0xffffff,emissiveMap:f.em});
     const F=L(fr), Bk=L(bk), S=L(sd);
     const mats=o.n?[S,S,roofM,roofM,F,Bk]:[S,S,roofM,roofM,Bk,F];
-    const m=new THREE.Mesh(new THREE.BoxGeometry(W*T,H,D*T),mats); m.position.set((XS(o.x0)+XS(o.x1))/2,H/2,(ZS(o.y0)+ZS(o.y1))/2); m.castShadow=m.receiveShadow=true; G.add(m);
-    const cope=new THREE.Mesh(new THREE.BoxGeometry(W*T+.1*T,YP(8),D*T+.1*T),new THREE.MeshLambertMaterial({color:0x4a464e})); cope.position.set(m.position.x,H+YP(4),m.position.z); cope.castShadow=true; G.add(cope);
+    const m=new THREE.Mesh(new THREE.BoxGeometry(W*T,H,D*T),mats); m.position.set((XS(o.x0)+XS(o.x1))/2,H/2,(ZS(o.y0)+ZS(o.y1))/2); m.castShadow=o.cheap?false:true; m.receiveShadow=true; G.add(m);
+    const cope=new THREE.Mesh(new THREE.BoxGeometry(W*T+.1*T,YP(8),D*T+.1*T),new THREE.MeshLambertMaterial({color:0x4a464e})); cope.position.set(m.position.x,H+YP(4),m.position.z); cope.castShadow=!o.cheap; G.add(cope);
     solid(o.x0,o.y0,o.x1,o.y1,o.h); BLK.blds.push({...o,mesh:m}); return m; }
   const TINTS=[[1.3,.82,.66],[1.12,1,.84],[.92,.95,1.02],[1.2,.95,.8],[1.05,.9,.92],[.98,1.02,.92],[1.25,.88,.72],[1.1,1.04,.95],[.9,.9,.96]];
-  const W2=[17.5,18.5,17,19,18,18.5], H2=[180,250,200,290,220,180]; let x=B.x0;
-  W2.forEach((w,i)=>{ building({x0:x,x1:x+w,y0:B.row2[0],y1:B.row2[1],h:H2[i],n:0,k:300+i*7,tint:TINTS[3+i],front:'shut',back:'glass',lit:.25,row:2}); x+=w+.6; });
+  [[B.x0,-18.6],[10.6,90],[90,150],[150,B.x1]].forEach(([a,b],i)=>building({x0:a,x1:b,y0:B.row2[0],y1:B.row2[1],h:140,n:0,k:300+i*7,tint:TINTS[3+i],front:'shut',back:'glass',lit:.2,row:2,doors:Math.max(1,Math.round((b-a)/14)),blankSide:true,cheap:true}));
+  for(let i=0;i+1<MAINROW.length;i++){ const a=MAINROW[i][1]+.1, b=MAINROW[i+1][0]-.1; if(b-a>1.5)building({x0:a,x1:b,y0:B.back,y1:BOD.OY,h:130,n:0,k:400+i*11,tint:TINTS[i%TINTS.length],front:'shut',back:'shut',lit:0,blankFace:true,blankSide:true,cheap:true,row:1}); }
   const BX=[], GL=[]; const bx=(L,x0,y0,p0,x1,y1,p1,c)=>L.push([XS(Math.min(x0,x1)),YP(Math.min(p0,p1)),ZS(Math.min(y0,y1)),XS(Math.max(x0,x1)),YP(Math.max(p0,p1)),ZS(Math.max(y0,y1)),c]);
   const zA=B.alley[1], zB=B.alley[0], mid=(zA+zB)/2;
   const KO='"Black Han Sans","Do Hyeon","Noto Sans KR",sans-serif', KO2='"Do Hyeon","Black Han Sans","Noto Sans KR",sans-serif';

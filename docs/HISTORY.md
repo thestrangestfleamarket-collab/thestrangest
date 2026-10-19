@@ -2594,3 +2594,38 @@ and wash ashore). No sound. WebXR on a headset: teleport arc, snap turn, grab an
   31.6 s against 32.3-33.7 s; the longest freeze after the start 7.1 s against 7.4-7.6 s; triangles drawn at the opening 222,000
   against 268,000-275,000; the park's south-west, the slowest frames (95th percentile) 49-51 ms against 52-59 ms.
   `tools/cireport.py` turns a run's results into one GitHub annotation (for sessions that can't download logs).
+- **One row of seats** (owner, 19 Oct 2026: "only 1 row of seats in theater and playhouse for now"): the movie theatre keeps its front
+  row (3.6 tiles from the screen wall, four seats), the playhouse its second (2.4 tiles back from the stage), each still with its aisle
+  lights (`057a-mainstreet.js`, `PLS.rows` in `044b-game-playhouse.js`).
+
+## 19 Oct 2026: insides built when you go in
+- **Room insides on entry** (owner: "I want to make the interior of all buildings not load until you go into them then you get an
+  'Entering...' message while it loads. i want it to be seamless ... each place should have a door that matches their building and you
+  press E [then: "make it double click instead of E"] to open it"; his map of the doors: the 'Market Entry Doors' artifact): `room()`
+  in `057-store.js` builds a room's walls, roof, door and everything outside its box when its step runs, and keeps the rest (the
+  things whose boxes lie inside the room, the floor, the lamps inside, their solids and flames) in `STORE.inside[id]`. Walking through
+  the door, or double-clicking it (`STORE.doorThings`, one `UI.thing` per room, named for the place), shows ENTERING and the place's
+  name on the black `#subfade`, builds the inside (`STORE.inGo`, the off-map rooms' way: one more bake), and fades back; the double
+  click also walks you in. Each place's door is the solid wooden door from the morning, in its own wall. The holodeck's booth and hall
+  stay built at once (`{now:1}`; its own fade covers the hall), and so do the rooms built off the map (`STORE.now` while they build).
+  The store's solids now always go to the street level's lists (`SOL.up`, `FIX.up`).
+- **The apartment house empty** (owner: "the apartment building should be empty"): `APTS.EMPTY`: no furniture, drapes or posters in
+  any flat; the halls, stairs, doors, windows and ceiling lights stay (`054-apts.js`).
+
+## 19 Oct 2026: Market St spread out, garages between, one long building on the Hudson side
+(owner: "lets spread the buildings on market st out to fill the street, and put empty buildings with garages between each one. for now
+just make 1 long fake building on the hudson to make the alley work. fake doors and windows. low render"; of the mockup, "theater should
+not have windows, make sure buildings are only as tall as they need to be"; then "go")
+- **The row** (`MAINROW` in `006-map-pre.js`, map tiles, west to east): the bar −50 to −39, the museum −18.3 to 10.3, the apartment
+  house 31 to 39.25, the subway stairs 60 to 64 and the bodega 76.35 to 85.15 where they were (the start and the station stay), the
+  theatre 97.3 to 111.3, the arcade 123.3 to 137.3, the dojo's ground 149.4 to 167.9, the playhouse 180 to 194, the holodeck booth's
+  lot 206 to 212, all inside the walkable edge (214). Set through `WROW` (bar, museum), `LAYOUT0` (`house` −17.24, `ghost` 15.85)
+  and `BLOCK.lots`; `BLOCK.x0/x1` now −50 to 212.
+- **Garages** (`069a-block.js`): every gap of the row wider than 1.5 tiles gets a shut one-storey building (130 high, 0.1 off each
+  neighbour) with a roll-up shutter on the street and on the alley, no windows, no inside, no shadow of its own; the iron gates find
+  no gaps left.
+- **The Hudson side of the alley**: the six back-row shops are one long low building (140 high) in four pieces (−50 to −18.6, notched
+  round the museum, then 10.6 to 90, 90 to 150, 150 to 212), painted doors every 14 tiles and shop windows on the alley side,
+  shutters on the river side, blank ends, no shadow.
+- **Only as tall as needed**: the theatre 176 (was 230), the arcade 180 (200, its ARCADE sign still fits), the apartment house three
+  floors (`ST` 3, was 5). The theatre's walls are plain brick with no windows (only its front picture stays).

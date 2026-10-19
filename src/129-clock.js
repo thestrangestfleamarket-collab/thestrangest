@@ -38,7 +38,7 @@ const CLOCK={h:17.4,run:false,speed:1440/600,sunV:new THREE.Vector3(0,1,0),moonV
     sunD.intensity=0;
     if(sunL.intensity>0&&(strong||now-lastS>100||stale)){ aim(sunD); sunD.shadow.needsUpdate=true; lastS=now; }
     if(typeof WATER!=='undefined')WATER.glowK=(typeof ROOMS!=='undefined'&&ROOMS.cur)||!up?1:Math.max(0,Math.min(1,(3-e)/8)); };
-  CLOCK.farBox=()=>{ const C=RING.cf, T=TILE, xa=[BOD.XS(C.x0),BOD.XS(C.x1)], za=[BOD.ZS(C.y0),BOD.ZS(C.y1)]; return [Math.min(...xa)-8*T,-4*T,Math.min(...za)-8*T,Math.max(...xa)+8*T,40*T,Math.max(...za)+8*T]; };
+  CLOCK.farBox=()=>{ const C=RING.cf, M=BOD.MAP, T=TILE, xa=[C.x0,C.x1,M.x0,M.x1].map(BOD.XS), za=[C.y0,C.y1,M.y0,M.y1].map(BOD.ZS); return [Math.min(...xa)-8*T,-4*T,Math.min(...za)-8*T,Math.max(...xa)+8*T,40*T,Math.max(...za)+8*T]; };
   CLOCK.set=h=>{ CLOCK.h=((h%24)+24)%24; };
   CLOCK.dark=()=>elev(CLOCK.h)<-2;
   const DYN=()=>{ const out=new Set(); if(window.W3&&W3.group)out.add(W3.group); for(const N of NPCS)if(N.g)out.add(N.g); for(const x of NPCS.extra||[])if(x&&x.g)out.add(x.g);

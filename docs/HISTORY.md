@@ -1854,3 +1854,25 @@ so he looked shrugged. You are now his mannequin (`data/full/humanoid.fbx`, Blen
 `data/humanoid.json`, 6 KB), sized to the UAL skeleton (it matches it: height, hips, shoulders, arm length within 3 cm). It stands in an
 A-pose, so the skeleton's arms are lowered to it before binding; each corner weighted in code to its nearest one or two bones. One flat
 light colour, cel-shaded, casting a shadow; the same clips. 402 triangles.
+
+## 19 Oct 2026: the park runs on, big clouds, sun through them
+- **The park runs on into the mist** (owner, asking about procedural.eu, a map terrain library on three.js: not usable here (satellite
+  photos, streamed map tiles, its own renderer), but its idea of ground fine near you and coarse far was; his pick of four places, "Park runs
+  on into mist"; `134a-parkfar.js`, `PFAR` in `006-map-pre.js` and `065-ring.js`): past the corner's north and east edges (north of it from
+  the park's west wall, east of it from the park's south wall) rolling lawns made in code, flat for 7 tiles then hills growing to some 10
+  tiles high far out, the park's lawn greens with grey rock on the steep faces, flat facets, one colour a face, lit in the cel bands. Cells 2
+  tiles near, 4, 8, 12 far (24-tile chunks with skirts). In the mist, everything else in that region more than 6 tiles past the edge is cut
+  (the park's far walls and gate, the north street, the Avenue), and the skyline's near rows on the park's side are left out (the rows 22+
+  tiles past the land and the baked far ones stay: the city across the park). The hills are only partly misted (half near, to nine tenths
+  far), so the ridges read in layers. Shown only while the MIST is on. Cost: 11,800 triangles, one draw, one program, no lights.
+- **Bigger clouds** (owner: "i like these clouds but they need to be way bigger and surrounding the buildings around edges and over sky";
+  `131-weather.js`): the same lumpy clouds, about three times the size: two in three a ring of banks round the skyline (150-320 tiles out,
+  14-52 high, 28-62 wide), the rest overhead (25-135 out, 30-46 high); at least 30 shown even in clear weather (30 + 50 x cloud).
+- **Sun through the clouds** (owner: "sun should shine through them to cause sun rays and light rays through the park"; of the two looks,
+  "Both"; then "the sun rays need to make logical sense, coming from the sun, not random"; `133a-sunrays.js`): **beams**: up to 8, each
+  leaving the sun-side edge of a real cloud straight along the sunlight to where it lands (the nearest to you, none within 3 tiles of the
+  camera), a pale six-sided shaft in two flat layers (core and edge, added light); whatever stands in a beam is lit a band brighter
+  (`sunS`/`sunB` in the lambert shader). By day only, none overcast or in rain. **Rays round the sun**: in the behind and first-person
+  views, when the sun is in sight, 32 steps from each pixel toward it count the open sky (the depth of the picture: clouds, trees and
+  buildings block), in 5 flat bands, warm, weaker over the sky itself. Cost: beams 192 triangles, one draw; rays one screen pass.
+  `tests/parkfar.cjs`, `tests/sunrays.cjs <out> [hour] [wx] [x,z]`.

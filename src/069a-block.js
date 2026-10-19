@@ -41,7 +41,7 @@ const BLK={blds:[],signs:[],band:()=>null}; window.BLK=BLK;
     const F=L(fr), Bk=L(bk), S=L(sd);
     const mats=o.n?[S,S,roofM,roofM,F,Bk]:[S,S,roofM,roofM,Bk,F];
     const m=new THREE.Mesh(new THREE.BoxGeometry(W*T,H,D*T),mats); m.position.set((XS(o.x0)+XS(o.x1))/2,H/2,(ZS(o.y0)+ZS(o.y1))/2); m.castShadow=o.cheap?false:true; m.receiveShadow=true; G.add(m);
-    const cope=new THREE.Mesh(new THREE.BoxGeometry(W*T+.1*T,YP(8),D*T+.1*T),new THREE.MeshLambertMaterial({color:0x4a464e})); cope.position.set(m.position.x,H+YP(4),m.position.z); cope.castShadow=!o.cheap; G.add(cope);
+    const cope=new THREE.Mesh(new THREE.BoxGeometry(W*T+.1*T,YP(8),D*T+.1*T),new THREE.MeshLambertMaterial({color:0x4a464e})); cope.position.set(m.position.x,H+YP(4),m.position.z); cope.castShadow=!o.cheap; G.add(cope); PEEK.whole(m,[F,Bk,S,roofM]); PEEK.whole(cope,[cope.material]);
     solid(o.x0,o.y0,o.x1,o.y1,o.h); BLK.blds.push({...o,mesh:m}); return m; }
   const TINTS=[[1.3,.82,.66],[1.12,1,.84],[.92,.95,1.02],[1.2,.95,.8],[1.05,.9,.92],[.98,1.02,.92],[1.25,.88,.72],[1.1,1.04,.95],[.9,.9,.96]];
   [[B.x0,-18.6],[10.6,90],[90,150],[150,B.x1]].forEach(([a,b],i)=>building({x0:a,x1:b,y0:B.row2[0],y1:B.row2[1],h:140,n:0,k:300+i*7,tint:TINTS[3+i],front:'shut',back:'glass',lit:.2,row:2,doors:Math.max(1,Math.round((b-a)/14)),blankSide:true,cheap:true}));

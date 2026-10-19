@@ -25,7 +25,7 @@ BATCH.build=(make)=>{ const it=BATCH.items; if(!it.length)return; const AW=2048;
     L.forEach((o,n)=>{ P.set(o.pos,n*18); const w=o.cv.width, h=o.cv.height; for(let q=0;q<6;q++){ const u=o.uv[q*2], v=o.uv[q*2+1]; U[n*12+q*2]=(o.ax+1+u*w)/AW; U[n*12+q*2+1]=1-(o.ay+1+(1-v)*h)/AH; } });
     const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.BufferAttribute(P,3)); geo.setAttribute('uv',new THREE.BufferAttribute(U,2)); geo.computeVertexNormals();
     geo.setAttribute('aCol',new THREE.BufferAttribute(new Float32Array(L.length*18).fill(1),3)); geo.setAttribute('aOp',new THREE.BufferAttribute(new Float32Array(L.length*6).fill(1),1));
-    const mat=make(k,map,emap); BATCH.tintable(mat); const me=new THREE.Mesh(geo,mat); me.userData.objOf=L.map(o=>o.obj); L.forEach((o,n)=>{ if(o.obj)o.obj.parts.push({me,v0:n*6,e:!!o.ecv}); }); me.receiveShadow=true; me.castShadow=!!BATCH.cast; scene.add(me); (BATCH.meshes||(BATCH.meshes={}))[p?k+'~'+p:k]=me; } }
+    const mat=make(k,map,emap); BATCH.tintable(mat); const me=new THREE.Mesh(geo,mat); PEEK.batch(me,L); me.userData.objOf=L.map(o=>o.obj); L.forEach((o,n)=>{ if(o.obj)o.obj.parts.push({me,v0:n*6,e:!!o.ecv}); }); me.receiveShadow=true; me.castShadow=!!BATCH.cast; scene.add(me); (BATCH.meshes||(BATCH.meshes={}))[p?k+'~'+p:k]=me; } }
   BATCH.stats={faces:it.length,pages:AHs.length,atlas:AHs.map(h=>AW+'x'+h).join(','),split:Object.keys(KS).filter(k=>new Set(KS[k].map(i=>it[i].pg)).size>1)}; (BATCH.log||(BATCH.log=[])).push(BATCH.stats); BATCH.items=[]; };
 
 BATCH.tintable=m=>{ const prev=m.onBeforeCompile; m.onBeforeCompile=(sh,r)=>{ if(prev)prev(sh,r);
@@ -33,3 +33,24 @@ BATCH.tintable=m=>{ const prev=m.onBeforeCompile; m.onBeforeCompile=(sh,r)=>{ if
     sh.fragmentShader='varying vec3 vCol; varying float vOp;\n'+sh.fragmentShader.replace('#include <map_fragment>',`#include <map_fragment>
       diffuseColor.rgb*=vCol; if(vOp<.999){ if(fract(sin(dot(floor(gl_FragCoord.xy),vec2(12.9898,78.233)))*43758.5453)>vOp)discard; }`); if(!m.isMeshBasicMaterial)sh.fragmentShader=sh.fragmentShader.replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n      totalEmissiveRadiance*=vCol;'); };
   const k0=m.customProgramCacheKey?m.customProgramCacheKey.bind(m):()=>''; m.customProgramCacheKey=()=>k0()+'|tint'; };
+const PEEK=window.PEEK={u:{uDP:{value:new THREE.Vector4(0,0,-2,.1)},uDK:{value:new THREE.Vector4(0,1,1e9,0)}},boxes:[],k:0,on:QS.get('dither')!=='0',ray:new THREE.Ray(),V:new THREE.Vector3(),W:new THREE.Vector3(),H:new THREE.Vector3()};
+PEEK.tag=(m,a)=>{ if(m.userData.dith||!PEEK.on)return m; m.userData.dith=1; const prev=m.onBeforeCompile; m.onBeforeCompile=(sh,r)=>{ if(prev)prev(sh,r); sh.uniforms.uDP=PEEK.u.uDP; sh.uniforms.uDK=PEEK.u.uDK;
+    sh.vertexShader=(a?'attribute float aWl;\n':'')+'varying vec4 vDc; varying float vWl, vWy;\n'+sh.vertexShader.replace('#include <project_vertex>','#include <project_vertex>\n vDc=gl_Position; vWl='+(a?'aWl':'1.')+'; vWy='+(a?'(modelMatrix*vec4(transformed,1.)).y':'0.')+';');
+    sh.fragmentShader='uniform vec4 uDP, uDK; varying vec4 vDc; varying float vWl, vWy;\nfloat dB2(vec2 a){ a=floor(a); return fract(dot(a,vec2(.5,a.y*.75))); }\n'+sh.fragmentShader.replace('#include <clipping_planes_fragment>',`#include <clipping_planes_fragment>
+      if(uDK.x>0.&&vWl>.5&&(vWl<1.5||vWy>uDK.z)){ vec3 dn=vDc.xyz/vDc.w; vec2 dq=dn.xy-uDP.xy; dq.x*=uDK.y; float dr=length(dq)/uDP.w; if(dr<1.&&dn.z<uDP.z&&dB2(gl_FragCoord.xy*.5)*.25+dB2(gl_FragCoord.xy)<uDK.x*min(1.,(1.-dr)*3.)*.8)discard; }`); };
+  const k0=m.customProgramCacheKey?m.customProgramCacheKey.bind(m):()=>''; m.customProgramCacheKey=()=>k0()+'|dith'+(a?1:0); return m; };
+PEEK.box=(me,x0,y0,z0,x1,y1,z1)=>{ const e=.7*TILE/.84; PEEK.boxes.push({me,b:new THREE.Box3(new THREE.Vector3(Math.min(x0,x1)-e,Math.min(y0,y1)-e,Math.min(z0,z1)-e),new THREE.Vector3(Math.max(x0,x1)+e,Math.max(y0,y1)+e,Math.max(z0,z1)+e))}); };
+PEEK.whole=(me,mats)=>{ for(const m of mats)PEEK.tag(m,0); me.updateMatrixWorld(); const b=new THREE.Box3().setFromObject(me); if(!b.isEmpty())PEEK.box(me,b.min.x,b.min.y,b.min.z,b.max.x,b.max.y,b.max.z); };
+PEEK.batch=(me,L)=>{ const M=TILE/.84, q=.05*TILE, G={}, K=[], V=PEEK.V;
+  for(const o of L){ const p=o.pos, ax=p[3]-p[0], ay=p[4]-p[1], az=p[5]-p[2], bx=p[6]-p[0], by=p[7]-p[1], bz=p[8]-p[2]; let nx=ay*bz-az*by, ny=az*bx-ax*bz, nz=ax*by-ay*bx; const l=Math.hypot(nx,ny,nz); if(l<1e-12){ K.push(null); continue; } nx/=l; ny/=l; nz/=l;
+    let k; if(Math.abs(ny)<.15){ const h=Math.hypot(nx,nz); nx/=h; nz/=h; if(nx<-1e-3||(Math.abs(nx)<=1e-3&&nz<0)){ nx=-nx; nz=-nz; } k='v'+Math.round(nx*40)+','+Math.round(nz*40)+','+Math.round((nx*p[0]+nz*p[2])/q); } else if(Math.abs(ny)>.9)k='h'+Math.round(p[1]/q); else { K.push(null); continue; }
+    K.push(k); const g=G[k]||(G[k]={v:k[0]==='v',nx,nz,b:new THREE.Box3(),t0:1e9,t1:-1e9}); for(let i=0;i<18;i+=3){ g.b.expandByPoint(V.set(p[i],p[i+1],p[i+2])); if(g.v){ const t=-g.nz*p[i]+g.nx*p[i+2]; g.t0=Math.min(g.t0,t); g.t1=Math.max(g.t1,t); } } }
+  let any=false; for(const k in G){ const g=G[k], b=g.b; g.w=g.v?(b.max.y-b.min.y>=2.2*M&&g.t1-g.t0>=1.2*M?1:0):(b.max.x-b.min.x>=2*M&&b.max.z-b.min.z>=2*M?2:0); if(g.w){ any=true; PEEK.box(me,b.min.x,b.min.y,b.min.z,b.max.x,b.max.y,b.max.z); } }
+  if(!any)return; const A=new Float32Array(L.length*6); K.forEach((k,n)=>{ if(k)A.fill(G[k].w,n*6,n*6+6); }); me.geometry.setAttribute('aWl',new THREE.BufferAttribute(A,1)); PEEK.tag(me.material,1); };
+PEEK.tick=dt=>{ const U=PEEK.u, on=PEEK.on&&UI.view!=='first'&&!UI.freeCam&&!ED.on&&!ROOMS.cur&&PEEK.boxes.length, M=TILE/.84, c=PEEK.V.set(pos.x,py+1.1*TILE,pos.z), R=PEEK.ray, W=PEEK.W, H=PEEK.H;
+  R.origin.copy(c); if(UI.persp)R.direction.copy(cam.position).sub(c).normalize(); else R.direction.set(0,0,1).applyQuaternion(cam.quaternion);
+  let cov=false; if(on){ const far=UI.persp?c.distanceTo(cam.position):1e5; for(const o of PEEK.boxes){ const me=o.me; if(!me.visible||(me.parent&&!me.parent.visible))continue; if(R.intersectBox(o.b,H)&&H.distanceTo(c)<far){ cov=true; break; } } }
+  PEEK.k=Math.max(0,Math.min(1,PEEK.k+(cov?dt:-dt)/.25)); PEEK.cov=cov; U.uDK.value.set(PEEK.k,RW/RH,py+2.6*TILE,0); if(!PEEK.k)return;
+  W.copy(c).project(cam); const x=W.x, y=W.y; H.set(1,0,0).applyQuaternion(cam.quaternion).multiplyScalar(1.6*M).add(c).project(cam); const r=Math.hypot((H.x-x)*RW/RH,H.y-y);
+  H.copy(c).addScaledVector(R.direction,.5*M).project(cam); U.uDP.value.set(x,y,H.z,Math.max(r,1e-4)); };
+PEEK.stat=()=>({boxes:PEEK.boxes.length,k:PEEK.k,cov:!!PEEK.cov,progs:renderer.info.programs.length,dith:renderer.info.programs.filter(p=>/\|dith/.test(p.cacheKey)).length});

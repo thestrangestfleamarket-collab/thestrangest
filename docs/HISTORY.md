@@ -2802,3 +2802,7 @@ fsomeone dies insomewhere they have to float back as a ghost to get resed. when 
   own lamp (black post, lantern) at each corner of the round where the two ways cross, 4.2 tiles off both ways' middles like the other
   park lamps, clear of the pillars; each its point light in `lamps` and a solid post (`061-park.js`). Cost: about 130 triangles, 4 lamps
   for the light picker (still at most 8 lit).
+- **Trees in clean cel bands** (owner, 19 Oct 2026, of a tree crown's face: "these types of shadows shouldnt look like that", "they
+  should look more like celshading", "not line or dot art"): the crowns' per-voxel speckle is gone, their soft inner darkening is two
+  flat steps, and they no longer shadow themselves in stripes (the shadow map draws their back faces, and the leaves' shadow offset is
+  0.35, was 0.12).

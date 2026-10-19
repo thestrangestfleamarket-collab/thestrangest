@@ -49,11 +49,20 @@ const BIRDS={list:[]}; window.BIRDS=BIRDS;
     const n=Math.min(4,flockN(k,Math.random())); for(let j=0;j<n;j++){ const p=sp[j%sp.length]; add(k,p[0],p[1],p[2],{src:'street',spots:sp}); } };
   const posts=()=>{ const P=(window.DRESS&&DRESS.lampposts)||[]; for(const p of P){ if(Math.hypot(p.x-pos.x,p.z-pos.z)>30*T||BIRDS.list.some(b=>b.post===p))continue; const r=hsh(p.x/T+dayN(),p.z/T,731); if(r>.12)continue;
     add(r<.035?HAWK:r<.08?2:1,p.x,p.y,p.z,{st:'perch',post:p,src:'post',spots:[[p.x,p.y,p.z]]}); } };
+  const SMALL=[0,3,5,6,7,8,9,2], gy=(x,z)=>(window.GARDEN&&GARDEN.lawnAt?GARDEN.lawnAt(x,z):null)??groundY(x,z);
+  const shrubs=()=>{ if(!window.FLORA||typeof groundY==='undefined')return; const tn=dayN(); let nb=BIRDS.list.filter(b=>b.src==='bush'||b.src==='bed').length;
+    for(const bu of FLORA.near(pos.x,pos.z,30*T)){ if(nb>=16)return; if(bu.bd===tn)continue; bu.bd=tn; const r=hsh(bu.x/T+tn,bu.z/T,741); if(r>.2)continue; const k=SMALL[Math.floor(hsh(bu.z/T,bu.x/T+tn,743)*SMALL.length)], sp=[];
+      for(let i=0;i<4;i++){ const a=i*1.57+r*9, d=bu.r+(.3+.8*hsh(i,bu.x/T,745))*T, x=bu.x+Math.cos(a)*d, z=bu.z+Math.sin(a)*d; sp.push([x,gy(x,z),z]); } if(bu.solid)sp.push([bu.x,bu.y+bu.h*.96,bu.z,1]);
+      const n=Math.min(3,flockN(k,hsh(tn,bu.x/T,747))); for(let j=0;j<n;j++){ const p=j===0&&sp[4]&&r<.1?sp[4]:sp[j%4]; add(k,p[0],p[1],p[2],{src:'bush',spots:sp,st:p[3]?'perch':'ground'}); nb++; } }
+    for(const d of FLORA.near(pos.x,pos.z,30*T,'bed')){ if(nb>=16)return; if(d.bd===tn)continue; d.bd=tn; const r=hsh(d.x/T+tn,d.z/T,751); if(r>.14)continue; const k=[0,3,6,7,2,4][Math.floor(hsh(d.z/T,d.x/T+tn,753)*6)];
+      const sp=d.p.slice(0,6).map(p=>{ const x=p[0]+(hsh(p[2],p[0],755)-.5)*.5*T, z=p[2]+(hsh(p[0],p[2],757)-.5)*.5*T; return [x,gy(x,z),z]; }); if(sp.length<2)continue;
+      const n=Math.min(3,flockN(k,hsh(tn,d.z/T,759))); for(let j=0;j<n;j++){ const p=sp[j%sp.length]; add(k,p[0],p[1],p[2],{src:'bed',spots:sp,flw:1}); nb++; } } };
   let tn0=-1; setInterval(()=>{ const tn=dayN(); if(tn!==tn0){ const first=tn0<0; tn0=tn; if(!first){ for(const b of [...BIRDS.list])if(b.st!=='pet')drop(b); CHK.clear(); if(WEEDS.chunks)for(const [k,g] of WEEDS.chunks)if(g&&g.sq){ CHK.add(k); chunk(k,g); } } }
-    if(!BIRDS.out)return; street(); posts(); for(const b of [...BIRDS.list])if((b.src==='street'||b.src==='post')&&Math.hypot(b.x-pos.x,b.z-pos.z)>40*T)drop(b); },3000);
-  const flyTo=(b,x,y,z,away)=>{ const d=Math.hypot(x-b.x,z-b.z); b.fly={a:[b.x,b.y,b.z],c:[x,y,z],t:0,dur:.7+d/(4.5*T)+(b.k===HAWK?1:0),h:Math.min(3.5,.4+d/T*.25)*WU,away}; b.st='fly'; b.yaw=Math.atan2(x-b.x,z-b.z); };
-  const flush=b=>{ if(b.st==='pet'||b.st==='fly')return; const a=Math.atan2(b.x-pos.x,b.z-pos.z)+(Math.random()-.5), far=b.spots.filter(s=>Math.hypot(s[0]-pos.x,s[2]-pos.z)>4*T);
-    if(far.length&&Math.random()<.6){ const s=far[Math.floor(Math.random()*far.length)]; flyTo(b,s[0],s[1],s[2]); } else flyTo(b,b.x+Math.sin(a)*28*T,b.y+9*WU,b.z+Math.cos(a)*28*T,true); };
+    if(!BIRDS.out)return; street(); posts(); shrubs(); for(const b of [...BIRDS.list])if((b.src==='street'||b.src==='post'||b.src==='bush'||b.src==='bed')&&Math.hypot(b.x-pos.x,b.z-pos.z)>40*T)drop(b); },3000);
+  const flyTo=(b,x,y,z,away,land)=>{ const d=Math.hypot(x-b.x,z-b.z); b.fly={a:[b.x,b.y,b.z],c:[x,y,z],t:0,dur:.7+d/(4.5*T)+(b.k===HAWK?1:0),h:Math.min(3.5,.4+d/T*.25)*WU*(land===2?.4:1),away,land}; b.st='fly'; b.yaw=Math.atan2(x-b.x,z-b.z); };
+  const SHY=k=>k!==1&&k!==4&&k!==HAWK;
+  const flush=b=>{ if(b.st==='pet'||b.st==='fly'||b.st==='hid')return; if(SHY(b.k)&&window.FLORA&&Math.random()<.8){ const c=FLORA.cover(b.x,b.z,pos.x,pos.z); if(c){ flyTo(b,c.x+(Math.random()-.5)*.2*c.r,c.y+c.h*.45,c.z+(Math.random()-.5)*.2*c.r,false,2); return; } } const a=Math.atan2(b.x-pos.x,b.z-pos.z)+(Math.random()-.5), far=b.spots.filter(s=>Math.hypot(s[0]-pos.x,s[2]-pos.z)>4*T);
+    if(far.length&&Math.random()<.6){ const s=far[Math.floor(Math.random()*far.length)]; flyTo(b,s[0],s[1],s[2],false,s[3]); } else flyTo(b,b.x+Math.sin(a)*28*T,b.y+9*WU,b.z+Math.cos(a)*28*T,true); };
   BIRDS.flush=flush; let lx=0, lz=0, still=0, spd=0; const m4=new THREE.Matrix4(), mw=new THREE.Matrix4(), mr=new THREE.Matrix4(), q=new THREE.Quaternion(), e=new THREE.Euler(), V3=THREE.Vector3, sv=new V3(), pv=new V3(), col=new THREE.Color();
   const seedAt=()=>S.seed&&S.seed.t>0?S.seed:null;
   const step=(b,dt)=>{ b.t+=dt; if(b.st==='still')return; const ws=b.k===HAWK?.45:1;
@@ -62,17 +71,18 @@ const BIRDS={list:[]}; window.BIRDS=BIRDS;
       b.wing=moving?1+.9*Math.sin(b.t*20):Math.max(0,b.wing-dt*6); b.pitch=moving?.2:0; b.lift=0; return; }
     if(b.st==='fly'){ const F=b.fly; F.t+=dt; const u=Math.min(1,F.t/F.dur), A=F.a, C=F.c; b.x=A[0]+(C[0]-A[0])*u; b.z=A[2]+(C[2]-A[2])*u; b.y=A[1]+(C[1]-A[1])*u+Math.sin(Math.PI*u)*F.h*(F.away?.3:1);
       b.wing=b.k===HAWK&&u>.2&&u<.85?1.35+.1*Math.sin(b.t*3):1.05+.85*Math.sin(b.t*22*ws); b.pitch=u<.15?-.35:u>.85?.3:0;
-      if(u>=1){ if(F.away){ drop(b); return; } b.st=b.post?'perch':'ground'; b.until=b.t+1+Math.random()*3; b.fly=null; } return; }
+      if(u>=1){ if(F.away){ drop(b); return; } b.st=F.land===2?'hid':b.post||F.land===1?'perch':'ground'; b.until=b.t+(b.st==='hid'?4+Math.random()*5:1+Math.random()*3); b.fly=null; } return; }
     b.wing=Math.max(0,b.wing-dt*5); const d=Math.hypot(b.x-pos.x,b.z-pos.z), sd=seedAt(), near=sd&&Math.hypot(b.x-sd.x,b.z-sd.z)<1.2*T;
-    if(b.st!=='perch'&&!PANEL.watching(b)&&d<(near?.5*T:spd>2.5*T?1.5*T:spd>.3*T?1.1*T:.5*T)){ flush(b); return; }
-    if(b.st==='perch'){ b.pitch=0; if(b.t>b.until){ b.until=b.t+3+Math.random()*6; b.yaw+=(Math.random()-.5)*2; } return; }
+    if(b.st==='hid'){ b.pitch=0; if(b.t>b.until){ if(d>3.5*T&&spd<1.2*T){ const g=b.spots.filter(s=>!s[3]), s=g[Math.floor(Math.random()*g.length)]||b.spots[0]; flyTo(b,s[0],s[1],s[2],false,s[3]); } else b.until=b.t+2+Math.random()*3; } return; }
+    if((b.st!=='perch'||!b.post)&&!PANEL.watching(b)&&d<(near?.5*T:spd>2.5*T?1.5*T:spd>.3*T?1.1*T:.5*T)){ flush(b); return; }
+    if(b.st==='perch'){ b.pitch=0; if(b.t>b.until){ b.until=b.t+3+Math.random()*6; if(!b.post&&b.spots.length>1&&Math.random()<.4){ const s=b.spots[Math.floor(Math.random()*b.spots.length)]; if(Math.hypot(s[0]-b.x,s[2]-b.z)>.3*T||Math.abs(s[1]-b.y)>.3*T){ flyTo(b,s[0],s[1],s[2],false,s[3]); return; } } b.yaw+=(Math.random()-.5)*2; } return; }
     if(sd&&!near&&Math.hypot(b.x-sd.x,b.z-sd.z)<14*T&&b.k!==HAWK&&b.t>b.until){ flyTo(b,sd.x+(Math.random()-.5)*.8*T,sd.y,sd.z+(Math.random()-.5)*.8*T); return; }
     if(b.hop){ b.hop.t+=dt; const u=Math.min(1,b.hop.t/b.hop.d); b.x=b.hop.a[0]+(b.hop.c[0]-b.hop.a[0])*u; b.z=b.hop.a[1]+(b.hop.c[1]-b.hop.a[1])*u; b.lift=K[b.k][6]==='hop'?Math.sin(Math.PI*u)*.06*WU:0; b.pitch=K[b.k][6]==='walk'?.08*Math.sin(u*Math.PI*6):0; if(u>=1)b.hop=null; return; }
     b.lift=0; if(b.peck){ b.peck-=dt; b.pitch=b.peck>0?.55:0; if(b.peck<=0)b.peck=0; }
     if(b.t>b.until){ const r=Math.random(); b.until=b.t+.4+Math.random()*(near?.8:2.2);
-      if(r<(near?.7:.35))b.peck=.25; else if(r<.85&&!near){ const walk=K[b.k][6]==='walk', L=(walk?.3:.18)*T*(.5+Math.random()), a=b.yaw+(Math.random()-.5)*2.4, h=b.spots[0], hx=b.x+Math.sin(a)*L, hz=b.z+Math.cos(a)*L;
+      if(r<(near?.7:b.flw?.55:.35))b.peck=.25; else if(r<.85&&!near){ const walk=K[b.k][6]==='walk', L=(walk?.3:.18)*T*(.5+Math.random()), a=b.yaw+(Math.random()-.5)*2.4, h=b.spots[0], hx=b.x+Math.sin(a)*L, hz=b.z+Math.cos(a)*L;
         if(Math.hypot(hx-h[0],hz-h[2])<3.5*T){ b.yaw=a; b.hop={a:[b.x,b.z],c:[hx,hz],t:0,d:walk?.5:.18}; } else b.yaw=Math.atan2(h[0]-b.x,h[2]-b.z); }
-      else if(r<.93&&!near&&b.spots.length>1){ const s=b.spots[Math.floor(Math.random()*b.spots.length)]; if(Math.hypot(s[0]-b.x,s[2]-b.z)>.8*T)flyTo(b,s[0],s[1],s[2]); }
+      else if(r<.93&&!near&&b.spots.length>1){ const s=b.spots[Math.floor(Math.random()*b.spots.length)]; if(Math.hypot(s[0]-b.x,s[2]-b.z)>.8*T)flyTo(b,s[0],s[1],s[2],false,s[3]); }
       else b.yaw+=(Math.random()-.5)*1.6; } };
   const place=(b,n)=>{ const P=K[b.k][7]; mw.compose(pv.set(b.x,b.y+b.lift,b.z),q.setFromEuler(e.set(b.pitch,b.yaw,0,'YXZ')),sv.set(b.s,b.s,b.s));
     for(const p of ['body','breast','head','cap','crest','mask','beak','eye','tail','leg']){ const c=p==='eye'?0x0a0a0a:P[p]; if(c==null)continue; const me=ME[p], i=n[p]=(n[p]||0); if(i>=MAXI)continue; me.setMatrixAt(i,mw); me.setColorAt(i,col.setHex(c)); n[p]++; }
@@ -82,7 +92,7 @@ const BIRDS={list:[]}; window.BIRDS=BIRDS;
   BIRDS.tick=dt=>{ if(!dt)return; const mv=Math.hypot(pos.x-lx,pos.z-lz); spd=spd*.8+mv/dt*.2; lx=pos.x; lz=pos.z; still=spd<.1*T?still+dt:0;
     const W=window.WX&&WX.now, out=LVL==='up'&&!(window.ROOMS&&ROOMS.cur)&&!(window.CLOCK&&CLOCK.dark())&&!(W&&(W.rain>.25||W.snow>.25||W.wind>.8)); BIRDS.out=out;
     if(S.seed){ S.seed.t-=dt; if(S.seed.t<=0)S.seed=null; } const n={};
-    for(const b of [...BIRDS.list]){ const pet=b.st==='pet', show=pet||out; b.hb.visible=show&&!pet; if(!show)continue; if(!pet&&Math.hypot(b.x-pos.x,b.z-pos.z)>45*T)continue; step(b,dt); if(BIRDS.list.includes(b))place(b,n); }
+    for(const b of [...BIRDS.list]){ const pet=b.st==='pet', show=pet||out; b.hb.visible=show&&!pet&&b.st!=='hid'; if(!show)continue; if(!pet&&Math.hypot(b.x-pos.x,b.z-pos.z)>45*T)continue; step(b,dt); if(BIRDS.list.includes(b))place(b,n); }
     for(const p in ME){ const me=ME[p]; me.count=n[p]||0; me.instanceMatrix.needsUpdate=true; if(me.instanceColor)me.instanceColor.needsUpdate=true; } BIRDS.shown=n.body||0; };
   { const t0=CLOCK.tick; CLOCK.tick=dt=>{ t0(dt); BIRDS.tick(dt); }; }
   const B='style="margin:0 4px 0 0;font:inherit;color:#ece5d3;background:#0e1016;border:2px solid #3a3f4e;padding:3px 8px;cursor:pointer"';

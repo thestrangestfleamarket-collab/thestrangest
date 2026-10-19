@@ -1748,3 +1748,38 @@ FIXED, NO, each report with its words, where, PICTURE and GO THERE (puts you at 
 For now nothing is fixed on its own: every report waits in NEW for the owner to APPROVE. A session asked to "work the queue" takes the
 APPROVED ones (see CLAUDE.md), fixes each, and marks it FIXED. The 16 reports already in `bug_reports` are from the old 2D game.
 `tests/bugcheck.cjs art|site` sends one with a stand-in store and approves it.
+
+## 19 Oct 2026: the arcade, the movie theatre, the playhouse and the holodeck on main street
+
+**Back from the old game, in the row's empty spots** (owner, 19 Oct 2026: "lets put the arcade, movie theater, playhouse, holodeck, back
+into the game. put them on main street, using the empty building spots. make the movie theatre smaller than in original map."; his pick of
+the mockups https://claude.ai/artifact/Hn7uCZXHTpjgfqwvnZLQFa (`mockups/main-street-places.html`): "A"). The three fillers are gone from
+`069a-block.js`; the lots are `BLOCK.lots` (`006-map-pre.js`), the rooms `src/057a-mainstreet.js`, built after the game opens as the
+other shells (`STORE.kit`'s `room()`, one step each), the old makers copied in: `044a-game-theatre-arcade.js` (26-theatre-front,
+26-y-theatre-inside, 23-w-arcade, the lounge's candy cabinets and the gamer room's upright, the VR station), `044b-game-playhouse.js`
+(26-z-the-playhouse, 47-playhouse-1-script and -times, 47-playhouse-2-show's timeline), `044c-game-holodeck.js`. Every old room faced the
+street from its -y side; here each is set out in the old frame and turned a half turn about its middle (`turn`: `BOD.placeAt` and the lamps).
+- **THE MOVIE THEATRE** (x 87-101): the art-house front fitted to 14 tiles (its middle as drawn, the ticket booth and the sunset poster
+  beside it, the posters wing left out; the tower and the ART HOUSE blade stand over the roof), a lobby in the front third, the hall: 12 red
+  seats (three rows of four, sittable), the screen between its drapes with the old film playing (a 64 x 36 picture on the screen, 8 frames a
+  second, only when you're in or by the door), the amber shell lights, the aisle lights, EXIT and the projection port over the lobby's doorway.
+- **THE ARCADE** (x 103.5-117.5): the old carpet with its neon shapes, plum walls with the pink and blue stripes and the wall lights, one of
+  every machine the old game had (the pink and the green candy cabinets with red stools, the upright ARCADE machine, the VR headset station),
+  a front of plum brick, a dark shop window with the screens glowing in it, the stripes and a pink neon ARCADE.
+- **THE PLAYHOUSE** (x 145.5-159.5): the old Victorian front (its PLAYHOUSE board, the Hound's name, the posters, the lit windows), 12.7 x 14
+  (the old 12 x 16, one row fewer: five rows of seven red velvet seats, sittable), the stage with its candles (real flames), the proscenium,
+  the masking legs and the cyclorama. **The show** as the old game ran it: sitting down starts THE HOUND OF THE BASKERVILLES, its five
+  scenes on the old timetable, the scenery swapped in the dark (Baker Street, the Hall, the moor, the fog), the players (block figures in
+  their costumes and hats) walking to their marks, the hound's run, leap and flight, the lights' cues. No recordings: each line is shown
+  as a caption, the old sound cues are the game's own sounds (door, creak, bark, drip...). `window.PLAYAT=t` shows the moment t (tests).
+- **THE HOLODECK** (a new lot, x 162-192): a dark front of panels, its door ringed in light, HOLODECK in cyan tubes. Walking in takes you
+  (a fade, as the subway's) to the old hall, 32 x 32 tiles, dark panels and the glowing grid, off the map (x 520, `STORE.bound` widened);
+  out through its door puts you back on the sidewalk. The old free turn only inside no longer applies: the view turns freely everywhere now.
+- Each is in the menu's PLACES (outside its door); walls near you cut as every room's, and in the alley the row's lane cut (`BLK.lane`).
+- **Costs** (`MAINDBG()`): triangles in the batch: the theatre about 1,300, the arcade 320 (its machines are pictures on few faces), the
+  playhouse 2,450 and its scenery 900 (one set shown at a time), the holodeck's front and hall about 50 each; the film one plane (2), the
+  players about 130 each and the hound 170 (drawn only inside during the show). Lamps: records only, LITE's eight nearest as ever: the
+  theatre 9, the arcade 5, the playhouse 10 (dimmed by the show's cues), the holodeck 2 + 2. Programs: none new (Lambert and Basic with or
+  without a map, the flames' own). A frame: nothing while outside and away; inside the theatre a 64 x 36 copy every 125 ms; inside the
+  playhouse during the show the players' few boxes. Nothing at the loading line.
+- Fixed on the way: the old letter A (`THFONT`) was a pixel short and drew as a 9 (PL9YHOUSE).

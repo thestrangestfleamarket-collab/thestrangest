@@ -3126,3 +3126,15 @@ versions) and put them in random spots in park and thats where specific mushroom
   FORAGING; one above your reach (its difficulty over your skill + 15, the keen-eye potion counting) never comes away: as before,
   YOU FAIL TO PICK IT CLEANLY, or now and then IT CRUMBLES IN YOUR HAND (owner: "no use the old verbiage about how you fail to pick
   it cleanly or soemthing").
+- **The squirrel's tower round; the squirrel a lookout who waves back** (owner, 19 Oct 2026, of the squirrel's tower by the park: "lets
+  do a rounded tower, (see if we have assets to use) , make the squirrel standing guards, idle animations, and he walks around, acts like
+  a lookout. waves if you wave at him"; `src/tower.js`, `src/npc-squirrel.js`): the castle kit's own round piece (`KMK.drum`) is built of
+  stacked boxes in the castle's grey stone, stepped at the edge and not the tower's dark brick, so the tower is made round here: a
+  32-sided drum 3 tiles across in the keep's own brick painter (keepOutWall, its four faces wrapped round the quarters: bays, slits,
+  string courses, the squirrel's door), a corbelled band under a round crenellated parapet (16 merlons, low enough that the squirrel
+  looks over), a round lead roof with a wooden hatch, and one round stair turret at the back-left with a lead cone. Solid as before
+  (two crossed boxes and the turret). **THE SQUIRREL KNIGHT** stands his watch on it: he walks the ring inside the parapet between six
+  lookout points (never through the turret's side), and at each faces out, shading his eyes with a paw while his head sweeps the
+  horizon, gives a little salute (paw to the helmet, sword lifted), flicks his tail, looks about; when you wave (the wave move) within
+  25 tiles he turns to you and waves back with his free paw. Cost: the tower about 400 triangles in its own batch (one draw, was ~240);
+  the squirrel unchanged (1,660); no light.

@@ -17,11 +17,12 @@ process.on('unhandledRejection',e=>{ errs.push('TEST '+String(e&&e.message||e).s
   await look('tw',1,2); await shot('roof',null,3000);
   rep.tdbg=[];
   for(let i=0;i<4;i++){ await look('sq',0,3.5); await shot('sq-'+i,null,6000); }
-  await look('sq',0,3.5); await shot('sq-scan',()=>{ SQUIRREL.N.mode='post'; SQUIRREL.A.act='scan'; SQUIRREL.A.t=0; SQUIRREL.N.aT=6; SQUIRREL.N.tT=20; },1800);
+  await pg.evaluate(()=>{ const G=GTOWER.ring(), r=G.RI-.36, N=SQUIRREL.N; N.mode='post'; N.li=3; N.st.x=G.X(G.cx); N.st.z=G.Z(G.cy+r); SQUIRREL.A.act=''; N.tT=30; }); await pg.waitForTimeout(1500);
+  await look('sq',0,3.5); await shot('sq-front',null,1500); await shot('sq-scan',()=>{ SQUIRREL.N.mode='post'; SQUIRREL.A.act='scan'; SQUIRREL.A.t=0; SQUIRREL.N.aT=6; SQUIRREL.N.tT=20; },1800);
   await shot('sq-salute',()=>{ SQUIRREL.A.act='salute'; SQUIRREL.A.t=0; SQUIRREL.N.aT=3; },700);
   await shot('sq-walk',()=>{ SQUIRREL.A.act=''; SQUIRREL.N.tT=0; },2500);
-  await pg.waitForTimeout(3000); await look('sq',0,2.2);
-  await pg.keyboard.press('b'); await pg.waitForTimeout(150); rep.up=await pg.evaluate(()=>__rigst().up&&__rigst().up.name);
+  await pg.waitForTimeout(3000); await pg.evaluate(()=>{ __dbg.UI.setFree(false); }); await pg.evaluate(go(2,3.5)); await pg.waitForTimeout(2500);
+  await pg.keyboard.press('b'); await pg.waitForTimeout(100); await look('sq',0,2.2); rep.up=await pg.evaluate(()=>__rigst().up&&__rigst().up.name);
   await shot('wave-1',null,500); await shot('wave-2',null,600);
   rep.upTrace=await pg.evaluate(async()=>{ const o=[]; for(let i=0;i<12;i++){ const u=__rigst().up; o.push((u?u.name+':'+u.t.toFixed(2)+':'+u.held:'-')+'|'+SQUIRREL.N.mode+':'+(SQUIRREL.N.wT||0).toFixed(2)); await new Promise(r=>setTimeout(r,500)); } return o; });
   await shot('wave-after',null,1000);

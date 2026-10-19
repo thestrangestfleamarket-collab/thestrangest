@@ -1898,6 +1898,21 @@ extra hip dip is passed on (all of it standing: sitting, crouching); the run's e
 bends a knee backwards in some run frames (37 in 4 s); each knee now bends toward the way his hips face (none backwards, walking or
 running). Planted feet: under 1 cm a second (walk, run, circles, stops, stairs). 722 triangles.
 
+**The mannequin deleted; the Walker back** (owner, 19 Oct 2026, of the realistic-head mockups: "stop delete this avatar from game"; his
+pick: the original Walker): the mannequin body is gone (`087a-avatars.js`, `data/humanoid.json`, `tools/humanoid-bake.cjs`,
+`data/full/humanoid.fbx`); the hand-made Walker, who had moved you unseen under it, is drawn again, in the default looks (the avatar editor
+and the looks panel's choices stay removed, from this morning). Kept from the day's movement work: your pose worked out every frame,
+the heading easing into turns. The head mockups (two rounds of six) were never put in the game.
+
+- **The Milky Way and clustered stars** (owner, 19 Oct 2026, of a starry sky dome shader on StackBlitz: "can we use this?"; offered clustered
+  stars, clustered stars plus a Milky Way band, or nothing: "2"; `src/sky.js`): not the shader itself (its smooth noise background and soft
+  stars break CEL, it costs two 3D noises a pixel, and it has no licence), only its idea. The night's stars are no longer even: patches of
+  thick and thin by a cheap noise, and thickest along a band. The band is a great circle tilted across the sky, its edges wavy, a dark rift
+  down its middle in places, in three flat steps of faint blue-grey drawn after the sky's own banding (so it isn't rounded away), hidden
+  under the weather's grey and fog and behind the mist's clouds; on only while the stars are (half out or more), never near the horizon.
+  **Stars in the mist**: the MIST look's sky painted over the stars, so none had shown at night since it came in; they and the band show now
+  in the gaps between its clouds. Cost: a few noise lookups a sky pixel, at night only; no triangles, lights or programs.
+
 ## 19 Oct 2026: lighter skeletons for a pixel game
 
 **The heaviest characters cut** (owner, 19 Oct 2026: "since we are do a pixel style game do we really need such high quality chracter

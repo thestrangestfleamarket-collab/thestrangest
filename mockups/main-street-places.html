@@ -30,6 +30,7 @@ section{display:grid;gap:14px}
 .q{border-left:3px solid var(--amber);padding:8px 12px;background:#1d1a14}
 ul{margin:0;padding-left:18px;display:grid;gap:4px}
 .legend{display:flex;gap:14px;flex-wrap:wrap;font:11px var(--disp);color:var(--dim)}
+.two{grid-template-columns:repeat(auto-fill,minmax(min(100%,400px),1fr))}
 .sw{display:inline-block;width:10px;height:10px;margin-right:5px;vertical-align:-1px}
 </style>
 <main>
@@ -61,7 +62,7 @@ ul{margin:0;padding-left:18px;display:grid;gap:4px}
 
 <section>
   <h2>3 · THE THEATRE, SMALLER</h2>
-  <div class="grid">
+  <div class="grid two">
     <div class="card plate"><h3>OLD GAME · 20 × 11 TILES · 20 SEATS</h3><svg id="th0" viewBox="0 0 220 140"></svg></div>
     <div class="card plate"><h3>NEW · 14 × 15.4 SPOT · 12 SEATS</h3><svg id="th1" viewBox="0 0 220 140"></svg><p class="dim">Three rows of four, the screen between its red drapes, the amber shell lights along the side walls, the film still playing. The front third is the lobby with the ticket window. In plan B the arcade's machines fill the lobby.</p></div>
   </div>
@@ -70,7 +71,7 @@ ul{margin:0;padding-left:18px;display:grid;gap:4px}
 <section>
   <h2>4 · THE GLOW</h2>
   <p class="dim">The bodega's OPEN sign, four ways. Each one stays CEL: hard steps of light, no smooth blur. Pick one, or mix (say "B with C's wet street").</p>
-  <div class="grid" id="glows"></div>
+  <div class="grid two" id="glows"></div>
 </section>
 </main>
 

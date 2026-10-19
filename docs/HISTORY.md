@@ -2696,3 +2696,8 @@ not have windows, make sure buildings are only as tall as they need to be"; then
   `SEEN` instead of removed. The light shafts never start inside or pass through a roofed place (14 tiles up the shaft checked against
   the room boxes and the solid boxes), and the shafts, the dust and the screen rays are off while you're in a room.
   `tests/runcheck.cjs` logs every still-shadow redraw with its count of casters (`SUNLOG`) to catch sudden jumps.
+- **Softer light on you, stronger lamps** (owner, 19 Oct 2026: "shadows are too harsh on things , its causing my character to llook
+  glitchy beacuse shaodws go on and off suddenly from every angle", "these lamps dont seem to be doing much", "the fire shadow and
+  lighting is btter"): your figure's own self-shadow (the hard band from whichever light is strongest, which jumped as lights changed)
+  is off by default (DISPLAY can turn it back on); the park's lanterns and lamp posts light at 24 (were 12 and 6) out to 12 tiles, the
+  street globe lamps at 28 (were 18) out to 12; outdoors at night a lamp near you lights your figure up to 70% (35% indoors).

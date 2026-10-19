@@ -3150,6 +3150,9 @@ versions) and put them in random spots in park and thats where specific mushroom
   page now says THE PICTURE WAS LOST, BRINGING IT BACK meanwhile, and redraws the shadows when it returns. `tests/ctxloss.cjs` checks it.
 - **Shaders at load**: already done (`163-main-15.js` compiles the whole scene and the clipped copies at the start); nothing changed.
 - **Collision by grid**: left for the server work; one Walker against the solids list costs almost nothing a frame.
+- **The rest of the quick wins, checked**: the tree sway loop ran over an empty list (the park's trees are one batched mesh), so it is gone;
+  the sun-shade ray already goes through the BVH (`137-bvh.js`); the 12 pawn bodies are all built at the start, so loading them one by one
+  waits for the lazy-places step.
 - **The budget in CI** (`.github/workflows/site.yml`, job `budget`, pull requests only): builds the base and the pull request, runs
   `tests/startprof.cjs` on both, and fails when the pull request draws more triangles or calls (over 10%), adds shader programs (over 2),
   starts over 35% slower, or brings new page errors (`tests/budget.cjs`); then `tests/ctxloss.cjs`.

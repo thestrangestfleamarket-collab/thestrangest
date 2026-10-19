@@ -279,7 +279,7 @@ const RIVER={way:'fluid',wi:2,step:false,t:0,on:false};
         uRip.value=SIM.A.texture; }
       else if(SIM.quiet<7){ const cc=renderer.getClearColor(new THREE.Color()), ca=renderer.getClearAlpha(); renderer.setClearColor(0,0); for(const Tg of [SIM.A,SIM.B]){ renderer.setRenderTarget(Tg); renderer.clear(true,false,false); } renderer.setClearColor(cc,ca); renderer.setRenderTarget(null); SIM.quiet=99; } }
     else SIM.drops.length=0;
-    if((RIVER.way==='full'||fl)&&surf.visible){ M4.multiplyMatrices(cam.projectionMatrix,cam.matrixWorldInverse); F.setFromProjectionMatrix(M4); bb.set(new THREE.Vector3(RIVER.cx-WIN/2,LV-12*WU,rz0),new THREE.Vector3(RIVER.cx+WIN/2,LV+2*WU,rz1));
+    if((RIVER.way==='full'||fl)&&surf.visible){ M4.multiplyMatrices(cam.projectionMatrix,cam.matrixWorldInverse); F.setFromProjectionMatrix(M4); bb.min.set(RIVER.cx-WIN/2,LV-12*WU,rz0); bb.max.set(RIVER.cx+WIN/2,LV+2*WU,rz1);
       if(F.intersectsBox(bb)){ const w=renderer.domElement.width, h=renderer.domElement.height; if(RT.width!==w||RT.height!==h)RT.setSize(w,h); SU.uRes.value.set(w,h); SU.uNear.value=cam.near; SU.uFar.value=cam.far; cam.getWorldDirection(SU.uCamD.value);
         surf.visible=false; spm.visible=false; renderer.setRenderTarget(RT); renderer.render(scene,cam); renderer.setRenderTarget(null); surf.visible=true; spm.visible=true; } }
     else cam.getWorldDirection(SU.uCamD.value);

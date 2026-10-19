@@ -14,12 +14,12 @@ const WX={hold:null,now:null};
   const HOLDS={CLEAR:{cloud:.08,rain:0,snow:0,storm:0,wind:.15,dir:1,fog:0},CLOUDY:{cloud:.85,rain:0,snow:0,storm:0,wind:.35,dir:1,fog:0},RAIN:{cloud:.95,rain:.7,snow:0,storm:0,wind:.4,dir:1,fog:0},
     STORM:{cloud:1,rain:1,snow:0,storm:.8,wind:.9,dir:1,fog:0},SNOW:{cloud:.9,rain:0,snow:.7,storm:0,wind:.2,dir:1,fog:0},FOG:{cloud:.6,rain:0,snow:0,storm:0,wind:0,dir:1,fog:.7}};
   WX.hold='CLOUDY'; { const q=QS.get('wx'); if(q&&q.toUpperCase()==='NATURAL')WX.hold=null; else if(q&&HOLDS[q.toUpperCase()])WX.hold=q.toUpperCase(); else { const v=SAVE.get('wx'); if(v==='NATURAL')WX.hold=null; else if(v&&HOLDS[v])WX.hold=v; } }
-  const ph=(a,b,c)=>{ const v=Math.sin(a*127.1+b*311.7+c*74.7)*43758.5453; return v-Math.floor(v); }, geos=[], ends=[]; let vc=0;
-  for(let n=0;n<80;n++){ const ang=ph(n,1,2)*Math.PI*2, dist=(55+ph(n,3,4)*(n<40?75:190))*TILE, cx=Math.sin(ang)*dist, cz=Math.cos(ang)*dist, cy=(7+ph(n,5,6)*7)*TILE, w=(7+ph(n,7,8)*10)*TILE;
+  const ph=(a,b,c)=>{ const v=Math.sin(a*127.1+b*311.7+c*74.7)*43758.5453; return v-Math.floor(v); }, geos=[], ends=[], CLD=WX.cld=[]; let vc=0;
+  for(let n=0;n<80;n++){ const ring=n%3!==2, ang=ph(n,1,2)*Math.PI*2, dist=(ring?150+ph(n,3,4)*170:25+ph(n,3,4)*110)*TILE, cx=Math.sin(ang)*dist, cz=Math.cos(ang)*dist, cy=(ring?14+ph(n,5,6)*38:30+ph(n,5,6)*16)*TILE, w=(ring?28+ph(n,7,8)*34:20+ph(n,7,8)*22)*TILE;
     for(let k=0;k<12;k++){ const u=ph(n,k,9)-.5, v=ph(n,k,10)-.5, r=w*(.22+.18*(1-Math.abs(u)*2)*ph(n,k,11)), g=new THREE.IcosahedronGeometry(r,0);
       g.scale(1,.75,1); const P=g.attributes.position; for(let i=0;i<P.count;i++)if(P.getY(i)<-r*.15)P.setY(i,-r*.15);
       g.translate(cx+u*w*1.6,cy+r*.3+(1-Math.abs(u)*2)*w*.18,cz+v*w*.7); geos.push(g); vc+=P.count; }
-    ends.push(vc); }
+    ends.push(vc); CLD.push([cx,cy,cz,w]); }
   const CP=new Float32Array(vc*3); { let o=0; for(const g of geos){ CP.set(g.attributes.position.array,o); o+=g.attributes.position.array.length; } }
   const cg=new THREE.BufferGeometry(); cg.setAttribute('position',new THREE.BufferAttribute(CP,3)); cg.computeVertexNormals();
   const cmat=new THREE.MeshLambertMaterial({color:0xffffff,emissive:0x2a3346,fog:false});
@@ -38,7 +38,7 @@ const WX={hold:null,now:null};
   const tick0=CLOCK.tick; CLOCK.tick=dt=>{ tick0(dt);
     if((ft-=dt)<=0){ ft=.5; WX.now=WX.hold?Object.assign({flash:WX.hold==='STORM'&&Math.random()<.04},HOLDS[WX.hold]):WX.at(T()); }
     const W=WX.now, up=LVL!=='down', inside=!OUT.open, day=cl((CLOCK.elev()+4)/14), t=performance.now()/1000;
-    WX.cloudCut(); const show=Math.round(6+W.cloud*74); CL.geometry.setDrawRange(0,ends[Math.min(79,show-1)]); CL.visible=up;
+    WX.cloudCut(); const show=Math.round(30+W.cloud*50); WX.show=show; CL.geometry.setDrawRange(0,ends[Math.min(79,show-1)]); CL.visible=up;
     cmat.color.setRGB(1,1,1).multiplyScalar(1-.35*W.rain-.35*W.storm); cmat.emissive.setRGB(.16,.2,.27).multiplyScalar(.4+.6*day);
     CL.position.set(pos.x+((t*(.3+W.wind*1.5)*TILE)%(40*TILE)),0,pos.z);
     if(up){ scene.background.lerp(cA.setRGB(.55,.58,.62).multiplyScalar(.25+.75*day),cl(W.cloud*W.cloud*.85)); if(W.storm)scene.background.multiplyScalar(1-.45*W.storm);

@@ -2903,3 +2903,22 @@ automatically. dragon balls of fire can start real fires. spread very slow. leav
   lights; bushes in the sun's still shadow. Not yet measured in the page (`tests/tricount.cjs`).
 - **Black underground** (owner, 19 Oct 2026, a picture of the subway with lavender sky round the station): below the street the sky
   dome is hidden and the background is black, whatever the day/night settings do.
+
+## 19 Oct 2026: the playhouse: a spotlight on the stage, taller walls, velvet drapes, big plush seats
+(owner, 19 Oct 2026: "the playhouse should have a spotlight on the stage. walls taaller, back of room is velvet drapes, large curshier
+seats.")
+- **Taller** (`057a-mainstreet.js`, `lot('play',190)`): the walls and ceiling are 190 high (were 130, about 7.9 tiles); the front is
+  the same Victorian front, taller in brick above the PLAYHOUSE board; the roof sits on the new height, so nothing is clipped.
+- **A spotlight**: a black can on a pipe batten up in the rigging over the front of the stage, aimed down at the middle of the
+  stage; a hard-edged warm-white pool on the stage floor (two flat bands, the core brighter), a faint flat beam from the lens to the
+  pool, and one warm lamp over the pool for whoever stands in it. The beam and pool only show while you are inside.
+- **Velvet drapes**: the wall behind the audience (round the doorway) and the wall behind the stage are hung with deep red velvet:
+  real folds (a zigzag of pleats, the light and the shadow side flat colours, flaring a little at the foot), a red valance with a
+  gold edge along the top. They are cut away with their walls. No sway (things at rest stay still).
+- **Big plush seats** (`044b-game-playhouse.js`): the row is five theatre armchairs a tile wide (were seven narrow ones): a dark wood
+  plinth, a thick cushion with a puffed top, a tall back rounded off in steps with a tufted back cushion, padded armrests shared
+  between seats; velvet red. Still one row (his "only 1 row of seats ... for now"), still sittable.
+- **Cost**: built only when you first walk in, as before. Drapes 294 triangles (two meshes), the rig and spotlight about 130 (the
+  beam and the pool 60), the seats about 480 (were about 290). Lamps: one more record (the playhouse has 8 inside and in front);
+  LITE's eight nearest as ever. Programs: none new beyond a vertex-coloured Lambert for the drapes and an additive Basic for the
+  light; nothing a frame but hiding the beam when you're outside.

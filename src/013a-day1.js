@@ -6,7 +6,7 @@
     for(let k=0;k<n;k++){ const yA=S.y1-(k+1)*run, yB=S.y1-k*run, zt=-(k+1)*rise*ZU, zr=-k*rise*ZU, a=X(S.x0), b=X(S.x1);
       q4(TR,[a,zt,Z(yB)],[b,zt,Z(yB)],[b,zt,Z(yA)],[a,zt,Z(yA)],(k&1)?CON:CON2); q4(TR,[a,zt,Z(yB)],[b,zt,Z(yB)],[b,zr,Z(yB)],[a,zr,Z(yB)],CON2.map(v=>v*.82));
       q4(TR,[a,zt,Z(yB-.03)],[b,zt,Z(yB-.03)],[b,zt+1.2*ZU,Z(yB-.03)],[a,zt+1.2*ZU,Z(yB-.03)],[196,170,64]); }
-    for(const x of [S.x0-.2,S.x1]){ bx(x,S.y0,-S.depth,x+.2,S.y1,0,TL); bx(x+.05,S.y0,27,x+.15,S.y1,30,RAIL); bx(x+.07,S.y0,14,x+.13,S.y1,16,RAIL); for(let y=S.y0;y<S.y1;y+=(S.y1-S.y0)/5)bx(x+.06,y,0,x+.14,y+.08,27,RAIL); bx(x+.06,S.y1-.08,0,x+.14,S.y1,27,RAIL); }
+    for(const x of [S.x0-.2,S.x1]){ for(let k=0;k<n;k++)bx(x,S.y1-(k+1)*run,-(k+1)*rise-2,x+.2,S.y1-k*run,0,TL); bx(x+.05,S.y0,27,x+.15,S.y1,30,RAIL); bx(x+.07,S.y0,14,x+.13,S.y1,16,RAIL); for(let y=S.y0;y<S.y1;y+=(S.y1-S.y0)/5)bx(x+.06,y,0,x+.14,y+.08,27,RAIL); bx(x+.06,S.y1-.08,0,x+.14,S.y1,27,RAIL); }
     bx(S.x0-.15,S.y0-.15,27,S.x1+.15,S.y0-.05,30,RAIL); bx(S.x0-.15,S.y0-.13,14,S.x1+.15,S.y0-.07,16,RAIL); for(let x=S.x0+1;x<S.x1;x+=1)bx(x-.04,S.y0-.14,0,x+.04,S.y0-.06,27,RAIL);
     MODS.stairCut=new THREE.Plane(new THREE.Vector3(0,-1,0),1e6); const SW=new THREE.Plane(new THREE.Vector3(0,-1,0),1e6);
     const mk=(B,pl)=>{ const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(B[0],3)); g.setAttribute('color',new THREE.Float32BufferAttribute(B[1],3)); g.computeVertexNormals();
@@ -31,7 +31,7 @@
     M.door=(py,p)=>{ lid.visible=LVL==='up'; if(!lidT++){ const top=MAPG.bodega; if(top)top.add(lid); } if(busy||UI.freeCam||(typeof RAG!=='undefined'&&RAG.on))return; const k=tread(p.x,p.z);
       if(LVL!=='down'&&k!=null&&k>=3)go('in'); else if(LVL==='down'&&k!=null&&k<=SM.steps-5)go('out'); };
     M.doorBusy=()=>busy; window.SUBGO=(x,z,lv)=>UI.goTo(x,z,lv); }
-  { const G=new THREE.Group(), lam=c=>new THREE.MeshLambertMaterial({color:c,flatShading:true}), flat=c=>new THREE.MeshBasicMaterial({color:c}), R=.2, H=46*ZU, S0=Y(SZ)+H+R+.02, SAY='THANK YOU FOR YOUR COOPERATION.';
+  { const G=new THREE.Group(), lam=c=>new THREE.MeshLambertMaterial({color:c}), flat=c=>new THREE.MeshBasicMaterial({color:c}), R=.2, H=46*ZU, S0=Y(SZ)+H+R+.02, SAY='THANK YOU FOR YOUR COOPERATION.';
     const BODY=lam(0xb8bec8), RIM=lam(0x3a3e48), DK=lam(0x2a2d34), LENS=flat(0x4dff86), TALK=flat(0x9be8ff), BEAM=new THREE.MeshBasicMaterial({color:0x5dff8e,transparent:true,opacity:.16,depthWrite:false,side:THREE.DoubleSide});
     const ring=new THREE.Mesh(new THREE.RingGeometry(.3,.35,16).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({color:0x5dff8e,side:THREE.DoubleSide})), CG=new THREE.ConeGeometry(1,1,12,1,true).translate(0,-.5,0).rotateX(-Math.PI/2);
     ring.visible=false; G.add(ring); scene.add(G);

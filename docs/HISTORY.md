@@ -2530,3 +2530,12 @@ Summer Afternoon in `docs/FEEL.md`.
 - **Cost**: the physics 0.017 ms a step; the yard 1,238 triangles, one draw, drawn only near it; no lights; nothing loaded until it's used.
 - `tests/feelcheck.cjs`: 26 checks (speeds, stops, reversal, walls, corners, passage, slopes, steps, ledge, coyote, buffer, held jump,
   ceiling, 30-144 fps, clips, blur, import, camera), all pass.
+
+**Quiet Island, its own page** (owner, 19 Oct 2026, a picture of a little island study: "lets make a vr scene for this world, i want most
+realistic textures you can create use find, etc. real water, small island with small hut (not house), realistic movments, phyiscs,
+relaxing (no sounds), go all out"; his picks: its own page, not a place in THE MARKET, so CEL does not apply to it; real CC0 textures
+downloaded): `island/`, published at https://claude.ai/artifact/BnwKkVwTUkgeMMYu9oS1sC. Poly Haven skies (day, sunset, moonrise) light
+it and are reflected in a Gerstner-wave sea with clear shallows, caustics, shore foam and sun or moon glitter; white rippled sand going
+wet at the swash line; a stilt hut of woven bamboo under reed thatch; six palms made in code that sway; a striped hammock that is real
+cloth (verlet); a canoe that rides the swell on a rope; fish schooling in the shallows; gulls; coconuts with physics (fall, roll, float
+and wash ashore). No sound. WebXR on a headset: teleport arc, snap turn, grab and throw. About 300,000 triangles, one shadowed sun.

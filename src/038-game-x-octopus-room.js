@@ -27,4 +27,3 @@ function octoTank(x,y){ PNAME='octopus tank'; const {LX,LY,Z0,ZT}=OCTK, x1=x+LX,
 STOREK.octo={OCTK,OCC,octoWall,octoFloorCol,octoTank};
 }
 
-{

@@ -58,3 +58,10 @@ jobs:
         run: node tests/budget.cjs out/base.json out/head.json
       - name: The lost picture comes back
         run: node tests/ctxloss.cjs dist/market.html
+      - name: The same picture (street, dungeon, castle, bodega)
+        run: node tests/samepic.cjs ../base/dist/market.html dist/market.html out/samepic
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: budget-pictures
+          path: out/

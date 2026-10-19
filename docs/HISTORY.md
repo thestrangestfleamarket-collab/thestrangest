@@ -3156,3 +3156,15 @@ versions) and put them in random spots in park and thats where specific mushroom
 - **The budget in CI** (`.github/workflows/site.yml`, job `budget`, pull requests only): builds the base and the pull request, runs
   `tests/startprof.cjs` on both, and fails when the pull request draws more triangles or calls (over 10%), adds shader programs (over 2),
   starts over 35% slower, or brings new page errors (`tests/budget.cjs`); then `tests/ctxloss.cjs`.
+
+## 19 Oct 2026: the move to modules, step 1: the dungeon written once
+
+- **One place per pull request** (owner, 19 Oct 2026, asked how to start the move to modules: "One place per PR"). The first: the shared kit
+  and the dungeon's copies.
+- **The dungeon's room and its things are written once** (`038z-dungeon.js`): `039`/`046` (the room: palette, walls, floor) and `040`/`049`
+  (its torches, columns, gibbet, sarcophagus...) were byte-for-byte copies, one for the dungeon and one for the castle's keep, because each
+  had to sit inside its own block. Now `dgnRoom(LBLD)` and `dgnThings(CATALOG,CAT_INFO,LAMPS,CAT_DEPTS,...)` hold them, and the four files
+  call them with their own block's hall, catalog and lamps. Checked with a scope analysis of the whole page: every name outside these files
+  resolves to the same file as before, and the two copies see the same outside names. 28 KB of source and 25 KB of the minified page gone.
+- **The same picture** (`tests/samepic.cjs`, in the CI budget job): the base and the pull request at the street, the dungeon, the castle and
+  the bodega at 1pm; fails when more than 3% of the pixels differ, and keeps the pictures in the run's `budget-pictures` artifact.

@@ -42,7 +42,7 @@ const SKY={};
           vec2 q=d.xz/(max(d.y,0.)+.06)*.9+vec2(uT*.012,uT*.005); float n=fbm(q), cov=step(uCov+uGap,n); cvr=cov; float lt=fbm(q+vec2(.05,.09)*2.);
           vec3 cl=mix(uMistC*.72,uMistC*uCL,step(n,lt+.03)); cl=mix(cl,uMistC*.6,step(.62,n)*.5);
           m=mix(m,cl,cov*smoothstep(.015,.12,el)); m=mix(m,uMistC*uHk,1.-smoothstep(0.,.06,el)); m+=st*(1.-cov)*step(.08,el);
-          m=mix(m,mix(sk,uS*.7+uMistC*.3,cov*.6),uSkyK*smoothstep(0.,.08,el)); c=mix(c,m,uMistK); c=bt(moon(c,d,uMoonK*(1.-cov*.85)),el); c=pow(floor(pow(max(c,0.),vec3(1./2.2))*16.+.5)/16.,vec3(2.2)); }
+          m=mix(m,mix(sk,uS*.7+uMistC*.3,cov*.6),uSkyK*smoothstep(0.,.08,el)); c=mix(c,m,uMistK); { float sa=acos(clamp(dot(d,uSunDir),-1.,1.)), sd=1.-step(uSunR,sa), sh=floor((1.-smoothstep(uSunR,uSunR*5.,sa))*3.)/3.*.5, ok=uSunK*(1.-cov*.75); c=mix(c,mix(uSunCol,vec3(1.,.96,.9),.45),sh*ok); c=mix(c,uSunCol,sd*ok); } c=bt(moon(c,d,uMoonK*(1.-cov*.85)),el); c=pow(floor(pow(max(c,0.),vec3(1./2.2))*16.+.5)/16.,vec3(2.2)); }
         if(uMistK<.5)c=bt(c,el); if(uBands>0.&&uMistK<.5)c=floor(c*uBands+.5)/uBands; c+=mwc*(1.-uGreyK)*(1.-uFogK)*(1.-cvr*uMistK);
         gl_FragColor=vec4(c,1.); }`});
   const dome=new THREE.Mesh(new THREE.BoxGeometry(2000,2000,2000),mat); dome.frustumCulled=false; dome.renderOrder=900; dome.matrixAutoUpdate=true; scene.add(dome); SKY.dome=dome; OUT.add(dome,'open');
@@ -59,7 +59,7 @@ const SKY={};
     U.uSideK.value=1-.6*cl((e-8)/20);
     U.uSunDir.value.copy(CLOCK.sunV); U.uSunR.value=(1.6+1.4*(1-cl(e/12)))*D; { let j=0; while(j<SUN.length-2&&e>SUN[j+1][0])j++; mixC(SUN[j][1],SUN[j+1][1],cl((e-SUN[j][0])/(SUN[j+1][0]-SUN[j][0])),U.uSunCol.value); }
     U.uSunK.value=cl((e+1.5)/1.5)*(1-.9*cl((W.cloud-.3)/.6));
-    U.uMoonDir.value.copy(CLOCK.moonV); const night=cl((-e-4)/6); U.uMoonK.value=night*(1-.8*cl((W.cloud-.3)/.6)); U.uStar.value=night*(1-cl(W.cloud*1.4)*(1-SC.stars)); U.uGap.value=SC.gap; U.uSkyK.value=SC.sky; U.uBlood.value=SC.blood*night; U.uMoonR.value=.03+.025*SC.blood; U.uMoonCol.value.setRGB(.86,.89,.95).lerp(MB,SC.blood); if(SC.blood&&up)HEMI.color.lerp(MB,.55*SC.blood*night);
+    U.uMoonDir.value.copy(CLOCK.moonV); const night=cl((-e-4)/6); U.uMoonK.value=night*(1-.8*cl((W.cloud-.3)/.6)); U.uStar.value=night*(1-cl(W.cloud*1.4)*(1-SC.stars)); U.uGap.value=SC.gap; U.uSkyK.value=Math.max(SC.sky,cl((e-3)/10)*(1-cl((W.cloud-.4)/.5))*.85); U.uBlood.value=SC.blood*night; U.uMoonR.value=.03+.025*SC.blood; U.uMoonCol.value.setRGB(.86,.89,.95).lerp(MB,SC.blood); if(SC.blood&&up)HEMI.color.lerp(MB,.55*SC.blood*night);
     U.uGrey.value.setRGB(.55,.58,.62).multiplyScalar(.25+.75*day); if(W.storm)U.uGrey.value.multiplyScalar(1-.45*W.storm); U.uGreyK.value=cl(W.cloud*W.cloud*.85);
     if(W.flash&&up){ U.uGrey.value.setRGB(.85,.88,.95); U.uGreyK.value=Math.max(U.uGreyK.value,.9); }
     if(WX.under){ const k=cl(1-Math.abs(e-1)/7)*(1-cl((W.cloud-.5)/.5)); WX.under.value.copy(U.uS.value).multiplyScalar(k*.9); }

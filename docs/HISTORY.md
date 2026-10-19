@@ -2783,3 +2783,8 @@ fsomeone dies insomewhere they have to float back as a ghost to get resed. when 
   a room you are not in, IN FOG) and USE when something you can use stands there; a find box; a click outlines it on screen for 5 s
   and lists its parts (materials, programs, textures, what the batch holds). Below, LOADED BUT NOT DRAWN: hidden, layer-off or out of
   view things by memory and triangles, the candidates for loading screens. `window.RENDERLIST()` gives the same as JSON.
+- **Softer light on you, stronger lamps** (owner, 19 Oct 2026: "shadows are too harsh on things , its causing my character to llook
+  glitchy beacuse shaodws go on and off suddenly from every angle", "these lamps dont seem to be doing much", "the fire shadow and
+  lighting is btter"): your figure's own self-shadow (the hard band from whichever light is strongest, which jumped as lights changed)
+  is off by default (DISPLAY can turn it back on); the park's lanterns and lamp posts light at 24 (were 12 and 6) out to 12 tiles, the
+  street globe lamps at 28 (were 18) out to 12; outdoors at night a lamp near you lights your figure up to 70% (35% indoors).

@@ -121,7 +121,7 @@ window.AVS=AVS;
     const ak=st.anim||1; C.an.base=base; C.an.ts=Math.max(.2,Math.min(4,ts*ak)); C.an.update(dt*(base==='Idle_Loop'?ak:1));
     if(C.relax)C.relax(dt,base==='Idle_Loop'&&!RAG.on); if(C.vrm)C.vrm.update(dt); };
   AVS.draw=()=>document.querySelectorAll('[data-av]').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.av===AVS.kind)));
-  AVS.menu=()=>{ for(const row of document.querySelectorAll('#davatar'))if(!row.children.length){ row.innerHTML=AVS.KINDS.map(k=>`<button class="btn" data-av="${k}">${AVS.NAME[k]}</button>`).join('');
+  AVS.menu=()=>{ for(const row of document.querySelectorAll('#davpick'))if(!row.children.length){ row.innerHTML=AVS.KINDS.map(k=>`<button class="btn" data-av="${k}">${AVS.NAME[k]}</button>`).join('');
       row.onclick=e=>{ const x=e.target.closest('[data-av]'); if(x){ e.stopPropagation(); AVS.set(x.dataset.av); } }; } AVS.draw(); };
   window.AVSDBG=()=>{ const C=AVS.C[AVS.kind]; return {kind:AVS.kind,ready:!!C&&!C.wait,err:C&&C.err||null,base:C&&C.an&&C.an.base,tris:C?Math.round(C.tris):W3.tris,sp:+sp.toFixed(2),vis:!!C&&!!C.g&&C.g.visible}; };
   let k0=QS.get('avatar'); if(!k0)try{ k0=SAVE.get('avatar'); }catch(e){} if(k0&&k0!=='walker')AVS.set(k0); }

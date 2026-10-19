@@ -1923,3 +1923,7 @@ the heading easing into turns. The head mockups (two rounds of six) were never p
   (7:18 am, SNOW, SOFT colours through the mist). Touching the time, the weather or the colours by hand ends the scene (the haze doesn't);
   `?scene=blood_moon` for tests. The moon now shows in the mist too (it was painted over, like the stars). Cost: none outside the sky
   shader's few lines; no triangles, lights or programs.
+  **Five quieter ones** (owner, the same day: "add 5 more subtle dusk, dawn, sunset, storm, etc."), a second row: **BLUE DAWN** (6:54 am,
+  CLEAR, SOFT, the sky just paling, the last stars), **FOGGY MORNING** (7:36 am, FOG, SOFT, low sun through it), **SOFT SUNSET** (5:57 pm,
+  CLOUDY, CLEAR colours, the warm horizon under the cloud), **DUSK** (6:27 pm, CLEAR, the street lights coming on), **DISTANT STORM** (5 pm,
+  RAIN, now and then a faint far flash and its thunder: lightning in RAIN is a third as bright as a STORM's).

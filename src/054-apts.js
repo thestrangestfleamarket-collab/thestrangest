@@ -18,7 +18,25 @@ const APTS={};
   const fan=(dx,dz,r,lit,seed)=>{
     const d=Math.hypot(dx,dz), a=Math.atan2(dz,dx); if(d>r-1.5||dz<1.2||Math.abs(d-r*.45)<.9||Math.abs(Math.sin(a*3))<.12*12/Math.max(d,1))return BAR;
     return lit?[GL[0],GL[1],GL[2]*.95,1]:[38,42,50]; };
-  const stone=(u,z,f,cap,holes,a0,a1)=>{
+  const vn=(u,v,k)=>{ const i=Math.floor(u), j=Math.floor(v), q=t=>t*t*(3-2*t), a=q(u-i), b=q(v-j), h=(x,y)=>hash(x,y,k); return (h(i,j)+(h(i+1,j)-h(i,j))*a)*(1-b)+(h(i,j+1)+(h(i+1,j+1)-h(i,j+1))*a)*b; };
+  const gr=(x,y,k,s=1)=>(vn(x/(5*s),y/(5*s),k)*3+vn(x/(1.7*s),y/(1.7*s),k+2)*2+vn(x*2.3/s,y*2.3/s,k+4))/6, ck=(x,y,k,s,w,on)=>vn(x/(s*4),y/(s*4),k+1)>on&&Math.abs(vn(x/s,y/s,k)-.5)<w;
+  const TN=BRICKS.TINT, blk=(bi,bc,f,fx,fy,W,Hh)=>{ const n=hash(bi,bc,19), tn=TN[Math.floor(hash(bi,bc,23)*TN.length)];
+    let k=(.85+.24*n)*(1+.16*(gr(fx/24+bi*1.3,fy/24+bc*.7,bc+3,1.2)-.5)); if(Hh===13)k*=1+.22*(gr(fx/5+bi*7,fy/5+bc*3,bc+5,.6)-.5); if(fy===Hh-1)k*=1.1; else if(fy<=2)k*=.9; if(fx<=1)k*=1.04; else if(fx>=W-2)k*=.92;
+    if((fx<=1||fx>=W-2)&&(fy<=2||fy>=Hh-2)&&hash(bi,bc,27)<.5)k*=.8; if(hash(Math.floor(fx+bi*31),Math.floor(fy+bc*17),29)<.03)k*=.78;
+    return sh([LS[0]*tn[0],LS[1]*tn[1],LS[2]*tn[2]],f*k); };
+  const rock=(base,sd,bw=.6,bh=9,mid)=>{ const P=(a,z,f)=>{ const ui=a*24, bc=Math.floor(z/bh), p=ui+(bc&1)*bw*12, bi=Math.floor(p/(bw*24)), fx=p-bi*bw*24, fy=z-bc*bh;
+      if(fy<1||fx<1)return sh(base,f*.7); const tn=TN[Math.floor(hash(bi,bc,sd+2)*TN.length)]; let k=(.9+.16*hash(bi,bc,sd))*(1+.14*(gr(ui/24,z/24,sd+4,1)-.5))*(z<5?.8+.04*z:1);
+      if(fy>=bh-1)k*=1.08; if(hash(Math.floor(ui),Math.floor(z),sd+6)<.035)k*=.78; if(ck(ui/24,z/24,sd+8,1,.012,.6))k*=.7; return sh([base[0]*tn[0],base[1]*tn[1],base[2]*tn[2]],f*k); };
+    return {fs:(nx,ny,X_,Y_,z,f)=>P(nx?Y_:X_,z,f),top:(x,y)=>{ let k=1+.12*(gr(x,y,sd+10,.5)-.5); if(mid)k*=1+.1*Math.max(0,1-Math.abs(x-mid[0])/mid[1]); if(hash(Math.floor(x*24),Math.floor(y*24),sd+12)<.04)k*=.84; return sh(base,k); }}; };
+  const weather=(c,u,z,cap,holes)=>{ const ui=u*24; let k=1+.07*(vn(ui/40,z/40,91)-.5);
+    for(const h of holes){ const hw=(h.a1-h.a0)*12, ax=Math.abs((u-(h.a0+h.a1)/2)*24); if(ax<hw&&z>=h.z0&&z<h.z1)return c;
+      if(!h.door&&ax<hw+3&&z<h.z0-1&&z>h.z0-70&&vn(ui/1.7,h.z0/9,95)>.5)k*=1-.22*(1-(h.z0-z)/70)*(1-ax/(hw+3)*.5); }
+    if(z<cap-30&&z>cap-110&&vn(ui/2.2,3,97)>.56)k*=1-.16*(1-(cap-30-z)/80);
+    if(z<40)k*=.8+.2*z/40+.06*(vn(ui/6,z/6,99)-.5);
+    if(ck(ui/24,z/24,101,1.4,.008,.62))k*=.68;
+    const o=sh(c,k); if(z<16&&vn(ui/5,z/4,103)>.6-.01*z){ const w=.45*(1-z/16); return [o[0]*(1-w)+70*w,o[1]*(1-w)+92*w,o[2]*(1-w)+52*w]; } return o; };
+  const stone=(u,z,f,cap,holes,a0,a1)=>weather(stone0(u,z,f,cap,holes,a0,a1),u,z,cap,holes);
+  const stone0=(u,z,f,cap,holes,a0,a1)=>{
     const ui=u*24, tone=(i,k)=>.94+.1*hash(i,k,19);
     if(z>=cap-30){ const zz=z-(cap-30); return sh(LS,f*(zz<10?(zz>=9?1.1:.92):zz<16?((Math.floor(ui/3)&1)?.55:1.04):zz>=29?1.14:zz<18?.62:.98)); }
     for(const h of holes){ const cx=(h.a0+h.a1)/2, dx=(u-cx)*24, hw=(h.a1-h.a0)*12, ax=Math.abs(dx), lv=Math.floor(h.z0/S);
@@ -34,9 +52,9 @@ const APTS={};
     const dq=Math.min(u-a0,a1-u), q=Math.floor(z/22);
     if(z>=S-8&&z<S)return sh(LS,f*(z===S-1?1.15:z===S-8?.6:1.02));
     if(dq<((q&1)?.36:.56)){ const qz=z%22; return sh(LS,f*1.06*(qz<2?.58:qz===21?1.12:Math.abs(dq-((q&1)?.36:.56))<.05?.62:tone(q,dq<.2?1:2))); }
-    if(z<S-8){ const c=Math.floor(z/13), zz=z%13, p=ui+(c&1)*15; if(zz<2)return sh(LS,f*.5); return sh(LS,f*(zz===12?1.12:p%30<1?.68:tone(Math.floor(p/30),c)*(z<10?.86:1))); }
+    if(z<S-8){ const c=Math.floor(z/13), zz=z%13, p=ui+(c&1)*15; if(zz<2)return sh(LS,f*.5); if(p%30<2)return sh(LS,f*(p%30<1?.55:.75)); return blk(Math.floor(p/30),c+100,f*(z<10?.86:1),p%30,zz,30,13); }
     const s=z%S; if(s>=S-6||s<1)return sh(LS,f*(s===S-6?.66:s===0?1.14:1));
-    const c=Math.floor(z/11), p=ui+(c&1)*13; if(z%11===0||p%26<1)return sh(LS,f*.84); return sh(LS,f*tone(Math.floor(p/26),c)); };
+    const c=Math.floor(z/11), p=ui+(c&1)*13; if(z%11===0||p%26<1)return sh(LS,f*.8); return blk(Math.floor(p/26),c,f,p%26,z%11,26,11); };
   const BLC={}, blinds=(a0,a1,seed)=>{ const o=[]; for(let lv=1;lv<ST;lv++)for(const k of [.22,.5,.78]){ const c=a0+(a1-a0)*k; o.push({a0:c-.55,a1:c+.55,z0:lv*S+42,z1:lv*S+94,blind:true,seed:seed+lv*7+k*10|0,lit:hash(seed,lv,k*10|0)<.4}); } return o; };
   const plaster=(u,z,f,tiled)=>{ if(z<6)return sh([96,70,48],f*(z<1?.7:z>4?1.15:1)); if(z>S-10)return sh([200,196,186],f*.9);
     if(tiled&&z<60){ const i=Math.floor(u*24/9), k=Math.floor((z-6)/9), g=(u*24/9-i)<.12||((z-6)/9-k)<.12; return sh(g?[190,188,180]:(i+k)&1?[236,234,226]:[228,226,216],f); }
@@ -80,7 +98,7 @@ const APTS={};
   outer('front','x',A.y1,A.x0,A.x1,holesF,-1,0,-1); outer('back','x',A.y0,A.x0,A.x1,holesB,1,0,1); outer('west','y',A.x0,A.y0-T,A.y1+T,[],1,1,0); outer('east','y',A.x1,A.y0-T,A.y1+T,[],-1,-1,0);
   for(const h of holesF)if(!h.door)pane({ax:'x',at:A.y1},h,h.lit,h.seed); for(const h of holesB)pane({ax:'x',at:A.y0},h,h.lit,h.seed);
   for(let lv=1;lv<ST;lv++)escape(A.y0,-1,lv*S+38,A.x0+.9,A.x1-.9,lv===1?70:S-36);
-  { const L=LS, ST2=[134,128,118], g=b=>gbox({...b,c:b.c||L},'A'), xa=A.x0, xb=A.x1, yf=A.y1, yb=A.y0;
+  { const L=LS, ST2=[134,128,118], g=b=>gbox({...b,c:b.c||L,...rock(b.c||L,61,.9,14)},'A'), xa=A.x0, xb=A.x1, yf=A.y1, yb=A.y0;
     g({x0:xa-.1,x1:xb+.1,y0:yf,y1:yf+.1,z0:S-8,z1:S}); g({x0:xa-.1,x1:xa,y0:yb,y1:yf,z0:S-8,z1:S}); g({x0:xb,x1:xb+.1,y0:yb,y1:yf,z0:S-8,z1:S});
     const z=S+22; g({x0:xa+.08,x1:xb-.08,y0:yf,y1:yf+.42,z0:z,z1:z+6});
     for(let x=xa+.4;x<xb-.3;x+=1.2)g({x0:x-.07,x1:x+.07,y0:yf,y1:yf+.32,z0:z-12,z1:z,c:ST2});
@@ -126,28 +144,7 @@ const APTS={};
       sol(lv,1.25,1.35,1.45,4.15); sol(lv,2.53,.15,2.63,4.1); if(lv===ST-1)sol(lv,.15,4.1,1.3,4.25);
       iw(lv,'shaftW','y',U(5),V(0),V(2.55),[],[],1,0,(u,zz,f)=>sh([92,96,102],f)); wsol(lv,'y',U(5),V(0),V(2.55),[]);
       iw(lv,'shaftF','x',V(2.55),U(5),U(7.5),[{a0:U(5.3),a1:U(7.2)}],[],0,1,(u,zz,f)=>zz<DH+10&&u>U(5.2)&&u<U(7.3)?sh([150,152,156],f):sh([92,96,102],f)); wsol(lv,'x',V(2.55),U(5),U(7.5),[{a0:U(5.3),a1:U(7.2)}]);
-      if(lv===0){
-        iw(0,'gL','y',U(2.65),V(5.3),V(8),[],[{a0:V(6),a1:V(7.2),n:1}],1,0); wsol(0,'y',U(2.65),V(5.3),V(8),[]);
-        iw(0,'gLf','x',V(8),U(0),U(2.65),[],[{a0:U(.7),a1:U(1.9),n:1}],0,1); wsol(0,'x',V(8),U(0),U(2.65),[]);
-        iw(0,'gLb','x',V(5.3),U(0),U(2.65),[],[],0,-1); wsol(0,'x',V(5.3),U(1.3),U(2.65),[]);
-        iw(0,'gR','y',U(4.85),V(3.7),V(8),[],[{a0:V(4.6),a1:V(5.8),n:1}],-1,0); wsol(0,'y',U(4.85),V(3.7),V(8),[]);
-        iw(0,'gRf','x',V(8),U(4.85),U(7.5),[],[],0,1); wsol(0,'x',V(8),U(4.85),U(7.5),[]);
-        iw(0,'gRb','x',V(3.7),U(4.85),U(7.5),[],[],0,-1); wsol(0,'x',V(3.7),U(4.85),U(7.5),[]); }
-      else if(lv===1){
-        iw(1,'cot','x',V(5.3),U(0),U(7.5),[{a0:U(3.05),a1:U(4.45)}],[],0,1,(u,zz,f)=>zz<S-6&&zz>5?sh([85,96,47],f*(hash(Math.floor(u*8),Math.floor(zz/3),37)<.3?.85:1)):sh([110,92,58],f)); wsol(1,'x',V(5.3),U(0),U(7.5),[{a0:U(3.05),a1:U(4.45)}]); }
-      else {
-        const nm=lv+1, dL=[{a0:V(7),a1:V(8.2),n:nm+'A'},{a0:V(11.2),a1:V(12.4),n:nm+'B'}], dR=[{a0:V(6.2),a1:V(7.4),n:nm+'C'},{a0:V(11.2),a1:V(12.4),n:nm+'D'}];
-        const plate=(dd,hs)=>(u,zz,f,sd)=>{ if(sd!==hs)return plaster(u,zz,f,false); for(const d of dd)if(Math.abs(u-(d.a0+d.a1)/2)<.2&&zz>DH+5&&zz<DH+13){ const e=Math.abs(u-(d.a0+d.a1)/2)>.17||zz<DH+6||zz>DH+11; return sh(e?[120,92,40]:(Math.floor((u-d.a0)*24)+Math.floor(zz))%3===0?[40,30,24]:[206,170,84],f); } return wainscot(u,zz,f); };
-        const wL=iw(lv,'hL','y',U(2.65),V(5.3),V(14),dL,[],1,0,plate(dL,1)); wsol(lv,'y',U(2.65),V(5.3),V(14),dL);
-        iw(lv,'hLb','x',V(5.3),U(0),U(2.65),[],[],0,-1,wainscot); wsol(lv,'x',V(5.3),U(1.3),U(2.65),[]);
-        const wR=iw(lv,'hR','y',U(4.85),V(3.7),V(14),dR,[],-1,0,plate(dR,-1)); wsol(lv,'y',U(4.85),V(3.7),V(14),dR);
-        iw(lv,'hRb','x',V(3.7),U(4.85),U(7.5),[],[],0,-1,wainscot); wsol(lv,'x',V(3.7),U(4.85),U(7.5),[]);
-        iw(lv,'pL','x',V(9.7),U(0),U(2.65),[],[],0,1); wsol(lv,'x',V(9.7),U(0),U(2.65),[]); iw(lv,'pR','x',V(9.7),U(4.85),U(7.5),[],[],0,1); wsol(lv,'x',V(9.7),U(4.85),U(7.5),[]);
-        for(const [dd,w,uh,sd] of [[dL,wL,2.65,-1],[dR,wR,4.85,1]])for(const d of dd)FLATS.push({lv,n:d.n,uh,sd,v0:d.a0-A.y0,v1:d.a1-A.y0,pl:w.pl,gap:sol(lv,uh-.12,d.a0-A.y0,uh+.12,d.a1-A.y0)}); } }
-    for(let r=0;r<4;r++)for(let c=0;c<5;c++)gbox({x0:U(.02),x1:U(.1),y0:V(9+c*.3),y1:V(9.28+c*.3),z0:40+r*12,z1:50+r*12,c:(r+c)%3?[176,140,64]:[190,152,72]},'A');
-    gbox({x0:U(.1),x1:U(.6),y0:V(11.4),y1:V(13),z0:0,z1:18,c:[90,62,40]},'A'); gbox({x0:U(.1),x1:U(.25),y0:V(11.4),y1:V(13),z0:18,z1:40,c:[90,62,40]},'A'); sol(0,.1,11.4,.6,13);
-    gbox({x0:U(4.95),x1:U(5.45),y0:V(8.2),y1:V(8.7),z0:0,z1:16,c:[150,80,50]},'A'); gbox({x0:U(4.9),x1:U(5.5),y0:V(8.15),y1:V(8.75),z0:16,z1:44,c:[46,110,52]},'A'); sol(0,4.95,8.2,5.45,8.7);
-    gbox({x0:U(2.6),x1:U(2.66),y0:V(8.3),y1:V(9.1),z0:40,z1:78,c:[30,30,34]},'A');
+      }
     APTS.floorsBuilt=true; }
   for(let lv=0;lv<ST;lv++){ if(LOBBY)continue; if(HOLLOW){ if(lv===0)flat(A.x0,A.y0,A.x1,A.y1,1,boards); continue; } const z=lv*S, R=rooms(lv), Ym=y=>2*hm-y;
     { const zf=lv>0?z:1; for(const [r,col] of [[R.liv,boards],[R.bed,boards],[R.kit,tiles],[R.bath,tiles]]){ flat(r.x0,r.y0,r.x1,r.y1,zf,col); flat(r.x0,Ym(r.y1),r.x1,Ym(r.y0),zf,col); }
@@ -187,8 +184,8 @@ const APTS={};
       LIGHTS.push({x:X(x0+2.6),y:Y(lv*S+S-14),z:Z(Yf(y1-1.5)),c:0xffd9a8,i:9},{x:X(x0+1.6),y:Y(lv*S+S-14),z:Z(Yf(hy+1.2)),c:0xfff2dc,i:6}); }
     LIGHTS.push({x:X(m),y:Y(lv*S+S-14),z:Z(hm),c:0xf2ead6,i:7},{x:X(x0+1.2),y:Y(lv*S+S-14),z:Z(hm),c:0xf2ead6,i:5},{x:X(A.x1-1.2),y:Y(lv*S+S-14),z:Z(hm),c:0xf2ead6,i:5}); }
   const ST0={x0:door.a0-.25,x1:door.a1+.25,y0:A.y1,land:.85,tr:.42,n:3}; ST0.y1=A.y1+ST0.land+ST0.n*ST0.tr; APTS.ST0=ST0;
-  { const BS=[98,95,90], NO=[136,131,122], CH=[86,84,80], IRN=[28,30,34], top=i=>(RZ+1)*(ST0.n-i)/(ST0.n+1), g=b=>BOD.gbox(b,'A');
-    BOD.gbox({x0:A.x0-.04,x1:A.x1+.04,y0:A.y0-.04,y1:A.y1+.04,z0:0,z1:RZ,c:BS},'A');
+  { const BS=[98,95,90], NO=[136,131,122], CH=[86,84,80], IRN=[28,30,34], top=i=>(RZ+1)*(ST0.n-i)/(ST0.n+1), MID=[(ST0.x0+ST0.x1)/2,(ST0.x1-ST0.x0)/2], g=b=>BOD.gbox(b.c===IRN?b:{...b,...rock(b.c,b.c===CH?67:63,.7,9,b.c===CH?null:MID)},'A');
+    BOD.gbox({x0:A.x0-.04,x1:A.x1+.04,y0:A.y0-.04,y1:A.y1+.04,z0:0,z1:RZ,c:BS,...rock(BS,65,.9,14)},'A');
     g({x0:ST0.x0,x1:ST0.x1,y0:ST0.y0,y1:ST0.y0+ST0.land,z0:0,z1:RZ+1,c:BS}); g({x0:ST0.x0,x1:ST0.x1,y0:ST0.y0+ST0.land-.06,y1:ST0.y0+ST0.land,z0:RZ-1,z1:RZ+1,c:NO});
     for(let i=0;i<ST0.n;i++){ const y0=ST0.y0+ST0.land+i*ST0.tr, h=top(i); g({x0:ST0.x0,x1:ST0.x1,y0,y1:y0+ST0.tr,z0:0,z1:h,c:BS}); g({x0:ST0.x0,x1:ST0.x1,y0:y0+ST0.tr-.06,y1:y0+ST0.tr,z0:h-2,z1:h,c:NO}); }
     for(const [c0,c1] of [[ST0.x0-.22,ST0.x0],[ST0.x1,ST0.x1+.22]]){ g({x0:c0,x1:c1,y0:ST0.y0,y1:ST0.y0+ST0.land,z0:0,z1:RZ+7,c:CH});
@@ -208,7 +205,7 @@ const APTS={};
   for(let lv=0;lv<ST;lv++){ if(HOLLOW||LOBBY)continue; const R=rooms(lv), yl=R.liv.y0, seg=(ax,at,a0,a1,holes)=>{ let a=a0; for(const h of [...holes].sort((p,q)=>p.a0-q.a0)){ if(h.a0>a)SOLS[lv].push(ax==='x'?[X(a),Z(at-T),X(h.a0),Z(at+T)]:[X(at-T),Z(a),X(at+T),Z(h.a0)]); a=h.a1; } if(a1>a)SOLS[lv].push(ax==='x'?[X(a),Z(at-T),X(a1),Z(at+T)]:[X(at-T),Z(a),X(at+T),Z(a1)]); };
     const dr=a=>({a0:a-DW,a1:a+DW}); seg('x',H.y1,A.x0,A.x1,[dr(A.x0+1.5),...(R.pass?[dr(A.x1-.75)]:[])]); seg('x',H.y0,A.x0,A.x1,[dr(A.x1-1.5)]);
     for(const f of [1,-1]){ const Yf=y=>f>0?y:2*hm-y, yL=Yf(yl), ya=Math.min(yL,Yf(H.y1)), yb=Math.max(yL,Yf(H.y1)); seg('x',yL,A.x0,R.bed.x1,[dr(A.x0+1.6),dr(A.x0+3.9),dr(A.x0+5.4)]); seg('y',R.kit.x1,ya,yb,[]); seg('y',R.bath.x1,ya,yb,[]); if(R.pass&&f>0)seg('y',R.pass.x0,H.y1,A.y1,[]); } }
-  if(HOLLOW||LOBBY){ const CL=LOBBY?1:0, CY0=LOBBY?A.y0+5.4:A.y0, dz=Y(CL*S)-Y(0), K=BOD.STOREK, CAT=K.CATALOG, PRE=K.PRESETS['Preset Herb Cottage 1']||[], WX=A.x1-A.x0, WY=A.y1-CY0, E=1.1, n0=K.LAMPS.length, MADE=[];
+  if(HOLLOW){ const CL=LOBBY?1:0, CY0=LOBBY?A.y0+5.4:A.y0, dz=Y(CL*S)-Y(0), K=BOD.STOREK, CAT=K.CATALOG, PRE=K.PRESETS['Preset Herb Cottage 1']||[], WX=A.x1-A.x0, WY=A.y1-CY0, E=1.1, n0=K.LAMPS.length, MADE=[];
     APTS.cotLv=CL; APTS.cotS=CL*S;
     const mu=(c,h,L,W)=>c-h<E?c:c+h>L-E?W-(L-c):E+(c-E)*(W-2*E)/(L-2*E);
     const put=(k,x,y,rot=0,sx=1)=>{ const f=CAT[k]; if(!f)return null; const p=f(+x.toFixed(3),+y.toFixed(3)); if(!p)return null;

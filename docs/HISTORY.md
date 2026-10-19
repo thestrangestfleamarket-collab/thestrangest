@@ -1748,3 +1748,20 @@ FIXED, NO, each report with its words, where, PICTURE and GO THERE (puts you at 
 For now nothing is fixed on its own: every report waits in NEW for the owner to APPROVE. A session asked to "work the queue" takes the
 APPROVED ones (see CLAUDE.md), fixes each, and marks it FIXED. The 16 reports already in `bug_reports` are from the old 2D game.
 `tests/bugcheck.cjs art|site` sends one with a stand-in store and approves it.
+
+## 19 Oct 2026: the apartment house becomes an empty hotel
+
+**The hotel** (owner, 19 Oct 2026, his picture of the house's corner and stoop at night: "make the texture and depth style, etc more
+realistic on this building. like we did with the bricks on sidewalk, central park ... not just straight lines with no lived in realness.
+give each thing realistic textures. i want to change this into a hotel. all floors empty. no people have apartments assigned anymore.
+everyone starts where they logged off"; his picks: "Everything bare", new players start in "Central Park", apartment 1 / mail / rent /
+residents "Remove all of it", "No sign"): `054-apts.js`:
+- **Bare inside**: every floor just its floor, the stairs and the elevator: the lobby's mailboxes, bench, plant and directory, the side
+  rooms, the cottage floor and its furniture (and with it the computer and the delivery drone, which stood on the cottage's desk), the
+  flats' walls, doors and furniture are gone.
+- **The stone weathered**: every block of the limestone its own tone and tint (`BRICKS.TINT`), grain, a lit top and shaded foot, chipped
+  corners and pits, hairline cracks; the rusticated ground floor rough-faced with deep joints; grime streaks run down from every sill and
+  from under the cornice, the foot darker with rising damp and moss in the lowest course (`blk`, `weather`, `rock`; the file's own small
+  noise, `vn`/`gr`/`ck`). The stoop, its cheek walls, the house's base, the cornice and balustrade in jointed, grained stone (`rock`), the
+  treads worn paler down the middle. The two planters built of brownstone blocks, each its own shade (`069-dress.js`).
+- **The start**: someone new starts in Central Park (`135-where.js`, `UI.goPlace`); everyone else where they logged off, as before.

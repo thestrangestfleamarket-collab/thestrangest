@@ -3126,3 +3126,25 @@ versions) and put them in random spots in park and thats where specific mushroom
   FORAGING; one above your reach (its difficulty over your skill + 15, the keen-eye potion counting) never comes away: as before,
   YOU FAIL TO PICK IT CLEANLY, or now and then IT CRUMBLES IN YOUR HAND (owner: "no use the old verbiage about how you fail to pick
   it cleanly or soemthing").
+
+## 19 Oct 2026: the brook flows out of the lake
+**The lake feeds the brook** (owner, 19 Oct 2026: "make sure the lake connects to the river."): the brook's spring sat about five tiles
+off the lake's south-west shore with grass between them (see "The brook from the lake's shore" above). Now the brook runs out of the lake
+(`061-park.js`, `089a-brook.js`, `060a-fount.js`, `064-map-post.js`):
+- **The outlet**: the brook's course starts four tiles inside the lake, on the shortest line from its old spring to the water that stays
+  7 tiles off the terrace (so at about 142.8, 42.6), and runs on to its old spring and its old course; it is 141 tiles long now (was 132),
+  the riffles, stepping stones and widths downstream the same as before. Where it leaves the lake the channel is wider (about 1.8 tiles each
+  side, narrowing over 8 tiles to the brook's usual width). The land has one hole for the lake and the brook together (`PARK.wetHole`),
+  so the lake's bank is notched where the brook leaves; the lake's shore rocks that stood in the notch are gone (7 of them); the lake's bed
+  goes down into the channel, the brook's banks go down under the lake's bed.
+- **The water**: the brook's water starts on a straight line across the channel right at the lake's edge, at the lake's level, and the
+  lake's water stops on that same line (it is not drawn downstream of it within the channel), so the two meet with no grass between.
+  2.5 tiles on, a lip of flat stones across the brook (you can stand on them) holds the lake's level; the water spills over it in foam
+  and drops about 9 cm to the brook's level (as before, -0.3 m), then on down the riffles. No spring boulders any more; six boulders
+  stand on the banks at the outlet.
+- **Walking**: in the outlet you wade down the channel bed as in the rest of the brook (inside the lake the channel's bed carries on
+  until the lake is deep enough to swim); the level switch keeps you above ground (`BROOK.over`, `FOUNT.wet`). Paths, lamps, trees,
+  flora, gold grass, fires and the campfire keep off the longer brook as before (`BK.wet`); the campfire stays where it was.
+- **The far end** already ran into its pool by the castle with no gap; unchanged.
+- **Cost**: the brook +876 triangles (22,004), the lake's bed -34 and its shore rocks -252; no lights, no new shader programs (the lake's
+  water program gains a cut-off test); nothing more a frame.

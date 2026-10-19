@@ -44,8 +44,6 @@ const BLK={blds:[],signs:[],band:()=>null}; window.BLK=BLK;
     const cope=new THREE.Mesh(new THREE.BoxGeometry(W*T+.1*T,YP(8),D*T+.1*T),new THREE.MeshLambertMaterial({color:0x4a464e})); cope.position.set(m.position.x,H+YP(4),m.position.z); cope.castShadow=true; G.add(cope);
     solid(o.x0,o.y0,o.x1,o.y1,o.h); BLK.blds.push({...o,mesh:m}); return m; }
   const TINTS=[[1.3,.82,.66],[1.12,1,.84],[.92,.95,1.02],[1.2,.95,.8],[1.05,.9,.92],[.98,1.02,.92],[1.25,.88,.72],[1.1,1.04,.95],[.9,.9,.96]];
-  const R1=[{x0:87,x1:101,h:250},{x0:103.5,x1:117.5,h:370},{x0:145.5,x1:159.5,h:300}];
-  R1.forEach((q,i)=>building({...q,y0:B.back,y1:-77,n:1,k:200+i*7,tint:TINTS[i],front:'shut',back:null,lit:.22,row:1}));
   const W2=[17.5,18.5,17,19,18,18.5], H2=[180,250,200,290,220,180]; let x=B.x0;
   W2.forEach((w,i)=>{ building({x0:x,x1:x+w,y0:B.row2[0],y1:B.row2[1],h:H2[i],n:0,k:300+i*7,tint:TINTS[3+i],front:'shut',back:'glass',lit:.25,row:2}); x+=w+.6; });
   const BX=[], GL=[]; const bx=(L,x0,y0,p0,x1,y1,p1,c)=>L.push([XS(Math.min(x0,x1)),YP(Math.min(p0,p1)),ZS(Math.min(y0,y1)),XS(Math.max(x0,x1)),YP(Math.max(p0,p1)),ZS(Math.max(y0,y1)),c]);
@@ -136,7 +134,7 @@ const BLK={blds:[],signs:[],band:()=>null}; window.BLK=BLK;
     Promise.race([Promise.all([document.fonts.load('40px "Black Han Sans"','바다'),document.fonts.load('40px "Do Hyeon"','오징')]),new Promise(r=>setTimeout(r,8000))]).then(()=>{ for(const s of BLK.signs)s.paint(); }).catch(()=>{}); }
   { const zr=a=>[Math.min(ZS(a[0]),ZS(a[1])),Math.max(ZS(a[0]),ZS(a[1]))], AL=zr(B.alley), PR=zr(B.prom), mx0=XS(BOD.MAP.x0), mx1=XS(BOD.MAP.x1);
     BLK.band=(x,z)=>x<mx0||x>mx1?null:z>AL[0]&&z<AL[1]?{z0:AL[0],z1:AL[1]}:z>PR[0]&&z<PR[1]?{z0:PR[0],z1:PR[1]}:null; }
-  { const lane=()=>!UI.persp&&(UI.view==='iso'||UI.view==='map')&&LVL!=='down'&&!ROOMS.cur&&BLK.band(pos.x,pos.z)&&cam.position.z>pos.z, z0=ZS(B.back)-.6*T, z1=ZS(-77)+.6*T, bb=new THREE.Box3();
+  { const lane=()=>!UI.persp&&(UI.view==='iso'||UI.view==='map')&&LVL!=='down'&&!ROOMS.cur&&BLK.band(pos.x,pos.z)&&cam.position.z>pos.z, z0=ZS(B.back)-.6*T, z1=ZS(-77)+.6*T, bb=new THREE.Box3(); BLK.lane=lane;
     let n=0; for(const w of cutWalls){ if(!w.me||!w.me.geometry)continue; bb.setFromObject(w.me); if(bb.isEmpty()||bb.max.y<.1||bb.min.z<z0||bb.max.z>z1)continue;
       const wh=w.when, al=Object.getOwnPropertyDescriptor(w,'always'), was=al?(al.get?()=>al.get.call(w):()=>al.value):()=>false;
       w.when=()=>lane()||(wh?wh():true); Object.defineProperty(w,'always',{get:()=>lane()||was(),configurable:true}); n++; } BLK.walls=n; }

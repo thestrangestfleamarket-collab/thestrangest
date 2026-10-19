@@ -63,7 +63,7 @@ const PDX=(10+27.3/2+LAY.o('apartments').x)*TILE, PDZ=(-8.4+LAY.o('apartments').
 const BLDK=1.1;
 const MAINX={w:70,e:70}, WID=14, NORTHY=9+WID;
 const AVE={x0:152+MAINX.e,x1:166.5+MAINX.e+WID,y1:57.5}; AVE.r0=AVE.x0+3.2; AVE.r1=AVE.x1-3.2;
-const BLOCK={back:-92.4,alley:[-99.4,-92.4],row2:[-111.4,-99.4],prom:[-119,-111.4],river:-165,x0:48,x1:159.5};
+const BLOCK={back:-92.4,alley:[-99.4,-92.4],row2:[-111.4,-99.4],prom:[-119,-111.4],river:-165,x0:48,x1:159.5,lots:{theatre:[87,101],arcade:[103.5,117.5],play:[145.5,159.5],holo:[162,192]}};
 const RING={wx0:31.5-MAINX.w-WID,wx1:46-MAINX.w,ny0:12.5+NORTHY,ny1:27+NORTHY+WID}; RING.wr0=RING.wx0+3.2; RING.wr1=RING.wx1-3.2; RING.nr0=RING.ny0+3.2; RING.nr1=RING.ny1-3.2;
 { const x0=(RING.wr0+RING.wr1)/2+2.7, raw=((50-MAINX.w)+AVE.x0)/2+9; RING.mine={x:x0+(Math.floor((raw-x0)/2.5)+.5)*2.5}; } AVE.y1=RING.ny1; AVE.ey1=RING.ny1+11.5; RING.stairs=[{x0:RING.wx0+.6,x1:RING.wx0+2.6,y0:-2,y1:4,steps:12,depth:98,dir:-1,leg:'w'},{x0:AVE.r1+.6,x1:AVE.r1+2.6,y0:-2.4,y1:3.6,steps:12,depth:98,dir:-1,leg:'e'}]; RING.river={y0:BLOCK.river,y1:BLOCK.river+46}; RING.ff={x0:RING.wx0-1.5,x1:AVE.x1+25.5,y0:RING.river.y0-1.5,y1:40.5+NORTHY};
 const MAPSTAIR={x0:59,x1:63,y0:-80,y1:-74, steps:12, depth:98, dir:-1};

@@ -2960,3 +2960,9 @@ building until you go inside"; `054-apts.js`, `075-main-13.js`)
   unless your feet on currently on ground, if you hold down cartwheel button you can just keep doing them in a row"): the cartwheel
   plays at 0.75 speed; U does nothing in the air, on a ladder or a ledge (no more mid-air cartwheel spin); holding U chains
   cartwheels back to back until it is let go.
+- **Sun beams brighter, softer, swaying** (owner, 19 Oct 2026: "the sun rays need to be 50% more opaque, more glowing, slowly swaying
+  like the trees, soft edges, slowly moving, 25-50% larger"): beams 50% more opaque with a brighter core, soft sides that fade
+  out toward their edges (his ask; an exception to the hard cel bands, like the distance blur), the top of each beam sways slowly
+  like the tree crowns, beams ~37% wider; they still drift slowly between spots.
+- **Grass rises back when you stand still** (owner, 19 Oct 2026: "once you stop in grass the grass wlil come back up around your
+  feet"): about half a second after you stop, the flattened patch shrinks over two seconds to a small ring at your feet.

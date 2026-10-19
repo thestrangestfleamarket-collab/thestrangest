@@ -57,7 +57,7 @@ WEEDS.lawnInit=()=>{ const T=TILE, CS=8*T, N=32, CELL=CS/N, MG=4, W=N+2*MG, hsh=
   WEEDS.pressAt=(x,z)=>{ let k=0; const E=.2*T, c=(e,w)=>{ k=Math.max(k,w*Math.max(0,Math.min(1,-e/E))); };
     for(let i=1;i<8;i++){ const m=MV[i]; if(m.w>=.5)c(Math.hypot(x-m.x,z-m.y)-.7*T,1); }
     for(let i=0;i<NT;i++){ const a=TR[i]; if(a.w<=0)continue; c(Math.hypot(x-a.x,z-a.y)-a.z,a.w); const b=TR[i+1]; if(b&&b.w>0){ const [l,t]=seg(x,z,a.x,a.y,b.x,b.y); c(l-(a.z+(b.z-a.z)*t),a.w+(b.w-a.w)*t); } } return k; };
-  let air0=false; const modeNow=()=>{ const m=st.move, nm=m&&m.name, a=m&&m.def&&m.def.air; if(RAG.on||nm==='roll'||nm==='fall')return 4; if(UI.fly||a&&m.t>=a.t0&&m.t<a.t0+a.T)return -1; if(nm==='crouch')return 2; return st.target>0&&st.run>.5?1:0; };
+  let air0=false, stop0=0, px0=0, pz0=0; const modeNow=()=>{ const m=st.move, nm=m&&m.name, a=m&&m.def&&m.def.air; if(RAG.on||nm==='roll'||nm==='fall')return 4; if(UI.fly||a&&m.t>=a.t0&&m.t<a.t0+a.T)return -1; if(nm==='crouch')return 2; return st.target>0&&st.run>.5?1:0; };
   const push=(md,now)=>{ for(let i=NT-1;i>1;i--){ TR[i].copy(TR[i-1]); TT[i]=TT[i-1]; TM[i]=TM[i-1]; } TR[1].set(pos.x,pos.z,0,0); TT[1]=now; TM[1]=md; };
   const near=[]; WEEDS.moveTick=()=>{ near.length=0; near.push([pos.x,pos.z,0]); if(typeof NPCS!=='undefined')for(const N of NPCS){ if(N.lv!=='up'||N.far||!N.st)continue; const small=!!(window.CREATS&&CREATS.includes(N)), gy=N.ground?N.ground(N.st.x,N.st.z):0, fly=N.g.position.y-gy>.35*T, tp=small&&!fly&&WEEDS.top?WEEDS.top(N.st.x,N.st.z):null, hide=tp!=null&&isFinite(tp);
       if(hide!==!!N._ing){ N._ing=hide; N.g.visible=!hide; } if(fly||!N.g.visible&&!hide)continue; const d=Math.hypot(N.st.x-pos.x,N.st.z-pos.z); if(d<14*T)near.push([N.st.x,N.st.z,d,small]); }
@@ -65,8 +65,9 @@ WEEDS.lawnInit=()=>{ const T=TILE, CS=8*T, N=32, CELL=CS/N, MG=4, W=N+2*MG, hsh=
     const now=performance.now()/1e3, up=LVL==='up', md=up?modeNow():-1, air=md<0&&!!(st.move&&st.move.def&&st.move.def.air);
     if(Math.hypot(pos.x-TR[0].x,pos.z-TR[0].y)>3*T||!up)TT.fill(-1e9);
     if(air0&&!air&&up)push(3,now); else if(md>=0&&(Math.hypot(pos.x-TR[1].x,pos.z-TR[1].y)>.5*T||TT[1]<0||TM[1]!==md&&TM[1]!==3))push(md,now); air0=air;
-    TR[0].set(pos.x,pos.z,0,0); TT[0]=md<0?-1e9:now; TM[0]=Math.max(0,md);
-    for(let i=0;i<NT;i++){ const M=MODE[TM[i]], age=now-TT[i]; TR[i].z=M[0]*T; TR[i].w=M[1]*Math.max(0,Math.min(1,1.6*(1-age/M[2]))); TK[i].set(M[3],M[4]*Math.max(0,1-age/.7),Math.min(age,9),0); } };
+    if(st.target>0||Math.hypot(pos.x-px0,pos.z-pz0)>.02*T||md!==0)stop0=now; px0=pos.x; pz0=pos.z; TR[0].set(pos.x,pos.z,0,0); TT[0]=md<0?-1e9:now; TM[0]=Math.max(0,md);
+    for(let i=0;i<NT;i++){ const M=MODE[TM[i]], age=now-TT[i]; TR[i].z=M[0]*T; TR[i].w=M[1]*Math.max(0,Math.min(1,1.6*(1-age/M[2]))); TK[i].set(M[3],M[4]*Math.max(0,1-age/.7),Math.min(age,9),0); }
+    { let f=Math.max(0,Math.min(1,(now-stop0-.6)/2.2)); f=f*f*(3-2*f); if(f>0){ TR[0].z+=(.28*T-TR[0].z)*f; TR[0].w*=1-.45*f; } } };
   const skip=o=>o.isInstancedMesh||o.isSkinnedMesh||o.isPoints||o.isSprite||o.isLine||(o.material&&(o.material.visible===false||o.material.isMeshToonMaterial||o.material.transparent||o.material.depthWrite===false||o.material.side===THREE.BackSide));
   const CH=new Map(); WEEDS.chunks=CH; WEEDS.lawnN=0; const clr=WEEDS.clr||(WEEDS.clr=[]);
   const RT=new THREE.WebGLRenderTarget(W,W,{depthBuffer:true}), CAM=new THREE.OrthographicCamera(-CS/2-MG*CELL,CS/2+MG*CELL,CS/2+MG*CELL,-CS/2-MG*CELL,.1,80*T), PIX=new Uint8Array(W*W*4);

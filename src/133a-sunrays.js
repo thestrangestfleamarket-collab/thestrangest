@@ -1,8 +1,8 @@
 const RAYS={};
 { const cl=v=>Math.max(0,Math.min(1,v)), hs=(a,b,c)=>{ const v=Math.sin(a*127.1+b*311.7+c*74.7)*43758.5453; return v-Math.floor(v); }, N=8, T=TILE;
-  const BU={uT:{value:0},uO:{value:.03},uC:{value:new THREE.Color(0xfff2cc)}}, bm=new THREE.ShaderMaterial({uniforms:BU,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide,
-    vertexShader:'varying vec2 vU; void main(){ vU=uv; vec4 p=vec4(position,1.); \n#ifdef USE_INSTANCING\n p=instanceMatrix*p; \n#endif\n gl_Position=projectionMatrix*modelViewMatrix*p; }',
-    fragmentShader:'uniform float uT,uO; uniform vec3 uC; varying vec2 vU; void main(){ float a=vU.x*6.2832, n=sin(a*3.+vU.y*2.-uT*.11)+sin(a*7.-vU.y*5.+uT*.07)*.6+sin(a*13.+uT*.05)*.3, st=floor((n*.25+.75)*3.)/3., f=smoothstep(0.,.25,vU.y)*(1.-smoothstep(.85,1.,vU.y)); gl_FragColor=vec4(uC*uO*st*f*1.8,1.); }'});
+  const BU={uT:{value:0},uO:{value:.045},uA:{value:.9*T},uC:{value:new THREE.Color(0xfff2cc)}}, bm=new THREE.ShaderMaterial({uniforms:BU,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide,
+    vertexShader:'uniform float uT,uA; varying vec2 vU; varying float vE; void main(){ vU=uv; vec4 p=vec4(position,1.); vec3 n=normal; \n#ifdef USE_INSTANCING\n p=instanceMatrix*p; n=mat3(instanceMatrix)*n; float ph=instanceMatrix[3].x*.013+instanceMatrix[3].z*.017; p.xz+=vec2(sin(uT*.55+ph)+.4*sin(uT*1.3+ph*3.),cos(uT*.47+ph)+.4*sin(uT*1.1+ph*2.))*uA*uv.y*uv.y; \n#endif\n vec4 m=modelViewMatrix*p; vec3 v=projectionMatrix[3][3]>.5?vec3(0.,0.,1.):normalize(-m.xyz); vE=abs(dot(normalize(mat3(modelViewMatrix)*n),v)); gl_Position=projectionMatrix*m; }',
+    fragmentShader:'uniform float uT,uO; uniform vec3 uC; varying vec2 vU; varying float vE; void main(){ float a=vU.x*6.2832, n=sin(a*3.+vU.y*2.-uT*.11)+sin(a*7.-vU.y*5.+uT*.07)*.6+sin(a*13.+uT*.05)*.3, st=n*.2+.8, e=smoothstep(.05,.9,vE), f=smoothstep(0.,.3,vU.y)*(1.-smoothstep(.75,1.,vU.y)); gl_FragColor=vec4(uC*uO*st*f*e*e*2.4,1.); }'});
   { const DN=90, DG=new THREE.BufferGeometry(), dp=new Float32Array(DN*3), ds=new Float32Array(DN); for(let i=0;i<DN;i++){ dp[i*3]=hs(i,1,2)-.5; dp[i*3+1]=hs(i,3,4); dp[i*3+2]=hs(i,5,6)-.5; ds[i]=hs(i,7,8); }
     DG.setAttribute('position',new THREE.BufferAttribute(dp,3)); DG.setAttribute('seed',new THREE.BufferAttribute(ds,1));
     const DU={uT:{value:0},uK:{value:0},uP:{value:new THREE.Vector3()},uBox:{value:12*T},uH:{value:4*T},uPx:{value:2},uB:{value:LFX.sunB},uS:{value:new THREE.Vector3(0,1,0)}};
@@ -12,7 +12,7 @@ const RAYS={};
     const DP=new THREE.Points(DG,DM); DP.frustumCulled=false; DP.visible=false; scene.add(DP); RAYS.dust=DP; RAYS.DU=DU; }
   const BM=new THREE.InstancedMesh(new THREE.CylinderGeometry(.5,.5,1,6,1,true).translate(0,.5,0),bm,N*2); BM.frustumCulled=false; BM.visible=false; scene.add(BM); RAYS.beams=BM;
   const m4=new THREE.Matrix4(), q=new THREE.Quaternion(), up=new THREE.Vector3(0,1,0), sv=new THREE.Vector3(), sp=new THREE.Vector3(), sc=new THREE.Vector3(), G=[];
-  const bd=new THREE.Vector3(0,1,0), SPOT=[0,1,2,3].map(i=>({x:0,z:0,tx:0,tz:0,t:0,r:(1.1+.5*hs(i,2,3))*T,on:0,o:null})), LEN=26*T;
+  const bd=new THREE.Vector3(0,1,0), SPOT=[0,1,2,3].map(i=>({x:0,z:0,tx:0,tz:0,t:0,r:(1.5+.7*hs(i,2,3))*T,on:0,o:null})), LEN=26*T;
   const rare=()=>{ const P=[], add=(x,z,o,w)=>{ if(Math.hypot(x-pos.x,z-pos.z)<28*T)P.push({x,z,o,w}); };
     for(const b of (window.BIRDS&&BIRDS.list)||[])if(b.st!=='fly'&&b.st!=='pet')add(b.x,b.z,b,1);
     for(const b of (window.BFLY&&BFLY.list&&BFLY.list())||[])if(b.g)add(b.g.position.x,b.g.position.z,b,1);
@@ -47,7 +47,7 @@ const RAYS={};
       if(!g){ b.set(0,-1e5,0,0); m4.makeScale(0,0,0); BM.setMatrixAt(i,m4); BM.setMatrixAt(i+N,m4); continue; }
       b.set(g[0],g[1],g[2],g[3]); sp.set(g[0],g[1],g[2]);
       BM.setMatrixAt(i,m4.compose(sp,q,sc.set(g[3]*2,g[4],g[3]*2))); BM.setMatrixAt(i+N,m4.compose(sp,q,sc.set(g[3]*1.1,g[4],g[3]*1.1))); }
-      BM.instanceMatrix.needsUpdate=true; BU.uO.value=.04*k; }
+      BM.instanceMatrix.needsUpdate=true; BU.uO.value=.06*k; }
     else for(const b of LFX.sunB)b.set(0,-1e5,0,0);
     U.uK.value=0; if(out&&!ROOMS.cur&&cam.isPerspectiveCamera&&e>-1){ depthFit(); sp.copy(cam.position).addScaledVector(sv,400).project(cam);
       cam.getWorldDirection(sc); if(sc.dot(sv)>0&&sp.z<1){ U.uSun.value.set(sp.x*.5+.5,sp.y*.5+.5); const off=Math.max(Math.abs(sp.x),Math.abs(sp.y)); U.uK.value=cl((e+1)/5)*(1-cl((W.cloud-.85)/.15))*cl((2.2-off)/1.2); U.uAsp.value=cam.aspect||1; } } P.enabled=U.uK.value>0; };

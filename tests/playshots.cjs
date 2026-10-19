@@ -22,13 +22,14 @@ process.on('unhandledRejection',e=>{ errs.push('TEST '+String(e&&e.message||e).s
   await shot('day-iso',null,4000);
   await pg.keyboard.press('q'); await pg.keyboard.press('q'); await shot('day-iso-rev',null,4000); await pg.keyboard.press('e'); await pg.keyboard.press('e');
   await pg.keyboard.press('v'); for(let i=0;i<6;i++){ await pg.mouse.wheel(0,600); await pg.waitForTimeout(150); }
-  await shot('day-behind-a',new Function(at+'__dbg.face(Math.atan2(tx-px,tz-pz));'),4000);
-  await shot('day-behind-b',new Function(at+'__dbg.face(Math.atan2(px-tx,pz-tz));'),4000);
+  await shot('day-behind-a',new Function(at+'STORE.goTo(px,B.Z(M.B.y0+11.8),"up"); __dbg.face(Math.atan2(tx-px,tz-pz));'),4000);
+  await shot('day-behind-b',new Function(at+'STORE.goTo(px,B.Z(M.B.y0+9.6),"up"); __dbg.face(Math.atan2(px-tx,pz-tz));'),4000);
   await pg.evaluate(()=>window.DN&&DN.set&&DN.set('night'));
-  await shot('night-behind-a',new Function(at+'__dbg.face(Math.atan2(tx-px,tz-pz));'),4000);
-  await shot('night-behind-b',new Function(at+'__dbg.face(Math.atan2(px-tx,pz-tz));'),4000);
-  await pg.keyboard.press('v'); await pg.keyboard.press('v');
+  await shot('night-behind-a',new Function(at+'STORE.goTo(px,B.Z(M.B.y0+11.8),"up"); __dbg.face(Math.atan2(tx-px,tz-pz));'),4000);
+  await shot('night-behind-b',new Function(at+'STORE.goTo(px,B.Z(M.B.y0+9.6),"up"); __dbg.face(Math.atan2(px-tx,pz-tz));'),4000);
+  await pg.keyboard.press('v'); await pg.keyboard.press('v'); await pg.evaluate(new Function(at+'STORE.goTo(px,pz,"up");'));
+  for(let i=0;i<6;i++){ await pg.mouse.wheel(0,600); await pg.waitForTimeout(150); }
   await shot('night-iso',null,4000);
   await pg.keyboard.press('q'); await pg.keyboard.press('q'); await shot('night-iso-rev',null,4000);
-  rep.r=await pg.evaluate(()=>{ const I=__dbg.info&&__dbg.info(); return I; });
+  rep.lamps=await pg.evaluate(()=>LITE.sel.map(L=>[+L.position.x.toFixed(1),+L.position.y.toFixed(1),+L.position.z.toFixed(1),+L.intensity.toFixed(2)])); rep.r=await pg.evaluate(()=>{ const I=__dbg.info&&__dbg.info(); return I; });
   fin(); await b.close(); })();

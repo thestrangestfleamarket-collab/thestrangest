@@ -1,14 +1,14 @@
 const BOOKS={}; window.BOOKS=BOOKS;
 { const T=TILE, KEY='books', say=FORAGE.say, use=FORAGE.use;
-  const BK=[['paper','TATTERED PAPERBACK','MENDED PAPERBACK',0,2,6,1,{glue:1},[0,45]],['novel','WATER-STAINED NOVEL','RESTORED NOVEL',15,4,14,2,{glue:1,thread:1},[10,55]],
-    ['atlas','BROKEN-SPINED ATLAS','RESTORED ATLAS',30,8,30,4,{glue:1,thread:1,cloth:1},[25,70]],['hymnal','LOOSE-LEAFED HYMNAL','REBOUND HYMNAL',40,10,40,5,{thread:2,cloth:1},[35,80]],
-    ['ledger','MOLDY SHOP LEDGER','RESTORED LEDGER',50,12,55,6,{glue:1,thread:1,leather:1},[45,90]],['herbal','CRUMBLING HERBAL','RESTORED HERBAL',60,0,90,10,{glue:2,thread:2,leather:1},[55,100]],
-    ['first','RUINED FIRST EDITION','RESTORED FIRST EDITION',75,0,220,15,{glue:1,thread:2,leather:2},[70,115]]];
-  const SUP=[['bkit',"BINDER'S KIT",15],['glue',"BOOKBINDER'S GLUE",1],['thread','LINEN THREAD',1],['cloth','BOOKCLOTH',2],['leather','CALF LEATHER',6]];
+  const BK=[['paper','TATTERED PAPERBACK','MENDED PAPERBACK',0,2,6,1,{bs_glue:1},[0,45]],['novel','WATER-STAINED NOVEL','RESTORED NOVEL',15,4,14,2,{bs_glue:1,bs_thread:1},[10,55]],
+    ['atlas','BROKEN-SPINED ATLAS','RESTORED ATLAS',30,8,30,4,{bs_glue:1,bs_thread:1,bs_cloth:1},[25,70]],['hymnal','LOOSE-LEAFED HYMNAL','REBOUND HYMNAL',40,10,40,5,{bs_thread:2,bs_cloth:1},[35,80]],
+    ['ledger','MOLDY SHOP LEDGER','RESTORED LEDGER',50,12,55,6,{bs_glue:1,bs_thread:1,bs_leather:1},[45,90]],['herbal','CRUMBLING HERBAL','RESTORED HERBAL',60,0,90,10,{bs_glue:2,bs_thread:2,bs_leather:1},[55,100]],
+    ['first','RUINED FIRST EDITION','RESTORED FIRST EDITION',75,0,220,15,{bs_glue:1,bs_thread:2,bs_leather:2},[70,115]]];
+  const SUP=[['bs_kit',"BINDER'S KIT",15],['bs_glue',"BOOKBINDER'S GLUE",1],['bs_thread','LINEN THREAD',1],['bs_cloth','BOOKCLOTH',2],['bs_leather','CALF LEATHER',6]];
   const NM={}, PR={}, RC=[]; for(const [id,w,r,,,rp,wp,ins,mm] of BK){ NM['bk_'+id]=w; NM['br_'+id]=r; PR['bk_'+id]=wp; PR['br_'+id]=rp; RC.push(['br_'+id,r,'bind',mm,Object.assign({['bk_'+id]:1},ins),'sells for $'+rp]); }
   for(const [id,n] of SUP)NM[id]=n; FORAGE.add({names:NM,prices:PR,recipes:RC});
-  FORAGE.CK.bind={short:'BIND',need:()=>FORAGE.has('bkit')?null:"YOU NEED A BINDER'S KIT (THE ODDITIES STALL HAS ONE).",made:nm=>`YOU MEND IT, PAGE BY PAGE: ${nm}.`,fail:'THE GLUE SETS CROOKED. THE BOOK IS NO WORSE, BUT YOUR SUPPLIES ARE WASTED.',keep:id=>id.startsWith('bk_'),
-    status:()=>FORAGE.has('bkit')?"BINDER'S KIT":"NO BINDER'S KIT"};
+  FORAGE.CK.bind={short:'BIND',need:()=>FORAGE.has('bs_kit')?null:"YOU NEED A BINDER'S KIT (THE ODDITIES STALL HAS ONE).",made:nm=>`YOU MEND IT, PAGE BY PAGE: ${nm}.`,fail:'THE GLUE SETS CROOKED. THE BOOK IS NO WORSE, BUT YOUR SUPPLIES ARE WASTED.',keep:id=>id.startsWith('bk_'),
+    status:()=>FORAGE.has('bs_kit')?"BINDER'S KIT":"NO BINDER'S KIT"};
   FORAGE.HELP.push("BOOKBINDING restores worn books (a binder's kit, glue, thread, cloth, leather); find them in trash cans and the river, or buy them at the oddities stall, which buys them back mended.");
   const day=()=>window.MAIL&&MAIL.ready?MAIL.day():window.CITY?CITY.day||0:0;
   const S={v:1,cans:{},sd:-1,stock:{}}; try{ const D=JSON.parse(SAVE.get(KEY)||'null'); if(D&&D.v===1)Object.assign(S,D); }catch(e){} const save=()=>SAVE.set(KEY,JSON.stringify(S));
@@ -29,7 +29,7 @@ const BOOKS={}; window.BOOKS=BOOKS;
     o+=`<div style="margin-bottom:8px"><button ${B} data-gem="1" style="margin:0">THE GEM OF THE DAY</button></div><div style="margin:6px 0 4px;color:#9b9584">WORN BOOKS (TODAY'S BOX)</div><table style="border-collapse:collapse;width:100%">`;
     for(const [id,w,,,p] of BK){ if(!p)continue; const n=S.stock[id]||0; o+=row(w+`<div style="color:#8a8676;font-size:10px">${n} LEFT</div>`,'$'+p,has('bk_'+id)?'x'+has('bk_'+id):'',n?`<button ${B} data-buy="bk_${id}">BUY</button>`:''); }
     o+=`</table><div style="margin:10px 0 4px;color:#9b9584">BINDING THINGS</div><table style="border-collapse:collapse;width:100%">`;
-    for(const [id,n,p] of SUP){ if(id==='bkit'&&has('bkit'))continue; o+=row(n,'$'+p,has(id)?'x'+has(id):'',`<button ${B} data-buy="${id}">BUY</button>${id==='bkit'?'':`<button ${B} data-buy="${id}" data-n="5">5 $${p*5}</button>`}`); }
+    for(const [id,n,p] of SUP){ if(id==='bs_kit'&&has('bs_kit'))continue; o+=row(n,'$'+p,has(id)?'x'+has(id):'',`<button ${B} data-buy="${id}">BUY</button>${id==='bs_kit'?'':`<button ${B} data-buy="${id}" data-n="5">5 $${p*5}</button>`}`); }
     o+=`</table><div style="margin:10px 0 4px;color:#9b9584">IT BUYS</div><table style="border-collapse:collapse;width:100%">`+mine.map(id=>{ const n=has(id), v=PR[id]; return row(NM[id],'$'+v,'x'+n,`<button ${B} data-sell="${id}">SELL</button>${n>1?`<button ${B} data-sell="${id}" data-n="all">ALL $${v*n}</button>`:''}`); }).join('')+'</table>';
     if(!mine.length)o+='<div style="color:#7d7a70;margin-top:6px">No books on you. Mend one with a binder\'s kit (THE PACK, CRAFT) and bring it here.</div>';
     const x=P.querySelector(':scope>.pX'); P.innerHTML=o; if(x)P.appendChild(x); };
@@ -41,4 +41,4 @@ const BOOKS={}; window.BOOKS=BOOKS;
     INV.add('x',0); delete INV.items.x; draw(); FORAGE.draw(); });
   BOOKS.open=()=>{ P.hidden=false; draw(); };
   for(const th of UI.things)if(th.name==='THE ODDITIES STALL')th.act=BOOKS.open;
-  window.BOOKDBG=()=>({stock:{...S.stock},cans:{...S.cans},mine:Object.keys(INV.items).filter(id=>/^(bk_|br_)/.test(id)),bind:FORAGE.sk('bind'),kit:FORAGE.has('bkit')}); }
+  window.BOOKDBG=()=>({stock:{...S.stock},cans:{...S.cans},mine:Object.keys(INV.items).filter(id=>/^(bk_|br_)/.test(id)),bind:FORAGE.sk('bind'),kit:FORAGE.has('bs_kit')}); }

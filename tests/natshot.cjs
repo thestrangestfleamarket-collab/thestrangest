@@ -17,7 +17,7 @@ const {chromium}=require('playwright');
   await pg.screenshot({path:out+'-bed.png'});
   console.log('bird',await pg.evaluate(()=>{ const b=BIRDS.list.find(b=>b.st!=='pet'); if(!b)return 'none'; BIRDS.menu(b); return BIRDS.K[b.k][0]; })); await pg.waitForTimeout(600); await pg.screenshot({path:out+'-menu.png'});
   await pg.evaluate(()=>{ document.getElementById('birdp').hidden=true; FORAGE.give('bseed',3); BIRDS.S.seen[0]=2; BIRDS.S.seen[3]=1; FORAGE.PACK.toggle('birds'); }); await pg.waitForTimeout(600); await pg.screenshot({path:out+'-journal.png'});
-  await pg.evaluate(()=>{ FORAGE.PACK.toggle(); FORAGE.give('bk_novel',1); FORAGE.give('glue',2); FORAGE.give('thread',2); FORAGE.give('bkit',1); FORAGE.PACK.toggle('craft'); }); await pg.waitForTimeout(600); await pg.screenshot({path:out+'-craft.png'});
+  await pg.evaluate(()=>{ FORAGE.PACK.toggle(); FORAGE.give('bk_novel',1); FORAGE.give('bs_glue',2); FORAGE.give('bs_thread',2); FORAGE.give('bs_kit',1); FORAGE.PACK.toggle('craft'); }); await pg.waitForTimeout(600); await pg.screenshot({path:out+'-craft.png'});
   await pg.evaluate(()=>{ FORAGE.craft('br_novel'); FORAGE.PACK.toggle(); BOOKS.open(); }); await pg.waitForTimeout(600); await pg.screenshot({path:out+'-books.png'});
   await pg.evaluate(()=>{ document.getElementById('bookp').hidden=true; VEG.SHOP.open(); }); await pg.waitForTimeout(600); await pg.screenshot({path:out+'-veg.png'});
   await pg.evaluate(()=>{ document.getElementById('vegp').hidden=true; const b=BIRDS.list.find(b=>b.st!=='pet'); if(b){ FORAGE.S.sk.bird=1000; STORE.pos.set(b.x+BIRDS.T*1.5,0,b.z); BIRDS.menu(b); document.querySelector('#birdp [data-a="tame"]').click(); } }); await pg.waitForTimeout(5000);

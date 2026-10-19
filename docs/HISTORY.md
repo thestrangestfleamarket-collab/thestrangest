@@ -1897,3 +1897,9 @@ off his feet (only more than 6 of the rig's units does), so he no longer drops t
 extra hip dip is passed on (all of it standing: sitting, crouching); the run's elbows are the rig's again. **Knees**: the rig itself
 bends a knee backwards in some run frames (37 in 4 s); each knee now bends toward the way his hips face (none backwards, walking or
 running). Planted feet: under 1 cm a second (walk, run, circles, stops, stairs). 722 triangles.
+
+**The mannequin deleted; the Walker back** (owner, 19 Oct 2026, of the realistic-head mockups: "stop delete this avatar from game"; his
+pick: the original Walker): the mannequin body is gone (`087a-avatars.js`, `data/humanoid.json`, `tools/humanoid-bake.cjs`,
+`data/full/humanoid.fbx`); the hand-made Walker, who had moved you unseen under it, is drawn again, in the default looks (the avatar editor
+and the looks panel's choices stay removed, from this morning). Kept from the day's movement work: your pose worked out every frame,
+the heading easing into turns. The head mockups (two rounds of six) were never put in the game.

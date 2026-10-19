@@ -23,6 +23,7 @@ jobs:
         run: |
           mkdir -p out; set +e
           MIN=0 python3 build.py > out/log.txt 2>&1; echo "build $?" >> out/status.txt
+          node tests/brookshots.cjs out/brook >> out/log.txt 2>&1; echo "brook $?" >> out/status.txt
           node tests/nextshots.cjs out >> out/log.txt 2>&1; echo "next $?" >> out/status.txt
           node tests/runcheck.cjs out/run >> out/log.txt 2>&1; echo "run $?" >> out/status.txt
           echo "::notice title=report::$(cat out/status.txt out/report.json 2>/dev/null | tr '\n' ' ' | cut -c1-6000)"

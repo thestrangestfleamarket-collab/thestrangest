@@ -2973,3 +2973,8 @@ building until you go inside"; `054-apts.js`, `075-main-13.js`)
 - **No dots on the figures** (owner, 19 Oct 2026, after a mockup of three looks: "i dont want dots", "i want B"): shadows falling on you
   and the walker-built figures are looked up a little off their surface (normal offset +0.18), so they no longer speckle the figure
   with dots; with the half-light floor and quarter bands above, a shadow on a figure is one clean flat band with a clean edge.
+- **Zoomed in, pixels stop growing** (owner, 19 Oct 2026, of a close zoom where his figure's face was a few huge blocks: "is it
+  possible to keep same resolution even when zooming in super close?", of two options "B"): zooming in, the art's pixels grow only
+  up to their size at the opening view (`PCAP`, the opening's screen pixels per art pixel); past that the picture gets finer instead
+  of blockier. This replaces "zoomed in the art's pixels only grow" (17 Oct) for close zooms; the opening and zoomed-out views are
+  unchanged, and nothing is ever finer on screen than the opening's pixel size.

@@ -26,7 +26,7 @@ const FULLRES=+(new URLSearchParams(location.search).get('fullres')||0); if(FULL
 const RESL=[.5,.75,1,1.5,2,3,4,6,8,12,16,24,32,48,64], V0=PPU*PXS;
 const ZUPX=6, RES=()=>RESL[Math.min(RESL.length-1,RESI+(V0*ppu/PPU/(PPU*RESL[RESI])>=ZUPX?1:0))];
 const MINPX=()=>Math.max(1,Math.round(PXS/RES())), MAXPX=8, ZMAX=PPU*80;
-const RESMAX=FULLRES?10:3, vpu=()=>V0*ppu/PPU, art=()=>PPU*RES(), pxS=()=>Math.max(MINPX(),Math.round(vpu()/art())), rppu=()=>Math.round(vpu()/art())<MINPX()?vpu()/pxS():art();
+const RESMAX=FULLRES?10:3, vpu=()=>V0*ppu/PPU, art=()=>PPU*RES(), PCAP=()=>Math.max(1,Math.round(PXS/RESL[RESI])), pxS=()=>Math.min(Math.max(MINPX(),PCAP()),Math.max(MINPX(),Math.round(vpu()/art()))), rppu=()=>{ const r=Math.round(vpu()/art()); return r<MINPX()||r>Math.max(MINPX(),PCAP())?vpu()/pxS():art(); };
 function frustum(){ const u=rppu(); cam.left=-RW/2/u; cam.right=RW/2/u; cam.top=RH/2/u; cam.bottom=-RH/2/u; cam.updateProjectionMatrix(); }
 addEventListener('resize',resize);
 

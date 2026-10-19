@@ -61,7 +61,7 @@ const WX={hold:null,now:null};
       for(let jz=Math.max(0,Math.floor(gz-R)),jz1=Math.min(NT-1,Math.ceil(gz+R));jz<=jz1;jz++){ const dz=jz+.5-gz; for(let jx=Math.max(0,Math.floor(gx-R)),jx1=Math.min(NT-1,Math.ceil(gx+R));jx<=jx1;jx++){ const dx=jx+.5-gx, t=1-(dx*dx+dz*dz)/R2; if(t>0)FB[jz*NT+jx]+=t*t; } } }
     for(let i=0;i<NT*NT;i++){ const v=FB[i]*3; M[i]=v>1?255:v*255; }
     for(let i=0;i<NT;i++)M[i]=M[NT*NT-1-i]=M[i*NT]=M[i*NT+NT-1]=0;
-    CSM.V.set(lx,lz,CC.x,CC.z); CSM.tex.needsUpdate=true; };
+    Object.assign(CSM.V,{x:lx,y:lz,z:CC.x,w:CC.z}); CSM.tex.needsUpdate=true; };
   const NR=1800, RB=16*TILE, RH=14*TILE, rp=new Float32Array(NR*6), rs=new Float32Array(NR*3); for(let i=0;i<NR;i++){ rs[i*3]=(Math.random()-.5)*2*RB; rs[i*3+1]=Math.random()*RH; rs[i*3+2]=(Math.random()-.5)*2*RB; }
   const rg=new THREE.BufferGeometry(); rg.setAttribute('position',new THREE.BufferAttribute(rp,3).setUsage(THREE.DynamicDrawUsage));
   const RAIN=new THREE.LineSegments(rg,new THREE.LineBasicMaterial({color:0xaec4e0,transparent:true,opacity:.55,depthWrite:false})); RAIN.frustumCulled=false; scene.add(RAIN);

@@ -15,7 +15,7 @@ const fin=()=>{ rep.errors=errs.slice(0,40); fs.writeFileSync(path.join(OUT,'rep
     const M=__dbg.MAPK, P=M.PARK, T=window.TILE||33.9/30, cx=M.BOD.XS(P.round[0]+(P.ox||0)), cz=M.BOD.ZS(P.round[1]+(P.oy||0)), px=(wx,wz)=>[((wx-C.V.z)/C.w+.5)*N/2,((wz-C.V.w)/C.w+.5)*N/2];
     x.fillStyle='red'; for(const g of [[-13,-15],[13,-15],[-14,3],[14,3],[-12,21],[13,21]]){ const [a,b]=px(cx+g[0]*T,cz+g[1]*T); x.fillRect(a-2,b-2,4,4); }
     x.strokeStyle='lime'; const w=(P.x1-P.x0)*T, h=(P.y1-P.y0)*T, [a,b]=px(M.BOD.XS(P.x0+(P.ox||0)),M.BOD.ZS(P.y0+(P.oy||0))), [c,e]=px(M.BOD.XS(P.x1+(P.ox||0)),M.BOD.ZS(P.y1+(P.oy||0))); x.strokeRect(Math.min(a,c),Math.min(b,e),Math.abs(c-a),Math.abs(e-b));
-    return {url:cv.toDataURL(),V:C.V.toArray(),cc:[cx,cz]}; });
+    return {url:cv.toDataURL(),V:[C.V.x,C.V.y,C.V.z,C.V.w],cc:[cx,cz]}; });
   fs.writeFileSync(path.join(OUT,H+'-mask.png'),Buffer.from(mk.url.split(',')[1],'base64')); rep['mask'+H]={V:mk.V,cc:mk.cc};
   await pg.mouse.move(480,270); for(let i=0;i<10;i++){ await pg.mouse.wheel(0,600); await pg.waitForTimeout(150); }
   for(let i=0;i<6;i++)await shot('animal'+i,(g)=>{ const M=__dbg.MAPK, P=M.PARK, T=window.TILE||33.9/30; STORE.goTo(M.BOD.XS(P.round[0]+(P.ox||0))+g[0]*T,M.BOD.ZS(P.round[1]+(P.oy||0))+g[1]*T,'up'); },3000,SPOT[i]);

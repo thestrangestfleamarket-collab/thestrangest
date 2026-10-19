@@ -36,7 +36,7 @@ ROOMS.roofAt=(x,y,z)=>{ const h=new THREE.Raycaster(new THREE.Vector3(x,y,z),new
       const A=MODS.apts; if(!hit&&A&&A.in){ const lv=A.floor(), S=BOD.K.STORY; for(const t of A.rects(lv)){ const b=box(BOD.X,BOD.Z,t,A.lvY(lv)-.5,A.lvY(lv+1)); if(within(b,pos.x,pos.z,lv>0?0:IN)){ hit=b; break; } } } }
     ROOMS.cur=hit; UI.isoPlace(); if(BOD.GD)BOD.GD.tick(); if(MODS.dungeon)MODS.dungeon.tick();
     for(const h of OVERHEAD)SEEN(h.o,cam.position.y<h.y);
-    const cutOn=hit&&!UI.persp&&(UI.view==='iso'||UI.view==='map'); VOID(cutOn?hit:null);
+    const cutOn=hit&&!UI.persp&&(UI.view==='iso'||UI.view==='map'); VOID(null);
     if(cutOn){ if(!NEARON||!NEARIN)ROOMS.nearAll(); NEARIN=true;
       const cx=cam.position.x-pos.x, cz=cam.position.z-pos.z, l=Math.hypot(cx,cz)||1, ux=cx/l, uz=cz/l, BAND=1.1*TILE;
       NEAR[0].normal.set(0,-1,0); NEAR[0].constant=py+.45*ZU*24/.84;

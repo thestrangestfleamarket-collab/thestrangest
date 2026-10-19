@@ -1,5 +1,5 @@
 const UAL=__DATA__("data/ual.json"), HUM=__DATA__("data/humanoid.json");
-const AVS={C:{}};
+const AVS={kind:'ghost',KINDS:['ghost','mannequin'],NAME:{ghost:'GHOST',mannequin:'MANNEQUIN'},C:{}};
 window.AVS=AVS;
 { const D=UAL.ual, RG=D.rig, BN=RG.names, PAR=RG.parent, BI=Object.fromEntries(BN.map((n,i)=>[n,i])), V=THREE.Vector3, Q=THREE.Quaternion;
   const b=s=>{ const t=atob(s), u=new Uint8Array(t.length); for(let i=0;i<t.length;i++)u[i]=t.charCodeAt(i); return u; }, f32=s=>new Float32Array(b(s).buffer), i16=s=>new Int16Array(b(s).buffer);
@@ -38,7 +38,8 @@ window.AVS=AVS;
   const fwd=()=>new V(Math.sin(heading),0,Math.cos(heading));
   const npcOf=(geo,rig,tall,names)=>{ const N=makeNPC(null,{key:'me',name:'YOU',names,eye:-1,lv:'up',group:'bodega',geo,skin:rig,tall,rank:names.map(()=>0),metres:1.85*(W3.SZ||1),x:pos.x,z:pos.z,radius:.3,speed:0,stride:0,rock:0,bob:0});
     NPCS.splice(NPCS.indexOf(N),1); if(N.g.parent)N.g.parent.remove(N.g); scene.add(N.g); NPCS.extra.push({g:N.g}); return N; };
-  const body=()=>{ const rig=rigOf(RG.t), B=rig.bones, bone=x=>B[BI[x]], A=new V(), C=new V(), wq=new Q(), pq=new Q();
+  const BUILD=AVS.BUILD={};
+  BUILD.mannequin=()=>{ const rig=rigOf(RG.t), B=rig.bones, bone=x=>B[BI[x]], A=new V(), C=new V(), wq=new Q(), pq=new Q();
     B[0].updateMatrixWorld(true);
     for(const [sd,x] of [['l',1],['r',-1]]){ const u=bone('upperarm_'+sd); u.getWorldPosition(A); bone('hand_'+sd).getWorldPosition(C);
       const dq=new Q().setFromUnitVectors(C.sub(A).normalize(),new V(.63*x,-.41,0).normalize()); u.getWorldQuaternion(wq); u.parent.getWorldQuaternion(pq); u.quaternion.copy(pq.invert().multiply(dq.multiply(wq))); B[0].updateMatrixWorld(true); }
@@ -57,6 +58,7 @@ window.AVS=AVS;
   const MOVE={jump:'Jump_Loop',backflip:'Jump_Loop',frontflip:'Jump_Loop',jab:'Punch_Jab',cross:'Punch_Cross',hook:'Punch_Cross',uppercut:'Punch_Cross',slap:'Punch_Jab',frontKick:'Punch_Cross',roundhouse:'Punch_Cross',
     legSweep:'Crouch_Idle_Loop',fall:'Death01',roll:'Roll',block:'Spell_Simple_Idle_Loop',guard:'Spell_Simple_Idle_Loop',crouch:'Crouch_Idle_Loop',flinch:'Hit_Chest',wave:'Interact',dance:'Dance_Loop'};
   const MPS=TILE/.84; let lx=null, lz=null, sp=0;
+  AVS.set=k=>{ if(!AVS.KINDS.includes(k))k='ghost'; for(const n in AVS.C)if(n!==k&&AVS.C[n].off)AVS.C[n].off(); AVS.kind=k; if(!AVS.C[k]&&BUILD[k])AVS.C[k]=BUILD[k](); try{ SAVE.set('avatar',k); }catch(e){} if(AVS.draw)AVS.draw(); };
   const pick=()=>{ const mv=st.move&&st.move.name; let base='Idle_Loop', ts=1;
     if(st.water&&st.water.in)base=sp>.3?'Swim_Fwd_Loop':'Swim_Idle_Loop';
     else if(st.sit)base='Sitting_Idle_Loop';
@@ -66,12 +68,17 @@ window.AVS=AVS;
       if(sn>3.6){ base='Sprint_Loop'; ts=sp/5; } else if(sn>2){ base='Jog_Fwd_Loop'; ts=sp/3.2; } else { base='Walk_Loop'; ts=sp/1.4; } }
     return [base,Math.max(.2,Math.min(4,ts*(st.anim||1)))]; };
   const jumpY=B=>{ const mv=st.move&&st.move.name; return mv&&/jump|flip/.test(mv)&&B&&B.J&&B.J.pelvis?Math.max(0,B.J.pelvis.y-18):0; };
-  AVS.tick=(dt,B)=>{ const C=AVS.C.me||(AVS.C.me=body()), first=typeof UI!=='undefined'&&UI.view==='first';
-    C.g.visible=!first&&!W3.hideMeQ; if(!W3.hideMeQ)W3.hideMe=true;
+  AVS.tick=(dt,B)=>{ const k=AVS.kind, C=AVS.C[k], first=typeof UI!=='undefined'&&UI.view==='first', mine=!!C;
+    for(const n in AVS.C){ const c=AVS.C[n]; if(c.g)c.g.visible=mine&&n===k&&!first&&!W3.hideMeQ; } if(!W3.hideMeQ)W3.hideMe=true;
     if(!dt)return;
     if(lx===null){ lx=pos.x; lz=pos.z; } const d=Math.hypot(pos.x-lx,pos.z-lz)/MPS/dt; lx=pos.x; lz=pos.z; sp+=(Math.min(d,9)-sp)*Math.min(1,dt*8);
     const [base,ts]=pick();
+    if(!mine)return; if(C.tick)return C.tick(dt,B);
     C.g.position.set(pos.x,py+jumpY(B)*ZU*(W3.SZ||1)*(W3.BH||1),pos.z); C.g.rotation.set(0,RAG.on?RAG.hd:heading,0);
     const b0=RAG.on?'Death01':base||'Idle_Loop'; C.an.base=b0; C.an.ts=ts; C.an.update(dt*(b0==='Idle_Loop'?st.anim||1:1));
     if(C.relax)C.relax(dt,b0==='Idle_Loop'&&!RAG.on); };
-  window.AVSDBG=()=>{ const C=AVS.C.me; return {ready:!!C,base:C&&C.an.base,tris:C?C.tris:0,sp:+sp.toFixed(2),vis:!!C&&C.g.visible}; }; }
+  AVS.draw=()=>document.querySelectorAll('[data-av]').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.av===AVS.kind)));
+  AVS.into=row=>{ if(!row.children.length){ row.innerHTML=AVS.KINDS.map(k=>`<button data-av="${k}">${AVS.NAME[k]}</button>`).join('');
+      row.onclick=e=>{ const x=e.target.closest('[data-av]'); if(x){ e.stopPropagation(); AVS.set(x.dataset.av); } }; } AVS.draw(); };
+  window.AVSDBG=()=>{ const C=AVS.C[AVS.kind]; return {kind:AVS.kind,ready:!!C,base:C&&C.an&&C.an.base,tris:C&&C.tris?Math.round(C.tris):0,sp:+sp.toFixed(2),vis:!!C&&!!C.g&&C.g.visible,ghost:C&&C.state?C.state():undefined}; };
+  let k0=QS.get('avatar'); if(!k0)try{ k0=SAVE.get('avatar'); }catch(e){} AVS.set(AVS.KINDS.includes(k0)?k0:'ghost'); }

@@ -6,7 +6,7 @@ const FOUNT={ready:false,swim:false}; window.FOUNT=FOUNT;
   const ter=FOUNT.ter=(x,y)=>FOUNT.S?Math.hypot(x-FOUNT.S.C.x,y-FOUNT.S.C.y)-FOUNT.S.R:1e9;
   FOUNT.away=(x,y)=>Math.min(lake(x,y)-1,ter(x,y)-1);
   FOUNT.at=P=>{ if(FOUNT.S)return FOUNT.S; const wx1=P.x1-8, wy1=P.y1-8, R=23, cx=wx1-R-8; let yS=-1e9; for(let x=cx-R;x<=cx+R;x+=.5)yS=Math.max(yS,P.round[1]+P.wobY(x)+4.2);
-    const C={x:cx,y:Math.ceil(yS+3.5+R)}, L={x:C.x+20,y:C.y+45,rx:95,ry:45,cx:P.x1-.6,cy:P.y1-.6};
+    const C={x:cx,y:Math.ceil(yS+3.5+R)}, L={x:C.x+20,y:C.y+45,rx:95,ry:45,cx:P.x1-1.6,cy:P.y1-1.6};
     FOUNT.S={C,R,L,wx1,wy1}; const S=FOUNT.S, pts=[];
     for(let i=0;i<=300;i++){ const a=Math.PI*(1+.85*i/300), cx=Math.cos(a), cy=Math.sin(a); let t=0; while(t<220&&raw(L.x+cx*t,L.y+cy*t)<0)t+=.2; let t0=Math.max(0,t-.2), t1=t; for(let k=0;k<16;k++){ const t=(t0+t1)/2; if(raw(L.x+cx*t,L.y+cy*t)<0)t0=t; else t1=t; } pts.push([L.x+cx*t0,L.y+cy*t0]); }
     const poly=[]; let prev=null; for(const p of pts){ const ins=p[0]<L.cx&&p[1]<L.cy;

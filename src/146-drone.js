@@ -23,26 +23,38 @@ DRONE.init=()=>{ const H=MODS.apts; if(!H||!H.A||!H.made)return; const A=H.A, T=
   const dot=bx(.05,.03,.05,flat(0x3cff6a)); dot.position.set(0,.055,.1); D.add(dot);
   const PAR=lam(0xa77a48), parcel=bx(.2,.15,.2,PAR); parcel.position.set(0,-.13,0); parcel.visible=false; D.add(parcel);
   D.scale.setScalar(T/1.13); MAPG.bodega.add(D);
-  const B=BOD.B0, out=Z(B.y1)>Z(B.y0)?1:-1, HOME=new THREE.Vector3(X((B.x0+B.x1)/2+.9),Y(97),Z(B.y1)+out*.35*T), hout=Z(A.y1)>Z(A.y0)?1:-1;
-  const WIN=new THREE.Vector3(X((A.x0+A.x1)/2),Y(CZ+70),Z(A.y1)+hout*1.5*T), DROP=new THREE.Vector3(X((A.x0+A.x1)/2),Y(CZ)+.02,Z(A.y1)-hout*.9*T), CRUISE=9;
-  D.position.copy(HOME); D.rotation.y=Math.atan2(WIN.x-HOME.x,WIN.z-HOME.z);
-  DRONE.mesh=D; DRONE.pc=PC;
-  let legs=[], item=null, wait=0, yaw=D.rotation.y, spin=0; const V=new THREE.Vector3(), dirV=new THREE.Vector3(0,0,1);
+  const B=BOD.B0, bx0=X(B.x1-.85), bz0=Z(BOD.BODOFF+.85), RB=Y(B.h), HOME=new THREE.Vector3(bx0,Y(97),bz0), hout=Z(A.y1)>Z(A.y0)?1:-1, RA=H.lvY?H.lvY(5):Y(CZ+150);
+  const DROP=new THREE.Vector3(X((A.x0+A.x1)/2),Y(CZ)+.02,Z(A.y1)-hout*.9*T), ax0=X(A.x0+4.4), az0=Z(A.y0+7.4), CRUISE=Math.max(9,RA+2.2);
+  const BOXES=[]; DRONE.roofBox=(x,z,y)=>{ const g=new THREE.Group(), W=.62*T, Hb=.42*T, P=[], N=[], C=[], cc=new THREE.Color(); g.position.set(x,y,z);
+    const add=(w,h,d,c,px,py,pz)=>{ const G=new THREE.BoxGeometry(w,h,d).translate(px,py,pz).toNonIndexed(); P.push(...G.attributes.position.array); N.push(...G.attributes.normal.array); cc.setHex(c); for(let i=0;i<G.attributes.position.count;i++)C.push(cc.r,cc.g,cc.b); };
+    add(W+.1*T,.05*T,W+.1*T,0x3a3e42,0,.025*T,0); add(W,Hb,W,0x8c9092,0,Hb/2,0); add(W*.84,.006*T,W*.84,0x3a3e42,0,Hb+.003*T,0); for(const f of [.35,.7])add(W+.012*T,.02*T,W+.012*T,0x6e7478,0,Hb*f,0);
+    add(.32*T,.14*T,.02*T,0x3a3e42,0,Hb*.5,W/2+.01*T); add(.02*T,.2*T,.24*T,0x7a5a40,W/2+.01*T,Hb*.3,0);
+    const SG=new THREE.BufferGeometry(); SG.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); SG.setAttribute('normal',new THREE.Float32BufferAttribute(N,3)); SG.setAttribute('color',new THREE.Float32BufferAttribute(C,3));
+    const body=new THREE.Mesh(SG,new THREE.MeshLambertMaterial({vertexColors:true})); body.castShadow=body.receiveShadow=true; g.add(body);
+    const hinge=new THREE.Group(); hinge.position.set(0,Hb,-W/2); g.add(hinge); const lid=bx(W+.05*T,.05*T,W+.05*T,lam(0x9ea2a4)); lid.position.set(0,.025*T,W/2); lid.castShadow=true; hinge.add(lid);
+    const led=bx(.05*T,.03*T,.05*T,flat(0x3cff6a)); led.position.set(W*.36,.06*T,W*.86); hinge.add(led);
+    MAPG.bodega.add(g); const R={g,hinge,led,k:0,to:0,top:new THREE.Vector3(x,y+Hb+.55*T,z),in:new THREE.Vector3(x,y+.08*T,z)}; BOXES.push(R); return R; };
+  const BB=DRONE.roofBox(bx0,bz0,RB), BA=DRONE.roofBox(ax0,az0,RA), ease=t=>t<.5?2*t*t:1-2*(1-t)*(1-t);
+  D.position.copy(HOME); DRONE.mesh=D; DRONE.pc=PC;
+  let legs=[], item=null, wait=0, yaw=D.rotation.y, spin=0, mv=null, tt=0; const V=new THREE.Vector3(), P0=new THREE.Vector3();
   const up=(p,y)=>new THREE.Vector3(p.x,y,p.z);
   DRONE.go=it=>{ if(DRONE.state!=='home')return false; item=it; parcel.visible=true; DRONE.state='out'; dot.material.color.set(0xff3a3a);
-    legs=[[up(HOME,CRUISE),1.8],[up(WIN,CRUISE),4.5],[WIN.clone(),1.6,Math.atan2(0,-hout)],['wait',2.4],['drop'],[up(WIN,CRUISE),1.8],[up(HOME,CRUISE),4.5],[HOME.clone(),1.4],['park']]; return true; };
+    legs=[['lid',BB,1],[BB.top.clone(),1.1],['lid',BB,0,1],[up(BB.top,CRUISE),1.8],[up(BA.top,CRUISE),4.5],[BA.top.clone(),1.8],['lid',BA,1],[BA.in.clone(),.9],['drop'],['wait',1.6],[BA.top.clone(),1],['lid',BA,0,1],[up(BA.top,CRUISE),1.8],[up(BB.top,CRUISE),4.5],[BB.top.clone(),1.8],['lid',BB,1],[HOME.clone(),1.1],['lid',BB,0,1],['park']]; return true; };
   const parcels=[]; const toast=msg=>{ let el=document.getElementById('dtoast'); if(!el){ el=document.createElement('div'); el.id='dtoast'; el.style.cssText='position:fixed;left:50%;bottom:64px;transform:translateX(-50%);font:12px var(--pixel,monospace);color:#e8f4dc;background:#14161a;border:2px solid #3a4a3a;padding:6px 10px;z-index:15;pointer-events:none'; document.body.appendChild(el); } el.textContent=msg; el.hidden=false; clearTimeout(el.t); el.t=setTimeout(()=>{ el.hidden=true; },3200); };
   const COLS={COFFEE:0x5a3a24,SODA:0xc0302c,WATER:0xaaccee,MILK:0xf0eee6,EGGS:0xd8c8a0,BREAD:0xc8924a,CHIPS:0xe8b830,'CANDY BAR':0x8a3a8a,CEREAL:0xd8602a,'FISH FOOD':0x3a8ac0};
   const land=()=>{ const p=bx(.2*T/1.13,.15*T/1.13,.2*T/1.13,PAR); p.position.copy(DROP).add(new THREE.Vector3((Math.random()-.5)*.4*T,.075*T/1.13,0)); MAPG.bodega.add(p); const it=item; parcels.push(p);
     const th={name:'PARCEL',obj:p,reach:1*T,near:2.2*T,tall:.6*T,act:()=>{ if(!p.parent)return; MAPG.bodega.remove(p); const g=bx(.12*T,.16*T,.1*T,lam(COLS[it]||0x888888)); g.position.copy(p.position).setY(DROP.y+.08*T); MAPG.bodega.add(g); toast('YOU OPEN THE PARCEL: '+it); }};
     UI.thing(th); DRONE.last=th; toast('A PARCEL FROM THE BODEGA: '+it); };
   const SPK=+(QS.get('dronek')||1);
-  DRONE.tick=dt=>{ if(DRONE.state==='home'||!dt)return; dt*=SPK; const L=legs[0]; if(!L){ DRONE.state='home'; return; }
+  DRONE.tick=dt=>{ if(!dt)return; dt*=SPK; tt+=dt; for(const R of BOXES){ R.k+=Math.sign(R.to-R.k)*Math.min(Math.abs(R.to-R.k),dt*1.4); R.hinge.rotation.x=-ease(R.k)*1.95; }
+    if(DRONE.state==='home')return; const L=legs[0]; if(!L){ DRONE.state='home'; return; }
     if(L[0]==='wait'){ wait+=dt; if(wait>=L[1]){ wait=0; legs.shift(); } }
+    else if(L[0]==='lid'){ L[1].to=L[2]; L[1].led.material.color.set(L[2]?0xffb020:0x3cff6a); if(L[3]||Math.abs(L[1].k-L[2])<.01)legs.shift(); }
     else if(L[0]==='drop'){ parcel.visible=false; land(); legs.shift(); }
     else if(L[0]==='park'){ legs.shift(); DRONE.state='home'; dot.material.color.set(0x3cff6a); for(const r of rot)r.rotation.y=0; D.rotation.set(0,yaw,0); return; }
-    else { V.subVectors(L[0],D.position); const d=V.length(), s=L[1]*dt; if(d<=s){ D.position.copy(L[0]); legs.shift(); } else { D.position.addScaledVector(V,s/d); const hz=Math.hypot(V.x,V.z); if(hz>.05||L[2]!=null){ const ty=L[2]!=null?L[2]:Math.atan2(V.x,V.z); yaw+=((((ty-yaw)%(2*Math.PI))+3*Math.PI)%(2*Math.PI)-Math.PI)*Math.min(1,dt*4); } } }
-    const moving=L&&L[0]!=='wait'&&legs[0]===L; D.rotation.set(moving&&Math.hypot(V.x,V.z)>.05?.18:0,yaw,0,'YXZ'); spin+=dt*40; for(const r of rot)r.rotation.y=spin; };
+    else { if(mv!==L){ mv=L; P0.copy(D.position); L.d=Math.max(.35,P0.distanceTo(L[0])/L[1]*1.3); L.t=0; } L.t+=dt; const k=Math.min(1,L.t/L.d); V.copy(D.position); D.position.lerpVectors(P0,L[0],ease(k)); V.subVectors(D.position,V);
+      const hz=Math.hypot(V.x,V.z); if(hz>1e-3)yaw+=((((Math.atan2(V.x,V.z)-yaw)%(2*Math.PI))+3*Math.PI)%(2*Math.PI)-Math.PI)*Math.min(1,dt*4); if(k>=1){ legs.shift(); mv=null; } }
+    const sp=Math.hypot(V.x,V.z)/Math.max(dt,1e-3); D.rotation.set(Math.min(.28,sp*.05)+Math.sin(tt*5.3)*.025,yaw,Math.sin(tt*6.7)*.035+Math.sin(tt*2.3)*.02,'YXZ'); spin+=dt*40; for(const r of rot)r.rotation.y=spin; };
   const vb=UI.view3b, E=new THREE.Vector3(), F=new THREE.Vector3();
   UI.view3b=a=>{ if(!DRONE.cam)return vb(a); cam=PCAM; if(RPASS)RPASS.camera=cam; if(Math.abs(PCAM.aspect-RW/RH)>1e-3){ PCAM.aspect=RW/RH; PCAM.updateProjectionMatrix(); }
     F.set(Math.sin(D.rotation.y),0,Math.cos(D.rotation.y)); cam.position.copy(D.position).addScaledVector(F,-1.7).add(E.set(0,.65,0)); cam.lookAt(E.copy(D.position).addScaledVector(F,2.2).add(V.set(0,-.7,0)));
@@ -66,5 +78,5 @@ DRONE.init=()=>{ const H=MODS.apts; if(!H||!H.A||!H.made)return; const A=H.A, T=
     P.querySelector('#pccam').onclick=()=>{ P.hidden=true; DRONE.setCam(true); }; P.querySelector('#pcx').onclick=()=>{ P.hidden=true; }; };
   DRONE.open=()=>{ draw(); P.hidden=false; };
   UI.thing({name:'COMPUTER',obj:hit,reach:1.1*T,near:2.4*T,tall:1.3*T,act:DRONE.open});
-  const t0=CLOCK.tick; CLOCK.tick=dt=>{ t0(dt); DRONE.tick(dt); if(DRONE.cam){ const s=hud.querySelector('#dhst'); s.textContent=(DRONE.state==='home'?'PARKED AT THE BODEGA':legs[0]&&legs[0][0]==='wait'?'AT YOUR WINDOW':'IN FLIGHT')+' · ALT '+Math.max(0,Math.round(D.position.y/1.13*.84))+' M'; } };
+  const t0=CLOCK.tick; CLOCK.tick=dt=>{ t0(dt); DRONE.tick(dt); BODB.tick&&BODB.tick(dt); if(DRONE.cam){ const s=hud.querySelector('#dhst'); s.textContent=(DRONE.state==='home'?'PARKED AT THE BODEGA':legs[0]&&legs[0][0]==='wait'?'AT YOUR ROOF':'IN FLIGHT')+' · ALT '+Math.max(0,Math.round(D.position.y/1.13*.84))+' M'; } };
   window.DRONEDBG=()=>({state:DRONE.state,pos:D.position.toArray().map(v=>+v.toFixed(2)),legs:legs.length,parcels:parcels.length,cash:purse.get()}); };

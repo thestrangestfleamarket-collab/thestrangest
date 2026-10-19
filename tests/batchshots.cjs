@@ -14,7 +14,7 @@ const SHOTS=[['start',null],['theatre','THE MOVIE THEATRE'],['theatre-in','enter
   for(const [name,to] of SHOTS){ try{
       if(to&&to.startsWith('enter:'))await pg.evaluate(id=>{ window.__INN=Object.keys(STORE.inside||{}).length; return STORE.enter(id,true); },to.slice(6));
       else if(to&&to.startsWith('()'))await pg.evaluate(f=>{ const [x,z]=eval(f)(); __dbg.UI.goTo(x,z,'up'); },to);
-      else if(to)await pg.evaluate(n=>{ const d=(STORE.main.doors||[]).find(q=>q[0]===n); if(d)__dbg.UI.goTo(d[1],d[2],'up'); },to);
+      else if(to)await pg.evaluate(n=>{ const d=(STORE.main.doors||[]).find(q=>q[0]===n); if(d)__dbg.UI.goTo(d[1],d[2],'up'); else __dbg.UI.goPlace(n); },to);
       await pg.waitForTimeout(8000); await pg.screenshot({path:path.join(OUT,name+'.png')}); console.log('shot',name);
     }catch(e){ errs.push(name+': '+e.message.slice(0,200)); } }
   errs.push('inside: '+JSON.stringify(await pg.evaluate(()=>Object.values(STORE.inside||{}).map(R=>R.id+(R.done?'+':'-')))));

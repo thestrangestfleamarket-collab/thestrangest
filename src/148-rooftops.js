@@ -14,25 +14,23 @@ ROOFS.init=()=>{ if(typeof BOD==='undefined'||!MODS.apts||!MODS.apts.A)return;
   const stack=(x,y,z)=>cyl(x,y,z,.06*MH,.7*MV,0x4a4c4e);
   const box=(xa,xb,za,zb,ya,yb,c)=>b((xa+xb)/2,(ya+yb)/2,(za+zb)/2,Math.abs(xb-xa),yb-ya,Math.abs(zb-za),c);
 
-  { const H=MODS.apts, A=H.A, x0=Math.min(X(A.x0),X(A.x1)), x1=Math.max(X(A.x0),X(A.x1)), z0=Math.min(Z(A.y0),Z(A.y1)), z1=Math.max(Z(A.y0),Z(A.y1)), top=H.lvY(5);
+  { const H=MODS.apts, A=H.A, x0=Math.min(X(A.x0),X(A.x1)), x1=Math.max(X(A.x0),X(A.x1)), z0=Math.min(Z(A.y0),Z(A.y1)), z1=Math.max(Z(A.y0),Z(A.y1)), top=H.lvY(H.floors||3);
     const fz=Z(A.y1)>Z(A.y0)?1:-1, front=fz>0?z1:z0, back=fz>0?z0:z1, BRK=0x7a3a2c, COP=0xb8b2a6, PIPE=0x3e4448;
     parapet(x0,z0,x1,z1,top,1,BRK,COP);
     for(const [x,ox] of [[x0+.25*MH,-1],[x1-.25*MH,1]]){ leader(x,front+fz*.1*MH,0,fz,top,PIPE); leader(x,back-fz*.1*MH,0,-fz,top,PIPE); }
     const U=u=>X(A.x0+u), Vv=v=>Z(A.y0+v);
-    box(U(.1),U(2.55),Vv(.15),Vv(4.15),top,top+2.7*MV,BRK); box(U(0),U(2.65),Vv(.05),Vv(4.25),top+2.7*MV,top+2.9*MV,COP);
-    box(U(2.55),U(2.6),Vv(1.6),Vv(2.7),top,top+2.1*MV,0x4a3a2c); box(U(2.6),U(2.64),Vv(2.5),Vv(2.6),top+1*MV,top+1.1*MV,0xc8b070);
-    box(U(5),U(7.4),Vv(.15),Vv(2.55),top,top+3*MV,BRK); box(U(4.9),U(7.5),Vv(.05),Vv(2.65),top+3*MV,top+3.2*MV,COP);
-    for(let k=0;k<4;k++)box(U(5.6),U(6.8),Vv(2.55),Vv(2.6),top+1.2*MV+k*.25*MV,top+1.35*MV+k*.25*MV,0x5a5e62);
-    const tx=U(3.9), tz=Vv(2.2), r=1.5*MH, legH=3.2*MV;
+    box(U(10.5),U(15.5),Vv(.15),Vv(2.65),top,top+3*MV,BRK); box(U(10.4),U(15.6),Vv(.05),Vv(2.75),top+3*MV,top+3.2*MV,COP);
+    for(const u of [11.1,13.6])for(let k=0;k<4;k++)box(U(u),U(u+1.2),Vv(2.65),Vv(2.7),top+1.2*MV+k*.25*MV,top+1.35*MV+k*.25*MV,0x5a5e62);
+    const tx=U(5), tz=Vv(2.4), r=1.5*MH, legH=3.2*MV;
     for(const [a,c] of [[-1,-1],[1,-1],[-1,1],[1,1]])b(tx+a*r*.7,top+legH/2,tz+c*r*.7,.16*MH,legH,.16*MH,0x2c2e30);
     for(const y of [top+1.1*MV,top+2.3*MV]){ b(tx,y,tz-r*.7,r*1.4,.1*MV,.1*MH,0x2c2e30); b(tx,y,tz+r*.7,r*1.4,.1*MV,.1*MH,0x2c2e30); b(tx-r*.7,y,tz,.1*MH,.1*MV,r*1.4,0x2c2e30); b(tx+r*.7,y,tz,.1*MH,.1*MV,r*1.4,0x2c2e30); }
     b(tx,top+legH+.08*MV,tz,r*2,.16*MV,r*2,0x5a4a38);
     cyl(tx,top+legH+.16*MV,tz,r,3.4*MV,0x7a5a3a); for(const k of [.5,1.4,2.3,3.1])cyl(tx,top+legH+.16*MV+k*MV,tz,r*1.03,.1*MV,0x2e2a28);
     cyl(tx,top+legH+3.56*MV,tz,r*1.08,1.3*MV,0x3c3430,1);
     for(let k=0;k<9;k++)b(tx+r*1.05,top+legH+.3*MV+k*.42*MV,tz,.04*MH,.04*MV,.4*MH,0x2c2e30); b(tx+r*1.05,top+legH+1.9*MV,tz-.2*MH,.04*MH,3.6*MV,.04*MH,0x2c2e30); b(tx+r*1.05,top+legH+1.9*MV,tz+.2*MH,.04*MH,3.6*MV,.04*MH,0x2c2e30);
-    for(const v of [6,10.5]){ box(U(.35),U(1.25),Vv(v),Vv(v+.9),top,top+1.8*MV,0x6e3428); box(U(.25),U(1.35),Vv(v-.1),Vv(v+1),top+1.8*MV,top+1.95*MV,COP); cyl((U(.55)+U(.75))/2,top+1.95*MV,Vv(v+.45),.12*MH,.3*MV,0x5a3a30); }
-    for(const [u,v] of [[3,6.5],[5.6,8.2],[2.4,11.6],[6.2,12.4]])vent(U(u),top,Vv(v)); for(const [u,v] of [[4.4,5.6],[3.3,9.4],[5.2,10.8]])stack(U(u),top,Vv(v));
-    { const ax=U(5.8), az=Vv(12.8), h=3.2*MV; b(ax,top+h/2,az,.05*MH,h,.05*MH,0x9aa0a6); for(const [y,w] of [[.75,1.4],[.88,1.1],[.97,.8]])b(ax,top+h*y,az,w*MH,.03*MV,.04*MH,0x9aa0a6); } }
+    for(const [w,v] of [[0,6],[0,10.5],[24.4,6],[24.4,10.5]]){ box(U(w+.35),U(w+1.25),Vv(v),Vv(v+.9),top,top+1.8*MV,0x6e3428); box(U(w+.25),U(w+1.35),Vv(v-.1),Vv(v+1),top+1.8*MV,top+1.95*MV,COP); cyl((U(w+.55)+U(w+.75))/2,top+1.95*MV,Vv(v+.45),.12*MH,.3*MV,0x5a3a30); }
+    for(const [u,v] of [[3,6.5],[5.6,8.2],[2.4,11.6],[9.2,12.4],[17.5,6.5],[20.6,8.2],[23.4,11.6]])vent(U(u),top,Vv(v)); for(const [u,v] of [[4.4,5.6],[8.3,9.4],[18.2,10.8],[24.2,4.4]])stack(U(u),top,Vv(v));
+    { const ax=U(19.8), az=Vv(12.8), h=3.2*MV; b(ax,top+h/2,az,.05*MH,h,.05*MH,0x9aa0a6); for(const [y,w] of [[.75,1.4],[.88,1.1],[.97,.8]])b(ax,top+h*y,az,w*MH,.03*MV,.04*MH,0x9aa0a6); } }
 
   { const B=BOD.B0, x0=Math.min(X(B.x0),X(B.x1)), x1=Math.max(X(B.x0),X(B.x1)), z0=Math.min(Z(B.y0),Z(B.y1)), z1=Math.max(Z(B.y0),Z(B.y1)), top=Y(B.h||130);
     const fz=Z(B.y1)>Z(B.y0)?1:-1, front=fz>0?z1:z0, GALV=0x8a8e92, mx=(x0+x1)/2, mz=(z0+z1)/2;

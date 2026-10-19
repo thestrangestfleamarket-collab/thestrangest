@@ -5,7 +5,7 @@
   const word=(s,c0,z0,k)=>(c,z)=>{ const i=Math.floor((c-c0)/k), r=6-Math.floor((z-z0)/k); if(c<c0||z<z0||i>=s.length*6-1||r<0||r>6)return false; const q=i%6, g=FONT[s[Math.floor(i/6)]]; return q<5&&!!g&&g[r*5+q]==='#'; };
   const neon=(on,c,z,k,col,f)=>{ if(on(c,z))return lit(col); for(const [a,b] of [[-k,0],[k,0],[0,-k],[0,k]])if(on(c+a,z+b))return sh(col,.42*f); return null; };
   const unplace=n=>{ const i=STORE.places.findIndex(p=>p[0]===n); if(i>=0)STORE.places.splice(i,1); }, door=(k,f)=>{ const L=lot(k); return [X(L.x0+f(L)),Z(L.y1)+2.2*TILE]; };
-  const MS=STORE.main={doors:[['THE MOVIE THEATRE',...door('theatre',()=>4.4)],['THE ARCADE',...door('arcade',L=>(L.x1-L.x0)/2)],['THE PLAYHOUSE',...door('play',L=>(L.x1-L.x0)/2)],['THE HOLODECK',...door('holo',L=>(L.x1-L.x0)/2)]]};
+  const MS=STORE.main={doors:[['THE MOVIE THEATRE',...door('theatre',()=>4.4)],['THE ARCADE',...door('arcade',L=>(L.x1-L.x0)/2)],['THE PLAYHOUSE',...door('play',L=>(L.x1-L.x0)/2)]]};
 
   STEPS.push(()=>{ const B=lot('theatre',176), W=B.x1-B.x0, cx=(B.x0+B.x1)/2, LOB=B.y1-4.6, door=B.x0+4.4;
     const SEG=[[6,14.65,-6],[16.6,19.5,-7.95],[2.8,2.8+W-11.55,8.75]];
@@ -62,18 +62,18 @@
       m.position.set(X(cx),Y(P.PLS.SZ+20),Z(my(P.PLS.CY+.9+i*1.4))); m.visible=false; scene.add(m); return m; });
     unplace('PLAYHOUSE'); MS.play={R,P,B,cx,cy,mx,my,L,SETM,fog,SH:{t0:null,cue:null,set:null,lv:-1,from:null,to:null,tc:0,step:-1,last:-1,cap:''},FIG:{},hound:null,up:0}; });
 
-  STEPS.push(()=>{ const L=lot('holo',0), bc=(L.x0+L.x1)/2, B={x0:bc-1,x1:bc+1,y0:L.y1-2,y1:L.y1,h:116}, W=B.x1-B.x0, door=bc, k=1, c0=Math.floor((W*24-47*k)/2), on=word('HOLODECK',c0,100,k), H={x0:520,y0:-88,x1:536,y1:-72,h:120}, hx=(H.x0+H.x1)/2;
+  STEPS.push(()=>{ const L=lot('arcade',0), bc=L.x0+1.6, B={x0:bc-1,x1:bc+1,y0:L.y0+.4,y1:L.y0+2.4,h:116}, W=B.x1-B.x0, door=bc, k=1, c0=Math.floor((W*24-47*k)/2), on=word('HOLODECK',c0,100,k), H={x0:520,y0:-88,x1:536,y1:-72,h:120}, hx=(H.x0+H.x1)/2;
     const front=(u,z,f)=>{ const c=Math.floor(u*24), d=Math.abs(B.x0+u-door);
       if(d<.62&&z<100&&(d>.5||z>=94))return HO.HOLOL; if(z<3)return HO.HOLOM;
       if(z>=98&&z<110)return neon(on,c,z,k,[96,200,255],f)||sh([10,12,18],f);
       const a=u-Math.floor(u); return a<.03||a>.97||z%24<1?sh([30,40,56],f):sh(HO.HOLOK,f); };
     const pan=(q,nx,ny,X_,Y_,z,f)=>HO.holoWall(f)(nx?Y_:X_,z);
     const F=room('holofront','HOLODECK',B,{floor:HO.holoFloor,in:pan,out:(nx,ny,Xw,Yw,z,f,cap)=>ny>0?front(Xw-B.x0,z,f):sh(HO.HOLOK,f),cope:[20,24,32],roof:()=>[18,20,26]},{w:'f',a:door,wd:1,h:94},()=>{
-      LAMPS.push({x:door,y:B.y1+1,z:104,r:4,c:[.4,.8,1]}); },{now:1});
+      LAMPS.push({x:door,y:B.y1+1,z:104,r:4,c:[.4,.8,1]}); },{now:1,z:.3});
     STORE.bound.x1=Math.max(STORE.bound.x1,X(H.x1+10)); STORE.bound.z0=Math.min(STORE.bound.z0,Z(H.y0-10)); STORE.bound.z1=Math.max(STORE.bound.z1,Z(H.y1+10));
     const R=room('holodeck','HOLODECK HALL',H,{floor:HO.holoFloor,in:pan,out:(nx,ny,Xw,Yw,z,f)=>sh(HO.HOLOK,f),cope:[20,24,32],roof:()=>[18,20,26]},{w:'f',a:hx,wd:3,h:96},()=>{
       LAMPS.push({x:hx-4,y:(H.y0+H.y1)/2,z:108,r:10,c:[.55,.75,1]},{x:hx+4,y:(H.y0+H.y1)/2,z:108,r:10,c:[.55,.75,1]}); },{now:1});
-    unplace('HOLODECK'); unplace('HOLODECK HALL');
+    unplace('HOLODECK HALL'); { const p=STORE.places.find(q=>q[0]==='HOLODECK'); if(p)p[0]='THE HOLODECK'; }
     const gnd=new THREE.Mesh(new THREE.PlaneGeometry(40*TILE*BLDK,40*TILE*BLDK).rotateX(-Math.PI/2),new THREE.MeshLambertMaterial({color:0x0a0b10})); gnd.position.set(X(hx),Y(.02),Z((H.y0+H.y1)/2)); scene.add(gnd);
     MS.holo={F,R,B,H,door,hx,busy:false}; });
 

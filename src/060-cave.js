@@ -44,6 +44,9 @@ const GCAVE={ready:false}; window.GCAVE=GCAVE;
     const glint=(i,on)=>{ const [dx,dy]=GL[i], s=on?.22*T:0; cry.setMatrixAt(NC+i,m4.compose(new V3(CX+dx*T,Y(4),CZ+dy*T),q.setFromEuler(e.set(.3,i,.2)),new V3(s,s*1.3,s))); cry.setColorAt(NC+i,cl.setRGB(1,.95,.7)); cry.instanceMatrix.needsUpdate=true; if(cry.instanceColor)cry.instanceColor.needsUpdate=true; };
     GL.forEach((g,i)=>glint(i,true)); grp.add(cry);
     { const L=new THREE.PointLight(new THREE.Color(.7,.68,1),20,9*T,1.6); L.position.set(CX-.6*T,Y(98),CZ); L.userData.i0=L.intensity; L.userData.both=true; L.userData.grp=null; L.userData.cave=1; if(LITE.recs)LITE.recs.push(L); GCAVE.L=L; }
+    { const FX=CX+2.2*T, cm=P.mesh([['campfire',S.c.x+2.2,S.c.y,.13,0]],false,true); if(grp!==scene)grp.add(cm);
+      const L=new THREE.PointLight(new THREE.Color(1,.6,.25),22,7*T,1.6); L.position.set(FX,.5*T,CZ); L.userData.fire=1; L.userData.both=true; L.userData.grp=grp===scene?null:grp; if(LITE.recs)LITE.recs.push(L); GCAVE.fireL=L;
+      GCAVE.flame=FLAME.add({kind:'bed',name:'campfire',x:FX,y:.12*T,z:CZ,w:.72*T,h:.88*T,embers:3,smoke:1.2,sk:1.1,light:L,seed:11,parent:grp}); GCAVE.fire={x:FX,z:CZ,y:.3}; }
     const sol=(x0,z0,x1,z1,h)=>{ SOL.up.push([x0,z0,x1,z1]); FIX.up.push([x0,z0,0,x1,z1,h]); };
     for(let i=0;i<40;i++){ const a=(i+.5)/40*Math.PI*2; if(Math.abs(Math.atan2(Math.sin(a),Math.cos(a)))<.36)continue; const r=foot(R,a)-.1, x=CX+Math.cos(a)*r*T, z=CZ+Math.sin(a)*r*T, b=.55*T; sol(x-b,z-b,x+b,z+b,Y(H)); }
     for(const s of [-1,1]){ const x=CX+(R+.2)*T, z=CZ+s*1.75*T; sol(x-.5*T,z-.45*T,x+.5*T,z+.45*T,Y(66)); }
@@ -54,7 +57,7 @@ const GCAVE={ready:false}; window.GCAVE=GCAVE;
     GCAVE.box=[B.x0,B.z0,B.x1,B.z1]; GCAVE.c={x:CX,z:CZ};
     GCAVE.inBox=(x,z,r=0)=>x>B.x0-r&&x<B.x1+r&&z>B.z0-r&&z<B.z1+r;
     GCAVE.spot=w=>{ if(w==='mouth'){ const a=(Math.random()-.5)*1.6, d=R+1.4+Math.random()*2.8; return {x:CX+Math.cos(a)*d*T,z:CZ+Math.sin(a)*d*T}; }
-      const a=Math.random()*Math.PI*2, r=1+Math.random()*2.6; return {x:CX+Math.cos(a)*r*T,z:CZ+Math.sin(a)*r*T}; };
+      for(let k=0;k<20;k++){ const a=Math.random()*Math.PI*2, r=1+Math.random()*2.6, x=CX+Math.cos(a)*r*T, z=CZ+Math.sin(a)*r*T; if(k===19||Math.hypot(x-CX-2.2*T,z-CZ)>1.2*T)return {x,z}; } };
     GCAVE.haunt=()=>{ return 'cave'; const h=CLOCK.h; if(h>=21||h<7)return 'cave'; const r=hs(Math.floor(h),(window.MAIL&&MAIL.ready?MAIL.day():0),21); return r<.22?'mouth':r<.34?'cave':'round'; };
     const hit=(x,z,w,h,o)=>{ const hb=new THREE.Mesh(new THREE.BoxGeometry(w,h,w),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(x,h/2,z); grp.add(hb); o.obj=hb; UI.thing(o); return o; };
     hit(CX+TS[0]*T,CZ,1.4*T,Y(40),{name:'THE TRADING STONE',reach:1.3*T,near:2.4*T,tall:Y(50),act:()=>{ if(window.TRADE)TRADE.open(); }});

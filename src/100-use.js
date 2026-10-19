@@ -76,7 +76,7 @@ const USE={seat:null}; window.USE=USE;
     let at=[c.x,c.z], reach=Math.max(hx,hz)+.9*T;
     if(k==='sit'){ const se=o.seat||(o.seat=seatOf(tris(o))); if(!se)return null; at=near(se.S,.4*T); reach=Math.min(hx,hz)+.55*T; th.act=()=>sitOn(se,th); }
     else if(k==='fridge'){ const [nx,nz]=front(o); at=[c.x+nx*(hx+.55*T),c.z+nz*(hz+.55*T)]; reach=.6*T; th.act=()=>fridge(o,th); }
-    else if(k==='lamp')th.act=()=>lamp(o,th); else if(k==='vend'){ reach=Math.max(hx,hz)+.6*T; th.act=()=>vend(o,th); } else { reach=1.4*T; th.act=()=>radio(o,th); }
+    else if(k==='lamp')th.act=()=>lamp(o,th); else if(k==='vend'){ reach=Math.max(hx,hz)+.6*T; th.pick=.9*T; th.act=()=>vend(o,th); } else { reach=1.4*T; th.act=()=>radio(o,th); }
     th.reach=reach; th.near=reach+(k==='lamp'?2.5:k==='fridge'?2.2:1.2)*T; th.obj.position.set(at[0],b.min.y,at[1]); return th; };
   USE.pick=ray=>{ if(OBJS.length+(typeof PERFX!=='undefined'?PERFX.gen*1e6:0)!==nO){ nO=OBJS.length+(typeof PERFX!=='undefined'?PERFX.gen*1e6:0); MS=[...new Set(OBJS.flatMap(o=>o.parts.map(p=>p.me)))]; }
     for(const h of ray.intersectObjects(MS.filter(shown),false)){ if(cut(h))continue; const o=h.object.userData.objOf[Math.floor(h.faceIndex/2)], k=o&&kindOf(o); if(!k)return null; const th=goal(o,k); return th?{th,d:h.distance}:null; } return null; };

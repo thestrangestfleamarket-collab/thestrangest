@@ -17,7 +17,7 @@ const BOOKS={}; window.BOOKS=BOOKS;
   BOOKS.find=(L,where)=>{ const id=roll(L); FORAGE.give('bk_'+id,1); say(`${where}: ${/^[AEIOU]/.test(NM['bk_'+id])?'AN':'A'} ${NM['bk_'+id]}.`,id==='first'||id==='herbal'?'#f2c14e':'#c8b0ff'); FORAGE.draw(); };
   BOOKS.chest=()=>BOOKS.find([['atlas',3],['ledger',3],['herbal',2],['first',1]],'ALSO IN THE CHEST, WRAPPED IN OILCLOTH');
   for(const [i,c] of ((window.DRESS&&DRESS.cans)||[]).entries()){ const hb=new THREE.Mesh(new THREE.BoxGeometry(.6*T,.9*T,.6*T),new THREE.MeshBasicMaterial({visible:false})), y=typeof groundY!=='undefined'?groundY(c.x,c.z):0; hb.position.set(c.x,y+.45*T,c.z); scene.add(hb);
-    UI.thing({name:'TRASH CAN',obj:hb,reach:1*T,near:1.8*T,tall:1*T,act:()=>{ const k='c'+i; if(S.cans[k]===day())return say('YOU HAVE BEEN THROUGH THIS ONE TODAY. NOTHING BUT WRAPPERS.','#c8c2b0');
+    UI.thing({name:'TRASH CAN',pick:true,obj:hb,reach:1*T,near:1.8*T,tall:1*T,act:()=>{ const k='c'+i; if(S.cans[k]===day())return say('YOU HAVE BEEN THROUGH THIS ONE TODAY. NOTHING BUT WRAPPERS.','#c8c2b0');
       S.cans[k]=day(); save(); if(typeof SFX!=='undefined')SFX.play('clunk',{vol:.3}); if(Math.random()<.4)BOOKS.find([['paper',6],['novel',3],['atlas',1],['hymnal',1]],'UNDER THE NEWSPAPERS');
       else say(['NOTHING BUT WRAPPERS AND A BENT FORK.','A SODA CAN, A SHOE, NOTHING YOU WANT.','JUST YESTERDAY\'S PAPERS.'][Math.floor(Math.random()*3)],'#c8c2b0'); }}); }
   const B='style="margin:0 0 0 4px;font:inherit;color:#ece5d3;background:#0e1016;border:2px solid #3a3f4e;padding:2px 7px;cursor:pointer"';

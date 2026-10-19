@@ -14,6 +14,7 @@ process.on('unhandledRejection',e=>{ errs.push('TEST '+String(e&&e.message||e).s
   await shot('apts-front',()=>{ const M=__dbg.MAPK, a=M.MODS.apts.A, B=M.BOD, zs=B.ZS((B.CURB+B.FAR)/2), z0=B.Z(a.y0), z1=B.Z(a.y1), zf=Math.abs(z0-zs)<Math.abs(z1-zs)?z0:z1, t=B.ZS(1)-B.ZS(0); STORE.goTo(B.X((a.x0+a.x1)/2),zf+Math.sign(zs-zf)*2.2*Math.abs(t),'up'); });
   await pg.mouse.move(480,270); for(let i=0;i<8;i++){ await pg.mouse.wheel(0,600); await pg.waitForTimeout(150); }
   await shot('street-wide',null,4000);
+  rep.frog=await pg.evaluate(async()=>{ const N=TOONS.frog, out=[], V=N.g.position.clone(); for(let i=0;i<60;i++){ const p=N.g.position; V.copy(p); V.y+=1; V.project(__dbg.camO()); const on=Math.abs(V.x)<1&&Math.abs(V.y)<1; out.push([+(p.x).toFixed(1),+(p.z).toFixed(1),+(p.y).toFixed(2),N.far?1:0,N.hid?1:0,N.g.visible?1:0,on?1:0,N.g.parent&&N.g.parent.visible?1:0].join(',')); await new Promise(r=>setTimeout(r,330)); } return out; });
   await pg.keyboard.press('0'); await pg.waitForTimeout(800);
   await shot('apts-lobby',()=>{ const M=__dbg.MAPK, a=M.MODS.apts.A; STORE.goTo(M.BOD.X((a.x0+a.x1)/2),M.BOD.Z(a.y0+(a.y1-a.y0)*.6),'up'); });
   rep.elv=await pg.evaluate(()=>window.ELVDBG&&ELVDBG());

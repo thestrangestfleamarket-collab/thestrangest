@@ -198,7 +198,7 @@ const props=()=>{ const S=PLS, B=PLB, wood=(x,y)=>{ const r=Math.floor(x*5), c=[
     {x0:x-.03,y0:y-.03,x1:x+.03,y1:y+.03,z0:S.SZ+h,z1:S.SZ+h+5,c:[255,200,90],foot:0,nb:1,life:1,top:()=>null,fi:()=>null,fj:()=>null}]),null,{walk:true}); };
 function plHoundAt(H,t){ if(!H.length||t<H[0][0]||t>=H[H.length-1][1])return null; let s=H[0]; for(const q of H)if(q[0]<=t)s=q;
   const run=t<s[1], k=run?(t-s[0])/(s[1]-s[0]):1, x=s[2]+(s[4]-s[2])*k, y=s[3]+(s[5]-s[3])*k, a=Math.atan2(s[5]-s[3],s[4]-s[2]);
-  return {x,y,a,s:run?(t*2.6)%1:.12+.03*Math.sin(t*9),up:s[6]&&run?Math.sin(k*Math.PI)*.7:0}; }
+  return {x,y,a,s:run?(t*2.6)%1:.12+.03*Math.sin(t*9),up:s[6]&&run?Math.sin(k*Math.PI)*.7:0,run}; }
 const PLPRAC={baker:[PLMID-.4,ay(-42.75),30],hall:[PLMID-.2,PLC+2.6,62],moor:null,fog:null};
 const bk=(x0,y0,z0,x1,y1,z1,c,e)=>[x0,y0,z0,x1,y1,z1,c,e], el=(x,y,z,r,c,e)=>bk(x-r[0],y-r[1],z-r[2],x+r[0],y+r[1],z+r[2],c,e), cy=(x,y,z0,z1,r,c,e)=>bk(x-r,y-r,z0,x+r,y+r,z1,c,e);
 const M=[46,42,40], Wd=[96,58,36], Lt=[120,30,28], FI=[250,150,50], Ok=[64,44,30], OkD=[46,30,20], GO=[200,170,90], HE=[84,90,62], GR=[140,136,128], BA=[58,50,44];
@@ -223,9 +223,6 @@ const SETS={
     [PLMID+3.9,ay(-43.1),[cy(0,0,0,1.5,.07,BA),bk(.05,-.03,.9,.6,.03,.96,BA),bk(-.5,-.025,1.15,-.05,.025,1.2,BA),bk(.4,-.025,1.2,.46,.025,1.6,BA)]],
     ...Array.from({length:7},(_,i)=>[PLMID-4.3+hash(i,3,437)*.7,PLC+2.6+hash(i,4,439)*.8,[cy(0,0,0,.5+hash(i,1,431)*.3,.012,hash(i,2,433)<.5?[118,104,62]:[84,90,52])]])]};
 SETS.fog=SETS.moor;
-const HOUND=[el(0,0,1.02,[.62,.24,.26],[18,18,20]),el(.42,0,1.06,[.3,.24,.3],[18,18,20]),el(.72,0,1.32,[.18,.15,.2],[22,22,24]),el(.9,0,1.42,[.2,.15,.15],[18,18,20]),
-  bk(1.02,-.08,1.28,1.24,.08,1.42,[150,230,100],1),el(1.04,-.09,1.48,[.035,.03,.03],[240,255,160],1),el(1.04,.09,1.48,[.035,.03,.03],[240,255,160],1),el(.82,-.12,1.58,[.06,.04,.09],[18,18,20]),el(.82,.12,1.58,[.06,.04,.09],[18,18,20]),
-  ...[[.45,-.14],[.45,.14],[-.42,-.14],[-.42,.14]].map(([a,b])=>Object.assign(cy(a,b,.05,.85,.06,[22,22,24]),{leg:[a,b]})),Object.assign(el(-.66,0,1.12,[.22,.05,.05],[22,22,24]),{tail:1})];
-return {PLS,PLMID,PLWALLS,PLCANDLES,PFRONT,playFront,playFloorCol,playWall,props,PLTR,PLCALL,plState,plPlayer,plHoundAt,SETS,HOUND,PLPRAC,plMark}; };
+return {PLS,PLMID,PLWALLS,PLCANDLES,PFRONT,playFront,playFloorCol,playWall,props,PLTR,PLCALL,plState,plPlayer,plHoundAt,SETS,PLPRAC,plMark}; };
 STOREK.play={PLAY,PLAYT,PLL,PLCUE,PLAYK};
 }

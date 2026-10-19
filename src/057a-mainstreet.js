@@ -35,14 +35,51 @@
       if(z>=110&&z<170&&c>=c0-8&&c<c0+35*k+8)return neon(on,c,z,k,[255,80,200],f)||sh([24,16,32],f);
       return null; };
     const out=(nx,ny,Xw,Yw,z,f,cap)=>{ if(ny>0){ const c=front(Xw-B.x0,z,f); if(c)return c; } return facade(nx,ny,Xw,Yw,z,f,cap,[96,58,80]); };
-    MS.arcade={R:room('arcade','ARCADE',B,{floor:TH.arcadeFloor,in:TH.arcadeWallOf(TH.arcadeLights(B)),out,cope:[60,44,70]},{w:'f',a:cx,wd:1.56,h:94},()=>{
-      A.arcade(B.x0+1.6,B.y0+.85,[0,1],0); A.arcade(B.x0+3.5,B.y0+.85,[0,1],1); TH.grProp('arcade machine',TH.GRM.arcade(),B.x0+4.9,B.y0+.2,0,{}); TH.vrStation(B.x1-2,B.y0+.6);
-      A.redStool(B.x0+1.6,B.y0+2.3); A.redStool(B.x0+3.5,B.y0+2.3);
-      LAMPS.push({x:cx,y:B.y0+4,z:120,r:10,c:[1.05,.88,1.2]},{x:cx,y:B.y1-4,z:120,r:10,c:[1.05,.88,1.2]},{x:cx,y:B.y1+1,z:140,r:5,c:[1,.3,.75]}); })}; unplace('ARCADE'); });
+    const x0=B.x0, y0=B.y0, x1=B.x1, y1=B.y1, GLOW=[], bx=(a,b,c,d,z0,z1,col,o={})=>({x0:a,y0:b,x1:c,y1:d,z0,z1,c:col,...o}), dk=(c,k=.55)=>c.map(v=>v*k);
+    const txt=(s,c0,z0)=>(c,z)=>{ const i=c-c0, r=6-(z-z0); if(i<0||r<0||r>6||i>=s.length*6-1)return false; const g=FONT[s[Math.floor(i/6)]]; return i%6<5&&!!g&&g[r*5+i%6]==='#'; };
+    const SCR=[(u,v,h)=>v<.35?[40,30,90]:Math.abs(u-.5)<(v-.35)*.75?(Math.abs(u-.5)<.03&&(v*20|0)%2?[250,240,200]:[90,90,100]):[40,140,60],
+      (u,v,h)=>Math.abs(u-.45-.12*Math.sin(v*14))<.04&&v<.8?[240,250,255]:h<.08?[120,160,255]:[20,30,80], (u,v,h)=>h<.07?[255,255,255]:Math.hypot(u-.5,v-.62)<.18?[255,120,230]:[50,20,80],
+      (u,v,h)=>Math.abs(v-.75+u*.6)<.05&&u<.7?[255,170,60]:Math.hypot(u-.72,v-.32)<.07?[255,240,200]:h<.05?[220,220,255]:[8,8,16], (u,v,h)=>((u*14|0)%3===0||(v*10|0)%3===0)?[60,220,90]:[10,30,14],
+      (u,v,h)=>((u*12|0)%4===0&&v>.2&&v<.8)||((v*9|0)%3===0&&u>.1&&u<.9)?[50,70,230]:h<.25?[255,230,90]:[6,6,20]];
+    const MAKES=[['TURBO',[190,36,40],[255,210,60]],['STORM',[36,56,150],[120,200,255]],['MAGIC',[96,36,140],[255,120,230]],['COMET',[26,26,34],[255,150,60]],['ROBOT',[50,110,64],[160,255,140]],['GHOST',[28,28,86],[255,240,120]]];
+    const upright=(cx_,m)=>{ const [nm,body,acc]=MAKES[m], w=.62, a=cx_-w, b=cx_+w, yb=y0+.15, yf=y0+1.1, on=txt(nm,(w*48-29)/2|0,2);
+      const side=(nx,ny,X_,Y_,z,k)=>ny>0?null:sh((Y_-yb+z/40)%.5<.12?acc:body,k);
+      const front=(f)=>(nx,ny,X_,Y_,z,k)=>ny>0?f(Math.floor((X_-a)*24),z,k):side(nx,ny,X_,Y_,z,k);
+      thing('arcade cabinet',[bx(a,yb,b,yf,0,40,body,{fs:front((c,z,k)=>z<7?[24,22,28]:z>14&&z<30&&c>12&&c<18?(z%4<2?lit([255,150,60]):[40,36,40]):sh(body,k))}),
+        bx(a,yf-.05,b,yf+.3,34,40,[40,40,48],{top:(X_,Y_)=>{ const c=(X_-a)*24|0, r=(Y_-yf)*24|0; return (c===8||c===9)&&r>2&&r<6?[200,30,30]:r>3&&r<6&&c>16&&c%3===0?lit([acc,[255,255,255],[60,200,255]][c%9/3|0]):[40,40,48]; }}),
+        bx(a,yb,b,yf-.25,40,74,body,{fs:front((c,z,k)=>{ const u=(c-3)/(w*48-6), v=(70-z)/26; if(u>=0&&u<=1&&v>=0&&v<=1)return lit(SCR[m](u,v,hs(c,z|0,991+m))); if(u>-.08&&u<1.08&&v>-.1&&v<1.1)return lit(dk(acc,.5)); return sh([22,20,26],k); })}),
+        bx(a,yb,b,yf-.08,74,88,body,{fs:front((c,z,k)=>on(c,z-77)?lit([255,255,255]):lit(acc))})]); GLOW.push([cx_,yf+.4,acc]); };
+    const pinball=(cy_,m)=>{ const [nm,body,acc]=MAKES[m], a=x0+.25, b=x0+1.45, ya=cy_-.3, yb2=cy_+.3, BB=[];
+      for(const [lx,ly] of [[a+.25,ya+.05],[a+.25,yb2-.1],[b-.1,ya+.05],[b-.1,yb2-.1]])BB.push(bx(lx,ly,lx+.05,ly+.05,0,22,[30,30,34]));
+      BB.push(bx(a+.2,ya,b,yb2,22,32,body,{top:(X_,Y_)=>{ const u=(X_-a-.2)/(b-a-.2), v=(Y_-ya)/(yb2-ya), d=[[.35,.3],[.35,.7],[.6,.5]].map(([p,q])=>Math.hypot(u-p,(v-q)*.6)); return u<.04||u>.96||v<.06||v>.94?[180,180,190]:Math.min(...d)<.05?lit([255,255,255]):Math.min(...d)<.08?lit(acc):Math.abs(v-.5)<.03&&u>.82?lit([255,80,80]):lit(dk(acc,.45)); },fs:(nx,ny,X_,Y_,z,k)=>sh((X_+Y_)%.4<.1?acc:body,k)}));
+      BB.push(bx(a,ya-.02,a+.2,yb2+.02,22,58,body,{fs:(nx,ny,X_,Y_,z,k)=>nx>0&&z>10&&z<32?((nm.length&&txt(nm,1,18)(Math.floor((yb2+.02-Y_)*24),z))?lit([255,255,255]):lit(acc)):sh(body,k)}));
+      thing('pinball machine',BB); GLOW.push([b+.4,cy_,acc]); };
+    const AW=TH.arcadeWallOf(TH.arcadeLights(B)), thing=(name,boxes,o={})=>PROPS.push({kind:name,name,boxes,...o});
+    MS.arcade={R:room('arcade','ARCADE',B,{floor:(x,yq)=>{ const y=y0+y1-yq; let c=TH.arcadeFloor(x,yq); if(Math.abs(x-cx)<1.1&&y>y0+2||y>y0+1.5&&y<y0+2.4)c=sh([62,52,70],.88+.24*hs(x*24|0,y*24|0,995)); for(const [gx,gy,col] of GLOW){ const d=Math.hypot(x-gx,(y-gy)*1.3); if(d<1.3){ const k=d<.45?.42:d<.85?.24:.12; return lit(c.map((v,i)=>v*(1-k)+col[i]*k)); } } return c; },
+      in:(q,nx,ny,X_,Y_,z,f)=>{ const u=nx?Y_:X_; if(nx&&z>=70&&z<112){ const k=Math.floor((u-y0-1)/2.6), uu=u-y0-1-k*2.6; if(k>=0&&k<4&&uu>.2&&uu<1.1){ const c=Math.floor((uu-.2)*24), r=Math.floor(z-70), P=MAKES[(k+(nx>0?0:3))%6]; return c<1||c>20||r<1||r>40?sh([230,226,214],f):r>30?sh(P[2],f):Math.hypot(c-10.5,r-16)<7?sh(P[2],f):sh(P[1],f); } } return AW(q,nx,ny,X_,Y_,z,f); },
+      out,cope:[60,44,70]},{w:'f',a:cx,wd:1.56,h:94},()=>{
+      MAKES.forEach((_,m)=>upright(x0+.95+m*1.42,m)); TH.grProp('arcade machine',TH.GRM.arcade(),x0+.95+6*1.42-.58,y0+.2,0,{}); GLOW.push([x0+.95+6*1.42,y0+1.5,[255,214,70]]);
+      pinball(y0+3.4,2); pinball(y0+4.9,0);
+      A.arcade(cx-.85,y0+5.6,[0,1],0); A.arcade(cx+.85,y0+5.6,[0,1],1); A.redStool(cx-.85,y0+7); A.redStool(cx+.85,y0+7); GLOW.push([cx-.85,y0+6.5,[236,70,160]],[cx+.85,y0+6.5,[110,220,80]]);
+      { const ax=cx-1.05, ay=y0+8.7, ex=ax+2.1, ey=ay+1.15, BB=[]; for(const [lx,ly] of [[ax+.15,ay+.15],[ex-.25,ay+.15],[ax+.15,ey-.25],[ex-.25,ey-.25]])BB.push(bx(lx,ly,lx+.1,ly+.1,0,20,[40,40,48]));
+        BB.push(bx(ax,ay,ex,ey,20,26,[240,240,244],{top:(X_,Y_)=>{ const u=(X_-ax)/2.1, v=(Y_-ay)/1.15; return u<.03||u>.97||v<.06||v>.94?[30,30,36]:Math.abs(u-.5)<.006?lit([230,40,50]):(u<.06||u>.94)&&Math.abs(v-.5)<.2?lit([40,90,230]):Math.abs(Math.hypot((u-.5)*2.1,(v-.5)*1.15)-.22)<.015?lit([40,90,230]):(X_*24|0)%4===0&&(Y_*24|0)%4===0?[200,200,206]:lit([236,236,242]); },fs:(nx,ny,X_,Y_,z,k)=>sh(z>3?[40,90,230]:[30,30,36],k)}),
+          bx(cx-.08,ay+.5,cx+.08,ay+.65,26,27,[230,40,50]),bx(ax+.3,ay+.48,ax+.48,ay+.66,26,30,[230,40,50]),bx(ex-.48,ay+.48,ex-.3,ay+.66,26,30,[40,90,230])); thing('air hockey table',BB); GLOW.push([cx,ay+.58,[220,230,255]]); }
+      { const BB=[bx(x1-1.3,y0+2.8,x1-.2,y0+3.9,0,30,[200,40,60],{fs:(nx,ny,X_,Y_,z,k)=>nx<0&&z>6&&z<20&&Math.abs(Y_-(y0+3.35))<.25?[20,20,24]:sh([200,40,60],k)}),
+          bx(x1-1.3,y0+2.8,x1-.2,y0+3.9,30,78,[255,255,255],{fs:(nx,ny,X_,Y_,z,k)=>{ const u=nx?Y_:X_; if(z<14)return lit([[255,120,180],[120,200,255],[255,230,90],[140,240,140]][Math.floor(hs(u*10|0,z/6|0,996)*4)]); if(z>40&&z<46&&Math.abs(u-(nx?y0+3.35:x1-.75))<.06)return [200,200,210]; return (u*24|0)%22===0?[190,190,200]:z>6?null:[40,40,48]; },top:()=>[200,40,60],nb:0}),
+          bx(x1-1.3,y0+2.8,x1-.2,y0+3.9,78,90,[200,40,60],{fs:(nx,ny,X_,Y_,z,k)=>nx<0?(txt('CLAW',3,3)(Math.floor((Y_-y0-2.8)*24),z)?lit([255,255,255]):lit([255,90,140])):sh([200,40,60],k)}),
+          bx(x1-.82,y0+3.3,x1-.68,y0+3.4,58,78,[200,200,210])]; thing('claw machine',BB); GLOW.push([x1-1.7,y0+3.35,[255,120,180]]); }
+      thing('change machine',[bx(x1-.42,y0+5.5,x1-.1,y0+6.2,18,74,[150,154,160],{fs:(nx,ny,X_,Y_,z,k)=>nx<0?(z>56&&z<68?(txt('CHANGE',1,59)(Math.floor((Y_-y0-5.5)*24),z)?lit([255,255,255]):lit([60,180,90])):z>34&&z<38&&Math.abs(Y_-(y0+5.85))<.12?[20,20,24]:sh([150,154,160],k)):sh([150,154,160],k)})],{high:true});
+      { const p=TH.vrStation(x1-.9,y0+7.6); BOD.place(p,1); }
+      { const cx0=x0+1.5, a=y0+8.6, b=y0+11.6, BB=[bx(cx0,a,cx0+.65,b,0,32,[60,40,70],{top:(X_,Y_)=>(Y_*24|0)%30<2?[170,180,190]:lit([200,220,235]),fs:(nx,ny,X_,Y_,z,k)=>nx>0&&z>8&&z<29?(z>26?[180,190,200]:lit([[255,120,180],[120,200,255],[255,230,90],[140,240,140],[240,240,240]][Math.floor(hs(Y_*8|0,z/7|0,997)*5)])):sh([60,40,70],k)})];
+        for(let k=0;k<3;k++)BB.push(bx(x0+.12,a,x0+.5,b,24+k*30,26+k*30,[120,90,60]));
+        for(let i=0;i<14;i++){ const yy=a+.2+(i%7)*.4, zz=26+Math.floor(i/7)*30, c=[[255,140,190],[140,200,255],[255,220,90],[150,230,140],[220,160,255]][i%5]; BB.push(bx(x0+.18,yy,x0+.44,yy+.26,zz,zz+12+hs(i,1,998)*6,c,{top:()=>sh(c,1.1)})); }
+        BB.push(bx(x0+.1,a+.6,x0+.14,b-.6,96,112,[255,210,60],{fs:(nx,ny,X_,Y_,z,k)=>nx>0?(txt('PRIZES',2,100)(Math.floor((b-.6-Y_)*24),z)?lit([255,255,255]):lit([230,60,150])):sh([255,210,60],k)}));
+        thing('prize counter',BB); }
+      LAMPS.push({x:cx,y:y0+4,z:120,r:10,c:[1.05,.88,1.2]},{x:cx,y:y1-4,z:120,r:10,c:[1.05,.88,1.2]},{x:cx,y:y1+1,z:140,r:5,c:[1,.3,.75]}); })}; unplace('ARCADE'); });
 
   STEPS.push(()=>{ const B=lot('play',130), cx=(B.x0+B.x1)/2, cy=(B.y0+B.y1)/2, P=PY.PLAYK(B), mx=x=>2*cx-x, my=y=>2*cy-y, L=[];
     const out=(nx,ny,Xw,Yw,z,f,cap)=>{ if(ny>0){ const c=P.playFront(Xw,z,f); if(c)return c; } return facade(nx,ny,Xw,Yw,z,f,cap,[118,50,44]); };
-    const R=room('playhouse','PLAYHOUSE',B,{floor:(x,y)=>P.playFloorCol(mx(x),my(y)),in:(q,nx,ny,X_,Y_,z,f)=>P.playWall(q,-nx,-ny,mx(X_),my(Y_),z,f),out,cope:[226,214,186]},{w:'f',a:cx,wd:1.56,h:94},(B_,l0)=>{
+    const R=room('playhouse','PLAYHOUSE',B,{floor:(x,y)=>P.playFloorCol(mx(x),y),in:(q,nx,ny,X_,Y_,z,f)=>P.playWall(q,-nx,-ny,mx(X_),my(Y_),z,f),out,cope:[226,214,186]},{w:'f',a:cx,wd:1.56,h:94},(B_,l0)=>{
       const n0=PROPS.length, S=P.PLS, lam=(k,x,y,z,r,c)=>{ const l={x,y,z,r,c}; LAMPS.push(l); L.push([k,l,null]); };
       P.props();
       for(const s of [-1,1]){ lam('house',P.PLMID+s*2.4,S.SY-3.2,110,7,[1,.86,.62]); lam('wall',s<0?B.x0+T+.35:B.x1-T-.35,S.SY-3.1,68,3.2,[.8,.52,.26]); lam('candle',P.PLMID+s*2.5,S.SY+.25,S.SZ+20,3.6,[.9,.6,.28]); lam('front',P.PLMID+s*1.3,B.y0-.9,74,4,[1.1,.9,.62]); }
@@ -62,7 +99,7 @@
       g.putImageData(im,0,0); const t=new THREE.CanvasTexture(cv); t.magFilter=t.minFilter=THREE.NearestFilter; t.wrapS=THREE.RepeatWrapping; t.colorSpace=THREE.SRGBColorSpace; return t; })();
     const fog=[0,1,2].map(i=>{ const t=fogT.clone(); t.needsUpdate=true; const m=new THREE.Mesh(new THREE.PlaneGeometry(X(P.PLS.PRX1)-X(P.PLS.PRX0),Y(40)-Y(0)),new THREE.MeshBasicMaterial({map:t,transparent:true,depthWrite:false}));
       m.position.set(X(cx),Y(P.PLS.SZ+20),Z(my(P.PLS.CY+.9+i*1.4))); m.visible=false; scene.add(m); return m; });
-    unplace('PLAYHOUSE'); MS.play={R,P,B,cx,cy,mx,my,L,SETM,fog,SH:{t0:null,cue:null,set:null,lv:-1,from:null,to:null,tc:0,step:-1,last:-1,cap:''},FIG:{},hound:null}; });
+    unplace('PLAYHOUSE'); MS.play={R,P,B,cx,cy,mx,my,L,SETM,fog,SH:{t0:null,cue:null,set:null,lv:-1,from:null,to:null,tc:0,step:-1,last:-1,cap:''},FIG:{},hound:null,up:0}; });
 
   STEPS.push(()=>{ const B=lot('holo',190), W=B.x1-B.x0, door=(B.x0+B.x1)/2, k=4, c0=Math.floor((W*24-47*k)/2), on=word('HOLODECK',c0,118,k), H={x0:520,y0:-104,x1:552,y1:-72,h:156}, hx=(H.x0+H.x1)/2;
     const front=(u,z,f)=>{ const c=Math.floor(u*24), d=Math.abs(B.x0+u-door);
@@ -79,19 +116,21 @@
     const gnd=new THREE.Mesh(new THREE.PlaneGeometry(80*TILE*BLDK,80*TILE*BLDK).rotateX(-Math.PI/2),new THREE.MeshLambertMaterial({color:0x0a0b10})); gnd.position.set(X(hx),Y(.02),Z((H.y0+H.y1)/2)); scene.add(gnd);
     MS.holo={F,R,B,H,door,hx,busy:false}; });
 
-  STEPS.push(()=>{ const TT=TILE*BLDK, PX=ZU*BLDK, V=new THREE.Vector3(), GEO={}, MAT={};
-    const mat=(c,e)=>MAT[c+e]||(MAT[c+e]=e?new THREE.MeshBasicMaterial({color:new THREE.Color(c)}):new THREE.MeshLambertMaterial({color:new THREE.Color(c)}));
-    const bxm=(w,h,d,c,x,y,z,e)=>{ const k=[w,h,d].map(v=>v.toFixed(4)).join(), me=new THREE.Mesh(GEO[k]||(GEO[k]=new THREE.BoxGeometry(w,h,d)),mat(c,e)); me.position.set(x,y,z); me.castShadow=true; return me; };
-    const HAT={top:[6,4,10],bowler:[6,4,6],deerstalker:[5,4,6],wide:[7,4,6],straw:[6,4,4]};
-    const mkFig=C=>{ const g=new THREE.Group(), L=C.look, pv=(x,y,p=g)=>{ const q=new THREE.Group(); q.position.set(x,y,0); p.add(q); return q; };
-      const body=pv(0,0), legs=[-1,1].map(s=>{ const q=pv(s*.09*TT,30*PX,body); q.add(bxm(.14*TT,26*PX,.16*TT,L.pants,0,-13*PX,0),bxm(.15*TT,4*PX,.22*TT,L.shoes,0,-28*PX,.03*TT)); return q; });
-      body.add(bxm(.42*TT,28*PX,.24*TT,L.shirt,0,44*PX,0));
-      const arms=[-1,1].map(s=>{ const q=pv(s*.27*TT,57*PX,body); q.add(bxm(.1*TT,22*PX,.12*TT,L.shirt,0,-11*PX,0),bxm(.09*TT,4*PX,.1*TT,L.skin,0,-24*PX,0)); return q; });
-      const head=pv(0,58*PX,body); head.add(bxm(.26*TT,15*PX,.26*TT,L.skin,0,8*PX,0),bxm(.28*TT,4*PX,.28*TT,L.hair,0,15*PX,-.01*TT),bxm(.04*TT,2*PX,.01*TT,'#1a1414',-.06*TT,9*PX,.13*TT),bxm(.04*TT,2*PX,.01*TT,'#1a1414',.06*TT,9*PX,.13*TT));
-      const h=HAT[C.hat]; if(h){ head.add(bxm(h[0]/12*TT,2*PX,h[0]/12*TT,C.hatC,0,17*PX,0),bxm(h[1]/12*TT,h[2]*PX,h[1]/12*TT,C.hatC,0,(18+h[2]/2)*PX,0)); }
-      g.visible=false; scene.add(g); return {g,body,legs,arms,head,hd:null,ph:0}; };
-    const mkHound=P=>{ const g=new THREE.Group(), parts=P.HOUND.map(([x0,y0,z0,x1,y1,z1,c,e],i)=>{ const me=bxm((y1-y0)*TT,(z1-z0)*24*PX,(x1-x0)*TT,'#'+c.map(v=>v.toString(16).padStart(2,'0')).join(''),(y0+y1)/2*TT,(z0+z1)/2*24*PX,(x0+x1)/2*TT,e);
-      me.userData.p0=me.position.clone(); me.userData.part=P.HOUND[i]; g.add(me); return me; }); g.visible=false; scene.add(g); return {g,parts}; };
+  STEPS.push(()=>{ const V=new THREE.Vector3(), MAT={}, mat=c=>MAT[c]||(MAT[c]=new THREE.MeshLambertMaterial({color:new THREE.Color(c)}));
+    const KINDS={holmes:'hero_m',watson:'villager_m',mortimer:'villager_m',henry:'hero_m',stapleton:'hero_m',barrymore:'villager_m'}, CLIP={wave:'cheer_idle_a',crouch:'sit_floor_idle_a',fall:'sit_floor_idle_a',block:'found_item_idle_a'};
+    const HAT={top:[.1,.065,.12],bowler:[.095,.065,.06],deerstalker:[.085,.066,.065],wide:[.125,.066,.05],straw:[.115,.068,.035]}, rgb=h=>{ const v=parseInt(h.slice(1),16); return [v>>16&255,v>>8&255,v&255]; };
+    const dress=(N,L)=>N.g.traverse(m=>{ const g=m.isMesh&&m.geometry; if(!g||!g.attributes.reg)return; const c=g.attributes.color.array, R=g.attributes.reg.array, P=g.attributes.position.array, n=R.length, S={}; let y0=1e9, y1=-1e9;
+      for(let i=0;i<n;i++){ const y=P[i*3+1]; y0=Math.min(y0,y); y1=Math.max(y1,y); const s=S[R[i]]||(S[R[i]]=[0,0,0,0,0]); s[0]+=c[i*3]; s[1]+=c[i*3+1]; s[2]+=c[i*3+2]; s[3]+=y; s[4]++; }
+      for(const r in S){ const s=S[r], a=s[0]/s[4], b=s[1]/s[4], d=s[2]/s[4], h=(s[3]/s[4]-y0)/(y1-y0); s.l=a*.3+b*.59+d*.11; s.k=a>107&&a>b&&b>d&&a-d>30&&b/a>.55&&b/a<.92?null:h<.1?'shoes':h<.45?'pants':h>.8?'hair':'shirt'; }
+      for(let i=0;i<n;i++){ const s=S[R[i]]; if(!s.k)continue; const q=rgb(L[s.k]), f=.65+.35*Math.min(1.6,(c[i*3]*.3+c[i*3+1]*.59+c[i*3+2]*.11)/(s.l||1)); for(let j=0;j<3;j++)c[i*3+j]=Math.min(255,q[j]*f); }
+      g.attributes.color.needsUpdate=true; });
+    const hold={free:()=>true,roam:false,brain:(dt,you,st)=>{ st.to=null; st.hold=true; }};
+    const mkFig=(w,M)=>{ const C=PY.PLAY.cast[w], N=window.PAWNNEW&&PAWNNEW(KINDS[w],'play_'+w,{npc:{...hold,x:X(M.cx),z:Z(M.cy),ground:()=>Y(M.P.PLS.SZ)}}); if(!N)return null;
+      dress(N,C.look); N.walker={talk:true}; let head=null; N.g.traverse(b=>{ if(b.isBone&&b.name==='DEF_head')head=b; });
+      const h=HAT[C.hat], H=N.H||TILE*2.4, hat=new THREE.Group(); if(h){ const m=mat(C.hatC); hat.add(new THREE.Mesh(new THREE.CylinderGeometry(h[0]*H,h[0]*H,.012*H,12),m),new THREE.Mesh(new THREE.CylinderGeometry(h[1]*H*(C.hat==='bowler'?.85:1),h[1]*H,h[2]*H,12).translate(0,h[2]*H/2,0),m)); hat.traverse(o=>o.castShadow=true); }
+      hat.visible=false; scene.add(hat); return {N,head,hat,H,hd:null}; };
+    const mkHound=M=>{ const N=window.CREATNEW&&CREATNEW('Rat','hound',.8,{paint:g=>{ const c=g.attributes.color.array, R=g.attributes.reg.array; for(let i=0;i<R.length;i++)for(let j=0;j<3;j++)c[i*3+j]=R[i]?[150,230,100][j]:Math.min(255,c[i*3+j]*.16+8); return g; },
+      npc:{...hold,x:X(M.cx),z:Z(M.cy),eye:1,eyeC:'.7,1.,.45',ground:()=>Y(M.P.PLS.SZ+(M.up||0))}}); if(N)N.g.visible=false; return N; };
     const cap=document.createElement('div'); cap.id='plcap'; cap.style.cssText='position:fixed;left:50%;bottom:9%;transform:translateX(-50%);max-width:min(70ch,90vw);padding:6px 12px;background:rgba(8,6,10,.78);color:#f0e4c4;font:14px/1.4 monospace;letter-spacing:1px;text-align:center;pointer-events:none;z-index:40;display:none'; document.body.appendChild(cap);
     const SFXK={knock:'door',door:'creak',howlfar:'bark',howlnear:'bark',snarl:'bark',paws:'step',mire:'drip',splash:'drip',owl:'chirp',sting:'boom',bell:'latch'};
     const recOf=l=>{ const x=X(l.x), y=Y(l.z), z=Z(l.y); return LITE.recs.find(L=>Math.abs(L.position.x-x)+Math.abs(L.position.y-y)+Math.abs(L.position.z-z)<1e-3)||null; };
@@ -107,20 +146,18 @@
       if(inside&&USE.seat&&!(SH.t0!=null&&(now-SH.t0)/1000<LL))SH.t0=now;
       const t=window.PLAYAT!=null?+window.PLAYAT:SH.t0!=null&&(now-SH.t0)/1000<LL?(now-SH.t0)/1000:-1, st=P.plState(t);
       const sets=n=>{ for(const k in M.SETM)for(const me of M.SETM[k])me.visible=k===(n==='fog'?'moor':n); };
-      if(!inside){ sets('baker'); for(const f of Object.values(M.FIG))f.g.visible=false; if(M.hound)M.hound.g.visible=false; for(const f of M.fog)f.visible=false; cap.style.display='none'; SH.last=-1; return; }
+      if(!inside){ sets('baker'); for(const f of Object.values(M.FIG))if(f){ f.N.g.visible=false; f.hat.visible=false; } if(M.hound)M.hound.g.visible=false; for(const f of M.fog)f.visible=false; cap.style.display='none'; SH.last=-1; return; }
       cue(M,st.lt,st.set,st.si===-1?1:Math.round(st.c*4)/4,now); sets(st.set);
       const TR=st.si>=0?P.PLTR[st.si]:st.si===-2?P.PLCALL:null, seen=new Set();
-      if(TR&&st.c>0)for(const [w,a] of Object.entries(TR.A)){ const p=P.plPlayer(a,t,TR); if(!p)continue; seen.add(w); const F=M.FIG[w]||(M.FIG[w]=mkFig(PY.PLAY.cast[w]));
-        F.g.visible=true; F.g.position.set(X(M.mx(p.x)),Y(P.PLS.SZ),Z(M.my(p.y))); const want=Math.atan2(-p.dir[0],-p.dir[1]); if(F.hd==null)F.hd=want; let dd=want-F.hd; dd=Math.atan2(Math.sin(dd),Math.cos(dd)); F.hd+=Math.max(-3*Math.PI*dt,Math.min(3*Math.PI*dt,dd)); F.g.rotation.set(0,F.hd,0);
-        let act=null; for(const [ta,mv] of a.acts)if(ta<=t&&t<ta+(mv==='crouch'?2.4:mv==='fall'?2:.8))act=mv;
-        F.ph+=p.walking?dt*Math.PI*3.2:0; const s=p.walking?Math.sin(F.ph):0; F.legs[0].rotation.x=s*.6; F.legs[1].rotation.x=-s*.6; F.arms[0].rotation.x=-s*.5; F.arms[1].rotation.x=s*.5;
-        F.body.position.y=act==='crouch'?-12*PX:0; F.legs.forEach(l=>l.scale.y=act==='crouch'?.6:1); if(act==='crouch')F.legs.forEach(l=>l.position.y=18*PX); else F.legs.forEach(l=>l.position.y=30*PX);
-        if(act==='wave')F.arms[1].rotation.x=-2.7; if(act==='block'){ F.arms[0].rotation.x=F.arms[1].rotation.x=-1.4; } F.g.rotation.x=act==='fall'?-1.35:0; }
-      for(const [w,F] of Object.entries(M.FIG))if(!seen.has(w))F.g.visible=false;
-      const ht=TR&&TR.H.length?P.plHoundAt(TR.H,t):null; if(ht&&!M.hound)M.hound=mkHound(P);
-      if(M.hound){ const Hd=M.hound; Hd.g.visible=!!ht; if(ht){ const ph=ht.s*Math.PI*2; Hd.g.position.set(X(M.mx(ht.x)),Y(P.PLS.SZ+ht.up*24),Z(M.my(ht.y))); Hd.g.rotation.y=Math.atan2(-Math.cos(ht.a),-Math.sin(ht.a));
-        for(const me of Hd.parts){ const q=me.userData.part, p0=me.userData.p0; if(q.leg){ const fore=q.leg[0]>0, side=q.leg[1]>0, a=ph+(fore?0:Math.PI)+(side?.4:0); me.position.set(p0.x,p0.y+Math.max(0,-Math.cos(a))*.08*24*PX,p0.z+Math.sin(a)*.16*TT); }
-          else if(q.tail)me.position.set(p0.x+Math.sin(ph)*.05*TT,p0.y+.04*24*PX*Math.cos(ph),p0.z); else me.position.set(p0.x,p0.y+Math.sin(ph*2)*.025*24*PX,p0.z); } } }
+      if(TR&&st.c>0)for(const [w,a] of Object.entries(TR.A)){ const p=P.plPlayer(a,t,TR); if(!p)continue; const F=w in M.FIG?M.FIG[w]:(M.FIG[w]=mkFig(w,M)); if(!F)continue; seen.add(w);
+        const N=F.N, want=Math.atan2(-p.dir[0],-p.dir[1]); if(F.hd==null)F.hd=want; let dd=want-F.hd; dd=Math.atan2(Math.sin(dd),Math.cos(dd)); F.hd+=Math.max(-3*Math.PI*dt,Math.min(3*Math.PI*dt,dd));
+        N.st.x=X(M.mx(p.x)); N.st.z=Z(M.my(p.y)); N.st.h=F.hd; N.g.position.set(N.st.x,Y(P.PLS.SZ),N.st.z); N.g.rotation.y=F.hd; N.g.visible=true;
+        let act=null; for(const [ta,mv] of a.acts)if(ta<=t&&t<ta+(mv==='crouch'?2.4:mv==='fall'?2:1.2))act=mv; const talk=a.talk.some(([t0,t1])=>t>=t0&&t<t1);
+        N.dwell=p.walking?'UAL_Walk_Formal_Loop':act?CLIP[act]:talk?'UAL_Idle_Talking_Loop':'UAL_Idle_Loop';
+        if(F.head&&F.hat.children.length){ F.head.getWorldPosition(V); F.hat.position.set(V.x,V.y+F.H*.1,V.z); F.hat.rotation.y=N.g.rotation.y; F.hat.visible=act!=='fall'&&act!=='crouch'; } }
+      for(const [w,F] of Object.entries(M.FIG))if(F&&!seen.has(w)){ F.N.g.visible=false; F.hat.visible=false; }
+      const ht=TR&&TR.H.length?P.plHoundAt(TR.H,t):null; if(ht&&M.hound===null)M.hound=mkHound(M)||0;
+      if(M.hound){ const N=M.hound; N.g.visible=!!ht; if(ht){ M.up=ht.up*24; N.st.x=X(M.mx(ht.x)); N.st.z=Z(M.my(ht.y)); N.st.h=Math.atan2(-Math.cos(ht.a),-Math.sin(ht.a)); N.g.position.set(N.st.x,Y(P.PLS.SZ+M.up),N.st.z); N.g.rotation.y=N.st.h; N.clip=ht.run?'Rat_Run':'Rat_Idle'; } }
       M.fog.forEach((f,i)=>{ f.visible=st.set==='fog'&&st.si>=0; if(f.visible){ f.material.map.offset.x=(t*.012*(i%2?-1:1)+i*.3)%1; f.material.opacity=Math.min(1,(t-PY.PLAYT.scenes[3].S)/14); } });
       let line=''; if(t>=0)for(const [t0,d,si,bi] of PY.PLAYT.lines)if(t>=t0&&t<t0+d){ const b=PY.PLAY.scenes[si].beats[bi]; line=PY.PLAY.cast[b.w].name.toUpperCase()+': '+b.s.replace(/\[[^\]]*\]\s*/g,''); }
       if(line!==SH.cap){ SH.cap=line; cap.textContent=line; cap.style.display=line?'block':'none'; }

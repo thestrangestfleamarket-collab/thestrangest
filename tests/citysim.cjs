@@ -3,7 +3,7 @@
 const {chromium}=require('playwright'); const S=process.argv[2];
 (async()=>{ const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader']}); const pg=await b.newPage({viewport:{width:900,height:600}}); const errs={};
   pg.on('pageerror',e=>{ errs[e.message.slice(0,160)]=(errs[e.message.slice(0,160)]||0)+1; });
-  await pg.goto('file://'+process.cwd()+'/dist/market.html?fresh=1&hour=12'); for(let i=0;i<200&&!(await pg.evaluate(()=>!!window.__started).catch(()=>false));i++)await pg.waitForTimeout(1000); await pg.waitForTimeout(5000);
+  await pg.goto('file://'+process.cwd()+'/dist/market.html?city=1&fresh=1&hour=12'); for(let i=0;i<200&&!(await pg.evaluate(()=>!!window.__started).catch(()=>false));i++)await pg.waitForTimeout(1000); await pg.waitForTimeout(5000);
   const until=async(fn,ms)=>{ const t=Date.now(); while(Date.now()-t<ms){ if(await pg.evaluate(fn).catch(()=>false))return Date.now()-t; await pg.waitForTimeout(3000); } return -1; };
   const res=[]; const rec=(name,ok,info)=>{ res.push([name,ok,info]); console.log((ok?'PASS ':'FAIL ')+name+(info?'  '+info:'')); };
   rec('six droids at the tower',await pg.evaluate(()=>Object.keys(CIVIC.staff).length===6&&Object.values(CIVIC.staff).every(S=>S.N&&S.N.key.startsWith('civ_'))),await pg.evaluate(()=>Object.keys(CIVIC.staff).join(',')));

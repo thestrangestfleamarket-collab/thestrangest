@@ -1,6 +1,6 @@
 const NEWS=window.NEWS={};
 NEWS.init=()=>{ const N=typeof TOONS!=='undefined'&&TOONS.cat; if(!N||typeof BOD==='undefined')return;
-  const X=BOD.XS, Y=z=>BOD.YS(z*.64), Z=BOD.ZS, T=TILE, xm=68, x0=xm-1.4, x1=xm+1.4, y1=-74.85, y0=y1-1.5;
+  const X=BOD.XS, Y=z=>BOD.YS(z*.64), Z=BOD.ZS, T=TILE, xm=(MAPSTAIR.x0+MAPSTAIR.x1)/2-6, x0=xm-1.4, x1=xm+1.4, y1=-74.85, y0=y1-1.5;
   const STEEL=0x5c6268, DARK=0x22262a, WOOD=0x8a6440, PAPER=0xe6e2d6, TW=0xa8844e;
   const BX=[]; const box=(a,b,c,d,z0,z1,col,L=BX,r=0)=>{ L.push([(X(a)+X(b))/2,(Y(z0)+Y(z1))/2,(Z(c)+Z(d))/2,Math.abs(X(b)-X(a)),Y(z1)-Y(z0),Math.abs(Z(d)-Z(c)),col,r]); };
   const rnd=(()=>{ let t=11; return ()=>{ t=(t*16807)%2147483647; return t/2147483647; }; })();

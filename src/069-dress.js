@@ -1,4 +1,4 @@
-const DRESS=window.DRESS={}, TLX={tick:()=>{}};
+const DRESS=window.DRESS={gaps:()=>{ const G=[]; for(let i=0;i+1<MAINROW.length;i++){ const a=MAINROW[i][1], b=MAINROW[i+1][0]; if(b-a>1.5)G.push([a,b]); } return G; }}, TLX={tick:()=>{}};
 { const G=MODS.bodega.ground, xm=(BOUND.x0+BOUND.x1)/2; let zc=null, zf=null; for(let z=BOUND.z0;z<BOUND.z1;z+=0.02){ const g=G(xm,z); if(zc==null&&g<-.01)zc=z; if(zc!=null&&zf==null&&g>-.01&&z>zc)zf=z; }
   const sw=zc-.5, far=zf+.6, AX=BOD.X(MODS.apts.A.x1), AX0=BOD.X(MODS.apts.A.x0), BX0=BOD.X(BOD.B0.x0);
   DRESS.kerb={sw,far}; DRESS.cans=[];
@@ -33,8 +33,8 @@ const DRESS=window.DRESS={}, TLX={tick:()=>{}};
       solid(x,z,.3*M,T8); POLES.push({x,z,d:-1,ax:'z',ring:'inner',y:y+T8-.6*M,h:L2[0][1],h2:L2[1][1],L:L2[0][0],L2:L2[1][0],corner:1}); DRESS.corner={x,z,y,lamps:L2.map(q=>q[0])}; }
     const wz=BOD.ZS(PARK.y0+PARK.oy), pz=far+.95*M, g0=BOD.XS(PARK.gate[0]+PARK.ox), g1=BOD.XS(PARK.gate[1]+PARK.ox), pts=[[g0-.9*M,pz],[g1+.9*M,pz]], px1=BOD.XS(PARK.x1+PARK.ox)-2;
     for(let x=g0-28*M;x>BOD.XS(PARK.x0+PARK.ox)+2;x-=28*M)pts.push([x,pz]); for(let x=g1+28*M;x<px1;x+=28*M)pts.push([x,pz]);
-    { const A=MODS.apts&&MODS.apts.A, dz=[BOD.X((BOD.B0.x0+BOD.B0.x1)/2),A?BOD.X(A.x1-1):1e9,BOD.XS((MAPSTAIR.x0+MAPSTAIR.x1)/2),...(STORE.main?STORE.main.doors.map(d=>d[1]):[])], sz=sw-.75*M;
-      for(let x=g0-14*M;x>BOD.XS(BLOCK.x0)+2*M;x-=28*M)if(dz.every(d=>Math.abs(d-x)>2.5*M))pts.push([x,sz]); for(let x=g0+14*M;x<BOD.XS(BLOCK.x1)-2*M;x+=28*M)if(dz.every(d=>Math.abs(d-x)>2.5*M))pts.push([x,sz]); }
+    { const A=MODS.apts&&MODS.apts.A, dz=[BOD.X((BOD.B0.x0+BOD.B0.x1)/2),A?BOD.X(MODS.apts.DX!=null?MODS.apts.DX:A.x1-1):1e9,BOD.XS((MAPSTAIR.x0+MAPSTAIR.x1)/2),...(STORE.main?STORE.main.doors.map(d=>d[1]):[])], sz=sw-.75*M;
+      for(const [a,b] of DRESS.gaps())if(b-a>=2.5){ const x=BOD.XS(b-a>6?a+1.2:(a+b)/2); if(dz.every(d=>Math.abs(d-x)>2*M))pts.push([x,sz]); } }
     { const ax=BOD.XS(AVE.r0)-.95*M, z0=BOD.ZS(BOD.MAP.y1)+5*M, z1=BOD.ZS(AVE.y1)-2; for(let z=z0;z<z1;z+=28*M)pts.push([ax,z]); }
     { const clear=([x,z])=>heads.every(([hx,,hz])=>Math.hypot(hx-x,hz-z)>2.6*M); for(let i=pts.length-1;i>=0;i--)if(!clear(pts[i]))pts.splice(i,1); }
     const xs=pts.map(p=>p[0]);
@@ -82,9 +82,9 @@ const DRESS=window.DRESS={}, TLX={tick:()=>{}};
       const rail=(a,b)=>{ const y=G((a+b)/2,z); for(const h of [.42*M,.9*M])blk((a+b)/2,y+h,z,b-a,.06*M,.05*M,RL); SOL.up.push([a,z-.06*M,b,z+.06*M]); FIX.up.push([a,z-.06*M,y,b,z+.06*M,y+H]); };
       for(const [a,b] of runs)rail(a,b); }
     { const M=1/.84*TILE, A=MODS.apts&&MODS.apts.A, zk=BOD.ZS(BOD.CURB), sd=Math.sign(zk)||1, hsh=(a,b)=>{ const v=Math.sin(a*12.9898+b*78.233)*43758.5453; return v-Math.floor(v); };
-      const clear=(x,z)=>!(window.MAPSTAIR&&MAPSTAIR.has&&MAPSTAIR.has(x,z,'up'))&&(DRESS.pools||[]).every(P=>Math.hypot(P[1]-x,P[2]-z)>2.4*M)&&!SOL.up.some(b=>x>b[0]-.9*M&&x<b[2]+.9*M&&z>b[1]-.9*M&&z<b[3]+.9*M)&&[BOD.X((BOD.B0.x0+BOD.B0.x1)/2),A?BOD.X(A.x1-1):1e9,BOD.XS((MAPSTAIR.x0+MAPSTAIR.x1)/2),...(STORE.main?STORE.main.doors.map(d=>d[1]):[])].every(d=>Math.abs(d-x)>7*M);
+      const clear=(x,z)=>!(window.MAPSTAIR&&MAPSTAIR.has&&MAPSTAIR.has(x,z,'up'))&&(DRESS.pools||[]).every(P=>Math.hypot(P[1]-x,P[2]-z)>2.4*M)&&!SOL.up.some(b=>x>b[0]-.9*M&&x<b[2]+.9*M&&z>b[1]-.9*M&&z<b[3]+.9*M)&&[BOD.X((BOD.B0.x0+BOD.B0.x1)/2),A?BOD.X(MODS.apts.DX!=null?MODS.apts.DX:A.x1-1):1e9,BOD.XS((MAPSTAIR.x0+MAPSTAIR.x1)/2),...(STORE.main?STORE.main.doors.map(d=>d[1]):[])].every(d=>Math.abs(d-x)>5*M);
       const OAK=[], PL=[], PITS=[], tp=(x,z)=>[x/TILE+BOD.OX-PARK.ox,z/TILE+BOD.OY-PARK.oy];
-      const tree=(x0,i,big)=>{ const z=zk-sd*1.05*M; let x=x0; for(let k=0;k<30&&!clear(x,z);k++)x+=(k&1?-1:1)*(k+1)*.6*M; if(!clear(x,z))return; const y=G(x,z), P=(big?1.6:1.35)*M, SET=0xa8a49c, IRN=0x1e2824, g=P/2-.05*M, gh=.42*M;
+      const tree=(x0,i,big,fix)=>{ const z=zk-sd*1.05*M; let x=x0; if(!fix)for(let k=0;k<30&&!clear(x,z);k++)x+=(k&1?-1:1)*(k+1)*.6*M; if(!clear(x,z))return; const y=G(x,z), P=(big?1.6:1.35)*M, SET=0xa8a49c, IRN=0x1e2824, g=P/2-.05*M, gh=.42*M;
         [[0,-P/2,P+.16*M,.16*M],[0,P/2,P+.16*M,.16*M],[-P/2,0,.16*M,P],[P/2,0,.16*M,P]].forEach(([dx,dz,w,d],j)=>blk(x+dx,y+.035*M+.01*M*hsh(i,j),z+dz,w,.07*M,d,[SET,0x9c9890,0xb0aca2,0xa4a096][j]));
         PITS.push([x,y+.025*M,z,P,i]);
         const zb=z-sd*g; for(const [cx,cz,lx,lz] of [[x,zb,2*g,0],[x-g,z,0,2*g],[x+g,z,0,2*g]]){ const L=lx||lz, n=Math.round(L/(.14*M));
@@ -93,9 +93,9 @@ const DRESS=window.DRESS={}, TLX={tick:()=>{}};
         for(const [cx,cz] of [[x-g,zb],[x+g,zb],[x-g,z+sd*g],[x+g,z+sd*g]])blk(cx,y+(gh+.06*M)/2,cz,.05*M,gh+.06*M,.05*M,IRN);
         OAK.push(['OakTree2',...tp(x,z),big?9.5:7+hsh(i,5),hsh(i,9)*6.28]);
         for(let j=0;j<4;j++){ const a=j*1.7+i, r=(.22+.2*hsh(i,j+40))*P; PL.push([['grass1','grass2','grass1','grass2'][j],...tp(x+Math.cos(a)*r,z+Math.sin(a)*r),.25+.12*hsh(j,i),a]); } };
-      if(A){ const mx=BOD.X((A.x0+A.x1)/2-1.2); tree(mx,0,1); tree(mx+22*M,1); tree(mx+48*M,2);
-        const zf=BOD.Z(A.y1), sdf=Math.sign(zk-zf)||1, BR=0x7a4c3e, BRD=0x5e3a30, IR=0x1c1e22, dx=BOD.X(A.x1-1)-BOD.X(A.x1-1-2.2);
-        for(const [k,cx] of [[0,BOD.X(A.x1-1)-dx*1.05],[1,BOD.X(A.x1-1)-dx*1.9]]){ const L=1.7*M, D=.8*M, h=.62*M, cz=zf+sdf*(D/2+.05*M), y=G(cx,cz);
+      if(A){ let ti=0; for(const [a,b] of DRESS.gaps()){ if(b-a<4)continue; const n=b-a>14?2:1; for(let j=0;j<n;j++)tree(BOD.XS(a+(b-a)*(j+1)/(n+1)+(b-a>6&&n===1?1:0)),ti,(ti++)%3===0,1); }
+        const zf=BOD.Z(A.y1), sdf=Math.sign(zk-zf)||1, BR=0x7a4c3e, BRD=0x5e3a30, IR=0x1c1e22, dx=BOD.X(A.x1-1)-BOD.X(A.x1-1-2.2), DX=BOD.X(MODS.apts.DX);
+        for(const [k,cx] of [[0,DX-dx*1.05],[1,DX-dx*1.9],[2,DX+dx*1.05],[3,DX+dx*1.9]]){ const L=1.7*M, D=.8*M, h=.62*M, cz=zf+sdf*(D/2+.05*M), y=G(cx,cz);
           blk(cx,y+h/2,cz,L-.02*M,h-.01*M,D-.02*M,0x2e221c); for(let r=0;r<3;r++)for(let c=0;c<5;c++){ const w=L/5, hh=h/3, n=hsh(k*31+r,c), col=new THREE.Color(BR).multiplyScalar(.82+.3*n).offsetHSL((hsh(c,r+k)-.5)*.03,0,0).getHex(); blk(cx-L/2+w*(c+.5)+(r&1?w*.15:0)*(c<4?1:0),y+hh*(r+.5),cz,w-.012*M,hh-.012*M,D,col); } blk(cx,y+h+.03*M,cz,L+.08*M,.06*M,D+.08*M,BRD); blk(cx,y+.04*M,cz,L+.04*M,.08*M,D+.04*M,BRD);
           for(const o of [-1,1])blk(cx,y+h+.42*M,cz+o*(D/2),L,.04*M,.04*M,IR); blk(cx-L/2,y+h+.42*M,cz,.04*M,.04*M,D,IR); blk(cx+L/2,y+h+.42*M,cz,.04*M,.04*M,D,IR);
           for(let t=0;t<=12;t++){ const u=-L/2+t*L/12; for(const o of [-1,1])blk(cx+u,y+h+.22*M,cz+o*(D/2),.025*M,.4*M,.025*M,IR); }

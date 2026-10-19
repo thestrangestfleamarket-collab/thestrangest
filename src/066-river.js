@@ -63,7 +63,8 @@ const RIVER={way:'fluid',wi:2,step:false,t:0,on:false};
   const simScene=new THREE.Scene(), simCam=new THREE.Camera(); simScene.add(new THREE.Mesh(new THREE.PlaneGeometry(1,1),simMat));
   RIVER.drop=(x,z,r,s)=>{ if(RIVER.way!=='full'&&RIVER.way!=='fluid')return; if(SIM.drops.length<8)SIM.drops.push([(x-SIM.x0)/SW,(z-SIM.z0)/SW,r,s]); };
 
-  const BN=[Math.round(WIN/(2*T)),Math.round(DZ/(2*T))], bedG=new THREE.PlaneGeometry(WIN,DZ,BN[0],BN[1]); bedG.rotateX(-Math.PI/2);
+  const ND=16*T, PG=(d,nx,nz,o)=>{ const g=new THREE.PlaneGeometry(WIN,d,nx,nz); g.rotateX(-Math.PI/2); g.translate(0,0,o); return g; };
+  const BN=[Math.round(WIN/(2*T)),Math.round(DZ/(2*T))];
   const uT0={value:0}, uBedK={value:0}, uCau={value:1}, uLvW={value:LV}, uSunD={value:new THREE.Vector3()};
   const GLN=`float rh(vec2 p){ return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453); }
     float rn(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.-2.*f); return mix(mix(rh(i),rh(i+vec2(1.,0.)),f.x),mix(rh(i+vec2(0.,1.)),rh(i+vec2(1.,1.)),f.x),f.y); }
@@ -81,14 +82,13 @@ const RIVER={way:'fluid',wi:2,step:false,t:0,on:false};
       vec3 n=normalize(vN); vec3 L=uAmb*.7+uSunC*max(dot(n,uSunD),0.)*.32; c*=L;
       float d=uLvW-vRw.y; if(d>0.&&uCau>0.){ vec2 p=vRw.xz*${MPU.toFixed(4)}*.62+uSunD.xz*d*${MPU.toFixed(4)}*.5; float k=cau(mod(p,6.2831),uT*.5)+.6*cau(mod(p*1.7+1.3,6.2831),uT*.4); float kk=clamp(k*1.6,0.,1.4); c*=.72+uCau*.9*kk*exp(-d*${MPU.toFixed(4)}*.1); c+=vec3(.25,.55,.55)*uCau*kk*.35*exp(-d*${MPU.toFixed(4)}*.1); }
       gl_FragColor=vec4(c,1.); }`});
-  const bed=new THREE.Mesh(bedG,bedMat); bed.receiveShadow=false;
-  bed.frustumCulled=false; scene.add(bed);
+  const bed=new THREE.Mesh(PG(ND,BN[0],Math.round(ND/(2*T)),(DZ-ND)/2),bedMat), bedF=new THREE.Mesh(PG(DZ-ND,BN[0],4,-ND/2),bedMat);
+  bed.frustumCulled=bedF.frustumCulled=false; bed.add(bedF); scene.add(bed);
   const bedTex=new THREE.DataTexture(new Uint8Array((BN[0]+1)*(BN[1]+1)*4),BN[0]+1,BN[1]+1); bedTex.magFilter=bedTex.minFilter=THREE.LinearFilter;
-  const buildBed=()=>{ const p=bedG.attributes.position, a=bedTex.image.data; for(let i=0;i<p.count;i++){ const x=p.getX(i)+RIVER.cx, z=p.getZ(i)+(rz0+rz1)/2, d=depthAt(x,z); p.setY(i,LV-d*WU); }
+  const buildBed=()=>{ const a=bedTex.image.data; for(const m of [bed,...bed.children]){ const g=m.geometry, p=g.attributes.position; for(let i=0;i<p.count;i++){ const x=p.getX(i)+RIVER.cx, z=p.getZ(i)+(rz0+rz1)/2, d=depthAt(x,z); p.setY(i,LV-d*WU); } p.needsUpdate=true; g.computeVertexNormals(); }
     for(let j=0;j<=BN[1];j++)for(let i=0;i<=BN[0];i++){ const x=RIVER.cx-WIN/2+i/BN[0]*WIN, z=rz0+j/BN[1]*DZ, k=(j*(BN[0]+1)+i)*4; a[k]=Math.min(255,depthAt(x,z)*20); a[k+3]=255; }
-    p.needsUpdate=true; bedG.computeVertexNormals(); bedTex.needsUpdate=true; bed.position.set(RIVER.cx,0,(rz0+rz1)/2); if(typeof seedGrass!=='undefined')seedGrass(); };
+    bedTex.needsUpdate=true; bed.position.set(RIVER.cx,0,(rz0+rz1)/2); if(typeof seedGrass!=='undefined')seedGrass(); };
 
-  const surfG=new THREE.PlaneGeometry(WIN,DZ,NX,NZ); surfG.rotateX(-Math.PI/2); surfG.boundingSphere=new THREE.Sphere(new THREE.Vector3(),WIN);
   const RT=new THREE.WebGLRenderTarget(4,4,{type:THREE.HalfFloatType}); RT.depthTexture=new THREE.DepthTexture(4,4); RT.depthTexture.type=THREE.FloatType;
   const SU={uT:uT0,uWA:{value:WA},uWB:{value:WB},uNW:{value:0},uAmp:{value:1},uWin:{value:new THREE.Vector4()},uRip:uRip,uRect:uRect,uRipOn:uRipOn,uRT:{value:1/SG},
     uScene:{value:RT.texture},uDepth:{value:RT.depthTexture},uRes:{value:new THREE.Vector2(4,4)},uNear:{value:.1},uFar:{value:800},uMode:{value:0},uBed:{value:bedTex},uBedR:{value:new THREE.Vector4()},
@@ -143,7 +143,7 @@ const RIVER={way:'fluid',wi:2,step:false,t:0,on:false};
         }
         if(uStep>0.)col=floor(col*24.+.5)/24.;
         gl_FragColor=vec4(col,alpha); }`});
-  const surf=new THREE.Mesh(surfG,surfMat); surf.frustumCulled=false; scene.add(surf);
+  const surf=new THREE.Mesh(PG(ND,NX,Math.round(ND/CELL),(DZ-ND)/2),surfMat), surfF=new THREE.Mesh(PG(DZ-ND+T,1,1,(T-ND)/2),surfMat); surf.frustumCulled=surfF.frustumCulled=false; surf.add(surfF); scene.add(surf);
   const FU={uT:uT0,uSky:{value:new THREE.Color(.5,.62,.75)},uDay:{value:1}};
   const flatMat=new THREE.ShaderMaterial({uniforms:FU,fog:false,
     vertexShader:'varying vec3 vW; void main(){ vec4 w=modelMatrix*vec4(position,1.); vW=w.xyz; gl_Position=projectionMatrix*viewMatrix*w; }',
@@ -187,8 +187,8 @@ const RIVER={way:'fluid',wi:2,step:false,t:0,on:false};
   const fishG=(()=>{ const s=.26*T, P=[[s,0,0],[0,.35*s,0],[0,0,.18*s],[0,-.3*s,0],[0,0,-.18*s],[-.9*s,0,0],[-1.3*s,.3*s,0],[-1.3*s,-.3*s,0]],
       F=[[0,1,2],[0,2,3],[0,3,4],[0,4,1],[5,2,1],[5,3,2],[5,4,3],[5,1,4],[5,6,7],[5,7,6]], pos=[]; for(const f of F)for(const v of f)pos.push(...P[v]);
     const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3)); g.computeVertexNormals(); return g; })();
-  const NF=36, fishM=new THREE.InstancedMesh(fishG,new THREE.MeshBasicMaterial({color:0xffffff}),NF); fishM.frustumCulled=false; scene.add(fishM);
-  const FISH=[], SCH=[]; const seedFish=()=>{ FISH.length=0; SCH.length=0; const Wt=WATERS[RIVER.wi], C=new THREE.Color();
+  const NF=36; let fishM=null;
+  const FISH=[], SCH=[]; const seedFish=()=>{ if(!fishM)return; FISH.length=0; SCH.length=0; const Wt=WATERS[RIVER.wi], C=new THREE.Color();
     for(let s=0;s<3;s++)SCH.push({x:0,z:0,y:0,tx:0,tz:0,ty:0,t:0,set:false});
     for(let i=0;i<NF;i++){ FISH.push({s:SCH[i%3],x:0,y:0,z:0,vx:0,vy:0,vz:0,o:[Math.random()*2-1,Math.random()*2-1,Math.random()-.5],big:Wt.bed===0&&i===NF-1}); fishM.setColorAt(i,C.setRGB(...Wt.fish[i%Wt.fish.length])); }
     fishM.instanceColor.needsUpdate=true; };
@@ -197,7 +197,7 @@ const RIVER={way:'fluid',wi:2,step:false,t:0,on:false};
     add(new THREE.CylinderGeometry(r,r*.85,.35*T,8),red,0); add(new THREE.CylinderGeometry(r*.9,r,.18*T,8),white,.26*T); add(new THREE.ConeGeometry(r*.9,.5*T,8),red,.6*T); add(new THREE.CylinderGeometry(.03*T,.03*T,.4*T,4),dark,1.0*T); }
   const BUOYS=[]; for(let x=fx0+25*T;x<fx1;x+=45*T){ const b=buoyG.clone(); b.traverse(o=>{ if(o.isMesh)o.castShadow=true; }); scene.add(b); const ln=new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(),new THREE.Vector3()]),new THREE.LineBasicMaterial({color:0x2a2622})); ln.frustumCulled=false; scene.add(ln); BUOYS.push({m:b,ln,x,z:rz1-14*T}); }
   const junk=new THREE.Group(); scene.add(junk);
-  const seedJunk=()=>{ while(junk.children.length)junk.remove(junk.children[0]); if(WATERS[RIVER.wi].bed!==0)return; const tyre=new THREE.MeshLambertMaterial({color:0x1a1a1c}), glass=new THREE.MeshLambertMaterial({color:0x3f7a4c});
+  const seedJunk=()=>{ while(junk.children.length)junk.remove(junk.children[0]); if(!RIVER.deep||WATERS[RIVER.wi].bed!==0)return; const tyre=new THREE.MeshLambertMaterial({color:0x1a1a1c}), glass=new THREE.MeshLambertMaterial({color:0x3f7a4c});
     for(let x=fx0+12*T;x<fx1;x+=31*T){ const z=rz1-(6+((x/T)%11))*T, t=new THREE.Mesh(new THREE.TorusGeometry(.3*T,.12*T,5,10),tyre); t.rotation.x=Math.PI/2; t.position.set(x,LV-depthAt(x,z)*WU+.1*T,z); junk.add(t);
       for(let k=0;k<3;k++){ const bx=x+(k*2.3-2)*T, bz=z-(k*1.7+1)*T, b=new THREE.Mesh(new THREE.CylinderGeometry(.06*T,.06*T,.3*T,5),glass); b.rotation.z=Math.PI/2; b.rotation.y=k; b.position.set(bx,LV-depthAt(bx,bz)*WU+.06*T,bz); junk.add(b); } } };
 
@@ -206,7 +206,7 @@ const RIVER={way:'fluid',wi:2,step:false,t:0,on:false};
     { vec4 o=instanceMatrix*vec4(0.,0.,0.,1.); float k=position.y*position.y; transformed.x+=k*.35*sin(uT*.9+o.x*.7+o.z*.3); transformed.z+=k*.25*sin(uT*1.3+o.x*.4); }`); };
   const grass=new THREE.InstancedMesh(grG,grMat,NGR); grass.frustumCulled=false; scene.add(grass);
   const seedGrass=()=>{ const Wt=WATERS[RIVER.wi], M=new THREE.Matrix4(), Q=new THREE.Quaternion(), V=new THREE.Vector3(), Sc=new THREE.Vector3(), C=new THREE.Color(); let n=0;
-    for(let i=0;i<NGR;i++){ const cI=i>>3, x=RIVER.cx+(hash(cI,(RIVER.cx/T)|0)-.5)*WIN*.6+(hash(i,11)-.5)*.9*T, z=rz1-(.6+Math.pow(hash(cI,77),1.6)*22)*T+(hash(i,12)-.5)*.9*T, d=depthAt(x,z); if(Wt.bed===1&&hash(i,5)<.6)continue;
+    for(let i=0;i<NGR;i++){ const cI=i>>3, x=RIVER.cx+(hash(cI,(RIVER.cx/T)|0)-.5)*WIN*.6+(hash(i,11)-.5)*.9*T, z=rz1-(.6+Math.pow(hash(cI,77),1.6)*22)*T+(hash(i,12)-.5)*.9*T, d=depthAt(x,z); if(Wt.bed===1&&hash(i,5)<.6||!RIVER.deep&&z<rz1-ND)continue;
       const h=(Wt.bed===1?3+hash(i,9)*3:.25+hash(i,9)*.35)*WU; Q.setFromAxisAngle(V.set(0,1,0),hash(i,3)*6.3); M.compose(V.set(x,LV-d*WU,z),Q,Sc.set(WU*2.2,h,WU*2.2)); grass.setMatrixAt(n,M);
       const g=Wt.bed===2?[.22,.5,.2]:Wt.bed===1?[.42,.34,.13]:[.3,.38,.18]; grass.setColorAt(n,C.setRGB(g[0]*(.8+.4*hash(i,4)),g[1]*(.8+.4*hash(i,4)),g[2])); n++; }
     grass.count=n; grass.instanceMatrix.needsUpdate=true; if(grass.instanceColor)grass.instanceColor.needsUpdate=true; };
@@ -219,6 +219,11 @@ const RIVER={way:'fluid',wi:2,step:false,t:0,on:false};
   const sound=(s,muff)=>{ try{ const c=SFX.live&&SFX.live(); if(!c||!SFX.on)return; const n=Math.floor(c.sampleRate*.8), b=c.createBuffer(1,n,c.sampleRate), d=b.getChannelData(0); let l=0; for(let i=0;i<n;i++){ l=(l+.05*(Math.random()*2-1))/1.05; d[i]=l*4*Math.exp(-i/n*(5-s*2)); }
     const src=c.createBufferSource(); src.buffer=b; const f=c.createBiquadFilter(); f.type=muff?'lowpass':'bandpass'; f.frequency.value=muff?300:1300; f.Q.value=.6; const G=c.createGain(); G.gain.value=(.25+s*.5)*SFX.vol; src.connect(f).connect(G).connect(c.destination); src.start(); }catch(e){} };
 
+  RIVER.deep=false; let dbusy=false; const wait=ms=>new Promise(r=>setTimeout(r,ms)), frames=k=>new Promise(r=>{ const f=()=>--k<=0?r():requestAnimationFrame(f); requestAnimationFrame(f); });
+  const deepGo=()=>{ if(RIVER.deep)return; RIVER.deep=true; for(const [m,c,g] of [[surf,surfF,PG(DZ,NX,NZ,0)],[bed,bedF,PG(DZ,BN[0],BN[1],0)]]){ m.remove(c); c.geometry.dispose(); m.geometry.dispose(); m.geometry=g; }
+    fishM=new THREE.InstancedMesh(fishG,new THREE.MeshBasicMaterial({color:0xffffff}),NF); fishM.frustumCulled=false; scene.add(fishM); seedFish(); seedJunk(); RIVER.cx=1e9; };
+  RIVER.load=async()=>{ if(RIVER.deep||dbusy)return; dbusy=true; const el=document.getElementById('subfade'); if(el){ el.textContent='LOADING...'; el.style.opacity='1'; await wait(340); }
+    deepGo(); await frames(3); if(el)el.style.opacity='0'; dbusy=false; };
   RIVER.over=(x,z)=>LVL==='up'&&x>lx0&&x<lx1&&z>rz0&&z<rz1;
   RIVER.air=1; RIVER.dep=0; RIVER.bot=0; let wasIn=false, wake=0, noAir=false, wasUnder=false;
   RIVER.feed=(st,pos,dt,go,keys)=>{ if(!RIVER.over(pos.x,pos.z)||!RIVER.swim&&onPier(pos.x,pos.z)){ RIVER.swim=false; if(wasIn)wasIn=false; return false; }
@@ -247,14 +252,15 @@ const RIVER={way:'fluid',wi:2,step:false,t:0,on:false};
   const F=new THREE.Frustum(), M4=new THREE.Matrix4(), bb=new THREE.Box3();
   RIVER.tick=(dt,pos)=>{ RIVER.t+=dt; uT0.value=RIVER.t; const up=OUT.world, way=RIVER.way;
     const cx=snapX(pos.x); if(Math.abs(cx-RIVER.cx)>1){ RIVER.cx=cx; buildBed(); setFlats(); surf.position.set(cx,LV,(rz0+rz1)/2); SU.uWin.value.set(cx-WIN/2,cx+WIN/2,0,0); SU.uBedR.value.set(cx-WIN/2,rz0,WIN,DZ); }
-    const real=way!=='flat'; surf.visible=up&&real; bed.visible=up&&real; flatL.visible=flatR.visible=up&&real; flatAll.visible=up&&!real; fishM.visible=junk.visible=grass.visible=up&&real;
+    const real=way!=='flat'; surf.visible=up&&real; bed.visible=up&&real; flatL.visible=flatR.visible=up&&real; flatAll.visible=up&&!real; junk.visible=grass.visible=up&&real; if(fishM)fishM.visible=up&&real;
+    if(!RIVER.deep&&up&&RIVER.over(pos.x,pos.z)&&(pos.z<rz1-10*T||RIVER.swim&&RIVER.dep>2.5))RIVER.load();
     for(const k of ['wallN','wallS'])RIVER[k].visible=up; cope.visible=RIVER.kit.visible=spm.visible=up; for(const B of BUOYS)B.m.visible=B.ln.visible=up;
     surfMat.transparent=way==='swell'; surfMat.depthWrite=way!=='swell'; SU.uMode.value=way==='swell'?1:way==='fluid'?2:0; SU.uStep.value=RIVER.step?1:0;
     SU.uAmp.value=1; uRipOn.value=way==='full'||way==='fluid'?1:0;
     const S=CLOCK.sun; uSunD.value.copy(CLOCK.sunV); SU.uSunC.value.copy(S.color).multiplyScalar(Math.min(1.4,S.intensity)); if(window.SKY&&SKY.U){ SU.uSkyH.value.copy(SKY.U.uH.value); SU.uSkyZ.value.copy(SKY.U.uZ.value); FU.uSky.value.copy(SKY.U.uH.value); }
     SU.uAmb.value.copy(SU.uSkyZ.value).multiplyScalar(.55).addScalar(.03); uAmbB.value.copy(SU.uSkyZ.value).multiplyScalar(.6).add(SU.uSkyH.value.clone().multiplyScalar(.25)); uSunCB.value.copy(SU.uSunC.value).multiplyScalar(.75); FU.uDay.value=cl((CLOCK.elev()+4)/14,.15,1);
     LITE.pool.forEach((Lp,i)=>{ if(i>=8)return; SU.uLP.value[i].copy(Lp.position); SU.uLC.value[i].set(Lp.color.r,Lp.color.g,Lp.color.b).multiplyScalar(Math.min(1,Lp.intensity/3)); });
-    if(real&&up){ const C=new THREE.Matrix4(), Q=new THREE.Quaternion(), E=new THREE.Euler(), Sv=new THREE.Vector3(), Pv=new THREE.Vector3();
+    if(real&&up&&fishM){ const C=new THREE.Matrix4(), Q=new THREE.Quaternion(), E=new THREE.Euler(), Sv=new THREE.Vector3(), Pv=new THREE.Vector3();
       for(const s of SCH){ s.t-=dt; if(!s.set||s.t<=0||Math.abs(s.x-pos.x)>26*T){ s.t=3+Math.random()*4; s.tx=cl(pos.x+(Math.random()*2-1)*14*T,lx0+2*T,lx1-2*T); s.tz=rz1-(2+Math.random()*16)*T; if(!s.set){ s.x=s.tx; s.z=s.tz; s.set=true; s.y=LV-1.5*WU; } }
         const bz=LV-depthAt(s.tx,s.tz)*WU; s.ty=bz+(LV-bz)*(.3+.4*Math.sin(RIVER.t*.1+s.tx)); s.x+=(s.tx-s.x)*dt*.25; s.z+=(s.tz-s.z)*dt*.25; s.y+=(s.ty-s.y)*dt*.3; }
       FISH.forEach((f,i)=>{ const s=f.s, tx=s.x+f.o[0]*1.4*T, tz=s.z+f.o[1]*1.4*T, ty=s.y+f.o[2]*WU; let ax=(tx-f.x)*1.2, ay=(ty-f.y)*1.2, az=(tz-f.z)*1.2;
@@ -282,7 +288,7 @@ const RIVER={way:'fluid',wi:2,step:false,t:0,on:false};
         uRip.value=SIM.A.texture; }
       else if(SIM.quiet<7){ const cc=renderer.getClearColor(new THREE.Color()), ca=renderer.getClearAlpha(); renderer.setClearColor(0,0); for(const Tg of [SIM.A,SIM.B]){ renderer.setRenderTarget(Tg); renderer.clear(true,false,false); } renderer.setClearColor(cc,ca); renderer.setRenderTarget(null); SIM.quiet=99; } }
     else SIM.drops.length=0;
-    if(surf.visible){ M4.multiplyMatrices(cam.projectionMatrix,cam.matrixWorldInverse); F.setFromProjectionMatrix(M4); bb.min.set(RIVER.cx-WIN/2,LV-WU,rz0); bb.max.set(RIVER.cx+WIN/2,LV+2*WU,rz1); if(cam.position.y>LV+2*WU&&!SEE())surf.visible=bed.visible=fishM.visible=junk.visible=grass.visible=false; }
+    if(surf.visible){ M4.multiplyMatrices(cam.projectionMatrix,cam.matrixWorldInverse); F.setFromProjectionMatrix(M4); bb.min.set(RIVER.cx-WIN/2,LV-WU,rz0); bb.max.set(RIVER.cx+WIN/2,LV+2*WU,rz1); if(cam.position.y>LV+2*WU&&!SEE()){ surf.visible=bed.visible=junk.visible=grass.visible=false; if(fishM)fishM.visible=false; } }
     if((RIVER.way==='full'||fl)&&surf.visible){
       if(cam.position.y<=LV+2*WU||SEE()){ const w=renderer.domElement.width, h=renderer.domElement.height; if(RT.width!==w||RT.height!==h)RT.setSize(w,h); SU.uRes.value.set(w,h); SU.uNear.value=cam.near; SU.uFar.value=cam.far; cam.getWorldDirection(SU.uCamD.value);
         surf.visible=false; spm.visible=false; renderer.setRenderTarget(RT); renderer.render(scene,cam); renderer.setRenderTarget(null); surf.visible=true; spm.visible=true; } }

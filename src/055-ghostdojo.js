@@ -74,7 +74,8 @@ function gdShape(GS,K,LAMPS){ const s=K.s, o=K.o, SC=1.5, cx=o[0]+4*s, Y1=o[1]+3
       for(const h of holes||[])if(a>h[0]-.14&&a<h[1]+.14&&z>h[2]-5&&z<h[3]+5)return wood(z<h[2]?.8:1.05);
       if(z>=147)return sh(J.DJPLA,.94+.06*hash(Math.floor(a*20),Math.floor(z/2),721));
       if(z>=139)return wood(z<140.5?.8:1.12);
-      if(alc&&a>alc[0]&&a<alc[1])return z<10?wood(.7):sh(J.DJPLA,.8+.05*hash(Math.floor(a*20),Math.floor(z/2),722));
+      if(alc&&a>alc[0]&&a<alc[1]){ const u=(a-alc[0])*24, L=(alc[1]-alc[0])*24, m=118-Math.abs(u-L*.55)*1.1; if(z<10||z>134||u<2||u>L-2)return wood(z<10?.7:1);
+        if(z<44)return ((u+4*Math.sin(z*.5))%14<2&&z%10>6)?[226,236,240]:[44,96,150]; if(z<m)return z>m-22+4*Math.sin(u*.7)?[240,242,246]:[70,96,140]; return z>110?[168,206,230]:[150,196,224]; }
       for(const w of win){ const r=Math.hypot((a-w)*24,z-RZc); if(r<RR+2.5){ if(r>=RR)return wood(); return ((a-w)*24+40)%7<1.3||(z+40)%7<1.3?wood(1.2):lit(WARM); } }
       if(pa<.09||pa>sp-.09||a<.09||a>L-.09)return wood();
       if(z<12)return wood(z<1?.6:(a*6)%1<.08?.75:1.05);
@@ -95,7 +96,7 @@ function gdShape(GS,K,LAMPS){ const s=K.s, o=K.o, SC=1.5, cx=o[0]+4*s, Y1=o[1]+3
         if(nx===w.n[0]&&ny===w.n[1])return shoji(w.inA(a),z,w.inL,w.door,w.win,w.alc,w.holes);
         if(nx===-w.n[0]&&ny===-w.n[1])return outside(id,a,z,k);
         return wood(.9); },()=>sh(WD,1.1),id)); }
-    BATCH.tag=OBJ('bodega','ghost street shop'); for(const b of WB)gbox(b,'GD'+b.id);
+    BATCH.tag=OBJ('bodega','bath house'); for(const b of WB)gbox(b,'GD'+b.id);
     const pw=(c,lo=.9,hi=1.08)=>(nx,ny,x,y,z,k)=>sh(c,k*(lo+(hi-lo)*hs(Math.floor((nx?y:x)*24),Math.floor(z/5),670)));
     const OUT={front:[0,1],back:[0,-1],west:[-1,0],east:[1,0]}, onWall=(f,a0,a1,z0,z1,d,c,more={})=>{ const w=WALLS[f], [ox,oy]=OUT[f], t=w.ax==='x'?(oy>0?[w.at1,w.at1+d]:[w.at0-d,w.at0]):(ox>0?[w.at1,w.at1+d]:[w.at0-d,w.at0]);
       return {...box3(w,a0,a1,z0,z1,t[0],t[1],more.fs||pw(c),more.top||(()=>sh(c,1.12)),f),...more}; };
@@ -113,10 +114,9 @@ function gdShape(GS,K,LAMPS){ const s=K.s, o=K.o, SC=1.5, cx=o[0]+4*s, Y1=o[1]+3
       DEP.push({id:'front',x0:X0+EW.a0,x1:X0+EW.a1,y0:Y1-.12,y1:Y1-.1,z0:EW.z0,z1:EW.z1,c:AMBER,fs:(nx,ny,x,y,z,k)=>lit(Math.floor(z+EW.z0)%16===0||Math.floor((x-X0-EW.a0)*24)%14===0?sh(AMBER,.86):AMBER),top:()=>lit(AMBER)});
       DEP.push(onWall('front',EW.a0-.1,EW.a1+.1,EW.z0-6,EW.z0,.14,[86,54,42])); }
     for(const u of UW){ const L=u.a1-u.a0, n=Math.round(L/.21); for(let i=1;i<n;i++){ const a=u.a0+i*L/n; DEP.push({...onWall('front',a-.025,a+.025,UZ0,UZ1,.05,[68,42,32]),id:'U'}); } DEP.push({...onWall('front',u.a0-.12,u.a1+.12,UZ0-6,UZ0,.12,[86,54,42]),id:'U'}); }
-    { const S=SIGN, gl=(a,z)=>{ const L=S.a1-S.a0, u=(a-S.a0)/L, v=(z-S.z0)/(S.z1-S.z0); if(u<.04||u>.96||v<.07||v>.93)return [52,34,28];
-        const ci=Math.floor((u-.04)/.92*3), lu=((u-.04)/.92*3-ci), lv=(v-.07)/.86, gx=Math.floor(lu*8), gy=Math.floor(lv*10);
-        let on=false; for(let s=0;s<6;s++){ const r=hs(ci,s,680), r2=hs(ci,s,681), hor=r<.55, p=Math.floor(r2*(hor?10:8)), a0=Math.floor(hs(ci,s,682)*4), a1=a0+2+Math.floor(hs(ci,s,683)*5); if(hor?gy===p&&gx>=a0&&gx<=Math.min(7,a1):gx===p&&gy>=a0&&gy<=Math.min(9,a1)){ on=true; break; } }
-        if(on&&lu>.12&&lu<.88)return hs(Math.floor(a*24),Math.floor(z),684)<.12?[150,116,62]:[214,168,82];
+    { const S=SIGN, F5={B:'uhhuhhu',A:'ehhvhhh',T:'v444444',H:'hhhvhhh',O:'ehhhhhe',U:'hhhhhhe',S:'fgge11u',E:'vgguggv'}, txt=(t,i,j)=>{ const c=Math.floor(i/12), g=F5[t[c]], gi=Math.floor((i-c*12)/2), gj=Math.floor(j/2); return !!g&&j>=0&&gi<5&&gj<7&&!!(parseInt(g[gj],32)>>(4-gi)&1); };
+      const gl=(a,z)=>{ const L=S.a1-S.a0, u=(a-S.a0)/L, v=(z-S.z0)/(S.z1-S.z0); if(u<.04||u>.96||v<.07||v>.93)return [52,34,28];
+        const px=(a-S.a0)*24, pz=S.z1-z, W=L*24; if(txt('BATH',Math.floor(px-(W-46)/2),Math.floor(pz-10))||txt('HOUSE',Math.floor(px-(W-58)/2),Math.floor(pz-30)))return hs(Math.floor(a*24),Math.floor(z),684)<.12?[150,116,62]:[214,168,82];
         return sh([36,52,84],.92+.1*hs(Math.floor(a*12),Math.floor(z/3),685)); };
       DEP.push({...onWall('front',S.a0,S.a1,S.z0,S.z1,.16,[36,52,84],{fs:(nx,ny,x,y,z,k)=>ny>0?sh(gl(x-X0,z+S.z0),k):sh([52,34,28],k),top:()=>[60,40,32]}),id:'U'}); }
     for(const f in IVY){ const w=WALLS[f]; for(let i=0;i<70;i++){ const a=hs(i,f.length,690)*w.L, z=4+hs(i,f.length,691)*290; if(ivyK(f,a,z)<.55||inOpen(f,a,z))continue;
@@ -146,12 +146,12 @@ function gdShape(GS,K,LAMPS){ const s=K.s, o=K.o, SC=1.5, cx=o[0]+4*s, Y1=o[1]+3
     flat(X0,Y0,X1,Y1,H+.5,(x,y)=>sh([92,62,48],.9+.1*hs(Math.floor(x*24/7),3,716)),'GDR');
     { const n=4, L=DOOR.a1-DOOR.a0, nz0=DH-38;
       for(let i=0;i<n;i++){ const a0=DOOR.a0+i*L/n+.02, a1=DOOR.a0+(i+1)*L/n-.02;
-        gbox({x0:X0+a0,x1:X0+a1,y0:Y1-.12,y1:Y1-.09,z0:nz0,z1:DH,c:[38,52,96],fs:(nx,ny,x,y,z,k)=>{ const u=(x-X0-DOOR.a0)/L, v=(z+nz0-(DH-19)); const r=Math.hypot((u-.5)*L*24,v); return sh(r<12&&r>8||r<4?[226,222,210]:z<3?[30,40,74]:[38,52,96],k); },top:()=>[30,40,74]},'GDfront'); }
+        gbox({x0:X0+a0,x1:X0+a1,y0:Y1-.12,y1:Y1-.09,z0:nz0,z1:DH,c:[38,52,96],fs:(nx,ny,x,y,z,k)=>{ const dx=((x-X0-DOOR.a0)/L-.5)*L*24, v=z+nz0-(DH-19), r=Math.hypot(dx,v+3), on=v<-2&&r>7.5&&r<10.5||v>-1&&v<13&&[-5,0,5].some(o=>Math.abs(dx-o-1.6*Math.sin(v*.45))<1.3); return sh(on?[226,222,210]:z<3?[30,40,74]:[38,52,96],k); },top:()=>[30,40,74]},'GDfront'); }
       BATCH.tag=OBJ('bodega','paper lantern');
       for(const a of [DOOR.a0-.5,DOOR.a1+.5]){ const x=X0+a, y=Y1+.55;
         gbox({x0:x-.01,x1:x+.01,y0:y-.01,y1:y+.01,z0:H-8,z1:H+18,c:[30,26,24]},'GDU');
         gbox({x0:x-.2,x1:x+.2,y0:y-.2,y1:y+.2,z0:H-34,z1:H-8,c:[220,60,44],top:()=>[40,30,28],fs:(nx,ny,X_,Y_,z)=>z<3||z>23?[40,30,28]:z%5<1?lit([200,40,30]):lit([255,96,64])},'GDL'); }
-      BATCH.tag=OBJ('bodega','ghost street shop'); }
+      BATCH.tag=OBJ('bodega','bath house'); }
     const THINGS=[]; const thing=(name,boxes,solid=true)=>{ BATCH.tag=OBJ('bodega',name); for(const b of boxes)gbox(b,'GDL'); THINGS.push({name,boxes,solid}); };
     const bk=(x0,y0,x1,y1,z0,z1,c,more={})=>({x0,y0,x1,y1,z0,z1,c,...more});
     { const bx=X1-.75, by=Y1+.18, R=[176,44,34], bf=(nx,ny,x,y,z,k)=>sh(z>9&&z<11?[30,26,24]:R,k);
@@ -174,22 +174,22 @@ function gdShape(GS,K,LAMPS){ const s=K.s, o=K.o, SC=1.5, cx=o[0]+4*s, Y1=o[1]+3
     bed('long planted bed',X0-1.45,Y1+1.4,X0-.55,Y1+5.2,[[X0-1,Y1+3.3]],760);
     bed('small planted bed',X1+.25,Y1+.25,X1+1.15,Y1+1.1,[],770);
     BATCH.tag=null;
-    const MW=10, MH=4, BX=(xi1-xi0-MW)/2, BY=(yi1-yi0-MH)/2, SEG=[[0,1,0],[1,3,1],[3,4,0],[4,6,1],[6,7,0],[7,9,1],[9,10,0]], CUSH=[[cx,cy],[cx-3,cy],[cx+3,cy]];
-    const floorCol=(x,y)=>{ const u=x-xi0-BX, v=y-yi0-BY;
-      if(u<0||u>=MW||v<0||v>=MH){ const al=Math.min(x-xi0,xi1-x)<Math.min(y-yi0,yi1-y), a=al?y:x, b=al?x:y, k=Math.floor(b*5), n=hash(k,Math.floor(a*1.3+k*.37),701);
-        return sh(J.DJBRD,(b*5)%1<.1?.72:.9+.18*n); }
-      for(const [ccx,ccy] of CUSH){ const zx=Math.abs(x-ccx), zy=Math.abs(y-ccy); if(zx<.42&&zy<.42)return Math.max(zx,zy)>.37?[70,76,120]:Math.max(zx,zy)<.05?[34,38,66]:sh([52,58,98],.95+.1*hash(Math.floor(x*14),Math.floor(y*14),717)); }
-      const g=SEG.find(q=>u>=q[0]&&u<q[1]), across=g[2], p=across?v%1:(u-g[0])%1, q=across?u-g[0]:v%2;
-      const edge=p<.035||p>.965, end=q<.02||q>1.98, w=hash(Math.floor(p*30),Math.floor(q*9)+Math.floor(across?v:(u-g[0])+Math.floor(v/2)*7)*31,703);
-      return edge?[64,58,40]:end?sh(J.DJTAT,.8):sh(J.DJTAT,(Math.floor(p*30)&1?.94:1)*(.96+.06*w)); };
+    const floorCol=(x,y)=>{ const e=Math.min(x-xi0,xi1-x,y-yi0,yi1-y), i=Math.floor(x*4), j=Math.floor(y*4); if(x*4-i<.08||y*4-j<.08)return [138,146,150];
+      return sh(e<.5?[66,112,150]:hash(i,j,701)<.14?[110,160,186]:[206,214,216],.95+.08*hash(i,j,702)); };
+    const PX0=cx-3.3, PX1=cx+3.3, PY0=cy-1.2, PY1=cy+1.2, HN=[184,146,100], hoop=(nx,ny,x,y,z,k)=>sh(z%4<1?[70,64,60]:HN,k);
+    thing('bath pool',[bk(PX0,PY0,PX1,PY0+.2,0,12,HN,{fs:pw(HN)}),bk(PX0,PY1-.2,PX1,PY1,0,12,HN,{fs:pw(HN)}),bk(PX0,PY0+.2,PX0+.2,PY1-.2,0,12,HN,{fs:pw(HN)}),bk(PX1-.2,PY0+.2,PX1,PY1-.2,0,12,HN,{fs:pw(HN)}),
+      bk(PX0+.2,PY0+.2,PX1-.2,PY1-.2,0,8,[74,158,180],{top:(x,y)=>(Math.floor(x*24+3*Math.sin(y*9))%9===0&&hash(Math.floor(x*3),Math.floor(y*6),703)<.5)?lit([170,226,236]):[74,158,180]})]);
+    for(const [x0,x1] of [[xi0+.1,xi0+.55],[xi1-.55,xi1-.1]])thing('wooden bench',[bk(x0,cy-1.5,x1,cy+1.5,13,17,HN,{top:(x,y)=>Math.floor(y*24)%5===0?[120,90,60]:sh(HN,1.06)}),bk(x0+.05,cy-1.4,x1-.05,cy-1.25,0,13,[120,90,60]),bk(x0+.05,cy+1.25,x1-.05,cy+1.4,0,13,[120,90,60])]);
+    for(const [x,y] of [[cx-2.7,PY1+.3],[cx-2.25,PY1+.35],[cx+2.4,PY1+.3]])thing('wooden bucket',[bk(x,y,x+.3,y+.3,0,9,HN,{fs:hoop,top:()=>[90,140,160]})],false);
+    for(const [x,y] of [[cx-1.6,PY1+.3],[cx+1.7,PY1+.3]])thing('bath stool',[bk(x,y,x+.36,y+.3,6,8,HN),bk(x+.03,y+.03,x+.08,y+.27,0,6,[120,90,60]),bk(x+.28,y+.03,x+.33,y+.27,0,6,[120,90,60])],false);
+    BATCH.tag=null;
     flat(xi0,yi0,xi1,yi1,.4,floorCol,'GDL'); flat(X0+DOOR.a0,Y1-T,X0+DOOR.a1,Y1,.4,(x,y)=>sh(J.DJBRD,(x*5)%1<.1?.72:1),'GDL');
     flat(X0+BAY.a0,Y1-T,X0+BAY.a1,Y1+BAY.out,BAY.z0+.3,(x,y)=>sh(J.DJBRD,(x*5)%1<.1?.72:1),'GDfront');
-    const ITEMS=[J.djTokonoma(TK[0],yi0,TK[1]),J.djBokkenRack(xi1,yi0+1.6,yi0+3.1)], CAND=[[xi0+.5,yi0+.5],[xi1-.5,yi0+.5],[xi0+.5,yi1-.5],[xi1-.5,yi1-.5]], AND=[[X0+DOOR.a0-.6,yi1-.45],[X0+DOOR.a1+.6,yi1-.45]];
+    const ITEMS=[], CAND=[[xi0+.5,yi0+.5],[xi1-.5,yi0+.5],[xi0+.5,yi1-.5],[xi1-.5,yi1-.5]], AND=[[X0+DOOR.a0-.6,yi1-.45],[X0+DOOR.a1+.6,yi1-.45]];
     const WAX=[226,214,186], WG=[236,184,120], E=c=>Object.assign(c,{e:1}), wax=p=>{ for(const b of p.boxes)if(!b.life)for(const f of ['fs','fi','fj','top']){ const g=b[f]; if(g)b[f]=(...a)=>{ const c=g(...a); if(!c)return c; if(!c.e)return f==='fs'?E(sh(WG,.28)):c;
         const k=Math.max(0,Math.min(1,(c[0]/240-.3)/1.07)); return f==='top'?E(sh(WG,.62)):E(sh(WG,.3+.34*k*k)); }; }
       const fb=p.boxes.find(b=>b.life), x=(fb.x0+fb.x1)/2, y=(fb.y0+fb.y1)/2; p.boxes.push({x0:x-.012,y0:y-.012,x1:x+.012,y1:y+.012,z0:30,z1:32.5,c:[26,22,20],foot:0,nb:1}); return p; };
     for(const [x,y] of CAND)ITEMS.push(wax(J.djCandle(x,y))); for(const [x,y] of AND)ITEMS.push(J.djAndon(x,y));
-    ITEMS.push(J.djIncense(xi0,yi0+2.6,[1,0]),J.djIncense(xi0+5.2,yi0,[0,1]));
     for(const p of ITEMS){ BATCH.tag=OBJ('bodega',p.name); for(const b of p.boxes)gbox(b,'GDL'); } BATCH.tag=null;
     const PLN={}; for(const id in WALLS)PLN[id]=new THREE.Plane(new THREE.Vector3(0,-1,0),1e6);
     BATCH.cast=true;
@@ -197,7 +197,7 @@ function gdShape(GS,K,LAMPS){ const s=K.s, o=K.o, SC=1.5, cx=o[0]+4*s, Y1=o[1]+3
       if(k==='B')return new THREE.MeshBasicMaterial({map,side:THREE.DoubleSide,alphaTest:.5});
       return new THREE.MeshLambertMaterial({map,alphaTest:.5,side:THREE.DoubleSide,...(emap?{emissiveMap:emap,emissive:0xffffff,emissiveIntensity:1.3}:{}),...cp}); });
     BATCH.cast=false; const KM=BATCH.meshes; BATCH.meshes={}; for(const me of BATCH.all(KM,'B'))me.castShadow=false;
-    const ix0=X(xi0), ix1=X(xi1), iz0=Z(yi0), iz1=Z(yi1), inside=()=>pos.x>ix0&&pos.x<ix1&&pos.z>iz0&&pos.z<iz1;
+    const ix0=X(xi0), ix1=X(xi1), iz0=Z(yi0), iz1=Z(yi1), inside=()=>pos.x>Math.min(ix0,ix1)&&pos.x<Math.max(ix0,ix1)&&pos.z>Math.min(iz0,iz1)&&pos.z<Math.max(iz0,iz1);
     for(const id in WALLS)for(const me of BATCH.all(KM,'GD'+id))cutWalls.push({pl:PLN[id],nx:WALLS[id].n[0],nz:WALLS[id].n[1],foot:Y(8),me,when:inside});
     const HIDE=[...BATCH.all(KM,'GDU'),...BATCH.all(KM,'GDR')];
     if(BOD.GHOSTST)BOD.GHOSTST.push({name:'ghost street shop roof',boxes:ROOF.filter(b=>b.z0>=H2).map(b=>({...b,x0:Math.max(b.x0,X0),x1:Math.min(b.x1,X1)})),high:1});
@@ -211,8 +211,7 @@ function gdShape(GS,K,LAMPS){ const s=K.s, o=K.o, SC=1.5, cx=o[0]+4*s, Y1=o[1]+3
     const LT=[];
     const light=(x,y,z,c,r,fl)=>{ const cm=Math.max(...c), L=new THREE.PointLight(new THREE.Color(c[0]/cm,c[1]/cm,c[2]/cm),0,r*TILE*1.25,1.6); L.position.set(X(x),Y(z),Z(y)); scene.add(L); LT.push({L,i:7*cm*Math.min(1.2,r/5),fl,s:Math.round(x*7+y*13)}); return LT[LT.length-1]; };
     for(const [x,y] of CAND)light(x,y,34,[.85,.42,.17],5,1); FLAME.props(ITEMS,X,Y,Z);
-    for(const [x,y,n] of [[xi0,yi0+2.6,[1,0]],[xi0+5.2,yi0,[0,1]]]){ const bx=x+n[0]*.12, by=y+n[1]*.12;
-      for(const [ox,oy,h] of [[-.025,0,12],[.02,.02,10],[0,-.025,11]])FLAME.add({kind:'none',x:X(bx+ox),y:Y(30+h),z:Z(by+oy),w:.02*TILE,smoke:1.6,sk:.35,seed:h}); }
+    for(const [i,sx] of [cx-2.3,cx-.8,cx+.7,cx+2.2].entries())FLAME.add({kind:'none',x:X(sx),y:Y(9),z:Z(cy+(i%2?.3:-.3)),w:.6*TILE,smoke:.8,steam:1,sk:1.5,seed:i});
     for(const [x,y] of AND)light(x,y,20,[.66,.34,.14],5.5,0);
     const OUTL=[[X0+(BAY.a0+BAY.a1)/2,Y1+1.4,70,[1,.6,.56],7],[X0+(EW.a0+EW.a1)/2,Y1+1.3,74,[1,.74,.42],7.5],[X0+W/2,Y1+1.2,90,[1,.66,.4],6],[X0+W/2,Y1+.9,H+60,[1,.72,.44],6],[X0-1.1,Y0+D/2,80,[1,.76,.5],5]];
     for(const [x,y,z,c,r] of OUTL){ const cm=Math.max(...c), L=new THREE.PointLight(new THREE.Color(c[0]/cm,c[1]/cm,c[2]/cm),9*cm*Math.min(1.3,r/5),r*TILE*1.25,1.6); L.position.set(X(x),Y(z),Z(y)); L.userData.i0=L.intensity; scene.add(L); }

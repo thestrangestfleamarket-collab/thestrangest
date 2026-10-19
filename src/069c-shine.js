@@ -44,7 +44,7 @@ const SHINE=window.SHINE={src:[],porch:[]};
     const v=Math.sin(x*12.9898+z*78.233)*43758.5453, P={i,L,on:.8-(v-Math.floor(v))*3,lit:null,me:null};
     if(pool){ const me=new THREE.Mesh(pool.geometry,pool.material), r=.5*L.distance; me.scale.set(r,1,r); me.position.set(lx+nx*r*.45,y+.03,lz+nz*r*.45); me.renderOrder=1; me.visible=false; scene.add(me); P.me=me; }
     SHINE.porch.push(P); halo(L.position.clone(),.42*M*k,PORCH,L,{beam:[.06*M,.8*M]}); };
-  { const B=BOD, B0=B.B0; porch(B.X((B0.x0+B0.x1)/2),B.Z(B0.y1),0); if(MODS.apts&&MODS.apts.A){ const A=MODS.apts.A; porch(B.X(A.x1-1),B.Z(A.y1),0,-1); }
+  { const B=BOD, B0=B.B0; porch(B.X((B0.x0+B0.x1)/2),B.Z(B0.y1),0); if(MODS.apts&&MODS.apts.A){ const A=MODS.apts.A; porch(B.X(MODS.apts.DX),B.Z(A.y1),0,-1); }
     if(B.GD)porch(B.X(B.GD.door[0]),B.Z(B.GD.door[1]),0,1.6);
     for(const d of STORE.main?STORE.main.doors:[])if(!/THEATRE/.test(d[0]))porch(d[1],d[2]-2.2*TILE,0);
     if(typeof WROW!=='undefined'){ porch(B.X((WROW.bar.x0+WROW.bar.x1)/2),B.Z(-77),0); const mx=B.X((WROW.mus.x0+WROW.mus.x1)/2), mz=B.Z(WROW.mus.y1); porch(mx,mz,0,1.6,1.5); porch(mx,mz,0,-1.6,1.5); }

@@ -1,4 +1,4 @@
-const LIVES={on:QS.get('lives')!=='0',ready:false,ms:0,stepMs:0,list:[],force:null,skips:0};
+const LIVES={on:QS.has('lives')?QS.get('lives')!=='0':CITY.on,ready:false,ms:0,stepMs:0,list:[],force:null,skips:0};
 { const T=TILE, X=BOD.XS, Z=BOD.ZS, XB=BOD.X, ZB=BOD.Z, M=BOD.MAP, LS=BOD.K.LSEED, HZ=.25, R=.3, d2=(a,b)=>Math.hypot(a.x-b.x,a.z-b.z);
   const ZS_=Z(LS.street-1.5), ZR=Z((LS.street+LS.grass)/2), ZF=Z((LS.grass+M.y1)/2), HOLE=[X(MAPSTAIR.x0-.6),Z(MAPSTAIR.y0),X(MAPSTAIR.x1+.6),Z(MAPSTAIR.y1+.6)];
   const inHole=(x,z)=>x>HOLE[0]&&x<HOLE[2]&&z>HOLE[1]&&z<HOLE[3];

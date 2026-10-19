@@ -2696,11 +2696,112 @@ not have windows, make sure buildings are only as tall as they need to be"; then
   `SEEN` instead of removed. The light shafts never start inside or pass through a roofed place (14 tiles up the shaft checked against
   the room boxes and the solid boxes), and the shafts, the dust and the screen rays are off while you're in a room.
   `tests/runcheck.cjs` logs every still-shadow redraw with its count of casters (`SUNLOG`) to catch sudden jumps.
+- **The Hudson's far part loaded when you go out** (owner, 19 Oct 2026: "i want the first part of hudson by the promanade to be part of
+  the load, but if you jump in and swim down further out it will say "Loading.." i dont want the entire hudson loading until you wnat to go
+  down there"; `066-river.js`): at the start only the strip of the river 16 tiles out from the promenade's bank is built in full (its fine
+  water surface, the bed under it, the sea grass in it); the rest is a stand-in: one flat quad of the same water (2 triangles, seen the same
+  from the street) and a coarse bed (4 rows). No fish, tyres or bottles yet. Swimming or rowing more than 10 tiles out, or diving deeper
+  than 2.5 m, shows LOADING... on the black `#subfade` (the ENTERING fade), builds the whole surface and bed, the fish and the junk, and
+  fades back; once (`RIVER.deep`, `RIVER.load`). Saves some 6,000 triangles a frame while the river is seen (plus ~1,700 in its scene
+  pass), 33 draws, and the fish's work every frame, until then.
+
+## 19 Oct 2026: Market St re-laid round the park gate; the apartment house big, two elevators, fire escapes
+(owner: "remove stairs from apartments, only elevator. make it a real elavtor. apartments need to be 2x as big, realistic fire escape
+in front and back they can walk out on"; then "i want the apartment lobby to be as big as the musuem lobby. two elevators in the back.
+moev the apartments to the middle of market st. bodeag next to it (garage in between)"; "move the museum and playhouse on left side of
+marketst, arcade and theater on right side. put the holodeck as a phone size booth spot in the arcade. when you walk in its a little
+bigger"; east order bodega, apartment house, dojo, theatre, arcade; "the subway should come out in the exact middle of the market st.
+directly across from the central apark entrance")
+- **The row** (`MAINROW`, `BLOCK.lots`, `LAYOUT0` in `006-map-pre.js`, map tiles, west to east): the bar −50 to −39 and the museum
+  −18.3 to 10.3 as they were, the playhouse 46.7 to 60.7, **the subway stairs 97 to 101** (`LAYOUT0.subway` 36.99: centred on 99, the
+  park's south gate, `PARK.round[0]`; the station under them moves with them), the bodega 104 to 112.8 (`LAYOUT0.bodega` 36.4), the
+  apartment house 115.8 to 144.4 (`house` 67.56), the dojo 149.4 to 167.9 (unchanged), the theatre 172.9 to 186.9, the arcade 191.9 to
+  205.9. Garages fill the gaps (3 tiles between the stairs, the bodega and the house). The newsstand stands 6 tiles west of the stairs.
+- **The holodeck** has no lot of its own: its booth (2 by 2, the HOLODECK neon over its door) stands inside the arcade by the back
+  wall; walking in fades you into the holodeck hall (16 by 16) as before. The menu's THE HOLODECK takes you into it.
+- **The apartment house** (`054-apts.js`) is the museum's width (26 by 14 bodega units; the alley keeps its depth), three floors, its
+  door in the middle of the front. **No stairs inside**: the ground floor one empty lobby (the checker floor), **two elevators** side by
+  side at the middle of the back (`ELV`, `ELVDBG()`): a call button by each door on every floor (double click), the car's own sliding
+  doors and the landing doors, floor buttons on the car's panel (double click; the panel's buttons still show while you stand in it),
+  the car rides smoothly (eases into the floor) with you in it, its cable and counterweight in the shaft. Upper floors: a corridor end
+  to end, the elevator hall off it, eight empty apartments (four front, four back) with wooden doors that swing open as you come.
+- **Fire escapes front and back** (black iron): a grated landing outside the 2nd and 3rd floors with railings, a stair between them,
+  and a counterweighted drop stair from the 2nd-floor landing to the sidewalk (front) and the alley (back), raised until you come near
+  its foot or are on the escape. Two windows on each landing are tall French windows you walk through (front 4.9 and 8.1, back 3.95 and
+  6.55 from the west corner). The landings and stairs are ground you stand on (`APTS.stoop` → the escape's height under you), their
+  rails solid on their own floor (`APTS.sol`). The front balustrade now runs only east of the escape.
+- **The roof** (`148-rooftops.js`): its things now on the roof (they were two storeys up since the house went to three floors); the
+  elevator machine room over both shafts, no stair bulkhead.
+- Cost: some 5,000 triangles of fire escape and 600 of elevators and doors, about 30 inner walls; lamps are records only (`LITE`
+  picks eight); no new program.
+
+## 19 Oct 2026: dying makes you a ghost; the dojo is THE BATH HOUSE where ghosts are brought back
+
+(owner: "make the dojo a bath house for ghosts to res. when you are a palyer and you die you turn into a ghost) if you go tinto the
+bathhouse you start to float up higher and higher until you vanish. then you have a loading screen and when yo ucome back you are outside
+the bathhouse looking away and it says "You feel refreshed." (you are alive again) (same rules as UO kinda) this makes it to where i
+fsomeone dies insomewhere they have to float back as a ghost to get resed. when they reappear they are wearing a white bathrobe.")
+- **Death** (`103-vitals.js`, `103a-death.js`): health at none no longer faints you; you fall and become a ghost: your own Walker pale
+  blue-white and half see-through (still in its bands: `W3.GH` mixes both of his materials), no shadow, floating about 0.15 m with a slow
+  bob. A ghost walks and runs anywhere, but a double click (or the use key) on anything but a door, the elevator or YOU says
+  "YOU ARE A GHOST." (`ghost:1` on a thing lets ghosts use it); no fishing; nothing hurts it; the town's people don't see it (their
+  brains get no you); no medic comes. "YOU ARE DEAD. FIND THE BATH HOUSE." stays at the top while dead. Kept in the save (`dead`).
+- **THE BATH HOUSE** (`055-ghostdojo.js`, same lot and building): the signboard reads BATH / HOUSE in gold, the noren carries the bath
+  mark; inside, a tiled floor (pale tiles, a few blue, a blue border), a hinoki-rimmed pool with water in the middle (steam rising,
+  `FLAME`'s new white `steam`), a bench along each side wall, wooden buckets and bath stools, a painted mountain and sea in the alcove;
+  the candles and lanterns as they were (no new lights). The menu: THE BATH HOUSE (its door) and THE BATHS (inside); the job BATH
+  ATTENDANT (was SENSEI).
+- **Coming back**: a ghost who goes in rises, faster and faster, fading for 3 s until gone; LOADING… on black; then alive, health full,
+  on the sidewalk before the door facing the street, and "You feel refreshed.". You come back in a **white bathrobe** (`LOOKS.robe`:
+  shirt, sleeves, hips and thighs white and a little fuller, a blue-grey belt, a V at the neck, bare shins), kept until you pick YOUR
+  CLOTHES under CLOTHES in YOU (saved in `looks`). A living player goes in as before.
+- Tests: `?die=1` (or `KILLME()`) kills you at start. Cost: no new triangles on you, 6 boxes of pool, benches, buckets and stools,
+  the steam's particles from the fire's pool (4 sources), one recompile of your two materials on dying and on coming back.
+- **The grass a field of tall grass** (owner, 19 Oct 2026: "instead of making grass look like lots of little blobs. just make the grass
+  raise higher in general and look more flat until you walk through it, like fields of tall grass (but this is thick like trees and more
+  solid) i dont want to see every blade, grainy, etc."; `WEEDS.lawnInit` in `140-weeds.js`, `lawnCol` in `014-gamekit.js`): the leaf
+  clumps and card tufts gone. Over every lawn (the same top-down check per 8-tile chunk, now at quarter tiles, never on ways, plazas, roads,
+  water, under things, nor in `WEEDS.clear`'s zones) one solid mass per chunk: a smooth top 0.42 to 0.72 tiles over the ground, rolling
+  with a slow noise, its edge a step lower, and straight sides down to the ground like a hedge (staircase corners cut to diagonals). One
+  green lit in the flat bands, large patches a step lighter; no blades, no grain. Still at rest (no wind, as of 18 Oct). You and up to
+  seven walkers near you press it down round your feet (0.8 tiles, a hard rim), and your trail stays pressed and stands back up over some
+  3.5 s. The lawn painted under it is a flat green (two tones in big patches). The mushrooms, flowers and birds sit on its top. Cost: a
+  chunk at most 2,048 top triangles plus its sides (about 20,000-30,000 in the picture, fewer than the clumps), one program, no light.
+- **Trees and lamps by the garages, no street signs** (owner, 19 Oct 2026: "the trees and street lights should be in front of the
+  garages not in ront of main locations. remove all stere signs for now."): the street trees stand in front of the garage buildings
+  between the places (one per garage 4+ tiles wide, two in the long ones; `DRESS.gaps()` from `MAINROW`), never shifted in front of a
+  place, and kept 5 tiles from any door; the south sidewalk's globe lamps stand at the garages too (one each, 2.5+ tiles wide). The
+  street name signs and no-parking signs are off (`BOD.signs` empty); the traffic lights stay.
+- **The render inspector** (owner, 19 Oct 2026: "can you add an option i can toggle in menu to see everything that is currently
+  rendering on screen, details, how much it costs, etc. i want to be able to see what im rendierng and then think if that should be
+  rendered or not beacuse im not able to see / interact, etc. i want to chunk the world off asm uch as possible into loading screens and
+  make the indital download and load super fast."): menu, DISPLAY, ON SCREEN, RENDER INSPECTOR (`161b-rinsp.js`). A panel, refreshed
+  twice a second and only while open: fps and frame ms, the last frame's calls and triangles (all passes), shader programs (and how many
+  are on screen), geometries and textures in memory, lights in the scene and lighting, shadow lights and their map sizes, where you are.
+  Then every thing the main view draws, grouped by name (map group, batch and its places, NPC, store room, object name), with its
+  triangles, calls, shadow, distance in tiles, whether it is in view, notes (OFFSCREEN NO-CULL, FAR past 60 tiles, BELOW GROUND, SHUT IN
+  a room you are not in, IN FOG) and USE when something you can use stands there; a find box; a click outlines it on screen for 5 s
+  and lists its parts (materials, programs, textures, what the batch holds). Below, LOADED BUT NOT DRAWN: hidden, layer-off or out of
+  view things by memory and triangles, the candidates for loading screens. `window.RENDERLIST()` gives the same as JSON.
 - **Softer light on you, stronger lamps** (owner, 19 Oct 2026: "shadows are too harsh on things , its causing my character to llook
   glitchy beacuse shaodws go on and off suddenly from every angle", "these lamps dont seem to be doing much", "the fire shadow and
   lighting is btter"): your figure's own self-shadow (the hard band from whichever light is strongest, which jumped as lights changed)
   is off by default (DISPLAY can turn it back on); the park's lanterns and lamp posts light at 24 (were 12 and 6) out to 12 tiles, the
   street globe lamps at 28 (were 18) out to 12; outdoors at night a lamp near you lights your figure up to 70% (35% indoors).
+- **The city's play off for now** (owner, 19 Oct 2026: "lets remoev all of the city functions an gameplay out of game for now"): one
+  switch, `CITY.on` (`?city=1` brings it all back; `152-city.js`). Off by default: the CITY tab and its pane (the ledger, shops, services,
+  open jobs, the post, your money, the log, the TRY buttons with YOU FAINT), the shops' stock and tills, wages and tax (`155-civic.js`),
+  the fires, outages, full cans, trash rounds, patrols and medics (`156-duties.js`), the daily lives (`LIVES.on`), the jobs (`JOBS.on`)
+  and the post (`MAIL.on`); each also takes its own `?lives=1`, `?jobs=1`, `?mail=1`. Kept: the code, the civic tower's building,
+  `CITY.places`/`CITY.send` (the walkers still wander the park and the street, the vendors stay at their stands), the bath house, death
+  and VIT. Your money is `INV.cash` alone (the drone's purse too).
+- **No sound** (owner, 19 Oct 2026: "remove all sounds from game"): no AudioContext is made (`SOUND`, `?sound=1` brings it back;
+  `091-sfx.js`, `100-use.js`, `110-musician.js`), so no effects, footsteps, ambience, club, brook, river, radio or music; the musicians
+  play on silently. The SOUND tab is hidden.
+- **Four lamps at the park's crossing** (owner, 19 Oct 2026: "the four corners spot in central park needs to have 4 lamps ."): the park's
+  own lamp (black post, lantern) at each corner of the round where the two ways cross, 4.2 tiles off both ways' middles like the other
+  park lamps, clear of the pillars; each its point light in `lamps` and a solid post (`061-park.js`). Cost: about 130 triangles, 4 lamps
+  for the light picker (still at most 8 lit).
 - **Trees in clean cel bands** (owner, 19 Oct 2026, of a tree crown's face: "these types of shadows shouldnt look like that", "they
   should look more like celshading", "not line or dot art"): the crowns' per-voxel speckle is gone, their soft inner darkening is two
   flat steps, and they no longer shadow themselves in stripes (the shadow map draws their back faces, and the leaves' shadow offset is

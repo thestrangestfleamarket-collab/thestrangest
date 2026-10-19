@@ -55,7 +55,7 @@ const USE={seat:null}; window.USE=USE;
         let nx=uy*wz-uz*wy, ny=uz*wx-ux*wz, nz=ux*wy-uy*wx; const l=Math.hypot(nx,ny,nz)||1; for(let q=0;q<3;q++){ N[j+q*3]=nx/l; N[j+q*3+1]=ny/l; N[j+q*3+2]=nz/l; } }
       tg.add(g); }); for(const g of tg){ g.attributes.position.needsUpdate=g.attributes.normal.needsUpdate=true; } };
   const fridge=(o,th)=>{ const d=doorOf(o); d.to=d.to?0:1.75; DOORS.add(d); th.name=d.to?'OPEN':'SHUT'; const at=box(o).getCenter(new V3()); if(d.to)SFX.play('latch',{at,vol:.8}); else SFX.play('door',{at,vol:.35,pitch:1.6,delay:.25}); };
-  const ac=()=>{ if(typeof SND!=='undefined'&&SND.ctx)return SND.ctx; if(!USE.ac)try{ USE.ac=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ return null; } if(USE.ac.state!=='running')USE.ac.resume(); return USE.ac; };
+  const ac=()=>{ if(!SOUND)return null; if(typeof SND!=='undefined'&&SND.ctx)return SND.ctx; if(!USE.ac)try{ USE.ac=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ return null; } if(USE.ac.state!=='running')USE.ac.resume(); return USE.ac; };
   const clunk=()=>{ const c=ac(); if(!c)return; const t0=c.currentTime+.02, n=c.sampleRate*.25|0, buf=c.createBuffer(1,n,c.sampleRate), D=buf.getChannelData(0); for(let i=0;i<n;i++)D[i]=(Math.random()*2-1)*Math.exp(-i/(c.sampleRate*.03));
     for(const [dt,f,g] of [[0,500,.5],[.16,260,.7]]){ const s=c.createBufferSource(), lp=c.createBiquadFilter(), G=c.createGain(); s.buffer=buf; lp.type='lowpass'; lp.frequency.value=f; G.gain.value=g; s.connect(lp).connect(G).connect(c.destination); s.start(t0+dt); } };
   const BLINK=new Set(), canM=new THREE.MeshLambertMaterial({color:new THREE.Color('rgb(196,44,40)')}), canG=new THREE.BoxGeometry(.07*T,.13*T,.07*T), CANS=[];

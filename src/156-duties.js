@@ -1,5 +1,5 @@
 const VEHD=__DATA__("data/trashbag.json");
-{ const T=TILE, S_=CIVIC.staff, H_=CIVIC.house, log=CIVIC.note, G=(x,z)=>MODS.bodega.ground(x,z);
+if(CITY.on){ const T=TILE, S_=CIVIC.staff, H_=CIVIC.house, log=CIVIC.note, G=(x,z)=>MODS.bodega.ground(x,z);
   const far=(a,b)=>Math.hypot(a.x-b.x,a.z-b.z)>18*T;
   const dispatch=(S,veh,spot,then,v)=>{ S.state='on a call'; CIVIC.go(S,spot,then,(v||2.2)*(far(S.N.st,spot)?1.5:1)); };
   const back=(S,veh)=>CIVIC.home(S);
@@ -22,7 +22,7 @@ const VEHD=__DATA__("data/trashbag.json");
   CIVIC.power=(on,x0,x1)=>{ for(const [L] of DRESS.pools||[])if(L.position.x>=x0&&L.position.x<=x1)L.userData.off=!on; LITE.t=0; };
   CIVIC.outage=x=>{ const x0=x-12*T, x1=x+12*T; CIVIC.power(false,x0,x1); if(!CITY.open('power').some(j=>j.data.x0===x0))CITY.post('power',{x,z:(K?K.sw:0)-.6*T,place:'street'},{x0,x1}); log('the lights went out along the street','street'); };
   CIVIC.tryOutage=()=>CIVIC.outage(BOD.X((BOD.B0.x0+BOD.B0.x1)/2));
-  const SPOTS=()=>{ const s=CIVIC.cans.map(c=>({x:c.x,z:c.z,what:'a trash can'})); if(BOD.GD)s.push({x:BOD.X(BOD.GD.door[0])+2.5*T,z:BOD.Z(BOD.GD.door[1])+1.5*T,what:'Ghost Street\'s forecourt'}); const p=CITY.place('park'); if(p)s.push({x:p.door.x+3*T,z:p.door.z-5*T,what:'the grass by the gate'}); return s; };
+  const SPOTS=()=>{ const s=CIVIC.cans.map(c=>({x:c.x,z:c.z,what:'a trash can'})); if(BOD.GD)s.push({x:BOD.X(BOD.GD.door[0])+2.5*T,z:BOD.Z(BOD.GD.door[1])+1.5*T,what:'the bath house\'s forecourt'}); const p=CITY.place('park'); if(p)s.push({x:p.door.x+3*T,z:p.door.z-5*T,what:'the grass by the gate'}); return s; };
   CIVIC.fire=(spot,why)=>{ if(CIVIC.fires.some(f=>Math.hypot(f.x-spot.x,f.z-spot.z)<3*T))return null; const y=G(spot.x,spot.z), s=FLAME.add({kind:'bed',x:spot.x,y,z:spot.z,w:.5*T,h:.6*T,embers:3,smoke:1.2}); const f={x:spot.x,z:spot.z,y,s,age:0,k:1,what:spot.what,out:false};
     CIVIC.fires.push(f); CITY.post('fire',{x:spot.x,z:spot.z+1.6*T,place:'street'},{what:spot.what}); log('FIRE: '+spot.what+(why?' ('+why+')':''),'street'); return f; };
   CIVIC.spots=SPOTS; CIVIC.lampsOff=()=>(DRESS.pools||[]).filter(p=>p[0].userData.off).length;
@@ -41,7 +41,7 @@ const VEHD=__DATA__("data/trashbag.json");
   const hose=(S,f,dt)=>{ if(f.out||!f.s.on)return true; f.hosed=true; if(S.N&&Math.random()<dt*40)spray(S.N,f); f.k=Math.max(.3,f.k-dt*.25); f.s.w=.5*T*f.k; f.s.h=.6*T*f.k; if(Math.random()<dt*12)FLAME.puff(f.x+(Math.random()-.5)*.6*T,f.y+.3*T,f.z+(Math.random()-.5)*.6*T,.7); if(f.k<=.3){ f.out=true; f.age=0; f.s.smoke=2.5; return true; } return false; };
   const fireJob=()=>{ for(const id of ['fire1','fire2']){ const S=S_[id]; if(!S||S.state!=='free')continue; const j=CITY.take('fire',id,S.N.st); if(!j)return; S.job=j; const f=CIVIC.fires.find(f=>Math.hypot(f.x-j.at.x,f.z-j.at.z)<3*T); log(S.name+' answered the call: '+j.data.what,'firehouse');
       dispatch(S,TRUCK,j.at,ok=>{ if(!ok||!f){ CITY.done(j); back(S,TRUCK); return; } S.state='hosing'; S.N.st.face={x:f.x,z:f.z}; S.hose=f; S.after=()=>{ log('the fire is out: '+f.what,'street'); CITY.done(j); back(S,TRUCK); }; },2.6); const O=S_[id==='fire1'?'fire2':'fire1']; if(O&&O.state==='free'){ O.job=j; O.state='on a call'; dispatch(O,null,{x:j.at.x+1.2*T,z:j.at.z},ok=>{ O.state='standing by'; O.after=()=>back(O,null); O.busy=0; O.wait=f; },2.6); } } };
-  let faintJob=null; const medTick=()=>{ if(VIT.out>0&&!faintJob&&LVL==='up'){ faintJob=CITY.post('medical',{x:pos.x,z:pos.z,place:'street'},{}); log('someone fainted on the street','street'); } if(faintJob&&VIT.out<=0&&faintJob.state==='open'){ CITY.done(faintJob); faintJob=null; }
+  let faintJob=null; const medTick=()=>{ if(VIT.out>0&&!VIT.dead&&!faintJob&&LVL==='up'){ faintJob=CITY.post('medical',{x:pos.x,z:pos.z,place:'street'},{}); log('someone fainted on the street','street'); } if(faintJob&&VIT.out<=0&&faintJob.state==='open'){ CITY.done(faintJob); faintJob=null; }
     const S=S_.medic; if(S&&S.state==='free'){ const j=CITY.take('medical',S.id,S.N.st); if(j){ S.job=j; CIVIC.carry(S,0xe8e8e0); dispatch(S,AMB,{x:pos.x,z:pos.z+.8*T},ok=>{ S.busy=4; S.after=()=>{ if(VIT.out>0)VIT.out=.1; VIT.hp=Math.max(VIT.hp,.7); log('the medic brought you round','street'); CITY.done(j); faintJob=null; CIVIC.carry(S,null); back(S,AMB); }; },2.8); } } };
   CIVIC.tryFaint=()=>VIT.hurt(1);
   for(const id of ['officer1','officer2']){ const S=S_[id]; if(S){ S.N.st.hold=false; S.state='on the beat'; } }

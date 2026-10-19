@@ -1,10 +1,10 @@
-const CITY={jobs:[],sched:[],day:0,nj:0,extra:[]}; window.CITY=CITY;
+const CITY={on:QS.get('city')==='1',jobs:[],sched:[],day:0,nj:0,extra:[]}; window.CITY=CITY;
 { const T=TILE, R0=.3*T, C=T/2;
   CITY.places=()=>{ const P=[], add=(id,name,x,z,dz,lv='up',o={})=>P.push(Object.assign({id,name,lv,at:{x,z},door:{x,z:z+dz}},o));
     { const B=BOD.B0; add('bodega','THE BODEGA',BOD.X((B.x0+B.x1)/2),BOD.Z(B.y1),T); }
     if(!AWAY.has('apartments'))add('apartments','THE APARTMENTS',POOLR.X((21.97+23.53)/2),POOLR.Z(POOLR.y1),T);
-    if(MODS.apts&&MODS.apts.A){ const A=MODS.apts.A; add('house','APARTMENT HOUSE',BOD.X(A.x1-1.0),BOD.Z(A.y1),T); }
-    if(BOD.GD)add('dojo','GHOST STREET',BOD.X(BOD.GD.door[0]),BOD.Z(BOD.GD.door[1]),T);
+    if(MODS.apts&&MODS.apts.A){ const A=MODS.apts.A; add('house','APARTMENT HOUSE',BOD.X(MODS.apts.DX),BOD.Z(A.y1),T); }
+    if(BOD.GD)add('dojo','THE BATH HOUSE',BOD.X(BOD.GD.door[0]),BOD.Z(BOD.GD.door[1]),T);
     add('park','CENTRAL PARK',BOD.XS((PARK.gate[0]+PARK.gate[1])/2+PARK.ox),BOD.ZS(PARK.y0+PARK.oy),-T);
     add('castle','THE CASTLE',BOD.XS(CASTLE.gate),BOD.ZS(CASTLE.b[2]),-1.5*T);
     add('subway','THE SUBWAY',BOD.XS((MAPSTAIR.x0+MAPSTAIR.x1)/2),BOD.ZS(MAPSTAIR.y1),.8*T);

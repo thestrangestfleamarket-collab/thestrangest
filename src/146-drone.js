@@ -65,7 +65,7 @@ DRONE.init=()=>{ const H=MODS.apts; if(!H||!H.A||!H.made)return; const A=H.A, T=
   DRONE.setCam=on=>{ DRONE.cam=!!on; hud.hidden=!on; if(!on){ UI.setView(UI.view); if(H.HP)H.HP.constant=H.in?H.lvY(H.floor())+H.SY*.93:1e6; } };
   hud.querySelector('#dhx').onclick=()=>DRONE.setCam(false);
   const MENU=[['COFFEE',2],['SODA',2],['WATER',1],['MILK',3],['EGGS',4],['BREAD',3],['CHIPS',2],['CANDY BAR',1],['CEREAL',4],['FISH FOOD',3]];
-  let cash=40; const purse={get:()=>window.MAIL&&MAIL.you?MAIL.you.cash:cash,add:v=>{ if(window.MAIL&&MAIL.you)MAIL.you.cash+=v; else cash+=v; }}; DRONE.purse=purse;
+  const purse={get:()=>INV.cash,add:v=>{ INV.cash+=v; }}; DRONE.purse=purse;
   const css=document.createElement('style'); css.textContent='#pcp{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(420px,calc(100vw - 32px));max-height:calc(100vh - 40px);overflow:auto;font:12px var(--pixel,monospace);color:#8cf0a8;background:#0e1a12;border:2px solid #3c7a4c;padding:14px 16px 12px;z-index:16;user-select:none}#pcp h3{margin:0 0 8px;font-size:13px}#pcp .row{display:flex;gap:8px;align-items:center;margin:3px 0}#pcp .it{flex:1}#pcp .st{margin-top:8px;color:#cfe8d0}';
   document.head.appendChild(css); const P=document.createElement('div'); P.id='pcp'; P.hidden=true; P.setAttribute('role','dialog'); P.setAttribute('aria-label','Drone link'); document.body.appendChild(P);
   const draw=()=>{ P.innerHTML=`<h3>DRONE LINK · THE BODEGA</h3><div>YOU HAVE $${purse.get()} · THE DRONE IS ${DRONE.state==='home'?'IN':'OUT'}</div>`+MENU.map(([n,c],i)=>`<div class="row"><span class="it">${n}</span><span>$${c}</span><button class="btn" data-i="${i}">ORDER</button></div>`).join('')+

@@ -52,14 +52,8 @@ const FOOT=(x,y,w,d)=>({x0:x,y0:y,x1:x+w,y1:y+d,z0:0,z1:.01,foot:1,top:()=>null,
 
 const GRASSP=[[62,100,50],[76,116,58],[90,132,66],[104,146,74]], GRASSL=[128,168,88], GRASSS=[50,84,42];
 const GRASSY=[[96,104,54],[110,116,60],[124,128,68],[136,138,76]], GEARTH=[[104,88,64],[118,100,74]], GTROD=.32;
-const LAWN=[[46,86,38],[56,102,44],[66,116,50],[78,130,56]], SPR=[[112,162,72],[94,146,62]], WEED=[[38,70,32],[44,80,36]], BLOOM=[[214,196,84],[228,226,212]];
-function lawnCol(x,y){ const ix=Math.floor(x*24), iy=Math.floor(y*24), n=grain(x,y,301,1.2); let c=LAWN[n<.42?0:n<.5?1:n<.58?2:3];
-  const cx=Math.floor(ix/6), cy=Math.floor(iy/6), h=hash(cx,cy,305), ax=cx*6+1+Math.floor(hash(cx,cy,307)*4), ay=cy*6+1+Math.floor(hash(cx,cy,309)*4), dx=ix-ax, dy=iy-ay;
-  if(h<.2){ if(dx===0&&dy===0)c=SPR[0]; else if(Math.abs(dx)===1&&dy===-1)c=SPR[1]; }
-  else if(h<.3){ if(dx>=0&&dx<2&&dy>=0&&dy<2)c=WEED[(dx+dy)&1]; else if(h<.235&&dx===2&&dy===-1)c=BLOOM[h<.215?0:1]; }
-  else{ const hb=hash(ix,iy,311), hb2=hash(ix,iy+1,311), lush=n; if(hb<.05+lush*.08)c=sh(c,1.18); else if(hb2<.05+lush*.08)c=sh(c,.72); else if(hb>.94)c=sh(c,.88); }
-  const hol=cvNoise(x/3.1,y/3.1,313); if(hol<.3)c=sh(c,.9); else if(hol>.74)c=sh(c,1.06);
-  return c; }
+const LAWN=[[46,86,38],[56,102,44],[66,116,50],[78,130,56]];
+function lawnCol(x,y){ return LAWN[cvNoise(x/9,y/9,301)>.58?2:1]; }
 function grassCol(x,y){ const n=(cvNoise(x/5,y/5,29)*3+cvNoise(x/1.7,y/1.7,31)*2+cvNoise(x*2.3,y*2.3,33))/6+(hash(Math.floor(x*48),Math.floor(y*48),35)-.5)*.07, dz=hash(Math.floor(x*48),Math.floor(y*48),53);
   let e=1; for(const [a,b] of [[1,0],[-1,0],[0,1],[0,-1]])for(const d of [.08,.16,.24,GTROD]){ const k=landK(x+a*d,y+b*d); if(k&&k!==1){ e=Math.min(e,d/GTROD); break; } }
   if(e<1&&n*.6+dz*.4>e*1.1+.25)return mt('grass',GEARTH[dz<.5?0:1]);

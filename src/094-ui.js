@@ -112,7 +112,7 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
     let best=null, bd=1e9; if(hits.length){ let o=hits[0].object; const th=live.find(th=>{ let q=o; while(q){ if(q===th.obj)return true; q=q.parent; } return false; }); if(th){ best=th; bd=hits[0].distance; } }
     const u=typeof USE!=='undefined'&&USE.pick(ray); if(u&&u.d<bd)best=u.th;
     if(best){ best.started=false; goal=best; return; }
-    if(window.RIVER&&RIVER.pick&&RIVER.pick(ray.ray,pos))return;
+    if(window.RIVER&&RIVER.pick&&!VIT.dead&&RIVER.pick(ray.ray,pos))return;
     goal=null; if(UI.fly)return; gplane.constant=-py; if(ray.ray.intersectPlane(gplane,hit)){ target=hit.clone(); UI.go(Math.hypot(hit.x-pos.x,hit.z-pos.z)); } });
   UI.useNear=()=>{ if(ED.on||UI.freeCam||MAPED.on||WE.on)return false; const hx=Math.sin(heading), hz=Math.cos(heading); let best=null, bs=1e9;
     for(const th of THINGS){ if(!th.obj.visible||th.obj.parent&&!th.obj.parent.visible)continue; const p=thAt(th), dx=p.x-pos.x, dz=p.z-pos.z, d=Math.hypot(dx,dz);
@@ -123,7 +123,7 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
   UI.runTick=()=>{ if(!UI.clickGo)return; if(!target){ UI.clickGo=false; st.runTarget=keys.has('shift')?1:0; return; } st.runTarget=keys.has('shift')||UI.clickRun&&Math.hypot(target.x-pos.x,target.z-pos.z)>1.6?1:0; };
   UI.goTick=()=>{ if(!goal)return; const p=thAt(goal), d=Math.hypot(p.x-pos.x,p.z-pos.z), reach=goal.reach||1;
     const stuck=!target&&goal.started; if(d>reach&&!(stuck&&d<(goal.near||0))){ if(stuck)goal=null; else { const k=(d-reach*0.8)/d; target=new THREE.Vector3(pos.x+(p.x-pos.x)*k,py,pos.z+(p.z-pos.z)*k); if(!goal.started)UI.go(d); goal.started=true; } return; }
-    target=null; heading=Math.atan2(p.x-pos.x,p.z-pos.z); const g=goal; goal=null; g.act(); if(g.npc&&typeof LINES!=='undefined')LINES.say(g.npc,'greet'); else say(g.name,p.clone().setY(p.y+(g.tall||1.6))); };
+    target=null; heading=Math.atan2(p.x-pos.x,p.z-pos.z); const g=goal; goal=null; if(VIT.dead&&!g.ghost)return say('YOU ARE A GHOST.',p.clone().setY(p.y+(g.tall||1.6))); g.act(); if(g.npc&&typeof LINES!=='undefined')LINES.say(g.npc,'greet'); else say(g.name,p.clone().setY(p.y+(g.tall||1.6))); };
   const css=document.createElement('style'); css.textContent=`
   #mode{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(12px + env(safe-area-inset-bottom,0px));font:12px var(--pixel);color:var(--key);background:var(--panel);border:2px solid var(--line);padding:6px 10px;z-index:15}
   #mode[hidden],#shd[hidden],#said[hidden]{display:none}
@@ -150,7 +150,7 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
       <div class="row"><span style="width:60px">TILT</span><input type="range" id="dtilt" min="0" max="1" step="0.001"><button class="btn" id="dreset">RESET THE VIEW</button></div>
       <h3>VIEW</h3><div class="row" id="dview"><button class="btn" data-view="map">MAP VIEW</button><button class="btn" data-view="iso">ISOMETRIC</button><button class="btn" data-view="third">THIRD PERSON</button><button class="btn" data-view="follow">BEHIND</button><button class="btn" data-view="first">FIRST PERSON</button></div>
       <div class="row"><button class="btn" id="dbody">PHYSICS BODY</button><span style="width:60px">LOOSE</span><input type="range" id="dloose" min="0" max="1" step="0.01"></div>
-      <h3>ON SCREEN</h3><div class="row"><button class="btn" id="dhelp">HELP PANEL</button><button class="btn" id="dstat">STATS</button><span style="width:70px;margin-left:8px">UI SCALE</span><button class="btn" data-ui="small">SMALL</button><button class="btn" data-ui="medium">MEDIUM</button><button class="btn" data-ui="large">LARGE</button></div></div>
+      <h3>ON SCREEN</h3><div class="row"><button class="btn" id="dhelp">HELP PANEL</button><button class="btn" id="dstat">STATS</button><button class="btn" id="drin">RENDER INSPECTOR</button><span style="width:70px;margin-left:8px">UI SCALE</span><button class="btn" data-ui="small">SMALL</button><button class="btn" data-ui="medium">MEDIUM</button><button class="btn" data-ui="large">LARGE</button></div></div>
     <div class="pane" data-p="atmo">
       <h3>SKY</h3><div class="row" id="amood"><span style="width:110px">EVENING COLOURS</span><button class="btn" data-m="">BY THE DAY</button><button class="btn" data-m="clear">CLEAR</button><button class="btn" data-m="fire">FIRE</button><button class="btn" data-m="soft">SOFT</button></div>
       <h3>HAZE</h3><div class="row" id="atmhaze"></div><div class="dim">the mist round the town's edge (MIST), the old far haze and sky (FAR), or none; DISTANCE LOOK sets its every number</div></div>
@@ -165,7 +165,7 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
     <div class="pane" data-p="bug" id="dbug"></div>
     <div class="foot"><span>ESC closes</span><span>THE MARKET</span></div></div>`;
   document.body.appendChild(M);
-  const $=s=>M.querySelector(s); let tab='map', mapLv='up';
+  const $=s=>M.querySelector(s); let tab='map', mapLv='up'; if(!SOUND)$('[data-t="sound"]').style.display='none';
   const show=t=>{ tab=t; M.querySelectorAll('[data-t]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.t===t))); M.querySelectorAll('[data-p]').forEach(p=>p.hidden=p.dataset.p!==t); if(t==='map')drawMap(); if(t==='display'||t==='graphics'||t==='sound')drawDisplay(); if(t==='sound')SNDED.into($('#dsndin')); if(t==='keys')drawKeys(); if(t==='bug')BUGS.open($('#dbug')); if(t==='atmo'){ window.CLOCK&&CLOCK.draw&&CLOCK.draw(); window.WX&&WX.draw&&WX.draw(); drawMood(); } };
   const drawMood=()=>{ const h=(window.SKY&&SKY.moodHold)||''; $('#amood').querySelectorAll('[data-m]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.m===h))); };
   $('#amood').onclick=e=>{ const b=e.target.closest('[data-m]'); if(!b||!window.SKY)return; SKY.moodHold=b.dataset.m||null; try{ b.dataset.m?SAVE.set('mood',b.dataset.m):SAVE.del('mood'); }catch(e){} drawMood(); };
@@ -202,7 +202,7 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
     { const c=CASTLE.b; add([c[0],c[2]],[c[1],c[3]],[120,118,110],'CASTLE'); }
     if(typeof GCAVE!=='undefined'&&GCAVE.box){ const b=GCAVE.box; add(wt(b[0],b[1]),wt(b[2],b[3]),[96,96,100],'CAVE'); }
     if(typeof GTOWER!=='undefined'&&GTOWER.site){ const t=GTOWER.site(); if(t)add(wt(t.x-t.w/2,t.z-t.d/2),wt(t.x+t.w/2,t.z+t.d/2),[130,126,116],'TOWER'); }
-    add([MAPSTAIR.x0,MAPSTAIR.y0],[MAPSTAIR.x1,MAPSTAIR.y1],[30,30,34],'SUBWAY'); add([66.6,-76.35],[69.4,-74.85],[46,110,64],'');
+    add([MAPSTAIR.x0,MAPSTAIR.y0],[MAPSTAIR.x1,MAPSTAIR.y1],[30,30,34],'SUBWAY'); { const n=(MAPSTAIR.x0+MAPSTAIR.x1)/2-6; add([n-1.4,-76.35],[n+1.4,-74.85],[46,110,64],''); }
     for(const R of STORE.rooms||[]){ const a=wt(R.x0,R.z0), b=wt(R.x1,R.z1); if(a[0]>F.x0&&b[0]<F.x1&&Math.max(a[1],b[1])>RV.y1&&Math.min(a[1],b[1])<F.y1&&!B.some(q=>Math.abs(q.x0-Math.min(a[0],b[0]))<1&&Math.abs(q.y0-Math.min(a[1],b[1]))<1))add(a,b,[110,104,96],(R.name||'').toUpperCase()); }
     for(const q of B){ const i0=Math.round((q.x0-F.x0)*S), i1=Math.round((q.x1-F.x0)*S), j0=Math.round((F.y1-q.y1)*S), j1=Math.round((F.y1-q.y0)*S);
       for(let j=Math.max(0,j0);j<Math.min(H,j1);j++)for(let i=Math.max(0,i0);i<Math.min(W,i1);i++){ const e=i===i0||i===i1-1||j===j0||j===j1-1, o=(j*W+i)*4; for(let k=0;k<3;k++)im.data[o+k]=e?q.col[k]*.55:q.col[k]; } }
@@ -224,7 +224,7 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
   UI.goTo=goTo;
   mcv.addEventListener('click',e=>{ const r=mcv.getBoundingClientRect(); if(mapLv==='up'){ const Q=plan(), [x,y]=Q.tile((e.clientX-r.left)/r.width*Q.W,(e.clientY-r.top)/r.height*Q.H); return goTo((x-BOD.OX)*TILE,(y-BOD.OY)*TILE,'up'); } const R=mapRect(mapLv); goTo(R.x0+(e.clientX-r.left)/r.width*(R.x1-R.x0),R.z0+(e.clientY-r.top)/r.height*(R.z1-R.z0),mapLv); });
   M.querySelectorAll('[data-lv]').forEach(b=>b.onclick=()=>{ mapLv=b.dataset.lv; drawMap(); });
-  const PLACES=[['THE STREET',-2.2,3.2,'up'],['THE BODEGA',BOD.X((BOD.B0.x0+BOD.B0.x1)/2),BOD.Z(BOD.B0.y1)-3.4,'up'],...(AWAY.has('apartments')?[]:[['THE APARTMENTS',POOLR.X(22.75),POOLR.Z(12),'up'],['THE POOL',POOLR.X(10),POOLR.Z(8.9),'up']]),['THE PLATFORM',MODS.station.plat.x,MODS.station.plat.z,'down'],['CENTRAL PARK',BOD.XS(PARK.round[0]+PARK.ox),BOD.ZS(PARK.y0+7+PARK.oy),'up'],['GHOST STREET',BOD.X(BOD.GD.door[0]),BOD.Z(BOD.GD.door[1]+4.5),'up'],...(STORE.main?STORE.main.doors.map(d=>[...d,'up']):[]),['THE CASTLE',BOD.XS(CASTLE.gate),BOD.ZS(CASTLE.b[2]-3),'up'],['THE DUNGEON',BOD.XS((CASTLE.hall.x0+CASTLE.hall.x1)/2),BOD.ZS((CASTLE.hall.y0+CASTLE.hall.y1)/2),'down']];
+  const PLACES=[['THE STREET',-2.2,3.2,'up'],['THE BODEGA',BOD.X((BOD.B0.x0+BOD.B0.x1)/2),BOD.Z(BOD.B0.y1)-3.4,'up'],...(AWAY.has('apartments')?[]:[['THE APARTMENTS',POOLR.X(22.75),POOLR.Z(12),'up'],['THE POOL',POOLR.X(10),POOLR.Z(8.9),'up']]),['THE PLATFORM',MODS.station.plat.x,MODS.station.plat.z,'down'],['CENTRAL PARK',BOD.XS(PARK.round[0]+PARK.ox),BOD.ZS(PARK.y0+7+PARK.oy),'up'],['THE BATH HOUSE',BOD.X(BOD.GD.door[0]),BOD.Z(BOD.GD.door[1]+4.5),'up'],...(STORE.main?STORE.main.doors.map(d=>[...d,'up']):[]),['THE CASTLE',BOD.XS(CASTLE.gate),BOD.ZS(CASTLE.b[2]-3),'up'],['THE DUNGEON',BOD.XS((CASTLE.hall.x0+CASTLE.hall.x1)/2),BOD.ZS((CASTLE.hall.y0+CASTLE.hall.y1)/2),'down']];
   UI.places=()=>PLACES.concat(STORE.places||[]);
   const goPlace=n=>{ if(STORE.ensure)STORE.ensure(); if(STORE.offGo)STORE.offGo(n); const P=PLACES.concat(STORE.places).find(p=>p[0]===n); if(P)goTo(P[1],P[2],P[3]); }; UI.goPlace=goPlace;
   { const q=QS.get('place'); const go=()=>window.__started?goPlace(q.toUpperCase()):setTimeout(go,200); if(q)setTimeout(go,300); }
@@ -234,7 +234,7 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
     const mid=(X,Z,r)=>[(X(r[0])+X(r[2]))/2,(Z(r[1])+Z(r[3]))/2], B=BOD.B0;
     add('THE SHOP',...mid(BOD.X,BOD.Z,[B.x0,BOD.BODOFF,B.x1,B.y1]),'up'); add('THE BACK ROOM',...mid(BOD.X,BOD.Z,[B.x0,B.y0,B.x1,BOD.BODOFF]),'up');
     const R=AWAY.has('apartments')?[]:POOLR.ROOMS||[]; [['THE GYM',0],['THE HALLWAY',3],['THE LOBBY',5],['THE OFFICE',6]].forEach(([n,i])=>R[i]&&add(n,...mid(POOLR.X,POOLR.Z,R[i]),'up'));
-    if(BOD.GD)add('THE DOJO',...mid(BOD.X,BOD.Z,BOD.GD.r),'up');
+    if(BOD.GD)add('THE BATHS',...mid(BOD.X,BOD.Z,BOD.GD.r),'up');
     if(MODS.apts){ const A=MODS.apts.A, H=MODS.apts.H; for(let f=0;f<(MODS.apts.floors||5);f++)add('APARTMENT HOUSE '+(f?'FLOOR '+(f+1):'GROUND'),BOD.X((A.x0+A.x1)/2),BOD.Z((H.y0+H.y1)/2),f?MODS.apts.lvY(f):'up'); }
     add('THE SUBWAY STAIRS',BOD.XS((MAPSTAIR.x0+MAPSTAIR.x1)/2),BOD.ZS(MAPSTAIR.y1+1.2),'up'); }
   if(STORE.places.length){ const h=document.createElement('h3'); h.textContent='MORE PLACES'; $('#places').parentNode.appendChild(h); const row=document.createElement('div'); row.className='row'; row.id='stored'; $('#places').parentNode.appendChild(row);
@@ -248,7 +248,7 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
     for(const id of ['places','roomsrow','stored'])if($('#'+id)){ $('#'+id).style.display='none'; const h=$('#'+id).previousElementSibling; if(id!=='places'&&h&&h.tagName==='H3')h.style.display='none'; } }
   const zMin=3, zMax=ZMAX, z2r=v=>Math.log(v/zMin)/Math.log(zMax/zMin), r2z=r=>zMin*Math.pow(zMax/zMin,r);
   function drawDisplay(){ $('#dsfx').textContent='EFFECTS '+(SFX.on?'ON':'OFF'); $('#dsfx').setAttribute('aria-pressed',String(SFX.on)); $('#damb').textContent='AMBIENCE '+(AMB.on?'ON':'OFF'); $('#damb').setAttribute('aria-pressed',String(AMB.on)); $('#dvol').value=SFX.vol; M.querySelectorAll('[data-res]').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.res===RESI))); $('#dlook').setAttribute('aria-pressed',String(LOOK.on)); $('#dlook').textContent='GLOW AND NIGHT LOOK '+(LOOK.on?'ON':'OFF'); $('#dsteps').value=W3.shade.steps; $('#ddepth').value=W3.shade.depth; M.querySelectorAll('[data-view]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.view===UI.view))); $('#dsharp').textContent=(SCL===1&&vpu()<art()?'full':RES()+'×')+' the game\'s detail'; $('#dzoom').value=z2r(ppuTo); $('#dtilt').value=(pitchTo-PMIN)/(PMAX-PMIN);
-    $('#dlit').textContent='LIGHT ON THEM: '+(UI.lit?'LAMPS':'FLAT'); $('#dlit').setAttribute('aria-pressed',String(UI.lit)); $('#dbody').setAttribute('aria-pressed',String(PB.on)); $('#dbody').textContent='PHYSICS BODY '+(PB.on?'ON':'OFF'); $('#dloose').value=PB.loose; $('#doutl').setAttribute('aria-pressed',String(OUTL.on)); $('#doutl').textContent='OUTLINE '+(OUTL.on?'ON':'OFF'); $('#dhelp').setAttribute('aria-pressed',String(!document.getElementById('hud').hidden)); $('#dstat').setAttribute('aria-pressed',String(!document.getElementById('stat').hidden));
+    $('#dlit').textContent='LIGHT ON THEM: '+(UI.lit?'LAMPS':'FLAT'); $('#dlit').setAttribute('aria-pressed',String(UI.lit)); $('#dbody').setAttribute('aria-pressed',String(PB.on)); $('#dbody').textContent='PHYSICS BODY '+(PB.on?'ON':'OFF'); $('#dloose').value=PB.loose; $('#doutl').setAttribute('aria-pressed',String(OUTL.on)); $('#doutl').textContent='OUTLINE '+(OUTL.on?'ON':'OFF'); $('#dhelp').setAttribute('aria-pressed',String(!document.getElementById('hud').hidden)); $('#dstat').setAttribute('aria-pressed',String(!document.getElementById('stat').hidden)); $('#drin').setAttribute('aria-pressed',String(!!(window.RINSP&&RINSP.on)));
     const sh=document.getElementById('shd'); $('#dshd').innerHTML=''; sh.querySelectorAll('button').forEach(b=>{ const c=document.createElement('button'); c.className='btn'; c.textContent=b.textContent; c.setAttribute('aria-pressed',b.getAttribute('aria-pressed')); c.onclick=()=>{ b.click(); drawDisplay(); }; $('#dshd').appendChild(c); }); }
   const RESN=['COARSEST','COARSE','NORMAL','SHARP'];
   for(let i=0;i<=RESMAX;i++){ const b=document.createElement('button'); b.className='btn'; b.dataset.res=i; b.textContent=RESN[i]||RESL[i]+'×'; b.onclick=()=>{ if(i<RESI)RESI=i; while(RESI<i&&(pxS()>1||vpu()>art()))RESI++; resize(); drawDisplay(); }; $('#dres').appendChild(b); }
@@ -262,7 +262,7 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
   $('#dreset').onclick=()=>{ yawTo=VIEW0.yaw; pitchTo=VIEW0.pitch; ppuTo=VIEW0.ppu; UI.home(); drawDisplay(); };
   const UIS={small:.9,medium:1,large:1.1}; UI.setScale=k=>{ if(!UIS[k])k='medium'; UI.scale=k; document.documentElement.style.setProperty('--uiz',UIS[k]); SAVE.set('uiscale',k); M.querySelectorAll('[data-ui]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.ui===k))); };
   UI.setScale(SAVE.get('uiscale')||'medium'); M.querySelectorAll('[data-ui]').forEach(b=>b.onclick=()=>UI.setScale(b.dataset.ui));
-  $('#dhelp').onclick=()=>{ const h=document.getElementById('hud'); h.hidden=!h.hidden; drawDisplay(); }; $('#dstat').onclick=()=>{ const h=document.getElementById('stat'); h.hidden=!h.hidden; drawDisplay(); };
+  $('#dhelp').onclick=()=>{ const h=document.getElementById('hud'); h.hidden=!h.hidden; drawDisplay(); }; $('#dstat').onclick=()=>{ const h=document.getElementById('stat'); h.hidden=!h.hidden; drawDisplay(); }; $('#drin').onclick=()=>{ if(!window.RINSP)return; RINSP.toggle(); drawDisplay(); if(RINSP.on&&UI.menuOpen)toggleMenu(); };
   try{ OUTL.on=SAVE.get('outline')==='1'; }catch(e){ OUTL.on=false; } OUTL.sp.enabled=OUTL.on;
   $('#doutl').onclick=()=>{ OUTL.on=!OUTL.on; OUTL.sp.enabled=OUTL.on; try{ SAVE.set('outline',OUTL.on?'1':'0'); }catch(e){} drawDisplay(); };
   UI.setLit=on=>{ UI.lit=on; W3.mesh.material=on?W3.toon:W3.flat; for(const N of NPCS)N.me.material=on?N.toon:N.flat; try{ SAVE.set('avlight',on?'1':'0'); }catch(e){} };
@@ -276,7 +276,7 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
   $('#kreset').onclick=()=>{ BIND={}; try{ SAVE.del('keys'); }catch(e){} REV=rev(); drawKeys(); drawBadge(); };
   for(const id of ['hud','stat','shd'])document.getElementById(id).hidden=true; document.getElementById('loading')?.remove();
   drawBadge(); }
-{ const PANS=[['menu',()=>UI.toggleMenu(),'.box'],['looks',el=>{ el.hidden=true; }],['we',()=>WE.toggle()],['movesp'],['maped',()=>MAPED.toggle()],['snded',()=>SNDED.close()],['shbar'],['hud'],['stat'],['shd'],['gemp'],['packp',el=>{ el.hidden=true; if(window.FORAGE)FORAGE.PACK.open=false; }],['shopp'],['fishp'],['vegp'],['birdp'],['bookp'],['minep'],['farlook']];
+{ const PANS=[['menu',()=>UI.toggleMenu(),'.box'],['looks',el=>{ el.hidden=true; }],['we',()=>WE.toggle()],['movesp'],['maped',()=>MAPED.toggle()],['snded',()=>SNDED.close()],['shbar'],['hud'],['stat'],['shd'],['gemp'],['packp',el=>{ el.hidden=true; if(window.FORAGE)FORAGE.PACK.open=false; }],['shopp'],['fishp'],['vegp'],['birdp'],['bookp'],['minep'],['farlook'],['rinsp',()=>RINSP.toggle(false)]];
   const css=document.createElement('style'); css.textContent='.pX{position:absolute;right:4px;top:4px;z-index:2;font:12px Silkscreen,monospace;color:#f2c14e;background:#0e1016;border:2px solid #3a3f4e;width:24px;height:24px;line-height:18px;padding:0;cursor:pointer} .pDrag{cursor:move}'; document.head.appendChild(css);
   const hide=el=>{ el.hidden=true; if(el.style.display)el.style.display='none'; };
   const NOPE='button,input,select,textarea,a,label,canvas,option,.pX';

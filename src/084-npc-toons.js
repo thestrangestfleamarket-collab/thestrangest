@@ -105,7 +105,7 @@ const TOONS={};
         B.head.rotation.y=c.sheet?0:c.look; } };
     const yC=BOD.CURB+.74, yF=BOD.FAR-.74, xa=RING.wr1+3, xb=AVE.r0-3, ym=(yC+yF)/2, LOOP=[[xa,yC],[xb,yC],[xb+1.2,ym],[xb,yF],[xa,yF],[xa-1.2,ym]].map(([x,y])=>({x:BOD.XS(x),z:BOD.ZS(y)}));
     let li=0; const pick=st=>{ li=(li+1)%LOOP.length; st.to=LOOP[li]; st.wait=0; };
-    TOONS.frog=make(def,{key:'scooterfrog',name:'THE FROG ON HIS SCOOTER',metres:1.725,radius:.55,speed:.7,stride:4,x:LOOP[0].x,z:LOOP[0].z,pick,roam:false},3); }
+    TOONS.frog=make(def,{key:'scooterfrog',name:'THE FROG ON HIS SCOOTER',metres:1.725,radius:.55,speed:.7,stride:4,x:LOOP[0].x,z:LOOP[0].z,pick,roam:false},3); TOONS.frog.farMove=dt=>{ const st=TOONS.frog.st; if(!st.to)pick(st); const dx=st.to.x-st.x, dz=st.to.z-st.z, d=Math.hypot(dx,dz), s2=Math.min(d,st.v*dt); if(d<.05){ pick(st); return; } st.x+=dx/d*s2; st.z+=dz/d*s2; st.h=Math.atan2(dx,dz); TOONS.frog.g.position.set(st.x,TOONS.frog.ground(st.x,st.z),st.z); TOONS.frog.g.rotation.y=st.h; }; }
 
   { const TEAL=[.22,.5,.5], TEAL2=[.17,.4,.41], BELLY=[.84,.82,.74], COAT=[.73,.68,.48], COAT2=[.6,.55,.37], TROU=[.32,.32,.33], SHOE=[.3,.2,.13], EYE=[.98,.82,.15];
     const def={ bones:[['root',null,[0,0,0]],['hips','root',[0,.95,0]],['head','hips',[0,1.42,0]],['jaw','head',[0,1.5,.05]],['fin','head',[0,1.84,-.05]],

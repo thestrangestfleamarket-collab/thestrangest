@@ -141,7 +141,7 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
   #menu .foot{padding:10px 16px;border-top:2px solid var(--line);color:var(--dim);display:flex;justify-content:space-between}`;
   document.head.appendChild(css);
   const M=document.createElement('div'); M.id='menu'; M.hidden=true; M.innerHTML=`<div class="box" role="dialog" aria-label="Menu">
-    <div class="tabs" role="tablist"><button role="tab" data-t="map">MAP</button><button role="tab" data-t="display">DISPLAY</button><button role="tab" data-t="atmo">ATMOSPHERE</button><button role="tab" data-t="graphics">GRAPHICS</button><button role="tab" data-t="sound">SOUND</button><button role="tab" data-t="avatar">AVATAR</button><button role="tab" data-t="keys">KEYS</button></div>
+    <div class="tabs" role="tablist"><button role="tab" data-t="map">MAP</button><button role="tab" data-t="display">DISPLAY</button><button role="tab" data-t="atmo">ATMOSPHERE</button><button role="tab" data-t="graphics">GRAPHICS</button><button role="tab" data-t="sound">SOUND</button><button role="tab" data-t="avatar">AVATAR</button><button role="tab" data-t="keys">KEYS</button><button role="tab" data-t="bug">REPORT A BUG</button></div>
     <div class="pane" data-p="map"><div class="row"><button class="btn" data-lv="up">THE STREET</button><button class="btn" data-lv="down">UNDERGROUND</button><span class="dim">click the map to go there</span></div>
       <canvas id="mapcv"></canvas><h3>GO TO</h3><div class="row"><select id="placesel" class="btn" style="font:inherit;min-width:min(340px,80vw);padding:6px 8px;background:#0e1016;color:#ece5d3;border:2px solid #3a3f4e"></select></div><div class="row" id="places" hidden></div></div>
     <div class="pane" data-p="display">
@@ -162,15 +162,16 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
     <div class="pane" data-p="avatar"><h3>YOUR AVATAR</h3><div class="dim" style="margin-bottom:8px">body, look, textures, outline, shading, poses, presets</div><div class="row"><button class="btn" id="davatar">OPEN THE AVATAR EDITOR</button><button class="btn" id="dshape">EDIT HIS SHAPE</button><button class="btn" id="dlooks">YOUR LOOKS</button></div></div>
     <div class="pane" data-p="keys"><div class="dim" style="margin-bottom:8px">click a key, then press the one you want (Escape to keep it)</div><table id="keytab"></table>
       <div class="row" style="margin-top:10px"><button class="btn" id="kreset">ALL BACK AS THEY WERE</button></div></div>
+    <div class="pane" data-p="bug" id="dbug"></div>
     <div class="foot"><span>ESC closes</span><span>THE MARKET</span></div></div>`;
   document.body.appendChild(M);
   const $=s=>M.querySelector(s); let tab='map', mapLv='up';
-  const show=t=>{ tab=t; M.querySelectorAll('[data-t]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.t===t))); M.querySelectorAll('[data-p]').forEach(p=>p.hidden=p.dataset.p!==t); if(t==='map')drawMap(); if(t==='display'||t==='graphics'||t==='sound')drawDisplay(); if(t==='sound')SNDED.into($('#dsndin')); if(t==='keys')drawKeys(); if(t==='atmo'){ window.CLOCK&&CLOCK.draw&&CLOCK.draw(); window.WX&&WX.draw&&WX.draw(); drawMood(); } };
+  const show=t=>{ tab=t; M.querySelectorAll('[data-t]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.t===t))); M.querySelectorAll('[data-p]').forEach(p=>p.hidden=p.dataset.p!==t); if(t==='map')drawMap(); if(t==='display'||t==='graphics'||t==='sound')drawDisplay(); if(t==='sound')SNDED.into($('#dsndin')); if(t==='keys')drawKeys(); if(t==='bug')BUGS.open($('#dbug')); if(t==='atmo'){ window.CLOCK&&CLOCK.draw&&CLOCK.draw(); window.WX&&WX.draw&&WX.draw(); drawMood(); } };
   const drawMood=()=>{ const h=(window.SKY&&SKY.moodHold)||''; $('#amood').querySelectorAll('[data-m]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.m===h))); };
   $('#amood').onclick=e=>{ const b=e.target.closest('[data-m]'); if(!b||!window.SKY)return; SKY.moodHold=b.dataset.m||null; try{ b.dataset.m?SAVE.set('mood',b.dataset.m):SAVE.del('mood'); }catch(e){} drawMood(); };
   M.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>show(b.dataset.t));
   M.addEventListener('click',e=>{ if(e.target===M)toggleMenu(); });
-  UI.toggleMenu=()=>toggleMenu();
+  UI.toggleMenu=()=>toggleMenu(); UI.menuTab=t=>{ if(!UI.menuOpen)toggleMenu(); show(t); };
   function toggleMenu(){ UI.menuOpen=!UI.menuOpen; M.hidden=!UI.menuOpen; keys.clear(); st.runTarget=0; if(UI.menuOpen){ mapLv=LVL; show(tab); } }
   const mcv=$('#mapcv'), mg=mcv.getContext('2d'), rt=new THREE.WebGLRenderTarget(8,8), top=new THREE.OrthographicCamera(-1,1,1,-1,.1,200);
   const mapRect=lv=>{ const B=lv==='down'?MODS.station.BOUND:AWAY.has('apartments')?MODS.bodega.BOUND:{x0:Math.min(MODS.bodega.BOUND.x0,MODS.pool.BOUND.x0),x1:Math.max(MODS.bodega.BOUND.x1,MODS.pool.BOUND.x1),z0:Math.min(MODS.bodega.BOUND.z0,MODS.pool.BOUND.z0),z1:Math.max(MODS.bodega.BOUND.z1,MODS.pool.BOUND.z1)};

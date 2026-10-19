@@ -54,7 +54,7 @@ const WX={hold:null,now:null};
   const CL=new THREE.Mesh(cg,cmat); CL.frustumCulled=false; CL.visible=false; scene.add(CL); WX.clouds=CL;
   CL.onBeforeRender=()=>{ const S=CLOCK.sun; CU.uSunD.value.copy(CLOCK.dir||CLOCK.sunV); CU.uSunC.value.copy(S.color).multiplyScalar(S.intensity); CU.uSky.value.copy(HEMI.color).multiplyScalar(HEMI.intensity); CU.uGnd.value.copy(HEMI.groundColor).multiplyScalar(HEMI.intensity); };
   const CSEE=n=>{ const f=CU.uCF.value, o=CL.position; return CULL.seen(CSPH.slice(0,n),o,S=>(S.center.x+o.x-pos.x)*f.x+(S.center.z+o.z-pos.z)*f.z+S.radius<12); };
-  const CSM=LFX.cs, NT=CSM.n, FB=new Float32Array(NT*NT); let bk='';
+  const CSM=WX.csm=LFX.cs, NT=CSM.n, FB=new Float32Array(NT*NT); let bk='';
   const bake=(show,L)=>{ const M=CSM.tex.image.data, W=CSM.w, k=NT/W, hy=CL.position.y, lx=L[0], lz=L[1]; FB.fill(0);
     for(let i=0,e=ends[show-1]*4;i<e;i+=4){ const y=PF[i+1]+hy, R=PF[i+3]*1.3*k, gx=(PF[i]-y*lx)*k+NT/2, gz=(PF[i+2]-y*lz)*k+NT/2;
       if(gx+R<0||gz+R<0||gx-R>=NT||gz-R>=NT)continue; const R2=R*R;

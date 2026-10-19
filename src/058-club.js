@@ -3,7 +3,6 @@
   const LOB={x0:16,y0:12,x1:24,y1:18}, BTH={x0:18,y0:0,x1:24,y1:6}, FLR={x0:5,y0:4,x1:15,y1:11}, BOOTH={x0:7,y0:.25,x1:13,y1:2.4}, BAR={x0:.15,y0:3,x1:1.6,y1:15};
   const at=(r,x,y,p=0)=>x>B.x0+r.x0-p&&x<B.x0+r.x1+p&&y>B.y0+r.y0-p&&y<B.y0+r.y1+p;
   const lit=c=>Object.assign([Math.min(255,c[0]),Math.min(255,c[1]),Math.min(255,c[2])],{e:1});
-  STORE.places.push(['CLUB STATIC',0,0,'up']);
   STORE.bound.x1=Math.max(STORE.bound.x1,X(472));
   const CLUB=window.CLUB={B,on:false,drop:null};
   const brick=(u,z)=>{ const row=Math.floor(z/6), i=Math.floor(u*24+(row&1)*5), b=Math.floor(i/10); return {mortar:i%10===9||Math.floor(z)%6===5,b,row}; };
@@ -30,7 +29,7 @@
     let c=sh([84,82,90],.9+.14*grain(x*1.5,y*1.5,932,.8)); if(grain(x*2.5,y*2.5,933,.6)>.7)c=sh(c,.72); if(hs(px,py,934)<.004)c=[190,170,90]; if(hs(px>>1,py>>1,935)<.003)c=[120,40,40]; return c; };
   const GL={S:'01111100001000001110000010000111110',T:'11111001000010000100001000010000100',A:'01110100011000111111100011000110001',I:'01110001000010000100001000010001110',C:'01111100001000010000100001000001111',L:'10000100001000010000100001000011111',U:'10001100011000110001100011000101110',B:'11110100011000111110100011000111110'};
   const neonW=(word,cell,atf,zc,col)=>{ const bs=[], c=Object.assign(col.slice(),{e:1}); [...word].forEach((ch,i)=>{ const g=GL[ch]; for(let r=0;r<7;r++)for(let q=0;q<5;q++)if(g[r*5+q]==='1')bs.push(atf(i*6+q,cell,zc-(r+1)*cell.z,c)); }); return bs; };
-  STEPS.push(()=>{ const T=.1;
+  K.offmap('CLUB STATIC',[426,-104,462,-74],()=>{ const T=.1;
     const xw=[['lobw','y',B.x0+LOB.x0,B.y0+LOB.y0,B.y1-T,1,[],true],['lobs','x',B.y0+LOB.y0,B.x0+LOB.x0,B.x1-T,1,[{a0:B.x0+18.6,a1:B.x0+20.2,z0:0,z1:94}],true],
       ['bthw','y',B.x0+BTH.x0,B.y0+T,B.y0+BTH.y1,1,[{a0:B.y0+4.3,a1:B.y0+5.7,z0:0,z1:94}],true],['bthn','x',B.y0+BTH.y1,B.x0+BTH.x0,B.x1-T,1,[],true]];
     room('club','CLUB STATIC',B,{floor,in:inner,out:outer,cope:[60,58,62],roof:(x,y)=>sh([52,52,56],.9+.1*hs(Math.floor(x*2),Math.floor(y*2),940))},{w:'f',a:B.x0+20,wd:1.56,h:96},(B_,l0)=>{
@@ -165,4 +164,4 @@
       for(const N of CLUB.dancers||[])if(N&&N.mixer){ const a=N.act&&N.act('UAL_Dance_Loop'); if(a)a.timeScale=dropping?1.5:1; } }; };
   window.CLUBDBG=()=>({mv:st.move&&st.move.name,cur:ROOMS.cur&&ROOMS.cur.id,recsI:(CLUB.recs||[]).map(L=>+L.intensity.toFixed(1)),ready:!!CLUB.ready,where:CLUB.where,beat:CLUB.beatNow&&+CLUB.beatNow().toFixed(2),drop:CLUB.drop,people:(CLUB.people||[]).length,recs:(CLUB.recs||[]).length,audio:!!(CLUB.A&&CLUB.A.c)});
   window.CLUBLOOK=(dx=12,dy=9,k=.5,d)=>{ if(d!=null)LOOKYAW(d); return LOOKAT(X(B.x0+dx),Z(B.y0+dy),k); };
-  window.CLUBGO=(dx=10,dy=13)=>{ if(STORE.ensure)STORE.ensure(); if(window.SUBGO)SUBGO(X(B.x0+dx),Z(B.y0+dy),'up'); return CLUBDBG(); }; }
+  window.CLUBGO=(dx=10,dy=13)=>{ STORE.offGo('CLUB STATIC'); if(window.SUBGO)SUBGO(X(B.x0+dx),Z(B.y0+dy),'up'); return CLUBDBG(); }; }

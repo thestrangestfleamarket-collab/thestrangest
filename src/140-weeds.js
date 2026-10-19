@@ -37,7 +37,7 @@ WEEDS.init=()=>{ WEEDS.dbg=f=>f({FIX,SOL,TILE,MODS}); const T=TILE, hsh=(a,b,s)=
     for(const f of FLOW){ const k=Math.floor(f[0]/cs)+','+Math.floor(f[2]/cs); if(!FC.has(k))FC.set(k,[]); FC.get(k).push(f); }
     for(const list of FC.values()){ const fm=new THREE.InstancedMesh(fg,fmt,list.length); list.forEach(([x,y,z],i)=>{ M.compose(new THREE.Vector3(x,y,z),q.identity(),new THREE.Vector3(1,1,1)); fm.setMatrixAt(i,M); }); fm.computeBoundingSphere(); scene.add(fm); WEEDS.meshes.push(fm); } }
   WEEDS.n=TUFT.length; WEEDS.flowers=FLOW.length; };
-WEEDS.lawnInit=()=>{ const T=TILE, CS=8*T, N=32, CELL=CS/N, MG=4, W=N+2*MG, hsh=(a,b,s)=>{ let h=(Math.floor(a*97)*374761393+Math.floor(b*89)*668265263+s*1442695041)|0; h=(h^(h>>>13))*1274126177|0; return ((h^(h>>>16))>>>0)/4294967296; };
+WEEDS.lawnInit=()=>{ const T=TILE, CS=8*T, N=16, CELL=CS/N, MG=4, W=N+2*MG, hsh=(a,b,s)=>{ let h=(Math.floor(a*97)*374761393+Math.floor(b*89)*668265263+s*1442695041)|0; h=(h^(h>>>13))*1274126177|0; return ((h^(h>>>16))>>>0)/4294967296; };
   const MV=WEEDS.movers, NT=12, TR=[...Array(NT)].map(()=>new THREE.Vector4(0,0,0,0)), TK=[...Array(NT)].map(()=>new THREE.Vector4(0,0,0,0)), TT=new Float64Array(NT).fill(-1e9), TM=new Int8Array(NT), F=x=>(x*T).toFixed(4);
   const MODE=[[.7,.85,3,0,0],[1.05,.9,1.5,1,1],[.5,.32,1,0,0],[1.5,.95,3,0,0],[1.15,1,5,0,0]]; WEEDS.UTR={value:TR}; WEEDS.UTK={value:TK};
   const mat=new THREE.MeshLambertMaterial({color:new THREE.Color().setRGB(70/255,122/255,52/255,THREE.SRGBColorSpace)});
@@ -112,17 +112,17 @@ WEEDS.lawnInit=()=>{ const T=TILE, CS=8*T, N=32, CELL=CS/N, MG=4, W=N+2*MG, hsh=
     for(let b=0;b<=N;b++)for(let a=0;a<=N;a++){ let k=0, g=0, ox=0, oz=0; for(const [di,dj] of [[-1,-1],[0,-1],[-1,0],[0,0]]){ const c=ci(a+di,b+dj); if(I[c]){ k++; g+=G[c]; ox+=di+.5; oz+=dj+.5; } }
       if(!k)continue; let e2=1e9; for(let j=b-MG;j<b+MG;j++)for(let i=a-MG;i<a+MG;i++)if(!I[ci(i,j)])e2=Math.min(e2,(i+.5-a)**2+(j+.5-b)**2);
       const gx=x0+a*CELL, gz=z0+b*CELL, wob=(vn(gx/(.55*T),gz/(.55*T),421)-.5)*2, t=Math.max(0,Math.min(1,(Math.min(MG,Math.sqrt(e2))-.707+.2+wob*.4)/2.4));
-      const f=k===1?.5:k===3?-.5:0, jg=k<4?.6*CELL:0, x=gx+ox*f*CELL+(vn(gx/(.4*T),gz/(.4*T),433)-.5)*jg, z=gz+oz*f*CELL+(vn(gx/(.4*T),gz/(.4*T),434)-.5)*jg, h=hgt(x,z)*(.16+.84*Math.sqrt(t)); g/=k;
+      const f=k===1?.5:k===3?-.5:0, jg=k<4?.6*CELL:0, x=gx+ox*f*CELL+(vn(gx/(.4*T),gz/(.4*T),433)-.5)*jg, z=gz+oz*f*CELL+(vn(gx/(.4*T),gz/(.4*T),434)-.5)*jg, h=hgt(x,z)*(.16+.84*Math.sqrt(t))*(.62+.76*vn(gx/(.31*T),gz/(.31*T),447)); g/=k;
       VI[b*N1+a]=P.length/3; VQ[b*N1+a]=[x,g,z,h]; P.push(x,g+h,z); AH.push(h); AT.push(1); }
-    const wall=(p,q,nx,nz)=>{ const ex=q[0]-p[0], ez=q[2]-p[2]; if(Math.abs(ex)+Math.abs(ez)<1e-4)return; const v=P.length/3, lo=-.06*T;
-      P.push(p[0],p[1]+p[3],p[2],q[0],q[1]+q[3],q[2],q[0],q[1]+lo,q[2],p[0],p[1]+lo,p[2]); AH.push(p[3],q[3],0,0); AT.push(0,0,0,0);
+    const wall=(p,q,nx,nz)=>{ const ex=q[0]-p[0], ez=q[2]-p[2]; if(Math.abs(ex)+Math.abs(ez)<1e-4)return; const v=P.length/3, lo=-.06*T, so=u=>(.12+.3*vn(u[0]/(.37*T),u[2]/(.37*T),451))*T;
+      P.push(p[0],p[1]+p[3],p[2],q[0],q[1]+q[3],q[2],q[0]+nx*so(q),q[1]+lo,q[2]+nz*so(q),p[0]+nx*so(p),p[1]+lo,p[2]+nz*so(p)); AH.push(p[3],q[3],0,0); AT.push(0,0,0,0);
       if(ez*nx-ex*nz>0)IX.push(v,v+1,v+2,v,v+2,v+3); else IX.push(v,v+2,v+1,v,v+3,v+2); };
     for(let j=0;j<N;j++)for(let i=0;i<N;i++){ if(!I[ci(i,j)])continue; const A=j*N1+i, B=A+1, C=A+N1, D=C+1;
       const cr=(p,q,r)=>(VQ[q][2]-VQ[p][2])*(VQ[r][0]-VQ[p][0])-(VQ[q][0]-VQ[p][0])*(VQ[r][2]-VQ[p][2]);
       if(cr(A,C,B)>0&&cr(B,C,D)>0)IX.push(VI[A],VI[C],VI[B],VI[B],VI[C],VI[D]); else IX.push(VI[A],VI[C],VI[D],VI[A],VI[D],VI[B]);
       if(!I[ci(i,j-1)])wall(VQ[A],VQ[B],0,-1); if(!I[ci(i+1,j)])wall(VQ[B],VQ[D],1,0); if(!I[ci(i,j+1)])wall(VQ[C],VQ[D],0,1); if(!I[ci(i-1,j)])wall(VQ[A],VQ[C],-1,0); }
     if(!IX.length)return null; const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); geo.setAttribute('aH',new THREE.Float32BufferAttribute(AH,1)); geo.setAttribute('aT',new THREE.Float32BufferAttribute(AT,1));
-    geo.setIndex(IX); geo.computeVertexNormals(); const me=new THREE.Mesh(geo,mat); me.receiveShadow=true; me.tri=IX.length/3; me.sq=SQ; me.top=(x,y,z)=>y+hgt(x,z); me.dispose=()=>geo.dispose();
+    geo.setIndex(IX); const gf=geo.toNonIndexed(); geo.dispose(); gf.computeVertexNormals(); const me=new THREE.Mesh(gf,mat); me.receiveShadow=true; me.tri=IX.length/3; me.sq=SQ; me.top=(x,y,z)=>y+hgt(x,z); me.dispose=()=>gf.dispose();
     MAPG.bodega.add(me); WEEDS.lawnN+=me.tri; return me; };
   const drop=k=>{ const me=CH.get(k); if(me){ MAPG.bodega.remove(me); me.dispose(); WEEDS.lawnN-=me.tri; } CH.delete(k); if(WEEDS.onDrop)WEEDS.onDrop(k); };
   { const RC=new THREE.Raycaster(), DN=new THREE.Vector3(0,-1,0), O=new THREE.Vector3(); WEEDS.top=(x,z)=>{ const k=Math.floor(x/CS)+','+Math.floor(z/CS); if(!CH.has(k))return undefined; const me=CH.get(k); if(!me)return null; RC.set(O.set(x,60*T,z),DN); const h=RC.intersectObject(me,false)[0]; return h?h.point.y:null; }; }

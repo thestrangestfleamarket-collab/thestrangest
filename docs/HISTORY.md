@@ -3053,3 +3053,9 @@ walk through people but at 75% speed (they slow you down a little) you cant walk
   "it was the stream", "i think it was all black beacuse it put me underground when i jumped in stream"): the level switch took
   any height under -1.6 for the underground (`MAPLV`); in the stream (`BROOK.over`), the park's lake (`FOUNT.wet`) or any water
   you're in, you stay above ground however deep you go.
+- **Tall grass in facets like the trees** (owner, 19 Oct 2026, of the tall grass's flat top and straight walls next to a tree crown:
+  "make the grass look more like tree triangle shapes on tops and sides not so uniform straight lines"): the tall grass is built of
+  bigger triangles (half-tile cells, was a quarter), each corner a different height, flat-shaded facet by facet like the crowns; its
+  sides lean out at uneven angles instead of standing as straight walls. Fewer triangles than before.
+- **Black underground** (owner, 19 Oct 2026, a picture of the subway with lavender sky round the station): below the street the sky
+  dome is hidden and the background is black, whatever the day/night settings do.

@@ -76,7 +76,7 @@ const DRESS=window.DRESS={}, TLX={tick:()=>{}};
       const rail=(a,b)=>{ const y=G((a+b)/2,z); for(const h of [.42*M,.9*M])blk((a+b)/2,y+h,z,b-a,.06*M,.05*M,RL); SOL.up.push([a,z-.06*M,b,z+.06*M]); FIX.up.push([a,z-.06*M,y,b,z+.06*M,y+H]); };
       for(const [a,b] of runs)rail(a,b); }
     { const M=1/.84*TILE, CR=[], A=MODS.apts&&MODS.apts.A, zk=BOD.ZS(BOD.CURB), sd=Math.sign(zk)||1, hsh=(a,b)=>{ const v=Math.sin(a*12.9898+b*78.233)*43758.5453; return v-Math.floor(v); };
-      const clear=(x,z)=>!(window.MAPSTAIR&&MAPSTAIR.has&&MAPSTAIR.has(x,z,'up'))&&(DRESS.pools||[]).every(P=>Math.hypot(P[1]-x,P[2]-z)>2.4*M)&&!SOL.up.some(b=>x>b[0]-.9*M&&x<b[2]+.9*M&&z>b[1]-.9*M&&z<b[3]+.9*M);
+      const clear=(x,z)=>!(window.MAPSTAIR&&MAPSTAIR.has&&MAPSTAIR.has(x,z,'up'))&&(DRESS.pools||[]).every(P=>Math.hypot(P[1]-x,P[2]-z)>2.4*M)&&!SOL.up.some(b=>x>b[0]-.9*M&&x<b[2]+.9*M&&z>b[1]-.9*M&&z<b[3]+.9*M)&&(STORE.main?STORE.main.doors:[]).every(d=>Math.abs(d[1]-x)>2*M);
       const tree=(x0,i)=>{ const z=zk-sd*1.05*M; let x=x0; for(let k=0;k<12&&!clear(x,z);k++)x+=(k&1?-1:1)*(k+1)*.6*M; if(!clear(x,z))return; const y=G(x,z), P=1.25*M, SET=0xa8a49c, SOIL=0x3a2c22;
         blk(x,y+.02*M,z,P,.04*M,P,SOIL); for(const [dx,dz,w,d] of [[0,-P/2,P+.16*M,.16*M],[0,P/2,P+.16*M,.16*M],[-P/2,0,.16*M,P],[P/2,0,.16*M,P]])blk(x+dx,y+.05*M,z+dz,w,.1*M,d,SET);
         for(let j=0;j<6;j++){ const a=j*1.05+i, r=.3*M+.15*M*hsh(i,j); blk(x+Math.cos(a)*r,y+.12*M,z+Math.sin(a)*r,.2*M,.2*M,.2*M,[0x3e6a34,0x4f7d3c,0x5a5a3a,0x6a8a44][j&3]); }

@@ -1955,6 +1955,10 @@ the park side's lamp post with its flat tan hexagon: "make all look realistic. g
   The screens light the carpet in front of them in three hard steps of their colour (painted into the floor: no lamp each); LITE records
   stay at 6 (the room's two, the candy cabinets' two, the VR's, the neon's). All in the store's one batch: about 1,000 triangles, no new
   program. Found on the way: the store's floors are painted mirrored front to back (`flat`); the playhouse and arcade floors allow for it.
+- **Clear of the doors** (19 Oct 2026, after the merge with the bar, the museum, the poles and the lamps): the street trees (`069-dress.js`)
+  and the telephone poles (`069b-poles.js`) now keep away from the four places' doors as they do from the others'. The places, as every
+  stored room, appear only when the store's steps are all done (built after the game opens, baked once at the end: the museum's steps
+  come before them); a slow headless run can look before that, so checks call `STORE.ensure()` or wait for `STORE.kit.STEPS.length===0`.
 - **The sellers' booths on the wall, at work** (owner, 19 Oct 2026, of the mushroom seller: "the mushrom skeleton should look around when idle,
   the yellow blobs should be flowing hair. make him 25% taller. his entire booth should be backed into the central park brick wall, (facing main).
   give him one table behind him that has shelves and stacks of colored mushroom (each row a dif mushroom). no grass around him."; of the tomato:

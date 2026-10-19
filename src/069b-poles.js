@@ -59,7 +59,7 @@ const WIRES=window.WIRES={perch:[],poles:[],tick:()=>{}};
     mat.onBeforeCompile=sh=>{ sh.uniforms.uF=uF; sh.vertexShader='attribute float pf; varying float vPf;\n'+sh.vertexShader.replace('void main() {','void main() { vPf=pf;');
       sh.fragmentShader='uniform vec4 uF; varying float vPf;\n'+sh.fragmentShader.replace('void main() {','void main() { if(vPf>-.5){ float o=uF[int(vPf+.5)]; if(o<.999&&fract(sin(dot(floor(gl_FragCoord.xy),vec2(12.9898,78.233)))*43758.5453)>o)discard; }'); };
     mat.customProgramCacheKey=()=>'poles';
-    const me=new THREE.Mesh(geo,mat); me.castShadow=me.receiveShadow=true; scene.add(me); OUT.add(me,'world');
+    const me=new THREE.Mesh(geo,mat); me.castShadow=me.receiveShadow=true; me.userData.cull=1; scene.add(me); OUT.add(me,'world');
     const NS=24, R=.032*M, WN=2, spans=[]; for(let w=0;w<WN;w++)for(let k=0;k+1<XS.length;k++){ const a=ends.find(e=>e.p===k&&e.sd===(w?1:-1)).at, b=ends.find(e=>e.p===k+1&&e.sd===(w?1:-1)).at; spans.push({w,k,a,b,L:a.distanceTo(b),ph:h3(w,k,6)*6}); }
     const NV=spans.length*NS*4*6, wp=new Float32Array(NV*3), wu=new Float32Array(NV*2), wf=new Float32Array(NV).fill(-1), u0=UV(SWT.wire,.5,.5); for(let i=0;i<NV;i++){ wu[i*2]=u0[0]; wu[i*2+1]=u0[1]; }
     const wg=new THREE.BufferGeometry(); wg.setAttribute('position',new THREE.BufferAttribute(wp,3)); wg.setAttribute('uv',new THREE.BufferAttribute(wu,2)); wg.setAttribute('pf',new THREE.BufferAttribute(wf,1));

@@ -1,4 +1,4 @@
-const CULL={L:[],M:new Map(),CS:16*TILE,on:QS.get('cull')!=='0'};
+const CULL={L:[],M:new Map(),CS:10*TILE,on:QS.get('cull')!=='0'};
 { const m4=new THREE.Matrix4(), w4=new THREE.Matrix4(), v=new THREE.Vector3(), B=new THREE.Box3(), key=(x,z)=>Math.floor(x/CULL.CS)*4096+Math.floor(z/CULL.CS);
   const drop=R=>{ for(const p of R.px){ p.removeFromParent(); if(p.isInstancedMesh)p.dispose(); else p.geometry.dispose(); } R.px=[]; R.ix=[]; };
   const vers=s=>{ const g=s.geometry; return s.isInstancedMesh?s.instanceMatrix.version+'/'+(s.instanceColor?s.instanceColor.version:0)+'/'+s.count:(g.index?g.index.version:0)+'/'+Object.values(g.attributes).map(a=>a.version).join(); };
@@ -18,9 +18,14 @@ const CULL={L:[],M:new Map(),CS:16*TILE,on:QS.get('cull')!=='0'};
     if(s.isInstancedMesh)fill(R); };
   const tie=R=>{ const s=R.s; for(const p of R.px){ if(p.parent!==s.parent)s.parent.add(p); p.matrix.copy(s.matrix); p.matrixWorldNeedsUpdate=true; p.visible=R.vis; p.layers.mask=s.layers.mask; p.castShadow=s.castShadow; p.receiveShadow=s.receiveShadow; p.material=s.material;
     p.customDepthMaterial=s.customDepthMaterial; p.customDistanceMaterial=s.customDistanceMaterial; p.renderOrder=s.renderOrder; } };
+  const SM=new THREE.Matrix4(), SF=new THREE.Frustum(), SS=new THREE.Sphere();
+  CULL.seen=(L,o,skip)=>{ SM.multiplyMatrices(cam.projectionMatrix,cam.matrixWorldInverse); const e=SM.elements, ox=o?o.x:0, oy=o?o.y:0, oz=o?o.z:0;
+    if(!cam.isOrthographicCamera){ SF.setFromProjectionMatrix(SM); return L.some(S=>!(skip&&skip(S))&&SF.intersectsSphere(SS.set(S.center,S.radius).translate(v.set(ox,oy,oz)))); }
+    const rx=Math.hypot(e[0],e[4],e[8]), ry=Math.hypot(e[1],e[5],e[9]);
+    return L.some(S=>{ if(skip&&skip(S))return false; const x=S.center.x+ox, y=S.center.y+oy, z=S.center.z+oz; return Math.abs(e[0]*x+e[4]*y+e[8]*z+e[12])<=1+S.radius*rx&&Math.abs(e[1]*x+e[5]*y+e[9]*z+e[13])<=1+S.radius*ry; }); };
   CULL.add=s=>{ if(!CULL.on||!s||CULL.M.has(s))return; const R={s,px:[],ix:[],ch:0,np:0}; CULL.M.set(s,R); CULL.L.push(R); };
   CULL.scan=()=>{ if(!CULL.on)return; scene.traverse(o=>{ if(o.isMesh&&o.userData.cull&&!o.isInstancedMesh){ CULL.add(o); return; } if(!o.isInstancedMesh||CULL.M.has(o)||o.userData.cullOf||!o.frustumCulled||o.count<8||Object.values(o.geometry.attributes).some(a=>a.isInstancedBufferAttribute))return;
-    if(!o.boundingSphere)o.computeBoundingSphere(); if(o.boundingSphere.radius>CULL.CS)CULL.add(o); }); };
+    if(!o.boundingSphere)o.computeBoundingSphere(); if(o.boundingSphere.radius>CULL.CS/2)CULL.add(o); }); };
   CULL.begin=()=>{ for(const R of CULL.L){ if(R.off)continue; const s=R.s; if(!s.parent){ drop(R); R.off=true; continue; }
       const vv=vers(s); if(!R.done||s.geometry!==R.g||!s.isInstancedMesh&&vv!==R.v||s.isInstancedMesh&&s.count!==R.n){ if(R.done&&++R.np>8){ drop(R); R.off=true; continue; } R.done=true; R.n=s.count; part(R); if(R.off){ drop(R); continue; } R.ch=0; }
       else if(vv!==R.v){ R.v=vv; fill(R); if(++R.ch>20){ drop(R); R.off=true; continue; } } else R.ch=0;

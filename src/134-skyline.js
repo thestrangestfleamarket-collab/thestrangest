@@ -64,6 +64,7 @@ const FAR3={};
 #include <fog_fragment>
 } else { float fd=distance(vFW.xz,uMP.xz); gl_FragColor.rgb=mix(gl_FragColor.rgb,uMC,mix(uHN,uHF,pastK())); }      `).replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n totalEmissiveRadiance+=fLit*vec3(1.,.82,.5)*.9+diffuseColor.rgb*uAmb;').replace('#include <dithering_fragment>','#include <dithering_fragment>\n if(uBake>.5) gl_FragColor=vec4(pastK(),0.,0.,1.);'); };
   mat.customProgramCacheKey=()=>'skylinefronts';
+  const FSP=BN.map(([x,z,sx,sz,h])=>new THREE.Sphere(new THREE.Vector3(x*TILE,y0+h*TILE/2,z*TILE),Math.hypot(sx,sz,h)*TILE/2));
   me.frustumCulled=false; me.visible=on; (MAPG.bodega||scene).add(me); FAR3.mesh=me; FAR3.n=BN.length; FAR3.tris=BN.length*12; FAR3.FU=FU;
   const CX=(LR.x0+LR.x1)/2*TILE, CZ=(LR.z0+LR.z1)/2*TILE, EYE=1.9, V0=Math.tan(-2*Math.PI/180), V1=Math.tan(30*Math.PI/180), DIRS=[[0,1],[1,0],[0,-1],[-1,0]];
   if(BAKE){ const fm=mk(BF); fm.frustumCulled=false; FAR3.farMesh=fm;
@@ -87,7 +88,7 @@ const FAR3={};
         .replace('#include <fog_fragment>','if(uMK<=0.){\n#include <fog_fragment>\n} else gl_FragColor.rgb=mix(gl_FragColor.rgb,uMC,mix(uHN,uHF,texture2D(uN,vMapUv).a));'); };
     pm.customProgramCacheKey=()=>'farpanels'; pan=new THREE.Mesh(g,pm); pan.frustumCulled=false; pan.renderOrder=-1; pan.visible=on; (MAPG.bodega||scene).add(pan); FAR3.panels=pan; FAR3.PU=PU; }
   const tick0=CLOCK.tick; CLOCK.tick=dt=>{ tick0(dt);
-    const up=LVL!=='down', inside=!OUT.open; me.visible=FAR3.on&&up; if(pan){ pan.visible=me.visible; FAR3.PU.uNK.value=Math.max(0,Math.min(1,(FU.uLit.value-FL.wd)/Math.max(1e-3,FL.wn-FL.wd))); }
+    const up=LVL!=='down', inside=!OUT.open; me.visible=FAR3.on&&up; if(pan){ pan.visible=me.visible; } if(me.visible&&!CULL.seen(FSP))me.visible=false; if(pan){ FAR3.PU.uNK.value=Math.max(0,Math.min(1,(FU.uLit.value-FL.wd)/Math.max(1e-3,FL.wn-FL.wd))); }
     FU.uHN.value=FL.hn; FU.uHF.value=FL.hf; FU.uHD.value=FL.hd; FU.uHS.value=Math.round(FL.hs); FU.uDT.value=FL.dt; if(SKY.U.uCov){ SKY.U.uCov.value=FL.cov; SKY.U.uCL.value=FL.cl; SKY.U.uZk.value=FL.zk; SKY.U.uHk.value=FL.hk; }
     FU.uLit.value=FL.wd+(FL.wn-FL.wd)*Math.max(0,Math.min(1,(1-CLOCK.elev())/6)); FU.uTW.value=performance.now()/1000/23;
     FU.uAmb.value=.55*Math.max(0,Math.min(1,(CLOCK.elev()+3)/12));

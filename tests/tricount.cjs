@@ -1,4 +1,4 @@
-// THE TRIANGLE COUNT (19 Oct 2026): node tests/tricount.cjs [out prefix] [page] [spots]: at fixed spots at the opening ISOMETRIC view, one frame's
+// THE TRIANGLE COUNT (19 Oct 2026): [Q=extra query] node tests/tricount.cjs [out prefix] [page] [spots]: at fixed spots at the opening ISOMETRIC view, one frame's
 // triangles by pass (the main picture, the river's pre-pass of it, each shadow light, the other passes; PERFX.bounds() called at each spot as the game does every 2 s) and the main picture's top 25 owners (with how much of each is inside
 // the view), a screenshot each (frames are taken until the lawn's chunks round you are made, a one-off pass each); out prefix.json holds it all. The owner's budget: the main picture under 100,000.
 const {chromium}=require('playwright'); const fs=require('fs'), path=require('path');
@@ -8,7 +8,7 @@ const SPOTS=[['bodega','()=>[12,3]'],['inbodega','()=>[9.9,-3.4]'],['parkgate','
   ['barinside','()=>[-69.9,-8]'],['night','()=>(__dbg.CLOCK.set(22),[12,3])']].filter(s=>!ONLY||ONLY.includes(s[0]));
 (async()=>{ const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist']}); const pg=await b.newPage({viewport:{width:1920,height:1080}}); pg.setDefaultTimeout(600000);
   pg.on('pageerror',e=>console.log('ERR',e.message.slice(0,200)));
-  await pg.goto('file://'+PAGE+'?fresh=1&hideme=1&hour=13',{waitUntil:'commit'});
+  await pg.goto('file://'+PAGE+'?fresh=1&hideme=1&hour=13'+(process.env.Q?'&'+process.env.Q:''),{waitUntil:'commit'});
   for(let i=0;i<400&&!(await pg.evaluate(()=>!!window.__started).catch(()=>false));i++)await pg.waitForTimeout(1000);
   await pg.evaluate(()=>{ STORE.ensure(); const D=__dbg, renderer=D.renderer, scene=D.scene, cam=D.camera; const own=new Map(), tag=(root,l)=>{ if(root&&root.traverse)root.traverse(o=>{ if(!own.has(o))own.set(o,l); }); };
     const place=me=>{ const c={}; for(const o of me.userData.objOf||[])if(o)c[o.place]=(c[o.place]||0)+1; const e=Object.entries(c).sort((a,b)=>b[1]-a[1]); return e.length?e.map(x=>x[0]).slice(0,2).join('+'):'?'; };
@@ -32,11 +32,11 @@ const SPOTS=[['bodega','()=>[12,3]'],['inbodega','()=>[9.9,-3.4]'],['parkgate','
   const res={}; const T0=Date.now();
   for(const [name,fn] of SPOTS){ await pg.evaluate(f=>{ const [x,z]=eval(f)(); __dbg.UI.goTo(x,z,'up'); },fn); await pg.waitForTimeout(9000); await pg.evaluate(()=>__dbg.PERFX.bounds()); await pg.waitForTimeout(2000);
     const r=await pg.evaluate(async()=>{ const T=__TC; T.retag(); const ms=[]; let R; for(let i=0;i<40;i++){ const a=performance.now(); R=await T.frame(); ms.push(performance.now()-a); if(i>=3&&!R.some(d=>d.pass.includes('other cam')))break; }
-      const iv=T.inView(), byPass={}, by={}; for(const d of R){ byPass[d.pass]=(byPass[d.pass]||0)+d.n; if(!d.pass.includes('MAIN'))continue; const L=T.label(d.o), O=by[L]||(by[L]={tris:0,draws:0,vis:0,nocull:0,_v:[]}); O.tris+=d.n; O.draws++; if(!d.cull)O.nocull++; const f=T.vis(d.o,iv); if(f!=null)O._v.push([f,d.n]); }
+      const iv=T.inView(), byPass={}, by={}, draws={}; for(const d of R){ byPass[d.pass]=(byPass[d.pass]||0)+d.n; draws[d.pass]=(draws[d.pass]||0)+1; if(!d.pass.includes('MAIN'))continue; const L=T.label(d.o), O=by[L]||(by[L]={tris:0,draws:0,vis:0,nocull:0,_v:[]}); O.tris+=d.n; O.draws++; if(!d.cull)O.nocull++; const f=T.vis(d.o,iv); if(f!=null)O._v.push([f,d.n]); }
       for(const O of Object.values(by)){ const s=O._v.reduce((a,x)=>a+x[1],0); O.vis=s?Math.round(O._v.reduce((a,x)=>a+x[0]*x[1],0)/s*100):null; delete O._v; }
       const main=Object.entries(byPass).filter(([k])=>k.includes('MAIN')).reduce((a,x)=>a+x[1],0), shadow=Object.entries(byPass).filter(([k])=>k.startsWith('shadow')).reduce((a,x)=>a+x[1],0);
-      return {pos:__dbg.pos().map(v=>+v.toFixed(1)),main,shadow,total:Object.values(byPass).reduce((a,x)=>a+x,0),byPass,frames:ms.length,frameMs:ms.slice(-3).map(x=>Math.round(x)),top:Object.entries(by).sort((a,b)=>b[1].tris-a[1].tris).slice(0,25)}; });
+      return {pos:__dbg.pos().map(v=>+v.toFixed(1)),main,mainDraws:Object.entries(draws).filter(([k])=>k.includes('MAIN')).reduce((a,x)=>a+x[1],0),shadow,draws,total:Object.values(byPass).reduce((a,x)=>a+x,0),byPass,frames:ms.length,frameMs:ms.slice(-3).map(x=>Math.round(x)),top:Object.entries(by).sort((a,b)=>b[1].tris-a[1].tris).slice(0,25)}; });
     res[name]=r; await pg.screenshot({path:OUT+'_'+name+'.png'});
-    console.log(`== ${name} at ${r.pos}: MAIN ${r.main}  shadow ${r.shadow}  all ${r.total}  frame ms ${r.frameMs}`); for(const [k,v] of Object.entries(r.byPass))console.log('   pass '+String(v).padStart(7)+'  '+k);
+    console.log(`== ${name} at ${r.pos}: MAIN ${r.main} (${r.mainDraws} draws)  shadow ${r.shadow}  all ${r.total}  frame ms ${r.frameMs}`); for(const [k,v] of Object.entries(r.byPass))console.log('   pass '+String(v).padStart(7)+' '+String(r.draws[k]).padStart(4)+'d  '+k);
     for(const [k,O] of r.top)console.log('   '+String(O.tris).padStart(7)+'  '+String(O.draws).padStart(3)+'d  '+(O.vis==null?'  ?':String(O.vis).padStart(3))+'% in view'+(O.nocull?' nocull'+O.nocull:'')+'  '+k); }
   fs.writeFileSync(OUT+'.json',JSON.stringify(res,null,1)); console.log('secs',Math.round((Date.now()-T0)/1000)); await b.close(); })();

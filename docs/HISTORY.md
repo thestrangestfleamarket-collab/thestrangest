@@ -1867,3 +1867,21 @@ on at a stop, the jump, the moves, sitting, swimming and the ragdoll (`ragPose`)
 planted foot moves under 1 cm a second walking, running, round a circle, stopping and on stairs (2.8 through a sharp quarter turn, where
 the rig's own pivots); flat on its ground within half a centimetre (3-4 on stairs). The page no longer carries `data/ual.json` (its
 skeleton now in `data/humanoid.json`, 16 KB): 260 KB less. Cost: some 60 bones set when his pose changes, a fraction of a millisecond.
+
+**His movement audited, fluid first** (owner, 19 Oct 2026: "walks terrible"; then "do a complete audit of his stance and movements make
+sure it makes sense, quick turn, leaning runs, i want him fully mobile like tomb raider. fluid. its #1 priority"): every move filmed
+side-on and from behind on its own (a page of the rig lifted from the build and the shipped 087a: stand, walk, run, start, stop, run-stop,
+U-turn, a running circle, jump, running jump, roll, kick). Found and fixed:
+- **Crouched walk, lunging run**: his hips had been the rig's height scaled up, and the short-legged rig drops its hips to reach its steps.
+  Now his hips stand as high as his own legs reach both feet (straight at rest), lowered further only by what the rig crouches beyond its
+  own legs' reach past its soft-kneed "standing easy" (sitting, landing, ducking). Off his feet (in the air, rolling, flipping, falling)
+  his hips follow the rig's (lower: in proportion; higher: the jump's true height), the two blended by how upright he is and how far his
+  feet are off the ground. Jumps no longer fold his legs back; the roll stays above the ground.
+- **Hips behind his feet**: the ball of his (longer) foot is pinned where the rig's is; his hips are set back by the difference, in his own
+  frame (so it doesn't drift in a circle).
+- **Boxer's arms running**: the elbow follows the rig's bend at 70%.
+- **Choppy moves**: your pose is now worked out every frame always (it was 10 a second standing and in moves, `ASTEP`); the street's
+  characters keep their steps (GRAPHICS' setting).
+- **Turns snapping**: your heading eases to where you steer (two thirds of the way in about 80 ms), at most 540 degrees a second as before.
+The lean into turns is the rig's own: 15 degrees round a running circle (he leans 14). Measured: a planted foot moves 1 to 4 cm a second
+(walk, run, circles, stops, stairs), 4 through a sharp quarter turn.

@@ -37,17 +37,24 @@ window.AVS=AVS;
     const K=new V(1,1,1), m=(J,o=new V())=>o.set(J.x*K.x,J.y*K.y,J.z*K.z), mb=new THREE.Matrix4(), SW=new V(), X=new V(), Y=new V(), Z=new V();
     const basis=(J,F,d,o=new Q())=>{ m(J[d[2]],Y).sub(m(J[d[1]],Z)).normalize(); X.set(F.x.x*K.x,F.x.y*K.y,F.x.z*K.z); X.addScaledVector(Y,-X.dot(Y)).normalize(); Z.crossVectors(X,Y); return o.setFromRotationMatrix(mb.makeBasis(X,Y,Z)); };
     let R0=null, WC=null, J0=null; const swing=(q,i,bn,dir)=>tq.setFromUnitVectors(SW.copy(AX[bn]).applyQuaternion(q).normalize(),dir).multiply(q);
-    const calib=()=>{ const RB=RIG.restOf().B; J0=RB.J; R0={}; WC={}; for(const [bn,d] of Object.entries(DRV)){ R0[bn]=basis(J0,RIG.frameOf(d[0],RB),d); WC[bn]=bn.startsWith('foot_')?W0[BI[bn]].clone():swing(W0[BI[bn]],BI[bn],bn,m(J0[d[2]],new V()).sub(m(J0[d[1]],Y)).normalize()).clone(); } };
-    const At=new V(), Hh=new V(), Kn=new V(), U=new V(), PL=new V(), DQ={}, cur=new Q(), sl=new Q();
+    const calib=()=>{ const RB=RIG.restOf().B; J0=RB.J; PZ.set(0,0,m(J0.ballL,PZ).z-P0[BI.ball_l].z); R0={}; WC={}; for(const [bn,d] of Object.entries(DRV)){ R0[bn]=basis(J0,RIG.frameOf(d[0],RB),d); WC[bn]=bn.startsWith('foot_')?W0[BI[bn]].clone():swing(W0[BI[bn]],BI[bn],bn,m(J0[d[2]],new V()).sub(m(J0[d[1]],Y)).normalize()).clone(); } };
+    const PZ=new V(), FT={l:new V(),r:new V()}, LEG=B[BI.calf_l].position.length()+B[BI.foot_l].position.length(), RLEG=RIG.THIGH+RIG.SHIN, At=new V(), Hh=new V(), Kn=new V(), U=new V(), PL=new V(), DQ={}, cur=new Q(), sl=new Q();
     const drive=PB=>{ const J=PB.J, body=N.me.parent; K.set(W3.group.scale.x/body.scale.x,W3.group.scale.y/body.scale.y,W3.group.scale.z/body.scale.z); if(!R0)calib();
       for(const [bn,d] of Object.entries(DRV)){ const F=RIG.frameOf(d[0],PB); if(F)DQ[bn]=basis(J,F,d,DQ[bn]||new Q()).multiply(iq.copy(R0[bn]).invert()); }
+      for(const s of ['l','r']){ const S=SIDE(s), bi=BI['ball_'+s], fi=BI['foot_'+s]; m(J['ball'+S],FT[s]); FT[s].y+=P0[bi].y-m(J0['ball'+S],X).y; FT[s].sub(X.copy(B[bi].position).applyQuaternion(sl.copy(DQ['foot_'+s]).multiply(WC['foot_'+s]))); }
       for(let i=0;i<nb;i++){ const bn=BN[i];
-        if(bn==='pelvis'){ m(J.pelvis,At).sub(m(J0.pelvis,U)); B[i].position.copy(P0[i]).add(At); B[i].position.z-=P0[BI.ball_l].z-m(J0.ballL,U).z; B[i].position.y=P0[i].y*J.pelvis.y/J0.pelvis.y; B[i].position.applyQuaternion(cur.copy(MQ[PAR[i]]).invert()); }
+        if(bn==='pelvis'){ m(J.pelvis,At).sub(m(J0.pelvis,U)); B[i].position.copy(P0[i]).add(At).add(PZ);
+          let lo=1e9, ex=1e9; for(const s of ['l','r']){ const S=SIDE(s), ti=BI['thigh_'+s], L=LEG*.995, a=J['ankle'+S], h=J['hip'+S], rd=Math.hypot(a.x-h.x,a.z-h.z), RL=RLEG*.995;
+            ex=Math.min(ex,a.y+Math.sqrt(Math.max(0,RL*RL-rd*rd))-h.y); Hh.copy(P0[ti]).sub(P0[i]).applyQuaternion(DQ.pelvis); const f=FT[s], dx=f.x-(B[i].position.x+Hh.x), dz=f.z-(B[i].position.z+Hh.z);
+            lo=Math.min(lo,f.y+Math.sqrt(Math.max(0,L*L-dx*dx-dz*dz))-Hh.y); }
+          const up=J.spine.y-J.pelvis.y, lift=Math.min(J.ankleL.y-J0.ankleL.y,J.ankleR.y-J0.ankleR.y), w=Math.max(0,Math.min(1,1.5-lift/3))*Math.max(0,Math.min(1,(up/(J0.spine.y-J0.pelvis.y)-.6)/.3)), dy=J.pelvis.y-J0.pelvis.y;
+          B[i].position.y=(1-w)*(dy<0?P0[i].y*J.pelvis.y/J0.pelvis.y:P0[i].y+dy*K.y)+w*(Math.min(lo,P0[i].y+Math.max(0,dy)*K.y)-Math.max(0,ex-1.1)*LEG/RLEG); B[i].position.applyQuaternion(cur.copy(MQ[PAR[i]]).invert()); }
         if(bn==='spine_01'||bn==='spine_02'){ setQ(i,sl.slerpQuaternions(DQ.pelvis,DQ.spine_03,bn==='spine_01'?1/3:2/3).multiply(W0[i])); continue; }
         if(!DRV[bn]||!DQ[bn]){ B[i].quaternion.copy(q0[i]); fk(i); continue; }
         cur.copy(DQ[bn]).multiply(WC[bn]);
+        if(bn.startsWith('lowerarm_')){ const u=BN[PAR[i]]; cur.slerp(sl.copy(MQ[PAR[i]]).multiply(iq.copy(WC[u]).invert()).multiply(WC[bn]),.3); }
         if(bn.startsWith('thigh_')){ const s=bn.slice(-1), S=SIDE(s), l1=B[BI['calf_'+s]].position.length(), l2=B[BI['foot_'+s]].position.length();
-          B[i].quaternion.copy(q0[i]); fk(i); Hh.copy(MP[i]); const bi=BI['ball_'+s]; m(J['ball'+S],At); At.y+=P0[bi].y-m(J0['ball'+S],X).y; At.sub(X.copy(B[bi].position).applyQuaternion(sl.copy(DQ['foot_'+s]).multiply(WC['foot_'+s]))); U.subVectors(At,Hh); const dd=Math.min(Math.max(U.length(),.05),l1+l2-1e-3); U.normalize(); At.copy(Hh).addScaledVector(U,dd);
+          B[i].quaternion.copy(q0[i]); fk(i); Hh.copy(MP[i]); At.copy(FT[s]); U.subVectors(At,Hh); const dd=Math.min(Math.max(U.length(),.05),l1+l2-1e-3); U.normalize(); At.copy(Hh).addScaledVector(U,dd);
           m(J['knee'+S],PL).sub(m(J['hip'+S],X).add(m(J['ankle'+S],Y)).multiplyScalar(.5)); PL.addScaledVector(U,-PL.dot(U)); if(PL.lengthSq()<1e-8)PL.set(0,0,1).addScaledVector(U,-U.z); PL.normalize();
           const ca=Math.max(-1,Math.min(1,(l1*l1+dd*dd-l2*l2)/(2*l1*dd))); Kn.copy(Hh).addScaledVector(U,ca*l1).addScaledVector(PL,Math.sqrt(1-ca*ca)*l1);
           setQ(i,swing(cur,i,bn,X.subVectors(Kn,Hh).normalize()).clone()); DQ['_k'+s]=Kn.clone(); DQ['_a'+s]=At.clone(); continue; }

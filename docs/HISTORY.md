@@ -1731,3 +1731,20 @@ the standard animation library's clips on the standard skeleton, sized each time
 of his pieces rides its bone, written straight into `W3.PM`). The old hand-animated Walker is gone from the menu (AVATAR: WALKER, MANNEQUIN,
 VROID). Where no clip fits yet (a move without one, the avatar editor's posing, the ragdoll fall) his own rig still poses him. The frozen
 copy (`data/hybrid.json`, its probe and bake) is removed. No new triangles.
+
+## 19 Oct 2026: REPORT A BUG and the owner's queue
+
+**Report a bug** (owner, 19 Oct 2026: "add a report bug feature that lets users report a bug and send screen shot and it autotmatically
+goes to you"; asked where and how fast: "1 . all 2 .instantly , just queue them all for now", "build queue for me to approve"): the menu's
+last tab, REPORT A BUG, and F8 anywhere (`136a-bugs.js`). Opening it takes the picture of the game behind the menu (the next frame read off
+the canvas, so nothing costs a frame while playing; JPEG, under 300 KB), and a box asks what went wrong. SEND stores the words, the picture
+and where it happened (position, level, nearest place, hour, view, build, screen, browser, the page's last errors) at once:
+- on the website: Supabase's `bug_reports` (the old game's table, reused) and `bug_shots` (new: the picture as text, so a session can read
+  it with SQL); a player sends only their own, only admins (`admins`) read and mark them. The login is the door's (cookie `tsfm-pass`,
+  renewed from the door's saved session when it runs out).
+- on the claude.ai link: the page's `db`, `bugs/<id>` and `bugshots/<id>` (published with `{db:{}, user:{}}`; `user` tells the owner).
+**The queue** is under the report box for the owner only (an admin on the website, the artifact's owner on claude.ai): NEW, APPROVED, LATER,
+FIXED, NO, each report with its words, where, PICTURE and GO THERE (puts you at the spot, facing the same way, at the same hour).
+For now nothing is fixed on its own: every report waits in NEW for the owner to APPROVE. A session asked to "work the queue" takes the
+APPROVED ones (see CLAUDE.md), fixes each, and marks it FIXED. The 16 reports already in `bug_reports` are from the old 2D game.
+`tests/bugcheck.cjs art|site` sends one with a stand-in store and approves it.

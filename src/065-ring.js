@@ -1,19 +1,10 @@
 const RINGX={};
-{ const R=RING, XS=BOD.XS, ZS=BOD.ZS, F=R.ff, T=TILE;
-  const x0=XS(F.x0), x1=XS(F.x1), z0=Math.min(ZS(F.y0),ZS(F.y1)), z1=Math.max(ZS(F.y0),ZS(F.y1)), H=26*T;
+{ const R=RING, XS=BOD.XS, ZS=BOD.ZS, F=R.ff, T=TILE, C=R.cf={x0:F.x0,x1:PARK.x1+(PARK.ox||0)-8,y0:F.y0,y1:PARK.y1+(PARK.oy||0)-8};
+  const box=f=>({x0:XS(f.x0),x1:XS(f.x1),z0:Math.min(ZS(f.y0),ZS(f.y1)),z1:Math.max(ZS(f.y0),ZS(f.y1))}), W=box(F), {x0,x1,z0,z1}=box(C), H=26*T;
+  RINGX.town={x:W.x0,y:W.z0,z:W.x1,w:W.z1};
   const S=MODS.station.BOUND; BOUND.x0=Math.min(x0,S.x0); BOUND.x1=Math.max(x1,S.x1); BOUND.z0=Math.min(z0,S.z0); BOUND.z1=Math.max(z1,S.z1); RINGX.bound={x0,x1,z0,z1}; Object.assign(MISTB,{x:x0,y:z0,z:x1,w:z1}); MISTE.w=T;
   const th=.2*T, wall=(a,b,c,d)=>{ SOL.up.push([a,b,c,d]); FIX.up.push([a,b,0,c,d,H]); };
   wall(x0-th,z0,x0,z1); wall(x1,z0,x1+th,z1); wall(x0,z0-th,x1,z0); wall(x0,z1,x1,z1+th);
-  const U={uP:{value:new THREE.Vector3()},uT:{value:0},uR:{value:6*T}};
-  const fm=new THREE.ShaderMaterial({uniforms:U,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,side:THREE.DoubleSide,
-    vertexShader:'varying vec3 vW; void main(){ vec4 w=modelMatrix*vec4(position,1.); vW=w.xyz; gl_Position=projectionMatrix*viewMatrix*w; }',
-    fragmentShader:`uniform vec3 uP; uniform float uT,uR; varying vec3 vW;
-      float hex(vec2 p){ p/=${(.9*T).toFixed(3)}; vec2 r=vec2(1.,1.732), h=r*.5; vec2 a=mod(p,r)-h, b=mod(p-h,r)-h; vec2 g=dot(a,a)<dot(b,b)?a:b; return max(abs(g.x)*.866+abs(g.y)*.5,abs(g.y)); }
-      void main(){ float d=length(vec2(vW.x-uP.x,vW.z-uP.z)), near=1.-smoothstep(uR*.25,uR,d), h=vW.y-uP.y; near*=1.-smoothstep(3.,9.,abs(h)/${T.toFixed(3)});
-        vec2 q=abs(vW.x-(${x0.toFixed(3)}))<.05||abs(vW.x-(${x1.toFixed(3)}))<.05?vec2(vW.z,vW.y):vec2(vW.x,vW.y); float e=hex(q), line=step(.475,e);
-        float pulse=.55+.45*sin(uT*2.+vW.y*.6+q.x*.3); if(near<.01)discard; gl_FragColor=vec4(vec3(.25,.85,1.)*(line*.42+.03)*near*pulse,1.); }`});
-  const box=new THREE.BoxGeometry(x1-x0,H,z1-z0,1,1,1); box.translate((x0+x1)/2,H/2-.5,(z0+z1)/2);
-  { const I=box.index.array, keep=[]; for(let f=0;f<I.length;f+=6){ const n=box.attributes.normal.array, v=I[f]; if(Math.abs(n[v*3+1])<.5)keep.push(...Array.from(I.slice(f,f+6))); } box.setIndex(keep); }
-  const field=new THREE.Mesh(box,fm); field.frustumCulled=false; field.renderOrder=5; scene.add(field); RINGX.field=field; OUT.add(field,'world');
-  RINGX.tick=dt=>{ const up=LVL!=='down'; if(!up)scene.background.setRGB(0,0,0); U.uP.value.set(pos.x,py,pos.z); U.uT.value+=dt; };
+  RINGX.inside=(x,z,R=0)=>x>x0+R&&x<x1-R&&z>z0+R&&z<z1-R;
+  RINGX.tick=()=>{ if(LVL==='down')scene.background.setRGB(0,0,0); };
   window.RINGX=RINGX; }

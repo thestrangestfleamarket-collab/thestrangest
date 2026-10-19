@@ -181,7 +181,7 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
     renderer.setRenderTarget(null); renderer.clippingPlanes=cp; renderer.setClearColor(cc,ca);
     for(const k in vis)MAPG[k].visible=vis[k]; HEMI.intensity=h0; W3.group.visible=true;
     const im=new ImageData(W,H); for(let y=0;y<H;y++){ const o=y*W*4, q=(H-1-y)*W*4; for(let i=0;i<W*4;i+=4){ im.data[o+i]=GAM[px[q+i]]; im.data[o+i+1]=GAM[px[q+i+1]]; im.data[o+i+2]=GAM[px[q+i+2]]; im.data[o+i+3]=255; } } return im; };
-  const PLAN={}; const plan=()=>{ if(PLAN.im)return PLAN; const F=RING.ff, S=2, W=Math.round((F.x1-F.x0)*S), H=Math.round((F.y1-F.y0)*S), K=BLDK, OX=BOD.OX, OY=BOD.OY;
+  const PLAN={}; const plan=()=>{ if(PLAN.im)return PLAN; const F=RING.cf, S=2, W=Math.round((F.x1-F.x0)*S), H=Math.round((F.y1-F.y0)*S), K=BLDK, OX=BOD.OX, OY=BOD.OY;
     const bt=(x,y)=>[OX+(x-OX)*K,OY+(y-OY)*K], wt=(x,z)=>[OX+x/TILE,OY+z/TILE];
     const P=PARK, px0=P.x0+P.ox, px1=P.x1+P.ox, py0=P.y0+P.oy, py1=P.y1+P.oy, RV=RING.river, G=BOD.grounds.filter(g=>!g.bld), RA=BOD.road.at;
     const C={void:[11,13,18],water:[40,86,128],quay:[104,104,98],road:[52,54,60],alley:[70,71,76],walk:[142,138,128],land:[60,104,54],lawn:[74,134,60],way:[186,170,128],wall:[48,52,46]};

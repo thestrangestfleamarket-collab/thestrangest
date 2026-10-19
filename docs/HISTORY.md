@@ -2648,3 +2648,7 @@ not have windows, make sure buildings are only as tall as they need to be"; then
   between the ring road and the avenue, round and round (out of `LIVES`).
 - **The park's wall casts its shadow** (owner, 19 Oct 2026, of the wall by the mushroom stall: "the shadowless wall"): the park's
   painted pieces (wall, piers, kerbs) are built with `BATCH.cast` on, so they draw into the sun's still shadow.
+- **The mushroom stand** (owner, 19 Oct 2026: "nothing on ground besisde muhsrhoom merchants, make his stack of rows go 2 more higher ,
+  diff kinds, some glow at night"): the log, the stump and the two baskets on the ground are gone; the stand's back rises to 2.58 with
+  two more shelves (2.0, 2.4) of new kinds: ghost caps (violet, glowing), amethyst violets, embers (orange, glowing), oysters and
+  sulphur shelf. The glowing caps are dim by day and bright after dark.

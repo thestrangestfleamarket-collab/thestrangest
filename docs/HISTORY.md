@@ -1876,3 +1876,25 @@ light colour, cel-shaded, casting a shadow; the same clips. 402 triangles.
   longer built a few seconds after the start; each is built the moment you pick it in the menu, or stand on its lot (a save, `?at=`,
   `CLUBGO`), then never again. The town's walkers and the mail don't count them. Measured: the street at the start 522,818 to 478,006
   triangles, 251 to 238 lamp records. Their code still comes in the page (some 70 KB unminified, about 1% of it); they have no data files to fetch.
+## 19 Oct 2026: the FEEL LAB controller
+
+**A new movement controller to try, the old one untouched** (owner, 19 Oct 2026: "create an avatar using this method for me to test in
+game", with a brief for a Summer Afternoon-style controller: three-mesh-bvh capsule collision, real acceleration and braking, sharp stops,
+coyote time and jump buffering, blended clips, an orbit camera kept out of walls, a tuning panel and a test yard): `087b-feel.js` (physics),
+`087c-feel-anim.js` (clips), `087d-feel-yard.js` (the yard), `087e-feel-panel.js` (panel, debug); details, results and what's verified about
+Summer Afternoon in `docs/FEEL.md`.
+- **Your mannequin, on the new controller**: fixed 1/60 s steps, a capsule against a BVH (the yard's mesh, or on the street the game's walls
+  and ground height), walkable / steep / ceiling contacts, 0.25 m steps, ground snap; camera-relative intent, linear acceleration and
+  braking with a harder reversal; jump height, coyote 0.1 s, buffer 0.12 s, short hop on release; Idle / Walk / Jog / Sprint by the speed you
+  really move, Jump_Start / Jump_Loop / Jump_Land on the physics (the last two restored to `data/ual.json` from before the October trim),
+  each clip at its measured foot speed (walk 1.2, jog 7, sprint 10.7 game metres a second); a little lean and landing squash on the model.
+- **Where**: the menu's MAP, MORE PLACES, **FEEL LAB** (a yard outside town: long wall, both corners, a 0.9 m passage, 14° and 40° ramps,
+  a 55° slope too steep to climb, 0.2 m steps, a 0.45 m block, a low ceiling, a raised platform with a ledge and a 2 m gap; the town's mist
+  moved to the yard's edge while you're in it). In the yard the new controller is always on; on the street only when switched on (the panel,
+  kept in the save, or `?feel=1`).
+- **Keys**: L the panel (presets RESPONSIVE / BALANCED / FLOATY, every setting live, reset, save, export / import JSON with checks), O the
+  debug display (state, speeds, timers, clip weights, the capsule, contact normals, the collision mesh, the camera's rays), T back to the
+  yard's spawn (R stays "turn the view").
+- **Cost**: the physics 0.017 ms a step; the yard 1,238 triangles, one draw, drawn only near it; no lights; nothing loaded until it's used.
+- `tests/feelcheck.cjs`: 26 checks (speeds, stops, reversal, walls, corners, passage, slopes, steps, ledge, coyote, buffer, held jump,
+  ceiling, 30-144 fps, clips, blur, import, camera), all pass.

@@ -11,13 +11,13 @@ renderer.domElement.addEventListener('pointerdown',e=>{ if(e.button===2||e.butto
 renderer.domElement.addEventListener('pointermove',e=>{ if(!drag)return; UI.orbit(e.clientX-drag.x,e.clientY-drag.y); drag={x:e.clientX,y:e.clientY}; });
 renderer.domElement.addEventListener('pointerup',()=>drag=null);
 renderer.domElement.addEventListener('wheel',e=>{ e.preventDefault(); ppuTo=Math.max(3,Math.min(ZMAX,ppuTo*Math.pow(1.0015,-e.deltaY))); UI.wheelAt(e); },{passive:false});
-addEventListener('keydown',e=>{ const k=UI.key(e); if(!k)return; keys.add(k); if(['arrowup','arrowdown','arrowleft','arrowright',' '].includes(k))e.preventDefault();
+addEventListener('keydown',e=>{ const k=UI.key(e); if(!k)return; if(FEEL.key(k,e))return; const FT=FEEL.take(); if(k===' '&&!e.repeat&&FT)FEEL.press(); keys.add(k); if(['arrowup','arrowdown','arrowleft','arrowright',' '].includes(k))e.preventDefault();
   if(k==='0'){ yawTo=VIEW0.yaw; pitchTo=VIEW0.pitch; ppuTo=VIEW0.ppu; UI.home(); } if(k==='n')nightTo=nightTo?0:1; if(k==='h')document.getElementById('hud').hidden^=1;
   if(k==='-'||k==='_'){RESI=Math.max(0,RESI-1);resize();} if(k==='='||k==='+'){ if(pxS()>1||vpu()>art())RESI=Math.min(RESMAX,RESI+1); resize(); }
-  if(k==='shift')st.runTarget=1; if(k==='f'&&!e.repeat&&!UI.freeCam&&!UI.fly&&!ED.on)trip=true; if(st.water&&st.water.in&&(k===' '||k==='j')){ st.water.dive=true; e.preventDefault(); } else if(MOVEK[k]&&!e.repeat&&!RAG.on&&!UI.freeCam&&!ED.on&&!(UI.fly&&k===' '))RIG.act(st,MOVEK[k]); });
+  if(k==='shift')st.runTarget=1; if(k==='f'&&!e.repeat&&!UI.freeCam&&!UI.fly&&!ED.on)trip=true; if(st.water&&st.water.in&&(k===' '||k==='j')){ st.water.dive=true; e.preventDefault(); } else if(MOVEK[k]&&!e.repeat&&!RAG.on&&!UI.freeCam&&!ED.on&&!(UI.fly&&k===' ')&&!(FT&&k===' '))RIG.act(st,MOVEK[k]); });
 const MOVEK={' ':' ',j:'J',k:'K',r:'R',v:'V'};
 addEventListener('keyup',e=>{ const k=UI.key(e); if(!k)return; keys.delete(k); if(k==='shift')st.runTarget=0; if(k===' '||k==='j'){ if(st.water)st.water.dive=false; } if(MOVEK[k])RIG.release(st,MOVEK[k]); });
-addEventListener('blur',()=>{ keys.clear(); st.runTarget=0; });
+addEventListener('blur',()=>{ keys.clear(); st.runTarget=0; FEEL.IN.press=0; }); document.addEventListener('visibilitychange',()=>{ if(document.hidden){ keys.clear(); st.runTarget=0; FEEL.IN.press=0; } });
 const ray=new THREE.Raycaster(), gplane=new THREE.Plane(new THREE.Vector3(0,1,0),0), hit=new THREE.Vector3();
 const marker=new THREE.Mesh(new THREE.PlaneGeometry(0.5,0.5).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({color:0xf2c14e,transparent:true,opacity:0.8})); marker.visible=false; scene.add(marker);
 
@@ -31,7 +31,7 @@ let last=performance.now(), fpsT=0, fpsN=0, t=0;
 function frame(now){ requestAnimationFrame(frame); renderer.info.reset(); const dt=Math.max(0,Math.min(0.05,(now-last)/1000)); last=now; METRO.tick(dt,pos); t+=dt;
   if(UI.freeCam?MAPLV(UI.camT.y-.9,UI.camT):MAPLV(py,pos))setPhys(LVL);
   if(UI.view!=='iso'){ if(keys.has('q'))yawTo+=dt*1.8; if(keys.has('e'))yawTo-=dt*1.8; if(keys.has('z'))pitchTo=UI.clampV(pitchTo-dt*1.2); if(keys.has('x'))pitchTo=UI.clampV(pitchTo+dt*1.2); }
-  const ease=Math.min(1,dt*12); yaw=Math.abs(yawTo-yaw)<1e-4?yawTo:yaw+(yawTo-yaw)*ease; pitch=Math.abs(pitchTo-pitch)<1e-4?pitchTo:pitch+(pitchTo-pitch)*ease; const zk0=UI.zk(); ppu=Math.abs(ppuTo/ppu-1)<1e-4?ppuTo:ppu*Math.pow(ppuTo/ppu,ease); if(pxS()!==SCL)resize(); else frustum(); UI.zoomStep(zk0);
+  const FT=FEEL.take(), ease=FT?1-Math.exp(-dt*FEEL.cfg.camDamp):Math.min(1,dt*12); yaw=Math.abs(yawTo-yaw)<1e-4?yawTo:yaw+(yawTo-yaw)*ease; pitch=Math.abs(pitchTo-pitch)<1e-4?pitchTo:pitch+(pitchTo-pitch)*ease; const zk0=UI.zk(); ppu=Math.abs(ppuTo/ppu-1)<1e-4?ppuTo:ppu*Math.pow(ppuTo/ppu,ease); if(pxS()!==SCL)resize(); else frustum(); UI.zoomStep(zk0);
   const a=yaw, fx=-Math.sin(a), fz=-Math.cos(a);
   let mx=0,mz=0, up=keys.has('w')||keys.has('arrowup'), dn=keys.has('s')||keys.has('arrowdown'), lf=keys.has('a')||keys.has('arrowleft'), rt=keys.has('d')||keys.has('arrowright');
   UI.camStep(dt,a,up,dn,lf,rt); if(UI.freeCam||ED.on)up=dn=lf=rt=false;
@@ -47,16 +47,19 @@ function frame(now){ requestAnimationFrame(frame); renderer.info.reset(); const 
   if(RAG.on)B=ragPose();
   else{
     if(window.BOAT&&BOAT.on){ BOAT.steer(dt,mx,mz); mx=0; mz=0; target=null; } const ml=Math.hypot(mx,mz), busy=st.move;
+    if(FT){ st.yr=0; if(!RIVER.feed(st,pos,dt,ml>0,keys))WATER.feed(st,pos,dt,ml>0,keys); st.target=0; RIG.step(st,dt); FEEL.step(dt,mx,mz); }
+    else{
     if(ml>0&&!busy){ let dh=Math.atan2(mx,mz)-heading; dh=Math.atan2(Math.sin(dh),Math.cos(dh)); const turn=3*Math.PI*dt; const dd=Math.max(-turn,Math.min(turn,dh)); heading+=dd; st.yr=dd/Math.max(dt,1e-3); } else st.yr=0;
     if(window.BOAT&&BOAT.on){ BOAT.carry(st,pos); heading=BOAT.hd; } else if(!RIVER.feed(st,pos,dt,ml>0,keys))WATER.feed(st,pos,dt,ml>0,keys); st.target=ml>0?1:0; const before=st.dist; RIG.step(st,dt); const go=(st.dist-before)*W3.SZ/PPU; if(typeof SFX!=='undefined')SFX.steps(st,go);
     if(go){ const ox=pos.x,oz=pos.z; pos.x+=Math.sin(heading)*go; pos.z+=Math.cos(heading)*go; if(UI.fly)UI.flyStep(0); else collide(pos); if(st.water&&st.water.in&&RIVER.swim)RIVER.clamp(pos); else if(st.water&&st.water.in&&POOLR.inBasin(pos.x,pos.z)){ const m=0.3; pos.x=Math.max(WATER.X0+m,Math.min(WATER.X0+WATER.W-m,pos.x)); pos.z=Math.max(WATER.Z0+m,Math.min(WATER.Z0+WATER.D-m,pos.z)); }
     if(target&&Math.hypot(pos.x-ox,pos.z-oz)<go*0.2)target=null; }
-    if(UI.fly)UI.flyStep(dt); else if(window.BOAT&&BOAT.on)py=BOAT.py; else { let g=groundY(pos.x,pos.z); if(st.fk)for(const n of 'LR'){ const f=st.fk[n]; if(f&&f.on&&Math.hypot(f.x-pos.x,f.z-pos.z)<1)g=Math.min(g,f.y); } py+=(g-py)*Math.min(1,dt*20); } P.x=pos.x/TL;
+    if(UI.fly)UI.flyStep(dt); else if(window.BOAT&&BOAT.on)py=BOAT.py; else { let g=groundY(pos.x,pos.z); if(st.fk)for(const n of 'LR'){ const f=st.fk[n]; if(f&&f.on&&Math.hypot(f.x-pos.x,f.z-pos.z)<1)g=Math.min(g,f.y); } py+=(g-py)*Math.min(1,dt*20); } }
+    P.x=pos.x/TL;
     P.y=-pos.z/TL; PH.hd=heading;
     if(!ASTEP.you.B||RAG.blend||ED.anim||st.w>0.01||st.target>0||st.stop||st.bank||st.fstep||ASTEP.gate(ASTEP.you,dt)){ st.world=RAG.on?null:{x:pos.x,z:pos.z,y:py,hd:heading,kx:1/W3.group.scale.x,ky:1/W3.group.scale.y,gnd:groundY,t:now/1000}; B=ED.anim?ED.animPose():RIG.pose(st); ragBlend(B); ragStrikes(B,J0,J0t?(now-J0t)/1000:0); J0=B.J; J0t=now; ASTEP.you.B=B; } else { B=ASTEP.you.B; PHYOU.strikes=[]; } }
   const hdA=(RAG.on?RAG.hd:heading)-a;
   if(loose.length||FLOATS.bodies.some(b=>Math.hypot(b.x[0]*TL-pos.x,-b.x[1]*TL-pos.z)<2.5))RIG.draw(B,cloud,hdA,uimg,PW,PICH,AX,AY,1,false);
-  W3.place(B,pos.x,py,pos.z,RAG.on?RAG.hd:heading,hdA,ZU); if(window.AVS)AVS.tick(dt,B); PB.step(dt,B,pos.x,py,pos.z,RAG.on?RAG.hd:heading,groundY(pos.x,pos.z),RAG.on); if(ED.on)ED.tick();
+  W3.place(B,pos.x,py,pos.z,RAG.on?RAG.hd:heading,hdA,ZU); if(window.AVS)AVS.tick(dt,B); FEEL.ui(dt); PB.step(dt,B,pos.x,py,pos.z,RAG.on?RAG.hd:heading,groundY(pos.x,pos.z),RAG.on); if(ED.on)ED.tick();
   phyYouNow(dt); looseAcc+=dt; let nst=0; while(looseAcc>=PHH&&nst<6){ looseAcc-=PHH; nst++; phyStep(loose,STATIC,PHH,null,null); } if(nst>=6)looseAcc=0; looseDraw();
   if(PERFX.poolNear()){ const px=FLOATS.px??pos.x, pz=FLOATS.pz??pos.z, k=1/Math.max(dt,1e-3); FLOATS.step(dt,{inWater:!!(st.water&&st.water.in),x:pos.x,z:pos.z,vx:(pos.x-px)*k,vz:(pos.z-pz)*k}); FLOATS.px=pos.x; FLOATS.pz=pos.z; }
   if(typeof UI!=='undefined'&&UI.freeCam)LITE.tick(dt,UI.camT.x,UI.camT.y,UI.camT.z); else LITE.tick(dt,pos.x,py+1.2*TILE,pos.z);

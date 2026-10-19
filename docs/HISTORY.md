@@ -1854,3 +1854,12 @@ so he looked shrugged. You are now his mannequin (`data/full/humanoid.fbx`, Blen
 `data/humanoid.json`, 6 KB), sized to the UAL skeleton (it matches it: height, hips, shoulders, arm length within 3 cm). It stands in an
 A-pose, so the skeleton's arms are lowered to it before binding; each corner weighted in code to its nearest one or two bones. One flat
 light colour, cel-shaded, casting a shadow; the same clips. 402 triangles.
+
+- **The Milky Way and clustered stars** (owner, 19 Oct 2026, of a starry sky dome shader on StackBlitz: "can we use this?"; offered clustered
+  stars, clustered stars plus a Milky Way band, or nothing: "2"; `src/sky.js`): not the shader itself (its smooth noise background and soft
+  stars break CEL, it costs two 3D noises a pixel, and it has no licence), only its idea. The night's stars are no longer even: patches of
+  thick and thin by a cheap noise, and thickest along a band. The band is a great circle tilted across the sky, its edges wavy, a dark rift
+  down its middle in places, in three flat steps of faint blue-grey drawn after the sky's own banding (so it isn't rounded away), hidden
+  under the weather's grey and fog and behind the mist's clouds; on only while the stars are (half out or more), never near the horizon.
+  **Stars in the mist**: the MIST look's sky painted over the stars, so none had shown at night since it came in; they and the band show now
+  in the gaps between its clouds. Cost: a few noise lookups a sky pixel, at night only; no triangles, lights or programs.

@@ -3115,3 +3115,9 @@ versions) and put them in random spots in park and thats where specific mushroom
   mushrooms; `MUSHDBG()` now counts gold and lawn kinds.
 - **Cost**: the gold grass adds no draws, lights or programs (the grass program replaced, `tallgrass3`); the ears, blades, stems and glints some
   150-700 triangles a patch in the lawn chunk that holds it (8-16 each); the cave's fire one lamp record, its pile ~100 triangles.
+- **The park's trees: elders and oaks in bunches, one each of three landmarks** (owner, 19 Oct 2026: "add 2, 5, and 6 but only 1 each
+  in diff parts of the park. use 4 and the current tree as common trees in park, different sizes, bunches, etc"; built in another
+  chat, `tools/trees-bake.py`): new trees in `data/forest.json`, Elder1 and Elder2 (gnarled, kinked trunks, 354 triangles each),
+  Spruce1 (160), Willow1 (310), Giant1 (367). Oaks and elders are the common trees, sizes 9 to 24; about 45% stand with one or two
+  smaller companions; about a third of the lake-shore oaks are elders. One spruce, one willow (by the lake) and one giant each stand
+  in a different quarter. A few thousand more triangles, no new lights or shader programs. They keep clear of the lake campfire.

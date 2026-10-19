@@ -1954,3 +1954,27 @@ the park side's lamp post with its flat tan hexagon: "make all look realistic. g
   The screens light the carpet in front of them in three hard steps of their colour (painted into the floor: no lamp each); LITE records
   stay at 6 (the room's two, the candy cabinets' two, the VR's, the neon's). All in the store's one batch: about 1,000 triangles, no new
   program. Found on the way: the store's floors are painted mirrored front to back (`flat`); the playhouse and arcade floors allow for it.
+- **The sellers' booths on the wall, at work** (owner, 19 Oct 2026, of the mushroom seller: "the mushrom skeleton should look around when idle,
+  the yellow blobs should be flowing hair. make him 25% taller. his entire booth should be backed into the central park brick wall, (facing main).
+  give him one table behind him that has shelves and stacks of colored mushroom (each row a dif mushroom). no grass around him."; of the tomato:
+  "same with tomato merchant, but with veggies. add stacks of veggies of boxes too. idle animations. also they need to be working at their booth.
+  occaisonaly sweeping, organizing things."; `stalls.js`, `083a-npc-mushroom.js` (moved after the rig it now uses), `npc-toons.js`, `veggies.js`, `weeds.js`): **the booths** sit flush on
+  the park wall's street face, read from the wall's own solid (`STALL.face`: the outermost FIX box spanning the booth near `PARK.y0`, so a thicker
+  wall moves them with it), the mushroom seller's west of the gate, the tomato's east, each 4.8 tiles wide and 3.6 deep, a little further from
+  the gate's piers so there's a way round: in front a plank counter with its three stepped risers and two short wings (a U open toward the wall),
+  the seller between it and **a shelf table** against the wall (a shelf under the top, the top, two shelves above stepping back, a back board),
+  each row heaped with one kind (his: puffballs, chanterelles, redcaps, moonglow; the tomato's: potatoes, cabbages, tomatoes, eggplants); beside
+  the tomato's two **stacks of vegetable crates** stepped up to the wall (three, two, one high, the top of each heaped), pumpkins and sacks; beside
+  his a mushroom log along the wall, a stump of boletes, baskets; a broom leaning on the wall at the gate end. **No weeds** in a booth's ground
+  (they grew from the tables' and the wall's own solids: weeds.js now skips `STALL.zones` and `WEEDS.clear` takes out any already grown).
+  **The mushroom seller** a quarter taller (3.16 m) and on bones now (npc-rig.js, like the tomato): his yellow lumps are **long hair**, twelve
+  locks of three pieces from under the hat to his shoulder blades, each piece on a spring (lagging when he starts, stops or turns, swinging
+  past when he stops; a turn of his head flicks them the other way; in wind, gusts by `PARK.windK`, still on a calm day); his tray on its own
+  bone. **At work** (`STALL.work`, both): standing he looks about (at you or anyone passing within 7 tiles in front of him, else down the
+  street one way or the other, or down at his goods), his body and hair still between glances; every 9-25 seconds he takes up a job: **tidying**
+  (to the shelf, reaches for a row by its height, carries a handful/crate of it in his hand to the counter, sets it down and pats the heaps
+  straight), **arranging** the counter or a wing in place, or **sweeping** (takes the broom from the wall, sweeps the booth's floor with
+  strokes side to side, or goes out round the gate end and sweeps the pavement in front of the counter, then puts the broom back); the
+  mushroom seller sets his tray down first and picks it up after. Cost: the booths some 16,700 and 16,200 triangles (were 13,700 and
+  13,100), the same six instanced draws each, no light; the mushroom seller some 5,200 triangles (was some 2,500) on 39 bones (one skinned draw, as the
+  tomato), the hair's springs a few hundred multiplies a step at the 10-a-second animation; nothing new a frame when far. `STALL.made[i].N.job('sweep'|'tidy'|'pat'|'wing')` (tests).

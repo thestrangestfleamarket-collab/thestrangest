@@ -2486,3 +2486,47 @@ improvements"; of the list, 2-13 "do it", and "i want dungeon to be a 'loading w
   CLEAR, SOFT, the sky just paling, the last stars), **FOGGY MORNING** (7:36 am, FOG, SOFT, low sun through it), **SOFT SUNSET** (5:57 pm,
   CLOUDY, CLEAR colours, the warm horizon under the cloud), **DUSK** (6:27 pm, CLEAR, the street lights coming on), **DISTANT STORM** (5 pm,
   RAIN, now and then a faint far flash and its thunder: lightning in RAIN is a third as bright as a STORM's).
+
+## 19 Oct 2026: the arcade, off the map; nothing off the map built until it's needed
+- **THE ARCADE** (owner, 19 Oct 2026, three shots of an arcade, a cafe and a rainy window: "make the arcade look exactly like this? every
+  thing you see. open big like this. give me mockup"; of the mockup https://claude.ai/artifact/YAR4dLzKShrea3HsNYT7qy (`mockups/arcade.html`):
+  "off map", "no people", no changes; `src/058a-arcade.js`): one open room 32 x 22.4 tiles (1.6 tiles and 38 px a metre) on its own lot east
+  of CLUB STATIC (bodega tiles x 480-512, y -104 to -81.6); MORE PLACES has THE ARCADE. The hall: the blacklight carpet (neon shapes glowing,
+  black between), a wood border, two purple neon strips under the ceiling, the pink ARCADE sign with its bulbs, the ARENA door, eleven cabinets
+  (boxes: body, panel, screen, hood, lit marquee, coin door, stick and buttons, side art; RAINBOW RUN striped, ISTANBUL TAKSI yellow, the
+  TELEMAK pair, and others), the SIMULATIONS portal, bean bags, a low table with cups, the rainbow jukebox, the dartboard, NEWSROOM / HIGH
+  SCORES / LEAGUE screens, THERE IS NO CLOUD, IT WORKS ON MY MACHINE. Through a brick wall's end, the cafe: counter and stools, espresso
+  machine, shelves, lit fridge, COFFEE in green neon, two menus, four pendants, the long table with its pink and blue glow and laptops, the
+  hex board game, two CRTs, the cork board, NO BUGS IN HERE / ONLY UNDOCUMENTED FEATURES / 1 PERSON IN THE CAFE (a fixed sign: "no people",
+  it counts nobody), HALL OF FAME, clocks, EXIT. The front: the door and three windows, fogged glass with drops (planes cut with the wall),
+  a bench, cushion and plant; outside a wet street, crosswalk, lamp posts, a tree, ECZANE lit across the road; rain while you're on the lot,
+  its own night air outside. A dark ceiling shown only from inside in the behind and first-person views (the roof still goes for isometric).
+  No people. All text in the game's 3x5 letters. Cost: about 4,000 triangles, 8 lamps (3 purple and pink, the portal, 2 pendants and the
+  long table, the street lamp), no new shader programs (the glass reuses the basic one).
+- **Off the map: built only when someone goes there** (owner: "make sure nobody is downloading off map scenes or anything until they need
+  it"; `offmap(name,lot,fn)` in store.js, `STORE.offGo`, `STORE.offAt`): VCR REPAIR, CLUB STATIC (its people with it) and THE ARCADE are no
+  longer built a few seconds after the start; each is built the moment you pick it in the menu, or stand on its lot (a save, `?at=`,
+  `CLUBGO`), then never again. The town's walkers and the mail don't count them. Measured: the street at the start 522,818 to 478,006
+  triangles, 251 to 238 lamp records. Their code still comes in the page (some 70 KB unminified, about 1% of it); they have no data files to fetch.
+## 19 Oct 2026: the FEEL LAB controller
+
+**A new movement controller to try, the old one untouched** (owner, 19 Oct 2026: "create an avatar using this method for me to test in
+game", with a brief for a Summer Afternoon-style controller: three-mesh-bvh capsule collision, real acceleration and braking, sharp stops,
+coyote time and jump buffering, blended clips, an orbit camera kept out of walls, a tuning panel and a test yard): `087b-feel.js` (physics),
+`087c-feel-anim.js` (clips), `087d-feel-yard.js` (the yard), `087e-feel-panel.js` (panel, debug); details, results and what's verified about
+Summer Afternoon in `docs/FEEL.md`.
+- **Your mannequin, on the new controller**: fixed 1/60 s steps, a capsule against a BVH (the yard's mesh, or on the street the game's walls
+  and ground height), walkable / steep / ceiling contacts, 0.25 m steps, ground snap; camera-relative intent, linear acceleration and
+  braking with a harder reversal; jump height, coyote 0.1 s, buffer 0.12 s, short hop on release; Idle / Walk / Jog / Sprint by the speed you
+  really move, Jump_Start / Jump_Loop / Jump_Land on the physics (the last two restored to `data/ual.json` from before the October trim),
+  each clip at its measured foot speed (walk 1.2, jog 7, sprint 10.7 game metres a second); a little lean and landing squash on the model.
+- **Where**: the menu's MAP, MORE PLACES, **FEEL LAB** (a yard outside town: long wall, both corners, a 0.9 m passage, 14° and 40° ramps,
+  a 55° slope too steep to climb, 0.2 m steps, a 0.45 m block, a low ceiling, a raised platform with a ledge and a 2 m gap; the town's mist
+  moved to the yard's edge while you're in it). In the yard the new controller is always on; on the street only when switched on (the panel,
+  kept in the save, or `?feel=1`).
+- **Keys**: L the panel (presets RESPONSIVE / BALANCED / FLOATY, every setting live, reset, save, export / import JSON with checks), O the
+  debug display (state, speeds, timers, clip weights, the capsule, contact normals, the collision mesh, the camera's rays), T back to the
+  yard's spawn (R stays "turn the view").
+- **Cost**: the physics 0.017 ms a step; the yard 1,238 triangles, one draw, drawn only near it; no lights; nothing loaded until it's used.
+- `tests/feelcheck.cjs`: 26 checks (speeds, stops, reversal, walls, corners, passage, slopes, steps, ledge, coyote, buffer, held jump,
+  ceiling, 30-144 fps, clips, blur, import, camera), all pass.

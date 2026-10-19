@@ -32,7 +32,7 @@ process.on('unhandledRejection',e=>{ errs.push('TEST '+String(e&&e.message||e).s
   await shot('grass',()=>{ const M=__dbg.MAPK, P=M.PARK; STORE.goTo(M.BOD.XS(P.round[0]+(P.ox||0)+9),M.BOD.ZS(P.round[1]+(P.oy||0)+6),'up'); });
   await pg.keyboard.down('w'); await pg.waitForTimeout(2500); await pg.keyboard.up('w'); await shot('grass-trail',null,800);
   rep.lawn=await pg.evaluate(()=>window.WEEDS&&{n:WEEDS.lawnN,chunks:WEEDS.chunks&&WEEDS.chunks.size});
-  await pg.evaluate(()=>window.KILLME&&KILLME()); await shot('ghost',null,6000);
+  await pg.evaluate(()=>window.KILLME&&KILLME()); await shot('ghost',null,12000);
   rep.dead=await pg.evaluate(()=>!!(__dbg.VIT.dead));
   await shot('bath-in',()=>{ const M=__dbg.MAPK, G=M.BOD.GD, r=G.r; let best=null; for(const X of [M.BOD.X,M.BOD.XS])for(const Z of [M.BOD.Z,M.BOD.ZS]){ STORE.goTo(X((r[0]+r[2])/2),Z((r[1]+r[3])/2),'up'); if(G.inside()){ best=1; break; } } window.__bathPick=best; },2500);
   await shot('bath-rise',null,2500); await shot('bath-back',null,7000);

@@ -7,7 +7,7 @@ process.on('unhandledRejection',e=>{ errs.push('TEST '+String(e&&e.message||e).s
   await pg.goto('file://'+PAGE+'?fresh=1&hour=13&wx=CLEAR',{waitUntil:'commit'});
   for(let i=0;i<900;i++){ await pg.waitForTimeout(500); if(await pg.evaluate(()=>!!window.__dbg))break; }
   await pg.waitForTimeout(5000);
-  const shot=async(n,f,w=5000)=>{ try{ if(f)await pg.evaluate(f); await pg.waitForTimeout(w); await pg.screenshot({path:path.join(OUT,n+'.png')}); }catch(e){ errs.push(n+': '+e.message.slice(0,200)); } };
+  rep.cams={}; const shot=async(n,f,w=5000)=>{ try{ if(f)await pg.evaluate(f); await pg.waitForTimeout(w); await pg.screenshot({path:path.join(OUT,n+'.png')}); rep.cams[n]=await pg.evaluate(()=>{ const c=__dbg.camO(); return [c.position.toArray().map(v=>+v.toFixed(2)),c.rotation.toArray().slice(0,3).map(v=>+(+v).toFixed(2)),__dbg.you(),c.near,c.far]; }); }catch(e){ errs.push(n+': '+e.message.slice(0,200)); } };
   await pg.evaluate(()=>STORE.ensure&&STORE.ensure());
   await shot('outside',()=>{ const M=STORE.main.play, B=__dbg.MAPK.BOD; STORE.goTo(B.X(M.cx),B.Z(M.B.y1+3),'up'); },4000);
   await pg.mouse.move(480,270); for(let i=0;i<4;i++){ await pg.mouse.wheel(0,500); await pg.waitForTimeout(150); }

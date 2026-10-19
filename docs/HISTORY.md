@@ -1912,3 +1912,22 @@ the heading easing into turns. The head mockups (two rounds of six) were never p
   under the weather's grey and fog and behind the mist's clouds; on only while the stars are (half out or more), never near the horizon.
   **Stars in the mist**: the MIST look's sky painted over the stars, so none had shown at night since it came in; they and the band show now
   in the gaps between its clouds. Cost: a few noise lookups a sky pixel, at night only; no triangles, lights or programs.
+
+**His walk and run smooth, with a captured gait** (owner, 19 Oct 2026: "the character runs way too jagged, needs to be way smoother,
+flowing"; "hes also walking with his arms sticking straight forward like a droid"; "make sure he has a natural gait and run, like tomb
+raider or prince of persia"; of the rig's run drawn from the side, "this doesnt make any sense is he falling?"). For you only (`st.smooth`,
+`071-main-11.js`; the street's Walkers keep their pixel steps), in the rig (`001-rig.js`):
+- **No pixel steps**: his hips' bob, the drop that lets a leg reach, the whole-body settle on the floor and the head were each rounded to
+  whole pixels; now exact.
+- **The run's flight**: with both feet up, the rig pulled his hips down toward where the feet would land (to 10 of 18) and snapped them
+  back on landing; now they ride a small arc from where he left the ground. His hips ease up (about 70 ms) and drop at once (so a leg
+  always reaches its planted foot; easing the drop too made feet fall out of reach and the rig's quick steps jerk them, so not that).
+- **Motion capture** (`tools/gait-bake.cjs` → `data/gait.json`, 17 KB): one cycle of a CMU walk and one of a run (subject 35, trials 01
+  and 17), heel-strike to heel-strike, fitted to his rig at 32 points (the existing `mocap-rig.cjs` fit). As he walks or runs (by his
+  pace, walk to run blended), his hips' turn, tilt and roll, spine's bend and twist, head's nod and both arms are the recording's, by his
+  step's phase; his swinging leg's path mid-swing too (his feet still land and lift where the rig plants them).
+- **The run's contact**: each foot on the ground 30% of a run cycle (was 40%; real running about 25-30%), the step shortened to match (his
+  speed unchanged), so a planted foot lifts before it is far behind him.
+Measured (`tests/walksmooth.cjs`, `tests/footworld.cjs`, both now with the smooth mode unless `STEPPED=1`): hip jolts a second walking 24
+to 4, running 36 to 22; planted feet don't slide; no foot jumps between frames. **Open**: his run covers some 8 leg-lengths a second (a
+jog is about 4), so with his short legs the back leg still reaches far behind at a run: his call (a slower run, or longer legs).

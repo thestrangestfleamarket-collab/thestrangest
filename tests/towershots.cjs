@@ -27,5 +27,8 @@ process.on('unhandledRejection',e=>{ errs.push('TEST '+String(e&&e.message||e).s
   rep.upTrace=await pg.evaluate(async()=>{ const o=[]; for(let i=0;i<12;i++){ const u=__rigst().up; o.push((u?u.name+':'+u.t.toFixed(2)+':'+u.held:'-')+'|'+SQUIRREL.N.mode+':'+(SQUIRREL.N.wT||0).toFixed(2)); await new Promise(r=>setTimeout(r,500)); } return o; });
   await shot('wave-after',null,1000);
   await look('tw',.55,.8); await shot('night',()=>DN.set('night'),3000);
+  await pg.evaluate(()=>{ DN.set('day'); __dbg.setRes(8); const G=GTOWER.ring(), r=G.RI-.36, N=SQUIRREL.N; N.mode='post'; N.li=3; N.st.x=G.X(G.cx); N.st.z=G.Z(G.cy+r); SQUIRREL.A.act=''; N.tT=60; N.aT=60; }); await pg.waitForTimeout(2500);
+  for(const [n,f] of [['c-idle',()=>{ SQUIRREL.A.act=''; }],['c-scan',()=>{ SQUIRREL.A.act='scan'; SQUIRREL.A.t=0; SQUIRREL.N.aT=60; }],['c-salute',()=>{ SQUIRREL.A.act='salute'; SQUIRREL.A.t=0; SQUIRREL.N.aT=60; }],['c-wave',()=>{ SQUIRREL.N.mode='wave'; SQUIRREL.N.wT=60; SQUIRREL.A.act='wave'; }]]){
+    await look('sq',0,7); await pg.evaluate(f); await pg.waitForTimeout(1500); await pg.screenshot({path:path.join(OUT,n+'.png'),clip:{x:280,y:110,width:400,height:260}}); rep[n]=await pg.evaluate(()=>{ const B=SQUIRREL.N.B; return ['armL','armR','head'].map(k=>[k,+B[k].rotation.x.toFixed(2),+B[k].rotation.y.toFixed(2),+B[k].rotation.z.toFixed(2)]); }); }
   rep.tris=await pg.evaluate(()=>__dbg.tris());
   fin(); await b.close(); })();

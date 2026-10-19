@@ -1688,3 +1688,10 @@ clean. The login is kept.
   Cost: Rapier (0.76 MB compressed from jsDelivr, cached after) loads in the background as the game starts, not blocking it.
 - **Bodies bump** (`076-npc-map.js`, `N.push`): walking into a character shares the overlap (he gives way part of it, more the faster you
   come, never into a wall), and running into one shoves him back a step (a push that dies away in a fraction of a second). No new cost.
+
+**Zoom** (owner, 18 Oct 2026: "allow me to zoom out 2 more levels. also when i try to zoom out and i cant anymore it skips instead of just
+not letting me"): `UI.MAXW` 19 to 30 tiles; at the limit the wheel does nothing (no zoom-to-cursor shift, `094-ui.js`).
+
+**The sun was gone** (owner, 18 Oct 2026: "no matter what time i make it its staying dark"): the comment strip of 18 Oct (no comments in
+src) took `scene.add(sunL,sunL.target)` with it, as it sat after a `//` note on its line, so the sun never lit anything and every hour
+looked like night. Back in `129-clock.js`.

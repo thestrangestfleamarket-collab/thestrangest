@@ -21,11 +21,13 @@ process.on('unhandledRejection',e=>{ errs.push('TEST '+String(e&&e.message||e).s
   await shot('night',()=>{ window.DN&&DN.set&&DN.set('night'); TP(__B.cx,__B.f[3]-.6); return ST(); },4000); await pg.evaluate(()=>window.DN&&DN.set&&DN.set('day'));
   await pg.evaluate(()=>KILLME()); for(let i=0;i<60;i++){ await pg.waitForTimeout(1000); if(await pg.evaluate(()=>!(window.RAGON&&RAGON())))break; }
   await shot('ghost-in',()=>{ TP(__B.cx,__B.yE+.45); return ST(); },3000);
-  rep.walk={out:[]}; { let bd=-1e9; for(const key of ['w','a','s','d']){ const d0=await pg.evaluate(()=>{ TP(__B.cx,__B.yE+.45); return 0; }); await pg.waitForTimeout(400);
-      const a=await pg.evaluate(()=>{ const B=__dbg.MAPK.BOD; return Math.hypot(__dbg.you().x-B.X(__B.cx),__dbg.you().z-B.Z(__B.yE-1.4)); }); await pg.keyboard.down(key); await pg.waitForTimeout(400); await pg.keyboard.up(key);
-      const c=await pg.evaluate(()=>{ const B=__dbg.MAPK.BOD; return Math.hypot(__dbg.you().x-B.X(__B.cx),__dbg.you().z-B.Z(__B.yE-1.4)); }); rep.walk.out.push(key+':'+(a-c).toFixed(2)); if(a-c>bd){ bd=a-c; rep.walk.best=key; } }
-    await pg.evaluate(()=>TP(__B.cx,__B.yE+.45)); await pg.waitForTimeout(400); }
-  if(rep.walk.best){ await pg.keyboard.down(rep.walk.best); for(let i=0;i<200;i++){ await pg.waitForTimeout(150); if(await pg.evaluate(()=>ST().inPool))break; } await pg.waitForTimeout(300); await pg.keyboard.up(rep.walk.best); }
+  rep.walk={out:[]}; { const V={}; for(const key of ['w','d']){ await pg.evaluate(()=>TP(__B.cx,__B.f[3]-.8)); await pg.waitForTimeout(500); const a=await pg.evaluate(()=>__dbg.you());
+      await pg.keyboard.down(key); await pg.waitForTimeout(1200); await pg.keyboard.up(key); const c=await pg.evaluate(()=>__dbg.you()); V[key]=[c.x-a.x,c.z-a.z]; }
+    const want=await pg.evaluate(()=>{ const B=__dbg.MAPK.BOD; return [B.X(__B.cx)-B.X(__B.cx),B.Z(__B.yE-1.4)-B.Z(__B.yE+.45)]; }); let best=null, bc=-2;
+    for(const combo of [['w'],['s'],['a'],['d'],['w','a'],['w','d'],['s','a'],['s','d']]){ let x=0,z=0; for(const k of combo){ const v=k==='w'?V.w:k==='s'?V.w.map(q=>-q):k==='d'?V.d:V.d.map(q=>-q); x+=v[0]; z+=v[1]; }
+      const c=(x*want[0]+z*want[1])/(Math.hypot(x,z)*Math.hypot(...want)||1); rep.walk.out.push(combo.join('')+':'+c.toFixed(2)); if(c>bc){ bc=c; best=combo; } }
+    rep.walk.best=best; rep.walk.V=V; await pg.evaluate(()=>TP(__B.cx,__B.yE+.45)); await pg.waitForTimeout(500); }
+  if(rep.walk.best){ for(const k of rep.walk.best)await pg.keyboard.down(k); for(let i=0;i<300;i++){ await pg.waitForTimeout(150); if(await pg.evaluate(()=>ST().inPool))break; } await pg.waitForTimeout(300); for(const k of rep.walk.best)await pg.keyboard.up(k); }
   rep.afterWalk=await pg.evaluate(()=>ST()); if(!rep.afterWalk.inPool){ await pg.evaluate(()=>TP(__B.cx-1.8,__B.yE-1.5)); rep.teleportedIn=true; }
   rep.dd=[]; { let k=0; const T=[.05,.8,1.6,2.4]; for(let n=0;n<600&&k<T.length;n++){ await pg.waitForTimeout(100); const d=await pg.evaluate(()=>window.DEADDBG&&DEADDBG()); if(d&&d.rise>=T[k]){ rep.dd.push(d); await pg.screenshot({path:path.join(OUT,'sink'+k+'.png')}); k++; } } }
   for(let n=0;n<600;n++){ await pg.waitForTimeout(100); if(await pg.evaluate(()=>{ const f=document.getElementById('subfade'); return f.textContent==='REFRESHED'&&+getComputedStyle(f).opacity>.9; }))break; }

@@ -3126,3 +3126,29 @@ versions) and put them in random spots in park and thats where specific mushroom
   FORAGING; one above your reach (its difficulty over your skill + 15, the keen-eye potion counting) never comes away: as before,
   YOU FAIL TO PICK IT CLEANLY, or now and then IT CRUMBLES IN YOUR HAND (owner: "no use the old verbiage about how you fail to pick
   it cleanly or soemthing").
+
+## 19 Oct 2026: the Moon Shrine moves into the back half of THE BATH HOUSE as a healing pool
+
+(owner: "lets mevo the moon temple indoor into the backhalf of the dojo. make the whole thing a pool, crystal clear healing water,
+that is where yo jump in as a ghost and sink down slowly (appear outside refreshed loading screen)")
+- **The pool** (`055-ghostdojo.js`, built on entry with the rest of the inside): the back half of the bath house is one pool, wall to
+  wall, of clear cyan water (one see-through plane at just under the floor, rippling in 3 flat bands, rings where you go in), over a
+  stone basin sunk into the ground (the ground under it holed, `GDK.pool`): a shallow ledge along the front (wading, knee deep) and
+  the deep part behind it, pale flagstones with glowing seams and two inlaid gold crescent moons on the bottom. The basin's walls are
+  one-sided so the cut-away view looks in. The old hinoki tub in the middle is gone; the benches, buckets and stools moved to the
+  front half; the steam rises off the pool.
+- **The Moon Shrine's look** (its own makers, `033`/`034`, `STOREK.shrine`): its mossy stone for the pool's coping (open in the middle,
+  three steps going down), the red vine-wrapped gate with its two lanterns standing over the steps, the robed statue with the gold
+  halo on a stone island at the back, two stone garden lanterns on rocks in the back corners, blossom clumps on islets, ferns at the
+  coping's ends, four floating paper lanterns, and the alcove's picture now a full moon over moonlit water. The shrine's six
+  butterflies came with it (they perch on the blossoms, the gate and the statue).
+- **Coming back**: a ghost walks (or jumps) through the gate into the water; it sinks slowly to the bottom (about 2.6 s, eased, the
+  sheet calm), fades in the last second, the screen goes black with REFRESHED, and you stand outside the door alive in the white
+  bathrobe, health and stamina full, "You feel refreshed." (`103a-death.js`). Walking into the bath house no longer does it; the
+  pool does. **Living players** go in too: wading on the ledge, swimming in the deep part (`BOD.GD.feed`, as the lake).
+- **Gone from the park**: the Moon Shrine room, its koi pond and pond water, `STORE.shrineFix`/`shrineGround` (the ground hook is now
+  the pool's, `BOD.GD.ground`) and the park's, weeds' and flowers' keep-outs around it (that ground is lawn and trees now). The
+  bath attendant and THE BATHS teleport use the front half (`BOD.GD.floor`).
+- Cost: inside only, built on entry: the interior draws about 51,000 triangles; lights inside stay at 8 (two candles, two andons,
+  the two stone lanterns, the pool's cyan glow, the statue's halo; the back corners' candles went); one new small shader program
+  (the water plane); nothing at start.

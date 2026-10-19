@@ -190,7 +190,6 @@ const AV={on:false};
   AV.open=t=>{ if(t)tab=t==='tex'?'look':t==='outl'||t==='shade'?'style':t; if(MAPED.on)MAPED.toggle(); if(WE.on)WE.toggle(); if(!ED.on){ ED.enter(true); view0=UI.view; if(UI.view!=='map'){ UI.setView('map'); pitchTo=clampP(0.22); ppuTo=Math.min(240,PPU*3.2); } } else ED.P.hidden=true;
     AV.on=true; setSculpt(tab==='body'&&sculpt); posing(); P.hidden=false; draw(); };
   const exit0=ED.exit; ED.exit=()=>{ holdB(false); who='you'; const v=view0; view0=null; AV.on=false; sculpt=false; P.hidden=true; if(v&&UI.view!==v)UI.setView(v); exit0(); };
-  AV.toggle=()=>{ if(AV.on&&!P.hidden)ED.exit(); else AV.open(); };
   LOOKS.open=()=>AV.open('look');
   { const st0=LOOKS.stats; LOOKS.stats=(hp,st)=>{ st0(hp,st); if(P.hidden)return; $('#avhp').style.width=Math.round(hp*100)+'%'; $('#avst').style.width=Math.round(st*100)+'%'; }; }
 }

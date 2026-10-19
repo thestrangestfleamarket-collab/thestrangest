@@ -2,7 +2,7 @@
 
 A separate project from the game: the owner (Bralynn) is building **a new version of The Strangest Flea Market in three.js**, one
 piece at a time. It is **not** the live game and never ships to it. The live game is the repo `bralynnb/tsfm` (thestrangestfleamarket.com);
-this repo is `bralynnbell/thestrangest`.
+this repo is `bralynnb/thestrangest` (once `bralynnbell/thestrangest`, the owner's old GitHub name).
 
 ## The game's repo: data only, never the rules
 
@@ -1645,6 +1645,29 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   characters walking the alley and the promenade. Found on the way: `build.py`'s glob took only `NNN-` names, so an inserted `NNNa-` file (as
   CLAUDE.md suggests) was never built; it takes `NNN*-` now.
 
+- **A controller, as the old game had it** (owner, 19 Oct 2026: "add the controller abilities from the old game to this game (allow
+  controllers to paly) all same tusff we had"; `162a-pad.js`, from the old game's `47-gamepad.js`): a standard (Xbox or PlayStation) pad
+  plays as the keyboard does, its buttons sent as the very keys (as they are bound in KEYS), read once a frame only while one is plugged in.
+  Left stick walks any way at all (`PAD.mv`), right stick looks round (BEHIND, FIRST) or spins the view (ISOMETRIC); A jump, dive; B back,
+  closes a box; X uses what you face or stand by (`UI.useNear`: the double click's things), else punches; Y kick; LB / RB turn the view
+  (Q / E); LT roll; RT held run, and with the D-pad up / down zoom; L3 the next view (V); R3 resets the view (0); VIEW / CREATE what you can do
+  (?); START the menu; D-pad right the pack (I). In a menu or a box the stick or D-pad moves a highlight between its controls, A presses, A takes
+  hold of a slider (left / right moves it), left / right steps a list, LB / RB the tabs, B back; nothing walks. The buttons rebind in KEYS (THE
+  CONTROLLER, with a pad plugged in; kept as `padkeys`), use and punch share X. A PlayStation pad shows its own names and face-button pictures.
+  The old game's card for things in reach and L3's nameplates have no match here yet. Cost: nothing drawn, no lights, nothing run without a pad.
+  `tests/padcheck.cjs` (a made-up pad).
+
+- **Free 360, no snapping** (owner, 19 Oct 2026: "i want full 360 view no snapping to views when free view. if y ou press q or e it will
+  cut to that shot, (not rotate)", his pick "Isometric drag spins 360", then "in 3rd person view no snapping at all", "in 1st person view no
+  snapping at all either"): in ISOMETRIC a right drag (or Shift + drag, or the controller's right stick) spins the view freely all the way
+  round, staying where you leave it; Q / E (and R) cut straight to the next of the four angles from wherever it is (`UI.isoStep`), no turn.
+  BEHIND no longer swings back to his back when he walks (the 17 Oct "swings back once he walks" is gone): the camera stays where you
+  turned it. FIRST PERSON never swung on its own; it stays as it was. Entering a place still sets that place's own angle.
+
+- **The avatar editor in its own menu tab** (owner, 19 Oct 2026: "get rid of shortcut for avater editor, just put it in tab in menu"):
+  Shift+K no longer does anything; the menu has an AVATAR tab (before KEYS) with OPEN THE AVATAR EDITOR, EDIT HIS SHAPE and YOUR
+  LOOKS (moved there from DISPLAY's HIM row). A double click on yourself still opens your looks.
+
 ## The website moves here (18 Oct 2026)
 
 **The white screen** (owner, 18 Oct 2026: "https://thestrangestfleamarket.com/ is just shownig white screen now"): the copy of THE MARKET
@@ -1746,3 +1769,46 @@ clip plane on the house's materials, at your floor), so from a flat's balcony th
   (`161-perf.js`): `PERFX.bounds` gave the walker a fixed bounding sphere at the world's middle, so far from it (here, the new platform) you
   vanished from some angles; the walker is never culled now. **Left out**: the black card, the train arriving, the force field and passport
   form (not wanted); riding a train (the car is parked); `tools/metro-bake.py` kept in case the Metro comes back.
+## 19 Oct 2026: three new avatars on standard bones
+
+**Three new avatars, the Walker untouched** (owner, 19 Oct 2026: "is there a total package we could use that gives me the character,
+movements, etc all in one?"; his mockups, https://claude.ai/artifact/9938S4GnmWdHACvY5PmAMG; "lets make all 3 options in game";
+"dont change the current avatar, add those as 3 new ones"): GRAPHICS gets an AVATAR row: WALKER (the default, as he was), WALKER ON CLIPS,
+MANNEQUIN, VROID; `?avatar=clips|mannequin|vroid`; kept in the save (`avatar`). `src/087a-avatars.js`. Each new one is its own body
+standing where you stand (the Walker hidden while it's chosen, nothing of his changed); the game's rig still moves you, and the body plays
+the standard animation library's clips for what you're doing (standing easy, walk / jog / sprint by your pace, a jump, the punches, roll,
+crouch, sit, swim, dance, falling). All three share one skeleton layout, so any clip library made for it (Mixamo, Quaternius, CMU) can be
+baked in for all three.
+- **WALKER ON CLIPS**: a copy of the Walker as the game draws him (his pieces and paint, read out of the built page by
+  `tools/hybrid-probe.cjs`, `tools/hybrid-bake.py` → `data/hybrid.json`) set on the standard skeleton sized to his proportions. A copy:
+  the avatar editor's changes reach him only when re-baked. 14,870 triangles (as the Walker).
+- **MANNEQUIN**: the animation library's own body (`data/ual.json`, back from 18 Oct), in skin, briefs, jeans, shirt, shoes and hair as
+  on 17 Oct. About 7,000 triangles.
+- **VROID**: a VRoid Studio character (pixiv's free sample, `data/full/vroid.vrm`; `tools/vrm-bake.py` drops the face expressions,
+  bump maps and thumbnail, textures to 512 px → `data/vroid.json`, 2.5 MB). Loaded only when first chosen (`__LAZY__` in build.py:
+  inline in the artifact, fetched on demand on the website), with three-vrm from the CDN. 36,470 triangles, its own toon shading.
+- The library's clips trimmed to the 17 the code names, at 12 fps (`tools/trim-clips.py`).
+
+**The Walker on clips replaces the Walker** (owner, 19 Oct 2026: "can you send this avatar shape to the main game?"; his picks: WALKER ON
+CLIPS, "Replace the Walker"; then, his shot of his own bald, plainer Walker on the clips: "I sill look like this"): you are the WALKER ON
+CLIPS body itself, the copy of the default Walker with his hair and paint (`data/hybrid.json`, `BUILD.walker` in `087a-avatars.js`), on
+the standard skeleton and its clips, from the start; the hand-animated Walker is hidden (still drawn while the avatar editor is open, so
+the editor has someone to show). AVATAR: WALKER, MANNEQUIN, VROID. The avatar editor's looks don't reach this body until it is baked again
+(`node tools/hybrid-probe.cjs && python3 tools/hybrid-bake.py`, after a `MIN=0` build). 14,870 triangles, as the Walker.
+
+## 19 Oct 2026: REPORT A BUG and the owner's queue
+
+**Report a bug** (owner, 19 Oct 2026: "add a report bug feature that lets users report a bug and send screen shot and it autotmatically
+goes to you"; asked where and how fast: "1 . all 2 .instantly , just queue them all for now", "build queue for me to approve"): the menu's
+last tab, REPORT A BUG, and F8 anywhere (`136a-bugs.js`). Opening it takes the picture of the game behind the menu (the next frame read off
+the canvas, so nothing costs a frame while playing; JPEG, under 300 KB), and a box asks what went wrong. SEND stores the words, the picture
+and where it happened (position, level, nearest place, hour, view, build, screen, browser, the page's last errors) at once:
+- on the website: Supabase's `bug_reports` (the old game's table, reused) and `bug_shots` (new: the picture as text, so a session can read
+  it with SQL); a player sends only their own, only admins (`admins`) read and mark them. The login is the door's (cookie `tsfm-pass`,
+  renewed from the door's saved session when it runs out).
+- on the claude.ai link: the page's `db`, `bugs/<id>` and `bugshots/<id>` (published with `{db:{}, user:{}}`; `user` tells the owner).
+**The queue** is under the report box for the owner only (an admin on the website, the artifact's owner on claude.ai): NEW, APPROVED, LATER,
+FIXED, NO, each report with its words, where, PICTURE and GO THERE (puts you at the spot, facing the same way, at the same hour).
+For now nothing is fixed on its own: every report waits in NEW for the owner to APPROVE. A session asked to "work the queue" takes the
+APPROVED ones (see CLAUDE.md), fixes each, and marks it FIXED. The 16 reports already in `bug_reports` are from the old 2D game.
+`tests/bugcheck.cjs art|site` sends one with a stand-in store and approves it.

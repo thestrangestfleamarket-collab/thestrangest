@@ -7,7 +7,8 @@ src = sorted(glob.glob('src/[0-9][0-9][0-9]*-*'))
 one = lambda name: read(next(f for f in src if re.search(r'/\d{3}-' + name + r'\.js$', f)))
 bv = str(int(time.time()))
 b64 = lambda f: json.dumps('data:image/png;base64,' + base64.b64encode(open(f, 'rb').read()).decode())
-data = lambda t: re.sub(r'__B64__\("([^"]+)"\)', lambda m: b64(m.group(1)), re.sub(r'__DATA__\("([^"]+)"\)', lambda m: read(m.group(1)), t))
+lazy = lambda t: re.sub(r'__LAZY__\("([^"]+)"\)', lambda m: '(()=>Promise.resolve(' + read(m.group(1)) + '))', t)
+data = lambda t: re.sub(r'__B64__\("([^"]+)"\)', lambda m: b64(m.group(1)), re.sub(r'__DATA__\("([^"]+)"\)', lambda m: read(m.group(1)), lazy(t)))
 
 page = ''.join(read(f) for f in src).replace('__BUILDV__', bv)
 i = page.index('<script type="module">') + len('<script type="module">')
@@ -21,10 +22,11 @@ shutil.rmtree('dist/g', ignore_errors=True)
 os.makedirs('dist/g')
 k = raw[:i].rindex('<script>')
 used = sorted(set(re.findall(r'__DATA__\("([^"]+)"\)', body)))
-for f in used:
+lazies = sorted(set(re.findall(r'__LAZY__\("([^"]+)"\)', body)))
+for f in used + lazies:
     shutil.copy(f, 'dist/g/' + os.path.basename(f))
 pre = 'const __DP=Object.fromEntries([' + ','.join(json.dumps(os.path.basename(f)) for f in used) + '].map(n=>[n,fetch("/g/"+n).then(r=>{ if(!r.ok)throw new Error(n+" "+r.status); return r.json(); })]));\n'
-game = pre + re.sub(r'__DATA__\("([^"]+)"\)', lambda m: '(await __DP[' + json.dumps(os.path.basename(m.group(1))) + '])', body)
+game = pre + re.sub(r'__LAZY__\("([^"]+)"\)', lambda m: '(()=>fetch("/g/"+' + json.dumps(os.path.basename(m.group(1))) + ').then(r=>r.json()))', re.sub(r'__DATA__\("([^"]+)"\)', lambda m: '(await __DP[' + json.dumps(os.path.basename(m.group(1))) + '])', body))
 open('dist/g/game.js', 'w').write(data(game))
 seg = raw[k + 8:i - len('<script type="module">')]
 open('dist/g/rig.js', 'w').write(data(seg[:seg.index('</script>')]))
@@ -45,7 +47,7 @@ def hashed(f):
     os.replace(f, n)
     return os.path.basename(n)
 g = read('dist/g/game.js')
-for f in used:
+for f in used + lazies:
     g = g.replace(json.dumps(os.path.basename(f)), json.dumps(hashed('dist/g/' + os.path.basename(f))))
 open('dist/g/game.js', 'w').write(g)
 m = read('dist/g/market.html').replace('__RIG__', hashed('dist/g/rig.js')).replace('__GAME__', hashed('dist/g/game.js'))

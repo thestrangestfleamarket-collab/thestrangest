@@ -11,6 +11,6 @@ window.R={p:Array.from(P),i:Array.from(g.index.array)};</script></body></html>`;
 const sv=http.createServer((q,s)=>s.end(q.url==='/f.fbx'?fs.readFileSync(R+'/data/full/humanoid.fbx'):PAGE)).listen(8766);
 (async()=>{ const b=await chromium.launch(), pg=await b.newPage(); await pg.goto('http://localhost:8766/'); await pg.waitForFunction(()=>window.R,null,{timeout:60000});
   const r=await pg.evaluate(()=>R), b64=a=>Buffer.from(a.buffer).toString('base64');
-  const U=JSON.parse(fs.readFileSync(R+'/data/ual.json')).ual, {names,parent,t,q,ibm}=U.rig;
+  const U=JSON.parse(fs.readFileSync(R+'/data/full/ual.json')).ual, {names,parent,t,q,ibm}=U.rig;
   fs.writeFileSync(R+'/data/humanoid.json',JSON.stringify({p:b64(new Float32Array(r.p)),i:b64(new Uint16Array(r.i)),tris:r.i.length/3,tall:U.tall,rig:{names,parent,t,q,ibm}}));
   console.log('data/humanoid.json',r.p.length/3,'corners',r.i.length/3,'triangles'); await b.close(); sv.close(); })();

@@ -1909,3 +1909,28 @@ relaxes 17 Oct's "leave the faces as complex as they are" for these eight). The 
 eye sockets and the belts lose their colour), the small ones (belts, buckles, pads, eyes: under 250 faces) kept whole and the middling ones
 (the mage's hat, the reaper's cloak, the breastplates) to half; cut to a fifth they broke. Checked side by side on their sheets. The
 pawns' full meshes now kept in `data/full/pawns.json`. `data/pawns.json` 1.62 MB → 0.93 MB, `data/skel.json` 375 → 232 KB.
+## 19 Oct 2026: a tidier, lighter start; the dungeon a loading world
+
+From a look over the whole code (owner, 19 Oct 2026: "take a look at the overall game code and structure and look for obvious
+improvements"; of the list, 2-13 "do it", and "i want dungeon to be a 'loading world' like subway (that way it doesnt load at first)"):
+- **The dungeon loads when you go in** (`077-npc-skel.js`): its KayKit skeletons (Warrior, Mage, Minion, Rogue, the gold one) and
+  `data/skel.json` are no longer built at the start (`__LAZY__`; on the website fetched then). Three treads down the castle's stair the
+  screen goes black with ENTERING DUNGEON (the subway's fade), you're set at the stair's foot, they're built under the black, and it
+  fades in; five treads up from the foot, LEAVING DUNGEON, and you're at the stair's top. Arriving any other way (the teleport list)
+  fades and builds the same. With `?trouble=1` (the troublemakers) they're built at the start as before. `DUNDBG()` for tests.
+- **One decoder, one loader** (`003a-skin.js`): `B64` (the browser's own base64 reader where it has one, else a plain loop: about 5x
+  faster than the old `Uint8Array.from(atob())`, which was in 12 places) and `SKIN` (points, geometry, rig, clips), shared by the
+  skeletons, the dragons, the creatures and the pawns (four copies before). Each model is decoded once and copied for each copy of
+  it (the 18 creatures, 24 pawns, 10 dragons decoded every copy before), and each clip set built once and shared.
+- **three.js minified** (`three.module.min.js`, 88 KB less); the unused three-vrm entry out of the import map. **The website's
+  shell** (`dist/g/market.html`) now asks for three.js, its addons and the start's data files at once (`modulepreload`, `preload`),
+  so they come down alongside `game.js` instead of after it.
+- **Frames**: the sun's shadow redrawn only when it moves (you walk) or 12 times a second (was every frame); the lamp's shadow only
+  when you move within its reach (was whenever you moved anywhere); hidden characters (sent home, troublemakers away) no longer
+  animate, their minds still run; the golems no longer split every triangle in four before rounding (12 golems were about 68,000
+  triangles; now a quarter of that); the dragons' tail and neck bends without updating all 76 bones' matrices each time; a few
+  objects made each frame now kept and reused. The river's extra picture of the scene left as is (halving it would change the water).
+- **Tidy**: the tests of removed things gone (figact, figshot, tpose, bodymock; civiccheck's vehicles line); `data/ual.json` (only a
+  bake input) moved to `data/full/`.
+- **Physics**: Rapier stays for now (his pick that morning). He asked whether so big an engine is needed: Rapier is about 690 KB
+  compressed, cannon-es about 77 KB; options put to him.

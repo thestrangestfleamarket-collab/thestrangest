@@ -1,15 +1,5 @@
-{ const PW=PAWNS, b=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0)), f32=s=>new Float32Array(b(s).buffer), i16=s=>new Int16Array(b(s).buffer), u16=s=>new Uint16Array(b(s).buffer);
-  const pts=M=>{ const q=i16(M.p), P=new Float32Array(q.length); for(let i=0;i<q.length;i++)P[i]=(q[i]+32500)*M.sc+M.lo[i%3]; return P; };
-  const geomOf=M=>{ const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(pts(M),3)); g.setAttribute('color',new THREE.BufferAttribute(b(M.c),3,true)); g.setIndex(new THREE.BufferAttribute(u16(M.i),1));
-    g.setAttribute('reg',new THREE.BufferAttribute(Float32Array.from(b(M.r)),1)); g.setAttribute('sh',new THREE.BufferAttribute(new Float32Array(M.n),1));
-    g.setAttribute('skinIndex',new THREE.Uint8BufferAttribute(b(M.j),4)); g.setAttribute('skinWeight',new THREE.BufferAttribute(b(M.w),4,true)); return g; };
-  const rigOf=R=>{ const bones=R.names.map((n,i)=>{ const B=new THREE.Bone(); B.name=n; B.position.fromArray(R.t[i]); B.quaternion.fromArray(R.q[i]); if(R.s)B.scale.fromArray(R.s[i]); return B; });
-    R.parent.forEach((p,i)=>{ if(p>=0)bones[p].add(bones[i]); }); const ibm=f32(R.ibm); return {bones,skeleton:new THREE.Skeleton(bones,bones.map((_,i)=>new THREE.Matrix4().fromArray(ibm,i*16)))}; };
-  const R0=PW.hero_m.rig, CLD=PW.hero_m.clips, CLIPS={};
-  for(const [name,Cl] of Object.entries(CLD)){ const BN=R0.names, T=Array.from({length:Cl.n},(_,k)=>k*Cl.dur/(Cl.n-1)), Q=i16(Cl.q), tracks=[];
-    BN.forEach((bn,j)=>{ const v=new Float32Array(Cl.n*4); for(let k=0;k<Cl.n;k++)for(let c=0;c<4;c++)v[k*4+c]=Q[(k*BN.length+j)*4+c]/32000; tracks.push(new THREE.QuaternionKeyframeTrack(bn+'.quaternion',T,v)); });
-    for(const [bn,p] of Object.entries(Cl.p))if(bn!=='root')tracks.push(new THREE.VectorKeyframeTrack(bn+'.position',T,f32(p)));
-    CLIPS[name]=new THREE.AnimationClip(name,Cl.dur,tracks); }
+{ const PW=PAWNS, geomOf=M=>SKIN.geom(M), rigOf=R=>SKIN.rig(R);
+  const R0=PW.hero_m.rig, CLD=PW.hero_m.clips, CLIPS=SKIN.clips(CLD,R0.names,false);
   const HOLD=QS.get('pawnclip'), WALKC=QS.get('pawnwalk')||'UAL_Walk_Loop', IDLEC=QS.get('pawnidle')||'UAL_Idle_Loop', WALK=1.6, RUNU=5.5, STILLC=new Set(['UAL_Idle_Loop','idle_a','idle_b','sit_floor_idle_a']);
   const PAWNL=[]; window.PAWNL=PAWNL;
   const UNIFORM={};
@@ -20,15 +10,7 @@
     const skin=r=>{ const S=sum[r], R_=S[0]/S[3]/255, G_=S[1]/S[3]/255, B_=S[2]/S[3]/255; return R_>.42&&R_>G_&&G_>B_&&R_-B_>.12&&G_/R_>.55&&G_/R_<.92; };
     const turn={}; for(const r in sum)turn[r]=skin(+r)?null:[hs(seed,+r),.75+hs(seed,+r+9)*.5];
     for(let i=0;i<R.length;i++){ const t=turn[R[i]]; if(!t)continue; col.setRGB(c[i*3]/255,c[i*3+1]/255,c[i*3+2]/255); col.getHSL(hsl); col.setHSL((hsl.h+t[0])%1,Math.min(1,hsl.s*1.1+.08),Math.min(.9,hsl.l*t[1])); c[i*3]=col.r*255; c[i*3+1]=col.g*255; c[i*3+2]=col.b*255; } return g; };
-  const boulder=(g,seed)=>{ const A=g.attributes, P0=A.position.array, I0=g.index.array, n0=P0.length/3, mid=new Map(), add={p:[],c:[],r:[],j:[],w:[]}, I=[];
-    const at=(a,b)=>{ const k=a<b?a*65536+b:b*65536+a; let m=mid.get(k); if(m!==undefined)return m; m=n0+add.p.length/3; mid.set(k,m);
-      for(let x=0;x<3;x++){ add.p.push((P0[a*3+x]+P0[b*3+x])/2); add.c.push(A.color.array[a*3+x]); } add.r.push(A.reg.array[a]);
-      const W={}; for(const v of [a,b])for(let x=0;x<4;x++){ const bi=A.skinIndex.array[v*4+x], wt=A.skinWeight.array[v*4+x]; if(wt)W[bi]=(W[bi]||0)+wt; }
-      const top=Object.entries(W).sort((p,q)=>q[1]-p[1]).slice(0,4), sum=top.reduce((t,e)=>t+e[1],0)||1; for(let x=0;x<4;x++){ add.j.push(top[x]?+top[x][0]:0); add.w.push(top[x]?Math.round(top[x][1]/sum*255):0); } return m; };
-    for(let t=0;t<I0.length;t+=3){ const a=I0[t],b=I0[t+1],c=I0[t+2], ab=at(a,b), bc=at(b,c), ca=at(c,a); I.push(a,ab,ca, ab,b,bc, ca,bc,c, ab,bc,ca); }
-    const cat=(name,arr,T)=>{ const a=A[name], out=new T(a.array.length+arr.length); out.set(a.array); out.set(arr,a.array.length); g.setAttribute(name,new THREE.BufferAttribute(out,a.itemSize,a.normalized)); };
-    cat('position',add.p,Float32Array); cat('color',add.c,Uint8Array); cat('reg',add.r,Float32Array); cat('sh',new Array(add.r.length).fill(0),Float32Array); cat('skinIndex',add.j,Uint8Array); cat('skinWeight',add.w,Uint8Array);
-    g.setIndex(new THREE.BufferAttribute(new Uint32Array(I),1));
+  const boulder=(g,seed)=>{ const I=g.index.array;
     const P=g.attributes.position.array, n=P.length/3, wid=new Int32Array(n), keys=new Map(); for(let i=0;i<n;i++){ const k=Math.round(P[i*3]*1e3)+','+Math.round(P[i*3+1]*1e3)+','+Math.round(P[i*3+2]*1e3); if(!keys.has(k))keys.set(k,keys.size); wid[i]=keys.get(k); }
     const m=keys.size, X=new Float64Array(m*3), nb=Array.from({length:m},()=>new Set()); for(let i=0;i<n;i++)for(let x=0;x<3;x++)X[wid[i]*3+x]=P[i*3+x];
     for(let t=0;t<I.length;t+=3)for(let e=0;e<3;e++){ const u=wid[I[t+e]], v=wid[I[t+(e+1)%3]]; if(u!==v){ nb[u].add(v); nb[v].add(u); } }
@@ -46,7 +28,7 @@
       for(let j=0;j<3;j++)c[i*3+j]=o[j]; F[i]=2+sd; }
     g.setAttribute('fab',new THREE.BufferAttribute(F,1)); g.attributes.color.needsUpdate=true; return g; };
   const ARMR={skeleton:[.05,.045],ogre:[.12,.11]}, ARMV=new THREE.Vector3(), ARMQ=new THREE.Quaternion(), ARMM=new THREE.Matrix4(), ARMI=new THREE.Matrix4();
-  const armsOf=(D,kind,rig,stone)=>{ const R=D.rig, M=D.mesh, ibm=f32(R.ibm), rest=i=>new THREE.Matrix4().fromArray(ibm,i*16).invert(), P=pts(M), J=b(M.j), W=b(M.w), C=b(M.c), RG=b(M.r), n=P.length/3;
+  const armsOf=(D,kind,rig,stone)=>{ const R=D.rig, M=D.mesh, ibm=F32(R.ibm), rest=i=>new THREE.Matrix4().fromArray(ibm,i*16).invert(), {p:P,j:J,w:W,c:C,r:RG}=SKIN.dec(M), n=P.length/3;
     const dom=i=>{ let m=0; for(let k=1;k<4;k++)if(W[i*4+k]>W[i*4+m])m=k; return J[i*4+m]; }, SP=R.names.indexOf('DEF_spine'), HL=[R.names.indexOf('DEF_hand_L'),R.names.indexOf('DEF_hand_R')];
     const rad=stone?[.15,.14]:ARMR[kind.split('_')[0]]||[.085,.075], bony=kind.startsWith('skeleton'), G={p:[],c:[],r:[],j:[],w:[],i:[]}, sides=[];
     HL.forEach((hb,si)=>{ const sg=si?-1:1, H0=rest(hb); let wx=0,wy=0,wz=0,wn=0,hc=[0,0,0],hr=0, tc=[0,0,0],tn=0,tr=0,tx=0,ty=1.78;

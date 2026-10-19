@@ -26,7 +26,7 @@ groundY=(x,z)=>{ const s=inStair(x,z); if(s){ const S=s.S; if(S.ground)return S.
   g('bodega',BOD.X(B.x0),BOD.Z(B.y0),BOD.X(B.x1),BOD.Z(B.y1)); g('house',BOD.X(A.x0),BOD.Z(A.y0),BOD.X(A.x1),BOD.Z(A.y1)); g('castle',BOD.XS(C[0]),BOD.ZS(C[2]),BOD.XS(C[1]),BOD.ZS(C[3]));
   if(G)g('ghost',BOD.X(G.x0),BOD.Z(G.y0),BOD.X(G.x1),BOD.Z(G.y1)); for(const R of STORE.rooms)g(R.id,R.x0,R.z0,R.x1,R.z1); }
 const HEMI=new THREE.HemisphereLight(0x55607a,0x14110e,.3); scene.add(HEMI);
-const LITE={N:8,pool:[],recs:[],sel:[],t:0,f:0,at:null}; window.LITE=LITE;
+const LITE={N:8,pool:[],recs:[],sel:[],t:0,f:0,at:null,V:new THREE.Vector3()}; window.LITE=LITE;
 for(let i=0;i<LITE.N;i++){ const L=new THREE.PointLight(0xffffff,0,8*TILE,1.6); L.userData.pool=true; if(!i){ L.castShadow=true; L.shadow.mapSize.set(1024,1024); L.shadow.camera.near=.1; L.shadow.camera.far=14; L.shadow.bias=-.002; L.shadow.normalBias=.06; } scene.add(L); LITE.pool.push(L); }
 SHL.push(LITE.pool[0],LITE.pool[1]);
 LITE.init=()=>{ const top=o=>{ while(o.parent&&o.parent!==scene)o=o.parent; return o; };
@@ -43,10 +43,10 @@ LITE.tick=(dt,x,y,z)=>{ const P=LITE.pool;
     for(const L of want){ if(slots.includes(L))continue; const i=slots.indexOf(null,1); if(i<0)break; slots[i]=L; }
     LITE.slots=slots; LITE.sel=slots.filter(Boolean); }
   for(let i=0;i<P.length;i++){ const S=P[i], L=(LITE.slots||LITE.sel)[i]; if(!L||!(L.intensity>0)){ S.intensity=0; continue; } S.position.copy(L.position); S.color.copy(L.color); S.intensity=L.intensity; S.distance=L.distance; S.decay=L.decay; }
-  const H0=(LITE.slots||LITE.sel)[0], H1=LITE.sel.filter(L=>L!==H0).sort((p,q)=>p.position.distanceToSquared(new THREE.Vector3(x,y,z))-q.position.distanceToSquared(new THREE.Vector3(x,y,z)))[0]; LITE.w=1;
+  const H0=(LITE.slots||LITE.sel)[0], H1=LITE.sel.filter(L=>L!==H0).sort((p,q)=>p.position.distanceToSquared(LITE.V.set(x,y,z))-q.position.distanceToSquared(LITE.V))[0]; LITE.w=1;
   if(H0&&H1&&P[0].intensity>0){ const dd=L=>Math.hypot(L.position.x-x,L.position.y-y,L.position.z-z); let w=Math.min(1,Math.max(0,(dd(H1)-dd(H0))/(1.5*TILE))); w=w*w*(3-2*w); LITE.w=w;
     if(w<1){ const S=P[0], E=P[P.length-1]; E.position.copy(S.position); E.color.copy(S.color); E.distance=S.distance; E.decay=S.decay; E.intensity=S.intensity*(1-w); S.intensity*=w; } }
-  const L0=P[0], first=(LITE.slots||LITE.sel)[0]; let mv=LITE.at!==first||Math.abs(x-LITE.px)+Math.abs(y-LITE.py)+Math.abs(z-LITE.pz)>1e-4; LITE.at=first; LITE.px=x; LITE.py=y; LITE.pz=z;
+  const L0=P[0], first=(LITE.slots||LITE.sel)[0]; let mv=LITE.at!==first||Math.abs(x-LITE.px)+Math.abs(y-LITE.py)+Math.abs(z-LITE.pz)>1e-4&&(x-L0.position.x)**2+(z-L0.position.z)**2<(L0.distance||8*TILE)**2; LITE.at=first; LITE.px=x; LITE.py=y; LITE.pz=z;
   if(L0.intensity>0&&typeof NPCS!=='undefined'){ const r=(L0.distance||8*TILE)**2; for(const N of NPCS){ if(!N.g||!N.g.visible||!N.st)continue; const p=N.g.position, dx=p.x-L0.position.x, dz=p.z-L0.position.z; if(dx*dx+dz*dz>r)continue; const k=p.x*7.13+p.z*3.31+p.y*1.7+N.st.h; if(N._lk!==k){ N._lk=k; mv=true; } } }
   L0.shadow.autoUpdate=L0.intensity>0&&mv; };
 scene.background=new THREE.Color(0x050507);
@@ -56,7 +56,7 @@ const UNDER=(()=>{ let on=false, hid=[]; const keep=new Set(['down','dungeon','c
         if(o.isInstancedMesh){ o.computeBoundingBox(); bb.copy(o.boundingBox).applyMatrix4(o.matrixWorld); } else bb.setFromObject(o); if(bb.isEmpty()||bb.min.y<-1)continue;
         o.traverse(c=>{ if(c.isMesh||c.isPoints||c.isLine||c.isSprite){ c.layers.disable(0); c.layers.enable(1); hid.push(c); } }); } }
     else{ for(const c of hid){ c.layers.enable(0); c.layers.disable(1); } hid=[]; } }; })();
-const MAPLV=(py,pos)=>{ METRO.door(py,pos); const lv=py<-1.6?'down':'up', si=inStair(pos.x,pos.z), st=si!=null, sd=st&&si.S!==MAPSTAIR;
+const MAPLV=(py,pos)=>{ METRO.door(py,pos); if(MODS.dunDoor)MODS.dunDoor(py,pos); const lv=py<-1.6?'down':'up', si=inStair(pos.x,pos.z), st=si!=null, sd=st&&si.S!==MAPSTAIR;
   MAPG.down.visible=lv==='down'||sd; if(MAPG.dungeon)MAPG.dungeon.visible=lv==='down'||st; for(const k of ['bodega','pool','poolout','park','castle'])if(MAPG[k])MAPG[k].visible=lv==='up'&&!(sd&&py<-1);
   UNDER(py<-1&&!(st&&!sd&&LVL==='up'));
   MODS.stairCut.constant=st?py+.25:1e6; if(MODS.castleStairCut)MODS.castleStairCut.constant=st?py+.25:1e6;

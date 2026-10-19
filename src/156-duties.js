@@ -4,7 +4,7 @@ const VEHD=__DATA__("data/trashbag.json");
   const dispatch=(S,veh,spot,then,v)=>{ S.state='on a call'; CIVIC.go(S,spot,then,(v||2.2)*(far(S.N.st,spot)?1.5:1)); };
   const back=(S,veh)=>CIVIC.home(S);
   const K=DRESS.kerb, PATROL=null, TRUCK=null, VAN=null, AMB=null;
-  const bagGeo=(()=>{ const M=VEHD.trashbag; if(!M)return null; const b=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0)), q=new Int16Array(b(M.p).buffer), P=new Float32Array(q.length); for(let i=0;i<q.length;i++)P[i]=(q[i]+32500)*M.sc+M.lo[i%3];
+  const bagGeo=(()=>{ const M=VEHD.trashbag; if(!M)return null; const b=B64, P=SKIN.pts(M);
     const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(P,3)); g.setAttribute('color',new THREE.BufferAttribute(b(M.c),3,true)); g.setIndex(new THREE.BufferAttribute(new Uint16Array(b(M.i).buffer),1)); g.computeVertexNormals(); g.computeBoundingBox(); return g; })();
   const BAGMAT=new THREE.MeshLambertMaterial({vertexColors:true});
   CIVIC.cans=(DRESS.cans||[]).map((c,i)=>{ const can={id:'can'+(i+1),x:c.x,z:c.z,fill:0,heap:null}; if(bagGeo){ const bb=bagGeo.boundingBox, s=1/.84*T*.8, me=new THREE.Mesh(bagGeo,BAGMAT); me.position.set(-(bb.min.x+bb.max.x)/2,-bb.min.y,-(bb.min.z+bb.max.z)/2); const body=new THREE.Group(); body.add(me); body.scale.set(s,s*ZU*24/TILE,s); const g=new THREE.Group(); g.add(body); g.position.set(c.x+.9*T,G(c.x,c.z),c.z-.1*T); g.visible=false; MAPG.bodega.add(g); can.heap=g; } return can; });

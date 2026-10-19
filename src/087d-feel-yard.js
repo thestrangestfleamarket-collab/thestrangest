@@ -35,7 +35,7 @@
     const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(VP,3)); g.setAttribute('color',new THREE.Float32BufferAttribute(VC,3)); g.computeVertexNormals();
     const me=Y.mesh=new THREE.Mesh(g,M(0xffffff,null,{vertexColors:true})); me.scale.set(MH,MV,MH); me.castShadow=me.receiveShadow=true; scene.add(me); Y.tris=VP.length/9; };
   Y.tick=()=>{ if(!Y.mesh)return; const o=org(), x=pos.x/MH, z=pos.z/MH, inY=Y.in(x,z); Y.mesh.visible=Math.abs(x-o.x)<R*3&&Math.abs(z-o.z)<R*3;
-    if(inY&&!Y.mb){ Y.mb={...MISTB}; Object.assign(MISTB,{x:(o.x-R)*MH,y:(o.z-R)*MH,z:(o.x+R)*MH,w:(o.z+R)*MH}); } else if(!inY&&Y.mb){ Object.assign(MISTB,Y.mb); Y.mb=null; } };
+    if(inY&&!Y.mb){ Y.mb={...MISTB}; Y.mb2={...MISTB2}; Object.assign(MISTB,{x:(o.x-R)*MH,y:(o.z-R)*MH,z:(o.x+R)*MH,w:(o.z+R)*MH}); Object.assign(MISTB2,{x:1e9,y:1e9,z:-1e9,w:-1e9}); } else if(!inY&&Y.mb){ Object.assign(MISTB,Y.mb); Object.assign(MISTB2,Y.mb2); Y.mb=null; } };
   const add=()=>{ if(!STORE.places)STORE.places=[]; const o=org(), s=SP[0]; if(!STORE.places.some(p=>p[0]==='FEEL LAB'))STORE.places.push(['FEEL LAB',(o.x+s[1])*MH,(o.z+s[3])*MH,0]); };
   add();
 }

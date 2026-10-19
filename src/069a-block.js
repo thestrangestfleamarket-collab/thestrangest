@@ -46,6 +46,9 @@ const BLK={blds:[],signs:[],band:()=>null}; window.BLK=BLK;
   const TINTS=[[1.3,.82,.66],[1.12,1,.84],[.92,.95,1.02],[1.2,.95,.8],[1.05,.9,.92],[.98,1.02,.92],[1.25,.88,.72],[1.1,1.04,.95],[.9,.9,.96]];
   [[B.x0,-18.6],[10.6,90],[90,150],[150,B.x1]].forEach(([a,b],i)=>building({x0:a,x1:b,y0:B.row2[0],y1:B.row2[1],h:140,n:0,k:300+i*7,tint:TINTS[3+i],front:'shut',back:'glass',lit:.2,row:2,doors:Math.max(1,Math.round((b-a)/14)),blankSide:true,cheap:true}));
   for(let i=0;i+1<MAINROW.length;i++){ const a=MAINROW[i][1]+.1, b=MAINROW[i+1][0]-.1; if(b-a>1.5)building({x0:a,x1:b,y0:B.back,y1:BOD.OY,h:130,n:0,k:400+i*11,tint:TINTS[i%TINTS.length],front:'shut',back:'shut',lit:0,blankFace:true,blankSide:true,cheap:true,row:1}); }
+  { const P=RING.bank, e=RING.ff.x0; building({x0:P.bx1+.1,x1:e,y0:P.ys,y1:P.y0,h:150,n:1,k:520,tint:TINTS[1],front:'glass',back:'shut',lit:.2,row:3,doors:2,blankSide:true,cheap:true});
+    [[P.x0,-78],[-78,e]].forEach(([a,b],i)=>building({x0:a,x1:b,y0:P.y1,y1:P.yn,h:130,n:0,k:540+i*7,tint:TINTS[5+i],front:'glass',back:'shut',lit:.15,row:3,doors:Math.max(1,Math.round((b-a)/14)),blankSide:true,cheap:true}));
+    building({x0:P.x0-7.5,x1:P.x0,y0:P.y0,y1:P.yn,h:170,n:0,k:560,tint:TINTS[2],front:'shut',back:'shut',lit:.25,row:3,blankFace:true,cheap:true}); }
   const BX=[], GL=[]; const bx=(L,x0,y0,p0,x1,y1,p1,c)=>L.push([XS(Math.min(x0,x1)),YP(Math.min(p0,p1)),ZS(Math.min(y0,y1)),XS(Math.max(x0,x1)),YP(Math.max(p0,p1)),ZS(Math.max(y0,y1)),c]);
   const zA=B.alley[1], zB=B.alley[0], mid=(zA+zB)/2;
   const KO='"Black Han Sans","Do Hyeon","Noto Sans KR",sans-serif', KO2='"Do Hyeon","Black Han Sans","Noto Sans KR",sans-serif';

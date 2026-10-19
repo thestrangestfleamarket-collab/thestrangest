@@ -2984,3 +2984,31 @@ building until you go inside"; `054-apts.js`, `075-main-13.js`)
   "it was the stream", "i think it was all black beacuse it put me underground when i jumped in stream"): the level switch took
   any height under -1.6 for the underground (`MAPLV`); in the stream (`BROOK.over`), the park's lake (`FOUNT.wet`) or any water
   you're in, you stay above ground however deep you go.
+
+## 19 Oct 2026: two campfires only (the lake, the golems' cave); gold grass where the rare mushrooms grow
+(owner: "let put a campfire by the lake and inside the cave with golems, nowhere else. lets add some of the gold style grass (3-4 diff
+versions) and put them in random spots in park and thats where specific mushrooms will grow"; `061-park.js`, `060-cave.js`,
+`140-weeds.js`, `141-forage.js`, `142a-flora.js`, `151-blaze.js`)
+- **The campfires**: the park's old campfire by the round is gone. One now stands on the lake's shore (`PARK.campAt`: the shore point
+  nearest the round that is 2.8 tiles off the water, off the ways, the terrace, the brook and the shore rocks; the lake oaks within 10
+  tiles of it left out), with its woodpile beside it and the sitting log on the land side facing the fire and the water (still a seat).
+  The other is inside the golems' cave, on the floor between its middle and the mouth (`GCAVE.fire`), the sitting stones round it; the
+  golems' spots in the cave keep off it. Each is the same fire as before (`FLAME` 'bed', smoke, embers) with one lamp record (the park's
+  26 strong to 9 tiles, the cave's 22 to 7, lighting inside and out of the mouth), so the 8-lamp pool is unchanged and the nearest fire
+  still takes the one lamp shadow. Both count as a flame for COOKING. Hills, oaks, bushes, flowers and the underbrush keep off the new
+  spot; the blaze (`BLAZE`) no longer counts a campfire or its woodpile as brush and never starts a wildfire within 2 tiles of one, and
+  the fire drones leave them alone.
+- **Gold grass** (`WEEDS.gold`, `WEEDS.goldAt`): sixteen patches (four of each kind), 1.5-2.6 tiles across with wobbly edges, at fixed
+  random spots on the park's lawns (the same every load), off the ways, water, brook, terrace, gates, the castle, shrine, cave and
+  campfire, anything solid, stalls and well clear of the oaks' crowns. They are part of the tall grass itself (same mass, same sway,
+  pressed and trailed the same way, one colour each with a hard edge): **GOLDEN WHEAT** (pale straw, an even top about a tile high,
+  dense wheat ears), **GOLDEN TUSSOCK** (amber, big round mounds with a few pale blades), **DRY GOLD REEDS** (ochre, tallest and
+  ragged, thin reed stems with cream plumes), **GILDED GRASS** (bright gold, low, with glints that twinkle and flecks of light). Flowers
+  and bushes keep off them.
+- **Their mushrooms**: MOREL only in the wheat, CHANTERELLE only in the tussocks, KING BOLETE only in the reeds, MOONGLOW only in the
+  gilded grass (`FORAGE.GOLD`; about one square in twenty a day, some three to five a patch); the plain lawns now grow the others
+  (button, puffball, ink cap, red cap). They hide under the gold grass like the rest (one in five peeks out; walking through shows
+  them; shoes may crush them, barefoot never). Fairy rings still give morels and moonglows. `GOLDDBG()` lists the patches and their
+  mushrooms; `MUSHDBG()` now counts gold and lawn kinds.
+- **Cost**: the gold grass adds no draws, lights or programs (the grass program replaced, `tallgrass3`); the ears, blades, stems and glints some
+  150-700 triangles a patch in the lawn chunk that holds it (8-16 each); the cave's fire one lamp record, its pile ~100 triangles.

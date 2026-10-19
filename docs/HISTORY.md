@@ -2663,3 +2663,7 @@ not have windows, make sure buildings are only as tall as they need to be"; then
   bands (3 steps, CEL), the screen rays a slow banded texture; 260 dust motes drift round you, bright inside a shaft, faint outside, by
   day when it isn't overcast; a band of low-poly trees (two crowns each) stands 3-7 tiles past the walkable edge in front of the skyline,
   tinted by the mist.
+- **Only the room you're in** (owner, 19 Oct 2026: "anytime you are in interior you should only see black around you except for the
+  only room you are in"): in the isometric view, inside any room (`ROOMS.cur`: shops, bar, bodega, apartment floors, the civic tower)
+  a black cover is drawn over the whole screen except the room's own box as the camera sees it (its 8 corners' outline), so the street
+  and the buildings round it are gone until you step out.

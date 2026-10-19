@@ -19,13 +19,24 @@ ROOMS.roofAt=(x,y,z)=>{ const h=new THREE.Raycaster(new THREE.Vector3(x,y,z),new
   ROOMS.nearAll=()=>{ NEARON=true; const skip=new Set([W3.group,...NPCS.map(N=>N.g),...NPCS.extra.map(X=>X.g).filter(Boolean)]); for(const o of [typeof MUS!=='undefined'&&MUS.g,typeof PNM!=='undefined'&&PNM.g,typeof SGM!=='undefined'&&SGM.g,typeof DRM!=='undefined'&&DRM.g])if(o)skip.add(o);
         const walk=o=>{ if(skip.has(o)||o.isSkinnedMesh)return; const ms=o.material?(Array.isArray(o.material)?o.material:[o.material]):[]; for(const mt of ms){ if(mt.clippingPlanes===NEAR||(mt.isShaderMaterial&&!mt.clipping)||(mt.clippingPlanes&&mt.clippingPlanes.length))continue; mt.clippingPlanes=NEAR; mt.clipIntersection=true; mt.needsUpdate=true; } for(const c of o.children)walk(c); };
         walk(scene); };
+  const VOID=(()=>{ const g=new THREE.BufferGeometry(), GA=new THREE.BufferAttribute(new Float32Array(240),3); me=new THREE.Mesh(g,new THREE.MeshBasicMaterial({color:0x000000,depthTest:false,depthWrite:false,fog:false,toneMapped:false,clippingPlanes:[new THREE.Plane(new V(0,-1,0),1e6)]}));
+    GA.setUsage(THREE.DynamicDrawUsage); g.setAttribute('position',GA); me.matrixAutoUpdate=false; me.frustumCulled=false; me.renderOrder=1e9; me.visible=false; scene.add(me); ROOMS.void=me; const c=new V(), P=[], m=.12*TILE;
+    return b=>{ if(!b||!cam.isOrthographicCamera){ me.visible=false; return; } P.length=0;
+      for(const x of [b.x0-m,b.x1+m])for(const y of [b.y0,b.y1+m])for(const z of [b.z0-m,b.z1+m]){ c.set(x,y,z).applyMatrix4(cam.matrixWorldInverse); P.push([c.x,c.y]); }
+      P.sort((u,v)=>u[0]-v[0]||u[1]-v[1]); const cr=(o,a,q)=>(a[0]-o[0])*(q[1]-o[1])-(a[1]-o[1])*(q[0]-o[0]), lo=[], hi=[];
+      for(const p of P){ while(lo.length>=2&&cr(lo[lo.length-2],lo[lo.length-1],p)<=0)lo.pop(); lo.push(p); }
+      for(let i=P.length-1;i>=0;i--){ const p=P[i]; while(hi.length>=2&&cr(hi[hi.length-2],hi[hi.length-1],p)<=0)hi.pop(); hi.push(p); }
+      const H=lo.slice(0,-1).concat(hi.slice(0,-1)), z=cam.zoom||1; let x0=cam.left/z, x1=cam.right/z, y0=cam.bottom/z, y1=cam.top/z;
+      for(const [x,y] of H){ x0=Math.min(x0,x-1); x1=Math.max(x1,x+1); y0=Math.min(y0,y-1); y1=Math.max(y1,y+1); } x0-=1; x1+=1; y0-=1; y1+=1;
+      const O=[[x0,y0],[x1,y0],[x1,y1],[x0,y1]].map(([x,y])=>new THREE.Vector2(x,y)), Hh=H.map(([x,y])=>new THREE.Vector2(x,y)), T=THREE.ShapeUtils.triangulateShape(O,[Hh]), A=O.concat(Hh), d=-(cam.near+.02);
+      let n=0; for(const t of T)for(const i of t){ if(n>=80)break; GA.setXYZ(n++,A[i].x,A[i].y,d); } GA.needsUpdate=true; g.setDrawRange(0,n-n%3); me.matrixWorld.copy(cam.matrixWorld); me.visible=true; }; })();
   ROOMS.tick=()=>{ if(!RL)build(); let hit=null, bnd=null; if(typeof LOOKS!=='undefined'&&LOOKS.light)LOOKS.light();
     if(LVL==='up'&&!UI.freeCam&&!ED.on&&!MAPED.on&&!(window.DRONE&&DRONE.cam)){
       const IN=-.55*TILE; hit=RL.find(b=>within(b,pos.x,pos.z,IN)&&py>b.y0-.3&&py<b.y1)||null;
       const A=MODS.apts; if(!hit&&A&&A.in){ const lv=A.floor(), S=BOD.K.STORY; for(const t of A.rects(lv)){ const b=box(BOD.X,BOD.Z,t,A.lvY(lv)-.5,A.lvY(lv+1)); if(within(b,pos.x,pos.z,lv>0?0:IN)){ hit=b; break; } } } }
     ROOMS.cur=hit; UI.isoPlace(); if(BOD.GD)BOD.GD.tick(); if(MODS.dungeon)MODS.dungeon.tick();
     for(const h of OVERHEAD)h.o.visible=cam.position.y<h.y;
-    const cutOn=hit&&!UI.persp&&(UI.view==='iso'||UI.view==='map');
+    const cutOn=hit&&!UI.persp&&(UI.view==='iso'||UI.view==='map'); VOID(cutOn?hit:null);
     if(cutOn){ if(!NEARON||!NEARIN)ROOMS.nearAll(); NEARIN=true;
       const cx=cam.position.x-pos.x, cz=cam.position.z-pos.z, l=Math.hypot(cx,cz)||1, ux=cx/l, uz=cz/l, BAND=1.1*TILE;
       NEAR[0].normal.set(0,-1,0); NEAR[0].constant=py+.45*ZU*24/.84;

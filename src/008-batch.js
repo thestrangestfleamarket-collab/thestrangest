@@ -41,11 +41,14 @@ if(PEEK.on)for(const k of ['lambert','basic']){ const S=THREE.ShaderLib[k]; S.un
 PEEK.box=(me,x0,y0,z0,x1,y1,z1)=>{ const e=.7*TILE/.84; PEEK.boxes.push({me,b:new THREE.Box3(new THREE.Vector3(Math.min(x0,x1)-e,Math.min(y0,y1)-e,Math.min(z0,z1)-e),new THREE.Vector3(Math.max(x0,x1)+e,Math.max(y0,y1)+e,Math.max(z0,z1)+e))}); };
 PEEK.mark=(g,A)=>{ g.setAttribute('aWl',new THREE.BufferAttribute(A||new Uint8Array(g.attributes.position.count).fill(2),1)); return g; };
 PEEK.whole=me=>{ PEEK.mark(me.geometry); me.updateMatrixWorld(); const b=new THREE.Box3().setFromObject(me); if(!b.isEmpty())PEEK.box(me,b.min.x,b.min.y,b.min.z,b.max.x,b.max.y,b.max.z); };
-PEEK.batch=(me,L)=>{ const M=TILE/.84, q=.05*TILE, G={}, K=[], V=PEEK.V;
-  for(const o of L){ const p=o.pos, ax=p[3]-p[0], ay=p[4]-p[1], az=p[5]-p[2], bx=p[6]-p[0], by=p[7]-p[1], bz=p[8]-p[2]; let nx=ay*bz-az*by, ny=az*bx-ax*bz, nz=ax*by-ay*bx; const l=Math.hypot(nx,ny,nz); if(l<1e-12){ K.push(null); continue; } nx/=l; ny/=l; nz/=l;
-    let k; if(Math.abs(ny)<.15){ const h=Math.hypot(nx,nz); nx/=h; nz/=h; if(nx<-1e-3||(Math.abs(nx)<=1e-3&&nz<0)){ nx=-nx; nz=-nz; } k='v'+Math.round(nx*40)+','+Math.round(nz*40)+','+Math.round((nx*p[0]+nz*p[2])/q); } else if(Math.abs(ny)>.9)k='h'+Math.round(p[1]/q); else { K.push(null); continue; }
-    K.push(k); const g=G[k]||(G[k]={v:k[0]==='v',nx,nz,b:new THREE.Box3(),t0:1e9,t1:-1e9}); for(let i=0;i<18;i+=3){ g.b.expandByPoint(V.set(p[i],p[i+1],p[i+2])); if(g.v){ const t=-g.nz*p[i]+g.nx*p[i+2]; g.t0=Math.min(g.t0,t); g.t1=Math.max(g.t1,t); } } }
-  let any=false; for(const k in G){ const g=G[k], b=g.b; g.w=g.v?(b.max.y-b.min.y>=2.2*M&&g.t1-g.t0>=1.2*M?2:0):(b.max.x-b.min.x>=2*M&&b.max.z-b.min.z>=2*M?3:0); if(g.w){ any=true; PEEK.box(me,b.min.x,b.min.y,b.min.z,b.max.x,b.max.y,b.max.z); } }
+PEEK.batch=(me,L)=>{ const M=TILE/.84, q=.05*TILE, C=6*M, G={}, K=[], V=PEEK.V, grp=(k,v,nx,nz)=>G[k]||(G[k]={v,nx,nz,b:new THREE.Box3(),t0:1e9,t1:-1e9});
+  L.forEach((o,n)=>{ const p=o.pos, ax=p[3]-p[0], ay=p[4]-p[1], az=p[5]-p[2], bx=p[6]-p[0], by=p[7]-p[1], bz=p[8]-p[2]; let nx=ay*bz-az*by, ny=az*bx-ax*bz, nz=ax*by-ay*bx; const l=Math.hypot(nx,ny,nz); K.push(null); if(l<1e-12||Math.abs(ny/l)>=.15)return; nx/=l; nz/=l;
+    const h=Math.hypot(nx,nz); nx/=h; nz/=h; if(nx<-1e-3||(Math.abs(nx)<=1e-3&&nz<0)){ nx=-nx; nz=-nz; } const k='v'+Math.round(nx*40)+','+Math.round(nz*40)+','+Math.round((nx*p[0]+nz*p[2])/q), g=grp(k,1,nx,nz); K[n]=k;
+    for(let i=0;i<18;i+=3){ g.b.expandByPoint(V.set(p[i],p[i+1],p[i+2])); const t=-nz*p[i]+nx*p[i+2]; g.t0=Math.min(g.t0,t); g.t1=Math.max(g.t1,t); } });
+  for(const k in G){ const g=G[k], b=g.b; g.w=b.max.y-b.min.y>=2.2*M&&g.t1-g.t0>=1.2*M?2:0; }
+  L.forEach((o,n)=>{ if(K[n]&&G[K[n]].w)return; const p=o.pos; let y=1e9, x=0, z=0; for(let i=0;i<18;i+=3){ y=Math.min(y,p[i+1]); x+=p[i]/6; z+=p[i+2]/6; } if(y<2.4*M){ K[n]=null; return; }
+    const k='r'+Math.floor(x/C)+','+Math.floor(z/C), g=grp(k,0); K[n]=k; for(let i=0;i<18;i+=3)g.b.expandByPoint(V.set(p[i],p[i+1],p[i+2])); });
+  let any=false; for(const k in G){ const g=G[k], b=g.b; if(!g.v)g.w=Math.max(b.max.x-b.min.x,b.max.z-b.min.z)>=2*M?3:0; if(g.w){ any=true; PEEK.box(me,b.min.x,b.min.y,b.min.z,b.max.x,b.max.y,b.max.z); } }
   if(!any)return; const A=new Uint8Array(L.length*6); K.forEach((k,n)=>{ if(k)A.fill(G[k].w,n*6,n*6+6); }); PEEK.mark(me.geometry,A); };
 PEEK.tick=dt=>{ const on=PEEK.on&&UI.view!=='first'&&!UI.freeCam&&!ED.on&&!ROOMS.cur&&PEEK.boxes.length, M=TILE/.84, c=PEEK.V.set(pos.x,py+1.1*TILE,pos.z), R=PEEK.ray, W=PEEK.W, H=PEEK.H, P=PEEK.uDP, K=PEEK.uDK;
   R.origin.copy(c); if(UI.persp)R.direction.copy(cam.position).sub(c).normalize(); else R.direction.set(0,0,1).applyQuaternion(cam.quaternion);

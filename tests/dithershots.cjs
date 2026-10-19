@@ -18,18 +18,20 @@ process.on('unhandledRejection',e=>{ errs.push('TEST '+String(e&&e.message||e).s
   await shot('tree-iso',behindTree,4000); await off('tree-iso-off');
   rep.ease=await pg.evaluate(async()=>{ PEEK.on=false; await new Promise(r=>setTimeout(r,800)); PEEK.on=true; const s=[]; const t0=performance.now(); while(performance.now()-t0<600){ s.push([Math.round(performance.now()-t0),+PEEK.k.toFixed(2)]); await new Promise(r=>requestAnimationFrame(r)); } return s; });
   rep.tickMs=await pg.evaluate(()=>{ const t0=performance.now(); for(let i=0;i<500;i++)PEEK.tick(0); return (performance.now()-t0)/500; });
-  await shot('wall-iso-apts',atRow,4000,[130,1.2]); await off('wall-iso-apts-off');
-  await shot('wall-iso-bodega',atRow,4000,[108,1.2]);
+  await shot('wall-iso-museum',atRow,4000,[0,1.2]); await off('wall-iso-museum-off');
+  await shot('wall-iso-arcade',atRow,4000,[199,1.2]);
+  await shot('wall-iso-play',atRow,4000,[53,1.2]);
   await shot('wall-iso-theatre',atRow,4000,[180,1.2]);
-  await shot('wall-iso-museum',atRow,4000,[0,1.2]);
+  await shot('wall-iso-theatre',atRow,4000,[180,1.2]);
+  rep.hits=await pg.evaluate(()=>{ const T3=__dbg.THREE, rc=new T3.Raycaster(), c=new T3.Vector3(...__dbg.pos()); c.y+=1; const cam=__dbg.camO(); rc.camera=cam; const d=c.clone().project(cam); rc.setFromCamera(new T3.Vector2(d.x,d.y),cam); return rc.intersectObjects(__dbg.scene.children,true).filter(h=>h.object.isMesh&&h.object.visible).slice(0,6).map(h=>({n:h.object.name,par:h.object.parent&&h.object.parent.name,t:h.object.material&&h.object.material.type,aWl:!!h.object.geometry.attributes.aWl,v:h.object.geometry.attributes.aWl?h.object.geometry.attributes.aWl.array[h.face.a]:null,d:+h.distance.toFixed(1),y:+h.point.y.toFixed(1),batch:!!h.object.userData.objOf})); });
   await pg.keyboard.press('v'); await pg.waitForTimeout(2000);
   rep['tree-behind']=await pg.evaluate(async()=>{ const raf=()=>new Promise(r=>requestAnimationFrame(r)), T=__dbg.MAPK.BOD.XS(1)-__dbg.MAPK.BOD.XS(0), P=__dbg.MAPK.PARK, oaks=P.oaks.slice().sort((a,b)=>b[2]-a[2]).slice(0,6), tried=[];
     for(const o of oaks)for(const d of [2,3,4,5,7])for(const s of [2,-2,3,-3,1.2,-1.2]){ const c=__dbg.camO().position, y=__dbg.you(), ux=c.x-y.x, uz=c.z-y.z, h=Math.hypot(ux,uz)||1, nx=ux/h, nz=uz/h;
       STORE.goTo(o[0]-nx*d*T-nz*s*T,o[1]-nz*d*T+nx*s*T,'up'); for(let i=0;i<4;i++)await raf(); const W=PEEK.W; tried.push(PEEK.cov?1:0); if(PEEK.cov&&Math.abs(W.x)<.7&&Math.abs(W.y)<.7)return {o,d,s,tried:tried.length}; }
     return {none:1,tried}; });
   await shot('tree-behind',null,3000); await off('tree-behind-off');
-  await pg.evaluate(()=>__dbg.face(Math.PI)); await shot('wall-behind',atRow,1000,[130,1.2]); await shot('wall-behind',()=>{ __dbg.face(Math.PI); },4000);
-  await pg.evaluate(()=>__dbg.face(0)); await shot('wall-behind-2',atRow,1000,[130,1.2]); await shot('wall-behind-2',()=>{ __dbg.face(0); },4000);
+  await pg.evaluate(()=>__dbg.face(Math.PI)); await shot('wall-behind',atRow,1000,[0,1.2]); await shot('wall-behind',()=>{ __dbg.face(Math.PI); },4000);
+  await pg.evaluate(()=>__dbg.face(0)); await shot('wall-behind-2',atRow,1000,[0,1.2]); await shot('wall-behind-2',()=>{ __dbg.face(0); },4000);
   await pg.keyboard.press('v'); await pg.waitForTimeout(2000);
   await shot('first',behindTree,3000);
   await pg.keyboard.press('v'); await pg.waitForTimeout(1500);

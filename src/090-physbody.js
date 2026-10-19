@@ -37,6 +37,6 @@ const PB={on:false,ready:false,loose:0.5};
       if(W3.E&&W3.E[i])W3.applyE(PM,W3.E[i],new THREE.Vector3().setFromMatrixPosition(PM)); if(W3.HIDE[i])PM.makeScale(0,0,0); });
     return true; };
   PB.load=()=>{ if(RAPIER||PB.loading)return; PB.loading=true; import('https://cdn.jsdelivr.net/npm/@dimforge/rapier3d-compat@0.12.0/rapier.es.js').then(async m=>{ RAPIER=m.default||m; await RAPIER.init(); PB.ready=true; need=true; PB.R=RAPIER; (PB.onReady||[]).forEach(f=>f()); }).catch(e=>{ console.warn('physics body: Rapier did not load',e); PB.on=false; }); };
-  PB.set=on=>{ PB.on=on; if(on){ PB.load(); need=true; } try{ SAVE.set('physbody2',on?'1':'0'); }catch(e){} };
-  let on0=false; try{ const v=SAVE.get('physbody2'); if(v!=null)on0=v==='1'; const l=SAVE.get('loose'); if(l!=null)PB.loose=+l; }catch(e){} PB.set(on0);
+  PB.set=on=>{ PB.on=on; if(on){ PB.load(); need=true; } try{ SAVE.set('physbody3',on?'1':'0'); }catch(e){} };
+  let on0=true; try{ const v=SAVE.get('physbody3'); if(v!=null)on0=v==='1'; const l=SAVE.get('loose'); if(l!=null)PB.loose=+l; }catch(e){} PB.set(on0);
 }

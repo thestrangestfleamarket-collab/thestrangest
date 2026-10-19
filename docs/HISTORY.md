@@ -1681,3 +1681,10 @@ starving messages, and nothing stops you running (`141-forage.js`; `103-vitals.j
 "its just beacuse something is cached"): `SAVE` goes to version 4 (`005-save.js`); the first time a browser opens it, everything the game
 kept there from older versions (`market-*`, `isowalk-*`: the saved game, its settings, recorded moves, the look) is cleared and it starts
 clean. The login is kept.
+
+**Physics: Rapier, extended** (owner, 19 Oct 2026: "i want to put the physics in the game back like the old game"; of the options, "1."
+(stay on Rapier); first "push and throw things, bodies bump each other, your body on by default"):
+- **Your physics body on by default** (`090-physbody.js`, saved as `physbody3` so everyone starts with it on; DISPLAY still turns it off).
+  Cost: Rapier (0.76 MB compressed from jsDelivr, cached after) loads in the background as the game starts, not blocking it.
+- **Bodies bump** (`076-npc-map.js`, `N.push`): walking into a character shares the overlap (he gives way part of it, more the faster you
+  come, never into a wall), and running into one shoves him back a step (a push that dies away in a fraction of a second). No new cost.

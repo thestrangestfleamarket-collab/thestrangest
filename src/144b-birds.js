@@ -89,7 +89,11 @@ const BIRDS={list:[]}; window.BIRDS=BIRDS;
     for(const [s,sg] of [['R',1],['L',-1]])for(const p of ['wing','bar']){ const c=P[p]; if(c==null)continue; const me=ME[p+s], i=n[p+s]=(n[p+s]||0); if(i>=MAXI)continue;
       m4.makeTranslation(sg*PIV[0],PIV[1],PIV[2]).multiply(mr.makeRotationZ(sg*b.wing)); me.setMatrixAt(i,m4.premultiply(mw)); me.setColorAt(i,col.setHex(c)); n[p+s]++; }
     b.hb.position.set(b.x,b.y+.2*T,b.z); };
-  BIRDS.tick=dt=>{ if(!dt)return; const mv=Math.hypot(pos.x-lx,pos.z-lz); spd=spd*.8+mv/dt*.2; lx=pos.x; lz=pos.z; still=spd<.1*T?still+dt:0;
+  let WS=null; const WR=3.5*T, wtick=dt=>{ if(!WS)return; const b=WS.b, d=Math.hypot(b.x-pos.x,b.z-pos.z);
+    if(!BIRDS.list.includes(b)||b.st==='fly'||d>WR){ say(d>WR?'YOU LOSE SIGHT OF IT.':'IT FLIES OFF.','#c8a090'); WS=null; return; }
+    WS.t+=dt*(spd<.3*T?1:.4); if(WS.t>=8){ WS.t=0; use('bird',WS.d-25,WS.d+25,WS.bonus+(spd<.1*T?5:0)); } };
+  BIRDS.watching=()=>WS&&{k:WS.b.k,t:+WS.t.toFixed(1)};
+  BIRDS.tick=dt=>{ if(!dt)return; wtick(dt); const mv=Math.hypot(pos.x-lx,pos.z-lz); spd=spd*.8+mv/dt*.2; lx=pos.x; lz=pos.z; still=spd<.1*T?still+dt:0;
     const W=window.WX&&WX.now, out=LVL==='up'&&!(window.ROOMS&&ROOMS.cur)&&!(window.CLOCK&&CLOCK.dark())&&!(W&&(W.rain>.25||W.snow>.25||W.wind>.8)); BIRDS.out=out;
     if(S.seed){ S.seed.t-=dt; if(S.seed.t<=0)S.seed=null; } const n={};
     for(const b of [...BIRDS.list]){ const pet=b.st==='pet', show=pet||out; b.hb.visible=show&&!pet&&b.st!=='hid'; if(!show)continue; if(!pet&&Math.hypot(b.x-pos.x,b.z-pos.z)>45*T)continue; step(b,dt); if(BIRDS.list.includes(b))place(b,n); }
@@ -109,7 +113,7 @@ const BIRDS={list:[]}; window.BIRDS=BIRDS;
   const log=b=>{ const k=b.k, first=!S.seen[k]; S.seen[k]=(S.seen[k]||0)+1; save();
     if(first){ say(`A NEW BIRD FOR YOUR JOURNAL: ${K[k][0]} (${K[k][1].toUpperCase()}).`,RARE(k)?'#f2c14e':'#c8b0ff'); if(BOUNTY[k]){ INV.cash+=BOUNTY[k]; say(`THE PARK'S BIRD COUNT PAYS $${BOUNTY[k]} FOR THE FIRST SIGHTING.`,'#f2c14e'); } }
     else say(`YOU WATCH THE ${K[k][0]} A WHILE.`,'#e8e2cc'); };
-  const ACT={watch:b=>{ const sd=seedAt(), bonus=sd&&Math.hypot(b.x-sd.x,b.z-sd.z)<2*T?10:0, d=DIFF(b.k); if(use('bird',d-25,d+25,bonus))log(b); else { say('IT FLIES OFF BEFORE YOU GET A GOOD LOOK.','#c8a090'); flush(b); } },
+  const ACT={watch:b=>{ const sd=seedAt(), bonus=sd&&Math.hypot(b.x-sd.x,b.z-sd.z)<2*T?10:0, d=DIFF(b.k); if(use('bird',d-25,d+25,bonus)){ log(b); WS={b,t:0,d,bonus}; say('YOU SETTLE IN TO WATCH IT. STAY CLOSE.','#9fe07f'); } else { say('IT FLIES OFF BEFORE YOU GET A GOOD LOOK.','#c8a090'); flush(b); } },
     tame:b=>{ if(b.k===HAWK)return say('A HAWK WILL NOT TAKE SEED FROM YOUR HAND.','#c8a090'); if(!FORAGE.has('bseed'))return say('YOU NEED BIRDSEED (THE MUSHROOM SELLER HAS IT).','#c8a090');
       FORAGE.take('bseed',1); const d=DIFF(b.k)+15; if(use('bird',d-20,d+30)){ if(!S.seen[b.k])log(b); makePet(b.k,b); } else { say('IT TAKES THE SEED AND FLIES OFF.','#c8a090'); flush(b); } },
     catch:b=>{ if(!FORAGE.has('bnet'))return say('YOU NEED A BIRD NET (THE MUSHROOM SELLER HAS THEM).','#c8a090'); if(b.k===HAWK)return say('A HAWK IS FAR TOO BIG FOR YOUR NET.','#c8a090');

@@ -2927,3 +2927,7 @@ building until you go inside"; `054-apts.js`, `075-main-13.js`)
   "SQUISH.", it lies flat and dark for 90 s and is gone for the day. Barefoot never crushes. The first time in the park with shoes on
   and mushrooms near: "TAKE OFF YOUR SHOES TO FORAGE SAFELY." (once, saved). `MUSHDBG()` gives hidden, revealed, peek, crushed, picked,
   barefoot. Cost: no new draws or triangles (the same three instanced draws; fewer shown), a check of the near mushrooms 8 times a second.
+- **Watching birds trains BIRDING** (owner, 19 Oct 2026: "when you watch a bird if you can stay within a radius around them you will
+  gain skill"): after a good look (WATCH), you settle in to watch; while you stay within 3.5 tiles and the bird stays, every 8 s of
+  watching is another BIRDING check (a gain chance, UO style), time counting fully while you stand still or walk slowly, a little
+  bonus for standing quite still; go farther or let it fly and you lose sight of it.

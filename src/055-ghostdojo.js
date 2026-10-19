@@ -96,7 +96,7 @@ function gdShape(GS,K,LAMPS){ const s=K.s, o=K.o, SC=1.5, cx=o[0]+4*s, Y1=o[1]+3
         if(nx===w.n[0]&&ny===w.n[1])return shoji(w.inA(a),z,w.inL,w.door,w.win,w.alc,w.holes);
         if(nx===-w.n[0]&&ny===-w.n[1])return outside(id,a,z,k);
         return wood(.9); },()=>sh(WD,1.1),id)); }
-    BATCH.tag=OBJ('bodega','bath house'); for(const b of WB)gbox(b,'GD'+b.id);
+    BATCH.tag=OBJ('bodega','bath house'); for(const b of WB)gbox({...b,skf:(nx,ny)=>(nx||ny)&&nx===WALLS[b.id].n[0]&&ny===WALLS[b.id].n[1]},'GD'+b.id);
     const pw=(c,lo=.9,hi=1.08)=>(nx,ny,x,y,z,k)=>sh(c,k*(lo+(hi-lo)*hs(Math.floor((nx?y:x)*24),Math.floor(z/5),670)));
     const OUT={front:[0,1],back:[0,-1],west:[-1,0],east:[1,0]}, onWall=(f,a0,a1,z0,z1,d,c,more={})=>{ const w=WALLS[f], [ox,oy]=OUT[f], t=w.ax==='x'?(oy>0?[w.at1,w.at1+d]:[w.at0-d,w.at0]):(ox>0?[w.at1,w.at1+d]:[w.at0-d,w.at0]);
       return {...box3(w,a0,a1,z0,z1,t[0],t[1],more.fs||pw(c),more.top||(()=>sh(c,1.12)),f),...more}; };
@@ -152,7 +152,7 @@ function gdShape(GS,K,LAMPS){ const s=K.s, o=K.o, SC=1.5, cx=o[0]+4*s, Y1=o[1]+3
         gbox({x0:x-.01,x1:x+.01,y0:y-.01,y1:y+.01,z0:H-8,z1:H+18,c:[30,26,24]},'GDU');
         gbox({x0:x-.2,x1:x+.2,y0:y-.2,y1:y+.2,z0:H-34,z1:H-8,c:[220,60,44],top:()=>[40,30,28],fs:(nx,ny,X_,Y_,z)=>z<3||z>23?[40,30,28]:z%5<1?lit([200,40,30]):lit([255,96,64])},'GDL'); }
       BATCH.tag=OBJ('bodega','bath house'); }
-    const THINGS=[]; const thing=(name,boxes,solid=true)=>{ BATCH.tag=OBJ('bodega',name); for(const b of boxes)gbox(b,'GDL'); THINGS.push({name,boxes,solid}); };
+    const THINGS=[], LATER=[]; const thing=(name,boxes,solid=true,later)=>{ if(later)LATER.push([name,boxes]); else{ BATCH.tag=OBJ('bodega',name); for(const b of boxes)gbox(b,'GDL'); } THINGS.push({name,boxes,solid}); };
     const bk=(x0,y0,x1,y1,z0,z1,c,more={})=>({x0,y0,x1,y1,z0,z1,c,...more});
     { const bx=X1-.75, by=Y1+.18, R=[176,44,34], bf=(nx,ny,x,y,z,k)=>sh(z>9&&z<11?[30,26,24]:R,k);
       thing('fire buckets',[bk(bx,by,bx+.3,by+.3,0,12,R,{fs:bf}),bk(bx+.32,by,bx+.62,by+.3,0,12,R,{fs:bf}),bk(bx+.16,by+.02,bx+.46,by+.32,12,24,R,{fs:bf,top:()=>[60,30,26]})]); }
@@ -178,27 +178,28 @@ function gdShape(GS,K,LAMPS){ const s=K.s, o=K.o, SC=1.5, cx=o[0]+4*s, Y1=o[1]+3
       return sh(e<.5?[66,112,150]:hash(i,j,701)<.14?[110,160,186]:[206,214,216],.95+.08*hash(i,j,702)); };
     const PX0=cx-3.3, PX1=cx+3.3, PY0=cy-1.2, PY1=cy+1.2, HN=[184,146,100], hoop=(nx,ny,x,y,z,k)=>sh(z%4<1?[70,64,60]:HN,k);
     thing('bath pool',[bk(PX0,PY0,PX1,PY0+.2,0,12,HN,{fs:pw(HN)}),bk(PX0,PY1-.2,PX1,PY1,0,12,HN,{fs:pw(HN)}),bk(PX0,PY0+.2,PX0+.2,PY1-.2,0,12,HN,{fs:pw(HN)}),bk(PX1-.2,PY0+.2,PX1,PY1-.2,0,12,HN,{fs:pw(HN)}),
-      bk(PX0+.2,PY0+.2,PX1-.2,PY1-.2,0,8,[74,158,180],{top:(x,y)=>(Math.floor(x*24+3*Math.sin(y*9))%9===0&&hash(Math.floor(x*3),Math.floor(y*6),703)<.5)?lit([170,226,236]):[74,158,180]})]);
-    for(const [x0,x1] of [[xi0+.1,xi0+.55],[xi1-.55,xi1-.1]])thing('wooden bench',[bk(x0,cy-1.5,x1,cy+1.5,13,17,HN,{top:(x,y)=>Math.floor(y*24)%5===0?[120,90,60]:sh(HN,1.06)}),bk(x0+.05,cy-1.4,x1-.05,cy-1.25,0,13,[120,90,60]),bk(x0+.05,cy+1.25,x1-.05,cy+1.4,0,13,[120,90,60])]);
-    for(const [x,y] of [[cx-2.7,PY1+.3],[cx-2.25,PY1+.35],[cx+2.4,PY1+.3]])thing('wooden bucket',[bk(x,y,x+.3,y+.3,0,9,HN,{fs:hoop,top:()=>[90,140,160]})],false);
-    for(const [x,y] of [[cx-1.6,PY1+.3],[cx+1.7,PY1+.3]])thing('bath stool',[bk(x,y,x+.36,y+.3,6,8,HN),bk(x+.03,y+.03,x+.08,y+.27,0,6,[120,90,60]),bk(x+.28,y+.03,x+.33,y+.27,0,6,[120,90,60])],false);
+      bk(PX0+.2,PY0+.2,PX1-.2,PY1-.2,0,8,[74,158,180],{top:(x,y)=>(Math.floor(x*24+3*Math.sin(y*9))%9===0&&hash(Math.floor(x*3),Math.floor(y*6),703)<.5)?lit([170,226,236]):[74,158,180]})],true,1);
+    for(const [x0,x1] of [[xi0+.1,xi0+.55],[xi1-.55,xi1-.1]])thing('wooden bench',[bk(x0,cy-1.5,x1,cy+1.5,13,17,HN,{top:(x,y)=>Math.floor(y*24)%5===0?[120,90,60]:sh(HN,1.06)}),bk(x0+.05,cy-1.4,x1-.05,cy-1.25,0,13,[120,90,60]),bk(x0+.05,cy+1.25,x1-.05,cy+1.4,0,13,[120,90,60])],true,1);
+    for(const [x,y] of [[cx-2.7,PY1+.3],[cx-2.25,PY1+.35],[cx+2.4,PY1+.3]])thing('wooden bucket',[bk(x,y,x+.3,y+.3,0,9,HN,{fs:hoop,top:()=>[90,140,160]})],false,1);
+    for(const [x,y] of [[cx-1.6,PY1+.3],[cx+1.7,PY1+.3]])thing('bath stool',[bk(x,y,x+.36,y+.3,6,8,HN),bk(x+.03,y+.03,x+.08,y+.27,0,6,[120,90,60]),bk(x+.28,y+.03,x+.33,y+.27,0,6,[120,90,60])],false,1);
     BATCH.tag=null;
-    flat(xi0,yi0,xi1,yi1,.4,floorCol,'GDL'); flat(X0+DOOR.a0,Y1-T,X0+DOOR.a1,Y1,.4,(x,y)=>sh(J.DJBRD,(x*5)%1<.1?.72:1),'GDL');
+    flat(X0+DOOR.a0,Y1-T,X0+DOOR.a1,Y1,.4,(x,y)=>sh(J.DJBRD,(x*5)%1<.1?.72:1),'GDL');
     flat(X0+BAY.a0,Y1-T,X0+BAY.a1,Y1+BAY.out,BAY.z0+.3,(x,y)=>sh(J.DJBRD,(x*5)%1<.1?.72:1),'GDfront');
     const ITEMS=[], CAND=[[xi0+.5,yi0+.5],[xi1-.5,yi0+.5],[xi0+.5,yi1-.5],[xi1-.5,yi1-.5]], AND=[[X0+DOOR.a0-.6,yi1-.45],[X0+DOOR.a1+.6,yi1-.45]];
     const WAX=[226,214,186], WG=[236,184,120], E=c=>Object.assign(c,{e:1}), wax=p=>{ for(const b of p.boxes)if(!b.life)for(const f of ['fs','fi','fj','top']){ const g=b[f]; if(g)b[f]=(...a)=>{ const c=g(...a); if(!c)return c; if(!c.e)return f==='fs'?E(sh(WG,.28)):c;
         const k=Math.max(0,Math.min(1,(c[0]/240-.3)/1.07)); return f==='top'?E(sh(WG,.62)):E(sh(WG,.3+.34*k*k)); }; }
       const fb=p.boxes.find(b=>b.life), x=(fb.x0+fb.x1)/2, y=(fb.y0+fb.y1)/2; p.boxes.push({x0:x-.012,y0:y-.012,x1:x+.012,y1:y+.012,z0:30,z1:32.5,c:[26,22,20],foot:0,nb:1}); return p; };
     for(const [x,y] of CAND)ITEMS.push(wax(J.djCandle(x,y))); for(const [x,y] of AND)ITEMS.push(J.djAndon(x,y));
-    for(const p of ITEMS){ BATCH.tag=OBJ('bodega',p.name); for(const b of p.boxes)gbox(b,'GDL'); } BATCH.tag=null;
     const PLN={}; for(const id in WALLS)PLN[id]=new THREE.Plane(new THREE.Vector3(0,-1,0),1e6);
     BATCH.cast=true;
-    BATCH.build((k,map,emap)=>{ const pl=PLN[k.slice(2)], cp=pl?{clippingPlanes:[pl]}:{};
+    const MKG=(k,map,emap)=>{ const pl=PLN[k.slice(2)], cp=pl?{clippingPlanes:[pl]}:{};
       if(k==='B')return new THREE.MeshBasicMaterial({map,side:THREE.DoubleSide,alphaTest:.5});
-      return new THREE.MeshLambertMaterial({map,alphaTest:.5,side:THREE.DoubleSide,...(emap?{emissiveMap:emap,emissive:0xffffff,emissiveIntensity:1.3}:{}),...cp}); });
+      return new THREE.MeshLambertMaterial({map,alphaTest:.5,side:THREE.DoubleSide,...(emap?{emissiveMap:emap,emissive:0xffffff,emissiveIntensity:1.3}:{}),...cp}); };
+    BATCH.build(MKG);
     BATCH.cast=false; const KM=BATCH.meshes; BATCH.meshes={}; for(const me of BATCH.all(KM,'B'))me.castShadow=false;
-    const ix0=X(xi0), ix1=X(xi1), iz0=Z(yi0), iz1=Z(yi1), inside=()=>pos.x>Math.min(ix0,ix1)&&pos.x<Math.max(ix0,ix1)&&pos.z>Math.min(iz0,iz1)&&pos.z<Math.max(iz0,iz1);
-    for(const id in WALLS)for(const me of BATCH.all(KM,'GD'+id))cutWalls.push({pl:PLN[id],nx:WALLS[id].n[0],nz:WALLS[id].n[1],foot:Y(8),me,when:inside});
+    const ix0=X(xi0), ix1=X(xi1), iz0=Z(yi0), iz1=Z(yi1), inBox=()=>pos.x>Math.min(ix0,ix1)&&pos.x<Math.max(ix0,ix1)&&pos.z>Math.min(iz0,iz1)&&pos.z<Math.max(iz0,iz1), inside=()=>inBox()||!!(window.ROOMS&&ROOMS.cur&&ROOMS.cur.lz==='bath');
+    const cuts=M=>{ for(const id in WALLS)for(const me of BATCH.all(M,'GD'+id))cutWalls.push({pl:PLN[id],nx:WALLS[id].n[0],nz:WALLS[id].n[1],foot:Y(8),me,when:inside}); }; cuts(KM);
+    { const ca=new THREE.Mesh(new THREE.PlaneGeometry(X(X0+DOOR.a1)-X(X0+DOOR.a0),Y(DH)),new THREE.MeshBasicMaterial({color:0x07070a})); ca.position.set((X(X0+DOOR.a0)+X(X0+DOOR.a1))/2,Y(DH)/2,Z(Y1-T-.06)); ca.raycast=()=>{}; scene.add(ca); GK.card=ca; }
     const HIDE=[...BATCH.all(KM,'GDU'),...BATCH.all(KM,'GDR')];
     if(BOD.GHOSTST)BOD.GHOSTST.push({name:'ghost street shop roof',boxes:ROOF.filter(b=>b.z0>=H2).map(b=>({...b,x0:Math.max(b.x0,X0),x1:Math.min(b.x1,X1)})),high:1});
     const sol=(x0,y0,x1,y1,zt)=>{ solids.push([X(x0),Z(y0),X(x1),Z(y1)]); fixed.push([X(x0),Z(y0),0,X(x1),Z(y1),Math.max(.05,Y(zt))]); };
@@ -209,10 +210,18 @@ function gdShape(GS,K,LAMPS){ const s=K.s, o=K.o, SC=1.5, cx=o[0]+4*s, Y1=o[1]+3
     for(const p of ITEMS){ const bs=p.boxes.filter(b=>b.z0<30&&b.z1-b.z0>3); if(!bs.length||/incense/.test(p.name))continue;
       sol(Math.min(...bs.map(b=>b.x0)),Math.min(...bs.map(b=>b.y0)),Math.max(...bs.map(b=>b.x1)),Math.max(...bs.map(b=>b.y1)),Math.max(...bs.map(b=>b.z1))); }
     const LT=[];
-    const light=(x,y,z,c,r,fl)=>{ const cm=Math.max(...c), L=new THREE.PointLight(new THREE.Color(c[0]/cm,c[1]/cm,c[2]/cm),0,r*TILE*1.25,1.6); L.position.set(X(x),Y(z),Z(y)); scene.add(L); LT.push({L,i:7*cm*Math.min(1.2,r/5),fl,s:Math.round(x*7+y*13)}); return LT[LT.length-1]; };
-    for(const [x,y] of CAND)light(x,y,34,[.85,.42,.17],5,1); FLAME.props(ITEMS,X,Y,Z);
-    for(const [i,sx] of [cx-2.3,cx-.8,cx+.7,cx+2.2].entries())FLAME.add({kind:'none',x:X(sx),y:Y(9),z:Z(cy+(i%2?.3:-.3)),w:.6*TILE,smoke:.8,steam:1,sk:1.5,seed:i});
-    for(const [x,y] of AND)light(x,y,20,[.66,.34,.14],5.5,0);
+    const light=(x,y,z,c,r,fl)=>{ const cm=Math.max(...c), L=new THREE.PointLight(new THREE.Color(c[0]/cm,c[1]/cm,c[2]/cm),0,r*TILE*1.25,1.6); L.position.set(X(x),Y(z),Z(y)); if(LITE.recs.length){ L.userData.grp=MAPG.bodega||null; LITE.recs.push(L); } else (MAPG.bodega||scene).add(L); LT.push({L,i:7*cm*Math.min(1.2,r/5),fl,s:Math.round(x*7+y*13)}); return LT[LT.length-1]; };
+    let built=false; const build=()=>{ if(built)return; built=true; const keep=BATCH.items.splice(0), m0=BATCH.meshes; BATCH.meshes={};
+      for(const b of WB)gbox({...b,skf:(nx,ny)=>!((nx||ny)&&nx===WALLS[b.id].n[0]&&ny===WALLS[b.id].n[1])},'GD'+b.id);
+      for(const [name,boxes] of LATER){ BATCH.tag=OBJ('bodega',name); for(const b of boxes)gbox(b,'GDL'); }
+      BATCH.tag=OBJ('bodega','bath house'); flat(xi0,yi0,xi1,yi1,.4,floorCol,'GDL');
+      for(const p of ITEMS){ BATCH.tag=OBJ('bodega',p.name); for(const b of p.boxes)gbox(b,'GDL'); } BATCH.tag=null;
+      BATCH.cast=true; BATCH.build(MKG); BATCH.cast=false; const M=BATCH.meshes||{}; BATCH.meshes=m0; BATCH.items=keep;
+      for(const k in M){ (MAPG.bodega||scene).add(M[k]); if(k==='B')M[k].castShadow=false; } cuts(M);
+      for(const [x,y] of CAND)light(x,y,34,[.85,.42,.17],5,1); FLAME.props(ITEMS,X,Y,Z);
+      for(const [i,sx] of [cx-2.3,cx-.8,cx+.7,cx+2.2].entries())FLAME.add({kind:'none',x:X(sx),y:Y(9),z:Z(cy+(i%2?.3:-.3)),w:.6*TILE,smoke:.8,steam:1,sk:1.5,seed:i});
+      for(const [x,y] of AND)light(x,y,20,[.66,.34,.14],5.5,0); was=null;
+      if(window.ROOMS&&ROOMS.lazy.bath)ROOMS.lazy.bath.done=true; if(window.ROOMS)ROOMS.reset(); if(window.CLIP)CLIP.run(); };
     const OUTL=[[X0+(BAY.a0+BAY.a1)/2,Y1+1.4,70,[1,.6,.56],7],[X0+(EW.a0+EW.a1)/2,Y1+1.3,74,[1,.74,.42],7.5],[X0+W/2,Y1+1.2,90,[1,.66,.4],6],[X0+W/2,Y1+.9,H+60,[1,.72,.44],6],[X0-1.1,Y0+D/2,80,[1,.76,.5],5]];
     for(const [x,y,z,c,r] of OUTL){ const cm=Math.max(...c), L=new THREE.PointLight(new THREE.Color(c[0]/cm,c[1]/cm,c[2]/cm),9*cm*Math.min(1.3,r/5),r*TILE*1.25,1.6); L.position.set(X(x),Y(z),Z(y)); L.userData.i0=L.intensity; scene.add(L); }
     const SH=[]; { const V=THREE.Vector3, g0=Y(.6);
@@ -233,7 +242,7 @@ function gdShape(GS,K,LAMPS){ const s=K.s, o=K.o, SC=1.5, cx=o[0]+4*s, Y1=o[1]+3
       const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3)); g.computeBoundingSphere();
       const m=new THREE.Mesh(g,new THREE.MeshBasicMaterial({color:0xffc890,transparent:true,opacity:.2,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide,fog:false})); m.renderOrder=3; m.userData.k=2.4; scene.add(m); SHX.push(m); }
     let was=null, hid=null, step=-1;
-    BOD.GD={r:[xi0,yi0,xi1,yi1],door:[X0+W/2,Y1],H:H+2,eave:H,inside,tick(){ const t=performance.now()/1000, inn=inside();
+    BOD.GD={r:[xi0,yi0,xi1,yi1],door:[X0+W/2,Y1],dw:DOOR.a1-DOOR.a0,H:H+2,eave:H,inside:inBox,build,tick(){ const t=performance.now()/1000, inn=inside();
       for(const l of LT){ const k=l.fl?FLAME.flick(l.s,t):1; if(inn||was!==inn)l.L.intensity=inn?l.i*k:0; } was=inn;
       if(hid!==inn){ hid=inn; for(const me of HIDE)SEEN(me,!inn); }
       const e=typeof CLOCK!=='undefined'&&CLOCK.elev?CLOCK.elev():0, n=Math.max(0,Math.min(1,(12-e)/22)), st=inn?-1:Math.round(n*3);

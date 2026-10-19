@@ -1,4 +1,4 @@
-const W3={group:new THREE.Group(), meshes:[], idMeshes:[], L:new THREE.Vector3(), tint:new THREE.Color(1,1,1), tris:0, lv:{value:2}, GH:{value:0}, look:{value:+(new URLSearchParams(location.search).get('look')||0)}, G:{value:new THREE.Matrix3()}, LP:{value:[new THREE.Vector3(),new THREE.Vector3()]}, LC:{value:[new THREE.Vector3(),new THREE.Vector3()]}, CamW:{value:new THREE.Vector3()}, LVP:{value:new THREE.Matrix4()},
+const W3={group:new THREE.Group(), meshes:[], idMeshes:[], L:new THREE.Vector3(), tint:new THREE.Color(1,1,1), tris:0, lv:{value:2}, look:{value:+(new URLSearchParams(location.search).get('look')||0)}, G:{value:new THREE.Matrix3()}, LP:{value:[new THREE.Vector3(),new THREE.Vector3()]}, LC:{value:[new THREE.Vector3(),new THREE.Vector3()]}, CamW:{value:new THREE.Vector3()}, LVP:{value:new THREE.Matrix4()},
   sm:new THREE.WebGLRenderTarget(512,512), smCam:new THREE.OrthographicCamera(-2.1,2.1,2.1,-2.1,0.1,12), Lw:new THREE.Vector3()};
 W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THREE.FloatType;
 { const R=RIG, {V,add,sub,mul,nrm,dot}=R, rest=(R.farOnly(false),R.build(R.walkPose({ph:0,w:0},null),null)), MATS=R.MATS, STEP=1, CELL=2, OUT=0.2*R.PX;
@@ -71,7 +71,7 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
   const FS=`uniform vec3 uL,uTint; uniform float uLv; uniform mat4 uLVP; uniform sampler2D uSM; uniform int uLook; uniform mat3 uG; uniform vec3 uLP[2],uLC[2],uCamW; varying vec3 vC0,vC1,vC2,vCd,vN,vW;
   float bay(vec2 p){ return fract(sin(dot(floor(vW*21.24+.001),vec3(12.9898,78.233,37.719)))*43758.5453); }
   vec3 room(vec3 nw,out vec3 rimc){ vec3 a=vec3(0.07,0.08,0.11); rimc=vec3(0.); for(int i=0;i<2;i++){ vec3 d=uLP[i]-vW; float k=min(1.,1./(1.+dot(d,d)*0.08)); a+=uLC[i]*max(dot(nw,normalize(d)),0.)*k*3.2; rimc+=uLC[i]*k; } return a; }
-  uniform float uGh; void main0(){ float l=dot(normalize(vN),uL); vec3 c;
+  void main(){ float l=dot(normalize(vN),uL); vec3 c;
     if(uLook==1){ float t=l+(bay(gl_FragCoord.xy)-0.5)*0.3; vec3 hi=mix(vC0,vec3(1.,.93,.8)*max(vC0.r,max(vC0.g,vC0.b)),.22), sh=vC2*vec3(.82,.88,1.18);
       gl_FragColor=vec4((t>0.4?hi:t>-0.2?vC1:sh)*uTint,1.); return; }
     if(uLook>=2){ vec3 nw=normalize(uG*vN), rimc; vec3 a=room(nw,rimc); float rim=pow(1.-max(dot(nw,-uCamW),0.),3.);
@@ -82,8 +82,7 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
     else{ int t=l>0.55?0:l>0.05?1:l>-0.4?2:4;
       if(uLv>1.5&&t<2){ vec4 p=uLVP*vec4(vW,1.); vec3 q=p.xyz/p.w*0.5+0.5; if(q.x>0.&&q.x<1.&&q.y>0.&&q.y<1.&&q.z-0.006>texture2D(uSM,q.xy).r) t=2; }
       c=t==0?vC0:t==1?vC1:t==2?vC2:vCd; }
-    gl_FragColor=vec4(c*uTint,1.); }
-  void main(){ main0(); gl_FragColor.rgb=mix(gl_FragColor.rgb,vec3(.8,.88,1.)*(.5+.7*dot(gl_FragColor.rgb,vec3(.3,.5,.2))),min(uGh,1.)*.75); gl_FragColor.a=1.-min(uGh,1.)*.5-max(uGh-1.,0.)*.5; }`;
+    gl_FragColor=vec4(c*uTint,1.); }`;
   const IVS=MOVE+`attribute float mat,pid; varying float vm,vd,vp; void main(){ `+AT+` vm=mat; vp=pid; vec4 mv=modelViewMatrix*(PM*vec4(position,1.)); vd=-mv.z; gl_Position=projectionMatrix*mv; }`;
   const IFS=`varying float vm,vd,vp; void main(){ gl_FragColor=vec4(floor(vp+0.5),floor(vm+0.5),0.,vd); }`;
   for(const P of PCS){ const fine=W3.fine(P); W3.warm(P,P.step||(fine?STEP/2:STEP),fine,null); }
@@ -94,7 +93,7 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
   { const RG=[]; let o=0; for(const g of geos){ const n=g.attributes.position.count; RG.push([o,n]); o+=n; }
     W3.reindex=()=>{ let n=0; for(let i=0;i<RG.length;i++)if(!W3.HIDE[i])n+=RG[i][1]; const I=new Uint32Array(n); let k=0; for(let i=0;i<RG.length;i++){ if(W3.HIDE[i])continue; const [a,c]=RG[i]; for(let v=0;v<c;v++)I[k++]=a+v; }
       all.setIndex(new THREE.BufferAttribute(I,1)); W3.trisWorn=n/3; }; W3.reindex(); }
-  const U={uGh:W3.GH,uPM:W3.PM,uL:{value:W3.L},uTint:{value:W3.tint},uLv:W3.lv,uLVP:W3.LVP,uSM:{value:W3.sm.depthTexture},uLook:W3.look,uG:W3.G,uLP:W3.LP,uLC:W3.LC,uCamW:W3.CamW};
+  const U={uPM:W3.PM,uL:{value:W3.L},uTint:{value:W3.tint},uLv:W3.lv,uLVP:W3.LVP,uSM:{value:W3.sm.depthTexture},uLook:W3.look,uG:W3.G,uLP:W3.LP,uLC:W3.LC,uCamW:W3.CamW};
   const m=new THREE.Mesh(all,new THREE.ShaderMaterial({vertexShader:VS,fragmentShader:FS,side:THREE.DoubleSide,uniforms:U}));
   const dist=new THREE.MeshDistanceMaterial({side:THREE.DoubleSide}); dist.onBeforeCompile=sh=>{ sh.uniforms.uPM=W3.PM; sh.vertexShader=MOVE+'\n'+sh.vertexShader.replace('#include <begin_vertex>',AT+' vec3 transformed=(PM*vec4(position,1.)).xyz;'); }; dist.customProgramCacheKey=()=>'w3dist'+NP;
   const depth=new THREE.MeshDepthMaterial({side:THREE.DoubleSide,depthPacking:THREE.RGBADepthPacking}); depth.onBeforeCompile=sh=>{ sh.uniforms.uPM=W3.PM; sh.vertexShader=MOVE+'\n'+sh.vertexShader.replace('#include <begin_vertex>',AT+' vec3 transformed=(PM*vec4(position,1.)).xyz;'); }; depth.customProgramCacheKey=()=>'w3depth'+NP;
@@ -130,8 +129,8 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
       .replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n if(uRim>0.){ vec3 vd=isOrthographic?vec3(0.,0.,1.):normalize(vViewPosition); totalEmissiveRadiance+=mix(diffuseColor.rgb,vec3(1.),.4)*uRim*pow(1.-abs(dot(normalize(vNormal),vd)),3.); }');
     sh.uniforms.uLv=W3.lv; sh.uniforms.uLVP=W3.LVP; sh.uniforms.uSM={value:W3.sm.depthTexture}; sh.uniforms.uSelf=W3.uSelf;
     sh.vertexShader='varying vec3 vWW;\n'+sh.vertexShader.replace('#include <project_vertex>','#include <project_vertex>\n vWW=(modelMatrix*vec4(transformed,1.)).xyz;').replace('#include <shadowmap_vertex>',THREE.ShaderChunk.shadowmap_vertex.replace(/(directional|point|spot)LightShadows\[ i \]\.shadowNormalBias/g,'($&+.18)'));
-    sh.uniforms.uGh=W3.GH; sh.uniforms.uFl=W3.uFl; sh.fragmentShader='uniform float uLv,uSelf,uGh,uFl; uniform mat4 uLVP; uniform sampler2D uSM; varying vec3 vWW;\n'+sh.fragmentShader.replace('#include <normal_fragment_begin>','float faceDirection=1.0; vec3 normal=normalize(vNormal); vec3 nonPerturbedNormal=normal;').replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n totalEmissiveRadiance+=diffuseColor.rgb*0.025;')
-      .replace('#include <opaque_fragment>','#include <opaque_fragment>\n if(uLv>1.5){ vec4 sp=uLVP*vec4(vWW,1.); vec3 q=sp.xyz/sp.w*0.5+0.5; if(q.x>0.&&q.x<1.&&q.y>0.&&q.y<1.&&q.z-0.006>texture2D(uSM,q.xy).r) gl_FragColor.rgb*=uSelf; }\n { float ld=max(dot(diffuseColor.rgb,vec3(.3,.5,.2)),.001), r=dot(gl_FragColor.rgb,vec3(.3,.5,.2))/ld, q=r<1.?max(uFl,floor(r*4.+.35)/4.):r; gl_FragColor.rgb=r<.02?diffuseColor.rgb*q:gl_FragColor.rgb*q/r; }\n gl_FragColor.rgb=mix(gl_FragColor.rgb,vec3(.8,.88,1.)*(.5+.7*dot(gl_FragColor.rgb,vec3(.3,.5,.2))),min(uGh,1.)*.75); gl_FragColor.a=1.-min(uGh,1.)*.5-max(uGh-1.,0.)*.5;'); };
+    sh.uniforms.uFl=W3.uFl; sh.fragmentShader='uniform float uLv,uSelf,uFl; uniform mat4 uLVP; uniform sampler2D uSM; varying vec3 vWW;\n'+sh.fragmentShader.replace('#include <normal_fragment_begin>','float faceDirection=1.0; vec3 normal=normalize(vNormal); vec3 nonPerturbedNormal=normal;').replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n totalEmissiveRadiance+=diffuseColor.rgb*0.025;')
+      .replace('#include <opaque_fragment>','#include <opaque_fragment>\n if(uLv>1.5){ vec4 sp=uLVP*vec4(vWW,1.); vec3 q=sp.xyz/sp.w*0.5+0.5; if(q.x>0.&&q.x<1.&&q.y>0.&&q.y<1.&&q.z-0.006>texture2D(uSM,q.xy).r) gl_FragColor.rgb*=uSelf; }\n { float ld=max(dot(diffuseColor.rgb,vec3(.3,.5,.2)),.001), r=dot(gl_FragColor.rgb,vec3(.3,.5,.2))/ld, q=r<1.?max(uFl,floor(r*4.+.35)/4.):r; gl_FragColor.rgb=r<.02?diffuseColor.rgb*q:gl_FragColor.rgb*q/r; }'); };
   toon.customProgramCacheKey=()=>'w3toon'+NP; W3.flat=m.material; W3.toon=toon; m.receiveShadow=true;
   W3.group.add(m); W3.meshes.push(m); W3.mesh=m;
   scene.add(W3.group);

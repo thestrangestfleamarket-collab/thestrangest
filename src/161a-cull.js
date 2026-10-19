@@ -26,7 +26,7 @@ const CULL={L:[],M:new Map(),CS:10*TILE,on:QS.get('cull')!=='0'};
   CULL.add=s=>{ if(!CULL.on||!s||CULL.M.has(s))return; const R={s,px:[],ix:[],ch:0,np:0}; CULL.M.set(s,R); CULL.L.push(R); };
   CULL.scan=()=>{ if(!CULL.on)return; scene.traverse(o=>{ if(o.isMesh&&o.userData.cull&&!o.isInstancedMesh){ CULL.add(o); return; } if(!o.isInstancedMesh||CULL.M.has(o)||o.userData.cullOf||!o.frustumCulled||o.count<8||Object.values(o.geometry.attributes).some(a=>a.isInstancedBufferAttribute))return;
     if(!o.boundingSphere)o.computeBoundingSphere(); if(o.boundingSphere.radius>CULL.CS/2)CULL.add(o); }); };
-  CULL.begin=()=>{ for(const R of CULL.L){ if(R.off)continue; const s=R.s; if(!s.parent){ drop(R); R.off=true; continue; }
+  CULL.begin=()=>{ if(ROOMS.hold)ROOMS.hold(); for(const R of CULL.L){ if(R.off)continue; const s=R.s; if(!s.parent){ drop(R); R.off=true; continue; }
       const vv=vers(s); if(!R.done||s.geometry!==R.g||!s.isInstancedMesh&&vv!==R.v||s.isInstancedMesh&&(s.count!==R.n||!!s.instanceColor!==!!(R.px[0]&&R.px[0].instanceColor))){ if(R.done&&++R.np>8){ drop(R); R.off=true; continue; } R.done=true; R.n=s.count; part(R); if(R.off){ drop(R); continue; } R.ch=0; }
       else if(vv!==R.v){ R.v=vv; fill(R); if(++R.ch>20){ drop(R); R.off=true; continue; } } else R.ch=0;
       R.vis=s.visible; tie(R); s.visible=false; } };

@@ -64,7 +64,7 @@ const MAPLV=(py,pos)=>{ METRO.door(py,pos); if(MODS.dunDoor)MODS.dunDoor(py,pos)
   if(lv===LVL)return false; LVL=lv; solids=SOL[lv]; fixed=FIX[lv]; HEMI.color.set(lv==='down'?0x8a93a8:0x55607a); HEMI.groundColor.set(lv==='down'?0x1a1814:0x14110e); HEMI.intensity=lv==='down'?.1:.3; return true; };
 
 { const MB=BOUND; STORE.tick=()=>{ STORE.pos=pos; STORE.cur=ROOMS.cur?ROOMS.cur.id:null; STORE.nl=lamps.length; STORE.lon=LITE.sel.length;
-    for(const r of STORE.roofs)SEEN(r.me,!r.R.inside(pos.x,pos.z)); BOUND=STORE.inStore(pos.x,pos.z)?STORE.bound:MB; }; }
+    for(const r of STORE.roofs)SEEN(r.me,!(r.R.inside(pos.x,pos.z)||ROOMS.cur===r.R)); BOUND=STORE.inStore(pos.x,pos.z)?STORE.bound:MB; }; }
 window.MAPDBG=()=>({LVL,cut:MODS.stairCut.constant,vis:Object.fromEntries(Object.entries(MAPG).map(([k,g])=>[k,g.visible])),stairLamp:lamps.filter(L=>L.parent===MAPG.stairs).map(L=>L.intensity),py:typeof py!=='undefined'?py:null,pos:typeof pos!=='undefined'?[pos.x,pos.z]:null});
 
 { const K=32, N=K*24, c=document.createElement('canvas'); c.width=c.height=N; const g=c.getContext('2d'), im=g.createImageData(N,N), GC=BOD.g.lawnCol;

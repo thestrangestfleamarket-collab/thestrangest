@@ -3,19 +3,28 @@
   document.head.appendChild(css); document.body.appendChild(el);
   const DEAD='YOU ARE DEAD. FIND THE BATH HOUSE.', note=(t,s)=>{ el.textContent=t; el.hidden=false; clearTimeout(note.t); if(s)note.t=setTimeout(()=>{ if(VIT.dead)note(DEAD); else el.hidden=true; },s*1000); };
   const wait=ms=>new Promise(r=>setTimeout(r,ms)), frames=k=>new Promise(r=>{ const f=()=>--k<=0?r():requestAnimationFrame(f); requestAnimationFrame(f); });
-  const look=on=>{ for(const m of [W3.flat,W3.toon]){ m.transparent=on; m.needsUpdate=true; } W3.mesh.castShadow=!on; };
-  let gh=0, rise=-1, busy=false;
-  VIT.die=()=>{ if(VIT.dead)return; VIT.dead=true; VIT.hp=0; VIT.out=2.4; trip=true; gh=0; rise=-1; try{ SAVE.set('dead','1'); }catch(e){} look(true); note(DEAD); };
+  const MH=T/.84; let S=null, gh=0, rise=-1, busy=false;
+  const sheet=()=>{ if(S||!window.GHOSTS||!GHOSTS.cloth)return S; const MV=BOD.YS(24)/.84, mat=new THREE.MeshToonMaterial({color:0xf2f0ea,emissive:0x2a3040,gradientMap:W3.GP,transparent:true,opacity:0,side:THREE.DoubleSide,depthWrite:false}), em=new THREE.MeshBasicMaterial({color:0x0c0c10,transparent:true,opacity:0}), eg=new THREE.CircleGeometry(1,10);
+    S=GHOSTS.cloth(1.15,true,17,.24,mat,pos.x/MH,py/MV+1.5,pos.z/MH); S.MV=MV; S.mat=mat; S.em=em; S.eyes=[-1,1].map(()=>{ const e=new THREE.Mesh(eg,em); e.scale.set(.05*MH,.075*MV,1); e.renderOrder=4; scene.add(e); return e; }); return S; };
+  const look=on=>{ W3.mesh.visible=!on; if(S){ S.me.visible=on; for(const e of S.eyes)e.visible=on; } };
+  const V=new THREE.Vector3();
+  VIT.die=()=>{ if(VIT.dead)return; VIT.dead=true; VIT.hp=0; VIT.out=2.4; trip=true; gh=0; rise=-1; try{ SAVE.set('dead','1'); }catch(e){} note(DEAD); };
   const back=async()=>{ busy=true; const f=document.getElementById('subfade');
     if(f){ f.textContent='LOADING…'; f.style.pointerEvents='auto'; f.style.opacity='1'; } await wait(1800);
     const G=BOD.GD, K=BOD.GDK, dx=G.door[0], oy=K?K.y1e+.6:G.door[1]+3;
     STORE.goTo(BOD.X(dx),BOD.Z(oy),'up'); heading=BOD.Z(oy+1)>BOD.Z(oy)?0:Math.PI; if(typeof PH!=='undefined')PH.hd=heading; keys.clear(); target=null;
-    VIT.dead=false; VIT.hp=1; VIT.out=0; gh=0; rise=-1; W3.GH.value=0; look(false); try{ SAVE.del('dead'); }catch(e){} LOOKS.robe(true);
+    VIT.dead=false; VIT.hp=1; VIT.out=0; gh=0; rise=-1; look(false); try{ SAVE.del('dead'); }catch(e){} LOOKS.robe(true);
     await frames(3); await wait(260); if(f){ f.style.opacity='0'; f.style.pointerEvents='none'; } note('You feel refreshed.',5); busy=false; };
   const t0=VIT.tick; VIT.tick=dt=>{ t0(dt); if(!VIT.dead||busy)return; VIT.hp=0;
-    if(gh>=1&&!RAG.on&&st.move&&st.move.name==='fall'&&st.move.held)RIG.release(st,'F'); if(rise<0){ gh=Math.min(1,gh+dt/1.5); if(gh>=1&&VIT.out<=0&&BOD.GD&&LVL==='up'&&py<2*T&&BOD.GD.inside())rise=0; }
+    if(gh>=1&&!RAG.on&&st.move&&st.move.name==='fall'&&st.move.held)RIG.release(st,'F');
+    if(VIT.out>0||!sheet())return;
+    if(!gh){ look(true); S.ball={x:pos.x/MH,y:py/S.MV+1.5,z:pos.z/MH}; S.drop(); }
+    if(rise<0){ gh=Math.min(1,gh+dt); if(gh>=1&&BOD.GD&&LVL==='up'&&py<2*T&&BOD.GD.inside())rise=0; }
     else{ rise+=dt; keys.clear(); target=null; gh=1+Math.min(1,rise/3); if(rise>=3.2)back(); }
-    W3.GH.value=gh; W3.group.position.y+=(Math.min(gh,1)*(.16+.04*Math.sin(performance.now()/1000*1.6))+(rise>0?.6*rise*rise:0))*T; };
+    const b=S.ball, to={x:pos.x/MH,y:py/S.MV+1.5+.05*Math.sin(performance.now()/1000*1.6)+(rise>0?.7*rise*rise:0),z:pos.z/MH}; S.gnd=py/S.MV;
+    if(Math.hypot(to.x-b.x,to.z-b.z)>2||Math.abs(to.y-b.y)>2){ S.ball=to; S.drop(); }
+    GHOSTS.run(S,dt,to,[],MH,S.MV); const a=gh<=1?gh:2-gh; S.mat.opacity=.5*a; S.em.opacity=.85*a;
+    const fx=Math.sin(heading), fz=Math.cos(heading); S.eyes.forEach((e,k)=>{ const sd=k?1:-1, ex=to.x+fx*(S.BR+.05)+fz*sd*.09, ey=to.y+.03, ez=to.z+fz*(S.BR+.05)-fx*sd*.09; e.position.set(ex*MH,ey*S.MV,ez*MH); e.lookAt(V.set((ex+fx)*MH,ey*S.MV,(ez+fz)*MH)); }); };
   window.KILLME=()=>VIT.die();
-  if(SAVE.get('dead')==='1'){ VIT.dead=true; VIT.hp=0; gh=1; look(true); note(DEAD); }
+  if(SAVE.get('dead')==='1'){ VIT.dead=true; VIT.hp=0; note(DEAD); }
   if(QS.get('die')){ const go=()=>window.__started?VIT.die():setTimeout(go,200); setTimeout(go,300); } }

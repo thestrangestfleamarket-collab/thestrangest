@@ -38,7 +38,7 @@ const GARDEN={}; window.GARDEN=GARDEN;
     HEAD.setMatrixAt(n.h,m4.compose(new V3(x,top,z),q,new V3(R*b,R*hh*(g<1?1.4:1),R*b))); HEAD.setColorAt(n.h++,col.setHex(g<1?0x5a9a4a:hc));
     if(cr&&g>=1){ CTR.setMatrixAt(n.c,m4.compose(new V3(x,top+R*hh*.55,z),q,new V3(R*cr,R*cr*.6,R*cr))); CTR.setColorAt(n.c++,col.setHex(cc)); } return top; };
   const sync=()=>{ hits.clear(); for(const t of things){ const i=UI.things.indexOf(t); if(i>=0)UI.things.splice(i,1); } things=[]; const n={s:0,h:0,c:0,l:0}, t0=now();
-    const add=(name,x,y,z,act)=>{ const hb=new THREE.Mesh(HB,HM); hb.position.set(x,y+.15*T,z); hits.add(hb); const th={name,obj:hb,reach:.9*T,near:1.6*T,tall:.4*T,act}; UI.thing(th); things.push(th); };
+    const add=(name,x,y,z,act)=>{ const hb=new THREE.Mesh(HB,HM); hb.position.set(x,y+.15*T,z); hits.add(hb); const th={name,pick:true,obj:hb,reach:.9*T,near:1.6*T,tall:.4*T,act}; UI.thing(th); things.push(th); };
     for(const arr of CH.values())for(const f of arr){ if(S.picked[f.id]||n.s>=NMX-20)continue; put(f.k,f.x,f.y,f.z,f.s,f.a,1,n); add(FL[f.k][0],f.x,f.y,f.z,()=>GARDEN.pick(f)); }
     for(const p of S.plots){ if(n.s>=NMX||Math.hypot(p.x-pos.x,p.z-pos.z)>40*T)continue; const g=Math.min(1,(t0-p.t)/GROW); put(p.k,p.x,p.y,p.z,1,p.a||0,g,n);
       add(`YOUR ${FL[p.k][0]} (${g>=1?'IN BLOOM':g<.4?'SPROUTING':'IN BUD'})`,p.x,p.y,p.z,()=>GARDEN.harvest(p)); }

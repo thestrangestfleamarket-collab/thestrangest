@@ -1,7 +1,7 @@
 const BIRDS={list:[]}; window.BIRDS=BIRDS;
 { const T=TILE, WU=T/.84, say=FORAGE.say, use=FORAGE.use, KEY='birds', {shape,sph,cyl,box,blob}=PARTSNPC.T, VIS=1.25;
   const K=[['HOUSE SPARROW','Passer domesticus',.15,0,3,6,'hop',{body:0x8a6a4a,breast:0xb8ae9c,head:0x8a8a86,cap:0x6e6e70,mask:0x2a2622,wing:0x7a5232,bar:0xe8e0d0,tail:0x5a4632,beak:0x2a2622,leg:0xb08a70}],
-    ['ROCK PIGEON','Columba livia',.32,5,4,5,'walk',{body:0x8a90a0,breast:0x6a7488,head:0x4a5868,mask:0x4a7a6a,wing:0x9aa0ae,bar:0x2a2a30,tail:0x6a7080,beak:0x3a3a3a,leg:0xc85050}],
+    ['ROCK PIGEON','Columba livia',.32,5,4,3,'walk',{body:0x8a90a0,breast:0x6a7488,head:0x4a5868,mask:0x4a7a6a,wing:0x9aa0ae,bar:0x2a2a30,tail:0x6a7080,beak:0x3a3a3a,leg:0xc85050}],
     ['EUROPEAN STARLING','Sturnus vulgaris',.21,10,4,4,'walk',{body:0x1e2228,breast:0x26302a,head:0x1a1e24,wing:0x2a2a2a,bar:0xa89a6a,tail:0x1a1a1e,beak:0xe8c040,leg:0xb08a70}],
     ['AMERICAN ROBIN','Turdus migratorius',.25,15,6,4,'hop',{body:0x4a4a48,breast:0xd0682a,head:0x262624,wing:0x4e4c48,tail:0x2e2e2c,beak:0xe0b030,leg:0x8a6a50}],
     ['MOURNING DOVE','Zenaida macroura',.3,20,6,3,'walk',{body:0xb09a80,breast:0xc8a898,head:0xa8a090,wing:0xa08c74,bar:0x2a2420,tail:0x8a7a68,beak:0x2a2626,leg:0xc87878}],
@@ -44,9 +44,9 @@ const BIRDS={list:[]}; window.BIRDS=BIRDS;
   const CHK=new Set(); { const a0=WEEDS.onAdd, d0=WEEDS.onDrop; WEEDS.onAdd=(key,grp)=>{ if(a0)a0(key,grp); if(!CHK.has(key)){ CHK.add(key); chunk(key,grp); } };
     WEEDS.onDrop=key=>{ if(d0)d0(key); CHK.delete(key); for(const b of [...BIRDS.list])if(b.src===key)drop(b); }; if(WEEDS.chunks)for(const [k,g] of WEEDS.chunks)if(g&&g.sq){ CHK.add(k); chunk(k,g); } }
   const street=()=>{ if(!window.DRESS||!DRESS.kerb||typeof groundY==='undefined')return; const {sw,far}=DRESS.kerb, side=Math.abs(pos.z-sw)<Math.abs(pos.z-far)?-1:1, zk=side<0?sw:far;
-    if(Math.abs(pos.z-zk)>14*T||BIRDS.list.filter(b=>b.src==='street').length>=8)return; const x=Math.min(BOUND.x1-T,Math.max(BOUND.x0+T,pos.x+(Math.random()<.5?-1:1)*(7+Math.random()*9)*T));
+    if(Math.abs(pos.z-zk)>14*T||BIRDS.list.filter(b=>b.src==='street').length>=6)return; const x=Math.min(BOUND.x1-T,Math.max(BOUND.x0+T,pos.x+(Math.random()<.5?-1:1)*(7+Math.random()*9)*T));
     const r=Math.random(), k=r<.6?1:r<.88?0:2, sp=[]; for(let i=0;i<6;i++){ const sx=x+(Math.random()-.5)*3*T, sz=zk+side*(.4+Math.random()*1.2)*T; sp.push([sx,groundY(sx,sz),sz]); }
-    const n=flockN(k,Math.random())+1; for(let j=0;j<n;j++){ const p=sp[j%sp.length]; add(k,p[0],p[1],p[2],{src:'street',spots:sp}); } };
+    const n=Math.min(4,flockN(k,Math.random())); for(let j=0;j<n;j++){ const p=sp[j%sp.length]; add(k,p[0],p[1],p[2],{src:'street',spots:sp}); } };
   const posts=()=>{ const P=(window.DRESS&&DRESS.lampposts)||[]; for(const p of P){ if(Math.hypot(p.x-pos.x,p.z-pos.z)>30*T||BIRDS.list.some(b=>b.post===p))continue; const r=hsh(p.x/T+dayN(),p.z/T,731); if(r>.12)continue;
     add(r<.035?HAWK:r<.08?2:1,p.x,p.y,p.z,{st:'perch',post:p,src:'post',spots:[[p.x,p.y,p.z]]}); } };
   let tn0=-1; setInterval(()=>{ const tn=dayN(); if(tn!==tn0){ const first=tn0<0; tn0=tn; if(!first){ for(const b of [...BIRDS.list])if(b.st!=='pet')drop(b); CHK.clear(); if(WEEDS.chunks)for(const [k,g] of WEEDS.chunks)if(g&&g.sq){ CHK.add(k); chunk(k,g); } } }
@@ -56,7 +56,7 @@ const BIRDS={list:[]}; window.BIRDS=BIRDS;
     if(far.length&&Math.random()<.6){ const s=far[Math.floor(Math.random()*far.length)]; flyTo(b,s[0],s[1],s[2]); } else flyTo(b,b.x+Math.sin(a)*28*T,b.y+9*WU,b.z+Math.cos(a)*28*T,true); };
   BIRDS.flush=flush; let lx=0, lz=0, still=0, spd=0; const m4=new THREE.Matrix4(), mw=new THREE.Matrix4(), mr=new THREE.Matrix4(), q=new THREE.Quaternion(), e=new THREE.Euler(), V3=THREE.Vector3, sv=new V3(), pv=new V3(), col=new THREE.Color();
   const seedAt=()=>S.seed&&S.seed.t>0?S.seed:null;
-  const step=(b,dt)=>{ b.t+=dt; const ws=b.k===HAWK?.45:1;
+  const step=(b,dt)=>{ b.t+=dt; if(b.st==='still')return; const ws=b.k===HAWK?.45:1;
     if(b.st==='pet'){ const hd=heading, rx=Math.cos(hd), rz=-Math.sin(hd), on=still>1.2, tx=on?pos.x+rx*.2*WU:pos.x-Math.sin(hd)*.7*T+rx*.4*T, tz=on?pos.z+rz*.2*WU:pos.z-Math.cos(hd)*.7*T+rz*.4*T, ty=py+(on?1.42:1.9)*WU;
       const k=Math.min(1,dt*(on?6:3)); b.x+=(tx-b.x)*k; b.y+=(ty-b.y)*k; b.z+=(tz-b.z)*k; const moving=Math.hypot(tx-b.x,tz-b.z)>.05*T||!on; b.yaw=on||spd>.2*T?hd:Math.atan2(pos.x-b.x,pos.z-b.z);
       b.wing=moving?1+.9*Math.sin(b.t*20):Math.max(0,b.wing-dt*6); b.pitch=moving?.2:0; b.lift=0; return; }
@@ -122,5 +122,5 @@ const BIRDS={list:[]}; window.BIRDS=BIRDS;
     for(let k=0;k<NK;k++){ const s=S.seen[k]; o+=`<tr style="border-bottom:1px solid #22252f;${s?'':'color:#5d5a52'}"><td style="padding:4px 2px">${s?K[k][0]+(RARE(k)?' <span style="color:#f2c14e">RARE</span>':''):'? ? ?'}<div style="color:#8a8676;font-size:10px">${s?'<i>'+K[k][1]+'</i>':''}</div></td><td style="text-align:right;padding:4px 6px">${s?'SEEN '+s:''}</td></tr>`; }
     return o+`</table><div style="color:#9b9584;margin-top:8px;line-height:1.5">Double click a bird to watch it. Birds are out by day, in fair weather; most in the park. Scatter seed and stand still to bring them near.</div>`; }});
   { const pk=Object.keys(INV.items).find(id=>id.startsWith('pet_')); if(pk){ const k=+pk.slice(4); const b=add(k,pos.x,py+1.4*WU,pos.z); b.st='pet'; b.src='pet'; b.th.name='YOUR TAME '+K[k][0]; } }
-  BIRDS.K=K; BIRDS.add=add; BIRDS.drop=drop; BIRDS.S=S;
+  BIRDS.K=K; BIRDS.T=T; BIRDS.add=add; BIRDS.drop=drop; BIRDS.S=S;
   window.BIRDDBG=()=>({out:BIRDS.out,n:BIRDS.list.length,shown:BIRDS.shown,tris:TRIS,kinds:BIRDS.list.map(b=>K[b.k][0]+':'+b.st),seen:{...S.seen},seed:S.seed,bird:FORAGE.sk('bird')}); }

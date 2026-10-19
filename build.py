@@ -33,10 +33,8 @@ open('dist/g/rig.js', 'w').write(data(seg[:seg.index('</script>')]))
 imap = seg[seg.index('</script>') + 9:]
 open('dist/g/market.html', 'w').write(data(raw[:k]) + '<script src="/g/__RIG__"></script>' + imap + '<script type="module" src="/g/__GAME__"></script>' + raw[j + 9:])
 
-code = '\n'.join([read('src/avatar/pre.js')] + [one(n) for n in ['walker3d', 'save', 'editor', 'animator', 'looks', 'avatar', 'avmove']] + [read('src/avatar/post.js')])
-open('dist/avatar.html', 'w').write(data(read('src/avatar/page.html').replace('__RIG__', one('rig')).replace('__CODE__', code)))
 open('dist/door.html', 'w').write(read('src/door/door.html'))
-pages = ['dist/market.html', 'dist/avatar.html', 'dist/door.html', 'dist/g/market.html', 'dist/g/rig.js', 'dist/g/game.js']
+pages = ['dist/market.html', 'dist/door.html', 'dist/g/market.html', 'dist/g/rig.js', 'dist/g/game.js']
 
 if os.environ.get('MIN', '1') != '0':
     if not os.path.exists('node_modules/esbuild'):
@@ -52,7 +50,7 @@ for f in used + lazies:
 open('dist/g/game.js', 'w').write(g)
 m = read('dist/g/market.html').replace('__RIG__', hashed('dist/g/rig.js')).replace('__GAME__', hashed('dist/g/game.js'))
 open('dist/g/market.html', 'w').write(m)
-pages = pages[:4]
+pages = pages[:3]
 for f in pages:
     t = read(f)
     if t.count('<!--') != t.count('-->') or not t.startswith('<') or t.startswith('<!--'):

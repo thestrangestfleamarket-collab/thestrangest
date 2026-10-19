@@ -90,7 +90,7 @@ const DRESS=window.DRESS={}, TLX={tick:()=>{}};
       if(A){ const mx=BOD.X((A.x0+A.x1)/2-1.2); tree(mx,0); tree(mx+22*M,1); tree(mx+48*M,2);
         const zf=BOD.Z(A.y1), sdf=Math.sign(zk-zf)||1, BR=0x7a4c3e, BRD=0x5e3a30, IR=0x1c1e22, dx=BOD.X(A.x1-1)-BOD.X(A.x1-1-2.2);
         for(const [k,cx] of [[0,BOD.X(A.x1-1)-dx*1.05],[1,BOD.X(A.x1-1)-dx*1.9]]){ const L=1.7*M, D=.8*M, h=.62*M, cz=zf+sdf*(D/2+.05*M), y=G(cx,cz);
-          blk(cx,y+h/2,cz,L,h,D,BR); blk(cx,y+h+.03*M,cz,L+.08*M,.06*M,D+.08*M,BRD); blk(cx,y+.04*M,cz,L+.04*M,.08*M,D+.04*M,BRD);
+          blk(cx,y+h/2,cz,L-.02*M,h-.01*M,D-.02*M,0x2e221c); for(let r=0;r<3;r++)for(let c=0;c<5;c++){ const w=L/5, hh=h/3, n=hsh(k*31+r,c), col=new THREE.Color(BR).multiplyScalar(.82+.3*n).offsetHSL((hsh(c,r+k)-.5)*.03,0,0).getHex(); blk(cx-L/2+w*(c+.5)+(r&1?w*.15:0)*(c<4?1:0),y+hh*(r+.5),cz,w-.012*M,hh-.012*M,D,col); } blk(cx,y+h+.03*M,cz,L+.08*M,.06*M,D+.08*M,BRD); blk(cx,y+.04*M,cz,L+.04*M,.08*M,D+.04*M,BRD);
           for(const o of [-1,1])blk(cx,y+h+.42*M,cz+o*(D/2),L,.04*M,.04*M,IR); blk(cx-L/2,y+h+.42*M,cz,.04*M,.04*M,D,IR); blk(cx+L/2,y+h+.42*M,cz,.04*M,.04*M,D,IR);
           for(let t=0;t<=12;t++){ const u=-L/2+t*L/12; for(const o of [-1,1])blk(cx+u,y+h+.22*M,cz+o*(D/2),.025*M,.4*M,.025*M,IR); }
           for(let j=0;j<10;j++){ const u=(hsh(k,j)-.5)*L*.85, v=(hsh(j,k+3)-.5)*D*.7, s=(.28+.18*hsh(k+j,9))*M; CR.push([cx+u,y+h+s*.6,cz+v,s*1.2,s,s*1.2,[0x3e6a34,0x4f7d3c,0x2f5a2c,0x5a8a40][j&3]]);

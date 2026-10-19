@@ -1812,3 +1812,45 @@ FIXED, NO, each report with its words, where, PICTURE and GO THERE (puts you at 
 For now nothing is fixed on its own: every report waits in NEW for the owner to APPROVE. A session asked to "work the queue" takes the
 APPROVED ones (see CLAUDE.md), fixes each, and marks it FIXED. The 16 reports already in `bug_reports` are from the old 2D game.
 `tests/bugcheck.cjs art|site` sends one with a stand-in store and approves it.
+
+## 19 Oct 2026: the apartment house becomes an empty hotel
+
+**The hotel** (owner, 19 Oct 2026, his picture of the house's corner and stoop at night: "make the texture and depth style, etc more
+realistic on this building. like we did with the bricks on sidewalk, central park ... not just straight lines with no lived in realness.
+give each thing realistic textures. i want to change this into a hotel. all floors empty. no people have apartments assigned anymore.
+everyone starts where they logged off"; his picks: "Everything bare", new players start in "Central Park", apartment 1 / mail / rent /
+residents "Remove all of it", "No sign"): `054-apts.js`:
+- **Bare inside**: every floor just its floor, the stairs and the elevator: the lobby's mailboxes, bench, plant and directory, the side
+  rooms, the cottage floor and its furniture (and with it the computer and the delivery drone, which stood on the cottage's desk), the
+  flats' walls, doors and furniture are gone.
+- **The stone weathered**: every block of the limestone its own tone and tint (`BRICKS.TINT`), grain, a lit top and shaded foot, chipped
+  corners and pits, hairline cracks; the rusticated ground floor rough-faced with deep joints; grime streaks run down from every sill and
+  from under the cornice, the foot darker with rising damp and moss in the lowest course (`blk`, `weather`, `rock`; the file's own small
+  noise, `vn`/`gr`/`ck`). The stoop, its cheek walls, the house's base, the cornice and balustrade in jointed, grained stone (`rock`), the
+  treads worn paler down the middle. The two planters built of brownstone blocks, each its own shade (`069-dress.js`).
+- **The start**: someone new starts in Central Park (`135-where.js`, `UI.goPlace`); everyone else where they logged off, as before.
+- **No homes in the house** (his pick, "Remove all of it"): the four residents are gone (`154-residents.js` removed; their pawns walk
+  the street like the others); your mailbox, its panel, the welcome letter and the rent every third day are gone, and rent, the
+  RESIDENTS list and GO TO YOUR MAILBOX are off the CITY tab. Workers live only over their own workplace; with none they stay out at night;
+  nobody sleeps in the house. Your money (`MAIL.you`), the shops' and the tower's mail and the street's mailboxes stay.
+
+## 19 Oct 2026: you are a stick figure
+
+**The avatars gone, you a stick figure for now** (owner, 19 Oct 2026: "lets get rid of player avatars completely. keep the physics and
+animations and just make the character play as a stick figure for now"; his picks: delete it all, just you (the street's Walkers, pawns
+and creatures as they were), solid 3D sticks, the current clips): you are a stick figure built in code (`087a-avatars.js`): round sticks
+for the spine, neck, shoulders, arms, hips and legs, small balls at the joints and hands, a ball head, all in one dark colour, cel-shaded
+and casting a shadow like the rest; on the standard skeleton, playing the same clips as before (standing easy, walk / jog / sprint by your
+pace, jump, punches, roll, crouch, sit, swim, dance, falling). The game's rig still moves you (the physics unchanged). 644 triangles (the
+Walker on clips was 14,870). Gone: WALKER / MANNEQUIN / VROID and GRAPHICS' AVATAR row, the menu's AVATAR tab, the avatar editor (its
+shape, looks, animate, speed and body-type tabs, the posing void) and the standalone `avatar.html`; `data/hybrid.json`, `data/vroid.json`
+(and `full/vroid.vrm`), the mannequin's mesh out of `data/ual.json` (its skeleton and clips kept), their bake tools and tests. Clicking
+yourself opens YOU: your name, health and stamina. The hand-made Walker still runs unseen under you (his rig is the physics) and the
+bearded Walker keeps the head shapes he borrowed from the editor (`ED.HEADS`, `097-editor.js`).
+
+**His mannequin, not the stick** (owner, 19 Oct 2026, his shot of the stick figure: "why is he standing like that? ... he has his
+shoulders lifted high"; then his `Humanoid.fbx`, "make it my body"): the stick's shoulder bars ran up from mid-chest to the shoulders,
+so he looked shrugged. You are now his mannequin (`data/full/humanoid.fbx`, Blender, no bones: `tools/humanoid-bake.cjs` →
+`data/humanoid.json`, 6 KB), sized to the UAL skeleton (it matches it: height, hips, shoulders, arm length within 3 cm). It stands in an
+A-pose, so the skeleton's arms are lowered to it before binding; each corner weighted in code to its nearest one or two bones. One flat
+light colour, cel-shaded, casting a shadow; the same clips. 402 triangles.

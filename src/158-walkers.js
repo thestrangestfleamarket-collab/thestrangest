@@ -34,8 +34,8 @@ if(WALKERS.on){ const T=TILE, X=BOD.XS, Z=BOD.ZS, rnd=Math.random, pick=a=>a[Mat
       if(W.mail){ W.mail=false; const got=MAIL.take(W.home.id,N.name); W.state='stay'; W.t=4+got.length*2.5; N.dwell='found_item_idle_a'; N.st.hold=true; N.st.to=null; const F=W.home.b.F; N.st.face={x:N.st.x-F.n.x,z:N.st.z-F.n.z}; return; }
       W.state='stay'; W.t=R(...K.stay)*(W.kind==='jogger'?1:R(.7,1.3)); N.dwell=inPark(N.st.x,N.st.z)||(W.kind!=='parkgoer'&&W.kind!=='golem')?pick(K.idles):'UAL_Idle_Loop'; if(N.dwell==='sit_floor_idle_a'&&!inPark(N.st.x,N.st.z))N.dwell='UAL_Idle_Loop';
       N.st.hold=true; N.st.to=null; const a=rnd()*Math.PI*2; N.st.face={x:N.st.x+Math.sin(a),z:N.st.z+Math.cos(a)}; }}) ; };
-  const start=()=>{ const res=new Set((CITY.residents||[]).map(r=>r.key)); let i=0;
-    for(const N of (window.PAWNL||[])){ if(res.has(N.key)||N.staff||N.lv==='down'||N.sheet)continue; const kind=/_\d$/.test(N.key)?'golem':KW[Math.floor(rnd()*KW.length)], K=KIND[kind], g=pick(K.gaits), G=GAIT[g];
+  const start=()=>{ let i=0;
+    for(const N of (window.PAWNL||[])){ if(N.staff||N.lv==='down'||N.sheet)continue; const kind=/_\d$/.test(N.key)?'golem':KW[Math.floor(rnd()*KW.length)], K=KIND[kind], g=pick(K.gaits), G=GAIT[g];
       const W={N,kind,gait:g,v:R(...G[2]),state:'wait',t:R(0,4),home:{x:N.st.x,z:N.st.z},leg:0,lap:null};
       if(kind==='loiterer'){ const s=spot(N,W,rnd()<.5?'park':'city'); if(s)W.home=s; }
       if(kind==='commuter'){ const ps=places(); W.ends=[pick(ps),pick(ps)]; }

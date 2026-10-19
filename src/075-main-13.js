@@ -2,7 +2,7 @@
 looseDraw();
 let looseAcc=0, J0=null, J0t=0, trip=false;
 
-const keys=new Set(); let target=null;
+const keys=new Set(), PAD={mv:null,n:0}; let target=null;
 const VIEW0={yaw:Math.PI/4,pitch:Math.PI/6,ppu:PPU}; let yaw=VIEW0.yaw, pitch=VIEW0.pitch, yawTo=yaw, pitchTo=pitch, ppuTo=ppu;
 const PMIN=0.17, PMAX=Math.PI/2-0.002, clampP=v=>Math.max(PMIN,Math.min(PMAX,v));
 renderer.domElement.addEventListener('contextmenu',e=>e.preventDefault());
@@ -36,6 +36,7 @@ function frame(now){ requestAnimationFrame(frame); renderer.info.reset(); const 
   let mx=0,mz=0, up=keys.has('w')||keys.has('arrowup'), dn=keys.has('s')||keys.has('arrowdown'), lf=keys.has('a')||keys.has('arrowleft'), rt=keys.has('d')||keys.has('arrowright');
   UI.camStep(dt,a,up,dn,lf,rt); if(UI.freeCam||ED.on)up=dn=lf=rt=false;
   if(up){mx+=fx;mz+=fz;} if(dn){mx-=fx;mz-=fz;} if(rt){mx+=-fz;mz+=fx;} if(lf){mx-=-fz;mz-=fx;}
+  if(PAD.mv&&(up||dn||lf||rt)){ const [lx,ly]=PAD.mv; mx=-ly*fx-lx*fz; mz=-ly*fz+lx*fx; }
   if(mx||mz)target=null; else if(target){ const dx=target.x-pos.x, dz=target.z-pos.z, d=Math.hypot(dx,dz); if(d<0.12)target=null; else {mx=dx/d;mz=dz/d;} }
   view0.a=a; P.x=pos.x/TL; P.y=-pos.z/TL; PH.hd=heading;
   const hit=PHYOU.hit||0, hn=PHYOU.hitN; PHYOU.hit=0;

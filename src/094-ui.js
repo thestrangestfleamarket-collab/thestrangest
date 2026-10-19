@@ -6,7 +6,7 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
   const NAME=k=>k===' '?'SPACE':k.length===1?k.toUpperCase():k.toUpperCase();
   let BIND={}; try{ BIND=JSON.parse(SAVE.get('keys')||'{}')||{}; }catch(e){}
   const DEF={view:'v',v:'b',rot:'r',r:'y'}, keyOf=a=>BIND[a]??DEF[a]??a, rev=()=>{ const r={}; for(const [a] of ACTS)r[keyOf(a)]=a; return r; };
-  let REV=rev(), waiting=null;
+  let REV=rev(), waiting=null; UI.keyOf=keyOf;
   UI.key=e=>{ const raw=e.key.toLowerCase();
     if(waiting){ if(raw!=='escape'){ const old=keyOf(waiting); for(const [a] of ACTS)if(a!==waiting&&keyOf(a)===raw)BIND[a]=old; BIND[waiting]=raw;
         try{ SAVE.set('keys',JSON.stringify(BIND)); }catch(err){} REV=rev(); } waiting=null; drawKeys(); e.preventDefault(); return null; }
@@ -31,6 +31,7 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
       const M=RIG.MOVES||{}, fights=Object.keys(M).filter(n=>M[n]&&M[n].combo);
       if(fights.length){ o+=h('FIGHTING: J PUNCH, K KICK; PRESS AGAIN IN TIME TO CHAIN'); for(const n of fights){ const c=M[n].combo; o+=row(n.replace(/([A-Z])/g,' $1').toUpperCase(),Object.entries(c).map(([k,v])=>k+' → '+v.replace(/([A-Z])/g,' $1').toUpperCase()).join(' · ')); } }
       const K=RIG.KEYMOVE||{}; if(Object.keys(K).length){ o+=h('YOUR OWN MOVES (HIS SHAPE → ANIMATE)'); for(const [k,n] of Object.entries(K))o+=row(k,n.toUpperCase()); }
+      if(UI.padMoves)o+=UI.padMoves(row,h);
       o+=h('THE MOUSE')+row('DOUBLE CLICK','WALK THERE (RUN IF FAR) · ON A SEAT: SIT · A LAMP: ON / OFF · A FRIDGE: OPEN · THE DRINKS MACHINE: A CAN · THE RADIO: MUSIC · A CHARACTER: GO UP AND GREET · YOURSELF: YOUR LOOKS · THE GUITARIST: WATCH HIS HANDS · A MUSHROOM: PICK IT · THE MUSHROOM SELLER: HIS SHOP')
         +row('LEFT DRAG','MOVE THE VIEW (ISOMETRIC, MAP) · LOOK ROUND (THIRD PERSON, BEHIND, FIRST)')+row('RIGHT DRAG','TURN THE VIEW')+row('WHEEL','ZOOM');
       P.innerHTML=o; P.style.display='block'; };
@@ -114,6 +115,11 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
     if(best){ best.started=false; goal=best; return; }
     if(window.RIVER&&RIVER.pick&&RIVER.pick(ray.ray,pos))return;
     goal=null; if(UI.fly)return; gplane.constant=-py; if(ray.ray.intersectPlane(gplane,hit)){ target=hit.clone(); UI.go(Math.hypot(hit.x-pos.x,hit.z-pos.z)); } });
+  UI.useNear=()=>{ if(ED.on||UI.freeCam||MAPED.on||WE.on)return false; const hx=Math.sin(heading), hz=Math.cos(heading); let best=null, bs=1e9;
+    for(const th of THINGS){ if(!th.obj.visible||th.obj.parent&&!th.obj.parent.visible)continue; const p=thAt(th), dx=p.x-pos.x, dz=p.z-pos.z, d=Math.hypot(dx,dz);
+      if(d>(th.near||(th.reach||1)+1.2*TILE)||Math.abs(p.y-py)>2*TILE)continue; const s=d-(dx*hx+dz*hz)/(d||1)*.6*TILE; if(s<bs){ bs=s; best=th; } }
+    if(!best&&typeof USE!=='undefined')for(const dy of [0,-.5,-1.2]){ ray.set(new THREE.Vector3(pos.x,py+TILE,pos.z),new THREE.Vector3(hx,dy,hz).normalize()); ray.far=2.4*TILE; const u=USE.pick(ray); ray.far=Infinity; if(u){ best=u.th; break; } }
+    if(!best)return false; best.started=false; goal=best; return true; };
   UI.go=d=>{ UI.clickGo=true; UI.clickRun=d>6; };
   UI.runTick=()=>{ if(!UI.clickGo)return; if(!target){ UI.clickGo=false; st.runTarget=keys.has('shift')?1:0; return; } st.runTarget=keys.has('shift')||UI.clickRun&&Math.hypot(target.x-pos.x,target.z-pos.z)>1.6?1:0; };
   UI.goTick=()=>{ if(!goal)return; const p=thAt(goal), d=Math.hypot(p.x-pos.x,p.z-pos.z), reach=goal.reach||1;
@@ -268,7 +274,7 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
   $('#dbody').onclick=()=>{ PB.set(!PB.on); drawDisplay(); }; $('#dloose').oninput=e=>{ PB.loose=+e.target.value; try{ SAVE.set('loose',String(PB.loose)); }catch(err){} };
   function drawKeys(){ const t=$('#keytab'); t.innerHTML=''; for(const [a,what] of ACTS){ const tr=document.createElement('tr'), b=document.createElement('button'); b.className='btn'; b.textContent=waiting===a?'PRESS A KEY…':NAME(keyOf(a)); b.setAttribute('aria-pressed',String(waiting===a)); b.onclick=()=>{ waiting=a; drawKeys(); };
       const td1=document.createElement('td'); td1.textContent=what.toUpperCase(); const td2=document.createElement('td'); td2.appendChild(b); tr.append(td1,td2); t.appendChild(tr); }
-    const e=document.createElement('tr'); e.innerHTML='<td>MENU</td><td><span class="dim">ESC</span></td>'; t.appendChild(e); }
+    const e=document.createElement('tr'); e.innerHTML='<td>MENU</td><td><span class="dim">ESC</span></td>'; t.appendChild(e); if(UI.padKeys)UI.padKeys(t); }
   $('#kreset').onclick=()=>{ BIND={}; try{ SAVE.del('keys'); }catch(e){} REV=rev(); drawKeys(); drawBadge(); };
   for(const id of ['hud','stat','shd'])document.getElementById(id).hidden=true; document.getElementById('loading')?.remove();
   drawBadge(); }

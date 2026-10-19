@@ -1645,6 +1645,18 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   characters walking the alley and the promenade. Found on the way: `build.py`'s glob took only `NNN-` names, so an inserted `NNNa-` file (as
   CLAUDE.md suggests) was never built; it takes `NNN*-` now.
 
+- **A controller, as the old game had it** (owner, 19 Oct 2026: "add the controller abilities from the old game to this game (allow
+  controllers to paly) all same tusff we had"; `162a-pad.js`, from the old game's `47-gamepad.js`): a standard (Xbox or PlayStation) pad
+  plays as the keyboard does, its buttons sent as the very keys (as they are bound in KEYS), read once a frame only while one is plugged in.
+  Left stick walks any way at all (`PAD.mv`), right stick looks round (BEHIND, FIRST) or slides the view (ISOMETRIC); A jump, dive; B back,
+  closes a box; X uses what you face or stand by (`UI.useNear`: the double click's things), else punches; Y kick; LB / RB turn the view
+  (Q / E); LT roll; RT held run, and with the D-pad up / down zoom; L3 the next view (V); R3 resets the view (0); VIEW / CREATE what you can do
+  (?); START the menu; D-pad right the pack (I). In a menu or a box the stick or D-pad moves a highlight between its controls, A presses, A takes
+  hold of a slider (left / right moves it), left / right steps a list, LB / RB the tabs, B back; nothing walks. The buttons rebind in KEYS (THE
+  CONTROLLER, with a pad plugged in; kept as `padkeys`), use and punch share X. A PlayStation pad shows its own names and face-button pictures.
+  The old game's card for things in reach and L3's nameplates have no match here yet. Cost: nothing drawn, no lights, nothing run without a pad.
+  `tests/padcheck.cjs` (a made-up pad).
+
 ## The website moves here (18 Oct 2026)
 
 **The white screen** (owner, 18 Oct 2026: "https://thestrangestfleamarket.com/ is just shownig white screen now"): the copy of THE MARKET

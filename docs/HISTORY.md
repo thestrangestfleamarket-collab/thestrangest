@@ -2597,3 +2597,17 @@ and wash ashore). No sound. WebXR on a headset: teleport arc, snap turn, grab an
 - **One row of seats** (owner, 19 Oct 2026: "only 1 row of seats in theater and playhouse for now"): the movie theatre keeps its front
   row (3.6 tiles from the screen wall, four seats), the playhouse its second (2.4 tiles back from the stage), each still with its aisle
   lights (`057a-mainstreet.js`, `PLS.rows` in `044b-game-playhouse.js`).
+
+## 19 Oct 2026: insides built when you go in
+- **Room insides on entry** (owner: "I want to make the interior of all buildings not load until you go into them then you get an
+  'Entering...' message while it loads. i want it to be seamless ... each place should have a door that matches their building and you
+  press E [then: "make it double click instead of E"] to open it"; his map of the doors: the 'Market Entry Doors' artifact): `room()`
+  in `057-store.js` builds a room's walls, roof, door and everything outside its box when its step runs, and keeps the rest (the
+  things whose boxes lie inside the room, the floor, the lamps inside, their solids and flames) in `STORE.inside[id]`. Walking through
+  the door, or double-clicking it (`STORE.doorThings`, one `UI.thing` per room, named for the place), shows ENTERING and the place's
+  name on the black `#subfade`, builds the inside (`STORE.inGo`, the off-map rooms' way: one more bake), and fades back; the double
+  click also walks you in. Each place's door is the solid wooden door from the morning, in its own wall. The holodeck's booth and hall
+  stay built at once (`{now:1}`; its own fade covers the hall), and so do the rooms built off the map (`STORE.now` while they build).
+  The store's solids now always go to the street level's lists (`SOL.up`, `FIX.up`).
+- **The apartment house empty** (owner: "the apartment building should be empty"): `APTS.EMPTY`: no furniture, drapes or posters in
+  any flat; the halls, stairs, doors, windows and ceiling lights stay (`054-apts.js`).

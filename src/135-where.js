@@ -9,7 +9,7 @@ const WHERE={};
   const home=()=>{ if(!window.__started){ setTimeout(home,200); return; } UI.goPlace('CENTRAL PARK'); };
   if(!test&&!W)setTimeout(home,300);
   let last='', t=0; const save=()=>{ if(test||RAG.on)return; const w={x:+pos.x.toFixed(3),z:+pos.z.toFixed(3),y:+py.toFixed(3),hd:+heading.toFixed(3)}, j=JSON.stringify(w); if(j===last)return; last=j; try{ SAVE.set(KEY,j); }catch(e){} };
-  WHERE.tick=dt=>{ if(!window.__started)return; t+=dt; if(t>2){ t=0; save(); if(STORE.offAt)STORE.offAt(pos.x,pos.z); } };
+  WHERE.tick=dt=>{ if(!window.__started)return; if(STORE.inAt&&LVL==='up')STORE.inAt(pos.x,pos.z); t+=dt; if(t>2){ t=0; save(); if(STORE.offAt)STORE.offAt(pos.x,pos.z); } };
   addEventListener('pagehide',save); addEventListener('visibilitychange',()=>{ if(document.visibilityState==='hidden')save(); });
   WHERE.save=save; WHERE.saved=()=>W; }
 

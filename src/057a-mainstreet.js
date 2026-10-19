@@ -69,10 +69,10 @@
       const a=u-Math.floor(u); return a<.03||a>.97||z%24<1?sh([30,40,56],f):sh(HO.HOLOK,f); };
     const pan=(q,nx,ny,X_,Y_,z,f)=>HO.holoWall(f)(nx?Y_:X_,z);
     const F=room('holofront','HOLODECK',B,{floor:HO.holoFloor,in:pan,out:(nx,ny,Xw,Yw,z,f,cap)=>ny>0?front(Xw-B.x0,z,f):sh(HO.HOLOK,f),cope:[20,24,32],roof:()=>[18,20,26]},{w:'f',a:door,wd:1,h:94},()=>{
-      LAMPS.push({x:door,y:B.y1+1,z:104,r:4,c:[.4,.8,1]}); });
+      LAMPS.push({x:door,y:B.y1+1,z:104,r:4,c:[.4,.8,1]}); },{now:1});
     STORE.bound.x1=Math.max(STORE.bound.x1,X(H.x1+10)); STORE.bound.z0=Math.min(STORE.bound.z0,Z(H.y0-10)); STORE.bound.z1=Math.max(STORE.bound.z1,Z(H.y1+10));
     const R=room('holodeck','HOLODECK HALL',H,{floor:HO.holoFloor,in:pan,out:(nx,ny,Xw,Yw,z,f)=>sh(HO.HOLOK,f),cope:[20,24,32],roof:()=>[18,20,26]},{w:'f',a:hx,wd:3,h:96},()=>{
-      LAMPS.push({x:hx-4,y:(H.y0+H.y1)/2,z:108,r:10,c:[.55,.75,1]},{x:hx+4,y:(H.y0+H.y1)/2,z:108,r:10,c:[.55,.75,1]}); });
+      LAMPS.push({x:hx-4,y:(H.y0+H.y1)/2,z:108,r:10,c:[.55,.75,1]},{x:hx+4,y:(H.y0+H.y1)/2,z:108,r:10,c:[.55,.75,1]}); },{now:1});
     unplace('HOLODECK'); unplace('HOLODECK HALL');
     const gnd=new THREE.Mesh(new THREE.PlaneGeometry(40*TILE*BLDK,40*TILE*BLDK).rotateX(-Math.PI/2),new THREE.MeshLambertMaterial({color:0x0a0b10})); gnd.position.set(X(hx),Y(.02),Z((H.y0+H.y1)/2)); scene.add(gnd);
     MS.holo={F,R,B,H,door,hx,busy:false}; });

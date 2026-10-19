@@ -1,4 +1,4 @@
-const APTS={};
+const APTS={EMPTY:true};
 { const {X,Z,faceTex,bq,C,facade,FRAME,place}=BOD,
   RZ=APTS.RZ=28, Y=z=>BOD.Y(z+RZ), gbox=(b,k)=>BOD.gbox({...b,z0:b.z0+RZ,z1:b.z1+RZ},k), R0=APTS.R0=BOD.Y(RZ)-BOD.Y(0), {speck,hash}=BOD.g, {MKS,CATALOG,PROPS,STUDIO,LSEED,STORY,sh}=BOD.K, S=STORY, ST=5, AH=ST*S, W=LSEED.walk, T=.1;
   const A=(o=>({x0:50.4+o.x/BLDK,x1:57.9+o.x/BLDK,y0:W-14+o.y/BLDK,y1:W+o.y/BLDK}))(LAY.o('house')), m=(A.x0+A.x1)/2, H={y0:A.y0+5.6,y1:A.y0+8.4}, hm=(H.y0+H.y1)/2, DW=.78, DH=94;
@@ -160,7 +160,7 @@ const APTS={};
       if(R.pass&&f>0)room('pass','y',R.pass.x0,H.y1,A.y1-T,[],false,false,-1,0); } }
   flat(A.x0,A.y0,A.x1,A.y1,AH,roofCol); flat(A.x0,A.y0,A.x1,A.y1,AH-4,()=>[228,226,220],false);
   const FD={N:[0,-1],S:[0,1],E:[1,0],W:[-1,0]}; const LIGHTS=[]; APTS.lights=LIGHTS;
-  const put=(kind,x,y,d,z,lv,sol)=>{ const f=CATALOG[kind]; if(!f){ console.warn('no',kind); return null; } const n0=PROPS.length; STUDIO.face(d?FD[d]:null,z); let p; try{ p=f(+x.toFixed(3),+y.toFixed(3)); }finally{ STUDIO.face(null); } if(!p)return null; place(p,0);
+  const put=(kind,x,y,d,z,lv,sol)=>{ if(APTS.EMPTY)return null; const f=CATALOG[kind]; if(!f){ console.warn('no',kind); return null; } const n0=PROPS.length; STUDIO.face(d?FD[d]:null,z); let p; try{ p=f(+x.toFixed(3),+y.toFixed(3)); }finally{ STUDIO.face(null); } if(!p)return null; place(p,0);
     const add0=BATCH.add, dy=Y(lv*S)-Y(0); BATCH.add=(pos,...r)=>{ for(let i=1;i<18;i+=3)pos[i]+=dy; add0(pos,...r); }; BATCH.tag=OBJ('apartments',p.name); try{ for(const b of p.boxes)gbox(b,'A'); }finally{ BATCH.add=add0; BATCH.tag=null; }
     const bs=p.boxes.filter(b=>!b.nb&&b.z0<30&&b.z1-b.z0>3); if(bs.length&&sol!==false){ const r={x0:Math.min(...bs.map(b=>b.x0)),y0:Math.min(...bs.map(b=>b.y0)),x1:Math.max(...bs.map(b=>b.x1)),y1:Math.max(...bs.map(b=>b.y1))}; SOLS[lv].push([X(r.x0),Z(r.y0),X(r.x1),Z(r.y1)]); }
     PROPS.length=n0; return p; };

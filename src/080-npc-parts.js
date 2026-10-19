@@ -35,5 +35,5 @@ const PARTSNPC={};
   window.RESHAPE=(key,part,scale,move)=>{ const N=NPCS.find(q=>q.key===key); if(N&&N.reshape)N.reshape(part,{scale,move}); };
   PARTSNPC.LANE=STLANE;
   { const HOLE=[BOD.XS(MAPSTAIR.x0-.6),BOD.ZS(MAPSTAIR.y0),BOD.XS(MAPSTAIR.x1+.6),BOD.ZS(MAPSTAIR.y1+.6)];
-    PARTSNPC.free=(x,z,R)=>!(x>HOLE[0]-R&&x<HOLE[2]+R&&z>HOLE[1]-R&&z<HOLE[3]+R)&&!SOL.up.some(b=>x>b[0]-R&&x<b[2]+R&&z>b[1]-R&&z<b[3]+R); }
+    PARTSNPC.free=(x,z,R)=>!(x>HOLE[0]-R&&x<HOLE[2]+R&&z>HOLE[1]-R&&z<HOLE[3]+R)&&!SOL.up.some(b=>x>b[0]-R&&x<b[2]+R&&z>b[1]-R&&z<b[3]+R)&&!FOUNT.wet(x,z,R); }
   PARTSNPC.street=(x,y)=>({lv:'up',group:'bodega',x:BOD.XS(x),z:BOD.ZS(y),lane:PARTSNPC.LANE,free:stfree,roam:true,ground:(x,z)=>MODS.bodega.ground(x,z)}); }

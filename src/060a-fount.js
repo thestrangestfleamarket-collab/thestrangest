@@ -1,0 +1,128 @@
+const FOUNT={ready:false,swim:false}; window.FOUNT=FOUNT;
+{ const ss=(a,b,v)=>{ const t=Math.max(0,Math.min(1,(v-a)/(b-a))); return t*t*(3-2*t); }, hs=(a,b,c=0)=>{ const s=Math.sin(a*127.1+b*311.7+c*74.7)*43758.5453; return s-Math.floor(s); };
+  const raw=(x,y)=>{ const {C,R,L}=FOUNT.S, dx=x-L.x, dy=y-L.y, e=Math.hypot(dx/L.rx,dy/L.ry)||1e-6, g=Math.hypot(dx/(L.rx*L.rx),dy/(L.ry*L.ry))/e||1e-6, a=Math.atan2(dy,dx);
+    return (e-1)/g-(1.3*Math.sin(a*23+1.3)+.7*Math.sin(a*41+.4))*ss(R+1.5,R+9,Math.hypot(x-C.x,y-C.y)); };
+  const lake=FOUNT.lake=(x,y)=>{ if(!FOUNT.S)return 1e9; const L=FOUNT.S.L; return Math.max(raw(x,y),x-L.cx,y-L.cy); };
+  const ter=FOUNT.ter=(x,y)=>FOUNT.S?Math.hypot(x-FOUNT.S.C.x,y-FOUNT.S.C.y)-FOUNT.S.R:1e9;
+  FOUNT.away=(x,y)=>Math.min(lake(x,y)-1,ter(x,y)-1);
+  FOUNT.at=P=>{ if(FOUNT.S)return FOUNT.S; const wx1=P.x1-8, wy1=P.y1-8, C={x:Math.round(P.x0+.755*(wx1-P.x0)),y:Math.round(wy1-.3*(wy1-P.y0))}, R=3.2, L={x:C.x+59,y:C.y+37,rx:100,ry:40,cx:P.x1-.6,cy:P.y1-.6};
+    FOUNT.S={C,R,L,wx1,wy1}; const S=FOUNT.S, pts=[];
+    for(let i=0;i<=300;i++){ const a=Math.PI*(1+.62*i/300), cx=Math.cos(a), cy=Math.sin(a); let t0=0, t1=170; for(let k=0;k<26;k++){ const t=(t0+t1)/2; if(raw(L.x+cx*t,L.y+cy*t)<0)t0=t; else t1=t; } pts.push([L.x+cx*t0,L.y+cy*t0]); }
+    const poly=[]; let prev=null; for(const p of pts){ const ins=p[0]<L.cx&&p[1]<L.cy;
+      if(ins&&prev&&!(prev[0]<L.cx&&prev[1]<L.cy)){ const t=(L.cy-prev[1])/(p[1]-prev[1]); poly.push([prev[0]+(p[0]-prev[0])*t,L.cy]); }
+      if(ins)poly.push(p); else if(prev&&prev[0]<L.cx&&prev[1]<L.cy){ const t=(L.cx-prev[0])/(p[0]-prev[0]); poly.push([L.cx,prev[1]+(p[1]-prev[1])*t]); break; }
+      prev=p; }
+    poly.push([L.cx,L.cy]); S.poly=poly; S.x0=Math.min(...poly.map(p=>p[0])); S.y0=Math.min(...poly.map(p=>p[1]));
+    const X=x=>BOD.XS(x+(P.ox||0)), Z=y=>BOD.ZS(y+(P.oy||0)), strips=[];
+    for(let x=Math.floor(S.x0);x<L.cx;x+=2){ let y0=L.cy; for(let y=S.y0-1;y<L.cy;y+=.5)if(lake(x+1,y)<0||lake(x,y)<0||lake(Math.min(x+2,L.cx-.01),y)<0){ y0=y; break; } if(y0<L.cy)strips.push([X(x),Z(y0),X(Math.min(x+2,L.cx)),Z(L.cy)]); }
+    S.strips=strips;
+    const nrm=(x,y)=>{ const e=.25, gx=lake(x+e,y)-lake(x-e,y), gy=lake(x,y+e)-lake(x,y-e), n=Math.hypot(gx,gy)||1; return [gx/n,gy/n]; };
+    const shore=[]; for(let i=1;i<poly.length;i++){ const [ax,ay]=poly[i-1], [bx,by]=poly[i], l=Math.hypot(bx-ax,by-ay); for(let s=0;s<l;s+=.25){ const x=ax+(bx-ax)*s/l, y=ay+(by-ay)*s/l; if(x<L.cx-.5&&y<L.cy-.5&&x<wx1+6&&y<wy1+6)shore.push([x,y]); } }
+    const rocks=[]; let acc=0; for(let i=0;i<shore.length;i++){ acc+=.25; const gap=1.05+.6*hs(i,3,1); if(acc<gap)continue; acc=0; const [x,y]=shore[i], n=nrm(x,y), k=.15+.5*hs(i,5,2), s=.24+.5*Math.pow(hs(i,7,3),1.5);
+      const rx=x-n[0]*k, ry=y-n[1]*k; if(ter(rx,ry)<.25)continue; rocks.push([rx,ry,s,hs(i,9,4)]); }
+    S.rocks=rocks;
+    const oaks=[]; acc=0; for(let i=0;i<shore.length;i++){ acc+=.25; if(acc<9+3*hs(i,11,5))continue; const [x,y]=shore[i]; if(x>wx1+2||y>wy1+2)continue; const n=nrm(x,y), k=1.6+2.2*hs(i,13,6), ox=x+n[0]*k, oy=y+n[1]*k, m=12+hs(i,17,8)*6, r=m*.42, [rx,ry]=P.round;
+      if(ter(ox,oy)<r+.5||Math.abs(oy-ry-P.wobY(ox))<3.6+r||Math.abs(ox-rx-P.wobX(oy))<3.6+r||oy<P.y0+18)continue; acc=0; oaks.push(['OakTree'+(1+Math.floor(hs(i,15,7)*3)),+ox.toFixed(1),+oy.toFixed(1),+m.toFixed(1)]); }
+    S.oaks=oaks; S.lamps=[235,305].map(a=>[C.x+Math.cos(a*Math.PI/180)*(R-.42),C.y+Math.sin(a*Math.PI/180)*(R-.42)]);
+    if(typeof STORE!=='undefined'&&STORE.places)STORE.places.push(['THE FOUNTAIN',X(C.x),Z(C.y-R-1.6),'up']);
+    return S; };
+  FOUNT.wet=(x,z,R=0)=>{ const S=FOUNT.S; if(!S)return false; const P=PARK, px=x/TILE+BOD.OX-(P.ox||0), py=z/TILE+BOD.OY-(P.oy||0); if(px<S.x0-3||py<S.y0-3)return false; return lake(px,py)<R/TILE; };
+  FOUNT.paint=({flat,X,Z,Y,hash,grain,speck})=>{ const S=FOUNT.S, {C,R}=S, sol=(x,y,b,h)=>{ SOL.up.push([X(x)-b*TILE,Z(y)-b*TILE,X(x)+b*TILE,Z(y)+b*TILE]); FIX.up.push([X(x)-b*TILE,Z(y)-b*TILE,0,X(x)+b*TILE,Z(y)+b*TILE,Y(h)]); };
+    const pav=(x,y)=>{ const dx=x-C.x, dy=y-C.y, r=Math.hypot(dx,dy); if(r>R)return null; const a=Math.atan2(dy,dx)+Math.PI, wear=BOD.g.cvNoise(x*1.3,y*1.3,707);
+      if(r>R-.25){ const u=a*R/.7, n=Math.floor(u), j=u-n<.05||r>R-.045; let c=(132+22*grain(x,y,711,1.2))*(.92+.16*hash(n,3,713)); if(j)c*=.62; else if(r<R-.21)c*=1.12; return speck([c,c*.97,c*.9],x,y,715); }
+      const ring=Math.floor(r/.125), fr=r/.125-ring, band=ring%8>=6;
+      if(band){ const u=a*r/.55, n=Math.floor(u), j=fr<.12&&ring%8===6||u-n<.06; let c=(150+20*grain(x,y,721,1.4))*(.93+.14*hash(n,ring,723)); if(j)c*=.64; else if(fr>.8&&ring%8===7)c*=.9; return speck([c,c*.96,c*.88],x,y,725); }
+      const u=a*Math.max(r,.2)/.25+(ring&1)*.5, n=Math.floor(u), j=fr<.2||u-n<.12, h=hash(n,ring,731);
+      if(j)return wear>.68&&hash(Math.floor(x*24),Math.floor(y*24),733)<.5?[58,80,42]:[92,82,72];
+      let c=[146+24*h,76+14*h,56+10*h]; if(h<.12)c=[118,62,48]; else if(h>.93)c=[168,104,78]; const g=(.9+.16*grain(x,y,735,1))*(1-.12*Math.max(0,wear-.5)); return speck(c.map(v=>v*g),x,y,737); };
+    flat(C.x-R,C.y-R,C.x+R,C.y+R,0,pav);
+    for(let i=0;i<20;i++){ const a=i/20*Math.PI*2; sol(C.x+Math.cos(a)*1.42,C.y+Math.sin(a)*1.42,.22,15); } sol(C.x,C.y,1.05,15);
+    const B0=20,B1=160; for(let a=B0;a<=B1;a+=5.4){ const t=a*Math.PI/180; sol(C.x+Math.cos(t)*(R-.14),C.y+Math.sin(t)*(R-.14),.17,26); }
+    for(const [x,y,s] of S.rocks)if(s>.56)sol(x,y,s*.42,s*24);
+    setTimeout(()=>{ try{ build(); }catch(e){ console.warn('FOUNT: not built',e); } },0); };
+  const build=()=>{ const P=PARK, S=FOUNT.S, {C,R,L}=S, X=x=>BOD.XS(x+(P.ox||0)), Z=y=>BOD.ZS(y+(P.oy||0)), Y=BOD.YS, T=TILE, WU=T/.84, V3=THREE.Vector3, grp=MAPG.park||scene, CX=X(C.x), CZ=Z(C.y);
+    const LV=-.22*WU, bedM=d=>Math.min(3.5,Math.max(0,d)*.42), bedY=d=>-bedM(d)*WU-.04; FOUNT.LV=LV; FOUNT.bedY=bedY;
+    const uT=FOUNT.uT={value:0}, uGl={value:1}, uP=FOUNT.uP={value:new THREE.Vector4()}; FOUNT.uGl=uGl;
+    const wmat=(deep,shal,ring)=>{ const m=new THREE.MeshLambertMaterial({color:0xffffff,transparent:true}), uC={value:new THREE.Vector4(...ring)}, uD={value:new THREE.Color().setRGB(...deep,THREE.SRGBColorSpace)}, uS={value:new THREE.Color().setRGB(...shal,THREE.SRGBColorSpace)};
+      m.onBeforeCompile=sh=>{ Object.assign(sh.uniforms,{uT,uGl,uP,uC,uDeep:uD,uShal:uS});
+        sh.vertexShader='attribute float aD; varying float vD; varying vec3 vWq;\n'+sh.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\n vD=aD;').replace('#include <project_vertex>','#include <project_vertex>\n vWq=(modelMatrix*vec4(transformed,1.)).xyz;');
+        sh.fragmentShader='uniform float uT,uGl; uniform vec4 uC,uP; uniform vec3 uDeep,uShal; varying float vD; varying vec3 vWq; float wg=0.;\nfloat wh(vec2 p){ return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453); }\n'+sh.fragmentShader
+          .replace('#include <color_fragment>',`#include <color_fragment>
+ { vec2 p=vWq.xz/${T.toFixed(3)}; float h=sin(p.x*.9+p.y*.35+uT*.8)+sin(p.y*1.3-p.x*.5-uT*.6)+.6*sin((p.x+p.y)*2.1+uT*1.3);
+   if(uC.w>0.){ float d=length(vWq.xz-uC.xy)/${T.toFixed(3)}; h+=uC.w*1.8*sin(d*24.-uT*7.)*exp(-abs(d-uC.z)*2.2); }
+   if(uP.z>0.){ float d=length(vWq.xz-uP.xy)/${T.toFixed(3)}; h+=uP.z*2.2*sin(d*8.-uT*6.)*exp(-d*.6); }
+   float b=floor(clamp(h*.2+.5,0.,.999)*3.)/2., q=floor(clamp(vD,0.,.999)*4.)/3.;
+   diffuseColor.rgb=mix(uShal,uDeep,q)*(.86+.2*b); diffuseColor.a=mix(.62,.96,q);
+   if(b>.9&&wh(floor(p*6.)+floor(uT*1.5))>.975)wg=uGl; }`)
+          .replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n totalEmissiveRadiance+=vec3(.7,.82,.78)*wg;'); };
+      m.customProgramCacheKey=()=>'fwater'; return m; };
+    const lakeM=wmat([.13,.25,.18],[.24,.33,.21],[0,0,0,0]); FOUNT.lakeM=lakeM;
+    const chunks=(cell,keep,make)=>{ const x0=Math.floor(S.x0)-2, y0=Math.floor(S.y0)-2, CH=16; let tris=0;
+      for(let cx=x0;cx<L.cx;cx+=CH)for(let cy=y0;cy<L.cy;cy+=CH){ const pos=[], ex=[]; for(let x=cx;x<Math.min(cx+CH,L.cx+cell);x+=cell)for(let y=cy;y<Math.min(cy+CH,L.cy+cell);y+=cell){ const q=[[x,y],[x+cell,y],[x+cell,y+cell],[x,y+cell]], d=q.map(([a,b])=>-lake(a,b)); if(!keep(d))continue; make(q,d,pos,ex); }
+        if(!pos.length)continue; tris+=pos.length/9; FOUNT.parts.push([pos,ex]); }
+      return tris; };
+    FOUNT.parts=[]; const BD=[[.36,.32,.22],[.29,.28,.19],[.21,.23,.15],[.14,.18,.12]], lin=new THREE.Color();
+    const bedTris=chunks(1,d=>Math.max(...d)>-1.4,(q,d,pos,col)=>{ const v=q.map(([a,b],k)=>[X(a),bedY(d[k]),Z(b)]); for(const t of [[0,2,1],[0,3,2]]){ const m=(d[t[0]]+d[t[1]]+d[t[2]])/3, dm=bedM(m), h=hs(Math.floor(q[0][0]*3+t[1]),Math.floor(q[0][1]*3),21);
+      const c=lin.setRGB(...BD[dm<.25?0:dm<.7?1:dm<1.6?2:3].map(v=>v*(.88+.24*h)),THREE.SRGBColorSpace).toArray(); for(const k of t){ pos.push(...v[k]); col.push(...c); } } });
+    const bedM_=new THREE.MeshLambertMaterial({vertexColors:true}); for(const [pos,col] of FOUNT.parts.splice(0)){ const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3)); g.setAttribute('color',new THREE.Float32BufferAttribute(col,3)); g.computeVertexNormals(); g.computeBoundingSphere(); const me=new THREE.Mesh(g,bedM_); me.receiveShadow=true; grp.add(me); }
+    const wTris=chunks(2,d=>Math.max(...d)>-1,(q,d,pos,ad)=>{ const v=q.map(([a,b])=>[X(a),LV,Z(b)]); for(const t of [[0,2,1],[0,3,2]])for(const k of t){ pos.push(...v[k]); ad.push(Math.max(0,Math.min(1,(bedM(d[k])-.22)/2.4))); } });
+    for(const [pos,ad] of FOUNT.parts.splice(0)){ const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3)); g.setAttribute('aD',new THREE.Float32BufferAttribute(ad,1)); g.computeVertexNormals(); g.computeBoundingSphere(); const me=new THREE.Mesh(g,lakeM); me.receiveShadow=true; me.renderOrder=1; grp.add(me); }
+    { const N=S.rocks.length, me=new THREE.InstancedMesh(new THREE.DodecahedronGeometry(1,0),new THREE.MeshLambertMaterial({color:0xffffff,flatShading:true}),N), m4=new THREE.Matrix4(), q=new THREE.Quaternion(), e=new THREE.Euler(), c=new THREE.Color();
+      S.rocks.forEach(([x,y,s,h],i)=>{ const w=s*T*.5, d=-lake(x,y); me.setMatrixAt(i,m4.compose(new V3(X(x),bedY(d)+w*.25,Z(y)),q.setFromEuler(e.set(h*3,h*9,h*2)),new V3(w*(1+.3*h),w*(.55+.3*hs(i,2)),w*(.9-.2*h)))); const g=.4+.16*hs(i,4); me.setColorAt(i,c.setRGB(g,g*.99,g*.95)); });
+      me.castShadow=me.receiveShadow=true; grp.add(me); FOUNT.rockN=N; }
+    const box=new THREE.BoxGeometry(1,1,1), stoneI=[], put=(x,z,y0,y1,len,th,phi,g)=>stoneI.push([x,(y0+y1)/2,z,len,y1-y0,th,phi,g]);
+    { const Rb=R-.14, A=[], NP=8; for(let i=0;i<NP;i++)A.push((20+140*i/(NP-1))*Math.PI/180); const at=a=>[X(C.x+Math.cos(a)*Rb),Z(C.y+Math.sin(a)*Rb)], ph=a=>Math.atan2(-Math.cos(a),-Math.sin(a));
+      A.forEach((a,i)=>{ const [x,z]=at(a); put(x,z,0,Y(30),.3*T,.3*T,ph(a),.62+.06*hs(i,1)); put(x,z,Y(30),Y(33.5),.38*T,.38*T,ph(a),.7); put(x,z,Y(33.5),Y(36),.16*T,.16*T,ph(a),.66); });
+      for(let i=0;i<NP-1;i++){ const a=A[i], b=A[i+1], m=(a+b)/2, [x0,z0]=at(a), [x1,z1]=at(b), len=Math.hypot(x1-x0,z1-z0)-.3*T, [xm,zm]=at(m), cm=Math.cos((b-a)/2), mx=X(C.x+Math.cos(m)*Rb*cm), mz=Z(C.y+Math.sin(m)*Rb*cm);
+        put(mx,mz,0,Y(4.5),len,.26*T,ph(m),.58+.05*hs(i,3)); put(mx,mz,Y(21.5),Y(26),len,.28*T,ph(m),.68+.05*hs(i,5));
+        const n=5; for(let k=1;k<=n;k++){ const t=a+(b-a)*(k/(n+1)), [bx,bz]=at(t); put(bx,bz,Y(4.5),Y(21.5),.085*T,.085*T,ph(t),.64+.06*hs(i,k)); put(bx,bz,Y(9),Y(15),.12*T,.12*T,ph(t)+.78,.6+.06*hs(k,i)); } } }
+    { const me=new THREE.InstancedMesh(box,new THREE.MeshLambertMaterial({color:0xffffff}),stoneI.length), m4=new THREE.Matrix4(), q=new THREE.Quaternion(), c=new THREE.Color(), up=new V3(0,1,0);
+      stoneI.forEach(([x,y,z,sx,sy,sz,phi,g],i)=>{ me.setMatrixAt(i,m4.compose(new V3(x,y,z),q.setFromAxisAngle(up,phi),new V3(sx,sy,sz))); me.setColorAt(i,c.setRGB(g,g*.96,g*.88)); }); me.castShadow=me.receiveShadow=true; grp.add(me); FOUNT.balN=stoneI.length; }
+    const pos=[], col=[], tri=(a,b,c,k)=>{ pos.push(...a,...b,...c); col.push(...k,...k,...k); };
+    const STONE=i=>{ const g=.6+.08*hs(i,31); return [g,g*.96,g*.88]; }, BRONZE=i=>{ const h=hs(i,37); return h<.22?[.3,.44,.36]:h<.3?[.42,.36,.22]:[.26*(.9+.2*h),.24*(.9+.2*h),.17]; };
+    const lathe=(prof,n,cf,x=CX,z=CZ,y0=0,rs=1)=>{ const P=(i,j)=>{ const a=i/n*Math.PI*2, [r,h]=prof[j]; return [x+Math.cos(a)*r*T*rs,y0+Y(h),z+Math.sin(a)*r*T*rs]; }; let k=0;
+      for(let i=0;i<n;i++)for(let j=0;j<prof.length-1;j++){ const a=P(i,j), b=P(i+1,j), c=P(i+1,j+1), d=P(i,j+1), cc=cf(k++); if(prof[j][0]>1e-4)tri(a,b,c,cc); if(prof[j+1][0]>1e-4)tri(a,c,d,cc); } };
+    lathe([[1.28,1],[1.28,13],[1.31,15.5],[1.53,15.5],[1.58,13.5],[1.58,0]],36,STONE);
+    lathe([[0,1],[1.28,1]],18,i=>[.3,.31,.27]);
+    lathe([[.42,0],[.42,10],[.34,13],[.3,16]],14,STONE);
+    lathe([[.3,16],[.15,19],[.13,30],[.17,37],[.13,44],[.16,46]],12,BRONZE);
+    lathe([[.16,46],[.42,48],[.72,51],[.92,54],[.95,56.5],[.88,56.5],[.6,54.5],[.22,53],[0,53]],28,BRONZE);
+    lathe([[.12,53],[.09,60],[.13,64],[.09,68],[.1,74]],10,BRONZE);
+    lathe([[.1,74],[.26,76],[.43,79.5],[.46,81.5],[.41,81.5],[.2,80],[0,80]],20,BRONZE);
+    lathe([[.13,80],[.13,86],[.16,87.5],[.16,89],[0,89]],10,BRONZE);
+    { const F=(dx,h,dz)=>[CX+dx*T,Y(h),CZ+dz*T], seg=(a,b,r0,r1,cf)=>{ const A=new V3(...a), B=new V3(...b), ax=new V3().subVectors(B,A).normalize(), u=new V3(Math.abs(ax.y)<.9?0:1,Math.abs(ax.y)<.9?1:0,0).cross(ax).normalize(), v=new V3().crossVectors(ax,u), N=5, ring=(c,r)=>Array.from({length:N},(_,i)=>{ const t=i/N*Math.PI*2; return new V3().copy(c).addScaledVector(u,Math.cos(t)*r).addScaledVector(v,Math.sin(t)*r).toArray(); });
+        const ra=ring(A,r0*T), rb=ring(B,r1*T); for(let i=0;i<N;i++){ const cc=cf(i); tri(ra[i],ra[(i+1)%N],rb[(i+1)%N],cc); tri(ra[i],rb[(i+1)%N],rb[i],cc); } };
+      lathe([[.15,89],[.13,96],[.1,104],[.085,110],[.11,113],[.07,116],[0,116]],10,BRONZE);
+      lathe([[0,114.5],[.06,115.5],[.085,118],[.075,121],[.04,122.5],[0,123]],8,BRONZE);
+      seg(F(.09,113,0),F(.17,123,-.1),.032,.026,BRONZE); seg(F(.17,123,-.1),F(.2,131,-.16),.026,.02,BRONZE);
+      seg(F(-.09,113,0),F(-.17,104,-.12),.032,.026,BRONZE); seg(F(-.17,104,-.12),F(-.2,96,-.2),.026,.02,BRONZE); seg(F(-.2,92,-.2),F(-.2,101,-.2),.008,.008,BRONZE); lathe([[0,100],[.05,103],[.02,105],[0,105]],5,i=>[.3,.44,.36],CX-.2*T,CZ-.2*T);
+      for(const s of [-1,1]){ const root=F(s*.05,113,.06), tips=[[.16,135,.18],[.34,141,.24],[.48,134,.26],[.52,124,.24],[.46,114,.2],[.34,106,.16],[.2,103,.1]].map(([a,h,b])=>F(s*a,h,b));
+        for(let i=0;i<tips.length-1;i++)tri(root,tips[i],tips[i+1],BRONZE(i+(s>0?9:0)).map(v=>v*(i%2?1:1.14))); } }
+    { const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3)); g.setAttribute('color',new THREE.Float32BufferAttribute(col,3)); g.computeVertexNormals(); g.computeBoundingSphere();
+      const me=new THREE.Mesh(g,new THREE.MeshLambertMaterial({vertexColors:true,side:THREE.DoubleSide})); me.castShadow=me.receiveShadow=true; grp.add(me); FOUNT.statTris=pos.length/9; }
+    const disc=(r,h,ring,deep,shal,dv)=>{ const g=new THREE.CircleGeometry(r*T,28).rotateX(-Math.PI/2); g.setAttribute('aD',new THREE.Float32BufferAttribute(new Float32Array(g.attributes.position.count).fill(dv),1)); const me=new THREE.Mesh(g,wmat(deep,shal,[CX,CZ,ring,1])); me.position.set(CX,Y(h),CZ); me.receiveShadow=true; me.renderOrder=1; grp.add(me); return me; };
+    disc(1.28,10.5,1.15,[.2,.36,.32],[.32,.46,.4],.75); disc(.88,55.5,.6,[.22,.38,.34],[.34,.48,.42],.6); disc(.41,80.8,.3,[.22,.38,.34],[.34,.48,.42],.6);
+    const SPR=[]; { const st=(n,r,h,vo,vu,hl,k,ph)=>{ for(let i=0;i<n;i++){ const a=(i+.5*ph)/n*Math.PI*2; SPR.push({a,r,h,vo:vo*(.9+.2*hs(i,n)),vu,hl,k,o:hs(i,k*7)}); } };
+      st(22,.46,81.5,.28,0,55.5,4,0); st(30,.95,56.5,.34,0,10.5,5,1); st(10,.17,88,.5,.95,80.8,4,0); }
+    const NS=SPR.reduce((a,s)=>a+s.k,0), dG=new THREE.OctahedronGeometry(.5,0), drops=new THREE.InstancedMesh(dG,new THREE.MeshLambertMaterial({color:0xffffff,emissive:new THREE.Color(.22,.27,.27)}),NS); drops.frustumCulled=false;
+    { const c=new THREE.Color(); for(let i=0;i<NS;i++)drops.setColorAt(i,c.setRGB(.74+.12*hs(i,1),.86+.08*hs(i,2),.9)); } grp.add(drops);
+    const g=9.81*WU, m4=new THREE.Matrix4(), q=new THREE.Quaternion(), up=new V3(0,1,0), vv=new V3(), pp=new V3(), sc=new V3();
+    const flow=t=>{ let n=0; for(const s of SPR){ const ca=Math.cos(s.a), sa=Math.sin(s.a), x0=CX+ca*s.r*T, z0=CZ+sa*s.r*T, y0=Y(s.h), vo=s.vo*WU, vu=s.vu*WU, yl=Y(s.hl), tf=(vu+Math.sqrt(vu*vu+2*g*Math.max(.01,y0-yl)))/g;
+        for(let k=0;k<s.k;k++){ const f=((t/tf+s.o+k/s.k)%1+1)%1, tt=f*tf, y=y0+vu*tt-.5*g*tt*tt; pp.set(x0+ca*vo*tt,Math.max(yl,y),z0+sa*vo*tt); vv.set(ca*vo,vu-g*tt,sa*vo); const sp=vv.length();
+          q.setFromUnitVectors(up,vv.multiplyScalar(1/sp)); sc.set(.05*T,Math.min(tf*sp/s.k*.8,.4*T)+.04*T,.05*T); drops.setMatrixAt(n++,m4.compose(pp,q,sc)); } }
+      drops.instanceMatrix.needsUpdate=true; };
+    flow(0); FOUNT.drops=drops; FOUNT.flowN=NS;
+    FOUNT.tris={bed:bedTris,water:wTris,rocks:FOUNT.rockN*36,balustrade:FOUNT.balN*12,statue:FOUNT.statTris,drops:NS*8,discs:84};
+    const near=(pos,d)=>Math.hypot(pos.x-CX,pos.z-CZ)<d*T;
+    FOUNT.hear=pos=>LVL==='up'&&!(typeof ROOMS!=='undefined'&&ROOMS.cur)?Math.pow(Math.max(0,1-Math.hypot(pos.x-CX,pos.z-CZ)/(16*T)),2):0;
+    let wasIn=false;
+    FOUNT.feed=(st,pos,dt,go,keys)=>{ if(LVL!=='up'||pos.x<X(S.x0-1)||pos.z<Z(S.y0-1)){ if(FOUNT.swim||wasIn){ FOUNT.swim=false; wasIn=false; uP.value.z=0; } return false; }
+      const d=-lake(pos.x/T+BOD.OX-(P.ox||0),pos.z/T+BOD.OY-(P.oy||0)); if(d<=0){ FOUNT.swim=false; uP.value.z=0; return false; }
+      const W=RIG.water(st,{level:LV/ZU,floor:bedY(d)/ZU}); W.go=!!go; W.fast=W.in&&(keys.has('k')||keys.has('shift'))?1:0;
+      if(W.in&&W.floor>=W.level-30&&!st.move&&!W.dive){ W.in=false; if(st.last)st.out={pose:JSON.parse(JSON.stringify(st.last)),t:0,T:.4}; }
+      let kick=0; for(const e of W.events)if(e.k==='splash')kick=Math.max(kick,Math.min(1.6,.4+e.v*.01)); W.events.length=0; if(W.in&&!wasIn)kick=1.4; wasIn=W.in; FOUNT.swim=W.in;
+      const wet=W.in||W.floor<W.level, z=wet?Math.max(kick,W.in?(go?.9:.35):(go?.55:0)):0; uP.value.set(pos.x,pos.z,uP.value.z+(z-uP.value.z)*Math.min(1,dt*(z>uP.value.z?12:2)),0); return true; };
+    FOUNT.tick=(dt,pos)=>{ if(LVL!=='up'||!grp.visible)return; const fn=near(pos,48), ln=pos.x>X(S.x0-50)&&pos.z>Z(S.y0-50); if(!fn&&!ln)return; uT.value+=dt;
+      try{ uGl.value=Math.max(0,Math.min(1,(CLOCK.elev()+2)/10)); }catch(e){} drops.visible=fn; if(fn)flow(uT.value); };
+    FOUNT.ready=true; };
+}

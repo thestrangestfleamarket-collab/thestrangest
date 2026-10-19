@@ -37,7 +37,7 @@ const PEEK=window.PEEK={uDP:{x:0,y:0,z:-2,w:.1},uDK:{x:0,y:1,z:1e9,w:0},boxes:[]
 if(PEEK.on)for(const k of ['lambert','basic']){ const S=THREE.ShaderLib[k]; S.uniforms.uDP={value:PEEK.uDP}; S.uniforms.uDK={value:PEEK.uDK};
   S.vertexShader='attribute float aWl; varying vec4 vDc; varying float vWl, vWy;\n'+S.vertexShader.replace('#include <project_vertex>','#include <project_vertex>\n vDc=gl_Position; vWl=aWl; vWy=(modelMatrix*vec4(transformed,1.)).y;');
   S.fragmentShader='uniform vec4 uDP, uDK; varying vec4 vDc; varying float vWl, vWy;\nfloat dB2(vec2 a){ a=floor(a); return fract(dot(a,vec2(.5,a.y*.75))); }\n'+S.fragmentShader.replace('#include <clipping_planes_fragment>',`#include <clipping_planes_fragment>
-  if(uDK.x>0.&&vWl>1.5&&(vWl<2.5||vWy>uDK.z)){ vec3 dn=vDc.xyz/vDc.w; vec2 dq=dn.xy-uDP.xy; dq.x*=uDK.y; float dr=length(dq)/uDP.w; if(dr<1.&&dn.z<uDP.z&&dB2(gl_FragCoord.xy*.5)*.25+dB2(gl_FragCoord.xy)<uDK.x*min(1.,(1.-dr)*3.)*.8)discard; }`); }
+  if(uDK.x>0.&&vWl>1.5&&(vWl<2.5||vWy>uDK.z)){ vec3 dn=vDc.xyz/vDc.w; vec2 dq=dn.xy-uDP.xy; dq.x*=uDK.y; float dr=length(dq)/uDP.w; if(dr<1.&&dn.z<uDP.z&&dB2(gl_FragCoord.xy*.5)*.25+dB2(gl_FragCoord.xy)<uDK.x*(dr<.7?.8:.4))discard; }`); }
 PEEK.box=(me,x0,y0,z0,x1,y1,z1)=>{ const e=.7*TILE/.84; PEEK.boxes.push({me,b:new THREE.Box3(new THREE.Vector3(Math.min(x0,x1)-e,Math.min(y0,y1)-e,Math.min(z0,z1)-e),new THREE.Vector3(Math.max(x0,x1)+e,Math.max(y0,y1)+e,Math.max(z0,z1)+e))}); };
 PEEK.mark=(g,A)=>{ g.setAttribute('aWl',new THREE.BufferAttribute(A||new Uint8Array(g.attributes.position.count).fill(2),1)); return g; };
 PEEK.whole=me=>{ PEEK.mark(me.geometry); me.updateMatrixWorld(); const b=new THREE.Box3().setFromObject(me); if(!b.isEmpty())PEEK.box(me,b.min.x,b.min.y,b.min.z,b.max.x,b.max.y,b.max.z); };
@@ -49,8 +49,8 @@ PEEK.batch=(me,L)=>{ const M=TILE/.84, q=.05*TILE, G={}, K=[], V=PEEK.V;
   if(!any)return; const A=new Uint8Array(L.length*6); K.forEach((k,n)=>{ if(k)A.fill(G[k].w,n*6,n*6+6); }); PEEK.mark(me.geometry,A); };
 PEEK.tick=dt=>{ const on=PEEK.on&&UI.view!=='first'&&!UI.freeCam&&!ED.on&&!ROOMS.cur&&PEEK.boxes.length, M=TILE/.84, c=PEEK.V.set(pos.x,py+1.1*TILE,pos.z), R=PEEK.ray, W=PEEK.W, H=PEEK.H, P=PEEK.uDP, K=PEEK.uDK;
   R.origin.copy(c); if(UI.persp)R.direction.copy(cam.position).sub(c).normalize(); else R.direction.set(0,0,1).applyQuaternion(cam.quaternion);
-  let cov=false; if(on){ const far=UI.persp?c.distanceTo(cam.position):1e5; for(const o of PEEK.boxes){ const me=o.me; if(!me.visible||(me.parent&&!me.parent.visible))continue; if(R.intersectBox(o.b,H)&&H.distanceTo(c)<far){ cov=true; break; } } }
+  let cov=false; if(on){ const far=UI.persp?c.distanceTo(cam.position):1e5; if(far>1.5*M)for(const o of PEEK.boxes){ const me=o.me; if(!me.visible||(me.parent&&!me.parent.visible))continue; if(R.intersectBox(o.b,H)&&H.distanceTo(c)<far){ cov=true; break; } } }
   PEEK.k=Math.max(0,Math.min(1,PEEK.k+(cov?dt:-dt)/.25)); PEEK.cov=cov; K.x=PEEK.k; K.y=RW/RH; K.z=py+2.6*TILE; if(!PEEK.k)return;
-  W.copy(c).project(cam); H.set(1,0,0).applyQuaternion(cam.quaternion).multiplyScalar(1.6*M).add(c).project(cam); P.w=Math.max(1e-4,Math.hypot((H.x-W.x)*RW/RH,H.y-W.y)); P.x=W.x; P.y=W.y;
+  W.copy(c).project(cam); H.set(1,0,0).applyQuaternion(cam.quaternion).multiplyScalar(1.6*M).add(c).project(cam); P.w=Math.max(1e-4,Math.min(.6,Math.hypot((H.x-W.x)*RW/RH,H.y-W.y))); P.x=W.x; P.y=W.y;
   H.copy(c).addScaledVector(R.direction,.5*M).project(cam); P.z=H.z; };
 PEEK.stat=()=>({boxes:PEEK.boxes.length,k:PEEK.k,cov:!!PEEK.cov,progs:renderer.info.programs.length});

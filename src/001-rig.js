@@ -410,7 +410,7 @@ MOVES.cartwheel=(()=>{ const C=(t,roll,yaw,side,z,a,b,l,r,o)=>[t,{root:[0,STAND,
       if(q===pq) off=pw-J[q].z; pq=q; pw=J[q].z+off; P.root=V(P.root.x,P.root.y-lo,P.root.z+off); }
     k.push({t,P,e:smooth}); }
   for(let i=n-1;i>0;i--) k[i].P.root=V(k[i].P.root.x,Math.max(k[i].P.root.y,k[i+1].P.root.y-3.6),k[i].P.root.z);
-  m.k=k; return m; })();
+  m.k=k; m.slow=.75; m.again=1; return m; })();
 const DIVES={};
 function diveMove(drop){ const k=Math.round(drop); if(DIVES[k]) return DIVES[k]; const A=(ua,fa,c)=>({L:{ua,fa,...c},R:{ua,fa,...c}});
   return DIVES[k]=jumpMove({v0:95,t0:0.6,turns:0.42,pivot:9,vz:16,drop:k,entry:true,
@@ -526,7 +526,7 @@ const AIRV={
   roll:air({yaw:-90,nod:-20,L:{ua:[0,150],fa:[0,150],th:[0,38],sh:[0,38],foot:0},R:{ua:[0,150],fa:[0,150],th:[0,38],sh:[0,38],foot:0}}),
   pitch:air({bend:26,nod:12,L:{ua:[62,24],fa:[82,24],th:[96,13],sh:[-32,13],foot:-20},R:{ua:[62,24],fa:[82,24],th:[96,13],sh:[-32,13],foot:-20}}),
 };
-const AIRSPIN={cartwheel:'roll',frontflip:'pitch',backflip:'pitch'};
+const AIRSPIN={frontflip:'pitch',backflip:'pitch'};
 for(const n of ['jab','cross','uppercut'])MOVES['b'+n]=move({lead:MOVES[n].lead,window:MOVES[n].window,keys:MOVES[n].keys.map(([t,c,e])=>[t,c===GUARD?BGUARD:c,e])});
 const KEYMOVE={J:'jab',K:'frontKick',N:'slap',' ':'jump',Q:'backflip',G:'backflip',E:'frontflip',F:'fall',R:'roll',C:'crouch',V:'wave',B:'block',X:'legSweep',U:'cartwheel'};
 
@@ -632,6 +632,7 @@ function act(st,key){ const W=st.water;
   const name=KEYMOVE[key]; if(!name) return; const mv=st.move;
   if(ARMMOVES.has(name)&&!(st.climb||st.hang||st.ride)){ if(mv){ const d=mv.def,a=d.air; if(a&&d.airv&&d.airv[key]&&!mv.variant&&mv.t>a.t0&&mv.t<a.t0+a.T*0.75){ mv.variant={name:d.airv[key],t:mv.t}; return; } }
     const u=st.up; if(!u||name=='block'){ beginUp(st,name); return; } const ud=u.def; if(ud.combo&&ARMMOVES.has(ud.combo[key])){ if(u.t>=ud.window[0]*RIGT.combo) beginUp(st,ud.combo[key]); else st.upNext=ud.combo[key]; } else st.upNext=name; return; }
+  if(MOVES[name]&&MOVES[name].again&&(st.climb||st.hang||st.ride||mv&&(!free(mv)||mv.def.air&&mv.t>=mv.def.air.t0&&mv.t<mv.def.air.t0+mv.def.air.T))) return;
   if(!mv){ begin(st,pick(st,name)); return; }
   const d=mv.def,a=d.air,left=a?a.t0+a.T-mv.t:0;
   if(a&&d.airv&&d.airv[key]&&!mv.variant&&mv.t>a.t0&&mv.t<a.t0+a.T*0.75){ mv.variant={name:d.airv[key],t:mv.t}; return; }
@@ -642,14 +643,14 @@ function release(st,key){ if(key=='carry'){ if(st.up&&st.up.name=='carry') st.up
 function tick(st,h){ st.run+=(st.runTarget-st.run)*Math.min(1,h*RIGT.blend); const g=gaitOf(st.run);
   if(st.up){ const u=st.up,d=u.def; if(!(d.hold&&u.held&&u.t+h>=d.hold)) u.t+=h*RIGT.moves*(st.anim||1); else u.t=d.hold; if(st.upNext&&d.window&&u.t>=d.window[0]*RIGT.combo) beginUp(st,st.upNext); else if(u.t>=d.dur){ st.up=null; if(st.upNext) beginUp(st,st.upNext); } }
   if(st.move){ const mv=st.move,d=mv.def,a=d.air,fr=free(mv);
-    if(!(d.hold&&mv.held&&mv.t+h>=d.hold)) mv.t+=d.air?h:h*RIGT.moves*(st.anim||1); else mv.t=d.hold;
+    if(!(d.hold&&mv.held&&mv.t+h>=d.hold)) mv.t+=d.air?h:h*RIGT.moves*(st.anim||1)*(d.slow||1); else mv.t=d.hold;
     if(st.next&&fr&&!(a&&mv.t<a.t0+a.T)) begin(st,pick(st,st.next));
     else if(d.air&&st.water&&(d.entry||st.water.level!=null&&st.water.floor<st.water.level-30)&&mv.t>=d.air.t0+d.air.T){
       const M=lift(moveAt(st),mv.floor),W=st.water,vy=d.air.v0-d.air.g*d.air.T; st.out={pose:JSON.parse(JSON.stringify(M)),t:0,T:0.9};
       W.in=true; W.y=M.root.y; W.vy=vy; W.under=1; W.swim=0; W.ph=0.15; W.sp=1; st.out.y0=W.y; W.events.push({k:'splash',z:6,v:-vy}); st.move=null; st.mv*=0.3; }
-    else if(mv.t>=d.dur||st.target>0&&fr&&mv.t>=(d.ex??(a?a.t0+a.T+.04:d.dur*.8))){ if(mv.name=='climb'&&st.water){ st.water.in=false; st.water.floor=0; }
+    else if(mv.t>=d.dur||(st.target>0||d.again&&mv.held)&&fr&&mv.t>=(d.ex??(a?a.t0+a.T+.04:d.dur*.8))){ if(mv.name=='climb'&&st.water){ st.water.in=false; st.water.floor=0; }
       const O=lift(moveAt(st),mv.floor),z=O.root.z; st.dist+=z-(mv.zc||0); O.root=V(O.root.x,O.root.y,0); st.out={pose:O,t:0,T:.12};
-      const nx=st.next; st.move=null; if(st.target>0){ const J=build(O).J; st.ph=d.ph??(J.ankleL.z>J.ankleR.z?.75:.25); } if(nx) begin(st,pick(st,nx)); }
+      const nx=st.next||(d.again&&mv.held&&!st.climb&&!st.hang?mv.name:null); st.move=null; if(st.target>0){ const J=build(O).J; st.ph=d.ph??(J.ankleL.z>J.ankleR.z?.75:.25); } if(nx) begin(st,pick(st,nx)); }
     const m=st.move,P0=pace(st)*st.target;
     if(!m) st.mv=0;
     else if(m.def.air){ const a=m.def.air; if(m.t>a.t0+a.T){ if(!m.down){ m.down=1; st.mv=st.mvw||0; } if(st.target>0&&free(m)) st.mv+=(P0-st.mv)*Math.min(1,h*8); else if(m.def.ph==null) st.mv*=Math.exp(-14*h); }

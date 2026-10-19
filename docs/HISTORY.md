@@ -1766,3 +1766,17 @@ nothing of cdn.jsdelivr.net: three is its own file (cached for good, it never ch
 recast are files of their own fetched only when the game first wants them, as before. Start-up: 5 same-origin files, about 874 KB
 compressed (was 1 page, the game, the rig and 9 files from jsdelivr, about 971 KB); the game's code ran about 1 s sooner locally.
 The claude.ai page (`dist/market.html`) is unchanged: one page, three from the CDN.
+
+- **The guitarist is a sheet ghost** (owner, 19 Oct 2026: "make the musician guitarist a ghost with sheet body, but fingers made of sheet too,
+  same playing skill and phyiscs. just change avatar and make it work (white sheet arms)"; `musician.js`): only his look changed; his rig, walk,
+  tunes, hands solved onto every note and the guitar are as they were. Drawn of him now: his arms, hands and every finger bone, in white sheet
+  (`sheet`, a little greyer than the sheet so the fretting and strumming read against it), and the guitar; his head, hair, body and legs are not
+  drawn. Over him a bedsheet with real cloth (Verlet, as Ghost Street's ghosts): a fitted bell of 161 points (a dome over the head, a hem with
+  points to the ground), dropped on him and gripping his head, held out by his shoulders, chest, hips, knees and ankles (so his walk swings
+  the hem), kept behind the guitar's body and behind both hands (the hands always show), stopped by the ground, simulated in his own frame so
+  turning and walking swing it; two eye holes on the sheet over his face, following his head. One mesh, his own material (no new program),
+  casting his shadow; `?sheet=guitarist` his sheet (black void, limbs spread; `sheetView`/`spreadPose` now shared with the bearded Walker's).
+  Cost: 22,674 triangles where he's seen (was 30,150: the hidden head, body and legs pay for the sheet's 320); one more draw; no lights;
+  the cloth some 1 ms a frame measured headless on software rendering (his own playing there 2-13 ms), only while he's posed (near and
+  drawn). `tests/ghostgt.cjs <out> play|walk [hour] [extra]`. Pictures: `mockups/ghost-guitarist-sheet.png`, `-street.png`, `-hands.png`,
+  `-walking.png`.

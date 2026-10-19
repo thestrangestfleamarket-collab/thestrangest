@@ -11,7 +11,7 @@ process.on('unhandledRejection',e=>{ errs.push('TEST '+String(e&&e.message||e).s
   const go=(dx,dz)=>`(()=>{ const s=GTOWER.site(), T=window.TILE||(__dbg.cv().TILE); STORE.goTo(s.x+${dx}*T,s.z+${dz}*T,'up'); })()`;
   for(let i=0;i<20;i++){ await pg.waitForTimeout(1000); if(await pg.evaluate(()=>window.GTOWER&&GTOWER.ready))break; }
   await shot('tower-iso',go(2.5,4),6000);
-  const look=(k,yo,z)=>pg.evaluate(([k,yo,z])=>{ const s=GTOWER.site(), N=SQUIRREL.N, p=k==='sq'?{x:N.g.position.x,y:N.g.position.y,z:N.g.position.z}:{x:s.x,y:s.top*yo,z:s.z}; LOOKAT(p.x,p.z,z,p.y); },[k,yo,z]);
+  const look=(k,yo,z)=>pg.evaluate(([k,yo,z])=>{ const s=GTOWER.site(), N=SQUIRREL.N, p=k==='sq'?{x:N.g.position.x,y:N.g.position.y+N.H*.5,z:N.g.position.z}:{x:s.x,y:s.top*yo,z:s.z}; LOOKAT(p.x,p.z,z,p.y); },[k,yo,z]);
   await look('tw',.55,.8); await shot('tower-whole',null,3000);
   await pg.keyboard.press('e'); await shot('tower-turned',null,3000); await pg.keyboard.press('e'); await shot('tower-back',null,3000); await pg.keyboard.press('q'); await pg.keyboard.press('q'); await pg.waitForTimeout(1500);
   await look('tw',1,2); await shot('roof',null,3000);

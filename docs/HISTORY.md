@@ -3131,7 +3131,7 @@ versions) and put them in random spots in park and thats where specific mushroom
   **Nothing vanishes walking past** for big trees and walls only, and the **no 4x4 ordered (Bayer) grid** of **The grain, not halftone**
   for this see-through only (the ask named a screen-door dither; say if the grain should be used instead). When a big park tree
   (oaks, elders and the landmarks: `PARK.mesh` with leaves, not bushes, flowers or small plants) or a building's wall (the apartment
-  house, the row's batched walls 2.2 m tall and 1.2 m long or more and its roofs above your head, the Hudson-side building, the
+  house, the row's batched walls 2.2 m tall and 1.2 m long or more, and above your head its roofs and everything 2.4 m up, the Hudson-side building, the
   garages, the civic tower) stands between the camera and you, the part of it nearer the camera than you is cut away in a 4x4 ordered
   pattern in a circle round you on screen (hard pixels, no blending: 80% of the pixels inside, 40% in its outer ring), eased in and out
   over a quarter second (`PEEK` in `008-batch.js`; a ray from your chest to the camera against the trees' and walls' boxes).

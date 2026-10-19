@@ -81,19 +81,19 @@ BOD.KC={KMK,KPP,DGN,DGP,LAMPS,CATALOG,dungeonWall,dungeonFloorCol,castleArch,KAR
   put('clock','wall clock',B.x0+3.1,B.y0+.14,0,1); put('mirror','convex mirror',B.x0+.42,B.y0+.15,0,1); put('calendar','calendar',B.x0+.11,B.y0+1.95,0,1); put('cord','extension cord',B.x0+.11,B.y0+.12,0,1);
   put('tube1','fluorescent tube',m,B.y0+2.5); put('tube2','fluorescent tube',m,B.y0+6.5);
   put('fan','box fan',B.x0+5.1,B.y0+.36); put('fly','fly strip',m-.8,B.y0+4.5); put('bell','door bell',m,B.y1-.24);
-  put('news','newspaper rack',B.x0+.6,B.y1-.5); put('dock','drone box',B.x1-.45,B.y0+.45); put('flap','drone flap',B.x1-1.1,B.y1);
+  put('news','newspaper rack',B.x0+.6,B.y1-.5); put('dock','drone box',B.x1-.85,B.y0+.85); O.dock.boxes.push({x0:B.x1-1.05,y0:B.y0+.65,x1:B.x1-.65,y1:B.y0+1.05,z0:114,z1:B0.h,c:[120,122,122],fi:(v,z)=>Math.floor(z)%6===0?[96,98,98]:[124,126,126],fj:(u,z)=>Math.floor(z)%6===0?[96,98,98]:[124,126,126]});
   put('wl3','shop shelf',B.x0+.36,B.y0+8.5,3);
   put('mat-fox','counter mat',B.x1-.42,B.y0+5.3); put('mat-run','rubber mat',B.x1-1.75,B.y0+5.3,1);
   { const y0=B0.y0, x0=B0.x0; put('of-desk','desk',x0+1.4,y0+.75); put('of-chair','office chair',x0+1.4,y0+1.6); put('of-pc','home computer',x0+1.4,y0+.6);
     put('of-shelf','shelves with boxes',x0+4.6,y0+.5); put('of-boxes','cardboard boxes',x0+6.6,y0+.7); put('of-sink','utility sink',x0+.55,y0+2.6,3);
     put('of-clock','wall clock',x0+3.2,y0+.29); put('of-tube','fluorescent tube',x0+3.6,y0+1.9); }
   BOD.food={x:B.x1-1.05,y:B.y0+6.3};
-  put('mat-out','door mat',m,B0.y1+.75); }
+  }
   const FRONT=[], ROOF=[], STREET=[], GHOSTST=[];
   { const M=MKS, bo=B0, bm=(bo.x0+bo.x1)/2, n0=PROPS.length;
     M.pipe(bo.x0+.2,bo.y1,bo.h-6);
     M.neon(bo.x0+1.5,bo.y1,64,'OPEN',[255,90,110]); M.signbox(bo.x0+.45,bo.x0+2.3,bo.y1,36,48,[250,250,246],[40,80,200],'LOTTO',false);
-    M.gatebox(bo.x0+.2,bo.x1-.2,bo.y1,114); M.bell(bm,bo.y1,98); M.meterbox(bo.x0+.9,bo.y1,30); M.number(bo.x0+1.6,bo.y1,82,'66'); M.moss(bo.x0+.3,bo.x0+3,bo.y1);
+    M.gatebox(bo.x0+.2,bo.x1-.2,bo.y1,114); M.bell(bm,bo.y1,98); M.meterbox(bo.x0+.9,bo.y1,30); M.number(bo.x0+1.6,bo.y1,82,'66');
     for(const p of PROPS.slice(n0))FRONT.push(p);
     { const K=GHOSTK.GSK, s=K.s; { const o=LAY.o('ghost'); K.o=[131+o.x/BLDK,W-8.3*s+o.y/BLDK]; } const n3=PROPS.length;
       for(const [k,dx,dy] of PRESETS['Preset Ghost Street 1'])if(!/row house|utility pole/.test(k))CATALOG[k](K.o[0]-3.5*s+dx,K.o[1]-.45*s+dy);

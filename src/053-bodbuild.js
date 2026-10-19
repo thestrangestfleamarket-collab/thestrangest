@@ -95,6 +95,23 @@ BODB={};
       else if(g.kind==='speed'){ pole(x,y,92); plate(x,y,g.n,1,62,92,(u,j,W,H)=>{ if(u===0||j===0||u===W-1||j===H-1)return BLK; if(u===1||j===1||u===W-2||j===H-2)return WH;
           for(const [s,r,sc] of [['SPEED',3,1],['LIMIT',9,1],['25',16,2]]){ const o=Math.floor((W-tw(s,sc))/2); if(u>=o&&txt(s,u-o,j-r,sc))return BLK; } return WH; }); } }
     BATCH.tag=null; }
+  { const fw=BOD.WALLS.find(w=>w.id==='front'), dh=fw.holes.find(h=>h.door), a0=dh.a0, a1=dh.a1, yf=fw.at, AL=[156,158,156], d=Z(yf+1)>Z(yf)?1:-1;
+    const gw=(x0,x1,z0,z1,c=AL,e=.06,o=0)=>BOD.gbox({x0,x1,y0:yf-e+o,y1:yf+e+o,z0,z1,c,fs:(nx,ny,P,Q,z,k)=>sh(c,k*(.92+.12*hash(Math.floor(P*48),Math.floor(z),301))),top:()=>c},'Wfront');
+    gw(a0,a0+.07,0,94,AL,.1); gw(a1-.07,a1,0,94,AL,.1); gw(a0,a1,88,94,AL,.1); gw(a0+.07,a1-.07,78,81); gw(a0+.5,a0+.57,0,78); gw(a0+.07,a0+.5,0,8);
+    for(const [x0,x1,z0,z1,c] of [[a0+.12,a0+.42,60,66,[200,40,36]],[a0+.12,a0+.42,63,64,[240,236,226]],[a0+.14,a0+.26,50,54,[40,80,170]],[a0+.28,a0+.4,50,54,[236,190,40]],[a0+.16,a0+.36,20,26,[236,232,220]]])gw(x0,x1,z0,z1,c,.006,.065*d);
+    const win=fw.holes.filter(h=>h.glass&&!h.door); for(const [k,h] of win.entries()){ const L=h.a1-h.a0, st=k?[[.1,.5,20,27,[30,60,150]],[.55,.85,20,24,[200,40,36]],[L-.6,L-.25,20,30,[236,232,214]],[L-.55,L-.3,26,27,[60,60,60]]]:[[L-.45,L-.15,20,26,[60,140,70]],[L-.42,L-.18,22,23,[240,240,230]],[.2,.4,82,88,[236,232,220]]];
+      for(const [u0,u1,z0,z1,c] of st)gw(h.a0+u0,h.a0+u1,z0,z1,c,.006,.105*d); gw(h.a0,h.a1,h.z0,h.z0+2,[96,98,98],.12); }
+    const hx=a1-.07, lw=(a0+.57)-hx, U=v=>X(hx+v)-X(hx), Hh=v=>Y(v)-Y(0), cl=[planes.front], mat=new THREE.MeshLambertMaterial({clippingPlanes:cl}), BXS=[], bx=(u0,u1,z0,z1,dp,c)=>BXS.push([(U(u0)+U(u1))/2,(Hh(z0)+Hh(z1))/2,0,Math.abs(U(u1)-U(u0)),Hh(z1)-Hh(z0),dp,c]);
+    bx(0,.07*Math.sign(lw),0,78,.05,0x9c9e9c); bx(lw-.07*Math.sign(lw),lw,0,78,.05,0x9c9e9c); bx(0,lw,72,78,.05,0x9c9e9c); bx(0,lw,0,12,.06,0xb4b6b4); bx(.1*Math.sign(lw),lw-.1*Math.sign(lw),38,41,.12,0x6e706e);
+    for(const [u0,u1,z0,z1,c] of [[.15,.45,62,68,0xc8282a],[.17,.43,64.5,65.5,0xf0ece2],[.5,.62,52,55,0x2850a8],[.64,.76,52,55,0xe8b828],[.3,.55,45,47,0xf0ece2]])bx(u0*Math.sign(lw),u1*Math.sign(lw),z0,z1,.07,c);
+    const lf=new THREE.InstancedMesh(new THREE.BoxGeometry(1,1,1),mat,BXS.length), m4=new THREE.Matrix4(), q=new THREE.Quaternion(), cc=new THREE.Color(); BXS.forEach(([x,y,z,a,b,c2,col],i)=>{ lf.setMatrixAt(i,m4.compose(new THREE.Vector3(x,y,z),q,new THREE.Vector3(a,b,c2*TILE))); lf.setColorAt(i,cc.setHex(col)); });
+    const gl=new THREE.Mesh(new THREE.PlaneGeometry(Math.abs(U(lw))-.12*TILE,Hh(60)),glassMat.clone()); gl.material.clippingPlanes=cl; gl.position.set(U(lw)/2,Hh(42),0);
+    const sl=new THREE.Mesh(new THREE.PlaneGeometry(Math.abs(X(a0+.5)-X(a0+.07)),Hh(70)),glassMat.clone()); sl.material.clippingPlanes=cl; sl.position.set((X(a0+.07)+X(a0+.5))/2,Hh(43),Z(yf)); scene.add(sl);
+    const tr=new THREE.Mesh(new THREE.PlaneGeometry(Math.abs(X(a1-.07)-X(a0+.07)),Hh(7)),glassMat.clone()); tr.material.clippingPlanes=cl; tr.position.set((X(a0)+X(a1))/2,Hh(84.5),Z(yf)); scene.add(tr);
+    const leaf=new THREE.Group(); leaf.add(lf,gl); leaf.position.set(X(hx),0,Z(yf)); lf.castShadow=true; scene.add(leaf);
+    const cx=(X(a0)+X(a1))/2, cz=Z(yf), sg=-d*Math.sign(U(lw)); let ang=0;
+    BODB.door={leaf,a:()=>ang}; BODB.tick=dt=>{ const near=Math.hypot(pos.x-cx,pos.z-cz)<1.5*TILE||((window.WALKERS&&WALKERS.list)||[]).some(W=>W.N&&W.N.st&&Math.hypot(W.N.st.x-cx,W.N.st.z-cz)<1.4*TILE);
+      const to=near?1.35:0; ang+=(to-ang)*Math.min(1,dt*(near?5:2.2)); if(!near&&ang<.01)ang=0; leaf.rotation.y=sg*ang; }; }
   BOD.paintProps();
   BATCH.cast=true;
   BATCH.build((k,map,emap)=>{ const pl=k[0]==='W'||k[0]==='H'?planes[k.slice(1)]:null, cp=pl?{clippingPlanes:[pl]}:{};

@@ -67,9 +67,7 @@ if(MAIL.on){ const T=TILE, M=1/.84*T, X=BOD.XS, Z=BOD.ZS, G=(x,z)=>MODS.bodega.g
         const s={x:p.x+F.n.x*.07*M,y:p.y-H/2+.07*M,z:p.z+F.n.z*.07*M}, [ox,oz]=orient(F,W*.6,.02*M); blk(s.x,s.y,s.z,ox,.035*M,oz,0x14161a);
         b.slot={x:p.x,y:p.y,z:p.z,F}; b.flag=FL.push({x:p.x+F.t.x*(W/2+.03*M),y:p.y,z:p.z+F.t.z*(W/2+.03*M),F,up:false})-1; for(const A of MAIL.addr)if(A.b===b)A.flag=b.flag; }
       b.step={x:F.at.x+F.n.x*.55*T+F.t.x*.6*T,z:F.at.z+F.n.z*.55*T+F.t.z*.6*T};
-      if(b.up&&b.up.length){ const off=-(b.id==='dojo'?2.6:1.9)*T, p=place(F,off,1.05*M), [dx,dz]=orient(F,.95*M,.06*T), y0=p.y-1.05*M;
-        blk(p.x,y0+1.08*M,p.z,dx,2.15*M,dz,0x2c4a3a); const [kx,kz]=orient(F,.04*M,.03*T); blk(p.x+F.t.x*.32*M+F.n.x*.05*T,y0+1.05*M,p.z+F.t.z*.32*M+F.n.z*.05*T,kx,.06*M,kz,0xc8a850);
-        const [sx2,sz2]=orient(F,1.2*M,.5*T); blk(p.x+F.n.x*.25*T,y0+.05*M,p.z+F.n.z*.25*T,sx2,.1*M,sz2,0x8a8478);
+      if(b.up&&b.up.length){ const off=-(b.id==='dojo'?2.6:1.9)*T;
         b.upStep={x:F.at.x+F.n.x*.75*T+F.t.x*off,z:F.at.z+F.n.z*.75*T+F.t.z*off};
         b.up.forEach((u,i)=>{ const q=place(F,off-(.75+i*.5)*T,1.2*M), [bx,bz]=orient(F,.3*M,.16*M); blk(q.x,q.y,q.z,bx,.36*M,bz,0x3c4048); const A=MAIL.addr.find(a=>a.b===b&&a.unit===u.unit&&a.up);
           A.box={x:q.x,y:q.y,z:q.z,F}; A.flag=FL.push({x:q.x+F.t.x*.17*M,y:q.y,z:q.z+F.t.z*.17*M,F,up:false})-1; A.tick=TK.push({x:q.x+F.n.x*.09*M,y:q.y+.07*M,z:q.z+F.n.z*.09*M,F,on:false})-1; A.step=b.upStep; }); } }

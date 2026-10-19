@@ -32,5 +32,6 @@ process.on('unhandledRejection',e=>{ errs.push('TEST '+String(e&&e.message||e).s
   await shot('bath-in',()=>{ const M=__dbg.MAPK, r=M.BOD.GD.r; STORE.goTo(M.BOD.X((r[0]+r[2])/2),M.BOD.Z((r[1]+r[3])/2),'up'); },2500);
   await shot('bath-rise',null,2500); await shot('bath-back',null,7000);
   rep.alive=await pg.evaluate(()=>!(__dbg.VIT.dead));
+  rep.render=await pg.evaluate(()=>{ try{ const r=RENDERLIST(); return {head:r.head||r.totals||null,top:(r.rows||r.drawn||[]).slice(0,12),hidden:(r.notDrawn||r.loaded||[]).slice(0,8)}; }catch(e){ return 'ERR '+e.message; } });
   rep.frog=await pg.evaluate(()=>{ const N=__dbg.npcs().find(n=>n.key==='scooterfrog'); return N&&{x:N.st.x,z:N.st.z,to:N.st.to,wait:N.st.wait,hold:N.st.hold,far:N.far,mode:N.mode,life:!!N.life,free:N.st.to?N.free(N.st.to.x,N.st.to.z,N.st.R):null,freeHere:N.free(N.st.x,N.st.z,N.st.R)}; });
   fin(); await b.close(); })();

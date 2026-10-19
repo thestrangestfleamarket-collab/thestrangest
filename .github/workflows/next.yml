@@ -1,7 +1,7 @@
 name: next
 on:
   push:
-    branches: ['claude/next', 'claude/next2']
+    branches: ['claude/next', 'claude/next2', 'claude/next3']
 permissions:
   contents: write
 concurrency:

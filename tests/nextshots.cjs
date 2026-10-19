@@ -24,5 +24,13 @@ process.on('unhandledRejection',e=>{ errs.push('TEST '+String(e&&e.message||e).s
   rep.river0=await pg.evaluate(()=>({deep:!!(window.RIVER&&RIVER.deep)}));
   await shot('hudson-far',async()=>{ const R=window.RIVER; if(R&&R.load)await R.load(); },6000);
   rep.river1=await pg.evaluate(()=>({deep:!!(window.RIVER&&RIVER.deep)}));
+  await shot('grass',()=>{ const M=__dbg.MAPK, P=M.PARK; STORE.goTo(M.BOD.XS(P.round[0]+(P.ox||0)+9),M.BOD.ZS(P.round[1]+(P.oy||0)+6),'up'); });
+  await pg.keyboard.down('w'); await pg.waitForTimeout(2500); await pg.keyboard.up('w'); await shot('grass-trail',null,800);
+  rep.lawn=await pg.evaluate(()=>window.WEEDS&&{n:WEEDS.lawnN,chunks:WEEDS.chunks&&WEEDS.chunks.size});
+  await pg.evaluate(()=>window.KILLME&&KILLME()); await shot('ghost',null,6000);
+  rep.dead=await pg.evaluate(()=>!!(__dbg.VIT.dead));
+  await shot('bath-in',()=>{ const M=__dbg.MAPK, r=M.BOD.GD.r; STORE.goTo(M.BOD.X((r[0]+r[2])/2),M.BOD.Z((r[1]+r[3])/2),'up'); },2500);
+  await shot('bath-rise',null,2500); await shot('bath-back',null,7000);
+  rep.alive=await pg.evaluate(()=>!(__dbg.VIT.dead));
   rep.frog=await pg.evaluate(()=>{ const N=__dbg.npcs().find(n=>n.key==='scooterfrog'); return N&&{x:N.st.x,z:N.st.z,to:N.st.to,wait:N.st.wait,hold:N.st.hold,far:N.far,mode:N.mode,life:!!N.life,free:N.st.to?N.free(N.st.to.x,N.st.to.z,N.st.R):null,freeHere:N.free(N.st.x,N.st.z,N.st.R)}; });
   fin(); await b.close(); })();

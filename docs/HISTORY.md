@@ -2846,3 +2846,18 @@ fsomeone dies insomewhere they have to float back as a ghost to get resed. when 
   running on), hands and feet stay put on the ground where they land. Footstep sounds are quiet during moves. Checked in node (the
   rig out of the built page, 60 a second): run, jump, cartwheel, roll, run with no stop, no NaN, speed held over 39 units a second
   (the run is 108). Cost: none a frame (the cartwheel's 25 poses are made once at load).
+
+## 19 Oct 2026: under the park's lake
+- **Under the lake looks like under water** (owner, 19 Oct 2026, of his screenshot diving in the park's lake by the fountain, the
+  screen pale sky bands, a dark strip at the horizon and himself a black shape in a void: "when i go under the pond"; `060a-fount.js`,
+  `094-ui.js`, `075-main-13.js`): the lake had no underwater view at all (its "Not yet" above): its water was drawn from above only,
+  the sky showed through it from below, and nothing kept the camera out of the ground under the bed. Now, as in the Hudson, when the
+  camera is under the lake's surface the scene takes on murky green water (`FOUNT.pre`/`FOUNT.post`, fog from 0.4 to 6 tiles, darker at
+  night), the sky dome is hidden so the murk is all you see beyond a few tiles, and the water's surface is seen from below (the lake's
+  water drawn on both sides). The bed, its slopes up to the shore (the basin's walls) and the shore rocks show through the murk.
+  **The camera**: BEHIND follows you down as you dive (its aim slides from above your head to just over your head under water), and goes
+  under with you; it never goes lower than a quarter metre over the bed (`FOUNT.bedAt`) and, out of a dive, keeps its old height over the
+  ground. FIRST PERSON (your eyes) never goes into or under the bed either. ISOMETRIC is unchanged (it looks down through the water).
+  With the NEW CONTROLLER on, walking into the lake now starts swimming as in the Hudson (it walked on the water before).
+  Cost: no triangles, no lights, no shader programs more (the lake's and the fountain's water share one, now two-sided); a few
+  numbers a frame. Not yet: light rays under water, weeds on the bed.

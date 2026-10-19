@@ -2392,6 +2392,25 @@ the heading easing into turns. The head mockups (two rounds of six) were never p
   **Stars in the mist**: the MIST look's sky painted over the stars, so none had shown at night since it came in; they and the band show now
   in the gaps between its clouds. Cost: a few noise lookups a sky pixel, at night only; no triangles, lights or programs.
 
+**His walk and run smooth, with a captured gait** (owner, 19 Oct 2026: "the character runs way too jagged, needs to be way smoother,
+flowing"; "hes also walking with his arms sticking straight forward like a droid"; "make sure he has a natural gait and run, like tomb
+raider or prince of persia"; of the rig's run drawn from the side, "this doesnt make any sense is he falling?"). For you only (`st.smooth`,
+`071-main-11.js`; the street's Walkers keep their pixel steps), in the rig (`001-rig.js`):
+- **No pixel steps**: his hips' bob, the drop that lets a leg reach, the whole-body settle on the floor and the head were each rounded to
+  whole pixels; now exact.
+- **The run's flight**: with both feet up, the rig pulled his hips down toward where the feet would land (to 10 of 18) and snapped them
+  back on landing; now they ride a small arc from where he left the ground. His hips ease up (about 70 ms) and drop at once (so a leg
+  always reaches its planted foot; easing the drop too made feet fall out of reach and the rig's quick steps jerk them, so not that).
+- **Motion capture** (`tools/gait-bake.cjs` → `data/gait.json`, 17 KB): one cycle of a CMU walk and one of a run (subject 35, trials 01
+  and 17), heel-strike to heel-strike, fitted to his rig at 32 points (the existing `mocap-rig.cjs` fit). As he walks or runs (by his
+  pace, walk to run blended), his hips' turn, tilt and roll, spine's bend and twist, head's nod and both arms are the recording's, by his
+  step's phase; his swinging leg's path mid-swing too (his feet still land and lift where the rig plants them).
+- **The run's contact**: each foot on the ground 30% of a run cycle (was 40%; real running about 25-30%), the step shortened to match (his
+  speed unchanged), so a planted foot lifts before it is far behind him.
+Measured (`tests/walksmooth.cjs`, `tests/footworld.cjs`, both now with the smooth mode unless `STEPPED=1`): hip jolts a second walking 24
+to 4, running 36 to 22; planted feet don't slide; no foot jumps between frames. **Open**: his run covers some 8 leg-lengths a second (a
+jog is about 4), so with his short legs the back leg still reaches far behind at a run: his call (a slower run, or longer legs).
+
 ## 19 Oct 2026: lighter skeletons for a pixel game
 
 **The heaviest characters cut** (owner, 19 Oct 2026: "since we are do a pixel style game do we really need such high quality chracter
@@ -2431,3 +2450,39 @@ improvements"; of the list, 2-13 "do it", and "i want dungeon to be a 'loading w
   one up fetches it (the pick-up done once it's in; the street's goods and trash cans are listed as soon as they exist); your physics body (still on by default) comes alive then too, and the DISPLAY
   button fetches it at once. `?physics=1` fetches it at the start (`tests/loosecheck.cjs` uses it); `tests/physlater.cjs` checks
   the wait and the first push.
+
+## 19 Oct 2026: the park runs on, big clouds, sun through them
+- **The park runs on into the mist** (owner, asking about procedural.eu, a map terrain library on three.js: not usable here (satellite
+  photos, streamed map tiles, its own renderer), but its idea of ground fine near you and coarse far was; his pick of four places, "Park runs
+  on into mist"; `134a-parkfar.js`, `PFAR` in `006-map-pre.js` and `065-ring.js`): past the corner's north and east edges (north of it from
+  the park's west wall, east of it from the park's south wall) rolling lawns made in code, flat for 7 tiles then hills growing to some 10
+  tiles high far out, the park's lawn greens with grey rock on the steep faces, flat facets, one colour a face, lit in the cel bands. Cells 2
+  tiles near, 4, 8, 12 far (24-tile chunks with skirts). In the mist, everything else in that region more than 6 tiles past the edge is cut
+  (the park's far walls and gate, the north street, the Avenue), and the skyline's near rows on the park's side are left out (the rows 22+
+  tiles past the land and the baked far ones stay: the city across the park). The hills are only partly misted (half near, to nine tenths
+  far), so the ridges read in layers. Shown only while the MIST is on. Cost: 11,800 triangles, one draw, one program, no lights.
+- **Bigger clouds** (owner: "i like these clouds but they need to be way bigger and surrounding the buildings around edges and over sky";
+  `131-weather.js`): the same lumpy clouds, about three times the size: two in three a ring of banks round the skyline (150-320 tiles out,
+  14-52 high, 28-62 wide), the rest overhead (25-135 out, 30-46 high); at least 30 shown even in clear weather (30 + 50 x cloud).
+- **Sun through the clouds** (owner: "sun should shine through them to cause sun rays and light rays through the park"; of the two looks,
+  "Both"; then "the sun rays need to make logical sense, coming from the sun, not random"; `133a-sunrays.js`): **beams**: up to 8, each
+  leaving the sun-side edge of a real cloud straight along the sunlight to where it lands (the nearest to you, none within 3 tiles of the
+  camera), a pale six-sided shaft in two flat layers (core and edge, added light); whatever stands in a beam is lit a band brighter
+  (`sunS`/`sunB` in the lambert shader). By day only, none overcast or in rain. **Rays round the sun**: in the behind and first-person
+  views, when the sun is in sight, 32 steps from each pixel toward it count the open sky (the depth of the picture: clouds, trees and
+  buildings block), in 5 flat bands, warm, weaker over the sky itself. Cost: beams 192 triangles, one draw; rays one screen pass.
+  `tests/parkfar.cjs`, `tests/sunrays.cjs <out> [hour] [wx] [x,z]`.
+- **Scenes** (owner, 19 Oct 2026, after no stars showed at the stopped 5:24 pm under CLOUDY: "set both of these as preset in the admin menu,
+  add 4 other presets that make sense too (atmosphereic as possible nothing boring) go all out"; `src/sky.js`): ATMOSPHERE (Esc) opens with
+  SCENES, one click setting the time (stopped), the weather and the evening colours together, kept like them: **STARRY NIGHT** (10:30 pm,
+  CLEAR, the mist's clouds thinned: the Milky Way and every star), **STARS IN THE MIST** (10 pm, CLOUDY, the stars shown anyway, between the
+  mist's clouds), **BLOOD MOON** (11:30 pm, CLEAR: the moon bigger and red with two flat rings of red glow, the sky reddened most at the
+  horizon, the mist and the night's light with it), **FIRE SUNSET** (6:06 pm, CLEAR, FIRE colours, the real sky's bands shown through the
+  mist, which takes the horizon's colour), **THUNDERSTORM** (6:48 pm, STORM, lightning three times as often, with its thunder), **FIRST SNOW**
+  (7:18 am, SNOW, SOFT colours through the mist). Touching the time, the weather or the colours by hand ends the scene (the haze doesn't);
+  `?scene=blood_moon` for tests. The moon now shows in the mist too (it was painted over, like the stars). Cost: none outside the sky
+  shader's few lines; no triangles, lights or programs.
+  **Five quieter ones** (owner, the same day: "add 5 more subtle dusk, dawn, sunset, storm, etc."), a second row: **BLUE DAWN** (6:54 am,
+  CLEAR, SOFT, the sky just paling, the last stars), **FOGGY MORNING** (7:36 am, FOG, SOFT, low sun through it), **SOFT SUNSET** (5:57 pm,
+  CLOUDY, CLEAR colours, the warm horizon under the cloud), **DUSK** (6:27 pm, CLEAR, the street lights coming on), **DISTANT STORM** (5 pm,
+  RAIN, now and then a faint far flash and its thunder: lightning in RAIN is a third as bright as a STORM's).

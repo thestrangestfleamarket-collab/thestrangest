@@ -5,7 +5,7 @@
 const fs=require('fs'), H=fs.readFileSync(__dirname+'/../dist/market.html','utf8'), a=H.indexOf('const RIG=(()=>{'), src=H.slice(a,H.indexOf('\n})();',a)+6);
 global.window=global; global.location={search:''}; global.document={createElement:()=>({getContext:()=>({})})}; global.localStorage={getItem:()=>null,setItem(){}};
 const R=new Function(src+'\nreturn RIG;')(), SZ=1.2, PPU=30, K=PPU/SZ, run=process.argv[2]==='run';
-function play(name,dts){ const st=R.create(); st.snap=true; st.target=1; st.runTarget=run?1:0; let z=0,t=0; const F=[];
+function play(name,dts){ const st=R.create(); st.snap=true; st.smooth=process.env.STEPPED!=="1"; st.target=1; st.runTarget=run?1:0; let z=0,t=0; const F=[];
   for(const dt of dts){ t+=dt; const b=st.dist; R.step(st,dt); const go=(st.dist-b)*SZ/PPU; z+=go; st.world={x:0,z,y:0,hd:0,kx:K,ky:K,gnd:()=>0,t}; const B=R.pose(st,true);
     const W=p=>({y:p.y/K,z:z+p.z/K}); F.push({dt,go,pel:W(B.J.pelvis),head:W(B.J.head),fl:W(B.J.ankleL),fr:W(B.J.ankleR)}); }
   const S=F.slice(60), sp=S.map(f=>f.go/f.dt), m=sp.reduce((a,b)=>a+b)/sp.length, sd=Math.sqrt(sp.reduce((a,b)=>a+(b-m)**2,0)/sp.length);

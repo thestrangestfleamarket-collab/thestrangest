@@ -6,7 +6,7 @@
 const fs=require('fs'), H=fs.readFileSync(__dirname+'/../dist/market.html','utf8'), a=H.indexOf('const RIG=(()=>{'), src=H.slice(a,H.indexOf('\n})();',a)+6);
 global.window=global; global.location={search:''}; global.document={createElement:()=>({getContext:()=>({})})}; global.localStorage={getItem:()=>null,setItem(){}};
 const R=new Function(src+'\nreturn RIG;')(), SZ=1.2, PPU=30, K=PPU/SZ, dt=1/60;
-function run(name,{gnd=()=>0,plan}){ const st=R.create(); st.snap=true; const pos={x:0,z:0}; let hd=0,py=gnd(0,0),t=0,prev=null,slide=0,on=0,maxv=0,steps=0,lastStep=null,gap=0,gn=0,gmax=0;
+function run(name,{gnd=()=>0,plan}){ const st=R.create(); st.snap=true; st.smooth=process.env.STEPPED!=="1"; const pos={x:0,z:0}; let hd=0,py=gnd(0,0),t=0,prev=null,slide=0,on=0,maxv=0,steps=0,lastStep=null,gap=0,gn=0,gmax=0;
   for(let f=0;f<60*plan.T;f++){ t+=f?dt:0; const c=plan.at(t); st.target=c.go?1:0; st.runTarget=c.run?1:0;
     let yr=0; if(c.go&&c.hd!=null){ let dh=Math.atan2(Math.sin(c.hd-hd),Math.cos(c.hd-hd)); const tn=3*Math.PI*dt; const dd=Math.max(-tn,Math.min(tn,dh)); hd+=dd; yr=dd/dt; } st.yr=yr;
     const b=st.dist; R.step(st,dt); const go=(st.dist-b)*SZ/PPU; pos.x+=Math.sin(hd)*go; pos.z+=Math.cos(hd)*go;

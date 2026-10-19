@@ -10,17 +10,20 @@ const SKY={};
   const W0={f:cl((hsh(dayN,1)-.2)/.6),s:cl((hsh(dayN,2)-.4)/.5)}; SKY.mood={f:0,s:0};
   const tmp=new THREE.Color(), stop=(X,k,out)=>{ out.setHex(X[k]); const F=MOOD.fire[String(X[0])], S=MOOD.soft[String(X[0])]; if(F&&SKY.mood.f)out.lerp(tmp.setHex(F[k-1]),SKY.mood.f); if(S&&SKY.mood.s)out.lerp(tmp.setHex(S[k-1]),SKY.mood.s); return out; };
   const cA=new THREE.Color(), cB=new THREE.Color(), mixS=(A,B,k,t,out)=>out.copy(stop(A,k,cA)).lerp(stop(B,k,cB),t);
+  const SC={stars:0,gap:0,blood:0,sky:0}, MB=new THREE.Color(.78,.16,.09);
   const SUN=[[-2,0xff4a20],[0,0xff6428],[3,0xff8c3a],[8,0xffc070],[20,0xfff0d0],[90,0xfff8ee]];
   const U={uH:{value:new THREE.Color()},uM:{value:new THREE.Color()},uZ:{value:new THREE.Color()},uS:{value:new THREE.Color()},uA:{value:new THREE.Color()},
     uSunDir:{value:new THREE.Vector3(0,1,0)},uSunCol:{value:new THREE.Color()},uSunK:{value:0},uSunR:{value:.04},uSideK:{value:1},
-    uMoonDir:{value:new THREE.Vector3(0,1,0)},uMoonK:{value:0},uMoonR:{value:.03},uStar:{value:0},uFogC:{value:new THREE.Color()},uFogK:{value:0},uGrey:{value:new THREE.Color()},uGreyK:{value:0},
+    uMoonDir:{value:new THREE.Vector3(0,1,0)},uMoonK:{value:0},uMoonR:{value:.03},uMoonCol:{value:new THREE.Color(.86,.89,.95)},uBlood:{value:0},uGap:{value:0},uSkyK:{value:0},uStar:{value:0},uFogC:{value:new THREE.Color()},uFogK:{value:0},uGrey:{value:new THREE.Color()},uGreyK:{value:0},
     uBands:{value:CEL?8:SMOOTH?0:24},uMistK:{value:0},uMistC:{value:new THREE.Color()},uT:{value:0},uCov:{value:.47},uCL:{value:1.16},uZk:{value:.62},uHk:{value:.5}};
   const mat=new THREE.ShaderMaterial({uniforms:U,side:THREE.BackSide,depthWrite:false,depthTest:true,
     vertexShader:'varying vec3 vD; void main(){ vD=position; vec4 p=projectionMatrix*modelViewMatrix*vec4(position,1.); gl_Position=p.xyww; }',
-    fragmentShader:`uniform vec3 uH,uM,uZ,uS,uA,uSunDir,uSunCol,uMoonDir,uFogC,uGrey; uniform float uSunK,uSunR,uSideK,uMoonK,uMoonR,uStar,uFogK,uGreyK,uBands,uMistK,uT,uCov,uCL,uZk,uHk; uniform vec3 uMistC; varying vec3 vD;
+    fragmentShader:`uniform vec3 uH,uM,uZ,uS,uA,uSunDir,uSunCol,uMoonDir,uFogC,uGrey; uniform float uSunK,uSunR,uSideK,uMoonK,uMoonR,uStar,uFogK,uGreyK,uBands,uMistK,uT,uCov,uCL,uZk,uHk; uniform vec3 uMistC,uMoonCol; uniform float uBlood,uGap,uSkyK; varying vec3 vD;
       float hs(vec2 p){ return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453); }
       float vn(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.-2.*f); vec2 m=mod(i,256.); return mix(mix(hs(m),hs(mod(m+vec2(1,0),256.)),f.x),mix(hs(mod(m+vec2(0,1),256.)),hs(mod(m+vec2(1,1),256.)),f.x),f.y); }
       float fbm(vec2 p){ return vn(p)*.55+vn(p*2.1+7.3)*.3+vn(p*4.3+3.1)*.15; }
+      vec3 moon(vec3 c,vec3 d,float k){ float a=acos(clamp(dot(d,uMoonDir),-1.,1.)), disc=1.-step(uMoonR,a), hr=(step(a,uMoonR*2.3)+step(a,uMoonR*4.))*.5*(1.-disc); c=mix(c,vec3(.34,.05,.04),hr*.45*uBlood*k); return mix(c,uMoonCol,disc*k); }
+      vec3 bt(vec3 c,float el){ return mix(c,c*vec3(1.4,.42,.38)+vec3(.05,.003,0.),uBlood*(.3+.7*(1.-smoothstep(0.,.55,el)))); }
       void main(){ vec3 d=normalize(vD); float el=max(d.y,0.); vec2 hz=normalize(d.xz+vec2(1e-4,0.)), sh=normalize(uSunDir.xz+vec2(1e-4,0.)); float cs=dot(hz,sh);
         vec3 c=mix(uH,uM,smoothstep(0.,.3,el)); c=mix(c,uZ,smoothstep(.2,.85,el));
         c=mix(c,uS,pow(max(cs,0.),3.)*exp(-el*5.)*uSideK); c=mix(c,uA,pow(max(-cs,0.),2.)*exp(-el*6.)*uSideK*.7);
@@ -31,16 +34,16 @@ const SKY={};
           mwc=vec3(.011,.013,.022)*(step(.38,mw)+step(.7,mw)+step(1.,mw))*step(.5,uStar)*step(.08,el);
           vec2 g=(uv*.5+.5)*44.; vec2 id=floor(g)+f*100.; float h=hs(id); if(h<.14*(.25+1.6*nc*nc)+.16*w){ vec2 o=vec2(hs(id+3.1),hs(id+7.3))*.6+.2; float r=length(fract(g)-o);
             float br=(.35+.65*hs(id+1.7))*step(r,.05+.07*hs(id+9.1)); st=vec3(.82,.88,1.)*br*uStar*smoothstep(0.,.12,el); c+=st; } }
-        { float ang=acos(clamp(dot(d,uMoonDir),-1.,1.)); float disc=1.-step(uMoonR,ang); c=mix(c,vec3(.86,.89,.95),disc*uMoonK); }
+        c=moon(c,d,uMoonK);
         { float ang=acos(clamp(dot(d,uSunDir),-1.,1.)); float disc=1.-step(uSunR,ang); float halo=(1.-smoothstep(uSunR,uSunR*4.,ang))*.45; if(uBands>0.)halo=floor(halo*3.)/3.*.45;
           c=mix(c,mix(uSunCol,vec3(1.,.96,.9),.45),halo*uSunK); c=mix(c,uSunCol,disc*uSunK); }
         c=mix(c,uGrey,uGreyK); c=mix(c,uFogC,uFogK*(1.-smoothstep(0.,.4,el)));
-        if(uMistK>0.){ vec3 m=mix(uMistC*uHk,uMistC*.95,smoothstep(0.,.22,el)); m=mix(m,uMistC*uZk,smoothstep(.35,.95,el));
-          vec2 q=d.xz/(max(d.y,0.)+.06)*.9+vec2(uT*.012,uT*.005); float n=fbm(q), cov=step(uCov,n); cvr=cov; float lt=fbm(q+vec2(.05,.09)*2.);
+        if(uMistK>0.){ vec3 sk=c, m=mix(uMistC*uHk,uMistC*.95,smoothstep(0.,.22,el)); m=mix(m,uMistC*uZk,smoothstep(.35,.95,el));
+          vec2 q=d.xz/(max(d.y,0.)+.06)*.9+vec2(uT*.012,uT*.005); float n=fbm(q), cov=step(uCov+uGap,n); cvr=cov; float lt=fbm(q+vec2(.05,.09)*2.);
           vec3 cl=mix(uMistC*.72,uMistC*uCL,step(n,lt+.03)); cl=mix(cl,uMistC*.6,step(.62,n)*.5);
           m=mix(m,cl,cov*smoothstep(.015,.12,el)); m=mix(m,uMistC*uHk,1.-smoothstep(0.,.06,el)); m+=st*(1.-cov)*step(.08,el);
-          c=mix(c,m,uMistK); c=pow(floor(pow(max(c,0.),vec3(1./2.2))*16.+.5)/16.,vec3(2.2)); }
-        if(uBands>0.&&uMistK<.5)c=floor(c*uBands+.5)/uBands; c+=mwc*(1.-uGreyK)*(1.-uFogK)*(1.-cvr*uMistK);
+          m=mix(m,mix(sk,uS*.7+uMistC*.3,cov*.6),uSkyK*smoothstep(0.,.08,el)); c=mix(c,m,uMistK); c=bt(moon(c,d,uMoonK*(1.-cov*.85)),el); c=pow(floor(pow(max(c,0.),vec3(1./2.2))*16.+.5)/16.,vec3(2.2)); }
+        if(uMistK<.5)c=bt(c,el); if(uBands>0.&&uMistK<.5)c=floor(c*uBands+.5)/uBands; c+=mwc*(1.-uGreyK)*(1.-uFogK)*(1.-cvr*uMistK);
         gl_FragColor=vec4(c,1.); }`});
   const dome=new THREE.Mesh(new THREE.BoxGeometry(2000,2000,2000),mat); dome.frustumCulled=false; dome.renderOrder=900; dome.matrixAutoUpdate=true; scene.add(dome); SKY.dome=dome; OUT.add(dome,'open');
   dome.onBeforeRender=(r,s,c)=>{ dome.position.copy(c.position); dome.scale.setScalar(c.isOrthographicCamera?Math.max(1,(c.right-c.left)*1.2/2000):1); dome.updateMatrixWorld(); };
@@ -56,10 +59,28 @@ const SKY={};
     U.uSideK.value=1-.6*cl((e-8)/20);
     U.uSunDir.value.copy(CLOCK.sunV); U.uSunR.value=(1.6+1.4*(1-cl(e/12)))*D; { let j=0; while(j<SUN.length-2&&e>SUN[j+1][0])j++; mixC(SUN[j][1],SUN[j+1][1],cl((e-SUN[j][0])/(SUN[j+1][0]-SUN[j][0])),U.uSunCol.value); }
     U.uSunK.value=cl((e+1.5)/1.5)*(1-.9*cl((W.cloud-.3)/.6));
-    U.uMoonDir.value.copy(CLOCK.moonV); const night=cl((-e-4)/6); U.uMoonK.value=night*(1-.8*cl((W.cloud-.3)/.6)); U.uStar.value=night*(1-cl(W.cloud*1.4));
+    U.uMoonDir.value.copy(CLOCK.moonV); const night=cl((-e-4)/6); U.uMoonK.value=night*(1-.8*cl((W.cloud-.3)/.6)); U.uStar.value=night*(1-cl(W.cloud*1.4)*(1-SC.stars)); U.uGap.value=SC.gap; U.uSkyK.value=SC.sky; U.uBlood.value=SC.blood*night; U.uMoonR.value=.03+.025*SC.blood; U.uMoonCol.value.setRGB(.86,.89,.95).lerp(MB,SC.blood); if(SC.blood&&up)HEMI.color.lerp(MB,.55*SC.blood*night);
     U.uGrey.value.setRGB(.55,.58,.62).multiplyScalar(.25+.75*day); if(W.storm)U.uGrey.value.multiplyScalar(1-.45*W.storm); U.uGreyK.value=cl(W.cloud*W.cloud*.85);
     if(W.flash&&up){ U.uGrey.value.setRGB(.85,.88,.95); U.uGreyK.value=Math.max(U.uGreyK.value,.9); }
     if(WX.under){ const k=cl(1-Math.abs(e-1)/7)*(1-cl((W.cloud-.5)/.5)); WX.under.value.copy(U.uS.value).multiplyScalar(k*.9); }
     if(scene.fog){ U.uFogC.value.copy(scene.fog.color); U.uFogK.value=cl(W.fog*1.3); } else U.uFogK.value=0; };
   SKY.dbg=()=>({elev:+CLOCK.elev().toFixed(2),fire:+SKY.mood.f.toFixed(2),soft:+SKY.mood.s.toFixed(2),cool:typeof LOOK!=='undefined'?+LOOK.cool.value.toFixed(2):null,sun:U.uSunK.value.toFixed(2),moon:U.uMoonK.value.toFixed(2),star:U.uStar.value.toFixed(2),grey:U.uGreyK.value.toFixed(2),H:'#'+U.uH.value.getHexString(),Z:'#'+U.uZ.value.getHexString()});
-  SKY.U=U; SKY.P=P; window.SKY=SKY; }
+  const SCN=[['STARRY NIGHT',22.5,'CLEAR','',{gap:.35},'a clear night, the milky way overhead'],['STARS IN THE MIST',22,'CLOUDY','',{stars:1,gap:-.06},'a cloudy night, the stars between the clouds'],
+    ['BLOOD MOON',23.5,'CLEAR','',{blood:1,gap:.2},'a big red moon, the town in its light'],['FIRE SUNSET',18.1,'CLEAR','fire',{sky:.85},'the sun going down in red and magenta'],
+    ['THUNDERSTORM',18.8,'STORM','',{flash:.14},'the blue hour, rain, lightning and thunder'],['FIRST SNOW',7.3,'SNOW','soft',{sky:.6},'snow at sunrise, soft and quiet'],
+    ['BLUE DAWN',6.9,'CLEAR','soft',{sky:.4},'the town still asleep, the sky just paling'],['FOGGY MORNING',7.6,'FOG','soft',{sky:.25},'a grey, still morning, the street lost in fog'],
+    ['SOFT SUNSET',17.95,'CLOUDY','clear',{sky:.5},'the sun low behind the clouds, warm and quiet'],['DUSK',18.45,'CLEAR','',{sky:.4},'the light going, the street lights coming on'],
+    ['DISTANT STORM',17,'RAIN','soft',{flash:.012},'steady rain, a storm somewhere far off']];
+  const pane=document.querySelector('#menu [data-p="atmo"]'), box=document.createElement('div');
+  box.innerHTML=`<h3>SCENES</h3><div id="scn">${[SCN.slice(0,6),SCN.slice(6)].map(g=>`<div class="row">${g.map(x=>`<button class="btn" data-s="${x[0]}" title="${x[5]}">${x[0]}</button>`).join('')}</div>`).join('')}</div><div class="dim" id="scnd">the time, the weather and the sky together, in one click</div>`;
+  if(pane){ pane.insertBefore(box,pane.firstChild);
+    pane.addEventListener('click',e=>{ if(SKY.sceneName&&e.target.closest('button,input,select')&&!e.target.closest('#scn,#atmhaze'))SKY.scene(null,true); }); }
+  const drawS=()=>{ if(!pane)return; box.querySelectorAll('[data-s]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.s===SKY.sceneName))); const P=SCN.find(x=>x[0]===SKY.sceneName);
+    box.querySelector('#scnd').textContent=P?P[5]:'the time, the weather and the sky together, in one click';
+    pane.querySelectorAll('#amood [data-m]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.m===(SKY.moodHold||'')))); CLOCK.draw&&CLOCK.draw(); WX.draw&&WX.draw(); };
+  SKY.scene=(n,keep)=>{ const P=SCN.find(x=>x[0]===n), o=P?P[4]:{}; SC.stars=o.stars||0; SC.gap=o.gap||0; SC.blood=o.blood||0; SC.sky=o.sky||0; WX.flashK=o.flash||0; SKY.sceneName=P?n:null;
+    if(P&&!keep){ CLOCK.set(P[1]); CLOCK.run=false; SKY.moodHold=P[3]||null; try{ SAVE.set('clock',JSON.stringify({h:P[1],run:false,speed:CLOCK.speed})); P[3]?SAVE.set('mood',P[3]):SAVE.del('mood'); }catch(e){} WX.set(P[2]); }
+    try{ P?SAVE.set('scene',n):SAVE.del('scene'); }catch(e){} drawS(); };
+  box.querySelector('#scn').onclick=e=>{ const b=e.target.closest('[data-s]'); if(b)SKY.scene(b.dataset.s); };
+  { const q=QS.get('scene'); if(q)SKY.scene(q.toUpperCase().replace(/_/g,' ')); else { let v=null; try{ v=SAVE.get('scene'); }catch(e){} if(v)SKY.scene(v,true); } }
+  SKY.U=U; SKY.P=P; SKY.SC=SC; SKY.MB=MB; window.SKY=SKY; }

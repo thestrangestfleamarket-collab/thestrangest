@@ -1,0 +1,358 @@
+{
+ "tower-iso": {
+  "x": -103.73399999999998,
+  "z": 50.03639999999999,
+  "y": 6.658773104653684,
+  "vis": true,
+  "tris": 1660,
+  "top": 6.658773104653684,
+  "mode": "post",
+  "act": "",
+  "li": 3,
+  "tower": 458
+ },
+ "tower-whole": {
+  "x": -103.73399999999998,
+  "z": 50.03639999999999,
+  "y": 6.658773104653684,
+  "vis": true,
+  "tris": 1660,
+  "top": 6.658773104653684,
+  "mode": "post",
+  "act": "",
+  "li": 3,
+  "tower": 458
+ },
+ "tower-turned": {
+  "x": -103.73399999999998,
+  "z": 50.03639999999999,
+  "y": 6.658773104653684,
+  "vis": true,
+  "tris": 1660,
+  "top": 6.658773104653684,
+  "mode": "post",
+  "act": "salute",
+  "li": 3,
+  "tower": 458
+ },
+ "tower-back": {
+  "x": -103.73399999999998,
+  "z": 50.03639999999999,
+  "y": 6.658773104653684,
+  "vis": true,
+  "tris": 1660,
+  "top": 6.658773104653684,
+  "mode": "post",
+  "act": "salute",
+  "li": 3,
+  "tower": 458
+ },
+ "roof": {
+  "x": -103.73399999999998,
+  "z": 50.03639999999999,
+  "y": 6.658773104653684,
+  "vis": true,
+  "tris": 1660,
+  "top": 6.658773104653684,
+  "mode": "post",
+  "act": "",
+  "li": 3,
+  "tower": 458
+ },
+ "tdbg": [],
+ "sq-0": {
+  "x": -103.73399999999998,
+  "z": 50.03639999999999,
+  "y": 6.658773104653684,
+  "vis": true,
+  "tris": 1660,
+  "top": 6.658773104653684,
+  "mode": "post",
+  "act": "",
+  "li": 3,
+  "tower": 458
+ },
+ "sq-1": {
+  "x": -103.61713957612653,
+  "z": 50.015958035185754,
+  "y": 6.658773104653684,
+  "vis": true,
+  "tris": 1660,
+  "top": 6.658773104653684,
+  "mode": "walk",
+  "act": "",
+  "li": 2,
+  "tower": 458
+ },
+ "sq-2": {
+  "x": -103.20338096046333,
+  "z": 49.868991730336205,
+  "y": 6.658773104653684,
+  "vis": true,
+  "tris": 1660,
+  "top": 6.658773104653684,
+  "mode": "walk",
+  "act": "",
+  "li": 2,
+  "tower": 458
+ },
+ "sq-3": {
+  "x": -102.92378584931552,
+  "z": 49.709175408778094,
+  "y": 6.658773104653684,
+  "vis": true,
+  "tris": 1660,
+  "top": 6.658773104653684,
+  "mode": "post",
+  "act": "",
+  "li": 2,
+  "tower": 458
+ },
+ "sq-front": {
+  "x": -103.73399999999998,
+  "z": 50.03639999999999,
+  "y": 6.658773104653684,
+  "vis": true,
+  "tris": 1660,
+  "top": 6.658773104653684,
+  "mode": "post",
+  "act": "",
+  "li": 3,
+  "tower": 458
+ },
+ "sq-scan": {
+  "x": -103.73399999999998,
+  "z": 50.03639999999999,
+  "y": 6.658773104653684,
+  "vis": true,
+  "tris": 1660,
+  "top": 6.658773104653684,
+  "mode": "post",
+  "act": "scan",
+  "li": 3,
+  "tower": 458
+ },
+ "sq-salute": {
+  "x": -103.73399999999998,
+  "z": 50.03639999999999,
+  "y": 6.658773104653684,
+  "vis": true,
+  "tris": 1660,
+  "top": 6.658773104653684,
+  "mode": "post",
+  "act": "salute",
+  "li": 3,
+  "tower": 458
+ },
+ "sq-walk": {
+  "x": -103.94985267462965,
+  "z": 49.99270750008961,
+  "y": 6.658773104653684,
+  "vis": true,
+  "tris": 1660,
+  "top": 6.658773104653684,
+  "mode": "walk",
+  "act": "",
+  "li": 4,
+  "tower": 458
+ },
+ "up": "wave",
+ "wave-1": {
+  "x": -104.15794349125545,
+  "z": 49.92084914394722,
+  "y": 6.658773104653684,
+  "vis": true,
+  "tris": 1660,
+  "top": 6.658773104653684,
+  "mode": "wave",
+  "act": "wave",
+  "li": 4,
+  "tower": 458
+ },
+ "wave-2": {
+  "x": -104.15794349125545,
+  "z": 49.92084914394722,
+  "y": 6.658773104653684,
+  "vis": true,
+  "tris": 1660,
+  "top": 6.658773104653684,
+  "mode": "wave",
+  "act": "wave",
+  "li": 4,
+  "tower": 458
+ },
+ "upTrace": [
+  "-|wave:1.30",
+  "-|wave:1.25",
+  "-|wave:1.15",
+  "-|wave:1.05",
+  "-|wave:0.95",
+  "-|wave:0.85",
+  "-|wave:0.75",
+  "-|wave:0.65",
+  "-|wave:0.55",
+  "-|wave:0.45",
+  "-|wave:0.35",
+  "-|wave:0.25"
+ ],
+ "wave-after": {
+  "x": -104.26461903953663,
+  "z": 49.868991730336205,
+  "y": 6.658773104653684,
+  "vis": true,
+  "tris": 1660,
+  "top": 6.658773104653684,
+  "mode": "walk",
+  "act": "",
+  "li": 4,
+  "tower": 458
+ },
+ "night": {
+  "x": -104.4706820964746,
+  "z": 49.75131327184316,
+  "y": 6.658773104653684,
+  "vis": true,
+  "tris": 1660,
+  "top": 6.658773104653684,
+  "mode": "walk",
+  "act": "",
+  "li": 4,
+  "tower": 458
+ },
+ "c-idle": {
+  "r": [
+   [
+    "armL",
+    0,
+    0,
+    -0.15
+   ],
+   [
+    "armR",
+    -1.18,
+    0,
+    0.12
+   ],
+   [
+    "head",
+    0,
+    0,
+    -0.05
+   ]
+  ],
+  "paw": [
+   -0.22,
+   0.36,
+   0.04
+  ],
+  "h": -0.07,
+  "camdir": [
+   -183.7,
+   183.7
+  ]
+ },
+ "c-scan": {
+  "r": [
+   [
+    "armL",
+    -2.48,
+    0,
+    0.4
+   ],
+   [
+    "armR",
+    -1.14,
+    0,
+    0.12
+   ],
+   [
+    "head",
+    -0.08,
+    0.25,
+    0
+   ]
+  ],
+  "paw": [
+   -0.09,
+   0.81,
+   0.18
+  ],
+  "h": 0,
+  "camdir": [
+   -183.7,
+   183.7
+  ]
+ },
+ "c-salute": {
+  "r": [
+   [
+    "armL",
+    -2.6,
+    0,
+    0.75
+   ],
+   [
+    "armR",
+    -1.46,
+    0,
+    0.12
+   ],
+   [
+    "head",
+    0,
+    0,
+    0
+   ]
+  ],
+  "paw": [
+   0.01,
+   0.8,
+   0.09
+  ],
+  "h": 0,
+  "camdir": [
+   -183.7,
+   183.7
+  ]
+ },
+ "c-wave": {
+  "r": [
+   [
+    "armL",
+    0.15,
+    0,
+    -2.71
+   ],
+   [
+    "armR",
+    -1.1,
+    0,
+    0.12
+   ],
+   [
+    "head",
+    0,
+    0,
+    0.12
+   ]
+  ],
+  "paw": [
+   -0.25,
+   0.85,
+   0.09
+  ],
+  "h": 0.64,
+  "camdir": [
+   -183.7,
+   183.7
+  ]
+ },
+ "tris": 163974,
+ "errors": [
+  "Fetch API cannot load file:///home/runner/work/thestrangest/thestrangest/dist/market.html?fresh=1&hour=13&wx=CLEAR. URL scheme \"file\" is not supported.",
+  "THREE.Sprite: \"Raycaster.camera\" needs to be set in order to raycast against sprites.",
+  "Fetch API cannot load file:///home/runner/work/thestrangest/thestrangest/dist/market.html?fresh=1&hour=13&wx=CLEAR. URL scheme \"file\" is not supported.",
+  "Fetch API cannot load file:///home/runner/work/thestrangest/thestrangest/dist/market.html?fresh=1&hour=13&wx=CLEAR. URL scheme \"file\" is not supported.",
+  "Fetch API cannot load file:///home/runner/work/thestrangest/thestrangest/dist/market.html?fresh=1&hour=13&wx=CLEAR. URL scheme \"file\" is not supported."
+ ]
+}

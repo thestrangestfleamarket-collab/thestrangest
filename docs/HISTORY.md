@@ -2655,3 +2655,11 @@ not have windows, make sure buildings are only as tall as they need to be"; then
 - **The far buildings steady** (owner, 19 Oct 2026: "thedark spots on buildings shift every frame so it just looks glitchy"): the far
   skyline's window pattern turns to its even average colour sooner (when a window cell is a third of a pixel, was a full pixel), so the
   small windows no longer crawl as the view moves.
+- **The sun, its rays and the sky** (owner, 19 Oct 2026: "the sun should be placed in the sky at this tmie and rays should come from
+  actualy direciton, they should feel more alive, have a textuer to them, slowly moving,d dust particles, make sure the sky matches the
+  sunny day where it needs to. the bottom of skylines should have trees in front of it"): the sun's disc and halo are drawn again over
+  the mist sky (they were hidden under it, so the rays seemed to come from nowhere); on a clear day the mist turns toward the sky's own
+  horizon colour and the real sky shows through (`uSkyK` from the sun's height and the cloud); the light shafts carry slow drifting
+  bands (3 steps, CEL), the screen rays a slow banded texture; 260 dust motes drift round you, bright inside a shaft, faint outside, by
+  day when it isn't overcast; a band of low-poly trees (two crowns each) stands 3-7 tiles past the walkable edge in front of the skyline,
+  tinted by the mist.

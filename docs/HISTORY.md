@@ -2970,3 +2970,6 @@ building until you go inside"; `054-apts.js`, `075-main-13.js`)
   lets erstrict how dark shadows can get and make the cel shaded a little more"): on you and the walker-built figures, light below
   full is stepped in quarters (harder cel bands) and never darker than half the figure's own colour by day (about a quarter at
   night), whatever the shadow or band. Same material, no new program cost.
+- **No dots on the figures** (owner, 19 Oct 2026, after a mockup of three looks: "i dont want dots", "i want B"): shadows falling on you
+  and the walker-built figures are looked up a little off their surface (normal offset +0.18), so they no longer speckle the figure
+  with dots; with the half-light floor and quarter bands above, a shadow on a figure is one clean flat band with a clean edge.

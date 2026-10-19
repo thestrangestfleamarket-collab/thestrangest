@@ -36,6 +36,7 @@ process.on('unhandledRejection',e=>{ errs.push('TEST '+String(e&&e.message||e).s
       if(d.tr.ph==='end'){ await shot('train-end',null,300); } }
     await pg.waitForTimeout(120); }
   rep.trainLog=log; rep.fight1=(await dbg()).fight; rep.forage=await pg.evaluate(()=>FORDBG().sk.fight);
+  { const seen=[]; for(let i=0;i<140;i++){ const d=await dbg(); const k=d.ninja&&(d.ninja.mv||d.ninja.up||d.ninja.step); if(k&&seen[seen.length-1]!==k)seen.push(k); if(i===60||i===100)await shot('kata'+i); await pg.waitForTimeout(400); } rep.kataAfter=seen; }
   await pg.evaluate(()=>DOJOWALK('out'));
   for(let i=0;i<200;i++){ if((await dbg()).busy)break; await pg.waitForTimeout(50); }
   await shot('fade-out',null,120);

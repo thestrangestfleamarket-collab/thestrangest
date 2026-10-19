@@ -2978,3 +2978,35 @@ building until you go inside"; `054-apts.js`, `075-main-13.js`)
   up to their size at the opening view (`PCAP`, the opening's screen pixels per art pixel); past that the picture gets finer instead
   of blockier. This replaces "zoomed in the art's pixels only grow" (17 Oct) for close zooms; the opening and zoomed-out views are
   unchanged, and nothing is ever finer on screen than the opening's pixel size.
+- **Black underground** (owner, 19 Oct 2026, a picture of the subway with lavender sky round the station): below the street the sky
+  dome is hidden and the background is black, whatever the day/night settings do.
+
+## 19 Oct 2026: every inside loads when you go in, only that room is seen, doors you can't see into
+(owner: "has the update gone in that is suppoed to only show the interiors and nothign else and not load nteriors at al until you go
+in? you should get a loading screen", of the BODEGA seen lit and open from the sidewalk; "when you enter anything like this it should go
+black everywhere else, even other floors on same interior. also it shouldnt cut off the part of your body not full inside"; earlier: "I
+want to make the interior of all buildinsg not load until you go into them then you get a "Entering..." message while it loads. i want it
+to be seamless.", "anytime you are in interior you should only see black around you except for the only room you are in.", "make sure
+all buildings have a front door that you cant see into")
+- **The BODEGA and THE BATH HOUSE built on entry** (`053-bodbuild.js` `BODB.build`, `055-ghostdojo.js` `BOD.GD.build`): at the start
+  only their shells (outer wall faces, roof, signs, front, door, the bath house's porch things and lights outside); the inner wall faces,
+  the shop's floor, shelves, counter, goods, office and its wall, the tubes and the lamps inside, and the bath's floor, pool, benches,
+  buckets, stools, candles, andon and steam are built the first time you go in, under ENTERING THE BODEGA / ENTERING THE BATH HOUSE on
+  the black `#subfade` (as `STORE.enter`). Their solids, `BOD.O`, `BOD.GD`'s box and door stay from the start (jobs, walkers, ghosts, the
+  bath's coming back are unchanged). `gbox` takes `skf(nx,ny)` to leave faces out.
+- **Doors you can't see into**: the BODEGA's windows, door and side lights are dark glass (no longer see-through); a black card stands
+  just inside the BODEGA's and the bath house's doorways (only while you're outside), so an open door shows dark. Double-click either
+  door to go in (`STORE.xth`), or walk in: a strip half a tile deep before every door (`band` on each room in `ROOMS`) counts as in.
+- **Only the room you're in, black round it** (`130-rooms.js`, `ROOMS.iv`): the black cover that drew wrong is gone. Inside any room
+  (`ROOMS.cur`: the BODEGA's shop or office, the bath house, the store rooms, the pool rooms, the civic tower, each apartment floor)
+  everything not in its box (and its door strip) is made invisible: whole objects that lie outside are hidden, a baked batch that straddles
+  it draws only its faces inside (an index of those faces), other floors of the same building included; the characters outside it are
+  hidden; the background is black. Kept each frame until you step out (`ROOMS.hold`, before the draw), then put back as it was. Going in or
+  out is one step under the black (two frames, then the fade back), so you're never half in. Lists made once per room (on a new build they're
+  made again). The sun's shadow maps are not redrawn while you're inside (the still map stays as it was outside); the lamp's is redrawn on
+  the way out.
+- **Your body never cut**: your figure's materials are never given the rooms' near-side cut (`ROOMS.nearAll` leaves out every material
+  the walker or the characters use, and takes it off again if one was shared); stepping into the door strip lowers the room's walls and
+  hides its roof at once, so no wall or jamb stands across you in the doorway.
+- **Cost**: nothing per frame but a loop over the hidden list; the two insides' faces, goods and lamps no longer baked at the start (not
+  yet measured); entering a room the first time takes one scan of the scene (under the black). `INTDBG()`: `{inside, built, hidden}`.

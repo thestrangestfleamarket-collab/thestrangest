@@ -3136,5 +3136,5 @@ versions) and put them in random spots in park and thats where specific mushroom
   (two crossed boxes and the turret). **THE SQUIRREL KNIGHT** stands his watch on it: he walks the ring inside the parapet between six
   lookout points (never through the turret's side), and at each faces out, shading his eyes with a paw while his head sweeps the
   horizon, gives a little salute (paw to the helmet, sword lifted), flicks his tail, looks about; when you wave (the wave move) within
-  25 tiles he turns to you and waves back with his free paw. Cost: the tower about 400 triangles in its own batch (one draw, was ~240);
+  25 tiles he turns to you and waves back with his free paw. Cost: the tower 458 triangles in its own batch (one draw, was ~240);
   the squirrel unchanged (1,660); no light.

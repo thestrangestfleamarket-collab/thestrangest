@@ -43,5 +43,9 @@ process.on('unhandledRejection',e=>{ errs.push('TEST '+String(e&&e.message||e).s
   await shot('fire',()=>{ const y=__dbg.you(); window.FIREAT&&FIREAT(y.x+2,y.z+2); },3000); await shot('fire-drone',null,12000); await shot('fire-out',null,15000);
   rep.blaze=await pg.evaluate(()=>window.BLAZEDBG&&BLAZEDBG());
   await shot('dragon',()=>{ window.DRAGONHOME&&DRAGONHOME(0); },3000);
+  await shot('fairy',()=>{ const r=window.FAIRYAT&&FAIRYAT(); if(r)STORE.goTo(r.x+2*(__dbg.camO().right-__dbg.camO().left)/40,r.z,'up'); },5000);
+  rep.spots=await pg.evaluate(()=>window.RAYS&&RAYS.spots&&RAYS.spots.map(s=>({x:+s.x.toFixed(1),z:+s.z.toFixed(1),o:!!s.o})));
+  await pg.keyboard.press('m'); await pg.waitForTimeout(1500); rep.mush=await pg.evaluate(()=>window.MUSHDBG&&MUSHDBG());
+  await shot('escape',()=>{ const M=__dbg.MAPK, a=M.MODS.apts.A, B=M.BOD, zs=B.ZS((B.CURB+B.FAR)/2), z0=B.Z(a.y0), z1=B.Z(a.y1), zf=Math.abs(z0-zs)<Math.abs(z1-zs)?z0:z1, t=Math.abs(B.ZS(1)-B.ZS(0)); STORE.goTo(B.X(a.x0+11.9),zf+Math.sign(zs-zf)*3*t,'up'); },4000);
   rep.frog=await pg.evaluate(()=>{ const N=__dbg.npcs().find(n=>n.key==='scooterfrog'); return N&&{x:N.st.x,z:N.st.z,to:N.st.to,wait:N.st.wait,hold:N.st.hold,far:N.far,mode:N.mode,life:!!N.life,free:N.st.to?N.free(N.st.to.x,N.st.to.z,N.st.R):null,freeHere:N.free(N.st.x,N.st.z,N.st.R)}; });
   fin(); await b.close(); })();

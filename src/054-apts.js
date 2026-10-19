@@ -160,7 +160,7 @@ const APTS={EMPTY:true};
       for(let i=0;i<ST0.n;i++){ const y0=ST0.y0+ST0.land+i*ST0.tr, z=top(i)+7; rail(y0,y0+ST0.tr,z+26); post(y0+ST0.tr*.3,z,z+26); post(y0+ST0.tr*.75,z,z+26); }
       g({x0:xm-.06,x1:xm+.06,y0:ST0.y1-.12,y1:ST0.y1,z0:top(ST0.n-1)+7,z1:top(ST0.n-1)+7+34,c:IRN}); } }
   const SY=Y(S)-Y(0), ix=x=>x/(TILE*BLDK)+BOD.OX, iy=z=>z/(TILE*BLDK)+BOD.OY, TOL=Y(24)-Y(0);
-  const EG=(x,z)=>{ if(Math.abs(x-pos.x)+Math.abs(z-pos.z)>.5*TILE)return null; const u=ix(x)-A.x0;
+  const EG=(x,z)=>{ if(!window.POSOK||Math.abs(x-pos.x)+Math.abs(z-pos.z)>.5*TILE)return null; const u=ix(x)-A.x0;
     for(const F of ESC){ const d=(iy(z)-F.yf)*F.o; if(d<0||d>DO||u<F.ua||u>F.ub)continue; const Q=d<DI?[S,2*S]:[];
       if(d>=DI){ if(u>=F.d1&&u<=F.f0)Q.push(S); if(u<=F.f0||u>=F.f1)Q.push(2*S); if(u>=F.f0&&u<=F.f1)Q.push(S+S*(u-F.f0)/RF);
         if(u>=F.d0&&u<=F.d1){ if(F.k>.95)Q.push(-RZ+(S+RZ)*(u-F.d0)/RD); else if(F.k<.05)Q.push(S); } }
@@ -225,10 +225,10 @@ const APTS={EMPTY:true};
     return {F,g,th:th_,foot:{x:X(U(F.d0)),z:(Z(F.yf+F.o*DI)+Z(F.yf+F.o*DO))/2}}; });
   APTS.inside=(x,z)=>{ const a=X(A.x0), b=X(A.x1), c=Z(A.y0), d=Z(A.y1); return x>Math.min(a,b)&&x<Math.max(a,b)&&z>Math.min(c,d)&&z<Math.max(c,d); };
   APTS.lvY=lv=>R0+lv*SY; APTS.lvOf=y=>Math.max(0,Math.min(ST-1,Math.floor((y-R0)/SY+.08)));
-  APTS.floor=()=>APTS.lvOf(py);
+  APTS.floor=()=>window.POSOK?APTS.lvOf(py):0;
   const gnd=(x,z,yy)=>{ for(const E of ELS){ const s=SE[ELS.indexOf(E)], a=X(U(s)), b=X(U(s+2.5)), c=Z(V(0)), d=Z(V(2.55)); if(x>Math.min(a,b)&&x<Math.max(a,b)&&z>Math.min(c,d)&&z<Math.max(c,d))return Y(E.z)+.02; }
     const f=Math.max(0,Math.min(ST-1,Math.floor((yy-R0)/SY+.08))); return R0+SY*f+(f===0?Y(1)-Y(0):0); };
-  APTS.ground=(x,z)=>x==null?R0+SY*APTS.floor():gnd(x,z,py);
+  APTS.ground=(x,z)=>!window.POSOK?R0:x==null?R0+SY*APTS.floor():gnd(x,z,py);
   APTS.SY=SY; APTS.in=false; APTS.esc=false; let was=-1, dl=performance.now();
   APTS.tick=()=>{ const inside=APTS.inside(pos.x,pos.z), eg=!inside&&LVL==='up'&&EG(pos.x,pos.z)!=null, inn=inside||eg, lv=APTS.floor(), now=performance.now(), dt=Math.min(.1,(now-dl)/1000); dl=now; APTS.in=inn; APTS.esc=eg;
     for(const E of ELS)E.tick(dt);

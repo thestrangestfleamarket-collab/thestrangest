@@ -2901,3 +2901,17 @@ automatically. dragon balls of fire can start real fires. spread very slow. leav
   flowers and 120-160 bushes over the whole park, some 25,000-30,000 triangles in all, split by `CULL` into 10-tile pieces so only
   what is on screen draws (a few thousand in a usual view); 20 draws, 2 new shader programs (bushes; flowers with the bend), no
   lights; bushes in the sun's still shadow. Not yet measured in the page (`tests/tricount.cjs`).
+
+## 19 Oct 2026: the fire escapes' ladder to the roof; outside stays outside
+(owner, of the apartment house's fire escapes: "the fire escape shouldnt have stairs, it hsould have a ladder that goes straight up and
+through the fireescapes all thew ay to roof.. also this view is mesed up when i was on fireescape, should still only see exterior of
+building until you go inside"; `054-apts.js`, `075-main-13.js`)
+- **The ladder**: the stair between the landings is gone. Each fire escape has one straight iron ladder (two rails, a rung every 12 px)
+  from the 2nd-floor landing up through a hatch in the 3rd-floor landing's grating, past the cornice and over the parapet onto the roof
+  (a gooseneck), front 11.9 and back 9.4 from the west corner. Stand at its foot (or at its head on the roof) and hold up or down, or double
+  click it: you hold on (the rig's climbing pose, facing the wall) and go straight up or down; step off at a landing with left/right or a
+  click, off the top onto the roof, off the bottom onto the 2nd-floor landing. The counterweighted drop stair to the sidewalk and the alley
+  stays.
+- **The roof walkable**: on the roof you walk the flat inside the parapet; the machine room, the water tower and the chimneys are solid.
+- **Outside is outside**: on the fire escape, the ladder or the roof the house counts as outside (`APTS.in` only between its walls and
+  under its roof): no cutaway, its roof and walls drawn, no inside lamps; only stepping in through a French window shows the inside.

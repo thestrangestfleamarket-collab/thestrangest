@@ -2705,3 +2705,30 @@ not have windows, make sure buildings are only as tall as they need to be"; then
   should look more like celshading", "not line or dot art"): the crowns' per-voxel speckle is gone, their soft inner darkening is two
   flat steps, and they no longer shadow themselves in stripes (the shadow map draws their back faces, and the leaves' shadow offset is
   0.35, was 0.12).
+
+## 19 Oct 2026: ten bushes and ten flowers in the park; birds and butterflies use them
+(owner: "add 10 types of bushes , 10 flowers, and make the birds and butterflys act acccordingly.")
+- **The plants** (`142a-flora.js`, `FLORA`): ten bushes (boxwood, hydrangea in blue bloom, rhododendron, holly with berries, juniper
+  cone, berry bush, lilac, forsythia, fern clump, rose bush) and ten flowers (tulip, daisy, sunflower, lavender, poppy, iris, marigold,
+  bluebell, foxglove, cosmos), each made of a few flat-coloured low-poly pieces (CEL Lambert, flat shading, vertex colours), one
+  instanced draw per kind. Set by rule (fixed hashes, the same every load) in the park: two-row beds along both ways every 10.5 tiles
+  (one side or the other) with a low hedge behind some; four quarter-beds and a rose bush with two boxwoods round the round; beds and
+  bushes in a ring just outside the fountain's terrace; rhododendron, hydrangea, holly and ferns round the oaks with bluebells and
+  foxgloves in their shade; junipers, forsythia, lilac and berry bushes along the inside of the walls with sunflowers between; drifts
+  of daisies, poppies and cosmos on the open lawns; lavender and iris round the two pillars; flowers in three corners of each tree pit
+  on Market St. Never on the ways, the terrace, the lake, the brook, the pond, the castle, the shrine, the cave or the campfire, never
+  within 6 tiles of a gate (3.5 for flowers) or on anything solid. Bushes are solid (except the fern) and cast shadows; flowers can be
+  walked through, bend away from you as the lawn does, and sway with the park's wind; they cast none. Kept apart from the lawn's
+  own code. `FLORADBG()` gives the counts.
+- **Butterflies** (`143-bfly.js`, `056-butterflies.js`): by day each flower bed within 24 tiles may hold one or two, which flit
+  between its blooms, the next beds' and any flowering bush near (hydrangea, rhododendron, lilac, forsythia, rose) and land on the
+  flower heads; at rest their wings open and close slowly (open, half, shut, half, about 3.6 s round) instead of snapping. The
+  park's lawns make half as many of their own now that there are beds. Catching is unchanged (`BFLY.catch`).
+- **Birds** (`144b-birds.js`): small birds come to bushes near you (hopping on the ground round them, now and then one on top) and
+  to flower beds (pecking more among the flowers); bush-top birds fly down and back. Startled, a small bird (not pigeons, doves or
+  the hawk) mostly dives into the nearest bush away from you instead of flying off, hides there (it can't be clicked) and comes back
+  out when you are 3.5 tiles off and not running. Watching, taming and catching are unchanged.
+- **Cost**: bushes 26-80 triangles each (fern 56, rose 68, juniper 26), flowers 22-46 (tulip 22, foxglove 46); an estimated 700-900
+  flowers and 120-160 bushes over the whole park, some 25,000-30,000 triangles in all, split by `CULL` into 10-tile pieces so only
+  what is on screen draws (a few thousand in a usual view); 20 draws, 2 new shader programs (bushes; flowers with the bend), no
+  lights; bushes in the sun's still shadow. Not yet measured in the page (`tests/tricount.cjs`).

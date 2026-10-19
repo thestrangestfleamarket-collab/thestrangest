@@ -14,6 +14,6 @@
         P=[A[0]+dx*u+zig*dz/L,A[1]+(Cc[1]-A[1])*u+hump+Math.sin(t*9)*.05,A[2]+dz*u-zig*dx/L]; pose=[0,1,2,1][Math.floor(t*12)%4]; b.g.rotation.y=Math.atan2(dx,dz); }
       else{ if(b.dur){ b.at=b.to; b.dur=0; } P=b.perches[b.at];
         if(!dark&&t>b.until){ let n=Math.floor(hash(Math.floor(t*10),b.k,445)*b.perches.length); if(n===b.at)n=(n+1)%b.perches.length; const A=b.perches[b.at], Cc=b.perches[n]; b.to=n; b.t0=t; b.dur=.9+Math.hypot(Cc[0]-A[0],Cc[2]-A[2])/TILE*2.4; b.until=t+b.dur+4+hash(Math.floor(t),b.k,447)*9; }
-        else pose=!dark&&hash(Math.floor(t/2.5),b.k,449)<.55?0:2; }
+        else { const c=(t*.55+b.k*.37)%2; pose=dark?2:c<.75?0:c<1?1:c<1.75?2:1; } }
       b.g.position.set(P[0],P[1],P[2]);
       if(pose!==b.pose){ b.pose=pose; b.flat.visible=pose!==2; b.up.visible=pose===2; if(pose!==2){ b.flat.material=b.M[pose]; const tt=tex(b.k,pose); b.flat.scale.set(tt.w*b.span,tt.h*b.span,1); } } } }; }

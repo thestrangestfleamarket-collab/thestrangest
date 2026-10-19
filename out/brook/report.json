@@ -1,0 +1,166 @@
+{
+ "brook": [
+  {
+   "i": 0,
+   "a": {
+    "y": -0.97,
+    "room": null,
+    "wade": true
+   },
+   "b": {
+    "y": -0.97,
+    "room": null,
+    "wade": true
+   }
+  },
+  {
+   "i": 24,
+   "a": {
+    "y": -0.97,
+    "room": null,
+    "wade": true
+   },
+   "b": {
+    "y": -0.97,
+    "room": null,
+    "wade": true
+   }
+  },
+  {
+   "i": 48,
+   "a": {
+    "y": -1.03,
+    "room": null,
+    "wade": true
+   },
+   "b": {
+    "y": -1.03,
+    "room": null,
+    "wade": true
+   }
+  },
+  {
+   "i": 72,
+   "a": {
+    "y": -1.09,
+    "room": null,
+    "wade": true
+   },
+   "b": {
+    "y": -1.09,
+    "room": null,
+    "wade": true
+   }
+  },
+  {
+   "i": 96,
+   "a": {
+    "y": 0.73,
+    "room": null,
+    "wade": true
+   },
+   "b": {
+    "y": 0.73,
+    "room": null,
+    "wade": true
+   }
+  },
+  {
+   "i": 120,
+   "a": {
+    "y": -1.15,
+    "room": null,
+    "wade": true
+   },
+   "b": {
+    "y": -1.15,
+    "room": null,
+    "wade": true
+   }
+  },
+  {
+   "i": 143,
+   "a": {
+    "y": -1.15,
+    "room": null,
+    "wade": true
+   },
+   "b": {
+    "y": -1.15,
+    "room": null,
+    "wade": true
+   }
+  },
+  {
+   "i": 167,
+   "a": {
+    "y": -1.21,
+    "room": null,
+    "wade": true
+   },
+   "b": {
+    "y": -1.21,
+    "room": null,
+    "wade": true
+   }
+  },
+  {
+   "i": 191,
+   "a": {
+    "y": -1.27,
+    "room": null,
+    "wade": true
+   },
+   "b": {
+    "y": -1.27,
+    "room": null,
+    "wade": true
+   }
+  },
+  {
+   "i": 215,
+   "a": {
+    "y": -1.33,
+    "room": null,
+    "wade": true
+   },
+   "b": {
+    "y": -1.33,
+    "room": null,
+    "wade": true
+   }
+  },
+  {
+   "i": 239,
+   "a": {
+    "y": -1.67,
+    "room": null,
+    "wade": true
+   },
+   "b": {
+    "y": -1.67,
+    "room": null,
+    "wade": true
+   }
+  },
+  {
+   "i": 263,
+   "a": {
+    "y": -0.63,
+    "room": null,
+    "wade": false
+   },
+   "b": {
+    "y": -0.63,
+    "room": null,
+    "wade": false
+   }
+  }
+ ],
+ "errors": [
+  "Fetch API cannot load file:///home/runner/work/thestrangest/thestrangest/dist/market.html?fresh=1&hour=13&wx=CLEAR. URL scheme \"file\" is not supported.",
+  "THREE.Sprite: \"Raycaster.camera\" needs to be set in order to raycast against sprites.",
+  "Fetch API cannot load file:///home/runner/work/thestrangest/thestrangest/dist/market.html?fresh=1&hour=13&wx=CLEAR. URL scheme \"file\" is not supported.",
+  "Fetch API cannot load file:///home/runner/work/thestrangest/thestrangest/dist/market.html?fresh=1&hour=13&wx=CLEAR. URL scheme \"file\" is not supported."
+ ]
+}

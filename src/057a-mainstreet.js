@@ -75,8 +75,8 @@
       const pc=[mx(S.SPOT[0]),my(S.SPOT[1])], fy=my(S.SY-1.2), fz=H-22, F=V(cx,fy,fz), Q=V(pc[0],pc[1],S.SZ), dir=Q.clone().sub(F).normalize(), up=new THREE.Vector3(0,1,0), dk=new THREE.MeshLambertMaterial({color:0x221e1c});
       const pipe=new THREE.Mesh(new THREE.BoxGeometry(Math.abs(X(B.x1-.1)-X(B.x0+.1)),Y(3)-Y(0),Math.abs(Z(.1)-Z(0))),dk); pipe.position.copy(V(cx,fy-.25,H-12)); g.add(pipe);
       const hang=new THREE.Mesh(new THREE.BoxGeometry(Y(2)-Y(0),Y(10)-Y(0),Y(2)-Y(0)),dk); hang.position.copy(V(cx,fy-.25,H-17)); g.add(hang);
-      const L=Y(16)-Y(0), can=new THREE.Mesh(new THREE.CylinderGeometry(Y(5)-Y(0),Y(4)-Y(0),L,8),dk); can.quaternion.setFromUnitVectors(up,dir); can.position.copy(F).addScaledVector(dir,-L/2); g.add(can);
-      const lens=new THREE.Mesh(new THREE.CircleGeometry(Y(4.6)-Y(0),8),new THREE.MeshBasicMaterial({color:0xfff0c8})); lens.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),dir); lens.position.copy(F).addScaledVector(dir,.002); g.add(lens);
+      const L=Y(22)-Y(0), can=new THREE.Mesh(new THREE.CylinderGeometry(Y(7)-Y(0),Y(5.5)-Y(0),L,8),dk); can.quaternion.setFromUnitVectors(up,dir); can.position.copy(F).addScaledVector(dir,-L/2); g.add(can);
+      const lens=new THREE.Mesh(new THREE.CircleGeometry(Y(6)-Y(0),8),new THREE.MeshBasicMaterial({color:0xfff0c8})); lens.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),dir); lens.position.copy(F).addScaledVector(dir,.002); g.add(lens);
       const add=(o,a)=>new THREE.MeshBasicMaterial({color:new THREE.Color(1,.9,.66),transparent:true,opacity:o,depthWrite:false,blending:THREE.AdditiveBlending,side:a?THREE.DoubleSide:THREE.FrontSide,polygonOffset:true,polygonOffsetFactor:-2});
       const ring=(r,z)=>{ const o=[]; for(let i=0;i<=20;i++){ const a=i/20*Math.PI*2; o.push(V(pc[0]+Math.cos(a)*r,pc[1]+Math.sin(a)*r,z)); } return o; };
       const fan=(c,rg)=>{ const a=[]; for(let i=0;i<20;i++)a.push(c.x,c.y,c.z,rg[i+1].x,rg[i+1].y,rg[i+1].z,rg[i].x,rg[i].y,rg[i].z); const ge=new THREE.BufferGeometry(); ge.setAttribute('position',new THREE.Float32BufferAttribute(a,3)); return ge; };

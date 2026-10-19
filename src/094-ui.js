@@ -1,7 +1,7 @@
 const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
 {
   const ACTS=[['w','walk up (screen)'],['s','walk down'],['a','walk left'],['d','walk right'],['shift','run · sink (free camera, fly)'],[' ','jump · rise (free camera, fly) · dive (swimming)'],
-    ['view','change the view (map, third person, behind, first person, isometric)'],['rot','turn the view a quarter (four angles)'],['j','punch'],['k','kick'],['r','roll'],['v','wave'],['f','fall'],['q','turn left'],['e','turn right'],['z','tilt down'],['x','tilt up'],['0','reset the view'],
+    ['view','change the view (map, third person, behind, first person, isometric)'],['rot','turn the view a quarter (four angles)'],['j','punch'],['k','kick'],['r','roll'],['v','wave'],['t','the ghost\'s guitar: off the back and play · back on'],['f','fall'],['q','turn left'],['e','turn right'],['z','tilt down'],['x','tilt up'],['0','reset the view'],
     ['c','free camera'],['g','fly (through walls)'],['=','sharper'],['-','coarser'],['h','hide the help']];
   const NAME=k=>k===' '?'SPACE':k.length===1?k.toUpperCase():k.toUpperCase();
   let BIND={}; try{ BIND=JSON.parse(SAVE.get('keys')||'{}')||{}; }catch(e){}
@@ -156,18 +156,17 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
     <div class="pane" data-p="graphics">
       <h3>RESOLUTION</h3><div class="row" id="dres"></div><div class="dim" id="dsharp"></div>
       <h3>SHADOWS</h3><div class="row" id="dshd"></div>
-      <h3>AVATAR</h3><div class="row" id="davpick"></div>
-      <h3>LIGHT</h3><div class="row"><button class="btn" id="dlook">GLOW AND NIGHT LOOK</button><button class="btn" id="dsmooth">LIGHT BANDS</button><button class="btn" id="danim">ANIMATION</button><button class="btn" id="dlit">LIGHT ON THEM</button><button class="btn" id="doutl">OUTLINE</button></div>
+            <h3>LIGHT</h3><div class="row"><button class="btn" id="dlook">GLOW AND NIGHT LOOK</button><button class="btn" id="dsmooth">LIGHT BANDS</button><button class="btn" id="danim">ANIMATION</button><button class="btn" id="dlit">LIGHT ON THEM</button><button class="btn" id="doutl">OUTLINE</button></div>
       <div class="row"><span style="width:110px">SHADE STEPS</span><input type="range" id="dsteps" min="2" max="12" step="1"><span style="width:110px">SHADOW DEPTH</span><input type="range" id="ddepth" min="0.02" max="0.98" step="0.005"></div></div>
     <div class="pane" data-p="sound"><h3>SOUND</h3><div class="row"><button class="btn" id="dsfx">EFFECTS</button><button class="btn" id="damb">AMBIENCE</button><span style="width:60px">VOLUME</span><input type="range" id="dvol" min="0" max="1" step="0.01"></div><div id="dsndin"></div></div>
-    <div class="pane" data-p="avatar"><h3>YOUR AVATAR</h3><div class="dim" style="margin-bottom:8px">body, look, textures, outline, shading, poses, presets</div><div class="row"><button class="btn" id="davatar">OPEN THE AVATAR EDITOR</button><button class="btn" id="dshape">EDIT HIS SHAPE</button><button class="btn" id="dlooks">YOUR LOOKS</button></div></div>
+    <div class="pane" data-p="avatar"><h3>AVATAR</h3><div class="row" id="davpick"></div><h3>YOUR AVATAR</h3><div class="dim" style="margin-bottom:8px">body, look, textures, outline, shading, poses, presets</div><div class="row"><button class="btn" id="davatar">OPEN THE AVATAR EDITOR</button><button class="btn" id="dshape">EDIT HIS SHAPE</button><button class="btn" id="dlooks">YOUR LOOKS</button></div></div>
     <div class="pane" data-p="keys"><div class="dim" style="margin-bottom:8px">click a key, then press the one you want (Escape to keep it)</div><table id="keytab"></table>
       <div class="row" style="margin-top:10px"><button class="btn" id="kreset">ALL BACK AS THEY WERE</button></div></div>
     <div class="pane" data-p="bug" id="dbug"></div>
     <div class="foot"><span>ESC closes</span><span>THE MARKET</span></div></div>`;
   document.body.appendChild(M);
   const $=s=>M.querySelector(s); if(window.AVS)AVS.menu(); let tab='map', mapLv='up';
-  const show=t=>{ tab=t; M.querySelectorAll('[data-t]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.t===t))); M.querySelectorAll('[data-p]').forEach(p=>p.hidden=p.dataset.p!==t); if(t==='map')drawMap(); if(t==='display'||t==='graphics'||t==='sound')drawDisplay(); if(t==='graphics'&&window.AVS)AVS.menu(); if(t==='sound')SNDED.into($('#dsndin')); if(t==='keys')drawKeys(); if(t==='bug')BUGS.open($('#dbug')); if(t==='atmo'){ window.CLOCK&&CLOCK.draw&&CLOCK.draw(); window.WX&&WX.draw&&WX.draw(); drawMood(); } };
+  const show=t=>{ tab=t; M.querySelectorAll('[data-t]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.t===t))); M.querySelectorAll('[data-p]').forEach(p=>p.hidden=p.dataset.p!==t); if(t==='map')drawMap(); if(t==='display'||t==='graphics'||t==='sound')drawDisplay(); if(t==='avatar'&&window.AVS)AVS.menu(); if(t==='sound')SNDED.into($('#dsndin')); if(t==='keys')drawKeys(); if(t==='bug')BUGS.open($('#dbug')); if(t==='atmo'){ window.CLOCK&&CLOCK.draw&&CLOCK.draw(); window.WX&&WX.draw&&WX.draw(); drawMood(); } };
   const drawMood=()=>{ const h=(window.SKY&&SKY.moodHold)||''; $('#amood').querySelectorAll('[data-m]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.m===h))); };
   $('#amood').onclick=e=>{ const b=e.target.closest('[data-m]'); if(!b||!window.SKY)return; SKY.moodHold=b.dataset.m||null; try{ b.dataset.m?SAVE.set('mood',b.dataset.m):SAVE.del('mood'); }catch(e){} drawMood(); };
   M.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>show(b.dataset.t));

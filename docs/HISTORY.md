@@ -2767,3 +2767,8 @@ fsomeone dies insomewhere they have to float back as a ghost to get resed. when 
   seven walkers near you press it down round your feet (0.8 tiles, a hard rim), and your trail stays pressed and stands back up over some
   3.5 s. The lawn painted under it is a flat green (two tones in big patches). The mushrooms, flowers and birds sit on its top. Cost: a
   chunk at most 2,048 top triangles plus its sides (about 20,000-30,000 in the picture, fewer than the clumps), one program, no light.
+- **Trees and lamps by the garages, no street signs** (owner, 19 Oct 2026: "the trees and street lights should be in front of the
+  garages not in ront of main locations. remove all stere signs for now."): the street trees stand in front of the garage buildings
+  between the places (one per garage 4+ tiles wide, two in the long ones; `DRESS.gaps()` from `MAINROW`), never shifted in front of a
+  place, and kept 5 tiles from any door; the south sidewalk's globe lamps stand at the garages too (one each, 2.5+ tiles wide). The
+  street name signs and no-parking signs are off (`BOD.signs` empty); the traffic lights stay.

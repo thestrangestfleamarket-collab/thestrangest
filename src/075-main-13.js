@@ -48,7 +48,7 @@ function frame(now){ requestAnimationFrame(frame); renderer.info.reset(); const 
   else{
     if(window.BOAT&&BOAT.on){ BOAT.steer(dt,mx,mz); mx=0; mz=0; target=null; } const ml=Math.hypot(mx,mz), busy=st.move;
     if(ml>0&&!busy){ let dh=Math.atan2(mx,mz)-heading; dh=Math.atan2(Math.sin(dh),Math.cos(dh)); const turn=3*Math.PI*dt; const dd=Math.max(-turn,Math.min(turn,dh*(1-Math.exp(-dt*12)))); heading+=dd; st.yr=dd/Math.max(dt,1e-3); } else st.yr=0;
-    if(window.BOAT&&BOAT.on){ BOAT.carry(st,pos); heading=BOAT.hd; } else if(!RIVER.feed(st,pos,dt,ml>0,keys))WATER.feed(st,pos,dt,ml>0,keys); st.target=ml>0?1:0; const before=st.dist; RIG.step(st,dt); const go=(st.dist-before)*W3.SZ/PPU; if(typeof SFX!=='undefined')SFX.steps(st,go);
+    if(window.BOAT&&BOAT.on){ BOAT.carry(st,pos); heading=BOAT.hd; } else if(!RIVER.feed(st,pos,dt,ml>0,keys)&&!(FOUNT.feed&&FOUNT.feed(st,pos,dt,ml>0,keys)))WATER.feed(st,pos,dt,ml>0,keys); st.target=ml>0?1:0; const before=st.dist; RIG.step(st,dt); const go=(st.dist-before)*W3.SZ/PPU; if(typeof SFX!=='undefined')SFX.steps(st,go);
     if(go){ const ox=pos.x,oz=pos.z; pos.x+=Math.sin(heading)*go; pos.z+=Math.cos(heading)*go; if(UI.fly)UI.flyStep(0); else collide(pos); if(st.water&&st.water.in&&RIVER.swim)RIVER.clamp(pos); else if(st.water&&st.water.in&&POOLR.inBasin(pos.x,pos.z)){ const m=0.3; pos.x=Math.max(WATER.X0+m,Math.min(WATER.X0+WATER.W-m,pos.x)); pos.z=Math.max(WATER.Z0+m,Math.min(WATER.Z0+WATER.D-m,pos.z)); }
     if(target&&Math.hypot(pos.x-ox,pos.z-oz)<go*0.2)target=null; }
     if(UI.fly)UI.flyStep(dt); else if(window.BOAT&&BOAT.on)py=BOAT.py; else { let g=groundY(pos.x,pos.z); if(st.fk)for(const n of 'LR'){ const f=st.fk[n]; if(f&&f.on&&Math.hypot(f.x-pos.x,f.z-pos.z)<1)g=Math.min(g,f.y); } py+=(g-py)*Math.min(1,dt*20); } P.x=pos.x/TL;
@@ -62,7 +62,7 @@ function frame(now){ requestAnimationFrame(frame); renderer.info.reset(); const 
   if(typeof UI!=='undefined'&&UI.freeCam)LITE.tick(dt,UI.camT.x,UI.camT.y,UI.camT.z); else LITE.tick(dt,pos.x,py+1.2*TILE,pos.z);
   let lampW=0; for(const L of lamps){ const d=Math.hypot(L.position.x-pos.x,L.position.z-pos.z); lampW=Math.max(lampW,1-d/6); }
   W3.tint.setRGB(.58,.6,.66).lerp(C2.setRGB(1,1,1),Math.max(0,lampW)*0.9); if(ED.on)W3.tint.setRGB(1,1,1);
-  DRESS.tick(dt,pos); RINGX.tick(dt); RIVER.tick(dt,pos); RIVER.hud(); SUBX.tick(dt); { const r=MODS.apts.tick(); if(r)solids=r; } { const r2=STORE.stackTick&&STORE.stackTick(); if(r2)solids=r2; } CITY.tick(dt,pos); NPCS.tick(dt,pos); if(FIRE)FIRE.tick(dt); FIGFX.tick(dt,pos); FLAME.tick(dt,pos); MUS.tick(dt); BWK.tick(dt); PNM.tick(dt); SGM.tick(dt); DRM.tick(dt); STAGE.tick(dt);
+  DRESS.tick(dt,pos); RINGX.tick(dt); RIVER.tick(dt,pos); FOUNT.tick&&FOUNT.tick(dt,pos); RIVER.hud(); SUBX.tick(dt); { const r=MODS.apts.tick(); if(r)solids=r; } { const r2=STORE.stackTick&&STORE.stackTick(); if(r2)solids=r2; } CITY.tick(dt,pos); NPCS.tick(dt,pos); if(FIRE)FIRE.tick(dt); FIGFX.tick(dt,pos); FLAME.tick(dt,pos); MUS.tick(dt); BWK.tick(dt); PNM.tick(dt); SGM.tick(dt); DRM.tick(dt); STAGE.tick(dt);
   UI.goTick(); UI.runTick(); CLOCK.tick(dt); VIT.tick(dt); LOOK.tick(); WHERE.tick(dt); AMB.tick(dt); LINES.tick(dt);
   marker.visible=!!target; if(target){ marker.position.set(target.x,groundY(target.x,target.z)+0.03,target.z); marker.material.opacity=0.5+0.4*Math.sin(t*8); }
   for(const sg of shopGroups)sg.scale.y+=(cut-sg.scale.y)*Math.min(1,dt*8);

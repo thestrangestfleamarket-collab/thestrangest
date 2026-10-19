@@ -2682,3 +2682,8 @@ not have windows, make sure buildings are only as tall as they need to be"; then
   (stride over 60%, running over 40%) is its own move, `runJump`: no two-foot crouch, a push off one leg with the other knee driven up,
   a split stride in the air, the landing on the leading foot with the speed kept, and the run picks up again on that foot's stance
   (phase set, 0.12 s blend). Standing jumps are as before.
+- **Lamps and trees on Market St** (owner, 19 Oct 2026: "remevo the tall street lamps from game, make sure lamps are spread out evenly
+  and not too many. make sure trees on market street arent blockign entrances from any direction of view (isometric)"): the tall
+  cobra-head lamps (street, ring roads and the double corner one) are off (`DRESS.tall`); the short globe posts stand every 28 tiles
+  on both sidewalks, staggered 14 apart side to side, never within 2.5 of a door. Street trees keep 7 tiles from every door (bodega,
+  apartments, subway stairs, each place's door) so no isometric angle puts a crown over an entrance.

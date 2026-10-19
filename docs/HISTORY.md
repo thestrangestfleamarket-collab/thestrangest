@@ -1668,6 +1668,12 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   Shift+K no longer does anything; the menu has an AVATAR tab (before KEYS) with OPEN THE AVATAR EDITOR, EDIT HIS SHAPE and YOUR
   LOOKS (moved there from DISPLAY's HIM row). A double click on yourself still opens your looks.
 
+- **The four people pawns gone** (owner, 19 Oct 2026, his screenshot of a dressed pawn walking the street at night: "these characters
+  shouldnt exist they were turned into the rock golems"): the golems were made from the townspeople's copies, but the four originals
+  (hero_m, hero_f, villager_m, villager_f: the apartment house's residents) were still made and walked. They're not made now
+  (`npc-pawns.js`: only for their own `?sheet=`); every other pawn keeps its number, so the golems look as they did. The residents'
+  rounds (`residents.js`) find no one and do nothing; the mail to their flats has no reader.
+
 ## The website moves here (18 Oct 2026)
 
 **The white screen** (owner, 18 Oct 2026: "https://thestrangestfleamarket.com/ is just shownig white screen now"): the copy of THE MARKET

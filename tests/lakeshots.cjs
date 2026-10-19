@@ -15,10 +15,11 @@ process.on('unhandledRejection',e=>{ errs.push('TEST '+String(e&&e.message||e).s
     prof:BK.C.slice(0,(BK.kM||0)+30).filter((c,i)=>i%3===0).map(c=>{ const x=M.BOD.XS(c[0]+(P.ox||0)), z=M.BOD.ZS(c[1]+(P.oy||0)); return [r(c[2]),r(HILL(x,z)),+FOUNT.lake(c[0],c[1]).toFixed(1),FOUNT.wet(x,z,0)?1:0]; }),camp:P.campAt(),fountTris:FOUNT.tris,brookTris:BROOK.tris&&BROOK.tris()}; });
   const go=async(k,dx=0,dy=0)=>pg.evaluate(([k,dx,dy])=>{ const M=__dbg.MAPK, P=M.PARK, BK=P.brook, c=BK.C[Math.max(0,Math.min(BK.N,k))]; STORE.goTo(M.BOD.XS(c[0]+dx+(P.ox||0)),M.BOD.ZS(c[1]+dy+(P.oy||0)),'up'); },[k,dx,dy]);
   const kM=rep.mouth.kM||0;
-  await go(kM); await shot('outlet-iso',null,6000); await zoom(600,6); await shot('outlet-z6',null,3000); await zoom(600,8); await shot('outlet-z14',null,3000);
-  for(const n of [1,2,3]){ await pg.keyboard.press('q'); await shot('outlet-z14-q'+n,null,3000); } await pg.keyboard.press('q'); await zoom(-600,8);
-  for(const n of [1,2,3]){ await pg.keyboard.press('q'); await shot('outlet-z6-q'+n,null,3000); } await pg.keyboard.press('q');
-  await go(kM+12); await shot('weir-z6',null,4000); await zoom(-600,6);
-  rep.atMouth=await pg.evaluate(()=>{ const y=__dbg.you(); return {y:+y.y.toFixed(3),over:!!BROOK.over,wade:!!BROOK.wade,wet:FOUNT.wet(y.x,y.z,1)}; });
-  await go(99999); await zoom(600,6); await shot('end-z6',null,5000); await zoom(600,8); await shot('end-z14',null,3000); await zoom(-600,14);
+  const kv=kM||20; await zoom(600,10);
+  await go(kv+4); await shot('outlet-iso-a0',null,6000);
+  for(const n of [1,2,3]){ await pg.keyboard.press('q'); await shot('outlet-iso-q'+n,null,4000); }
+  await go(kv+4,-3,3); await shot('outlet-iso-q3b',null,4000); await go(kv+2,3,-2); await shot('outlet-iso-q3c',null,4000);
+  await go(99999); await shot('end-iso-q3',null,5000); await pg.keyboard.press('q'); await shot('end-iso-a0',null,4000);
+  rep.atMouth=await pg.evaluate(k=>{ const M=__dbg.MAPK, P=M.PARK, c=P.brook.C[k]; STORE.goTo(M.BOD.XS(c[0]),M.BOD.ZS(c[1]),'up'); return 1; },kv);
+  await pg.waitForTimeout(2000); rep.atMouth=await pg.evaluate(()=>{ const y=__dbg.you(); return {y:+y.y.toFixed(3),over:!!BROOK.over,wade:!!BROOK.wade,wet:FOUNT.wet(y.x,y.z,1)}; });
   fin(); await b.close(); })();

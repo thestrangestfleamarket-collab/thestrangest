@@ -24,6 +24,7 @@ jobs:
           mkdir -p out; set +e
           MIN=0 python3 build.py > out/log.txt 2>&1; echo "build $?" >> out/status.txt
           node tests/lakeshots.cjs out >> out/log.txt 2>&1; echo "lake $?" >> out/status.txt
+          git fetch -q origin main --depth 1 && git worktree add -q /tmp/base FETCH_HEAD && ln -s "$PWD/node_modules" /tmp/base/node_modules && cp tests/lakeshots.cjs /tmp/base/tests/ && (cd /tmp/base && MIN=0 python3 build.py > /dev/null 2>&1; node tests/lakeshots.cjs "$OLDPWD/out/base" > "$OLDPWD/out/base.txt" 2>&1); echo "base $?" >> out/status.txt
           true
       - name: Publish results to a branch
         if: always()

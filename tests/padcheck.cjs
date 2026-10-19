@@ -1,0 +1,26 @@
+const {chromium}=require('playwright');
+(async()=>{ const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader']});
+  const pg=await b.newPage({viewport:{width:1100,height:820}}); const errs={}; pg.on('pageerror',e=>{ errs[e.message]=1; });
+  await pg.addInitScript(()=>{ const P={id:'Xbox Wireless Controller (STANDARD GAMEPAD Vendor: 045e)',index:0,connected:true,mapping:'standard',timestamp:1,axes:[0,0,0,0],buttons:Array.from({length:17},()=>({pressed:false,value:0}))};
+    window.__pad=P; navigator.getGamepads=()=>[P]; window.__press=(i,v)=>{ P.buttons[i]={pressed:v>.5,value:v}; P.timestamp++; }; window.__axes=a=>{ P.axes=a; P.timestamp++; }; });
+  await pg.goto('file://'+process.cwd()+'/dist/market.html?fresh=1&at=0,6',{timeout:180000}); await pg.waitForFunction(()=>window.__started,null,{timeout:180000}); await pg.waitForTimeout(8000);
+  await pg.evaluate(()=>dispatchEvent(new Event('gamepadconnected')));
+  const P=()=>pg.evaluate(()=>__dbg.pos().map(v=>+v.toFixed(2)));
+  const p0=await P(); await pg.evaluate(()=>__axes([1,0,0,0])); await pg.waitForTimeout(1500); await pg.evaluate(()=>__axes([0,0,0,0])); await pg.waitForTimeout(500);
+  console.log('stick right', p0, '->', await P(), 'keys', await pg.evaluate(()=>__dbg.cv().keys));
+  await pg.evaluate(()=>__press(0,1)); await pg.waitForTimeout(250); console.log('jump y', await P()); await pg.evaluate(()=>__press(0,0)); await pg.waitForTimeout(800);
+  await pg.evaluate(()=>__press(9,1)); await pg.waitForTimeout(200); await pg.evaluate(()=>__press(9,0)); await pg.waitForTimeout(300);
+  console.log('menu open', await pg.evaluate(()=>[__UI.menuOpen, document.querySelector('.padon')?.textContent]));
+  await pg.evaluate(()=>__press(5,1)); await pg.waitForTimeout(150); await pg.evaluate(()=>__press(5,0)); await pg.waitForTimeout(300);
+  await pg.evaluate(()=>__press(13,1)); await pg.waitForTimeout(150); await pg.evaluate(()=>__press(13,0)); await pg.waitForTimeout(300);
+  console.log('RB then down', await pg.evaluate(()=>[document.querySelector('#menu [aria-selected=true]')?.textContent, document.querySelector('.padon')?.outerHTML.slice(0,120)]));
+  for(let i=0;i<5;i++){ await pg.evaluate(()=>__press(5,1)); await pg.waitForTimeout(120); await pg.evaluate(()=>__press(5,0)); await pg.waitForTimeout(150); }
+  console.log('keys tab', await pg.evaluate(()=>[document.querySelector('#menu [aria-selected=true]')?.textContent, document.querySelectorAll('#keytab .padrow').length]));
+  await pg.screenshot({path:process.argv[2]||'/tmp/pad.png'});
+  await pg.evaluate(()=>__press(1,1)); await pg.waitForTimeout(150); await pg.evaluate(()=>__press(1,0)); await pg.waitForTimeout(300);
+  console.log('B closes', await pg.evaluate(()=>__UI.menuOpen));
+  await pg.evaluate(()=>__press(10,1)); await pg.waitForTimeout(150); await pg.evaluate(()=>__press(10,0)); await pg.waitForTimeout(300);
+  console.log('L3 view', await pg.evaluate(()=>__UI.view));
+  const y0=await pg.evaluate(()=>__dbg.yaw()[1]); await pg.evaluate(()=>__axes([0,0,1,0])); await pg.waitForTimeout(800); await pg.evaluate(()=>__axes([0,0,0,0]));
+  console.log('right stick yaw', y0.toFixed(2), (await pg.evaluate(()=>__dbg.yaw()[1])).toFixed(2));
+  console.log('errors',Object.keys(errs)); await b.close(); })();

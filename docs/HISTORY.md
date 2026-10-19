@@ -2,7 +2,7 @@
 
 A separate project from the game: the owner (Bralynn) is building **a new version of The Strangest Flea Market in three.js**, one
 piece at a time. It is **not** the live game and never ships to it. The live game is the repo `bralynnb/tsfm` (thestrangestfleamarket.com);
-this repo is `bralynnbell/thestrangest`.
+this repo is `bralynnb/thestrangest` (once `bralynnbell/thestrangest`, the owner's old GitHub name).
 
 ## The game's repo: data only, never the rules
 
@@ -1644,6 +1644,25 @@ the subway underneath, stairs down from the sidewalk. Next pieces are the owner'
   shadow lamp, no new program. The fillers are solid boxes, no way in. `BLOCKDBG()`. Not yet: insides, names on the back row's river side,
   characters walking the alley and the promenade. Found on the way: `build.py`'s glob took only `NNN-` names, so an inserted `NNNa-` file (as
   CLAUDE.md suggests) was never built; it takes `NNN*-` now.
+
+- **A controller, as the old game had it** (owner, 19 Oct 2026: "add the controller abilities from the old game to this game (allow
+  controllers to paly) all same tusff we had"; `162a-pad.js`, from the old game's `47-gamepad.js`): a standard (Xbox or PlayStation) pad
+  plays as the keyboard does, its buttons sent as the very keys (as they are bound in KEYS), read once a frame only while one is plugged in.
+  Left stick walks any way at all (`PAD.mv`), right stick looks round (BEHIND, FIRST) or spins the view (ISOMETRIC); A jump, dive; B back,
+  closes a box; X uses what you face or stand by (`UI.useNear`: the double click's things), else punches; Y kick; LB / RB turn the view
+  (Q / E); LT roll; RT held run, and with the D-pad up / down zoom; L3 the next view (V); R3 resets the view (0); VIEW / CREATE what you can do
+  (?); START the menu; D-pad right the pack (I). In a menu or a box the stick or D-pad moves a highlight between its controls, A presses, A takes
+  hold of a slider (left / right moves it), left / right steps a list, LB / RB the tabs, B back; nothing walks. The buttons rebind in KEYS (THE
+  CONTROLLER, with a pad plugged in; kept as `padkeys`), use and punch share X. A PlayStation pad shows its own names and face-button pictures.
+  The old game's card for things in reach and L3's nameplates have no match here yet. Cost: nothing drawn, no lights, nothing run without a pad.
+  `tests/padcheck.cjs` (a made-up pad).
+
+- **Free 360, no snapping** (owner, 19 Oct 2026: "i want full 360 view no snapping to views when free view. if y ou press q or e it will
+  cut to that shot, (not rotate)", his pick "Isometric drag spins 360", then "in 3rd person view no snapping at all", "in 1st person view no
+  snapping at all either"): in ISOMETRIC a right drag (or Shift + drag, or the controller's right stick) spins the view freely all the way
+  round, staying where you leave it; Q / E (and R) cut straight to the next of the four angles from wherever it is (`UI.isoStep`), no turn.
+  BEHIND no longer swings back to his back when he walks (the 17 Oct "swings back once he walks" is gone): the camera stays where you
+  turned it. FIRST PERSON never swung on its own; it stays as it was. Entering a place still sets that place's own angle.
 
 ## The website moves here (18 Oct 2026)
 

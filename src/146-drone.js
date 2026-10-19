@@ -25,10 +25,12 @@ DRONE.init=()=>{ const H=MODS.apts; if(!H||!H.A||!H.made)return; const A=H.A, T=
   D.scale.setScalar(T/1.13); MAPG.bodega.add(D);
   const B=BOD.B0, bx0=X(B.x1-.85), bz0=Z(BOD.BODOFF+.85), RB=Y(B.h), HOME=new THREE.Vector3(bx0,Y(97),bz0), hout=Z(A.y1)>Z(A.y0)?1:-1, RA=H.lvY?H.lvY(5):Y(CZ+150);
   const DROP=new THREE.Vector3(X((A.x0+A.x1)/2),Y(CZ)+.02,Z(A.y1)-hout*.9*T), ax0=X(A.x0+4.4), az0=Z(A.y0+7.4), CRUISE=Math.max(9,RA+2.2);
-  const BOXES=[]; DRONE.roofBox=(x,z,y)=>{ const g=new THREE.Group(), W=.62*T, Hb=.42*T, GA=lam(0x8c9092), DK=lam(0x3a3e42); g.position.set(x,y,z);
-    const add=(m,px,py,pz)=>{ m.position.set(px,py,pz); m.castShadow=m.receiveShadow=true; g.add(m); return m; };
-    add(bx(W+.1*T,.05*T,W+.1*T,DK),0,.025*T,0); add(bx(W,Hb,W,GA),0,Hb/2,0); add(bx(W*.84,.006*T,W*.84,DK),0,Hb+.003*T,0); for(const f of [.35,.7])add(bx(W+.012*T,.02*T,W+.012*T,lam(0x6e7478)),0,Hb*f,0);
-    add(bx(.32*T,.14*T,.02*T,DK),0,Hb*.5,W/2+.01*T); add(bx(.02*T,.2*T,.24*T,lam(0x7a5a40)),W/2+.01*T,Hb*.3,0);
+  const BOXES=[]; DRONE.roofBox=(x,z,y)=>{ const g=new THREE.Group(), W=.62*T, Hb=.42*T, P=[], N=[], C=[], cc=new THREE.Color(); g.position.set(x,y,z);
+    const add=(w,h,d,c,px,py,pz)=>{ const G=new THREE.BoxGeometry(w,h,d).translate(px,py,pz).toNonIndexed(); P.push(...G.attributes.position.array); N.push(...G.attributes.normal.array); cc.setHex(c); for(let i=0;i<G.attributes.position.count;i++)C.push(cc.r,cc.g,cc.b); };
+    add(W+.1*T,.05*T,W+.1*T,0x3a3e42,0,.025*T,0); add(W,Hb,W,0x8c9092,0,Hb/2,0); add(W*.84,.006*T,W*.84,0x3a3e42,0,Hb+.003*T,0); for(const f of [.35,.7])add(W+.012*T,.02*T,W+.012*T,0x6e7478,0,Hb*f,0);
+    add(.32*T,.14*T,.02*T,0x3a3e42,0,Hb*.5,W/2+.01*T); add(.02*T,.2*T,.24*T,0x7a5a40,W/2+.01*T,Hb*.3,0);
+    const SG=new THREE.BufferGeometry(); SG.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); SG.setAttribute('normal',new THREE.Float32BufferAttribute(N,3)); SG.setAttribute('color',new THREE.Float32BufferAttribute(C,3));
+    const body=new THREE.Mesh(SG,new THREE.MeshLambertMaterial({vertexColors:true})); body.castShadow=body.receiveShadow=true; g.add(body);
     const hinge=new THREE.Group(); hinge.position.set(0,Hb,-W/2); g.add(hinge); const lid=bx(W+.05*T,.05*T,W+.05*T,lam(0x9ea2a4)); lid.position.set(0,.025*T,W/2); lid.castShadow=true; hinge.add(lid);
     const led=bx(.05*T,.03*T,.05*T,flat(0x3cff6a)); led.position.set(W*.36,.06*T,W*.86); hinge.add(led);
     MAPG.bodega.add(g); const R={g,hinge,led,k:0,to:0,top:new THREE.Vector3(x,y+Hb+.55*T,z),in:new THREE.Vector3(x,y+.08*T,z)}; BOXES.push(R); return R; };

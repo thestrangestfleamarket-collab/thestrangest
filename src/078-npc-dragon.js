@@ -1,15 +1,6 @@
-{ const S=DRAGON, b=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0)), f32=s=>new Float32Array(b(s).buffer), i16=s=>new Int16Array(b(s).buffer), u16=s=>new Uint16Array(b(s).buffer);
+{ const S=DRAGON;
   const BN=S.rig.names, JI=Object.fromEntries(BN.map((n,i)=>[n,i]));
-  const pts=M=>{ const q=i16(M.p), P=new Float32Array(q.length); for(let i=0;i<q.length;i++)P[i]=(q[i]+32500)*M.sc+M.lo[i%3]; return P; };
-  const geomOf=M=>{ const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(pts(M),3)); g.setAttribute('color',new THREE.BufferAttribute(b(M.c),3,true)); g.setIndex(new THREE.BufferAttribute(u16(M.i),1));
-    g.setAttribute('reg',new THREE.BufferAttribute(new Float32Array(M.n),1)); g.setAttribute('sh',new THREE.BufferAttribute(new Float32Array(M.n),1));
-    g.setAttribute('skinIndex',new THREE.Uint8BufferAttribute(b(M.j),4)); g.setAttribute('skinWeight',new THREE.BufferAttribute(b(M.w),4,true)); return g; };
-  const rigOf=()=>{ const R=S.rig, bones=R.names.map((n,i)=>{ const B=new THREE.Bone(); B.name=n; B.position.fromArray(R.t[i]); B.quaternion.fromArray(R.q[i]); if(R.s)B.scale.fromArray(R.s[i]); return B; });
-    R.parent.forEach((p,i)=>{ if(p>=0)bones[p].add(bones[i]); }); const ibm=f32(R.ibm); return {bones,skeleton:new THREE.Skeleton(bones,bones.map((_,i)=>new THREE.Matrix4().fromArray(ibm,i*16)))}; };
-  const CLIPS={}; for(const [name,C] of Object.entries(S.clips)){ const T=Array.from({length:C.n},(_,k)=>k*C.dur/(C.n-1)), Q=i16(C.q), tracks=[];
-    BN.forEach((bn,j)=>{ const v=new Float32Array(C.n*4); for(let k=0;k<C.n;k++)for(let c=0;c<4;c++)v[k*4+c]=Q[(k*BN.length+j)*4+c]/32000; tracks.push(new THREE.QuaternionKeyframeTrack(bn+'.quaternion',T,v)); });
-    for(const [bn,p] of Object.entries(C.p))tracks.push(new THREE.VectorKeyframeTrack(bn+'.position',T,f32(p)));
-    CLIPS[name]=new THREE.AnimationClip(name,C.dur,tracks); }
+  const geomOf=M=>SKIN.geom(M,true,false), rigOf=()=>SKIN.rig(S.rig), CLIPS=SKIN.clips(S.clips,BN);
   const M=S.chars.Dragon, GR=['#0d2410','#163a19','#225023','#2f6630'].map(h=>new THREE.Color(h));
   const greenGeo=()=>{ const g=geomOf(M), c=g.attributes.color, n=c.count, L=new Float32Array(n); for(let i=0;i<n;i++)L[i]=c.getX(i)*.3+c.getY(i)*.59+c.getZ(i)*.11;
     const so=[...L].sort((a,b)=>a-b), q=[so[Math.floor(n*.25)],so[Math.floor(n*.5)],so[Math.floor(n*.75)]], arr=new Uint8Array(n*3);
@@ -46,7 +37,7 @@
     const L=r.bones.filter(b=>/^Body_002_L_/.test(b.name)), R=r.bones.filter(b=>/^Body_002_R_/.test(b.name)), v=new THREE.Vector3(); let best=0, bt=0;
     for(let k=0;k<32;k++){ const t=k/32*CLIPS.Flying_loop.duration; mx.setTime(t); g.updateMatrixWorld(true); let s=0; for(const b of L.concat(R)){ b.getWorldPosition(v); s+=Math.abs(v.x); } if(s>best){ best=s; bt=t; } } return bt; })();
   const GLC=new THREE.Color(), UP=new THREE.Vector3(0,1,0), qa=new THREE.Quaternion(), wq=new THREE.Quaternion(), ax=new THREE.Vector3();
-  const bend=(b,axis,ang)=>{ if(!b||!ang)return; b.getWorldQuaternion(wq); ax.copy(axis).applyQuaternion(wq.invert()).normalize(); b.quaternion.multiply(qa.setFromAxisAngle(ax,ang)); b.updateMatrixWorld(true); };
+  const bend=(b,axis,ang)=>{ if(!b||!ang)return; wq.copy(b.quaternion); for(let p=b.parent;p;p=p.parent)wq.premultiply(p.quaternion); ax.copy(axis).applyQuaternion(wq.invert()).normalize(); b.quaternion.multiply(qa.setFromAxisAngle(ax,ang)); };
   const make=(i)=>{ const rig=rigOf(), mixer=new THREE.AnimationMixer(rig.bones[0]), act=n=>mixer.clipAction(CLIPS[n]);
     const idle=act('Idle_loop'), fly=act('Flying_loop'), lift=act('GroundToFly'), attack=act('Attack');
     idle.play(); fly.play(); fly.time=Math.random()*CLIPS.Flying_loop.duration; lift.setLoop(THREE.LoopOnce); lift.clampWhenFinished=true;
@@ -59,7 +50,7 @@
         D.gl+=((D.style==='glide'&&D.mode==='fly'?1:0)-D.gl)*Math.min(1,dt*1.5); fly.timeScale=(D.mode==='come'?.5:.62)*(1-D.gl);
         if(D.gl>.02){ const L=CLIPS.Flying_loop.duration; let dd=GLIDE-fly.time; dd-=Math.round(dd/L)*L; fly.time+=dd*Math.min(1,dt*2.5*D.gl); }
         mixer.update(dt);
-        if(D.mode!=='perch'){ N.g.updateMatrixWorld(true); FW.set(Math.sin(st.h),0,Math.cos(st.h)); RT.set(Math.cos(st.h),0,-Math.sin(st.h)); D.tw+=dt;
+        if(D.mode!=='perch'){ FW.set(Math.sin(st.h),0,Math.cos(st.h)); RT.set(Math.cos(st.h),0,-Math.sin(st.h)); D.tw+=dt;
           TAIL.forEach((b,k)=>{ bend(b,UP,-D.turn*.18*(k+1)/3+Math.sin(D.tw*1.1+k*.7)*.05*(1+D.gl)); bend(b,RT,D.climb*.08); });
           NECK.forEach((b,k)=>bend(b,UP,D.turn*.12)); } } });
     N.push=()=>{}; N.blocks=()=>false;

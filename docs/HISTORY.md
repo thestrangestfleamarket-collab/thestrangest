@@ -2306,3 +2306,128 @@ Main's north edge (36 tiles further north), fountain terrace and lake, together 
 - **Triangles** (`tests/tricount.cjs`, main picture, now also at `fountain` and `parknorth`): park gate 72,723; middle of the park 36,478;
   in front of the fountain 37,588; the north edge 29,104. Every spot is under 100,000 (highest: beside the bodega, 84,934). The park's
   hills are one mesh over the whole park (`089-pond.js`), so CULL's 10-tile pieces cover the new land as well.
+
+## 19 Oct 2026: flowers, birds and book restoration
+- **The old game's crafting design stays out** (owner, 19 Oct 2026, after seeing its mockups from tsfm's `mockups-archive`, gathered at
+  https://claude.ai/artifact/Qjpy4SZ6oftjgt4zfhyyTm: "lets not pull any of that back in"): none of the old game's crafting design (its skills
+  list, benches, the Eye's network prices, porters, the passport's skill pick, the black market) comes into THE MARKET. Crafting stays the
+  town's UO way built on foraging, fishing and butterflies (`141-forage.js`, `142-fishing.js`, `143-bfly.js`).
+- **GARDENING, BIRDING, BOOKBINDING** (owner, 19 Oct 2026: "lets add flowers, birds, book restoration (whatever those ksills are called)"; his
+  picks: flowers both picked wild and grown, birds watched, tamed and caught ("all"), books both found and bought, birds seen everywhere; the
+  bird sheet shown first, then "Go"). Three new skills (`141-forage.js`'s list; the total cap 450 → 600 for ten skills; each starts at 10).
+  **Flowers** (`144a-garden.js`): eight wildflowers on every lawn each day in drifts, each grass its own odds (`WILD`), the PINK LADY'S SLIPPER
+  only 10 tiles or more into the park; a double click picks. THE TOMATO sells seeds (marigold, zinnia, tulip bulb, sunflower, rose cutting;
+  `VEG.add` in veggies.js) and buys every flower and bouquet; PLANT (THE PACK) on any lawn, sprout → bud → bloom in one market day, twelve at
+  most, a double click cuts them (2-3 flowers, sometimes a seed back). Seven bouquets in CRAFT (posy $14 … orchid corsage $120). Cost: up to
+  400 flowers in four instanced draws (stem, leaf, head, centre), some 45 triangles each, 60-80 near you; no light, no new program.
+  **Birds** (`144b-birds.js`): thirteen of New York's (sparrow, pigeon, starling, robin, mourning dove, blue jay, cardinal, chickadee,
+  mockingbird, red-winged blackbird; rare: Baltimore oriole, scarlet tanager, red-tailed hawk), each made in parts (body, breast, head, cap,
+  crest, mask, beak, eyes, tail, legs, two wings with their bars) and coloured by kind, 1.5 times life size like the butterflies. By day in
+  fair weather: flocks on the lawns (most in the park), pigeons and sparrows on the sidewalks by the kerb, a pigeon, starling or the hawk on a
+  lamp post; they hop, walk, peck, fly between spots, take off if you run at them; roost at night, in rain, snow or a gale. A double click:
+  WATCH (the journal, a BIRDS tab in THE PACK; a rare one's first sighting pays $40-80), TAME (birdseed; it follows you and sits on your
+  shoulder; one at a time), CATCH (a bird net and a cage; caged birds sell to the mushroom seller, or TAME / RELEASE in the pack); SCATTER
+  seed and stand still to bring them near. The mushroom seller sells birdseed $1, the net $20, cages $5. Cost: some 340 triangles a bird,
+  20-40 near you, 16 instanced draws, one material; an invisible box each to click. `BIRDDBG()`; `tests/birdsheet.cjs` the sheet.
+  **Books** (`144c-books.js`): seven worn books (paperback … ruined first edition) found in the street's trash cans (each once a day), on a
+  line in the river, sometimes in a sunken chest; THE ODDITIES STALL is now a self-serve book stall (today's box of worn books, a binder's
+  kit, glue, thread, bookcloth, calf leather; it buys books back mended, $6-220; the gem of the day a button on it). Restored in CRAFT with
+  the kit; a failure wastes the supplies but keeps the book. Not at the newsstand (newspapers only). `BOOKDBG()`; `tests/natshot.cjs` all three.
+
+**His mannequin moved by his own rig** (owner, 19 Oct 2026: "is this using all the other techniques we added earlier where he is actually
+touching ground, can run in circles, lean, etc."; his pick of two: drive the mannequin from the rig): the clips are gone from you; every
+time the rig works out his pose (`ASTEP`), each of the mannequin's bones takes the turn of the rig's piece it stands for (hips, torso, neck,
+head, upper arm, forearm, hand, thigh, shin, foot: the piece's axis from its joints, its twist from the piece's own frame), measured from
+the rig's rest to the mannequin standing the same way. His hips go where the rig's go, as high as the rig's are of theirs; each leg
+reaches (two-bone) for where the rig's ball of the foot is in the world, so a locked foot stays locked. So he has all of it: feet planted
+in the world (straight, running, round a circle, turning, stopping, the settling steps, stairs), the lean into turns, the weight carried
+on at a stop, the jump, the moves, sitting, swimming and the ragdoll (`ragPose`). Not followed: the PHYSICS BODY option's own jiggle
+(it moves the old Walker's pieces, not the pose). Measured (in the page, the rig played as `tests/footworld.cjs` plays it, 60 fps): a
+planted foot moves under 1 cm a second walking, running, round a circle, stopping and on stairs (2.8 through a sharp quarter turn, where
+the rig's own pivots); flat on its ground within half a centimetre (3-4 on stairs). The page no longer carries `data/ual.json` (its
+skeleton now in `data/humanoid.json`, 16 KB): 260 KB less. Cost: some 60 bones set when his pose changes, a fraction of a millisecond.
+
+**His movement audited, fluid first** (owner, 19 Oct 2026: "walks terrible"; then "do a complete audit of his stance and movements make
+sure it makes sense, quick turn, leaning runs, i want him fully mobile like tomb raider. fluid. its #1 priority"): every move filmed
+side-on and from behind on its own (a page of the rig lifted from the build and the shipped 087a: stand, walk, run, start, stop, run-stop,
+U-turn, a running circle, jump, running jump, roll, kick). Found and fixed:
+- **Crouched walk, lunging run**: his hips had been the rig's height scaled up, and the short-legged rig drops its hips to reach its steps.
+  Now his hips stand as high as his own legs reach both feet (straight at rest), lowered further only by what the rig crouches beyond its
+  own legs' reach past its soft-kneed "standing easy" (sitting, landing, ducking). Off his feet (in the air, rolling, flipping, falling)
+  his hips follow the rig's (lower: in proportion; higher: the jump's true height), the two blended by how upright he is and how far his
+  feet are off the ground. Jumps no longer fold his legs back; the roll stays above the ground.
+- **Hips behind his feet**: the ball of his (longer) foot is pinned where the rig's is; his hips are set back by the difference, in his own
+  frame (so it doesn't drift in a circle).
+- **Boxer's arms running**: the elbow follows the rig's bend at 70%.
+- **Choppy moves**: your pose is now worked out every frame always (it was 10 a second standing and in moves, `ASTEP`); the street's
+  characters keep their steps (GRAPHICS' setting).
+- **Turns snapping**: your heading eases to where you steer (two thirds of the way in about 80 ms), at most 540 degrees a second as before.
+The lean into turns is the rig's own: 15 degrees round a running circle (he leans 14). Measured: a planted foot moves 1 to 4 cm a second
+(walk, run, circles, stops, stairs), 4 through a sharp quarter turn.
+
+**Built like the Walker; knees only bend forward** (owner, 19 Oct 2026: "run left and right and see how it looks (not good)"; then "make
+him built more like shape of the other avatar, short, stocky, bigger head, less realistic"; then, of a running frame, "legs bending
+backwards?"): the mannequin is reshaped, once, when he is made, to the Walker's own rest skeleton (`RIG.restOf()`): each joint where the
+Walker's is (short legs, the hips at his, the arms to mid-thigh), each bone's flesh carried with it, stretched along the bone to its new
+length and thickened across it (legs 1.5, arms 1.4, hands and feet 1.35, neck 1.5, body 1.25); the bones re-bound there. His own head is
+folded away inside a round one the Walker's size (an icosphere, 320 triangles, smooth, on the head bone). With the rig's proportions his
+moves fit him: the run, the reversals left and right, the jump. Also: the run's flight (both feet a little up) no longer counts as being
+off his feet (only more than 6 of the rig's units does), so he no longer drops to a kneel after a reversal; moving, only 15% of the rig's
+extra hip dip is passed on (all of it standing: sitting, crouching); the run's elbows are the rig's again. **Knees**: the rig itself
+bends a knee backwards in some run frames (37 in 4 s); each knee now bends toward the way his hips face (none backwards, walking or
+running). Planted feet: under 1 cm a second (walk, run, circles, stops, stairs). 722 triangles.
+
+**The mannequin deleted; the Walker back** (owner, 19 Oct 2026, of the realistic-head mockups: "stop delete this avatar from game"; his
+pick: the original Walker): the mannequin body is gone (`087a-avatars.js`, `data/humanoid.json`, `tools/humanoid-bake.cjs`,
+`data/full/humanoid.fbx`); the hand-made Walker, who had moved you unseen under it, is drawn again, in the default looks (the avatar editor
+and the looks panel's choices stay removed, from this morning). Kept from the day's movement work: your pose worked out every frame,
+the heading easing into turns. The head mockups (two rounds of six) were never put in the game.
+
+- **The Milky Way and clustered stars** (owner, 19 Oct 2026, of a starry sky dome shader on StackBlitz: "can we use this?"; offered clustered
+  stars, clustered stars plus a Milky Way band, or nothing: "2"; `src/sky.js`): not the shader itself (its smooth noise background and soft
+  stars break CEL, it costs two 3D noises a pixel, and it has no licence), only its idea. The night's stars are no longer even: patches of
+  thick and thin by a cheap noise, and thickest along a band. The band is a great circle tilted across the sky, its edges wavy, a dark rift
+  down its middle in places, in three flat steps of faint blue-grey drawn after the sky's own banding (so it isn't rounded away), hidden
+  under the weather's grey and fog and behind the mist's clouds; on only while the stars are (half out or more), never near the horizon.
+  **Stars in the mist**: the MIST look's sky painted over the stars, so none had shown at night since it came in; they and the band show now
+  in the gaps between its clouds. Cost: a few noise lookups a sky pixel, at night only; no triangles, lights or programs.
+
+## 19 Oct 2026: lighter skeletons for a pixel game
+
+**The heaviest characters cut** (owner, 19 Oct 2026: "since we are do a pixel style game do we really need such high quality chracter
+mesh?"; his pick 1 of three: cut only the outliers, to about 1,000-1,200 triangles; then, shown that keeping the heads whole left them at
+1,500-2,300, "go": cut the heads too). By `tools/simplify.py skel pawns`: the body to a fifth, the head to half with its eyes kept (this
+relaxes 17 Oct's "leave the faces as complex as they are" for these eight). The four skeleton pawns 4,128/3,478/3,252/3,816 →
+1,822/1,238/1,288/1,494 (mage, reaper, guard light, guard heavy), the four KayKit skeletons 3,706/2,784/2,982/3,218 →
+1,638/1,204/1,264/1,416 (Warrior, Mage, Minion, Rogue). The pawns are made of coloured parts: each part kept its own (or the guard's dark
+eye sockets and the belts lose their colour), the small ones (belts, buckles, pads, eyes: under 250 faces) kept whole and the middling ones
+(the mage's hat, the reaper's cloak, the breastplates) to half; cut to a fifth they broke. Checked side by side on their sheets. The
+pawns' full meshes now kept in `data/full/pawns.json`. `data/pawns.json` 1.62 MB → 0.93 MB, `data/skel.json` 375 → 232 KB.
+## 19 Oct 2026: a tidier, lighter start; the dungeon a loading world
+
+From a look over the whole code (owner, 19 Oct 2026: "take a look at the overall game code and structure and look for obvious
+improvements"; of the list, 2-13 "do it", and "i want dungeon to be a 'loading world' like subway (that way it doesnt load at first)"):
+- **The dungeon loads when you go in** (`077-npc-skel.js`): its KayKit skeletons (Warrior, Mage, Minion, Rogue, the gold one) and
+  `data/skel.json` are no longer built at the start (`__LAZY__`; on the website fetched then). Three treads down the castle's stair the
+  screen goes black with ENTERING DUNGEON (the subway's fade), you're set at the stair's foot, they're built under the black, and it
+  fades in; five treads up from the foot, LEAVING DUNGEON, and you're at the stair's top. Arriving any other way (the teleport list)
+  fades and builds the same. With `?trouble=1` (the troublemakers) they're built at the start as before. `DUNDBG()` for tests.
+- **One decoder, one loader** (`003a-skin.js`): `B64` (the browser's own base64 reader where it has one, else a plain loop: about 5x
+  faster than the old `Uint8Array.from(atob())`, which was in 12 places) and `SKIN` (points, geometry, rig, clips), shared by the
+  skeletons, the dragons, the creatures and the pawns (four copies before). Each model is decoded once and copied for each copy of
+  it (the 18 creatures, 24 pawns, 10 dragons decoded every copy before), and each clip set built once and shared.
+- **three.js minified** (`three.module.min.js`, 88 KB less); the unused three-vrm entry out of the import map.  (The website's shell
+  preloads I added were made unneeded the same day by the bundled website build of `claude/adoring-noether-jfaqto`.)
+- **Frames**: the sun's shadow redrawn only when it moves (you walk) or 12 times a second (was every frame); the lamp's shadow only
+  when you move within its reach (was whenever you moved anywhere); hidden characters (sent home, troublemakers away) no longer
+  animate, their minds still run; the golems no longer split every triangle in four before rounding (12 golems were about 68,000
+  triangles; now a quarter of that); the dragons' tail and neck bends without updating all 76 bones' matrices each time; a few
+  objects made each frame now kept and reused. The river's extra picture of the scene left as is (halving it would change the water).
+- **Tidy**: the tests of removed things gone (figact, figshot, tpose, bodymock; civiccheck's vehicles line); `data/ual.json` stays in
+  `data/` (the avatars read it again).
+- **Physics only when wanted** (he asked whether so big an engine is needed: Rapier about 690 KB compressed, cannon-es about 77 KB;
+  of A load it later, B switch to cannon-es, C load it only when first used, "C"): Rapier is no longer fetched at the start. The
+  loose things are known without it (`150-loose.js`), and the first push into a light one, punch or kick near one, or click to pick
+  one up fetches it (the pick-up done once it's in; the street's goods and trash cans are listed as soon as they exist); your physics body (still on by default) comes alive then too, and the DISPLAY
+  button fetches it at once. `?physics=1` fetches it at the start (`tests/loosecheck.cjs` uses it); `tests/physlater.cjs` checks
+  the wait and the first push.

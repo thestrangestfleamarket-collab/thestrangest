@@ -1,6 +1,6 @@
 const PARK=window.PARK={x0:50,x1:108,y0:-61+NORTHY,y1:12.5+NORTHY+NORTHX,gate:[92.5,99.5],round:[96,-47,7]};
 PARK.sway={value:0}; PARK.windK={value:1}; PARK.tick=()=>{ PARK.sway.value=performance.now()/1000; };
-await grab('park',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.ox=PO.x; PARK.oy=PO.y; PARK.x0=50-MAINX.w+PE[0]; PARK.x1=AVE.x0+PE[2]; PARK.y0+=PE[1]; PARK.y1+=PE[3]; const X=x=>BOD.XS(x+PO.x), Z=y=>BOD.ZS(y+PO.y), Y=BOD.YS, {hash,grain,speck,grassCol}=BOD.g, P=PARK, U=TILE/.84, f32=s=>new Float32Array(Uint8Array.from(atob(s),c=>c.charCodeAt(0)).buffer), b8=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+await grab('park',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.ox=PO.x; PARK.oy=PO.y; PARK.x0=50-MAINX.w+PE[0]; PARK.x1=AVE.x0+PE[2]; PARK.y0+=PE[1]; PARK.y1+=PE[3]; const X=x=>BOD.XS(x+PO.x), Z=y=>BOD.ZS(y+PO.y), Y=BOD.YS, {hash,grain,speck,grassCol}=BOD.g, P=PARK, U=TILE/.84, f32=F32, b8=B64;
   P.round=[(P.x0+P.x1)/2,(P.y0+P.y1-NORTHX)/2,7]; P.gate=[P.round[0]-5,P.round[0]+5]; const RX=x=>x-96+P.round[0], RY=y=>y+47+P.round[1];
   const WA=3, wobX=y=>WA*Math.sin(2*Math.PI*(y-P.y0)/(P.y1-NORTHX-P.y0)), wobY=x=>WA*Math.sin(2*Math.PI*(x-P.x0)/(P.x1-P.x0)); P.wobX=wobX; P.wobY=wobY;
   const path=(x,y)=>{ const [cx,cy,r]=P.round; return Math.abs(x-cx-wobX(y))<3.6||Math.abs(y-cy-wobY(x))<3.6||Math.hypot(x-cx,y-cy)<r; };   P.path=path; FOUNT.at(P);

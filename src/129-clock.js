@@ -12,7 +12,7 @@ const CLOCK={h:17.4,run:false,speed:1440/600,sunV:new THREE.Vector3(0,1,0),moonV
   if(SKYV){ const F=SKYV===2?.09:.3, G=SKYV===2?.08:.28, at=(e,v)=>{ K[K.findIndex(k=>k[0]===e)]=v; };
     at(6,[6,0x9fb8d8,0xf0c8a0,0x4a3a2a,F,0xffb070,1.9]); at(10,[10,0x86aadc,0xf0d4b0,0x54442e,F,0xffd4a0,2.6]); at(14,[14,0x6a9fe0,0xbfdcff,0x5b4a35,G,0xfff1d6,3.5]); at(90,[90,0x4f8ee0,0xbfdcff,0x5b4a35,G,0xfff1d6,3.8]); }
   const ca=new THREE.Color(), cb=new THREE.Color(), mixC=(a,b,t,out)=>out.copy(ca.setHex(a)).lerp(cb.setHex(b),t);
-  let last={h:-1,x:0,z:0,lv:''};
+  let last={h:-1,x:0,z:0,lv:''}, lastS=0; const lastT=new THREE.Vector3();
   CLOCK.tick=dt=>{ if(CLOCK.run)CLOCK.h=(CLOCK.h+dt*CLOCK.speed/60)%24;
     const e=elev(CLOCK.h); let i=0; while(i<K.length-2&&e>K[i+1][0])i++; const A=K[i], B=K[i+1], t=Math.max(0,Math.min(1,(e-A[0])/(B[0]-A[0])));
     const up=LVL!=='down';
@@ -25,7 +25,8 @@ const CLOCK={h:17.4,run:false,speed:1440/600,sunV:new THREE.Vector3(0,1,0),moonV
     { const sc=sunL.shadow.camera, tx=(sc.right-sc.left)/sunL.shadow.mapSize.x; SNM.lookAt(dir,ORG,UPV); SR.setFromMatrixColumn(SNM,0); SU.setFromMatrixColumn(SNM,1); SP.set(pos.x,py,pos.z);
       const a=Math.round(SP.dot(SR)/tx)*tx, b=Math.round(SP.dot(SU)/tx)*tx, c=SP.dot(dir); sunL.target.position.copy(SR).multiplyScalar(a).addScaledVector(SU,b).addScaledVector(dir,c); }
         sunL.position.copy(sunL.target.position).addScaledVector(dir,60*TILE); sunL.target.updateMatrixWorld();
-    const strong=sunL.intensity>.3; sunL.shadow.autoUpdate=strong;
+    const strong=sunL.intensity>.3, now=performance.now(); sunL.shadow.autoUpdate=false;
+    if(strong&&(now-lastS>80||!lastT.equals(sunL.target.position))){ sunL.shadow.needsUpdate=true; lastS=now; lastT.copy(sunL.target.position); }
     if(!strong&&(Math.abs(last.h-CLOCK.h)>.05||Math.hypot(last.x-pos.x,last.z-pos.z)>4*TILE||last.lv!==LVL)){ sunL.shadow.needsUpdate=true; last={h:CLOCK.h,x:pos.x,z:pos.z,lv:LVL}; }
     if(typeof WATER!=='undefined')WATER.glowK=(typeof ROOMS!=='undefined'&&ROOMS.cur)||!up?1:Math.max(0,Math.min(1,(3-e)/8));
     if(UI.menuOpen)CLOCK.draw&&CLOCK.draw(); };

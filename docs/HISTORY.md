@@ -2594,3 +2594,6 @@ and wash ashore). No sound. WebXR on a headset: teleport arc, snap turn, grab an
   31.6 s against 32.3-33.7 s; the longest freeze after the start 7.1 s against 7.4-7.6 s; triangles drawn at the opening 222,000
   against 268,000-275,000; the park's south-west, the slowest frames (95th percentile) 49-51 ms against 52-59 ms.
   `tools/cireport.py` turns a run's results into one GitHub annotation (for sessions that can't download logs).
+- **One row of seats** (owner, 19 Oct 2026: "only 1 row of seats in theater and playhouse for now"): the movie theatre keeps its front
+  row (3.6 tiles from the screen wall, four seats), the playhouse its second (2.4 tiles back from the stage), each still with its aisle
+  lights (`057a-mainstreet.js`, `PLS.rows` in `044b-game-playhouse.js`).

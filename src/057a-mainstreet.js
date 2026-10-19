@@ -13,7 +13,7 @@
     const out=(nx,ny,Xw,Yw,z,f,cap)=>{ if(ny>0){ const c=pic(Xw,z); if(c)return c.e?c:sh(c,f); } return facade(nx,ny,Xw,Yw,z,f,cap,[96,58,80]); };
     const S={x0:B.x0+2.2,x1:B.x1-2.2,y:B.y1-T,z0:60,z1:172,m:12};
     const R=room('theatre','MOVIE THEATRE',B,{floor:TH.theatreCarpet,in:(q,nx,ny,X_,Y_,z,f)=>TH.theatreWall(nx?Y_:X_,z,f),out,cope:[200,192,170]},{w:'f',a:door,wd:1.56,h:94},(B_,l0)=>{
-      const n0=PROPS.length, oL=B.y0+4.6, odx=2*cx-door, w=.85, rx0=cx-2*w, rows=[3.6,5.3,7].map(d=>B.y1-d);
+      const n0=PROPS.length, oL=B.y0+4.6, odx=2*cx-door, w=.85, rx0=cx-2*w, rows=[3.6].map(d=>B.y1-d);
       TH.theatreScreen(S); TH.theatreDrape(B.x0+T,S.x0-S.m/24,S); TH.theatreDrape(S.x1+S.m/24,B.x1-T,S); TH.theatreValance(S);
       for(const y of rows)for(let i=0;i<4;i++)TH.theatreSeat(rx0+i*w,y,w,i===3);
       for(const [x,n] of [[B.x0+T,[1,0]],[B.x1-T,[-1,0]]])for(const y of [2.4,6].map(d=>B.y1-d)){ SK.bar.theatreSconce(x,y,n); LAMPS.push({x:x+n[0]*.35,y,z:68,r:3.4,c:[1,.62,.34]}); }

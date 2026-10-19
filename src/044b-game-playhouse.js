@@ -105,7 +105,7 @@ const PFONT={...STOREK.theatre.THFONT,D:'####.#...##...##...##...##...#####.',F:
   4:'...#...##..#.#.#..#.#####...#....#.',6:'..##..#...#....####.#...##...#.###.',8:'.###.#...##...#.###.#...##...#.###.'};
 const PLAYK=PLB=>{ const PLMID=(PLB.x0+PLB.x1)/2, SY=PLB.y0+7.9, ay=a=>SY+(a+48.3)*6/6.2;
 const PLS={x0:PLB.x0+.1,x1:PLB.x1-.1,SY,PRY:ay(-47.4),PRX0:PLMID-4.3,PRX1:PLMID+4.3,PRZ:90,CY:ay(-46.8),SZ:22,back:PLB.y1-.1,LEGS:[ay(-45.4),ay(-43.9)],legW:1.6,
-  rows:[1.3,2.4,3.5,4.6,5.7].map(d=>SY-d),SX0:PLMID-2.5,SX1:PLMID+2.5,lobby:PLB.y0+1.6};
+  rows:[2.4].map(d=>SY-d),SX0:PLMID-2.5,SX1:PLMID+2.5,lobby:PLB.y0+1.6};
 const PLWALLS=[SY-1.9,SY-4.3], PLCANDLES=[[PLMID-3.5,SY+.25,20],[PLMID-1.4,SY+.25,14],[PLMID+1.4,SY+.25,14],[PLMID+3.5,SY+.25,20],[PLMID+3.9,ay(-45.2),24]];
 const plMark=m=>[PLMID+m[0],PLS.CY+.5+m[1]], PLC=PLS.CY+.5;
 function playFloorCol(x,y){ if(y<PLS.lobby)return lobbyCol(x,y);

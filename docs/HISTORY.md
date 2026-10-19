@@ -2646,3 +2646,5 @@ not have windows, make sure buildings are only as tall as they need to be"; then
 - **The frog on his scooter** (owner, 19 Oct 2026: "make this guy 1.5 x bigger, make him drive on the bike line up and down the
   street both sides, slowly"): 1.725 m (was 1.15), speed 0.7; he rides east in the south bike lane, turns, rides west in the north one,
   between the ring road and the avenue, round and round (out of `LIVES`).
+- **The park's wall casts its shadow** (owner, 19 Oct 2026, of the wall by the mushroom stall: "the shadowless wall"): the park's
+  painted pieces (wall, piers, kerbs) are built with `BATCH.cast` on, so they draw into the sun's still shadow.

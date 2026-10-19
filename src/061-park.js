@@ -205,5 +205,5 @@ await grab('park',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.ox=P
   const sol=(x0,y0,x1,y1,h)=>{ SOL.up.push([X(x0),Z(y0),X(x1),Z(y1)]); FIX.up.push([X(x0),Z(y0),0,X(x1),Z(y1),Y(h)]); };
   for(const [x0,y0,x1,y1] of RUNS)sol(x0,y0,x1,y1,WH); for(const [,,x0,y0,x1,y1] of PIERS)sol(x0-.14,y0-.14,x1+.14,y1+.14,PH+18);
   FOUNT.paint({flat,X,Z,Y,hash,grain,speck});
-  BATCH.build((k,map,emap)=>new THREE.MeshLambertMaterial({map,emissiveMap:emap||null,emissive:emap?new THREE.Color(1,1,1):new THREE.Color(0,0,0),alphaTest:.5,side:THREE.DoubleSide}));
+  BATCH.cast=true; BATCH.build((k,map,emap)=>new THREE.MeshLambertMaterial({map,emissiveMap:emap||null,emissive:emap?new THREE.Color(1,1,1):new THREE.Color(0,0,0),alphaTest:.5,side:THREE.DoubleSide})); BATCH.cast=false;
   MODS.park={BOUND:{x0:X(P.x0+.3),x1:X(P.x1-.3),z0:Z(P.y0),z1:Z(P.y1-.3)},inside:()=>false}; });

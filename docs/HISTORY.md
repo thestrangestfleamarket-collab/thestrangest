@@ -1748,3 +1748,29 @@ FIXED, NO, each report with its words, where, PICTURE and GO THERE (puts you at 
 For now nothing is fixed on its own: every report waits in NEW for the owner to APPROVE. A session asked to "work the queue" takes the
 APPROVED ones (see CLAUDE.md), fixes each, and marks it FIXED. The 16 reports already in `bug_reports` are from the old 2D game.
 `tests/bugcheck.cjs art|site` sends one with a stand-in store and approves it.
+
+## 19 Oct 2026: THE BAR and the MUSEUM OF EARTH on the main row
+
+**The bar, exactly as it was, and the museum, back, west of the apartment house** (owner, 19 Oct 2026: "lets add the bar, exactly as it
+was, the museum, also back, on main street on other side of hotel"; "hotel = apartment"; plan A of https://claude.ai/artifact/Hn7uCZXHTpjgfqwvnZLQFa):
+- **Where** (`WROW` in `006-map-pre.js`, building units; tiles are 72 + (u - 72) x 1.1): THE BAR at x 10.8-20.8 (tiles 4.9-15.9), its door on
+  the main street as before; MUSEUM OF EARTH at x 22.6-48.6 (tiles 17.7-46.3), its front 3 back from the sidewalk with the portico (steps,
+  four columns, the entablature and pediment) between it and the sidewalk. Gaps of about 2 tiles to each other and to the apartment house
+  (for the gates). The museum is 21 deep (to tile y -103.4): deeper than the row, over the alley's asphalt where the alley has no buildings
+  (west of x 48); the alley there ends at its east wall.
+- **The bar**: `'bar'` out of `AWAY0`; the room, its stage and the band (pianist, singer, drummer one at a time; the guitarist untouched, on
+  the street) as they were, the same code. Its lives, walkers, residents, BARKEEP and the menu's entry come back with it. The map editor moves it.
+- **The museum**: the old game's own makers copied in (`044b-f-game-x-museum-*`: the stone, the floors, the walls' pictures (the titles, Egypt's
+  frieze, the Lascaux wall, the fossil wall), the banners, the bronze doors' surround, the portico, the hall's columns, the desk, the bench and
+  every exhibit; its plan `MUS` from the land file, `044a`), set out as the old game placed them, the whole turned a half turn so the front
+  faces the main street (`placeAt`). The doors are a real doorway now (2.5 wide), into the great hall; the galleries through the arches. The
+  T. rex (out since 16 Oct), the rope and the khipu (never placed) and the plaques' texts (no card shows them here) not copied. The mammoth's
+  scan in blocks three times coarser (`data/museum.json`, `tools/scan-trim.py` from `data/full/museum-scans.json`): 1,021 boxes, not 12,267.
+  CURATOR its job. MORE PLACES: THE BAR, MUSEUM OF EARTH.
+- **The room rules**: each its own room (`store.js`'s `room`): near walls cut to the foot, only your room drawn from inside; the museum's
+  inner walls cut on your side of them (`dyn`: the wall's side follows where you stand). `rec()` makes a room's record and menu entry before
+  it is built, so the menu, lives and walkers know it from the start.
+- **Cost**: the museum about 18,000 triangles (the mammoth 10,000 of them), the bar's room about 30,000 and one musician at a time (at most
+  27,500); 13 lamp records for the museum, the bar's as before, all in LITE's pool (its 8 nearest, from inside only), no new shadow lamp, no
+  new shader program. Nothing at the loading line: both are built after the game opens (`STEPS`), the museum in seven steps, the band after
+  the bar (before, the bar and the band were built at the loading line).

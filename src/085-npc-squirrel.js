@@ -31,7 +31,7 @@ const SQUIRREL={}; window.SQUIRREL=SQUIRREL;
       const t=A.t||0, sc=A.act==='scan'?k:0, sa=A.act==='salute'?k:0;
       if(sc){ B.armL.rotation.x=-2.5*sc; B.armL.rotation.z=-.15+.55*sc; B.armL.scale.set(1+.25*sc,1+.45*sc,1+.25*sc); B.head.rotation.y=Math.sin(t*.7)*.9*sc+c.look*(1-sc); B.head.rotation.x=-.08*sc; B.hips.rotation.x=.08*sc; }
       if(sa){ const u=t<.25?t/.25:t<1.4?1:Math.max(0,1-(t-1.4)/.3); B.armL.rotation.x=-2.6*u*sa; B.armL.rotation.z=-.15+.9*u*sa; B.armL.scale.set(1+.2*u*sa,1+.4*u*sa,1+.2*u*sa); B.armR.rotation.x-=.35*u*sa; B.hips.position.y+=.012*u*sa; B.head.rotation.y*=1-u; }
-      if(A.wk>.01){ const q=A.wk; B.armL.rotation.x=-.6*q; B.armL.rotation.z=-.15-2.05*q+Math.sin(c.t*11)*.45*q; B.armL.scale.set(1+.15*q,1+.35*q,1+.15*q); B.head.rotation.z=.12*q; B.head.rotation.y*=1-q; }
+      if(A.wk>.01){ const q=A.wk; B.armL.rotation.x=.45*q; B.armL.rotation.z=-.15-2.25*q+Math.sin(c.t*11)*.45*q; B.armL.scale.set(1+.15*q,1+.35*q,1+.15*q); B.head.rotation.z=.12*q; B.head.rotation.y*=1-q; }
       c.vT=(c.vT??6)-dt; if(c.vT<0){ c.up=!c.up; c.vT=c.up?2.5+Math.random()*2:7+Math.random()*9; } if(A.act==='wave'||A.act==='scan')c.up=true; c.vis=(c.vis||0)+((c.up?1:0)-(c.vis||0))*Math.min(1,dt*6); B.visor.rotation.x=-1.2*c.vis; } };
   const A={act:'',t:0}, G=GTOWER.ring(), S=GTOWER.site(), PI=Math.PI;
   const RR=G?G.RI-.36:0, rp=a=>({x:G.X(G.cx+Math.cos(a)*RR),z:G.Z(G.cy+Math.sin(a)*RR)}), angOf=(x,z)=>Math.atan2((z-G.Z(G.cy))/TILE,(x-G.X(G.cx))/TILE), wrap=a=>((a+PI*3)%(PI*2))-PI;

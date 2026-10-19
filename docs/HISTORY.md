@@ -2646,3 +2646,12 @@ not have windows, make sure buildings are only as tall as they need to be"; then
 - **The frog on his scooter** (owner, 19 Oct 2026: "make this guy 1.5 x bigger, make him drive on the bike line up and down the
   street both sides, slowly"): 1.725 m (was 1.15), speed 0.7; he rides east in the south bike lane, turns, rides west in the north one,
   between the ring road and the avenue, round and round (out of `LIVES`).
+- **The park's wall casts its shadow** (owner, 19 Oct 2026, of the wall by the mushroom stall: "the shadowless wall"): the park's
+  painted pieces (wall, piers, kerbs) are built with `BATCH.cast` on, so they draw into the sun's still shadow.
+- **The mushroom stand** (owner, 19 Oct 2026: "nothing on ground besisde muhsrhoom merchants, make his stack of rows go 2 more higher ,
+  diff kinds, some glow at night"): the log, the stump and the two baskets on the ground are gone; the stand's back rises to 2.58 with
+  two more shelves (2.0, 2.4) of new kinds: ghost caps (violet, glowing), amethyst violets, embers (orange, glowing), oysters and
+  sulphur shelf. The glowing caps are dim by day and bright after dark.
+- **The far buildings steady** (owner, 19 Oct 2026: "thedark spots on buildings shift every frame so it just looks glitchy"): the far
+  skyline's window pattern turns to its even average colour sooner (when a window cell is a third of a pixel, was a full pixel), so the
+  small windows no longer crawl as the view moves.

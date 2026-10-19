@@ -7,7 +7,12 @@ const STALL=(()=>{ const M=TILE/.84, VS=ZU*24/TILE, mv=m=>m*M*VS;
     inkcap:{s:.03,h:1.6,f:(p,s)=>{ p('cyl',0xe6e0d0,0,s*.8,0,s*.8,s*3.4,s*.8,Math.PI/2); }},
     bolete:{s:.055,h:1.4,f:(p,s)=>{ p('cyl',0xd8c4a0,0,s*.45,0,s*.45,s*.9,s*.45); p('cap',0x7a4a24,0,s*.85,0,s,s*.55,s); }},
     morel:{s:.03,h:2.2,f:(p,s)=>{ p('cyl',0xe2d4b4,0,s*.35,0,s*.4,s*.7,s*.4); p('cone',0x5e4428,0,s*1.5,0,s*.75,s*1.8,s*.75); }},
-    moonglow:{s:.035,h:1.5,f:(p,s)=>{ p('cyl',0x9fe8f0,0,s*.5,0,s*.3,s,s*.3,0,1); p('cap',0x48d8f0,0,s*.9,0,s,s*.6,s,0,1); }}};
+    moonglow:{s:.035,h:1.5,f:(p,s)=>{ p('cyl',0x9fe8f0,0,s*.5,0,s*.3,s,s*.3,0,1); p('cap',0x48d8f0,0,s*.9,0,s,s*.6,s,0,1); }},
+    ghostcap:{s:.04,h:1.5,f:(p,s)=>{ p('cyl',0xe8ddf6,0,s*.5,0,s*.28,s,s*.28,0,1); p('cap',0xc8a8ff,0,s*.95,0,s,s*.7,s,0,1); }},
+    ember:{s:.035,h:1.6,f:(p,s)=>{ p('cyl',0xffd8a0,0,s*.5,0,s*.3,s,s*.3,0,1); p('cone',0xff8a2a,0,s*1.1,0,s*.8,s*.9,s*.8,0,0,1); }},
+    oyster:{s:.05,h:1,f:(p,s,r)=>{ p('cap',0xb8b4aa,0,s*.4,0,s,s*.3,s*.7,.5); p('cap',0x9a968c,s*.5,s*.6,0,s*.7,s*.25,s*.5,.6); }},
+    violet:{s:.035,h:1.5,f:(p,s)=>{ p('cyl',0x8a5ab8,0,s*.5,0,s*.28,s,s*.28); p('cap',0x6a2a9a,0,s*.9,0,s,s*.55,s); }},
+    sulphur:{s:.05,h:1,f:(p,s)=>{ p('cap',0xf0b828,0,s*.4,0,s,s*.3,s*.8,.4); p('cap',0xe8781e,0,s*.75,0,s*.8,s*.25,s*.6,.4); }}};
   const VEG={
     tomato:{s:.04,h:1.7,f:(p,s)=>{ p('ball',0xcc3420,0,s*.85,0,s,s*.85,s); p('ball',0x3e8a2a,0,s*1.6,0,s*.35,s*.15,s*.35); }},
     pepper:{s:.045,h:2,f:(p,s,r,R)=>{ p('ball',[0x2f8a2a,0xd8b028,0xc8321e][Math.floor(R()*3)],0,s,0,s,s*1.1,s); }},
@@ -52,11 +57,12 @@ const STALL=(()=>{ const M=TILE/.84, VS=ZU*24/TILE, mv=m=>m*M*VS;
           const cx=(pa+pb)/2, cy=(pc+pd)/2, w=(pb-pa)*.9, dd=(pd-pc)*.82;
           if(st===2&&ki.i%4===0)basket(K,cx,cy,sh,.11,6); else heap(K,cx,cy,sh,w,dd,Math.round(many(K,w,dd)*.6)); } } };
     const RW=veg?[KS.potato,KS.cabbage,KS.tomato,KS.eggplant]:[KS.puffball,KS.chanterelle,KS.redcap,KS.moonglow], RH=[.24,H,1.2,1.6];
-    legs(xa,xb,ya,yb,H-.05); box(xa,xb,ya,yb,H-.05,H,WOOD); box(xa+.04,xb-.04,ya+.04,yb-.04,.2,.24,DARK); box(xa,xb,yb-.035,yb,H,1.78,DARK);
+    const TOP=veg?1.78:2.58; legs(xa,xb,ya,yb,H-.05); box(xa,xb,ya,yb,H-.05,H,WOOD); box(xa+.04,xb-.04,ya+.04,yb-.04,.2,.24,DARK); box(xa,xb,yb-.035,yb,H,TOP,DARK);
     box(xa,xb,yb-.5,yb,1.15,1.2,WOOD); box(xa,xb,yb-.3,yb,1.55,1.6,WOOD);
-    for(const u of [xa,(xa+xb)/2-.04,xb-.08]){ box(u,u+.08,yb-.5,yb-.42,H,1.15,LEG); box(u,u+.08,yb-.3,yb-.22,1.2,1.55,LEG); box(u,u+.08,yb-.1,yb-.02,H,1.78,LEG); }
-    row(RW[0],xa+.08,xb-.08,ya+.06,yb-.06,RH[0],.45); row(RW[1],xa+.04,xb-.04,ya+.03,yb-.52,RH[1],.8); row(RW[2],xa+.04,xb-.04,yb-.48,yb-.04,RH[2],.8); row(RW[3],xa+.04,xb-.04,yb-.28,yb-.04,RH[3],.9);
-    solid(xa,xb,ya,yb,1.8);
+    for(const u of [xa,(xa+xb)/2-.04,xb-.08]){ box(u,u+.08,yb-.5,yb-.42,H,1.15,LEG); box(u,u+.08,yb-.3,yb-.22,1.2,1.55,LEG); box(u,u+.08,yb-.1,yb-.02,H,TOP,LEG); if(!veg){ box(u,u+.08,yb-.24,yb-.16,1.6,1.95,LEG); box(u,u+.08,yb-.18,yb-.1,2,2.35,LEG); } }
+    if(!veg){ box(xa,xb,yb-.24,yb,1.95,2,WOOD); box(xa,xb,yb-.18,yb,2.35,2.4,WOOD); }
+    row(RW[0],xa+.08,xb-.08,ya+.06,yb-.06,RH[0],.45); row(RW[1],xa+.04,xb-.04,ya+.03,yb-.52,RH[1],.8); row(RW[2],xa+.04,xb-.04,yb-.48,yb-.04,RH[2],.8); row(RW[3],xa+.04,xb-.04,yb-.28,yb-.04,RH[3],.9); if(!veg){ row(KS.ghostcap,xa+.04,(xa+xb)/2,yb-.22,yb-.04,2,.9); row(KS.violet,(xa+xb)/2,xb-.04,yb-.22,yb-.04,2,.9); row(KS.ember,xa+.04,(xa+xb)/2,yb-.16,yb-.04,2.4,.9); row(KS.oyster,(xa+xb)/2,xb-.04,yb-.16,yb-.04,2.4,.9); row(KS.sulphur,xa+.04,xb-.04,yb-.16,yb-.04,2.4,.3); }
+    solid(xa,xb,ya,yb,veg?1.8:2.6);
     const CK=veg?[KS.carrot,KS.pepper,KS.corn,KS.onion,KS.greens,KS.tomato]:[KS.button,KS.bolete,KS.inkcap,KS.morel,KS.redcap,KS.chanterelle];
     const fx=(u0,u1)=>[Math.min(xo+fo*u0,xo+fo*u1),Math.max(xo+fo*u0,xo+fo*u1)];
     if(veg){ const SK=[KS.tomato,KS.cabbage,KS.pepper,KS.onion,KS.potato,KS.eggplant,KS.carrot,KS.corn]; let n=0;
@@ -64,15 +70,12 @@ const STALL=(()=>{ const M=TILE/.84, VS=ZU*24/TILE, mv=m=>m*M*VS;
         for(let k=0;k<hi;k++)crate(a+sh,b+sh,c,d,k*.29,k*.29+dh,[0x9a7044,0x8a6238,0xa47a4a][(n+k)%3]); heap(SK[n++%SK.length],(a+b)/2+sh,(c+d)/2,(hi-1)*.29+dh-.08,(b-a)*.82,(d-c)*.8,9); solid(a,b,c,d,hi*.29); }
       const [pa,pb]=fx(.1,.95); for(let k=0;k<6;k++)item(KS.pumpkin,X(RR(pa,pb)),0,Z(RR(CY0-.1,CY0+.7)),KS.pumpkin.s*RR(.8,1.2),RR(0,6)); solid(pa,pb,CY0-.1,CY0+.7,.3);
       sack(fx(.4,.4)[0],wy-2.1); sack(fx(.85,.85)[0],wy-2.05,0xb89a6a); solid(...fx(.15,1.1),wy-2.35,wy-1.8,.5); }
-    else { const [la,lb]=fx(.1,1.15), lz=Z(wy-.22); inst('cyl',0x6a4a2e,X((la+lb)/2),mv(.17),lz,mv(.17),(lb-la)*TILE,.17*M,0,0,Math.PI/2); for(let k=0;k<11;k++)item(MUSH.chanterelle,X(RR(la+.1,lb-.1)),.3,lz+RR(-.07,.07)*M,.04,0);
-      solid(la,lb,wy-.42,yb,.35); const [sa]=fx(.55,.55); inst('cyl',0x5a3e24,X(sa),mv(.2),Z(CY0+.3),.2*M,mv(.4),.2*M); for(let k=0;k<7;k++)item(MUSH.bolete,X(sa)+RR(-.12,.12)*M,.4,Z(CY0+.3)+RR(-.12,.12)*M,.05,0); solid(sa-.28,sa+.28,CY0,CY0+.6,.4);
-      basket(KS.button,fx(.45,.45)[0],wy-1.25,0,.16,12); basket(KS.redcap,fx(.5,.5)[0],wy-1.85,0,.15,11); solid(...fx(.2,.75),wy-2.1,wy-1.0,.3); }
     { const bx=xg-gate*.16, fz=Z(wy-.46), tz=Z(yb-.04), dy=mv(1.3), dz=tz-fz, a=Math.atan2(dz,dy), L=Math.hypot(dz,dy);
       TG.push(inst('cyl',0x8a6a3e,X(bx),dy/2,(fz+tz)/2,.02*M,L,.02*M,a), inst('box',0xc8a85a,X(bx),mv(.13),fz+.02*M,.3*M,mv(.26),.07*M,a), inst('box',0x9a3a2a,X(bx),mv(.27),fz+.05*M,.2*M,mv(.04),.06*M,a)); }
     const grp=(typeof MAPG!=='undefined'&&MAPG.park)||scene, c=new THREE.Color(), ME={}; let tris=0;
     const lam=new THREE.MeshLambertMaterial({color:0xffffff}), glow=new THREE.MeshBasicMaterial({color:0xffffff});
     for(const [g,L] of Object.entries(I)){ if(!L.length)continue; const geo=G[g==='glow'?'cap':g], me=ME[g]=new THREE.InstancedMesh(geo,g==='glow'?glow:lam,L.length);
-      L.forEach(([m,col],i)=>{ me.setMatrixAt(i,m); me.setColorAt(i,c.setHex(col)); }); me.computeBoundingSphere&&me.computeBoundingSphere(); me.castShadow=g!=='glow'; me.receiveShadow=true; grp.add(me);
+      L.forEach(([m,col],i)=>{ me.setMatrixAt(i,m); me.setColorAt(i,c.setHex(col)); }); me.computeBoundingSphere&&me.computeBoundingSphere(); me.castShadow=g!=='glow'; me.receiveShadow=true; if(g==='glow')me.onBeforeRender=()=>{ glow.color.setScalar(CLOCK.dark&&CLOCK.dark()?1.25:.55); }; grp.add(me);
       tris+=L.length*(geo.index?geo.index.count:geo.attributes.position.count)/3; }
     const W=(x,y)=>({x:X(x),z:Z(y)}), HY=(CY1+ya)/2, sg=gate, far=wy-9, zone=[BX[0]-.7*TILE,Math.min(Z(CY0-1.4),Z(wy+.5)),BX[2]+.7*TILE,Math.max(Z(CY0-1.4),Z(wy+.5))];
     zones.push(zone); if(window.WEEDS&&WEEDS.clear)WEEDS.clear(zone);

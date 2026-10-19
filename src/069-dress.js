@@ -33,7 +33,7 @@ const DRESS=window.DRESS={}, TLX={tick:()=>{}};
       solid(x,z,.3*M,T8); POLES.push({x,z,d:-1,ax:'z',ring:'inner',y:y+T8-.6*M,h:L2[0][1],h2:L2[1][1],L:L2[0][0],L2:L2[1][0],corner:1}); DRESS.corner={x,z,y,lamps:L2.map(q=>q[0])}; }
     const wz=BOD.ZS(PARK.y0+PARK.oy), pz=far+.95*M, g0=BOD.XS(PARK.gate[0]+PARK.ox), g1=BOD.XS(PARK.gate[1]+PARK.ox), pts=[[g0-.9*M,pz],[g1+.9*M,pz]], px1=BOD.XS(PARK.x1+PARK.ox)-2;
     for(let x=g0-28*M;x>BOD.XS(PARK.x0+PARK.ox)+2;x-=28*M)pts.push([x,pz]); for(let x=g1+28*M;x<px1;x+=28*M)pts.push([x,pz]);
-    { const A=MODS.apts&&MODS.apts.A, dz=[BOD.X((BOD.B0.x0+BOD.B0.x1)/2),A?BOD.X(A.x1-1):1e9,BOD.XS((MAPSTAIR.x0+MAPSTAIR.x1)/2),...(STORE.main?STORE.main.doors.map(d=>d[1]):[])], sz=sw-.75*M;
+    { const A=MODS.apts&&MODS.apts.A, dz=[BOD.X((BOD.B0.x0+BOD.B0.x1)/2),A?BOD.X(MODS.apts.DX!=null?MODS.apts.DX:A.x1-1):1e9,BOD.XS((MAPSTAIR.x0+MAPSTAIR.x1)/2),...(STORE.main?STORE.main.doors.map(d=>d[1]):[])], sz=sw-.75*M;
       for(let x=g0-14*M;x>BOD.XS(BLOCK.x0)+2*M;x-=28*M)if(dz.every(d=>Math.abs(d-x)>2.5*M))pts.push([x,sz]); for(let x=g0+14*M;x<BOD.XS(BLOCK.x1)-2*M;x+=28*M)if(dz.every(d=>Math.abs(d-x)>2.5*M))pts.push([x,sz]); }
     { const ax=BOD.XS(AVE.r0)-.95*M, z0=BOD.ZS(BOD.MAP.y1)+5*M, z1=BOD.ZS(AVE.y1)-2; for(let z=z0;z<z1;z+=28*M)pts.push([ax,z]); }
     { const clear=([x,z])=>heads.every(([hx,,hz])=>Math.hypot(hx-x,hz-z)>2.6*M); for(let i=pts.length-1;i>=0;i--)if(!clear(pts[i]))pts.splice(i,1); }
@@ -82,7 +82,7 @@ const DRESS=window.DRESS={}, TLX={tick:()=>{}};
       const rail=(a,b)=>{ const y=G((a+b)/2,z); for(const h of [.42*M,.9*M])blk((a+b)/2,y+h,z,b-a,.06*M,.05*M,RL); SOL.up.push([a,z-.06*M,b,z+.06*M]); FIX.up.push([a,z-.06*M,y,b,z+.06*M,y+H]); };
       for(const [a,b] of runs)rail(a,b); }
     { const M=1/.84*TILE, A=MODS.apts&&MODS.apts.A, zk=BOD.ZS(BOD.CURB), sd=Math.sign(zk)||1, hsh=(a,b)=>{ const v=Math.sin(a*12.9898+b*78.233)*43758.5453; return v-Math.floor(v); };
-      const clear=(x,z)=>!(window.MAPSTAIR&&MAPSTAIR.has&&MAPSTAIR.has(x,z,'up'))&&(DRESS.pools||[]).every(P=>Math.hypot(P[1]-x,P[2]-z)>2.4*M)&&!SOL.up.some(b=>x>b[0]-.9*M&&x<b[2]+.9*M&&z>b[1]-.9*M&&z<b[3]+.9*M)&&[BOD.X((BOD.B0.x0+BOD.B0.x1)/2),A?BOD.X(A.x1-1):1e9,BOD.XS((MAPSTAIR.x0+MAPSTAIR.x1)/2),...(STORE.main?STORE.main.doors.map(d=>d[1]):[])].every(d=>Math.abs(d-x)>7*M);
+      const clear=(x,z)=>!(window.MAPSTAIR&&MAPSTAIR.has&&MAPSTAIR.has(x,z,'up'))&&(DRESS.pools||[]).every(P=>Math.hypot(P[1]-x,P[2]-z)>2.4*M)&&!SOL.up.some(b=>x>b[0]-.9*M&&x<b[2]+.9*M&&z>b[1]-.9*M&&z<b[3]+.9*M)&&[BOD.X((BOD.B0.x0+BOD.B0.x1)/2),A?BOD.X(MODS.apts.DX!=null?MODS.apts.DX:A.x1-1):1e9,BOD.XS((MAPSTAIR.x0+MAPSTAIR.x1)/2),...(STORE.main?STORE.main.doors.map(d=>d[1]):[])].every(d=>Math.abs(d-x)>7*M);
       const OAK=[], PL=[], PITS=[], tp=(x,z)=>[x/TILE+BOD.OX-PARK.ox,z/TILE+BOD.OY-PARK.oy];
       const tree=(x0,i,big)=>{ const z=zk-sd*1.05*M; let x=x0; for(let k=0;k<30&&!clear(x,z);k++)x+=(k&1?-1:1)*(k+1)*.6*M; if(!clear(x,z))return; const y=G(x,z), P=(big?1.6:1.35)*M, SET=0xa8a49c, IRN=0x1e2824, g=P/2-.05*M, gh=.42*M;
         [[0,-P/2,P+.16*M,.16*M],[0,P/2,P+.16*M,.16*M],[-P/2,0,.16*M,P],[P/2,0,.16*M,P]].forEach(([dx,dz,w,d],j)=>blk(x+dx,y+.035*M+.01*M*hsh(i,j),z+dz,w,.07*M,d,[SET,0x9c9890,0xb0aca2,0xa4a096][j]));

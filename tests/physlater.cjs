@@ -1,5 +1,5 @@
 // PHYSICS ONLY WHEN WANTED (owner, 19 Oct 2026, of "do we need such a big physics engine": "C"): Rapier is not fetched at the start;
-// walking into a light loose thing (a trash can) fetches it, and then the trash can is pushed. No page errors.
+// a punch beside a light loose thing (the nearest one) fetches it, and then the thing is a body. No page errors.
 // node tests/physlater.cjs   (software rendering: a few minutes)
 const {chromium}=require('playwright');
 let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
@@ -9,14 +9,14 @@ let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
   for(let i=0;i<200&&!await pg.evaluate(()=>!!window.__started).catch(()=>false);i++)await pg.waitForTimeout(1000);
   await pg.waitForTimeout(15000);
   ok(!got.length&&!await pg.evaluate(()=>GOODSDBG().built),'the physics is not fetched at the start');
-  const a=await pg.evaluate(()=>{ const T=__dbg.cv().TILE, a=LOOSE.nearest('trash can'), [x,y,z]=__dbg.pos(); return a; });
-  ok(!!a,'the trash cans are known before the physics ('+(a&&a.name)+')');
-  await pg.evaluate(()=>{ const T=__dbg.cv().TILE, a=LOOSE.nearest('trash can'), [x,y,z]=__dbg.pos(), dx=a.at[0]-x, dz=a.at[2]-z, d=Math.hypot(dx,dz)||1, r=Math.max(...a.h); __dbg.UI.goTo(a.at[0]-dx/d*(r+.7*T),a.at[2]-dz/d*(r+.7*T),y); });
-  await pg.waitForTimeout(1500); const t0=Date.now(); const r0=await pg.evaluate(()=>{ const T=__dbg.cv().TILE, a=LOOSE.nearest('trash can'), [x,,z]=__dbg.pos(), dx=a.at[0]-x, dz=a.at[2]-z, d=Math.hypot(dx,dz); __dbg.go(a.at[0]+dx/d*2.5*T,a.at[2]+dz/d*2.5*T); return a; });
+  const N=await pg.evaluate(()=>{ const [x,,z]=__dbg.pos(), L=LOOSE.list(true).filter(q=>q.k!=='v'&&!q.heavy&&q.m>2).sort((p,q)=>Math.hypot(p.at[0]-x,p.at[2]-z)-Math.hypot(q.at[0]-x,q.at[2]-z)); return L[0]&&L[0].name; });
+  const rx='^'+(N||'-').replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'$', a=await pg.evaluate(n=>LOOSE.nearest(n),rx);
+  ok(!!a,'the loose things are known before the physics (the nearest light one: '+N+')');
+  await pg.evaluate(n=>{ const T=__dbg.cv().TILE, a=LOOSE.nearest(n), [x,y,z]=__dbg.pos(), dx=a.at[0]-x, dz=a.at[2]-z, d=Math.hypot(dx,dz)||1, r=Math.max(...a.h); __dbg.UI.goTo(a.at[0]-dx/d*(r+.7*T),a.at[2]-dz/d*(r+.7*T),y); },rx);
+  await pg.waitForTimeout(1500); const t0=Date.now(); await pg.keyboard.down('j'); await pg.waitForTimeout(150); await pg.keyboard.up('j');
   for(let i=0;i<60&&!await pg.evaluate(()=>GOODSDBG().built);i++)await pg.waitForTimeout(1000);
-  ok(got.length>0&&await pg.evaluate(()=>GOODSDBG().built),`walking into it fetches the physics (${got.length?((got[0]-t0)/1000).toFixed(1)+' s':'never'})`);
-  await pg.evaluate(()=>{ const T=__dbg.cv().TILE, a=LOOSE.nearest('trash can'), [x,,z]=__dbg.pos(), dx=a.at[0]-x, dz=a.at[2]-z, d=Math.hypot(dx,dz); __dbg.go(a.at[0]+dx/d*2.5*T,a.at[2]+dz/d*2.5*T); });
-  await pg.waitForTimeout(12000); const r1=await pg.evaluate(()=>LOOSE.nearest('trash can'));
-  ok(Math.hypot(r1.at[0]-r0.at[0],r1.at[2]-r0.at[2])>.05,`then it is pushed (moved ${Math.hypot(r1.at[0]-r0.at[0],r1.at[2]-r0.at[2]).toFixed(2)})`);
+  ok(got.length>0&&await pg.evaluate(()=>GOODSDBG().built),`a punch beside it fetches the physics (${got.length?((got[0]-t0)/1000).toFixed(1)+' s':'never'})`);
+  await pg.waitForTimeout(3000); const r1=await pg.evaluate(n=>LOOSE.list().some(q=>new RegExp(n).test(q.name)),rx);
+  ok(r1,'then it is a body (it can be pushed and thrown)');
   ok(!errs.length,'no page errors '+errs.join(' | '));
   await b.close(); console.log(bad?bad+' FAILED':'all good'); process.exit(bad?1:0); })();

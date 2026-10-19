@@ -1,5 +1,5 @@
 # THE UAL CLIPS ON THE PAWNS (owner, 17 Oct 2026: "match this same rig skeleton ... give them all the same stuff"): the UAL1 animation library's
-# 43 clips (data/full/ual.json: the mannequin's Unreal-style rig of 65 bones) retold on the twelve pawn characters' rig (data/pawns.json: RigPawn,
+# 43 clips (data/ual.json: the mannequin's Unreal-style rig of 65 bones) retold on the twelve pawn characters' rig (data/pawns.json: RigPawn,
 # 16 bones: pelvis, spine, head, two free hands, each leg a thigh, a calf (each with a twist bone) and a foot). Each pawn bone follows one
 # mannequin bone: it turns in the world as that bone turns away from its rest (both rigs rest in the same T: hands out, legs straight), put
 # back under its parent; a twist bone keeps its rest. The hands, free of any arm, go where the mannequin's hands go, the distance from the
@@ -7,7 +7,7 @@
 # (the twelve share one rig and one clip set), named UAL_<clip>.  Run: python3 tools/retarget-ual.py
 import json, base64, numpy as np
 b64=lambda a:base64.b64encode(np.ascontiguousarray(a).tobytes()).decode(); dec=lambda s,dt:np.frombuffer(base64.b64decode(s),dt)
-U=json.load(open('data/full/ual.json'))['ual']; PW=json.load(open('data/pawns.json')); PR=PW['hero_m']['rig']; UR=U['rig']
+U=json.load(open('data/ual.json'))['ual']; PW=json.load(open('data/pawns.json')); PR=PW['hero_m']['rig']; UR=U['rig']
 def q2m(q):
     x,y,z,w=q; return np.array([[1-2*(y*y+z*z),2*(x*y-z*w),2*(x*z+y*w)],[2*(x*y+z*w),1-2*(x*x+z*z),2*(y*z-x*w)],[2*(x*z-y*w),2*(y*z+x*w),1-2*(x*x+y*y)]])
 def m2q(R):

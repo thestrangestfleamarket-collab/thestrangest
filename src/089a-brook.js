@@ -1,0 +1,96 @@
+const BROOK={}; window.BROOK=BROOK;
+{ const go=()=>{ if(typeof PARK==='undefined'||!PARK.fire||!PARK.brook||!MODS.land)return setTimeout(go,500);
+    const P=PARK, BK=P.brook, {C,N,SL,B,W,L,D,RF}=BK, T=TILE, WU=T/.84, G0=-.5*ZU, X=x=>BOD.XS(x+(P.ox||0)), Z=y=>BOD.ZS(y+(P.oy||0)), grp=(typeof MAPG!=='undefined'&&MAPG.park)||scene;
+    const hs=(i,s)=>{ const v=Math.sin(i*12.9898+s*78.233)*43758.5453; return v-Math.floor(v); }, ss=(a,b,v)=>{ const t=Math.max(0,Math.min(1,(v-a)/(b-a))); return t*t*(3-2*t); };
+    const bed=(x,y)=>{ const v=BK.h(x,y); return v==null?0:v; }, E=Math.ceil((W(SL)+B+1)/.5), row=k=>{ const kc=Math.max(0,Math.min(N,k)), c=C[kc], [nx,ny]=BK.nrm(kc), tx=ny, ty=-nx, o=(k-kc)*SL/N; return [c[0]+tx*o,c[1]+ty*o,c[2],nx,ny]; };
+    const pool=s=>ss(SL-18,SL-6,s), rif=s=>RF.reduce((a,r)=>a+Math.exp(-(((s-r)/1.3)**2)),0), spd=s=>Math.max(.12,1+1.6*rif(s)-.9*pool(s));
+    const tau=new Float32Array(N+1); for(let k=1;k<=N;k++)tau[k]=tau[k-1]+(SL/N)/spd(C[k][2]);
+    const CH=Math.ceil(N/40), banks=[], waters=[], U={uT:{value:0},uDay:{value:1},uSky:{value:new THREE.Color(.5,.62,.75)},uSun:{value:new THREE.Color(1,1,1)},uMe:{value:new THREE.Vector4()}};
+    const bankMat=new THREE.MeshLambertMaterial({map:MODS.land.material.map,vertexColors:true,polygonOffset:true,polygonOffsetFactor:1,polygonOffsetUnits:1});
+    bankMat.onBeforeCompile=sh=>{ sh.vertexShader='attribute float aWet; varying float vWet;\n'+sh.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\n vWet=aWet;');
+      sh.fragmentShader='varying float vWet;\n'+sh.fragmentShader.replace('#include <map_fragment>','float wq=step(.5+.35*(fract(sin(dot(floor(vWP.xz*6.),vec2(127.1,311.7)))*43758.5453)-.5),vWet);\n vec4 sampledDiffuseColor=texture2D(map,vMapUv); diffuseColor*=mix(sampledDiffuseColor,vec4(1.),wq);')
+        .replace('#include <color_fragment>','#include <color_fragment>\n if(wq>.5){ float pb=fract(sin(dot(floor(vWP.xz*9.),vec2(12.9898,78.233)))*43758.5453); diffuseColor.rgb*=pb>.8?1.18:pb<.2?.82:1.; } else diffuseColor.rgb=sampledDiffuseColor.rgb;'); };
+    bankMat.customProgramCacheKey=()=>'brookbank';
+    const LT=[0,.1,.2,.29,.37,.45,.53,.61,.69,.77,.85,.93,1];
+    for(let ci=0;ci<CH;ci++){ const k0=ci*40-(ci===0?E:0), k1=Math.min(N,ci*40+40)+(ci===CH-1?E:0), V=[], UV=[], CO=[], WT=[], I=[], RS=2, rows=[];
+      for(let k=k0;k<=k1;k+=RS)rows.push(k); if(rows[rows.length-1]!==k1)rows.push(k1);
+      const nl=LT.length*2-1; rows.forEach((k,ri)=>{ const [cx,cy,s,nx,ny]=row(k), R=W(s)+B+.5, lv=L(s);
+        for(let li=0;li<nl;li++){ const f=li<LT.length-1?-LT[LT.length-1-li]:LT[li-LT.length+1], x=cx+nx*f*R, y=cy+ny*f*R, h=bed(x,y), wx=X(x), wz=Z(y);
+          V.push(wx,h*WU+G0,wz); UV.push(wx/T,-wz/T); const wet=1-ss(lv+.05,lv+.15,h); WT.push(wet); CO.push(...(h<lv-.02?[.5,.47,.41]:[.6,.52,.4]));
+          if(ri&&li){ const a=(ri-1)*nl+li-1, b=a+1, c=ri*nl+li-1, d=c+1; I.push(a,b,c,b,d,c); } } });
+      const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(V,3)); g.setAttribute('uv',new THREE.Float32BufferAttribute(UV,2)); g.setAttribute('color',new THREE.Float32BufferAttribute(CO,3)); g.setAttribute('aWet',new THREE.Float32BufferAttribute(WT,1)); g.setIndex(I); g.computeVertexNormals();
+      const me=new THREE.Mesh(g,bankMat); me.receiveShadow=true; grp.add(me); banks.push(me);
+      const WV=[], WF=[], WI=[], WL=[-1,-.66,-.33,0,.33,.66,1];
+      for(let k=k0,ri=0;k<=k1;k++,ri++){ const [cx,cy,s,nx,ny]=row(k), R=W(s)+.75*B, lv=L(s), kc=Math.max(0,Math.min(N,k));
+        WL.forEach((f,li)=>{ const x=cx+nx*f*R, y=cy+ny*f*R; WV.push(X(x),lv*WU+G0+.004,Z(y)); WF.push(tau[kc]+(k-kc)*.5,f*R,lv-bed(x,y),spd(s)); if(ri&&li){ const a=(ri-1)*7+li-1, b=a+1, c=ri*7+li-1, d=c+1; WI.push(a,b,c,b,d,c); } }); }
+      const wg=new THREE.BufferGeometry(); wg.setAttribute('position',new THREE.Float32BufferAttribute(WV,3)); wg.setAttribute('aF',new THREE.Float32BufferAttribute(WF,4)); wg.setIndex(WI);
+      waters.push({g:wg,k0,k1,rk:[]}); }
+    const RK=[], STP=[], PB=[], col=[], add=(x,y,r,sy,top,kind)=>RK.push({x,y,r,sy,top,kind,sd:RK.length});
+    const sideAt=(k,f,d)=>{ const c=C[k], [nx,ny]=BK.nrm(k); return [c[0]+nx*f*d,c[1]+ny*f*d]; }, kAt=s=>Math.max(0,Math.min(N,Math.round(s/SL*N))), nearBr=s=>Math.abs(s-C[BK.br.k][2])<BK.br.S+3;
+    for(let i=0;i<10;i++){ const a=-Math.PI*.15+i/9*Math.PI*1.3+hs(i,1)*.3, k=0, [nx,ny]=BK.nrm(0), ba=Math.atan2(ny,nx)+Math.PI*.5+a, r=W(0)+.4+hs(i,2)*1.4, m=.55+hs(i,3)*.75;
+      add(C[0][0]+Math.cos(ba)*r,C[0][1]+Math.sin(ba)*r,m,.7,null,'b'); }
+    for(let s=9,i=0;s<SL-16;s+=4+hs(i,4)*5,i++){ if(nearBr(s))continue; const k=kAt(s), f=hs(i,5)<.5?1:-1, m=.4+hs(i,6)*.75, [x,y]=sideAt(k,f,W(s)+.2+hs(i,7)*.9); add(x,y,m,.65,null,'b');
+      if(hs(i,8)<.45){ const [x2,y2]=sideAt(kAt(s+1.2),f,W(s)+.9+hs(i,9)*.8); add(x2,y2,m*.6,.6,null,'b'); } }
+    for(const r of RF){ const k=kAt(r); if(nearBr(r))continue; for(let j=0,n=3+Math.floor(hs(r,1)*3);j<n;j++){ const f=-1+2*(j+.5)/n+(hs(r,j+2)-.5)*.3, m=.18+hs(r,j+9)*.22, [x,y]=sideAt(k,f,W(r)*.85); add(x,y,m,.6,.06+hs(r,j+5)*.14,'m'); } }
+    for(let i=0;i<16;i++){ const s=6+hs(i,21)*(SL-26); if(nearBr(s))continue; const k=kAt(s), [x,y]=sideAt(k,hs(i,22)*1.6-.8,W(s)); add(x,y,.2+hs(i,23)*.35,.6,.05+hs(i,24)*.2,'m'); }
+    for(const s0 of [36,88,140]){ let s=s0; while(nearBr(s)||RF.some(r=>Math.abs(r-s)<4))s+=3; const k=kAt(s), w=W(s)+.6, n=Math.max(3,Math.round(2*w/1.15));
+      for(let j=0;j<n;j++){ const f=-1+2*(j+.5)/n, [x,y]=sideAt(k,f,w), dd=hs(s,j)*.25-.12, m=.36+hs(s,j+3)*.08; add(x+dd,y-dd,m,.32,.1,'s'); } }
+    for(let i=0;i<12;i++){ const a=i/12*Math.PI*2+hs(i,31)*.4, c=C[N], r=W(SL)+.6+hs(i,32)*1.3; if(a>Math.PI*.35&&a<Math.PI*.65)continue; add(c[0]+Math.cos(a)*r,c[1]+Math.sin(a)*r,.45+hs(i,33)*.8,.6,null,'b'); }
+    for(let i=0;i<260;i++){ const s=hs(i,41)*SL, k=kAt(s); if(nearBr(s))continue; const lv=L(s), f=hs(i,42)<.5?1:-1, d0=W(s)*(.7+hs(i,43)*.7), [x,y]=sideAt(k,f,d0), h=bed(x,y); if(h>lv+.25||h<lv-.15)continue; PB.push([x,y,h,.06+hs(i,44)*.1]); }
+    const rgeo=(det,sd)=>{ const g=new THREE.IcosahedronGeometry(1,det), p=g.attributes.position; for(let i=0;i<p.count;i++){ const x=p.getX(i), y=p.getY(i), z=p.getZ(i), n=1+.12*Math.sin(x*3.1+sd)*Math.cos(z*2.7+y*1.9+sd*2)+.06*Math.sin(y*5.3+x*4.1); p.setXYZ(i,x*n,y*n,z*n); } return g; };
+    const rmat=new THREE.MeshLambertMaterial({color:0xffffff}), m4=new THREE.Matrix4(), q=new THREE.Quaternion(), e=new THREE.Euler(), cc=new THREE.Color(), V3=THREE.Vector3;
+    const NB=5, bin=(x,y)=>{ const r=BK.q(x,y); return Math.min(NB-1,Math.floor((r?r[1]:0)/SL*NB)); }, RG=rgeo(1,3), PG=new THREE.IcosahedronGeometry(1,0); BROOK.rocks=[]; BROOK.pebbles=[];
+    for(let bi=0;bi<NB;bi++){ const list=RK.filter(o=>bin(o.x,o.y)===bi), pl=PB.filter(p=>bin(p[0],p[1])===bi);
+      if(list.length){ const me=new THREE.InstancedMesh(RG,rmat,list.length);
+        list.forEach((o,i)=>{ const s=BK.q(o.x,o.y), lv=L(s?s[1]:0), wx=X(o.x), wz=Z(o.y), rx=o.r*WU, ry=o.r*o.sy*WU, g=o.top!=null?(lv+o.top)*WU-ry:bed(o.x,o.y)*WU-ry*.35, a=hs(o.sd,51)*6.28;
+          o.wx=wx; o.wz=wz; o.wr=rx; o.top3=g+ry+G0; me.setMatrixAt(i,m4.compose(new V3(wx,g+G0,wz),q.setFromEuler(e.set((hs(o.sd,52)-.5)*.25,a,(hs(o.sd,53)-.5)*.25)),new V3(rx*(.85+hs(o.sd,54)*.35),ry,rx*(.8+hs(o.sd,55)*.3))));
+          const v=.5+hs(o.sd,56)*.16, mo=o.kind==='b'&&hs(o.sd,57)<.35; me.setColorAt(i,cc.setRGB(v*(mo?.86:1),v*(mo?1:.99),v*(mo?.8:.96))); });
+        me.castShadow=true; me.computeBoundingSphere(); grp.add(me); BROOK.rocks.push(me); }
+      if(pl.length){ const me=new THREE.InstancedMesh(PG,rmat,pl.length); pl.forEach(([x,y,h,r],i)=>{ const R=r*WU; me.setMatrixAt(i,m4.compose(new V3(X(x),h*WU+G0,Z(y)),q.setFromEuler(e.set(hs(i,61)*3,hs(i,62)*3,0)),new V3(R,R*.55,R*.8))); const v=.42+hs(i,63)*.3; me.setColorAt(i,cc.setRGB(v,v*.97,v*.92)); });
+        me.computeBoundingSphere(); grp.add(me); BROOK.pebbles.push(me); } }
+    for(const o of RK){ if(o.kind==='s'){ BK.st.push([o.x,o.y,o.r*.95/.84,(o.top3-G0)/WU]); continue; } if(o.r<.3)continue; const b=o.wr*.7; SOL.up.push([o.wx-b,o.wz-b,o.wx+b,o.wz+b]); FIX.up.push([o.wx-b,o.wz-b,G0-T,o.wx+b,o.wz+b,o.top3]); }
+    const VS='attribute vec4 aF; varying vec4 vF; varying vec3 vW; void main(){ vF=aF; vec4 w=modelMatrix*vec4(position,1.); vW=w.xyz; gl_Position=projectionMatrix*viewMatrix*w; }';
+    const FS=`uniform float uT,uDay; uniform vec3 uSky,uSun; uniform vec4 uMe, uRk[24]; varying vec4 vF; varying vec3 vW;
+      float h1(vec2 p){ return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453); }
+      float vn(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.-2.*f); return mix(mix(h1(i),h1(i+vec2(1,0)),f.x),mix(h1(i+vec2(0,1)),h1(i+vec2(1,1)),f.x),f.y); }
+      void main(){ float sp=vF.w, ta=vF.x-uT*.8, u=vF.y, pl=step(sp,.3); vec2 wp=vW.xz/${T.toFixed(4)};
+        vec2 fp=mix(vec2(ta*.8,u*2.4),wp*.7+vec2(uT*.05,0.),pl); float n=vn(fp)*.65+vn(fp*2.3+7.)*.35, n2=vn(vec2(ta*2.2,u*5.)+3.);
+        vec3 deep=vec3(.05,.13,.17)*(.3+.7*uDay), sky=uSky*(.3+.45*uDay)+vec3(.06,.09,.13)*(1.-uDay)+vec3(.02,.04,.06), c=deep;
+        if(n>.6)c=mix(deep,sky,.3); if(n>.76-.04*pl&&n2>.45)c=mix(deep,sky,.6);
+        float g=h1(floor(vec2(ta*5.,u*6.)*(1.-pl)+wp*6.*pl)+floor(uT*(3.-2.*pl))*vec2(.37,13.)); if(g>.982-.012*sp*(1.-pl)-.045*(1.-uDay))c=vec3(.82,.92,1.)*(.55+.45*uDay)+uSun*.08;
+        float fo=0.; if(vF.z<.015+.03*n*n2)fo=1.; if(sp>1.5&&vn(vec2(ta*5.,u*7.))*.6+n2*.4>.62-.1*(sp-1.5))fo=1.;
+        for(int i=0;i<24;i++){ vec4 r=uRk[i]; if(r.z<=0.)continue; vec2 d=vW.xz-r.xy; float dl=length(d); if(dl>r.z*4.5)continue; vec2 fd=vec2(cos(r.w),sin(r.w)); float al=dot(d,fd), cr=d.x*fd.y-d.y*fd.x;
+          if(dl<r.z*(.98+.16*n))fo=1.; if(al>0.&&al<r.z*2.6&&abs(cr)<r.z*(.75-.6*al/(r.z*2.6))&&vn(vec2(al*4./r.z-uT*5.,cr*6./r.z))>.6)fo=1.; }
+        if(uMe.w>0.){ float dm=length(vW.xz-uMe.xy)/${T.toFixed(4)}; if(dm<.2||dm<1.3&&fract(dm/.42-uT*1.6)<.16*(1.3-dm)*uMe.w)fo=1.; }
+        if(fo>.5)c=vec3(.74,.82,.86)*(.3+.65*uDay)+uSun*.12;
+        gl_FragColor=vec4(c,1.); }`;
+    for(const w of waters){ const s0=C[Math.max(0,w.k0)][2]-6, s1=C[Math.min(N,w.k1)][2]+6, mine=RK.filter(o=>{ const r=BK.q(o.x,o.y); return r&&r[1]>s0&&r[1]<s1&&o.top3>L(r[1])*WU+G0; }).slice(0,24);
+      const arr=[]; for(let i=0;i<24;i++){ const o=mine[i]; if(!o){ arr.push(new THREE.Vector4()); continue; } const k=kAt(BK.q(o.x,o.y)[1]), [nx,ny]=BK.nrm(k); arr.push(new THREE.Vector4(o.wx,o.wz,o.wr*(o.kind==='s'?.95:.8),Math.atan2(nx,-ny))); }
+      const m=new THREE.ShaderMaterial({uniforms:{...U,uRk:{value:arr}},vertexShader:VS,fragmentShader:FS,fog:false}); m.customProgramCacheKey=()=>'brookwater';
+      const me=new THREE.Mesh(w.g,m); grp.add(me); w.me=me; }
+    { const br=BK.br, yc=br.yc, S=br.S, cx=P.round[0], ex=(y,f)=>cx+P.wobX(y)+f*3.6, kc=C[br.k], lv=L(kc[2]), a=W(kc[2])+.4, U0=S+2, hump=BK.hump;
+      const cv=document.createElement('canvas'); cv.width=cv.height=48; const g2=cv.getContext('2d'), id=g2.createImageData(48,48);
+      for(let y=0;y<48;y++)for(let x=0;x<48;x++){ const ro=Math.floor(y/12), xo=x+(ro%2)*12, bi=Math.floor(xo/24), j=y%12===0||xo%24===0, t=hs(bi*7+ro,71), v=j?70:(118+40*t)*(y%12===1?1.1:y%12===11?.86:1), k=(y*48+x)*4; id.data[k]=v; id.data[k+1]=v*.97; id.data[k+2]=v*.9; id.data[k+3]=255; }
+      g2.putImageData(id,0,0); const tx=new THREE.CanvasTexture(cv); tx.magFilter=tx.minFilter=THREE.NearestFilter; tx.generateMipmaps=false; tx.colorSpace=THREE.SRGBColorSpace; tx.wrapS=tx.wrapT=THREE.RepeatWrapping; tx.repeat.set(1/1.4,1/1.4);
+      const smat=new THREE.MeshLambertMaterial({map:tx,side:THREE.DoubleSide}), vb=(-D(kc[2])-.3)*WU, par=.5*WU;
+      for(const f of [-1,1]){ const sh=new THREE.Shape(); sh.moveTo(-U0,vb); sh.lineTo(U0,vb); for(let i=16;i>=0;i--){ const u=-U0+2*U0*i/16; sh.lineTo(u,hump(ex(yc+u,f)-f*.1,yc+u)*WU+par); }
+        const ho=new THREE.Path(), sp=(lv-.1)*WU, cr=(br.H-.14)*WU; ho.moveTo(-a,sp); for(let i=1;i<16;i++){ const t=Math.PI*(1-i/16); ho.lineTo(Math.cos(t)*a,sp+Math.sin(t)*(cr-sp)); } ho.lineTo(a,sp); sh.holes.push(ho);
+        const geo=new THREE.ExtrudeGeometry(sh,{depth:.45,bevelEnabled:false,curveSegments:4}), p=geo.attributes.position;
+        for(let i=0;i<p.count;i++){ const u=p.getX(i), v=p.getY(i), w=p.getZ(i); p.setXYZ(i,X(ex(yc+u,f)+f*w),v+G0,Z(yc+u)); } geo.computeVertexNormals();
+        const me=new THREE.Mesh(geo,smat); me.castShadow=me.receiveShadow=true; grp.add(me);
+        for(let i=0;i<8;i++){ const u0=-U0+2*U0*i/8, u1=u0+2*U0/8, xa=X(ex(yc+(u0+u1)/2,f)), xb=X(ex(yc+(u0+u1)/2,f)+f*.45); SOL.up.push([Math.min(xa,xb),Z(yc+u0),Math.max(xa,xb),Z(yc+u1)]); FIX.up.push([Math.min(xa,xb),Z(yc+u0),vb+G0,Math.max(xa,xb),Z(yc+u1),Math.max(hump(ex(yc+u0,f)-f*.1,yc+u0),hump(ex(yc+u1,f)-f*.1,yc+u1))*WU+par+G0]); } }
+      const dv=[], di=[], n=24; for(let i=0;i<=n;i++){ const y=yc-U0+2*U0*i/n; for(const f of [-1,1]){ const x=ex(y,f)-f*.02; dv.push(X(x),hump(ex(y,0),y)*WU+.003,Z(y)); } if(i)di.push(2*i-2,2*i,2*i-1,2*i-1,2*i,2*i+1); }
+      const dg=new THREE.BufferGeometry(); dg.setAttribute('position',new THREE.Float32BufferAttribute(dv,3)); dg.setIndex(di); dg.computeVertexNormals(); const uv=[]; for(let i=0;i<dv.length;i+=3)uv.push(dv[i]/T*1.2,dv[i+2]/T*1.2); dg.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));
+      const dk=new THREE.Mesh(dg,new THREE.MeshLambertMaterial({map:tx,polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-1,side:THREE.DoubleSide})); dk.receiveShadow=true; grp.add(dk); BROOK.bridge=dk; }
+    let snd=null, splash=0, wasIn=false;
+    const sound=(c,near,rf)=>{ if(!snd||snd.ctx!==c){ const n=c.sampleRate*2, b=c.createBuffer(1,n,c.sampleRate), d=b.getChannelData(0); let l=0; for(let i=0;i<n;i++){ l=l*.9+(Math.random()*2-1)*.1; d[i]=l*3*(.7+.3*Math.sin(i/n*Math.PI*14+Math.sin(i/n*Math.PI*6)*3)); }
+        const s=c.createBufferSource(), F=c.createBiquadFilter(), G=c.createGain(); s.buffer=b; s.loop=true; F.type='bandpass'; F.frequency.value=1400; F.Q.value=.8; G.gain.value=0; s.connect(F).connect(G).connect(c.destination); s.start(); snd={ctx:c,F,G}; }
+      const v=SFX.on?Math.max(0,1-near/14)**2*(.12+.12*rf)*SFX.vol:0; snd.G.gain.setTargetAtTime(v,c.currentTime,.3); snd.F.frequency.setTargetAtTime(1200+700*rf+300*Math.sin(c.currentTime*.7),c.currentTime,.4); };
+    const plash=c=>{ const n=Math.floor(c.sampleRate*.25), b=c.createBuffer(1,n,c.sampleRate), d=b.getChannelData(0); for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*Math.exp(-i/n*7); const s=c.createBufferSource(), F=c.createBiquadFilter(), G=c.createGain(); s.buffer=b; F.type='bandpass'; F.frequency.value=900+Math.random()*600; G.gain.value=.18*SFX.vol; s.connect(F).connect(G).connect(c.destination); s.start(); };
+    BROOK.tick=(dt,pos)=>{ U.uT.value=performance.now()/1000%1000; const px=pos.x/T+72-(P.ox||0), py=pos.z/T-77-(P.oy||0), r=LVL==='up'?BK.q(px,py):null, s=r?r[1]:0, h=r?BK.h(px,py):null, wade=r&&h!=null&&h<L(s)-.04&&!BK.st.some(o=>Math.hypot(px-o[0],py-o[1])<o[2]);
+      const mv=wade?Math.min(1,Math.hypot(pos.x-(BROOK.lx||pos.x),pos.z-(BROOK.lz||pos.z))/Math.max(dt,1e-3)/T):0; BROOK.lx=pos.x; BROOK.lz=pos.z; U.uMe.value.set(pos.x,pos.z,0,wade?.35+.65*mv:0); BROOK.wade=!!wade;
+      if(typeof CLOCK!=='undefined'&&CLOCK.sun){ U.uSun.value.copy(CLOCK.sun.color).multiplyScalar(Math.min(1.2,CLOCK.sun.intensity)); U.uDay.value=Math.max(.15,Math.min(1,(CLOCK.elev()+4)/14)); } if(window.SKY&&SKY.U)U.uSky.value.copy(SKY.U.uH.value);
+      try{ const c=typeof SFX!=='undefined'&&SFX.live&&SFX.live(); if(c){ sound(c,r?Math.max(0,r[0]-W(s)):99,r?Math.min(1,rif(s)):0); if(wade&&mv>.3&&(splash-=dt)<0){ splash=.42; plash(c); } if(wade&&!wasIn)plash(c); } }catch(_){ } wasIn=!!wade; };
+    BROOK.tris=()=>[...banks,...waters.map(w=>w.me)].reduce((a,m)=>a+m.geometry.index.count/3,0)+BROOK.rocks.reduce((t,m)=>t+m.count*80,0)+BROOK.pebbles.reduce((t,m)=>t+m.count*20,0);
+    BROOK.ready=true; };
+  go(); }

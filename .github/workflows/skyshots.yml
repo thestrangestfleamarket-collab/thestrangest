@@ -1,7 +1,7 @@
 name: skyshots
 on:
   push:
-    branches: ['claude/sky-rays']
+    branches: ['claude/sky-rays-2']
 permissions:
   contents: write
 concurrency:
@@ -23,8 +23,9 @@ jobs:
         run: |
           mkdir -p out; set +e
           MIN=0 python3 build.py > out/log.txt 2>&1; echo "build $?" >> out/status.txt
-          node tests/skyshots.cjs out >> out/log.txt 2>&1; echo "run $?" >> out/status.txt
-          echo "::notice title=report::$(cat out/status.txt out/report.json 2>/dev/null | tr '\n' ' ' | cut -c1-6000)"
+          node tests/skyshots.cjs out >> out/log.txt 2>&1; echo "sky $?" >> out/status.txt
+          node tests/runcheck.cjs out/run >> out/log.txt 2>&1; echo "run $?" >> out/status.txt
+          echo "::notice title=report::$(cat out/status.txt out/report.json out/run/report.json 2>/dev/null | tr '\n' ' ' | cut -c1-6000)"
           true
       - name: Publish results to a branch
         if: always()

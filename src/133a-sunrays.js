@@ -15,7 +15,8 @@ const RAYS={};
   let pick=0;
   const spots=()=>{ const L=[], C=WX.cld||[], n=Math.min(C.length,WX.show||C.length), h=Math.hypot(sv.x,sv.z)||1, ox=-sv.z/h, oz=sv.x/h; G.length=0; if(sv.y<.06)return;
     for(let i=0;i<n;i++){ const [cx,cy,cz,w]=C[i]; for(const s of [-1,1]){ const px=cx+s*ox*w*.62, pz=cz+s*oz*w*.62, k=cy/sv.y, gx=px-sv.x*k, gz=pz-sv.z*k, d=Math.hypot(gx-pos.x,gz-pos.z); if(d<90*T)L.push([d,gx,gz,px,cy,pz,(1.2+hs(i,s,4)*1.6)*T]); } }
-    L.sort((u,v)=>u[0]-v[0]); for(const [,x,z,px,py,pz,r] of L){ if(G.length>=N)break; const y=typeof groundY==='function'?groundY(x,z):0, v=sc.copy(cam.position).sub(sp.set(x,y,z)), t=v.dot(sv); if(v.lengthSq()-t*t>(r*1.5+3*T)**2)G.push([x,y,z,r,Math.hypot(px-x,py-y,pz-z)]); } };
+    L.sort((u,v)=>u[0]-v[0]); const RB=ROOMS.boxes(), FX=FIX.up, roofed=(x,y,z)=>RB.some(b=>x>b.x0&&x<b.x1&&z>b.z0&&z<b.z1&&y<b.y1)||FX.some(B=>B[5]>.6*T&&y<B[5]&&x>B[0]&&x<B[3]&&z>B[1]&&z<B[4]), shaded=(x,y,z)=>{ for(let t=0;t<=14*T;t+=1.2*T)if(roofed(x+sv.x*t,y+sv.y*t,z+sv.z*t))return true; return false; };
+    for(const [,x,z,px,py,pz,r] of L){ if(G.length>=N)break; const y=typeof groundY==='function'?groundY(x,z):0; if(shaded(x,y+.1*T,z))continue; const v=sc.copy(cam.position).sub(sp.set(x,y,z)), t=v.dot(sv); if(v.lengthSq()-t*t>(r*1.5+3*T)**2)G.push([x,y,z,r,Math.hypot(px-x,py-y,pz-z)]); } };
   const RT=[composer.renderTarget1,composer.renderTarget2], depthFit=()=>{ for(const t of RT)if(!t.depthTexture||t.depthTexture.image.width!==t.width||t.depthTexture.image.height!==t.height){ if(t.depthTexture)t.depthTexture.dispose(); t.depthTexture=new THREE.DepthTexture(t.width,t.height); t.dispose(); } };
   const U={tDiffuse:{value:null},tDepth:{value:null},uSun:{value:new THREE.Vector2()},uK:{value:0},uAsp:{value:1},uCol:{value:new THREE.Color(1,.86,.62)},uT:{value:0}};
   const P=new ShaderPass({uniforms:U,vertexShader:'varying vec2 vUv; void main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.); }',
@@ -32,12 +33,12 @@ const RAYS={};
     const W=typeof WX!=='undefined'&&WX.now||{cloud:.2}, out=LVL==='up'&&SKY.dome.visible, e=CLOCK.elev(), k=out?cl((e-1)/6)*(1-cl((W.cloud-.8)/.15)):0;
     sv.copy(CLOCK.sunV).normalize(); LFX.sunS.x=sv.x; LFX.sunS.y=sv.y; LFX.sunS.z=sv.z; LFX.sunS.w=k;
     if(k>0&&(pick-=dt)<=0){ pick=.5; spots(); }
-    BM.visible=k>0; { const D=RAYS.DU, dk=W.cloud<.6?k:0; RAYS.dust.visible=dk>0; D.uK.value=dk; D.uS.value.copy(sv); D.uP.value.set(pos.x,py,pos.z); D.uPx.value=Math.max(1,Math.round((typeof pxS==='function'?pxS():1))); } if(k>0){ q.setFromUnitVectors(up,sv); for(let i=0;i<N;i++){ const g=G[i], b=LFX.sunB[i];
+    BM.visible=k>0&&!ROOMS.cur; { const D=RAYS.DU, dk=W.cloud<.6?k:0; RAYS.dust.visible=dk>0&&!ROOMS.cur; D.uK.value=dk; D.uS.value.copy(sv); D.uP.value.set(pos.x,py,pos.z); D.uPx.value=Math.max(1,Math.round((typeof pxS==='function'?pxS():1))); } if(k>0){ q.setFromUnitVectors(up,sv); for(let i=0;i<N;i++){ const g=G[i], b=LFX.sunB[i];
       if(!g){ b.set(0,-1e5,0,0); m4.makeScale(0,0,0); BM.setMatrixAt(i,m4); BM.setMatrixAt(i+N,m4); continue; }
       b.set(g[0],g[1],g[2],g[3]); sp.set(g[0],g[1],g[2]);
       BM.setMatrixAt(i,m4.compose(sp,q,sc.set(g[3]*2,g[4],g[3]*2))); BM.setMatrixAt(i+N,m4.compose(sp,q,sc.set(g[3]*1.1,g[4],g[3]*1.1))); }
       BM.instanceMatrix.needsUpdate=true; BU.uO.value=.03*k; }
     else for(const b of LFX.sunB)b.set(0,-1e5,0,0);
-    U.uK.value=0; if(out&&cam.isPerspectiveCamera&&e>-1){ depthFit(); sp.copy(cam.position).addScaledVector(sv,400).project(cam);
+    U.uK.value=0; if(out&&!ROOMS.cur&&cam.isPerspectiveCamera&&e>-1){ depthFit(); sp.copy(cam.position).addScaledVector(sv,400).project(cam);
       cam.getWorldDirection(sc); if(sc.dot(sv)>0&&sp.z<1){ U.uSun.value.set(sp.x*.5+.5,sp.y*.5+.5); const off=Math.max(Math.abs(sp.x),Math.abs(sp.y)); U.uK.value=cl((e+1)/5)*(1-cl((W.cloud-.85)/.15))*cl((2.2-off)/1.2); U.uAsp.value=cam.aspect||1; } } P.enabled=U.uK.value>0; };
   window.RAYS=RAYS; }

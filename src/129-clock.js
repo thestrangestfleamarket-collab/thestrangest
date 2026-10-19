@@ -38,10 +38,10 @@ const CLOCK={h:17.4,run:false,speed:1440/600,sunV:new THREE.Vector3(0,1,0),moonV
   const DYN=()=>{ const out=new Set(); if(window.W3&&W3.group)out.add(W3.group); for(const N of NPCS)if(N.g)out.add(N.g); for(const x of NPCS.extra||[])if(x&&x.g)out.add(x.g);
     if(window.CREATS)for(const N of CREATS)if(N.g)out.add(N.g); for(const k of ['BOAT','DRONE'])if(window[k]&&window[k].g)out.add(window[k].g); return out; };
   { const SM=renderer.shadowMap, orig=SM.render;
-    SM.render=(lights,sc,camera)=>{ if(sc!==scene)return orig.call(SM,lights,sc,camera); const rest=lights.filter(L=>L!==sunL&&L!==sunD);
-      if(lights.includes(sunL)&&sunL.shadow.needsUpdate){ const hid=[]; for(const o of DYN())if(o.visible){ o.visible=false; hid.push(o); } SM.needsUpdate=true; orig.call(SM,[sunL],sc,camera); for(const o of hid)o.visible=true; SC.n++; }
+    SM.render=(lights,sc,camera)=>{ if(sc!==scene)return orig.call(SM,lights,sc,camera); const rest=lights.filter(L=>L!==sunL&&L!==sunD); if(!CLOCK.main){ SM.needsUpdate=true; return orig.call(SM,rest,sc,camera); } const m0=camera.layers.mask; camera.layers.enable(3);
+      if(lights.includes(sunL)&&sunL.shadow.needsUpdate){ const hid=[]; for(const o of DYN())if(o.visible){ o.visible=false; hid.push(o); } SM.needsUpdate=true; orig.call(SM,[sunL],sc,camera); for(const o of hid)o.visible=true; SC.n++; if(window.SUNLOG){ let c=0; sc.traverseVisible(o=>{ if(o.isMesh&&o.castShadow)c++; }); SUNLOG.push([+(performance.now()/1000).toFixed(2),c]); } }
       if(lights.includes(sunD)&&sunD.shadow.needsUpdate){ const ch=SC.root.children; ch.length=0; for(const o of DYN())if(o.visible&&o.parent)ch.push(o); SM.needsUpdate=true; orig.call(SM,[sunD],SC.root,camera); SC.nd++; }
-      SM.needsUpdate=true; orig.call(SM,rest,sc,camera); }; }
+      SM.needsUpdate=true; orig.call(SM,rest,sc,camera); camera.layers.mask=m0; }; }
   window.SUNDBG=()=>({still:SC.n,moving:SC.nd,dyn:DYN().size,maps:[sunL.shadow.mapSize.x,sunD.shadow.mapSize.x],patch:THREE.ShaderChunk.lights_fragment_begin.includes('NUM_DIR_LIGHT_SHADOWS > 1')});
   CLOCK.sun=sunL; CLOCK.sunD=sunD; window.CLOCK=CLOCK; CLOCK.elev=()=>elev(CLOCK.h); CLOCK.SKYV=SKYV;
   const pane=document.querySelector('#menu [data-p="atmo"]')||document.querySelector('#menu [data-p="display"]'), box=document.createElement('div');

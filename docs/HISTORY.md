@@ -2687,3 +2687,12 @@ not have windows, make sure buildings are only as tall as they need to be"; then
   cobra-head lamps (street, ring roads and the double corner one) are off (`DRESS.tall`); the short globe posts stand every 28 tiles
   on both sidewalks, staggered 14 apart side to side, never within 2.5 of a door. Street trees keep 7 tiles from every door (bodega,
   apartments, subway stairs, each place's door) so no isometric angle puts a crown over an entrance.
+- **Shadows steady, light kept out of buildings** (owner, 19 Oct 2026: "shadows still flicker when i run. all shadows like they turn on
+  and off randomly" and "sun rays should follow real logic and not being able to shine into buildings. (make sure all building act
+  like they hav a roof when inside even though you can see it (same with overhead lights) hide them dont take them way"): the sun's
+  cached shadow was sometimes drawn during a side pass (the skyline's own layer pass, the water passes) that sees only part of the
+  scene, so whole sets of shadows vanished until the next refresh; the sun's maps are now drawn only in the main view pass. Hidden
+  roofs (and anything `SEEN` hides) still cast every shadow: the shadow passes see layer 3 too. Overhead fixtures are hidden with
+  `SEEN` instead of removed. The light shafts never start inside or pass through a roofed place (14 tiles up the shaft checked against
+  the room boxes and the solid boxes), and the shafts, the dust and the screen rays are off while you're in a room.
+  `tests/runcheck.cjs` logs every still-shadow redraw with its count of casters (`SUNLOG`) to catch sudden jumps.

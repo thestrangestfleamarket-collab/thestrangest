@@ -2655,3 +2655,11 @@ not have windows, make sure buildings are only as tall as they need to be"; then
 - **The far buildings steady** (owner, 19 Oct 2026: "thedark spots on buildings shift every frame so it just looks glitchy"): the far
   skyline's window pattern turns to its even average colour sooner (when a window cell is a third of a pixel, was a full pixel), so the
   small windows no longer crawl as the view moves.
+- **The Hudson's far part loaded when you go out** (owner, 19 Oct 2026: "i want the first part of hudson by the promanade to be part of
+  the load, but if you jump in and swim down further out it will say "Loading.." i dont want the entire hudson loading until you wnat to go
+  down there"; `066-river.js`): at the start only the strip of the river 16 tiles out from the promenade's bank is built in full (its fine
+  water surface, the bed under it, the sea grass in it); the rest is a stand-in: one flat quad of the same water (2 triangles, seen the same
+  from the street) and a coarse bed (4 rows). No fish, tyres or bottles yet. Swimming or rowing more than 10 tiles out, or diving deeper
+  than 2.5 m, shows LOADING... on the black `#subfade` (the ENTERING fade), builds the whole surface and bed, the fish and the junk, and
+  fades back; once (`RIVER.deep`, `RIVER.load`). Saves some 6,000 triangles a frame while the river is seen (plus ~1,700 in its scene
+  pass), 33 draws, and the fish's work every frame, until then.

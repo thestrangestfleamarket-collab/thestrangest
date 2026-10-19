@@ -7,7 +7,7 @@ process.on('unhandledRejection',e=>{ errs.push('TEST '+String(e&&e.message||e).s
   await pg.goto('file://'+PAGE+'?fresh=1&hour=13&wx=CLEAR',{waitUntil:'commit'});
   for(let i=0;i<900;i++){ await pg.waitForTimeout(500); if(await pg.evaluate(()=>!!window.__dbg))break; }
   await pg.waitForTimeout(5000); await pg.evaluate(()=>window.DN&&DN.set&&DN.set('day'));
-  const shot=async(n,f,w=4000)=>{ try{ if(f)await pg.evaluate(f); await pg.waitForTimeout(w); await pg.screenshot({path:path.join(OUT,n+'.png')}); rep[n]=await pg.evaluate(()=>window.SQDBG&&SQDBG()); }catch(e){ errs.push(n+': '+e.message.slice(0,200)); } };
+  const shot=async(n,f,w=4000)=>{ try{ if(f)await pg.evaluate(f); await pg.waitForTimeout(w); await pg.screenshot({path:path.join(OUT,n+'.png')}); if(/^(sq|wave)/.test(n))await pg.screenshot({path:path.join(OUT,n+'-zoom.png'),clip:{x:330,y:170,width:300,height:170}}); rep[n]=await pg.evaluate(()=>window.SQDBG&&SQDBG()); }catch(e){ errs.push(n+': '+e.message.slice(0,200)); } };
   const go=(dx,dz)=>`(()=>{ const s=GTOWER.site(), T=window.TILE||(__dbg.cv().TILE); STORE.goTo(s.x+${dx}*T,s.z+${dz}*T,'up'); })()`;
   for(let i=0;i<20;i++){ await pg.waitForTimeout(1000); if(await pg.evaluate(()=>window.GTOWER&&GTOWER.ready))break; }
   await shot('tower-iso',go(2.5,4),6000);

@@ -1,5 +1,5 @@
 const GTOWER={}; window.GTOWER=GTOWER;
-{ const H=173, PH=8, MH=12, TH=212, TC=58, R=1.5, RB=R+.1, RI=R-.06, TA=-Math.PI*.75, TD=R+.22, TR=.46;
+{ const H=173, PH=4, MH=8, TH=212, TC=58, R=1.5, RB=R+.1, RI=R-.06, TA=-Math.PI*.75, TD=R+.22, TR=.46;
   GTOWER.ring=()=>{ const S=GCAVE.S; if(!S)return null; const t=S.tw, P=PARK; return {cx:t.x,cy:t.y,R,RI,TA,X:x=>BOD.XS(x+P.ox),Z:y=>BOD.ZS(y+P.oy)}; };
   GTOWER.site=()=>{ const S=GCAVE.S; if(!S)return null; const P=PARK, t=S.tw; return {x:BOD.XS(t.x+P.ox),z:BOD.ZS(t.y+P.oy),w:2*RB*TILE,d:2*RB*TILE,r:RI*TILE,top:BOD.YS(H)}; };
   const build=()=>{ const P=PARK, t=GCAVE.S.tw, X=x=>BOD.XS(x+P.ox), Z=y=>BOD.ZS(y+P.oy), Y=BOD.YS, {bq,faceTex,C}=BOD, K=BOD.STOREK.keep, sh=BOD.K.sh, cx=t.x, cy=t.y;

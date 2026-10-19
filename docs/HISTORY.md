@@ -1854,3 +1854,13 @@ so he looked shrugged. You are now his mannequin (`data/full/humanoid.fbx`, Blen
 `data/humanoid.json`, 6 KB), sized to the UAL skeleton (it matches it: height, hips, shoulders, arm length within 3 cm). It stands in an
 A-pose, so the skeleton's arms are lowered to it before binding; each corner weighted in code to its nearest one or two bones. One flat
 light colour, cel-shaded, casting a shadow; the same clips. 402 triangles.
+
+## 19 Oct 2026: lighter skeletons for a pixel game
+
+**The heaviest characters cut to about 1,000-1,200 triangles** (owner, 19 Oct 2026: "since we are do a pixel style game do we really
+need such high quality chracter mesh?"; his pick 1 of three: cut only the outliers). The four skeleton pawns (mage, reaper, guard light,
+guard heavy: 3,250-4,130 → 880-1,200) and the four KayKit skeletons (Warrior, Mage, Minion, Rogue: 3,000-3,700 → 1,200-1,640), by
+`tools/simplify.py skel pawns`: the head's colour marks (eyes) kept exactly, the rest of the head to half, the body to a fifth (this
+relaxes 17 Oct's "leave the faces as complex as they are" for these eight only). The pawns' full meshes now kept in
+`data/full/pawns.json`. `data/pawns.json` 1.62 MB → 0.88 MB, `data/skel.json` 375 → 232 KB; the page
+5.20 → 4.43 MB. 27,364 → 9,868 triangles across the eight (their gear as it was).

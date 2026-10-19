@@ -12,10 +12,11 @@ import json,base64,os,shutil,sys,numpy as np,fast_simplification as FS
 from collections import defaultdict
 B=lambda s,t:np.frombuffer(base64.b64decode(s),t); E=lambda a:base64.b64encode(np.ascontiguousarray(a).tobytes()).decode()
 BODY,THING=.5,.33
+LEAN,LEANHEAD=.2,.5   # (owner, 19 Oct 2026, his pick 1: the skeleton pawns and the KayKit skeletons to about 1,000-1,200 triangles; the head's marks kept, its rest to half, the body to a fifth)
 FILES=['props','forest','kit','creatures','skel','dragon','bear']   # (the goldfish deleted, 17 Oct 2026)   # (the six figures removed, 17 Oct 2026)
 os.makedirs('data/full',exist_ok=True)
 for f in FILES:
-    if not os.path.exists(f'data/full/{f}.json'): shutil.copy(f'data/{f}.json',f'data/full/{f}.json')
+    if os.path.exists(f'data/{f}.json') and not os.path.exists(f'data/full/{f}.json'): shutil.copy(f'data/{f}.json',f'data/full/{f}.json')
 
 def nearest(src,dst):
     j=np.empty(len(dst),np.int64)
@@ -51,7 +52,7 @@ def run(V,F,groups):   # groups: (face index list, how much to keep); returns th
 
 # ---- INDEXED meshes (the kit, the gear, the rigged characters): n, lo, sc, p (i16 x3, the bakes' own: a point is (p+32500)*sc+lo, as every
 # reader in src/ unpacks it; read and written here as uint16 before, every point came back slid round its box: the skeletons' gear out of their hands), c (u8 x3), [r u8], [j u8 x4, w u8 x4], i (u16 or u32)
-def indexed(M,head=None,keepk=THING):
+def indexed(M,head=None,keepk=THING,headk=1):
     n=M['n']; V=np.array(M['lo'])+(B(M['p'],np.int16).reshape(-1,3).astype(float)+32500)*M['sc']; C=B(M['c'],np.uint8).reshape(-1,3)
     big=M.get('i32') or n>65535; F=B(M['i'],np.uint32 if big else np.uint16).reshape(-1,3).astype(np.int64)
     R=B(M['r'],np.uint8) if 'r' in M else np.zeros(n,np.uint8); J=B(M['j'],np.uint8).reshape(-1,4) if 'j' in M else None; W=B(M['w'],np.uint8).reshape(-1,4) if 'w' in M else None
@@ -63,7 +64,8 @@ def indexed(M,head=None,keepk=THING):
     fr=R[F[:,0]]; groups=[]
     if head is not None and J is not None:   # a character: the head kept, the body to half; the glowing part (eye region) kept too
         dom=J[np.arange(n),W.argmax(1)]; hv=np.isin(dom,list(head)); hf=hv[F].any(1)|(fr==M.get('eye',-1))
-        for r in np.unique(fr): groups+= [(np.where((fr==r)&hf)[0],1),(np.where((fr==r)&~hf)[0],keepk)]
+        dt=details(F,C[F].mean(1)) if headk<1 else np.ones(len(F),bool)
+        for r in np.unique(fr): groups+= [(np.where((fr==r)&hf&dt)[0],1),(np.where((fr==r)&hf&~dt)[0],headk),(np.where((fr==r)&~hf)[0],keepk)]
     else:   # a thing: its marks kept, the rest to a third
         dt=details(F,C[F].mean(1))
         for r in np.unique(fr): groups+= [(np.where((fr==r)&dt)[0],1),(np.where((fr==r)&~dt)[0],keepk)]
@@ -134,7 +136,7 @@ if not ONLY or ONLY&set(('creatures',)):
     print('creatures',save('creatures',d))
 if not ONLY or ONLY&set(('skel',)):
     d=load('skel'); hs=headset(d['rig'],lambda nm:nm=='head')
-    for k,M in d['chars'].items(): N=indexed(M,hs,BODY); report('skeleton '+k,M['tris'],N['tris']); d['chars'][k]=N
+    for k,M in d['chars'].items(): N=indexed(M,hs,LEAN,LEANHEAD); report('skeleton '+k,M['tris'],N['tris']); d['chars'][k]=N
     for k,M in d['gear'].items(): N=indexed(M); report('gear '+k,M['tris'],N['tris']); d['gear'][k]=N
     print('skel',save('skel',d))
 if not ONLY or ONLY&set(('dragon',)):
@@ -143,4 +145,9 @@ if not ONLY or ONLY&set(('dragon',)):
     print('dragon',save('dragon',d))
 if not ONLY or ONLY&set(('bear',)):
     d=load('bear'); nm=d['names']; N=soup(d,{i for i,x in enumerate(nm) if x in ('ears','head','muzzle','eyes and nose')},BODY); report('bear',d['tris'],N['tris']); print('bear',save('bear',N))
+if not ONLY or ONLY&set(('pawns',)):   # (the four skeleton pawns only; their full meshes in data/full/pawns.json, the rest of data/pawns.json, the shared clips too, left as it is)
+    d=json.load(open('data/pawns.json')); full=load('pawns')
+    for k in ('skeleton_mage','skeleton_reaper','skeleton_guard_light','skeleton_guard_heavy'):
+        M=full[k]['mesh']; hs=headset(full[k]['rig'],lambda nm:nm=='DEF_head'); N=indexed(M,hs,LEAN,LEANHEAD); report('pawn '+k,M['tris'],N['tris']); d[k]['mesh']=N
+    print('pawns',save('pawns',d))
 print(f'ALL MODELS: {t0} -> {t1} triangles')

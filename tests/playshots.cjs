@@ -21,7 +21,7 @@ process.on('unhandledRejection',e=>{ errs.push('TEST '+String(e&&e.message||e).s
   await pg.evaluate(()=>window.DN&&DN.set&&DN.set('day'));
   await shot('day-iso',null,4000);
   await pg.keyboard.press('q'); await pg.keyboard.press('q'); await shot('day-iso-rev',null,4000); await pg.keyboard.press('e'); await pg.keyboard.press('e');
-  await pg.keyboard.press('v'); for(let i=0;i<6;i++){ await pg.mouse.wheel(0,600); await pg.waitForTimeout(150); }
+  await pg.keyboard.press('v'); for(let i=0;i<6;i++){ await pg.mouse.wheel(0,-400); await pg.waitForTimeout(150); }
   const st=(z)=>new Function(at+`STORE.goTo(px,B.Z(M.B.y0+${z}),"up"); __dbg.face(Math.atan2(px-tx,B.Z(M.B.y0+${z})-tz));`);
   const doors=(z)=>new Function(at+`STORE.goTo(px,B.Z(M.B.y0+${z}),"up"); __dbg.face(Math.atan2(tx-px,tz-B.Z(M.B.y0+${z})));`);
   await shot('day-behind-stage',st(10.6),4000); await shot('day-behind-doors',doors(9.6),4000);

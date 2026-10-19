@@ -57,9 +57,9 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
     q0.setFromEuler(UI.eul.set(-pitch,yaw,0,'YXZ')); yawTo-=dx*0.008; pitchTo=clampP(pitchTo+dy*0.006); yaw=yawTo; pitch=pitchTo; q1.setFromEuler(UI.eul.set(-pitch,yaw,0,'YXZ'));
     tv.subVectors(disp,piv); const t0=tv.clone(); tv.applyQuaternion(q0.invert()).applyQuaternion(q1); viewV().add(tv.sub(t0)); disp.add(tv);
     if(!UI.freeCam){ tv.set(0,0,1).applyQuaternion(q1); UI.off.addScaledVector(tv,-UI.off.dot(tv)); } };
-  UI.MAXW=19*TILE; UI.NEARH=6.6/.84*TILE; window.CAMW=()=>(cam.right-cam.left)/TILE;
+  UI.MAXW=30*TILE; UI.NEARH=6.6/.84*TILE; window.CAMW=()=>(cam.right-cam.left)/TILE;
   let zAt=null; UI.wheelAt=e=>{ if(UI.persp){ ppuTo=ppu; if(UI.view==='third'||UI.view==='follow')UI.dist=Math.max(1.2*TILE,Math.min(22*TILE,UI.dist*Math.pow(1.0015,e.deltaY))); return; }
-    if(e.deltaY>0){ const w=cam.right-cam.left; ppuTo=Math.max(ppuTo,ppu*w/UI.MAXW); if(w>=UI.MAXW)return; } const r=cv.getBoundingClientRect(); zAt={x:e.clientX-r.left-r.width/2,y:r.height/2-(e.clientY-r.top)}; };
+    if(e.deltaY>0){ const w=cam.right-cam.left; ppuTo=Math.max(ppuTo,ppu*w/UI.MAXW); if(w>=UI.MAXW*.995){ ppuTo=ppu; zAt=null; return; } } const r=cv.getBoundingClientRect(); zAt={x:e.clientX-r.left-r.width/2,y:r.height/2-(e.clientY-r.top)}; };
   UI.zk=()=>(cam.right-cam.left)/cv.getBoundingClientRect().width;
   UI.zoomStep=k0=>{ const w0=cam.right-cam.left; if(w0>UI.MAXW*1.002)ppuTo=Math.max(ppuTo,ppu*w0/UI.MAXW);
     if(!zAt)return; const k1=UI.zk(); if(Math.abs(k1-k0)<1e-9){ if(Math.abs(ppu/ppuTo-1)<1e-3)zAt=null; return; } const R0=tv.setFromMatrixColumn(cam.matrixWorld,0).clone(), U0=new THREE.Vector3().setFromMatrixColumn(cam.matrixWorld,1);

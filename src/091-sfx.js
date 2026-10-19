@@ -48,7 +48,7 @@ const SFX={on:true,vol:1,mix:{fx:{},loops:{},gap:1,blip:1}};
     const s=c.createBufferSource(), G=c.createGain(); s.buffer=b; s.loop=!!R[k].loop; s.playbackRate.value=(o.pitch||1)*(o.vary?1+(Math.random()-.5)*o.vary:1);
     let P=null; if(o.at&&c.createStereoPanner){ P=c.createStereoPanner(); } else if(o.pan!=null&&c.createStereoPanner){ P=c.createStereoPanner(); P.pan.value=o.pan; }
     const kd=place(o,G,o.at?P:null); if(kd<=0)return null; G.gain.value=(o.vol==null?1:o.vol)*kd*(o.raw?1:SFX.fxLevel(k)); const out=o.bus||bus(c); if(P)s.connect(P).connect(G).connect(out); else s.connect(G).connect(out); s.start(c.currentTime+(o.delay||0)); return {s,G,P}; };
-  let ph0=0; SFX.steps=(st,go)=>{ const ph=st.ph||0; const down=Math.floor(ph*2)!==Math.floor(ph0*2); ph0=ph; if(!down||!(go>0)||st.w<.3||!SFX.on)return; SFX.play('step',{vol:.18+.3*(st.run||0),vary:.25,pitch:.9+Math.random()*.2}); };
+  let ph0=0; SFX.steps=(st,go)=>{ const ph=st.ph||0; const down=Math.floor(ph*2)!==Math.floor(ph0*2); ph0=ph; if(!down||!(go>0)||st.w<.3||st.move||!SFX.on)return; SFX.play('step',{vol:.18+.3*(st.run||0),vary:.25,pitch:.9+Math.random()*.2}); };
   const hashS=s=>{ let h=2166136261; for(let i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619); } return h>>>0; };
   SFX.voiceOf=(key,bank)=>{ const h=hashS(String(key||'')); return {bank:bank||(h&1?'high':'low'),pitch:.92+((h>>>8)%1000)/1000*.16}; };
   const VB={}; const vbuf=(c,bank,i)=>{ const key=bank+i; if(VB[key]&&VB[key].sampleRate===c.sampleRate)return VB[key]; const S=c.sampleRate, n=S*.07|0, b=c.createBuffer(1,n,S), D=b.getChannelData(0), f0=(bank==='high'?230:140)*(1+(i%4)*.06), fm=[1.5,2.2,2.8,3.6][(i>>2)%4];

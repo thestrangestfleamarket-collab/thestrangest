@@ -28,15 +28,36 @@ await grab('park',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.ox=P
     return {C,SL,N,B,W,L,D,RF,q,h,st,nrm,rim,br,hump,wet:(x,y,m=0)=>{ const r=q(x,y); return !!r&&r[0]<W(r[1])+B+m; }}; })();
   { const h0=P.hill; P.hill=(x,y)=>{ const r=BK.q(x,y); if(!r)return h0(x,y); const e=r[0]-BK.W(r[1])-BK.B; if(path(x,y))return BK.hump(x,y)*TILE/.84; if(e>=0)return h0(x,y)*ss(0,5,e); return BK.h(x,y)*TILE/.84; }; }
   window.HILL=(wx,wz)=>{ const g=window.PARK; return g&&g.hill?g.hill(wx/TILE+72-(g.ox||0),wz/TILE-77-(g.oy||0)):0; };
-  const hexCol=(x,y)=>{ const s=1/3, w=s*Math.sqrt(3), row=Math.floor(y/(s*1.5)), ox=(row&1)?w/2:0, col=Math.floor((x-ox)/w), cx=(col+.5)*w+ox, cy=row*s*1.5+s;
-    const dx=Math.abs(x-cx), dy=Math.abs(y-cy), e=Math.max(dx/w*2,(dy+dx/Math.sqrt(3))/s), seam=e>.86, n=hash(col,row,71), g=grain(x,y,73,2), hp=hash(Math.floor(x*24),Math.floor(y*24),77);
-    if(seam){ if(BOD.g.cvNoise(x/2.5,y/2.5,79)>.6&&hp<.65)return [[52,82,40],[66,98,48],[44,70,34]][Math.floor(hash(Math.floor(x*24),Math.floor(y*24),81)*3)]; const c=36+8*n; return [c,c,c+2]; }
-    let c=58+22*n+10*(g-.5); if(e>.74)c*=(y<cy)?1.14:.84; return speck([c,c,c+2],x,y,75); };
-  const lawn=BOD.g.lawnCol;
-  const CS=(S=>({x0:S.x0-PO.x,x1:S.x1-PO.x,y0:S.y0-PO.y,y1:S.y1-PO.y}))(CASTLE.stair), groundCol=(x,y)=>x>=CS.x0&&x<CS.x1&&y>=CS.y0&&y<CS.y1?null:path(x,y)?hexCol(x,y):lawn(x,y);
+  const [rcx,rcy,rr]=P.round, smx=(a,b,k)=>{ const h=Math.max(k-Math.abs(a-b),0)/k; return Math.max(a,b)+h*h*k/4; };
+  const dep=(x,y)=>smx(smx(3.6-Math.abs(x-rcx-wobX(y)),3.6-Math.abs(y-rcy-wobY(x)),2.4),rr-Math.hypot(x-rcx,y-rcy),2), eo=(x,y)=>{ const n=1.3*(cvn(x/4.5,y/4.5,421)-.5)+.6*(cvn(x/1.4,y/1.4,423)-.5)-.12; return n>.12?.12+(n-.12)*.35:n; }, vis=P.vis=(x,y)=>dep(x,y)+eo(x,y);
+  const SC=.36, GR=.05, STN=[[112,109,102],[126,122,113],[140,135,124],[102,104,104],[134,124,108]], TF=[[40,72,32],[54,92,40],[72,114,50],[96,138,62]], SOIL=[[78,66,50],[66,56,44]], KC=new Map();
+  const cell=(x,y)=>{ const gx=Math.floor(x/SC), gy=Math.floor(y/SC); let d1=9, d2=9, u=0, v=0, sx=0, sy=0;
+    for(let i=-1;i<2;i++)for(let j=-1;j<2;j++){ const a=gx+i, b=gy+j, cx=(a+.1+.8*hash(a,b,401))*SC, cy=(b+.1+.8*hash(a,b,403))*SC, d=Math.hypot(x-cx,y-cy)/(.74+.56*hash(a,b,405)**2);
+      if(d<d1){ d2=d1; d1=d; u=a; v=b; sx=cx; sy=cy; } else if(d<d2)d2=d; } return [d2-d1,u,v,sx,sy]; };
+  const keep=(u,v,sx,sy)=>{ const id=u*65536+v; let r=KC.get(id); if(r!==undefined)return r; const k=vis(sx,sy), h=hash(u,v,407);
+    r=(k>.5?h>.012:k>0?h>.4*(1-k/.5):k>-.45&&h<.1*(1+k/.45))?k:null; KC.set(id,r); return r; };
+  const tuft=(x,y,pv)=>{ const a=Math.floor(x*2), b=Math.floor(y*2), h=hash(a,b,441); if(h>.06+.6*Math.max(0,1-pv/1.1))return null;
+    const tx=(a+.15+.7*hash(a,b,443))/2, ty=(b+.15+.7*hash(a,b,445))/2, r=.07+.05*hash(a,b,447), dx=x-tx, dy=y-ty, d=Math.hypot(dx,dy); if(d>r)return null;
+    const ang=Math.atan2(dy,dx)*5/Math.PI+hash(a,b,449)*9, bl=Math.abs(ang-Math.round(ang)); if(d>r*.35&&bl>.28)return null;
+    return TF[d<r*.35?1:d<r*.7?(bl<.12?3:2):(hash(Math.floor(x*24),Math.floor(y*24),451)<.5?2:3)]; };
+  const hexCol=(x,y)=>{ const pv=vis(x,y); if(pv<-.8)return null; const tf=pv>-.25?tuft(x,y,pv):null; if(tf)return tf;
+    const [e,u,v,sx,sy]=cell(x,y), px=hash(Math.floor(x*24),Math.floor(y*24),453), ks=keep(u,v,sx,sy);
+    if(ks===null){ if(pv<0||pv<.6&&hash(u,v,411)<.45)return null; return px<.3?TF[px<.12?0:1]:SOIL[px<.7?0:1]; }
+    if(ks<.35&&hash(u,v,409)<.35){ const a=hash(u,v,410)*6.283; if((x-sx)*Math.cos(a)+(y-sy)*Math.sin(a)>.03)return pv<0?null:px<.4?TF[1]:SOIL[0]; }
+    const mo=cvn(x/2.2,y/2.2,431);
+    if(e<GR){ if(mo>.6)return [[44,70,34],[56,86,40]][px<.5?0:1]; if(px<.5*Math.max(0,.9-pv))return TF[px<.15?0:1]; return [[66,66,56],[58,60,52]][px<.7?0:1]; }
+    let c=STN[Math.floor(hash(u,v,413)*5)]; const t=hash(u,v,415); if(t<.06)c=[164,156,138]; else if(t>.95)c=[86,86,86];
+    const l=(x-sx)*-.45+(y-sy)*-.9; let f=cvn(x/7,y/7,433)>.64?.92:1;
+    if(e<GR+.05){ if(l<=0&&mo>.52)return [56,86,42]; f*=l>0?1.13:.8; } else if(e>GR+.17&&l>.02)f*=1.05;
+    if(hash(u,v,419)<.09){ const a=hash(u,v,421)*3.14, s=(x-sx)*Math.cos(a)+(y-sy)*Math.sin(a), q=-(x-sx)*Math.sin(a)+(y-sy)*Math.cos(a); if(Math.abs(q-.25*Math.abs(s))<.022&&e>GR+.02)f*=.62; }
+    return [c[0]*f,c[1]*f,c[2]*f]; };
+  const CS=(S=>({x0:S.x0-PO.x,x1:S.x1-PO.x,y0:S.y0-PO.y,y1:S.y1-PO.y}))(CASTLE.stair), groundCol=(x,y)=>x>=CS.x0&&x<CS.x1&&y>=CS.y0&&y<CS.y1?null:hexCol(x,y);
   const flat=(x0,y0,x1,y1,z,col)=>BOD.bq([X(x0),Y(z),Z(y1)],[X(x1),Y(z),Z(y1)],[X(x1),Y(z),Z(y0)],[X(x0),Y(z),Z(y0)],BOD.faceTex((x1-x0)*24,(y1-y0)*24,(i,j)=>BOD.C(col(x0+(i+.5)/24,y0+(j+.5)/24))),'G');
-  { const [cx,cy,r]=P.round, w=4+WA, R=r+1, wayCol=(x,y)=>path(x,y)?groundCol(x,y):null, strips=(x0,y0,x1,y1)=>{ for(let x=x0;x<x1;x+=29)flat(x,y0,Math.min(x1,x+29),y1,0,wayCol); };
-    strips(P.x0,cy-w,cx-R,cy+w); strips(cx+R,cy-w,P.x1,cy+w); strips(cx-R,cy-R,cx+R,cy+R); strips(cx-w,P.y0+.5,cx+w,cy-R); strips(cx-w,cy+R,cx+w,P.y1); }
+  { const [cx,cy,r]=P.round, w=4.6+WA, R=r+1, T3=P.tufts=[], strips=(x0,y0,x1,y1,ax)=>{ const a0=ax?x0:y0, a1=ax?x1:y1, V=(t,q)=>ax?vis(t,q):vis(q,t);
+      for(let s=ax?y0:x0, e=ax?y1:x1; s<e; s++){ const s1=Math.min(e,s+1), m=(s+s1)/2; let lo=1e9, hi=-1e9; for(let t=a0;t<a1;t+=1/24)for(let q=0;q<5;q++)if(V(t,s+(s1-s)*q/4)>-.8){ lo=Math.min(lo,t); hi=Math.max(hi,t); }
+        if(hi<lo)continue; lo=Math.max(a0,Math.floor(lo*24-2)/24); hi=Math.min(a1,Math.ceil(hi*24+3)/24); ax?flat(lo,s,hi,s1,0,groundCol):flat(s,lo,s1,hi,0,groundCol);
+        for(const [b,d,f] of [[lo,1/24,lo>a0+.01],[hi,-1/24,hi<a1-.01]]){ if(!f||hash(Math.floor(m*7),Math.floor(b*7),461)>.6)continue; let t=b; while(V(t,m)<.08&&Math.abs(t-b)<3)t+=d; if(Math.abs(t-b)<3)T3.push(ax?[t,m,hash(Math.floor(m*7),3,463)]:[m,t,hash(Math.floor(m*7),5,463)]); } } };
+    strips(P.x0,cy-w,cx-R,cy+w,0); strips(cx+R,cy-w,P.x1,cy+w,0); strips(cx-R,cy-R,cx+R,cy+R,1); strips(cx-w,P.y0+.5,cx+w,cy-R,1); strips(cx-w,cy+R,cx+w,P.y1,1); }
   const stone=(i,j,k,H=99,cap=false)=>BRICKS.face(i,j,k,H,cap);
   const capSide=(i,j,h)=>{ const n=grain(i/24,j/24,91,1.2), c=(j===0?1.2:j>=h-1?.62:1)*(124+20*n); return speck([c,c,c*.96],i/24,j/24,93); };
   const face=(a,b,c,d,w,h,fn)=>BOD.bq(a,b,c,d,BOD.faceTex(w,h,(i,j)=>BOD.C(fn(i,j))),'G');
@@ -144,7 +165,7 @@ await grab('park',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.ox=P
       const hm=new THREE.SpriteMaterial({map:HT,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,toneMapped:false}), SPR=[], LL=[];
       for(const [x,y,z] of HL){ const s=new THREE.Sprite(hm); s.position.set(x,y,z); s.scale.set(2.6*M,2.6*M,1); s.renderOrder=2; s.visible=false; scene.add(s); SPR.push(s);
         const L=new THREE.PointLight(new THREE.Color(1,.8,.52),24,12*TILE,1.6); L.position.set(x,y,z); L.userData.i0=24; L.intensity=0; scene.add(L); lamps.push(L); LL.push(L); }
-      const lit=()=>{ let d=false; try{ d=CLOCK.dark(); }catch(_){ } glass.color.setHex(d?0xffc978:0x6e6656); core.color.setHex(d?0xfff6dc:0x8a7e66); for(const s of SPR)s.visible=d; for(const L of LL)L.intensity=d?L.userData.i0:0; }; lit(); setInterval(lit,2000); } }
+      const lit=()=>{ let d=false; try{ d=CLOCK.dark(); }catch(_){ } glass.color.setHex(d?0xffc978:0x6e6656); core.color.setHex(d?0xfff6dc:0x8a7e66); for(const s of SPR)s.visible=d; for(const L of LL)L.intensity=d?L.userData.i0*(window.DN?DN.lk:1):0; }; lit(); setInterval(lit,2000); PARK.lampLit=lit; } }
   const TL=[0,1,2,3].includes(+QS.get('treelook'))&&QS.get('treelook')!==null?+QS.get('treelook'):0;
   const treeLook=sh=>{ sh.vertexShader='attribute vec3 aTr; varying vec3 vTr; varying vec3 vLw;\n'+sh.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\n vTr=aTr; vLw=transformed;')
       .replace('#include <shadowmap_vertex>',THREE.ShaderChunk.shadowmap_vertex.replace(/(directional|point)LightShadows\[ i \]\.shadowNormalBias/g,'($&+aTr.z*.35)'));

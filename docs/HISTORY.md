@@ -2806,3 +2806,43 @@ fsomeone dies insomewhere they have to float back as a ghost to get resed. when 
   should look more like celshading", "not line or dot art"): the crowns' per-voxel speckle is gone, their soft inner darkening is two
   flat steps, and they no longer shadow themselves in stripes (the shadow map draws their back faces, and the leaves' shadow offset is
   0.35, was 0.12).
+- **Only day or night** (owner, 19 Oct 2026: "for now i want to remove all the time of day and control of weather from menu, and i only
+  want day or night. i want to be able to set the exact settings for each one. i want them both to be atmosphereic, day needs sun, clouds
+  up high, sun shining through, rays, beams of light, butteflies, birds, dragons, cats, ghosts, etc. peaceful."; `134b-daynight.js`,
+  `129-clock.js`, `131-weather.js`, `132-sky.js`, `094-ui.js`): ATMOSPHERE's TIME OF DAY, WEATHER, SCENES and EVENING COLOURS are gone; in
+  their place DAY / NIGHT (N switches them, kept in the save's `dn`). The clock stands still at the mode's hour (DAY 3:30 pm, NIGHT
+  10:30 pm) and the weather is held fair (DAY a few clouds, NIGHT fewer, no rain, light wind), so the butterflies, birds, wasps, dragons,
+  cats and ghosts are out by day and the bats, ghosts, cats and lit lamps by night. Each mode has its own look, every number live with
+  SAVE (`dn-day`, `dn-night`), RESET and EXPORT (`DAY {...}` / `NIGHT {...}`: when he sends it, put it in `D0`): the sun's height (the
+  hour; at night where the moon is), sunlight or moonlight, the light all round, the sky overhead and at the horizon, how many clouds,
+  their height and brightness, the high clouds' cover and brightness, where the mist starts, its depth and how much it takes the sky's
+  colour, by day the light shafts and rays and the dust in them, by night the lamps, the stars and the moon. The cloud cover and
+  brightness left DISTANCE LOOK (the mode owns them). `?hour=H` still sets a test's hour (before 6 or after 19 is NIGHT; not saved),
+  `?wx=` still holds a weather (`natural` the old drifting one); the old saved hour, weather, scene and colours are no longer read.
+  Cost: nothing drawn more; one more pass over a few numbers a frame.
+- **The park's paths natural** (owner, 19 Oct 2026, of Central Park's cobbles, dark hexagons in a straight band with a hard stair-stepped
+  edge against flat grass: "the paths needs to all look more natural and have tufts, edges, variety, not straight lines, grout, realistm,
+  etc;"; `061-park.js`, `140-weeds.js`): the hexagons are gone for loose cobbles (stones of mixed size and shape about a third of a tile,
+  five flat greys and browns, a few pale or dark ones, a lit and a shaded rim, some cracked) set in dark greenish grout with moss where it's
+  shaded and grass coming up through it. The edges wander (a slow and a quick wobble, mostly inward, at most 0.3 tile out), the corners
+  where the ways meet the round are rounded off, and the edge stones go missing, chipped or loose a little out on the lawn, with soil and
+  sprouts where they're gone; painted tufts grow out of the joints, thicker near the edges, and a couple of hundred of the street's 3D weed
+  tufts (`PARK.tufts`, four triangles each) stand along both edges. The ground under the paths is now laid in one-tile slices only as wide
+  as the path in each (was 14-tile-wide strips), so the lawn's 3D grass grows right up to the stones and the atlas is about a third smaller.
+  Where you can walk is unchanged (`PARK.path`); only the picture moved (`PARK.vis`).
+- **Fluid moves: full control, a cartwheel** (owner, 19 Oct 2026: "make sure they can jump and keep running, animations... i want them
+  to have ful control, ie running then they jump then press cartwheel then run again, etc. i dont awnt the animations to have strict
+  things they have to complete, i want the avatar to be fluid and dynamic"; `001-rig.js` `act`/`begin`/`tick`, `075-main-13.js`):
+  any move key starts its move at once from wherever the body is (blended from the current pose, 0.1 s; no combo windows to wait for).
+  In the air a ground move waits for the landing and starts on touchdown (a jump pressed in the air is a hop on landing); a cartwheel
+  or flip pressed in the air is an air spin (a sideways aerial or a tucked somersault, finished before the feet land); a second jump
+  never starts in the air. Only climbing out, ledges, wall moves and dives still finish first. Holding a direction steers during any
+  move (half the usual turn) and the speed eases toward the held walk or run (in the air 2/s, on landing 8/s; kicks, sweeps and
+  crouches keep a fifth to a third of it, the roll most of it); with a direction held a move hands over to the gait as soon as its
+  work is done (a jump on touching down, a kick after it lands, the roll on its feet), on the leading foot's step, in 0.12 s. Every
+  blend out is 0.12 s (was 0.2). The running jump now happens in the game too (it was never chosen once any water had been near).
+  **Cartwheel** (U; the controller's CARTWHEEL, unset; in the menu's KEYS and WHAT YOU CAN DO): side-on, lead hand then the other,
+  legs over in a straddle, feet down one after the other, then a quarter turn back to facing on; about 3 tiles in 1 s (0.86 s when
+  running on), hands and feet stay put on the ground where they land. Footstep sounds are quiet during moves. Checked in node (the
+  rig out of the built page, 60 a second): run, jump, cartwheel, roll, run with no stop, no NaN, speed held over 39 units a second
+  (the run is 108). Cost: none a frame (the cartwheel's 25 poses are made once at load).

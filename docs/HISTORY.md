@@ -1855,6 +1855,49 @@ so he looked shrugged. You are now his mannequin (`data/full/humanoid.fbx`, Blen
 A-pose, so the skeleton's arms are lowered to it before binding; each corner weighted in code to its nearest one or two bones. One flat
 light colour, cel-shaded, casting a shadow; the same clips. 402 triangles.
 
+**His mannequin moved by his own rig** (owner, 19 Oct 2026: "is this using all the other techniques we added earlier where he is actually
+touching ground, can run in circles, lean, etc."; his pick of two: drive the mannequin from the rig): the clips are gone from you; every
+time the rig works out his pose (`ASTEP`), each of the mannequin's bones takes the turn of the rig's piece it stands for (hips, torso, neck,
+head, upper arm, forearm, hand, thigh, shin, foot: the piece's axis from its joints, its twist from the piece's own frame), measured from
+the rig's rest to the mannequin standing the same way. His hips go where the rig's go, as high as the rig's are of theirs; each leg
+reaches (two-bone) for where the rig's ball of the foot is in the world, so a locked foot stays locked. So he has all of it: feet planted
+in the world (straight, running, round a circle, turning, stopping, the settling steps, stairs), the lean into turns, the weight carried
+on at a stop, the jump, the moves, sitting, swimming and the ragdoll (`ragPose`). Not followed: the PHYSICS BODY option's own jiggle
+(it moves the old Walker's pieces, not the pose). Measured (in the page, the rig played as `tests/footworld.cjs` plays it, 60 fps): a
+planted foot moves under 1 cm a second walking, running, round a circle, stopping and on stairs (2.8 through a sharp quarter turn, where
+the rig's own pivots); flat on its ground within half a centimetre (3-4 on stairs). The page no longer carries `data/ual.json` (its
+skeleton now in `data/humanoid.json`, 16 KB): 260 KB less. Cost: some 60 bones set when his pose changes, a fraction of a millisecond.
+
+**His movement audited, fluid first** (owner, 19 Oct 2026: "walks terrible"; then "do a complete audit of his stance and movements make
+sure it makes sense, quick turn, leaning runs, i want him fully mobile like tomb raider. fluid. its #1 priority"): every move filmed
+side-on and from behind on its own (a page of the rig lifted from the build and the shipped 087a: stand, walk, run, start, stop, run-stop,
+U-turn, a running circle, jump, running jump, roll, kick). Found and fixed:
+- **Crouched walk, lunging run**: his hips had been the rig's height scaled up, and the short-legged rig drops its hips to reach its steps.
+  Now his hips stand as high as his own legs reach both feet (straight at rest), lowered further only by what the rig crouches beyond its
+  own legs' reach past its soft-kneed "standing easy" (sitting, landing, ducking). Off his feet (in the air, rolling, flipping, falling)
+  his hips follow the rig's (lower: in proportion; higher: the jump's true height), the two blended by how upright he is and how far his
+  feet are off the ground. Jumps no longer fold his legs back; the roll stays above the ground.
+- **Hips behind his feet**: the ball of his (longer) foot is pinned where the rig's is; his hips are set back by the difference, in his own
+  frame (so it doesn't drift in a circle).
+- **Boxer's arms running**: the elbow follows the rig's bend at 70%.
+- **Choppy moves**: your pose is now worked out every frame always (it was 10 a second standing and in moves, `ASTEP`); the street's
+  characters keep their steps (GRAPHICS' setting).
+- **Turns snapping**: your heading eases to where you steer (two thirds of the way in about 80 ms), at most 540 degrees a second as before.
+The lean into turns is the rig's own: 15 degrees round a running circle (he leans 14). Measured: a planted foot moves 1 to 4 cm a second
+(walk, run, circles, stops, stairs), 4 through a sharp quarter turn.
+
+**Built like the Walker; knees only bend forward** (owner, 19 Oct 2026: "run left and right and see how it looks (not good)"; then "make
+him built more like shape of the other avatar, short, stocky, bigger head, less realistic"; then, of a running frame, "legs bending
+backwards?"): the mannequin is reshaped, once, when he is made, to the Walker's own rest skeleton (`RIG.restOf()`): each joint where the
+Walker's is (short legs, the hips at his, the arms to mid-thigh), each bone's flesh carried with it, stretched along the bone to its new
+length and thickened across it (legs 1.5, arms 1.4, hands and feet 1.35, neck 1.5, body 1.25); the bones re-bound there. His own head is
+folded away inside a round one the Walker's size (an icosphere, 320 triangles, smooth, on the head bone). With the rig's proportions his
+moves fit him: the run, the reversals left and right, the jump. Also: the run's flight (both feet a little up) no longer counts as being
+off his feet (only more than 6 of the rig's units does), so he no longer drops to a kneel after a reversal; moving, only 15% of the rig's
+extra hip dip is passed on (all of it standing: sitting, crouching); the run's elbows are the rig's again. **Knees**: the rig itself
+bends a knee backwards in some run frames (37 in 4 s); each knee now bends toward the way his hips face (none backwards, walking or
+running). Planted feet: under 1 cm a second (walk, run, circles, stops, stairs). 722 triangles.
+
 ## 19 Oct 2026: lighter skeletons for a pixel game
 
 **The heaviest characters cut** (owner, 19 Oct 2026: "since we are do a pixel style game do we really need such high quality chracter

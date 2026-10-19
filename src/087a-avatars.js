@@ -1,41 +1,13 @@
-const UAL=__DATA__("data/ual.json"), HUM=__DATA__("data/humanoid.json");
+const HUM=__DATA__("data/humanoid.json");
 const AVS={C:{}};
 window.AVS=AVS;
-{ const D=UAL.ual, RG=D.rig, BN=RG.names, PAR=RG.parent, BI=Object.fromEntries(BN.map((n,i)=>[n,i])), V=THREE.Vector3, Q=THREE.Quaternion;
-  const b=s=>{ const t=atob(s), u=new Uint8Array(t.length); for(let i=0;i<t.length;i++)u[i]=t.charCodeAt(i); return u; }, f32=s=>new Float32Array(b(s).buffer), i16=s=>new Int16Array(b(s).buffer);
-  const TT=C=>Array.from({length:C.n},(_,k)=>k*C.dur/(C.n-1));
-  const clipsFor=kp=>{ const out={}; for(const [name,C] of Object.entries(D.clips)){ const t=TT(C), q=i16(C.q), tr=[];
-      BN.forEach((bn,j)=>{ const v=new Float32Array(C.n*4); for(let k=0;k<C.n;k++)for(let c=0;c<4;c++)v[k*4+c]=q[(k*BN.length+j)*4+c]/32000; tr.push(new THREE.QuaternionKeyframeTrack(bn+'.quaternion',t,v)); });
-      for(const [bn,p] of Object.entries(C.p))if(bn!=='root')tr.push(new THREE.VectorKeyframeTrack(bn+'.position',t,f32(p).map(x=>x*kp)));
-      out[name]=new THREE.AnimationClip(name,C.dur,tr); } return out; };
+{ const RG=HUM.rig, BN=RG.names, PAR=RG.parent, BI=Object.fromEntries(BN.map((n,i)=>[n,i])), V=THREE.Vector3, Q=THREE.Quaternion;
+  const b=s=>{ const t=atob(s), u=new Uint8Array(t.length); for(let i=0;i<t.length;i++)u[i]=t.charCodeAt(i); return u; }, f32=s=>new Float32Array(b(s).buffer);
   const rigOf=T=>{ const bones=BN.map((n,i)=>{ const B=new THREE.Bone(); B.name=n; B.position.fromArray(T[i]); B.quaternion.fromArray(RG.q[i]); return B; });
     PAR.forEach((p,i)=>{ if(p>=0)bones[p].add(bones[i]); }); return {bones,skeleton:new THREE.Skeleton(bones)}; };
   const geoOf=(P,C,SI,SW,I)=>{ const g=new THREE.BufferGeometry(), n=P.length/3; g.setAttribute('position',new THREE.BufferAttribute(P,3)); g.setAttribute('color',new THREE.BufferAttribute(C,3,true));
     g.setAttribute('reg',new THREE.BufferAttribute(new Float32Array(n),1)); g.setAttribute('sh',new THREE.BufferAttribute(new Float32Array(n),1));
     g.setAttribute('skinIndex',new THREE.Uint8BufferAttribute(SI,4)); g.setAttribute('skinWeight',new THREE.BufferAttribute(SW,4,true)); g.setIndex(new THREE.BufferAttribute(I,1)); return g; };
-  const Anim=(mixer,CL)=>{ const A={}, W={}, act=n=>A[n]||(A[n]=mixer.clipAction(CL[n])); const M={base:'Idle_Loop',ts:1};
-    M.update=dt=>{ const tgt=CL[M.base]?M.base:'Idle_Loop'; act(tgt).timeScale=M.ts;
-      for(const n of new Set([...Object.keys(W),tgt])){ const a=act(n); W[n]=W[n]??0; W[n]+=((n===tgt?1:0)-W[n])*Math.min(1,dt*10);
-        if(W[n]>.01){ if(!a.isRunning()){ a.setLoop(THREE.LoopRepeat,Infinity); a.play(); } a.setEffectiveWeight(W[n]); } else{ a.stop(); delete W[n]; } }
-      mixer.update(dt); };
-    return M; };
-  const relaxer=(bone,root,fw)=>{ const need=['spine_02','neck_01','spine_03','pelvis'].concat(...['l','r'].map(s=>['upperarm_','lowerarm_','hand_','thigh_','calf_','foot_'].map(k=>k+s))); if(need.some(n=>!bone(n)))return null;
-    let rx=0; const DOWN=new V(0,-1,0), wq=new Q(), pq=new Q(), dq=new Q(), q0=new Q(), fq=new Q(), fpq=new Q(), A=new V(), B2=new V(), P1=new V(), P2=new V();
-    const aim=(b_,c,dir)=>{ b_.getWorldPosition(A); c.getWorldPosition(B2); dq.setFromUnitVectors(B2.sub(A).normalize(),dir); b_.getWorldQuaternion(wq); b_.parent.getWorldQuaternion(pq); b_.quaternion.copy(pq.invert().multiply(dq.multiply(wq))); b_.updateMatrixWorld(true); };
-    const blend=(b_,c,dir,w)=>{ q0.copy(b_.quaternion); aim(b_,c,dir); if(w<1){ b_.quaternion.slerpQuaternions(q0,b_.quaternion.clone(),w); b_.updateMatrixWorld(true); } };
-    const outOf=(a,c)=>{ bone(a).getWorldPosition(P1); bone(c).getWorldPosition(P2); P2.sub(P1); P2.y=0; return P2.normalize().clone(); };
-    const footY=()=>{ bone('foot_l').getWorldPosition(P1); bone('foot_r').getWorldPosition(P2); return Math.min(P1.y,P2.y); };
-    return (dt,on)=>{ rx+=((on?1:0)-rx)*Math.min(1,dt*6); if(rx<.01)return; root.updateMatrixWorld(true); const f=fw(), y0=footY();
-      blend(bone('spine_02'),bone('neck_01'),new V(0,1,0).addScaledVector(f,.05).normalize(),rx*.7);
-      for(const sd of ['l','r']){ const o=outOf('spine_03','upperarm_'+sd);
-        blend(bone('upperarm_'+sd),bone('lowerarm_'+sd),DOWN.clone().addScaledVector(o,.14).addScaledVector(f,.02).normalize(),rx);
-        blend(bone('lowerarm_'+sd),bone('hand_'+sd),DOWN.clone().addScaledVector(o,.06).addScaledVector(f,.16).normalize(),rx); }
-      for(const sd of ['l','r']){ const ft=bone('foot_'+sd); ft.getWorldQuaternion(fq); const o=outOf('pelvis','thigh_'+sd);
-        blend(bone('thigh_'+sd),bone('calf_'+sd),DOWN.clone().addScaledVector(o,.03).normalize(),rx);
-        blend(bone('calf_'+sd),ft,DOWN.clone().addScaledVector(f,-.02).normalize(),rx);
-        ft.parent.getWorldQuaternion(fpq); ft.quaternion.copy(fpq.invert().multiply(fq)); ft.updateMatrixWorld(true); }
-      root.position.y+=y0-footY(); }; };
-  const fwd=()=>new V(Math.sin(heading),0,Math.cos(heading));
   const npcOf=(geo,rig,tall,names)=>{ const N=makeNPC(null,{key:'me',name:'YOU',names,eye:-1,lv:'up',group:'bodega',geo,skin:rig,tall,rank:names.map(()=>0),metres:1.85*(W3.SZ||1),x:pos.x,z:pos.z,radius:.3,speed:0,stride:0,rock:0,bob:0});
     NPCS.splice(NPCS.indexOf(N),1); if(N.g.parent)N.g.parent.remove(N.g); scene.add(N.g); NPCS.extra.push({g:N.g}); return N; };
   const body=()=>{ const rig=rigOf(RG.t), B=rig.bones, bone=x=>B[BI[x]], A=new V(), C=new V(), wq=new Q(), pq=new Q();
@@ -52,26 +24,69 @@ window.AVS=AVS;
     for(let i=0;i<n;i++){ Pv.fromArray(P,i*3); const d=SEG.map(([k,a,c])=>{ G.subVectors(c,a); const t=Math.max(0,Math.min(1,E.subVectors(Pv,a).dot(G)/G.lengthSq())); return [k,Pv.distanceTo(E.copy(a).addScaledVector(G,t))]; }).sort((x,y)=>x[1]-y[1]);
       const [k0,d0]=d[0], [k1,d1]=d.find(x=>x[0]!==k0), w0=1/Math.pow(d0+.01,4), w1=d1<d0*1.6?1/Math.pow(d1+.01,4):0, w=Math.round(255*w0/(w0+w1));
       si[i*4]=k0; sw[i*4]=w; si[i*4+1]=k1; sw[i*4+1]=255-w; }
-    const N=npcOf(geoOf(P,new Uint8Array(n*3).map((_,i)=>[206,196,182][i%3]),si,sw,I),rig,D.tall,['body']);
-    return {g:N.g,N,an:Anim(new THREE.AnimationMixer(B[0]),clipsFor(1)),relax:relaxer(bone,N.g,fwd),tris:HUM.tris}; };
-  const MOVE={jump:'Jump_Loop',backflip:'Jump_Loop',frontflip:'Jump_Loop',jab:'Punch_Jab',cross:'Punch_Cross',hook:'Punch_Cross',uppercut:'Punch_Cross',slap:'Punch_Jab',frontKick:'Punch_Cross',roundhouse:'Punch_Cross',
-    legSweep:'Crouch_Idle_Loop',fall:'Death01',roll:'Roll',block:'Spell_Simple_Idle_Loop',guard:'Spell_Simple_Idle_Loop',crouch:'Crouch_Idle_Loop',flinch:'Hit_Chest',wave:'Interact',dance:'Dance_Loop'};
-  const MPS=TILE/.84; let lx=null, lz=null, sp=0;
-  const pick=()=>{ const mv=st.move&&st.move.name; let base='Idle_Loop', ts=1;
-    if(st.water&&st.water.in)base=sp>.3?'Swim_Fwd_Loop':'Swim_Idle_Loop';
-    else if(st.sit)base='Sitting_Idle_Loop';
-    else if(mv)base=MOVE[mv]||null;
-    else if(st.up&&MOVE[st.up.name])base=MOVE[st.up.name];
-    else if(sp>.25){ const sk=(st.wk||1)+((st.rk||1)-(st.wk||1))*(st.run||0), sn=sp/sk;
-      if(sn>3.6){ base='Sprint_Loop'; ts=sp/5; } else if(sn>2){ base='Jog_Fwd_Loop'; ts=sp/3.2; } else { base='Walk_Loop'; ts=sp/1.4; } }
-    return [base,Math.max(.2,Math.min(4,ts*(st.anim||1)))]; };
-  const jumpY=B=>{ const mv=st.move&&st.move.name; return mv&&/jump|flip/.test(mv)&&B&&B.J&&B.J.pelvis?Math.max(0,B.J.pelvis.y-18):0; };
-  AVS.tick=(dt,B)=>{ const C=AVS.C.me||(AVS.C.me=body()), first=typeof UI!=='undefined'&&UI.view==='first';
+    const N=npcOf(geoOf(P,new Uint8Array(n*3).map((_,i)=>[206,196,182][i%3]),si,sw,I),rig,HUM.tall,['body']);
+    let HEAD; { const RB=RIG.restOf().B.J, body=N.me.parent, k=new V(W3.group.scale.x/body.scale.x,W3.group.scale.y/body.scale.y,W3.group.scale.z/body.scale.z), mp=j=>new V(j.x*k.x,j.y*k.y,j.z*k.z), nbn=B.length;
+      const MAP={pelvis:'pelvis',spine_02:'spine',spine_03:'chest',neck_01:'neck',Head:'headBase'}; for(const s of ['l','r']){ const S=s.toUpperCase(); Object.assign(MAP,{['clavicle_'+s]:'clav'+S,['upperarm_'+s]:'shoulder'+S,['lowerarm_'+s]:'elbow'+S,['hand_'+s]:'wrist'+S,['middle_04_leaf_'+s]:'fingers'+S,['thigh_'+s]:'hip'+S,['calf_'+s]:'knee'+S,['foot_'+s]:'ankle'+S,['ball_'+s]:'ball'+S,['ball_leaf_'+s]:'toe'+S}); }
+      const NJ=J.map(()=>null); for(const [bn,j] of Object.entries(MAP))NJ[BI[bn]]=mp(RB[j]); NJ[BI.spine_01]=NJ[BI.pelvis].clone().lerp(NJ[BI.spine_02],.5); NJ[0]=J[0].clone();
+      const CH={pelvis:'spine_01',spine_01:'spine_02',spine_02:'spine_03',spine_03:'neck_01',neck_01:'Head'}; for(const s of ['l','r'])Object.assign(CH,{['clavicle_'+s]:'upperarm_'+s,['upperarm_'+s]:'lowerarm_'+s,['lowerarm_'+s]:'hand_'+s,['hand_'+s]:'middle_04_leaf_'+s,['thigh_'+s]:'calf_'+s,['calf_'+s]:'foot_'+s,['foot_'+s]:'ball_'+s,['ball_'+s]:'ball_leaf_'+s});
+      const RAD=n=>/^(thigh|calf)/.test(n)?1.5:/^(upperarm|lowerarm)/.test(n)?1.4:/^(hand|foot|ball)/.test(n)?1.35:/^neck/.test(n)?1.5:/^(spine|pelvis|clav)/.test(n)?1.25:1;
+      const HK=(RB.headTop.y-RB.headBase.y)*k.y/(HUM.tall-J[BI.Head].y), TR=J.map(()=>null);
+      for(let i=0;i<nbn;i++){ const bn=BN[i];
+        if(bn==='Head'){ TR[i]={o:J[i],n:NJ[i],q:new Q(),u:new V(0,1,0),ax:HK*.85,rd:HK}; continue; }
+        if(CH[bn]){ const c=BI[CH[bn]], du=J[c].clone().sub(J[i]), dn=NJ[c].clone().sub(NJ[i]); TR[i]={o:J[i],n:NJ[i],q:new Q().setFromUnitVectors(du.clone().normalize(),dn.clone().normalize()),u:du.clone().normalize(),ax:dn.length()/du.length(),rd:RAD(bn)}; continue; }
+        const p=PAR[i]; TR[i]=p<0?{o:J[i],n:J[i],q:new Q(),u:new V(0,1,0),ax:1,rd:1}:TR[p]; }
+      const tf=(T,p,o)=>{ const d=o.copy(p).sub(T.o), a=T.u.clone().multiplyScalar(d.dot(T.u)); return d.sub(a).multiplyScalar(T.rd).add(a.multiplyScalar(T.ax)).applyQuaternion(T.q).add(T.n); };
+      for(let i=0;i<nbn;i++)if(!NJ[i])NJ[i]=tf(TR[PAR[i]],J[i],new V());
+      const pa=N.me.geometry.attributes.position, o1=new V(), o2=new V();
+      for(let v=0;v<pa.count;v++){ Pv.fromBufferAttribute(pa,v); const w=sw[v*4]/255; tf(TR[si[v*4]],Pv,o1).multiplyScalar(w).add(tf(TR[si[v*4+1]],Pv,o2).multiplyScalar(1-w)); pa.setXYZ(v,o1.x,o1.y,o1.z); }
+      const hc=mp(RB.head), hy=(RB.headTop.y-RB.headBase.y)*k.y*.5, hx=hy*body.scale.y/body.scale.x*.92;
+      for(let v=0;v<pa.count;v++)if((si[v*4]===BI.Head&&sw[v*4]>60)||(si[v*4+1]===BI.Head&&sw[v*4+1]>100))pa.setXYZ(v,hc.x,hc.y,hc.z);
+      const hg=new THREE.IcosahedronGeometry(1,2), hp=hg.attributes.position, hn=hp.count, HN=new Float32Array(hp.array); for(let v=0;v<hn;v++){ Pv.set(hp.getX(v)/hx,hp.getY(v)/hy,hp.getZ(v)/hx/1.05).normalize().toArray(HN,v*3); hp.setXYZ(v,hc.x+hp.getX(v)*hx,hc.y+hp.getY(v)*hy,hc.z+hp.getZ(v)*hx*1.05); }
+      const hs=new Uint8Array(hn*4), hw=new Uint8Array(hn*4); for(let v=0;v<hn;v++){ hs[v*4]=BI.Head; hw[v*4]=255; }
+      const HG=geoOf(new Float32Array(hp.array),new Uint8Array(hn*3).map((_,i)=>[206,196,182][i%3]),hs,hw,new Uint32Array([...Array(hn).keys()])); HG.setAttribute('normal',new THREE.BufferAttribute(HN,3));
+      HEAD=new THREE.SkinnedMesh(HG,N.me.material); HEAD.frustumCulled=false; HEAD.castShadow=HEAD.receiveShadow=true; body.add(HEAD); HEAD.bind(rig.skeleton,N.me.bindMatrix);
+      pa.needsUpdate=true; N.renorm();
+      const WQ=B.map(()=>new Q()); for(let i=0;i<nbn;i++){ const p=PAR[i]; WQ[i].copy(p<0?B[i].quaternion:WQ[p].clone().multiply(B[i].quaternion)); }
+      const NQ=WQ.map((q,i)=>TR[i].q.clone().multiply(q));
+      for(let i=0;i<nbn;i++){ const p=PAR[i]; if(p<0)continue; const ip=NQ[p].clone().invert(); B[i].position.copy(NJ[i]).sub(NJ[p]).applyQuaternion(ip); B[i].quaternion.copy(ip.multiply(NQ[i])); }
+      const M=new THREE.Matrix4(); rig.skeleton.boneInverses.forEach((m,i)=>m.copy(M.compose(NJ[i],NQ[i],new V(1,1,1)).premultiply(N.me.bindMatrix)).invert()); }
+    const nb=B.length, q0=B.map(x=>x.quaternion.clone()), MQ=B.map(()=>new Q()), MP=B.map(()=>new V());
+    const fk=i=>{ const p=PAR[i]; if(p<0){ MQ[i].copy(B[i].quaternion); MP[i].copy(B[i].position); } else{ MQ[i].copy(MQ[p]).multiply(B[i].quaternion); MP[i].copy(B[i].position).applyQuaternion(MQ[p]).add(MP[p]); } };
+    for(let i=0;i<nb;i++)fk(i);
+    const W0=MQ.map(q=>q.clone()), P0=MP.map(p=>p.clone()), tq=new Q(), iq=new Q();
+    const setQ=(i,q)=>{ B[i].quaternion.copy(tq.copy(MQ[PAR[i]]).invert().multiply(q)); fk(i); };
+    const SIDE=s=>s.toUpperCase(), DRV={pelvis:['hips','pelvis','spine','spine_01'],spine_03:['torso','spine','neck','neck_01'],neck_01:['neck','neck','headBase','Head'],Head:['head','headBase','headTop',null]};
+    for(const s of ['l','r']){ const S=SIDE(s); Object.assign(DRV,{['upperarm_'+s]:['upperArm'+S,'shoulder'+S,'elbow'+S,'lowerarm_'+s],['lowerarm_'+s]:['forearm'+S,'elbow'+S,'wrist'+S,'hand_'+s],['hand_'+s]:['hand'+S,'wrist'+S,'fingers'+S,'middle_01_'+s],
+      ['thigh_'+s]:['thigh'+S,'hip'+S,'knee'+S,'calf_'+s],['calf_'+s]:['shin'+S,'knee'+S,'ankle'+S,'foot_'+s],['foot_'+s]:['shoe'+S,'ankle'+S,'ball'+S,'ball_'+s]}); }
+    const AX={}; for(const [bn,d] of Object.entries(DRV)){ const i=BI[bn], dir=d[3]?P0[BI[d[3]]].clone().sub(P0[i]):new V(0,1,0); AX[bn]=dir.normalize().applyQuaternion(W0[i].clone().invert()); }
+    const K=new V(1,1,1), m=(J,o=new V())=>o.set(J.x*K.x,J.y*K.y,J.z*K.z), mb=new THREE.Matrix4(), SW=new V(), X=new V(), Y=new V(), Z=new V();
+    const basis=(J,F,d,o=new Q())=>{ m(J[d[2]],Y).sub(m(J[d[1]],Z)).normalize(); X.set(F.x.x*K.x,F.x.y*K.y,F.x.z*K.z); X.addScaledVector(Y,-X.dot(Y)).normalize(); Z.crossVectors(X,Y); return o.setFromRotationMatrix(mb.makeBasis(X,Y,Z)); };
+    let R0=null, WC=null, J0=null; const swing=(q,i,bn,dir)=>tq.setFromUnitVectors(SW.copy(AX[bn]).applyQuaternion(q).normalize(),dir).multiply(q);
+    const calib=()=>{ const RB=RIG.restOf().B; J0=RB.J; PZ.set(0,0,m(J0.ballL,PZ).z-P0[BI.ball_l].z); R0={}; WC={}; for(const [bn,d] of Object.entries(DRV)){ R0[bn]=basis(J0,RIG.frameOf(d[0],RB),d); WC[bn]=bn.startsWith('foot_')?W0[BI[bn]].clone():swing(W0[BI[bn]],BI[bn],bn,m(J0[d[2]],new V()).sub(m(J0[d[1]],Y)).normalize()).clone(); } };
+    const PZ=new V(), FT={l:new V(),r:new V()}, LEG=B[BI.calf_l].position.length()+B[BI.foot_l].position.length(), RLEG=RIG.THIGH+RIG.SHIN, At=new V(), Hh=new V(), Kn=new V(), U=new V(), PL=new V(), DQ={}, cur=new Q(), sl=new Q();
+    const drive=(PB,gw=0)=>{ const J=PB.J, body=N.me.parent; K.set(W3.group.scale.x/body.scale.x,W3.group.scale.y/body.scale.y,W3.group.scale.z/body.scale.z); if(!R0)calib();
+      for(const [bn,d] of Object.entries(DRV)){ const F=RIG.frameOf(d[0],PB); if(F)DQ[bn]=basis(J,F,d,DQ[bn]||new Q()).multiply(iq.copy(R0[bn]).invert()); }
+      for(const s of ['l','r']){ const S=SIDE(s), bi=BI['ball_'+s], fi=BI['foot_'+s]; m(J['ball'+S],FT[s]); FT[s].y+=P0[bi].y-m(J0['ball'+S],X).y; FT[s].sub(X.copy(B[bi].position).applyQuaternion(sl.copy(DQ['foot_'+s]).multiply(WC['foot_'+s]))); }
+      for(let i=0;i<nb;i++){ const bn=BN[i];
+        if(bn==='pelvis'){ m(J.pelvis,At).sub(m(J0.pelvis,U)); B[i].position.copy(P0[i]).add(At).add(PZ);
+          let lo=1e9, ex=1e9; for(const s of ['l','r']){ const S=SIDE(s), ti=BI['thigh_'+s], L=LEG*.995, a=J['ankle'+S], h=J['hip'+S], rd=Math.hypot(a.x-h.x,a.z-h.z), RL=RLEG*.995;
+            ex=Math.min(ex,a.y+Math.sqrt(Math.max(0,RL*RL-rd*rd))-h.y); Hh.copy(P0[ti]).sub(P0[i]).applyQuaternion(DQ.pelvis); const f=FT[s], dx=f.x-(B[i].position.x+Hh.x), dz=f.z-(B[i].position.z+Hh.z);
+            lo=Math.min(lo,f.y+Math.sqrt(Math.max(0,L*L-dx*dx-dz*dz))-Hh.y); }
+          const up=J.spine.y-J.pelvis.y, lift=Math.min(J.ankleL.y-J0.ankleL.y,J.ankleR.y-J0.ankleR.y), w=Math.max(0,Math.min(1,(10-lift)/4))*Math.max(0,Math.min(1,(up/(J0.spine.y-J0.pelvis.y)-.6)/.3)), dy=J.pelvis.y-J0.pelvis.y;
+          B[i].position.y=(1-w)*(dy<0?P0[i].y*J.pelvis.y/J0.pelvis.y:P0[i].y+dy*K.y)+w*(Math.min(lo,P0[i].y+Math.max(0,dy)*K.y)-Math.max(0,ex-1.1)*LEG/RLEG*(1-.85*gw)); B[i].position.applyQuaternion(cur.copy(MQ[PAR[i]]).invert()); }
+        if(bn==='spine_01'||bn==='spine_02'){ setQ(i,sl.slerpQuaternions(DQ.pelvis,DQ.spine_03,bn==='spine_01'?1/3:2/3).multiply(W0[i])); continue; }
+        if(!DRV[bn]||!DQ[bn]){ B[i].quaternion.copy(q0[i]); fk(i); continue; }
+        cur.copy(DQ[bn]).multiply(WC[bn]);
+        if(bn.startsWith('thigh_')){ const s=bn.slice(-1), S=SIDE(s), l1=B[BI['calf_'+s]].position.length(), l2=B[BI['foot_'+s]].position.length();
+          B[i].quaternion.copy(q0[i]); fk(i); Hh.copy(MP[i]); At.copy(FT[s]); U.subVectors(At,Hh); const dd=Math.min(Math.max(U.length(),.05),l1+l2-1e-3); U.normalize(); At.copy(Hh).addScaledVector(U,dd);
+          m(J['knee'+S],PL).sub(m(J['hip'+S],X).add(m(J['ankle'+S],Y)).multiplyScalar(.5)); PL.addScaledVector(U,-PL.dot(U)); PL.normalize(); Y.set(0,0,1).applyQuaternion(DQ.pelvis); Y.addScaledVector(U,-Y.dot(U)).normalize(); const pd=PL.dot(Y); if(!(pd>=.5))PL.addScaledVector(Y,.5-(pd||0)).normalize();
+          const ca=Math.max(-1,Math.min(1,(l1*l1+dd*dd-l2*l2)/(2*l1*dd))); Kn.copy(Hh).addScaledVector(U,ca*l1).addScaledVector(PL,Math.sqrt(1-ca*ca)*l1);
+          setQ(i,swing(cur,i,bn,X.subVectors(Kn,Hh).normalize()).clone()); DQ['_k'+s]=Kn.clone(); DQ['_a'+s]=At.clone(); continue; }
+        if(bn.startsWith('calf_')){ const s=bn.slice(-1); fk(i); setQ(i,swing(cur,i,bn,X.subVectors(DQ['_a'+s],MP[i]).normalize()).clone()); continue; }
+        setQ(i,cur); } };
+    return {g:N.g,N,HEAD,drive,tris:HUM.tris+HEAD.geometry.attributes.position.count/3}; };
+  AVS.tick=(dt,PB)=>{ const C=AVS.C.me||(AVS.C.me=body()), first=typeof UI!=='undefined'&&UI.view==='first';
     C.g.visible=!first&&!W3.hideMeQ; if(!W3.hideMeQ)W3.hideMe=true;
-    if(!dt)return;
-    if(lx===null){ lx=pos.x; lz=pos.z; } const d=Math.hypot(pos.x-lx,pos.z-lz)/MPS/dt; lx=pos.x; lz=pos.z; sp+=(Math.min(d,9)-sp)*Math.min(1,dt*8);
-    const [base,ts]=pick();
-    C.g.position.set(pos.x,py+jumpY(B)*ZU*(W3.SZ||1)*(W3.BH||1),pos.z); C.g.rotation.set(0,RAG.on?RAG.hd:heading,0);
-    const b0=RAG.on?'Death01':base||'Idle_Loop'; C.an.base=b0; C.an.ts=ts; C.an.update(dt*(b0==='Idle_Loop'?st.anim||1:1));
-    if(C.relax)C.relax(dt,b0==='Idle_Loop'&&!RAG.on); };
-  window.AVSDBG=()=>{ const C=AVS.C.me; return {ready:!!C,base:C&&C.an.base,tris:C?C.tris:0,sp:+sp.toFixed(2),vis:!!C&&C.g.visible}; }; }
+    C.g.position.set(pos.x,py,pos.z); C.g.rotation.set(0,RAG.on?RAG.hd:heading,0); if(C.HEAD.material!==C.N.me.material)C.HEAD.material=C.N.me.material;
+    if(PB&&PB.J&&C.g.visible&&PB!==C.last){ C.last=PB; C.drive(PB,Math.min(1,st.w||0)); } };
+  window.AVSDBG=()=>{ const C=AVS.C.me; return {ready:!!C,tris:C?C.tris:0,vis:!!C&&C.g.visible}; }; }

@@ -1,5 +1,5 @@
-const DRM={}; STORE.DRM=DRM;
-if(STORE.bar){ const S=STORE.bar, AT={x:BOD.X(S.drums.x),z:BOD.Z(S.drums.y-OCTBK),hd:0,y:BOD.Y(S.stage.z)}, g=new THREE.Group(); MAPG.bodega.add(g); DRM.g=g; DRM.at=AT;
+const DRM={tick:()=>{}}; STORE.DRM=DRM;
+DRM.make=()=>{ if(!STORE.bar)return; const S=STORE.bar, AT={x:BOD.X(S.drums.x),z:BOD.Z(S.drums.y-OCTBK),hd:0,y:BOD.Y(S.stage.z)}, g=new THREE.Group(); MAPG.bodega.add(g); DRM.g=g; DRM.at=AT;
   g.position.set(AT.x,AT.y,AT.z); g.rotation.set(0,AT.hd,0); g.scale.set(1/PPU,ZU,1/PPU);
   const CAP=160, im=new THREE.InstancedMesh(new THREE.SphereGeometry(1,10,8),new THREE.MeshLambertMaterial({}),CAP); im.instanceMatrix.setUsage(THREE.DynamicDrawUsage); im.castShadow=true; im.receiveShadow=true; im.frustumCulled=false; g.add(im);
   const col=new THREE.Color(), M4=new THREE.Matrix4(), Q=new THREE.Quaternion(), EU=new THREE.Euler(0,0,0,'YXZ'), P3=new THREE.Vector3(), S3=new THREE.Vector3();
@@ -11,5 +11,4 @@ if(STORE.bar){ const S=STORE.bar, AT={x:BOD.X(S.drums.x),z:BOD.Z(S.drums.y-OCTBK
     for(const e of B.E){ if(n>=CAP)break; place(n++,e[0],e[1],e[2],e[3],e[4],e[5],e[6],e[7],e[8],e[9]); }
     for(const [x,y,z,c] of B.D){ if(n>=CAP)break; place(n++,x,y,z,.7,.7,.7,0,0,0,c); }
     im.count=n; im.instanceMatrix.needsUpdate=true; if(im.instanceColor)im.instanceColor.needsUpdate=true;
-    const N=IMX.nodes.get('bar|drum kit'); if(N&&SND.ctx){ const c=SND.ctx, v=new THREE.Vector3(AT.x,1,AT.z).project(cam); N.g.gain.setTargetAtTime(.9*Math.max(0,1-d/14),c.currentTime,.1); N.pan.pan.setTargetAtTime(Math.max(-.8,Math.min(.8,v.x*.8)),c.currentTime,.1); } }; }
-if(!STORE.bar)DRM.tick=()=>{};
+    const N=IMX.nodes.get('bar|drum kit'); if(N&&SND.ctx){ const c=SND.ctx, v=new THREE.Vector3(AT.x,1,AT.z).project(cam); N.g.gain.setTargetAtTime(.9*Math.max(0,1-d/14),c.currentTime,.1); N.pan.pan.setTargetAtTime(Math.max(-.8,Math.min(.8,v.x*.8)),c.currentTime,.1); } }; };

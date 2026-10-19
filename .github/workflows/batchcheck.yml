@@ -58,9 +58,9 @@ jobs:
           python-version: '3.12'
       - run: npm ci --no-audit --no-fund
       - run: npx playwright install --with-deps chromium
-      - run: python3 build.py && python3 tools/perfprof.py
+      - run: cp new/tests/startprof.cjs tests/ && cp new/tools/perfprof.py tools/ && python3 build.py && python3 tools/perfprof.py
       - name: Start and park cost before
-        run: cp new/tests/startprof.cjs tests/ && node tests/startprof.cjs out/startprof-before.json
+        run: node tests/startprof.cjs out/startprof-before.json
         continue-on-error: true
       - uses: actions/upload-artifact@v4
         if: always()

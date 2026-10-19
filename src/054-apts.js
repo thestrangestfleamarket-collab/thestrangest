@@ -177,7 +177,7 @@ const APTS={EMPTY:true};
   const base=(lv,e)=>lv||e?SOL.up.filter(s=>WS.includes(s)?!lv:!EB.some(b=>s[0]<b[2]&&s[2]>b[0]&&s[1]<b[3]&&s[3]>b[1])):SOL.up;
   for(const L of LIGHTS){ const P=new THREE.PointLight(L.c,0,6.5*TILE,1.6); P.position.set(L.x,L.y,L.z); P.userData.i0=L.i; P.userData.in=cur=>!!cur&&APTS.in&&P.position.y>cur.y0-.3&&P.position.y<cur.y1-.5; scene.add(P); L.light=P; }
   const mat=c=>new THREE.MeshLambertMaterial({color:c,clippingPlanes:[HP,LP]}), bx=(w,h,d,m)=>new THREE.Mesh(new THREE.BoxGeometry(Math.abs(w)||.001,Math.abs(h)||.001,Math.abs(d)||.001),m);
-  const reg=o=>{ const f=()=>{ try{ UI.thing(o); }catch(e){ setTimeout(f,400); } }; setTimeout(f,0); };
+  const reg=o=>{ o.ghost=1; const f=()=>{ try{ UI.thing(o); }catch(e){ setTimeout(f,400); } }; setTimeout(f,0); };
   const STEEL=mat(0x8c9098), DARKS=mat(0x5a5e66), IRON=mat(0x22242a), WOOD=mat(0x7a5236), BRASS=mat(0xc8a050), LITB=new THREE.MeshBasicMaterial({color:0xffd27a,clippingPlanes:[HP,LP]}), HIT=new THREE.MeshBasicMaterial({visible:false});
   const fz=Math.sign(Z(V(2.5))-Z(V(.2)))||1, HH=Y(S-16)-Y(0), th=Y(3)-Y(0), lh=Y(DH)-Y(0), FN=['LOBBY','2ND FLOOR','3RD FLOOR','4TH FLOOR','5TH FLOOR'];
   const inCab=E=>Math.abs(py-Y(E.z))<SY*.5&&pos.x>E.cx-E.W/2&&pos.x<E.cx+E.W/2&&pos.z>E.cz-E.D/2&&pos.z<E.cz+E.D/2;

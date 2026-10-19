@@ -34,7 +34,7 @@ void main(){
   else{ vec2 q=(p-.5)*2.; float r=length(q);
     if(vK<3.5){ float n=fbm(vec3(q*2.4+vec2(0.,-t*2.6),t*.8+s)), heat=1.05-r*1.15+(n-.47)*1.1; if(heat<th*.25)discard; col=ramp(heat*1.15); }
     else if(vK<4.5){ if(r>1.)discard; col=ramp(.3+.65*vA)*(1.2-r*.4); }
-    else{ float n=fbm(vec3(q*1.7,t*.35+s)), a=(1.-r)*(.45+n)*vA; if(a<th*.9+.05)discard; col=vec3(.075,.07,.066)*(.7+.8*n); } }
+    else{ float n=fbm(vec3(q*1.7,t*.35+s)), a=(1.-r)*(.45+n)*vA; if(a<th*.9+.05)discard; col=vK>5.5?vec3(.78,.8,.82)*(.85+.3*n):vec3(.075,.07,.066)*(.7+.8*n); } }
   gl_FragColor=vec4(col,1.);
   #include <colorspace_fragment>
 }`;
@@ -45,13 +45,13 @@ void main(){
   const me=new THREE.Mesh(g,mat); me.frustumCulled=false; me.raycast=()=>{}; me.name='fire'; scene.add(me);
   const n1=(t,s)=>{ const i=Math.floor(t), f=t-i, u=f*f*(3-2*f), h=k=>{ const v=Math.sin((k+s*31.7)*127.1)*43758.5453; return v-Math.floor(v); }; return h(i)+(h(i+1)-h(i))*u; };
   const flick=(s,t=performance.now()/1000)=>.8+.12*n1(t*5.3,s)+.1*n1(t*13.1,s+7)-.1*Math.max(0,n1(t*1.7,s+3)-.7)/.3;
-  const add=o=>{ const s={name:o.name||o.kind,k:K[o.kind]??-1,x:o.x,y:o.y,z:o.z,w:o.w||.1,h:o.h||.2,sd:o.seed??Math.random()*50,embers:o.embers||0,smoke:o.smoke||0,sk:o.sk||1,light:o.light||null,li:o.light?o.light.intensity:0,ride:o.ride||o.light||null,ea:Math.random(),sa:Math.random(),a:new THREE.Object3D(),on:true};
+  const add=o=>{ const s={name:o.name||o.kind,k:K[o.kind]??-1,x:o.x,y:o.y,z:o.z,w:o.w||.1,h:o.h||.2,sd:o.seed??Math.random()*50,embers:o.embers||0,smoke:o.smoke||0,steam:o.steam?6:5,sk:o.sk||1,light:o.light||null,li:o.light?o.light.intensity:0,ride:o.ride||o.light||null,ea:Math.random(),sa:Math.random(),a:new THREE.Object3D(),on:true};
     if(s.ride)s.off=[s.x-s.ride.position.x,s.y-s.ride.position.y,s.z-s.ride.position.z];
     s.a.position.set(s.x,s.y,s.z); (o.parent||scene).add(s.a); SRC.push(s); return s; };
   const shown=o=>{ for(;o;o=o.parent)if(!o.visible)return false; return true; };
   const part=(k,x,y,z,vx,vy,vz,life,sz,sd=Math.random()*9,g=0)=>{ if(PT.length>=N-64)return; PT.push({k,x,y,z,vx,vy,vz,t:0,life,sz,sd,g}); };
   const ember=(x,y,z,v=1)=>part(4,x,y,z,(Math.random()-.5)*.3*TILE*v,(.5+Math.random()*.7)*TILE*v,(Math.random()-.5)*.3*TILE*v,.7+Math.random()*1.1,(.025+Math.random()*.02)*TILE,Math.random()*9);
-  const puff=(x,y,z,k=1)=>part(5,x,y,z,(Math.random()-.5)*.04*TILE,(.22+Math.random()*.12)*TILE*Math.sqrt(k),(Math.random()-.5)*.04*TILE,(2.2+Math.random()*1.6)*Math.sqrt(k),.14*TILE*k,Math.random()*9);
+  const puff=(x,y,z,k=1,kk=5)=>part(kk,x,y,z,(Math.random()-.5)*.04*TILE,(.22+Math.random()*.12)*TILE*Math.sqrt(k),(Math.random()-.5)*.04*TILE,(2.2+Math.random()*1.6)*Math.sqrt(k),.14*TILE*k,Math.random()*9);
   const props=(list,X,Y,Z,lights=[])=>{ const out=[], used=new Set();
     for(const p of list)for(const b of p.boxes){ const c=b.c; if(!b.life||!c||c[0]<240||c[2]>110||c[1]<100)continue;
       const nm=p.name||p.kind||'', cx=(b.x0+b.x1)/2, cy=(b.y0+b.y1)/2, x=X(cx), z=Z(cy), bw=X(b.x1)-X(b.x0), kind=/brazier/.test(nm)?'bed':/torch/.test(nm)?'torch':'candle';
@@ -64,7 +64,7 @@ void main(){
       if(s.light)s.light.intensity=s.li*flick(s.sd,t);
       s.vis=s.on&&shown(s.a)&&(!you||(s.x-you.x)**2+(s.z-you.z)**2<far); if(!s.vis)continue;
       if(s.embers){ s.ea+=dt*s.embers; while(s.ea>=1){ s.ea-=1; ember(s.x+(Math.random()-.5)*s.w*.4,s.y+s.h*.35,s.z+(Math.random()-.5)*s.w*.4); } }
-      if(s.smoke){ s.sa+=dt*s.smoke; while(s.sa>=1){ s.sa-=1; puff(s.x+(Math.random()-.5)*s.w*.2,s.y+(s.k<0?0:s.h*.8),s.z+(Math.random()-.5)*s.w*.2,s.sk); } }
+      if(s.smoke){ s.sa+=dt*s.smoke; while(s.sa>=1){ s.sa-=1; puff(s.x+(Math.random()-.5)*s.w*.2,s.y+(s.k<0?0:s.h*.8),s.z+(Math.random()-.5)*s.w*.2,s.sk,s.steam); } }
       if(s.k>=0&&n<N){ P.set([s.x,s.y,s.z,s.k],n*4); S.set([s.w,s.h,s.sd,1],n*4); n++; } }
     for(const q of PT){ q.t+=dt; const u=q.t/q.life; if(u>=1)continue;
       if(q.k===4){ q.vx+=(Math.random()-.5)*.8*TILE*dt; q.vz+=(Math.random()-.5)*.8*TILE*dt; q.vy+=(q.g?-q.g:-.2*TILE)*dt; const dr=Math.max(0,1-1.2*dt); q.vx*=dr; q.vz*=dr; }

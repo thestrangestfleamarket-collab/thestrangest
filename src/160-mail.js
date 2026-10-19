@@ -22,7 +22,7 @@ if(MAIL.on){ const T=TILE, M=1/.84*T, X=BOD.XS, Z=BOD.ZS, G=(x,z)=>MODS.bodega.g
     if(R.z1<R.z0){ n.z=-n.z; }
     bld(id,name,{at,n,t:{x:-n.z,z:n.x}},kind); };
   MAIL.build=()=>{ if(MAIL.ready)return; const W=(window.WALKERS&&WALKERS.list||[]).filter(w=>w.N&&!w.N.staff);
-    fromPlace('bodega','bodega','THE BODEGA','shop'); fromPlace('dojo','dojo','GHOST STREET','shop');
+    fromPlace('bodega','bodega','THE BODEGA','shop'); fromPlace('dojo','dojo','THE BATH HOUSE','shop');
     fromRoom('diner','diner','THE DINER','shop'); fromRoom('bar','bar','THE BAR','shop'); fromRoom('octo','aquarium','THE AQUARIUM','biz'); fromRoom('museum','museum','MUSEUM OF EARTH','biz');
     for(const R of (STORE.rooms||[]))if(/^av_/.test(R.id))fromRoom(R.id,R.id.slice(3),R.name,'biz');
     fromRoom('keep','keep','THE KEEP','biz'); fromRoom('cottage','cottage','THE HERB COTTAGE','biz');

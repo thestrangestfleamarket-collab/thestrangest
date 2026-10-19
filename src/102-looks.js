@@ -3,12 +3,24 @@ const LOOKS={};
   const COL={skin:'#e6c4b0',hair:'#6a5958',eye:'#5a3a26',shirt:'#a9a57e',pants:'#434e58',shoes:'#77614a'}, HAIRS=['hair','hairLong','hairLongA','hairBun','hairPony','hairPonyA'];
   const sz=(w,d=w)=>[w,1,d], LR=(n,v)=>({[n+'L']:v,[n+'R']:v}), arms=(u,f=u)=>({...LR('upperArm',sz(u)),...LR('sleeve',sz(u)),...LR('forearm',sz(f))}), legs=(t,sh=t)=>({...LR('thigh',sz(t)),...LR('shin',sz(sh))});
   const MALE={hips:[.81,1,.873],torso:sz(1.05,1.06),...arms(1.05,1.03),...legs(1.04,1)};
-  const L={name:''};
-  try{ L.name=JSON.parse(SAVE.get('looks')||'{}').name||''; }catch(e){}
-  const save=()=>{ try{ SAVE.set('looks',JSON.stringify({name:L.name})); }catch(e){} };
+  const L={name:'',robe:false};
+  try{ const o=JSON.parse(SAVE.get('looks')||'{}'); L.name=o.name||''; L.robe=!!o.robe; }catch(e){}
+  const save=()=>{ try{ SAVE.set('looks',JSON.stringify({name:L.name,robe:L.robe})); }catch(e){} };
   const tones=h=>{ const c=new THREE.Color(h); return [1,.9,.7,.42].map(k=>c.clone().multiplyScalar(k)); };
+  const put=(A,i,r)=>{ A.c0.setXYZ(i,r[0].r,r[0].g,r[0].b); A.c1.setXYZ(i,r[1].r,r[1].g,r[1].b); A.c2.setXYZ(i,r[2].r,r[2].g,r[2].b); A.cd.setXYZ(i,(r[2].r+r[3].r)/2,(r[2].g+r[3].g)/2,(r[2].b+r[3].b)/2); if(A.color)A.color.setXYZ(i,r[1].r,r[1].g,r[1].b); };
   const recolor=()=>{ const g=W3.mesh.geometry, A=g.attributes, mt=A.mat.array, n=mt.length;
-    for(let i=0;i<n;i++){ const r=W3.ramp[mt[i]|0]; if(!r)continue; A.c0.setXYZ(i,r[0].r,r[0].g,r[0].b); A.c1.setXYZ(i,r[1].r,r[1].g,r[1].b); A.c2.setXYZ(i,r[2].r,r[2].g,r[2].b); A.cd.setXYZ(i,(r[2].r+r[3].r)/2,(r[2].g+r[3].g)/2,(r[2].b+r[3].b)/2); if(A.color)A.color.setXYZ(i,r[1].r,r[1].g,r[1].b); }
+    for(let i=0;i<n;i++){ const r=W3.ramp[mt[i]|0]; if(r)put(A,i,r); }
+    for(const k of ['c0','c1','c2','cd','color'])if(A[k])A[k].needsUpdate=true; };
+  const RB={torso:[1.06,1,1.08],hips:[1.12,1,1.12],thighL:[1.14,1,1.14],thighR:[1.14,1,1.14],sleeveL:[1.12,1,1.12],sleeveR:[1.12,1,1.12],upperArmL:[1.08,1,1.08],upperArmR:[1.08,1,1.08]}, WHITE=tones('#f6f4ee'), BELT=tones('#c4ccd8'); let E0=null;
+  LOOKS.robe=on=>{ L.robe=!!on; save(); if(!E0)E0=W3.E.map(e=>e&&{...e,s:e.s.slice()}); recolor();
+    W3.pcs.forEach((P,i)=>{ const e=E0[i], k=on&&RB[P.n]; W3.E[i]=k?{s:(e?e.s:[1,1,1]).map((v,j)=>v*k[j]),o:[0,0,0],q:[0,0,0,1]}:e; }); if(!on)return;
+    const A=W3.mesh.geometry.attributes, n=A.mat.count, ti=W3.idx('torso'), hi=W3.idx('hips'), SK=W3.ramp[MATS.indexOf('skin')]; let y0=1e9, y1=-1e9, h1=-1e9;
+    for(let i=0;i<n;i++){ const k=A.pidx.getX(i), y=A.position.getY(i); if(k===ti){ y0=Math.min(y0,y); y1=Math.max(y1,y); } else if(k===hi)h1=Math.max(h1,y); }
+    for(let i=0;i<n;i++){ const P=W3.pcs[A.pidx.getX(i)|0], x=A.position.getX(i), y=A.position.getY(i), z=A.position.getZ(i); if(!P)continue;
+      if(/^shin/.test(P.n)&&MATS[A.mat.getX(i)|0]==='pants')put(A,i,SK);
+      else if(P.n==='torso'&&z>1.2&&y>y1-10&&Math.abs(x)<(y-y1+10)*.32)put(A,i,SK);
+      else if(P.n==='torso'&&y<y0+5||P.n==='hips'&&y>h1-4)put(A,i,BELT);
+      else if(RB[P.n])put(A,i,WHITE); }
     for(const k of ['c0','c1','c2','cd','color'])if(A[k])A[k].needsUpdate=true; };
   const apply=()=>{ const set=(m,h)=>{ const i=MATS.indexOf(m); if(i>=0)W3.ramp[i]=tones(h); }; for(const k in COL)set(k,COL[k]); { const i=MATS.indexOf('lid'); if(i>=0)W3.ramp[i]=tones(COL.skin).map(c=>c.multiplyScalar(.78)); } recolor();
     for(const n of HAIRS){ const i=W3.idx(n); if(i>=0)W3.HIDE[i]=n!=='hair'; } for(let k=0;k<6;k++){ const i=W3.idx('eyes'+k); if(i>=0)W3.HIDE[i]=k!==0; } if(W3.reindex)W3.reindex(); };
@@ -20,11 +32,12 @@ const LOOKS={};
   document.head.appendChild(css);
   const P=document.createElement('div'); P.id='looks'; P.hidden=true; P.setAttribute('role','dialog'); P.setAttribute('aria-label','Your character');
   P.innerHTML=`<h2>YOU</h2><div class="row"><input type="text" id="lname" maxlength="24" placeholder="your name"><button id="lclose">CLOSE</button></div>
-    
+    <h3>CLOTHES</h3><div class="row"><button id="lwear0">YOUR CLOTHES</button><button id="lwear1">WHITE BATHROBE</button></div>
     <h3>STATS</h3><div class="row"><span style="width:70px">HEALTH</span><div class="bar"><i id="lhp" style="background:#c84a3a;width:100%"></i></div></div>
     <div class="row" style="margin-top:4px"><span style="width:70px">STAMINA</span><div class="bar"><i id="lst" style="background:#d8b84a;width:100%"></i></div></div>`;
   document.body.appendChild(P);
-  const draw=()=>{ $('#lname').value=L.name; };
+  const draw=()=>{ $('#lname').value=L.name; $('#lwear0').setAttribute('aria-pressed',String(!L.robe)); $('#lwear1').setAttribute('aria-pressed',String(L.robe)); };
+  $('#lwear0').onclick=()=>{ LOOKS.robe(false); draw(); }; $('#lwear1').onclick=()=>{ LOOKS.robe(true); draw(); };
   $('#lname').oninput=e=>{ L.name=e.target.value; save(); };
   $('#lname').addEventListener('keydown',e=>e.stopPropagation());
   $('#lclose').onclick=()=>{ P.hidden=true; };
@@ -32,7 +45,7 @@ const LOOKS={};
   LOOKS.stats=(hp,st)=>{ if(P.hidden)return; $('#lhp').style.width=Math.round(hp*100)+'%'; $('#lst').style.width=Math.round(st*100)+'%'; };
   const hit=new THREE.Mesh(new THREE.BoxGeometry(.8*TILE,2.2*TILE,.8*TILE),new THREE.MeshBasicMaterial({visible:false})); scene.add(hit);
   renderer.domElement.addEventListener('pointerdown',()=>{ hit.position.set(pos.x,py+1.1*TILE,pos.z); hit.updateMatrixWorld(); },true);
-  UI.thing({name:'YOU',obj:hit,reach:99,tall:2,act:()=>LOOKS.open()});
+  UI.thing({name:'YOU',ghost:1,obj:hit,reach:99,tall:2,act:()=>LOOKS.open()});
   W3.E=W3.pcs.map(()=>null); for(const [n,v] of Object.entries(MALE)){ const i=W3.idx(n); if(i>=0)W3.E[i]={s:v.slice(),o:[0,0,0],q:[0,0,0,1]}; }
   const LT=new THREE.Vector3(), LS=new THREE.Vector3(), LSTEP=+(QS.get('lstep')??7)*Math.PI/180; let lt0=performance.now();
   LOOKS.light=()=>{ const now=performance.now(), k=1-Math.exp(-Math.min(.1,(now-lt0)/1000)*7); lt0=now; const sun=CLOCK.sun;
@@ -40,4 +53,4 @@ const LOOKS={};
     else{ const best=SHL.find(S=>S.intensity>0); if(!best)return; LT.set(best.position.x-pos.x,Math.max(.25*TILE,best.position.y-(py+1.2*TILE)),best.position.z-pos.z).normalize(); }
     if(!(LS.lengthSq()>.5))LS.copy(LT); else LS.lerp(LT,k).normalize();
     if(!W3.realL||!(W3.Lw.lengthSq()>.5)||W3.Lw.angleTo(LS)>LSTEP)W3.Lw.copy(LS); W3.realL=true; };
-  apply(); }
+  apply(); if(L.robe)LOOKS.robe(true); }

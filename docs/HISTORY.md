@@ -2199,3 +2199,52 @@ stepping stones you can stand on, pebbles at the waterline. The north way crosse
 arch, parapets each side. Trees, plants and the way's lamps keep off it; the menu's map draws it. Cost: about 25,000 triangles in
 all, cut into sections so a view draws only its part (measured: +0.8K at the cave, none at the gate, the bridge view 9K lower than
 before as hills and trees left the channel); up to 3 more draws; one new shader program (the water) and one bank variant; no lamps.
+
+## 19 Oct 2026: the triangle budget kept (the picture under 100,000)
+
+The owner, 19 Oct 2026: "go" (to bringing THE MARKET under his rule of 17 Oct, "under 100,000 triangles on screen": "i dont want to
+render a bunch of needless stuff and not even use it"). Nothing he asked for removed; nothing looks different at the opening view.
+- **Measured first** (`tests/tricount.cjs`: 1920x1080, `?fresh=1&hideme=1&hour=13`, the opening ISOMETRIC zoom, `STORE.ensure()`, one frame
+  at each spot counted draw by draw through `renderBufferDirect`, the main picture apart from the shadow passes and the river's pre-pass,
+  its top 25 owners and how much of each was inside the view at all). **What was wrong**: most of what was drawn was off the screen
+  (typically 0 to 10% of an owner's triangles in the view): instanced meshes laid over the whole map (gates, roofs, lamp heads, signals,
+  hydrants, the park railing's gate leaves, the river's kit) are one mesh each, so one corner on screen drew all of it; the clouds, the
+  goods (frustum culling off), the river and the far skyline had culling off; the park's hills were one mesh 280 m across; and **the
+  whole picture was drawn twice** on the main street: the river's refraction pre-pass (the scene behind its water) ran whenever a box
+  17 m deep round the river touched the view's frustum, a loose test that passed all along the street with no water on screen.
+- **Before → after**, main picture (draws), the river pre-pass, shadow passes (sun + the one shadow lamp, six faces):
+
+  | spot | main before | river pre-pass before | main after | shadows before | shadows after |
+  |---|---|---|---|---|---|
+  | beside the bodega (12, 3) | 187,114 (126) | 185,792 | 80,888 (113) | 149,817 | 104,301 |
+  | inside the bodega (9.9, -3.4) | 170,936 (138) | 162,840 | 62,066-84,420 (124) | 472,768 (lamp 356,920) | 143,874 (lamp 75,334) |
+  | park main gate (30.5, 42.9) | 207,851 (119) | 6,776 | 68,419 (109) | 555,092 (lamp 427,604) | 183,606 (lamp 107,938) |
+  | main row, theatre/arcade (33, 2.5) | 153,810 (117) | 152,488 | 22,062 (94) | 112,973 | 70,565 |
+  | bar / museum (-57, 2.5) | 162,636 (87) | 161,314 | 38,826 (65) | 112,140 | 63,604 |
+  | east end, holodeck (118.6, 2.5) | 136,742 (83) | 135,420 | 17,116 (59) | 66,000 | 18,532 |
+  | middle of Central Park (34.5, 85.6) | 167,146 (97) | 6,776 | 34,600 (91) | 110,483 | 48,875 |
+  | inside the bar (-69.9, -8) | 199,052 (83) | 190,956 | 70,990 (58) | 121,606 | 72,504 |
+  | main street at night, 22:00 (12, 3) | 187,150 (130) | 185,828 | 58,252-80,930 (117) | 0 | 0 |
+
+  (The earlier "383,000 in view" was `__dbg.tris()`, everything inside the frustum: about the main picture and the pre-pass together.
+  The ranges are two runs: the walking guitarist, 22,400, in the view or not.) Frame time, headless software graphics, same machine,
+  20 frames' median, three runs each: beside the bodega 1,300-1,400 ms to 783-900, the park gate 1,117-1,250 to 767-917, inside the bar
+  1,650-1,700 to 867-967 (a comparison only; real numbers come from a real GPU).
+- **What was cut, and why it doesn't show**:
+  - `161a-cull.js` (`CULL`): an instanced mesh spread wider than 10 tiles is drawn as pieces of 10 tiles (11.3 m), and three draws only
+    the pieces inside each camera (the main view and every shadow camera, so shadows from off screen still fall). Same geometry, material,
+    colours, layers and shadows; the original stays the record (rays, editors, colour changes, `count` and `visible` are its own and copied
+    in each frame between `CULL.begin()` and `CULL.end()`, round the frame's drawing like `NPCS.cull`); a mesh that changes every frame
+    gives up and draws as before. Plain meshes marked `userData.cull`: the park's hills, the drains, the poles, the street trees' fluff.
+  - The river: its surface, bed, fish, junk and weed drawn and its pre-pass run only when its water is on screen (the exact on-screen
+    test of the water's box, not the 17 m-deep one; under water as before).
+  - The clouds (none on screen at the opening view: they are 60 m off and the shader already hides those in front) and the far skyline's
+    boxes: drawn only when one is on screen (`CULL.seen`, exact for the isometric camera, the frustum for the others).
+  - The goods: culled again (their bounds now follow a thrown good); a side of one colour is one quad, not 18 (the same colours; 33,868 to
+    24,076 triangles). The batches' far scraps (`PERFX.chunk`) their own pieces, not a 186 m-wide piece's tail. The park railing's
+    pickets lose the faces inside the wall, the collar and the finial (36 to 28 triangles; never visible from any view).
+- **Shown**: before/after screenshots at every spot with the same camera (`mockups/tri/sbs_*.png`, with `?fx=cool` so the drifting cloud
+  shadows don't differ): changed pixels 0.0-2.7%, all of them moving things (walkers, the tree's sway and its shadow, the drain's steam).
+- **Still the most**: the walking guitarist (22,400, his fingers and guitar whole by the owner's word), the goods (24,100) and the
+  pianist (22,500) inside their rooms, the bar's room (about 29,000), the two veg stalls at the park gate (about 31,000: round veg of
+  20 faces); the shadow lamp's six faces at the park gate (108,000, the stalls' veg again).

@@ -2820,3 +2820,13 @@ fsomeone dies insomewhere they have to float back as a ghost to get resed. when 
   brightness left DISTANCE LOOK (the mode owns them). `?hour=H` still sets a test's hour (before 6 or after 19 is NIGHT; not saved),
   `?wx=` still holds a weather (`natural` the old drifting one); the old saved hour, weather, scene and colours are no longer read.
   Cost: nothing drawn more; one more pass over a few numbers a frame.
+- **The park's paths natural** (owner, 19 Oct 2026, of Central Park's cobbles, dark hexagons in a straight band with a hard stair-stepped
+  edge against flat grass: "the paths needs to all look more natural and have tufts, edges, variety, not straight lines, grout, realistm,
+  etc;"; `061-park.js`, `140-weeds.js`): the hexagons are gone for loose cobbles (stones of mixed size and shape about a third of a tile,
+  five flat greys and browns, a few pale or dark ones, a lit and a shaded rim, some cracked) set in dark greenish grout with moss where it's
+  shaded and grass coming up through it. The edges wander (a slow and a quick wobble, mostly inward, at most 0.3 tile out), the corners
+  where the ways meet the round are rounded off, and the edge stones go missing, chipped or loose a little out on the lawn, with soil and
+  sprouts where they're gone; painted tufts grow out of the joints, thicker near the edges, and a couple of hundred of the street's 3D weed
+  tufts (`PARK.tufts`, four triangles each) stand along both edges. The ground under the paths is now laid in one-tile slices only as wide
+  as the path in each (was 14-tile-wide strips), so the lawn's 3D grass grows right up to the stones and the atlas is about a third smaller.
+  Where you can walk is unchanged (`PARK.path`); only the picture moved (`PARK.vis`).

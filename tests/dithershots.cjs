@@ -13,21 +13,23 @@ process.on('unhandledRejection',e=>{ errs.push('TEST '+String(e&&e.message||e).s
   for(let i=0;i<4;i++){ const d=await pg.evaluate(()=>{ PEEK.tick(0); return [PEEK.ray.direction.x,PEEK.ray.direction.z]; }); rep['turn'+i]=d; if(d[1]<-.3)break; await pg.keyboard.press('e'); await pg.waitForTimeout(1500); }
   const behindTree=()=>{ const d=PEEK.ray.direction, h=Math.hypot(d.x,d.z)||1, T=__dbg.MAPK.BOD.XS(1)-__dbg.MAPK.BOD.XS(0); const P=__dbg.MAPK.PARK, o=P.oaks.slice().sort((a,b)=>b[2]-a[2])[0], it=P.trees.userData.items.find(q=>Math.hypot(q.x-o[0],q.z-o[1])<.5)||{r:3*T};
     STORE.goTo(o[0]-d.x/h*(.8*T+it.r*.45),o[1]-d.z/h*(.8*T+it.r*.45),'up'); const y=__dbg.you(); return {tree:o,r:it.r,you:[y.x,y.z]}; };
-  const atRow=([x,y])=>{ const B=__dbg.MAPK.BOD; STORE.goTo(B.XS(x),B.ZS(y),'up'); const u=__dbg.you(); return {want:[B.XS(x),B.ZS(y)],you:[u.x,u.z]}; };
+  const atRow=([x,y])=>{ const B=__dbg.MAPK.BOD, ins=(X,Z)=>!!(STORE.inStore&&STORE.inStore(X,Z)), L=[]; let was=false, Y=null; for(let v=-95;v<-40;v+=.5){ const i=ins(B.XS(x),B.ZS(v)); L.push(i?1:0); if(was&&!i){ Y=v+(y||1.2); break; } was=was||i; }
+    if(Y==null)return {none:1,L:L.join('')}; STORE.goTo(B.XS(x),B.ZS(Y),'up'); const u=__dbg.you(); return {Y,want:[B.XS(x),B.ZS(Y)],you:[u.x,u.z],inside:ins(u.x,u.z)}; };
   await shot('tree-iso',behindTree,4000); await off('tree-iso-off');
   rep.ease=await pg.evaluate(async()=>{ PEEK.on=false; await new Promise(r=>setTimeout(r,800)); PEEK.on=true; const s=[]; const t0=performance.now(); while(performance.now()-t0<600){ s.push([Math.round(performance.now()-t0),+PEEK.k.toFixed(2)]); await new Promise(r=>requestAnimationFrame(r)); } return s; });
   rep.tickMs=await pg.evaluate(()=>{ const t0=performance.now(); for(let i=0;i<500;i++)PEEK.tick(0); return (performance.now()-t0)/500; });
-  await shot('wall-iso-apts',atRow,4000,[130,-78.3]); await off('wall-iso-apts-off');
-  await shot('wall-iso-museum',()=>{ const B=__dbg.MAPK.BOD; STORE.goTo(B.XS(0),B.ZS(-78.3),'up'); return __dbg.pos(); },4000);
-  await shot('wall-iso-theatre',()=>{ const B=__dbg.MAPK.BOD; STORE.goTo(B.XS(180),B.ZS(-78.3),'up'); return __dbg.pos(); },4000);
+  await shot('wall-iso-apts',atRow,4000,[130,1.2]); await off('wall-iso-apts-off');
+  await shot('wall-iso-bodega',atRow,4000,[108,1.2]);
+  await shot('wall-iso-theatre',atRow,4000,[180,1.2]);
+  await shot('wall-iso-museum',atRow,4000,[0,1.2]);
   await pg.keyboard.press('v'); await pg.waitForTimeout(2000);
   rep['tree-behind']=await pg.evaluate(async()=>{ const raf=()=>new Promise(r=>requestAnimationFrame(r)), T=__dbg.MAPK.BOD.XS(1)-__dbg.MAPK.BOD.XS(0), P=__dbg.MAPK.PARK, oaks=P.oaks.slice().sort((a,b)=>b[2]-a[2]).slice(0,6), tried=[];
     for(const o of oaks)for(const d of [2,3,4,5,7])for(const s of [2,-2,3,-3,1.2,-1.2]){ const c=__dbg.camO().position, y=__dbg.you(), ux=c.x-y.x, uz=c.z-y.z, h=Math.hypot(ux,uz)||1, nx=ux/h, nz=uz/h;
       STORE.goTo(o[0]-nx*d*T-nz*s*T,o[1]-nz*d*T+nx*s*T,'up'); for(let i=0;i<4;i++)await raf(); const W=PEEK.W; tried.push(PEEK.cov?1:0); if(PEEK.cov&&Math.abs(W.x)<.7&&Math.abs(W.y)<.7)return {o,d,s,tried:tried.length}; }
     return {none:1,tried}; });
   await shot('tree-behind',null,3000); await off('tree-behind-off');
-  await shot('wall-behind',a=>{ __dbg.face(Math.PI); const r=(([x,y])=>{ const B=__dbg.MAPK.BOD; STORE.goTo(B.XS(x),B.ZS(y),'up'); return __dbg.pos(); })(a); __dbg.face(Math.PI); return r; },4000,[130,-76]);
-  await shot('wall-behind-2',a=>{ __dbg.face(0); const B=__dbg.MAPK.BOD; STORE.goTo(B.XS(a[0]),B.ZS(a[1]),'up'); __dbg.face(0); return __dbg.pos(); },4000,[130,-76]);
+  await pg.evaluate(()=>__dbg.face(Math.PI)); await shot('wall-behind',atRow,1000,[130,1.2]); await shot('wall-behind',()=>{ __dbg.face(Math.PI); },4000);
+  await pg.evaluate(()=>__dbg.face(0)); await shot('wall-behind-2',atRow,1000,[130,1.2]); await shot('wall-behind-2',()=>{ __dbg.face(0); },4000);
   await pg.keyboard.press('v'); await pg.waitForTimeout(2000);
   await shot('first',behindTree,3000);
   await pg.keyboard.press('v'); await pg.waitForTimeout(1500);

@@ -1854,3 +1854,25 @@ so he looked shrugged. You are now his mannequin (`data/full/humanoid.fbx`, Blen
 `data/humanoid.json`, 6 KB), sized to the UAL skeleton (it matches it: height, hips, shoulders, arm length within 3 cm). It stands in an
 A-pose, so the skeleton's arms are lowered to it before binding; each corner weighted in code to its nearest one or two bones. One flat
 light colour, cel-shaded, casting a shadow; the same clips. 402 triangles.
+
+## 19 Oct 2026: the arcade, off the map; nothing off the map built until it's needed
+- **THE ARCADE** (owner, 19 Oct 2026, three shots of an arcade, a cafe and a rainy window: "make the arcade look exactly like this? every
+  thing you see. open big like this. give me mockup"; of the mockup https://claude.ai/artifact/YAR4dLzKShrea3HsNYT7qy (`mockups/arcade.html`):
+  "off map", "no people", no changes; `src/058a-arcade.js`): one open room 32 x 22.4 tiles (1.6 tiles and 38 px a metre) on its own lot east
+  of CLUB STATIC (bodega tiles x 480-512, y -104 to -81.6); MORE PLACES has THE ARCADE. The hall: the blacklight carpet (neon shapes glowing,
+  black between), a wood border, two purple neon strips under the ceiling, the pink ARCADE sign with its bulbs, the ARENA door, eleven cabinets
+  (boxes: body, panel, screen, hood, lit marquee, coin door, stick and buttons, side art; RAINBOW RUN striped, ISTANBUL TAKSI yellow, the
+  TELEMAK pair, and others), the SIMULATIONS portal, bean bags, a low table with cups, the rainbow jukebox, the dartboard, NEWSROOM / HIGH
+  SCORES / LEAGUE screens, THERE IS NO CLOUD, IT WORKS ON MY MACHINE. Through a brick wall's end, the cafe: counter and stools, espresso
+  machine, shelves, lit fridge, COFFEE in green neon, two menus, four pendants, the long table with its pink and blue glow and laptops, the
+  hex board game, two CRTs, the cork board, NO BUGS IN HERE / ONLY UNDOCUMENTED FEATURES / 1 PERSON IN THE CAFE (a fixed sign: "no people",
+  it counts nobody), HALL OF FAME, clocks, EXIT. The front: the door and three windows, fogged glass with drops (planes cut with the wall),
+  a bench, cushion and plant; outside a wet street, crosswalk, lamp posts, a tree, ECZANE lit across the road; rain while you're on the lot,
+  its own night air outside. A dark ceiling shown only from inside in the behind and first-person views (the roof still goes for isometric).
+  No people. All text in the game's 3x5 letters. Cost: about 4,000 triangles, 8 lamps (3 purple and pink, the portal, 2 pendants and the
+  long table, the street lamp), no new shader programs (the glass reuses the basic one).
+- **Off the map: built only when someone goes there** (owner: "make sure nobody is downloading off map scenes or anything until they need
+  it"; `offmap(name,lot,fn)` in store.js, `STORE.offGo`, `STORE.offAt`): VCR REPAIR, CLUB STATIC (its people with it) and THE ARCADE are no
+  longer built a few seconds after the start; each is built the moment you pick it in the menu, or stand on its lot (a save, `?at=`,
+  `CLUBGO`), then never again. The town's walkers and the mail don't count them. Measured: the street at the start 522,818 to 478,006
+  triangles, 251 to 238 lamp records. Their code still comes in the page (some 70 KB unminified, about 1% of it); they have no data files to fetch.

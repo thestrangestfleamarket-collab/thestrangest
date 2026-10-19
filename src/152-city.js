@@ -9,7 +9,7 @@ const CITY={jobs:[],sched:[],day:0,nj:0,extra:[]}; window.CITY=CITY;
     add('castle','THE CASTLE',BOD.XS(CASTLE.gate),BOD.ZS(CASTLE.b[2]),-1.5*T);
     add('subway','THE SUBWAY',BOD.XS((MAPSTAIR.x0+MAPSTAIR.x1)/2),BOD.ZS(MAPSTAIR.y1),.8*T);
     add('platform','THE PLATFORM',MODS.station.plat.x,MODS.station.plat.z,0,'down');
-    for(const [n,x,z,lv] of STORE.places)if(x||z)add('store:'+n.toLowerCase().replace(/^the /,'').replace(/\s+/g,'-'),n,x,z,0,lv,{inside:true,stacked:typeof lv==='number'});
+    for(const [n,x,z,lv,off] of STORE.places)if((x||z)&&!off)add('store:'+n.toLowerCase().replace(/^the /,'').replace(/\s+/g,'-'),n,x,z,0,lv,{inside:true,stacked:typeof lv==='number'});
     for(const e of CITY.extra)P.push(e);
     return P; };
   CITY.place=id=>CITY.places().find(p=>p.id===id||p.name===String(id).toUpperCase());

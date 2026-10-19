@@ -16,7 +16,7 @@
       for(const b of p.boxes)gbox(b,kind); } BATCH.tag=null;
     if(look.floor)flat(B.x0,B.y0,B.x1,B.y1,o.z??.15,look.floor,'L');
     if(look.in){ const H=B.h, walls=[['f','x',B.y1,B.x0,B.x1,-1],['b','x',B.y0,B.x0,B.x1,1],['w','y',B.x0,B.y0-T,B.y1+T,1],['e','y',B.x1,B.y0-T,B.y1+T,-1]].concat(o.xw||[]);
-      for(const [wid,ax,at,a0,a1,inS,holes0,inner] of walls){ const holes=(holes0||[]).concat(door&&door.w===wid?[{a0:door.a-door.wd/2,a1:door.a+door.wd/2,z0:0,z1:door.h}]:[]), kind='W'+id+':'+wid, pl=planes[kind]=new THREE.Plane(new THREE.Vector3(0,-1,0),1e6);
+      for(const [wid,ax,at,a0,a1,inS,holes0,inner] of walls){ const holes=(holes0||[]).concat(o.holes&&o.holes[wid]||[],door&&door.w===wid?[{a0:door.a-door.wd/2,a1:door.a+door.wd/2,z0:0,z1:door.h}]:[]), kind='W'+id+':'+wid, pl=planes[kind]=new THREE.Plane(new THREE.Vector3(0,-1,0),1e6);
         const paint=(s,u,z)=>{ const nx=ax==='y'?s:0, ny=ax==='x'?s:0, Xw=ax==='y'?at+s*.1:u, Yw=ax==='x'?at+s*.1:u; return (inner||s===inS)?look.in(B,nx,ny,Xw,Yw,z,1):(look.out||facade)(nx,ny,Xw,Yw,z,1,H); };
         const pt=(a,z,off)=>ax==='x'?[X(a),Y(z),Z(at+off)]:[X(at+off),Y(z),Z(a)];
         const as=new Set([a0,a1]), zs=new Set([0,H]); for(const h of holes){ as.add(Math.max(a0,h.a0)); as.add(Math.min(a1,h.a1)); zs.add(h.z0); zs.add(h.z1); }
@@ -85,7 +85,7 @@
     const T=ter.hi[1], S0=pl.hi[1], in_=(b,x,z)=>x>=b.lo[0]&&x<=b.hi[0]&&z>=b.lo[2]&&z<=b.hi[2];
     STORE.shrineGround=(x,z)=>{ if(in_(ter,x,z))return T; if(in_(st,x,z))return S0+(T-S0)*Math.max(0,Math.min(1,(st.hi[2]-z)/(st.hi[2]-st.lo[2]))); if(in_(pl,x,z))return S0; return null; }; };
 
-  const STEPS=[]; STORE.kit={room,flat,put,sol,STEPS,PLATE}; for(const [n,k] of [['THE HERB COTTAGE','garden'],['THE AQUARIUM','aquarium'],['THE KEEP','keep'],['THE BUTTERFLIES','garden']])if(!AWAY.has(k))STORE.places.push([n,0,0,'up']);
+  const STEPS=[], OFF=STORE.off={}, offmap=(name,lot,fn)=>{ OFF[name]={lot,fn}; STORE.places.push([name,0,0,'up','off']); }; STORE.kit={room,flat,put,sol,STEPS,PLATE,offmap,planes}; for(const [n,k] of [['THE HERB COTTAGE','garden'],['THE AQUARIUM','aquarium'],['THE KEEP','keep'],['THE BUTTERFLIES','garden']])if(!AWAY.has(k))STORE.places.push([n,0,0,'up']);
   const GARDEN=STORE.garden={cottage:[72-15/BLDK,-77-14.6/BLDK],house:[72-4.6/BLDK,-77-9.2/BLDK]};
   if(!AWAY.has('garden'))STEPS.push(()=>{ const O=GARDEN.cottage, R=room('cottage','THE HERB COTTAGE',{x0:O[0],y0:O[1],x1:O[0]+9,y1:O[1]+12,h:96},{floor:grassCol},null,()=>{ PRESETS['Preset Herb Cottage 1'].forEach(([k,dx,dy,r])=>put(k,O[0]+dx,O[1]+dy,r)); },
       {z:.05,pieceWalls:{'herb cottage wall, west':['w',1,0],'herb cottage wall, east':['e',-1,0],'herb cottage wall, north':['b',0,1],'herb cottage wall, south':['f',0,-1]}});
@@ -126,8 +126,7 @@
     if(!AWAY.has('avenue'))for(const [id,name,z0,z1,d,h] of AVR){ STORE.places.push([name,0,0,'up']);
       STEPS.push(()=>{ const B={id:'lav_'+id,x0:AX,y0:-77+z0/BLDK+.1,x1:AX+d,y1:-77+z1/BLDK-.1,h}; room('av_'+id,name,B,{floor:conc,in:plaster},{w:'w',a:(B.y0+B.y1)/2,wd:1.56,h:94},(B,l0)=>{ LAMPS.push({own:1,room:1,day:true,x:(B.x0+B.x1)/2,y:(B.y0+B.y1)/2,z:Math.min(h-20,120),r:Math.max(6,.75*Math.max(d,(z1-z0)/BLDK)),c:[1,.9,.75]}); }); }); } }
 
-  STORE.places.push(['VCR REPAIR',0,0,'up']);
-  STEPS.push(()=>{ const B={id:'lvcr',x0:380,y0:-92,x1:394,y1:-82,h:270}, H=B.h, hs=hash, P=[.2,2.5,4.95,7.9,10.05], WIN=[[.45,2.2],[5.2,7.6]], WZ=[42,118];
+  offmap('VCR REPAIR',[368,-100,408,-72],()=>{ const B={id:'lvcr',x0:380,y0:-92,x1:394,y1:-82,h:270}, H=B.h, hs=hash, P=[.2,2.5,4.95,7.9,10.05], WIN=[[.45,2.2],[5.2,7.6]], WZ=[42,118];
     const sto=(i,j)=>{ const r=hs(i,j,811); return r<.34?[214,200,182]:r<.56?[230,220,206]:r<.72?[186,164,142]:r<.82?[150,124,102]:r<.92?[246,242,234]:[112,94,80]; };
     const blk=(u,z)=>{ const r=Math.floor(z/5), i=Math.floor(u*24+(r&1)*5), c=Math.floor(i/10); if(i%10===9||Math.floor(z)%5===4)return [160,161,161]; const v=196+hs(c,r,812)*14; return [v,v,v-3]; };
     const front=(x,z,f)=>{ const u=x-B.x0;
@@ -265,6 +264,9 @@
     [12,21].forEach((k,i)=>{ const b=BF.add(k,HP); b.at=b.to=i*4; b.g.position.set(...HP[b.at]); }); }
       if(ROOMS.reset)ROOMS.reset(); if(window.CLIP)window.CLIP.run(); if(typeof INTERIORS!=='undefined')INTERIORS.build(); };
     STORE.ensure=finish;
+    STORE.offGo=n=>{ const o=OFF[n]; if(!o||o.done)return; finish(); o.done=1; o.fn(); const it=BATCH.items.splice(0); lit(); if(it.length){ BATCH.items=it; Object.assign(STORE.meshes,bake()); }
+      if(ROOMS.reset)ROOMS.reset(); if(window.CLIP)window.CLIP.run(); if(typeof INTERIORS!=='undefined')INTERIORS.build(); };
+    STORE.offAt=(x,z)=>{ for(const n in OFF){ const [a,b,c,d]=OFF[n].lot; if(!OFF[n].done&&x>X(a)&&x<X(c)&&z>Z(b)&&z<Z(d))STORE.offGo(n); } };
     const run=()=>{ if(done)return; if(STEPS.length){ step(); setTimeout(run,60); } else finish(); };
     STORE.later=()=>setTimeout(run,1500); }
 }

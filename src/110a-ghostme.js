@@ -5,7 +5,7 @@ AVS.BUILD.ghost=()=>{ const R=RIG, D=R.D, g=new THREE.Group(); scene.add(g); NPC
   const lerpF=(f,h,w)=>Object.assign(lerpA(f,h,w),{o:lerp(f.o,h.o,w)}), sm=u=>{ u=Math.max(0,Math.min(1,u)); return u*u*(3-2*u); };
   const BK=(()=>{ const y=R.nrm(R.V(.5,.866,0)), z0=R.V(0,0,-1), z=R.nrm(R.sub(z0,R.mul(y,R.dot(z0,y)))); return {o:R.V(-1.5,20.5,-9.4),x:R.cross(y,z),y,z}; })();
   const v3=v=>new THREE.Vector3(v.x,v.y,v.z), M4=new THREE.Matrix4(), QB=new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(v3(BK.x),v3(BK.y),v3(BK.z))), QF=new THREE.Quaternion(), QG=new THREE.Quaternion(), V1=new THREE.Vector3(), V2=new THREE.Vector3(), V3=new THREE.Vector3();
-  const S={w:0,lift:5,lv:0,lean:0,bank:0,sp:0,gs:0,gv:0,play:false,song:0,t:0,lx:null,lz:null,tk:false}, GF={};
+  const S={w:0,jh:0,lift:5,lv:0,lean:0,bank:0,sp:0,gs:0,gv:0,play:false,song:0,t:0,lx:null,lz:null,tk:false}, GF={};
   const float=dt=>{ const P=R.walkPose({ph:0,w:0},null), k=Math.min(1,S.sp/4), sw=S.gs>.02&&S.gs<.98?Math.sin(Math.PI*S.gs):0;
     for(const n of 'LR'){ P[n].ua=[(34-40*k)*D,16*D]; P[n].fa=[(52-34*k)*D,0]; } P.nod=(4-6*k)*D; if(sw)P.R.ua=[(22+50*sw)*D,(12+18*sw)*D];
     npcSpring(ar,P,dt,NPCARMS); ar.P=P; return R.settle(R.build(P,null),0); };
@@ -33,7 +33,7 @@ AVS.BUILD.ghost=()=>{ const R=RIG, D=R.D, g=new THREE.Group(); scene.add(g); NPC
     if(S.play&&(st.target>0||mv||wet||still))put();
     const useB=!!B&&(RAG.on||still||(mv&&(ARM.test(mv)||BODY.test(mv)))||(!mv&&held&&ARM.test(held)));
     S.w+=((useB?1:0)-S.w)*Math.min(1,dt*(useB?14:6)); if(S.w<.002)S.w=0; if(S.w>.998)S.w=1;
-    const gk=55, gc=2*Math.sqrt(gk)*.55; S.gv+=(gk*((S.play?1:0)-S.gs)-gc*S.gv)*dt; S.gs+=S.gv*dt; if(!S.play&&S.gs<.001&&Math.abs(S.gv)<.001){ S.gs=0; S.gv=0; }
+    const gk=20, gc=2*Math.sqrt(gk)*.5; S.gv+=(gk*((S.play?1:0)-S.gs)-gc*S.gv)*dt; S.gs+=S.gv*dt; if(!S.play&&S.gs<.001&&Math.abs(S.gv)<.001){ S.gs=0; S.gv=0; }
     const Bg=float(dt); let Bp=null, wp=0;
     if(S.play&&S.gs>.45){ Bp=gtBody(a,dt); wp=sm((S.gs-.45)/.5); if(GTS.t>GTEND+1.5){ S.song=gtNext(S.song); gtSet(S.song); } MUS.tones(GTS.t,0,pos.x,pos.z); }
     const ws=B?S.w:0, fr=n=>{ let F=R.frameOf(n,Bg); if(wp)F=lerpF(F,R.frameOf(n,Bp),wp); if(ws)F=lerpF(F,R.frameOf(n,B),ws); return F; };
@@ -42,8 +42,8 @@ AVS.BUILD.ghost=()=>{ const R=RIG, D=R.D, g=new THREE.Group(); scene.add(g); NPC
     const e=S.gs, b=Math.sin(Math.PI*Math.max(0,Math.min(1,e))); QF.setFromRotationMatrix(M4.makeBasis(v3(GTF.x),v3(GTF.y),v3(GTF.z))); QG.slerpQuaternions(QB,QF,e); M4.makeRotationFromQuaternion(QG).extractBasis(V1,V2,V3);
     GF.x={x:V1.x,y:V1.y,z:V1.z}; GF.y={x:V2.x,y:V2.y,z:V2.z}; GF.z={x:V3.x,y:V3.y,z:V3.z}; const tb=Math.atan2(BK.o.x,BK.o.z), tf=Math.atan2(GTF.o.x,GTF.o.z), ta=tb+(tf-tb)*e, rd=Math.hypot(BK.o.x,BK.o.z)*(1-e)+Math.hypot(GTF.o.x,GTF.o.z)*e+b*3;
     GF.o={x:Math.sin(ta)*rd,y:BK.o.y+(GTF.o.y-BK.o.y)*e+b*4,z:Math.cos(ta)*rd};
-    const jy=mv&&/jump|flip/.test(mv)&&B&&B.J.pelvis?Math.max(0,B.J.pelvis.y-18):0, bob=.9*Math.sin(S.t*1.4);
-    const tl=wet&&B&&B.J.chest?B.J.chest.y-J0.pelvis.y+8+bob:still?0:5+bob+jy*.8, lk=40, lc=2*Math.sqrt(lk)*.8; S.lv+=(lk*(tl-S.lift)-lc*S.lv)*dt; S.lift+=S.lv*dt;
+    const jy=mv&&/jump|flip/.test(mv)&&B&&B.J.pelvis?Math.max(0,B.J.pelvis.y-18):0, bob=.9*Math.sin(S.t*1.4); S.jh=Math.max(jy*.9,S.jh*Math.exp(-dt*2.2));
+    const tl=wet&&B&&B.J.chest?B.J.chest.y-J0.pelvis.y+8+bob:still?0:5+bob+S.jh, lk=40, lc=2*Math.sqrt(lk)*.8; S.lv+=(lk*(tl-S.lift)-lc*S.lv)*dt; S.lift+=S.lv*dt;
     S.lean+=((still?0:Math.min(.2,S.sp*.045))-S.lean)*Math.min(1,dt*3); S.bank+=(Math.max(-.2,Math.min(.2,-(st.yr||0)*.04))-S.bank)*Math.min(1,dt*3);
     musScale(g); g.position.set(pos.x,py+S.lift*g.scale.y,pos.z); g.rotation.set(S.lean*(1-S.w),RAG.on?RAG.hd:heading,S.bank*(1-S.w),'YXZ');
     SF.pose(dt,{J,m:{Rh}},GF,fr,(groundY(pos.x,pos.z)-g.position.y)/g.scale.y); sling(GF,J); };

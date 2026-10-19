@@ -3121,3 +3121,7 @@ versions) and put them in random spots in park and thats where specific mushroom
   Spruce1 (160), Willow1 (310), Giant1 (367). Oaks and elders are the common trees, sizes 9 to 24; about 45% stand with one or two
   smaller companions; about a third of the lake-shore oaks are elders. One spruce, one willow (by the lake) and one giant each stand
   in a different quarter. A few thousand more triangles, no new lights or shader programs. They keep clear of the lake campfire.
+- **Every mushroom shows; skill decides the picking** (owner, 19 Oct 2026, of the gold-grass mushrooms hidden below a skill: "i want
+  them to show up but you cant pick them without the skill level (like before)", "mushrooms"): all mushrooms are seen whatever your
+  FORAGING; one above your reach (its difficulty over your skill + 15, the keen-eye potion counting) can't be picked: YOU NEED
+  FORAGING N TO PICK THIS MUSHROOM.

@@ -60,10 +60,10 @@ const FORAGE={}; window.FORAGE=FORAGE;
       const k=gv?GOLD[gv]:pickKind(WEEDS.kindAt(x,z),hsh(x/T,z/T+d*.53,202)), px=x+(hsh(x,z,203)-.5)*(gv?.2:.4)*T, pz=z+(hsh(z,x,204)-.5)*(gv?.2:.4)*T;
       out.push({k,g:gv,x:px,z:pz,y,top:grp.top(px,y,pz),pk:hsh(x,z,206)<.2,rv:0,cr:0,id:d+':'+Math.round(px*10)+','+Math.round(pz*10),s:.8+.5*hsh(x,z,205)}); } return out; };
   const m4=new THREE.Matrix4(), q=new THREE.Quaternion(), V3=THREE.Vector3, col=new THREE.Color(); let things=[];
-  FORAGE.sync=()=>{ let nc=0, ng=0, ns=0; const see=sk('forage')+15+FORAGE.keen(), list=[]; hits.clear(); for(const t of things){ const i=UI.things.indexOf(t); if(i>=0)UI.things.splice(i,1); } things=[];
+  FORAGE.sync=()=>{ let nc=0, ng=0, ns=0; const list=[]; hits.clear(); for(const t of things){ const i=UI.things.indexOf(t); if(i>=0)UI.things.splice(i,1); } things=[];
     const now=performance.now()/1e3;
     for(const arr of CH.values())for(const m of arr){ if(list.length>=NMX)break; if(m.cr>now){ if(nc<NMX){ const [,,,,,cc,,[w]]=MU[m.k], r=.2*T*m.s; CAPS.setMatrixAt(nc,m4.compose(new V3(m.x,m.y+.01*T,m.z),q,new V3(r*w*1.5,r*.1,r*w*1.5))); CAPS.setColorAt(nc++,col.setHex(cc).multiplyScalar(.5)); } continue; }
-      if(S.picked[m.id]||MU[m.k][1]>see||!(m.pk||m.rv>now))continue; list.push(m); }
+      if(S.picked[m.id]||!(m.pk||m.rv>now))continue; list.push(m); }
     for(const m of list){ const [nm,,,,,cc,sc,[w,h,sh,sw]]=MU[m.k], r=.2*T*m.s, glow=m.k==='moonglow', sH=r*sh+(m.pk?Math.max(0,m.top-m.y-r*sh*.3):0);
       STEMS.setMatrixAt(ns,m4.compose(new V3(m.x,m.y,m.z),q,new V3(r*sw*(m.pk?.6:.5),sH,r*sw*(m.pk?.6:.5)))); STEMS.setColorAt(ns++,col.setHex(sc));
       const me=glow?GLOW:CAPS, n=glow?ng++:nc++; me.setMatrixAt(n,m4.compose(new V3(m.x,m.y+sH*.95,m.z),q,new V3(r*w,r*h,r*w))); me.setColorAt(n,col.setHex(cc));
@@ -85,7 +85,7 @@ const FORAGE={}; window.FORAGE=FORAGE;
       if(near&&shod&&up&&!S.shoeHint&&WEEDS.inPark&&WEEDS.inPark(pos.x,pos.z)){ S.shoeHint=1; say('TAKE OFF YOUR SHOES TO FORAGE SAFELY.','#f2c14e'); saveSoon(); }
       if(ch)FORAGE.sync(); };
     window.MUSHDBG=()=>{ const now=performance.now()/1e3, o={hidden:0,revealed:0,peek:0,crushed:0,picked:0,barefoot:!shod0(),gold:{},lawn:{}}; for(const arr of CH.values())for(const m of arr){ const gk=m.g?WEEDS.GV[m.g]+': '+m.k:m.k, gb=m.g?o.gold:o.lawn; gb[gk]=(gb[gk]||0)+1; if(m.cr>now)o.crushed++; else if(S.picked[m.id])o.picked++; else if(m.pk)o.peek++; else if(m.rv>now)o.revealed++; else o.hidden++; } return o; }; }
-  FORAGE.pick=m=>{ const [nm,d]=MU[m.k], kb=FORAGE.keen(); if(typeof SFX!=='undefined')SFX.play('step',{vol:.5});
+  FORAGE.pick=m=>{ const [nm,d]=MU[m.k], kb=FORAGE.keen(); if(d>sk('forage')+15+kb){ say(`YOU NEED FORAGING ${Math.ceil(d-15)} TO PICK THIS MUSHROOM.`,'#c8a090'); return; } if(typeof SFX!=='undefined')SFX.play('step',{vol:.5});
     if(use('forage',d-25,d+25,kb)){ S.picked[m.id]=1; const n=1+(sk('forage')+kb>d+20&&Math.random()<.4?1:0), known=d<10||use('myco',d-30,d+20);
       give((known?'m_':'u_')+m.k,n); say(known?`YOU PICK ${n>1?n+' ':'A '}${nm}${n>1?'S':''}.`:`YOU PICK ${n>1?n:'A'} MUSHROOM${n>1?'S':''} YOU DON'T KNOW.`,known?'#e8e2cc':'#c8b0ff'); }
     else if(Math.random()<.3){ S.picked[m.id]=1; say('IT CRUMBLES IN YOUR HAND.','#c8a090'); } else say('YOU FAIL TO PICK IT CLEANLY.','#c8a090');

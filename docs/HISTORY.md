@@ -2667,3 +2667,6 @@ not have windows, make sure buildings are only as tall as they need to be"; then
   only room you are in"): in the isometric view, inside any room (`ROOMS.cur`: shops, bar, bodega, apartment floors, the civic tower)
   a black cover is drawn over the whole screen except the room's own box as the camera sees it (its 8 corners' outline), so the street
   and the buildings round it are gone until you step out.
+- **No glow on you indoors** (owner, 19 Oct 2026: "whats cauasing this glow on my char? ... it only does it inside"): your figure was
+  brightened toward white by any lamp within 6 tiles (90%), and rooms are full of lamps; now only lit lamps count, by their strength,
+  and at most 35%.

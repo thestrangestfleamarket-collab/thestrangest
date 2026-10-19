@@ -277,7 +277,7 @@ function gdShape(GS,K,LAMPS){ const s=K.s, o=K.o, SC=1.5, cx=o[0]+4*s, Y1=o[1]+3
     let was=null, hid=null, step=-1, wIn=false;
     const PW={uT:{value:0},uP:{value:new THREE.Vector4()},me:null}, KT=TILE*BLDK, tx=x=>x/KT+BOD.OX, ty=z=>z/KT+BOD.OY, inPool=(x,z)=>{ const a=tx(x), b=ty(z); return a>xi0&&a<xi1&&b>yi0&&b<yR-.1; };
     const poke=(x,z,k=1)=>{ PW.uP.value.set(x,z,Math.max(PW.uP.value.z,k),0); };
-    BOD.GD={r:[xi0,yi0,xi1,yi1],floor:[xi0,yE+.3,xi1,yi1],door:[X0+W/2,Y1],dw:DOOR.a1-DOOR.a0,H:H+2,eave:H,y0:Y(BD-6),deep:Y(BD),inside:inBox,build,inPool,poke,
+    BOD.GD={r:[xi0,yi0,xi1,yi1],floor:[xi0,yE+.3,xi1,yi1],door:[X0+W/2,Y1],dw:DOOR.a1-DOOR.a0,H:H+2,eave:H,y0:Y(BD-6),deep:Y(BD),inside:inBox,build,inPool,poke,deepAt:(x,z)=>[x,Z(Math.min(ty(z),yL-.55))],
       ground(x,z){ const a=tx(x), b=ty(z); if(a<=xi0||a>=xi1||b<=yi0||b>=yE)return null; if(b>yS)return Math.abs(a-cx)<GAP?Y(BS*(yE-b)/(yE-yS)):b<yR?Y(BS):null; return Y(BS); },
       feed(st,pos,dt,go,keys){ if(LVL!=='up'||!built||VIT.dead||!inPool(pos.x,pos.z)){ if(wIn){ wIn=false; if(st.water)st.water.in=false; } return false; }
         const b=ty(pos.z), W=RIG.water(st,{level:(Y(WL)-py)/ZU,floor:(Y(b<yL?BD:BS)-py)/ZU}); W.go=!!go; W.fast=W.in&&(keys.has('k')||keys.has('shift'))?1:0;

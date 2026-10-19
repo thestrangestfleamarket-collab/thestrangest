@@ -3,7 +3,7 @@
   document.head.appendChild(css); document.body.appendChild(el);
   const DEAD='YOU ARE DEAD. FIND THE BATH HOUSE.', note=(t,s)=>{ el.textContent=t; el.hidden=false; clearTimeout(note.t); if(s)note.t=setTimeout(()=>{ if(VIT.dead)note(DEAD); else el.hidden=true; },s*1000); };
   const wait=ms=>new Promise(r=>setTimeout(r,ms)), frames=k=>new Promise(r=>{ const f=()=>--k<=0?r():requestAnimationFrame(f); requestAnimationFrame(f); });
-  const MH=T/.84; let S=null, gh=0, rise=-1, busy=false;
+  const MH=T/.84; let S=null, gh=0, rise=-1, busy=false, dp=null;
   const sheet=()=>{ if(S||!window.GHOSTS||!GHOSTS.cloth)return S; const MV=BOD.YS(24)/.84, mat=new THREE.MeshToonMaterial({color:0xf2f0ea,emissive:0x2a3040,gradientMap:W3.GP,transparent:true,opacity:0,side:THREE.DoubleSide,depthWrite:false}), em=new THREE.MeshBasicMaterial({color:0x0c0c10,transparent:true,opacity:0}), eg=new THREE.CircleGeometry(1,10);
     S=GHOSTS.cloth(1.15,true,17,.24,mat,pos.x/MH,py/MV+1.5,pos.z/MH); S.MV=MV; S.mat=mat; S.em=em; S.eyes=[-1,1].map(()=>{ const e=new THREE.Mesh(eg,em); e.scale.set(.05*MH,.075*MV,1); e.renderOrder=4; scene.add(e); return e; }); return S; };
   const look=on=>{ W3.mesh.visible=!on; if(S){ S.me.visible=on; for(const e of S.eyes)e.visible=on; } };
@@ -19,9 +19,9 @@
     if(gh>=1&&!RAG.on&&st.move&&st.move.name==='fall'&&st.move.held)RIG.release(st,'F');
     if(VIT.out>0||!sheet())return;
     if(!gh){ look(true); S.ball={x:pos.x/MH,y:py/S.MV+1.5,z:pos.z/MH}; S.drop(); }
-    if(rise<0){ gh=Math.min(1,gh+dt); if(gh>=1&&BOD.GD&&LVL==='up'&&py<2*T&&(BOD.GD.inPool?BOD.GD.inPool(pos.x,pos.z):BOD.GD.inside())){ rise=0; if(BOD.GD.poke)BOD.GD.poke(pos.x,pos.z,1.4); } }
+    if(rise<0){ gh=Math.min(1,gh+dt); if(gh>=1&&BOD.GD&&LVL==='up'&&py<2*T&&(BOD.GD.inPool?BOD.GD.inPool(pos.x,pos.z):BOD.GD.inside())){ rise=0; dp=BOD.GD.deepAt?BOD.GD.deepAt(pos.x,pos.z):[pos.x,pos.z]; if(BOD.GD.poke)BOD.GD.poke(pos.x,pos.z,1.4); } }
     else{ rise+=dt; keys.clear(); target=null; gh=1+Math.max(0,(rise-2.2)/1); if(BOD.GD.poke&&rise<2)BOD.GD.poke(pos.x,pos.z,.5); if(rise>=3.2)back(); }
-    const dn=BOD.GD&&BOD.GD.deep!=null?BOD.GD.deep/S.MV+.45:py/S.MV, y0=py/S.MV+1.5, e=rise>0?Math.min(1,rise/2.6):0, b=S.ball, to={x:pos.x/MH,y:y0+.05*Math.sin(performance.now()/1000*1.6)*(1-e)+(dn-y0)*e*e*(3-2*e),z:pos.z/MH}; S.gnd=rise>0?dn-.5:py/S.MV;
+    const dn=BOD.GD&&BOD.GD.deep!=null?BOD.GD.deep/S.MV+.45:py/S.MV, y0=py/S.MV+1.5, e=rise>0?Math.min(1,rise/2.6):0, b=S.ball, s3=e*e*(3-2*e), q=rise>0&&dp?Math.min(1,s3*1.6):0, to={x:(pos.x+((dp?dp[0]:pos.x)-pos.x)*q)/MH,y:y0+.05*Math.sin(performance.now()/1000*1.6)*(1-e)+(dn-y0)*s3,z:(pos.z+((dp?dp[1]:pos.z)-pos.z)*q)/MH}; S.gnd=rise>0?dn-.5:py/S.MV;
     if(Math.hypot(to.x-b.x,to.z-b.z)>2||Math.abs(to.y-b.y)>2){ S.ball=to; S.drop(); }
     GHOSTS.run(S,dt,to,[],MH,S.MV); const a=gh<=1?gh:2-gh; S.mat.opacity=.5*a; S.em.opacity=.85*a;
     const fx=Math.sin(heading), fz=Math.cos(heading); S.eyes.forEach((e,k)=>{ const sd=k?1:-1, ex=to.x+fx*(S.BR+.05)+fz*sd*.09, ey=to.y+.03, ez=to.z+fz*(S.BR+.05)-fx*sd*.09; e.position.set(ex*MH,ey*S.MV,ez*MH); e.lookAt(V.set((ex+fx)*MH,ey*S.MV,(ez+fz)*MH)); }); };

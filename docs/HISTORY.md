@@ -2629,3 +2629,6 @@ not have windows, make sure buildings are only as tall as they need to be"; then
   shutters on the river side, blank ends, no shadow.
 - **Only as tall as needed**: the theatre 176 (was 230), the arcade 180 (200, its ARCADE sign still fits), the apartment house three
   floors (`ST` 3, was 5). The theatre's walls are plain brick with no windows (only its front picture stays).
+- **Deploys from this repo** (19 Oct 2026): Cloudflare's Builds for the `thestrangest` worker were linked to the old `bralynnb` GitHub
+  account and stopped seeing `main` after the repo moved to `thestrangestfleamarket-collab` (nothing deployed after #89). Relinked to
+  `thestrangestfleamarket-collab/thestrangest`, branch `main`, build `npm ci && python3 build.py`, deploy `npx wrangler deploy`.

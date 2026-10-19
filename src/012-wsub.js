@@ -35,7 +35,7 @@ const WSUB=(()=>{ const ox=-90, oy=-105;
   const SZ=-UH, SC6={steel:[136,140,148],steelL:[176,180,188],dark:[38,38,44],cap:[16,16,20],cam:[62,64,70],lens:[10,10,14],board:[14,12,12],dot:[255,168,40],dotDim:[60,36,14]};
   const LED35={P:'111101111100100',L:'100100100100111',E:'111100110100111',A:'010101111101101',S:'011100010001110',M:'101111111101101',I:'111010010010111',O:'111101101101111',U:'101101101101111',
     N:'101111111111101',D:'110101101101110',T:'111010010010010',H:'101101111101101',G:'011100101101011',R:'110101110101101',V:'101101101101010',W:'101101111111101',' ':'000000000000000',C:'111100100100111',K:'101101110101101',
-    0:'111101101101111',1:'010110010010111',2:'111001111100111',3:'111001011001111',4:'101101111001001',':':'000010000010000','^':'010111010010010'};
+    Y:'101101010010010',0:'111101101101111',1:'010110010010111',2:'111001111100111',3:'111001011001111',4:'101101111001001',':':'000010000010000','^':'010111010010010'};
   const LEDTXT=['PLEASE MIND THE GAP','TRAIN ARRIVING','14:03'];
   W.column=(x0,y0)=>{ PNAME='station column'; const x1=x0+.7, y1=y0+.7, tile=(u,z,f)=>sh(W.tile(u,z-SZ,1),f), by0=y1+.12, by1=by0+1.6, bx=x0+.3, LW=by1-by0;
     const led=(nx,Y,z)=>{ let a=(Y-by0)*24*2; if(nx>0)a=LW*48-a; const r=Math.floor((SZ+74-z)*2);
@@ -59,10 +59,29 @@ const WSUB=(()=>{ const ox=-90, oy=-105;
   const faceX=(y0,len,zt,A,els)=>(v,z)=>A(Math.floor((ROT<2?y0+len-v:v-y0)*24),Math.floor(zt-z))||els(v,z);
   const QS={iron:[40,42,48],plate:[16,16,20],ink:[236,236,230],red:[236,44,40],lamp:[30,30,34]};
   W.litSign=(x,y,t)=>{ PNAME='lit sign'; const w=t.length*4+5, H=12, L=w/24, y0=y-L/2, A=plate(w,H,t,QS.ink,QS.plate,QS.iron);
-    return prop([{x0:x-.03,y0,x1:x+.03,y1:y0+L,z0:80,z1:80+H,c:QS.plate,em:1,foot:1,fi:faceX(y0,L,80+H,A,()=>QS.plate),fj:()=>QS.iron,top:()=>QS.iron},
+    return prop([{x0:x-.03,y0,x1:x+.03,y1:y0+L,z0:80,z1:80+H,c:QS.plate,em:1,foot:1,fs:(nx,ny,X,Y,zr)=>nx?A(Math.floor((nx>0?y0+L-Y:Y-y0)*24),Math.floor(H-zr))||QS.plate:QS.iron,top:()=>QS.iron},
       ...[y0+.15,y0+L-.2].map(p=>({x0:x-.015,x1:x+.015,y0:p,y1:p+.05,z0:80+H,z1:UH,c:QS.iron,foot:0}))],null,{walk:true}); };
   W.signal=(x,y,n)=>{ PNAME='tunnel signal'; return prop([{x0:x-.05,y0:y-.05,x1:x+.05,y1:y+.05,z0:0,z1:44,c:QS.iron},{x0:x-.14,y0:y-.1,x1:x+.14,y1:y+.1,z0:44,z1:60,c:QS.lamp,foot:1},
       {x0:x-.08,y0:n?y+.1:y-.14,x1:x+.08,y1:n?y+.14:y-.1,z0:48,z1:56,c:QS.red,em:1,foot:1}],null,{walk:true}); };
+  const Q4={steel:[132,136,142],steelD:[84,88,94],bin:[56,66,60],binD:[36,44,40],binR:[28,30,34],frame:[36,36,40],cable:[172,36,32],cableD:[120,24,22],bracket:[52,54,60],redD:[70,16,16],mach:[58,68,90],machT:[78,90,114],machD:[46,54,72],scr:[150,214,244,1],slot:[20,22,28]};
+  W.mach=(x0,y0)=>{ PNAME='passport machine'; const x1=x0+.54, y1=y0+.7;
+    return prop([{x0,y0,x1,y1,z0:0,z1:46,foot:1,c:Q4.mach,top:()=>Q4.machT,fj:()=>Q4.machD,fi:(v,z)=>z>26&&z<40&&v>y0+.12&&v<y1-.12?Q4.scr:z>15&&z<18&&v>y0+.2&&v<y1-.2?Q4.slot:Q4.mach}]); };
+  W.bin=(x,y)=>{ PNAME='trash bin'; const x0=x-.25, y0=y-.25, side=(a,z,f)=>sh(z>26?Q4.binR:z%9<1?Q4.binD:Q4.bin,f);
+    return prop([{x0,y0,x1:x0+.5,y1:y0+.5,z0:0,z1:30,c:Q4.bin,top:(u,v)=>Math.max(Math.abs(u-x),Math.abs(v-y))<.14?[12,12,14]:Q4.binR,fi:(v,z)=>side(v,z,.8),fj:(u,z)=>side(u,z,1)}]); };
+  W.poster=(x,y,k)=>{ PNAME='station poster'; const Wd=29, H=28, A=W.art(Wd,H,put=>{ for(let yy=0;yy<H;yy++)for(let a=0;a<Wd;a++){ let c;
+        if(k===0)c=yy<4?[232,120,60]:yy<7?[170,80,80]:yy<16?[90,40,90]:(a%5<3&&yy<22+(a*7)%5)?[24,20,34]:hash(a,yy,1)<.3?[240,220,120]:[24,20,34];
+        else if(k===1){ const d=Math.hypot(a-14,yy-13); c=d<7?[200,40,40]:d<8?[120,20,20]:yy>20&&a%2?[60,60,70]:[232,224,200]; }
+        else c=mod(a+yy,8)<3?[232,232,224]:yy>18&&a>18?[220,180,40]:[40,60,130];
+        put(a,yy,a<2||a>=Wd-2||yy<2||yy>=H-2?Q4.frame:c); } });
+    return prop([{x0:x,y0:y,x1:x+.04,y1:y+Wd/24,z0:44,z1:44+H,c:Q4.frame,foot:1,fi:faceX(y,Wd/24,44+H,A,()=>Q4.frame),fj:()=>Q4.frame,top:()=>Q4.frame}]); };
+  W.namePlate=(x,y,t)=>{ PNAME='station sign'; const Wd=t.length*4+7, H=13, A=plate(Wd,H,t,QS.ink,QS.plate,QS.ink);
+    return prop([{x0:x,y0:y,x1:x+.04,y1:y+Wd/24,z0:58,z1:58+H,c:QS.plate,foot:1,fi:faceX(y,Wd/24,58+H,A,()=>QS.plate),fj:()=>QS.plate,top:()=>QS.plate}]); };
+  W.cables=(x,y0,y1)=>{ PNAME='cable run'; const bs=[81,86].map(z=>({x0:x,y0,x1:x+.08,y1,z0:z,z1:z+3,c:Q4.cable,foot:1,fi:()=>Q4.cableD,fj:()=>Q4.cableD,top:()=>Q4.cable}));
+    for(let p=y0+.5;p<y1-.2;p+=2)bs.push({x0:x,y0:p,x1:x+.16,y1:p+.1,z0:79,z1:91,c:Q4.bracket,foot:1}); return prop(bs); };
+  W.gate=(x,y,n)=>{ PNAME='no entry gate'; const L=1.4, x0=x-L/2, yy=n?y:y-.06, bar=(z0,z1)=>({x0,y0:yy,x1:x0+L,y1:yy+.06,z0,z1,c:QS.iron,foot:1}), bs=[bar(0,4),bar(36,39),bar(70,74)];
+    for(let a=x0+.1;a<x0+L-.05;a+=.2)bs.push({x0:a,x1:a+.05,y0:yy,y1:yy+.06,z0:4,z1:70,c:QS.iron,foot:1});
+    const Wd=37, H=11, A=plate(Wd,H,'NO ENTRY',QS.ink,QS.red,QS.ink), w=Wd/24, py=n?yy+.06:yy-.04, u0=x-w/2;
+    bs.push({x0:u0,x1:x+w/2,y0:py,y1:py+.04,z0:44,z1:44+H,c:QS.red,foot:1,fs:(nx,ny,X,Y,zr)=>ny?A(Math.floor((ny>0?X-u0:u0+w-X)*24),Math.floor(H-zr))||QS.red:Q4.redD,top:()=>Q4.redD}); return prop(bs); };
   const CC={side:[104,108,118],sheen:[150,156,168],seam:[78,82,90],band:[70,80,46],bandL:[96,108,62],eave:[34,36,42],glass:[28,36,50],glassL:[92,110,138],rim:[196,202,212],
     under:[26,26,30],ribL:[116,122,134],ribD:[56,58,66],cap:[150,156,168],inside:[226,214,160],red:[240,56,40],head:[255,222,140],frame:[60,62,70]};
   const CQ=c=>c.length>3?c:c.map(v=>v&~7);
@@ -88,12 +107,4 @@ const WSUB=(()=>{ const ox=-90, oy=-105;
     for(let z=EAVE;z<CREST;z+=3){ const t=(z+1.5-EAVE)/(CREST-EAVE), w=Wd*Math.sqrt(Math.max(.02,1-t*t)), r=.3+.35*t;
       out.push(box(-w,w,-L+r,L-r,z,Math.min(CREST,z+3),CC.ribL,{side:()=>CC.ribD,end:()=>CC.cap,top:(X,Y)=>{ const e2=Math.min(Y+L,L-Y); return e2<1.4?(e2<.7?CC.rim:CC.cap):Math.floor((X+Wd)*24/4.8)%2?CC.ribL:CC.ribD; }})); }
     return out; };
-  W.carJob=(f,e=0)=>{ const rot=ROT, bs=W.carBoxes(f,e), [x0,y0,x1,y1]=boxBounds(bs), w=x1-x0, h=y1-y0, px=new Uint8ClampedArray(w*h*4), gp=new Uint8Array(w*h), dep=new Float32Array(w*h).fill(-1e9); let row=0;
-    const L={K:1,x:x0,y:y0,w,h:4,putG(X,Y,c,de){ X-=x0; Y-=y0; if(X<0||Y<0||X>=w||Y>=h)return; const q=Y*w+X; if(de<dep[q])return; dep[q]=de; px[q*4]=c[0]; px[q*4+1]=c[1]; px[q*4+2]=c[2]; px[q*4+3]=255; gp[q]=c.length>3?1:0; }};
-    return {c:null,dead:false,step(ms){ if(ROT!==rot){ this.dead=true; return false; } const t0=performance.now();
-      while(row<h&&performance.now()-t0<ms){ L.y=y0+row; for(const b of bs)rasterBox(L,b); row+=4; } if(row<h)return false;
-      const tx=W.TRACKS[e], env=envNear(tx,W.D1Y), Lc=env?lightAt(env,tx,W.D1Y,(LVZ(-1)+20)/24,null).map(v=>Math.max(CHARMIN,Math.min(1,v))):[.6,.6,.6];
-      for(let q=0;q<w*h;q++)if(px[q*4+3]&&!gp[q]){ px[q*4]*=Lc[0]; px[q*4+1]*=Lc[1]; px[q*4+2]*=Lc[2]; }
-      const c=document.createElement('canvas'); c.width=w; c.height=h; c.getContext('2d').putImageData(new ImageData(px,w,h),0,0);
-      const [sx,sy]=toS(...vw(0,0)); c.ox=x0-sx; c.oy=y0-sy; this.c=c; return true; }}; };
   return W; })();

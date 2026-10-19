@@ -1705,6 +1705,70 @@ starving messages, and nothing stops you running (`141-forage.js`; `103-vitals.j
 kept there from older versions (`market-*`, `isowalk-*`: the saved game, its settings, recorded moves, the look) is cleared and it starts
 clean. The login is kept.
 
+**Physics: Rapier, extended** (owner, 19 Oct 2026: "i want to put the physics in the game back like the old game"; of the options, "1."
+(stay on Rapier); first "push and throw things, bodies bump each other, your body on by default"):
+- **Your physics body on by default** (`090-physbody.js`, saved as `physbody3` so everyone starts with it on; DISPLAY still turns it off).
+  Cost: Rapier (0.76 MB compressed from jsDelivr, cached after) loads in the background as the game starts, not blocking it.
+- **Bodies bump** (`076-npc-map.js`, `N.push`): walking into a character shares the overlap (he gives way part of it, more the faster you
+  come, never into a wall), and running into one shoves him back a step (a push that dies away in a fraction of a second). No new cost.
+
+**Zoom** (owner, 18 Oct 2026: "allow me to zoom out 2 more levels. also when i try to zoom out and i cant anymore it skips instead of just
+not letting me"): `UI.MAXW` 19 to 30 tiles; at the limit the wheel does nothing (no zoom-to-cursor shift, `094-ui.js`).
+
+**The sun was gone** (owner, 18 Oct 2026: "no matter what time i make it its staying dark"): the comment strip of 18 Oct (no comments in
+src) took `scene.add(sunL,sunL.target)` with it, as it sat after a `//` note on its line, so the sun never lit anything and every hour
+looked like night. Back in `129-clock.js`.
+
+**Never into other floors** (owner, 19 Oct 2026: "you should never see the interiors of other floors"): inside the apartment house the
+floors above were already cut at your ceiling (`APTS.HP`); now everything of the house below your floor is cut too (`APTS.LP`, a second
+clip plane on the house's materials, at your floor), so from a flat's balcony the lobby isn't seen. No new cost.
+## 18 Oct 2026: only the corner walkable, the rest into the mist
+- **The corner** (owner: "i want to change the map to only make this walkable. the roads going up and right should look like they keep going (central park is huge and this is only 1 corner)"; of the mockups https://claude.ai/artifact/W5rQsTCsnMvrJkBtPEVZHg, "lets do the mist"): walkable from the west street to 8 tiles short of the park's east wall, from the river to 8 tiles short of its north wall (`RING.cf`, `065-ring.js`): the same solid walls, now invisible (no cyan field). The mist starts right at that edge and is full 8 tiles past it, so the park's far walls, the north street and the Avenue stay hidden and the roads run on into it. The skyline keeps the old town box (`RINGX.town`). Characters pick spots and routes only inside it (`stfree`, `STLANE`); the joggers run out and back up West St and along Market St. The menu map shows the corner. A saved DISTANCE LOOK drops its mist start and depth once (`corner` in `farlook`).
+- **Loose things: push and throw** (owner, 19 Oct 2026: physics like the old game, "push and throw things"; he chose all of: small
+  clutter, light furniture, street things, and "everything not fixed", heavy ones barely budge, nothing bolted down; building
+  structure stays fixed). `150-loose.js` (was `150-goodsphys.js`; still `GPH`, on the physics body's one Rapier load):
+  - What is loose: every placed thing whose name is furniture or clutter (chairs, stools, bar stools, office chairs, tables, desks,
+    benches, barrels, crates, boxes, bags, bottles, jars, pots and potted plants, radios, TVs, lamps that stand, vacuums, newspaper
+    rack, fridges, wardrobes, beds, sofas, bookshelves, cabinets, chests, speaker stacks, dumpster, bins), the street's trash cans,
+    and the bodega's 208 goods as before. Fixed: walls, floors, doors, windows, stairs, columns, fences, counters and bars, shelves
+    and coolers, sinks, signs and neon, anything on a wall, lamp posts and park lamps, rugs and mats, planted beds, the castle.
+    Boxes, crates, glasses, bottles, tapes, bones split into one body each; any other thing is one body.
+  - Bodies only within 12 tiles of you and on your floor (asleep until touched; frozen and taken out of the world past 15 tiles);
+    fixed colliders streamed around you from the walking solids, the fixed boxes, the ground (4-tile blocks) and, near the bodega,
+    its shelves and walls. Walking into a light thing shoves it (a body that follows you, pushing with a person's force), so a
+    heavy one (over 30 kg: wardrobes, fridges, beds, sofas) barely moves and still blocks you where it now stands; a light one's
+    walking solid is gone once it is a body. Punches and kicks send things flying (heavy ones a little). Click a light thing to pick
+    it up, click again to throw it (SHIFT+click for a seat or a lamp, whose click is still sit or switch). Things sleep when still.
+  - Cost: no triangles or lights added (a moved thing's faces are moved out of the batched mesh into its own small mesh: one draw
+    call for each thing that has ever moved); about 350 fixed colliders near you. In the cloud's software rendering: 1.6 ms a frame
+    with everything asleep in the bodega (180 bodies), 4.7 ms with 100 awake.
+
+## 19 Oct 2026: the Day 1 station in place of the Metro
+- **The very first station** (owner: "lets replace the subway station with the very 1st one with security drones, passport machine, etc.";
+  his pick "Station + machine + drones", no arrival scene: you still start where you did; the old game read once for it, read-only):
+  the Metro (`010-metro.js`, `data/metro.json`, its car ride) is gone; the Day 1 station of the old game (its 11 Oct room, the owner's
+  `subway-station-target.webp`, plus the 10 Oct look of `23-pack-objects-4-station.js`) is THE subway, built always (`012-wsub.js` its
+  painters, `013-main-3.js` the room, `013a-day1.js` the stairs, the way in and the drones). One storey down as in the old game (the
+  platform at the loop tunnel's depth, `STN.DY`), the room 25.5 x 10.4 tiles under the lot running east-west, the track's tunnels 12 tiles
+  past each end. **The stairs**: the street opening where the Metro's was (tiles x 60-64, its top on the sidewalk's back edge), 12 concrete
+  steps with yellow nosings 6 tiles down to the platform's back wall, tiled sides, green railings round it at the street (`MAPSTAIR`).
+  Three treads down ENTERING SUBWAY and you're at the stairs' foot (`METRO.door`, as the Metro's; `?subyaw=0..3`), five treads up from the
+  foot LEAVING SUBWAY. **In the room**: the tiled back wall (posters, two MARKET ST name plates, red cables on brackets, all cut with the
+  wall), the curved far wall with its three big posters, two tiled columns with dome cameras and amber boards (PLEASE MIND THE GAP / TRAIN
+  ARRIVING / 14:03), four steel benches facing the track (double click to sit), two bins, TO STREET hung over the stairs' foot (reads from
+  both sides now), a NO ENTRY gate in each end wall, the arched tunnel mouths with a red signal in each, the old car parked at the platform,
+  the steps down to the track at each end, eight cool lamps. **The passport machine** (steel cabinet, lit screen, slot) against the back
+  wall beside the stairs, **two security drones** perched on it (silver balls, a dark band, a green lens, a rotor: made in parts). The first
+  time you come within 4 tiles of the machine in a visit they lift off (a chirp), float to your right and left at head height, scan you
+  (a green ring sweeping shoes to head and back, a beam from each lens, a code-made `scan` sound in `091-sfx.js`), the first says THANK YOU
+  FOR YOUR COOPERATION. in the speech style (`LINES.say`), and both go back and sit still. They run only while you're down there.
+  Hooked as the Metro was: `MODS.station` (ground, plat, path, lane), THE PLATFORM / THE SUBWAY STAIRS, lives' way down, the rats (now on
+  this platform, `METRO.rats`), the newsstand untouched. **Cost**: the station 1,784 triangles, its stairs 532, the drones 312 (the beams and ring 80 more while
+  scanning); the platform's whole screen about 80,000 with you and the rats (the Metro's 130,000); 10 lamp records (was 11; LITE's eight
+  nearest light), no new program; a frame the same as before with the drones home (they move only while out); the page 0.93 MB smaller (`metro.json` dropped). `tests/day1shot.cjs <out>`. **Found on the way**
+  (`161-perf.js`): `PERFX.bounds` gave the walker a fixed bounding sphere at the world's middle, so far from it (here, the new platform) you
+  vanished from some angles; the walker is never culled now. **Left out**: the black card, the train arriving, the force field and passport
+  form (not wanted); riding a train (the car is parked); `tools/metro-bake.py` kept in case the Metro comes back.
 ## 19 Oct 2026: three new avatars on standard bones
 
 **Three new avatars, the Walker untouched** (owner, 19 Oct 2026: "is there a total package we could use that gives me the character,

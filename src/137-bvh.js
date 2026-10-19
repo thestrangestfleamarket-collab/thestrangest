@@ -22,5 +22,6 @@ const BVH={on:QS.get('bvh')!=='0', ready:false, lib:null, built:0, ms:0};
     import('https://cdn.jsdelivr.net/npm/three-mesh-bvh@0.8.3/build/index.module.js').then(m=>{
       THREE.BufferGeometry.prototype.computeBoundsTree=m.computeBoundsTree; THREE.BufferGeometry.prototype.disposeBoundsTree=m.disposeBoundsTree;
       BVH.lib=m; BVH.ready=true; warm(); }).catch(e=>{ console.warn('BVH: three-mesh-bvh did not load, rays stay three\'s own',e); BVH.lib=null; BVH.on=false; }); };
+  BVH.refit=g=>{ if(!g.boundsTree)return; try{ g.boundsTree.refit(); g._bvhK=key(g); }catch(e){ g.boundsTree=null; } };
   BVH.stats=()=>{ let n=0,t=0,d=0; const seen=new Set(); scene.traverse(o=>{ const g=o.geometry; if(!g||seen.has(g))return; seen.add(g); if(g.boundsTree){ n++; t+=tris(g); } if(g._bvhDyn)d++; }); return {ready:BVH.ready,trees:n,tris:t,dynamic:d,built:BVH.built,ms:+BVH.ms.toFixed(1)}; };
 }

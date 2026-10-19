@@ -103,4 +103,3 @@ WATER.feed=(st,pos,dt,go,keys)=>{ if(!WATER.mesh)return RIG.water(st,{level:null
   return W; };
 
 await grab('down',async()=>{ const solids=SOL.down, fixed=FIX.down, SHL=[]; let BOUND, groundY; const c0=cutWalls.length;
-if(AWAY.has('station')){

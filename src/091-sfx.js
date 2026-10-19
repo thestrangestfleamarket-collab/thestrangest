@@ -33,6 +33,7 @@ const SFX={on:true,vol:1,mix:{fx:{},loops:{},gap:1,blip:1}};
     train:{len:4.5,f:(D,n)=>{ const F=lp(), G=lp(); for(let i=0;i<n;i++){ const t=i/n; D[i]=(F(rnd(),.02)*1.4+G(rnd(),.25)*.25*(((i*73)%1000<500)?1:.6))*Math.pow(Math.sin(t*Math.PI),1.2); } }},
     siren:{len:1.6,f:(D,n,S)=>{ for(let i=0;i<n;i++){ const s=i/S, t=i/n; D[i]=Math.sin(TAU*(700+150*Math.sin(TAU*s*1.1))*s)*Math.sin(t*Math.PI)*.08; } }},
     thunder:{len:2.2,f:(D,n)=>{ const F=lp(); for(let i=0;i<n;i++){ const t=i/n; D[i]=F(rnd(),.03+.04*rnd())*Math.min(t*30,1)*env(t,1.8)*(1+.5*Math.sin(t*37))*1.2; } }},
+    scan:{len:1.1,f:(D,n,S)=>{ for(let i=0;i<n;i++){ const s=i/S, t=i/n; D[i]=Math.sin(TAU*(820+620*t)*s)*(Math.floor(s*22)%2?.45:1)*Math.sin(t*Math.PI)*.1; } }},
     hum:{len:4,loop:true,f:(D,n)=>{ const F=lp(); for(let i=0;i<n;i++)D[i]=F(rnd(),.03); const a=n*.05|0; for(let i=0;i<a;i++){ const k=i/a; D[i]*=k; D[n-1-i]*=k; } }},
     rain:{len:3,loop:true,f:(D,n)=>{ const F=lp(); for(let i=0;i<n;i++)D[i]=(rnd()-F(rnd(),.5)*.5)*.6; const a=n*.05|0; for(let i=0;i<a;i++){ const k=i/a; D[i]*=k; D[n-1-i]*=k; } }},
     wind:{len:5,loop:true,f:(D,n,S)=>{ const F=lp(); for(let i=0;i<n;i++){ const s=i/S; D[i]=F(rnd(),.05)*(.6+.4*Math.sin(TAU*s*.23)*Math.sin(TAU*s*.071)); } const a=n*.05|0; for(let i=0;i<a;i++){ const k=i/a; D[i]*=k; D[n-1-i]*=k; } }},

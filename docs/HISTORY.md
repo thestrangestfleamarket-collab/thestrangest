@@ -2611,3 +2611,21 @@ and wash ashore). No sound. WebXR on a headset: teleport arc, snap turn, grab an
   The store's solids now always go to the street level's lists (`SOL.up`, `FIX.up`).
 - **The apartment house empty** (owner: "the apartment building should be empty"): `APTS.EMPTY`: no furniture, drapes or posters in
   any flat; the halls, stairs, doors, windows and ceiling lights stay (`054-apts.js`).
+
+## 19 Oct 2026: Market St spread out, garages between, one long building on the Hudson side
+(owner: "lets spread the buildings on market st out to fill the street, and put empty buildings with garages between each one. for now
+just make 1 long fake building on the hudson to make the alley work. fake doors and windows. low render"; of the mockup, "theater should
+not have windows, make sure buildings are only as tall as they need to be"; then "go")
+- **The row** (`MAINROW` in `006-map-pre.js`, map tiles, west to east): the bar −50 to −39, the museum −18.3 to 10.3, the apartment
+  house 31 to 39.25, the subway stairs 60 to 64 and the bodega 76.35 to 85.15 where they were (the start and the station stay), the
+  theatre 97.3 to 111.3, the arcade 123.3 to 137.3, the dojo's ground 149.4 to 167.9, the playhouse 180 to 194, the holodeck booth's
+  lot 206 to 212, all inside the walkable edge (214). Set through `WROW` (bar, museum), `LAYOUT0` (`house` −17.24, `ghost` 15.85)
+  and `BLOCK.lots`; `BLOCK.x0/x1` now −50 to 212.
+- **Garages** (`069a-block.js`): every gap of the row wider than 1.5 tiles gets a shut one-storey building (130 high, 0.1 off each
+  neighbour) with a roll-up shutter on the street and on the alley, no windows, no inside, no shadow of its own; the iron gates find
+  no gaps left.
+- **The Hudson side of the alley**: the six back-row shops are one long low building (140 high) in four pieces (−50 to −18.6, notched
+  round the museum, then 10.6 to 90, 90 to 150, 150 to 212), painted doors every 14 tiles and shop windows on the alley side,
+  shutters on the river side, blank ends, no shadow.
+- **Only as tall as needed**: the theatre 176 (was 230), the arcade 180 (200, its ARCADE sign still fits), the apartment house three
+  floors (`ST` 3, was 5). The theatre's walls are plain brick with no windows (only its front picture stays).

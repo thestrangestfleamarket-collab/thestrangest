@@ -184,11 +184,11 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
     renderer.setRenderTarget(null); renderer.clippingPlanes=cp; renderer.setClearColor(cc,ca);
     for(const k in vis)MAPG[k].visible=vis[k]; HEMI.intensity=h0; W3.group.visible=true;
     const im=new ImageData(W,H); for(let y=0;y<H;y++){ const o=y*W*4, q=(H-1-y)*W*4; for(let i=0;i<W*4;i+=4){ im.data[o+i]=GAM[px[q+i]]; im.data[o+i+1]=GAM[px[q+i+1]]; im.data[o+i+2]=GAM[px[q+i+2]]; im.data[o+i+3]=255; } } return im; };
-  const PLAN={}; const plan=()=>{ if(PLAN.im)return PLAN; const F=RING.cf, S=2, W=Math.round((F.x1-F.x0)*S), H=Math.round((F.y1-F.y0)*S), K=BLDK, OX=BOD.OX, OY=BOD.OY;
+  const PLAN={}; const plan=()=>{ if(PLAN.im)return PLAN; const BK=RING.bank, TW=RING.cf.x0, F={...RING.cf,x0:BK.x0-1.5}, S=2, W=Math.round((F.x1-F.x0)*S), H=Math.round((F.y1-F.y0)*S), K=BLDK, OX=BOD.OX, OY=BOD.OY;
     const bt=(x,y)=>[OX+(x-OX)*K,OY+(y-OY)*K], wt=(x,z)=>[OX+x/TILE,OY+z/TILE];
     const P=PARK, px0=P.x0+P.ox, px1=P.x1+P.ox, py0=P.y0+P.oy, py1=P.y1+P.oy, RV=RING.river, G=BOD.grounds.filter(g=>!g.bld), RA=BOD.road.at;
     const C={void:[11,13,18],water:[40,86,128],quay:[104,104,98],road:[52,54,60],alley:[70,71,76],walk:[142,138,128],land:[60,104,54],lawn:[74,134,60],way:[186,170,128],wall:[48,52,46]};
-    const kind=(x,y)=>{ if(x<F.x0||x>F.x1||y<F.y0||y>F.y1)return 'void'; if(y<RV.y1)return y>RV.y1-1?'quay':'water'; if(RA(x,y))return 'road';
+    const kind=(x,y)=>{ if(x<F.x0||x>F.x1||y<F.y0||y>F.y1||x<TW&&(y<BK.ys||y>BK.yn))return 'void'; if(y<RV.y1)return y>RV.y1-1?'quay':'water'; if(RA(x,y))return 'road';
       if(x>px0&&x<px1&&y>py0&&y<py1){ if(x<px0+.5||x>px1-.5||y<py0+.5||y>py1-.5)return 'wall'; if(FOUNT.lake(x-P.ox,y-P.oy)<0)return 'water'; if(FOUNT.ter(x-P.ox,y-P.oy)<0)return 'way'; return P.path&&P.path(x-P.ox,y-P.oy)?'way':P.brook&&(h=>h!=null&&h<P.brook.L(P.brook.q(x-P.ox,y-P.oy)[1]))(P.brook.h(x-P.ox,y-P.oy))?'water':'lawn'; }
       for(let i=G.length-1;i>=0;i--){ const g=G[i]; if(x>=g.x0&&x<g.x1&&y>=g.y0&&y<g.y1)return /road|Road/.test(g.id)?'road':g.id==='alley'?'alley':g.id==='corner'?(g.z<0?'road':'walk'):'walk'; } return 'land'; };
     const im=new ImageData(W,H); for(let j=0;j<H;j++)for(let i=0;i<W;i++){ const c=C[kind(F.x0+(i+.5)/S,F.y1-(j+.5)/S)], o=(j*W+i)*4; im.data[o]=c[0]; im.data[o+1]=c[1]; im.data[o+2]=c[2]; im.data[o+3]=255; }

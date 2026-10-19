@@ -1,19 +1,27 @@
 const {chromium}=(()=>{ try{ return require('playwright'); }catch(e){ return require(require('child_process').execSync('npm root -g').toString().trim()+'/playwright'); } })();
-(async()=>{ const out=process.argv[2]||'mockups/ghost-player', only=(process.argv[3]||'idle,glide,arms,back,play').split(','), at=process.argv[4]||'0,3', b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader']});
-  const pg=await b.newPage({viewport:{width:900,height:700}}); pg.setDefaultTimeout(300000); const errs={}; pg.on('pageerror',e=>{ errs[e.message]=(errs[e.message]||0)+1; if(errs[e.message]===1)console.log('pageerror:',e.message.slice(0,300),(e.stack||'').split('\n').slice(1,3).join(' / ').slice(0,300)); });
-  await pg.goto('file://'+process.cwd()+'/dist/market.html?fresh=1&hour=13&npcwait=99&at='+at+(process.argv[5]||''),{waitUntil:'commit',timeout:300000});
+(async()=>{ const out=process.argv[2]||'mockups/ghost-player', only=(process.argv[3]||'idle,glide,arms,play,swim').split(','), b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader']});
+  const pg=await b.newPage({viewport:{width:900,height:700}}); pg.setDefaultTimeout(300000); const errs={}; pg.on('pageerror',e=>{ errs[e.message]=(errs[e.message]||0)+1; if(errs[e.message]===1)console.log('pageerror:',e.message.slice(0,300)); });
+  await pg.goto('file://'+process.cwd()+'/dist/market.html?fresh=1&hour='+(process.argv[4]||13)+'&wx=clear&npcwait=99&at=-4,10',{waitUntil:'commit',timeout:300000});
   for(let i=0;i<200&&!(await pg.evaluate(()=>!!window.__started&&window.AVSDBG&&AVSDBG().ready).catch(()=>false));i++)await pg.waitForTimeout(1000);
-  await pg.evaluate(()=>{ hud.hidden=true; stat.hidden=true; window.__dbg.cam(Math.PI/4,.5,window.__dbg.cv().PPU*5); }); await pg.waitForTimeout(5000);
-  const S=()=>pg.evaluate(()=>JSON.stringify(AVSDBG())), shot=async n=>{ await pg.screenshot({path:out+'-'+n+'.png'}); console.log(n,await S()); };
-  const cam=(y,p,z)=>pg.evaluate(([y,p,z])=>{ const h=window.__dbg.hd(); window.__dbg.cam(h+y,p,window.__dbg.cv().PPU*z); },[y,p,z]);
-  if(only.includes('idle')){ await cam(.785,.45,5); await pg.waitForTimeout(3000); await shot('idle');
-    const still=await pg.evaluate(async()=>{ const C=AVS.C.ghost, a=C.state().cloth; await new Promise(r=>setTimeout(r,1500)); const q=C.state(); return {a,b:q.cloth,lift:q.lift}; }); console.log('idle drift',JSON.stringify(still)); }
-  if(only.includes('glide')){ await cam(1.6,.4,4); await pg.keyboard.down('w'); for(let i=0;i<4;i++){ await pg.waitForTimeout(i?500:1200); await shot('glide'+i); } await pg.keyboard.down('Shift'); await pg.waitForTimeout(1500); await shot('run'); await pg.keyboard.up('Shift'); await pg.keyboard.up('w');
-    for(let i=0;i<3;i++){ await pg.waitForTimeout(400); await shot('stop'+i); } await pg.keyboard.press(' '); await pg.waitForTimeout(350); await shot('jump'); await pg.waitForTimeout(2500); }
-  if(only.includes('arms')){ await cam(.6,.45,5); await pg.waitForTimeout(1000); await pg.keyboard.down('b'); await pg.waitForTimeout(700); await shot('wave'); await pg.keyboard.up('b'); await pg.waitForTimeout(1500);
-    await pg.keyboard.press('j'); await pg.waitForTimeout(250); await shot('punch'); await pg.waitForTimeout(1500); }
-  if(only.includes('back')){ await cam(3.6,.4,5); await pg.waitForTimeout(2500); await shot('back'); }
-  if(only.includes('play')){ await cam(.5,.4,5); await pg.waitForTimeout(800); await pg.keyboard.press('t'); for(let i=0;i<4;i++){ await pg.waitForTimeout(220); await shot('swing'+i); } await pg.waitForTimeout(2500); await shot('play');
-    await cam(.5,.4,8); await pg.waitForTimeout(2500); await shot('playclose'); await pg.keyboard.press('t'); await pg.waitForTimeout(2500); await cam(3.6,.4,5); await pg.waitForTimeout(2000); await shot('slung'); }
-  console.log(await pg.evaluate(()=>{ const C=AVS.C.ghost, T=f=>{ const t=performance.now(); for(let i=0;i<60;i++)f(); return +((performance.now()-t)/60).toFixed(3); }; return JSON.stringify({tris:C.tris,tick:T(()=>C.tick(1/60,null)),onScreen:window.__dbg.tris()}); }).catch(e=>'eval '+e.message));
+  await pg.evaluate(()=>{ hud.hidden=true; stat.hidden=true; const D=window.__dbg, U=D.UI; D.setHd(Math.PI/2); U.setFree(true); const f=()=>{ if(U.freeCam){ const p=AVS.C.ghost.g.position; U.camT.set(p.x,p.y+.85,p.z); } requestAnimationFrame(f); }; f();
+    window.__cam=(y,p,z)=>D.cam(D.hd()+y,p,D.cv().PPU*z); window.__key=(k,up)=>{ U.setFree(false); dispatchEvent(new KeyboardEvent(up?'keyup':'keydown',{key:k})); U.setFree(true); };
+    const raf=requestAnimationFrame.bind(window); let lr=null, vt=0; window.__k=1; window.requestAnimationFrame=cb=>raf(t=>{ if(lr===null){ lr=t; vt=t; } if(t!==lr){ vt+=(t-lr)*window.__k; lr=t; } cb(vt); }); });
+  const st=()=>pg.evaluate(()=>JSON.stringify(AVSDBG().ghost)), shot=async n=>{ await pg.screenshot({path:out+'-'+n+'.png'}); console.log(n,await st()); }, cam=(y,p,z)=>pg.evaluate(([y,p,z])=>__cam(y,p,z),[y,p,z]), key=(k,up)=>pg.evaluate(([k,up])=>__key(k,up),[k,up]);
+  const slow=k=>pg.evaluate(k=>{ window.__k=k; },k), home=()=>pg.evaluate(()=>{ STORE.pos.set(-4,0,10); window.__dbg.setHd(Math.PI/2); });
+  await pg.waitForTimeout(12000);
+  if(only.includes('idle')){ await cam(-.6,.42,3.6); await pg.waitForTimeout(3000); await shot('idle'); await cam(3.4,.42,3.6); await pg.waitForTimeout(3000); await shot('back');
+    console.log('idle motion',await pg.evaluate(async()=>{ const a=AVS.C.ghost.g.children[1].geometry.attributes.position.array, S=[]; for(let i=0;i<20;i++){ S.push(Float32Array.from(a)); await new Promise(r=>requestAnimationFrame(()=>r())); }
+      let mx=0, j2=0; for(let i=1;i<S.length;i++)for(let k=0;k<a.length;k++){ mx=Math.max(mx,Math.abs(S[i][k]-S[i-1][k])); if(i>1)j2=Math.max(j2,Math.abs(S[i][k]-2*S[i-1][k]+S[i-2][k])); } return {maxStep:+mx.toFixed(3),maxJerk:+j2.toFixed(3)}; })); }
+  if(only.includes('glide')){ await cam(-1.3,.42,3.2); await pg.waitForTimeout(1500); await pg.evaluate(()=>window.__dbg.go(8,10)); for(let i=0;i<3;i++){ await pg.waitForTimeout(i?400:900); await shot('glide'+i); }
+    await pg.keyboard.down('Shift'); await pg.waitForTimeout(1200); await shot('run'); await pg.keyboard.up('Shift'); await pg.evaluate(()=>window.__dbg.go(-3,10)); for(let i=0;i<2;i++){ await pg.waitForTimeout(300); await shot('turn'+i); }
+    await pg.waitForTimeout(6000); await home(); await pg.waitForTimeout(2500); await cam(-1.3,.42,3.2); await slow(.03); await key(' '); for(let i=0;i<3;i++)await shot('jump'+i); await key(' ',1); await slow(1); await pg.waitForTimeout(3000); }
+  if(only.includes('arms')){ await home(); await cam(-.4,.42,3.6); await pg.waitForTimeout(2500); await key('b'); await pg.waitForTimeout(900); await shot('wave'); await key('b',1); await pg.waitForTimeout(2500);
+    await key('j'); await key('j',1); await pg.waitForTimeout(200); await shot('punch'); await pg.waitForTimeout(2500); }
+  if(only.includes('play')){ await home(); await cam(-.6,.42,3.6); await pg.waitForTimeout(2500); await slow(.012); await pg.keyboard.down('t'); await pg.waitForTimeout(40); await pg.keyboard.up('t'); for(let i=0;i<5;i++)await shot('swing'+i); await slow(1);
+    await pg.waitForTimeout(3000); await shot('play'); await cam(-.3,.3,7); await pg.waitForTimeout(2500); await shot('playclose'); await cam(0,1.2,5); await pg.waitForTimeout(2500); await shot('playtop');
+    await cam(-.6,.42,3.6); await pg.keyboard.down('t'); await pg.waitForTimeout(40); await pg.keyboard.up('t'); await pg.waitForTimeout(3500); await shot('slung');
+    await pg.keyboard.down('t'); await pg.waitForTimeout(40); await pg.keyboard.up('t'); await pg.waitForTimeout(2500); await pg.evaluate(()=>window.__dbg.go(0,10)); await pg.waitForTimeout(2500); console.log('walked away',await st()); }
+  if(only.includes('swim')){ await pg.evaluate(()=>{ window.__dbg.UI.setFree(false); RIVER.set({way:'full',wi:0}); }); await pg.waitForTimeout(1500); await pg.evaluate(()=>[...document.querySelectorAll('#rvpan [data-go="2"]')][0].click()); await pg.waitForTimeout(4000);
+    await pg.evaluate(()=>window.__dbg.UI.setFree(true)); await cam(.6,.35,3.2); await pg.waitForTimeout(3000); await shot('swim'); await pg.keyboard.down(' '); await pg.waitForTimeout(3500); await shot('dive'); await pg.keyboard.up(' '); await pg.waitForTimeout(3000); }
+  console.log(await pg.evaluate(()=>{ const C=AVS.C.ghost, T=f=>{ const t=performance.now(); for(let i=0;i<40;i++)f(); return +((performance.now()-t)/40).toFixed(2); }; return JSON.stringify({tris:C.tris,tickMs:T(()=>C.tick(1/60,null))}); }));
   console.log('errors',JSON.stringify(errs)); await b.close(); })();

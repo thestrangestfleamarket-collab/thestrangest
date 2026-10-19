@@ -50,7 +50,7 @@ function sheetFig(g){ const V=RIG.V, MT=RIG.MATS; if(!MT.includes('sheet')){ MT.
     const geo=new THREE.BufferGeometry(); geo.setAttribute('position',pa); geo.setAttribute('normal',new THREE.BufferAttribute(new Float32Array(NV*3),3)); geo.setAttribute('color',new THREE.BufferAttribute(col,3)); geo.setAttribute('pidx',new THREE.BufferAttribute(new Float32Array(NV).fill(PCS.length),1)); geo.setIndex(idx);
     FM.PM.value[PCS.length].identity();
     const cm=new THREE.Mesh(geo,FM.me.material); cm.customDistanceMaterial=FM.me.customDistanceMaterial; cm.customDepthMaterial=FM.me.customDepthMaterial; cm.castShadow=true; cm.frustumCulled=false; g.add(cm);
-    O.set(P); const NC=RA.length/2, CA=Int32Array.from(RA), CL=Float32Array.from(RL);
+    O.set(P); const P0=P.slice(), NC=RA.length/2, CA=Int32Array.from(RA), CL=Float32Array.from(RL);
     const SP=[], HP=[], M0=new THREE.Matrix4(), M1=new THREE.Matrix4(), v=new THREE.Vector3(), hd={x:0,y:0,z:0}, hp={...H0}; let acc=0, first=true, FL=.6;
     const step=F=>{ for(let k=0;k<K3;k+=3){ const x=P[k], y=P[k+1], z=P[k+2]; P[k]=x+(x-O[k])*DMP; P[k+1]=y+(y-O[k+1])*DMP+G*H*H; P[k+2]=z+(z-O[k+2])*DMP; O[k]=x; O[k+1]=y; O[k+2]=z; }
       for(let it=0;it<6;it++){
@@ -64,8 +64,9 @@ function sheetFig(g){ const V=RIG.V, MT=RIG.MATS; if(!MT.includes('sheet')){ MT.
           if(F){ const dx=P[k]-F.o.x, dy=P[k+1]-F.o.y, dz=P[k+2]-F.o.z, qx=dx*F.x.x+dy*F.x.y+dz*F.x.z, qy=dx*F.y.x+dy*F.y.y+dz*F.y.z, qz=dx*F.z.x+dy*F.z.y+dz*F.z.z;
             if((qx/6.6)**2+((qy-2.2)/8.6)**2<1&&qz>-4.4&&qz<2){ const m=-4.4-qz; P[k]+=F.z.x*m; P[k+1]+=F.z.y*m; P[k+2]+=F.z.z*m; } }
           if(P[k+1]<FL){ P[k+1]=FL; O[k]+=(P[k]-O[k])*.5; O[k+2]+=(P[k+2]-O[k+2])*.5; } } } };
-    const cloth=(dt,B,F,fl)=>{ FL=(fl||0)+.6; g.updateMatrix(); if(!first&&B){ M1.copy(g.matrix).invert().multiply(M0); if(Math.hypot(M1.elements[12],M1.elements[14])<30)for(const A of [P,O])for(let k=0;k<K3;k+=3){ v.set(A[k],A[k+1],A[k+2]).applyMatrix4(M1); A[k]=v.x; A[k+1]=v.y; A[k+2]=v.z; } }
+    const cloth=(dt,B,F,fl)=>{ FL=(fl||0)+.6; g.updateMatrix(); if(!first&&B){ M1.copy(g.matrix).invert().multiply(M0); if(Math.hypot(M1.elements[12],M1.elements[13],M1.elements[14])<12)for(const A of [P,O])for(let k=0;k<K3;k+=3){ v.set(A[k],A[k+1],A[k+2]).applyMatrix4(M1); A[k]=v.x; A[k+1]=v.y; A[k+2]=v.z; } }
       first=false; M0.copy(g.matrix); if(!B||!dt)return;
+      if(Math.hypot(P[0]-B.J.head.x,P[1]-B.J.head.y-rr,P[2]-B.J.head.z)>24){ for(let k=0;k<K3;k+=3){ P[k]=P0[k]+B.J.head.x-H0.x; P[k+1]=P0[k+1]+B.J.head.y-H0.y; P[k+2]=P0[k+2]+B.J.head.z-H0.z; } O.set(P); ST.fill(NaN); }
       const J=B.J, S=(p,r)=>SP.push(p.x,p.y,p.z,r); SP.length=0; S(J.head,rr); for(const n of 'LR'){ S(J['shoulder'+n],3.6); S(J['knee'+n],3.8); S(J['ankle'+n],3.2); } S(J.chest,5); S(J.spine,4.8); S(J.pelvis,5); HP.length=0; for(const n of 'LR'){ const w=J['wrist'+n], c=R.mul(R.add(w,J['k20'+n]||w),.5); HP.push(w.x,w.y,w.z,3.5,c.x,c.y,c.z,4.5); }
       acc=Math.min(acc+dt,H*3); const n=Math.floor(acc/H); acc-=n*H; for(const c of 'xyz'){ hd[c]=n?(J.head[c]-hp[c])/n:0; hp[c]=J.head[c]; }
       for(let s=0;s<n;s++)step(F);

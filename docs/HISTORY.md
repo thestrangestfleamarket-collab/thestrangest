@@ -1780,3 +1780,29 @@ The claude.ai page (`dist/market.html`) is unchanged: one page, three from the C
   the cloth some 1 ms a frame measured headless on software rendering (his own playing there 2-13 ms), only while he's posed (near and
   drawn). `tests/ghostgt.cjs <out> play|walk [hour] [extra]`. Pictures: `mockups/ghost-guitarist-sheet.png`, `-street.png`, `-hands.png`,
   `-walking.png`.
+
+- **You can be the ghost** (owner, 19 Oct 2026: "amazing. lets make the ghost playable by players too as the main avatar. can float and
+  use arms, put guitar on their back too, you can take off and paly"; `110a-ghostme.js`, the sheet shared from `musician.js`):
+  - **GHOST** is the first choice of AVATAR (the AVATAR row moved from GRAPHICS to the menu's AVATAR tab, above the editor's buttons) and
+    the avatar a new player starts as; a save that already has a pick keeps it (`avatar`). `?avatar=ghost|walker|mannequin|vroid`.
+  - The guitarist's own sheet, not a copy: `sheetFig(g)` in `musician.js` makes the white sheet arms, hands and finger bones, the guitar
+    and its strings, and the cloth bedsheet with eye holes, for him and for you (one geometry, his material and programs). The cloth now
+    takes the ground's height under it, and comes back over the head if it is ever left behind (a fall, a teleport).
+  - **Floating**: no legs; it glides about 0.15 m above the ground with a slow bob (1.4 rad/s, 3 cm), leaning into its speed and banking on
+    turns; the hem trails, swings round on turns and swings forward when it stops (the cloth in the world, not in his frame). Running is a
+    faster glide. A jump lifts it and lets it settle back over about a second. On stairs, slopes and the stacked floors it follows the ground
+    as you do (your own height, `py`). In the Hudson it stands in the water to the hem while you swim, and sinks with you when you dive (the
+    sheet billowing up). Its shadow is the sheet's and the arms'.
+  - **Arms**: every move you make with your arms (punches, the slap, block, wave, reaching and grabbing, carrying) is the Walker's own move
+    put on its sheet arms, eased in and out; kicks, climbing and falling move the body under the sheet. At rest its arms hang a little
+    forward and trail back as it speeds up.
+  - **The guitar on its back**: slung diagonally, neck up past the left shoulder, on a leather strap round the right side, across the chest
+    and over the shoulder (laid over the sheet). **T** (KEYS: "the ghost's guitar"; the controller's D-PAD LEFT; both in the `?` list) takes it
+    off: it swings round the right side to the front on a spring (the guitar's weight: about half a second, overshooting a little and settling), the right hand helping it
+    round, and it plays the guitarist's tunes with his playing system (the same tunes, both hands solved onto every note, the same sound:
+    silent while the recordings are out). The guitarist stops while you play. T again, moving, a move, the water or sitting swing it back.
+  - Things at rest: hovering idle it only bobs and the sheet sways with the bob (headless: no jitter frame to frame).
+  - Cost: 22,716 triangles (the guitarist's 22,674 and the strap's 42; the Walker on clips was 14,870), 9 draws (the figure, the
+    sheet, the strap, the six strings), no lights, no new programs; about 2.5 ms a frame headless on software
+    rendering (the cloth, the strap, the arms), and the guitarist's solver while playing (12 ms there). `tests/ghostme.cjs`; pictures
+    `mockups/ghost-player-*.png`.

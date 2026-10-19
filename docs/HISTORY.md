@@ -1748,3 +1748,36 @@ FIXED, NO, each report with its words, where, PICTURE and GO THERE (puts you at 
 For now nothing is fixed on its own: every report waits in NEW for the owner to APPROVE. A session asked to "work the queue" takes the
 APPROVED ones (see CLAUDE.md), fixes each, and marks it FIXED. The 16 reports already in `bug_reports` are from the old 2D game.
 `tests/bugcheck.cjs art|site` sends one with a stand-in store and approves it.
+
+## 19 Oct 2026: the street signs, the telephone poles and their wires
+
+**The street signs** (owner, 19 Oct 2026, of the NO PARKING sign on the main street's sidewalk, its grey pole across its face: "make sure
+metal pole isnt blocking signs. make signs 2x bigger, use realistic texture, shines, textures, shapes, lived in"; `052a-signs.js`, called
+from `bodbuild.js` where the old signs were drawn): every sign (`BOD.signs`: the corners' name blades, NO PARKING, SPEED LIMIT 25, STOP;
+the map has no bus stop or one way sign) twice as big, **the post always behind the plate**: NO PARKING back to back on its post (one plate
+each side, the post between them), SPEED LIMIT and STOP on the post's far side from the opening view, the name blades on a cap at the top
+of the post (on the traffic lights' poles, above their top). Posts are galvanized U-channel with its row of holes (the blades' a round
+post), rusty at the foot, now and then a flyer band; a post in four leans a little. Plates in 48 texels a tile: a 5x7 letter (NO PARKING /
+8AM-6PM / EXC SUN, the P in its red ring and slash, NO STANDING ANYTIME, SPEED LIMIT 25, STOP on its octagon, MARKET ST and the rest),
+the rolled edge (lit top and left, dark bottom and right), rounded corners, two bolts with rust running down from them, the reflective
+sheeting's glint (two hard diagonal bands, no gradient), the red or green faded to a different degree on each, stickers, a scribbled tag,
+grime along the foot; one plate in five bent at its middle; the backs bare aluminium stencilled NYC DOT. The SPEED LIMIT posts stand 1.3
+tiles in from the kerb (the plate no longer over the road), NO PARKING .8. Cost: about 20 triangles a plate and 10 a post, some 2,600 in
+all in the street's batch (no new draw, no light, no program); the atlas some 1 M texels more.
+
+**Telephone poles back, on the apartment side only** (owner, same day: "add telephone poles back. jsut on main apartment side. 4 poles and
+long black thick wires (only2) very realistic. try nto to have them block view. wires and poles are common perch areas fro creatures that
+perch. like dragons."; `069b-poles.js`). They went with the power grid when the power house was put off the map (18 Oct, main street
+only); the grid (`grid.js`) stays off. Four creosoted wooden poles (8 m, eight-sided, tapered) at the kerb edge of the main street's
+apartment-house sidewalk, spread over `BLOCK.x0`..`BLOCK.x1` and each moved to the nearest spot clear of the street lights, the signs, the
+bins, the trees and the doors (the bodega's, the apartment house's, Ghost Street's, the subway stair); read from `DRESS.kerb`, so a wider
+sidewalk moves them. Each: grain, checks (cracks), a darker foot and a greyer weathered top, staples and torn flyers (tear-off tabs) at
+eye height, an aluminium tag, galvanized climbing steps from 2.6 m, a wooden crossarm across the street with two braces, green glass
+insulators, a lean on some; the second pole carries a transformer can. **Two thick black wires** run the length on the crossarms' ends,
+in real catenary curves (sag 2.4% of the span), swaying gently with the weather's wind (still when there's none). **Not in the way**: a
+pole standing between the camera and you (on screen over you, nearer the camera) dissolves to a third (the batch's random see-through,
+eased); the wires are thin and high. **Perches**: the four pole tops and a point on each span (`WIRES.perch`) join the dragons' ledges
+(`078-npc-dragon.js`); a dragon picks a free one, and the wire sags a little under it (16 cm, a V to the dragon) while it sits, the dragon
+riding the sway. The game has no other perching creature (the bats fly, the pigeons aren't on the map). `WIRESDBG()`,
+`DRAGONPERCH(i,k)` for a test. Cost: some 1,700 triangles the poles (one draw), 1,150 the wires (one draw, rebuilt only near and
+moving, under 0.1 ms), one small program (the poles' Lambert with its dissolve), no light; the sun's shadow from the poles.

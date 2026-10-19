@@ -40,7 +40,7 @@ const BWK={}; window.BWK=BWK;
   const free=(x,z)=>stfree(x,z,st.R), turn=a=>{ let e=a-st.hd; return Math.atan2(Math.sin(e),Math.cos(e)); };
   if(typeof NPCS!=='undefined'&&NPCS.extra)NPCS.extra.push(BWK);
   if(SHEET){ st.x=BOD.XS(100); st.z=BOD.ZS((BOD.MAP.y0+BOD.MAP.y1)/2); st.hd=Math.PI/4; }
-  BWK.tick=dt=>{ const near=Math.hypot(pos.x-st.x,pos.z-st.z)<40;
+  BWK.on=QS.get('bwk')!=null; BWK.tick=dt=>{ if(!BWK.on&&!SHEET){ g.visible=false; return; } const near=Math.hypot(pos.x-st.x,pos.z-st.z)<40;
     if(SHEET){ R.farOnly(false); const B=R.settle(R.build(spreadPose(),null),0); PCS.forEach((pc,i)=>FM.set(i,R.frameOf(pc.on||pc.n,B)));
       st.y=MODS.bodega.ground(st.x,st.z); g.position.set(st.x,st.y,st.z); g.rotation.y=st.hd; headE(); musScale(g,F.h);
       if(!BWK.sheetOn){ BWK.sheetOn=true; sheetView(g,st.y+g.scale.y*27); } return; }

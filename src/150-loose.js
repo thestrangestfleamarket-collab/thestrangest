@@ -132,12 +132,12 @@ const GPH=window.GPH={ms:0,n:0};
     const o=m.userData.objOf&&m.userData.objOf[Math.floor(h.faceIndex/2)]; let b=null, bd=1e9; if(o)for(const it of A){ if(it.o!==o||it.dm)continue; const t=at(it), d=Math.hypot(t.x-h.point.x,t.y-h.point.y,t.z-h.point.z); if(d<bd){ bd=d; b=it; } } return b; };
   GPH.pick=ray=>{ if(!ready){ if(!cat||held)return null; const h=ray.intersectObjects(picks,false)[0], it=h&&itemOf(h,pre); if(!it||it.m>CARRY||it.o&&USE.test&&USE.test.kindOf(it.o)&&!keys.has('shift'))return null;
       const o=new THREE.Object3D(), r=Math.max(it.h[0],it.h[2]); o.position.set(it.t.x,it.t.y-it.h[1],it.t.z);
-      return {d:h.distance,th:{name:(it.name||'').replace(/^cottage: /,'').toUpperCase(),obj:o,reach:.85*T+r,near:1.6*T+r,tall:Math.max(.4*T,it.h[1]*2),act:()=>{ want=it; }}}; }
+      return {d:h.distance,th:{name:(it.name||'').replace(/^cottage: /,'').toUpperCase(),pick:true,obj:o,reach:.85*T+r,near:1.6*T+r,tall:Math.max(.4*T,it.h[1]*2),act:()=>{ want=it; }}}; }
     if(held){ const pl=new THREE.Plane(new THREE.Vector3(0,1,0),-py), g=new THREE.Vector3(); if(!ray.ray.intersectPlane(pl,g))return null; const it=held, o=new THREE.Object3D(); o.position.copy(g);
       return {d:0,th:{name:'THROW',obj:o,reach:1e9,act:()=>throwTo(it,g)}}; }
     const h=ray.intersectObjects(picks,false)[0]; if(!h)return null; const it=itemOf(h); if(!it||!it.rb||it.m>CARRY)return null; if(it.o&&USE.test&&USE.test.kindOf(it.o)&&!keys.has('shift'))return null;
     const o=new THREE.Object3D(), p=it.rb.translation(), r=Math.max(it.h[0],it.h[2]); o.position.set(p.x,p.y-it.h[1],p.z);
-    return {d:h.distance,th:{name:(it.name||'').replace(/^cottage: /,'').toUpperCase(),obj:o,reach:.85*T+r,near:1.6*T+r,tall:Math.max(.4*T,it.h[1]*2),act:()=>grab(it)}}; };
+    return {d:h.distance,th:{name:(it.name||'').replace(/^cottage: /,'').toUpperCase(),pick:true,obj:o,reach:.85*T+r,near:1.6*T+r,tall:Math.max(.4*T,it.h[1]*2),act:()=>grab(it)}}; };
   GPH.init=()=>{ if(typeof USE==='undefined'){ setTimeout(GPH.init,500); return; } const p0=USE.pick; USE.pick=ray=>{ const a=p0(ray), b=GPH.pick(ray); return b&&(!a||b.d<=a.d)?b:a; };
     const t0=CLOCK.tick; CLOCK.tick=dt=>{ t0(dt); GPH.tick(dt); }; };
   const nearest=f=>{ let b=null, bd=1e9; for(const it of ready?act:pre){ if(!f(it))continue; const p=at(it), d=Math.hypot(p.x-pos.x,p.z-pos.z); if(d<bd){ bd=d; b=it; } } return b; };

@@ -20,7 +20,7 @@ process.on('unhandledRejection',e=>{ errs.push('TEST '+String(e&&e.message||e).s
   for(let i=0;i<100;i++){ await pg.waitForTimeout(100); if(!(await dbg()).busy)break; }
   await shot('inside',null,1500); rep.d1=await dbg();
   rep.render=await pg.evaluate(()=>{ try{ const r=RENDERLIST(); return {head:r.head||r.totals||null}; }catch(e){ return 'ERR '+e.message; } });
-  await pg.evaluate(()=>{ const n=DOJONINJA(), d=DOJODBG(); STORE.goTo(n.x-1.5*d.tile,n.z+3.2*d.tile,'up'); }); await pg.waitForTimeout(1500); const frames=[]; for(let i=0;i<10;i++){ await shot('ninja'+i,null,0); frames.push((await dbg()).ninja); await pg.waitForTimeout(380); } rep.frames=frames;
+  await pg.evaluate(()=>{ const n=DOJONINJA(), d=DOJODBG(); STORE.goTo(n.x,n.z+2.4*d.tile,'up'); }); await pg.waitForTimeout(1500); const frames=[]; for(let i=0;i<10;i++){ await shot('ninja'+i,null,0); frames.push((await dbg()).ninja); await pg.waitForTimeout(380); } rep.frames=frames;
   await pg.evaluate(()=>{ const n=DOJONINJA(), d=DOJODBG(); STORE.goTo(n.x,n.z+2.4*d.tile,'up'); }); await pg.keyboard.press('v'); await shot('behind',()=>{ const n=DOJONINJA(), y=__dbg.you(); __dbg.face(Math.atan2(n.x-y.x,n.z-y.z)+Math.PI); },2500);
   for(let i=0;i<5;i++){ await shot('behind'+i,null,0); await pg.waitForTimeout(450); }
   await pg.keyboard.press('v'); await pg.keyboard.press('v'); await pg.waitForTimeout(800);
@@ -31,7 +31,7 @@ process.on('unhandledRejection',e=>{ errs.push('TEST '+String(e&&e.message||e).s
   for(let i=0;i<2000;i++){ const d=await dbg(); if(!d.tr.on)break; const key=d.tr.ph+d.tr.n;
     if(!seen[key]){ seen[key]=1; log.push([d.tr.ph,d.tr.n,d.tr.drill,d.ninja&&d.ninja.mv,d.ninja&&d.ninja.up]);
       if(d.tr.ph==='demo'){ await pg.waitForTimeout(250); await shot('train'+d.tr.n+'-demo'); }
-      if(d.tr.ph==='you'){ if(d.tr.n===0){ await pg.keyboard.press('v'); await shot('face',()=>{ const n=DOJONINJA(), y=__dbg.you(); __dbg.face(Math.atan2(n.x-y.x,n.z-y.z)+Math.PI); },700); await pg.keyboard.press('v'); await pg.keyboard.press('v'); await pg.waitForTimeout(300); } await shot('train'+d.tr.n+'-you'); if(d.tr.n!==2){ const ks=await pg.evaluate(k=>k.map(a=>__UI.keyOf(a)),d.tr.keys); for(const k of ks){ await pg.keyboard.press(k===' '?'Space':k); await pg.waitForTimeout(450); } } }
+      if(d.tr.ph==='you'){ if(d.tr.n===0){ await pg.keyboard.press('v'); await pg.keyboard.press('v'); await shot('face',()=>{ const n=DOJONINJA(), y=__dbg.you(); __dbg.face(Math.atan2(n.x-y.x,n.z-y.z)+Math.PI); },700); await pg.keyboard.press('v'); await pg.waitForTimeout(300); } await shot('train'+d.tr.n+'-you'); if(d.tr.n!==2){ const ks=await pg.evaluate(k=>k.map(a=>__UI.keyOf(a)),d.tr.keys); for(const k of ks){ await pg.keyboard.press(k===' '?'Space':k); await pg.waitForTimeout(450); } } }
       if(d.tr.ph==='good'||d.tr.ph==='miss'){ await shot('train'+d.tr.n+'-'+d.tr.ph); }
       if(d.tr.ph==='end'){ await shot('train-end',null,300); } }
     await pg.waitForTimeout(120); }

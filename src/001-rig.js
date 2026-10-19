@@ -444,6 +444,13 @@ function climbPose(st){ const z=st.climb.z,u=st.climb.slide?0.5:0.5-0.5*Math.cos
     A[hi].ua=[168*D,12*D]; A[hi].fa=[176*D,8*D]; A[lo].ua=[118*D,16*D]; A[lo].fa=[158*D,10*D]; A.L.fist=A.R.fist=1;
     A[lo].th=[64*D,8*D]; A[lo].sh=[-14*D,8*D]; A[hi].th=[8*D,6*D]; A[hi].sh=[-4*D,6*D]; A.L.foot=A.R.foot=0; }
   return mix(P,Q,u); }
+const PICKS={};
+function pickMove(h,z){ const k=clamp(Math.round(h/2)*2,0,50),q=clamp(Math.round(z/2)*2,4,16),key=k+','+q; if(PICKS[key]) return PICKS[key];
+  const G=(d,a)=>({root:[0,STAND-7*d,-1.5*d],bend:44*d,nod:12*d,L:{ik:[FOOTX,ANKLE,2.5*d],ua:[9+30*d,14],fa:[19+60*d,10]},R:{ik:[-FOOTX,ANKLE,-2.5*d],ua:[a,-6],fa:[a+8,-8],fist:0}});
+  let best=null;
+  for(let d=0;d<=1.001&&!(best&&best.e<2);d+=.25) for(let a=-40;a<=170;a+=5){ const J=build(apply(START,G(d,a))).J,f=J.fingersR,e=Math.abs(f.y-k-1)+Math.abs(f.z-q)*.6+d; if(!best||e<best.e) best={e,d,a}; }
+  return PICKS[key]=move({keep:.1,ex:.5,keys:[[0,{}],[.3,G(best.d,best.a)],[.36,{R:{fist:1}}],
+    [.62,{root:[0,STAND,0],bend:0,nod:0,L:{ik:SL,ua:[9,8],fa:[19,8]},R:{ik:SR,ua:[9,8],fa:[19,8],fist:0}}]]}); }
 const UPS={},DOWNS={},LEAPS={};
 function upMove(h){ const k=Math.round(h); if(UPS[k]) return UPS[k]; const lo=STAND-k, R=(ua,fa)=>({ua:[ua,12],fa:[fa,10]});
   return UPS[k]=move({travel:true,blend:0.15,below:k,keys:[
@@ -558,7 +565,10 @@ function upLayer(st,P){ const u=st.up; if(!u)return P; if(st.water&&st.water.in|
   const d=u.def, U=moveAtOf(u), k=smooth(clamp(u.t/0.08,0,1))*(1-smooth(clamp((u.t-(d.dur-0.14))/0.14,0,1))); if(k<=0)return P; const arms=d.arms||(d.arms=armsOf(d));
   for(const n of 'LR')if(arms[n]){ const a=P[n],b=U[n]; a.ua=lerp2(a.ua,b.ua,k); a.fa=lerp2(a.fa,b.fa,k); a.fist=lerp(a.fist,b.fist,k); }
   for(const f of ['cyaw','nod','look'])P[f]=lerp(P[f],U[f],k); return P; }
-const rawPose=st=>upLayer(st,rawPose0(st));
+function aimLayer(st,P){ const A=st.aim; if(!A||!(A.w>0)||st.water&&st.water.in||st.climb||st.hang||st.ride||st.sit) return P;
+  const R=cat(turn(P.yaw,P.roll,P.pitch),turn(0,P.side,P.bend)),v=nrm(A.v),x=dot(v,R.x),y=dot(v,R.y),z=dot(v,R.z),a=Math.atan2(z,-y),b=Math.asin(clamp(-x,-1,1)),w=A.w;
+  P.R.ua=lerp2(P.R.ua,[a,b],w); P.R.fa=lerp2(P.R.fa,[a+.2,b],w); P.R.fist=lerp(P.R.fist,1,w); P.cyaw=lerp(P.cyaw,clamp(Math.atan2(x,z)*.3,-.5,.5),w); return P; }
+const rawPose=st=>aimLayer(st,upLayer(st,rawPose0(st)));
 function rawPose0(st){ const Wt=st.water,W=Wt&&Wt.in?swimPose(st):st.climb?climbPose(st):st.hang?hangPose(st):st.ride?ridePose(st):st.sit?sitPose(st):lift(walkPose(st,st.abd),floorOf(st));
   if(st.move){ const M=lift(moveAt(st),st.move.floor),u=smooth(clamp(st.move.t/(st.move.def.blend||0.1),0,1)); return u<1?mix(st.move.from,M,u):M; }
   if(st.out){ const u=smooth(clamp(st.out.t/(st.out.T||.12),0,1)),O=st.out.y0!=null?lift(JSON.parse(JSON.stringify(st.out.pose)),Wt.y-st.out.y0):st.out.pose; return mix(O,W,u); }
@@ -625,6 +635,7 @@ function act(st,key){ const W=st.water;
   if(key&&key.hop!=null){ if(!st.move) begin(st,'hop',hopDown(key.hop)); return; }
   if(key&&key.wallHit!=null){ begin(st,'wallHit',wallHitMove(key.wallHit,key.vy)); st.move.wall=true; return; }
   if(key&&key.wallRun!=null){ begin(st,'wallRun',wallRunMove(key.wallRun)); st.move.wall=true; return; }
+  if(key&&key.pick!=null){ begin(st,'pick',pickMove(key.pick,key.z||10)); return; }
   if(key&&key.leap!=null){ if(!st.move) begin(st,'leap',leapMove(key.leap)); return; }
   if(W&&W.in) return;
   if(key==' '&&W&&W.board&&!st.move&&W.level!=null){ begin(st,'dive',diveMove(W.floor+STAND+9-(W.level+12))); return; }
@@ -678,7 +689,7 @@ const WSTEP=4.75;
 function pose(st,inPlace){ const busy=st.move||st.out,P=JSON.parse(JSON.stringify(st.last||rawPose(st))),dev={};
   for(const n of 'LR') dev[n]=ZERO;
   const swimming=st.water&&st.water.in||!!st.climb||!!st.hang||!!st.ride||!!st.sit;
-  if(!st.move&&!swimming) st.abd=clearArms(st,dev); st.fdn=0; if(!busy&&!swimming){ st._lk=1; Object.assign(P,lift(walkPose(st,st.abd),floorOf(st))); st._lk=0; upLayer(st,P); if(st.sign)st.sign(P); }
+  if(!st.move&&!swimming) st.abd=clearArms(st,dev); st.fdn=0; if(!busy&&!swimming){ st._lk=1; Object.assign(P,lift(walkPose(st,st.abd),floorOf(st))); st._lk=0; aimLayer(st,upLayer(st,P)); if(st.sign)st.sign(P); }
   if(st.move&&st.move.def.travel) P.root=V(P.root.x,P.root.y,inPlace?0:P.root.z-(carries(st.move)?st.move.zc||0:0));
   if(OVL.fn)OVL.fn(st,P);
   const B=settle(busy||st.up||(st.water&&st.water.in)?clearPose(P,dev):build(P,dev),st.move&&st.move.base!=null?st.move.base:floorOf(st)+(busy?0:st.fdn||0),busy,st.smooth);

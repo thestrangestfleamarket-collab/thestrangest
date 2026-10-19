@@ -2901,3 +2901,5 @@ automatically. dragon balls of fire can start real fires. spread very slow. leav
   flowers and 120-160 bushes over the whole park, some 25,000-30,000 triangles in all, split by `CULL` into 10-tile pieces so only
   what is on screen draws (a few thousand in a usual view); 20 draws, 2 new shader programs (bushes; flowers with the bend), no
   lights; bushes in the sun's still shadow. Not yet measured in the page (`tests/tricount.cjs`).
+- **Black underground** (owner, 19 Oct 2026, a picture of the subway with lavender sky round the station): below the street the sky
+  dome is hidden and the background is black, whatever the day/night settings do.

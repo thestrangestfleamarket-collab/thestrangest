@@ -1913,6 +1913,83 @@ the heading easing into turns. The head mockups (two rounds of six) were never p
   **Stars in the mist**: the MIST look's sky painted over the stars, so none had shown at night since it came in; they and the band show now
   in the gaps between its clouds. Cost: a few noise lookups a sky pixel, at night only; no triangles, lights or programs.
 
+**His walk and run smooth, with a captured gait** (owner, 19 Oct 2026: "the character runs way too jagged, needs to be way smoother,
+flowing"; "hes also walking with his arms sticking straight forward like a droid"; "make sure he has a natural gait and run, like tomb
+raider or prince of persia"; of the rig's run drawn from the side, "this doesnt make any sense is he falling?"). For you only (`st.smooth`,
+`071-main-11.js`; the street's Walkers keep their pixel steps), in the rig (`001-rig.js`):
+- **No pixel steps**: his hips' bob, the drop that lets a leg reach, the whole-body settle on the floor and the head were each rounded to
+  whole pixels; now exact.
+- **The run's flight**: with both feet up, the rig pulled his hips down toward where the feet would land (to 10 of 18) and snapped them
+  back on landing; now they ride a small arc from where he left the ground. His hips ease up (about 70 ms) and drop at once (so a leg
+  always reaches its planted foot; easing the drop too made feet fall out of reach and the rig's quick steps jerk them, so not that).
+- **Motion capture** (`tools/gait-bake.cjs` → `data/gait.json`, 17 KB): one cycle of a CMU walk and one of a run (subject 35, trials 01
+  and 17), heel-strike to heel-strike, fitted to his rig at 32 points (the existing `mocap-rig.cjs` fit). As he walks or runs (by his
+  pace, walk to run blended), his hips' turn, tilt and roll, spine's bend and twist, head's nod and both arms are the recording's, by his
+  step's phase; his swinging leg's path mid-swing too (his feet still land and lift where the rig plants them).
+- **The run's contact**: each foot on the ground 30% of a run cycle (was 40%; real running about 25-30%), the step shortened to match (his
+  speed unchanged), so a planted foot lifts before it is far behind him.
+Measured (`tests/walksmooth.cjs`, `tests/footworld.cjs`, both now with the smooth mode unless `STEPPED=1`): hip jolts a second walking 24
+to 4, running 36 to 22; planted feet don't slide; no foot jumps between frames. **Open**: his run covers some 8 leg-lengths a second (a
+jog is about 4), so with his short legs the back leg still reaches far behind at a run: his call (a slower run, or longer legs).
+
+## 19 Oct 2026: lighter skeletons for a pixel game
+
+**The heaviest characters cut** (owner, 19 Oct 2026: "since we are do a pixel style game do we really need such high quality chracter
+mesh?"; his pick 1 of three: cut only the outliers, to about 1,000-1,200 triangles; then, shown that keeping the heads whole left them at
+1,500-2,300, "go": cut the heads too). By `tools/simplify.py skel pawns`: the body to a fifth, the head to half with its eyes kept (this
+relaxes 17 Oct's "leave the faces as complex as they are" for these eight). The four skeleton pawns 4,128/3,478/3,252/3,816 →
+1,822/1,238/1,288/1,494 (mage, reaper, guard light, guard heavy), the four KayKit skeletons 3,706/2,784/2,982/3,218 →
+1,638/1,204/1,264/1,416 (Warrior, Mage, Minion, Rogue). The pawns are made of coloured parts: each part kept its own (or the guard's dark
+eye sockets and the belts lose their colour), the small ones (belts, buckles, pads, eyes: under 250 faces) kept whole and the middling ones
+(the mage's hat, the reaper's cloak, the breastplates) to half; cut to a fifth they broke. Checked side by side on their sheets. The
+pawns' full meshes now kept in `data/full/pawns.json`. `data/pawns.json` 1.62 MB → 0.93 MB, `data/skel.json` 375 → 232 KB.
+## 19 Oct 2026: a tidier, lighter start; the dungeon a loading world
+
+From a look over the whole code (owner, 19 Oct 2026: "take a look at the overall game code and structure and look for obvious
+improvements"; of the list, 2-13 "do it", and "i want dungeon to be a 'loading world' like subway (that way it doesnt load at first)"):
+- **The dungeon loads when you go in** (`077-npc-skel.js`): its KayKit skeletons (Warrior, Mage, Minion, Rogue, the gold one) and
+  `data/skel.json` are no longer built at the start (`__LAZY__`; on the website fetched then). Three treads down the castle's stair the
+  screen goes black with ENTERING DUNGEON (the subway's fade), you're set at the stair's foot, they're built under the black, and it
+  fades in; five treads up from the foot, LEAVING DUNGEON, and you're at the stair's top. Arriving any other way (the teleport list)
+  fades and builds the same. With `?trouble=1` (the troublemakers) they're built at the start as before. `DUNDBG()` for tests.
+- **One decoder, one loader** (`003a-skin.js`): `B64` (the browser's own base64 reader where it has one, else a plain loop: about 5x
+  faster than the old `Uint8Array.from(atob())`, which was in 12 places) and `SKIN` (points, geometry, rig, clips), shared by the
+  skeletons, the dragons, the creatures and the pawns (four copies before). Each model is decoded once and copied for each copy of
+  it (the 18 creatures, 24 pawns, 10 dragons decoded every copy before), and each clip set built once and shared.
+- **three.js minified** (`three.module.min.js`, 88 KB less); the unused three-vrm entry out of the import map. **The website's
+  shell** (`dist/g/market.html`) now asks for three.js, its addons and the start's data files at once (`modulepreload`, `preload`),
+  so they come down alongside `game.js` instead of after it.
+- **Frames**: the sun's shadow redrawn only when it moves (you walk) or 12 times a second (was every frame); the lamp's shadow only
+  when you move within its reach (was whenever you moved anywhere); hidden characters (sent home, troublemakers away) no longer
+  animate, their minds still run; the golems no longer split every triangle in four before rounding (12 golems were about 68,000
+  triangles; now a quarter of that); the dragons' tail and neck bends without updating all 76 bones' matrices each time; a few
+  objects made each frame now kept and reused. The river's extra picture of the scene left as is (halving it would change the water).
+- **Tidy**: the tests of removed things gone (figact, figshot, tpose, bodymock; civiccheck's vehicles line); `data/ual.json` (only a
+  bake input) moved to `data/full/`.
+- **Physics**: Rapier stays for now (his pick that morning). He asked whether so big an engine is needed: Rapier is about 690 KB
+  compressed, cannon-es about 77 KB; options put to him.
+
+## 19 Oct 2026: the park runs on, big clouds, sun through them
+- **The park runs on into the mist** (owner, asking about procedural.eu, a map terrain library on three.js: not usable here (satellite
+  photos, streamed map tiles, its own renderer), but its idea of ground fine near you and coarse far was; his pick of four places, "Park runs
+  on into mist"; `134a-parkfar.js`, `PFAR` in `006-map-pre.js` and `065-ring.js`): past the corner's north and east edges (north of it from
+  the park's west wall, east of it from the park's south wall) rolling lawns made in code, flat for 7 tiles then hills growing to some 10
+  tiles high far out, the park's lawn greens with grey rock on the steep faces, flat facets, one colour a face, lit in the cel bands. Cells 2
+  tiles near, 4, 8, 12 far (24-tile chunks with skirts). In the mist, everything else in that region more than 6 tiles past the edge is cut
+  (the park's far walls and gate, the north street, the Avenue), and the skyline's near rows on the park's side are left out (the rows 22+
+  tiles past the land and the baked far ones stay: the city across the park). The hills are only partly misted (half near, to nine tenths
+  far), so the ridges read in layers. Shown only while the MIST is on. Cost: 11,800 triangles, one draw, one program, no lights.
+- **Bigger clouds** (owner: "i like these clouds but they need to be way bigger and surrounding the buildings around edges and over sky";
+  `131-weather.js`): the same lumpy clouds, about three times the size: two in three a ring of banks round the skyline (150-320 tiles out,
+  14-52 high, 28-62 wide), the rest overhead (25-135 out, 30-46 high); at least 30 shown even in clear weather (30 + 50 x cloud).
+- **Sun through the clouds** (owner: "sun should shine through them to cause sun rays and light rays through the park"; of the two looks,
+  "Both"; then "the sun rays need to make logical sense, coming from the sun, not random"; `133a-sunrays.js`): **beams**: up to 8, each
+  leaving the sun-side edge of a real cloud straight along the sunlight to where it lands (the nearest to you, none within 3 tiles of the
+  camera), a pale six-sided shaft in two flat layers (core and edge, added light); whatever stands in a beam is lit a band brighter
+  (`sunS`/`sunB` in the lambert shader). By day only, none overcast or in rain. **Rays round the sun**: in the behind and first-person
+  views, when the sun is in sight, 32 steps from each pixel toward it count the open sky (the depth of the picture: clouds, trees and
+  buildings block), in 5 flat bands, warm, weaker over the sky itself. Cost: beams 192 triangles, one draw; rays one screen pass.
+  `tests/parkfar.cjs`, `tests/sunrays.cjs <out> [hour] [wx] [x,z]`.
 - **Scenes** (owner, 19 Oct 2026, after no stars showed at the stopped 5:24 pm under CLOUDY: "set both of these as preset in the admin menu,
   add 4 other presets that make sense too (atmosphereic as possible nothing boring) go all out"; `src/sky.js`): ATMOSPHERE (Esc) opens with
   SCENES, one click setting the time (stopped), the weather and the evening colours together, kept like them: **STARRY NIGHT** (10:30 pm,

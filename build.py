@@ -45,10 +45,14 @@ def hashed(f):
     os.replace(f, n)
     return os.path.basename(n)
 g = read('dist/g/game.js')
+hn = {f: hashed('dist/g/' + os.path.basename(f)) for f in used + lazies}
 for f in used + lazies:
-    g = g.replace(json.dumps(os.path.basename(f)), json.dumps(hashed('dist/g/' + os.path.basename(f))))
+    g = g.replace(json.dumps(os.path.basename(f)), json.dumps(hn[f]))
 open('dist/g/game.js', 'w').write(g)
-m = read('dist/g/market.html').replace('__RIG__', hashed('dist/g/rig.js')).replace('__GAME__', hashed('dist/g/game.js'))
+J = 'https://cdn.jsdelivr.net/npm/three@0.160.0/'
+pl = ''.join('<link rel="modulepreload" href="' + J + u + '">' for u in ['build/three.module.min.js'] + ['examples/jsm/postprocessing/' + p + '.js' for p in re.findall(r"from 'three/addons/postprocessing/(\w+)\.js'", body)])
+pl += ''.join('<link rel="preload" as="fetch" crossorigin="anonymous" href="/g/' + hn[f] + '">' for f in used)
+m = read('dist/g/market.html').replace('__RIG__', hashed('dist/g/rig.js')).replace('__GAME__', hashed('dist/g/game.js')).replace('<script type="module" src="/g/', pl + '<script type="module" src="/g/', 1)
 open('dist/g/market.html', 'w').write(m)
 pages = pages[:3]
 for f in pages:

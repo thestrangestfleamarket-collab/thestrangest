@@ -1,5 +1,5 @@
 const KIT={data:KITD,geos:{},things:[]};
-{ const b=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0)), i16=s=>new Int16Array(b(s).buffer), u16=s=>new Uint16Array(b(s).buffer), u32=s=>new Uint32Array(b(s).buffer), YS=ZU*24/TILE;
+{ const b=B64, i16=I16, u16=U16, u32=s=>new Uint32Array(b(s).buffer), YS=ZU*24/TILE;
   KIT.geo=name=>{ if(KIT.geos[name])return KIT.geos[name]; const M=KITD[name]; if(!M){ console.warn('kit: no',name); return null; }
     const q=i16(M.p), P=new Float32Array(q.length); for(let i=0;i<q.length;i++)P[i]=(q[i]+32500)*M.sc+M.lo[i%3];
     const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(P,3)); g.setAttribute('color',new THREE.BufferAttribute(b(M.c),3,true)); g.setIndex(new THREE.BufferAttribute(M.i32?u32(M.i):u16(M.i),1));

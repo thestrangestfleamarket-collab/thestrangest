@@ -13,7 +13,6 @@ const {chromium}=require('playwright');
   const P=await pg.evaluate(()=>CITY.places().filter(p=>['precinct','firehouse','post','depot','hall','clinic'].includes(p.id)).map(p=>p.id+'@'+(p.door.x/__dbg.cv().TILE).toFixed(0)+','+(p.door.z/__dbg.cv().TILE).toFixed(0)));
   console.log('the civic row:',P.join(' · '),'· row triangles',await pg.evaluate(()=>CIVIC.tris));
   const d0=await dbg(); console.log('staff:',d0.staff.map(s=>s[0]+' '+s[1]+' at '+s[3]+','+s[4]+(s[5]?'':' HIDDEN')).join(' · '));
-  console.log('vehicles:',JSON.stringify(await pg.evaluate(()=>VEHDBG())));
   // a look at the row from above, and a car close
   await pg.evaluate(()=>{ const h=CIVIC.house('depot'), T=__dbg.cv().TILE; __dbg.UI.setFree(true); __dbg.UI.camT.set(h.x,1.5,h.z+2*T); __dbg.cam(0.4,0.75,__dbg.cv().PPU*.45); }); await pg.waitForTimeout(3000); await pg.screenshot({path:out+'/civic_row.png'});
   await pg.evaluate(()=>{ const v=VEH.kinds.patrol; __dbg.UI.setFree(true); __dbg.UI.camT.set(v.x,v.H*.6,v.z); __dbg.cam(null,null,__dbg.cv().PPU*3); }); await pg.waitForTimeout(2500); await pg.screenshot({path:out+'/civic_car.png'});

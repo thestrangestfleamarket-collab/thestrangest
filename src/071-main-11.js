@@ -1,5 +1,5 @@
 
-const cloud=RIG.bake(0.5,1), st=RIG.create(); st.snap=true;
+const cloud=RIG.bake(0.5,1), st=RIG.create(); st.snap=true; st.smooth=true;
 const PW=112,PICH=100,AX=56,AY=86, pimg=new Uint32Array(PW*PICH), uimg=new Uint32Array(PW*PICH), pdata=new ImageData(PW,PICH), pcv=document.createElement('canvas'); pcv.width=PW; pcv.height=PICH;
 const pg=pcv.getContext('2d'), ptex=new THREE.CanvasTexture(pcv); ptex.magFilter=ptex.minFilter=THREE.NearestFilter; ptex.generateMipmaps=false; ptex.colorSpace=THREE.SRGBColorSpace;
 const VS=1;

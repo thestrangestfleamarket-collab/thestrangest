@@ -7,7 +7,7 @@ const SHINE=window.SHINE={src:[],porch:[]};
   const mrg=gs=>{ const A=gs.map(g=>(g.index?g.toNonIndexed():g).attributes.position.array), P=new Float32Array(A.reduce((n,a)=>n+a.length,0)); let o=0; for(const a of A){ P.set(a,o); o+=a.length; }
     const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(P,3)); g.computeVertexNormals(); return g; };
   const inst=(geo,n,col,basic)=>{ const me=new THREE.InstancedMesh(geo,basic||new THREE.MeshLambertMaterial({color:0xffffff,flatShading:true}),Math.max(1,n)); me.count=0; me.col=new THREE.Color(col); me.castShadow=!basic; me.receiveShadow=!basic; scene.add(me); MS.push(me); return me; };
-  const put=(me,x,y,z,a,o=0)=>{ q.setFromAxisAngle(Y1,a); me.setMatrixAt(me.count,m4.compose(V(x+Math.cos(a)*o,y,z-Math.sin(a)*o),q,V(1,1,1))); me.setColorAt(me.count,me.col); return me.count++; };
+  const put=(me,x,y,z,a,o=0,k=1)=>{ q.setFromAxisAngle(Y1,a); me.setMatrixAt(me.count,m4.compose(V(x+Math.cos(a)*o,y,z-Math.sin(a)*o),q,V(k,k,k))); me.setColorAt(me.count,me.col); return me.count++; };
   const CH=(geo,col)=>{ const L=[]; return {put:(...p)=>L.push(p),done(){ const by=new Map(); for(const p of L){ const k=Math.floor(p[0]/36)+','+Math.floor(p[2]/36); if(!by.has(k))by.set(k,[]); by.get(k).push(p); }
     for(const ps of by.values()){ const me=inst(geo,ps.length,col); for(const p of ps)put(me,...p); me.computeBoundingSphere(); } }}; };
   const arm=(L,y)=>[tube([[.05,y-.76],[.1,y+.04],[L*.35,y+.26],[L-.3,y+.12]],.055),tube([[.08,y-1.26],[.12,y-.46],[L*.27,y-.11],[L*.58,y+.12]],.025)];
@@ -38,15 +38,17 @@ const SHINE=window.SHINE={src:[],porch:[]};
       box(0,-.155,.17,.15,.012,.012),box(0,-.155,.17,.012,.012,.15)]), JAR=lat([[0,-.15],[.05,-.15],[.065,-.12],[.065,0],[.06,.03],[0,.03]],8).translate(0,0,.17*M);
   const sconce=inst(SC,24,0x2e2a24), jar=inst(JAR,24,0x4a4238,new THREE.MeshBasicMaterial({color:0xffffff})), PJ=new THREE.Color(1,.9,.7), PD=new THREE.Color(0x4a4238);
   const pool=D.pools&&D.pools[0]&&D.pools[0][4];
-  const porch=(x,z,a,side=1)=>{ const ox=Math.cos(a), oz=-Math.sin(a), nx=Math.sin(a), nz=Math.cos(a), px=x+ox*1.2*side, pz=z+oz*1.2*side, y=G(px+nx*.6,pz+nz*.6), my=y+2.05*M;
-    const i=put(sconce,px,my,pz,a); put(jar,px,my,pz,a);
-    const L=new THREE.PointLight(PORCH,0,5.5*TILE,1.6), lx=px+nx*.25*M, lz=pz+nz*.25*M; L.position.set(lx,my-.06*M,lz); L.userData.i0=7; scene.add(L);
+  const porch=(x,z,a,side=1,k=1)=>{ const ox=Math.cos(a), oz=-Math.sin(a), nx=Math.sin(a), nz=Math.cos(a), px=x+ox*1.2*side, pz=z+oz*1.2*side, y=G(px+nx*.6,pz+nz*.6), my=y+2.05*M*k;
+    const i=put(sconce,px,my,pz,a,0,k); put(jar,px,my,pz,a,0,k);
+    const L=new THREE.PointLight(PORCH,0,5.5*TILE,1.6), lx=px+nx*.25*M*k, lz=pz+nz*.25*M*k; L.position.set(lx,my-.06*M*k,lz); L.userData.i0=7; scene.add(L);
     const v=Math.sin(x*12.9898+z*78.233)*43758.5453, P={i,L,on:.8-(v-Math.floor(v))*3,lit:null,me:null};
     if(pool){ const me=new THREE.Mesh(pool.geometry,pool.material), r=.5*L.distance; me.scale.set(r,1,r); me.position.set(lx+nx*r*.45,y+.03,lz+nz*r*.45); me.renderOrder=1; me.visible=false; scene.add(me); P.me=me; }
-    SHINE.porch.push(P); halo(L.position.clone(),.42*M,PORCH,L,{beam:[.06*M,.8*M]}); };
+    SHINE.porch.push(P); halo(L.position.clone(),.42*M*k,PORCH,L,{beam:[.06*M,.8*M]}); };
   { const B=BOD, B0=B.B0; porch(B.X((B0.x0+B0.x1)/2),B.Z(B0.y1),0); if(MODS.apts&&MODS.apts.A){ const A=MODS.apts.A; porch(B.X(A.x1-1),B.Z(A.y1),0,-1); }
     if(B.GD)porch(B.X(B.GD.door[0]),B.Z(B.GD.door[1]),0,1.6);
-    for(const o of BLK.blds)if(o.row===1)porch(B.XS(o.x1)-1.55,B.ZS(o.y1),0); sconce.computeBoundingSphere(); jar.computeBoundingSphere(); }
+    for(const d of STORE.main?STORE.main.doors:[])if(!/THEATRE/.test(d[0]))porch(d[1],d[2]-2.2*TILE,0);
+    if(typeof WROW!=='undefined'){ porch(B.X((WROW.bar.x0+WROW.bar.x1)/2),B.Z(-77),0); const mx=B.X((WROW.mus.x0+WROW.mus.x1)/2), mz=B.Z(WROW.mus.y1); porch(mx,mz,0,1.6,1.5); porch(mx,mz,0,-1.6,1.5); }
+    sconce.computeBoundingSphere(); jar.computeBoundingSphere(); }
   if(typeof TLX!=='undefined'&&TLX.mesh){ const sm=TLX.mesh, p=V(), s=V(); for(let i=0;i<sm.count;i++){ sm.getMatrixAt(i,m4); m4.decompose(p,q,s); if(Math.max(s.x,s.z)>.15*M&&s.y>.15*M)halo(p.clone(),.36*M,new THREE.Color(),null,{sig:i}); } }
   if(pool){ const N=160, cv=document.createElement('canvas'); cv.width=cv.height=N; const g=cv.getContext('2d'), im=g.createImageData(N,N), f=r=>{ const d=Math.hypot(.5,r); return .5/d*d**-1.6*Math.max(0,1-d**4)**2; }, f0=f(0);
     for(let j=0;j<N;j++)for(let i=0;i<N;i++){ const r=Math.hypot((i+.5)/N*2-1,(j+.5)/N*2-1), e=r>1?0:f(r*.5)/f0, a=e>.72?.2:e>.45?.13:e>.22?.075:e>.09?.035:0, k=(j*N+i)*4; im.data[k]=255; im.data[k+1]=214; im.data[k+2]=150; im.data[k+3]=Math.round(a*255); }

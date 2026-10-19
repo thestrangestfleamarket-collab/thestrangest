@@ -3166,3 +3166,15 @@ seats.")
   beam and the pool 60), the seats about 480 (were about 290). Lamps: one more record (the playhouse has 8 inside and in front);
   LITE's eight nearest as ever. Programs: none new beyond a vertex-coloured Lambert for the drapes and an additive Basic for the
   light; nothing a frame but hiding the beam when you're outside.
+- **Autodither for big trees and walls** (owner, 19 Oct 2026, of an isometric screenshot where the park's big crowns hid him: "lets add
+  autodither only for big trees and walls"): this explicit ask overrides the older **No dithering, nothing vanishing** (17 Oct) and
+  **Nothing vanishes walking past** for big trees and walls only, and the **no 4x4 ordered (Bayer) grid** of **The grain, not halftone**
+  for this see-through only (the ask named a screen-door dither; say if the grain should be used instead). When a big park tree
+  (oaks, elders and the landmarks: `PARK.mesh` with leaves, not bushes, flowers or small plants) or a building's wall (the apartment
+  house, the row's batched walls 2.2 m tall and 1.2 m long or more, and above your head its roofs and everything 2.4 m up, the Hudson-side building, the
+  garages, the civic tower) stands between the camera and you, the part of it nearer the camera than you is cut away in a 4x4 ordered
+  pattern in a circle round you on screen (hard pixels, no blending: 80% of the pixels inside, 40% in its outer ring), eased in and out
+  over a quarter second (`PEEK` in `008-batch.js`; a ray from your chest to the camera against the trees' and walls' boxes).
+  Isometric and behind only; never in first person, the free camera, the editor or a room. Characters, things, lamps, shadows and the
+  depth passes are untouched. `?dither=0` turns it off. Cost: no triangles, lights or new shader programs (a few lines in the world's
+  Lambert and basic shaders), about 0.02 ms a frame for the ray.

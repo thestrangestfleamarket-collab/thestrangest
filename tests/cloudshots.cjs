@@ -19,7 +19,7 @@ const fin=()=>{ rep.errors=errs.slice(0,40); fs.writeFileSync(path.join(OUT,'rep
   fs.writeFileSync(path.join(OUT,H+'-mask.png'),Buffer.from(mk.url.split(',')[1],'base64')); rep['mask'+H]={V:mk.V,cc:mk.cc};
   rep['diag'+H]=await pg.evaluate(()=>{ const R=WX.dbgR, out=[], seen=new Set(); let n=0; __scene.traverse(o=>{ if(!o.isMesh||n>12)return; const m=Array.isArray(o.material)?o.material[0]:o.material; if(!m||m.type!=='MeshLambertMaterial'||seen.has(m))return; seen.add(m); const p=R.properties.get(m), u=p.uniforms; if(!u)return; n++;
      out.push({name:o.name||o.parent&&o.parent.name, tCS:!!u.tCS, same:u.tCS&&u.tCS.value===WX.csm.tex, ver:u.tCS&&u.tCS.value.version, src:u.tCS&&u.tCS.value.source===WX.csm.tex.source, csV:u.csV&&JSON.stringify(u.csV.value), env:u.tENV&&u.tENV.value.version, envSrcV:u.tENV&&u.tENV.value.source.version, prog:!!p.currentProgram, hasCS:p.currentProgram?R.getContext().getShaderSource(R.getContext().getAttachedShaders(p.currentProgram.program)[1]).includes('tCS'):null}); });
-     const E=WX.lfx.env.image.data, row=63*64*4; return {mats:out, P0:[E[row],E[row+1],E[row+2]], texV:WX.csm.tex.version, fx:[...WX.lfx.on]}; });
+     const E=WX.lfx.env.image.data, row=63*64*4; return {bkl:(WX.bkl||[]).slice(0,10).concat((WX.bkl||[]).slice(-5)),bkn:(WX.bkl||[]).length,mats:out.slice(0,1), P0:[E[row],E[row+1],E[row+2]], texV:WX.csm.tex.version, fx:[...WX.lfx.on]}; });
   await pg.mouse.move(480,270); for(let i=0;i<10;i++){ await pg.mouse.wheel(0,600); await pg.waitForTimeout(150); }
   for(let i=0;i<6;i++)await shot('animal'+i,(g)=>{ const M=__dbg.MAPK, P=M.PARK, T=window.TILE||33.9/30; STORE.goTo(M.BOD.XS(P.round[0]+(P.ox||0))+g[0]*T,M.BOD.ZS(P.round[1]+(P.oy||0))+g[1]*T,'up'); },3000,SPOT[i]);
   await pg.evaluate(SP=>0,SPOT);

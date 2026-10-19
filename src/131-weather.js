@@ -74,7 +74,7 @@ const WX={hold:null,now:null};
     const W=WX.now, up=LVL!=='down', inside=!OUT.open, day=cl((CLOCK.elev()+4)/14), t=performance.now()/1000;
     if(!ends.length)build(); WX.cloudCut(); const show=Math.min(NC,Math.round(90+W.cloud*150)); WX.show=show; cg.instanceCount=ends[show-1];
     cmat.color.setRGB(1,1,1).multiplyScalar(1-.35*W.rain-.35*W.storm); cmat.emissive.setRGB(.16,.2,.27).multiplyScalar(.4+.6*day);
-    CL.position.set(CC.x,2*(WX.cy||0),CC.z); CL.visible=up&&CSEE(show); { const D=CLOCK.dir||CLOCK.sunV, y=Math.max(.2079,D.y), L=[D.x/y,D.z/y], key=show+'|'+CL.position.y.toFixed(1)+'|'+Math.round(L[0]*40)+'|'+Math.round(L[1]*40); if(key!==bk){ bk=key; bake(show,L); } }
+    CL.position.set(CC.x,2*(WX.cy||0),CC.z); CL.visible=up&&CSEE(show); { const D=CLOCK.dir||CLOCK.sunV, y=Math.max(.2079,D.y), L=[D.x/y,D.z/y], key=show+'|'+CL.position.y.toFixed(1)+'|'+Math.round(L[0]*40)+'|'+Math.round(L[1]*40); if(key!==bk){ (WX.bkl=WX.bkl||[]).push(key+' '+performance.now().toFixed(0)); bk=key; bake(show,L); } }
     if(up){ scene.background.lerp(cA.setRGB(.55,.58,.62).multiplyScalar(.25+.75*day),cl(W.cloud*W.cloud*.85)); if(W.storm)scene.background.multiplyScalar(1-.45*W.storm);
       CLOCK.sun.intensity*=1-.72*cl((W.cloud-.2)/.8); }
     if(W.flash&&flashT<=0)flashT=.14; if(flashT>0){ flashT-=dt; if(up){ const f=WX.hold==='RAIN'?.3:1; scene.background.lerp(cA.setRGB(.85,.88,.95),f); HEMI.intensity+=2.5*f; } }

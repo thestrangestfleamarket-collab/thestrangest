@@ -10,7 +10,7 @@
       for(const [bn,p] of Object.entries(Cl.p))tracks.push(new THREE.VectorKeyframeTrack(bn+'.position',T,f32(p)));
       out[name]=new THREE.AnimationClip(name,Cl.dur,tracks); } return out; };
   const M=BOD.MAP, X=BOD.XS, Z=BOD.ZS, PARKL={x0:X(PARK.x0+PARK.ox+2),x1:X(PARK.x1+PARK.ox-2),z0:Z(PARK.y0+PARK.oy+1.5),z1:Z(PARK.y1+PARK.oy-1)}, ALL={x0:X(M.x0+2),x1:X(M.x1-2),z0:Z(-76.3),z1:Z(PARK.y1+PARK.oy-1)},
-    HOLE=[X(MAPSTAIR.x0-.6),Z(MAPSTAIR.y0),X(MAPSTAIR.x1+.6),Z(MAPSTAIR.y1+.6)], FREE=(x,z,R)=>!(x>HOLE[0]-R&&x<HOLE[2]+R&&z>HOLE[1]-R&&z<HOLE[3]+R)&&!SOL.up.some(b=>x>b[0]-R&&x<b[2]+R&&z>b[1]-R&&z<b[3]+R);
+    HOLE=[X(MAPSTAIR.x0-.6),Z(MAPSTAIR.y0),X(MAPSTAIR.x1+.6),Z(MAPSTAIR.y1+.6)], FREE=(x,z,R)=>!(x>HOLE[0]-R&&x<HOLE[2]+R&&z>HOLE[1]-R&&z<HOLE[3]+R)&&!SOL.up.some(b=>x>b[0]-R&&x<b[2]+R&&z>b[1]-R&&z<b[3]+R)&&!FOUNT.wet(x,z,R);
   const KIND={Rat:{walk:'Rat_Walk',run:'Rat_Run',idle:'Rat_Idle',pace:3,lane:ALL,night:.6},Frog:{walk:'Frog_Jump',idle:'Frog_Idle',pace:2.4,lane:PARKL,hop:[.33,.78]},Slime:{walk:'Slime_Walk',idle:'Slime_Idle',pace:1.2,lane:PARKL,turn:-Math.PI/2},
     Snake:{walk:'Snake_Walk',idle:'Snake_Idle',pace:2,lane:PARKL},Spider:{walk:'Spider_Walk',idle:'Spider_Idle',pace:3,lane:PARKL},Bat:{walk:'Bat_Flying',idle:'Bat_Flying',pace:3,lane:PARKL,fly:[6,13],night:1},Wasp:{walk:'Wasp_Flying',idle:'Wasp_Flying',pace:3,lane:PARKL,fly:[1,2.5],day:1,turn:-Math.PI/2}};
   const PAINT=(()=>{ const hh=(x,y,z)=>{ const v=Math.sin(x*127.1+y*311.7+z*74.7)*43758.5453; return v-Math.floor(v); }, vn=(x,y,z)=>{ const i=Math.floor(x), j=Math.floor(y), k=Math.floor(z), f=x-i, g=y-j, e=z-k, s=t=>t*t*(3-2*t), u=s(f), v=s(g), w=s(e), L=(a,b,t)=>a+(b-a)*t;

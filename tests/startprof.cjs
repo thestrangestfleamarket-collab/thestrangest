@@ -7,7 +7,7 @@ const OUT=process.argv[2]||'startprof.json', PAGE=path.resolve(process.argv[3]||
 (async()=>{ fs.mkdirSync(path.dirname(path.resolve(OUT)),{recursive:true}); const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist']});
   const pg=await b.newPage({viewport:{width:1280,height:720}}); pg.setDefaultTimeout(900000); const errs=[];
   pg.on('pageerror',e=>errs.push(e.message.slice(0,200)));
-  await pg.addInitScript(()=>{ window.__LT=[]; try{ new PerformanceObserver(l=>{ for(const e of l.getEntries())window.__LT.push([Math.round(e.startTime),Math.round(e.duration)]); }).observe({type:'longtask',buffered:true}); }catch(e){} });
+  await pg.addInitScript(()=>{ window.FLATLOG={}; window.__LT=[]; try{ new PerformanceObserver(l=>{ for(const e of l.getEntries())window.__LT.push([Math.round(e.startTime),Math.round(e.duration)]); }).observe({type:'longtask',buffered:true}); }catch(e){} });
   const t0=Date.now(); await pg.goto('file://'+PAGE+'?fresh=1&hour=13',{waitUntil:'commit'});
   let started=null; for(let i=0;i<900;i++){ await pg.waitForTimeout(500); if(await pg.evaluate(()=>!!window.__started)){ started=Date.now()-t0; break; } }
   const rep={page:path.basename(PAGE),startMs:started,errs};
@@ -21,8 +21,12 @@ const OUT=process.argv[2]||'startprof.json', PAGE=path.resolve(process.argv[3]||
         res({frames:d.length,dtMed:med(d),dtP95:p95(d),dtMax:+Math.max(...d).toFixed(1),over100:d.filter(x=>x>100).length,sys,info}); } };
       requestAnimationFrame(f); }));
     rep[name]=r; };
+  rep.batch=await pg.evaluate(()=>(window.BATCH&&BATCH.log||[]).map(b=>({faces:b.faces,pages:b.pages,atlas:b.atlas})));
+  rep.flats=await pg.evaluate(()=>Object.entries(window.FLATLOG||{}).sort((a,b)=>b[1]-a[1]).slice(0,14).map(([k,v])=>[Math.round(v/1e6*10)/10+'Mpx',k]));
+  rep.sun=await pg.evaluate(()=>window.SUNDBG?SUNDBG():null);
   await sample('start');
   await sample('parkSW',()=>{ const P=__dbg.MAPK.PARK, B=__dbg.MAPK.BOD; __dbg.UI.goTo(B.XS(P.x0+(P.round[0]-P.x0)*.45+(P.ox||0)),B.ZS(P.round[1]+(P.round[1]-P.y0)*-.35+(P.oy||0)),'up'); });
+  rep.sun2=await pg.evaluate(()=>window.SUNDBG?SUNDBG():null);
   rep.longTasks=await pg.evaluate(()=>window.__LT.sort((a,b)=>b[1]-a[1]).slice(0,40));
   rep.longTotal=await pg.evaluate(()=>window.__LT.reduce((a,x)=>a+x[1],0));
   await pg.screenshot({path:OUT.replace(/\.json$/,'')+'-park.png'});

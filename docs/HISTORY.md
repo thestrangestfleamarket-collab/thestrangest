@@ -2772,3 +2772,14 @@ fsomeone dies insomewhere they have to float back as a ghost to get resed. when 
   between the places (one per garage 4+ tiles wide, two in the long ones; `DRESS.gaps()` from `MAINROW`), never shifted in front of a
   place, and kept 5 tiles from any door; the south sidewalk's globe lamps stand at the garages too (one each, 2.5+ tiles wide). The
   street name signs and no-parking signs are off (`BOD.signs` empty); the traffic lights stay.
+- **The render inspector** (owner, 19 Oct 2026: "can you add an option i can toggle in menu to see everything that is currently
+  rendering on screen, details, how much it costs, etc. i want to be able to see what im rendierng and then think if that should be
+  rendered or not beacuse im not able to see / interact, etc. i want to chunk the world off asm uch as possible into loading screens and
+  make the indital download and load super fast."): menu, DISPLAY, ON SCREEN, RENDER INSPECTOR (`161b-rinsp.js`). A panel, refreshed
+  twice a second and only while open: fps and frame ms, the last frame's calls and triangles (all passes), shader programs (and how many
+  are on screen), geometries and textures in memory, lights in the scene and lighting, shadow lights and their map sizes, where you are.
+  Then every thing the main view draws, grouped by name (map group, batch and its places, NPC, store room, object name), with its
+  triangles, calls, shadow, distance in tiles, whether it is in view, notes (OFFSCREEN NO-CULL, FAR past 60 tiles, BELOW GROUND, SHUT IN
+  a room you are not in, IN FOG) and USE when something you can use stands there; a find box; a click outlines it on screen for 5 s
+  and lists its parts (materials, programs, textures, what the batch holds). Below, LOADED BUT NOT DRAWN: hidden, layer-off or out of
+  view things by memory and triangles, the candidates for loading screens. `window.RENDERLIST()` gives the same as JSON.

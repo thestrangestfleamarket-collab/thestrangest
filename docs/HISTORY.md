@@ -2655,3 +2655,33 @@ not have windows, make sure buildings are only as tall as they need to be"; then
 - **The far buildings steady** (owner, 19 Oct 2026: "thedark spots on buildings shift every frame so it just looks glitchy"): the far
   skyline's window pattern turns to its even average colour sooner (when a window cell is a third of a pixel, was a full pixel), so the
   small windows no longer crawl as the view moves.
+
+## 19 Oct 2026: Market St re-laid round the park gate; the apartment house big, two elevators, fire escapes
+(owner: "remove stairs from apartments, only elevator. make it a real elavtor. apartments need to be 2x as big, realistic fire escape
+in front and back they can walk out on"; then "i want the apartment lobby to be as big as the musuem lobby. two elevators in the back.
+moev the apartments to the middle of market st. bodeag next to it (garage in between)"; "move the museum and playhouse on left side of
+marketst, arcade and theater on right side. put the holodeck as a phone size booth spot in the arcade. when you walk in its a little
+bigger"; east order bodega, apartment house, dojo, theatre, arcade; "the subway should come out in the exact middle of the market st.
+directly across from the central apark entrance")
+- **The row** (`MAINROW`, `BLOCK.lots`, `LAYOUT0` in `006-map-pre.js`, map tiles, west to east): the bar −50 to −39 and the museum
+  −18.3 to 10.3 as they were, the playhouse 46.7 to 60.7, **the subway stairs 97 to 101** (`LAYOUT0.subway` 36.99: centred on 99, the
+  park's south gate, `PARK.round[0]`; the station under them moves with them), the bodega 104 to 112.8 (`LAYOUT0.bodega` 36.4), the
+  apartment house 115.8 to 144.4 (`house` 67.56), the dojo 149.4 to 167.9 (unchanged), the theatre 172.9 to 186.9, the arcade 191.9 to
+  205.9. Garages fill the gaps (3 tiles between the stairs, the bodega and the house). The newsstand stands 6 tiles west of the stairs.
+- **The holodeck** has no lot of its own: its booth (2 by 2, the HOLODECK neon over its door) stands inside the arcade by the back
+  wall; walking in fades you into the holodeck hall (16 by 16) as before. The menu's THE HOLODECK takes you into it.
+- **The apartment house** (`054-apts.js`) is the museum's width (26 by 14 bodega units; the alley keeps its depth), three floors, its
+  door in the middle of the front. **No stairs inside**: the ground floor one empty lobby (the checker floor), **two elevators** side by
+  side at the middle of the back (`ELV`, `ELVDBG()`): a call button by each door on every floor (double click), the car's own sliding
+  doors and the landing doors, floor buttons on the car's panel (double click; the panel's buttons still show while you stand in it),
+  the car rides smoothly (eases into the floor) with you in it, its cable and counterweight in the shaft. Upper floors: a corridor end
+  to end, the elevator hall off it, eight empty apartments (four front, four back) with wooden doors that swing open as you come.
+- **Fire escapes front and back** (black iron): a grated landing outside the 2nd and 3rd floors with railings, a stair between them,
+  and a counterweighted drop stair from the 2nd-floor landing to the sidewalk (front) and the alley (back), raised until you come near
+  its foot or are on the escape. Two windows on each landing are tall French windows you walk through (front 4.9 and 8.1, back 3.95 and
+  6.55 from the west corner). The landings and stairs are ground you stand on (`APTS.stoop` → the escape's height under you), their
+  rails solid on their own floor (`APTS.sol`). The front balustrade now runs only east of the escape.
+- **The roof** (`148-rooftops.js`): its things now on the roof (they were two storeys up since the house went to three floors); the
+  elevator machine room over both shafts, no stair bulkhead.
+- Cost: some 5,000 triangles of fire escape and 600 of elevators and doors, about 30 inner walls; lamps are records only (`LITE`
+  picks eight); no new program.

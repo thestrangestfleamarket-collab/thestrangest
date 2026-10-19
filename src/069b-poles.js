@@ -1,7 +1,7 @@
 const WIRES=window.WIRES={perch:[],poles:[],tick:()=>{}};
 { const M=TILE/.84, V3=THREE.Vector3, G=MODS.bodega.ground, h3=(a,b,c)=>{ const v=Math.sin(a*12.9898+b*78.233+c*37.719)*43758.5453; return v-Math.floor(v); };
   const X0=BOD.XS(BLOCK.x0), X1=BOD.XS(BLOCK.x1), zp=DRESS.kerb.sw+.5-.5*M, A=MODS.apts&&MODS.apts.A;
-  const doors=[BOD.X((BOD.B0.x0+BOD.B0.x1)/2),A?BOD.X(A.x1-1):1e9,BOD.GD?BOD.X(BOD.GD.door[0]):1e9,BOD.XS((MAPSTAIR.x0+MAPSTAIR.x1)/2),...(STORE.main?STORE.main.doors.map(d=>d[1]):[])];
+  const doors=[BOD.X((BOD.B0.x0+BOD.B0.x1)/2),A?BOD.X(MODS.apts.DX):1e9,BOD.GD?BOD.X(BOD.GD.door[0]):1e9,BOD.XS((MAPSTAIR.x0+MAPSTAIR.x1)/2),...(STORE.main?STORE.main.doors.map(d=>d[1]):[])];
   const free=x=>DRESS.poles.every(p=>Math.abs(p.z-zp)>3*M||Math.abs(p.x-x)>3*M)&&BOD.signs.every(s=>Math.abs(BOD.ZS(s.y)-zp)>3*M||Math.abs(BOD.XS(s.x)-x)>2*M)&&DRESS.cans.every(c=>Math.abs(c.x-x)>1.6*M)
     &&doors.every(d=>Math.abs(d-x)>3.2*M)&&!SOL.up.some(b=>x>b[0]-.8*M&&x<b[2]+.8*M&&zp>b[1]-.8*M&&zp<b[3]+.8*M);
   const XS=[]; for(let i=0;i<4;i++){ const c=X0+(X1-X0)*(i+.5)/4; for(let k=0;k<60;k++){ const x=c+(k&1?-1:1)*Math.ceil(k/2)*.4*M; if(free(x)){ XS.push(x); break; } } }

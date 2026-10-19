@@ -1701,3 +1701,21 @@ floors above were already cut at your ceiling (`APTS.HP`); now everything of the
 clip plane on the house's materials, at your floor), so from a flat's balcony the lobby isn't seen. No new cost.
 ## 18 Oct 2026: only the corner walkable, the rest into the mist
 - **The corner** (owner: "i want to change the map to only make this walkable. the roads going up and right should look like they keep going (central park is huge and this is only 1 corner)"; of the mockups https://claude.ai/artifact/W5rQsTCsnMvrJkBtPEVZHg, "lets do the mist"): walkable from the west street to 8 tiles short of the park's east wall, from the river to 8 tiles short of its north wall (`RING.cf`, `065-ring.js`): the same solid walls, now invisible (no cyan field). The mist starts right at that edge and is full 8 tiles past it, so the park's far walls, the north street and the Avenue stay hidden and the roads run on into it. The skyline keeps the old town box (`RINGX.town`). Characters pick spots and routes only inside it (`stfree`, `STLANE`); the joggers run out and back up West St and along Market St. The menu map shows the corner. A saved DISTANCE LOOK drops its mist start and depth once (`corner` in `farlook`).
+- **Loose things: push and throw** (owner, 19 Oct 2026: physics like the old game, "push and throw things"; he chose all of: small
+  clutter, light furniture, street things, and "everything not fixed", heavy ones barely budge, nothing bolted down; building
+  structure stays fixed). `150-loose.js` (was `150-goodsphys.js`; still `GPH`, on the physics body's one Rapier load):
+  - What is loose: every placed thing whose name is furniture or clutter (chairs, stools, bar stools, office chairs, tables, desks,
+    benches, barrels, crates, boxes, bags, bottles, jars, pots and potted plants, radios, TVs, lamps that stand, vacuums, newspaper
+    rack, fridges, wardrobes, beds, sofas, bookshelves, cabinets, chests, speaker stacks, dumpster, bins), the street's trash cans,
+    and the bodega's 208 goods as before. Fixed: walls, floors, doors, windows, stairs, columns, fences, counters and bars, shelves
+    and coolers, sinks, signs and neon, anything on a wall, lamp posts and park lamps, rugs and mats, planted beds, the castle.
+    Boxes, crates, glasses, bottles, tapes, bones split into one body each; any other thing is one body.
+  - Bodies only within 12 tiles of you and on your floor (asleep until touched; frozen and taken out of the world past 15 tiles);
+    fixed colliders streamed around you from the walking solids, the fixed boxes, the ground (4-tile blocks) and, near the bodega,
+    its shelves and walls. Walking into a light thing shoves it (a body that follows you, pushing with a person's force), so a
+    heavy one (over 30 kg: wardrobes, fridges, beds, sofas) barely moves and still blocks you where it now stands; a light one's
+    walking solid is gone once it is a body. Punches and kicks send things flying (heavy ones a little). Click a light thing to pick
+    it up, click again to throw it (SHIFT+click for a seat or a lamp, whose click is still sit or switch). Things sleep when still.
+  - Cost: no triangles or lights added (a moved thing's faces are moved out of the batched mesh into its own small mesh: one draw
+    call for each thing that has ever moved); about 350 fixed colliders near you. In the cloud's software rendering: 1.6 ms a frame
+    with everything asleep in the bodega (180 bodies), 4.7 ms with 100 awake.

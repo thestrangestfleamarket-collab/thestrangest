@@ -57,19 +57,33 @@ const FORAGE={}; window.FORAGE=FORAGE;
   const pickKind=(g,r)=>{ const W=GROWS[g]||GROWS.flat; let s=0; for(const k in W)s+=W[k]; r*=s; for(const k in W)if((r-=W[k])<0)return k; return 'button'; };
   const spawns=(key,grp)=>{ const d=day(), Q=grp.sq, out=[]; for(let i=0;i<Q.length;i+=3){ const x=Q[i], y=Q[i+1], z=Q[i+2]; if(hsh(x/T+d*.37,z/T,201)>.016||!WEEDS.inPark||!WEEDS.inPark(x,z,10)||(WEEDS.mushAt&&!WEEDS.mushAt(x,z)))continue;
       const g=WEEDS.kindAt(x,z), k=pickKind(g,hsh(x/T,z/T+d*.53,202)), px=x+(hsh(x,z,203)-.5)*.4*T, pz=z+(hsh(z,x,204)-.5)*.4*T;
-      out.push({k,x:px,z:pz,y:grp.top(px,y,pz),id:d+':'+Math.round(px*10)+','+Math.round(pz*10),s:.8+.5*hsh(x,z,205)}); } return out; };
+      out.push({k,x:px,z:pz,y,top:grp.top(px,y,pz),pk:hsh(x,z,206)<.2,rv:0,cr:0,id:d+':'+Math.round(px*10)+','+Math.round(pz*10),s:.8+.5*hsh(x,z,205)}); } return out; };
   const m4=new THREE.Matrix4(), q=new THREE.Quaternion(), V3=THREE.Vector3, col=new THREE.Color(); let things=[];
   FORAGE.sync=()=>{ let nc=0, ng=0, ns=0; const see=sk('forage')+15+FORAGE.keen(), list=[]; hits.clear(); for(const t of things){ const i=UI.things.indexOf(t); if(i>=0)UI.things.splice(i,1); } things=[];
-    for(const arr of CH.values())for(const m of arr){ if(S.picked[m.id]||MU[m.k][1]>see||list.length>=NMX)continue; list.push(m); }
-    for(const m of list){ const [nm,,,,,cc,sc,[w,h,sh,sw]]=MU[m.k], r=.2*T*m.s, glow=m.k==='moonglow';
-      STEMS.setMatrixAt(ns,m4.compose(new V3(m.x,m.y,m.z),q,new V3(r*sw*.5,r*sh,r*sw*.5))); STEMS.setColorAt(ns++,col.setHex(sc));
-      const me=glow?GLOW:CAPS, n=glow?ng++:nc++; me.setMatrixAt(n,m4.compose(new V3(m.x,m.y+r*sh*.95,m.z),q,new V3(r*w,r*h,r*w))); me.setColorAt(n,col.setHex(cc));
-      const hb=new THREE.Mesh(HB,HM); hb.position.set(m.x,m.y+.2*T,m.z); hits.add(hb);
+    const now=performance.now()/1e3;
+    for(const arr of CH.values())for(const m of arr){ if(list.length>=NMX)break; if(m.cr>now){ if(nc<NMX){ const [,,,,,cc,,[w]]=MU[m.k], r=.2*T*m.s; CAPS.setMatrixAt(nc,m4.compose(new V3(m.x,m.y+.01*T,m.z),q,new V3(r*w*1.5,r*.1,r*w*1.5))); CAPS.setColorAt(nc++,col.setHex(cc).multiplyScalar(.5)); } continue; }
+      if(S.picked[m.id]||MU[m.k][1]>see||!(m.pk||m.rv>now))continue; list.push(m); }
+    for(const m of list){ const [nm,,,,,cc,sc,[w,h,sh,sw]]=MU[m.k], r=.2*T*m.s, glow=m.k==='moonglow', sH=r*sh+(m.pk?Math.max(0,m.top-m.y-r*sh*.3):0);
+      STEMS.setMatrixAt(ns,m4.compose(new V3(m.x,m.y,m.z),q,new V3(r*sw*(m.pk?.6:.5),sH,r*sw*(m.pk?.6:.5)))); STEMS.setColorAt(ns++,col.setHex(sc));
+      const me=glow?GLOW:CAPS, n=glow?ng++:nc++; me.setMatrixAt(n,m4.compose(new V3(m.x,m.y+sH*.95,m.z),q,new V3(r*w,r*h,r*w))); me.setColorAt(n,col.setHex(cc));
+      const hb=new THREE.Mesh(HB,HM); hb.position.set(m.x,m.y+Math.max(.2*T,sH),m.z); hits.add(hb);
       const th={name:nm,obj:hb,reach:.9*T,near:1.6*T,tall:.4*T,act:()=>FORAGE.pick(m)}; UI.thing(th); things.push(th); }
     for(const [me,n] of [[CAPS,nc],[STEMS,ns],[GLOW,ng]]){ me.count=n; me.instanceMatrix.needsUpdate=true; if(me.instanceColor)me.instanceColor.needsUpdate=true; } FORAGE.shown=list.length; };
   FORAGE.things=()=>things; WEEDS.onAdd=(key,grp)=>{ CH.set(key,spawns(key,grp)); FORAGE.sync(); }; WEEDS.onDrop=key=>{ if(CH.delete(key))FORAGE.sync(); };
   if(WEEDS.chunks)for(const [k,g] of WEEDS.chunks)if(g&&g.sq)CH.set(k,spawns(k,g)); FORAGE.sync();
   setInterval(()=>{ const d=day(); if(d!==S.pd){ const old=S.pd; S.pd=d; for(const k in S.picked)if(!k.startsWith(d+':'))delete S.picked[k]; if(old!==-1&&WEEDS.chunks){ CH.clear(); for(const [k,g] of WEEDS.chunks)if(g&&g.sq)CH.set(k,spawns(k,g)); FORAGE.sync(); } save(); } },1000);
+  { const TRL=[], shod0=()=>typeof LOOKS!=='undefined'&&LOOKS.L&&!LOOKS.L.bare; let acc=0, lx=pos.x, lz=pos.z;
+    const pressed=(x,z,now)=>{ if(WEEDS.pressAt)return WEEDS.pressAt(x,z); const R=.8*T; for(const p of TRL)if(now-p[2]<3.5&&Math.hypot(x-p[0],z-p[1])<R)return 1;
+      if(typeof NPCS!=='undefined')for(const N of NPCS)if(N.lv==='up'&&!N.far&&N.st&&Math.abs(N.st.x-x)<R&&Math.hypot(N.st.x-x,N.st.z-z)<R)return 1; return 0; };
+    const t0=CLOCK.tick; CLOCK.tick=dt=>{ t0(dt); if((acc+=dt)<.12)return; const h=acc; acc=0; if(!CH.size)return; const now=performance.now()/1e3, up=LVL==='up', mv=Math.hypot(pos.x-lx,pos.z-lz)/h; lx=pos.x; lz=pos.z;
+      if(up&&(!TRL.length||Math.hypot(pos.x-TRL[0][0],pos.z-TRL[0][1])>.3*T)){ TRL.unshift([pos.x,pos.z,now]); if(TRL.length>16)TRL.pop(); } if(up&&TRL.length)TRL[0][2]=now;
+      const shod=shod0(), cro=st.move&&st.move.name==='crouch', pc=cro||(st.w||0)<.4?.1:st.run>.5?.7:.35; let ch=false, near=false;
+      for(const arr of CH.values())for(const m of arr){ if(m.cr&&m.cr<=now){ m.cr=0; ch=true; } if(S.picked[m.id])continue; const v0=m.pk||m.rv>now;
+        if(up&&pressed(m.x,m.z,now)>.3)m.rv=now+20; if(v0!==(m.pk||m.rv>now))ch=true; const d=Math.hypot(pos.x-m.x,pos.z-m.z); if(d<8*T)near=true;
+        if(d>.55*T){ m.st=0; continue; } if(m.st||!up||d>.35*T)continue; m.st=1; if(shod&&mv>.2*T&&Math.random()<pc){ S.picked[m.id]=1; m.cr=now+90; m.rv=now+20; say('SQUISH.','#c8a090'); saveSoon(); ch=true; } }
+      if(near&&shod&&up&&!S.shoeHint&&WEEDS.inPark&&WEEDS.inPark(pos.x,pos.z)){ S.shoeHint=1; say('TAKE OFF YOUR SHOES TO FORAGE SAFELY.','#f2c14e'); saveSoon(); }
+      if(ch)FORAGE.sync(); };
+    window.MUSHDBG=()=>{ const now=performance.now()/1e3, o={hidden:0,revealed:0,peek:0,crushed:0,picked:0,barefoot:!shod0()}; for(const arr of CH.values())for(const m of arr){ if(m.cr>now)o.crushed++; else if(S.picked[m.id])o.picked++; else if(m.pk)o.peek++; else if(m.rv>now)o.revealed++; else o.hidden++; } return o; }; }
   FORAGE.pick=m=>{ const [nm,d]=MU[m.k], kb=FORAGE.keen(); if(typeof SFX!=='undefined')SFX.play('step',{vol:.5});
     if(use('forage',d-25,d+25,kb)){ S.picked[m.id]=1; const n=1+(sk('forage')+kb>d+20&&Math.random()<.4?1:0), known=d<10||use('myco',d-30,d+20);
       give((known?'m_':'u_')+m.k,n); say(known?`YOU PICK ${n>1?n+' ':'A '}${nm}${n>1?'S':''}.`:`YOU PICK ${n>1?n:'A'} MUSHROOM${n>1?'S':''} YOU DON'T KNOW.`,known?'#e8e2cc':'#c8b0ff'); }

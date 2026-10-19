@@ -2903,3 +2903,84 @@ automatically. dragon balls of fire can start real fires. spread very slow. leav
   lights; bushes in the sun's still shadow. Not yet measured in the page (`tests/tricount.cjs`).
 - **Black underground** (owner, 19 Oct 2026, a picture of the subway with lavender sky round the station): below the street the sky
   dome is hidden and the background is black, whatever the day/night settings do.
+
+## 19 Oct 2026: the fire escapes' ladder to the roof; outside stays outside
+(owner, of the apartment house's fire escapes: "the fire escape shouldnt have stairs, it hsould have a ladder that goes straight up and
+through the fireescapes all thew ay to roof.. also this view is mesed up when i was on fireescape, should still only see exterior of
+building until you go inside"; `054-apts.js`, `075-main-13.js`)
+- **The ladder**: the stair between the landings is gone. Each fire escape has one straight iron ladder (two rails, a rung every 12 px)
+  from the 2nd-floor landing up through a hatch in the 3rd-floor landing's grating, past the cornice and over the parapet onto the roof
+  (a gooseneck), front 11.9 and back 9.4 from the west corner. Stand at its foot (or at its head on the roof) and hold up or down, or double
+  click it: you hold on (the rig's climbing pose, facing the wall) and go straight up or down; step off at a landing with left/right or a
+  click, off the top onto the roof, off the bottom onto the 2nd-floor landing. The counterweighted drop stair to the sidewalk and the alley
+  stays.
+- **The roof walkable**: on the roof you walk the flat inside the parapet; the machine room, the water tower and the chimneys are solid.
+- **Outside is outside**: on the fire escape, the ladder or the roof the house counts as outside (`APTS.in` only between its walls and
+  under its roof): no cutaway, its roof and walls drawn, no inside lamps; only stepping in through a French window shows the inside.
+- **Mushrooms under the tall grass, barefoot foraging** (owner, 19 Oct 2026: "mushrooms should be mostly under the tall grass and
+  should only be revealed when you walk over it. if you are barefoot you dont risk stepping on it, but if you are waering shoes you
+  can crush them. playes should take off their shoes and go barefoot when looking for mushrooms"; `141-forage.js`, `102-looks.js`,
+  `094-ui.js`): the mushrooms now stand on the ground under the grass. Four in five are hidden (not drawn, not clickable) until the
+  grass over them is pressed down (you or a walker within 0.8 tiles: `WEEDS.pressAt` when the grass gives it, else your own last
+  3.5 s of steps and the walkers near you); then they stay out while it is pressed and 20 s after, and hide again. One in five has a
+  tall stem and peeks out over the grass top. **SHOES** (YOU panel: SHOES ON / BAREFOOT; key M, rebindable in KEYS; saved in `looks`):
+  taking them off or on is a short crouch and "YOU TAKE OFF YOUR SHOES." / "YOU PUT YOUR SHOES BACK ON."; barefoot, your shoes are
+  skin. With shoes on, stepping onto a mushroom (hidden or out) may crush it: walking 35%, running 70%, crouching or creeping 10%;
+  "SQUISH.", it lies flat and dark for 90 s and is gone for the day. Barefoot never crushes. The first time in the park with shoes on
+  and mushrooms near: "TAKE OFF YOUR SHOES TO FORAGE SAFELY." (once, saved). `MUSHDBG()` gives hidden, revealed, peek, crushed, picked,
+  barefoot. Cost: no new draws or triangles (the same three instanced draws; fewer shown), a check of the near mushrooms 8 times a second.
+- **Watching birds trains BIRDING** (owner, 19 Oct 2026: "when you watch a bird if you can stay within a radius around them you will
+  gain skill"): after a good look (WATCH), you settle in to watch; while you stay within 3.5 tiles and the bird stays, every 8 s of
+  watching is another BIRDING check (a gain chance, UO style), time counting fully while you stand still or walk slowly, a little
+  bonus for standing quite still; go farther or let it fly and you lose sight of it.
+- **Light shafts that find things; fairy rings** (owner, 19 Oct 2026: "the sun beams should come more from above, have them slowly
+  moves around the park to diferent spots. they should shine on thinsg that are rare like mushrooms, buttefly, birds, have them move
+  around slowly to new spots. add mushromo circles that pop up randomly."): the four shafts no longer start from cloud gaps along the
+  sun's slant; they come down nearly straight (the sun's direction tilted 70% toward overhead), drift slowly (about 25 s to arrive)
+  and every 35-65 s each picks a new spot within 28 tiles: mostly a rare thing (a fairy ring first, then mushrooms, butterflies,
+  birds that aren't flying), following it if it moves, else a sunny lawn spot; never under a roof, never across the camera's line.
+  Fairy rings (`141b-fairy.js`): every 70-160 s, up to 3 at a time, a ring of 9-14 mushrooms (four kinds: red, white, brown, glowing
+  blue) pops up on a park lawn 8-24 tiles from you, stays 4-6 minutes and fades; double-click to gather it (morels, or moonglows from a
+  blue ring). `FAIRYAT()` makes one.
+- **The tall grass in soft tussocks, swaying, marked by how you move** (owner, 19 Oct 2026: "i like the grass. it looks too blocky. can
+  you make it a little more crasslike and sway like the trees, give me mockups. also diferent ways walking through it might affect it";
+  of the mockups he picked A, SOFT TUSSOCKS; `WEEDS.lawnInit` in `140-weeds.js`): the same solid mass, its top broken into rounded clumps
+  (lumps some 0.8 tiles apart over the slow roll), its edge no longer a hedge wall: the last tile or so slopes down in a rounded shoulder
+  whose width wobbles, the outline jittered, only a low lip at the ground. Lit by its own faces in the flat bands; no blades, no grain. It
+  sways in the park trees' own wind (`PARK.sway`, `PARK.windK`), more at the top, gusts rolling across. How you move leaves its own mark
+  (from the rig's state): walking a narrow parted path (0.7 tiles, back up in some 3 s); running a wider wake (1.05) pushed outward with
+  a short rustling ripple, back in 1.5 s; crouching barely brushes the tops (0.5, shallow, 1 s); a jump nothing in the air and a round
+  flattened patch where you land (1.5, 3 s); a roll, fall or lying down a long crushed lane (1.15, 5 s). The walkers near you still press
+  it. `WEEDS.pressAt(x,z)` says how pressed it is at a point (0 to 1). Cost about as before: at most 2,048 top triangles a chunk plus its
+  low lips, one program, no light.
+- **Small things hide in the tall grass; no walkers** (owner, 19 Oct 2026: "small creatures shouldnt be seen (you can see a small
+  trail where they are walking but they are too short to b seen. flying things dont cause the grass to move" and "remove all other npc
+  walkers, beard walkers, etc from the game"): creatures (`CREATS`) on the tall grass are hidden and only part it in a small trail
+  (0.3 tiles, lighter); anything off the ground (flying) doesn't touch the grass. The townsfolk walkers are off (`?walkers=1` brings
+  them back) and so is the bearded walker (`?bwk` brings him back).
+- **Cartwheel slower, ground only, held repeats** (owner, 19 Oct 2026: "you should cart wheel 25% slower, you cant start a cartwheel
+  unless your feet on currently on ground, if you hold down cartwheel button you can just keep doing them in a row"): the cartwheel
+  plays at 0.75 speed; U does nothing in the air, on a ladder or a ledge (no more mid-air cartwheel spin); holding U chains
+  cartwheels back to back until it is let go.
+- **Sun beams brighter, softer, swaying** (owner, 19 Oct 2026: "the sun rays need to be 50% more opaque, more glowing, slowly swaying
+  like the trees, soft edges, slowly moving, 25-50% larger"): beams 50% more opaque with a brighter core, soft sides that fade
+  out toward their edges (his ask; an exception to the hard cel bands, like the distance blur), the top of each beam sways slowly
+  like the tree crowns, beams ~37% wider; they still drift slowly between spots.
+- **Grass rises back when you stand still** (owner, 19 Oct 2026: "once you stop in grass the grass wlil come back up around your
+  feet"): about half a second after you stop, the flattened patch shrinks over two seconds to a small ring at your feet.
+- **Lighter, crisper shading on the figures** (owner, 19 Oct 2026, of his figure in a shadow: "the shadows are still too dark on avatar,
+  lets erstrict how dark shadows can get and make the cel shaded a little more"): on you and the walker-built figures, light below
+  full is stepped in quarters (harder cel bands) and never darker than half the figure's own colour by day (about a quarter at
+  night), whatever the shadow or band. Same material, no new program cost.
+- **No dots on the figures** (owner, 19 Oct 2026, after a mockup of three looks: "i dont want dots", "i want B"): shadows falling on you
+  and the walker-built figures are looked up a little off their surface (normal offset +0.18), so they no longer speckle the figure
+  with dots; with the half-light floor and quarter bands above, a shadow on a figure is one clean flat band with a clean edge.
+- **Zoomed in, pixels stop growing** (owner, 19 Oct 2026, of a close zoom where his figure's face was a few huge blocks: "is it
+  possible to keep same resolution even when zooming in super close?", of two options "B"): zooming in, the art's pixels grow only
+  up to their size at the opening view (`PCAP`, the opening's screen pixels per art pixel); past that the picture gets finer instead
+  of blockier. This replaces "zoomed in the art's pixels only grow" (17 Oct) for close zooms; the opening and zoomed-out views are
+  unchanged, and nothing is ever finer on screen than the opening's pixel size.
+- **Diving in the stream no longer puts you underground** (owner, 19 Oct 2026: "when i jumped in the pool the game turned black",
+  "it was the stream", "i think it was all black beacuse it put me underground when i jumped in stream"): the level switch took
+  any height under -1.6 for the underground (`MAPLV`); in the stream (`BROOK.over`), the park's lake (`FOUNT.wet`) or any water
+  you're in, you stay above ground however deep you go.

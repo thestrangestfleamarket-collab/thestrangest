@@ -2655,3 +2655,13 @@ not have windows, make sure buildings are only as tall as they need to be"; then
 - **The far buildings steady** (owner, 19 Oct 2026: "thedark spots on buildings shift every frame so it just looks glitchy"): the far
   skyline's window pattern turns to its even average colour sooner (when a window cell is a third of a pixel, was a full pixel), so the
   small windows no longer crawl as the view moves.
+- **The grass a field of tall grass** (owner, 19 Oct 2026: "instead of making grass look like lots of little blobs. just make the grass
+  raise higher in general and look more flat until you walk through it, like fields of tall grass (but this is thick like trees and more
+  solid) i dont want to see every blade, grainy, etc."; `WEEDS.lawnInit` in `140-weeds.js`, `lawnCol` in `014-gamekit.js`): the leaf
+  clumps and card tufts gone. Over every lawn (the same top-down check per 8-tile chunk, now at quarter tiles, never on ways, plazas, roads,
+  water, under things, nor in `WEEDS.clear`'s zones) one solid mass per chunk: a smooth top 0.42 to 0.72 tiles over the ground, rolling
+  with a slow noise, its edge a step lower, and straight sides down to the ground like a hedge (staircase corners cut to diagonals). One
+  green lit in the flat bands, large patches a step lighter; no blades, no grain. Still at rest (no wind, as of 18 Oct). You and up to
+  seven walkers near you press it down round your feet (0.8 tiles, a hard rim), and your trail stays pressed and stands back up over some
+  3.5 s. The lawn painted under it is a flat green (two tones in big patches). The mushrooms, flowers and birds sit on its top. Cost: a
+  chunk at most 2,048 top triangles plus its sides (about 20,000-30,000 in the picture, fewer than the clumps), one program, no light.

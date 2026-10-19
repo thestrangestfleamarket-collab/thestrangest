@@ -4,8 +4,8 @@
   const lit=c=>Object.assign(c.slice(),{e:1}), FONT={...TH.THFONT,D:'####.#...##...##...##...##...#####.',L:'#....#....#....#....#....#....#####'};
   const word=(s,c0,z0,k)=>(c,z)=>{ const i=Math.floor((c-c0)/k), r=6-Math.floor((z-z0)/k); if(c<c0||z<z0||i>=s.length*6-1||r<0||r>6)return false; const q=i%6, g=FONT[s[Math.floor(i/6)]]; return q<5&&!!g&&g[r*5+q]==='#'; };
   const neon=(on,c,z,k,col,f)=>{ if(on(c,z))return lit(col); for(const [a,b] of [[-k,0],[k,0],[0,-k],[0,k]])if(on(c+a,z+b))return sh(col,.42*f); return null; };
-  const MS=STORE.main={};
-  for(const n of ['MOVIE THEATRE','ARCADE','PLAYHOUSE','HOLODECK'])STORE.places.push([n,0,0,'up']);
+  const unplace=n=>{ const i=STORE.places.findIndex(p=>p[0]===n); if(i>=0)STORE.places.splice(i,1); }, door=(k,f)=>{ const L=lot(k); return [X(L.x0+f(L)),Z(L.y1)+2.2*TILE]; };
+  const MS=STORE.main={doors:[['THE MOVIE THEATRE',...door('theatre',()=>4.4)],['THE ARCADE',...door('arcade',L=>(L.x1-L.x0)/2)],['THE PLAYHOUSE',...door('play',L=>(L.x1-L.x0)/2)],['THE HOLODECK',...door('holo',L=>(L.x1-L.x0)/2)]]};
 
   STEPS.push(()=>{ const B=lot('theatre',230), W=B.x1-B.x0, cx=(B.x0+B.x1)/2, LOB=B.y1-4.6, door=B.x0+4.4;
     const SEG=[[6,14.65,-6],[16.6,19.5,-7.95],[2.8,2.8+W-11.55,8.75]];
@@ -24,7 +24,7 @@
       turn(B,n0,l0); },{xw:[['lobby','x',LOB,B.x0+T,B.x1-T,-1,[{a0:door-.8,a1:door+.8,z0:0,z1:96}],true]]});
     const tx=new THREE.DataTexture(new Uint8Array(TH.FILMW*TH.FILMH*4),TH.FILMW,TH.FILMH); tx.magFilter=tx.minFilter=THREE.NearestFilter; tx.colorSpace=THREE.SRGBColorSpace;
     const fm=new THREE.Mesh(new THREE.PlaneGeometry(X(S.x1)-X(S.x0),Y(S.z1)-Y(S.z0)),new THREE.MeshBasicMaterial({map:tx})); fm.position.set(X(cx),Y((S.z0+S.z1)/2),Z(B.y0+T+.075)); fm.visible=false; scene.add(fm);
-    MS.theatre={R,fm,tx,k:-1}; });
+    unplace('MOVIE THEATRE'); MS.theatre={R,fm,tx,k:-1}; });
 
   STEPS.push(()=>{ const B=lot('arcade',200), W=B.x1-B.x0, cx=(B.x0+B.x1)/2, A=TH.ARC, k=6, c0=Math.floor((W*24-35*k)/2), on=word('ARCADE',c0,118,k);
     const front=(u,z,f)=>{ const c=Math.floor(u*24);
@@ -38,7 +38,7 @@
     MS.arcade={R:room('arcade','ARCADE',B,{floor:TH.arcadeFloor,in:TH.arcadeWallOf(TH.arcadeLights(B)),out,cope:[60,44,70]},{w:'f',a:cx,wd:1.56,h:94},()=>{
       A.arcade(B.x0+1.6,B.y0+.85,[0,1],0); A.arcade(B.x0+3.5,B.y0+.85,[0,1],1); TH.grProp('arcade machine',TH.GRM.arcade(),B.x0+4.9,B.y0+.2,0,{}); TH.vrStation(B.x1-2,B.y0+.6);
       A.redStool(B.x0+1.6,B.y0+2.3); A.redStool(B.x0+3.5,B.y0+2.3);
-      LAMPS.push({x:cx,y:B.y0+4,z:150,r:8,c:[1.05,.88,1.2]},{x:cx,y:B.y1-4,z:150,r:8,c:[1.05,.88,1.2]},{x:cx,y:B.y1+1,z:140,r:5,c:[1,.3,.75]}); })}; });
+      LAMPS.push({x:cx,y:B.y0+4,z:120,r:10,c:[1.05,.88,1.2]},{x:cx,y:B.y1-4,z:120,r:10,c:[1.05,.88,1.2]},{x:cx,y:B.y1+1,z:140,r:5,c:[1,.3,.75]}); })}; unplace('ARCADE'); });
 
   STEPS.push(()=>{ const B=lot('play',130), cx=(B.x0+B.x1)/2, cy=(B.y0+B.y1)/2, P=PY.PLAYK(B), mx=x=>2*cx-x, my=y=>2*cy-y, L=[];
     const out=(nx,ny,Xw,Yw,z,f,cap)=>{ if(ny>0){ const c=P.playFront(Xw,z,f); if(c)return c; } return facade(nx,ny,Xw,Yw,z,f,cap,[118,50,44]); };
@@ -62,7 +62,7 @@
       g.putImageData(im,0,0); const t=new THREE.CanvasTexture(cv); t.magFilter=t.minFilter=THREE.NearestFilter; t.wrapS=THREE.RepeatWrapping; t.colorSpace=THREE.SRGBColorSpace; return t; })();
     const fog=[0,1,2].map(i=>{ const t=fogT.clone(); t.needsUpdate=true; const m=new THREE.Mesh(new THREE.PlaneGeometry(X(P.PLS.PRX1)-X(P.PLS.PRX0),Y(40)-Y(0)),new THREE.MeshBasicMaterial({map:t,transparent:true,depthWrite:false}));
       m.position.set(X(cx),Y(P.PLS.SZ+20),Z(my(P.PLS.CY+.9+i*1.4))); m.visible=false; scene.add(m); return m; });
-    MS.play={R,P,B,cx,cy,mx,my,L,SETM,fog,SH:{t0:null,cue:null,set:null,lv:-1,from:null,to:null,tc:0,step:-1,last:-1,cap:''},FIG:{},hound:null}; });
+    unplace('PLAYHOUSE'); MS.play={R,P,B,cx,cy,mx,my,L,SETM,fog,SH:{t0:null,cue:null,set:null,lv:-1,from:null,to:null,tc:0,step:-1,last:-1,cap:''},FIG:{},hound:null}; });
 
   STEPS.push(()=>{ const B=lot('holo',190), W=B.x1-B.x0, door=(B.x0+B.x1)/2, k=4, c0=Math.floor((W*24-47*k)/2), on=word('HOLODECK',c0,118,k), H={x0:520,y0:-104,x1:552,y1:-72,h:156}, hx=(H.x0+H.x1)/2;
     const front=(u,z,f)=>{ const c=Math.floor(u*24), d=Math.abs(B.x0+u-door);
@@ -75,7 +75,7 @@
     STORE.bound.x1=Math.max(STORE.bound.x1,X(H.x1+10)); STORE.bound.z0=Math.min(STORE.bound.z0,Z(H.y0-10)); STORE.bound.z1=Math.max(STORE.bound.z1,Z(H.y1+10));
     const R=room('holodeck','HOLODECK HALL',H,{floor:HO.holoFloor,in:pan,out:(nx,ny,Xw,Yw,z,f)=>sh(HO.HOLOK,f),cope:[20,24,32],roof:()=>[18,20,26]},{w:'f',a:hx,wd:3,h:96},()=>{
       LAMPS.push({x:hx-8,y:(H.y0+H.y1)/2,z:140,r:16,c:[.55,.75,1]},{x:hx+8,y:(H.y0+H.y1)/2,z:140,r:16,c:[.55,.75,1]}); });
-    STORE.places.splice(STORE.places.findIndex(p=>p[0]==='HOLODECK HALL'),1);
+    unplace('HOLODECK'); unplace('HOLODECK HALL');
     const gnd=new THREE.Mesh(new THREE.PlaneGeometry(80*TILE*BLDK,80*TILE*BLDK).rotateX(-Math.PI/2),new THREE.MeshLambertMaterial({color:0x0a0b10})); gnd.position.set(X(hx),Y(.02),Z((H.y0+H.y1)/2)); scene.add(gnd);
     MS.holo={F,R,B,H,door,hx,busy:false}; });
 

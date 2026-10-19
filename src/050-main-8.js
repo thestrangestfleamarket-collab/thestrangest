@@ -5,7 +5,7 @@ BOD.KC={KMK,KPP,DGN,DGP,LAMPS,CATALOG,dungeonWall,dungeonFloorCol,castleArch,KAR
 {
   const B0=LBLD[0], B00={...B0}, W=LSEED.walk, CURB=LSEED.street, FAR=LSEED.grass, RD=-4;
   const OX=(B00.x0+B00.x1)/2, OY=B00.y1, K=BLDK, X=x=>(x-OX)*TILE*K, Z=y=>(y-OY)*TILE*K, Y=z=>z*ZU*K, XS=x=>(x-OX)*TILE, ZS=y=>(y-OY)*TILE, YS=z=>z*ZU; Object.assign(BOD,{X,Z,Y,XS,ZS,YS,OX,OY,B0});
-  const MAP={x0:RING.wx0,x1:172+MAINX.e+WID,y0:B00.y0,y1:FAR+12}, POOLX=82, AV=AVE, RG=RING;
+  const MAP={x0:RING.wx0,x1:172+MAINX.e+WID,y0:B00.y0,y1:FAR+12}, POOLX=82, AV=AVE, RG=RING, BK=RING.bank;
   { const o=LAY.o('bodega'); B0.x0+=o.x/K; B0.x1+=o.x/K; B0.y0+=o.y/K; B0.y1+=o.y/K; }
   const BODOFF=B0.y0+3.75; BOD.BODOFF=BODOFF;
   const holed=f=>(x,y)=>[MAPSTAIR,...RING.stairs].some(S=>x>=S.x0&&x<S.x1&&y>=S.y0&&y<S.y1)?null:f(x,y);
@@ -109,8 +109,8 @@ BOD.KC={KMK,KPP,DGN,DGP,LAMPS,CATALOG,dungeonWall,dungeonFloorCol,castleArch,KAR
   BOD.g={bodegaWall,grain,speck,COPE,DTBRICK,hash,grassCol,lawnCol,kerbFace,cvNoise}; BOD.CURB=CURB; BOD.FAR=FAR;
   BOD.gbox=gbox; BOD.faceTex=faceTex; BOD.bq=bq; BOD.C=C; BOD.facade=facade; BOD.FRAME=FRAME; BOD.place=place; BOD.placeAt=placeAt; BOD.MAP=MAP; BOD.K={MKS,CATALOG,PROPS,STUDIO,LSEED,STORY,sh};
   const PCX=(50-MAINX.w+LAY.e('park')[0]+AV.x0+LAY.e('park')[2])/2+LAY.o('park').x, PCY=(MAP.y1+RG.ny0-NORTHX)/2+LAY.o('park').y, GATE=[PCX-3.5,PCX+3.5], EGATE=[PCY-2,PCY+2];
-  const KR=1.6, RR=[[MAP.x0,CURB,MAP.x1,FAR],[AV.r0,FAR,AV.r1,RG.nr1],[RG.wr0,FAR,RG.wr1,RG.nr1],[RG.wr0,RG.nr0,AV.r1,RG.nr1]];
-  const CORN=[[RG.wr0,FAR,-1,1,1],[RG.wr1,FAR,1,1,1],[AV.r0,FAR,-1,1,1],[AV.r1,FAR,1,1,1],[RG.wr1,RG.nr0,1,-1,1],[AV.r0,RG.nr0,-1,-1,1],[RG.wr0,RG.nr1,1,-1,0],[AV.r1,RG.nr1,-1,-1,0]].map(([x,y,sx,sy,cv])=>({x,y,sx,sy,cv,cx:x+sx*KR,cy:y+sy*KR}));
+  const KR=1.6, RR=[[MAP.x0,CURB,MAP.x1,FAR],[AV.r0,FAR,AV.r1,RG.nr1],[RG.wr0,FAR,RG.wr1,RG.nr1],[RG.wr0,RG.nr0,AV.r1,RG.nr1],[BK.rx,BK.r0,RG.wr0,BK.r1]];
+  const CORN=[[RG.wr0,FAR,-1,1,1],[RG.wr1,FAR,1,1,1],[AV.r0,FAR,-1,1,1],[AV.r1,FAR,1,1,1],[RG.wr1,RG.nr0,1,-1,1],[AV.r0,RG.nr0,-1,-1,1],[RG.wr0,RG.nr1,1,-1,0],[AV.r1,RG.nr1,-1,-1,0],[RG.wr0,BK.r0,-1,-1,1],[RG.wr0,BK.r1,-1,1,1]].map(([x,y,sx,sy,cv])=>({x,y,sx,sy,cv,cx:x+sx*KR,cy:y+sy*KR}));
   const inQ=(c,x,y)=>{ const u=(x-c.x)*c.sx, v=(y-c.y)*c.sy; return u>=0&&u<=KR&&v>=0&&v<=KR; };
   const ROADAT=(x,y)=>{ let r=false; for(const b of RR)if(x>b[0]&&x<b[2]&&y>b[1]&&y<b[3]){ r=true; break; } for(const c of CORN)if(inQ(c,x,y)&&Math.hypot(x-c.cx,y-c.cy)>KR)return !!c.cv; return r; };
   const KB=.16, NR=RR.map(b=>[b[0]-KR-.3,b[1]-KR-.3,b[2]+KR+.3,b[3]+KR+.3]), KX=kerbCol('x'), KY=kerbCol('y');
@@ -120,7 +120,7 @@ BOD.KC={KMK,KPP,DGN,DGP,LAMPS,CATALOG,dungeonWall,dungeonFloorCol,castleArch,KAR
   const SW=f=>(x,y)=>{ if(ROADAT(x,y)||rampAt(x,y)!=null)return null; const v=f(x,y); return v&&(kerbAt(x,y)||v); };
   const XW=[[GATE[0],GATE[1],'x',CURB,FAR],[AV.r1+.3,AV.x1-.3,'x',CURB,FAR],[RG.wx0+.3,RG.wr0-.3,'x',CURB,FAR],
     [FAR+KR+.3,FAR+KR+1.9,'y',AV.r0,AV.r1],[EGATE[0],EGATE[1],'y',AV.r0,AV.r1],[EGATE[0],EGATE[1],'y',RG.wr0,RG.wr1],[FAR+KR+.3,FAR+KR+1.9,'y',RG.wr0,RG.wr1],
-    [GATE[0],GATE[1],'x',RG.nr0,RG.nr1],[RG.wr0+KR+.2,RG.wr0+KR+1.8,'x',RG.nr0,RG.nr1],[AV.r1-KR-1.8,AV.r1-KR-.2,'x',RG.nr0,RG.nr1]];
+    [GATE[0],GATE[1],'x',RG.nr0,RG.nr1],[RG.wr0+KR+.2,RG.wr0+KR+1.8,'x',RG.nr0,RG.nr1],[AV.r1-KR-1.8,AV.r1-KR-.2,'x',RG.nr0,RG.nr1],[RG.wx0+.3,RG.wr0-.3,'x',BK.r0,BK.r1]];
   const inX=(ax,e,a,m)=>XW.some(w=>w[2]===ax&&e>=w[3]-.01&&e<=w[4]+.01&&a>w[0]-m&&a<w[1]+m);
   const RPD=.75, RP=[];
   for(const [a0,a1,ax,l0,h0] of XW)for(const [e,dir] of [[l0,-1],[h0,1]]){ const P=(u,w)=>ax==='x'?[u,e+dir*w]:[e+dir*w,u], ok=u=>ROADAT(...P(u,-.05))&&!ROADAT(...P(u,.05))&&!ROADAT(...P(u,RPD+.05));
@@ -135,8 +135,8 @@ BOD.KC={KMK,KPP,DGN,DGP,LAMPS,CATALOG,dungeonWall,dungeonFloorCol,castleArch,KAR
       const W=()=>{ const n=grain(x,y,39,2.2); return n<.3?[150,148,142]:[196,194,186]; };
       if(u<a0+.1||u>a1-.1)return W(); if(u>a0+.25&&u<a1-.25&&(Math.floor((v-l0-.15)/.5)&1)===0)return W(); return null; } return null; };
   const LN=[['x',CURB,1,MAP.x0+.5,MAP.x1-.5,[[RG.wr0,RG.wr1],[AV.r0,AV.r1]]],['x',FAR,-1,RG.wr1+KR,AV.r0-KR],['x',FAR,-1,AV.r1+KR,MAP.x1-.5],
-    ['y',AV.r0,1,FAR+KR,RG.nr0-KR],['y',AV.r1,-1,FAR+KR,RG.nr0],['y',RG.wr0,1,FAR+KR,RG.nr0],['y',RG.wr1,-1,FAR+KR,RG.nr0-KR],
-    ['x',RG.nr0,1,RG.wr1+KR,AV.r0-KR],['x',RG.nr1,-1,RG.wr1,AV.r0]];
+    ['y',AV.r0,1,FAR+KR,RG.nr0-KR],['y',AV.r1,-1,FAR+KR,RG.nr0],['y',RG.wr0,1,FAR+KR,RG.nr0,[[BK.r0,BK.r1]]],['y',RG.wr1,-1,FAR+KR,RG.nr0-KR],
+    ['x',RG.nr0,1,RG.wr1+KR,AV.r0-KR],['x',RG.nr1,-1,RG.wr1,AV.r0],['x',BK.r0,1,BK.rx+.5,RG.wr0-KR],['x',BK.r1,-1,BK.rx+.5,RG.wr0-KR]];
   const sd=(px,py,ax,ay,bx,by)=>{ const dx=bx-ax, dy=by-ay, t=Math.max(0,Math.min(1,((px-ax)*dx+(py-ay)*dy)/(dx*dx+dy*dy))); return Math.hypot(px-ax-t*dx,py-ay-t*dy); };
   const BIKE=[[-.27,-.08,0,-.06],[0,-.06,-.08,.12],[-.27,-.08,-.08,.12],[-.08,.12,.17,.12],[.17,.12,0,-.06],[.17,.12,.27,-.08],[.17,.12,.15,.2],[.11,.2,.21,.2],[-.14,.14,-.02,.14]];
   const bike=(u,w)=>Math.abs(Math.hypot(u+.27,w+.08)-.15)<.035||Math.abs(Math.hypot(u-.27,w+.08)-.15)<.035||BIKE.some(s=>sd(u,w,...s)<.032);
@@ -149,7 +149,7 @@ BOD.KC={KMK,KPP,DGN,DGP,LAMPS,CATALOG,dungeonWall,dungeonFloorCol,castleArch,KAR
       const t=ax==='x'?dir:-dir, k=Math.round((a-a0-8)/22), sa=a0+8+k*22;
       if(k>=0&&sa<a1-2){ const u=(a-sa)*t; if(u>-.75&&u<.25&&bike(u+.25,d-.74)||u>.45&&u<1&&chev(u-.6,d-.74))return WHITE(x,y,hp); }
       return null; } return null; };
-  const JX=[[RG.wr0,CURB,RG.wr1,FAR],[AV.r0,CURB,AV.r1,FAR],[RG.wr0,RG.nr0,RG.wr1,RG.nr1],[AV.r0,RG.nr0,AV.r1,RG.nr1]], inJ=(x,y,m)=>JX.some(b=>x>b[0]-m&&x<b[2]+m&&y>b[1]-m&&y<b[3]+m);
+  const JX=[[RG.wr0,CURB,RG.wr1,FAR],[AV.r0,CURB,AV.r1,FAR],[RG.wr0,RG.nr0,RG.wr1,RG.nr1],[AV.r0,RG.nr0,AV.r1,RG.nr1],[RG.wr0,BK.r0,RG.wr1,BK.r1]], inJ=(x,y,m)=>JX.some(b=>x>b[0]-m&&x<b[2]+m&&y>b[1]-m&&y<b[3]+m);
   const YEL=[[190,156,54],[212,176,62]];
   const marks=(x,y)=>{ const hp=hash(Math.floor(x*24),Math.floor(y*24),617);
     for(const b of RR){ if(!(x>b[0]&&x<b[2]&&y>b[1]&&y<b[3]))continue; const ax=b[2]-b[0]>b[3]-b[1]?'x':'y', a=ax==='x'?x:y, v=ax==='x'?y:x, m=ax==='x'?(b[1]+b[3])/2:(b[0]+b[2])/2, q=Math.abs(v-m);
@@ -180,17 +180,18 @@ BOD.KC={KMK,KPP,DGN,DGP,LAMPS,CATALOG,dungeonWall,dungeonFloorCol,castleArch,KAR
       return hash(Math.floor(fu*4),Math.floor(fw*6),639)<.25&&hp<.5?[112,78,54]:hp<.3?[104,102,98]:[78,77,75]; }); };
   BOD.kerbs=[{ax:'x',at:CURB,a0:MAP.x0,a1:MAP.x1,n:1},{ax:'x',at:FAR,a0:MAP.x0,a1:RG.wr0-KR,n:-1,e1:1},{ax:'x',at:FAR,a0:RG.wr1+KR,a1:AV.r0-KR,n:-1,e0:1,e1:1},{ax:'x',at:FAR,a0:AV.r1+KR,a1:MAP.x1,n:-1,e0:1},
     {ax:'y',at:AV.r0,a0:FAR+KR,a1:RG.nr0-KR,n:1,e0:1,e1:1},{ax:'y',at:AV.r1,a0:FAR+KR,a1:RG.nr1-KR,n:-1,e0:1,e1:1},
-    {ax:'y',at:RG.wr0,a0:FAR+KR,a1:RG.nr1-KR,n:1,e0:1,e1:1},{ax:'y',at:RG.wr1,a0:FAR+KR,a1:RG.nr0-KR,n:-1,e0:1,e1:1},
+    {ax:'y',at:RG.wr0,a0:FAR+KR,a1:BK.r0-KR,n:1,e0:1,e1:1},{ax:'y',at:RG.wr0,a0:BK.r1+KR,a1:RG.nr1-KR,n:1,e0:1,e1:1},{ax:'x',at:BK.r0,a0:BK.rx,a1:RG.wr0-KR,n:1,e1:1},{ax:'x',at:BK.r1,a0:BK.rx,a1:RG.wr0-KR,n:-1,e1:1},{ax:'y',at:BK.rx,a0:BK.r0,a1:BK.r1,n:1},{ax:'y',at:RG.wr1,a0:FAR+KR,a1:RG.nr0-KR,n:-1,e0:1,e1:1},
     {ax:'x',at:RG.nr0,a0:RG.wr1+KR,a1:AV.r0-KR,n:1,e0:1,e1:1},{ax:'x',at:RG.nr1,a0:RG.wr0+KR,a1:AV.r1-KR,n:-1,e0:1,e1:1},
     {ax:'y',at:MAP.x0,a0:CURB,a1:FAR,n:1},{ax:'y',at:MAP.x1,a0:CURB,a1:FAR,n:-1}].map(k=>({z0:RD,z1:0,...k}));
-  for(const k of BOD.kerbs){ if(k.at===MAP.x0||k.at===MAP.x1)continue; const ds=[]; if(k.e0)ds.push(k.a0+1); if(k.e1)ds.push(k.a1-1);
+  for(const k of BOD.kerbs){ if(k.at===MAP.x0||k.at===MAP.x1||k.at===BK.rx)continue; const ds=[]; if(k.e0)ds.push(k.a0+1); if(k.e1)ds.push(k.a1-1);
     for(let a=k.a0+14;a<k.a1-8;a+=28)if(ds.every(b=>Math.abs(b-a)>10))ds.push(a);
     for(const a of ds)if(a>k.a0+.6&&a<k.a1-.6&&!inX(k.ax,k.at,a,1.2))drain(k.ax,k.at,k.n,a); }
   { const yc=(CURB+FAR)/2, xw=(RG.wr0+RG.wr1)/2, xa=(AV.r0+AV.r1)/2, yn=(RG.nr0+RG.nr1)/2, ok=(x,y)=>!XW.some(w=>{ const u=w[2]==='x'?x:y, v=w[2]==='x'?y:x; return u>w[0]-1.2&&u<w[1]+1.2&&v>w[3]&&v<w[4]; });
     for(const [x,y] of [[xw,yc],[xa,yc],[xw,yn],[xa,yn]])manhole(x,y);
     let k=0; for(let x=MAP.x0+20;x<MAP.x1-4;x+=40,k++)if(ok(x,yc)&&Math.abs(x-xw)>8&&Math.abs(x-xa)>8)manhole(x,yc+(k&1?1.6:-1.6));
     k=0; for(let y=FAR+20;y<RG.nr0-5;y+=40,k++)for(const xm of [xw,xa])if(ok(xm,y))manhole(xm+(k&1?1.6:-1.6),y);
-    k=0; for(let x=RG.wr1+20;x<AV.r0-5;x+=40,k++)if(ok(x,yn))manhole(x,yn+(k&1?1.6:-1.6)); }
+    k=0; for(let x=RG.wr1+20;x<AV.r0-5;x+=40,k++)if(ok(x,yn))manhole(x,yn+(k&1?1.6:-1.6));
+    k=0; for(let x=BK.rx+10;x<RG.wr0-8;x+=24,k++)if(ok(x,(BK.r0+BK.r1)/2))manhole(x,(BK.r0+BK.r1)/2+(k&1?1.6:-1.6)); }
   const RW=(x,y)=>{ if(!ROADAT(x,y))return null; const L=IX.get(at2(x,y)); if(L)for(const f of L){ const v=f(x,y); if(v)return v; } return bars(x,y)||lane(x,y)||marks(x,y)||roadCol(x,y,0); };
   BOD.kerbFaceAt=(k,a,z,H)=>{ for(const r of RP)if(r.ax===k.ax&&r.e===k.at&&a>r.u0&&a<r.u1)return null;
     for(const d of DR)if(d.ax===k.ax&&d.e===k.at&&Math.abs(a-d.a)<.5){ if(z>=H-1)break; if(Math.abs(a-d.a)>.44)return [96,94,88]; return z<1?[120,116,108]:[14,14,16]; } return kerbFace(a,z,H); };
@@ -198,10 +199,10 @@ BOD.KC={KMK,KPP,DGN,DGP,LAMPS,CATALOG,dungeonWall,dungeonFloorCol,castleArch,KAR
     const P=[]; for(let i=0;i<=n;i++){ const t=a0+dl*i/n; P.push([c.cx+Math.cos(t)*KR,c.cy+Math.sin(t)*KR]); } return rev?P.reverse():P; };
   BOD.kerbArcs=CORN.map(c=>({P:arc(c),z0:RD,z1:0}));
   { const C=(x,y)=>CORN.find(c=>c.x===x&&c.y===y), M=MAP;
-    BOD.roadPolys=[[[M.x0,CURB],[M.x1,CURB],[M.x1,FAR],...arc(C(AV.r1,FAR)),[AV.r1,RG.nr0],...arc(C(AV.r0,RG.nr0)),...arc(C(AV.r0,FAR),1),...arc(C(RG.wr1,FAR)),...arc(C(RG.wr1,RG.nr0),1),[RG.wr0,RG.nr0],...arc(C(RG.wr0,FAR),1),[M.x0,FAR]],
+    BOD.roadPolys=[[[M.x0,CURB],[M.x1,CURB],[M.x1,FAR],...arc(C(AV.r1,FAR)),[AV.r1,RG.nr0],...arc(C(AV.r0,RG.nr0)),...arc(C(AV.r0,FAR),1),...arc(C(RG.wr1,FAR)),...arc(C(RG.wr1,RG.nr0),1),[RG.wr0,RG.nr0],...arc(C(RG.wr0,BK.r1),1),[BK.rx,BK.r1],[BK.rx,BK.r0],...arc(C(RG.wr0,BK.r0)),...arc(C(RG.wr0,FAR),1),[M.x0,FAR]],
       [[RG.wr0,RG.nr0],[AV.r1,RG.nr0],...arc(C(AV.r1,RG.nr1),1),...arc(C(RG.wr0,RG.nr1))]]; }
   const PATCH=CORN.map(c=>({id:'corner',x0:Math.min(c.x,c.cx),y0:Math.min(c.y,c.cy),x1:Math.max(c.x,c.cx),y1:Math.max(c.y,c.cy),z:c.cv?RD:0,col:c.cv?RW:SW(slabCol),tex:null,rep:2}));
-  const SG=[], NM={main:'MARKET ST',west:'WEST ST',north:'NORTH ST',ave:'THE AVE'}, CN=[['main','west'],['main','west'],['main','ave'],['main','ave'],['north','west'],['north','ave'],['north','west'],['north','ave']];
+  const SG=[], NM={main:'MARKET ST',west:'WEST ST',north:'NORTH ST',ave:'THE AVE',bank:'BANK ST'}, CN=[['main','west'],['main','west'],['main','ave'],['main','ave'],['north','west'],['north','ave'],['north','west'],['north','ave'],['bank','west'],['bank','west']];
   const TLC=[0,3], TK=(KR-.45)/Math.SQRT2;
   CORN.forEach((c,i)=>{ const k=c.cv?KR-1.2:KR+1.2, t=TLC.includes(i); SG.push({kind:'name',x:t?c.cx-c.sx*TK:c.cx-c.sx*k/Math.SQRT2,y:t?c.cy-c.sy*TK:c.cy-c.sy*k/Math.SQRT2,ax:NM[CN[i][0]],ay:NM[CN[i][1]],np:t}); });
   SG.push({kind:'name',x:RG.wr1+1,y:CURB-.75,ax:NM.main,ay:NM.west},{kind:'name',x:AV.r0-1,y:CURB-.75,ax:NM.main,ay:NM.ave});
@@ -236,6 +237,10 @@ BOD.KC={KMK,KPP,DGN,DGP,LAMPS,CATALOG,dungeonWall,dungeonFloorCol,castleArch,KAR
     {id:'nthRoad',x0:RG.wr0,y0:RG.nr0,x1:AV.r1,y1:RG.nr1,z:RD,col:RW,tex:'asphalt_02',tint:[62,64,68],rep:3},
     {id:'nthKN',x0:RG.wr0,y0:RG.nr1,x1:AV.r1,y1:RG.nr1+.16,z:0,col:kerbCol('x'),tex:'concrete_pavement',tint:[178,174,164],rep:2},
     {id:'nthN',x0:RG.wx0,y0:RG.nr1+.16,x1:AV.r1+.16,y1:RG.ny1,z:0,col:slabCol,tex:'concrete_pavement',tint:[166,161,148],rep:2},
+    {id:'bnkS',x0:BK.x0,y0:BK.y0,x1:RG.wx0,y1:BK.r0,z:0,col:slabCol,tex:'concrete_pavement',tint:[166,161,148],rep:2},
+    {id:'bnkN',x0:BK.x0,y0:BK.r1,x1:RG.wx0,y1:BK.y1,z:0,col:slabCol,tex:'concrete_pavement',tint:[166,161,148],rep:2},
+    {id:'bnkW',x0:BK.x0,y0:BK.r0,x1:BK.rx,y1:BK.r1,z:0,col:slabCol,tex:'concrete_pavement',tint:[166,161,148],rep:2},
+    {id:'bnkRoad',x0:BK.rx,y0:BK.r0,x1:RG.wr0,y1:BK.r1,z:RD,col:RW,tex:'asphalt_02',tint:[62,64,68],rep:3},
     {id:'ghostst',bld:true,x0:BOD.GDK.ground.x0,y0:BOD.GDK.Y0-1.2,x1:BOD.GDK.ground.x1,y1:BOD.GDK.y1e,z:.1,col:BOD.GDK.court,tex:null,rep:2},
     {id:'grassW',x0:MAP.x0,y0:B00.y0,x1:B0.x0,y1:W,z:0,col:holed(lawnCol),tex:null,rep:2},...PATCH].map(g=>g.id==='corner'||g.bld||g.id==='alley'||g.id==='prom'||g.id==='grassW'||g.col===RW?g:{...g,col:SW(g.col)});
   BOD.LAMPS=LAMPS.filter(l=>!l.off&&l.r>0);

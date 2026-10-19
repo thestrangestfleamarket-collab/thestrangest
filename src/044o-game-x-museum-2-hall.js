@@ -42,11 +42,11 @@ function porticoSteps(x,y){ PNAME='museum portico steps'; const W=9, D=3;
     const i=Math.floor((X-x+W)/1.2), j=Math.floor(v/.8); if(((X-x+W)%1.2)<.03||(v%.8)<.03&&v>1.2)return mt('concrete',sh(MARBD,.95)); return mt('concrete',hash(i,j,1801)<.4?sh(MARB,.96):MARB); },fi:()=>sh(MARBD,.62),fj:()=>sh(MARBD,.8)}],null,{walk:true,flat:true}); }
 const portColumn=(x,y)=>{ PNAME='museum column'; return prop(column(x,y,150)); };
 const hallColumn=(x,y)=>{ PNAME='museum column'; return prop(column(x,y,190)); };
-function entablature(x,y){ PNAME='museum entablature'; const W=8.8, r=rect(x,y,[0,-1],W,.9), Z=150, H=26, nm='MUSEUM OF EARTH', B=[];
+function entablature(x,y,nm='MUSEUM OF EARTH',k=1){ PNAME=k>1?'bank entablature':'museum entablature'; const W=8.8, r=rect(x,y,[0,-1],W,.9), Z=150, H=k>1?32:26, B=[];
   B.push(fb(r,0,1,0,1,Z,Z+H,MARB,(s,t,z,len)=>{ const a=(1-t)*len*FP, L=len*FP;
     if(z>=H-5)return z>=H-2?MARBL:Math.floor(a/4)%2?MARBD:MARB;
     if(z<10)return z%3===0?MARBD:z<3?sh(MARB,.96):MARB;
-    if(s==='f'){ const tw=muTW(nm,1), l=(L-tw)/2, cc=Math.floor(a-l), zz=Math.floor(z-12); if(cc>=0&&cc<tw&&zz>=0&&zz<7){ const g=MUF[nm[Math.floor(cc/6)]], q=cc%6; if(g&&q<5&&g[(6-zz)*5+q]==='#')return [92,84,70]; } }
+    if(s==='f'||k>1&&s==='b'){ const tw=muTW(nm,k), l=(L-tw)/2, cc=Math.floor(((s==='b'?L-a:a)-l)/k), zz=Math.floor((z-12)/k); if(cc>=0&&cc<tw/k&&zz>=0&&zz<7){ const g=MUF[nm[Math.floor(cc/6)]], q=cc%6; if(g&&q<5&&g[(6-zz)*5+q]==='#')return k>1?muLit([238,204,120]):[92,84,70]; } }
     return MARB; },()=>MARBL,{foot:1}));
   for(const t of [0,1-.9/W])B.push(fb(r,t,t+.9/W,0,2.9,Z,Z+H,MARB,(s,tt,z)=>z>=H-2?MARBL:z<10&&z%3===0?MARBD:MARB,()=>MARBL,{foot:1}));
   const PH=26, ped=(s,t,z,len)=>{ if(s!=='f'&&s!=='b')return null; const a=t*len*FP, L=len*FP, w=(1-z/PH)*L/2, d=Math.abs(a-L/2); if(d>w)return null;
@@ -69,6 +69,6 @@ function museumBench(x,y){ PNAME='museum bench'; const r=rect(x,y,[0,1],2,.6), L
   for(const t of [.04,.92])B.push(fb(r,t,t+.04,.05,.95,0,12,S,null,()=>S));
   B.push(fb(r,0,1,0,1,12,17,L,(s,t,z)=>z<1?sh(L,.7):L,(t,d)=>{ const a=Math.floor(t*48), b=Math.floor(d*14); return (a%6===3&&b%4===2)?sh(L,.7):(a+b)%7===0?sh(L,1.08):L; }));
   return prop(B); }
-const K={'museum portico steps':porticoSteps,'museum column':portColumn,'museum hall column':hallColumn,'museum entablature':entablature,'information desk':infoDesk,'museum bench':museumBench};
+const K={'museum portico steps':porticoSteps,'museum column':portColumn,'museum hall column':hallColumn,'museum entablature':entablature,'bank entablature':(x,y)=>entablature(x,y,'BANK',2),'information desk':infoDesk,'museum bench':museumBench};
 for(const k in K){ CATALOG[k]=(x,y)=>K[k](x,y); KIND_OF[k]=k; }
 })();

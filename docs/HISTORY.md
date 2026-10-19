@@ -3059,3 +3059,29 @@ walk through people but at 75% speed (they slow you down a little) you cant walk
   sides lean out at uneven angles instead of standing as straight walls. Fewer triangles than before.
 - **Black underground** (owner, 19 Oct 2026, a picture of the subway with lavender sky round the station): below the street the sky
   dome is hidden and the background is black, whatever the day/night settings do.
+
+## 19 Oct 2026: BANK ST runs west off West St at the castle; THE BANK on its far corner
+(owner, with the menu map's THE STREET tab, his marker on West St by the castle: "I want to extend the street this way and put the bank
+on the corner, make it look like the museum front and lobby inside for now."; asked which way and where: "West, off the left edge",
+"Far end of the new part")
+- **The street** (`RING.bank` in `006-map-pre.js`, map tiles): off West St's west side at the castle's latitude, west to x −96: road
+  y 17 to 37 (20 wide, like Market St), the south sidewalk 6.7 to 17 (wide, the bank's portico on it), the north one 37 to 44, an end
+  sidewalk −102.5 to −96. Road, kerbs, rounded corners, drains, two manholes, bike lanes, the double yellow line and a crosswalk with
+  ramps across its mouth on West St's sidewalk line all come from `050-main-8.js`'s own lists (`RR`, `CORN`, `LN`, `XW`, `JX`,
+  `BOD.kerbs`, `roadPolys`); West St's edge line is dashed across the mouth. Its sign name is BANK ST (street signs stay off).
+- **Walkable**: the town's west wall opens at the mouth and walls go round the new part (`065-ring.js`, `RINGX.pocket`); `BOUND.x0`
+  goes out to −102.5. The far mist has a second box (`MISTB2`, one more `min` in the fog chunk) so the street isn't misted; the
+  skyline's boxes and the band of trees keep 10 tiles clear of it.
+- **THE BANK** (`057b-bank.js`) on the south-west corner, facing north like the museum: the museum's width (26 bodega units), 16
+  deep, its front made by the museum's own makers (the stone, its painted door, the portico steps, four columns, entablature and
+  pediment) with BANK in gilt, lit letters on the entablature (`'bank entablature'`, painted on both its faces: the museum's own
+  MUSEUM OF EARTH is painted only on the face toward its wall, the old game's side, so it never shows) and no banners. Inside one marble lobby like the
+  museum's great hall: the hall's walls and verde-bordered marble floor, THE BANK and SAVINGS · LOANS over the door inside, six hall
+  columns, the information desk at the back, two benches, three hall lamps. Its door works like the museum's (ENTERING THE BANK; the
+  inside is built only then). In MORE PLACES as THE BANK and on the map.
+- **Round it** (`069a-block.js`, fake and cheap like the Hudson side's): shops a storey and a half high east of the bank, one-storey
+  shops on the north side (low, so they hide little of the street in the isometric view) and a taller blank block closing the west end.
+- **Lamps**: three globe posts (two on the south sidewalk 33 tiles apart, one on the north between them).
+- Cost: the bank about the museum's front (walls, portico, roof) plus 6 columns, a desk and 2 benches inside once entered; the five
+  fake blocks 24 triangles each; 3 street lamps and 3 lobby lamp records (LITE still lights 8 at most); no new shader program.
+  Measured in CI: 71,711 triangles on screen at the junction, 86,278 before the bank, 55,115 in its lobby.

@@ -1,2 +1,2 @@
-STOREK.museum={MUS,museumWall,museumFloorCol,museumOutside};
+STOREK.museum={MUS,MUP,museumWall,museumFloorCol,museumOutside,museumHallCol};
 }

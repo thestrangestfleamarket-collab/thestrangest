@@ -1,0 +1,27 @@
+name: tower
+on:
+  push:
+    branches: [claude/round-tower]
+jobs:
+  shots:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium
+      - run: MIN=0 python3 build.py
+      - run: node tests/towershots.cjs out || true
+      - run: |
+          git config user.name ci; git config user.email ci@example.com
+          git checkout --orphan ci-out-tower
+          git rm -rf --cached . >/dev/null
+          git add -f out
+          git commit -m shots
+          git push -f origin ci-out-tower

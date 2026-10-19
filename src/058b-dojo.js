@@ -1,9 +1,9 @@
 { const K=STORE.kit, {room,STEPS,sol}=K, {X,Y,Z,gbox}=BOD, hs=BOD.g.hash, sh=BOD.K.sh, {PROPS,LAMPS}=BOD.STOREK, J=BOD.GDJ;
   const lit=c=>Object.assign([Math.min(255,c[0]),Math.min(255,c[1]),Math.min(255,c[2])],{e:1});
-  const B={x0:538,y0:-100,x1:556,y1:-88,h:150}, DA=(B.x0+B.x1)/2, DH=100, MAT={x0:DA-3.6,x1:DA+3.6,y0:-96.8,y1:-92.2};
-  const GM=28.5, GX=BOD.OX+(GM-BOD.OX)/BLDK, GY=BOD.OY;
+  const B={x0:760,y0:-100,x1:778,y1:-88,h:150}, DA=(B.x0+B.x1)/2, DH=100, MAT={x0:DA-3.6,x1:DA+3.6,y0:-96.8,y1:-92.2};
+  const GM=146.9, GX=BOD.OX+(GM-BOD.OX)/BLDK, GY=BOD.OY;
   const DOJO=window.DOJO={B,MAT,DA,id:'ninjadojo',gate:{x:GX,y:GY},built:false,ready:null};
-  STORE.bound.x1=Math.max(STORE.bound.x1,X(572));
+  STORE.bound.x1=Math.max(STORE.bound.x1,X(796));
   STORE.main.doors.push(['THE DOJO',X(GX),Z(GY)+2.2*TILE]);
   const F3={D:'110101101101110',O:'111101101101111',J:'001001001101111'};
   const glyph=(s,u,v,k)=>{ const i=Math.floor(v/(6*k)), c=s[i], q=F3[c]; if(!q)return false; const r=Math.floor((v-i*6*k)/k), cc=Math.floor(u/k); return r<5&&cc>=0&&cc<3&&q[r*3+cc]==='1'; };
@@ -25,7 +25,7 @@
     BATCH.tag=OBJ('store:dojogate','dojo gate'); for(const q of bs)gbox(q,q.em?'B':'L'); BATCH.tag=null;
     for(const s of [-1,1])sol(GX+s*.8-(s>0?0:.16),GY,GX+s*.8+(s>0?.16:0),GY+.2,DH);
     sol(GX-1.5,GY,GX-1.02,GY+.08,DH); });
-  K.offmap('THE DOJO',[530,-108,566,-80],()=>{
+  K.offmap('THE DOJO',[752,-108,788,-80],()=>{
     const WD=J.DJWOOD, PAP=J.DJPAP, PLA=J.DJPLA, wd=(k,f=1)=>sh(WD,k*f), WARM=[255,206,128];
     const RW={b:[DA-5.2,DA+5.2],w:[(B.y0+B.y1)/2],e:[(B.y0+B.y1)/2]}, RZ=74, RR=26;
     const shoji=(wall,a,z,f)=>{ const pa=((a%2)+2)%2;
@@ -60,7 +60,8 @@
       { const x=B.x0+1.3, y=B.y1-1.5, DR=[132,52,36];
         thing('taiko drum',[bx(x-.5,y-.25,x-.4,y+.25,0,22,[50,34,26]),bx(x+.4,y-.25,x+.5,y+.25,0,22,[50,34,26]),bx(x-.4,y-.42,x+.4,y+.42,10,34,DR,{fs:(nx,ny,P,Q,z,k)=>nx?(z<2||z>22?[40,30,26]:[226,214,186]):sh(Math.abs(z-12)<1||z<1.5||z>22.5?[200,170,90]:DR,k),top:()=>sh(DR,1.1)})]); }
       for(const [x,y] of [[DA-.7,B.y0+1.4],[DA+.7,B.y0+1.4]])thing('zabuton',[bx(x-.32,y-.32,x+.32,y+.32,0,2.5,[120,40,40],{top:(X_,Y_)=>Math.abs(X_-x)>.27||Math.abs(Y_-y)>.27?[90,30,30]:[140,48,46]})],{walk:1});
-      for(const [x,y] of [[MAT.x0+.4,MAT.y0-.6],[MAT.x1-.4,MAT.y0-.6],[MAT.x0+.4,MAT.y1+.6],[MAT.x1-.4,MAT.y1+.6]]){
+      { const cx=DA, cy=(MAT.y0+MAT.y1)/2, PP=[236,226,200]; thing('ceiling lamp',[bx(cx-.03,cy-.03,cx+.03,cy+.03,B.h-8,B.h,[30,26,24]),bx(cx-.7,cy-.7,cx+.7,cy+.7,B.h-14,B.h-8,PP,{em:1,fs:(nx,ny,P,Q,z)=>z<1||z>5?[60,40,30]:lit(PP),top:()=>[60,40,30]})],{high:1}); }
+      for(const [x,y] of [[B.x0+1.3,B.y0+3.2],[B.x0+1.3,B.y1-3],[B.x1-1.9,B.y0+2.2],[B.x1-1.9,B.y1-2.6]]){
         thing('paper lantern',[bx(x-.01,y-.01,x+.01,y+.01,B.h-26,B.h,[30,26,24]),bx(x-.18,y-.18,x+.18,y+.18,B.h-54,B.h-26,[230,70,52],{em:1,fs:(nx,ny,P,Q,z)=>z<3||z>25?[40,30,28]:z%5<1?lit([210,46,34]):lit([255,112,76]),top:()=>[40,30,28]})],{high:1}); }
       LAMPS.push({own:1,room:1,day:true,x:DA,y:(MAT.y0+MAT.y1)/2,z:B.h-30,r:7,c:[1,.78,.52]});
     });

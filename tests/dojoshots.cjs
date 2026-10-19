@@ -21,7 +21,7 @@ process.on('unhandledRejection',e=>{ errs.push('TEST '+String(e&&e.message||e).s
   await shot('inside',null,1500); rep.d1=await dbg();
   rep.render=await pg.evaluate(()=>{ try{ const r=RENDERLIST(); return {head:r.head||r.totals||null}; }catch(e){ return 'ERR '+e.message; } });
   await pg.mouse.wheel(0,-300); await pg.waitForTimeout(800); const frames=[]; for(let i=0;i<10;i++){ await shot('ninja'+i,null,0); frames.push((await dbg()).ninja); await pg.waitForTimeout(380); } rep.frames=frames;
-  await pg.keyboard.press('v'); await shot('behind',()=>{ const n=DOJONINJA(), y=__dbg.you(); __dbg.face(Math.atan2(n.x-y.x,n.z-y.z)); },2500);
+  await pg.keyboard.press('v'); await shot('behind',()=>{ const n=DOJONINJA(), y=__dbg.you(); __dbg.face(Math.atan2(n.x-y.x,n.z-y.z)+Math.PI); },2500);
   for(let i=0;i<5;i++){ await shot('behind'+i,null,0); await pg.waitForTimeout(450); }
   await pg.keyboard.press('v'); await pg.keyboard.press('v'); await pg.waitForTimeout(800);
   rep.fight0=(await dbg()).fight;
@@ -31,7 +31,7 @@ process.on('unhandledRejection',e=>{ errs.push('TEST '+String(e&&e.message||e).s
   for(let i=0;i<500;i++){ const d=await dbg(); if(!d.tr.on)break; const key=d.tr.ph+d.tr.n;
     if(!seen[key]){ seen[key]=1; log.push([d.tr.ph,d.tr.n,d.tr.drill,d.ninja&&d.ninja.mv,d.ninja&&d.ninja.up]);
       if(d.tr.ph==='demo'){ await pg.waitForTimeout(250); await shot('train'+d.tr.n+'-demo'); }
-      if(d.tr.ph==='you'){ await shot('train'+d.tr.n+'-you'); if(d.tr.n!==2){ const ks=await pg.evaluate(k=>k.map(a=>__UI.keyOf(a)),d.tr.keys); for(const k of ks){ await pg.keyboard.press(k===' '?'Space':k); await pg.waitForTimeout(230); } } }
+      if(d.tr.ph==='you'){ await shot('train'+d.tr.n+'-you'); if(d.tr.n!==2){ const ks=await pg.evaluate(k=>k.map(a=>__UI.keyOf(a)),d.tr.keys); for(const k of ks){ await pg.keyboard.press(k===' '?'Space':k); await pg.waitForTimeout(450); } } }
       if(d.tr.ph==='good'||d.tr.ph==='miss'){ await shot('train'+d.tr.n+'-'+d.tr.ph); }
       if(d.tr.ph==='end'){ await shot('train-end',null,300); } }
     await pg.waitForTimeout(120); }
@@ -40,6 +40,8 @@ process.on('unhandledRejection',e=>{ errs.push('TEST '+String(e&&e.message||e).s
   for(let i=0;i<200;i++){ if((await dbg()).busy)break; await pg.waitForTimeout(50); }
   await shot('fade-out',null,120);
   for(let i=0;i<100;i++){ await pg.waitForTimeout(100); if(!(await dbg()).busy)break; }
-  await shot('outside',null,2500); rep.d2=await dbg();
-  await shot('menu-jump',()=>__UI.goPlace('THE DOJO'),2500); rep.d3=await dbg();
+  await pg.evaluate(()=>__UI.isoTo()); await shot('outside',null,2500); rep.d2=await dbg();
+  rep.bath=await pg.evaluate(()=>{ const G=__dbg.MAPK.BOD.GDK, D=window.DOJO; return G&&{X0:G.X0,X1:G.X1,ground:G.ground,gate:D.gate}; });
+  rep.placesBefore=await pg.evaluate(()=>__UI.places().filter(p=>/DOJO/.test(p[0])));
+  await shot('menu-jump',()=>__UI.goPlace('THE DOJO'),300); rep.d3=await dbg(); await shot('menu-jump2',null,2500); rep.d4=await dbg();
   fin(); await b.close(); })();

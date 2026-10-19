@@ -41,7 +41,7 @@
     else if((TR.ph==='good'||TR.ph==='miss')&&TR.t>1.4){ TR.n++; if(TR.n>=TR.list.length){ TR.ph='end'; TR.t=0; show('TRAINING DONE: '+TR.ok+' OF '+TR.list.length,'MARTIAL ARTS '+(FORAGE.S.sk.fight/10).toFixed(1),'#f2c14e'); }
       else { TR.ph='intro'; TR.t=1.2; } }
     else if(TR.ph==='end'&&TR.t>2.8)TR.stop(); };
-  const mk=()=>{ if(N)return; const MT=R.MATS; if(!MT.includes('ninja')){ MT.push('ninja'); W3.ramp.push(['#3e3f4a','#26272f','#17171d','#0b0b0e'].map(h=>new THREE.Color(h))); }
+  const mk=()=>{ if(N)return; const MT=R.MATS; if(!MT.includes('ninja')){ MT.push('ninja'); W3.ramp.push(['#6c6e7e','#474959','#2d2e3a','#16161d'].map(h=>new THREE.Color(h))); }
     const NB=MT.indexOf('ninja'), keep=new Set(['eye','eyeW','pupil'].map(n=>MT.indexOf(n)).filter(i=>i>=0)), LID=MT.indexOf('lid'), SKN=MT.indexOf('skin');
     const {PCS}=musBody(); for(const p of PCS)p.recol=m=>keep.has(m)?m:m===LID?SKN:NB;
     for(const P of PCS)if(!MUSGEO.has(P.share||P)){ const fine=W3.fine(P); W3.warm(P,P.step||(fine?.5:1),fine,null); }
@@ -74,6 +74,8 @@
     if(!busy&&LVL==='up'&&!UI.freeCam&&!(typeof RAG!=='undefined'&&RAG.on)){ const ins=inD();
       if(!ins&&Math.abs(pos.x-GX)<.85*T&&pos.z>GZ-.2*T&&pos.z<GZ+.62*T)D.enter();
       else if(ins&&Math.abs(pos.x-IX)<.9*T&&pos.z>IZ-.55*T)D.leave(); }
+    const ins=inD(); if(ins){ SKY.dome.visible=false; if(scene.background&&scene.background.isColor)scene.background.setRGB(0,0,0); scene.fog=null; if(window.FAR3&&FAR3.mesh){ FAR3.mesh.visible=false; if(FAR3.panels)FAR3.panels.visible=false; } }
+    else if(D.was&&LVL==='up')SKY.dome.visible=true; D.was=ins;
     ntick(dt); TR.tick(dt); };
   window.DOJODBG=()=>({tile:T,built:D.built,inside:inD(),busy,gate:[+(GX/T).toFixed(2),+(GZ/T).toFixed(2)],door:[+(IX/T).toFixed(2),+(IZ/T).toFixed(2)],you:[+(pos.x/T).toFixed(2),+(pos.z/T).toFixed(2)],
     ninja:N&&{x:+(N.x/T).toFixed(2),z:+(N.z/T).toFixed(2),hd:+N.hd.toFixed(2),step:N.cur&&N.cur.k,mv:N.S.move&&N.S.move.name,up:N.S.up&&N.S.up.name,tris:N.tris},

@@ -43,7 +43,7 @@ const CLOCK={h:17.4,run:false,speed:1440/600,sunV:new THREE.Vector3(0,1,0),moonV
       if(lights.includes(sunD)&&sunD.shadow.needsUpdate){ const ch=SC.root.children; ch.length=0; for(const o of DYN())if(o.visible&&o.parent)ch.push(o); SM.needsUpdate=true; orig.call(SM,[sunD],SC.root,camera); SC.nd++; }
       SM.needsUpdate=true; orig.call(SM,rest,sc,camera); }; }
   window.SUNDBG=()=>({still:SC.n,moving:SC.nd,dyn:DYN().size,maps:[sunL.shadow.mapSize.x,sunD.shadow.mapSize.x],patch:THREE.ShaderChunk.lights_fragment_begin.includes('NUM_DIR_LIGHT_SHADOWS > 1')});
-  CLOCK.sun=sunL; CLOCK.sunD=sunD; CLOCK.elev=()=>elev(CLOCK.h); CLOCK.SKYV=SKYV;
+  CLOCK.sun=sunL; CLOCK.sunD=sunD; window.CLOCK=CLOCK; CLOCK.elev=()=>elev(CLOCK.h); CLOCK.SKYV=SKYV;
   const pane=document.querySelector('#menu [data-p="atmo"]')||document.querySelector('#menu [data-p="display"]'), box=document.createElement('div');
   const PRE=[['DAWN',6.4],['MORNING',9],['NOON',12],['AFTERNOON',15.5],['GOLDEN HOUR',17.4],['SUNSET',18.25],['BLUE HOUR',18.9],['NIGHT',21.5],['MIDNIGHT',0]];
   box.innerHTML=`<h3>TIME OF DAY</h3><div class="row"><span id="ctime" style="width:72px"></span><input type="range" id="chour" min="0" max="24" step="0.05" style="flex:1"></div>

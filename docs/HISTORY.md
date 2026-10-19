@@ -2966,3 +2966,7 @@ building until you go inside"; `054-apts.js`, `075-main-13.js`)
   like the tree crowns, beams ~37% wider; they still drift slowly between spots.
 - **Grass rises back when you stand still** (owner, 19 Oct 2026: "once you stop in grass the grass wlil come back up around your
   feet"): about half a second after you stop, the flattened patch shrinks over two seconds to a small ring at your feet.
+- **Lighter, crisper shading on the figures** (owner, 19 Oct 2026, of his figure in a shadow: "the shadows are still too dark on avatar,
+  lets erstrict how dark shadows can get and make the cel shaded a little more"): on you and the walker-built figures, light below
+  full is stepped in quarters (harder cel bands) and never darker than half the figure's own colour by day (about a quarter at
+  night), whatever the shadow or band. Same material, no new program cost.

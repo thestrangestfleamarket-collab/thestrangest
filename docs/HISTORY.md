@@ -2673,3 +2673,7 @@ not have windows, make sure buildings are only as tall as they need to be"; then
 - **The glow in the sun** (owner, 19 Oct 2026: "i want that glow to happen in the direct sunlight it looks cool"): outdoors by day a
   ray goes from your chest toward the sun (every 0.15 s, 40 tiles, solid things only); when nothing blocks it your figure brightens
   toward white (up to 90%, by the sun's strength), easing in and out over a quarter second as you step in and out of shade.
+- **The Walker's shoulders and head** (owner, 19 Oct 2026: "the avatars back shoulders go up too high and his neck sticks out too far
+  forward. he runs with his ehad tilted too fast back"): the collar's back point lower and nearer the neck (neck +1.8 up, 0.3 back; was
+  +3, 0.8), the head set back over the neck (head base 0.1 forward, head 0.5, top 0.3; were 0.4, 1.0, 0.8); running leans the body
+  45% less, the head never tips back more than 3 degrees and eases there instead of snapping.

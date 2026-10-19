@@ -26,7 +26,7 @@ const BODYS={A:{so:6.3,sq:.9,r1:5.6,r2:6.1},B:{so:7.4,sq:.9,r1:5.4,r2:5.6},C:{so
   C2:{so:7.4,sq:.72,r1:4.9,r2:5.7,hx:3.7,pel:[4.8,4.3],hr:2.8,th:[3.2,2.5],sh:[2.45,2.6,1.9],shoe:{r:.3}},
   C3:{so:7.4,sq:.72,r1:4.9,r2:5.7,hx:4.0,pel:[5,4.6],hr:3.1,th:[3.7,2.85],sh:[2.75,3.1,2.15],shoe:{r:.4}}};
 const BODY={...LEG0,...(BODYS[(typeof location!=='undefined'&&new URLSearchParams(location.search).get('body')||'S2F').toUpperCase()]||BODYS.S2F)};
-const RIGP0={bones:{thigh:6.9,shin:6.5,upper:7.4,fore:6.3,spine:[0,5,0],chest:[0,10,0],neck:[0,14,0],headBase:[0,16.5,0.4],head:[0,25.2,1.0],headTop:[0,34,0.8],
+const RIGP0={bones:{thigh:6.9,shin:6.5,upper:7.4,fore:6.3,spine:[0,5,0],chest:[0,10,0],neck:[0,14,0],headBase:[0,16.5,0.1],head:[0,25.2,0.5],headTop:[0,34,0.3],
   clav:[1.5,3,0],shoulder:[BODY.so,BODY.sy,0],hip:[BODY.hx,-0.4,0],hand:[0,0,0],handSize:1},pieces:{}};
 let RIGP=JSON.parse(JSON.stringify(RIGP0)),RIGGEN=0,THIGH,SHIN,UPPER,FORE,HIPX,HIP;
 function rigSet(o){ const d=JSON.parse(JSON.stringify(RIGP0)); if(o&&o.bones) for(const k in d.bones) if(o.bones[k]!=null) d.bones[k]=o.bones[k]; if(o&&o.pieces) d.pieces=JSON.parse(JSON.stringify(o.pieces));
@@ -140,6 +140,7 @@ function walkPose(st,abd){ const r=st.run||0,rs=r*r,g=gaitOf(r); if(st.smooth){ 
   if(st.smooth&&typeof GAIT!=='undefined'){ const u=q.L, m=f=>gv(u,rs,f)*D, mx=(x,y)=>x+(y-x)*w;
     for(const k of ['yaw','roll','pitch','side','bend','cyaw','nod'])P[k]=mx(P[k],m(c=>c[k])); P.pyaw=mx(P.pyaw,0); P.look=mx(P.look,-0.5*P.cyaw);
     for(const n of 'LR'){ const b=abd?abd[n]:0; P[n].ua=[mx(P[n].ua[0],m(c=>c[n].ua[0])),mx(P[n].ua[1],m(c=>c[n].ua[1])+b)]; P[n].fa=[mx(P[n].fa[0],m(c=>c[n].fa[0])),mx(P[n].fa[1],m(c=>c[n].fa[1])+b)]; } }
+  if(st.smooth){ P.bend*=1-.45*rs; const nd=Math.max(-3*D,Math.min(6*D,P.nod)); st.ndS=st.ndS==null?nd:st.ndS+(nd-st.ndS)*.06; P.nod=st.ndS; }
   const bk=st.bank||0; if(bk){ const L=STAND-ANKLE; P.roll+=bk; P.root=add(P.root,V(L*Math.sin(bk),-L*(1-Math.cos(bk))-2*FOOTX*Math.abs(Math.sin(bk)),0)); P.side-=0.3*bk; }
   const so=st.stop; if(so){ const t=so.t,k=so.a*Math.exp(-t/0.3)*Math.cos(2*Math.PI*t/0.8),dip=t<0.3?so.a*Math.sin(Math.PI*t/0.3):0;
     P.bend+=10*D*k; P.nod-=5*D*k; P.root=add(P.root,V(0,-1.5*dip,2.2*k));
@@ -220,7 +221,7 @@ function headPieces(H,lift,mouth){ const P=[];
 const suitPaint=(p,J)=>{ if(p.z<1.5) return null; const ax=Math.abs(p.x-J.chest.x), y=p.y; if(y>31.2&&y<33.4&&ax<1.15||y>22.5&&y<=31.2&&ax<0.65+(31.2-y)*0.04) return 'tie'; return y>27&&ax<(34.4-y)*0.32?'collar':null; };
 const smin=(a,b,k)=>{ const h=Math.max(k-Math.abs(a-b),0)/k; return Math.min(a,b)-h*h*k/4; };
 function bodyPieces(J,suit){ const P=[];
-  P.push({n:'torso',m:'shirt',d:p=>Math.max(smin(Math.min(rcone(sq(p,J.chest,BODY.sq),add(J.pelvis,V(0,1.4,0)),J.chest,BODY.r1,BODY.r2),rcone(p,J.shoulderL,J.shoulderR,BODY.bar,BODY.bar)),Math.min(rcone(p,add(J.neck,V(0,3,-0.8)),J.shoulderL,BODY.col[0],BODY.col[1]),rcone(p,add(J.neck,V(0,3,-0.8)),J.shoulderR,BODY.col[0],BODY.col[1])),2),J.pelvis.y-0.6-p.y),...(suit?{paint:p=>suitPaint(p,J)}:{})});
+  P.push({n:'torso',m:'shirt',d:p=>Math.max(smin(Math.min(rcone(sq(p,J.chest,BODY.sq),add(J.pelvis,V(0,1.4,0)),J.chest,BODY.r1,BODY.r2),rcone(p,J.shoulderL,J.shoulderR,BODY.bar,BODY.bar)),Math.min(rcone(p,add(J.neck,V(0,1.8,-0.3)),J.shoulderL,BODY.col[0],BODY.col[1]),rcone(p,add(J.neck,V(0,1.8,-0.3)),J.shoulderR,BODY.col[0],BODY.col[1])),2),J.pelvis.y-0.6-p.y),...(suit?{paint:p=>suitPaint(p,J)}:{})});
   P.push({n:'hips',m:'pants',d:p=>Math.min(rcone(sq(p,J.pelvis,0.8),add(J.hipL,V(0,0.5,0)),add(J.hipR,V(0,0.5,0)),BODY.hr,BODY.hr),rcone(sq(p,J.pelvis,0.8),add(J.pelvis,V(0,0.6,0)),add(J.pelvis,V(0,-1,0)),BODY.pel[0],BODY.pel[1]))});
   for(const n of 'LR') P.push({n:'thigh'+n,m:'pants',d:p=>rcone(p,J['hip'+n],J['knee'+n],BODY.th[0],BODY.th[1])});
   return P; }

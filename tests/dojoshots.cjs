@@ -26,12 +26,12 @@ process.on('unhandledRejection',e=>{ errs.push('TEST '+String(e&&e.message||e).s
   await pg.keyboard.press('v'); await pg.keyboard.press('v'); await pg.waitForTimeout(800);
   rep.fight0=(await dbg()).fight;
   await pg.evaluate(()=>{ const n=DOJONINJA(), d=DOJODBG(); STORE.goTo(n.x,n.z+2.2*d.tile,'up'); }); await pg.waitForTimeout(800);
-  await pg.evaluate(()=>DOJOTRAIN());
+  await pg.evaluate(()=>{ const q=[.2,.4,.9], r0=Math.random; Math.random=()=>q.length?q.shift():r0(); DOJOTRAIN(); Math.random=r0; });
   const log=[]; let seen={}, n=0;
   for(let i=0;i<2000;i++){ const d=await dbg(); if(!d.tr.on)break; const key=d.tr.ph+d.tr.n;
     if(!seen[key]){ seen[key]=1; log.push([d.tr.ph,d.tr.n,d.tr.drill,d.ninja&&d.ninja.mv,d.ninja&&d.ninja.up,d.you,d.ninja&&[d.ninja.x,d.ninja.z],d.inside,d.tr.why]);
       if(d.tr.ph==='demo'){ await pg.waitForTimeout(250); await shot('train'+d.tr.n+'-demo'); }
-      if(d.tr.ph==='you'){ if(d.tr.n===0){ await pg.keyboard.press('v'); await pg.keyboard.press('v'); await shot('face',()=>{ const n=DOJONINJA(), y=__dbg.you(); __dbg.face(Math.atan2(n.x-y.x,n.z-y.z)+Math.PI); },700); await pg.keyboard.press('v'); await pg.waitForTimeout(300); } await shot('train'+d.tr.n+'-you'); if(d.tr.n!==2){ const ks=await pg.evaluate(k=>k.map(a=>__UI.keyOf(a)),d.tr.keys); for(const k of ks){ await pg.keyboard.press(k===' '?'Space':k); await pg.waitForTimeout(450); } } }
+      if(d.tr.ph==='you'){ if(d.tr.n===0){ await pg.keyboard.press('v'); await pg.keyboard.press('v'); await shot('face',()=>{ const n=DOJONINJA(), y=__dbg.you(); __dbg.face(Math.atan2(n.x-y.x,n.z-y.z)+Math.PI); },700); await pg.keyboard.press('v'); await pg.waitForTimeout(300); } await shot('train'+d.tr.n+'-you'); if(d.tr.n!==4){ const ks=await pg.evaluate(k=>k.map(a=>__UI.keyOf(a)),d.tr.keys); for(const k of ks){ await pg.keyboard.press(k===' '?'Space':k); await pg.waitForTimeout(450); } } }
       if(d.tr.ph==='good'||d.tr.ph==='miss'){ await shot('train'+d.tr.n+'-'+d.tr.ph); }
       if(d.tr.ph==='end'){ await shot('train-end',null,300); } }
     await pg.waitForTimeout(120); }

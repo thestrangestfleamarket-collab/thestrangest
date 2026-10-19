@@ -1695,3 +1695,7 @@ not letting me"): `UI.MAXW` 19 to 30 tiles; at the limit the wheel does nothing 
 **The sun was gone** (owner, 18 Oct 2026: "no matter what time i make it its staying dark"): the comment strip of 18 Oct (no comments in
 src) took `scene.add(sunL,sunL.target)` with it, as it sat after a `//` note on its line, so the sun never lit anything and every hour
 looked like night. Back in `129-clock.js`.
+
+**Never into other floors** (owner, 19 Oct 2026: "you should never see the interiors of other floors"): inside the apartment house the
+floors above were already cut at your ceiling (`APTS.HP`); now everything of the house below your floor is cut too (`APTS.LP`, a second
+clip plane on the house's materials, at your floor), so from a flat's balcony the lobby isn't seen. No new cost.

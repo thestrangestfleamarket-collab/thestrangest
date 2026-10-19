@@ -1,7 +1,7 @@
 // THE CITY'S SERVICES, CHECKED (src/civic.js, duties.js, vehicles.js): at 13:00, the clock stopped: the six houses of the civic row are
 // addresses, the staff stand at their doors in uniform, the four vehicles are parked at their houses; TRY a fire: a firefighter answers,
 // the truck's lights go, the fire is hosed out; TRY an outage: the lamps off, the works crew comes, the lamps back; TRY a full can: a heap
-// beside it, the crew empties it; a letter to you: the clock run past 9:30, the carrier leaves, your box gets it; YOU FAINT: the medic
+// beside it, the crew empties it; a letter to the bodega: the clock run past 9:30, the carrier leaves, the bodega's box gets it; YOU FAINT: the medic
 // comes, you're up. Each watched till done (minutes each in the cloud's frames). Shots: argv[2] (a folder), civic_*.png
 // node tests/civiccheck.cjs <out folder>
 const {chromium}=require('playwright');
@@ -30,9 +30,9 @@ const {chromium}=require('playwright');
   t=await until(()=>CIVIC.staff.works.state==='free',300000,4000); await pg.evaluate(()=>CIVIC.tryCan()); d=await dbg(); console.log('a full can:',JSON.stringify(d.cans[0]),'· job',d.jobs.filter(j=>j.startsWith('trash')).join());
   t=await until(()=>CIVIC.cans[0].fill===0&&CITY.open('trash').length===0,600000,4000); console.log('  emptied after',t>=0?(t/1000).toFixed(0)+' s':'NEVER (10 min)');
   // THE MAIL
-  await pg.evaluate(()=>{ CIVIC.send('you','THE MARKET','HELLO','test'); CITY.setHour(9.4); }); await pg.waitForTimeout(1500); await pg.evaluate(()=>CITY.setHour(9.6)); await pg.waitForTimeout(2000);
+  await pg.evaluate(()=>{ CIVIC.send('bodega','THE MARKET','HELLO','test'); CITY.setHour(9.4); }); await pg.waitForTimeout(1500); await pg.evaluate(()=>CITY.setHour(9.6)); await pg.waitForTimeout(2000);
   d=await dbg(); console.log('the mail: bag',d.bag,'· carrier',d.staff.find(s=>s[0]==='carrier')[1]);
-  t=await until(()=>CIVIC.box('you').length>0,600000,4000); console.log('  your letter arrived after',t>=0?(t/1000).toFixed(0)+' s':'NEVER (10 min)','· boxes',JSON.stringify((await dbg()).boxes));
+  t=await until(()=>CIVIC.box('bodega').length>0,600000,4000); console.log('  the bodega\'s letter arrived after',t>=0?(t/1000).toFixed(0)+' s':'NEVER (10 min)','· boxes',JSON.stringify((await dbg()).boxes));
   // YOU FAINT
   await pg.evaluate(()=>{ const P=CITY.place('bodega'); STORE.goTo(P.door.x,P.door.z+2*__dbg.cv().TILE,'up'); CIVIC.tryFaint(); }); await pg.waitForTimeout(2000); d=await dbg(); console.log('you fainted: job',d.jobs.filter(j=>j.startsWith('medical')).join(),'· medic',d.staff.find(s=>s[0]==='medic')[1]);
   t=await until(()=>CIVIC.log.some(e=>/brought you round/.test(e.what)),600000,4000); console.log('  the medic brought you round after',t>=0?(t/1000).toFixed(0)+' s':'NEVER (10 min)');

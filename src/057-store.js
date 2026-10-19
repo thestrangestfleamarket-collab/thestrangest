@@ -10,6 +10,7 @@
   const sol=(x0,y0,x1,y1,zt)=>{ SOL.up.push([X(x0),Z(y0),X(x1),Z(y1)]); FIX.up.push([X(x0),Z(y0),0,X(x1),Z(y1),Math.max(.05,Y(zt))]); };
   const roofCol=(x,y)=>{ const n=grain(x,y,61,1.4); return speck(n<.35?[50,50,52]:n>.7?[66,64,62]:[58,57,57],x,y,63); };
   const planes={}, cuts=[]; STORE.inside={};
+  const CEIL=(x0,z0,x1,z1,y)=>{ const g=new THREE.PlaneGeometry(Math.abs(x1-x0),Math.abs(z1-z0)).rotateX(Math.PI/2), me=new THREE.Mesh(g,new THREE.MeshLambertMaterial({color:0x5a544c,clippingPlanes:[new THREE.Plane(new THREE.Vector3(0,-1,0),1e6)]})); me.position.set((x0+x1)/2,y,(z0+z1)/2); me.receiveShadow=true; scene.add(me); return me; }; STORE.CEIL=CEIL;
   const room=(id,name,B,look,door,set,o={})=>{ const n0=PROPS.length, l0=LAMPS.length; set(B,l0); const all=PROPS.slice(n0), lamAll=LAMPS.slice(l0);
     const lazy=!!(door&&look.in&&!o.now&&!STORE.now), inB=b=>b.x0>=B.x0-.2&&b.x1<=B.x1+.2&&b.y0>=B.y0-.2&&b.y1<=B.y1+.2;
     const inner=lazy?all.filter(p=>p.boxes&&p.boxes.length&&p.boxes.every(inB)):[], outer=all.filter(p=>!inner.includes(p));
@@ -27,7 +28,7 @@
       L.position.set(X(l.x),Y(l.z),Z(l.y)); L.userData.i0=L.intensity; scene.add(L); lamps.push(L);
       if(l.r>=3||l.neon){ L.castShadow=true; L.shadow.mapSize.set(256,256); L.shadow.camera.near=.05; L.shadow.camera.far=l.r*TILE*1.3; L.shadow.bias=-.004; L.shadow.normalBias=.06; L.shadow.autoUpdate=false; L.shadow.needsUpdate=true; } }
     };
-    const inside=()=>{ boxes(inner); if(look.floor)flat(B.x0,B.y0,B.x1,B.y1,o.z??.15,look.floor,'L'); solids_(inner); lamps_(lin); FLAME.props(inner,X,Y,Z,lamps); };
+    const inside=()=>{ boxes(inner); if(B.h>0&&!o.noCeil)CEIL(X(B.x0),Z(B.y0),X(B.x1),Z(B.y1),Y(B.h)-.02); if(look.floor)flat(B.x0,B.y0,B.x1,B.y1,o.z??.15,look.floor,'L'); solids_(inner); lamps_(lin); FLAME.props(inner,X,Y,Z,lamps); };
     boxes(outer);
     if(look.in){ const H=B.h, walls=(o.xo?[]:[['f','x',B.y1,B.x0,B.x1,-1],['b','x',B.y0,B.x0,B.x1,1],['w','y',B.x0,B.y0-T,B.y1+T,1],['e','y',B.x1,B.y0-T,B.y1+T,-1]]).concat(o.xw||[]);
       for(const [wid,ax,at,a0,a1,inS,holes0,inner] of walls){ const holes=(holes0||[]).concat(o.holes&&o.holes[wid]||[],door&&door.w===wid?[{a0:door.a-door.wd/2,a1:door.a+door.wd/2,z0:0,z1:door.h}]:[]), kind='W'+id+':'+wid, pl=planes[kind]=new THREE.Plane(new THREE.Vector3(0,-1,0),1e6);

@@ -127,9 +127,9 @@ ROAM.pick=(st,free)=>{ const L=ROAM.L; for(let k=0;k<12;k++){ let to;
 const PXSNAP=on=>{ const L=PXSNAP.L;
   if(!on){ for(const [o,dx,dy,dz] of L){ o.position.x-=dx; o.position.y-=dy; o.position.z-=dz; } L.length=0; return; }
   if(UI.persp||!UI.snR)return; const u=rppu(), cr=UI.snR, cu=UI.snU;
-  const snap=(o,cams)=>{ if(!o||!o.visible)return; const p=o.position, x=p.dot(cr), y=p.dot(cu), a=Math.round(x*u)/u-x, b=Math.round(y*u)/u-y, dx=cr.x*a+cu.x*b, dy=cr.y*a+cu.y*b, dz=cr.z*a+cu.z*b;
+  const snap=(o,cams,D)=>{ if(!o||!o.visible)return; const p=o.position, x=p.dot(cr), y=p.dot(cu), a=Math.round(x*u)/u-x, b=Math.round(y*u)/u-y, dx=D?D.x:cr.x*a+cu.x*b, dy=D?D.y:cr.y*a+cu.y*b, dz=D?D.z:cr.z*a+cu.z*b;
     p.x+=dx; p.y+=dy; p.z+=dz; L.push([o,dx,dy,dz]); for(const [c,M] of cams||[]){ c.position.x+=dx; c.position.y+=dy; c.position.z+=dz; L.push([c,dx,dy,dz]); c.updateMatrixWorld(); if(M)M.value.multiplyMatrices(c.projectionMatrix,c.matrixWorldInverse); } };
-  if(typeof W3!=='undefined'&&W3.group)snap(W3.group,[[W3.smCam,W3.LVP]]);
+  if(typeof W3!=='undefined'&&W3.group)snap(W3.group,[[W3.smCam,W3.LVP]],UI.snD);
   for(const N of NPCS)if(!N.far)snap(N.g);
   for(const X of NPCS.extra)if(X.g)snap(X.g); };
 PXSNAP.L=[]; window.PXSNAP=PXSNAP;

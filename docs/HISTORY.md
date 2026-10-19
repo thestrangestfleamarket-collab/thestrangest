@@ -2632,3 +2632,17 @@ not have windows, make sure buildings are only as tall as they need to be"; then
 - **Deploys from this repo** (19 Oct 2026): Cloudflare's Builds for the `thestrangest` worker were linked to the old `bralynnb` GitHub
   account and stopped seeing `main` after the repo moved to `thestrangestfleamarket-collab` (nothing deployed after #89). Relinked to
   `thestrangestfleamarket-collab/thestrangest`, branch `main`, build `npm ci && python3 build.py`, deploy `npx wrangler deploy`.
+- **Smooth running** (owner, 19 Oct 2026: "running is very choppy. the characters height changes constantly. needs to be smoothed out
+  make sure no sudden jumps in location when moving. plus the shadows glitch"): the player is moved by the camera's own pixel step
+  (`UI.snD`, used by `PXSNAP`) so it no longer jumps a pixel against the screen; in the run's flight the body goes smoothly from the
+  last foot's height to the next one (no jump at landing) and the body's drop eases (30/s) instead of snapping; the sun's moving shadow
+  is redrawn every frame by day (was 25 a second), the still one every 12 tiles or 10 s (was 8 tiles, 4 s). `tests/runcheck.cjs`.
+- **The subway taller, with a ceiling** (owner, 19 Oct 2026: "subway neesd to be 2x taller, subway 1.5x taller, the ceiling should
+  always be shown when inside interiors. this rail shouldnt be visible inside. the tunnels should be real and dark. walkable."; read as
+  the station 2x, the train 1.5x): the station's walls and columns to twice the storey, a ceiling over it, a black lid over the stairwell
+  at the street's level (the street's green railing no longer seen from inside); the train car half again as tall; the tunnels 36
+  tiles each way (was 12), dark walls with a roof, walkable from the platform's end steps. Every room built by `room()` gets a ceiling
+  facing down (`STORE.CEIL`): seen from inside in the behind and first-person views, never from above.
+- **The frog on his scooter** (owner, 19 Oct 2026: "make this guy 1.5 x bigger, make him drive on the bike line up and down the
+  street both sides, slowly"): 1.725 m (was 1.15), speed 0.7; he rides east in the south bike lane, turns, rides west in the north one,
+  between the ring road and the avenue, round and round (out of `LIVES`).

@@ -115,7 +115,7 @@ function phyStep(bs,st,h,wind,js){
     if(!(b.you>0)&&(still&&(b.rest+=h)>.25||b.held>.4)){ b.awake=false; b.v=[0,0,0]; b.w=[0,0,0]; b.held=0; } else if(!still)b.rest=0; }
   return cs; }
 const view0={a:Math.PI/4}; let STATIC=[], PHYROOMS=[];
-const RAG={on:false,bodies:[],joints:[],t:0,hd:0,blend:null,acc:0,trip:false,hit:null,held:null,toss:null,ko:0}, RAGOFF=true;
+const RAG={on:false,bodies:[],joints:[],t:0,hd:0,blend:null,acc:0,trip:false,hit:null,held:null,toss:null,ko:0}, RAGOFF=true; window.RAGON=()=>RAG.on;
 const RT=48/Math.SQRT2/(48/(33.9*Math.SQRT2)), RZ=24*RIG.PX/RT;
 const ragW=(p,hd=RAG.hd)=>{ const q=RIG.yaw(p,hd), du=(q.x+q.z)/(Math.SQRT2*RT), dv=(q.z-q.x)/(Math.SQRT2*RT), [dx,dy]=wvV(du,dv); return [P.x+dx,P.y+dy,q.y/RT]; },
   ragWv=p=>{ const q=RIG.yaw(p,RAG.hd), du=(q.x+q.z)/Math.SQRT2, dv=(q.z-q.x)/Math.SQRT2, [dx,dy]=wvV(du,dv), n=Math.hypot(dx,dy,q.y)||1; return [dx/n,dy/n,q.y/n]; },

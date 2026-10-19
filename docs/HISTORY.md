@@ -3178,3 +3178,18 @@ seats.")
   Isometric and behind only; never in first person, the free camera, the editor or a room. Characters, things, lamps, shadows and the
   depth passes are untouched. `?dither=0` turns it off. Cost: no triangles, lights or new shader programs (a few lines in the world's
   Lambert and basic shaders), about 0.02 ms a frame for the ray.
+## 19 Oct 2026: the dungeon its own place, five levels off the map
+- **The dungeon off the map** (owner, 19 Oct 2026: "i want the dungon to be sep location. each level is off map." / "make 5 levels all
+  empty right now." / "each staircase just works like the subway, you start to go up and it loads to next screen, make sure you only have
+  to take 1 step before it switches. (try to fade in and out when you can for smoother transitions)"; later, not built yet: slimes on
+  levels 1-3, skeletons on 2-5, "dont build out yet"; `src/062a-dungeon.js`): the great hall under the castle is gone; the castle's
+  stairwell stays, and the first tread of it fades the screen out (0.3 s, in four steps like the subway's), ENTERING DUNGEON — LEVEL 1 on
+  the black, and fades into level 1 (0.4 s). Levels 1-5 are each an empty hall the old one's size (14 x 13.2 tiles), each on its own lot
+  far east of the map at the subway's depth (bodega tiles x 900 + 40 a level), black all round; only the level you're on is built (built
+  as you arrive, taken down as you leave). Each has the old hall's walls and cobbles (its painters; no door, banners or slit), four wall
+  torches with live flames and a dim cold fill, a stair up against the back wall into a dark arch, and (1-4) a stairwell down with a
+  rim, its far end dark; even levels mirrored. One step onto either stair: DUNGEON — LEVEL n (level 1's stair up: LEAVING DUNGEON, out
+  at the castle stair's top). The walls toward the camera cut like the castle's. The subway is hidden while you're down there.
+  The skeletons are no longer brought in (the levels are empty); they still load only when called (`DUNGEON.spawn(n)`, unused).
+  The menu's THE DUNGEON is now DUNGEON L1. `window.DUNGEON` {level, go(n), spawn(n)}, `DUNDBG()`. Cost a level: about 900 triangles,
+  5 lamps (4 torches, the fill), no new shader programs (the castle's materials).

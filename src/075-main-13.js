@@ -37,6 +37,7 @@ function frame(now){ requestAnimationFrame(frame); renderer.info.reset(); const 
   UI.camStep(dt,a,up,dn,lf,rt); if(UI.freeCam||ED.on)up=dn=lf=rt=false;
   if(up){mx+=fx;mz+=fz;} if(dn){mx-=fx;mz-=fz;} if(rt){mx+=-fz;mz+=fx;} if(lf){mx-=-fz;mz-=fx;}
   if(PAD.mv&&(up||dn||lf||rt)){ const [lx,ly]=PAD.mv; mx=-ly*fx-lx*fz; mz=-ly*fz+lx*fx; }
+  if(!RAG.on&&MODS.apts.lad&&MODS.apts.lad(dt,up,dn,lf||rt||!!target)){ up=dn=lf=rt=false; mx=mz=0; target=null; }
   if(mx||mz)target=null; else if(target){ const dx=target.x-pos.x, dz=target.z-pos.z, d=Math.hypot(dx,dz); if(d<0.12)target=null; else {mx=dx/d;mz=dz/d;} }
   view0.a=a; P.x=pos.x/TL; P.y=-pos.z/TL; PH.hd=heading;
   const hit=PHYOU.hit||0, hn=PHYOU.hitN; PHYOU.hit=0;

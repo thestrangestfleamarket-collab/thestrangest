@@ -1701,3 +1701,30 @@ floors above were already cut at your ceiling (`APTS.HP`); now everything of the
 clip plane on the house's materials, at your floor), so from a flat's balcony the lobby isn't seen. No new cost.
 ## 18 Oct 2026: only the corner walkable, the rest into the mist
 - **The corner** (owner: "i want to change the map to only make this walkable. the roads going up and right should look like they keep going (central park is huge and this is only 1 corner)"; of the mockups https://claude.ai/artifact/W5rQsTCsnMvrJkBtPEVZHg, "lets do the mist"): walkable from the west street to 8 tiles short of the park's east wall, from the river to 8 tiles short of its north wall (`RING.cf`, `065-ring.js`): the same solid walls, now invisible (no cyan field). The mist starts right at that edge and is full 8 tiles past it, so the park's far walls, the north street and the Avenue stay hidden and the roads run on into it. The skyline keeps the old town box (`RINGX.town`). Characters pick spots and routes only inside it (`stfree`, `STLANE`); the joggers run out and back up West St and along Market St. The menu map shows the corner. A saved DISTANCE LOOK drops its mist start and depth once (`corner` in `farlook`).
+
+## 19 Oct 2026: the Day 1 station in place of the Metro
+- **The very first station** (owner: "lets replace the subway station with the very 1st one with security drones, passport machine, etc.";
+  his pick "Station + machine + drones", no arrival scene: you still start where you did; the old game read once for it, read-only):
+  the Metro (`010-metro.js`, `data/metro.json`, its car ride) is gone; the Day 1 station of the old game (its 11 Oct room, the owner's
+  `subway-station-target.webp`, plus the 10 Oct look of `23-pack-objects-4-station.js`) is THE subway, built always (`012-wsub.js` its
+  painters, `013-main-3.js` the room, `013a-day1.js` the stairs, the way in and the drones). One storey down as in the old game (the
+  platform at the loop tunnel's depth, `STN.DY`), the room 25.5 x 10.4 tiles under the lot running east-west, the track's tunnels 12 tiles
+  past each end. **The stairs**: the street opening where the Metro's was (tiles x 60-64, its top on the sidewalk's back edge), 12 concrete
+  steps with yellow nosings 6 tiles down to the platform's back wall, tiled sides, green railings round it at the street (`MAPSTAIR`).
+  Three treads down ENTERING SUBWAY and you're at the stairs' foot (`METRO.door`, as the Metro's; `?subyaw=0..3`), five treads up from the
+  foot LEAVING SUBWAY. **In the room**: the tiled back wall (posters, two MARKET ST name plates, red cables on brackets, all cut with the
+  wall), the curved far wall with its three big posters, two tiled columns with dome cameras and amber boards (PLEASE MIND THE GAP / TRAIN
+  ARRIVING / 14:03), four steel benches facing the track (double click to sit), two bins, TO STREET hung over the stairs' foot (reads from
+  both sides now), a NO ENTRY gate in each end wall, the arched tunnel mouths with a red signal in each, the old car parked at the platform,
+  the steps down to the track at each end, eight cool lamps. **The passport machine** (steel cabinet, lit screen, slot) against the back
+  wall beside the stairs, **two security drones** perched on it (silver balls, a dark band, a green lens, a rotor: made in parts). The first
+  time you come within 4 tiles of the machine in a visit they lift off (a chirp), float to your right and left at head height, scan you
+  (a green ring sweeping shoes to head and back, a beam from each lens, a code-made `scan` sound in `091-sfx.js`), the first says THANK YOU
+  FOR YOUR COOPERATION. in the speech style (`LINES.say`), and both go back and sit still. They run only while you're down there.
+  Hooked as the Metro was: `MODS.station` (ground, plat, path, lane), THE PLATFORM / THE SUBWAY STAIRS, lives' way down, the rats (now on
+  this platform, `METRO.rats`), the newsstand untouched. **Cost**: the station 1,784 triangles, its stairs 532, the drones 312 (the beams and ring 80 more while
+  scanning); the platform's whole screen about 80,000 with you and the rats (the Metro's 130,000); 10 lamp records (was 11; LITE's eight
+  nearest light), no new program; a frame the same as before with the drones home (they move only while out); the page 0.93 MB smaller (`metro.json` dropped). `tests/day1shot.cjs <out>`. **Found on the way**
+  (`161-perf.js`): `PERFX.bounds` gave the walker a fixed bounding sphere at the world's middle, so far from it (here, the new platform) you
+  vanished from some angles; the walker is never culled now. **Left out**: the black card, the train arriving, the force field and passport
+  form (not wanted); riding a train (the car is parked); `tools/metro-bake.py` kept in case the Metro comes back.

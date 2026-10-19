@@ -2903,3 +2903,17 @@ automatically. dragon balls of fire can start real fires. spread very slow. leav
   lights; bushes in the sun's still shadow. Not yet measured in the page (`tests/tricount.cjs`).
 - **Black underground** (owner, 19 Oct 2026, a picture of the subway with lavender sky round the station): below the street the sky
   dome is hidden and the background is black, whatever the day/night settings do.
+- **Picking things up; a sword and nets in your hand** (owner, 19 Oct 2026: "can we add a picking something off ground animation, and
+  using something in your hand, like a sword or net (would work the same, move it with your mouse)"; `001-rig.js` `pickMove`/`aimLayer`,
+  `146a-wield.js`): **picking up** is a move of its own: he walks to within half a tile, bends and crouches as low as he must (the rig
+  finds the crouch and arm that put his right hand on the thing, once per height) or just reaches out for something high, closes his
+  hand at 0.3 s, and only then is it taken (the thing vanishes as his hand gets there); 0.6 s, cut short or into anything like his other
+  moves. It plays for mushrooms, flowers and your garden, loose gems in the mines, the drone's parcel, a trash can's rummage, the drinks
+  machine (a reach to its slot) and loose things you pick up to carry. **Held things**: 1 cycles a SWORD (every player is given one), the
+  BUTTERFLY NET and the BIRD NET (if you have them) and empty hands; the pack has HOLD / PUT AWAY on each. Holding one, his right arm
+  points it where the mouse is (the mouse on a plane at his waist), easing after it, so moving the mouse fast is a swing; a left click
+  is a slash across (alternating sides, 0.3 s); standing, he turns to face where you aim. Double click no longer walks while you hold
+  something (the keys do; the right drag still turns the view); put it away for the usual clicks. Fast swings leave a flat pale swoosh
+  (the last 0.12 s of the blade). The butterfly net catches a butterfly its hoop passes through mid-swing, the bird net a bird (the
+  usual skill checks, cage and all); a low sword swing parts the grass. Cost: the item (a sword 48 triangles, a net about 130) and the
+  swoosh (14), only while held; under 0.1 ms a frame.

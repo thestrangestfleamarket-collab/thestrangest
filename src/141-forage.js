@@ -65,7 +65,7 @@ const FORAGE={}; window.FORAGE=FORAGE;
       STEMS.setMatrixAt(ns,m4.compose(new V3(m.x,m.y,m.z),q,new V3(r*sw*.5,r*sh,r*sw*.5))); STEMS.setColorAt(ns++,col.setHex(sc));
       const me=glow?GLOW:CAPS, n=glow?ng++:nc++; me.setMatrixAt(n,m4.compose(new V3(m.x,m.y+r*sh*.95,m.z),q,new V3(r*w,r*h,r*w))); me.setColorAt(n,col.setHex(cc));
       const hb=new THREE.Mesh(HB,HM); hb.position.set(m.x,m.y+.2*T,m.z); hits.add(hb);
-      const th={name:nm,obj:hb,reach:.9*T,near:1.6*T,tall:.4*T,act:()=>FORAGE.pick(m)}; UI.thing(th); things.push(th); }
+      const th={name:nm,pick:true,obj:hb,reach:.9*T,near:1.6*T,tall:.4*T,act:()=>FORAGE.pick(m)}; UI.thing(th); things.push(th); }
     for(const [me,n] of [[CAPS,nc],[STEMS,ns],[GLOW,ng]]){ me.count=n; me.instanceMatrix.needsUpdate=true; if(me.instanceColor)me.instanceColor.needsUpdate=true; } FORAGE.shown=list.length; };
   FORAGE.things=()=>things; WEEDS.onAdd=(key,grp)=>{ CH.set(key,spawns(key,grp)); FORAGE.sync(); }; WEEDS.onDrop=key=>{ if(CH.delete(key))FORAGE.sync(); };
   if(WEEDS.chunks)for(const [k,g] of WEEDS.chunks)if(g&&g.sq)CH.set(k,spawns(k,g)); FORAGE.sync();

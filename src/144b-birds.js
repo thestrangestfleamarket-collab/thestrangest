@@ -116,6 +116,7 @@ const BIRDS={list:[]}; window.BIRDS=BIRDS;
       if(!FORAGE.has('cage'))return say('YOU NEED AN EMPTY CAGE TO PUT IT IN.','#c8a090'); const d=DIFF(b.k)+10; if(typeof SFX!=='undefined')SFX.play('step',{vol:.4});
       if(use('bird',d-25,d+25)){ FORAGE.take('cage',1); FORAGE.give('bd_'+b.k,1); if(!S.seen[b.k])log(b); say(`YOU NET THE ${K[b.k][0]} AND CAGE IT.`,'#b8f0a0'); drop(b); } else { say('YOUR NET SWISHES THROUGH EMPTY AIR.','#c8a090'); flush(b); } },
     free:b=>{ freePet(); }};
+  BIRDS.net=b=>{ ACT.catch(b); FORAGE.draw(); };
   P.addEventListener('click',ev=>{ const t=ev.target.closest('button[data-a]'); if(!t)return; const b=PANEL.b; if(!b||(gone(b)&&b.st!=='pet')){ say('IT HAS FLOWN.','#c8a090'); return close(); }
     if(t.dataset.a!=='free'&&Math.hypot(b.x-pos.x,b.z-pos.z)>3.2*T){ say('IT IS TOO FAR OFF. GO NEARER.','#c8a090'); return; } ACT[t.dataset.a](b); FORAGE.draw(); if(gone(b)||t.dataset.a==='free')close(); else draw(); });
   const petOf=()=>BIRDS.list.find(b=>b.st==='pet');

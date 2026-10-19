@@ -36,7 +36,7 @@ const LFX={on:new Set((new URLSearchParams(location.search).get('fx')??'cs,cool'
 LFX.AO={x0:-45,z0:-40,w:160,h:150,k:6};
 LFX.shade=true;
 if(LFX.shade){ LFX.env=new THREE.DataTexture(new Uint8Array(64*64*4),64,64); LFX.env.wrapS=LFX.env.wrapT=THREE.RepeatWrapping; LFX.env.magFilter=LFX.env.minFilter=THREE.LinearFilter; LFX.env.needsUpdate=true;
-  LFX.cs={n:1024,w:256*33.9/PPU,V:{x:0,y:0,z:0,w:0}}; LFX.cs.tex=new THREE.DataTexture(new Uint8Array(1024*1024),1024,1024,THREE.RedFormat); LFX.cs.tex.magFilter=LFX.cs.tex.minFilter=THREE.LinearFilter; LFX.cs.tex.needsUpdate=true;
+  LFX.cs={n:1024,w:256*33.9/PPU,V:{x:0,y:0,z:0,w:0}}; LFX.cs.tex=new (class extends THREE.DataTexture{ get version(){ return this.source.version; } set version(v){} })(new Uint8Array(1024*1024),1024,1024,THREE.RedFormat); LFX.cs.tex.magFilter=LFX.cs.tex.minFilter=THREE.LinearFilter; LFX.cs.tex.needsUpdate=true;
   const A=LFX.AO; LFX.ao=new THREE.DataTexture(new Uint8Array(A.w*A.k*A.h*A.k).fill(255),A.w*A.k,A.h*A.k,THREE.RedFormat); LFX.ao.magFilter=LFX.ao.minFilter=THREE.LinearFilter; LFX.ao.needsUpdate=true;
   LFX.sunS={x:0,y:1,z:0,w:0}; LFX.sunB=[...Array(8)].map(()=>new THREE.Vector4(0,-1e5,0,0)); THREE.ShaderLib.lambert.uniforms.sunS={value:LFX.sunS}; THREE.ShaderLib.lambert.uniforms.sunB={value:LFX.sunB}; THREE.ShaderLib.lambert.uniforms.tENV={value:LFX.env}; THREE.ShaderLib.lambert.uniforms.tAO={value:LFX.ao}; THREE.ShaderLib.lambert.uniforms.tCS={value:LFX.cs.tex}; THREE.ShaderLib.lambert.uniforms.csV={value:LFX.cs.V}; }
 if(DITH||LFX.shade){ THREE.ShaderLib.lambert.vertexShader='varying vec3 vWP;\n'+THREE.ShaderLib.lambert.vertexShader.replace('#include <project_vertex>','#include <project_vertex>\n vWP=(modelMatrix*vec4(transformed,1.)).xyz;');

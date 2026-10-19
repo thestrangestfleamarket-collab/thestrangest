@@ -24,8 +24,8 @@ BODB={};
     if(h1<.16)c=sh(c,1.38); else if(h1<.22)c=[c[0]*1.24,c[1]*1.14,c[2]]; else if(h1>.97)c=sh(c,.7);
     if(Math.abs(sv-.05-wob)<.03)c=sh(c,.6); else if(Math.abs(sv-.11-wob)<.03&&cvNoise(u*2,sN,77)>.45)c=sh(c,1.3);
     for(const [a,b,c2,d,k] of PATCH){ const e=.07*(cvNoise(u*4,v*4,79)-.5); if(u>a+e&&u<c2-e&&v>b+e&&v<d-e){ const ed=Math.min(u-a-e,c2-e-u,v-b-e,d-e-v); c=k===1?(h1<.3?[124,126,124]:h1<.55?[158,160,156]:[144,146,144]):k===2?[40,37,36]:[33,33,36]; if(k!==1&&h1<.08)c=sh(c,1.7); if(ed<.06)c=sh(c,k===1?.78:1.5); } }
-    for(const [cu,cv,ru,rv] of POND){ const d=Math.hypot((u-cu)/ru,(v-cv)/rv)+cvNoise(u*1.6,v*1.6,81)*.5-.25; if(d<1.05){ if(d>.95||Math.abs(d-.78)<.03||Math.abs(d-.55)<.025)c=[108,102,90]; else c=sh(c,.76); } }
-    { const dx=u-(RW*.5+1.4), dy=v-(RH*.55+.3); if(dx>-.2&&dx<1.6&&dy>-.1&&dy<.9){ const rr=cvNoise(u*3,v*3,89); if(rr>.4)c=[86+30*rr,64+16*rr,44]; } }
+    for(const [cu,cv,ru,rv] of POND){ const d=Math.hypot((u-cu)/ru,(v-cv)/rv)+cvNoise(u*1.6,v*1.6,81)*.7+cvNoise(u*5,v*5,82)*.25-.47; if(d<1.04){ if(d>.97&&cvNoise(u*6,v*6,84)>.35)c=sh([100,95,84],.9+.2*h1); else if(d<.97)c=sh(c,d<.6?.7:.8); } }
+    { const dx=u-(RW*.5+1.4), dy=v-(RH*.55+.3); if(dx>-.2&&dx<1.6&&dy>-.1&&dy<.9){ const rr=cvNoise(u*3,v*3,89); if(rr>.45)c=sh(c,.7+.3*rr); } }
     const ed=Math.min(u,RW-u,v,RH-v); if(ed<.55){ if(hash(i>>1,j>>1,83)<.3*(1-ed/.55))c=hash(i,j,85)<.55?[60,78,44]:[96,78,52]; else c=sh(c,.86); }
     if(hash(i,j,87)<.003)c=[214,212,204]; if(hash(i>>2,j>>2,91)<.004)c=[150,120,70];
     return c; };

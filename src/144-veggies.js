@@ -4,7 +4,8 @@ const VEG={}; window.VEG=VEG;
     ['v_corn','EAR OF CORN',3,2,.08,0xe8c84a,[.05,.18],0],['v_cabbage','CABBAGE',5,3,.08,0x8ac05a,[.1,.09],1],['v_eggplant','EGGPLANT',4,2,.07,0x4a2a5a,[.06,.12],1],
     ['v_potato','POTATO',2,1,.07,0xb08a5a,[.06,.05],1],['v_onion','ONION',2,1,.04,0xd8b88a,[.055,.055],1],['v_greens','LEAFY GREENS',3,2,.04,0x4a9a3a,[.09,.05],1],
     ['v_pumpkin','PUMPKIN',12,7,.14,0xe0782a,[.2,.16],1]];
-  const NM=Object.fromEntries(V.map(v=>[v[0],v[1]])), SELL=Object.fromEntries(V.map(v=>[v[0],v[2]])), BUY=Object.fromEntries(V.map(v=>[v[0],v[3]]));
+  const NM=Object.fromEntries(V.map(v=>[v[0],v[1]])), SELL=Object.fromEntries(V.map(v=>[v[0],v[2]])), BUY=Object.fromEntries(V.map(v=>[v[0],v[3]])), XS=[], XB=[];
+  VEG.add=(sells,buys)=>{ for(const id in sells){ SELL[id]=sells[id]; XS.push(id); } for(const id in buys){ BUY[id]=buys[id]; XB.push(id); } }; const NMV=id=>NM[id]||FORAGE.NM[id]||id;
   FORAGE.add({names:Object.assign({},NM,{f_corn:'ROAST CORN',f_vstew:'VEGETABLE STEW',f_stuffpep:'STUFFED PEPPER',f_psoup:'PUMPKIN SOUP'}),
     raw:Object.fromEntries(V.map(v=>[v[0],[v[4],0]])),
     prices:Object.assign({f_corn:7,f_vstew:14,f_stuffpep:16,f_psoup:28},BUY),
@@ -22,15 +23,15 @@ const VEG={}; window.VEG=VEG;
   const sp=document.createElement('div'); sp.id='vegp'; sp.hidden=true; sp.style.cssText='position:fixed;left:50%;top:10%;transform:translateX(-50%);width:min(460px,92vw);max-height:80vh;overflow:auto;z-index:21;padding:14px 16px;font:11px Silkscreen,monospace;letter-spacing:.4px;color:#d8dae2;background:#0b0d13f2;border:2px solid #3a3f4e;zoom:var(--uiz,1)';
   document.body.appendChild(sp); sp.addEventListener('keydown',e=>e.stopPropagation()); sp.addEventListener('keyup',e=>e.stopPropagation());
   const row=(a,b,c,d)=>`<tr style="border-bottom:1px solid #22252f"><td style="padding:4px 2px">${a}</td><td style="text-align:right;padding:4px 6px">${b}</td><td style="text-align:right">${c}</td><td style="text-align:right;white-space:nowrap">${d}</td></tr>`;
-  SHOP.draw=()=>{ if(sp.hidden)return; const mine=V.map(v=>v[0]).filter(id=>FORAGE.has(id)>0);
-    let o=`<h3 style="margin:0 0 4px;color:#f2c14e;font:12px Silkscreen,monospace">THE TOMATO'S VEGGIES</h3><div style="color:#9b9584;margin-bottom:8px">Fresh today. He buys back what you don't want.</div><div style="margin-bottom:8px">YOU HAVE <b style="color:#f2c14e">$${Math.round(INV.cash)}</b></div>`;
-    o+=`<div style="margin:6px 0 4px;color:#9b9584">HE SELLS</div><table style="border-collapse:collapse;width:100%">`+V.map(([id,nm,p])=>row(nm,'$'+p,FORAGE.has(id)?'x'+FORAGE.has(id):'',`<button ${B} data-buy="${id}">BUY</button><button ${B} data-buy="${id}" data-n="5">5 $${p*5}</button>`)).join('')+'</table>';
-    o+=`<div style="margin:10px 0 4px;color:#9b9584">HE BUYS</div><table style="border-collapse:collapse;width:100%">`+mine.map(id=>{ const n=FORAGE.has(id), v=BUY[id]; return row(NM[id],'$'+v,'x'+n,`<button ${B} data-sell="${id}">SELL</button>${n>1?`<button ${B} data-sell="${id}" data-n="all">ALL $${v*n}</button>`:''}`); }).join('')+'</table>';
+  SHOP.draw=()=>{ if(sp.hidden)return; const mine=[...V.map(v=>v[0]),...XB].filter(id=>FORAGE.has(id)>0);
+    let o=`<h3 style="margin:0 0 4px;color:#f2c14e;font:12px Silkscreen,monospace">THE TOMATO'S VEGGIES</h3><div style="color:#9b9584;margin-bottom:8px">Fresh today. Seeds too. He buys back what you don't want, and flowers.</div><div style="margin-bottom:8px">YOU HAVE <b style="color:#f2c14e">$${Math.round(INV.cash)}</b></div>`;
+    o+=`<div style="margin:6px 0 4px;color:#9b9584">HE SELLS</div><table style="border-collapse:collapse;width:100%">`+[...V.map(v=>v[0]),...XS].map(id=>{ const p=SELL[id]; return row(NMV(id),'$'+p,FORAGE.has(id)?'x'+FORAGE.has(id):'',`<button ${B} data-buy="${id}">BUY</button><button ${B} data-buy="${id}" data-n="5">5 $${p*5}</button>`); }).join('')+'</table>';
+    o+=`<div style="margin:10px 0 4px;color:#9b9584">HE BUYS</div><table style="border-collapse:collapse;width:100%">`+mine.map(id=>{ const n=FORAGE.has(id), v=BUY[id]; return row(NMV(id),'$'+v,'x'+n,`<button ${B} data-sell="${id}">SELL</button>${n>1?`<button ${B} data-sell="${id}" data-n="all">ALL $${v*n}</button>`:''}`); }).join('')+'</table>';
     if(!mine.length)o+='<div style="color:#7d7a70;margin-top:6px">No vegetables on you. Cook them by a flame: roast corn, a stew, a stuffed pepper, pumpkin soup.</div>';
     const x=sp.querySelector(':scope>.pX'); sp.innerHTML=o; if(x)sp.appendChild(x); };
   sp.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b||b.classList.contains('pX'))return; const d=b.dataset;
-    if(d.buy){ const n=+d.n||1, c=SELL[d.buy]*n; if(INV.cash<c)say('YOU CANNOT AFFORD THAT.','#c8a090'); else { INV.cash-=c; FORAGE.give(d.buy,n); say(`YOU BUY ${n} ${NM[d.buy]} FOR $${c}.`); if(window.CIVIC&&CIVIC.note)CIVIC.note('you bought '+n+' '+NM[d.buy].toLowerCase()+' from the tomato','park'); } }
-    if(d.sell){ const n=d.n==='all'?FORAGE.has(d.sell):1, v=BUY[d.sell]*n; FORAGE.take(d.sell,n); INV.cash+=v; say(`YOU SELL ${n} ${NM[d.sell]} FOR $${v}.`,'#f2c14e'); if(typeof SFX!=='undefined')SFX.play('clunk',{vol:.5}); }
+    if(d.buy){ const n=+d.n||1, c=SELL[d.buy]*n; if(INV.cash<c)say('YOU CANNOT AFFORD THAT.','#c8a090'); else { INV.cash-=c; FORAGE.give(d.buy,n); say(`YOU BUY ${n} ${NMV(d.buy)} FOR $${c}.`); if(window.CIVIC&&CIVIC.note)CIVIC.note('you bought '+n+' '+NMV(d.buy).toLowerCase()+' from the tomato','park'); } }
+    if(d.sell){ const n=d.n==='all'?FORAGE.has(d.sell):1, v=BUY[d.sell]*n; FORAGE.take(d.sell,n); INV.cash+=v; say(`YOU SELL ${n} ${NMV(d.sell)} FOR $${v}.`,'#f2c14e'); if(typeof SFX!=='undefined')SFX.play('clunk',{vol:.5}); }
     INV.add('x',0); delete INV.items.x; SHOP.draw(); FORAGE.draw(); });
   SHOP.open=()=>{ sp.hidden=false; SHOP.draw(); if(typeof LINES!=='undefined'&&TOONS.tomato)LINES.say(TOONS.tomato,'greet'); };
   window.VEGDBG=()=>({stand:!!VEG.stand,wx:TOONS.tomato&&TOONS.tomato.st.x,wz:TOONS.tomato&&TOONS.tomato.st.z,x:TOONS.tomato&&+(TOONS.tomato.st.x/T).toFixed(1),z:TOONS.tomato&&+(TOONS.tomato.st.z/T).toFixed(1),held:TOONS.tomato&&TOONS.tomato.st.hold,mine:V.map(v=>[v[0],FORAGE.has(v[0])]).filter(a=>a[1])}); }

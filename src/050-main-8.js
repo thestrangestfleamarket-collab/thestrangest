@@ -159,11 +159,12 @@ BOD.KC={KMK,KPP,DGN,DGP,LAMPS,CATALOG,dungeonWall,dungeonFloorCol,castleArch,KAR
     return null; };
   const IX=new Map(), at2=(x,y)=>Math.floor(x/2)+','+Math.floor(y/2), feat=(x0,y0,x1,y1,f)=>{ for(let i=Math.floor(x0/2);i<=Math.floor(x1/2);i++)for(let j=Math.floor(y0/2);j<=Math.floor(y1/2);j++){ const k=i+','+j; (IX.get(k)||IX.set(k,[]).get(k)).push(f); } };
   const MH=[], DR=[];
-  const manhole=(cx,cy)=>{ MH.push([cx,cy]); feat(cx-.45,cy-.45,cx+.45,cy+.45,(x,y)=>{ const dx=x-cx, dy=y-cy, r=Math.hypot(dx,dy); if(r>=.42)return null;
-    if(r>.35)return dx+dy<0?[78,76,72]:[40,40,42];
-    if(r>.32)return [26,26,28];
-    const rs=hash(Math.floor(cx*7),Math.floor(cy*7),621); if(Math.abs(r-.2)<.022)return [36,36,38]; if(r<.07)return [86,84,80];
-    const q=((Math.floor((dx+1)*24/3)+Math.floor((dy+1)*24/3))&1); let c=q?[98,95,90]:[62,61,59]; if(r>.24&&hash(Math.floor(x*24),Math.floor(y*24),623)<.12+.15*rs)c=[110,76,52];
+  const manhole=(cx,cy)=>{ MH.push([cx,cy]); const rs=hash(Math.floor(cx*7),Math.floor(cy*7),621), pa=.5+.12*rs; feat(cx-.7,cy-.7,cx+.7,cy+.7,(x,y)=>{ const dx=x-cx, dy=y-cy, r=Math.hypot(dx,dy), px=Math.floor(x*24), py=Math.floor(y*24), hp=hash(px,py,625);
+    if(r>=.42){ const e=Math.max(Math.abs(dx),Math.abs(dy))+(cvNoise(x*6,y*6,627)-.5)*.12; if(e>pa)return null; if(e>pa-.03)return [30,30,32]; return hp<.1?[58,58,60]:[44,44,47]; }
+    if(r>.35)return dx+dy<0?[80,78,74]:[40,40,42]; if(r>.32)return [24,24,26];
+    const a=Math.atan2(dy,dx), wr=Math.cos(a-rs*6.3)>.55&&r>.1, sp=Math.abs(((a/(Math.PI/4))%1+1)%1-.5)<.05/Math.max(.08,r);
+    let c; if(r<.09)c=Math.abs(dy)<.02&&Math.abs(dx)<.07&&(px&1)?[40,40,42]:[90,88,84]; else if(sp)c=[56,55,53]; else { const ring=((r*24/1.1)%1+1)%1; c=ring<.45?(dx+dy<0?[106,103,98]:[74,72,69]):[52,51,49]; if(wr)c=[c[0]*.6+46,c[1]*.6+45,c[2]*.6+43]; }
+    if(r>.2&&cvNoise(x*9,y*9,629)>.68)c=[112,74,50]; if(hash(px>>1,py>>1,631)<.02)c=[22,22,24]; if(Math.abs(r-.27)<.02&&Math.abs(a-rs*5)<.12)c=[16,16,18];
     return c; }); };
   const HOLE=[0,0,0]; HOLE.h=1; const drain=(ax,e,dir,a)=>{ DR.push({ax,e,a,dir}); const HL=.62, OUT=.82, R=.22, x0=ax==='x'?a-HL-R:Math.min(e,e+dir*(OUT+R)), x1=ax==='x'?a+HL+R:Math.max(e,e+dir*(OUT+R)), y0=ax==='x'?Math.min(e,e+dir*(OUT+R)):a-HL-R, y1=ax==='x'?Math.max(e,e+dir*(OUT+R)):a+HL+R;
     const sd=hash(Math.floor(a*7),Math.floor(e*7),631);

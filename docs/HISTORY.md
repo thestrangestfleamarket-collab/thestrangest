@@ -2655,3 +2655,44 @@ not have windows, make sure buildings are only as tall as they need to be"; then
 - **The far buildings steady** (owner, 19 Oct 2026: "thedark spots on buildings shift every frame so it just looks glitchy"): the far
   skyline's window pattern turns to its even average colour sooner (when a window cell is a third of a pixel, was a full pixel), so the
   small windows no longer crawl as the view moves.
+- **The sun, its rays and the sky** (owner, 19 Oct 2026: "the sun should be placed in the sky at this tmie and rays should come from
+  actualy direciton, they should feel more alive, have a textuer to them, slowly moving,d dust particles, make sure the sky matches the
+  sunny day where it needs to. the bottom of skylines should have trees in front of it"): the sun's disc and halo are drawn again over
+  the mist sky (they were hidden under it, so the rays seemed to come from nowhere); on a clear day the mist turns toward the sky's own
+  horizon colour and the real sky shows through (`uSkyK` from the sun's height and the cloud); the light shafts carry slow drifting
+  bands (3 steps, CEL), the screen rays a slow banded texture; 260 dust motes drift round you, bright inside a shaft, faint outside, by
+  day when it isn't overcast; a band of low-poly trees (two crowns each) stands 3-7 tiles past the walkable edge in front of the skyline,
+  tinted by the mist.
+- **Only the room you're in** (owner, 19 Oct 2026: "anytime you are in interior you should only see black around you except for the
+  only room you are in"): in the isometric view, inside any room (`ROOMS.cur`: shops, bar, bodega, apartment floors, the civic tower)
+  a black cover is drawn over the whole screen except the room's own box as the camera sees it (its 8 corners' outline), so the street
+  and the buildings round it are gone until you step out.
+- **No glow on you indoors** (owner, 19 Oct 2026: "whats cauasing this glow on my char? ... it only does it inside"): your figure was
+  brightened toward white by any lamp within 6 tiles (90%), and rooms are full of lamps; now only lit lamps count, by their strength,
+  and at most 35%.
+- **The glow in the sun** (owner, 19 Oct 2026: "i want that glow to happen in the direct sunlight it looks cool"): outdoors by day a
+  ray goes from your chest toward the sun (every 0.15 s, 40 tiles, solid things only); when nothing blocks it your figure brightens
+  toward white (up to 90%, by the sun's strength), easing in and out over a quarter second as you step in and out of shade.
+- **The Walker's shoulders and head** (owner, 19 Oct 2026: "the avatars back shoulders go up too high and his neck sticks out too far
+  forward. he runs with his ehad tilted too fast back"): the collar's back point lower and nearer the neck (neck +1.8 up, 0.3 back; was
+  +3, 0.8), the head set back over the neck (head base 0.1 forward, head 0.5, top 0.3; were 0.4, 1.0, 0.8); running leans the body
+  45% less, the head never tips back more than 3 degrees and eases there instead of snapping.
+- **The running jump** (owner, 19 Oct 2026: "when you are running and you jump you should land in running position to keep running,
+  right now it jumps with both feet plants and lands two feet, i want a more natural run+jump+run animation"): jumping while running
+  (stride over 60%, running over 40%) is its own move, `runJump`: no two-foot crouch, a push off one leg with the other knee driven up,
+  a split stride in the air, the landing on the leading foot with the speed kept, and the run picks up again on that foot's stance
+  (phase set, 0.12 s blend). Standing jumps are as before.
+- **Lamps and trees on Market St** (owner, 19 Oct 2026: "remevo the tall street lamps from game, make sure lamps are spread out evenly
+  and not too many. make sure trees on market street arent blockign entrances from any direction of view (isometric)"): the tall
+  cobra-head lamps (street, ring roads and the double corner one) are off (`DRESS.tall`); the short globe posts stand every 28 tiles
+  on both sidewalks, staggered 14 apart side to side, never within 2.5 of a door. Street trees keep 7 tiles from every door (bodega,
+  apartments, subway stairs, each place's door) so no isometric angle puts a crown over an entrance.
+- **Shadows steady, light kept out of buildings** (owner, 19 Oct 2026: "shadows still flicker when i run. all shadows like they turn on
+  and off randomly" and "sun rays should follow real logic and not being able to shine into buildings. (make sure all building act
+  like they hav a roof when inside even though you can see it (same with overhead lights) hide them dont take them way"): the sun's
+  cached shadow was sometimes drawn during a side pass (the skyline's own layer pass, the water passes) that sees only part of the
+  scene, so whole sets of shadows vanished until the next refresh; the sun's maps are now drawn only in the main view pass. Hidden
+  roofs (and anything `SEEN` hides) still cast every shadow: the shadow passes see layer 3 too. Overhead fixtures are hidden with
+  `SEEN` instead of removed. The light shafts never start inside or pass through a roofed place (14 tiles up the shaft checked against
+  the room boxes and the solid boxes), and the shafts, the dust and the screen rays are off while you're in a room.
+  `tests/runcheck.cjs` logs every still-shadow redraw with its count of casters (`SUNLOG`) to catch sudden jumps.

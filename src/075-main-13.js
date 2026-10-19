@@ -1,6 +1,6 @@
 
 looseDraw();
-let looseAcc=0, J0=null, J0t=0, trip=false;
+let looseAcc=0, J0=null, J0t=0, trip=false; const SUNG={t:0,lit:0,k:0,rc:new THREE.Raycaster(),o:new THREE.Vector3(),hit:[]};
 
 const keys=new Set(), PAD={mv:null,n:0}; let target=null;
 const VIEW0={yaw:Math.PI/4,pitch:Math.PI/6,ppu:PPU}; let yaw=VIEW0.yaw, pitch=VIEW0.pitch, yawTo=yaw, pitchTo=pitch, ppuTo=ppu;
@@ -63,8 +63,11 @@ function frame(now){ requestAnimationFrame(frame); renderer.info.reset(); const 
   phyYouNow(dt); looseAcc+=dt; let nst=0; while(looseAcc>=PHH&&nst<6){ looseAcc-=PHH; nst++; phyStep(loose,STATIC,PHH,null,null); } if(nst>=6)looseAcc=0; looseDraw();
   if(PERFX.poolNear()){ const px=FLOATS.px??pos.x, pz=FLOATS.pz??pos.z, k=1/Math.max(dt,1e-3); FLOATS.step(dt,{inWater:!!(st.water&&st.water.in),x:pos.x,z:pos.z,vx:(pos.x-px)*k,vz:(pos.z-pz)*k}); FLOATS.px=pos.x; FLOATS.pz=pos.z; }
   if(typeof UI!=='undefined'&&UI.freeCam)LITE.tick(dt,UI.camT.x,UI.camT.y,UI.camT.z); else LITE.tick(dt,pos.x,py+1.2*TILE,pos.z);
-  let lampW=0; for(const L of lamps){ const d=Math.hypot(L.position.x-pos.x,L.position.z-pos.z); lampW=Math.max(lampW,1-d/6); }
-  W3.tint.setRGB(.58,.6,.66).lerp(C2.setRGB(1,1,1),Math.max(0,lampW)*0.9); if(ED.on)W3.tint.setRGB(1,1,1);
+  let lampW=0; for(const L of lamps){ if(!L.visible||!(L.intensity>0)||!L.parent)continue; const d=Math.hypot(L.position.x-pos.x,L.position.z-pos.z); if(d<6)lampW=Math.max(lampW,(1-d/6)*Math.min(1,L.intensity/(L.userData.i0||L.intensity))); }
+  { const G=SUNG, sun=CLOCK.sun, out=LVL==='up'&&!ROOMS.cur&&sun&&sun.intensity>.6&&CLOCK.dir&&CLOCK.dir.y>.05; if((G.t-=dt)<=0){ G.t=.15; G.lit=0; if(out){ G.rc.set(G.o.set(pos.x,py+1.1*TILE,pos.z),CLOCK.dir); G.rc.camera=cam; G.rc.far=40*TILE; G.hit.length=0; let blk=false;
+      for(const h of G.rc.intersectObjects(scene.children,true,G.hit)){ const o=h.object, m=Array.isArray(o.material)?o.material[0]:o.material; let v=true; for(let q=o;q;q=q.parent)if(!q.visible||q===W3.group){ v=false; break; } if(!v||o.isSprite||!m||m.transparent||m.depthWrite===false||o.isPoints||o.isSprite||o.isLine)continue; blk=true; break; }
+      G.lit=blk?0:Math.min(1,(sun.intensity-.6)/1.4); } } G.k+=(G.lit-G.k)*Math.min(1,dt*4); }
+  W3.tint.setRGB(.58,.6,.66).lerp(C2.setRGB(1,1,1),Math.max(Math.max(0,lampW)*0.35,SUNG.k*.9)); if(ED.on)W3.tint.setRGB(1,1,1);
   DRESS.tick(dt,pos); RINGX.tick(dt); RIVER.tick(dt,pos); FOUNT.tick&&FOUNT.tick(dt,pos); RIVER.hud(); if(window.BROOK&&BROOK.tick)BROOK.tick(dt,pos); SUBX.tick(dt); { const r=MODS.apts.tick(); if(r)solids=r; } { const r2=STORE.stackTick&&STORE.stackTick(); if(r2)solids=r2; } CITY.tick(dt,pos); NPCS.tick(dt,pos); if(FIRE)FIRE.tick(dt); FIGFX.tick(dt,pos); FLAME.tick(dt,pos); MUS.tick(dt); BWK.tick(dt); PNM.tick(dt); SGM.tick(dt); DRM.tick(dt); STAGE.tick(dt);
   UI.goTick(); UI.runTick(); CLOCK.tick(dt); VIT.tick(dt); LOOK.tick(); WHERE.tick(dt); AMB.tick(dt); LINES.tick(dt);
   marker.visible=!!target; if(target){ marker.position.set(target.x,groundY(target.x,target.z)+0.03,target.z); marker.material.opacity=0.5+0.4*Math.sin(t*8); }
@@ -77,7 +80,7 @@ function frame(now){ requestAnimationFrame(frame); renderer.info.reset(); const 
   for(const w of cutWalls)w.pl.constant=(!UI.persp&&(w.always||Math.sin(a)*w.nx+Math.cos(a)*w.nz<-0.05)&&pitch<1.45&&(!w.when||w.when()))?w.foot:1e6;
   { const bi=BODB.inside(); for(const r of BODB.roof)SEEN(r,!bi); } if(MODS.pool.roof)SEEN(MODS.pool.roof,!MODS.pool.inside(pos.x,pos.z));
   const wOn=LVL==='up'&&(MODS.pool.inside(pos.x,pos.z)||Math.hypot(pos.x-POOLR.X((POOLR.bx0+POOLR.bx1)/2),pos.z-POOLR.Z((POOLR.by0+POOLR.by1)/2))<15*TILE);
-  ROOMS.tick(); INTERIORS.tick(); PERFX.tick(); STORE.tick(); NPCS.cull(true); INTERIORS.cull(true); CULL.begin(); if(PERFX.bfNear())BF.tick(dt); if(wOn)WATER.step(renderer,dt); WATER.tickAll(renderer,dt,pos); renderer.shadowMap.needsUpdate=true; if(wOn&&WATER.seen(WATER.mesh,cam))WATER.under(renderer,scene,cam,lamps); WATER.underAll(renderer,scene,cam,lamps); RIVER.pre(renderer,scene,cam,dt,pos); FAR3.pre(renderer,cam); W3.shadowPass(renderer); if(OUTL.on)OUTL.render(renderer,scene,cam); composer.render(); RIVER.post(scene); FAR3.post(); CULL.end(); NPCS.cull(false); INTERIORS.cull(false);
+  ROOMS.tick(); INTERIORS.tick(); PERFX.tick(); STORE.tick(); NPCS.cull(true); INTERIORS.cull(true); CULL.begin(); if(PERFX.bfNear())BF.tick(dt); if(wOn)WATER.step(renderer,dt); WATER.tickAll(renderer,dt,pos); renderer.shadowMap.needsUpdate=true; if(wOn&&WATER.seen(WATER.mesh,cam))WATER.under(renderer,scene,cam,lamps); WATER.underAll(renderer,scene,cam,lamps); RIVER.pre(renderer,scene,cam,dt,pos); FAR3.pre(renderer,cam); W3.shadowPass(renderer); if(OUTL.on)OUTL.render(renderer,scene,cam); CLOCK.main=1; composer.render(); CLOCK.main=0; RIVER.post(scene); FAR3.post(); CULL.end(); NPCS.cull(false); INTERIORS.cull(false);
   fpsN++; fpsT+=dt; if(fpsT>0.5){ const RI=renderer.info.render; statEl.textContent=`${Math.round(fpsN/fpsT)} fps · ${Math.round(RI.calls/fpsN)} draws · ${(RI.triangles/fpsN/1000).toFixed(1)}k tris · ${RW}×${RH} px · turn ${Math.round(((a*180/Math.PI)%360+360)%360)}° · tilt ${Math.round(pitch*180/Math.PI)}° · zoom ${(SCL*rppu()/V0).toFixed(2)}× · art ${SCL===1&&vpu()<art()?'full':RES()+'×'}`; renderer.info.reset(); fpsN=0; fpsT=0; }
 }
 composer=new EffectComposer(renderer); composer.setPixelRatio(1); composer.addPass(RPASS=new RenderPass(scene,cam)); { const sp=new ShaderPass(OUTL.pass); composer.addPass(sp); OUTL.sp=sp; sp.enabled=!!OUTL.on; OUTL.pass.uniforms=sp.uniforms; sp.uniforms.tId.value=OUTL.rt.texture; sp.uniforms.tint.value=W3.tint; }

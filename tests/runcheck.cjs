@@ -8,11 +8,12 @@ const OUT=process.argv[2]||'runout', PAGE=path.resolve(__dirname,'../dist/market
   for(let i=0;i<900;i++){ await pg.waitForTimeout(500); if(await pg.evaluate(()=>!!window.__started))break; }
   await pg.waitForTimeout(5000);
   const place=async(f)=>{ await pg.evaluate(f); await pg.waitForTimeout(4000); };
-  await place(()=>{ const B=__dbg.MAPK.BOD; STORE.goTo(B.XS(100),B.ZS((B.CURB+B.FAR)/2),'up'); });
+  await place(()=>{ const B=__dbg.MAPK.BOD; STORE.goTo(B.XS(60),B.ZS((B.CURB+B.FAR)/2),'up'); });
   await pg.evaluate(()=>{ const S=window.__S=[]; let last=performance.now(); const V=new (__dbg.camO().position.constructor)();
     const f=now=>{ if(!window.__S)return; const c=__dbg.camO(), y=__dbg.you(), g=__dbg.W3.group.position; V.set(y.x,y.y+1,y.z).project(c);
       S.push([+(now-last).toFixed(1),+y.x.toFixed(4),+y.z.toFixed(4),+y.y.toFixed(4),+((V.x+1)*480).toFixed(2),+((1-V.y)*270).toFixed(2),+g.y.toFixed(4)]); last=now; requestAnimationFrame(f); }; requestAnimationFrame(f); });
-  const runs=[['wd',['w','d']],['sa',['s','a']],['w',['w']],['d',['d']]];
+  await pg.evaluate(()=>{ window.SUNLOG=[]; window.__VIS=[]; window.__VT=setInterval(()=>{ let c=0; __scene.traverseVisible(o=>{ if(o.isMesh&&o.castShadow)c++; }); __VIS.push(c); },500); });
+  const runs=[['wd',['w','d']],['sa',['s','a']],['w',['w']],['d',['d']],['wd2',['w','d']],['wa',['w','a']]];
   for(const [n,ks] of runs){ await pg.keyboard.down('Shift'); for(const k of ks)await pg.keyboard.down(k);
     for(let i=0;i<3;i++){ await pg.waitForTimeout(900); await pg.screenshot({path:path.join(OUT,'run-'+n+'-'+i+'.png'),clip:{x:330,y:120,width:300,height:300}}); }
     for(const k of ks)await pg.keyboard.up(k); await pg.keyboard.up('Shift'); await pg.waitForTimeout(600); }
@@ -20,7 +21,7 @@ const OUT=process.argv[2]||'runout', PAGE=path.resolve(__dirname,'../dist/market
   const st=a=>{ a=a.filter(Number.isFinite); const m=a.reduce((p,q)=>p+q,0)/Math.max(1,a.length); return {n:a.length,mean:+m.toFixed(3),max:+Math.max(...a).toFixed(3),sd:+Math.sqrt(a.reduce((p,q)=>p+(q-m)**2,0)/Math.max(1,a.length)).toFixed(3)}; };
   const dts=S.map(r=>r[0]), step=S.slice(1).map((r,i)=>Math.hypot(r[1]-S[i][1],r[2]-S[i][2])/Math.max(1,r[0])*16.7), dpy=S.slice(1).map((r,i)=>Math.abs(r[3]-S[i][3])), dsx=S.slice(2).map((r,i)=>Math.abs(r[4]-2*S[i+1][4]+S[i][4])), dsy=S.slice(2).map((r,i)=>Math.abs(r[5]-2*S[i+1][5]+S[i][5]));
   rep.run={frames:st(dts),slow:dts.filter(d=>d>40).length,stepPer60:st(step),pyStep:st(dpy),screenJerkX:st(dsx),screenJerkY:st(dsy),gy:st(S.map(r=>r[6]))};
-  rep.sun=await pg.evaluate(()=>window.SUNDBG&&SUNDBG());
+  rep.sun=await pg.evaluate(()=>window.SUNDBG&&SUNDBG()); rep.sunlog=await pg.evaluate(()=>{ clearInterval(__VT); return {still:SUNLOG,vis:__VIS}; }); { const L=rep.sunlog.still; rep.sunJumps=L.slice(1).map((r,i)=>[r[0],r[1],L[i][1]]).filter(([,a,b])=>Math.abs(a-b)>Math.max(20,b*.15)); }
   fs.writeFileSync(path.join(OUT,'frames.json'),JSON.stringify(S));
   await place(()=>{ const N=__dbg.npcs().find(n=>n.key==='scooterfrog'); if(N)STORE.goTo(N.st.x,N.st.z+1.5*(__dbg.camO().right-__dbg.camO().left)/30,'up'); });
   await pg.screenshot({path:path.join(OUT,'frog.png')}); rep.frog=await pg.evaluate(()=>{ const N=__dbg.npcs().find(n=>n.key==='scooterfrog'); return N&&{x:N.st.x,z:N.st.z,to:N.st.to}; });

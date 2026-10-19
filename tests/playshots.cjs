@@ -23,7 +23,9 @@ process.on('unhandledRejection',e=>{ errs.push('TEST '+String(e&&e.message||e).s
   await pg.keyboard.press('q'); await pg.keyboard.press('q'); await shot('day-iso-rev',null,4000); await pg.keyboard.press('e'); await pg.keyboard.press('e');
   await pg.keyboard.press('v'); for(let i=0;i<6;i++){ await pg.mouse.wheel(0,600); await pg.waitForTimeout(150); }
   await shot('day-behind-a',new Function(at+'STORE.goTo(px,B.Z(M.B.y0+11.8),"up"); __dbg.face(Math.atan2(tx-px,tz-pz));'),4000);
+  rep.posA=await pg.evaluate(()=>[__dbg.you(),STORE.main.play.B]);
   await shot('day-behind-b',new Function(at+'STORE.goTo(px,B.Z(M.B.y0+9.6),"up"); __dbg.face(Math.atan2(px-tx,pz-tz));'),4000);
+  rep.posB=await pg.evaluate(()=>__dbg.you());
   await pg.evaluate(()=>window.DN&&DN.set&&DN.set('night'));
   await shot('night-behind-a',new Function(at+'STORE.goTo(px,B.Z(M.B.y0+11.8),"up"); __dbg.face(Math.atan2(tx-px,tz-pz));'),4000);
   await shot('night-behind-b',new Function(at+'STORE.goTo(px,B.Z(M.B.y0+9.6),"up"); __dbg.face(Math.atan2(px-tx,pz-tz));'),4000);

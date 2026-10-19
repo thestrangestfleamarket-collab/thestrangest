@@ -5,9 +5,9 @@ const FORAGE={}; window.FORAGE=FORAGE;
     inkcap:['SHAGGY INK CAP',35,10,.04,0,0xd8d4cc,0xe8e4dc,[.6,1.7,.8,.8]],bolete:['KING BOLETE',45,16,.15,0,0x7a4a2a,0xd8c49a,[1.25,.8,1,1.6]],
     morel:['MOREL',55,26,.08,0,0xb08a5a,0xe6dcc4,[.62,1.5,.7,.9]],moonglow:['MOONGLOW',75,60,0,1,0xa8f0ff,0xd8f4ff,[.95,.6,1,.9]]};
   const MK=Object.keys(MU);
-  const GROWS={flat:{button:6,inkcap:3,puffball:1},roll:{button:3,puffball:2,chanterelle:2,morel:1},little:{chanterelle:5,button:2,redcap:1},
-    big:{redcap:4,chanterelle:2,bolete:1},giant:{bolete:4,redcap:1,moonglow:.6},bigflat:{inkcap:4,moonglow:.8,bolete:1},tuft:{puffball:5,morel:1.5,button:1}};
-  FORAGE.MU=MU; FORAGE.GROWS=GROWS;
+  const GROWS={flat:{button:6,inkcap:3,puffball:1},roll:{button:3,puffball:3,inkcap:1},little:{button:4,redcap:1,puffball:1},
+    big:{redcap:4,button:2,inkcap:1},giant:{redcap:3,inkcap:2},bigflat:{inkcap:4,puffball:1},tuft:{puffball:5,button:1}}, GOLD=['','morel','chanterelle','bolete','moonglow'];
+  FORAGE.MU=MU; FORAGE.GROWS=GROWS; FORAGE.GOLD=GOLD;
   const RC=[['p_refresh','REFRESH POTION','alchemy',[0,50],{puffball:3},'your stamina all back'],['p_heal','HEAL POTION','alchemy',[15,65],{chanterelle:2,puffball:1},'half your health back'],
     ['p_str','STRENGTH POTION','alchemy',[30,80],{redcap:2},'run without tiring, 3 min'],['p_keen','KEEN EYE POTION','alchemy',[30,80],{inkcap:2},'see and pick as if 20 better, 5 min'],
     ['p_cure','CURE POTION','alchemy',[40,90],{morel:1,button:1},'the poison gone'],['p_gheal','GREATER HEAL','alchemy',[60,110],{moonglow:1,chanterelle:2},'all your health, and more for a minute'],
@@ -55,9 +55,10 @@ const FORAGE={}; window.FORAGE=FORAGE;
   GLOW.castShadow=false; const HB=new THREE.BoxGeometry(.7*T,.5*T,.7*T), HM=new THREE.MeshBasicMaterial({visible:false}), hits=new THREE.Group(); (MAPG.park||scene).add(hits);
   const hsh=(a,b,s)=>{ let h=(Math.floor(a*97)*374761393+Math.floor(b*89)*668265263+s*1442695041)|0; h=(h^(h>>>13))*1274126177|0; return ((h^(h>>>16))>>>0)/4294967296; };
   const pickKind=(g,r)=>{ const W=GROWS[g]||GROWS.flat; let s=0; for(const k in W)s+=W[k]; r*=s; for(const k in W)if((r-=W[k])<0)return k; return 'button'; };
-  const spawns=(key,grp)=>{ const d=day(), Q=grp.sq, out=[]; for(let i=0;i<Q.length;i+=3){ const x=Q[i], y=Q[i+1], z=Q[i+2]; if(hsh(x/T+d*.37,z/T,201)>.016||!WEEDS.inPark||!WEEDS.inPark(x,z,10)||(WEEDS.mushAt&&!WEEDS.mushAt(x,z)))continue;
-      const g=WEEDS.kindAt(x,z), k=pickKind(g,hsh(x/T,z/T+d*.53,202)), px=x+(hsh(x,z,203)-.5)*.4*T, pz=z+(hsh(z,x,204)-.5)*.4*T;
-      out.push({k,x:px,z:pz,y,top:grp.top(px,y,pz),pk:hsh(x,z,206)<.2,rv:0,cr:0,id:d+':'+Math.round(px*10)+','+Math.round(pz*10),s:.8+.5*hsh(x,z,205)}); } return out; };
+  const spawns=(key,grp)=>{ const d=day(), Q=grp.sq, out=[]; for(let i=0;i<Q.length;i+=3){ const x=Q[i], y=Q[i+1], z=Q[i+2], gd=WEEDS.goldAt&&WEEDS.goldAt(x,z), gv=gd&&gd[1]>.5?gd[0]:0;
+      if(gv?hsh(x/T+d*.37,z/T,207)>.05:gd&&gd[1]>0||hsh(x/T+d*.37,z/T,201)>.016||!WEEDS.inPark||!WEEDS.inPark(x,z,10)||(WEEDS.mushAt&&!WEEDS.mushAt(x,z)))continue;
+      const k=gv?GOLD[gv]:pickKind(WEEDS.kindAt(x,z),hsh(x/T,z/T+d*.53,202)), px=x+(hsh(x,z,203)-.5)*(gv?.2:.4)*T, pz=z+(hsh(z,x,204)-.5)*(gv?.2:.4)*T;
+      out.push({k,g:gv,x:px,z:pz,y,top:grp.top(px,y,pz),pk:hsh(x,z,206)<.2,rv:0,cr:0,id:d+':'+Math.round(px*10)+','+Math.round(pz*10),s:.8+.5*hsh(x,z,205)}); } return out; };
   const m4=new THREE.Matrix4(), q=new THREE.Quaternion(), V3=THREE.Vector3, col=new THREE.Color(); let things=[];
   FORAGE.sync=()=>{ let nc=0, ng=0, ns=0; const see=sk('forage')+15+FORAGE.keen(), list=[]; hits.clear(); for(const t of things){ const i=UI.things.indexOf(t); if(i>=0)UI.things.splice(i,1); } things=[];
     const now=performance.now()/1e3;
@@ -83,7 +84,7 @@ const FORAGE={}; window.FORAGE=FORAGE;
         if(d>.55*T){ m.st=0; continue; } if(m.st||!up||d>.35*T)continue; m.st=1; if(shod&&mv>.2*T&&Math.random()<pc){ S.picked[m.id]=1; m.cr=now+90; m.rv=now+20; say('SQUISH.','#c8a090'); saveSoon(); ch=true; } }
       if(near&&shod&&up&&!S.shoeHint&&WEEDS.inPark&&WEEDS.inPark(pos.x,pos.z)){ S.shoeHint=1; say('TAKE OFF YOUR SHOES TO FORAGE SAFELY.','#f2c14e'); saveSoon(); }
       if(ch)FORAGE.sync(); };
-    window.MUSHDBG=()=>{ const now=performance.now()/1e3, o={hidden:0,revealed:0,peek:0,crushed:0,picked:0,barefoot:!shod0()}; for(const arr of CH.values())for(const m of arr){ if(m.cr>now)o.crushed++; else if(S.picked[m.id])o.picked++; else if(m.pk)o.peek++; else if(m.rv>now)o.revealed++; else o.hidden++; } return o; }; }
+    window.MUSHDBG=()=>{ const now=performance.now()/1e3, o={hidden:0,revealed:0,peek:0,crushed:0,picked:0,barefoot:!shod0(),gold:{},lawn:{}}; for(const arr of CH.values())for(const m of arr){ const gk=m.g?WEEDS.GV[m.g]+': '+m.k:m.k, gb=m.g?o.gold:o.lawn; gb[gk]=(gb[gk]||0)+1; if(m.cr>now)o.crushed++; else if(S.picked[m.id])o.picked++; else if(m.pk)o.peek++; else if(m.rv>now)o.revealed++; else o.hidden++; } return o; }; }
   FORAGE.pick=m=>{ const [nm,d]=MU[m.k], kb=FORAGE.keen(); if(typeof SFX!=='undefined')SFX.play('step',{vol:.5});
     if(use('forage',d-25,d+25,kb)){ S.picked[m.id]=1; const n=1+(sk('forage')+kb>d+20&&Math.random()<.4?1:0), known=d<10||use('myco',d-30,d+20);
       give((known?'m_':'u_')+m.k,n); say(known?`YOU PICK ${n>1?n+' ':'A '}${nm}${n>1?'S':''}.`:`YOU PICK ${n>1?n:'A'} MUSHROOM${n>1?'S':''} YOU DON'T KNOW.`,known?'#e8e2cc':'#c8b0ff'); }
@@ -150,4 +151,5 @@ const FORAGE={}; window.FORAGE=FORAGE;
     SHOP.draw(); PACK.draw(); });
   SHOP.open=()=>{ sp.hidden=false; SHOP.draw(); if(typeof LINES!=='undefined'&&MUSH.N)LINES.say(MUSH.N,'greet'); };
   for(const th of UI.things)if(th.npc&&th.npc===MUSH.N){ th.act=()=>SHOP.open(); th.reach=2.2*T; th.near=3*T; }
+  window.GOLDDBG=()=>{ const P=WEEDS.gold()||[], M=[]; for(const arr of CH.values())for(const m of arr)if(m.g)M.push({k:m.k,v:WEEDS.GV[m.g],x:+(m.x/T).toFixed(1),z:+(m.z/T).toFixed(1),pk:m.pk}); return {patches:P.map(p=>({v:WEEDS.GV[p.v],x:p.wx,z:p.wz,r:+p.r.toFixed(2)})),mush:M}; };
   window.FORDBG=()=>({sk:{...S.sk},lock:{...S.lock},food:+S.food.toFixed(2),fx:{...S.fx},chunks:CH.size,shown:FORAGE.shown,items:{...INV.items},cash:INV.cash,fire:!!fire()}); }

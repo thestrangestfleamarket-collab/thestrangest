@@ -1,15 +1,6 @@
-{ const S=SKEL, b=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0)), f32=s=>new Float32Array(b(s).buffer), i16=s=>new Int16Array(b(s).buffer), u16=s=>new Uint16Array(b(s).buffer);
+const SKELGO=()=>SKELGO.p||(SKELGO.p=(async()=>{ const S=await SKEL();
   const BN=S.rig.names.map(n=>n.replace(/\./g,'_')), JI=Object.fromEntries(BN.map((n,i)=>[n,i]));
-  const pts=M=>{ const q=i16(M.p), P=new Float32Array(q.length); for(let i=0;i<q.length;i++)P[i]=(q[i]+32500)*M.sc+M.lo[i%3]; return P; };
-  const geomOf=(M,rigged)=>{ const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(pts(M),3)); g.setAttribute('color',new THREE.BufferAttribute(b(M.c),3,true)); g.setIndex(new THREE.BufferAttribute(u16(M.i),1));
-    g.setAttribute('reg',new THREE.BufferAttribute(M.r?Float32Array.from(b(M.r)):new Float32Array(M.n),1)); g.setAttribute('sh',new THREE.BufferAttribute(new Float32Array(M.n),1));
-    if(rigged){ g.setAttribute('skinIndex',new THREE.Uint8BufferAttribute(b(M.j),4)); g.setAttribute('skinWeight',new THREE.BufferAttribute(b(M.w),4,true)); } return g; };
-  const rigOf=()=>{ const R=S.rig, bones=R.names.map((n,i)=>{ const B=new THREE.Bone(); B.name=BN[i]; B.position.fromArray(R.t[i]); B.quaternion.fromArray(R.q[i]); return B; });
-    R.parent.forEach((p,i)=>{ if(p>=0)bones[p].add(bones[i]); }); const ibm=f32(R.ibm); return {bones,skeleton:new THREE.Skeleton(bones,bones.map((_,i)=>new THREE.Matrix4().fromArray(ibm,i*16)))}; };
-  const CLIPS={}; for(const [name,C] of Object.entries(S.clips)){ const T=Array.from({length:C.n},(_,k)=>k*C.dur/(C.n-1)), Q=i16(C.q), tracks=[];
-    BN.forEach((bn,j)=>{ const v=new Float32Array(C.n*4); for(let k=0;k<C.n;k++)for(let c=0;c<4;c++)v[k*4+c]=Q[(k*BN.length+j)*4+c]/32000; tracks.push(new THREE.QuaternionKeyframeTrack(bn+'.quaternion',T,v)); });
-    for(const [bn,p] of Object.entries(C.p))if(bn!=='root')tracks.push(new THREE.VectorKeyframeTrack(bn.replace(/\./g,'_')+'.position',T,f32(p)));
-    CLIPS[name]=new THREE.AnimationClip(name,C.dur,tracks); }
+  const geomOf=(M,rigged)=>SKIN.geom(M,rigged), rigOf=()=>SKIN.rig(S.rig,BN), CLIPS=SKIN.clips(S.clips,BN,false,n=>n.replace(/\./g,'_'));
   const LANE={x0:BOD.XS(52),x1:BOD.XS(106),z0:BOD.ZS(-76.3),z1:BOD.ZS(BOD.FAR+2.8)}, HOLE=[BOD.XS(MAPSTAIR.x0-.6),BOD.ZS(MAPSTAIR.y0),BOD.XS(MAPSTAIR.x1+.6),BOD.ZS(MAPSTAIR.y1+.6)],
     free=(x,z,R)=>!(x>HOLE[0]-R&&x<HOLE[2]+R&&z>HOLE[1]-R&&z<HOLE[3]+R)&&!SOL.up.some(b=>x>b[0]-R&&x<b[2]+R&&z>b[1]-R&&z<b[3]+R), WALK=.87;
   const RUNU=2.6;
@@ -94,6 +85,16 @@
   { const DN=DUN(); skel('Minion','GOLD SKELETON',1.4,DN?DN.x:T_(77),DN?DN.z:Z_(BOD.FAR),.45,{key:'Gold',walkN:'Walking_A',idleN:'Idle_A',gild:true,dun:DN}); }
   window.GUARDX={TROUBLE,shoot,free,SEE,RUN,LANE,T_,Z_,d2,GUARDS};
   window.GUARDDBG=()=>({guards:GUARDS.map(N=>({k:N.key,mode:N.guard.mode,x:+(N.st.x/TILE).toFixed(1),z:+(N.st.z/TILE).toFixed(1),act:N.an.once&&N.an.once.n})),trouble:TROUBLE.map(N=>({mode:N.mode,x:+(N.st.x/TILE).toFixed(1),z:+(N.st.z/TILE).toFixed(1),act:N.an.once&&N.an.once.n})),next:+next.toFixed(1),dark:CLOCK.dark()});
-  window.SKELDBG=()=>NPCS.filter(N=>N.mixer).map(N=>({key:N.key,x:+N.st.x.toFixed(2),z:+N.st.z.toFixed(2),y:+N.g.position.y.toFixed(2),to:!!N.st.to,bones:N.me.skeleton.bones.length})); }
+  })());
+window.SKELDBG=()=>NPCS.filter(N=>N.mixer).map(N=>({key:N.key,x:+N.st.x.toFixed(2),z:+N.st.z.toFixed(2),y:+N.g.position.y.toFixed(2),to:!!N.st.to,bones:N.me.skeleton.bones.length}));
+if(!MODS.dungeon||QS.get('trouble'))await SKELGO();
+{ const S=CASTLE.stair, n=S.steps, rn=(S.y1-S.y0)/n, cx=((S.x0+S.x1)/2-72)*TILE, foot={x:cx,z:(S.y1+.7+77)*TILE}, top={x:cx,z:(S.y0-.5+77)*TILE};
+  const tread=(x,z)=>{ const gx=x/TILE+72, gy=z/TILE-77; return gx>=S.x0&&gx<S.x1&&gy>=S.y0&&gy<S.y1?Math.min(n,Math.floor((gy-S.y0)/rn)+1):null; };
+  const wait=ms=>new Promise(r=>setTimeout(r,ms)), frames=k=>new Promise(r=>{ const f=()=>--k<=0?r():requestAnimationFrame(f); requestAnimationFrame(f); });
+  let busy=false; const go=async dir=>{ busy=true; const el=document.getElementById('subfade'); el.textContent=dir==='out'?'LEAVING DUNGEON':'ENTERING DUNGEON'; el.style.pointerEvents='auto'; el.style.opacity='1'; await wait(340);
+    if(dir!=='load'){ const p=dir==='in'?foot:top; UI.goTo(p.x,p.z,dir==='in'?'down':'up'); keys.clear(); }
+    if(dir!=='out')await SKELGO(); await frames(3); await wait(260); el.style.opacity='0'; el.style.pointerEvents='none'; await wait(360); busy=false; };
+  MODS.dunDoor=(py,p)=>{ if(!MODS.dungeon||busy||UI.freeCam||METRO.doorBusy()||(typeof RAG!=='undefined'&&RAG.on))return; const k=tread(p.x,p.z);
+    if(LVL!=='down'&&k!=null&&k>=3)go('in'); else if(LVL==='down'&&k!=null&&k<=n-5)go('out'); else if(!SKELGO.p&&LVL==='down'&&MODS.dungeon.inside(p.x,p.z))go('load'); }; window.DUNDBG=()=>({stair:S,tile:TILE,lv:LVL,on:!!SKELGO.p}); }
 
 const DRAGON=__DATA__("data/dragon.json");

@@ -9,8 +9,8 @@ const OUT=process.argv[2]||'runout', PAGE=path.resolve(__dirname,'../dist/market
   await pg.waitForTimeout(5000);
   const place=async(f)=>{ await pg.evaluate(f); await pg.waitForTimeout(4000); };
   await place(()=>{ const B=__dbg.MAPK.BOD; STORE.goTo(B.XS(100),B.ZS((B.CURB+B.FAR)/2),'up'); });
-  await pg.evaluate(()=>{ const S=window.__S=[]; let last=performance.now(); const V=new (__dbg.cam().position.constructor)();
-    const f=now=>{ if(!window.__S)return; const c=__dbg.cam(), y=__dbg.you(), g=__dbg.W3.group.position; V.set(y.x,y.y+1,y.z).project(c);
+  await pg.evaluate(()=>{ const S=window.__S=[]; let last=performance.now(); const V=new (__dbg.camO().position.constructor)();
+    const f=now=>{ if(!window.__S)return; const c=__dbg.camO(), y=__dbg.you(), g=__dbg.W3.group.position; V.set(y.x,y.y+1,y.z).project(c);
       S.push([+(now-last).toFixed(1),+y.x.toFixed(4),+y.z.toFixed(4),+y.y.toFixed(4),+((V.x+1)*480).toFixed(2),+((1-V.y)*270).toFixed(2),+g.y.toFixed(4)]); last=now; requestAnimationFrame(f); }; requestAnimationFrame(f); });
   const runs=[['wd',['w','d']],['sa',['s','a']],['w',['w']],['d',['d']]];
   for(const [n,ks] of runs){ await pg.keyboard.down('Shift'); for(const k of ks)await pg.keyboard.down(k);
@@ -22,7 +22,7 @@ const OUT=process.argv[2]||'runout', PAGE=path.resolve(__dirname,'../dist/market
   rep.run={frames:st(dts),slow:dts.filter(d=>d>40).length,stepPer60:st(step),pyStep:st(dpy),screenJerkX:st(dsx),screenJerkY:st(dsy),gy:st(S.map(r=>r[6]))};
   rep.sun=await pg.evaluate(()=>window.SUNDBG&&SUNDBG());
   fs.writeFileSync(path.join(OUT,'frames.json'),JSON.stringify(S));
-  await place(()=>{ const N=__dbg.npcs().find(n=>n.key==='scooterfrog'); if(N)STORE.goTo(N.st.x,N.st.z+1.5*(__dbg.cam().right-__dbg.cam().left)/30,'up'); });
+  await place(()=>{ const N=__dbg.npcs().find(n=>n.key==='scooterfrog'); if(N)STORE.goTo(N.st.x,N.st.z+1.5*(__dbg.camO().right-__dbg.camO().left)/30,'up'); });
   await pg.screenshot({path:path.join(OUT,'frog.png')}); rep.frog=await pg.evaluate(()=>{ const N=__dbg.npcs().find(n=>n.key==='scooterfrog'); return N&&{x:N.st.x,z:N.st.z,to:N.st.to}; });
   await pg.waitForTimeout(5000); rep.frog2=await pg.evaluate(()=>{ const N=__dbg.npcs().find(n=>n.key==='scooterfrog'); return N&&{x:N.st.x,z:N.st.z}; });
   await place(()=>{ STORE.goTo(METRO.plat.x,METRO.plat.z,'down'); });

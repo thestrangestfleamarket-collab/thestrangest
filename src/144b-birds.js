@@ -21,7 +21,7 @@ const BIRDS={list:[]}; window.BIRDS=BIRDS;
   const PART=[['body',[shape(blob(.2,.19,.4,8,5),[1,1,1],[0,.36,-.02])]],['breast',[shape(blob(.17,.17,.24,6,4),[1,1,1],[0,.31,.12])]],['head',[shape(blob(.15,.15,.16,6,4),[1,1,1],[0,.55,.3])]],
     ['cap',[shape(blob(.135,.07,.13,6,3),[1,1,1],[0,.64,.29])]],['crest',[shape(cyl(0,.07,.22,4),[1,1,1],[0,.72,.21],null,[-35,0,0])]],['mask',[shape(blob(.155,.09,.08,6,3),[1,1,1],[0,.5,.37])]],
     ['beak',[shape(cyl(0,.045,.15,4),[1,1,1],[0,.53,.49],null,[90,0,0])]],['eye',[-1,1].map(s=>shape(sph(.028,4,3),[1,1,1],[s*.125,.58,.37]))],
-    ['tail',[shape(box(.17,.03,.34),[1,1,1],[0,.38,-.52],null,[15,0,0])]],['leg',[-1,1].map(s=>shape(cyl(.014,.014,.22,3),[1,1,1],[s*.06,.11,.02]))],
+    ['tail',[shape(box(.17,.03,.26),[1,1,1],[0,.37,-.46],null,[15,0,0])]],['leg',[-1,1].map(s=>shape(cyl(.014,.014,.22,3),[1,1,1],[s*.06,.11,.02]))],
     ['wing',[shape(blob(.03,.13,.3,6,3),[1,1,1],[.02,-.11,-.14])],1],['bar',[shape(blob(.034,.03,.18,4,2),[1,1,1],[.026,-.13,-.1])],1]];
   const PIV=[.17,.47,.08], mat=new THREE.MeshLambertMaterial({flatShading:true,side:THREE.DoubleSide}), MAXI=48, ME={};
   const geo=(parts,mx)=>{ let n=0; for(const p of parts)n+=p.P.length; const P=new Float32Array(n); let o=0; for(const p of parts){ P.set(p.P,o); o+=p.P.length; } if(mx)for(let i=0;i<n;i+=3)P[i]=-P[i];

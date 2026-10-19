@@ -3126,3 +3126,17 @@ versions) and put them in random spots in park and thats where specific mushroom
   FORAGING; one above your reach (its difficulty over your skill + 15, the keen-eye potion counting) never comes away: as before,
   YOU FAIL TO PICK IT CLEANLY, or now and then IT CRUMBLES IN YOUR HAND (owner: "no use the old verbiage about how you fail to pick
   it cleanly or soemthing").
+
+## 19 Oct 2026: still clouds, three times as many, twice as high, animal shapes and their shadows
+- **The clouds** (owner, 19 Oct 2026, of the park lawn with big cloud shadows on the grass: "make the clouds 3x more in sky, 2x higher,
+  and they dont move. make the shapes softer, and make random shapes that have shadows on ground like a cat or dinosaur,"; `131-weather.js`):
+  240 clouds (90 + 150 x cloud shown, was 30 + 50 of 80), fixed in the world round the park's centre (no drift, no following you, the same
+  every time); every height doubled (overhead 60-92 tiles, the ring 28-104, the admin's CLOUD HEIGHT counting twice). Softer: each cloud 26
+  small round puffs (camera-facing round discs, `ShaderMaterial`, one instanced draw), lit as one rounded body in four flat bands, not puff
+  by puff. Six animal clouds built from puffs (a sitting cat with ears and a curled tail, a long-necked dinosaur, a rabbit, a whale with its
+  spout, a T-rex, a snail), placed so that at the DAY hour their shadows lie across the park lawn, turned to read upright from the opening
+  isometric angle; the plain clouds are kept off them.
+- **Real cloud shadows** (`006-map-pre.js`, `bake` in `131-weather.js`): the scrolling noise shadow is gone; the shown clouds are drawn top-down
+  along the sunlight into a 1024 x 1024 map (256 tiles square round the park, a quarter tile a texel), redrawn only when the sun turns,
+  the count changes or the height is changed (some 10 ms); the ground looks it up along the sun with a hard edge (CEL). Cost: 12,800
+  triangles in all (2 a puff), one draw, one program (instead of the Lambert one), no lights; 1 MB texture.

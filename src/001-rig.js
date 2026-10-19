@@ -348,11 +348,11 @@ const MOVES={
     [0.22,{root:[0,17.6,1],bend:-6,nod:-6,L:{ua:[72,6],fa:[172,-6]}},'out'],[0.3,{}],[0.42,GUARD],[0.5,{}]]}),
   slap:move({lead:'R',window:[0.3,0.5],keys:[[0,{}],[0.11,{root:[0,17.2,0.5],cyaw:-26,pyaw:-9,nod:2,R:{ua:[76,-58],fa:[70,-62],fist:0}}],
     [0.2,{root:[0,17.2,1],cyaw:30,pyaw:13,nod:0,R:{ua:[88,42],fa:[84,46],fist:0}},'out'],[0.28,{}],[0.5,{}]]}),
-  frontKick:move({stop:20,combo:{K:'roundhouse',J:'jab'},window:[0.46,0.7],keys:[[0,{}],[0.06,GUARD],
+  frontKick:move({stop:20,keep:.35,ex:.5,combo:{K:'roundhouse',J:'jab'},window:[0.46,0.7],keys:[[0,{}],[0.06,GUARD],
     [0.16,{root:[0.9,17.4,0],bend:-11,R:{th:[62,8],sh:[-22,8],foot:0}}],
     [0.26,{bend:-17,R:{th:[62,4],sh:[60,4],foot:28}},'out'],[0.34,{}],
     [0.46,{bend:-11,R:{th:[62,8],sh:[-22,8],foot:0}}],[0.58,{root:[0,17.3,0],bend:0,R:{ik:[-FOOTX,ANKLE,-1]}}],[0.7,GUARD]]}),
-  roundhouse:move({stop:20,combo:{J:'jab',K:'frontKick'},window:[0.62,0.82],keys:(()=>{ const r=(y,lean)=>{ const t=y*D; return [FOOTX-3.2*Math.cos(t)+lean*Math.cos(t),17.3,3.2*Math.sin(t)-lean*Math.sin(t)]; };
+  roundhouse:move({stop:20,keep:.3,ex:.62,combo:{J:'jab',K:'frontKick'},window:[0.62,0.82],keys:(()=>{ const r=(y,lean)=>{ const t=y*D; return [FOOTX-3.2*Math.cos(t)+lean*Math.cos(t),17.3,3.2*Math.sin(t)-lean*Math.sin(t)]; };
     return [[0,GUARD],[0.12,{root:r(55,0.6),yaw:55,roll:6,L:{ik:[FOOTX,ANKLE,0]},R:{th:[70,28],sh:[-12,28]}}],
       [0.22,{root:r(130,1),yaw:130,roll:16,R:{th:[30,70],sh:[30,70],foot:10}},'lin'],[0.32,{root:r(200,1.2),yaw:200,roll:22,R:{th:[12,86],sh:[12,86]}},'lin'],
       [0.44,{root:r(280,1.2),yaw:280,roll:20,R:{th:[16,84],sh:[16,84]}},'lin'],[0.56,{root:r(340,0.8),yaw:340,roll:10,R:{th:[60,24],sh:[-18,24],foot:0}},'lin'],
@@ -371,7 +371,7 @@ const MOVES={
     ['u0.62',{}],['u0.86',{bend:4,nod:0,L:{ua:[100,34],fa:[100,34],th:[14,3],sh:[0,3],foot:0},R:{ua:[100,34],fa:[100,34],th:[14,3],sh:[0,3],foot:0}}],
     ['u1',{bend:0,L:{ik:SL},R:{ik:SR}}],[100.1,{root:[0,13.8,0.5],bend:22,L:{ua:[60,30],fa:[72,30]},R:{ua:[60,30],fa:[72,30]}},'out'],
     [100.38,{root:[0,STAND,0],bend:0,L:{ua:[9,8],fa:[19,8]},R:{ua:[9,8],fa:[19,8]}}]]}),
-  fall:move({topple:FALL,travel:true,keys:(()=>{ const T=FALL.T; return [[0,{}],
+  fall:move({topple:FALL,travel:true,keep:0,ex:FALL.T+2.15,keys:(()=>{ const T=FALL.T; return [[0,{}],
     [T*0.35,{nod:-10,L:{ua:[60,20],fa:[70,20]},R:{ua:[40,20],fa:[50,20],th:[-20,2],sh:[-50,2],foot:-30}}],
     [T*0.8,{nod:-24,L:{ua:[100,30],fa:[100,26]},R:{ua:[100,30],fa:[100,26]}}],
     [T,{root:[0,1.3,17.9],pitch:84,L:{th:[0,0],sh:[0,0],foot:-50},R:{th:[-6,2],sh:[-10,2],foot:-50}}],
@@ -381,7 +381,7 @@ const MOVES={
     [T+1.75,{root:[0,9.5,11],pitch:38,nod:-14,L:{th:[-38,6],sh:[-128,6],foot:-60},R:{th:[-38,6],sh:[-128,6],foot:-60}}],
     [T+2.15,{root:[0,10.5,8.5],pitch:0,bend:16,nod:0,L:{th:[88,4],sh:[0,4],foot:0,ua:[40,20],fa:[60,10]},R:{th:[0,2],sh:[-92,2],foot:-60,ua:[20,12],fa:[30,12]}}],
     [T+2.6,{root:[0,STAND,8.5],bend:0,L:{ik:[FOOTX,ANKLE,9],ua:[9,8],fa:[19,8]},R:{ik:[-FOOTX,ANKLE,8.5],ua:[9,8],fa:[19,8]}}]]; })()}),
-  roll:move({travel:true,keys:[[0,{}],
+  roll:move({travel:true,keep:.8,ex:.92,keys:[[0,{}],
     [0.16,{root:[0,11,2],bend:36,nod:26,L:{ua:[84,24],fa:[84,24]},R:{ua:[84,24],fa:[84,24]}}],
     [0.28,{root:[0,8,6],pitch:45,bend:30,nod:40,L:{th:[80,12],sh:[-30,12],ua:[70,30],fa:[80,30]},R:{th:[80,12],sh:[-30,12],ua:[70,30],fa:[80,30]}}],
     [0.46,{root:[0,6,12],pitch:150,L:{th:[105,12],sh:[-25,12]},R:{th:[105,12],sh:[-25,12]}},'lin'],
@@ -389,18 +389,28 @@ const MOVES={
     [0.8,{root:[0,8,24],pitch:330,bend:24,nod:20},'lin'],
     [0.92,{root:[0,11,27],pitch:360,bend:20,nod:6,L:{ik:[FOOTX,ANKLE,28],ua:[60,20],fa:[70,20]},R:{ik:[-FOOTX,ANKLE,28],ua:[60,20],fa:[70,20]}}],
     [1.12,{root:[0,STAND,28],bend:0,nod:0,L:{ua:[9,8],fa:[19,8]},R:{ua:[9,8],fa:[19,8]}}]]}),
-  legSweep:move({blend:0.22,stop:20,keys:(()=>{ const r=y=>{ const t=y*D; return [FOOTX-3.2*Math.cos(t),9,3.2*Math.sin(t)]; }, LEG=(y,d=12)=>{ const t=y*D; return {ik:[FOOTX-d*Math.cos(t),ANKLE,d*Math.sin(t)],foot:0}; };
+  legSweep:move({blend:0.14,stop:20,keep:.2,ex:.6,keys:(()=>{ const r=y=>{ const t=y*D; return [FOOTX-3.2*Math.cos(t),9,3.2*Math.sin(t)]; }, LEG=(y,d=12)=>{ const t=y*D; return {ik:[FOOTX-d*Math.cos(t),ANKLE,d*Math.sin(t)],foot:0}; };
     return [[0,{root:[0,10.5,-1],bend:24,nod:-10,L:{ua:[58,16],fa:[80,10]},R:{ua:[58,16],fa:[80,10]}}],[0.1,{root:r(0),bend:30,nod:-4,L:{ik:[FOOTX,ANKLE,0],ua:[30,40],fa:[50,30],fist:1},R:{...LEG(0),ua:[30,40],fa:[50,30],fist:1}}],
       [0.2,{root:r(90),yaw:90,R:LEG(90)},'lin'],[0.3,{root:r(180),yaw:180,R:LEG(180)},'lin'],[0.4,{root:r(270),yaw:270,R:LEG(270)},'lin'],
       [0.52,{root:r(350),yaw:350,R:LEG(350,8)}],[0.64,{root:[0,13,0],yaw:360,bend:12,R:{ik:[-FOOTX,ANKLE,-1]}}],[0.82,{...GUARD,yaw:360}]]; })()}),
   block:move({hold:0.12,keys:[[0,GUARD],[0.12,{root:[0,16.4,-0.8],bend:6,nod:10,cyaw:0,pyaw:0,L:{ua:[100,26],fa:[168,-18],fist:1},R:{ua:[96,26],fa:[170,-18],fist:1}},'out'],[0.34,GUARD]]}),
-  crouch:move({stop:1e3,combo:{J:'uppercut',K:'legSweep'},window:[0,0.5],hold:0.22,keys:[[0,{}],[0.22,{root:[0,10.5,-1],bend:24,nod:-10,L:{ua:[58,16],fa:[80,10]},R:{ua:[58,16],fa:[80,10]}}],[0.5,{root:[0,STAND,0],bend:0,nod:0,L:{ua:[9,8],fa:[19,8]},R:{ua:[9,8],fa:[19,8]}}]]}),
+  crouch:move({stop:1e3,keep:.2,ex:.36,combo:{J:'uppercut',K:'legSweep'},window:[0,0.5],hold:0.22,keys:[[0,{}],[0.22,{root:[0,10.5,-1],bend:24,nod:-10,L:{ua:[58,16],fa:[80,10]},R:{ua:[58,16],fa:[80,10]}}],[0.5,{root:[0,STAND,0],bend:0,nod:0,L:{ua:[9,8],fa:[19,8]},R:{ua:[9,8],fa:[19,8]}}]]}),
   guard:move({lead:'R',hold:0.12,keys:[[0,GUARD],[0.12,BGUARD,'out'],[0.4,{}]]}),
   hook:move({lead:'R',window:[0.24,0.48],keys:[[0,BGUARD],[0.12,{root:[0,17.2,0.6],cyaw:-18,pyaw:-8,nod:0,L:{ua:[70,-30],fa:[110,-25],fist:1}}],
     [0.2,{root:[0,17,1],cyaw:34,pyaw:16,L:{ua:[88,-48],fa:[96,-10],fist:1}},'out'],[0.26,{}],[0.38,BGUARD],[0.48,{}]]}),
   flinch:move({lead:'R',keys:[[0,BGUARD],[0.07,{root:[0,17.6,-1.2],nod:-16,cyaw:14,bend:-7},'out'],[0.32,BGUARD],[0.4,{}]]}),
   wave:move({lead:'R',keys:[[0,{}],[0.25,{look:-8,nod:-4,R:{ua:[150,34],fa:[168,22]}}],[0.4,{R:{fa:[146,42]}}],[0.55,{R:{fa:[176,8]}}],[0.7,{R:{fa:[146,42]}}],[0.85,{R:{fa:[176,8]}}],[1.0,{R:{fa:[146,42]}}],[1.2,{R:{fa:[168,22]}}],[1.5,{look:0,nod:0,R:{ua:[9,8],fa:[19,8]}}]]}),
 };
+MOVES.cartwheel=(()=>{ const C=(t,roll,yaw,side,z,a,b,l,r,o)=>[t,{root:[0,STAND,z],roll,yaw,side,L:{ua:[0,a],fa:[0,a],th:[0,l],sh:[0,l],foot:0},R:{ua:[0,b],fa:[0,b],th:[0,r],sh:[0,r],foot:0},...o}];
+  const m=move({travel:true,keep:.1,ex:.86,keys:[[0,{}],C(.1,8,-70,10,6,150,150,28,-4,{bend:4}),C(.22,62,-90,35,17,112,165,38,22,{nod:-20}),C(.34,122,-90,35,27,150,175,45,40,{nod:-45,bend:-10}),
+    C(.46,182,-90,14,36,168,182,45,45,{nod:-55,bend:-14}),C(.58,248,-90,-8,45,176,168,40,52,{nod:-40,bend:-8}),C(.7,308,-84,-18,53,150,118,28,50,{nod:-10,bend:0}),C(.82,360,-40,-4,58,60,50,8,10,{nod:0,bend:6}),
+    [.98,{root:[0,STAND,60],yaw:0,side:0,bend:0,L:{ik:[FOOTX,ANKLE,62],ua:[9,8],fa:[19,8]},R:{ik:[-FOOTX,ANKLE,58],ua:[9,8],fa:[19,8]}}]]}),k=[],n=Math.round(m.dur/.04),SUP=/^(palm|fingers|heel|ball|toe)/; let r0=0,off=0,pq=null,pw=0;
+  for(let i=0;i<=n;i++){ const t=m.dur*i/n,P=moveAtOf({def:m,t}); P.roll=r0=r0+wrap(P.roll-r0);
+    if(i){ const J=build(P).J; let lo=1e9,q=null,qy=1e9; for(const [j,r] of FLOOR) if(J[j]){ const y=J[j].y-r; lo=Math.min(lo,y); if(SUP.test(j)&&y<qy){ qy=y; q=j; } }
+      if(q===pq) off=pw-J[q].z; pq=q; pw=J[q].z+off; P.root=V(P.root.x,P.root.y-lo,P.root.z+off); }
+    k.push({t,P,e:smooth}); }
+  for(let i=n-1;i>0;i--) k[i].P.root=V(k[i].P.root.x,Math.max(k[i].P.root.y,k[i+1].P.root.y-3.6),k[i].P.root.z);
+  m.k=k; return m; })();
 const DIVES={};
 function diveMove(drop){ const k=Math.round(drop); if(DIVES[k]) return DIVES[k]; const A=(ua,fa,c)=>({L:{ua,fa,...c},R:{ua,fa,...c}});
   return DIVES[k]=jumpMove({v0:95,t0:0.6,turns:0.42,pivot:9,vz:16,drop:k,entry:true,
@@ -513,9 +523,12 @@ function ridePose(st){ const R=st.ride,P=neutral(),z=R.z||0;
 const AIRV={
   flyingKick:air({bend:-16,cyaw:-10,L:{th:[70,12],sh:[-36,12],foot:-10,ua:[70,34],fa:[70,34],fist:1},R:{th:[64,5],sh:[60,5],foot:25,ua:[-24,24],fa:[-6,24],fist:1}}),
   airPunch:air({bend:18,nod:-6,cyaw:20,R:{ua:[84,-2],fa:[84,-5],fist:1,th:[10,3],sh:[-60,3]},L:{ua:[-30,18],fa:[-10,18],fist:1,th:[24,4],sh:[-48,4]}}),
+  roll:air({yaw:-90,nod:-20,L:{ua:[0,150],fa:[0,150],th:[0,38],sh:[0,38],foot:0},R:{ua:[0,150],fa:[0,150],th:[0,38],sh:[0,38],foot:0}}),
+  pitch:air({bend:26,nod:12,L:{ua:[62,24],fa:[82,24],th:[96,13],sh:[-32,13],foot:-20},R:{ua:[62,24],fa:[82,24],th:[96,13],sh:[-32,13],foot:-20}}),
 };
+const AIRSPIN={cartwheel:'roll',frontflip:'pitch',backflip:'pitch'};
 for(const n of ['jab','cross','uppercut'])MOVES['b'+n]=move({lead:MOVES[n].lead,window:MOVES[n].window,keys:MOVES[n].keys.map(([t,c,e])=>[t,c===GUARD?BGUARD:c,e])});
-const KEYMOVE={J:'jab',K:'frontKick',N:'slap',' ':'jump',Q:'backflip',G:'backflip',E:'frontflip',F:'fall',R:'roll',C:'crouch',V:'wave',B:'block',X:'legSweep'};
+const KEYMOVE={J:'jab',K:'frontKick',N:'slap',' ':'jump',Q:'backflip',G:'backflip',E:'frontflip',F:'fall',R:'roll',C:'crouch',V:'wave',B:'block',X:'legSweep',U:'cartwheel'};
 
 function flow(K,i,x){ const a=K[Math.max(0,i-2)],b=K[i-1],c=K[i],d=K[Math.min(K.length-1,i+1)],tb=b.t,tc=c.t,ta=a===b?tb-(tc-tb):a.t,td=d===c?tc+(tc-tb):d.t,dt=tc-tb;
   const H=(p0,p1,p2,p3)=>{ const m1=(p2-p0)/(tc-ta)*dt,m2=(p3-p1)/(td-tb)*dt,x2=x*x,x3=x2*x; return (2*x3-3*x2+1)*p1+(x3-2*x2+x)*m1+(-2*x3+3*x2)*p2+(x3-x2)*m2; };
@@ -531,6 +544,7 @@ function moveAtOf(mv){ const def=mv.def,t=Math.min(mv.t,def.dur),ks=def.kl&&t>de
   const a=def.air; if(a&&t>=a.t0&&t<=a.t0+a.T){ const tau=t-a.t0,i2=Math.min(240,Math.round(tau/a.T*240));
     P.root=V(P.root.x,P.root.y+a.v0*tau-a.g*tau*tau/2,P.root.z); P.pv=a.c; if(a.spin) P.pitch+=a.spin[i2];
     if(mv.variant){ const v=mv.variant,w=Math.min(1,(t-v.t)/0.08)*(1-smooth(clamp((tau/a.T-0.8)/0.17,0,1))); if(w>0){ const Q=apply(P,AIRV[v.name]); P=mix(P,Q,w); } }
+    if(mv.spin){ const s=mv.spin,u=clamp((t-s.t)/s.T,0,1); P=mix(P,apply(P,AIRV[s.k]),Math.min(1,3*Math.sin(Math.PI*u))); P[s.k]+=s.s*2*Math.PI*smooth(u); P.pv=lerp(a.c,9,Math.min(1,u*6)); }
     for(const n of 'LR') delete P[n].ik; }
   const tp=def.topple; if(tp&&t<tp.T){ const th=tp.tab[Math.min(tp.tab.length-1,Math.round(t*240))]; P.pitch=th; P.root=V(0,STAND*Math.cos(th),STAND*Math.sin(th)); for(const n of 'LR') if(P[n].ik) legIK(P,n,n=='L'?1:-1,P[n].ik); }
   for(const k of ['yaw','roll','pitch']) P[k]=wrap(P[k]);
@@ -547,7 +561,7 @@ function upLayer(st,P){ const u=st.up; if(!u)return P; if(st.water&&st.water.in|
 const rawPose=st=>upLayer(st,rawPose0(st));
 function rawPose0(st){ const Wt=st.water,W=Wt&&Wt.in?swimPose(st):st.climb?climbPose(st):st.hang?hangPose(st):st.ride?ridePose(st):st.sit?sitPose(st):lift(walkPose(st,st.abd),floorOf(st));
   if(st.move){ const M=lift(moveAt(st),st.move.floor),u=smooth(clamp(st.move.t/(st.move.def.blend||0.1),0,1)); return u<1?mix(st.move.from,M,u):M; }
-  if(st.out){ const u=smooth(clamp(st.out.t/(st.out.T||0.2),0,1)),O=st.out.y0!=null?lift(JSON.parse(JSON.stringify(st.out.pose)),Wt.y-st.out.y0):st.out.pose; return mix(O,W,u); }
+  if(st.out){ const u=smooth(clamp(st.out.t/(st.out.T||.12),0,1)),O=st.out.y0!=null?lift(JSON.parse(JSON.stringify(st.out.pose)),Wt.y-st.out.y0):st.out.pose; return mix(O,W,u); }
   return W; }
 
 function water(st,o){ const W=st.water||(st.water={in:false,y:0,vy:0,ph:0,t:0,swim:0,under:0,back:0,load:0,events:[]}); Object.assign(W,o); return W; }
@@ -591,15 +605,17 @@ const SPR={head:[260,22]};
 function create(){ return {ph:0,w:0,target:0,run:0,runTarget:0,dist:0,acc:0,abd:{L:0,R:0},move:null,out:null,next:null,up:null,upNext:null,mv:0,last:null,
   head:{x:0,v:0,a0:null,a1:null}}; }
 function handed(st,def){ if(!def||!def.lead||(st.hand||'R')===def.lead) return def; return def.mir||(def.mir={...def,lead:st.hand,mir:null,arms:null,k:def.k.map(K=>({...K,P:mirror(K.P)}))}); }
-function begin(st,name,dd){ const def=handed(st,dd||MOVES[name]),from=st.last||rawPose(st),g=gaitOf(st.run);
-  if(st.move&&st.move.def.k[st.move.def.k.length-1].P.root.z) commit(st);
-  st.move={def,name,t:0,from:JSON.parse(JSON.stringify(from)),held:true,variant:null,floor:def.deck?0:floorOf(st)}; st.out=null; st.next=null;
+const pace=st=>gaitOf(st.run).speed*((st.wk||1)+((st.rk||1)-(st.wk||1))*st.run);
+function begin(st,name,dd){ const def=handed(st,dd||MOVES[name]),from=JSON.parse(JSON.stringify(st.last||rawPose(st))),om=st.move;
+  if(om){ const z=from.root.z; st.dist+=z-(om.zc||0); from.root=V(from.root.x,from.root.y,0); }
+  st.move={def,name,t:0,from,held:true,variant:null,floor:def.deck?0:floorOf(st)}; st.out=null; st.next=null;
   if(def.below!=null) st.move.base=Math.min(floorOf(st)-def.below,from.root.y-STAND);
-  st.mvw=g.speed*st.w; st.mv=def.air?st.mvw+def.air.vz:st.mvw*0.9; }
+  st.mvw=Math.max(pace(st)*st.w,om?.9*st.mv:0); st.mv=def.air?st.mvw+def.air.vz:st.mvw*0.9; }
 const ARMMOVES=new Set(['jab','cross','uppercut','block','wave']);
 function beginUp(st,name){ st.up={def:handed(st,MOVES[name]),name,t:0,held:true}; st.upNext=null; }
 const carries=m=>!!(m&&m.def.travel&&!m.def.below&&!m.def.deck);
-function commit(st){ const z=st.move.def.k[st.move.def.k.length-1].P.root.z; st.dist+=z-(st.move.zc||0); if(st.last) st.last.root=V(st.last.root.x,st.last.root.y,st.last.root.z-z); }
+const free=m=>{ const d=m.def; return d.below==null&&!d.deck&&!m.wall&&!(d.src&&(d.src.drop||d.src.entry)); };
+const pick=(st,n)=>n=='jump'&&st.w>.6&&st.run>.4?'runJump':n;
 function act(st,key){ const W=st.water;
   if(key=='climb'){ if(W&&W.in&&!st.move) begin(st,'climb'); return; }
   if(key=='mantle'){ if(!st.move){ st.climb=null; st.hang=null; begin(st,'mantle'); } return; }
@@ -616,24 +632,31 @@ function act(st,key){ const W=st.water;
   const name=KEYMOVE[key]; if(!name) return; const mv=st.move;
   if(ARMMOVES.has(name)&&!(st.climb||st.hang||st.ride)){ if(mv){ const d=mv.def,a=d.air; if(a&&d.airv&&d.airv[key]&&!mv.variant&&mv.t>a.t0&&mv.t<a.t0+a.T*0.75){ mv.variant={name:d.airv[key],t:mv.t}; return; } }
     const u=st.up; if(!u||name=='block'){ beginUp(st,name); return; } const ud=u.def; if(ud.combo&&ARMMOVES.has(ud.combo[key])){ if(u.t>=ud.window[0]*RIGT.combo) beginUp(st,ud.combo[key]); else st.upNext=ud.combo[key]; } else st.upNext=name; return; }
-  if(!mv){ begin(st,name=='jump'&&st.w>.6&&st.run>.4&&!st.water?'runJump':name); return; }
-  const d=mv.def,a=d.air;
+  if(!mv){ begin(st,pick(st,name)); return; }
+  const d=mv.def,a=d.air,left=a?a.t0+a.T-mv.t:0;
   if(a&&d.airv&&d.airv[key]&&!mv.variant&&mv.t>a.t0&&mv.t<a.t0+a.T*0.75){ mv.variant={name:d.airv[key],t:mv.t}; return; }
-  if(d.combo&&d.combo[key]){ if(mv.t>=d.window[0]*RIGT.combo) begin(st,d.combo[key]); else st.next=d.combo[key]; }
-  else if(name=='jump'&&!a) st.next='jump'; }
+  if(name!='fall'&&(!free(mv)||a&&mv.t>=a.t0&&left>0)){ if(free(mv)&&AIRSPIN[name]&&!mv.spin&&!a.spin&&left>.22) mv.spin={k:AIRSPIN[name],t:mv.t,T:left-.04,s:name=='backflip'?-1:1}; else st.next=name; return; }
+  if(a&&mv.t<a.t0&&name=='jump') return;
+  begin(st,d.combo&&d.combo[key]||pick(st,name)); }
 function release(st,key){ if(key=='carry'){ if(st.up&&st.up.name=='carry') st.up.held=false; return; } if(st.move&&KEYMOVE[key]==st.move.name) st.move.held=false; if(st.up&&KEYMOVE[key]==st.up.name) st.up.held=false; }
 function tick(st,h){ st.run+=(st.runTarget-st.run)*Math.min(1,h*RIGT.blend); const g=gaitOf(st.run);
   if(st.up){ const u=st.up,d=u.def; if(!(d.hold&&u.held&&u.t+h>=d.hold)) u.t+=h*RIGT.moves*(st.anim||1); else u.t=d.hold; if(st.upNext&&d.window&&u.t>=d.window[0]*RIGT.combo) beginUp(st,st.upNext); else if(u.t>=d.dur){ st.up=null; if(st.upNext) beginUp(st,st.upNext); } }
-  if(st.move){ const mv=st.move,d=mv.def;
+  if(st.move){ const mv=st.move,d=mv.def,a=d.air,fr=free(mv);
     if(!(d.hold&&mv.held&&mv.t+h>=d.hold)) mv.t+=d.air?h:h*RIGT.moves*(st.anim||1); else mv.t=d.hold;
-    if(st.next&&d.window&&mv.t>=d.window[0]*RIGT.combo) begin(st,st.next);
+    if(st.next&&fr&&!(a&&mv.t<a.t0+a.T)) begin(st,pick(st,st.next));
     else if(d.air&&st.water&&(d.entry||st.water.level!=null&&st.water.floor<st.water.level-30)&&mv.t>=d.air.t0+d.air.T){
       const M=lift(moveAt(st),mv.floor),W=st.water,vy=d.air.v0-d.air.g*d.air.T; st.out={pose:JSON.parse(JSON.stringify(M)),t:0,T:0.9};
       W.in=true; W.y=M.root.y; W.vy=vy; W.under=1; W.swim=0; W.ph=0.15; W.sp=1; st.out.y0=W.y; W.events.push({k:'splash',z:6,v:-vy}); st.move=null; st.mv*=0.3; }
-    else if(mv.t>=d.dur){ if(st.move.name=='climb'&&st.water){ st.water.in=false; st.water.floor=0; } st.out={pose:JSON.parse(JSON.stringify(lift(moveAt(st),mv.floor))),t:0}; if(d.k[d.k.length-1].P.root.z){ const z=d.k[d.k.length-1].P.root.z; st.dist+=z-(mv.zc||0); st.out.pose.root.z-=z; } const nx=st.next; st.move=null; if(d.ph!=null&&st.target>0){ st.ph=d.ph; st.out.T=.12; } if(nx) begin(st,nx); }
-    if(st.move&&st.move.def.air){ const a=st.move.def.air; if(st.move.t>a.t0+a.T){ if(!st.move.down){ st.move.down=1; st.mv=st.mvw||0; } if(st.move.def.ph==null)st.mv*=Math.exp(-14*h); } } else if(st.move) st.mv*=Math.exp(-(st.move.def.stop||1.2)*h); else st.mv=0;
+    else if(mv.t>=d.dur||st.target>0&&fr&&mv.t>=(d.ex??(a?a.t0+a.T+.04:d.dur*.8))){ if(mv.name=='climb'&&st.water){ st.water.in=false; st.water.floor=0; }
+      const O=lift(moveAt(st),mv.floor),z=O.root.z; st.dist+=z-(mv.zc||0); O.root=V(O.root.x,O.root.y,0); st.out={pose:O,t:0,T:.12};
+      const nx=st.next; st.move=null; if(st.target>0){ const J=build(O).J; st.ph=d.ph??(J.ankleL.z>J.ankleR.z?.75:.25); } if(nx) begin(st,pick(st,nx)); }
+    const m=st.move,P0=pace(st)*st.target;
+    if(!m) st.mv=0;
+    else if(m.def.air){ const a=m.def.air; if(m.t>a.t0+a.T){ if(!m.down){ m.down=1; st.mv=st.mvw||0; } if(st.target>0&&free(m)) st.mv+=(P0-st.mv)*Math.min(1,h*8); else if(m.def.ph==null) st.mv*=Math.exp(-14*h); }
+      else if(m.t>=a.t0&&st.target>0&&free(m)) st.mv+=(P0+a.vz-st.mv)*Math.min(1,h*2); }
+    else if(st.target>0&&free(m)) st.mv+=(P0*(m.def.keep??.5)-st.mv)*Math.min(1,h*6); else st.mv*=Math.exp(-(m.def.stop||1.2)*h);
     if(carries(st.move)){ const zn=moveAt(st).root.z, zc=st.move.zc||0; st.dist+=zn-zc; st.move.zc=zn; } }
-  else { if(st.out) st.out.t+=h; if(st.out&&st.out.t>(st.out.T||0.2)) st.out=null; }
+  else { if(st.out) st.out.t+=h; if(st.out&&st.out.t>(st.out.T||.12)) st.out=null; }
   const w0=st.w;
   st.w+=(st.target-st.w)*Math.min(1,h*RIGT.start); if(Math.abs(st.w-st.target)<1e-3||st.snap&&!st.move) st.w=st.target;
   if(w0>0.3&&st.target===0&&!st.move&&!(st.water&&st.water.in)) st.stop={t:0,a:Math.min(1,w0)*(0.7+0.5*st.run)};

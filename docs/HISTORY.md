@@ -2701,3 +2701,19 @@ not have windows, make sure buildings are only as tall as they need to be"; then
   lighting is btter"): your figure's own self-shadow (the hard band from whichever light is strongest, which jumped as lights changed)
   is off by default (DISPLAY can turn it back on); the park's lanterns and lamp posts light at 24 (were 12 and 6) out to 12 tiles, the
   street globe lamps at 28 (were 18) out to 12; outdoors at night a lamp near you lights your figure up to 70% (35% indoors).
+- **Fluid moves: full control, a cartwheel** (owner, 19 Oct 2026: "make sure they can jump and keep running, animations... i want them
+  to have ful control, ie running then they jump then press cartwheel then run again, etc. i dont awnt the animations to have strict
+  things they have to complete, i want the avatar to be fluid and dynamic"; `001-rig.js` `act`/`begin`/`tick`, `075-main-13.js`):
+  any move key starts its move at once from wherever the body is (blended from the current pose, 0.1 s; no combo windows to wait for).
+  In the air a ground move waits for the landing and starts on touchdown (a jump pressed in the air is a hop on landing); a cartwheel
+  or flip pressed in the air is an air spin (a sideways aerial or a tucked somersault, finished before the feet land); a second jump
+  never starts in the air. Only climbing out, ledges, wall moves and dives still finish first. Holding a direction steers during any
+  move (half the usual turn) and the speed eases toward the held walk or run (in the air 2/s, on landing 8/s; kicks, sweeps and
+  crouches keep a fifth to a third of it, the roll most of it); with a direction held a move hands over to the gait as soon as its
+  work is done (a jump on touching down, a kick after it lands, the roll on its feet), on the leading foot's step, in 0.12 s. Every
+  blend out is 0.12 s (was 0.2). The running jump now happens in the game too (it was never chosen once any water had been near).
+  **Cartwheel** (U; the controller's CARTWHEEL, unset; in the menu's KEYS and WHAT YOU CAN DO): side-on, lead hand then the other,
+  legs over in a straddle, feet down one after the other, then a quarter turn back to facing on; about 3 tiles in 1 s (0.86 s when
+  running on), hands and feet stay put on the ground where they land. Footstep sounds are quiet during moves. Checked in node (the
+  rig out of the built page, 60 a second): run, jump, cartwheel, roll, run with no stop, no NaN, speed held over 39 units a second
+  (the run is 108). Cost: none a frame (the cartwheel's 25 poses are made once at load).

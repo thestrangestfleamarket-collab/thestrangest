@@ -161,8 +161,8 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
       <div class="row" style="margin-top:10px"><button class="btn" id="kreset">ALL BACK AS THEY WERE</button></div></div>
     <div class="foot"><span>ESC closes</span><span>THE MARKET</span></div></div>`;
   document.body.appendChild(M);
-  const $=s=>M.querySelector(s); if(window.AVS)AVS.menu($('#davatar')); let tab='map', mapLv='up';
-  const show=t=>{ tab=t; M.querySelectorAll('[data-t]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.t===t))); M.querySelectorAll('[data-p]').forEach(p=>p.hidden=p.dataset.p!==t); if(t==='map')drawMap(); if(t==='display'||t==='graphics'||t==='sound')drawDisplay(); if(t==='sound')SNDED.into($('#dsndin')); if(t==='keys')drawKeys(); if(t==='atmo'){ window.CLOCK&&CLOCK.draw&&CLOCK.draw(); window.WX&&WX.draw&&WX.draw(); drawMood(); } };
+  const $=s=>M.querySelector(s); if(window.AVS)AVS.menu(); let tab='map', mapLv='up';
+  const show=t=>{ tab=t; M.querySelectorAll('[data-t]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.t===t))); M.querySelectorAll('[data-p]').forEach(p=>p.hidden=p.dataset.p!==t); if(t==='map')drawMap(); if(t==='display'||t==='graphics'||t==='sound')drawDisplay(); if(t==='graphics'&&window.AVS)AVS.menu(); if(t==='sound')SNDED.into($('#dsndin')); if(t==='keys')drawKeys(); if(t==='atmo'){ window.CLOCK&&CLOCK.draw&&CLOCK.draw(); window.WX&&WX.draw&&WX.draw(); drawMood(); } };
   const drawMood=()=>{ const h=(window.SKY&&SKY.moodHold)||''; $('#amood').querySelectorAll('[data-m]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.m===h))); };
   $('#amood').onclick=e=>{ const b=e.target.closest('[data-m]'); if(!b||!window.SKY)return; SKY.moodHold=b.dataset.m||null; try{ b.dataset.m?SAVE.set('mood',b.dataset.m):SAVE.del('mood'); }catch(e){} drawMood(); };
   M.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>show(b.dataset.t));

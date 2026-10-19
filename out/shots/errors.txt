@@ -1,0 +1,1 @@
+inside: ["bar+","museum-","theatre+","arcade-","playhouse+"]

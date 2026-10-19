@@ -1,0 +1,596 @@
+{
+ "page": "market-prof.html",
+ "startMs": 63347,
+ "errs": [],
+ "batch": [
+  {
+   "faces": 440,
+   "pages": 1,
+   "atlas": "2048x1206"
+  },
+  {
+   "faces": 100,
+   "pages": 1,
+   "atlas": "2048x254"
+  },
+  {
+   "faces": 3498,
+   "pages": 2,
+   "atlas": "2048x8160,2048x6683"
+  },
+  {
+   "faces": 1824,
+   "pages": 1,
+   "atlas": "2048x621"
+  },
+  {
+   "faces": 3544,
+   "pages": 1,
+   "atlas": "2048x1621"
+  },
+  {
+   "faces": 35296,
+   "pages": 1,
+   "atlas": "2048x1171"
+  },
+  {
+   "faces": 861,
+   "pages": 1,
+   "atlas": "2048x5219"
+  },
+  {
+   "faces": 1665,
+   "pages": 1,
+   "atlas": "2048x1011"
+  },
+  {
+   "faces": 3681,
+   "pages": 1,
+   "atlas": "2048x614"
+  },
+  {
+   "faces": 9836,
+   "pages": 1,
+   "atlas": "2048x5999"
+  }
+ ],
+ "flats": [
+  [
+   "10.5Mpx",
+   "G (x,y)=>{ if(!ROADAT(x,y))return null; const L=IX.get(at2(x,y)); if(L)for(const f of L){ co"
+  ],
+  [
+   "5Mpx",
+   "G (x,y)=>{ if(ROADAT(x,y)||rampAt(x,y)!=null)return null; const v=f(x,y); return v&&(kerbAt("
+  ],
+  [
+   "1.4Mpx",
+   "G function slabCol(x,y){ const wy=(y+(cvNoise(x*1.3+9,y*1.3,403)-.5)*.08)/SLB, j=Math.floor("
+  ],
+  [
+   "1.2Mpx",
+   "G (x,y)=>roadCol(x,y,1)"
+  ],
+  [
+   "1Mpx",
+   "G (x,y)=>[MAPSTAIR,...RING.stairs].some(S=>x>=S.x0&&x<S.x1&&y>=S.y0&&y<S.y1)?null:f(x,y)"
+  ],
+  [
+   "0.1Mpx",
+   "G (x,y)=>{ const {hash,grain}=BOD.g, sh=BOD.K.sh, px=Math.floor(x*24), py=Math.floor(y*24);\n"
+  ],
+  [
+   "0.1Mpx",
+   "R (x,y)=>{ const u=x-B0.x0, v=y-B0.y0, i=Math.floor(x*24), j=Math.floor(y*24), h1=hash(i,j,7"
+  ],
+  [
+   "0.1Mpx",
+   "G (x,y)=>bodegaFloorCol(x,y)"
+  ]
+ ],
+ "sun": {
+  "still": 2,
+  "moving": 3,
+  "dyn": 62,
+  "maps": [
+   3072,
+   2048
+  ],
+  "patch": true
+ },
+ "start": {
+  "frames": 10,
+  "dtMed": 1229.6,
+  "dtP95": 1927.9,
+  "dtMax": 1927.9,
+  "over100": 10,
+  "sys": {
+   "total": {
+    "med": 118.2,
+    "p95": 1089.8,
+    "max": 1089.8
+   },
+   "CLOCK(+weather)": {
+    "med": 75.2,
+    "p95": 542.4,
+    "max": 542.4
+   },
+   "walker rig": {
+    "med": 7.6,
+    "p95": 15.6,
+    "max": 15.6
+   },
+   "musicians+stage": {
+    "med": 3.6,
+    "p95": 7.5,
+    "max": 7.5
+   },
+   "DRESS": {
+    "med": 0.4,
+    "p95": 2.6,
+    "max": 2.6
+   },
+   "walker place + physbody": {
+    "med": 0.2,
+    "p95": 6.2,
+    "max": 6.2
+   },
+   "loose physics": {
+    "med": 0.1,
+    "p95": 2.6,
+    "max": 2.6
+   },
+   "floats": {
+    "med": null,
+    "p95": null,
+    "max": null
+   },
+   "composer.render": {
+    "med": 25,
+    "p95": 32,
+    "max": 32
+   },
+   "NPCS.tick": {
+    "med": 0.2,
+    "p95": 0.4,
+    "max": 0.4
+   },
+   "self-shadow passes": {
+    "med": 0.2,
+    "p95": 6.5,
+    "max": 6.5
+   },
+   "LITE.tick": {
+    "med": 0.1,
+    "p95": 0.4,
+    "max": 0.4
+   },
+   "FLAME": {
+    "med": 0.1,
+    "p95": 2.2,
+    "max": 2.2
+   },
+   "cutWalls": {
+    "med": 0.1,
+    "p95": 0.1,
+    "max": 0.1
+   },
+   "ROOMS.tick": {
+    "med": 0.1,
+    "p95": 2.1,
+    "max": 2.1
+   },
+   "butterflies": {
+    "med": 0.1,
+    "p95": 1.8,
+    "max": 1.8
+   },
+   "apts.tick": {
+    "med": 0,
+    "p95": 0.1,
+    "max": 0.1
+   },
+   "STORE.stackTick": {
+    "med": 0,
+    "p95": 0,
+    "max": 0
+   },
+   "FIRE": {
+    "med": 0,
+    "p95": 0,
+    "max": 0
+   },
+   "FIGFX": {
+    "med": 0,
+    "p95": 0.1,
+    "max": 0.1
+   },
+   "UI": {
+    "med": 0,
+    "p95": 0.1,
+    "max": 0.1
+   },
+   "VIT": {
+    "med": 0,
+    "p95": 0.1,
+    "max": 0.1
+   },
+   "LOOK": {
+    "med": 0,
+    "p95": 0.1,
+    "max": 0.1
+   },
+   "STORE.tick": {
+    "med": 0,
+    "p95": 0.1,
+    "max": 0.1
+   },
+   "WATER.step": {
+    "med": 0,
+    "p95": 0,
+    "max": 0
+   },
+   "WATER.tickAll": {
+    "med": 0,
+    "p95": 0,
+    "max": 0
+   },
+   "WATER.under": {
+    "med": 0,
+    "p95": 0.1,
+    "max": 0.1
+   },
+   "WATER.underAll": {
+    "med": 0,
+    "p95": 0,
+    "max": 0
+   },
+   "outline": {
+    "med": 0,
+    "p95": 0.1,
+    "max": 0.1
+   }
+  },
+  "info": {
+   "calls": 126,
+   "tris": 144762,
+   "programs": 137,
+   "geos": 183,
+   "tex": 91
+  }
+ },
+ "parkSW": {
+  "frames": 13,
+  "dtMed": 997.6,
+  "dtP95": 1253.9,
+  "dtMax": 1253.9,
+  "over100": 13,
+  "sys": {
+   "total": {
+    "med": 81.4,
+    "p95": 275.3,
+    "max": 275.3
+   },
+   "CLOCK(+weather)": {
+    "med": 47.7,
+    "p95": 245,
+    "max": 245
+   },
+   "walker rig": {
+    "med": 2.7,
+    "p95": 5.3,
+    "max": 5.3
+   },
+   "musicians+stage": {
+    "med": 1,
+    "p95": 4.2,
+    "max": 4.2
+   },
+   "DRESS": {
+    "med": 0.3,
+    "p95": 1.1,
+    "max": 1.1
+   },
+   "walker place + physbody": {
+    "med": 0.2,
+    "p95": 0.3,
+    "max": 0.3
+   },
+   "loose physics": {
+    "med": 0.1,
+    "p95": 0.8,
+    "max": 0.8
+   },
+   "floats": {
+    "med": null,
+    "p95": null,
+    "max": null
+   },
+   "composer.render": {
+    "med": 16.4,
+    "p95": 34.6,
+    "max": 34.6
+   },
+   "self-shadow passes": {
+    "med": 0.2,
+    "p95": 0.4,
+    "max": 0.4
+   },
+   "LITE.tick": {
+    "med": 0.1,
+    "p95": 0.7,
+    "max": 0.7
+   },
+   "NPCS.tick": {
+    "med": 0.1,
+    "p95": 2,
+    "max": 2
+   },
+   "cutWalls": {
+    "med": 0.1,
+    "p95": 0.2,
+    "max": 0.2
+   },
+   "ROOMS.tick": {
+    "med": 0.1,
+    "p95": 0.3,
+    "max": 0.3
+   },
+   "butterflies": {
+    "med": 0.1,
+    "p95": 0.1,
+    "max": 0.1
+   },
+   "apts.tick": {
+    "med": 0,
+    "p95": 0.1,
+    "max": 0.1
+   },
+   "STORE.stackTick": {
+    "med": 0,
+    "p95": 0,
+    "max": 0
+   },
+   "FIRE": {
+    "med": 0,
+    "p95": 0,
+    "max": 0
+   },
+   "FIGFX": {
+    "med": 0,
+    "p95": 0.2,
+    "max": 0.2
+   },
+   "FLAME": {
+    "med": 0,
+    "p95": 0.1,
+    "max": 0.1
+   },
+   "UI": {
+    "med": 0,
+    "p95": 0.1,
+    "max": 0.1
+   },
+   "VIT": {
+    "med": 0,
+    "p95": 0.1,
+    "max": 0.1
+   },
+   "LOOK": {
+    "med": 0,
+    "p95": 0.1,
+    "max": 0.1
+   },
+   "STORE.tick": {
+    "med": 0,
+    "p95": 0.1,
+    "max": 0.1
+   },
+   "WATER.step": {
+    "med": 0,
+    "p95": 0,
+    "max": 0
+   },
+   "WATER.tickAll": {
+    "med": 0,
+    "p95": 0,
+    "max": 0
+   },
+   "WATER.under": {
+    "med": 0,
+    "p95": 0,
+    "max": 0
+   },
+   "WATER.underAll": {
+    "med": 0,
+    "p95": 0,
+    "max": 0
+   },
+   "outline": {
+    "med": 0,
+    "p95": 0,
+    "max": 0
+   }
+  },
+  "info": {
+   "calls": 138,
+   "tris": 172398,
+   "programs": 139,
+   "geos": 219,
+   "tex": 93
+  }
+ },
+ "sun2": {
+  "still": 10,
+  "moving": 34,
+  "dyn": 62,
+  "maps": [
+   3072,
+   2048
+  ],
+  "patch": true
+ },
+ "longTasks": [
+  [
+   1381,
+   29474
+  ],
+  [
+   63521,
+   16663
+  ],
+  [
+   56566,
+   6768
+  ],
+  [
+   30858,
+   4624
+  ],
+  [
+   80196,
+   3209
+  ],
+  [
+   93946,
+   2319
+  ],
+  [
+   103879,
+   2026
+  ],
+  [
+   83847,
+   2008
+  ],
+  [
+   45946,
+   1752
+  ],
+  [
+   51607,
+   1638
+  ],
+  [
+   99288,
+   1579
+  ],
+  [
+   85926,
+   1544
+  ],
+  [
+   97783,
+   1490
+  ],
+  [
+   96297,
+   1460
+  ],
+  [
+   90410,
+   1337
+  ],
+  [
+   91813,
+   1150
+  ],
+  [
+   118074,
+   1147
+  ],
+  [
+   102751,
+   1114
+  ],
+  [
+   115964,
+   1061
+  ],
+  [
+   110998,
+   1059
+  ],
+  [
+   117027,
+   1042
+  ],
+  [
+   113035,
+   1019
+  ],
+  [
+   109983,
+   1014
+  ],
+  [
+   114953,
+   1007
+  ],
+  [
+   119222,
+   987
+  ],
+  [
+   112062,
+   969
+  ],
+  [
+   87584,
+   954
+  ],
+  [
+   92989,
+   954
+  ],
+  [
+   100882,
+   951
+  ],
+  [
+   120212,
+   941
+  ],
+  [
+   108136,
+   938
+  ],
+  [
+   105911,
+   916
+  ],
+  [
+   109075,
+   904
+  ],
+  [
+   36279,
+   901
+  ],
+  [
+   114055,
+   894
+  ],
+  [
+   101835,
+   879
+  ],
+  [
+   89418,
+   838
+  ],
+  [
+   88562,
+   823
+  ],
+  [
+   50397,
+   804
+  ],
+  [
+   48275,
+   715
+  ]
+ ],
+ "longTotal": 117795
+}

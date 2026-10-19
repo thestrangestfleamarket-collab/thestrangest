@@ -1863,3 +1863,14 @@ light colour, cel-shaded, casting a shadow; the same clips. 402 triangles.
   under the weather's grey and fog and behind the mist's clouds; on only while the stars are (half out or more), never near the horizon.
   **Stars in the mist**: the MIST look's sky painted over the stars, so none had shown at night since it came in; they and the band show now
   in the gaps between its clouds. Cost: a few noise lookups a sky pixel, at night only; no triangles, lights or programs.
+
+- **Scenes** (owner, 19 Oct 2026, after no stars showed at the stopped 5:24 pm under CLOUDY: "set both of these as preset in the admin menu,
+  add 4 other presets that make sense too (atmosphereic as possible nothing boring) go all out"; `src/sky.js`): ATMOSPHERE (Esc) opens with
+  SCENES, one click setting the time (stopped), the weather and the evening colours together, kept like them: **STARRY NIGHT** (10:30 pm,
+  CLEAR, the mist's clouds thinned: the Milky Way and every star), **STARS IN THE MIST** (10 pm, CLOUDY, the stars shown anyway, between the
+  mist's clouds), **BLOOD MOON** (11:30 pm, CLEAR: the moon bigger and red with two flat rings of red glow, the sky reddened most at the
+  horizon, the mist and the night's light with it), **FIRE SUNSET** (6:06 pm, CLEAR, FIRE colours, the real sky's bands shown through the
+  mist, which takes the horizon's colour), **THUNDERSTORM** (6:48 pm, STORM, lightning three times as often, with its thunder), **FIRST SNOW**
+  (7:18 am, SNOW, SOFT colours through the mist). Touching the time, the weather or the colours by hand ends the scene (the haze doesn't);
+  `?scene=blood_moon` for tests. The moon now shows in the mist too (it was painted over, like the stars). Cost: none outside the sky
+  shader's few lines; no triangles, lights or programs.

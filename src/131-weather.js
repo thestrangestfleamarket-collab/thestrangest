@@ -36,7 +36,7 @@ const WX={hold:null,now:null};
   const SNOW=new THREE.Points(sg,new THREE.PointsMaterial({color:0xffffff,size:2,sizeAttenuation:false})); SNOW.frustumCulled=false; scene.add(SNOW);
   const FOG=new THREE.Fog(0x9aa3ad,2,200), cA=new THREE.Color(), cB=new THREE.Color(); let flashT=0, last=0, ft=0;
   const tick0=CLOCK.tick; CLOCK.tick=dt=>{ tick0(dt);
-    if((ft-=dt)<=0){ ft=.5; WX.now=WX.hold?Object.assign({flash:WX.hold==='STORM'&&Math.random()<.04},HOLDS[WX.hold]):WX.at(T()); }
+    if((ft-=dt)<=0){ ft=.5; WX.now=WX.hold?Object.assign({flash:WX.hold==='STORM'&&Math.random()<(WX.flashK||.04)},HOLDS[WX.hold]):WX.at(T()); }
     const W=WX.now, up=LVL!=='down', inside=!OUT.open, day=cl((CLOCK.elev()+4)/14), t=performance.now()/1000;
     WX.cloudCut(); const show=Math.round(6+W.cloud*74); CL.geometry.setDrawRange(0,ends[Math.min(79,show-1)]); CL.visible=up;
     cmat.color.setRGB(1,1,1).multiplyScalar(1-.35*W.rain-.35*W.storm); cmat.emissive.setRGB(.16,.2,.27).multiplyScalar(.4+.6*day);
@@ -56,5 +56,6 @@ const WX={hold:null,now:null};
   const pane=document.querySelector('#menu [data-p="atmo"]')||document.querySelector('#menu [data-p="display"]'), box=document.createElement('div');
   box.innerHTML='<h3>WEATHER</h3><div class="row" id="wxrow"></div><div class="dim" id="wxnow"></div>'; pane.insertBefore(box,pane.children[1]||null);
   const row=box.querySelector('#wxrow'), draw=()=>{ row.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String((b.dataset.wx||null)===WX.hold))); const W=WX.now; if(W)box.querySelector('#wxnow').textContent=W.storm>.1?'A STORM':W.snow>.05?'SNOW':W.rain>.05?'RAIN':W.fog>.2?'FOG':W.cloud>.7?'OVERCAST':W.cloud>.35?'SOME CLOUD':'CLEAR'; };
-  for(const k of ['NATURAL',...Object.keys(HOLDS)]){ const b=document.createElement('button'); b.className='btn'; b.textContent=k; if(k!=='NATURAL')b.dataset.wx=k; b.onclick=()=>{ WX.hold=k==='NATURAL'?null:k; ft=0; draw(); try{ SAVE.set('wx',k); }catch(e){} }; row.appendChild(b); }
+  for(const k of ['NATURAL',...Object.keys(HOLDS)]){ const b=document.createElement('button'); b.className='btn'; b.textContent=k; if(k!=='NATURAL')b.dataset.wx=k; b.onclick=()=>WX.set(k); row.appendChild(b); }
+  WX.set=k=>{ WX.hold=k==='NATURAL'?null:k; ft=0; draw(); try{ SAVE.set('wx',k); }catch(e){} };
   WX.draw=draw; window.WX=WX; setInterval(()=>{ if(UI.menuOpen)draw(); },1000); window.WXDBG=()=>WX.now; }

@@ -10,12 +10,12 @@ const {chromium}=require('playwright');
     window.claude={use:async n=>n==='db'?db:n==='user'?{isOwner:async()=>true}:null}; });
   else{ const sub='11111111-2222-3333-4444-555555555555', jwt='x.'+Buffer.from(JSON.stringify({sub,exp:Date.now()/1000+3600})).toString('base64url')+'.y';
     await pg.addInitScript(()=>localStorage.setItem('sb-jvcetttmqseoteidfggn-auth-token',JSON.stringify({refresh_token:'r'})));
-    await pg.route('https://jvcetttmqseoteidfggn.supabase.co/**',async r=>{ const u=new URL(r.request().url()), m=r.request().method(); if(process.env.LOGREQ)console.log(m,u.pathname+u.search), body=r.request().postData(), J=o=>r.fulfill({status:200,contentType:'application/json',body:JSON.stringify(o)});
+    await pg.route('https://jvcetttmqseoteidfggn.supabase.co/**',async r=>{ const u=new URL(r.request().url()), m=r.request().method(), body=r.request().postData(), J=o=>r.fulfill({status:200,contentType:'application/json',body:JSON.stringify(o)});
       if(u.pathname==='/auth/v1/token')return J({access_token:jwt,refresh_token:'r2'});
       if(u.pathname==='/rest/v1/admins')return J([{user_id:sub}]);
       if(u.pathname==='/rest/v1/bug_reports'&&m==='POST'){ store.reports.push({...JSON.parse(body),player:sub,status:'new',created_at:new Date().toISOString()}); return r.fulfill({status:201}); }
       if(u.pathname==='/rest/v1/bug_reports'&&m==='PATCH'){ const id=u.searchParams.get('id').slice(3), s=JSON.parse(body).status; store.marks.push(s); for(const x of store.reports)if(x.id===id)x.status=s; return r.fulfill({status:204}); }
-      if(u.pathname==='/rest/v1/bug_reports'){ if(process.env.LOGREQ)console.log('LIST',store.reports.map(x=>x.status)); return J(store.reports.slice().reverse()); }
+      if(u.pathname==='/rest/v1/bug_reports')return J(store.reports.slice().reverse());
       if(u.pathname==='/rest/v1/bug_shots'&&m==='POST'){ const o=JSON.parse(body); store.shots[o.report]=o.jpg; return r.fulfill({status:201}); }
       if(u.pathname==='/rest/v1/bug_shots'){ const id=u.searchParams.get('report').slice(3); return J(store.shots[id]?[{jpg:store.shots[id]}]:[]); }
       r.fulfill({status:404}); }); }

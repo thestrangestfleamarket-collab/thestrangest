@@ -2806,3 +2806,15 @@ fsomeone dies insomewhere they have to float back as a ghost to get resed. when 
   should look more like celshading", "not line or dot art"): the crowns' per-voxel speckle is gone, their soft inner darkening is two
   flat steps, and they no longer shadow themselves in stripes (the shadow map draws their back faces, and the leaves' shadow offset is
   0.35, was 0.12).
+- **Mushrooms under the tall grass, barefoot foraging** (owner, 19 Oct 2026: "mushrooms should be mostly under the tall grass and
+  should only be revealed when you walk over it. if you are barefoot you dont risk stepping on it, but if you are waering shoes you
+  can crush them. playes should take off their shoes and go barefoot when looking for mushrooms"; `141-forage.js`, `102-looks.js`,
+  `094-ui.js`): the mushrooms now stand on the ground under the grass. Four in five are hidden (not drawn, not clickable) until the
+  grass over them is pressed down (you or a walker within 0.8 tiles: `WEEDS.pressAt` when the grass gives it, else your own last
+  3.5 s of steps and the walkers near you); then they stay out while it is pressed and 20 s after, and hide again. One in five has a
+  tall stem and peeks out over the grass top. **SHOES** (YOU panel: SHOES ON / BAREFOOT; key M, rebindable in KEYS; saved in `looks`):
+  taking them off or on is a short crouch and "YOU TAKE OFF YOUR SHOES." / "YOU PUT YOUR SHOES BACK ON."; barefoot, your shoes are
+  skin. With shoes on, stepping onto a mushroom (hidden or out) may crush it: walking 35%, running 70%, crouching or creeping 10%;
+  "SQUISH.", it lies flat and dark for 90 s and is gone for the day. Barefoot never crushes. The first time in the park with shoes on
+  and mushrooms near: "TAKE OFF YOUR SHOES TO FORAGE SAFELY." (once, saved). `MUSHDBG()` gives hidden, revealed, peek, crushed, picked,
+  barefoot. Cost: no new draws or triangles (the same three instanced draws; fewer shown), a check of the near mushrooms 8 times a second.

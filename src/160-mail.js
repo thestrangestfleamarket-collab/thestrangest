@@ -22,32 +22,23 @@ if(MAIL.on){ const T=TILE, M=1/.84*T, X=BOD.XS, Z=BOD.ZS, G=(x,z)=>MODS.bodega.g
     if(R.z1<R.z0){ n.z=-n.z; }
     bld(id,name,{at,n,t:{x:-n.z,z:n.x}},kind); };
   MAIL.build=()=>{ if(MAIL.ready)return; const W=(window.WALKERS&&WALKERS.list||[]).filter(w=>w.N&&!w.N.staff);
-    const flats=MODS.apts&&MODS.apts.flats&&MODS.apts.flats.length?MODS.apts.flats.map(F=>F.n):['1A','1B','2A','2B','3A','3B','4A','4B','5A','5B'], RES=CITY.residents||[];
-    fromPlace('house','house','THE APARTMENT HOUSE','flats',[]); fromPlace('apartments','apts','THE APARTMENTS','flats',[]);
     fromPlace('bodega','bodega','THE BODEGA','shop'); fromPlace('dojo','dojo','GHOST STREET','shop');
     fromRoom('diner','diner','THE DINER','shop'); fromRoom('bar','bar','THE BAR','shop'); fromRoom('octo','aquarium','THE AQUARIUM','biz'); fromRoom('museum','museum','MUSEUM OF EARTH','biz');
     for(const R of (STORE.rooms||[]))if(/^av_/.test(R.id))fromRoom(R.id,R.id.slice(3),R.name,'biz');
     fromRoom('keep','keep','THE KEEP','biz'); fromRoom('cottage','cottage','THE HERB COTTAGE','biz');
     { const T0=CITY.place('tower'); if(T0)bld('tower','THE CIVIC TOWER',front(T0.at,T0.door),'flats',(CIVIC.row||[]).map(h=>({unit:h.name,dept:h.id,who:{type:'civic',ref:h.id,name:h.name}}))); }
-    const JB=window.JOBS&&JOBS.plan?JOBS.plan(B,W,RES):[], wk=w=>({type:'walker',ref:w,name:person(w.N.key)});
+    if(window.JOBS&&JOBS.plan)JOBS.plan(B,W);
     for(const b of B)for(const u of b.up||[])if(u.who&&u.who.type==='walker')u.who.name=person(u.who.ref.N.key);
-    const upW=new Set(JB.filter(J=>J.home==='up').map(J=>J.w)), toHouse=JB.filter(J=>J.home==='house').map(J=>J.w), toApts=JB.filter(J=>J.home==='apts').map(J=>J.w);
-    const rest=W.filter(w=>!upW.has(w)&&!toHouse.includes(w)&&!toApts.includes(w)), hq=[...toHouse,...rest];
-    const noApts=!B.some(b=>b.id==='apts'); let youIn=false;
-    const houseUnits=flats.map(f=>{ const r=RES.find(r=>r.flat===f); if(r)return {unit:f,who:{type:'res',ref:r,name:r.name}}; if(noApts&&!youIn){ youIn=true; return {unit:f,who:{type:'you',name:'YOU'}}; } const w=hq.shift(); return {unit:f,who:w?wk(w):null}; });
-    const aq=[...toApts,...hq], aptUnits=[{unit:'1',who:{type:'you',name:'YOU'}},...aq.map((w,i)=>({unit:String(i+2),who:wk(w)}))];
-    { const h=B.find(b=>b.id==='house'), a=B.find(b=>b.id==='apts'); if(h)h.units=houseUnits; if(a)a.units=aptUnits; }
     const byS={}; for(const b of B){ b.street=streetOf(b.F); (byS[b.street]=byS[b.street]||[]).push(b); }
     for(const [s,L] of Object.entries(byS)){ L.sort((a,b)=>along(s,a.F)-along(s,b.F)); let last=-1; for(const b of L){ const s0=s==='MARKET STREET'?X(30):s==='THE AVENUE'?Z(-80):s==='NORTH STREET'?X(30):Z(-80);
         let k=1+2*Math.max(0,Math.round((along(s,b.F)-s0)/T/3)); if(k<=last)k=last+2; last=k; b.num=k; } }
     for(const b of B){ const line=(b.street==='CENTRAL PARK'?'':b.num+' ')+b.street;
-      if(b.units)for(const u of b.units){ const id=b.id+'-'+u.unit.replace(/\s+/g,'').replace(/^THE/,'').toLowerCase(); const A={id,b,unit:u.unit,name:u.who?u.who.name:'OCCUPANT',who:u.who,kind:b.id==='tower'?'civic':'home',label:(b.id==='tower'?u.unit+', ':(b.id==='house'?'FLAT ':'APT ')+u.unit+', ')+line};
-          MAIL.addr.push(A); if(u.who&&u.who.type==='walker')u.who.ref.home=A; if(u.who&&u.who.type==='res')u.who.ref.addr=A; if(u.who&&u.who.type==='you')MAIL.mine=A; }
+      if(b.units)for(const u of b.units){ const id=b.id+'-'+u.unit.replace(/\s+/g,'').replace(/^THE/,'').toLowerCase(); MAIL.addr.push({id,b,unit:u.unit,name:u.who?u.who.name:'OCCUPANT',who:u.who,kind:'civic',label:u.unit+', '+line}); }
       else MAIL.addr.push({id:b.id,b,unit:null,name:b.name,who:{type:b.kind,ref:b.id,name:b.name},kind:b.kind,label:b.name+', '+line});
       for(const u of b.up||[]){ const A={id:b.id+'-'+u.unit,b,unit:u.unit,up:true,name:u.who.name,who:u.who,kind:'home',label:'APT '+u.unit+', '+line}; MAIL.addr.push(A); if(u.who.type==='walker')u.who.ref.home=A; } }
     MAIL.office=MAIL.addr.find(a=>a.id==='tower-postoffice')||MAIL.addr.find(a=>/POST/.test(a.unit||''));
     MAIL.hall=MAIL.addr.find(a=>/CITY HALL/.test(a.unit||'')); MAIL.depot=MAIL.addr.find(a=>/DEPOT/.test(a.unit||''));
-    for(const w of W)if(w.home){ w.N.name=w.home.name; w.cash=w.cash??60; }
+    for(const w of W)if(w.home&&w.home.id){ w.N.name=w.home.name; w.cash=w.cash??60; }
     const ORD={'MARKET STREET':[0,1],'THE AVENUE':[1,1],'NORTH STREET':[2,-1],'WEST STREET':[3,-1],'CENTRAL PARK':[4,1]};
     B.sort((a,b)=>ORD[a.street][0]-ORD[b.street][0]||ORD[a.street][1]*(along(a.street,a.F)-along(b.street,b.F)));
     MAIL.B=B; boxes(); MAIL.ready=true; restore(); log('the post office opened: '+MAIL.addr.length+' addresses'); };
@@ -105,8 +96,6 @@ if(MAIL.on){ const T=TILE, M=1/.84*T, X=BOD.XS, Z=BOD.ZS, G=(x,z)=>MODS.bodega.g
 
   const PRICE={LETTER:1,POSTCARD:1,PARCEL:4,BILL:0,ADVERT:0,NOTICE:0,PAYMENT:1,GIFT:1};
   const purse=A=>{ if(!A||!A.who)return null; const w=A.who;
-    if(w.type==='you')return {get:()=>MAIL.you.cash,add:v=>{ MAIL.you.cash+=v; }};
-    if(w.type==='res')return {get:()=>w.ref.cash||0,add:v=>{ w.ref.cash=(w.ref.cash||0)+v; }};
     if(w.type==='walker')return {get:()=>w.ref.cash||0,add:v=>{ w.ref.cash=(w.ref.cash||0)+v; }};
     if(w.type==='shop'||w.type==='biz'){ const S=CIVIC.shops[w.ref]||CIVIC.shops['store:'+w.ref]; if(S)return {get:()=>S.till,add:v=>{ S.till+=v; }}; }
     return {get:()=>CIVIC.ledger.treasury,add:v=>{ CIVIC.ledger.treasury+=v; }}; };
@@ -125,8 +114,8 @@ if(MAIL.on){ const T=TILE, M=1/.84*T, X=BOD.XS, Z=BOD.ZS, G=(x,z)=>MODS.bodega.g
   const readEffect=l=>{ const A=MAIL.byId(l.to), P=purse(A);
     if(l.kind==='GIFT'&&l.amount&&P){ P.add(l.amount); log(A.name+' found $'+l.amount+' in a card'); }
     if(l.kind==='PAYMENT'&&l.amount&&P){ P.add(l.amount); const b=MAIL.L.find(x=>x.id===l.re); if(b){ b.paid=true; H(b,'paid'); } log(A.name+' banked a payment of $'+l.amount); }
-    if(l.kind==='BILL'&&A&&A.who&&A.who.type!=='you')pay(l);
-    if((l.kind==='LETTER'||l.kind==='POSTCARD')&&l.from&&A&&A.who&&A.who.type!=='you'&&!l.auto&&rnd()<(MAIL.replyP??.55))setTimeout(()=>reply(l),400+rnd()*2000); };
+    if(l.kind==='BILL'&&A)pay(l);
+    if((l.kind==='LETTER'||l.kind==='POSTCARD')&&l.from&&A&&!l.auto&&rnd()<(MAIL.replyP??.55))setTimeout(()=>reply(l),400+rnd()*2000); };
   const pay=b=>{ const A=MAIL.byId(b.to), P=purse(A); if(!P||b.paid)return; if(P.get()<b.amount+1){ b.owed=true; H(b,'could not be paid'); log(A.name+' could not pay '+b.subject.toLowerCase()); return false; }
     P.add(-b.amount); b.paid=true; MAIL.post({from:A.id,to:b.from,kind:'PAYMENT',amount:b.amount,re:b.id,subject:'PAYMENT: '+b.subject,body:'Enclosed, a check for $'+b.amount+'.\n'+A.name,at:postAt(A)}); return true; };
   MAIL.pay=pay;
@@ -147,18 +136,16 @@ if(MAIL.on){ const T=TILE, M=1/.84*T, X=BOD.XS, Z=BOD.ZS, G=(x,z)=>MODS.bodega.g
     else { const r=W(REPLIES); s=r[0]+l.subject.replace(/^RE: /,''); b=r[1]+'\n'+A.name; }
     MAIL.post({from:A.id,to:l.from,kind:'LETTER',subject:s,body:b,re:l.id,at:postAt(A)}); };
   MAIL.reply=reply;
-  const people=()=>MAIL.addr.filter(a=>a.kind==='home'&&a.who&&a.who.type!=='you');
+  const people=()=>MAIL.addr.filter(a=>a.kind==='home'&&a.who);
   CITY.at(20.5,()=>{ if(!MAIL.ready)return; for(const A of people()){ if(rnd()>.3)continue; const r=rnd(), others=MAIL.addr.filter(a=>a!==A);
       if(r<.6){ const to=pick(people().filter(a=>a!==A)), c=rnd()<.25?W(CARDS):W(LETTERS); MAIL.post({from:A.id,to:to.id,kind:CARDS.includes(c)?'POSTCARD':'LETTER',subject:c[0],body:c[1]+'\n'+A.name,at:postAt(A)}); }
       else if(r<.85){ const to=pick(others.filter(a=>a.kind==='shop'||a.kind==='biz')); if(to)MAIL.post({from:A.id,to:to.id,subject:'AN ORDER',body:'Please put aside a few things for me. I will come by.\n'+A.name,at:postAt(A)}); }
-      else if(MAIL.hall){ const c=W(COMPLAINTS); MAIL.post({from:A.id,to:MAIL.hall.id,subject:c[0],body:c[1]+'\n'+A.name+', '+A.label,at:postAt(A)}); } }
-    if(rnd()<.35&&MAIL.mine){ const from=pick(people()), c=rnd()<.5?W(LETTERS):W(CARDS); MAIL.post({from:from.id,to:MAIL.mine.id,kind:CARDS.includes(c)?'POSTCARD':'LETTER',subject:c[0],body:c[1]+'\n'+from.name,at:postAt(from)}); } },'the evening letters');
-  CITY.at(8,()=>{ if(!MAIL.ready||!MAIL.hall)return; if(MAIL.day()%3!==0)return; for(const A of MAIL.addr.filter(a=>a.kind==='home'))MAIL.post({from:MAIL.hall.id,to:A.id,kind:'BILL',amount:CIVIC.ledger.rent,subject:'RENT, DAYS '+MAIL.day()+'-'+(MAIL.day()+2),body:'Rent for '+A.label+' is $'+CIVIC.ledger.rent+'. Please mail your payment to City Hall.',at:'counter'}); log('city hall mailed the rent bills','hall'); },'rent bills');
+      else if(MAIL.hall){ const c=W(COMPLAINTS); MAIL.post({from:A.id,to:MAIL.hall.id,subject:c[0],body:c[1]+'\n'+A.name+', '+A.label,at:postAt(A)}); } } },'the evening letters');
   CITY.at(11,()=>{ if(!MAIL.ready||MAIL.day()%7!==6)return; for(const S of MAIL.addr.filter(a=>a.kind==='shop')){ const to=people().sort(()=>rnd()-.5).slice(0,4); for(const A of to)MAIL.post({from:S.id,to:A.id,kind:'ADVERT',subject:S.name+': THIS WEEK',body:'Fresh on our shelves this week. Show this card for a little something extra.\n'+S.name,at:postAt(S)}); } },'the shops\' adverts');
   { const b0=CIVIC.buy; CIVIC.restocked=id=>{ const A=MAIL.byId(id.replace(/^store:/,'')); if(A&&MAIL.depot)MAIL.post({from:MAIL.depot.id,to:A.id,kind:'BILL',amount:15,subject:'DELIVERY: 12 CRATES',body:'For goods delivered to '+A.name+': $15.',at:'counter'}); }; }
 
-  CIVIC.send=(to,from,subject,body)=>{ const A=to==='you'?MAIL.mine:(CITY.residents||[]).find(r=>r.key===to)?.addr||MAIL.byId(to)||MAIL.byId(String(to).replace(/^store:/,'')); return MAIL.post({to:A&&A.id,toName:String(to),fromName:from,subject,body,at:'counter'}); };
-  CIVIC.box=to=>{ const A=to==='you'?MAIL.mine:(CITY.residents||[]).find(r=>r.key===to)?.addr||MAIL.byId(to); return A?MAIL.L.filter(l=>l.to===A.id&&(l.state==='delivered'||l.state==='read')):[]; };
+  CIVIC.send=(to,from,subject,body)=>{ const A=MAIL.byId(to)||MAIL.byId(String(to).replace(/^store:/,'')); return MAIL.post({to:A&&A.id,toName:String(to),fromName:from,subject,body,at:'counter'}); };
+  CIVIC.box=to=>{ const A=MAIL.byId(to); return A?MAIL.L.filter(l=>l.to===A.id&&(l.state==='delivered'||l.state==='read')):[]; };
   const S_=()=>CIVIC.staff.carrier;
   const sortMail=()=>{ let n=0; for(const l of MAIL.L.filter(l=>l.state==='collected')){
       if(!MAIL.byId(l.to)){ if(MAIL.byId(l.from)&&!l.returned){ l.returned=true; l.to=l.from; l.toName=l.fromName; l.toLabel=l.fromLabel; l.subject='RETURN TO SENDER: '+l.subject; H(l,'no such address: returned to sender'); } else { l.state='dead'; H(l,'no such address, no sender: to the dead letters'); continue; } }
@@ -175,7 +162,7 @@ if(MAIL.on){ const T=TILE, M=1/.84*T, X=BOD.XS, Z=BOD.ZS, G=(x,z)=>MODS.bodega.g
     if(st.cb)st.cb.in.length=0; return n; };
   const deliverAt=(b)=>{ let n=0; for(const A of MAIL.addr.filter(a=>a.b===b)){ const inBox=MAIL.L.filter(l=>l.to===A.id&&l.state==='delivered'&&l.kind!=='PARCEL').length;
       const mine=MAIL.L.filter(l=>l.to===A.id&&(l.state==='sorted'||l.state==='held')); let room=15-inBox, slip=false;
-      for(const l of mine){ if(l.kind==='PARCEL'||room>0){ l.state='delivered'; H(l,l.kind==='PARCEL'?'left on the step':'delivered to the box'); if(l.kind!=='PARCEL')room--; n++; if(A.who&&A.who.type==='you')note('YOU HAVE MAIL · '+A.label); }
+      for(const l of mine){ if(l.kind==='PARCEL'||room>0){ l.state='delivered'; H(l,l.kind==='PARCEL'?'left on the step':'delivered to the box'); if(l.kind!=='PARCEL')room--; n++; }
         else if(l.state!=='held'){ l.state='held'; H(l,'the box was full: held at the post office'); slip=true; } }
       if(slip)MAIL.post({to:A.id,fromName:'THE POST OFFICE',kind:'NOTICE',subject:'MAIL HELD FOR YOU',body:'Your box was full. We are holding your mail at the post office; it comes on the next round once there is room.',at:'counter'}); }
     return n; };
@@ -194,52 +181,16 @@ if(MAIL.on){ const T=TILE, M=1/.84*T, X=BOD.XS, Z=BOD.ZS, G=(x,z)=>MODS.bodega.g
   CITY.at(9,()=>{ for(const A of MAIL.addr)if(A.kind==='civic')MAIL.take(A.id,A.name); },'the departments read their mail');
   CITY.at(10,()=>{ for(const A of MAIL.addr)if(A.kind==='shop'||A.kind==='biz'||A.up&&A.who&&A.who.type==='shop')MAIL.take(A.id,A.name); },'the shops read their mail');
   MAIL.waiting=A=>!!A&&MAIL.L.some(l=>l.to===A.id&&l.state==='delivered');
-  let acc=0; const t0=CITY.tick; CITY.tick=(dt,you)=>{ t0(dt,you); if(!MAIL.ready)return; if((acc+=dt)<.25)return; acc=0;
-    for(const r of CITY.residents||[])if(r.state==='home'&&r.addr&&MAIL.waiting(r.addr))MAIL.take(r.addr.id,r.name); };
 
   const note=t=>{ let d=document.getElementById('mailnote'); if(!d){ d=document.createElement('div'); d.id='mailnote'; d.style.cssText='position:fixed;left:50%;top:14px;transform:translateX(-50%);z-index:19;padding:6px 12px;font:12px Silkscreen,monospace;letter-spacing:.5px;color:#f2c14e;background:#0e1016e8;border:2px solid #3a3f4e;pointer-events:none'; document.body.appendChild(d); }
     d.textContent=t; d.style.display='block'; clearTimeout(d.tm); d.tm=setTimeout(()=>{ d.style.display='none'; },4500); };
   MAIL.note=note;
-  const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
-  const panel=()=>{ let P=document.getElementById('mailp'); if(P)return P; P=document.createElement('div'); P.id='mailp'; P.hidden=true;
-    P.style.cssText='position:fixed;left:50%;top:8%;transform:translateX(-50%);width:min(560px,92vw);max-height:80vh;overflow:auto;z-index:21;padding:14px 16px;font:11px Silkscreen,monospace;letter-spacing:.4px;color:#d8dae2;background:#0b0d13f2;border:2px solid #3a3f4e';
-    document.body.appendChild(P); P.addEventListener('keydown',e=>e.stopPropagation()); P.addEventListener('keyup',e=>e.stopPropagation()); return P; };
-  const btn='class="btn" style="margin:2px 4px 2px 0"';
-  let view='in', openId=null;
-  const openBox=b=>{ const mine=MAIL.mine&&MAIL.mine.b===b;
-    if(!mine){ const As=MAIL.addr.filter(a=>a.b===b&&!a.up), n=As.filter(a=>MAIL.waiting(a)).length, out=MAIL.L.some(l=>l.state==='posted'&&As.some(a=>a.id===l.at));
-      note((b.units?b.name+' · '+As.length+' BOXES':As[0].label)+(n?' · MAIL IN '+n:' · EMPTY')+(out?' · FLAG UP':'')); return; }
-    MAIL.take(MAIL.mine.id,'you'); view='in'; openId=null; panel().hidden=false; render(); };
-  MAIL.open=()=>{ if(MAIL.mine)openBox(MAIL.mine.b); };
-  const render=()=>{ const P=panel(); if(P.hidden)return; const me=MAIL.mine, my=MAIL.L.filter(l=>l.to===me.id&&(l.state==='read'||l.kept)).reverse(), sent=MAIL.L.filter(l=>l.from===me.id).reverse();
-    let o=`<h3 style="margin:0 0 6px">YOUR MAILBOX · ${esc(me.label)}</h3><div style="color:#9aa">YOU HAVE $${MAIL.you.cash} · ${fmt(stamp())}</div>
-      <div style="margin:8px 0"><button ${btn} data-v="in">LETTERS (${my.filter(l=>!l.seen).length} NEW)</button><button ${btn} data-v="write">WRITE</button><button ${btn} data-v="sent">SENT</button></div>`;
-    if(view==='in'){ if(openId){ const l=MAIL.L.find(x=>x.id===openId); l.seen=true;
-        o+=`<div style="border:1px solid #3a3f4e;padding:8px;background:#f1ead8;color:#2a2620;font-family:Georgia,serif;font-size:13px;letter-spacing:0"><div style="font:10px Silkscreen,monospace;color:#7a6a50">${esc(l.kind)} · POSTMARKED ${esc(fmt(l.post))}</div>
-          <div>From: ${esc(l.fromName)}${l.fromLabel?' · '+esc(l.fromLabel):''}</div><div>To: ${esc(l.toName)}</div><b>${esc(l.subject)}</b><p style="white-space:pre-wrap">${esc(l.body)}</p>${l.amount?'<div>$'+l.amount+(l.kind==='BILL'?(l.paid?' · PAID':' · DUE'):'')+'</div>':''}</div>
-          <div style="margin-top:6px">${l.kind==='BILL'&&!l.paid?`<button ${btn} data-a="pay">PAY $${l.amount}</button>`:''}${l.from&&MAIL.byId(l.from)?`<button ${btn} data-a="reply">REPLY</button>`:''}<button ${btn} data-a="bin">THROW OUT</button><button ${btn} data-a="back">BACK</button></div>`; }
-      else o+=my.length?my.map(l=>`<div data-l="${l.id}" style="cursor:pointer;padding:4px 2px;border-bottom:1px solid #222;${l.seen?'color:#8a8e9a':'color:#f2c14e'}">${esc(l.kind)} · ${esc(l.fromName)}: ${esc(l.subject)} <span style="float:right">${esc(fmt(l.post))}</span></div>`).join(''):'<div style="color:#8a8e9a">No letters. The carrier comes at 9:30.</div>'; }
-    else if(view==='write'){ const opts=MAIL.addr.filter(a=>a!==me).map(a=>`<option value="${a.id}">${esc(a.name)} · ${esc(a.label)}</option>`).join('');
-      o+=`<div>TO <select id="mwto" style="max-width:100%">${opts}</select></div><div style="margin-top:4px">KIND <select id="mwk"><option>LETTER</option><option>POSTCARD</option><option>PARCEL</option><option value="GIFT">CARD WITH $5</option></select> <span style="color:#9aa">STAMP $1, PARCEL $4</span></div>
-        <div style="margin-top:4px">SUBJECT <input id="mws" style="width:70%" maxlength="40"></div><textarea id="mwb" rows="6" style="width:100%;margin-top:4px" maxlength="600"></textarea>
-        <div><button ${btn} data-a="send">POST IT (IN YOUR BOX, FLAG UP)</button></div>`; }
-    else o+=sent.length?sent.map(l=>`<div style="padding:4px 2px;border-bottom:1px solid #222">${esc(l.kind)} TO ${esc(l.toName)}: ${esc(l.subject)}<br><span style="color:#9aa">${esc(l.state.toUpperCase())} · ${esc((l.hist[l.hist.length-1]||[])[2]||'')}</span></div>`).join(''):'<div style="color:#8a8e9a">Nothing sent yet.</div>';
-    P.innerHTML=o;
-    P.querySelectorAll('[data-v]').forEach(b=>b.onclick=()=>{ view=b.dataset.v; openId=null; render(); });
-    P.querySelectorAll('[data-l]').forEach(d=>d.onclick=()=>{ openId=+d.dataset.l; render(); });
-    const act=(a,f)=>{ const b=P.querySelector('[data-a="'+a+'"]'); if(b)b.onclick=f; };
-    act('back',()=>{ openId=null; render(); }); act('bin',()=>{ const l=MAIL.L.find(x=>x.id===openId); l.state='discarded'; H(l,'thrown out'); openId=null; render(); save(); });
-    act('pay',()=>{ const l=MAIL.L.find(x=>x.id===openId); if(MAIL.you.cash<l.amount+1){ note('NOT ENOUGH MONEY'); return; } MAIL.you.cash-=l.amount; l.paid=true; H(l,'paid by you');
-      MAIL.post({from:me.id,to:l.from,kind:'PAYMENT',amount:l.amount,re:l.id,subject:'PAYMENT: '+l.subject,body:'Enclosed, a check for $'+l.amount+'.',at:me.id}); note('PAYMENT IN YOUR BOX · FLAG UP'); render(); save(); });
-    act('reply',()=>{ const l=MAIL.L.find(x=>x.id===openId); view='write'; openId=null; render(); P.querySelector('#mwto').value=l.from; P.querySelector('#mws').value=('RE: '+l.subject.replace(/^RE: /,'')).slice(0,40); });
-    act('send',()=>{ const to=P.querySelector('#mwto').value, k=P.querySelector('#mwk').value, s=P.querySelector('#mws').value.trim()||'(NO SUBJECT)', b=P.querySelector('#mwb').value.trim();
-      const l=MAIL.post({from:me.id,to,kind:k,subject:s.toUpperCase(),body:b,amount:k==='GIFT'?5:0,at:me.id}); if(!l){ note('NOT ENOUGH MONEY FOR THE STAMP'); return; }
-      if(k==='GIFT')MAIL.you.cash-=5; note('POSTED · THE CARRIER TAKES IT AT 9:30'); view='sent'; render(); save(); }); };
-  setInterval(render,2000);
+  const openBox=b=>{ const As=MAIL.addr.filter(a=>a.b===b&&!a.up), n=As.filter(a=>MAIL.waiting(a)).length, out=MAIL.L.some(l=>l.state==='posted'&&As.some(a=>a.id===l.at));
+    note((b.units?b.name+' · '+As.length+' BOXES':As[0].label)+(n?' · MAIL IN '+n:' · EMPTY')+(out?' · FLAG UP':'')); };
 
-  const save=()=>{ if(!MAIL.ready)return; try{ SAVE.set('mail',JSON.stringify({v:1,day:MAIL.day(),h:CLOCK.h,nid:MAIL.nid,you:MAIL.you,L:MAIL.L.slice(-500),cb:MAIL.cboxes.map(c=>c.in),cash:Object.fromEntries(MAIL.addr.filter(a=>a.who&&(a.who.type==='walker'||a.who.type==='res')).map(a=>[a.id,a.who.ref.cash||0]))})); }catch(e){} };
+  const save=()=>{ if(!MAIL.ready)return; try{ SAVE.set('mail',JSON.stringify({v:1,day:MAIL.day(),h:CLOCK.h,nid:MAIL.nid,you:MAIL.you,L:MAIL.L.slice(-500),cb:MAIL.cboxes.map(c=>c.in),cash:Object.fromEntries(MAIL.addr.filter(a=>a.who&&a.who.type==='walker').map(a=>[a.id,a.who.ref.cash||0]))})); }catch(e){} };
   const restore=()=>{ let D=null; try{ D=JSON.parse(SAVE.get('mail')||'null'); }catch(e){} if(QS.get('fresh')&&QS.get('keepmail')!=='1')D=null;
-    if(!D||D.v!==1){ MAIL.post({to:MAIL.mine&&MAIL.mine.id,from:MAIL.hall&&MAIL.hall.id,kind:'NOTICE',subject:'WELCOME TO THE MARKET',body:'Welcome to apartment 1. Your mail comes to this box each morning on the 9:30 round. Rent is $'+CIVIC.ledger.rent+' every third day, by mail to City Hall. Curfew is 23:00.\nCITY HALL',at:'counter'}); return; }
+    if(!D||D.v!==1)return;
     MAIL.day0=Math.max(0,(D.day||0)+((D.h||0)>CLOCK.h?1:0)); MAIL.nid=D.nid||0; MAIL.you=D.you||MAIL.you; MAIL.L=(D.L||[]).filter(l=>l&&l.id);
     (D.cb||[]).forEach((a,i)=>{ if(MAIL.cboxes[i])MAIL.cboxes[i].in=a||[]; }); for(const [id,v] of Object.entries(D.cash||{})){ const A=MAIL.byId(id); if(A&&A.who&&A.who.ref)A.who.ref.cash=v; }
     for(const l of MAIL.L)if(l.state==='out')l.state='sorted'; refresh(); };

@@ -28,8 +28,6 @@ raw, page = page, data(page[:i] + body + page[j:])
 os.makedirs('dist', exist_ok=True)
 open('dist/market.html', 'w').write(page)
 
-code = '\n'.join([read('src/avatar/pre.js')] + [one(n) for n in ['walker3d', 'save', 'editor', 'animator', 'looks', 'avatar', 'avmove']] + [read('src/avatar/post.js')])
-open('dist/avatar.html', 'w').write(data(read('src/avatar/page.html').replace('__RIG__', one('rig')).replace('__CODE__', code)))
 open('dist/door.html', 'w').write(read('src/door/door.html'))
 
 shutil.rmtree('dist/g', ignore_errors=True)
@@ -42,7 +40,7 @@ for f in sorted(set(re.findall(r'__(?:DATA|LAZY)__\("([^"]+)"\)', body))):
 seg = raw[k + 8:i - len('<script type="module">')]
 open('dist/g/rig.js', 'w').write(data(seg[:seg.index('</script>')]))
 open('dist/g/page.html', 'w').write(re.sub(r'<meta[^>]*>|<title>.*?</title>', '', raw[:k]).strip())
-pages = ['dist/market.html', 'dist/avatar.html', 'dist/door.html', 'dist/g/rig.js', 'dist/g/page.html']
+pages = ['dist/market.html', 'dist/door.html', 'dist/g/rig.js', 'dist/g/page.html']
 if os.environ.get('MIN', '1') != '0':
     if not os.path.exists('node_modules/esbuild'):
         subprocess.run(['npm', 'install', '--no-audit', '--no-fund'], check=True)
@@ -59,7 +57,7 @@ os.remove('dist/g/page.html')
 open('dist/g/game.js', 'w').write(re.sub(r"'https://cdn\.jsdelivr\.net/npm/((?:@[^/@']+/)?[^/@']+)@([^/']+)[^']*'", npm, data(game)))
 m = subprocess.run(['node', 'tools/bundle.cjs', 'dist/g/game.js', 'dist/g'], check=True, capture_output=True, text=True).stdout.strip()
 open('dist/g/market.html', 'w').write('<!doctype html><meta name="market-build" content="' + bv + '"><title>The Market</title><body bgcolor=#0e1016><script type=module src=/g/' + m + '></script>')
-pages = pages[:3] + ['dist/g/market.html']
+pages = pages[:2] + ['dist/g/market.html']
 for f in pages:
     t = read(f)
     if t.count('<!--') != t.count('-->') or not t.startswith('<') or t.startswith('<!--'):

@@ -8,8 +8,6 @@ const LIVES={on:QS.get('lives')!=='0',ready:false,ms:0,stepMs:0,list:[],force:nu
   LIVES.build=()=>{
     place('street',{door:null,reach:0});
     { const B=BOD.B0, dx=XB((B.x0+B.x1)/2); place('bodega',{walls:true,door:{x:dx,z:ZS_},path:[{x:dx,z:ZB(B.y1)+.6*T},{x:dx,z:ZB(B.y1)-3.4}],box:bx(XB,ZB,[B.x0+1,BOD.BODOFF+1,B.x1-1,B.y1-1]),reach:2.5*T}); }
-    if(MODS.apts&&MODS.apts.A){ const A=MODS.apts.A, H=MODS.apts.H, dx=XB(A.x1-1.0), hm=(H.y0+H.y1)/2;
-      place('apthouse',{walls:true,door:{x:dx,z:ZS_},path:[{x:dx,z:ZB(A.y1)+.6*T},{x:dx,z:ZB(A.y1)-1.2},{x:XB(A.x1-.75),z:ZB(hm)},{x:XB((A.x0+A.x1)/2),z:ZB(hm)}],box:bx(XB,ZB,[A.x0+.7,H.y0+.4,A.x1-.7,H.y1-.4]),reach:3*T}); }
     if(!AWAY.has('apartments')){ const Rm=POOLR.ROOMS||[], dx=POOLR.X(22.75), HY=(6.24+8.28)/2;
       place('lobby',{walls:true,door:{x:dx,z:ZS_},path:[{x:dx,z:POOLR.Z(16.8)+.6*T},{x:dx,z:POOLR.Z(15.6)},{x:dx,z:POOLR.Z(12)}],box:Rm[5]&&bx(POOLR.X,POOLR.Z,[Rm[5][0]+.8,Rm[5][1]+.8,Rm[5][2]-.8,Rm[5][3]-.8]),reach:2.5*T});
       place('hallway',{walls:true,door:{x:dx,z:ZS_},path:[{x:dx,z:POOLR.Z(16.8)+.6*T},{x:dx,z:POOLR.Z(15.6)},{x:dx,z:POOLR.Z(HY)},{x:POOLR.X(27.3*2/3-1),z:POOLR.Z(HY)},{x:POOLR.X(11),z:POOLR.Z(HY)}],box:Rm[3]&&bx(POOLR.X,POOLR.Z,[Rm[3][0]+.6,Rm[3][1]+.4,Rm[3][2]-.6,Rm[3][3]-.4]),reach:4*T}); }
@@ -51,7 +49,7 @@ const LIVES={on:QS.get('lives')!=='0',ready:false,ms:0,stepMs:0,list:[],force:nu
     if(t<7)return [L.home,'sleeping']; if(t<8)return [L.home,'standing']; if(t<9)return [L.meal,'sitting']; if(t<12)return [L.work,'standing']; if(t<13)return [L.meal,'sitting'];
     if(t<17)return [L.work,'standing']; if(t<19)return [L.eve,'standing']; if(t<22)return [L.night,L.night==='bar'?'sitting':'standing']; return [L.home,'sleeping']; };
   const lifeOf=(N,i)=>{ const k=N.key, pick=(a,b)=>i%2?a:b, s=((i*7)%9-4)*.2, has=id=>!!P[id];
-    const L={s,home:has('apthouse')&&(i%3!==2||!has('lobby'))?'apthouse':has('lobby')?pick('lobby','hallway'):'street',meal:has('diner')?'diner':'street',work:'bodega',eve:pick('park','street'),night:'street',at:null,k:0,wp:null,i:0,state:'standing',to:null,wt:0};
+    const L={s,home:has('lobby')?pick('lobby','hallway'):'street',meal:has('diner')?'diner':'street',work:'bodega',eve:pick('park','street'),night:'street',at:null,k:0,wp:null,i:0,state:'standing',to:null,wt:0};
     if(/^skeleton/.test(k)){ L.work='castle'; L.home=has('dungeon')?'dungeon':L.home; L.eve='park'; }
     else if(/^ogre/.test(k)){ L.work=has('dojo')?'dojo':'street'; }
     else if(/^hero/.test(k)){ L.work='park'; L.eve='stalls'; }
@@ -60,8 +58,7 @@ const LIVES={on:QS.get('lives')!=='0',ready:false,ms:0,stepMs:0,list:[],force:nu
     else if(k==='Gold'){ L.work='subway'; L.home='subway'; L.eve='street'; }
     if(i%4===1&&has('bar'))L.night='bar';
     return L; };
-  const resident=N=>!!(window.CITY&&CITY.residents&&CITY.residents.some(r=>r.key===N.key));
-  const livesFor=N=>!('mode' in N)&&!N.guard&&!N.sheet&&!N.st.hold&&N.lv==='up'&&!(window.CREATS&&CREATS.includes(N))&&N.key!=='fox'&&N.key!=='mushroom'&&N.key!=='bear'&&!resident(N)&&!N.errand&&!N.walker;
+  const livesFor=N=>!('mode' in N)&&!N.guard&&!N.sheet&&!N.st.hold&&N.lv==='up'&&!(window.CREATS&&CREATS.includes(N))&&N.key!=='fox'&&N.key!=='mushroom'&&N.key!=='bear'&&!N.errand&&!N.walker;
   LIVES.init=()=>{ if(!LIVES.on)return; LIVES.build(); let i=0; for(const N of NPCS)N.v0=N.st.v;
     for(const N of NPCS){ if(!livesFor(N))continue; const L=N.life=lifeOf(N,i++); N.st.hold=true; N.st.to=null;
       N.free=(x,z,R)=>freeAt(N,x,z,true); N.ground=(x,z)=>gnd(N,x,z);

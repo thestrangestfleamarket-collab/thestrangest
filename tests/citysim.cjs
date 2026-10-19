@@ -21,8 +21,8 @@ const {chromium}=require('playwright'); const S=process.argv[2];
   rec('medic droid brings you round',med>=0,'after '+(med/1000).toFixed(0)+' s, beam seen '+beam);
   // WORKS: a full can; MAIL: a letter and the round
   await pg.evaluate(()=>CIVIC.tryCan()); const wk=await until(()=>CIVIC.cans[0].fill===0&&CITY.open('trash').length===0,300000); rec('works droid empties a can',wk>=0,'after '+(wk/1000).toFixed(0)+' s');
-  await pg.evaluate(()=>{ CIVIC.send('you','SIM','HELLO','test'); CITY.setHour(9.4); }); await pg.waitForTimeout(1500); await pg.evaluate(()=>CITY.setHour(9.6));
-  const ml=await until(()=>CIVIC.box('you').length>0,300000); rec('mail droid delivers your letter',ml>=0,'after '+(ml/1000).toFixed(0)+' s');
+  await pg.evaluate(()=>{ CIVIC.send('bodega','SIM','HELLO','test'); CITY.setHour(9.4); }); await pg.waitForTimeout(1500); await pg.evaluate(()=>CITY.setHour(9.6));
+  const ml=await until(()=>CIVIC.box('bodega').length>0,300000); rec('mail droid delivers a letter to the bodega',ml>=0,'after '+(ml/1000).toFixed(0)+' s');
   // POLICE: a troublemaker by hand if the guards' code allows
   const pol=await pg.evaluate(()=>{ const TR=window.GUARDX&&GUARDX.TROUBLE; if(!TR||!TR.length)return 'no troublemaker to send'; const t=TR[0], P=CIVIC.staff.officer1.N; t.mode='come'; t.st.x=P.st.x+3*__dbg.cv().TILE; t.st.z=P.st.z; t.g.visible=true; return 'sent'; });
   let pl=-1; if(pol==='sent')pl=await until(()=>CIVIC.log.some(e=>/POLICE DROID/.test(e.what)),180000); rec('police droid answers a troublemaker',pl>=0,pol+(pl>=0?', after '+(pl/1000).toFixed(0)+' s':''));

@@ -12,7 +12,7 @@ Look there before changing how something looks or behaves, and add a short dated
 - `src/NNN-name.{html,js}`: the page, in order. The build joins them as they are, so a file may start or end inside a block
   of the file before or after it. `000`/`002`/`end` are the page's HTML, `001-rig.js` the Walker's rig, the rest the game's
   module. `game-*.js` are the old game's own makers, copied in (the build no longer reads `bralynnb/tsfm`).
-  `main*.js` are the page's own glue code between places. `src/avatar/` holds the standalone avatar editor's own three files.
+  `main*.js` are the page's own glue code between places.
   `src/door/door.html` is the website's door (invite code, login); `worker/door.js` the website's server (`wrangler.jsonc`).
 - **No comments anywhere in `src/`**: not in code, not in shader text, not in HTML or CSS. Keep code short; history goes in
   `docs/HISTORY.md` and in git, never in the source.
@@ -25,7 +25,7 @@ Look there before changing how something looks or behaves, and add a short dated
 
 `python3 build.py`: joins `src/`, puts in the data and the build stamp (`__BUILDV__`), adds the loading breaths
 (`tools/yields.py`), minifies with esbuild (`tools/minify.cjs`; `npm install` once) and writes `dist/market.html` and
-`dist/avatar.html` and `dist/door.html`; it stops if a page has an unclosed `<!--`. For the website it also writes `dist/g/`: THE MARKET
+`dist/door.html`; it stops if a page has an unclosed `<!--`. For the website it also writes `dist/g/`: THE MARKET
 split like the old game (`market.html` a 4 KB shell, `rig.<hash>.js`, `game.<hash>.js`, each `data/*.json` as `<name>.<hash>.json`
 fetched at start); the worker hands `dist/g/` only to a login, cached for good (a new build, new names). The artifact stays `dist/market.html`. `MIN=0 python3 build.py` keeps them readable for debugging.
 

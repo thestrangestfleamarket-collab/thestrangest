@@ -2,7 +2,6 @@
   "private": true,
   "devDependencies": {
     "@dimforge/rapier3d-compat": "0.12.0",
-    "@pixiv/three-vrm": "3.3.3",
     "@recast-navigation/core": "0.43.1",
     "@recast-navigation/generators": "0.43.1",
     "esbuild": "0.24.0",

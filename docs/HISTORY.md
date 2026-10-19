@@ -2590,3 +2590,7 @@ and wash ashore). No sound. WebXR on a headset: teleport arc, snap turn, grab an
   for game"): the front counter and its two side wings are gone from `STALL.build` (`081-stalls.js`); the back shelf and the crates,
   sacks, logs and baskets beside it stay. Each merchant's place is just in front of the shelf, facing the street; both only stand and
   look about now (the tomato's `STALL.work` as the mushroom seller's, `144-veggies.js`). Their trade (FORAGE, VEG) is unchanged.
+- **Measured** (`tests/startprof.cjs`, the cloud's software rendering, before and after on one machine, twice each): time to start
+  31.6 s against 32.3-33.7 s; the longest freeze after the start 7.1 s against 7.4-7.6 s; triangles drawn at the opening 222,000
+  against 268,000-275,000; the park's south-west, the slowest frames (95th percentile) 49-51 ms against 52-59 ms.
+  `tools/cireport.py` turns a run's results into one GitHub annotation (for sessions that can't download logs).

@@ -37,29 +37,46 @@ WEEDS.init=()=>{ WEEDS.dbg=f=>f({FIX,SOL,TILE,MODS}); const T=TILE, hsh=(a,b,s)=
     for(const f of FLOW){ const k=Math.floor(f[0]/cs)+','+Math.floor(f[2]/cs); if(!FC.has(k))FC.set(k,[]); FC.get(k).push(f); }
     for(const list of FC.values()){ const fm=new THREE.InstancedMesh(fg,fmt,list.length); list.forEach(([x,y,z],i)=>{ M.compose(new THREE.Vector3(x,y,z),q.identity(),new THREE.Vector3(1,1,1)); fm.setMatrixAt(i,M); }); fm.computeBoundingSphere(); scene.add(fm); WEEDS.meshes.push(fm); } }
   WEEDS.n=TUFT.length; WEEDS.flowers=FLOW.length; };
-WEEDS.lawnInit=()=>{ const T=TILE, CS=8*T, N=32, CELL=CS/N, W=N+2, hsh=(a,b,s)=>{ let h=(Math.floor(a*97)*374761393+Math.floor(b*89)*668265263+s*1442695041)|0; h=(h^(h>>>13))*1274126177|0; return ((h^(h>>>16))>>>0)/4294967296; };
-  const MV=WEEDS.movers, TR=[...Array(12)].map(()=>new THREE.Vector4(0,0,0,0)), TT=new Float64Array(12).fill(-1e9), RP=(.8*T).toFixed(4), EP=(.24*T).toFixed(4), E2=(.15*T).toFixed(4); WEEDS.UTR={value:TR};
+WEEDS.lawnInit=()=>{ const T=TILE, CS=8*T, N=32, CELL=CS/N, MG=4, W=N+2*MG, hsh=(a,b,s)=>{ let h=(Math.floor(a*97)*374761393+Math.floor(b*89)*668265263+s*1442695041)|0; h=(h^(h>>>13))*1274126177|0; return ((h^(h>>>16))>>>0)/4294967296; };
+  const MV=WEEDS.movers, NT=12, TR=[...Array(NT)].map(()=>new THREE.Vector4(0,0,0,0)), TK=[...Array(NT)].map(()=>new THREE.Vector4(0,0,0,0)), TT=new Float64Array(NT).fill(-1e9), TM=new Int8Array(NT), F=x=>(x*T).toFixed(4);
+  const MODE=[[.7,.85,3,0,0],[1.05,.9,1.5,1,1],[.5,.32,1,0,0],[1.5,.95,3,0,0],[1.15,1,5,0,0]]; WEEDS.UTR={value:TR}; WEEDS.UTK={value:TK};
   const mat=new THREE.MeshLambertMaterial({color:new THREE.Color().setRGB(70/255,122/255,52/255,THREE.SRGBColorSpace)});
-  const HEAD='attribute float aH; attribute float aT; uniform vec4 uMv[8]; uniform vec4 uTr[12];\nfloat tgP(vec2 p){ float k=0.; for(int i=0;i<8;i++){ vec4 m=uMv[i]; if(m.w<.5)continue; k=max(k,clamp(('+RP+'-length(p-m.xy))/'+EP+',0.,1.)); }\n for(int i=0;i<11;i++){ vec4 a=uTr[i], b=uTr[i+1]; if(a.w<=0.||b.w<=0.)continue; vec2 ab=b.xy-a.xy, ap=p-a.xy; float t=clamp(dot(ap,ab)/max(dot(ab,ab),1e-4),0.,1.); k=max(k,mix(a.w,b.w,t)*clamp(('+RP+'-length(ap-ab*t))/'+EP+',0.,1.)); } return k; }\n';
-  mat.onBeforeCompile=sh=>{ sh.uniforms.uMv=WEEDS.UMV; sh.uniforms.uTr=WEEDS.UTR; sh.vertexShader=HEAD+sh.vertexShader.replace('#include <beginnormal_vertex>','#include <beginnormal_vertex>\n vec3 tgW=(modelMatrix*vec4(position,1.)).xyz; float tgK=tgP(tgW.xz); if(aT>.5){ vec2 tgG=vec2(tgP(tgW.xz+vec2('+E2+',0.)),tgP(tgW.xz+vec2(0.,'+E2+')))-tgK; objectNormal=normalize(objectNormal+vec3(tgG.x,0.,tgG.y)*aH*.82/'+E2+'); }')
-    .replace('#include <begin_vertex>','#include <begin_vertex>\n transformed.y-=aH*tgK*.82;').replace('#include <shadowmap_vertex>',THREE.ShaderChunk.shadowmap_vertex.replace(/(directional|point)LightShadows\[ i \]\.shadowNormalBias/g,'($&+.12)'));
+  const HEAD='attribute float aH; attribute float aT; uniform vec4 uMv[8]; uniform vec4 uTr[12]; uniform vec4 uTk[12]; uniform float uSw, uWk;\n'
+    +'void tgA(vec2 d, float r, float w, vec4 q, inout float k, inout vec2 pu, inout float rp){ float l=length(d), e=l-r, bd=clamp(1.-abs(e)/'+F(.45)+',0.,1.); k=max(k,w*clamp(-e/'+F(.2)+',0.,1.)); pu+=d/max(l,.001)*q.x*w*bd; rp+=q.y*sin(e*'+(6.2832/(.5*T)).toFixed(4)+'-q.z*12.)*bd; }\n'
+    +'float tgP(vec2 p, out vec2 pu, out float rp){ float k=0.; pu=vec2(0.); rp=0.; for(int i=1;i<8;i++){ vec4 m=uMv[i]; if(m.w<.5)continue; k=max(k,clamp(('+F(.7)+'-length(p-m.xy))/'+F(.2)+',0.,1.)); }\n'
+    +' for(int i=0;i<12;i++){ vec4 a=uTr[i]; if(a.w<=0.)continue; vec4 q=uTk[i]; vec2 d=p-a.xy; tgA(d,a.z,a.w,q,k,pu,rp);\n'
+    +'  if(i<11){ vec4 b=uTr[i+1]; if(b.w>0.){ vec2 ab=b.xy-a.xy; float t=clamp(dot(d,ab)/max(dot(ab,ab),1e-4),0.,1.); tgA(d-ab*t,mix(a.z,b.z,t),mix(a.w,b.w,t),q,k,pu,rp); } } }\n'
+    +' pu/=max(1.,length(pu)); rp=clamp(rp,-1.,1.); return k; }\n';
+  mat.onBeforeCompile=sh=>{ Object.assign(sh.uniforms,{uMv:WEEDS.UMV,uTr:WEEDS.UTR,uTk:WEEDS.UTK,uSw:PARK.sway,uWk:PARK.windK});
+    sh.vertexShader=HEAD+sh.vertexShader.replace('#include <beginnormal_vertex>','#include <beginnormal_vertex>\n vec3 tgW=(modelMatrix*vec4(position,1.)).xyz; vec2 tgU, tgD; float tgR, tgS, tgK=tgP(tgW.xz,tgU,tgR); if(aT>.5){ vec2 tgG=vec2(tgP(tgW.xz+vec2('+F(.15)+',0.),tgD,tgS),tgP(tgW.xz+vec2(0.,'+F(.15)+'),tgD,tgS))-tgK; objectNormal=normalize(objectNormal+vec3(tgG.x,0.,tgG.y)*aH*.9/'+F(.15)+'); }')
+    .replace('#include <begin_vertex>','#include <begin_vertex>\n { float ph=dot(tgW.xz,vec2(.35,.2))/'+F(1)+', g=(.6+.4*sin(uSw*.23-dot(tgW.xz,vec2(.05,.03))/'+F(1)+'))*uWk*(1.-tgK); transformed.x+=sin(uSw*1.6-ph)*aH*.1*g; transformed.z+=sin(uSw*1.2-ph*1.3)*aH*.07*g; transformed.xz+=tgU*aH*.3; transformed.y+=tgR*aH*.15-aH*tgK*.9; }')
+    .replace('#include <shadowmap_vertex>',THREE.ShaderChunk.shadowmap_vertex.replace(/(directional|point)LightShadows\[ i \]\.shadowNormalBias/g,'($&+.12)'));
     sh.fragmentShader=sh.fragmentShader.replace('#include <color_fragment>','#include <color_fragment>\n diffuseColor.rgb*=lfn(vWP.xz*.031+7.)>.6?1.07:1.;'); };
-  mat.customProgramCacheKey=()=>'tallgrass';
+  mat.customProgramCacheKey=()=>'tallgrass2';
+  const seg=(px,pz,ax,az,bx,bz)=>{ const ux=bx-ax, uz=bz-az, t=Math.max(0,Math.min(1,((px-ax)*ux+(pz-az)*uz)/Math.max(ux*ux+uz*uz,1e-4))); return [Math.hypot(px-ax-ux*t,pz-az-uz*t),t]; };
+  WEEDS.pressAt=(x,z)=>{ let k=0; const E=.2*T, c=(e,w)=>{ k=Math.max(k,w*Math.max(0,Math.min(1,-e/E))); };
+    for(let i=1;i<8;i++){ const m=MV[i]; if(m.w>=.5)c(Math.hypot(x-m.x,z-m.y)-.7*T,1); }
+    for(let i=0;i<NT;i++){ const a=TR[i]; if(a.w<=0)continue; c(Math.hypot(x-a.x,z-a.y)-a.z,a.w); const b=TR[i+1]; if(b&&b.w>0){ const [l,t]=seg(x,z,a.x,a.y,b.x,b.y); c(l-(a.z+(b.z-a.z)*t),a.w+(b.w-a.w)*t); } } return k; };
+  let air0=false; const modeNow=()=>{ const m=st.move, nm=m&&m.name, a=m&&m.def&&m.def.air; if(RAG.on||nm==='roll'||nm==='fall')return 4; if(UI.fly||a&&m.t>=a.t0&&m.t<a.t0+a.T)return -1; if(nm==='crouch')return 2; return st.target>0&&st.run>.5?1:0; };
+  const push=(md,now)=>{ for(let i=NT-1;i>1;i--){ TR[i].copy(TR[i-1]); TT[i]=TT[i-1]; TM[i]=TM[i-1]; } TR[1].set(pos.x,pos.z,0,0); TT[1]=now; TM[1]=md; };
   const near=[]; WEEDS.moveTick=()=>{ near.length=0; near.push([pos.x,pos.z,0]); if(typeof NPCS!=='undefined')for(const N of NPCS){ if(N.lv!=='up'||N.far||!N.g.visible||!N.st)continue; const d=Math.hypot(N.st.x-pos.x,N.st.z-pos.z); if(d<14*T)near.push([N.st.x,N.st.z,d]); }
     near.sort((a,b)=>a[2]-b[2]); for(let i=0;i<8;i++){ const n=near[i]; if(n)MV[i].set(n[0],n[1],.55*T,1); else MV[i].w=0; }
-    const now=performance.now()/1e3, up=LVL==='up'; if(Math.hypot(pos.x-TR[0].x,pos.z-TR[0].y)>3*T||!up)TT.fill(-1e9);
-    if(Math.hypot(pos.x-TR[1].x,pos.z-TR[1].y)>.6*T||TT[1]<0){ for(let i=11;i>1;i--){ TR[i].copy(TR[i-1]); TT[i]=TT[i-1]; } TR[1].set(pos.x,pos.z,0,1); TT[1]=up?now:-1e9; }
-    TR[0].set(pos.x,pos.z,0,1); TT[0]=up?now:-1e9; for(let i=0;i<12;i++)TR[i].w=Math.max(0,Math.min(1,1.6*(1-(now-TT[i])/3.5))); };
+    const now=performance.now()/1e3, up=LVL==='up', md=up?modeNow():-1, air=md<0&&!!(st.move&&st.move.def&&st.move.def.air);
+    if(Math.hypot(pos.x-TR[0].x,pos.z-TR[0].y)>3*T||!up)TT.fill(-1e9);
+    if(air0&&!air&&up)push(3,now); else if(md>=0&&(Math.hypot(pos.x-TR[1].x,pos.z-TR[1].y)>.5*T||TT[1]<0||TM[1]!==md&&TM[1]!==3))push(md,now); air0=air;
+    TR[0].set(pos.x,pos.z,0,0); TT[0]=md<0?-1e9:now; TM[0]=Math.max(0,md);
+    for(let i=0;i<NT;i++){ const M=MODE[TM[i]], age=now-TT[i]; TR[i].z=M[0]*T; TR[i].w=M[1]*Math.max(0,Math.min(1,1.6*(1-age/M[2]))); TK[i].set(M[3],M[4]*Math.max(0,1-age/.7),Math.min(age,9),0); } };
   const skip=o=>o.isInstancedMesh||o.isSkinnedMesh||o.isPoints||o.isSprite||o.isLine||(o.material&&(o.material.visible===false||o.material.isMeshToonMaterial||o.material.transparent||o.material.depthWrite===false||o.material.side===THREE.BackSide));
   const CH=new Map(); WEEDS.chunks=CH; WEEDS.lawnN=0; const clr=WEEDS.clr||(WEEDS.clr=[]);
-  const RT=new THREE.WebGLRenderTarget(W,W,{depthBuffer:true}), CAM=new THREE.OrthographicCamera(-CS/2-CELL,CS/2+CELL,CS/2+CELL,-CS/2-CELL,.1,80*T), PIX=new Uint8Array(W*W*4);
+  const RT=new THREE.WebGLRenderTarget(W,W,{depthBuffer:true}), CAM=new THREE.OrthographicCamera(-CS/2-MG*CELL,CS/2+MG*CELL,CS/2+MG*CELL,-CS/2-MG*CELL,.1,80*T), PIX=new Uint8Array(W*W*4);
   const VS='varying float vY; void main(){ vec4 w=modelMatrix*vec4(position,1.);'+'\n#ifdef USE_INSTANCING\n w=modelMatrix*instanceMatrix*vec4(position,1.);\n#endif\n vY=w.y; gl_Position=projectionMatrix*viewMatrix*w; }';
   const M0=new THREE.ShaderMaterial({vertexShader:VS,fragmentShader:'varying float vY; void main(){ gl_FragColor=vec4(0.); }',side:THREE.DoubleSide});
   const M1=new THREE.ShaderMaterial({vertexShader:VS,fragmentShader:'varying float vY; void main(){ gl_FragColor=vec4(1.,clamp((vY+.5)/4.,0.,1.),0.,1.); }',side:THREE.DoubleSide});
   const PS=24*T, KINDS=['flat','roll','little','big','giant','bigflat','tuft'];
   const vn=(x,z,s)=>{ const ix=Math.floor(x), iz=Math.floor(z), fx=x-ix, fz=z-iz, u=fx*fx*(3-2*fx), v=fz*fz*(3-2*fz), h=(a,b)=>hsh(a/97,b/89,s);
     return (h(ix,iz)*(1-u)+h(ix+1,iz)*u)*(1-v)+(h(ix,iz+1)*(1-u)+h(ix+1,iz+1)*u)*v; };
-  const hgt=(x,z)=>T*(.42+.3*vn(x/T/9,z/T/9,401));
+  const lump=(x,z)=>{ const S=.78*T, gx=Math.floor(x/S), gz=Math.floor(z/S); let b=0; for(let i=-1;i<=1;i++)for(let j=-1;j<=1;j++){ const a=gx+i, c=gz+j, px=(a+.15+.7*hsh(a,c,411))*S, pz=(c+.15+.7*hsh(c,a,412))*S, r=S*(.7+.35*hsh(a,c,413)), d=((x-px)**2+(z-pz)**2)/(r*r); if(d<1)b=Math.max(b,Math.sqrt(1-d)*(.8+.2*hsh(c,a,414))); } return b; };
+  const hgt=(x,z)=>T*(.5+.3*vn(x/T/9,z/T/9,401))*(.7+.3*lump(x,z));
   const WK=[3,2,2,1.5,1,1.5,3], WS=WK.reduce((a,b)=>a+b,0), pickK=r=>{ r*=WS; for(let i=0;i<WK.length;i++)if((r-=WK[i])<0)return KINDS[i]; return 'flat'; };
   const inPark=(x,z,m=0)=>{ if(typeof PARK==='undefined'||PARK.ox==null)return false; const xa=BOD.XS(PARK.x0+PARK.ox+m), xb=BOD.XS(PARK.x1+PARK.ox-m), za=BOD.ZS(PARK.y0+PARK.oy+m), zb=BOD.ZS(PARK.y1+PARK.oy-m);
     return x>Math.min(xa,xb)&&x<Math.max(xa,xb)&&z>Math.min(za,zb)&&z<Math.max(za,zb); };
@@ -87,23 +104,26 @@ WEEDS.lawnInit=()=>{ const T=TILE, CS=8*T, N=32, CELL=CS/N, W=N+2, hsh=(a,b,s)=>
     renderer.readRenderTargetPixels(RT,0,0,W,W,PIX);
     scene.overrideMaterial=ov; renderer.setRenderTarget(rt0); renderer.autoClear=ac; renderer.setClearColor(cc,ca); scene.background=bg; scene.fog=fg;
     LW.forEach((o,i)=>o.layers.mask=lm[i]); hid.forEach(o=>o.visible=true);
-    const G=new Float32Array(W*W), I=new Uint8Array(W*W), SQ=[], P=[], AH=[], AT=[], IX=[], N1=N+1, VI=new Int32Array(N1*N1).fill(-1), VQ=[];
-    for(let r=0;r<W;r++)for(let u=0;u<W;u++){ const k=(r*W+u)*4, c=(N-r+1)*W+u, x=x0+(u-.5)*CELL, z=z0+(N-r+.5)*CELL; if(PIX[k]<128||clr.some(q=>x>q[0]&&x<q[2]&&z>q[1]&&z<q[3]))continue; I[c]=1; G[c]=PIX[k+1]/255*4-.5; }
-    for(let j=0;j<N;j+=2)for(let i=0;i<N;i+=2){ const c=(j+1)*W+i+1; if(I[c])SQ.push(x0+(i+1)*CELL,G[c],z0+(j+1)*CELL); }
-    for(let b=0;b<=N;b++)for(let a=0;a<=N;a++){ let k=0, g=0, ox=0, oz=0; for(const [di,dj] of [[-1,-1],[0,-1],[-1,0],[0,0]]){ const c=(b+dj+1)*W+a+di+1; if(I[c]){ k++; g+=G[c]; ox+=di+.5; oz+=dj+.5; } }
-      if(!k)continue; const f=k===1?.5:k===3?-.5:0, x=x0+(a+ox*f)*CELL, z=z0+(b+oz*f)*CELL, h=hgt(x,z)*(k<4?.8:1); g/=k;
+    const G=new Float32Array(W*W), I=new Uint8Array(W*W), SQ=[], P=[], AH=[], AT=[], IX=[], N1=N+1, VI=new Int32Array(N1*N1).fill(-1), VQ=[], ci=(i,j)=>(j+MG)*W+i+MG;
+    for(let r=0;r<W;r++)for(let u=0;u<W;u++){ const k=(r*W+u)*4, i=u-MG, j=N+MG-1-r, x=x0+(i+.5)*CELL, z=z0+(j+.5)*CELL; if(PIX[k]<128||clr.some(q=>x>q[0]&&x<q[2]&&z>q[1]&&z<q[3]))continue; I[ci(i,j)]=1; G[ci(i,j)]=PIX[k+1]/255*4-.5; }
+    for(let j=0;j<N;j+=2)for(let i=0;i<N;i+=2){ const c=ci(i,j); if(I[c])SQ.push(x0+(i+1)*CELL,G[c],z0+(j+1)*CELL); }
+    for(let b=0;b<=N;b++)for(let a=0;a<=N;a++){ let k=0, g=0, ox=0, oz=0; for(const [di,dj] of [[-1,-1],[0,-1],[-1,0],[0,0]]){ const c=ci(a+di,b+dj); if(I[c]){ k++; g+=G[c]; ox+=di+.5; oz+=dj+.5; } }
+      if(!k)continue; let e2=1e9; for(let j=b-MG;j<b+MG;j++)for(let i=a-MG;i<a+MG;i++)if(!I[ci(i,j)])e2=Math.min(e2,(i+.5-a)**2+(j+.5-b)**2);
+      const gx=x0+a*CELL, gz=z0+b*CELL, wob=(vn(gx/(.55*T),gz/(.55*T),421)-.5)*2, t=Math.max(0,Math.min(1,(Math.min(MG,Math.sqrt(e2))-.707+.2+wob*.4)/2.4));
+      const f=k===1?.5:k===3?-.5:0, jg=k<4?.6*CELL:0, x=gx+ox*f*CELL+(vn(gx/(.4*T),gz/(.4*T),433)-.5)*jg, z=gz+oz*f*CELL+(vn(gx/(.4*T),gz/(.4*T),434)-.5)*jg, h=hgt(x,z)*(.16+.84*Math.sqrt(t)); g/=k;
       VI[b*N1+a]=P.length/3; VQ[b*N1+a]=[x,g,z,h]; P.push(x,g+h,z); AH.push(h); AT.push(1); }
     const wall=(p,q,nx,nz)=>{ const ex=q[0]-p[0], ez=q[2]-p[2]; if(Math.abs(ex)+Math.abs(ez)<1e-4)return; const v=P.length/3, lo=-.06*T;
       P.push(p[0],p[1]+p[3],p[2],q[0],q[1]+q[3],q[2],q[0],q[1]+lo,q[2],p[0],p[1]+lo,p[2]); AH.push(p[3],q[3],0,0); AT.push(0,0,0,0);
       if(ez*nx-ex*nz>0)IX.push(v,v+1,v+2,v,v+2,v+3); else IX.push(v,v+2,v+1,v,v+3,v+2); };
-    for(let j=0;j<N;j++)for(let i=0;i<N;i++){ if(!I[(j+1)*W+i+1])continue; const A=j*N1+i, B=A+1, C=A+N1, D=C+1;
-      IX.push(VI[A],VI[C],VI[B],VI[B],VI[C],VI[D]);
-      if(!I[j*W+i+1])wall(VQ[A],VQ[B],0,-1); if(!I[(j+1)*W+i+2])wall(VQ[B],VQ[D],1,0); if(!I[(j+2)*W+i+1])wall(VQ[C],VQ[D],0,1); if(!I[(j+1)*W+i])wall(VQ[A],VQ[C],-1,0); }
+    for(let j=0;j<N;j++)for(let i=0;i<N;i++){ if(!I[ci(i,j)])continue; const A=j*N1+i, B=A+1, C=A+N1, D=C+1;
+      const cr=(p,q,r)=>(VQ[q][2]-VQ[p][2])*(VQ[r][0]-VQ[p][0])-(VQ[q][0]-VQ[p][0])*(VQ[r][2]-VQ[p][2]);
+      if(cr(A,C,B)>0&&cr(B,C,D)>0)IX.push(VI[A],VI[C],VI[B],VI[B],VI[C],VI[D]); else IX.push(VI[A],VI[C],VI[D],VI[A],VI[D],VI[B]);
+      if(!I[ci(i,j-1)])wall(VQ[A],VQ[B],0,-1); if(!I[ci(i+1,j)])wall(VQ[B],VQ[D],1,0); if(!I[ci(i,j+1)])wall(VQ[C],VQ[D],0,1); if(!I[ci(i-1,j)])wall(VQ[A],VQ[C],-1,0); }
     if(!IX.length)return null; const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); geo.setAttribute('aH',new THREE.Float32BufferAttribute(AH,1)); geo.setAttribute('aT',new THREE.Float32BufferAttribute(AT,1));
     geo.setIndex(IX); geo.computeVertexNormals(); const me=new THREE.Mesh(geo,mat); me.receiveShadow=true; me.tri=IX.length/3; me.sq=SQ; me.top=(x,y,z)=>y+hgt(x,z); me.dispose=()=>geo.dispose();
     MAPG.bodega.add(me); WEEDS.lawnN+=me.tri; return me; };
   const drop=k=>{ const me=CH.get(k); if(me){ MAPG.bodega.remove(me); me.dispose(); WEEDS.lawnN-=me.tri; } CH.delete(k); if(WEEDS.onDrop)WEEDS.onDrop(k); };
-  WEEDS.lawnDrop=r=>{ for(const k of [...CH.keys()]){ const [a,b]=k.split(',').map(Number); if(r[2]>a*CS-CELL&&r[0]<(a+1)*CS+CELL&&r[3]>b*CS-CELL&&r[1]<(b+1)*CS+CELL)drop(k); } };
+  WEEDS.lawnDrop=r=>{ for(const k of [...CH.keys()]){ const [a,b]=k.split(',').map(Number); if(r[2]>a*CS-MG*CELL&&r[0]<(a+1)*CS+MG*CELL&&r[3]>b*CS-MG*CELL&&r[1]<(b+1)*CS+MG*CELL)drop(k); } };
   let busy=0, next=0; WEEDS.lawnTick=()=>{ if(LVL!=='up'||(ROOMS&&ROOMS.cur))return; const pcx=Math.floor(pos.x/CS), pcz=Math.floor(pos.z/CS);
     for(const k of [...CH.keys()]){ const [a,b]=k.split(',').map(Number); if(Math.max(Math.abs(a-pcx),Math.abs(b-pcz))>3)drop(k); }
     let best=null, bd=1e9; for(let b=-2;b<=2;b++)for(let a=-2;a<=2;a++){ const k=(pcx+a)+','+(pcz+b); if(CH.has(k))continue; const d=a*a+b*b; if(d<bd){ bd=d; best=[pcx+a,pcz+b,k]; } }

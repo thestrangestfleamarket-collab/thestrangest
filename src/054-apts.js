@@ -178,7 +178,7 @@ const APTS={EMPTY:true};
     for(const F of FLATS){ const [m0,m1]=dmat(F.pl), x=X(U(F.uh)), z0=Z(V(F.v0)), len=Z(V(F.v1))-z0, pv=new THREE.Group(), leaf=new THREE.Mesh(new THREE.BoxGeometry(.06,lh,Math.abs(len)*.96),m0), kb=new THREE.Mesh(new THREE.BoxGeometry(.16,Y(4)-Y(0),.08),m1);
       leaf.position.set(0,lh/2,len*.5); kb.position.set(0,Y(46)-Y(0),len*.86); pv.add(leaf,kb); pv.position.set(x,Y(F.lv*S),z0); scene.add(pv); leaf.castShadow=leaf.receiveShadow=true;
       F.pv=pv; F.rs=F.sd*Math.sign(len)*Math.sign(X(A.x0+1)-X(A.x0)); F.open=0; F.keep=0; F.by=0; F.g0=F.gap.slice(); F.at={x,z:z0+len/2};
-      const reg=()=>{ try{ UI.thing({name:'DOOR '+F.n,obj:leaf,reach:1.2*TILE,near:2*TILE,tall:1*TILE,act:()=>{ F.keep=F.keep>0?0:12; }}); }catch(e){ setTimeout(reg,400); } }; setTimeout(reg,0); } }
+      const reg=()=>{ try{ UI.thing({name:'DOOR '+F.n,ghost:1,obj:leaf,reach:1.2*TILE,near:2*TILE,tall:1*TILE,act:()=>{ F.keep=F.keep>0?0:12; }}); }catch(e){ setTimeout(reg,400); } }; setTimeout(reg,0); } }
   for(let lv=0;lv<ST;lv++){ if(LOBBY)continue; if(HOLLOW){ if(lv===0)for(const [fx,i] of [[.3,8],[.7,8]])LIGHTS.push({x:X(A.x0+(A.x1-A.x0)*fx),y:Y(S-14),z:Z(hm),c:0xf2ead6,i}); continue; } const R=rooms(lv), x0=A.x0, yl=R.liv.y0, y1=A.y1, hy=H.y1, bx1=R.bed.x1, k=lv*7;
     for(const f of [1,-1]){ const Yf=y=>f>0?y:2*hm-y;
       LIGHTS.push({x:X(x0+2.6),y:Y(lv*S+S-14),z:Z(Yf(y1-1.5)),c:0xffd9a8,i:9},{x:X(x0+1.6),y:Y(lv*S+S-14),z:Z(Yf(hy+1.2)),c:0xfff2dc,i:6}); }
@@ -250,7 +250,7 @@ const APTS={EMPTY:true};
     P.querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>ELV.go(+b.dataset.f));
     for(let lv=0;lv<ST;lv++){ const hb=bx(.35,Y(30)-Y(0),.25,new THREE.MeshBasicMaterial({visible:false})); hb.position.set(X(U(7.1)),Y(lv*S+48),Z(V(2.7))); scene.add(hb);
       const bt=bx(.06,Y(12)-Y(0),.03,mat(0xcaa860)); bt.position.set(X(U(7.05)),Y(lv*S+48),Z(V(2.58))+fz*.02); scene.add(bt);
-      const reg=()=>{ try{ UI.thing({name:'ELEVATOR',obj:hb,reach:1.1*TILE,near:2.4*TILE,tall:1*TILE,act:()=>{ if(APTS.floor()===lv)ELV.call(lv); }}); }catch(e){ setTimeout(reg,400); } }; setTimeout(reg,0); }
+      const reg=()=>{ try{ UI.thing({name:'ELEVATOR',ghost:1,obj:hb,reach:1.1*TILE,near:2.4*TILE,tall:1*TILE,act:()=>{ if(APTS.floor()===lv)ELV.call(lv); }}); }catch(e){ setTimeout(reg,400); } }; setTimeout(reg,0); }
     ELV.tick=(lv,inside)=>{ const now=performance.now(), dt=Math.min(.1,(now-ELV.last)/1000); ELV.last=now;
       if(ELV.ph==='opening'){ ELV.door=Math.min(1,ELV.door+dt/.9); if(ELV.door>=1){ ELV.ph='open'; ELV.wait=0; } }
       else if(ELV.ph==='open'){ ELV.wait+=dt; if(ELV.wait>6&&!inCab())ELV.ph='closingIdle'; }

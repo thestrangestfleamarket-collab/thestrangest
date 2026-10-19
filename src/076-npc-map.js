@@ -1,4 +1,4 @@
-const NPCS=[];
+const NPCS=[], NOYOU={x:1e6,y:0,z:1e6};
 const DENIM_GLSL=`vec3 denim(vec3 c,vec3 p){ float u=(p.x+p.z)*0.7071+p.y*0.5, v=(p.x-p.z)*0.7071-p.y*0.5;
   float rib=step(0.5,fract(u*170.)), weft=step(0.55,fract(v*240.)), slub=step(0.93,fract(sin(dot(floor(vec2(u,v)*300.),vec2(12.9898,78.233)))*43758.5));
   vec3 warp=c*vec3(1.22,1.18,1.1), weftc=c*0.78; vec3 o=mix(weftc,warp,rib*0.55+weft*0.25); return mix(o,c*1.3,slub*0.5); }
@@ -72,7 +72,7 @@ function makeNPC(D,o){ const N={key:o.key,name:o.name,names:o.names,lv:o.lv||'do
   const block=(x,z,R)=>Math.hypot(x-st.x,z-st.z)<st.R+R;
   N.tick=(dt,you)=>{ if(N.sheet&&!N.sheetOn){ N.sheetOn=true; UI.setFree(true); UI.camT.set(st.x,g.position.y+tall*s*ZU*24/TILE*.5,st.z); ppu=ppuTo=PPU*4; window.SHEETTURN=d=>{ yaw=yawTo=d*Math.PI/180; };
       for(const G of Object.values(MAPG))for(const c of G.children)if(c!==g)c.visible=false; const r0=renderer.render.bind(renderer); renderer.render=(s,c)=>{ if(s.background&&s.background.isColor)s.background.set(0); r0(s,c); }; }
-    if(o.brain)o.brain(dt,you,st,N);
+    if(o.brain)o.brain(dt,VIT.dead?NOYOU:you,st,N);
     if(N.mode==='hidden'&&!g.visible)return;
     if(st.sx||st.sz){ const nx=st.x+st.sx*dt, nz=st.z+st.sz*dt; if(N.free(nx,nz,st.R)){ st.x=nx; st.z=nz; } const k=Math.max(0,1-dt*6); st.sx*=k; st.sz*=k; if(Math.abs(st.sx)+Math.abs(st.sz)<.01)st.sx=st.sz=0; }
     let want=st.h, moving=false;

@@ -2655,3 +2655,26 @@ not have windows, make sure buildings are only as tall as they need to be"; then
 - **The far buildings steady** (owner, 19 Oct 2026: "thedark spots on buildings shift every frame so it just looks glitchy"): the far
   skyline's window pattern turns to its even average colour sooner (when a window cell is a third of a pixel, was a full pixel), so the
   small windows no longer crawl as the view moves.
+
+## 19 Oct 2026: dying makes you a ghost; the dojo is THE BATH HOUSE where ghosts are brought back
+
+(owner: "make the dojo a bath house for ghosts to res. when you are a palyer and you die you turn into a ghost) if you go tinto the
+bathhouse you start to float up higher and higher until you vanish. then you have a loading screen and when yo ucome back you are outside
+the bathhouse looking away and it says "You feel refreshed." (you are alive again) (same rules as UO kinda) this makes it to where i
+fsomeone dies insomewhere they have to float back as a ghost to get resed. when they reappear they are wearing a white bathrobe.")
+- **Death** (`103-vitals.js`, `103a-death.js`): health at none no longer faints you; you fall and become a ghost: your own Walker pale
+  blue-white and half see-through (still in its bands: `W3.GH` mixes both of his materials), no shadow, floating about 0.15 m with a slow
+  bob. A ghost walks and runs anywhere, but a double click (or the use key) on anything but a door, the elevator or YOU says
+  "YOU ARE A GHOST." (`ghost:1` on a thing lets ghosts use it); no fishing; nothing hurts it; the town's people don't see it (their
+  brains get no you); no medic comes. "YOU ARE DEAD. FIND THE BATH HOUSE." stays at the top while dead. Kept in the save (`dead`).
+- **THE BATH HOUSE** (`055-ghostdojo.js`, same lot and building): the signboard reads BATH / HOUSE in gold, the noren carries the bath
+  mark; inside, a tiled floor (pale tiles, a few blue, a blue border), a hinoki-rimmed pool with water in the middle (steam rising,
+  `FLAME`'s new white `steam`), a bench along each side wall, wooden buckets and bath stools, a painted mountain and sea in the alcove;
+  the candles and lanterns as they were (no new lights). The menu: THE BATH HOUSE (its door) and THE BATHS (inside); the job BATH
+  ATTENDANT (was SENSEI).
+- **Coming back**: a ghost who goes in rises, faster and faster, fading for 3 s until gone; LOADING… on black; then alive, health full,
+  on the sidewalk before the door facing the street, and "You feel refreshed.". You come back in a **white bathrobe** (`LOOKS.robe`:
+  shirt, sleeves, hips and thighs white and a little fuller, a blue-grey belt, a V at the neck, bare shins), kept until you pick YOUR
+  CLOTHES under CLOTHES in YOU (saved in `looks`). A living player goes in as before.
+- Tests: `?die=1` (or `KILLME()`) kills you at start. Cost: no new triangles on you, 6 boxes of pool, benches, buckets and stools,
+  the steam's particles from the fire's pool (4 sources), one recompile of your two materials on dying and on coming back.

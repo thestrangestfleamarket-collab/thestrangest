@@ -28,6 +28,8 @@ const WX={hold:null,now:null};
     sh.fragmentShader='varying vec3 vCW; varying float vCD; uniform vec3 uCF,uCO,uUnder; uniform vec4 uCM;\n'+sh.fragmentShader.replace('void main() {','void main() { if(dot(vCW.xz-uCO.xz,uCF.xz)<12.) discard;').replace('#include <lights_fragment_end>','#include <lights_fragment_end>\n reflectedLight.indirectDiffuse+=uUnder*vCD;').replace('#include <dithering_fragment>','#include <dithering_fragment>\n gl_FragColor.rgb=mix(gl_FragColor.rgb,uCM.rgb,uCM.a);'); };
   WX.cloudCut=()=>{ if(mistT>0&&--mistT<=0)CU.uCM.value.w=0; const f=new THREE.Vector3(); cam.getWorldDirection(f); f.y=0; if(f.lengthSq()<1e-6)f.set(0,0,1); f.normalize(); CU.uCF.value.copy(f); CU.uCO.value.set(pos.x,0,pos.z); };
   const CL=new THREE.Mesh(cg,cmat); CL.frustumCulled=false; scene.add(CL); WX.clouds=CL;
+  const CSPH=[], CFR=new THREE.Frustum(), CFM=new THREE.Matrix4(), CSP=new THREE.Sphere(); { let a=0; for(const b of ends){ const Bx=new THREE.Box3(); for(let i=a;i<b;i++)Bx.expandByPoint(new THREE.Vector3().fromBufferAttribute(cg.attributes.position,i)); CSPH.push(Bx.getBoundingSphere(new THREE.Sphere())); a=b; } }
+  const CSEE=n=>{ CFR.setFromProjectionMatrix(CFM.multiplyMatrices(cam.projectionMatrix,cam.matrixWorldInverse)); for(let i=0;i<n;i++)if(CFR.intersectsSphere(CSP.copy(CSPH[i]).translate(CL.position)))return true; return false; };
   const NR=1800, RB=16*TILE, RH=14*TILE, rp=new Float32Array(NR*6), rs=new Float32Array(NR*3); for(let i=0;i<NR;i++){ rs[i*3]=(Math.random()-.5)*2*RB; rs[i*3+1]=Math.random()*RH; rs[i*3+2]=(Math.random()-.5)*2*RB; }
   const rg=new THREE.BufferGeometry(); rg.setAttribute('position',new THREE.BufferAttribute(rp,3).setUsage(THREE.DynamicDrawUsage));
   const RAIN=new THREE.LineSegments(rg,new THREE.LineBasicMaterial({color:0xaec4e0,transparent:true,opacity:.55,depthWrite:false})); RAIN.frustumCulled=false; scene.add(RAIN);
@@ -38,9 +40,9 @@ const WX={hold:null,now:null};
   const tick0=CLOCK.tick; CLOCK.tick=dt=>{ tick0(dt);
     if((ft-=dt)<=0){ ft=.5; WX.now=WX.hold?Object.assign({flash:WX.hold==='STORM'&&Math.random()<.04},HOLDS[WX.hold]):WX.at(T()); }
     const W=WX.now, up=LVL!=='down', inside=!OUT.open, day=cl((CLOCK.elev()+4)/14), t=performance.now()/1000;
-    WX.cloudCut(); const show=Math.round(6+W.cloud*74); CL.geometry.setDrawRange(0,ends[Math.min(79,show-1)]); CL.visible=up;
+    WX.cloudCut(); const show=Math.round(6+W.cloud*74); CL.geometry.setDrawRange(0,ends[Math.min(79,show-1)]);
     cmat.color.setRGB(1,1,1).multiplyScalar(1-.35*W.rain-.35*W.storm); cmat.emissive.setRGB(.16,.2,.27).multiplyScalar(.4+.6*day);
-    CL.position.set(pos.x+((t*(.3+W.wind*1.5)*TILE)%(40*TILE)),0,pos.z);
+    CL.position.set(pos.x+((t*(.3+W.wind*1.5)*TILE)%(40*TILE)),0,pos.z); CL.visible=up&&CSEE(Math.min(80,show));
     if(up){ scene.background.lerp(cA.setRGB(.55,.58,.62).multiplyScalar(.25+.75*day),cl(W.cloud*W.cloud*.85)); if(W.storm)scene.background.multiplyScalar(1-.45*W.storm);
       CLOCK.sun.intensity*=1-.72*cl((W.cloud-.2)/.8); }
     if(W.flash&&flashT<=0)flashT=.14; if(flashT>0){ flashT-=dt; if(up){ scene.background.setRGB(.85,.88,.95); HEMI.intensity+=2.5; } }

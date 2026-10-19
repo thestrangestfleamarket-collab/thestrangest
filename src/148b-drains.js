@@ -12,7 +12,7 @@ DRAINS.init=()=>{ const R=typeof BOD!=='undefined'&&BOD.road; if(!R||!R.DR||!R.D
     for(let k=0;k<3;k++){ const u=(hs(i,k)-.5)*.8, w=.1+hs(k,i)*.5, s=.06+.06*hs(i+k,3), yy=yw+.004; quad(at(d,u-s,w-s,yy),at(d,u+s,w-s,yy),at(d,u+s,w+s,yy),at(d,u-s,w+s,yy),[[96,70,40],[150,120,60],[210,206,196]][k]); } });
   function sh0(c,f){ return [Math.min(255,c[0]*f),Math.min(255,c[1]*f),Math.min(255,c[2]*f)]; }
   const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); g.setAttribute('color',new THREE.Float32BufferAttribute(C,3)); g.computeVertexNormals();
-  const basin=new THREE.Mesh(g,new THREE.MeshLambertMaterial({vertexColors:true,side:THREE.DoubleSide})); basin.receiveShadow=true; scene.add(basin);
+  const basin=new THREE.Mesh(g,new THREE.MeshLambertMaterial({vertexColors:true,side:THREE.DoubleSide})); basin.receiveShadow=true; basin.userData.cull=1; scene.add(basin);
   const N=96, cv=document.createElement('canvas'); cv.width=cv.height=16; const cx=cv.getContext('2d'), im=cx.createImageData(16,16);
   for(let j=0;j<16;j++)for(let i=0;i<16;i++){ const r=Math.hypot(i-7.5,j-7.5)/8+(hs(i>>1,j>>1)-.5)*.22, a=r<.4?1:r<.68?.6:r<.9?.28:0, q=(j*16+i)*4; im.data[q]=im.data[q+1]=im.data[q+2]=Math.round(255*a); im.data[q+3]=255; }
   cx.putImageData(im,0,0); const tx=new THREE.CanvasTexture(cv); tx.magFilter=tx.minFilter=THREE.NearestFilter; tx.generateMipmaps=false;

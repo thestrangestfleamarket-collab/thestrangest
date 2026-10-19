@@ -22,7 +22,7 @@ const GPH=window.GPH={ms:0,n:0};
   function catalog(){ gm=BOD.goodsMesh;
     if(gm&&BOD.goods){ const g=gm.geometry, pa=g.attributes.position; pa.setUsage(THREE.DynamicDrawUsage); g.attributes.normal.setUsage(THREE.DynamicDrawUsage); P0=pa.array.slice(); N0=g.attributes.normal.array.slice();
       for(const G of BOD.goods){ const a=[1e9,1e9,1e9], b=[-1e9,-1e9,-1e9]; for(let v=G.v0;v<G.v1;v++)for(let k=0;k<3;k++){ const q=P0[v*3+k]; if(q<a[k])a[k]=q; if(q>b[k])b[k]=q; } items.push(mk(null,'v',a,b,{name:G.k,m:G.m,v0:G.v0,v1:G.v1})); }
-      g._bvhDyn=true; g.computeBoundingSphere(); g.boundingSphere.radius+=30*T; g.boundingBox=null; gm.frustumCulled=false; }
+      g._bvhDyn=true; g.computeBoundingSphere(); g.boundingSphere.radius+=30*T; g.boundingBox=null; }
     if(typeof DRESS!=='undefined'&&DRESS.rounds)for(const cn of DRESS.cans||[]){ const L=[], a=[1e9,1e9,1e9], b=[-1e9,-1e9,-1e9], y0=MODS.bodega.ground(cn.x,cn.z), s=new THREE.Vector3();
       for(const me of [DRESS.rounds,DRESS.blocks])for(let i=0;i<me.count;i++){ me.getMatrixAt(i,M4); V.setFromMatrixPosition(M4); if(Math.hypot(V.x-cn.x,V.z-cn.z)>.5*M1||V.y>y0+1.3*M1)continue; s.setFromMatrixScale(M4);
         [V.x,V.y,V.z].forEach((c,k)=>{ const e=[s.x,s.y,s.z][k]/2; a[k]=Math.min(a[k],c-e); b[k]=Math.max(b[k],c+e); }); L.push([me,i,M4.clone()]); }

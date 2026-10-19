@@ -115,19 +115,23 @@ BODB={};
       const along=c.y1-c.y0>c.x1-c.x0, cx=(c.x0+c.x1)/2, cy=(c.y0+c.y1)/2; let a=(along?c.y0:c.x0)+.95;
       for(const [k,n,...args] of GLAY.counter)for(let i=0;i<n;i++){ list.push({g:GOOD[k](...args),k,x:along?cx-.12+i*.02:a,y:along?a:cy,z,yaw:along?Math.PI/2:0}); a+=(k==='bananas'?.36:.09); } }
     const P=[], N=[], Cc=[], col=new THREE.Color();
-    const emit=(it,pa,tri)=>{ const cs=Math.cos(it.yaw), sn=Math.sin(it.yaw), q=[0,1,2].map(i=>tri[i][0]).reduce((s,v)=>[s[0]+v[0]/3,s[1]+v[1]/3,s[2]+v[2]/3],[0,0,0]);
-      const c=pa.mat(q,tri[0][1])||[200,200,200]; col.setRGB(c[0]/255,c[1]/255,c[2]/255,THREE.SRGBColorSpace);
+    const tc=(pa,tri)=>pa.mat([0,1,2].map(i=>tri[i][0]).reduce((s,v)=>[s[0]+v[0]/3,s[1]+v[1]/3,s[2]+v[2]/3],[0,0,0]),tri[0][1])||[200,200,200];
+    const emit=(it,pa,tri,c=tc(pa,tri))=>{ const cs=Math.cos(it.yaw), sn=Math.sin(it.yaw); col.setRGB(c[0]/255,c[1]/255,c[2]/255,THREE.SRGBColorSpace);
       for(const [p,n] of tri){ const lx=p[0]+pa.c[0], ly=p[1]+pa.c[1], lz=p[2]+pa.c[2], gx=it.x+lx*cs-ly*sn, gy=it.y+lx*sn+ly*cs;
         P.push(X(gx),Y(it.z+lz*24),Z(gy)); N.push(n[0]*cs-n[1]*sn,n[2],n[0]*sn+n[1]*cs); Cc.push(col.r,col.g,col.b); } };
     const quad=(it,pa,a,b,c,d,n)=>{ emit(it,pa,[[a,n],[b,n],[c,n]]); emit(it,pa,[[a,n],[c,n],[d,n]]); };
+    const same=C=>C.every(c=>c[0]===C[0][0]&&c[1]===C[0][1]&&c[2]===C[0][2]);
+    const sheet=(it,pa,Q,n,A,B,Cq,D)=>{ const T=Q.flatMap(([a,b,c,d])=>[[[a,n],[b,n],[c,n]],[[a,n],[c,n],[d,n]]]), C=T.map(t=>tc(pa,t));
+      if(same(C)){ emit(it,pa,[[A,n],[B,n],[Cq,n]],C[0]); emit(it,pa,[[A,n],[Cq,n],[D,n]],C[0]); } else T.forEach((t,k)=>emit(it,pa,t,C[k])); };
     const GL=BOD.goods=[]; for(const it of list){ const v0=P.length/3; for(const pa of it.g.parts){
       if(pa.t==='box'){ const [hx,hy,hz]=pa.h, NZ=6, NA=3;
-        for(const [ax,s] of [[0,1],[0,-1],[1,1],[1,-1]]){ const n=ax?[0,s,0]:[s,0,0], ha=ax?hx:hy;
-          for(let i=0;i<NA;i++)for(let j=0;j<NZ;j++){ const u0=-ha+2*ha*i/NA, u1=-ha+2*ha*(i+1)/NA, z0=-hz+2*hz*j/NZ, z1=-hz+2*hz*(j+1)/NZ; const pt=(u,z)=>ax?[u,s*hy,z]:[s*hx,u,z]; quad(it,pa,pt(u0,z0),pt(u1,z0),pt(u1,z1),pt(u0,z1),n); } }
+        for(const [ax,s] of [[0,1],[0,-1],[1,1],[1,-1]]){ const n=ax?[0,s,0]:[s,0,0], ha=ax?hx:hy, pt=(u,z)=>ax?[u,s*hy,z]:[s*hx,u,z], Q=[];
+          for(let i=0;i<NA;i++)for(let j=0;j<NZ;j++){ const u0=-ha+2*ha*i/NA, u1=-ha+2*ha*(i+1)/NA, z0=-hz+2*hz*j/NZ, z1=-hz+2*hz*(j+1)/NZ; Q.push([pt(u0,z0),pt(u1,z0),pt(u1,z1),pt(u0,z1)]); }
+          sheet(it,pa,Q,n,pt(-ha,-hz),pt(ha,-hz),pt(ha,hz),pt(-ha,hz)); }
         for(const s of [1,-1])quad(it,pa,[-hx,-hy,s*hz],[hx,-hy,s*hz],[hx,hy,s*hz],[-hx,hy,s*hz],[0,0,s]); }
       else if(pa.t==='cyl'){ const r=pa.r, hh=pa.hh, NS=10, NZ=6;
         for(let i=0;i<NS;i++){ const a0=i/NS*2*Math.PI, a1=(i+1)/NS*2*Math.PI, am=(a0+a1)/2, n=[Math.cos(am),Math.sin(am),0];
-          for(let j=0;j<NZ;j++){ const z0=-hh+2*hh*j/NZ, z1=-hh+2*hh*(j+1)/NZ; quad(it,pa,[Math.cos(a0)*r,Math.sin(a0)*r,z0],[Math.cos(a1)*r,Math.sin(a1)*r,z0],[Math.cos(a1)*r,Math.sin(a1)*r,z1],[Math.cos(a0)*r,Math.sin(a0)*r,z1],n); }
+          const pc=(a,z)=>[Math.cos(a)*r,Math.sin(a)*r,z], Q=[]; for(let j=0;j<NZ;j++){ const z0=-hh+2*hh*j/NZ, z1=-hh+2*hh*(j+1)/NZ; Q.push([pc(a0,z0),pc(a1,z0),pc(a1,z1),pc(a0,z1)]); } sheet(it,pa,Q,n,pc(a0,-hh),pc(a1,-hh),pc(a1,hh),pc(a0,hh));
           for(const s of [1,-1])emit(it,pa,[[[0,0,s*hh],[0,0,s]],[[Math.cos(a0)*r,Math.sin(a0)*r,s*hh],[0,0,s]],[[Math.cos(a1)*r,Math.sin(a1)*r,s*hh],[0,0,s]]]); } } }
       GL.push({k:it.k,m:it.g.m||.5,v0,v1:P.length/3}); }
     const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); geo.setAttribute('normal',new THREE.Float32BufferAttribute(N,3)); geo.setAttribute('color',new THREE.Float32BufferAttribute(Cc,3));

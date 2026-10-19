@@ -31,8 +31,7 @@ const CLOCK={h:17.4,run:false,speed:1440/600,sunV:new THREE.Vector3(0,1,0),moonV
     if(stale){ aim(sunL); SC.c.set(pos.x,py,pos.z); SC.d.copy(dir); SC.lv=LVL; SC.t=now; SC.w=cam.right-cam.left; sunL.shadow.needsUpdate=true; }
     sunD.intensity=0;
     if(sunL.intensity>0&&(strong||now-lastS>100||stale)){ aim(sunD); sunD.shadow.needsUpdate=true; lastS=now; }
-    if(typeof WATER!=='undefined')WATER.glowK=(typeof ROOMS!=='undefined'&&ROOMS.cur)||!up?1:Math.max(0,Math.min(1,(3-e)/8));
-    if(UI.menuOpen)CLOCK.draw&&CLOCK.draw(); };
+    if(typeof WATER!=='undefined')WATER.glowK=(typeof ROOMS!=='undefined'&&ROOMS.cur)||!up?1:Math.max(0,Math.min(1,(3-e)/8)); };
   CLOCK.set=h=>{ CLOCK.h=((h%24)+24)%24; };
   CLOCK.dark=()=>elev(CLOCK.h)<-2;
   const DYN=()=>{ const out=new Set(); if(window.W3&&W3.group)out.add(W3.group); for(const N of NPCS)if(N.g)out.add(N.g); for(const x of NPCS.extra||[])if(x&&x.g)out.add(x.g);
@@ -44,23 +43,4 @@ const CLOCK={h:17.4,run:false,speed:1440/600,sunV:new THREE.Vector3(0,1,0),moonV
       SM.needsUpdate=true; orig.call(SM,rest,sc,camera); camera.layers.mask=m0; }; }
   window.SUNDBG=()=>({still:SC.n,moving:SC.nd,dyn:DYN().size,maps:[sunL.shadow.mapSize.x,sunD.shadow.mapSize.x],patch:THREE.ShaderChunk.lights_fragment_begin.includes('NUM_DIR_LIGHT_SHADOWS > 1')});
   CLOCK.sun=sunL; CLOCK.sunD=sunD; window.CLOCK=CLOCK; CLOCK.elev=()=>elev(CLOCK.h); CLOCK.SKYV=SKYV;
-  const pane=document.querySelector('#menu [data-p="atmo"]')||document.querySelector('#menu [data-p="display"]'), box=document.createElement('div');
-  const PRE=[['DAWN',6.4],['MORNING',9],['NOON',12],['AFTERNOON',15.5],['GOLDEN HOUR',17.4],['SUNSET',18.25],['BLUE HOUR',18.9],['NIGHT',21.5],['MIDNIGHT',0]];
-  box.innerHTML=`<h3>TIME OF DAY</h3><div class="row"><span id="ctime" style="width:72px"></span><input type="range" id="chour" min="0" max="24" step="0.05" style="flex:1"></div>
-    <div class="row" id="cpre">${PRE.map(([n,h])=>`<button class="btn" data-h="${h}">${n}</button>`).join('')}</div>
-    <div class="row"><button class="btn" id="crun">STOPPED</button><span>A DAY IN</span><select id="cspeed" class="btn"><option value="120">2 MIN</option><option value="600" selected>10 MIN</option><option value="3600">1 HOUR</option><option value="86400">24 HOURS (REAL)</option></select></div>`;
-  pane.insertBefore(box,pane.firstChild);
-  const q=s=>box.querySelector(s), fmt=h=>{ const H=Math.floor(h), m=Math.floor((h-H)*60); return ((H+11)%12+1)+':'+String(m).padStart(2,'0')+(H<12?' AM':' PM'); };
-  const keep=()=>{ try{ SAVE.set('clock',JSON.stringify({h:+CLOCK.h.toFixed(3),run:CLOCK.run,speed:CLOCK.speed})); }catch(e){} };
-  try{ const k=JSON.parse(SAVE.get('clock')||'null'); if(k&&isFinite(k.h)){ CLOCK.set(k.h); CLOCK.run=!!k.run; if(k.speed>0)CLOCK.speed=k.speed; } }catch(e){}
-  q('#cspeed').value=String(Math.round(1440/CLOCK.speed));
-  CLOCK.draw=()=>{ q('#ctime').textContent=fmt(CLOCK.h); if(document.activeElement!==q('#chour'))q('#chour').value=CLOCK.h; q('#crun').textContent=CLOCK.run?'RUNNING':'STOPPED'; q('#crun').setAttribute('aria-pressed',String(CLOCK.run));
-    q('#cpre').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(Math.abs(+b.dataset.h-CLOCK.h)<.02))); };
-  q('#chour').oninput=e=>{ CLOCK.set(+e.target.value); CLOCK.draw(); }; q('#chour').onchange=keep;
-  q('#cpre').onclick=e=>{ const b=e.target.closest('button'); if(!b)return; CLOCK.set(+b.dataset.h); CLOCK.draw(); keep(); };
-  q('#crun').onclick=()=>{ CLOCK.run=!CLOCK.run; CLOCK.draw(); keep(); };
-  q('#cspeed').onchange=e=>{ CLOCK.speed=1440/(+e.target.value); keep(); };
-  addEventListener('pagehide',()=>{ if(CLOCK.run)keep(); });
-  addEventListener('keydown',e=>{ if(e.key.toLowerCase()==='n'&&!e.repeat&&!/INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName||''))CLOCK.set(CLOCK.dark()?12:19); });
-  const qh=+(QS.get('hour')??NaN); if(!isNaN(qh))CLOCK.set(qh);
-  CLOCK.draw(); }
+  }

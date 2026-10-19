@@ -6,7 +6,7 @@ const SKY={};
   const MOOD={fire:{'-6':[0x4a3058,0x2a2a60,0x101838,0xb0304a,0x3a2a58],'-2.5':[0xa84a6a,0x6a3c80,0x24284e,0xff4a3a,0x8a4a78],'0':[0xff7a5a,0xc05a88,0x3a3a78,0xff5a2a,0xd87898],'3':[0xffa070,0xd08098,0x4a5aa0,0xff8a40,0xe898a8],'8':[0xf8c8a0,0xb8a8c8,0x5a80c8,0xffd890,0xe0b8c8]},
     soft:{'-6':[0x34405a,0x203050,0x121a34,0x6a5040,0x2a3450],'-2.5':[0x7a7888,0x4a5878,0x243050,0xc08060,0x6a6880],'0':[0xc8a088,0x8898a8,0x3a5078,0xe8a070,0xa8a0a8],'3':[0xd8b8a0,0xa0b8c0,0x4a6c98,0xf0c090,0xc0b8b8],'8':[0xe0d0c0,0xa8c0d0,0x5888c0,0xf0d8b0,0xd0c8c8]}};
   const hsh=(n,k)=>{ const v=Math.sin(n*12.9898+k*78.233)*43758.5453; return v-Math.floor(v); }, dayN=QS.get('day')!=null?+QS.get('day'):Math.floor(Date.now()/86400000);
-  SKY.moodHold=QS.get('mood')||SAVE.get('mood')||null;
+  SKY.moodHold=QS.get('mood')||'clear';
   const W0={f:cl((hsh(dayN,1)-.2)/.6),s:cl((hsh(dayN,2)-.4)/.5)}; SKY.mood={f:0,s:0};
   const tmp=new THREE.Color(), stop=(X,k,out)=>{ out.setHex(X[k]); const F=MOOD.fire[String(X[0])], S=MOOD.soft[String(X[0])]; if(F&&SKY.mood.f)out.lerp(tmp.setHex(F[k-1]),SKY.mood.f); if(S&&SKY.mood.s)out.lerp(tmp.setHex(S[k-1]),SKY.mood.s); return out; };
   const cA=new THREE.Color(), cB=new THREE.Color(), mixS=(A,B,k,t,out)=>out.copy(stop(A,k,cA)).lerp(stop(B,k,cB),t);
@@ -65,22 +65,4 @@ const SKY={};
     if(WX.under){ const k=cl(1-Math.abs(e-1)/7)*(1-cl((W.cloud-.5)/.5)); WX.under.value.copy(U.uS.value).multiplyScalar(k*.9); }
     if(scene.fog){ U.uFogC.value.copy(scene.fog.color); U.uFogK.value=cl(W.fog*1.3); } else U.uFogK.value=0; };
   SKY.dbg=()=>({elev:+CLOCK.elev().toFixed(2),fire:+SKY.mood.f.toFixed(2),soft:+SKY.mood.s.toFixed(2),cool:typeof LOOK!=='undefined'?+LOOK.cool.value.toFixed(2):null,sun:U.uSunK.value.toFixed(2),moon:U.uMoonK.value.toFixed(2),star:U.uStar.value.toFixed(2),grey:U.uGreyK.value.toFixed(2),H:'#'+U.uH.value.getHexString(),Z:'#'+U.uZ.value.getHexString()});
-  const SCN=[['STARRY NIGHT',22.5,'CLEAR','',{gap:.35},'a clear night, the milky way overhead'],['STARS IN THE MIST',22,'CLOUDY','',{stars:1,gap:-.06},'a cloudy night, the stars between the clouds'],
-    ['BLOOD MOON',23.5,'CLEAR','',{blood:1,gap:.2},'a big red moon, the town in its light'],['FIRE SUNSET',18.1,'CLEAR','fire',{sky:.85},'the sun going down in red and magenta'],
-    ['THUNDERSTORM',18.8,'STORM','',{flash:.14},'the blue hour, rain, lightning and thunder'],['FIRST SNOW',7.3,'SNOW','soft',{sky:.6},'snow at sunrise, soft and quiet'],
-    ['BLUE DAWN',6.9,'CLEAR','soft',{sky:.4},'the town still asleep, the sky just paling'],['FOGGY MORNING',7.6,'FOG','soft',{sky:.25},'a grey, still morning, the street lost in fog'],
-    ['SOFT SUNSET',17.95,'CLOUDY','clear',{sky:.5},'the sun low behind the clouds, warm and quiet'],['DUSK',18.45,'CLEAR','',{sky:.4},'the light going, the street lights coming on'],
-    ['DISTANT STORM',17,'RAIN','soft',{flash:.012},'steady rain, a storm somewhere far off']];
-  const pane=document.querySelector('#menu [data-p="atmo"]'), box=document.createElement('div');
-  box.innerHTML=`<h3>SCENES</h3><div id="scn">${[SCN.slice(0,6),SCN.slice(6)].map(g=>`<div class="row">${g.map(x=>`<button class="btn" data-s="${x[0]}" title="${x[5]}">${x[0]}</button>`).join('')}</div>`).join('')}</div><div class="dim" id="scnd">the time, the weather and the sky together, in one click</div>`;
-  if(pane){ pane.insertBefore(box,pane.firstChild);
-    pane.addEventListener('click',e=>{ if(SKY.sceneName&&e.target.closest('button,input,select')&&!e.target.closest('#scn,#atmhaze'))SKY.scene(null,true); }); }
-  const drawS=()=>{ if(!pane)return; box.querySelectorAll('[data-s]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.s===SKY.sceneName))); const P=SCN.find(x=>x[0]===SKY.sceneName);
-    box.querySelector('#scnd').textContent=P?P[5]:'the time, the weather and the sky together, in one click';
-    pane.querySelectorAll('#amood [data-m]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.m===(SKY.moodHold||'')))); CLOCK.draw&&CLOCK.draw(); WX.draw&&WX.draw(); };
-  SKY.scene=(n,keep)=>{ const P=SCN.find(x=>x[0]===n), o=P?P[4]:{}; SC.stars=o.stars||0; SC.gap=o.gap||0; SC.blood=o.blood||0; SC.sky=o.sky||0; WX.flashK=o.flash||0; SKY.sceneName=P?n:null;
-    if(P&&!keep){ CLOCK.set(P[1]); CLOCK.run=false; SKY.moodHold=P[3]||null; try{ SAVE.set('clock',JSON.stringify({h:P[1],run:false,speed:CLOCK.speed})); P[3]?SAVE.set('mood',P[3]):SAVE.del('mood'); }catch(e){} WX.set(P[2]); }
-    try{ P?SAVE.set('scene',n):SAVE.del('scene'); }catch(e){} drawS(); };
-  box.querySelector('#scn').onclick=e=>{ const b=e.target.closest('[data-s]'); if(b)SKY.scene(b.dataset.s); };
-  { const q=QS.get('scene'); if(q)SKY.scene(q.toUpperCase().replace(/_/g,' ')); else { let v=null; try{ v=SAVE.get('scene'); }catch(e){} if(v)SKY.scene(v,true); } }
   SKY.U=U; SKY.P=P; SKY.SC=SC; SKY.MB=MB; window.SKY=SKY; }

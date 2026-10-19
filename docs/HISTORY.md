@@ -2705,3 +2705,17 @@ not have windows, make sure buildings are only as tall as they need to be"; then
   should look more like celshading", "not line or dot art"): the crowns' per-voxel speckle is gone, their soft inner darkening is two
   flat steps, and they no longer shadow themselves in stripes (the shadow map draws their back faces, and the leaves' shadow offset is
   0.35, was 0.12).
+- **Only day or night** (owner, 19 Oct 2026: "for now i want to remove all the time of day and control of weather from menu, and i only
+  want day or night. i want to be able to set the exact settings for each one. i want them both to be atmosphereic, day needs sun, clouds
+  up high, sun shining through, rays, beams of light, butteflies, birds, dragons, cats, ghosts, etc. peaceful."; `134b-daynight.js`,
+  `129-clock.js`, `131-weather.js`, `132-sky.js`, `094-ui.js`): ATMOSPHERE's TIME OF DAY, WEATHER, SCENES and EVENING COLOURS are gone; in
+  their place DAY / NIGHT (N switches them, kept in the save's `dn`). The clock stands still at the mode's hour (DAY 3:30 pm, NIGHT
+  10:30 pm) and the weather is held fair (DAY a few clouds, NIGHT fewer, no rain, light wind), so the butterflies, birds, wasps, dragons,
+  cats and ghosts are out by day and the bats, ghosts, cats and lit lamps by night. Each mode has its own look, every number live with
+  SAVE (`dn-day`, `dn-night`), RESET and EXPORT (`DAY {...}` / `NIGHT {...}`: when he sends it, put it in `D0`): the sun's height (the
+  hour; at night where the moon is), sunlight or moonlight, the light all round, the sky overhead and at the horizon, how many clouds,
+  their height and brightness, the high clouds' cover and brightness, where the mist starts, its depth and how much it takes the sky's
+  colour, by day the light shafts and rays and the dust in them, by night the lamps, the stars and the moon. The cloud cover and
+  brightness left DISTANCE LOOK (the mode owns them). `?hour=H` still sets a test's hour (before 6 or after 19 is NIGHT; not saved),
+  `?wx=` still holds a weather (`natural` the old drifting one); the old saved hour, weather, scene and colours are no longer read.
+  Cost: nothing drawn more; one more pass over a few numbers a frame.

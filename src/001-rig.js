@@ -333,6 +333,12 @@ const MOVES={
     ['u1',{L:{ik:SL,foot:0},R:{ik:SR,foot:0}}],
     [100.09,{root:[0,14,0.5],bend:16,L:{ua:[40,26],fa:[56,26]},R:{ua:[40,26],fa:[56,26]}},'out'],
     [100.34,{root:[0,STAND,0],bend:0,L:{ua:[9,8],fa:[19,8]},R:{ua:[9,8],fa:[19,8]}}]]}),
+  runJump:jumpMove({v0:70,t0:0.06,ph:0.25,keys:[[0,{}],
+    [0.06,{root:[0,STAND-1.2,0.6],bend:10,nod:-2,L:{th:[-24,2],sh:[-8,2],foot:-24,ua:[38,14],fa:[84,14]},R:{th:[52,4],sh:[-72,4],foot:-10,ua:[-34,14],fa:[46,14]}},'in'],
+    ['u0.45',{root:[0,STAND,0.4],bend:9,nod:-2,L:{th:[-38,2],sh:[-64,2],foot:-28,ua:[30,14],fa:[80,14]},R:{th:[62,4],sh:[-44,4],foot:-4,ua:[-28,14],fa:[50,14]}}],
+    ['u0.85',{root:[0,STAND,0.4],bend:8,L:{th:[-22,2],sh:[-74,2],foot:-20,ua:[22,14],fa:[76,14]},R:{th:[34,3],sh:[-12,3],foot:6,ua:[-16,14],fa:[56,14]}}],
+    ['u1',{root:[0,STAND-.6,0.4],R:{ik:[-FOOTX,ANKLE,2.5],foot:0}}],
+    [100.07,{root:[0,STAND-1.4,0.5],bend:10,L:{th:[2,2],sh:[-80,2]}},'out']]}),
   jab:move({lead:'R',combo:{J:'cross',K:'frontKick'},window:[0.2,0.42],keys:[[0,{}],[0.08,GUARD],
     [0.15,{root:[0,17.2,1],cyaw:-22,pyaw:-9,nod:0,L:{ua:[86,3],fa:[86,-1]}},'out'],[0.21,{}],[0.32,GUARD],[0.42,{}]]}),
   cross:move({lead:'R',combo:{J:'uppercut',K:'frontKick'},window:[0.22,0.44],keys:[[0,GUARD],
@@ -610,7 +616,7 @@ function act(st,key){ const W=st.water;
   const name=KEYMOVE[key]; if(!name) return; const mv=st.move;
   if(ARMMOVES.has(name)&&!(st.climb||st.hang||st.ride)){ if(mv){ const d=mv.def,a=d.air; if(a&&d.airv&&d.airv[key]&&!mv.variant&&mv.t>a.t0&&mv.t<a.t0+a.T*0.75){ mv.variant={name:d.airv[key],t:mv.t}; return; } }
     const u=st.up; if(!u||name=='block'){ beginUp(st,name); return; } const ud=u.def; if(ud.combo&&ARMMOVES.has(ud.combo[key])){ if(u.t>=ud.window[0]*RIGT.combo) beginUp(st,ud.combo[key]); else st.upNext=ud.combo[key]; } else st.upNext=name; return; }
-  if(!mv){ begin(st,name); return; }
+  if(!mv){ begin(st,name=='jump'&&st.w>.6&&st.run>.4&&!st.water?'runJump':name); return; }
   const d=mv.def,a=d.air;
   if(a&&d.airv&&d.airv[key]&&!mv.variant&&mv.t>a.t0&&mv.t<a.t0+a.T*0.75){ mv.variant={name:d.airv[key],t:mv.t}; return; }
   if(d.combo&&d.combo[key]){ if(mv.t>=d.window[0]*RIGT.combo) begin(st,d.combo[key]); else st.next=d.combo[key]; }
@@ -624,8 +630,8 @@ function tick(st,h){ st.run+=(st.runTarget-st.run)*Math.min(1,h*RIGT.blend); con
     else if(d.air&&st.water&&(d.entry||st.water.level!=null&&st.water.floor<st.water.level-30)&&mv.t>=d.air.t0+d.air.T){
       const M=lift(moveAt(st),mv.floor),W=st.water,vy=d.air.v0-d.air.g*d.air.T; st.out={pose:JSON.parse(JSON.stringify(M)),t:0,T:0.9};
       W.in=true; W.y=M.root.y; W.vy=vy; W.under=1; W.swim=0; W.ph=0.15; W.sp=1; st.out.y0=W.y; W.events.push({k:'splash',z:6,v:-vy}); st.move=null; st.mv*=0.3; }
-    else if(mv.t>=d.dur){ if(st.move.name=='climb'&&st.water){ st.water.in=false; st.water.floor=0; } st.out={pose:JSON.parse(JSON.stringify(lift(moveAt(st),mv.floor))),t:0}; if(d.k[d.k.length-1].P.root.z){ const z=d.k[d.k.length-1].P.root.z; st.dist+=z-(mv.zc||0); st.out.pose.root.z-=z; } const nx=st.next; st.move=null; if(nx) begin(st,nx); }
-    if(st.move&&st.move.def.air){ const a=st.move.def.air; if(st.move.t>a.t0+a.T){ if(!st.move.down){ st.move.down=1; st.mv=st.mvw||0; } st.mv*=Math.exp(-14*h); } } else if(st.move) st.mv*=Math.exp(-(st.move.def.stop||1.2)*h); else st.mv=0;
+    else if(mv.t>=d.dur){ if(st.move.name=='climb'&&st.water){ st.water.in=false; st.water.floor=0; } st.out={pose:JSON.parse(JSON.stringify(lift(moveAt(st),mv.floor))),t:0}; if(d.k[d.k.length-1].P.root.z){ const z=d.k[d.k.length-1].P.root.z; st.dist+=z-(mv.zc||0); st.out.pose.root.z-=z; } const nx=st.next; st.move=null; if(d.ph!=null&&st.target>0){ st.ph=d.ph; st.out.T=.12; } if(nx) begin(st,nx); }
+    if(st.move&&st.move.def.air){ const a=st.move.def.air; if(st.move.t>a.t0+a.T){ if(!st.move.down){ st.move.down=1; st.mv=st.mvw||0; } if(st.move.def.ph==null)st.mv*=Math.exp(-14*h); } } else if(st.move) st.mv*=Math.exp(-(st.move.def.stop||1.2)*h); else st.mv=0;
     if(carries(st.move)){ const zn=moveAt(st).root.z, zc=st.move.zc||0; st.dist+=zn-zc; st.move.zc=zn; } }
   else { if(st.out) st.out.t+=h; if(st.out&&st.out.t>(st.out.T||0.2)) st.out=null; }
   const w0=st.w;

@@ -2677,3 +2677,8 @@ not have windows, make sure buildings are only as tall as they need to be"; then
   forward. he runs with his ehad tilted too fast back"): the collar's back point lower and nearer the neck (neck +1.8 up, 0.3 back; was
   +3, 0.8), the head set back over the neck (head base 0.1 forward, head 0.5, top 0.3; were 0.4, 1.0, 0.8); running leans the body
   45% less, the head never tips back more than 3 degrees and eases there instead of snapping.
+- **The running jump** (owner, 19 Oct 2026: "when you are running and you jump you should land in running position to keep running,
+  right now it jumps with both feet plants and lands two feet, i want a more natural run+jump+run animation"): jumping while running
+  (stride over 60%, running over 40%) is its own move, `runJump`: no two-foot crouch, a push off one leg with the other knee driven up,
+  a split stride in the air, the landing on the leading foot with the speed kept, and the run picks up again on that foot's stance
+  (phase set, 0.12 s blend). Standing jumps are as before.

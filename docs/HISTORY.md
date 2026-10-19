@@ -2579,3 +2579,9 @@ and wash ashore). No sound. WebXR on a headset: teleport arc, snap turn, grab an
   seen or not; now only when on screen (`WATER.seen`, `009-water3d.js`). The weeds build a lawn chunk at most every 120 ms (or three
   times its own cost) instead of every frame at the start (`140-weeds.js`). The sun-ray pass is switched off when there are no rays
   (`133a-sunrays.js`). `tests/startprof.cjs` measures the start and the park's south-west before and after.
+- **The mushroom seller stays put** (owner: "the mushroom merchants should always stay in same spot, no sweeping, make his hair thinner
+  and more in the back, flowing, real skull face, looks around"): his booth work is only `look` now (`STALL.work` jobs; a new empty
+  plan in `081-stalls.js`): he stands at his place, every 2-5 s glancing at whoever passes or off to the sides. His twelve locks
+  hang from the back half of his head only (-104 to 104 degrees from the back, were round to the temples), about half as thick and
+  a little longer, still on their springs; the face is a skull's: deep round sockets, a split nose hole, a dark mouth slot with five
+  teeth, cheekbones, a narrower jaw (`083a-npc-mushroom.js`).

@@ -93,6 +93,7 @@ const STALL=(()=>{ const M=TILE/.84, VS=ZU*24/TILE, mv=m=>m*M*VS;
     const plans={
       tidy:()=>{ const i=Math.floor(Math.random()*S.shelf.length); return [...off(),go(S.shelf[i]),act('reach',S.shelfF[i],1.9,{row:Math.floor(Math.random()*4),mid:{item:1}}),go(pick(S.counter)),act('put',S.face,1.3,{mid:{item:0}}),act('pat',S.face,2.6),go(S.home),...on()]; },
       pat:()=>[act('pat',S.face,2.5+Math.random()*2.5)],
+      look:()=>[],
       wing:()=>{ const w=pick(S.wing); return [...off(),go(w.p),act('pat',w.f,3.2),go(S.home),...on()]; },
       sweep:()=>{ const P=Math.random()<.5?S.sweepIn:S.sweepOut, L=[...off(),go(S.broom.p),act('reach',S.broom.f,1.2,{row:1,mid:{broom:1}})], m=Math.floor(P.length/2);
         P.forEach((p,i)=>{ L.push(go(p,.5,1)); if(i===m)L.push(act('sweep',S.face,2.5+Math.random()*2)); });

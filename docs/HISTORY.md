@@ -1924,7 +1924,8 @@ the park side's lamp post with its flat tan hexagon: "make all look realistic. g
   On at dusk, off at dawn as before (`DRESS.tick`); a cut wire darkens halo, cone and pool with the lamp.
 - **Porch lights** (owner: "front needs a porch light. all buildisng do."): a jelly-jar sconce (wall plate, arm, cap, glass jar,
   cage of four bars and two rings) beside every front door on the main street: the bodega, the apartment house (left of the stoop),
-  Ghost Street, the three shuttered fronts; a warm lamp record each (LITE's eight nearest), its halo, cone and pool, on at its own
+  Ghost Street, the three shuttered fronts (19 Oct, after the main row's new lots: the arcade, the playhouse and the holodeck at
+  their doors, the bar; the museum a larger pair, one either side of its doors; the theatre none, its canopy's downlights light its door); a warm lamp record each (LITE's eight nearest), its halo, cone and pool, on at its own
   moment after sunset.
 - **The traffic lights**: each lit signal lamp a coloured stepped halo, following the signal's phase.
 - **The bodega's OPEN sign, live neon** (owner, of the mockups' section 4, https://claude.ai/artifact/Hn7uCZXHTpjgfqwvnZLQFa: "B & C"):

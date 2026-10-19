@@ -2,7 +2,7 @@ const CLOCK={h:17.4,run:false,speed:1440/600,sunV:new THREE.Vector3(0,1,0),moonV
 { const D=Math.PI/180, sunL=new THREE.DirectionalLight(0xffffff,0), sunD=new THREE.DirectionalLight(0xffffff,0), sunF=new THREE.DirectionalLight(0xffffff,0), R=32*TILE, RD=20*TILE, FM=Math.min(4096,renderer.capabilities.maxTextureSize);
   for(const [L,r,m] of [[sunL,R,3072],[sunD,RD,2048],[sunF,R,FM]]){ L.castShadow=true; L.shadow.mapSize.set(m,m); Object.assign(L.shadow.camera,{left:-r,right:r,top:r,bottom:-r,near:.5,far:120*TILE}); L.shadow.camera.updateProjectionMatrix();
     L.shadow.bias=-.0005; L.shadow.normalBias=+(QS.get("snb")||.12); L.shadow.autoUpdate=false; scene.add(L,L.target); }
-  const SC={c:new THREE.Vector3(1e9,0,0),d:new THREE.Vector3(),fd:new THREE.Vector3(),lv:'',flv:'',st:0,g:0,dirty:0,root:{visible:true,layers:new THREE.Layers(),children:[]},n:0,nd:0,nf:0,fb:null};
+  const SC={c:new THREE.Vector3(1e9,0,0),d:new THREE.Vector3(),fd:new THREE.Vector3(),lv:'',flv:'',st:0,g:0,dirty:0,fdirty:0,ft:0,root:{visible:true,layers:new THREE.Layers(),children:[]},n:0,nd:0,nf:0,fb:null};
   const SNM=new THREE.Matrix4(), SR=new THREE.Vector3(), SU=new THREE.Vector3(), SP=new THREE.Vector3(), ORG=new THREE.Vector3(), UPV=new THREE.Vector3(0,1,0);
   const elev=h=>50*Math.cos(2*Math.PI*(h-12.7)/24)-8, azim=h=>2*Math.PI*(h-12.7)/24;
   const K=[[-90,0x050507,0x55607a,0x14110e,.13,0x6f86c9,.14],[-18,0x050507,0x55607a,0x14110e,.13,0x6f86c9,.14],[-12,0x0a0e22,0x4a5a8a,0x15121a,.18,0x6f86c9,.1],
@@ -32,11 +32,12 @@ const CLOCK={h:17.4,run:false,speed:1440/600,sunV:new THREE.Vector3(0,1,0),moonV
       sunF.target.position.copy(SR).multiplyScalar((lo[0]+hi[0])/2).addScaledVector(SU,(lo[1]+hi[1])/2).addScaledVector(dir,(lo[2]+hi[2])/2); sunF.position.copy(sunF.target.position).addScaledVector(dir,hd+.5);
       sunF.target.updateMatrixWorld(); sunF.updateMatrixWorld(); sunF.shadow.bias=sunL.shadow.bias*120*TILE/sc.far; sunF.shadow.normalBias=Math.max(sunL.shadow.normalBias,1.5*2*Math.max(hr,hu)/FM); };
     const strong=sunL.intensity>.3, now=performance.now(), out=up&&!(typeof ROOMS!=='undefined'&&ROOMS.cur)&&sunL.intensity>0;
-    if(out&&now-SC.st>1000){ SC.st=now; const g=sig(); if(g!==SC.g){ SC.g=g; SC.dirty=1; } }
+    if(out&&now-SC.st>1000){ SC.st=now; const g=sig(); if(g!==SC.g){ SC.g=g; SC.dirty=SC.fdirty=1; } }
     const stale=out&&(SC.d.dot(dir)<Math.cos(.4*D)||Math.hypot(SC.c.x-pos.x,SC.c.z-pos.z)>12*TILE||SC.lv!==LVL);
     if(stale){ aim(sunL); SC.c.set(pos.x,py,pos.z); SC.d.copy(dir); SC.lv=LVL; sunL.shadow.needsUpdate=true; }
-    if(out&&(SC.fd.dot(dir)<Math.cos(.4*D)||SC.flv!==LVL)){ fit(); SC.fd.copy(dir); SC.flv=LVL; sunF.shadow.needsUpdate=true; }
-    if(out&&SC.dirty){ SC.dirty=0; sunL.shadow.needsUpdate=sunF.shadow.needsUpdate=true; }
+    if(out&&(SC.fd.dot(dir)<Math.cos(.4*D)||SC.flv!==LVL)){ fit(); SC.fd.copy(dir); SC.flv=LVL; SC.ft=now; sunF.shadow.needsUpdate=true; }
+    if(out&&SC.dirty){ SC.dirty=0; sunL.shadow.needsUpdate=true; }
+    if(out&&SC.fdirty&&now-SC.ft>1e4){ SC.fdirty=0; SC.ft=now; sunF.shadow.needsUpdate=true; }
     sunD.intensity=0;
     if(sunL.intensity>0&&(strong||now-lastS>100||stale)){ aim(sunD); sunD.shadow.needsUpdate=true; lastS=now; }
     if(typeof WATER!=='undefined')WATER.glowK=(typeof ROOMS!=='undefined'&&ROOMS.cur)||!up?1:Math.max(0,Math.min(1,(3-e)/8)); };

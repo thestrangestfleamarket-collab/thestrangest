@@ -27,13 +27,11 @@ const TRADE={}; window.TRADE=TRADE;
       <div style="margin-bottom:8px">YOU HAVE <b style="color:#f2c14e">$${Math.round(INV.cash)}</b> · ${INV.count()} STONE${INV.count()===1?'':'S'}</div><table style="border-collapse:collapse;width:100%">`;
     for(const [id,name,price] of GEMS){ const n=INV.items[id]||0;
       o+=`<tr style="border-bottom:1px solid #22252f;${n?'':'color:#7d7a70'}"><td style="padding:4px 2px">${esc(name)}</td><td style="text-align:right;padding:4px 6px">$${price}</td><td style="text-align:right;padding:4px 6px">${n?'x'+n:'-'}</td><td style="text-align:right;white-space:nowrap">${n?`<button ${btn} data-s="${id}">SELL</button>${n>1?`<button ${btn} data-s="${id}" data-n="all">ALL $${price*n}</button>`:''}`:''}</td></tr>`; }
-    o+=`</table><div style="color:#9b9584;margin-top:10px">Find them: the glints on the cave's floor (back each day), the oddities stall by the park's gate (one a day).</div>`;
+    o+=`</table><div style="color:#9b9584;margin-top:10px">Find them: the glints on the cave's floor (back each day).</div>`;
     const x=P.querySelector(':scope>.pX'); P.innerHTML=o; if(x)P.appendChild(x); };
   TRADE.open=N=>{ const P=panel(); P.hidden=false; TRADE.draw();
     if(N&&N.walker&&N.walker.state==='stay'){ N.walker.t=Math.max(N.walker.t,14); N.st.face={x:pos.x,z:pos.z}; }
     if(N&&typeof LINES!=='undefined')setTimeout(()=>LINES.say(N,'golem'),60); };
   TRADE.close=()=>{ const P=document.getElementById('gemp'); if(P)P.hidden=true; };
   { const isG=N=>N&&N.walker&&N.walker.kind==='golem'; for(const th of UI.things)if(th.npc){ const a0=th.act; th.act=()=>{ if(isG(th.npc))TRADE.open(th.npc); else a0(); }; } }
-  if(typeof PARK!=='undefined'&&PARK.odd&&PARK.gate){ const P=PARK, x=BOD.XS(P.gate[0]-3.7+P.ox), z=BOD.ZS(P.y0+2.65+P.oy), hb=new THREE.Mesh(new THREE.BoxGeometry(3*TILE,BOD.YS(34),1.2*TILE),new THREE.MeshBasicMaterial({visible:false}));
-    hb.position.set(x,BOD.YS(17),z); (MAPG.park||scene).add(hb); UI.thing({name:'THE ODDITIES STALL',obj:hb,reach:1.5*TILE,near:2.6*TILE,tall:BOD.YS(40),act:()=>INV.pick('stall')}); }
   window.GEMDBG=()=>({cash:INV.cash,items:INV.items,picked:INV.picked,open:!!(document.getElementById('gemp')&&!document.getElementById('gemp').hidden)}); }

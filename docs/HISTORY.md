@@ -1903,3 +1903,37 @@ was, the museum, also back, on main street on other side of hotel"; "hotel = apa
   27,500); 13 lamp records for the museum, the bar's as before, all in LITE's pool (its 8 nearest, from inside only), no new shadow lamp, no
   new shader program. Nothing at the loading line: both are built after the game opens (`STEPS`), the museum in seven steps, the band after
   the bar (before, the bar and the band were built at the loading line).
+## 19 Oct 2026: the lamps redone, porch lights, live neon
+
+**Real lamps, real light** (owner, 19 Oct 2026, his shot of a main-street lamp at night, a plain pole, a dark box head and a flat tan
+rectangle for its light: "lamps need to be redone. make light look super eralistic (cel shading) but real ophsiycs, glow, rays, light,
+shien, etc. bulb shape, tuft around. edges, ridges, etc."; then "glow realistic light (all lights, all glow, no fake)"; and, his crop of
+the park side's lamp post with its flat tan hexagon: "make all look realistic. go through all of main. take liberties. i trust you.";
+`069b-shine.js`, `SHINE`):
+- **The street lights** (both kerbs, the loop's roads): a cast-iron base with a flared foot and stepped ridges, a fluted tapered pole
+  with a collar, a cap, the curved davit arm and its scroll brace, the luminaire (a teardrop housing with its rim and ribs) and a glass
+  bowl lens under it, the light in the bowl (moved under the head; its pool with it). **The corner light**: the same, taller, two arms.
+  **The park side's lamp posts**: the cast base, a fluted post, a capital, a cup, an acorn globe (the light) and a crown on top.
+  Built once, instanced in chunks of 36 m so only what's on screen is drawn.
+- **The light, CEL and physical**: the lens a bright core; a stepped halo round it (four flat bands, the core near white); a faint
+  stepped cone of light from the lens to the ground, stronger in fog, rain and snow; the ground's pool cut in flat bands where a
+  point light's real fall-off (distance to the power 1.6, its reach, the cosine on the ground) crosses 72%, 45%, 22% and 9%, so a
+  far lamp's painted pool looks like a near one's real light; a lamp LITE is lighting for real shows no painted pool (never both).
+  **Wet ground** (the game's wetness, `LFX.ws.wet`): each lamp shows a stepped streak in the wet ground, mirrored where a puddle
+  would show it, broken by moving ripples. **Moths**: three or four round each of the three nearest lit lamps at night.
+  On at dusk, off at dawn as before (`DRESS.tick`); a cut wire darkens halo, cone and pool with the lamp.
+- **Porch lights** (owner: "front needs a porch light. all buildisng do."): a jelly-jar sconce (wall plate, arm, cap, glass jar,
+  cage of four bars and two rings) beside every front door on the main street: the bodega, the apartment house (left of the stoop),
+  Ghost Street, the three shuttered fronts; a warm lamp record each (LITE's eight nearest), its halo, cone and pool, on at its own
+  moment after sunset.
+- **The traffic lights**: each lit signal lamp a coloured stepped halo, following the signal's phase.
+- **The bodega's OPEN sign, live neon** (owner, of the mockups' section 4, https://claude.ai/artifact/Hn7uCZXHTpjgfqwvnZLQFa: "B & C"):
+  B, LIVE NEON: the gas hums (a faint flutter), now and then one letter stutters off and catches again; its lamp record flutters with it;
+  a stepped pool in its colour on the sidewalk. C, WET NIGHT: when the ground is wet the sign shows again in it, upside down, in hard
+  steps, broken by ripples where drops land; dry nights look like B. The alley's neon signs (`069a-block.js`) the same.
+- Not changed: lit windows (already their own light); the park's gate lanterns (the park's own session).
+- **Cost**: a street light 660 triangles (432 iron, 148 head, 80 lens; it was about 180), a lamp post about 450 and its globe 80, a sconce 212 and its
+  jar 64; 36,700 in all over the map but in 36 m chunks, only those on screen drawn (the main street at night, measured: 300,186
+  triangles in the picture against 302,958 before, the blocks they replace gone); the glows 2 triangles each, 264 in one draw;
+  6 porch lamp records (LITE's eight nearest, no new light, no shadow); 2 new shader programs (the glows, the wet reflection);
+  about 18 more draws on the main street; SHINE.tick 0.08 ms a frame (headless). `SHINEDBG()`.

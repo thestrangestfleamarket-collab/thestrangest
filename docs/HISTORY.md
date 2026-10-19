@@ -1833,3 +1833,24 @@ residents "Remove all of it", "No sign"): `054-apts.js`:
   the street like the others); your mailbox, its panel, the welcome letter and the rent every third day are gone, and rent, the
   RESIDENTS list and GO TO YOUR MAILBOX are off the CITY tab. Workers live only over their own workplace; with none they stay out at night;
   nobody sleeps in the house. Your money (`MAIL.you`), the shops' and the tower's mail and the street's mailboxes stay.
+
+## 19 Oct 2026: you are a stick figure
+
+**The avatars gone, you a stick figure for now** (owner, 19 Oct 2026: "lets get rid of player avatars completely. keep the physics and
+animations and just make the character play as a stick figure for now"; his picks: delete it all, just you (the street's Walkers, pawns
+and creatures as they were), solid 3D sticks, the current clips): you are a stick figure built in code (`087a-avatars.js`): round sticks
+for the spine, neck, shoulders, arms, hips and legs, small balls at the joints and hands, a ball head, all in one dark colour, cel-shaded
+and casting a shadow like the rest; on the standard skeleton, playing the same clips as before (standing easy, walk / jog / sprint by your
+pace, jump, punches, roll, crouch, sit, swim, dance, falling). The game's rig still moves you (the physics unchanged). 644 triangles (the
+Walker on clips was 14,870). Gone: WALKER / MANNEQUIN / VROID and GRAPHICS' AVATAR row, the menu's AVATAR tab, the avatar editor (its
+shape, looks, animate, speed and body-type tabs, the posing void) and the standalone `avatar.html`; `data/hybrid.json`, `data/vroid.json`
+(and `full/vroid.vrm`), the mannequin's mesh out of `data/ual.json` (its skeleton and clips kept), their bake tools and tests. Clicking
+yourself opens YOU: your name, health and stamina. The hand-made Walker still runs unseen under you (his rig is the physics) and the
+bearded Walker keeps the head shapes he borrowed from the editor (`ED.HEADS`, `097-editor.js`).
+
+**His mannequin, not the stick** (owner, 19 Oct 2026, his shot of the stick figure: "why is he standing like that? ... he has his
+shoulders lifted high"; then his `Humanoid.fbx`, "make it my body"): the stick's shoulder bars ran up from mid-chest to the shoulders,
+so he looked shrugged. You are now his mannequin (`data/full/humanoid.fbx`, Blender, no bones: `tools/humanoid-bake.cjs` →
+`data/humanoid.json`, 6 KB), sized to the UAL skeleton (it matches it: height, hips, shoulders, arm length within 3 cm). It stands in an
+A-pose, so the skeleton's arms are lowered to it before binding; each corner weighted in code to its nearest one or two bones. One flat
+light colour, cel-shaded, casting a shadow; the same clips. 402 triangles.

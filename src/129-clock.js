@@ -42,6 +42,7 @@ const CLOCK={h:17.4,run:false,speed:1440/600,sunV:new THREE.Vector3(0,1,0),moonV
     if(typeof WATER!=='undefined')WATER.glowK=(typeof ROOMS!=='undefined'&&ROOMS.cur)||!up?1:Math.max(0,Math.min(1,(3-e)/8)); };
   CLOCK.farBox=()=>{ const C=RING.cf, M=BOD.MAP, T=TILE, xa=[C.x0,C.x1,M.x0,M.x1].map(BOD.XS), za=[C.y0,C.y1,M.y0,M.y1].map(BOD.ZS); return [Math.min(...xa)-8*T,-4*T,Math.min(...za)-8*T,Math.max(...xa)+8*T,40*T,Math.max(...za)+8*T]; };
   const sig=()=>{ const dy=DYN(); let g=0; const f=o=>{ if(!o.visible||dy.has(o))return; if(o.isMesh&&o.castShadow)g=(g*31+o.id+(o.isInstancedMesh?o.count*7919:0))|0; for(const c of o.children)f(c); }; f(scene); return g; };
+  window.SIGL=()=>{ const dy=DYN(), m={}; const f=(o,p)=>{ if(!o.visible||dy.has(o))return; const q=p+'<'+(o.name||o.type); if(o.isMesh&&o.castShadow)m[o.uuid]=q.slice(-90)+'#'+(o.isInstancedMesh?o.count:1); for(const c of o.children)f(c,q); }; f(scene,''); return m; };
   CLOCK.set=h=>{ CLOCK.h=((h%24)+24)%24; };
   CLOCK.dark=()=>elev(CLOCK.h)<-2;
   const DYN=()=>{ const out=new Set(); if(window.W3&&W3.group)out.add(W3.group); for(const N of NPCS)if(N.g)out.add(N.g); for(const x of NPCS.extra||[])if(x&&x.g)out.add(x.g);

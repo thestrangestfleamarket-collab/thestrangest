@@ -31,12 +31,13 @@ process.on('unhandledRejection',e=>{ errs.push('TEST '+String(e&&e.message||e).s
     fs.writeFileSync(path.join(OUT,n+'.png'),Buffer.from(r.png,'base64')); return {n:r.n,noisy:r.noisy}; };
   const vset=()=>pg.evaluate(()=>{ const m={}, V=__dbg.camO().position.constructor, T=33.9/30; __scene.traverseVisible(o=>{ if(!o.isMesh||!o.castShadow)return; const pth=[]; let q=o; while(q&&q!==__scene&&pth.length<5){ pth.push(q.name||q.type); q=q.parent; } const b=new (V.prototype.constructor)(); o.getWorldPosition(b); m[o.uuid]=[pth.join('<'),+(b.x/T).toFixed(0),+(b.z/T).toFixed(0),o.isInstancedMesh?o.count:1]; }); return m; });
   const sdiff=(A,B)=>({gone:Object.keys(A).filter(k=>!B[k]).map(k=>A[k]).slice(0,30),came:Object.keys(B).filter(k=>!A[k]).map(k=>B[k]).slice(0,30),nA:Object.keys(A).length,nB:Object.keys(B).length});
-  if(process.argv[3]==='diag'){ await pg.keyboard.press('v'); await pg.waitForTimeout(1500); rep.vd={};
+  if(process.argv[3]==='diag'){ await pg.evaluate(()=>{ window.SIGD=[]; let L=SIGL(); setInterval(()=>{ const N=SIGL(), g=Object.keys(L).filter(k=>N[k]!==L[k]).map(k=>'-'+L[k]), c=Object.keys(N).filter(k=>N[k]!==L[k]).map(k=>'+'+N[k]); if(g.length||c.length)SIGD.push([+(performance.now()/1000).toFixed(1),g.slice(0,8),c.slice(0,8)]); L=N; },1000); });
+    await pg.keyboard.press('v'); await pg.waitForTimeout(1500); rep.vd={};
     await at(150,-Math.PI/2); const e150=await vset(); await at(150,Math.PI/2); const w150=await vset(); rep.vd.turn=sdiff(e150,w150);
     await at(150,-Math.PI/2); const e150b=await vset(); rep.vd.same=sdiff(e150,e150b);
     await at(140,-Math.PI/2); const e140=await vset(); await at(146,-Math.PI/2); const e146=await vset(); rep.vd.walk=sdiff(e140,e146);
     await pg.keyboard.press('v'); await pg.keyboard.press('v'); await pg.waitForTimeout(1500); await at(150,-Math.PI/4); const iso=await vset(); rep.vd.iso=sdiff(e150,iso);
-    rep.sunlog=await pg.evaluate(()=>window.SUNLOG); fin(); await b.close(); return; }
+    rep.sigd=await pg.evaluate(()=>SIGD); rep.sunlog=await pg.evaluate(()=>window.SUNLOG); fin(); await b.close(); return; }
   await pg.keyboard.press('v'); await pg.waitForTimeout(1500);
   const E=-Math.PI/2, Wd=Math.PI/2, cen=()=>pg.evaluate(()=>window.SUNDBG&&SUNDBG().still);
   rep.recentre={}; for(const [P,yaw,tag] of [[130,E,'E130'],[170,E,'E170'],[150,Wd,'W150'],[190,Wd,'W190'],[220,Wd,'W220']]){

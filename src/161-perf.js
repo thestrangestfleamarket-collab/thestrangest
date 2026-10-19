@@ -50,7 +50,7 @@ SELFSH.use=N=>!PERFX.on[2]||SELFSH.set.has(N);
 PERFX.bounds=()=>{ if(!PERFX.on[4])return; const S=new THREE.Sphere();
   scene.traverse(o=>{ if(!o.isMesh||o.frustumCulled||o.userData.nb)return;
     if(o.isSkinnedMesh){ o.userData.nb=true; const g=o.geometry; g.computeBoundingBox(); o.boundingSphere=g.boundingBox.getBoundingSphere(new THREE.Sphere()); o.boundingSphere.radius*=1.6; o.frustumCulled=true; return; }
-    if(o===W3.mesh||(o.material&&o.material.customProgramCacheKey&&/^mus/.test(o.material.customProgramCacheKey()))){ o.userData.nb=true; const g=o.geometry; g.computeBoundingBox(); g.boundingBox.getBoundingSphere(S); g.boundingSphere=S.clone(); g.boundingSphere.radius*=1.6; o.frustumCulled=true; return; }
+    if(o===W3.mesh)return; if(o.material&&o.material.customProgramCacheKey&&/^mus/.test(o.material.customProgramCacheKey())){ o.userData.nb=true; const g=o.geometry; g.computeBoundingBox(); g.boundingBox.getBoundingSphere(S); g.boundingSphere=S.clone(); g.boundingSphere.radius*=1.6; o.frustumCulled=true; return; }
     if(o===WATER.mesh||(WATER.extra||[]).some(w=>w.mesh===o)){ o.userData.nb=true; const g=o.geometry; g.computeBoundingSphere(); g.boundingSphere.radius+=1.5*TILE; o.frustumCulled=true; } }); };
 PERFX.maps=()=>{ if(!PERFX.on[6])return; const L=LITE.pool[0]; if(L.shadow.mapSize.x>512){ L.shadow.mapSize.set(512,512); if(L.shadow.map){ L.shadow.map.dispose(); L.shadow.map=null; } } };
 PERFX.near=(x,z,r)=>Math.hypot(pos.x-x,pos.z-z)<r;

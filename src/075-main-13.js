@@ -28,7 +28,7 @@ function collide(p){ if(typeof NPCS!=='undefined')for(const N of NPCS)if(N.lv===
 
 const R=new THREE.Vector3(),U=new THREE.Vector3(),F=new THREE.Vector3(),disp=new THREE.Vector3();
 let last=performance.now(), fpsT=0, fpsN=0, t=0;
-function frame(now){ requestAnimationFrame(frame); renderer.info.reset(); const dt=Math.max(0,Math.min(0.05,(now-last)/1000)); last=now; if(METRO)METRO.train.tick(dt,pos); t+=dt;
+function frame(now){ requestAnimationFrame(frame); renderer.info.reset(); const dt=Math.max(0,Math.min(0.05,(now-last)/1000)); last=now; METRO.tick(dt,pos); t+=dt;
   if(UI.freeCam?MAPLV(UI.camT.y-.9,UI.camT):MAPLV(py,pos))setPhys(LVL);
   if(UI.view!=='iso'){ if(keys.has('q'))yawTo+=dt*1.8; if(keys.has('e'))yawTo-=dt*1.8; if(keys.has('z'))pitchTo=UI.clampV(pitchTo-dt*1.2); if(keys.has('x'))pitchTo=UI.clampV(pitchTo+dt*1.2); }
   const ease=Math.min(1,dt*12); yaw=Math.abs(yawTo-yaw)<1e-4?yawTo:yaw+(yawTo-yaw)*ease; pitch=Math.abs(pitchTo-pitch)<1e-4?pitchTo:pitch+(pitchTo-pitch)*ease; const zk0=UI.zk(); ppu=Math.abs(ppuTo/ppu-1)<1e-4?ppuTo:ppu*Math.pow(ppuTo/ppu,ease); if(pxS()!==SCL)resize(); else frustum(); UI.zoomStep(zk0);

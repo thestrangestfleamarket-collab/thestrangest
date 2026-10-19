@@ -72,6 +72,7 @@ function makeNPC(D,o){ const N={key:o.key,name:o.name,names:o.names,lv:o.lv||'do
   N.tick=(dt,you)=>{ if(N.sheet&&!N.sheetOn){ N.sheetOn=true; UI.setFree(true); UI.camT.set(st.x,g.position.y+tall*s*ZU*24/TILE*.5,st.z); ppu=ppuTo=PPU*4; window.SHEETTURN=d=>{ yaw=yawTo=d*Math.PI/180; };
       for(const G of Object.values(MAPG))for(const c of G.children)if(c!==g)c.visible=false; const r0=renderer.render.bind(renderer); renderer.render=(s,c)=>{ if(s.background&&s.background.isColor)s.background.set(0); r0(s,c); }; }
     if(o.brain)o.brain(dt,you,st,N);
+    if(st.sx||st.sz){ const nx=st.x+st.sx*dt, nz=st.z+st.sz*dt; if(N.free(nx,nz,st.R)){ st.x=nx; st.z=nz; } const k=Math.max(0,1-dt*6); st.sx*=k; st.sz*=k; if(Math.abs(st.sx)+Math.abs(st.sz)<.01)st.sx=st.sz=0; }
     let want=st.h, moving=false;
     if(st.to){ const ex=st.to.x-st.x, ez=st.to.z-st.z, d=Math.hypot(ex,ez); if(d<.05){ st.to=st.next||null; st.next=null; st.wait=st.to?0:1.5+Math.random()*4; }
       else{ want=Math.atan2(ex,ez); const turn=Math.abs(((want-st.h+Math.PI*3)%(Math.PI*2))-Math.PI);
@@ -87,17 +88,19 @@ function makeNPC(D,o){ const N={key:o.key,name:o.name,names:o.names,lv:o.lv||'do
     const gy=N.ground(st.x,st.z)+(N._bb||0); g.position.set(st.x,gy,st.z); g.rotation.set(0,st.h,0); body.rotation.set(0,0,N._rk||0); if(!o.skin)body.scale.y=s*ZU*24/TILE;
     if(ad){ if(o.anim)o.anim(ad,moving,st,s); N._ao=g.position.y-gy; } else if(N._ao)g.position.y+=N._ao; };
   N.blocks=(x,z,R)=>block(x,z,R); N.gap=(x,z)=>Math.hypot(x-st.x,z-st.z);
-  N.push=p=>{ const dx=p.x-st.x, dz=p.z-st.z, d=Math.hypot(dx,dz), R=st.R+.3; if(d<R&&d>1e-4){ p.x=st.x+dx/d*R; p.z=st.z+dz/d*R; } };
+  N.push=p=>{ const dx=p.x-st.x, dz=p.z-st.z, d=Math.hypot(dx,dz), R=st.R+.3; if(!(d<R&&d>1e-4))return;
+    const ux=dx/d, uz=dz/d, sp=Math.hypot(p.x-pos.x,p.z-pos.z), k=Math.min(.75,.4+sp*3/TILE), nx=st.x-ux*(R-d)*k, nz=st.z-uz*(R-d)*k;
+    if(N.free(nx,nz,st.R)){ st.x=nx; st.z=nz; } if(sp>.05*TILE&&!(st.sx||st.sz)){ const v=Math.min(sp,.12*TILE)*28; st.sx=-ux*v; st.sz=-uz*v; } p.x=st.x+ux*R; p.z=st.z+uz*R; };
   N.shadowPass=renderer=>{ if(W3.lv.value<1.5||N.far||!g.visible||!g.parent.visible)return; if(typeof SELFSH!=='undefined'&&!SELFSH.use(N)){ N.LVP.value.copy(SELFSH.off); return; } const mid=new THREE.Vector3(g.position.x,g.position.y+H*.45,g.position.z); N.smCam.position.copy(mid).addScaledVector(W3.Lw,7); N.smCam.up.set(0,Math.abs(W3.Lw.y)>.6?0:1,Math.abs(W3.Lw.y)>.6?1:0); N.smCam.lookAt(mid); N.smCam.updateMatrixWorld();
     N.LVP.value.multiplyMatrices(N.smCam.projectionMatrix,N.smCam.matrixWorldInverse); const ms=[]; g.traverse(o=>{ if(o.isMesh){ ms.push([o,o.material]); o.material=N.depthMat; } });
     renderer.setRenderTarget(N.sm); renderer.clear(); renderer.render(g,N.smCam); renderer.setRenderTarget(null); for(const [o,m] of ms)o.material=m; };
   if(!o.noSelf){ const s0=W3.shadowPass; W3.shadowPass=r=>{ s0(r); N.shadowPass(r); }; }
   N.g=g; N.st=st; N.body=body; N.H=H; NPCS.push(N); return N; }
-const STLANE={x0:BOD.XS(BOD.MAP.x0+2),x1:BOD.XS(BOD.MAP.x1-2),z0:BOD.ZS(-76.3),z1:BOD.ZS(RING.ny1-1)}, STHOLE=[BOD.XS(MAPSTAIR.x0-.6),BOD.ZS(MAPSTAIR.y0),BOD.XS(MAPSTAIR.x1+.6),BOD.ZS(MAPSTAIR.y1+.6)],
+const STLANE={x0:BOD.XS(BOD.MAP.x0+2),x1:Math.min(BOD.XS(BOD.MAP.x1-2),RINGX.bound.x1-TILE),z0:BOD.ZS(-76.3),z1:Math.min(BOD.ZS(RING.ny1-1),RINGX.bound.z1-TILE)}, STHOLE=[BOD.XS(MAPSTAIR.x0-.6),BOD.ZS(MAPSTAIR.y0),BOD.XS(MAPSTAIR.x1+.6),BOD.ZS(MAPSTAIR.y1+.6)],
   CSHOLE=[BOD.XS(CASTLE.stair.x0-.6),BOD.ZS(CASTLE.stair.y0-.6),BOD.XS(CASTLE.stair.x1+.6),BOD.ZS(CASTLE.stair.y1+.6)], CSB=[BOD.XS(CASTLE.b[0]-.5),BOD.ZS(CASTLE.b[2]-.5),BOD.XS(CASTLE.b[1]+.5),BOD.ZS(CASTLE.b[3]+.5)],
   inBox=(b,x,z,R)=>x>b[0]-R&&x<b[2]+R&&z>b[1]-R&&z<b[3]+R,
   inBuilding=(x,z,R)=>ROOMS.boxes().some(b=>b.y0<1&&x>b.x0-R&&x<b.x1+R&&z>b.z0-R&&z<b.z1+R)||(MODS.apts&&MODS.apts.inside&&MODS.apts.inside(x,z))||inBox(CSB,x,z,R),
-  stfree=(x,z,R)=>!inBox(STHOLE,x,z,R)&&!inBox(CSHOLE,x,z,R)&&!inBuilding(x,z,R)&&!SOL.up.some(b=>x>b[0]-R&&x<b[2]+R&&z>b[1]-R&&z<b[3]+R);
+  stfree=(x,z,R)=>RINGX.inside(x,z,R)&&!inBox(STHOLE,x,z,R)&&!inBox(CSHOLE,x,z,R)&&!inBuilding(x,z,R)&&!SOL.up.some(b=>x>b[0]-R&&x<b[2]+R&&z>b[1]-R&&z<b[3]+R);
 const ROAM={L:STLANE,wallZ:BOD.ZS(PARK.y0+PARK.oy),gate:[BOD.XS(PARK.gate[0]+PARK.ox+.8),BOD.XS(PARK.gate[1]+PARK.ox-.8)]};
 window.ROAMDBG=()=>ROAM; window.STFREE=stfree;
 const DUN=()=>{ const D=MODS.dungeon; if(!D)return null; const B=D.B, X=BOD.XS, Z=BOD.ZS, lane={x0:X(B.x0+1.2),x1:X(B.x1-1.2),z0:Z(B.y0+1.2),z1:Z(B.y1-1.2)},

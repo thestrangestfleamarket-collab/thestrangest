@@ -15,12 +15,13 @@ process.on('unhandledRejection',e=>{ errs.push('TEST '+String(e&&e.message||e).s
   const st=()=>pg.evaluate(()=>window.ALLEYDBG&&ALLEYDBG());
   await shot('start');
   await go(99,-62); await pg.mouse.move(480,270); for(let i=0;i<4;i++){ await pg.mouse.wheel(0,600); await pg.waitForTimeout(150); }
-  await shot('street99'); rep.street99=await cost();
+  await shot('street99'); rep.street99=await cost(); await pg.keyboard.press('q'); await pg.keyboard.press('q'); await go(130,-74); await shot('street130-q2'); await pg.keyboard.press('q'); await pg.keyboard.press('q');
   await go(99,-91.5); await shot('gate99'); rep.gate99=await st();
   await go(209,-85); await shot('east-mouth'); rep.mouth=await st();
   await go(209,-93.6); await pg.waitForTimeout(30); await pg.screenshot({path:path.join(OUT,'fade.png')}); rep.fadeTxt=await pg.evaluate(()=>{ const e=document.getElementById('subfade'); return e&&[e.textContent,e.style.opacity]; });
   await shot('east-in',null,5000); rep.enter=await st();
   await go(130,-95.9); await shot('alley130'); rep.alley130=await cost();
+  for(const k of [1,2]){ await pg.keyboard.press('q'); await shot('alley130-q'+k,null,2500); } await pg.keyboard.press('q'); await pg.keyboard.press('q');
   await go(94,-95.9); await shot('alley94'); rep.alley94=await cost();
   for(const k of [1,2]){ await pg.keyboard.press('q'); await shot('alley94-q'+k,null,2500); } await pg.keyboard.press('q'); await pg.keyboard.press('q');
   await pg.keyboard.press('v'); await shot('alley94-behind',()=>__dbg.face(Math.PI/2),4000);

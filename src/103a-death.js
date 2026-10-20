@@ -7,7 +7,7 @@
   const sheet=()=>{ if(S||!window.GHOSTS||!GHOSTS.cloth)return S; const MV=BOD.YS(24)/.84, mat=new THREE.MeshToonMaterial({color:0xf2f0ea,emissive:0x2a3040,gradientMap:W3.GP,transparent:true,opacity:0,side:THREE.DoubleSide,depthWrite:false}), em=new THREE.MeshBasicMaterial({color:0x0c0c10,transparent:true,opacity:0}), eg=new THREE.CircleGeometry(1,10);
     S=GHOSTS.cloth(1.15,true,17,.24,mat,pos.x/MH,py/MV+1.5,pos.z/MH); S.MV=MV; S.mat=mat; S.em=em; S.eyes=[-1,1].map(()=>{ const e=new THREE.Mesh(eg,em); e.scale.set(.05*MH,.075*MV,1); e.renderOrder=4; scene.add(e); return e; }); return S; };
   const look=on=>{ W3.mesh.visible=!on; if(S){ S.me.visible=on; for(const e of S.eyes)e.visible=on; } };
-  const V=new THREE.Vector3();
+  const V=new THREE.Vector3(), DBGN={r:0,d:0};
   VIT.die=()=>{ if(VIT.dead)return; VIT.dead=true; VIT.hp=0; VIT.out=2.4; trip=true; gh=0; rise=-1; try{ SAVE.set('dead','1'); }catch(e){} note(DEAD); };
   const back=async()=>{ busy=true; const f=document.getElementById('subfade');
     if(f){ f.textContent='REFRESHED'; f.style.pointerEvents='auto'; f.style.opacity='1'; } await wait(1800);
@@ -22,9 +22,9 @@
     if(rise<0){ gh=Math.min(1,gh+dt); if(gh>=1&&BOD.GD&&LVL==='up'&&py<2*T&&(BOD.GD.inPool?BOD.GD.inPool(pos.x,pos.z):BOD.GD.inside())){ rise=0; dp=BOD.GD.deepAt?BOD.GD.deepAt(pos.x,pos.z):[pos.x,pos.z]; if(BOD.GD.poke)BOD.GD.poke(pos.x,pos.z,1.4); } }
     else{ rise+=dt; keys.clear(); target=null; gh=1+Math.max(0,(rise-2.2)/1); if(BOD.GD.poke&&rise<2)BOD.GD.poke(pos.x,pos.z,.5); if(rise>=3.2)back(); }
     const dn=BOD.GD&&BOD.GD.deep!=null?BOD.GD.deep/S.MV+.45:py/S.MV, y0=py/S.MV+1.5, e=rise>0?Math.min(1,rise/2.6):0, b=S.ball, s3=e*e*(3-2*e), q=rise>0&&dp?Math.min(1,s3*1.6):0, to={x:(pos.x+((dp?dp[0]:pos.x)-pos.x)*q)/MH,y:y0+.05*Math.sin(performance.now()/1000*1.6)*(1-e)+(dn-y0)*s3,z:(pos.z+((dp?dp[1]:pos.z)-pos.z)*q)/MH}; S.gnd=rise>0?dn-.5:py/S.MV;
-    if(Math.hypot(to.x-b.x,to.z-b.z)>2||Math.abs(to.y-b.y)>2){ S.ball=to; S.drop(); }
-    GHOSTS.run(S,dt,to,[],MH,S.MV); const a=gh<=1?gh:2-gh; S.mat.opacity=.5*a; S.em.opacity=.85*a;
+    if(Math.hypot(to.x-b.x,to.z-b.z)>2||Math.abs(to.y-b.y)>2){ S.ball=to; S.drop(); DBGN.d++; }
+    DBGN.r++; GHOSTS.run(S,dt,to,[],MH,S.MV); const a=gh<=1?gh:2-gh; S.mat.opacity=.5*a; S.em.opacity=.85*a;
     const fx=Math.sin(heading), fz=Math.cos(heading); S.eyes.forEach((e,k)=>{ const sd=k?1:-1, ex=to.x+fx*(S.BR+.05)+fz*sd*.09, ey=to.y+.03, ez=to.z+fz*(S.BR+.05)-fx*sd*.09; e.position.set(ex*MH,ey*S.MV,ez*MH); e.lookAt(V.set((ex+fx)*MH,ey*S.MV,(ez+fz)*MH)); }); };
-  window.KILLME=()=>VIT.die(); window.DEADDBG=()=>({gh,rise,busy,out:VIT.out,lvl:LVL,py,sheet:!!S,pool:!!(BOD.GD&&BOD.GD.inPool&&BOD.GD.inPool(pos.x,pos.z))});
+  window.KILLME=()=>VIT.die(); window.DEADDBG=()=>({gh,rise,busy,out:VIT.out,lvl:LVL,py,sheet:!!S,pool:!!(BOD.GD&&BOD.GD.inPool&&BOD.GD.inPool(pos.x,pos.z)),dead:VIT.dead,vis:S?S.me.visible:null,w3:W3.mesh.visible,mv:st.move&&st.move.name,held:st.move&&st.move.held,rag:RAG.on,ball:S&&[S.ball.x,S.ball.y,S.ball.z].map(v=>+v.toFixed(2)),gnd:S&&+S.gnd.toFixed(2),ext:S&&(()=>{ let lo=9e9,hi=-9e9,stk=0; for(const k of S.live){ lo=Math.min(lo,S.P[k+1]); hi=Math.max(hi,S.P[k+1]); if(S.ST[k]===S.ST[k])stk++; } return [+lo.toFixed(2),+hi.toFixed(2),stk]; })(),runs:DBGN.r,drops:DBGN.d});
   if(SAVE.get('dead')==='1'){ VIT.dead=true; VIT.hp=0; note(DEAD); }
   if(QS.get('die')){ const go=()=>window.__started?VIT.die():setTimeout(go,200); setTimeout(go,300); } }

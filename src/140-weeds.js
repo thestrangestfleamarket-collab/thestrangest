@@ -5,7 +5,7 @@ WEEDS.clear=r=>{ (WEEDS.clr=WEEDS.clr||[]).push(r); if(WEEDS.lawnDrop)WEEDS.lawn
 WEEDS.GV=['','GOLDEN WHEAT','GOLDEN TUSSOCK','DRY GOLD REEDS','GILDED GRASS'];
 WEEDS.gold=()=>{ if(WEEDS.GP)return WEEDS.GP; const P=window.PARK; if(!P||P.ox==null||!P.brook||!P.campAt||typeof FOUNT==='undefined'||!FOUNT.S)return null;
   const T=TILE, X=x=>BOD.XS(x+P.ox), Z=y=>BOD.ZS(y+P.oy), [cx,cy,cr]=P.round, BK=P.brook, F=FOUNT, CF=P.campAt(), h=(a,b,c)=>{ const v=Math.sin(a*127.1+b*311.7+c*74.7)*43758.5453; return v-Math.floor(v); };
-  const KEEP=[[cx+12.5-7,cy+11.5-7,cx+12.5+7,cy+11.5+7],[CASTLE.b[0]-P.ox-3,CASTLE.b[2]-P.oy-3,CASTLE.b[1]-P.ox+3,CASTLE.b[3]-P.oy+3],(o=>[o[0]-3,o[1]-3,o[0]+9,o[1]+19])(STORE.shrineO||[69,-45.9+NORTHY]),[CF.x-5,CF.y-5,CF.x+5,CF.y+5],...(typeof GCAVE!=='undefined'?GCAVE.keep(P):[]),...(window.GCAVE&&GCAVE.S?[(t=>[t.x-12,t.y-12,t.x+12,t.y+12])(GCAVE.S.tw)]:[])];
+  const KEEP=[[cx+12.5-7,cy+11.5-7,cx+12.5+7,cy+11.5+7],[CASTLE.b[0]-P.ox-3,CASTLE.b[2]-P.oy-3,CASTLE.b[1]-P.ox+3,CASTLE.b[3]-P.oy+3],[CF.x-5,CF.y-5,CF.x+5,CF.y+5],...(typeof GCAVE!=='undefined'?GCAVE.keep(P):[]),...(window.GCAVE&&GCAVE.S?[(t=>[t.x-12,t.y-12,t.x+12,t.y+12])(GCAVE.S.tw)]:[])];
   const GT=[[(P.gate[0]+P.gate[1])/2,P.y0],...(P.egate?[[P.x1,(P.egate[0]+P.egate[1])/2]]:[]),...(P.wgate?[[P.x0,(P.wgate[0]+P.wgate[1])/2]]:[]),...(P.ngate?[[(P.ngate[0]+P.ngate[1])/2,P.y1]]:[])];
   const xa=Math.min(X(P.x0),X(P.x1)), xb=Math.max(X(P.x0),X(P.x1)), za=Math.min(Z(P.y0),Z(P.y1)), zb=Math.max(Z(P.y0),Z(P.y1));
   const SB=SOL.up.filter(b=>b[2]>xa&&b[0]<xb&&b[3]>za&&b[1]<zb), RB=(STORE.rooms||[]).filter(R=>R.walls&&R.x0!=null&&!(R.y0>=1)), SZ=typeof STALL!=='undefined'&&STALL.zones||[];

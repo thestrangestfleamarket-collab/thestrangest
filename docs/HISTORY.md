@@ -3636,3 +3636,9 @@ initial download and load super fast"; then "Go")
   barely be able to see the skyline over it. i dont want the park feeling small."): the gate's "A" medallion becomes CENTRAL PARK,
   small all-metal lettering arched over the gate; the far trees become a deep forest of much bigger trees that nearly hides the
   skyline. Cost to state when built (far trees: triangles against the budget; the skyline mostly hidden may let it draw less).
+- **The tomato merchant** (owner, 20 Oct 2026, with a picture: "tomato merchant should be 25% taller, nothing on ground (no loose
+  veggies)"): 25% taller; no loose vegetables on the ground around the stall.
+- **Walking through things** (owner, 20 Oct 2026, with a picture of the Walker overlapping a merchant's tray: "shouldnt be able to walk
+  through objects ( dont just patch this tray look for root cause)"): a bug to take at the root: why a prop can be walked through at all
+  (the solids pass in `052` skips props by name and by box size; stall furniture may be placed after the solids are built), not a box
+  added to that one tray.

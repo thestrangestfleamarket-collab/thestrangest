@@ -3696,3 +3696,10 @@ initial download and load super fast"; then "Go")
   starts under the real worker; every place's code arrives: one machine, 2–3 minutes). The measuring checks (budget, the same picture,
   the same pixels) run only with the `measure` label on the pull request or the `measure` box when the workflow is started by hand.
   The rule for asking: anything touching painting, what is drawn, the frame loop or the start; a move the scope proof covers does not.
+
+## 20 Oct 2026: the store and the bank are their own builders (modules)
+
+- `057-store.js` is `059g-store.js` (`await grab('store', ...)`; its one direct `solids.push` names `SOL.up`) and `057b-bank.js`, which
+  needs `STORE.kit` from it, follows as `059h-bank.js` (`await grab('bank', ...)`: the bank will get its own load, so its own builder
+  is the first step). Scope proof: every reference resolves as before. The bodega builder now holds only the bodega: its layout,
+  solids, signs, building and the butterflies.

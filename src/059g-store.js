@@ -1,5 +1,5 @@
-// THE STORE: rooms with doors (diner, bar, museum, keep, cottage, aquarium, avenue) and their places in the menu.
-{ const K=BOD.STOREK, {X,Y,Z,gbox,faceTex,bq,C,place,facade}=BOD, {CATALOG,PROPS,LAMPS,PRESETS,LBLD,T,sh,hash}=K, {grain,speck,lawnCol:grassCol}=BOD.g;
+// THE STORE: rooms with doors (diner, bar, museum, keep, cottage, aquarium, avenue) and their places in the menu. Its own builder.
+await grab('store',async()=>{ const K=BOD.STOREK, {X,Y,Z,gbox,faceTex,bq,C,place,facade}=BOD, {CATALOG,PROPS,LAMPS,PRESETS,LBLD,T,sh,hash}=K, {grain,speck,lawnCol:grassCol}=BOD.g;
   const B_=id=>LBLD.find(b=>b.id===id);
   const LG=k=>{ const o=LAY.o(k); return [o.x/BLDK,o.y/BLDK]; }, AO=LG('apartments');
   for(const [id,k] of [['ldiner','diner'],['lbodega2','bar'],['lcastle','apartments']]){ const b=B_(id), [dx,dy]=LG(k); if(b&&!b.laid){ b.x0+=dx; b.x1+=dx; b.y0+=dy; b.y1+=dy; b.laid=1; } }
@@ -228,7 +228,7 @@
           q([fx,Y(zz),Z(u)],[fx,Y(zz),Z(u+.5)],[fx,Y(zz+9),Z(u+.5)],[fx,Y(zz+9),Z(u)],c); } });
       const PA=[B.x1+11,B.y1+1.6], PB=[B.x0-6,B.y1+1.6], PH=360, wood=[78,60,46];
       for(const [px_,py_] of [PA,PB]){ BATCH.tag=OBJ('store:vcr','pole'); gbox({x0:px_-.12,y0:py_-.12,x1:px_+.12,y1:py_+.12,z0:0,z1:PH,c:wood}); gbox({x0:px_-1,y0:py_-.06,x1:px_+1,y1:py_+.06,z0:PH-24,z1:PH-18,c:wood});
-        solids.push([X(px_-.15),Z(py_-.15),X(px_+.15),Z(py_+.15)]); } BATCH.tag=null;
+        SOL.up.push([X(px_-.15),Z(py_-.15),X(px_+.15),Z(py_+.15)]); } BATCH.tag=null;
       const cable=(a,b,sag)=>{ const N=18, w=.025*TILE; let pr=null; for(let i=0;i<=N;i++){ const t=i/N, p=[X(a[0]+(b[0]-a[0])*t),Y(a[2]+(b[2]-a[2])*t)-sag*TILE*4*t*(1-t),Z(a[1]+(b[1]-a[1])*t)];
           if(pr){ const col=[.07,.05,.09]; q([pr[0],pr[1]-w,pr[2]],[p[0],p[1]-w,p[2]],[p[0],p[1]+w,p[2]],[pr[0],pr[1]+w,pr[2]],col); q([pr[0]-w,pr[1],pr[2]-w],[p[0]-w,p[1],p[2]-w],[p[0]+w,p[1],p[2]+w],[pr[0]+w,pr[1],pr[2]+w],col); } pr=p; } };
       cable([B.x1,B.y1-.4,H],[PA[0]-.9,PA[1],PH-18],1.1); cable([PB[0]+.9,PB[1],PH-18],[PA[0]-.9,PA[1],PH-18],2.6); cable([PB[0]-.9,PB[1],PH-18],[PA[0]+.9,PA[1],PH-18],3.2);
@@ -297,4 +297,4 @@
     STORE.offAt=(x,z)=>{ const w=[]; for(const n in OFF){ const [a,b,c,d]=OFF[n].lot; if(!OFF[n].done&&x>X(a)&&x<X(c)&&z>Z(b)&&z<Z(d))w.push(STORE.offGo(n)); } return Promise.all(w); };
     const run=()=>{ if(done)return; const c=need().filter(c=>!LOADED(c)); if(c.length){ LOAD(...c).then(run,()=>setTimeout(run,2000)); return; } if(STEPS.length){ step(); setTimeout(run,60); } else finish(); };
     STORE.later=()=>{ if(QS.get('steps')!=='0')setTimeout(run,1500); }; }
-}
+});

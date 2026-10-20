@@ -2,7 +2,8 @@
 // Opens the base and the pull request at the same places and hour, takes a picture of each, and compares them pixel by pixel in the
 // browser. Moving code around must not change what is drawn. People and birds walk and the clock runs, so a little always moves:
 // Math.random is seeded the same in every page, and the base is taken twice; the pull request fails only when it differs from the base
-// by more than the base differs from itself, plus 3%. The pictures are kept in the out dir for a look.
+// by more than the base differs from itself, plus 3%. The sun's rays are hidden (they pick a spot near you on a timer, so a page that
+// starts faster gets another beam). The pictures are kept in the out dir for a look.
 const {chromium}=require('playwright'), path=require('path'), fs=require('fs');
 const [BASE,HEAD,OUT='out/samepic']=process.argv.slice(2).map((p,i)=>i<2?path.resolve(p):p);
 const PLACES=['THE STREET','THE DUNGEON','THE CASTLE','THE BODEGA'];
@@ -13,7 +14,7 @@ let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
     await pg.addInitScript(()=>{ let x=123456789; Math.random=()=>{ x^=x<<13; x^=x>>>17; x^=x<<5; return (x>>>0)/4294967296; }; });
     await pg.goto('file://'+page+'?fresh=1&hour=13&place='+encodeURIComponent(place),{waitUntil:'commit'});
     let s=false; for(let i=0;i<900&&!(s=await pg.evaluate(()=>!!window.__started).catch(()=>false));i++)await pg.waitForTimeout(500);
-    await pg.waitForTimeout(20000); const f=path.join(OUT,place.replace(/\W+/g,'-').toLowerCase()+'-'+tag+'.png'); await pg.screenshot({path:f}); await pg.close(); return {f,s,errs}; };
+    await pg.waitForTimeout(20000); await pg.evaluate(()=>{ const R=window.RAYS; if(R)for(const k of ['beams','dust'])if(R[k])R[k].visible=false; }); await pg.waitForTimeout(500); const f=path.join(OUT,place.replace(/\W+/g,'-').toLowerCase()+'-'+tag+'.png'); await pg.screenshot({path:f}); await pg.close(); return {f,s,errs}; };
   const cmp=await b.newPage();
   for(const place of PLACES){ const A=await shot(BASE,place,'base'), A2=await shot(BASE,place,'base2'), B=await shot(HEAD,place,'head');
     ok(B.s,place+': starts'); ok(B.errs.filter(e=>!A.errs.includes(e)).length===0,place+': no new page errors '+B.errs.join(' | '));

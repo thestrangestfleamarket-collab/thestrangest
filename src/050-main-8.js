@@ -157,7 +157,7 @@ BOD.KC={KMK,KPP,DGN,DGP,LAMPS,CATALOG,dungeonWall,dungeonFloorCol,castleArch,KAR
     for(const [a0,a1,ax,l0,h0] of XW){ const u=ax==='x'?x:y, v=ax==='x'?y:x, m=(l0+h0)/2; if(v<=l0+.12||v>=h0-.12||inJ(x,y,1.5))continue;
       const lo=ax==='x'; if(u>a0-1.05&&u<a0-.7&&(lo?v<m-.2:v>m+.2)||u>a1+.7&&u<a1+1.05&&(lo?v>m+.2:v<m-.2))return WHITE(x,y,hp); }
     return null; };
-  const IX=new Map(), at2=(x,y)=>Math.floor(x/2)+','+Math.floor(y/2), feat=(x0,y0,x1,y1,f)=>{ for(let i=Math.floor(x0/2);i<=Math.floor(x1/2);i++)for(let j=Math.floor(y0/2);j<=Math.floor(y1/2);j++){ const k=i+','+j; (IX.get(k)||IX.set(k,[]).get(k)).push(f); } };
+  const IX=new Map(), at2=(x,y)=>Math.floor(x/2)*1048576+Math.floor(y/2), feat=(x0,y0,x1,y1,f)=>{ for(let i=Math.floor(x0/2);i<=Math.floor(x1/2);i++)for(let j=Math.floor(y0/2);j<=Math.floor(y1/2);j++){ const k=i*1048576+j; (IX.get(k)||IX.set(k,[]).get(k)).push(f); } };
   const MH=[], DR=[];
   const manhole=(cx,cy)=>{ MH.push([cx,cy]); const rs=hash(Math.floor(cx*7),Math.floor(cy*7),621), pa=.5+.12*rs; feat(cx-.7,cy-.7,cx+.7,cy+.7,(x,y)=>{ const dx=x-cx, dy=y-cy, r=Math.hypot(dx,dy), px=Math.floor(x*24), py=Math.floor(y*24), hp=hash(px,py,625);
     if(r>=.42){ const e=Math.max(Math.abs(dx),Math.abs(dy))+(cvNoise(x*6,y*6,627)-.5)*.12; if(e>pa)return null; if(e>pa-.03)return [30,30,32]; return hp<.1?[58,58,60]:[44,44,47]; }

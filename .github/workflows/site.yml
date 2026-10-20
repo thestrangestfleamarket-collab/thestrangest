@@ -62,6 +62,9 @@ jobs:
       - name: The same picture (street, dungeon, castle, bodega, diner, bar)
         if: success() || failure()
         run: set -o pipefail; node tests/samepic.cjs ../base/dist/market.html dist/market.html out/samepic | tee out/samepic.log
+      - name: The same pixels in every painted texture
+        if: success() || failure()
+        run: set -o pipefail; node tests/texhash.cjs ../base/dist/market.html dist/market.html | tee out/texhash.log
       - name: Results as annotations (for sessions that can't download logs)
         if: always()
         run: |

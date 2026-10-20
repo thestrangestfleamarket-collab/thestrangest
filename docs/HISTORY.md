@@ -3753,6 +3753,38 @@ initial download and load super fast"; then "Go")
   inside, the tussock roll kept so the flat part is not a sheet. The wind is out of its shader (the trees' `PARK.sway` no longer reaches
   it); what still moves it is the treading of you and the walkers near you, as before. Cost: the same mesh; a little less vertex work.
 
+## 20 Oct 2026: CENTRAL PARK over the gate; the deep forest behind
+
+- (owner, 20 Oct 2026: "chaneg (A) to (Central Park) mark it arched, small, all metal, the trees towarsd the distance should be much
+  bigger and looks like a deep forest of trees, you should barely be able to see the skyline over it. i dont want the park feeling small";
+  `061-park.js`): the gate's painted oval with its A is gone; CENTRAL PARK stands over the gate in small iron pixel letters (a 5-row
+  font, each pixel a box of the gate's own iron) along a stepped iron arc, reading from the street. Beyond North St, three rows of
+  much bigger oaks and elders (m 30–55, twice the park's) in a band 50 units deep across the park's width and past its ends: a wall of
+  crowns from inside the park, the skyline just showing over it. Cost: the letters and arc some 180 boxes (2,200 triangles, in the
+  gate's instanced mesh, no new draw); the forest 49 trees, about 12,000 triangles in the park's one tree mesh (18,300 in all now),
+  drawn only when the far side is in view; no lights or programs.
+
+## 20 Oct 2026: the run's crossing; arriving in front of the doormat
+
+- **The run** (owner, 20 Oct 2026, with a picture at the bodega's door: "at points in the running stance the character has both legs
+  back like this"; `walkPose` in `001-rig.js`): measured through a cycle, both ankles sat behind the pelvis for a tenth of each cycle
+  (2–8 units), while the swing foot crossed under the body after the stance foot had already fallen behind the hip. Running, the swing
+  now comes through earlier (its ease runs 40% faster at full run, held at the landing point before touch-down), so the crossing is one
+  frame with both feet within two units of the hip, under the body. The walk is untouched (the factor scales with the run). The jump
+  test still passes. `tests/runcycle` is the measure (kept in the session's tools, not the repo).
+- **The doormat** (owner, same message: "when you enter a location you should show up in front of their doormat"): every arrival by
+  a place's door (the GO TO menu, the E action at a door, `STORE.enter`) lands you 1.2–1.6 units inside the door, centred on it, facing
+  into the room (`goTo` takes a heading; a room records its door's inward heading, `R.hd`, on its place entry). THE BODEGA's GO TO spot
+  was 3.4 units in, past the mat; it is 1.6 now, in front of it.
+- **Loops for things that move by themselves** (owner, 20 Oct 2026: "i want things like this that move to be looped to save on render
+  cpu and time", of the flower boxes): measured before building. The flower boxes, the trees, the gold grass and the lawn's edges
+  already sway in their vertex shader (one sine per vertex on the GPU, no CPU and no per-frame upload), which is cheaper than any
+  made-once loop could be; nothing there to convert. The CPU side of everything that moves by itself (every tick chained to the clock,
+  timed one by one on the street at noon, software rendering): about 3 ms a frame in all, the largest the clock's own sun and lamp
+  aim (0.9 ms), the birds (0.4), the arcade's fog check (0.35), the lawn's trample slots (0.3); the one-off lawn chunk builds (20–100 ms
+  each, throttled) are what made CLOCK look like 21 ms in the earlier frame profile. The guitarist no longer walks (and collides against
+  the street's solids) while farther than 40 units or out of the bodega map: he stands where he was and resumes when you come near.
+
 ## 20 Oct 2026: the same-picture check now sees the park and the platform
 
 - An audit of what the gates actually catch: `tests/samepic.cjs` (the pixel gate, run only with the `measure` label) looked at the

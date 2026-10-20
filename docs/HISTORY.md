@@ -3271,3 +3271,17 @@ moves in idl animations."; "skin of player just wearing all black like ninja")
   source: three.js copies a texture into each material, and a copy never saw later changes). Found on the way: `LFX.env` (`tENV`) has
   the same copying, so its live row (cloud strength, wet, snow) is whatever it was when each material was made. Cost: 12,800
   triangles in all (2 a puff), one draw, one program (instead of the Lambert one), no lights; 1 MB texture.
+- **Building shadows stay put whatever you do** (owner, 19 Oct 2026: "the shadows on the buildings shift way to quick and much
+  shouldnt be affected by what i do"; his shots: behind view down Market St, a big building shadow appearing on the right
+  sidewalk after a few steps): the sun's still shadow covered only 32 tiles round you and was redrawn round you when you walked 12
+  tiles, zoomed, or every 10-20 s, so in the behind view shadows past its edge were missing and popped in as it moved; it also
+  reached only 60 tiles toward the sun, so tall things further up-sun lost their shadow depending on where it was centred. Now a
+  second still map covers the whole walled town and Market St once (4096, fixed to the world, drawn when the sun moves or the
+  level changes); the fine map round you is used where it reaches and the town map everywhere else, so moving it changes only
+  sharpness, never whether a shadow is there. Both reach 200 tiles toward the sun (same bias in metres). No timed redraws: the
+  maps are redrawn only when the sun moves, you walk 12 tiles (fine map), or the set of still shadow-casters changes (checked
+  once a second; the town map at most every 10 s). Nothing redrawn in rooms; still only in the main pass; hidden roofs cast.
+- **Cost**: one more shadow map (4096², about 64 MB of video memory where the GPU allows 4096; smaller otherwise), no new lamp or
+  program (the existing sun program picks fine or town map), no triangles. Software rendering in the test: town map 9-36 ms when
+  drawn (start, sun change, things added), fine map 2-10 ms when you walk 12 tiles; nothing while standing still (was a fine-map
+  redraw every 10 s). `SUNDBG()` shows `far` redraws and the town box; `SUNLOG` rows now carry the ms and which map.

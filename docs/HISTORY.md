@@ -3684,3 +3684,11 @@ initial download and load super fast"; then "Go")
 
 - `059d-fireview.js` moves after the bodega builder and is wrapped in `await grab('fire', ...)`: its meshes land in `MAPG.fire`. It was already a
   self-contained block using only page-level names; the scope proof shows every reference resolving as before.
+
+## 20 Oct 2026: checks only when needed
+
+- **Light by default** (owner, 20 Oct 2026, after GitHub refused to start jobs for the day's minutes: "lets try to not be as check heavy,
+  only check when errors or really need to to be safe"): a pull request runs the build check only (build; the door opens and THE MARKET
+  starts under the real worker; every place's code arrives: one machine, 2–3 minutes). The measuring checks (budget, the same picture,
+  the same pixels) run only with the `measure` label on the pull request or the `measure` box when the workflow is started by hand.
+  The rule for asking: anything touching painting, what is drawn, the frame loop or the start; a move the scope proof covers does not.

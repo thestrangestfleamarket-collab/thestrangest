@@ -58,7 +58,13 @@ Several chats work at once, each on its own branch. Every time:
 
 Moving here from `bralynnb/tsfm` (owner, 18 Oct 2026). This repo is the whole site: `worker/door.js` serves `/` (THE MARKET to a
 checked login, the door to anyone else) from `dist/`. `.github/workflows/site.yml` builds and runs `tests/site.cjs` (the real worker
-under `wrangler dev`: the door shows, THE MARKET starts) on every push and pull request. Never copy `market.html` anywhere by hand.
+under `wrangler dev`: the door shows, THE MARKET starts) and `tests/places.cjs` on every push and pull request. Never copy `market.html` anywhere by hand.
+**Checks are light by default** (owner, 20 Oct 2026: "lets try to not be as check heavy, only check when errors or really need to to be
+safe"): a pull request gets the build check only. The measuring checks (budget, same picture, same pixels: four machines, 8–10 minutes)
+run only when asked: put the `measure` label on the pull request (`gh api -X POST repos/<owner>/<repo>/issues/<n>/labels -f 'labels[]=measure'`,
+then start the workflow by hand or push), or start the workflow by hand with `measure` ticked. Ask for them when a change touches
+painting, what is drawn, the frame loop or the start; a move the scope proof covers does not need them. If GitHub drops a pull request's
+event (it happens), start the workflow by hand: `gh api -X POST repos/<owner>/<repo>/actions/workflows/site.yml/dispatches -f ref=<branch>`.
 
 ## Bug reports and the owner's queue
 

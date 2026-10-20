@@ -9,7 +9,7 @@ const BFLY={}; window.BFLY=BFLY;
   FORAGE.add({names:NM,prices:PRICES}); FORAGE.SELLP.push('b_','bu_','s_'); FORAGE.SELLS.push(['net',12,()=>!FORAGE.has('net')],['frame',4,()=>true]);
   const CH=new Map(), DEEP=10, pickC=r=>{ r*=CS; for(let i=0;i<12;i++)if((r-=COMMON[i])<0)return i; return 0; };
   const spawn=(key,grp)=>{ const Q=grp.sq; if(!Q||Q.length<9)return []; const turn=Math.floor((window.CLOCK?CLOCK.h:12)/2), d=(window.MAIL&&MAIL.ready?MAIL.day():0)*13+turn, out=[];
-    const i0=3*Math.floor(hsh(Q[0]/T,Q[2]/T,301)*(Q.length/3)), cx=Q[i0], cz=Q[i0+2], park=WEEDS.inPark(cx,cz), deep=WEEDS.inPark(cx,cz,DEEP), n=park?(hsh(cx/T+d,cz/T,303)<(window.FLORA&&FLORA.beds.length?.35:.7)?1+(hsh(cz/T,cx/T+d,305)<.35?1:0):0):(hsh(cx/T+d,cz/T,303)<.18?1:0);
+    const i0=3*Math.floor(hsh(Q[0]/T,Q[2]/T,301)*(Q.length/3)), cx=Q[i0], cz=Q[i0+2], park=WEEDS.inPark(cx,cz), deep=WEEDS.inPark(cx,cz,DEEP), n=park&&!PARK.in?0:park?(hsh(cx/T+d,cz/T,303)<(window.FLORA&&FLORA.beds.length?.35:.7)?1+(hsh(cz/T,cx/T+d,305)<.35?1:0):0):(hsh(cx/T+d,cz/T,303)<.18?1:0);
     for(let j=0;j<n;j++){ const P=[]; for(let i=0;i<Q.length&&P.length<6;i+=3){ const x=Q[i], z=Q[i+2]; if(Math.hypot(x-cx,z-cz)>3.5*T||hsh(x/T+j,z/T+d,307)>.35)continue; P.push([x,grp.top(x,Q[i+1],z)+(.15+.7*hsh(z,x,309))*WU,z]); }
       if(P.length<3)continue; const r=hsh(cx/T+j*7,cz/T+d,311), k=deep&&r<.06?12+Math.floor(hsh(cz/T,cx/T+j+d,313)*(NK-12)):pickC(hsh(cx/T+d*3,cz/T+j,315));
       const b=BF.add(k,P); b.wild=true; b.chunk=key; out.push(b); hit(b); } return out; };
@@ -17,7 +17,7 @@ const BFLY={}; window.BFLY=BFLY;
     const P=d.p.concat(...FLORA.beds.filter(o=>o!==d&&!o.street&&Math.hypot(o.x-d.x,o.z-d.z)<7*T).slice(0,2).map(o=>o.p)); if(P.length<2)return out; const deep=WEEDS.inPark&&WEEDS.inPark(d.x,d.z,DEEP);
     for(let j=0;j<n;j++){ const k=deep&&hsh(d.z/T+j,d.x/T+dd,323)<.06?12+Math.floor(hsh(d.x/T,d.z/T+j+dd,325)*(NK-12)):pickC(hsh(d.x/T+dd*3,d.z/T+j,327)), b=BF.add(k,P), i=Math.floor(hsh(j,d.id+dd,329)*P.length);
       b.at=b.to=i; b.g.position.set(...P[i]); b.wild=true; b.chunk='bed:'+d.id; out.push(b); hit(b); } return out; };
-  const beds=()=>{ if(!window.FLORA||!FLORA.beds.length||LVL!=='up')return; for(const d of FLORA.beds){ const key='bed:'+d.id, far=Math.hypot(d.x-pos.x,d.z-pos.z);
+  const beds=()=>{ if(!window.FLORA||!FLORA.beds.length||LVL!=='up')return; for(const d of FLORA.beds){ const key='bed:'+d.id, far=!d.street&&!PARK.in?1e9:Math.hypot(d.x-pos.x,d.z-pos.z);
     if(far<BEDR&&!CH.has(key))CH.set(key,bedSpawn(d)); else if(far>BEDR+10*T&&CH.has(key)){ CH.get(key).forEach(drop); CH.delete(key); } } };
   const hit=b=>{ const hb=new THREE.Mesh(HB,HM); hb.position.y=.1*WU; b.g.add(hb); b.th={name:BF_KINDS[b.k][0].toUpperCase(),obj:hb,reach:1.1*T,near:1.4*T,tall:.3*T,act:()=>BFLY.catch(b)}; UI.thing(b.th); };
   const HB=new THREE.BoxGeometry(.5*T,.4*T,.5*T), HM=new THREE.MeshBasicMaterial({visible:false});

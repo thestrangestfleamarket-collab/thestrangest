@@ -2,7 +2,7 @@ const MAPED={on:false};
 { const T=TILE, G=.25, LBL={bodega:'THE BODEGA',house:'APARTMENT HOUSE',apartments:'APARTMENTS + POOL',ghost:'GHOST STREET + BATH HOUSE',diner:'THE DINER',bar:'THE BAR',park:'CENTRAL PARK',castle:'THE CASTLE + DUNGEON',subway:'SUBWAY STAIRS + STATION',land:'THE LAND (GRASS)'};
   const COL={bodega:'#a0503e',house:'#8c4a3c',apartments:'#5a6f8c',ghost:'#8a6a3e',diner:'#b04a44',bar:'#8a6040',park:'#3f7a3a',castle:'#8c8678',subway:'#3f7a5a',land:'#1d3420'};
   const SIZED={park:1,land:1};
-  const LIVE={apartments:['pool','poolout'],subway:['down','stairs'],park:['park'],castle:['castle','castlestairs','dungeon']};
+  const LIVE={apartments:['pool','poolout'],subway:['down','stairs'],park:['parkwall','park'],castle:['castle','castlestairs','dungeon']};
   const room=id=>()=>{ const R=STORE.rooms.find(r=>r.id===id); return R?[R.x0,R.z0,R.x1,R.z1]:null; };
   const BOX={bodega:()=>{ const B=BOD.B0; return [BOD.X(B.x0),BOD.Z(B.y0),BOD.X(B.x1),BOD.Z(B.y1)]; },
     house:()=>{ const A=MODS.apts.A; return [BOD.X(A.x0),BOD.Z(A.y0),BOD.X(A.x1),BOD.Z(A.y1)]; },

@@ -57,8 +57,8 @@ const UNDER=(()=>{ let on=false, hid=[]; const keep=new Set(['down','dungeon','c
         o.traverse(c=>{ if(c.isMesh||c.isPoints||c.isLine||c.isSprite){ c.layers.disable(0); c.layers.enable(1); hid.push(c); } }); } }
     else{ for(const c of hid){ c.layers.enable(0); c.layers.disable(1); } hid=[]; } }; })();
 const OUTWET=p=>LVL==='up'&&!!((st.water&&st.water.in)||window.BROOK&&BROOK.over||window.FOUNT&&FOUNT.wet&&FOUNT.wet(p.x,p.z,TILE));
-const MAPLV=(py,pos)=>{ METRO.door(py,pos); if(MODS.dunDoor)MODS.dunDoor(py,pos); const wet=OUTWET(pos), lv=py<-1.6&&!wet?'down':'up', si=inStair(pos.x,pos.z), st=si!=null, sd=st&&si.S!==MAPSTAIR;
-  MAPG.down.visible=(lv==='down'||sd)&&!(lv==='down'&&MODS.dungeon.inside(pos.x,pos.z)); if(MAPG.dungeon)MAPG.dungeon.visible=lv==='down'||st; for(const k of ['bodega','pool','poolout','park','castle'])if(MAPG[k])MAPG[k].visible=lv==='up'&&!(sd&&py<-1);
+const MAPLV=(py,pos)=>{ METRO.door(py,pos); if(MODS.dunDoor)MODS.dunDoor(py,pos); PARK.door(py,pos); const wet=OUTWET(pos), lv=py<-1.6&&!wet?'down':'up', si=inStair(pos.x,pos.z), st=si!=null, sd=st&&si.S!==MAPSTAIR;
+  MAPG.down.visible=(lv==='down'||sd)&&!(lv==='down'&&MODS.dungeon.inside(pos.x,pos.z)); if(MAPG.dungeon)MAPG.dungeon.visible=lv==='down'||st; for(const k of ['bodega','pool','poolout','parkwall','park','castle'])if(MAPG[k])MAPG[k].visible=lv==='up'&&!(sd&&py<-1)&&(k!=='park'||PARK.in);
   UNDER(py<-1&&!wet&&!(st&&!sd&&LVL==='up'));
   MODS.stairCut.constant=st?py+.25:1e6; if(MODS.castleStairCut)MODS.castleStairCut.constant=st?py+.25:1e6;
   if(lv===LVL)return false; LVL=lv; solids=SOL[lv]; fixed=FIX[lv]; HEMI.color.set(lv==='down'?0x8a93a8:0x55607a); HEMI.groundColor.set(lv==='down'?0x1a1814:0x14110e); HEMI.intensity=lv==='down'?.1:.3; return true; };
@@ -82,6 +82,6 @@ window.MAPDBG=()=>({LVL,cut:MODS.stairCut.constant,vis:Object.fromEntries(Object
   { const S=CASTLE.stair; hole(tt(XS(S.x0)),tt(ZS(S.y0)),tt(XS(S.x1)),tt(ZS(S.y1))); }
   hole(tt(POOLR.X(POOLR.bx0)),tt(POOLR.Z(POOLR.by0)),tt(POOLR.X(POOLR.bx1)),tt(POOLR.Z(POOLR.by1)));
   { const z0=tt(Math.min(ZS(RING.river.y0),ZS(RING.river.y1))), z1=tt(Math.max(ZS(RING.river.y0),ZS(RING.river.y1))); hole(LR.x0+.5,z0,LR.x1-.5,z1); }
-  if(window.PARK&&PARK.brook&&FOUNT.S)for(const H of PARK.wetHole())sh.holes.push(new THREE.Path(H.map(([x,y])=>new THREE.Vector2(tt(XS(x+(PARK.ox||0))),-tt(ZS(y+(PARK.oy||0)))))));
-  const geo=new THREE.ShapeGeometry(sh); geo.rotateX(-Math.PI/2); geo.scale(TILE,1,TILE); geo.translate(0,-.5*ZU,0);
+  const mk=()=>{ const geo=new THREE.ShapeGeometry(sh); geo.rotateX(-Math.PI/2); geo.scale(TILE,1,TILE); geo.translate(0,-.5*ZU,0); return geo; }, geo=mk(); let geoH=null;
+  MODS.landHoles=on=>{ if(on&&!geoH&&window.PARK&&PARK.brook&&FOUNT.S){ for(const H of PARK.wetHole())sh.holes.push(new THREE.Path(H.map(([x,y])=>new THREE.Vector2(tt(XS(x+(PARK.ox||0))),-tt(ZS(y+(PARK.oy||0))))))); geoH=mk(); } m.geometry=on&&geoH?geoH:geo; };
   const m=new THREE.Mesh(geo,new THREE.MeshLambertMaterial({map:t})); m.receiveShadow=true; MAPG.bodega.add(m); MODS.land=m; }

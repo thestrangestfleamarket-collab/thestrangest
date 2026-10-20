@@ -2,7 +2,7 @@ const CITY={on:QS.get('city')==='1',jobs:[],sched:[],day:0,nj:0,extra:[]}; windo
 { const T=TILE, R0=.3*T, C=T/2;
   CITY.places=()=>{ const P=[], add=(id,name,x,z,dz,lv='up',o={})=>P.push(Object.assign({id,name,lv,at:{x,z},door:{x,z:z+dz}},o));
     { const B=BOD.B0; add('bodega','THE BODEGA',BOD.X((B.x0+B.x1)/2),BOD.Z(B.y1),T); }
-    if(!AWAY.has('apartments'))add('apartments','THE APARTMENTS',POOLR.X((21.97+23.53)/2),POOLR.Z(POOLR.y1),T);
+    
     if(MODS.apts&&MODS.apts.A){ const A=MODS.apts.A; add('house','APARTMENT HOUSE',BOD.X(MODS.apts.DX),BOD.Z(A.y1),T); }
     if(BOD.GD)add('dojo','THE BATH HOUSE',BOD.X(BOD.GD.door[0]),BOD.Z(BOD.GD.door[1]),T);
     add('park','CENTRAL PARK',BOD.XS((PARK.gate[0]+PARK.gate[1])/2+PARK.ox),BOD.ZS(PARK.y0+PARK.oy),-T);

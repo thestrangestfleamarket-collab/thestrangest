@@ -54,11 +54,9 @@ PERFX.bounds=()=>{ if(!PERFX.on[4])return; const S=new THREE.Sphere();
     if(o===WATER.mesh||(WATER.extra||[]).some(w=>w.mesh===o)){ o.userData.nb=true; const g=o.geometry; g.computeBoundingSphere(); g.boundingSphere.radius+=1.5*TILE; o.frustumCulled=true; } }); };
 PERFX.maps=()=>{ if(!PERFX.on[6])return; const L=LITE.pool[0]; if(L.shadow.mapSize.x>512){ L.shadow.mapSize.set(512,512); if(L.shadow.map){ L.shadow.map.dispose(); L.shadow.map=null; } } };
 PERFX.near=(x,z,r)=>Math.hypot(pos.x-x,pos.z-z)<r;
-PERFX.poolNear=()=>{ if(!PERFX.fl0){ PERFX.fl0=true; return true; }
-  return !PERFX.on[7]||LVL==='up'&&(MODS.pool.inside(pos.x,pos.z)||PERFX.near(POOLR.X((POOLR.bx0+POOLR.bx1)/2),POOLR.Z((POOLR.by0+POOLR.by1)/2),15*TILE)); };
 PERFX.bfNear=()=>!PERFX.on[7]||BF.list.some(b=>PERFX.near(b.g.position.x,b.g.position.z,25*TILE));
 PERFX.hide=(g,h)=>{ if(!g||!!g.userData.ph===h)return; g.userData.ph=h; g.traverse(o=>{ if(o.userData.lm0===undefined)o.userData.lm0=o.layers.mask; o.layers.mask=h?0:o.userData.lm0; }); };
-PERFX.tick=()=>{ PERFX.rooms(); if(PERFX.on[7]&&typeof WATER!=='undefined'&&WATER.mesh)PERFX.hide(WATER.mesh,!ROOMS.cur&&!UI.freeCam&&!MAPED.on&&!ED.on&&!PERFX.poolNear());
+PERFX.tick=()=>{ PERFX.rooms();
   if((PERFX.fc=(PERFX.fc||0)+1)%120===30)PERFX.bounds();
  
   if(PERFX.on[7])for(const M of [MUS,PNM,SGM,DRM])if(M&&M.g){ const A=M.at||M.g.position; PERFX.hide(M.g,!UI.freeCam&&!MAPED.on&&!PERFX.near(A.x,A.z,18)); } };

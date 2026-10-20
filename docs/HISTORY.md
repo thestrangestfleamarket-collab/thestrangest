@@ -3455,8 +3455,8 @@ park's brick wall twice as high", "no ivy on the wall"; `061-park.js`)
 
 - **Measured** (cloud software graphics, two runs, `tests/bodegacost.cjs`, `tests/cpuprof.cjs` on a measuring branch): of about 30 s to start,
   13-19 s is one stretch with no breaths: the BODEGA's builder runs every place maker from `014` to `052`. Inside it the makers cost almost
-  nothing; the time is the ground (`053-bodbuild.js`, one loop: 13.5 s, 20.6 megapixels painted at 24 a tile, the roads 11.1 of them) and the
-  apartments and pool (`064-map-post.js`, 8.3 s). By function, painting (`faceTex` and the colour functions under it: `hash`, `cvNoise`,
+  nothing; the time is the ground (`053-bodbuild.js`, one loop: 13.5 s, 20.6 megapixels painted at 24 a tile, the roads 11.1 of them) and 8.3 s
+  timed against `064-map-post.js`'s empty `poolout` builder, which was really the code after it (the timers stood only in place builders). By function, painting (`faceTex` and the colour functions under it: `hash`, `cvNoise`,
   `grain`, `sh`, the road's `lane`, `marks`, `bars`, `ROADAT`, `inQ`) is 22 of 37 s; then the Walker's warm-up (5.3 s) and making NPCs (2.2 s).
 - **The ground painted once and kept** (`006a-paintc.js` `PAINTC`, used by `053-bodbuild.js` `flat0`): the first time, the ground is painted as
   before; once the game runs it is saved, gzipped, in the browser (IndexedDB `market-paint`, keyed by the build stamp). The next start loads it
@@ -3505,12 +3505,22 @@ initial download and load super fast"; then "Go")
 
 - **Owner's answers** (20 Oct 2026, on the overhaul review): talking between players "yes but not yet"; player trade "yes" (players sell or
   give each other things, so a trade runs on the block's server with both sides confirming); what happens when a block is full is "future
-  plans"; looks "yes everyone can customize" (the crowd keeps one built body per look). Still open: whether friends always land in the same
-  copy of a block.
+  plans"; looks "yes everyone can customize" (the crowd keeps one built body per look). Friends: see the next entry.
 - **No claude.ai copy** (owner, 20 Oct 2026, asked whether to keep the copy of THE MARKET published as a claude.ai page
   (claude.ai/artifact/PnmQqhkusfewby35tf4zo5) or drop it: "yes" to dropping it): the game lives only on thestrangestfleamarket.com;
   the publishing steps and that link are out of CLAUDE.md, and no chat publishes the game to claude.ai any more. `dist/market.html`
   stays as the single-file page the tests drive.
+
+## 20 Oct 2026: the pool and the apartment building deleted
+
+- **Deleted for good** (owner, 20 Oct 2026: "i want to remove the pool from the game, i thought it was already gone", then, asked whether to
+  delete its code or keep it switched off: "yes delete for good"). It had been off the map since 18 Oct (`apartments` in `AWAY0`); now its
+  code is gone: the building and pool's builder (`grab('pool')`), its outside (`grab('poolout')`), the stand-in measures (`POOLR`,
+  `MODS.pool`), the pool's water (`WATER.build`; `WATER.feed` now only says you're dry when the river and the fountain don't hold you), the
+  pool's floats, its rooms in the menu and the map editor, the grid's service to it, the dragons' perches on its roof, its address, and the
+  per-frame checks for being in it (`075-main-13.js`, `161-perf.js`). `apartments` is no longer an away key; `?bring=apartments` does nothing.
+  The keep's lot (`lcastle`, still away) keeps the 1000-tile offset it had through the apartments' layout key, so nothing else moves.
+- **Friends** (owner, 20 Oct 2026: "friends on same block yes theres only 1 right now"): friends always land on the same block.
 
 ## 20 Oct 2026: lighter checks on pull requests
 

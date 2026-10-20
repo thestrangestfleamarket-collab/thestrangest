@@ -22,9 +22,10 @@
     if(rise<0){ gh=Math.min(1,gh+dt); if(gh>=1&&BOD.GD&&LVL==='up'&&py<2*T&&(BOD.GD.inPool?BOD.GD.inPool(pos.x,pos.z):BOD.GD.inside())){ rise=0; dp=BOD.GD.deepAt?BOD.GD.deepAt(pos.x,pos.z):[pos.x,pos.z]; if(BOD.GD.poke)BOD.GD.poke(pos.x,pos.z,1.4); } }
     else{ rise+=dt; keys.clear(); target=null; gh=1+Math.max(0,(rise-2.2)/1); if(BOD.GD.poke&&rise<2)BOD.GD.poke(pos.x,pos.z,.5); if(rise>=3.2)back(); }
     const dn=BOD.GD&&BOD.GD.deep!=null?BOD.GD.deep/S.MV+.45:py/S.MV, y0=py/S.MV+1.5, e=rise>0?Math.min(1,rise/2.6):0, b=S.ball, s3=e*e*(3-2*e), q=rise>0&&dp?Math.min(1,s3*1.6):0, to={x:(pos.x+((dp?dp[0]:pos.x)-pos.x)*q)/MH,y:y0+.05*Math.sin(performance.now()/1000*1.6)*(1-e)+(dn-y0)*s3,z:(pos.z+((dp?dp[1]:pos.z)-pos.z)*q)/MH}; S.gnd=rise>0?dn-.5:py/S.MV;
-    if(Math.hypot(to.x-b.x,to.z-b.z)>2||Math.abs(to.y-b.y)>2){ S.ball=to; S.drop(); }
+    if(Math.hypot(to.x-b.x,to.z-b.z)>1||Math.abs(to.y-b.y)>1)GHOSTS.move(S,to);
+    if(gh>=1&&rise<0&&!GHOSTS.on(S)){ S.ball={...to}; S.drop(); GHOSTS.settle(S,240); }
     GHOSTS.run(S,dt,to,[],MH,S.MV); const a=gh<=1?gh:2-gh; S.mat.opacity=.5*a; S.em.opacity=.85*a;
     const fx=Math.sin(heading), fz=Math.cos(heading); S.eyes.forEach((e,k)=>{ const sd=k?1:-1, ex=to.x+fx*(S.BR+.05)+fz*sd*.09, ey=to.y+.03, ez=to.z+fz*(S.BR+.05)-fx*sd*.09; e.position.set(ex*MH,ey*S.MV,ez*MH); e.lookAt(V.set((ex+fx)*MH,ey*S.MV,(ez+fz)*MH)); }); };
-  window.KILLME=()=>VIT.die(); window.DEADDBG=()=>({gh,rise,busy,out:VIT.out,lvl:LVL,py,sheet:!!S,pool:!!(BOD.GD&&BOD.GD.inPool&&BOD.GD.inPool(pos.x,pos.z))});
+  window.KILLME=()=>VIT.die(); window.DEADDBG=()=>({gh,rise,busy,out:VIT.out,lvl:LVL,py,sheet:!!S,pool:!!(BOD.GD&&BOD.GD.inPool&&BOD.GD.inPool(pos.x,pos.z)),on:S?GHOSTS.on(S):null,span:S?(()=>{ let lo=9,hi=-9; for(const k of S.live){ lo=Math.min(lo,S.P[k+1]); hi=Math.max(hi,S.P[k+1]); } return +(hi-lo).toFixed(2); })():null});
   if(SAVE.get('dead')==='1'){ VIT.dead=true; VIT.hp=0; note(DEAD); }
   if(QS.get('die')){ const go=()=>window.__started?VIT.die():setTimeout(go,200); setTimeout(go,300); } }

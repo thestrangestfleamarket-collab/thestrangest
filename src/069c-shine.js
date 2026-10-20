@@ -86,18 +86,20 @@ void main(){ float a=0.; vec3 col=vK; vec2 u=vU;
     const base=me.material.color.clone(), col=new THREE.Color(N.c[0]/255,N.c[1]/255,N.c[2]/255);
     for(let i=0;i<me.count;i++)me.setColorAt(i,cc.setRGB(1,1,1));
     NL.push({me,halo:N.halo,base,let_,nl:li+1,L,i0:L&&L.intensity,col,refl:{map:cv,w:w*st,h:h*sy,c,gz:c.z+1.2*TILE}}); }
-  for(const sg of BLK.signs)if(sg.fm){ const b=new THREE.Box3().setFromObject(sg.grp), c=b.getCenter(V()); NL.push({fm:sg.fm,base:sg.fm.color.clone(),halo:sg.grp.children.find(m=>m.material&&m.material.blending===THREE.AdditiveBlending),nl:1,grp:sg.grp,o:sg.o,c}); }
   const RV=`uniform float uG; varying vec2 vUv; varying vec2 vW; void main(){ vUv=uv; vec4 w=modelMatrix*vec4(position,1.); vec3 fw=-vec3(viewMatrix[0][2],viewMatrix[1][2],viewMatrix[2][2]); w.y=2.*uG-w.y; w.xyz+=fw*((uG-w.y)/fw.y); vW=w.xz; gl_Position=projectionMatrix*viewMatrix*w; }`;
   const RF=`uniform sampler2D map; uniform vec3 uC; uniform float uWet,uT,uF; varying vec2 vUv; varying vec2 vW; float h(vec2 p){ return fract(sin(dot(p,vec2(12.9898,78.233)))*43758.5453); }
 void main(){ vec4 c=texture2D(map,vUv); if(c.a<.5)discard; vec2 g=vW*.9, id=floor(g); float ph=fract(uT*.6+h(id)), d=length(fract(g)-.5-(vec2(h(id+3.1),h(id+7.7))-.5)*.4);
  float a=.34*uWet*uF*(abs(d-ph*.62)<.08?.1:1.)*(fract(vUv.y*18.+h(vec2(floor(vW.x*5.),floor(uT*2.)))*.6)<.4?.35:1.)*(vUv.y<.35?.55:1.); if(a<.01)discard; gl_FragColor=vec4(c.rgb*uC*a,1.); }`;
   const tx=c=>{ const t=new THREE.CanvasTexture(c); t.magFilter=t.minFilter=THREE.NearestFilter; t.generateMipmaps=false; t.colorSpace=THREE.SRGBColorSpace; return t; };
-  for(const N of NL){ const mat=new THREE.ShaderMaterial({uniforms:{map:{value:N.refl?tx(N.refl.map):N.fm.map},uC:{value:N.refl?N.col:N.fm.color},uG:{value:0},uF:{value:1},uWet:U.uWet,uT:U.uT},vertexShader:RV,fragmentShader:RF,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-4});
+  const mk=N=>{ const mat=new THREE.ShaderMaterial({uniforms:{map:{value:N.refl?tx(N.refl.map):N.fm.map},uC:{value:N.refl?N.col:N.fm.color},uG:{value:0},uF:{value:1},uWet:U.uWet,uT:U.uT},vertexShader:RV,fragmentShader:RF,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-4});
     let me; if(N.refl){ me=new THREE.Mesh(new THREE.PlaneGeometry(N.refl.w,N.refl.h),mat); me.position.copy(N.refl.c); scene.add(me); mat.uniforms.uG.value=G(N.refl.c.x,N.refl.gz); }
     else { me=new THREE.Mesh(new THREE.PlaneGeometry(N.o.w*TILE,N.o.h*TILE),mat); me.position.z=.04*TILE; N.grp.add(me); mat.uniforms.uG.value=G(N.c.x,N.c.z); }
     me.frustumCulled=false; me.renderOrder=3; me.visible=false; N.rm=me;
     if(N.refl&&pool){ const p=new THREE.Mesh(pool.geometry,new THREE.MeshBasicMaterial({map:pool.material.map,color:N.col,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,toneMapped:false,polygonOffset:true,polygonOffsetFactor:-2})), r=2.6*TILE;
-      p.scale.set(r,1,r); p.position.set(N.refl.c.x,G(N.refl.c.x,N.refl.gz)+.03,N.refl.c.z+r*.55); p.renderOrder=1; scene.add(p); N.pool=p; } }
+      p.scale.set(r,1,r); p.position.set(N.refl.c.x,G(N.refl.c.x,N.refl.gz)+.03,N.refl.c.z+r*.55); p.renderOrder=1; scene.add(p); N.pool=p; } };
+  for(const N of NL)mk(N);
+  BLK.shine=sg=>{ if(!sg.fm)return; const b=new THREE.Box3().setFromObject(sg.grp), c=b.getCenter(V()), N={fm:sg.fm,base:sg.fm.color.clone(),halo:sg.grp.children.find(m=>m.material&&m.material.blending===THREE.AdditiveBlending),nl:1,grp:sg.grp,o:sg.o,c}; mk(N); NL.push(N); };
+  for(const sg of BLK.signs)BLK.shine(sg);
   const hs=(a,b)=>{ const v=Math.sin(a*12.9898+b*78.233)*43758.5453; return v-Math.floor(v); };
   let sigT=0, mo=0; const near=[];
   SHINE.tick=dt=>{ const t=performance.now()/1000, e=CLOCK.elev(), up=OUT.world, W=(typeof WX!=='undefined'&&WX.now)||{}, wet=up&&typeof LFX!=='undefined'&&LFX.ws?LFX.ws.wet||0:0, night=Math.max(0,Math.min(1,(3-e)/8));

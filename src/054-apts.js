@@ -92,7 +92,7 @@ const APTS={EMPTY:true};
   for(const h of holesF)if(!h.door&&!h.fw)pane({ax:'x',at:A.y1},h,h.lit,h.seed); for(const h of holesB)if(!h.fw)pane({ax:'x',at:A.y0},h,h.lit,h.seed);
   const SOLS=[]; APTS.sol=SOLS; for(let lv=0;lv<ST;lv++)SOLS[lv]=[];
   const U=u=>A.x0+u, V=v=>A.y0+v;
-  for(const F of ESC){ const Yd=d=>F.yf+F.o*d, B=(u0,u1,d0,d1,z0,z1,top)=>gbox({x0:U(u0),x1:U(u1),y0:Math.min(Yd(d0),Yd(d1)),y1:Math.max(Yd(d0),Yd(d1)),z0,z1,c:steel,foot:0,top:top?(x,y)=>(Math.floor(x*10)+Math.floor(y*10))&1?sh(steel,.6):steel:null},'A');
+  for(const F of ESC){ const Yd=d=>F.yf+F.o*d, B=(u0,u1,d0,d1,z0,z1,top)=>gbox({x0:U(u0),x1:U(u1),y0:Math.min(Yd(d0),Yd(d1)),y1:Math.max(Yd(d0),Yd(d1)),z0,z1,c:steel,foot:0,top:top?(x,y)=>(Math.floor(x*10)+Math.floor(y*10))&1?sh(steel,.6):steel:null},F.o<0?'E':'A');
     const rs=(lv,u0,u1,d0,d1)=>{ const a=Z(Yd(d0)), b=Z(Yd(d1)); SOLS[lv].push([X(U(u0)),Math.min(a,b),X(U(u1)),Math.max(a,b)]); };
     const rail=(lv,u0,u1,d0,d1)=>{ rs(lv,u0,u1,d0,d1); const z=lv*S, al=u1-u0>d1-d0, L=al?u1-u0:d1-d0, n=Math.max(1,Math.round(L/.36));
       B(u0,u1,d0,d1,z+30,z+33); B(u0,u1,d0,d1,z+14,z+16); for(let i=0;i<=n;i++){ const t=i/n*L; al?B(u0+t-.02,u0+t+.02,d0,d1,z,z+30):B(u0,u1,d0+t-.02,d0+t+.02,z,z+30); } };
@@ -169,7 +169,7 @@ const APTS={EMPTY:true};
   APTS.stoop=(x,z)=>{ const u=ix(x), v=iy(z); if(u<ST0.x0||u>ST0.x1||v<ST0.y0||v>=ST0.y1)return EG(x,z); const t=v-ST0.y0; if(t<ST0.land)return Y(1);
     const i=Math.floor((t-ST0.land)/ST0.tr); return BOD.Y((RZ+1)*(ST0.n-i)/(ST0.n+1)); };
   BATCH.build((k,map,emap)=>k==='B'?new THREE.MeshBasicMaterial({map,side:THREE.DoubleSide,alphaTest:.5,clippingPlanes:[HP,LP]}):new THREE.MeshLambertMaterial({map,alphaTest:.5,side:THREE.DoubleSide,clippingPlanes:[HP,LP],...(emap?{emissiveMap:emap,emissive:0xffffff,emissiveIntensity:1.3}:{})}));
-  const AM=Object.values(BATCH.meshes); BATCH.meshes={}; APTS.meshes=AM.concat(WALLM); for(const me of AM){ me.castShadow=true; me.receiveShadow=true; }
+  const AM=Object.values(BATCH.meshes); APTS.back=BATCH.all(BATCH.meshes,'E'); BATCH.meshes={}; APTS.meshes=AM.concat(WALLM); for(const me of AM){ me.castShadow=true; me.receiveShadow=true; }
   const WS=[], osol=(x0,y0,x1,y1,zt,w)=>{ const r=[X(x0),Z(y0),X(x1),Z(y1)]; solids.push(r); if(w)WS.push(r); fixed.push([X(x0),Z(y0),0,X(x1),Z(y1),Math.max(.05,Y(zt))]); };
   osol(A.x0-T,A.y1-T,door.a0,A.y1+T,AH,1); osol(door.a1,A.y1-T,A.x1+T,A.y1+T,AH,1); osol(A.x0-T,A.y0-T,A.x1+T,A.y0+T,AH,1); osol(A.x0-T,A.y0,A.x0+T,A.y1,AH); osol(A.x1-T,A.y0,A.x1+T,A.y1,AH);
   for(const [c0,c1] of [[ST0.x0-.22,ST0.x0],[ST0.x1,ST0.x1+.22]])osol(c0,ST0.y0,c1,ST0.y1,0);
@@ -225,7 +225,7 @@ const APTS={EMPTY:true};
     for(let i=0;i<n;i++){ const t=bx(L/n*1.05,.025,w,IRON); t.position.set(-L+(i+.5)*L/n,-Hh+(i+1)*Hh/(n+1),0); g.add(t); }
     const cwg=bx(.18*TILE,Y(26)-Y(0),.18*TILE,IRON); cwg.position.set(.25*TILE,-Y(10)+Y(0),0); g.add(cwg);
     g.position.set(xt,Y(S),(Z(F.yf+F.o*DI)+Z(F.yf+F.o*DO))/2); scene.add(g); g.traverse(o=>{ if(o.isMesh)o.castShadow=true; });
-    return {F,g,th:th_,foot:{x:X(U(F.d0)),z:(Z(F.yf+F.o*DI)+Z(F.yf+F.o*DO))/2}}; });
+    if(F.o<0)APTS.back.push(g); return {F,g,th:th_,foot:{x:X(U(F.d0)),z:(Z(F.yf+F.o*DI)+Z(F.yf+F.o*DO))/2}}; });
   APTS.inside=(x,z)=>{ const a=X(A.x0), b=X(A.x1), c=Z(A.y0), d=Z(A.y1); return x>Math.min(a,b)&&x<Math.max(a,b)&&z>Math.min(c,d)&&z<Math.max(c,d); };
   APTS.lvY=lv=>R0+lv*SY; APTS.lvOf=y=>Math.max(0,Math.min(ST-1,Math.floor((y-R0)/SY+.08)));
   APTS.floor=()=>window.POSOK?APTS.lvOf(py):0;

@@ -3230,3 +3230,27 @@ that is where yo jump in as a ghost and sink down slowly (appear outside refresh
 - Cost: inside only, built on entry: the whole view inside draws 51,000 to 65,000 triangles (under 100,000); lights inside stay at 8 (two candles, two andons,
   the two stone lanterns, the pool's cyan glow, the statue's halo; the back corners' candles went); one new small shader program
   (the water plane); nothing at start.
+## 19 Oct 2026: THE DOJO, its own place, and the ninja who trains you
+
+(owner: "make the dojo a separate place, (pick logiacal spot) and put a ninja in there who can train you in fighting. he does badass
+moves in idl animations."; "skin of player just wearing all black like ninja")
+- **Where** (`058b-dojo.js`): its gate stands on Market St. in the 5-tile gap between the apartment house and THE BATH HOUSE (the old
+  dojo's lot, so the dojo stays where it always was, next door), facing the street: red posts, a tiled roof, a navy noren with the
+  white ring and red sun, a DOJO signboard, two red lanterns. It blocks no door (the apartment house's and the bath house's are
+  further along their fronts). The menu: THE DOJO (its gate) and THE DOJO HALL (inside).
+- **A place of its own** (`K.offmap`, built only the first time you go in): one step into the gate's doorway fades to black with
+  ENTERING THE DOJO (`#subfade`), and you stand inside the hall's door; black all round it (no sky, no fog, no far city). One step
+  into the hall's door fades back with LEAVING THE DOJO, outside the gate facing the street.
+- **The hall** (18 by 12): the old dojo hall's look from its maker (`025-game-w-west-dojo-1-hall.js`): tatami in the half-offset
+  pattern, shoji walls with round windows, a tokonoma, the bokken rack, candles in the back corners, andon by the door; also a
+  katana stand, two makiwara, a taiko drum, two zabuton, paper lanterns and a paper ceiling lamp over a navy-edged training mat with
+  a red ring. Lights: the candles, the andon and the ceiling lamp (within the 8).
+- **The ninja** (`141a-ninja.js`): the player's own Walker (`musBody`, with your face's shape) all in black (one new colour ramp; the
+  hair and head a hood), a skin band left open across the eyes. On his mat he runs a kata from the rig's own moves, chained with
+  pauses and turns: jab, cross, uppercut, front kick, roundhouse, leg sweep, block, guard holds, backflip, frontflip, cartwheels. He
+  keeps to the mat and out of your way; drawn and run only while you are in the dojo. Cost: one figure, ~21,000 triangles, no light,
+  one shader program shared with the musicians.
+- **Training**: use him (click or the use key) and he bows; five drills (always JAB and FRONT KICK, then three of ONE-TWO,
+  CARTWHEEL, ROLL, JUMP, ROUNDHOUSE, UPPERCUT): WATCH, he shows the move; YOUR TURN, press its keys (shown with your own key
+  bindings) before the bar runs out: GOOD. or TOO SLOW. Each good one raises the new skill MARTIAL ARTS (in the skills list with
+  the others, 0.3 a drill up to 30, then 0.2, then 0.1; its arrow lock respected). Walking away ends the session.

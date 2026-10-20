@@ -3285,3 +3285,34 @@ moves in idl animations."; "skin of player just wearing all black like ninja")
   program (the existing sun program picks fine or town map), no triangles. Software rendering in the test: town map 9-36 ms when
   drawn (start, sun change, things added), fine map 2-10 ms when you walk 12 tiles; nothing while standing still (was a fine-map
   redraw every 10 s). `SUNDBG()` shows `far` redraws and the town box; `SUNLOG` rows now carry the ms and which map.
+
+## 19 Oct 2026: Central Park its own place, built when you go in; its wall twice as high, no ivy, an "A" over the gate
+(owner, queued 19 Oct 2026, then "Go": make Central Park its own loaded place: not loaded at the start; through its gate a loading screen
+like the subway's and the dungeon's, one step in, then the park; out through a gate back to the street; "the gate gets a sign 'A'", "the
+park's brick wall twice as high", "no ivy on the wall"; `061-park.js`)
+- **At the start only the edge** (`MAPG.parkwall`): the wall all round (now 96 px, was 48; still 1.5 tiles thick, its street face where
+  it was), the four gates' piers with their lanterns, the railing on the cope, the open gate leaves, the squirrel's tower (it shows over
+  the wall), the mushroom seller's and the tomato's stalls on the sidewalk, the main path from the gate to the round, and stand-ins for
+  the park's trees (one flat crown and trunk each, a cone for the spruce, coloured from each tree's own leaves and bark, instanced) so the
+  park still looks wooded through the gate and over the wall. While the park isn't loaded its ground is the plain lawn with the tall grass.
+- **No ivy** anywhere on the wall or the piers (the painted ivy and its leaf clumps are gone; the moss in the low joints stays).
+- **The "A"**: an iron overthrow between the main gate's piers on Market St (two bars, short balusters, spear tips) carrying an oval
+  medallion, park green with a gold rim and a gold "A", both faces.
+- **The rest when you go in** (`PARK.later(fn)` queues a part, `PARK.load` builds them all under the black, about 50 steps with a breath
+  between): all other paths, the trees, rocks and undergrowth, the campfire, the path lamps, the fountain terrace and lake, the pond and
+  the hills, the brook, the golems' cave, the flowers and bushes, the paths' tufts, the sitting log; then the mine's park hatch is placed
+  again. One step into any gate (0.35 tiles past the wall's outer face): ENTERING CENTRAL PARK on `#subfade` (its fade), built the first
+  time, fade in; one step out: LEAVING CENTRAL PARK and back to the street, the park hidden (kept, not built again). Arriving inside any
+  other way (the teleport list, a saved place, a new player, who still starts in Central Park) goes black at once and does the same. The
+  castle counts as inside. Nothing is drawn while it builds. Inside, the city beyond the wall is drawn as before (my call: same view).
+- **Only while you're in the park**: its creatures (frogs, slime, snake, spiders, bats, wasps; `group:'park'`), the squirrel knight and
+  the golems (`N.park`: not run, not shown); park butterflies, birds, fairy rings, sunbeams on its lawn, falling leaves and mushrooms.
+  The dragons now perch on the street's trees (the park's aren't there at the start). The lake's and brook's holes in the land are cut only
+  inside (`MODS.landHoles`); keep-outs, the menu's map, `OUTWET`, the golden grass and the lake's and brook's shapes still come from the
+  park's numbers at the start (no meshes). `PARKPLACE()` for tests.
+- **Cost** (software rendering, the same machine, `origin/main` against this): at the start 668,000 triangles in the scene (was
+  1,042,000), 2,110 meshes (3,360), 299 geometries (648), 143 textures (178), 127 programs (145), 145 lamp records (177); ready about
+  1 s sooner (27.9 s against 28.9 s), and the cave, pond, brook, fountain and tower no longer build in the first seconds after. On Market
+  St at the gate: 117 draws, 107,000 triangles drawn (were 1,735 and 728,000). The edge's new parts: the stand-ins about 2,200 triangles,
+  the sign about 850, no light; the wall's painted faces twice the area. Going in the first time: 2.2 s under the black (steps of at most
+  0.3 s); after that a fade. Inside, the park as before.

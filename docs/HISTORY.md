@@ -3776,3 +3776,11 @@ initial download and load super fast"; then "Go")
   a place's door (the GO TO menu, the E action at a door, `STORE.enter`) lands you 1.2–1.6 units inside the door, centred on it, facing
   into the room (`goTo` takes a heading; a room records its door's inward heading, `R.hd`, on its place entry). THE BODEGA's GO TO spot
   was 3.4 units in, past the mat; it is 1.6 now, in front of it.
+- **Loops for things that move by themselves** (owner, 20 Oct 2026: "i want things like this that move to be looped to save on render
+  cpu and time", of the flower boxes): measured before building. The flower boxes, the trees, the gold grass and the lawn's edges
+  already sway in their vertex shader (one sine per vertex on the GPU, no CPU and no per-frame upload), which is cheaper than any
+  made-once loop could be; nothing there to convert. The CPU side of everything that moves by itself (every tick chained to the clock,
+  timed one by one on the street at noon, software rendering): about 3 ms a frame in all, the largest the clock's own sun and lamp
+  aim (0.9 ms), the birds (0.4), the arcade's fog check (0.35), the lawn's trample slots (0.3); the one-off lawn chunk builds (20–100 ms
+  each, throttled) are what made CLOCK look like 21 ms in the earlier frame profile. The guitarist no longer walks (and collides against
+  the street's solids) while farther than 40 units or out of the bodega map: he stands where he was and resumes when you come near.

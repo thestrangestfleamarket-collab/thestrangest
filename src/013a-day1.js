@@ -62,5 +62,4 @@
 }
 MODS.station={BOUND,ground:(x,z)=>METRO.inside(x,z)?METRO.ground(x,z):STN.DY,DY:METRO.DY,plat:METRO.plat,lane:METRO.lane,path:METRO.path};
  for(const w of cutWalls.slice(c0))if(!w.when)w.when=()=>LVL==='down'; for(const L of SHL)L.removeFromParent(); });
-await grab('bodega',async()=>{ const solids=SOL.up, fixed=FIX.up, SHL=[]; let BOUND, groundY; const c0=cutWalls.length;
 BOD={meshes:[], walls:{}, lamps:[]};

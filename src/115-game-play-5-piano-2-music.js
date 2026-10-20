@@ -24,7 +24,7 @@ const pnWhite=m=>{ const o=Math.floor(m/12), p=m%12, w=[0,0.5,1,1.5,2,3,3.5,4,4.
 function pnVoice(s){ const out=[]; let t=0, d=1; for(const tok of s.trim().split(/\s+/)){ if(!tok||tok==='|')continue; const [p,l]=tok.split(':'); if(l)d=+l;
     if(p!=='r')out.push({t,keys:p.split('+').map(pnMidi),d}); t+=d; } return out; }
 function pnCompile(T){ if(T.c)return T.c; const S=T.gen(), notes=[], q=T.q, T0=1.0;
-  for(const h of ['R','L'])for(const v of S[h])for(const e of pnVoice(v))for(const m of e.keys){ const acc=(e.t-T.pickup)%T.bar===0?.07:0, jit=(hash(e.t,m,733)-.5)*.08;
+  for(const h of ['R','L'])for(const v of S[h])for(const e of pnVoice(v))for(const m of e.keys){ const acc=(e.t-T.pickup)%T.bar===0?.07:0, jit=(hash3(e.t,m,733)-.5)*.08;
     notes.push({m,h,t0:T0+e.t*q,t1:T0+(e.t+e.d)*q-0.03,vel:Math.max(.12,Math.min(1,T.vel[h]+acc+jit))}); }
   notes.sort((a,b)=>a.t0-b.t0||a.m-b.m);
   for(const h of ['R','L']){ const ns=notes.filter(n=>n.h===h); let i=0;

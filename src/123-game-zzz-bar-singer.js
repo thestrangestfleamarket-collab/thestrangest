@@ -5,9 +5,9 @@ function voxChord(n){ const m=/^([A-G])([#b]?)(m?)(7?)/.exec(n||'C'), R={C:0,D:2
   const s=[0,m[3]?3:4,7]; if(m[4])s.push(m[3]?10:10); return {r:R,tones:s.map(k=>(R+k)%12),minor:!!m[3]}; }
 function voxBar(T,b,ch,key){ const beats=T.beats||4, R=beats===3?[[1,1,1],[2,1],[1,.5,.5,1],[1,2]]:[[1,1,1,1],[2,2],[1.5,.5,2],[1,1,2],[2,1,1]], end=b%4===3, br=b%8===7;
   if(br)return [{d:beats-1,n:null},{d:1,n:null}];
-  const rh=end?[beats]:R[Math.floor(hash(b,VOX.song,911)*R.length)], scale=[0,2,4,5,7,9,11].map(k=>(key+k)%12), out=[]; let at=0;
+  const rh=end?[beats]:R[Math.floor(hash3(b,VOX.song,911)*R.length)], scale=[0,2,4,5,7,9,11].map(k=>(key+k)%12), out=[]; let at=0;
   for(const d of rh){ const strong=at%1===0&&(at===0||beats===4&&at===2), pool=[]; for(let n=57;n<=74;n++){ const pc=n%12; if(ch.tones.includes(pc)||!strong&&scale.includes(pc))pool.push(n); }
-    let best=pool[0], bs=1e9; for(const n of pool){ const sc=Math.abs(n-VOX.prev)+(n===VOX.prev?1.5:0)+hash(b*7+at*3,n,913)*1.6+(end&&n%12!==ch.r&&n%12!==ch.tones[1]?4:0); if(sc<bs){ bs=sc; best=n; } }
+    let best=pool[0], bs=1e9; for(const n of pool){ const sc=Math.abs(n-VOX.prev)+(n===VOX.prev?1.5:0)+hash3(b*7+at*3,n,913)*1.6+(end&&n%12!==ch.r&&n%12!==ch.tones[1]?4:0); if(sc<bs){ bs=sc; best=n; } }
     out.push({d,n:best}); VOX.prev=best; at+=d; }
   return out; }
 function voxChain(){ const c=SND.ctx; if(!c||!SND.on||c.state!=='running')return false; if(VOX.out)return true; VOX.out=c.createGain(); VOX.pan=c.createStereoPanner(); VOX.out.gain.value=0; VOX.out.connect(VOX.pan); VOX.pan.connect(imxOut()); return true; }

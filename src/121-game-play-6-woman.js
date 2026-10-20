@@ -9,7 +9,7 @@ const WOMAN=(()=>{ const {V,add,sub,mul,dot,rcone,ell,rbox}=RIG;
     wavesBack:q=>Math.max(Math.min(cap(q),rbox(q,V(.4,35,-3.9),V(7.6,11,3.3),1.6)+Math.sin(q.y*1.3)*.35),-faceCut(q,47.2)),
     bob:q=>Math.max(Math.min(cap(q,1.03),rbox(q,V(0,41,-1.4),V(8.6,4.4,5.4),1.4)),-faceCut(q,45.6)),
     bun:q=>Math.max(Math.min(cap(q,.98),ell(q,V(0,50.2,-5.2),V(3.2,3.0,3.0))),-faceCut(q,48.5)),
-    curls:q=>Math.max(ell(q,V(0,45.5,.2),V(11,10.2,9.6))+(hash(q.x*1.5|0,q.y*1.5|0,(q.z*1.5|0)+901)-.5)*.6,-Math.max(2.6-q.z,q.y-47.2)),
+    curls:q=>Math.max(ell(q,V(0,45.5,.2),V(11,10.2,9.6))+(hash3(q.x*1.5|0,q.y*1.5|0,(q.z*1.5|0)+901)-.5)*.6,-Math.max(2.6-q.z,q.y-47.2)),
     pony:q=>Math.max(Math.min(cap(q,.98),rcone(q,V(0,47,-6.4),V(0,32,-8.6),2.0,1.0)),-faceCut(q,48.2)),
     pixie:q=>Math.max(cap(q,1.02),-faceCut(q,46.2)),
     braid:q=>{ let d=Math.max(cap(q,.98),-faceCut(q,48.4)); for(let i=0;i<9;i++)d=Math.min(d,ell(q,V(0,44-i*1.9,-6.8+i*.08),V(1.6-i*.06,1.3,1.4))); return d; },
@@ -27,7 +27,7 @@ const WOMAN=(()=>{ const {V,add,sub,mul,dot,rcone,ell,rbox}=RIG;
     wrapv:q=>q.z>1&&q.y>27.5&&Math.abs(q.x+(q.y-27.5)*.15)<(q.y-27.5)*.8,
     sweet:q=>q.y>29.6-Math.max(0,1.1-Math.abs(Math.abs(q.x)-2.1)*.8)*(q.z>1?1:0)||Math.abs(q.x)>5.4&&q.y>28.6};
   const NONE={d:()=>99,bb:[0,.1,0,.1,0,.1]};
-  const pieces=o=>(J,base)=>{ const out=[], H=(x,y,z)=>hash(x|0,y|0,(z|0)+907);
+  const pieces=o=>(J,base)=>{ const out=[], H=(x,y,z)=>hash3(x|0,y|0,(z|0)+907);
     for(const pc of base){ const n=pc.n, s=n.slice(-1);
       if(n==='beard'){ out.push(Object.assign({},pc,NONE)); continue; }
       if(n==='hair'){ out.push(Object.assign({},pc,{d:HAIR[o.hair],paint:o.hair==='curls'?null:q=>H(q.x*3,q.y*.8,q.z*3)<.12?'coat':null,bb:[-12,12,24,57,-11,11]})); continue; }

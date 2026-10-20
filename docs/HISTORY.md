@@ -3556,3 +3556,15 @@ initial download and load super fast"; then "Go")
   *lot* in `015` was also called `BODB`, the name of the bodega *builder* in `006`; the lot is `BLOT` now). A scope proof
   (every reference's declaration before and after, 226,800 references) shows the only other change is `BRICKS` reaching its own
   `const` instead of the same object through `window`. Next: open the builder just before `052`, so `014`–`051` are top-level code.
+
+## 20 Oct 2026: the bodega builder opens at 050 (modules, step 3)
+
+- **The kits and the old game's makers are the page's own code** (`013a-day1.js`, `050-main-8.js`): the builder
+  `await grab('bodega', ...)` now opens in `050-main-8.js`, between the block it closes and the block that lays the bodega out, so it
+  spans `050` to `059` (274 KB) instead of `013a` to `059` (787 KB); `014`–`049` run at the page's top level. Four names that the
+  builder's scope used to shadow were renamed first, each by its resolved declaration with the scope tool, never by text: the page's
+  `hash` in `004-main.js` (`Math.imul`, 22 uses in `004`, `115`, `121`, `123`, `126`) is `hash3`, so the kits' `hash` (the one the
+  painted textures depend on, 499 uses) keeps its name; the kit's prop list `PROPS` is `PROPL`, its tunnel-and-bridge `CITY` is `KCITY`,
+  its weed colours `WEEDS` is `WEEDC` (the page-level `PROPS`, `CITY`, `WEEDS` are untouched). Proof: every reference resolves to the
+  same declaration text as before (226,600 compared). What was already true and now shows: none of `014`–`049` touches the scene, the
+  lamps or the walls, so the builder's group holds exactly what it held.

@@ -32,9 +32,9 @@ const RESMAX=FULLRES?10:3, vpu=()=>V0*ppu/PPU, art=()=>PPU*RES(), PCAP=()=>Math.
 function frustum(){ const u=rppu(); cam.left=-RW/2/u; cam.right=RW/2/u; cam.top=RH/2/u; cam.bottom=-RH/2/u; cam.updateProjectionMatrix(); }
 addEventListener('resize',resize);
 
-const hash=(x,y,s)=>{ let h=(Math.imul(x,374761393)+Math.imul(y,668265263)+Math.imul(s,982451653))|0; h=Math.imul(h^(h>>>13),1274126177); h^=h>>>16; return (h>>>0)/4294967296; };
+const hash3=(x,y,s)=>{ let h=(Math.imul(x,374761393)+Math.imul(y,668265263)+Math.imul(s,982451653))|0; h=Math.imul(h^(h>>>13),1274126177); h^=h>>>16; return (h>>>0)/4294967296; };
 const vnoise=(x,y,p,s)=>{ const xi=Math.floor(x),yi=Math.floor(y),fx=x-xi,fy=y-yi,u=fx*fx*(3-2*fx),v=fy*fy*(3-2*fy),m=a=>((a%p)+p)%p;
-  const a=hash(m(xi),m(yi),s),b=hash(m(xi+1),m(yi),s),c=hash(m(xi),m(yi+1),s),d=hash(m(xi+1),m(yi+1),s); return a+(b-a)*u+(c-a)*v+(a-b-c+d)*u*v; };
+  const a=hash3(m(xi),m(yi),s),b=hash3(m(xi+1),m(yi),s),c=hash3(m(xi),m(yi+1),s),d=hash3(m(xi+1),m(yi+1),s); return a+(b-a)*u+(c-a)*v+(a-b-c+d)*u*v; };
 const fbm=(x,y,px,py,s)=>vnoise(x,y,px,s)*.55+vnoise(x*2,y*2,px*2,s+1)*.3+vnoise(x*4,y*4,px*4,s+2)*.15;
 const B4=[0,8,2,10,12,4,14,6,3,11,1,9,15,7,13,5], dith=(x,y)=>B4[(y&3)*4+(x&3)]/16-.47;
 const rgb=h=>[h>>16&255,h>>8&255,h&255];
@@ -45,15 +45,15 @@ function tex(w,h,fn){ const c=document.createElement('canvas'); c.width=w; c.hei
   t.wrapS=t.wrapT=THREE.RepeatWrapping; t.colorSpace=THREE.SRGBColorSpace; return t; }
 const S=256, CL=8;
 const nz=(x,y,s,c=CL)=>fbm(x/S*c,y/S*c,c,c,s);
-const grassT=tex(S,S,(x,y)=>{ const tuft=hash(x,y,7)<.03||hash(x,(y+1)&255,7)<.03, fl=hash(x>>1,y>>1,9);
-  if(fl<.0015)return (hash(x>>1,y>>1,10)<.5)?0xe8d36a:0xf2efe2; if(tuft)return nz(x,y,3)>.5?0x8cbb57:0x76a646;
+const grassT=tex(S,S,(x,y)=>{ const tuft=hash3(x,y,7)<.03||hash3(x,(y+1)&255,7)<.03, fl=hash3(x>>1,y>>1,9);
+  if(fl<.0015)return (hash3(x>>1,y>>1,10)<.5)?0xe8d36a:0xf2efe2; if(tuft)return nz(x,y,3)>.5?0x8cbb57:0x76a646;
   return tone(nz(x,y,1),x,y,[0x3c6628,0x48782f,0x568a37,0x659b41]); });
-const asphaltT=tex(S,S,(x,y)=>{ const h=hash(x,y,21); if(h<.03)return 0x56575d; if(h<.05)return 0x222327; return tone(nz(x,y,20),x,y,[0x2e2f34,0x35363c,0x3c3d43,0x44454c]); });
-const concreteT=tex(S,S,(x,y)=>{ if(x%32===0||y%32===0)return 0x85807a; const h=hash(x,y,31); if(h<.012)return 0x8e8981;
+const asphaltT=tex(S,S,(x,y)=>{ const h=hash3(x,y,21); if(h<.03)return 0x56575d; if(h<.05)return 0x222327; return tone(nz(x,y,20),x,y,[0x2e2f34,0x35363c,0x3c3d43,0x44454c]); });
+const concreteT=tex(S,S,(x,y)=>{ if(x%32===0||y%32===0)return 0x85807a; const h=hash3(x,y,31); if(h<.012)return 0x8e8981;
   return tone(nz(x,y,30),x,y,[0x9d988e,0xa9a498,0xb3aea2,0xbcb7ab]); });
-const earthT=tex(S,S,(x,y)=>{ const s=hash(x>>1,y>>1,41); if(s<.03)return hash(x>>1,y>>1,42)<.5?0xa89c88:0x8f8573; if(hash(x,y,43)<.04)return 0x5f4930;
+const earthT=tex(S,S,(x,y)=>{ const s=hash3(x>>1,y>>1,41); if(s<.03)return hash3(x>>1,y>>1,42)<.5?0xa89c88:0x8f8573; if(hash3(x,y,43)<.04)return 0x5f4930;
   return tone(nz(x,y,40),x,y,[0x6e5337,0x7a5e3e,0x866947,0x917352]); });
-const grainT=tex(64,64,(x,y)=>hash(x,y,51)<.03?0xc4c4c4:tone(fbm(x/16,y/16,4,4,50),x,y,[0xd2d2d2,0xe0e0e0,0xeeeeee,0xffffff]));
+const grainT=tex(64,64,(x,y)=>hash3(x,y,51)<.03?0xc4c4c4:tone(fbm(x/16,y/16,4,4,50),x,y,[0xd2d2d2,0xe0e0e0,0xeeeeee,0xffffff]));
 const woodT=tex(64,64,(x,y)=>tone(fbm(x/32,y/5,2,13,60),x,y,[0xb9b9b9,0xcfcfcf,0xe4e4e4,0xf6f6f6]));
 
 const grad=new THREE.DataTexture(new Uint8Array([70,140,205,255]),4,1,THREE.RedFormat); grad.magFilter=grad.minFilter=THREE.NearestFilter; grad.needsUpdate=true;

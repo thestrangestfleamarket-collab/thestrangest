@@ -3681,3 +3681,10 @@ initial download and load super fast"; then "Go")
   flaps that swing with his legs; grey greaves, dark boots; **the cape is cloth** (35 points, 7 across and 5 down, the top row on
   his shoulders), swung by his starts, stops, turns and pace, pushed by his legs, still when he stands. Now and then, standing,
   he squares his shoulders. `metres` 2.4. Cost: 3,828 triangles, no lights.
+
+- **MR. BLOCKS** (owner, 20 Oct 2026, his photo of a blue felt fellow in a brown hat whose legs are building blocks; same rules;
+  `084-npc-toons.js`, `blocks`): measured off the photo (hat 1.0-.85 and .37 across, brim .80-.83 and .67 across, tilted 9 degrees;
+  eyes .655, nose .595, mouth slot .53, a green bar badge at .41; a pear-shaped body .6 across low down; arms at .43); a yellow block
+  thigh and yellow foot on his right, an orange block thigh and orange foot on his left, in front of his body as in the photo;
+  rounded blocks (`rbox`, a superellipsoid). He waddles (the rock .1), the hat and the arms lag on springs, and standing he now and
+  then tips his hat. `metres` 2.0. Cost: 2,944 triangles, no lights.

@@ -1,4 +1,4 @@
-// THE STREET'S TOONS: the tomato, the cat in the raincoat, the TV cat, the frog on his scooter, the shark, the manatee, the rain fish, NUMBER 80 and the ember knight.
+// THE STREET'S TOONS: the tomato, the cat in the raincoat, the TV cat, the frog on his scooter, the shark, the manatee, the rain fish, NUMBER 80, the ember knight and MR. BLOCKS.
 const TOONS={};
 { const {shape,limb,sph,cyl,box,torus,blob,shell}=PARTSNPC.T;
   const part=(name,rank,bone,of)=>({name,rank,bone,of}), BLACK=[0,0,0], WHITE=[.96,.95,.9];
@@ -310,4 +310,28 @@ const TOONS={};
           S.calm=mv<.0005*n?S.calm+dt:0; }
         for(let k=0;k<CN.length;k++)B['k'+k].position.set(S.p[k][0],S.p[k][1],S.p[k][2]); } };
     TOONS.knight=make(def,{key:'emberknight',name:'THE EMBER KNIGHT',metres:2.4,radius:.3,speed:.38,stride:7,at:96,eyeC:'1.,.55,.18'},8); }
+  { const {spl,prof,surf,lathe,tube,skin,ss,noise}=PARTSNPC.T, F=(a,b,c,k=80)=>(x,y,z)=>{ const v=noise(x,y,z,k); return v>.68?c:v<.3?b:a; }, TAU=Math.PI*2;
+    const BLU=F([.42,.6,.75],[.4,.58,.73],[.45,.63,.78]), HAT=F([.42,.25,.17],[.4,.23,.16],[.45,.27,.19]), BAND=[.3,.17,.11], GRN=F([.42,.7,.6],[.4,.67,.57],[.45,.73,.63]), YEL=F([.93,.72,.15],[.9,.69,.13],[.95,.76,.2]), ORA=F([.82,.33,.14],[.79,.31,.13],[.85,.36,.16]), INK=[.04,.04,.04];
+    const melt=(c,E,nu,nv,k=6)=>surf(nu,nv,(u,v)=>{ const th=v*Math.PI, ph=u*TAU, d=[Math.sin(th)*Math.sin(ph),-Math.cos(th),Math.sin(th)*Math.cos(ph)]; let s=0;
+      for(const [e,R] of E){ const o=[0,1,2].map(i=>(c[i]-e[i])/R[i]), q=[0,1,2].map(i=>d[i]/R[i]), A=q[0]**2+q[1]**2+q[2]**2, B=2*(o[0]*q[0]+o[1]*q[1]+o[2]*q[2]), C=o[0]**2+o[1]**2+o[2]**2-1, h=B*B-4*A*C; if(h>0){ const t=(-B+Math.sqrt(h))/(2*A); if(t>0)s+=t**k; } }
+      const t=s**(1/k); return [c[0]+d[0]*t,c[1]+d[1]*t,c[2]+d[2]*t]; });
+    const rbox=(hx,hy,hz,nu,nv,e=.35)=>surf(nu,nv,(u,v)=>{ const th=v*Math.PI-Math.PI/2, ph=u*TAU, f=(c,p)=>Math.sign(c)*Math.pow(Math.abs(c),p), cy=Math.cos(th);
+      return [hx*f(cy,e)*f(Math.sin(ph),e),hy*f(Math.sin(th),e),hz*f(cy,e)*f(Math.cos(ph),e)]; });
+    const BODY=[[[0,.33,0],[.3,.25,.24]],[[0,.6,0],[.25,.22,.21]]], bodyZ=(x,y)=>{ let z=0; for(const [e,R] of BODY){ const q=1-((x-e[0])/R[0])**2-((y-e[1])/R[1])**2; if(q>0)z=Math.max(z,e[2]+R[2]*Math.sqrt(q)); } return z; };
+    const onB=(x,y,o=0)=>[x,y,bodyZ(x,y)+o];
+    const arm=sx=>skin(shape(rbox(.085,.115,.08,10,8,.6),BLU,[sx*.31,.43,0],null,[0,0,sx*18]),()=>['arm'+(sx<0?'L':'R'),1]);
+    const leg=(sx,C)=>[ shape(rbox(.12,.13,.105,10,8,.35),C,[sx*.12,.22,.14]), shape(rbox(.11,.055,.12,10,6,.45),C,[sx*.15,.055,.13],null,[0,sx*12,0]) ];
+    const def={ bones:[['root',null,[0,0,0]],['hips','root',[0,.3,0]],['body','hips',[0,.4,0]],['hat','body',[0,.8,0]],['armL','body',[-.25,.5,0]],['armR','body',[.25,.5,0]],['legL','hips',[-.12,.32,.12]],['legR','hips',[.12,.32,.12]]],
+      parts:[ part('face',3,'body',[ ...[-1,1].map(sx=>shape(blob(.04,.04,.012,10,6),INK,onB(sx*.079,.655,.002))), shape(rbox(.068,.016,.012,8,4,.4),INK,onB(0,.53,.002)) ]),
+        part('nose',2,'body',[ shape(blob(.035,.03,.025,8,6),BLU,onB(0,.595,-.005)) ]),
+        part('badge',2,'body',[ shape(rbox(.09,.033,.03,8,4,.4),GRN,onB(-.06,.41,.005),null,[0,0,-18]) ]),
+        part('body',0,'body',[ skin(shape(melt([0,.45,0],BODY,28,18),BLU),(x,y)=>{ const k=ss(.3,.45,y); return ['hips',1-k,'body',k]; }) ]),
+        part('hat',4,'hat',[ shape(lathe([[.19,.01],[.188,.075],[.18,.14],[.165,.17],[.08,.175],[0,.175]],20,7),HAT,[0,.81,0],null,[0,0,-9]), shape(lathe([[.19,.015],[.192,.03],[.191,.045],[.189,.05]],20,2),BAND,[0,.81,0],null,[0,0,-9]),
+          shape(lathe([[.185,.015],[.28,-.005],[.33,-.007],[.342,.005],[.335,.018],[.28,.008],[.185,.027]],24,6),HAT,[0,.81,0],null,[0,0,-9]) ]),
+        part('arm L',1,'armL',[ arm(-1) ]), part('arm R',1,'armR',[ arm(1) ]),
+        part('leg L',1,'legL',leg(-1,YEL)), part('leg R',1,'legR',leg(1,ORA)) ],
+      springs:{ hat:{f:-.1,s:.1,k:45,c:4,lim:.25}, armL:{f:-.2,s:.15,k:35,c:4,lim:.4}, armR:{f:-.2,s:-.15,k:35,c:4,lim:.4}, body:{f:-.04,s:.05,k:70,c:7,lim:.12} },
+      pose:(c,dt)=>{ const B=c.B, m=c.mv, ph=c.st.ph; RIGNPC.walk(c,{arm:.45,leg:.45,bob:.03,rock:.1}); B.body.rotation.y=c.look; B.body.rotation.z=-Math.sin(ph)*.05*m;
+        if(c.sheet)return; if((c.tip=(c.tip??6+Math.random()*6)-dt)<1.6&&!m){ const g=Math.sin(Math.max(0,c.tip)/1.6*Math.PI); B.armR.rotation.z+=g*2.3; B.armR.rotation.x-=g*.3; B.hat.position.y+=g*.05; B.hat.rotation.z-=g*.25; if(c.tip<0)c.tip=8+Math.random()*8; } } };
+    TOONS.blocks=make(def,{key:'blocks',name:'MR. BLOCKS',metres:2.0,radius:.32,speed:.32,stride:8,at:100},9); }
   window.TOONSDBG=()=>Object.fromEntries(Object.entries(TOONS).map(([k,N])=>[k,{key:N.key,x:+N.st.x.toFixed(2),z:+N.st.z.toFixed(2),tris:N.tris,vis:N.g.visible}])); }

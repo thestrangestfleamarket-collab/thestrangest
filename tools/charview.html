@@ -18,7 +18,7 @@ const mat=new THREE.ShaderMaterial({side:THREE.DoubleSide,uniforms:{uL},vertexSh
   fragmentShader:`uniform vec3 uL; varying vec3 vC,vN; void main(){ float l=dot(normalize(vN)*(gl_FrontFacing?1.:-1.),uL); vec3 c=l>.55?min(vec3(1.),vC*1.1):l>.05?vC:l>-.4?vC*.84*vec3(.95,.97,1.04):vC*.7*vec3(.92,.95,1.06); gl_FragColor=vec4(c,1.); }`});
 const solid=new THREE.Mesh(geo(DEF.parts.filter(p=>!p.glass)),mat), sc=new THREE.Scene(); sc.background=new THREE.Color(0); sc.add(solid);
 const gl=DEF.parts.filter(p=>p.glass); if(gl.length){ const g=geo(gl), c=g.attributes.color.array, c4=new Float32Array(c.length/3*4); for(let i=0;i<c.length/3;i++){ c4.set([c[i*3],c[i*3+1],c[i*3+2],c[i*3]+c[i*3+1]+c[i*3+2]>2.95?.6:.14],i*4); } g.setAttribute('color',new THREE.BufferAttribute(c4,4)); sc.add(new THREE.Mesh(g,new THREE.MeshBasicMaterial({vertexColors:true,transparent:true,depthWrite:false,side:THREE.DoubleSide}))); }
-window.TRIS=solid.geometry.attributes.position.count/3;
+window.TRIS=solid.geometry.attributes.position.count/3+' '+JSON.stringify(Object.fromEntries(DEF.parts.map(p=>[p.name,p.of.reduce((a,s)=>a+s.P.length/9,0)])));
 const bb=new THREE.Box3().setFromObject(sc), h=bb.max.y-bb.min.y, cy=(bb.max.y+bb.min.y)/2;
 const r=new THREE.WebGLRenderer({antialias:true}); r.setSize(innerWidth,innerHeight); r.outputColorSpace=THREE.LinearSRGBColorSpace; document.body.appendChild(r.domElement);
 const cam=new THREE.PerspectiveCamera(30,innerWidth/innerHeight,.01,50);

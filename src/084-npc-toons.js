@@ -141,20 +141,20 @@ const TOONS={};
     const robeW=(x,y,z)=>{ if(y>=YR[0])return ['hips',1]; let a=Math.atan2(x,z); if(a<0)a+=TAU; const fu=a/TAU*NC, i0=Math.floor(fu)%NC, tu=fu-Math.floor(fu), fv=Math.min(NR-1.0001,Math.max(0,(YR[0]-y)/(YR[0]-YR[NR-1])*(NR-1))), j0=Math.floor(fv), tv=fv-j0;
       return ['c'+K(i0,j0),(1-tu)*(1-tv),'c'+K(i0+1,j0),tu*(1-tv),'c'+K(i0,j0+1),(1-tu)*tv,'c'+K(i0+1,j0+1),tu*tv]; };
     const HOOD=prof([[.13,.7],[.14,.78],[.142,.86],[.135,.93],[.115,.975],[.07,1.0],[0,1.01]]), he=f=>.7+.29*ss(1.45,.2,f), hp=(a,y,o=0)=>{ const r=HOOD.R(Math.min(1.009,y))+o; return [r*Math.sin(a),y,r*Math.cos(a)-.01]; };
-    const sleeve=sx=>{ const s=sx<0?'L':'R', up=sx<0?0:.08; return skin(shape(tube([[sx*.17,.66,0],[sx*.215,.56,.02],[sx*.25,.45+up*.5,.04],[sx*.27,.36+up,.07],[sx*.275,.29+up,.09]],[.06,.058,.06,.07,.08,.082],16,18,{up:[0,0,1],sz:.85,
+    const sleeve=sx=>{ const s=sx<0?'L':'R', up=sx<0?0:.08; return skin(shape(tube([[sx*.17,.66,0],[sx*.215,.56,.02],[sx*.25,.45+up*.5,.04],[sx*.27,.36+up,.07],[sx*.275,.29+up,.09]],[.06,.058,.06,.07,.08,.082],10,10,{up:[0,0,1],sz:.85,
       d:(p,u,v)=>{ const k=1+.05*Math.sin(u*TAU*5)*v; return [p[0]*1+(p[0]-sx*.25)*(k-1),p[1],p[2]]; }}),PK),(x,y)=>{ const e=ss(.52,.42,y), h=ss(.6,.66,y)*.6; return ['arm'+s,1-e-h,'elbow'+s,e,'hips',h]; }); };
-    const hand=sx=>{ const s=sx<0?'L':'R', y=sx<0?.29:.37, x=sx*.275, z=.1; return [shape(blob(.034,.042,.026,12,8),BL,[x,y-.03,z]), ...[-1.5,-.5,.5,1.5].map(k=>shape(blob(.01,.027,.011,8,6),BL,[x+k*.016,y-.075+Math.abs(k)*.006,z+.004],null,[0,0,-k*9])), shape(blob(.01,.024,.011,8,6),BL,[x-sx*.034,y-.035,z+.018],null,[30,0,sx*40])]; };
-    const foot=sx=>{ const g=blob(.088,.045,.075,16,10), P=g.attributes.position; for(let i=0;i<P.count;i++)if(P.getY(i)<0)P.setY(i,P.getY(i)*.4); return [shape(g,BL,[sx*.11,.035,.04]), ...[-1.5,-.5,.5,1.5].map(k=>shape(blob(.024,.026,.03,10,6),BL,[sx*.11+k*.04,.026,.105]))]; };
+    const hand=sx=>{ const s=sx<0?'L':'R', y=sx<0?.29:.37, x=sx*.275, z=.1; return [shape(blob(.034,.042,.026,8,5),BL,[x,y-.03,z]), ...[-1.5,-.5,.5,1.5].map(k=>shape(blob(.01,.027,.011,5,3),BL,[x+k*.016,y-.075+Math.abs(k)*.006,z+.004],null,[0,0,-k*9])), shape(blob(.01,.024,.011,5,3),BL,[x-sx*.034,y-.035,z+.018],null,[30,0,sx*40])]; };
+    const foot=sx=>{ const g=blob(.088,.045,.075,12,7), P=g.attributes.position; for(let i=0;i<P.count;i++)if(P.getY(i)<0)P.setY(i,P.getY(i)*.4); return [shape(g,BL,[sx*.11,.035,.04]), ...[-1.5,-.5,.5,1.5].map(k=>shape(blob(.024,.026,.03,6,4),BL,[sx*.11+k*.04,.026,.105]))]; };
     const def={ bones:[['root',null,[0,0,0]],['hips','root',[0,.4,0]],['head','hips',[0,.72,0]],['armL','hips',[-.17,.63,0]],['elbowL','armL',[-.25,.45,.04]],['handL','elbowL',[-.275,.3,.09]],
         ['armR','hips',[.17,.63,0]],['elbowR','armR',[.25,.49,.04]],['handR','elbowR',[.275,.38,.09]],['legL','hips',[-.11,.25,0]],['legR','hips',[.11,.25,0]],...NODE.map((p,k)=>['c'+k,'root',p])],
-      parts:[ part('eyes',3,'head',[-1,1].flatMap(sx=>[ shape(sph(.026,10,8),BLACK,[sx*.07,.925,.088],[1.25,.8,.7],[0,sx*40,0]), shape(sph(.007,4,3),SHINE,[sx*.076,.935,.106]) ])),
+      parts:[ part('eyes',3,'head',[-1,1].flatMap(sx=>[ shape(sph(.026,8,5),BLACK,[sx*.07,.925,.088],[1.25,.8,.7],[0,sx*40,0]), shape(sph(.007,4,3),SHINE,[sx*.076,.935,.106]) ])),
         part('nostrils',3,'head',[-1,1].map(sx=>shape(sph(.011,6,4),BLACK,[sx*.024,.907,.196],[1,.6,.7],[-30,0,0]))),
-        part('mouth',3,'head',[ shape(tube([[-.082,.852,.13],[-.047,.857,.178],[0,.862,.199],[.047,.857,.178],[.082,.852,.13]],[.004,.004],5,14),[.08,.1,.14]) ]),
-        part('head',1,'head',[ shape(melt([0,.84,.05],[[[0,.86,.03],[.108,.13,.115]],[[0,.885,.13],[.08,.058,.08]],[[0,.79,.085],[.108,.08,.105]]],36,26),BL) ]),
-        part('hood',2,'head',[ shape(surf(40,16,(u,v)=>{ const a=u*TAU, f=Math.min(u,1-u)*TAU, e=he(f), y=e+(1.01-e)*Math.pow(v,.85); return hp(a,y,.004*Math.sin(a*9+y*30)); }),PK),
-          shape(tube(Array.from({length:13},(_,i)=>{ const f=(i/12-.5)*2.9; return hp(f,he(Math.abs(f)),.012); }),[.02,.026,.026,.026,.02],10,30),PK) ]),
-        part('cowl',3,'hips',[ shape(surf(40,12,(u,v)=>{ const a=u*TAU, b=v*TAU, r=.05*(1+.15*Math.sin(a*5+1)), R=1+r*Math.cos(b)/.15; return [.155*R*Math.sin(a),.705+r*Math.sin(b)*1.1+.008*Math.sin(a*3),.14*R*Math.cos(a)]; }),PK) ]),
-        part('robe',0,'root',[ skin(shape(surf(48,30,(u,v)=>rp(u*TAU,.7-(.7-.063)*v)),PK),robeW), skin(shape(surf(48,1,(u,v)=>{ const p=rp(u*TAU,.063); return [p[0]*(1-.025*v),p[1]+.012*v,p[2]*(1-.025*v)]; }),PK2),robeW) ]),
+        part('mouth',3,'head',[ shape(tube([[-.082,.852,.13],[-.047,.857,.178],[0,.862,.199],[.047,.857,.178],[.082,.852,.13]],[.004,.004],4,10),[.08,.1,.14]) ]),
+        part('head',1,'head',[ shape(melt([0,.84,.05],[[[0,.86,.03],[.108,.13,.115]],[[0,.885,.13],[.08,.058,.08]],[[0,.79,.085],[.108,.08,.105]]],18,12),BL) ]),
+        part('hood',2,'head',[ shape(surf(20,9,(u,v)=>{ const a=u*TAU, f=Math.min(u,1-u)*TAU, e=he(f), y=e+(1.01-e)*Math.pow(v,.85); return hp(a,y,.004*Math.sin(a*9+y*30)); }),PK),
+          shape(tube(Array.from({length:13},(_,i)=>{ const f=(i/12-.5)*2.9; return hp(f,he(Math.abs(f)),.012); }),[.02,.026,.026,.026,.02],6,16),PK) ]),
+        part('cowl',3,'hips',[ shape(surf(22,7,(u,v)=>{ const a=u*TAU, b=v*TAU, r=.05*(1+.15*Math.sin(a*5+1)), R=1+r*Math.cos(b)/.15; return [.155*R*Math.sin(a),.705+r*Math.sin(b)*1.1+.008*Math.sin(a*3),.14*R*Math.cos(a)]; }),PK) ]),
+        part('robe',0,'root',[ skin(shape(surf(28,14,(u,v)=>rp(u*TAU,.7-(.7-.063)*v)),PK),robeW), skin(shape(surf(28,1,(u,v)=>{ const p=rp(u*TAU,.063); return [p[0]*(1-.025*v),p[1]+.012*v,p[2]*(1-.025*v)]; }),PK2),robeW) ]),
         part('sleeve L',1,'armL',[ sleeve(-1) ]), part('sleeve R',1,'armR',[ sleeve(1) ]),
         part('hand L',2,'handL',hand(-1)), part('hand R',2,'handR',hand(1)),
         part('foot L',0,'legL',foot(-1)), part('foot R',0,'legR',foot(1)) ],
@@ -181,28 +181,28 @@ const TOONS={};
     const HEAD=prof([[.205,.5],[.232,.56],[.245,.63],[.246,.69],[.238,.75],[.218,.81],[.185,.865],[.14,.91],[.085,.94],[.03,.952],[0,.955]]), HZ=.93;
     const onB=(P,Z,a,y,o=0)=>{ const r=P.R(y)+o; return [r*Math.sin(a),y,r*Z*Math.cos(a)]; }, D=Math.PI/180;
     const eye=sx=>{ const a=34*D*sx, y=.728, p=onB(HEAD,HZ,a,y), n=[Math.sin(a),0,Math.cos(a)], at=k=>p.map((q,i)=>q+n[i]*k);
-      return [shape(blob(.06,.06,.026,14,10),RIM,at(.004),null,[0,a/D,0]), shape(blob(.047,.047,.03,14,10),BLACK,at(.02),null,[0,a/D,0]), shape(sph(.009,6,4),SHINE,[at(.047)[0]-.012,y+.016,at(.047)[2]])]; };
-    const lip=(xs,ys,rs,dz)=>tube(xs.map((x,i)=>[x,ys[i],Math.sqrt(Math.max(0,HEAD.R(ys[i])**2-x*x))*HZ+dz]),rs,10,16);
-    const lapel=sx=>surf(14,12,(u,v)=>onB(BODY,BZ,-sx*D*(2+60*u*(.15+.85*Math.pow(Math.sin(v*Math.PI/2),.7))),.39+.175*v,.012+.022*u*v));
+      return [shape(blob(.06,.06,.026,10,5),RIM,at(.004),null,[0,a/D,0]), shape(blob(.047,.047,.03,10,5),BLACK,at(.02),null,[0,a/D,0]), shape(sph(.009,4,3),SHINE,[at(.047)[0]-.012,y+.016,at(.047)[2]])]; };
+    const lip=(xs,ys,rs,dz)=>tube(xs.map((x,i)=>[x,ys[i],Math.sqrt(Math.max(0,HEAD.R(ys[i])**2-x*x))*HZ+dz]),rs,6,10);
+    const lapel=sx=>surf(8,6,(u,v)=>onB(BODY,BZ,-sx*D*(2+60*u*(.15+.85*Math.pow(Math.sin(v*Math.PI/2),.7))),.39+.175*v,.012+.022*u*v));
     const pocket=sx=>surf(8,4,(u,v)=>onB(BODY,BZ,(18+20*u)*D*sx,.33+.055*v,.012+.016*(1-v)));
-    const foot=sx=>{ const g=blob(.082,.07,.11,14,10), P=g.attributes.position; for(let i=0;i<P.count;i++)if(P.getY(i)<0)P.setY(i,P.getY(i)*.35); return shape(g,FL,[sx*.195,.05,.05],null,[0,sx*18,0]); };
-    const arm=sx=>{ const s=sx<0?'L':'R'; return skin(shape(tube([[sx*.245,.5,.07],[sx*.29,.44,.11],[sx*.3,.37,.14],[sx*.27,.3,.17],[sx*.24,.27,.18]],[.03,.05,.056,.05,.032,0],12,18,{up:[1,0,0],sz:.6}),FL),
+    const foot=sx=>{ const g=blob(.082,.07,.11,10,7), P=g.attributes.position; for(let i=0;i<P.count;i++)if(P.getY(i)<0)P.setY(i,P.getY(i)*.35); return shape(g,FL,[sx*.195,.05,.05],null,[0,sx*18,0]); };
+    const arm=sx=>{ const s=sx<0?'L':'R'; return skin(shape(tube([[sx*.245,.5,.07],[sx*.29,.44,.11],[sx*.3,.37,.14],[sx*.27,.3,.17],[sx*.24,.27,.18]],[.03,.05,.056,.05,.032,0],8,10,{up:[1,0,0],sz:.6}),FL),
       (x,y)=>{ const t=ss(.42,.33,y), h=ss(.46,.5,y)*.5; return ['arm'+s,1-t-h,'arm'+s+'t',t,'hips',h]; }); };
     const def={ bones:[['root',null,[0,0,0]],['hips','root',[0,.3,0]],['head','hips',[0,.55,0]],['hood','head',[0,.95,0]],
         ['armL','hips',[-.25,.5,.07]],['armLt','armL',[-.29,.38,.13]],['armR','hips',[.25,.5,.07]],['armRt','armR',[.29,.38,.13]],['tail','hips',[0,.25,-.24]],['tailFin','tail',[0,.25,-.26]],['legL','hips',[-.195,.13,.03]],['legR','hips',[.195,.13,.03]]],
       parts:[ part('eyes',3,'head',[...eye(-1),...eye(1)]),
         part('lips',3,'head',[ shape(lip([-.09,-.05,0,.05,.09],[.628,.656,.668,.656,.628],[0,.024,.03,.03,.024,0],.016),LIP), shape(lip([-.055,0,.055],[.627,.618,.627],[0,.022,.026,.022,0],.012),LIP), shape(lip([-.06,0,.06],[.634,.642,.634],[0,.006,.007,.006,0],.03),LIP2) ]),
         part('marks',3,'head',[ shape(sph(.013,6,4),[.98,.8,.55],onB(HEAD,HZ,Math.asin(-.16/HEAD.R(.815)),.815,.004)), shape(blob(.016,.024,.012,8,6),[.93,.38,.1],onB(HEAD,HZ,Math.asin(-.185/HEAD.R(.61)),.61,.004),null,[0,-50,0]) ]),
-        part('head',1,'head',[ shape(lathe(HEAD,40,26,{sz:HZ}),OR) ]),
-        {name:'hood',rank:5,bone:'hood',glass:true,of:[ shape(surf(40,22,(u,v)=>{ const a=u*Math.PI*2, f=Math.min(u,1-u)*Math.PI*2, e=f>1.9?.52:.52+.34*Math.pow(1-f/1.9,.8), y=e+(1-e)*Math.pow(v,.8), r=HOOD.R(Math.min(.999,y))*(1+.035*Math.sin(a*9+y*25));
+        part('head',1,'head',[ shape(lathe(HEAD,22,13,{sz:HZ}),OR) ]),
+        {name:'hood',rank:5,bone:'hood',glass:true,of:[ shape(surf(22,11,(u,v)=>{ const a=u*Math.PI*2, f=Math.min(u,1-u)*Math.PI*2, e=f>1.9?.52:.52+.34*Math.pow(1-f/1.9,.8), y=e+(1-e)*Math.pow(v,.8), r=HOOD.R(Math.min(.999,y))*(1+.035*Math.sin(a*9+y*25));
           return [r*Math.sin(a)-Math.max(0,y-.8)*.12,y,r*(HZ+.02)*Math.cos(a)]; }),(x,y,z)=>Math.sin(Math.atan2(x,z)*9+y*25)>.72?[1,1,1]:[.95,.95,.92]) ]},
-        part('coat',0,'hips',[ shape(lathe(BODY,40,24,{sz:BZ}),MU), shape(tube([.53,.45,.36,.27,.19,.12].map(y=>onB(BODY,BZ,0,y,.004)),[.005,.005],6,12),[.62,.45,.1]) ]),
-        part('collar',2,'hips',[ shape(lathe([[.228,.52],[.23,.59],[.245,.614],[.268,.604],[.284,.568],[.29,.5]],36,8,{sz:BZ+.02,keep:(u)=>Math.min(u,1-u)>.1}),MU) ]),
+        part('coat',0,'hips',[ shape(lathe(BODY,22,12,{sz:BZ}),MU), shape(tube([.53,.45,.36,.27,.19,.12].map(y=>onB(BODY,BZ,0,y,.004)),[.005,.005],4,8),[.62,.45,.1]) ]),
+        part('collar',2,'hips',[ shape(lathe([[.228,.52],[.23,.59],[.245,.614],[.268,.604],[.284,.568],[.29,.5]],22,5,{sz:BZ+.02,keep:(u)=>Math.min(u,1-u)>.1}),MU) ]),
         part('lapels',2,'hips',[ shape(lapel(-1),MU2), shape(lapel(1),MU2) ]),
         part('pockets',1,'hips',[ shape(pocket(-1),MU2), shape(pocket(1),MU2) ]),
         part('arm L',2,'armL',[ arm(-1) ]), part('arm R',2,'armR',[ arm(1) ]),
-        part('tail fin',2,'tailFin',[ ...[[.44,-.46],[.1,-.44]].map(([y,z])=>shape(tube([[0,.25,-.24],[0,(.25+y)/2,(z-.24)/2-.02],[0,y,z]],[.035,.07,.065,.03,0],10,12,{up:[1,0,0],sz:.28}),FL)),
-          shape(blob(.014,.1,.07,8,6),FL,[0,.26,-.34]) ]),
+        part('tail fin',2,'tailFin',[ ...[[.44,-.46],[.1,-.44]].map(([y,z])=>shape(tube([[0,.25,-.24],[0,(.25+y)/2,(z-.24)/2-.02],[0,y,z]],[.035,.07,.065,.03,0],6,8,{up:[1,0,0],sz:.28}),FL)),
+          shape(blob(.014,.1,.07,6,4),FL,[0,.26,-.34]) ]),
         part('foot L',0,'legL',[ foot(-1) ]), part('foot R',0,'legR',[ foot(1) ]) ],
       springs:{ tail:{y:.4,k:35,c:4,lim:.5}, tailFin:{y:.5,k:30,c:3,lim:.6}, hood:{f:-.05,s:.05,k:60,c:5,lim:.12}, armLt:{f:-.25,s:.2,k:40,c:4,lim:.5}, armRt:{f:-.25,s:.2,k:40,c:4,lim:.5}, head:{f:-.03,s:.03,k:80,c:8,lim:.1} },
       pose:(c,dt)=>{ const B=c.B, m=c.mv, ph=c.st.ph, sw=Math.sin(ph)*m; RIGNPC.walk(c,{arm:.35,leg:.55,bob:.035,rock:.09});
@@ -217,31 +217,31 @@ const TOONS={};
       const t=s**(1/k); return [c[0]+d[0]*t,c[1]+d[1]*t,c[2]+d[2]*t]; });
     const TOR=prof([[.07,.25],[.1,.262],[.108,.3],[.108,.4],[.105,.47],[.092,.512],[.06,.533],[0,.54]]), TZ=.78, DOME=prof([[.13,.655],[.133,.69],[.126,.73],[.106,.77],[.07,.8],[.03,.81],[0,.812]]), DZ=.95;
     const onT=(x,y,o)=>[x,y,Math.sqrt(Math.max(0,TOR.R(y)**2-x*x))*TZ+o], onD=(a,y,o=0)=>{ const r=DOME.R(y)+o; return [r*Math.sin(a),y,r*DZ*Math.cos(a)]; };
-    const loop=(cx,cy,rx,ry)=>shape(tube(Array.from({length:25},(_,i)=>{ const a=i/24*TAU; return onT(cx+rx*Math.sin(a),cy+ry*Math.cos(a),.006); }),[.007,.007],6,40),GLD);
+    const loop=(cx,cy,rx,ry)=>shape(tube(Array.from({length:25},(_,i)=>{ const a=i/24*TAU; return onT(cx+rx*Math.sin(a),cy+ry*Math.cos(a),.006); }),[.007,.007],4,14),GLD);
     const VW=v=>.118*Math.pow(1-v,.85)+.004, visor=(u,v)=>{ const x=u*VW(v), y=.665-v*.19, R=.13; return [x,y,Math.sqrt(Math.max(0,R*R-x*x))*.95+.012*(1-Math.abs(u))-.035*v*v]; };
-    const arm=sx=>{ const s=sx<0?'L':'R'; return skin(shape(tube([[sx*.1,.52,0],[sx*.122,.47,.004],[sx*.13,.42,.01],[sx*.132,.37,.016],[sx*.134,.345,.02]],[.042,.046,.043,.04,.041,.043],14,16),(x,y,z)=>y>.405?GRN(x,y,z):MAR(x,y,z)),
+    const arm=sx=>{ const s=sx<0?'L':'R'; return skin(shape(tube([[sx*.1,.52,0],[sx*.122,.47,.004],[sx*.13,.42,.01],[sx*.132,.37,.016],[sx*.134,.345,.02]],[.042,.046,.043,.04,.041,.043],8,10),(x,y,z)=>y>.405?GRN(x,y,z):MAR(x,y,z)),
       (x,y)=>{ const e=ss(.44,.39,y), h=ss(.5,.53,y)*.5; return ['arm'+s,1-e-h,'elbow'+s,e,'chest',h]; }); };
-    const hand=sx=>[shape(blob(.032,.034,.03,12,8),TAN,[sx*.136,.31,.022]), shape(blob(.012,.02,.012,8,6),TAN,[sx*.12,.322,.045],null,[20,0,sx*30])];
-    const leg=sx=>{ const s=sx<0?'L':'R', x=sx*.065; return skin(shape(tube([[x,.31,0],[x,.24,0],[x,.17,.004],[x,.1,0]],[.05,.05,.047,.044,.042],14,18,{d:(p,u,v)=>{ const k=1+.05*Math.sin(v*TAU*5); return [x+(p[0]-x)*k,p[1],p[2]*k]; }}),MAR2),
+    const hand=sx=>[shape(blob(.032,.034,.03,8,6),TAN,[sx*.136,.31,.022]), shape(blob(.012,.02,.012,6,4),TAN,[sx*.12,.322,.045],null,[20,0,sx*30])];
+    const leg=sx=>{ const s=sx<0?'L':'R', x=sx*.065; return skin(shape(tube([[x,.31,0],[x,.24,0],[x,.17,.004],[x,.1,0]],[.05,.05,.047,.044,.042],7,10,{d:(p,u,v)=>{ const k=1+.05*Math.sin(v*TAU*5); return [x+(p[0]-x)*k,p[1],p[2]*k]; }}),MAR2),
       (x,y)=>{ const k=ss(.2,.15,y); return ['leg'+s,1-k,'knee'+s,k]; }); };
-    const boot=sx=>{ const x=sx*.065; return [ shape(melt([x,.06,.02],[[[x,.085,0],[.046,.045,.046]],[[x,.04,.035],[.052,.04,.075]]],24,16),BRN), shape(blob(.055,.012,.08,16,6),SOLE,[x,.008,.035]),
+    const boot=sx=>{ const x=sx*.065; return [ shape(melt([x,.06,.02],[[[x,.085,0],[.046,.045,.046]],[[x,.04,.035],[.052,.04,.075]]],12,8),BRN), shape(blob(.055,.012,.08,8,3),SOLE,[x,.008,.035]),
       ...[0,1,2].map(k=>shape(box(.04,.006,.008),GLD,[x,.075-k*.018,.045+k*.012],null,[-30,0,0])) ]; };
     const STUDS=[[.755,-55],[.755,-25],[.755,25],[.755,55],[.71,-75],[.71,-45],[.71,45],[.71,75],[.735,-90],[.735,90],[.72,180],[.75,150],[.75,-150],[.72,120],[.72,-120]];
     const def={ bones:[['root',null,[0,0,0]],['hips','root',[0,.27,0]],['chest','hips',[0,.4,0]],['head','chest',[0,.53,0]],['horn','head',[0,.8,0]],
         ['armL','chest',[-.1,.515,0]],['elbowL','armL',[-.13,.42,.01]],['handL','elbowL',[-.134,.34,.02]],['armR','chest',[.1,.515,0]],['elbowR','armR',[.13,.42,.01]],['handR','elbowR',[.134,.34,.02]],
         ['legL','hips',[-.065,.27,0]],['kneeL','legL',[-.065,.17,0]],['footL','kneeL',[-.065,.09,0]],['legR','hips',[.065,.27,0]],['kneeR','legR',[.065,.17,0]],['footR','kneeR',[.065,.09,0]]],
-      parts:[ part('eye holes',4,'head',[-1,1].map(sx=>shape(blob(.022,.017,.008,10,6),BLACK,[...visor(sx*.52,.34).map((q,i)=>i===2?q+.004:q)],null,[0,sx*28,sx*-12]))),
-        part('visor',3,'head',[ shape(surf(16,14,(u,v)=>visor(u*2-1,v)),VIS), shape(tube(Array.from({length:9},(_,i)=>visor(0,i/8*.98).map((q,k)=>k===2?q+.003:q)),[.006,.005],6,12),HEL) ]),
-        part('face',1,'head',[ shape(blob(.094,.088,.09,18,12),TAN,[0,.6,.02]) ]),
-        part('helmet',2,'head',[ shape(surf(40,18,(u,v)=>{ const a=u*TAU, f=Math.min(u,1-u)*TAU, e=.655-.11*ss(1,1.7,f), y=e+(.812-e)*v, r=y<.655?.133+.006*(.655-y)/.11:DOME.R(y); return [r*Math.sin(a),y,r*DZ*Math.cos(a)]; }),HEL), shape(lathe([[.133,.648],[.142,.655],[.142,.672],[.133,.678]],40,3,{sz:DZ}),HEL) ]),
-        part('studs',3,'head',STUDS.map(([y,a])=>shape(sph(.012,8,6),GLD,onD(a*D,y,.004)))),
-        part('crest',3,'head',[ shape(blob(.022,.058,.012,10,10),GLD,onD(0,.75,.004),null,[-28,0,0]), shape(box(.003,.08,.004),[.66,.48,.18],onD(0,.75,.016),null,[-28,0,0]) ]),
-        part('horn',3,'horn',[ shape(tube([[0,.795,0],[0,.86,.004],[0,.93,-.004],[0,1.0,-.012]],[.043,.034,.024,.012,0],14,24,{d:(p,u,v)=>{ const k=1+.08*Math.abs(Math.sin(v*Math.PI*7)); return [p[0]*k,p[1],(p[2]+.004)*k-.004]; }}),GLD) ]),
-        part('side horns',3,'head',[-1,1].map(sx=>shape(tube([[sx*.118,.715,0],[sx*.15,.75,0],[sx*.172,.79,-.004],[sx*.18,.835,-.01]],[.024,.02,.013,.006,0],10,14),CRM))),
-        part('ear cups',3,'head',[-1,1].flatMap(sx=>[ shape(blob(.014,.058,.038,12,10),GLD,[sx*.136,.635,0]), shape(torus(.04,.011,8,20),CRM,[sx*.14,.635,0],[1,1.45,1],[0,90,0]) ])),
-        part('neck guard',2,'chest',[-1,1].map(sx=>shape(blob(.05,.032,.045,12,8),CRM,[sx*.1,.548,.02]))),
-        part('shirt',0,'chest',[ skin(shape(lathe(TOR,36,20,{sz:TZ}),MAR),(x,y)=>{ const k=ss(.3,.42,y); return ['hips',1-k,'chest',k]; }),
-          skin(shape(lathe([[.1,.25],[.104,.256],[.104,.272],[.1,.278]],36,3,{sz:TZ}),MAR2),()=>['hips',1]) ]),
+      parts:[ part('eye holes',4,'head',[-1,1].map(sx=>shape(blob(.022,.017,.008,8,4),BLACK,[...visor(sx*.52,.34).map((q,i)=>i===2?q+.004:q)],null,[0,sx*28,sx*-12]))),
+        part('visor',3,'head',[ shape(surf(10,8,(u,v)=>visor(u*2-1,v)),VIS), shape(tube(Array.from({length:9},(_,i)=>visor(0,i/8*.98).map((q,k)=>k===2?q+.003:q)),[.006,.005],4,8),HEL) ]),
+        part('face',1,'head',[ shape(blob(.094,.088,.09,10,6),TAN,[0,.6,.02]) ]),
+        part('helmet',2,'head',[ shape(surf(20,9,(u,v)=>{ const a=u*TAU, f=Math.min(u,1-u)*TAU, e=.655-.11*ss(1,1.7,f), y=e+(.812-e)*v, r=y<.655?.133+.006*(.655-y)/.11:DOME.R(y); return [r*Math.sin(a),y,r*DZ*Math.cos(a)]; }),HEL), shape(lathe([[.133,.648],[.142,.655],[.142,.672],[.133,.678]],20,2,{sz:DZ}),HEL) ]),
+        part('studs',3,'head',STUDS.map(([y,a])=>shape(sph(.012,4,3),GLD,onD(a*D,y,.004)))),
+        part('crest',3,'head',[ shape(blob(.022,.058,.012,8,6),GLD,onD(0,.75,.004),null,[-28,0,0]), shape(box(.003,.08,.004),[.66,.48,.18],onD(0,.75,.016),null,[-28,0,0]) ]),
+        part('horn',3,'horn',[ shape(tube([[0,.795,0],[0,.86,.004],[0,.93,-.004],[0,1.0,-.012]],[.043,.034,.024,.012,0],8,12,{d:(p,u,v)=>{ const k=1+.08*Math.abs(Math.sin(v*Math.PI*4)); return [p[0]*k,p[1],(p[2]+.004)*k-.004]; }}),GLD) ]),
+        part('side horns',3,'head',[-1,1].map(sx=>shape(tube([[sx*.118,.715,0],[sx*.15,.75,0],[sx*.172,.79,-.004],[sx*.18,.835,-.01]],[.024,.02,.013,.006,0],6,8),CRM))),
+        part('ear cups',3,'head',[-1,1].flatMap(sx=>[ shape(blob(.014,.058,.038,6,5),GLD,[sx*.136,.635,0]), shape(torus(.04,.011,4,10),CRM,[sx*.14,.635,0],[1,1.45,1],[0,90,0]) ])),
+        part('neck guard',2,'chest',[-1,1].map(sx=>shape(blob(.05,.032,.045,6,5),CRM,[sx*.1,.548,.02]))),
+        part('shirt',0,'chest',[ skin(shape(lathe(TOR,18,10,{sz:TZ}),MAR),(x,y)=>{ const k=ss(.3,.42,y); return ['hips',1-k,'chest',k]; }),
+          skin(shape(lathe([[.1,.25],[.104,.256],[.104,.272],[.1,.278]],18,2,{sz:TZ}),MAR2),()=>['hips',1]) ]),
         part('number',2,'chest',[ loop(-.034,.468,.022,.026), loop(-.034,.41,.026,.032), loop(.04,.44,.026,.058) ]),
         part('sleeve L',1,'armL',[ arm(-1) ]), part('sleeve R',1,'armR',[ arm(1) ]), part('hand L',2,'handL',hand(-1)), part('hand R',2,'handR',hand(1)),
         part('leg L',0,'legL',[ leg(-1) ]), part('leg R',0,'legR',[ leg(1) ]), part('boot L',1,'footL',boot(-1)), part('boot R',1,'footR',boot(1)) ],

@@ -3638,3 +3638,8 @@ initial download and load super fast"; then "Go")
 - **Checked**: `tests/places.cjs` (now in the site workflow) logs in on the real worker, checks the start fetches no chunk, enters every
   place (each fetches its file, builds, no page errors, no late fetch), then reloads with a saved spot inside the dungeon; all pass, the
   site check too.
+
+- **The three new characters cut to about 4,000 triangles each** (owner, 20 Oct 2026: "these are for a low res pixel game, do they really
+  need to be so big?"; his pick "4000", as 19 Oct's cut of the heaviest pawns): their curves are sampled more coarsely (fewer rings and
+  segments on every lathe, tube and surface; the same profiles, proportions, bones, cloth and motion). THE MANATEE 11,876 → 3,748;
+  THE RAIN FISH 11,236 → 3,764 with the hood; NUMBER 80 14,324 → 4,048 (his horn four rings, not seven).

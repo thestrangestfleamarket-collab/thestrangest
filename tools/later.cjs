@@ -7,7 +7,7 @@
 // after the first frame); every other '@later'; is taken out. Functions already in a place's chunk ('@park' and the like), methods,
 // generators, one-line arrows, arrows that use this/arguments and the ways into places (anything that calls LOAD) are left alone. Prints how many functions and characters it marked.
 const {chromium}=require('playwright'), fs=require('fs'), path=require('path'), http=require('http');
-const {parse}=require('./scope.cjs');
+const {parse}=require('./chunkscope.cjs');
 let PAGE='', Y='if(performance.now()-__YT>40)await __Y();', MARK=" '@later';", MIN=300;
 const coverage=async()=>{
   const srv=http.createServer((q,r)=>{ const p=path.join('dist',decodeURIComponent(new URL(q.url,'http://x').pathname)); if(!p.startsWith('dist')||!fs.existsSync(p)||fs.statSync(p).isDirectory()){ r.writeHead(404); return r.end(); } r.writeHead(200,{'content-type':p.endsWith('.html')?'text/html':'application/octet-stream'}); fs.createReadStream(p).pipe(r); });

@@ -1,5 +1,5 @@
 const fs = require('fs');
-const scope = () => require('./scope.cjs');
+const scope = () => require('./chunkscope.cjs');
 const RT = 'const __CM={}, __CP={};\n'
   + 'const LOAD=(...ns)=>Promise.all(ns.map(n=>!n||__CM[n]?0:__CP[n]||(__CP[n]=__CLOAD(n).then(m=>{ __CM[n]=__CM[n]||m; },e=>{ delete __CP[n]; throw e; }))));\n'
   + 'const LOADED=n=>!n||!!__CM[n];\n'

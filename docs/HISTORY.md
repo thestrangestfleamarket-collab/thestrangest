@@ -3656,3 +3656,11 @@ initial download and load super fast"; then "Go")
   `WEEDC` (the page-level `PROPS`, `CITY`, `WEEDS` are untouched). Proof: every reference resolves to the
   same declaration text as before (226,600 compared). What was already true and now shows: none of `014`–`049` touches the scene, the
   lamps or the walls, so the builder's group holds exactly what it held.
+
+## 20 Oct 2026: the sun rays off
+
+- **Done** (owner, 20 Oct 2026: "lets take off sun rays for now from game -queue"): `133a-sunrays.js` is deleted (the beams, the dust
+  and the full-screen shader pass it put in the composer, with its tick on the clock), with its test `tests/sunrays.cjs`; the day and
+  night panel loses its LIGHT SHAFTS AND RAYS and DUST IN THE LIGHT sliders and the presets their `ray`/`dust` keys. Cost taken off
+  every frame outdoors by day: one full-screen pass, 16 beam cylinders and the dust points; one shader program fewer. The picture
+  check no longer needs to hide them (it still can, harmlessly, on older pages).

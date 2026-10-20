@@ -1,4 +1,4 @@
-{ const DGO=S=>{
+{ const DFL=[0,1].map(()=>{ const L=new THREE.PointLight(0xff8a30,0,7*TILE,1.6); MAPG.bodega.add(L); return L; }), DGO=S=>{
   const BN=S.rig.names, JI=Object.fromEntries(BN.map((n,i)=>[n,i]));
   const geomOf=M=>SKIN.geom(M,true,false), rigOf=()=>SKIN.rig(S.rig), CLIPS=SKIN.clips(S.clips,BN);
   const M=S.chars.Dragon, GR=['#0d2410','#163a19','#225023','#2f6630'].map(h=>new THREE.Color(h));
@@ -19,7 +19,7 @@
   const haloTex=(c,W)=>{ const cv=document.createElement('canvas'); cv.width=cv.height=W; const g=cv.getContext('2d'), im=g.createImageData(W,W), Bm=[0,8,2,10,12,4,14,6,3,11,1,9,15,7,13,5];
     for(let j=0;j<W;j++)for(let i=0;i<W;i++){ const d=Math.hypot((i+.5)/W*2-1,(j+.5)/W*2-1), t=(Bm[(j%4)*4+i%4]+.5)/16, a=d<.35+(t-.5)*.1?.9:d<.6+(t-.5)*.12?.45:d<.95+(t-.5)*.1?.15:0, q=(j*W+i)*4; im.data[q]=c[0]; im.data[q+1]=c[1]; im.data[q+2]=c[2]; im.data[q+3]=a*255; }
     g.putImageData(im,0,0); const t=new THREE.CanvasTexture(cv); t.magFilter=t.minFilter=THREE.NearestFilter; t.generateMipmaps=false; t.colorSpace=THREE.SRGBColorSpace; return t; };
-  const HT=haloTex([255,150,40],24), FL=[0,1].map(()=>{ const L=new THREE.PointLight(0xff8a30,0,7*TI,1.6); MAPG.bodega.add(L); return L; });
+  const HT=haloTex([255,150,40],24), FL=DFL;
   const FB=[];
   const fire=(from,dir)=>{ let f=FB.find(f=>!f.on); if(!f){ f={g:new THREE.Group()};
       const h=new THREE.Mesh(new THREE.PlaneGeometry(1.6*TI,1.6*TI),new THREE.MeshBasicMaterial({map:HT,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,toneMapped:false})); h.onBeforeRender=(r,s,cm)=>{ h.quaternion.copy(cm.quaternion); h.updateMatrixWorld(); };

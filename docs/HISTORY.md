@@ -3672,6 +3672,10 @@ initial download and load super fast"; then "Go")
   none back; the scope proof shows every reference resolving as before. The club's inside still builds on entry (the `club` chunk).
   Next: the arcade, the dojo, the fire escape, the ghost dojo, the apartments, main street and the store, one each.
 
+## 20 Oct 2026: the arcade is its own builder (modules)
+
+- `059b-arcade.js` moves after the bodega builder and is wrapped in `await grab('arcade', ...)`: its meshes land in `MAPG.arcade`. It was already a
+
 ## 20 Oct 2026: the dojo is its own builder (modules)
 
 - `059c-dojo.js` moves after the bodega builder and is wrapped in `await grab('dojo', ...)`: its meshes land in `MAPG.dojo`. It was already a

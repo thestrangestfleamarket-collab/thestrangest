@@ -3631,3 +3631,8 @@ initial download and load super fast"; then "Go")
 - **The sun rays off** (owner, 20 Oct 2026, with a picture of the street under the beams: "lets take off sun rays for now from game
   -queue"): the light beams and their dust (`133a-sunrays.js`, `RAYS`) come out of the game for now. Queued; small enough to go as its
   own pull request before the next module step (the picture check then no longer needs to hide them).
+- **The park gate and the far forest** (owner, 20 Oct 2026, with a picture through the park gate: "chaneg (A) to (Central Park) mark
+  it arched, small, all metal, the trees towarsd the distance should be much bigger and looks like a deep forest of trees, you should
+  barely be able to see the skyline over it. i dont want the park feeling small."): the gate's "A" medallion becomes CENTRAL PARK,
+  small all-metal lettering arched over the gate; the far trees become a deep forest of much bigger trees that nearly hides the
+  skyline. Cost to state when built (far trees: triangles against the budget; the skyline mostly hidden may let it draw less).

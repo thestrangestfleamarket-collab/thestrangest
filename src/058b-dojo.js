@@ -7,7 +7,7 @@
   STORE.main.doors.push(['THE DOJO',X(GX),Z(GY)+2.2*TILE]);
   const F3={D:'110101101101110',O:'111101101101111',J:'001001001101111'};
   const glyph=(s,u,v,k)=>{ const i=Math.floor(v/(6*k)), c=s[i], q=F3[c]; if(!q)return false; const r=Math.floor((v-i*6*k)/k), cc=Math.floor(u/k); return r<5&&cc>=0&&cc<3&&q[r*3+cc]==='1'; };
-  STEPS.push(()=>{ '@later'; const RED=[120,44,32], DK=[40,30,26], RF=[44,44,52], bs=[];
+  STEPS.push(()=>{ const RED=[120,44,32], DK=[40,30,26], RF=[44,44,52], bs=[];
     const b=(x0,y0,x1,y1,z0,z1,c,o={})=>bs.push({x0,y0,x1,y1,z0,z1,c,...o});
     b(GX-.8,GY,GX+.8,GY+.03,0,DH-4,[16,13,12],{fs:(nx,ny,P,Q,z)=>z<6?[58,40,28]:z<9?[34,26,20]:[16,13,12]});
     for(const s of [-1,1])b(GX+s*.8-(s>0?0:.16),GY,GX+s*.8+(s>0?.16:0),GY+.2,0,DH+4,RED,{fs:(nx,ny,P,Q,z,k)=>sh(RED,k*(z<8?.7:1))});

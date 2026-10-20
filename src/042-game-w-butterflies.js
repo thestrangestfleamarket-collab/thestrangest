@@ -8,7 +8,7 @@ const BF_SHAPE={
   blue:{f:[[0,0.145],[0.16,0.493],[0.56,0.667],[0.9,0.58],[0.84,0.174],[0.62,-0.02],[0,-0.04]],h:[.27,-.28,.32,.3]},
   bhut:{f:[[0,0.116],[0.2,0.493],[0.62,0.667],[1,0.551],[0.76,0.058],[0,-0.02]],h:[.26,-.32,.32,.28],tail:[[.3,-.52],[.36,-.98],[.42,-.96],[.4,-.52]],tail2:[[.18,-.55],[.22,-.82],[.27,-.8],[.26,-.55]]}};
 const bfIn=(P,x,y)=>{ let c=false; for(let i=0,j=P.length-1;i<P.length;j=i++){ const [a,b]=P[i],[p,q]=P[j]; if((b>y)!==(q>y)&&x<(p-a)*(y-b)/(q-b)+a)c=!c; } return c; };
-function bfWing(sh,u,v){ '@later'; const S=BF_SHAPE[sh], [hx,hy,hr,hv]=S.h;
+function bfWing(sh,u,v){ const S=BF_SHAPE[sh], [hx,hy,hr,hv]=S.h;
   const inF=(x,y)=>u>=0&&bfIn(S.f,x,y), inH=(x,y)=>x>=0&&((x-hx)/hr)**2+((y-hy)/hv)**2<=1||S.tail&&bfIn(S.tail,x,y)||S.tail2&&bfIn(S.tail2,x,y);
   const f=inF(u,v), h=!f&&inH(u,v); if(!f&&!h)return null;
   const [cx,cy]=f?[.42,.3]:[hx,hy], t=k=>{ const x=cx+(u-cx)/k, y=cy+(v-cy)/k; return f?inF(x,y):inH(x,y); };
@@ -49,7 +49,7 @@ const BF_KINDS=[
   ['Apollo','Parnassius apollo','mountain meadows of Europe and Asia',75,'pier',1,(u,v,f,r)=>{ const eye=!f&&[[.22,-.24],[.36,-.42]].find(([a,b])=>bfNear(u,v,a,b,.075)); if(eye)return bfNear(u,v,eye[0],eye[1],.045)?BF_C.red:BF_C.blk;
     return f&&[[.45,.3],[.62,.22],[.3,.14]].some(([a,b])=>bfNear(u,v,a,b,.05))?BF_C.blk:f&&r<.12?[196,198,196]:[244,242,236]; },[236,232,220]]];
 
-function bfPic(k,w,pose){ '@later'; const [,,,,sh,,pat,under]=BF_KINDS[k], hs=w/2, ys=.72;
+function bfPic(k,w,pose){ const [,,,,sh,,pat,under]=BF_KINDS[k], hs=w/2, ys=.72;
   if(pose===2){ const W=Math.max(3,Math.round(hs*1.25)), h=Math.max(3,Math.round(hs*1.05)+1), oy=h-1, px=new Array(W*h).fill(null);
     for(let y=0;y<h;y++)for(let x=0;x<W;x++){ const a=(x+.5-W*.45)/hs, b=(oy-(y+.5))/hs;
       if(y===oy&&Math.abs(a)<.42){ px[y*W+x]=a>.34?[40,34,30]:[30,26,24]; continue; }

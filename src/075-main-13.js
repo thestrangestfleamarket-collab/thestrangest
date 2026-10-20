@@ -11,7 +11,7 @@ renderer.domElement.addEventListener('pointerdown',e=>{ if(e.button===2||e.butto
 renderer.domElement.addEventListener('pointermove',e=>{ if(!drag)return; UI.orbit(e.clientX-drag.x,e.clientY-drag.y); drag={x:e.clientX,y:e.clientY}; });
 renderer.domElement.addEventListener('pointerup',()=>drag=null);
 renderer.domElement.addEventListener('wheel',e=>{ e.preventDefault(); let lo=3; if(e.deltaY>0&&!UI.persp){ const w=cam.right-cam.left; if(w>=UI.MAXW*.99)return; lo=Math.max(lo,ppu*w/UI.MAXW); } ppuTo=Math.max(lo,Math.min(ZMAX,ppuTo*Math.pow(1.0015,-e.deltaY))); UI.wheelAt(e); },{passive:false});
-addEventListener('keydown',e=>{ '@later'; const k=UI.key(e); if(!k)return; if(FEEL.key(k,e))return; const FT=FEEL.take(); if(k===' '&&!e.repeat&&FT)FEEL.press(); keys.add(k); if(['arrowup','arrowdown','arrowleft','arrowright',' '].includes(k))e.preventDefault();
+addEventListener('keydown',e=>{ const k=UI.key(e); if(!k)return; if(FEEL.key(k,e))return; const FT=FEEL.take(); if(k===' '&&!e.repeat&&FT)FEEL.press(); keys.add(k); if(['arrowup','arrowdown','arrowleft','arrowright',' '].includes(k))e.preventDefault();
   if(k==='0'){ yawTo=VIEW0.yaw; pitchTo=VIEW0.pitch; ppuTo=VIEW0.ppu; UI.home(); } if(k==='h')document.getElementById('hud').hidden^=1; if(k==='1'&&!e.repeat&&!ED.on&&window.WIELD)WIELD.next();
   if(k==='-'||k==='_'){RESI=Math.max(0,RESI-1);resize();} if(k==='='||k==='+'){ if(pxS()>1||vpu()>art())RESI=Math.min(RESMAX,RESI+1); resize(); }
   if(k==='shift')st.runTarget=1; if(k==='f'&&!e.repeat&&!UI.freeCam&&!UI.fly&&!ED.on)trip=true; if(st.water&&st.water.in&&(k===' '||k==='j')){ st.water.dive=true; e.preventDefault(); } else if(MOVEK[k]&&!e.repeat&&!RAG.on&&!UI.freeCam&&!ED.on&&!(UI.fly&&k===' ')&&!(FT&&k===' '))RIG.act(st,MOVEK[k]); });
@@ -21,7 +21,7 @@ addEventListener('blur',()=>{ keys.clear(); st.runTarget=0; FEEL.IN.press=0; });
 const ray=new THREE.Raycaster(), gplane=new THREE.Plane(new THREE.Vector3(0,1,0),0), hit=new THREE.Vector3();
 const marker=new THREE.Mesh(new THREE.PlaneGeometry(0.5,0.5).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({color:0xf2c14e,transparent:true,opacity:0.8})); marker.visible=false; scene.add(marker);
 
-function collide(p){ '@later'; if(typeof NPCS!=='undefined'&&!VIT.dead)for(const N of NPCS)if(N.lv===LVL&&!N.far)N.push(p); const r=0.36; p.x=Math.max(BOUND.x0,Math.min(BOUND.x1,p.x)); p.z=Math.max(BOUND.z0,Math.min(BOUND.z1,p.z));
+function collide(p){ if(typeof NPCS!=='undefined'&&!VIT.dead)for(const N of NPCS)if(N.lv===LVL&&!N.far)N.push(p); const r=0.36; p.x=Math.max(BOUND.x0,Math.min(BOUND.x1,p.x)); p.z=Math.max(BOUND.z0,Math.min(BOUND.z1,p.z));
   for(const [x0,z0,x1,z1] of solids){ const cx=Math.max(x0,Math.min(x1,p.x)), cz=Math.max(z0,Math.min(z1,p.z)), dx=p.x-cx, dz=p.z-cz, d2=dx*dx+dz*dz;
     if(d2>=r*r)continue; if(d2>1e-8){ const d=Math.sqrt(d2); p.x=cx+dx/d*r; p.z=cz+dz/d*r; }
     else { const o=[p.x-x0+r,x1-p.x+r,p.z-z0+r,z1-p.z+r], m=Math.min(...o); if(m===o[0])p.x=x0-r; else if(m===o[1])p.x=x1+r; else if(m===o[2])p.z=z0-r; else p.z=z1+r; } } }

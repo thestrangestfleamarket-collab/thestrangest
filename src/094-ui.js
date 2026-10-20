@@ -7,7 +7,7 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
   let BIND={}; try{ BIND=JSON.parse(SAVE.get('keys')||'{}')||{}; }catch(e){}
   const DEF={view:'v',v:'b',rot:'r',r:'y',shoes:'m'}, keyOf=a=>BIND[a]??DEF[a]??a, rev=()=>{ const r={}; for(const [a] of ACTS)r[keyOf(a)]=a; return r; };
   let REV=rev(), waiting=null; UI.keyOf=keyOf;
-  UI.key=e=>{ '@later'; const raw=e.key.toLowerCase();
+  UI.key=e=>{ const raw=e.key.toLowerCase();
     if(waiting){ if(raw!=='escape'){ const old=keyOf(waiting); for(const [a] of ACTS)if(a!==waiting&&keyOf(a)===raw)BIND[a]=old; BIND[waiting]=raw;
         try{ SAVE.set('keys',JSON.stringify(BIND)); }catch(err){} REV=rev(); } waiting=null; drawKeys(); e.preventDefault(); return null; }
     if(raw==='escape'){ if(e.type==='keydown'){ if(ED.on)ED.exit(); else if(WE.on)WE.toggle(); else toggleMenu(); } return null; }
@@ -99,8 +99,8 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
   let fx=null, fz=null; const fv=new THREE.Vector3();
   UI.follow=()=>{ const mv=fx!=null&&Math.hypot(pos.x-fx,pos.z-fz)>1e-4; fx=pos.x; fz=pos.z; if(!mv||UI.off.lengthSq()<1e-8)return;
     fv.set(pos.x,py+.9,pos.z).project(cam); if(Math.abs(fv.x)>.92||Math.abs(fv.y)>.92){ UI.off.set(0,0,0); zAt=null; } };
-  cv.addEventListener('pointerdown',e=>{ '@later'; if(e.button!==0||ED.on)return; if(window.WIELD&&WIELD.on&&!MAPED.on&&!WE.on&&!UI.freeCam){ WIELD.strike(); return; } if(MAPED.down(e)||WE.down(e)){ cv.setPointerCapture(e.pointerId); return; } L={x:e.clientX,y:e.clientY,x0:e.clientX,y0:e.clientY,moved:false}; UI.grab(e); cv.setPointerCapture(e.pointerId); });
-  cv.addEventListener('pointermove',e=>{ '@later'; if(MAPED.dragging){ MAPED.move(e); return; } if(WE.dragging){ WE.move(e); return; } if(!L)return; if(!L.moved&&Math.hypot(e.clientX-L.x0,e.clientY-L.y0)>5)L.moved=true;
+  cv.addEventListener('pointerdown',e=>{ if(e.button!==0||ED.on)return; if(window.WIELD&&WIELD.on&&!MAPED.on&&!WE.on&&!UI.freeCam){ WIELD.strike(); return; } if(MAPED.down(e)||WE.down(e)){ cv.setPointerCapture(e.pointerId); return; } L={x:e.clientX,y:e.clientY,x0:e.clientX,y0:e.clientY,moved:false}; UI.grab(e); cv.setPointerCapture(e.pointerId); });
+  cv.addEventListener('pointermove',e=>{ if(MAPED.dragging){ MAPED.move(e); return; } if(WE.dragging){ WE.move(e); return; } if(!L)return; if(!L.moved&&Math.hypot(e.clientX-L.x0,e.clientY-L.y0)>5)L.moved=true;
     if(L.moved&&!e.shiftKey&&!e.altKey&&!UI.persp)UI.pan(e.clientX-L.x,e.clientY-L.y);
     else if(L.moved)UI.orbit(e.clientX-L.x,e.clientY-L.y); L.x=e.clientX; L.y=e.clientY; });
   cv.addEventListener('pointerup',()=>{ MAPED.up(); WE.up(); L=null; });
@@ -167,7 +167,7 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
     <div class="foot"><span>ESC closes</span><span>THE MARKET</span></div></div>`;
   document.body.appendChild(M);
   const $=s=>M.querySelector(s); let tab='map', mapLv='up'; if(!SOUND)$('[data-t="sound"]').style.display='none';
-  const show=t=>{ '@later'; tab=t; M.querySelectorAll('[data-t]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.t===t))); M.querySelectorAll('[data-p]').forEach(p=>p.hidden=p.dataset.p!==t); if(t==='map')drawMap(); if(t==='display'||t==='graphics'||t==='sound')drawDisplay(); if(t==='sound')SNDED.into($('#dsndin')); if(t==='keys')drawKeys(); if(t==='bug')BUGS.open($('#dbug')); if(t==='atmo')window.DN&&DN.draw(); };
+  const show=t=>{ tab=t; M.querySelectorAll('[data-t]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.t===t))); M.querySelectorAll('[data-p]').forEach(p=>p.hidden=p.dataset.p!==t); if(t==='map')drawMap(); if(t==='display'||t==='graphics'||t==='sound')drawDisplay(); if(t==='sound')SNDED.into($('#dsndin')); if(t==='keys')drawKeys(); if(t==='bug')BUGS.open($('#dbug')); if(t==='atmo')window.DN&&DN.draw(); };
   M.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>show(b.dataset.t));
   M.addEventListener('click',e=>{ if(e.target===M)toggleMenu(); });
   UI.toggleMenu=()=>toggleMenu(); UI.menuTab=t=>{ if(!UI.menuOpen)toggleMenu(); show(t); };
@@ -185,7 +185,7 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
     renderer.setRenderTarget(null); renderer.clippingPlanes=cp; renderer.setClearColor(cc,ca);
     for(const k in vis)MAPG[k].visible=vis[k]; HEMI.intensity=h0; W3.group.visible=true;
     const im=new ImageData(W,H); for(let y=0;y<H;y++){ const o=y*W*4, q=(H-1-y)*W*4; for(let i=0;i<W*4;i+=4){ im.data[o+i]=GAM[px[q+i]]; im.data[o+i+1]=GAM[px[q+i+1]]; im.data[o+i+2]=GAM[px[q+i+2]]; im.data[o+i+3]=255; } } return im; };
-  const PLAN={}; const plan=()=>{ '@later'; if(PLAN.im)return PLAN; const BK=RING.bank, TW=RING.cf.x0, F={...RING.cf,x0:BK.x0-1.5}, S=2, W=Math.round((F.x1-F.x0)*S), H=Math.round((F.y1-F.y0)*S), K=BLDK, OX=BOD.OX, OY=BOD.OY;
+  const PLAN={}; const plan=()=>{ if(PLAN.im)return PLAN; const BK=RING.bank, TW=RING.cf.x0, F={...RING.cf,x0:BK.x0-1.5}, S=2, W=Math.round((F.x1-F.x0)*S), H=Math.round((F.y1-F.y0)*S), K=BLDK, OX=BOD.OX, OY=BOD.OY;
     const bt=(x,y)=>[OX+(x-OX)*K,OY+(y-OY)*K], wt=(x,z)=>[OX+x/TILE,OY+z/TILE];
     const P=PARK, px0=P.x0+P.ox, px1=P.x1+P.ox, py0=P.y0+P.oy, py1=P.y1+P.oy, RV=RING.river, G=BOD.grounds.filter(g=>!g.bld), RA=BOD.road.at;
     const C={void:[11,13,18],water:[40,86,128],quay:[104,104,98],road:[52,54,60],alley:[70,71,76],walk:[142,138,128],land:[60,104,54],lawn:[74,134,60],way:[186,170,128],wall:[48,52,46]};
@@ -210,7 +210,7 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
     const L=[]; for(const q of B)if(q.n)L.push([q.n,(q.x0+q.x1)/2,q.y1<BOD.road.CORN[0].y?q.y0-2.5:q.y1+1.5]);
     L.push(['CENTRAL PARK',(px0+px1)/2,(py0+py1)/2+12],['HUDSON RIVER',(F.x0+F.x1)/2,(RV.y0+RV.y1)/2],['MARKET ST',(RING.wr1+AVE.r0)/2-40,(BOD.road.CORN[0]?BOD.road.CORN[0].y:-60)]);
     Object.assign(PLAN,{F,S,W,H,im,L,sx:x=>(x-F.x0)*S,sy:y=>(F.y1-y)*S,tile:(i,j)=>[F.x0+i/S,F.y1-j/S]}); return PLAN; };
-  function drawMap(){ '@later'; M.querySelectorAll('[data-lv]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.lv===mapLv)));
+  function drawMap(){ M.querySelectorAll('[data-lv]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.lv===mapLv)));
     if(mapLv==='up'){ const Q=plan(); mcv.width=Q.W; mcv.height=Q.H; mcv.style.width='100%'; mg.putImageData(Q.im,0,0); mg.font='8px Silkscreen,monospace'; mg.textAlign='center'; mg.textBaseline='middle';
       const U=[]; for(const [n,x,y] of Q.L){ const a=Math.round(Q.sx(x)), w=mg.measureText(n).width/2+2; let b=Math.round(Q.sy(y)); while(U.some(u=>Math.abs(u[0]-a)<u[2]+w&&Math.abs(u[1]-b)<9))b+=9; U.push([a,b,w]);
         mg.fillStyle='#000'; mg.fillText(n,a+1,b+1); mg.fillStyle='#ece5d3'; mg.fillText(n,a,b); }

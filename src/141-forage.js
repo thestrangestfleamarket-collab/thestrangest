@@ -98,7 +98,7 @@ const FORAGE={}; window.FORAGE=FORAGE;
   FORAGE.ident=id=>{ const k=id.slice(2), d=MU[k][1]; if(use('myco',d-30,d+20)){ const n=have(id); take(id,n); give('m_'+k,n); say(`IT IS A ${MU[k][0]}.`,'#c8b0ff'); } else say('YOU CANNOT TELL WHAT IT IS.','#c8a090'); PACK.draw(); };
   const fire=()=>{ '@later'; if(typeof FLAME==='undefined')return null; const w=new V3(); for(const s of FLAME.src){ if(s.k<0||s.k>2)continue; let o=s.a, vis=true; for(;o;o=o.parent)if(!o.visible){ vis=false; break; } if(!vis)continue; s.a.getWorldPosition(w); if(Math.hypot(w.x-pos.x,w.z-pos.z)<3*T&&Math.abs(w.y-py)<3*T)return s; } return null; };
   FORAGE.fire=fire;
-  FORAGE.craft=rid=>{ '@later'; const r=RC.find(x=>x[0]===rid); if(!r)return; const [id,nm,k,[mn,mx],ins]=r;
+  FORAGE.craft=rid=>{ const r=RC.find(x=>x[0]===rid); if(!r)return; const [id,nm,k,[mn,mx],ins]=r;
     for(const m in ins)if(have(iid(m))<ins[m])return say('YOU DO NOT HAVE WHAT IT TAKES.','#c8a090');
     if(k==='alchemy'){ if(!have('mortar'))return say('YOU NEED A MORTAR AND PESTLE.','#c8a090'); if(!have('bottle'))return say('YOU NEED AN EMPTY BOTTLE.','#c8a090'); }
     if(k==='cooking'&&!fire())return say('YOU NEED A FLAME TO COOK OVER: A FIRE, A CANDLE, A TORCH.','#c8a090');

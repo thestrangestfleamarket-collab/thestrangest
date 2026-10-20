@@ -25,14 +25,16 @@ const TOUR=[
   if(!up){ console.log('FAIL: the worker never started\n'+log); w.kill(); process.exit(1); }
   const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist']});
   const ctx=await b.newContext({viewport:{width:960,height:540}}); await ctx.addCookies([{name:'tsfm-pass',value:'dev:site-check',url:BASE}]);
+  await ctx.addInitScript(()=>{ let s; Object.defineProperty(window,'__started',{configurable:true,get(){ return s; },set(v){ s=v; if(v&&!window.__t0)window.__t0=performance.now(); }}); });
   const pg=await ctx.newPage(); pg.setDefaultTimeout(900000); const errs=[], late=[], req=[]; let phase='start';
   pg.on('pageerror',e=>errs.push(e.message.slice(0,300))); pg.on('console',m=>{ const t=m.text(); if(/not loaded before use/.test(t))late.push(t); else if(m.type()==='error')errs.push(t.slice(0,300)); });
   pg.on('request',r=>{ const u=new URL(r.url()); if(u.pathname.startsWith('/g/'))req.push({f:u.pathname.slice(3),phase}); });
   const start=async q=>{ const t0=Date.now(); await pg.goto(BASE+'/'+q,{waitUntil:'commit',timeout:600000}); let s=false; for(let i=0;i<1500&&!(s=await pg.evaluate(()=>!!window.__started).catch(()=>false));i++)await wait(200); return s&&Date.now()-t0; };
   const ms=await start('?fresh=1&hour=13&wx=CLEAR'); ok(!!ms,'THE MARKET starts ('+ms+' ms)');
   const gz=f=>{ const p=path.join('dist/g',f), d=fs.readFileSync(p); return p.endsWith('.bin')?d.length:zlib.gzipSync(d,{level:9}).length; };
-  const st=[...new Set(req.filter(r=>r.phase==='start').map(r=>r.f))];
-  console.log('     the start fetched '+st.length+' files, '+Math.round(st.reduce((a,f)=>a+gz(f),0)/1024)+' KB gzipped; code: '+st.filter(f=>/\.js$/.test(f)).map(f=>f+' '+Math.round(gz(f)/1024)+' KB').join(', '));
+  const st=await pg.evaluate(()=>performance.getEntriesByType('resource').filter(e=>e.startTime<window.__t0).map(e=>new URL(e.name).pathname).filter(p=>p.startsWith('/g/')).map(p=>p.slice(3)));
+  ok(st.every(f=>fs.existsSync(path.join('dist/g',f))),'the start\'s files are all in dist/g');
+  console.log('     first frame after '+Math.round(await pg.evaluate(()=>window.__t0))+' ms of the page; the start fetched '+st.length+' files, '+Math.round(st.reduce((a,f)=>a+gz(f),0)/1024)+' KB gzipped; code: '+st.filter(f=>/\.js$/.test(f)).map(f=>f+' '+Math.round(gz(f)/1024)+' KB').join(', '));
   ok(!st.some(f=>/^x-(?!later)/.test(f)),'no place\'s code at the start');
   phase='after'; await wait(8000);
   for(const [name,file,go,back] of TOUR){ phase=name; const e0=errs.length, l0=late.length;

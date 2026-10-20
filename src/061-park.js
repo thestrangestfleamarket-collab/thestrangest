@@ -25,13 +25,13 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
     const h=(x,y)=>{ const r=q(x,y); if(!r)return null; const [d,s]=r, w=W(s), e=d-w; if(e>=B)return null; let v=-D(s)*(1-ss(-.6*w,B,e));
       for(const o of st){ const u=Math.hypot(x-o[0],y-o[1]); if(u<o[2])v=Math.max(v,o[3]); } return v; };
     const nrm=k=>{ const a=C[Math.max(0,k-1)], b=C[Math.min(N,k+1)], l=Math.hypot(b[0]-a[0],b[1]-a[1]); return [-(b[1]-a[1])/l,(b[0]-a[0])/l]; };
-    const rim=m=>{ '@later'; const o=[], r=k=>W(C[k][2])+B+m, side=(k,f)=>{ const [nx,ny]=nrm(k); o.push([C[k][0]+f*nx*r(k),C[k][1]+f*ny*r(k)]); }, cap=(k,off)=>{ const [nx,ny]=nrm(k), a=Math.atan2(ny,nx)+off; for(let i=1;i<12;i++){ const t=a-i/12*Math.PI; o.push([C[k][0]+Math.cos(t)*r(k),C[k][1]+Math.sin(t)*r(k)]); } };
+    const rim=m=>{ const o=[], r=k=>W(C[k][2])+B+m, side=(k,f)=>{ const [nx,ny]=nrm(k); o.push([C[k][0]+f*nx*r(k),C[k][1]+f*ny*r(k)]); }, cap=(k,off)=>{ const [nx,ny]=nrm(k), a=Math.atan2(ny,nx)+off; for(let i=1;i<12;i++){ const t=a-i/12*Math.PI; o.push([C[k][0]+Math.cos(t)*r(k),C[k][1]+Math.sin(t)*r(k)]); } };
       for(let k=0;k<=N;k++)side(k,1); cap(N,0); for(let k=N;k>=0;k--)side(k,-1); cap(0,Math.PI); return o; };
     let kM=kC; const out=k=>{ const [nx,ny]=nrm(k), c=C[k], w=W(c[2])+B+.2; for(let f=-1;f<=1;f+=.25)if(FOUNT.lake(c[0]+nx*f*w,c[1]+ny*f*w)<.05)return false; return true; }; while(kM<N&&!out(kM))kM++; const m=C[kM][2], sW=m+2.5;
     const ks=C.map((c,k)=>Math.abs(c[0]-P.round[0]-wobX(c[1]))<3.6?k:-1).filter(k=>k>=0), km=ks[ks.length>>1], yc=C[km][1], S=W(C[km][2])+B+.6, br={k:km,yc,S,H:.55}, hump=(x,y)=>{ const t=Math.abs(y-yc)/(S+2); return t>=1||Math.abs(x-P.round[0]-wobX(y))>=3.6?0:br.H*.5*(1+Math.cos(Math.PI*t)); };
     return {C,SL,N,B,W,L,D,RF,q,h,st,nrm,rim,br,hump,m,kM,sW,sK,wet:(x,y,m=0)=>{ const r=q(x,y); return !!r&&r[0]<W(r[1])+B+m; }}; })();
   FOUNT.S.rocks=FOUNT.S.rocks.filter(r=>!BK.wet(r[0],r[1],.6));
-  P.wetHole=()=>{ '@later'; const Lp=FOUNT.S.poly, R=BK.rim(-.3), keep=(A,f)=>{ const n=A.length; for(let j=0;j<n;j++)if(f(A[(j+n-1)%n])&&!f(A[j])){ const o=[]; for(let i=0;i<n&&!f(A[(j+i)%n]);i++)o.push(A[(j+i)%n]); return o; } return null; };
+  P.wetHole=()=>{ const Lp=FOUNT.S.poly, R=BK.rim(-.3), keep=(A,f)=>{ const n=A.length; for(let j=0;j<n;j++)if(f(A[(j+n-1)%n])&&!f(A[j])){ const o=[]; for(let i=0;i<n&&!f(A[(j+i)%n]);i++)o.push(A[(j+i)%n]); return o; } return null; };
     const a=keep(Lp,([x,y])=>BK.wet(x,y,-.3)), b=keep(R,([x,y])=>FOUNT.lake(x,y)<0); if(!a||!b)return [Lp,R]; const d=(p,q)=>Math.hypot(p[0]-q[0],p[1]-q[1]), e=a[a.length-1], br=b.slice().reverse();
     return [[...a,...(d(e,b[0])+d(b[b.length-1],a[0])<d(e,br[0])+d(br[br.length-1],a[0])?b:br)]]; };
   P.campAt=()=>{ if(P.camp0)return P.camp0; const S=FOUNT.S, F=FOUNT, L=S.L, [cx,cy]=P.round; let best=null, bd=1e9;

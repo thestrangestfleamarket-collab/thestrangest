@@ -50,7 +50,7 @@ ROOMS.roofAt=(x,y,z)=>{ const h=new THREE.Raycaster(new THREE.Vector3(x,y,z),new
     if(typeof LITE!=='undefined')for(const L of LITE.pool)if(L.castShadow)L.shadow.needsUpdate=true; };
   const apply=w=>{ leave(); if(!w)return; let T=IV.C.get(w.key); if(!T){ scene.updateMatrixWorld(); T=scan(w.b,scene.children.slice()); IV.C.set(w.key,T); } put(T); IV.top=new Set(T.top); IV.nc=-1; IV.key=w.key; IV.b=w.b; };
   const frames=n=>new Promise(r=>{ const f=()=>--n<=0?r():requestAnimationFrame(f); requestAnimationFrame(f); });
-  const swap=async()=>{ '@later'; const el=document.getElementById('subfade'), w=IV.want, lz=w&&lazyOf(w.b);
+  const swap=async()=>{ const el=document.getElementById('subfade'), w=IV.want, lz=w&&lazyOf(w.b);
     if(!el||!window.__started||el.style.opacity==='1'){ if(lz){ await lz.need(); lz.go(); } apply(IV.want); return; }
     IV.busy=true; const tr=el.style.transition; el.style.transition='none'; el.textContent=lz?'ENTERING '+lz.name:''; el.style.opacity='1';
     try{ if(lz){ if(lz.S)lz.S.busy=true; if(typeof keys!=='undefined'&&keys.clear)keys.clear(); await frames(2); await lz.need(); lz.go(); await frames(1); }

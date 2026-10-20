@@ -55,7 +55,7 @@ await grab('dungeon',async()=>{});
   const wait=ms=>new Promise(r=>setTimeout(r,ms)), frames=k=>new Promise(r=>{ const f=()=>--k<=0?r():requestAnimationFrame(f); requestAnimationFrame(f); });
   const S=CASTLE.stair, top={x:((S.x0+S.x1)/2-72)*TILE,z:(S.y0-.5+77)*TILE};
   const bnd=n=>{ const B=lot(n); return {x0:X(B.x0),x1:X(B.x1),z0:Z(B.y0),z1:Z(B.y1)}; };
-  const go=async(n,how)=>{ '@later'; if(busy)return; busy=true; const el=document.getElementById('subfade'), tr=el.style.transition;
+  const go=async(n,how)=>{ if(busy)return; busy=true; const el=document.getElementById('subfade'), tr=el.style.transition;
     el.style.transition='opacity .3s steps(4)'; el.textContent=n?(cur||how==='load'&&n>1?'':'ENTERING ')+'DUNGEON — LEVEL '+n:'LEAVING DUNGEON'; el.style.pointerEvents='auto'; el.style.opacity='1'; await wait(320);
     keys.clear();
     if(n){ await LOAD('dungeon'); const L=build(n), a=how==='below'?L.atDn:L.atUp; if(how!=='load'){ UI.goTo(a.x,a.z,'down'); heading=a.h; } BOUND=bnd(n); }

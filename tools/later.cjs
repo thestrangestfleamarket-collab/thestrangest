@@ -1,15 +1,17 @@
 // THE LATER CHUNK, MARKED FROM WHAT THE START RUNS (20 Oct 2026, the code split). Build first with the later chunk kept in the page:
 //   SKIP=later MIN=0 python3 build.py && node tools/later.cjs
-// Opens dist/market.html in headless Chromium (software rendering: slow, run it in CI) and records which functions run: a new player's
+// Serves dist/market.html to headless Chromium (software rendering: slow, run it in CI) and records which functions run: a new player's
 // start with a few seconds of play (keys, mouse, the views, the menu), a walk to Market St and 15 s there, then a returning player's start
 // by the park gate; with ?steps=0, so the rooms the store builds in the background (they wait for the later chunk) count as not run.
 // Every function of 300 characters or more that never ran is given '@later'; (its code then comes in x-later.<hash>.js, fetched right
 // after the first frame); every other '@later'; is taken out. Functions already in a place's chunk ('@park' and the like), methods,
 // generators, one-line arrows and arrows that use this/arguments are left alone. Prints how many functions and characters it marked.
-const {chromium}=require('playwright'), fs=require('fs'), path=require('path');
+const {chromium}=require('playwright'), fs=require('fs'), path=require('path'), http=require('http');
 const {parse}=require('./scope.cjs');
-const PAGE='file://'+path.resolve('dist/market.html'), Y='if(performance.now()-__YT>40)await __Y();', MARK=" '@later';", MIN=300;
+let PAGE='', Y='if(performance.now()-__YT>40)await __Y();', MARK=" '@later';", MIN=300;
 const coverage=async()=>{
+  const srv=http.createServer((q,r)=>{ const p=path.join('dist',decodeURIComponent(new URL(q.url,'http://x').pathname)); if(!p.startsWith('dist')||!fs.existsSync(p)||fs.statSync(p).isDirectory()){ r.writeHead(404); return r.end(); } r.writeHead(200,{'content-type':p.endsWith('.html')?'text/html':'application/octet-stream'}); fs.createReadStream(p).pipe(r); });
+  await new Promise(r=>srv.listen(0,'127.0.0.1',r)); PAGE='http://127.0.0.1:'+srv.address().port+'/market.html';
   const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist']});
   const ctx=await b.newContext({viewport:{width:960,height:540}}), LEN={}, ran={}, t0=Date.now(), say=m=>console.log('later: '+m+' ('+Math.round((Date.now()-t0)/1000)+' s)');
   let pg, cdp, K, M, src={};
@@ -32,7 +34,7 @@ const coverage=async()=>{
     for(const k in ran){ const [l,a,c]=k.split(':'); if(l===len)F.push({a:+a,b:+c,n:ran[k]}); }
     F.sort((x,y)=>x.a-y.a||y.b-x.b); let end=-1;
     for(const f of F){ if(f.n||f.b-f.a<MIN||f.a<end)continue; end=f.b; out.push(text.slice(f.a,f.a+200)); } }
-  await b.close(); return out;
+  await b.close(); srv.close(); return out;
 };
 (async()=>{
   const heads=await coverage();

@@ -3,7 +3,7 @@ function gdShape(GS,K,LAMPS){ const s=K.s, o=K.o, SC=1.5, cx=o[0]+4*s, Y1=o[1]+3
   const G=BOD.GDK={o,s,SC,X0,X1,Y0,Y1,W,D,cx,y1e:o[1]+8.3*s};
   G.ground={x0:X0-1.6,x1:X1+1.6};
   G.pool=[X0+.22,Y0+.22,X1-.22,(Y0+Y1)/2+.15];
-  G.court=(x,y)=>{ '@later'; const {hash,grain}=BOD.g, sh=BOD.K.sh, px=Math.floor(x*24), py=Math.floor(y*24);
+  G.court=(x,y)=>{ const {hash,grain}=BOD.g, sh=BOD.K.sh, px=Math.floor(x*24), py=Math.floor(y*24);
     const out=x<X0||x>X1||y<Y0||y>Y1; if(!out)return x>G.pool[0]&&x<G.pool[2]&&y>G.pool[1]&&y<G.pool[3]?null:[96,90,84];
     const dEave=Math.max(X0-x,x-X1,Y0-y,y-Y1);
     const wet=G.puddles.some(([pcx,pcy,rx,ry])=>{ const u=(x-pcx)/rx, v=(y-pcy)/ry; return u*u+v*v+(grain(x*3,y*3,611,.6)-.5)*.5<1; });

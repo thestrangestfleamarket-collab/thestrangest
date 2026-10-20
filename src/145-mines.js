@@ -93,7 +93,7 @@ const MINE={ready:false}; window.MINE=MINE;
     built.seams=SE; MINE.n=SE.length;
     const cg=new THREE.OctahedronGeometry(.14*T,0); cg.scale(1,1.8,1); built.cry=new THREE.InstancedMesh(cg,new THREE.MeshBasicMaterial(),Math.max(1,SE.length*3)); built.cry.instanceColor=new THREE.InstancedBufferAttribute(new Float32Array(Math.max(1,SE.length*3)*3),3); built.cry.count=0; built.cry.frustumCulled=false; G.add(built.cry);
     MINE.ready=true; };
-  const unbuild=()=>{ '@later'; unthing(); for(const a of sol){ const i=SOL.down.indexOf(a); if(i>=0)SOL.down.splice(i,1); } for(const a of fix){ const i=FIX.down.indexOf(a); if(i>=0)FIX.down.splice(i,1); } sol.length=fix.length=0;
+  const unbuild=()=>{ unthing(); for(const a of sol){ const i=SOL.down.indexOf(a); if(i>=0)SOL.down.splice(i,1); } for(const a of fix){ const i=FIX.down.indexOf(a); if(i>=0)FIX.down.splice(i,1); } sol.length=fix.length=0;
     for(const L of recs){ const i=LITE.recs.indexOf(L); if(i>=0)LITE.recs.splice(i,1); } recs.length=0; LIFTS.length=0;
     while(G.children.length){ const o=G.children[0]; G.remove(o); o.traverse(c=>{ if(c.geometry)c.geometry.dispose(); }); } while(top.children.length)top.remove(top.children[0]); built=null; MINE.ready=false; };
   const syncSeams=()=>{ if(!built)return; const now=performance.now()/1000, C=built.cry, m4=new THREE.Matrix4(), q=new THREE.Quaternion(), col=new THREE.Color(); let n=0;

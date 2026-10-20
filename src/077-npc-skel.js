@@ -88,13 +88,5 @@ const SKELGO=()=>SKELGO.p||(SKELGO.p=(async()=>{ const S=await SKEL();
   })());
 window.SKELDBG=()=>NPCS.filter(N=>N.mixer).map(N=>({key:N.key,x:+N.st.x.toFixed(2),z:+N.st.z.toFixed(2),y:+N.g.position.y.toFixed(2),to:!!N.st.to,bones:N.me.skeleton.bones.length}));
 if(!MODS.dungeon||QS.get('trouble'))await SKELGO();
-{ const S=CASTLE.stair, n=S.steps, rn=(S.y1-S.y0)/n, cx=((S.x0+S.x1)/2-72)*TILE, foot={x:cx,z:(S.y1+.7+77)*TILE}, top={x:cx,z:(S.y0-.5+77)*TILE};
-  const tread=(x,z)=>{ const gx=x/TILE+72, gy=z/TILE-77; return gx>=S.x0&&gx<S.x1&&gy>=S.y0&&gy<S.y1?Math.min(n,Math.floor((gy-S.y0)/rn)+1):null; };
-  const wait=ms=>new Promise(r=>setTimeout(r,ms)), frames=k=>new Promise(r=>{ const f=()=>--k<=0?r():requestAnimationFrame(f); requestAnimationFrame(f); });
-  let busy=false; const go=async dir=>{ busy=true; const el=document.getElementById('subfade'); el.textContent=dir==='out'?'LEAVING DUNGEON':'ENTERING DUNGEON'; el.style.pointerEvents='auto'; el.style.opacity='1'; await wait(340);
-    if(dir!=='load'){ const p=dir==='in'?foot:top; UI.goTo(p.x,p.z,dir==='in'?'down':'up'); keys.clear(); }
-    if(dir!=='out')await SKELGO(); await frames(3); await wait(260); el.style.opacity='0'; el.style.pointerEvents='none'; await wait(360); busy=false; };
-  MODS.dunDoor=(py,p)=>{ if(!MODS.dungeon||busy||UI.freeCam||METRO.doorBusy()||(typeof RAG!=='undefined'&&RAG.on))return; const k=tread(p.x,p.z);
-    if(LVL!=='down'&&k!=null&&k>=3)go('in'); else if(LVL==='down'&&k!=null&&k<=n-5)go('out'); else if(!SKELGO.p&&LVL==='down'&&MODS.dungeon.inside(p.x,p.z))go('load'); }; window.DUNDBG=()=>({stair:S,tile:TILE,lv:LVL,on:!!SKELGO.p}); }
 
 const DRAGON=__DATA__("data/dragon.json");

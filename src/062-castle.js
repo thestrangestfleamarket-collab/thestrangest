@@ -40,28 +40,6 @@ await grab('castlestairs',async()=>{ const X=BOD.XS, Z=BOD.ZS, Y=BOD.YS, S=CASTL
   for(const x of [S.x0-.2,S.x1])box(x,S.y0,-S.depth,x+.2,S.y1,0,ST2);
   const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); geo.setAttribute('color',new THREE.Float32BufferAttribute(Cc,3)); geo.computeVertexNormals();
   MODS.castleStairCut=new THREE.Plane(new THREE.Vector3(0,-1,0),1e6);
-  const m=new THREE.Mesh(geo,new THREE.MeshLambertMaterial({vertexColors:true,side:THREE.DoubleSide,clippingPlanes:[MODS.castleStairCut]})); m.receiveShadow=true; m.castShadow=true; scene.add(m);
+  const m=new THREE.Mesh(geo,new THREE.MeshLambertMaterial({vertexColors:true,side:THREE.DoubleSide,clippingPlanes:[MODS.castleStairCut]})); m.receiveShadow=true; m.castShadow=true; scene.add(m); MODS.castleStairMat=m.material;
   for(const lv of ['up','down'])for(const x of [S.x0-.2,S.x1]){ const base=lv==='down'?sd:0; SOL[lv].push([X(x),Z(S.y0),X(x+.2),Z(S.y1)]); FIX[lv].push([X(x),Z(S.y0),base,X(x+.2),Z(S.y1),base+Y(lv==='down'?98:30)]); }
   const L=new THREE.PointLight(new THREE.Color(1,.82,.58),5,7*TILE,1.6); L.position.set(X((S.x0+S.x1)/2),Y(-44),Z((S.y0+S.y1)/2)); L.userData.i0=L.intensity; scene.add(L); lamps.push(L); });
-await grab('dungeon',async()=>{ const K=BOD.KC, KP=BOD.K.PROPS, Kc=K.CATALOG, X=BOD.XS, Z=BOD.ZS, Y=BOD.YS, {faceTex,bq,C}=BOD, {hash}=BOD.g, D=K.DGN, B=D.b, dy=STN.DY, T=.1, n0=KP.length, l0=K.LAMPS.length;
-  const wall=(x0,y0,x1,y1)=>({x0,y0,x1,y1,z0:0,z1:D.H+4,c:K.DGP.st[1],top:()=>K.DGP.lo,fs:(nx,ny,Xp,Yp,z,k)=>K.dungeonWall(null,nx,ny,Xp,Yp,z,k,D)});
-  const WB=[wall(B.x0-T,B.y0-T,B.x1+T,B.y0+T),wall(B.x0-T,B.y1-T,B.x1+T,B.y1+T),wall(B.x0-T,B.y0+T,B.x0+T,B.y1-T),wall(B.x1-T,B.y0+T,B.x1+T,B.y1-T)];
-  bq([X(D.x0),Y(.3)+dy,Z(D.y1)],[X(D.x1),Y(.3)+dy,Z(D.y1)],[X(D.x1),Y(.3)+dy,Z(D.y0)],[X(D.x0),Y(.3)+dy,Z(D.y0)],faceTex((D.x1-D.x0)*24,(D.y1-D.y0)*24,(i,j)=>C(K.dungeonFloorCol(D.x0+(i+.5)/24,D.y0+(j+.5)/24,D))),'L');
-  const ox=D.x0, oy=D.y0, w=.8, ar=[3,7,11].map(v=>ox+v), ay=oy+7.8, arch=ar.map(x=>[x,84,w*24]);
-  { let a=D.x0; for(const x of ar){ K.KMK.dblock(a,ay-.2,x-w,ay+.2,0,126,arch); a=x+w; } K.KMK.dblock(a,ay-.2,D.x1,ay+.2,0,126,arch); for(const x of ar)K.KMK.dblock(x-w,ay-.2,x+w,ay+.2,84,126,arch,true); }
-  for(const [x,y] of [[3,2.8],[9.6,2.8]])Kc['stone column'](ox+x,oy+y); Kc['brazier'](ox+8.2,oy+8.6);
-  for(const [x,y] of [[5.2,12.2],[5.9,12.2],[5.5,11.5]])Kc['oak barrel'](ox+x,oy+y); for(const [x,y] of [[13.3,12.5],[13.3,11.7],[12.5,12.5]])Kc['crate'](ox+x,oy+y);
-  Kc['straw'](ox+4.1,oy+9.6); Kc['bones'](ox+9.1,oy+9.4); Kc['skull'](ox+.8,oy+.6); Kc['bone pile'](ox+.5,oy+4.2);
-  for(const t of D.torches){ const [x,y]=t.w==='b'?[D.x0+t.u,D.y0+.16]:t.w==='f'?[D.x0+t.u,D.y1-.16]:t.w==='l'?[D.x0+.16,D.y0+t.u]:[D.x1-.16,D.y0+t.u]; Kc['wall torch'](x,y,t.w); }
-  const made=KP.slice(n0); BATCH.cast=true; BATCH.tag=OBJ('dungeon','the hall'); for(const b of WB)gboxS(b,'L',dy);
-  for(const p of made){ BATCH.tag=OBJ('dungeon',p.name); for(const b of p.boxes)gboxS(b,'L',dy); } BATCH.tag=null;
-  BATCH.build(castleMat); BATCH.cast=false;
-  for(const b of WB){ SOL.down.push([X(b.x0),Z(b.y0),X(b.x1),Z(b.y1)]); FIX.down.push([X(b.x0),Z(b.y0),dy,X(b.x1),Z(b.y1),dy+Y(D.H)]); }
-  for(const p of made)castleSolid('down',p,dy);
-  const LF=[];
-  const light=l=>{ const cm=Math.max(...l.c), L=new THREE.PointLight(new THREE.Color(l.c[0]/cm,l.c[1]/cm,l.c[2]/cm),22*cm*Math.min(1.2,l.r/5),l.r*TILE*1.4,1.6); L.position.set(X(l.x),Y(l.z)+dy,Z(l.y)); L.userData.i0=L.intensity; scene.add(L); lamps.push(L); return L; };
-  for(const l of K.LAMPS.slice(l0)){ const L=light(l); if(l.flick)LF.push(L); }
-  FLAME.props(made,X,z=>Y(z)+dy,Z,LF);
-  light({x:D.cx,y:D.cy,z:70,r:11,c:[.4,.46,.6]});
-  MODS.dungeon={B,ground:()=>dy,inside:(x,z)=>x>X(B.x0)&&x<X(B.x1)&&z>Z(B.y0)&&z<Z(B.y1),
-    tick(){}}; });

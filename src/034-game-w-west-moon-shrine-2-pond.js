@@ -42,7 +42,7 @@ PRESETS['Preset Moon Shrine 1']=[['mossy parapet',3,.11,0],['mossy parapet',3,15
   ['mossy walkway stone',4.4,13.1,0],['mossy walkway stone',4.5,14.1,0],['mossy walkway stone',4.45,15.15,0],['stone garden lantern',.78,15.2,0],
   ['fern bush',5.2,15.25,0],['fern bush',.48,6.55,0],['fern bush',5.52,6.4,0],['blossom clump',.55,5.3,0],['blossom clump',5.45,5.25,0],['blossom clump',.45,9.6,0],['blossom clump',2.2,1.4,0]];
 
-STOREK.shrine={MSP};
+STOREK.shrine={MSP,msStone,msGate,msStatue,msToro,msBlossom,msFloatingLantern,msFern,msBlock,msFlag};
 }
 
 {

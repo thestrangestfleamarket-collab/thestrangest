@@ -295,5 +295,5 @@
         if(BOD.GD){ const [x,y]=BOD.GD.door; xd('THE BATH HOUSE',x,y+.35,x,y-1); } } };
     STORE.offAt=(x,z)=>{ const w=[]; for(const n in OFF){ const [a,b,c,d]=OFF[n].lot; if(!OFF[n].done&&x>X(a)&&x<X(c)&&z>Z(b)&&z<Z(d))w.push(STORE.offGo(n)); } return Promise.all(w); };
     const run=()=>{ if(done)return; const c=need().filter(c=>!LOADED(c)); if(c.length){ LOAD(...c).then(run,()=>setTimeout(run,2000)); return; } if(STEPS.length){ step(); setTimeout(run,60); } else finish(); };
-    STORE.later=()=>setTimeout(run,1500); }
+    STORE.later=()=>{ if(QS.get('steps')!=='0')setTimeout(run,1500); }; }
 }

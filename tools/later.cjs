@@ -1,7 +1,8 @@
 // THE LATER CHUNK, MARKED FROM WHAT THE START RUNS (20 Oct 2026, the code split). Build first with the later chunk kept in the page:
 //   SKIP=later MIN=0 python3 build.py && node tools/later.cjs
 // Opens dist/market.html in headless Chromium (software rendering: slow, run it in CI) and records which functions run: a new player's
-// start with a few seconds of play (keys, mouse, the views, the menu), a walk to Market St and 15 s there, then a returning player's start.
+// start with a few seconds of play (keys, mouse, the views, the menu), a walk to Market St and 15 s there, then a returning player's start
+// by the park gate; with ?steps=0, so the rooms the store builds in the background (they wait for the later chunk) count as not run.
 // Every function of 300 characters or more that never ran is given '@later'; (its code then comes in x-later.<hash>.js, fetched right
 // after the first frame); every other '@later'; is taken out. Functions already in a place's chunk ('@park' and the like), methods,
 // generators, one-line arrows and arrows that use this/arguments are left alone. Prints how many functions and characters it marked.
@@ -17,14 +18,14 @@ const coverage=async()=>{
     cdp=await ctx.newCDPSession(pg); await cdp.send('Debugger.enable'); cdp.on('Debugger.scriptParsed',e=>{ if(e.length>500000){ LEN[e.scriptId]=e.length; src[e.length]=[cdp,e.scriptId]; } });
     await cdp.send('Profiler.enable'); await cdp.send('Profiler.startPreciseCoverage',{callCount:true,detailed:false});
     await pg.goto(PAGE+q,{waitUntil:'commit',timeout:600000}); let s=false; for(let i=0;i<3000&&!(s=await pg.evaluate(()=>!!window.__started).catch(()=>false));i++)await pg.waitForTimeout(200); say('started '+q+' '+s); };
-  await start('?fresh=1&hour=13&wx=CLEAR'); await snap();
+  await start('?fresh=1&hour=13&wx=CLEAR&steps=0'); await snap();
   await M.move(480,270); await M.move(600,300); await M.click(500,280); await M.wheel(0,300); await M.wheel(0,-300);
   for(const k of ['w','a','s','d']){ await K.down(k); await pg.waitForTimeout(400); await K.up(k); }
   await K.down('Shift'); await K.down('w'); await pg.waitForTimeout(600); await K.press(' '); await K.up('w'); await K.up('Shift');
   for(const k of ['v','v','v','q','e','Escape','Escape']){ await K.press(k); await pg.waitForTimeout(300); }
   await M.down({button:'right'}); await M.move(520,260); await M.up({button:'right'});
   say('played'); await pg.evaluate(()=>{ const B=__dbg.MAPK.BOD; STORE.goTo(B.XS(99),B.ZS((B.CURB+B.FAR)/2),'up'); }); await pg.waitForTimeout(15000); await snap(); say('street');
-  await pg.waitForTimeout(3000); await start('?hour=13&wx=CLEAR'); await pg.waitForTimeout(12000);
+  await pg.evaluate(()=>STORE.goTo(PARK.look[0],PARK.look[1],'up')); await pg.waitForTimeout(4000); await start('?hour=13&wx=CLEAR&steps=0'); await pg.waitForTimeout(12000);
   for(const k of ['w','d']){ await K.down(k); await pg.waitForTimeout(300); await K.up(k); } await snap(); say('returned');
   const out=[];
   for(const len in src){ const [c,id]=src[len], F=[], text=(await c.send('Debugger.getScriptSource',{scriptId:id})).scriptSource;

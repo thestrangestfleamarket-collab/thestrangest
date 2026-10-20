@@ -1,0 +1,165 @@
+{
+ "brook": [
+  {
+   "i": 0,
+   "a": {
+    "y": -0.85,
+    "room": null,
+    "wade": false
+   },
+   "b": {
+    "y": -0.85,
+    "room": null,
+    "wade": false
+   }
+  },
+  {
+   "i": 26,
+   "a": {
+    "y": -0.97,
+    "room": null,
+    "wade": true
+   },
+   "b": {
+    "y": -0.97,
+    "room": null,
+    "wade": true
+   }
+  },
+  {
+   "i": 51,
+   "a": {
+    "y": -1.03,
+    "room": null,
+    "wade": true
+   },
+   "b": {
+    "y": -1.03,
+    "room": null,
+    "wade": true
+   }
+  },
+  {
+   "i": 77,
+   "a": {
+    "y": -1.03,
+    "room": null,
+    "wade": true
+   },
+   "b": {
+    "y": -1.03,
+    "room": null,
+    "wade": true
+   }
+  },
+  {
+   "i": 103,
+   "a": {
+    "y": -1.09,
+    "room": null,
+    "wade": true
+   },
+   "b": {
+    "y": -1.09,
+    "room": null,
+    "wade": true
+   }
+  },
+  {
+   "i": 129,
+   "a": {
+    "y": -1.15,
+    "room": null,
+    "wade": true
+   },
+   "b": {
+    "y": -1.15,
+    "room": null,
+    "wade": true
+   }
+  },
+  {
+   "i": 154,
+   "a": {
+    "y": -1.15,
+    "room": null,
+    "wade": true
+   },
+   "b": {
+    "y": -1.15,
+    "room": null,
+    "wade": true
+   }
+  },
+  {
+   "i": 180,
+   "a": {
+    "y": -1.21,
+    "room": null,
+    "wade": true
+   },
+   "b": {
+    "y": -1.21,
+    "room": null,
+    "wade": true
+   }
+  },
+  {
+   "i": 206,
+   "a": {
+    "y": -1.27,
+    "room": null,
+    "wade": true
+   },
+   "b": {
+    "y": -1.27,
+    "room": null,
+    "wade": true
+   }
+  },
+  {
+   "i": 232,
+   "a": {
+    "y": -1.29,
+    "room": null,
+    "wade": true
+   },
+   "b": {
+    "y": -1.29,
+    "room": null,
+    "wade": true
+   }
+  },
+  {
+   "i": 257,
+   "a": {
+    "y": -1.59,
+    "room": null,
+    "wade": true
+   },
+   "b": {
+    "y": -1.59,
+    "room": null,
+    "wade": true
+   }
+  },
+  {
+   "i": 283,
+   "a": {
+    "y": -0.63,
+    "room": null,
+    "wade": false
+   },
+   "b": {
+    "y": -0.63,
+    "room": null,
+    "wade": false
+   }
+  }
+ ],
+ "errors": [
+  "Fetch API cannot load file:///home/runner/work/thestrangest/thestrangest/dist/market.html?fresh=1&hour=13&wx=CLEAR. URL scheme \"file\" is not supported.",
+  "Fetch API cannot load file:///home/runner/work/thestrangest/thestrangest/dist/market.html?fresh=1&hour=13&wx=CLEAR. URL scheme \"file\" is not supported.",
+  "Fetch API cannot load file:///home/runner/work/thestrangest/thestrangest/dist/market.html?fresh=1&hour=13&wx=CLEAR. URL scheme \"file\" is not supported."
+ ]
+}

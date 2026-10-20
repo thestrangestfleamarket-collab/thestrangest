@@ -19,12 +19,12 @@ jobs:
       - name: Build minified
         run: python3 build.py && mkdir -p out && node tests/chunkmeasure.cjs sizes out
       - name: Measure website start
-        run: node tests/chunkmeasure.cjs web out || true
+        run: node tests/chunkmeasure.cjs web out > out/web.log 2>&1 || true
       - name: Profile start
-        run: MIN=0 python3 build.py; python3 tests/startcost.py && node tests/chunkmeasure.cjs prof out || true
+        run: (MIN=0 python3 build.py; python3 tests/startcost.py && node tests/chunkmeasure.cjs prof out) > out/prof.log 2>&1 || true
       - name: Tour
         timeout-minutes: 25
-        run: node tests/chunkmeasure.cjs tour out || true
+        run: if [ -f TOUR ]; then node tests/chunkmeasure.cjs tour out > out/tour.log 2>&1; fi || true
       - name: Publish
         if: always()
         run: |

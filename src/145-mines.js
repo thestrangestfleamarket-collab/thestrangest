@@ -14,7 +14,7 @@ const MINE={ready:false}; window.MINE=MINE;
     ['sonic','SONIC EXTRACTOR',90,'a pulse frees every lit seam near you; some shatter'],['mdrone','EXTRACTION DRONE',150,'sent to a lit seam up to 14 tiles off; the surest']];
   const G=new THREE.Group(); G.name='mine'; MAPG.down.add(G); let built=null;
   const top=new THREE.Group(); (MAPG.park||scene).add(top);
-  const lawnAt=(x,z)=>{ const rc=new THREE.Raycaster(new V3(x,40,z),new V3(0,-1,0)); const vis=o=>{ for(;o;o=o.parent)if(!o.visible)return false; return true; };
+  const lawnAt=(x,z)=>{ const rc=new THREE.Raycaster(new V3(x,40,z),new V3(0,-1,0)); const vis=o=>{ for(;o;o=o.parent){ if(o===MAPG.park)return PARK.ready; if(!o.visible)return false; } return true; };
     for(const h of rc.intersectObjects([MAPG.park,MAPG.castle,MODS.land,typeof POND!=='undefined'&&POND.hills].filter(Boolean),true)){ const o=h.object; if(o.isInstancedMesh||o.isSkinnedMesh||o.isPoints||o.isLine||o.isSprite||!vis(o)||(o.material&&o.material.visible===false))continue; return (o===MODS.land||(typeof POND!=='undefined'&&o===POND.hills))&&h.point.y>-.6&&h.point.y<.6; } return false; };
   const LIFTS=[]; let ride=null;
   const liftMesh=(stone)=>{ const g=new THREE.Group(); const a=new THREE.Mesh(new THREE.CylinderGeometry(.72*T,.72*T,.06*T,10),new THREE.MeshLambertMaterial({color:stone?0x6a6660:0x4a5058,flatShading:true})); g.add(a);
@@ -41,7 +41,7 @@ const MINE={ready:false}; window.MINE=MINE;
     const ent=[]; const gi=Math.floor((R.mine.x-G0.x0)/CS); ent.push({k:'sub',c:[gi,0]});
     { const P=PARK; let best=null; for(let n=0;n<40&&!best;n++){ const a=n*2.4, r=n*.9, x=XS(P.round[0]+(P.ox||0)+26+Math.cos(a)*r), z=ZS(P.round[1]+(P.oy||0)+9+Math.sin(a)*r), c=cellAt(x,z); if(c&&ok(...c)&&lawnAt(x,z))best={x,z,c}; }
       if(best)ent.push({k:'hatch',c:best.c,x:best.x,z:best.z}); }
-    if(window.GCAVE&&GCAVE.c){ const C=GCAVE.c; let best=null; for(const [a,r] of [[2.4,1.6],[1.8,1.9],[3,1.4],[-2.6,1.6],[2.2,2.4],[-2,2.2],[0,0]]){ const x=C.x+Math.cos(a)*r*T, z=C.z+Math.sin(a)*r*T; if(!SOL.up.some(b=>x>b[0]-.6*T&&x<b[2]+.6*T&&z>b[1]-.6*T&&z<b[3]+.6*T)){ best={x,z}; break; } }
+    if(window.GCAVE&&(GCAVE.c||GCAVE.S)){ const C=GCAVE.c||{x:XS(GCAVE.S.c.x+PARK.ox),z:ZS(GCAVE.S.c.y+PARK.oy)}; let best=null; for(const [a,r] of [[2.4,1.6],[1.8,1.9],[3,1.4],[-2.6,1.6],[2.2,2.4],[-2,2.2],[0,0]]){ const x=C.x+Math.cos(a)*r*T, z=C.z+Math.sin(a)*r*T; if(!SOL.up.some(b=>x>b[0]-.6*T&&x<b[2]+.6*T&&z>b[1]-.6*T&&z<b[3]+.6*T)){ best={x,z}; break; } }
       const c=best&&cellAt(best.x,best.z); if(c&&ok(...c))ent.push({k:'cave',c,x:best.x,z:best.z}); }
     const r0=rngOf(9157); for(let n=1;n<ent.length;n++)walk(r0,ent[n-1].c,ent[n].c); if(ent.length>2)walk(r0,ent[0].c,ent[ent.length-1].c);
     for(const e of ent)room(e.c[0],e.c[1],1);
@@ -151,6 +151,6 @@ const MINE={ready:false}; window.MINE=MINE;
   let lastIn=false; setInterval(()=>{ const inn=MINE.inside(pos.x,pos.z); if(inn!==lastIn){ lastIn=inn; HUD.hidden=!inn; if(inn){ HUD.draw(); say('THE DEEP MINE. P SCANS THE ROCK.','#7ff4ff'); } }
       if(inn){ const e=HUD.querySelector('#mdep'); if(e)e.textContent='MINE · '+Math.round(-py*.84/T)+' M DOWN'; } if(built)syncSeams();
       if(built&&day()!==built.day&&LVL==='up'&&!ride){ S.mined=Object.fromEntries(Object.entries(S.mined).filter(([k])=>k.startsWith(day()+':'))); save(); build(); } },1000);
-  { const go=()=>{ if(!window.__started||!(window.GCAVE&&GCAVE.ready)||!PARK.round)return setTimeout(go,1500); try{ build(); }catch(e){ console.warn('MINE',e); } }; setTimeout(go,4000); }
+  { const go=()=>{ if(!window.__started||!(window.GCAVE&&GCAVE.S)||!PARK.round)return setTimeout(go,1500); try{ build(); }catch(e){ console.warn('MINE',e); } }; setTimeout(go,4000); let re=false; PARK.onShow.push(on=>{ if(on&&!re&&built&&!ride){ re=true; try{ build(); }catch(e){ console.warn('MINE',e); } } }); }
   window.MINEDBG=()=>built?({day:built.day,ent:built.ent.map(e=>[e.k,e.c,e.x!=null?[+e.x.toFixed(1),+e.z.toFixed(1)]:null]),cells:built.carved.reduce((a,b)=>a+b,0),rock:built.rock.count,lamps:built.lamps,seams:built.seams.length,lit:built.cry.count/3,tool:S.tool,inside:MINE.inside(pos.x,pos.z),lifts:LIFTS.map(L=>[L.k,+L.x.toFixed(1),+L.z.toFixed(1),+L.bot.toFixed(2)])}):null;
   MINE.build=build; MINE.LIFTS=LIFTS; MINE.step=dt=>{ rideTick(dt); jobTick(dt); }; MINE.cellW=(i,j)=>[XS(cx(i)),ZS(cy(j))]; MINE.seams=()=>built?built.seams:[]; }

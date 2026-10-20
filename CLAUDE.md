@@ -21,6 +21,9 @@ Look there before changing how something looks or behaves, and add a short dated
   `data/full/` keeps the unsimplified originals (never shipped). `tools/`: bake and trim scripts.
   After re-baking a character, run `python3 tools/trim-clips.py` (keeps only clips the code names, at 12 fps).
 - To add a file, give it a number between its neighbours (e.g. `054a-name.js`, or renumber).
+- **Before reading a file, grep it in `docs/MAP.md`** (made by `node tools/map.cjs`, refreshed by the build): what it needs, what it gives,
+  and which function it sits inside. `await grab('bodega', ...)` is one function from `013a` to `059` (787 KB): names defined in those
+  files are its locals, not globals. The move to modules (20 Oct 2026) is lifting the shared kits out of it, then one place per pull request.
 
 ## Build
 

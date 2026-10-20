@@ -1,13 +1,15 @@
 // THE SAME PIXELS (19 Oct 2026, faster painting): node tests/texhash.cjs <base page> <head page>
 // The ground, walls and floors are painted in code at the start. A faster painter must paint exactly the same pixels: this opens both
 // pages (Math.random seeded the same), and once each has started hashes every texture in the scene (ImageData, canvases, data textures),
-// and fails unless the two sets of hashes are identical. The head is opened a second time in the same browser profile, so its ground comes
+// (after STORE.ensure(), so whatever the start builds a piece at a time afterwards is all built in both) and fails unless the two sets
+// of hashes are identical. The head is opened a second time in the same browser profile, so its ground comes
 // from the paint cache (PAINTC), and that must match too. Prints how many textures and pixels were compared.
 const {chromium}=require('playwright'), path=require('path');
 const [A,B]=process.argv.slice(2).map(p=>path.resolve(p));
 const run=async(ctx,page,waitSave)=>{ const t0=Date.now(); const pg=await ctx.newPage({viewport:{width:640,height:360}}); pg.setDefaultTimeout(900000); const errs=[]; pg.on('pageerror',e=>errs.push(e.message.slice(0,200)));
   await pg.addInitScript(()=>{ let x=123456789; Math.random=()=>{ x^=x<<13; x^=x>>>17; x^=x<<5; return (x>>>0)/4294967296; }; });
   await pg.goto('file://'+page+'?fresh=1&hour=13&wx=CLEAR',{waitUntil:'commit'}); await pg.waitForFunction(()=>window.__started,null,{polling:200,timeout:900000});
+  await pg.evaluate(()=>{ if(window.STORE&&STORE.ensure)STORE.ensure(); }); await pg.waitForTimeout(3000);
   const r=await pg.evaluate(()=>{ const seen=new Set(), out=[]; let px=0; const cv=document.createElement('canvas'), g=cv.getContext('2d',{willReadFrequently:true});
     const fnv=d=>{ let h=2166136261; for(let i=0;i<d.length;i++){ h^=d[i]; h=Math.imul(h,16777619); } return (h>>>0).toString(16); };
     const bytes=im=>{ if(!im)return null; if(im.data&&im.width&&im.height&&!(im instanceof HTMLCanvasElement))return im.data; const w=im.width, h=im.height; if(!w||!h)return null; cv.width=w; cv.height=h; g.clearRect(0,0,w,h); g.drawImage(im,0,0); return g.getImageData(0,0,w,h).data; };

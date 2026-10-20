@@ -1,3 +1,4 @@
+// THE WALKER'S BODY: pieces built from shapes (meshOf0: distance fields, tetrahedra, simplify), warmed before first use.
 const W3={group:new THREE.Group(), meshes:[], idMeshes:[], L:new THREE.Vector3(), tint:new THREE.Color(1,1,1), tris:0, lv:{value:2}, look:{value:+(new URLSearchParams(location.search).get('look')||0)}, G:{value:new THREE.Matrix3()}, LP:{value:[new THREE.Vector3(),new THREE.Vector3()]}, LC:{value:[new THREE.Vector3(),new THREE.Vector3()]}, CamW:{value:new THREE.Vector3()}, LVP:{value:new THREE.Matrix4()},
   sm:new THREE.WebGLRenderTarget(512,512), smCam:new THREE.OrthographicCamera(-2.1,2.1,2.1,-2.1,0.1,12), Lw:new THREE.Vector3()};
 W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THREE.FloatType;

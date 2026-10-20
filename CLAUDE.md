@@ -8,15 +8,17 @@ live on the website thestrangestfleamarket.com (Cloudflare Workers Builds deploy
 Every decision the owner has made, with his words and dates, is in `docs/HISTORY.md` (large: search it, don't read it whole).
 Look there before changing how something looks or behaves, and add a short dated entry there for each new decision.
 
-## Layout (owner, 18 Oct 2026: "minimal files ... no comments in code ... smallest download")
+## Layout (owner, 18 Oct 2026: "smallest download"; the "minimal files" and "no comments" rules were relaxed on 20 Oct 2026)
 
 - `src/NNN-name.{html,js}`: the page, in order. The build joins them as they are, so a file may start or end inside a block
   of the file before or after it. `000`/`002`/`end` are the page's HTML, `001-rig.js` the Walker's rig, the rest the game's
   module. `game-*.js` are the old game's own makers, copied in (the build no longer reads `bralynnb/tsfm`).
   `main*.js` are the page's own glue code between places.
   `src/door/door.html` is the website's door (invite code, login); `worker/door.js` the website's server (`wrangler.jsonc`).
-- **No comments anywhere in `src/`**: not in code, not in shader text, not in HTML or CSS. Keep code short; history goes in
-  `docs/HISTORY.md` and in git, never in the source.
+- **Comments (owner, 20 Oct 2026)**: every file in `src/` starts with one comment line saying what it is; add that line when you
+  touch a file that lacks it. Otherwise keep comments rare and short: a line where the code would mislead without it. The minifier
+  strips them all (`legalComments: 'none'`), so they cost the download nothing. History goes in `docs/HISTORY.md` and in git, never
+  in the source. No comments in HTML or CSS (the build checks pages for an unclosed `<!--`).
 - `data/*.json`: baked models, clips and textures, put in where the code says `__DATA__("data/x.json")`.
   `data/full/` keeps the unsimplified originals (never shipped). `tools/`: bake and trim scripts.
   After re-baking a character, run `python3 tools/trim-clips.py` (keeps only clips the code names, at 12 fps).

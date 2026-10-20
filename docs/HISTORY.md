@@ -3556,3 +3556,11 @@ initial download and load super fast"; then "Go")
   *lot* in `015` was also called `BODB`, the name of the bodega *builder* in `006`; the lot is `BLOT` now). A scope proof
   (every reference's declaration before and after, 226,800 references) shows the only other change is `BRICKS` reaching its own
   `const` instead of the same object through `window`. Next: open the builder just before `052`, so `014`–`051` are top-level code.
+
+## 20 Oct 2026: comments allowed, the README set right
+
+- **The no-comments rule relaxed** (owner, 20 Oct 2026, on an audit from another chat that found the rule "saves exactly zero bytes"
+  because the minifier strips comments (`legalComments: 'none'`): "lets fix 2 and 7"): every file in `src/` starts with one comment line
+  saying what it is (22 written now, the rest as files are touched); otherwise comments stay rare and short. HTML and CSS stay bare.
+- **README** (the audit's point 7): it pointed at the dropped claude.ai copy and a `dist/avatar.html` the build no longer makes; now the
+  website, the real outputs and the map. `island/README.md` describes a separate standalone page and is left alone.

@@ -8,9 +8,7 @@ const LIVES={on:QS.has('lives')?QS.get('lives')!=='0':CITY.on,ready:false,ms:0,s
   LIVES.build=()=>{
     place('street',{door:null,reach:0});
     { const B=BOD.B0, dx=XB((B.x0+B.x1)/2); place('bodega',{walls:true,door:{x:dx,z:ZS_},path:[{x:dx,z:ZB(B.y1)+.6*T},{x:dx,z:ZB(B.y1)-3.4}],box:bx(XB,ZB,[B.x0+1,BOD.BODOFF+1,B.x1-1,B.y1-1]),reach:2.5*T}); }
-    if(!AWAY.has('apartments')){ const Rm=POOLR.ROOMS||[], dx=POOLR.X(22.75), HY=(6.24+8.28)/2;
-      place('lobby',{walls:true,door:{x:dx,z:ZS_},path:[{x:dx,z:POOLR.Z(16.8)+.6*T},{x:dx,z:POOLR.Z(15.6)},{x:dx,z:POOLR.Z(12)}],box:Rm[5]&&bx(POOLR.X,POOLR.Z,[Rm[5][0]+.8,Rm[5][1]+.8,Rm[5][2]-.8,Rm[5][3]-.8]),reach:2.5*T});
-      place('hallway',{walls:true,door:{x:dx,z:ZS_},path:[{x:dx,z:POOLR.Z(16.8)+.6*T},{x:dx,z:POOLR.Z(15.6)},{x:dx,z:POOLR.Z(HY)},{x:POOLR.X(27.3*2/3-1),z:POOLR.Z(HY)},{x:POOLR.X(11),z:POOLR.Z(HY)}],box:Rm[3]&&bx(POOLR.X,POOLR.Z,[Rm[3][0]+.6,Rm[3][1]+.4,Rm[3][2]-.6,Rm[3][3]-.4]),reach:4*T}); }
+    
     if(BOD.GD){ const G=BOD.GD, dx=XB(G.door[0]); place('dojo',{walls:true,door:{x:dx,z:ZS_},path:[{x:dx,z:ZB(G.door[1])+.8*T},{x:dx,z:ZB(G.door[1])-1.5*T},mid(XB,ZB,G.floor||G.r)],box:bx(XB,ZB,G.floor?[G.floor[0]+1.2,G.floor[1]+.3,G.floor[2]-1.2,G.floor[3]-.6]:[G.r[0]+1.2,G.r[1]+1.2,G.r[2]-1.2,G.r[3]-1.2]),reach:3*T}); }
     for(const [id,nm] of [['diner','diner'],['bar','bar']]){ const Rr=STORE.rooms.find(r=>r.id===nm); if(!Rr||Rr.fy)continue;
       place(id,{walls:true,door:{x:Rr.at.x,z:ZS_},path:[{x:Rr.at.x,z:Rr.z1+.6*T},{x:Rr.at.x,z:Rr.at.z}],box:{x0:Rr.x0+.8*T,z0:Rr.z0+.8*T,x1:Rr.x1-.8*T,z1:Rr.z1-.8*T},reach:3*T}); }

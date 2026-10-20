@@ -42,7 +42,7 @@ const SKELGO=()=>SKELGO.p||(SKELGO.p=LOAD('dungeon').then(async()=>{ '@dungeon';
   const bolts=dt=>{ for(const b of BOLTS){ if(!b.on)continue; const T=b.T, to=new THREE.Vector3(T.st.x,T.g.position.y+T.H*.5,T.st.z), d=to.clone().sub(b.m.position), l=d.length(), step=16*TILE*dt;
     b.m.lookAt(to); if(l<=step||T.mode==='hidden'){ b.on=false; b.m.visible=false; if(l<=step)T.knock(b.from,b.dmg); } else b.m.position.addScaledVector(d,step/l); } };
   const SHOVE={x:0,z:0}; const shove=dt=>{ if(Math.abs(SHOVE.x)+Math.abs(SHOVE.z)<1e-3)return; pos.x+=SHOVE.x*dt; pos.z+=SHOVE.z*dt; const k=Math.max(0,1-dt*7); SHOVE.x*=k; SHOVE.z*=k; collide(pos); };
-  const onStreet=()=>LVL==='up'&&!BODB.inside()&&!MODS.pool.inside(pos.x,pos.z);
+  const onStreet=()=>LVL==='up'&&!BODB.inside();
   for(const [key,name,tx,metres,walkN,idleN,speed,gear,beat,style] of CH){ const G={beat:beat.map(([x,y])=>({x:T_(x),z:Z_(y)})),leg:0,mode:'patrol',cool:0,look:Math.random()*6,style};
     const DN=DUN();
     const N=skel(key,name,metres,DN?DN.x:T_(tx),DN?DN.z:Z_({58:-67,69:-65.5,82:-68.5,95:-66}[tx]),speed*.9,{walkN,idleN,gear,dun:DN,

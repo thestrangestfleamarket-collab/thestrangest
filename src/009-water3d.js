@@ -86,22 +86,11 @@ WATER.under=(renderer,scene,cam,lamps)=>{ const w=renderer.domElement.width, h=r
   lamps.slice(0,12).forEach((L,i)=>{ u.uLP.value[i].copy(L.position); u.uLC.value[i].set(L.color.r,L.color.g,L.color.b).multiplyScalar(Math.min(1,(L.userData.i0||L.intensity)/3)); }); u.uNL.value=Math.min(12,lamps.length);
   const v0=WATER.mesh.visible; WATER.mesh.visible=false; renderer.setRenderTarget(WATER.rt); renderer.render(scene,cam); renderer.setRenderTarget(null); WATER.mesh.visible=v0; };
 };
-WATER.build=()=>{ const P=POOLR; waterBody(WATER,{X0:P.X(P.bx0),X1:P.X(P.bx1),Z0:P.Z(P.by0),Z1:P.Z(P.by1),lvl:P.Y(P.level),GX:208,GY:80,dep:u=>Math.max(0.02,(P.level-P.bedAt(u*P.LX))/24*0.84)}); };
 WATER.extra=[]; WATER.body=cfg=>{ const W={drops:[],uH:{value:null},uWB:{value:new THREE.Vector4()},uLevel:{value:0},uGrid:{value:new THREE.Vector2()},mats:[],name:cfg.name}; waterBody(W,cfg); WATER.extra.push(W); return W; };
 WATER.tickAll=(renderer,dt,pos)=>{ for(const w of WATER.extra){ w.on=LVL==='up'&&Math.hypot(pos.x-(w.X0+w.W/2),pos.z-(w.Z0+w.D/2))<14*TILE; if(w.on)w.step(renderer,dt); } };
 WATER.FR=new THREE.Frustum(); WATER.PM=new THREE.Matrix4();
 WATER.seen=(m,cam)=>{ if(!m||!m.visible)return false; if(!m.userData.bb)m.userData.bb=new THREE.Box3().setFromObject(m); WATER.PM.multiplyMatrices(cam.projectionMatrix,cam.matrixWorldInverse); WATER.FR.setFromProjectionMatrix(WATER.PM); return WATER.FR.intersectsBox(m.userData.bb); };
 WATER.underAll=(renderer,scene,cam,lamps)=>{ for(const w of WATER.extra)if(w.on&&WATER.seen(w.mesh,cam))w.under(renderer,scene,cam,lamps); };
-WATER.feed=(st,pos,dt,go,keys)=>{ if(!WATER.mesh)return RIG.water(st,{level:null,floor:0});
-  const b=POOLR.inBasin(pos.x,pos.z), in0=st.water&&st.water.in;
-  WATER.rise=in0?0.065/(POOLR.LX*POOLR.LY*0.84*0.84)/WATER.MPU:0; WATER.mesh.position.y=WATER.lvl+WATER.rise;
-  const W=RIG.water(st,b?{level:POOLR.level*BLDK+(WATER.hAt(pos.x,pos.z)+WATER.rise)/ZU,floor:POOLR.bedAt(b[0])*BLDK}:{level:null,floor:0});
-  W.go=!!go; W.fast=W.in&&(keys.has('k')||keys.has('shift'))?1:0;
-  if(W.in&&W.floor>=W.level-30&&!st.move&&!W.dive){ W.in=false; if(st.last)st.out={pose:JSON.parse(JSON.stringify(st.last)),t:0,T:0.4}; }
-  const was=WATER.wasIn; WATER.wasIn=W.in; if(W.in&&!was){ WATER.drop(pos.x,pos.z,0.5,0.09); WATER.splash(pos.x,WATER.lvl,pos.z,70,2.6); }
-  for(const e of W.events)if(e.k==='splash'){ WATER.drop(pos.x,pos.z,0.45,Math.min(0.14,0.02+e.v*0.0009)); WATER.splash(pos.x,WATER.lvl,pos.z,Math.min(90,20+e.v*0.5),Math.min(3,1+e.v*0.015)); } W.events.length=0;
-  WATER.wake=(WATER.wake||0)-dt; if(b&&(W.in||W.floor<W.level)&&WATER.wake<0){ WATER.wake=0.07; const s=W.in?(go?0.016:0.006)*(1+W.fast):(go?0.012:0);
-    if(s)WATER.drop(pos.x+(Math.random()-.5)*0.25,pos.z+(Math.random()-.5)*0.25,W.in?0.32:0.22,s); if(W.in&&go&&!W.dive&&Math.random()<0.35)WATER.splash(pos.x,WATER.lvl,pos.z,3+(W.fast?4:0),1.1); }
-  return W; };
+WATER.feed=st=>RIG.water(st,{level:null,floor:0});
 
 await grab('down',async()=>{ const solids=SOL.down, fixed=FIX.down, SHL=[]; let BOUND, groundY; const c0=cutWalls.length;

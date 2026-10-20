@@ -20,7 +20,7 @@ window.GRID=GRID;
     const B=typeof BOD!=='undefined'?BOD:null, bx=(x0,y0,x1,y1,S)=>({x0:(S?B.XS:B.X)(x0),z0:(S?B.ZS:B.Z)(y0),x1:(S?B.XS:B.X)(x1),z1:(S?B.ZS:B.Z)(y1),y0:-1,y1:40});
     if(B&&B.B0)GRID.serve('bodega',{box:bx(B.B0.x0,B.B0.y0,B.B0.x1,B.B0.y1)});
     if(B&&typeof MODS!=='undefined'&&MODS.apts&&MODS.apts.A){ const A=MODS.apts.A; GRID.serve('house',{box:bx(A.x0,A.y0,A.x1,A.y1)}); }
-    if(typeof POOLR!=='undefined'&&POOLR.X&&!AWAY.has('apartments'))GRID.serve('apartments',{box:{x0:POOLR.X(POOLR.x0),z0:POOLR.Z(POOLR.y0),x1:POOLR.X(POOLR.x1),z1:POOLR.Z(POOLR.y1),y0:-1,y1:60}});
+    
     if(B&&B.grounds){ const g=B.grounds.find(q=>q.id==='ghostst'); if(g)GRID.serve('ghost',{box:bx(g.x0,g.y0,g.x1,g.y1)}); }
     if(typeof STORE!=='undefined')for(const R of STORE.rooms||[]){ const cx=(R.x0+R.x1)/2, cz=(R.z0+R.z1)/2; if(cx<BOUND.x0||cx>BOUND.x1||cz<BOUND.z0||cz>BOUND.z1)continue;
       GRID.serve(R.id,{box:{x0:R.x0,z0:R.z0,x1:R.x1,z1:R.z1,y0:(R.y0??0)-1,y1:(R.y0??0)+40}}); }

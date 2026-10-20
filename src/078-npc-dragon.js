@@ -8,7 +8,7 @@
     g.setAttribute('color',new THREE.BufferAttribute(arr,3,true)); return g; };
   const B0=BOD.B0, TI=TILE, PER=[
     {x:BOD.X(MODS.apts.A.x0+3.7),z:BOD.Z(MODS.apts.A.y1)-.6*TI,y:BOD.Y(650),h:0},{x:BOD.X((B0.x0+B0.x1)/2),z:BOD.Z(B0.y1)-.6*TI,y:BOD.Y(B0.h),h:0},
-    ...(AWAY.has('apartments')?[]:[{x:POOLR.X(8),z:POOLR.Z(POOLR.y1)-.6*TI,y:POOLR.Y(POOLR.H),h:0},{x:POOLR.X(21),z:POOLR.Z(POOLR.y1)-.6*TI,y:POOLR.Y(POOLR.H),h:0}]),...WIRES.perch];
+    ...WIRES.perch];
   const gy=(x,z)=>{ const t=window.WEEDS&&WEEDS.top&&WEEDS.top(x,z); return typeof t==='number'?t:MODS.bodega.ground(x,z); };
   const TREES=[PARK.trees,DRESS.trees].filter(Boolean).flatMap(m=>m.userData.items||[]).filter(o=>o.top-o.y>2*TI&&o.r>.5*TI);
   const spot=(o,a,k)=>({x:o.x+Math.sin(a)*o.r*k,z:o.z+Math.cos(a)*o.r*k,y:o.y+(o.top-o.y)*(k>.8?.58:.64),h:a,tree:o});

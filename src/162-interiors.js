@@ -5,7 +5,6 @@ const INTERIORS={on:QS.get('interiors')==='1'||(!FREE&&QS.get('interiors')!=='0'
   const mk=(id,boxes,doors,inside)=>{ if(L.some(I=>I.id===id))return; L.push({id,boxes,doors,inside,meshes:new Set(),walls:[],on:true}); };
   const places=()=>{ const B=BOD.B0, mB=(B.x0+B.x1)/2;
     mk('bodega',[box(BOD.X,BOD.Z,[B.x0,B.y0,B.x1,B.y1],-1,BOD.Y(B.h))],[[BOD.X(mB),BOD.Z(B.y1)]]);
-    if(POOLR.ROOMS&&POOLR.ROOMS.length)mk('poolbld',POOLR.ROOMS.map(t=>box(POOLR.X,POOLR.Z,t,POOLR.Y(-150),POOLR.Y(POOLR.H))),[[POOLR.X(22.75),POOLR.Z(POOLR.y1)]]);
     if(BOD.GD)mk('dojo',[box(BOD.X,BOD.Z,BOD.GD.r,-1,BOD.Y(BOD.GD.H))],[[BOD.X(BOD.GD.door[0]),BOD.Z(BOD.GD.door[1])]]);
     if(MODS.apts){ const A=MODS.apts.A; mk('house',[box(BOD.X,BOD.Z,[A.x0,A.y0,A.x1,A.y1],-1,MODS.apts.SY*5)],[[BOD.X(MODS.apts.DX),BOD.Z(A.y1)]],()=>MODS.apts.in); }
     for(const R of STORE.rooms)if(R.walls)mk('store:'+R.id,[{x0:R.x0,x1:R.x1,z0:R.z0,z1:R.z1,y0:R.y0,y1:R.y1}],[[R.at.x,R.at.z]],()=>R.inside(pos.x,pos.z)); };

@@ -1,12 +1,11 @@
 const MAPED={on:false};
-{ const T=TILE, G=.25, LBL={bodega:'THE BODEGA',house:'APARTMENT HOUSE',apartments:'APARTMENTS + POOL',ghost:'GHOST STREET + BATH HOUSE',diner:'THE DINER',bar:'THE BAR',park:'CENTRAL PARK',castle:'THE CASTLE + DUNGEON',subway:'SUBWAY STAIRS + STATION',land:'THE LAND (GRASS)'};
-  const COL={bodega:'#a0503e',house:'#8c4a3c',apartments:'#5a6f8c',ghost:'#8a6a3e',diner:'#b04a44',bar:'#8a6040',park:'#3f7a3a',castle:'#8c8678',subway:'#3f7a5a',land:'#1d3420'};
+{ const T=TILE, G=.25, LBL={bodega:'THE BODEGA',house:'APARTMENT HOUSE',ghost:'GHOST STREET + BATH HOUSE',diner:'THE DINER',bar:'THE BAR',park:'CENTRAL PARK',castle:'THE CASTLE + DUNGEON',subway:'SUBWAY STAIRS + STATION',land:'THE LAND (GRASS)'};
+  const COL={bodega:'#a0503e',house:'#8c4a3c',ghost:'#8a6a3e',diner:'#b04a44',bar:'#8a6040',park:'#3f7a3a',castle:'#8c8678',subway:'#3f7a5a',land:'#1d3420'};
   const SIZED={park:1,land:1};
-  const LIVE={apartments:['pool','poolout'],subway:['down','stairs'],park:['parkwall','park'],castle:['castle','castlestairs','dungeon']};
+  const LIVE={subway:['down','stairs'],park:['parkwall','park'],castle:['castle','castlestairs','dungeon']};
   const room=id=>()=>{ const R=STORE.rooms.find(r=>r.id===id); return R?[R.x0,R.z0,R.x1,R.z1]:null; };
   const BOX={bodega:()=>{ const B=BOD.B0; return [BOD.X(B.x0),BOD.Z(B.y0),BOD.X(B.x1),BOD.Z(B.y1)]; },
     house:()=>{ const A=MODS.apts.A; return [BOD.X(A.x0),BOD.Z(A.y0),BOD.X(A.x1),BOD.Z(A.y1)]; },
-    apartments:()=>[POOLR.X(POOLR.x0),POOLR.Z(POOLR.y0),POOLR.X(POOLR.x1),POOLR.Z(POOLR.y1)],
     ghost:()=>{ const g=BOD.grounds.find(g=>g.id==='ghostst'); return [BOD.X(g.x0),BOD.Z(g.y0),BOD.X(g.x1),BOD.Z(g.y1)]; },
     diner:room('diner'), bar:room('bar'),
     park:()=>[BOD.XS(PARK.x0+PARK.ox),BOD.ZS(PARK.y0+PARK.oy),BOD.XS(PARK.x1+PARK.ox),BOD.ZS(PARK.y1+PARK.oy)],
@@ -14,7 +13,7 @@ const MAPED={on:false};
     subway:()=>{ const S=MAPSTAIR; return [BOD.XS(S.x0),BOD.ZS(S.y0),BOD.XS(S.x1),BOD.ZS(S.y1)]; },
     land:()=>{ const L=MODS.landR; return [L.x0*T,L.z0*T,L.x1*T,L.z1*T]; }};
   for(const k of AWAY)delete BOX[k];
-  const HIGH={bodega:()=>BOD.Y(BOD.B0.h),house:()=>BOD.Y(5*BOD.K.STORY),apartments:()=>POOLR.Y(POOLR.H),ghost:()=>BOD.Y(280),diner:()=>BOD.Y(130),bar:()=>BOD.Y(130),park:()=>BOD.YS(54),castle:()=>BOD.YS(200*CYS),subway:()=>BOD.YS(30),land:()=>.05};
+  const HIGH={bodega:()=>BOD.Y(BOD.B0.h),house:()=>BOD.Y(5*BOD.K.STORY),ghost:()=>BOD.Y(280),diner:()=>BOD.Y(130),bar:()=>BOD.Y(130),park:()=>BOD.YS(54),castle:()=>BOD.YS(200*CYS),subway:()=>BOD.YS(30),land:()=>.05};
   const KEYS=Object.keys(BOX), BUILT=JSON.parse(JSON.stringify(LAY.L)), q4=v=>Math.round(v/G)*G, q20=v=>Math.round(v*20)/20, clean=o=>{ const r={}; for(const k in o){ const v=o[k]||{}, e=(v.e||[0,0,0,0]).map(q4), q={};
       if(q4(v.x||0))q.x=q4(v.x); if(q4(v.y||0))q.y=q4(v.y); if(e.some(n=>n))q.e=e; if(q4(v.h||0))q.h=q4(v.h); if(v.s&&q20(v.s)!==1)q.s=q20(v.s); if(Object.keys(q).length)r[k]=q; } return r; };
   let WORK=clean(BUILT), sel='bodega', V=null, act=null, PH=null, d3=null, OV=null, was=null;

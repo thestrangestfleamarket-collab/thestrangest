@@ -3688,3 +3688,15 @@ initial download and load super fast"; then "Go")
   thigh and yellow foot on his right, an orange block thigh and orange foot on his left, in front of his body as in the photo;
   rounded blocks (`rbox`, a superellipsoid). He waddles (the rock .1), the hat and the arms lag on springs, and standing he now and
   then tips his hat. `metres` 2.0. Cost: 2,944 triangles, no lights.
+
+- **The mushroom house, as a model only** (owner, 20 Oct 2026, his photo of a felted blue mushroom cottage: "same, but this shold be
+  scale of place you can go inside, (like a bodega), should be height of 2 stories"; his answers: "just create it as glb", the
+  rooms "Empty rooms"; not in THE MARKET yet). `node tools/mushroom-house.cjs <out>` writes `<out>.glb` and pictures (front, side,
+  back, above, the door open, inside). In metres, measured off the photo at 9 m tall: the blue felt body (bulging foot, waist,
+  flaring under the cap) to 5.8 m, the spotted brown cap from 5.6 m (6 m across) to 9 m, the chimney to 8 m; the porch on the right
+  with its own roof, the arched wooden door (1.06 x 2.6 m, sill at 1.34 m, four stone steps, iron rails, a planter) and a round
+  window; windows glowing warm (an arched one with a balcony and a round one upstairs at 4.2-5.4 m, an arched one and a round one
+  with flower boxes below at 2.2-3.3 m), a little mushroom on the wall, felt dots. Inside, empty: the ground floor at 1.34 m, the
+  porch open into it, a curved stair of 13 steps up the back wall to the upper floor at 3.95 m (a railed stairwell), the upper room
+  open up into the cap. Three parts: `house`, `windows` (emissive), and the door on a hinge node that swings on y.
+  15,560 + 1,108 + 312 triangles; 436 KB.

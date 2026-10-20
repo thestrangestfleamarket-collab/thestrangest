@@ -3710,6 +3710,11 @@ initial download and load super fast"; then "Go")
   `await grab('apts', ...)`; `APTS` is a page-level const now. Its `osol()` names `SOL.up`/`FIX.up` directly, as the ghost dojo's does.
   Scope proof: every other reference resolves as before.
 
+## 20 Oct 2026: main street is its own builder (modules)
+
+- `057a-mainstreet.js` is `059-street.js` (ahead of the dojo, which reads `STORE.main.doors` when it builds), after the bodega builder, wrapped in `await grab('mainstreet', ...)`. It used none of the
+  builder's locals. Scope proof: 0 differences.
+
 ## 20 Oct 2026: the store and the bank are their own builders (modules)
 
 - `057-store.js` is `059-store.js` (first after the builder: the club, the arcade, main street and the bank read `STORE.kit` when they build) (`await grab('store', ...)`; its one direct `solids.push` names `SOL.up`) and `057b-bank.js`, which

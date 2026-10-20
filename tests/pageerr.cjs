@@ -1,3 +1,5 @@
+// PAGE ERRORS (20 Oct 2026): node tests/pageerr.cjs <page>. Opens the page, waits up to 180 s for the start, and prints its page errors and
+// whether it started as GitHub annotations: the one channel a chat can read when a check fails (the logs are not downloadable from here).
 const {chromium}=require('playwright'),path=require('path');
 (async()=>{ const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist']}); const pg=await b.newPage(); const out=[];
   pg.on('pageerror',e=>out.push('PAGEERROR '+e.message.slice(0,400)+' | '+(e.stack||'').split('\n').slice(1,4).join(' / ')));

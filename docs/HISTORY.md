@@ -3730,6 +3730,14 @@ initial download and load super fast"; then "Go")
   leave `{name}` shorthand keys alone, and builders read each other's registrations at build time, so file order between them is a
   dependency the scope proof cannot see (main street before the dojo, the store first of all).
 
+## 20 Oct 2026: nobody walks through what an NPC holds
+
+- **Root cause** (owner, 20 Oct 2026, with a picture of the Walker inside a merchant's tray: "shouldnt be able to walk through
+  objects ( dont just patch this tray look for root cause)"): an NPC pushed you out of one circle round its body (`N.push`, `076`),
+  so a tray, a broom or an item held out in front stuck out past it and you could stand in it. Props themselves were already solid
+  above ankle height. Now an NPC whose job holds something (`rig.job.tray|broom|item`) also pushes you out of a second circle where
+  the held thing is, 0.42 tiles ahead of it, without moving the NPC. Cost: nothing on screen; one extra distance per nearby NPC.
+
 ## 20 Oct 2026: the tomato merchant
 
 - (owner, 20 Oct 2026: "tomato merchant should be 25% taller, nothing on ground (no loose veggies)"): THE TOMATO is 2.3 m (was 1.84);

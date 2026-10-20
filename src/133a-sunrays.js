@@ -20,13 +20,13 @@ const RAYS={};
     for(const th of UI.things||[])if(/MUSHROOM|MOREL|MOONGLOW|CAP|PUFF|CHANTERELLE|BOLETE/.test(th.name||'')&&th.obj&&th.obj.visible){ th.obj.getWorldPosition(sp); add(sp.x,sp.z,th,2); }
     return P; };
   const roofed=(x,y,z)=>ROOMS.boxes().some(b=>x>b.x0&&x<b.x1&&z>b.z0&&z<b.z1&&y<b.y1)||FIX.up.some(B=>B[5]>.6*T&&y<B[5]&&x>B[0]&&x<B[3]&&z>B[1]&&z<B[4]), shaded=(x,y,z)=>{ for(let t=0;t<=14*T;t+=1.2*T)if(roofed(x+bd.x*t,y+bd.y*t,z+bd.z*t))return true; return false; };
-  const lawn=()=>{ for(let k=0;k<20;k++){ const a=Math.random()*6.283, d=(6+Math.random()*16)*T, x=pos.x+Math.cos(a)*d, z=pos.z+Math.sin(a)*d; if((!window.WEEDS||!WEEDS.inPark||WEEDS.inPark(x,z))&&!shaded(x,(typeof groundY==='function'?groundY(x,z):0)+.1*T,z))return {x,z}; } return null; };
+  const lawn=()=>{ for(let k=0;k<20;k++){ const a=Math.random()*6.283, d=(6+Math.random()*16)*T, x=pos.x+Math.cos(a)*d, z=pos.z+Math.sin(a)*d; if((!window.WEEDS||!WEEDS.inPark||WEEDS.inPark(x,z)&&PARK.in)&&!shaded(x,(typeof groundY==='function'?groundY(x,z):0)+.1*T,z))return {x,z}; } return null; };
   const spots=dt=>{ G.length=0; if(sv.y<.06)return; let R=null;
     for(const S of SPOT){ S.t-=dt; if(S.t<=0||!S.on){ R=R||rare(); const free=R.filter(c=>!SPOT.some(o=>o!==S&&o.o===c.o)), pick=free.length&&Math.random()<.8?free.sort((a,b)=>b.w-a.w+Math.random()*2-1)[0]:lawn(); S.t=35+Math.random()*30; if(pick){ S.tx=pick.x; S.tz=pick.z; S.o=pick.o||null; if(!S.on){ S.x=S.tx; S.z=S.tz; S.on=1; } } }
       if(S.o){ const o=S.o, ox=o.g?o.g.position.x:o.x, oz=o.g?o.g.position.z:o.z; if(ox!=null&&isFinite(ox)){ S.tx=ox; S.tz=oz; } }
       const k=Math.min(1,dt*.05); S.x+=(S.tx-S.x)*k; S.z+=(S.tz-S.z)*k; if(!S.on)continue;
       const y=typeof groundY==='function'?groundY(S.x,S.z):0; if(shaded(S.x,y+.1*T,S.z))continue; const v=sc.copy(cam.position).sub(sp.set(S.x,y,S.z)), t=v.dot(bd); if(v.lengthSq()-t*t>(S.r*2+4*T)**2)G.push([S.x,y,S.z,S.r,LEN]); } };
-  RAYS.spots=SPOT;
+  RAYS.spots=SPOT; PARK.onShow.push(()=>{ for(const S of SPOT)S.t=0; });
   const RT=[composer.renderTarget1,composer.renderTarget2], depthFit=()=>{ for(const t of RT)if(!t.depthTexture||t.depthTexture.image.width!==t.width||t.depthTexture.image.height!==t.height){ if(t.depthTexture)t.depthTexture.dispose(); t.depthTexture=new THREE.DepthTexture(t.width,t.height); t.dispose(); } };
   const U={tDiffuse:{value:null},tDepth:{value:null},uSun:{value:new THREE.Vector2()},uK:{value:0},uAsp:{value:1},uCol:{value:new THREE.Color(1,.86,.62)},uT:{value:0}};
   const P=new ShaderPass({uniforms:U,vertexShader:'varying vec2 vUv; void main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.); }',

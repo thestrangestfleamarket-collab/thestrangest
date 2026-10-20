@@ -47,7 +47,7 @@ const SKELGO=()=>SKELGO.p||(SKELGO.p=(async()=>{ const S=await SKEL();
     const DN=DUN();
     const N=skel(key,name,metres,DN?DN.x:T_(tx),DN?DN.z:Z_({58:-67,69:-65.5,82:-68.5,95:-66}[tx]),speed*.9,{walkN,idleN,gear,dun:DN,
       pick:DN?undefined:st=>{ G.leg^=1; const p=G.beat[G.leg]; st.to={x:p.x,z:p.z+(Math.random()-.5)*.3*TILE}; st.v=G.walkV; },
-      brain:(dt,you,st,N)=>{ if(N===GUARDS[0]){ bolts(dt); shove(dt); }
+      brain:(dt,you,st,N)=>{ if(DN)return; if(N===GUARDS[0]){ bolts(dt); shove(dt); }
         G.walkV=G.walkV||st.v; G.cool-=dt; G.look+=dt;
         const T=TROUBLE.filter(t=>t.mode==='come'||t.mode==='fight').map(t=>[t,d2(t.st,st)]).filter(([,d])=>d<SEE).sort((p,q)=>p[1]-q[1])[0];
         if(T){ const [t,d]=T, R=style.reach*TILE; G.mode='fight'; N.alert=true; st.hold=true;

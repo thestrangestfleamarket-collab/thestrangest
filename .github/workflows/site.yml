@@ -55,6 +55,24 @@ jobs:
           node tests/startprof.cjs out/base.json ../base/dist/market-prof.html
           node tests/startprof.cjs out/head.json dist/market-prof.html
       - name: Compare against the budget
-        run: node tests/budget.cjs out/base.json out/head.json
+        run: set -o pipefail; node tests/budget.cjs out/base.json out/head.json | tee out/budget.log
       - name: The lost picture comes back
-        run: node tests/ctxloss.cjs dist/market.html
+        if: success() || failure()
+        run: set -o pipefail; node tests/ctxloss.cjs dist/market.html | tee out/ctxloss.log
+      - name: The same picture (street, dungeon, castle, bodega)
+        if: success() || failure()
+        run: set -o pipefail; node tests/samepic.cjs ../base/dist/market.html dist/market.html out/samepic | tee out/samepic.log
+      - name: Results as annotations (for sessions that can't download logs)
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import glob
+          for f in sorted(glob.glob('out/*.log')):
+              t = '\n'.join(l for l in open(f).read().split('\n') if not l.startswith('::'))[-6000:].replace('%', '%25').replace('\r', '').replace('\n', '%0A')
+              print('::notice title=' + f + '::' + t)
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: budget-pictures
+          path: out/

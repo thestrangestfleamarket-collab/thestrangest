@@ -95,4 +95,6 @@ for f in pages:
     t = read(f)
     if t.count('<!--') != t.count('-->') or not t.startswith('<') or t.startswith('<!--'):
         sys.exit(f + ': broken page (an unclosed <!-- or no page at the top)')
+if subprocess.run(['node', 'tools/map.cjs', 'docs/MAP.md'], capture_output=True).returncode:
+    print('docs/MAP.md not refreshed (node tools/map.cjs failed: is acorn installed?)')
 print('built', ', '.join(pages), '+', len(os.listdir('dist/g')) - 1, 'files in dist/g,', len(src), 'files,', ny, 'breaths')

@@ -3537,3 +3537,12 @@ initial download and load super fast"; then "Go")
   (`W3.warm`, `meshOf0`) at about 6 s of the 21 s. The shading now keys its grid and its normal smoothing with numbers instead of text and
   makes the cheap tests before the distance; the figure builder skips the empty cells without making small arrays. The output is the same:
   `tests/texhash.cjs` now also hashes every body built at the start (positions, normals, colours, `sh`) and fails if any differs.
+
+## 20 Oct 2026: the map of the source (modules, step 1)
+
+- **The map** (owner, 20 Oct 2026: "ok lets fix modules", after asking what gives the biggest token saving): `tools/map.cjs` (with
+  `tools/scope.cjs`, the scope analyser that proved the dungeon and bar modules) writes `docs/MAP.md`: every file's size, the builder it
+  sits inside, what it gives other files and what it needs from them. A chat greps its file there instead of reading the neighbours.
+  What it showed: `await grab('bodega', ...)` is one function from `013a-day1.js` to `059-main-10.js`, 787 KB of the 2.4 MB, and the
+  shared kits inside it (`016` street kit 13 names, `020` apartment furniture 22, `029` bar counter 32, `033` shrine pieces 24, `036` cottage
+  room 32) are what keep its places from standing alone. Next: lift the kits out, then one place per pull request.

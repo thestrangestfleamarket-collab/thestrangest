@@ -3313,3 +3313,30 @@ moves in idl animations."; "skin of player just wearing all black like ninja")
 - **Cost**: a slime 1,068 triangles (1,056 the model, 12 its disc): level 1 5,340, level 2 7,476, level 3 8,544, in two draws; no
   lamps; one new shader program (the slimes' toon). The skeletons as before (their models, no new programs). `DUNMOBDBG()`,
   `DUNMOBS` (hit/hitRes for tests); `MODS.dungeon.hook(f)` is told the level on each build (0 on leaving).
+## 19 Oct 2026: your apartment and your fire escape (the outside view, off the map)
+(owner, showing a picture of a city seen from a fire escape landing: "i want that to be the view when you go out to your fireescape (but
+it will be off map)"; his pick of the options: "Outside view"; `058c-fireview.js`, `141c-fireview.js`)
+- **Your apartment**: the apartment house's 3rd-floor back east flat (its door 23.4 from the west corner, the corridor side) is yours: a
+  brass plate YOUR APARTMENT over its door (seen from the corridor). The menu's MORE PLACES has YOUR APARTMENT (inside it) and YOUR FIRE
+  ESCAPE. The flat stays empty (the house's rule).
+- **Out the window**: double click its window (24.7 from the west corner, YOUR FIRE ESCAPE) or walk into it: the black `#subfade` fade
+  (LOADING YOUR FIRE ESCAPE... the first time, built then and only then: `K.offmap`), and you stand on your fire escape. Walk into the
+  window behind you (or double click it, BACK INSIDE) and the fade puts you back in the flat by that window.
+- **The fire escape** (off the map, east past the dojo hall): a grated black-iron landing on the 5th floor of a six-storey red brick
+  walk-up, railings, the straight ladder up through the hatch of the 6th-floor landing and down to the 4th, the stack of landings down
+  to the 2nd with its drop ladder; a stone step under your tall window (SIT ON THE STEP: you sit on it, your legs over the grating;
+  walking off stands you up), three potted plants. The window is always lit warm at night; one lamp (the window's light) lights the
+  landing at night (one of the 8).
+- **The view**: the street five storeys below (sidewalks, a two-way street with its yellow line, parking lines, manholes, crosswalks at
+  the avenue, parked cars, ten cars driving both ways with head and tail lights at night, iron street lamps with hard-edged pools of
+  light at night, street trees), the row across the street (3 to 5 storeys, brick of the game's colours, shops with awnings and signs
+  lit at night, windows lit at random at night, parapets, water towers, bulkheads, chimneys and AC boxes on the roofs, kept lower than
+  your landing so the isometric view is never blocked), the neighbours on your side (some with fire escapes and shops), an avenue
+  running away across the street, then blocks of the far city's boxes (`FAR3`'s own facade and lit-window material, taller with
+  distance, some towers) and the far skyline's painted panorama (`FAR3.panels`, its day and night pictures) all round. The sky is the
+  game's (DAY/NIGHT presets); the town's far city, its trees and the mist are hidden while you're out there.
+- **Cost**: built only on the first visit and drawn only while you're on the landing (one group): baked boxes in the game's box way (the
+  near landing and your facade at 24 texels a tile, the rest at 8), one instanced draw of ~200 far boxes (~2,400 triangles, the far
+  city's program), 8 triangles of skyline panels (the panels' program), one ground plane, two instanced draws of cars (~1,100
+  triangles). Measured on the landing (whole frame): 43,800 triangles and 42 draw calls in the isometric view, 45,800 and 48 in the behind view. In the isometric view the far boxes that would stand between the camera and you are left out (worked out again only when the view turns); the neighbours next to your building are at most 5 storeys so they never hide you. One lamp at night. Programs: the store's Lambert ones
+  (front-sided for the buildings), the cars' vertex-colour Lambert and Basic.

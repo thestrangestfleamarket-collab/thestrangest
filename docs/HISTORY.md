@@ -3506,6 +3506,10 @@ initial download and load super fast"; then "Go")
 - **Owner's answers** (20 Oct 2026, on the overhaul review): talking between players "yes but not yet"; player trade "yes" (players sell or
   give each other things, so a trade runs on the block's server with both sides confirming); what happens when a block is full is "future
   plans"; looks "yes everyone can customize" (the crowd keeps one built body per look). Friends: see the next entry.
+- **No claude.ai copy** (owner, 20 Oct 2026, asked whether to keep the copy of THE MARKET published as a claude.ai page
+  (claude.ai/artifact/PnmQqhkusfewby35tf4zo5) or drop it: "yes" to dropping it): the game lives only on thestrangestfleamarket.com;
+  the publishing steps and that link are out of CLAUDE.md, and no chat publishes the game to claude.ai any more. `dist/market.html`
+  stays as the single-file page the tests drive.
 
 ## 20 Oct 2026: the pool and the apartment building deleted
 

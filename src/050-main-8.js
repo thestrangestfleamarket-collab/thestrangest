@@ -112,7 +112,9 @@ BOD.KC={KMK,KPP,DGN,DGP,LAMPS,CATALOG,dungeonWall,dungeonFloorCol,castleArch,KAR
   const KR=1.6, RR=[[MAP.x0,CURB,MAP.x1,FAR],[AV.r0,FAR,AV.r1,RG.nr1],[RG.wr0,FAR,RG.wr1,RG.nr1],[RG.wr0,RG.nr0,AV.r1,RG.nr1],[BK.rx,BK.r0,RG.wr0,BK.r1]];
   const CORN=[[RG.wr0,FAR,-1,1,1],[RG.wr1,FAR,1,1,1],[AV.r0,FAR,-1,1,1],[AV.r1,FAR,1,1,1],[RG.wr1,RG.nr0,1,-1,1],[AV.r0,RG.nr0,-1,-1,1],[RG.wr0,RG.nr1,1,-1,0],[AV.r1,RG.nr1,-1,-1,0],[RG.wr0,BK.r0,-1,-1,1],[RG.wr0,BK.r1,-1,1,1]].map(([x,y,sx,sy,cv])=>({x,y,sx,sy,cv,cx:x+sx*KR,cy:y+sy*KR}));
   const inQ=(c,x,y)=>{ const u=(x-c.x)*c.sx, v=(y-c.y)*c.sy; return u>=0&&u<=KR&&v>=0&&v<=KR; };
-  const ROADAT=(x,y)=>{ let r=false; for(const b of RR)if(x>b[0]&&x<b[2]&&y>b[1]&&y<b[3]){ r=true; break; } for(const c of CORN)if(inQ(c,x,y)&&Math.hypot(x-c.cx,y-c.cy)>KR)return !!c.cv; return r; };
+  const TCL=(list,bb)=>{ const M=new Map(); return (x,y)=>{ const tx=Math.floor(x), ty=Math.floor(y), k=tx*1048576+ty; let L=M.get(k); if(!L){ L=list.filter(it=>{ const b=bb(it); return b[2]>=tx-.01&&b[0]<=tx+1.01&&b[3]>=ty-.01&&b[1]<=ty+1.01; }); M.set(k,L); } return L; }; };
+  const RRt=TCL(RR,b=>b), CORNt=TCL(CORN,c=>[Math.min(c.x,c.x+c.sx*KR),Math.min(c.y,c.y+c.sy*KR),Math.max(c.x,c.x+c.sx*KR),Math.max(c.y,c.y+c.sy*KR)]);
+  const ROADAT=(x,y)=>{ let r=false; for(const b of RRt(x,y))if(x>b[0]&&x<b[2]&&y>b[1]&&y<b[3]){ r=true; break; } for(const c of CORNt(x,y))if(inQ(c,x,y)&&Math.hypot(x-c.cx,y-c.cy)>KR)return !!c.cv; return r; };
   const KB=.16, NR=RR.map(b=>[b[0]-KR-.3,b[1]-KR-.3,b[2]+KR+.3,b[3]+KR+.3]), KX=kerbCol('x'), KY=kerbCol('y');
   const kerbAt=(x,y)=>{ if(!NR.some(b=>x>b[0]&&x<b[2]&&y>b[1]&&y<b[3]))return null;
     for(const c of CORN)if(inQ(c,x,y)){ const d=Math.hypot(x-c.cx,y-c.cy); if(c.cv?d>KR-KB:d<KR+KB)return KX(Math.atan2(y-c.cy,x-c.cx)*KR+c.x*7,y); return null; }
@@ -131,7 +133,8 @@ BOD.KC={KMK,KPP,DGN,DGP,LAMPS,CATALOG,dungeonWall,dungeonFloorCol,castleArch,KAR
     if(w>.04&&w<.36&&ti>=2&&ti<Math.floor(W*24)-2){ const a=ti%3, b=tj%3; return b===1&&a===1?[246,214,92]:b===1&&a===2||b===2&&a===1?[164,128,30]:[216,178,48]; }
     const n=grain(u*3.1,w*7.3,631,1.4); return tj%2?(n<.4?[150,147,139]:[162,158,149]):(n<.4?[158,154,146]:[170,166,157]); };
   BOD.ramps={RP,D:RPD,col:rampCol,at:rampAt};
-  const bars=(x,y)=>{ for(const [a0,a1,ax,l0,h0] of XW){ const u=ax==='x'?x:y, v=ax==='x'?y:x; if(u<=a0||u>=a1||v<=l0+.15||v>=h0-.15)continue;
+  const XWb=TCL(XW,([a0,a1,ax,l0,h0])=>ax==='x'?[a0,l0,a1,h0]:[l0,a0,h0,a1]), XWm=TCL(XW,([a0,a1,ax,l0,h0])=>ax==='x'?[a0-1.05,l0,a1+1.05,h0]:[l0,a0-1.05,h0,a1+1.05]);
+  const bars=(x,y)=>{ for(const [a0,a1,ax,l0,h0] of XWb(x,y)){ const u=ax==='x'?x:y, v=ax==='x'?y:x; if(u<=a0||u>=a1||v<=l0+.15||v>=h0-.15)continue;
       const W=()=>{ const n=grain(x,y,39,2.2); return n<.3?[150,148,142]:[196,194,186]; };
       if(u<a0+.1||u>a1-.1)return W(); if(u>a0+.25&&u<a1-.25&&(Math.floor((v-l0-.15)/.5)&1)===0)return W(); return null; } return null; };
   const LN=[['x',CURB,1,MAP.x0+.5,MAP.x1-.5,[[RG.wr0,RG.wr1],[AV.r0,AV.r1]]],['x',FAR,-1,RG.wr1+KR,AV.r0-KR],['x',FAR,-1,AV.r1+KR,MAP.x1-.5],
@@ -142,7 +145,8 @@ BOD.KC={KMK,KPP,DGN,DGP,LAMPS,CATALOG,dungeonWall,dungeonFloorCol,castleArch,KAR
   const bike=(u,w)=>Math.abs(Math.hypot(u+.27,w+.08)-.15)<.035||Math.abs(Math.hypot(u-.27,w+.08)-.15)<.035||BIKE.some(s=>sd(u,w,...s)<.032);
   const chev=(u,w)=>{ const q=Math.abs(w); return q<.3&&[0,.2].some(c=>Math.abs(u-c+q*.9)<.045); };
   const WHITE=(x,y,hp)=>{ const n=grain(x,y,611,1.1); return hp<.05?[170,168,160]:n<.3?[188,186,178]:[212,210,202]; };
-  const lane=(x,y)=>{ for(const [ax,e,dir,a0,a1,dash] of LN){ const a=ax==='x'?x:y, d=((ax==='x'?y:x)-e)*dir; if(d<.12||d>=1.44||a<a0||a>a1)continue;
+  const LNt=TCL(LN,([ax,e,dir,a0,a1])=>{ const p=e+dir*.12, q=e+dir*1.44, lo=Math.min(p,q), hi=Math.max(p,q); return ax==='x'?[a0,lo,a1,hi]:[lo,a0,hi,a1]; });
+  const lane=(x,y)=>{ for(const [ax,e,dir,a0,a1,dash] of LNt(x,y)){ const a=ax==='x'?x:y, d=((ax==='x'?y:x)-e)*dir; if(d<.12||d>=1.44||a<a0||a>a1)continue;
       if(inX(ax,e,a,.35))return null;
       const hp=hash(Math.floor(x*24),Math.floor(y*24),613), worn=cvNoise(x*1.7,y*1.7,615)>.78&&hp<.55;
       if(d>=1.32)return worn||dash&&dash.some(r=>a>r[0]-.2&&a<r[1]+.2)&&(Math.floor(a/1.2)&1)?null:WHITE(x,y,hp);
@@ -151,11 +155,11 @@ BOD.KC={KMK,KPP,DGN,DGP,LAMPS,CATALOG,dungeonWall,dungeonFloorCol,castleArch,KAR
       return null; } return null; };
   const JX=[[RG.wr0,CURB,RG.wr1,FAR],[AV.r0,CURB,AV.r1,FAR],[RG.wr0,RG.nr0,RG.wr1,RG.nr1],[AV.r0,RG.nr0,AV.r1,RG.nr1],[RG.wr0,BK.r0,RG.wr1,BK.r1]], inJ=(x,y,m)=>JX.some(b=>x>b[0]-m&&x<b[2]+m&&y>b[1]-m&&y<b[3]+m);
   const YEL=[[190,156,54],[212,176,62]];
-  const marks=(x,y)=>{ const hp=hash(Math.floor(x*24),Math.floor(y*24),617);
-    for(const b of RR){ if(!(x>b[0]&&x<b[2]&&y>b[1]&&y<b[3]))continue; const ax=b[2]-b[0]>b[3]-b[1]?'x':'y', a=ax==='x'?x:y, v=ax==='x'?y:x, m=ax==='x'?(b[1]+b[3])/2:(b[0]+b[2])/2, q=Math.abs(v-m);
-      if(q>.06&&q<.19&&!inJ(x,y,.3)&&!inX(ax,m,a,1.1))return cvNoise(x*1.7,y*1.7,619)>.8&&hp<.5?null:YEL[grain(x,y,621,1.1)<.4?0:1]; break; }
-    for(const [a0,a1,ax,l0,h0] of XW){ const u=ax==='x'?x:y, v=ax==='x'?y:x, m=(l0+h0)/2; if(v<=l0+.12||v>=h0-.12||inJ(x,y,1.5))continue;
-      const lo=ax==='x'; if(u>a0-1.05&&u<a0-.7&&(lo?v<m-.2:v>m+.2)||u>a1+.7&&u<a1+1.05&&(lo?v>m+.2:v<m-.2))return WHITE(x,y,hp); }
+  const marks=(x,y)=>{ let hq=-1; const hpf=()=>hq<0?(hq=hash(Math.floor(x*24),Math.floor(y*24),617)):hq;
+    for(const b of RRt(x,y)){ if(!(x>b[0]&&x<b[2]&&y>b[1]&&y<b[3]))continue; const ax=b[2]-b[0]>b[3]-b[1]?'x':'y', a=ax==='x'?x:y, v=ax==='x'?y:x, m=ax==='x'?(b[1]+b[3])/2:(b[0]+b[2])/2, q=Math.abs(v-m);
+      if(q>.06&&q<.19&&!inJ(x,y,.3)&&!inX(ax,m,a,1.1))return cvNoise(x*1.7,y*1.7,619)>.8&&hpf()<.5?null:YEL[grain(x,y,621,1.1)<.4?0:1]; break; }
+    for(const [a0,a1,ax,l0,h0] of XWm(x,y)){ const u=ax==='x'?x:y, v=ax==='x'?y:x, m=(l0+h0)/2; if(v<=l0+.12||v>=h0-.12||inJ(x,y,1.5))continue;
+      const lo=ax==='x'; if(u>a0-1.05&&u<a0-.7&&(lo?v<m-.2:v>m+.2)||u>a1+.7&&u<a1+1.05&&(lo?v>m+.2:v<m-.2))return WHITE(x,y,hpf()); }
     return null; };
   const IX=new Map(), at2=(x,y)=>Math.floor(x/2)*1048576+Math.floor(y/2), feat=(x0,y0,x1,y1,f)=>{ for(let i=Math.floor(x0/2);i<=Math.floor(x1/2);i++)for(let j=Math.floor(y0/2);j<=Math.floor(y1/2);j++){ const k=i*1048576+j; (IX.get(k)||IX.set(k,[]).get(k)).push(f); } };
   const MH=[], DR=[];

@@ -13,7 +13,7 @@ let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
     await pg.addInitScript(()=>{ let x=123456789; Math.random=()=>{ x^=x<<13; x^=x>>>17; x^=x<<5; return (x>>>0)/4294967296; }; });
     await pg.goto('file://'+page+'?fresh=1&hour=13&place='+encodeURIComponent(place),{waitUntil:'commit'});
     let s=false; for(let i=0;i<900&&!(s=await pg.evaluate(()=>!!window.__started).catch(()=>false));i++)await pg.waitForTimeout(500);
-    await pg.waitForTimeout(8000); const f=path.join(OUT,place.replace(/\W+/g,'-').toLowerCase()+'-'+tag+'.png'); await pg.screenshot({path:f}); await pg.close(); return {f,s,errs}; };
+    await pg.waitForTimeout(20000); const f=path.join(OUT,place.replace(/\W+/g,'-').toLowerCase()+'-'+tag+'.png'); await pg.screenshot({path:f}); await pg.close(); return {f,s,errs}; };
   const cmp=await b.newPage();
   for(const place of PLACES){ const A=await shot(BASE,place,'base'), A2=await shot(BASE,place,'base2'), B=await shot(HEAD,place,'head');
     ok(B.s,place+': starts'); ok(B.errs.filter(e=>!A.errs.includes(e)).length===0,place+': no new page errors '+B.errs.join(' | '));

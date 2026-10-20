@@ -31,7 +31,8 @@ BODB={};
     if(hash(i,j,87)<.003)c=[214,212,204]; if(hash(i>>2,j>>2,91)<.004)c=[150,120,70];
     return c; };
   const flat=(x0,y0,x1,y1,z,col,kind,S)=>{ if(x1-x0>80||y1-y0>80){ for(let a=x0;a<x1;a+=80)for(let b=y0;b<y1;b+=80)flat0(a,b,Math.min(x1,a+80),Math.min(y1,b+80),z,col,kind,S); return; } return flat0(x0,y0,x1,y1,z,col,kind,S); };
-  const flat0=(x0,y0,x1,y1,z,col,kind,S)=>{ if(window.FLATLOG){ const k=kind+' '+String(col).slice(0,90); FLATLOG[k]=(FLATLOG[k]||0)+(x1-x0)*(y1-y0)*576; } const X=S?BOD.XS:BOD.X, Y=S?BOD.YS:BOD.Y, Z=S?BOD.ZS:BOD.Z; return BOD.bq([X(x0),Y(z),Z(y1)],[X(x1),Y(z),Z(y1)],[X(x1),Y(z),Z(y0)],[X(x0),Y(z),Z(y0)],BOD.faceTex((x1-x0)*24,(y1-y0)*24,(i,j)=>BOD.C(col(x0+(i+.5)/24,y0+(j+.5)/24))),kind); };
+  const CSIG=new WeakMap(), csig=f=>{ let v=CSIG.get(f); if(v==null){ const t=String(f); let h=2166136261; for(let i=0;i<t.length;i++)h=Math.imul(h^t.charCodeAt(i),16777619); v=(h>>>0).toString(36)+t.length; CSIG.set(f,v); } return v; };
+  const flat0=(x0,y0,x1,y1,z,col,kind,S)=>{ if(window.FLATLOG){ const k=kind+' '+String(col).slice(0,90); FLATLOG[k]=(FLATLOG[k]||0)+(x1-x0)*(y1-y0)*576; } const X=S?BOD.XS:BOD.X, Y=S?BOD.YS:BOD.Y, Z=S?BOD.ZS:BOD.Z; const fn=(i,j)=>BOD.C(col(x0+(i+.5)/24,y0+(j+.5)/24)), w=Math.max(1,Math.round((x1-x0)*24)), h=Math.max(1,Math.round((y1-y0)*24)), k=kind+'|'+(S?1:0)+'|'+x0+','+y0+','+x1+','+y1+','+z+'|'+csig(col); const im=PAINTC.get(k,w,h,fn); let tx; if(im)tx={map:{image:im},em:null}; else { tx=BOD.faceTex((x1-x0)*24,(y1-y0)*24,fn); if(!tx.em)PAINTC.put(k,tx.map.image); } return BOD.bq([X(x0),Y(z),Z(y1)],[X(x1),Y(z),Z(y1)],[X(x1),Y(z),Z(y0)],[X(x0),Y(z),Z(y0)],tx,kind); };
   flat(B0.x0,B0.y0,B0.x1,B0.y1,H,roofCol,'R');
   { const gb=b=>BOD.gbox(b,'R'), t=.36, PH=23, red=(i,j,k)=>{ const c=BRICKS.face(i,j,k,PH), m=c[0]<84; return m?[c[0]*1.25,c[1]*1.2,c[2]*1.12]:[c[0]*1.22,c[1]*.58,c[2]*.48]; };
     const wall=(x0,y0,x1,y1)=>gb({x0,y0,x1,y1,z0:H,z1:H+PH,c:[120,60,48],fs:(nx,ny,P,Q,z,k)=>{ const u=nx?Q:P, i=Math.floor(u*24), j=Math.floor(PH-z), o=(nx>0&&x0>B0.x0+RW/2)||(nx<0&&x0<B0.x0+RW/2)||(ny>0&&y0>B0.y0+RH/2)||(ny<0&&y0<B0.y0+RH/2);
@@ -63,6 +64,7 @@ BODB={};
       gb({x0:sx0+.05,x1:sx1-.05,y0:sy0+.05,y1:sy1-.05,z0:H+CH,z1:H+CH+1.4,c:[70,88,96],fs:(nx,ny,P,Q,z,k)=>sh([96,98,98],k),top:(P,Q)=>{ const u=P-sx0, v=Q-sy0, hp=hash(Math.floor(P*24),Math.floor(Q*24),287), e=Math.min(u-.05,sx1-.05-P,v-.05,sy1-.05-Q);
         if(e<.05||Math.abs(u-(sx1-sx0)/2)<.025||Math.abs(v-(sy1-sy0)/2)<.025)return [92,94,94]; if(Math.abs(((u+v)*24/5)%1-.5)<.1||Math.abs(((u-v)*24/5+100)%1-.5)<.1)return [104,118,124];
         if(e<.14&&hp<.6)return [60,62,56]; if(Math.abs(v-.3-u*.5)<.015&&u>.6)return [150,170,176]; if(cvNoise(u*5,v*5,289)>.76)return hp<.5?[96,82,48]:[70,86,46]; return hp<.5?[62,80,90]:[56,72,82]; }}); } }
+  await PAINTC.ready;
   const GQ=BODB.GQ=[]; for(const g of BOD.grounds)if(g.id!=='shop'){ const S=!g.bld, gx=S?BOD.XS:BOD.X, gz=S?BOD.ZS:BOD.Z;
     for(let a=g.x0;a<g.x1;a+=20)for(let b=g.y0;b<g.y1;b+=20){ const x1=Math.min(g.x1,a+20), y1=Math.min(g.y1,b+20), xa=gx(a), xb=gx(x1), za=gz(b), zb=gz(y1);
       GQ.push({x0:Math.min(xa,xb),x1:Math.max(xa,xb),z0:Math.min(za,zb),z1:Math.max(za,zb),go:()=>flat0(a,b,x1,y1,g.z,g.col,'G',S)}); } }
@@ -110,7 +112,7 @@ BODB={};
       BATCH.cast=false; BATCH.build(MK); const M=BATCH.meshes||{}; BATCH.meshes=m0; BATCH.items=keep; for(const k in M)(MAPG.bodega||scene).add(M[k]); post(M); };
     BODB.gnear=(x,z,R)=>{ const L=GQ.filter(j=>gd(j,x,z)<R); if(L.length){ paint(L); flush(); } };
     BODB.gtick=dt=>{ if(!GQ.length&&!HOLD.length)return; BODB.gnear(pos.x,pos.z,BODB.GR); if((gt+=dt)<.05)return; gt=0;
-      const t0=performance.now(); while(GQ.length&&performance.now()-t0<6){ let b=null, bd=1e9; for(const j of GQ){ const d=gd(j,pos.x,pos.z); if(d<bd){ bd=d; b=j; } } paint([b]); } if(hn>=24||!GQ.length)flush(); }; BODB.GR=48*TILE; }
+      const t0=performance.now(); while(GQ.length&&performance.now()-t0<6){ let b=null, bd=1e9; for(const j of GQ){ const d=gd(j,pos.x,pos.z); if(d<bd){ bd=d; b=j; } } paint([b]); } if(hn>=24||!GQ.length){ flush(); if(!GQ.length&&window.PAINTC)PAINTC.save(); } }; BODB.GR=48*TILE; }
   const goods=()=>{ const {GOOD,GLAY}=BOD, O=BOD.O, list=[];
     const row=(p,f,zpx,items)=>{ const along=f[0]?1:0, a1=along?p.y1:p.x1, yaw=Math.atan2(-f[0],f[1]); let a=(along?p.y0:p.x0)+.08, last=null;
       for(const [k,n,...args] of items){ if(last&&last!==k)a+=.04; last=k;

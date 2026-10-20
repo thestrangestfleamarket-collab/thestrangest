@@ -3450,6 +3450,21 @@ park's brick wall twice as high", "no ivy on the wall"; `061-park.js`)
   Checked with the scope analysis: the moved statements make no calls when they run (only functions and values), every name outside these
   files resolves as before, and the kit sees the same outside names (`hash`, `sh`, `sided`, `PNAME`, `prop`, `LAMPS`, `zShift`). 18 KB of source gone.
 - **The same picture** now also steps inside the diner and the bar (`in:diner`, `in:bar`).
+
+## 19 Oct 2026: where the start goes; the ground painted once and kept
+
+- **Measured** (cloud software graphics, two runs, `tests/bodegacost.cjs`, `tests/cpuprof.cjs` on a measuring branch): of about 30 s to start,
+  13-19 s is one stretch with no breaths: the BODEGA's builder runs every place maker from `014` to `052`. Inside it the makers cost almost
+  nothing; the time is the ground (`053-bodbuild.js`, one loop: 13.5 s, 20.6 megapixels painted at 24 a tile, the roads 11.1 of them) and the
+  apartments and pool (`064-map-post.js`, 8.3 s). By function, painting (`faceTex` and the colour functions under it: `hash`, `cvNoise`,
+  `grain`, `sh`, the road's `lane`, `marks`, `bars`, `ROADAT`, `inQ`) is 22 of 37 s; then the Walker's warm-up (5.3 s) and making NPCs (2.2 s).
+- **The ground painted once and kept** (`006a-paintc.js` `PAINTC`, used by `053-bodbuild.js` `flat0`): the first time, the ground is painted as
+  before; once the game runs it is saved, gzipped, in the browser (IndexedDB `market-paint`, keyed by the build stamp). The next start loads it
+  instead of painting. Each saved patch is checked first: 48 of its pixels are painted again and compared, and any patch that differs (the map
+  edited, a painter changed) is painted from scratch. `?paintc=0` turns it off; `PAINTC.P` counts hits, misses, rejects and the load time.
+- **The road's index keyed by numbers** (`050-main-8.js` `at2`): no string made for each of the road's 11 million pixels.
+- **The same pixels** (`tests/texhash.cjs`, in the CI budget job): every texture in the scene hashed on the base and the pull request (seeded
+  randomness), and the pull request opened twice in one profile so the second start comes from the cache; all three must match exactly.
 ## 20 Oct 2026: a faster start: the ground painted round you first, the rest after; dragons fetched after the start; no frozen page in the builders
 (owner, 19 Oct 2026, on the render inspector: "i want to chunk the world off as much as possible into loading screens and make the
 initial download and load super fast"; then "Go")
@@ -3464,6 +3479,8 @@ initial download and load super fast"; then "Go")
   where you open (where you are, your saved place, or Central Park's gate for a new player) are painted while the page loads. The rest
   (about 260 cells) are painted after the start, the nearest first, in slices of at most 6 ms every 0.05 s, built 24 at a time; any cell
   within 48 tiles of you is painted before the frame is drawn, so a jump from the menu, a load or a walk never shows a missing ground.
+- With the paint cache (`PAINTC`, the same day): the cells are its patches, so a returning player's near cells come from the cache;
+  the cache is saved again once the last far cell is painted.
 - **Breaths inside the builders** (`tools/yields.py`): the places' builders (`grab(...)`) now get the loading breaths too, so the
   street's builder (bodega to the dojo, a third of the code) no longer holds the page for seconds without answering.
 - **Dragons after the start** (`077-npc-skel.js`, `078-npc-dragon.js`): `data/dragon.json` is `__LAZY__` (on the website fetched after

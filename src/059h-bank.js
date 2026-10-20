@@ -1,4 +1,5 @@
-{ const K=STORE.kit, {room,rec,STEPS}=K, SK=BOD.STOREK, {CATALOG,LAMPS,T,sh}=SK, MK=SK.museum, M=MK.MUS, MB=M.b, P=RING.bank, OX=BOD.OX, OY=BOD.OY, DEP=16;
+// THE BANK: the bank on the street (its own builder; it moves to the bottom-left corner and gets its own load later, 20 Oct 2026).
+await grab('bank',async()=>{ const K=STORE.kit, {room,rec,STEPS}=K, SK=BOD.STOREK, {CATALOG,LAMPS,T,sh}=SK, MK=SK.museum, M=MK.MUS, MB=M.b, P=RING.bank, OX=BOD.OX, OY=BOD.OY, DEP=16;
   const x0=OX+(P.x0-OX)/BLDK, y1=OY+(P.y0-OY)/BLDK, B={id:'lbank',x0,x1:x0+(MB.x1-MB.x0),y0:y1-DEP,y1,h:MB.h};
   const SX=MB.x0+MB.x1, SY=MB.y0+MB.y1, dx=B.x0-MB.x0, dy=B.y1-MB.y1, FW=[[0,1],[-1,0],[0,-1],[1,0]], stone=[226,220,204], D={w:'f',a:(B.x0+B.x1)/2,wd:2.5,h:76};
   const RN={x0:MB.x0+T,x1:MB.x1-T,y0:MB.y0+T,y1:MB.y0+DEP-T}, OB={...MB,plain:1}, WO={get P(){ return MK.MUP.bank; },k:'hall'};
@@ -10,4 +11,4 @@
     for(const x of [M.hx0+.8,M.hx1-.8])for(const y of [MB.y0+3.2,MB.y0+8,by-3.2])mp('museum hall column',x,y);
     mp('information desk',M.mid,by-2.2,2); mp('museum bench',MB.x0+1.4,MB.y0+8,3); mp('museum bench',MB.x1-1.4,MB.y0+8,1);
     for(let i=0;i<3;i++)LAMPS.push({own:1,room:1,day:true,x:SX-(MB.x0+(MB.x1-MB.x0)*(i+.5)/3)+dx,y:SY-(MB.y0+DEP/2)+dy,z:170,r:16,c:[1.3,1.3,1.26]}); }));
-}
+});

@@ -71,7 +71,8 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
       for(let s=ax?y0:x0, e=ax?y1:x1; s<e; s++){ const s1=Math.min(e,s+1), m=(s+s1)/2; let lo=1e9, hi=-1e9; for(let t=a0;t<a1;t+=1/24)for(let q=0;q<5;q++)if(V(t,s+(s1-s)*q/4)>-.8){ lo=Math.min(lo,t); hi=Math.max(hi,t); }
         if(hi<lo)continue; lo=Math.max(a0,Math.floor(lo*24-2)/24); hi=Math.min(a1,Math.ceil(hi*24+3)/24); ax?flat(lo,s,hi,s1,0,groundCol):flat(s,lo,s1,hi,0,groundCol);
         for(const [b,d,f] of [[lo,1/24,lo>a0+.01],[hi,-1/24,hi<a1-.01]]){ if(!f||hash(Math.floor(m*7),Math.floor(b*7),461)>.6)continue; let t=b; while(V(t,m)<.08&&Math.abs(t-b)<3)t+=d; if(Math.abs(t-b)<3)T3.push(ax?[t,m,hash(Math.floor(m*7),3,463)]:[m,t,hash(Math.floor(m*7),5,463)]); } } };
-    strips(cx-w,P.y0+.5,cx+w,cy-R,1); PARK.later(()=>{ strips(P.x0,cy-w,cx-R,cy+w,0); strips(cx+R,cy-w,P.x1,cy+w,0); strips(cx-R,cy-R,cx+R,cy+R,1); strips(cx-w,cy+R,cx+w,P.y1,1); }); }
+    strips(cx-w,P.y0+.5,cx+w,cy-R,1); const part=(x0,y0,x1,y1,ax)=>{ const a=ax?y0:x0, b=ax?y1:x1; for(let s=a;s<b;s+=8){ const e=Math.min(b,s+8); PARK.later(()=>ax?strips(x0,s,x1,e,1):strips(s,y0,e,y1,0)); } };
+    part(P.x0,cy-w,cx-R,cy+w,0); part(cx+R,cy-w,P.x1,cy+w,0); part(cx-R,cy-R,cx+R,cy+R,1); part(cx-w,cy+R,cx+w,P.y1,1); }
   const stone=(i,j,k,H=99,cap=false)=>BRICKS.face(i,j,k,H,cap);
   const capSide=(i,j,h)=>{ const n=grain(i/24,j/24,91,1.2), c=(j===0?1.2:j>=h-1?.62:1)*(124+20*n); return speck([c,c,c*.96],i/24,j/24,93); };
   const face=(a,b,c,d,w,h,fn)=>BOD.bq(a,b,c,d,BOD.faceTex(w,h,(i,j)=>BOD.C(fn(i,j))),'G');

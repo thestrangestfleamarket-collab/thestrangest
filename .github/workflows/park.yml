@@ -24,6 +24,8 @@ jobs:
           mkdir -p out; set +e
           MIN=0 python3 build.py > out/log.txt 2>&1; echo "build $?" >> out/status.txt
           node tests/parkplace.cjs out >> out/log.txt 2>&1; echo "park $?" >> out/status.txt
+          git fetch -q origin main && git worktree add -q ../base origin/main && ln -s $GITHUB_WORKSPACE/node_modules ../base/node_modules && (cd ../base && MIN=0 python3 build.py > /dev/null 2>&1); ls -la ../base/dist/market.html >> out/log.txt
+          node tests/parkstart.cjs out ../base/dist/market.html dist/market.html >> out/log.txt 2>&1; echo "start $?" >> out/status.txt
           true
       - name: Publish results to a branch
         if: always()

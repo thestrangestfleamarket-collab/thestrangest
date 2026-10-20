@@ -126,4 +126,27 @@ const TOONS={};
         if((c.snap=(c.snap??6)-dt)<.5){ B.jaw.rotation.x=Math.sin(Math.max(0,c.snap)/.5*Math.PI)*.35; if(c.snap<0)c.snap=6+Math.random()*8; } else B.jaw.rotation.x=.08;
         if(c.sheet)B.jaw.rotation.x=.2; } };
     TOONS.shark=make(def,{key:'shark',name:'THE SHARK',metres:1.85,radius:.3,speed:.42,stride:6,at:84},4); }
+  { const BLU=[.27,.4,.57], BLU2=[.21,.32,.47], BLU3=[.34,.48,.65], PK=[.8,.49,.52], PK2=[.68,.39,.43], PK3=[.87,.58,.6], SHINE=[.85,.85,.9];
+    const felt=(a,b,c)=>(x,y,z)=>{ const v=PARTSNPC.T.noise(x,y,z,30); return v>.7?c:v<.25?b:a; };
+    const fuzz=felt(BLU,BLU2,BLU3), wool=(x,y,z)=>{ const f=Math.sin(Math.atan2(x,z)*11+y*1.5), v=PARTSNPC.T.noise(x,y,z,28); return v>.74?PK3:f>.55?PK2:PK; };
+    const def={ bones:[['root',null,[0,0,0]],['hips','root',[0,.9,0]],['head','hips',[0,1.4,0]],['armL','hips',[-.24,1.3,0]],['armR','hips',[.24,1.3,0]],
+        ['legL','hips',[-.13,.3,0]],['legR','hips',[.13,.3,0]],['robe','hips',[0,1.3,0]]],
+      parts:[ part('nostrils',0,'head',[-1,1].map(sx=>shape(sph(.016,5,4),BLACK,[sx*.045,1.555,.315],[1,.7,1]))),
+        part('mouth',0,'head',[ shape(box(.17,.008,.01),BLACK,[0,1.475,.29],null,[0,0,0]) ]),
+        part('eyes',0,'head',[-1,1].map(sx=>shape(sph(.034,8,6),BLACK,[sx*.115,1.64,.165],[1,1,.8]))),
+        part('glints',5,'head',[-1,1].map(sx=>shape(sph(.008,4,3),SHINE,[sx*.12,1.655,.195]))),
+        part('stubble',4,'head',Array.from({length:12},(_,i)=>{ const u=(i%6-2.5)/2.5, r=i<6?0:1; return shape(box(.004,.016,.006),[.1,.12,.16],[u*.08,1.49+r*.012,.296-u*u*.03],null,[0,0,u*20]); })),
+        part('face',2,'head',[ shape(blob(.16,.19,.17,14,10),fuzz,[0,1.6,.06]), shape(blob(.14,.1,.15,12,8),fuzz,[0,1.52,.16]), shape(blob(.11,.05,.1,10,6),fuzz,[0,1.45,.16]),
+          ...[-1,1].map(sx=>shape(blob(.05,.03,.04,8,5),BLU2,[sx*.115,1.668,.155])) ]),
+        part('hood',3,'head',[ shape(blob(.23,.25,.21,14,10),wool,[0,1.63,-.07]), shape(torus(.175,.05,6,16),wool,[0,1.6,.07],[1,1.2,1]),
+          shape(torus(.17,.08,6,16),wool,[0,1.38,.02],[1.1,1,1],[90,0,0]), shape(torus(.155,.06,6,16),PK2,[0,1.33,.0],[1.15,1,1],[90,0,0]) ]),
+        part('robe',1,'robe',[ shape(cyl(.24,.44,1.2,18),wool,[0,.72,0]), shape(blob(.25,.12,.2,14,6),wool,[0,1.3,0]), shape(torus(.43,.025,4,18),PK2,[0,.13,0],[1,1,1],[90,0,0]) ]),
+        ...[['L',-1],['R',1]].flatMap(([s,sx])=>[
+          part('sleeve '+s,1,'arm'+s,[ limb([sx*.24,1.3,0],[sx*.36,.82,.06],.08,.17,wool,10), shape(torus(.165,.02,4,12),PK2,[sx*.36,.82,.06],[1,1,1],[90,0,sx*-14]) ]),
+          part('hand '+s,2,'arm'+s,[ shape(blob(.06,.075,.045,8,6),fuzz,[sx*.37,.76,.07]), ...[-1,0,1].map(k=>shape(blob(.018,.04,.018,6,4),fuzz,[sx*.37+k*.025,.69,.08],null,[0,0,k*10])),
+            shape(blob(.017,.035,.017,6,4),fuzz,[sx*.34,.74,.1],null,[30,0,sx*-30]) ]),
+          part('foot '+s,0,'leg'+s,[ shape(blob(.12,.075,.15,10,6),fuzz,[sx*.13,.06,.08]), ...[-1.5,-.5,.5,1.5].map(k=>shape(blob(.032,.035,.04,6,4),fuzz,[sx*.13+k*.05,.04,.22])) ]) ]) ],
+      springs:{ robe:{f:.08,s:-.08,k:45,c:6,lim:.2}, head:{f:-.03,s:.03,k:90,c:9,lim:.1} },
+      pose:(c)=>{ const B=c.B; RIGNPC.walk(c,{arm:.25,leg:.4,bob:.025,rock:.04}); B.head.rotation.y=c.look; B.robe.rotation.z=Math.sin(c.st.ph)*.03*c.mv; } };
+    TOONS.manatee=make(def,{key:'manatee',name:'THE MANATEE',metres:3.7,radius:.42,speed:.36,stride:6,at:80},5); }
   window.TOONSDBG=()=>Object.fromEntries(Object.entries(TOONS).map(([k,N])=>[k,{key:N.key,x:+N.st.x.toFixed(2),z:+N.st.z.toFixed(2),tris:N.tris,vis:N.g.visible}])); }

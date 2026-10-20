@@ -3556,3 +3556,7 @@ initial download and load super fast"; then "Go")
   *lot* in `015` was also called `BODB`, the name of the bodega *builder* in `006`; the lot is `BLOT` now). A scope proof
   (every reference's declaration before and after, 226,800 references) shows the only other change is `BRICKS` reaching its own
   `const` instead of the same object through `window`. Next: open the builder just before `052`, so `014`–`051` are top-level code.
+
+- **Character screenshots in a black void, always** (owner, 20 Oct 2026: "set a hard rule to do screenshots of characters in black
+  voids"): every screenshot of a character shows only it on black: no ground, sky, scenery or other characters. A shot with
+  anything else in it is retaken, not shown. In CLAUDE.md's rules.

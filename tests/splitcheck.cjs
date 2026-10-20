@@ -26,14 +26,15 @@ const TOUR={
   const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist']});
   const ctx=await b.newContext({viewport:{width:960,height:540}});
   if(mode==='site')await ctx.addCookies([{name:'tsfm-pass',value:'dev:site-check',url:BASE}]);
+  await ctx.addInitScript(()=>{ let s; Object.defineProperty(window,'__started',{configurable:true,get(){ return s; },set(v){ s=v; if(v&&!window.__t0)window.__t0=Math.round(performance.now()); }}); });
   const pg=await ctx.newPage(); pg.setDefaultTimeout(900000);
   pg.on('pageerror',e=>rep.errors.push(e.message.slice(0,400))); pg.on('console',m=>{ if((m.type()==='error'&&!/URL scheme "file"/.test(m.text()))||/not loaded before use/.test(m.text()))rep.errors.push('console: '+m.text().slice(0,300)); });
   const req=[]; let phase='start'; pg.on('request',r=>req.push({u:r.url(),phase}));
-  let cdp=null; const SRC={}; if(process.env.COV){ cdp=await ctx.newCDPSession(pg); await cdp.send('Debugger.enable'); cdp.on('Debugger.scriptParsed',e=>{ if(e.length>500000)SRC[e.scriptId]=1; }); await cdp.send('Profiler.enable'); await cdp.send('Profiler.startPreciseCoverage',{callCount:true,detailed:false}); }
-  const snap=async()=>{ const r=await cdp.send('Profiler.takePreciseCoverage'); const o={}; for(const s of r.result)if(SRC[s.scriptId])for(const f of s.functions){ const g=f.ranges[0]; o[s.scriptId+':'+g.startOffset+':'+g.endOffset]=(o[s.scriptId+':'+g.startOffset+':'+g.endOffset]||0)+g.count; } return o; };
+  let cdp=null; const SRC={}; if(process.env.COV){ cdp=await ctx.newCDPSession(pg); await cdp.send('Debugger.enable'); cdp.on('Debugger.scriptParsed',e=>{ if(e.length>500000)SRC[e.scriptId]=e.length; }); await cdp.send('Profiler.enable'); await cdp.send('Profiler.startPreciseCoverage',{callCount:true,detailed:false}); }
+  const snap=async()=>{ const r=await cdp.send('Profiler.takePreciseCoverage'); const o={}; for(const s of r.result)if(SRC[s.scriptId])for(const f of s.functions){ const g=f.ranges[0], k=SRC[s.scriptId]+':'+g.startOffset+':'+g.endOffset; o[k]=(o[k]||0)+g.count; } return o; };
   const t0=Date.now(); await pg.goto(url,{waitUntil:'commit',timeout:600000});
   let ok=false; for(let i=0;i<3000&&!(ok=await pg.evaluate(()=>!!window.__started).catch(()=>false));i++)await pg.waitForTimeout(200);
-  rep.started=ok; rep.startMs=Date.now()-t0; rep.pageStart=await pg.evaluate(()=>({now:Math.round(performance.now()),warm:window.WARMMS})).catch(()=>null);
+  rep.started=ok; rep.startMs=Date.now()-t0; rep.pageStart=await pg.evaluate(()=>({t0:window.__t0,now:Math.round(performance.now()),warm:window.WARMMS})).catch(()=>null);
   if(process.env.COV){ const A=await snap(); const K=pg.keyboard, M=pg.mouse;
     await M.move(480,270); await M.move(600,300); await M.click(500,280); await M.wheel(0,300); await M.wheel(0,-300);
     for(const k of ['w','a','s','d']){ await K.down(k); await pg.waitForTimeout(400); await K.up(k); }
@@ -41,8 +42,12 @@ const TOUR={
     for(const k of ['v','v','v','q','e','Escape','Escape']){ await K.press(k); await pg.waitForTimeout(300); }
     await M.down({button:'right'}); await M.move(520,260); await M.up({button:'right'});
     await pg.evaluate(()=>{ const B=__dbg.MAPK.BOD; STORE.goTo(B.XS(99),B.ZS((B.CURB+B.FAR)/2),'up'); }); await pg.waitForTimeout(15000); const Bs=await snap(), L=[];
-    for(const id in SRC){ const src=(await cdp.send('Debugger.getScriptSource',{scriptId:id})).scriptSource; const F=[];
-      for(const k of new Set([...Object.keys(A),...Object.keys(Bs)])){ const [sid,a,b]=k.split(':'); if(sid!==id)continue; F.push({a:+a,b:+b,c:(A[k]||0)+(Bs[k]||0)}); }
+    await pg.evaluate(()=>window.WHERE&&WHERE.save&&WHERE.save()).catch(()=>{}); await pg.waitForTimeout(3000);
+    await pg.goto(url.replace('fresh=1&',''),{waitUntil:'commit',timeout:600000}); for(let i=0;i<3000&&!(await pg.evaluate(()=>!!window.__started).catch(()=>false));i++)await pg.waitForTimeout(200);
+    await pg.waitForTimeout(12000); for(const k of ['w','d']){ await K.down(k); await pg.waitForTimeout(300); await K.up(k); } Object.assign(Bs,Object.fromEntries(Object.entries(await snap()).map(([k,v])=>[k,(Bs[k]||0)+v])));
+    const ids={}; for(const id in SRC)ids[SRC[id]]=id;
+    for(const len in ids){ const id=ids[len], src=(await cdp.send('Debugger.getScriptSource',{scriptId:id})).scriptSource; const F=[];
+      for(const k of new Set([...Object.keys(A),...Object.keys(Bs)])){ const [sl,a,b]=k.split(':'); if(sl!==len)continue; F.push({a:+a,b:+b,c:(A[k]||0)+(Bs[k]||0)}); }
       F.sort((x,y)=>x.a-y.a||y.b-x.b); let end=-1;
       for(const f of F){ if(f.c||f.b-f.a<300||f.a<end)continue; end=f.b; L.push({n:f.b-f.a,s:src.slice(f.a,f.a+200),pre:src.slice(Math.max(0,f.a-80),f.a)}); } }
     fs.writeFileSync(path.join(OUT,'cov.json'),JSON.stringify(L)); rep.cov={n:L.length,bytes:L.reduce((a,x)=>a+x.n,0)}; }

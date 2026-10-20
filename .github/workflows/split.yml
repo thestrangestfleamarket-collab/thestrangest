@@ -32,6 +32,9 @@ jobs:
       - name: Head as the artifact
         run: node tests/splitcheck.cjs file . out/head-file.json "$(cat tests/.tour 2>/dev/null)"
         continue-on-error: true
+      - name: Places on the website
+        run: node tests/places.cjs out 2>&1 | tee out-places.log
+        continue-on-error: true
       - name: Base
         run: |
           git fetch --depth=1 origin main

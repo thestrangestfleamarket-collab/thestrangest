@@ -3560,3 +3560,17 @@ initial download and load super fast"; then "Go")
 - **Character screenshots in a black void, always** (owner, 20 Oct 2026: "set a hard rule to do screenshots of characters in black
   voids"): every screenshot of a character shows only it on black: no ground, sky, scenery or other characters. A shot with
   anything else in it is retaken, not shown. In CLAUDE.md's rules.
+
+- **Characters from smooth curves, not stacked shapes; THE RAIN FISH** (owner, 20 Oct 2026: "i dont want blocky looking toy characters";
+  "try to match the character exactly, curves, every angle"; "keep proportions correct"; "give him fish tail"; "make these characters
+  2x bigger than they need to be so we can scale down and up as needed"; his picks: about 12k triangles each, sides and back inferred
+  from the one photo and corrected by him). New shared kit in `080-npc-parts.js` (`PARTSNPC.T`): `spl` (a curve through traced points),
+  `prof`/`lathe` (a body turned from a profile traced off the photo), `surf` (any surface by a function), `tube` (a smooth limb along a
+  curve, its width along it), `skin` (a shape's points weighted between bones, so a limb bends smoothly); `RIGNPC.make` takes those
+  weights and see-through parts (`glass`: one more skinned mesh on the same bones, clear with white streaks).
+  **THE RAIN FISH** (`084-npc-toons.js`, `rainfish`), from his photo of a felted orange fish in a yellow felt raincoat under a clear
+  plastic hood: measured off the photo (eye height .73, mouth .65, head width .49, coat width .59 of his height); big glossy eyes in
+  cream rims, a pink pout, the coat with collar, lapels, pocket flaps and the seam, flipper arms that bend at a second bone and lag,
+  stubby feet, and a fish tail with a forked fin out the back that sways as he waddles. Built at twice his size (`metres` 2.2).
+  Cost: 9,716 triangles, one more draw and program (the hood), no lights. Pictures: `node tools/charview.cjs` (the character alone on
+  black, front, side, back; not the game).

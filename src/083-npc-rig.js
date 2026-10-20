@@ -1,6 +1,6 @@
 const RIGNPC={};
 { const V1=new THREE.Vector3(), M1=new THREE.Matrix4();
-  RIGNPC.make=(def,o)=>{ const bones=[], by={};
+  RIGNPC.make=(def,o)=>{ const bones=[], by={}, GL=def.parts.filter(p=>p.glass); def=Object.assign({},def,{parts:def.parts.filter(p=>!p.glass)});
     for(const [n,pa,at] of def.bones){ const B=new THREE.Bone(); B.name=n; B.userData.at=at; const P=pa&&by[pa];
       if(P){ const q=P.userData.at; B.position.set(at[0]-q[0],at[1]-q[1],at[2]-q[2]); P.add(B); } else B.position.set(at[0],at[1],at[2]);
       B.userData.rest=B.position.clone(); by[n]=B; bones.push(B); }
@@ -8,7 +8,7 @@ const RIGNPC={};
     let n=0; for(const p of def.parts)for(const s of p.of)n+=s.P.length/3;
     const P=new Float32Array(n*3), C=new Float32Array(n*3), R=new Float32Array(n), SI=new Uint16Array(n*4), SW=new Float32Array(n*4), ranges={}; let at=0, top=0;
     def.parts.forEach((p,pi)=>{ const start=at, bi=bones.indexOf(by[p.bone]); for(const s of p.of){ P.set(s.P,at*3); C.set(s.C,at*3); at+=s.P.length/3; }
-      R.fill(pi,start,at); for(let i=start;i<at;i++){ SI[i*4]=bi; SW[i*4]=1; top=Math.max(top,P[i*3+1]); } ranges[p.name]={start,count:at-start}; });
+      R.fill(pi,start,at); let k=start; for(const s of p.of){ const n=s.P.length/3; for(let i=0;i<n;i++,k++){ const w=s.W&&s.W[i]; if(w){ for(let j=0;j<w.length/2&&j<4;j++){ SI[k*4+j]=bones.indexOf(by[w[j*2]]); SW[k*4+j]=w[j*2+1]; } } else{ SI[k*4]=bi; SW[k*4]=1; } top=Math.max(top,P[k*3+1]); } } ranges[p.name]={start,count:at-start}; });
     const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.BufferAttribute(P,3)); geo.setAttribute('color',new THREE.BufferAttribute(C,3)); geo.setAttribute('reg',new THREE.BufferAttribute(R,1));
     geo.setAttribute('skinIndex',new THREE.Uint16BufferAttribute(SI,4)); geo.setAttribute('skinWeight',new THREE.BufferAttribute(SW,4));
     const SP=Object.entries(def.springs||{}).map(([b,s])=>({B:by[b],k:s.k||60,c:s.c||7,f:s.f||0,s:s.s||0,y:s.y||0,lim:s.lim||.8,x:0,z:0,w:0,vx:0,vz:0,vw:0}));
@@ -34,6 +34,10 @@ const RIGNPC={};
         q.B.rotation.x+=q.x; q.B.rotation.z+=q.z; q.B.rotation.y+=q.w; } };
     const N=makeNPC(null,Object.assign({names:def.parts.map(p=>p.name),rank:def.parts.map(p=>p.rank||0),geo,skin:{bones,skeleton},tall:top,anim},o));
     N.B=by; N.parts=ranges; N.tris=n/3; N.rig=c;
+    if(GL.length){ const P2=[], C2=[], S2=[], W2=[]; for(const p of GL){ const bi=bones.indexOf(by[p.bone]); for(const s of p.of){ const m=s.P.length/3; for(let i=0;i<m;i++){ const w=s.W&&s.W[i];
+        P2.push(s.P[i*3],s.P[i*3+1],s.P[i*3+2]); C2.push(s.C[i*3],s.C[i*3+1],s.C[i*3+2],s.C[i*3]+s.C[i*3+1]+s.C[i*3+2]>2.95?.6:.14); S2.push(w?bones.indexOf(by[w[0]]):bi,w&&w[2]?bones.indexOf(by[w[2]]):0,0,0); W2.push(w?w[1]:1,w&&w[2]?w[3]:0,0,0); } } }
+      const g2=new THREE.BufferGeometry(); g2.setAttribute('position',new THREE.Float32BufferAttribute(P2,3)); g2.setAttribute('color',new THREE.Float32BufferAttribute(C2,4)); g2.setAttribute('skinIndex',new THREE.Uint16BufferAttribute(S2,4)); g2.setAttribute('skinWeight',new THREE.Float32BufferAttribute(W2,4));
+      const gm=new THREE.SkinnedMesh(g2,new THREE.MeshBasicMaterial({vertexColors:true,transparent:true,depthWrite:false,side:THREE.DoubleSide})); gm.frustumCulled=false; N.me.parent.add(gm); gm.bind(skeleton,N.me.bindMatrix); N.glass=gm; N.tris+=P2.length/9; }
     const p0=N.push; let bumped=false; N.push=p=>{ const d=Math.hypot(p.x-N.st.x,p.z-N.st.z); if(d<N.st.R+.3){ if(!bumped){ bumped=true; for(const q of SP){ q.vx+=(Math.random()-.5)*6; q.vz+=(Math.random()-.5)*6; } } } else if(d>N.st.R+.45)bumped=false; p0(p); };
     const base=Float32Array.from(P), baseC=Float32Array.from(C);
     N.reshape=(name,{scale=[1,1,1],move=[0,0,0]}={})=>{ const r=ranges[name]; if(!r)return; const A=geo.attributes.position.array; let cx=0, cy=0, cz=0;

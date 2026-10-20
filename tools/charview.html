@@ -1,0 +1,27 @@
+<!doctype html><html><body style="margin:0;background:#000"><script type="importmap">{"imports":{"three":"/three.module.js"}}</script>
+<script type="module">
+import * as THREE from 'three'; window.THREE=THREE;
+const src=await (await fetch('/src.js')).text(), parts=await (await fetch('/parts.js')).text();
+const PARTSNPC={}; new Function('PARTSNPC','THREE',parts)(PARTSNPC,THREE);
+let DEF; const RIGNPC={make:d=>(DEF=d,{}),walk:()=>{}}, TOONS={};
+const {shape,limb,sph,cyl,box,torus,blob,shell}=PARTSNPC.T, part=(name,rank,bone,of)=>({name,rank,bone,of}), BLACK=[0,0,0], WHITE=[.96,.95,.9];
+const make=(def)=>RIGNPC.make(def);
+eval(src);
+const geo=ps=>{ const n=ps.reduce((a,p)=>a+p.of.reduce((b,s)=>b+s.P.length,0),0), P=new Float32Array(n), C=new Float32Array(n); let at=0;
+  for(const p of ps)for(const s of p.of){ P.set(s.P,at); C.set(s.C,at); at+=s.P.length; }
+  const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(P,3)); g.setAttribute('color',new THREE.BufferAttribute(C,3)); g.computeVertexNormals();
+  const Nn=g.attributes.normal.array, acc=new Map(), k=i=>Math.round(P[i]*2e3)+','+Math.round(P[i+1]*2e3)+','+Math.round(P[i+2]*2e3);
+  for(let i=0;i<n;i+=3){ const a=acc.get(k(i))||[0,0,0]; a[0]+=Nn[i]; a[1]+=Nn[i+1]; a[2]+=Nn[i+2]; acc.set(k(i),a); }
+  for(let i=0;i<n;i+=3){ const a=acc.get(k(i)), l=Math.hypot(...a)||1; Nn[i]=a[0]/l; Nn[i+1]=a[1]/l; Nn[i+2]=a[2]/l; } return g; };
+const uL={value:new THREE.Vector3(.5,.75,.6).normalize()};
+const mat=new THREE.ShaderMaterial({side:THREE.DoubleSide,uniforms:{uL},vertexShader:`attribute vec3 color; varying vec3 vC,vN; void main(){ vC=color; vN=normalize(mat3(modelMatrix)*normal); gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.); }`,
+  fragmentShader:`uniform vec3 uL; varying vec3 vC,vN; void main(){ float l=dot(normalize(vN)*(gl_FrontFacing?1.:-1.),uL); vec3 c=l>.55?min(vec3(1.),vC*1.1):l>.05?vC:l>-.4?vC*.84*vec3(.95,.97,1.04):vC*.7*vec3(.92,.95,1.06); gl_FragColor=vec4(c,1.); }`});
+const solid=new THREE.Mesh(geo(DEF.parts.filter(p=>!p.glass)),mat), sc=new THREE.Scene(); sc.background=new THREE.Color(0); sc.add(solid);
+const gl=DEF.parts.filter(p=>p.glass); if(gl.length){ const g=geo(gl), c=g.attributes.color.array, c4=new Float32Array(c.length/3*4); for(let i=0;i<c.length/3;i++){ c4.set([c[i*3],c[i*3+1],c[i*3+2],c[i*3]+c[i*3+1]+c[i*3+2]>2.95?.6:.14],i*4); } g.setAttribute('color',new THREE.BufferAttribute(c4,4)); sc.add(new THREE.Mesh(g,new THREE.MeshBasicMaterial({vertexColors:true,transparent:true,depthWrite:false,side:THREE.DoubleSide}))); }
+window.TRIS=solid.geometry.attributes.position.count/3;
+const bb=new THREE.Box3().setFromObject(sc), h=bb.max.y-bb.min.y, cy=(bb.max.y+bb.min.y)/2;
+const r=new THREE.WebGLRenderer({antialias:true}); r.setSize(innerWidth,innerHeight); r.outputColorSpace=THREE.LinearSRGBColorSpace; document.body.appendChild(r.domElement);
+const cam=new THREE.PerspectiveCamera(30,innerWidth/innerHeight,.01,50);
+window.shot=a=>{ const d=h*2.7; const cx=(bb.max.x+bb.min.x)/2, cz=(bb.max.z+bb.min.z)/2; cam.position.set(cx+Math.sin(a)*d,cy+h*.05,cz+Math.cos(a)*d); cam.lookAt(cx,cy,cz); uL.value.set(Math.sin(a+.7),1.1,Math.cos(a+.7)).normalize(); r.render(sc,cam); };
+window.ready=true;
+</script></body></html>

@@ -44,7 +44,6 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
   { const H=rest.J.head, {rbox,ell,box}=R, Vv=R.V, ad=R.add, HB=[H.x-11,H.x+11,H.y-14,H.y+11,H.z-11,H.z+11];
     const head=PCS.find(P=>P.n==='head'), hair=PCS.find(P=>P.n==='hair'), hd=head.d, hr=hair.d;
     for(const P of PCS)if(/^shoe[LR]$/.test(P.n))P.paint=p=>p.y<1.15?'sole':null;
-    const side=p=>Math.abs(p.x-H.x), front=p=>p.z>H.z+3.6;
     head.paint=()=>null;
     const V=(n,on,m,d,paint)=>({n,on,m,d,paint,bb:HB,step:.5});
     const CUT=H.y-5.5, sq=x=>x*x, lock=(p,k=1.7)=>.28*sq(Math.sin(p.x*k+.5*Math.sin(p.y*.6))), lockY=(p,k=2.4)=>.22*sq(Math.sin(p.y*k+.4*Math.sin(p.x*.9)));

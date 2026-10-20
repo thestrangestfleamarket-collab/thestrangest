@@ -56,8 +56,6 @@ const USE={seat:null}; window.USE=USE;
       tg.add(g); }); for(const g of tg){ g.attributes.position.needsUpdate=g.attributes.normal.needsUpdate=true; } };
   const fridge=(o,th)=>{ const d=doorOf(o); d.to=d.to?0:1.75; DOORS.add(d); th.name=d.to?'OPEN':'SHUT'; const at=box(o).getCenter(new V3()); if(d.to)SFX.play('latch',{at,vol:.8}); else SFX.play('door',{at,vol:.35,pitch:1.6,delay:.25}); };
   const ac=()=>{ if(!SOUND)return null; if(typeof SND!=='undefined'&&SND.ctx)return SND.ctx; if(!USE.ac)try{ USE.ac=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ return null; } if(USE.ac.state!=='running')USE.ac.resume(); return USE.ac; };
-  const clunk=()=>{ const c=ac(); if(!c)return; const t0=c.currentTime+.02, n=c.sampleRate*.25|0, buf=c.createBuffer(1,n,c.sampleRate), D=buf.getChannelData(0); for(let i=0;i<n;i++)D[i]=(Math.random()*2-1)*Math.exp(-i/(c.sampleRate*.03));
-    for(const [dt,f,g] of [[0,500,.5],[.16,260,.7]]){ const s=c.createBufferSource(), lp=c.createBiquadFilter(), G=c.createGain(); s.buffer=buf; lp.type='lowpass'; lp.frequency.value=f; G.gain.value=g; s.connect(lp).connect(G).connect(c.destination); s.start(t0+dt); } };
   const BLINK=new Set(), canM=new THREE.MeshLambertMaterial({color:new THREE.Color('rgb(196,44,40)')}), canG=new THREE.BoxGeometry(.07*T,.13*T,.07*T), CANS=[];
   const vend=(o,th)=>{ const b=box(o), c=b.getCenter(new V3()); let dx=pos.x-c.x, dz=pos.z-c.z; if(Math.abs(dx)>Math.abs(dz)){ dx=Math.sign(dx); dz=0; } else { dz=Math.sign(dz); dx=0; }
     const m=new THREE.Mesh(canG,canM); m.position.set(dx?(dx>0?b.max.x:b.min.x)+dx*.12*T:c.x+(Math.random()-.5)*.2*T,b.min.y+.45*T,dz?(dz>0?b.max.z:b.min.z)+dz*.12*T:c.z+(Math.random()-.5)*.2*T); m.castShadow=true;

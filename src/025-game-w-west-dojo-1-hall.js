@@ -19,28 +19,7 @@ function djLathe(cx,cy,z0,z1,rf,col,dz=2,dw=.04){ const out=[];
       out.push(sided({x0:cx+xa,y0:cy-hy,x1:cx+xa+w,y1:cy+hy,z0:za,z1:zb,c:[90,90,90],foot:0,nb:1,fs:(nx,ny,X,Y,zr)=>col(X-cx,Y-cy,za+zr-z0,0),top:(X,Y)=>col(X-cx,Y-cy,zb-z0,1)})); } }
   return out; }
 const DJTAT=[178,166,112], DJBRD=[128,84,50], DJWOOD=[70,48,34], DJPAP=[226,218,196], DJPLA=[204,192,164];
-const DJWIN=[-4,4], DJPAN=[[-3,-2],[2,3]], djPan=(d,north)=>DJPAN.some(([p,q])=>d>=p&&d<q&&!(north&&p>0));
-function djOpen(a,z,north){ const d=a-DJ.c[0];
-  if(Math.abs(d)<DJ.dw)return z<DJ.DH||z>59&&z<70&&(a*8)%1>.22&&z%4.5>1.2;
-  if(djPan(d,north)&&z>11.5&&z<51.5&&(a%1)>.06&&(a%1)<.94)return true;
-  for(const w of DJWIN){ if(north&&w>0)continue; const r=Math.hypot((d-w)*24,z-34); if(r<15)return r<13.6&&((d-w)*24+40)%7>1.3&&(z+40)%7>1.3; }
-  return false; }
-function djIvy(a,z,d,north){ const dc=Math.min(a-DJ.h.x0,DJ.h.x1-a), n=hash(Math.floor(a*6),Math.floor(z/6),731);
-  let on=dc<1.7&&z<70*Math.pow(1-dc/1.7,.75)+8*n-4||z>52&&z<59&&dc<2.2+.9*n;
-  if(!on)for(const w of DJWIN){ if(north&&w>0)continue; const r=Math.hypot((d-w)*24,z-34); if(r>13&&r<19+3*n&&z<36)on=true; }
-  return on?djLeaf(a*48,(72-z)*2,733+(north?1:0),.45,.78,1):null; }
-function djWallCol(a,z,north,f,shut=north){ const d=a-DJ.c[0], pa=((a%2)+2)%2, iv=z>=1&&djIvy(a,z,d,north); if(iv)return sh(iv,f*1.2);
-  if(Math.abs(d)<DJ.dw&&z<DJ.DH)return null;
-  if(Math.abs(d)<DJ.dw&&z<58)return sh(mt('wood',sh(DJWOOD,z<DJ.DH+1?.8:1.12)),f);
-  if(Math.abs(d)<DJ.dw&&z<70&&z>59)return djOpen(a,z,true)?null:sh(mt('wood',sh(DJWOOD,1.15)),f);
-  if(djPan(d,shut)&&z>11.5&&z<51.5){ const q=((a%1)+1)%1; return q<.06||q>.94?sh(mt('wood',sh(DJWOOD,1.25)),f):null; }
-  if(pa<.09||pa>1.91||Math.abs(Math.abs(d)-DJ.dw)<.09)return sh(mt('wood',DJWOOD),f);
-  if(z>53&&z<58)return sh(mt('wood',sh(DJWOOD,z<54.5?.8:1.12)),f);
-  if(z>=58)return sh(mt('cope',sh(DJPLA,.94+.06*hash(Math.floor(a*20),Math.floor(z/2),721))),f);
-  if(z<10)return sh(mt('wood',sh(DJWOOD,z<1?.6:(a*6)%1<.08?.75:1.05)),f);
-  for(const w of DJWIN){ if(north&&w>0)continue; const r=Math.hypot((d-w)*24,z-34); if(r<15)return r>=13.6?sh(mt('wood',DJWOOD),f):djOpen(a,z,north)?null:sh(mt('wood',sh(DJWOOD,1.2)),f); }
-  if(z<11.5||z>51.5||(a*4)%1<.07||z%10.5<1)return sh(mt('wood',sh(DJWOOD,1.25)),f);
-  return sh(mt('frame',sh(DJPAP,.94+.06*hash(Math.floor(a*12),Math.floor(z/3),723))),f); }
+const DJWIN=[-4,4], DJPAN=[[-3,-2],[2,3]];
 function djAndon(x,y){ PNAME='andon'; const w=.17, P=(a,z)=>(Math.abs(a)>w-.025||z<9||z>27.5||Math.abs(z-18)<.6)?sh(DJWOOD,1.1):djE(z<12?[230,150,80]:[255,206,140]);
   const p=prop([djBx(x-w,y-w,x+w,y+w,0,6,DJWOOD,{top:()=>sh(DJWOOD,.8)}),{x0:x-w,y0:y-w,x1:x+w,y1:y+w,z0:6,z1:29,foot:0,c:DJWOOD,top:()=>djE([255,226,170]),fi:(v,z)=>P(v-y,z),fj:(u,z)=>P(u-x,z)}]);
   LAMPS.push({x,y,z:20,r:4.8,c:[.66,.34,.14],own:1,room:1,day:true,prop:p}); return p; }

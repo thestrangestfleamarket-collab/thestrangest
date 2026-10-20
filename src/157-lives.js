@@ -1,5 +1,5 @@
 const LIVES={on:QS.has('lives')?QS.get('lives')!=='0':CITY.on,ready:false,ms:0,stepMs:0,list:[],force:null,skips:0};
-{ const T=TILE, X=BOD.XS, Z=BOD.ZS, XB=BOD.X, ZB=BOD.Z, M=BOD.MAP, LS=BOD.K.LSEED, HZ=.25, R=.3, d2=(a,b)=>Math.hypot(a.x-b.x,a.z-b.z);
+{ const T=TILE, X=BOD.XS, Z=BOD.ZS, XB=BOD.X, ZB=BOD.Z, M=BOD.MAP, LS=BOD.K.LSEED, HZ=.25, d2=(a,b)=>Math.hypot(a.x-b.x,a.z-b.z);
   const ZS_=Z(LS.street-1.5), ZR=Z((LS.street+LS.grass)/2), ZF=Z((LS.grass+M.y1)/2), HOLE=[X(MAPSTAIR.x0-.6),Z(MAPSTAIR.y0),X(MAPSTAIR.x1+.6),Z(MAPSTAIR.y1+.6)];
   const inHole=(x,z)=>x>HOLE[0]&&x<HOLE[2]&&z>HOLE[1]&&z<HOLE[3];
   const P={}; const place=(id,o)=>{ P[id]=Object.assign({id,lv:'up',walls:false,reach:1.5*T,path:[]},o); return P[id]; };
@@ -86,7 +86,7 @@ const LIVES={on:QS.has('lives')?QS.get('lives')!=='0':CITY.on,ready:false,ms:0,s
     st.to={x:g.x,z:g.z}; st.wait=0; L.gave=g; };
   const arrive=(N,dt)=>{ const L=N.life, st=N.st; if(L.wp){ L.wp=null; L.at=L.to; L.k=P[L.at].path.length; L.inside=P[L.at].walls?L.at:null; L.state=plan(L,CLOCK.h)[1]; st.to=null; st.wait=1e9; L.wt=4+Math.random()*8; return; }
     if(L.state==='walking')L.state=plan(L,CLOCK.h)[1]; if(L.state==='standing'&&(L.wt-=dt)<=0){ L.wt=6+Math.random()*8; wander(N); } };
-  let acc=0, n=0;
+  let acc=0;
   LIVES.tick=(dt,you)=>{ if(!LIVES.ready)return; const t0=performance.now(); acc+=dt; const step=acc>=HZ; if(step)acc-=HZ;
     for(const N of NPCS){ const L=N.life;
       if(!L){ if(step&&N.far)beat(N,HZ); continue; }

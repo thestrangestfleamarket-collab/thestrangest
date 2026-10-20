@@ -2,6 +2,8 @@ name: split
 on:
   push:
     branches: [claude/code-split]
+permissions:
+  contents: write
 jobs:
   split:
     runs-on: ubuntu-latest

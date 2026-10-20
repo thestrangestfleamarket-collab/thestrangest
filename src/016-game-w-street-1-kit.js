@@ -2,13 +2,6 @@ const MKS=(()=>{ const MK={}, FP=24;
 const art=(W,H,draw)=>{ const a=new Array(W*H).fill(null); draw((x,y,c)=>{ x=Math.floor(x); y=Math.floor(y); if(c&&x>=0&&y>=0&&x<W&&y<H)a[y*W+x]=c; }); return (x,y)=>x>=0&&y>=0&&x<W&&y<H?a[y*W+x]:null; };
 const onFace=(a0,zt,A,els,flip=0,len=0)=>(u,z)=>{ const x=Math.floor(flip?(a0+len-u)*FP:(u-a0)*FP), c=A(x,Math.floor(zt-z)); return c||els(u,z); };
 const planks=(k,c,n)=>({c,fi:(y,z)=>sh(mt(k,c),(Math.floor(z/n)&1?.6:.66)*(z%n<1?.8:1)),fj:(x,z)=>sh(mt(k,c),(Math.floor(z/n)&1?.8:.86)*(z%n<1?.8:1))});
-function bush(cx,cy,z,G=[[62,118,60],[78,140,70],[46,92,50],[98,158,82]],sc=1){ const B=[[0,-9,9],[-6,-6,7],[6,-5,7],[-2,-13,6],[4,-12,5]].map(b=>b.map(v=>v*sc));
-  return {bounds:{x0:cx-.5*sc,y0:cy-.5*sc,x1:cx+.5*sc,y1:cy+.5*sc,z0:z,z1:z+24*sc},paint(L){ const [px,py]=edPt(cx,cy), [sx,sy]=toS(...vw(px,py));
-    const K=L.K, ox=Math.floor(sx), oy=Math.floor(sy)-z, fx0=Math.floor(ox*K), fy0=Math.floor(oy*K), ex=fx0/K-ox, ey=fy0/K-oy;
-    for(let fy=Math.floor(-26*sc*K);fy<=Math.ceil(5*sc*K)-1;fy++)for(let fx=Math.floor(-16*sc*K);fx<=Math.ceil(17*sc*K)-1;fx++){ let best=-1,lit=0; const ix=Math.floor(fx/K+ex), iy=Math.floor(fy/K+ey);
-      for(const [bx,by,r] of B){ const dx=(fx+.5)/K+ex-bx,dy=(fy+.5)/K+ey-by,q=r*r-dx*dx-dy*dy; if(q<0)continue; const dz=Math.sqrt(q); if(dz>best){best=dz; lit=(-dx*.55-dy*.6+dz*.58)/r;} }
-      if(best<0)continue; const n=hash(ix,iy,Math.round(sx));
-      const t=lit+(n-.5)*.5; L.putK(fx0+fx,fy0+fy,t>.72?G[3]:t>.42?G[1]:t>.12?G[0]:G[2],1e9,[px,py,z+12*sc,1]); } }}; }
 const Bx=(x0,y0,x1,y1,z0,z1,c,o)=>({x0,y0,x1,y1,z0,z1,c,...(Math.min(x1-x0,y1-y0)<.08||z1-z0<2?{nb:1}:{}),...o});
 const FOOT=(x,y,w,d)=>({x0:x,y0:y,x1:x+w,y1:y+d,z0:0,z1:.01,foot:1,top:()=>null,fi:()=>null,fj:()=>null});
 const WD=y=>y<LSEED.street?1:-1, WS=y=>y+.1*WD(y);
@@ -20,7 +13,6 @@ function txt(put,s,x0,y0,c,k=2){ [...s].forEach((ch,i)=>{ const g=F3[ch]; if(!g)
 const tw=(s,k=1)=>(s.length*4-1)*k;
 function face(W,H,bg,lines,flip,a0,zt,len){ const A=art(W,H,put=>{ for(let y=0;y<H;y++)for(let x=0;x<W;x++)put(x,y,typeof bg==='function'?bg(x,y):bg); for(const [s,c,k,y] of lines)txt(put,s,Math.floor((W-tw(s,k))/2),y,c,k); });
   return onFace(a0,zt,A,()=>null,flip,len); }
-const stripes=(a,b,n=6)=>(x,y)=>Math.floor(x/n)&1?a:b;
 MK.awning=(x0,x1,y,z,ca,cb,name,sub)=>{ PNAME='awning'; const d=.9, W=Math.round((x1-x0)*FP), lines=[[name,[250,246,230],2,sub?3:8]]; if(sub)lines.push([sub,[250,246,230],2,15]);
   const same=ca.join()===cb.join(), val0=face(W,26,ca,lines,FL(y),x0,z-4,x1-x0), val=(u,zz)=>{ const k=Math.floor((u-x0)*FP/6); if(zz<z-28&&((k&1)?zz<z-28:zz<z-29))return null; const c=val0(u,zz); return c&&hash(Math.floor(u*24),Math.floor(zz),88)<.08?sh(c,.9):c; }, top=(u,v)=>{ const n=hash(Math.floor(u*12),Math.floor(v*12),87); return same?(n<.12?sh(ca,.92):n>.96?sh(ca,1.06):ca):Math.floor(((u-x0)*FP)/6)&1?ca:cb; };
   return prop([WF(x0,x1,y),Bw(x0,x1,y,-.1,d,z-4,z,ca,{foot:0,top,fj:(u,z2)=>sh(ca,.9),fi:(v,z2)=>sh(cb,.7)}),
@@ -109,7 +101,7 @@ MK.handtruck=(x,y)=>{ PNAME='hand truck'; const c=[200,60,40]; return prop([Bx(x
 MK.cardboard=(x,y)=>{ PNAME='cardboard boxes'; const c=[196,160,110], bs=[Bx(x,y,x+.7,y+.5,0,18,c,{...planks('crates',c,30)}),Bx(x+.1,y+.6,x+.6,y+1,0,14,sh(c,.95),{...planks('crates',c,30)}),Bx(x+.05,y+.05,x+.55,y+.45,18,30,sh(c,.9),{foot:0,top:(u,v)=>Math.abs(u-x-.3)<.03?sh(c,.7):c})]; return prop(bs); };
 MK.trashbags=(x,y,n=4)=>{ PNAME='trash bags'; const bs=[]; for(let i=0;i<n;i++){ const u=x+hash(i,1,11)*.8, v=y+hash(i,2,11)*.6, w=.36+hash(i,3,11)*.2, h=14+hash(i,4,11)*8, c=[36,38,42]; bs.push(Bx(u,v,u+w,v+w*.9,0,h,c,{top:(a,b)=>hash(Math.floor(a*20),Math.floor(b*20),i)<.15?[70,72,78]:c,fj:(a,z)=>z>h-3?[60,62,66]:hash(Math.floor(a*20),Math.floor(z/2),i)<.1?[58,60,66]:c,fi:()=>[26,28,30]})); } return prop(bs); };
 MK.shoppingcart=(x,y)=>{ PNAME='shopping cart'; const c=[150,152,156]; const bs=[Bx(x,y,x+.5,y+.9,0,6,[50,50,54]),Bx(x,y,x+.5,y+.9,12,30,c,{foot:0,fj:(u,z)=>((Math.floor(u*24)+Math.floor(z/2))&1)?null:c,fi:(u,z)=>((Math.floor(u*24)+Math.floor(z/2))&1)?null:sh(c,.7),top:(u,v)=>((Math.floor(u*24)+Math.floor(v*24))&1)?null:c}),Bx(x-.04,y+.85,x+.54,y+.9,30,33,[40,40,44],{foot:0})]; return prop(bs); };
-MK.bike=(x,y,alongX,c=[60,80,160])=>{ PNAME='bicycle'; const L=1.1, W=.12, bs=alongX?[Bx(x,y,x+.3,y+W,0,20,[30,30,34]),Bx(x+.8,y,x+1.1,y+W,0,20,[30,30,34]),Bx(x+.25,y+.02,x+.85,y+.1,14,18,c,{foot:0}),Bx(x+.45,y+.02,x+.55,y+.1,18,30,c,{foot:0}),Bx(x+.4,y-.1,x+.6,y+.22,30,32,[40,40,44],{foot:0}),Bx(x+.9,y-.15,x+1,y+.27,28,30,[40,40,44],{foot:0})]
+MK.bike=(x,y,alongX,c=[60,80,160])=>{ PNAME='bicycle'; const W=.12, bs=alongX?[Bx(x,y,x+.3,y+W,0,20,[30,30,34]),Bx(x+.8,y,x+1.1,y+W,0,20,[30,30,34]),Bx(x+.25,y+.02,x+.85,y+.1,14,18,c,{foot:0}),Bx(x+.45,y+.02,x+.55,y+.1,18,30,c,{foot:0}),Bx(x+.4,y-.1,x+.6,y+.22,30,32,[40,40,44],{foot:0}),Bx(x+.9,y-.15,x+1,y+.27,28,30,[40,40,44],{foot:0})]
   :[Bx(x,y,x+W,y+.3,0,20,[30,30,34]),Bx(x,y+.8,x+W,y+1.1,0,20,[30,30,34]),Bx(x+.02,y+.25,x+.1,y+.85,14,18,c,{foot:0}),Bx(x+.02,y+.45,x+.1,y+.55,18,30,c,{foot:0}),Bx(x-.1,y+.4,x+.22,y+.6,30,32,[40,40,44],{foot:0}),Bx(x-.15,y+.9,x+.27,y+1,28,30,[40,40,44],{foot:0})]; return prop(bs); };
 MK.scooter=(x,y)=>{ PNAME='scooter'; const c=[200,70,60]; return prop([Bx(x,y,x+.25,y+.3,0,12,[30,30,34]),Bx(x+1.1,y,x+1.35,y+.3,0,12,[30,30,34]),Bx(x+.2,y+.02,x+1.15,y+.28,8,22,c,{foot:0,fi:()=>sh(c,.7),fj:(u,z)=>z>18?sh(c,.6):c}),Bx(x+.5,y+.04,x+1,y+.26,22,30,[40,40,44],{foot:0}),Bx(x+1.1,y+.02,x+1.2,y+.28,22,36,[80,82,86],{foot:0}),Bx(x+1.05,y-.1,x+1.25,y+.4,36,38,[40,40,44],{foot:0})]); };
 MK.newsstand=(x,y)=>{ PNAME='newsstand'; const c=[60,120,80], d=sh(c,.72), X=x+2, Y=y+1.3, T=.08, H=70, wood=[120,98,72];

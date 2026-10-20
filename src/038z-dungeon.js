@@ -103,7 +103,7 @@ function dungeonFloorCol(x,y,R=DGN){ const S=.26, px=x-R.x0, py=y-R.y0, j=Math.f
   return c; }
 return {DGP,dgnLit,DGN,dgnWeb,dgnIvy,dgnRidge,dgnFoot,dgnStone,dgnDamp,dungeonWall,dungeonFloorCol}; };
 const dgnThings=(CATALOG,CAT_INFO,LAMPS,CAT_DEPTS,DGP,dgnLit,DGN,dgnWeb)=>{
-const C=DGP, lit=dgnLit, o3=c=>({c,nb:1,top:()=>sh(c,1.12),fi:()=>sh(c,.7),fj:()=>sh(c,.86)});
+const C=DGP, lit=dgnLit;
 const FLH=[10,12,11,13,9,12,10,13], flick=(p,FL,seed)=>{ p.life=t=>{ FL.ph=Math.floor(hash(Math.floor(t*7),seed,425)*8); }; p.lifeKey=()=>FL.ph; };
 function lathe(cx,cy,z0,z1,rf,col,dz=2,dw=.04){ const out=[];
   for(let z=z0;z<z1-1e-9;z+=dz){ const za=z, zb=Math.min(z1,z+dz), r=rf((za+zb)/2-z0); if(!(r>.004))continue; const n=Math.max(1,Math.round(2*r/dw)), w=2*r/n;

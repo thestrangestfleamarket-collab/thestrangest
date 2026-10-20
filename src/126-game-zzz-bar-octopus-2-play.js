@@ -45,15 +45,13 @@ function octHabits(now){ const solo=OCT.mood==='solo';
   if(!solo&&now>OCT.puff.next&&octPh(OCT.sip,now)<0){ OCT.puff.at=now; OCT.puff.next=now+7000+hash(Math.floor(now/1000),1,741)*5000; }
   if(!solo&&now>OCT.sip.next&&octPh(OCT.puff,now)<0&&OCT.lev>.05){ OCT.sip.at=now; OCT.sip.next=now+10000+hash(Math.floor(now/1000),2,743)*6000; OCT.lev=Math.max(0,OCT.lev-.12); } }
 const octUp=k=>k<0?0:Math.round((k<.3?k/.3:k<.7?1:(1-k)/.3)*4)/4;
-function octSlosh(dt,gx){ const o=OCT.slo; if(o.px==null){ o.px=gx; return; } const v=(gx-o.px)/Math.max(dt,1e-3), a=(v-o.vx)/Math.max(dt,1e-3); o.px=gx; o.vx=v;
-  const w0=2*Math.PI*3; o.w+=(-w0*w0*o.th-2*.08*w0*o.w-a/(PHG*24)*w0*w0*.6)*dt; o.th+=o.w*dt; o.th=Math.max(-.7,Math.min(.7,o.th)); }
 function octPose(now){ const st=hand=>{ const q=OCT.hits[hand]; let nx=null, ls=null; for(const h of q){ if(h.at>=now-5){ if(!nx||h.at<nx.at)nx=h; } else if(!ls||h.at>ls.at)ls=h; }
     let k=.7, i=nx?nx.i:ls?ls.i:hand==='L'?5:7; if(nx&&nx.at-now<140)k=(nx.at-now)/140; else if(ls&&now-ls.at<120){ k=(now-ls.at)/120*.7; i=ls.i; }
     return [i,Math.round(Math.max(0,Math.min(1,k))*3)]; };
   const kq=OCT.hits.K, kick=kq.some(h=>Math.abs(now-h.at)<70)?1:0, beat=OCT.spb?((OCT.tnow/(OCT.spb*(OCT.sub||2)))%1+1)%1:0;
   return {L:st('L'),R:st('R'),A:st('A'),B:st('B'),puff:octUp(octPh(OCT.puff,now)),sip:octUp(octPh(OCT.sip,now)),lev:Math.round(OCT.lev*10)/10,sl:Math.round(Math.tan(OCT.slo.th)*4)/4,
     kick,hat:OCT.hat?1:0,sw:Math.floor(((OCT.tnow||0)/((OCT.spb||.3)*(OCT.sub||2)))%2)*2,nod:beat<.25?1:0}; }
-function octArms(p){ const z=0, sh=[[4,7,26],[4,-7,26]], hand=(h,[i,k])=>{ const D=OCTD[i], S=sh[h==='L'?0:1], v=[S[0]-D[0],S[1]-D[1],S[2]-D[2]], l=Math.hypot(...v)||1, kk=k/3;
+function octArms(p){ const sh=[[4,7,26],[4,-7,26]], hand=(h,[i,k])=>{ const D=OCTD[i], S=sh[h==='L'?0:1], v=[S[0]-D[0],S[1]-D[1],S[2]-D[2]], l=Math.hypot(...v)||1, kk=k/3;
     const tip=[D[0]+v[0]/l*14,D[1]+v[1]/l*14,D[2]+v[2]/l*14+1], up=[tip[0]-2,tip[1],tip[2]+10], aimUp=[D[0],D[1],D[2]+16];
     return [[tip[0]+(up[0]-tip[0])*kk,tip[1]+(up[1]-tip[1])*kk,tip[2]+(up[2]-tip[2])*kk],[D[0],D[1],D[2]+1+(aimUp[2]-D[2]-1)*kk]]; };
   const kd=OCTD[0], hd=OCTD[5], Z=OCTSEAT, mix=(a,b,k)=>a.map((v,j)=>v+(b[j]-v)*k);
@@ -65,15 +63,3 @@ function octArms(p){ const z=0, sh=[[4,7,26],[4,-7,26]], hand=(h,[i,k])=>{ const
   o.CG=mix([1,15*OCTS,Z+9],[9.4,2.6,Z+10],p.puff); o.CGA=mix([.5,1,.55],[.45,1,.05],p.puff);
   o.GL=mix([1,-15*OCTS,Z+7],[8.2,-5.2,Z+6],p.sip); o.GLP=p.sip*.55; o.LEV=p.lev; o.SL=p.sl;
   return o; }
-function octPic(now,may){ may=may&&now-(OCT.paintAt||0)>=50; const p=octPose(now), Hv=(()=>{ const [a,b]=vwV(0,1); return Math.round(Math.atan2(b,a)/(Math.PI/4))*Math.PI/4; })(), rr=Math.max(1,charRes(S));
-  const key=p.L.join()+'|'+p.R.join()+'|'+(p.A?p.A.join()+p.B.join():'')+'|'+p.puff+'|'+p.sip+'|'+p.lev+'|'+p.sl+'|'+p.kick+p.hat+p.sw+p.nod+'|'+Hv.toFixed(2)+'|'+rr+'|'+OCT.lk; let it=OCT.pics.get(key);
-  if(!it){ if(!may)return OCT.cur; OCT.paintAt=now; if(OCT.pics.size>140)OCT.pics.clear(); const t0=performance.now();
-    const o=pupPaint(octBody(octArms(p)),Hv,OCTP,rr,{S:120}), m=4*rr, w=o.w+2*m, h=o.h+2*m, c=document.createElement('canvas'); c.width=w; c.height=h; const g=c.getContext('2d'), im=g.createImageData(w,h), d=im.data, L=OCT.L;
-    const lit=[L[0]*.65+.32,L[1]*.65+.24,L[2]*.65+.48];
-    for(let y=0;y<o.h;y++)for(let x=0;x<o.w;x++){ const s=(y*o.w+x)*4; if(!o.px[s+3])continue; const i=((y+m)*w+x+m)*4; d[i]=Math.min(255,o.px[s]*lit[0]); d[i+1]=Math.min(255,o.px[s+1]*lit[1]); d[i+2]=Math.min(255,o.px[s+2]*lit[2]); const r=o.px[s], g=o.px[s+1], b=o.px[s+2]; d[i+3]=b>g*1.25&&r>g*1.12?150:255; }
-    const R=3*rr, H=new Uint8Array(w*h).fill(99); for(let y=0;y<h;y++){ let k=99; for(let x=0;x<w;x++){ k=d[(y*w+x)*4+3]?0:Math.min(99,k+1); H[y*w+x]=k; } k=99; for(let x=w-1;x>=0;x--){ k=d[(y*w+x)*4+3]?0:Math.min(99,k+1); if(k<H[y*w+x])H[y*w+x]=k; } }
-    for(let x=0;x<w;x++)for(let y=0;y<h;y++){ const i=y*w+x; if(d[i*4+3])continue; let best=99; for(let dy=-R;dy<=R;dy++){ const yy=y+dy; if(yy<0||yy>=h)continue; const c=Math.max(Math.abs(dy),H[yy*w+x]); if(c<best)best=c; }
-      if(best<=R){ const a=[0,70,44,26,16,10,6][Math.ceil(best/rr)]||0; if(a){ d[i*4]=170; d[i*4+1]=90; d[i*4+2]=255; d[i*4+3]=a; } } }
-    g.putImageData(im,0,0); it={c,K:rr,ax:(o.ax+m)/rr,ay:(o.ay+m)/rr,w:w/rr,h:h/rr,key:'octo|'+key}; OCT.pics.set(key,it); PERF.add('the bar: the drummer painted (a new pose)',performance.now()-t0); }
-  OCT.cur=it; return it; }
-function octLight(x,y,now){ if(now-OCT.lightAt<=1000)return; OCT.lightAt=now; const env=envNear(x,y), L=env?lightAt(env,x,y,(BAR.stage.z+26)/24,null).map(v=>Math.max(Math.round(v*12)/12,CHARMIN)):[1,1,1]; OCT.L=L; OCT.lk=L.join(); }

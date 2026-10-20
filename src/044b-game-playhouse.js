@@ -202,7 +202,6 @@ function plHoundAt(H,t){ if(!H.length||t<H[0][0]||t>=H[H.length-1][1])return nul
   const run=t<s[1], k=run?(t-s[0])/(s[1]-s[0]):1, x=s[2]+(s[4]-s[2])*k, y=s[3]+(s[5]-s[3])*k, a=Math.atan2(s[5]-s[3],s[4]-s[2]);
   return {x,y,a,s:run?(t*2.6)%1:.12+.03*Math.sin(t*9),up:s[6]&&run?Math.sin(k*Math.PI)*.7:0,run}; }
 const PLPRAC={baker:[PLMID-.4,ay(-42.75),30],hall:[PLMID-.2,PLC+2.6,62],moor:null,fog:null};
-const bk=(x0,y0,z0,x1,y1,z1,c,e)=>[x0,y0,z0,x1,y1,z1,c,e], el=(x,y,z,r,c,e)=>bk(x-r[0],y-r[1],z-r[2],x+r[0],y+r[1],z+r[2],c,e), cy=(x,y,z0,z1,r,c,e)=>bk(x-r,y-r,z0,x+r,y+r,z1,c,e);
 const M=[46,42,40], Wd=[96,58,36], Lt=[120,30,28], FI=[250,150,50], Ok=[64,44,30], OkD=[46,30,20], GO=[200,170,90], HE=[84,90,62], GR=[140,136,128], BA=[58,50,44];
 const SETS={baker:[],hall:[],moor:[]};
 SETS.fog=SETS.moor;

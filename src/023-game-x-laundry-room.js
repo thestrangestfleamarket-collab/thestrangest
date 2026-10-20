@@ -14,9 +14,6 @@ const LAC={tile:[226,224,216],tileL:[240,239,234],tileD:[204,202,194],joint:[182
   pot:[230,208,140],stalk:[196,160,110],bloom:[208,68,54]};
 const lauLit=c=>Object.assign([...c],{e:1});
 const LAUWIN={u0:38,u1:84,z0:30,z1:78};
-function laundryTile(u,z,f){ const c=LAC; if(z<3)return sh(c.skirt,f); const uu=((u%24)+24)%24, zz=(((z-3)%26)+26)%26;
-  if(uu<1||zz<1)return sh(c.joint,f); const b=uu<2.5||zz>=23.5?c.tileL:uu>=22.5||zz<2.5?c.tileD:c.tile, s=hash(Math.floor(u),Math.floor(z),1607);
-  return sh(s<.02?sh(b,.95):b,f); }
 (()=>{ const {FP,rect,fb,worn,metal}=STUDIO.kit, c=LAC, hi={foot:1};
 function washerDryer(x,y,f=[1,0]){ PNAME='stacked washer and dryer'; const r=rect(x,y,f,.8,.75), B=[];
   const machine=(z0,h,seed)=>{ const PZ=h-7;

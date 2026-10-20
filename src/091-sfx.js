@@ -1,7 +1,7 @@
 const SOUND=QS.get('sound')==='1';
 const SNDMIX0={fx:{},loops:{},gap:1,blip:1};
 const SFX={on:true,vol:1,mix:{fx:{},loops:{},gap:1,blip:1}};
-{ const sr=()=>SFX.ctx().sampleRate, rnd=()=>Math.random()*2-1, TAU=Math.PI*2;
+{ const rnd=()=>Math.random()*2-1, TAU=Math.PI*2;
   { const s=SAVE.get('sfx'), v=SAVE.get('vol'); if(s!=null)SFX.on=s==='1'; if(v!=null)SFX.vol=Math.max(0,Math.min(1,+v)); }
   const mixOf=o=>({fx:Object.assign({},SNDMIX0.fx,o&&o.fx||{}),loops:Object.assign({},SNDMIX0.loops,o&&o.loops||{}),gap:o&&o.gap!=null?+o.gap:SNDMIX0.gap,blip:o&&o.blip!=null?+o.blip:SNDMIX0.blip});
   try{ SFX.mix=mixOf(JSON.parse(SAVE.get('sndmix')||'null')); }catch(e){ SFX.mix=mixOf(null); }

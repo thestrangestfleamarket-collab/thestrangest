@@ -99,7 +99,7 @@ function wallPaint(ivyAt,seed,opening){
   item('portrait in a red frame');
   box(0,6.78,2.72,0.06,7.45,3.5,(f,u,v,W,H)=>f!=='E'?PAL.redD:frameArt(f,u,v,W,H,(a,b,w,h)=>{ const cx=w/2; if((a-cx)**2/16+(b-h*0.33)**2/20<1)return C('#c8a888'); if(b>h*0.5&&Math.abs(a-cx)<w*0.32+(b-h*0.5)*0.4)return C('#3a2a2a'); return C('#8a7a58');}),{wall:'W'});
   item('herb garland');
-  { const ys=7.85, ye=9.95; let last=null;
+  { const ys=7.85, ye=9.95; 
     for(let y=ys;y<=ye;y+=0.06){ const t=(y-ys)/(ye-ys), z=2.95-0.42*Math.sin(t*Math.PI); box(0.02,y,z,0.06,y+0.065,z+0.04,PAL.cork,{wall:'W',small:1}); }
     const hang=(y,kind)=>{ const t=(y-ys)/(ye-ys), z=2.95-0.42*Math.sin(t*Math.PI);
       box(0.03,y,z-0.18,0.05,y+0.02,z,PAL.cork,{wall:'W',small:1});

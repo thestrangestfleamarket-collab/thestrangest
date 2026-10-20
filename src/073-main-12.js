@@ -115,7 +115,7 @@ function phyStep(bs,st,h,wind,js){
     if(!(b.you>0)&&(still&&(b.rest+=h)>.25||b.held>.4)){ b.awake=false; b.v=[0,0,0]; b.w=[0,0,0]; b.held=0; } else if(!still)b.rest=0; }
   return cs; }
 const view0={a:Math.PI/4}; let STATIC=[], PHYROOMS=[];
-const RAG={on:false,bodies:[],joints:[],t:0,hd:0,blend:null,acc:0,trip:false,hit:null,held:null,toss:null,ko:0}, RAGOFF=true; window.RAGON=()=>RAG.on;
+const RAG={on:false,bodies:[],joints:[],t:0,hd:0,blend:null,acc:0,trip:false,hit:null,held:null,toss:null,ko:0}; window.RAGON=()=>RAG.on;
 const RT=48/Math.SQRT2/(48/(33.9*Math.SQRT2)), RZ=24*RIG.PX/RT;
 const ragW=(p,hd=RAG.hd)=>{ const q=RIG.yaw(p,hd), du=(q.x+q.z)/(Math.SQRT2*RT), dv=(q.z-q.x)/(Math.SQRT2*RT), [dx,dy]=wvV(du,dv); return [P.x+dx,P.y+dy,q.y/RT]; },
   ragWv=p=>{ const q=RIG.yaw(p,RAG.hd), du=(q.x+q.z)/Math.SQRT2, dv=(q.z-q.x)/Math.SQRT2, [dx,dy]=wvV(du,dv), n=Math.hypot(dx,dy,q.y)||1; return [dx/n,dy/n,q.y/n]; },
@@ -181,9 +181,5 @@ STATIC=fixed.map(([x0,z0,y0,x1,z1,y1])=>[x0/TL,-z1/TL,y0/TL,x1/TL,-z0/TL,y1/TL])
 function setPhys(lv){ STATIC=FIX[lv].map(([x0,z0,y0,x1,z1,y1])=>[x0/TL,-z1/TL,y0/TL,x1/TL,-z0/TL,y1/TL]); PHYROOMS[0].st=STATIC.map(b=>[b[0],b[1],b[2]/RZ,b[3],b[4],b[5]/RZ]); }
 
 const loose=[]; const CM=new THREE.Matrix3().set(1,0,0,0,0,1,0,-1,0), CMT=CM.clone().transpose(), m3t=new THREE.Matrix3(), m4t=new THREE.Matrix4();
-function body(o,mat,x,z,y=0){ const b=phyBody({...o,at:[x/TL,-z/TL,y/TL]}), g=new THREE.Group(); g.matrixAutoUpdate=false; scene.add(g);
-  for(const p of b.parts){ let geo; if(p.t==='box'){ geo=new THREE.BoxGeometry(2*p.h[0]*TL,2*p.h[2]*TL,2*p.h[1]*TL); worldUV(geo,4); } else if(p.t==='cyl')geo=new THREE.CylinderGeometry(p.r*TL,p.r*TL,2*p.hh*TL,8); else geo=new THREE.IcosahedronGeometry(p.r*TL,1);
-    const me=new THREE.Mesh(geo,mat); me.position.set(p.c[0]*TL,p.c[2]*TL,-p.c[1]*TL); me.castShadow=me.receiveShadow=true; g.add(me); }
-  b.g=g; loose.push(b); return b; }
 function looseDraw(){ for(const b of loose){ const m=b.m3; m3t.set(m[0],m[1],m[2],m[3],m[4],m[5],m[6],m[7],m[8]).premultiply(CM).multiply(CMT);
   m4t.setFromMatrix3(m3t).setPosition(b.x[0]*TL,b.x[2]*TL,-b.x[1]*TL); b.g.matrix.copy(m4t); b.g.matrixWorldNeedsUpdate=true; } }

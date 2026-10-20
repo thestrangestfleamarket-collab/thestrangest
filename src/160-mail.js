@@ -10,7 +10,7 @@ if(MAIL.on){ const T=TILE, M=1/.84*T, X=BOD.XS, Z=BOD.ZS, G=(x,z)=>MODS.bodega.g
   MAIL.fmt=fmt;
 
   const front=(at,door)=>{ const dx=door.x-at.x, dz=door.z-at.z; const n=Math.abs(dx)>Math.abs(dz)?{x:Math.sign(dx),z:0}:{x:0,z:Math.sign(dz)||1}; return {at,n,t:{x:-n.z,z:n.x}}; };
-  const parkZ0=()=>Z(PARK.y0+PARK.oy), parkZ1=()=>Z(PARK.y1+PARK.oy);
+  const parkZ0=()=>Z(PARK.y0+PARK.oy);
   const streetOf=F=>{ const {at,n}=F; if(n.x<0&&at.x>X(AVE.x0-2))return 'THE AVENUE'; if(n.z<0&&at.z>Z(RING.ny0-2))return 'NORTH STREET'; if(n.x>0&&at.x<X(RING.wx1+2))return 'WEST STREET';
     if(n.z>0&&at.z<parkZ0())return 'MARKET STREET'; return 'CENTRAL PARK'; };
   const along=(st,F)=>st==='THE AVENUE'||st==='WEST STREET'?F.at.z:F.at.x;
@@ -47,7 +47,7 @@ if(MAIL.on){ const T=TILE, M=1/.84*T, X=BOD.XS, Z=BOD.ZS, G=(x,z)=>MODS.bodega.g
   const FL=[], TK=[], PC=[];
   const place=(F,off,h)=>({x:F.at.x+F.t.x*off+F.n.x*.1*T,z:F.at.z+F.t.z*off+F.n.z*.1*T,y:G(F.at.x+F.n.x*.6*T,F.at.z+F.n.z*.6*T)+h});
   const orient=(F,w,d)=>F.n.x?[d,w]:[w,d];
-  const boxes=()=>{ const RED=0xb8322a, MET=0x3c4048, BRASS=0xb89a4a;
+  const boxes=()=>{ const MET=0x3c4048, BRASS=0xb89a4a;
     for(const b of MAIL.B){ const F=b.F, side=b.id==='tower'?1.6*T:1.25*T;
       if(!b.units){ const p=place(F,side,1.1*M), [sx,sz]=orient(F,.36*M,.2*M); blk(p.x,p.y,p.z,sx,.42*M,sz,MET); const [lx,lz]=orient(F,.22*M,.02*M); blk(p.x+F.n.x*.1*M,p.y+.08*M,p.z+F.n.z*.1*M,lx,.025*M,lz,0x14161a);
         const A=MAIL.addr.find(a=>a.b===b); A.box={x:p.x,y:p.y,z:p.z,F}; A.flag=FL.push({x:p.x+F.t.x*.2*M,y:p.y,z:p.z+F.t.z*.2*M,F,up:false})-1; A.tick=TK.push({x:p.x+F.n.x*.11*M,y:p.y+.08*M,z:p.z+F.n.z*.11*M,F,on:false})-1; }

@@ -45,11 +45,6 @@ const GTSTR=(()=>{ const IN=0.0254, L0=GT.S*GT.U;
 const GTOPEN=[64,59,55,50,45,40];
 const gtHz=(s,k)=>{ const q=GTSTR[s-1]; return Math.sqrt(q.T/q.mu)/(2*GT.S*Math.pow(2,-k/12)*GT.U); };
 const GTA={buf:null,busy:false,failed:0,ok:false,g:null,pan:null,at:{},on:[null,null,null,null,null,null]};
-function gtChain(){ const c=SND.ctx; if(!c||!SND.on||c.state!=='running')return false; if(GTA.g)return true;
-  const g=GTA.g=c.createGain(), pan=GTA.pan=c.createStereoPanner(), cv=c.createConvolver(), wet=c.createGain();
-  const len=Math.floor(c.sampleRate*0.7), ir=c.createBuffer(2,len,c.sampleRate);
-  for(let ch=0;ch<2;ch++){ const q=ir.getChannelData(ch); for(let i=0;i<len;i++){ const t=i/c.sampleRate; q[i]=(Math.random()*2-1)*Math.exp(-t*13.8/0.5)*(t<0.004?0:1); } for(const ms of [7,11,16,23,29])q[Math.floor(c.sampleRate*ms/1000)+ch*13]+=0.6; }
-  cv.buffer=ir; wet.gain.value=0.2; GTA.wet=wet; g.gain.value=0; g.connect(pan); pan.connect(SND.out); pan.connect(cv); cv.connect(wet); wet.connect(SND.out); return true; }
 function gtAudio(){ return false; }
 function gtMute(s,when,T){ if(GTPHYS.model&&GTPHYS.ok)gtPhysMute(s,when,0.25); const v=GTA.on[s-1]; if(!v)return; GTA.on[s-1]=null; v.g.gain.setTargetAtTime(0,Math.max(when,v.when),T/3); try{ v.src.stop(Math.max(when,v.when)+T*5); }catch(e){} }
 function gtPlay(s,k,when,amp,tone,r){ if(GTPHYS.model&&gtPhys()){ gtMute(s,when,0.012); gtPhysPluck(s,k,when,amp,gtBright(tone),(r==='s'?GT.YS:r&&GTYP[GTRH[r]]||GT.YP)/GT.S); return; }

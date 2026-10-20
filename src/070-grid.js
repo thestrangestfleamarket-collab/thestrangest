@@ -87,7 +87,7 @@ window.GRID=GRID;
       if(!s.cut)ribbon(P,curve(a,b,g,6),W,CC); else{ ribbon(P,curve(a,[a[0]+(b[0]-a[0])*.3,a[1]-1.8*M,a[2]+(b[2]-a[2])*.3],-.2*M,4),W,CC); ribbon(P,curve(b,[b[0]+(a[0]-b[0])*.2,b[1]-1.4*M,b[2]+(a[2]-b[2])*.2],-.2*M,4),W,CC); } }
     if(!wireMesh){ wireMesh=new THREE.Mesh(new THREE.BufferGeometry(),wireMat); wireMesh.frustumCulled=false; wireMesh.name='grid-wires'; (MAPG.bodega||scene).add(wireMesh); }
     wireMesh.geometry.dispose(); const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); g.setAttribute('aC',new THREE.Float32BufferAttribute(CC,3)); wireMesh.geometry=g; GRID.tris=P.length/9; };
-  GRID.hardware=()=>{ const BL=[], blk=(x,y,z,sx,sy,sz,c)=>BL.push([x,y,z,sx,sy,sz,c]), GR=0x5d6266, DK=0x3f4448, WD=0x4a3a2a, INS=0x6a8a7a;
+  GRID.hardware=()=>{ const BL=[], blk=(x,y,z,sx,sy,sz,c)=>BL.push([x,y,z,sx,sy,sz,c]), GR=0x5d6266, WD=0x4a3a2a, INS=0x6a8a7a;
     GRID.nodes.filter(n=>n.kind==='pole').forEach((n,i)=>{ blk(n.x,n.y,n.z,1.1*M,.08*M,.08*M,WD); for(const k of [-1,0,1])blk(n.x+k*.42*M,n.y+.09*M,n.z,.07*M,.1*M,.07*M,INS);
       if(i%3===1)blk(n.x+.22*M,n.y-.75*M,n.z+n.d*.14*M,.3*M,.5*M,.3*M,GR); });
     const H=GRID.house; if(H){ const x=H.x+H.w/2, z=H.z-H.d/2, y=H.y; blk(x,y+H.h/2,z,H.w,H.h,H.d,0x6e3a2c); blk(x,y+H.h+.08*M,z,H.w+.2*M,.16*M,H.d+.2*M,0x2b2628);

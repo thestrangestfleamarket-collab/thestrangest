@@ -62,7 +62,7 @@ MK.chimney=(x,y,z,fy)=>{ PNAME='chimney'; return prop([WF(x-.2,x+.2,fy),Bx(x-.2,
 MK.antenna=(x,y,z,fy)=>{ PNAME='TV antenna'; const c=[150,150,156], bs=[WF(x-.3,x+.3,fy),Bx(x-.02,y-.02,x+.02,y+.02,z,z+50,[90,90,96],{foot:0})]; for(let k=0;k<4;k++){ const w=.2+k*.12; bs.push(Bx(x-w,y-.01,x+w,y+.01,z+46-k*6,z+47-k*6,c,{foot:0})); } bs.push(Bx(x-.01,y-.3,x+.01,y+.3,z+40,z+41,c,{foot:0})); return prop(bs); };
 MK.bulkhead=(x,y,z,fy)=>{ PNAME='roof door'; return prop([WF(x-.5,x+.5,fy),Bx(x-.5,y-.5,x+.5,y+.5,z,z+40,[110,66,52],{foot:0,fj:(u,zz)=>Math.abs(u-x)<.25&&zz<z+32?[50,46,44]:brickCol(u,zz,1,1e9),fi:(u,zz)=>brickCol(u,zz,.8,1e9),top:()=>[70,66,62]}),Bx(x-.55,y-.55,x+.55,y+.55,z+40,z+44,[90,90,94],{foot:0})]); };
 MK.skylight=(x,y,z,fy)=>{ PNAME='skylight'; return prop([WF(x-.5,x+.5,fy),Bx(x-.5,y-.4,x+.5,y+.4,z,z+8,[80,82,86],{foot:0,top:(u,v)=>Math.min(Math.abs(u-x)-.5,Math.abs(v-y)-.4)>-.06||Math.abs(u-x)<.02?[80,82,86]:[90,130,160]})]); };
-MK.coop=(x,y,z,fy)=>{ PNAME='pigeon coop'; const c=[120,110,90], o={foot:0}, w=[150,154,156], t=.05, pg=[160,160,170], bd=planks('crates',c,6); const bs=[WF(x-.6,x+.6,fy),
+MK.coop=(x,y,z,fy)=>{ PNAME='pigeon coop'; const c=[120,110,90], o={foot:0}, w=[150,154,156], pg=[160,160,170], bd=planks('crates',c,6); const bs=[WF(x-.6,x+.6,fy),
   Bx(x-.6,y-.5,x+.6,y+.5,z,z+2,c,{foot:0,top:(u,v)=>hash(Math.floor(u*24),Math.floor(v*24),71)<.08?[214,212,200]:sh(c,.8)}),
   Bx(x-.6,y-.5,x+.6,y-.42,z+2,z+30,c,{...o,...bd}),Bx(x-.6,y-.42,x-.52,y+.5,z+2,z+30,c,{...o,...bd}),Bx(x+.52,y-.42,x+.6,y+.5,z+2,z+30,c,{...o,...bd}),
   Bx(x-.65,y-.55,x+.65,y+.55,z+30,z+33,[90,88,84],o)];

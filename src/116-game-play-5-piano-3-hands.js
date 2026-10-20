@@ -23,7 +23,6 @@ const PNKF={}; const pkFrame=(m,u)=>{ const {V}=RIG, b=pnBlack(m), y=PK.Y+(b?.4:
   return {o:V(pkX(m),y-PK.PIV*s,zb+PK.PIV-PK.PIV*c),x:V(1,0,0),y:V(0,c,-s),z:V(0,s,c)}; };
 for(const m of PKEYS)PNKF[m]=pkFrame(m,0);
 const PKBENCH={o:RIG.V(0,0,0),x:RIG.V(1,0,0),y:RIG.V(0,1,0),z:RIG.V(0,0,1)};
-const PNCASEF={pnCase:PKBENCH,pnDesk:PKBENCH,pnBed:PKBENCH,pnLegs:PKBENCH};
 Object.assign(POSES,{pianoSit:{root:[0,15,0],L:{ik:[RIG.FOOTX+.8,RIG.ANKLE,8]},R:{ik:[-RIG.FOOTX-.5,RIG.ANKLE+.8,8.5]}},
   pianoPed:{root:[0,15,0],L:{ik:[RIG.FOOTX+.8,RIG.ANKLE,8]},R:{ik:[-RIG.FOOTX-.5,RIG.ANKLE+.2,8.5]}},
   pianoRest:{root:[0,15,0],bend:-2,L:{ik:[RIG.FOOTX+.8,RIG.ANKLE,8]},R:{ik:[-RIG.FOOTX-.5,RIG.ANKLE,8.5]},hands:{L:[4.6,17.8,7.4],R:[-4.6,17.8,7.4]}}});
@@ -53,8 +52,4 @@ function pnPose(t){ const {V,add,mul,sub}=RIG, T={L:pnFingers('L',t),R:pnFingers
   P._T=T; return P; }
 const pnFing=(P,B,T)=>{ for(const n of 'LR'){ const s=n==='L'?1:-1; P[n].fg=[0,1,2,3,4].map(i=>gtReach(RIG.digitBase(B.m.hf[n],s,i),i,T[n][i+1])); } };
 function pnKeys(t){ const pr=Object.assign({},PNKF); for(const n of PNS.c.notes){ if(n.t0-0.05>t)break; if(n.t1+0.06<t)continue; const u=pkDown(n,t); if(u>0)pr['pk'+n.m]=pkFrame(n.m,u); } pr.bench=pr.benchTop=PKBENCH; return pr; }
-function pnSound(a,t){ if(!pnAudio())return; const c=SND.ctx, ct=c.currentTime, when=x=>ct+Math.max(0,x-t)+0.03, ns=PNS.c.notes;
-  const d=Math.hypot(a.x-P.x,a.y-P.y); PNA.g.gain.setTargetAtTime(SND.on?0.5*Math.max(0.2,1-d/10):0,ct,0.05);
-  { const [sx]=toS(...vw(a.x,a.y)), [px]=toS(...vw(P.x,P.y)); PNA.pan.pan.setTargetAtTime(Math.max(-0.8,Math.min(0.8,(sx-px)/120)),ct,0.1); }
-  while(PNS.sent<ns.length&&ns[PNS.sent].t0<=t+0.1){ const n=ns[PNS.sent++]; if(n.t0<t-0.05)continue; pnPlay(n.m,when(n.t0),when(n.off),n.vel); } }
 window.__piano={PNS,PNBOOK,PNA,set:pnSet,compile:pnCompile,pose:pnPose,keys:pnKeys,x:pkX};

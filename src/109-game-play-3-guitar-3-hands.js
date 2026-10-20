@@ -111,6 +111,5 @@ function gtSound(a,t){ if(PLAY221.seeking)return; const ok=GTPHYS.model?gtPhys()
   { const [sx]=toS(...vw(a.x,a.y)), [px]=toS(...vw(P.x,P.y)); GTA.pan.pan.setTargetAtTime(Math.max(-0.8,Math.min(0.8,(sx-px)/120)),ct,0.1); }
   while(GTS.sent<GTEV.length&&GTEV[GTS.sent].t<=A){ const e=GTEV[GTS.sent++]; if(e.t<t-0.05)continue;
     if(e.n)gtPlay(e.n.s,e.n.at,when(e.t),e.n.amp,e.n.tone,e.n.r); else gtMute(e.s,when(e.t),0.04); } }
-function gtStop(){ if(!SND.ctx)return; for(let s=1;s<=6;s++)gtMute(s,SND.ctx.currentTime,0.15); }
 function gtSlung(a,B){ const {V,nrm,cross,sub,mul,dot}=RIG, y=nrm(V(0.75,0.62,0.1)), z0=V(-0.2,0.1,1), z=nrm(sub(z0,mul(y,dot(z0,y)))); B.props.guitar={o:GTSLUNG.o,x:cross(y,z),y,z}; }
 window.__gtStep=gtStep; window.__guitar={GTA,GTS,get GTTUNE(){ return GTTUNE; },get GTLH(){ return GTLH; },get GTSTRUM(){ return GTSTRUM; },GTBOOK,get song(){ return GTSONG; },set:gtSet,next:gtNext,PLAY221,PLAYA,get SND(){ return SND; },pre:()=>PLAY221.pre,hz:gtHz,get pm(){ return GTPM; }};

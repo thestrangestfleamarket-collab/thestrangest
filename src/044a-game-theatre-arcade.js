@@ -33,10 +33,8 @@ const THFRONT=(()=>{ let f=null; const build=()=>{ const W=480, H=392, a=new Arr
 let THX0=0, THY=0; const THX=u=>THX0-u, thAt=(x,y)=>{ THX0=x; THY=y; };
 function thOut(parts,o,more=[]){ PNAME='theatre front'; const x0=THX0; return prop([...parts.map(([u0,u1,z0,z1,d,side,top,foot])=>sided({x0:THX(u1),x1:THX(u0),y0:THY-d,y1:THY,z0,z1,c:side,foot:foot?1:0,top:()=>top||side,
   fs:(nx,ny,X,Y,z,k)=>{ if(ny<0){ const c=THFRONT(x0-X,z+z0); if(c)return c.e?c:sh(c,k); } return sh(side,k); }})),...more],null,o); }
-const thb=(u0,u1,d0,d1,z0,z1,c,fs,o)=>sided({x0:THX(u1),x1:THX(u0),y0:THY-d1,y1:THY-d0,z0,z1,c,top:()=>c,fs:fs?(nx,ny,X,Y,z,k)=>fs(nx,ny,X,Y,z+z0,k):(nx,ny,X,Y,z,k)=>sh(c,k),...o});
 const thFront=clip=>{ const RB=[164,58,48], CR=[234,228,206], GR=[112,122,144], SL=[74,80,98], C=L=>L.map(p=>clip(p)).filter(Boolean);
   for(const [L,o,m] of [[[[0,4.73,0,99,.5,RB,[150,52,44],1],[0,4.83,99,111,.62,CR,[246,242,228]]]],[[[16.1,20,0,99,.5,RB,[150,52,44],1],[16,20,99,111,.62,CR,[246,242,228]]]],
-    
     [[[6.1,14.4,98,134,.15,SL,[96,102,122]],[8.5,12.1,106,131,.2,[250,248,240],[250,248,240]]],{walk:true}],
     [[[4.73,16.1,92,152,.2,RB,[150,52,44],1],[4.4,16.1,152,168,.42,CR,[246,242,228]]],{walk:true}],
     [[[8.4,12.5,0,2,.35,[200,204,210],[214,218,222],1]],{walk:true}]]){ const ps=C(L); if(ps.length||(m&&m.length))thOut(ps,o,m); } };
@@ -111,7 +109,7 @@ const arcadeWallOf=ARCS=>function(q,nx,ny,X,Y,z,f){ const zz=z%STORY;
   if(zz>=54&&zz<63){ const u=nx?Y:X; for(const s of ARCS)if((nx?s[2]:s[3])&&Math.abs((nx?s[1]:s[0])-u)<.13&&Math.abs((nx?s[0]:s[1])-(nx?X:Y))<.3){ const d=Math.abs((nx?s[1]:s[0])-u); if(d<.1&&zz>=55&&zz<62){ const c=[255,214,170]; c.e=1; return c; } return sh([150,124,92],f); } }
   if(zz>=46&&zz<49)return sh([236,64,160],f); if(zz>=50&&zz<52)return sh([60,206,230],f);
   return sh(speck([54,34,62],nx?Y:X,z/24,755),f); }
-const ARC=(()=>{ const {art,onF,lit,C,rect,fb,worn,metal}=MLK, FP=24;
+const ARC=(()=>{ const {art,onF,lit,C,rect,fb,worn,metal}=MLK;
   const W=[232,232,236], WD=[196,198,206], WL=[244,244,248];
   const white=(k)=>(s,t,z)=>{ const c=worn(W,t,z,k); return s==='b'?sh(c,.9):c; };
   function arcade(x,y,f=[0,1],green=0){ PNAME=green?'arcade cabinet, green':'arcade cabinet, pink'; const r=rect(x,y,f,1.5,1.3), T=green?[110,220,80]:[236,70,160], TD=sh(T,.7), B=[];

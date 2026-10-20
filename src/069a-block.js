@@ -55,7 +55,7 @@ const BLK={blds:[],signs:[],band:()=>null,built:0,in:false,hi:[],LO:.5}; window.
   const CR=[[98.5,zA-.5,.9,.9,22,[.18,.42,.36]],[98.5,zA-.5,.9,.9,44,[.22,.48,.62]],[121,zA-.6,1.1,1.1,40,[.2,.34,.24]],[73,zB+.6,1.3,.9,30,[.54,.42,.26]],[140,zB+.6,1,1,40,[.2,.34,.24]],[63,zB+.5,.8,.8,24,[.6,.18,.16]]];
   for(const [x,y,w,d,hp] of CR)solid(x-w/2,Math.min(y-d/2,y+d/2),x+w/2,Math.max(y-d/2,y+d/2),hp);
   const GA=new THREE.Group(); GA.name='alley'; GA.visible=false; scene.add(GA);
-  let tl=0; const Y=()=>{ BLK.step=Math.max(BLK.step||0,performance.now()-tl); return new Promise(r=>requestAnimationFrame(()=>{ tl=performance.now(); r(); })); };
+  let tl=0; const Y=()=>{ const n=performance.now(); if(n-tl<20)return Promise.resolve(); BLK.step=Math.max(BLK.step||0,n-tl); return new Promise(r=>requestAnimationFrame(()=>{ tl=performance.now(); r(); })); };
   const make=async()=>{ const G=GA, bx=(L,x0,y0,p0,x1,y1,p1,c)=>L.push([XS(Math.min(x0,x1)),YP(Math.min(p0,p1)),ZS(Math.min(y0,y1)),XS(Math.max(x0,x1)),YP(Math.max(p0,p1)),ZS(Math.max(y0,y1)),c]);
   const KO='"Black Han Sans","Do Hyeon","Noto Sans KR",sans-serif', KO2='"Do Hyeon","Black Han Sans","Noto Sans KR",sans-serif';
   const words=(g,t,x,y,w,h,font,vert)=>{ g.textAlign='center'; g.textBaseline='middle';
@@ -158,15 +158,17 @@ const BLK={blds:[],signs:[],band:()=>null,built:0,in:false,hi:[],LO:.5}; window.
       const wh=w.when, al=Object.getOwnPropertyDescriptor(w,'always'), was=al?(al.get?()=>al.get.call(w):()=>al.value):()=>false;
       w.when=()=>lane()||(wh?wh():true); Object.defineProperty(w,'always',{get:()=>lane()||was(),configurable:true}); n++; } BLK.walls=n; }
   const esc=v=>{ const A=MODS.apts; if(A&&A.back)for(const me of A.back)me.visible=v; }; esc(false);
-  const vis=v=>{ GA.visible=v; for(const q of BLK.hi){ if(v&&!q.hi)q.hi=q.paint(); q.m.material=v?q.hi:q.lo; } esc(v); BLK.in=v; };
+  const vis=v=>{ BLK.shown=v; GA.visible=v; for(const q of BLK.hi)q.m.material=v?q.hi:q.lo; esc(v); };
   const frames=n=>new Promise(r=>{ const f=()=>--n<=0?r():requestAnimationFrame(f); requestAnimationFrame(f); });
-  BLK.go=async()=>{ if(BLK.in||BLK.busy)return; if(BLK.built){ vis(true); return; } BLK.busy=true; const el=document.getElementById('subfade'), live=el&&window.__started;
-    if(live){ el.textContent='ENTERING THE ALLEY'; el.style.opacity='1'; if(typeof keys!=='undefined'&&keys.clear)keys.clear(); await frames(3); }
-    const t0=performance.now(); tl=t0; for(const q of BLK.hi){ q.hi=q.paint(); await Y(); } await make(); BLK.step=Math.max(BLK.step||0,performance.now()-tl); BLK.built=1; vis(true); BLK.ms=+(performance.now()-t0).toFixed(1); if(live){ await frames(2); el.style.opacity='0'; } BLK.busy=false; };
-  BLK.away=()=>{ if(BLK.in&&!BLK.busy)vis(false); };
-  { const zb=ZS(B.back), sg=Math.sign(ZS(B.alley[0])-zb)||-1; BLK.tick=()=>{ if(typeof ROOMS!=='undefined'&&ROOMS.cur||BLK.busy||UI.freeCam||ED.on)return; const d=(pos.z-zb)*sg;
-      if(!BLK.in&&LVL==='up'&&d>.2*T&&window.POSOK!==false)BLK.go(); else if(BLK.in&&(d<-12*T||LVL!=='up'))BLK.away(); };
+  const build=async()=>{ const t0=performance.now(); tl=t0; for(const q of BLK.hi){ q.hi=q.paint(); await Y(); } await make(); BLK.step=Math.max(BLK.step||0,performance.now()-tl); BLK.ms=+(performance.now()-t0).toFixed(1); BLK.built=1; };
+  BLK.go=async()=>{ if(BLK.fade||BLK.built)return; BLK.fade=1; const el=document.getElementById('subfade'), live=el&&window.__started;
+    if(live){ el.textContent='ENTERING THE ALLEY'; el.style.opacity='1'; if(typeof keys!=='undefined'&&keys.clear)keys.clear(); await frames(2); }
+    await (BLK.job||(BLK.job=build())); if(live){ await frames(2); el.style.opacity='0'; } BLK.fade=0; };
+  { const zb=ZS(B.back), sg=Math.sign(ZS(B.alley[0])-zb)||-1; BLK.tick=()=>{ if(typeof ROOMS!=='undefined'&&ROOMS.cur||UI.freeCam||ED.on||window.POSOK===false)return; const d=(pos.z-zb)*sg, up=LVL==='up';
+      BLK.in=up&&d>.2*T; const need=BLK.in||up&&(d>-10*T||d>-32*T&&(UI.persp||(cam.position.z-pos.z)*sg>0));
+      if(BLK.in&&!BLK.built)BLK.go(); else if(need&&!BLK.job)BLK.job=build();
+      const v=need&&!!BLK.built; if(v!==!!BLK.shown)vis(v); };
     const t0=DRESS.tick; DRESS.tick=(dt,p)=>{ if(t0)t0(dt,p); BLK.tick(); }; }
-  window.ALLEYDBG=()=>({in:BLK.in,built:BLK.built,ms:BLK.ms,step:BLK.step&&+BLK.step.toFixed(1),kids:GA.children.length,signs:BLK.signs.length,lamps:GA.children.filter(o=>o.isLight).length+LITE.recs.filter(L=>L.userData.grp===GA).length,hi:BLK.hi.map(q=>q.m.material===q.hi?1:0),esc:(MODS.apts&&MODS.apts.back||[]).map(m=>m.visible?1:0)});
+  window.ALLEYDBG=()=>({in:BLK.in,shown:!!BLK.shown,built:BLK.built,ms:BLK.ms,step:BLK.step&&+BLK.step.toFixed(1),kids:GA.children.length,signs:BLK.signs.length,lamps:GA.children.filter(o=>o.isLight).length+LITE.recs.filter(L=>L.userData.grp===GA).length,hi:BLK.hi.map(q=>q.m.material===q.hi?1:0),esc:(MODS.apts&&MODS.apts.back||[]).map(m=>m.visible?1:0)});
   window.BLOCKDBG=()=>({blds:BLK.blds.map(q=>[q.row,q.x0,q.x1,q.h]),signs:BLK.signs.length,boxes:BX.length+GL.length,band:BLK.band(pos.x,pos.z)});
 }

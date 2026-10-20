@@ -31,7 +31,3 @@ function cordStep(a,dt){ const P=a.cord, A=RIG.add(a.mic.o,RIG.mul(a.mic.y,-.3))
 function singStep(a,dt){ if(!a.B)return; a.mic=singMic(a.B); for(const n of ['ampBox','ampGrille','ampPanel','ampKnobs','ampLight'])a.B.props[n]=SINGF; a.B.props.mic=a.B.props.micGrille=a.mic;
   if(!a.cord)cordNew(a); const h=Math.min(dt,.05)/2; cordStep(a,h); cordStep(a,h);
   let s=0; for(const c of a.cord)s+=Math.round(c.p.x*4)*7+Math.round(c.p.y*4)*13+Math.round(c.p.z*4); a.sigx=s; }
-function cordDraw(a,yawA,r){ if(!a.cord)return; const k=a.c.dens*r, W=(a.c.W||CIW)*r, H=(a.c.H||CIH)*r, AX=(a.c.AX||CAX)*r, AY=(a.c.AY||CAY)*r, dep=RIG.depth(W*H), buf=a.buf; if(!dep)return;
-  for(let i=0;i<CORDN-1;i++){ const A=a.cord[i].p, B=a.cord[i+1].p, n=Math.max(2,Math.ceil(CORDL*k*1.4));
-    for(let j=0;j<=n;j++){ const u=j/n, p=RIG.project(RIG.V(A.x+(B.x-A.x)*u,A.y+(B.y-A.y)*u,A.z+(B.z-A.z)*u),yawA), x=Math.floor(AX+p[0]*k), y=Math.floor(AY+p[1]*k); if(x<0||y<0||x>=W||y>=H)continue;
-      const q=y*W+x; if(buf[q]&&dep[q]<p[2]-0.3)continue; buf[q]=(i+j)%9===0?0xff403a3c:0xff1a1618; } } }

@@ -50,14 +50,7 @@ function gtChain(){ const c=SND.ctx; if(!c||!SND.on||c.state!=='running')return 
   const len=Math.floor(c.sampleRate*0.7), ir=c.createBuffer(2,len,c.sampleRate);
   for(let ch=0;ch<2;ch++){ const q=ir.getChannelData(ch); for(let i=0;i<len;i++){ const t=i/c.sampleRate; q[i]=(Math.random()*2-1)*Math.exp(-t*13.8/0.5)*(t<0.004?0:1); } for(const ms of [7,11,16,23,29])q[Math.floor(c.sampleRate*ms/1000)+ch*13]+=0.6; }
   cv.buffer=ir; wet.gain.value=0.2; GTA.wet=wet; g.gain.value=0; g.connect(pan); pan.connect(SND.out); pan.connect(cv); cv.connect(wet); wet.connect(SND.out); return true; }
-function gtAudio(){ return false; const c=SND.ctx; if(!gtChain())return false; if(GTA.ok||GTA.busy||performance.now()<GTA.failed)return GTA.ok; GTA.busy=true;
-  fetch('audio/guitar.mp3').then(r=>{ if(!r.ok)throw new Error('audio/guitar.mp3: '+r.status); return r.arrayBuffer(); }).then(b=>c.decodeAudioData(b)).then(buf=>{
-    const d=buf.getChannelData(0), sr=buf.sampleRate;
-    for(const [m,t0,L,hz] of GTSAMP){ const a=Math.max(0,Math.floor((t0-0.1)*sr)), e=Math.min(d.length-1,Math.floor((t0+0.2)*sr)); let pk=0; for(let i=a;i<e;i++)pk=Math.max(pk,Math.abs(d[i]));
-      let i=a; while(i<e&&Math.abs(d[i])<pk*0.06)i++; GTA.at[m]={t:Math.max(0,i/sr-0.004),L,hz}; }
-    GTA.buf=buf; GTA.ok=true; })
-    .catch(e=>{ console.warn('guitar sound',e); GTA.failed=performance.now()+10000; }).finally(()=>{ GTA.busy=false; });
-  return false; }
+function gtAudio(){ return false; }
 function gtMute(s,when,T){ if(GTPHYS.model&&GTPHYS.ok)gtPhysMute(s,when,0.25); const v=GTA.on[s-1]; if(!v)return; GTA.on[s-1]=null; v.g.gain.setTargetAtTime(0,Math.max(when,v.when),T/3); try{ v.src.stop(Math.max(when,v.when)+T*5); }catch(e){} }
 function gtPlay(s,k,when,amp,tone,r){ if(GTPHYS.model&&gtPhys()){ gtMute(s,when,0.012); gtPhysPluck(s,k,when,amp,gtBright(tone),(r==='s'?GT.YS:r&&GTYP[GTRH[r]]||GT.YP)/GT.S); return; }
   const c=SND.ctx, m=GTOPEN[s-1]+k; let q=GTSAMP[0]; for(const x of GTSAMP)if(Math.abs(x[0]-m)<Math.abs(q[0]-m))q=x; const A=GTA.at[q[0]]; if(!A)return;

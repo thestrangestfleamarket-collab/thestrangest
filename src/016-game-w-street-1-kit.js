@@ -32,7 +32,6 @@ MK.signbox=(x0,x1,y,z0,z1,bg,fg,s,lit)=>{ PNAME='shop sign'; const W=Math.round(
   const p=prop([WF(x0,x1,y),Bw(x0,x1,y,0,.12,z0,z1,bg,{foot:0,em:lit?1:0,fj:f,fi:()=>sh(bg,.6),top:()=>sh(bg,.8)})]); if(lit)LAMPS.push({x:(x0+x1)/2,y:y+.4*WD(y),z:z0,r:3,c:[1,.9,.7],prop:p}); return p; };
 MK.neon=(x,y,z,s,c)=>{ PNAME='neon sign'; const W=tw(s,2)+4, cells=[]; txt((a,b)=>cells.push([a,b]),s,2,2,c,2);
   const p=prop([WF(x-.3,x+.3,y)]); NEONS.push({x,y,z,W,cells,c}); LAMPS.push({x,y:y+.3*WD(y),z,r:2.2,c:[c[0]/255,c[1]/255,c[2]/255],prop:p,neon:true}); return p; };
-const unsign=p=>{ p.gone=true; for(const l of LAMPS)if(l.prop===p)l.prop=null; return p; };
 MK.posters=(x0,x1,y,z0,n,seed)=>{ PNAME='posters'; const bs=[WF(x0,x1,y)]; const C=[[220,70,60],[240,200,70],[60,120,200],[240,240,230],[40,160,120],[230,120,40],[200,80,160]];
   for(let i=0;i<n;i++){ const h=hash(i,seed,1), w=.35+hash(i,seed,2)*.35, hh=12+hash(i,seed,3)*18, px=x0+h*(x1-x0-w), pz=z0+hash(i,seed,4)*30, c=C[Math.floor(hash(i,seed,5)*C.length)];
     bs.push(Bw(px,px+w,y,0,.02,pz,pz+hh,c,{foot:0,fj:(u,z)=>{ const e=Math.min(u-px,px+w-u), ez=Math.min(z-pz,pz+hh-z); return e<.04||ez<1?sh(c,.75):(Math.floor(z/3)&1)&&Math.abs(u-px-w/2)<w*.3&&z>pz+2&&z<pz+hh-3?sh(c,.55):c; },fi:()=>null,top:()=>null})); }

@@ -28,7 +28,7 @@
       for(let j=0;j<3;j++)c[i*3+j]=o[j]; F[i]=2+sd; }
     g.setAttribute('fab',new THREE.BufferAttribute(F,1)); g.attributes.color.needsUpdate=true; return g; };
   const ARMR={skeleton:[.05,.045],ogre:[.12,.11]}, ARMV=new THREE.Vector3(), ARMQ=new THREE.Quaternion(), ARMM=new THREE.Matrix4(), ARMI=new THREE.Matrix4();
-  const armsOf=(D,kind,rig,stone)=>{ const R=D.rig, M=D.mesh, ibm=F32(R.ibm), rest=i=>new THREE.Matrix4().fromArray(ibm,i*16).invert(), {p:P,j:J,w:W,c:C,r:RG}=SKIN.dec(M), n=P.length/3;
+  const armsOf=(D,kind,rig,stone)=>{ const R=D.rig, M=D.mesh, ibm=F32(BY(R,'ibm')), rest=i=>new THREE.Matrix4().fromArray(ibm,i*16).invert(), {p:P,j:J,w:W,c:C,r:RG}=SKIN.dec(M), n=P.length/3;
     const dom=i=>{ let m=0; for(let k=1;k<4;k++)if(W[i*4+k]>W[i*4+m])m=k; return J[i*4+m]; }, SP=R.names.indexOf('DEF_spine'), HL=[R.names.indexOf('DEF_hand_L'),R.names.indexOf('DEF_hand_R')];
     const rad=stone?[.15,.14]:ARMR[kind.split('_')[0]]||[.085,.075], bony=kind.startsWith('skeleton'), G={p:[],c:[],r:[],j:[],w:[],i:[]}, sides=[];
     HL.forEach((hb,si)=>{ const sg=si?-1:1, H0=rest(hb); let wx=0,wy=0,wz=0,wn=0,hc=[0,0,0],hr=0, tc=[0,0,0],tn=0,tr=0,tx=0,ty=1.78;

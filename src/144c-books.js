@@ -17,14 +17,14 @@ const BOOKS={}; window.BOOKS=BOOKS;
   BOOKS.find=(L,where)=>{ const id=roll(L); FORAGE.give('bk_'+id,1); say(`${where}: ${/^[AEIOU]/.test(NM['bk_'+id])?'AN':'A'} ${NM['bk_'+id]}.`,id==='first'||id==='herbal'?'#f2c14e':'#c8b0ff'); FORAGE.draw(); };
   BOOKS.chest=()=>BOOKS.find([['atlas',3],['ledger',3],['herbal',2],['first',1]],'ALSO IN THE CHEST, WRAPPED IN OILCLOTH');
   for(const [i,c] of ((window.DRESS&&DRESS.cans)||[]).entries()){ const hb=new THREE.Mesh(new THREE.BoxGeometry(.6*T,.9*T,.6*T),new THREE.MeshBasicMaterial({visible:false})), y=typeof groundY!=='undefined'?groundY(c.x,c.z):0; hb.position.set(c.x,y+.45*T,c.z); scene.add(hb);
-    UI.thing({name:'TRASH CAN',pick:true,obj:hb,reach:1*T,near:1.8*T,tall:1*T,act:()=>{ const k='c'+i; if(S.cans[k]===day())return say('YOU HAVE BEEN THROUGH THIS ONE TODAY. NOTHING BUT WRAPPERS.','#c8c2b0');
+    UI.thing({name:'TRASH CAN',pick:true,obj:hb,reach:1*T,near:1.8*T,tall:1*T,act:()=>{ '@later'; const k='c'+i; if(S.cans[k]===day())return say('YOU HAVE BEEN THROUGH THIS ONE TODAY. NOTHING BUT WRAPPERS.','#c8c2b0');
       S.cans[k]=day(); save(); if(typeof SFX!=='undefined')SFX.play('clunk',{vol:.3}); if(Math.random()<.4)BOOKS.find([['paper',6],['novel',3],['atlas',1],['hymnal',1]],'UNDER THE NEWSPAPERS');
       else say(['NOTHING BUT WRAPPERS AND A BENT FORK.','A SODA CAN, A SHOE, NOTHING YOU WANT.','JUST YESTERDAY\'S PAPERS.'][Math.floor(Math.random()*3)],'#c8c2b0'); }}); }
   const B='style="margin:0 0 0 4px;font:inherit;color:#ece5d3;background:#0e1016;border:2px solid #3a3f4e;padding:2px 7px;cursor:pointer"';
   const row=(a,b,c,d)=>`<tr style="border-bottom:1px solid #22252f"><td style="padding:4px 2px">${a}</td><td style="text-align:right;padding:4px 6px">${b}</td><td style="text-align:right">${c}</td><td style="text-align:right;white-space:nowrap">${d}</td></tr>`;
   const P=document.createElement('div'); P.id='bookp'; P.hidden=true; P.style.cssText='position:fixed;left:50%;top:10%;transform:translateX(-50%);width:min(470px,92vw);max-height:80vh;overflow:auto;z-index:21;padding:14px 16px;font:11px Silkscreen,monospace;letter-spacing:.4px;color:#d8dae2;background:#0b0d13f2;border:2px solid #3a3f4e;zoom:var(--uiz,1)';
   document.body.appendChild(P); P.addEventListener('keydown',e=>e.stopPropagation()); P.addEventListener('keyup',e=>e.stopPropagation());
-  const draw=()=>{ if(P.hidden)return; restock(); const has=FORAGE.has, mine=Object.keys(INV.items).filter(id=>INV.items[id]>0&&/^(bk_|br_)/.test(id)).sort((a,b)=>b.localeCompare(a));
+  const draw=()=>{ '@later'; if(P.hidden)return; restock(); const has=FORAGE.has, mine=Object.keys(INV.items).filter(id=>INV.items[id]>0&&/^(bk_|br_)/.test(id)).sort((a,b)=>b.localeCompare(a));
     let o=`<h3 style="margin:0 0 4px;color:#f2c14e;font:12px Silkscreen,monospace">THE ODDITIES STALL</h3><div style="color:#9b9584;margin-bottom:8px">Self serve. Old books and the things to mend them. Mended books bought back. Pay in the tin.</div><div style="margin-bottom:8px">YOU HAVE <b style="color:#f2c14e">$${Math.round(INV.cash)}</b></div>`;
     o+=`<div style="margin-bottom:8px"><button ${B} data-gem="1" style="margin:0">THE GEM OF THE DAY</button></div><div style="margin:6px 0 4px;color:#9b9584">WORN BOOKS (TODAY'S BOX)</div><table style="border-collapse:collapse;width:100%">`;
     for(const [id,w,,,p] of BK){ if(!p)continue; const n=S.stock[id]||0; o+=row(w+`<div style="color:#8a8676;font-size:10px">${n} LEFT</div>`,'$'+p,has('bk_'+id)?'x'+has('bk_'+id):'',n?`<button ${B} data-buy="bk_${id}">BUY</button>`:''); }
@@ -33,7 +33,7 @@ const BOOKS={}; window.BOOKS=BOOKS;
     o+=`</table><div style="margin:10px 0 4px;color:#9b9584">IT BUYS</div><table style="border-collapse:collapse;width:100%">`+mine.map(id=>{ const n=has(id), v=PR[id]; return row(NM[id],'$'+v,'x'+n,`<button ${B} data-sell="${id}">SELL</button>${n>1?`<button ${B} data-sell="${id}" data-n="all">ALL $${v*n}</button>`:''}`); }).join('')+'</table>';
     if(!mine.length)o+='<div style="color:#7d7a70;margin-top:6px">No books on you. Mend one with a binder\'s kit (THE PACK, CRAFT) and bring it here.</div>';
     const x=P.querySelector(':scope>.pX'); P.innerHTML=o; if(x)P.appendChild(x); };
-  P.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b||b.classList.contains('pX'))return; const d=b.dataset;
+  P.addEventListener('click',e=>{ '@later'; const b=e.target.closest('button'); if(!b||b.classList.contains('pX'))return; const d=b.dataset;
     if(d.gem){ P.hidden=true; INV.pick('stall'); return; }
     if(d.buy){ const n=+d.n||1, bk=d.buy.startsWith('bk_'), id=d.buy.slice(3), p=bk?BK.find(x=>x[0]===id)[4]:SUP.find(x=>x[0]===d.buy)[2], c=p*n;
       if(bk&&!(S.stock[id]>0))say('NONE LEFT TODAY.','#c8a090'); else if(INV.cash<c)say('YOU CANNOT AFFORD THAT.','#c8a090'); else { INV.cash-=c; FORAGE.give(d.buy,n); if(bk){ S.stock[id]--; save(); } say(`YOU DROP $${c} IN THE TIN AND TAKE ${n>1?n+' ':''}${NM[d.buy]}.`); } }

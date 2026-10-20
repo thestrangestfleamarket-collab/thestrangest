@@ -33,7 +33,7 @@ onmessage=async e=>{ const {id,R,B,cfg,bh}=e.data, P=[], I=[]; try{ await ok; }c
     import(CORE).then(async m=>{ await m.init(); NAV.lib=m; NAV.ready=true; build('up',false); build('up',true); build('down',false); })
       .catch(e=>{ console.warn('NAV: recast did not load, routes stay the A*',e); NAV.lib=null; NAV.on=false; }); };
   const HE={x:2*CS*4,y:T,z:2*CS*4};
-  NAV.route=(lv,a,b,free)=>{ if(!NAV.ready)return null; const street=lv==='up'&&typeof STFREE!=='undefined'&&free===STFREE, k=lv+(street?':st':''), M=NAV.M[k];
+  NAV.route=(lv,a,b,free)=>{ '@later'; if(!NAV.ready)return null; const street=lv==='up'&&typeof STFREE!=='undefined'&&free===STFREE, k=lv+(street?':st':''), M=NAV.M[k];
     build(lv,street); if(!M||!M.q||M.sig!==sig(lv,street))return null;
     const t0=performance.now(), r=M.q.computePath({x:a.x,y:0,z:a.z},{x:b.x,y:0,z:b.z},{halfExtents:HE,maxPathPolys:4096,maxStraightPathPoints:1024});
     if(!r.success||!r.path||r.path.length<2)return null;

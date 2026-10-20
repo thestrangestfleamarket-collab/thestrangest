@@ -1,3 +1,4 @@
+// THE PARK: its layout, the forest (instanced trees with sway in the shader), paths and the park wall.
 const PARK=window.PARK={x0:50,x1:108,y0:-61+NORTHY,y1:12.5+NORTHY+NORTHX,gate:[92.5,99.5],round:[96,-47,7]};
 PARK.sway={value:0}; PARK.windK={value:1}; PARK.tick=()=>{ PARK.sway.value=performance.now()/1000; };
 PARK.Q=[]; PARK.in=false; PARK.ready=false; PARK.onShow=[]; PARK.later=f=>PARK.ready?PARK.run(f):PARK.Q.push(f);
@@ -180,7 +181,7 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
         const L=new THREE.PointLight(new THREE.Color(1,.8,.52),24,12*TILE,1.6); L.position.set(x,y,z); L.userData.i0=24; L.intensity=0; scene.add(L); lamps.push(L); LL.push(L); }
       const lit=()=>{ let d=false; try{ d=CLOCK.dark(); }catch(_){ } glass.color.setHex(d?0xffc978:0x6e6656); core.color.setHex(d?0xfff6dc:0x8a7e66); for(const s of SPR)s.visible=d; for(const L of LL)L.intensity=d?L.userData.i0*(window.DN?DN.lk:1):0; }; lit(); setInterval(lit,2000); PARK.lampLit=lit; } }
   const TL=[0,1,2,3].includes(+QS.get('treelook'))&&QS.get('treelook')!==null?+QS.get('treelook'):0;
-  const treeLook=sh=>{ sh.vertexShader='attribute vec3 aTr; varying vec3 vTr; varying vec3 vLw;\n'+sh.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\n vTr=aTr; vLw=transformed;')
+  const treeLook=sh=>{ '@later'; sh.vertexShader='attribute vec3 aTr; varying vec3 vTr; varying vec3 vLw;\n'+sh.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\n vTr=aTr; vLw=transformed;')
       .replace('#include <shadowmap_vertex>',THREE.ShaderChunk.shadowmap_vertex.replace(/(directional|point)LightShadows\[ i \]\.shadowNormalBias/g,'($&+aTr.z*.35)'));
     let f='varying vec3 vTr; varying vec3 vLw; float TW=0., TSH=1.;\nfloat lfH(vec3 p){ return fract(sin(dot(p,vec3(127.1,311.7,74.7)))*43758.5453); }\n'+sh.fragmentShader
       .replace('diffuseColor.rgb*=wn.y>=max(wn.x,wn.z)?1.:','diffuseColor.rgb*=vTr.z>.5&&'+(TL>1)+'?1.:wn.y>=max(wn.x,wn.z)?1.:');
@@ -234,7 +235,7 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
       me.computeBoundingSphere(); me.castShadow=true; me.receiveShadow=true; G.add(me); };
     inst(new THREE.IcosahedronGeometry(1,0),CR); inst(new THREE.ConeGeometry(1,2,6),SP); inst(new THREE.CylinderGeometry(1,1,1,5),TK); scene.add(G); P.stand=G; }
   window.PARKDBG=()=>({oaks:PARK.oaks,trees:TREES,TL,progs:renderer.info.programs.length});
-  PARK.later(()=>{ PARK.rocks=mesh([['BigRock3',87.5,-37,2.6,1.8],['BigRock5',126,-41,2.4,.2],['Rock_12',55.5,-41,1,1],['Rock1',111,-41,.6,2],['BigRock1',66,-35,2,1.1]].map(([k,x,y,...r])=>[k,RX(x),RY(y),...r]),false);
+  PARK.later(()=>{ '@park'; PARK.rocks=mesh([['BigRock3',87.5,-37,2.6,1.8],['BigRock5',126,-41,2.4,.2],['Rock_12',55.5,-41,1,1],['Rock1',111,-41,.6,2],['BigRock1',66,-35,2,1.1]].map(([k,x,y,...r])=>[k,RX(x),RY(y),...r]),false);
   { const UG=[['bush1',1.1],['bush2',1.2],['bush3',1.3],['bush4',1.5],['bush5',1.1],['flower1',.5],['flower2',.7],['flower3',.3],['flower4',.7],['flower5',.35],['flower6',.8],['grass1',.5],['grass2',.6],['grass1',.45],['grass2',.55],['mushroom1',.3],['mushroom2',.35],['mushroom3',.3],['mushroom4',.25],['stone2',.5],['stone3',.2],['stones1',.25]];
     const list=[]; for(let i=0;i<90;i++){ const x=P.x0+2+hash(i,3,91)*(P.x1-P.x0-4), y=P.y1-NORTHX-1-Math.pow(hash(i,7,93),1.6)*(P.y1-NORTHX-P.y0-3); if(path(x,y)||path(x+1,y)||path(x-1,y)||path(x,y+1)||path(x,y-1)||BK.wet(x,y,1)||hash(i,11,95)<.3||FOUNT.away(x,y)<0)continue; if(x>67&&x<77&&y>-44+NORTHY&&y<-24+NORTHY)continue; if(Math.hypot(x-P.campAt().x,y-P.campAt().y)<4)continue; if(typeof GCAVE!=='undefined'&&GCAVE.keep(P).some(b=>x>b[0]&&x<b[2]&&y>b[1]&&y<b[3]))continue; { const [a,b,c,d]=CASTLE.b.map((v,i)=>v-(i<2?PO.x:PO.y)); if(x>a-1.6&&x<b+1.6&&y>c-1.6&&y<d+1.6)continue; }
       const [k,m]=UG[Math.floor(hash(i,13,97)*UG.length)]; list.push([k,x,y,m*(.8+.4*hash(i,17,99)),hash(i,19,101)*6.28]); }
@@ -249,7 +250,7 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
       ['daisy',92.3,-56,.35,0],['tulip',92.3,-54,.4,1],['rose',92.3,-52,.45,2],['sunflower',99.7,-56,.9,.5],['lily',99.7,-54,.4,1.5],['daisy',99.7,-52,.35,2.5],['hbush1',91.5,-58.8,.9,0],['hbush2',100.5,-58.8,.9,1.2]].map(([k,x,y,...r])=>[k,RX(x),/^(daisy|tulip|rose|sunflower|lily|hbush)/.test(k)?y+NORTHY:RY(y),...r]).concat([['sitlog',LOG[0],LOG[1],.5,.4+wa(LOG[0]-CF.x,LOG[1]-CF.y)-wa(-1.5,-.9)]]),false,false); PARK.sitlog=[X(LOG[0]),Z(LOG[1])];
     for(const [x,y,m] of [[RX(90),RY(-41.5),3.2],[RX(102),RY(-41.5),2.6]]){ const r=.35*m/.84*.2; SOL.up.push([X(x)-r,Z(y)-r,X(x)+r,Z(y)+r]); FIX.up.push([X(x)-r,Z(y)-r,0,X(x)+r,Z(y)+r,m/.84*TILE]); } }
   });
-  PARK.later(()=>{ const LP=[]; { const [cx,cy]=P.round; for(let y=P.y0+4;y<P.y1-2;y+=13)if(Math.abs(y-cy)>9){ let v=y; while(BK.wet(cx+wobX(v)+(LP.length%2?4.2:-4.2),v,.8))v+=1.5; LP.push([cx+wobX(v)+(LP.length%2?4.2:-4.2),v]); } for(let x=P.x0+6;x<P.x1-4;x+=16)if(Math.abs(x-cx)>9){ let u=x; while(BK.wet(u,cy+wobY(u)+(LP.length%2?4.2:-4.2),.8))u+=1.5; LP.push([u,cy+wobY(u)+(LP.length%2?4.2:-4.2)]); } LP.push(...FOUNT.S.lamps); for(const [a,b] of [[-1,-1],[1,-1],[1,1],[-1,1]]){ const x=cx+a*4.2, y=cy+b*4.2; LP.push([x+wobX(y),y+wobY(x)]); } }
+  PARK.later(()=>{ '@park'; const LP=[]; { const [cx,cy]=P.round; for(let y=P.y0+4;y<P.y1-2;y+=13)if(Math.abs(y-cy)>9){ let v=y; while(BK.wet(cx+wobX(v)+(LP.length%2?4.2:-4.2),v,.8))v+=1.5; LP.push([cx+wobX(v)+(LP.length%2?4.2:-4.2),v]); } for(let x=P.x0+6;x<P.x1-4;x+=16)if(Math.abs(x-cx)>9){ let u=x; while(BK.wet(u,cy+wobY(u)+(LP.length%2?4.2:-4.2),.8))u+=1.5; LP.push([u,cy+wobY(u)+(LP.length%2?4.2:-4.2)]); } LP.push(...FOUNT.S.lamps); for(const [a,b] of [[-1,-1],[1,-1],[1,1],[-1,1]]){ const x=cx+a*4.2, y=cy+b*4.2; LP.push([x+wobX(y),y+wobY(x)]); } }
   for(const [x,y] of LP){ const h0=170, h1=179, w=.17; BATCH.tag=OBJ('park','park lamp'); block(x-.07,y-.07,x+.07,y+.07,0,h0,31,()=>[40,40,44]); block(x-w-.04,y-w-.04,x+w+.04,y+w+.04,h1,h1+3,35,()=>[48,46,44]);
     for(const [a,b,c,d] of [[[X(x-w),Y(h0),Z(y+w)],[X(x+w),Y(h0),Z(y+w)],[X(x+w),Y(h1),Z(y+w)],[X(x-w),Y(h1),Z(y+w)]],[[X(x+w),Y(h0),Z(y-w)],[X(x-w),Y(h0),Z(y-w)],[X(x-w),Y(h1),Z(y-w)],[X(x+w),Y(h1),Z(y-w)]],
         [[X(x-w),Y(h0),Z(y-w)],[X(x-w),Y(h0),Z(y+w)],[X(x-w),Y(h1),Z(y+w)],[X(x-w),Y(h1),Z(y-w)]],[[X(x+w),Y(h0),Z(y+w)],[X(x+w),Y(h0),Z(y-w)],[X(x+w),Y(h1),Z(y-w)],[X(x+w),Y(h1),Z(y+w)]]])
@@ -272,7 +273,7 @@ await grab('park',async()=>{});
   P.at=(x,z)=>[x/TILE+BOD.OX-P.ox,z/TILE+BOD.OY-P.oy];
   P.within=(x,z,m=0)=>{ const [px,py]=P.at(x,z), b=CASTLE.b, c=[b[0]-P.ox,b[2]-P.oy,b[1]-P.ox,b[3]-P.oy]; return px>P.x0+m&&px<P.x1-m&&py>P.y0+m&&py<P.y1-m||px>c[0]+m&&px<c[2]-m&&py>c[1]+m&&py<c[3]-m; };
   P.rect=()=>{ const a=BOD.XS(P.x0+P.ox-2), b=BOD.XS(P.x1+P.ox+2), c=BOD.ZS(P.y0+P.oy-2), d=BOD.ZS(P.y1+P.oy+2); return [Math.min(a,b),Math.min(c,d),Math.max(a,b),Math.max(c,d)]; };
-  P.steps=[]; P.load=async()=>{ const t0=performance.now(); while(P.Q.length){ const t=performance.now(); P.run(P.Q.shift()); P.steps.push(Math.round(performance.now()-t)); await brk(); } P.ready=true; scene.updateMatrixWorld();
+  P.steps=[]; P.load=async()=>{ await LOAD('park'); const t0=performance.now(); while(P.Q.length){ const t=performance.now(); P.run(P.Q.shift()); P.steps.push(Math.round(performance.now()-t)); await brk(); } P.ready=true; scene.updateMatrixWorld();
     for(const f of [()=>ROOMS.reset(),()=>CLIP.run(),()=>PERFX.chunk(),()=>CULL.scan()])try{ f(); }catch(e){ console.warn('PARK',e); } P.ms=Math.round(performance.now()-t0); };
   P.show=on=>{ P.in=on; G.visible=on&&LVL==='up'; if(P.stand)P.stand.visible=!on; if(MODS.landHoles)MODS.landHoles(on); if(window.WEEDS&&WEEDS.lawnDrop)WEEDS.lawnDrop(P.rect()); for(const f of P.onShow)try{ f(on); }catch(e){ console.warn('PARK',e); } };
   const go=async(on,jump)=>{ busy=true; const el=document.getElementById('subfade'), tr=el.style.transition; el.style.transition=jump?'none':'opacity .3s steps(4)'; el.textContent=on?'ENTERING CENTRAL PARK':'LEAVING CENTRAL PARK'; el.style.pointerEvents='auto'; el.style.opacity='1';

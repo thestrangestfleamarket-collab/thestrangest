@@ -1,3 +1,4 @@
+// THE PAWNS: the baked characters (data/pawns.json) given arms, cloth colours and animation.
 { const PW=PAWNS, geomOf=M=>SKIN.geom(M), rigOf=R=>SKIN.rig(R);
   const R0=PW.hero_m.rig, CLD=PW.hero_m.clips, CLIPS=SKIN.clips(CLD,R0.names,false);
   const HOLD=QS.get('pawnclip'), WALKC=QS.get('pawnwalk')||'UAL_Walk_Loop', IDLEC=QS.get('pawnidle')||'UAL_Idle_Loop', WALK=1.6, RUNU=5.5, STILLC=new Set(['UAL_Idle_Loop','idle_a','idle_b','sit_floor_idle_a']);
@@ -5,7 +6,7 @@
   const UNIFORM={};
   const dressed=(g,t)=>{ if(!t)return g; const c=g.attributes.color.array; for(let i=0;i<c.length;i+=3){ const l=(c[i]*.3+c[i+1]*.59+c[i+2]*.11)/255; for(let j=0;j<3;j++)c[i+j]=Math.min(255,c[i+j]*.4+t[j]*255*.6*(.3+.7*l)); } return g; };
   const hs=(i,j)=>{ const v=Math.sin(i*12.9898+j*78.233)*43758.5453; return v-Math.floor(v); };
-  const recloth=(g,seed)=>{ const c=g.attributes.color.array, R=g.attributes.reg.array, sum={}, col=new THREE.Color(), hsl={};
+  const recloth=(g,seed)=>{ '@later'; const c=g.attributes.color.array, R=g.attributes.reg.array, sum={}, col=new THREE.Color(), hsl={};
     for(let i=0;i<R.length;i++){ const r=R[i], S=sum[r]||(sum[r]=[0,0,0,0]); S[0]+=c[i*3]; S[1]+=c[i*3+1]; S[2]+=c[i*3+2]; S[3]++; }
     const skin=r=>{ const S=sum[r], R_=S[0]/S[3]/255, G_=S[1]/S[3]/255, B_=S[2]/S[3]/255; return R_>.42&&R_>G_&&G_>B_&&R_-B_>.12&&G_/R_>.55&&G_/R_<.92; };
     const turn={}; for(const r in sum)turn[r]=skin(+r)?null:[hs(seed,+r),.75+hs(seed,+r+9)*.5];
@@ -31,7 +32,7 @@
   const armsOf=(D,kind,rig,stone)=>{ const R=D.rig, M=D.mesh, ibm=F32(BY(R,'ibm')), rest=i=>new THREE.Matrix4().fromArray(ibm,i*16).invert(), {p:P,j:J,w:W,c:C,r:RG}=SKIN.dec(M), n=P.length/3;
     const dom=i=>{ let m=0; for(let k=1;k<4;k++)if(W[i*4+k]>W[i*4+m])m=k; return J[i*4+m]; }, SP=R.names.indexOf('DEF_spine'), HL=[R.names.indexOf('DEF_hand_L'),R.names.indexOf('DEF_hand_R')];
     const rad=stone?[.15,.14]:ARMR[kind.split('_')[0]]||[.085,.075], bony=kind.startsWith('skeleton'), G={p:[],c:[],r:[],j:[],w:[],i:[]}, sides=[];
-    HL.forEach((hb,si)=>{ const sg=si?-1:1, H0=rest(hb); let wx=0,wy=0,wz=0,wn=0,hc=[0,0,0],hr=0, tc=[0,0,0],tn=0,tr=0,tx=0,ty=1.78;
+    HL.forEach((hb,si)=>{ const sg=si?-1:1, H0=rest(hb); let wx=0, wy=0, wz=0, wn=0, hc=[0,0,0], hr=0, tc=[0,0,0], tn=0, tr=0, tx=0;
       for(let i=0;i<n;i++){ const x=P[i*3],y=P[i*3+1],z=P[i*3+2], d=dom(i);
         if(d===hb&&Math.abs(x)<.9){ wx+=x; wy+=y; wz+=z; wn++; for(let k=0;k<3;k++)hc[k]+=C[i*3+k]; hr=RG[i]; }
         if(d===SP&&x*sg>0&&y>1.6&&y<1.92){ tx=Math.max(tx,x*sg); }}
@@ -54,9 +55,9 @@
     return {G,sides,SP}; };
   const armM=(B,out)=>{ out.identity(); for(let x=B;x&&x.isBone;x=x.parent){ x.updateMatrix(); out.premultiply(x.matrix); } return out; };
   const AS=new THREE.Vector3(), AW=new THREE.Vector3(), AE=new THREE.Vector3(), AD=new THREE.Vector3(), AP=new THREE.Vector3(), AX=new THREE.Vector3(), AZ=new THREE.Vector3(), SPM=new THREE.Matrix4(), HM=new THREE.Matrix4(), RTI=new THREE.Matrix4(), ONE=new THREE.Vector3();
-  const armSet=(bone,from,to,k)=>{ AD.subVectors(to,from); const len=AD.length()||1e-6; AD.divideScalar(len); AZ.copy(AP).addScaledVector(AD,-AP.dot(AD)); if(AZ.lengthSq()<1e-8)AZ.set(0,0,1); AZ.normalize(); AX.crossVectors(AD,AZ);
+  const armSet=(bone,from,to,k)=>{ '@later'; AD.subVectors(to,from); const len=AD.length()||1e-6; AD.divideScalar(len); AZ.copy(AP).addScaledVector(AD,-AP.dot(AD)); if(AZ.lengthSq()<1e-8)AZ.set(0,0,1); AZ.normalize(); AX.crossVectors(AD,AZ);
     ARMM.makeBasis(AX,AD,AZ).setPosition(from); ARMM.scale(ONE.set(1,k,1)); ARMI.multiplyMatrices(RTI,ARMM).decompose(bone.position,bone.quaternion,bone.scale); };
-  const armsSolve=(A,bones)=>{ const root=bones[0]; root.updateMatrix(); RTI.copy(root.matrix).invert(); armM(bones[A.SP],SPM);
+  const armsSolve=(A,bones)=>{ '@later'; const root=bones[0]; root.updateMatrix(); RTI.copy(root.matrix).invert(); armM(bones[A.SP],SPM);
     for(const s of A.sides){ AS.copy(s.Sl).applyMatrix4(SPM); AW.copy(s.Wl).applyMatrix4(armM(bones[s.hb],HM)); const d=AS.distanceTo(AW), L=s.L, k=Math.max(1,d/(2*L));
       AP.set(s.sg*.35,-.45,-1).transformDirection(SPM);
       if(d>=2*L*.999)AE.lerpVectors(AS,AW,.5); else{ AD.subVectors(AW,AS).divideScalar(d); const a=d/2, h=Math.sqrt(Math.max(0,L*L-a*a)); AZ.copy(AP).addScaledVector(AD,-AP.dot(AD)).normalize(); AE.copy(AS).addScaledVector(AD,a).addScaledVector(AZ,h); }
@@ -68,7 +69,7 @@
   const MK=([key,kind,copy],i,X={})=>{ const D=PW[kind], rig=rigOf(D.rig), AR=armsOf(D,kind,rig,!!copy), mixer=new THREE.AnimationMixer(rig.bones[0]), A={}, act=n=>A[n]||(A[n]=mixer.clipAction(CLIPS[n])); let cur=null;
     const N=makeNPC(null,{key,name:key.toUpperCase().replace('_',' '),names:D.mesh.parts,lv:'up',group:'bodega',geo:X.cloth!=null?recloth(withArms(geomOf(D.mesh),AR),X.cloth):copy?golem(withArms(geomOf(D.mesh),AR),copy*7+i):dressed(withArms(geomOf(D.mesh),AR),UNIFORM[key]),skin:rig,tall:D.tall,rank:D.mesh.parts.map(()=>0),metres:1.35,x:BOD.XS(66+(i%12)*4.4+(copy?1.7*copy:0)),z:BOD.ZS(i%2?BOD.FAR+.8:-73.6),lane:STLANE,free:stfree,roam:true,ground:(x,z)=>MODS.bodega.ground(x,z),radius:.3,speed:.5,stride:0,rock:0,bob:0,...(!copy&&/^(skeleton|ogre)/.test(key)&&QS.get('sheet')!==key&&DUN()||{}),
       brain:HOLD?(dt,you,st)=>{ st.to=null; st.hold=true; }:undefined,...(X.npc||{}),
-      anim:(dt,moving,st,sc)=>{ let want, ts=1;
+      anim:(dt,moving,st,sc)=>{ '@later'; let want, ts=1;
         if(HOLD)want=HOLD; else if(N.sheet)want='UAL_A_TPose'; else{ const run=moving&&st.v>(N.gait?2.4:1.2)*TILE; const fast=moving&&N.gaitU>2.5; want=moving?(run&&!fast?'UAL_Sprint_Loop':N.gait||WALKC):N.dwell||N.idle||IDLEC; if(moving)ts=Math.max(.6,Math.min(1.8,st.v/((run&&!fast?RUNU:N.gaitU||WALK)*sc))); }
         if(want!==cur){ const a=act(want); a.reset().setLoop(THREE.LoopRepeat,Infinity).fadeIn(.2).play(); if(cur)act(cur).fadeOut(.2); cur=want; }
         act(cur).timeScale=N.sheet&&!HOLD?0:ts; mixer.update(dt); armsSolve(AR,rig.bones); }});

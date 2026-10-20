@@ -3,12 +3,7 @@ const APTS={EMPTY:true};
   RZ=APTS.RZ=28, Y=z=>BOD.Y(z+RZ), gbox=(b,k)=>BOD.gbox({...b,z0:b.z0+RZ,z1:b.z1+RZ},k), R0=APTS.R0=BOD.Y(RZ)-BOD.Y(0), {speck,hash}=BOD.g, {MKS,CATALOG,PROPS,STUDIO,LSEED,STORY,sh}=BOD.K, S=STORY, ST=3, AH=ST*S, W=LSEED.walk, T=.1;
   const A=(o=>({x0:50.4+o.x/BLDK,x1:76.4+o.x/BLDK,y0:W-14+o.y/BLDK,y1:W+o.y/BLDK}))(LAY.o('house')), m=(A.x0+A.x1)/2, H={y0:A.y0+5.6,y1:A.y0+8.4}, DW=.78, DH=94;
   APTS.A=A; APTS.H=H; const TEX={}; for(const k in TEXTURES)TEX[k]={w:TEXTURES[k].w,h:TEXTURES[k].h,c:B64(BY(TEXTURES[k],'c'))};
-  const tex=(nm,i,j)=>{ const t=TEX[nm], k=(((j%t.h)+t.h)%t.h)*t.w+(((i%t.w)+t.w)%t.w), c=t.c; return [c[k*3],c[k*3+1],c[k*3+2]]; };
-  const STONE=[176,168,152], brick=(u,z,f,cap,holes)=>{ if(z>=cap-20)return facade(0,1,u,0,z,f,cap);
-    if(z<10)return sh(speck(tex('concrete',Math.floor(u*24),Math.floor(z)),u,z/24,95),f*(z<1?.8:1));
-    const s=z%S; if(z>S-4&&(s<4||s>=S-2)){ const t=sh(STONE,f); return s>=S-2?sh(t,.6):s===3?sh(t,1.12):s===0?sh(t,.8):t; }
-    for(const h of holes){ if(u>h.a0-.14&&u<h.a1+.14){ if(z>=h.z1&&z<h.z1+5)return sh(STONE,f*(z===h.z1+4?1.1:.95)); if(z<h.z0&&z>=h.z0-4)return sh(STONE,f*(z===h.z0-1?1.1:.9)); } }
-    return sh(tex('brick',Math.floor(u*24),Math.floor(z)),f*(.96+.08*hash(Math.floor(u*24/9),Math.floor(z/5),11))); };
+  const STONE=[176,168,152];
   const LS=[150,144,132], GL=[255,214,150], BAR=[30,28,26];
   const glass=(dx,dz,hw,hh,lit,seed)=>{
     const tr=hh*.68, ax=Math.abs(dx); if(ax>hw-1.5||dz<1.5||dz>hh-1.5||ax<1||Math.abs(dz-tr)<1.2||(dz>tr&&Math.abs(ax-hw/2)<.8))return BAR;
@@ -229,7 +224,7 @@ const APTS={EMPTY:true};
   APTS.inside=(x,z)=>{ const a=X(A.x0), b=X(A.x1), c=Z(A.y0), d=Z(A.y1); return x>Math.min(a,b)&&x<Math.max(a,b)&&z>Math.min(c,d)&&z<Math.max(c,d); };
   APTS.lvY=lv=>R0+lv*SY; APTS.lvOf=y=>Math.max(0,Math.min(ST-1,Math.floor((y-R0)/SY+.08)));
   APTS.floor=()=>window.POSOK?APTS.lvOf(py):0;
-  const gnd=(x,z,yy)=>{ if(yy>RFY)return R0+SY*ST; for(const E of ELS){ const s=SE[ELS.indexOf(E)], a=X(U(s)), b=X(U(s+2.5)), c=Z(V(0)), d=Z(V(2.55)); if(x>Math.min(a,b)&&x<Math.max(a,b)&&z>Math.min(c,d)&&z<Math.max(c,d))return Y(E.z)+.02; }
+  const gnd=(x,z,yy)=>{ '@later'; if(yy>RFY)return R0+SY*ST; for(const E of ELS){ const s=SE[ELS.indexOf(E)], a=X(U(s)), b=X(U(s+2.5)), c=Z(V(0)), d=Z(V(2.55)); if(x>Math.min(a,b)&&x<Math.max(a,b)&&z>Math.min(c,d)&&z<Math.max(c,d))return Y(E.z)+.02; }
     const f=Math.max(0,Math.min(ST-1,Math.floor((yy-R0)/SY+.08))); return R0+SY*f+(f===0?Y(1)-Y(0):0); };
   const RS=[[10.4,0,15.6,2.75],[3.8,1.2,6.2,3.6],[.25,5.9,1.35,7],[.25,10.4,1.35,11.5],[24.65,5.9,25.75,7],[24.65,10.4,25.75,11.5]].map(r=>{ const a=[X(U(r[0])),Z(V(r[1])),X(U(r[2])),Z(V(r[3]))]; return [Math.min(a[0],a[2]),Math.min(a[1],a[3]),Math.max(a[0],a[2]),Math.max(a[1],a[3])]; });
   RS.push([X(door.a0),Math.min(Z(A.y1-T),Z(A.y1+T)),X(door.a1),Math.max(Z(A.y1-T),Z(A.y1+T))]);

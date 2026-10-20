@@ -1,3 +1,4 @@
+// THE MAP, BEFORE THE PLACES: lots and layout (LBLD, LAY), the away list (AWAY), the grab() that groups a place's meshes, shared state (SOL, FIX, MODS).
 const CEL=(()=>{ const q=+new URLSearchParams(location.search).get('cel'); let v=null; try{ v=+SAVE.get('bands'); }catch(e){} const n=q||v||4; return Math.max(3,Math.min(5,n|0)); })();
 const HUE=(()=>{ const q=new URLSearchParams(location.search).get('hue'); return (q!=null?+q:1).toFixed(3); })();
 const SMOOTH=false;
@@ -49,7 +50,7 @@ if(LFX.shade){ const FN='#ifdef FLAT_SHADED\n vec3 nq=normalize(cross(dFdx(vView
   THREE.ShaderLib.lambert.fragmentShader=THREE.ShaderLib.lambert.fragmentShader
   .replace('#include <color_fragment>','#include <color_fragment>\n float lfP=0.;\n { vec4 Q0=texelFetch(tENV,ivec2(0,63),0), Q1=texelFetch(tENV,ivec2(1,63),0);\n if(Q0.g>.01||Q1.b>.01){\n'+FN+' float upq=step(.7,(vec4(nq,0.)*viewMatrix).y); vec3 dc=diffuseColor.rgb; float gr=step(dc.r*1.1,dc.g)*step(dc.b*1.05,dc.g);\n if(Q0.g>.01&&upq>0.){ float w=Q0.g; diffuseColor.rgb*=1.-w*(.34-.22*gr); lfP=w*step(.79,lfn(vWP.xz*.55+3.)*.7+lfn(vWP.xz*1.9+11.)*.3)*(1.-gr)*step(vWP.y,.4); diffuseColor.rgb*=1.-.6*lfP; }\n if(Q1.b>.01&&upq>0.){ float c=step(1.-Q1.b*1.15,lfn(vWP.xz*.8+9.)*.6+lfn(vWP.xz*3.1+5.)*.4); diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.9,.92,.96),c); lfP*=1.-c; } } }')
   .replace('#include <opaque_fragment>',' if(lfP>0.){ vec3 sk=texelFetch(tENV,ivec2(2,63),0).rgb; outgoingLight=mix(outgoingLight,sk*.46+.015,lfP*.8); }\n#include <opaque_fragment>'); }
-const NEONS=[], SHL=[], cutWalls=[], lamps=[], shopGroups=[]; let night=1, nightTo=1; const C1=new THREE.Color(), C2=new THREE.Color(); function applyTime(){}
+const NEONS=[], SHL=[], cutWalls=[], lamps=[], shopGroups=[]; let night=1, nightTo=1; const C2=new THREE.Color(); function applyTime(){}
 const ZU=1/(PPU*Math.cos(Math.PI/6)), TILE=33.9/PPU, QS=new URLSearchParams(location.search), LAMPI=8, LAMPD=1.6;
 const SEEN=(o,show)=>{ if(!SEEN.L){ SEEN.L=1; scene.traverse(c=>{ if(c.isLight&&c.shadow)c.shadow.camera.layers.enable(3); }); }
   if(o.userData.seen===show)return; o.userData.seen=show; o.traverse(c=>{ if(c.isMesh||c.isLine||c.isPoints){ if(show)c.layers.enable(0); else c.layers.disable(0); c.layers.enable(3); } }); };
@@ -60,7 +61,7 @@ const FREE=QS.get('free')!=='0';
 const SOL={up:[],down:[]}, FIX={up:[],down:[]}, CLIPX=[];
 let solids=SOL.up, fixed=FIX.up, BOUND, groundY, LVL='up', BOD, BODB, METRO;
 const STORE={rooms:[],places:[],roofs:[]}, BF={list:[]}; window.STORE=STORE;
-const MAPG={}, MODS={}; let MAPBAKE=0; const OVERHEAD=[]; let RPASS=null, FIRE=null;
+const MAPG={}, MODS={};  const OVERHEAD=[]; let RPASS=null, FIRE=null;
 const grab=async(name,fn)=>{ const n0=scene.children.length; await fn(); const g=new THREE.Group(); g.name=name; for(const o of scene.children.slice(n0))g.add(o); scene.add(g); MAPG[name]=g; return g; };
 const LAYOUT0={bodega:{x:36.4},diner:{x:-24.75},ghost:{x:15.85},house:{x:67.56},subway:{x:36.99},apartments:{x:59},park:{e:[-4,0,0,0]},castle:{x:-70,y:25.5+14}};
 const AWAY0=['diner','aquarium','garden','avenue','keep','civic','power'], AWAYLOT=1000;

@@ -1,3 +1,4 @@
+// THE FRAME: the main loop (frame): movement, collision, water, sun shade, lamps, rooms, culling, then the render.
 
 looseDraw();
 let looseAcc=0, J0=null, J0t=0, trip=false; const SUNG={t:0,lit:0,k:0,rc:new THREE.Raycaster(),o:new THREE.Vector3(),hit:[]};

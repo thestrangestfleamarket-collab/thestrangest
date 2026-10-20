@@ -14,11 +14,8 @@ const LAC={tile:[226,224,216],tileL:[240,239,234],tileD:[204,202,194],joint:[182
   pot:[230,208,140],stalk:[196,160,110],bloom:[208,68,54]};
 const lauLit=c=>Object.assign([...c],{e:1});
 const LAUWIN={u0:38,u1:84,z0:30,z1:78};
-function laundryTile(u,z,f){ const c=LAC; if(z<3)return sh(c.skirt,f); const uu=((u%24)+24)%24, zz=(((z-3)%26)+26)%26;
-  if(uu<1||zz<1)return sh(c.joint,f); const b=uu<2.5||zz>=23.5?c.tileL:uu>=22.5||zz<2.5?c.tileD:c.tile, s=hash(Math.floor(u),Math.floor(z),1607);
-  return sh(s<.02?sh(b,.95):b,f); }
 (()=>{ const {FP,rect,fb,worn,metal}=STUDIO.kit, c=LAC, hi={foot:1};
-function washerDryer(x,y,f=[1,0]){ PNAME='stacked washer and dryer'; const r=rect(x,y,f,.8,.75), B=[];
+function washerDryer(x,y,f=[1,0]){ '@later'; PNAME='stacked washer and dryer'; const r=rect(x,y,f,.8,.75), B=[];
   const machine=(z0,h,seed)=>{ const PZ=h-7;
     const front=(s,t,z,len)=>{ if(s==='b')return sh(c.bodyD,.9); if(s!=='f')return z<1.5?sh(c.body,.6):worn(c.body,t,z,seed);
       const a=t*len*FP, W=len*FP, m=Math.hypot(a-W/2,(z-PZ/2)*1.05);
@@ -30,14 +27,14 @@ function washerDryer(x,y,f=[1,0]){ PNAME='stacked washer and dryer'; const r=rec
     B.push(fb(r,.15,.85,.14,.6,z0+2,z0+PZ-1,c.drum,(s,t,z,len)=>{ if(s!=='f')return c.drum; const a=(t-.5)*len*FP, m=Math.hypot(a,(z-(PZ/2-2))*1.05);
       return m<2?c.drumL:m<5?(hash(Math.floor(a),Math.floor(z),seed+1)<.14?c.wash:c.drum):sh(c.drumL,.8); },null,hi)); };
   machine(0,26,1613); machine(26,26,1617); return prop(B); }
-function laundryBasket(x,y,f=[1,0]){ PNAME='laundry basket'; const r=rect(x,y,f,.45,.45), H=22, B=[], w=.11;
+function laundryBasket(x,y,f=[1,0]){ '@later'; PNAME='laundry basket'; const r=rect(x,y,f,.45,.45), H=22, B=[], w=.11;
   const weave=(s,t,z)=>{ if(z<1.5)return sh(c.basketD,.9); if(z>=H-2)return c.basketD; const a=Math.floor(t*11), b=Math.floor(z/2); return (a+b)&1?c.basket:hash(a,b,1619)<.5?c.basketD:sh(c.basket,.92); };
   B.push(fb(r,0,1,0,1,0,2,c.basketD,null,()=>c.basketD));
   for(const [t0,t1,d0,d1] of [[0,w,0,1],[1-w,1,0,1],[w,1-w,0,w],[w,1-w,1-w,1]])B.push(fb(r,t0,t1,d0,d1,2,H,c.basket,weave,()=>c.basketD,hi));
   B.push(fb(r,w,1-w,w,1-w,2,H+3,c.wash,(s,t,z)=>z<H-4?sh(c.wash,.8):c.wash,(t,d,X,Y)=>{ const n=hash(Math.floor(X*48),Math.floor(Y*48),1621); return n<.15?sh(c.wash,.86):n>.9?c.wash:sh(c.wash,.95); },hi));
   return prop(B); }
 function utilitySink(x,y,f=[1,0]){ PNAME='utility sink'; const r=rect(x,y,f,1.1,.6), B=[], Z=24, BZ=10, w=.07;
-  const cab=(s,t,z,len)=>{ const k=worn(c.white,t,z,1623); if(z<3)return sh(c.whiteD,.8); if(s!=='f')return k; const a=t*len*FP, W=len*FP;
+  const cab=(s,t,z,len)=>{ '@later'; const k=worn(c.white,t,z,1623); if(z<3)return sh(c.whiteD,.8); if(s!=='f')return k; const a=t*len*FP, W=len*FP;
     if(z>=Z-1||(z>=Z-8&&z<Z-7)||(Math.abs(a-W/2)<.6&&z<Z-8)||a<1||a>=W-1)return c.whiteD;
     if(z>=Z-5.5&&z<Z-3.5&&Math.abs(a-W/2)<4)return c.pinkD; if(z>=Z-15&&z<Z-12&&(Math.abs(a-W*.42)<1||Math.abs(a-W*.58)<1))return c.pinkD;
     return k; };
@@ -48,25 +45,25 @@ function utilitySink(x,y,f=[1,0]){ PNAME='utility sink'; const r=rect(x,y,f,1.1,
   const T0=Z+BZ; B.push(fb(r,.47,.53,.86,.94,T0,T0+11,c.steel,(s,t,z)=>metal(c.steel,t,z),()=>c.steel,hi),fb(r,.48,.52,.62,.9,T0+9,T0+11,c.steel,null,()=>sh(c.steel,1.05),hi),
     fb(r,.48,.52,.6,.64,T0+6,T0+9,c.steel,null,null,hi),fb(r,.42,.58,.88,.92,T0+11,T0+13,c.steel,null,null,hi));
   return prop(B); }
-function roundMirror(x,y,f=[1,0]){ PNAME='round mirror'; const r=rect(x,y,f,.45,.05), Z=36, H=16;
+function roundMirror(x,y,f=[1,0]){ '@later'; PNAME='round mirror'; const r=rect(x,y,f,.45,.05), Z=36, H=16;
   const face=(s,t,z,len)=>{ const a=(t-.5)*len*FP, m=Math.hypot(a,z-H/2); if(m>7.5)return null; if(s!=='f'||m>6.3)return c.ring; return a+z-H/2<-5?sh(c.body,1.14):hash(Math.floor(a),Math.floor(z),1629)<.04?sh(c.body,1.1):c.body; };
   return prop([fb(r,0,1,0,1,Z,Z+H,c.ring,face,()=>null,hi)],null,{walk:true}); }
-function wallPlanter(x,y,f=[1,0]){ PNAME='wall planter'; const r=rect(x,y,f,.4,.3), Z=40, B=[];
+function wallPlanter(x,y,f=[1,0]){ '@later'; PNAME='wall planter'; const r=rect(x,y,f,.4,.3), Z=40, B=[];
   B.push(fb(r,.1,.9,.3,1,Z,Z+9,c.pot,(s,t,z)=>z>7?sh(c.pot,.85):z<1?sh(c.pot,.8):worn(c.pot,t,z,1631),()=>[70,52,38],hi),fb(r,.4,.6,.85,1,Z-4,Z,c.handle,null,null,hi));
   for(const [t0,t1,d0,d1,z0,h,col] of [[.2,.35,.4,.6,Z+9,10,c.stalk],[.45,.58,.5,.7,Z+9,13,c.stalk],[.62,.8,.45,.65,Z+9,8,c.stalk],[.3,.5,.55,.8,Z+9,6,sh(c.stalk,.85)],
     [.18,.36,.4,.6,Z+19,5,c.bloom],[.44,.6,.5,.7,Z+22,6,c.bloom],[.6,.82,.45,.65,Z+17,5,c.bloom]])B.push(fb(r,t0,t1,d0,d1,z0,z0+h,col,(s,t,z)=>hash(Math.floor(t*10),Math.floor(z),1633)<.25?sh(col,.82):col,null,hi));
   return prop(B,null,{walk:true}); }
-function hangingCabinet(x,y,f=[1,0]){ PNAME='hanging cabinet'; const r=rect(x,y,f,.75,.5), Z=56, H=24;
+function hangingCabinet(x,y,f=[1,0]){ '@later'; PNAME='hanging cabinet'; const r=rect(x,y,f,.75,.5), Z=56, H=24;
   const face=(s,t,z,len)=>{ if(s==='b')return c.cabD; if(s!=='f')return worn(c.cab,t,z,1635); const a=t*len*FP, W=len*FP;
     if(a<1||a>=W-1||z<1||z>=H-1)return c.cabD; return a>=W-4&&a<W-2.5&&z>=H*.4&&z<H*.4+6?c.handle:worn(c.cabL,t,z,1635); };
   return prop([fb(r,0,1,0,1,Z,Z+H,c.cab,face,()=>c.cabD,hi)],null,{high:true,walk:true}); }
-function hangingCabinetWide(x,y,f=[1,0]){ PNAME='hanging cabinet, wide'; const r=rect(x,y,f,1.3,.5), Z=62, H=20, B=[];
+function hangingCabinetWide(x,y,f=[1,0]){ '@later'; PNAME='hanging cabinet, wide'; const r=rect(x,y,f,1.3,.5), Z=62, H=20, B=[];
   const face=(s,t,z,len)=>{ if(s==='b')return c.cabD; if(s!=='f')return worn(c.cab,t,z,1637); const a=t*len*FP, W=len*FP;
     if(a<1||a>=W-1||z<1||z>=H-1||Math.abs(a-W/2)<.6)return c.cabD; return Math.abs(Math.abs(a-W/2)-3)<1&&z>=H*.4&&z<H*.4+6?c.handle:worn(c.cabL,t,z,1637); };
   B.push(fb(r,0,1,0,1,Z,Z+H,c.cab,face,()=>c.cabD,hi));
   B.push(fb(r,0,1,0,1,Z-10,Z-8,c.cab,null,()=>c.cabL,hi),fb(r,0,1,.85,1,Z-8,Z,c.cabD,null,null,hi),fb(r,0,.05,0,1,Z-8,Z,c.cab,null,null,hi),fb(r,.95,1,0,1,Z-8,Z,c.cab,null,null,hi));
   return prop(B,null,{high:true,walk:true}); }
-function supplyCupboard(x,y,f=[1,0]){ PNAME='supply cupboard'; const r=rect(x,y,f,1.1,.5), Z=40, H=30, B=[], side=(s,t,z)=>worn(c.cab,t,z,1639);
+function supplyCupboard(x,y,f=[1,0]){ '@later'; PNAME='supply cupboard'; const r=rect(x,y,f,1.1,.5), Z=40, H=30, B=[], side=(s,t,z)=>worn(c.cab,t,z,1639);
   B.push(fb(r,0,1,.88,1,Z,Z+H,c.cabD,(s,t,z)=>s==='f'?sh(c.cabD,.85):side(s,t,z),()=>c.cabD,hi));
   B.push(fb(r,0,1,0,1,Z,Z+2,c.cab,side,()=>sh(c.cabL,.9),hi),fb(r,0,1,0,1,Z+H-2,Z+H,c.cab,side,()=>c.cabL,hi),fb(r,0,.05,0,1,Z+2,Z+H-2,c.cab,side,null,hi),fb(r,.95,1,0,1,Z+2,Z+H-2,c.cab,side,null,hi));
   B.push(fb(r,.05,.95,.3,.88,Z+15,Z+17,c.cab,side,()=>c.cabL,hi));
@@ -74,7 +71,7 @@ function supplyCupboard(x,y,f=[1,0]){ PNAME='supply cupboard'; const r=rect(x,y,
   B.push(fb(r,.2,.45,.4,.8,Z+2,Z+11,c.wash,(s,t,z)=>z>8?sh(c.wash,.9):c.wash,null,hi));
   B.push(fb(r,.12,.4,.28,.34,Z+6,Z+18,c.wash,(s,t,z)=>hash(Math.floor(t*8),Math.floor(z/2),1643)<.2?sh(c.wash,.85):c.wash,null,hi));
   return prop(B,null,{high:true,walk:true}); }
-function basketShelf(x,y,f=[1,0]){ PNAME='basket shelf'; const r=rect(x,y,f,1.4,.55), B=[], side=(s,t,z)=>worn(c.white,t,z,1645);
+function basketShelf(x,y,f=[1,0]){ '@later'; PNAME='basket shelf'; const r=rect(x,y,f,1.4,.55), B=[], side=(s,t,z)=>worn(c.white,t,z,1645);
   B.push(fb(r,0,1,0,1,0,3,c.whiteD,null,()=>c.whiteD),fb(r,0,1,.9,1,3,26,c.whiteD,(s,t,z)=>s==='f'?sh(c.whiteD,.9):side(s,t,z),()=>c.white,hi),
     fb(r,0,.04,0,.9,3,26,c.white,side,()=>c.white,hi),fb(r,.96,1,0,.9,3,26,c.white,side,()=>c.white,hi),fb(r,.04,.96,0,.9,12,14,c.white,side,()=>c.white,hi),fb(r,.04,.96,0,.9,24,26,c.white,side,()=>c.white,hi));
   const wick=seed=>(s,t,z)=>{ if(z<1||z>=9)return c.wickD; const a=Math.floor(t*14), b=Math.floor(z/2); return (a+b)&1?c.wick:hash(a,b,seed)<.5?c.wickD:c.wickL; };
@@ -82,7 +79,7 @@ function basketShelf(x,y,f=[1,0]){ PNAME='basket shelf'; const r=rect(x,y,f,1.4,
   B.push(fb(r,.1,.5,.2,.8,14,24,c.olive,(s,t,z)=>z>8?sh(c.olive,.85):worn(c.olive,t,z,1651),()=>sh(c.olive,.9),hi),fb(r,.55,.9,.25,.8,14,22,c.brown,(s,t,z)=>worn(c.brown,t,z,1653),()=>sh(c.brown,.9),hi));
   return prop(B); }
 const F3L={T:'111010010010010',U:'101101101101111'};
-function tallShelfUnit(x,y,f=[0,1]){ PNAME='tall shelf unit'; const r=rect(x,y,f,.8,.55), H=72, B=[], side=(s,t,z)=>worn(c.dark,t,z,1655), top=()=>c.darkL;
+function tallShelfUnit(x,y,f=[0,1]){ '@later'; PNAME='tall shelf unit'; const r=rect(x,y,f,.8,.55), H=72, B=[], side=(s,t,z)=>worn(c.dark,t,z,1655), top=()=>c.darkL;
   const rail=(s,t,z,len)=>{ if(s!=='f')return side(s,t,z); const a=Math.floor(t*len*FP)-2, rz=z-1; if(a>=0&&rz>=0&&rz<5){ const g=F3L['TUTU'[Math.floor(a/4)]], k=a%4; if(g&&k<3&&g[(4-Math.floor(rz))*3+k]==='1')return c.darkL; } return side(s,t,z); };
   B.push(fb(r,0,1,.9,1,0,H,c.darkD,(s,t,z)=>s==='f'?sh(c.darkD,.9):side(s,t,z),top),fb(r,0,.06,0,.9,0,H,c.dark,side,top),fb(r,.94,1,0,.9,0,H,c.dark,side,top));
   for(const z of [0,15,29,43,57])B.push(fb(r,.06,.94,0,.9,z,z+2,c.dark,side,top,z?hi:undefined));
@@ -94,12 +91,12 @@ function tallShelfUnit(x,y,f=[0,1]){ PNAME='tall shelf unit'; const r=rect(x,y,f
   for(const [z,col] of [[17,c.yellow],[20,sh(c.yellow,.9)],[23,c.yellow]])B.push(fb(r,.12,.88,.15,.8,z,z+3,col,(s,t,zz)=>zz<1?sh(col,.75):col,()=>col,hi));
   B.push(fb(r,1,1.08,.3,.42,40,52,c.grey,(s,t,z)=>z>9?c.darkL:z<3?sh(c.grey,.8):c.grey,()=>c.grey,hi));
   return prop(B); }
-function darkRug(x,y,f=[0,1]){ PNAME='dark patterned rug'; const r=rect(x,y,f,2.6,3.6), W=2.6*FP, D=3.6*FP;
+function darkRug(x,y,f=[0,1]){ '@later'; PNAME='dark patterned rug'; const r=rect(x,y,f,2.6,3.6), W=2.6*FP, D=3.6*FP;
   return prop([fb(r,0,1,0,1,0,1,c.rug,()=>c.rugD,(t,d,X,Y)=>{ const u=t*W, v=d*D, e=Math.min(u,W-u,v,D-v), n=hash(Math.floor(X*48),Math.floor(Y*48),1661);
     if(e<1.5)return mt('carpet',c.rugM); if(e<3)return mt('carpet',c.rugD);
     const a=((u+v)%52+52)%52, b=((u-v)%52+52)%52; if(a<1.3||b<1.3||Math.abs(u-W/2)<.8)return mt('carpet',c.rugL);
     return mt('carpet',n<.2?c.rugD:n>.94?sh(c.rug,1.1):c.rug); })],null,{walk:true,flat:true}); }
-function ventGrille(x,y,f=[1,0]){ PNAME='vent grille'; const r=rect(x,y,f,.6,.05), Z=52, H=12;
+function ventGrille(x,y,f=[1,0]){ '@later'; PNAME='vent grille'; const r=rect(x,y,f,.6,.05), Z=52, H=12;
   return prop([fb(r,0,1,0,1,Z,Z+H,c.ring,(s,t,z,len)=>{ if(s!=='f')return c.ring; const a=t*len*FP, W=len*FP; if(a<1.5||a>=W-1.5||z<1.5||z>=H-1.5)return c.ring; return Math.floor(z)%3===1?c.panel:sh(c.body,.95); },()=>c.ring,hi)],null,{high:true,walk:true}); }
 const K={'stacked washer and dryer':washerDryer,'laundry basket':laundryBasket,'utility sink':utilitySink,'round mirror':roundMirror,'wall planter':wallPlanter,'hanging cabinet':hangingCabinet,
   'hanging cabinet, wide':hangingCabinetWide,'supply cupboard':supplyCupboard,'basket shelf':basketShelf,'tall shelf unit':tallShelfUnit,'dark patterned rug':darkRug,'vent grille':ventGrille};

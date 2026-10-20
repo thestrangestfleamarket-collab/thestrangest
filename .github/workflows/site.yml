@@ -28,6 +28,8 @@ jobs:
         run: python3 build.py
       - name: Check the site opens (door, then THE MARKET)
         run: node tests/site.cjs
+      - name: Every place's code comes when you go there
+        run: node tests/places.cjs out
       - name: The page's errors, when it did not open
         if: failure()
         run: MIN=0 python3 build.py && node tests/pageerr.cjs dist/market.html

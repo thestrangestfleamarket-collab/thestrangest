@@ -7,29 +7,29 @@
   const CLUB=window.CLUB={B,on:false,drop:null};
   const brick=(u,z)=>{ const row=Math.floor(z/6), i=Math.floor(u*24+(row&1)*5), b=Math.floor(i/10); return {mortar:i%10===9||Math.floor(z)%6===5,b,row}; };
   const TAGC=[[230,60,170],[60,210,240],[240,220,60],[255,255,255],[140,240,90]];
-  const tag=(u,z,seed)=>{ const cell=Math.floor(u/3.2), r=hs(cell,seed,900); if(r>.45)return null; const cu=u-cell*3.2, h0=26+r*60, c=TAGC[Math.floor(r*97)%TAGC.length];
+  const tag=(u,z,seed)=>{ '@later'; const cell=Math.floor(u/3.2), r=hs(cell,seed,900); if(r>.45)return null; const cu=u-cell*3.2, h0=26+r*60, c=TAGC[Math.floor(r*97)%TAGC.length];
     if(cu<.4||cu>2.6||z<h0||z>h0+26)return null; const px=Math.floor(cu*24), py=Math.floor(z-h0), s=hs(cell,seed,901)*6;
     const on=Math.abs(py-13-8*Math.sin(px/5+s)-4*Math.sin(px/2.3+s*2))<2.2||(px%11<2&&Math.abs(py-13)<9); return on?c:null; };
-  const poster=(u,z,seed)=>{ const cell=Math.floor(u/2.1), r=hs(cell,seed,905); if(r<.7||z<70||z>130)return null; const cu=u-cell*2.1; if(cu<.4||cu>1.6)return null;
+  const poster=(u,z,seed)=>{ '@later'; const cell=Math.floor(u/2.1), r=hs(cell,seed,905); if(r<.7||z<70||z>130)return null; const cu=u-cell*2.1; if(cu<.4||cu>1.6)return null;
     const P=[[200,40,60],[30,30,40],[240,200,60],[40,90,200]][Math.floor(r*40)%4], py=z-70, px=Math.floor((cu-.4)*24);
     if(py>46)return [236,230,214]; if(py>40&&px%4<3)return [20,20,24]; if(Math.hypot(px-14,py-22)<9)return [236,230,214]; return hs(px,Math.floor(py),906)<.08?[150,140,130]:P; };
-  const inner=(B_,nx,ny,Xw,Yw,z,f)=>{ const u=nx?Yw:Xw; let c;
+  const inner=(B_,nx,ny,Xw,Yw,z,f)=>{ '@later'; const u=nx?Yw:Xw; let c;
     if(at(BTH,Xw,Yw,.3)){ const tx=Math.floor(u*24/6), tz=Math.floor(z/6); c=(Math.floor(u*24)%6===0||Math.floor(z)%6===0)?[110,108,100]:sh([196,194,186],.85+.12*hs(tx,tz,910)); if(z<14)c=sh(c,.75); const t=tag(u,z,7); if(t)c=t; return sh(c,f); }
     if(at(LOB,Xw,Yw,.3)){ c=z<10?[40,20,20]:sh([96,24,30],.9+.1*grain(u*2,z/30,911,1)); if(z>150&&z<154)c=[160,130,60]; return sh(c,f); }
     const k=brick(u,z); c=k.mortar?[26,26,32]:sh([52,50,60],.86+.2*hs(k.b,k.row,912)); if(hs(Math.floor(u*24),Math.floor(z),913)<.02)c=[120,48,40];
     const p=poster(u,z,nx?3:ny>0?4:5); if(p)return sh(p,f); const t=tag(u,z,nx?11:ny); if(t)return sh(t,f*.9);
     if(z<8)c=[18,18,20]; return sh(c,f); };
-  const outer=(nx,ny,Xw,Yw,z,f)=>{ const u=nx?Yw:Xw, k=brick(u,z); let c=k.mortar?[22,22,26]:sh([38,38,44],.85+.22*hs(k.b,k.row,920));
+  const outer=(nx,ny,Xw,Yw,z,f)=>{ '@later'; const u=nx?Yw:Xw, k=brick(u,z); let c=k.mortar?[22,22,26]:sh([38,38,44],.85+.22*hs(k.b,k.row,920));
     if(grain(u*1.4,z/26,921,1)>.72&&!k.mortar)c=sh([128,58,46],.8+.2*hs(k.b,k.row,922));
     if(z<20)c=sh(c,.7+z*.015); const t=z<110?tag(u,z,nx?21:ny>0?22:23):null; if(t)c=t; if(ny>0){ const p=poster(u-1.3,z,24); if(p&&Math.abs(Xw-(B.x0+20))>1.6)c=p; }
     if(z>B.h-8)c=[60,58,62]; return sh(c,f); };
-  const floor=(x,y)=>{ const px=Math.floor(x*24), py=Math.floor(y*24);
+  const floor=(x,y)=>{ '@later'; const px=Math.floor(x*24), py=Math.floor(y*24);
     if(at(BTH,x,y)){ const t=(px%5===0||py%5===0); return t?[80,80,78]:sh([150,152,150],.8+.15*hs(px>>2,py>>2,930)); }
     if(at(LOB,x,y)&&Math.abs(x-(B.x0+20))<1.2)return sh([110,24,32],.9+.1*hs(px>>1,py>>1,931));
     let c=sh([84,82,90],.9+.14*grain(x*1.5,y*1.5,932,.8)); if(grain(x*2.5,y*2.5,933,.6)>.7)c=sh(c,.72); if(hs(px,py,934)<.004)c=[190,170,90]; if(hs(px>>1,py>>1,935)<.003)c=[120,40,40]; return c; };
   const GL={S:'01111100001000001110000010000111110',T:'11111001000010000100001000010000100',A:'01110100011000111111100011000110001',I:'01110001000010000100001000010001110',C:'01111100001000010000100001000001111',L:'10000100001000010000100001000011111',U:'10001100011000110001100011000101110',B:'11110100011000111110100011000111110'};
   const neonW=(word,cell,atf,zc,col)=>{ const bs=[], c=Object.assign(col.slice(),{e:1}); [...word].forEach((ch,i)=>{ const g=GL[ch]; for(let r=0;r<7;r++)for(let q=0;q<5;q++)if(g[r*5+q]==='1')bs.push(atf(i*6+q,cell,zc-(r+1)*cell.z,c)); }); return bs; };
-  K.offmap('CLUB STATIC',[426,-104,462,-74],()=>{ const T=.1;
+  K.offmap('CLUB STATIC',[426,-104,462,-74],()=>{ '@club'; const T=.1;
     const xw=[['lobw','y',B.x0+LOB.x0,B.y0+LOB.y0,B.y1-T,1,[],true],['lobs','x',B.y0+LOB.y0,B.x0+LOB.x0,B.x1-T,1,[{a0:B.x0+18.6,a1:B.x0+20.2,z0:0,z1:94}],true],
       ['bthw','y',B.x0+BTH.x0,B.y0+T,B.y0+BTH.y1,1,[{a0:B.y0+4.3,a1:B.y0+5.7,z0:0,z1:94}],true],['bthn','x',B.y0+BTH.y1,B.x0+BTH.x0,B.x1-T,1,[],true]];
     room('club','CLUB STATIC',B,{floor,in:inner,out:outer,cope:[60,58,62],roof:(x,y)=>sh([52,52,56],.9+.1*hs(Math.floor(x*2),Math.floor(y*2),940))},{w:'f',a:B.x0+20,wd:1.56,h:96},(B_,l0)=>{
@@ -82,7 +82,7 @@
       thing('wall light',[bx(B.x0-.3,y0+8.8,B.x0,y0+9.2,120,126,[50,50,54]),bx(B.x0-.26,y0+8.84,B.x0-.02,y0+9.16,116,120,[255,190,110],{em:1})],{high:1});
       CLUB.spots={x0,y0,dX,fy,cX,stools:stools.map(s=>({x:(s.x0+s.x1)/2,y:(s.y0+s.y1)/2}))}; },{xw}); const hook=()=>{ try{ CLOCK.tick; }catch(e){ setTimeout(hook,400); return; } CLUB.hook(); }; hook(); });
   const BPM=124, BEAT=60/BPM, PAL=[[255,40,180],[40,210,255],[150,60,255],[255,170,40]];
-  const init=()=>{ if(CLUB.ready||!CLUB.spots)return; CLUB.ready=true; const S=CLUB.spots, x0=S.x0, y0=S.y0;
+  const init=()=>{ '@club'; if(CLUB.ready||!CLUB.spots)return; CLUB.ready=true; const S=CLUB.spots, x0=S.x0, y0=S.y0;
     const TL=new THREE.InstancedMesh(new THREE.PlaneGeometry(TILE*.92,TILE*.92).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({color:0xffffff}),70), m4=new THREE.Matrix4(), col=new THREE.Color();
     for(let j=0;j<7;j++)for(let i=0;i<10;i++){ m4.makeTranslation(X(x0+FLR.x0+i+.5),Y(.6),Z(y0+FLR.y0+j+.5)); TL.setMatrixAt(j*10+i,m4); TL.setColorAt(j*10+i,col.setRGB(.1,.05,.12)); }
     TL.instanceMatrix.needsUpdate=true; scene.add(TL); CLUB.tiles=TL;
@@ -112,7 +112,7 @@
       ks.push([4*b+.25,{root:[0,18,0],bend:0,nod:0,side:0,cyaw:0,L:{ua:[9,8],fa:[19,8],fist:0},R:{ua:[9,8],fa:[19,8],fist:0}}]);
       RIG.MOVES.dance=RIG.mkMove({keys:ks.sort((p,q)=>p[0]-q[0]).filter((k,i,a)=>!i||k[0]>a[i-1][0]+.01)}); RIG.KEYMOVE.U='dance'; MOVEK.u='U'; }
     CLUB.sound(); };
-  CLUB.sound=()=>{ const A={}; CLUB.A=A; let next=0, n=0;
+  CLUB.sound=()=>{ '@club'; const A={}; CLUB.A=A; let next=0, n=0;
     const mk=c=>{ if(A.c===c)return true; A.c=c; A.lp=c.createBiquadFilter(); A.lp.type='lowpass'; A.lp.frequency.value=300; A.g=c.createGain(); A.g.gain.value=0; A.rg=c.createGain(); A.rg.gain.value=0;
       A.out=c.createGain(); A.lp.connect(A.g); A.g.connect(A.out); A.rg.connect(A.out); A.out.connect(c.destination);
       const nb=c.createBuffer(1,c.sampleRate,c.sampleRate), dd=nb.getChannelData(0); for(let i=0;i<dd.length;i++)dd[i]=Math.random()*2-1; A.noise=nb; next=c.currentTime+.1; A.t0=next; return true; };
@@ -137,7 +137,7 @@
     CLUB.beatNow=()=>{ const c=A.c; if(c&&c.state==='running'&&CLUB.tn)return n-(CLUB.tn-c.currentTime)/BEAT; return performance.now()/1000/BEAT; }; };
   CLUB.dropIt=()=>{ const b=Math.ceil(CLUB.n||CLUB.beatNow()), r0=Math.ceil(b/4)*4; CLUB.drop={r0,n0:r0+8,n1:r0+8+16}; };
   const FOGC=new THREE.Fog(0x161020,2,200), FV=new THREE.Vector3();
-  CLUB.hook=()=>{ let recs=null, nRec=-1; const tick0=CLOCK.tick; CLOCK.tick=dt=>{ tick0(dt); if(!CLUB.spots)return; if(!CLUB.ready)init();
+  CLUB.hook=()=>{ '@later'; let recs=null, nRec=-1; const tick0=CLOCK.tick; CLOCK.tick=dt=>{ tick0(dt); if(!CLUB.spots)return; if(!CLUB.ready)init();
       const x=pos.x, z=pos.z, cx=X(B.x0+W/2), cz=Z(B.y0+D/2), d=Math.hypot(x-cx,z-cz), here=LVL==='up'&&d<60*TILE;
       const inC=x>X(B.x0)&&x<X(B.x1)&&Math.min(Z(B.y0),Z(B.y1))<z&&z<Math.max(Z(B.y0),Z(B.y1)), gx=x/TILE, at2=r=>{ const p=[[X(B.x0+r.x0),X(B.x0+r.x1)],[Z(B.y0+r.y0),Z(B.y0+r.y1)]]; return x>Math.min(...p[0])&&x<Math.max(...p[0])&&z>Math.min(...p[1])&&z<Math.max(...p[1]); };
       const hall=inC&&!at2(LOB)&&!at2(BTH); CLUB.where={d,inside:inC,hall,lobby:inC&&at2(LOB),bath:inC&&at2(BTH)};

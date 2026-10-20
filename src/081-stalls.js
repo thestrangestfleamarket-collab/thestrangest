@@ -43,19 +43,10 @@ const STALL=(()=>{ const M=TILE/.84, VS=ZU*24/TILE, mv=m=>m*M*VS;
         for(let i=0;i<cnt&&left>0;i++,left--)item(K,X(cx+RR(-.5,.5)*w*k),h+lay*K.s*1.3*K.h*.8,Z(cy+RR(-.5,.5)*d*k),K.s*1.3*RR(.85,1.15),RR(0,6.28)); lay++; } };
     const many=(K,w,d)=>Math.round((K.s<.05?8:4)*(w*d)/(.43*.24));
     const row=(K,a,b,c,d,h,f=1)=>{ const n=Math.max(1,Math.round((b-a)/.42)); for(let k=0;k<n;k++){ const w=(b-a)/n, cx=a+w*(k+.5)+RR(-.05,.05)*w, dd=(d-c)*.88; heap(K,cx,(c+d)/2,h,w*RR(.95,1.15),dd,Math.round(many(K,w,dd)*f*RR(.8,1.25))); } };
-    const basket=(K,cx,cy,h,r,n)=>{ inst('cyl',0xa8844a,X(cx),mv(h+.09),Z(cy),r*M,mv(.18),r*M); inst('cyl',0x7a5a2e,X(cx),mv(h+.185),Z(cy),r*1.03*M,mv(.02),r*1.03*M); heap(K,cx,cy,h+.16,r*2.2/.84,r*2.2/.84,n); };
     const crate=(a,b,c,d,h0,h1,col=0x9a7044)=>{ box(a,b,c,d,h0,h1,col); box(a-.005,b+.005,c-.005,d+.005,(h0+h1)/2-.012,(h0+h1)/2+.012,0x6e4e2c); };
     const sack=(cx,cy,col=0xc8b080)=>{ inst('ball',col,X(cx),mv(.24),Z(cy),.2*M,mv(.24),.17*M); inst('cyl',0x9a8458,X(cx),mv(.5),Z(cy),.07*M,mv(.08),.07*M); };
-    const H=.8, WOOD=0x9e7a4c, LEG=0x6e5434, RISER=0x8a6238, DARK=0x7a5c38, ki={i:0};
+    const H=.8, WOOD=0x9e7a4c, LEG=0x6e5434, DARK=0x7a5c38, ki={i:0};
     const legs=(a,b,c,d,h)=>{ const L=.1; for(const [u,v] of [[a+.05,c+.05],[b-.05-L,c+.05],[a+.05,d-.05-L],[b-.05-L,d-.05-L]])box(u,u+L,v,v+L,0,h,LEG); };
-    const table=(a,b,c,d,rise,ks)=>{ box(a,b,c,d,H-.05,H,WOOD); legs(a,b,c,d,H-.05); box(a+.1,b-.1,(c+d)/2-.03,(c+d)/2+.03,.25,.3,LEG); solid(a,b,c,d,H+.4);
-      const along=rise==='y'?'x':'y', len=along==='x'?b-a:d-c, cols=Math.max(1,Math.round(len/.5));
-      for(let st=0;st<3;st++){ const sh=H+st*.12;
-        let sa=a,sb=b,sc=c,sd=d; if(rise==='y'){ sc=c+(d-c)*st/3; sd=c+(d-c)*(st+1)/3; } else if(rise==='+x'){ sa=a+(b-a)*st/3; sb=a+(b-a)*(st+1)/3; } else { sb=b-(b-a)*st/3; sa=b-(b-a)*(st+1)/3; }
-        if(st)crate(sa+.01,sb-.01,sc+.01,sd-.01,H,sh,RISER);
-        for(let k=0;k<cols;k++){ const K=ks[ki.i++%ks.length]; let pa,pb,pc,pd; if(along==='x'){ pa=a+len*k/cols; pb=a+len*(k+1)/cols; pc=sc; pd=sd; } else { pc=c+len*k/cols; pd=c+len*(k+1)/cols; pa=sa; pb=sb; }
-          const cx=(pa+pb)/2, cy=(pc+pd)/2, w=(pb-pa)*.9, dd=(pd-pc)*.82;
-          if(st===2&&ki.i%4===0)basket(K,cx,cy,sh,.11,6); else heap(K,cx,cy,sh,w,dd,Math.round(many(K,w,dd)*.6)); } } };
     const RW=veg?[KS.potato,KS.cabbage,KS.tomato,KS.eggplant]:[KS.puffball,KS.chanterelle,KS.redcap,KS.moonglow], RH=[.24,H,1.2,1.6];
     const TOP=veg?1.78:2.58; legs(xa,xb,ya,yb,H-.05); box(xa,xb,ya,yb,H-.05,H,WOOD); box(xa+.04,xb-.04,ya+.04,yb-.04,.2,.24,DARK); box(xa,xb,yb-.035,yb,H,TOP,DARK);
     box(xa,xb,yb-.5,yb,1.15,1.2,WOOD); box(xa,xb,yb-.3,yb,1.55,1.6,WOOD);
@@ -97,11 +88,11 @@ const STALL=(()=>{ const M=TILE/.84, VS=ZU*24/TILE, mv=m=>m*M*VS;
       pat:()=>[act('pat',S.face,2.5+Math.random()*2.5)],
       look:()=>[],
       wing:()=>{ const w=pick(S.wing); return [...off(),go(w.p),act('pat',w.f,3.2),go(S.home),...on()]; },
-      sweep:()=>{ const P=Math.random()<.5?S.sweepIn:S.sweepOut, L=[...off(),go(S.broom.p),act('reach',S.broom.f,1.2,{row:1,mid:{broom:1}})], m=Math.floor(P.length/2);
+      sweep:()=>{ '@later'; const P=Math.random()<.5?S.sweepIn:S.sweepOut, L=[...off(),go(S.broom.p),act('reach',S.broom.f,1.2,{row:1,mid:{broom:1}})], m=Math.floor(P.length/2);
         P.forEach((p,i)=>{ L.push(go(p,.5,1)); if(i===m)L.push(act('sweep',S.face,2.5+Math.random()*2)); });
         return [...L,go(S.broom.p),act('reach',S.broom.f,1.2,{row:1,mid:{broom:0}}),go(S.home),...on()]; }};
     const set=s=>{ if(!s)return; Object.assign(J,s); if('broom' in s)S.broomOn(!s.broom); };
-    const next=()=>{ if(cur)set(cur.end); cur=plan.shift()||null; J.t=0; st.to=null; st.v=v0;
+    const next=()=>{ '@later'; if(cur)set(cur.end); cur=plan.shift()||null; J.t=0; st.to=null; st.v=v0;
       if(!cur){ J.k='stand'; st.face=S.face; wait=o.wait?o.wait():9+Math.random()*16; return; }
       if(cur.go){ st.to={x:cur.go.x,z:cur.go.z}; st.v=v0*cur.v; J.k=cur.sw?'sweep':'walk'; } else { st.face=cur.f; J.k=cur.k; J.d=cur.d; J.row=cur.row??1; } };
     const rel=p=>wrap(Math.atan2(p.x-st.x,p.z-st.z)-st.h);

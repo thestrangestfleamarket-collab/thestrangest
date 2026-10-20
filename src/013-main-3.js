@@ -26,7 +26,7 @@
   const wallY=(x,y0,y1,z0,z1,paint)=>quad(V(x,y0,z0+SZ),V(x,y1,z0+SZ),V(x,y1,z1+SZ),V(x,y0,z1+SZ),faceTex((y1-y0)*24,z1-z0,(i,j)=>C(paint(y0+(i+.5)/24,z1-j-.5))),true);
   const wallX=(y,x0,x1,z0,z1,paint)=>quad(V(x0,y,z0+SZ),V(x1,y,z0+SZ),V(x1,y,z1+SZ),V(x0,y,z1+SZ),faceTex((x1-x0)*24,z1-z0,(i,j)=>C(paint(x0+(i+.5)/24,z1-j-.5))),true);
   const solid=(x0,y0,x1,y1,zt)=>{ const a=V(x0,y0,0), b=V(x1,y1,0), q=[Math.min(a[0],b[0]),Math.min(a[2],b[2]),Math.max(a[0],b[0]),Math.max(a[2],b[2])]; solids.push(q); fixed.push([q[0],q[1],0,q[2],q[3],Math.max(.05,zt*ZU)]); };
-  const stile=W.wallPaint('stile'), tubeP=W.wallPaint('tubeP'), conc=(u,z)=>sh(concreteCol(u,z/24),.9), dark=()=>[14,14,16];
+  const stile=W.wallPaint('stile'), tubeP=W.wallPaint('tubeP'), dark=()=>[14,14,16];
   floor(AVE,SY0,PLAT,SY1,0,W.platformCol);
   wallY(PLAT,SY0,SY1,-32,0,(u,z)=>W.platEdge(u,z));
   floor(PLAT,SY0-TE,TW,SY1+TE,-32,W.tracksCol);

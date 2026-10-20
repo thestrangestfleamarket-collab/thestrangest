@@ -3336,3 +3336,18 @@ moves in idl animations."; "skin of player just wearing all black like ninja")
   Checked with the scope analysis: the moved statements make no calls when they run (only functions and values), every name outside these
   files resolves as before, and the kit sees the same outside names (`hash`, `sh`, `sided`, `PNAME`, `prop`, `LAMPS`, `zShift`). 18 KB of source gone.
 - **The same picture** now also steps inside the diner and the bar (`in:diner`, `in:bar`).
+
+## 19 Oct 2026: where the start goes; the ground painted once and kept
+
+- **Measured** (cloud software graphics, two runs, `tests/bodegacost.cjs`, `tests/cpuprof.cjs` on a measuring branch): of about 30 s to start,
+  13-19 s is one stretch with no breaths: the BODEGA's builder runs every place maker from `014` to `052`. Inside it the makers cost almost
+  nothing; the time is the ground (`053-bodbuild.js`, one loop: 13.5 s, 20.6 megapixels painted at 24 a tile, the roads 11.1 of them) and the
+  apartments and pool (`064-map-post.js`, 8.3 s). By function, painting (`faceTex` and the colour functions under it: `hash`, `cvNoise`,
+  `grain`, `sh`, the road's `lane`, `marks`, `bars`, `ROADAT`, `inQ`) is 22 of 37 s; then the Walker's warm-up (5.3 s) and making NPCs (2.2 s).
+- **The ground painted once and kept** (`006a-paintc.js` `PAINTC`, used by `053-bodbuild.js` `flat0`): the first time, the ground is painted as
+  before; once the game runs it is saved, gzipped, in the browser (IndexedDB `market-paint`, keyed by the build stamp). The next start loads it
+  instead of painting. Each saved patch is checked first: 48 of its pixels are painted again and compared, and any patch that differs (the map
+  edited, a painter changed) is painted from scratch. `?paintc=0` turns it off; `PAINTC.P` counts hits, misses, rejects and the load time.
+- **The road's index keyed by numbers** (`050-main-8.js` `at2`): no string made for each of the road's 11 million pixels.
+- **The same pixels** (`tests/texhash.cjs`, in the CI budget job): every texture in the scene hashed on the base and the pull request (seeded
+  randomness), and the pull request opened twice in one profile so the second start comes from the cache; all three must match exactly.

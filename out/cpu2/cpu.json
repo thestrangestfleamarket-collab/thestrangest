@@ -1,0 +1,367 @@
+{
+ "totalMs": 26117,
+ "self": [
+  [
+   3442,
+   "(program) @:0:0"
+  ],
+  [
+   2472,
+   "A @three.module.min.js:6:341951"
+  ],
+  [
+   1633,
+   "makeNPC @market.html?fresh=1&hour=13&wx=CLEAR:10246:17"
+  ],
+  [
+   1572,
+   "hash @market.html?fresh=1&hour=13&wx=CLEAR:1669:12"
+  ],
+  [
+   1087,
+   "Jl.setSize @three.module.min.js:6:434077"
+  ],
+  [
+   809,
+   "meshOf0 @market.html?fresh=1&hour=13&wx=CLEAR:9774:19"
+  ],
+  [
+   803,
+   "(anon) @market.html?fresh=1&hour=13&wx=CLEAR:957:23"
+  ],
+  [
+   803,
+   "faceTex @market.html?fresh=1&hour=13&wx=CLEAR:5962:17"
+  ],
+  [
+   679,
+   "(garbage collector) @:0:0"
+  ],
+  [
+   444,
+   "texSubImage2D @three.module.min.js:6:377917"
+  ],
+  [
+   443,
+   "(anon) @market.html?fresh=1&hour=13&wx=CLEAR:8310:28"
+  ],
+  [
+   426,
+   "cvNoise @market.html?fresh=1&hour=13&wx=CLEAR:1671:17"
+  ],
+  [
+   371,
+   "BATCH.build @market.html?fresh=1&hour=13&wx=CLEAR:1264:13"
+  ],
+  [
+   324,
+   "museumWall @market.html?fresh=1&hour=13&wx=CLEAR:5570:20"
+  ],
+  [
+   305,
+   "k @market.html?fresh=1&hour=13&wx=CLEAR:278:13"
+  ],
+  [
+   298,
+   "box @market.html?fresh=1&hour=13&wx=CLEAR:231:13"
+  ],
+  [
+   294,
+   "emit @market.html?fresh=1&hour=13&wx=CLEAR:9784:43"
+  ],
+  [
+   283,
+   "sh @market.html?fresh=1&hour=13&wx=CLEAR:1670:10"
+  ],
+  [
+   280,
+   "V @market.html?fresh=1&hour=13&wx=CLEAR:41:9"
+  ],
+  [
+   255,
+   "(anon) @market.html?fresh=1&hour=13&wx=CLEAR:9785:112"
+  ],
+  [
+   239,
+   "E @market.html?fresh=1&hour=13&wx=CLEAR:9788:17"
+  ],
+  [
+   236,
+   "rcone @market.html?fresh=1&hour=13&wx=CLEAR:227:15"
+  ],
+  [
+   217,
+   "grain @market.html?fresh=1&hour=13&wx=CLEAR:1693:15"
+  ],
+  [
+   214,
+   "simplify @market.html?fresh=1&hour=13&wx=CLEAR:9796:20"
+  ],
+  [
+   205,
+   "stone0 @market.html?fresh=1&hour=13&wx=CLEAR:6543:16"
+  ],
+  [
+   163,
+   "(anon) @market.html?fresh=1&hour=13&wx=CLEAR:9449:14"
+  ],
+  [
+   152,
+   "Jl.readRenderTargetPixels @three.module.min.js:6:451895"
+  ],
+  [
+   147,
+   "(anon) @market.html?fresh=1&hour=13&wx=CLEAR:6064:52"
+  ],
+  [
+   141,
+   "face @market.html?fresh=1&hour=13&wx=CLEAR:9277:16"
+  ],
+  [
+   139,
+   "face @market.html?fresh=1&hour=13&wx=CLEAR:5910:14"
+  ],
+  [
+   132,
+   "put @market.html?fresh=1&hour=13&wx=CLEAR:1275:13"
+  ],
+  [
+   128,
+   "d @market.html?fresh=1&hour=13&wx=CLEAR:9829:11"
+  ],
+  [
+   114,
+   "(idle) @:0:0"
+  ],
+  [
+   113,
+   "ell @market.html?fresh=1&hour=13&wx=CLEAR:230:13"
+  ],
+  [
+   105,
+   "slabCol @market.html?fresh=1&hour=13&wx=CLEAR:1698:17"
+  ],
+  [
+   105,
+   "len @market.html?fresh=1&hour=13&wx=CLEAR:42:42"
+  ],
+  [
+   104,
+   "nb.fs @market.html?fresh=1&hour=13&wx=CLEAR:5984:23"
+  ],
+  [
+   101,
+   "vert @market.html?fresh=1&hour=13&wx=CLEAR:9782:16"
+  ],
+  [
+   99,
+   "weather @market.html?fresh=1&hour=13&wx=CLEAR:6535:17"
+  ],
+  [
+   98,
+   "rampAt @market.html?fresh=1&hour=13&wx=CLEAR:6080:16"
+  ],
+  [
+   96,
+   "fn @market.html?fresh=1&hour=13&wx=CLEAR:6368:226"
+  ],
+  [
+   94,
+   "N.renorm @market.html?fresh=1&hour=13&wx=CLEAR:10249:12"
+  ],
+  [
+   90,
+   "in @market.html?fresh=1&hour=13&wx=CLEAR:7164:62"
+  ],
+  [
+   86,
+   "W3.warm @market.html?fresh=1&hour=13&wx=CLEAR:9771:77"
+  ],
+  [
+   86,
+   "side @market.html?fresh=1&hour=13&wx=CLEAR:5969:16"
+  ]
+ ],
+ "total": [
+  [
+   26117,
+   "(root) @:0:0"
+  ],
+  [
+   10615,
+   "(anon) @market.html?fresh=1&hour=13&wx=CLEAR:957:23"
+  ],
+  [
+   7218,
+   "faceTex @market.html?fresh=1&hour=13&wx=CLEAR:5962:17"
+  ],
+  [
+   4341,
+   "W3.warm @market.html?fresh=1&hour=13&wx=CLEAR:9771:77"
+  ],
+  [
+   4252,
+   "meshOf0 @market.html?fresh=1&hour=13&wx=CLEAR:9774:19"
+  ],
+  [
+   3515,
+   "frame @market.html?fresh=1&hour=13&wx=CLEAR:10171:15"
+  ],
+  [
+   3442,
+   "(program) @:0:0"
+  ],
+  [
+   3312,
+   "goPlace @market.html?fresh=1&hour=13&wx=CLEAR:11998:17"
+  ],
+  [
+   3312,
+   "home @market.html?fresh=1&hour=13&wx=CLEAR:14272:14"
+  ],
+  [
+   3312,
+   "finish @market.html?fresh=1&hour=13&wx=CLEAR:7351:18"
+  ],
+  [
+   3220,
+   "Jl.render @three.module.min.js:6:448640"
+  ],
+  [
+   3042,
+   "Jl.renderBufferDirect @three.module.min.js:6:436513"
+  ],
+  [
+   3011,
+   "(anon) @three.module.min.js:6:436601"
+  ],
+  [
+   2946,
+   "step @market.html?fresh=1&hour=13&wx=CLEAR:7350:16"
+  ],
+  [
+   2932,
+   "render @EffectComposer.js:105:8"
+  ],
+  [
+   2913,
+   "render @RenderPass.js:27:8"
+  ],
+  [
+   2913,
+   "RPASS.render @market.html?fresh=1&hour=13&wx=CLEAR:14051:92"
+  ],
+  [
+   2477,
+   "Ml.getUniforms @three.module.min.js:6:343234"
+  ],
+  [
+   2477,
+   "A @three.module.min.js:6:341951"
+  ],
+  [
+   2457,
+   "Yt @three.module.min.js:6:443938"
+  ],
+  [
+   2456,
+   "Jt @three.module.min.js:6:445418"
+  ],
+  [
+   2456,
+   "Zt @three.module.min.js:6:445207"
+  ],
+  [
+   2064,
+   "room @market.html?fresh=1&hour=13&wx=CLEAR:7095:14"
+  ],
+  [
+   1944,
+   "(anon) @market.html?fresh=1&hour=13&wx=CLEAR:1666:21"
+  ],
+  [
+   1861,
+   "makeNPC @market.html?fresh=1&hour=13&wx=CLEAR:10246:17"
+  ],
+  [
+   1771,
+   "(anon) @market.html?fresh=1&hour=13&wx=CLEAR:8222:23"
+  ],
+  [
+   1757,
+   "flat0 @market.html?fresh=1&hour=13&wx=CLEAR:6368:15"
+  ],
+  [
+   1627,
+   "paint @market.html?fresh=1&hour=13&wx=CLEAR:6443:17"
+  ],
+  [
+   1626,
+   "go @market.html?fresh=1&hour=13&wx=CLEAR:6403:95"
+  ],
+  [
+   1619,
+   "BODB.gnear @market.html?fresh=1&hour=13&wx=CLEAR:6446:16"
+  ],
+  [
+   1610,
+   "fn @market.html?fresh=1&hour=13&wx=CLEAR:6368:226"
+  ],
+  [
+   1572,
+   "hash @market.html?fresh=1&hour=13&wx=CLEAR:1669:12"
+  ],
+  [
+   1536,
+   "block @market.html?fresh=1&hour=13&wx=CLEAR:8297:15"
+  ],
+  [
+   1536,
+   "face @market.html?fresh=1&hour=13&wx=CLEAR:8296:14"
+  ],
+  [
+   1431,
+   "wall @market.html?fresh=1&hour=13&wx=CLEAR:8322:14"
+  ],
+  [
+   1388,
+   "(anon) @market.html?fresh=1&hour=13&wx=CLEAR:8296:63"
+  ],
+  [
+   1287,
+   "E @market.html?fresh=1&hour=13&wx=CLEAR:9788:17"
+  ],
+  [
+   1253,
+   "cvNoise @market.html?fresh=1&hour=13&wx=CLEAR:1671:17"
+  ],
+  [
+   1130,
+   "(anon) @market.html?fresh=1&hour=13&wx=CLEAR:8310:28"
+  ],
+  [
+   1091,
+   "(anon) @market.html?fresh=1&hour=13&wx=CLEAR:7121:99"
+  ],
+  [
+   1088,
+   "resize @market.html?fresh=1&hour=13&wx=CLEAR:1005:16"
+  ],
+  [
+   1087,
+   "Jl.setSize @three.module.min.js:6:434077"
+  ],
+  [
+   1045,
+   "gbox @market.html?fresh=1&hour=13&wx=CLEAR:5967:16"
+  ],
+  [
+   1032,
+   "vert @market.html?fresh=1&hour=13&wx=CLEAR:9782:16"
+  ],
+  [
+   1001,
+   "paint @market.html?fresh=1&hour=13&wx=CLEAR:7116:21"
+  ]
+ ]
+}

@@ -3684,3 +3684,9 @@ initial download and load super fast"; then "Go")
 
 - `059d-fireview.js` moves after the bodega builder and is wrapped in `await grab('fire', ...)`: its meshes land in `MAPG.fire`. It was already a
   self-contained block using only page-level names; the scope proof shows every reference resolving as before.
+
+## 20 Oct 2026: the apartments are their own builder (modules)
+
+- **`054-apts.js` is `059a-apts.js`** (before `059a-club`, since your fire escape reads `MODS.apts` when it builds), wrapped in
+  `await grab('apts', ...)`; `APTS` is a page-level const now. Its `osol()` names `SOL.up`/`FIX.up` directly, as the ghost dojo's does.
+  Scope proof: every other reference resolves as before.

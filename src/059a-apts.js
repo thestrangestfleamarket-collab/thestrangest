@@ -1,5 +1,6 @@
+// THE APARTMENTS: the brownstone apartment block on the street, its stoop, elevator and floors (its own builder).
 const APTS={EMPTY:true};
-{ const {X,Z,faceTex,bq,C,facade,FRAME,place}=BOD,
+await grab('apts',async()=>{ const {X,Z,faceTex,bq,C,facade,FRAME,place}=BOD,
   RZ=APTS.RZ=28, Y=z=>BOD.Y(z+RZ), gbox=(b,k)=>BOD.gbox({...b,z0:b.z0+RZ,z1:b.z1+RZ},k), R0=APTS.R0=BOD.Y(RZ)-BOD.Y(0), {speck,hash}=BOD.g, {MKS,CATALOG,PROPS,STUDIO,LSEED,STORY,sh}=BOD.K, S=STORY, ST=3, AH=ST*S, W=LSEED.walk, T=.1;
   const A=(o=>({x0:50.4+o.x/BLDK,x1:76.4+o.x/BLDK,y0:W-14+o.y/BLDK,y1:W+o.y/BLDK}))(LAY.o('house')), m=(A.x0+A.x1)/2, H={y0:A.y0+5.6,y1:A.y0+8.4}, DW=.78, DH=94;
   APTS.A=A; APTS.H=H; const TEX={}; for(const k in TEXTURES)TEX[k]={w:TEXTURES[k].w,h:TEXTURES[k].h,c:B64(BY(TEXTURES[k],'c'))};
@@ -165,7 +166,7 @@ const APTS={EMPTY:true};
     const i=Math.floor((t-ST0.land)/ST0.tr); return BOD.Y((RZ+1)*(ST0.n-i)/(ST0.n+1)); };
   BATCH.build((k,map,emap)=>k==='B'?new THREE.MeshBasicMaterial({map,side:THREE.DoubleSide,alphaTest:.5,clippingPlanes:[HP,LP]}):new THREE.MeshLambertMaterial({map,alphaTest:.5,side:THREE.DoubleSide,clippingPlanes:[HP,LP],...(emap?{emissiveMap:emap,emissive:0xffffff,emissiveIntensity:1.3}:{})}));
   const AM=Object.values(BATCH.meshes); APTS.back=BATCH.all(BATCH.meshes,'E'); BATCH.meshes={}; APTS.meshes=AM.concat(WALLM); for(const me of AM){ me.castShadow=true; me.receiveShadow=true; }
-  const WS=[], osol=(x0,y0,x1,y1,zt,w)=>{ const r=[X(x0),Z(y0),X(x1),Z(y1)]; solids.push(r); if(w)WS.push(r); fixed.push([X(x0),Z(y0),0,X(x1),Z(y1),Math.max(.05,Y(zt))]); };
+  const WS=[], osol=(x0,y0,x1,y1,zt,w)=>{ const r=[X(x0),Z(y0),X(x1),Z(y1)]; SOL.up.push(r); if(w)WS.push(r); FIX.up.push([X(x0),Z(y0),0,X(x1),Z(y1),Math.max(.05,Y(zt))]); };
   osol(A.x0-T,A.y1-T,door.a0,A.y1+T,AH,1); osol(door.a1,A.y1-T,A.x1+T,A.y1+T,AH,1); osol(A.x0-T,A.y0-T,A.x1+T,A.y0+T,AH,1); osol(A.x0-T,A.y0,A.x0+T,A.y1,AH); osol(A.x1-T,A.y0,A.x1+T,A.y1,AH);
   for(const [c0,c1] of [[ST0.x0-.22,ST0.x0],[ST0.x1,ST0.x1+.22]])osol(c0,ST0.y0,c1,ST0.y1,0);
   const EB=ESC.map(F=>{ const a=Z(F.yf), b=Z(F.yf+F.o*(DO+.05)); return [X(U(F.ua-.05)),Math.min(a,b),X(U(F.ub+.05)),Math.max(a,b)]; });
@@ -253,4 +254,4 @@ const APTS={EMPTY:true};
   window.HOUSEAT=(dy=0)=>[BOD.X(m),BOD.Z(A.y1+dy)];
   window.APTSDBG=()=>({in:APTS.in,esc:APTS.esc,floor:APTS.floor(),py,pos:[+pos.x.toFixed(2),+pos.z.toFixed(2)],door:+X(m).toFixed(1),drop:ESC.map(F=>+F.k.toFixed(2)),lad:LAD.F?+LAD.y.toFixed(1):null});
   APTS.rects=lv=>[[A.x0,A.y0,A.x1,A.y1]];
-  MODS.apts=APTS; }
+  MODS.apts=APTS; });

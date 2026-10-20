@@ -251,6 +251,7 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
   PARK.later(()=>FOUNT.paint({flat,X,Z,Y,hash,grain,speck}));
   PARK.later(()=>{ BATCH.cast=true; BATCH.build(BM); BATCH.cast=false; if(window.WEEDS&&WEEDS.more)WEEDS.more(P.tufts||[]); });
   MODS.park={BOUND:{x0:X(P.x0+.3),x1:X(P.x1-.3),z0:Z(P.y0),z1:Z(P.y1-.3)},inside:()=>false}; });
+PARK.later(()=>GCAVE.build&&GCAVE.build());
 await grab('park',async()=>{});
 { const G=MAPG.park, P=PARK, wait=ms=>new Promise(r=>setTimeout(r,ms)), frames=k=>new Promise(r=>{ const f=()=>--k<=0?r():requestAnimationFrame(f); requestAnimationFrame(f); }), brk=()=>new Promise(r=>{ const c=new MessageChannel(); c.port1.onmessage=()=>r(); c.port2.postMessage(0); });
   G.visible=false; let busy=false, lx=null, lz=null;

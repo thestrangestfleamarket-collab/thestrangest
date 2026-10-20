@@ -66,4 +66,4 @@ const GCAVE={ready:false}; window.GCAVE=GCAVE;
     GCAVE.regrow(); setInterval(GCAVE.regrow,5000);
     GCAVE.tris=dg.attributes.position.count/3; GCAVE.ready=true;
     for(const N of (window.PAWNL||[]))if(/_\d$/.test(N.key)&&!N.sheet){ const p=GCAVE.spot('cave'); if(!p)continue; try{ CITY.stop(N); }catch(e){} N.st.x=p.x; N.st.z=p.z; N.st.to=null; N.g.position.x=p.x; N.g.position.z=p.z; } };
-  PARK.later(()=>{ try{ build(); }catch(e){ console.warn('CAVE: not built',e); } }); }
+  GCAVE.build=()=>{ try{ build(); }catch(e){ console.warn('CAVE: not built',e); } }; }

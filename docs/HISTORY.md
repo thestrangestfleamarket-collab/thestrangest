@@ -3710,3 +3710,17 @@ initial download and load super fast"; then "Go")
   the trousers share the same fur (`furry`: the same push, strand length and density), each in its own colour with felt flecks; the
   head and ears the same, finer. The coat open at the front (tan facing, a button), its fronts and back on springs that swing as he
   walks; ears flick now and then; he tilts his head. `metres` 3.6. Cost: 4,806 triangles (about 1,300 of them fur strands), no lights.
+- **The sun rays off** (owner, 20 Oct 2026, with a picture of the street under the beams: "lets take off sun rays for now from game
+  -queue"): the light beams and their dust (`133a-sunrays.js`, `RAYS`) come out of the game for now. Queued; small enough to go as its
+  own pull request before the next module step (the picture check then no longer needs to hide them).
+- **The park gate and the far forest** (owner, 20 Oct 2026, with a picture through the park gate: "chaneg (A) to (Central Park) mark
+  it arched, small, all metal, the trees towarsd the distance should be much bigger and looks like a deep forest of trees, you should
+  barely be able to see the skyline over it. i dont want the park feeling small."): the gate's "A" medallion becomes CENTRAL PARK,
+  small all-metal lettering arched over the gate; the far trees become a deep forest of much bigger trees that nearly hides the
+  skyline. Cost to state when built (far trees: triangles against the budget; the skyline mostly hidden may let it draw less).
+- **The tomato merchant** (owner, 20 Oct 2026, with a picture: "tomato merchant should be 25% taller, nothing on ground (no loose
+  veggies)"): 25% taller; no loose vegetables on the ground around the stall.
+- **Walking through things** (owner, 20 Oct 2026, with a picture of the Walker overlapping a merchant's tray: "shouldnt be able to walk
+  through objects ( dont just patch this tray look for root cause)"): a bug to take at the root: why a prop can be walked through at all
+  (the solids pass in `052` skips props by name and by box size; stall furniture may be placed after the solids are built), not a box
+  added to that one tray.

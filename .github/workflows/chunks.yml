@@ -22,6 +22,8 @@ jobs:
         run: node tests/chunkmeasure.cjs web out || true
       - name: Build readable and tour
         run: MIN=0 python3 build.py && node tests/chunkmeasure.cjs tour out || true
+      - name: Profile start
+        run: python3 tests/startcost.py && node tests/chunkmeasure.cjs prof out || true
       - name: Publish
         run: |
           git config user.email ci@example.com; git config user.name ci

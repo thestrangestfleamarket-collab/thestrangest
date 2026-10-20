@@ -25,6 +25,12 @@ const stats=pg=>pg.evaluate(()=>new Promise(res=>requestAnimationFrame(()=>reque
       if(!run)await pg.screenshot({path:path.join(OUT,'web-start.png')});
       out.push({...t,reqs,startBytes:reqs.filter(r=>r.phase==='start').reduce((a,r)=>a+r.raw,0),startGzip:reqs.filter(r=>r.phase==='start').reduce((a,r)=>a+r.gzip,0),stats:s,errs:errs.slice(0,20)}); await b.close(); }
     srv.close(); return save('web.json',out); }
+  if(MODE==='prof'){ const off=JSON.parse(fs.readFileSync(path.join(D,'prof-offsets.json'))); const b=await chromium.launch({args:ARGS}); const pg=await b.newPage({viewport:{width:960,height:540}}); pg.setDefaultTimeout(900000);
+    await pg.goto('file://'+D+'/market-prof.html?fresh=1&hour=13&wx=CLEAR',{waitUntil:'commit'}); await pg.waitForFunction(()=>window.__started,null,{polling:100,timeout:900000});
+    const L=await pg.evaluate(()=>window.__YPL), fileOf=p=>{ let f=off[0][1]; for(const [o,n] of off){ if(o<=p)f=n; else break; } return f; }, per={};
+    for(let k=1;k<L.length;k++){ const f=fileOf(L[k-1][0]); per[f]=(per[f]||0)+L[k][1]-L[k-1][1]; }
+    const top=Object.entries(per).sort((a,b)=>b[1]-a[1]).slice(0,40).map(([f,ms])=>[f,Math.round(ms)]);
+    await b.close(); return save('prof.json',{first:Math.round(L[0][1]),last:Math.round(L[L.length-1][1]),n:L.length,top}); }
   if(MODE==='tour'){ const b=await chromium.launch({args:ARGS}); const pg=await b.newPage({viewport:{width:960,height:540}}); pg.setDefaultTimeout(900000); const errs=[], rep={};
     pg.on('pageerror',e=>errs.push(e.message.slice(0,300))); pg.on('console',m=>{ if(m.type()==='error')errs.push(m.text().slice(0,300)); });
     await pg.goto('file://'+D+'/market.html?fresh=1&hour=13&wx=CLEAR',{waitUntil:'commit'});

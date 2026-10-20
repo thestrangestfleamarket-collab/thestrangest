@@ -1,3 +1,4 @@
+// THE PAWNS: the baked characters (data/pawns.json) given arms, cloth colours and animation.
 { const PW=PAWNS, geomOf=M=>SKIN.geom(M), rigOf=R=>SKIN.rig(R);
   const R0=PW.hero_m.rig, CLD=PW.hero_m.clips, CLIPS=SKIN.clips(CLD,R0.names,false);
   const HOLD=QS.get('pawnclip'), WALKC=QS.get('pawnwalk')||'UAL_Walk_Loop', IDLEC=QS.get('pawnidle')||'UAL_Idle_Loop', WALK=1.6, RUNU=5.5, STILLC=new Set(['UAL_Idle_Loop','idle_a','idle_b','sit_floor_idle_a']);

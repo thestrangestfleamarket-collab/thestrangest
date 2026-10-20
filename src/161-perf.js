@@ -1,3 +1,4 @@
+// PERFORMANCE SWITCHES: hiding far rooms, props and water; shadow map size; what runs only when near.
 const PERFX={on:{}, inner:[], gen:0};
 { const q=QS.get('perfx'); for(const k of [1,2,4,5,6,7])PERFX.on[k]=q!=='0'&&!(q||'').split(',').includes('-'+k); if(FREE&&!(q||'').split(',').includes('+1'))PERFX.on[1]=false; }
 { const key=b=>[b.x0,b.z0,b.x1,b.z1,b.y0].map(v=>(+v).toFixed(2)).join();

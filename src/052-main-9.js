@@ -1,3 +1,4 @@
+// THE BODEGA'S SOLIDS: walls and props become collision boxes; BOUND and groundY for the bodega.
 
   BOD.GOOD=GOOD; BOD.GLAY=GLAY; BOD.GC=GC;
   const sol=(x0,y0,x1,y1,zt)=>{ solids.push([X(x0),Z(y0),X(x1),Z(y1)]); fixed.push([X(x0),Z(y0),0,X(x1),Z(y1),Math.max(.05,Y(zt))]); };

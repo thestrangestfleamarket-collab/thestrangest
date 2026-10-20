@@ -118,6 +118,6 @@
       if(RES)for(const r of RES)if(r.on&&!r.dead&&!r.ogre&&inCone(s,r.N.st.x,r.N.st.z,r.N.g.position.y,.25*T))hitRes(r,s.d*m,you); }
     if(slimeTick(dt,you,alive)||S.length)draw(); if(RES)for(const r of RES)if(r.on)resTick(r,dt,you,alive); boltTick(dt); };
   const c0=CLOCK.tick; CLOCK.tick=dt=>{ c0(dt); tick(dt); };
-  window.DUNMOBS={get slimes(){ return slimes; },get res(){ return RES; },hit:(i,d=1)=>hitSlime(slimes[i],d,{x:pos.x,z:pos.z}),hitRes:(i,d=1)=>hitRes(RES.filter(r=>r.on)[i],d,{x:pos.x,z:pos.z}),things:()=>things};
+  window.DUNMOBS={T,get slimes(){ return slimes; },get res(){ return RES; },hit:(i,d=1)=>hitSlime(slimes[i],d,{x:pos.x,z:pos.z}),hitRes:(i,d=1)=>hitRes(RES.filter(r=>r.on)[i],d,{x:pos.x,z:pos.z}),things:()=>things};
   window.DUNMOBDBG=()=>({level:lvl,slimes:slimes.map(S=>({k:S.k,hp:S.hp,dead:S.dead,gone:!!S.gone,x:+(S.x/T).toFixed(1),z:+(S.z/T).toFixed(1)})),
     res:(RES||[]).filter(r=>r.on||r.dead).map(r=>({k:r.key,hp:r.hp,dead:r.dead,agg:r.agg,x:+(r.N.st.x/T).toFixed(1),z:+(r.N.st.z/T).toFixed(1),in:r.N.g.parent===MAPG.dungeon})),things:things.map(t=>t.name),bolts:bolts.length,tris:slimes.length*(g0.index.count/3+12)}); }

@@ -3614,3 +3614,13 @@ initial download and load super fast"; then "Go")
   when you walk that way, with a "Loading Bank" line; the street going north from there is empty grass and dead-ends at an invisible
   wall, the road drawn as if it went on. This is the first place to get its own load, so it follows the module steps. A map mockup of
   the corner goes to the owner before it is built.
+- **The apartments** (owner, 20 Oct 2026, with a picture of the brownstone's stoop: "the apartments shoudl be opposite end of street as
+  bank (facing market st and bank) it should get its own loading screen too, same thing, north street from there is empty on right side
+  (central park will be on left)"): the brownstone apartments (`054-apts.js`; not the building with the pool, deleted earlier that day)
+  move to the end of the street opposite the bank, front on Market St, facing the bank; their own load, like the bank; the street north
+  of them has nothing on the right and Central Park on the left.
+- **Only the place you are in loads at the start** (owner, 20 Oct 2026: "this means that bank and apartments dont load at start
+  (unless thats where you are at when you login) - so the only thing that hsould load is the place you're at (bank, apt, market st,
+  central park, each interior)"): the rule for the loading work. Market St, Central Park, the bank, the apartments and each interior
+  are each their own load; at the start only the one you are standing in is built, the rest when you walk toward them, each with its
+  own "Loading …" line.

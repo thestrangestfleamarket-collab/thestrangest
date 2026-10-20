@@ -1,4 +1,4 @@
-{ const F=window.FIREV, T=TILE, KK=BLDK, {X,Y,Z}=BOD, hs=BOD.g.hash, sh=BOD.K.sh, bq=BOD.bq, {CX,WY,HZ,S}=F, A=APTS.A, RZ=APTS.RZ, U=u=>A.x0+u, V=v=>A.y0+v;
+{ const APTS=MODS.apts, F=window.FIREV, T=TILE, KK=BLDK, {X,Y,Z}=BOD, hs=BOD.g.hash, sh=BOD.K.sh, bq=BOD.bq, {CX,WY,HZ,S}=F, A=APTS.A, RZ=APTS.RZ, U=u=>A.x0+u, V=v=>A.y0+v;
   const ix=x=>x/(T*KK)+BOD.OX, iy=z=>z/(T*KK)+BOD.OY, cl=v=>Math.max(0,Math.min(1,v)), nk=()=>cl((4-CLOCK.elev())/8);
   const L0=CX-3.6, L1=CX+3.6, DO=1.65, STP={x0:CX-.8,x1:CX+.8,y1:WY+.42,z:14}, LX=CX+2.6, AWX=24.7;
   const onL=(x,z)=>{ const u=ix(x), v=iy(z); return u>L0-.3&&u<L1+.3&&v>WY-.4&&v<WY+DO+.4; };

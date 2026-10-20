@@ -1,0 +1,22 @@
+<!doctype html><html><body style="margin:0;background:#000"><script type="importmap">{"imports":{"three":"/three.module.js"}}</script>
+<script type="module">
+import * as THREE from 'three'; window.THREE=THREE;
+const T=n=>fetch(n).then(r=>r.text()), src=await T('/src.js'), parts=await T('/parts.js'), rig=await T('/rig.js');
+const PARTSNPC={}; new Function('PARTSNPC','THREE',parts)(PARTSNPC,THREE);
+const gm=new THREE.DataTexture(new Uint8Array([70,130,200,255]),4,1,THREE.RedFormat); gm.needsUpdate=true;
+const sc=new THREE.Scene(); sc.background=new THREE.Color(0); const L=new THREE.DirectionalLight(0xffffff,2.4); sc.add(L,new THREE.AmbientLight(0xffffff,.9));
+let N; const makeNPC=(D,o)=>{ const geo=o.geo; geo.computeVertexNormals(); const P=geo.attributes.position.array, Nn=geo.attributes.normal.array, acc=new Map(), k=i=>Math.round(P[i]*2e3)+','+Math.round(P[i+1]*2e3)+','+Math.round(P[i+2]*2e3);
+  for(let i=0;i<P.length;i+=3){ const a=acc.get(k(i))||[0,0,0]; a[0]+=Nn[i]; a[1]+=Nn[i+1]; a[2]+=Nn[i+2]; acc.set(k(i),a); } for(let i=0;i<P.length;i+=3){ const a=acc.get(k(i)), l=Math.hypot(...a)||1; Nn[i]=a[0]/l; Nn[i+1]=a[1]/l; Nn[i+2]=a[2]/l; }
+  const me=new THREE.SkinnedMesh(geo,new THREE.MeshToonMaterial({vertexColors:true,gradientMap:gm,side:THREE.DoubleSide})); me.add(o.skin.bones[0]); me.bind(o.skin.skeleton); me.frustumCulled=false;
+  const g=new THREE.Group(); g.add(me); sc.add(g); N={me,g,o,push:()=>{},renorm:()=>{},st:{x:0,z:0,h:0,ph:0}}; return N; };
+const TILE=1, QS={get:()=>null}, cam=new THREE.PerspectiveCamera(30,innerWidth/innerHeight,.01,50);
+const RIGNPC={}; new Function('RIGNPC','THREE','TILE','QS','cam','makeNPC',rig.replace(/^const RIGNPC=\{\};/,''))(RIGNPC,THREE,TILE,QS,cam,makeNPC);
+const TOONS={}, {shape,limb,sph,cyl,box,torus,blob,shell}=PARTSNPC.T, part=(name,rank,bone,of)=>({name,rank,bone,of}), BLACK=[0,0,0], WHITE=[.96,.95,.9];
+const make=(def,o)=>RIGNPC.make(def,Object.assign({eye:0,stride:6},o));
+eval(src);
+const r=new THREE.WebGLRenderer({antialias:true}); r.setSize(innerWidth,innerHeight); r.outputColorSpace=THREE.LinearSRGBColorSpace; document.body.appendChild(r.domElement);
+const st=N.st, A=N.o.anim; let t=0;
+window.step=(dt,v,turn)=>{ st.h+=turn*dt; st.x+=Math.sin(st.h)*v*dt; st.z+=Math.cos(st.h)*v*dt; st.ph+=v*dt*7; A(dt,v>0,st,1); N.g.position.set(st.x,0,st.z); N.g.rotation.y=st.h; t+=dt; };
+window.shot=(a)=>{ const d=2.6; cam.position.set(st.x+Math.sin(a)*d,.55,st.z+Math.cos(a)*d); cam.lookAt(st.x,.5,st.z); L.position.set(st.x+Math.sin(a+.7)*3,4,st.z+Math.cos(a+.7)*3); L.target.position.set(st.x,0,st.z); L.target.updateMatrixWorld(); r.render(sc,cam); };
+window.ready=true;
+</script></body></html>

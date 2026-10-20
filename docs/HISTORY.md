@@ -3574,3 +3574,14 @@ initial download and load super fast"; then "Go")
   stubby feet, and a fish tail, just the forked fin out the back of the coat ("just the flipper part"), swaying as he waddles. Built at twice his size (`metres` 2.2).
   Cost: 9,476 triangles, one more draw and program (the hood), no lights. Pictures: `node tools/charview.cjs` (the character alone on
   black, front, side, back; not the game).
+
+- **THE MANATEE rebuilt in smooth curves, its robe real cloth** (owner, 20 Oct 2026: "i want things like robes flowing and arms with
+  movements"; "yes" to rebuilding it as the rain fish was; `084-npc-toons.js`, `manatee`): measured off his photo (eye .92 of his
+  height, mouth .87, chin .72, cowl .69-.76, shoulders .64, hands .33, hem .06; robe .52 wide at the hem, face .21, feet .18 each).
+  One smooth head (`melt`: skull, snout and jaw blended, not three lumps), small glossy eyes, nostrils, a long smile; a wool hood
+  framing the face with a rolled edge, a thick lumpy cowl; bell sleeves on shoulder, elbow and hand bones (the elbows lag and bend
+  as he walks; now and then he lifts his right hand); big padded feet with four toes. **The robe is cloth**: 96 points (16 round,
+  6 down, the top row held at his shoulders) under gravity, swung by his starts, stops, turns and pace, kept off his body and pushed
+  by his legs, each point a bone the robe hangs on; it settles and stops still when he stands. Built at twice his size (`metres` 3.7).
+  Cost: 11,876 triangles, no lights, no new programs, the cloth under 0.1 ms a frame. Moving pictures: `node tools/charanim.cjs`
+  (the game's own rig on the character alone, on black: stand, walk, turn, stop).

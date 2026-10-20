@@ -1,8 +1,8 @@
 // THE START AND THE PARK, WHAT THEY COST (19 Oct 2026): node tests/startprof.cjs <out.json> [page]
 // The page's long tasks from the first byte to the game starting (and after), the time to start, then 12 s of frames at the start and
 // 12 s in the park's south-west (between the castle, the cave and the moon shrine); with the profiling copy (tools/perfprof.py) each
-// system's share of a frame there, and the renderer's draws and triangles (averaged over the last 10 frames: the lamp's cube shadow
-// redraws every other frame, so one frame alone swings by half).
+// system's share of a frame there, and the renderer's draws and triangles (the median frame of the sample: the lamp's cube shadow redraws
+// every other frame and the town's still shadow map now and then, so one frame alone swings by half or more).
 const {chromium}=require('playwright'); const fs=require('fs'), path=require('path');
 const OUT=process.argv[2]||'startprof.json', PAGE=path.resolve(process.argv[3]||path.resolve(__dirname,'../dist/market-prof.html'));
 (async()=>{ fs.mkdirSync(path.dirname(path.resolve(OUT)),{recursive:true}); const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist']});
@@ -18,7 +18,7 @@ const OUT=process.argv[2]||'startprof.json', PAGE=path.resolve(process.argv[3]||
         const st={}; if(window.__PF){ const H=__PF.hist.slice(-Math.min(__PF.hist.length,d.length)); for(const fr of H)for(const k in fr)(st[k]=st[k]||[]).push(fr[k]); }
         const med=a=>{ const s=[...a].sort((x,y)=>x-y); return +s[Math.floor(s.length/2)].toFixed(2); }, p95=a=>{ const s=[...a].sort((x,y)=>x-y); return +s[Math.floor(s.length*.95)].toFixed(2); };
         const sys=Object.fromEntries(Object.entries(st).map(([k,v])=>[k,{med:med(v),p95:p95(v),max:+Math.max(...v).toFixed(1)}]).sort((a,b)=>b[1].med-a[1].med));
-        const R=window.__R, L=IN.slice(-10), avg=k=>L.length?Math.round(L.reduce((a,x)=>a+x[k],0)/L.length):null, info=R?{calls:avg(0),tris:avg(1),programs:R.renderer.info.programs.length,geos:R.renderer.info.memory.geometries,tex:R.renderer.info.memory.textures}:null;
+        const R=window.__R, avg=k=>{ if(!IN.length)return null; const v=IN.map(x=>x[k]).sort((a,b)=>a-b); return v[Math.floor(v.length/2)]; }, info=R?{calls:avg(0),tris:avg(1),programs:R.renderer.info.programs.length,geos:R.renderer.info.memory.geometries,tex:R.renderer.info.memory.textures}:null;
         res({frames:d.length,dtMed:med(d),dtP95:p95(d),dtMax:+Math.max(...d).toFixed(1),over100:d.filter(x=>x>100).length,sys,info}); } };
       requestAnimationFrame(f); }));
     rep[name]=r; };

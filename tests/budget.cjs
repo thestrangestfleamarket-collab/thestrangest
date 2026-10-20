@@ -1,7 +1,7 @@
 // THE BUDGET CHECK (19 Oct 2026, quick wins): node tests/budget.cjs <base.json> <head.json>
 // Compares two runs of tests/startprof.cjs (the pull request's base and the pull request, same machine, one after the other) and fails
 // when the pull request costs more: triangles or draw calls a frame on the street at the start or in the park's south-west, shader
-// programs, the time to start, or page errors the base didn't have. Writes a table to the run's summary when on GitHub.
+// programs (over 10%: it counts what has compiled so far, and rooms built while sampling add to it), the time to start, or page errors the base didn't have. Writes a table to the run's summary when on GitHub.
 const fs=require('fs');
 const [A,B]=process.argv.slice(2).map(f=>JSON.parse(fs.readFileSync(f,'utf8')));
 const rows=[], fail=[];
@@ -11,7 +11,7 @@ for(const spot of ['start','parkSW']){
   const a=(A[spot]||{}).info||{}, b=(B[spot]||{}).info||{};
   cmp(spot+' triangles',a.tris,b.tris,x=>Math.ceil(x*1.1)+500);
   cmp(spot+' draw calls',a.calls,b.calls,x=>Math.ceil(x*1.1)+5);
-  cmp(spot+' shader programs',a.programs,b.programs,x=>x+2);
+  cmp(spot+' shader programs',a.programs,b.programs,x=>Math.ceil(x*1.1)+2);
   cmp(spot+' frame ms (median)',(A[spot]||{}).dtMed,(B[spot]||{}).dtMed,x=>x*1.5+5);
 }
 cmp('time to start (ms)',A.startMs,B.startMs,x=>Math.round(x*1.35+3000));

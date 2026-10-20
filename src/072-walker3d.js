@@ -20,7 +20,8 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
     const vert=p=>{ const e=0.02, g=nrm(V(P.d(V(p.x+e,p.y,p.z))-P.d(V(p.x-e,p.y,p.z)),P.d(V(p.x,p.y+e,p.z))-P.d(V(p.x,p.y-e,p.z)),P.d(V(p.x,p.y,p.z+e))-P.d(V(p.x,p.y,p.z-e))));
       const l=sub(add(p,mul(g,OUT)),F.o); return [dot(l,F.x),dot(l,F.y),dot(l,F.z),dot(g,F.x),dot(g,F.y),dot(g,F.z),MATS.indexOf(P.paint&&P.paint(p)||P.m)]; };
     const VC=new Map(), NT=nx*ny*nz, emit=r=>{ raw.push(r[0],r[1],r[2],r[3],r[4],r[5]); mats.push(r[6]); };
-    for(let i=r0[0];i<r1[0]-1;i++)for(let j=r0[1];j<r1[1]-1;j++)for(let k=r0[2];k<r1[2]-1;k++){ const v=CO.map(([a,b,c])=>val[I(i+a,j+b,k+c)]); if(v.every(x=>x>0)||v.every(x=>x<=0))continue;
+    const OF=CO.map(([a,b,c])=>(a*ny+b)*nz+c);
+    for(let i=r0[0];i<r1[0]-1;i++)for(let j=r0[1];j<r1[1]-1;j++)for(let k=r0[2];k<r1[2]-1;k++){ const o=I(i,j,k); let np=0, nn=0; for(let c=0;c<8;c++){ const x=val[o+OF[c]]; if(x>0)np++; else if(x<=0)nn++; } if(np===8||nn===8)continue; const v=CO.map(([a,b,c])=>val[I(i+a,j+b,k+c)]);
       const p=CO.map(([a,b,c])=>at(i+a,j+b,k+c)), gi=CO.map(([a,b,c])=>I(i+a,j+b,k+c));
       for(const t of TET){ const ins=t.filter(c=>v[c]<=0), out=t.filter(c=>v[c]>0); if(!ins.length||!out.length)continue;
         const E=(a,b)=>{ const key=gi[a]*NT+gi[b]; let r=VC.get(key); if(!r){ const f=v[a]/(v[a]-v[b]); r=vert(add(p[a],mul(sub(p[b],p[a]),f))); VC.set(key,r); } return r; };

@@ -3529,3 +3529,11 @@ initial download and load super fast"; then "Go")
   is the slowest one, not all of them. The same picture takes the base once per place, not twice, and allows 5% of the pixels to differ
   (the base differs from itself by up to 2%; `SAMEPIC_NOISE=1` measures it again). The picture and pixel checks run only when the game
   changes (`src/`, `data/`, the build) or those checks do; the budget and the lost picture always run.
+
+## 20 Oct 2026: the people built faster at the start, the same vertices
+
+- **Faster first visit, part 2** (`076-npc-map.js`, `072-walker3d.js`): a profile of the start on main showed the NPCs' self-shading
+  (`makeNPC`'s `sh`, which looks around every vertex for higher-ranked parts) at about 3 s and building the figures from their shapes
+  (`W3.warm`, `meshOf0`) at about 6 s of the 21 s. The shading now keys its grid and its normal smoothing with numbers instead of text and
+  makes the cheap tests before the distance; the figure builder skips the empty cells without making small arrays. The output is the same:
+  `tests/texhash.cjs` now also hashes every body built at the start (positions, normals, colours, `sh`) and fails if any differs.

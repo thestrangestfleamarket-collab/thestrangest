@@ -31,6 +31,13 @@ const stats=pg=>pg.evaluate(()=>new Promise(res=>requestAnimationFrame(()=>reque
     for(const k in M){ const f=+k<0?'(before)':fileOf(+k); per[f]=(per[f]||0)+M[k]; pos.push([+k,M[k]]); }
     const top=Object.entries(per).sort((a,b)=>b[1]-a[1]).slice(0,50).map(([f,ms])=>[f,Math.round(ms)]), hot=pos.sort((a,b)=>b[1]-a[1]).slice(0,40).map(([p,ms])=>[fileOf(p),p,Math.round(ms)]);
     await b.close(); return save('prof.json',{first:Math.round(first),total:Math.round(Object.values(per).reduce((a,b)=>a+b,0)),top,hot}); }
+  if(MODE==='early'){ const b=await chromium.launch({args:ARGS}); const pg=await b.newPage({viewport:{width:960,height:540}}); pg.setDefaultTimeout(900000); const errs=[], rep={gq:[]};
+    pg.on('pageerror',e=>errs.push(e.message.slice(0,300))); pg.on('console',m=>{ if(m.type()==='error')errs.push(m.text().slice(0,300)); });
+    await pg.goto('file://'+D+'/market.html?fresh=1&hour=13&wx=CLEAR',{waitUntil:'commit'}); await pg.waitForFunction(()=>window.__started,null,{polling:50,timeout:900000});
+    rep.gq.push(await pg.evaluate(()=>window.BODB&&BODB.GQ.length));
+    for(const n of ['THE BANK','THE CASTLE','THE STREET']){ await pg.evaluate(n=>__UI.goPlace(n),n); await pg.waitForTimeout(2500); rep.gq.push([n,await pg.evaluate(()=>BODB.GQ.length),await pg.evaluate(()=>__dbg.info().calls)]); await pg.screenshot({path:path.join(OUT,'early-'+n.replace(/\W+/g,'_')+'.png')}); }
+    for(let k=0;k<20;k++){ await pg.waitForTimeout(1000); const q=await pg.evaluate(()=>BODB.GQ.length); rep.gq.push(q); if(!q)break; }
+    rep.calls=await pg.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(()=>r(__dbg.info().calls))))); rep.errors=errs; await b.close(); return save('early.json',rep); }
   if(MODE==='tour'){ const b=await chromium.launch({args:ARGS}); const pg=await b.newPage({viewport:{width:960,height:540}}); pg.setDefaultTimeout(900000); const errs=[], rep={};
     pg.on('pageerror',e=>errs.push(e.message.slice(0,300))); pg.on('console',m=>{ if(m.type()==='error')errs.push(m.text().slice(0,300)); });
     await pg.goto('file://'+D+'/market.html?fresh=1&hour=13&wx=CLEAR',{waitUntil:'commit'});

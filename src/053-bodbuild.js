@@ -104,12 +104,13 @@ BODB={};
     for(const w of BOD.WALLS)for(const me of BATCH.all(M,'W'+w.id))cutWalls.push({pl:planes[w.id],nx:NRM[w.id][0],nz:NRM[w.id][1],foot:Y(8),me,when:inside}); };
   BATCH.cast=true; BATCH.build(MK); BATCH.cast=false; Object.assign(KINDS,BATCH.meshes); BATCH.meshes={}; post(KINDS);
   BODB.roof=BATCH.all(KINDS,'R');
-  { const gd=(j,x,z)=>Math.hypot(Math.max(j.x0-x,0,x-j.x1),Math.max(j.z0-z,0,z-j.z1));
-    BODB.gpaint=L=>{ if(!L.length)return; for(const j of L)GQ.splice(GQ.indexOf(j),1); const keep=BATCH.items.splice(0), m0=BATCH.meshes, tg=BATCH.tag; BATCH.meshes={}; BATCH.tag=null;
-      for(const j of L)j.go(); BATCH.cast=false; BATCH.build(MK); const M=BATCH.meshes||{}; BATCH.meshes=m0; BATCH.items=keep; BATCH.tag=tg; for(const k in M)(MAPG.bodega||scene).add(M[k]); post(M); };
-    BODB.gnear=(x,z,R)=>BODB.gpaint(GQ.filter(j=>gd(j,x,z)<R));
-    let gt=0; BODB.gtick=dt=>{ if(!GQ.length)return; BODB.gnear(pos.x,pos.z,BODB.GR); if((gt+=dt)<.15)return; gt=0;
-      const L=GQ.slice().sort((a,b)=>gd(a,pos.x,pos.z)-gd(b,pos.x,pos.z)).slice(0,2); BODB.gpaint(L); }; BODB.GR=48*TILE; }
+  { const gd=(j,x,z)=>Math.hypot(Math.max(j.x0-x,0,x-j.x1),Math.max(j.z0-z,0,z-j.z1)); let HOLD=[], hn=0, gt=0; window.BODB=BODB;
+    const paint=L=>{ const keep=BATCH.items.splice(0), tg=BATCH.tag; BATCH.tag=null; for(const j of L){ GQ.splice(GQ.indexOf(j),1); j.go(); hn++; } HOLD.push(...BATCH.items.splice(0)); BATCH.items=keep; BATCH.tag=tg; };
+    const flush=()=>{ if(!HOLD.length)return; const keep=BATCH.items.splice(0), m0=BATCH.meshes; BATCH.meshes={}; BATCH.items=HOLD; HOLD=[]; hn=0;
+      BATCH.cast=false; BATCH.build(MK); const M=BATCH.meshes||{}; BATCH.meshes=m0; BATCH.items=keep; for(const k in M)(MAPG.bodega||scene).add(M[k]); post(M); };
+    BODB.gnear=(x,z,R)=>{ const L=GQ.filter(j=>gd(j,x,z)<R); if(L.length){ paint(L); flush(); } };
+    BODB.gtick=dt=>{ if(!GQ.length&&!HOLD.length)return; BODB.gnear(pos.x,pos.z,BODB.GR); if((gt+=dt)<.1)return; gt=0;
+      if(GQ.length){ let b=null, bd=1e9; for(const j of GQ){ const d=gd(j,pos.x,pos.z); if(d<bd){ bd=d; b=j; } } paint([b]); } if(hn>=6||!GQ.length)flush(); }; BODB.GR=48*TILE; }
   const goods=()=>{ const {GOOD,GLAY}=BOD, O=BOD.O, list=[];
     const row=(p,f,zpx,items)=>{ const along=f[0]?1:0, a1=along?p.y1:p.x1, yaw=Math.atan2(-f[0],f[1]); let a=(along?p.y0:p.x0)+.08, last=null;
       for(const [k,n,...args] of items){ if(last&&last!==k)a+=.04; last=k;

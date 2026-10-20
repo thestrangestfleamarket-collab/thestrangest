@@ -1,0 +1,495 @@
+{
+ "frogTrace": [
+  "-106.9,8.7,-0.15,0,0,1,1,1",
+  "-106.8,8.7,-0.15,0,0,1,1,1",
+  "-106.8,8.7,-0.15,0,0,1,1,1",
+  "-106.7,8.7,-0.15,0,0,1,1,1",
+  "-106.6,8.7,-0.15,0,0,1,1,1",
+  "-106.5,8.7,-0.15,0,0,1,1,1",
+  "-106.5,8.7,-0.15,0,0,1,1,1",
+  "-106.4,8.7,-0.15,0,0,1,1,1",
+  "-106.3,8.7,-0.15,0,0,1,1,1",
+  "-106.3,8.7,-0.15,0,0,1,1,1",
+  "-106.2,8.7,-0.15,0,0,1,1,1",
+  "-106.1,8.7,-0.15,0,0,1,1,1",
+  "-106,8.7,-0.15,0,0,1,1,1",
+  "-105.9,8.7,-0.15,0,0,1,1,1",
+  "-105.8,8.7,-0.15,0,0,1,1,1",
+  "-105.7,8.7,-0.15,0,0,1,1,1",
+  "-105.7,8.7,-0.15,0,0,1,1,1",
+  "-105.6,8.7,-0.15,0,0,1,1,1",
+  "-105.5,8.7,-0.15,0,0,1,1,1",
+  "-105.5,8.7,-0.15,0,0,1,1,1",
+  "-105.4,8.7,-0.15,0,0,1,1,1",
+  "-105.3,8.7,-0.15,0,0,1,1,1",
+  "-105.2,8.7,-0.15,0,0,1,1,1",
+  "-105.1,8.7,-0.15,0,0,1,1,1",
+  "-105.1,8.7,-0.15,0,0,1,1,1",
+  "-105,8.7,-0.15,0,0,1,1,1",
+  "-104.9,8.7,-0.15,0,0,1,1,1",
+  "-104.9,8.7,-0.15,0,0,1,1,1",
+  "-104.8,8.7,-0.15,0,0,1,1,1",
+  "-104.8,8.7,-0.15,0,0,1,1,1",
+  "-104.7,8.7,-0.15,0,0,1,1,1",
+  "-104.6,8.7,-0.15,0,0,1,1,1",
+  "-104.5,8.7,-0.15,0,0,1,1,1",
+  "-104.4,8.7,-0.15,0,0,1,1,1",
+  "-104.4,8.7,-0.15,0,0,1,1,1",
+  "-104.3,8.7,-0.15,0,0,1,1,1",
+  "-104.2,8.7,-0.15,0,0,1,1,1",
+  "-104.2,8.7,-0.15,0,0,1,1,1",
+  "-104.1,8.7,-0.15,0,0,1,1,1",
+  "-104,8.7,-0.15,0,0,1,1,1",
+  "-104,8.7,-0.15,0,0,1,1,1",
+  "-103.9,8.7,-0.15,0,0,1,1,1",
+  "-103.9,8.7,-0.15,0,0,1,1,1",
+  "-103.8,8.7,-0.15,0,0,1,1,1",
+  "-103.7,8.7,-0.15,0,0,1,1,1",
+  "-103.6,8.7,-0.15,0,0,1,1,1",
+  "-103.6,8.7,-0.15,0,0,1,1,1",
+  "-103.5,8.7,-0.15,0,0,1,1,1",
+  "-103.4,8.7,-0.15,0,0,1,1,1",
+  "-103.3,8.7,-0.15,0,0,1,1,1",
+  "-103.2,8.7,-0.15,0,0,1,1,1",
+  "-103.2,8.7,-0.15,0,0,1,1,1",
+  "-103.1,8.7,-0.15,0,0,1,1,1",
+  "-103.1,8.7,-0.15,0,0,1,1,1",
+  "-103,8.7,-0.15,0,0,1,1,1",
+  "-102.9,8.7,-0.15,0,0,1,1,1",
+  "-102.8,8.7,-0.15,0,0,1,1,1",
+  "-102.7,8.7,-0.15,0,0,1,1,1",
+  "-102.7,8.7,-0.15,0,0,1,1,1",
+  "-102.6,8.7,-0.15,0,0,1,1,1"
+ ],
+ "elv": [
+  {
+   "z": 1,
+   "ph": "idle",
+   "at": 0,
+   "door": 0
+  },
+  {
+   "z": 1,
+   "ph": "idle",
+   "at": 0,
+   "door": 0
+  }
+ ],
+ "places": [
+  [
+   "THE MOVIE THEATRE",
+   119.6
+  ],
+  [
+   "THE ARCADE",
+   143.4
+  ],
+  [
+   "THE PLAYHOUSE",
+   -20.7
+  ],
+  [
+   "THE DOJO",
+   84.6
+  ]
+ ],
+ "river0": {
+  "deep": false
+ },
+ "river1": {
+  "deep": true
+ },
+ "cartAir": [
+  "runJump:0.10",
+  "runJump:0.25"
+ ],
+ "cartHeld": {
+  "n": 1,
+  "seq": "cartwheel:0.00 cartwheel:0.04 cartwheel:0.07 cartwheel:0.15"
+ },
+ "grassBack": {
+  "justStopped": 0,
+  "after4s": 0,
+  "atFeet": 0.4675
+ },
+ "lawn": {
+  "n": 10960,
+  "chunks": 34
+ },
+ "dead": true,
+ "alive": false,
+ "bathIn": {
+  "pick": 1,
+  "inside": false,
+  "y": 0,
+  "r": [
+   144.16242424242424,
+   -89.58,
+   157.32242424242426,
+   -84.02
+  ]
+ },
+ "render": {
+  "head": {
+   "fps": 0,
+   "ms": 0,
+   "calls": 128,
+   "tris": 48366,
+   "points": 90,
+   "lines": 437,
+   "programs": 221,
+   "progsOnScreen": 46,
+   "geometries": 979,
+   "textures": 276,
+   "lightsInScene": 11,
+   "lightsLit": 8,
+   "shadows": [
+    "Point 512x6",
+    "Directional 3072",
+    "Directional 2048"
+   ],
+   "lvl": "up",
+   "place": "",
+   "at": [
+    78.6,
+    -9.5
+   ],
+   "drawnObjs": 126,
+   "drawnTris": 71602,
+   "fog": 1769912,
+   "loadedTris": 792856,
+   "geoBytes": 57964777,
+   "texBytes": 436823128
+  },
+  "top": [
+   {
+    "name": "park / park › Buffer MeshLambert",
+    "tris": 15717,
+    "calls": 3,
+    "n": 3,
+    "sh": 3,
+    "dist": 52,
+    "inView": true,
+    "why": [
+     "FAR"
+    ],
+    "act": null
+   },
+   {
+    "name": "Buffer MeshLambert",
+    "tris": 13132,
+    "calls": 23,
+    "n": 23,
+    "sh": 16,
+    "dist": 0,
+    "inView": true,
+    "why": [
+     "FAR",
+     "OFFSCREEN NO-CULL",
+     "SHUT IN ROOM"
+    ],
+    "act": "YOU"
+   },
+   {
+    "name": "bodega / bodega › Buffer MeshLambert",
+    "tris": 12038,
+    "calls": 19,
+    "n": 19,
+    "sh": 18,
+    "dist": 6.2,
+    "inView": true,
+    "why": [],
+    "act": "YOU"
+   },
+   {
+    "name": "bodega / bodega › Icosahedron MeshLambert",
+    "tris": 10920,
+    "calls": 1,
+    "n": 1,
+    "sh": 0,
+    "dist": 0,
+    "inView": true,
+    "why": [],
+    "act": null
+   },
+   {
+    "name": "bodega / BATCH",
+    "tris": 5246,
+    "calls": 6,
+    "n": 6,
+    "sh": 4,
+    "dist": 0,
+    "inView": true,
+    "why": [],
+    "act": null
+   },
+   {
+    "name": "park / park › Octahedron MeshLambert",
+    "tris": 4480,
+    "calls": 1,
+    "n": 1,
+    "sh": 0,
+    "dist": 116.1,
+    "inView": false,
+    "why": [
+     "OFFSCREEN NO-CULL",
+     "FAR"
+    ],
+    "act": null
+   },
+   {
+    "name": "bodega / BATCH · bodega",
+    "tris": 2062,
+    "calls": 5,
+    "n": 5,
+    "sh": 5,
+    "dist": 0,
+    "inView": true,
+    "why": [],
+    "act": null
+   },
+   {
+    "name": "Lathe MeshLambert",
+    "tris": 1400,
+    "calls": 2,
+    "n": 2,
+    "sh": 2,
+    "dist": 15.3,
+    "inView": true,
+    "why": [],
+    "act": null
+   },
+   {
+    "name": "bodega / bodega › Shape MeshLambert",
+    "tris": 978,
+    "calls": 1,
+    "n": 1,
+    "sh": 0,
+    "dist": 0,
+    "inView": true,
+    "why": [],
+    "act": null
+   },
+   {
+    "name": "Box MeshLambert",
+    "tris": 948,
+    "calls": 4,
+    "n": 4,
+    "sh": 3,
+    "dist": 0,
+    "inView": true,
+    "why": [],
+    "act": null
+   },
+   {
+    "name": "bodega / fire drones",
+    "tris": 864,
+    "calls": 1,
+    "n": 1,
+    "sh": 1,
+    "dist": 37.9,
+    "inView": true,
+    "why": [],
+    "act": null
+   },
+   {
+    "name": "bodega / fire drone docks",
+    "tris": 576,
+    "calls": 1,
+    "n": 1,
+    "sh": 1,
+    "dist": 37.4,
+    "inView": true,
+    "why": [],
+    "act": null
+   }
+  ],
+  "hidden": []
+ },
+ "flora": {
+  "bushes": 131,
+  "flowers": 848,
+  "beds": 97,
+  "tris": 30906,
+  "n": {
+   "BOXWOOD": 27,
+   "HYDRANGEA": 13,
+   "RHODODENDRON": 9,
+   "HOLLY": 21,
+   "JUNIPER": 10,
+   "BERRY BUSH": 7,
+   "LILAC": 13,
+   "FORSYTHIA": 11,
+   "FERN": 10,
+   "ROSE BUSH": 10,
+   "TULIP": 240,
+   "DAISY": 137,
+   "SUNFLOWER": 32,
+   "LAVENDER": 61,
+   "POPPY": 34,
+   "IRIS": 77,
+   "MARIGOLD": 75,
+   "BLUEBELL": 63,
+   "FOXGLOVE": 52,
+   "COSMOS": 77
+  },
+  "K": {
+   "bush": [
+    "BOXWOOD",
+    "HYDRANGEA",
+    "RHODODENDRON",
+    "HOLLY",
+    "JUNIPER",
+    "BERRY BUSH",
+    "LILAC",
+    "FORSYTHIA",
+    "FERN",
+    "ROSE BUSH"
+   ],
+   "flower": [
+    "TULIP",
+    "DAISY",
+    "SUNFLOWER",
+    "LAVENDER",
+    "POPPY",
+    "IRIS",
+    "MARIGOLD",
+    "BLUEBELL",
+    "FOXGLOVE",
+    "COSMOS"
+   ],
+   "bushTris": [
+    40,
+    68,
+    80,
+    44,
+    26,
+    52,
+    60,
+    62,
+    56,
+    68
+   ],
+   "flowerTris": [
+    22,
+    22,
+    38,
+    42,
+    22,
+    38,
+    30,
+    30,
+    46,
+    22
+   ]
+  }
+ },
+ "blaze": {
+  "fires": [
+   {
+    "x": 38.2,
+    "z": 93.2,
+    "age": 2,
+    "wet": 0,
+    "by": 1
+   }
+  ],
+  "drones": [
+   {
+    "st": "home",
+    "x": -110.3,
+    "y": 4.1,
+    "z": 32.3
+   },
+   {
+    "st": "go",
+    "x": 171.3,
+    "y": 10.9,
+    "z": 32.3
+   },
+   {
+    "st": "home",
+    "x": -110.3,
+    "y": 4.1,
+    "z": 169.6
+   },
+   {
+    "st": "home",
+    "x": 171.3,
+    "y": 4.1,
+    "z": 169.6
+   }
+  ],
+  "marks": 1,
+  "docks": 4,
+  "cruise": 26.9,
+  "light": 5.3
+ },
+ "spots": [
+  {
+   "x": 36.7,
+   "z": 64.2,
+   "o": false
+  },
+  {
+   "x": 50.2,
+   "z": 65.5,
+   "o": false
+  },
+  {
+   "x": 43.9,
+   "z": 58,
+   "o": false
+  },
+  {
+   "x": 13.4,
+   "z": 56.1,
+   "o": false
+  }
+ ],
+ "mush": {
+  "hidden": 2,
+  "revealed": 0,
+  "peek": 0,
+  "crushed": 0,
+  "picked": 0,
+  "barefoot": true,
+  "gold": {},
+  "lawn": {
+   "puffball": 1,
+   "button": 1
+  }
+ },
+ "bodegaIn": {
+  "inside": null,
+  "built": [
+   "arcade"
+  ],
+  "hidden": 0,
+  "busy": false
+ },
+ "frog": {
+  "x": -82.76119999999636,
+  "z": 8.746199999999993,
+  "to": {
+   "x": 169.72599999999997,
+   "z": 8.746199999999993
+  },
+  "wait": 0,
+  "far": true,
+  "life": false,
+  "free": false,
+  "freeHere": true
+ },
+ "errors": [
+  "Fetch API cannot load file:///home/runner/work/thestrangest/thestrangest/dist/market.html?fresh=1&hour=13&wx=CLEAR. URL scheme \"file\" is not supported.",
+  "THREE.Sprite: \"Raycaster.camera\" needs to be set in order to raycast against sprites.",
+  "Fetch API cannot load file:///home/runner/work/thestrangest/thestrangest/dist/market.html?fresh=1&hour=13&wx=CLEAR. URL scheme \"file\" is not supported.",
+  "Fetch API cannot load file:///home/runner/work/thestrangest/thestrangest/dist/market.html?fresh=1&hour=13&wx=CLEAR. URL scheme \"file\" is not supported.",
+  "Fetch API cannot load file:///home/runner/work/thestrangest/thestrangest/dist/market.html?fresh=1&hour=13&wx=CLEAR. URL scheme \"file\" is not supported.",
+  "Fetch API cannot load file:///home/runner/work/thestrangest/thestrangest/dist/market.html?fresh=1&hour=13&wx=CLEAR. URL scheme \"file\" is not supported.",
+  "Fetch API cannot load file:///home/runner/work/thestrangest/thestrangest/dist/market.html?fresh=1&hour=13&wx=CLEAR. URL scheme \"file\" is not supported.",
+  "Fetch API cannot load file:///home/runner/work/thestrangest/thestrangest/dist/market.html?fresh=1&hour=13&wx=CLEAR. URL scheme \"file\" is not supported.",
+  "Fetch API cannot load file:///home/runner/work/thestrangest/thestrangest/dist/market.html?fresh=1&hour=13&wx=CLEAR. URL scheme \"file\" is not supported."
+ ]
+}

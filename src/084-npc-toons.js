@@ -21,7 +21,7 @@ const TOONS={};
         part('broom',0,'broom',[ limb([0,.8,.25],[0,.1,.62],.016,.016,[.55,.4,.22],5), shape(box(.24,.14,.05),[.8,.66,.34],[0,.06,.65],null,[-22,0,0]), shape(box(.19,.03,.055),[.6,.22,.16],[0,.14,.63],null,[-22,0,0]) ]) ],
       springs:{ head:{f:-.03,s:.03,k:90,c:9,lim:.15}, leaves:{f:-.12,s:.12,k:55,c:5,lim:.4}, stem:{f:-.2,s:.2,k:40,c:4,lim:.6} },
       pose:(c)=>{ RIGNPC.walk(c,{legs:[],arm:.5,bob:.03,rock:.05}); c.B.head.rotation.y=c.look; c.B.head.rotation.z=Math.sin(c.st.ph*2)*.03*c.mv; STALL.pose(c,TA); } }, TA={put:.75,reach:[.3,1.1,1.9,2.4],lean:[.35,.12,0,-.05],sw:[-.75,-.95,-.75,.95]};
-    TOONS.tomato=make(def,{key:'tomato',name:'THE TOMATO',metres:1.84, radius:.32,speed:.45,stride:6.5,at:60},0); }
+    TOONS.tomato=make(def,{key:'tomato',name:'THE TOMATO',metres:2.3, radius:.32,speed:.45,stride:6.5,at:60},0); }
 
   { const YEL=[.95,.78,.16], YEL2=[.82,.64,.1], FUR=[.92,.86,.68], FUR2=[.8,.72,.52], PINK=[.9,.6,.55], BOOT=[.12,.11,.1], PAPER=[.88,.86,.8], INK=[.95,.92,.82], LID=[.15,.15,.17], HEAD=[.75,.2,.18], INKP=[.45,.45,.45];
     const def={ bones:[['root',null,[0,0,0]],['hips','root',[0,.42,0]],['head','hips',[0,.7,0]],['earL','head',[-.14,.98,-.02]],['earR','head',[.14,.98,-.02]],

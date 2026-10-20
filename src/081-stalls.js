@@ -44,7 +44,6 @@ const STALL=(()=>{ const M=TILE/.84, VS=ZU*24/TILE, mv=m=>m*M*VS;
     const many=(K,w,d)=>Math.round((K.s<.05?8:4)*(w*d)/(.43*.24));
     const row=(K,a,b,c,d,h,f=1)=>{ const n=Math.max(1,Math.round((b-a)/.42)); for(let k=0;k<n;k++){ const w=(b-a)/n, cx=a+w*(k+.5)+RR(-.05,.05)*w, dd=(d-c)*.88; heap(K,cx,(c+d)/2,h,w*RR(.95,1.15),dd,Math.round(many(K,w,dd)*f*RR(.8,1.25))); } };
     const crate=(a,b,c,d,h0,h1,col=0x9a7044)=>{ box(a,b,c,d,h0,h1,col); box(a-.005,b+.005,c-.005,d+.005,(h0+h1)/2-.012,(h0+h1)/2+.012,0x6e4e2c); };
-    const sack=(cx,cy,col=0xc8b080)=>{ inst('ball',col,X(cx),mv(.24),Z(cy),.2*M,mv(.24),.17*M); inst('cyl',0x9a8458,X(cx),mv(.5),Z(cy),.07*M,mv(.08),.07*M); };
     const H=.8, WOOD=0x9e7a4c, LEG=0x6e5434, DARK=0x7a5c38, ki={i:0};
     const legs=(a,b,c,d,h)=>{ const L=.1; for(const [u,v] of [[a+.05,c+.05],[b-.05-L,c+.05],[a+.05,d-.05-L],[b-.05-L,d-.05-L]])box(u,u+L,v,v+L,0,h,LEG); };
     const RW=veg?[KS.potato,KS.cabbage,KS.tomato,KS.eggplant]:[KS.puffball,KS.chanterelle,KS.redcap,KS.moonglow], RH=[.24,H,1.2,1.6];
@@ -59,8 +58,7 @@ const STALL=(()=>{ const M=TILE/.84, VS=ZU*24/TILE, mv=m=>m*M*VS;
     if(veg){ const SK=[KS.tomato,KS.cabbage,KS.pepper,KS.onion,KS.potato,KS.eggplant,KS.carrot,KS.corn]; let n=0;
       for(const [u0,u1] of [[.12,.66],[.7,1.24]])for(const [c,d,hi] of [[wy-.5,yb,3],[wy-.98,wy-.52,2],[wy-1.46,wy-1,1]]){ const [a,b]=fx(u0,u1), dh=.28+RR(-.02,.02), sh=RR(-.02,.02);
         for(let k=0;k<hi;k++)crate(a+sh,b+sh,c,d,k*.29,k*.29+dh,[0x9a7044,0x8a6238,0xa47a4a][(n+k)%3]); heap(SK[n++%SK.length],(a+b)/2+sh,(c+d)/2,(hi-1)*.29+dh-.08,(b-a)*.82,(d-c)*.8,9); solid(a,b,c,d,hi*.29); }
-      const [pa,pb]=fx(.1,.95); for(let k=0;k<6;k++)item(KS.pumpkin,X(RR(pa,pb)),0,Z(RR(CY0-.1,CY0+.7)),KS.pumpkin.s*RR(.8,1.2),RR(0,6)); solid(pa,pb,CY0-.1,CY0+.7,.3);
-      sack(fx(.4,.4)[0],wy-2.1); sack(fx(.85,.85)[0],wy-2.05,0xb89a6a); solid(...fx(.15,1.1),wy-2.35,wy-1.8,.5); }
+      }
     { const bx=xg-gate*.16, fz=Z(wy-.46), tz=Z(yb-.04), dy=mv(1.3), dz=tz-fz, a=Math.atan2(dz,dy), L=Math.hypot(dz,dy);
       TG.push(inst('cyl',0x8a6a3e,X(bx),dy/2,(fz+tz)/2,.02*M,L,.02*M,a), inst('box',0xc8a85a,X(bx),mv(.13),fz+.02*M,.3*M,mv(.26),.07*M,a), inst('box',0x9a3a2a,X(bx),mv(.27),fz+.05*M,.2*M,mv(.04),.06*M,a)); }
     const grp=(typeof MAPG!=='undefined'&&MAPG.parkwall)||scene, c=new THREE.Color(), ME={}; let tris=0;

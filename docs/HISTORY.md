@@ -3729,3 +3729,9 @@ initial download and load super fast"; then "Go")
   the bodega (169 KB, from 787 KB that morning). `docs/MAP.md` lists them. Two lessons, now in CLAUDE.md: a rename by reference must
   leave `{name}` shorthand keys alone, and builders read each other's registrations at build time, so file order between them is a
   dependency the scope proof cannot see (main street before the dojo, the store first of all).
+
+## 20 Oct 2026: the tomato merchant
+
+- (owner, 20 Oct 2026: "tomato merchant should be 25% taller, nothing on ground (no loose veggies)"): THE TOMATO is 2.3 m (was 1.84);
+  the vegetable stand no longer scatters pumpkins and sacks on the ground in front of it (`081-stalls.js`), and their two collision
+  boxes went with them. Cost: fewer instances, nothing else.

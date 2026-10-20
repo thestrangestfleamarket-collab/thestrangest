@@ -1,0 +1,1098 @@
+{
+ "L1": {
+  "mob": {
+   "level": 1,
+   "slimes": [
+    {
+     "k": "green",
+     "hp": 2,
+     "dead": false,
+     "gone": false,
+     "x": 833.7,
+     "z": 68.4
+    },
+    {
+     "k": "green",
+     "hp": 2,
+     "dead": false,
+     "gone": false,
+     "x": 834.1,
+     "z": 64.5
+    },
+    {
+     "k": "green",
+     "hp": 2,
+     "dead": false,
+     "gone": false,
+     "x": 837,
+     "z": 66.9
+    },
+    {
+     "k": "green",
+     "hp": 2,
+     "dead": false,
+     "gone": false,
+     "x": 835.3,
+     "z": 60.3
+    },
+    {
+     "k": "green",
+     "hp": 2,
+     "dead": false,
+     "gone": false,
+     "x": 830.2,
+     "z": 65.2
+    }
+   ],
+   "res": [
+    {
+     "k": "ogre",
+     "hp": 3,
+     "dead": false,
+     "agg": false,
+     "x": 829.9,
+     "z": 64.4,
+     "in": true
+    },
+    {
+     "k": "ogre_mage",
+     "hp": 3,
+     "dead": false,
+     "agg": false,
+     "x": 834.7,
+     "z": 63.4,
+     "in": true
+    },
+    {
+     "k": "ogre_guard_light",
+     "hp": 3,
+     "dead": false,
+     "agg": false,
+     "x": 831.7,
+     "z": 67.7,
+     "in": true
+    },
+    {
+     "k": "ogre_guard_heavy",
+     "hp": 3,
+     "dead": false,
+     "agg": false,
+     "x": 838.1,
+     "z": 68.9,
+     "in": true
+    }
+   ],
+   "things": [],
+   "bolts": 0,
+   "tris": 5340
+  },
+  "dun": {
+   "level": 1,
+   "lv": "down",
+   "busy": false,
+   "lot": 1,
+   "objs": 10,
+   "lights": 5,
+   "sol": 9,
+   "tris": 494,
+   "skel": false
+  },
+  "tris": 28532,
+  "calls": 69,
+  "hp": 1,
+  "jour": []
+ },
+ "L2": {
+  "mob": {
+   "level": 2,
+   "slimes": [
+    {
+     "k": "green",
+     "hp": 2,
+     "dead": false,
+     "gone": false,
+     "x": 874.1,
+     "z": 65.5
+    },
+    {
+     "k": "green",
+     "hp": 2,
+     "dead": false,
+     "gone": false,
+     "x": 870.8,
+     "z": 59.5
+    },
+    {
+     "k": "green",
+     "hp": 2,
+     "dead": false,
+     "gone": false,
+     "x": 869.1,
+     "z": 68.9
+    },
+    {
+     "k": "blue",
+     "hp": 3,
+     "dead": false,
+     "gone": false,
+     "x": 879.4,
+     "z": 67.2
+    },
+    {
+     "k": "blue",
+     "hp": 3,
+     "dead": false,
+     "gone": false,
+     "x": 875.9,
+     "z": 58.3
+    },
+    {
+     "k": "blue",
+     "hp": 3,
+     "dead": false,
+     "gone": false,
+     "x": 876.4,
+     "z": 68.7
+    },
+    {
+     "k": "blue",
+     "hp": 3,
+     "dead": false,
+     "gone": false,
+     "x": 874,
+     "z": 62.4
+    }
+   ],
+   "res": [
+    {
+     "k": "skeleton_guard_light",
+     "hp": 3,
+     "dead": false,
+     "agg": false,
+     "x": 874.3,
+     "z": 68.2,
+     "in": true
+    },
+    {
+     "k": "Minion",
+     "hp": 3,
+     "dead": false,
+     "agg": true,
+     "x": 876.8,
+     "z": 60.7,
+     "in": true
+    }
+   ],
+   "things": [],
+   "bolts": 0,
+   "tris": 7476
+  },
+  "dun": {
+   "level": 2,
+   "lv": "down",
+   "busy": false,
+   "lot": 2,
+   "objs": 10,
+   "lights": 5,
+   "sol": 9,
+   "tris": 494,
+   "skel": true
+  },
+  "tris": 26648,
+  "calls": 53,
+  "hp": 1,
+  "jour": []
+ },
+ "L3": {
+  "mob": {
+   "level": 3,
+   "slimes": [
+    {
+     "k": "blue",
+     "hp": 3,
+     "dead": false,
+     "gone": false,
+     "x": 915,
+     "z": 66.8
+    },
+    {
+     "k": "blue",
+     "hp": 3,
+     "dead": false,
+     "gone": false,
+     "x": 915.1,
+     "z": 58.6
+    },
+    {
+     "k": "blue",
+     "hp": 3,
+     "dead": false,
+     "gone": false,
+     "x": 910,
+     "z": 67.1
+    },
+    {
+     "k": "purple",
+     "hp": 5,
+     "dead": false,
+     "gone": false,
+     "x": 920.6,
+     "z": 67.3
+    },
+    {
+     "k": "purple",
+     "hp": 5,
+     "dead": false,
+     "gone": false,
+     "x": 911.6,
+     "z": 64.8
+    },
+    {
+     "k": "purple",
+     "hp": 5,
+     "dead": false,
+     "gone": false,
+     "x": 919.3,
+     "z": 59.8
+    },
+    {
+     "k": "red",
+     "hp": 7,
+     "dead": false,
+     "gone": false,
+     "x": 918.7,
+     "z": 68.1
+    },
+    {
+     "k": "red",
+     "hp": 7,
+     "dead": false,
+     "gone": false,
+     "x": 917,
+     "z": 62.4
+    }
+   ],
+   "res": [
+    {
+     "k": "skeleton_guard_light",
+     "hp": 3,
+     "dead": false,
+     "agg": false,
+     "x": 915.5,
+     "z": 66.6,
+     "in": true
+    },
+    {
+     "k": "skeleton_guard_heavy",
+     "hp": 5,
+     "dead": false,
+     "agg": false,
+     "x": 918.5,
+     "z": 59.3,
+     "in": true
+    },
+    {
+     "k": "Minion",
+     "hp": 3,
+     "dead": false,
+     "agg": false,
+     "x": 912.3,
+     "z": 66.1,
+     "in": true
+    }
+   ],
+   "things": [],
+   "bolts": 0,
+   "tris": 8544
+  },
+  "dun": {
+   "level": 3,
+   "lv": "down",
+   "busy": false,
+   "lot": 3,
+   "objs": 10,
+   "lights": 5,
+   "sol": 9,
+   "tris": 494,
+   "skel": true
+  },
+  "tris": 27922,
+  "calls": 16,
+  "hp": 1,
+  "jour": []
+ },
+ "L4": {
+  "mob": {
+   "level": 4,
+   "slimes": [],
+   "res": [
+    {
+     "k": "skeleton_mage",
+     "hp": 3,
+     "dead": false,
+     "agg": false,
+     "x": 959.9,
+     "z": 66.9,
+     "in": true
+    },
+    {
+     "k": "skeleton_guard_heavy",
+     "hp": 5,
+     "dead": false,
+     "agg": false,
+     "x": 957.1,
+     "z": 68.5,
+     "in": true
+    },
+    {
+     "k": "Warrior",
+     "hp": 5,
+     "dead": false,
+     "agg": false,
+     "x": 952.8,
+     "z": 58.8,
+     "in": true
+    },
+    {
+     "k": "Rogue",
+     "hp": 3,
+     "dead": false,
+     "agg": true,
+     "x": 955.8,
+     "z": 63.1,
+     "in": true
+    }
+   ],
+   "things": [],
+   "bolts": 0,
+   "tris": 0
+  },
+  "dun": {
+   "level": 4,
+   "lv": "down",
+   "busy": false,
+   "lot": 4,
+   "objs": 10,
+   "lights": 5,
+   "sol": 9,
+   "tris": 494,
+   "skel": true
+  },
+  "tris": 21656,
+  "calls": 57,
+  "hp": 1,
+  "jour": []
+ },
+ "L5": {
+  "mob": {
+   "level": 5,
+   "slimes": [],
+   "res": [
+    {
+     "k": "skeleton_mage",
+     "hp": 3,
+     "dead": false,
+     "agg": false,
+     "x": 993.1,
+     "z": 68.9,
+     "in": true
+    },
+    {
+     "k": "skeleton_reaper",
+     "hp": 6,
+     "dead": false,
+     "agg": false,
+     "x": 998.5,
+     "z": 62.3,
+     "in": true
+    },
+    {
+     "k": "Warrior",
+     "hp": 5,
+     "dead": false,
+     "agg": false,
+     "x": 998,
+     "z": 58.3,
+     "in": true
+    },
+    {
+     "k": "Mage",
+     "hp": 3,
+     "dead": false,
+     "agg": false,
+     "x": 999.9,
+     "z": 66.9,
+     "in": true
+    },
+    {
+     "k": "Gold",
+     "hp": 9,
+     "dead": false,
+     "agg": false,
+     "x": 995.2,
+     "z": 62.4,
+     "in": true
+    }
+   ],
+   "things": [],
+   "bolts": 0,
+   "tris": 0
+  },
+  "dun": {
+   "level": 5,
+   "lv": "down",
+   "busy": false,
+   "lot": 5,
+   "objs": 10,
+   "lights": 5,
+   "sol": 6,
+   "tris": 426,
+   "skel": true
+  },
+  "tris": 17636,
+  "calls": 15,
+  "hp": 1,
+  "jour": []
+ },
+ "punch": [
+  {
+   "hp": 1,
+   "dead": false,
+   "d": 0.98
+  },
+  {
+   "hp": 0,
+   "dead": true,
+   "d": 0.6
+  },
+  {
+   "hp": 0,
+   "dead": true,
+   "d": 0.6
+  },
+  {
+   "hp": 0,
+   "dead": true,
+   "d": 0.6
+  },
+  {
+   "hp": 0,
+   "dead": true,
+   "d": 0.6
+  },
+  {
+   "hp": 0,
+   "dead": true,
+   "d": 0.6
+  }
+ ],
+ "killed": {
+  "mob": {
+   "level": 1,
+   "slimes": [
+    {
+     "k": "green",
+     "hp": 0,
+     "dead": true,
+     "gone": false,
+     "x": 838.9,
+     "z": 59.2
+    },
+    {
+     "k": "green",
+     "hp": 2,
+     "dead": false,
+     "gone": false,
+     "x": 829.4,
+     "z": 63.1
+    },
+    {
+     "k": "green",
+     "hp": 2,
+     "dead": false,
+     "gone": false,
+     "x": 829.5,
+     "z": 60.1
+    },
+    {
+     "k": "green",
+     "hp": 2,
+     "dead": false,
+     "gone": false,
+     "x": 837.1,
+     "z": 68.5
+    },
+    {
+     "k": "green",
+     "hp": 2,
+     "dead": false,
+     "gone": false,
+     "x": 832.6,
+     "z": 67.2
+    }
+   ],
+   "res": [
+    {
+     "k": "ogre",
+     "hp": 3,
+     "dead": false,
+     "agg": false,
+     "x": 832.9,
+     "z": 66.6,
+     "in": true
+    },
+    {
+     "k": "ogre_mage",
+     "hp": 3,
+     "dead": false,
+     "agg": false,
+     "x": 838.3,
+     "z": 59.9,
+     "in": true
+    },
+    {
+     "k": "ogre_guard_light",
+     "hp": 3,
+     "dead": false,
+     "agg": false,
+     "x": 837.1,
+     "z": 60.4,
+     "in": true
+    },
+    {
+     "k": "ogre_guard_heavy",
+     "hp": 3,
+     "dead": false,
+     "agg": false,
+     "x": 836.6,
+     "z": 68.2,
+     "in": true
+    }
+   ],
+   "things": [
+    "GREEN SLIME",
+    "A LOOSE QUARTZ CRYSTAL"
+   ],
+   "bolts": 0,
+   "tris": 5340
+  },
+  "dun": {
+   "level": 1,
+   "lv": "down",
+   "busy": false,
+   "lot": 1,
+   "objs": 10,
+   "lights": 5,
+   "sol": 9,
+   "tris": 494,
+   "skel": true
+  },
+  "tris": 25264,
+  "calls": 55,
+  "hp": 1,
+  "jour": []
+ },
+ "nobottle": {
+  "have": 0,
+  "thing": true,
+  "last": "YOU NEED A BOTTLE TO HOLD THE SLIME."
+ },
+ "bottle": {
+  "have": 1,
+  "bottles": 1,
+  "thing": false,
+  "last": "YOU SCOOP THE GREEN SLIME INTO A BOTTLE."
+ },
+ "loot": {
+  "names": [
+   "A LOOSE QUARTZ CRYSTAL"
+  ],
+  "cash": [
+   100,
+   100
+  ],
+  "fight": 0.5
+ },
+ "L1all": {
+  "mob": {
+   "level": 1,
+   "slimes": [
+    {
+     "k": "green",
+     "hp": 0,
+     "dead": true,
+     "gone": true,
+     "x": 838.9,
+     "z": 59.2
+    },
+    {
+     "k": "green",
+     "hp": -7,
+     "dead": true,
+     "gone": false,
+     "x": 829.4,
+     "z": 63.1
+    },
+    {
+     "k": "green",
+     "hp": -7,
+     "dead": true,
+     "gone": false,
+     "x": 829.5,
+     "z": 60.1
+    },
+    {
+     "k": "green",
+     "hp": -7,
+     "dead": true,
+     "gone": false,
+     "x": 837.7,
+     "z": 68.3
+    },
+    {
+     "k": "green",
+     "hp": -7,
+     "dead": true,
+     "gone": false,
+     "x": 832.6,
+     "z": 67.2
+    }
+   ],
+   "res": [
+    {
+     "k": "ogre",
+     "hp": 3,
+     "dead": false,
+     "agg": false,
+     "x": 833.5,
+     "z": 66.2,
+     "in": true
+    },
+    {
+     "k": "ogre_mage",
+     "hp": 3,
+     "dead": false,
+     "agg": false,
+     "x": 838,
+     "z": 60.1,
+     "in": true
+    },
+    {
+     "k": "ogre_guard_light",
+     "hp": 3,
+     "dead": false,
+     "agg": false,
+     "x": 837.5,
+     "z": 60.5,
+     "in": true
+    },
+    {
+     "k": "ogre_guard_heavy",
+     "hp": 3,
+     "dead": false,
+     "agg": false,
+     "x": 836,
+     "z": 67.9,
+     "in": true
+    }
+   ],
+   "things": [
+    "GREEN SLIME",
+    "GREEN SLIME",
+    "GREEN SLIME",
+    "GREEN SLIME"
+   ],
+   "bolts": 0,
+   "tris": 5340
+  },
+  "dun": {
+   "level": 1,
+   "lv": "down",
+   "busy": false,
+   "lot": 1,
+   "objs": 10,
+   "lights": 5,
+   "sol": 9,
+   "tris": 494,
+   "skel": true
+  },
+  "tris": 25232,
+  "calls": 54,
+  "hp": 1,
+  "jour": [
+   "THE GREEN SLIME BURSTS.",
+   "YOUR SKILL IN MARTIAL ARTS HAS INCREASED. IT IS NOW 0.4.",
+   "THE GREEN SLIME BURSTS.",
+   "YOUR SKILL IN MARTIAL ARTS HAS INCREASED. IT IS NOW 0.5.",
+   "YOU PICK UP THE QUARTZ CRYSTAL."
+  ]
+ },
+ "L3attack": {
+  "mob": {
+   "level": 3,
+   "slimes": [
+    {
+     "k": "blue",
+     "hp": 3,
+     "dead": false,
+     "gone": false,
+     "x": 914.8,
+     "z": 62.9
+    },
+    {
+     "k": "blue",
+     "hp": 3,
+     "dead": false,
+     "gone": false,
+     "x": 919.1,
+     "z": 68
+    },
+    {
+     "k": "blue",
+     "hp": 3,
+     "dead": false,
+     "gone": false,
+     "x": 910.6,
+     "z": 68.8
+    },
+    {
+     "k": "purple",
+     "hp": 5,
+     "dead": false,
+     "gone": false,
+     "x": 917.9,
+     "z": 59.8
+    },
+    {
+     "k": "purple",
+     "hp": 5,
+     "dead": false,
+     "gone": false,
+     "x": 913.1,
+     "z": 65.9
+    },
+    {
+     "k": "purple",
+     "hp": 5,
+     "dead": false,
+     "gone": false,
+     "x": 910.9,
+     "z": 62.3
+    },
+    {
+     "k": "red",
+     "hp": 7,
+     "dead": false,
+     "gone": false,
+     "x": 920.9,
+     "z": 59.2
+    },
+    {
+     "k": "red",
+     "hp": 7,
+     "dead": false,
+     "gone": false,
+     "x": 914.4,
+     "z": 63
+    }
+   ],
+   "res": [
+    {
+     "k": "skeleton_guard_light",
+     "hp": 3,
+     "dead": false,
+     "agg": false,
+     "x": 917.2,
+     "z": 68.8,
+     "in": true
+    },
+    {
+     "k": "skeleton_guard_heavy",
+     "hp": 5,
+     "dead": false,
+     "agg": false,
+     "x": 911.4,
+     "z": 67.9,
+     "in": true
+    },
+    {
+     "k": "Minion",
+     "hp": 3,
+     "dead": false,
+     "agg": true,
+     "x": 920.5,
+     "z": 59,
+     "in": true
+    }
+   ],
+   "things": [],
+   "bolts": 0,
+   "tris": 8544
+  },
+  "dun": {
+   "level": 3,
+   "lv": "down",
+   "busy": false,
+   "lot": 3,
+   "objs": 10,
+   "lights": 5,
+   "sol": 9,
+   "tris": 494,
+   "skel": true
+  },
+  "tris": 26316,
+  "calls": 50,
+  "hp": 1,
+  "jour": []
+ },
+ "trace": [
+  "Warrior,1.52,-0.08,-,true,-2.04,1.56,1,true",
+  "Warrior,1.52,-0.18,-,true,-3.21,1.56,1,true",
+  "Warrior,1.52,-0.33,-,true,-4.08,1.56,1,true",
+  "Warrior,1.44,-0.48,-,true,-4.45,1.56,1,true",
+  "Warrior,1.36,-0.58,-,true,-4.57,1.56,1,true",
+  "Warrior,1.28,-0.68,-,true,-4.63,1.56,1,true",
+  "Warrior,1.17,-0.83,-,true,-4.68,1.56,1,true",
+  "Warrior,1.09,-0.93,-,true,-4.7,1.56,0.951,true",
+  "Warrior,1.01,-1.03,-,true,-4.71,1.56,0.952,true",
+  "Warrior,0.93,-1.13,-,true,-4.71,1.56,0.953,true",
+  "Warrior,0.85,-1.23,-,true,-4.72,1.56,0.954,true",
+  "Warrior,0.77,1.76,1H_Melee_Attack_Chop,false,-4.72,1.56,0.956,true",
+  "Warrior,0.77,1.66,1H_Melee_Attack_Chop,false,-4.72,1.56,0.957,true",
+  "Warrior,0.77,1.56,1H_Melee_Attack_Chop,false,-4.72,1.56,0.958,true",
+  "Warrior,0.77,1.46,1H_Melee_Attack_Chop,false,-4.72,1.56,0.959,true",
+  "Warrior,0.77,1.36,1H_Melee_Attack_Chop,false,-4.72,1.56,0.88,true"
+ ],
+ "L4fight": {
+  "mob": {
+   "level": 4,
+   "slimes": [],
+   "res": [
+    {
+     "k": "skeleton_mage",
+     "hp": 3,
+     "dead": false,
+     "agg": false,
+     "x": 955.9,
+     "z": 62.9,
+     "in": true
+    },
+    {
+     "k": "skeleton_guard_heavy",
+     "hp": 5,
+     "dead": false,
+     "agg": false,
+     "x": 953.8,
+     "z": 60.4,
+     "in": true
+    },
+    {
+     "k": "Warrior",
+     "hp": 5,
+     "dead": false,
+     "agg": true,
+     "x": 957.3,
+     "z": 68.6,
+     "in": true
+    },
+    {
+     "k": "Rogue",
+     "hp": 3,
+     "dead": false,
+     "agg": true,
+     "x": 960.7,
+     "z": 68,
+     "in": true
+    }
+   ],
+   "things": [],
+   "bolts": 1,
+   "tris": 0
+  },
+  "dun": {
+   "level": 4,
+   "lv": "down",
+   "busy": false,
+   "lot": 4,
+   "objs": 10,
+   "lights": 5,
+   "sol": 9,
+   "tris": 494,
+   "skel": true
+  },
+  "tris": 19897,
+  "calls": 55,
+  "hp": 0.892,
+  "jour": []
+ },
+ "skelKill": [
+  "skeleton_mage:0",
+  "skeleton_guard_heavy:2",
+  "skeleton_guard_heavy:-1",
+  "Warrior:2",
+  "Warrior:-1",
+  "Rogue:0"
+ ],
+ "L4killed": {
+  "mob": {
+   "level": 4,
+   "slimes": [],
+   "res": [
+    {
+     "k": "skeleton_guard_heavy",
+     "hp": -1,
+     "dead": true,
+     "agg": true,
+     "x": 953.6,
+     "z": 60,
+     "in": true
+    },
+    {
+     "k": "Warrior",
+     "hp": -1,
+     "dead": true,
+     "agg": true,
+     "x": 956.7,
+     "z": 68.5,
+     "in": true
+    },
+    {
+     "k": "Rogue",
+     "hp": 0,
+     "dead": true,
+     "agg": true,
+     "x": 961,
+     "z": 67.9,
+     "in": true
+    }
+   ],
+   "things": [
+    "COINS ($4)",
+    "A LOOSE AMETHYST",
+    "A LOOSE GEODE",
+    "COINS ($9)"
+   ],
+   "bolts": 0,
+   "tris": 0
+  },
+  "dun": {
+   "level": 4,
+   "lv": "down",
+   "busy": false,
+   "lot": 4,
+   "objs": 10,
+   "lights": 5,
+   "sol": 9,
+   "tris": 494,
+   "skel": true
+  },
+  "tris": 19711,
+  "calls": 55,
+  "hp": 0.857,
+  "jour": [
+   "THE ROGUE FALLS."
+  ]
+ },
+ "L5again": {
+  "mob": {
+   "level": 5,
+   "slimes": [],
+   "res": [
+    {
+     "k": "skeleton_mage",
+     "hp": 3,
+     "dead": false,
+     "agg": false,
+     "x": 991.5,
+     "z": 67.9,
+     "in": true
+    },
+    {
+     "k": "skeleton_reaper",
+     "hp": 6,
+     "dead": false,
+     "agg": false,
+     "x": 997.8,
+     "z": 64.5,
+     "in": true
+    },
+    {
+     "k": "Warrior",
+     "hp": 5,
+     "dead": false,
+     "agg": false,
+     "x": 999.6,
+     "z": 68.3,
+     "in": true
+    },
+    {
+     "k": "Mage",
+     "hp": 3,
+     "dead": false,
+     "agg": true,
+     "x": 994.9,
+     "z": 61.2,
+     "in": true
+    },
+    {
+     "k": "Gold",
+     "hp": 9,
+     "dead": false,
+     "agg": false,
+     "x": 999.2,
+     "z": 58.6,
+     "in": true
+    }
+   ],
+   "things": [],
+   "bolts": 0,
+   "tris": 0
+  },
+  "dun": {
+   "level": 5,
+   "lv": "down",
+   "busy": false,
+   "lot": 5,
+   "objs": 10,
+   "lights": 5,
+   "sol": 6,
+   "tris": 426,
+   "skel": true
+  },
+  "tris": 16420,
+  "calls": 10,
+  "hp": 1,
+  "jour": []
+ },
+ "out": {
+  "mob": {
+   "level": 0,
+   "slimes": [],
+   "res": [],
+   "things": [],
+   "bolts": 0,
+   "tris": 0
+  },
+  "dun": {
+   "level": 0,
+   "lv": "up",
+   "busy": false,
+   "lot": 0,
+   "objs": 0,
+   "lights": 0,
+   "sol": 0,
+   "tris": 0,
+   "skel": true
+  },
+  "tris": 178742,
+  "calls": 1229,
+  "hp": 1,
+  "jour": []
+ },
+ "errors": [
+  "Fetch API cannot load file:///home/runner/work/thestrangest/thestrangest/dist/market.html?fresh=1&hour=13&wx=CLEAR. URL scheme \"file\" is not supported.",
+  "THREE.Sprite: \"Raycaster.camera\" needs to be set in order to raycast against sprites.",
+  "Fetch API cannot load file:///home/runner/work/thestrangest/thestrangest/dist/market.html?fresh=1&hour=13&wx=CLEAR. URL scheme \"file\" is not supported.",
+  "Fetch API cannot load file:///home/runner/work/thestrangest/thestrangest/dist/market.html?fresh=1&hour=13&wx=CLEAR. URL scheme \"file\" is not supported."
+ ]
+}

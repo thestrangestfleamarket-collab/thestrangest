@@ -16,19 +16,21 @@ const NPCMID=new THREE.Vector3();
 function makeNPC(D,o){ const N={key:o.key,name:o.name,names:o.names,lv:o.lv||'down',hp:1,sta:1}; const b=B64, geo=o.geo||new THREE.BufferGeometry();
   if(!o.geo){ const P=new Float32Array(b(D.p).buffer); geo.setAttribute('position',new THREE.BufferAttribute(P,3)); geo.setAttribute('color',new THREE.BufferAttribute(b(D.c),3,true)); geo.setAttribute('reg',new THREE.BufferAttribute(Float32Array.from(b(D.r)),1)); }
   const RG=geo.attributes.reg.array; geo.computeVertexNormals();
-  N.renorm=()=>{ geo.computeVertexNormals(); const P=geo.attributes.position.array, Nn=geo.attributes.normal.array, acc=new Map(), key=i=>Math.round(P[i]*2e3)+','+Math.round(P[i+1]*2e3)+','+Math.round(P[i+2]*2e3);
+  N.renorm=()=>{ geo.computeVertexNormals(); const P=geo.attributes.position.array, Nn=geo.attributes.normal.array, acc=new Map(); let mx=0; for(let i=0;i<P.length;i++)mx=Math.max(mx,Math.abs(P[i]));
+    const key=mx*2e3<65000?i=>((Math.round(P[i]*2e3)+65536)*131072+Math.round(P[i+1]*2e3)+65536)*131072+Math.round(P[i+2]*2e3)+65536:i=>Math.round(P[i]*2e3)+','+Math.round(P[i+1]*2e3)+','+Math.round(P[i+2]*2e3);
     for(let i=0;i<P.length;i+=3){ const k=key(i), a=acc.get(k)||[0,0,0]; a[0]+=Nn[i]; a[1]+=Nn[i+1]; a[2]+=Nn[i+2]; acc.set(k,a); }
     for(let i=0;i<P.length;i+=3){ const a=acc.get(key(i)), l=Math.hypot(...a)||1; Nn[i]=a[0]/l; Nn[i+1]=a[1]/l; Nn[i+2]=a[2]/l; } geo.attributes.normal.needsUpdate=true; geo.computeBoundingSphere(); geo.computeBoundingBox(); };
   geo.computeBoundingBox(); if(!o.skin)geo.translate(0,-geo.boundingBox.min.y,0);
   const tall=o.tall||geo.boundingBox.max.y-geo.boundingBox.min.y;
   N.renorm();
   { const P=geo.attributes.position.array, Nn=geo.attributes.normal.array, n=P.length/3, rk=o.rank, SH=new Float32Array(n), w=tall*.07, grid=new Map(),
-      C=i=>[Math.floor(P[i*3]/w),Math.floor(P[i*3+1]/w),Math.floor(P[i*3+2]/w)];
-    for(let i=0;i<n;i++){ const k=C(i).join(); (grid.get(k)||grid.set(k,[]).get(k)).push(i); }
-    for(let i=0;i<n;i++){ const r=rk[RG[i]]||0, [cx,cy,cz]=C(i); let best=0;
-      for(let a=-1;a<=1;a++)for(let b=-1;b<=1;b++)for(let c=-1;c<=1;c++){ const L=grid.get((cx+a)+','+(cy+b)+','+(cz+c)); if(!L)continue;
-        for(const j of L){ if((rk[RG[j]]||0)<=r)continue; const dx=P[j*3]-P[i*3], dy=P[j*3+1]-P[i*3+1], dz=P[j*3+2]-P[i*3+2], d=Math.hypot(dx,dy,dz);
-          if(d>=w||dy<-w*.25||dx*Nn[i*3]+dy*Nn[i*3+1]+dz*Nn[i*3+2]<-w*.15)continue; best=Math.max(best,1-d/w); } }
+      CI=new Int32Array(n*3); let cm=0; for(let i=0;i<n*3;i++){ CI[i]=Math.floor(P[i]/w); cm=Math.max(cm,Math.abs(CI[i])); }
+    const ck=cm<500?(x,y,z)=>((x+512)*1024+y+512)*1024+z+512:(x,y,z)=>x+','+y+','+z, RK=new Float64Array(n), w2=w*w*1.000001;
+    for(let i=0;i<n;i++){ RK[i]=rk[RG[i]]||0; const k=ck(CI[i*3],CI[i*3+1],CI[i*3+2]); (grid.get(k)||grid.set(k,[]).get(k)).push(i); }
+    for(let i=0;i<n;i++){ const r=RK[i], cx=CI[i*3], cy=CI[i*3+1], cz=CI[i*3+2], px=P[i*3], py=P[i*3+1], pz=P[i*3+2], nx=Nn[i*3], ny=Nn[i*3+1], nz=Nn[i*3+2]; let best=0;
+      for(let a=-1;a<=1;a++)for(let b=-1;b<=1;b++)for(let c=-1;c<=1;c++){ const L=grid.get(ck(cx+a,cy+b,cz+c)); if(!L)continue;
+        for(let q=0;q<L.length;q++){ const j=L[q]; if(RK[j]<=r)continue; const dx=P[j*3]-px, dy=P[j*3+1]-py, dz=P[j*3+2]-pz;
+          if(dy<-w*.25||dx*nx+dy*ny+dz*nz<-w*.15||dx*dx+dy*dy+dz*dz>=w2)continue; const d=Math.hypot(dx,dy,dz); if(d>=w)continue; best=Math.max(best,1-d/w); } }
       SH[i]=best; }
     geo.setAttribute('sh',new THREE.BufferAttribute(SH,1)); if(!geo.attributes.fab)geo.setAttribute('fab',new THREE.BufferAttribute(new Float32Array(n),1)); }
   N.sm=new THREE.WebGLRenderTarget(256,256); N.sm.depthTexture=new THREE.DepthTexture(256,256); N.smCam=new THREE.OrthographicCamera(-1.8,1.8,1.8,-1.8,.1,14); N.LVP={value:new THREE.Matrix4()};

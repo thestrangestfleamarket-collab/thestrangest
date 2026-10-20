@@ -3521,3 +3521,11 @@ initial download and load super fast"; then "Go")
   per-frame checks for being in it (`075-main-13.js`, `161-perf.js`). `apartments` is no longer an away key; `?bring=apartments` does nothing.
   The keep's lot (`lcastle`, still away) keeps the 1000-tile offset it had through the apartments' layout key, so nothing else moves.
 - **Friends** (owner, 20 Oct 2026: "friends on same block yes theres only 1 right now"): friends always land on the same block.
+
+## 20 Oct 2026: the people built faster at the start, the same vertices
+
+- **Faster first visit, part 2** (`076-npc-map.js`, `072-walker3d.js`): a profile of the start on main showed the NPCs' self-shading
+  (`makeNPC`'s `sh`, which looks around every vertex for higher-ranked parts) at about 3 s and building the figures from their shapes
+  (`W3.warm`, `meshOf0`) at about 6 s of the 21 s. The shading now keys its grid and its normal smoothing with numbers instead of text and
+  makes the cheap tests before the distance; the figure builder skips the empty cells without making small arrays. The output is the same:
+  `tests/texhash.cjs` now also hashes every body built at the start (positions, normals, colours, `sh`) and fails if any differs.

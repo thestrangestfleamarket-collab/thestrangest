@@ -3511,3 +3511,11 @@ initial download and load super fast"; then "Go")
   (claude.ai/artifact/PnmQqhkusfewby35tf4zo5) or drop it: "yes" to dropping it): the game lives only on thestrangestfleamarket.com;
   the publishing steps and that link are out of CLAUDE.md, and no chat publishes the game to claude.ai any more. `dist/market.html`
   stays as the single-file page the tests drive.
+
+## 20 Oct 2026: lighter checks on pull requests
+
+- **Fewer, faster checks** (owner, 20 Oct 2026, after a pull request's checks took about 25 minutes: "ok do less checks", then "go"):
+  the budget, the same picture and the same pixels now run side by side as their own jobs (`.github/workflows/site.yml`), so the wait
+  is the slowest one, not all of them. The same picture takes the base once per place, not twice, and allows 5% of the pixels to differ
+  (the base differs from itself by up to 2%; `SAMEPIC_NOISE=1` measures it again). The picture and pixel checks run only when the game
+  changes (`src/`, `data/`, the build) or those checks do; the budget and the lost picture always run.

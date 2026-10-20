@@ -17,34 +17,15 @@ jobs:
       - run: npm ci --no-audit --no-fund
       - run: npx playwright install --with-deps chromium
       - name: Build
-        run: python3 build.py 2>&1 | tee out-build.log
-      - name: Site check
-        run: node tests/site.cjs 2>&1 | tee out-site.log
-        continue-on-error: true
-      - name: Head on the website
-        run: node tests/splitcheck.cjs site . out/head-site.json "$(cat tests/.tour 2>/dev/null)"
-        continue-on-error: true
-      - name: Head as the artifact
-        run: node tests/splitcheck.cjs file . out/head-file.json "$(cat tests/.tour 2>/dev/null)"
-        continue-on-error: true
-      - name: Places on the website
-        run: node tests/places.cjs out 2>&1 | tee out-places.log
-        continue-on-error: true
+        run: MIN=0 python3 build.py
       - name: Base
         run: |
           git fetch --depth=1 origin main
           git worktree add ../base FETCH_HEAD
           ln -s "$PWD/node_modules" ../base/node_modules
-          (cd ../base && python3 build.py)
-          node tests/splitcheck.cjs site ../base out/base-site.json ""
-        continue-on-error: true
-      - name: Budget against main (start, street, park; readable builds)
-        run: |
-          { MIN=0 python3 build.py && python3 tools/perfprof.py
-          (cd ../base && MIN=0 python3 build.py && python3 tools/perfprof.py)
-          node tests/startprof.cjs out/base-prof.json ../base/dist/market-prof.html
-          node tests/startprof.cjs out/head-prof.json dist/market-prof.html
-          node tests/budget.cjs out/base-prof.json out/head-prof.json; } 2>&1 | tail -80 > out-budget.log
+          (cd ../base && MIN=0 python3 build.py)
+      - name: Compare places
+        run: node tests/arcadecmp.cjs 2>&1 | tee out-cmp.log
         continue-on-error: true
       - name: Publish
         if: always()

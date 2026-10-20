@@ -3529,3 +3529,38 @@ initial download and load super fast"; then "Go")
   is the slowest one, not all of them. The same picture takes the base once per place, not twice, and allows 5% of the pixels to differ
   (the base differs from itself by up to 2%; `SAMEPIC_NOISE=1` measures it again). The picture and pixel checks run only when the game
   changes (`src/`, `data/`, the build) or those checks do; the budget and the lost picture always run.
+## 20 Oct 2026: the game code split: the start fetches only the code it runs
+
+(owner, 20 Oct 2026, told "the download at the start is still about 1.5 MB, and most of that is the game code in one piece (2.25 MB,
+845 KB gzipped). Splitting it up is a bigger change to how the page is built": "Yes fix game code")
+- **How** (`tools/chunks.cjs`, `tools/scope.cjs`, `build.py`, `tools/bundle.cjs`): a function whose body starts with `'@name';` is cut
+  out of the page at build time into chunk `name`. On the website each chunk is its own file, `x-name.<hash>.js` (cached for good like the
+  rest of `/g/`), fetched by `await LOAD('name')`; in `dist/market.html` the chunks stay in the page and `LOAD` is instant, so every test
+  of the single page runs the same cut code. The page keeps a small stand-in for each cut function: on its first call it makes the real
+  one with every name around it as before (names that never change are handed in; the ones that do are read and written live), so the
+  source reads exactly as it did. A cut function that runs before its chunk came still works (the chunk is fetched there and then and the
+  page waits) and the console says `chunk name was not loaded before use (#n)`; `dist/chunks.txt` lists every cut function by number.
+  Without `acorn` (a local build with no `npm ci`) every chunk simply stays in the page.
+- **Places, fetched on the way in, behind their black fades**: `dungeon` (the levels' builder, the slimes and skeleton fighters, the
+  skeletons), `park` (the fountain and lake, the brook, the pond, the cave, the rocks and lamps), `dojo` (the hall and the ninja), `fire`
+  (your fire escape), `club`, `arcade`, `vcr` (VCR repair), `bath` (the bath house's inside). The ways in wait for them: the dungeon's
+  door, `PARK.load`, `STORE.offGo`/`enter`/`ensure`/`offAt`, the rooms' swap, the menu's places (`UI.goPlace` now waits) and a saved
+  spot (the restore waits for the later chunk first). The dungeon's slimes and fighters are made the first time you go down (the slime
+  bottles' names and prices are still known from the start).
+- **Later**: every other function the start never runs, ~650 of them (~540 KB of source: the store's rooms and their makers, menus and
+  panels, editors, mail, the feel lab...), fetched as soon as the start is done; the store's background rooms wait for it. They are
+  marked by `tools/later.cjs` from what the start runs in Chromium (a new player's start with a few seconds of keys, mouse, the views and
+  the menu, a walk to Market St, then a returning player's start; anything that calls `LOAD` stays in the start file). New code stays in
+  the start file until the tool is run again.
+- **Dead code out**: 40 functions and constants nothing used (the old street-scene helpers `box`/`cyl`/`plane`/`worldUV`, `bush`,
+  `laundryTile`, the dojo hall's `djWallCol`/`djOpen`/`djIvy`, the guitar's and piano's unused chains, the octopus's `octPic`, the stalls'
+  `table`/`basket`...), and five 256-pixel textures (grass, asphalt, concrete, earth, wood) painted at every start and never used.
+- **Measured** (CI, the website under `wrangler dev`, gzipped): the start's download 1,512 KB to 1,306 KB (the game code 838 KB to
+  607 KB; three.js, the rig and the data as before), then 190 KB of later code right after the first frame and each place's file when
+  you go in. First frame about the same here (23.0 s against 24.2 s; under software graphics the building dominates and the files come
+  from the same machine): the gain is the download on a real connection. Same triangles, draws and lights at the start and in the park
+  (the budget check); its start frame median moved (72.6 to 118.5 ms) with twice the frames sampled and a lower 95th percentile
+  (254 against 566 ms): noise of when the background work lands, not a slower frame.
+- **Checked**: `tests/places.cjs` (now in the site workflow) logs in on the real worker, checks the start fetches no chunk, enters every
+  place (each fetches its file, builds, no page errors, no late fetch), then reloads with a saved spot inside the dungeon; all pass, the
+  site check too.

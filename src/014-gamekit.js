@@ -6,7 +6,7 @@ const PROPS=[]; let PNAME='object';
 function prop(boxes,extra,o){ const fp=boxes.filter(b=>b.z0===0||b.foot);
   const p={boxes,extra,x0:Math.min(...fp.map(b=>b.x0)),y0:Math.min(...fp.map(b=>b.y0)),x1:Math.max(...fp.map(b=>b.x1)),y1:Math.max(...fp.map(b=>b.y1)),lv:0,id:PROPS.length,name:PNAME,...o};
   p.chunk=chunkAtL((p.x0+p.x1)/2,(p.y0+p.y1)/2,p.lv); PROPS.push(p); return p; }
-const sided=b=>b, cutOut=f=>null; function zShift(b,dz){ const nb={...b,z0:b.z0+dz,z1:b.z1+dz}; return b.fs?sided(nb):nb; }
+const sided=b=>b; function zShift(b,dz){ const nb={...b,z0:b.z0+dz,z1:b.z1+dz}; return b.fs?sided(nb):nb; }
 const SQB={lv:-1,hall:{x0:78.5,x1:93.5,y0:-85.2,y1:-77},gym:{x0:78.5,x1:101.24,y0:-99.74,y1:-85.2},lau:{x0:93.5,x1:99.2,y0:-85.2,y1:-77,h:88,lv:-1},H:126,pool:{x0:78.5,x1:101.24,y0:-99.5,y1:-85.5,lv:-2}};
 const LSEED={x0:66,split:76,a0:78.5,x1:93.5,c0:96,deep:-104.5,back:-89.5,walk:-77,street:-70,grass:-64+14,end:-56+14,
   b2:106,sr:[108.5,119.1],sx0:40,sx1:118,px0:40,px1:118,pend:-28,gym:[70,80],gy1:-46,pool:[80,97],pyp:-44,theatre:[46,66],ty1:-36.5,py0:-58,py1:-38,paths:[[74,77],[88,90],[54,57],[105,107]],
@@ -48,7 +48,6 @@ function roadCol(x,y,w){ const c=w?[86,87,90]:[62,64,68], n=grain(x,y,37,1.3), S
   if(!w&&y>=S.street&&y<S.grass&&Math.abs(Math.abs(y-yc)-1.6)<.45&&cvNoise(x/1.1,y/1.1,147)>.72)return mt('road',speck(sh(c,.82),x,y,149));
   return mt('road',speck(n<.34?sh(c,.92):n>.68?sh(c,w?1.08:1.06):c,x,y,41)); }
 const DTBRICK=[118,50,44];
-const FOOT=(x,y,w,d)=>({x0:x,y0:y,x1:x+w,y1:y+d,z0:0,z1:.01,foot:1,top:()=>null,fi:()=>null,fj:()=>null});
 
 const GRASSP=[[62,100,50],[76,116,58],[90,132,66],[104,146,74]], GRASSL=[128,168,88], GRASSS=[50,84,42];
 const GRASSY=[[96,104,54],[110,116,60],[124,128,68],[136,138,76]], GEARTH=[[104,88,64],[118,100,74]], GTROD=.32;

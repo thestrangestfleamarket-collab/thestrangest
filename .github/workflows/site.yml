@@ -66,7 +66,7 @@ jobs:
           git fetch --depth=1 origin ${{ github.base_ref }}
           git worktree add ../base FETCH_HEAD
           ln -s "$PWD/node_modules" ../base/node_modules
-          P=${{ matrix.test == 'budget' && 'python3 tools/perfprof.py' || 'true' }}
+          P="${{ matrix.test == 'budget' && 'python3 tools/perfprof.py' || 'true' }}"
           (cd ../base && MIN=0 python3 build.py && $P)
           MIN=0 python3 build.py && $P
           mkdir -p out

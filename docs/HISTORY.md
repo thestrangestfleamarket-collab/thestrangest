@@ -3311,5 +3311,5 @@ it will be off map)"; his pick of the options: "Outside view"; `058c-fireview.js
 - **Cost**: built only on the first visit and drawn only while you're on the landing (one group): baked boxes in the game's box way (the
   near landing and your facade at 24 texels a tile, the rest at 8), one instanced draw of ~200 far boxes (~2,400 triangles, the far
   city's program), 8 triangles of skyline panels (the panels' program), one ground plane, two instanced draws of cars (~1,100
-  triangles). Triangles on screen and draw calls measured in the test (below). One lamp at night. Programs: the store's Lambert ones
+  triangles). Measured on the landing (whole frame): 43,800 triangles and 42 draw calls in the isometric view, 45,800 and 48 in the behind view. In the isometric view the far boxes that would stand between the camera and you are left out (worked out again only when the view turns); the neighbours next to your building are at most 5 storeys so they never hide you. One lamp at night. Programs: the store's Lambert ones
   (front-sided for the buildings), the cars' vertex-colour Lambert and Basic.

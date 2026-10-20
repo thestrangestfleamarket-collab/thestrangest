@@ -3,7 +3,7 @@ const RINSP={on:false,sel:null,f:''}; window.RINSP=RINSP;
   let el=null, iv=0, raf=0, fc=0, f0=0, n=0, hl=null, hlT=0, last=null, lastH=[];
   const esc=s=>String(s).replace(/[&<>"]/g,c=>'&#'+c.charCodeAt(0)+';'), kb=b=>b<1048576?(b/1024).toFixed(0)+'K':(b/1048576).toFixed(1)+'M';
   const mats=o=>Array.isArray(o.material)?o.material:o.material?[o.material]:[];
-  const tris=o=>{ const g=o.geometry; if(o.isSprite)return 2; if(!g||!g.attributes)return 0; const c=g.index?g.index.count:g.attributes.position?g.attributes.position.count:0, d=g.drawRange, k=Math.max(0,Math.min(c-d.start,d.count));
+  const tris=o=>{ '@later'; const g=o.geometry; if(o.isSprite)return 2; if(!g||!g.attributes)return 0; const c=g.index?g.index.count:g.attributes.position?g.attributes.position.count:0, d=g.drawRange, k=Math.max(0,Math.min(c-d.start,d.count));
     return Math.round((o.isMesh?k/3:o.isPoints?k:o.isLineSegments?k/2:Math.max(0,k-1))*(o.isInstancedMesh?o.count:1)); };
   const calls=o=>Array.isArray(o.material)?(o.geometry.groups.length||1):1;
   const gb=g=>{ if(!g||!g.attributes)return 0; let b=g.index?g.index.array.byteLength:0; for(const k in g.attributes){ const a=g.attributes[k]; b+=(a.isInterleavedBufferAttribute?a.data.array:a.array).byteLength; } return b; };
@@ -11,18 +11,18 @@ const RINSP={on:false,sel:null,f:''}; window.RINSP=RINSP;
   const tsz=t=>{ const i=t.image||{}, w=i.width||i.videoWidth||0, h=i.height||i.videoHeight||0; return [w,h,Math.round(w*h*4*(t.generateMipmaps&&t.minFilter!==THREE.NearestFilter&&t.minFilter!==THREE.LinearFilter?1.33:1))]; };
   const prog=m=>{ const p=renderer.properties.get(m).currentProgram; return p?p.name+' #'+p.id:''; };
   let NM=new Map(), RN=new Map(); const OP=new WeakMap();
-  const names=()=>{ NM=new Map(); RN=new Map(); for(const k in MAPG)NM.set(MAPG[k],'MAP '+k); for(const k in BATCH.meshes||{})NM.set(BATCH.meshes[k],'BATCH '+k);
+  const names=()=>{ '@later'; NM=new Map(); RN=new Map(); for(const k in MAPG)NM.set(MAPG[k],'MAP '+k); for(const k in BATCH.meshes||{})NM.set(BATCH.meshes[k],'BATCH '+k);
     for(const N of NPCS)if(N.g)NM.set(N.g,'NPC '+(N.name||N.key)); for(const X of NPCS.extra||[])if(X&&X.g)NM.set(X.g,'NPC '+(X.name||X.key||'extra')); NM.set(W3.group,'YOU');
     for(const R of STORE.rooms||[])RN.set('store:'+R.id,R.name||R.id); };
-  const objOf=o=>{ const A=o.userData.objOf; if(!A)return null; let r=OP.get(o); if(r&&r.A===A)return r; const c=new Map(), w=new Map();
+  const objOf=o=>{ '@later'; const A=o.userData.objOf; if(!A)return null; let r=OP.get(o); if(r&&r.A===A)return r; const c=new Map(), w=new Map();
     for(const q of A)if(q){ c.set(q.place,(c.get(q.place)||0)+1); w.set(q,(w.get(q)||0)+1); } const pl=[...c.entries()].sort((a,b)=>b[1]-a[1]);
     r={A,top:pl.length?(RN.get(pl[0][0])||pl[0][0])+(pl.length>1?' +'+(pl.length-1):''):'',objs:[...w.entries()].sort((a,b)=>b[1]-a[1]).slice(0,8).map(([q,k])=>(RN.get(q.place)||q.place)+':'+q.name+' '+k*2)}; OP.set(o,r); return r; };
-  const label=o0=>{ let o=o0.userData.cullOf||o0, leaf=null, top=null, bt=null; for(let q=o;q&&q!==scene;q=q.parent){ const k=NM.get(q); if(k){ if(k[0]==='M')top=top||k; else if(k[0]==='B')bt=bt||k; else leaf=leaf||k; } else if(!leaf&&q.name)leaf=q.name; }
+  const label=o0=>{ '@later'; let o=o0.userData.cullOf||o0, leaf=null, top=null, bt=null; for(let q=o;q&&q!==scene;q=q.parent){ const k=NM.get(q); if(k){ if(k[0]==='M')top=top||k; else if(k[0]==='B')bt=bt||k; else leaf=leaf||k; } else if(!leaf&&q.name)leaf=q.name; }
     const r=objOf(o)||(o.parent&&objOf(o.parent)); if(!leaf&&(bt||r))leaf=(bt||'BATCH')+(r&&r.top?' · '+r.top:''); if(!leaf){ const m=mats(o)[0]; leaf=(o.parent&&o.parent!==scene&&o.parent.name?o.parent.name+' › ':'')+(o.geometry?o.geometry.type.replace('Geometry',''):o.type)+(m?' '+m.type.replace('Material',''):''); }
     if(o.userData.inner)leaf+=' (room part)'; return (top?top.slice(4)+' / ':'')+leaf; };
   const youIn=b=>pos.x>b.x0&&pos.x<b.x1&&pos.z>b.z0&&pos.z<b.z1&&py>b.y0-.3&&py<b.y1;
   const wbox=o=>{ if(o.isInstancedMesh){ if(!o.boundingBox)o.computeBoundingBox(); return BX.copy(o.boundingBox).applyMatrix4(o.matrixWorld); } const g=o.geometry; if(!g)return BX.makeEmpty(); if(!g.boundingBox)g.computeBoundingBox(); return BX.copy(g.boundingBox).applyMatrix4(o.matrixWorld); };
-  const collect=full=>{ names(); M4.multiplyMatrices(cam.projectionMatrix,cam.matrixWorldInverse); F.setFromProjectionMatrix(M4); P3.set(pos.x,py,pos.z);
+  const collect=full=>{ '@later'; names(); M4.multiplyMatrices(cam.projectionMatrix,cam.matrixWorldInverse); F.setFromProjectionMatrix(M4); P3.set(pos.x,py,pos.z);
     const RB=ROOMS.boxes(), fg=scene.fog&&scene.fog.isFog?scene.fog:null, seen=new Set(), drawn=new Set(), rows=new Map(), progs=new Set(), lights=[];
     const TH=(UI.things||[]).filter(th=>th.obj&&th.obj.visible&&(!th.obj.parent||th.obj.parent.visible)).map(th=>[th.name,th.obj.getWorldPosition(new THREE.Vector3()),th.near||th.reach||T]);
     scene.traverseVisible(o=>{ seen.add(o); if(o.isLight){ lights.push(o); return; } if(o.userData.rin||o.userData.cullOf||!(o.isMesh||o.isPoints||o.isLine||o.isSprite))return;
@@ -49,15 +49,15 @@ const RINSP={on:false,sel:null,f:''}; window.RINSP=RINSP;
       hid=lastH=[...H.values()].map(w=>({...w,why:[...w.why]})).sort((a,b)=>b.geoB+b.texB+b.tris*30-(a.geoB+a.texB+a.tris*30)); head.loadedTris=all; head.geoBytes=gB; head.texBytes=tB; RINSP.tot={all,gB,tB,L:head.lightsInScene}; }
     else if(RINSP.tot){ head.loadedTris=RINSP.tot.all; head.geoBytes=RINSP.tot.gB; head.texBytes=RINSP.tot.tB; head.lightsInScene=RINSP.tot.L; }
     return last={head,drawn:out,hidden:hid}; };
-  const detail=w=>{ if(!w)return ''; return w.objs.slice(0,6).map(o=>{ const ms=mats(o), r=objOf(o.userData.cullOf||o)||(o.parent&&objOf(o.parent));
+  const detail=w=>{ '@later'; if(!w)return ''; return w.objs.slice(0,6).map(o=>{ const ms=mats(o), r=objOf(o.userData.cullOf||o)||(o.parent&&objOf(o.parent));
       return '<div class="o">'+esc(o.type+(o.name?' "'+o.name+'"':'')+' · '+tris(o)+' tris'+(o.isInstancedMesh?' ('+o.count+' copies)':'')+' · shadow '+(o.castShadow?'CAST':'-')+'/'+(o.receiveShadow?'RECV':'-')+(o.frustumCulled?'':' · NEVER CULLED')+' · layers '+o.layers.mask+' · geo '+kb(gb(o.geometry)))+
         ms.map(m=>'<br>&nbsp;'+esc(m.type+(m.name?' "'+m.name+'"':'')+' · '+prog(m)+(m.customProgramCacheKey&&m.customProgramCacheKey()?' · key '+m.customProgramCacheKey().slice(0,60):'')+(m.transparent?' · transparent':''))+texs(m).map(t=>{ const [a,b,c]=tsz(t); return '<br>&nbsp;&nbsp;'+esc('texture '+a+'x'+b+' '+kb(c)); }).join('')).join('')+
         (r?'<br>&nbsp;'+esc('holds: '+r.objs.join(', ')):'')+'</div>'; }).join('')+(w.objs.length>6?'<div class="o">… '+(w.n-6)+' more</div>':''); };
-  const mark=w=>{ if(hl){ hl.removeFromParent(); hl.geometry.dispose(); hl.material.dispose(); hl=null; } if(!w)return; BU.makeEmpty(); for(const o of w.objs){ const b=wbox(o); if(!b.isEmpty())BU.union(b); } if(BU.isEmpty())return;
+  const mark=w=>{ '@later'; if(hl){ hl.removeFromParent(); hl.geometry.dispose(); hl.material.dispose(); hl=null; } if(!w)return; BU.makeEmpty(); for(const o of w.objs){ const b=wbox(o); if(!b.isEmpty())BU.union(b); } if(BU.isEmpty())return;
     hl=new THREE.Box3Helper(BU.clone(),0xff3df0); hl.material.depthTest=false; hl.material.transparent=true; hl.renderOrder=9999; hl.frustumCulled=false; hl.layers.mask=cam.layers.mask; hl.userData.rin=1; scene.add(hl); hlT=performance.now()+5000; };
   const row=(w,i,h)=>'<tr data-i="'+i+'"'+(RINSP.sel===w.name?' class="s"':'')+'><td>'+esc(w.name)+(w.n>1?' <span class="d">×'+w.n+'</span>':'')+'</td><td>'+w.tris.toLocaleString()+'</td>'+
     (h?'<td>'+kb(w.geoB+w.texB)+'</td><td class="w">'+esc(w.why.join(', '))+'</td>':'<td>'+w.calls+'</td><td>'+(w.sh?'Y':'')+'</td><td>'+w.dist+'</td><td>'+(w.inView?'Y':'<b>N</b>')+'</td><td class="w">'+esc(w.why.join(', '))+(w.act?' <span class="a">USE: '+esc(w.act)+'</span>':'')+'</td>')+'</tr>';
-  const draw=()=>{ if(!el)return; const D=collect(n++%4===0), h=D.head, f=RINSP.f.toLowerCase(), ok=w=>!f||w.name.toLowerCase().includes(f)||w.why.join(' ').toLowerCase().includes(f), dr=D.drawn.filter(ok).slice(0,60), hd=D.hidden.filter(ok).slice(0,30);
+  const draw=()=>{ '@later'; if(!el)return; const D=collect(n++%4===0), h=D.head, f=RINSP.f.toLowerCase(), ok=w=>!f||w.name.toLowerCase().includes(f)||w.why.join(' ').toLowerCase().includes(f), dr=D.drawn.filter(ok).slice(0,60), hd=D.hidden.filter(ok).slice(0,30);
     el.querySelector('.h').innerHTML=esc(h.fps+' FPS · '+h.ms+' MS · '+h.calls+' CALLS · '+h.tris.toLocaleString()+' TRIS'+(h.points?' · '+h.points+' PTS':'')+' (all passes)')+'<br>'+
       esc('PROGRAMS '+h.programs+' ('+h.progsOnScreen+' on screen) · GEOMETRIES '+h.geometries+' · TEXTURES '+h.textures)+'<br>'+
       esc('LIGHTS '+h.lightsInScene+' in scene, '+h.lightsLit+' lighting · SHADOWS '+(h.shadows.join(', ')||'none'))+'<br>'+
@@ -68,7 +68,7 @@ const RINSP={on:false,sel:null,f:''}; window.RINSP=RINSP;
     const s=D.drawn.find(w=>w.name===RINSP.sel)||D.hidden.find(w=>w.name===RINSP.sel); el.querySelector('.dt').innerHTML=s?'<b>'+esc(s.name)+'</b>'+detail(s):'<span class="d">click a row to light it up and see its parts</span>';
     if(hl&&performance.now()>hlT)mark(null); };
   const pick=h=>e=>{ const tr=e.target.closest('tr[data-i]'); if(!tr||!last)return; const w=(h?last.hidden:last.drawn)[+tr.dataset.i]; if(!w)return; RINSP.sel=RINSP.sel===w.name?null:w.name; mark(RINSP.sel?w:null); draw(); };
-  const make=()=>{ const css=document.createElement('style'); css.textContent=`#rinsp{position:fixed;left:calc(12px + env(safe-area-inset-left,0px));top:12px;z-index:16;width:min(620px,calc(100vw - 24px));max-height:calc(100vh - 24px);overflow:auto;box-sizing:border-box;font:10px/1.5 var(--pixel);color:var(--fg);background:rgba(11,13,19,.94);border:2px solid var(--line);padding:8px 10px}
+  const make=()=>{ '@later'; const css=document.createElement('style'); css.textContent=`#rinsp{position:fixed;left:calc(12px + env(safe-area-inset-left,0px));top:12px;z-index:16;width:min(620px,calc(100vw - 24px));max-height:calc(100vh - 24px);overflow:auto;box-sizing:border-box;font:10px/1.5 var(--pixel);color:var(--fg);background:rgba(11,13,19,.94);border:2px solid var(--line);padding:8px 10px}
 #rinsp[hidden]{display:none}#rinsp h3{font:inherit;font-size:11px;color:var(--key);margin:8px 0 4px}#rinsp h3:first-child{margin-top:0}#rinsp .h{font-variant-numeric:tabular-nums}#rinsp .d{color:var(--dim)}#rinsp .a{color:#7fe08a}
 #rinsp input{font:inherit;color:var(--fg);background:#0e1016;border:2px solid #3a3f4e;padding:3px 6px;width:100%;box-sizing:border-box}#rinsp table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
 #rinsp th{color:var(--dim);text-align:right;font-weight:normal;padding:2px 4px;border-bottom:1px solid var(--line)}#rinsp th:first-child,#rinsp td:first-child{text-align:left}#rinsp td{padding:2px 4px;border-bottom:1px solid #22252f;text-align:right;white-space:nowrap}

@@ -114,7 +114,7 @@ BODB={};
     BODB.gnear=(x,z,R)=>{ const L=GQ.filter(j=>gd(j,x,z)<R); if(L.length){ paint(L); flush(); } };
     BODB.gtick=dt=>{ if(!GQ.length&&!HOLD.length)return; BODB.gnear(pos.x,pos.z,BODB.GR); if((gt+=dt)<.05)return; gt=0;
       const t0=performance.now(); while(GQ.length&&performance.now()-t0<6){ let b=null, bd=1e9; for(const j of GQ){ const d=gd(j,pos.x,pos.z); if(d<bd){ bd=d; b=j; } } paint([b]); } if(hn>=24||!GQ.length){ flush(); if(!GQ.length&&window.PAINTC)PAINTC.save(); } }; BODB.GR=48*TILE; }
-  const goods=()=>{ const {GOOD,GLAY}=BOD, O=BOD.O, list=[];
+  const goods=()=>{ '@later'; const {GOOD,GLAY}=BOD, O=BOD.O, list=[];
     const row=(p,f,zpx,items)=>{ const along=f[0]?1:0, a1=along?p.y1:p.x1, yaw=Math.atan2(-f[0],f[1]); let a=(along?p.y0:p.x0)+.08, last=null;
       for(const [k,n,...args] of items){ if(last&&last!==k)a+=.04; last=k;
         for(let i=0;i<n;i++){ const g=GOOD[k](...args), e=g.parts.map(q=>q.t==='box'?[q.h[0],q.h[1]]:[q.r,q.r]), w=Math.max(...e.map(v=>v[0])), d=Math.max(...e.map(v=>v[1]));
@@ -164,7 +164,7 @@ BODB={};
   const lampsOf=inn=>{ for(const l of BOD.LAMPS){ const cm=Math.max(...l.c); if(!(cm>0)||inB(l)!==inn)continue; const L=new THREE.PointLight(new THREE.Color(l.c[0]/cm,l.c[1]/cm,l.c[2]/cm),7*cm*Math.min(1.2,l.r/5),l.r*TILE*1.25,1.6);
     L.position.set(X(l.x),Y(l.z),Z(l.y)); L.userData.i0=L.intensity; L.userData.both=!!l.neon; lamps.push(L); if(inn&&LITE.recs.length){ L.userData.grp=MAPG.bodega||null; LITE.recs.push(L); } else scene.add(L); } };
   lampsOf(false);
-  BODB.build=()=>{ if(BODB.built)return; BODB.built=1; const keep=BATCH.items.splice(0), m0=BATCH.meshes; BATCH.meshes={};
+  BODB.build=()=>{ '@later'; if(BODB.built)return; BODB.built=1; const keep=BATCH.items.splice(0), m0=BATCH.meshes; BATCH.meshes={};
     for(const w of BOD.WALLS){ wallF(w,true); if(!w.outer)wallR(w); }
     const g=BOD.grounds.find(q=>q.id==='shop'); if(g)flat(g.x0,g.y0,g.x1,g.y1,g.z,g.col,'G',!g.bld);
     BOD.paintProps(Object.values(BOD.O));

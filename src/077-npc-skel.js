@@ -1,4 +1,4 @@
-const SKELGO=()=>SKELGO.p||(SKELGO.p=(async()=>{ const S=await SKEL();
+const SKELGO=()=>SKELGO.p||(SKELGO.p=LOAD('dungeon').then(async()=>{ '@dungeon'; const S=await SKEL();
   const BN=S.rig.names.map(n=>n.replace(/\./g,'_')), JI=Object.fromEntries(BN.map((n,i)=>[n,i]));
   const geomOf=(M,rigged)=>SKIN.geom(M,rigged), rigOf=()=>SKIN.rig(S.rig,BN), CLIPS=SKIN.clips(S.clips,BN,false,n=>n.replace(/\./g,'_'));
   const LANE={x0:BOD.XS(52),x1:BOD.XS(106),z0:BOD.ZS(-76.3),z1:BOD.ZS(BOD.FAR+2.8)}, HOLE=[BOD.XS(MAPSTAIR.x0-.6),BOD.ZS(MAPSTAIR.y0),BOD.XS(MAPSTAIR.x1+.6),BOD.ZS(MAPSTAIR.y1+.6)],
@@ -85,7 +85,7 @@ const SKELGO=()=>SKELGO.p||(SKELGO.p=(async()=>{ const S=await SKEL();
   { const DN=DUN(); skel('Minion','GOLD SKELETON',1.4,DN?DN.x:T_(77),DN?DN.z:Z_(BOD.FAR),.45,{key:'Gold',walkN:'Walking_A',idleN:'Idle_A',gild:true,dun:DN}); }
   window.GUARDX={TROUBLE,shoot,free,SEE,RUN,LANE,T_,Z_,d2,GUARDS};
   window.GUARDDBG=()=>({guards:GUARDS.map(N=>({k:N.key,mode:N.guard.mode,x:+(N.st.x/TILE).toFixed(1),z:+(N.st.z/TILE).toFixed(1),act:N.an.once&&N.an.once.n})),trouble:TROUBLE.map(N=>({mode:N.mode,x:+(N.st.x/TILE).toFixed(1),z:+(N.st.z/TILE).toFixed(1),act:N.an.once&&N.an.once.n})),next:+next.toFixed(1),dark:CLOCK.dark()});
-  })());
+  }));
 window.SKELDBG=()=>NPCS.filter(N=>N.mixer).map(N=>({key:N.key,x:+N.st.x.toFixed(2),z:+N.st.z.toFixed(2),y:+N.g.position.y.toFixed(2),to:!!N.st.to,bones:N.me.skeleton.bones.length}));
 if(!MODS.dungeon||QS.get('trouble'))await SKELGO();
 

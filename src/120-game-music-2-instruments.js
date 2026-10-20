@@ -52,7 +52,7 @@ imBars('tubular bells','Tubular bells','bells','tube',imRange(72,89),()=>9,.0009
 imBars('kalimba','Kalimba','tines','tine',[60,62,64,65,67,69,71,72,74,76,77,79,81,83,84,86,88],m=>Math.max(1.2,3-(m-60)*.06),.0012,{body:[[240,.08,1],[520,.05,.6]],gain:.9});
 imBars('steel pan','Steel pan','pan','pan',imRange(62,88),m=>Math.max(.8,1.8-(m-62)*.03),.0013,{gain:.8});
 function imFretHz(I,s,f){ return imHz(I.open[s])*Math.pow(2,f/12); }
-function imAct(kind,a){ const I=IMK[kind]; if(!I||!a)return []; const fam=I.dsp.fam, ok={pluck:'pluck',stop:'pluck',mute:'pluck',bow:'bow',pz:'bow',blow:'pipe',hit:'hit'}[a.k];
+function imAct(kind,a){ '@later'; const I=IMK[kind]; if(!I||!a)return []; const fam=I.dsp.fam, ok={pluck:'pluck',stop:'pluck',mute:'pluck',bow:'bow',pz:'bow',blow:'pipe',hit:'hit'}[a.k];
   if(!ok||ok!==fam||(a.s!=null&&!(a.s>=0&&a.s<(I.S||I.open||[]).length))||(a.i!=null&&!(a.i>=0&&a.i<(I.parts||I.notes||[]).length))||(a.s==null&&ok!=='pipe'&&ok!=='hit')||(ok==='hit'&&a.i==null))return [];
   const v=Math.max(0,Math.min(1,+a.v||(a.v===0?0:.7))), dt=Math.max(0,Math.min(1,+a.dt||0));
   if(a.k==='pluck'){ const S=I.S[a.s]; if(!S)return []; const hz=I.lay==='harp'?imHz(I.notes[a.s]+(a.f||0)):imFretHz(I,a.s,a.f||0);
@@ -78,11 +78,11 @@ function imBessel(m,x){ let s=0, t=Math.pow(x/2,m); for(let k=1;k<=m;k++)t/=k; f
 function imMallet(f,tau){ const x=2*f*tau; if(Math.abs(1-x)<1e-4)return Math.PI/4; return Math.abs(Math.cos(Math.PI*f*tau)/(1-x*x)); }
 const IMCH=[['',[0,4,7]],['m',[0,3,7]],['7',[0,4,7,10]],['maj7',[0,4,7,11]],['m7',[0,3,7,10]],['mMaj7',[0,3,7,11]],['dim',[0,3,6]],['dim7',[0,3,6,9]],['m7b5',[0,3,6,10]],
   ['aug',[0,4,8]],['aug7',[0,4,8,10]],['augMaj7',[0,4,8,11]],['sus4',[0,5,7]],['sus2',[0,2,7]],['5',[0,7]]];
-function imChordName(ms){ if(!ms.length)return ''; const pcs=[...new Set(ms.map(m=>((m%12)+12)%12))].sort((a,b)=>a-b), bass=Math.min(...ms)%12;
+function imChordName(ms){ '@later'; if(!ms.length)return ''; const pcs=[...new Set(ms.map(m=>((m%12)+12)%12))].sort((a,b)=>a-b), bass=Math.min(...ms)%12;
   if(pcs.length===1)return IMNOTE[pcs[0]];
   for(const r of [bass,...pcs.filter(p=>p!==bass)])for(const [n,iv] of IMCH){ const set=iv.map(i=>(r+i)%12).sort((a,b)=>a-b); if(set.length===pcs.length&&set.every((v,i)=>v===pcs[i]))return IMNOTE[r]+n+(r!==bass?'/'+IMNOTE[bass]:''); }
   return ''; }
-function imShape(I,root,iv,capo=0){ const n=I.open.length, pcs=iv.map(i=>(root+i)%12), best={sc:-1e9,sh:null}, cur=[];
+function imShape(I,root,iv,capo=0){ '@later'; const n=I.open.length, pcs=iv.map(i=>(root+i)%12), best={sc:-1e9,sh:null}, cur=[];
   const opt=I.open.map((o,s)=>{ const r=[-1]; for(let f=0;f<=5;f++){ if(I.fifth&&s===4&&f>0&&f+capo<I.fifth)continue; if(pcs.includes((o+capo+f)%12))r.push(f); } return r; });
   const score=sh=>{ const on=sh.map((f,s)=>f<0?null:I.open[s]+capo+f); const sounding=on.filter(v=>v!=null); if(sounding.length<Math.min(3,n))return -1e9;
     const low=Math.min(...sounding); if(low%12!==root)return -1e9; const have=new Set(sounding.map(v=>v%12)); for(const p of pcs)if(!have.has(p)&&!(iv.length>3&&p===(root+7)%12))return -1e9;

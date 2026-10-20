@@ -4,7 +4,7 @@ const plane=(r,d0,d1,z0,H,pic,o)=>fb(r,0,1,d0,d1,z0,z0+H,c.ink,(s,t,z,len)=>s===
 const line=(put,x0,z0,x1,z1,col,w=1)=>{ const n=Math.max(1,Math.ceil(Math.max(Math.abs(x1-x0),Math.abs(z1-z0)))); for(let i=0;i<=n;i++){ const x=x0+(x1-x0)*i/n, z=z0+(z1-z0)*i/n; for(let a=0;a<w;a++)for(let b=0;b<w;b++)put(Math.round(x-w/2+a),Math.round(z-w/2+b),col); } };
 const ell=(put,cx,cz,rx,rz,col,fill=true,ring=.7)=>{ for(let z=Math.floor(cz-rz)-1;z<=cz+rz+1;z++)for(let x=Math.floor(cx-rx)-1;x<=cx+rx+1;x++){ const d=((x+.5-cx)/rx)**2+((z+.5-cz)/rz)**2; if(d<1&&(fill||d>ring))put(x,z,col); } };
 const BONE={b:[104,80,58],l:[142,112,82],d:[64,48,36]};
-const bone=(put,x0,z0,x1,z1,w,B=BONE)=>{ const dx=x1-x0, dz=z1-z0, L=Math.hypot(dx,dz)||1, nx=-dz/L, nz=dx/L, sg=nz<0?-1:1;
+const bone=(put,x0,z0,x1,z1,w,B=BONE)=>{ '@later'; const dx=x1-x0, dz=z1-z0, L=Math.hypot(dx,dz)||1, nx=-dz/L, nz=dx/L, sg=nz<0?-1:1;
   for(let z=Math.floor(Math.min(z0,z1)-w);z<=Math.max(z0,z1)+w;z++)for(let x=Math.floor(Math.min(x0,x1)-w);x<=Math.max(x0,x1)+w;x++){ const px=x+.5-x0, pz=z+.5-z0, t=(px*dx+pz*dz)/(L*L);
     const tt=Math.max(0,Math.min(1,t)), s=(px-dx*tt)*nx*sg+(pz-dz*tt)*nz*sg, h=w/2+(t<.08||t>.92?.8:0); if(Math.abs(s)>h||t<-.12||t>1.12)continue;
     put(x,z,s>h-1.2?B.l:s<-h+1.2?B.d:B.b); } };

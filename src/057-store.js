@@ -107,15 +107,15 @@
 
   const OFF=STORE.off={}, offmap=(name,lot,fn)=>{ OFF[name]={lot,fn}; STORE.places.push([name,0,0,'up','off']); }; STORE.kit={room,rec,flat,put,sol,STEPS,PLATE,offmap,planes}; for(const [n,k] of [['THE HERB COTTAGE','garden'],['THE AQUARIUM','aquarium'],['THE KEEP','keep'],['THE BUTTERFLIES','garden']])if(!AWAY.has(k))STORE.places.push([n,0,0,'up']);
   const GARDEN=STORE.garden={cottage:[72-15/BLDK,-77-14.6/BLDK],house:[72-4.6/BLDK,-77-9.2/BLDK]};
-  if(!AWAY.has('garden'))STEPS.push(()=>{ const O=GARDEN.cottage, R=room('cottage','THE HERB COTTAGE',{x0:O[0],y0:O[1],x1:O[0]+9,y1:O[1]+12,h:96},{floor:grassCol},null,()=>{ PRESETS['Preset Herb Cottage 1'].forEach(([k,dx,dy,r])=>put(k,O[0]+dx,O[1]+dy,r)); },
+  if(!AWAY.has('garden'))STEPS.push(()=>{ '@later'; const O=GARDEN.cottage, R=room('cottage','THE HERB COTTAGE',{x0:O[0],y0:O[1],x1:O[0]+9,y1:O[1]+12,h:96},{floor:grassCol},null,()=>{ PRESETS['Preset Herb Cottage 1'].forEach(([k,dx,dy,r])=>put(k,O[0]+dx,O[1]+dy,r)); },
       {z:.05,pieceWalls:{'herb cottage wall, west':['w',1,0],'herb cottage wall, east':['e',-1,0],'herb cottage wall, north':['b',0,1],'herb cottage wall, south':['f',0,-1]}});
     R.at={x:-4.6*TILE,z:1.6*TILE}; const pl=STORE.places.find(q=>q[0]===R.name); if(pl){ pl[1]=R.at.x; pl[2]=R.at.z; } });
 
-  if(!AWAY.has('aquarium'))STEPS.push(()=>{ const B={id:'locto',x0:97.6,y0:-84,x1:112.4,y1:-77,h:130}, O=K.octo; room('octo','THE AQUARIUM',B,{floor:O.octoFloorCol,in:O.octoWall},{w:'f',a:(B.x0+B.x1)/2,wd:1.56,h:94},B=>{ const {LX,LY,Z0,ZT}=O.OCTK, x=B.x0+5.5-LX/2, y=B.y1-2.6-LY/2, p=O.octoTank(x,y); place(p,0);
+  if(!AWAY.has('aquarium'))STEPS.push(()=>{ '@later'; const B={id:'locto',x0:97.6,y0:-84,x1:112.4,y1:-77,h:130}, O=K.octo; room('octo','THE AQUARIUM',B,{floor:O.octoFloorCol,in:O.octoWall},{w:'f',a:(B.x0+B.x1)/2,wd:1.56,h:94},B=>{ const {LX,LY,Z0,ZT}=O.OCTK, x=B.x0+5.5-LX/2, y=B.y1-2.6-LY/2, p=O.octoTank(x,y); place(p,0);
       for(const [lx,ly,i] of [[x+LX/2,y-.35,0],[x+LX/2,y+LY+.35,1],[x-.35,y+LY/2,2],[x+LX+.35,y+LY/2,3]])LAMPS.push({own:1,room:1,day:true,x:lx,y:ly,z:Z0+4,r:i<2?4.2:3,c:[.5,.72,.95]});
       STORE.tank={x0:x+.035,y0:y+.035,x1:x+LX-.035,y1:y+LY-.035,z:ZT-4,bed:Z0+1}; }); STORE.tank.dz=0; });
 
-  if(!AWAY.has('keep'))STEPS.push(()=>{ const B=B_('lcastle'), [cx,cy]=LG('castle'); Object.assign(B,{x0:51.09+cx,x1:60.59+cx,y0:-22.9+cy,y1:-13.9+cy});
+  if(!AWAY.has('keep'))STEPS.push(()=>{ '@later'; const B=B_('lcastle'), [cx,cy]=LG('castle'); Object.assign(B,{x0:51.09+cx,x1:60.59+cx,y0:-22.9+cy,y1:-13.9+cy});
     const KK=K.keep, KC={door:B.x0+4.75,arches:[B.x0+2.1,B.x0+4.75,B.x0+7.4]}, my=(B.y0+B.y1)/2, lead=(x,y)=>{ const n=grain(x,y,67,1.2); return n<.4?[74,76,80]:n>.7?[90,92,96]:[82,84,88]; };
     room('keep','THE KEEP',B,{floor:KK.keepFloorCol,in:KK.keepInWall,out:(nx,ny,Xx,Yy,z,f,cap)=>KK.keepOutWall(B,nx,ny,Xx,Yy,z,f,cap),cope:[184,174,150],roof:lead},{w:'b',a:KC.door,wd:1.4,h:96},B=>{ const M=KK.KMK;
       M.turret(B.x0-T,B.y0-T,-1,-1); M.turret(B.x1+T,B.y0-T,1,-1); M.turret(B.x0-T,B.y1+T,-1,1); M.turret(B.x1+T,B.y1+T,1,1);
@@ -144,9 +144,9 @@
     ['theatre','MOVIE THEATRE · ARCADE',87.6,103.6,16,260],['playhouse','PLAYHOUSE',103.6,115.6,12,220],['baker','221B BAKER STREET',115.6,126,12,230]];
   { const AX=72+(AVE.x1-72)/BLDK, plaster=(B,nx,ny,Xw,Yw,z,f)=>sh(z<8?[118,112,102]:[168,160,146],f*(z<8?.9:1)), conc=(x,y)=>{ const n=grain(x,y,71,1.3); return n<.4?[92,90,86]:n>.7?[104,102,98]:[98,96,92]; };
     if(!AWAY.has('avenue'))for(const [id,name,z0,z1,d,h] of AVR){ STORE.places.push([name,0,0,'up']);
-      STEPS.push(()=>{ const B={id:'lav_'+id,x0:AX,y0:-77+z0/BLDK+.1,x1:AX+d,y1:-77+z1/BLDK-.1,h}; room('av_'+id,name,B,{floor:conc,in:plaster},{w:'w',a:(B.y0+B.y1)/2,wd:1.56,h:94},(B,l0)=>{ LAMPS.push({own:1,room:1,day:true,x:(B.x0+B.x1)/2,y:(B.y0+B.y1)/2,z:Math.min(h-20,120),r:Math.max(6,.75*Math.max(d,(z1-z0)/BLDK)),c:[1,.9,.75]}); }); }); } }
+      STEPS.push(()=>{ '@later'; const B={id:'lav_'+id,x0:AX,y0:-77+z0/BLDK+.1,x1:AX+d,y1:-77+z1/BLDK-.1,h}; room('av_'+id,name,B,{floor:conc,in:plaster},{w:'w',a:(B.y0+B.y1)/2,wd:1.56,h:94},(B,l0)=>{ LAMPS.push({own:1,room:1,day:true,x:(B.x0+B.x1)/2,y:(B.y0+B.y1)/2,z:Math.min(h-20,120),r:Math.max(6,.75*Math.max(d,(z1-z0)/BLDK)),c:[1,.9,.75]}); }); }); } }
 
-  offmap('VCR REPAIR',[368,-100,408,-72],()=>{ const B={id:'lvcr',x0:380,y0:-92,x1:394,y1:-82,h:270}, H=B.h, hs=hash, P=[.2,2.5,4.95,7.9,10.05], WIN=[[.45,2.2],[5.2,7.6]], WZ=[42,118];
+  offmap('VCR REPAIR',[368,-100,408,-72],()=>{ '@vcr'; const B={id:'lvcr',x0:380,y0:-92,x1:394,y1:-82,h:270}, H=B.h, hs=hash, P=[.2,2.5,4.95,7.9,10.05], WIN=[[.45,2.2],[5.2,7.6]], WZ=[42,118];
     const sto=(i,j)=>{ const r=hs(i,j,811); return r<.34?[214,200,182]:r<.56?[230,220,206]:r<.72?[186,164,142]:r<.82?[150,124,102]:r<.92?[246,242,234]:[112,94,80]; };
     const blk=(u,z)=>{ const r=Math.floor(z/5), i=Math.floor(u*24+(r&1)*5), c=Math.floor(i/10); if(i%10===9||Math.floor(z)%5===4)return [160,161,161]; const v=196+hs(c,r,812)*14; return [v,v,v-3]; };
     const front=(x,z,f)=>{ const u=x-B.x0;
@@ -267,6 +267,7 @@
   STORE.meshes=M; STORE.stats=BATCH.stats; STORE.XYZ={X,Y,Z};
   { const pend=[]; let done=false;
     const lit=()=>{ if(!LITE.recs.length)return; const nl=[]; scene.traverse(o=>{ if(o.isPointLight&&!o.userData.pool)nl.push(o); }); for(const L of nl){ L.userData.grp=null; L.castShadow=false; L.removeFromParent(); LITE.recs.push(L); } };
+    const need=()=>[...new Set(['later',...STEPS.map(f=>f.chunk).filter(Boolean)])];
     const step=()=>{ STEPS.shift()(); pend.push(...BATCH.items.splice(0)); lit(); STORE.doorThings(); };
     const finish=()=>{ if(done)return; done=true; while(STEPS.length)step(); if(!pend.length)return; BATCH.items=pend; Object.assign(STORE.meshes,bake());
       const Tk=STORE.tank; if(Tk){ WATER.body({name:'tank',X0:X(Tk.x0),X1:X(Tk.x1),Z0:Z(Tk.y0),Z1:Z(Tk.y1),lvl:Y(Tk.z+(Tk.dz||0)),GX:110,GY:40,dep:()=>(Tk.z-Tk.bed)/50*1.8});
@@ -275,15 +276,16 @@
       if(STORE.houseAt){ const H=STORE.houseAt, hp=(dx,dy,z)=>[X(H[0]+dx),Y(z+(STORE.houseZ||0)),Z(H[1]+dy)], HP=[hp(-.16,-.09,38),hp(-.12,.07,41),hp(.18,.09,37),hp(.13,-.1,35),hp(-.06,0,44),hp(.06,0,44),hp(.08,-.11,32),hp(-.24,0,47),hp(.24,0,47),hp(0,-.17,49)];
     [12,21].forEach((k,i)=>{ const b=BF.add(k,HP); b.at=b.to=i*4; b.g.position.set(...HP[b.at]); }); }
       if(ROOMS.reset)ROOMS.reset(); if(window.CLIP)window.CLIP.run(); if(typeof INTERIORS!=='undefined')INTERIORS.build(); };
-    STORE.ensure=finish;
-    STORE.offGo=n=>{ const o=OFF[n]; if(!o||o.done)return; finish(); o.done=1; STORE.now=1; o.fn(); STORE.now=0; const it=BATCH.items.splice(0); lit(); if(it.length){ BATCH.items=it; Object.assign(STORE.meshes,bake()); }
+    STORE.need=()=>LOAD(...need());
+    STORE.ensure=async()=>{ await LOAD(...need()); finish(); };
+    STORE.offGo=n=>{ const o=OFF[n]; if(!o||o.done)return; if(!LOADED(o.fn.chunk)||need().some(c=>!LOADED(c)))return o.wait||(o.wait=LOAD(o.fn.chunk,...need()).then(()=>STORE.offGo(n))); finish(); o.done=1; STORE.now=1; o.fn(); STORE.now=0; const it=BATCH.items.splice(0); lit(); if(it.length){ BATCH.items=it; Object.assign(STORE.meshes,bake()); }
       if(ROOMS.reset)ROOMS.reset(); if(window.CLIP)window.CLIP.run(); if(typeof INTERIORS!=='undefined')INTERIORS.build(); };
-    STORE.inGo=id=>{ const R=STORE.inside[id]; if(!R||R.done)return; R.done=true; finish(); STORE.now=1; R.go(); STORE.now=0; const it=BATCH.items.splice(0); lit(); if(it.length){ BATCH.items=it; Object.assign(STORE.meshes,bake()); }
+    STORE.inGo=id=>{ '@later'; const R=STORE.inside[id]; if(!R||R.done)return; R.done=true; finish(); STORE.now=1; R.go(); STORE.now=0; const it=BATCH.items.splice(0); lit(); if(it.length){ BATCH.items=it; Object.assign(STORE.meshes,bake()); }
       if(ROOMS.reset)ROOMS.reset(); if(window.CLIP)window.CLIP.run(); if(typeof INTERIORS!=='undefined')INTERIORS.build(); };
     const DOORP=(R,k)=>{ const d=R.door, B=R.B; return d.w==='f'?[d.a,B.y1+k]:d.w==='b'?[d.a,B.y0-k]:d.w==='w'?[B.x0-k,d.a]:[B.x1+k,d.a]; };
     const frames=n=>new Promise(r=>{ const f=()=>--n<=0?r():requestAnimationFrame(f); requestAnimationFrame(f); });
     STORE.enter=async(id,walk)=>{ const R=STORE.inside[id]; if(!R||R.busy)return; R.busy=true; const el=document.getElementById('subfade'), name=/^THE /.test(R.name)?R.name:'THE '+R.name;
-      if(!R.done){ if(el){ el.textContent='ENTERING '+name; el.style.opacity='1'; } if(typeof keys!=='undefined'&&keys.clear)keys.clear(); await frames(3); STORE.inGo(id); await frames(2); }
+      if(!R.done){ if(el){ el.textContent='ENTERING '+name; el.style.opacity='1'; } if(typeof keys!=='undefined'&&keys.clear)keys.clear(); await frames(3); await LOAD(...need()); STORE.inGo(id); await frames(2); }
       if(walk){ const [x,y]=DOORP(R,-1.4); STORE.goTo(X(x),Z(y),'up'); await frames(2); } if(el)el.style.opacity='0'; R.busy=false; };
     STORE.inAt=(x,z)=>{ for(const id in STORE.inside){ const R=STORE.inside[id]; if(R.done||R.busy)continue; const B=R.B; if(x>X(B.x0)&&x<X(B.x1)&&Math.min(Z(B.y0),Z(B.y1))<z&&z<Math.max(Z(B.y0),Z(B.y1)))STORE.enter(id,false); } };
     STORE.doorThings=()=>{ if(typeof UI==='undefined'||!UI.thing)return; for(const id in STORE.inside){ const R=STORE.inside[id]; if(R.th)continue; const [x,y]=DOORP(R,.35), hb=new THREE.Mesh(new THREE.BoxGeometry(1.4*TILE,2.6*TILE,.5*TILE),new THREE.MeshBasicMaterial({visible:false}));
@@ -292,7 +294,7 @@
           UI.thing({name,ghost:1,obj:hb,reach:1.4*TILE,near:2.4*TILE,tall:2.6*TILE,act:()=>STORE.goTo(X(ix),Z(iy),'up')}); };
         { const B=BOD.B0, m=(B.x0+B.x1)/2; xd('THE BODEGA',m,B.y1+.35,m,B.y1-1.4); }
         if(BOD.GD){ const [x,y]=BOD.GD.door; xd('THE BATH HOUSE',x,y+.35,x,y-1); } } };
-    STORE.offAt=(x,z)=>{ for(const n in OFF){ const [a,b,c,d]=OFF[n].lot; if(!OFF[n].done&&x>X(a)&&x<X(c)&&z>Z(b)&&z<Z(d))STORE.offGo(n); } };
-    const run=()=>{ if(done)return; if(STEPS.length){ step(); setTimeout(run,60); } else finish(); };
-    STORE.later=()=>setTimeout(run,1500); }
+    STORE.offAt=(x,z)=>{ const w=[]; for(const n in OFF){ const [a,b,c,d]=OFF[n].lot; if(!OFF[n].done&&x>X(a)&&x<X(c)&&z>Z(b)&&z<Z(d))w.push(STORE.offGo(n)); } return Promise.all(w); };
+    const run=()=>{ if(done)return; const c=need().filter(c=>!LOADED(c)); if(c.length){ LOAD(...c).then(run,()=>setTimeout(run,2000)); return; } if(STEPS.length){ step(); setTimeout(run,60); } else finish(); };
+    STORE.later=()=>{ if(QS.get('steps')!=='0')setTimeout(run,1500); }; }
 }

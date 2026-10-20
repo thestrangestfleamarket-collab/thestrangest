@@ -24,8 +24,15 @@ page = ''.join(read(f) for f in src).replace('__BUILDV__', bv)
 i = page.index('<script type="module">') + len('<script type="module">')
 j = page.rindex('</script>')
 body, ny = yields(page[i:j])
-raw, page = page, data(page[:i] + body + page[j:])
 os.makedirs('dist', exist_ok=True)
+open('dist/.body.js', 'w').write(body)
+subprocess.run(['node', 'tools/chunks.cjs', 'dist/.body.js', 'dist/.main.js', 'dist/.chunks.json'], check=True)
+body, CH = read('dist/.main.js'), json.load(open('dist/.chunks.json'))
+for f in ['dist/.body.js', 'dist/.main.js', 'dist/.chunks.json']: os.remove(f)
+open('dist/chunks.txt', 'w').write(''.join('%s #%d %d bytes, %d names + live %s: %s\n' % (r['name'], r['ix'], r['bytes'], r['imm'], ' '.join(r['live']), r['head']) for r in CH['report']))
+for n in sorted(set(r['name'] for r in CH['report'])): print('chunk', n + ':', sum(1 for r in CH['report'] if r['name'] == n), 'functions,', sum(r['bytes'] for r in CH['report'] if r['name'] == n), 'bytes')
+art = CH['rt'] + 'const __CK={' + ','.join(json.dumps(n) + ':' + c for n, c in CH['code'].items()) + '};\nconst __CLOAD=n=>Promise.resolve(__CK[n]||{}), __CSYNC=n=>__CK[n]||{};\n'
+raw, page = page, data(page[:i] + art + body + page[j:])
 open('dist/market.html', 'w').write(page)
 
 open('dist/door.html', 'w').write(read('src/door/door.html'))
@@ -85,10 +92,13 @@ game = ('document.body.insertAdjacentHTML("afterbegin",' + json.dumps(read('dist
     + UNB
     + 'const __DP=Object.fromEntries([' + ','.join('[' + names[f] + ',' + bins.get(f, 'null') + ']' for f in used) + '].map(([n,b])=>[n,__GJ(n,b)]));\n'
     + 'await __RIG;\n'
+    + CH['rt'] + 'const __CU=__CHUNKURLS__, __CE=t=>(0,eval)(t); window.__CREG=m=>m;\nconst __CLOAD=n=>!__CU[n]?Promise.resolve({}):fetch("/g/"+__CU[n]).then(r=>{ if(!r.ok)throw new Error(n+" "+r.status); return r.text(); }).then(__CE);\n'
+    + 'const __CSYNC=n=>{ const x=new XMLHttpRequest(); x.open("GET","/g/"+__CU[n],false); x.send(); if(x.status!==200)throw new Error(n+" "+x.status); return __CE(x.responseText); };\n'
     + re.sub(r'__LAZY__\("([^"]+)"\)', lambda m: '(()=>__GJ(' + names[m.group(1)] + ',' + bins.get(m.group(1), 'null') + '))', re.sub(r'__DATA__\("([^"]+)"\)', lambda m: '(await __DP[' + names[m.group(1)] + '])', body)))
 os.remove('dist/g/page.html')
 open('dist/g/game.js', 'w').write(re.sub(r"'https://cdn\.jsdelivr\.net/npm/((?:@[^/@']+/)?[^/@']+)@([^/']+)[^']*'", npm, data(game)))
-m = subprocess.run(['node', 'tools/bundle.cjs', 'dist/g/game.js', 'dist/g'], check=True, capture_output=True, text=True).stdout.strip()
+for n, c in CH['code'].items(): open('dist/g/x-' + n + '.js', 'w').write('"use strict";__CREG(' + c + ');\n')
+m = subprocess.run(['node', 'tools/bundle.cjs', 'dist/g/game.js', 'dist/g'] + ['dist/g/x-' + n + '.js' for n in CH['code']], check=True, capture_output=True, text=True).stdout.strip()
 open('dist/g/market.html', 'w').write('<!doctype html><meta name="market-build" content="' + bv + '"><title>The Market</title><body bgcolor=#0e1016><script type=module src=/g/' + m + '></script>')
 pages = pages[:2] + ['dist/g/market.html']
 for f in pages:

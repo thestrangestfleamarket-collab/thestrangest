@@ -69,7 +69,7 @@ const FAR3={};
   me.frustumCulled=false; me.visible=on; (MAPG.bodega||scene).add(me); FAR3.mesh=me; FAR3.n=BN.length; FAR3.tris=BN.length*12; FAR3.FU=FU;
   const CX=(LR.x0+LR.x1)/2*TILE, CZ=(LR.z0+LR.z1)/2*TILE, EYE=1.9, V0=Math.tan(-2*Math.PI/180), V1=Math.tan(30*Math.PI/180), DIRS=[[0,1],[1,0],[0,-1],[-1,0]];
   if(BAKE){ const fm=mk(BF); fm.frustumCulled=false; FAR3.farMesh=fm;
-    FAR3.bake=(dens,pk)=>{ const N=Math.round(90*dens), rt=new THREE.WebGLRenderTarget(N,N,{type:THREE.FloatType}), camB=new THREE.PerspectiveCamera(90,1,1,20000), r0=Math.floor((V0+1)/2*N), r1=Math.ceil((V1+1)/2*N), H=r1-r0, out=new Float32Array(N*4*H*4), buf=new Float32Array(N*N*4);
+    FAR3.bake=(dens,pk)=>{ '@later'; const N=Math.round(90*dens), rt=new THREE.WebGLRenderTarget(N,N,{type:THREE.FloatType}), camB=new THREE.PerspectiveCamera(90,1,1,20000), r0=Math.floor((V0+1)/2*N), r1=Math.ceil((V1+1)/2*N), H=r1-r0, out=new Float32Array(N*4*H*4), buf=new Float32Array(N*N*4);
       const kept=[]; scene.traverse(o=>{ if(o!==scene&&!o.isLight&&o.visible&&o.parent===scene){ kept.push(o); o.visible=false; } }); scene.add(fm); const fog=scene.fog, bg=scene.background, cc=renderer.getClearColor(new THREE.Color()), ca=renderer.getClearAlpha(), mk0=FU.uMK.value;
       scene.fog=null; scene.background=null; renderer.setClearColor(0,0); FU.uMK.value=0; FU.uBake.value=pk?1:0; const lce=renderer.localClippingEnabled; renderer.localClippingEnabled=false;
       DIRS.forEach(([dx,dz],f)=>{ camB.position.set(CX,EYE,CZ); camB.up.set(0,1,0); camB.lookAt(CX+dx,EYE,CZ+dz); camB.updateMatrixWorld();
@@ -125,7 +125,7 @@ const FAR3={};
       ['hd','HAZE REACHES FULL (tiles)',30,500,5],['hs','HAZE STEPS',2,16,1],['dt','WINDOWS SHOW UNTIL',0,1,.01],['wn','LIT WINDOWS AT NIGHT',0,.6,.01],['wd','LIT WINDOWS BY DAY',0,.3,.01],
       ['bl','BLUR',0,3,.05],['br','BLUR COARSENESS',1,4,.5],['zk','SKY OVERHEAD',.2,1.4,.01],['hk','SKY AT HORIZON',.1,1.2,.01]];
     let P=null; const draw=()=>{ if(!P)return; for(const [k] of D){ const r=P.querySelector('[data-k="'+k+'"]'); if(r){ r.value=FL[k]; r.nextSibling.textContent=(+FL[k]).toFixed(2); } } };
-    FAR3.panel=()=>{ if(P){ P.hidden=!P.hidden; draw(); return; } P=document.createElement('div'); P.id='farlook';
+    FAR3.panel=()=>{ '@later'; if(P){ P.hidden=!P.hidden; draw(); return; } P=document.createElement('div'); P.id='farlook';
       P.style.cssText='position:fixed;right:12px;top:8%;width:min(380px,92vw);max-height:84vh;overflow:auto;z-index:21;padding:12px 14px;font:10px Silkscreen,monospace;letter-spacing:.4px;color:#d8dae2;background:#0b0d13f2;border:2px solid #3a3f4e;zoom:var(--uiz,1)';
       P.innerHTML='<div style="color:#f2c14e;font-size:12px;margin-bottom:8px">DISTANCE LOOK</div><div id="flst" style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px">'+Object.keys(ST).map(n=>'<button class="btn" data-st="'+n+'">'+n+'</button>').join('')+'</div>'
         +D.map(([k,l,a,b,st])=>'<div style="margin:5px 0"><div>'+l+'</div><input type="range" data-k="'+k+'" min="'+a+'" max="'+b+'" step="'+st+'" style="width:76%;vertical-align:middle"><span style="display:inline-block;width:20%;text-align:right"></span></div>').join('')

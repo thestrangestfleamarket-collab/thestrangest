@@ -25,7 +25,7 @@
   function barCandle(x,y){ PNAME='candle'; const FL={ph:0}, bs=tcandle(x,y,BZ+BT,FL); for(const b of bs)if(b.z0===BZ+BT)b.foot=1; const p=prop(bs,null,{hang:BZ+BT}); flick(p,FL,Math.round(x*11+y*17)); LAMPS.push({own:1,room:1,day:true,x,y,z:BZ+BT+8,r:2.6,c:[.72,.4,.15],prop:p}); return p; }
   function consoleTV(x,y){ PNAME='console TV'; const W=.76, D=.48, x0=x-W/2, x1=x+W/2, y0=y-D/2, y1=y+D/2, LZ=7, CZ=34, wood=[104,66,38], woodD=[70,44,26], woodL=[138,92,54], bs=[];
     for(const [lx,ly] of [[x0+.06,y0+.06],[x1-.1,y0+.06],[x0+.06,y1-.1],[x1-.1,y1-.1]])bs.push(pb(lx,ly,lx+.04,ly+.04,0,LZ,woodD));
-    bs.push(pb(x0,y0,x1,y1,LZ,LZ+CZ,wood,{top:(X,Y)=>(X-x0)*24%6<1?woodD:woodL,fs:(nx,ny,X,Y,z)=>{ const u=nx?Y-y0:X-x0, zr=z-LZ;
+    bs.push(pb(x0,y0,x1,y1,LZ,LZ+CZ,wood,{top:(X,Y)=>(X-x0)*24%6<1?woodD:woodL,fs:(nx,ny,X,Y,z)=>{ '@later'; const u=nx?Y-y0:X-x0, zr=z-LZ;
       if(ny>0){ const a=(X-x0)/W; if(zr<9&&a>.12&&a<.88)return (Math.floor(a*W*24)+Math.floor(zr))%2?[86,74,58]:[110,96,74];
         if(zr<11&&zr>=9&&(Math.abs(a-.7)<.04||Math.abs(a-.82)<.04))return [210,196,160];
         if(zr>=12&&zr<CZ-3&&a>.1&&a<.9)return [26,28,30]; }
@@ -33,7 +33,7 @@
     for(const s of [-1,1])bs.push(pb(x+s*.04-.008,y-.008,x+s*.04+.008,y+.008,LZ+CZ,LZ+CZ+2,[40,40,44]),pb(x+s*.18-.006,y-.006,x+s*.18+.006,y+.006,LZ+CZ+2,LZ+CZ+15,[170,172,176],{nb:1}));
     const p=prop(bs,null,{});
     const TUBE={x0:x0+W*.1,x1:x0+W*.9,y:y1+.002,z0:LZ+12,z1:LZ+CZ-3};
-    p.lifeDraw=(Dd,Wd,Hd,ox,oy,t,K=1)=>{ const [fa,fb2]=vwV(0,1); if(fa+fb2<=0)return;
+    p.lifeDraw=(Dd,Wd,Hd,ox,oy,t,K=1)=>{ '@later'; const [fa,fb2]=vwV(0,1); if(fa+fb2<=0)return;
       const zb=LVZ(V.lv), wf=Math.round((TUBE.x1-TUBE.x0)*24*K), hf=Math.round((TUBE.z1-TUBE.z0)*K), fl=.88+.12*hash(Math.floor(t*14),3,4713), roll=(t*.13)%1;
       for(let i=0;i<wf;i++){ const u=(i+.5)/wf, X=TUBE.x0+u*(TUBE.x1-TUBE.x0), [vx,vy]=vw(X,TUBE.y), bx=((vx-vy)*HW-ox)*K, by=((vx+vy)*HH-oy)*K;
         for(let j=0;j<hf;j++){ const v=(j+.5)/hf, z=TUBE.z1-v*(TUBE.z1-TUBE.z0), X2=Math.floor(bx), Y2=Math.floor(by-(z-zb)*K); if(X2<0||Y2<0||X2>=Wd||Y2>=Hd)continue;
@@ -41,7 +41,7 @@
           let g=crtShow(u,v,t); g*=fl*(1-.35*Math.max(0,1-Math.min(cu,cv)*9))*((j%2)?.82:1)*(Math.abs(v-roll)<.04?1.12:1); g+=(hash(i,j,Math.floor(t*20))-.5)*.08;
           const c=Math.max(0,Math.min(255,40+g*215)), k=(Y2*Wd+X2)*4; Dd[k]=c*.94; Dd[k+1]=c*.97; Dd[k+2]=Math.min(255,c*1.04+6); Dd[k+3]=255; } } };
     LAMPS.push({own:1,room:1,day:true,x,y:y1+.6,z:LZ+22,r:3.2,c:[.36,.4,.46],prop:p}); return p; }
-  function crtShow(u,v,t){ const sc=Math.floor(t/7)%4, s=t%7, bg=.26;
+  function crtShow(u,v,t){ '@later'; const sc=Math.floor(t/7)%4, s=t%7, bg=.26;
     if(sc===0){ const r=Math.hypot(u-.5,(v-.45)*1.2), a=Math.atan2(v-.45,u-.5)+s*.6; if(r<.18)return .95; if(r<.42&&Math.floor((a+Math.PI)/(Math.PI*2)*16)%2)return .62-r*.6; return v>.78&&v<.86&&u>.2&&u<.8&&Math.floor(u*30)%3?.8:bg; }
     if(sc===1){ const curt=Math.floor(u*14)%2?.3:.22, hx=.5+Math.sin(s*.7)*.03, mouth=Math.floor(s*6)%2;
       const head=Math.hypot((u-hx)/.1,(v-.3)/.13)<1, body=v>.42&&Math.abs(u-hx)<.2-(v-.42)*.0, shirt=body&&Math.abs(u-hx)<.05*(1-(v-.42)*1.6)&&v<.62;
@@ -79,7 +79,7 @@
     bs.push(fb(x,y,x1,y1,0,Z,K,(s,a,row,Lf,h)=>row<2?G:row>h-2?[12,10,12]:(a%(S*.5|0))<1?[34,30,32]:K,(X,Y)=>edge(X,Y,x,y,x1,y1)<.04?G:(Math.floor(Y*S/5)&1)?[30,26,30]:[36,32,36],{foot:1}));
     bs.push(fb(x+L/2-.5,y1,x+L/2+.5,y1+.3,0,7,K,(s,a,row)=>row<1?G:K,(X,Y)=>edge(X,Y,x+L/2-.5,y1,x+L/2+.5,y1+.3)<.03?G:[36,32,36],{foot:1}));
     return prop(bs,null,{stands:[{x0:x,y0:y,x1,y1,z:Z}]}); }
-  function micStand(x,y,z0,len,cord){ PNAME=cord?'microphone cord':'microphone stand'; const bs=[], Z=v=>z0+v, CH=[208,210,214], CR=[22,20,24], IR=[40,38,44];
+  function micStand(x,y,z0,len,cord){ '@later'; PNAME=cord?'microphone cord':'microphone stand'; const bs=[], Z=v=>z0+v, CH=[208,210,214], CR=[22,20,24], IR=[40,38,44];
     if(!cord){
     for(let r=0;r<4;r++){ const w=.09-r*.018; bs.push(fb(x-w,y-w*.8,x+w,y+w*.8,Z(r*.5),Z(r*.5+.5),IR,()=>IR,r===3?[70,68,76]:IR,{foot:r===0?1:0})); }
     bs.push(fb(x-.022,y-.022,x+.022,y+.022,Z(2),Z(34),CH,(s,a,row)=>row%5===0?[240,242,246]:CH,CH));
@@ -90,7 +90,7 @@
     let px=x+.04, py=y; for(let i=1;i<=Math.round(len*40);i++){ const u=i/(len*40), cx=x+.04+Math.sin(u*7.5)*.16*(1-u*.6), cy=y-u*len;
       bs.push(fb(Math.min(px,cx)-.016,Math.min(py,cy)-.016,Math.max(px,cx)+.016,Math.max(py,cy)+.016,Z(0),Z(.6),CR,()=>CR,[34,32,36],{foot:i===1?1:0})); px=cx; py=cy; }
     return prop(bs,null,cord?{walk:true}:{}); }
-  function guitarCase(x,y,z0){ PNAME='open guitar case'; const bs=[], Z=v=>z0+v, L=.92, K=[26,22,22], KH=[60,54,52], RD=[138,22,34];
+  function guitarCase(x,y,z0){ '@later'; PNAME='open guitar case'; const bs=[], Z=v=>z0+v, L=.92, K=[26,22,22], KH=[60,54,52], RD=[138,22,34];
     const w=u=>u<.2?.36*Math.sqrt(Math.max(.08,1-((u-.2)/.21)**2)):u<.4?.36-.09*Math.sin((u-.2)/.2*Math.PI/2):u<.52?.27+.04*Math.sin((u-.4)/.12*Math.PI/2):u<.62?.31-.18*(u-.52)/.1:.13;
     const N=28, x0=x-L/2, HL=Math.round(.36*33.9*.94);
     for(let i=0;i<N;i++){ const u=(i+.5)/N, W=Math.min(.36,w(u)), X0=x0+L*i/N, X1=x0+L*(i+1)/N, Y0=y-W/2, Y1=y+W/2;

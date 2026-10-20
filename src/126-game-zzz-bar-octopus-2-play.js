@@ -18,19 +18,19 @@ OCTG.g_solo={beats:4,sub:4,bpm:104};
 const OCTSET=[{m:'groove',g:'g_funk',bars:8},{m:'groove',g:'g_slow',bars:8},{m:'groove',g:'g_rock',bars:8},{m:'solo',g:'g_solo',bars:8},
   {m:'groove',g:'g_swing',bars:8},{m:'groove',g:'g_bossa',bars:8},{m:'groove',g:'g_slow',bars:8},{m:'solo',g:'g_solo',bars:8}];
 const octV=c=>c==='X'?1:c==='x'?.72:c==='o'?.36:0;
-function octGrooveStep(G,bar,i,bars){ const per=G.beats*G.sub, fl=bar%4===3?(bar===bars-1?2:1)*G.sub:0, out=[];
+function octGrooveStep(G,bar,i,bars){ '@later'; const per=G.beats*G.sub, fl=bar%4===3?(bar===bars-1?2:1)*G.sub:0, out=[];
   if(fl&&i>=per-fl){ const k=i-(per-fl), seq=G.sub===3?[1,2,3,3,4,4]:G.sub===2?[1,2,3,4]:[1,1,2,2,3,3,4,4], d=seq[Math.floor(k*seq.length/fl)]; out.push([d,k%2?'L':'R',k===0?.95:.75]); if(i===per-1)out.push([0,'K',.9]); return out; }
   for(const [d,h,st] of G.v){ const v=octV(st[i%st.length]); if(v)out.push([d,h,v]); }
   if(bar%4===0&&i===0&&bar>0)out.push([6,'A',.85]);
   return out; }
-function octSoloStep(bar,i){ const b=bar%8, out=[], acc=i%4===0;
+function octSoloStep(bar,i){ '@later'; const b=bar%8, out=[], acc=i%4===0;
   if(b<2){ const H='RLRRLRLLRLRRLRLL'; out.push([1,H[i],acc?.95:.38]); if(i%2===0)out.push([5,'A',i%4===0?.7:.45]); if('X.....x.X.......'[i]!=='.')out.push([0,'K',.85]); }
   else if(b<4){ if(i<8){ out.push([[2,2,3,3,2,3,4,4][i],i%2?'L':'R',acc?.95:.7]); if(i%4===0)out.push([0,'K',.8]); } else { if(i%2===0)out.push([4,'B',i===8?1:.8]); if(i===8)out.push([6,'A',.9],[0,'K',1]); } }
   else if(b<6){ const H='LRAB', D=[1,2,5,4]; out.push([D[i%4],H[i%4],acc?.95:.62]); if(i%8===0)out.push([0,'K',.9]); }
   else if(b===6){ out.push([[2,2,2,3,3,3,3,4,4,4,4,4,1,1,1,1][i],i%2?'L':'R',acc?.95:.66]); if(i===0)out.push([6,'A',1]); if(i%4===0)out.push([0,'K',.75]); }
   else{ if(i===0||i===6||i===12)out.push([6,'A',1],[7,'B',.95],[1,'L',1],[0,'K',1]); if(i===14||i===15)out.push([1,i===14?'R':'L',.8]); }
   return out; }
-function octStep(dt,now){ const N=imxNode('bar','drum kit');
+function octStep(dt,now){ '@later'; const N=imxNode('bar','drum kit');
   if(OCT.src!=='alone'){ OCT.t=0; OCT.last=-1; OCT.g=0; OCT.src='alone'; }
   let E=OCTSET[OCT.g%OCTSET.length], G=OCTG[E.g]; OCT.mood=E.m; let spb=60/G.bpm/G.sub; OCT.t+=dt; const t=OCT.t;
   OCT.spb=spb; OCT.beats=G.beats; OCT.sub=G.sub; OCT.tnow=t;
@@ -41,19 +41,17 @@ function octStep(dt,now){ const N=imxNode('bar','drum kit');
 function octHit(N,i,hand,v,when,delay,r=.3){ if(N)imxSend(N,imAct('drum kit',{k:'hit',i,v,r,dt:Math.min(1,delay)}));
   if(hand){ const q=OCT.hits[hand]; q.push({at:when,i}); if(q.length>24)q.shift(); } }
 const octPh=(o,now)=>{ const k=(now-o.at)/3200; return k>=0&&k<1?k:-1; };
-function octHabits(now){ const solo=OCT.mood==='solo';
+function octHabits(now){ '@later'; const solo=OCT.mood==='solo';
   if(!solo&&now>OCT.puff.next&&octPh(OCT.sip,now)<0){ OCT.puff.at=now; OCT.puff.next=now+7000+hash(Math.floor(now/1000),1,741)*5000; }
   if(!solo&&now>OCT.sip.next&&octPh(OCT.puff,now)<0&&OCT.lev>.05){ OCT.sip.at=now; OCT.sip.next=now+10000+hash(Math.floor(now/1000),2,743)*6000; OCT.lev=Math.max(0,OCT.lev-.12); } }
 const octUp=k=>k<0?0:Math.round((k<.3?k/.3:k<.7?1:(1-k)/.3)*4)/4;
-function octSlosh(dt,gx){ const o=OCT.slo; if(o.px==null){ o.px=gx; return; } const v=(gx-o.px)/Math.max(dt,1e-3), a=(v-o.vx)/Math.max(dt,1e-3); o.px=gx; o.vx=v;
-  const w0=2*Math.PI*3; o.w+=(-w0*w0*o.th-2*.08*w0*o.w-a/(PHG*24)*w0*w0*.6)*dt; o.th+=o.w*dt; o.th=Math.max(-.7,Math.min(.7,o.th)); }
-function octPose(now){ const st=hand=>{ const q=OCT.hits[hand]; let nx=null, ls=null; for(const h of q){ if(h.at>=now-5){ if(!nx||h.at<nx.at)nx=h; } else if(!ls||h.at>ls.at)ls=h; }
+function octPose(now){ '@later'; const st=hand=>{ const q=OCT.hits[hand]; let nx=null, ls=null; for(const h of q){ if(h.at>=now-5){ if(!nx||h.at<nx.at)nx=h; } else if(!ls||h.at>ls.at)ls=h; }
     let k=.7, i=nx?nx.i:ls?ls.i:hand==='L'?5:7; if(nx&&nx.at-now<140)k=(nx.at-now)/140; else if(ls&&now-ls.at<120){ k=(now-ls.at)/120*.7; i=ls.i; }
     return [i,Math.round(Math.max(0,Math.min(1,k))*3)]; };
   const kq=OCT.hits.K, kick=kq.some(h=>Math.abs(now-h.at)<70)?1:0, beat=OCT.spb?((OCT.tnow/(OCT.spb*(OCT.sub||2)))%1+1)%1:0;
   return {L:st('L'),R:st('R'),A:st('A'),B:st('B'),puff:octUp(octPh(OCT.puff,now)),sip:octUp(octPh(OCT.sip,now)),lev:Math.round(OCT.lev*10)/10,sl:Math.round(Math.tan(OCT.slo.th)*4)/4,
     kick,hat:OCT.hat?1:0,sw:Math.floor(((OCT.tnow||0)/((OCT.spb||.3)*(OCT.sub||2)))%2)*2,nod:beat<.25?1:0}; }
-function octArms(p){ const z=0, sh=[[4,7,26],[4,-7,26]], hand=(h,[i,k])=>{ const D=OCTD[i], S=sh[h==='L'?0:1], v=[S[0]-D[0],S[1]-D[1],S[2]-D[2]], l=Math.hypot(...v)||1, kk=k/3;
+function octArms(p){ '@later'; const sh=[[4,7,26],[4,-7,26]], hand=(h,[i,k])=>{ const D=OCTD[i], S=sh[h==='L'?0:1], v=[S[0]-D[0],S[1]-D[1],S[2]-D[2]], l=Math.hypot(...v)||1, kk=k/3;
     const tip=[D[0]+v[0]/l*14,D[1]+v[1]/l*14,D[2]+v[2]/l*14+1], up=[tip[0]-2,tip[1],tip[2]+10], aimUp=[D[0],D[1],D[2]+16];
     return [[tip[0]+(up[0]-tip[0])*kk,tip[1]+(up[1]-tip[1])*kk,tip[2]+(up[2]-tip[2])*kk],[D[0],D[1],D[2]+1+(aimUp[2]-D[2]-1)*kk]]; };
   const kd=OCTD[0], hd=OCTD[5], Z=OCTSEAT, mix=(a,b,k)=>a.map((v,j)=>v+(b[j]-v)*k);
@@ -65,15 +63,3 @@ function octArms(p){ const z=0, sh=[[4,7,26],[4,-7,26]], hand=(h,[i,k])=>{ const
   o.CG=mix([1,15*OCTS,Z+9],[9.4,2.6,Z+10],p.puff); o.CGA=mix([.5,1,.55],[.45,1,.05],p.puff);
   o.GL=mix([1,-15*OCTS,Z+7],[8.2,-5.2,Z+6],p.sip); o.GLP=p.sip*.55; o.LEV=p.lev; o.SL=p.sl;
   return o; }
-function octPic(now,may){ may=may&&now-(OCT.paintAt||0)>=50; const p=octPose(now), Hv=(()=>{ const [a,b]=vwV(0,1); return Math.round(Math.atan2(b,a)/(Math.PI/4))*Math.PI/4; })(), rr=Math.max(1,charRes(S));
-  const key=p.L.join()+'|'+p.R.join()+'|'+(p.A?p.A.join()+p.B.join():'')+'|'+p.puff+'|'+p.sip+'|'+p.lev+'|'+p.sl+'|'+p.kick+p.hat+p.sw+p.nod+'|'+Hv.toFixed(2)+'|'+rr+'|'+OCT.lk; let it=OCT.pics.get(key);
-  if(!it){ if(!may)return OCT.cur; OCT.paintAt=now; if(OCT.pics.size>140)OCT.pics.clear(); const t0=performance.now();
-    const o=pupPaint(octBody(octArms(p)),Hv,OCTP,rr,{S:120}), m=4*rr, w=o.w+2*m, h=o.h+2*m, c=document.createElement('canvas'); c.width=w; c.height=h; const g=c.getContext('2d'), im=g.createImageData(w,h), d=im.data, L=OCT.L;
-    const lit=[L[0]*.65+.32,L[1]*.65+.24,L[2]*.65+.48];
-    for(let y=0;y<o.h;y++)for(let x=0;x<o.w;x++){ const s=(y*o.w+x)*4; if(!o.px[s+3])continue; const i=((y+m)*w+x+m)*4; d[i]=Math.min(255,o.px[s]*lit[0]); d[i+1]=Math.min(255,o.px[s+1]*lit[1]); d[i+2]=Math.min(255,o.px[s+2]*lit[2]); const r=o.px[s], g=o.px[s+1], b=o.px[s+2]; d[i+3]=b>g*1.25&&r>g*1.12?150:255; }
-    const R=3*rr, H=new Uint8Array(w*h).fill(99); for(let y=0;y<h;y++){ let k=99; for(let x=0;x<w;x++){ k=d[(y*w+x)*4+3]?0:Math.min(99,k+1); H[y*w+x]=k; } k=99; for(let x=w-1;x>=0;x--){ k=d[(y*w+x)*4+3]?0:Math.min(99,k+1); if(k<H[y*w+x])H[y*w+x]=k; } }
-    for(let x=0;x<w;x++)for(let y=0;y<h;y++){ const i=y*w+x; if(d[i*4+3])continue; let best=99; for(let dy=-R;dy<=R;dy++){ const yy=y+dy; if(yy<0||yy>=h)continue; const c=Math.max(Math.abs(dy),H[yy*w+x]); if(c<best)best=c; }
-      if(best<=R){ const a=[0,70,44,26,16,10,6][Math.ceil(best/rr)]||0; if(a){ d[i*4]=170; d[i*4+1]=90; d[i*4+2]=255; d[i*4+3]=a; } } }
-    g.putImageData(im,0,0); it={c,K:rr,ax:(o.ax+m)/rr,ay:(o.ay+m)/rr,w:w/rr,h:h/rr,key:'octo|'+key}; OCT.pics.set(key,it); PERF.add('the bar: the drummer painted (a new pose)',performance.now()-t0); }
-  OCT.cur=it; return it; }
-function octLight(x,y,now){ if(now-OCT.lightAt<=1000)return; OCT.lightAt=now; const env=envNear(x,y), L=env?lightAt(env,x,y,(BAR.stage.z+26)/24,null).map(v=>Math.max(Math.round(v*12)/12,CHARMIN)):[1,1,1]; OCT.L=L; OCT.lk=L.join(); }

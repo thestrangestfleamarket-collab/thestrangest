@@ -3,7 +3,7 @@ const WX={hold:null,now:null};
   const noise=(t,s,oct=2)=>{ let v=0,a=1,n=0; for(let o=0;o<oct;o++){ const i=Math.floor(t), f=t-i, u=f*f*(3-2*f); v+=a*(hsh(i,s+o*7)*(1-u)+hsh(i+1,s+o*7)*u); n+=a; a*=.5; t=t*2.1+11.7; } return v/n; };
   const cl=v=>Math.max(0,Math.min(1,v)), st=(n,k)=>cl((n-.5)*k+.5);
   const T=()=>Math.floor(Date.now()/86400000)*1440+CLOCK.h*60;
-  WX.at=T=>{ const h=(T%1440+1440)%1440/60, dew=t=>{ const hh=(t%1440+1440)%1440/60; return hh<7||hh>21?.12:hh<10?.12*(10-hh)/3:hh>18?.12*(hh-18)/3:0; };
+  WX.at=T=>{ '@later'; const h=(T%1440+1440)%1440/60, dew=t=>{ const hh=(t%1440+1440)%1440/60; return hh<7||hh>21?.12:hh<10?.12*(10-hh)/3:hh>18?.12*(hh-18)/3:0; };
     const pres=t=>st(noise(t/2600,11,3),1.6), moist=t=>cl(st(noise(t/1900,23,3),1.6)*.85+dew(t)), p=pres(T), dp=(pres(T+60)-pres(T-60))*8;
     const cloudAt=t=>cl(moist(t)*1.4-pres(t)*1.0+st(noise(t/400,37,2),1.2)*.45-.12), cloud=(cloudAt(T-30)+cloudAt(T-60)+cloudAt(T-90))/3;
     const rainAt=t=>cl((cloudAt(t)-.7)*3.5)*cl((moist(t)-.5)*3), fall=rainAt(T-15), storm=fall>.5&&p<.22?cl((.22-p)*6*fall):0;
@@ -70,7 +70,7 @@ const WX={hold:null,now:null};
   const NS=1400, sp=new Float32Array(NS*3), ss=new Float32Array(NS*4); for(let i=0;i<NS;i++){ ss[i*4]=(Math.random()-.5)*2*RB; ss[i*4+1]=Math.random()*RH; ss[i*4+2]=(Math.random()-.5)*2*RB; ss[i*4+3]=Math.random()*6.28; }
   const sg=new THREE.BufferGeometry(); sg.setAttribute('position',new THREE.BufferAttribute(sp,3).setUsage(THREE.DynamicDrawUsage));
   const SNOW=new THREE.Points(sg,new THREE.PointsMaterial({color:0xffffff,size:2,sizeAttenuation:false})); SNOW.frustumCulled=false; scene.add(SNOW);
-  const FOG=new THREE.Fog(0x9aa3ad,2,200), cA=new THREE.Color(), cB=new THREE.Color(); let flashT=0, last=0, ft=0;
+  const FOG=new THREE.Fog(0x9aa3ad,2,200), cA=new THREE.Color(), cB=new THREE.Color(); let flashT=0, ft=0;
   const tick0=CLOCK.tick; CLOCK.tick=dt=>{ tick0(dt);
     if((ft-=dt)<=0){ ft=.5; WX.now=WX.hold?Object.assign({flash:(WX.hold==='STORM'||WX.flashK>0)&&Math.random()<(WX.flashK||.04)},HOLDS[WX.hold]):WX.fix&&!WX.nat?{...WX.fix,flash:false}:WX.at(T()); }
     const W=WX.now, up=LVL!=='down', inside=!OUT.open, day=cl((CLOCK.elev()+4)/14), t=performance.now()/1000;

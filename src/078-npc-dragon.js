@@ -21,12 +21,12 @@
     g.putImageData(im,0,0); const t=new THREE.CanvasTexture(cv); t.magFilter=t.minFilter=THREE.NearestFilter; t.generateMipmaps=false; t.colorSpace=THREE.SRGBColorSpace; return t; };
   const HT=haloTex([255,150,40],24), FL=DFL;
   const FB=[];
-  const fire=(from,dir)=>{ let f=FB.find(f=>!f.on); if(!f){ f={g:new THREE.Group()};
+  const fire=(from,dir)=>{ '@later'; let f=FB.find(f=>!f.on); if(!f){ f={g:new THREE.Group()};
       const h=new THREE.Mesh(new THREE.PlaneGeometry(1.6*TI,1.6*TI),new THREE.MeshBasicMaterial({map:HT,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,toneMapped:false})); h.onBeforeRender=(r,s,cm)=>{ h.quaternion.copy(cm.quaternion); h.updateMatrixWorld(); };
       f.g.add(h); MAPG.bodega.add(f.g); f.fl=FLAME.add({kind:'ball',x:0,y:0,z:0,w:.95*TI,h:.95*TI,parent:f.g}); FB.push(f); }
     f.on=f.fl.on=true; f.t=0; f.g.visible=true; f.g.position.copy(from); f.v=dir.clone(); };
   const spark=(p,v,life)=>FLAME.part(4,p.x,p.y,p.z,v.x,v.y,v.z,life,.11*TI,undefined,G*1.6);
-  const burst=p=>{ if(typeof SFX!=='undefined')SFX.play('boom',{at:p,far:40*TI,vol:.9,vary:.2}); for(let k=0;k<18;k++){ const a=Math.random()*Math.PI*2, u=Math.random(); spark(p,new THREE.Vector3(Math.cos(a)*u*3*TI,(1+Math.random()*2.5)*TI,Math.sin(a)*u*3*TI),.6+Math.random()*.6); }
+  const burst=p=>{ '@later'; if(typeof SFX!=='undefined')SFX.play('boom',{at:p,far:40*TI,vol:.9,vary:.2}); for(let k=0;k<18;k++){ const a=Math.random()*Math.PI*2, u=Math.random(); spark(p,new THREE.Vector3(Math.cos(a)*u*3*TI,(1+Math.random()*2.5)*TI,Math.sin(a)*u*3*TI),.6+Math.random()*.6); }
     for(let k=0;k<4;k++)FLAME.puff(p.x+(Math.random()-.5)*.5*TI,p.y+.2*TI,p.z+(Math.random()-.5)*.5*TI,2.2);
     if(window.BLAZE)BLAZE.land(p); const hit=(x,z)=>Math.hypot(x-p.x,z-p.z)<1.3*TI; if(LVL==='up'&&hit(pos.x,pos.z))VIT.hurt(.25); for(const N of NPCS)if(N.lv==='up'&&N.key!=='dragon'&&N.g.visible&&hit(N.st.x,N.st.z))N.hp=Math.max(0,N.hp-.25); };
   const G=9.8/.84*TI*.35;
@@ -50,7 +50,7 @@
     let wI=0, wF=1, wL=0; const s0=sky(), HT0=HOMES.length?HOMES[i%HOMES.length]:null, ha=i*2.4+1;
     if(HT0){ D.home=spot(HT0,ha,.42); D.p=D.home; }
     const nearTree=o=>{ const c=TREES.filter(q=>q!==o&&Math.hypot(q.x-o.x,q.z-o.z)<40*TI); return c.length?c[Math.floor(Math.random()*c.length)]:null; };
-    const nextOf=()=>{ const P=D.p, r=Math.random();
+    const nextOf=()=>{ '@later'; const P=D.p, r=Math.random();
       if(!D.home||P!==D.home)return D.home&&Math.random()<.9?D.home:null;
       if(r<.4){ const o=nearTree(P.tree); if(o)return spot(o,Math.random()*6.28,.5); }
       if(r<.75){ const o=P.tree, a=Math.random()*6.28, d=o.r*(1.1+Math.random()*.6)+.5*TI, x=o.x+Math.sin(a)*d, z=o.z+Math.cos(a)*d; if(MODS.bodega.ground(x,z)>-.01)return {x,z,y:gy(x,z),h:a,ground:1}; }

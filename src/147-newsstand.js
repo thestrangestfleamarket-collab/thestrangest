@@ -37,7 +37,7 @@ NEWS.init=()=>{ const N=typeof TOONS!=='undefined'&&TOONS.cat; if(!N||typeof BOD
     SH.count=n; SH.instanceMatrix.needsUpdate=true; SH.instanceColor.needsUpdate=true; SH.visible=n>0; };
   const BU=new THREE.InstancedMesh(geo,lam,12); BU.count=0; BU.castShadow=true; scene.add(BU); const bundles=[];
   const bspot=k=>[x0-.55,y1-.4-(k>>1)*.5+.1,3.4+(k&1)*11];
-  const drawB=()=>{ let n=0; for(const b of bundles){ const [bx,by,bz]=b.at, w=.5, d=.36;
+  const drawB=()=>{ '@later'; let n=0; for(const b of bundles){ const [bx,by,bz]=b.at, w=.5, d=.36;
       const put=(a,b2,c,d2,z0,z1,cc)=>{ BU.setMatrixAt(n,m4.compose(new V((X(a)+X(b2))/2,(Y(z0)+Y(z1))/2,(Z(c)+Z(d2))/2),q,new V(Math.abs(X(b2)-X(a)),Y(z1)-Y(z0),Math.abs(Z(d2)-Z(c))))); BU.setColorAt(n,col.setHex(cc)); n++; };
       put(bx-w/2,bx+w/2,by-d/2,by+d/2,bz,bz+10,PAPER); put(bx-.03,bx+.03,by-d/2-.01,by+d/2+.01,bz,bz+10.4,0x9a7040); put(bx-w/2-.01,bx+w/2+.01,by-.03,by+.03,bz,bz+10.4,0x9a7040); }
     BU.count=n; if(n){ BU.instanceMatrix.needsUpdate=true; BU.instanceColor.needsUpdate=true; } };
@@ -100,11 +100,11 @@ NEWS.init=()=>{ const N=typeof TOONS!=='undefined'&&TOONS.cat; if(!N||typeof BOD
   const left=it=>it.k==='papers'?stock.papers[it.i]:stock[it.k];
   const HEAD=[['FIREBALL SCORCHES PARK BENCH','dragons blamed; the city shrugs'],['BODEGA FOX DENIES PRICE HIKE','"a dollar is a dollar," he says'],['SKELETON GUARDS SEE OFF TROUBLEMAKERS','three hooded figures flee down the subway stairs'],
     ['MUSHROOM STALL A HIT AT THE PARK GATE','the seller is said to be "very calm"'],['METRO RUNS ON TIME, MOSTLY','riders surprised'],['CASTLE FOUND TO BE HALF SIZE','built for the woodland folk, the mayor explains']];
-  const front=i=>{ const d=(window.CITY&&CITY.day)||0, w=null, a=HEAD[(d*3+i)%HEAD.length], b=HEAD[(d*3+i+2)%HEAD.length];
+  const front=i=>{ '@later'; const d=(window.CITY&&CITY.day)||0, w=null, a=HEAD[(d*3+i)%HEAD.length], b=HEAD[(d*3+i+2)%HEAD.length];
     return `<div class="np"><div class="nh" style="border-color:#${TITLES[i][1].toString(16).padStart(6,'0')}">${TITLES[i][0]}</div><div class="nd">DAY ${d+1} · 25¢ MORE THAN YESTERDAY${w?' · '+String(w).toUpperCase():''}</div><b>${a[0]}</b><p>${a[1]}</p><b class="s">${b[0]}</b><p>${b[1]}</p></div>`; };
   const css=document.createElement('style'); css.textContent='#nsp{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(420px,calc(100vw - 32px));max-height:calc(100vh - 40px);overflow:auto;font:12px var(--pixel,monospace);color:#e8e2c8;background:#18241c;border:2px solid #4c7a58;padding:14px 16px 12px;z-index:16;user-select:none}#nsp h3{margin:0 0 6px;font-size:13px}#nsp .row{display:flex;gap:8px;align-items:center;margin:3px 0}#nsp .it{flex:1}#nsp .sec{margin:8px 0 2px;color:#9cc8a4}#nsp .st{margin-top:8px;color:#f0d890;min-height:1em}#nsp .np{background:#eee8d8;color:#222;padding:8px 10px;margin-top:8px}#nsp .nh{font-size:15px;border-bottom:3px solid;margin-bottom:4px}#nsp .nd{font-size:10px;margin-bottom:6px}#nsp .np p{margin:2px 0 6px}#nsp .s{font-size:11px}';
   document.head.appendChild(css); const P=document.createElement('div'); P.id='nsp'; P.hidden=true; P.setAttribute('role','dialog'); P.setAttribute('aria-label','Newsstand'); document.body.appendChild(P);
-  const draw=(msg='',page='')=>{ const open=isOpen(CLOCK.h), sec={papers:'NEWSPAPERS'}; let last='';
+  const draw=(msg='',page='')=>{ '@later'; const open=isOpen(CLOCK.h), sec={papers:'NEWSPAPERS'}; let last='';
     P.innerHTML=`<h3>THE NEWSSTAND · THE CAT IN THE RAINCOAT</h3><div>${open?'OPEN 5:45 TO 10 PM':'CLOSED. OPENS AT 5:45 AM'} · YOU HAVE $${purse.get()}</div>`+ITEMS.map((it,i)=>{ const s=sec[it.k]!==last?`<div class="sec">${sec[it.k]}</div>`:''; last=sec[it.k]; const l=left(it);
       return s+`<div class="row"><span class="it">${it.n}</span><span>${l} LEFT</span><span>$${it.p}</span><button class="btn" data-i="${i}" ${open&&l>0?'':'disabled'}>BUY</button></div>`; }).join('')+`<div class="st">${msg}</div>${page}<div class="row" style="margin-top:8px"><button class="btn" id="nsx">CLOSE</button></div>`;
     P.querySelectorAll('[data-i]').forEach(b=>b.onclick=()=>{ const it=ITEMS[+b.dataset.i]; if(purse.get()<it.p){ draw('NOT ENOUGH MONEY.'); return; } if(left(it)<=0){ draw('SOLD OUT.'); return; }
@@ -113,10 +113,10 @@ NEWS.init=()=>{ const N=typeof TOONS!=='undefined'&&TOONS.cat; if(!N||typeof BOD
       draw('THANK YOU. ENJOY YOUR '+it.n+'.',it.k==='papers'?front(it.i):''); });
     P.querySelector('#nsx').onclick=()=>{ P.hidden=true; }; };
   const FRONT={x:X(xm),z:Z(y1+1.15)}; NEWS.front=FRONT;
-  NEWS.customer=C=>{ if(!isOpen(CLOCK.h))return false; const i=[0,1,2,3].filter(k=>stock.papers[k]>0).sort(()=>Math.random()-.5)[0]; if(i==null)return false;
+  NEWS.customer=C=>{ '@later'; if(!isOpen(CLOCK.h))return false; const i=[0,1,2,3].filter(k=>stock.papers[k]>0).sort(()=>Math.random()-.5)[0]; if(i==null)return false;
     stock.papers[i]--; stacks(); sold++; wake(); queue=queue.filter(a=>a.n!=='arrange'&&a.n!=='stretch'); if(!act||act.n!=='serve'&&act.n!=='change')doAct('serve',()=>doAct('change'));
     if(window.CIVIC&&CIVIC.note)CIVIC.note((C&&C.name||'someone').replace(/ \(.*\)$/,'').toLowerCase()+' bought '+TITLES[i][0].toLowerCase()+' at the newsstand','newsstand'); return true; };
-  NEWS.call=()=>{ const WL=(window.WALKERS&&WALKERS.list)||[], ok=WL.filter(W=>(W.state==='stay'||W.state==='wait')&&W.kind!=='golem'&&!(W.job&&W.job.state&&W.job.state!=='off')&&W.N.lv==='up'&&Math.hypot(W.N.st.x-FRONT.x,W.N.st.z-FRONT.z)<30*T);
+  NEWS.call=()=>{ '@later'; const WL=(window.WALKERS&&WALKERS.list)||[], ok=WL.filter(W=>(W.state==='stay'||W.state==='wait')&&W.kind!=='golem'&&!(W.job&&W.job.state&&W.job.state!=='off')&&W.N.lv==='up'&&Math.hypot(W.N.st.x-FRONT.x,W.N.st.z-FRONT.z)<30*T);
     const W=ok[Math.floor(Math.random()*ok.length)]; if(!W)return null; const N=W.N, to={x:FRONT.x+(Math.random()-.5)*.8*T,z:FRONT.z}; cust={N,t:90}; W.state='going'; N.dwell=null; N.st.face=null;
     CITY.send(N,to,{v:W.v,then:ok=>{ cust=null; if(!ok){ W.state='wait'; W.t=1; return; } const got=NEWS.customer(N); W.state='stay'; W.t=got?5+Math.random()*4:1.5; N.dwell=got?'found_item_idle_a':null; N.st.hold=true; N.st.to=null; N.st.face={x:X(xm),z:Z(y1-.8)}; }}); return N.key; };
   NEWS.open=()=>{ draw(); P.hidden=false; if(isOpen(CLOCK.h)&&!act){ doAct('wave'); } };

@@ -12,7 +12,7 @@ const LINES={log:[]};
   const hashS=s=>{ let h=2166136261; for(let i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619); } return h>>>0; };
   const fill=(s,ctx)=>s.replace(/\{\{(\w+)\}\}/g,(m,k)=>ctx[k]);
   LINES.pools=POOL; LINES.add=(k,arr)=>{ POOL[k]=(POOL[k]||[]).concat(arr); };
-  LINES.pick=(k,ctx={},seed)=>{ const pool=POOL[k]||[]; if(!pool.length)return '';
+  LINES.pick=(k,ctx={},seed)=>{ '@later'; const pool=POOL[k]||[]; if(!pool.length)return '';
     const fits=pool.filter(s=>!/\{\{(\w+)\}\}/.test(s.replace(/\{\{(\w+)\}\}/g,(m,q)=>ctx[q]?'':m)));
     const use=fits.length?fits:pool.filter(s=>!/\{\{/.test(s)); if(!use.length)return '';
     const fresh=use.filter(s=>!recent.includes(s)), opts=fresh.length?fresh:use, i=seed!=null?hashS(String(seed))%opts.length:Math.floor(Math.random()*opts.length), line=opts[i];
@@ -21,7 +21,7 @@ const LINES={log:[]};
   const st=document.createElement('style'); st.textContent='.said2{position:fixed;transform:translate(-50%,-100%);font:12px var(--pixel);color:var(--fg);background:var(--panel);border:2px solid var(--line);padding:3px 7px;pointer-events:none;z-index:14;white-space:nowrap;max-width:240px}'; document.head.appendChild(st);
   const ON=[], MAX=3, V=new THREE.Vector3();
   const you=()=>(typeof LOOKS!=='undefined'&&LOOKS.L&&LOOKS.L.name)||'';
-  LINES.say=(N,k,ctx)=>{ if(!N||!N.g)return ''; const text=POOL[k]?LINES.pick(k,Object.assign({name:you()},ctx||{})):String(k); if(!text)return '';
+  LINES.say=(N,k,ctx)=>{ '@later'; if(!N||!N.g)return ''; const text=POOL[k]?LINES.pick(k,Object.assign({name:you()},ctx||{})):String(k); if(!text)return '';
     const old=ON.findIndex(o=>o.N===N); if(old>=0){ ON[old].el.remove(); ON.splice(old,1); } while(ON.length>=MAX){ ON[0].el.remove(); ON.shift(); }
     const el=document.createElement('div'); el.className='said2'; document.body.appendChild(el);
     const o={N,el,text,n:0,t:0,life:Math.max(1.5,Math.min(4.5,text.length/40+.8)),voice:N.voice||(N.voice=SFX.voiceOf(N.key||N.name))}; ON.push(o);

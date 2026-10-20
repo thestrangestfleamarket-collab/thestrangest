@@ -22,13 +22,13 @@ const BLAZE=window.BLAZE={F:[],D:[]};
     mat.customProgramCacheKey=()=>'burnmark';
     const me=new THREE.InstancedMesh(g,mat,NM); me.count=0; me.receiveShadow=true; me.frustumCulled=false; me.name='burn marks'; me.raycast=()=>{}; MAPG.bodega.add(me);
     for(let i=0;i<NM;i++){ me.setMatrixAt(i,Z0); BM.push(null); } return {me,aA,NM}; })();
-  const mark=(x,z,y)=>{ let i=BM.indexOf(null); if(i<0){ let o=1e9; BM.forEach((m,j)=>{ if(m.t>=0&&m.a<o){ o=m.a; i=j; } }); if(i<0)i=0; }
+  const mark=(x,z,y)=>{ '@later'; let i=BM.indexOf(null); if(i<0){ let o=1e9; BM.forEach((m,j)=>{ if(m.t>=0&&m.a<o){ o=m.a; i=j; } }); if(i<0)i=0; }
     const m={i,x,z,y,a:.05,a0:0,t:-1,fix:top(x,z)===undefined}; BM[i]=m; mk.me.setMatrixAt(i,m4.compose(p3.set(x,y+.03*T,z),q4.setFromAxisAngle(s3.set(0,1,0),rnd()*6.28),s3.set(1,1,1).multiplyScalar((1.05+rnd()*.5)*T)));
     mk.me.instanceMatrix.needsUpdate=true; mk.me.count=Math.max(mk.me.count,i+1); return m; };
   const remark=m=>{ mk.me.getMatrixAt(m.i,m4); m4.elements[13]=m.y+.03*T; mk.me.setMatrixAt(m.i,m4); mk.me.instanceMatrix.needsUpdate=true; };
   const SRC=[], src=()=>{ let s=SRC.find(s=>s.free); if(s){ s.free=false; s.on=true; return s; } s=FLAME.add({kind:'bed',name:'grass fire',x:0,y:0,z:0,w:.5*T,h:.6*T,embers:2,smoke:1}); SRC.push(s); return s; };
   const L=new THREE.PointLight(new THREE.Color(1,.55,.2),0,7*T,1.6); L.userData.fire=1; scene.add(L);
-  const start=BLAZE.start=(x,z,force)=>{ if(F.length>=MAX||F.some(f=>Math.hypot(f.x-x,f.z-z)<.7*T)||!force&&!burnable(x,z))return null;
+  const start=BLAZE.start=(x,z,force)=>{ '@later'; if(F.length>=MAX||F.some(f=>Math.hypot(f.x-x,f.z-z)<.7*T)||!force&&!burnable(x,z))return null;
     const y=surf(x,z), s=src(); s.x=x; s.y=y; s.z=z; s.a.position.set(x,y,z); s.w=s.h=0; s.sd=rnd()*50; s.steam=5;
     const f={x,z,y,s,age:0,life:70+rnd()*60,sp:20+rnd()*20,wet:0,by:null,m:mark(x,z,y),sz:.85+rnd()*.35,fix:top(x,z)===undefined,out:false}; F.push(f); return f; };
   BLAZE.land=p=>{ if(burnable(p.x,p.z)&&rnd()<.6)start(p.x,p.z); };
@@ -69,7 +69,7 @@ const BLAZE=window.BLAZE={F:[],D:[]};
   const hover=(d,f)=>{ const dx=d.p.x-f.x, dz=d.p.z-f.z, l=Math.hypot(dx,dz)||1; return new V3(f.x+dx/l*2.2*M,f.y+2.6*M,f.z+dz/l*2.2*M); };
   const send=(d,f)=>{ d.f=f; f.by=d; const h=hover(d,f), c=Math.max(G(f.x,f.z),G(d.p.x,d.p.z))+CRUISE; d.legs=d.st==='spray'?[h]:[new V3(d.p.x,Math.max(d.p.y,c),d.p.z),new V3(h.x,c,h.z),h]; d.st='go'; };
   const home=d=>{ d.f=null; const c=Math.max(d.p.y,d.home.y+CRUISE*.7); d.legs=[new V3(d.p.x,c,d.p.z),new V3(d.home.x,c,d.home.z),d.home.clone()]; d.st='back'; };
-  const fly=(d,dt)=>{ const g=d.legs[0]; if(!g)return true; const dv=p3.subVectors(g,d.p), dist=dv.length(), last=d.legs.length===1, vm=Math.min(7*M,dist*(last?1.1:2.5));
+  const fly=(d,dt)=>{ '@later'; const g=d.legs[0]; if(!g)return true; const dv=p3.subVectors(g,d.p), dist=dv.length(), last=d.legs.length===1, vm=Math.min(7*M,dist*(last?1.1:2.5));
     if(dist>1e-4)dv.multiplyScalar(vm/dist); dv.y=Math.max(-2.5*M,Math.min(3*M,dv.y)); const ac=s3.subVectors(dv,d.v).multiplyScalar(2.2), al=ac.length(), AM=5*M; if(al>AM)ac.multiplyScalar(AM/al);
     d.v.addScaledVector(ac,dt); d.p.addScaledVector(d.v,dt); d.a.lerp(ac,Math.min(1,dt*4));
     if(dist<(last?.06*M:1.2*M)&&(!last||d.v.length()<.5*M)){ d.legs.shift(); if(last){ d.p.copy(g); d.v.set(0,0,0); return true; } } return false; };

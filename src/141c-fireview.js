@@ -6,8 +6,8 @@
   F.on=false; F.G=G;
   const wait=ms=>new Promise(r=>setTimeout(r,ms)), frames=k=>new Promise(r=>{ const f=()=>--k<=0?r():requestAnimationFrame(f); requestAnimationFrame(f); });
   const fade=async(txt,fn)=>{ busy=true; const el=document.getElementById('subfade'); el.textContent=txt; el.style.pointerEvents='auto'; el.style.opacity='1'; if(keys.clear)keys.clear(); target=null; await wait(340); await frames(2);
-    fn(); await frames(3); await wait(260); el.style.opacity='0'; el.style.pointerEvents='none'; await wait(360); busy=false; };
-  F.out=()=>{ if(busy)return; fade(F.built?'YOUR FIRE ESCAPE':'LOADING YOUR FIRE ESCAPE...',()=>{ STORE.offGo(F.name); UI.goTo(X(CX),Z(WY+1.05),Y(HZ)); heading=0; if(UI.persp&&window.__dbg)__dbg.face(Math.PI); }); };
+    await fn(); await frames(3); await wait(260); el.style.opacity='0'; el.style.pointerEvents='none'; await wait(360); busy=false; };
+  F.out=()=>{ if(busy)return; fade(F.built?'YOUR FIRE ESCAPE':'LOADING YOUR FIRE ESCAPE...',async()=>{ await STORE.offGo(F.name); UI.goTo(X(CX),Z(WY+1.05),Y(HZ)); heading=0; if(UI.persp&&window.__dbg)__dbg.face(Math.PI); }); };
   F.back=()=>{ if(busy)return; fade('YOUR APARTMENT',()=>{ if(USE.seat){ USE.seat=null; st.sit=null; } UI.goTo(X(U(AWX)),Z(V(1.1)),APTS.lvY(2)); heading=0; }); };
   const hit=(w,h,d,x,y,z)=>{ const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),new THREE.MeshBasicMaterial({visible:false})); m.position.set(x,y,z); scene.add(m); return m; };
   UI.thing({name:'YOUR FIRE ESCAPE',ghost:1,obj:hit(1.1*T*KK,BOD.Y(52),.3*T,X(U(AWX)),BOD.Y(2*S+68+RZ),Z(V(.2))),reach:1.4*T,near:2.6*T,tall:1.4*T,act:()=>{ if(APTS.in&&APTS.floor()===2)F.out(); }});
@@ -17,10 +17,10 @@
     const t=new THREE.CanvasTexture(cv); t.magFilter=t.minFilter=THREE.NearestFilter; t.generateMipmaps=false; t.colorSpace=THREE.SRGBColorSpace;
     const m=new THREE.Mesh(new THREE.PlaneGeometry(W/24*T*KK,BOD.Y(H)),new THREE.MeshLambertMaterial({map:t,clippingPlanes:[APTS.HP,APTS.LP]})); m.position.set(X(U(23.4)),BOD.Y(2*S+105+RZ),Z(V(5.6)+.1)+.01); scene.add(m); return m; })();
   const P3=(x,y,z)=>[X(x),Y(z),Z(y)];
-  const tx=(w,h,fn)=>{ const im=new ImageData(w,h), d=im.data; let ie=null, e=null;
+  const tx=(w,h,fn)=>{ '@later'; const im=new ImageData(w,h), d=im.data; let ie=null, e=null;
     for(let j=0,k=0;j<h;j++)for(let i=0;i<w;i++,k+=4){ const v=fn(i,j); if(!v)continue; d[k]=v[0]; d[k+1]=v[1]; d[k+2]=v[2]; d[k+3]=255; if(v.length>3){ if(!ie){ ie=new ImageData(w,h); e=ie.data; } e[k]=v[3]; e[k+1]=v[4]; e[k+2]=v[5]; e[k+3]=255; } }
     return {map:{image:im},em:ie?{image:ie}:null}; };
-  const box=(b,p=8,k='F')=>{ const {x0,x1,y0,y1,z0,z1}=b, sk=b.sk||'', H=Math.max(1,Math.round((z1-z0)*p/24));
+  const box=(b,p=8,k='F')=>{ '@later'; const {x0,x1,y0,y1,z0,z1}=b, sk=b.sk||'', H=Math.max(1,Math.round((z1-z0)*p/24));
     const fs=(nx,ny,x,y,z)=>b.fs?b.fs(nx,ny,x,y,z-z0,nx?.68:.84,p):sh(b.c,nx?.68:.84);
     const vf=(a,bb,c,d,len,at)=>{ const W=Math.max(1,Math.round(len*p)); bq(a,bb,c,d,tx(W,H,(i,j)=>at((i+.5)/W,z1-(j+.5)*(z1-z0)/H)),k); };
     if(z1-z0>.4){
@@ -35,7 +35,7 @@
   const brick=(c,u,z,f,lo,sd)=>{ const r=Math.floor(z/6), q=u*24+(r&1)*6, b=Math.floor(q/12), n=hs(b,r,sd);
     if(!lo&&(z-r*6<1||q-b*12<1))return sh(c,f*.66); return sh(c,f*(.86+.22*n)*(hs(Math.floor(q/40),Math.floor(z/30),sd+1)<.15?.9:1)); };
   const tar=(x,y)=>{ const n=hs(Math.floor(x*6),Math.floor(y*6),61); return n<.3?[50,50,52]:n>.7?[66,64,62]:[58,57,57]; };
-  const shop=(o,u,zz,f,lo)=>{ const cu=(o.x0+o.x1)/2, du=Math.abs(u-cu), sd=o.sd, aw=AWN[Math.floor(hs(sd,1,3)*AWN.length)], lit=hs(sd,2,4)<.8;
+  const shop=(o,u,zz,f,lo)=>{ '@later'; const cu=(o.x0+o.x1)/2, du=Math.abs(u-cu), sd=o.sd, aw=AWN[Math.floor(hs(sd,1,3)*AWN.length)], lit=hs(sd,2,4)<.8;
     if(Math.min(u-o.x0,o.x1-u)<.3)return sh(o.st,f*.9);
     if(zz<8)return sh(o.st,f*.7);
     if(zz<86){ if(du<.55)return du>.5||zz>82?[30,30,32]:zz>66?(lit?[...GLASS,255,226,170]:GLASS):sh([70,50,38],f);
@@ -60,28 +60,28 @@
       const ln=o.mine&&fr&&s===4?1:hs(k+97,s,sd)<o.lit, cur=hs(k+31,s,sd+5), cc=CUR[Math.floor(cur*CUR.length)], cs=cur<.6&&du>hw*.5, dc=cs?sh(cc,.7):((Math.floor(u*24)+zz)%9===0?[58,64,74]:GLASS);
       if(!ln)return dc; const n=.86+.14*hs(Math.floor(u*8),Math.floor(zz/4),sd+9), wc=cs?[cc[0],cc[1]*.8,cc[2]*.6]:WARM; return [...dc,wc[0]*n,wc[1]*n,wc[2]*n]; }
     return brick(c,u,z,f,lo,sd); };
-  const bld=(x0,x1,y0,y1,n,o,p=8)=>{ const zb=o.zb||0, top=zb+n*S+16, O={x0,x1,top,zb,c:o.c,st:o.st||[170,162,148],sd:o.sd,c0:o.c0??(x0+1.3+((x1-x0-2.6)%2.6)/2),bay:2.6,lit:o.lit??.35,shop:o.shop,door:o.door,fw:o.fw,blank:o.blank,mine:o.mine};
+  const bld=(x0,x1,y0,y1,n,o,p=8)=>{ '@later'; const zb=o.zb||0, top=zb+n*S+16, O={x0,x1,top,zb,c:o.c,st:o.st||[170,162,148],sd:o.sd,c0:o.c0??(x0+1.3+((x1-x0-2.6)%2.6)/2),bay:2.6,lit:o.lit??.35,shop:o.shop,door:o.door,fw:o.fw,blank:o.blank,mine:o.mine};
     box({x0,x1,y0,y1,z0:0,z1:top,sk:o.sk,fs:fac(O),top:o.roof||tar},p,'F'); return O; };
   const railP=(x0,x1,y0,y1,z,p)=>{ const al=x1-x0>y1-y0, a0=al?x0:y0; box({x0,x1,y0,y1,z0:z,z1:z+33,fs:(nx,ny,x,y,zr)=>{ const a=al?x:y; return zr>=30||(zr>=14&&zr<16)||((a-a0)%.36)<.05?STEEL:null; },top:()=>STEEL},p,'L'); };
   const ladder=(x,y,za,zb,p)=>box({x0:x-.22,x1:x+.22,y0:y,y1:y+.04,z0:za,z1:zb,fs:(nx,ny,X_,Y_,zr)=>Math.abs(X_-x)>.17||zr%12<2?STEEL:null,top:()=>STEEL},p,'L');
-  const escape=(x0,x1,yw,zs,lx,p,mine)=>{ const g=p<16?6:12;
+  const escape=(x0,x1,yw,zs,lx,p,mine)=>{ '@later'; const g=p<16?6:12;
     zs.forEach((z,i)=>{ const hole=i>0;
       box({x0,x1,y0:yw,y1:yw+DO,z0:z-3,z1:z,c:STEEL,top:(x,y)=>hole&&Math.abs(x-lx)<.3&&y>yw+.7&&y<yw+1.15?null:((x*g)%1<.4||(y*g)%1<.4)?STEEL:null},p,'L');
       box({x0,x1,y0:yw+DO-.06,y1:yw+DO,z0:z-9,z1:z-3,c:STEEL},p,'L'); for(let u=x0+.3;u<x1;u+=2.4)box({x0:u,x1:u+.06,y0:yw,y1:yw+DO,z0:z-12,z1:z-3,c:STEEL},p,'L');
       railP(x0,x1,yw+DO-.04,yw+DO,z,p); railP(x0,x0+.04,yw,yw+DO,z,p); railP(x1-.04,x1,yw,yw+DO,z,p);
       if(i<zs.length-1)ladder(lx,yw+.9,z,zs[i+1]+2,p); });
     ladder(lx,yw+.9,zs[0]-110,zs[0],p); };
-  const tree=(x,y)=>{ const LF=[[52,92,44],[64,108,50],[44,78,40]], lf=(x_,y_,z)=>sh(LF[Math.floor(hs(Math.floor(x_*8+z/6),Math.floor(y_*8),51)*3)],1);
+  const tree=(x,y)=>{ '@later'; const LF=[[52,92,44],[64,108,50],[44,78,40]], lf=(x_,y_,z)=>sh(LF[Math.floor(hs(Math.floor(x_*8+z/6),Math.floor(y_*8),51)*3)],1);
     box({x0:x-.07,x1:x+.07,y0:y-.07,y1:y+.07,z0:4,z1:62,c:[70,52,40]},8,'L');
     box({x0:x-.8,x1:x+.8,y0:y-.8,y1:y+.8,z0:52,z1:96,fs:(nx,ny,X_,Y_,z,f)=>sh(lf(X_,Y_,z),f),top:(x_,y_)=>lf(x_,y_,0)},8,'L');
     box({x0:x-.5,x1:x+.5,y0:y-.5,y1:y+.5,z0:96,z1:116,fs:(nx,ny,X_,Y_,z,f)=>sh(lf(X_,Y_,z),f*1.05),top:(x_,y_)=>sh(lf(x_,y_,3),1.1)},8,'L'); };
-  const car=(x,y,c,dir)=>{ const L=.95, w=.4; box({x0:x-L,x1:x+L,y0:y-w,y1:y+w,z0:6,z1:22,c,fs:(nx,ny,X_,Y_,z,f)=>z<3?[24,24,26]:sh(c,f),top:()=>sh(c,1.05)},8,'L');
+  const car=(x,y,c,dir)=>{ '@later'; const L=.95, w=.4; box({x0:x-L,x1:x+L,y0:y-w,y1:y+w,z0:6,z1:22,c,fs:(nx,ny,X_,Y_,z,f)=>z<3?[24,24,26]:sh(c,f),top:()=>sh(c,1.05)},8,'L');
     box({x0:x-L*.5+dir*.1,x1:x+L*.45+dir*.1,y0:y-w*.86,y1:y+w*.86,z0:22,z1:34,c,fs:(nx,ny,X_,Y_,z,f)=>z<10?[44,52,62]:sh(c,f),top:()=>sh(c,1.1)},8,'L'); };
   const lamps=[]; for(let i=0;i<12;i++){ lamps.push([CX-66+i*12,WY+2.75,1]); lamps.push([CX-60+i*12,WY+12.25,-1]); }
   const pool=(x,y)=>{ let b=0; for(const [lx,ly,s] of lamps){ const d=Math.hypot(x-lx,(y-(ly+s*.8))*1.25); if(d<1.1)return 2; if(d<1.9)b=1; } return b; };
   const lit2=(c,b)=>b===2?[...c,58,46,26]:b===1?[...c,28,22,12]:c;
   const AVE0=CX+24, AVE1=CX+33;
-  const road=(x,y)=>{ const n=hs(Math.floor(x*8),Math.floor(y*8),81), v=y-WY; let c=n<.25?[46,48,52]:n>.85?[62,62,66]:[54,56,60];
+  const road=(x,y)=>{ '@later'; const n=hs(Math.floor(x*8),Math.floor(y*8),81), v=y-WY; let c=n<.25?[46,48,52]:n>.85?[62,62,66]:[54,56,60];
     const ca=x>AVE0-3&&x<AVE1+3; if(!ca&&Math.abs(Math.abs(v-7.5)-.1)<.05)c=[200,170,60];
     if(!ca&&(Math.abs(v-4.25)<.04||Math.abs(v-10.75)<.04))c=[176,176,170];
     if((x>AVE0-3&&x<AVE0-.6||x>AVE1+.6&&x<AVE1+3)&&(Math.floor(v*2.2)&1)&&v>3.3&&v<11.7)c=[190,190,184];
@@ -91,7 +91,7 @@
   const walk=(x,y)=>{ const n=hs(Math.floor(x*8),Math.floor(y*8),85), j=((x-CX)%1.4+1.4)%1.4<.12||((y-WY)%1.4+1.4)%1.4<.12; return lit2(j?[132,128,122]:sh([164,160,152],.95+.1*n),pool(x,y)); };
   const make=(k,map,emap)=>{ const m=new THREE.MeshLambertMaterial({map,alphaTest:.5,side:k==='F'?THREE.FrontSide:THREE.DoubleSide,...(emap?{emissiveMap:emap,emissive:0xffffff,emissiveIntensity:0}:{})}); if(emap)MATS.push(m); return m; };
   const sol=STORE.kit.sol;
-  F.build=()=>{ if(F.built)return; const keep=BATCH.items.splice(0), km=BATCH.meshes, kc=BATCH.cast; BATCH.meshes={}; BATCH.cast=true; BATCH.tag=null;
+  F.build=()=>{ '@fire'; if(F.built)return; const keep=BATCH.items.splice(0), km=BATCH.meshes, kc=BATCH.cast; BATCH.meshes={}; BATCH.cast=true; BATCH.tag=null;
     const R=(i,j)=>hs(i,j,907);
     bld(CX-9,CX+9,WY-12,WY,6,{c:[132,64,50],sd:11,c0:CX,fw:1,mine:1,lit:.4,door:CX+5.2,zb:28,sk:'nwe',st:[178,170,156]},24);
     box({x0:CX+4.5,x1:CX+5.9,y0:WY,y1:WY+1.1,z0:0,z1:24,c:[150,146,136],top:(x,y)=>sh([150,146,136],(y-WY)*24%9<1?.8:1)},12,'L');

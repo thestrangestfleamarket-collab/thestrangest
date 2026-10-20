@@ -22,14 +22,14 @@ ROOMS.roofAt=(x,y,z)=>{ const h=new THREE.Raycaster(new THREE.Vector3(x,y,z),new
         const walk=o=>{ if(skip.has(o)||o.isSkinnedMesh)return; const ms=o.material?(Array.isArray(o.material)?o.material:[o.material]):[]; for(const mt of ms){ if(own.has(mt)||mt.clippingPlanes===NEAR||(mt.isShaderMaterial&&!mt.clipping)||(mt.clippingPlanes&&mt.clippingPlanes.length))continue; mt.clippingPlanes=NEAR; mt.clipIntersection=true; mt.needsUpdate=true; } for(const c of o.children)walk(c); };
         walk(scene); };
   const IV={key:null,b:null,want:null,re:null,busy:false,H:[],L:[],S:[],top:new Set(),nc:0,C:new Map()}; ROOMS.iv=IV;
-  ROOMS.lazy={bodega:{name:'THE BODEGA',go:()=>BODB.build&&BODB.build(),done:false},bath:{name:'THE BATH HOUSE',go:()=>BOD.GD&&BOD.GD.build&&BOD.GD.build(),done:false}};
+  ROOMS.lazy={bodega:{name:'THE BODEGA',go:()=>BODB.build&&BODB.build(),need:()=>LOAD(BODB.build&&BODB.build.chunk),done:false},bath:{name:'THE BATH HOUSE',go:()=>BOD.GD&&BOD.GD.build&&BOD.GD.build(),need:()=>LOAD(BOD.GD&&BOD.GD.build&&BOD.GD.build.chunk),done:false}};
   const kOf=b=>[b.x0,b.z0,b.x1,b.z1,b.y0].map(v=>(+v).toFixed(2)).join();
   const lazyOf=b=>{ if(!b)return null; const L=b.lz&&ROOMS.lazy[b.lz]; if(L)return L.done?null:L; const S=b.id&&STORE.inside&&STORE.inside[b.id];
-    return S&&!S.done?{name:/^THE /.test(S.name)?S.name:'THE '+S.name,S,go:()=>{ S.busy=false; STORE.inGo(b.id); }}:null; };
+    return S&&!S.done?{name:/^THE /.test(S.name)?S.name:'THE '+S.name,S,go:()=>{ S.busy=false; STORE.inGo(b.id); },need:()=>STORE.need&&STORE.need()}:null; };
   const BX=new THREE.Box3(), V3=new V();
   const ovl=(a,r)=>a.max.x>r.x0&&a.min.x<r.x1&&a.max.z>r.z0&&a.min.z<r.z1&&a.max.y>r.y0&&a.min.y<r.y1, con=(a,r)=>a.min.x>=r.x0&&a.max.x<=r.x1&&a.min.z>=r.z0&&a.max.z<=r.z1&&a.min.y>=r.y0&&a.max.y<=r.y1;
   const pin=(r,x,y,z)=>x>r.x0&&x<r.x1&&z>r.z0&&z<r.z1&&y>r.y0&&y<r.y1;
-  const scan=(b,roots)=>{ const e=.15*TILE, R={x0:b.x0-e,x1:b.x1+e,z0:b.z0-e,z1:b.z1+e,y0:b.y0-.3,y1:b.y1+.1*TILE}, D=b.band?{x0:b.band.x0,x1:b.band.x1,z0:b.band.z0,z1:b.band.z1,y0:R.y0,y1:R.y1}:null;
+  const scan=(b,roots)=>{ '@later'; const e=.15*TILE, R={x0:b.x0-e,x1:b.x1+e,z0:b.z0-e,z1:b.z1+e,y0:b.y0-.3,y1:b.y1+.1*TILE}, D=b.band?{x0:b.band.x0,x1:b.band.x1,z0:b.band.z0,z1:b.band.z1,y0:R.y0,y1:R.y1}:null;
     const inn=(x,y,z)=>pin(R,x,y,z)||!!D&&pin(D,x,y,z), T={H:[],L:[],S:[],top:new Set(roots)};
     const skip=new Set([W3.group,...NPCS.map(N=>N.g),...(NPCS.extra||[]).map(q=>q&&q.g),FLAME.me,WATER.mesh,...(WATER.extra||[]).map(w=>w.mesh),
       typeof MUS!=='undefined'&&MUS.g,typeof PNM!=='undefined'&&PNM.g,typeof SGM!=='undefined'&&SGM.g,typeof DRM!=='undefined'&&DRM.g].filter(Boolean));
@@ -51,10 +51,10 @@ ROOMS.roofAt=(x,y,z)=>{ const h=new THREE.Raycaster(new THREE.Vector3(x,y,z),new
   const apply=w=>{ leave(); if(!w)return; let T=IV.C.get(w.key); if(!T){ scene.updateMatrixWorld(); T=scan(w.b,scene.children.slice()); IV.C.set(w.key,T); } put(T); IV.top=new Set(T.top); IV.nc=-1; IV.key=w.key; IV.b=w.b; };
   const frames=n=>new Promise(r=>{ const f=()=>--n<=0?r():requestAnimationFrame(f); requestAnimationFrame(f); });
   const swap=async()=>{ const el=document.getElementById('subfade'), w=IV.want, lz=w&&lazyOf(w.b);
-    if(!el||!window.__started||el.style.opacity==='1'){ if(lz)lz.go(); apply(IV.want); return; }
+    if(!el||!window.__started||el.style.opacity==='1'){ if(lz){ await lz.need(); lz.go(); } apply(IV.want); return; }
     IV.busy=true; const tr=el.style.transition; el.style.transition='none'; el.textContent=lz?'ENTERING '+lz.name:''; el.style.opacity='1';
-    try{ if(lz){ if(lz.S)lz.S.busy=true; if(typeof keys!=='undefined'&&keys.clear)keys.clear(); await frames(2); lz.go(); await frames(1); }
-      const l2=IV.want&&lazyOf(IV.want.b); if(l2)l2.go(); apply(IV.want); await frames(2); }
+    try{ if(lz){ if(lz.S)lz.S.busy=true; if(typeof keys!=='undefined'&&keys.clear)keys.clear(); await frames(2); await lz.need(); lz.go(); await frames(1); }
+      const l2=IV.want&&lazyOf(IV.want.b); if(l2){ await l2.need(); l2.go(); } apply(IV.want); await frames(2); }
     finally{ el.style.transition=tr; el.style.opacity='0'; IV.busy=false; } };
   ROOMS.hold=()=>{ if(!IV.key)return; if(scene.children.length!==IV.nc){ IV.nc=scene.children.length; const nw=scene.children.filter(c=>!IV.top.has(c)); if(nw.length){ for(const c of nw)IV.top.add(c); put(scan(IV.b,nw)); } }
     for(const q of IV.H)q[0].visible=false; for(const q of IV.L)q[0].layers.mask=0; if(scene.background&&scene.background.isColor)scene.background.setRGB(0,0,0); };

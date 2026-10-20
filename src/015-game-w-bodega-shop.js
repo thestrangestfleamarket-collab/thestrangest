@@ -1,10 +1,10 @@
-const BLOT=LBLD.find(b=>b.id==='lbodega'), BODOFF=BLOT.y0+3.75, BOD3B=LBLD.find(b=>b.id==='lbodega3'), bodegaFloorCol=(x,y)=>bodegaFloorAt(x,y,BLOT), bodegaFloorCol3=(x,y)=>bodegaFloorAt(x,y,BOD3B);
-function bodegaFloorAt(x,y,B){ const off=B===BLOT?y<BODOFF:y>B.y1-3.75, n=grain(x,y,41,1.2), st=grain(x,y,47,2.6), c=off?[106,106,104]:[112,116,124];
+const BLOT=LBLD.find(b=>b.id==='lbodega'), BODOFF=BLOT.y0+3.75, bodegaFloorCol=(x,y)=>bodegaFloorAt(x,y,BLOT);
+function bodegaFloorAt(x,y,B){ '@later'; const off=B===BLOT?y<BODOFF:y>B.y1-3.75, n=grain(x,y,41,1.2), st=grain(x,y,47,2.6), c=off?[106,106,104]:[112,116,124];
   if(!off&&(((x-B.x0)%3+3)%3<.04||((y-B.y1)%3+3)%3<.04))return mt('concrete',[84,88,96]);
   if(crack(x,y,413,1.3,.006,.55))return mt('concrete',sh(c,.74));
   let k=n<.36?.92:n>.66?1.05:1; if(st>.68)k*=.8; else if(st>.62)k*=.9; if(spot(x,y,45,.7,.035,.3))k*=1.12;
   return mt('concrete',sh(c,k)); }
-function bodegaWall(q,nx,ny,X,Y,z,f){ const u=nx?Y:X, i=Math.floor(u*1.5), j=Math.floor(z/16), bx=(u*1.5-i)*16, bz=z-j*16, joint=bz<1||((i+(j&1)*.5)*16%16<1&&bx<1);
+function bodegaWall(q,nx,ny,X,Y,z,f){ '@later'; const u=nx?Y:X, i=Math.floor(u*1.5), j=Math.floor(z/16), bx=(u*1.5-i)*16, bz=z-j*16, joint=bz<1||((i+(j&1)*.5)*16%16<1&&bx<1);
   if(z<4)return sh([40,42,46],f); if(z>=40&&z<43)return sh([70,76,86],f);
   const c=z<40?[78,88,98]:[148,156,160]; return sh(joint?sh(c,.82):c,f*(1+hash(i,j,43)*.04)); }
 { const FP=24, lit=c=>Object.assign([...c],{e:1});
@@ -46,7 +46,7 @@ function bodegaWall(q,nx,ny,X,Y,z,f){ const u=nx?Y:X, i=Math.floor(u*1.5), j=Mat
       ...FRIDGE_Z.slice(1).map(z=>({x0:x+t,y0:y+t,x1:x+D-.03,y1:y+W-t,z0:z-1,z1:z,c:[200,230,236],top:()=>lit([214,236,244]),fi:()=>[170,200,210]}))],null,
       {glass:{x:x+D,y0:y,y1:y+W,z0:FRIDGE_Z[0],z1:Z-6}});
     LAMPS.push({own:1,room:1,x:x+D+.5,y:y+W/2,z:30,r:3.2,c:[.45,.7,1],prop:p}); return p; }
-  const newsRack=(x,y)=>{ PNAME='newspaper rack'; const c=[120,122,126], W=.5, D=.4, P=[[214,210,196],[222,220,212],[206,200,182]], B=[];
+  const newsRack=(x,y)=>{ '@later'; PNAME='newspaper rack'; const c=[120,122,126], W=.5, D=.4, P=[[214,210,196],[222,220,212],[206,200,182]], B=[];
     for(const [a,b] of [[x,y],[x+W-.03,y],[x,y+D-.03],[x+W-.03,y+D-.03]])B.push({x0:a,y0:b,x1:a+.03,y1:b+.03,z0:0,z1:26,c,nb:1,top:()=>sh(c,1.1)});
     B.push({x0:x,y0:y+D-.03,x1:x+W,y1:y+D,z0:24,z1:26,c,nb:1,top:()=>sh(c,1.1)},{x0:x,y0:y,x1:x+W,y1:y+.03,z0:2,z1:3,c,nb:1},{x0:x,y0:y+D-.03,x1:x+W,y1:y+D,z0:2,z1:3,c,nb:1});
     for(let i=0;i<3;i++){ const y0=y+i*.12, y1=Math.min(y+D,y0+.18), z=6+i*6;
@@ -75,7 +75,7 @@ function bodegaWall(q,nx,ny,X,Y,z,f){ const u=nx?Y:X, i=Math.floor(u*1.5), j=Mat
     return prop(B); };
   const paperBags=(x,y)=>{ PNAME='paper bags'; const c=[164,134,96]; return prop([{x0:x,y0:y,x1:x+.42,y1:y+.3,z0:0,z1:14,c,fj:(u,z)=>(Math.floor(z/2)&1)?sh(c,.9):c,fi:()=>sh(c,.7),top:()=>sh(c,.95)}]); };
   const wallPhone=(x,y)=>{ PNAME='wall phone'; const c=[32,32,36]; return prop([ft(x,y,x+.08,y+.26),{x0:x,y0:y,x1:x+.08,y1:y+.26,z0:50,z1:64,c,foot:0,fi:(v,z)=>v>y+.14&&z>52&&z<62?[50,50,56]:c,top:()=>c},{x0:x,y0:y+.1,x1:x+.02,y1:y+.12,z0:40,z1:50,c:[50,50,56],foot:0,nb:1}]); };
-  const radio=(x,y)=>{ PNAME='radio'; const c=[70,74,82]; return prop([ft(x,y,x+.5,y+.24),{x0:x,y0:y,x1:x+.5,y1:y+.24,z0:102,z1:112,c,foot:0,fj:(u,z)=>u<x+.3&&z>104&&z<110?(Math.floor((u-x)*FP)&1?[40,42,46]:[90,94,100]):u>x+.36&&z>105&&z<109?lit([240,120,60]):c,fi:()=>sh(c,.7),top:()=>sh(c,.9)},{x0:x+.46,y0:y+.1,x1:x+.48,y1:y+.12,z0:112,z1:124,c:[180,182,186],foot:0,nb:1}]); };
+  const radio=(x,y)=>{ '@later'; PNAME='radio'; const c=[70,74,82]; return prop([ft(x,y,x+.5,y+.24),{x0:x,y0:y,x1:x+.5,y1:y+.24,z0:102,z1:112,c,foot:0,fj:(u,z)=>u<x+.3&&z>104&&z<110?(Math.floor((u-x)*FP)&1?[40,42,46]:[90,94,100]):u>x+.36&&z>105&&z<109?lit([240,120,60]):c,fi:()=>sh(c,.7),top:()=>sh(c,.9)},{x0:x+.46,y0:y+.1,x1:x+.48,y1:y+.12,z0:112,z1:124,c:[180,182,186],foot:0,nb:1}]); };
   const convexMirror=(x,y)=>{ PNAME='convex mirror'; const c=[150,156,166]; return prop([ft(x,y,x+.44,y+.08),{x0:x,y0:y,x1:x+.44,y1:y+.08,z0:98,z1:112,c,foot:0,fj:(u,z)=>{ const dx=(u-x-.22)*FP/7, dz=(z-105)/7, r=dx*dx+dz*dz; return r>1?null:r>.8?[60,62,66]:r<.15?[214,220,230]:[150,160,172]; },fi:()=>null,top:()=>null}]); };
   const cord=(x,y0,y1,drops)=>{ PNAME='extension cord'; const c=[36,36,40], bs=[ft(x,y0,x+.025,y1),{x0:x,y0:y0,x1:x+.025,y1:y1,z0:118,z1:119.5,c,foot:0,nb:1}];
     for(const v of drops)bs.push({x0:x,y0:v-.012,x1:x+.025,y1:v+.012,z0:66,z1:118,c,foot:0,nb:1},{x0:x,y0:v-.06,x1:x+.04,y1:v+.06,z0:116,z1:120,c:[200,200,196],foot:0,nb:1});

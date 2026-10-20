@@ -1,6 +1,8 @@
-{ const T=TILE, X=BOD.XS, Z=BOD.ZS, D=MODS.dungeon, say=FORAGE.say, G=new THREE.Group(), PK=new THREE.Group(); PK.visible=false; MAPG.dungeon.add(G); scene.add(PK);
+{ const D=MODS.dungeon; let M=null;
   const TIER={green:{c:0x5ce04a,hp:2,v:.9,dmg:0,s:1,loot:.25,sk:[-10,40],nm:'GREEN',p:4,see:0},blue:{c:0x3fa2ff,hp:3,v:1.1,dmg:.03,s:1.06,loot:.35,sk:[0,50],nm:'BLUE',p:8,see:3},
     purple:{c:0xb058ff,hp:5,v:1.3,dmg:.05,s:1.14,loot:.45,sk:[15,65],nm:'PURPLE',p:15,see:3.6},red:{c:0xff4434,hp:7,v:1.5,dmg:.07,s:1.24,loot:.6,sk:[30,80],nm:'RED',p:25,see:4.2}};
+  FORAGE.add({names:Object.fromEntries(Object.keys(TIER).map(k=>['slime_'+k,'BOTTLE OF '+TIER[k].nm+' SLIME'])),prices:Object.fromEntries(Object.keys(TIER).map(k=>['slime_'+k,TIER[k].p]))});
+  const init=()=>{ '@dungeon'; const T=TILE, X=BOD.XS, Z=BOD.ZS, say=FORAGE.say, G=new THREE.Group(), PK=new THREE.Group(); PK.visible=false; MAPG.dungeon.add(G); scene.add(PK);
   const SLV={1:['green','green','green','green','green'],2:['green','green','green','blue','blue','blue','blue'],3:['blue','blue','blue','purple','purple','purple','red','red']};
   const LOOT={green:[['$',1,3,7],['quartz',0,0,3]],blue:[['$',2,6,5],['quartz',0,0,2],['amethyst',0,0,2],['p_refresh',0,0,1]],
     purple:[['$',5,12,4],['amethyst',0,0,2],['geode',0,0,2],['amber',0,0,1],['p_heal',0,0,1],['m_chanterelle',0,0,1]],
@@ -10,7 +12,6 @@
   const SKL={2:['skeleton_guard_light','Minion'],3:['skeleton_guard_light','skeleton_guard_heavy','Minion'],4:['skeleton_guard_heavy','skeleton_mage','Warrior','Rogue'],5:['skeleton_reaper','skeleton_mage','Warrior','Mage','Gold']};
   const SST={skeleton_guard_light:[3,.06],skeleton_guard_heavy:[5,.08],skeleton_mage:[3,.06],skeleton_reaper:[6,.1],Minion:[3,.05],Warrior:[5,.08],Rogue:[3,.05],Mage:[3,.06],Gold:[9,.1]}, KK=['Minion','Warrior','Rogue','Mage','Gold'];
   const OGRE=['ogre','ogre_mage','ogre_guard_light','ogre_guard_heavy'];
-  FORAGE.add({names:Object.fromEntries(Object.keys(TIER).map(k=>['slime_'+k,'BOTTLE OF '+TIER[k].nm+' SLIME'])),prices:Object.fromEntries(Object.keys(TIER).map(k=>['slime_'+k,TIER[k].p]))});
   const nameOf=id=>id==='$'?'COINS':GEMS.find(g=>g[0]===id)?GEMS.find(g=>g[0]===id)[1]:id.startsWith('m_')?FORAGE.MU[id.slice(2)][0]:(FORAGE.RC.find(r=>r[0]===id)||[0,id])[1];
   const sfx=(k,o)=>{ if(typeof SFX!=='undefined')SFX.play(k,o); };
   const SD=CREATURES.Slime, g0=SKIN.geom(SD.mesh,false); g0.deleteAttribute('sh'); g0.computeBoundingBox(); g0.translate(0,-g0.boundingBox.min.y,0);
@@ -69,7 +70,6 @@
   const onLevel=n=>{ for(const th of [...things])unthing(th); for(const b of bolts)b.m.removeFromParent(); bolts=[]; lvl=n; L=n?D.lay(n):null; slimes=[]; IM.count=GL.count=0;
     if(!n){ arrange(0); return; } spawnSlimes(n); arrange(n);
     if(SKL[n]&&SKL[n].some(k=>KK.includes(k))&&!(window.GUARDX)){ SKELGO().then(()=>{ RES=null; if(lvl===n)arrange(n); else arrange(lvl); }); } };
-  D.hook(onLevel);
   const draw=()=>{ slimes.forEach((S,i)=>{ const t=TIER[S.k], s=S0*t.s; let sx=1, sy=1, y=0;
       if(S.dead){ const u=Math.min(1,S.pop/.28); sx=u<.4?1+u*.8:1.32+(u-.4)*.4; sy=u<.4?1+u*.5:Math.max(.13,1.2-(u-.4)*1.8); }
       else if(S.air>0){ const u=S.ph; if(u<.2){ sy=1-u*1.2; sx=1+u*.6; } else if(u<.8){ const a=(u-.2)/.6; y=Math.sin(Math.PI*a)*.34*T; sy=1.12-.12*Math.abs(a-.5)*2; sx=.94; } else{ const a=(u-.8)/.2; sy=.78+.22*a; sx=1.12-.12*a; } }
@@ -117,7 +117,8 @@
     const S=alive?strikes():[]; for(const s of S){ const m=strength(); for(const sl of slimes)if(!sl.dead&&inCone(s,sl.x,sl.z,D.ground(sl.x,sl.z),.2*T))hitSlime(sl,s.d*m,you);
       if(RES)for(const r of RES)if(r.on&&!r.dead&&!r.ogre&&inCone(s,r.N.st.x,r.N.st.z,r.N.g.position.y,.25*T))hitRes(r,s.d*m,you); }
     if(slimeTick(dt,you,alive)||S.length)draw(); if(RES)for(const r of RES)if(r.on)resTick(r,dt,you,alive); boltTick(dt); };
-  const c0=CLOCK.tick; CLOCK.tick=dt=>{ c0(dt); tick(dt); };
   window.DUNMOBS={T,get slimes(){ return slimes; },get res(){ return RES; },hit:(i,d=1)=>hitSlime(slimes[i],d,{x:pos.x,z:pos.z}),hitRes:(i,d=1)=>hitRes(RES.filter(r=>r.on)[i],d,{x:pos.x,z:pos.z}),things:()=>things};
   window.DUNMOBDBG=()=>({level:lvl,slimes:slimes.map(S=>({k:S.k,hp:S.hp,dead:S.dead,gone:!!S.gone,x:+(S.x/T).toFixed(1),z:+(S.z/T).toFixed(1)})),
-    res:(RES||[]).filter(r=>r.on).map(r=>({k:r.key,hp:r.hp,dead:r.dead,agg:r.agg,x:+(r.N.st.x/T).toFixed(1),z:+(r.N.st.z/T).toFixed(1),in:r.N.g.parent===MAPG.dungeon})),things:things.map(t=>t.name),bolts:bolts.length,tris:slimes.length*(g0.index.count/3+12)}); }
+    res:(RES||[]).filter(r=>r.on).map(r=>({k:r.key,hp:r.hp,dead:r.dead,agg:r.agg,x:+(r.N.st.x/T).toFixed(1),z:+(r.N.st.z/T).toFixed(1),in:r.N.g.parent===MAPG.dungeon})),things:things.map(t=>t.name),bolts:bolts.length,tris:slimes.length*(g0.index.count/3+12)}); return {onLevel,tick}; };
+  D.hook(n=>{ if(!M){ if(!n)return; M=init(); } M.onLevel(n); });
+  const c0=CLOCK.tick; CLOCK.tick=dt=>{ c0(dt); if(M)M.tick(dt); }; }

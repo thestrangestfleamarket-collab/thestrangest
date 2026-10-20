@@ -35,6 +35,18 @@ Look there before changing how something looks or behaves, and add a short dated
 split like the old game (`market.html` a 4 KB shell, `rig.<hash>.js`, `game.<hash>.js`, each `data/*.json` as `<name>.<hash>.json`
 fetched at start); the worker hands `dist/g/` only to a login, cached for good (a new build, new names). `dist/market.html` is the single-file page the tests drive. `MIN=0 python3 build.py` keeps them readable for debugging.
 
+**Code in its own file (chunks, 20 Oct 2026)**: a function whose body starts with `'@name';` (e.g. `()=>{ '@park'; ... }`) is cut out
+by `tools/chunks.cjs` (needs `acorn`, which `npm ci` brings; without it everything stays in the page) into chunk `name`: on the website
+`x-name.<hash>.js`, fetched by `await LOAD('name')`; in `dist/market.html` kept in the page (LOAD is instant). The cut function still
+sees every name around it (handed in, or read live when it can change). Call `LOAD` (behind the place's black fade) before such a
+function first runs; if one runs before its chunk came, it is fetched there and then (the page waits for it) and the console says
+`chunk name was not loaded before use (#n)` (`dist/chunks.txt` lists every cut function by number): add the missing `LOAD`.
+Places: `dungeon`, `park`, `dojo`, `fire`, `club`, `arcade`, `vcr`, `bath` (on the way in: `STORE.offGo`/`enter`/`ensure`, the
+`ROOMS` swap, `PARK.load`, the dungeon's `go`, a saved spot); `later` (code the start never runs, fetched as soon as the start is
+done) is marked by `tools/later.cjs` from what the start runs (re-run it in CI now and then: `SKIP=later MIN=0 python3 build.py &&
+node tools/later.cjs`; new code stays in the start file until then). `tests/places.cjs` enters every place on the website and fails
+on a missing `LOAD`.
+
 ## Going live: one line of work
 
 Several chats work at once, each on its own branch. Every time:

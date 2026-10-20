@@ -1,4 +1,4 @@
-function msPond(x,y,w,d,z0=0,K=.2){ const zw=z0+7;
+function msPond(x,y,w,d,z0=0,K=.2){ '@later'; const zw=z0+7;
   const p=msPut('moon pond',[msStone(x,y,x+w,y+K,z0,zw),msStone(x,y+d-K,x+w,y+d,z0,zw),msStone(x,y+K,x+K,y+d-K,z0,zw),msStone(x+w-K,y+K,x+w,y+d-K,z0,zw)],{flat:false});
   LAMPS.push(msLamp({x:x+w/2,y:y+d/2,z:zw+4,r:3.6,c:[.3,.95,.85]},p)); return p; }
 const MSKOI=[{c:[232,98,48],m:[250,244,236],a:1.2,b:1,z:.4,hd:0,sp:.22,tail:0,face:1,up:0}];

@@ -19,7 +19,7 @@
   P.addEventListener('pointerup',e=>{ const t=e.target; if(t&&t.type==='range')setTimeout(()=>t.blur(),0); });
   const msg=t=>{ const m=P.querySelector('.msg'); if(m)m.textContent=t; };
   const btn=(a,t,on)=>`<button type="button" data-a="${a}"${on===undefined?'':` aria-pressed="${!!on}"`}>${t}</button>`;
-  const draw=()=>{ const c=FEEL.cfg, R=FEEL.RANGE; let o=`<h3 data-a="min"><span>FEEL LAB</span><span>${P.dataset.min==='1'?'+':'–'}</span></h3><div class="bd">`;
+  const draw=()=>{ '@later'; const c=FEEL.cfg, R=FEEL.RANGE; let o=`<h3 data-a="min"><span>FEEL LAB</span><span>${P.dataset.min==='1'?'+':'–'}</span></h3><div class="bd">`;
     o+=`<div>${btn('on','NEW CONTROLLER ON THE STREET',FEEL.on)}${btn('dbg','DEBUG (O)',FEEL.dbg)}${btn('shadow','SHADOWS',renderer.shadowMap.enabled)}</div>`;
     o+=`<h4>THE YARD (T: BACK TO SPAWN)</h4><div>${FEEL.yard.spots().map((s,i)=>btn('spot'+i,s.n)).join('')}${btn('street','BACK TO THE STREET')}</div>`;
     o+=`<h4>PRESETS</h4><div>${Object.keys(FEEL.PRE).map(n=>btn('pre'+n,n)).join('')}</div>`;
@@ -30,10 +30,10 @@
   P.addEventListener('input',e=>{ const k=e.target.dataset&&e.target.dataset.k; if(!k)return; const v=parseFloat(e.target.value); if(!isFinite(v))return; const err=FEEL.set({[k]:v}); if(err.length)msg(err[0]); else msg(''); if(k==='camDist'||k==='camPitch')FEEL.applyCam(); sync(); });
   const file=document.createElement('input'); file.type='file'; file.accept='application/json,.json';
   file.onchange=()=>{ const f=file.files[0]; if(!f)return; f.text().then(t=>{ P.querySelector('textarea').value=t; imp(); }); file.value=''; };
-  const imp=()=>{ let o; try{ o=JSON.parse(P.querySelector('textarea').value); }catch(e){ msg('NOT VALID JSON'); return; } const r=FEEL.check(o); if(r.err.length){ msg('NOT IMPORTED: '+r.err.join('; ')); return; } FEEL.cfg={...FEEL.DEF,...r.cfg}; FEEL.applyCam(); sync(); msg('IMPORTED '+Object.keys(r.cfg).length+' SETTINGS'); };
+  const imp=()=>{ '@later'; let o; try{ o=JSON.parse(P.querySelector('textarea').value); }catch(e){ msg('NOT VALID JSON'); return; } const r=FEEL.check(o); if(r.err.length){ msg('NOT IMPORTED: '+r.err.join('; ')); return; } FEEL.cfg={...FEEL.DEF,...r.cfg}; FEEL.applyCam(); sync(); msg('IMPORTED '+Object.keys(r.cfg).length+' SETTINGS'); };
   FEEL.imp=t=>{ draw(); P.querySelector('textarea').value=t; imp(); return msg&&P.querySelector('.msg').textContent; };
   FEEL.exp=()=>JSON.stringify(FEEL.cfg,null,1);
-  P.addEventListener('click',e=>{ const b=e.target.closest('[data-a]'); if(!b)return; const a=b.dataset.a; b.blur();
+  P.addEventListener('click',e=>{ '@later'; const b=e.target.closest('[data-a]'); if(!b)return; const a=b.dataset.a; b.blur();
     if(a==='min'){ P.dataset.min=P.dataset.min==='1'?'0':'1'; draw(); return; }
     if(a==='on'){ FEEL.setOn(!FEEL.on); draw(); return; }
     if(a==='dbg'){ FEEL.setDbg(!FEEL.dbg); draw(); return; }

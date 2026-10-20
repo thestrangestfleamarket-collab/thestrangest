@@ -116,7 +116,7 @@ function gtBody(a,dt){ '@later'; const R=RIG; R.farOnly(false); GTS.t+=dt; const
       if(!MUS.sheetOn){ MUS.sheetOn=true; sheetView(g,AT.y+g.scale.y*27); } return; }
     if(MUS.watch&&!UI.freeCam){ MUS.watch=false; SHB.hidden=true; SHB.style.display='none'; if(MUS.res0!=null){ RESI=MUS.res0; MUS.res0=null; resize(); } } const d=Math.hypot(pos.x-AT.x,pos.z-AT.z);
     if(WK.mode==='play'&&(d>18&&!MUS.watch||GTS.t>GTEND+1.5)){ WK.mode='stop'; WK.t=1.5+Math.random()*2; }
-    if(WK.mode!=='play'){ if(!MUS.lent)gtHush(); const B=MUS.on?walkTick(dt,MAPG.bodega.visible&&d<40):null; if(!B)return SF.cloth(dt,null); MUS.B=B; SF.pose(dt,B,backOf()); musScale(g); return; }
+    if(WK.mode!=='play'){ if(!MUS.lent)gtHush(); const near=MAPG.bodega.visible&&d<40, B=MUS.on&&near?walkTick(dt,near):null; if(!B)return SF.cloth(dt,null); MUS.B=B; SF.pose(dt,B,backOf()); musScale(g); return; }
     if(!MUS.on||!MAPG.bodega.visible){ gtHush(); return; }
     const B=gtBody(a,dt), t=GTS.t; MUS.B=B; musScale(g);
     if(MUS.err){ const T=a.P._T; for(const n of 'LR')for(let i=0;i<5;i++)if(T[n][i]&&T[n].w[i]>=.99){ const k=B.J['k'+i+'3'+n]; if(k){ const e=MUS.err[n]; e[0]+=R.len(R.sub(k,T[n][i])); e[1]++; } } }

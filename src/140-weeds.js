@@ -76,7 +76,7 @@ WEEDS.lawnInit=()=>{ const T=TILE, CS=8*T, N=16, CELL=CS/N, MG=4, W=N+2*MG, hsh=
       +' else if(gv==4&&vG.y>.42&&vG.z<.5){ float r=fract(sin(dot(floor(vWP.xz/'+F(.08)+'),vec2(12.9898,78.233)))*43758.5453); tw=step(.965,r)*step(.7,fract(uSw*.5+r*13.)); } totalEmissiveRadiance+=vec3(1.,.82,.4)*(tw*.9+(vG.z>3.5?.35:0.)); }'); };
   mat.customProgramCacheKey=()=>'tallgrass3';
   const seg=(px,pz,ax,az,bx,bz)=>{ const ux=bx-ax, uz=bz-az, t=Math.max(0,Math.min(1,((px-ax)*ux+(pz-az)*uz)/Math.max(ux*ux+uz*uz,1e-4))); return [Math.hypot(px-ax-ux*t,pz-az-uz*t),t]; };
-  WEEDS.pressAt=(x,z)=>{ let k=0; const E=.2*T, c=(e,w)=>{ k=Math.max(k,w*Math.max(0,Math.min(1,-e/E))); };
+  WEEDS.pressAt=(x,z)=>{ '@later'; let k=0; const E=.2*T, c=(e,w)=>{ k=Math.max(k,w*Math.max(0,Math.min(1,-e/E))); };
     for(let i=1;i<8;i++){ const m=MV[i]; if(m.w>=.5)c(Math.hypot(x-m.x,z-m.y)-.7*T,1); }
     for(let i=0;i<NT;i++){ const a=TR[i]; if(a.w<=0)continue; c(Math.hypot(x-a.x,z-a.y)-a.z,a.w); const b=TR[i+1]; if(b&&b.w>0){ const [l,t]=seg(x,z,a.x,a.y,b.x,b.y); c(l-(a.z+(b.z-a.z)*t),a.w+(b.w-a.w)*t); } } return k; };
   let air0=false, stop0=0, px0=0, pz0=0; const modeNow=()=>{ const m=st.move, nm=m&&m.name, a=m&&m.def&&m.def.air; if(RAG.on||nm==='roll'||nm==='fall')return 4; if(UI.fly||a&&m.t>=a.t0&&m.t<a.t0+a.T)return -1; if(nm==='crouch')return 2; return st.target>0&&st.run>.5?1:0; };
@@ -120,7 +120,7 @@ WEEDS.lawnInit=()=>{ const T=TILE, CS=8*T, N=16, CELL=CS/N, MG=4, W=N+2*MG, hsh=
     const isl=vn(tx/2.6,tz/2.6,96); if(isl>.8)kind=kind==='tuft'?'flat':'tuft';
     return kind; };
   WEEDS.kindAt=patch;
-  const stalks=(x0,z0,G,I,ci,P,AH,AT,AG,IX)=>{ const V3=THREE.Vector3, tri=(a,b,c,o,g,v,pt)=>{ const n=new V3().subVectors(b,a).cross(new V3().subVectors(c,a)), m=new V3().add(a).add(b).add(c).multiplyScalar(1/3); if(n.dot(m.sub(o))<0)[b,c]=[c,b];
+  const stalks=(x0,z0,G,I,ci,P,AH,AT,AG,IX)=>{ '@later'; const V3=THREE.Vector3, tri=(a,b,c,o,g,v,pt)=>{ const n=new V3().subVectors(b,a).cross(new V3().subVectors(c,a)), m=new V3().add(a).add(b).add(c).multiplyScalar(1/3); if(n.dot(m.sub(o))<0)[b,c]=[c,b];
       for(const q of [a,b,c]){ IX.push(P.length/3); P.push(q.x,q.y,q.z); AH.push(Math.max(0,q.y-g)); AT.push(0); AG.push(v,1,pt); } };
     const spin=(x,y,z,y0,y1,r,n,lx,lz,g,v,pt,mid=.5)=>{ const A=new V3(x+lx*(y1-y),y1,z+lz*(y1-y)), B=new V3(x+lx*(y0-y),y0,z+lz*(y0-y)), ym=y0+(y1-y0)*mid, R=[], o=new V3(x+lx*(ym-y),ym,z+lz*(ym-y)), a0=hsh(x,z,611)*6.28;
       for(let k=0;k<n;k++){ const a=a0+k/n*6.28; R.push(new V3(o.x+Math.cos(a)*r,ym,o.z+Math.sin(a)*r)); } for(let k=0;k<n;k++){ tri(A,R[k],R[(k+1)%n],o,g,v,pt); tri(B,R[(k+1)%n],R[k],o,g,v,pt); } };

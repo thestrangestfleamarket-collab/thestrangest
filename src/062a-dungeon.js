@@ -11,7 +11,7 @@ await grab('dungeon',async()=>{});
   const ground=(x,z)=>{ const n=lotAt(x,z); if(!n)return dy; const L=lay(n), gx=iX(x), gy=iZ(z), u=tread(L.up,gx,gy), d=tread(L.dn,gx,gy); return dy+Y(u?u*L.up.rise:d?-d*L.dn.rise:0); };
   const PL={}, SIDE={b:[0,1],f:[0,-1],w:[1,0],e:[-1,0]}; for(const k in SIDE)PL['K'+k]=new THREE.Plane(new THREE.Vector3(0,-1,0),1e6);
   let cur=0, busy=false, mine=null; const HK=[];
-  const clear=()=>{ if(!mine)return; const M=mine; mine=null; cur=0;
+  const clear=()=>{ '@later'; if(!mine)return; const M=mine; mine=null; cur=0;
     for(const o of M.objs){ G.remove(o); o.traverse(c=>{ if(c.geometry)c.geometry.dispose(); if(c.material&&c.material!==MODS.castleStairMat)for(const q of [].concat(c.material)){ if(q.map)q.map.dispose(); if(q.emissiveMap)q.emissiveMap.dispose(); q.dispose(); } }); }
     const out=(A,L)=>{ for(const a of L){ const i=A.indexOf(a); if(i>=0)A.splice(i,1); } };
     out(SOL.down,M.sol); out(FIX.down,M.fix); out(LITE.recs,M.lights); out(FLAME.src,M.fl); out(cutWalls,M.cuts); LITE.t=0; for(const f of HK)f(0); };

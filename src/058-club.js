@@ -7,23 +7,23 @@
   const CLUB=window.CLUB={B,on:false,drop:null};
   const brick=(u,z)=>{ const row=Math.floor(z/6), i=Math.floor(u*24+(row&1)*5), b=Math.floor(i/10); return {mortar:i%10===9||Math.floor(z)%6===5,b,row}; };
   const TAGC=[[230,60,170],[60,210,240],[240,220,60],[255,255,255],[140,240,90]];
-  const tag=(u,z,seed)=>{ const cell=Math.floor(u/3.2), r=hs(cell,seed,900); if(r>.45)return null; const cu=u-cell*3.2, h0=26+r*60, c=TAGC[Math.floor(r*97)%TAGC.length];
+  const tag=(u,z,seed)=>{ '@later'; const cell=Math.floor(u/3.2), r=hs(cell,seed,900); if(r>.45)return null; const cu=u-cell*3.2, h0=26+r*60, c=TAGC[Math.floor(r*97)%TAGC.length];
     if(cu<.4||cu>2.6||z<h0||z>h0+26)return null; const px=Math.floor(cu*24), py=Math.floor(z-h0), s=hs(cell,seed,901)*6;
     const on=Math.abs(py-13-8*Math.sin(px/5+s)-4*Math.sin(px/2.3+s*2))<2.2||(px%11<2&&Math.abs(py-13)<9); return on?c:null; };
-  const poster=(u,z,seed)=>{ const cell=Math.floor(u/2.1), r=hs(cell,seed,905); if(r<.7||z<70||z>130)return null; const cu=u-cell*2.1; if(cu<.4||cu>1.6)return null;
+  const poster=(u,z,seed)=>{ '@later'; const cell=Math.floor(u/2.1), r=hs(cell,seed,905); if(r<.7||z<70||z>130)return null; const cu=u-cell*2.1; if(cu<.4||cu>1.6)return null;
     const P=[[200,40,60],[30,30,40],[240,200,60],[40,90,200]][Math.floor(r*40)%4], py=z-70, px=Math.floor((cu-.4)*24);
     if(py>46)return [236,230,214]; if(py>40&&px%4<3)return [20,20,24]; if(Math.hypot(px-14,py-22)<9)return [236,230,214]; return hs(px,Math.floor(py),906)<.08?[150,140,130]:P; };
-  const inner=(B_,nx,ny,Xw,Yw,z,f)=>{ const u=nx?Yw:Xw; let c;
+  const inner=(B_,nx,ny,Xw,Yw,z,f)=>{ '@later'; const u=nx?Yw:Xw; let c;
     if(at(BTH,Xw,Yw,.3)){ const tx=Math.floor(u*24/6), tz=Math.floor(z/6); c=(Math.floor(u*24)%6===0||Math.floor(z)%6===0)?[110,108,100]:sh([196,194,186],.85+.12*hs(tx,tz,910)); if(z<14)c=sh(c,.75); const t=tag(u,z,7); if(t)c=t; return sh(c,f); }
     if(at(LOB,Xw,Yw,.3)){ c=z<10?[40,20,20]:sh([96,24,30],.9+.1*grain(u*2,z/30,911,1)); if(z>150&&z<154)c=[160,130,60]; return sh(c,f); }
     const k=brick(u,z); c=k.mortar?[26,26,32]:sh([52,50,60],.86+.2*hs(k.b,k.row,912)); if(hs(Math.floor(u*24),Math.floor(z),913)<.02)c=[120,48,40];
     const p=poster(u,z,nx?3:ny>0?4:5); if(p)return sh(p,f); const t=tag(u,z,nx?11:ny); if(t)return sh(t,f*.9);
     if(z<8)c=[18,18,20]; return sh(c,f); };
-  const outer=(nx,ny,Xw,Yw,z,f)=>{ const u=nx?Yw:Xw, k=brick(u,z); let c=k.mortar?[22,22,26]:sh([38,38,44],.85+.22*hs(k.b,k.row,920));
+  const outer=(nx,ny,Xw,Yw,z,f)=>{ '@later'; const u=nx?Yw:Xw, k=brick(u,z); let c=k.mortar?[22,22,26]:sh([38,38,44],.85+.22*hs(k.b,k.row,920));
     if(grain(u*1.4,z/26,921,1)>.72&&!k.mortar)c=sh([128,58,46],.8+.2*hs(k.b,k.row,922));
     if(z<20)c=sh(c,.7+z*.015); const t=z<110?tag(u,z,nx?21:ny>0?22:23):null; if(t)c=t; if(ny>0){ const p=poster(u-1.3,z,24); if(p&&Math.abs(Xw-(B.x0+20))>1.6)c=p; }
     if(z>B.h-8)c=[60,58,62]; return sh(c,f); };
-  const floor=(x,y)=>{ const px=Math.floor(x*24), py=Math.floor(y*24);
+  const floor=(x,y)=>{ '@later'; const px=Math.floor(x*24), py=Math.floor(y*24);
     if(at(BTH,x,y)){ const t=(px%5===0||py%5===0); return t?[80,80,78]:sh([150,152,150],.8+.15*hs(px>>2,py>>2,930)); }
     if(at(LOB,x,y)&&Math.abs(x-(B.x0+20))<1.2)return sh([110,24,32],.9+.1*hs(px>>1,py>>1,931));
     let c=sh([84,82,90],.9+.14*grain(x*1.5,y*1.5,932,.8)); if(grain(x*2.5,y*2.5,933,.6)>.7)c=sh(c,.72); if(hs(px,py,934)<.004)c=[190,170,90]; if(hs(px>>1,py>>1,935)<.003)c=[120,40,40]; return c; };
@@ -137,7 +137,7 @@
     CLUB.beatNow=()=>{ const c=A.c; if(c&&c.state==='running'&&CLUB.tn)return n-(CLUB.tn-c.currentTime)/BEAT; return performance.now()/1000/BEAT; }; };
   CLUB.dropIt=()=>{ const b=Math.ceil(CLUB.n||CLUB.beatNow()), r0=Math.ceil(b/4)*4; CLUB.drop={r0,n0:r0+8,n1:r0+8+16}; };
   const FOGC=new THREE.Fog(0x161020,2,200), FV=new THREE.Vector3();
-  CLUB.hook=()=>{ let recs=null, nRec=-1; const tick0=CLOCK.tick; CLOCK.tick=dt=>{ tick0(dt); if(!CLUB.spots)return; if(!CLUB.ready)init();
+  CLUB.hook=()=>{ '@later'; let recs=null, nRec=-1; const tick0=CLOCK.tick; CLOCK.tick=dt=>{ tick0(dt); if(!CLUB.spots)return; if(!CLUB.ready)init();
       const x=pos.x, z=pos.z, cx=X(B.x0+W/2), cz=Z(B.y0+D/2), d=Math.hypot(x-cx,z-cz), here=LVL==='up'&&d<60*TILE;
       const inC=x>X(B.x0)&&x<X(B.x1)&&Math.min(Z(B.y0),Z(B.y1))<z&&z<Math.max(Z(B.y0),Z(B.y1)), gx=x/TILE, at2=r=>{ const p=[[X(B.x0+r.x0),X(B.x0+r.x1)],[Z(B.y0+r.y0),Z(B.y0+r.y1)]]; return x>Math.min(...p[0])&&x<Math.max(...p[0])&&z>Math.min(...p[1])&&z<Math.max(...p[1]); };
       const hall=inC&&!at2(LOB)&&!at2(BTH); CLUB.where={d,inside:inC,hall,lobby:inC&&at2(LOB),bath:inC&&at2(BTH)};

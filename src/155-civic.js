@@ -11,7 +11,7 @@ const CIVIC={row:[],staff:{},log:[],ledger:{treasury:500,day:0,tax:10,wage:20,cu
   blk(cx-Wd/2+TK/2,y+H/2,zf+D/2,TK,H,D,STONE); blk(cx+Wd/2-TK/2,y+H/2,zf+D/2,TK,H,D,STONE); blk(cx,y+H/2,zb-TK/2,Wd,H,TK,STONE);
   blk(cx-Wd/2+pw/2,y+DH/2,zf+TK/2,pw,DH,TK,STONE); blk(cx+Wd/2-pw/2,y+DH/2,zf+TK/2,pw,DH,TK,STONE); blk(cx,y+(DH+H)/2,zf+TK/2,Wd,H-DH,TK,STONE);
   blk(cx,y+H+.08*M,zf+D/2,Wd+.2*T,.16*M,D+.2*T,0x4a4844); for(const [a,b,sx,sz] of [[0,-D/2,Wd,.14*T],[0,D/2,Wd,.14*T],[-Wd/2,0,.14*T,D],[Wd/2,0,.14*T,D]])blk(cx+a,y+H+.45*M,zf+D/2+b,sx,.6*M,sz,STONE);
-  HOUSES.forEach(([id,name,col,sign],i)=>{ const fy=y+i*FH;
+  HOUSES.forEach(([id,name,col,sign],i)=>{ '@later'; const fy=y+i*FH;
     blk(cx,fy+FH-.3*M,zf-.03*T,Wd+.04*T,.6*M,.08*T,col); blk(cx,fy+FH-.3*M,zf-.08*T,Wd*.34,.4*M,.04*T,sign);
     if(i>0)for(const k of [-1,0,1])blk(cx+k*Wd*.32,fy+FH*.48,zf-.03*T,Wd*.16,FH*.42,.06*T,0x26303c);
     if(id==='clinic'){ blk(cx,fy+FH-.22*M,zf-.11*T,.12*M,.3*M,.03*T,0xf4f0e8); blk(cx,fy+FH-.22*M,zf-.11*T,.3*M,.12*M,.03*T,0xf4f0e8); }
@@ -28,7 +28,7 @@ const CIVIC={row:[],staff:{},log:[],ledger:{treasury:500,day:0,tax:10,wage:20,cu
   for(const h of CIVIC.row)CITY.extra.push({id:h.id,name:h.name,lv:'up',at:h.at,door:h.door});
   CIVIC.house=id=>CIVIC.row.find(h=>h.id===id);
   if(CITY.on){ for(const [id,stock,price,food] of [['bodega',20,4,true],['store:diner',16,7,true],['store:bar',16,6,false],['dojo',12,3,false]])CIVIC.shops[id]={id,stock,price,food,till:0,sold:0,low:false};
-  CIVIC.buy=(who,id)=>{ const S=CIVIC.shops[id]; if(!S)return false; if(S.stock<=0){ CIVIC.note(who.name+' found the shelves empty',id); return false; } if((who.cash||0)<S.price){ CIVIC.note(who.name+' had no money for '+id,id); return false; }
+  CIVIC.buy=(who,id)=>{ '@later'; const S=CIVIC.shops[id]; if(!S)return false; if(S.stock<=0){ CIVIC.note(who.name+' found the shelves empty',id); return false; } if((who.cash||0)<S.price){ CIVIC.note(who.name+' had no money for '+id,id); return false; }
     S.stock--; S.sold++; S.till+=S.price; who.cash-=S.price; if(S.food&&who.hunger!=null)who.hunger=0; CIVIC.note(who.name+' bought something at '+id+' ($'+S.price+')',id); if(S.stock<8&&!S.low){ S.low=true; CITY.post('restock',id,{shop:id}); CIVIC.note(id+' is low on stock: a delivery asked for',id); } return true; };
   CIVIC.send=(to,from,subject,body)=>{ const L={id:(CIVIC.mail.n=(CIVIC.mail.n||0)+1),to,from,subject,body:body||'',day:CITY.day,t:CLOCK.h,state:'posted'}; CIVIC.mail.bag.push(L); return L; };
   CIVIC.box=to=>CIVIC.mail.boxes[to]||(CIVIC.mail.boxes[to]=[]);
@@ -43,7 +43,7 @@ const CIVIC={row:[],staff:{},log:[],ledger:{treasury:500,day:0,tax:10,wage:20,cu
     Mn.querySelector('.foot').before(pane); const show=t=>{ Mn.querySelectorAll('[data-t]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.t===t))); Mn.querySelectorAll('[data-p]').forEach(p=>p.hidden=p.dataset.p!==t); if(t==='city')CIVIC.draw(); };
     bt.onclick=()=>show('city'); Mn.querySelectorAll('[data-t]').forEach(b=>{ if(b!==bt){ const f=b.onclick; b.onclick=e=>{ f&&f(e); show(b.dataset.t); }; } });
     const fmt=h=>{ const m=Math.floor(h*60)%60, hh=Math.floor(h)%24; return hh+':'+(m<10?'0':'')+m; }, esc=s=>String(s).replace(/</g,'&lt;');
-    CIVIC.draw=()=>{ if(!pane.offsetParent)return; const L=CIVIC.ledger, row=(a,b)=>`<div style="display:flex;justify-content:space-between;gap:12px"><span>${a}</span><span style="color:#c9ccd6">${b}</span></div>`;
+    CIVIC.draw=()=>{ '@later'; if(!pane.offsetParent)return; const L=CIVIC.ledger, row=(a,b)=>`<div style="display:flex;justify-content:space-between;gap:12px"><span>${a}</span><span style="color:#c9ccd6">${b}</span></div>`;
       let o=`<h3>THE LEDGER</h3>${row('DAY '+CITY.day+' · '+fmt(CLOCK.h)+(CLOCK.run?' RUNNING':' STOPPED'),'TREASURY $'+L.treasury)}${row('LAWS','tax $'+L.tax+' a shop · curfew '+L.curfew[0]+':00-'+L.curfew[1]+':00')}`;
       o+='<h3>SHOPS</h3>'+Object.values(CIVIC.shops).map(S=>row(S.id,'stock '+S.stock+' · till $'+S.till+' · sold '+S.sold)).join('');
       o+='<h3>SERVICES</h3>'+Object.values(CIVIC.staff).map(S=>row(S.name,S.state+(S.job?' · '+S.job.kind+(S.job.place?' at '+S.job.place:''):''))).join('');

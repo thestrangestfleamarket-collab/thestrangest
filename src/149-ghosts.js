@@ -8,7 +8,7 @@ const GHOSTS=window.GHOSTS={list:[]};
     const me=new THREE.Mesh(geo,mat); me.frustumCulled=false; me.renderOrder=3; scene.add(me);
     const Q={R,N,BR,P,O,ST,REST,live,geo,pos,me,ball:{x:sx,y,z:sz},d:{x:0,y:0,z:0},gnd:0,acc:0};
     Q.drop=()=>{ const b=Q.ball; for(let j=0;j<N;j++)for(let i=0;i<N;i++){ const k=(j*N+i)*3; P[k]=b.x+((i/(N-1))*2-1)*R; P[k+1]=b.y+BR+.35; P[k+2]=b.z+((j/(N-1))*2-1)*R; } O.set(P); ST.fill(NaN); }; Q.drop(); return Q; };
-  const step=(Q,others)=>{ const {P,O,ST,REST,live,ball:b,d}=Q, rr=Q.BR+.012, g0=Q.gnd+.004;
+  const step=(Q,others)=>{ '@later'; const {P,O,ST,REST,live,ball:b,d}=Q, rr=Q.BR+.012, g0=Q.gnd+.004;
     for(const k of live){ const x=P[k], y=P[k+1], z=P[k+2]; P[k]=x+(x-O[k])*DAMP; P[k+1]=y+(y-O[k+1])*DAMP+G*H*H; P[k+2]=z+(z-O[k+2])*DAMP; O[k]=x; O[k+1]=y; O[k+2]=z; }
     for(let it=0;it<10;it++){
       for(const [ia,ib,L,s] of REST){ const dx=P[ib]-P[ia], dy=P[ib+1]-P[ia+1], dz=P[ib+2]-P[ia+2], l=Math.hypot(dx,dy,dz)||1e-6; let f=(l-L)/l*.5*s; if(l<L){ if(s<1)continue; f*=.15; }
@@ -21,7 +21,7 @@ const GHOSTS=window.GHOSTS={list:[]};
   GHOSTS.move=(Q,to)=>{ const b=Q.ball, x=to.x-b.x, y=to.y-b.y, z=to.z-b.z; for(const k of Q.live){ Q.P[k]+=x; Q.P[k+1]+=y; Q.P[k+2]+=z; Q.O[k]+=x; Q.O[k+1]+=y; Q.O[k+2]+=z; } Object.assign(b,to); };
   GHOSTS.on=Q=>{ const b=Q.ball; for(const k of Q.live)if(Q.P[k+1]>b.y)return true; return false; };
   GHOSTS.settle=(Q,n)=>{ Q.d={x:0,y:0,z:0}; for(let s=0;s<n;s++)step(Q,[]); };
-  GHOSTS.run=(Q,dt,to,others,MH,MV)=>{ Q.acc=Math.min(Q.acc+dt,H*8); const n=Math.max(1,Math.floor(Q.acc/H)); Q.acc=Math.max(0,Q.acc-n*H); const b=Q.ball, b0={...b};
+  GHOSTS.run=(Q,dt,to,others,MH,MV)=>{ '@later'; Q.acc=Math.min(Q.acc+dt,H*8); const n=Math.max(1,Math.floor(Q.acc/H)); Q.acc=Math.max(0,Q.acc-n*H); const b=Q.ball, b0={...b};
     Q.d={x:(to.x-b0.x)/n,y:(to.y-b0.y)/n,z:(to.z-b0.z)/n}; for(let s=0;s<n;s++){ b.x+=Q.d.x; b.y+=Q.d.y; b.z+=Q.d.z; step(Q,others); } Object.assign(b,to);
     const A=Q.pos.array, P=Q.P; for(const k of Q.live){ A[k]=P[k]*MH; A[k+1]=P[k+1]*MV; A[k+2]=P[k+2]*MH; } Q.pos.needsUpdate=true; Q.geo.computeVertexNormals(); }; }
 GHOSTS.init=()=>{ if(typeof BOD==='undefined'||!BOD.GD)return; const X=BOD.X, Z=BOD.Z, MH=TILE/.84, MV=BOD.YS(24)/.84;

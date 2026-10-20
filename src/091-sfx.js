@@ -16,7 +16,7 @@ const SFX={on:true,vol:1,mix:{fx:{},loops:{},gap:1,blip:1}};
     thud:{len:.2,f:(D,n,S)=>{ for(let i=0;i<n;i++){ const t=i/n; D[i]=(Math.sin(TAU*80*i/S)*.7+rnd()*.3)*env(t,3); } }},
     page:{len:.25,f:(D,n)=>{ const F=lp(); for(let i=0;i<n;i++){ const t=i/n; D[i]=F(rnd(),.3+t*.5)*Math.sin(t*Math.PI)*.5; } }},
     latch:{len:.06,f:(D,n,S)=>{ for(let i=0;i<n;i++){ const s=i/S, t=i/n; D[i]=(Math.sin(TAU*1800*s)*.4+Math.sin(TAU*3500*s)*.2)*env(t,2)*.5; } }},
-    door:{len:.5,f:(D,n,S)=>{ const F=lp(); for(let i=0;i<n;i++){ const s=i/S; let v=0; if(s<.03)v+=(Math.sin(TAU*1800*s)*.4+Math.sin(TAU*3500*s)*.2)*env(s/.03,2)*.4;
+    door:{len:.5,f:(D,n,S)=>{ '@later'; const F=lp(); for(let i=0;i<n;i++){ const s=i/S; let v=0; if(s<.03)v+=(Math.sin(TAU*1800*s)*.4+Math.sin(TAU*3500*s)*.2)*env(s/.03,2)*.4;
         if(s>.03&&s<.25){ const lt=(s-.03)/.22; v+=(Math.sin(TAU*45*s)*.6+Math.sin(TAU*90*s)*.3+F(rnd(),.08)*.2)*Math.exp(-lt*5)*.5; } if(s>.08)v+=Math.sin(TAU*120*s)*Math.exp(-(s-.08)/.42*4)*.15; D[i]=v; } }},
     heart:{len:.12,f:(D,n,S)=>{ for(let i=0;i<n;i++){ let v=0; for(const st of [0,n*.42|0]){ const dt=i-st; if(dt>=0){ const t=dt/(n*.5); if(t<1)v+=Math.sin(TAU*62*dt/S)*env(t,3)*(st?.7:1); } } D[i]=v*.8; } }},
     cough:{len:.32,f:(D,n,S)=>{ const F=lp(); for(let i=0;i<n;i++){ let v=0; for(const st of [0,n*.51|0]){ const dt=i-st; if(dt>=0&&dt<n*.37){ const t=dt/(n*.37), e=Math.min(t*30,1)*env(t,2.5); v+=F(rnd(),.55)*e*.55+Math.sin(TAU*110*dt/S)*e*e*.3; } } D[i]=v; } }},
@@ -42,7 +42,7 @@ const SFX={on:true,vol:1,mix:{fx:{},loops:{},gap:1,blip:1}};
   SFX.names=()=>Object.keys(R); SFX.recipe=k=>R[k];
   const BUF={}; SFX.buffer=(k,c)=>{ const r=R[k]; if(!r)return null; const key=k+(r.loop?'':''); if(BUF[key]&&BUF[key].sampleRate===c.sampleRate)return BUF[key];
     const S=c.sampleRate, n=Math.max(1,Math.round(r.len*S)), b=c.createBuffer(1,n,S); r.f(b.getChannelData(0),n,S); return BUF[key]=b; };
-  const V=new THREE.Vector3(); const place=(o,G,P)=>{ if(!o.at)return 1; const x=o.at.x, z=o.at.z!=null?o.at.z:o.at.y, d=Math.hypot(x-pos.x,z-pos.z), far=o.far||9*TILE, k=Math.max(0,1-d/far); if(k<=0)return 0;
+  const V=new THREE.Vector3(); const place=(o,G,P)=>{ '@later'; if(!o.at)return 1; const x=o.at.x, z=o.at.z!=null?o.at.z:o.at.y, d=Math.hypot(x-pos.x,z-pos.z), far=o.far||9*TILE, k=Math.max(0,1-d/far); if(k<=0)return 0;
     if(P){ V.set(x,o.at.y!=null&&o.at.z!=null?o.at.y:py+1,z).project(cam); P.pan.value=Math.max(-.8,Math.min(.8,V.x*.8)); } return k; };
   SFX.play=(k,o={})=>{ const c=SFX.live(); if(!c||!SFX.on||!R[k])return null; const b=SFX.buffer(k,c); if(!b)return null;
     const s=c.createBufferSource(), G=c.createGain(); s.buffer=b; s.loop=!!R[k].loop; s.playbackRate.value=(o.pitch||1)*(o.vary?1+(Math.random()-.5)*o.vary:1);
@@ -51,8 +51,8 @@ const SFX={on:true,vol:1,mix:{fx:{},loops:{},gap:1,blip:1}};
   let ph0=0; SFX.steps=(st,go)=>{ const ph=st.ph||0; const down=Math.floor(ph*2)!==Math.floor(ph0*2); ph0=ph; if(!down||!(go>0)||st.w<.3||st.move||!SFX.on)return; SFX.play('step',{vol:.18+.3*(st.run||0),vary:.25,pitch:.9+Math.random()*.2}); };
   const hashS=s=>{ let h=2166136261; for(let i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619); } return h>>>0; };
   SFX.voiceOf=(key,bank)=>{ const h=hashS(String(key||'')); return {bank:bank||(h&1?'high':'low'),pitch:.92+((h>>>8)%1000)/1000*.16}; };
-  const VB={}; const vbuf=(c,bank,i)=>{ const key=bank+i; if(VB[key]&&VB[key].sampleRate===c.sampleRate)return VB[key]; const S=c.sampleRate, n=S*.07|0, b=c.createBuffer(1,n,S), D=b.getChannelData(0), f0=(bank==='high'?230:140)*(1+(i%4)*.06), fm=[1.5,2.2,2.8,3.6][(i>>2)%4];
+  const VB={}; const vbuf=(c,bank,i)=>{ '@later'; const key=bank+i; if(VB[key]&&VB[key].sampleRate===c.sampleRate)return VB[key]; const S=c.sampleRate, n=S*.07|0, b=c.createBuffer(1,n,S), D=b.getChannelData(0), f0=(bank==='high'?230:140)*(1+(i%4)*.06), fm=[1.5,2.2,2.8,3.6][(i>>2)%4];
     for(let j=0;j<n;j++){ const s=j/S, t=j/n, e=Math.min(t*18,1)*env(t,1.4); D[j]=(Math.sin(TAU*f0*s)*.6+Math.sin(TAU*f0*2*s)*.3*Math.sin(TAU*fm*s*20)+Math.sin(TAU*f0*3*s)*.12)*e*.35; } return VB[key]=b; };
-  SFX.blip=(v,o={})=>{ const c=SFX.live(); if(!c||!SFX.on)return; const s=c.createBufferSource(), G=c.createGain(); s.buffer=vbuf(c,v.bank||'low',Math.floor(Math.random()*16)); s.playbackRate.value=(v.pitch||1)*(.96+Math.random()*.08);
+  SFX.blip=(v,o={})=>{ '@later'; const c=SFX.live(); if(!c||!SFX.on)return; const s=c.createBufferSource(), G=c.createGain(); s.buffer=vbuf(c,v.bank||'low',Math.floor(Math.random()*16)); s.playbackRate.value=(v.pitch||1)*(.96+Math.random()*.08);
     let P=null; if(o.at&&c.createStereoPanner)P=c.createStereoPanner(); const kd=place(o,G,P); if(kd<=0)return; G.gain.value=.22*kd*(SFX.mix.blip==null?1:+SFX.mix.blip); if(P)s.connect(P).connect(G).connect(bus(c)); else s.connect(G).connect(bus(c)); s.start(); };
 }

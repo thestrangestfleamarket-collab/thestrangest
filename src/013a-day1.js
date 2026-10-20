@@ -24,7 +24,7 @@
     document.body.appendChild(el);
     const qy=QS.get('subyaw'); M.YAW=-Math.PI/4+(qy!=null?+qy:0)*Math.PI/2;
     let busy=false, lidT=0; const wait=ms=>new Promise(r=>setTimeout(r,ms)), frames=k=>new Promise(r=>{ const f=()=>--k<=0?r():requestAnimationFrame(f); requestAnimationFrame(f); });
-    const go=async dir=>{ busy=true; el.textContent=dir==='in'?'ENTERING SUBWAY':'LEAVING SUBWAY'; el.style.pointerEvents='auto'; el.style.opacity='1'; await wait(340);
+    const go=async dir=>{ '@later'; busy=true; el.textContent=dir==='in'?'ENTERING SUBWAY':'LEAVING SUBWAY'; el.style.pointerEvents='auto'; el.style.opacity='1'; await wait(340);
       const p=dir==='in'?M.foot:M.street; UI.goTo(p.x,p.z,dir==='in'?'down':'up'); keys.clear();
       if(UI.view==='iso'||UI.view==='map'){ if(dir==='in'){ yaw=yawTo=M.YAW; } else if(UI.isoTo){ UI.isoTo(); yaw=yawTo; } }
       await frames(3); await wait(260); el.style.opacity='0'; el.style.pointerEvents='none'; await wait(360); busy=false; };

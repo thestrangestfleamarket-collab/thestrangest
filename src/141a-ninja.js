@@ -27,7 +27,7 @@
     F.say(`YOUR SKILL IN MARTIAL ARTS HAS INCREASED. IT IS NOW ${(S.sk.fight/10).toFixed(1)}.`,'#7fd0ff'); if(F.save)F.save(); if(F.draw)F.draw(); };
   const TR={on:false,ph:'',t:0,n:0,ok:0,list:[],d:null,lu:null,lm:null};
   TR.stop=()=>{ TR.on=false; E.style.display='none'; if(N){ N.q=null; } };
-  TR.start=()=>{ if(TR.on||!N)return; const pick=[0,1]; while(pick.length<5){ const i=2+Math.floor(Math.random()*6); if(!pick.includes(i))pick.push(i); }
+  TR.start=()=>{ '@later'; if(TR.on||!N)return; const pick=[0,1]; while(pick.length<5){ const i=2+Math.floor(Math.random()*6); if(!pick.includes(i))pick.push(i); }
     TR.list=pick.sort((a,b)=>a-b).map(i=>DR[i]); TR.on=true; TR.ph='intro'; TR.t=0; TR.n=0; TR.ok=0; TR.lu=st.up; TR.lm=st.move; N.q=[]; show('THE NINJA BOWS','WATCH, THEN DO AS HE DOES'); };
   TR.tick=dt=>{ if(!TR.on)return; TR.t+=dt; const far=!inD()||Math.hypot(pos.x-N.x,pos.z-N.z)>7*T;
     if(far&&TR.ph!=='end'){ TR.ph='end'; TR.t=0; show('THE NINJA RETURNS TO HIS KATA','COME BACK WHEN YOU ARE READY','#c8a090'); }
@@ -53,11 +53,11 @@
     UI.thing({name:'THE NINJA',obj:hb,reach:1.7*T,near:3*T,tall:2.5*T,act:()=>TR.start()}); };
   D.ready=mk; if(D.built)mk();
   const CB=()=>(R.RIGT&&R.RIGT.combo)||1;
-  const begin=s=>{ const S=N.S, [k,a]=s; N.cur={k,a,t:0};
+  const begin=s=>{ '@later'; const S=N.S, [k,a]=s; N.cur={k,a,t:0};
     if(k==='g'||k==='block'){ R.beginUp(S,k==='g'?'guard':'block'); if(S.up)S.up.held=true; }
     else if(k==='t')N.to=a; else if(k==='c')N.to=N.x<CX?Math.PI/2:-Math.PI/2; else if(k==='r'){}
     else if(R.ARMMOVES.has(k)){ R.beginUp(S,k); if(S.up)S.up.held=false; } else { R.begin(S,k); if(S.move)S.move.held=false; } };
-  const done=dt=>{ const S=N.S, c=N.cur, k=c.k; c.t+=dt;
+  const done=dt=>{ '@later'; const S=N.S, c=N.cur, k=c.k; c.t+=dt;
     if(k==='g'||k==='block'){ const end=c.t>=c.a||c.a>20&&!(TR.on&&TR.ph==='you'); if(end&&S.up)S.up.held=false; return end&&(!S.up||c.t>c.a+.5); }
     if(k==='r')return c.t>=c.a; if(k==='t')return Math.abs(dang(N.to,N.hd))<.04;
     if(k==='c'){ if(!c.went){ if(Math.abs(dang(N.to,N.hd))<.04){ R.begin(S,c.a); if(S.move)S.move.held=false; c.went=1; } return false; } return !S.move&&!S.out; }

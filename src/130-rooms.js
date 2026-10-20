@@ -28,7 +28,7 @@ ROOMS.roofAt=(x,y,z)=>{ const h=new THREE.Raycaster(new THREE.Vector3(x,y,z),new
   const BX=new THREE.Box3(), V3=new V();
   const ovl=(a,r)=>a.max.x>r.x0&&a.min.x<r.x1&&a.max.z>r.z0&&a.min.z<r.z1&&a.max.y>r.y0&&a.min.y<r.y1, con=(a,r)=>a.min.x>=r.x0&&a.max.x<=r.x1&&a.min.z>=r.z0&&a.max.z<=r.z1&&a.min.y>=r.y0&&a.max.y<=r.y1;
   const pin=(r,x,y,z)=>x>r.x0&&x<r.x1&&z>r.z0&&z<r.z1&&y>r.y0&&y<r.y1;
-  const scan=(b,roots)=>{ const e=.15*TILE, R={x0:b.x0-e,x1:b.x1+e,z0:b.z0-e,z1:b.z1+e,y0:b.y0-.3,y1:b.y1+.1*TILE}, D=b.band?{x0:b.band.x0,x1:b.band.x1,z0:b.band.z0,z1:b.band.z1,y0:R.y0,y1:R.y1}:null;
+  const scan=(b,roots)=>{ '@later'; const e=.15*TILE, R={x0:b.x0-e,x1:b.x1+e,z0:b.z0-e,z1:b.z1+e,y0:b.y0-.3,y1:b.y1+.1*TILE}, D=b.band?{x0:b.band.x0,x1:b.band.x1,z0:b.band.z0,z1:b.band.z1,y0:R.y0,y1:R.y1}:null;
     const inn=(x,y,z)=>pin(R,x,y,z)||!!D&&pin(D,x,y,z), T={H:[],L:[],S:[],top:new Set(roots)};
     const skip=new Set([W3.group,...NPCS.map(N=>N.g),...(NPCS.extra||[]).map(q=>q&&q.g),FLAME.me,WATER.mesh,...(WATER.extra||[]).map(w=>w.mesh),
       typeof MUS!=='undefined'&&MUS.g,typeof PNM!=='undefined'&&PNM.g,typeof SGM!=='undefined'&&SGM.g,typeof DRM!=='undefined'&&DRM.g].filter(Boolean));

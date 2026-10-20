@@ -150,7 +150,7 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
   { const place0=W3.place; W3.place=(...a)=>{ place0(...a); W3.uFl.value=typeof CLOCK!=='undefined'&&CLOCK.dark()?.26:.5; W3.group.updateMatrixWorld(true); const now=performance.now(), hdt=Math.min(.05,(now-(W3.hairT||now))/1000); W3.hairT=now;
       PCS.forEach((P,i)=>{ if(P.swing&&!W3.HIDE[i])swing(P,i,hdt); }); }; }
   const SW={pv:new THREE.Vector3(),ax:new THREE.Vector3(),p:new THREE.Vector3(),M3:new THREE.Matrix4(),pW:new THREE.Vector3(),rest:new THREE.Vector3(),m:new THREE.Vector3(),v:new THREE.Vector3(),d:new THREE.Vector3(),q:new THREE.Quaternion(),M1:new THREE.Matrix4(),M2:new THREE.Matrix4(),inv:new THREE.Matrix3(),G:new THREE.Vector3()};
-  function swing(P,i,dt){ const S=P.swing, st=P.sw||(P.sw={m:null,pm:new THREE.Vector3()}), PM=W3.PM.value[i], GW=W3.group.matrixWorld;
+  function swing(P,i,dt){ '@later'; const S=P.swing, st=P.sw||(P.sw={m:null,pm:new THREE.Vector3()}), PM=W3.PM.value[i], GW=W3.group.matrixWorld;
     SW.inv.setFromMatrix4(GW).invert(); const sy=W3.group.scale.y, L=S.len*sy;
     SW.pW.set(S.pivot[0],S.pivot[1],S.pivot[2]).applyMatrix4(PM).applyMatrix4(GW);
     SW.rest.set(S.rest[0],S.rest[1],S.rest[2]).transformDirection(PM).transformDirection(GW);
@@ -176,7 +176,7 @@ OUTL.pass={uniforms:{tDiffuse:{value:null},tId:{value:OUTL.rt.texture},px:{value
     if(q.w-c.w>(abs(q.y-c.y)<0.5?t1:t2))return true; float a=legs[int(c.x+0.5)], b=legs[int(q.x+0.5)]; return a>0.&&b>0.&&a!=b&&q.w>=c.w; }
   void main(){ vec4 c=texture2D(tId,vUv); vec4 base=texture2D(tDiffuse,vUv); if(c.x<0.){ gl_FragColor=base; return; }
     bool e=edgeTo(c,vec2(1,0))||edgeTo(c,vec2(-1,0))||edgeTo(c,vec2(0,1))||edgeTo(c,vec2(0,-1)); gl_FragColor=e?vec4(mix(cols[int(c.y+0.5)]*tint,oc,ocK),1.):base; }`};
-OUTL.render=(renderer,scene,cam)=>{ const w=renderer.domElement.width, h=renderer.domElement.height; if(OUTL.rt.width!==w||OUTL.rt.height!==h)OUTL.rt.setSize(w,h); OUTL.pass.uniforms.px.value.set(1/w,1/h);
+OUTL.render=(renderer,scene,cam)=>{ '@later'; const w=renderer.domElement.width, h=renderer.domElement.height; if(OUTL.rt.width!==w||OUTL.rt.height!==h)OUTL.rt.setSize(w,h); OUTL.pass.uniforms.px.value.set(1/w,1/h);
   const ac=renderer.autoClear; renderer.setRenderTarget(OUTL.rt); renderer.state.buffers.color.setClear(-2,0,0,1e9); renderer.clear(true,true,false);
   const cut=(OUTL.hidden?OUTL.hidden():[]).filter(Boolean); for(const o of cut)o.visible=false; W3.group.visible=false; scene.overrideMaterial=OUTL.occ; const bg=scene.background; scene.background=null; renderer.autoClear=false; renderer.render(scene,cam); scene.overrideMaterial=null; scene.background=bg; W3.group.visible=true; for(const o of cut)o.visible=true;
   const m0=W3.mesh.material; W3.mesh.material=W3.idMat; renderer.render(W3.group,cam); W3.mesh.material=m0;

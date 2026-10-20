@@ -35,7 +35,8 @@ const TOUR=[
   const st=await pg.evaluate(()=>performance.getEntriesByType('resource').filter(e=>e.startTime<window.__t0).map(e=>new URL(e.name).pathname).filter(p=>p.startsWith('/g/')).map(p=>p.slice(3)));
   ok(st.every(f=>fs.existsSync(path.join('dist/g',f))),'the start\'s files are all in dist/g');
   console.log('     first frame after '+Math.round(await pg.evaluate(()=>window.__t0))+' ms of the page; the start fetched '+st.length+' files, '+Math.round(st.reduce((a,f)=>a+gz(f),0)/1024)+' KB gzipped; code: '+st.filter(f=>/\.js$/.test(f)).map(f=>f+' '+Math.round(gz(f)/1024)+' KB').join(', '));
-  ok(!st.some(f=>/^x-(?!later)/.test(f)),'no place\'s code at the start');
+  ok(!st.some(f=>/^x-/.test(f)),'no chunk at the start');
+  console.log('     chunks: '+fs.readdirSync('dist/g').filter(f=>/^x-/.test(f)).map(f=>f.split('.')[0].slice(2)+' '+Math.round(gz(f)/1024)+' KB').join(', '));
   phase='after'; await wait(8000);
   for(const [name,file,go,back] of TOUR){ phase=name; const e0=errs.length, l0=late.length;
     const r=await pg.evaluate(`(${go})()`).catch(e=>'ERR '+e.message);

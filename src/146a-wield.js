@@ -3,7 +3,7 @@ const WIELD={on:null}; window.WIELD=WIELD;
   FORAGE.add({names:{sword:'SWORD'},prices:{sword:15}});
   if(!FORAGE.has('sword')&&(!SAVE.get('sword0')||QS.get('fresh'))){ FORAGE.give('sword',1); SAVE.set('sword0','1'); }
   const lam=c=>new THREE.MeshLambertMaterial({color:c}), bx=(w,h,d,m,y)=>{ const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m); o.position.y=y; return o; };
-  const net=(r,col,bag)=>{ const g=new THREE.Group(), p=new THREE.Mesh(new THREE.CylinderGeometry(.016,.016,1.1,5),lam(0x8a6a44)), h=new THREE.Mesh(new THREE.TorusGeometry(r,.014,4,10),lam(col)),
+  const net=(r,col,bag)=>{ '@later'; const g=new THREE.Group(), p=new THREE.Mesh(new THREE.CylinderGeometry(.016,.016,1.1,5),lam(0x8a6a44)), h=new THREE.Mesh(new THREE.TorusGeometry(r,.014,4,10),lam(col)),
       b=new THREE.Mesh(new THREE.ConeGeometry(r*.95,r*1.6,8,1,true),new THREE.MeshBasicMaterial({color:bag,transparent:true,opacity:.4,side:THREE.DoubleSide,depthWrite:false}));
     p.position.y=.45; h.position.y=1+r; h.rotation.y=Math.PI/2; b.position.set(-r*.8,1+r,0); b.rotation.z=Math.PI/2; g.add(p,h,b); g.r=r; g.head=new V3(0,1+r,0); return g; };
   const MK={sword:()=>{ const g=new THREE.Group(), gold=lam(0x9a8450); g.add(bx(.035,.2,.035,lam(0x4a3426),-.02),bx(.22,.03,.05,gold,.09),bx(.075,.72,.014,lam(0xd8dce2),.46),bx(.05,.05,.05,gold,-.14)); g.head=new V3(0,.8,0); return g; },
@@ -15,7 +15,7 @@ const WIELD={on:null}; window.WIELD=WIELD;
   const cur=new V3(0,-.3,1).normalize(), aim=new V3(), aim0=new V3(0,-.3,1).normalize(), sh=new V3(), head=new V3(), tip=new V3(), base=new V3(), ax=new V3(), bx2=new V3(), bz=new V3();
   let sw=null, side=1, spd=0, turning=false, cutT=0;
   renderer.domElement.addEventListener('pointermove',e=>{ ms.x=e.clientX; ms.y=e.clientY; });
-  WIELD.set=id=>{ if(MESH[WIELD.on])MESH[WIELD.on].visible=false; WIELD.on=null; if(!id||!FORAGE.has(id)){ if(id)say('YOU HAVE NO '+NM[id]+'.','#c8a090'); return; }
+  WIELD.set=id=>{ '@later'; if(MESH[WIELD.on])MESH[WIELD.on].visible=false; WIELD.on=null; if(!id||!FORAGE.has(id)){ if(id)say('YOU HAVE NO '+NM[id]+'.','#c8a090'); return; }
     const m=MESH[id]||(MESH[id]=MK[id]()); if(!m.parent){ m.matrixAutoUpdate=false; scene.add(m); } WIELD.on=id; target=null; say('YOU HOLD THE '+NM[id]+'. THE MOUSE AIMS IT, A CLICK SWINGS.','#e8e2cc'); FORAGE.draw(); };
   WIELD.next=()=>{ const own=LIST.filter(k=>FORAGE.has(k)), i=own.indexOf(WIELD.on); WIELD.set(i+1<own.length?own[i+1]:null); if(!WIELD.on)say('YOUR HANDS ARE FREE.','#e8e2cc'); };
   WIELD.strike=()=>{ if(!WIELD.on||sw&&sw.t<.18)return; sw={t:0,T:.3,s:side}; side=-side; if(typeof SFX!=='undefined')SFX.play('step',{vol:.3,pitch:2.2}); };

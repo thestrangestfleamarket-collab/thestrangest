@@ -1,0 +1,32 @@
+name: chunks
+on:
+  push:
+    branches: [claude/chunks]
+jobs:
+  measure:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium
+      - name: Build minified
+        run: python3 build.py && mkdir -p out && node tests/chunkmeasure.cjs sizes out
+      - name: Measure website start
+        run: node tests/chunkmeasure.cjs web out || true
+      - name: Build readable and tour
+        run: MIN=0 python3 build.py && node tests/chunkmeasure.cjs tour out || true
+      - name: Publish
+        run: |
+          git config user.email ci@example.com; git config user.name ci
+          git checkout --orphan ci-out-chunks
+          git rm -rf --cached . > /dev/null
+          git add -f out
+          git commit -m out -q
+          git push -f origin ci-out-chunks

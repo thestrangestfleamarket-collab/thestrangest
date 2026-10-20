@@ -1,0 +1,643 @@
+{
+ "d0": {
+  "tile": 1.13,
+  "built": false,
+  "inside": false,
+  "busy": false,
+  "gate": [
+   74.9,
+   0
+  ],
+  "door": [
+   766.7,
+   -12.1
+  ],
+  "you": [
+   27,
+   46
+  ],
+  "ninja": null,
+  "tr": {
+   "on": false,
+   "ph": "",
+   "n": 0,
+   "ok": 0,
+   "drill": null,
+   "keys": null
+  },
+  "fight": 0
+ },
+ "atFade": {
+  "tile": 1.13,
+  "built": true,
+  "inside": true,
+  "busy": true,
+  "gate": [
+   74.9,
+   0
+  ],
+  "door": [
+   766.7,
+   -12.1
+  ],
+  "you": [
+   766.7,
+   -13.7
+  ],
+  "ninja": {
+   "x": 766.7,
+   "z": -19.25,
+   "hd": 0,
+   "step": "g",
+   "mv": null,
+   "up": "guard",
+   "tris": 21114
+  },
+  "tr": {
+   "on": false,
+   "ph": "",
+   "n": 0,
+   "ok": 0,
+   "drill": null,
+   "keys": null
+  },
+  "fight": 0
+ },
+ "d1": {
+  "tile": 1.13,
+  "built": true,
+  "inside": true,
+  "busy": false,
+  "gate": [
+   74.9,
+   0
+  ],
+  "door": [
+   766.7,
+   -12.1
+  ],
+  "you": [
+   766.7,
+   -13.7
+  ],
+  "ninja": {
+   "x": 766.7,
+   "z": -19.25,
+   "hd": 0,
+   "step": "g",
+   "mv": null,
+   "up": "guard",
+   "tris": 21114
+  },
+  "tr": {
+   "on": false,
+   "ph": "",
+   "n": 0,
+   "ok": 0,
+   "drill": null,
+   "keys": null
+  },
+  "fight": 0
+ },
+ "render": {
+  "head": {
+   "fps": 0,
+   "ms": 0,
+   "calls": 14,
+   "tris": 38534,
+   "points": 0,
+   "lines": 0,
+   "programs": 196,
+   "progsOnScreen": 8,
+   "geometries": 541,
+   "textures": 189,
+   "lightsInScene": 11,
+   "lightsLit": 8,
+   "shadows": [
+    "Point 512x6",
+    "Directional 3072",
+    "Directional 2048"
+   ],
+   "lvl": "up",
+   "place": "THE DOJO HALL",
+   "at": [
+    766.7,
+    -13.7
+   ],
+   "drawnObjs": 12,
+   "drawnTris": 38530,
+   "fog": null,
+   "loadedTris": 905041,
+   "geoBytes": 72954928,
+   "texBytes": 467493320
+  }
+ },
+ "frames": [
+  {
+   "x": 766.7,
+   "z": -19.25,
+   "hd": 0,
+   "step": "jab",
+   "mv": null,
+   "up": "jab",
+   "tris": 21114
+  },
+  {
+   "x": 766.7,
+   "z": -19.25,
+   "hd": 0,
+   "step": "cross",
+   "mv": null,
+   "up": "cross",
+   "tris": 21114
+  },
+  {
+   "x": 766.7,
+   "z": -19.25,
+   "hd": 0,
+   "step": "uppercut",
+   "mv": null,
+   "up": "uppercut",
+   "tris": 21114
+  },
+  {
+   "x": 766.7,
+   "z": -19.25,
+   "hd": 0,
+   "step": "r",
+   "mv": null,
+   "up": null,
+   "tris": 21114
+  },
+  {
+   "x": 766.7,
+   "z": -19.25,
+   "hd": 0,
+   "step": "frontKick",
+   "mv": "frontKick",
+   "up": null,
+   "tris": 21114
+  },
+  {
+   "x": 766.7,
+   "z": -19.25,
+   "hd": 0,
+   "step": "frontKick",
+   "mv": "frontKick",
+   "up": null,
+   "tris": 21114
+  },
+  {
+   "x": 766.7,
+   "z": -19.25,
+   "hd": 0,
+   "step": "roundhouse",
+   "mv": "roundhouse",
+   "up": null,
+   "tris": 21114
+  },
+  {
+   "x": 766.7,
+   "z": -19.25,
+   "hd": 0,
+   "step": "roundhouse",
+   "mv": "roundhouse",
+   "up": null,
+   "tris": 21114
+  },
+  {
+   "x": 766.7,
+   "z": -19.25,
+   "hd": 0,
+   "step": "r",
+   "mv": null,
+   "up": null,
+   "tris": 21114
+  },
+  {
+   "x": 766.7,
+   "z": -19.25,
+   "hd": 0,
+   "step": "r",
+   "mv": null,
+   "up": null,
+   "tris": 21114
+  },
+  {
+   "x": 766.7,
+   "z": -19.25,
+   "hd": 1.35,
+   "step": "t",
+   "mv": null,
+   "up": null,
+   "tris": 21114
+  },
+  {
+   "x": 766.7,
+   "z": -19.25,
+   "hd": 1.57,
+   "step": "jab",
+   "mv": null,
+   "up": "jab",
+   "tris": 21114
+  },
+  {
+   "x": 766.7,
+   "z": -19.25,
+   "hd": 1.57,
+   "step": "cross",
+   "mv": null,
+   "up": "cross",
+   "tris": 21114
+  },
+  {
+   "x": 766.7,
+   "z": -19.25,
+   "hd": 1.57,
+   "step": "legSweep",
+   "mv": "legSweep",
+   "up": null,
+   "tris": 21114
+  },
+  {
+   "x": 766.7,
+   "z": -19.25,
+   "hd": 1.57,
+   "step": "legSweep",
+   "mv": "legSweep",
+   "up": null,
+   "tris": 21114
+  },
+  {
+   "x": 766.7,
+   "z": -19.25,
+   "hd": 1.57,
+   "step": "r",
+   "mv": null,
+   "up": null,
+   "tris": 21114
+  },
+  {
+   "x": 766.7,
+   "z": -19.25,
+   "hd": 1.8,
+   "step": "t",
+   "mv": null,
+   "up": null,
+   "tris": 21114
+  },
+  {
+   "x": 766.7,
+   "z": -19.25,
+   "hd": 3.14,
+   "step": "backflip",
+   "mv": "backflip",
+   "up": null,
+   "tris": 21114
+  }
+ ],
+ "fight0": 0,
+ "trainLog": [
+  [
+   "intro",
+   0,
+   null,
+   "frontKick",
+   null,
+   "frontKick"
+  ],
+  [
+   "demo",
+   0,
+   "JAB",
+   null,
+   null,
+   null
+  ],
+  [
+   "you",
+   0,
+   "JAB",
+   null,
+   null,
+   null
+  ],
+  [
+   "good",
+   0,
+   "JAB",
+   null,
+   "guard",
+   "g"
+  ],
+  [
+   "intro",
+   1,
+   "JAB",
+   null,
+   null,
+   null
+  ],
+  [
+   "demo",
+   1,
+   "FRONT KICK",
+   null,
+   null,
+   null
+  ],
+  [
+   "you",
+   1,
+   "FRONT KICK",
+   null,
+   null,
+   null
+  ],
+  [
+   "good",
+   1,
+   "FRONT KICK",
+   null,
+   "guard",
+   "g"
+  ],
+  [
+   "intro",
+   2,
+   "FRONT KICK",
+   null,
+   null,
+   null
+  ],
+  [
+   "demo",
+   2,
+   "CARTWHEEL",
+   null,
+   null,
+   null
+  ],
+  [
+   "you",
+   2,
+   "CARTWHEEL",
+   null,
+   null,
+   null
+  ],
+  [
+   "good",
+   2,
+   "CARTWHEEL",
+   null,
+   "guard",
+   "g"
+  ],
+  [
+   "intro",
+   3,
+   "CARTWHEEL",
+   null,
+   null,
+   null
+  ],
+  [
+   "demo",
+   3,
+   "ROLL",
+   null,
+   null,
+   null
+  ],
+  [
+   "you",
+   3,
+   "ROLL",
+   null,
+   null,
+   null
+  ],
+  [
+   "good",
+   3,
+   "ROLL",
+   null,
+   "guard",
+   "g"
+  ],
+  [
+   "intro",
+   4,
+   "ROLL",
+   null,
+   null,
+   null
+  ],
+  [
+   "demo",
+   4,
+   "UPPERCUT",
+   null,
+   null,
+   null
+  ],
+  [
+   "you",
+   4,
+   "UPPERCUT",
+   null,
+   null,
+   null
+  ],
+  [
+   "miss",
+   4,
+   "UPPERCUT",
+   null,
+   "guard",
+   "g"
+  ],
+  [
+   "end",
+   5,
+   "UPPERCUT",
+   null,
+   null,
+   null
+  ]
+ ],
+ "fight1": 1.2,
+ "forage": 12,
+ "kataAfter": [
+  "roundhouse",
+  "block",
+  "r",
+  "t",
+  "frontflip",
+  "r",
+  "c",
+  "cartwheel",
+  "c",
+  "r",
+  "c",
+  "cartwheel"
+ ],
+ "d2": {
+  "tile": 1.13,
+  "built": true,
+  "inside": false,
+  "busy": false,
+  "gate": [
+   74.9,
+   0
+  ],
+  "door": [
+   766.7,
+   -12.1
+  ],
+  "you": [
+   74.9,
+   1.4
+  ],
+  "ninja": {
+   "x": 764.54,
+   "z": -18.33,
+   "hd": 6.28,
+   "step": "g",
+   "mv": null,
+   "up": "guard",
+   "tris": 21114
+  },
+  "tr": {
+   "on": false,
+   "ph": "end",
+   "n": 5,
+   "ok": 4,
+   "drill": "UPPERCUT",
+   "keys": [
+    "j",
+    "j",
+    "j"
+   ]
+  },
+  "fight": 1.2
+ },
+ "bath": {
+  "X0": 143.94242424242424,
+  "X1": 157.54242424242426,
+  "ground": {
+   "x0": 142.34242424242424,
+   "x1": 159.14242424242425
+  },
+  "gate": {
+   "x": 140.0909090909091,
+   "y": -77
+  }
+ },
+ "placesBefore": [
+  [
+   "THE DOJO",
+   84.637,
+   2.4859999999999998,
+   "up"
+  ],
+  [
+   "THE DOJO HALL",
+   866.371,
+   -15.164600000000002,
+   "up",
+   "off"
+  ]
+ ],
+ "d3": {
+  "tile": 1.13,
+  "built": true,
+  "inside": true,
+  "busy": false,
+  "gate": [
+   74.9,
+   0
+  ],
+  "door": [
+   766.7,
+   -12.1
+  ],
+  "you": [
+   766.7,
+   -13.42
+  ],
+  "ninja": {
+   "x": 764.54,
+   "z": -18.33,
+   "hd": 6.28,
+   "step": "r",
+   "mv": null,
+   "up": null,
+   "tris": 21114
+  },
+  "tr": {
+   "on": false,
+   "ph": "end",
+   "n": 5,
+   "ok": 4,
+   "drill": "UPPERCUT",
+   "keys": [
+    "j",
+    "j",
+    "j"
+   ]
+  },
+  "fight": 1.2
+ },
+ "d4": {
+  "tile": 1.13,
+  "built": true,
+  "inside": true,
+  "busy": false,
+  "gate": [
+   74.9,
+   0
+  ],
+  "door": [
+   766.7,
+   -12.1
+  ],
+  "you": [
+   766.7,
+   -13.42
+  ],
+  "ninja": {
+   "x": 764.54,
+   "z": -18.33,
+   "hd": 6.28,
+   "step": "r",
+   "mv": null,
+   "up": null,
+   "tris": 21114
+  },
+  "tr": {
+   "on": false,
+   "ph": "end",
+   "n": 5,
+   "ok": 4,
+   "drill": "UPPERCUT",
+   "keys": [
+    "j",
+    "j",
+    "j"
+   ]
+  },
+  "fight": 1.2
+ },
+ "errors": [
+  "Fetch API cannot load file:///home/runner/work/thestrangest/thestrangest/dist/market.html?fresh=1&hour=13&wx=CLEAR. URL scheme \"file\" is not supported.",
+  "THREE.Sprite: \"Raycaster.camera\" needs to be set in order to raycast against sprites.",
+  "Fetch API cannot load file:///home/runner/work/thestrangest/thestrangest/dist/market.html?fresh=1&hour=13&wx=CLEAR. URL scheme \"file\" is not supported.",
+  "Fetch API cannot load file:///home/runner/work/thestrangest/thestrangest/dist/market.html?fresh=1&hour=13&wx=CLEAR. URL scheme \"file\" is not supported.",
+  "Fetch API cannot load file:///home/runner/work/thestrangest/thestrangest/dist/market.html?fresh=1&hour=13&wx=CLEAR. URL scheme \"file\" is not supported.",
+  "Fetch API cannot load file:///home/runner/work/thestrangest/thestrangest/dist/market.html?fresh=1&hour=13&wx=CLEAR. URL scheme \"file\" is not supported.",
+  "Fetch API cannot load file:///home/runner/work/thestrangest/thestrangest/dist/market.html?fresh=1&hour=13&wx=CLEAR. URL scheme \"file\" is not supported.",
+  "Fetch API cannot load file:///home/runner/work/thestrangest/thestrangest/dist/market.html?fresh=1&hour=13&wx=CLEAR. URL scheme \"file\" is not supported."
+ ]
+}

@@ -3684,6 +3684,10 @@ initial download and load super fast"; then "Go")
 
 - `059d-fireview.js` moves after the bodega builder and is wrapped in `await grab('fire', ...)`: its meshes land in `MAPG.fire`. It was already a
   self-contained block using only page-level names; the scope proof shows every reference resolving as before.
+- **The running stance and the doormat** (owner, 20 Oct 2026, with two pictures, the Walker at the bodega's door and just inside:
+  "at points in the running stance the character has both legs back like this. when you enter a location you should show up in front
+  of their doormat. - queue"): the run has frames with both legs trailing behind the body (to fix in the gait); on entering a place you
+  appear in front of its doormat, facing in, not to the side of it.
 
 ## 20 Oct 2026: checks only when needed
 

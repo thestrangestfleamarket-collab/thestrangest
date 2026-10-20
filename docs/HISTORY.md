@@ -3671,3 +3671,8 @@ initial download and load super fast"; then "Go")
   `MAPG.club`, its own group, instead of the bodega's. It was already a self-contained block using only page-level names and giving
   none back; the scope proof shows every reference resolving as before. The club's inside still builds on entry (the `club` chunk).
   Next: the arcade, the dojo, the fire escape, the ghost dojo, the apartments, main street and the store, one each.
+
+## 20 Oct 2026: your fire escape is its own builder (modules)
+
+- `059d-fireview.js` moves after the bodega builder and is wrapped in `await grab('fire', ...)`: its meshes land in `MAPG.fire`. It was already a
+  self-contained block using only page-level names; the scope proof shows every reference resolving as before.

@@ -23,7 +23,9 @@ const WX={hold:null,now:null};
     [[-.5,-1,3.2],[-4,2.3,1,5,2.3,1.1],[5,.7,1.1],[5,0,.4,5.6,-2.5,.3],[5.7,-2.8,.55],[4.4,0,.4,4.1,-2.3,.3],[4,-2.6,.5]]];
   const SPOT=[[-13,-15],[13,-15],[-14,3],[14,3],[-12,21],[13,21]], sunAt=h=>{ const e=Math.max(12,50*Math.cos(2*Math.PI*(h-12.7)/24)-8)*Math.PI/180, a=2*Math.PI*(h-12.7)/24; return [Math.sin(a)/Math.tan(e),Math.cos(a)/Math.tan(e)]; };
   const build=()=>{ const P=window.PARK, B=typeof BOD!=='undefined'?BOD:null; if(P&&B&&B.XS){ CC.x=B.XS(P.round[0]+(P.ox||0)); CC.z=B.ZS(P.round[1]+(P.oy||0)); }
-    const T=TILE, hy=2*(WX.cy||0), [sx,sz]=sunAt(window.DN&&DN.S?DN.S.day.h:15.5), tg=SPOT.map(g=>[g[0]*T,g[1]*T]);
+    const T=TILE, hy=2*(WX.cy||0), [sx,sz]=sunAt(window.DN&&DN.S?DN.S.day.h:15.5), tg=WX.spot=[], O=P&&P.oaks||[], WD=window.WEEDS;
+    if(WD&&WD.inPark){ const C=[]; for(let i=-45;i<=45;i+=3)for(let j=-45;j<=45;j+=3){ const x=CC.x+i*T, z=CC.z+j*T; if(WD.inPark(x,z)&&!O.some(o=>Math.hypot(o[0]-x,o[1]-z)<8*T))C.push([i*T,j*T]); } C.sort((a,b)=>Math.hypot(a[0],a[1])-Math.hypot(b[0],b[1])); for(const c of C)if(tg.length<6&&tg.every(g=>Math.hypot(g[0]-c[0],g[1]-c[1])>20*T))tg.push(c); }
+    for(const g of SPOT)if(tg.length<6)tg.push([g[0]*T,g[1]*T]);
     for(let n=0;n<NC;n++){ const a0=PF.length;
       if(n<SHP.length){ const h=(70+ph(n,5,6)*8)*T, cx=tg[n][0]+(h+hy)*sx, cz=tg[n][1]+(h+hy)*sz, j=(ph(n,3,4)-.5)*.5, co=Math.cos(j), si=Math.sin(j), s=1.15*T, C=[];
         for(const q of SHP[n]){ if(q.length<4){ C.push(q); continue; } const [x0,z0,r0,x1,z1,r1]=q, m=Math.max(1,Math.ceil(Math.hypot(x1-x0,z1-z0)/(Math.min(r0,r1)*.7))); for(let i=0;i<=m;i++){ const t=i/m; C.push([x0+(x1-x0)*t,z0+(z1-z0)*t,r0+(r1-r0)*t]); } }

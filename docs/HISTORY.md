@@ -3712,5 +3712,5 @@ initial download and load super fast"; then "Go")
 
 ## 20 Oct 2026: main street is its own builder (modules)
 
-- `057a-mainstreet.js` is `059f-mainstreet.js`, after the bodega builder, wrapped in `await grab('mainstreet', ...)`. It used none of the
+- `057a-mainstreet.js` is `059-street.js` (ahead of the dojo, which reads `STORE.main.doors` when it builds), after the bodega builder, wrapped in `await grab('mainstreet', ...)`. It used none of the
   builder's locals. Scope proof: 0 differences.

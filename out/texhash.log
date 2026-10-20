@@ -1,0 +1,8 @@
+start ms: base 36805 | head, first visit 37456 {"hit":0,"miss":308,"bad":0,"ms":0,"loaded":0,"saved":0} | head, second visit 29018 {"hit":308,"miss":0,"bad":0,"ms":581,"loaded":308,"saved":0}
+base 228 textures 101187340 pixels | head 229 textures 93987688 pixels
+only in base: 2048x1747:bd9bc105 2048x1747:e0365cac 2048x234:1151a21e 2048x799:895f0012 2048x8182:4188e830 | only in head: 178x38:da1d53ef 2048x208:1ef3c660 2048x799:d118b76 2048x8182:c4cdae84 53x24:ff637c3b 53x24:ff637c3b
+ground patches: 308 compared base vs head, 0 differ | 308 compared head vs head from the cache, 0 differ
+(whole texture sheets: 11 differ, 7 from the cache; the ground is now painted round you first, so its patches land on the sheets in another order each run: informational only)
+ok   the same pixels in every ground patch
+people's bodies: base 57, head 57
+ok   the same vertices in every body (NPCs and figures)

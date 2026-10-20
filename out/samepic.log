@@ -1,0 +1,19 @@
+ok   THE STREET: starts
+ok   THE STREET: no new page errors 
+ok   THE STREET: 0.23% of pixels differ from the base (allowed 5.00%)
+ok   THE DUNGEON: starts
+ok   THE DUNGEON: no new page errors 
+ok   THE DUNGEON: 0.24% of pixels differ from the base (allowed 5.00%)
+ok   THE CASTLE: starts
+ok   THE CASTLE: no new page errors 
+ok   THE CASTLE: 0.18% of pixels differ from the base (allowed 5.00%)
+ok   THE BODEGA: starts
+ok   THE BODEGA: no new page errors 
+ok   THE BODEGA: 0.01% of pixels differ from the base (allowed 5.00%)
+ok   in:diner: starts
+ok   in:diner: no new page errors 
+ok   in:diner: 0.03% of pixels differ from the base (allowed 5.00%)
+ok   in:bar: starts
+ok   in:bar: no new page errors 
+ok   in:bar: 0.08% of pixels differ from the base (allowed 5.00%)
+all good

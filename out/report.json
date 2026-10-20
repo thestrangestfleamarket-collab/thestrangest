@@ -1,0 +1,343 @@
+{
+ "park": {
+  "rooms": [
+   "bar",
+   "museum",
+   "bank",
+   "theatre",
+   "arcade",
+   "playhouse",
+   "holofront",
+   "holodeck"
+  ],
+  "places": []
+ },
+ "bath-front_r": {
+  "py": 0,
+  "water": false,
+  "dead": false,
+  "inPool": false,
+  "room": {
+   "inside": null,
+   "built": [],
+   "hidden": 0,
+   "busy": false
+  }
+ },
+ "bath-zoom_r": {
+  "py": 0,
+  "water": false,
+  "dead": false,
+  "inPool": false,
+  "room": {
+   "inside": "bath",
+   "built": [
+    "bath"
+   ],
+   "hidden": 905,
+   "busy": false
+  }
+ },
+ "bath-turn_r": {
+  "py": 0,
+  "water": false,
+  "dead": false,
+  "inPool": false,
+  "room": {
+   "inside": "bath",
+   "built": [
+    "bath"
+   ],
+   "hidden": 905,
+   "busy": false
+  }
+ },
+ "bath-turn2_r": {
+  "py": 0,
+  "water": false,
+  "dead": false,
+  "inPool": false,
+  "room": {
+   "inside": "bath",
+   "built": [
+    "bath"
+   ],
+   "hidden": 905,
+   "busy": false
+  }
+ },
+ "wade_r": {
+  "py": 0,
+  "water": false,
+  "dead": false,
+  "inPool": true,
+  "room": {
+   "inside": "bath",
+   "built": [
+    "bath"
+   ],
+   "hidden": 905,
+   "busy": false
+  }
+ },
+ "wade": {
+  "py": -0.847,
+  "water": false,
+  "dead": false,
+  "inPool": true,
+  "room": {
+   "inside": "bath",
+   "built": [
+    "bath"
+   ],
+   "hidden": 905,
+   "busy": false
+  }
+ },
+ "swim_r": {
+  "py": 0,
+  "water": false,
+  "dead": false,
+  "inPool": true,
+  "room": {
+   "inside": "bath",
+   "built": [
+    "bath"
+   ],
+   "hidden": 905,
+   "busy": false
+  }
+ },
+ "swim": {
+  "py": -0.847,
+  "water": true,
+  "dead": false,
+  "inPool": true,
+  "room": {
+   "inside": "bath",
+   "built": [
+    "bath"
+   ],
+   "hidden": 905,
+   "busy": false
+  }
+ },
+ "night_r": {
+  "py": 0,
+  "water": true,
+  "dead": false,
+  "inPool": false,
+  "room": {
+   "inside": "bath",
+   "built": [
+    "bath"
+   ],
+   "hidden": 905,
+   "busy": false
+  }
+ },
+ "ghost-in_r": {
+  "py": 0,
+  "water": false,
+  "dead": true,
+  "inPool": false,
+  "room": {
+   "inside": "bath",
+   "built": [
+    "bath"
+   ],
+   "hidden": 905,
+   "busy": false
+  }
+ },
+ "walk": {
+  "out": [
+   "w:no -3.15,2.34,0",
+   "a:no 3.31,2.34,0",
+   "s:IN 1.18,-0.52,-0.62"
+  ],
+  "best": "s"
+ },
+ "afterWalk": {
+  "py": -0.676,
+  "water": false,
+  "dead": true,
+  "inPool": true,
+  "room": {
+   "inside": "bath",
+   "built": [
+    "bath"
+   ],
+   "hidden": 905,
+   "busy": false
+  }
+ },
+ "dd": [
+  {
+   "gh": 1,
+   "rise": 0.49999999999999994,
+   "busy": false,
+   "out": -0.04999999999999993,
+   "lvl": "up",
+   "py": -0.675641825617696,
+   "sheet": true,
+   "pool": true
+  },
+  {
+   "gh": 1,
+   "rise": 0.8500000000000002,
+   "busy": false,
+   "out": -0.04999999999999993,
+   "lvl": "up",
+   "py": -0.675641825617696,
+   "sheet": true,
+   "pool": true
+  },
+  {
+   "gh": 1,
+   "rise": 1.6000000000000008,
+   "busy": false,
+   "out": -0.04999999999999993,
+   "lvl": "up",
+   "py": -0.675641825617696,
+   "sheet": true,
+   "pool": true
+  },
+  {
+   "gh": 1.2499999999999991,
+   "rise": 2.4499999999999993,
+   "busy": false,
+   "out": -0.04999999999999993,
+   "lvl": "up",
+   "py": -0.675641825617696,
+   "sheet": true,
+   "pool": true
+  }
+ ],
+ "during": {
+  "py": 0,
+  "water": false,
+  "dead": false,
+  "inPool": false,
+  "room": {
+   "inside": null,
+   "built": [
+    "bath"
+   ],
+   "hidden": 0,
+   "busy": false
+  },
+  "fade": "REFRESHED"
+ },
+ "after": {
+  "py": 0,
+  "water": false,
+  "dead": false,
+  "inPool": false,
+  "room": {
+   "inside": null,
+   "built": [
+    "bath"
+   ],
+   "hidden": 0,
+   "busy": false
+  },
+  "hp": 1,
+  "sta": 1
+ },
+ "outside-wide_r": {
+  "py": 0,
+  "water": false,
+  "dead": false,
+  "inPool": false,
+  "room": {
+   "inside": null,
+   "built": [
+    "bath"
+   ],
+   "hidden": 0,
+   "busy": false
+  }
+ },
+ "render": {
+  "head": {
+   "fps": 0,
+   "ms": 0,
+   "calls": 114,
+   "tris": 123281,
+   "points": 90,
+   "lines": 437,
+   "programs": 228,
+   "progsOnScreen": 44,
+   "geometries": 454,
+   "textures": 183,
+   "lightsInScene": 11,
+   "lightsLit": 8,
+   "shadows": [
+    "Point 512x6",
+    "Directional 3072",
+    "Directional 2048"
+   ],
+   "lvl": "up",
+   "place": "",
+   "at": [
+    86.6,
+    0.7
+   ],
+   "drawnObjs": 107,
+   "drawnTris": 132251,
+   "fog": 1769912,
+   "loadedTris": 844157,
+   "geoBytes": 65824868,
+   "texBytes": 452665688
+  }
+ },
+ "in-again_r": {
+  "py": 0,
+  "water": false,
+  "dead": false,
+  "inPool": false,
+  "room": {
+   "inside": null,
+   "built": [
+    "bath"
+   ],
+   "hidden": 0,
+   "busy": false
+  }
+ },
+ "renderIn": {
+  "info": {
+   "frame": 1611,
+   "calls": 31,
+   "triangles": 65084,
+   "points": 0,
+   "lines": 0
+  },
+  "tris": 65470
+ },
+ "park-old-shrine_r": [
+  0,
+  74.59129999999999,
+  {
+   "x": 0,
+   "y": 0
+  }
+ ],
+ "info": {
+  "frame": 1780,
+  "calls": 234,
+  "triangles": 113598,
+  "points": 90,
+  "lines": 437
+ },
+ "errors": [
+  "Fetch API cannot load file:///home/runner/work/thestrangest/thestrangest/dist/market.html?fresh=1&hour=13&wx=CLEAR. URL scheme \"file\" is not supported.",
+  "THREE.Sprite: \"Raycaster.camera\" needs to be set in order to raycast against sprites.",
+  "Fetch API cannot load file:///home/runner/work/thestrangest/thestrangest/dist/market.html?fresh=1&hour=13&wx=CLEAR. URL scheme \"file\" is not supported.",
+  "Fetch API cannot load file:///home/runner/work/thestrangest/thestrangest/dist/market.html?fresh=1&hour=13&wx=CLEAR. URL scheme \"file\" is not supported.",
+  "Fetch API cannot load file:///home/runner/work/thestrangest/thestrangest/dist/market.html?fresh=1&hour=13&wx=CLEAR. URL scheme \"file\" is not supported.",
+  "Fetch API cannot load file:///home/runner/work/thestrangest/thestrangest/dist/market.html?fresh=1&hour=13&wx=CLEAR. URL scheme \"file\" is not supported.",
+  "Fetch API cannot load file:///home/runner/work/thestrangest/thestrangest/dist/market.html?fresh=1&hour=13&wx=CLEAR. URL scheme \"file\" is not supported."
+ ]
+}

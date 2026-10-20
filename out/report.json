@@ -1,0 +1,97 @@
+{
+ "corridor": {
+  "built": false,
+  "on": false,
+  "mats": 0,
+  "meshes": 0,
+  "pos": [
+   136.42,
+   -84.9
+  ],
+  "py": 12.19,
+  "apt": {
+   "in": true,
+   "floor": 2
+  }
+ },
+ "room": {
+  "built": false,
+  "on": false,
+  "mats": 0,
+  "meshes": 0,
+  "pos": [
+   135.22,
+   -88.4
+  ],
+  "py": 12.19,
+  "apt": {
+   "in": true,
+   "floor": 2
+  }
+ },
+ "escape": {
+  "built": true,
+  "on": true,
+  "mid": 174,
+  "mats": 2,
+  "meshes": 7,
+  "pos": [
+   1000,
+   -93.95
+  ],
+  "py": 23.2,
+  "apt": {
+   "in": false,
+   "floor": 2
+  }
+ },
+ "tris": {
+  "tris": 43800,
+  "calls": 42,
+  "culled": 0
+ },
+ "lite": 8,
+ "trisBehind": {
+  "tris": 45822,
+  "calls": 48,
+  "culled": 0
+ },
+ "lite2": 8,
+ "sit": {
+  "built": true,
+  "on": true,
+  "mid": 174,
+  "mats": 2,
+  "meshes": 7,
+  "pos": [
+   1000,
+   -94.5
+  ],
+  "py": 23.2,
+  "apt": {
+   "in": false,
+   "floor": 2
+  }
+ },
+ "back": {
+  "built": true,
+  "on": false,
+  "mid": 174,
+  "mats": 2,
+  "meshes": 7,
+  "pos": [
+   136.52,
+   -89.9
+  ],
+  "py": 12.19,
+  "apt": {
+   "in": true,
+   "floor": 2
+  }
+ },
+ "errors": [
+  "Fetch API cannot load file:///home/runner/work/thestrangest/thestrangest/dist/market.html?fresh=1&hour=13&wx=CLEAR. URL scheme \"file\" is not supported.",
+  "THREE.Sprite: \"Raycaster.camera\" needs to be set in order to raycast against sprites.",
+  "Fetch API cannot load file:///home/runner/work/thestrangest/thestrangest/dist/market.html?fresh=1&hour=13&wx=CLEAR. URL scheme \"file\" is not supported."
+ ]
+}

@@ -3703,3 +3703,9 @@ initial download and load super fast"; then "Go")
   function; the rest is wrapped in `await grab('ghostdojo', ...)`. Its `sol()` wrote to the builder's `solids`/`fixed`, which were always
   the street's arrays; it now names `SOL.up`/`FIX.up` directly (the page-level `solids`/`fixed` switch with the level, so naming them
   would not be the same). The scope proof shows every other reference resolving as before.
+
+## 20 Oct 2026: the apartments are their own builder (modules)
+
+- **`054-apts.js` is `059a-apts.js`** (before `059a-club`, since your fire escape reads `MODS.apts` when it builds), wrapped in
+  `await grab('apts', ...)`; `APTS` is a page-level const now. Its `osol()` names `SOL.up`/`FIX.up` directly, as the ghost dojo's does.
+  Scope proof: every other reference resolves as before.

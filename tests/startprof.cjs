@@ -12,7 +12,7 @@ const OUT=process.argv[2]||'startprof.json', PAGE=path.resolve(process.argv[3]||
   const t0=Date.now(); await pg.goto('file://'+PAGE+'?fresh=1&hour=13',{waitUntil:'commit'});
   let started=null; for(let i=0;i<900;i++){ await pg.waitForTimeout(500); if(await pg.evaluate(()=>!!window.__started)){ started=Date.now()-t0; break; } }
   const rep={page:path.basename(PAGE),startMs:started,errs};
-  const sample=async(name,go)=>{ if(go)await pg.evaluate(go); await pg.waitForTimeout(go?15000:4000);
+  const sample=async(name,go)=>{ await pg.evaluate(()=>{ if(window.BODB&&BODB.gnear)BODB.gnear(0,0,Infinity); }); if(go)await pg.evaluate(go); await pg.waitForTimeout(go?15000:4000);
     const r=await pg.evaluate(()=>new Promise(res=>{ const d=[], s0=performance.now(); let l=performance.now(); const h0=window.__PF?__PF.hist.length:0;
       const IN=[]; const f=()=>{ const n=performance.now(); d.push(n-l); l=n; if(window.__R){ const I=__R.renderer.info.render; IN.push([I.calls,I.triangles]); } if(n-s0<12000)requestAnimationFrame(f); else {
         const st={}; if(window.__PF){ const H=__PF.hist.slice(-Math.min(__PF.hist.length,d.length)); for(const fr of H)for(const k in fr)(st[k]=st[k]||[]).push(fr[k]); }

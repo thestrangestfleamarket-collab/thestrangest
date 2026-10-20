@@ -3600,3 +3600,17 @@ initial download and load super fast"; then "Go")
 - **Checked**: `tests/places.cjs` (now in the site workflow) logs in on the real worker, checks the start fetches no chunk, enters every
   place (each fetches its file, builds, no page errors, no late fetch), then reloads with a saved spot inside the dungeon; all pass, the
   site check too.
+
+## 20 Oct 2026: two requests queued (the grass, the bank)
+
+- **The grass** (owner, 20 Oct 2026: "lets make the grass mostly flat again, except on the edges, more natural, and it doesnt move at
+  all unless something is moving it (you, npc, character, animal, etc) the environment cant move it - queue"): grass lies flat except
+  at the edges, where it stands more naturally; nothing in the environment (wind, time) moves it; only something moving through it does
+  (you, an NPC, a character, an animal). Queued, not built.
+- **The bank** (owner, 20 Oct 2026, with a picture of the map's west edge: "this part of the map is wrong, i want the bank all the way
+  bottom left, facing market st. so its a dead end) it gets its own load. when you go that way it says "Loading Bank" etc and doesnt
+  load at start. the street going north is empty (just grass for now) and dead ends) looks like it keeps going but forcefield."): the
+  bank moves to the bottom-left corner, its front on Market St, the street ending at it; it is not loaded at the start but brought in
+  when you walk that way, with a "Loading Bank" line; the street going north from there is empty grass and dead-ends at an invisible
+  wall, the road drawn as if it went on. This is the first place to get its own load, so it follows the module steps. A map mockup of
+  the corner goes to the owner before it is built.

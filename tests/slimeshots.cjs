@@ -14,7 +14,7 @@ process.on('unhandledRejection',e=>{ errs.push('TEST '+String(e&&e.message||e).s
   await pg.evaluate(()=>DUNGEON.go(1)); await pg.waitForTimeout(4000);
   await pg.evaluate(()=>{ const S=DUNMOBS.slimes[0], T=window.TILE||__dbg.MAPK.BOD.XS(1)-__dbg.MAPK.BOD.XS(0); S.wait=99; S.to=null; __dbg.ui().goTo(S.x,S.z-.7*Math.abs(T),'down'); });
   await wheel(-5); await shot('L1-near',null,1500);
-  rep.punch=[]; for(let i=0;i<6;i++){ await pg.evaluate(()=>{ const S=DUNMOBS.slimes[0], y=__dbg.you(); window.heading0=Math.atan2(S.x-y.x,S.z-y.z); }); await pg.keyboard.press('j'); await pg.waitForTimeout(700); rep.punch.push(await pg.evaluate(()=>{ const S=DUNMOBS.slimes[0], y=__dbg.you(); return {hp:S.hp,dead:S.dead,d:+(Math.hypot(S.x-y.x,S.z-y.z)/((window.TILE)||1)).toFixed(2)}; })); }
+  rep.punch=[]; for(let i=0;i<6;i++){ await pg.evaluate(()=>{ const S=DUNMOBS.slimes[0], y=__dbg.you(), T=window.TILE||1; S.x=y.x+Math.sin(y.h)*.6*T; S.z=y.z+Math.cos(y.h)*.6*T; S.to=null; S.air=0; S.wait=99; S.kb=null; }); await pg.keyboard.press('j'); await pg.waitForTimeout(700); rep.punch.push(await pg.evaluate(()=>{ const S=DUNMOBS.slimes[0], y=__dbg.you(); return {hp:S.hp,dead:S.dead,d:+(Math.hypot(S.x-y.x,S.z-y.z)/((window.TILE)||1)).toFixed(2)}; })); }
   await pg.evaluate(()=>{ if(!DUNMOBS.slimes[0].dead)DUNMOBS.hit(0,9); }); await shot('L1-killed',null,1200); await st('killed');
   rep.nobottle=await pg.evaluate(()=>{ delete INV.items.bottle; const th=DUNMOBS.things().find(t=>/SLIME/.test(t.name)); th.act(); return {have:FORAGE.has('slime_green'),thing:!!DUNMOBS.things().includes(th),last:[...document.querySelectorAll('#fjour div')].map(d=>d.textContent).slice(-1)[0]}; });
   await shot('L1-nobottle',null,600);

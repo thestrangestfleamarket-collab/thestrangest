@@ -1,4 +1,4 @@
-// THE SAME PIXELS (19 Oct 2026, faster painting): node tests/texhash.cjs <base page> <head page>
+// THE SAME PIXELS (19-20 Oct 2026, faster painting): node tests/texhash.cjs <base page> <head page>
 // The ground, walls and floors are painted in code at the start. A faster painter must paint exactly the same pixels: this opens both
 // pages (Math.random seeded the same), and once each has started hashes every texture in the scene (ImageData, canvases, data textures),
 // (after STORE.ensure(), so whatever the start builds a piece at a time afterwards is all built in both) and fails unless the two sets

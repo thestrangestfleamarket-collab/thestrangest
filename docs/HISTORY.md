@@ -3465,3 +3465,30 @@ park's brick wall twice as high", "no ivy on the wall"; `061-park.js`)
 - **The road's index keyed by numbers** (`050-main-8.js` `at2`): no string made for each of the road's 11 million pixels.
 - **The same pixels** (`tests/texhash.cjs`, in the CI budget job): every texture in the scene hashed on the base and the pull request (seeded
   randomness), and the pull request opened twice in one profile so the second start comes from the cache; all three must match exactly.
+## 20 Oct 2026: a faster start: the ground painted round you first, the rest after; dragons fetched after the start; no frozen page in the builders
+(owner, 19 Oct 2026, on the render inspector: "i want to chunk the world off as much as possible into loading screens and make the
+initial download and load super fast"; then "Go")
+- **Measured first** (software rendering in CI, `origin/main` with the park and the alley already loading on entry and the data split
+  into json + gzipped bin): the website start fetches 4.56 MB (1.57 MB on the wire): the game code 2.25 MB (845 KB gz), three.js 665 KB
+  (172 KB gz), the rig 116 KB (44 KB gz), the data's bins (pawns 198 KB, creatures 145 KB, props 80 KB, forest 24 KB, dragon 24 KB,
+  textures 11 KB, kit, museum, trashbag) and their small json. A profile of the loading (a timer at every breath) put about half of the
+  build in one line: painting the whole map's ground (every sidewalk, kerb, road and lawn strip, 24 texels a tile) inside the street's
+  builder, with no breath in it (some 7 s of the 14 s that builder took here).
+- **The ground round you first** (`053-bodbuild.js`, `BODB.GQ`, `BODB.gnear`, `BODB.gtick`): the street's ground is cut into 20-tile
+  cells (on the same texel grid as before, so it looks the same: the shots match texel for texel) and only those within 48 tiles of
+  where you open (where you are, your saved place, or Central Park's gate for a new player) are painted while the page loads. The rest
+  (about 260 cells) are painted after the start, the nearest first, in slices of at most 6 ms every 0.05 s, built 24 at a time; any cell
+  within 48 tiles of you is painted before the frame is drawn, so a jump from the menu, a load or a walk never shows a missing ground.
+- With the paint cache (`PAINTC`, the same day): the cells are its patches, so a returning player's near cells come from the cache;
+  the cache is saved again once the last far cell is painted.
+- **Breaths inside the builders** (`tools/yields.py`): the places' builders (`grab(...)`) now get the loading breaths too, so the
+  street's builder (bodega to the dojo, a third of the code) no longer holds the page for seconds without answering.
+- **Dragons after the start** (`077-npc-skel.js`, `078-npc-dragon.js`): `data/dragon.json` is `__LAZY__` (on the website fetched after
+  the start) and the ten dragons are made once the game has started; they fly in a moment later. Their two fire lights are still made
+  at the start, so no lamp count changes and no shader is compiled again when they come.
+- **Result** (same CI runs, `origin/main` against this): the loading profile 27.6 s to 19.2 s and 28.3 s to 14.3 s (two runs); the
+  website's first frame 32.6-46.4 s to 30.7-30.9 s (noisy here; the CPU part is what shrank); the start download 1,568 KB to 1,545 KB
+  on the wire. No new triangles, lights or shader programs (183 against 185 after the same tour); the late ground cells are their own
+  batches (one draw per 24 cells, frustum-culled). Under software rendering the last far cells are done about a minute after the
+  start (the frame rate there is low); at a normal frame rate a few seconds.
+- Not done (left for later): the game code is still one 845 KB download; the creatures, props and pawns still come at the start.

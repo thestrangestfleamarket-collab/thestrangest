@@ -74,14 +74,14 @@ def yields(js):
             if st: st.pop()
             i=k+1; continue
         if c in '([':
-            st.append(c); kw.append(prev(k)[1] if c=='(' else None); i=k+1; continue
+            w=prev(k)[1] if c=='(' else None; st.append('g' if w=='grab' else c); kw.append(w); i=k+1; continue
         if c in ')]':
             if st: st.pop()
             lastkw=kw.pop() if kw else None
             i=k+1; continue
         if c==';':
             i=k+1
-            if all(x=='b' for x in st):
+            if all(x in 'bg' for x in st):
                 m2=re.compile(r"\s*(?://[^\n]*\n\s*)*([A-Za-z_$]*)").match(js,i); w=m2.group(1)
                 if w in ('else','catch','finally','while'): continue
                 out.append(js[last:i]); out.append(CHECK); last=i; count+=1

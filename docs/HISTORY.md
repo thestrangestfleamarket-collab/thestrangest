@@ -3571,6 +3571,6 @@ initial download and load super fast"; then "Go")
   **THE RAIN FISH** (`084-npc-toons.js`, `rainfish`), from his photo of a felted orange fish in a yellow felt raincoat under a clear
   plastic hood: measured off the photo (eye height .73, mouth .65, head width .49, coat width .59 of his height); big glossy eyes in
   cream rims, a pink pout, the coat with collar, lapels, pocket flaps and the seam, flipper arms that bend at a second bone and lag,
-  stubby feet, and a fish tail with a forked fin out the back that sways as he waddles. Built at twice his size (`metres` 2.2).
-  Cost: 9,716 triangles, one more draw and program (the hood), no lights. Pictures: `node tools/charview.cjs` (the character alone on
+  stubby feet, and a fish tail, just the forked fin out the back of the coat ("just the flipper part"), swaying as he waddles. Built at twice his size (`metres` 2.2).
+  Cost: 9,476 triangles, one more draw and program (the hood), no lights. Pictures: `node tools/charview.cjs` (the character alone on
   black, front, side, back; not the game).

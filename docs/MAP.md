@@ -125,7 +125,7 @@ Places built with `await grab(name, async()=>{...})` are one function each, ofte
 | `081-stalls.js` | 16.0 | top level | STALL (083a 084 140 142a 144) | 003: THREE; 004: scene; 006: FIX MAPG SOL TILE ZU; 076: NPCS; 129: CLOCK; 140: WEEDS |
 | `083-npc-rig.js` | 7.2 | top level | RIGNPC (083a 084 085) | 003: THREE; 004: cam; 006: QS TILE; 076: makeNPC |
 | `083a-npc-mushroom.js` | 6.4 | top level | MUSH (141 144) | 003: THREE; 006: BOD MODS; 061: PARK; 080: PARTSNPC; 081: STALL; 083: RIGNPC |
-| `084-npc-toons.js` | 24.7 | top level | TOONS (144 147) | 003: THREE; 006: AVE BOD RING TILE; 080: PARTSNPC; 081: STALL; 083: RIGNPC |
+| `084-npc-toons.js` | 24.5 | top level | TOONS (144 147) | 003: THREE; 006: AVE BOD RING TILE; 080: PARTSNPC; 081: STALL; 083: RIGNPC |
 | `085-npc-squirrel.js` | 7.1 | top level |  | 004: cam; 006: BOD LVL MODS TILE; 061: PARK; 063: GTOWER; 071: st; 080: PARTSNPC; 083: RIGNPC |
 | `086-npc-fox.js` | 3.5 | top level | CREATURES (087 146b) | 003: THREE; 006: LAY MODS TILE; 080: PARTSNPC; 092: LINES |
 | `087-npc-creatures.js` | 9.5 | top level | PAWNS (088) | 003: THREE; 003a: SKIN; 006: BOD MAPSTAIR METRO MODS SOL TILE; 060a: FOUNT; 061: PARK; 076: makeNPC; 086: CREATURES; 089: POND; 129: CLOCK |

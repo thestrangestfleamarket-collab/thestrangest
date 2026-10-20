@@ -162,7 +162,7 @@ const TOONS={};
     const arm=sx=>{ const s=sx<0?'L':'R'; return skin(shape(tube([[sx*.245,.5,.07],[sx*.29,.44,.11],[sx*.3,.37,.14],[sx*.27,.3,.17],[sx*.24,.27,.18]],[.03,.05,.056,.05,.032,0],12,18,{up:[1,0,0],sz:.6}),FL),
       (x,y)=>{ const t=ss(.42,.33,y), h=ss(.46,.5,y)*.5; return ['arm'+s,1-t-h,'arm'+s+'t',t,'hips',h]; }); };
     const def={ bones:[['root',null,[0,0,0]],['hips','root',[0,.3,0]],['head','hips',[0,.55,0]],['hood','head',[0,.95,0]],
-        ['armL','hips',[-.25,.5,.07]],['armLt','armL',[-.29,.38,.13]],['armR','hips',[.25,.5,.07]],['armRt','armR',[.29,.38,.13]],['tail','hips',[0,.2,-.24]],['tailFin','tail',[0,.26,-.46]],['legL','hips',[-.195,.13,.03]],['legR','hips',[.195,.13,.03]]],
+        ['armL','hips',[-.25,.5,.07]],['armLt','armL',[-.29,.38,.13]],['armR','hips',[.25,.5,.07]],['armRt','armR',[.29,.38,.13]],['tail','hips',[0,.25,-.24]],['tailFin','tail',[0,.25,-.26]],['legL','hips',[-.195,.13,.03]],['legR','hips',[.195,.13,.03]]],
       parts:[ part('eyes',3,'head',[...eye(-1),...eye(1)]),
         part('lips',3,'head',[ shape(lip([-.09,-.05,0,.05,.09],[.628,.656,.668,.656,.628],[0,.024,.03,.03,.024,0],.016),LIP), shape(lip([-.055,0,.055],[.627,.618,.627],[0,.022,.026,.022,0],.012),LIP), shape(lip([-.06,0,.06],[.634,.642,.634],[0,.006,.007,.006,0],.03),LIP2) ]),
         part('marks',3,'head',[ shape(sph(.013,6,4),[.98,.8,.55],onB(HEAD,HZ,Math.asin(-.16/HEAD.R(.815)),.815,.004)), shape(blob(.016,.024,.012,8,6),[.93,.38,.1],onB(HEAD,HZ,Math.asin(-.185/HEAD.R(.61)),.61,.004),null,[0,-50,0]) ]),
@@ -174,9 +174,8 @@ const TOONS={};
         part('lapels',2,'hips',[ shape(lapel(-1),MU2), shape(lapel(1),MU2) ]),
         part('pockets',1,'hips',[ shape(pocket(-1),MU2), shape(pocket(1),MU2) ]),
         part('arm L',2,'armL',[ arm(-1) ]), part('arm R',2,'armR',[ arm(1) ]),
-        part('tail',1,'tail',[ skin(shape(tube([[0,.2,-.2],[0,.205,-.31],[0,.235,-.4],[0,.26,-.46]],[.085,.07,.052,.038,.034],12,10,{up:[1,0,0],sz:.62}),OR),(x,y,z)=>{ const t=ss(-.25,-.36,z); return ['hips',1-t,'tail',t]; }) ]),
-        part('tail fin',2,'tailFin',[ ...[[.44,-.64],[.1,-.62]].map(([y,z])=>shape(tube([[0,.26,-.45],[0,(.26+y)/2,(z-.45)/2-.02],[0,y,z]],[.035,.07,.065,.03,0],10,12,{up:[1,0,0],sz:.28}),FL)),
-          shape(blob(.014,.1,.07,8,6),FL,[0,.265,-.53]) ]),
+        part('tail fin',2,'tailFin',[ ...[[.44,-.46],[.1,-.44]].map(([y,z])=>shape(tube([[0,.25,-.24],[0,(.25+y)/2,(z-.24)/2-.02],[0,y,z]],[.035,.07,.065,.03,0],10,12,{up:[1,0,0],sz:.28}),FL)),
+          shape(blob(.014,.1,.07,8,6),FL,[0,.26,-.34]) ]),
         part('foot L',0,'legL',[ foot(-1) ]), part('foot R',0,'legR',[ foot(1) ]) ],
       springs:{ tail:{y:.4,k:35,c:4,lim:.5}, tailFin:{y:.5,k:30,c:3,lim:.6}, hood:{f:-.05,s:.05,k:60,c:5,lim:.12}, armLt:{f:-.25,s:.2,k:40,c:4,lim:.5}, armRt:{f:-.25,s:.2,k:40,c:4,lim:.5}, head:{f:-.03,s:.03,k:80,c:8,lim:.1} },
       pose:(c,dt)=>{ const B=c.B, m=c.mv, ph=c.st.ph, sw=Math.sin(ph)*m; RIGNPC.walk(c,{arm:.35,leg:.55,bob:.035,rock:.09});

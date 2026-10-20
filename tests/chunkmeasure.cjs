@@ -1,6 +1,6 @@
 const {chromium}=require('playwright'); const fs=require('fs'), path=require('path'), zlib=require('zlib'), http=require('http');
 const [MODE,OUT]=[process.argv[2],process.argv[3]||'out']; fs.mkdirSync(OUT,{recursive:true});
-const D=path.resolve(__dirname,'../dist'), ARGS=['--use-gl=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist'];
+const D=process.env.DIST?path.resolve(process.env.DIST):path.resolve(__dirname,'../dist'), ARGS=['--use-gl=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist'];
 const gz=b=>zlib.gzipSync(b,{level:9}).length, br=b=>zlib.brotliCompressSync(b).length;
 const save=(n,o)=>{ fs.writeFileSync(path.join(OUT,n),JSON.stringify(o,null,1)); console.log(n,JSON.stringify(o).slice(0,3000)); };
 const stats=pg=>pg.evaluate(()=>new Promise(res=>requestAnimationFrame(()=>requestAnimationFrame(()=>{ const R=__dbg.renderer, I=R.info; let meshes=0, sceneTris=0;
@@ -10,7 +10,7 @@ const stats=pg=>pg.evaluate(()=>new Promise(res=>requestAnimationFrame(()=>reque
 (async()=>{
   if(MODE==='sizes'){ const rows=[]; const add=(f,n)=>{ const b=fs.readFileSync(f); rows.push({file:n,raw:b.length,gzip:gz(b),br:br(b)}); };
     add(path.join(D,'market.html'),'market.html'); for(const f of fs.readdirSync(path.join(D,'g')).sort())add(path.join(D,'g',f),'g/'+f);
-    const src=fs.readdirSync(path.resolve(__dirname,'../src')).filter(f=>/^\d/.test(f)).map(f=>{ const b=fs.readFileSync(path.resolve(__dirname,'../src',f)); return {file:f,raw:b.length,gzip:gz(b)}; }).sort((a,b)=>b.gzip-a.gzip);
+    const SRC=path.resolve(D,'../src'); const src=fs.readdirSync(SRC).filter(f=>/^\d/.test(f)).map(f=>{ const b=fs.readFileSync(path.join(SRC,f)); return {file:f,raw:b.length,gzip:gz(b)}; }).sort((a,b)=>b.gzip-a.gzip);
     return save('sizes.json',{dist:rows,srcTop:src.slice(0,30),srcTotal:src.reduce((s,r)=>s+r.raw,0)}); }
   if(MODE==='web'){ const srv=http.createServer((q,r)=>{ const u=decodeURIComponent(q.url.split('?')[0]); const f=path.join(D,u); if(!f.startsWith(D)||!fs.existsSync(f)||fs.statSync(f).isDirectory()){ r.writeHead(404); return r.end(); }
       const ty=f.endsWith('.js')?'text/javascript':f.endsWith('.json')?'application/json':f.endsWith('.html')?'text/html':f.endsWith('.wasm')?'application/wasm':'application/octet-stream'; r.writeHead(200,{'content-type':ty}); r.end(fs.readFileSync(f)); }).listen(8123);

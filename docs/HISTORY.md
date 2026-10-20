@@ -3643,3 +3643,30 @@ initial download and load super fast"; then "Go")
   need to be so big?"; his pick "4000", as 19 Oct's cut of the heaviest pawns): their curves are sampled more coarsely (fewer rings and
   segments on every lathe, tube and surface; the same profiles, proportions, bones, cloth and motion). THE MANATEE 11,876 → 3,748;
   THE RAIN FISH 11,236 → 3,764 with the hood; NUMBER 80 14,324 → 4,048 (his horn four rings, not seven).
+## 20 Oct 2026: two requests queued (the grass, the bank)
+
+- **The grass** (owner, 20 Oct 2026: "lets make the grass mostly flat again, except on the edges, more natural, and it doesnt move at
+  all unless something is moving it (you, npc, character, animal, etc) the environment cant move it - queue"): grass lies flat except
+  at the edges, where it stands more naturally; nothing in the environment (wind, time) moves it; only something moving through it does
+  (you, an NPC, a character, an animal). Queued, not built.
+- **The bank** (owner, 20 Oct 2026, with a picture of the map's west edge: "this part of the map is wrong, i want the bank all the way
+  bottom left, facing market st. so its a dead end) it gets its own load. when you go that way it says "Loading Bank" etc and doesnt
+  load at start. the street going north is empty (just grass for now) and dead ends) looks like it keeps going but forcefield."): the
+  bank moves to the bottom-left corner, its front on Market St, the street ending at it; it is not loaded at the start but brought in
+  when you walk that way, with a "Loading Bank" line; the street going north from there is empty grass and dead-ends at an invisible
+  wall, the road drawn as if it went on. This is the first place to get its own load, so it follows the module steps. A map mockup of
+  the corner goes to the owner before it is built.
+- **The apartments** (owner, 20 Oct 2026, with a picture of the brownstone's stoop: "the apartments shoudl be opposite end of street as
+  bank (facing market st and bank) it should get its own loading screen too, same thing, north street from there is empty on right side
+  (central park will be on left)"): the brownstone apartments (`054-apts.js`; not the building with the pool, deleted earlier that day)
+  move to the end of the street opposite the bank, front on Market St, facing the bank; their own load, like the bank; the street north
+  of them has nothing on the right and Central Park on the left.
+- **Only the place you are in loads at the start** (owner, 20 Oct 2026: "this means that bank and apartments dont load at start
+  (unless thats where you are at when you login) - so the only thing that hsould load is the place you're at (bank, apt, market st,
+  central park, each interior)"): the rule for the loading work. Market St, Central Park, the bank, the apartments and each interior
+  are each their own load; at the start only the one you are standing in is built, the rest when you walk toward them, each with its
+  own "Loading …" line.
+- **Loops for things that move on their own** (owner, 20 Oct 2026, with a picture of the flower boxes on the brownstone's railings:
+  "i want things like this that move to be looped to save on render cpu and time"): a thing that sways or stirs by itself (flowers,
+  leaves, a flag, a sign) plays a short looped animation made once, instead of being computed every frame. A rule for new things and
+  for the queue on the existing ones.

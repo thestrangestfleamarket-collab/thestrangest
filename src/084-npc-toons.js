@@ -1,4 +1,4 @@
-// THE STREET'S TOONS: the tomato, the cat in the raincoat, the TV cat, the frog on his scooter, the shark, the manatee, the rain fish, NUMBER 80, the ember knight and MR. BLOCKS.
+// THE STREET'S TOONS: the tomato, the cat in the raincoat, the TV cat, the frog on his scooter, the shark, the manatee, the rain fish, NUMBER 80, the ember knight, MR. BLOCKS and the bear in the coat.
 const TOONS={};
 { const {shape,limb,sph,cyl,box,torus,blob,shell}=PARTSNPC.T;
   const part=(name,rank,bone,of)=>({name,rank,bone,of}), BLACK=[0,0,0], WHITE=[.96,.95,.9];
@@ -334,4 +334,54 @@ const TOONS={};
       pose:(c,dt)=>{ const B=c.B, m=c.mv, ph=c.st.ph; RIGNPC.walk(c,{arm:.45,leg:.45,bob:.03,rock:.1}); B.body.rotation.y=c.look; B.body.rotation.z=-Math.sin(ph)*.05*m;
         if(c.sheet)return; if((c.tip=(c.tip??6+Math.random()*6)-dt)<1.6&&!m){ const g=Math.sin(Math.max(0,c.tip)/1.6*Math.PI); B.armR.rotation.z+=g*2.3; B.armR.rotation.x-=g*.3; B.hat.position.y+=g*.05; B.hat.rotation.z-=g*.25; if(c.tip<0)c.tip=8+Math.random()*8; } } };
     TOONS.blocks=make(def,{key:'blocks',name:'MR. BLOCKS',metres:2.0,radius:.32,speed:.32,stride:8,at:100},9); }
+  { const {spl,prof,surf,lathe,tube,skin,ss,noise}=PARTSNPC.T, TAU=Math.PI*2, D=Math.PI/180;
+    const fur=(a,b,c)=>(x,y,z)=>{ const v=noise(x,y,z,120), w=noise(x+3,y,z,40); return v>.66?c:v<.32?b:w>.6?c:a; };
+    const GRY=fur([.5,.47,.44],[.4,.37,.35],[.64,.61,.57]), BRN=fur([.36,.25,.18],[.29,.2,.14],[.45,.33,.24]), FELT=(x,y,z)=>noise(x,y,z,90)>.6?[.6,.58,.55]:[.53,.51,.48];
+    const TAN=[.62,.48,.34], CRM=[.86,.8,.7], BLU=(x,y,z)=>noise(x,y,z,90)>.62?[.5,.64,.8]:[.45,.6,.77], STR=[.9,.88,.82], BELT=[.33,.24,.18];
+    const shag=(g,amp,k=110)=>{ g.computeVertexNormals(); const P=g.attributes.position, N=g.attributes.normal; let cx=0, cy=0, cz=0; for(let i=0;i<P.count;i++){ cx+=P.getX(i); cy+=P.getY(i); cz+=P.getZ(i); } cx/=P.count; cy/=P.count; cz/=P.count;
+      for(let i=0;i<P.count;i++){ const x=P.getX(i), y=P.getY(i), z=P.getZ(i); let nx=N.getX(i), ny=N.getY(i), nz=N.getZ(i); if(nx*(x-cx)+ny*(y-cy)+nz*(z-cz)<0){ nx=-nx; ny=-ny; nz=-nz; N.setXYZ(i,nx,ny,nz); }
+        const s=amp*(.3+noise(x,y,z,k)); P.setXYZ(i,x+nx*s,y+ny*s,z+nz*s); } return g; };
+    const hair=(g,col,n,len,seed,W)=>{ let q=seed; const r=()=>{ q=(q*16807)%2147483647; return q/2147483647; }, P=g.attributes.position, N=g.attributes.normal, out=[], d=new THREE.Vector3(), tg=new THREE.Vector3(), nv=new THREE.Vector3(), V=[];
+      for(let i=0;i<n;i++){ const j=Math.floor(r()*P.count), x=P.getX(j), y=P.getY(j), z=P.getZ(j); nv.set(N.getX(j),N.getY(j),N.getZ(j)); d.copy(nv).multiplyScalar(.7).add(tg.set((r()-.5)*.5,-1,(r()-.5)*.5)).normalize(); tg.crossVectors(nv,d).normalize();
+        const L=len*(.6+r()*.8), w=.009+r()*.006; V.push(x+tg.x*w,y+tg.y*w,z+tg.z*w, x-tg.x*w,y-tg.y*w,z-tg.z*w, x+d.x*L,y+d.y*L,z+d.z*L); }
+      const h=new THREE.BufferGeometry(); h.setAttribute('position',new THREE.Float32BufferAttribute(V,3)); const s=shape(h,col); return [W?skin(s,W):s]; };
+    const furry=(g,amp,col,n,len,seed,W)=>{ shag(g,amp); const m=shape(g,col); return [W?skin(m,W):m,...hair(g,col,n,len,seed,W)]; };
+    const melt=(c,E,nu,nv,k=8)=>surf(nu,nv,(u,v)=>{ const th=v*Math.PI, ph=u*TAU, d=[Math.sin(th)*Math.sin(ph),-Math.cos(th),Math.sin(th)*Math.cos(ph)]; let s=0;
+      for(const [e,R] of E){ const o=[0,1,2].map(i=>(c[i]-e[i])/R[i]), q=[0,1,2].map(i=>d[i]/R[i]), A=q[0]**2+q[1]**2+q[2]**2, B=2*(o[0]*q[0]+o[1]*q[1]+o[2]*q[2]), C=o[0]**2+o[1]**2+o[2]**2-1, h=B*B-4*A*C; if(h>0){ const t=(-B+Math.sqrt(h))/(2*A); if(t>0)s+=t**k; } }
+      const t=s**(1/k); return [c[0]+d[0]*t,c[1]+d[1]*t,c[2]+d[2]*t]; });
+    const HEAD=[[[0,.9,0],[.147,.1,.13]],[[0,.86,.07],[.12,.07,.09]]];
+    const TOR=prof([[.12,.43],[.15,.45],[.165,.5],[.17,.6],[.16,.7],[.12,.77],[.06,.8]]), TZ=.75, onT=(x,y,o)=>[x,y,Math.sqrt(Math.max(0,TOR.R(y)**2-x*x))*TZ+o];
+    const JK=prof([[.215,.3],[.21,.4],[.2,.55],[.195,.67],[.17,.75],[.12,.8]]), JZ=.8, OPEN=26*D;
+    const jw=(x,y,z)=>{ const a=Math.atan2(x,z), k=ss(.62,.38,y); return a>0&&a<1.4?['chest',1-k,'jR',k]:a<0&&a>-1.4?['chest',1-k,'jL',k]:['chest',1-k,'jB',k]; };
+    const jcol=(x,y,z)=>{ const a=Math.abs(Math.atan2(x,z)); return a<OPEN+.16&&y<.75?TAN:GRY(x,y,z); };
+    const sleeve=sx=>{ const s=sx<0?'L':'R'; return furry(tube([[sx*.18,.75,0],[sx*.215,.66,.005],[sx*.235,.56,.012],[sx*.24,.47,.02],[sx*.24,.4,.03]],[.075,.08,.075,.072,.075,.078],8,10),.008,GRY,110,.035,sx<0?3:5,(x,y)=>{ const e=ss(.6,.52,y); return ['arm'+s,1-e,'elbow'+s,e]; }); };
+    const leg=sx=>{ const s=sx<0?'L':'R', x=sx*.08; return furry(tube([[x,.46,0],[x,.33,0],[x,.22,.005],[x,.08,0]],[.08,.078,.074,.072,.074],8,10),.008,BRN,110,.035,sx<0?9:13,(x,y)=>{ const k=ss(.29,.21,y); return ['leg'+s,1-k,'knee'+s,k]; }); };
+    const def={ bones:[['root',null,[0,0,0]],['hips','root',[0,.45,0]],['chest','hips',[0,.6,0]],['head','chest',[0,.8,0]],['earL','head',[-.12,.94,0]],['earR','head',[.12,.94,0]],
+        ['armL','chest',[-.18,.74,0]],['elbowL','armL',[-.23,.56,.01]],['handL','elbowL',[-.24,.4,.03]],['armR','chest',[.18,.74,0]],['elbowR','armR',[.23,.56,.01]],['handR','elbowR',[.24,.4,.03]],
+        ['jL','chest',[-.12,.55,.12]],['jR','chest',[.12,.55,.12]],['jB','chest',[0,.55,-.14]],
+        ['legL','hips',[-.08,.45,0]],['kneeL','legL',[-.08,.26,0]],['footL','kneeL',[-.08,.08,0]],['legR','hips',[.08,.45,0]],['kneeR','legR',[.08,.26,0]],['footR','kneeR',[.08,.08,0]]],
+      parts:[ part('eyes',4,'head',[-1,1].map(sx=>shape(sph(.012,6,4),BLACK,[sx*.043,.905,.152]))),
+        part('nose',4,'head',[ shape(blob(.022,.015,.014,8,5),BLACK,[0,.874,.176]), shape(tube([[-.025,.842,.163],[0,.848,.171],[.025,.842,.163]],[.003,.003],3,6),BLACK) ]),
+        part('muzzle',3,'head',[ shape(blob(.05,.035,.04,10,6),CRM,[0,.855,.144]) ]),
+        part('head',2,'head',furry(melt([0,.88,.02],HEAD,18,12),.005,GRY,90,.03,21)),
+        ...[['L',-1],['R',1]].map(([s,sx])=>part('ear '+s,3,'ear'+s,[ ...furry(blob(.045,.045,.022,10,6).translate(sx*.125,.955,-.01),.003,GRY,14,.02,sx<0?31:37), shape(blob(.028,.03,.01,8,5),TAN,[sx*.123,.952,.01]) ])),
+        part('sweater',0,'chest',[ skin(shape(lathe(TOR,14,8,{sz:TZ}),BLU),(x,y)=>{ const k=ss(.45,.55,y); return ['hips',1-k,'chest',k]; }),
+          ...[.686,.652,.619,.583].map(y=>shape(tube([-.1,-.05,0,.05,.1].map(x=>onT(x,y,.004)),[.004,.004],3,8),STR)), ...[-.04,0,.04].map(x=>shape(tube([onT(x,.56,.004),onT(x,.48,.004)],[.003,.003],3,2),STR)) ]),
+        part('belt',1,'hips',[ shape(lathe([[.165,.432],[.172,.44],[.172,.465],[.168,.472]],18,2,{sz:TZ}),BELT) ]),
+        part('jacket',2,'chest',[ ...furry(surf(30,12,(u,v)=>{ const a=OPEN+u*(TAU-2*OPEN), y=.3+.5*v, r=JK.R(y); return [r*Math.sin(a),y,r*JZ*Math.cos(a)]; }),.009,jcol,330,.04,7,jw),
+          ...furry(surf(26,5,(u,v)=>{ const a=OPEN*.6+u*(TAU-1.2*OPEN), b=v*Math.PI, r=.135+.04*Math.sin(b); return [r*Math.sin(a),.775+.04*Math.cos(b),r*JZ*Math.cos(a)]; }),.01,GRY,80,.04,17,()=>['chest',1]),
+          skin(shape(sph(.018,6,4),[.45,.3,.18],[-.1,.48,.19],[1,1,.4]),()=>['jL',1]),
+          ]),
+        part('sleeve L',2,'armL',sleeve(-1)), part('sleeve R',2,'armR',sleeve(1)),
+        ...[['L',-1],['R',1]].map(([s,sx])=>part('paw '+s,3,'hand'+s,[ shape(blob(.045,.05,.04,10,6),FELT,[sx*.24,.36,.035]) ])),
+        part('trousers',0,'hips',[ ...furry(lathe([[.15,.38],[.165,.42],[.168,.46],[.16,.48]],18,3,{sz:TZ}),.008,BRN,30,.03,23,()=>['hips',1]) ]),
+        part('leg L',1,'legL',leg(-1)), part('leg R',1,'legR',leg(1)),
+        ...[['L',-1],['R',1]].map(([s,sx])=>part('foot '+s,1,'foot'+s,[ shape(blob(.065,.045,.095,12,7),FELT,[sx*.085,.04,.025]) ])) ],
+      springs:{ jL:{f:.25,s:.15,k:30,c:3,lim:.45}, jR:{f:.25,s:.15,k:30,c:3,lim:.45}, jB:{f:.3,s:.15,k:30,c:3,lim:.45}, earL:{f:-.15,s:.12,k:55,c:5,lim:.35}, earR:{f:-.15,s:.12,k:55,c:5,lim:.35}, head:{f:-.03,s:.03,k:80,c:8,lim:.08}, elbowL:{f:-.12,k:40,c:5,lim:.3}, elbowR:{f:-.12,k:40,c:5,lim:.3} },
+      pose:(c,dt)=>{ const B=c.B, m=c.mv, ph=c.st.ph, sw=Math.sin(ph)*m, cp=Math.cos(ph)*m; RIGNPC.walk(c,{arm:.3,leg:.4,bob:.015,rock:.035}); B.head.rotation.y=c.look;
+        if(c.sheet)return; B.kneeL.rotation.x=Math.max(0,cp)*.65; B.kneeR.rotation.x=Math.max(0,-cp)*.65; B.footL.rotation.x=-B.kneeL.rotation.x*.5; B.footR.rotation.x=-B.kneeR.rotation.x*.5;
+        B.elbowL.rotation.x=-.15-Math.max(0,-sw)*.35; B.elbowR.rotation.x=-.15-Math.max(0,sw)*.35; B.jL.rotation.x=Math.min(0,B.legL.rotation.x)*.5; B.jR.rotation.x=Math.min(0,B.legR.rotation.x)*.5;
+        if((c.ear=(c.ear??5+Math.random()*5)-dt)<0&&!m){ c.ear=6+Math.random()*7; c.kick(Math.random()<.5?'earL':'earR','z',(Math.random()<.5?-1:1)*6); }
+        if((c.tilt=(c.tilt??9+Math.random()*6)-dt)<1.6&&!m){ const g=Math.sin(Math.max(0,c.tilt)/1.6*Math.PI); B.head.rotation.z=g*.2; if(c.tilt<0)c.tilt=10+Math.random()*8; } } };
+    TOONS.bear=make(def,{key:'coatbear',name:'THE BEAR IN THE COAT',metres:3.6,radius:.36,speed:.36,stride:6.5,at:104},10); }
   window.TOONSDBG=()=>Object.fromEntries(Object.entries(TOONS).map(([k,N])=>[k,{key:N.key,x:+N.st.x.toFixed(2),z:+N.st.z.toFixed(2),tris:N.tris,vis:N.g.visible}])); }

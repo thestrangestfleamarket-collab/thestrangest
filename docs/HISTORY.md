@@ -3700,3 +3700,13 @@ initial download and load super fast"; then "Go")
   porch open into it, a curved stair of 13 steps up the back wall to the upper floor at 3.95 m (a railed stairwell), the upper room
   open up into the cap. Three parts: `house`, `windows` (emissive), and the door on a hinge node that swings on y.
   15,560 + 1,108 + 312 triangles; 436 KB.
+
+- **THE BEAR IN THE COAT, fuzzy** (owner, 20 Oct 2026, his photo of a felted grey bear in a shaggy coat over a striped blue
+  sweater and brown trousers: "make sure the bear is fuzzy and jacket and legs are same texture"; asked, "One fur for both";
+  `084-npc-toons.js`, `coatbear`): measured off the photo (ears .95 of his height, eyes .90, muzzle .86, chin .81; collar .75-.82,
+  sweater .47-.76 with stripes at .69/.65/.62/.58, belt .44-.47, coat hem .31, paws .36-.40, trousers .08-.44, feet 0-.09).
+  **The fur, in shape, not texture** (no photo textures; CEL bands as ever): every furry surface is pushed out by fine noise along
+  its outward normal (`shag`) and carries short fur strands, each one flat triangle lying outward and down (`hair`); the coat and
+  the trousers share the same fur (`furry`: the same push, strand length and density), each in its own colour with felt flecks; the
+  head and ears the same, finer. The coat open at the front (tan facing, a button), its fronts and back on springs that swing as he
+  walks; ears flick now and then; he tilts his head. `metres` 3.6. Cost: 4,806 triangles (about 1,300 of them fur strands), no lights.

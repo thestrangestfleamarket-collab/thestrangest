@@ -57,8 +57,10 @@ jobs:
       - name: Compare against the budget
         run: set -o pipefail; node tests/budget.cjs out/base.json out/head.json | tee out/budget.log
       - name: The lost picture comes back
+        if: success() || failure()
         run: set -o pipefail; node tests/ctxloss.cjs dist/market.html | tee out/ctxloss.log
       - name: The same picture (street, dungeon, castle, bodega)
+        if: success() || failure()
         run: set -o pipefail; node tests/samepic.cjs ../base/dist/market.html dist/market.html out/samepic | tee out/samepic.log
       - name: Results as annotations (for sessions that can't download logs)
         if: always()

@@ -1,0 +1,493 @@
+{
+ "startCost": {
+  "calls": 402,
+  "tris": 319127,
+  "geoms": 661,
+  "tex": 160,
+  "progs": 147,
+  "sceneTris": 281950,
+  "lamps": 118,
+  "recs": 188,
+  "blockObjs": 32,
+  "blockTris": 384,
+  "alley": {
+   "in": false,
+   "shown": false,
+   "built": 0,
+   "kids": 0,
+   "signs": 0,
+   "lamps": 0,
+   "hi": [
+    0,
+    0,
+    0,
+    0
+   ],
+   "tris": 1930,
+   "esc": [
+    0,
+    0
+   ]
+  },
+  "visObjs": [
+   1044,
+   606186
+  ]
+ },
+ "street99": {
+  "calls": 385,
+  "tris": 265394,
+  "geoms": 693,
+  "tex": 189,
+  "progs": 163,
+  "sceneTris": 199446,
+  "lamps": 118,
+  "recs": 188,
+  "blockObjs": 32,
+  "blockTris": 384,
+  "alley": {
+   "in": false,
+   "shown": false,
+   "built": 0,
+   "kids": 0,
+   "signs": 0,
+   "lamps": 0,
+   "hi": [
+    0,
+    0,
+    0,
+    0
+   ],
+   "tris": 1930,
+   "esc": [
+    0,
+    0
+   ]
+  },
+  "visObjs": [
+   1036,
+   606026
+  ]
+ },
+ "street130": {
+  "in": false,
+  "shown": false,
+  "built": 0,
+  "kids": 0,
+  "signs": 0,
+  "lamps": 0,
+  "hi": [
+   0,
+   0,
+   0,
+   0
+  ],
+  "tris": 1930,
+  "esc": [
+   0,
+   0
+  ]
+ },
+ "turnFade": [
+  "",
+  "0"
+ ],
+ "turnWait": 7,
+ "street130q2": {
+  "calls": 394,
+  "tris": 100612,
+  "geoms": 848,
+  "tex": 232,
+  "progs": 191,
+  "sceneTris": 189466,
+  "lamps": 127,
+  "recs": 197,
+  "blockObjs": 32,
+  "blockTris": 384,
+  "alley": {
+   "in": false,
+   "shown": true,
+   "built": 1,
+   "ms": 5460.4,
+   "step": 854.9,
+   "steps": [
+    646,
+    24,
+    617,
+    602,
+    855,
+    597,
+    601,
+    597
+   ],
+   "kids": 25,
+   "signs": 22,
+   "lamps": 9,
+   "hi": [
+    1,
+    1,
+    1,
+    1
+   ],
+   "tris": 3352,
+   "esc": [
+    1,
+    1
+   ]
+  },
+  "visObjs": [
+   1122,
+   608316
+  ]
+ },
+ "street130back": {
+  "calls": 0,
+  "tris": 0,
+  "geoms": 860,
+  "tex": 242,
+  "progs": 195,
+  "sceneTris": 184640,
+  "lamps": 127,
+  "recs": 197,
+  "blockObjs": 32,
+  "blockTris": 384,
+  "alley": {
+   "in": false,
+   "shown": false,
+   "built": 1,
+   "ms": 5460.4,
+   "step": 854.9,
+   "steps": [
+    646,
+    24,
+    617,
+    602,
+    855,
+    597,
+    601,
+    597
+   ],
+   "kids": 25,
+   "signs": 22,
+   "lamps": 9,
+   "hi": [
+    0,
+    0,
+    0,
+    0
+   ],
+   "tris": 3352,
+   "esc": [
+    0,
+    0
+   ]
+  },
+  "visObjs": [
+   1039,
+   604974
+  ]
+ },
+ "gate99": {
+  "in": false,
+  "shown": true,
+  "built": 1,
+  "ms": 5460.4,
+  "step": 854.9,
+  "steps": [
+   646,
+   24,
+   617,
+   602,
+   855,
+   597,
+   601,
+   597
+  ],
+  "kids": 25,
+  "signs": 22,
+  "lamps": 9,
+  "hi": [
+   1,
+   1,
+   1,
+   1
+  ],
+  "tris": 3352,
+  "esc": [
+   1,
+   1
+  ]
+ },
+ "enterFade": [
+  "",
+  "0"
+ ],
+ "enter": {
+  "in": true,
+  "shown": true,
+  "built": 1,
+  "ms": 5460.4,
+  "step": 854.9,
+  "steps": [
+   646,
+   24,
+   617,
+   602,
+   855,
+   597,
+   601,
+   597
+  ],
+  "kids": 25,
+  "signs": 22,
+  "lamps": 9,
+  "hi": [
+   1,
+   1,
+   1,
+   1
+  ],
+  "tris": 3352,
+  "esc": [
+   1,
+   1
+  ]
+ },
+ "alley130": {
+  "calls": 938,
+  "tris": 229180,
+  "geoms": 893,
+  "tex": 267,
+  "progs": 208,
+  "sceneTris": 188232,
+  "lamps": 127,
+  "recs": 197,
+  "blockObjs": 32,
+  "blockTris": 384,
+  "alley": {
+   "in": true,
+   "shown": true,
+   "built": 1,
+   "ms": 5460.4,
+   "step": 854.9,
+   "steps": [
+    646,
+    24,
+    617,
+    602,
+    855,
+    597,
+    601,
+    597
+   ],
+   "kids": 46,
+   "signs": 22,
+   "lamps": 9,
+   "hi": [
+    1,
+    1,
+    1,
+    1
+   ],
+   "tris": 3904,
+   "esc": [
+    1,
+    1
+   ]
+  },
+  "visObjs": [
+   1119,
+   610328
+  ]
+ },
+ "alley94": {
+  "calls": 431,
+  "tris": 197270,
+  "geoms": 897,
+  "tex": 268,
+  "progs": 210,
+  "sceneTris": 176552,
+  "lamps": 127,
+  "recs": 197,
+  "blockObjs": 32,
+  "blockTris": 384,
+  "alley": {
+   "in": true,
+   "shown": true,
+   "built": 1,
+   "ms": 5460.4,
+   "step": 854.9,
+   "steps": [
+    646,
+    24,
+    617,
+    602,
+    855,
+    597,
+    601,
+    597
+   ],
+   "kids": 46,
+   "signs": 22,
+   "lamps": 9,
+   "hi": [
+    1,
+    1,
+    1,
+    1
+   ],
+   "tris": 3904,
+   "esc": [
+    1,
+    1
+   ]
+  },
+  "visObjs": [
+   1104,
+   609044
+  ]
+ },
+ "left": {
+  "in": false,
+  "shown": false,
+  "built": 1,
+  "ms": 5460.4,
+  "step": 854.9,
+  "steps": [
+   646,
+   24,
+   617,
+   602,
+   855,
+   597,
+   601,
+   597
+  ],
+  "kids": 46,
+  "signs": 22,
+  "lamps": 9,
+  "hi": [
+   0,
+   0,
+   0,
+   0
+  ],
+  "tris": 3904,
+  "esc": [
+   0,
+   0
+  ]
+ },
+ "leftCost": {
+  "calls": 372,
+  "tris": 334085,
+  "geoms": 1004,
+  "tex": 322,
+  "progs": 214,
+  "sceneTris": 178014,
+  "lamps": 127,
+  "recs": 197,
+  "blockObjs": 32,
+  "blockTris": 384,
+  "alley": {
+   "in": false,
+   "shown": false,
+   "built": 1,
+   "ms": 5460.4,
+   "step": 854.9,
+   "steps": [
+    646,
+    24,
+    617,
+    602,
+    855,
+    597,
+    601,
+    597
+   ],
+   "kids": 46,
+   "signs": 22,
+   "lamps": 9,
+   "hi": [
+    0,
+    0,
+    0,
+    0
+   ],
+   "tris": 3904,
+   "esc": [
+    0,
+    0
+   ]
+  },
+  "visObjs": [
+   1034,
+   604956
+  ]
+ },
+ "B0": {
+  "in": false,
+  "shown": false,
+  "built": 0,
+  "kids": 0,
+  "signs": 0,
+  "lamps": 0,
+  "hi": [
+   0,
+   0,
+   0,
+   0
+  ],
+  "tris": 1930,
+  "esc": [
+   0,
+   0
+  ]
+ },
+ "tpFade": [
+  "ENTERING THE ALLEY",
+  "1"
+ ],
+ "tpWait": 0,
+ "tp": {
+  "in": true,
+  "shown": true,
+  "built": 1,
+  "ms": 2099.5,
+  "step": 383,
+  "steps": [
+   25,
+   24,
+   24,
+   381,
+   376,
+   383
+  ],
+  "kids": 46,
+  "signs": 22,
+  "lamps": 9,
+  "hi": [
+   1,
+   1,
+   1,
+   1
+  ],
+  "tris": 3904,
+  "esc": [
+   1,
+   1
+  ]
+ },
+ "tpFade2": [
+  "ENTERING THE ALLEY",
+  "0"
+ ],
+ "errors": [
+  "A Fetch API cannot load file:///home/runner/work/thestrangest/thestrangest/dist/market.html?fresh=1&hour=13&wx=CLEAR. URL scheme \"file\" is not supported.",
+  "A THREE.Sprite: \"Raycaster.camera\" needs to be set in order to raycast against sprites.",
+  "A Fetch API cannot load file:///home/runner/work/thestrangest/thestrangest/dist/market.html?fresh=1&hour=13&wx=CLEAR. URL scheme \"file\" is not supported.",
+  "A Fetch API cannot load file:///home/runner/work/thestrangest/thestrangest/dist/market.html?fresh=1&hour=13&wx=CLEAR. URL scheme \"file\" is not supported.",
+  "B Fetch API cannot load file:///home/runner/work/thestrangest/thestrangest/dist/market.html?fresh=1&hour=13&wx=CLEAR. URL scheme \"file\" is not supported.",
+  "B THREE.Sprite: \"Raycaster.camera\" needs to be set in order to raycast against sprites."
+ ]
+}

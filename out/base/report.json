@@ -1,0 +1,147 @@
+{
+ "startCost": {
+  "calls": 409,
+  "tris": 319271,
+  "geoms": 687,
+  "tex": 162,
+  "progs": 148,
+  "sceneTris": 283614,
+  "lamps": 127,
+  "recs": 197,
+  "blockObjs": 119,
+  "blockTris": 2358,
+  "alley": null,
+  "visObjs": [
+   1128,
+   610210
+  ]
+ },
+ "street99": {
+  "calls": 400,
+  "tris": 264930,
+  "geoms": 719,
+  "tex": 191,
+  "progs": 164,
+  "sceneTris": 198008,
+  "lamps": 127,
+  "recs": 197,
+  "blockObjs": 119,
+  "blockTris": 2358,
+  "alley": null,
+  "visObjs": [
+   1121,
+   610258
+  ]
+ },
+ "turnFade": [
+  "",
+  "0"
+ ],
+ "turnWait": 0,
+ "street130q2": {
+  "calls": 399,
+  "tris": 100192,
+  "geoms": 854,
+  "tex": 222,
+  "progs": 178,
+  "sceneTris": 189418,
+  "lamps": 127,
+  "recs": 197,
+  "blockObjs": 119,
+  "blockTris": 2358,
+  "alley": null,
+  "visObjs": [
+   1123,
+   608902
+  ]
+ },
+ "street130back": {
+  "calls": 273,
+  "tris": 97112,
+  "geoms": 862,
+  "tex": 226,
+  "progs": 181,
+  "sceneTris": 186748,
+  "lamps": 127,
+  "recs": 197,
+  "blockObjs": 119,
+  "blockTris": 2358,
+  "alley": null,
+  "visObjs": [
+   1123,
+   608902
+  ]
+ },
+ "enterFade": [
+  "",
+  "0"
+ ],
+ "alley130": {
+  "calls": 938,
+  "tris": 229288,
+  "geoms": 895,
+  "tex": 251,
+  "progs": 199,
+  "sceneTris": 188232,
+  "lamps": 127,
+  "recs": 197,
+  "blockObjs": 119,
+  "blockTris": 2358,
+  "alley": null,
+  "visObjs": [
+   1120,
+   610998
+  ]
+ },
+ "alley94": {
+  "calls": 433,
+  "tris": 198662,
+  "geoms": 899,
+  "tex": 252,
+  "progs": 201,
+  "sceneTris": 177164,
+  "lamps": 127,
+  "recs": 197,
+  "blockObjs": 119,
+  "blockTris": 2358,
+  "alley": null,
+  "visObjs": [
+   1105,
+   609726
+  ]
+ },
+ "leftCost": {
+  "calls": 384,
+  "tris": 335335,
+  "geoms": 1006,
+  "tex": 306,
+  "progs": 205,
+  "sceneTris": 178764,
+  "lamps": 127,
+  "recs": 197,
+  "blockObjs": 119,
+  "blockTris": 2358,
+  "alley": null,
+  "visObjs": [
+   1117,
+   608736
+  ]
+ },
+ "tpFade": [
+  "",
+  "0"
+ ],
+ "tpWait": 0,
+ "tpFade2": [
+  "",
+  "0"
+ ],
+ "errors": [
+  "A Fetch API cannot load file:///home/runner/work/thestrangest/base/dist/market.html?fresh=1&hour=13&wx=CLEAR. URL scheme \"file\" is not supported.",
+  "A THREE.Sprite: \"Raycaster.camera\" needs to be set in order to raycast against sprites.",
+  "A Fetch API cannot load file:///home/runner/work/thestrangest/base/dist/market.html?fresh=1&hour=13&wx=CLEAR. URL scheme \"file\" is not supported.",
+  "A Fetch API cannot load file:///home/runner/work/thestrangest/base/dist/market.html?fresh=1&hour=13&wx=CLEAR. URL scheme \"file\" is not supported.",
+  "B Fetch API cannot load file:///home/runner/work/thestrangest/base/dist/market.html?fresh=1&hour=13&wx=CLEAR. URL scheme \"file\" is not supported.",
+  "B THREE.Sprite: \"Raycaster.camera\" needs to be set in order to raycast against sprites."
+ ]
+}

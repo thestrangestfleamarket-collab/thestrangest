@@ -48,7 +48,7 @@ KMK.bars=(x0,y0,x1,y1)=>{ PNAME='iron bars'; const X=y0===y1, t=.03, h=96, I=DGP
   for(const [z0,c] of [[0,DGP.rust],[44,I],[h-4,I]])B.push(X?ib(x0,y0-t*1.6,x1,y0+t*1.6,z0,z0+4,c):ib(x0-t*1.6,y0,x0+t*1.6,y1,z0,z0+4,c));
   return prop(B,null,{solids:[X?{x0,y0:y0-.06,x1,y1:y0+.06}:{x0:x0-.06,y0,x1:x0+.06,y1}]}); };
 KMK.rim=(x0,y0,x1,y1,h=26)=>{ PNAME='stairwell rim'; return prop([kb(x0,y0,x1,y1,0,h,4851,{top:()=>sh(C.trim,1.04)},(nx,ny,u,z)=>z>=h-4?(z>=h-1?sh(C.trim,1.08):C.trim):null)],null,{}); };
-KMK.dblock=(x0,y0,x1,y1,z0,z1,arch,walk)=>{ PNAME='dungeon stone'; const H=126, sd=4861+Math.round(x0*3+y0*7);
+KMK.dblock=(x0,y0,x1,y1,z0,z1,arch,walk)=>{ '@later'; PNAME='dungeon stone'; const H=126, sd=4861+Math.round(x0*3+y0*7);
   const b=sided({x0,y0,x1,y1,z0,z1,c:DGP.st[1],foot:1,nb:z0>0?1:0,top:()=>DGP.lo,fs:(nx,ny,X,Y,zr,k)=>{ const u=(nx?Y:X)*24, z=zr+z0;
     if(arch)for(const [ax,zs,r] of arch){ const c=castleArch((X-ax)*24,z,zs,r,KARCH.in); if(c&&ny)return sh(c,k); }
     const c=dgnRidge(u,z,H)||dgnFoot(u,z,sd); return sh(c||dgnStone(u,z,sd),k*(c?1:dgnDamp(u,z,sd,H))); }});

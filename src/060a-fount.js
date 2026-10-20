@@ -29,7 +29,7 @@ const FOUNT={ready:false,swim:false}; window.FOUNT=FOUNT;
     if(typeof STORE!=='undefined'&&STORE.places)STORE.places.push(['THE FOUNTAIN',X(C.x),Z(C.y-R-1.6),'up']);
     return S; };
   FOUNT.wet=(x,z,R=0)=>{ const S=FOUNT.S; if(!S)return false; const P=PARK, px=x/TILE+BOD.OX-(P.ox||0), py=z/TILE+BOD.OY-(P.oy||0); if(px<S.x0-3||py<S.y0-3)return false; return lake(px,py)<R/TILE; };
-  FOUNT.paint=({flat,X,Z,Y,hash,grain,speck})=>{ const S=FOUNT.S, {C,R}=S, sol=(x,y,b,h)=>{ SOL.up.push([X(x)-b*TILE,Z(y)-b*TILE,X(x)+b*TILE,Z(y)+b*TILE]); FIX.up.push([X(x)-b*TILE,Z(y)-b*TILE,0,X(x)+b*TILE,Z(y)+b*TILE,Y(h)]); };
+  FOUNT.paint=({flat,X,Z,Y,hash,grain,speck})=>{ '@park'; const S=FOUNT.S, {C,R}=S, sol=(x,y,b,h)=>{ SOL.up.push([X(x)-b*TILE,Z(y)-b*TILE,X(x)+b*TILE,Z(y)+b*TILE]); FIX.up.push([X(x)-b*TILE,Z(y)-b*TILE,0,X(x)+b*TILE,Z(y)+b*TILE,Y(h)]); };
     const RB=8.6, slab=(u,j,k,x,y)=>{ const n=Math.floor(u); let c=(146+22*grain(x,y,k,1.3))*(.92+.16*hash(n,k,713)); if(j||u-n<.04)c*=.62; return speck([c,c*.96,c*.88],x,y,k+2); };
     const pav=(x,y)=>{ const dx=x-C.x, dy=y-C.y, r=Math.hypot(dx,dy); if(r>R)return null; const a=Math.atan2(dy,dx)+Math.PI, wear=BOD.g.cvNoise(x*1.3,y*1.3,707);
       if(r>R-.4)return slab(a*R/.9,r>R-.045||Math.abs(r-(R-.4))<.04,711,x,y);
@@ -45,7 +45,7 @@ const FOUNT={ready:false,swim:false}; window.FOUNT=FOUNT;
     for(let a=8;a<=172;a+=.5/(R-.14)*180/Math.PI){ const t=a*Math.PI/180; sol(C.x+Math.cos(t)*(R-.14),C.y+Math.sin(t)*(R-.14),.28,30); }
     for(const [x,y,s] of S.rocks)if(s>.56)sol(x,y,s*.42,s*24);
     PARK.later(()=>{ try{ build(); }catch(e){ console.warn('FOUNT: not built',e); } }); };
-  const build=()=>{ const P=PARK, S=FOUNT.S, {C,R,L}=S, X=x=>BOD.XS(x+(P.ox||0)), Z=y=>BOD.ZS(y+(P.oy||0)), Y=BOD.YS, T=TILE, WU=T/.84, V3=THREE.Vector3, grp=MAPG.park||scene, CX=X(C.x), CZ=Z(C.y);
+  const build=()=>{ '@park'; const P=PARK, S=FOUNT.S, {C,R,L}=S, X=x=>BOD.XS(x+(P.ox||0)), Z=y=>BOD.ZS(y+(P.oy||0)), Y=BOD.YS, T=TILE, WU=T/.84, V3=THREE.Vector3, grp=MAPG.park||scene, CX=X(C.x), CZ=Z(C.y);
     const LV=-.22*WU, bedM=FOUNT.bedM, BK=P.brook, bk=(a,b)=>{ const h=BK&&BK.h(a,b); return h==null?1e9:h*WU-.5*ZU; }, bedY=d=>-bedM(d)*WU-.04; FOUNT.LV=LV; FOUNT.bedY=bedY;
     FOUNT.bedAt=(x,z)=>{ if(LVL!=='up')return null; const d=-lake(x/T+BOD.OX-(P.ox||0),z/T+BOD.OY-(P.oy||0)); return d>-1?bedY(d):null; };
     const uT=FOUNT.uT={value:0}, uGl={value:1}, uP=FOUNT.uP={value:new THREE.Vector4()}, uO={value:new THREE.Vector4()}, uOw={value:new THREE.Vector2()}; FOUNT.uGl=uGl;

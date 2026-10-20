@@ -1,3 +1,4 @@
+// THE WALKER'S BODY: pieces built from shapes (meshOf0: distance fields, tetrahedra, simplify), warmed before first use.
 const W3={group:new THREE.Group(), meshes:[], idMeshes:[], L:new THREE.Vector3(), tint:new THREE.Color(1,1,1), tris:0, lv:{value:2}, look:{value:+(new URLSearchParams(location.search).get('look')||0)}, G:{value:new THREE.Matrix3()}, LP:{value:[new THREE.Vector3(),new THREE.Vector3()]}, LC:{value:[new THREE.Vector3(),new THREE.Vector3()]}, CamW:{value:new THREE.Vector3()}, LVP:{value:new THREE.Matrix4()},
   sm:new THREE.WebGLRenderTarget(512,512), smCam:new THREE.OrthographicCamera(-2.1,2.1,2.1,-2.1,0.1,12), Lw:new THREE.Vector3()};
 W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THREE.FloatType;
@@ -45,7 +46,6 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
   { const H=rest.J.head, {rbox,ell,box}=R, Vv=R.V, ad=R.add, HB=[H.x-11,H.x+11,H.y-14,H.y+11,H.z-11,H.z+11];
     const head=PCS.find(P=>P.n==='head'), hair=PCS.find(P=>P.n==='hair'), hd=head.d, hr=hair.d;
     for(const P of PCS)if(/^shoe[LR]$/.test(P.n))P.paint=p=>p.y<1.15?'sole':null;
-    const side=p=>Math.abs(p.x-H.x), front=p=>p.z>H.z+3.6;
     head.paint=()=>null;
     const V=(n,on,m,d,paint)=>({n,on,m,d,paint,bb:HB,step:.5});
     const CUT=H.y-5.5, sq=x=>x*x, lock=(p,k=1.7)=>.28*sq(Math.sin(p.x*k+.5*Math.sin(p.y*.6))), lockY=(p,k=2.4)=>.22*sq(Math.sin(p.y*k+.4*Math.sin(p.x*.9)));
@@ -152,7 +152,7 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
   { const place0=W3.place; W3.place=(...a)=>{ place0(...a); W3.uFl.value=typeof CLOCK!=='undefined'&&CLOCK.dark()?.26:.5; W3.group.updateMatrixWorld(true); const now=performance.now(), hdt=Math.min(.05,(now-(W3.hairT||now))/1000); W3.hairT=now;
       PCS.forEach((P,i)=>{ if(P.swing&&!W3.HIDE[i])swing(P,i,hdt); }); }; }
   const SW={pv:new THREE.Vector3(),ax:new THREE.Vector3(),p:new THREE.Vector3(),M3:new THREE.Matrix4(),pW:new THREE.Vector3(),rest:new THREE.Vector3(),m:new THREE.Vector3(),v:new THREE.Vector3(),d:new THREE.Vector3(),q:new THREE.Quaternion(),M1:new THREE.Matrix4(),M2:new THREE.Matrix4(),inv:new THREE.Matrix3(),G:new THREE.Vector3()};
-  function swing(P,i,dt){ const S=P.swing, st=P.sw||(P.sw={m:null,pm:new THREE.Vector3()}), PM=W3.PM.value[i], GW=W3.group.matrixWorld;
+  function swing(P,i,dt){ '@later'; const S=P.swing, st=P.sw||(P.sw={m:null,pm:new THREE.Vector3()}), PM=W3.PM.value[i], GW=W3.group.matrixWorld;
     SW.inv.setFromMatrix4(GW).invert(); const sy=W3.group.scale.y, L=S.len*sy;
     SW.pW.set(S.pivot[0],S.pivot[1],S.pivot[2]).applyMatrix4(PM).applyMatrix4(GW);
     SW.rest.set(S.rest[0],S.rest[1],S.rest[2]).transformDirection(PM).transformDirection(GW);
@@ -178,7 +178,7 @@ OUTL.pass={uniforms:{tDiffuse:{value:null},tId:{value:OUTL.rt.texture},px:{value
     if(q.w-c.w>(abs(q.y-c.y)<0.5?t1:t2))return true; float a=legs[int(c.x+0.5)], b=legs[int(q.x+0.5)]; return a>0.&&b>0.&&a!=b&&q.w>=c.w; }
   void main(){ vec4 c=texture2D(tId,vUv); vec4 base=texture2D(tDiffuse,vUv); if(c.x<0.){ gl_FragColor=base; return; }
     bool e=edgeTo(c,vec2(1,0))||edgeTo(c,vec2(-1,0))||edgeTo(c,vec2(0,1))||edgeTo(c,vec2(0,-1)); gl_FragColor=e?vec4(mix(cols[int(c.y+0.5)]*tint,oc,ocK),1.):base; }`};
-OUTL.render=(renderer,scene,cam)=>{ const w=renderer.domElement.width, h=renderer.domElement.height; if(OUTL.rt.width!==w||OUTL.rt.height!==h)OUTL.rt.setSize(w,h); OUTL.pass.uniforms.px.value.set(1/w,1/h);
+OUTL.render=(renderer,scene,cam)=>{ '@later'; const w=renderer.domElement.width, h=renderer.domElement.height; if(OUTL.rt.width!==w||OUTL.rt.height!==h)OUTL.rt.setSize(w,h); OUTL.pass.uniforms.px.value.set(1/w,1/h);
   const ac=renderer.autoClear; renderer.setRenderTarget(OUTL.rt); renderer.state.buffers.color.setClear(-2,0,0,1e9); renderer.clear(true,true,false);
   const cut=(OUTL.hidden?OUTL.hidden():[]).filter(Boolean); for(const o of cut)o.visible=false; W3.group.visible=false; scene.overrideMaterial=OUTL.occ; const bg=scene.background; scene.background=null; renderer.autoClear=false; renderer.render(scene,cam); scene.overrideMaterial=null; scene.background=bg; W3.group.visible=true; for(const o of cut)o.visible=true;
   const m0=W3.mesh.material; W3.mesh.material=W3.idMat; renderer.render(W3.group,cam); W3.mesh.material=m0;

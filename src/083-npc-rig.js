@@ -1,3 +1,4 @@
+// CHARACTERS ON BONES: RIGNPC.make (bones, springs, smooth skin weights, see-through parts) and RIGNPC.walk.
 const RIGNPC={};
 { const V1=new THREE.Vector3(), M1=new THREE.Matrix4();
   RIGNPC.make=(def,o)=>{ const bones=[], by={}, GL=def.parts.filter(p=>p.glass); def=Object.assign({},def,{parts:def.parts.filter(p=>!p.glass)});
@@ -40,7 +41,7 @@ const RIGNPC={};
       const gm=new THREE.SkinnedMesh(g2,new THREE.MeshBasicMaterial({vertexColors:true,transparent:true,depthWrite:false,side:THREE.DoubleSide})); gm.frustumCulled=false; N.me.parent.add(gm); gm.bind(skeleton,N.me.bindMatrix); N.glass=gm; N.tris+=P2.length/9; }
     const p0=N.push; let bumped=false; N.push=p=>{ const d=Math.hypot(p.x-N.st.x,p.z-N.st.z); if(d<N.st.R+.3){ if(!bumped){ bumped=true; for(const q of SP){ q.vx+=(Math.random()-.5)*6; q.vz+=(Math.random()-.5)*6; } } } else if(d>N.st.R+.45)bumped=false; p0(p); };
     const base=Float32Array.from(P), baseC=Float32Array.from(C);
-    N.reshape=(name,{scale=[1,1,1],move=[0,0,0]}={})=>{ const r=ranges[name]; if(!r)return; const A=geo.attributes.position.array; let cx=0, cy=0, cz=0;
+    N.reshape=(name,{scale=[1,1,1],move=[0,0,0]}={})=>{ '@later'; const r=ranges[name]; if(!r)return; const A=geo.attributes.position.array; let cx=0, cy=0, cz=0;
       for(let i=r.start;i<r.start+r.count;i++){ cx+=base[i*3]; cy+=base[i*3+1]; cz+=base[i*3+2]; } cx/=r.count; cy/=r.count; cz/=r.count;
       for(let i=r.start;i<r.start+r.count;i++){ A[i*3]=cx+(base[i*3]-cx)*scale[0]+move[0]; A[i*3+1]=cy+(base[i*3+1]-cy)*scale[1]+move[1]; A[i*3+2]=cz+(base[i*3+2]-cz)*scale[2]+move[2]; }
       geo.attributes.position.needsUpdate=true; N.renorm(); };

@@ -3,11 +3,11 @@
   FEEL.A=A;
   const ref=()=>{ const c=FEEL.cfg; return [c.walkRef,c.jogRef,c.sprintRef]; };
   const gait=s=>{ const c=FEEL.cfg, a=Math.max(c.run,c.jogRef); if(s<=c.walk)return [1,0,0]; if(s<c.run){ const k=(s-c.walk)/(c.run-c.walk); return [1-k,k,0]; } if(s<a||c.sprintRef<=a)return [0,1,0]; if(s<c.sprintRef){ const k=(s-a)/(c.sprintRef-a); return [0,1-k,k]; } return [0,0,1]; };
-  const init=C=>{ C.mx.stopAllAction(); for(const n of ALL){ const cl=C.CL[n]; if(!cl)continue; const a=C.mx.clipAction(cl); a.enabled=true;
+  const init=C=>{ '@later'; C.mx.stopAllAction(); for(const n of ALL){ const cl=C.CL[n]; if(!cl)continue; const a=C.mx.clipAction(cl); a.enabled=true;
       if(/Start|Land/.test(n)){ a.setLoop(THREE.LoopOnce,1); a.clampWhenFinished=true; } else a.setLoop(THREE.LoopRepeat,Infinity);
       a.setEffectiveWeight(0); a.play(); A.act[n]=a; A.w[n]=n==='Idle_Loop'?1:0; A.tw[n]=A.w[n]; } A.C=C; A.base={sy:C.g.scale.y}; C.g.rotation.order='YXZ'; };
   FEEL.release=()=>{ if(!A.C)return; A.C.mx.stopAllAction(); A.C.g.rotation.set(0,heading,0); A.C.g.scale.y=A.base.sy; A.C=null; };
-  FEEL.anim=(dt,C)=>{ if(A.C!==C)init(C); const c=FEEL.cfg, S=FEEL.S, ev=FEEL.ev, hs=FEEL.hs, k=c.animK;
+  FEEL.anim=(dt,C)=>{ '@later'; if(A.C!==C)init(C); const c=FEEL.cfg, S=FEEL.S, ev=FEEL.ev, hs=FEEL.hs, k=c.animK;
     if(!A.moving&&hs>.3)A.moving=true; else if(A.moving&&hs<.12)A.moving=false;
     const air=!S.gnd&&(S.jumped||S.air>Math.max(.12,c.coyote));
     for(const n in A.tw)A.tw[n]=0;

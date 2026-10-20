@@ -1,3 +1,4 @@
+// NPCs: makeNPC builds a body with self-shading and its cel material; the NPC list, culling and the street lane.
 const NPCS=[], NOYOU={x:1e6,y:0,z:1e6};
 const DENIM_GLSL=`vec3 denim(vec3 c,vec3 p){ float u=(p.x+p.z)*0.7071+p.y*0.5, v=(p.x-p.z)*0.7071-p.y*0.5;
   float rib=step(0.5,fract(u*170.)), weft=step(0.55,fract(v*240.)), slub=step(0.93,fract(sin(dot(floor(vec2(u,v)*300.),vec2(12.9898,78.233)))*43758.5));
@@ -69,7 +70,7 @@ function makeNPC(D,o){ const N={key:o.key,name:o.name,names:o.names,lv:o.lv||'do
     if(SH===N.key){ N.sheet=true; st.face={x:st.x+1,z:st.z+1}; st.h=Math.PI/4; } } } }
   const free=N.free=o.free||((x,z,R)=>!CLIP.hit(SOL[N.lv]||SOL.up,x,z,R)); N.ground=ground;
   N.pick=()=>pick();
-  const pick=()=>{ if(o.pick){ o.pick(st); return; } if(o.roam){ if(!ROAM.pick(st,free)){ st.to=null; st.wait=1; } return; } for(let k=0;k<12;k++){
+  const pick=()=>{ '@later'; if(o.pick){ o.pick(st); return; } if(o.roam){ if(!ROAM.pick(st,free)){ st.to=null; st.wait=1; } return; } for(let k=0;k<12;k++){
     const r=(Math.random()<.5?-1:1)*(2+Math.random()*7)*TILE; st.to=longX?{x:Math.max(LX0,Math.min(LX1,st.x+r)),z:LZ0+Math.random()*(LZ1-LZ0)}:{x:LX0+Math.random()*(LX1-LX0),z:Math.max(LZ0,Math.min(LZ1,st.z+r))}; if(free(st.to.x,st.to.z,st.R))return; } st.to=null; st.wait=1; };
   const block=(x,z,R)=>Math.hypot(x-st.x,z-st.z)<st.R+R;
   N.tick=(dt,you)=>{ if(N.sheet&&!N.sheetOn){ N.sheetOn=true; UI.setFree(true); UI.camT.set(st.x,g.position.y+tall*s*ZU*24/TILE*.5,st.z); ppu=ppuTo=PPU*4; window.SHEETTURN=d=>{ yaw=yawTo=d*Math.PI/180; };
@@ -111,7 +112,7 @@ const DUN=()=>{ const D=MODS.dungeon; if(!D)return null; const B=D.B, X=BOD.XS, 
     free=(x,z,R)=>x>lane.x0&&x<lane.x1&&z>lane.z0&&z<lane.z1&&!SOL.down.some(b=>x>b[0]-R&&x<b[2]+R&&z>b[1]-R&&z<b[3]+R);
   let p={x:(lane.x0+lane.x1)/2,z:(lane.z0+lane.z1)/2}; for(let k=0;k<60;k++){ const q={x:lane.x0+Math.random()*(lane.x1-lane.x0),z:lane.z0+Math.random()*(lane.z1-lane.z0)}; if(free(q.x,q.z,.4*TILE)){ p=q; break; } }
   return {lv:'down',group:MAPG.dungeon?'dungeon':'down',lane,free,ground:(x,z)=>D.ground(x,z),roam:false,x:p.x,z:p.z,dun:true}; };
-ROAM.pick=(st,free)=>{ const L=ROAM.L; for(let k=0;k<12;k++){ let to;
+ROAM.pick=(st,free)=>{ '@later'; const L=ROAM.L; for(let k=0;k<12;k++){ let to;
     if(Math.random()<.25)to={x:L.x0+Math.random()*(L.x1-L.x0),z:L.z0+Math.random()*(L.z1-L.z0)};
     else{ const a=Math.random()*Math.PI*2, r=(2+Math.random()*7)*TILE; to={x:Math.max(L.x0,Math.min(L.x1,st.x+Math.sin(a)*r)),z:Math.max(L.z0,Math.min(L.z1,st.z+Math.cos(a)*r))}; }
     if(!free(to.x,to.z,st.R))continue;

@@ -1,3 +1,4 @@
+// THE BODEGA'S LAYOUT: coordinates (X, Z, Y), the street and ghost street, roads and lanes and their painters; opens grab('bodega').
 
 BOD.KC={KMK,KPP,DGN,DGP,LAMPS,CATALOG,dungeonWall,dungeonFloorCol,castleArch,KARCH};
 }
@@ -5,7 +6,7 @@ BOD.KC={KMK,KPP,DGN,DGP,LAMPS,CATALOG,dungeonWall,dungeonFloorCol,castleArch,KAR
 {
   const B0=LBLD[0], B00={...B0}, W=LSEED.walk, CURB=LSEED.street, FAR=LSEED.grass, RD=-4;
   const OX=(B00.x0+B00.x1)/2, OY=B00.y1, K=BLDK, X=x=>(x-OX)*TILE*K, Z=y=>(y-OY)*TILE*K, Y=z=>z*ZU*K, XS=x=>(x-OX)*TILE, ZS=y=>(y-OY)*TILE, YS=z=>z*ZU; Object.assign(BOD,{X,Z,Y,XS,ZS,YS,OX,OY,B0});
-  const MAP={x0:RING.wx0,x1:172+MAINX.e+WID,y0:B00.y0,y1:FAR+12}, POOLX=82, AV=AVE, RG=RING, BK=RING.bank;
+  const MAP={x0:RING.wx0,x1:172+MAINX.e+WID,y0:B00.y0,y1:FAR+12}, AV=AVE, RG=RING, BK=RING.bank;
   { const o=LAY.o('bodega'); B0.x0+=o.x/K; B0.x1+=o.x/K; B0.y0+=o.y/K; B0.y1+=o.y/K; }
   const BODOFF=B0.y0+3.75; BOD.BODOFF=BODOFF;
   const holed=f=>(x,y)=>[MAPSTAIR,...RING.stairs].some(S=>x>=S.x0&&x<S.x1&&y>=S.y0&&y<S.y1)?null:f(x,y);

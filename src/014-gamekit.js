@@ -1,12 +1,13 @@
+// THE GAME KIT: the old game's painters and prop makers that every place shares (hash, sh, prop, LAMPS, CATALOG, PNAME); needs nothing.
 const hash=(a,b,c=0)=>{ let h=(a*374761393+b*668265263+c*2147483647)|0; h=(h^(h>>>13))*1274126177|0; return ((h^(h>>>16))>>>0)/4294967296; };
-const sh=(c,f)=>{ const o=[Math.min(255,c[0]*f),Math.min(255,c[1]*f),Math.min(255,c[2]*f)]; if(c.e)o.e=c.e; return o; }, mt=(k,c)=>c, CURMAT=0, TEXUV=[0,0], rlf=(c,t)=>c;
+const sh=(c,f)=>{ const o=[Math.min(255,c[0]*f),Math.min(255,c[1]*f),Math.min(255,c[2]*f)]; if(c.e)o.e=c.e; return o; }, mt=(k,c)=>c, TEXUV=[0,0], rlf=(c,t)=>c;
 function cvNoise(u,v,k){ const i=Math.floor(u), j=Math.floor(v), fu=u-i, fv=v-j, su=fu*fu*(3-2*fu), sv=fv*fv*(3-2*fv), a=hash(i,j,k), b=hash(i+1,j,k), c=hash(i,j+1,k), d=hash(i+1,j+1,k); return (a+(b-a)*su)*(1-sv)+(c+(d-c)*su)*sv; }
 let ROT=0; const LIFE={mode:0}; const STORY=130, T=.1, FP=24, chunkAtL=()=>null, LAMPS=[], CATALOG={}, CAT_INFO={}, CAT_DEPTS=[], WORLD={}, KIND_OF={};
 const PROPS=[]; let PNAME='object';
 function prop(boxes,extra,o){ const fp=boxes.filter(b=>b.z0===0||b.foot);
   const p={boxes,extra,x0:Math.min(...fp.map(b=>b.x0)),y0:Math.min(...fp.map(b=>b.y0)),x1:Math.max(...fp.map(b=>b.x1)),y1:Math.max(...fp.map(b=>b.y1)),lv:0,id:PROPS.length,name:PNAME,...o};
   p.chunk=chunkAtL((p.x0+p.x1)/2,(p.y0+p.y1)/2,p.lv); PROPS.push(p); return p; }
-const sided=b=>b, cutOut=f=>null; function zShift(b,dz){ const nb={...b,z0:b.z0+dz,z1:b.z1+dz}; return b.fs?sided(nb):nb; }
+const sided=b=>b; function zShift(b,dz){ const nb={...b,z0:b.z0+dz,z1:b.z1+dz}; return b.fs?sided(nb):nb; }
 const SQB={lv:-1,hall:{x0:78.5,x1:93.5,y0:-85.2,y1:-77},gym:{x0:78.5,x1:101.24,y0:-99.74,y1:-85.2},lau:{x0:93.5,x1:99.2,y0:-85.2,y1:-77,h:88,lv:-1},H:126,pool:{x0:78.5,x1:101.24,y0:-99.5,y1:-85.5,lv:-2}};
 const LSEED={x0:66,split:76,a0:78.5,x1:93.5,c0:96,deep:-104.5,back:-89.5,walk:-77,street:-70,grass:-64+14,end:-56+14,
   b2:106,sr:[108.5,119.1],sx0:40,sx1:118,px0:40,px1:118,pend:-28,gym:[70,80],gy1:-46,pool:[80,97],pyp:-44,theatre:[46,66],ty1:-36.5,py0:-58,py1:-38,paths:[[74,77],[88,90],[54,57],[105,107]],
@@ -48,13 +49,12 @@ function roadCol(x,y,w){ const c=w?[86,87,90]:[62,64,68], n=grain(x,y,37,1.3), S
   if(!w&&y>=S.street&&y<S.grass&&Math.abs(Math.abs(y-yc)-1.6)<.45&&cvNoise(x/1.1,y/1.1,147)>.72)return mt('road',speck(sh(c,.82),x,y,149));
   return mt('road',speck(n<.34?sh(c,.92):n>.68?sh(c,w?1.08:1.06):c,x,y,41)); }
 const DTBRICK=[118,50,44];
-const FOOT=(x,y,w,d)=>({x0:x,y0:y,x1:x+w,y1:y+d,z0:0,z1:.01,foot:1,top:()=>null,fi:()=>null,fj:()=>null});
 
 const GRASSP=[[62,100,50],[76,116,58],[90,132,66],[104,146,74]], GRASSL=[128,168,88], GRASSS=[50,84,42];
 const GRASSY=[[96,104,54],[110,116,60],[124,128,68],[136,138,76]], GEARTH=[[104,88,64],[118,100,74]], GTROD=.32;
 const LAWN=[[46,86,38],[56,102,44],[66,116,50],[78,130,56]];
 function lawnCol(x,y){ return LAWN[cvNoise(x/9,y/9,301)>.58?2:1]; }
-function grassCol(x,y){ const n=(cvNoise(x/5,y/5,29)*3+cvNoise(x/1.7,y/1.7,31)*2+cvNoise(x*2.3,y*2.3,33))/6+(hash(Math.floor(x*48),Math.floor(y*48),35)-.5)*.07, dz=hash(Math.floor(x*48),Math.floor(y*48),53);
+function grassCol(x,y){ '@later'; const n=(cvNoise(x/5,y/5,29)*3+cvNoise(x/1.7,y/1.7,31)*2+cvNoise(x*2.3,y*2.3,33))/6+(hash(Math.floor(x*48),Math.floor(y*48),35)-.5)*.07, dz=hash(Math.floor(x*48),Math.floor(y*48),53);
   let e=1; for(const [a,b] of [[1,0],[-1,0],[0,1],[0,-1]])for(const d of [.08,.16,.24,GTROD]){ const k=landK(x+a*d,y+b*d); if(k&&k!==1){ e=Math.min(e,d/GTROD); break; } }
   if(e<1&&n*.6+dz*.4>e*1.1+.25)return mt('grass',GEARTH[dz<.5?0:1]);
   const dry=cvNoise(x/13,y/13,51)+(dz-.5)*.05>.63, P=dry?GRASSY:GRASSP; let c=P[n<.4?0:n<.49?1:n<.58?2:3];
@@ -78,6 +78,6 @@ BRICKS.face=(i,j,k,H=99,cap=false)=>{ const row=Math.floor(j/6), fy=j-row*6, off
   if(Math.abs(cvNoise(i/7,j/7,k+40)-.5)<.025&&cvNoise(i/30,j/30,k+41)>.66)c*=.72;
   return [c*tn[0],c*tn[1],c*tn[2]]; };
 BRICKS.one=sd=>{ const n=hash(sd,7,3), tn=BRICKS.TINT[Math.floor(hash(sd,9,5)*BRICKS.TINT.length)]; return (i,j,kk,w,h)=>{ let c=(106+24*n)*(1+.05*(grain(i/24,j/24,sd,1.5)-.5)); if(j===0)c*=1.1; else if(j>=h-1)c*=.86; if(i===0||i>=w-1)c*=.8; return [c*tn[0],c*tn[1],c*tn[2]]; }; };
-BRICKS.quoins=(x0,y0,x1,y1,z0,z1,k,box)=>{ for(let r=0;r*6<z1-z0;r++){ const zt=z1-r*6, zb=Math.max(z0,zt-5); if(zt-zb<2)continue;
+BRICKS.quoins=(x0,y0,x1,y1,z0,z1,k,box)=>{ '@later'; for(let r=0;r*6<z1-z0;r++){ const zt=z1-r*6, zb=Math.max(z0,zt-5); if(zt-zb<2)continue;
   for(const [cx,sx] of [[x0,-1],[x1,1]])for(const [cy,sy] of [[y0,-1],[y1,1]]){ const sd=k*977+r*31+(sx+1)*5+(sy+1), lx=(r+(sx>0)+(sy>0))&1, L=.38+.08*hash(sd,1,1), S=.2+.06*hash(sd,2,1), pr=.012+.04*hash(sd,3,1), ex=lx?L:S, ey=lx?S:L;
     box(sx<0?cx-pr:cx-ex,sy<0?cy-pr:cy-ey,sx<0?cx+ex:cx+pr,sy<0?cy+ey:cy+pr,zb,zt,BRICKS.one(sd)); } } };

@@ -3572,7 +3572,7 @@ initial download and load super fast"; then "Go")
   plastic hood: measured off the photo (eye height .73, mouth .65, head width .49, coat width .59 of his height); big glossy eyes in
   cream rims, a pink pout, the coat with collar, lapels, pocket flaps and the seam, flipper arms that bend at a second bone and lag,
   stubby feet, and a fish tail, just the forked fin out the back of the coat ("just the flipper part"), swaying as he waddles. Built at twice his size (`metres` 2.2).
-  Cost: 9,476 triangles, one more draw and program (the hood), no lights. Pictures: `node tools/charview.cjs` (the character alone on
+  Cost: 11,236 triangles with the hood (9,476 without), one more draw and program (the hood), no lights. Pictures: `node tools/charview.cjs` (the character alone on
   black, front, side, back; not the game).
 
 - **THE MANATEE rebuilt in smooth curves, its robe real cloth** (owner, 20 Oct 2026: "i want things like robes flowing and arms with
@@ -3595,3 +3595,46 @@ initial download and load super fast"; then "Go")
   boots with gold laces. Arms on shoulder, elbow and hand; legs on hip, knee and foot (knees bend in the swing). Standing, now and
   then he reaches up to set his helmet straight. Built at twice his size (`metres` 2.2). Cost: 14,324 triangles (over the 12k he
   picked for each: the helmet's horns and studs), no lights, no new programs.
+## 20 Oct 2026: comments allowed, the README set right
+
+- **The no-comments rule relaxed** (owner, 20 Oct 2026, on an audit from another chat that found the rule "saves exactly zero bytes"
+  because the minifier strips comments (`legalComments: 'none'`): "lets fix 2 and 7"): every file in `src/` starts with one comment line
+  saying what it is (22 written now, the rest as files are touched); otherwise comments stay rare and short. HTML and CSS stay bare.
+- **README** (the audit's point 7): it pointed at the dropped claude.ai copy and a `dist/avatar.html` the build no longer makes; now the
+  website, the real outputs and the map. `island/README.md` describes a separate standalone page and is left alone.
+## 20 Oct 2026: the game code split: the start fetches only the code it runs
+
+(owner, 20 Oct 2026, told "the download at the start is still about 1.5 MB, and most of that is the game code in one piece (2.25 MB,
+845 KB gzipped). Splitting it up is a bigger change to how the page is built": "Yes fix game code")
+- **How** (`tools/chunks.cjs`, `tools/chunkscope.cjs`, `build.py`, `tools/bundle.cjs`): a function whose body starts with `'@name';` is cut
+  out of the page at build time into chunk `name`. On the website each chunk is its own file, `x-name.<hash>.js` (cached for good like the
+  rest of `/g/`), fetched by `await LOAD('name')`; in `dist/market.html` the chunks stay in the page and `LOAD` is instant, so every test
+  of the single page runs the same cut code. The page keeps a small stand-in for each cut function: on its first call it makes the real
+  one with every name around it as before (names that never change are handed in; the ones that do are read and written live), so the
+  source reads exactly as it did. A cut function that runs before its chunk came still works (the chunk is fetched there and then and the
+  page waits) and the console says `chunk name was not loaded before use (#n)`; `dist/chunks.txt` lists every cut function by number.
+  Without `acorn` (a local build with no `npm ci`) every chunk simply stays in the page.
+- **Places, fetched on the way in, behind their black fades**: `dungeon` (the levels' builder, the slimes and skeleton fighters, the
+  skeletons), `park` (the fountain and lake, the brook, the pond, the cave, the rocks and lamps), `dojo` (the hall and the ninja), `fire`
+  (your fire escape), `club`, `arcade`, `vcr` (VCR repair), `bath` (the bath house's inside). The ways in wait for them: the dungeon's
+  door, `PARK.load`, `STORE.offGo`/`enter`/`ensure`/`offAt`, the rooms' swap, the menu's places (`UI.goPlace` now waits) and a saved
+  spot (the restore waits for the later chunk first). The dungeon's slimes and fighters are made the first time you go down (the slime
+  bottles' names and prices are still known from the start).
+- **Later**: every other function the start never runs, ~650 of them (~540 KB of source: the store's rooms and their makers, menus and
+  panels, editors, mail, the feel lab...), fetched as soon as the start is done; the store's background rooms wait for it. They are
+  marked by `tools/later.cjs` from what the start runs in Chromium (a new player's start with a few seconds of keys, mouse, the views and
+  the menu, a walk to Market St, then a returning player's start; anything that calls `LOAD` stays in the start file). New code stays in
+  the start file until the tool is run again.
+- **Dead code out**: 40 functions and constants nothing used (the old street-scene helpers `box`/`cyl`/`plane`/`worldUV`, `bush`,
+  `laundryTile`, the dojo hall's `djWallCol`/`djOpen`/`djIvy`, the guitar's and piano's unused chains, the octopus's `octPic`, the stalls'
+  `table`/`basket`, the bodega's third-floor lot...), and five 256-pixel textures (grass, asphalt, concrete, earth, wood) painted at every start and never used.
+- **Measured** (CI, the website under `wrangler dev`, gzipped, everything fetched before the first frame): the start's download about
+  1,513 KB to 1,307 KB; the game code 840 KB to 607 KB (2.23 MB to 1.66 MB unzipped); three.js, the rig and the data as before. Right
+  after the first frame the later chunk, 190 KB; going in: park 18 KB, dungeon 12 KB (plus its skeletons' data as before), arcade 12 KB,
+  club 6 KB, VCR repair 6 KB, fire escape 4 KB, dojo 3 KB, bath house 2 KB. First frame about the same here (four runs: 10.5/9.6,
+  23.0/24.2, 18.9/20.3, 12.1/11.6 s against main; under software graphics the building dominates and the files come from the same
+  machine): the gain is the download on a real connection. The budget check: the same triangles, draws and lights at the start and in
+  the park; its frame medians swing both ways between runs (3-4 frames sampled in the park), the systems' own time a frame no higher.
+- **Checked**: `tests/places.cjs` (now in the site workflow) logs in on the real worker, checks the start fetches no chunk, enters every
+  place (each fetches its file, builds, no page errors, no late fetch), then reloads with a saved spot inside the dungeon; all pass, the
+  site check too.

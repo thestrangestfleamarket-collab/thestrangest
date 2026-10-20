@@ -1,3 +1,4 @@
+// THE STATION'S END AND THE BODEGA'S START: closes grab('down') (the platform under the street) and sets up BOD, the bodega's bag of makers.
   M.exit=()=>{ const S=SM, X=x=>(x-72)*TILE, Z=y=>(y+77)*TILE, n=S.steps, rise=S.depth/n, run=(S.y1-S.y0)/n, c3=new THREE.Color(), TR=[[],[]], WL=[[],[]];
     const q4=(B,a,b,c,d,col)=>{ c3.setRGB(col[0]/255,col[1]/255,col[2]/255,THREE.SRGBColorSpace); for(const v of [a,b,c,a,c,d]){ B[0].push(...v); B[1].push(c3.r,c3.g,c3.b); } };
     const bx=(x0,y0,z0,x1,y1,z1,col)=>{ const [a,b,c,d]=[X(x0),X(x1),Z(y0),Z(y1)], [e,f]=[z0*ZU,z1*ZU], dk=col.map(v=>v*.8), lt=col.map(v=>Math.min(255,v*1.08));
@@ -24,7 +25,7 @@
     document.body.appendChild(el);
     const qy=QS.get('subyaw'); M.YAW=-Math.PI/4+(qy!=null?+qy:0)*Math.PI/2;
     let busy=false, lidT=0; const wait=ms=>new Promise(r=>setTimeout(r,ms)), frames=k=>new Promise(r=>{ const f=()=>--k<=0?r():requestAnimationFrame(f); requestAnimationFrame(f); });
-    const go=async dir=>{ busy=true; el.textContent=dir==='in'?'ENTERING SUBWAY':'LEAVING SUBWAY'; el.style.pointerEvents='auto'; el.style.opacity='1'; await wait(340);
+    const go=async dir=>{ '@later'; busy=true; el.textContent=dir==='in'?'ENTERING SUBWAY':'LEAVING SUBWAY'; el.style.pointerEvents='auto'; el.style.opacity='1'; await wait(340);
       const p=dir==='in'?M.foot:M.street; UI.goTo(p.x,p.z,dir==='in'?'down':'up'); keys.clear();
       if(UI.view==='iso'||UI.view==='map'){ if(dir==='in'){ yaw=yawTo=M.YAW; } else if(UI.isoTo){ UI.isoTo(); yaw=yawTo; } }
       await frames(3); await wait(260); el.style.opacity='0'; el.style.pointerEvents='none'; await wait(360); busy=false; };

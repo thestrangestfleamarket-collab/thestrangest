@@ -7,7 +7,7 @@ window.GRID=GRID;
   GRID.serve=(key,o)=>{ const s=Object.assign({key,box:null,grp:null,at:null,node:null,pw:false,cut:false,lamps:[],faces:[]},o); GRID.servs.push(s); return s; };
   const near=(x,z,kinds)=>{ let b=null, bd=1e9; for(const n of GRID.nodes){ if(kinds&&!kinds.includes(n.kind))continue; const d=(n.x-x)**2+(n.z-z)**2; if(d<bd){ bd=d; b=n; } } return b; };
   const inBox=(b,p,m=0)=>p.x>b.x0-m&&p.x<b.x1+m&&p.z>b.z0-m&&p.z<b.z1+m&&(b.y0==null||(p.y>b.y0-m&&p.y<b.y1+m));
-  GRID.derive=()=>{ const D=typeof DRESS!=='undefined'?DRESS:{}, poles=D.poles||[], G=(x,z)=>groundY(x,z);
+  GRID.derive=()=>{ '@later'; const D=typeof DRESS!=='undefined'?DRESS:{}, poles=D.poles||[], G=(x,z)=>groundY(x,z);
     const o=LAY.o('power'), sw=poles.length?poles.find(p=>p.d>0):null, far=poles.length?poles.find(p=>p.d<0):null;
     const PH={w:6*TILE,d:5*TILE,h:5.2*M, x:BOUND.x0-4.6*TILE+o.x*TILE, z:(sw?sw.z:BOUND.z0+2*TILE)+o.y*TILE+1.6*TILE};
     PH.y=G(PH.x,PH.z); GRID.house=PH; const src=GRID.node(PH.x+PH.w/2,PH.y+PH.h-.6*M,PH.z-.4*TILE,'source',{house:PH});
@@ -46,12 +46,12 @@ window.GRID=GRID;
       if(me.isInstancedMesh){ if(me===D.heads||me===D.lant)return; for(let i=0;i<me.count;i++){ me.getMatrixAt(i,m4); bb.getCenter(v).applyMatrix4(m4); me.localToWorld(v); const L=near2(v); if(L)GRID.glows.push({L,me,i}); } }
       else{ bb.getCenter(v); me.localToWorld(v); const L=near2(v); if(L)GRID.glows.push({L,me}); } });
     GRID.ready=true; };
-  GRID.flow=()=>{ for(const n of GRID.nodes)n.pw=false; const q=GRID.nodes.filter(n=>n.src); for(const n of q)n.pw=true;
+  GRID.flow=()=>{ '@later'; for(const n of GRID.nodes)n.pw=false; const q=GRID.nodes.filter(n=>n.src); for(const n of q)n.pw=true;
     while(q.length){ const n=q.pop(); for(const s of GRID.spans){ if(s.cut)continue; const o=s.a===n?s.b:s.b===n?s.a:null; if(o&&!o.pw){ o.pw=true; q.push(o); } } }
     for(const s of GRID.servs)s.pw=!!(s.node&&s.node.pw&&!s.cut); GRID.dirty=true; };
   const setLamp=(L,pw)=>{ if(!pw){ if(!L.userData.dark){ L.userData.dark=true; L.userData.offU=!!L.userData.off; } L.userData.off=true; } else if(L.userData.dark){ L.userData.dark=false; L.userData.off=L.userData.offU; } };
   const C=new THREE.Color(), DIM=[.18,.18,.2];
-  GRID.apply=()=>{ GRID.dirty=false; const D=typeof DRESS!=='undefined'?DRESS:{};
+  GRID.apply=()=>{ '@later'; GRID.dirty=false; const D=typeof DRESS!=='undefined'?DRESS:{};
     for(const [L,on] of GRID.lamps)setLamp(L,on.pw);
     for(const me of [D.heads,D.lant])if(me&&!me.instanceColor){ me.setColorAt(0,C.setRGB(1,1,1)); me.material.needsUpdate=true; }
     for(const n of GRID.nodes){ if(n.kind==='pole'&&D.heads&&n.h!=null){ D.heads.setColorAt(n.h,C.setRGB(...(n.pw?[1,1,1]:DIM))); if(n.h2!=null)D.heads.setColorAt(n.h2,C.setRGB(...(n.pw?[1,1,1]:DIM))); D.heads.instanceColor.needsUpdate=true; }
@@ -69,16 +69,16 @@ window.GRID=GRID;
   GRID.cutNear=(x,z)=>{ let b=-1, bd=1e9; GRID.spans.forEach(s=>{ const t=Math.max(0,Math.min(1,((x-s.a.x)*(s.b.x-s.a.x)+(z-s.a.z)*(s.b.z-s.a.z))/(((s.b.x-s.a.x)**2+(s.b.z-s.a.z)**2)||1))), d=(s.a.x+(s.b.x-s.a.x)*t-x)**2+(s.a.z+(s.b.z-s.a.z)*t-z)**2; if(d<bd){ bd=d; b=s.id; } }); return b>=0?GRID.cut(b):null; };
   GRID.mendAll=()=>{ for(const s of GRID.spans)s.cut=false; for(const s of GRID.servs)s.cut=false; GRID.flow(); };
   GRID.state=()=>({nodes:GRID.nodes.map(n=>[n.kind,n.pw?1:0]),spans:GRID.spans.map(s=>[s.a.id,s.b.id,s.cut?1:0]),servs:GRID.servs.map(s=>[s.key,s.pw?1:0,s.lamps.length,s.faces.length]),dark:[...GRID.lamps.keys()].filter(L=>L.userData.dark).length,lamps:GRID.lamps.size});
-  const wireMat=new THREE.MeshBasicMaterial({color:0x14110f,side:THREE.DoubleSide}); wireMat.onBeforeCompile=sh=>{ sh.uniforms.uRes=GRID.uRes;
+  const wireMat=new THREE.MeshBasicMaterial({color:0x14110f,side:THREE.DoubleSide}); wireMat.onBeforeCompile=sh=>{ '@later'; sh.uniforms.uRes=GRID.uRes;
     sh.vertexShader='attribute vec3 aC; uniform vec2 uRes;\n'+sh.vertexShader.replace('#include <project_vertex>','#include <project_vertex>\n { vec4 cc=projectionMatrix*modelViewMatrix*vec4(aC,1.); vec2 d=gl_Position.xy/gl_Position.w-cc.xy/cc.w; float px=length(d*uRes*.5); if(px<.6&&px>1e-6){ d*=.6/px; gl_Position.xy=(cc.xy/cc.w+d)*gl_Position.w; } }'); };
   wireMat.customProgramCacheKey=()=>'gridwire'; GRID.uRes={value:new THREE.Vector2(1,1)}; let wireMesh=null;
   const sag=(a,b,t,s)=>{ const x=a[0]+(b[0]-a[0])*t, y=a[1]+(b[1]-a[1])*t-s*4*t*(1-t), z=a[2]+(b[2]-a[2])*t; return [x,y,z]; };
-  const ribbon=(P,pts,w,CC)=>{ for(let i=0;i<pts.length-1;i++){ const p=pts[i], q=pts[i+1], dx=q[0]-p[0], dz=q[2]-p[2], l=Math.hypot(dx,dz)||1, nx=-dz/l*w, nz=dx/l*w;
+  const ribbon=(P,pts,w,CC)=>{ '@later'; for(let i=0;i<pts.length-1;i++){ const p=pts[i], q=pts[i+1], dx=q[0]-p[0], dz=q[2]-p[2], l=Math.hypot(dx,dz)||1, nx=-dz/l*w, nz=dx/l*w;
       P.push(p[0]+nx,p[1],p[2]+nz, q[0]+nx,q[1],q[2]+nz, q[0]-nx,q[1],q[2]-nz, p[0]+nx,p[1],p[2]+nz, q[0]-nx,q[1],q[2]-nz, p[0]-nx,p[1],p[2]-nz);
       P.push(p[0],p[1]+w,p[2], q[0],q[1]+w,q[2], q[0],q[1]-w,q[2], p[0],p[1]+w,p[2], q[0],q[1]-w,q[2], p[0],p[1]-w,p[2]);
       for(let r=0;r<2;r++)CC.push(...p,...q,...q,...p,...q,...p); } };
   const curve=(a,b,s,n=8)=>{ const o=[]; for(let i=0;i<=n;i++)o.push(sag(a,b,i/n,s)); return o; };
-  GRID.wires=()=>{ const P=[], CC=[], W=.028*M, arm=.42*M;
+  GRID.wires=()=>{ '@later'; const P=[], CC=[], W=.028*M, arm=.42*M;
     const ends=(n,k,cnt)=>{ const off=(k-(cnt-1)/2)*arm; return n.kind==='pole'?[n.x+off,n.y+.1*M,n.z]:n.kind==='source'?[n.x,n.y+off*.5,n.z]:[n.x,n.y-.2*M,n.z]; };
     for(const s of GRID.spans)for(let k=0;k<s.n;k++){ const a=ends(s.a,k,s.n), b=ends(s.b,k,s.n), L=Math.hypot(b[0]-a[0],b[2]-a[2]), g=Math.min(.9*M,.018*L);
       if(!s.cut)ribbon(P,curve(a,b,g),W,CC); else{ const m=sag(a,b,.5,g); for(const [e,q] of [[a,b],[b,a]]){ const dx=q[0]-e[0], dz=q[2]-e[2], l=Math.hypot(dx,dz)||1, h=[e[0]+dx/l*Math.min(l*.42,2.2*M)*.55,Math.min(e[1],m[1])-2.3*M,e[2]+dz/l*Math.min(l*.42,2.2*M)*.55];
@@ -87,7 +87,7 @@ window.GRID=GRID;
       if(!s.cut)ribbon(P,curve(a,b,g,6),W,CC); else{ ribbon(P,curve(a,[a[0]+(b[0]-a[0])*.3,a[1]-1.8*M,a[2]+(b[2]-a[2])*.3],-.2*M,4),W,CC); ribbon(P,curve(b,[b[0]+(a[0]-b[0])*.2,b[1]-1.4*M,b[2]+(a[2]-b[2])*.2],-.2*M,4),W,CC); } }
     if(!wireMesh){ wireMesh=new THREE.Mesh(new THREE.BufferGeometry(),wireMat); wireMesh.frustumCulled=false; wireMesh.name='grid-wires'; (MAPG.bodega||scene).add(wireMesh); }
     wireMesh.geometry.dispose(); const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); g.setAttribute('aC',new THREE.Float32BufferAttribute(CC,3)); wireMesh.geometry=g; GRID.tris=P.length/9; };
-  GRID.hardware=()=>{ const BL=[], blk=(x,y,z,sx,sy,sz,c)=>BL.push([x,y,z,sx,sy,sz,c]), GR=0x5d6266, DK=0x3f4448, WD=0x4a3a2a, INS=0x6a8a7a;
+  GRID.hardware=()=>{ '@later'; const BL=[], blk=(x,y,z,sx,sy,sz,c)=>BL.push([x,y,z,sx,sy,sz,c]), GR=0x5d6266, WD=0x4a3a2a, INS=0x6a8a7a;
     GRID.nodes.filter(n=>n.kind==='pole').forEach((n,i)=>{ blk(n.x,n.y,n.z,1.1*M,.08*M,.08*M,WD); for(const k of [-1,0,1])blk(n.x+k*.42*M,n.y+.09*M,n.z,.07*M,.1*M,.07*M,INS);
       if(i%3===1)blk(n.x+.22*M,n.y-.75*M,n.z+n.d*.14*M,.3*M,.5*M,.3*M,GR); });
     const H=GRID.house; if(H){ const x=H.x+H.w/2, z=H.z-H.d/2, y=H.y; blk(x,y+H.h/2,z,H.w,H.h,H.d,0x6e3a2c); blk(x,y+H.h+.08*M,z,H.w+.2*M,.16*M,H.d+.2*M,0x2b2628);

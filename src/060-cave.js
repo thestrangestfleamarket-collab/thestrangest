@@ -6,7 +6,7 @@ const GCAVE={ready:false}; window.GCAVE=GCAVE;
     const {c,R,tw}=GCAVE.S; return [[c.x-R-3,c.y-R-2,c.x+R+5,c.y+R+2],[tw.x-tw.w/2-2.5,tw.y-tw.d/2-2.5,tw.x+tw.w/2+3,tw.y+tw.d/2+3]]; };
   const hs=(a,b,c=0)=>{ const s=Math.sin(a*127.1+b*311.7+c*74.7)*43758.5453; return s-Math.floor(s); };
   const foot=(R,a)=>R/Math.pow(Math.pow(Math.abs(Math.cos(a)),3)+Math.pow(Math.abs(Math.sin(a)),3),1/3);
-  const build=()=>{ const P=PARK, S=GCAVE.S, X=x=>BOD.XS(x+P.ox), Z=y=>BOD.ZS(y+P.oy), Y=BOD.YS, T=TILE, CX=X(S.c.x), CZ=Z(S.c.y), R=S.R, grp=MAPG.park||scene, V3=THREE.Vector3;
+  const build=()=>{ '@park'; const P=PARK, S=GCAVE.S, X=x=>BOD.XS(x+P.ox), Z=y=>BOD.ZS(y+P.oy), Y=BOD.YS, T=TILE, CX=X(S.c.x), CZ=Z(S.c.y), R=S.R, grp=MAPG.park||scene, V3=THREE.Vector3;
     const H=130, NI=30, NJ=6, SEG=Math.PI*2/NI, A0=-1.5*SEG, MOUTH=i=>i<3, MJ=3;
     const pt=(i,j)=>{ if(j>=NJ)return new V3(CX,Y(H),CZ); const a=A0+(i%NI)*SEG, f=j/NJ*Math.PI/2, n=hs(i%NI,j,3)-.5, r=foot(R,a)*Math.pow(Math.cos(f),.7)*(1+n*.16)*(j?1:1.02);
       return new V3(CX+Math.cos(a)*r*T,Y(H*Math.sin(f)*(1+(hs(i%NI,j,5)-.5)*.14)),CZ+Math.sin(a)*r*T); };
@@ -22,7 +22,7 @@ const GCAVE={ready:false}; window.GCAVE=GCAVE;
         const p=[[r1*ra,a],[r1*rb,b],[r0*rb,b],[r0*ra,a]].map(([r,t])=>[CX+Math.cos(t)*r*T,.03,CZ+Math.sin(t)*r*T]); fp.push(...p[0],...p[2],...p[1],...p[0],...p[3],...p[2]); for(let q=0;q<6;q++)fc.push(g,g*.95,g*.88); } }
       const fg=new THREE.BufferGeometry(); fg.setAttribute('position',new THREE.Float32BufferAttribute(fp,3)); fg.setAttribute('color',new THREE.Float32BufferAttribute(fc,3)); fg.computeVertexNormals();
       const fl=new THREE.Mesh(fg,new THREE.MeshLambertMaterial({vertexColors:true})); fl.receiveShadow=true; grp.add(fl); }
-    const BL=[], at=(dx,dy)=>[CX+dx*T,CZ+dy*T];
+    const BL=[];
     for(let i=0;i<34;i++){ const a=i/34*Math.PI*2; if(Math.abs(Math.atan2(Math.sin(a),Math.cos(a)))<.42)continue; const r=foot(R,a)+.15, s=.45+.4*hs(i,1,17); BL.push([CX+Math.cos(a)*r*T,Y(5*s),CZ+Math.sin(a)*r*T,s*T,Y(15*s),s*T*.9,a+hs(i,2,3)*3,.36+.16*hs(i,3,19)]); }
     for(const s of [-1,1])BL.push([CX+(R+.2)*T,Y(28),CZ+s*1.75*T,1.1*T,Y(36),.95*T,s,.4]); BL.push([CX+(R*.8)*T,Y(96),CZ,1.2*T,Y(22),2.2*T,.4,.44]);
     for(const [dx,dy,s,h] of [[-1.5,-1.2,1.3,140],[1,1.8,1.1,128],[-2.6,2,1,104],[2.2,-2.4,.9,96]])BL.push([CX+dx*T,Y(h-6),CZ+dy*T,s*T*1.3,Y(16*s),s*T*1.2,dx,.46]);

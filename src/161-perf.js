@@ -1,3 +1,4 @@
+// PERFORMANCE SWITCHES: hiding far rooms, props and water; shadow map size; what runs only when near.
 const PERFX={on:{}, inner:[], gen:0};
 { const q=QS.get('perfx'); for(const k of [1,2,4,5,6,7])PERFX.on[k]=q!=='0'&&!(q||'').split(',').includes('-'+k); if(FREE&&!(q||'').split(',').includes('+1'))PERFX.on[1]=false; }
 { const key=b=>[b.x0,b.z0,b.x1,b.z1,b.y0].map(v=>(+v).toFixed(2)).join();
@@ -14,7 +15,7 @@ const PERFX={on:{}, inner:[], gen:0};
       for(let f=0;f<nF;f++){ const j=fb[f]; if(j>=0&&flat[f]&&hiY[f]<=floor[j]+2*tol)fb[f]=-1; }
       const groups=new Map(); for(let f=0;f<nF;f++)(groups.get(fb[f])||groups.set(fb[f],[]).get(fb[f])).push(f);
       if(![...groups.keys()].some(j=>j>=0))continue; if(!groups.has(-1))groups.set(-1,[]);
-      const where=new Int32Array(nF), into=new Array(nF), names=Object.keys(g.attributes), make=fs=>{ const G=new THREE.BufferGeometry();
+      const where=new Int32Array(nF), into=new Array(nF), names=Object.keys(g.attributes), make=fs=>{ '@later'; const G=new THREE.BufferGeometry();
         for(const n of names){ const A=g.attributes[n], s=A.itemSize, src=A.array, dst=new src.constructor(fs.length*6*s); fs.forEach((f,k)=>dst.set(src.subarray(f*6*s,(f+1)*6*s),k*6*s)); G.setAttribute(n,new THREE.BufferAttribute(dst,s,A.normalized)); }
         G.computeBoundingSphere(); G.computeBoundingBox(); return G; };
       const objOf=me.userData.objOf;
@@ -47,7 +48,7 @@ SELFSH.pick=()=>{ SELFSH.set.clear(); if(!PERFX.on[2])return; const R=12*TILE, c
   c.sort((a,b)=>a[0]-b[0]); for(const [,N] of c.slice(0,2))SELFSH.set.add(N); };
 SELFSH.use=N=>!PERFX.on[2]||SELFSH.set.has(N);
 { const s0=W3.shadowPass; W3.shadowPass=r=>{ SELFSH.pick(); s0(r); }; }
-PERFX.bounds=()=>{ if(!PERFX.on[4])return; const S=new THREE.Sphere();
+PERFX.bounds=()=>{ '@later'; if(!PERFX.on[4])return; const S=new THREE.Sphere();
   scene.traverse(o=>{ if(!o.isMesh||o.frustumCulled||o.userData.nb)return;
     if(o.isSkinnedMesh){ o.userData.nb=true; const g=o.geometry; g.computeBoundingBox(); o.boundingSphere=g.boundingBox.getBoundingSphere(new THREE.Sphere()); o.boundingSphere.radius*=1.6; o.frustumCulled=true; return; }
     if(o===W3.mesh)return; if(o.material&&o.material.customProgramCacheKey&&/^mus/.test(o.material.customProgramCacheKey())){ o.userData.nb=true; const g=o.geometry; g.computeBoundingBox(); g.boundingBox.getBoundingSphere(S); g.boundingSphere=S.clone(); g.boundingSphere.radius*=1.6; o.frustumCulled=true; return; }

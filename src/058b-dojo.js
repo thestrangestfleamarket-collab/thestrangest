@@ -25,7 +25,7 @@
     BATCH.tag=OBJ('store:dojogate','dojo gate'); for(const q of bs)gbox(q,q.em?'B':'L'); BATCH.tag=null;
     for(const s of [-1,1])sol(GX+s*.8-(s>0?0:.16),GY,GX+s*.8+(s>0?.16:0),GY+.2,DH);
     sol(GX-1.5,GY,GX-1.02,GY+.08,DH); });
-  K.offmap('THE DOJO HALL',[752,-108,788,-80],()=>{
+  K.offmap('THE DOJO HALL',[752,-108,788,-80],()=>{ '@dojo';
     const WD=J.DJWOOD, PAP=J.DJPAP, PLA=J.DJPLA, wd=(k,f=1)=>sh(WD,k*f), WARM=[255,206,128];
     const RW={b:[DA-5.2,DA+5.2],w:[(B.y0+B.y1)/2],e:[(B.y0+B.y1)/2]}, RZ=74, RR=26;
     const shoji=(wall,a,z,f)=>{ const pa=((a%2)+2)%2;

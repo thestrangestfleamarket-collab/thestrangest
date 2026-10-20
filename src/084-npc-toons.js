@@ -1,3 +1,4 @@
+// THE STREET'S TOONS: the tomato, the cat in the raincoat, the TV cat, the frog on his scooter, the shark, the manatee, the rain fish and NUMBER 80.
 const TOONS={};
 { const {shape,limb,sph,cyl,box,torus,blob,shell}=PARTSNPC.T;
   const part=(name,rank,bone,of)=>({name,rank,bone,of}), BLACK=[0,0,0], WHITE=[.96,.95,.9];

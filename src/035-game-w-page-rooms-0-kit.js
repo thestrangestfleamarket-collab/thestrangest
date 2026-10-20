@@ -16,7 +16,7 @@ const PGK=(()=>{ const ZS=27, TX=24, E1=1<<24, E2=2<<24, SKY=3<<24, FIRE=4<<24, 
   const lamp=(x,y,z,r,col,I,fl,o)=>{ if(cur)cur.lamps.push({x,y,z,r,col,I,fl:fl||0,o:o||{}}); return 0; };
   const flame=(x,y,z)=>{ if(cur)cur.flames.push({x,y,z,s:cur.flames.length}); };
   const wood=(base,o={})=>{ const sd=o.seed||1,lite=o.lite||1.12,dark=o.dark||0.8,pl=o.plank||0,along=o.along||'v';
-    return (f,u,v,W,H)=>{ let a,b; if(f==='T'){ a=along==='u'?u:v; b=along==='u'?v:u; } else { a=(f==='S'||f==='N'||along==='v')?v:u; b=a===v?u:v; }
+    return (f,u,v,W,H)=>{ '@later'; let a,b; if(f==='T'){ a=along==='u'?u:v; b=along==='u'?v:u; } else { a=(f==='S'||f==='N'||along==='v')?v:u; b=a===v?u:v; }
       const bi=Math.floor(b/(o.gw||2)); let k=0.93+0.1*hh(bi,0,sd)+0.05*Math.sin(a*0.3+bi*2.3);
       if(hh(bi,Math.floor(a/7),sd+5)<0.05)k*=0.82; if(pl&&Math.floor(b)%pl===0)k*=0.72;
       if(!o.nobev){ if(v<1||u<1)k*=lite; else if(v>H-1.1||u>W-1.1)k*=dark; } return shd(base,k); }; };
@@ -25,7 +25,7 @@ const PGK=(()=>{ const ZS=27, TX=24, E1=1<<24, E2=2<<24, SKY=3<<24, FIRE=4<<24, 
     gold:C('#94722c'),paper:C('#ece4cc'),terra:C('#b05a3a'),soil:C('#3a2a1c')};
   const candle=(x,y,z,h,r)=>{ r=r||0.04; cyl(x,y,r,z,z+h,(f,u,v,W,H)=>f==='T'?((u-W/2)**2+(v-H/2)**2<1?PAL.waxD:PAL.wax):shd(PAL.wax,(v<1.2?1.08:1)*(hh(u,v>>1,4)<0.08?0.9:1)*(Math.abs(u%(W)-W*0.2)<1?1.12:1)),{small:1}); flame(x,y,z+h); };
   const jar=(x,y,z,r,h,fill,o)=>{ o=o||{};
-    cyl(x,y,r,z,z+h,(f,u,v,W,H)=>{ if(f==='T')return PAL.glassD; const fl=v/H; let c=PAL.glass;
+    cyl(x,y,r,z,z+h,(f,u,v,W,H)=>{ '@later'; if(f==='T')return PAL.glassD; const fl=v/H; let c=PAL.glass;
       if(fill!==undefined&&fl>(o.lvl||0.35)){ c=mix(PAL.glass,fill,0.75); if(hh(u>>1,v>>1,11)<0.15)c=shd(c,0.8); }
       if(o.label&&fl>0.45&&fl<0.75&&(u%W)<W*0.45)c=(fl<0.5||fl>0.7)?PAL.paper:C('#d8ccb0');
       const hl=(u%W)/W; if(hl>0.1&&hl<0.16)c=shd(c,1.25); if(v<1)c=shd(c,1.1); return c; },{small:1});
@@ -45,7 +45,7 @@ const PGK=(()=>{ const ZS=27, TX=24, E1=1<<24, E2=2<<24, SKY=3<<24, FIRE=4<<24, 
     cyl(x,y,r*0.12,z+h*0.92,z+h*1.2,PAL.stem,{small:1},r*0.08); };
   const vase=(x,y,z,r,h,col)=>cyl(x,y,r,z,z+h,(f,u,v,W,H)=>f==='T'?shd(col,0.6):shd(col,((u%W)/W>0.12&&(u%W)/W<0.2)?1.3:1),{small:1},r*0.6);
   const flowers=(x,y,z,s,col,colL,n)=>{ for(let i=0;i<(n||9);i++){ const a=rr(0,6.28),d=rr(0,s*0.6); ell(x+Math.cos(a)*d,y+Math.sin(a)*d,z+rr(0,s*0.5),s*0.22,s*0.22,s*0.18,(f,u,v,W,H,wx,wy,wz,lx,ly,lz)=>lz>0.3&&lx*lx+ly*ly<0.1?C('#f0d060'):(lz>0.2?colL:col),{small:1}); } };
-  const wallClock=(cx,cz,col,colD,tick)=>{ const LY=SCN.LY; box(cx-0.36,LY-0.07,cz-0.36,cx+0.36,LY,cz+0.36,(f,u,v,W,H,x,y,z)=>{ const dx=x-cx,dz=z-cz,d=Math.hypot(dx,dz); if(d>0.36)return -1; if(d>0.3)return d>0.34?colD:col; if(d<0.025)return tick;
+  const wallClock=(cx,cz,col,colD,tick)=>{ const LY=SCN.LY; box(cx-0.36,LY-0.07,cz-0.36,cx+0.36,LY,cz+0.36,(f,u,v,W,H,x,y,z)=>{ '@later'; const dx=x-cx,dz=z-cz,d=Math.hypot(dx,dz); if(d>0.36)return -1; if(d>0.3)return d>0.34?colD:col; if(d<0.025)return tick;
     const ang=Math.atan2(dx,dz); for(let k=0;k<12;k++){ const a=k/12*6.283; if(Math.abs(Math.sin(ang-a))*d<0.012&&Math.cos(ang-a)>0&&d>0.24)return tick; }
     const hand=(a,len,w)=>Math.cos(ang-a)>0&&d<len&&Math.abs(Math.sin(ang-a))*d<w; if(hand(10.17/12*6.283,0.17,0.02)||hand(2/12*6.283,0.25,0.013))return 0x2a2620; return 0xe0d6b8; },{wall:'S'}); };
   const frameArt=(f,u,v,W,H,inner)=>{ if(u<2||v<2||u>W-2||v>H-2)return (u<1||v<1)?PAL.redL:PAL.redD; if(u<3||v<3||u>W-3||v>H-3)return PAL.trim; return inner(u-3,v-3,W-6,H-6); };
@@ -53,7 +53,7 @@ const PGK=(()=>{ const ZS=27, TX=24, E1=1<<24, E2=2<<24, SKY=3<<24, FIRE=4<<24, 
     for(const [a,b,lmax,lmin] of spans){ let x=a; while(x<b){ const w=rr(0.07,0.13); list.push({a:x,w,len:rr(lmin,lmax),ph:rr(0,6.28),amp:rr(amp[0],amp[1]),c:cols[Math.floor(rnd()*cols.length)]}); x+=w*0.8; } }
     let P0=null, L=[1,1,1], litAt=-1e9;
     const strip=(d,a,b,z0,z1,c,o)=>alongX?box(a,0.03,z0,b,0.06,z1,c,o):box(0.03,a,z0,0.06,b,z1,c,o);
-    item(name,{wall:1,drape:(dx,dy,near)=>{ const out=[];
+    item(name,{wall:1,drape:(dx,dy,near)=>{ '@later'; const out=[];
       for(const d of list){ const hem=Math.min(0.5,d.len*0.4), zt=(rod-d.len+hem)*ZS, zb=(rod-d.len)*ZS, r=alongX?{x0:d.a-0.1+dx,x1:d.a+d.w+0.1+dx,y0:0.03+dy,y1:0.06+dy}:{x0:0.03+dx,x1:0.06+dx,y0:d.a-0.1+dy,y1:d.a+d.w+0.1+dy};
         out.push(sided({...r,z0:zb,z1:zt,c:[0,0,0],nb:1,life:1,top:()=>null,
           fs:(nx,ny,X,Y,z,k)=>{ if(LIFE.mode!==1||(alongX?!ny:!nx)||near(wall))return null; const f=LIFE.f||0, zr=z/((zt-zb)||1), off=d.amp*(1-zr)*1.6*Math.sin(f/8*6.283+d.ph), a=(alongX?X-dx:Y-dy)-d.a-off;
@@ -76,7 +76,7 @@ const PGK=(()=>{ const ZS=27, TX=24, E1=1<<24, E2=2<<24, SKY=3<<24, FIRE=4<<24, 
   const flick=(x,y,f)=>hh(Math.floor(x*97),Math.floor(y*89),f);
   const fireCol=(X,z,f)=>{ const q=Math.max(0,Math.min(1,0.55+0.45*Math.sin(X*31+f*1.7)*Math.cos(z*0.4-f*2.3)+0.2*(flick(X,z,f)-0.5)));
     return Object.assign([255,Math.round(40+q*q*190),Math.round(q*q*q*90)],{e:1}); };
-  const faceUV=(p,f,x,y,z)=>{ switch(f){ case 'T':return [(x-p.x0)*TX,(y-p.y0)*TX,(p.x1-p.x0)*TX,(p.y1-p.y0)*TX];
+  const faceUV=(p,f,x,y,z)=>{ '@later'; switch(f){ case 'T':return [(x-p.x0)*TX,(y-p.y0)*TX,(p.x1-p.x0)*TX,(p.y1-p.y0)*TX];
       case 'E':return [(p.y1-y)*TX,(p.z1-z)*TX,(p.y1-p.y0)*TX,(p.z1-p.z0)*TX]; case 'W':return [(y-p.y0)*TX,(p.z1-z)*TX,(p.y1-p.y0)*TX,(p.z1-p.z0)*TX];
       case 'S':return [(x-p.x0)*TX,(p.z1-z)*TX,(p.x1-p.x0)*TX,(p.z1-p.z0)*TX]; default:return [(p.x1-x)*TX,(p.z1-z)*TX,(p.x1-p.x0)*TX,(p.z1-p.z0)*TX]; } };
   const paint=(p,f,x,y,z)=>{ if(typeof p.c!=='function')return p.c; const [u,v,W,H]=faceUV(p,f,x,y,z);
@@ -88,7 +88,7 @@ const PGK=(()=>{ const ZS=27, TX=24, E1=1<<24, E2=2<<24, SKY=3<<24, FIRE=4<<24, 
   const wallOfPrim=(p,S)=>{ if(p.wall)return p.wall; const [x0,y0,x1,y1,z0]=p.t===0?[p.x0,p.y0,p.x1,p.y1,p.z0]:p.t===1?[p.cx-p.r0,p.cy-p.r0,p.cx+p.r0,p.cy+p.r0,p.z0]:[p.cx-p.rx,p.cy-p.ry,p.cx+p.rx,p.cy+p.ry,p.cz-p.rz];
     if(!S||z0<=1.0)return null; return x1<0.45?'W':y1<0.45?'N':x0>S.LX-0.45?'E':y0>S.LY-0.45?'S':null; };
   const inHole=(p,S,f,X,Y,z)=>{ if(!S||!p.wallOf)return false; for(const h of S.holes){ if(h.wall!==p.wallOf)continue; const a=(h.wall==='W'||h.wall==='E')?Y:X; if(a>h.a0&&a<h.a1&&z<h.z1)return true; } return false; };
-  function gameBoxes(it,dx,dy){ const out=[], S=it.scn, near=nearIn(S);
+  function gameBoxes(it,dx,dy){ '@later'; const out=[], S=it.scn, near=nearIn(S);
     for(const p of it.prims){ const live=!!p.fire, hw=wallOfPrim(p,S), only=p.cutOnly;
       const gone=()=>(hw&&near(hw))||(only&&!near(only));
       if(p.t===0){
@@ -132,7 +132,7 @@ const PGK=(()=>{ const ZS=27, TX=24, E1=1<<24, E2=2<<24, SKY=3<<24, FIRE=4<<24, 
       const cx=(Math.min(...xs)+Math.max(...xs))/2, cy=(Math.min(...ys)+Math.max(...ys))/2, o=it.o, name=it.name, S=it.scn;
       const high=it.prims.every(p=>wallOfPrim(p,S)||p.wall||(p.t===0?p.z0:p.t===1?p.z0:p.cz-p.rz)>1.0), walls=it.prims.filter(p=>p.wallOf);
       it.c=[cx,cy];
-      CATALOG[name]=(x,y)=>{ PNAME=name; const dx=x-cx, dy=y-cy, bs=gameBoxes(it,dx,dy);
+      CATALOG[name]=(x,y)=>{ '@later'; PNAME=name; const dx=x-cx, dy=y-cy, bs=gameBoxes(it,dx,dy);
         if(!bs.some(b=>b.z0===0||b.foot))for(const b of bs)b.foot=1;
         const moving=it.flames.length||it.prims.some(p=>p.fire)||o.drape;
         let lf=0; const opts={...(o.wall||high?{walk:true,high:true,hang:Math.max(0,Math.round(Math.min(...it.prims.map(p=>p.t===2?p.cz-p.rz:p.z0))*ZS))}:{}),...(o.flat||o.floor?{flat:true,walk:true}:{}),...(o.walk?{walk:true}:{}),...(o.stands?{walk:true,stands:o.stands.map(([a,b,c,d,z])=>({x0:a+dx,y0:b+dy,x1:c+dx,y1:d+dy,z}))}:{}),
@@ -149,7 +149,7 @@ const PGK=(()=>{ const ZS=27, TX=24, E1=1<<24, E2=2<<24, SKY=3<<24, FIRE=4<<24, 
       KIND_OF[name]=name; CAT_INFO[name]={...(info[name]||{no:dept.slice(0,2).toUpperCase()+'-'+name.length,name:name[0].toUpperCase()+name.slice(1),price:50,desc:'',mat:''}),dept}; } }
   const put=(D,W,H,x,y,c,a=255)=>{ x=Math.floor(x); y=Math.floor(y); if(x<0||y<0||x>=W||y>=H)return; const i=(y*W+x)*4; if(a<255&&D[i+3]){ const t=a/255; D[i]+=(c[0]-D[i])*t; D[i+1]+=(c[1]-D[i+1])*t; D[i+2]+=(c[2]-D[i+2])*t; D[i+3]=Math.max(D[i+3],a); return; } D[i]=c[0]; D[i+1]=c[1]; D[i+2]=c[2]; D[i+3]=a; };
   const seen=()=>{ const a=wvV(1,0), c=wvV(0,1); return [a[0]||c[0],a[1]||c[1]]; };
-  function moving(name,draw){ const mk=CATALOG[name], it=ITEMS[name];
+  function moving(name,draw){ '@later'; const mk=CATALOG[name], it=ITEMS[name];
     CATALOG[name]=(x,y)=>{ const p=mk(x,y), dx=x-it.c[0], dy=y-it.c[1]; let L=[1,1,1], litAt=-1e9;
       const at=(lx,ly)=>{ const q=[lx+dx,ly+dy]; return p.ed?p.ed(q[0],q[1]):q; };
       const S={p,at,
@@ -157,7 +157,7 @@ const PGK=(()=>{ const ZS=27, TX=24, E1=1<<24, E2=2<<24, SKY=3<<24, FIRE=4<<24, 
         faces:(nx,ny)=>{ const o=at(0,0), q=at(nx,ny), s=seen(); return (q[0]-o[0])*s[0]>0.5||(q[1]-o[1])*s[1]>0.5; },
         light:(lx,ly,lz)=>{ const now=performance.now(); if(now-litAt>1000&&typeof lightEnv==='function'){ litAt=now; const [X,Y]=at(lx,ly), env=lightEnv(X-.5,Y-.5,X+.5,Y+.5,false,LVZ(p.lv||0)); L=env?lightAt(env,X,Y,(lz*ZS+LVZ(p.lv||0))/24,null).map(v=>Math.max(.15,Math.min(1.2,v))):[1,1,1]; } return L; }};
       p.lifeDraw=(D,W,H,ox,oy,t,K=1)=>draw(D,W,H,ox,oy,t,K,S); return p; }; }
-  const water=(cx,cy,r,rimZ,wi,cfg={})=>{ let Wb=null, lv=0; const HT=0.75, w=DEEPW.WATERS[wi], amp=w.waves.reduce((t,v)=>t+v[1],0)*(cfg.height??1);
+  const water=(cx,cy,r,rimZ,wi,cfg={})=>{ '@later'; let Wb=null, lv=0; const HT=0.75, w=DEEPW.WATERS[wi], amp=w.waves.reduce((t,v)=>t+v[1],0)*(cfg.height??1);
     return (D,W,H,ox,oy,t,K,S,life)=>{ if(!Wb){ Wb=DEEPW.body(2*r,2*r,HT,wi,{...DEEPW.DEFAULTS,timer:0,bare:true,...cfg,life}); lv=Math.max(0.5,HT-amp-0.08); }
       const Z0=rimZ*ZS-lv*DEEPW.ZPX+LVZ(S.p.lv||0)-LVZ(V.lv); Wb.draw(D,W,H,ox,oy,K,t,(a,b)=>S.at(cx-r+a,cy-r+b),Z0,false,[],null);
       const [ex,ey]=S.scr(cx,cy,rimZ,ox,oy,K), A=r*0.97*Math.SQRT2*HW*K, B=r*0.97*Math.SQRT2*HH*K;

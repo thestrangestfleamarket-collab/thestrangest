@@ -10,7 +10,7 @@ let N; const makeNPC=(D,o)=>{ const geo=o.geo; geo.computeVertexNormals(); const
   const me=new THREE.SkinnedMesh(geo,new THREE.MeshToonMaterial({vertexColors:true,gradientMap:gm,side:THREE.DoubleSide})); me.add(o.skin.bones[0]); me.bind(o.skin.skeleton); me.frustumCulled=false;
   const g=new THREE.Group(); g.add(me); sc.add(g); N={me,g,o,push:()=>{},renorm:()=>{},st:{x:0,z:0,h:0,ph:0}}; return N; };
 const TILE=1, QS={get:()=>null}, cam=new THREE.PerspectiveCamera(30,innerWidth/innerHeight,.01,50);
-const RIGNPC={}; new Function('RIGNPC','THREE','TILE','QS','cam','makeNPC',rig.replace(/^const RIGNPC=\{\};/,''))(RIGNPC,THREE,TILE,QS,cam,makeNPC);
+const RIGNPC={}; new Function('RIGNPC','THREE','TILE','QS','cam','makeNPC',rig.replace(/const RIGNPC=\{\};/,''))(RIGNPC,THREE,TILE,QS,cam,makeNPC);
 const TOONS={}, {shape,limb,sph,cyl,box,torus,blob,shell}=PARTSNPC.T, part=(name,rank,bone,of)=>({name,rank,bone,of}), BLACK=[0,0,0], WHITE=[.96,.95,.9];
 const make=(def,o)=>RIGNPC.make(def,Object.assign({eye:0,stride:6},o));
 eval(src);

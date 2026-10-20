@@ -12,7 +12,7 @@ const PNBOOK=[
     const B='E5:3 G4:1 F5 E5 D5:3 F4:1 E5 D5 C5:3 E4:1 D5 C5 B4:2 r:1 E4:1 E5 r r E5 E6 r r D#5 E5 r r D#5 E5 D#5 E5 D#5 E5 D#5';
     const BL='C3:1 G3 C4 r:3 G2:1 G3 B3 r:3 A2:1 E3 A3 r:3 E2:1 E3 r:4 r:6 r:6 r:6';
     return {R:['E5:1 D#5 '+A+' A4:2 r:2 E5:1 D#5 '+A+' A4:2 r:1 B4:1 C5 D5 '+B+' '+A+' A4:12'],L:['r:2 '+AL+' A2:1 E3 A3 r:3 '+AL+' A2:1 E3 A3 r:3 '+BL+' '+AL+' A2:1 E3:1 A3:10']}; }},
-  {name:'Gymnopédie No. 1 (Satie)',q:0.22,bar:12,pickup:0,vel:{R:.5,L:.36},pedal:true,gen:()=>{ const L1=[], L2=[];
+  {name:'Gymnopédie No. 1 (Satie)',q:0.22,bar:12,pickup:0,vel:{R:.5,L:.36},pedal:true,gen:()=>{ '@later'; const L1=[], L2=[];
     for(let b=0;b<20;b++){ const g=!(b&1); L1.push((g?'G2':'D2')+':12'); L2.push('r:4',(g?'B3+D4+F#4':'A3+C#4+F#4')+':8'); }
     L1.push('G2:36'); L2.push('r:4','B3+D4+F#4:32');
     const ph='r:4 F#5:4 A5:4 G5:4 F#5:4 C#5:4 B4:4 C#5:4 D5:4 A4:12 F#4:48';

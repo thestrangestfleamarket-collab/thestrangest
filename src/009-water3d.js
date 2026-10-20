@@ -1,5 +1,5 @@
 const WATER={drops:[], uH:{value:null}, uWB:{value:new THREE.Vector4()}, uLevel:{value:0}, uGrid:{value:new THREE.Vector2()}, uCK:{value:+(QS0=>QS0.get('ck')||160)(new URLSearchParams(location.search))}, mats:[]};
-WATER.caustic=m=>{ m.onBeforeCompile=sh=>{ Object.assign(sh.uniforms,{uH:WATER.uH,uWB:WATER.uWB,uLevel:WATER.uLevel,uGrid:WATER.uGrid,uCK:WATER.uCK});
+WATER.caustic=m=>{ '@later'; m.onBeforeCompile=sh=>{ Object.assign(sh.uniforms,{uH:WATER.uH,uWB:WATER.uWB,uLevel:WATER.uLevel,uGrid:WATER.uGrid,uCK:WATER.uCK});
   sh.vertexShader='varying vec3 vWp;\n'+sh.vertexShader.replace('#include <project_vertex>','#include <project_vertex>\n vWp=(modelMatrix*vec4(transformed,1.)).xyz;');
   sh.fragmentShader='uniform sampler2D uH; uniform vec4 uWB; uniform float uLevel,uCK; uniform vec2 uGrid; varying vec3 vWp;\n'+sh.fragmentShader.replace('#include <dithering_fragment>',`#include <dithering_fragment>
   if(vWp.y<uLevel){ vec2 uv=(vWp.xz-uWB.xy)/(uWB.zw-uWB.xy); uv=clamp(uv,0.,1.); vec2 t=1./uGrid; float c=texture2D(uH,uv).r;
@@ -50,7 +50,7 @@ const waterBody=(WATER,cfg)=>{ const {X0,X1,Z0,Z1,lvl,GX,GY}=cfg, W=X1-X0, D=Z1-
   WATER.spg=new THREE.BufferGeometry(); WATER.spg.setAttribute('position',new THREE.BufferAttribute(new Float32Array(600*3),3)); WATER.spg.setDrawRange(0,0);
   const spm=new THREE.Points(WATER.spg,new THREE.PointsMaterial({color:0xdff3ff,size:2,sizeAttenuation:false})); spm.frustumCulled=false; scene.add(spm);
 WATER.drop=(x,z,r,s)=>{ if(WATER.drops.length<8)WATER.drops.push([(x-WATER.X0)/WATER.W,(z-WATER.Z0)/WATER.D,r,s]); };
-WATER.step=(renderer,dt)=>{ WATER.t+=dt;
+WATER.step=(renderer,dt)=>{ '@later'; WATER.t+=dt;
   if(WATER.drops.length)WATER.calm=false; if(WATER.calm){ if(WATER.SP.n)WATER.spray(dt); return; }
   const u=WATER.simMat.uniforms;
   const H=1/180; WATER.acc=Math.min((WATER.acc||0)+dt,8*H); const n=Math.floor(WATER.acc/H); WATER.acc-=n*H; u.uDt.value=H;
@@ -68,20 +68,20 @@ WATER.step=(renderer,dt)=>{ WATER.t+=dt;
     gl.readPixels(0,0,WATER.GX,WATER.GY,gl.RGBA,gl.HALF_FLOAT,0); gl.bindBuffer(gl.PIXEL_PACK_BUFFER,null); A.sync=gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE,0); gl.flush(); }
   renderer.setRenderTarget(null);
   WATER.spray(dt); };
-WATER.hAt=(x,z)=>{ const GX=WATER.GX, GY=WATER.GY, fx=Math.max(0,Math.min(GX-1.001,(x-WATER.X0)/WATER.W*GX-.5)), fz=Math.max(0,Math.min(GY-1.001,(z-WATER.Z0)/WATER.D*GY-.5)), i=fx|0, j=fz|0, u=fx-i, v=fz-j,
+WATER.hAt=(x,z)=>{ '@later'; const GX=WATER.GX, GY=WATER.GY, fx=Math.max(0,Math.min(GX-1.001,(x-WATER.X0)/WATER.W*GX-.5)), fz=Math.max(0,Math.min(GY-1.001,(z-WATER.Z0)/WATER.D*GY-.5)), i=fx|0, j=fz|0, u=fx-i, v=fz-j,
   H=(a,b)=>THREE.DataUtils.fromHalfFloat(WATER.rb[(b*GX+a)*4]); return H(i,j)*(1-u)*(1-v)+H(i+1,j)*u*(1-v)+H(i,j+1)*(1-u)*v+H(i+1,j+1)*u*v; };
 WATER.slope=(x,z)=>{ const e=WATER.dx; return [(WATER.hAt(x+e,z)-WATER.hAt(x-e,z))/(2*e),(WATER.hAt(x,z+e)-WATER.hAt(x,z-e))/(2*e)]; };
 WATER.over=(x,z)=>x>WATER.X0&&x<WATER.X0+WATER.W&&z>WATER.Z0&&z<WATER.Z0+WATER.D;
 WATER.SP={n:0,max:600,p:new Float32Array(600*3),v:new Float32Array(600*3)};
 WATER.splash=(x,y,z,n,sp)=>{ const S=WATER.SP; for(let k=0;k<n&&S.n<S.max;k++){ const i=S.n++, a=Math.random()*Math.PI*2, up=0.5+Math.random()*0.8, out=Math.random()*0.7;
   S.p.set([x+(Math.random()-.5)*0.2,y+0.02,z+(Math.random()-.5)*0.2],i*3); S.v.set([Math.cos(a)*out*sp,up*sp,Math.sin(a)*out*sp],i*3); } };
-WATER.spray=dt=>{ const S=WATER.SP, g=9.81/WATER.MPU; let k=0; dt=Math.min(dt,1/30);
+WATER.spray=dt=>{ '@later'; const S=WATER.SP, g=9.81/WATER.MPU; let k=0; dt=Math.min(dt,1/30);
   for(let i=0;i<S.n;i++){ const p=S.p, v=S.v; v[i*3+1]-=g*dt; for(let q=0;q<3;q++)p[i*3+q]+=v[i*3+q]*dt;
     const x=p[i*3], y=p[i*3+1], z=p[i*3+2], wet=WATER.over(x,z);
     if(wet&&y<WATER.lvl+WATER.hAt(x,z)&&v[i*3+1]<0){ WATER.drop(x,z,0.07,0.0025); continue; } if(!wet&&y<0)continue;
     if(k!==i){ for(let q=0;q<3;q++){ p[k*3+q]=p[i*3+q]; v[k*3+q]=v[i*3+q]; } } k++; }
   S.n=k; const a=WATER.spg.attributes.position; a.array.set(S.p.subarray(0,k*3)); a.needsUpdate=true; WATER.spg.setDrawRange(0,k); };
-WATER.under=(renderer,scene,cam,lamps)=>{ const w=renderer.domElement.width, h=renderer.domElement.height; if(WATER.rt.width!==w||WATER.rt.height!==h)WATER.rt.setSize(w,h);
+WATER.under=(renderer,scene,cam,lamps)=>{ '@later'; const w=renderer.domElement.width, h=renderer.domElement.height; if(WATER.rt.width!==w||WATER.rt.height!==h)WATER.rt.setSize(w,h);
   const u=WATER.mat.uniforms; u.uRes.value.set(w,h); u.uGlow.value.setRGB(.02,.16,.18).multiplyScalar(WATER.glowK==null?1:WATER.glowK); u.uNear.value=cam.near; u.uFar.value=cam.far; cam.getWorldDirection(u.uCam.value);
   lamps.slice(0,12).forEach((L,i)=>{ u.uLP.value[i].copy(L.position); u.uLC.value[i].set(L.color.r,L.color.g,L.color.b).multiplyScalar(Math.min(1,(L.userData.i0||L.intensity)/3)); }); u.uNL.value=Math.min(12,lamps.length);
   const v0=WATER.mesh.visible; WATER.mesh.visible=false; renderer.setRenderTarget(WATER.rt); renderer.render(scene,cam); renderer.setRenderTarget(null); WATER.mesh.visible=v0; };

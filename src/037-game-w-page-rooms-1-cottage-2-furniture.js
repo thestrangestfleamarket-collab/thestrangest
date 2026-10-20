@@ -1,6 +1,6 @@
   cyl(2.55,2.15,0.95,0,0.015,(f,u,v,W,H)=>{ const d=Math.hypot(u-W/2,v-H/2)/(W/2); return shd(d>0.9?PAL.purpleD:PAL.purple,0.95+0.08*hh(u,v,3)); },{solid:0,occ:0});
   item('patterned rug, purple and gold',{flat:1});
-  box(3.5,2.1,0,7.3,5.3,0.02,(f,u,v,W,H)=>{ if(f!=='T')return PAL.purpleD;
+  box(3.5,2.1,0,7.3,5.3,0.02,(f,u,v,W,H)=>{ '@later'; if(f!=='T')return PAL.purpleD;
     if(u<3||u>W-3){ return (Math.floor(v)%2)?((u<1||u>W-1)?-1:C('#9a8c70')):-1; }
     const a=u-3,b=v,Wi=W-6,Hi=H; const ex=Math.min(a,Wi-a,b,Hi-b);
     if(ex<2)return PAL.purpleD; if(ex<4)return ((Math.floor(a/2)+Math.floor(b/2))%2)?PAL.gold:PAL.purpleD; if(ex<5)return PAL.purpleD;
@@ -17,7 +17,7 @@
   item('apothecary cabinet');
   { const x0=2.7,x1=4.5,y0=0.05,y1=0.95,h=3.0, Wc=wood(PAL.oak,{seed:41}), Wd=wood(PAL.oakD,{seed:42});
     for(const fx of [x0+0.1,x1-0.18]) box(fx,y1-0.18,0,fx+0.08,y1-0.08,0.12,PAL.oakD,{small:1});
-    box(x0,y0,0.12,x1,y1,1.2,(f,u,v,W,H)=>{ if(f!=='S')return Wc(f,u,v,W,H);
+    box(x0,y0,0.12,x1,y1,1.2,(f,u,v,W,H)=>{ '@later'; if(f!=='S')return Wc(f,u,v,W,H);
         const half=W/2, a=u<half?u:u-half; if(u<1.2||Math.abs(u-half)<0.6||u>W-1.2||v<1.2||v>H-1.2)return PAL.oakD;
         if(a>4&&a<half-4&&v>4&&v<H-4){ const inner=(a<6||a>half-6||v<6||v>H-6); if(inner)return shd(PAL.oak,0.82); if(Math.abs(a-(u<half?half-8:8))<1&&Math.abs(v-H/2)<5)return PAL.goldL; return shd(PAL.oak,1.05+0.05*hh(Math.floor(a),Math.floor(v/5),3)); }
         return Wc(f,u,v,W,H); });
@@ -58,7 +58,7 @@
     self.fireLamp=STOVE_L;
   for(const [lx,ly] of [[x0+0.05,y0+0.05],[x1-0.15,y0+0.05],[x0+0.05,y1-0.15],[x1-0.15,y1-0.15]]) box(lx,ly,0,lx+0.1,ly+0.1,0.28,PAL.ironD,{});
     box(x0-0.05,y0-0.05,0.25,x1+0.05,y1+0.05,0.33,PAL.iron);
-    box(x0,y0,0.33,x1,y1,1.0,(f,u,v,W,H,x,y,z)=>{ let c=PAL.iron; if(u<1.2||v<1.2)c=PAL.ironL; else if(u>W-1.2||v>H-1.2)c=PAL.ironD;
+    box(x0,y0,0.33,x1,y1,1.0,(f,u,v,W,H,x,y,z)=>{ '@later'; let c=PAL.iron; if(u<1.2||v<1.2)c=PAL.ironL; else if(u>W-1.2||v>H-1.2)c=PAL.ironD;
         if(f==='S'){
           const half=W/2,a=u<half?u:u-half; if(a>2&&a<half-2&&v>3&&v<H-3){ if(a<3||a>half-3||v<4||v>H-4)return PAL.ironL;
             if(v>H*0.45&&v<H-6&&(Math.floor(a)%3!==0))return FIRE|0;  return shd(PAL.iron,0.85); }
@@ -75,7 +75,7 @@
   item('low chest with candles');
   { const x0=7.9,x1=8.75,y0=4.2,y1=6.4,h=1.0, Wa=wood(PAL.amber,{seed:61,along:'u'});
     for(const [lx,ly] of [[x0,y0],[x1-0.08,y0],[x0,y1-0.08],[x1-0.08,y1-0.08]]) box(lx,ly,0,lx+0.08,ly+0.08,0.12,PAL.amberD,{small:1});
-    box(x0,y0,0.12,x1,y1,h-0.06,(f,u,v,W,H)=>{ if(f==='E'){ if(v<1.5||v>H-1.5||u<1.5||u>W-1.5)return PAL.amberD; if(v>3&&v<H-3&&u>3&&u<W-3){ if(u<4||u>W-4||v<4||v>H-4)return shd(PAL.amber,0.78); if(Math.abs(u-W/2)<1&&Math.abs(v-7)<1.5)return PAL.goldL; return shd(PAL.amber,1.05+0.05*hh(Math.floor(u/6),Math.floor(v),3)); } } return Wa(f,u,v,W,H); });
+    box(x0,y0,0.12,x1,y1,h-0.06,(f,u,v,W,H)=>{ '@later'; if(f==='E'){ if(v<1.5||v>H-1.5||u<1.5||u>W-1.5)return PAL.amberD; if(v>3&&v<H-3&&u>3&&u<W-3){ if(u<4||u>W-4||v<4||v>H-4)return shd(PAL.amber,0.78); if(Math.abs(u-W/2)<1&&Math.abs(v-7)<1.5)return PAL.goldL; return shd(PAL.amber,1.05+0.05*hh(Math.floor(u/6),Math.floor(v),3)); } } return Wa(f,u,v,W,H); });
     box(x0-0.03,y0-0.03,h-0.06,x1+0.03,y1+0.03,h,wood(PAL.amberL,{seed:62,along:'v'}));
     bookLying(8.15,5.35,h,8.65,5.95,0.08,C('#a83a3a'),{spine:'E'}); bookLying(8.18,5.4,h+0.08,8.6,5.9,0.07,C('#e0d4b8'),{spine:'E'});
     candle(8.4,5.65,h+0.15,0.2); candle(8.3,4.8,h,0.18); candle(8.45,4.95,h,0.12); candle(8.25,5.05,h,0.08);
@@ -99,7 +99,7 @@
   jar(4.95,11.75,0,0.12,0.22,C('#e8e4dc'));
   item('folding screen');
   { const panels=[[6.1,6.75,11.32],[6.78,7.43,11.44],[7.46,8.11,11.32]];
-    for(const [a,b,y] of panels) box(a,y,0.05,b,y+0.06,2.1,(f,u,v,W,H,x,yy,z)=>{ const top=2.1-0.18*Math.sqrt(Math.max(0,1-((x-(a+b)/2)/((b-a)/2))**2)); if(z>2.1-0.18+ (0.18-(2.1-top)) && z>top)return -1;
+    for(const [a,b,y] of panels) box(a,y,0.05,b,y+0.06,2.1,(f,u,v,W,H,x,yy,z)=>{ '@later'; const top=2.1-0.18*Math.sqrt(Math.max(0,1-((x-(a+b)/2)/((b-a)/2))**2)); if(z>2.1-0.18+ (0.18-(2.1-top)) && z>top)return -1;
         if(f==='T')return PAL.oakD; if(u<2.5||u>W-2.5||v>H-3||z>top-0.08||Math.abs(z-0.5)<0.04)return (u<1||v<1)?PAL.oakL:shd(PAL.oak,0.85);
         if(z<0.5)return shd(PAL.oak,0.75); const q=hh(Math.floor(u/4),Math.floor(v/4),9); const flo=((u%8)-4)**2+((v%8)-4)**2<5;
         if(flo&&q<0.25)return C('#6a4a8a'); if(flo&&q<0.45)return C('#2a5a5a'); if(Math.abs((u+v*0.6)%9-4)<0.5)return C('#2a3a5a'); return shd(C('#1e2240'),0.9+0.15*hh(u>>1,v>>1,3)); },{});
@@ -125,7 +125,7 @@
   const info=(no,name,price,desc,mat)=>({no,name,price,desc,mat});
   { const {item,box,C,shd,hh}=PGK, LX=9, LY=12, WH=3.8, N=6, RISE=2.0, SX=LX/2/N, DZ=RISE/N, OV=0.45;
     const TILE=C('#b0583a'), TILED=C('#7e3a24'), TILEL=C('#c86f4a'), PLAS=C('#55602f'), PLASD=C('#434d24'), OAK=C('#7a4520'), OAKD=C('#55301a');
-    const tiles=(f,u,v,W,H,x,y,z)=>{ if(f==='T'){ const cr=Math.floor(x*3), t=y*2+(cr%2)*0.5, fx=x*3-cr, ft=t-Math.floor(t); if(fx<0.14||ft<0.1)return TILED; return shd(hh(cr,Math.floor(t),19)<0.15?TILEL:TILE,0.9+0.14*hh(cr,Math.floor(t),23)); }
+    const tiles=(f,u,v,W,H,x,y,z)=>{ '@later'; if(f==='T'){ const cr=Math.floor(x*3), t=y*2+(cr%2)*0.5, fx=x*3-cr, ft=t-Math.floor(t); if(fx<0.14||ft<0.1)return TILED; return shd(hh(cr,Math.floor(t),19)<0.15?TILEL:TILE,0.9+0.14*hh(cr,Math.floor(t),23)); }
       if(f==='N'||f==='S')return shd(z>WH+RISE-DZ*1.5?TILED:PLAS,0.92+0.1*hh(Math.floor(x*4),Math.floor(z*6),29));
       return shd(TILED,(Math.floor(y*2)%2?0.9:1)); };
     item('herb cottage roof');

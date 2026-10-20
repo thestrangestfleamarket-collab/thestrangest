@@ -1,3 +1,4 @@
+// CHARACTERS IN PARTS: the shape kit (boxes, blobs, curves traced from a photo, lathes, tubes, skin weights) and PARTSNPC.street for the street's walkers.
 const PARTSNPC={};
 { const D2R=Math.PI/180, M4=new THREE.Matrix4(), E=new THREE.Euler(), Q=new THREE.Quaternion(), UP=new THREE.Vector3(0,1,0), V=new THREE.Vector3();
   const shape=(g,col,at,sz,rot)=>{ g=g.toNonIndexed(); if(sz)g.scale(sz[0],sz[1],sz[2]); if(rot)g.applyMatrix4(M4.makeRotationFromEuler(E.set(rot[0]*D2R,rot[1]*D2R,rot[2]*D2R))); if(at)g.translate(at[0],at[1],at[2]);
@@ -5,11 +6,11 @@ const PARTSNPC={};
   const limb=(a,b,r0,r1,col,seg=8)=>{ const d=V.set(b[0]-a[0],b[1]-a[1],b[2]-a[2]), L=d.length(); d.normalize(); const g=new THREE.CylinderGeometry(r1,r0,L,seg).toNonIndexed(); g.translate(0,L/2,0); Q.setFromUnitVectors(UP,d); g.applyQuaternion(Q); g.translate(a[0],a[1],a[2]); return shape(g,col); };
   const sph=(r,w=8,h=6)=>new THREE.SphereGeometry(r,w,h), cyl=(r0,r1,h,s=8)=>new THREE.CylinderGeometry(r0,r1,h,s), box=(x,y,z)=>new THREE.BoxGeometry(x,y,z), torus=(r,t,a=6,b=16)=>new THREE.TorusGeometry(r,t,a,b);
   const capsule=(r,l,cs=4,rs=10)=>new THREE.CapsuleGeometry(r,l,cs,rs), shell=(r0,r1,h,seg,t0,tl)=>new THREE.CylinderGeometry(r0,r1,h,seg,1,true,t0,tl), blob=(rx,ry,rz,w=12,h=8)=>{ const g=new THREE.SphereGeometry(1,w,h); g.scale(rx,ry,rz); return g; };
-  const tbox=(w0,d0,w1,d1,h,ox=0,oz=0)=>{ const a=w0/2, b=d0/2, c=w1/2, d=d1/2, pyr=!w1&&!d1;
+  const tbox=(w0,d0,w1,d1,h,ox=0,oz=0)=>{ '@later'; const a=w0/2, b=d0/2, c=w1/2, d=d1/2, pyr=!w1&&!d1;
     const V=[-a,0,-b, a,0,-b, a,0,b, -a,0,b, ox-c,h,oz-d, ox+c,h,oz-d, ox+c,h,oz+d, ox-c,h,oz+d];
     const I=pyr?[0,1,2, 0,2,3, 3,2,6, 1,0,4, 2,1,5, 0,3,7]:[0,1,2, 0,2,3, 4,6,5, 4,7,6, 3,2,6, 3,6,7, 1,0,4, 1,4,5, 2,1,5, 2,5,6, 0,3,7, 0,7,4];
     const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(V,3)); g.setIndex(I); return g; };
-  const flatten=(geo,ranges,parts)=>{ const P=geo.attributes.position.array, Nn=geo.attributes.normal.array;
+  const flatten=(geo,ranges,parts)=>{ '@later'; const P=geo.attributes.position.array, Nn=geo.attributes.normal.array;
     for(const p of parts){ if(!p.flat)continue; const r=ranges[p.name]; for(let i=r.start;i<r.start+r.count;i+=3){ const a=i*3, ax=P[a], ay=P[a+1], az=P[a+2], bx=P[a+3]-ax, by=P[a+4]-ay, bz=P[a+5]-az, cx=P[a+6]-ax, cy=P[a+7]-ay, cz=P[a+8]-az;
       let nx=by*cz-bz*cy, ny=bz*cx-bx*cz, nz=bx*cy-by*cx; const l=Math.hypot(nx,ny,nz)||1; nx/=l; ny/=l; nz/=l; for(let k=0;k<9;k+=3){ Nn[a+k]=nx; Nn[a+k+1]=ny; Nn[a+k+2]=nz; } } }
     geo.attributes.normal.needsUpdate=true; };
@@ -39,7 +40,7 @@ const PARTSNPC={};
     const base=Float32Array.from(geo.attributes.position.array), baseC=Float32Array.from(C);
     N.parts=ranges; N.tris=n/3;
     if(parts.some(p=>p.flat)){ const smooth=N.renorm; N.renorm=()=>{ smooth(); flatten(geo,ranges,parts); }; N.renorm(); }
-    N.reshape=(name,{scale=[1,1,1],move=[0,0,0],pivot}={})=>{ const r=ranges[name]; if(!r)return; const A=geo.attributes.position.array; let cx=0, cy=0, cz=0;
+    N.reshape=(name,{scale=[1,1,1],move=[0,0,0],pivot}={})=>{ '@later'; const r=ranges[name]; if(!r)return; const A=geo.attributes.position.array; let cx=0, cy=0, cz=0;
       if(pivot)[cx,cy,cz]=pivot; else{ for(let i=r.start;i<r.start+r.count;i++){ cx+=base[i*3]; cy+=base[i*3+1]; cz+=base[i*3+2]; } cx/=r.count; cy/=r.count; cz/=r.count; }
       for(let i=r.start;i<r.start+r.count;i++){ A[i*3]=cx+(base[i*3]-cx)*scale[0]+move[0]; A[i*3+1]=cy+(base[i*3+1]-cy)*scale[1]+move[1]; A[i*3+2]=cz+(base[i*3+2]-cz)*scale[2]+move[2]; }
       geo.attributes.position.needsUpdate=true; N.renorm(); };

@@ -3473,3 +3473,10 @@ park's brick wall twice as high", "no ivy on the wall"; `061-park.js`)
   only those whose area touches that tile (`TCL`, in their order, so the first match is the same one); `marks` makes its noise only when it
   draws; `cvNoise` no longer makes a small function on each call. `hash` is left alone: its second multiply goes past exact integers, so any
   faster form would give other noise. Checked by `tests/texhash.cjs`: every texture identical to the base.
+
+## 20 Oct 2026: multiplayer, more answers
+
+- **Owner's answers** (20 Oct 2026, on the overhaul review): talking between players "yes but not yet"; player trade "yes" (players sell or
+  give each other things, so a trade runs on the block's server with both sides confirming); what happens when a block is full is "future
+  plans"; looks "yes everyone can customize" (the crowd keeps one built body per look). Still open: whether friends always land in the same
+  copy of a block.

@@ -1,4 +1,5 @@
-{ const K=STORE.kit, {room,STEPS,sol}=K, {X,Y,Z,gbox}=BOD, hs=BOD.g.hash, sh=BOD.K.sh, {PROPS,LAMPS}=BOD.STOREK, J=BOD.GDJ;
+// THE DOJO: the dojo's building on the street (its own builder; the hall inside builds when you go in).
+await grab('dojo',async()=>{ const K=STORE.kit, {room,STEPS,sol}=K, {X,Y,Z,gbox}=BOD, hs=BOD.g.hash, sh=BOD.K.sh, {PROPS,LAMPS}=BOD.STOREK, J=BOD.GDJ;
   const lit=c=>Object.assign([Math.min(255,c[0]),Math.min(255,c[1]),Math.min(255,c[2])],{e:1});
   const B={x0:760,y0:-100,x1:778,y1:-88,h:150}, DA=(B.x0+B.x1)/2, DH=100, MAT={x0:DA-3.6,x1:DA+3.6,y0:-96.8,y1:-92.2};
   const GM=146.9, GX=BOD.OX+(GM-BOD.OX)/BLDK, GY=BOD.OY;
@@ -66,4 +67,4 @@
       LAMPS.push({own:1,room:1,day:true,x:DA,y:(MAT.y0+MAT.y1)/2,z:B.h-30,r:7,c:[1,.78,.52]});
     });
     DOJO.built=true; if(DOJO.ready)DOJO.ready(); });
-}
+});

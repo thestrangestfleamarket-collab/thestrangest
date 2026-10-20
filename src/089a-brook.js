@@ -1,5 +1,5 @@
 const BROOK={}; window.BROOK=BROOK;
-{ const go=__CHUNK__('park',()=>{ if(typeof PARK==='undefined'||!PARK.fire||!PARK.brook||!MODS.land)return setTimeout(go,500);
+{ const go=()=>{ '@park'; if(typeof PARK==='undefined'||!PARK.fire||!PARK.brook||!MODS.land)return setTimeout(go,500);
     const P=PARK, BK=P.brook, {C,N,SL,B,W,L,D,RF}=BK, T=TILE, WU=T/.84, G0=-.5*ZU, X=x=>BOD.XS(x+(P.ox||0)), Z=y=>BOD.ZS(y+(P.oy||0)), grp=(typeof MAPG!=='undefined'&&MAPG.park)||scene;
     const hs=(i,s)=>{ const v=Math.sin(i*12.9898+s*78.233)*43758.5453; return v-Math.floor(v); }, ss=(a,b,v)=>{ const t=Math.max(0,Math.min(1,(v-a)/(b-a))); return t*t*(3-2*t); };
     const bed=(x,y)=>{ const v=BK.h(x,y); return v==null?0:v; }, bedL=(x,y)=>{ const v=bed(x,y), d=-FOUNT.lake(x,y); return d>0?Math.min(v,-FOUNT.bedM(d)-(.04+G0)/WU):v; }, E=Math.ceil((W(SL)+B+1)/.5), row=k=>{ const kc=Math.max(0,Math.min(N,k)), c=C[kc], [nx,ny]=BK.nrm(kc), tx=ny, ty=-nx, o=(k-kc)*SL/N; return [c[0]+tx*o,c[1]+ty*o,c[2],nx,ny]; };
@@ -92,5 +92,5 @@ const BROOK={}; window.BROOK=BROOK;
       if(typeof CLOCK!=='undefined'&&CLOCK.sun){ U.uSun.value.copy(CLOCK.sun.color).multiplyScalar(Math.min(1.2,CLOCK.sun.intensity)); U.uDay.value=Math.max(.15,Math.min(1,(CLOCK.elev()+4)/14)); } if(window.SKY&&SKY.U)U.uSky.value.copy(SKY.U.uH.value);
       try{ const c=typeof SFX!=='undefined'&&SFX.live&&SFX.live(); if(c){ sound(c,r?Math.max(0,r[0]-W(s)):99,r?Math.min(1,rif(s)):0); if(wade&&mv>.3&&(splash-=dt)<0){ splash=.42; plash(c); } if(wade&&!wasIn)plash(c); } }catch(_){ } wasIn=!!wade; };
     BROOK.tris=()=>[...banks,...waters.map(w=>w.me)].reduce((a,m)=>a+m.geometry.index.count/3,0)+BROOK.rocks.reduce((t,m)=>t+m.count*80,0)+BROOK.pebbles.reduce((t,m)=>t+m.count*20,0);
-    BROOK.ready=true; });
+    BROOK.ready=true; };
   PARK.later(go); }

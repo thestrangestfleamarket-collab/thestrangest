@@ -29,7 +29,7 @@
     let c=sh([84,82,90],.9+.14*grain(x*1.5,y*1.5,932,.8)); if(grain(x*2.5,y*2.5,933,.6)>.7)c=sh(c,.72); if(hs(px,py,934)<.004)c=[190,170,90]; if(hs(px>>1,py>>1,935)<.003)c=[120,40,40]; return c; };
   const GL={S:'01111100001000001110000010000111110',T:'11111001000010000100001000010000100',A:'01110100011000111111100011000110001',I:'01110001000010000100001000010001110',C:'01111100001000010000100001000001111',L:'10000100001000010000100001000011111',U:'10001100011000110001100011000101110',B:'11110100011000111110100011000111110'};
   const neonW=(word,cell,atf,zc,col)=>{ const bs=[], c=Object.assign(col.slice(),{e:1}); [...word].forEach((ch,i)=>{ const g=GL[ch]; for(let r=0;r<7;r++)for(let q=0;q<5;q++)if(g[r*5+q]==='1')bs.push(atf(i*6+q,cell,zc-(r+1)*cell.z,c)); }); return bs; };
-  K.offmap('CLUB STATIC',[426,-104,462,-74],__CHUNK__('club',()=>{ const T=.1;
+  K.offmap('CLUB STATIC',[426,-104,462,-74],()=>{ '@club'; const T=.1;
     const xw=[['lobw','y',B.x0+LOB.x0,B.y0+LOB.y0,B.y1-T,1,[],true],['lobs','x',B.y0+LOB.y0,B.x0+LOB.x0,B.x1-T,1,[{a0:B.x0+18.6,a1:B.x0+20.2,z0:0,z1:94}],true],
       ['bthw','y',B.x0+BTH.x0,B.y0+T,B.y0+BTH.y1,1,[{a0:B.y0+4.3,a1:B.y0+5.7,z0:0,z1:94}],true],['bthn','x',B.y0+BTH.y1,B.x0+BTH.x0,B.x1-T,1,[],true]];
     room('club','CLUB STATIC',B,{floor,in:inner,out:outer,cope:[60,58,62],roof:(x,y)=>sh([52,52,56],.9+.1*hs(Math.floor(x*2),Math.floor(y*2),940))},{w:'f',a:B.x0+20,wd:1.56,h:96},(B_,l0)=>{
@@ -80,9 +80,9 @@
         {x:x0+19,y:y0+8.5,z:110,r:6,c:[.6,.3,1],...o},{x:x0+21,y:y0+3,z:110,r:5,c:[.8,.9,1],...o},{x:x0+20,y:y0+15,z:110,r:5,c:[1,.3,.3],...o});
       LAMPS.push({own:1,x:dX,y:fy+1,z:100,r:10,c:[1,.5,.85]},{own:1,x:B.x0-1,y:y0+9,z:120,r:9,c:[1,.66,.32]});
       thing('wall light',[bx(B.x0-.3,y0+8.8,B.x0,y0+9.2,120,126,[50,50,54]),bx(B.x0-.26,y0+8.84,B.x0-.02,y0+9.16,116,120,[255,190,110],{em:1})],{high:1});
-      CLUB.spots={x0,y0,dX,fy,cX,stools:stools.map(s=>({x:(s.x0+s.x1)/2,y:(s.y0+s.y1)/2}))}; },{xw}); const hook=()=>{ try{ CLOCK.tick; }catch(e){ setTimeout(hook,400); return; } CLUB.hook(); }; hook(); }));
+      CLUB.spots={x0,y0,dX,fy,cX,stools:stools.map(s=>({x:(s.x0+s.x1)/2,y:(s.y0+s.y1)/2}))}; },{xw}); const hook=()=>{ try{ CLOCK.tick; }catch(e){ setTimeout(hook,400); return; } CLUB.hook(); }; hook(); });
   const BPM=124, BEAT=60/BPM, PAL=[[255,40,180],[40,210,255],[150,60,255],[255,170,40]];
-  const init=__CHUNK__('club',()=>{ if(CLUB.ready||!CLUB.spots)return; CLUB.ready=true; const S=CLUB.spots, x0=S.x0, y0=S.y0;
+  const init=()=>{ '@club'; if(CLUB.ready||!CLUB.spots)return; CLUB.ready=true; const S=CLUB.spots, x0=S.x0, y0=S.y0;
     const TL=new THREE.InstancedMesh(new THREE.PlaneGeometry(TILE*.92,TILE*.92).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({color:0xffffff}),70), m4=new THREE.Matrix4(), col=new THREE.Color();
     for(let j=0;j<7;j++)for(let i=0;i<10;i++){ m4.makeTranslation(X(x0+FLR.x0+i+.5),Y(.6),Z(y0+FLR.y0+j+.5)); TL.setMatrixAt(j*10+i,m4); TL.setColorAt(j*10+i,col.setRGB(.1,.05,.12)); }
     TL.instanceMatrix.needsUpdate=true; scene.add(TL); CLUB.tiles=TL;
@@ -111,8 +111,8 @@
       const ks=[[0,{}]]; for(let i=0;i<8;i++){ const t=(i+.5)*b/2+.08, arm=i<4?(i%2?hiR:hiL):pump; ks.push([t-b/4,down(i%2?-1:1,arm)],[t,up]); }
       ks.push([4*b+.25,{root:[0,18,0],bend:0,nod:0,side:0,cyaw:0,L:{ua:[9,8],fa:[19,8],fist:0},R:{ua:[9,8],fa:[19,8],fist:0}}]);
       RIG.MOVES.dance=RIG.mkMove({keys:ks.sort((p,q)=>p[0]-q[0]).filter((k,i,a)=>!i||k[0]>a[i-1][0]+.01)}); RIG.KEYMOVE.U='dance'; MOVEK.u='U'; }
-    CLUB.sound(); });
-  CLUB.sound=__CHUNK__('club',()=>{ const A={}; CLUB.A=A; let next=0, n=0;
+    CLUB.sound(); };
+  CLUB.sound=()=>{ '@club'; const A={}; CLUB.A=A; let next=0, n=0;
     const mk=c=>{ if(A.c===c)return true; A.c=c; A.lp=c.createBiquadFilter(); A.lp.type='lowpass'; A.lp.frequency.value=300; A.g=c.createGain(); A.g.gain.value=0; A.rg=c.createGain(); A.rg.gain.value=0;
       A.out=c.createGain(); A.lp.connect(A.g); A.g.connect(A.out); A.rg.connect(A.out); A.out.connect(c.destination);
       const nb=c.createBuffer(1,c.sampleRate,c.sampleRate), dd=nb.getChannelData(0); for(let i=0;i<dd.length;i++)dd[i]=Math.random()*2-1; A.noise=nb; next=c.currentTime+.1; A.t0=next; return true; };
@@ -134,7 +134,7 @@
       const d=where.d, open=where.hall?1:0, g0=here?v*Math.max(0,1-d/(60*TILE))*(open?.9:where.inside?.7:.55):0;
       A.g.gain.setTargetAtTime(g0,ct,.15); A.lp.frequency.setTargetAtTime(open?16000:where.inside?700:260,ct,.15); A.rg.gain.setTargetAtTime(here&&!open?v*(where.inside?.55:Math.max(0,.35-d/(30*TILE))):here?v*.06:0,ct,.15);
       if(!here){ next=Math.max(next,ct+.1); return; } while(next<ct+.3){ beat(c,next,n); n++; next+=BEAT; } CLUB.n=n; CLUB.tn=next; };
-    CLUB.beatNow=()=>{ const c=A.c; if(c&&c.state==='running'&&CLUB.tn)return n-(CLUB.tn-c.currentTime)/BEAT; return performance.now()/1000/BEAT; }; });
+    CLUB.beatNow=()=>{ const c=A.c; if(c&&c.state==='running'&&CLUB.tn)return n-(CLUB.tn-c.currentTime)/BEAT; return performance.now()/1000/BEAT; }; };
   CLUB.dropIt=()=>{ const b=Math.ceil(CLUB.n||CLUB.beatNow()), r0=Math.ceil(b/4)*4; CLUB.drop={r0,n0:r0+8,n1:r0+8+16}; };
   const FOGC=new THREE.Fog(0x161020,2,200), FV=new THREE.Vector3();
   CLUB.hook=()=>{ let recs=null, nRec=-1; const tick0=CLOCK.tick; CLOCK.tick=dt=>{ tick0(dt); if(!CLUB.spots)return; if(!CLUB.ready)init();

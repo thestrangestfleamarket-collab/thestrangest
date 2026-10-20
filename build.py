@@ -91,12 +91,12 @@ game = ('document.body.insertAdjacentHTML("afterbegin",' + json.dumps(read('dist
     + UNB
     + 'const __DP=Object.fromEntries([' + ','.join('[' + names[f] + ',' + bins.get(f, 'null') + ']' for f in used) + '].map(([n,b])=>[n,__GJ(n,b)]));\n'
     + 'await __RIG;\n'
-    + CH['rt'] + 'const __CU=__CHUNKURLS__, __CE=t=>(0,eval)(t);\nconst __CLOAD=n=>fetch("/g/"+__CU[n]).then(r=>{ if(!r.ok)throw new Error(n+" "+r.status); return r.text(); }).then(__CE);\n'
+    + CH['rt'] + 'const __CU=__CHUNKURLS__, __CE=t=>(0,eval)(t); window.__CREG=m=>m;\nconst __CLOAD=n=>fetch("/g/"+__CU[n]).then(r=>{ if(!r.ok)throw new Error(n+" "+r.status); return r.text(); }).then(__CE);\n'
     + 'const __CSYNC=n=>{ const x=new XMLHttpRequest(); x.open("GET","/g/"+__CU[n],false); x.send(); if(x.status!==200)throw new Error(n+" "+x.status); return __CE(x.responseText); };\n'
     + re.sub(r'__LAZY__\("([^"]+)"\)', lambda m: '(()=>__GJ(' + names[m.group(1)] + ',' + bins.get(m.group(1), 'null') + '))', re.sub(r'__DATA__\("([^"]+)"\)', lambda m: '(await __DP[' + names[m.group(1)] + '])', body)))
 os.remove('dist/g/page.html')
 open('dist/g/game.js', 'w').write(re.sub(r"'https://cdn\.jsdelivr\.net/npm/((?:@[^/@']+/)?[^/@']+)@([^/']+)[^']*'", npm, data(game)))
-for n, c in CH['code'].items(): open('dist/g/x-' + n + '.js', 'w').write('"use strict";(' + c + ');\n')
+for n, c in CH['code'].items(): open('dist/g/x-' + n + '.js', 'w').write('"use strict";__CREG(' + c + ');\n')
 m = subprocess.run(['node', 'tools/bundle.cjs', 'dist/g/game.js', 'dist/g'] + ['dist/g/x-' + n + '.js' for n in CH['code']], check=True, capture_output=True, text=True).stdout.strip()
 open('dist/g/market.html', 'w').write('<!doctype html><meta name="market-build" content="' + bv + '"><title>The Market</title><body bgcolor=#0e1016><script type=module src=/g/' + m + '></script>')
 pages = pages[:2] + ['dist/g/market.html']

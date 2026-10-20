@@ -222,7 +222,7 @@ function gdShape(GS,K,LAMPS){ const s=K.s, o=K.o, SC=1.5, cx=o[0]+4*s, Y1=o[1]+3
     for(const [a,b] of COP)sol(a,yR,b,yE,7); for(const px of [cx-1.75,cx+1.75])sol(px-.17,yE-.33,px+.17,yE+.01,129); for(const [a,b,c_,d] of ISL)sol(a,b,c_,d,140);
     const LT=[];
     const light=(x,y,z,c,r,fl)=>{ const cm=Math.max(...c), L=new THREE.PointLight(new THREE.Color(c[0]/cm,c[1]/cm,c[2]/cm),0,r*TILE*1.25,1.6); L.position.set(X(x),Y(z),Z(y)); if(LITE.recs.length){ L.userData.grp=MAPG.bodega||null; LITE.recs.push(L); } else (MAPG.bodega||scene).add(L); LT.push({L,i:7*cm*Math.min(1.2,r/5),fl,s:Math.round(x*7+y*13)}); return LT[LT.length-1]; };
-    let built=false; const build=__CHUNK__('bath',()=>{ if(built)return; built=true; const keep=BATCH.items.splice(0), m0=BATCH.meshes; BATCH.meshes={};
+    let built=false; const build=()=>{ '@bath'; if(built)return; built=true; const keep=BATCH.items.splice(0), m0=BATCH.meshes; BATCH.meshes={};
       for(const b of WB)gbox({...b,skf:(nx,ny)=>!((nx||ny)&&nx===WALLS[b.id].n[0]&&ny===WALLS[b.id].n[1])},'GD'+b.id);
       for(const [name,boxes] of LATER){ BATCH.tag=OBJ('bodega',name); for(const b of boxes)gbox(b,'GDL'); }
       BATCH.tag=OBJ('bodega','bath house'); flat(xi0,yE,xi1,yi1,.4,floorCol,'GDL');
@@ -254,7 +254,7 @@ function gdShape(GS,K,LAMPS){ const s=K.s, o=K.o, SC=1.5, cx=o[0]+4*s, Y1=o[1]+3
       if(window.BF&&BF.add){ const at=(x,y,z)=>[X(x),Y(z),Z(y)], PER=[at(cx-.6,yi0+1,19),at(cx+.62,yi0+.95,17),at(xi0+2.25,yi0+.55,29),at(xi1-2.25,yi0+.55,29),at(cx-2.38,yE-.16,152),at(cx+2.15,yE-.16,152),at(cx,yi0+.62,132),at(xi0+.45,yE-.16,20)];
         [0,2,4,6,8,10].forEach((k,i)=>{ const b=BF.add(k,PER); b.at=b.to=i%PER.length; b.g.position.set(...PER[b.at]); }); }
       was=null;
-      if(window.ROOMS&&ROOMS.lazy.bath)ROOMS.lazy.bath.done=true; if(window.ROOMS)ROOMS.reset(); if(window.CLIP)CLIP.run(); });
+      if(window.ROOMS&&ROOMS.lazy.bath)ROOMS.lazy.bath.done=true; if(window.ROOMS)ROOMS.reset(); if(window.CLIP)CLIP.run(); };
     const OUTL=[[X0+(BAY.a0+BAY.a1)/2,Y1+1.4,70,[1,.6,.56],7],[X0+(EW.a0+EW.a1)/2,Y1+1.3,74,[1,.74,.42],7.5],[X0+W/2,Y1+1.2,90,[1,.66,.4],6],[X0+W/2,Y1+.9,H+60,[1,.72,.44],6],[X0-1.1,Y0+D/2,80,[1,.76,.5],5]];
     for(const [x,y,z,c,r] of OUTL){ const cm=Math.max(...c), L=new THREE.PointLight(new THREE.Color(c[0]/cm,c[1]/cm,c[2]/cm),9*cm*Math.min(1.3,r/5),r*TILE*1.25,1.6); L.position.set(X(x),Y(z),Z(y)); L.userData.i0=L.intensity; scene.add(L); }
     const SH=[]; { const V=THREE.Vector3, g0=Y(.6);

@@ -3,26 +3,26 @@ const { parse, analyze } = require('./scope.cjs');
 const RT = 'const __CM={}, __CP={};\n'
   + 'const LOAD=(...ns)=>Promise.all(ns.map(n=>!n||__CM[n]?0:__CP[n]||(__CP[n]=__CLOAD(n).then(m=>{ __CM[n]=__CM[n]||m; },e=>{ delete __CP[n]; throw e; }))));\n'
   + 'const LOADED=n=>!n||!!__CM[n];\n'
-  + 'const __CF=(n,i,t,s)=>{ let f=null; const w=function(){ if(!f){ if(!__CM[n]){ console.warn("chunk "+n+" was not loaded before use"); __CM[n]=__CSYNC(n); } f=__CM[n][i](...t(),s); } return f.apply(this,arguments); }; w.chunk=n; return w; };\n'
+  + 'const __CF=(n,i,t,s)=>{ let f=null; const w=function(){ return (f||(f=__CI(n,i,t,s))).apply(this,arguments); }; w.chunk=n; return w; };\n'
+  + 'const __CI=(n,i,t,s)=>{ if(!__CM[n]){ console.warn("chunk "+n+" was not loaded before use"); __CM[n]=__CSYNC(n); } return __CM[n][i](...t(),s); };\n'
   + 'window.LOAD=LOAD; window.LOADED=LOADED;\n';
 function chunks(body) {
-  const ast = parse(body), A = analyze(ast), marks = [];
+  const ast = parse(body), A = analyze(ast), marks = [], FN = /^(Arrow)?Function(Expression|Declaration)$/;
   (function w(n) {
     if (!n || typeof n.type !== 'string') return;
-    if (n.type === 'CallExpression' && n.callee.type === 'Identifier' && n.callee.name === '__CHUNK__') {
-      const [a, f] = n.arguments;
-      if (n.arguments.length !== 2 || a.type !== 'Literal' || typeof a.value !== 'string' || !/^[a-z][a-z0-9]*$/.test(a.value) || !/^(Arrow)?FunctionExpression$/.test(f.type))
-        throw new Error('__CHUNK__("name", function) expected at ' + n.start + ': ' + body.slice(n.start, n.start + 80));
-      marks.push({ call: n, name: a.value, fn: f });
-      for (const k in f) { const c = f[k]; if (Array.isArray(c)) c.forEach(w); else if (c && typeof c.type === 'string') w(c); }
-      return;
+    if (FN.test(n.type) && n.body.type === 'BlockStatement') {
+      const d = n.body.body[0];
+      if (d && d.type === 'ExpressionStatement' && d.expression.type === 'Literal' && typeof d.expression.value === 'string' && /^@/.test(d.expression.value)) {
+        const name = d.expression.value.slice(1);
+        if (!/^[a-z][a-z0-9]*$/.test(name)) throw new Error('bad chunk name ' + name + ' at ' + n.start);
+        if (n.generator) throw new Error('chunk "' + name + '": a generator at ' + n.start);
+        marks.push({ call: n, name, fn: n, dir: d, decl: n.type === 'FunctionDeclaration' });
+      }
     }
     for (const k in n) { if (k === 'type') continue; const c = n[k]; if (Array.isArray(c)) c.forEach(w); else if (c && typeof c.type === 'string') w(c); }
   })(ast);
-  for (const m of marks) for (const o of marks) if (o !== m && o.call.start > m.fn.start && o.call.end < m.fn.end) throw new Error('__CHUNK__ inside __CHUNK__ at ' + o.call.start);
+  for (const m of marks) for (const o of marks) if (o !== m && o.call.start > m.fn.start && o.call.end < m.fn.end) throw new Error('a chunk function inside a chunk function at ' + o.call.start + ': ' + body.slice(o.call.start, o.call.start + 60));
   const inside = (p, m) => p >= m.fn.start && p < m.fn.end;
-  const binding = new Map();
-  const key = r => r.to;
   const written = new Map();
   for (const r of A.refs) if (r.to && r.write === true) { if (!written.has(r.to)) written.set(r.to, new Set()); written.get(r.to).add(r.id.name); }
   const declAt = new Map();
@@ -34,16 +34,16 @@ function chunks(body) {
     (function sc(n, fnDepth) {
       if (!n || typeof n.type !== 'string') return;
       if (n.type === 'ThisExpression' || n.type === 'Super' || (n.type === 'MetaProperty' && n.meta.name === 'new'))
-        if (!fnDepth && f.type === 'ArrowFunctionExpression') throw new Error('__CHUNK__("' + m.name + '"): an arrow that uses this/super/new.target at ' + n.start);
+        if (!fnDepth && f.type === 'ArrowFunctionExpression') throw new Error('chunk "' + m.name + '": an arrow that uses this/super/new.target at ' + n.start);
       const d = n !== f && (n.type === 'FunctionExpression' || n.type === 'FunctionDeclaration') ? 1 : 0;
       for (const k in n) { if (k === 'type') continue; const c = n[k]; if (Array.isArray(c)) c.forEach(x => sc(x, fnDepth + d)); else if (c && typeof c.type === 'string') sc(c, fnDepth + d); }
     })(f.body, f.type === 'ArrowFunctionExpression' ? 0 : 1);
     for (const r of A.refs) {
       if (!inside(r.id.start, m) || r.write === 'decl') continue;
-      if (r.id.name === 'arguments' && (!r.to || !insideScope(r.to, f))) { if (f.type === 'ArrowFunctionExpression') throw new Error('__CHUNK__("' + m.name + '"): arguments of an outer function'); continue; }
+      if (r.id.name === 'arguments' && (!r.to || !insideScope(r.to, f))) { if (f.type === 'ArrowFunctionExpression') throw new Error('chunk "' + m.name + '": arguments of an outer function'); continue; }
       if (!r.to || scopeInside(r.to, m)) continue;
       const nm = r.id.name;
-      if (/^__(DATA|LAZY|B64)__$/.test(nm)) throw new Error('__CHUNK__("' + m.name + '"): ' + nm + ' inside a chunk');
+      if (/^__(DATA|LAZY|B64)__$/.test(nm)) throw new Error('chunk "' + m.name + '": ' + nm + ' inside a chunk');
       if (nm === '__s') throw new Error('__s is reserved');
       const d = declAt.get(r.to) && declAt.get(r.to).get(nm);
       const w = written.get(r.to) && written.get(r.to).has(nm);
@@ -63,12 +63,14 @@ function chunks(body) {
     for (const k in n) { if (k === 'type') continue; const c = n[k]; if (Array.isArray(c)) c.forEach(w); else if (c && typeof c.type === 'string') w(c); } })(ast);
   for (const m of marks) {
     const f = m.fn, ed = m.rew.map(r => ({ s: r.id.start, e: r.id.end, t: (sh.has(r.id.start) ? r.id.name + ':' : '') + '__s.' + r.id.name })).sort((a, b) => b.s - a.s);
+    ed.push({ s: m.dir.start, e: m.dir.end, t: '' }); ed.sort((a, b) => b.s - a.s);
     let t = body.slice(f.start, f.end);
     for (const e of ed) t = t.slice(0, e.s - f.start) + e.t + t.slice(e.e - f.start);
     const imm = [...m.cap].filter(([, c]) => !c.live).map(([n]) => n), live = [...m.cap].filter(([, c]) => c.live);
     (out[m.name] = out[m.name] || []).push(m.ix + ':(' + imm.concat('__s').join(',') + ')=>(' + t + ')');
     const acc = live.length ? '{' + live.map(([n, c]) => 'get ' + n + '(){ return ' + n + '; }' + (c.set ? ',set ' + n + '(v){ ' + n + '=v; }' : '')).join(',') + '}' : '0';
-    edits.push({ s: m.call.start, e: m.call.end, t: '__CF(' + JSON.stringify(m.name) + ',' + m.ix + ',()=>[' + imm.join(',') + '],' + acc + ')' });
+    const args = JSON.stringify(m.name) + ',' + m.ix + ',()=>[' + imm.join(',') + '],' + acc, nm = m.decl && f.id.name;
+    edits.push({ s: f.start, e: f.end, t: m.decl ? (f.async ? 'async ' : '') + 'function ' + nm + '(){ return (' + nm + '.$||(' + nm + '.$=__CI(' + args + '))).apply(this,arguments); }' : '__CF(' + args + ')' });
   }
   edits.sort((a, b) => b.s - a.s);
   let main = body;

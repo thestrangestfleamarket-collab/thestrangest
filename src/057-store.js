@@ -145,7 +145,7 @@
     if(!AWAY.has('avenue'))for(const [id,name,z0,z1,d,h] of AVR){ STORE.places.push([name,0,0,'up']);
       STEPS.push(()=>{ const B={id:'lav_'+id,x0:AX,y0:-77+z0/BLDK+.1,x1:AX+d,y1:-77+z1/BLDK-.1,h}; room('av_'+id,name,B,{floor:conc,in:plaster},{w:'w',a:(B.y0+B.y1)/2,wd:1.56,h:94},(B,l0)=>{ LAMPS.push({own:1,room:1,day:true,x:(B.x0+B.x1)/2,y:(B.y0+B.y1)/2,z:Math.min(h-20,120),r:Math.max(6,.75*Math.max(d,(z1-z0)/BLDK)),c:[1,.9,.75]}); }); }); } }
 
-  offmap('VCR REPAIR',[368,-100,408,-72],__CHUNK__('vcr',()=>{ const B={id:'lvcr',x0:380,y0:-92,x1:394,y1:-82,h:270}, H=B.h, hs=hash, P=[.2,2.5,4.95,7.9,10.05], WIN=[[.45,2.2],[5.2,7.6]], WZ=[42,118];
+  offmap('VCR REPAIR',[368,-100,408,-72],()=>{ '@vcr'; const B={id:'lvcr',x0:380,y0:-92,x1:394,y1:-82,h:270}, H=B.h, hs=hash, P=[.2,2.5,4.95,7.9,10.05], WIN=[[.45,2.2],[5.2,7.6]], WZ=[42,118];
     const sto=(i,j)=>{ const r=hs(i,j,811); return r<.34?[214,200,182]:r<.56?[230,220,206]:r<.72?[186,164,142]:r<.82?[150,124,102]:r<.92?[246,242,234]:[112,94,80]; };
     const blk=(u,z)=>{ const r=Math.floor(z/5), i=Math.floor(u*24+(r&1)*5), c=Math.floor(i/10); if(i%10===9||Math.floor(z)%5===4)return [160,161,161]; const v=196+hs(c,r,812)*14; return [v,v,v-3]; };
     const front=(x,z,f)=>{ const u=x-B.x0;
@@ -250,7 +250,7 @@
         FOGV.color.copy(cD).lerp(cN,n); FOGV.near=d-(11+6*n)*TILE; FOGV.far=d+(40-10*n)*TILE; scene.fog=FOGV; scene.background.lerp(FOGV.color,.85);
         cam.getWorldDirection(V3); V3.y=0; if(V3.lengthSq()<1e-6)V3.set(0,0,1); CU.uCF.value.copy(V3.normalize()); CU.uCO.value.set(pos.x,0,pos.z);
         beam.rotation.y=Math.sin(t*.13)*1.1+.4; beam.rotation.x=2.35+Math.sin(t*.21)*.12; beam.material.opacity=.03+.06*n; }; }
-  }));
+  });
 
   const bake=()=>{ BATCH.cast=true;
   BATCH.build((k,map,emap)=>{ const pl=planes[k], cp=pl?{clippingPlanes:[pl]}:{};
@@ -266,7 +266,7 @@
   STORE.meshes=M; STORE.stats=BATCH.stats; STORE.XYZ={X,Y,Z};
   { const pend=[]; let done=false;
     const lit=()=>{ if(!LITE.recs.length)return; const nl=[]; scene.traverse(o=>{ if(o.isPointLight&&!o.userData.pool)nl.push(o); }); for(const L of nl){ L.userData.grp=null; L.castShadow=false; L.removeFromParent(); LITE.recs.push(L); } };
-    const need=()=>[...new Set(STEPS.map(f=>f.chunk).filter(Boolean))];
+    const need=()=>[...new Set(['later',...STEPS.map(f=>f.chunk).filter(Boolean)])];
     const step=()=>{ STEPS.shift()(); pend.push(...BATCH.items.splice(0)); lit(); STORE.doorThings(); };
     const finish=()=>{ if(done)return; done=true; while(STEPS.length)step(); if(!pend.length)return; BATCH.items=pend; Object.assign(STORE.meshes,bake());
       const Tk=STORE.tank; if(Tk){ WATER.body({name:'tank',X0:X(Tk.x0),X1:X(Tk.x1),Z0:Z(Tk.y0),Z1:Z(Tk.y1),lvl:Y(Tk.z+(Tk.dz||0)),GX:110,GY:40,dep:()=>(Tk.z-Tk.bed)/50*1.8});

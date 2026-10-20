@@ -41,7 +41,7 @@
     else if((TR.ph==='good'||TR.ph==='miss')&&TR.t>1.4){ TR.n++; if(TR.n>=TR.list.length){ TR.ph='end'; TR.t=0; show('TRAINING DONE: '+TR.ok+' OF '+TR.list.length,'MARTIAL ARTS '+(FORAGE.S.sk.fight/10).toFixed(1),'#f2c14e'); }
       else { TR.ph='intro'; TR.t=1.2; } }
     else if(TR.ph==='end'&&TR.t>2.8)TR.stop(); };
-  const mk=__CHUNK__('dojo',()=>{ if(N)return; const MT=R.MATS; if(!MT.includes('ninja')){ MT.push('ninja'); W3.ramp.push(['#4a4c5c','#2e2f3c','#1d1e27','#0e0e14'].map(h=>new THREE.Color(h))); }
+  const mk=()=>{ '@dojo'; if(N)return; const MT=R.MATS; if(!MT.includes('ninja')){ MT.push('ninja'); W3.ramp.push(['#4a4c5c','#2e2f3c','#1d1e27','#0e0e14'].map(h=>new THREE.Color(h))); }
     const NB=MT.indexOf('ninja'), keep=new Set(['eye','eyeW','pupil'].map(n=>MT.indexOf(n)).filter(i=>i>=0)), LID=MT.indexOf('lid'), SKN=MT.indexOf('skin');
     const {PCS,J}=musBody(), H=J.head; for(const p of PCS)p.recol=m=>keep.has(m)?m:m===LID?SKN:NB;
     if(!MT.includes('ninjaface')){ MT.push('ninjaface'); W3.ramp.push(W3.ramp[SKN].map(c=>c.clone())); } const NF=MT.indexOf('ninjaface');
@@ -50,7 +50,7 @@
     const FM=figureMesh(PCS,'ninja'), g=new THREE.Group(); g.add(FM.me); scene.add(g);
     const S=R.create(); S.smooth=true; const hb=new THREE.Mesh(new THREE.BoxGeometry(1.1*T,2.3*T,1.1*T),new THREE.MeshBasicMaterial({visible:false})); scene.add(hb);
     N={g,FM,PCS,S,hb,x:CX,z:CZ,hd:0,to:0,ki:0,cur:null,q:null,tris:FM.tris};
-    UI.thing({name:'THE NINJA',obj:hb,reach:1.7*T,near:3*T,tall:2.5*T,act:()=>TR.start()}); });
+    UI.thing({name:'THE NINJA',obj:hb,reach:1.7*T,near:3*T,tall:2.5*T,act:()=>TR.start()}); };
   D.ready=mk; if(D.built)mk();
   const CB=()=>(R.RIGT&&R.RIGT.combo)||1;
   const begin=s=>{ const S=N.S, [k,a]=s; N.cur={k,a,t:0};

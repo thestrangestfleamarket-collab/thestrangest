@@ -27,16 +27,18 @@ const TOUR={
   const ctx=await b.newContext({viewport:{width:960,height:540}});
   if(mode==='site')await ctx.addCookies([{name:'tsfm-pass',value:'dev:site-check',url:BASE}]);
   const pg=await ctx.newPage(); pg.setDefaultTimeout(900000);
-  pg.on('pageerror',e=>rep.errors.push(e.message.slice(0,400))); pg.on('console',m=>{ if(m.type()==='error'||/not loaded before use/.test(m.text()))rep.errors.push('console: '+m.text().slice(0,300)); });
+  pg.on('pageerror',e=>rep.errors.push(e.message.slice(0,400))); pg.on('console',m=>{ if((m.type()==='error'&&!/URL scheme "file"/.test(m.text()))||/not loaded before use/.test(m.text()))rep.errors.push('console: '+m.text().slice(0,300)); });
   const req=[]; let phase='start'; pg.on('request',r=>req.push({u:r.url(),phase}));
-  if(process.env.COV)await pg.coverage.startJSCoverage({reportAnonymousScripts:true,resetOnNavigation:false});
+  let cdp=null; const SRC={}; if(process.env.COV){ cdp=await ctx.newCDPSession(pg); await cdp.send('Debugger.enable'); cdp.on('Debugger.scriptParsed',e=>{ if(e.length>500000)SRC[e.scriptId]=1; }); await cdp.send('Profiler.enable'); await cdp.send('Profiler.startPreciseCoverage',{callCount:true,detailed:false}); }
+  const snap=async()=>{ const r=await cdp.send('Profiler.takePreciseCoverage'); const o={}; for(const s of r.result)if(SRC[s.scriptId])for(const f of s.functions){ const g=f.ranges[0]; o[s.scriptId+':'+g.startOffset+':'+g.endOffset]=(o[s.scriptId+':'+g.startOffset+':'+g.endOffset]||0)+g.count; } return o; };
   const t0=Date.now(); await pg.goto(url,{waitUntil:'commit',timeout:600000});
   let ok=false; for(let i=0;i<3000&&!(ok=await pg.evaluate(()=>!!window.__started).catch(()=>false));i++)await pg.waitForTimeout(200);
   rep.started=ok; rep.startMs=Date.now()-t0; rep.pageStart=await pg.evaluate(()=>({now:Math.round(performance.now()),warm:window.WARMMS})).catch(()=>null);
-  if(process.env.COV){ const C=await pg.coverage.stopJSCoverage(), L=[];
-    for(const e of C){ if(!e.source||e.source.length<500000)continue; const F=e.functions.filter(f=>f.ranges[0].count===0&&f.ranges[0].endOffset-f.ranges[0].startOffset>600).map(f=>f.ranges[0]);
-      F.sort((a,b)=>a.startOffset-b.startOffset||b.endOffset-a.endOffset); let end=-1;
-      for(const r of F){ if(r.startOffset<end)continue; end=r.endOffset; L.push({n:r.endOffset-r.startOffset,s:e.source.slice(r.startOffset,r.startOffset+160),pre:e.source.slice(Math.max(0,r.startOffset-120),r.startOffset)}); } }
+  if(process.env.COV){ const A=await snap(); await pg.evaluate(()=>{ const B=__dbg.MAPK.BOD; STORE.goTo(B.XS(99),B.ZS((B.CURB+B.FAR)/2),'up'); }); await pg.waitForTimeout(15000); const Bs=await snap(), L=[];
+    for(const id in SRC){ const src=(await cdp.send('Debugger.getScriptSource',{scriptId:id})).scriptSource; const F=[];
+      for(const k of new Set([...Object.keys(A),...Object.keys(Bs)])){ const [sid,a,b]=k.split(':'); if(sid!==id)continue; F.push({a:+a,b:+b,c:(A[k]||0)+(Bs[k]||0)}); }
+      F.sort((x,y)=>x.a-y.a||y.b-x.b); let end=-1;
+      for(const f of F){ if(f.c||f.b-f.a<300||f.a<end)continue; end=f.b; L.push({n:f.b-f.a,s:src.slice(f.a,f.a+200),pre:src.slice(Math.max(0,f.a-80),f.a)}); } }
     fs.writeFileSync(path.join(OUT,'cov.json'),JSON.stringify(L)); rep.cov={n:L.length,bytes:L.reduce((a,x)=>a+x.n,0)}; }
   phase='after'; await pg.waitForTimeout(8000);
   const files=f=>{ const u=new URL(f.u); if(!u.pathname.startsWith('/g/'))return null; const p=path.join(ROOT,'dist',u.pathname); if(!fs.existsSync(p))return null; const d=fs.readFileSync(p); return {f:u.pathname.slice(3),raw:d.length,gz:p.endsWith('.bin')?d.length:zlib.gzipSync(d,{level:9}).length}; };

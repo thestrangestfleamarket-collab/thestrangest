@@ -15,7 +15,7 @@ await grab('dungeon',async()=>{});
     for(const o of M.objs){ G.remove(o); o.traverse(c=>{ if(c.geometry)c.geometry.dispose(); if(c.material&&c.material!==MODS.castleStairMat)for(const q of [].concat(c.material)){ if(q.map)q.map.dispose(); if(q.emissiveMap)q.emissiveMap.dispose(); q.dispose(); } }); }
     const out=(A,L)=>{ for(const a of L){ const i=A.indexOf(a); if(i>=0)A.splice(i,1); } };
     out(SOL.down,M.sol); out(FIX.down,M.fix); out(LITE.recs,M.lights); out(FLAME.src,M.fl); out(cutWalls,M.cuts); LITE.t=0; for(const f of HK)f(0); };
-  const build=__CHUNK__('dungeon',n=>{ clear(); const L=lay(n), {R,up,dn}=L, s0=scene.children.length, n0=KP.length, l0=K.LAMPS.length, f0=FLAME.src.length, keep=BATCH.items.splice(0), M={objs:[],sol:[],fix:[],lights:[],fl:[],cuts:[]};
+  const build=n=>{ '@dungeon'; clear(); const L=lay(n), {R,up,dn}=L, s0=scene.children.length, n0=KP.length, l0=K.LAMPS.length, f0=FLAME.src.length, keep=BATCH.items.splice(0), M={objs:[],sol:[],fix:[],lights:[],fl:[],cuts:[]};
     const arch=(nx,ny,Xp,Yp,z)=>{ if(ny<=0||Math.abs(Yp-R.y0)>.06||Xp<up.x0-.2||Xp>up.x1+.2)return null; const hw=(up.x1-up.x0)*12, d=Math.abs(Xp-(up.x0+up.x1)/2)*24, sp=up.n*up.rise+30, r=Math.hypot(d,Math.max(0,z-sp));
       return r<hw-3?P0.dark:r<hw+2?sh(P0.hi,.8):null; };
     const wall=(x0,y0,x1,y1)=>({x0,y0,x1,y1,z0:0,z1:R.H+4,c:P0.st[1],top:()=>P0.lo,fs:(nx,ny,Xp,Yp,z,k)=>arch(nx,ny,Xp,Yp,z)||K.dungeonWall(null,nx,ny,Xp,Yp,z,k,R)});
@@ -51,7 +51,7 @@ await grab('dungeon',async()=>{});
     light({x:R.cx,y:R.cy,z:70,r:11,c:[.4,.46,.6]});
     FLAME.props(made,X,z=>Y(z)+dy,Z,LF); M.fl=FLAME.src.slice(f0);
     for(const o of scene.children.slice(s0)){ G.add(o); M.objs.push(o); }
-    mine=M; cur=n; LITE.t=0; for(const f of HK)f(n); return L; });
+    mine=M; cur=n; LITE.t=0; for(const f of HK)f(n); return L; };
   const wait=ms=>new Promise(r=>setTimeout(r,ms)), frames=k=>new Promise(r=>{ const f=()=>--k<=0?r():requestAnimationFrame(f); requestAnimationFrame(f); });
   const S=CASTLE.stair, top={x:((S.x0+S.x1)/2-72)*TILE,z:(S.y0-.5+77)*TILE};
   const bnd=n=>{ const B=lot(n); return {x0:X(B.x0),x1:X(B.x1),z0:Z(B.y0),z1:Z(B.y1)}; };

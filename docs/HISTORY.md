@@ -3712,7 +3712,7 @@ initial download and load super fast"; then "Go")
 
 ## 20 Oct 2026: the store and the bank are their own builders (modules)
 
-- `057-store.js` is `059g-store.js` (`await grab('store', ...)`; its one direct `solids.push` names `SOL.up`) and `057b-bank.js`, which
+- `057-store.js` is `059-store.js` (first after the builder: the club, the arcade, main street and the bank read `STORE.kit` when they build) (`await grab('store', ...)`; its one direct `solids.push` names `SOL.up`) and `057b-bank.js`, which
   needs `STORE.kit` from it, follows as `059h-bank.js` (`await grab('bank', ...)`: the bank will get its own load, so its own builder
   is the first step). Scope proof: every reference resolves as before. The bodega builder now holds only the bodega: its layout,
   solids, signs, building and the butterflies.

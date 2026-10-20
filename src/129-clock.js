@@ -1,7 +1,7 @@
 const CLOCK={h:17.4,run:false,speed:1440/600,sunV:new THREE.Vector3(0,1,0),moonV:new THREE.Vector3(0,1,0)};
 { const D=Math.PI/180, sunL=new THREE.DirectionalLight(0xffffff,0), sunD=new THREE.DirectionalLight(0xffffff,0), sunF=new THREE.DirectionalLight(0xffffff,0), R=32*TILE, RD=20*TILE, FM=Math.min(4096,renderer.capabilities.maxTextureSize);
-  for(const [L,r,m] of [[sunL,R,3072],[sunD,RD,2048],[sunF,R,FM]]){ L.castShadow=true; L.shadow.mapSize.set(m,m); Object.assign(L.shadow.camera,{left:-r,right:r,top:r,bottom:-r,near:.5,far:120*TILE}); L.shadow.camera.updateProjectionMatrix();
-    L.shadow.bias=-.0005; L.shadow.normalBias=+(QS.get("snb")||.12); L.shadow.autoUpdate=false; scene.add(L,L.target); }
+  for(const [L,r,m] of [[sunL,R,3072],[sunD,RD,2048],[sunF,R,FM]]){ L.castShadow=true; L.shadow.mapSize.set(m,m); Object.assign(L.shadow.camera,{left:-r,right:r,top:r,bottom:-r,near:.5,far:260*TILE}); L.shadow.camera.updateProjectionMatrix();
+    L.shadow.bias=-.06/260; L.shadow.normalBias=+(QS.get("snb")||.12); L.shadow.autoUpdate=false; scene.add(L,L.target); }
   const SC={c:new THREE.Vector3(1e9,0,0),d:new THREE.Vector3(),fd:new THREE.Vector3(),lv:'',flv:'',st:0,g:0,dirty:0,fdirty:0,ft:0,root:{visible:true,layers:new THREE.Layers(),children:[]},n:0,nd:0,nf:0,fb:null};
   const SNM=new THREE.Matrix4(), SR=new THREE.Vector3(), SU=new THREE.Vector3(), SP=new THREE.Vector3(), ORG=new THREE.Vector3(), UPV=new THREE.Vector3(0,1,0);
   const elev=h=>50*Math.cos(2*Math.PI*(h-12.7)/24)-8, azim=h=>2*Math.PI*(h-12.7)/24;
@@ -25,12 +25,12 @@ const CLOCK={h:17.4,run:false,speed:1440/600,sunV:new THREE.Vector3(0,1,0),moonV
       const ma=azim(CLOCK.h+12)*.5+.6, me=48*D; CLOCK.moonV.set(Math.sin(ma)*Math.cos(me),Math.sin(me),Math.cos(ma)*Math.cos(me)); }
     const aim=L=>{ const sc=L.shadow.camera, tx=(sc.right-sc.left)/L.shadow.mapSize.x; SNM.lookAt(dir,ORG,UPV); SR.setFromMatrixColumn(SNM,0); SU.setFromMatrixColumn(SNM,1); SP.set(pos.x,py,pos.z);
       const a=Math.round(SP.dot(SR)/tx)*tx, b=Math.round(SP.dot(SU)/tx)*tx, c=SP.dot(dir); L.target.position.copy(SR).multiplyScalar(a).addScaledVector(SU,b).addScaledVector(dir,c);
-      L.position.copy(L.target.position).addScaledVector(dir,60*TILE); L.target.updateMatrixWorld(); L.updateMatrixWorld(); };
+      L.position.copy(L.target.position).addScaledVector(dir,200*TILE); L.target.updateMatrixWorld(); L.updateMatrixWorld(); };
     const fit=()=>{ const B=SC.fb||(SC.fb=CLOCK.farBox()); SNM.lookAt(dir,ORG,UPV); SR.setFromMatrixColumn(SNM,0); SU.setFromMatrixColumn(SNM,1); const lo=[1e9,1e9,1e9], hi=[-1e9,-1e9,-1e9];
       for(let k=0;k<8;k++){ SP.set(k&1?B[3]:B[0],k&2?B[4]:B[1],k&4?B[5]:B[2]); [SP.dot(SR),SP.dot(SU),SP.dot(dir)].forEach((v,j)=>{ lo[j]=Math.min(lo[j],v); hi[j]=Math.max(hi[j],v); }); }
-      const sc=sunF.shadow.camera, hr=(hi[0]-lo[0])/2, hu=(hi[1]-lo[1])/2, hd=(hi[2]-lo[2])/2+2*TILE; Object.assign(sc,{left:-hr,right:hr,top:hu,bottom:-hu,near:.5,far:2*hd+1}); sc.updateProjectionMatrix();
-      sunF.target.position.copy(SR).multiplyScalar((lo[0]+hi[0])/2).addScaledVector(SU,(lo[1]+hi[1])/2).addScaledVector(dir,(lo[2]+hi[2])/2); sunF.position.copy(sunF.target.position).addScaledVector(dir,hd+.5);
-      sunF.target.updateMatrixWorld(); sunF.updateMatrixWorld(); sunF.shadow.bias=sunL.shadow.bias*120*TILE/sc.far; sunF.shadow.normalBias=Math.max(sunL.shadow.normalBias,1.5*2*Math.max(hr,hu)/FM); };
+      const sc=sunF.shadow.camera, hr=(hi[0]-lo[0])/2, hu=(hi[1]-lo[1])/2, hd=(hi[2]-lo[2])/2+2*TILE; Object.assign(sc,{left:-hr,right:hr,top:hu,bottom:-hu,near:.5,far:2*hd+150*TILE}); sc.updateProjectionMatrix();
+      sunF.target.position.copy(SR).multiplyScalar((lo[0]+hi[0])/2).addScaledVector(SU,(lo[1]+hi[1])/2).addScaledVector(dir,(lo[2]+hi[2])/2); sunF.position.copy(sunF.target.position).addScaledVector(dir,hd+150*TILE);
+      sunF.target.updateMatrixWorld(); sunF.updateMatrixWorld(); sunF.shadow.bias=-.06*TILE/sc.far; sunF.shadow.normalBias=Math.max(sunL.shadow.normalBias,1.5*2*Math.max(hr,hu)/FM); };
     const strong=sunL.intensity>.3, now=performance.now(), out=up&&!(typeof ROOMS!=='undefined'&&ROOMS.cur)&&sunL.intensity>0;
     if(out&&now-SC.st>1000){ SC.st=now; const g=sig(); if(g!==SC.g){ SC.g=g; SC.dirty=SC.fdirty=1; } }
     const stale=out&&(SC.d.dot(dir)<Math.cos(.4*D)||Math.hypot(SC.c.x-pos.x,SC.c.z-pos.z)>12*TILE||SC.lv!==LVL);

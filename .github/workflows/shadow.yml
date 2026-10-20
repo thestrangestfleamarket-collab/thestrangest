@@ -23,8 +23,8 @@ jobs:
         run: |
           mkdir -p out; set +e
           MIN=0 python3 build.py > out/log.txt 2>&1; echo "build $?" >> out/status.txt
-          node tests/shadowwalk.cjs out diag >> out/log.txt 2>&1; echo "shadow $?" >> out/status.txt
-          false && git fetch -q origin +refs/heads/main:refs/remotes/origin/main && git worktree add base origin/main && ln -s $PWD/node_modules base/node_modules && cp tests/shadowwalk.cjs base/tests/ && (cd base && MIN=0 python3 build.py > ../out/logbase.txt 2>&1) && mkdir -p out/base && node base/tests/shadowwalk.cjs out/base >> out/logbase.txt 2>&1; echo "base $?" >> out/status.txt
+          node tests/shadowwalk.cjs out >> out/log.txt 2>&1; echo "shadow $?" >> out/status.txt
+          git fetch -q origin +refs/heads/main:refs/remotes/origin/main && git worktree add base origin/main && ln -s $PWD/node_modules base/node_modules && cp tests/shadowwalk.cjs base/tests/ && (cd base && MIN=0 python3 build.py > ../out/logbase.txt 2>&1) && mkdir -p out/base && node base/tests/shadowwalk.cjs out/base >> out/logbase.txt 2>&1; echo "base $?" >> out/status.txt
           echo "::notice title=report::$(cat out/status.txt 2>/dev/null | tr '\n' ' ' | cut -c1-2000)"
           true
       - name: Publish results to a branch

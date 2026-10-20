@@ -3546,3 +3546,13 @@ initial download and load super fast"; then "Go")
   What it showed: `await grab('bodega', ...)` is one function from `013a-day1.js` to `059-main-10.js`, 787 KB of the 2.4 MB, and the
   shared kits inside it (`016` street kit 13 names, `020` apartment furniture 22, `029` bar counter 32, `033` shrine pieces 24, `036` cottage
   room 32) are what keep its places from standing alone. Next: lift the kits out, then one place per pull request.
+
+## 20 Oct 2026: the block inside the bodega builder dissolved (modules, step 2)
+
+- **38 files out of the function** (`013a-day1.js`, `052-main-9.js`, `015-game-w-bodega-shop.js`): the bodega builder
+  (`await grab('bodega', ...)`, `013a` to `059`) opened a plain block right after its locals that ran to the end of `052`; the kits
+  and the old game's makers (`014` to `051`) sat inside it though none of them used the builder's locals (only `052`, `054`, `055`,
+  `057` and `059` do). The block's braces are gone, so those files' names are now the page's own (one clash fixed first: the bodega
+  *lot* in `015` was also called `BODB`, the name of the bodega *builder* in `006`; the lot is `BLOT` now). A scope proof
+  (every reference's declaration before and after, 226,800 references) shows the only other change is `BRICKS` reaching its own
+  `const` instead of the same object through `window`. Next: open the builder just before `052`, so `014`–`051` are top-level code.

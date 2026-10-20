@@ -1,5 +1,5 @@
-const BODB=LBLD.find(b=>b.id==='lbodega'), BODOFF=BODB.y0+3.75, BOD3B=LBLD.find(b=>b.id==='lbodega3'), bodegaFloorCol=(x,y)=>bodegaFloorAt(x,y,BODB), bodegaFloorCol3=(x,y)=>bodegaFloorAt(x,y,BOD3B);
-function bodegaFloorAt(x,y,B){ const off=B===BODB?y<BODOFF:y>B.y1-3.75, n=grain(x,y,41,1.2), st=grain(x,y,47,2.6), c=off?[106,106,104]:[112,116,124];
+const BLOT=LBLD.find(b=>b.id==='lbodega'), BODOFF=BLOT.y0+3.75, BOD3B=LBLD.find(b=>b.id==='lbodega3'), bodegaFloorCol=(x,y)=>bodegaFloorAt(x,y,BLOT), bodegaFloorCol3=(x,y)=>bodegaFloorAt(x,y,BOD3B);
+function bodegaFloorAt(x,y,B){ const off=B===BLOT?y<BODOFF:y>B.y1-3.75, n=grain(x,y,41,1.2), st=grain(x,y,47,2.6), c=off?[106,106,104]:[112,116,124];
   if(!off&&(((x-B.x0)%3+3)%3<.04||((y-B.y1)%3+3)%3<.04))return mt('concrete',[84,88,96]);
   if(crack(x,y,413,1.3,.006,.55))return mt('concrete',sh(c,.74));
   let k=n<.36?.92:n>.66?1.05:1; if(st>.68)k*=.8; else if(st>.62)k*=.9; if(spot(x,y,45,.7,.035,.3))k*=1.12;

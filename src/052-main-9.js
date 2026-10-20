@@ -11,4 +11,3 @@
   groundY=(x,z)=>{ const gx=x/TILE+OX, gy=z/TILE+OY, rw=rampAt(gx,gy); if(rw!=null)return YS(RD*(1-rw/RPD)); return ROADAT(gx,gy)?YS(RD):(window.HILL?HILL(x,z):0); };
   BOD.inside=(x,z)=>{ const gx=x/TILE/K+OX, gy=z/TILE/K+OY; return gx>B0.x0&&gx<B0.x1&&gy>B0.y0&&gy<B0.y1; };
 }
-}

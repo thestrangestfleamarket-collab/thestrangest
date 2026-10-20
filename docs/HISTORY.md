@@ -3737,3 +3737,9 @@ initial download and load super fast"; then "Go")
   so a tray, a broom or an item held out in front stuck out past it and you could stand in it. Props themselves were already solid
   above ankle height. Now an NPC whose job holds something (`rig.job.tray|broom|item`) also pushes you out of a second circle where
   the held thing is, 0.42 tiles ahead of it, without moving the NPC. Cost: nothing on screen; one extra distance per nearby NPC.
+
+## 20 Oct 2026: the tomato merchant
+
+- (owner, 20 Oct 2026: "tomato merchant should be 25% taller, nothing on ground (no loose veggies)"): THE TOMATO is 2.3 m (was 1.84);
+  the vegetable stand no longer scatters pumpkins and sacks on the ground in front of it (`081-stalls.js`), and their two collision
+  boxes went with them. Cost: fewer instances, nothing else.

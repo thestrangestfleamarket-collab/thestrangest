@@ -10,31 +10,10 @@
     if(!BARDARK)bs.push(fb(x-.004,y-G,x+.002,y+w+G,Z0-gh,Z0+h+gh,[200,80,60],(s,a,row)=>{ if(s!=='px')return null; const u=a/S-G, zz=h+gh-row/H, d=Math.hypot(Math.max(0,-u,u-w),Math.max(0,-zz,zz-h)/FP), f=Math.max(0,1-d/G);
       const i=a>>1, j=row>>1, on=f>.6||f>.3&&((i+j)&1)||f>.08&&!(i&1)&&!(j&1); return on?lit([Math.round(170+85*f),Math.round(116-30*f),Math.round(96-30*f)]):null; },()=>null,{nb:1,em:1}));
     const p=prop(bs,null,{hang:Z0,walk:true,high:true}); LAMPS.push({own:1,room:1,x:x+.6,y:y+w/2,z:h/2,r:5.5,c:[1.5,.36,.28],prop:p,off:BARDARK?1:0}); return p; }
-  function exitSign(x,y){ PNAME='exit sign'; const w=.62, h=8;
-    const p=prop([fb(x,y,x+.1,y+w,0,h,[214,206,186],(s,a,row,L)=>{ if(s!=='px')return [190,180,160]; const A=(a-6)>>1, R=(row-3)>>1; if(row<1||row>=2*h-1||a<1||a>=L-1)return [150,140,120]; return A>=0&&R>=0&&R<5&&'EXIT'.split('').some((ch,i)=>{ const q=A-i*4; return q>=0&&q<3&&F3[ch][R*3+q]==='1'; })?lit([240,80,60]):[226,220,200]; },[200,190,170],{foot:1,em:1})],null,{hang:0,walk:true,high:true});
-    LAMPS.push({own:1,room:1,x:x+.3,y:y+w/2,z:h/2,r:1.2,c:[1,.4,.3],prop:p}); return p; }
-  function blinds(x,y,L,Z){ PNAME='window blinds'; const S2=[132,128,104], S1=[108,104,84];
-    return prop([fb(x,y,x+.04,y+L,0,Z,S2,(s,a,row,Lf,h)=>s!=='px'?S1:row<4||row>h-4||a<4||a>Lf-4?DP.woodD:(row%8<2?[40,38,30]:row%8<3?S1:row%8===7?sh(S2,1.15):S2),S1,{foot:1}),
-      fb(x,y-.06,x+.08,y,0,Z,DP.woodD,()=>DP.woodD,DP.wood,{foot:1}),fb(x,y+L,x+.08,y+L+.06,0,Z,DP.woodD,()=>DP.woodD,DP.wood,{foot:1}),fb(x,y-.06,x+.1,y+L+.06,-3,0,DP.woodD,(s,a,row)=>row<1?DP.woodL:DP.woodD,DP.woodL),
-      fb(x,y-.06,x+.08,y+L+.06,Z,Z+3,DP.woodD,()=>DP.woodD,DP.wood)],null,{hang:0,walk:true,high:true}); }
-  const POSTERS={
-    'koi night':(put,w,h)=>{ box(put,0,0,w,h,[40,70,140]); disc(put,w/2,h*.42,w*.32,w*.32,[250,210,80]); disc(put,w/2,h*.42,w*.22,w*.22,[40,70,140]);
-      for(const [cx,cy,c] of [[w*.35,h*.62,[240,110,50]],[w*.62,h*.7,[244,236,224]]]){ disc(put,cx,cy,7,4,c); box(put,cx+6,cy-2,cx+10,cy+3,c); }
-      box(put,3,h-22,w-3,h-3,[250,236,200]); T3(put,'KOI',6,h-20,[40,70,140],1); T3(put,'NIGHT',6,h-12,[200,60,40],1); },
-    'ghost sale':(put,w,h)=>{ box(put,0,0,w,h,[24,24,28]); disc(put,w/2,h*.4,w*.28,h*.22,[230,232,236]); box(put,w*.22,h*.4,w*.78,h*.62,[230,232,236]);
-      for(let i=0;i<4;i++)disc(put,w*.28+i*w*.15,h*.62,w*.07,w*.07,[24,24,28]); box(put,w*.4,h*.34,w*.44,h*.4,[24,24,28]); box(put,w*.56,h*.34,w*.6,h*.4,[24,24,28]);
-      T3(put,'GHOST',5,6,[250,90,90],1); T3(put,'SHOP',5,h-14,[230,232,236],1); },
-    'hover taxi':(put,w,h)=>{ box(put,0,0,w,h,[240,150,40]); box(put,4,h*.35,w-4,h*.55,[250,220,60]); box(put,8,h*.27,w-10,h*.37,[60,60,70]); for(let x=8;x<w-8;x+=6)put(x,h*.6,[200,90,30]);
-      box(put,6,h*.58,w-6,h*.6,[200,90,30]); T3(put,'HOVER',5,5,[30,30,40],1); T3(put,'TAXI',5,13,[30,30,40],1); T3(put,'30S',w-16,h-10,[255,255,255],1); },
-    'moon shrine':(put,w,h)=>{ box(put,0,0,w,h,[120,26,30]); disc(put,w/2,h*.3,w*.3,w*.3,[250,236,200]); disc(put,w/2+5,h*.27,w*.24,w*.26,[120,26,30]);
-      box(put,w*.3,h*.55,w*.7,h*.57,[30,20,20]); box(put,w*.36,h*.57,w*.4,h*.8,[30,20,20]); box(put,w*.6,h*.57,w*.64,h*.8,[30,20,20]); box(put,w*.26,h*.52,w*.74,h*.54,[30,20,20]);
-      T3(put,'MOON',w/2-8,h-24,[250,236,200],1); T3(put,'SHRINE',w/2-12,h-16,[250,236,200],1); T3(put,'ROOF',w/2-8,h-8,[240,180,90],1); },
-    '190 street':(put,w,h)=>{ box(put,0,0,w,h,[236,232,220]); box(put,0,0,w,12,[40,90,170]); T3(put,'190',4,3,[255,255,255],1); box(put,w/2-1,14,w/2+1,h-6,[40,160,80]); box(put,6,h/2,w-6,h/2+2,[220,60,50]);
-      for(const [cx,cy] of [[w/2,20],[w/2,h/2+1],[w/2,h-10],[10,h/2+1],[w-10,h/2+1]])disc(put,cx,cy,3,3,[30,30,30],.3); },
-    'night painting':(put,w,h)=>{ for(let y=0;y<h;y++)box(put,0,y,w,y+1,[18+y/h*30|0,26+y/h*30|0,60+y/h*20|0]); for(let i=0;i<20;i++)put(hash(i,1,100)*w,hash(i,2,100)*h*.5,[220,220,200]);
-      disc(put,w*.7,h*.22,5,5,[240,230,190]); for(let x=0;x<w;x++){ const t=h*.7+Math.sin(x*.15)*4+Math.sin(x*.4)*2; box(put,x,t,x+1,h,[14,20,30]); } } };
-  function poster(x,y,name,L,Hh){ PNAME='poster'; const w=Math.round(L*S), h=Hh*H, A=pic(w,h,put=>POSTERS[name](put,w,h));
-    return prop([fb(x,y,x+.04,y+L,0,Hh,[40,30,24],(s,a,row,Lf,hh)=>s!=='px'?[40,30,24]:a<2||a>=Lf-2||row<2||row>=hh-2?[40,30,24]:A(a,row)||[200,200,200],[60,46,34],{foot:1})],null,{hang:0,walk:true,high:true}); }
+  
+  
+  
+  
   function tv(x,y){ PNAME='TV'; const L=.86, Z=22;
     const A=pic(Math.round(L*S),Z*H,put=>{ const w=Math.round(L*S), h=Z*H; box(put,0,0,w,h,DP.black); if(BARDARK){ box(put,3,3,w-3,h-3,[22,26,30]); for(let i=0;i<5;i++)box(put,6+i*3,5+i,8+i*3,6+i,[44,50,58]); return; }
       box(put,3,3,w-3,h-3,lit([40,130,60]));
@@ -73,12 +52,7 @@
       if(fig(.42+sw,.55)||fig(.58+sw,.5))return .06; const r=Math.hypot(u-.5-sw,(v-.7)*1.4); return r<.34?.75-r:bg*(v>.92?1.6:1); }
     { const bx=.5, k=s*2.4, balls=[0,1,2].map(i=>{ const ph=(k+i*2.1)%(Math.PI*2); return [bx+Math.cos(ph)*.16,.42-Math.abs(Math.sin(ph))*.24]; });
       for(const [bu,bv] of balls)if(Math.hypot(u-bu,v-bv)<.035)return .95; if(Math.hypot((u-bx)/.07,(v-.52)/.09)<1)return .8; if(v>.6&&Math.abs(u-bx)<.12-(v-.6)*.1)return .1; return v>.88?.4:bg; } }
-  function cupboard(x,y){ PNAME='cupboard'; const D=.62, L=.92, Z=34, bs=[];
-    bs.push(fb(x,y,x+D,y+L,0,Z,DP.black,(s,a,row,Lf,h)=>row<2?DP.blackL:s==='px'&&(Math.abs(a-Lf/2)<1||row>h-4)?[16,16,18]:s==='px'&&row>20&&row<26&&Math.abs(a-Lf/2)<5&&Math.abs(a-Lf/2)>2?DP.chromeL:DP.black,(X,Y)=>edge(X,Y,x,y,x+D,y+L)<.03?DP.blackL:[40,42,46],{foot:1}));
-    bs.push(...round(x+.3,y+.3,Z,Z+9,.09,(dx,dy,z,top)=>top?[214,200,170]:Math.atan2(dy,dx)>1.5?[220,226,224]:[180,190,188],1,.04));
-    for(let i=0;i<5;i++){ const a=x+.26+(i%3)*.04, b=y+.26+(i>>1)*.04; bs.push(pb(a,b,a+.015,b+.015,Z+9,Z+15,[[240,240,240],[220,60,60],[60,140,220]][i%3],{nb:1})); }
-    bs.push(pb(x+.28,y+.6,x+.38,y+.7,Z,Z+7,[200,40,40],{nb:1,top:()=>[120,20,20]}));
-    return prop(bs); }
+  
 
   function soffit(x,y,L,W){ PNAME='soffit'; const Z0=106, Z1=126, rc=.6, bs=[], x1=x+L, y1=y+W;
     const face=(s,a,row,Lf,h)=>s==='px'||s==='py'?(row<12?(row<1?[200,90,70]:[176,64,46]):row<13?[110,40,30]:row>h-2?[120,84,52]:[176,132,86]):[150,110,70];
@@ -145,7 +119,7 @@
   var barWall=(q,nx,ny,X,Y,z,f)=>{ const u=nx?Y:X, zz=z%STORY; if(zz<4)return sh([30,18,16],f); if(zz<38)return sh((u*24|0)%16<1?[68,22,20]:zz>35?[112,40,34]:[88,30,26],f);
     if(zz<40)return sh([150,112,58],f); if(zz>112)return sh([26,20,26],f); return sh(speck([74,46,60],u,z/24,97),f); };
 
-  const up=(p,dz)=>{ p.boxes=p.boxes.map(b=>zShift(b,dz)); for(const l of LAMPS)if(l.prop===p)l.z+=dz; p.hang=(p.hang||0)+dz; return p; };
+  
   const C={'bar counter':(x,y)=>barStraight(x-.9,y-BD/2,1.8,null),'bar counter: ashtray':(x,y)=>barStraight(x-.9,y-BD/2,1.8,0),
     'bar counter: bottle':(x,y)=>barStraight(x-.9,y-BD/2,1.8,1),'bar counter: glass':(x,y)=>barStraight(x-.9,y-BD/2,1.8,2),
     'bar round end':(x,y)=>barRound(x-.56,y-.56),'bar corner':(x,y)=>barCorner(x-BD/2,y-1.5,3.02),'back bar':(x,y)=>backBar(x-2.6,y-.31,5.2),

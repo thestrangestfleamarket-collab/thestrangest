@@ -3624,3 +3624,7 @@ initial download and load super fast"; then "Go")
   central park, each interior)"): the rule for the loading work. Market St, Central Park, the bank, the apartments and each interior
   are each their own load; at the start only the one you are standing in is built, the rest when you walk toward them, each with its
   own "Loading …" line.
+- **Loops for things that move on their own** (owner, 20 Oct 2026, with a picture of the flower boxes on the brownstone's railings:
+  "i want things like this that move to be looped to save on render cpu and time"): a thing that sways or stirs by itself (flowers,
+  leaves, a flag, a sign) plays a short looped animation made once, instead of being computed every frame. A rule for new things and
+  for the queue on the existing ones.

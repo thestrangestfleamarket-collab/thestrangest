@@ -7,7 +7,7 @@ const opt = { bundle: true, format: 'esm', target: 'es2022', charset: 'utf8', mi
   fs.writeFileSync(path.join(out, navName), nav);
   const cu = {};
   for (const x of xs) {
-    const c = (await es.transform(fs.readFileSync(x, 'utf8'), { format: 'esm', target: 'es2022', charset: 'utf8', minify: opt.minify, legalComments: 'none' })).code, n = path.basename(x, '.js');
+    const c = (await es.transform(fs.readFileSync(x, 'utf8'), { target: 'es2022', charset: 'utf8', minify: opt.minify, legalComments: 'none' })).code, n = path.basename(x, '.js');
     cu[n.slice(2)] = n + '.' + sha(c) + '.js'; fs.writeFileSync(path.join(out, cu[n.slice(2)]), c); fs.unlinkSync(x);
   }
   fs.writeFileSync(entry, fs.readFileSync(entry, 'utf8').replaceAll('__NAV__', navName).replaceAll('__CHUNKURLS__', JSON.stringify(cu)));

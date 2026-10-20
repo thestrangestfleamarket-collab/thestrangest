@@ -20,11 +20,17 @@ const TOUR={
   const ctx=await b.newContext({viewport:{width:960,height:540}});
   if(mode==='site')await ctx.addCookies([{name:'tsfm-pass',value:'dev:site-check',url:BASE}]);
   const pg=await ctx.newPage(); pg.setDefaultTimeout(900000);
-  pg.on('pageerror',e=>rep.errors.push(e.message.slice(0,400))); pg.on('console',m=>{ if(m.type()==='error')rep.errors.push('console: '+m.text().slice(0,300)); });
+  pg.on('pageerror',e=>rep.errors.push(e.message.slice(0,400))); pg.on('console',m=>{ if(m.type()==='error'||/not loaded before use/.test(m.text()))rep.errors.push('console: '+m.text().slice(0,300)); });
   const req=[]; let phase='start'; pg.on('request',r=>req.push({u:r.url(),phase}));
+  if(process.env.COV)await pg.coverage.startJSCoverage({reportAnonymousScripts:true,resetOnNavigation:false});
   const t0=Date.now(); await pg.goto(url,{waitUntil:'commit',timeout:600000});
   let ok=false; for(let i=0;i<3000&&!(ok=await pg.evaluate(()=>!!window.__started).catch(()=>false));i++)await pg.waitForTimeout(200);
   rep.started=ok; rep.startMs=Date.now()-t0; rep.pageStart=await pg.evaluate(()=>({now:Math.round(performance.now()),warm:window.WARMMS})).catch(()=>null);
+  if(process.env.COV){ const C=await pg.coverage.stopJSCoverage(), L=[];
+    for(const e of C){ if(!e.source||e.source.length<500000)continue; const F=e.functions.filter(f=>f.ranges[0].count===0&&f.ranges[0].endOffset-f.ranges[0].startOffset>600).map(f=>f.ranges[0]);
+      F.sort((a,b)=>a.startOffset-b.startOffset||b.endOffset-a.endOffset); let end=-1;
+      for(const r of F){ if(r.startOffset<end)continue; end=r.endOffset; L.push({n:r.endOffset-r.startOffset,s:e.source.slice(r.startOffset,r.startOffset+160),pre:e.source.slice(Math.max(0,r.startOffset-120),r.startOffset)}); } }
+    fs.writeFileSync(path.join(OUT,'cov.json'),JSON.stringify(L)); rep.cov={n:L.length,bytes:L.reduce((a,x)=>a+x.n,0)}; }
   phase='after'; await pg.waitForTimeout(8000);
   const files=f=>{ const u=new URL(f.u); if(!u.pathname.startsWith('/g/'))return null; const p=path.join(ROOT,'dist',u.pathname); if(!fs.existsSync(p))return null; const d=fs.readFileSync(p); return {f:u.pathname.slice(3),raw:d.length,gz:p.endsWith('.bin')?d.length:zlib.gzipSync(d,{level:9}).length}; };
   const sum=ph=>{ const L=[...new Set(req.filter(r=>r.phase===ph).map(r=>r.u))].map(u=>files({u})).filter(Boolean); return {files:L,raw:L.reduce((a,x)=>a+x.raw,0),gz:L.reduce((a,x)=>a+x.gz,0)}; };

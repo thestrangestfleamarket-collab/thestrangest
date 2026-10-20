@@ -1,10 +1,10 @@
 const fs = require('fs');
 const { parse, analyze } = require('./scope.cjs');
 const RT = 'const __CM={}, __CP={};\n'
-  + 'const LOAD=n=>!n||__CM[n]?Promise.resolve():__CP[n]||(__CP[n]=__CLOAD(n).then(m=>{ __CM[n]=m; },e=>{ delete __CP[n]; throw e; }));\n'
+  + 'const LOAD=(...ns)=>Promise.all(ns.map(n=>!n||__CM[n]?0:__CP[n]||(__CP[n]=__CLOAD(n).then(m=>{ __CM[n]=__CM[n]||m; },e=>{ delete __CP[n]; throw e; }))));\n'
   + 'const LOADED=n=>!n||!!__CM[n];\n'
-  + 'const __CF=(n,i,t,s)=>{ let f=null; const w=function(){ if(!f){ const m=__CM[n]; if(!m)throw new Error("chunk "+n+" not loaded"); f=m[i](...t(),s); } return f.apply(this,arguments); }; w.chunk=n; return w; };\n'
-  + 'window.LOAD=LOAD;\n';
+  + 'const __CF=(n,i,t,s)=>{ let f=null; const w=function(){ if(!f){ if(!__CM[n]){ console.warn("chunk "+n+" was not loaded before use"); __CM[n]=__CSYNC(n); } f=__CM[n][i](...t(),s); } return f.apply(this,arguments); }; w.chunk=n; return w; };\n'
+  + 'window.LOAD=LOAD; window.LOADED=LOADED;\n';
 function chunks(body) {
   const ast = parse(body), A = analyze(ast), marks = [];
   (function w(n) {

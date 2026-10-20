@@ -16,6 +16,9 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - name: Build readable
         run: MIN=0 python3 build.py
+      - name: Start coverage (readable artifact)
+        run: COV=1 node tests/splitcheck.cjs file . out/cov-file.json ""
+        continue-on-error: true
       - name: Build
         run: python3 build.py 2>&1 | tee out-build.log
       - name: Site check

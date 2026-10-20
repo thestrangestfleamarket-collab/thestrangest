@@ -13,7 +13,7 @@ process.on('unhandledRejection',e=>{ errs.push('TEST '+String(e&&e.message||e).s
   for(const n of [1,2,3,4,5]){ await pg.evaluate(n=>DUNGEON.go(n),n); await pg.waitForTimeout(n>=2?9000:4000); await shot('L'+n,null,1500); await st('L'+n); }
   await pg.evaluate(()=>DUNGEON.go(1)); await pg.waitForTimeout(4000);
   await pg.evaluate(()=>{ const S=DUNMOBS.slimes[0], T=DUNMOBS.T; S.wait=99; S.to=null; __dbg.ui().goTo(S.x,S.z-.7*Math.abs(T),'down'); });
-  await wheel(-5); await shot('L1-near',null,1500);
+  await wheel(-2); await shot('L1-near',null,1500);
   rep.punch=[]; for(let i=0;i<6;i++){ await pg.evaluate(()=>{ const S=DUNMOBS.slimes[0], y=__dbg.you(), T=DUNMOBS.T; S.x=y.x+Math.sin(y.h)*.6*T; S.z=y.z+Math.cos(y.h)*.6*T; S.to=null; S.air=0; S.wait=99; S.kb=null; }); await pg.keyboard.press('j'); await pg.waitForTimeout(700); rep.punch.push(await pg.evaluate(()=>{ const S=DUNMOBS.slimes[0], y=__dbg.you(); return {hp:S.hp,dead:S.dead,d:+(Math.hypot(S.x-y.x,S.z-y.z)/DUNMOBS.T).toFixed(2)}; })); }
   await pg.evaluate(()=>{ if(!DUNMOBS.slimes[0].dead)DUNMOBS.hit(0,9); }); await shot('L1-killed',null,1200); await st('killed');
   rep.nobottle=await pg.evaluate(()=>{ delete INV.items.bottle; const th=DUNMOBS.things().find(t=>/SLIME/.test(t.name)); th.act(); return {have:FORAGE.has('slime_green'),thing:!!DUNMOBS.things().includes(th),last:[...document.querySelectorAll('#fjour div')].map(d=>d.textContent).slice(-1)[0]}; });
@@ -26,7 +26,8 @@ process.on('unhandledRejection',e=>{ errs.push('TEST '+String(e&&e.message||e).s
   await pg.waitForTimeout(5000); await st('L3attack'); await shot('L3-after',null,500);
   await pg.evaluate(()=>{ __dbg.VIT.hp=1; DUNGEON.go(4); }); await pg.waitForTimeout(9000);
   await pg.evaluate(()=>{ const r=DUNMOBS.res.find(r=>r.on&&!r.dead&&r.key==='Warrior')||DUNMOBS.res.find(r=>r.on), T=DUNMOBS.T; __dbg.ui().goTo(r.N.st.x+1.5*T,r.N.st.z,'down'); });
-  await shot('L4-fight0',null,2500); await shot('L4-fight1',null,2500); await st('L4fight');
+  rep.trace=await pg.evaluate(async()=>{ const out=[], T=DUNMOBS.T; for(let i=0;i<16;i++){ const r=DUNMOBS.res.find(r=>r.on&&r.agg)||DUNMOBS.res.find(r=>r.on), N=r.N, y=__dbg.you(); out.push([r.key,+(Math.hypot(N.st.x-y.x,N.st.z-y.z)/T).toFixed(2),+r.cool.toFixed(2),N.an&&N.an.once?N.an.once.n:'-',!!N.st.to,+N.st.h.toFixed(2),+Math.atan2(y.x-N.st.x,y.z-N.st.z).toFixed(2),+__dbg.VIT.hp.toFixed(3),r.agg].join(',')); await new Promise(r=>setTimeout(r,400)); } return out; });
+  await shot('L4-fight0',null,500); await shot('L4-fight1',null,2500); await st('L4fight');
   rep.skelKill=await pg.evaluate(async()=>{ const out=[]; for(let k=0;k<12;k++){ const on=DUNMOBS.res.filter(r=>r.on&&!r.dead); if(!on.length)break; DUNMOBS.hitRes(DUNMOBS.res.filter(r=>r.on).indexOf(on[0]),3); out.push(on[0].key+':'+on[0].hp); await new Promise(r=>setTimeout(r,400)); } return out; });
   await shot('L4-killed',null,2500); await st('L4killed');
   await pg.evaluate(()=>{ __dbg.VIT.hp=1; DUNGEON.go(5); }); await pg.waitForTimeout(6000); await shot('L5-again',null,500); await st('L5again');

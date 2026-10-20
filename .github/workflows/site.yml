@@ -26,6 +26,8 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - name: Build
         run: python3 build.py
+      - name: Page errors (temporary)
+        run: MIN=0 python3 build.py && node tests/_err.cjs dist/market.html
       - name: Check the site opens (door, then THE MARKET)
         run: node tests/site.cjs
   game:

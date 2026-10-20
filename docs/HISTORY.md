@@ -3149,6 +3149,6 @@ that is where yo jump in as a ghost and sink down slowly (appear outside refresh
 - **Gone from the park**: the Moon Shrine room, its koi pond and pond water, `STORE.shrineFix`/`shrineGround` (the ground hook is now
   the pool's, `BOD.GD.ground`) and the park's, weeds' and flowers' keep-outs around it (that ground is lawn and trees now). The
   bath attendant and THE BATHS teleport use the front half (`BOD.GD.floor`).
-- Cost: inside only, built on entry: the interior draws about 51,000 triangles; lights inside stay at 8 (two candles, two andons,
+- Cost: inside only, built on entry: the whole view inside draws 51,000 to 65,000 triangles (under 100,000); lights inside stay at 8 (two candles, two andons,
   the two stone lanterns, the pool's cyan glow, the statue's halo; the back corners' candles went); one new small shader program
   (the water plane); nothing at start.

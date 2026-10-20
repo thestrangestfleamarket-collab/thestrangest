@@ -81,8 +81,8 @@ const USE={seat:null}; window.USE=USE;
   USE.pick=ray=>{ if(OBJS.length+(typeof PERFX!=='undefined'?PERFX.gen*1e6:0)!==nO){ nO=OBJS.length+(typeof PERFX!=='undefined'?PERFX.gen*1e6:0); MS=[...new Set(OBJS.flatMap(o=>o.parts.map(p=>p.me)))]; }
     for(const h of ray.intersectObjects(MS.filter(shown),false)){ if(cut(h))continue; const o=h.object.userData.objOf[Math.floor(h.faceIndex/2)], k=o&&kindOf(o); if(!k)return null; const th=goal(o,k); return th?{th,d:h.distance}:null; } return null; };
   for(const th of (typeof KIT!=='undefined'?KIT.things:[]))if(th.name==='BENCH'){ th.act=()=>{ const se=seatOf(tris(th.obj)); if(se)sitOn(se,th); }; th.reach=1.5; th.near=1.5+1.2*T; }
-  if(typeof PARK!=='undefined'&&PARK.sitlog&&PARK.more){ const [x,z]=PARK.sitlog, hb=new THREE.Mesh(new THREE.BoxGeometry(1.4*T,.6*T,1.4*T),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(x,.3*T,z); scene.add(hb);
-    let se=null; const th={name:'SITTING LOG',obj:hb,reach:1.3*T,near:2.5*T,tall:.8*T,act:()=>{ se=se||seatOf(tris(PARK.more,[x,z,.9*T])); if(se)sitOn(se,th); }}; UI.thing(th); }
+  if(typeof PARK!=='undefined')PARK.later(()=>{ if(!PARK.sitlog||!PARK.more)return; const [x,z]=PARK.sitlog, hb=new THREE.Mesh(new THREE.BoxGeometry(1.4*T,.6*T,1.4*T),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(x,.3*T,z); scene.add(hb);
+    let se=null; const th={name:'SITTING LOG',obj:hb,reach:1.3*T,near:2.5*T,tall:.8*T,act:()=>{ se=se||seatOf(tris(PARK.more,[x,z,.9*T])); if(se)sitOn(se,th); }}; UI.thing(th); });
   const sitKeys=new Set(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright',' ','f','j','k','n','b','x','shift']);
   addEventListener('keydown',e=>{ if(USE.seat&&!e.repeat&&(sitKeys.has((e.key||'').toLowerCase())||!/^(q|e|r|z|x|v|c|0|=|-|\+|escape|control|alt|meta|tab)$/i.test(e.key||'')))stand(true); });
   const g0=UI.goTick; let last=performance.now();

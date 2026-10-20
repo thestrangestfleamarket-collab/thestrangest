@@ -17,7 +17,7 @@ const VEG={}; window.VEG=VEG;
     const N=TOONS.tomato; if(!N)return; N.life=null; N.roam=false; if(!N.sheet)STALL.work(N,VEG.stand,{jobs:['look'],wait:()=>2+Math.random()*3});
     for(const th of UI.things)if(th.npc&&th.npc===N){ th.act=()=>SHOP.open(); th.reach=2.2*T; th.near=3*T; }
   };
-  { const wait=()=>{ if(!PARK.fire||typeof MUSH==='undefined'||!MUSH.booth||typeof TOONS==='undefined'||!TOONS.tomato)return setTimeout(wait,500); STAND(); }; wait(); }
+  { const wait=()=>{ if(typeof MUSH==='undefined'||!MUSH.booth||typeof TOONS==='undefined'||!TOONS.tomato)return setTimeout(wait,500); STAND(); }; wait(); }
   const SHOP={}; VEG.SHOP=SHOP; const say=FORAGE.say, B='style="margin:0 0 0 4px;font:inherit;color:#ece5d3;background:#0e1016;border:2px solid #3a3f4e;padding:2px 7px;cursor:pointer"';
   const sp=document.createElement('div'); sp.id='vegp'; sp.hidden=true; sp.style.cssText='position:fixed;left:50%;top:10%;transform:translateX(-50%);width:min(460px,92vw);max-height:80vh;overflow:auto;z-index:21;padding:14px 16px;font:11px Silkscreen,monospace;letter-spacing:.4px;color:#d8dae2;background:#0b0d13f2;border:2px solid #3a3f4e;zoom:var(--uiz,1)';
   document.body.appendChild(sp); sp.addEventListener('keydown',e=>e.stopPropagation()); sp.addEventListener('keyup',e=>e.stopPropagation());

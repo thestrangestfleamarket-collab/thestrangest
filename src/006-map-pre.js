@@ -77,7 +77,7 @@ const MAINROW=[[-50,-39],[-18.3,10.3],[46.7,60.7],[97,101],[104,112.8],[115.8,14
 const WROW={bar:{x0:-38.91,x1:-28.91},mus:{x0:-10.09,y0:-101,x1:15.91,y1:-80,h:210}};
 const RING={wx0:31.5-MAINX.w-WID,wx1:46-MAINX.w,ny0:12.5+NORTHY+NORTHX,ny1:27+NORTHY+WID+NORTHX}; RING.wr0=RING.wx0+3.2; RING.wr1=RING.wx1-3.2; RING.nr0=RING.ny0+3.2; RING.nr1=RING.ny1-3.2;
 { const x0=(RING.wr0+RING.wr1)/2+2.7, raw=((50-MAINX.w)+AVE.x0)/2+9; RING.mine={x:x0+(Math.floor((raw-x0)/2.5)+.5)*2.5}; } AVE.y1=RING.ny1; AVE.ey1=RING.ny1+11.5; RING.stairs=[{x0:RING.wx0+.6,x1:RING.wx0+2.6,y0:-2,y1:4,steps:12,depth:98,dir:-1,leg:'w'},{x0:AVE.r1+.6,x1:AVE.r1+2.6,y0:-2.4,y1:3.6,steps:12,depth:98,dir:-1,leg:'e'}]; RING.river={y0:BLOCK.river,y1:BLOCK.river+46}; RING.ff={x0:RING.wx0-1.5,x1:AVE.x1+25.5,y0:RING.river.y0-1.5,y1:40.5+NORTHY+NORTHX};
-RING.bank={x0:-102.5,rx:-96,y0:6.7,r0:17,r1:37,y1:44,ys:-10.9,yn:56,bx1:-73.9};
+RING.bank={x0:-74,x1:-58,cy:-57.5,ys:-72,yn:-43};
 const MAPSTAIR={x0:60.01,x1:64.01,y0:-82.9,y1:-76.9, steps:12, depth:98, dir:-1};
 { const o=LAY.o('subway'); MAPSTAIR.x0+=o.x; MAPSTAIR.x1+=o.x; MAPSTAIR.y0+=o.y; MAPSTAIR.y1+=o.y; }
 const CASTLE={b:[46,67,-21,-4],gate:58.5,stair:{x0:61.5,x1:63.5,y0:-19.4,y1:-13.4,steps:12,depth:98,dir:1},hall:{x0:51,y0:-20,x1:65,y1:-6.8,h:130}};

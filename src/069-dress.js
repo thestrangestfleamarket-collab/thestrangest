@@ -35,7 +35,6 @@ const DRESS=window.DRESS={gaps:()=>{ const G=[]; for(let i=0;i+1<MAINROW.length;
     { const A=MODS.apts&&MODS.apts.A, dz=[BOD.X((BOD.B0.x0+BOD.B0.x1)/2),A?BOD.X(MODS.apts.DX!=null?MODS.apts.DX:A.x1-1):1e9,BOD.XS((MAPSTAIR.x0+MAPSTAIR.x1)/2),...(STORE.main?STORE.main.doors.map(d=>d[1]):[])], sz=sw-.75*M;
       for(const [a,b] of DRESS.gaps())if(b-a>=2.5){ const x=BOD.XS(b-a>6?a+1.2:(a+b)/2); if(dz.every(d=>Math.abs(d-x)>2*M))pts.push([x,sz]); } }
     { const ax=BOD.XS(AVE.r0)-.95*M, z0=BOD.ZS(BOD.MAP.y1)+5*M, z1=BOD.ZS(AVE.y1)-2; for(let z=z0;z<z1;z+=28*M)pts.push([ax,z]); }
-    { const P=RING.bank, zs=BOD.ZS(P.r0-.9), zn=BOD.ZS(P.r1+.9); for(const [x,z] of [[-62,zs],[-95,zs],[-78.5,zn]])pts.push([BOD.XS(x),z]); }
     { const clear=([x,z])=>heads.every(([hx,,hz])=>Math.hypot(hx-x,hz-z)>2.6*M); for(let i=pts.length-1;i>=0;i--)if(!clear(pts[i]))pts.splice(i,1); }
     const xs=pts.map(p=>p[0]);
     const H=4.2*M, pole=new THREE.InstancedMesh(new THREE.CylinderGeometry(.055*M,.07*M,H,8).translate(0,H/2,0),new THREE.MeshLambertMaterial({color:0x22262b,flatShading:true}),xs.length*2),

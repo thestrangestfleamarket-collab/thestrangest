@@ -32,7 +32,7 @@ const FAR3={};
     put(xs(.63),zN+6,15,15,126,ST,5);
     for(const t of [.42,.46,.53,.55,.61,.66,.69])put(xs(t),zN+(hs(t*5,2)-.5)*24,10+hs(t*9,3)*8,9,80+hs(t*7,4)*40,ST,5);
     for(let k=0;k<60;k++){ const t=k/60+hs(k,21)*.01, x=xs(t), w=5+hs(k,22)*7, h=10+hs(k,23)*10, z=LR.z1-26-hs(k,24)*5; put(x,z,w,6,h,null,null); if(hs(k,25)<.45)put(x+(hs(k,26)-.5)*w*.5,z,1.6,1.6,h+3.2,[.34,.27,.22],1); } }
-  for(let i=B.length-1;i>=0;i--){ const b=B[i]; if(RINGX.inPocket(b[0]*TILE,b[1]*TILE,(Math.max(b[2],b[3])/2+10)*TILE))B.splice(i,1); }
+  { const P=RINGX.pocket, m=10*TILE; for(let i=B.length-1;i>=0;i--){ const b=B[i], x0=(b[0]-b[2]/2)*TILE, x1=(b[0]+b[2]/2)*TILE, z0=(b[1]-b[3]/2)*TILE, z1=(b[1]+b[3]/2)*TILE; if(x1>P.x0-m&&x0<P.x1+m&&z1>P.z0-m&&z0<P.z1+m)B.splice(i,1); } }
   const FW=16, FH=10, NV=8, atlas=new Uint8Array(FW*FH*NV*4), hp=(a,b)=>{ const v=Math.sin(a*91.7+b*47.3)*43758.5453; return v-Math.floor(v); };
   const WALL=[[128,60,48],[96,66,52],[118,118,114],[176,162,134],[122,56,44],[150,155,162],[168,132,96],[196,184,156]];
   for(let v=0;v<NV;v++)for(let y=0;y<FH;y++)for(let x=0;x<FW;x++){ const k=((v*FH+y)*FW+x)*4, w=WALL[v], n=.9+hp(x+v*7,y)*.18; let c=[w[0]*n,w[1]*n,w[2]*n], a=0;

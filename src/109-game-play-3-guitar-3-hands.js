@@ -112,18 +112,5 @@ function gtSound(a,t){ if(PLAY221.seeking)return; const ok=GTPHYS.model?gtPhys()
   while(GTS.sent<GTEV.length&&GTEV[GTS.sent].t<=A){ const e=GTEV[GTS.sent++]; if(e.t<t-0.05)continue;
     if(e.n)gtPlay(e.n.s,e.n.at,when(e.t),e.n.amp,e.n.tone,e.n.r); else gtMute(e.s,when(e.t),0.04); } }
 function gtStop(){ if(!SND.ctx)return; for(let s=1;s<=6;s++)gtMute(s,SND.ctx.currentTime,0.15); }
-function gtStart(){ const [x,y]=PW(6.1,5.05); const a=PLAYA.walker=castNew('walker',x,y,Math.PI/4); a.playing=true; a.face=null; a.talkHand=false; a.gone=false;
-  gtSet(0); PLAY221.pre=0; if(GTA.wet)GTA.wet.gain.value=.2; playLook('holmes',{who:'walker'}); playLook('watson',{who:'walker'}); }
-function gtPrelude(dt){ const a=PLAYA.walker; if(!a)return false; if(PLAY221.pre>=GTPRE){ if(a.path===null&&!a.hide&&a.gone){ a.hide=true; } return false; }
-  PLAY221.pre+=dt; if(PLAY221.pre>=GTPRE-0.6&&a.playing){ a.playing=false; a.pose='stand'; a.bT=0.6; a.hold={}; gtStop(); }
-  if(PLAY221.pre>=GTPRE){ playWalk('walker',[[6.1,8.1],[6.1,9.2],[6.1,10.15]],A90); a.gone=true; }
-  return true; }
 function gtSlung(a,B){ const {V,nrm,cross,sub,mul,dot}=RIG, y=nrm(V(0.75,0.62,0.1)), z0=V(-0.2,0.1,1), z=nrm(sub(z0,mul(y,dot(z0,y)))); B.props.guitar={o:GTSLUNG.o,x:cross(y,z),y,z}; }
-function gtStrings(a,yawA,r,win){ const G=a.B.props.guitar; if(!G)return; const k=a.c.dens*r, W=CIW*r, H=CIH*r, dep=RIG.depth(W*H), buf=a.buf, f=win?win.f:1; if(!dep)return;
-  const at=(x,y,z)=>RIG.add(G.o,RIG.add(RIG.add(RIG.mul(G.x,x),RIG.mul(G.y,y)),RIG.mul(G.z,z)));
-  for(let i=1;i<=6;i++){ const c=i<4?0xffa4a9ad:0xff80868a, n=Math.ceil(GT.S*k*1.2*f);
-    for(let j=0;j<=n;j++){ const u=j/n, y=GT.S*u, p=RIG.project(at(GT.sx(i,y),y,GT.sz(y)),yawA);
-      const X=CAX*r+p[0]*k, Y=CAY*r+p[1]*k, x=Math.floor(X), yy=Math.floor(Y); if(x<0||yy<0||x>=W||yy>=H)continue; const q=yy*W+x; if(buf[q]&&dep[q]<p[2]-0.25)continue;
-      if(!win){ buf[q]=c; continue; } const wx=Math.floor((X-win.x0)*f), wy=Math.floor((Y-win.y0)*f); if(wx>=0&&wy>=0&&wx<win.W&&wy<win.H){ win.o[wy*win.W+wx]=c;
-        for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){ const nx=wx+dx, ny=wy+dy; if(nx<0||ny<0||nx>=win.W||ny>=win.H)continue; const q2=ny*win.W+nx, v=win.o[q2]; if(v===c)continue; win.o[q2]=(0xff000000|[0,8,16].reduce((m,sh)=>m|Math.round(((v>>>sh)&255)*.6+((c>>>sh)&255)*.4)<<sh,0))>>>0; } } } } }
 window.__gtStep=gtStep; window.__guitar={GTA,GTS,get GTTUNE(){ return GTTUNE; },get GTLH(){ return GTLH; },get GTSTRUM(){ return GTSTRUM; },GTBOOK,get song(){ return GTSONG; },set:gtSet,next:gtNext,PLAY221,PLAYA,get SND(){ return SND; },pre:()=>PLAY221.pre,hz:gtHz,get pm(){ return GTPM; }};

@@ -3399,3 +3399,32 @@ park's brick wall twice as high", "no ivy on the wall"; `061-park.js`)
   `GHOSTS.settle`), so the ghost is upright whatever happens until the bath house. The drop at the moment of dying is as it was.
   Cost: nothing new drawn; a teleport moves 289 points (microseconds); a re-form, only if it slips off, about 20-40 ms once.
   `DEADDBG()` gains `on` and `span`.
+## 19 Oct 2026: the overhaul review; quick wins, first batch
+
+- **The review and his answers** (owner, 19 Oct 2026, on the overhaul review doc): multiplayer is "up to 100 people on city block"
+  ("not 100 people on screen at once, just on the map somewhere at once", "probably no more than 20 at a time"; a totally different
+  part of the city is a different server with its own map, characters and players); "ignore file rule" (folders of small modules are
+  fine from now on); the artifact's data goes to its **asset store**; settings for **high end pc, chromebook, tablet and phone**;
+  **quick wins first**; "go without rest of my answers".
+- **Dead code out**: 22 functions nothing called (`stripeT`, `unsign`, `laundryFloorCol`, `laundryWall`, `djHallFloor`, `djFace`,
+  `shellSide`, `msKoiLife`, `msPondSolid`, `octoRGB`, `runZ`, `gtFret`, `gtStart`, `gtPrelude`, `gtStrings`, `pnStep`, `mallet`,
+  `imxTick`, `imMidi`, `cordDraw`, `octLead`, `octDraw`) and the bodies of the guitar's and piano's sample players, which began with
+  `return false` (they fetched `audio/*.mp3`, which his rule forbids anyway). The page is 8.9 KB smaller minified; nothing seen changes.
+- **The website's data as binary** (`build.py`, `worker/door.js`, `003a-skin.js`): each `data/*.json` the website fetches is split into a
+  small JSON (names and numbers) and a gzipped `.bin` with the bytes that were base64 text. The loader puts the bytes back where they were:
+  the skin decoder reads them directly (`BY`), and anything else asking for the old text gets it, made the first time it's asked.
+  Checked offline on all ten files: 575 pieces back byte for byte, the same JSON when written out. The ten files: 708 KB gzipped before,
+  611 KB after, and 2.3 MB less JSON to parse at the start. The worker hands out `.bin` with `content-encoding: gzip`. The artifact keeps
+  base64 inline until its asset store is set up.
+- **PXSNAP without new arrays every frame**: the pixel snap of the Walker and the NPCs kept one small array per thing per frame; it now
+  keeps one flat list.
+- **The lost picture** (phones and tablets drop the graphics context in the background): three.js already brings the renderer back; the
+  page now says THE PICTURE WAS LOST, BRINGING IT BACK meanwhile, and redraws the shadows when it returns. `tests/ctxloss.cjs` checks it.
+- **Shaders at load**: already done (`163-main-15.js` compiles the whole scene and the clipped copies at the start); nothing changed.
+- **Collision by grid**: left for the server work; one Walker against the solids list costs almost nothing a frame.
+- **The rest of the quick wins, checked**: the tree sway loop ran over an empty list (the park's trees are one batched mesh), so it is gone;
+  the sun-shade ray already goes through the BVH (`137-bvh.js`); the 12 pawn bodies are all built at the start, so loading them one by one
+  waits for the lazy-places step.
+- **The budget in CI** (`.github/workflows/site.yml`, job `budget`, pull requests only): builds the base and the pull request, runs
+  `tests/startprof.cjs` on both, and fails when the pull request draws more triangles or calls (over 10%), adds shader programs (over 2),
+  starts over 35% slower, or brings new page errors (`tests/budget.cjs`); then `tests/ctxloss.cjs`.

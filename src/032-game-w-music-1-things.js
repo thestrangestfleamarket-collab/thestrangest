@@ -48,7 +48,6 @@ function imPipe(x,y,name){ PNAME=name; const B=[], f=name==='flute';
   const p=prop(B,null,{music:name}); return imOpts(p,name); }
 const IMKITBAR={k:1.1,sp:1.35};
 function imDrums(x,y,dz=0,k=1,sp=1){ PNAME=dz?'drum kit on a stage':'drum kit'; const B=[], i2t=i=>i*.0254/.9/2*k, sh2=IMC.shell, hd=IMC.head, zk=z=>Math.round(z*k);
-  const shellSide=(z,X,Y)=>z<1||z>=99?IMC.chrome:sh2;
   { const r=i2t(22), cz=Math.round(r*24*1.1); for(let z=0;z<2*cz;z++){ const h=Math.sqrt(Math.max(0,cz*cz-(z-cz+.5)**2))/24/1.1; B.push(imB(x-h,y+.02,x+h,y+.02+.4*k,z,z+1,sh2,{foot:z===0?1:0,fs:(nx,ny,X,Y,zz,k)=>sh(ny>0?(Math.hypot(X-x,(z-cz)/24/1.1)>h*.9?IMC.chrome:hd):sh2,k)})); } }
   const drum=(dx,dy,inch,z0,dep)=>{ const r=i2t(inch); dx*=sp; dy*=sp; z0=zk(z0); dep=zk(dep); imRound(B,x+dx,y+dy,z0,z0+dep,()=>r,sh2,{side:(z)=>z===0||z===dep-1?IMC.chrome:sh2,top:()=>hd}); if(z0>0)B.push(imB(x+dx-.01,y+dy-.01,x+dx+.01,y+dy+.01,0,z0,IMC.chrome)); };
   drum(-.42,-.1,14,16,4); drum(-.12,.12,10,24,6); drum(.14,.12,12,24,7); drum(.46,-.08,16,0,15);

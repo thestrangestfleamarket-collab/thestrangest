@@ -19,14 +19,6 @@ function djLathe(cx,cy,z0,z1,rf,col,dz=2,dw=.04){ const out=[];
       out.push(sided({x0:cx+xa,y0:cy-hy,x1:cx+xa+w,y1:cy+hy,z0:za,z1:zb,c:[90,90,90],foot:0,nb:1,fs:(nx,ny,X,Y,zr)=>col(X-cx,Y-cy,za+zr-z0,0),top:(X,Y)=>col(X-cx,Y-cy,zb-z0,1)})); } }
   return out; }
 const DJTAT=[178,166,112], DJBRD=[128,84,50], DJWOOD=[70,48,34], DJPAP=[226,218,196], DJPLA=[204,192,164];
-function djHallFloor(x,y){ const {x0,y0,x1,y1}=DJ.h, T=DJ.T, e=Math.min(x-x0-T,x1-T-x,y-y0-T,y1-T-y);
-  if(e<.95){ const al=Math.min(x-x0,x1-x)<Math.min(y-y0,y1-y), a=al?y:x, b=al?x:y, k=Math.floor(b*5), n=hash(k,Math.floor(a*1.3+k*.37),701);
-    return mt('wood',sh(DJBRD,(b*5)%1<.1?.72:.9+.18*n)); }
-  const zx=Math.abs(x-DJ.c[0]), zy=Math.abs(y-DJ.c[1]);
-  if(zx<.42&&zy<.42)return mt('carpet',Math.max(zx,zy)>.37?[70,76,120]:Math.max(zx,zy)<.05?[34,38,66]:sh([52,58,98],.95+.1*hash(Math.floor(x*14),Math.floor(y*14),717)));
-  const u=x-(x0+1.05), v=y-(y0+1.05), bi=Math.floor(u/2), bj=Math.floor(v/2), across=(bi+bj)&1, p=across?u-bi*2:v-bj*2, q=across?v-bj*2:u-bi*2;
-  const pm=p%1, edge=pm<.035||pm>.965, end=q<.02||q>1.98, w=hash(Math.floor(pm*30),Math.floor(q*9),703);
-  return edge?[64,58,40]:end?mt('carpet',sh(DJTAT,.8)):mt('carpet',sh(DJTAT,(Math.floor(pm*30)&1?.94:1)*(.96+.06*w))); }
 const DJWIN=[-4,4], DJPAN=[[-3,-2],[2,3]], djPan=(d,north)=>DJPAN.some(([p,q])=>d>=p&&d<q&&!(north&&p>0));
 function djOpen(a,z,north){ const d=a-DJ.c[0];
   if(Math.abs(d)<DJ.dw)return z<DJ.DH||z>59&&z<70&&(a*8)%1>.22&&z%4.5>1.2;
@@ -49,10 +41,6 @@ function djWallCol(a,z,north,f,shut=north){ const d=a-DJ.c[0], pa=((a%2)+2)%2, i
   for(const w of DJWIN){ if(north&&w>0)continue; const r=Math.hypot((d-w)*24,z-34); if(r<15)return r>=13.6?sh(mt('wood',DJWOOD),f):djOpen(a,z,north)?null:sh(mt('wood',sh(DJWOOD,1.2)),f); }
   if(z<11.5||z>51.5||(a*4)%1<.07||z%10.5<1)return sh(mt('wood',sh(DJWOOD,1.25)),f);
   return sh(mt('frame',sh(DJPAP,.94+.06*hash(Math.floor(a*12),Math.floor(z/3),723))),f); }
-function djFace(b,nx,ny,X,Y,z,f){ if(z>=DJ.H)return null; const [cx,cy]=DJ.c, e=.15;
-  if(ny&&(Math.abs(Y-b.y0)<e||Math.abs(Y-b.y1)<e)){ const n=Math.abs(Y-b.y0)<e; return djWallCol(X,z,n,f,n); }
-  if(nx&&(Math.abs(X-b.x0)<e||Math.abs(X-b.x1)<e))return djWallCol(Y-cy+cx,z,false,f,Math.abs(X-b.x1)<e);
-  return sh(mt('wood',DJWOOD),f); }
 function djAndon(x,y){ PNAME='andon'; const w=.17, P=(a,z)=>(Math.abs(a)>w-.025||z<9||z>27.5||Math.abs(z-18)<.6)?sh(DJWOOD,1.1):djE(z<12?[230,150,80]:[255,206,140]);
   const p=prop([djBx(x-w,y-w,x+w,y+w,0,6,DJWOOD,{top:()=>sh(DJWOOD,.8)}),{x0:x-w,y0:y-w,x1:x+w,y1:y+w,z0:6,z1:29,foot:0,c:DJWOOD,top:()=>djE([255,226,170]),fi:(v,z)=>P(v-y,z),fj:(u,z)=>P(u-x,z)}]);
   LAMPS.push({x,y,z:20,r:4.8,c:[.66,.34,.14],own:1,room:1,day:true,prop:p}); return p; }

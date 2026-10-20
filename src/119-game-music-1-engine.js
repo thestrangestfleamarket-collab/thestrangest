@@ -9,7 +9,6 @@ function pluck(S,pos,amp,bright){ const N=Math.min(4095,Math.round(S.len)); let 
   S.lp=0; S.apc=0; S.fd=0; S.mute=1; S.mt=1; S.on=true; S.q=0; }
 function mkRes(f,t60,w,sr){ const r=Math.pow(10,-3/(t60*sr)), o=TAU*f/sr; return {c:2*r*Math.cos(o),r2:r*r,k:(1-r)*Math.hypot(1-r*Math.cos(2*o),r*Math.sin(2*o)),w,y1:0,y2:0}; }
 function J(m,x){ let s=0, t=Math.pow(x/2,m); for(let k=1;k<=m;k++)t/=k; for(let k=0;k<30;k++){ s+=t; t*=-(x*x/4)/((k+1)*(k+1+m)); if(Math.abs(t)<1e-9)break; } return s; }
-function mallet(f,tau){ const x=2*f*tau; if(Math.abs(1-x)<1e-4)return Math.PI/4; return Math.abs(Math.cos(Math.PI*f*tau)/(1-x*x)); }
 class Imx extends AudioWorkletProcessor{
   constructor(o){ super(); const p=this.p=o.processorOptions||{}; const sr=sampleRate; this.fam=p.fam; this.ev=[]; this.quiet=0; this.post=0; this.noise=12345;
     this.S=[]; const n=p.n||6; for(let i=0;i<n*(p.pair?2:1);i++)this.S.push(mkStr());
@@ -102,13 +101,4 @@ function imxRec(N,evs,t0){ const R=IMSAMP[N.kind]&&imsLoad(N.kind); if(!R)return
       src.connect(f); f.connect(g); g.connect(N.lim); src.start(t,A.t,A.L); N.on[e.s]={src,g,hz:A.hz}; src.onended=()=>{ if(N.on[e.s]&&N.on[e.s].src===src)N.on[e.s]=null; }; }
     else if(e.k==='stop'&&v)v.src.playbackRate.setValueAtTime(e.hz/v.hz,t);
     else if(e.k==='mute'&&v&&e.v<1){ v.g.gain.setTargetAtTime(0,t,.02); try{ v.src.stop(t+.2); }catch(err){} N.on[e.s]=null; } } }
-function imxTick(now){ if(!IMX.nodes.size)return; const c=SND.ctx; if(!c)return; const t0=performance.now();
-  for(const [key,N] of IMX.nodes){ if(now-N.at>120000&&!(IMV.on&&N.who==='me')){ try{ N.node.disconnect(); N.pan.disconnect(); }catch(e){} IMX.nodes.delete(key); continue; }
-    if(N.who==='me')continue; let v=0, s=0;
-    if(N.who==='bar'){ if(BARM.on&&LEVEL===0){ const x=BAR.drums.x, y=BAR.drums.y, d=Math.hypot(x-P.x,y-P.y); v=.9/(1+d*d*.05); const [sx]=toS(...vw(x,y)), [px]=toS(...vw(P.x,P.y)); s=Math.max(-.8,Math.min(.8,(sx-px)/120)); }
-      N.g.gain.setTargetAtTime(v,c.currentTime,.1); N.pan.pan.setTargetAtTime(s,c.currentTime,.1); continue; }
-    const o=ONLINE.others.get(N.who);
-    if(o&&o.l===LEVEL){ const [x,y]=onlineAt(o,now), d=Math.hypot(x-P.x,y-P.y); v=d>14?0:1/(1+d*d*.06); const [sx]=toS(...vw(x,y)), [px]=toS(...vw(P.x,P.y)); s=Math.max(-.8,Math.min(.8,(sx-px)/120)); }
-    N.g.gain.setTargetAtTime(v,c.currentTime,.1); N.pan.pan.setTargetAtTime(s,c.currentTime,.1); }
-  PERF.add('music: instruments heard (others\' and the bar\'s)',performance.now()-t0); }
 window.__imx=IMX;

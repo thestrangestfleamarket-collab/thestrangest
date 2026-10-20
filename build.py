@@ -1,4 +1,4 @@
-import base64, glob, hashlib, json, os, re, shutil, subprocess, sys, time
+import base64, glob, gzip, hashlib, json, os, re, shutil, subprocess, sys, time
 sys.path.insert(0, 'tools')
 from yields import yields
 
@@ -33,10 +33,34 @@ open('dist/door.html', 'w').write(read('src/door/door.html'))
 shutil.rmtree('dist/g', ignore_errors=True)
 os.makedirs('dist/g')
 k = raw[:i].rindex('<script>')
-names = {}
+B64S = re.compile(r'^[A-Za-z0-9+/]+=*$')
+def split(f):
+    d, buf = json.load(open(f)), bytearray()
+    def w(o):
+        if isinstance(o, dict):
+            if '$' in o: sys.exit(f + ': a "$" key clashes with the binary split')
+            return {k: w(v) for k, v in o.items()}
+        if isinstance(o, list): return [w(v) for v in o]
+        if isinstance(o, str) and len(o) > 64 and len(o) % 4 == 0 and B64S.match(o):
+            b = base64.b64decode(o)
+            if base64.b64encode(b).decode() != o: return o
+            while len(buf) % 4: buf.append(0)
+            a = len(buf); buf.extend(b)
+            return {'$': [a, len(b)]}
+        return o
+    s = w(d)
+    return (json.dumps(s, separators=(',', ':')), bytes(buf)) if buf else None
+names, bins = {}, {}
 for f in sorted(set(re.findall(r'__(?:DATA|LAZY)__\("([^"]+)"\)', body))):
-    shutil.copy(f, 'dist/g/' + os.path.basename(f))
-    names[f] = json.dumps(hashed('dist/g/' + os.path.basename(f)))
+    o = 'dist/g/' + os.path.basename(f)
+    sp = split(f) if f.endswith('.json') else None
+    if sp:
+        open(o, 'w').write(sp[0])
+        open(o[:-5] + '.bin', 'wb').write(gzip.compress(sp[1], 9, mtime=0))
+        bins[f] = json.dumps(hashed(o[:-5] + '.bin'))
+    else:
+        shutil.copy(f, o)
+    names[f] = json.dumps(hashed(o))
 seg = raw[k + 8:i - len('<script type="module">')]
 open('dist/g/rig.js', 'w').write(data(seg[:seg.index('</script>')]))
 open('dist/g/page.html', 'w').write(re.sub(r'<meta[^>]*>|<title>.*?</title>', '', raw[:k]).strip())
@@ -48,11 +72,20 @@ if os.environ.get('MIN', '1') != '0':
 elif not os.path.exists('node_modules/three'):
     subprocess.run(['npm', 'install', '--no-audit', '--no-fund'], check=True)
 used = [f for f in names if '__DATA__("' + f + '")' in body]
+UNB = ('const __GF=(n,k)=>fetch("/g/"+n).then(r=>{ if(!r.ok)throw new Error(n+" "+r.status); return k?r.arrayBuffer():r.json(); });\n'
+    + 'const __UNB=(j,u)=>{ const w=o=>{ for(const k in o){ const v=o[k]; if(!v||typeof v!=="object")continue; const p=v.$;'
+    + ' if(Array.isArray(p)&&p.length===2&&Object.keys(v).length===1){ const a=p[0], n=p[1]; let s=null;'
+    + ' if(!Object.prototype.hasOwnProperty.call(o,"$b"))Object.defineProperty(o,"$b",{value:{},enumerable:false});'
+    + ' Object.defineProperty(o.$b,k,{enumerable:true,get:()=>u.slice(a,a+n)});'
+    + ' Object.defineProperty(o,k,{enumerable:true,configurable:true,get(){ if(s===null){ let t=""; for(let i=a;i<a+n;i+=32768)t+=String.fromCharCode.apply(null,u.subarray(i,Math.min(i+32768,a+n))); s=btoa(t); } return s; },'
+    + 'set(x){ Object.defineProperty(o,k,{value:x,writable:true,enumerable:true,configurable:true}); }}); } else w(v); } }; w(j); return j; };\n'
+    + 'const __GJ=(n,b)=>Promise.all([__GF(n,0),b?__GF(b,1):null]).then(([j,u])=>u?__UNB(j,new Uint8Array(u)):j);\n')
 game = ('document.body.insertAdjacentHTML("afterbegin",' + json.dumps(read('dist/g/page.html')) + ');\n'
     + 'const __RIG=new Promise((r,e)=>document.head.append(Object.assign(document.createElement("script"),{src:"/g/' + hashed('dist/g/rig.js') + '",onload:r,onerror:e})));\n'
-    + 'const __DP=Object.fromEntries([' + ','.join(names[f] for f in used) + '].map(n=>[n,fetch("/g/"+n).then(r=>{ if(!r.ok)throw new Error(n+" "+r.status); return r.json(); })]));\n'
+    + UNB
+    + 'const __DP=Object.fromEntries([' + ','.join('[' + names[f] + ',' + bins.get(f, 'null') + ']' for f in used) + '].map(([n,b])=>[n,__GJ(n,b)]));\n'
     + 'await __RIG;\n'
-    + re.sub(r'__LAZY__\("([^"]+)"\)', lambda m: '(()=>fetch("/g/"+' + names[m.group(1)] + ').then(r=>r.json()))', re.sub(r'__DATA__\("([^"]+)"\)', lambda m: '(await __DP[' + names[m.group(1)] + '])', body)))
+    + re.sub(r'__LAZY__\("([^"]+)"\)', lambda m: '(()=>__GJ(' + names[m.group(1)] + ',' + bins.get(m.group(1), 'null') + '))', re.sub(r'__DATA__\("([^"]+)"\)', lambda m: '(await __DP[' + names[m.group(1)] + '])', body)))
 os.remove('dist/g/page.html')
 open('dist/g/game.js', 'w').write(re.sub(r"'https://cdn\.jsdelivr\.net/npm/((?:@[^/@']+/)?[^/@']+)@([^/']+)[^']*'", npm, data(game)))
 m = subprocess.run(['node', 'tools/bundle.cjs', 'dist/g/game.js', 'dist/g'], check=True, capture_output=True, text=True).stdout.strip()

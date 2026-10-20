@@ -1,6 +1,5 @@
 const IMNOTE=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
 const imHz=m=>440*Math.pow(2,(m-69)/12), imName=m=>IMNOTE[((m%12)+12)%12]+(Math.floor(m/12)-1);
-const imMidi=s=>{ const r=/^([A-G]#?)(-?\d)$/.exec(s); return r?IMNOTE.indexOf(r[1])+12*(+r[2]+1):null; };
 const IMR={
   membrane:[[1,1],[1.594,1],[2.136,1],[2.296,0],[2.653,1],[2.918,1],[3.156,1],[3.501,1],[3.6,0],[3.652,1]],
   freebar:[1,2.756,5.404,8.933,13.344],

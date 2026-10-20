@@ -6,8 +6,8 @@
   F.on=false; F.G=G;
   const wait=ms=>new Promise(r=>setTimeout(r,ms)), frames=k=>new Promise(r=>{ const f=()=>--k<=0?r():requestAnimationFrame(f); requestAnimationFrame(f); });
   const fade=async(txt,fn)=>{ busy=true; const el=document.getElementById('subfade'); el.textContent=txt; el.style.pointerEvents='auto'; el.style.opacity='1'; if(keys.clear)keys.clear(); target=null; await wait(340); await frames(2);
-    fn(); await frames(3); await wait(260); el.style.opacity='0'; el.style.pointerEvents='none'; await wait(360); busy=false; };
-  F.out=()=>{ if(busy)return; fade(F.built?'YOUR FIRE ESCAPE':'LOADING YOUR FIRE ESCAPE...',()=>{ STORE.offGo(F.name); UI.goTo(X(CX),Z(WY+1.05),Y(HZ)); heading=0; if(UI.persp&&window.__dbg)__dbg.face(Math.PI); }); };
+    await fn(); await frames(3); await wait(260); el.style.opacity='0'; el.style.pointerEvents='none'; await wait(360); busy=false; };
+  F.out=()=>{ if(busy)return; fade(F.built?'YOUR FIRE ESCAPE':'LOADING YOUR FIRE ESCAPE...',async()=>{ await STORE.offGo(F.name); UI.goTo(X(CX),Z(WY+1.05),Y(HZ)); heading=0; if(UI.persp&&window.__dbg)__dbg.face(Math.PI); }); };
   F.back=()=>{ if(busy)return; fade('YOUR APARTMENT',()=>{ if(USE.seat){ USE.seat=null; st.sit=null; } UI.goTo(X(U(AWX)),Z(V(1.1)),APTS.lvY(2)); heading=0; }); };
   const hit=(w,h,d,x,y,z)=>{ const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),new THREE.MeshBasicMaterial({visible:false})); m.position.set(x,y,z); scene.add(m); return m; };
   UI.thing({name:'YOUR FIRE ESCAPE',ghost:1,obj:hit(1.1*T*KK,BOD.Y(52),.3*T,X(U(AWX)),BOD.Y(2*S+68+RZ),Z(V(.2))),reach:1.4*T,near:2.6*T,tall:1.4*T,act:()=>{ if(APTS.in&&APTS.floor()===2)F.out(); }});
@@ -91,7 +91,7 @@
   const walk=(x,y)=>{ const n=hs(Math.floor(x*8),Math.floor(y*8),85), j=((x-CX)%1.4+1.4)%1.4<.12||((y-WY)%1.4+1.4)%1.4<.12; return lit2(j?[132,128,122]:sh([164,160,152],.95+.1*n),pool(x,y)); };
   const make=(k,map,emap)=>{ const m=new THREE.MeshLambertMaterial({map,alphaTest:.5,side:k==='F'?THREE.FrontSide:THREE.DoubleSide,...(emap?{emissiveMap:emap,emissive:0xffffff,emissiveIntensity:0}:{})}); if(emap)MATS.push(m); return m; };
   const sol=STORE.kit.sol;
-  F.build=()=>{ if(F.built)return; const keep=BATCH.items.splice(0), km=BATCH.meshes, kc=BATCH.cast; BATCH.meshes={}; BATCH.cast=true; BATCH.tag=null;
+  F.build=__CHUNK__('fire',()=>{ if(F.built)return; const keep=BATCH.items.splice(0), km=BATCH.meshes, kc=BATCH.cast; BATCH.meshes={}; BATCH.cast=true; BATCH.tag=null;
     const R=(i,j)=>hs(i,j,907);
     bld(CX-9,CX+9,WY-12,WY,6,{c:[132,64,50],sd:11,c0:CX,fw:1,mine:1,lit:.4,door:CX+5.2,zb:28,sk:'nwe',st:[178,170,156]},24);
     box({x0:CX+4.5,x1:CX+5.9,y0:WY,y1:WY+1.1,z0:0,z1:24,c:[150,146,136],top:(x,y)=>sh([150,146,136],(y-WY)*24%9<1?.8:1)},12,'L');
@@ -155,7 +155,7 @@
     UI.thing({name:'BACK INSIDE',ghost:1,obj:hit(1.2*T*KK,Y(94),.4*T,X(CX),Y(HZ+47),Z(WY+.15)),reach:1.4*T,near:2.6*T,tall:2.2*T,act:()=>F.back()});
     UI.thing({name:'SIT ON THE STEP',ghost:1,obj:hit(1.6*T*KK,Y(16),.45*T,X(CX),Y(HZ+8),Z(WY+.22)),reach:1.3*T,near:2.4*T,tall:.6*T,act:()=>F.sit()});
     const pl=STORE.places.find(q=>q[0]===F.name); if(pl){ pl[1]=X(CX); pl[2]=Z(WY+1.05); pl[3]=Y(HZ); }
-    F.built=true; };
+    F.built=true; });
   F.sit=()=>{ if(!F.on)return; const x=X(CX), z=Z(WY+.5); USE.seat={back:pos.clone(),x,z}; pos.x=x; pos.z=z; target=null; heading=0; st.sit={z:Math.max(2,Y(STP.z)/(ZU*W3.SZ*(W3.BH||1)))}; };
   const sg0=STORE.stackGround; STORE.stackGround=(x,z)=>{ if(F.built&&onL(x,z)){ const u=ix(x), v=iy(z); return Y(HZ+(u>STP.x0&&u<STP.x1&&v<STP.y1?STP.z:0)); } return sg0?sg0(x,z):null; };
   const into=(u0,v0,u,v)=>Math.abs(u-u0)<.5&&v<v0&&Math.cos(heading)<-.6&&lp&&Math.hypot(pos.x-lp.x,pos.z-lp.z)>1e-4;

@@ -5,8 +5,8 @@
   const room=()=>STORE.rooms.find(r=>r.id===D.id), inD=()=>{ const Rm=room(); return !!Rm&&LVL==='up'&&Rm.inside(pos.x,pos.z); };
   let busy=false;
   const fade=async(txt,fn)=>{ busy=true; const el=document.getElementById('subfade'); el.textContent=txt; el.style.pointerEvents='auto'; el.style.opacity='1'; if(keys.clear)keys.clear(); target=null; await wait(340);
-    fn(); await frames(3); await wait(260); el.style.opacity='0'; el.style.pointerEvents='none'; await wait(360); busy=false; };
-  D.enter=()=>{ if(!busy)fade('ENTERING THE DOJO',()=>{ STORE.offGo('THE DOJO HALL'); UI.goTo(IX,IZ-1.6*T,'up'); heading=Math.PI; }); };
+    await fn(); await frames(3); await wait(260); el.style.opacity='0'; el.style.pointerEvents='none'; await wait(360); busy=false; };
+  D.enter=()=>{ if(!busy)fade('ENTERING THE DOJO',async()=>{ await STORE.offGo('THE DOJO HALL'); UI.goTo(IX,IZ-1.6*T,'up'); heading=Math.PI; }); };
   D.leave=()=>{ if(!busy)fade('LEAVING THE DOJO',()=>{ TR.stop(); UI.goTo(GX,GZ+1.4*T,'up'); heading=0; }); };
   { const hb=new THREE.Mesh(new THREE.BoxGeometry(1.8*T,2.6*T,.5*T),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(GX,1.3*T,GZ+.3*T); scene.add(hb);
     UI.thing({name:'THE DOJO',ghost:1,obj:hb,reach:1.2*T,near:2.4*T,tall:2.8*T,act:()=>D.enter()}); }
@@ -41,7 +41,7 @@
     else if((TR.ph==='good'||TR.ph==='miss')&&TR.t>1.4){ TR.n++; if(TR.n>=TR.list.length){ TR.ph='end'; TR.t=0; show('TRAINING DONE: '+TR.ok+' OF '+TR.list.length,'MARTIAL ARTS '+(FORAGE.S.sk.fight/10).toFixed(1),'#f2c14e'); }
       else { TR.ph='intro'; TR.t=1.2; } }
     else if(TR.ph==='end'&&TR.t>2.8)TR.stop(); };
-  const mk=()=>{ if(N)return; const MT=R.MATS; if(!MT.includes('ninja')){ MT.push('ninja'); W3.ramp.push(['#4a4c5c','#2e2f3c','#1d1e27','#0e0e14'].map(h=>new THREE.Color(h))); }
+  const mk=__CHUNK__('dojo',()=>{ if(N)return; const MT=R.MATS; if(!MT.includes('ninja')){ MT.push('ninja'); W3.ramp.push(['#4a4c5c','#2e2f3c','#1d1e27','#0e0e14'].map(h=>new THREE.Color(h))); }
     const NB=MT.indexOf('ninja'), keep=new Set(['eye','eyeW','pupil'].map(n=>MT.indexOf(n)).filter(i=>i>=0)), LID=MT.indexOf('lid'), SKN=MT.indexOf('skin');
     const {PCS,J}=musBody(), H=J.head; for(const p of PCS)p.recol=m=>keep.has(m)?m:m===LID?SKN:NB;
     if(!MT.includes('ninjaface')){ MT.push('ninjaface'); W3.ramp.push(W3.ramp[SKN].map(c=>c.clone())); } const NF=MT.indexOf('ninjaface');
@@ -50,7 +50,7 @@
     const FM=figureMesh(PCS,'ninja'), g=new THREE.Group(); g.add(FM.me); scene.add(g);
     const S=R.create(); S.smooth=true; const hb=new THREE.Mesh(new THREE.BoxGeometry(1.1*T,2.3*T,1.1*T),new THREE.MeshBasicMaterial({visible:false})); scene.add(hb);
     N={g,FM,PCS,S,hb,x:CX,z:CZ,hd:0,to:0,ki:0,cur:null,q:null,tris:FM.tris};
-    UI.thing({name:'THE NINJA',obj:hb,reach:1.7*T,near:3*T,tall:2.5*T,act:()=>TR.start()}); };
+    UI.thing({name:'THE NINJA',obj:hb,reach:1.7*T,near:3*T,tall:2.5*T,act:()=>TR.start()}); });
   D.ready=mk; if(D.built)mk();
   const CB=()=>(R.RIGT&&R.RIGT.combo)||1;
   const begin=s=>{ const S=N.S, [k,a]=s; N.cur={k,a,t:0};

@@ -7,7 +7,7 @@
   STORE.main.doors.push(['THE DOJO',X(GX),Z(GY)+2.2*TILE]);
   const F3={D:'110101101101110',O:'111101101101111',J:'001001001101111'};
   const glyph=(s,u,v,k)=>{ const i=Math.floor(v/(6*k)), c=s[i], q=F3[c]; if(!q)return false; const r=Math.floor((v-i*6*k)/k), cc=Math.floor(u/k); return r<5&&cc>=0&&cc<3&&q[r*3+cc]==='1'; };
-  STEPS.push(()=>{ const RED=[120,44,32], DK=[40,30,26], RF=[44,44,52], bs=[];
+  STEPS.push(__CHUNK__('street',()=>{ const RED=[120,44,32], DK=[40,30,26], RF=[44,44,52], bs=[];
     const b=(x0,y0,x1,y1,z0,z1,c,o={})=>bs.push({x0,y0,x1,y1,z0,z1,c,...o});
     b(GX-.8,GY,GX+.8,GY+.03,0,DH-4,[16,13,12],{fs:(nx,ny,P,Q,z)=>z<6?[58,40,28]:z<9?[34,26,20]:[16,13,12]});
     for(const s of [-1,1])b(GX+s*.8-(s>0?0:.16),GY,GX+s*.8+(s>0?.16:0),GY+.2,0,DH+4,RED,{fs:(nx,ny,P,Q,z,k)=>sh(RED,k*(z<8?.7:1))});
@@ -24,8 +24,8 @@
     b(GX-1.05,GY,GX+1.05,GY+.7,0,2,[120,118,112],{top:(x,y)=>hs(Math.floor(x*6),Math.floor(y*6),811)<.15?[104,102,98]:[132,130,124]});
     BATCH.tag=OBJ('store:dojogate','dojo gate'); for(const q of bs)gbox(q,q.em?'B':'L'); BATCH.tag=null;
     for(const s of [-1,1])sol(GX+s*.8-(s>0?0:.16),GY,GX+s*.8+(s>0?.16:0),GY+.2,DH);
-    sol(GX-1.5,GY,GX-1.02,GY+.08,DH); });
-  K.offmap('THE DOJO HALL',[752,-108,788,-80],()=>{
+    sol(GX-1.5,GY,GX-1.02,GY+.08,DH); }));
+  K.offmap('THE DOJO HALL',[752,-108,788,-80],__CHUNK__('dojo',()=>{
     const WD=J.DJWOOD, PAP=J.DJPAP, PLA=J.DJPLA, wd=(k,f=1)=>sh(WD,k*f), WARM=[255,206,128];
     const RW={b:[DA-5.2,DA+5.2],w:[(B.y0+B.y1)/2],e:[(B.y0+B.y1)/2]}, RZ=74, RR=26;
     const shoji=(wall,a,z,f)=>{ const pa=((a%2)+2)%2;
@@ -65,5 +65,5 @@
         thing('paper lantern',[bx(x-.01,y-.01,x+.01,y+.01,B.h-26,B.h,[30,26,24]),bx(x-.18,y-.18,x+.18,y+.18,B.h-54,B.h-26,[230,70,52],{em:1,fs:(nx,ny,P,Q,z)=>z<3||z>25?[40,30,28]:z%5<1?lit([210,46,34]):lit([255,112,76]),top:()=>[40,30,28]})],{high:1}); }
       LAMPS.push({own:1,room:1,day:true,x:DA,y:(MAT.y0+MAT.y1)/2,z:B.h-30,r:7,c:[1,.78,.52]});
     });
-    DOJO.built=true; if(DOJO.ready)DOJO.ready(); });
+    DOJO.built=true; if(DOJO.ready)DOJO.ready(); }));
 }

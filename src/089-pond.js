@@ -1,5 +1,5 @@
 const POND={}; window.POND=POND;
-{ const go=()=>{ if(typeof PARK==='undefined'||!PARK.fire)return setTimeout(go,500);
+{ const go=__CHUNK__('park',()=>{ if(typeof PARK==='undefined'||!PARK.fire)return setTimeout(go,500);
     const P=PARK, X=x=>BOD.XS(x+(P.ox||0)), Z=y=>BOD.ZS(y+(P.oy||0)), Y=BOD.YS, [rx,ry]=P.round, cx=rx+12.5, cy=ry+11.5, R=4.2, RIM=9, LV=7;
     const WX=X(cx), WZ=Z(cy), RW=R*TILE;
     POND.c={x:WX,z:WZ}; POND.r=RW;
@@ -22,5 +22,5 @@ const POND={}; window.POND=POND;
       for(let j=0;j<ny;j++)for(let i=0;i<nx;i++){ const h=Math.max(H[j*(nx+1)+i],H[j*(nx+1)+i+1],H[(j+1)*(nx+1)+i],H[(j+1)*(nx+1)+i+1]); if(h<=.001)continue;
         const a=vi(i,j), b=vi(i+1,j), c=vi(i+1,j+1), d=vi(i,j+1); I.push(a,d,b,b,d,c); }
       if(I.length){ const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(V,3)); g.setAttribute('uv',new THREE.Float32BufferAttribute(U,2)); g.setIndex(I); g.computeVertexNormals();
-        const me=new THREE.Mesh(g,new THREE.MeshLambertMaterial({map:MODS.land.material.map,polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-1})); me.receiveShadow=true; me.castShadow=true; me.userData.cull=1; grp.add(me); POND.hills=me; POND.hillTris=I.length/3; } } };
+        const me=new THREE.Mesh(g,new THREE.MeshLambertMaterial({map:MODS.land.material.map,polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-1})); me.receiveShadow=true; me.castShadow=true; me.userData.cull=1; grp.add(me); POND.hills=me; POND.hillTris=I.length/3; } } });
   PARK.later(go); }

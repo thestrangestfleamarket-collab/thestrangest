@@ -5,6 +5,13 @@ const fin=c=>{ fs.writeFileSync(outf,JSON.stringify(rep,null,1)); console.log(JS
 const TOUR={
   dungeon:{go:async()=>{ await DUNGEON.go(1); await new Promise(r=>setTimeout(r,4000)); return DUNDBG(); },back:async()=>{ await DUNGEON.go(0); }},
   dungeon3:{go:async()=>{ await DUNGEON.go(3); await new Promise(r=>setTimeout(r,6000)); return {d:DUNDBG(),m:window.DUNMOBDBG&&DUNMOBDBG()}; },back:async()=>{ await DUNGEON.go(0); }},
+  park:{go:async()=>{ const B=__dbg.MAPK.BOD, P=PARK; STORE.goTo(B.XS(P.round[0]+(P.ox||0)+3),B.ZS(P.round[1]+(P.oy||0)+3),'up'); for(let i=0;i<120&&!PARK.ready;i++)await new Promise(r=>setTimeout(r,500)); await new Promise(r=>setTimeout(r,4000)); return {p:PARKPLACE(),f:!!FOUNT.drops}; },back:async()=>{ const B=__dbg.MAPK.BOD; STORE.goTo(B.XS(99),B.ZS((B.CURB+B.FAR)/2),'up'); await new Promise(r=>setTimeout(r,3000)); }},
+  dojo:{go:async()=>{ DOJO.enter(); for(let i=0;i<60&&!DOJO.built;i++)await new Promise(r=>setTimeout(r,500)); await new Promise(r=>setTimeout(r,3000)); return {built:DOJO.built,ninja:window.DOJONINJA&&DOJONINJA()}; },back:async()=>{ DOJO.leave(); await new Promise(r=>setTimeout(r,3000)); }},
+  fire:{go:async()=>{ FIREV.out(); for(let i=0;i<60&&!FIREV.built;i++)await new Promise(r=>setTimeout(r,500)); await new Promise(r=>setTimeout(r,3000)); return FIREDBG(); },back:async()=>{ FIREV.back(); await new Promise(r=>setTimeout(r,3000)); }},
+  club:{go:async()=>{ await UI.goPlace('CLUB STATIC'); await new Promise(r=>setTimeout(r,6000)); return CLUBDBG(); },back:async()=>{}},
+  arcade:{go:async()=>{ await UI.goPlace('THE ARCADE'); await new Promise(r=>setTimeout(r,3000)); await STORE.enter('arcade',true); await new Promise(r=>setTimeout(r,4000)); return INTDBG(); },back:async()=>{}},
+  vcr:{go:async()=>{ await UI.goPlace('VCR REPAIR'); await new Promise(r=>setTimeout(r,5000)); return Object.keys(STORE.off).filter(k=>STORE.off[k].done); },back:async()=>{}},
+  bath:{go:async()=>{ const M=__dbg.MAPK, G=M.BOD.GD, r=G.r; STORE.goTo(M.BOD.X((r[0]+r[2])/2),M.BOD.Z((r[1]+r[3])/2),'up'); await new Promise(r=>setTimeout(r,7000)); return {inside:G.inside(),int:INTDBG()}; },back:async()=>{ const B=__dbg.MAPK.BOD; STORE.goTo(B.XS(99),B.ZS((B.CURB+B.FAR)/2),'up'); await new Promise(r=>setTimeout(r,3000)); }},
 };
 (async()=>{
   fs.mkdirSync(OUT,{recursive:true});

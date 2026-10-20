@@ -4,18 +4,20 @@ await grab('park',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.ox=P
   P.round=[(P.x0+P.x1)/2,(P.y0+P.y1-NORTHX)/2,7]; P.gate=[P.round[0]-5,P.round[0]+5]; const RX=x=>x-96+P.round[0], RY=y=>y+47+P.round[1];
   const WA=3, wobX=y=>WA*Math.sin(2*Math.PI*(y-P.y0)/(P.y1-NORTHX-P.y0)), wobY=x=>WA*Math.sin(2*Math.PI*(x-P.x0)/(P.x1-P.x0)); P.wobX=wobX; P.wobY=wobY;
   const path=(x,y)=>{ const [cx,cy,r]=P.round; return Math.abs(x-cx-wobX(y))<3.6||Math.abs(y-cy-wobY(x))<3.6||Math.hypot(x-cx,y-cy)<r; };   P.path=path; FOUNT.at(P);
-  const HK=[[P.round[0]+12.5-6,P.round[1]+11.5-6,P.round[0]+12.5+6,P.round[1]+11.5+6],[CASTLE.b[0]-PO.x-3,CASTLE.b[2]-PO.y-3,CASTLE.b[1]-PO.x+3,CASTLE.b[3]-PO.y+3],(o=>[o[0]-3,o[1]-3,o[0]+9,o[1]+19])(STORE.shrineO||[69,-45.9+NORTHY]),[RX(90)-3,RY(-41.5)-3,RX(102)+3,RY(-41.5)+3],...(typeof GCAVE!=='undefined'?GCAVE.keep(P):[])];
+  const HK=[[P.round[0]+12.5-6,P.round[1]+11.5-6,P.round[0]+12.5+6,P.round[1]+11.5+6],[CASTLE.b[0]-PO.x-3,CASTLE.b[2]-PO.y-3,CASTLE.b[1]-PO.x+3,CASTLE.b[3]-PO.y+3],[RX(90)-3,RY(-41.5)-3,RX(102)+3,RY(-41.5)+3],...(typeof GCAVE!=='undefined'?GCAVE.keep(P):[])];
   const ss=(a,b,v)=>{ const t=Math.max(0,Math.min(1,(v-a)/(b-a))); return t*t*(3-2*t); }, cvn=BOD.g.cvNoise;
   P.hill=(x,y)=>{ if(x<P.x0||x>P.x1||y<P.y0||y>P.y1)return 0; const [cx,cy,r]=P.round;
     let d=Math.min(Math.abs(x-cx-wobX(y))-3.6,Math.abs(y-cy-wobY(x))-3.6,Math.hypot(x-cx,y-cy)-r,x-P.x0-1.5,P.x1-x-1.5,y-P.y0-9,P.y1-y-1.5,FOUNT.away(x,y)); if(d<=0)return 0;
     for(const b of HK){ const e=Math.max(b[0]-x,x-b[2],b[1]-y,y-b[3]); if(e<d)d=e; if(d<=0)return 0; }
     const n=cvn(x/12,y/12,501)*.7+cvn(x/5,y/5,503)*.3; return 1.6*TILE*ss(0,6,d)*Math.max(0,(n-.33)/.67); };
-  const BK=P.brook=(()=>{ const K=[[140,33.5],[133,29],[125,25.5],[114,22],[103,20.5],[96,21],[88,23.5],[77,21.5],[65,24.5],[53,20],[41,23],[31,20],[23,17.5],[15,14.5]].map(([x,y])=>[x-99+P.round[0],y+1.25+P.round[1]]), Q=[];
+  const BK=P.brook=(()=>{ const K=[[140,33.5],[133,29],[125,25.5],[114,22],[103,20.5],[96,21],[88,23.5],[77,21.5],[65,24.5],[53,20],[41,23],[31,20],[23,17.5],[15,14.5]].map(([x,y])=>[x-99+P.round[0],y+1.25+P.round[1]]), Q=[]; let bs=null;
+    { const [ax,ay]=K[0], l=Math.hypot(ax-K[1][0],ay-K[1][1]), ux=(ax-K[1][0])/l, uy=(ay-K[1][1])/l; for(let a=-1.3;a<=1.3;a+=.05){ const dx=ux*Math.cos(a)-uy*Math.sin(a), dy=ux*Math.sin(a)+uy*Math.cos(a); let t=0; while(t<40&&FOUNT.lake(ax+dx*t,ay+dy*t)>=0)t+=.25; if(t>=40)continue; let ok=true; for(let u=0;u<=t+4;u+=.5)if(FOUNT.ter(ax+dx*u,ay+dy*u)<7)ok=false; if(ok&&(!bs||t<bs[0]))bs=[t,dx,dy]; } if(bs)K.unshift([ax+bs[1]*(bs[0]+4),ay+bs[2]*(bs[0]+4)]); }
     for(let i=0;i<K.length-1;i++){ const a=K[Math.max(0,i-1)], b=K[i], c=K[i+1], d=K[Math.min(K.length-1,i+2)]; for(let k=0;k<16;k++){ const t=k/16, f=j=>.5*(2*b[j]+(c[j]-a[j])*t+(2*a[j]-5*b[j]+4*c[j]-d[j])*t*t+(3*b[j]-a[j]-3*c[j]+d[j])*t*t*t); Q.push([f(0),f(1)]); } } Q.push(K[K.length-1]);
     const acc=[0]; for(let i=1;i<Q.length;i++)acc.push(acc[i-1]+Math.hypot(Q[i][0]-Q[i-1][0],Q[i][1]-Q[i-1][1])); const SL=acc[acc.length-1], N=Math.round(SL/.5), C=[];
     for(let k=0,j=0;k<=N;k++){ const s=k*SL/N; while(j<Q.length-2&&acc[j+1]<s)j++; const t=(s-acc[j])/(acc[j+1]-acc[j]||1); C.push([Q[j][0]+(Q[j+1][0]-Q[j][0])*t,Q[j][1]+(Q[j+1][1]-Q[j][1])*t,s]); }
-    const RF=[20,47,74,101,127,150].map(r=>Math.round(r*SL/185)), B=1.4, W=s=>(1.45+.3*Math.sin(s*.13+1)+.15*Math.sin(s*.41))*(.7+.3*ss(0,8,s))+5*ss(SL-18,SL-4,s),
-      L=s=>-.3-RF.reduce((a,r)=>a+.045*ss(r-.5,r+.5,s),0), D=s=>.42-L(s)+.5*ss(SL-18,SL-6,s), G=new Map(), gk=(i,j)=>i*4096+j, st=[];
+    const sK=bs?acc[16]:0; let kC=0; while(kC<N&&FOUNT.lake(C[kC][0],C[kC][1])<0)kC++; const sC=C[kC][2], LK=-.22+(.5*ZU-.004)*.84/TILE;
+    const RF=[20,47,74,101,127,150].map(r=>Math.round(sK+r*(SL-sK)/185)), B=1.4, W=s=>1.45+.3*Math.sin((s-sK)*.13+1)+.15*Math.sin((s-sK)*.41)+1.8*(1-ss(sC,sC+8,s))+5*ss(SL-18,SL-4,s),
+      L=s=>-.3-RF.reduce((a,r)=>a+.045*ss(r-.5,r+.5,s),0)+(LK+.3)*(1-ss(sW-.25,sW+.25,s)), D=s=>.42-L(s)+.5*ss(SL-18,SL-6,s), G=new Map(), gk=(i,j)=>i*4096+j, st=[];
     for(let k=0;k<N;k++){ const [x0,y0]=C[k], [x1,y1]=C[k+1], r=W(C[k][2])+B+6; for(let i=Math.floor((Math.min(x0,x1)-r)/4);i<=Math.floor((Math.max(x0,x1)+r)/4);i++)for(let j=Math.floor((Math.min(y0,y1)-r)/4);j<=Math.floor((Math.max(y0,y1)+r)/4);j++){ const g=gk(i,j); if(!G.has(g))G.set(g,[]); G.get(g).push(k); } }
     const q=(x,y)=>{ const l=G.get(gk(Math.floor(x/4),Math.floor(y/4))); if(!l)return null; let bd=1e9, bs=0, sg=1;
       for(const k of l){ const [x0,y0,s0]=C[k], [x1,y1,s1]=C[k+1], vx=x1-x0, vy=y1-y0, t=Math.max(0,Math.min(1,((x-x0)*vx+(y-y0)*vy)/(vx*vx+vy*vy))), d=Math.hypot(x-x0-vx*t,y-y0-vy*t); if(d<bd){ bd=d; bs=s0+(s1-s0)*t; sg=vx*(y-y0)-vy*(x-x0)>0?1:-1; } } return [bd,bs,sg]; };
@@ -24,8 +26,13 @@ await grab('park',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.ox=P
     const nrm=k=>{ const a=C[Math.max(0,k-1)], b=C[Math.min(N,k+1)], l=Math.hypot(b[0]-a[0],b[1]-a[1]); return [-(b[1]-a[1])/l,(b[0]-a[0])/l]; };
     const rim=m=>{ const o=[], r=k=>W(C[k][2])+B+m, side=(k,f)=>{ const [nx,ny]=nrm(k); o.push([C[k][0]+f*nx*r(k),C[k][1]+f*ny*r(k)]); }, cap=(k,off)=>{ const [nx,ny]=nrm(k), a=Math.atan2(ny,nx)+off; for(let i=1;i<12;i++){ const t=a-i/12*Math.PI; o.push([C[k][0]+Math.cos(t)*r(k),C[k][1]+Math.sin(t)*r(k)]); } };
       for(let k=0;k<=N;k++)side(k,1); cap(N,0); for(let k=N;k>=0;k--)side(k,-1); cap(0,Math.PI); return o; };
+    let kM=kC; const out=k=>{ const [nx,ny]=nrm(k), c=C[k], w=W(c[2])+B+.2; for(let f=-1;f<=1;f+=.25)if(FOUNT.lake(c[0]+nx*f*w,c[1]+ny*f*w)<.05)return false; return true; }; while(kM<N&&!out(kM))kM++; const m=C[kM][2], sW=m+2.5;
     const ks=C.map((c,k)=>Math.abs(c[0]-P.round[0]-wobX(c[1]))<3.6?k:-1).filter(k=>k>=0), km=ks[ks.length>>1], yc=C[km][1], S=W(C[km][2])+B+.6, br={k:km,yc,S,H:.55}, hump=(x,y)=>{ const t=Math.abs(y-yc)/(S+2); return t>=1||Math.abs(x-P.round[0]-wobX(y))>=3.6?0:br.H*.5*(1+Math.cos(Math.PI*t)); };
-    return {C,SL,N,B,W,L,D,RF,q,h,st,nrm,rim,br,hump,wet:(x,y,m=0)=>{ const r=q(x,y); return !!r&&r[0]<W(r[1])+B+m; }}; })();
+    return {C,SL,N,B,W,L,D,RF,q,h,st,nrm,rim,br,hump,m,kM,sW,sK,wet:(x,y,m=0)=>{ const r=q(x,y); return !!r&&r[0]<W(r[1])+B+m; }}; })();
+  FOUNT.S.rocks=FOUNT.S.rocks.filter(r=>!BK.wet(r[0],r[1],.6));
+  P.wetHole=()=>{ const Lp=FOUNT.S.poly, R=BK.rim(-.3), keep=(A,f)=>{ const n=A.length; for(let j=0;j<n;j++)if(f(A[(j+n-1)%n])&&!f(A[j])){ const o=[]; for(let i=0;i<n&&!f(A[(j+i)%n]);i++)o.push(A[(j+i)%n]); return o; } return null; };
+    const a=keep(Lp,([x,y])=>BK.wet(x,y,-.3)), b=keep(R,([x,y])=>FOUNT.lake(x,y)<0); if(!a||!b)return [Lp,R]; const d=(p,q)=>Math.hypot(p[0]-q[0],p[1]-q[1]), e=a[a.length-1], br=b.slice().reverse();
+    return [[...a,...(d(e,b[0])+d(b[b.length-1],a[0])<d(e,br[0])+d(br[br.length-1],a[0])?b:br)]]; };
   P.campAt=()=>{ if(P.camp0)return P.camp0; const S=FOUNT.S, F=FOUNT, L=S.L, [cx,cy]=P.round; let best=null, bd=1e9;
     for(const [x0,y0] of S.poly){ if(x0>=L.cx-.5||y0>=L.cy-.5)continue; const e=.25, gx=F.lake(x0+e,y0)-F.lake(x0-e,y0), gy=F.lake(x0,y0+e)-F.lake(x0,y0-e), n=Math.hypot(gx,gy)||1, nx=gx/n, ny=gy/n, x=x0+nx*2.8, y=y0+ny*2.8;
       if(x<P.x0+6||x>P.x1-6||y<P.y0+6||y>P.y1-6||F.lake(x,y)<2.2||F.ter(x,y)<4.5||BK.wet(x,y,3.5)||Math.abs(x-cx-wobX(y))<7||Math.abs(y-cy-wobY(x))<7||S.rocks.some(r=>Math.hypot(r[0]-x,r[1]-y)<1.8))continue;
@@ -199,11 +206,11 @@ await grab('park',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.ox=P
     const mat=new THREE.MeshLambertMaterial({vertexColors:true,side:THREE.DoubleSide,shadowSide:THREE.BackSide});
     const SWG=sway&&(sway===2?'{ float h=aSw.x, g=(.7+.3*sin(uSw*.23+aSw.y))*uWk; transformed.x+=sin(uSw*2.3+aSw.y)*h*.12*g; transformed.z+=sin(uSw*1.9+aSw.y*1.7)*h*.08*g; }':'{ float h=aSw.x*aSw.x*.1, g=(.7+.3*sin(uSw*.23+aSw.y))*uWk; transformed.x+=sin(uSw*1.6+aSw.y)*h*.035*g; transformed.z+=sin(uSw*1.2+aSw.y*1.7)*h*.025*g; }'), swayV=sh=>{ sh.uniforms.uSw=PARK.sway; sh.uniforms.uWk=PARK.windK; sh.vertexShader='attribute vec2 aSw; uniform float uSw,uWk;\n'+sh.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\n '+SWG); };
     if(sway||TL){ mat.onBeforeCompile=sh=>{ if(TL)treeLook(sh); if(sway)swayV(sh); }; mat.customProgramCacheKey=()=>'oaksway'+sway+'tl'+TL; }
-    RG.push(P3.length/3); const me=BATCHED(g,RG,mat); me.userData.P=P3; me.userData.LF=LF; me.userData.items=IT; me.castShadow=true; me.receiveShadow=TL!==2;
+    if(leafy)PEEK.mark(g); RG.push(P3.length/3); const me=BATCHED(g,RG,mat); if(leafy)for(const o of IT)PEEK.box(me,o.x-o.r,o.y,o.z-o.r,o.x+o.r,o.top,o.z+o.r); me.userData.P=P3; me.userData.LF=LF; me.userData.items=IT; me.castShadow=true; me.receiveShadow=TL!==2;
     if(sway&&TL)for(const [k,M] of [['customDepthMaterial',new THREE.MeshDepthMaterial({depthPacking:THREE.RGBADepthPacking})],['customDistanceMaterial',new THREE.MeshDistanceMaterial()]]){ M.onBeforeCompile=swayV; M.customProgramCacheKey=()=>'oakswayd'+sway; me[k]=M; }
     scene.add(me); return me; };
   const TREEY=12+4.6; PARK.mesh=mesh;
-  const TREES=(()=>{ const out=[], RR=[], KEEP=[[P.round[0]+12.5-6,P.round[1]+11.5-6,P.round[0]+12.5+6,P.round[1]+11.5+6],[CASTLE.b[0]-3,CASTLE.b[2]-3,CASTLE.b[1]+3,CASTLE.b[3]+3],(o=>[o[0]-3,o[1]-3,o[0]+9,o[1]+19])(STORE.shrineO||[69,-45.9+NORTHY]),[P.gate[0]-16,P.y0,P.gate[1]+8,P.y0+12],(c=>[c.x-7,c.y-7,c.x+7,c.y+7])(P.campAt()),[RX(90)-3,RY(-41.5)-3,RX(102)+3,RY(-41.5)+3],...(typeof GCAVE!=='undefined'?GCAVE.keep(P):[])];
+  const TREES=(()=>{ const out=[], RR=[], KEEP=[[P.round[0]+12.5-6,P.round[1]+11.5-6,P.round[0]+12.5+6,P.round[1]+11.5+6],[CASTLE.b[0]-3,CASTLE.b[2]-3,CASTLE.b[1]+3,CASTLE.b[3]+3],[P.gate[0]-16,P.y0,P.gate[1]+8,P.y0+12],(c=>[c.x-7,c.y-7,c.x+7,c.y+7])(P.campAt()),[RX(90)-3,RY(-41.5)-3,RX(102)+3,RY(-41.5)+3],...(typeof GCAVE!=='undefined'?GCAVE.keep(P):[])];
     const [cx,cy]=P.round, W=k=>/^Oak/.test(k)?.42:F[k].wide*.45, add=(k,x,y,m,t)=>{ out.push([k,+x.toFixed(1),+y.toFixed(1),+m.toFixed(1),+t.toFixed(2)]); RR.push(m*W(k)); }, near=(x,y,r,f,g)=>out.some((o,j)=>Math.hypot(o[1]-x,o[2]-y)<Math.max(g,(RR[j]+r)*f)),
       ok=(x,y,r)=>!(Math.abs(x-cx-wobX(y))<6.6+r||Math.abs(y-cy-wobY(x))<6.6+r||y<P.y0+TREEY+4||y>P.y1-r-8||x<P.x0+r+10||x>P.x1-r-10||Math.hypot(x-cx,y-cy)<P.round[2]+r+6||KEEP.some(b=>x>b[0]-r&&x<b[2]+r&&y>b[1]-r&&y<b[3]+r)||BK.wet(x,y,r)||FOUNT.lake(x,y)<r*.35+1.5||FOUNT.ter(x,y)<r+.5);
     for(const [k,m,qx,qy,lk] of [['Willow1',19,1,1,1],['Giant1',34,-1,1,0],['Spruce1',28,1,-1,0]]){ const r=m*W(k), tx=(qx<0?P.x0:P.x1)/2+cx/2, ty=(qy<0?P.y0:P.y1)/2+cy/2; let best=null, bs=1e9;

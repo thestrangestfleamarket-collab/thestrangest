@@ -3127,6 +3127,164 @@ versions) and put them in random spots in park and thats where specific mushroom
   YOU FAIL TO PICK IT CLEANLY, or now and then IT CRUMBLES IN YOUR HAND (owner: "no use the old verbiage about how you fail to pick
   it cleanly or soemthing").
 
+## 19 Oct 2026: the brook flows out of the lake
+**The lake feeds the brook** (owner, 19 Oct 2026: "make sure the lake connects to the river."): the brook's spring sat about five tiles
+off the lake's south-west shore with grass between them (see "The brook from the lake's shore" above). Now the brook runs out of the lake
+(`061-park.js`, `089a-brook.js`, `060a-fount.js`, `064-map-post.js`):
+- **The outlet**: the brook's course starts four tiles inside the lake, on the shortest line from its old spring to the water that stays
+  7 tiles off the terrace (so at about 142.8, 42.6), and runs on to its old spring and its old course; it is 141 tiles long now (was 132),
+  the riffles, stepping stones and widths downstream the same as before. Where it leaves the lake the channel is wider (about 1.8 tiles each
+  side, narrowing over 8 tiles to the brook's usual width). The land has one hole for the lake and the brook together (`PARK.wetHole`),
+  so the lake's bank is notched where the brook leaves; the lake's shore rocks that stood in the notch are gone (7 of them); the lake's bed
+  goes down into the channel, the brook's banks go down under the lake's bed.
+- **The water**: the brook's water starts on a straight line across the channel right at the lake's edge, at the lake's level, and the
+  lake's water stops on that same line (it is not drawn downstream of it within the channel), so the two meet with no grass between.
+  2.5 tiles on, a lip of flat stones across the brook (you can stand on them) holds the lake's level; the water spills over it in foam
+  and drops about 9 cm to the brook's level (as before, -0.3 m), then on down the riffles. No spring boulders any more; six boulders
+  stand on the banks at the outlet.
+- **Walking**: in the outlet you wade down the channel bed as in the rest of the brook (inside the lake the channel's bed carries on
+  until the lake is deep enough to swim); the level switch keeps you above ground (`BROOK.over`, `FOUNT.wet`). Paths, lamps, trees,
+  flora, gold grass, fires and the campfire keep off the longer brook as before (`BK.wet`); the campfire stays where it was.
+- **The far end** already ran into its pool by the castle with no gap; unchanged.
+- **Cost**: the brook +876 triangles (22,004), the lake's bed -34 and its shore rocks -252; no lights, no new shader programs (the lake's
+  water program gains a cut-off test); nothing more a frame.
+## 19 Oct 2026: the playhouse: a spotlight on the stage, taller walls, velvet drapes, big plush seats
+(owner, 19 Oct 2026: "the playhouse should have a spotlight on the stage. walls taaller, back of room is velvet drapes, large curshier
+seats.")
+- **Taller** (`057a-mainstreet.js`, `lot('play',190)`): the walls and ceiling are 190 high (were 130, about 7.9 tiles); the front is
+  the same Victorian front, taller in brick above the PLAYHOUSE board; the roof sits on the new height, so nothing is clipped.
+- **A spotlight**: a black can on a pipe batten up in the rigging over the front of the stage, aimed down at the middle of the
+  stage; a hard-edged warm-white pool on the stage floor (two flat bands, the core brighter), a faint flat beam from the lens to the
+  pool, and one warm lamp over the pool for whoever stands in it. The beam and pool only show while you are inside.
+- **Velvet drapes**: the wall behind the audience (round the doorway) and the wall behind the stage are hung with deep red velvet:
+  real folds (a zigzag of pleats, the light and the shadow side flat colours, flaring a little at the foot), a red valance with a
+  gold edge along the top. They are cut away with their walls. No sway (things at rest stay still).
+- **Big plush seats** (`044b-game-playhouse.js`): the row is five theatre armchairs a tile wide (were seven narrow ones): a dark wood
+  plinth, a thick cushion with a puffed top, a tall back rounded off in steps with a tufted back cushion, padded armrests shared
+  between seats; velvet red. Still one row (his "only 1 row of seats ... for now"), still sittable.
+- **Cost**: built only when you first walk in, as before. Drapes 294 triangles (two meshes), the rig and spotlight about 130 (the
+  beam and the pool 60), the seats about 480 (were about 290). Lamps: one more record (the playhouse has 8 inside and in front);
+  LITE's eight nearest as ever. Programs: none new beyond a vertex-coloured Lambert for the drapes and an additive Basic for the
+  light; nothing a frame but hiding the beam when you're outside.
+- **Autodither for big trees and walls** (owner, 19 Oct 2026, of an isometric screenshot where the park's big crowns hid him: "lets add
+  autodither only for big trees and walls"): this explicit ask overrides the older **No dithering, nothing vanishing** (17 Oct) and
+  **Nothing vanishes walking past** for big trees and walls only, and the **no 4x4 ordered (Bayer) grid** of **The grain, not halftone**
+  for this see-through only (the ask named a screen-door dither; say if the grain should be used instead). When a big park tree
+  (oaks, elders and the landmarks: `PARK.mesh` with leaves, not bushes, flowers or small plants) or a building's wall (the apartment
+  house, the row's batched walls 2.2 m tall and 1.2 m long or more, and above your head its roofs and everything 2.4 m up, the Hudson-side building, the
+  garages, the civic tower) stands between the camera and you, the part of it nearer the camera than you is cut away in a 4x4 ordered
+  pattern in a circle round you on screen (hard pixels, no blending: 80% of the pixels inside, 40% in its outer ring), eased in and out
+  over a quarter second (`PEEK` in `008-batch.js`; a ray from your chest to the camera against the trees' and walls' boxes).
+  Isometric and behind only; never in first person, the free camera, the editor or a room. Characters, things, lamps, shadows and the
+  depth passes are untouched. `?dither=0` turns it off. Cost: no triangles, lights or new shader programs (a few lines in the world's
+  Lambert and basic shaders), about 0.02 ms a frame for the ray.
+## 19 Oct 2026: the dungeon its own place, five levels off the map
+- **The dungeon off the map** (owner, 19 Oct 2026: "i want the dungon to be sep location. each level is off map." / "make 5 levels all
+  empty right now." / "each staircase just works like the subway, you start to go up and it loads to next screen, make sure you only have
+  to take 1 step before it switches. (try to fade in and out when you can for smoother transitions)"; later, not built yet: slimes on
+  levels 1-3, skeletons on 2-5, "dont build out yet"; `src/062a-dungeon.js`): the great hall under the castle is gone; the castle's
+  stairwell stays, and the first tread of it fades the screen out (0.3 s, in four steps like the subway's), ENTERING DUNGEON — LEVEL 1 on
+  the black, and fades into level 1 (0.4 s). Levels 1-5 are each an empty hall the old one's size (14 x 13.2 tiles), each on its own lot
+  far east of the map at the subway's depth (bodega tiles x 900 + 40 a level), black all round; only the level you're on is built (built
+  as you arrive, taken down as you leave). Each has the old hall's walls and cobbles (its painters; no door, banners or slit), four wall
+  torches with live flames and a dim cold fill, a stair up against the back wall into a dark arch, and (1-4) a stairwell down with a
+  rim, its far end dark; even levels mirrored. One step onto either stair: DUNGEON — LEVEL n (level 1's stair up: LEAVING DUNGEON, out
+  at the castle stair's top). The walls toward the camera cut like the castle's. The subway is hidden while you're down there.
+  The skeletons are no longer brought in (the levels are empty); they still load only when called (`DUNGEON.spawn(n)`, unused).
+  The menu's THE DUNGEON is now DUNGEON L1. `window.DUNGEON` {level, go(n), spawn(n)}, `DUNDBG()`. Cost a level: about 900 triangles,
+  5 lamps (4 torches, the fill), no new shader programs (the castle's materials).
+- **The squirrel's tower round; the squirrel a lookout who waves back** (owner, 19 Oct 2026, of the squirrel's tower by the park: "lets
+  do a rounded tower, (see if we have assets to use) , make the squirrel standing guards, idle animations, and he walks around, acts like
+  a lookout. waves if you wave at him"; `src/tower.js`, `src/npc-squirrel.js`): the castle kit's own round piece (`KMK.drum`) is built of
+  stacked boxes in the castle's grey stone, stepped at the edge and not the tower's dark brick, so the tower is made round here: a
+  32-sided drum 3 tiles across in the keep's own brick painter (keepOutWall, its four faces wrapped round the quarters: bays, slits,
+  string courses, the squirrel's door), a corbelled band under a round crenellated parapet (16 merlons, low enough that the squirrel
+  looks over), a round lead roof with a wooden hatch, and one round stair turret at the back-left with a lead cone. Solid as before
+  (two crossed boxes and the turret). **THE SQUIRREL KNIGHT** stands his watch on it: he walks the ring inside the parapet between six
+  lookout points (never through the turret's side), and at each faces out, shading his eyes with a paw while his head sweeps the
+  horizon, gives a little salute (paw to the helmet, sword lifted), flicks his tail, looks about; when you wave (the wave move) within
+  25 tiles he turns to you and waves back with his free paw. Cost: the tower 458 triangles in its own batch (one draw, was ~240);
+  the squirrel unchanged (1,660); no light.
+## 19 Oct 2026: the Moon Shrine moves into the back half of THE BATH HOUSE as a healing pool
+
+(owner: "lets mevo the moon temple indoor into the backhalf of the dojo. make the whole thing a pool, crystal clear healing water,
+that is where yo jump in as a ghost and sink down slowly (appear outside refreshed loading screen)")
+- **The pool** (`055-ghostdojo.js`, built on entry with the rest of the inside): the back half of the bath house is one pool, wall to
+  wall, of clear cyan water (one see-through plane at just under the floor, rippling in 3 flat bands, rings where you go in), over a
+  stone basin sunk into the ground (the ground under it holed, `GDK.pool`): a shallow ledge along the front (wading, knee deep) and
+  the deep part behind it, pale flagstones with glowing seams and two inlaid gold crescent moons on the bottom. The basin's walls are
+  one-sided so the cut-away view looks in. The old hinoki tub in the middle is gone; the benches, buckets and stools moved to the
+  front half; the steam rises off the pool.
+- **The Moon Shrine's look** (its own makers, `033`/`034`, `STOREK.shrine`): its mossy stone for the pool's coping (open in the middle,
+  three steps going down), the red vine-wrapped gate with its two lanterns standing over the steps, the robed statue with the gold
+  halo on a stone island at the back, two stone garden lanterns on rocks in the back corners, blossom clumps on islets, ferns at the
+  coping's ends, four floating paper lanterns, and the alcove's picture now a full moon over moonlit water. The shrine's six
+  butterflies came with it (they perch on the blossoms, the gate and the statue).
+- **Coming back**: a ghost walks (or jumps) through the gate into the water; it sinks slowly to the bottom (about 2.6 s, eased, the
+  sheet calm), fades in the last second, the screen goes black with REFRESHED, and you stand outside the door alive in the white
+  bathrobe, health and stamina full, "You feel refreshed." (`103a-death.js`). Walking into the bath house no longer does it; the
+  pool does. **Living players** go in too: wading on the ledge, swimming in the deep part (`BOD.GD.feed`, as the lake).
+- **Gone from the park**: the Moon Shrine room, its koi pond and pond water, `STORE.shrineFix`/`shrineGround` (the ground hook is now
+  the pool's, `BOD.GD.ground`) and the park's, weeds' and flowers' keep-outs around it (that ground is lawn and trees now). The
+  bath attendant and THE BATHS teleport use the front half (`BOD.GD.floor`).
+- Cost: inside only, built on entry: the whole view inside draws 51,000 to 65,000 triangles (under 100,000); lights inside stay at 8 (two candles, two andons,
+  the two stone lanterns, the pool's cyan glow, the statue's halo; the back corners' candles went); one new small shader program
+  (the water plane); nothing at start.
+## 19 Oct 2026: THE DOJO, its own place, and the ninja who trains you
+
+(owner: "make the dojo a separate place, (pick logiacal spot) and put a ninja in there who can train you in fighting. he does badass
+moves in idl animations."; "skin of player just wearing all black like ninja")
+- **Where** (`058b-dojo.js`): its gate stands on Market St. in the 5-tile gap between the apartment house and THE BATH HOUSE (the old
+  dojo's lot, so the dojo stays where it always was, next door), facing the street: red posts, a tiled roof, a navy noren with the
+  white ring and red sun, a DOJO signboard, two red lanterns. It blocks no door (the apartment house's and the bath house's are
+  further along their fronts). The menu: THE DOJO (its gate) and THE DOJO HALL (inside).
+- **A place of its own** (`K.offmap`, built only the first time you go in): one step into the gate's doorway fades to black with
+  ENTERING THE DOJO (`#subfade`), and you stand inside the hall's door; black all round it (no sky, no fog, no far city). One step
+  into the hall's door fades back with LEAVING THE DOJO, outside the gate facing the street.
+- **The hall** (18 by 12): the old dojo hall's look from its maker (`025-game-w-west-dojo-1-hall.js`): tatami in the half-offset
+  pattern, shoji walls with round windows, a tokonoma, the bokken rack, candles in the back corners, andon by the door; also a
+  katana stand, two makiwara, a taiko drum, two zabuton, paper lanterns and a paper ceiling lamp over a navy-edged training mat with
+  a red ring. Lights: the candles, the andon and the ceiling lamp (within the 8).
+- **The ninja** (`141a-ninja.js`): the player's own Walker (`musBody`, with your face's shape) all in black (one new colour ramp; the
+  hair and head a hood), a skin band left open across the eyes. On his mat he runs a kata from the rig's own moves, chained with
+  pauses and turns: jab, cross, uppercut, front kick, roundhouse, leg sweep, block, guard holds, backflip, frontflip, cartwheels. He
+  keeps to the mat and out of your way; drawn and run only while you are in the dojo. Cost: one figure, ~21,000 triangles, no light,
+  one shader program shared with the musicians.
+- **Training**: use him (click or the use key) and he bows; five drills (always JAB and FRONT KICK, then three of ONE-TWO,
+  CARTWHEEL, ROLL, JUMP, ROUNDHOUSE, UPPERCUT): WATCH, he shows the move; YOUR TURN, press its keys (shown with your own key
+  bindings) before the bar runs out: GOOD. or TOO SLOW. Each good one raises the new skill MARTIAL ARTS (in the skills list with
+  the others, 0.3 a drill up to 30, then 0.2, then 0.1; its arrow lock respected). Walking away ends the session.
+## 19 Oct 2026: still clouds, three times as many, twice as high, animal shapes and their shadows
+- **The clouds** (owner, 19 Oct 2026, of the park lawn with big cloud shadows on the grass: "make the clouds 3x more in sky, 2x higher,
+  and they dont move. make the shapes softer, and make random shapes that have shadows on ground like a cat or dinosaur,"; `131-weather.js`):
+  240 clouds (90 + 150 x cloud shown, was 30 + 50 of 80), fixed in the world round the park's centre (no drift, no following you, the same
+  every time); every height doubled (overhead 60-92 tiles, the ring 28-104, the admin's CLOUD HEIGHT counting twice). Softer: each cloud 26
+  small round puffs (camera-facing round discs, `ShaderMaterial`, one instanced draw), lit as one rounded body in four flat bands, not puff
+  by puff. Six animal clouds built from puffs (a sitting cat with ears and a curled tail, a long-necked dinosaur, a rabbit, a whale with its
+  spout, a T-rex, a snail), placed so that at the DAY hour (`DN.S.day.h`) their shadows lie on the park's open lawn (the lawn spots
+  nearest the park's centre at least 8 tiles from an oak, 20 apart; `WX.spot` for tests), turned to read upright from the opening
+  isometric angle; the plain clouds are kept off them. Seen from the ground they sit near the sun (they are along its light).
+- **Real cloud shadows** (`006-map-pre.js`, `bake` in `131-weather.js`): the scrolling noise shadow is gone; the shown clouds are drawn top-down
+  along the sunlight into a 1024 x 1024 map (256 tiles square round the park, a quarter tile a texel), redrawn only when the sun turns,
+  the count changes or the height is changed (some 10 ms); the ground looks it up along the sun with a hard edge (CEL), the sunlight there down by up to six tenths, the light all round by a
+  fifth (stronger than the old noise's). The map's texture keeps every material's copy in step (its `version` read from its shared
+  source: three.js copies a texture into each material, and a copy never saw later changes). Found on the way: `LFX.env` (`tENV`) has
+  the same copying, so its live row (cloud strength, wet, snow) is whatever it was when each material was made. Cost: 12,800
+  triangles in all (2 a puff), one draw, one program (instead of the Lambert one), no lights; 1 MB texture.
+- **Building shadows stay put whatever you do** (owner, 19 Oct 2026: "the shadows on the buildings shift way to quick and much
+  shouldnt be affected by what i do"; his shots: behind view down Market St, a big building shadow appearing on the right
+  sidewalk after a few steps): the sun's still shadow covered only 32 tiles round you and was redrawn round you when you walked 12
+  tiles, zoomed, or every 10-20 s, so in the behind view shadows past its edge were missing and popped in as it moved; it also
+  reached only 60 tiles toward the sun, so tall things further up-sun lost their shadow depending on where it was centred. Now a
+  second still map covers the whole walled town and Market St once (4096, fixed to the world, drawn when the sun moves or the
+  level changes); the fine map round you is used where it reaches and the town map everywhere else, so moving it changes only
+  sharpness, never whether a shadow is there. Both reach 200 tiles toward the sun (same bias in metres). No timed redraws: the
+  maps are redrawn only when the sun moves, you walk 12 tiles (fine map), or the set of still shadow-casters changes (checked
+  once a second; the town map at most every 10 s). Nothing redrawn in rooms; still only in the main pass; hidden roofs cast.
+- **Cost**: one more shadow map (4096², about 64 MB of video memory where the GPU allows 4096; smaller otherwise), no new lamp or
+  program (the existing sun program picks fine or town map), no triangles. Software rendering in the test: town map 9-36 ms when
+  drawn (start, sun change, things added), fine map 2-10 ms when you walk 12 tiles; nothing while standing still (was a fine-map
+  redraw every 10 s). `SUNDBG()` shows `far` redraws and the town box; `SUNLOG` rows now carry the ms and which map.
 ## 19 Oct 2026: the overhaul review; quick wins, first batch
 
 - **The review and his answers** (owner, 19 Oct 2026, on the overhaul review doc): multiplayer is "up to 100 people on city block"

@@ -18,9 +18,10 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - name: Build readable (later chunk kept inline, for coverage)
         run: SKIP=later MIN=0 python3 build.py
-      - name: Start coverage (readable artifact)
-        run: COV=1 node tests/splitcheck.cjs file . out/cov-file.json ""
+      - name: Mark the later chunk from what the start runs
+        run: node tools/later.cjs 2>&1 | tee out-later.log; git diff -- src > out-later.patch
         continue-on-error: true
+        timeout-minutes: 30
       - name: Build
         run: python3 build.py 2>&1 | tee out-build.log
       - name: Site check
@@ -46,7 +47,7 @@ jobs:
       - name: Publish
         if: always()
         run: |
-          mkdir -p out; cp out-*.log out/ || true
+          mkdir -p out; cp out-*.log out-*.patch out/ || true
           ls -la dist/g > out/dist-g.txt; ls -la ../base/dist/g > out/base-g.txt || true
           git config user.email ci@example.com; git config user.name ci
           git checkout --orphan ci-out-split; git rm -rf --cached . >/dev/null; git add -f out; git commit -m out >/dev/null; git push -f origin ci-out-split

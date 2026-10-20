@@ -1,5 +1,5 @@
 const fs = require('fs');
-const { parse, analyze } = require('./scope.cjs');
+const scope = () => require('./scope.cjs');
 const RT = 'const __CM={}, __CP={};\n'
   + 'const LOAD=(...ns)=>Promise.all(ns.map(n=>!n||__CM[n]?0:__CP[n]||(__CP[n]=__CLOAD(n).then(m=>{ __CM[n]=__CM[n]||m; },e=>{ delete __CP[n]; throw e; }))));\n'
   + 'const LOADED=n=>!n||!!__CM[n];\n'
@@ -7,7 +7,7 @@ const RT = 'const __CM={}, __CP={};\n'
   + 'const __CI=(n,i,t,s)=>{ if(!__CM[n]){ console.warn("chunk "+n+" was not loaded before use"); __CM[n]=__CSYNC(n); } return __CM[n][i](...t(),s); };\n'
   + 'window.LOAD=LOAD; window.LOADED=LOADED;\n';
 function chunks(body) {
-  const ast = parse(body), A = analyze(ast), marks = [], FN = /^(Arrow)?Function(Expression|Declaration)$/;
+  const { parse, analyze } = scope(), ast = parse(body), A = analyze(ast), marks = [], FN = /^(Arrow)?Function(Expression|Declaration)$/;
   (function w(n) {
     if (!n || typeof n.type !== 'string') return;
     if (FN.test(n.type) && n.body.type === 'BlockStatement') {
@@ -82,7 +82,9 @@ function chunks(body) {
 module.exports = { chunks, RT };
 if (require.main === module) {
   const [inp, outMain, outJson] = process.argv.slice(2);
-  const r = chunks(fs.readFileSync(inp, 'utf8'));
+  let ok = true; try { require.resolve('acorn'); } catch (e) { ok = false; }
+  if (!ok) console.error('chunks: no acorn here (npm ci brings it), so every chunk stays in the page');
+  const r = ok ? chunks(fs.readFileSync(inp, 'utf8')) : { main: fs.readFileSync(inp, 'utf8'), code: {}, report: [] };
   fs.writeFileSync(outMain, r.main);
   fs.writeFileSync(outJson, JSON.stringify({ code: r.code, report: r.report, rt: RT }));
 }

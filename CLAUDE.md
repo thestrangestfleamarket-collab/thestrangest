@@ -29,6 +29,16 @@ Look there before changing how something looks or behaves, and add a short dated
 split like the old game (`market.html` a 4 KB shell, `rig.<hash>.js`, `game.<hash>.js`, each `data/*.json` as `<name>.<hash>.json`
 fetched at start); the worker hands `dist/g/` only to a login, cached for good (a new build, new names). The artifact stays `dist/market.html`. `MIN=0 python3 build.py` keeps them readable for debugging.
 
+**Code in its own file (chunks, 20 Oct 2026)**: a function whose body starts with `'@name';` (e.g. `()=>{ '@park'; ... }`) is cut out
+by `tools/chunks.cjs` (needs `acorn`, which `npm ci` brings) into chunk `name`: on the website `x-name.<hash>.js`, fetched by
+`await LOAD('name')`; in the artifact kept in the page (LOAD is instant). The cut function still sees every name around it (passed in,
+or read live when it can change). Call `LOAD` (behind the place's black fade) before such a function first runs; if one runs before its
+chunk came, it is fetched there and then (the page freezes for the fetch) and the console says `chunk name was not loaded before use`:
+add the missing `LOAD`. Places: `dungeon`, `park`, `dojo`, `fire`, `club`, `arcade`, `vcr`, `bath` (on entry: `STORE.offGo`/`enter`,
+`ROOMS` swap, `PARK.load`, the dungeon's `go`); `later` (code the start never runs, fetched right after the first frame) is marked by
+`tools/later.cjs` from what the start runs (re-run it in CI now and then; new code stays in the start file until then).
+`tests/places.cjs` enters every place on the website and fails on a missing `LOAD`.
+
 ## Publishing: one line of work
 
 Several chats work at once, each on its own branch, all publishing to the same link. Every time:

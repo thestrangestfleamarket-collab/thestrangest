@@ -30,7 +30,7 @@ subprocess.run(['node', 'tools/chunks.cjs', 'dist/.body.js', 'dist/.main.js', 'd
 body, CH = read('dist/.main.js'), json.load(open('dist/.chunks.json'))
 for f in ['dist/.body.js', 'dist/.main.js', 'dist/.chunks.json']: os.remove(f)
 for r in CH['report']: print('chunk', r['name'], r['bytes'], 'bytes,', r['imm'], 'names +', len(r['live']), 'live:', ' '.join(r['live']))
-art = CH['rt'] + 'const __CK={' + ','.join(json.dumps(n) + ':' + c for n, c in CH['code'].items()) + '};\nconst __CLOAD=n=>Promise.resolve(__CK[n]), __CSYNC=n=>__CK[n];\n'
+art = CH['rt'] + 'const __CK={' + ','.join(json.dumps(n) + ':' + c for n, c in CH['code'].items()) + '};\nconst __CLOAD=n=>Promise.resolve(__CK[n]||{}), __CSYNC=n=>__CK[n]||{};\n'
 raw, page = page, data(page[:i] + art + body + page[j:])
 open('dist/market.html', 'w').write(page)
 
@@ -91,7 +91,7 @@ game = ('document.body.insertAdjacentHTML("afterbegin",' + json.dumps(read('dist
     + UNB
     + 'const __DP=Object.fromEntries([' + ','.join('[' + names[f] + ',' + bins.get(f, 'null') + ']' for f in used) + '].map(([n,b])=>[n,__GJ(n,b)]));\n'
     + 'await __RIG;\n'
-    + CH['rt'] + 'const __CU=__CHUNKURLS__, __CE=t=>(0,eval)(t); window.__CREG=m=>m;\nconst __CLOAD=n=>fetch("/g/"+__CU[n]).then(r=>{ if(!r.ok)throw new Error(n+" "+r.status); return r.text(); }).then(__CE);\n'
+    + CH['rt'] + 'const __CU=__CHUNKURLS__, __CE=t=>(0,eval)(t); window.__CREG=m=>m;\nconst __CLOAD=n=>!__CU[n]?Promise.resolve({}):fetch("/g/"+__CU[n]).then(r=>{ if(!r.ok)throw new Error(n+" "+r.status); return r.text(); }).then(__CE);\n'
     + 'const __CSYNC=n=>{ const x=new XMLHttpRequest(); x.open("GET","/g/"+__CU[n],false); x.send(); if(x.status!==200)throw new Error(n+" "+x.status); return __CE(x.responseText); };\n'
     + re.sub(r'__LAZY__\("([^"]+)"\)', lambda m: '(()=>__GJ(' + names[m.group(1)] + ',' + bins.get(m.group(1), 'null') + '))', re.sub(r'__DATA__\("([^"]+)"\)', lambda m: '(await __DP[' + names[m.group(1)] + '])', body)))
 os.remove('dist/g/page.html')

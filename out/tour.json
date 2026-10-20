@@ -1,0 +1,287 @@
+{
+ "firstFrame": 30768,
+ "start": {
+  "frameTris": 373937,
+  "frameCalls": 440,
+  "programs": 142,
+  "geometries": 577,
+  "textures": 130,
+  "meshes": 3050,
+  "sceneTris": 986831,
+  "viewTris": 280830,
+  "npcs": 56,
+  "heapMB": 307,
+  "rl": {
+   "keys": [
+    "head",
+    "drawn",
+    "hidden"
+   ],
+   "top": [
+    [
+     "park / park › Buffer MeshLambert",
+     17051,
+     7,
+     0
+    ],
+    [
+     "Buffer MeshLambert",
+     15608,
+     19,
+     0
+    ],
+    [
+     "YOU",
+     14858,
+     1,
+     0
+    ],
+    [
+     "bodega / bodega › Buffer MeshLambert",
+     13730,
+     7,
+     0
+    ],
+    [
+     "bodega / NPC A DRAGON",
+     11530,
+     10,
+     52.9
+    ],
+    [
+     "bodega / bodega › Icosahedron MeshLambert",
+     10920,
+     1,
+     0
+    ],
+    [
+     "park / NPC WASP",
+     7710,
+     3,
+     53.1
+    ],
+    [
+     "park / NPC FROG",
+     6674,
+     2,
+     52.8
+    ],
+    [
+     "bodega / NPC RAT",
+     6588,
+     3,
+     9.2
+    ],
+    [
+     "bodega / NPC THE MUSHROOM SELLER",
+     5298,
+     1,
+     12.4
+    ],
+    [
+     "park / park › Octahedron MeshLambert",
+     4480,
+     1,
+     98.9
+    ],
+    [
+     "park / NPC SPIDER",
+     3924,
+     2,
+     52.4
+    ],
+    [
+     "park / NPC BAT",
+     2046,
+     3,
+     53
+    ],
+    [
+     "bodega / NPC HERO F_1",
+     1812,
+     1,
+     49.9
+    ],
+    [
+     "bodega / NPC HERO F_2",
+     1812,
+     1,
+     49.3
+    ]
+   ]
+  }
+ },
+ "you": {
+  "x": 30.509999999999998,
+  "y": 0,
+  "z": 51.98,
+  "h": 0.8,
+  "sx": 0.0012792941329145776
+ },
+ "gq": [
+  200,
+  198,
+  195,
+  192,
+  190,
+  188,
+  186,
+  183,
+  179,
+  175
+ ],
+ "dragons": 10,
+ "places": {
+  "THE STREET": {
+   "tris": 133680,
+   "calls": 143,
+   "you": {
+    "x": -2.2,
+    "y": 0,
+    "z": 3.2,
+    "h": 0.8,
+    "sx": 0.0021516757099283123
+   },
+   "errs": []
+  },
+  "THE BODEGA": {
+   "tris": 225283,
+   "calls": 296,
+   "you": {
+    "x": 41.132,
+    "y": 0,
+    "z": -3.4,
+    "h": 0.8,
+    "sx": 0.0019676610017770723
+   },
+   "errs": []
+  },
+  "CENTRAL PARK": {
+   "tris": 361381,
+   "calls": 442,
+   "you": {
+    "x": 30.509999999999998,
+    "y": 0,
+    "z": 51.98,
+    "h": 0.8,
+    "sx": -0.0003601992936267417
+   },
+   "errs": []
+  },
+  "THE BATH HOUSE": {
+   "tris": 99434,
+   "calls": 182,
+   "you": {
+    "x": 97.87683333333335,
+    "y": 0,
+    "z": -2.8588999999999967,
+    "h": 0.8,
+    "sx": -0.004713674490001794
+   },
+   "errs": []
+  },
+  "THE MOVIE THEATRE": {
+   "tris": 0,
+   "calls": 0,
+   "you": {
+    "x": 119.61049999999999,
+    "y": 0,
+    "z": 2.4859999999999998,
+    "h": 0.8,
+    "sx": -0.004816686999870758
+   },
+   "errs": []
+  },
+  "THE PLAYHOUSE": {
+   "tris": 91136,
+   "calls": 127,
+   "you": {
+    "x": -20.678999999999995,
+    "y": 0,
+    "z": 2.4859999999999998,
+    "h": 0.8,
+    "sx": -0.005120054131786923
+   },
+   "errs": []
+  },
+  "THE CASTLE": {
+   "tris": 168390,
+   "calls": 278,
+   "you": {
+    "x": -94.35499999999999,
+    "y": 0,
+    "z": 104.52499999999999,
+    "h": 0.8,
+    "sx": 0.007437094829327328
+   },
+   "errs": [
+    "Fetch API cannot load file:///home/runner/work/thestrangest/thestrangest/dist/market.html?fresh=1&hour=13&wx=CLEAR. URL scheme \"file\" is not supported."
+   ]
+  },
+  "DUNGEON L1": {
+   "tris": 28818,
+   "calls": 17,
+   "you": {
+    "x": 939.369,
+    "y": -3.772021758705555,
+    "z": 68.591,
+    "h": 0.8,
+    "sx": -0.0013729716587493447
+   },
+   "errs": []
+  },
+  "THE SUBWAY STAIRS": {
+   "tris": 425240,
+   "calls": 778,
+   "you": {
+    "x": 30.509999999999998,
+    "y": 0,
+    "z": 1.4689999999999968,
+    "h": 0.8,
+    "sx": 0.006516548933276385
+   },
+   "errs": []
+  },
+  "THE BANK": {
+   "tris": 15332,
+   "calls": 11,
+   "you": {
+    "x": -181.02599999999998,
+    "y": 0,
+    "z": 93.0894,
+    "h": 0.8,
+    "sx": 0.003144774728281803
+   },
+   "errs": []
+  },
+  "CLUB STATIC": {
+   "tris": 20674,
+   "calls": 15,
+   "you": {
+    "x": 472.34000000000003,
+    "y": 0,
+    "z": -5.220600000000004,
+    "h": 0.8,
+    "sx": 0.005977384100812372
+   },
+   "errs": []
+  },
+  "THE SQUIRREL'S TOWER": {
+   "tris": 173899,
+   "calls": 265,
+   "you": {
+    "x": -99.892,
+    "y": 0,
+    "z": 48.815999999999995,
+    "h": 0.8,
+    "sx": 0.0030368539593941773
+   },
+   "errs": []
+  }
+ },
+ "errors": [
+  "Fetch API cannot load file:///home/runner/work/thestrangest/thestrangest/dist/market.html?fresh=1&hour=13&wx=CLEAR. URL scheme \"file\" is not supported.",
+  "Fetch API cannot load file:///home/runner/work/thestrangest/thestrangest/dist/market.html?fresh=1&hour=13&wx=CLEAR. URL scheme \"file\" is not supported.",
+  "Fetch API cannot load file:///home/runner/work/thestrangest/thestrangest/dist/market.html?fresh=1&hour=13&wx=CLEAR. URL scheme \"file\" is not supported."
+ ]
+}

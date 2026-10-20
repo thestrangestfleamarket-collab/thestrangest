@@ -1,0 +1,331 @@
+{
+ "dist": [
+  {
+   "file": "market.html",
+   "raw": 4731471,
+   "gzip": 1614296,
+   "br": 1274705
+  },
+  {
+   "file": "g/c.89cad15dab.js",
+   "raw": 2049168,
+   "gzip": 750909,
+   "br": 561437
+  },
+  {
+   "file": "g/c.baf4bd5377.js",
+   "raw": 664988,
+   "gzip": 171560,
+   "br": 139795
+  },
+  {
+   "file": "g/c.db36fed76a.js",
+   "raw": 72983,
+   "gzip": 23623,
+   "br": 20669
+  },
+  {
+   "file": "g/c.ff9e0dca43.js",
+   "raw": 106,
+   "gzip": 120,
+   "br": 91
+  },
+  {
+   "file": "g/creatures.5d06ee0c3a.bin",
+   "raw": 145042,
+   "gzip": 145096,
+   "br": 145047
+  },
+  {
+   "file": "g/creatures.88d33bbe9f.json",
+   "raw": 20982,
+   "gzip": 6149,
+   "br": 5276
+  },
+  {
+   "file": "g/dragon.065563cb5c.bin",
+   "raw": 24111,
+   "gzip": 24094,
+   "br": 24115
+  },
+  {
+   "file": "g/dragon.41db66eaf9.json",
+   "raw": 7169,
+   "gzip": 1878,
+   "br": 1558
+  },
+  {
+   "file": "g/forest.bc95f1d7bb.json",
+   "raw": 2102,
+   "gzip": 640,
+   "br": 563
+  },
+  {
+   "file": "g/forest.e923685d49.bin",
+   "raw": 25585,
+   "gzip": 24060,
+   "br": 23966
+  },
+  {
+   "file": "g/kit.10aca1e502.bin",
+   "raw": 6173,
+   "gzip": 6196,
+   "br": 6177
+  },
+  {
+   "file": "g/kit.466a6127fb.json",
+   "raw": 1384,
+   "gzip": 576,
+   "br": 508
+  },
+  {
+   "file": "g/m.0af627de5a.js",
+   "raw": 2252861,
+   "gzip": 846363,
+   "br": 683843
+  },
+  {
+   "file": "g/market.html",
+   "raw": 161,
+   "gzip": 152,
+   "br": 103
+  },
+  {
+   "file": "g/museum.02d6d79e30.bin",
+   "raw": 2899,
+   "gzip": 2922,
+   "br": 2903
+  },
+  {
+   "file": "g/museum.487bcb957f.json",
+   "raw": 145,
+   "gzip": 133,
+   "br": 123
+  },
+  {
+   "file": "g/nav.80cb4780d3.js",
+   "raw": 791710,
+   "gzip": 234260,
+   "br": 185747
+  },
+  {
+   "file": "g/pawns.31d80e6b4f.bin",
+   "raw": 199527,
+   "gzip": 197979,
+   "br": 194003
+  },
+  {
+   "file": "g/pawns.3833072449.json",
+   "raw": 23992,
+   "gzip": 2649,
+   "br": 2053
+  },
+  {
+   "file": "g/props.1256a0033b.bin",
+   "raw": 81056,
+   "gzip": 79727,
+   "br": 79439
+  },
+  {
+   "file": "g/props.71feead9f1.json",
+   "raw": 6104,
+   "gzip": 1705,
+   "br": 1402
+  },
+  {
+   "file": "g/rig.230e9a57dd.js",
+   "raw": 116435,
+   "gzip": 44251,
+   "br": 37669
+  },
+  {
+   "file": "g/skel.3650b9a00d.bin",
+   "raw": 98583,
+   "gzip": 98636,
+   "br": 98588
+  },
+  {
+   "file": "g/skel.c016ff14b3.json",
+   "raw": 6241,
+   "gzip": 2021,
+   "br": 1674
+  },
+  {
+   "file": "g/textures.7d8f06e1f8.json",
+   "raw": 139,
+   "gzip": 114,
+   "br": 102
+  },
+  {
+   "file": "g/textures.ba513046d4.bin",
+   "raw": 11121,
+   "gzip": 11144,
+   "br": 11125
+  },
+  {
+   "file": "g/trashbag.2076e143f2.json",
+   "raw": 192,
+   "gzip": 162,
+   "br": 148
+  },
+  {
+   "file": "g/trashbag.eb711327b8.bin",
+   "raw": 511,
+   "gzip": 534,
+   "br": 515
+  }
+ ],
+ "srcTop": [
+  {
+   "file": "001-rig.js",
+   "raw": 107041,
+   "gzip": 39059
+  },
+  {
+   "file": "061-park.js",
+   "raw": 45580,
+   "gzip": 18444
+  },
+  {
+   "file": "066-river.js",
+   "raw": 44313,
+   "gzip": 17098
+  },
+  {
+   "file": "057-store.js",
+   "raw": 41851,
+   "gzip": 16875
+  },
+  {
+   "file": "094-ui.js",
+   "raw": 46133,
+   "gzip": 16665
+  },
+  {
+   "file": "055-ghostdojo.js",
+   "raw": 38441,
+   "gzip": 15634
+  },
+  {
+   "file": "054-apts.js",
+   "raw": 34832,
+   "gzip": 14069
+  },
+  {
+   "file": "058a-arcade.js",
+   "raw": 32040,
+   "gzip": 12589
+  },
+  {
+   "file": "160-mail.js",
+   "raw": 29308,
+   "gzip": 11616
+  },
+  {
+   "file": "140-weeds.js",
+   "raw": 27548,
+   "gzip": 11368
+  },
+  {
+   "file": "050-main-8.js",
+   "raw": 29531,
+   "gzip": 11191
+  },
+  {
+   "file": "038z-dungeon.js",
+   "raw": 28504,
+   "gzip": 11073
+  },
+  {
+   "file": "141-forage.js",
+   "raw": 27170,
+   "gzip": 10871
+  },
+  {
+   "file": "053-bodbuild.js",
+   "raw": 25893,
+   "gzip": 10720
+  },
+  {
+   "file": "057a-mainstreet.js",
+   "raw": 24523,
+   "gzip": 10634
+  },
+  {
+   "file": "072-walker3d.js",
+   "raw": 28151,
+   "gzip": 10395
+  },
+  {
+   "file": "145-mines.js",
+   "raw": 26418,
+   "gzip": 10390
+  },
+  {
+   "file": "044b-game-playhouse.js",
+   "raw": 24721,
+   "gzip": 10277
+  },
+  {
+   "file": "144b-birds.js",
+   "raw": 24138,
+   "gzip": 9971
+  },
+  {
+   "file": "134-skyline.js",
+   "raw": 23039,
+   "gzip": 9863
+  },
+  {
+   "file": "150-loose.js",
+   "raw": 25267,
+   "gzip": 9851
+  },
+  {
+   "file": "141c-fireview.js",
+   "raw": 23739,
+   "gzip": 9837
+  },
+  {
+   "file": "058-club.js",
+   "raw": 23888,
+   "gzip": 9703
+  },
+  {
+   "file": "096-mapedit.js",
+   "raw": 24673,
+   "gzip": 9615
+  },
+  {
+   "file": "044a-game-theatre-arcade.js",
+   "raw": 23349,
+   "gzip": 9417
+  },
+  {
+   "file": "069a-block.js",
+   "raw": 23325,
+   "gzip": 9413
+  },
+  {
+   "file": "073-main-12.js",
+   "raw": 22592,
+   "gzip": 9204
+  },
+  {
+   "file": "060a-fount.js",
+   "raw": 21424,
+   "gzip": 8786
+  },
+  {
+   "file": "110-musician.js",
+   "raw": 20933,
+   "gzip": 8712
+  },
+  {
+   "file": "035-game-w-page-rooms-0-kit.js",
+   "raw": 21656,
+   "gzip": 8618
+  }
+ ],
+ "srcTotal": 2393448
+}

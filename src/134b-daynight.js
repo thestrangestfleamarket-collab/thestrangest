@@ -1,10 +1,10 @@
 const DN={lk:1,mode:'day'};
-{ const U=SKY.U, Q=k=>(QS.get(k)??''), D0={day:{h:15.5,sun:1,amb:1,zen:'#3d7ed8',hor:'#cfe2f4',cld:.15,cy:12,cb:1.05,cov:.6,cl:1.25,m0:48,m1:34,hz:.6,ray:1.4,dust:1.3,lamp:1,star:1,moon:1},
-    night:{h:22.5,sun:1.3,amb:1.25,zen:'#04060e',hor:'#141c40',cld:.1,cy:4,cb:.75,cov:.62,cl:.85,m0:34,m1:26,hz:.25,ray:1,dust:1,lamp:1.25,star:1.3,moon:1}};
+{ const U=SKY.U, Q=k=>(QS.get(k)??''), D0={day:{h:15.5,sun:1,amb:1,zen:'#3d7ed8',hor:'#cfe2f4',cld:.15,cy:12,cb:1.05,cov:.6,cl:1.25,m0:48,m1:34,hz:.6,lamp:1,star:1,moon:1},
+    night:{h:22.5,sun:1.3,amb:1.25,zen:'#04060e',hor:'#141c40',cld:.1,cy:4,cb:.75,cov:.62,cl:.85,m0:34,m1:26,hz:.25,lamp:1.25,star:1.3,moon:1}};
   const F=[['h','SUN HEIGHT (THE HOUR)',7.5,18,.05,'d'],['h','NIGHT HOUR (WHERE THE MOON IS)',19.5,29.5,.05,'n'],['sun','SUNLIGHT',0,2,.01,'d'],['sun','MOONLIGHT',0,3,.01,'n'],['amb','LIGHT ALL ROUND',0,3,.01],
     ['zen','SKY OVERHEAD','c'],['hor','SKY AT THE HORIZON','c'],['cld','CLOUDS (HOW MANY)',0,1,.01],['cy','CLOUD HEIGHT (TILES)',-10,40,.5],['cb','CLOUD BRIGHTNESS',.3,1.6,.01],
     ['cov','HIGH CLOUD COVER (LOWER = MORE)',.2,.9,.01],['cl','HIGH CLOUD BRIGHTNESS',.5,1.6,.01],['m0','MIST STARTS (TILES PAST TOWN)',-10,80,1],['m1','MIST DEPTH (TILES)',4,160,1],['hz','MIST TINTED BY THE SKY',0,1,.01],
-    ['ray','LIGHT SHAFTS AND RAYS',0,3,.01,'d'],['dust','DUST IN THE LIGHT',0,3,.01,'d'],['lamp','LAMPS',0,3,.01,'n'],['star','STARS',0,2,.01,'n'],['moon','MOON',0,1,.01,'n']];
+    ['lamp','LAMPS',0,3,.01,'n'],['star','STARS',0,2,.01,'n'],['moon','MOON',0,1,.01,'n']];
   const S={}; for(const m of ['day','night']){ S[m]={...D0[m]}; try{ Object.assign(S[m],JSON.parse(SAVE.get('dn-'+m)||'{}')); }catch(e){} }
   try{ const v=SAVE.get('dn'); if(v==='night'||v==='day')DN.mode=v; }catch(e){}
   const qh=+(Q('hour')||NaN); if(!isNaN(qh)){ DN.mode=qh<6||qh>19?'night':'day'; S[DN.mode].h=qh; DN.test=1; }
@@ -17,7 +17,7 @@ const DN={lk:1,mode:'day'};
     if(SKY.dome.visible){ U.uZ.value.set(P.zen); U.uH.value.set(P.hor); U.uM.value.copy(U.uH.value).lerp(U.uZ.value,.45); U.uCov.value=P.cov; U.uCL.value=P.cl;
       if(night){ U.uStar.value=Math.min(2,U.uStar.value*P.star); U.uMoonK.value=Math.min(1,U.uMoonK.value*P.moon); } }
     if(MISTE.x&&FAR3.mist){ MISTE.y=P.m0; MISTE.z=P.m1; const f=FAR3.fog.color.lerp(U.uH.value,P.hz); U.uMistC.value.copy(f); FAR3.FU.uMC.value.copy(f).multiplyScalar(.62); if(scene.background&&scene.background.isColor)scene.background.copy(f).multiplyScalar(.5); }
-    if(!night){ const u=RAYS.pass.uniforms.uK; u.value=Math.min(1.5,u.value*P.ray); RAYS.pass.enabled=u.value>0; if(RAYS.beams.visible)RAYS.beams.material.uniforms.uO.value*=P.ray; RAYS.DU.uK.value*=P.dust; } if(!up){ SKY.dome.visible=false; if(scene.background&&scene.background.isColor)scene.background.setRGB(0,0,0); } };
+    if(!up){ SKY.dome.visible=false; if(scene.background&&scene.background.isColor)scene.background.setRGB(0,0,0); } };
   const box=document.getElementById('adn'), fl=v=>(+v).toFixed(2); let dirty=false;
   DN.draw=()=>{ if(!box)return; const m=DN.mode, P=S[m], k=m==='night'?'n':'d';
     box.innerHTML=`<h3>DAY OR NIGHT</h3><div class="row" id="dnm"><button class="btn" data-dn="day" aria-pressed="${m==='day'}">DAY</button><button class="btn" data-dn="night" aria-pressed="${m==='night'}">NIGHT</button><span class="dim">N switches them</span></div>

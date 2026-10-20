@@ -71,7 +71,7 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
       for(let s=ax?y0:x0, e=ax?y1:x1; s<e; s++){ const s1=Math.min(e,s+1), m=(s+s1)/2; let lo=1e9, hi=-1e9; for(let t=a0;t<a1;t+=1/24)for(let q=0;q<5;q++)if(V(t,s+(s1-s)*q/4)>-.8){ lo=Math.min(lo,t); hi=Math.max(hi,t); }
         if(hi<lo)continue; lo=Math.max(a0,Math.floor(lo*24-2)/24); hi=Math.min(a1,Math.ceil(hi*24+3)/24); ax?flat(lo,s,hi,s1,0,groundCol):flat(s,lo,s1,hi,0,groundCol);
         for(const [b,d,f] of [[lo,1/24,lo>a0+.01],[hi,-1/24,hi<a1-.01]]){ if(!f||hash(Math.floor(m*7),Math.floor(b*7),461)>.6)continue; let t=b; while(V(t,m)<.08&&Math.abs(t-b)<3)t+=d; if(Math.abs(t-b)<3)T3.push(ax?[t,m,hash(Math.floor(m*7),3,463)]:[m,t,hash(Math.floor(m*7),5,463)]); } } };
-    strips(cx-w,P.y0+.5,cx+w,P.y0+8.5,1); PARK.later(()=>{ strips(P.x0,cy-w,cx-R,cy+w,0); strips(cx+R,cy-w,P.x1,cy+w,0); strips(cx-R,cy-R,cx+R,cy+R,1); strips(cx-w,P.y0+8.5,cx+w,cy-R,1); strips(cx-w,cy+R,cx+w,P.y1,1); }); }
+    strips(cx-w,P.y0+.5,cx+w,cy-R,1); PARK.later(()=>{ strips(P.x0,cy-w,cx-R,cy+w,0); strips(cx+R,cy-w,P.x1,cy+w,0); strips(cx-R,cy-R,cx+R,cy+R,1); strips(cx-w,cy+R,cx+w,P.y1,1); }); }
   const stone=(i,j,k,H=99,cap=false)=>BRICKS.face(i,j,k,H,cap);
   const capSide=(i,j,h)=>{ const n=grain(i/24,j/24,91,1.2), c=(j===0?1.2:j>=h-1?.62:1)*(124+20*n); return speck([c,c,c*.96],i/24,j/24,93); };
   const face=(a,b,c,d,w,h,fn)=>BOD.bq(a,b,c,d,BOD.faceTex(w,h,(i,j)=>BOD.C(fn(i,j))),'G');
@@ -221,7 +221,18 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
         if(ok(x2,y2,rr)&&!near(x2,y2,rr,.5,4.5))add(kk,x2,y2,mm,hash(i,83+j,9)*6.28); } }
     for(const [k0,x,y,m] of FOUNT.S.oaks){ const k=hash(Math.round(x),Math.round(y),87)<.35?'Elder'+(1+Math.abs(Math.round(x))%2):k0; if(!near(x,y,m*W(k),.6,8)&&!BK.wet(x,y,m*.42))add(k,x,y,m,hash(Math.round(x),Math.round(y),89)*6.28); } return out; })();
   PARK.later(()=>{ PARK.trees=QS.get('trees')==='0'?null:mesh(TREES,true,true,true); });
-  PARK.oaks=TREES.map(([k,x,y,m])=>[X(x),Z(y),m]); window.PARKDBG=()=>({oaks:PARK.oaks,trees:TREES,TL,progs:renderer.info.programs.length});
+  PARK.oaks=TREES.map(([k,x,y,m])=>[X(x),Z(y),m]);
+  { const LK=new Map(), V=THREE.Vector3, m4=new THREE.Matrix4(), q=new THREE.Quaternion(), c=new THREE.Color(), up=new V(0,1,0), CR=[], SP=[], TK=[], G=new THREE.Group();
+    const look=k=>{ if(LK.has(k))return LK.get(k); const D=F[k], p=f32(D.p), col=b8(D.c), lc=[0,0,0], tc=[0,0,0]; let y0=1e9, y1=-1e9, r=0, ym=0, n=0, tn=0;
+      for(let i=0;i<p.length;i+=3){ ym=Math.max(ym,p[i+1]); if(col[i+1]>col[i]*1.08&&col[i+1]>col[i+2]*1.08){ y0=Math.min(y0,p[i+1]); y1=Math.max(y1,p[i+1]); r=Math.max(r,Math.hypot(p[i],p[i+2])); for(let j=0;j<3;j++)lc[j]+=col[i+j]; n++; } else { for(let j=0;j<3;j++)tc[j]+=col[i+j]; tn++; } }
+      const L=n?{y0,y1,r,lc:lc.map(v=>v/n)}:{y0:ym*.4,y1:ym,r:ym*.3,lc:[70,110,50]}; L.tc=tn?tc.map(v=>v/tn):[90,70,50]; L.tr=D.trunk||.1; L.cone=/Spruce|Pine|Fir/.test(k); LK.set(k,L); return L; };
+    for(const [k,x,y,m,t] of TREES){ const L=look(k), s=m/.84*TILE, ox=X(x), oz=Z(y), oy=P.hill(x,y), h=.94+.12*hash(Math.round(x*7),Math.round(y*7),131);
+      (L.cone?SP:CR).push([ox,oy+s*(L.y0+L.y1)/2,oz,s*L.r*.8,s*(L.y1-L.y0)/2,L.lc.map(v=>v*h),t]); TK.push([ox,oy+s*L.y0*.55,oz,Math.max(.12*TILE,s*L.tr*.5),s*L.y0*1.1,L.tc,0]); }
+    const inst=(geo,L)=>{ if(!L.length)return; const me=new THREE.InstancedMesh(geo,new THREE.MeshLambertMaterial({flatShading:true}),L.length);
+      L.forEach(([x,y,z,r,hh,cl,t],i)=>{ me.setMatrixAt(i,m4.compose(new V(x,y,z),q.setFromAxisAngle(up,t),new V(r,hh,r))); me.setColorAt(i,c.setRGB(cl[0]/255,cl[1]/255,cl[2]/255,THREE.SRGBColorSpace)); });
+      me.computeBoundingSphere(); me.castShadow=true; me.receiveShadow=true; G.add(me); };
+    inst(new THREE.IcosahedronGeometry(1,0),CR); inst(new THREE.ConeGeometry(1,2,6),SP); inst(new THREE.CylinderGeometry(1,1,1,5),TK); scene.add(G); P.stand=G; }
+  window.PARKDBG=()=>({oaks:PARK.oaks,trees:TREES,TL,progs:renderer.info.programs.length});
   PARK.later(()=>{ PARK.rocks=mesh([['BigRock3',87.5,-37,2.6,1.8],['BigRock5',126,-41,2.4,.2],['Rock_12',55.5,-41,1,1],['Rock1',111,-41,.6,2],['BigRock1',66,-35,2,1.1]].map(([k,x,y,...r])=>[k,RX(x),RY(y),...r]),false);
   { const UG=[['bush1',1.1],['bush2',1.2],['bush3',1.3],['bush4',1.5],['bush5',1.1],['flower1',.5],['flower2',.7],['flower3',.3],['flower4',.7],['flower5',.35],['flower6',.8],['grass1',.5],['grass2',.6],['grass1',.45],['grass2',.55],['mushroom1',.3],['mushroom2',.35],['mushroom3',.3],['mushroom4',.25],['stone2',.5],['stone3',.2],['stones1',.25]];
     const list=[]; for(let i=0;i<90;i++){ const x=P.x0+2+hash(i,3,91)*(P.x1-P.x0-4), y=P.y1-NORTHX-1-Math.pow(hash(i,7,93),1.6)*(P.y1-NORTHX-P.y0-3); if(path(x,y)||path(x+1,y)||path(x-1,y)||path(x,y+1)||path(x,y-1)||BK.wet(x,y,1)||hash(i,11,95)<.3||FOUNT.away(x,y)<0)continue; if(x>67&&x<77&&y>-44+NORTHY&&y<-24+NORTHY)continue; if(Math.hypot(x-P.campAt().x,y-P.campAt().y)<4)continue; if(typeof GCAVE!=='undefined'&&GCAVE.keep(P).some(b=>x>b[0]&&x<b[2]&&y>b[1]&&y<b[3]))continue; { const [a,b,c,d]=CASTLE.b.map((v,i)=>v-(i<2?PO.x:PO.y)); if(x>a-1.6&&x<b+1.6&&y>c-1.6&&y<d+1.6)continue; }
@@ -260,12 +271,12 @@ await grab('park',async()=>{});
   P.at=(x,z)=>[x/TILE+BOD.OX-P.ox,z/TILE+BOD.OY-P.oy];
   P.within=(x,z,m=0)=>{ const [px,py]=P.at(x,z), b=CASTLE.b, c=[b[0]-P.ox,b[2]-P.oy,b[1]-P.ox,b[3]-P.oy]; return px>P.x0+m&&px<P.x1-m&&py>P.y0+m&&py<P.y1-m||px>c[0]+m&&px<c[2]-m&&py>c[1]+m&&py<c[3]-m; };
   P.rect=()=>{ const a=BOD.XS(P.x0+P.ox-2), b=BOD.XS(P.x1+P.ox+2), c=BOD.ZS(P.y0+P.oy-2), d=BOD.ZS(P.y1+P.oy+2); return [Math.min(a,b),Math.min(c,d),Math.max(a,b),Math.max(c,d)]; };
-  P.load=async()=>{ const t0=performance.now(); while(P.Q.length){ P.run(P.Q.shift()); await brk(); } P.ready=true; scene.updateMatrixWorld();
+  P.steps=[]; P.load=async()=>{ const t0=performance.now(); while(P.Q.length){ const t=performance.now(); P.run(P.Q.shift()); P.steps.push(Math.round(performance.now()-t)); await brk(); } P.ready=true; scene.updateMatrixWorld();
     for(const f of [()=>ROOMS.reset(),()=>CLIP.run(),()=>PERFX.chunk(),()=>CULL.scan()])try{ f(); }catch(e){ console.warn('PARK',e); } P.ms=Math.round(performance.now()-t0); };
-  P.show=on=>{ P.in=on; G.visible=on&&LVL==='up'; if(MODS.landHoles)MODS.landHoles(on); if(window.WEEDS&&WEEDS.lawnDrop)WEEDS.lawnDrop(P.rect()); for(const f of P.onShow)try{ f(on); }catch(e){ console.warn('PARK',e); } };
+  P.show=on=>{ P.in=on; G.visible=on&&LVL==='up'; if(P.stand)P.stand.visible=!on; if(MODS.landHoles)MODS.landHoles(on); if(window.WEEDS&&WEEDS.lawnDrop)WEEDS.lawnDrop(P.rect()); for(const f of P.onShow)try{ f(on); }catch(e){ console.warn('PARK',e); } };
   const go=async(on,jump)=>{ busy=true; const el=document.getElementById('subfade'), tr=el.style.transition; el.style.transition=jump?'none':'opacity .3s steps(4)'; el.textContent=on?'ENTERING CENTRAL PARK':'LEAVING CENTRAL PARK'; el.style.pointerEvents='auto'; el.style.opacity='1';
-    await wait(jump?60:320); if(typeof keys!=='undefined'&&keys.clear)keys.clear();
-    try{ if(on&&!P.ready)await P.load(); }catch(e){ console.warn('PARK: not loaded',e); } P.show(on); await frames(3); await wait(140);
+    await wait(jump?60:320); if(typeof keys!=='undefined'&&keys.clear)keys.clear(); P.hold=true;
+    try{ if(on&&!P.ready)await P.load(); }catch(e){ console.warn('PARK: not loaded',e); } P.hold=false; P.show(on); await frames(3); await wait(140);
     el.style.transition='opacity .4s steps(5)'; el.style.opacity='0'; el.style.pointerEvents='none'; await wait(420); el.style.transition=tr; busy=false; };
   P.door=(py,p)=>{ if(busy||!window.__started||LVL!=='up'||py<-1||UI.freeCam)return; const jump=lx!=null&&Math.hypot(p.x-lx,p.z-lz)>2*TILE; lx=p.x; lz=p.z; const w=P.within(p.x,p.z,P.in?-.35:.35); if(w!==P.in)go(w,jump); };
-  window.PARKPLACE=()=>({in:P.in,ready:P.ready,busy,ms:P.ms,left:P.Q.length,kids:G.children.length}); }
+  window.PARKPLACE=()=>({in:P.in,ready:P.ready,busy,ms:P.ms,steps:P.steps,left:P.Q.length,kids:G.children.length}); }

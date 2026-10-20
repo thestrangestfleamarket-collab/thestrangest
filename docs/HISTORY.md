@@ -3664,3 +3664,10 @@ initial download and load super fast"; then "Go")
   night panel loses its LIGHT SHAFTS AND RAYS and DUST IN THE LIGHT sliders and the presets their `ray`/`dust` keys. Cost taken off
   every frame outdoors by day: one full-screen pass, 16 beam cylinders and the dust points; one shader program fewer. The picture
   check no longer needs to hide them (it still can, harmlessly, on older pages).
+
+## 20 Oct 2026: the club is its own builder (modules, step 4)
+
+- **`058-club.js` is `059a-club.js`**, after the bodega builder closes, wrapped in `await grab('club', ...)`: its room and props land in
+  `MAPG.club`, its own group, instead of the bodega's. It was already a self-contained block using only page-level names and giving
+  none back; the scope proof shows every reference resolving as before. The club's inside still builds on entry (the `club` chunk).
+  Next: the arcade, the dojo, the fire escape, the ghost dojo, the apartments, main street and the store, one each.

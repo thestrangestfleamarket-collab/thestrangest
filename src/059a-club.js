@@ -1,4 +1,5 @@
-{ const K=STORE.kit, {room,STEPS}=K, {X,Y,Z}=BOD, {hash,grain}=BOD.g, sh=BOD.K.sh, {PROPS,LAMPS}=BOD.STOREK, hs=hash;
+// CLUB STATIC: the night club (its own builder; the room, the DJ, the dancers and the drop; the inside builds when you go in).
+await grab('club',async()=>{ const K=STORE.kit, {room,STEPS}=K, {X,Y,Z}=BOD, {hash,grain}=BOD.g, sh=BOD.K.sh, {PROPS,LAMPS}=BOD.STOREK, hs=hash;
   const B={id:'lclub',x0:432,y0:-98,x1:456,y1:-80,h:230}, W=B.x1-B.x0, D=B.y1-B.y0;
   const LOB={x0:16,y0:12,x1:24,y1:18}, BTH={x0:18,y0:0,x1:24,y1:6}, FLR={x0:5,y0:4,x1:15,y1:11}, BOOTH={x0:7,y0:.25,x1:13,y1:2.4}, BAR={x0:.15,y0:3,x1:1.6,y1:15};
   const at=(r,x,y,p=0)=>x>B.x0+r.x0-p&&x<B.x0+r.x1+p&&y>B.y0+r.y0-p&&y<B.y0+r.y1+p;
@@ -164,4 +165,4 @@
       for(const N of CLUB.dancers||[])if(N&&N.mixer){ const a=N.act&&N.act('UAL_Dance_Loop'); if(a)a.timeScale=dropping?1.5:1; } }; };
   window.CLUBDBG=()=>({mv:st.move&&st.move.name,cur:ROOMS.cur&&ROOMS.cur.id,recsI:(CLUB.recs||[]).map(L=>+L.intensity.toFixed(1)),ready:!!CLUB.ready,where:CLUB.where,beat:CLUB.beatNow&&+CLUB.beatNow().toFixed(2),drop:CLUB.drop,people:(CLUB.people||[]).length,recs:(CLUB.recs||[]).length,audio:!!(CLUB.A&&CLUB.A.c)});
   window.CLUBLOOK=(dx=12,dy=9,k=.5,d)=>{ if(d!=null)LOOKYAW(d); return LOOKAT(X(B.x0+dx),Z(B.y0+dy),k); };
-  window.CLUBGO=(dx=10,dy=13)=>{ STORE.offGo('CLUB STATIC'); if(window.SUBGO)SUBGO(X(B.x0+dx),Z(B.y0+dy),'up'); return CLUBDBG(); }; }
+  window.CLUBGO=(dx=10,dy=13)=>{ STORE.offGo('CLUB STATIC'); if(window.SUBGO)SUBGO(X(B.x0+dx),Z(B.y0+dy),'up'); return CLUBDBG(); }; });

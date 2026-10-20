@@ -3628,3 +3628,6 @@ initial download and load super fast"; then "Go")
   "i want things like this that move to be looped to save on render cpu and time"): a thing that sways or stirs by itself (flowers,
   leaves, a flag, a sign) plays a short looped animation made once, instead of being computed every frame. A rule for new things and
   for the queue on the existing ones.
+- **The sun rays off** (owner, 20 Oct 2026, with a picture of the street under the beams: "lets take off sun rays for now from game
+  -queue"): the light beams and their dust (`133a-sunrays.js`, `RAYS`) come out of the game for now. Queued; small enough to go as its
+  own pull request before the next module step (the picture check then no longer needs to hide them).

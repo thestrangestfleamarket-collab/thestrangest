@@ -3529,6 +3529,41 @@ initial download and load super fast"; then "Go")
   is the slowest one, not all of them. The same picture takes the base once per place, not twice, and allows 5% of the pixels to differ
   (the base differs from itself by up to 2%; `SAMEPIC_NOISE=1` measures it again). The picture and pixel checks run only when the game
   changes (`src/`, `data/`, the build) or those checks do; the budget and the lost picture always run.
+
+## 20 Oct 2026: the people built faster at the start, the same vertices
+
+- **Faster first visit, part 2** (`076-npc-map.js`, `072-walker3d.js`): a profile of the start on main showed the NPCs' self-shading
+  (`makeNPC`'s `sh`, which looks around every vertex for higher-ranked parts) at about 3 s and building the figures from their shapes
+  (`W3.warm`, `meshOf0`) at about 6 s of the 21 s. The shading now keys its grid and its normal smoothing with numbers instead of text and
+  makes the cheap tests before the distance; the figure builder skips the empty cells without making small arrays. The output is the same:
+  `tests/texhash.cjs` now also hashes every body built at the start (positions, normals, colours, `sh`) and fails if any differs.
+
+## 20 Oct 2026: the map of the source (modules, step 1)
+
+- **The map** (owner, 20 Oct 2026: "ok lets fix modules", after asking what gives the biggest token saving): `tools/map.cjs` (with
+  `tools/scope.cjs`, the scope analyser that proved the dungeon and bar modules) writes `docs/MAP.md`: every file's size, the builder it
+  sits inside, what it gives other files and what it needs from them. A chat greps its file there instead of reading the neighbours.
+  What it showed: `await grab('bodega', ...)` is one function from `013a-day1.js` to `059-main-10.js`, 787 KB of the 2.4 MB, and the
+  shared kits inside it (`016` street kit 13 names, `020` apartment furniture 22, `029` bar counter 32, `033` shrine pieces 24, `036` cottage
+  room 32) are what keep its places from standing alone. Next: lift the kits out, then one place per pull request.
+
+## 20 Oct 2026: the block inside the bodega builder dissolved (modules, step 2)
+
+- **38 files out of the function** (`013a-day1.js`, `052-main-9.js`, `015-game-w-bodega-shop.js`): the bodega builder
+  (`await grab('bodega', ...)`, `013a` to `059`) opened a plain block right after its locals that ran to the end of `052`; the kits
+  and the old game's makers (`014` to `051`) sat inside it though none of them used the builder's locals (only `052`, `054`, `055`,
+  `057` and `059` do). The block's braces are gone, so those files' names are now the page's own (one clash fixed first: the bodega
+  *lot* in `015` was also called `BODB`, the name of the bodega *builder* in `006`; the lot is `BLOT` now). A scope proof
+  (every reference's declaration before and after, 226,800 references) shows the only other change is `BRICKS` reaching its own
+  `const` instead of the same object through `window`. Next: open the builder just before `052`, so `014`–`051` are top-level code.
+
+## 20 Oct 2026: comments allowed, the README set right
+
+- **The no-comments rule relaxed** (owner, 20 Oct 2026, on an audit from another chat that found the rule "saves exactly zero bytes"
+  because the minifier strips comments (`legalComments: 'none'`): "lets fix 2 and 7"): every file in `src/` starts with one comment line
+  saying what it is (22 written now, the rest as files are touched); otherwise comments stay rare and short. HTML and CSS stay bare.
+- **README** (the audit's point 7): it pointed at the dropped claude.ai copy and a `dist/avatar.html` the build no longer makes; now the
+  website, the real outputs and the map. `island/README.md` describes a separate standalone page and is left alone.
 ## 20 Oct 2026: the game code split: the start fetches only the code it runs
 
 (owner, 20 Oct 2026, told "the download at the start is still about 1.5 MB, and most of that is the game code in one piece (2.25 MB,

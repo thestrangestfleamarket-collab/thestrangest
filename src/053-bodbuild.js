@@ -1,3 +1,4 @@
+// BUILDING THE BODEGA: faces batched into meshes, the ground painted a patch at a time round you (BODB.gnear), lamps and goods.
 BODB={};
 { const {X,Y,Z,B0,BODOFF}=BOD, {bodegaWall,grain,speck,COPE,hash}=BOD.g, H=B0.h, KINDS={};
   const inside=()=>BOD.inside(pos.x,pos.z)||!!(window.ROOMS&&ROOMS.cur&&ROOMS.cur.lz==='bodega'); BODB.inside=inside;

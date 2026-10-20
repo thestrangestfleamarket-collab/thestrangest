@@ -1,3 +1,4 @@
+// THE BODEGA'S LAYOUT: coordinates (X, Z, Y), the street and ghost street, roads and lanes and their painters; opens grab('bodega').
 
 BOD.KC={KMK,KPP,DGN,DGP,LAMPS,CATALOG,dungeonWall,dungeonFloorCol,castleArch,KARCH};
 }

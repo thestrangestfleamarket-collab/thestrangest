@@ -1,3 +1,4 @@
+// THE PAINT CACHE: painted ground patches kept in IndexedDB (gzip) so a second visit skips the painting; ?paintc=0 turns it off.
 const PAINTC=(()=>{ const V='__BUILDV__', DB='market-paint', ST='p', KEY='ground', M=new Map(), NEW=[], P={hit:0,miss:0,bad:0,ms:0,loaded:0,saved:0};
   const off=QS.get('paintc')==='0'||typeof indexedDB==='undefined'||typeof DecompressionStream==='undefined';
   const idb=()=>new Promise((res,rej)=>{ const r=indexedDB.open(DB,1); r.onupgradeneeded=()=>r.result.createObjectStore(ST); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); });

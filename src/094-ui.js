@@ -1,3 +1,4 @@
+// THE UI: the camera (isometric, behind, first person), zoom and turn, the menu, places, and the top-down shot.
 const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
 {
   const ACTS=[['w','walk up (screen)'],['s','walk down'],['a','walk left'],['d','walk right'],['shift','run · sink (free camera, fly)'],[' ','jump · rise (free camera, fly) · dive (swimming)'],

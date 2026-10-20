@@ -1,3 +1,4 @@
+// FAST RAYS: three-mesh-bvh behind three's raycast for big still meshes, loaded after the start.
 const BVH={on:QS.get('bvh')!=='0', ready:false, lib:null, built:0, ms:0};
 {
   const orig=THREE.Mesh.prototype.raycast, MIN=100, OPT={indirect:true, setBoundingBox:false, verbose:false, maxLeafTris:10};

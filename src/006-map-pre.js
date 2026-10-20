@@ -1,3 +1,4 @@
+// THE MAP, BEFORE THE PLACES: lots and layout (LBLD, LAY), the away list (AWAY), the grab() that groups a place's meshes, shared state (SOL, FIX, MODS).
 const CEL=(()=>{ const q=+new URLSearchParams(location.search).get('cel'); let v=null; try{ v=+SAVE.get('bands'); }catch(e){} const n=q||v||4; return Math.max(3,Math.min(5,n|0)); })();
 const HUE=(()=>{ const q=new URLSearchParams(location.search).get('hue'); return (q!=null?+q:1).toFixed(3); })();
 const SMOOTH=false;

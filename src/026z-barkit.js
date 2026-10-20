@@ -1,3 +1,4 @@
+// THE BAR KIT: barKit(onBar) returns the 44 makers the bar and the diner build their furniture with.
 const barKit=onBar=>{
 const FP=24, H=2, S=FP*H;
 const art=(W,Hh,draw)=>{ const a=new Array(W*Hh).fill(null); draw((x,y,c)=>{ x=Math.floor(x); y=Math.floor(y); if(c&&x>=0&&y>=0&&x<W&&y<Hh)a[y*W+x]=c; }); return (x,y)=>x>=0&&y>=0&&x<W&&y<Hh?a[y*W+x]:null; };

@@ -1,3 +1,4 @@
+// THE PAGE: renderer, scene, camera, the shared painters (tex, hash3) and the loading of the data files.
 
 import {EffectComposer} from 'three/addons/postprocessing/EffectComposer.js';
 import {RenderPass} from 'three/addons/postprocessing/RenderPass.js';

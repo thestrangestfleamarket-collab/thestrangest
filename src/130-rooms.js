@@ -11,7 +11,7 @@ ROOMS.roofAt=(x,y,z)=>{ const h=new THREE.Raycaster(new THREE.Vector3(x,y,z),new
   const build=()=>{ RL=[]; const B=BOD.B0, mB=(B.x0+B.x1)/2, sb=box(BOD.X,BOD.Z,[B.x0,BOD.BODOFF,B.x1,B.y1],-1,BOD.Y(B.h)), ob=box(BOD.X,BOD.Z,[B.x0,B.y0,B.x1,BOD.BODOFF],-1,BOD.Y(B.h));
     sb.lz=ob.lz='bodega'; sb.band=box(BOD.X,BOD.Z,[mB-.98,B.y1-.05,mB+.98,B.y1+.55],-1,0); RL.push(sb,ob);
     for(const t of POOLR.ROOMS||[])RL.push(box(POOLR.X,POOLR.Z,t,POOLR.Y(-150),POOLR.Y(POOLR.H)));
-    if(BOD.GD){ const G=BOD.GD, h=(G.dw||2.4)/2+.2, gb=box(BOD.X,BOD.Z,G.r,-1,BOD.Y(G.H)); gb.lz='bath'; gb.band=box(BOD.X,BOD.Z,[G.door[0]-h,G.door[1]-.3,G.door[0]+h,G.door[1]+.55],-1,0); RL.push(gb); }
+    if(BOD.GD){ const G=BOD.GD, h=(G.dw||2.4)/2+.2, gb=box(BOD.X,BOD.Z,G.r,G.y0||-1,BOD.Y(G.H)); gb.lz='bath'; gb.band=box(BOD.X,BOD.Z,[G.door[0]-h,G.door[1]-.3,G.door[0]+h,G.door[1]+.55],-1,0); RL.push(gb); }
     for(const R of STORE.rooms)if(R.walls){ if(R.dw&&R.B&&!R.band)R.band=sband(R); RL.push(R); }
     if(window.CIVIC&&CIVIC.tower){ const t=CIVIC.tower; RL.push({id:'civic',x0:t.x0,x1:t.x1,z0:t.z0,z1:t.z1,y0:t.y-1,y1:t.y+t.H}); } };
   ROOMS.boxes=()=>{ if(!RL)build(); return RL; };

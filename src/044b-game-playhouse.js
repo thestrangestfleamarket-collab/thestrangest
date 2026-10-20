@@ -105,7 +105,7 @@ const PFONT={...STOREK.theatre.THFONT,D:'####.#...##...##...##...##...#####.',F:
   4:'...#...##..#.#.#..#.#####...#....#.',6:'..##..#...#....####.#...##...#.###.',8:'.###.#...##...#.###.#...##...#.###.'};
 const PLAYK=PLB=>{ const PLMID=(PLB.x0+PLB.x1)/2, SY=PLB.y0+7.9, ay=a=>SY+(a+48.3)*6/6.2;
 const PLS={x0:PLB.x0+.1,x1:PLB.x1-.1,SY,PRY:ay(-47.4),PRX0:PLMID-4.3,PRX1:PLMID+4.3,PRZ:90,CY:ay(-46.8),SZ:22,back:PLB.y1-.1,LEGS:[ay(-45.4),ay(-43.9)],legW:1.6,
-  rows:[2.4].map(d=>SY-d),SX0:PLMID-2.5,SX1:PLMID+2.5,lobby:PLB.y0+1.6};
+  rows:[2.4].map(d=>SY-d),SPOT:[PLMID,SY+2.7,1.6],SX0:PLMID-2.5,SX1:PLMID+2.5,lobby:PLB.y0+1.6};
 const PLWALLS=[SY-1.9,SY-4.3], PLCANDLES=[[PLMID-3.5,SY+.25,20],[PLMID-1.4,SY+.25,14],[PLMID+1.4,SY+.25,14],[PLMID+3.5,SY+.25,20],[PLMID+3.9,ay(-45.2),24]];
 const plMark=m=>[PLMID+m[0],PLS.CY+.5+m[1]], PLC=PLS.CY+.5;
 function playFloorCol(x,y){ if(y<PLS.lobby)return lobbyCol(x,y);
@@ -113,7 +113,7 @@ function playFloorCol(x,y){ if(y<PLS.lobby)return lobbyCol(x,y);
   const r=Math.floor(x*4), b=Math.floor(y/1.5+hash(r,0,41)*3), c=[[86,58,40],[78,52,36],[92,62,42]][Math.floor(hash(b,r,43)*3)];
   return mt('wood',(x*4-r)<.08?sh(c,.7):c); }
 function playWall(q,nx,ny,X,Y,z,f){ const u=nx?Y:X;
-  if(ny<0&&Math.abs(Y-PLB.y1)<.3&&z>=PLS.SZ){ const s=1-.05*((u*24|0)%7===0)-.03*Math.abs(Math.sin(u*2.1)); return sh(z>PLB.h-16?[30,30,34]:[196,202,208],f*s); }
+  if(ny<0&&Math.abs(Y-PLB.y1)<.3||ny>0&&Math.abs(Y-PLB.y0)<.3)return sh((u*24|0)%9<4?[96,14,26]:[74,10,20],f);
   if(Y>PLS.PRY+.05)return sh(z<PLS.SZ&&ny?[60,46,34]:[20,20,22],f);
   if(z<6)return sh([40,26,20],f);
   if(z<40)return sh(z%10<1?[52,32,24]:[74,46,32],f);
@@ -183,9 +183,19 @@ const props=()=>{ const S=PLS, B=PLB, wood=(x,y)=>{ const r=Math.floor(x*5), c=[
   const BLK=[22,22,24], blk={c:BLK,top:()=>[30,30,32],fi:()=>[18,18,20],fj:()=>[24,24,26]}, GILT=[200,162,78], RED=[132,28,34];
   PNAME='stage'; prop([{x0:S.x0,y0:S.SY,x1:S.x1,y1:S.back,z0:0,z1:S.SZ,c:[120,86,54],top:wood,fi:(y,z)=>sh(z>S.SZ-3?GILT:[46,30,24],.62),fj:(x,z)=>sh(z>S.SZ-3?GILT:[52,34,26],.8)}
   ]);
-  const n=Math.round((S.SX1-S.SX0)/.72), w=(S.SX1-S.SX0)/n, V=[150,32,40], Vd=[112,22,30], IR=[36,34,36], arm=(a,y)=>({x0:a-.04,y0:y-.3,x1:a+.04,y1:y+.24,z0:0,z1:17,c:IR,top:()=>[118,82,52],fi:()=>sh(IR,.62),fj:()=>sh(IR,.8)});
-  for(const y of S.rows)for(let i=0;i<n;i++){ const a=S.SX0+i*w; PNAME='playhouse chair'; prop([{x0:a+.05,y0:y-.18,x1:a+w-.05,y1:y+.22,z0:10,z1:13,c:V,top:()=>V,fi:()=>sh(Vd,.9),fj:()=>sh(V,.8)},
-    {x0:a+.05,y0:y-.3,x1:a+w-.05,y1:y-.18,z0:10,z1:32,c:V,top:()=>sh(V,1.06),fi:()=>sh(Vd,.9),fj:(xx,z)=>sh(z>29?V:Vd,.85)},arm(a,y),...(i===n-1?[arm(a+w,y)]:[])]); }
+  const n=Math.round((S.SX1-S.SX0)/1), w=(S.SX1-S.SX0)/n, V=[150,30,42], Vd=[100,16,28], Vh=[186,54,64], Wd=[52,30,22], G=[190,150,70];
+  const vel=(c0,top)=>({c:c0,top:()=>top||sh(c0,1.12),fi:()=>sh(c0,.68),fj:()=>sh(c0,.86)});
+  const arm=(a,y)=>[{x0:a-.08,y0:y-.42,x1:a+.08,y1:y+.36,z0:0,z1:20,c:Wd,top:()=>Wd,fi:()=>sh(Wd,.7),fj:(x,z)=>z<3?sh(G,.8):Wd},
+    {x0:a-.11,y0:y-.4,x1:a+.11,y1:y+.42,z0:20,z1:25,foot:0,...vel(V,Vh),fj:(x,z)=>sh(z>23?Vh:V,.86)}];
+  for(const y of S.rows)for(let i=0;i<n;i++){ const a=S.SX0+i*w, b=a+w; PNAME='playhouse chair'; prop([
+    {x0:a+.1,y0:y-.4,x1:b-.1,y1:y+.3,z0:0,z1:5,c:Wd,top:()=>Wd,fi:()=>sh(Wd,.7),fj:()=>sh(Wd,.85)},
+    {x0:a+.1,y0:y-.24,x1:b-.1,y1:y+.44,z0:5,z1:13,foot:0,...vel(V),fj:(x,z)=>sh(z>10?Vh:V,.86)},
+    {x0:a+.16,y0:y-.2,x1:b-.16,y1:y+.38,z0:13,z1:16,foot:0,...vel(V,Vh),fj:()=>sh(Vh,.86)},
+    {x0:a+.1,y0:y-.48,x1:b-.1,y1:y-.24,z0:5,z1:40,foot:0,...vel(Vd),fj:(x,z)=>sh(z<7?G:Vd,.86)},
+    {x0:a+.17,y0:y-.48,x1:b-.17,y1:y-.24,z0:40,z1:44,foot:0,...vel(Vd,sh(Vd,1.2))},
+    {x0:a+.28,y0:y-.48,x1:b-.28,y1:y-.24,z0:44,z1:46,foot:0,...vel(Vd,sh(Vd,1.2))},
+    {x0:a+.17,y0:y-.24,x1:b-.17,y1:y-.1,z0:16,z1:39,foot:0,...vel(V,Vh),fj:(x,z)=>{ const q=(x-a-.17)/(w-.34)*3%1; return sh(z>36?Vh:q<.08||q>.92?Vd:V,.9); }},
+    ...arm(a,y),...(i===n-1?arm(b,y):[])]); }
   for(const [x,nx] of [[B.x0+T,1],[B.x1-T,-1]])for(const y of PLWALLS)STOREK.bar.theatreSconce(x,y,[nx,0]);
   };
 function plHoundAt(H,t){ if(!H.length||t<H[0][0]||t>=H[H.length-1][1])return null; let s=H[0]; for(const q of H)if(q[0]<=t)s=q;

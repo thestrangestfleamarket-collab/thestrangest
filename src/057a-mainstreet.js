@@ -38,13 +38,14 @@
       out,cope:[60,44,70]},{w:'f',a:cx,wd:1.56,h:94},()=>{
       LAMPS.push({x:cx,y:(y0+y1)/2,z:120,r:10,c:[1,.92,1.05]},{x:cx,y:y1+1,z:140,r:5,c:[1,.3,.75]}); })}; unplace('ARCADE'); });
 
-  STEPS.push(()=>{ const B=lot('play',130), cx=(B.x0+B.x1)/2, cy=(B.y0+B.y1)/2, P=PY.PLAYK(B), mx=x=>2*cx-x, my=y=>2*cy-y, L=[];
+  STEPS.push(()=>{ const B=lot('play',190), cx=(B.x0+B.x1)/2, cy=(B.y0+B.y1)/2, P=PY.PLAYK(B), mx=x=>2*cx-x, my=y=>2*cy-y, L=[];
     const out=(nx,ny,Xw,Yw,z,f,cap)=>{ if(ny>0){ const c=P.playFront(Xw,z,f); if(c)return c; } return facade(nx,ny,Xw,Yw,z,f,cap,[118,50,44]); };
     const R=room('playhouse','PLAYHOUSE',B,{floor:(x,y)=>P.playFloorCol(mx(x),y),in:(q,nx,ny,X_,Y_,z,f)=>P.playWall(q,-nx,-ny,mx(X_),my(Y_),z,f),out,cope:[226,214,186]},{w:'f',a:cx,wd:1.56,h:94},(B_,l0)=>{
       const n0=PROPS.length, S=P.PLS, lam=(k,x,y,z,r,c)=>{ const l={x,y,z,r,c}; LAMPS.push(l); L.push([k,l,null]); };
       P.props();
       for(const s of [-1,1]){ lam('house',P.PLMID+s*2.4,S.SY-3.2,110,7,[1,.86,.62]); lam('wall',s<0?B.x0+T+.35:B.x1-T-.35,S.SY-3.1,68,3.2,[.8,.52,.26]); lam('front',P.PLMID+s*1.3,B.y0-.9,74,4,[1.1,.9,.62]); }
       lam('lobby',P.PLMID,B.y0+.8,90,4.5,[1,.86,.62]);
+      LAMPS.push({x:S.SPOT[0],y:S.SPOT[1],z:S.SZ+66,r:3.4,c:[1.25,1.14,.92]});
       turn(B,n0,l0); });
     const PAT={books:(c,r)=>{ const s=Math.floor(r/16); if(r%16<2)return [96,58,36]; return [[120,30,30],[40,60,90],[60,80,50],[140,110,60],[80,40,70]][Math.floor(hs(Math.floor((c+s*7)/3),s,91)*5)]; },
       window:(c,r)=>c%22<3||r%26<3||c<4||r<4?[226,220,206]:[40,52,78], panel:(c,r)=>c%30<3||r%34<3?[46,30,20]:sh([64,44,30],.95+.1*hs(c>>3,r>>2,31)),
@@ -60,7 +61,29 @@
       g.putImageData(im,0,0); const t=new THREE.CanvasTexture(cv); t.magFilter=t.minFilter=THREE.NearestFilter; t.wrapS=THREE.RepeatWrapping; t.colorSpace=THREE.SRGBColorSpace; return t; })();
     const fog=[0,1,2].map(i=>{ const t=fogT.clone(); t.needsUpdate=true; const m=new THREE.Mesh(new THREE.PlaneGeometry(X(P.PLS.PRX1)-X(P.PLS.PRX0),Y(40)-Y(0)),new THREE.MeshBasicMaterial({map:t,transparent:true,depthWrite:false}));
       m.position.set(X(cx),Y(P.PLS.SZ+20),Z(my(P.PLS.CY+.9+i*1.4))); m.visible=false; scene.add(m); return m; });
-    unplace('PLAYHOUSE'); MS.play={R,P,B,cx,cy,mx,my,L,SETM,fog,SH:{t0:null,cue:null,set:null,lv:-1,from:null,to:null,tc:0,step:-1,last:-1,cap:''},FIG:{},hound:null,up:0}; });
+    const rig=()=>{ const S=P.PLS, H=B.h, g=new THREE.Group(), V=(x,y,z)=>new THREE.Vector3(X(x),Y(z),Z(y)), col=(r,g_,b)=>new THREE.Color().setRGB(r/255,g_/255,b/255,THREE.SRGBColorSpace);
+      const drape=(yw,s,x0,x1,z0,gaps,nz)=>{ const pts=[], cs=[], tri=(a,b,c,k)=>{ for(const q of [a,b,c]){ pts.push(q.x,q.y,q.z); cs.push(k.r,k.g,k.b); } }, quad=(a,b,c,d,k)=>{ tri(a,b,c,k); tri(a,c,d,k); };
+        const A=col(124,20,36), Bc=col(84,10,24), Rv=col(110,16,30), Gd=col(196,156,70), p=.36, zt=H-28;
+        let x=x0, k=0; while(x<x1-.01){ const xn=Math.min(x1,x+p/2), m=(x+xn)/2; if(!gaps.some(([a,b])=>m>a&&m<b)){ const d0=k%2?.2:.04, d1=k%2?.04:.2, f0=k%2?.3:.06, f1=k%2?.06:.3;
+          quad(V(x,yw+s*f0,z0),V(xn,yw+s*f1,z0),V(xn,yw+s*d1,zt),V(x,yw+s*d0,zt),k%2?Bc:A); } x=xn; k++; }
+        const box=(xa,xb,ya,yb,za,zb,c)=>{ const p8=[[xa,ya],[xb,ya],[xb,yb],[xa,yb]]; for(let i=0;i<4;i++){ const [u0,v0]=p8[i], [u1,v1]=p8[(i+1)%4]; quad(V(u0,v0,za),V(u1,v1,za),V(u1,v1,zb),V(u0,v0,zb),c); } quad(V(xa,ya,za),V(xb,ya,za),V(xb,yb,za),V(xa,yb,za),c); };
+        const ya=yw, yb=yw+s*.34; box(x0,x1,Math.min(ya,yb),Math.max(ya,yb),zt-6,H-4,Rv); box(x0,x1,Math.min(ya,yb+s*.02),Math.max(ya,yb+s*.02),zt-6,zt-3,Gd);
+        const ge=new THREE.BufferGeometry(); ge.setAttribute('position',new THREE.Float32BufferAttribute(pts,3)); ge.setAttribute('color',new THREE.Float32BufferAttribute(cs,3)); ge.computeVertexNormals();
+        const pl=new THREE.Plane(new THREE.Vector3(0,-1,0),1e6), me=new THREE.Mesh(ge,new THREE.MeshLambertMaterial({vertexColors:true,side:THREE.DoubleSide,clippingPlanes:[pl]})); me.receiveShadow=true; g.add(me);
+        cutWalls.push({pl,nx:0,nz,foot:Y(8),me,when:()=>R.inside(pos.x,pos.z)}); return pts.length/9; };
+      const t0=drape(B.y0+.1,1,B.x0+.1,B.x1-.1,S.SZ,[],1)+drape(B.y1-.1,-1,B.x0+.1,B.x1-.1,0,[[cx-.95,cx+.95]],-1);
+      const pc=[mx(S.SPOT[0]),my(S.SPOT[1])], fy=my(S.SY-1.2), fz=H-22, F=V(cx,fy,fz), Q=V(pc[0],pc[1],S.SZ), dir=Q.clone().sub(F).normalize(), up=new THREE.Vector3(0,1,0), dk=new THREE.MeshLambertMaterial({color:0x221e1c});
+      const pipe=new THREE.Mesh(new THREE.BoxGeometry(Math.abs(X(B.x1-.1)-X(B.x0+.1)),Y(3)-Y(0),Math.abs(Z(.1)-Z(0))),dk); pipe.position.copy(V(cx,fy-.25,H-12)); g.add(pipe);
+      const hang=new THREE.Mesh(new THREE.BoxGeometry(Y(2)-Y(0),Y(10)-Y(0),Y(2)-Y(0)),dk); hang.position.copy(V(cx,fy-.25,H-17)); g.add(hang);
+      const L=Y(22)-Y(0), can=new THREE.Mesh(new THREE.CylinderGeometry(Y(7)-Y(0),Y(5.5)-Y(0),L,8),dk); can.quaternion.setFromUnitVectors(up,dir); can.position.copy(F).addScaledVector(dir,-L/2); g.add(can);
+      const lens=new THREE.Mesh(new THREE.CircleGeometry(Y(6)-Y(0),8),new THREE.MeshBasicMaterial({color:0xfff0c8})); lens.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),dir); lens.position.copy(F).addScaledVector(dir,.002); g.add(lens);
+      const add=(o,a)=>new THREE.MeshBasicMaterial({color:new THREE.Color(1,.9,.66),transparent:true,opacity:o,depthWrite:false,blending:THREE.AdditiveBlending,side:a?THREE.DoubleSide:THREE.FrontSide,polygonOffset:true,polygonOffsetFactor:-2});
+      const ring=(r,z)=>{ const o=[]; for(let i=0;i<=20;i++){ const a=i/20*Math.PI*2; o.push(V(pc[0]+Math.cos(a)*r,pc[1]+Math.sin(a)*r,z)); } return o; };
+      const fan=(c,rg)=>{ const a=[]; for(let i=0;i<20;i++)a.push(c.x,c.y,c.z,rg[i+1].x,rg[i+1].y,rg[i+1].z,rg[i].x,rg[i].y,rg[i].z); const ge=new THREE.BufferGeometry(); ge.setAttribute('position',new THREE.Float32BufferAttribute(a,3)); return ge; };
+      const r0=S.SPOT[2], beam=new THREE.Mesh(fan(F,ring(r0,S.SZ+.3)),add(.07,1)), pool=new THREE.Mesh(fan(V(pc[0],pc[1],S.SZ+.3),ring(r0,S.SZ+.3)),add(.2)), core=new THREE.Mesh(fan(V(pc[0],pc[1],S.SZ+.4),ring(r0*.62,S.SZ+.4)),add(.16));
+      for(const m of [pool,core])m.renderOrder=2; beam.renderOrder=3; g.add(beam,pool,core); scene.add(g); MS.play.spot=[beam,pool,core];
+      MS.play.rigN=t0; };
+    unplace('PLAYHOUSE'); MS.play={R,P,B,cx,cy,mx,my,L,SETM,fog,SH:{t0:null,cue:null,set:null,lv:-1,from:null,to:null,tc:0,step:-1,last:-1,cap:''},FIG:{},hound:null,up:0}; { const I=STORE.inside.playhouse; if(I){ const go=I.go; I.go=()=>{ go(); rig(); }; } else rig(); } });
 
   STEPS.push(()=>{ const L=lot('arcade',0), bc=L.x0+1.6, B={x0:bc-1,x1:bc+1,y0:L.y0+.4,y1:L.y0+2.4,h:116}, W=B.x1-B.x0, door=bc, k=1, c0=Math.floor((W*24-47*k)/2), on=word('HOLODECK',c0,100,k), H={x0:520,y0:-88,x1:536,y1:-72,h:120}, hx=(H.x0+H.x1)/2;
     const front=(u,z,f)=>{ const c=Math.floor(u*24), d=Math.abs(B.x0+u-door);
@@ -102,6 +125,7 @@
       const k=Math.min(1,(now-S.tc)/1500), step=S.from?Math.round(k*5):5; if(step===S.step)return; S.step=step;
       for(const [g,l,L] of M.L){ if(g==='front'||!L)continue; const a=S.from&&S.from[g]||S.to[g], b=S.to[g], c=a.map((v,i)=>v+(b[i]-v)*step/5), cm=Math.max(...c); if(cm>0)L.color.setRGB(c[0]/cm,c[1]/cm,c[2]/cm); L.intensity=cm>0?7*cm*Math.min(1.2,l.r/5):0; } };
     const show=(dt,now)=>{ const M=MS.play; if(!M||!M.P)return; const {R,P,SH}=M, inside=LVL==='up'&&R.inside(pos.x,pos.z), LL=PY.PLL;
+      if(M.spot)for(const m of M.spot)m.visible=inside;
       if(!M.SETM.baker&&STORE.meshes&&BATCH.all(STORE.meshes,'Pset:baker').length)for(const n of ['baker','hall','moor'])M.SETM[n]=BATCH.all(STORE.meshes,'Pset:'+n);
       for(const e of M.L)if(!e[2])e[2]=recOf(e[1]);
       if(inside&&USE.seat&&!(SH.t0!=null&&(now-SH.t0)/1000<LL))SH.t0=now;

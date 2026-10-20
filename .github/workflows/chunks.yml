@@ -16,6 +16,10 @@ jobs:
           cache: npm
       - run: npm ci --no-audit --no-fund
       - run: npx playwright install --with-deps chromium
+      - name: Baseline (main)
+        run: |
+          mkdir -p out/base; git fetch -q origin main; git worktree add -q base origin/main; ln -s ../node_modules base/node_modules; cp tests/chunkmeasure.cjs tests/startcost.py base/tests/
+          (cd base && python3 build.py && DIST=dist node tests/chunkmeasure.cjs sizes ../out/base && DIST=dist node tests/chunkmeasure.cjs web ../out/base && MIN=0 python3 build.py; python3 tests/startcost.py && DIST=dist node tests/chunkmeasure.cjs prof ../out/base) > out/base.log 2>&1 || true
       - name: Build minified
         run: python3 build.py && mkdir -p out && node tests/chunkmeasure.cjs sizes out
       - name: Measure website start

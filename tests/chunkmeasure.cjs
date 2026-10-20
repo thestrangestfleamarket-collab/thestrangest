@@ -13,11 +13,11 @@ const stats=pg=>pg.evaluate(()=>new Promise(res=>requestAnimationFrame(()=>reque
     const SRC=path.resolve(D,'../src'); const src=fs.readdirSync(SRC).filter(f=>/^\d/.test(f)).map(f=>{ const b=fs.readFileSync(path.join(SRC,f)); return {file:f,raw:b.length,gzip:gz(b)}; }).sort((a,b)=>b.gzip-a.gzip);
     return save('sizes.json',{dist:rows,srcTop:src.slice(0,30),srcTotal:src.reduce((s,r)=>s+r.raw,0)}); }
   if(MODE==='web'){ const srv=http.createServer((q,r)=>{ const u=decodeURIComponent(q.url.split('?')[0]); const f=path.join(D,u); if(!f.startsWith(D)||!fs.existsSync(f)||fs.statSync(f).isDirectory()){ r.writeHead(404); return r.end(); }
-      const ty=f.endsWith('.js')?'text/javascript':f.endsWith('.json')?'application/json':f.endsWith('.html')?'text/html':f.endsWith('.wasm')?'application/wasm':'application/octet-stream'; r.writeHead(200,{'content-type':ty}); r.end(fs.readFileSync(f)); }).listen(8123);
+      const ty=f.endsWith('.js')?'text/javascript':f.endsWith('.json')?'application/json':f.endsWith('.html')?'text/html':f.endsWith('.wasm')?'application/wasm':'application/octet-stream'; r.writeHead(200,f.endsWith('.bin')?{'content-type':ty,'content-encoding':'gzip'}:{'content-type':ty}); r.end(fs.readFileSync(f)); }).listen(8123);
     const out=[];
     for(let run=0;run<2;run++){ const b=await chromium.launch({args:ARGS}); const pg=await b.newPage({viewport:{width:960,height:540}}); pg.setDefaultTimeout(900000); const errs=[], reqs=[]; let phase='start';
       pg.on('pageerror',e=>errs.push(e.message.slice(0,300))); pg.on('console',m=>{ if(m.type()==='error')errs.push(m.text().slice(0,300)); });
-      pg.on('response',async r=>{ try{ const u=r.url(); if(!u.includes('/g/'))return; const body=await r.body(); reqs.push({u:u.replace(/.*\/g\//,''),raw:body.length,gzip:gz(body),phase}); }catch(e){} });
+      pg.on('response',async r=>{ try{ const u=r.url(); if(!u.includes('/g/'))return; const body=await r.body(), wire=u.endsWith('.bin')?fs.statSync(path.join(D,'g',u.replace(/.*\/g\//,'').split('?')[0])).size:gz(body); reqs.push({u:u.replace(/.*\/g\//,''),raw:body.length,gzip:wire,phase}); }catch(e){} });
       await pg.goto('http://localhost:8123/g/market.html?fresh=1&hour=13&wx=CLEAR',{waitUntil:'commit'});
       try{ await pg.waitForFunction(()=>window.__started,null,{polling:100,timeout:240000}); }catch(e){ await pg.screenshot({path:path.join(OUT,'web-fail.png')}); save('web-fail.json',{errs,reqs,html:(await pg.content()).slice(0,3000)}); throw e; }
       const t=await pg.evaluate(()=>new Promise(res=>requestAnimationFrame(()=>requestAnimationFrame(()=>res({firstFrame:Math.round(performance.now()),warm:window.WARMMS})))));

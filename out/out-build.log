@@ -1,0 +1,14 @@
+dist/market.html 5119940 -> 4733890
+dist/door.html 22652 -> 21600
+dist/g/rig.js 137728 -> 116435
+dist/g/page.html 3212 -> 3149
+chunk arcade: 1 functions, 31722 bytes
+chunk bath: 1 functions, 4492 bytes
+chunk club: 3 functions, 16017 bytes
+chunk dojo: 2 functions, 5956 bytes
+chunk dungeon: 3 functions, 32795 bytes
+chunk fire: 2 functions, 10370 bytes
+chunk later: 652 functions, 543648 bytes
+chunk park: 7 functions, 50356 bytes
+chunk vcr: 1 functions, 15852 bytes
+built dist/market.html, dist/door.html, dist/g/market.html + 34 files in dist/g, 210 files, 6606 breaths

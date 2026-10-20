@@ -1,0 +1,672 @@
+later #0 397 bytes, 0 names + live : e=>{ '@later'; e.preventDefault(); let d=document.getElementById('ctxlost'); if(!d){ d=doc
+later #1 981 bytes, 1 names + live : m=>{ '@later'; m.onBeforeCompile=sh=>{ Object.assign(sh.uniforms,{uH:WATER.uH,uWB:WATER.uW
+later #2 2106 bytes, 2 names + live : (renderer,dt)=>{ '@later'; WATER.t+=dt; if(WATER.drops.length)WATER.calm=false; if(WATER
+later #3 348 bytes, 2 names + live : (x,z)=>{ '@later'; const GX=WATER.GX, GY=WATER.GY, fx=Math.max(0,Math.min(GX-1.001,(x-WATE
+later #4 588 bytes, 1 names + live : dt=>{ '@later'; const S=WATER.SP, g=9.81/WATER.MPU; let k=0; dt=Math.min(dt,1/30); for(l
+later #5 790 bytes, 1 names + live : (renderer,scene,cam,lamps)=>{ '@later'; const w=renderer.domElement.width, h=renderer.domE
+later #6 511 bytes, 4 names + live busy UI keys yaw yawTo: async dir=>{ '@later'; busy=true; el.textContent=dir==='in'?'ENTERING SUBWAY':'LEAVING SUB
+later #7 1531 bytes, 12 names + live : function grassCol(x,y){ '@later'; const n=(cvNoise(x/5,y/5,29)*3+cvNoise(x/1.7,y/1.7,31)*2
+later #8 467 bytes, 2 names + live : (x0,y0,x1,y1,z0,z1,k,box)=>{ '@later'; for(let r=0;r*6<z1-z0;r++){ const zt=z1-r*6, zb=Mat
+later #9 457 bytes, 7 names + live : function bodegaFloorAt(x,y,B){ '@later'; const off=B===BLOT?y<BODOFF:y>B.y1-3.75, n=grain(
+later #10 344 bytes, 2 names + live : function bodegaWall(q,nx,ny,X,Y,z,f){ '@later'; const u=nx?Y:X, i=Math.floor(u*1.5), j=Mat
+later #11 1091 bytes, 3 names + live PNAME: (x,y)=>{ '@later'; PNAME='newspaper rack'; const c=[120,122,126], W=.5, D=.4, P=[[214,210,
+later #12 375 bytes, 5 names + live PNAME: (x,y)=>{ '@later'; PNAME='radio'; const c=[70,74,82]; return prop([ft(x,y,x+.5,y+.24),{x0:
+later #13 1012 bytes, 8 names + live PNAME: (x0,x1,y,z,ca,cb,name,sub)=>{ '@later'; PNAME='awning'; const d=.9, W=Math.round((x1-x0)*F
+later #14 640 bytes, 5 names + live PNAME: (x0,x1,y,z0,n,seed)=>{ '@later'; PNAME='posters'; const bs=[WF(x0,x1,y)]; const C=[[220,70
+later #15 559 bytes, 10 names + live PNAME: (x0,x1,y,z0,z1,s1,s2)=>{ '@later'; PNAME='painted sign'; const W=Math.round((x1-x0)*FP), H
+later #16 418 bytes, 10 names + live PNAME: (x0,x1,y,z0,s,c1,c2)=>{ '@later'; PNAME='graffiti'; const W=Math.round((x1-x0)*FP), A=art(
+later #17 313 bytes, 4 names + live PNAME: (x,y,z)=>{ '@later'; PNAME='window AC'; const c=[168,170,166]; return prop([WF(x-.36,x+.36
+later #18 734 bytes, 4 names + live PNAME: (x0,x1,y,z,ladder)=>{ '@later'; PNAME='fire escape'; const c=[52,54,58], d=.75, bs=[WF(x0,
+later #19 376 bytes, 4 names + live PNAME: (x0,x1,y,z)=>{ '@later'; PNAME='clothesline'; const bs=[WF(x0,x1,y),Bw(x0,x1,y,.3,.32,z,z+
+later #20 433 bytes, 3 names + live PNAME: (x,y)=>{ '@later'; PNAME='utility pole'; const c=[96,78,58]; const bs=[Bx(x-.1,y-.1,x+.1,y
+later #21 871 bytes, 1 names + live PNAME: (x0,x1,y,n=3)=>{ '@later'; PNAME='overhead wires'; const air=o=>({c:[0,0,0],nb:1,top:()=>n
+later #22 319 bytes, 7 names + live PNAME: (x0,x1,y,z0,z1)=>{ '@later'; PNAME='TV glow'; const c=[120,170,255]; const p=prop([WF(x0,x
+later #23 328 bytes, 6 names + live PNAME: (x,y,z,c=[255,120,90])=>{ '@later'; PNAME='paper lantern'; const p=prop([WF(x-.15,x+.15,y)
+later #24 779 bytes, 6 names + live PNAME: (x,y,z)=>{ '@later'; PNAME='flag'; const bs=[WF(x-.1,x+.1,y),Bw(x-.03,x+.03,y,0,.9,z,z+2,[
+later #25 379 bytes, 5 names + live PNAME: (x0,x1,y,z)=>{ '@later'; PNAME='window display'; const bs=[WF(x0,x1,y)], C=[[220,60,60],[2
+later #26 1601 bytes, 5 names + live PNAME: (x,y,w,flip)=>{ '@later'; PNAME='produce stand'; const bs=[], F=[[220,60,50],[240,170,40],
+later #27 770 bytes, 4 names + live PNAME: (x,y)=>{ '@later'; PNAME='flower buckets'; const bs=[], C=[[230,70,90],[240,210,70],[250,2
+later #28 679 bytes, 3 names + live PNAME: (x,y,n=3)=>{ '@later'; PNAME='milk crates'; const C=[[200,50,50],[50,80,200],[230,200,60]]
+later #29 413 bytes, 3 names + live PNAME: (x,y,n=4)=>{ '@later'; PNAME='trash bags'; const bs=[]; for(let i=0;i<n;i++){ const u=x+ha
+later #30 393 bytes, 3 names + live PNAME: (x,y)=>{ '@later'; PNAME='shopping cart'; const c=[150,152,156]; const bs=[Bx(x,y,x+.5,y+.
+later #31 626 bytes, 2 names + live PNAME: (x,y,alongX,c=[60,80,160])=>{ '@later'; PNAME='bicycle'; const W=.12, bs=alongX?[Bx(x,y,x+
+later #32 394 bytes, 3 names + live PNAME: (x,y)=>{ '@later'; PNAME='scooter'; const c=[200,70,60]; return prop([Bx(x,y,x+.25,y+.3,0,
+later #33 1486 bytes, 5 names + live PNAME: (x,y)=>{ '@later'; PNAME='newsstand'; const c=[60,120,80], d=sh(c,.72), X=x+2, Y=y+1.3, T=
+later #34 932 bytes, 4 names + live PNAME: (x,y)=>{ '@later'; PNAME='wire basket'; const c=[80,110,76], t=.04, e=x+.6, f=y+.6, bs=[Bx
+later #35 1947 bytes, 3 names + live PNAME: (x,y,f=1)=>{ '@later'; PNAME='fire hydrant'; const R=[196,40,34], RD=[132,22,22], RL=[232,
+later #36 768 bytes, 2 names + live PNAME: (x,y,flip)=>{ '@later'; PNAME='pay phone'; const c=[90,92,96], d=[30,30,34], o={foot:0}; r
+later #37 722 bytes, 8 names + live PNAME: (x,y,s1,s2)=>{ '@later'; PNAME='street sign'; const g=[22,104,62], wh=[240,242,236], bs=[B
+later #38 374 bytes, 4 names + live PNAME: (x,y)=>{ '@later'; PNAME='bus stop'; return prop([Bx(x-.03,y-.03,x+.03,y+.03,0,78,[70,72,7
+later #39 317 bytes, 3 names + live PNAME: (x,y,w,d)=>{ '@later'; PNAME='puddle'; return prop([Bx(x,y,x+w,y+d,0,.5,[90,100,110],{top:
+later #40 429 bytes, 3 names + live PNAME: (x,y,c=[40,110,70])=>{ '@later'; PNAME='dumpster'; return prop([Bx(x,y,x+1.6,y+1,0,6,[40,4
+later #41 350 bytes, 2 names + live PNAME: (x,y)=>{ '@later'; PNAME='tires'; const bs=[]; for(let k=0;k<3;k++)bs.push(Bx(x,y,x+.6,y+.
+later #42 378 bytes, 3 names + live PNAME: (x,y,ca,cb)=>{ '@later'; PNAME='umbrella'; const bs=[Bx(x-.2,y-.2,x+.2,y+.2,0,4,[60,60,64]
+later #43 392 bytes, 3 names + live PNAME: (x0,x1,y,z,c=[255,220,140])=>{ '@later'; PNAME='string lights'; const bs=[Bx(x0,y-.05,x1,y
+later #44 459 bytes, 4 names + live PNAME: (x,y,w,d,ca,cb)=>{ '@later'; PNAME='rug of wares'; const bs=[Bx(x,y,x+w,y+d,0,1,ca,{top:(u
+later #45 782 bytes, 4 names + live PNAME: (x,y,z,fy)=>{ '@later'; PNAME='water tower'; const c=[120,90,60], bs=[WF(x-.6,x+.6,fy)]; f
+later #46 353 bytes, 4 names + live PNAME: (x,y,z,fy)=>{ '@later'; PNAME='rooftop AC'; const c=[160,162,160]; return prop([WF(x-.6,x+
+later #47 1118 bytes, 6 names + live PNAME: (x,y,z,fy)=>{ '@later'; PNAME='pigeon coop'; const c=[120,110,90], o={foot:0}, w=[150,154,
+later #48 614 bytes, 6 names + live PNAME: (x0,x1,y,z,fy,s1,s2,bg,fg)=>{ '@later'; PNAME='billboard'; const W=Math.round((x1-x0)*FP),
+later #49 334 bytes, 4 names + live PNAME: (x,y,z,fy)=>{ '@later'; PNAME='roof garden'; const bs=[WF(x-.5,x+.5,fy)]; for(let i=0;i<3;
+later #50 452 bytes, 5 names + live PNAME: (x,y,h,w=1.4,seed=1)=>{ '@later'; PNAME='ivy'; const x0=x-w, x1=x+w; return prop([WF(x0,x1
+later #51 507 bytes, 6 names + live PNAME: (x,y,z,c=[200,70,80])=>{ '@later'; PNAME='window box'; return prop([WF(x-.6,x+.6,y),Bw(x-.
+later #52 628 bytes, 6 names + live PNAME: (x,y,z)=>{ '@later'; PNAME='hanging plant'; return prop([WF(x-.2,x+.2,y),Bw(x-.01,x+.01,y,
+later #53 429 bytes, 5 names + live PNAME: (x,y,n=8,seed=2)=>{ '@later'; PNAME='weeds'; const bs=[]; for(let i=0;i<n;i++){ const u=x+
+later #54 349 bytes, 3 names + live PNAME: (x,y)=>{ '@later'; PNAME='folding chair'; const c=[150,80,60]; return prop([Bx(x,y,x+.06,y
+later #55 431 bytes, 3 names + live PNAME: (x,y)=>{ '@later'; PNAME='dominoes table'; const c=[60,110,90]; const bs=[Bx(x+.04,y+.04,x
+later #56 350 bytes, 3 names + live PNAME: (x,y,l1,l2)=>{ '@later'; PNAME='chalkboard'; const c=[40,44,42]; return prop([Bx(x,y,x+2,y
+later #57 378 bytes, 3 names + live PNAME: (x,y)=>{ '@later'; PNAME='newspaper stack'; const bs=[]; for(let k=0;k<4;k++)bs.push(Bx(x+
+later #58 2837 bytes, 16 names + live PNAME: (x,y,arm,heads,grp,peds=[])=>{ '@later'; PNAME='traffic signal'; const bs=[Bx(x-.08,y-.08,
+later #59 687 bytes, 9 names + live PNAME: (x,y,f,W,H,z1,bg,lines,post=true)=>{ '@later'; PNAME='street sign'; const w=W/FP/2, A=art(
+later #60 828 bytes, 8 names + live PNAME: (x,y0,y1,f,panels)=>{ '@later'; PNAME='sign gantry'; const bs=[Bx(x-.08,y0-.08,x+.08,y0+.0
+later #61 453 bytes, 5 names + live PNAME: (x,y,dy)=>{ '@later'; PNAME='street light'; const ey=y+dy*1.8, bs=[Bx(x-.07,y-.07,x+.07,y+
+later #62 593 bytes, 5 names + live PNAME: (x0,y0,x1,y1,z=0)=>{ '@later'; PNAME='railing'; const bs=[], ax=Math.abs(x1-x0)>=Math.abs(
+later #63 1947 bytes, 14 names + live PNAME: (T,ya,yb)=>{ '@later'; PNAME='tunnel cut'; const dep=y=>T.d*(T.y1-y)/(T.y1-T.y0), Z0=-T.d-
+later #64 1370 bytes, 7 names + live PNAME: (B,ya,yb)=>{ '@later'; PNAME='bridge'; const D=B.deck, bs=[], st=[], so=[], m=(B.x0+B.x1)/
+later #65 335 bytes, 5 names + live PNAME: (x,y,z)=>{ '@later'; PNAME='bridge lamp'; const p=prop([FOOT(x-.1,y-.1,.2,.2),Bx(x-.06,y-.
+later #66 389 bytes, 7 names + live PNAME: function aptMat(x,y,f=[0,1]){ '@later'; PNAME='entrance mat'; const r=rect(x,y,f,1,.66), c
+later #67 542 bytes, 9 names + live PNAME: function wardrobe(x,y,f=[0,1]){ '@later'; PNAME='wardrobe'; const r=rect(x,y,f,1.2,.55), H
+later #68 531 bytes, 8 names + live PNAME: function vacuum(x,y,f=[0,1]){ '@later'; PNAME='vacuum'; const r=rect(x,y,f,.38,.34), bag=A
+later #69 776 bytes, 11 names + live PNAME: function tvStand(x,y,f=[0,1]){ '@later'; PNAME='TV on a low stand'; const r=rect(x,y,f,1.4
+later #70 739 bytes, 8 names + live PNAME: function aptPoster(x,y,f=[0,1]){ '@later'; PNAME='poster'; const r=rect(x,y,f,.7,.04), z0=
+later #71 823 bytes, 10 names + live PNAME: function plantShelf(x,y,f=[0,1]){ '@later'; PNAME='wall shelf with plant'; const r=rect(x,
+later #72 826 bytes, 9 names + live PNAME: function bookcase(x,y,f=[0,1]){ '@later'; PNAME='bookcase'; const r=rect(x,y,f,1.2,.5), H=
+later #73 531 bytes, 8 names + live ONZ PNAME: function computer(x,y,f=[0,1],z=ONZ){ '@later'; PNAME='computer'; const r=rect(x,y,f,.5,.4
+later #74 477 bytes, 6 names + live ONZ PNAME: function deskLamp(x,y,f=[0,1],z=ONZ){ '@later'; PNAME='desk lamp'; const r=rect(x,y,f,.3,.
+later #75 729 bytes, 8 names + live p: (s,t,zz,len)=>{ '@later'; const a=t*len*FP, n=p&&p.radio; if(s==='f'&&t>.6&&t<.94&&zz>
+later #76 675 bytes, 8 names + live PNAME: function sofa(x,y,f=[0,1]){ '@later'; PNAME='sofa'; const r=rect(x,y,f,1.8,.85), c=AP.clot
+later #77 544 bytes, 7 names + live PNAME: function rug(x,y,f=[0,1]){ '@later'; PNAME='rug'; const r=rect(x,y,f,2.6,3.1), c=AP.rug, d
+later #78 347 bytes, 7 names + live PNAME: function coffeeTable(x,y,f=[0,1]){ '@later'; PNAME='coffee table'; const r=rect(x,y,f,.9,.
+later #79 855 bytes, 9 names + live PNAME: function bed(x,y,f=[0,1]){ '@later'; PNAME='single bed'; const r=rect(x,y,f,2.1,.95), c=AP
+later #80 369 bytes, 7 names + live PNAME: function diningTable(x,y,f=[0,1]){ '@later'; PNAME='dining table'; const r=rect(x,y,f,.9,.
+later #81 456 bytes, 7 names + live PNAME: function stool(x,y,f=[0,1]){ '@later'; PNAME='stool'; const r=rect(x,y,f,.36,.36), c=AP.pi
+later #82 2583 bytes, 13 names + live PNAME: function fridgeOpen(x,y,f=[0,1]){ '@later'; PNAME='fridge, open'; const r=rect(x,y,f,.75,.
+later #83 1518 bytes, 10 names + live PNAME: function fridgeDoor(x,y,f=[0,1]){ '@later'; PNAME='fridge door, open'; const r=rect(x,y,f,
+later #84 918 bytes, 9 names + live PNAME: function stove(x,y,f=[0,1]){ '@later'; PNAME='stove'; const r=rect(x,y,f,.7,.65), H=36, c=
+later #85 785 bytes, 10 names + live PNAME: function sinkCounter(x,y,f=[0,1]){ '@later'; PNAME='sink and counter'; const r=rect(x,y,f,
+later #86 623 bytes, 8 names + live PNAME: function bath(x,y,f=[0,1]){ '@later'; PNAME='bath'; const r=rect(x,y,f,1.8,.75), H=22, c=A
+later #87 550 bytes, 7 names + live PNAME: function toilet(x,y,f=[0,1]){ '@later'; PNAME='toilet'; const r=rect(x,y,f,.46,.72), c=AP.
+later #88 650 bytes, 9 names + live PNAME: function washingMachine(x,y,f=[0,1]){ '@later'; PNAME='washing machine'; const r=rect(x,y,
+later #89 488 bytes, 7 names + live PNAME: function bathSink(x,y,f=[0,1]){ '@later'; PNAME='bathroom sink'; const r=rect(x,y,f,.5,.42
+later #90 498 bytes, 7 names + live PNAME: function towelRail(x,y,f=[0,1]){ '@later'; PNAME='towel rail'; const r=rect(x,y,f,.55,.12)
+later #91 468 bytes, 5 names + live PNAME: function floorLamp(x,y,f=[0,1]){ '@later'; PNAME='floor lamp'; const r=rect(x,y,f,.3,.3), 
+later #92 362 bytes, 6 names + live PNAME: function blinds(x,y,f=[0,1]){ '@later'; PNAME='window blinds'; const r=rect(x,y,f,1.16,.03
+later #93 1135 bytes, 10 names + live PNAME: function washerDryer(x,y,f=[1,0]){ '@later'; PNAME='stacked washer and dryer'; const r=rec
+later #94 749 bytes, 7 names + live PNAME: function laundryBasket(x,y,f=[1,0]){ '@later'; PNAME='laundry basket'; const r=rect(x,y,f,
+later #95 381 bytes, 5 names + live : (s,t,z,len)=>{ '@later'; const k=worn(c.white,t,z,1623); if(z<3)return sh(c.whiteD,.8); if
+later #96 420 bytes, 8 names + live PNAME: function roundMirror(x,y,f=[1,0]){ '@later'; PNAME='round mirror'; const r=rect(x,y,f,.45,
+later #97 696 bytes, 8 names + live PNAME: function wallPlanter(x,y,f=[1,0]){ '@later'; PNAME='wall planter'; const r=rect(x,y,f,.4,.
+later #98 450 bytes, 7 names + live PNAME: function hangingCabinet(x,y,f=[1,0]){ '@later'; PNAME='hanging cabinet'; const r=rect(x,y,
+later #99 694 bytes, 7 names + live PNAME: function hangingCabinetWide(x,y,f=[1,0]){ '@later'; PNAME='hanging cabinet, wide'; const r
+later #100 967 bytes, 8 names + live PNAME: function supplyCupboard(x,y,f=[1,0]){ '@later'; PNAME='supply cupboard'; const r=rect(x,y,
+later #101 1173 bytes, 8 names + live PNAME: function basketShelf(x,y,f=[1,0]){ '@later'; PNAME='basket shelf'; const r=rect(x,y,f,1.4,
+later #102 1533 bytes, 9 names + live PNAME: function tallShelfUnit(x,y,f=[0,1]){ '@later'; PNAME='tall shelf unit'; const r=rect(x,y,f
+later #103 560 bytes, 8 names + live PNAME: function darkRug(x,y,f=[0,1]){ '@later'; PNAME='dark patterned rug'; const r=rect(x,y,f,2.
+later #104 365 bytes, 7 names + live PNAME: function ventGrille(x,y,f=[1,0]){ '@later'; PNAME='vent grille'; const r=rect(x,y,f,.6,.05
+later #105 391 bytes, 1 names + live : function foBlob(P,cx,cy,rx,ry,pal,seed){ '@later'; for(let y=Math.floor(cy-ry-2);y<=cy+r
+later #106 798 bytes, 4 names + live : function gsFloor(x,y){ '@later'; if(!GSK)return null; const o=GSK.o; const s=GSK.s, u=(x-o
+later #107 380 bytes, 0 names + live vwV: function onPlane(c,alongX,n){ '@later'; const nv=vwV(alongX?0:n,alongX?n:0); if(nv[0]<=0&&
+later #108 963 bytes, 3 names + live : function lifeFace(D,W,Hh,ox,oy,K,o,u0,alongX,c,n,a0,a1,z0,z1,f,L){ '@later'; const at=onPl
+later #109 427 bytes, 4 names + live : (a,z)=>{ '@later'; if(a>=99&&a<138&&z<72)return z>=70||a<101||a>=136?QD.post:mix([40,28,54
+later #110 338 bytes, 3 names + live : (a,z,f)=>{ '@later'; const sway=[0,1,2,1][f], lt=[0,.06,.1,.03][f], g=mix(QD.warm[1],QD.wa
+later #111 551 bytes, 3 names + live : (a,z)=>{ '@later'; if(a<3||a>=163||Math.abs(a-85)<2||z<88||z>=154)return QD.post; 
+later #112 324 bytes, 1 names + live : (a,z,f)=>{ '@later'; const d=Math.hypot(a-30.5,z-89.5); if(d<11){ if(d>9.5)return QD.blueL
+later #113 474 bytes, 1 names + live : (a,z)=>{ '@later'; if(a<2||a>=74||z<84||z>=106)return QD.blueDark; const dx=a-19, dz=z-95,
+later #114 633 bytes, 4 names + live : (a,z)=>{ '@later'; if(a>=13&&a<40&&z>=20&&z<56){ if(a===13||a===39||z===20||z===55)return 
+later #115 931 bytes, 8 names + live : function rowHouse(o,u0,v0,u1,v1,wh,rh,seed){ '@later'; const lu=Math.round((u1-u0)*32); 
+later #116 1029 bytes, 4 names + live : function pole(o,u,v,to){ '@later'; const X=u2=>o[0]+u2*s, Y=v2=>o[1]+v2*s, H=168, PD=[86,5
+later #117 969 bytes, 3 names + live : function djLeaf(u,v,s,light,dens=.85,gapOK=0){ '@later'; const CW=7, CH=6, cj0=Math.floor(
+later #118 339 bytes, 4 names + live : (du,zz)=>{ '@later'; if(typeof LIFE==='undefined'||LIFE.mode!==1)return null; const h=DJFL
+later #119 646 bytes, 3 names + live PNAME: function djIncense(x,y,n){ '@later'; PNAME='incense'; const BR=[120,88,48], ST=[96,52,40],
+later #120 843 bytes, 6 names + live PNAME: function djHanging(x,y,n,kind){ '@later'; PNAME='hanging plant'; const TC=[166,92,56], see
+later #121 1345 bytes, 4 names + live PNAME DJ: function djTokonoma(x0,y,x1){ '@later'; PNAME='tokonoma'; const D=.85, DK=[58,36,24], cx=(
+later #122 457 bytes, 3 names + live PNAME: function djBokkenRack(x,y0,y1){ '@later'; PNAME='bokken rack'; const W=[150,110,66], DK=[6
+later #123 344 bytes, 9 names + live : (s,a,row,Lf,h)=>{ '@later'; const nx=s==='px'?1:s==='nx'?-1:0, ny=s==='py'?1:s==='ny'?-1:0
+later #124 603 bytes, 4 names + live PNAME: function blinds(x,y,L,Z){ '@later'; PNAME='window blinds'; const S2=[132,128,104], S1=[108
+later #125 338 bytes, 2 names + live : (put,w,h)=>{ '@later'; box(put,0,0,w,h,[240,150,40]); box(put,4,h*.35,w-4,h*.55,[250,220,6
+later #126 321 bytes, 3 names + live : (put,w,h)=>{ '@later'; box(put,0,0,w,h,[236,232,220]); box(put,0,0,w,12,[40,90,170]); T3(p
+later #127 1366 bytes, 7 names + live : function onBar(k,x,x1,y0,y1,bs){ '@later'; const z=BZ+BT, m=(x+x1)/2, yc=(y0+y1)/2+.1; 
+later #128 340 bytes, 5 names + live PNAME: function airCooler(x,y){ '@later'; PNAME='air cooler'; const w=.5, Z=30, G=[150,156,154]; 
+later #129 1535 bytes, 11 names + live PNAME: function doubleDoors(x,y,stick){ '@later'; PNAME='double doors'; const L=2.1, Z=76, bs=[];
+later #130 1032 bytes, 8 names + live PNAME: function woodDoor(x,y){ '@later'; PNAME='door'; const L=1.3, Z=76; const A=pic(Math.ro
+later #131 612 bytes, 5 names + live PNAME: function soffit(x,y,L,W){ '@later'; PNAME='soffit'; const Z0=106+DZ, Z1=126+DZ, rc=.6, bs=
+later #132 1600 bytes, 7 names + live PNAME: function fan(x,y){ '@later'; PNAME='ceiling fan'; const Zc=126+DZ, bs=[], R=1.15, Zb=106+D
+later #133 352 bytes, 4 names + live : function dinerWall(q,nx,ny,X,Y,z,f){ '@later'; const u=nx?Y:X, zz=z%STORY, top=q.h-4, b=((
+later #134 432 bytes, 9 names + live : (nx,ny,X,Y,z)=>{ '@later'; const u=nx?Y-y0:X-x0, zr=z-LZ; if(ny>0){ const a=(X-x0)/W
+later #135 980 bytes, 3 names + live vwV: (Dd,Wd,Hd,ox,oy,t,K=1)=>{ '@later'; const [fa,fb2]=vwV(0,1); if(fa+fb2<=0)return; co
+later #136 1573 bytes, 0 names + live : function crtShow(u,v,t){ '@later'; const sc=Math.floor(t/7)%4, s=t%7, bg=.26; if(sc===
+later #137 1212 bytes, 2 names + live PNAME: function micStand(x,y,z0,len,cord){ '@later'; PNAME=cord?'microphone cord':'microphone sta
+later #138 1215 bytes, 3 names + live PNAME: function guitarCase(x,y,z0){ '@later'; PNAME='open guitar case'; const bs=[], Z=v=>z0+v, L
+later #139 1210 bytes, 5 names + live : function imGuitar(x,y,o){ '@later'; const B=[], z0=3, L=o.L, wb=z=>{ const u=z/L; if(o.rou
+later #140 353 bytes, 4 names + live : function imAmp(B,x,y){ '@later'; const c=IMC.black; B.push(imB(x-.26,y-.15,x+.26,y+.15,0,1
+later #141 958 bytes, 5 names + live PNAME: function imHarp(x,y){ '@later'; PNAME='harp'; const B=[], c=IMC.varnish, H=44; B.push(im
+later #142 1287 bytes, 6 names + live PNAME: function imBowed(x,y,name){ '@later'; PNAME=name; const B=[], v=name==='violin', s=v?.48:1
+later #143 672 bytes, 5 names + live PNAME: function imPipe(x,y,name){ '@later'; PNAME=name; const B=[], f=name==='flute'; B.push(im
+later #144 1574 bytes, 5 names + live PNAME: function imBarsProp(x,y,name){ '@later'; PNAME=name; const B=[], I={xylophone:[32,.62,26,[
+later #145 609 bytes, 5 names + live PNAME: function imBells(x,y){ '@later'; PNAME='tubular bells'; const B=[], hw=.7, H=56; for(con
+later #146 544 bytes, 5 names + live PNAME: function imKalimba(x,y){ '@later'; PNAME='kalimba'; const B=[]; B.push(imB(x-.16,y-.16,x
+later #147 607 bytes, 5 names + live PNAME: function imPan(x,y){ '@later'; PNAME='steel pan'; const B=[], r=.32; for(const a of [0,2
+later #148 608 bytes, 7 names + live : function msFlag(u,v){ '@later'; const row=Math.floor(v/.52), s0=hash(row,3)*.6, col=Math.f
+later #149 466 bytes, 7 names + live : function msBlock(a,z,top){ '@later'; const row=Math.floor((top-z)/10), sa=a+hash(row,5)*.4
+later #150 604 bytes, 2 names + live : function msLathe(cx,cy,z0,z1,rf,col,dz=2,dw=.035){ '@later'; const out=[]; for(let z=z0;
+later #151 332 bytes, 2 names + live : function msSteps(x,y,z0=0){ '@later'; const sw=[msStone(x-.25,y,x,y+1.2,z0,z0+23),msStone(
+later #152 685 bytes, 8 names + live : function msPlaza(x,y,z0=0){ '@later'; const cx=2.78, cy=2.8; return msPut('spiral stone pl
+later #153 477 bytes, 8 names + live : function msPlinth(x,y,z0=0){ '@later'; return msPut('statue plinth',[...msLathe(x,y,z0,z0+
+later #154 600 bytes, 6 names + live : function msStatueCol(dx,dy,z,nx,ny,top,head){ '@later'; const th=Math.atan2(dy,dx); let 
+later #155 1961 bytes, 13 names + live MST: function msStatue(x,y,z0=0){ '@later'; const S0=z0, col=(ox,oy,hd)=>(dx,dy,z,nx,ny,top)=>m
+later #156 1933 bytes, 16 names + live : function msGate(x,y,z0=0){ '@later'; const wood=(nx,ny,X,Y,zr,k,post)=>{ const a=nx?Y:X; l
+later #157 407 bytes, 8 names + live : function msHangingLantern(x,y,z0=0){ '@later'; const bs=[sided({x0:x-.02,y0:y-.02,x1:x+.02
+later #158 758 bytes, 7 names + live : function msBloom(dx,dy,z,nx,ny,top){ '@later'; const cs=.05, gu=dx/cs, gv=dy/cs, gz=z/(cs*
+later #159 517 bytes, 8 names + live : function msPost(x,y,z0=0,vine=false){ '@later'; const bs=[msStone(x-.14,y-.14,x+.14,y+.14,
+later #160 711 bytes, 8 names + live : function msGroundLantern(x,y,z0=0,k=4){ '@later'; const bs=[sided({x0:x-.13,y0:y-.13,x1:x+
+later #161 882 bytes, 17 names + live : function msToro(x,y,z0=0){ '@later'; const st=(dx,dy,z,nx,ny,top)=>msShade(msMix(msBlock(M
+later #162 443 bytes, 7 names + live : function msFern(x,y,z0=0,r=.45,rz=12){ '@later'; return msPut('fern bush',msEll(x,y,z0+rz*
+later #163 357 bytes, 6 names + live : function msTuft(x,y,z0=0,r=.14,h=8){ '@later'; return msPut('moss and grass tuft',msLathe(
+later #164 901 bytes, 8 names + live MS_VINES: function msParapet(x0,y0,x1,y1,z0=0,ox=0,oy=1){ '@later'; const ax=ox?1:0, vine=(nx,ny,X,Y
+later #165 312 bytes, 4 names + live : function msPond(x,y,w,d,z0=0,K=.2){ '@later'; const zw=z0+7; const p=msPut('moon pond',[
+later #166 430 bytes, 9 names + live : (f,u,v,W,H)=>{ '@later'; let a,b; if(f==='T'){ a=along==='u'?u:v; b=along==='u'?v:u; } els
+later #167 383 bytes, 6 names + live o: (f,u,v,W,H)=>{ '@later'; if(f==='T')return PAL.glassD; const fl=v/H; let c=PAL.glass; 
+later #168 488 bytes, 5 names + live : (f,u,v,W,H,x,y,z)=>{ '@later'; const dx=x-cx,dz=z-cz,d=Math.hypot(dx,dz); if(d>0.36)return
+later #169 1141 bytes, 10 names + live P0 litAt L: (dx,dy,near)=>{ '@later'; const out=[]; for(const d of list){ const hem=Math.min(0.5
+later #170 415 bytes, 1 names + live : (p,f,x,y,z)=>{ '@later'; switch(f){ case 'T':return [(x-p.x0)*TX,(y-p.y0)*TX,(p.x1-p.x0)*T
+later #171 4285 bytes, 11 names + live : function gameBoxes(it,dx,dy){ '@later'; const out=[], S=it.scn, near=nearIn(S); for(co
+later #172 1636 bytes, 14 names + live PNAME: (x,y)=>{ '@later'; PNAME=name; const dx=x-cx, dy=y-cy, bs=gameBoxes(it,dx,dy); if(
+later #173 941 bytes, 4 names + live : function moving(name,draw){ '@later'; const mk=CATALOG[name], it=ITEMS[name]; CATALOG[
+later #174 796 bytes, 2 names + live : (cx,cy,r,rimZ,wi,cfg={})=>{ '@later'; let Wb=null, lv=0; const HT=0.75, w=DEEPW.WATERS[wi]
+later #175 1646 bytes, 10 names + live : (f,u,v,W,H,x,y,z)=>{ '@later'; if(f==='T'){ return (v<2||v>H-2)?PAL.trimD:shd(PAL.trim
+later #176 395 bytes, 3 names + live : (f,u,v,W,H,x,y)=>{ '@later'; if(f!=='T')return shd(PAL.floorD,0.7+0.1*hh(u>>2,v,1)); 
+later #177 386 bytes, 6 names + live : (f,u,v,x,y,z)=>{ '@later'; if(f!=='S')return; const hw=winHalf(z), dx=Math.abs(x-WIN.mx); 
+later #178 521 bytes, 4 names + live : (f,u,v,x,y,z)=>{ '@later'; if(f!=='W')return; if(y>8.5&&y<9.9&&z<2.35+0.25*Math.sqrt
+later #179 365 bytes, 3 names + live : (f,u,v,W,H,x,y,z)=>{ '@later'; let k=0.95+0.08*hh(Math.floor(u/12),0,7); if(f==='T
+later #180 942 bytes, 4 names + live : (f,u,v,W,H)=>{ '@later'; if(f!=='T')return PAL.purpleD; if(u<3||u>W-3){ return (Math.f
+later #181 461 bytes, 4 names + live : (f,u,v,W,H)=>{ '@later'; if(f!=='S')return Wc(f,u,v,W,H); const half=W/2, a=u<half
+later #182 462 bytes, 4 names + live : (f,u,v,W,H,x,y,z)=>{ '@later'; let c=PAL.iron; if(u<1.2||v<1.2)c=PAL.ironL; else if(u>W-1.
+later #183 327 bytes, 4 names + live : (f,u,v,W,H)=>{ '@later'; if(f==='E'){ if(v<1.5||v>H-1.5||u<1.5||u>W-1.5)return PAL.amberD;
+later #184 610 bytes, 6 names + live : (f,u,v,W,H,x,yy,z)=>{ '@later'; const top=2.1-0.18*Math.sqrt(Math.max(0,1-((x-(a+b)/2)/((b
+later #185 407 bytes, 9 names + live : (f,u,v,W,H,x,y,z)=>{ '@later'; if(f==='T'){ const cr=Math.floor(x*3), t=y*2+(cr%2)*0.5, fx
+later #186 368 bytes, 5 names + live : function octoWall(q,nx,ny,X,Y,z,f){ '@later'; const c=OCC, u=nx?Y:X; if(z<0)return sh(c.
+later #187 1282 bytes, 8 names + live PNAME: function octoTank(x,y){ '@later'; PNAME='octopus tank'; const {LX,LY,Z0,ZT}=OCTK, x1=x+LX,
+later #188 560 bytes, 3 names + live : function dgnStone(u,z,seed){ '@later'; const j=Math.floor(z/14), zz=z-j*14, L=24+Math.floo
+later #189 440 bytes, 2 names + live : function dgnWeb(du,dz,r,seed){ '@later'; if(du<0||dz<0||du>r||dz>r)return null; const d=Ma
+later #190 449 bytes, 1 names + live : function dgnChain(du,dz,l){ '@later'; const a=Math.abs(du); if(dz>7||dz<-l-6)return null; 
+later #191 936 bytes, 3 names + live : function dgnDoor(du,dz){ '@later'; const a=Math.abs(du); if(dz>=92||a>=23)return null; i
+later #192 363 bytes, 3 names + live : function dgnSlit(du,dz){ '@later'; const a=Math.abs(du); if(dz<84||dz>=112||a>=12)return n
+later #193 355 bytes, 1 names + live : function dgnTally(du,dz){ '@later'; if(du<0||du>52||dz<46||dz>=62)return null; const row=d
+later #194 762 bytes, 3 names + live : function dgnBanner(du,dz,seed){ '@later'; const a=Math.abs(du); if(dz<-3||a>15)return null
+later #195 1426 bytes, 18 names + live : function dungeonWall(q,nx,ny,X,Y,z,f,R=DGN){ '@later'; const e=.06, H=R.H, w=ny>0&&Math.ab
+later #196 1895 bytes, 5 names + live : function dungeonFloorCol(x,y,R=DGN){ '@later'; const S=.26, px=x-R.x0, py=y-R.y0, j=Math.f
+later #197 542 bytes, 1 names + live : function lathe(cx,cy,z0,z1,rf,col,dz=2,dw=.04){ '@later'; const out=[]; for(let z=z0;z<z
+later #198 779 bytes, 2 names + live : function skull(cx,cy,z,r=.14){ '@later'; const h=r*46, bone=(u,v)=>{ const e=u*u+((v-.55)*
+later #199 645 bytes, 3 names + live : function bone(x,y,len,alongX,z,seed){ '@later'; const w=.1, L=len/2, sh2=hash(seed,1,0)<.5
+later #200 383 bytes, 2 names + live : function ribs(x,y,z){ '@later'; return {x0:x-.22,y0:y-.16,x1:x+.22,y1:y+.16,z0:z,z1:z+1,fo
+later #201 1646 bytes, 10 names + live PNAME: (x,y,dir)=>{ '@later'; PNAME='wall torch'; const R=DGN; dir=dir||[['b',y-R.y0],['f',R.y1-y
+later #202 1108 bytes, 1 names + live PNAME: function mover(kind,bx,draw,o){ '@later'; PNAME=kind; const p=prop([{...bx,foot:1,nb:1,c:[
+later #203 1791 bytes, 2 names + live : (x0,y0,x1,y1)=>{ '@later'; const ax=Math.abs(x1-x0)>Math.abs(y1-y0), len=ax?x1-x0:y1-y0, n
+later #204 782 bytes, 7 names + live PNAME: (x,y)=>{ '@later'; PNAME='stone column'; const H=DGN.H, B=[], hw=.3, d=.09; const face=(
+later #205 667 bytes, 5 names + live PNAME: (x,y)=>{ '@later'; PNAME='oak barrel'; const H=28, OK=[C.oakD,C.oak,C.oakL]; const col=(
+later #206 600 bytes, 5 names + live PNAME: (x,y)=>{ '@later'; PNAME='crate'; const w=.36, H=16, planks=(u,z,k)=>{ const row=Math.floo
+later #207 901 bytes, 5 names + live PNAME: (x,y)=>{ '@later'; PNAME='iron chest'; const W=.42, D=.26, H=12, LH=5; const band=(u,z,k
+later #208 1232 bytes, 9 names + live PNAME: (x,y)=>{ '@later'; PNAME='brazier'; const FL={ph:0}, B=[], I=C.iron, IL=C.ironL; for(let
+later #209 844 bytes, 6 names + live PNAME: (x,y)=>{ '@later'; PNAME='gibbet'; const H=DGN.H, Z0=44, Z1=78, hw=.22, I=C.iron, IL=C.iro
+later #210 720 bytes, 4 names + live PNAME: (x,y)=>{ '@later'; PNAME='straw'; const w=.4, d=.3, s=Math.round(x*7+y*3); const st=(u,v
+later #211 844 bytes, 6 names + live PNAME: (x,y)=>{ '@later'; PNAME='sarcophagus'; const W=.8, D=.34, H=16, LH=6, S1=C.st[1]; const
+later #212 575 bytes, 11 names + live : function keepInWall(q,nx,ny,X,Y,z,f){ '@later'; const R=KEEPR, dim=z>170?Math.max(.38,1-(z
+later #213 1247 bytes, 8 names + live PNAME: (cx,cy,sx,sy)=>{ '@later'; PNAME='keep turret'; const B=[], o=1, n=1, sd=4500+Math.round(c
+later #214 558 bytes, 6 names + live PNAME: (b,side)=>{ '@later'; PNAME='keep parapet'; const B=[], t=.3, x0=b.x0-T, x1=b.x1+T, y0=b.y
+later #215 760 bytes, 3 names + live PNAME: (b,side,gap)=>{ '@later'; PNAME='keep face'; const B=[], S=[], x0=b.x0-T, x1=b.x1+T, y0=b.
+later #216 1240 bytes, 9 names + live PNAME: (gx,wy,H)=>{ '@later'; PNAME='gatehouse'; const y0=wy-.5, y1=wy+1.1, w=.65, sd=4800, ps=[]
+later #217 493 bytes, 2 names + live : function bfWing(sh,u,v){ '@later'; const S=BF_SHAPE[sh], [hx,hy,hr,hv]=S.h; const inF=(x
+later #218 1225 bytes, 2 names + live : function bfPic(k,w,pose){ '@later'; const [,,,,sh,,pat,under]=BF_KINDS[k], hs=w/2, ys=.72;
+later #219 744 bytes, 6 names + live PNAME: function venetian(x,y,f=[0,1],up=0){ '@later'; PNAME=up?'venetian blinds, up':'venetian bl
+later #220 1693 bytes, 7 names + live PNAME: function silkCurtains(x,y,f=[0,1],loose=0){ '@later'; PNAME=loose?'silk curtains, loose':'
+later #221 448 bytes, 2 names + live : function ivyPx(u,d,long){ '@later'; if(d<4)return hash(u,d,405)<.8?leafC(u,d):null; cons
+later #222 327 bytes, 5 names + live PNAME: function ivy(x,y,f=[0,1],long=0){ '@later'; PNAME=long?'trailing ivy, long':'trailing ivy'
+later #223 628 bytes, 6 names + live : function candle(r,t,d,z,h,i,FL){ '@later'; const w=[234,224,200]; return [fb(r,t-.05,t+.
+later #224 508 bytes, 8 names + live PNAME: function candles(x,y,f=[0,1],z=ONZ(),n=3){ '@later'; PNAME=n===2?'two candles':'candles'; 
+later #225 892 bytes, 7 names + live PNAME: function patternedRug(x,y,f=[0,1]){ '@later'; PNAME='patterned rug'; const r=rect(x,y,f,2.
+later #226 880 bytes, 5 names + live PNAME: function fig(x,y,f=[0,1]){ '@later'; PNAME='fiddle-leaf fig'; const r=rect(x,y,f,.64,.64),
+later #227 321 bytes, 2 names + live : function trailPx(u,d,n,seed){ '@later'; const g=Math.floor(u/4); if(hash(g,1,seed)>.6)retu
+later #228 1075 bytes, 11 names + live PNAME: function pothosShelf(x,y,f=[0,1]){ '@later'; PNAME='pothos shelf'; const r=rect(x,y,f,.9,.
+later #229 1144 bytes, 10 names + live PNAME: function hangingPothos(x,y,f=[0,1]){ '@later'; PNAME='hanging pothos'; const r=rect(x,y,f,
+later #230 1028 bytes, 8 names + live PNAME: function teaTray(x,y,f=[0,1],z=ONZ()){ '@later'; PNAME='tea tray'; const r=rect(x,y,f,.38,
+later #231 822 bytes, 7 names + live PNAME: function pegRail(x,y,f=[0,1]){ '@later'; PNAME='peg rail with a hat and a bag'; const r=re
+later #232 664 bytes, 7 names + live PNAME: function bookStack(x,y,f=[0,1]){ '@later'; PNAME='stack of books with a candle'; const r=r
+later #233 3636 bytes, 11 names + live PNAME CLOCK: function bfHouse(x,y,f=[0,1]){ '@later'; PNAME='butterfly house'; const r=rect(x,y,f,.64,.
+later #234 388 bytes, 1 names + live : (W,HT,draw)=>{ '@later'; W=Math.ceil(W*H); HT=Math.ceil(HT*H); const a=new Array(W*HT).fil
+later #235 1712 bytes, 11 names + live PNAME: function fridge(x,y,f=[1,0]){ '@later'; PNAME='lounge fridge'; const r=rect(x,y,f,4.7,.6),
+later #236 1637 bytes, 10 names + live : r=>{ '@later'; const L=r.W, B=[], fw=(s,t,z)=>s==='b'||s==='f'?sh(C.woodD,s==='f'?.9:1):wo
+later #237 480 bytes, 6 names + live PNAME: function stool(x,y){ '@later'; PNAME='red bar stool'; const r=rect(x,y,[0,1],.7,.7), rd=(t
+later #238 558 bytes, 6 names + live : (r,t0,t1,d,z0,B,wide=1)=>{ '@later'; const w=(t1-t0), sc=art(wide*24,16,(px,bx)=>{ bx(0,0,
+later #239 451 bytes, 7 names + live PNAME: function pcDesk(x,y,f=[1,0]){ '@later'; PNAME='PC desk'; const r=rect(x,y,f,2,.9), B=[], T
+later #240 674 bytes, 4 names + live PNAME: function officeChair(x,y,f=[1,0]){ '@later'; PNAME='office chair'; const r=rect(x,y,f,.7,.
+later #241 695 bytes, 8 names + live PNAME: function longDesk(x,y,f=[1,0]){ '@later'; PNAME='mezzanine desk'; const r=rect(x,y,f,4,1),
+later #242 715 bytes, 4 names + live PNAME: function gamingChair(x,y,f=[1,0]){ '@later'; PNAME='gaming chair'; const r=rect(x,y,f,.8,.
+later #243 1687 bytes, 5 names + live : function filmFrame(k){ '@later'; if(FILMS[k])return FILMS[k]; const W=FILMW, H=FILMH, d=ne
+later #244 975 bytes, 4 names + live : function arcadeFloor(x,y){ '@later'; const cx=Math.floor(x*1.25), cy=Math.floor(y*1.25), k
+later #245 357 bytes, 1 names + live : A=>{ '@later'; const o=[], i=T, n=(a,b)=>Math.max(1,Math.round((b-a)/4)); for(const [y,ny]
+later #246 1341 bytes, 12 names + live PNAME: function arcade(x,y,f=[0,1],green=0){ '@later'; PNAME=green?'arcade cabinet, green':'arcad
+later #247 406 bytes, 5 names + live PNAME: function redStool(x,y){ '@later'; PNAME='red stool'; const r=rect(x,y,[0,1],.7,.5), B=[fb(
+later #248 313 bytes, 1 names + live : (x, y, w, h, f) => { '@later'; for (const [ly, c] of [[4, QR.pink], [9, QR.cyan], [14, Q
+later #249 1900 bytes, 7 names + live : () => { '@later'; const trim = (a, k, w, h) => (a === 0 || a === w - 1) ? grE(QR.green
+later #250 1558 bytes, 6 names + live PNAME: function grProp(name,M,x,y,z,o){ '@later'; PNAME=name; const S=1/FP, F=M.frames||0; let cu
+later #251 1470 bytes, 6 names + live : function vrHeadsetBoxes(x,y,z0=0,cable=true){ '@later'; const H=20, w=.31, sd=(o)=>sided({
+later #252 899 bytes, 8 names + live PNAME: function vrStation(x,y){ '@later'; PNAME='VR headset station'; const Z=30, sd=o=>sided(o),
+later #253 439 bytes, 7 names + live : function playFloorCol(x,y){ '@later'; if(y<PLS.lobby)return lobbyCol(x,y); { const a=Mat
+later #254 312 bytes, 0 names + live : function plPos(a,t){ '@later'; if(t<a.in||t>a.out)return null; let x=a.p0[0], y=a.p0[1], m
+later #255 367 bytes, 3 names + live : function plPlayer(a,t,TR){ '@later'; const p=plPos(a,t); if(!p)return null; const {x,y,mv}
+later #256 366 bytes, 0 names + live : function plHoundAt(H,t){ '@later'; if(!H.length||t<H[0][0]||t>=H[H.length-1][1])return nul
+later #257 503 bytes, 1 names + live : (put,x0,z0,x1,z1,w,B=BONE)=>{ '@later'; const dx=x1-x0, dz=z1-z0, L=Math.hypot(dx,dz)||1, 
+later #258 2440 bytes, 9 names + live PNAME: function vending(x,y,f=[1,0],red=0){ '@later'; PNAME=red?'vending machine, red':'vending m
+later #259 512 bytes, 10 names + live PNAME: (x0,y0,x1,y1,z0,z1,arch,walk)=>{ '@later'; PNAME='dungeon stone'; const H=126, sd=4861+Mat
+later #260 602 bytes, 2 names + live : (c,a,u,n,P,off=0,FW=0)=>{ '@later'; const A=a.length()*2, U=u.length()*2, N=n.length()*2, 
+later #261 341 bytes, 5 names + live : (x,y,n,s)=>{ '@later'; const lean=h3(s,1,2)<.25?.03+.04*h3(s,2,3):0, la=h3(s,3,4)*6.28, L=
+later #262 584 bytes, 7 names + live : (S,top,round)=>{ '@later'; const s=S.s, fl=h3(s,20,1)<.4?42+Math.floor(h3(s,21,1)*20):-99;
+later #263 752 bytes, 8 names + live : (S,side,z0,z1,w,front,o={})=>{ '@later'; const n=S.N.clone().multiplyScalar(side), a=S.A.c
+later #264 642 bytes, 7 names + live : (s,dir)=>{ '@later'; const v=Math.floor(h3(s,30,1)*3); return wear((i,j,W,H)=>{ if(i==
+later #265 1151 bytes, 14 names + live : (g,k)=>{ '@later'; const {x,y}=g, s=k*7.31+1.7, bend=h3(s,40,1)<.22?(h3(s,41,1)<.5?-1:1)*(
+later #266 4450 bytes, 7 names + live BOD: ()=>{ '@later'; const {GOOD,GLAY}=BOD, O=BOD.O, list=[]; const row=(p,f,zpx,items)=>{ 
+later #267 663 bytes, 10 names + live BODB BOD ROOMS CLIP: ()=>{ '@later'; if(BODB.built)return; BODB.built=1; const keep=BATCH.items.splice(0), m0=B
+later #268 344 bytes, 11 names + live : (x,z,yy)=>{ '@later'; if(yy>RFY)return R0+SY*ST; for(const E of ELS){ const s=SE[ELS.index
+later #269 1727 bytes, 10 names + live : function shoji(a,z,L,door,win,alc,holes){ '@later'; const n=Math.max(1,Math.round(L/2)), s
+later #270 523 bytes, 9 names + live : (x,y,deep)=>{ '@later'; const u=x-xi0, v=y-yi0, row=Math.floor(v/.5), off=hs(row,9,780)*.6
+later #271 370 bytes, 8 names + live LITE: (x,y,z,c,r,fl)=>{ '@later'; const cm=Math.max(...c), L=new THREE.PointLight(new THREE.Colo
+bath #272 4492 bytes, 42 names + live built BOD PW was ROOMS CLIP: ()=>{ '@bath'; if(built)return; built=true; const keep=BATCH.items.splice(0), m0=BATCH.mes
+later #273 600 bytes, 3 names + live : (k,pose)=>{ '@later'; const key=k+':'+pose; let t=PICS.get(key); if(t)return t; const Q=bf
+later #274 749 bytes, 6 names + live : (k,perches)=>{ '@later'; const span=BF_KINDS[k][3]/1000*2/.84*TILE, s=span/16; const m
+later #275 1208 bytes, 4 names + live CLOCK: dt=>{ '@later'; const dark=typeof CLOCK!=='undefined'&&CLOCK.dark(); for(const b of BF
+later #276 531 bytes, 7 names + live : ()=>{ '@later'; const O=GARDEN.cottage, R=room('cottage','THE HERB COTTAGE',{x0:O[0],y0:O[
+later #277 576 bytes, 5 names + live : ()=>{ '@later'; const B={id:'locto',x0:97.6,y0:-84,x1:112.4,y1:-77,h:130}, O=K.octo; room(
+later #278 2611 bytes, 8 names + live : ()=>{ '@later'; const B=B_('lcastle'), [cx,cy]=LG('castle'); Object.assign(B,{x0:51.09+cx,
+later #279 335 bytes, 12 names + live : ()=>{ '@later'; const B={id:'lav_'+id,x0:AX,y0:-77+z0/BLDK+.1,x1:AX+d,y1:-77+z1/BLDK-.1,h}
+vcr #280 15852 bytes, 17 names + live LVL pos WX CLOCK ROOMS cam: ()=>{ '@vcr'; const B={id:'lvcr',x0:380,y0:-92,x1:394,y1:-82,h:270}, H=B.h, hs=hash, P=[.2
+later #281 353 bytes, 5 names + live ROOMS INTERIORS: id=>{ '@later'; const R=STORE.inside[id]; if(!R||R.done)return; R.done=true; finish(); STO
+later #282 3908 bytes, 13 names + live pos: ()=>{ '@later'; const S=P.PLS, H=B.h, g=new THREE.Group(), V=(x,y,z)=>new THREE.Vector3(X(
+later #283 698 bytes, 12 names + live : (w,M)=>{ '@later'; const C=PY.PLAY.cast[w], N=window.PAWNNEW&&PAWNNEW(KINDS[w],'play_'+w,{
+later #284 395 bytes, 4 names + live : M=>{ '@later'; const N=window.CREATNEW&&CREATNEW('Rat','hound',.8,{paint:g=>{ const c=g.at
+later #285 930 bytes, 4 names + live : (M,cu,set,lv,now)=>{ '@later'; const S=M.SH, C=PY.PLCUE; if(cu!==S.cue||set!==S.set|
+later #286 354 bytes, 1 names + live UI keys: async(x,z,txt)=>{ '@later'; const H=MS.holo, el=document.getElementById('subfade'); H.busy
+later #287 414 bytes, 2 names + live : (u,z,seed)=>{ '@later'; const cell=Math.floor(u/3.2), r=hs(cell,seed,900); if(r>.45)return
+later #288 456 bytes, 1 names + live : (u,z,seed)=>{ '@later'; const cell=Math.floor(u/2.1), r=hs(cell,seed,905); if(r<.7||z<70||
+later #289 745 bytes, 9 names + live : (B_,nx,ny,Xw,Yw,z,f)=>{ '@later'; const u=nx?Yw:Xw; let c; if(at(BTH,Xw,Yw,.3)){ const
+later #290 431 bytes, 7 names + live : (nx,ny,Xw,Yw,z,f)=>{ '@later'; const u=nx?Yw:Xw, k=brick(u,z); let c=k.mortar?[22,22,26]:s
+later #291 478 bytes, 7 names + live : (x,y)=>{ '@later'; const px=Math.floor(x*24), py=Math.floor(y*24); if(at(BTH,x,y)){ co
+club #292 8778 bytes, 16 names + live CLOCK: ()=>{ '@club'; const T=.1; const xw=[['lobw','y',B.x0+LOB.x0,B.y0+LOB.y0,B.y1-T,1,[],t
+club #293 3808 bytes, 9 names + live UI MOVEK: ()=>{ '@club'; if(CLUB.ready||!CLUB.spots)return; CLUB.ready=true; const S=CLUB.spots, x0=
+club #294 3431 bytes, 3 names + live SFX: ()=>{ '@club'; const A={}; CLUB.A=A; let next=0, n=0; const mk=c=>{ if(A.c===c)return 
+later #295 2957 bytes, 19 names + live CLOCK pos LVL FAR3 ROOMS cam LITE: ()=>{ '@later'; let recs=null, nRec=-1; const tick0=CLOCK.tick; CLOCK.tick=dt=>{ tick0(dt)
+arcade #296 31722 bytes, 20 names + live LVL pos WX CLOCK UI FAR3 ROOMS cam: ()=>{ '@arcade'; const lit=c=>Object.assign([c[0],c[1],c[2]],{e:1}), hex=h=>[parseInt(
+dojo #297 4632 bytes, 12 names + live : ()=>{ '@dojo'; const WD=J.DJWOOD, PAP=J.DJPAP, PLA=J.DJPLA, wd=(k,f=1)=>sh(WD,k*f), WA
+fire #298 38 bytes, 1 names + live : ()=>{ '@fire'; if(F.build)F.build(); });if(performance.now()-__YT>40)await __Y(); STORE.
+park #299 8837 bytes, 11 names + live PARK BOD LITE py ROOMS CLOCK MAIL UI TRADE INV CITY: ()=>{ '@park'; const P=PARK, S=GCAVE.S, X=x=>BOD.XS(x+P.ox), Z=y=>BOD.ZS(y+P.oy), Y=BOD.YS
+park #300 2310 bytes, 4 names + live BOD PARK build: ({flat,X,Z,Y,hash,grain,speck})=>{ '@park'; const S=FOUNT.S, {C,R}=S, sol=(x,y,b,h)=>{ SOL
+park #301 15011 bytes, 8 names + live PARK BOD LVL ROOMS CLOCK SKY: ()=>{ '@park'; const P=PARK, S=FOUNT.S, {C,R,L}=S, X=x=>BOD.XS(x+(P.ox||0)), Z=y=>BOD.ZS(y
+later #302 1519 bytes, 2 names + live : sh=>{ '@later'; sh.vertexShader='attribute vec3 aTr; varying vec3 vTr; varying vec3 vLw;\n
+park #303 3137 bytes, 22 names + live : ()=>{ '@park'; PARK.rocks=mesh([['BigRock3',87.5,-37,2.6,1.8],['BigRock5',126,-41,2.4,.2],
+park #304 1547 bytes, 17 names + live BOD: ()=>{ '@park'; const LP=[]; { const [cx,cy]=P.round; for(let y=P.y0+4;y<P.y1-2;y+=13)if(Ma
+later #305 575 bytes, 7 names + live mine cur LITE: ()=>{ '@later'; if(!mine)return; const M=mine; mine=null; cur=0; for(const o of M.objs
+dungeon #306 5127 bytes, 30 names + live LVL cur LITE mine: n=>{ '@dungeon'; clear(); const L=lay(n), {R,up,dn}=L, s0=scene.children.length, n0=KP.len
+later #307 576 bytes, 0 names + live SFX: (s,muff)=>{ '@later'; try{ const c=SFX.live&&SFX.live(); if(!c||!SFX.on)return; const n=Ma
+later #308 388 bytes, 16 names + live fishM: ()=>{ '@later'; if(RIVER.deep)return; RIVER.deep=true; for(const [m,c,g] of [[surf,surfF,P
+later #309 709 bytes, 5 names + live __YT dbusy: async()=>{ '@later';if(performance.now()-__YT>40)await __Y(); if(RIVER.deep||dbusy)return;
+later #310 779 bytes, 15 names + live fishM: (f,i)=>{ '@later'; const s=f.s, tx=s.x+f.o[0]*1.4*T, tz=s.z+f.o[1]*1.4*T, ty=s.y+f.o[2]*WU
+later #311 556 bytes, 7 names + live : name=>{ '@later'; if(KIT.geos[name])return KIT.geos[name]; const M=KITD[name]; if(!M){ con
+later #312 1085 bytes, 10 names + live : (name,x,z,o={})=>{ '@later'; const geo=KIT.geo(name); if(!geo)return null; const M=KITD[na
+later #313 879 bytes, 4 names + live __YT keys: async()=>{ '@later';if(performance.now()-__YT>40)await __Y(); if(BLK.fade||BLK.built)retur
+later #314 5537 bytes, 17 names + live groundY BOUND BOD wireMesh: ()=>{ '@later'; const D=typeof DRESS!=='undefined'?DRESS:{}, poles=D.poles||[], G=(x,z)=>g
+later #315 368 bytes, 1 names + live : ()=>{ '@later'; for(const n of GRID.nodes)n.pw=false; const q=GRID.nodes.filter(n=>n.src);
+later #316 1638 bytes, 6 names + live : ()=>{ '@later'; GRID.dirty=false; const D=typeof DRESS!=='undefined'?DRESS:{}; for(con
+later #317 402 bytes, 1 names + live : sh=>{ '@later'; sh.uniforms.uRes=GRID.uRes; sh.vertexShader='attribute vec3 aC; unifor
+later #318 499 bytes, 0 names + live : (P,pts,w,CC)=>{ '@later'; for(let i=0;i<pts.length-1;i++){ const p=pts[i], q=pts[i+1], dx=
+later #319 1500 bytes, 9 names + live wireMesh: ()=>{ '@later'; const P=[], CC=[], W=.028*M, arm=.42*M; const ends=(n,k,cnt)=>{ const 
+later #320 1719 bytes, 10 names + live : ()=>{ '@later'; const BL=[], blk=(x,y,z,sx,sy,sz,c)=>BL.push([x,y,z,sx,sy,sz,c]), GR=0x5d6
+later #321 1698 bytes, 3 names + live : function swing(P,i,dt){ '@later'; const S=P.swing, st=P.sw||(P.sw={m:null,pm:new THREE.Vec
+later #322 885 bytes, 2 names + live : (renderer,scene,cam)=>{ '@later'; const w=renderer.domElement.width, h=renderer.domElement
+later #323 1629 bytes, 5 names + live : function phyBody(o){ '@later'; const vol=p=>p.t==='box'?8*p.h[0]*p.h[1]*p.h[2]:p.t==='cyl'
+later #324 528 bytes, 0 names + live : function phyIn(p,P,sk=0){ '@later'; const x=P[0]-p.c[0], y=P[1]-p.c[1], z=P[2]-p.c[2]; i
+later #325 742 bytes, 10 names + live view0 py: function phyYouIn(p){ '@later'; const Y=PHYOU, Mk=Y.m; if(!Mk)return null; const a=view0.a
+later #326 332 bytes, 4 names + live : (A,B,d,ra,rb)=>{ '@later'; const da=dyn(A), db=dyn(B), r={d,A:da?A:null,B:db?B:null,you:B=
+later #327 331 bytes, 1 names + live : r=>{ '@later'; const d=r.d, A=r.A, B=r.B; let v=0; if(A)v+=A.v[0]*d[0]+A.v[1]*d[1]+A.v[2]*
+later #328 313 bytes, 0 names + live : (r,j)=>{ '@later'; const d=r.d, A=r.A, B=r.B; if(A){ const m=A.iM*j; A.v[0]+=d[0]*m; A.v[1
+later #329 324 bytes, 4 names + live : function phyJointFix(js){ '@later'; for(let it=0;it<8;it++)for(const J of js){ const A=J.A
+later #330 593 bytes, 0 names + live : function ragQ(X,Y,Z){ '@later'; const m=[X[0],Y[0],Z[0],X[1],Y[1],Z[1],X[2],Y[2],Z[2]], t=
+later #331 2771 bytes, 18 names + live : function ragStart(B,J0,dt,shove){ '@later'; const J=B.J, m=B.m, u=1/RT, bs=[], js=[], W=k=
+later #332 1314 bytes, 12 names + live PHYROOMS ONLINE: function ragStep(dt){ '@later'; const t0=performance.now(), R=PHYROOMS.find(r=>r.on&&P.x>r
+later #333 783 bytes, 5 names + live : function ragPose(){ '@later'; const J={}, m={foot:{},hf:{},fist:{}}, V=RIG.V, M3=(x,y,z)=>
+later #334 749 bytes, 8 names + live : function ragEnd(){ '@later'; const st=PH.st, by={}; for(const b of RAG.bodies)by[b.name]=b
+later #335 422 bytes, 9 names + live ROAM: ()=>{ '@later'; if(o.pick){ o.pick(st); return; } if(o.roam){ if(!ROAM.pick(st,free)){ st.
+later #336 589 bytes, 2 names + live : (st,free)=>{ '@later'; const L=ROAM.L; for(let k=0;k<12;k++){ let to; if(Math.random()
+dungeon #337 11088 bytes, 14 names + live BOD LVL BODB LINES CLOCK VIT: async()=>{ '@dungeon'; const S=await SKEL(); const BN=S.rig.names.map(n=>n.replace(/\./g
+later #338 579 bytes, 6 names + live : (from,dir)=>{ '@later'; let f=FB.find(f=>!f.on); if(!f){ f={g:new THREE.Group()}; co
+later #339 634 bytes, 6 names + live SFX BLAZE LVL VIT: p=>{ '@later'; if(typeof SFX!=='undefined')SFX.play('boom',{at:p,far:40*TI,vol:.9,vary:.2}
+later #340 431 bytes, 6 names + live : ()=>{ '@later'; const P=D.p, r=Math.random(); if(!D.home||P!==D.home)return D.home&&
+later #341 408 bytes, 2 names + live : (x,y,z,k,wind)=>{ '@later'; const a=Math.random()*6.28, r=.05+.08*Math.random(); FX.add({x
+later #342 340 bytes, 2 names + live : (x,y,z,R)=>{ '@later'; for(let i=0;i<9;i++){ const a=i/9*6.28+Math.random()*.5, v=(1.2+Mat
+later #343 321 bytes, 2 names + live : (a,c,col)=>{ '@later'; const d=a.distanceTo(c), n=Math.max(1,Math.ceil(d/(.04*TILE))); for
+later #344 466 bytes, 1 names + live : (w0,d0,w1,d1,h,ox=0,oz=0)=>{ '@later'; const a=w0/2, b=d0/2, c=w1/2, d=d1/2, pyr=!w1&&!d1;
+later #345 572 bytes, 0 names + live : (geo,ranges,parts)=>{ '@later'; const P=geo.attributes.position.array, Nn=geo.attributes.n
+later #346 576 bytes, 4 names + live : (name,{scale=[1,1,1],move=[0,0,0],pivot}={})=>{ '@later'; const r=ranges[name]; if(!r)retu
+later #347 381 bytes, 5 names + live : ()=>{ '@later'; const P=Math.random()<.5?S.sweepIn:S.sweepOut, L=[...off(),go(S.broom.p),a
+later #348 343 bytes, 6 names + live cur plan wait: ()=>{ '@later'; if(cur)set(cur.end); cur=plan.shift()||null; J.t=0; st.to=null; st.v=v0; 
+later #349 535 bytes, 4 names + live : (name,{scale=[1,1,1],move=[0,0,0]}={})=>{ '@later'; const r=ranges[name]; if(!r)return; co
+later #350 1364 bytes, 1 names + live A: (c,dt)=>{ '@later'; const B=c.B, k=A.k=(A.k||0)+((A.act?1:0)-(A.k||0))*Math.min(1,dt*7), w
+later #351 1564 bytes, 10 names + live LVL: (dt,you,s,N)=>{ '@later'; if(N.sheet||!G)return; s.hold=true; A.t+=dt; N.li=N.li??3; N.mod
+later #352 368 bytes, 2 names + live : ()=>{ '@later'; const w=N.g.getWorldPosition(new THREE.Vector3()), bb=new THREE.Box3().set
+later #353 394 bytes, 5 names + live : st=>{ '@later'; const P=window.POND, L=K.lane; st2.drink=false; st.face=null; if(P&&P.read
+later #354 859 bytes, 8 names + live : (key,id,metres,X={})=>{ '@later'; const D=C[key], K=KIND[key], rig=rigOf(D.rig), CL=clipsO
+later #355 426 bytes, 2 names + live : o=>{ '@later'; if(!o||typeof o!=='object'||Array.isArray(o))return {err:['not a JSON objec
+later #356 579 bytes, 3 names + live : list=>{ '@later'; const P=[], q=(a,b,c,d)=>P.push(...a,...b,...c,...a,...c,...d); for(
+later #357 1962 bytes, 11 names + live col: p=>{ '@later'; const r=K().radius, cs=cosS(); let pushed=false; for(let it=0;it<4;it++
+later #358 2670 bytes, 11 names + live col BOUND LVL: dt=>{ '@later'; const c=K(), p=S.p, v=S.v; S.t+=dt; const wasG=S.gnd, vy0=v.y; let ix=
+later #359 933 bytes, 11 names + live py heading col: (dt,mx,mz)=>{ '@later'; if(!FEEL.lib)FEEL.load(); FEEL.go=0; if(!FEEL.ready||FEEL.hold)ret
+later #360 1086 bytes, 14 names + live cdt camD groundY: (T,C)=>{ '@later'; const dt=cdt, Y=FEEL.yard; if(!FEEL.ready||!Y||!Y.bvh||!Y.in(T.x/MH,T.z
+later #361 428 bytes, 3 names + live : C=>{ '@later'; C.mx.stopAllAction(); for(const n of ALL){ const cl=C.CL[n]; if(!cl)continu
+later #362 2763 bytes, 7 names + live IN_MOVE heading py SFX: (dt,C)=>{ '@later'; if(A.C!==C)init(C); const c=FEEL.cfg, S=FEEL.S, ev=FEEL.ev, hs=FEEL.hs
+later #363 3039 bytes, 10 names + live : ()=>{ '@later'; if(Y.bvh||!FEEL.ready)return; const o=org(), P=[], VP=[], VC=[], C=new THR
+later #364 1230 bytes, 5 names + live : ()=>{ '@later'; const c=FEEL.cfg, R=FEEL.RANGE; let o=`<h3 data-a="min"><span>FEEL LAB</sp
+later #365 327 bytes, 4 names + live : ()=>{ '@later'; let o; try{ o=JSON.parse(P.querySelector('textarea').value); }catch(e){ ms
+later #366 1456 bytes, 9 names + live UI: e=>{ '@later'; const b=e.target.closest('[data-a]'); if(!b)return; const a=b.dataset.a; b.
+later #367 790 bytes, 2 names + live : (g,seed)=>{ '@later'; const c=g.attributes.color.array, R=g.attributes.reg.array, sum={}, 
+later #368 389 bytes, 8 names + live : (bone,from,to,k)=>{ '@later'; AD.subVectors(to,from); const len=AD.length()||1e-6; AD.divi
+later #369 652 bytes, 11 names + live : (A,bones)=>{ '@later'; const root=bones[0]; root.updateMatrix(); RTI.copy(root.matrix).inv
+later #370 600 bytes, 13 names + live cur: (dt,moving,st,sc)=>{ '@later'; let want, ts=1; if(HOLD)want=HOLD; else if(N.sheet)
+park #371 3307 bytes, 12 names + live BOD: ()=>{ '@park'; if(typeof PARK==='undefined'||!PARK.fire)return setTimeout(go,500); con
+park #372 16207 bytes, 12 names + live BOD SFX LVL CLOCK SKY: ()=>{ '@park'; if(typeof PARK==='undefined'||!PARK.fire||!PARK.brook||!MODS.land)return se
+later #373 342 bytes, 9 names + live : function targets(B,x,y,z,hd,dt){ '@later'; const k=W3.SZ; T.makeRotationY(hd).setPosition(
+later #374 1193 bytes, 6 names + live world RAPIER ground bodies need: function build(){ '@later'; const G=R.G?R.G():280; world=new RAPIER.World({x:0,y:-G,z:0});
+later #375 857 bytes, 6 names + live bodies: function drive(h,down){ '@later'; const stiff=0.06+0.5*(1-PB.loose), limp=down?0.015:stiff
+later #376 312 bytes, 8 names + live : (pc,i)=>{ '@later'; const j=PART[i]; if(j<0)return; const O=new THREE.Matrix4().multiplyMa
+later #377 364 bytes, 1 names + live RAPIER need: ()=>{ '@later'; if(RAPIER||PB.loading)return; PB.loading=true; import('https://cdn.jsdeliv
+later #378 366 bytes, 4 names + live : (D,n,S)=>{ '@later'; const F=lp(); for(let i=0;i<n;i++){ const s=i/S; let v=0; if(s<.03)v+
+later #379 312 bytes, 3 names + live py cam: (o,G,P)=>{ '@later'; if(!o.at)return 1; const x=o.at.x, z=o.at.z!=null?o.at.z:o.at.y, d=Ma
+later #380 464 bytes, 3 names + live : (c,bank,i)=>{ '@later'; const key=bank+i; if(VB[key]&&VB[key].sampleRate===c.sampleRate)re
+later #381 498 bytes, 4 names + live : (v,o={})=>{ '@later'; const c=SFX.live(); if(!c||!SFX.on)return; const s=c.createBufferSou
+later #382 588 bytes, 5 names + live recent: (k,ctx={},seed)=>{ '@later'; const pool=POOL[k]||[]; if(!pool.length)return ''; const 
+later #383 731 bytes, 6 names + live CLOCK: (N,k,ctx)=>{ '@later'; if(!N||!N.g)return ''; const text=POOL[k]?LINES.pick(k,Object.assig
+later #384 2030 bytes, 5 names + live : ()=>{ '@later'; if(P.style.display!=='none'){ P.style.display='none'; return; } cons
+later #385 609 bytes, 8 names + live yawTo yaw pitchTo pitch: (dx,dy)=>{ '@later'; if(UI.view==='iso'){ yawTo-=dx*.008; yaw=yawTo; return; } if(UI.p
+later #386 414 bytes, 3 names + live ppuTo ppu cam zAt: e=>{ '@later'; if(UI.persp){ ppuTo=ppu; if(UI.view==='third'||UI.view==='follow')UI.dist=M
+later #387 505 bytes, 6 names + live cam BOUND: (dx,dy)=>{ '@later'; const r=cv.getBoundingClientRect(), k=(cam.right-cam.left)/r.width, R
+later #388 323 bytes, 2 names + live ED WIELD MAPED WE L: e=>{ '@later'; if(e.button!==0||ED.on)return; if(window.WIELD&&WIELD.on&&!MAPED.on&&!WE.on
+later #389 310 bytes, 3 names + live cam: (txt,at)=>{ '@later'; const r=cv.getBoundingClientRect(), v=at.clone().project(cam); said.
+later #390 1014 bytes, 9 names + live MAPED WIELD WE ED cam USE goal VIT py target: e=>{ '@later'; if(MAPED.on)return; if(window.WIELD&&WIELD.on&&!WE.on)return; if(WE.on){ WE
+later #391 773 bytes, 7 names + live ED MAPED WE heading py USE goal: ()=>{ '@later'; if(ED.on||UI.freeCam||MAPED.on||WE.on)return false; const hx=Math.sin(head
+later #392 1365 bytes, 12 names + live : (R,lv,W,H)=>{ '@later'; const vis={}; rt.setSize(W,H); for(const k in MAPG)vis[k]=MAPG[k].
+later #393 342 bytes, 5 names + live mapLv BOD: e=>{ '@later'; const r=mcv.getBoundingClientRect(); if(mapLv==='up'){ const Q=plan(), [x,y
+later #394 1846 bytes, 15 names + live RESI LOOK SCL ppuTo pitchTo RINSP: function drawDisplay(){ '@later'; $('#dsfx').textContent='EFFECTS '+(SFX.on?'ON':'OFF'); $
+later #395 682 bytes, 6 names + live waiting: function drawKeys(){ '@later'; const t=$('#keytab'); t.innerHTML=''; for(const [a,what] of
+later #396 1012 bytes, 2 names + live : e=>{ '@later'; if(e.button!==0||e.target.closest(NOPE))return; e.stopPropagation(); e.prev
+later #397 563 bytes, 1 names + live : (name,val,min,max,step,on,play)=>{ '@later'; const r=document.createElement('div'); r.clas
+later #398 1608 bytes, 7 names + live rows: (T=P)=>{ '@later'; T.innerHTML=(T===P?'<h2>SOUND EDITOR</h2>':'')+'<div class="dim">each l
+later #399 327 bytes, 4 names + live V: ()=>{ '@later'; let x0=1e9,z0=1e9,x1=-1e9,z1=-1e9; for(const k of KEYS){ if(k==='land')con
+later #400 1070 bytes, 11 names + live V sel PH d3 info: ()=>{ '@later'; if(!V)fit(); g.fillStyle='#07090d'; g.fillRect(0,0,cv2.width,cv2.height); 
+later #401 675 bytes, 8 names + live WORK sel: ()=>{ '@later'; const w=off(WORK,sel), chg=JSON.stringify(clean(WORK))!==JSON.stringify(cl
+later #402 1229 bytes, 12 names + live OV sel WORK d3 live: ()=>{ '@later'; if(!OV)return; for(const c of OV.children.slice()){ c.geometry.dispose(); 
+later #403 350 bytes, 6 names + live WORK: (reset)=>{ '@later'; for(const k in LIVE){ const a=off(BUILT,k), w=off(WORK,k); for(const 
+later #404 324 bytes, 6 names + live sel act WORK V: e=>{ '@later'; const [px,pz]=at2(e), ed=edge2(px,pz), k=ed<0?hit2(px,pz):sel; cv2.setPoint
+later #405 399 bytes, 9 names + live act V sel: e=>{ '@later'; const [px,pz]=at2(e); if(!act){ const ed=edge2(px,pz); cv2.style.cursor=ed=
+later #406 391 bytes, 4 names + live sel cam: (gp,e)=>{ '@later'; if(!SIZED[sel]||!gp)return -1; const b=boxOf(sel), r=renderer.domEleme
+later #407 436 bytes, 8 names + live d3 WORK sel: e=>{ '@later'; if(!MAPED.on||e.button!==0||e.shiftKey||e.altKey)return false; const ray=ra
+later #408 323 bytes, 7 names + live d3 sel: e=>{ '@later'; if(!d3)return; if(d3.t==='orbit'){ UI.orbit(e.clientX-d3.x,e.clientY-d3.y);
+later #409 718 bytes, 10 names + live was OV PH shoot carryOff d3: ()=>{ '@later'; MAPED.on=P.style.display==='none'; P.style.display=MAPED.on?'block':'none'
+later #410 611 bytes, 5 names + live PH: ()=>{ '@later'; let x0=1e9,z0=1e9,x1=-1e9,z1=-1e9; for(const k of KEYS){ if(k==='land')con
+later #411 2255 bytes, 10 names + live OV: k=>{ '@later'; const b=BOX[k](); if(!b)return null; const l0=built(k), hi=HIGH[k](), m=.35
+later #412 377 bytes, 3 names + live WORK: C=>{ '@later'; const a=off(BUILT,C.k), w=off(WORK,C.k), dx=(w.x-a.x)*T, dz=(w.y-a.y)*T, dy
+later #413 440 bytes, 1 names + live : C=>{ '@later'; for(const {A,keep} of C.faces){ const O=A.array; for(const f of keep)for(le
+later #414 346 bytes, 1 names + live : o=>{ '@later'; if(o.base)return o.base; const B=o.parts.map(p=>p.me.geometry.attributes.po
+later #415 1147 bytes, 4 names + live : function apply(o){ '@later'; const B=base(o), e=stOf(o), c=o.c, ca=Math.cos(e.r*Math.PI/18
+later #416 378 bytes, 3 names + live sel: function draw(){ '@later'; $('#wtools').hidden=!sel; $('#wname').textContent=sel?'PICKED: 
+later #417 326 bytes, 4 names + live box sel: function frame(){ '@later'; if(box){ scene.remove(box); box=null; } if(!sel||stOf(sel).del
+later #418 377 bytes, 5 names + live cam: e=>{ '@later'; const r=renderer.domElement.getBoundingClientRect(); ray.setFromCamera(new 
+later #419 455 bytes, 6 names + live drag cam sel: e=>{ '@later'; if(!drag)return; const r=renderer.domElement.getBoundingClientRect(); ray.s
+later #420 679 bytes, 1 names + live : (o,near)=>{ '@later'; const out=[]; if(o.parts){ for(const p of o.parts){ const a=p.me
+later #421 456 bytes, 2 names + live : TR=>{ '@later'; const b=new THREE.Box3(), F=[]; for(const t of TR){ for(let k=0;k<9;k+=3)b
+later #422 946 bytes, 4 names + live : TR=>{ '@later'; const {b,F}=look(TR), y0=b.min.y, q=.04*T, bins={}; for(const f of F)if(Ma
+later #423 424 bytes, 8 names + live groundY target heading: (se,th)=>{ '@later'; SFX.play('creak',{vol:.5,vary:.3,delay:.4}); const [x,z]=near(se.S,.4
+later #424 398 bytes, 1 names + live : L=>{ '@later'; const P=[], N=[]; for(const [w,h,d,x,y,z] of L){ const g=new THREE.BoxGeome
+later #425 1725 bytes, 10 names + live : o=>{ '@later'; if(o.door!==undefined)return o.door; const b=box(o), [nx,nz]=front(o), c=b.
+later #426 836 bytes, 0 names + live : d=>{ '@later'; const ca=Math.cos(d.a*d.s), sa=Math.sin(d.a*d.s), h=d.hinge, tg=new Set(); 
+later #427 616 bytes, 11 names + live : (o,th)=>{ '@later'; const b=box(o), c=b.getCenter(new V3()); let dx=pos.x-c.x, dz=pos.z-c.
+later #428 753 bytes, 7 names + live : ()=>{ '@later'; const R=USE.radio, c=R&&ac(); if(!c||c.state!=='running')return; if(!USE.r
+later #429 846 bytes, 13 names + live : (o,k)=>{ '@later'; const b=box(o), c=b.getCenter(new V3()), hx=(b.max.x-b.min.x)/2, hz=(b.
+later #430 454 bytes, 5 names + live PERFX nO MS: ray=>{ '@later'; if(OBJS.length+(typeof PERFX!=='undefined'?PERFX.gen*1e6:0)!==nO){ nO=OBJ
+later #431 335 bytes, 4 names + live TRADE: k=>{ '@later'; if(!INV.ready(k)){ TRADE.note('NOTHING HERE TODAY. BACK TOMORROW'); return 
+later #432 383 bytes, 4 names + live CIVIC: (id,n=1)=>{ '@later'; const g=byId(id), have=INV.items[id]||0; n=Math.min(n,have); if(!g||
+later #433 788 bytes, 2 names + live : ()=>{ '@later'; let P=document.getElementById('gemp'); if(P)return P; P=document.createEle
+later #434 477 bytes, 1 names + live : t=>{ '@later'; let n=document.getElementById('gemn'); if(!n){ n=document.createElement('di
+later #435 1074 bytes, 9 names + live E0 feet: on=>{ '@later'; L.robe=!!on; save(); if(!E0)E0=W3.E.map(e=>e&&{...e,s:e.s.slice()}); recol
+later #436 374 bytes, 4 names + live draw FORAGE: on=>{ '@later'; on=on===undefined?L.bare:!!on; if(on===!L.bare)return; L.bare=!on; save();
+later #437 342 bytes, 3 names + live : ()=>{ '@later'; $('#lname').value=L.name; $('#lwear0').setAttribute('aria-pressed',String(
+later #438 592 bytes, 5 names + live S GHOSTS BOD py: ()=>{ '@later'; if(S||!window.GHOSTS||!GHOSTS.cloth)return S; const MV=BOD.YS(24)/.84, mat
+later #439 1832 bytes, 11 names + live __YT busy BOD heading target gh rise: async()=>{ '@later';if(performance.now()-__YT>40)await __Y(); busy=true;if(performance.now
+later #440 688 bytes, 7 names + live GTYP GTRH GTSAMP: function gtPlay(s,k,when,amp,tone,r){ '@later'; if(GTPHYS.model&&gtPhys()){ gtMute(s,when,
+later #441 1183 bytes, 8 names + live GTLH: function gtLeft(t){ '@later'; const out=[]; out.w=[]; for(let f=1;f<=4;f++){ let cur=null,
+later #442 1778 bytes, 9 names + live GTTUNE GTSTRUM: function gtRight(t){ '@later'; const out=[]; out.w=[]; for(const r in GTRH){ const d=GTRH[
+later #443 728 bytes, 0 names + live : function gtReach(B0,i,T){ '@later'; const {sub,dot,nrm,add,mul}=RIG, d=sub(T,B0.K), L=RIG.
+later #444 465 bytes, 5 names + live : function gtDigit(hf,s,i,T0){ '@later'; let T=T0, fg=null; for(let k=0;k<20;k++){ const B0=
+later #445 527 bytes, 0 names + live : function gtArm(P,n,T,pole,sy=13.3+RIG.STAND){ '@later'; const {V,sub,add,mul,len,nrm,dot}=
+later #446 415 bytes, 0 names + live : function gtArmPts(J,n){ '@later'; const {add,mul,sub}=RIG, S=J['shoulder'+n],E=J['elbow'+n
+later #447 618 bytes, 3 names + live : function gtSolid(J,body){ '@later'; const {V,add,sub,mul,len}=RIG, push={L:{w:V(0,0,0),e:V
+later #448 766 bytes, 0 names + live : function gtApart(hf,s,fg){ '@later'; const {add,mul,sub,len}=RIG, pts=i=>{ const J=RIG.dig
+later #449 352 bytes, 4 names + live : function gtDigitFrom(hf,s,i,T,from,w){ '@later'; const fg=gtDigit(hf,s,i,T), r=RIG.DIG[i][
+later #450 1728 bytes, 14 names + live GTSTRUM: function gtPose(t){ '@later'; const {add,mul,sub,dot,V,nrm}=RIG, T={L:gtLeft(t),R:gtRight(
+later #451 405 bytes, 7 names + live : function gtFing(P,B,T){ '@later'; const yT=T.yT; P.L.fg=gtApart(B.m.hf.L,1,[0,1,2,3,4].m
+later #452 494 bytes, 0 names + live : function npcSpring(a,P,dt,items){ '@later'; const S=a.sp||(a.sp={}), h=Math.min(dt,.05), n
+later #453 612 bytes, 10 names + live GTTUNE GTDAMP: function gtStep(a,dt,now){ '@later'; if(!a.playing){ castStep(a,dt,now); if(a.B)gtSlung(a,
+later #454 650 bytes, 9 names + live GTEV: function gtSound(a,t){ '@later'; if(PLAY221.seeking)return; const ok=GTPHYS.model?gtPhys()
+later #455 516 bytes, 6 names + live ppu ppuTo yaw yawTo: (g,y)=>{ '@later'; UI.setFree(true); UI.camT.set(g.position.x,y,g.position.z); ppu=ppuTo=P
+later #456 313 bytes, 6 names + live GTBEAT: function gtBody(a,dt){ '@later'; const R=RIG; R.farOnly(false); GTS.t+=dt; const t=GTS.t, 
+later #457 613 bytes, 7 names + live cam GTEV: function gtTones(t,d,x,z){ '@later'; if(!SND.ctx||SND.ctx.state!=='running')return; if(!gt
+later #458 317 bytes, 7 names + live ppuTo RESI SHB: ()=>{ '@later'; MUS.ask(); const p=new THREE.Vector3().setFromMatrixPosition(new THREE.Mat
+later #459 783 bytes, 3 names + live : function pnPlay(m,when,off,vel){ '@later'; let q=PNSAMP[0]; for(const x of PNSAMP)if(Math.
+later #460 366 bytes, 0 names + live : ()=>{ '@later'; const L1=[], L2=[]; for(let b=0;b<20;b++){ const g=!(b&1); L1.push((g?
+later #461 948 bytes, 6 names + live : function pnFingers(h,t){ '@later'; const ns=PNS.c[h], out=[], w=[]; const home=f=>h==='R'?
+later #462 1121 bytes, 9 names + live pnFing: function pnPose(t){ '@later'; const {V,add,mul,sub}=RIG, T={L:pnFingers('L',t),R:pnFingers
+later #463 530 bytes, 7 names + live cam: function pnTones(t,d){ '@later'; if(!SND.ctx||SND.ctx.state!=='running')return; if(!pnAudi
+later #464 439 bytes, 2 names + live : function imxReady(){ '@later'; const c=SND.ctx; if(!c||!c.audioWorklet||!SND.on||c.state!=
+later #465 617 bytes, 2 names + live : function imxOut(){ '@later'; const c=SND.ctx; if(IMX.out)return IMX.out; const cv=c.create
+later #466 663 bytes, 5 names + live IMK: function imxNode(who,kind){ '@later'; if(!imxReady())return null; const key=who+'|'+kind; 
+later #467 679 bytes, 6 names + live : function imsLoad(kind){ '@later'; const S=IMSAMP[kind]; if(!S)return null; if(kind==='cl
+later #468 1303 bytes, 3 names + live : function imxRec(N,evs,t0){ '@later'; const R=IMSAMP[N.kind]&&imsLoad(N.kind); if(!R)return
+later #469 2803 bytes, 7 names + live : function imAct(kind,a){ '@later'; const I=IMK[kind]; if(!I||!a)return []; const fam=I.dsp.
+later #470 447 bytes, 2 names + live : function imChordName(ms){ '@later'; if(!ms.length)return ''; const pcs=[...new Set(ms.map(
+later #471 1330 bytes, 0 names + live : function imShape(I,root,iv,capo=0){ '@later'; const n=I.open.length, pcs=iv.map(i=>(root+i
+later #472 344 bytes, 3 names + live : function cordNew(a){ '@later'; const {V,add,mul,sub}=RIG, A=add(a.mic.o,mul(a.mic.y,-.3)),
+later #473 1422 bytes, 5 names + live : function cordStep(a,dt){ '@later'; const P=a.cord, A=RIG.add(a.mic.o,RIG.mul(a.mic.y,-.3))
+later #474 399 bytes, 4 names + live : function singStep(a,dt){ '@later'; if(!a.B)return; a.mic=singMic(a.B); for(const n of ['am
+later #475 820 bytes, 2 names + live : function voxBar(T,b,ch,key){ '@later'; const beats=T.beats||4, R=beats===3?[[1,1,1],[2,1],
+later #476 1145 bytes, 3 names + live : function voxNote(f,t0,dur,vow,v){ '@later'; const c=SND.ctx, o=c.createOscillator(), lp=c.
+later #477 923 bytes, 8 names + live SGM: function voxStep(dt,now){ '@later'; if(!voxChain())return; const c=SND.ctx, ct=c.currentTi
+later #478 610 bytes, 1 names + live : function octArm(L,r,t,bw,r0=3,r1=1,n=11,g=40){ '@later'; const P=u=>{ const a=(1-u)*(1-u),
+later #479 2157 bytes, 5 names + live : function octBody(A){ '@later'; const L=[], D=[], z0=OCTSEAT, nod=A.nod||0; const root=a=
+later #480 510 bytes, 1 names + live : function octGrooveStep(G,bar,i,bars){ '@later'; const per=G.beats*G.sub, fl=bar%4===3?(bar
+later #481 887 bytes, 0 names + live : function octSoloStep(bar,i){ '@later'; const b=bar%8, out=[], acc=i%4===0; if(b<2){ cons
+later #482 931 bytes, 7 names + live : function octStep(dt,now){ '@later'; const N=imxNode('bar','drum kit'); if(OCT.src!=='alo
+later #483 381 bytes, 3 names + live : function octHabits(now){ '@later'; const solo=OCT.mood==='solo'; if(!solo&&now>OCT.puff.
+later #484 815 bytes, 3 names + live : function octPose(now){ '@later'; const st=hand=>{ const q=OCT.hits[hand]; let nx=null, ls=
+later #485 1210 bytes, 3 names + live : function octArms(p){ '@later'; const sh=[[4,7,26],[4,-7,26]], hand=(h,[i,k])=>{ const D=OC
+later #486 321 bytes, 9 names + live : (i,x,y,z,rx,ry,rz,yaw,pit,rol,c)=>{ '@later'; P3.set(y,z,x); EU.set(-pit,yaw,rol); Q.setFr
+later #487 2467 bytes, 15 names + live CULL: (b,roots)=>{ '@later'; const e=.15*TILE, R={x0:b.x0-e,x1:b.x1+e,z0:b.z0-e,z1:b.z1+e,y0:b.y
+later #488 999 bytes, 4 names + live : T=>{ '@later'; const h=(T%1440+1440)%1440/60, dew=t=>{ const hh=(t%1440+1440)%1440/60; ret
+later #489 875 bytes, 4 names + live : ()=>{ '@later'; const A=LFX.AO, W=A.w*A.k, H=A.h*A.k, D=new Float32Array(W*H).fill(1e9); 
+later #490 1195 bytes, 19 names + live LVL BOD py: ()=>{ '@later'; tick2(); const t=performance.now()/1000, dt=1/60, up=LVL!=='down', day=cl(
+later #491 1500 bytes, 11 names + live : (dens,pk)=>{ '@later'; const N=Math.round(90*dens), rt=new THREE.WebGLRenderTarget(N,N,{ty
+later #492 2369 bytes, 6 names + live P: ()=>{ '@later'; if(P){ P.hidden=!P.hidden; draw(); return; } P=document.createElement('div
+later #493 319 bytes, 4 names + live dirty: e=>{ '@later'; const k=e.target.dataset.k; if(!k)return; const P=DN.P(); P[k]=e.target.typ
+later #494 600 bytes, 6 names + live dirty: e=>{ '@later'; const t=e.target, m=t.dataset.dn, msg=()=>box.querySelector('#dnmsg'); 
+later #495 785 bytes, 0 names + live : ()=>{ '@later'; if(document.getElementById('newver'))return; const d=document.createElemen
+later #496 897 bytes, 4 names + live __YT T: async()=>{ '@later';if(performance.now()-__YT>40)await __Y(); const s=JSON.parse(localStor
+later #497 362 bytes, 4 names + live __YT T: async()=>{ '@later';if(performance.now()-__YT>40)await __Y(); let t=ck()||T;if(performance
+later #498 343 bytes, 1 names + live : async(body,context,jpg)=>{ '@later'; const id=crypto.randomUUID(); await sb('/rest/v
+later #499 597 bytes, 5 names + live __YT BE: async()=>{ '@later';if(performance.now()-__YT>40)await __Y(); if(BE)return BE;if(performan
+later #500 521 bytes, 5 names + live py heading LVL: ()=>{ '@later'; let near='', d=1e9; try{ for(const p of UI.places()){ const q=Math.hypot(p
+later #501 2521 bytes, 2 names + live __YT el shot ctx queue: async()=>{ '@later';if(performance.now()-__YT>40)await __Y(); const be=await backend(), ow
+later #502 2680 bytes, 8 names + live __YT el rows filt heading: async()=>{ '@later';if(performance.now()-__YT>40)await __Y(); const be=await backend(), $=
+later #503 2586 bytes, 13 names + live BOUND: ()=>{ '@later'; const things=[], chars=[]; for(const o of OBJS){ if(!o.parts.length)co
+later #504 413 bytes, 5 names + live : (x,z)=>{ '@later'; let k=0; const E=.2*T, c=(e,w)=>{ k=Math.max(k,w*Math.max(0,Math.min(1,
+later #505 2080 bytes, 7 names + live : (x0,z0,G,I,ci,P,AH,AT,AG,IX)=>{ '@later'; const V3=THREE.Vector3, tri=(a,b,c,o,g,v,pt)=>{ 
+later #506 718 bytes, 9 names + live : (k,min,max,bonus=0)=>{ '@later'; const v=sk(k)+bonus, c=Math.max(0,Math.min(1,(v-min)/(max
+later #507 315 bytes, 4 names + live : (x,z,now)=>{ '@later'; if(WEEDS.pressAt)return WEEDS.pressAt(x,z); const R=.8*T; for(const
+later #508 413 bytes, 4 names + live : ()=>{ '@later'; const now=performance.now()/1e3, o={hidden:0,revealed:0,peek:0,crushed:0,p
+later #509 657 bytes, 10 names + live : m=>{ '@later'; const [nm,d]=MU[m.k], kb=FORAGE.keen(); if(typeof SFX!=='undefined')SFX.pla
+later #510 844 bytes, 14 names + live : id=>{ '@later'; if(!have(id))return; take(id,1); let k=id.slice(2); if(id.startsWith('
+later #511 335 bytes, 4 names + live py: ()=>{ '@later'; if(typeof FLAME==='undefined')return null; const w=new V3(); for(const s o
+later #512 4077 bytes, 17 names + live : ()=>{ '@later'; const P=document.getElementById('packp'); if(!P||P.hidden)return; const ta
+later #513 436 bytes, 4 names + live : e=>{ '@later'; const b=e.target.closest('button'); if(!b||b.classList.contains('pX'))retur
+later #514 2275 bytes, 8 names + live : ()=>{ '@later'; if(sp.hidden)return; const ids=Object.keys(INV.items).filter(id=>INV.items
+later #515 343 bytes, 4 names + live N: ()=>{ '@later'; if(TR.on||!N)return; const pick=[0,1]; while(pick.length<5){ const i=2+Mat
+dojo #516 1324 bytes, 12 names + live N: ()=>{ '@dojo'; if(N)return; const MT=R.MATS; if(!MT.includes('ninja')){ MT.push('ninja'); 
+later #517 373 bytes, 2 names + live N: s=>{ '@later'; const S=N.S, [k,a]=s; N.cur={k,a,t:0}; if(k==='g'||k==='block'){ R.begi
+later #518 677 bytes, 4 names + live N: dt=>{ '@later'; const S=N.S, c=N.cur, k=c.k; c.t+=dt; if(k==='g'||k==='block'){ const 
+later #519 1031 bytes, 10 names + live : ()=>{ '@later'; for(let k=0;k<24;k++){ const a=Math.random()*6.283, d=(8+Math.random()*16)
+later #520 701 bytes, 10 names + live : ()=>{ '@later'; let k=0; for(const r of FAIRY.list){ const up=Math.min(1,r.t/2.5), fade=Ma
+later #521 386 bytes, 0 names + live : (w,h,fn)=>{ '@later'; const im=new ImageData(w,h), d=im.data; let ie=null, e=null; for
+later #522 1178 bytes, 4 names + live : (b,p=8,k='F')=>{ '@later'; const {x0,x1,y0,y1,z0,z1}=b, sk=b.sk||'', H=Math.max(1,Math.rou
+later #523 892 bytes, 5 names + live : (o,u,zz,f,lo)=>{ '@later'; const cu=(o.x0+o.x1)/2, du=Math.abs(u-cu), sd=o.sd, aw=AWN[Math
+later #524 329 bytes, 4 names + live : (x0,x1,y0,y1,n,o,p=8)=>{ '@later'; const zb=o.zb||0, top=zb+n*S+16, O={x0,x1,top,zb,c:o.c,
+later #525 619 bytes, 5 names + live : (x0,x1,yw,zs,lx,p,mine)=>{ '@later'; const g=p<16?6:12; zs.forEach((z,i)=>{ const hole
+later #526 496 bytes, 3 names + live : (x,y)=>{ '@later'; const LF=[[52,92,44],[64,108,50],[44,78,40]], lf=(x_,y_,z)=>sh(LF[Math.
+later #527 317 bytes, 2 names + live : (x,y,c,dir)=>{ '@later'; const L=.95, w=.4; box({x0:x-L,x1:x+L,y0:y-w,y1:y+w,z0:6,z1:22,c,
+later #528 537 bytes, 7 names + live : (x,y)=>{ '@later'; const n=hs(Math.floor(x*8),Math.floor(y*8),81), v=y-WY; let c=n<.25?[46
+fire #529 10332 bytes, 42 names + live MID CARS light: ()=>{ '@fire'; if(F.built)return; const keep=BATCH.items.splice(0), km=BATCH.meshes, kc=BA
+later #530 1879 bytes, 6 names + live : ()=>{ '@later'; if(sp.hidden)return; const ids=Object.keys(INV.items).filter(id=>INV.items
+later #531 681 bytes, 8 names + live : e=>{ '@later'; const b=e.target.closest('button'); if(!b||b.classList.contains('pX'))retur
+later #532 731 bytes, 7 names + live row: (dt,mx,mz)=>{ '@later'; const m=Math.hypot(mx,mz); if(m>0){ let dh=Math.atan2(mx,mz)-BOAT.
+later #533 327 bytes, 5 names + live row: ()=>{ '@later'; const h=RIVER.hAt(BOAT.x,BOAT.z); BOAT.py=RB.lv+h+Y(.12); boat.position.se
+later #534 320 bytes, 10 names + live : (ray,p)=>{ '@later'; if(FORAGE.has('rod')&&!RIVER.swim&&ray.intersectPlane(pl,hp)&&hp.x>RB
+later #535 997 bytes, 10 names + live : b=>{ '@later'; if(!b.g.parent)return; const p=W3.group.position; if(Math.hypot(p.x-b.g.pos
+later #536 414 bytes, 5 names + live : id=>{ '@later'; const k=+id.slice(2), d=DIFF(k); if(!FORAGE.has('frame'))return say('YOU N
+later #537 343 bytes, 7 names + live : id=>{ '@later'; const k=+id.slice(2); FORAGE.take(id,1); const p=W3.group.position, P=[[p.
+later #538 1404 bytes, 11 names + live : ()=>{ '@later'; if(sp.hidden)return; const mine=[...V.map(v=>v[0]),...XB].filter(id=>FORAG
+later #539 509 bytes, 9 names + live : f=>{ '@later'; const [nm,d]=FL[f.k]; if(typeof SFX!=='undefined')SFX.play('step',{vol:.4})
+later #540 645 bytes, 11 names + live LVL: id=>{ '@later'; const k=id.slice(3); if(LVL!=='up'||(window.ROOMS&&ROOMS.cur))return say('
+later #541 690 bytes, 12 names + live : p=>{ '@later'; const g=(now()-p.t)/GROW, [nm,d]=FL[p.k]; if(g<1){ const h=Math.ceil((1-g)*
+later #542 585 bytes, 6 names + live : b=>{ '@later'; if(b.st==='pet'||b.st==='fly'||b.st==='hid')return; if(SHY(b.k)&&window.FLO
+later #543 914 bytes, 9 names + live : ()=>{ '@later'; const b=PANEL.b; if(!b)return close(); const k=b.k, pet=b.st==='pet'; 
+later #544 386 bytes, 7 names + live : b=>{ '@later'; const k=b.k, first=!S.seen[k]; S.seen[k]=(S.seen[k]||0)+1; save(); if(f
+later #545 385 bytes, 8 names + live makePet: b=>{ '@later'; if(b.k===HAWK)return say('A HAWK WILL NOT TAKE SEED FROM YOUR HAND.','#c8a0
+later #546 605 bytes, 11 names + live : b=>{ '@later'; if(!FORAGE.has('bnet'))return say('YOU NEED A BIRD NET (THE MUSHROOM SELLER
+later #547 394 bytes, 9 names + live : ev=>{ '@later'; const t=ev.target.closest('button[data-a]'); if(!t)return; const b=PANEL.b
+later #548 389 bytes, 9 names + live freePet py: (k,b)=>{ '@later'; const old=petOf(); if(old){ freePet(true); } for(const id of Object.key
+later #549 354 bytes, 6 names + live LVL groundY: ()=>{ '@later'; if(LVL!=='up'||(window.ROOMS&&ROOMS.cur))return say('SCATTER IT OUTDOORS.'
+later #550 792 bytes, 4 names + live : ()=>{ '@later'; const n=Object.keys(S.seen).length; let o=`<div style="margin-bottom:6px">
+later #551 498 bytes, 7 names + live : ()=>{ '@later'; const k='c'+i; if(S.cans[k]===day())return say('YOU HAVE BEEN THROUGH THIS
+later #552 1980 bytes, 11 names + live : ()=>{ '@later'; if(P.hidden)return; restock(); const has=FORAGE.has, mine=Object.keys(INV.
+later #553 883 bytes, 12 names + live : e=>{ '@later'; const b=e.target.closest('button'); if(!b||b.classList.contains('pX'))retur
+later #554 452 bytes, 6 names + live ride target: (L,down)=>{ '@later'; if(ride)return; if(Math.hypot(pos.x-L.x,pos.z-L.z)>1.3*T)return say(
+later #555 781 bytes, 9 names + live scanCD ringT ringR ringY py built: ()=>{ '@later'; if(!MINE.inside(pos.x,pos.z))return say('THE SCANNER ONLY READS ROCK: GO D
+later #556 503 bytes, 8 names + live job py ringT ringR ringY HUD: s=>{ '@later'; if(s.gone||job)return; const t=S.tool; if(!owns(t)){ const o=['cutter',
+later #557 530 bytes, 10 names + live groundY: (s)=>{ '@later'; const m=new THREE.Mesh(new THREE.OctahedronGeometry(.1*T,0),new THREE.Mes
+later #558 1176 bytes, 7 names + live : ()=>{ '@later'; if(dp.hidden)return; let o=`<h3 style="margin:0 0 4px;color:#7ff4ff;font:1
+later #559 516 bytes, 3 names + live : ()=>{ '@later'; const tb=(id,nm)=>owns(id)?`<button data-t="${id}" style="font:inherit;col
+later #560 1546 bytes, 7 names + live : (x,z,y)=>{ '@later'; const g=new THREE.Group(), W=.62*T, Hb=.42*T, P=[], N=[], C=[], cc=ne
+later #561 494 bytes, 8 names + live item legs: it=>{ '@later'; if(DRONE.state!=='home')return false; item=it; parcel.visible=true; DRONE.
+later #562 478 bytes, 0 names + live : msg=>{ '@later'; let el=document.getElementById('dtoast'); if(!el){ el=document.createElem
+later #563 565 bytes, 12 names + live item: ()=>{ '@later'; const p=bx(.2*T/1.13,.15*T/1.13,.2*T/1.13,PAR); p.position.copy(DROP).add(
+later #564 1354 bytes, 11 names + live tt legs wait yaw mv spin: dt=>{ '@later'; if(!dt)return; dt*=SPK; tt+=dt; for(const R of BOXES){ R.k+=Math.sign(R.to
+later #565 460 bytes, 9 names + live cam RPASS RW RH: a=>{ '@later'; if(!DRONE.cam)return vb(a); cam=PCAM; if(RPASS)RPASS.camera=cam; if(Math.ab
+later #566 1304 bytes, 5 names + live CIVIC: ()=>{ '@later'; P.innerHTML=`<h3>DRONE LINK · THE BODEGA</h3><div>YOU HAVE $${purse.get()}
+later #567 545 bytes, 3 names + live : (r,col,bag)=>{ '@later'; const g=new THREE.Group(), p=new THREE.Mesh(new THREE.CylinderGeo
+later #568 383 bytes, 7 names + live target: id=>{ '@later'; if(MESH[WIELD.on])MESH[WIELD.on].visible=false; WIELD.on=null; if(!id||!FO
+dungeon #569 16580 bytes, 22 names + live BOD py heading LVL: ()=>{ '@dungeon'; const T=TILE, X=BOD.XS, Z=BOD.ZS, say=FORAGE.say, G=new THREE.Group(), P
+later #570 592 bytes, 10 names + live : ()=>{ '@later'; let n=0; for(const b of bundles){ const [bx,by,bz]=b.at, w=.5, d=.36; 
+later #571 422 bytes, 2 names + live CITY: i=>{ '@later'; const d=(window.CITY&&CITY.day)||0, w=null, a=HEAD[(d*3+i)%HEAD.length], b=
+later #572 1416 bytes, 14 names + live CIVIC queue act: (msg='',page='')=>{ '@later'; const open=isOpen(CLOCK.h), sec={papers:'NEWSPAPERS'}; let l
+later #573 526 bytes, 7 names + live sold queue act CIVIC: C=>{ '@later'; if(!isOpen(CLOCK.h))return false; const i=[0,1,2,3].filter(k=>stock.papers[
+later #574 727 bytes, 7 names + live WALKERS cust CITY: ()=>{ '@later'; const WL=(window.WALKERS&&WALKERS.list)||[], ok=WL.filter(W=>(W.state==='s
+later #575 1190 bytes, 3 names + live : (Q,others)=>{ '@later'; const {P,O,ST,REST,live,ball:b,d}=Q, rr=Q.BR+.012, g0=Q.gnd+.004; 
+later #576 482 bytes, 2 names + live : (Q,dt,to,others,MH,MV)=>{ '@later'; Q.acc=Math.min(Q.acc+dt,H*8); const n=Math.max(1,Math.
+later #577 593 bytes, 1 names + live : (it,gone,t,q)=>{ '@later'; let s=!gone&&it.heavy, f=s; if(s){ M4.makeRotationFromQuaternio
+later #578 827 bytes, 7 names + live world R hooks groundY: it=>{ '@later'; const t=it.t, rb=world.createRigidBody(R.RigidBodyDesc.dynamic().setTransl
+later #579 3164 bytes, 13 names + live LVL py BOD lk world fixed fxL fxM solids groundY R fb: ()=>{ '@later'; const W=new Map(), px=pos.x, pz=pos.z, Rr=RF+T, k=LVL+Math.round(py/(1.5*T
+later #580 373 bytes, 11 names + live zn LIGHTS cg cc py held: ()=>{ '@later'; if(++zn%40===0)LIGHTS=null; if(!cg||!cc)catalog(); more(); const lo=py-1.1
+later #581 742 bytes, 7 names + live R world fb eq hooks you py ready: function build(){ '@later'; R=PB.R; world=new R.World({x:0,y:-13,z:0}); world.timestep=DT;
+later #582 1478 bytes, 7 names + live gm P0 N0 detach: it=>{ '@later'; const t=it.rb.translation(), r=it.rb.rotation(); Q.set(r.x,r.y,r.z,r.w); i
+later #583 1132 bytes, 3 names + live PERFX: it=>{ '@later'; const by=new Map(); for(const p of it.parts)(by.get(p.me)||by.set(p.me,[])
+later #584 473 bytes, 2 names + live py you: (I,h)=>{ '@later'; const tx=pos.x+I[0]*.14*T, ty=py+.8, tz=pos.z+I[1]*.14*T, p=you.transla
+later #585 943 bytes, 5 names + live lastHit BOD heading py held: ()=>{ '@later'; const s=(st.up&&STRIKE.test(st.up.name)&&st.up)||(st.move&&STRIKE.test(st.
+later #586 442 bytes, 3 names + live held R: (it,g)=>{ '@later'; held=null; RIG.release(st,'carry'); it.rb.setBodyType(R.RigidBodyType.
+later #587 534 bytes, 3 names + live gm: (h,A=act)=>{ '@later'; const m=h.object; if(m===gm){ const v=h.face.a; return items.find(q
+later #588 1296 bytes, 9 names + live ready cat held picks want py: ray=>{ '@later'; if(!ready){ if(!cat||held)return null; const h=ray.intersectObjects(picks
+later #589 450 bytes, 9 names + live : (x,z,y)=>{ '@later'; let i=BM.indexOf(null); if(i<0){ let o=1e9; BM.forEach((m,j)=>{ if(m.
+later #590 398 bytes, 9 names + live : (x,z,force)=>{ '@later'; if(F.length>=MAX||F.some(f=>Math.hypot(f.x-x,f.z-z)<.7*T)||!force
+later #591 607 bytes, 3 names + live : (d,dt)=>{ '@later'; const g=d.legs[0]; if(!g)return true; const dv=p3.subVectors(g,d.p), d
+later #592 1034 bytes, 7 names + live BOD: ()=>{ '@later'; const P=[], add=(id,name,x,z,dz,lv='up',o={})=>P.push(Object.assign({id,na
+later #593 677 bytes, 5 names + live : (lv,free)=>{ '@later'; const L=SOL[lv], gk=lv+':'+(free?free.name||'f':''); let g=GRID.get
+later #594 2060 bytes, 4 names + live : (lv,a,b,free)=>{ '@later'; const t0=performance.now(), g=grid(lv,free), s=nearFree(g,a.x,a
+later #595 1116 bytes, 6 names + live : (lv,a,b,free)=>{ '@later'; if(!NAV.ready)return null; const street=lv==='up'&&typeof STFRE
+later #596 594 bytes, 12 names + live BOD: ([id,name,col,sign],i)=>{ '@later'; const fy=y+i*FH; blk(cx,fy+FH-.3*M,zf-.03*T,Wd+.04
+later #597 562 bytes, 2 names + live : (who,id)=>{ '@later'; const S=CIVIC.shops[id]; if(!S)return false; if(S.stock<=0){ CIVIC.n
+later #598 1527 bytes, 6 names + live MAIL: ()=>{ '@later'; if(!pane.offsetParent)return; const L=CIVIC.ledger, row=(a,b)=>`<div style
+later #599 385 bytes, 4 names + live : ()=>{ '@later'; const M=VEHD.trashbag; if(!M)return null; const b=B64, P=SKIN.pts(M); 
+later #600 467 bytes, 8 names + live : (c,i)=>{ '@later'; const can={id:'can'+(i+1),x:c.x,z:c.z,fill:0,heap:null}; if(bagGeo){ co
+later #601 993 bytes, 8 names + live : ()=>{ '@later'; const S=S_.works; if(!S||S.state!=='free')return; const j=CITY.take('resto
+later #602 465 bytes, 6 names + live : ()=>{ '@later'; const S=S_.works; if(!S||S.state!=='free'||!CIVIC.cans.length)return; S.st
+later #603 442 bytes, 6 names + live : (spot,why)=>{ '@later'; if(CIVIC.fires.some(f=>Math.hypot(f.x-spot.x,f.z-spot.z)<3*T))retu
+later #604 669 bytes, 7 names + live LVL: dt=>{ '@later'; for(const f of CIVIC.fires.slice()){ if(f.out){ if((f.age+=dt)>3){ f.s.on=
+later #605 358 bytes, 3 names + live : (N,f)=>{ '@later'; const d=JET.d[JET.k=(JET.k+1)%JET.n], hx=N.st.x+Math.sin(N.st.h)*.35*T,
+later #606 353 bytes, 3 names + live : (S,f,dt)=>{ '@later'; if(f.out||!f.s.on)return true; f.hosed=true; if(S.N&&Math.random()<d
+later #607 754 bytes, 8 names + live : ()=>{ '@later'; for(const id of ['fire1','fire2']){ const S=S_[id]; if(!S||S.state!=='free
+later #608 645 bytes, 10 names + live faintJob LVL: ()=>{ '@later'; if(VIT.out>0&&!VIT.dead&&!faintJob&&LVL==='up'){ faintJob=CITY.post('medic
+later #609 1051 bytes, 9 names + live : ()=>{ '@later'; const TR=window.GUARDX&&GUARDX.TROUBLE||[]; for(const t of TR){ if((t.mode
+later #610 323 bytes, 4 names + live flashed BOD: ()=>{ '@later'; const W=window.WX&&WX.now; if(!W)return; if(W.flash&&!flashed){ flashed=tr
+later #611 876 bytes, 16 names + live LVL acc: (dt,you)=>{ '@later'; d0(dt,you); fireTick(dt); wxTick(); jetTick(dt); BEAM.visible=fa
+later #612 2465 bytes, 15 names + live BOD: ()=>{ '@later'; place('street',{door:null,reach:0}); { const B=BOD.B0, dx=XB((B.x0
+later #613 389 bytes, 3 names + live : (N,x,z)=>{ '@later'; const s=inStair(x,z,N.lv); if(s){ const S=s.S; if(S.ground)return S.g
+later #614 912 bytes, 4 names + live : (N,to)=>{ '@later'; const L=N.life, st=N.st, wp=[], at=P[L.at]; if(at&&at.path.length)
+later #615 695 bytes, 10 names + live : N=>{ '@later'; const L=N.life, st=N.st, pl=P[L.at]; for(let k=0;k<8;k++){ let q; if(
+later #616 388 bytes, 0 names + live : (L,h)=>{ '@later'; const t=(h-L.s+24)%24; if(t<7)return [L.home,'sleeping']; if(t<8)re
+later #617 801 bytes, 1 names + live : (N,i)=>{ '@later'; const k=N.key, pick=(a,b)=>i%2?a:b, s=((i*7)%9-4)*.2, has=id=>!!P[id]; 
+later #618 357 bytes, 4 names + live : (N,dt)=>{ '@later'; const L=N.life, st=N.st; if(L.wp){ L.wp=null; L.at=L.to; L.k=P[L.at].p
+later #619 564 bytes, 2 names + live : (N,dt)=>{ '@later'; const st=N.st; if(st.hold&&!N.guard)return; if(!st.to){ if((st.wait-=d
+later #620 337 bytes, 3 names + live : ()=>{ '@later'; let s='LIVES '+LIVES.ms.toFixed(3)+' ms/frame '+CLOCK.h.toFixed(2)+'h\nKE
+later #621 1232 bytes, 14 names + live : (N,W,what)=>{ '@later'; const st=N.st, ok=p=>p&&N.free(p.x,p.z,st.R); for(let k=0;k<16
+later #622 989 bytes, 7 names + live MAIL: (N,W)=>{ '@later'; const K=KIND[W.kind], mail=W.home&&window.MAIL&&MAIL.ready&&MAIL.waitin
+later #623 861 bytes, 11 names + live : ()=>{ '@later'; let i=0; for(const N of (window.PAWNL||[])){ if(N.staff||N.lv==='down'
+later #624 820 bytes, 4 names + live acc: (dt,you)=>{ '@later'; t0(dt,you); for(const W of WALKERS.list){ const N=W.N; if(W.job&&W.j
+later #625 1065 bytes, 7 names + live : (B,W)=>{ '@later'; const by=id=>B.find(b=>b.id===id), keep=by('keep'), free=W.slice().sort
+later #626 483 bytes, 4 names + live : J=>{ '@later'; if(J.spot)return J.spot; if(J.S.out)return J.spot=J.S.spot; const F=J.S.b.F
+later #627 507 bytes, 5 names + live pick: J=>{ '@later'; const N=J.w.N, A=homeOf(J), s=workSpot(J); if(J.state==='home'){ hide(N,fal
+later #628 511 bytes, 6 names + live MAIL: J=>{ '@later'; const N=J.w.N, A=homeOf(J); if(!A||!A.step){ if(J.state==='work'||J.state==
+later #629 627 bytes, 7 names + live acc: (dt,you)=>{ '@later'; t0(dt,you); if((acc+=dt)<.5)return; acc=.0; const h=CLOCK.h; for
+later #630 544 bytes, 2 names + live : (rid,id,name,kind)=>{ '@later'; const R=(STORE.rooms||[]).find(r=>r.id===rid); if(!R||!R.d
+later #631 2726 bytes, 18 names + live boxes restore: ()=>{ '@later'; if(MAIL.ready)return; const W=(window.WALKERS&&WALKERS.list||[]).filter(w=
+later #632 7972 bytes, 22 names + live BOD openBox note draw: ()=>{ '@later'; const MET=0x3c4048, BRASS=0xb89a4a; for(const b of MAIL.B){ const F=b.
+later #633 1023 bytes, 7 names + live : ()=>{ '@later'; if(!MAIL.meFL)return; const m4=new THREE.Matrix4(), q=new THREE.Quaternion
+later #634 338 bytes, 4 names + live : ()=>{ '@later'; if(!MAIL.ready)return; for(const f of FL)f.up=false; for(const t of TK)t.o
+later #635 389 bytes, 1 names + live : A=>{ '@later'; if(!A||!A.who)return null; const w=A.who; if(w.type==='walker')return {
+later #636 1088 bytes, 9 names + live trim: o=>{ '@later'; const from=MAIL.byId(o.from), kind=o.kind||'LETTER', price=PRICE[kind]??1, 
+later #637 504 bytes, 5 names + live pay reply: l=>{ '@later'; const A=MAIL.byId(l.to), P=purse(A); if(l.kind==='GIFT'&&l.amount&&P){ 
+later #638 426 bytes, 4 names + live postAt: b=>{ '@later'; const A=MAIL.byId(b.to), P=purse(A); if(!P||b.paid)return; if(P.get()<b.amo
+later #639 415 bytes, 6 names + live : l=>{ '@later'; const A=MAIL.byId(l.to); if(!A)return; let s, b; if(A.kind==='civic'){ 
+later #640 740 bytes, 9 names + live : ()=>{ '@later'; if(!MAIL.ready)return; for(const A of people()){ if(rnd()>.3)continue; con
+later #641 362 bytes, 4 names + live : ()=>{ '@later'; if(!MAIL.ready||MAIL.day()%7!==6)return; for(const S of MAIL.addr.filter(a
+later #642 477 bytes, 2 names + live : ()=>{ '@later'; let n=0; for(const l of MAIL.L.filter(l=>l.state==='collected')){ if
+later #643 611 bytes, 3 names + live : (sweep)=>{ '@later'; const out=[]; if(!sweep)for(const b of MAIL.B){ const ids=MAIL.ad
+later #644 360 bytes, 4 names + live : (st)=>{ '@later'; let n=0; const ids=st.b?MAIL.addr.filter(a=>a.b===st.b).map(a=>a.id):[];
+later #645 834 bytes, 2 names + live : (b)=>{ '@later'; let n=0; for(const A of MAIL.addr.filter(a=>a.b===b)){ const inBox=MAIL.L
+later #646 1458 bytes, 9 names + live : (sweep)=>{ '@later'; const S=S_(); if(!MAIL.ready||!S||S.state!=='free'&&S.state!=='sortin
+later #647 508 bytes, 0 names + live : t=>{ '@later'; let d=document.getElementById('mailnote'); if(!d){ d=document.createElement
+later #648 577 bytes, 5 names + live : ()=>{ '@later'; let D=null; try{ D=JSON.parse(SAVE.get('mail')||'null'); }catch(e){} if(QS
+later #649 377 bytes, 3 names + live : fs=>{ '@later'; const G=new THREE.BufferGeometry(); for(const n of names){ const A
+later #650 874 bytes, 6 names + live : ()=>{ '@later'; if(!PERFX.on[4])return; const S=new THREE.Sphere(); scene.traverse(o=>{ 
+later #651 351 bytes, 0 names + live : o=>{ '@later'; const g=o.geometry; if(o.isSprite)return 2; if(!g||!g.attributes)return 0; 
+later #652 406 bytes, 5 names + live NM RN: ()=>{ '@later'; NM=new Map(); RN=new Map(); for(const k in MAPG)NM.set(MAPG[k],'MAP '+k); 
+later #653 510 bytes, 1 names + live RN: o=>{ '@later'; const A=o.userData.objOf; if(!A)return null; let r=OP.get(o); if(r&&r.A===A
+later #654 662 bytes, 3 names + live NM: o0=>{ '@later'; let o=o0.userData.cullOf||o0, leaf=null, top=null, bt=null; for(let q=o;q&
+later #655 4445 bytes, 25 names + live cam py LVL lastH last: full=>{ '@later'; names(); M4.multiplyMatrices(cam.projectionMatrix,cam.matrixWorldInverse
+later #656 948 bytes, 9 names + live : w=>{ '@later'; if(!w)return ''; return w.objs.slice(0,6).map(o=>{ const ms=mats(o), r=objO
+later #657 478 bytes, 4 names + live hl cam hlT: w=>{ '@later'; if(hl){ hl.removeFromParent(); hl.geometry.dispose(); hl.material.dispose()
+later #658 1671 bytes, 7 names + live el n hl hlT: ()=>{ '@later'; if(!el)return; const D=collect(n++%4===0), h=D.head, f=RINSP.f.toLowerCase
+later #659 2042 bytes, 3 names + live el: ()=>{ '@later'; const css=document.createElement('style'); css.textContent=`#rinsp{positio
+later #660 595 bytes, 5 names + live BOD: ()=>{ '@later'; const B=BOD.B0, mB=(B.x0+B.x1)/2; mk('bodega',[box(BOD.X,BOD.Z,[B.x0,B
+later #661 910 bytes, 5 names + live reindex: me=>{ '@later'; const g=me.geometry; if(!g.attributes.aOp||g.index||me.userData.intr===fal
+later #662 324 bytes, 2 names + live : me=>{ '@later'; const T=me.userData.intr, parts=[T.always]; for(const k in T.per)if(L.find
+later #663 525 bytes, 3 names + live : i=>{ '@later'; const k=(PAD.ps?'ps':'xb')+i; if(IC[k])return IC[k]; const [gl,col]=GL[PAD.
+later #664 405 bytes, 2 names + live : (dx,dy,cs)=>{ '@later'; const a=PAD.ui, r=a.getBoundingClientRect(), ax=r.left+r.width/2, 
+later #665 315 bytes, 3 names + live : d=>{ '@later'; const p=(PAD.ui&&PAD.ui.closest('body>*'))||panels()[0], ts=p?[...p.querySe
+later #666 311 bytes, 7 names + live : ()=>{ '@later'; if(PAD.grab){ grab(null); return; } if(UI.menuOpen||document.getElementByI
+later #667 610 bytes, 10 names + live : (on,hit,ax,act)=>{ '@later'; if(PAD.mouse){ if(!act)return; PAD.mouse=false; } const [dx,d
+later #668 2539 bytes, 17 names + live capUp capT nav: now=>{ '@later'; if(!PAD.n){ letGo(); return; } requestAnimationFrame(tick); const dt=Math
+later #669 429 bytes, 5 names + live : (row,h)=>{ '@later'; if(!PAD.n)return ''; let o=h('THE CONTROLLER (CHANGE ITS BUTTONS IN T
+later #670 1335 bytes, 9 names + live waiting capUp capT: t=>{ '@later'; t=t||document.getElementById('keytab'); if(!t||!PAD.n)return; [...t.querySe
+later #671 561 bytes, 2 names + live cam: ()=>{ '@later'; const F=new THREE.Frustum(), M=new THREE.Matrix4().multiplyMatrices(cam.pr

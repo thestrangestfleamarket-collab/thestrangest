@@ -1,0 +1,15 @@
+ok   /market.html is not handed out by itself
+ok   /market is not handed out by itself
+ok   /door.html is not handed out by itself
+ok   /avatar.html is not handed out by itself
+ok   /g/market.html is not handed out by itself
+ok   /g/market is not handed out by itself
+ok   /g/c.0a713fc750.js is not handed out by itself
+ok   /g/c.0a713fc750.js with a login
+ok   / without a login: the door, with its invite code box
+ok   the door: no page errors 
+ok   / with a login: THE MARKET
+ok   THE MARKET starts
+ok   THE MARKET draws (its canvas is on the page)
+ok   THE MARKET: no page errors 
+all good

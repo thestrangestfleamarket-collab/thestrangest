@@ -1,0 +1,33 @@
+ok   THE MARKET starts (17029 ms)
+ok   the start's files are all in dist/g
+     first frame after 16710 ms of the page; the start fetched 19 files, 1277 KB gzipped; code: m.e8ce680b1f.js 594 KB, c.0a713fc750.js 168 KB, rig.230e9a57dd.js 43 KB
+ok   no chunk at the start
+     chunks: arcade 12 KB, bath 2 KB, club 6 KB, dojo 3 KB, dungeon 12 KB, fire 4 KB, later 186 KB, park 18 KB, vcr 6 KB
+ok   dungeon: built and shown
+ok   dungeon: its code fetched (x-dungeon)
+ok   dungeon: no page errors, no slow fetch 
+ok   park: built and shown
+ok   park: its code fetched (x-park)
+ok   park: no page errors, no slow fetch 
+ok   dojo: built and shown
+ok   dojo: its code fetched (x-dojo)
+ok   dojo: no page errors, no slow fetch 
+ok   fire escape: built and shown
+ok   fire escape: its code fetched (x-fire)
+ok   fire escape: no page errors, no slow fetch 
+ok   club: built and shown
+ok   club: its code fetched (x-club)
+ok   club: no page errors, no slow fetch 
+ok   arcade: built and shown
+ok   arcade: its code fetched (x-arcade)
+ok   arcade: no page errors, no slow fetch 
+ok   vcr repair: built and shown
+ok   vcr repair: its code fetched (x-vcr)
+ok   vcr repair: no page errors, no slow fetch 
+ok   bath house: built and shown
+ok   bath house: its code fetched (x-bath)
+ok   bath house: no page errors, no slow fetch 
+ok   a saved spot in the dungeon loads its code at the start ({"level":2,"lv":"down","busy":true,"lot":2,"objs":10,"lights":5,"sol":9,"tris":494,"skel":true,"you":{"x":992.931,"y":-3.772021758705555,"z":68.591,"h":0,"sx":-0.007901995495616595},"saved":"{\"x\":992.931,\"z\":68.591,\"y\":-3.772,\"hd\":0}"})
+ok   the saved start: no page errors, no slow fetch 
+ok   no slow fetch anywhere 
+all good

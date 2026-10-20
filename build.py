@@ -24,8 +24,14 @@ page = ''.join(read(f) for f in src).replace('__BUILDV__', bv)
 i = page.index('<script type="module">') + len('<script type="module">')
 j = page.rindex('</script>')
 body, ny = yields(page[i:j])
-raw, page = page, data(page[:i] + body + page[j:])
 os.makedirs('dist', exist_ok=True)
+open('dist/.body.js', 'w').write(body)
+subprocess.run(['node', 'tools/chunks.cjs', 'dist/.body.js', 'dist/.main.js', 'dist/.chunks.json'], check=True)
+body, CH = read('dist/.main.js'), json.load(open('dist/.chunks.json'))
+for f in ['dist/.body.js', 'dist/.main.js', 'dist/.chunks.json']: os.remove(f)
+for r in CH['report']: print('chunk', r['name'], r['bytes'], 'bytes,', r['imm'], 'names +', len(r['live']), 'live:', ' '.join(r['live']))
+art = CH['rt'] + 'const __CK={' + ','.join(json.dumps(n) + ':' + c for n, c in CH['code'].items()) + '};\nconst __CLOAD=n=>Promise.resolve(__CK[n]);\n'
+raw, page = page, data(page[:i] + art + body + page[j:])
 open('dist/market.html', 'w').write(page)
 
 open('dist/door.html', 'w').write(read('src/door/door.html'))
@@ -85,10 +91,12 @@ game = ('document.body.insertAdjacentHTML("afterbegin",' + json.dumps(read('dist
     + UNB
     + 'const __DP=Object.fromEntries([' + ','.join('[' + names[f] + ',' + bins.get(f, 'null') + ']' for f in used) + '].map(([n,b])=>[n,__GJ(n,b)]));\n'
     + 'await __RIG;\n'
+    + CH['rt'] + 'const __CU=__CHUNKURLS__;\nconst __CLOAD=n=>import("/g/"+__CU[n]).then(m=>m.default);\n'
     + re.sub(r'__LAZY__\("([^"]+)"\)', lambda m: '(()=>__GJ(' + names[m.group(1)] + ',' + bins.get(m.group(1), 'null') + '))', re.sub(r'__DATA__\("([^"]+)"\)', lambda m: '(await __DP[' + names[m.group(1)] + '])', body)))
 os.remove('dist/g/page.html')
 open('dist/g/game.js', 'w').write(re.sub(r"'https://cdn\.jsdelivr\.net/npm/((?:@[^/@']+/)?[^/@']+)@([^/']+)[^']*'", npm, data(game)))
-m = subprocess.run(['node', 'tools/bundle.cjs', 'dist/g/game.js', 'dist/g'], check=True, capture_output=True, text=True).stdout.strip()
+for n, c in CH['code'].items(): open('dist/g/x-' + n + '.js', 'w').write('export default ' + c + ';\n')
+m = subprocess.run(['node', 'tools/bundle.cjs', 'dist/g/game.js', 'dist/g'] + ['dist/g/x-' + n + '.js' for n in CH['code']], check=True, capture_output=True, text=True).stdout.strip()
 open('dist/g/market.html', 'w').write('<!doctype html><meta name="market-build" content="' + bv + '"><title>The Market</title><body bgcolor=#0e1016><script type=module src=/g/' + m + '></script>')
 pages = pages[:2] + ['dist/g/market.html']
 for f in pages:

@@ -1,11 +1,16 @@
 const es = require('esbuild'), fs = require('fs'), path = require('path'), crypto = require('crypto');
-const [entry, out] = process.argv.slice(2), sha = s => crypto.createHash('sha256').update(s).digest('hex').slice(0, 10);
+const [entry, out, ...xs] = process.argv.slice(2), sha = s => crypto.createHash('sha256').update(s).digest('hex').slice(0, 10);
 const opt = { bundle: true, format: 'esm', target: 'es2022', charset: 'utf8', minify: process.env.MIN !== '0', legalComments: 'eof', write: false, logLevel: 'error' };
 (async () => {
   const nav = (await es.build({ ...opt, stdin: { contents: "export * from '@recast-navigation/core';export * from '@recast-navigation/generators';", resolveDir: process.cwd() } })).outputFiles[0].text;
   const navName = 'nav.' + sha(nav) + '.js';
   fs.writeFileSync(path.join(out, navName), nav);
-  fs.writeFileSync(entry, fs.readFileSync(entry, 'utf8').replaceAll('__NAV__', navName));
+  const cu = {};
+  for (const x of xs) {
+    const c = (await es.transform(fs.readFileSync(x, 'utf8'), { format: 'esm', target: 'es2022', charset: 'utf8', minify: opt.minify, legalComments: 'none' })).code, n = path.basename(x, '.js');
+    cu[n.slice(2)] = n + '.' + sha(c) + '.js'; fs.writeFileSync(path.join(out, cu[n.slice(2)]), c); fs.unlinkSync(x);
+  }
+  fs.writeFileSync(entry, fs.readFileSync(entry, 'utf8').replaceAll('__NAV__', navName).replaceAll('__CHUNKURLS__', JSON.stringify(cu)));
   const r = await es.build({ ...opt, entryPoints: { m: entry }, splitting: true, outdir: out, chunkNames: 'c-[hash]', metafile: true });
   const text = {}, deps = {}, name = {};
   for (const f of r.outputFiles) text[path.basename(f.path)] = f.text;

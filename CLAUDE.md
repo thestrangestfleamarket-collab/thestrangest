@@ -24,8 +24,11 @@ Look there before changing how something looks or behaves, and add a short dated
   After re-baking a character, run `python3 tools/trim-clips.py` (keeps only clips the code names, at 12 fps).
 - To add a file, give it a number between its neighbours (e.g. `054a-name.js`, or renumber).
 - **Before reading a file, grep it in `docs/MAP.md`** (made by `node tools/map.cjs`, refreshed by the build): what it needs, what it gives,
-  and which function it sits inside. `await grab('bodega', ...)` is one function from `013a` to `059` (787 KB): names defined in those
-  files are its locals, not globals. The move to modules (20 Oct 2026) is lifting the shared kits out of it, then one place per pull request.
+  and which builder it sits inside. Each place is its own builder, `await grab(name, async()=>{...})`, one file each (`059-store` to
+  `059h-bank` on the street; the park, castle, dungeon, stairs and station after). The kits (`014`–`049`) and the bodega's own files
+  (`050`–`059`) come first. **Builders read each other's registrations when they build** (`STORE.kit` from the store, `STORE.main` from
+  main street, `MODS.apts` from the apartments), so a builder's file must come after the ones it reads: the scope proof (`tools/scope.cjs`)
+  cannot see that; the build check's error step can. Prove a move with the scope proof, then run the build check.
 
 ## Build
 

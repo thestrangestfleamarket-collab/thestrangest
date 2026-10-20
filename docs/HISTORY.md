@@ -3721,3 +3721,11 @@ initial download and load super fast"; then "Go")
   needs `STORE.kit` from it, follows as `059h-bank.js` (`await grab('bank', ...)`: the bank will get its own load, so its own builder
   is the first step). Scope proof: every reference resolves as before. The bodega builder now holds only the bodega: its layout,
   solids, signs, building and the butterflies.
+
+## 20 Oct 2026: the move to modules, done for the street
+
+- **Every place on the street is its own builder**: the store (`059-store`), main street (`059-street`), the apartments (`059a-apts`),
+  the club, the arcade, the dojo, your fire escape, the ghost dojo, the bank (`059h-bank`); the bodega builder (`050`–`059`) holds only
+  the bodega (169 KB, from 787 KB that morning). `docs/MAP.md` lists them. Two lessons, now in CLAUDE.md: a rename by reference must
+  leave `{name}` shorthand keys alone, and builders read each other's registrations at build time, so file order between them is a
+  dependency the scope proof cannot see (main street before the dojo, the store first of all).

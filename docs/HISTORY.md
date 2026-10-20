@@ -3465,3 +3465,11 @@ park's brick wall twice as high", "no ivy on the wall"; `061-park.js`)
 - **The road's index keyed by numbers** (`050-main-8.js` `at2`): no string made for each of the road's 11 million pixels.
 - **The same pixels** (`tests/texhash.cjs`, in the CI budget job): every texture in the scene hashed on the base and the pull request (seeded
   randomness), and the pull request opened twice in one profile so the second start comes from the cache; all three must match exactly.
+
+## 20 Oct 2026: the road's painters ask only what's near
+
+- **Painting the first visit faster, the same pixels** (`050-main-8.js`, `014-gamekit.js`): the road's painters (`ROADAT`, `bars`, `lane`,
+  `marks`) tested every road, corner, crosswalk and lane for each of the road's 11 million pixels. Each now keeps, per map tile, the list of
+  only those whose area touches that tile (`TCL`, in their order, so the first match is the same one); `marks` makes its noise only when it
+  draws; `cvNoise` no longer makes a small function on each call. `hash` is left alone: its second multiply goes past exact integers, so any
+  faster form would give other noise. Checked by `tests/texhash.cjs`: every texture identical to the base.

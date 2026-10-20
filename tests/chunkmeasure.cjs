@@ -42,6 +42,6 @@ const stats=pg=>pg.evaluate(()=>new Promise(res=>requestAnimationFrame(()=>reque
     rep.gq=[]; for(let k=0;k<10;k++){ rep.gq.push(await pg.evaluate(()=>window.BODB&&BODB.GQ?BODB.GQ.length:null)); await pg.waitForTimeout(1500); } rep.dragons=await pg.evaluate(()=>window.DRAGONDBG?DRAGONDBG().length:null);
     const WANT=['THE STREET','THE BODEGA','THE CASTLE','THE BANK',"THE SQUIRREL'S TOWER",'CLUB STATIC','THE MOVIE THEATRE','THE PLAYHOUSE','THE BATH HOUSE','THE SUBWAY STAIRS','DUNGEON L1','CENTRAL PARK'], names=(await pg.evaluate(()=>__UI.places().map(p=>p[0]))).filter(n=>WANT.includes(n)); rep.places={};
     let i=0; for(const n of names){ const e0=errs.length; try{ const to=(p,ms)=>Promise.race([p,new Promise((_,r)=>setTimeout(()=>r(new Error('timeout')),ms))]); await to(pg.evaluate(n=>__UI.goPlace(n),n),20000); await pg.waitForTimeout(6000); const s=await to(pg.evaluate(()=>({tris:__dbg.info().triangles,calls:__dbg.info().calls,you:__dbg.you()})),20000); rep.places[n]={...s,errs:errs.slice(e0)}; fs.writeFileSync(path.join(OUT,'tour.json'),JSON.stringify(rep,null,1)); await to(pg.screenshot({path:path.join(OUT,'p'+String(i++).padStart(2,'0')+'-'+n.replace(/[^A-Z0-9]+/gi,'_')+'.png')}),30000); }catch(e){ rep.places[n]='ERR '+e.message.slice(0,200); } }
-    await pg.evaluate(()=>__UI.goPlace('THE STREET')); await pg.waitForTimeout(6000); rep.end=await stats(pg);
+    
     rep.errors=errs.slice(0,40); return save('tour.json',rep); }
 })().catch(e=>{ console.error(e); process.exit(1); });

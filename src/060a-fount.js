@@ -44,7 +44,7 @@ const FOUNT={ready:false,swim:false}; window.FOUNT=FOUNT;
     { const n=Math.ceil(2*Math.PI*8.35/.55); for(let i=0;i<n;i++){ const a=i/n*Math.PI*2; sol(C.x+Math.cos(a)*8.35,C.y+Math.sin(a)*8.35,.32,20); } sol(C.x,C.y,5.9,20); }
     for(let a=8;a<=172;a+=.5/(R-.14)*180/Math.PI){ const t=a*Math.PI/180; sol(C.x+Math.cos(t)*(R-.14),C.y+Math.sin(t)*(R-.14),.28,30); }
     for(const [x,y,s] of S.rocks)if(s>.56)sol(x,y,s*.42,s*24);
-    setTimeout(()=>{ try{ build(); }catch(e){ console.warn('FOUNT: not built',e); } },0); };
+    PARK.later(()=>{ try{ build(); }catch(e){ console.warn('FOUNT: not built',e); } }); };
   const build=()=>{ const P=PARK, S=FOUNT.S, {C,R,L}=S, X=x=>BOD.XS(x+(P.ox||0)), Z=y=>BOD.ZS(y+(P.oy||0)), Y=BOD.YS, T=TILE, WU=T/.84, V3=THREE.Vector3, grp=MAPG.park||scene, CX=X(C.x), CZ=Z(C.y);
     const LV=-.22*WU, bedM=FOUNT.bedM, BK=P.brook, bk=(a,b)=>{ const h=BK&&BK.h(a,b); return h==null?1e9:h*WU-.5*ZU; }, bedY=d=>-bedM(d)*WU-.04; FOUNT.LV=LV; FOUNT.bedY=bedY;
     FOUNT.bedAt=(x,z)=>{ if(LVL!=='up')return null; const d=-lake(x/T+BOD.OX-(P.ox||0),z/T+BOD.OY-(P.oy||0)); return d>-1?bedY(d):null; };

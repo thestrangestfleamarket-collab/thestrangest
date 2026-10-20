@@ -73,7 +73,7 @@
         if(want!==cur){ const a=act(want); a.reset().setLoop(THREE.LoopRepeat,Infinity).fadeIn(.2).play(); if(cur)act(cur).fadeOut(.2); cur=want; }
         act(cur).timeScale=N.sheet&&!HOLD?0:ts; mixer.update(dt); armsSolve(AR,rig.bones); }});
     N.restless=()=>!!HOLD||cur===N.dwell&&!STILLC.has(cur)&&(cur!=='UAL_Idle_Talking_Loop'||!!(N.walker&&N.walker.talk));
-    N.mixer=mixer; N.kind=kind; N.act=act; if(!X.npc)PAWNL.push(N); return N; };
+    N.mixer=mixer; N.kind=kind; N.act=act; if(copy&&!X.npc)N.park=true; if(!X.npc)PAWNL.push(N); return N; };
   ALL.forEach((k,i)=>(k[2]||!PEOPLE.includes(k[0])||QS.get('sheet')===k[0])&&MK(k,i));
   window.PAWNNEW=(kind,key,X)=>MK([key,kind,0],0,X);
   window.PAWNCAM=(i=0,k=1.6)=>{ const N=PAWNL[i]; UI.setFree(true); UI.camT.set(N.st.x,N.g.position.y+N.H*.5,N.st.z); ppu=ppuTo=PPU*k; };

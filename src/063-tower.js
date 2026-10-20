@@ -36,8 +36,8 @@ const GTOWER={}; window.GTOWER=GTOWER;
     cone(tx,ty,TR+.14,TH,TH+TC,TN,(i,j,s)=>(s&1)?(j%6<1?[64,66,72]:[82,84,88]):(j%6<1?[70,72,78]:[90,92,96]));
     BATCH.tag=null;
     BATCH.cast=true; BATCH.build((k,map,emap)=>new THREE.MeshLambertMaterial({map,alphaTest:.5,side:THREE.DoubleSide})); BATCH.cast=false;
-    const Ms=BATCH.meshes||{}; BATCH.meshes={}; for(const me of Object.values(Ms)){ if(MAPG.park)MAPG.park.add(me); GTOWER.me=me; GTOWER.tris=me.geometry.attributes.position.count/3; }
+    const Ms=BATCH.meshes||{}; BATCH.meshes={}; for(const me of Object.values(Ms)){ MAPG.parkwall.add(me); GTOWER.me=me; GTOWER.tris=me.geometry.attributes.position.count/3; }
     const sol=(a0,b0,a1,b1,h)=>{ SOL.up.push([X(a0),Z(b0),X(a1),Z(b1)]); FIX.up.push([X(a0),Z(b0),0,X(a1),Z(b1),Y(h)]); };
     const q=RB*.72; sol(cx-q,cy-RB,cx+q,cy+RB,H+PH); sol(cx-RB,cy-q,cx+RB,cy+q,H+PH); sol(tx-TR,ty-TR,tx+TR,ty+TR,TH); GTOWER.ready=true; };
-  const go=()=>{ if(!window.__started||typeof GCAVE==='undefined'||!GCAVE.S||!PARK.fire)return setTimeout(go,400); setTimeout(()=>{ try{ build(); }catch(e){ console.warn('TOWER: not built',e); } },600); };
+  const go=()=>{ if(!window.__started||typeof GCAVE==='undefined'||!GCAVE.S||!MAPG.parkwall)return setTimeout(go,400); setTimeout(()=>{ try{ build(); }catch(e){ console.warn('TOWER: not built',e); } },600); };
   go(); }

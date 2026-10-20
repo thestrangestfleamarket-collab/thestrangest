@@ -35,9 +35,10 @@ const FLORA={bushes:[],beds:[],tris:0,n:{}}; window.FLORA=FLORA;
     ['COSMOS',.64,()=>[st(.62,0,0,[0,0,.06]),[OCT,0xe070b0,[.055,.006,.055],[-.02,.63,0]],[OCT,0xf2c81e,[.014,.01,.014],[-.02,.636,0]]]]];
   const BG=BUSH.map(b=>mkG(b[3]())), FG=FLOW.map(f=>mkG(f[2]())), tri=g=>g.attributes.position.count/3;
   FLORA.K={bush:BUSH.map(b=>b[0]),flower:FLOW.map(f=>f[0]),bushTris:BG.map(tri),flowerTris:FG.map(tri)};
-  const BU=[], FL=[], BEDS=[]; let cur=null;
+  let BU=[], FL=[], BEDS=[], cur=null; FLORA.meshes=[]; FLORA.flowers=0;
   const bedOpen=()=>{ cur=[]; }, bedClose=()=>{ if(cur&&cur.length>=3)BEDS.push(cur); cur=null; };
-  if(typeof PARK!=='undefined'&&PARK.ox!=null&&PARK.brook&&PARK.hill){ const P=PARK, X=x=>BOD.XS(x+P.ox), Z=y=>BOD.ZS(y+P.oy), [cx,cy,cr]=P.round, BK=P.brook, F=FOUNT;
+  const grow=park=>{ BU=[]; FL=[]; BEDS=[]; const b0=FLORA.beds.length;
+  if(park&&typeof PARK!=='undefined'&&PARK.ox!=null&&PARK.brook&&PARK.hill){ const P=PARK, X=x=>BOD.XS(x+P.ox), Z=y=>BOD.ZS(y+P.oy), [cx,cy,cr]=P.round, BK=P.brook, F=FOUNT;
     const pd=(x,y)=>Math.min(Math.abs(x-cx-P.wobX(y))-3.6,Math.abs(y-cy-P.wobY(x))-3.6,Math.hypot(x-cx,y-cy)-cr), RX=x=>x-96+cx, RY=y=>y+47+cy;
     const KEEP=[[cx+12.5-6.5,cy+11.5-6.5,cx+12.5+6.5,cy+11.5+6.5],[CASTLE.b[0]-P.ox-2,CASTLE.b[2]-P.oy-2,CASTLE.b[1]-P.ox+2,CASTLE.b[3]-P.oy+2],...(P.campAt?[(c=>[c.x-4,c.y-4,c.x+4,c.y+4])(P.campAt())]:[]),...(typeof GCAVE!=='undefined'?GCAVE.keep(P):[])];
     const GT=[[(P.gate[0]+P.gate[1])/2,P.y0],...(P.egate?[[P.x1,(P.egate[0]+P.egate[1])/2]]:[]),...(P.wgate?[[P.x0,(P.wgate[0]+P.wgate[1])/2]]:[]),...(P.ngate?[[(P.ngate[0]+P.ngate[1])/2,P.y1]]:[])];
@@ -76,7 +77,7 @@ const FLORA={bushes:[],beds:[],tris:0,n:{}}; window.FLORA=FLORA;
     for(const px of [90,102]){ const x=RX(px), y=RY(-41.5); bedOpen(); for(let j=0;j<10;j++){ const a=j/10*Math.PI*2; fl(j%2?3:5,x+Math.cos(a)*1.55,y+Math.sin(a)*1.55); } bedClose(); }
     for(const b of BU){ b.x=X(b.px); b.z=Z(b.py); b.y=P.hill(b.px,b.py); }
     for(const f of FL){ f.x=X(f.px); f.z=Z(f.py); f.y=P.hill(f.px,f.py); } }
-  if(typeof DRESS!=='undefined'&&DRESS.pits){ const pm=DRESS.pits, M=new THREE.Matrix4(), PK=[[6,0,1],[1,6,6],[0,9,0]]; for(let i=0;i<pm.count;i++){ pm.getMatrixAt(i,M); const E=M.elements, x=E[12], y=E[13], z=E[14], w=Math.hypot(E[0],E[2]); bedOpen();
+  if(!park&&typeof DRESS!=='undefined'&&DRESS.pits){ const pm=DRESS.pits, M=new THREE.Matrix4(), PK=[[6,0,1],[1,6,6],[0,9,0]]; for(let i=0;i<pm.count;i++){ pm.getMatrixAt(i,M); const E=M.elements, x=E[12], y=E[13], z=E[14], w=Math.hypot(E[0],E[2]); bedOpen();
       [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([u,v],j)=>{ if(j===i%4)return; for(let n=0;n<2;n++){ FL.push({k:PK[i%3][(j+n)%3],x:x+u*w*.33+n*.08*w*v,z:z+v*w*.33-n*.08*w*u,y,s:.8+.2*hsh(i,j+n,49),a:hsh(j,i+n,47)*6.28,street:1}); cur.push(FL.length-1); } }); bedClose(); } }
   const top=f=>f.y+FLOW[f.k][1]*VF*f.s*WU;
   for(const b of BU){ const D=BUSH[b.k], hb=b.s*VB*WU, h=hb*[.8,1.05,1.3,1.35,1.9,.85,1.25,1.2,.55,.95][b.k], r=Math.max(.2,D[1])*hb;
@@ -84,15 +85,16 @@ const FLORA={bushes:[],beds:[],tris:0,n:{}}; window.FLORA=FLORA;
     if(o.solid){ const s=r*.8; SOL.up.push([b.x-s,b.z-s,b.x+s,b.z+s]); FIX.up.push([b.x-s,b.z-s,b.y,b.x+s,b.z+s,b.y+h]); } }
   for(const L of BEDS){ let x=0, z=0; for(const i of L){ x+=FL[i].x; z+=FL[i].z; } x/=L.length; z/=L.length; const p=L.filter((_,j)=>j%Math.max(1,Math.floor(L.length/8))===0).slice(0,8).map(i=>[FL[i].x,top(FL[i])+.02*T,FL[i].z]);
     FLORA.beds.push({id:FLORA.beds.length,x,z,y:FL[L[0]].y,n:L.length,street:!!FL[L[0]].street,p,k:[...new Set(L.map(i=>FL[i].k))]}); }
-  for(const d of FLORA.beds)d.p=d.p.concat(FLORA.bushes.filter(b=>b.bloom&&Math.hypot(b.x-d.x,b.z-d.z)<5*T).slice(0,3).map(b=>[b.x,b.y+b.h*.97,b.z]));
-  const grp=(typeof MAPG!=='undefined'&&MAPG.park)||scene, sway=sh=>{ sh.uniforms.uMv=WEEDS.UMV; sh.uniforms.uSw=PARK.sway; sh.uniforms.uWk=PARK.windK;
+  for(const d of FLORA.beds.slice(b0))d.p=d.p.concat(FLORA.bushes.filter(b=>b.bloom&&Math.hypot(b.x-d.x,b.z-d.z)<5*T).slice(0,3).map(b=>[b.x,b.y+b.h*.97,b.z]));
+  const grp=park?MAPG.park:MAPG.bodega, sway=sh=>{ sh.uniforms.uMv=WEEDS.UMV; sh.uniforms.uSw=PARK.sway; sh.uniforms.uWk=PARK.windK;
     sh.vertexShader='uniform vec4 uMv[8]; uniform float uSw,uWk;\n'+sh.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\n { float ph=instanceMatrix[3].x*.37+instanceMatrix[3].z*.23, g=(.7+.3*sin(uSw*.23+ph))*uWk*max(position.y,0.)*.06; transformed.x+=sin(uSw*2.3+ph)*g; transformed.z+=sin(uSw*1.9+ph*1.7)*g*.7; }\n '+WEEDS.PART(T,'min(max(position.y,0.)*2.,1.)')); };
   const MB=new THREE.MeshLambertMaterial({vertexColors:true,flatShading:true}), MF=new THREE.MeshLambertMaterial({vertexColors:true,flatShading:true,side:THREE.DoubleSide});
   MF.onBeforeCompile=sway; MF.customProgramCacheKey=()=>'florasway';
   const inst=(G,mat,L,sc,cast,nm)=>{ if(!L.length)return null; const me=new THREE.InstancedMesh(G,mat,L.length);
     L.forEach((o,i)=>{ const v=.88+.2*hsh(o.x,o.z,57), s=o.s*sc; me.setMatrixAt(i,m4.compose(new V3(o.x,o.y,o.z),q.setFromAxisAngle(new V3(0,1,0),o.a),new V3(s,s,s))); me.setColorAt(i,col.setRGB(v,v*(.97+.06*hsh(o.z,o.x,59)),v)); });
     me.computeBoundingSphere(); me.castShadow=cast; me.receiveShadow=true; me.name=nm; me.raycast=()=>{}; grp.add(me); FLORA.tris+=tri(G)*L.length; FLORA.n[nm]=L.length; return me; };
-  FLORA.meshes=[...BG.map((G,k)=>inst(G,MB,BU.filter(b=>b.k===k),VB*WU,true,BUSH[k][0])),...FG.map((G,k)=>inst(G,MF,FL.filter(f=>f.k===k),VF*WU,false,FLOW[k][0]))].filter(Boolean);
+  FLORA.meshes.push(...[...BG.map((G,k)=>inst(G,MB,BU.filter(b=>b.k===k),VB*WU,true,BUSH[k][0])),...FG.map((G,k)=>inst(G,MF,FL.filter(f=>f.k===k),VF*WU,false,FLOW[k][0]))].filter(Boolean)); FLORA.flowers+=FL.length; };
+  grow(false); PARK.later(()=>grow(true));
   FLORA.near=(x,z,R,what)=>(what==='bed'?FLORA.beds:FLORA.bushes).filter(o=>Math.hypot(o.x-x,o.z-z)<R);
   FLORA.cover=(bx,bz,px,pz,R=8*T)=>{ let best=null, bd=1e9; for(const b of FLORA.bushes){ const d=Math.hypot(b.x-bx,b.z-bz); if(d>R)continue; const dp=Math.hypot(b.x-px,b.z-pz); if(dp<2.2*T||dp<Math.hypot(bx-px,bz-pz)*.7)continue; const s=d-dp*.3; if(s<bd){ bd=s; best=b; } } return best; };
-  FLORA.flowers=FL.length; window.FLORADBG=()=>({bushes:FLORA.bushes.length,flowers:FL.length,beds:FLORA.beds.length,tris:FLORA.tris,n:FLORA.n,K:FLORA.K}); }
+  window.FLORADBG=()=>({bushes:FLORA.bushes.length,flowers:FLORA.flowers,beds:FLORA.beds.length,tris:FLORA.tris,n:FLORA.n,K:FLORA.K}); }

@@ -32,10 +32,10 @@
     const LC=[[.42,.55,.18],[.62,.6,.2],[.78,.48,.16],[.6,.3,.12]]; for(let i=0;i<NL;i++){ ls.push({o:i%16,t:Math.random()*8,ph:Math.random()*6}); lc.set(LC[i%4],i*3); }
     for(let i=0;i<NM;i++)ms.push([(Math.random()-.5)*14*TILE,Math.random()*3*TILE,(Math.random()-.5)*14*TILE,Math.random()*6]);
     for(const o of [BIRDS,LEAVES,MOTES])OUT.add(o,'open');
-    const tick2=LFX.tick; LFX.tick=()=>{ tick2(); const t=performance.now()/1000, dt=1/60, up=LVL!=='down', day=cl((CLOCK.elev()+3)/12), park=typeof PARK!=='undefined'&&PARK.oaks;
+    const tick2=LFX.tick; LFX.tick=()=>{ tick2(); const t=performance.now()/1000, dt=1/60, up=LVL!=='down', day=cl((CLOCK.elev()+3)/12), park=typeof PARK!=='undefined'&&PARK.in&&PARK.oaks;
       const cx=BOD.XS(96+PARK.ox), cz=BOD.ZS(-40+PARK.oy); for(let i=0;i<NB;i++){ const a=t*.18+i*.35, r=(14+i*1.3)*TILE, x=cx+Math.cos(a)*r, z=cz+Math.sin(a)*r*.7, y=(9+Math.sin(i*2.1+t*.5))*TILE, w=.35*TILE, f=Math.sin(t*9+i)*.18*TILE, dx=-Math.sin(a), dz=Math.cos(a)*.7;
         bp.set([x-dz*w,y+f,z+dx*w, x,y,z, x,y,z, x+dz*w,y+f,z-dx*w],i*12); } bg.attributes.position.needsUpdate=true;
       if(park)for(let i=0;i<NL;i++){ const L=ls[i], o=park[L.o%park.length]; L.t+=dt; const T=L.t%9, y=o[2]*.8-T*.9; if(y<.02){ lp.set([o[0]+Math.sin(L.ph)*1.6,.02,o[1]+Math.cos(L.ph)*1.6],i*3); continue; }
         lp.set([o[0]+Math.sin(L.ph+T*.8)*1.6+T*.25,y,o[1]+Math.cos(L.ph)*1.6+Math.sin(T*2.3+L.ph)*.3],i*3); } lg.attributes.position.needsUpdate=true;
-      MOTES.visible=MOTES.visible&&day>.3; for(let i=0;i<NM;i++){ const m=ms[i]; mp.set([pos.x+m[0]+Math.sin(t*.3+m[3])*.4,py+m[1]+Math.sin(t*.5+m[3]*2)*.2,pos.z+m[2]+Math.cos(t*.25+m[3])*.4],i*3); } mg.attributes.position.needsUpdate=true; }; }
+      LEAVES.visible=LEAVES.visible&&!!park; MOTES.visible=MOTES.visible&&day>.3; for(let i=0;i<NM;i++){ const m=ms[i]; mp.set([pos.x+m[0]+Math.sin(t*.3+m[3])*.4,py+m[1]+Math.sin(t*.5+m[3]*2)*.2,pos.z+m[2]+Math.cos(t*.25+m[3])*.4],i*3); } mg.attributes.position.needsUpdate=true; }; }
   if(LFX.tick){ const tick0=CLOCK.tick; CLOCK.tick=dt=>{ tick0(dt); LFX.tick(); }; } }

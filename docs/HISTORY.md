@@ -3254,3 +3254,20 @@ moves in idl animations."; "skin of player just wearing all black like ninja")
   CARTWHEEL, ROLL, JUMP, ROUNDHOUSE, UPPERCUT): WATCH, he shows the move; YOUR TURN, press its keys (shown with your own key
   bindings) before the bar runs out: GOOD. or TOO SLOW. Each good one raises the new skill MARTIAL ARTS (in the skills list with
   the others, 0.3 a drill up to 30, then 0.2, then 0.1; its arrow lock respected). Walking away ends the session.
+## 19 Oct 2026: still clouds, three times as many, twice as high, animal shapes and their shadows
+- **The clouds** (owner, 19 Oct 2026, of the park lawn with big cloud shadows on the grass: "make the clouds 3x more in sky, 2x higher,
+  and they dont move. make the shapes softer, and make random shapes that have shadows on ground like a cat or dinosaur,"; `131-weather.js`):
+  240 clouds (90 + 150 x cloud shown, was 30 + 50 of 80), fixed in the world round the park's centre (no drift, no following you, the same
+  every time); every height doubled (overhead 60-92 tiles, the ring 28-104, the admin's CLOUD HEIGHT counting twice). Softer: each cloud 26
+  small round puffs (camera-facing round discs, `ShaderMaterial`, one instanced draw), lit as one rounded body in four flat bands, not puff
+  by puff. Six animal clouds built from puffs (a sitting cat with ears and a curled tail, a long-necked dinosaur, a rabbit, a whale with its
+  spout, a T-rex, a snail), placed so that at the DAY hour (`DN.S.day.h`) their shadows lie on the park's open lawn (the lawn spots
+  nearest the park's centre at least 8 tiles from an oak, 20 apart; `WX.spot` for tests), turned to read upright from the opening
+  isometric angle; the plain clouds are kept off them. Seen from the ground they sit near the sun (they are along its light).
+- **Real cloud shadows** (`006-map-pre.js`, `bake` in `131-weather.js`): the scrolling noise shadow is gone; the shown clouds are drawn top-down
+  along the sunlight into a 1024 x 1024 map (256 tiles square round the park, a quarter tile a texel), redrawn only when the sun turns,
+  the count changes or the height is changed (some 10 ms); the ground looks it up along the sun with a hard edge (CEL), the sunlight there down by up to six tenths, the light all round by a
+  fifth (stronger than the old noise's). The map's texture keeps every material's copy in step (its `version` read from its shared
+  source: three.js copies a texture into each material, and a copy never saw later changes). Found on the way: `LFX.env` (`tENV`) has
+  the same copying, so its live row (cloud strength, wet, snow) is whatever it was when each material was made. Cost: 12,800
+  triangles in all (2 a puff), one draw, one program (instead of the Lambert one), no lights; 1 MB texture.

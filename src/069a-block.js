@@ -52,7 +52,7 @@ const BLK={blds:[],signs:[],band:()=>null,built:0,in:false,hi:[],LO:.5}; window.
   const CR=[[98.5,zA-.5,.9,.9,22,[.18,.42,.36]],[98.5,zA-.5,.9,.9,44,[.22,.48,.62]],[121,zA-.6,1.1,1.1,40,[.2,.34,.24]],[73,zB+.6,1.3,.9,30,[.54,.42,.26]],[140,zB+.6,1,1,40,[.2,.34,.24]],[63,zB+.5,.8,.8,24,[.6,.18,.16]]];
   for(const [x,y,w,d,hp] of CR)solid(x-w/2,Math.min(y-d/2,y+d/2),x+w/2,Math.max(y-d/2,y+d/2),hp);
   const GA=new THREE.Group(); GA.name='alley'; GA.visible=false; scene.add(GA);
-  let tl=0; const Y=()=>{ const n=performance.now(); if(n-tl<20)return Promise.resolve(); BLK.step=Math.max(BLK.step||0,n-tl); (BLK.steps||(BLK.steps=[])).push(Math.round(n-tl)); return new Promise(r=>requestAnimationFrame(()=>{ tl=performance.now(); r(); })); };
+  let tl=0; const Y=()=>{ const n=performance.now(); if(n-tl<20)return Promise.resolve(); BLK.step=Math.max(BLK.step||0,n-tl); (BLK.steps||(BLK.steps=[])).push(Math.round(n-tl)); return new Promise(r=>requestAnimationFrame(r)).then(()=>{ tl=performance.now(); }); };
   const make=async()=>{ const G=GA, bx=(L,x0,y0,p0,x1,y1,p1,c)=>L.push([XS(Math.min(x0,x1)),YP(Math.min(p0,p1)),ZS(Math.min(y0,y1)),XS(Math.max(x0,x1)),YP(Math.max(p0,p1)),ZS(Math.max(y0,y1)),c]);
   const KO='"Black Han Sans","Do Hyeon","Noto Sans KR",sans-serif', KO2='"Do Hyeon","Black Han Sans","Noto Sans KR",sans-serif';
   const words=(g,t,x,y,w,h,font,vert)=>{ g.textAlign='center'; g.textBaseline='middle';
@@ -166,6 +166,6 @@ const BLK={blds:[],signs:[],band:()=>null,built:0,in:false,hi:[],LO:.5}; window.
       if(BLK.in&&!BLK.built)BLK.go(); else if(need&&!BLK.job)BLK.job=build();
       const v=need&&!!BLK.built; if(v!==!!BLK.shown)vis(v); };
     const t0=DRESS.tick; DRESS.tick=(dt,p)=>{ if(t0)t0(dt,p); BLK.tick(); }; }
-  window.ALLEYDBG=()=>({in:BLK.in,shown:!!BLK.shown,built:BLK.built,ms:BLK.ms,step:BLK.step&&+BLK.step.toFixed(1),steps:BLK.steps,kids:GA.children.length,signs:BLK.signs.length,lamps:GA.children.filter(o=>o.isLight).length+LITE.recs.filter(L=>L.userData.grp===GA).length,hi:BLK.hi.map(q=>q.m.material===q.hi?1:0),esc:(MODS.apts&&MODS.apts.back||[]).map(m=>m.visible?1:0)});
+  window.ALLEYDBG=()=>({in:BLK.in,shown:!!BLK.shown,built:BLK.built,ms:BLK.ms,step:BLK.step&&+BLK.step.toFixed(1),steps:BLK.steps,kids:GA.children.length,signs:BLK.signs.length,lamps:GA.children.filter(o=>o.isLight).length+LITE.recs.filter(L=>L.userData.grp===GA).length,hi:BLK.hi.map(q=>q.m.material===q.hi?1:0),tris:(()=>{ let t=0; const f=o=>{ const g=o.geometry; if(g){ const c=g.index?g.index.count:g.attributes.position.count; t+=(o.isLineSegments?c/2:c/3)*(o.isInstancedMesh?o.count:1); } }; GA.traverse(f); for(const m of MODS.apts&&MODS.apts.back||[])m.traverse(f); return Math.round(t); })(),esc:(MODS.apts&&MODS.apts.back||[]).map(m=>m.visible?1:0)});
   window.BLOCKDBG=()=>({blds:BLK.blds.map(q=>[q.row,q.x0,q.x1,q.h]),signs:BLK.signs.length,boxes:BX.length+GL.length,band:BLK.band(pos.x,pos.z)});
 }

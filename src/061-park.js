@@ -4,7 +4,7 @@ await grab('park',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.ox=P
   P.round=[(P.x0+P.x1)/2,(P.y0+P.y1-NORTHX)/2,7]; P.gate=[P.round[0]-5,P.round[0]+5]; const RX=x=>x-96+P.round[0], RY=y=>y+47+P.round[1];
   const WA=3, wobX=y=>WA*Math.sin(2*Math.PI*(y-P.y0)/(P.y1-NORTHX-P.y0)), wobY=x=>WA*Math.sin(2*Math.PI*(x-P.x0)/(P.x1-P.x0)); P.wobX=wobX; P.wobY=wobY;
   const path=(x,y)=>{ const [cx,cy,r]=P.round; return Math.abs(x-cx-wobX(y))<3.6||Math.abs(y-cy-wobY(x))<3.6||Math.hypot(x-cx,y-cy)<r; };   P.path=path; FOUNT.at(P);
-  const HK=[[P.round[0]+12.5-6,P.round[1]+11.5-6,P.round[0]+12.5+6,P.round[1]+11.5+6],[CASTLE.b[0]-PO.x-3,CASTLE.b[2]-PO.y-3,CASTLE.b[1]-PO.x+3,CASTLE.b[3]-PO.y+3],(o=>[o[0]-3,o[1]-3,o[0]+9,o[1]+19])(STORE.shrineO||[69,-45.9+NORTHY]),[RX(90)-3,RY(-41.5)-3,RX(102)+3,RY(-41.5)+3],...(typeof GCAVE!=='undefined'?GCAVE.keep(P):[])];
+  const HK=[[P.round[0]+12.5-6,P.round[1]+11.5-6,P.round[0]+12.5+6,P.round[1]+11.5+6],[CASTLE.b[0]-PO.x-3,CASTLE.b[2]-PO.y-3,CASTLE.b[1]-PO.x+3,CASTLE.b[3]-PO.y+3],[RX(90)-3,RY(-41.5)-3,RX(102)+3,RY(-41.5)+3],...(typeof GCAVE!=='undefined'?GCAVE.keep(P):[])];
   const ss=(a,b,v)=>{ const t=Math.max(0,Math.min(1,(v-a)/(b-a))); return t*t*(3-2*t); }, cvn=BOD.g.cvNoise;
   P.hill=(x,y)=>{ if(x<P.x0||x>P.x1||y<P.y0||y>P.y1)return 0; const [cx,cy,r]=P.round;
     let d=Math.min(Math.abs(x-cx-wobX(y))-3.6,Math.abs(y-cy-wobY(x))-3.6,Math.hypot(x-cx,y-cy)-r,x-P.x0-1.5,P.x1-x-1.5,y-P.y0-9,P.y1-y-1.5,FOUNT.away(x,y)); if(d<=0)return 0;
@@ -210,7 +210,7 @@ await grab('park',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.ox=P
     if(sway&&TL)for(const [k,M] of [['customDepthMaterial',new THREE.MeshDepthMaterial({depthPacking:THREE.RGBADepthPacking})],['customDistanceMaterial',new THREE.MeshDistanceMaterial()]]){ M.onBeforeCompile=swayV; M.customProgramCacheKey=()=>'oakswayd'+sway; me[k]=M; }
     scene.add(me); return me; };
   const TREEY=12+4.6; PARK.mesh=mesh;
-  const TREES=(()=>{ const out=[], RR=[], KEEP=[[P.round[0]+12.5-6,P.round[1]+11.5-6,P.round[0]+12.5+6,P.round[1]+11.5+6],[CASTLE.b[0]-3,CASTLE.b[2]-3,CASTLE.b[1]+3,CASTLE.b[3]+3],(o=>[o[0]-3,o[1]-3,o[0]+9,o[1]+19])(STORE.shrineO||[69,-45.9+NORTHY]),[P.gate[0]-16,P.y0,P.gate[1]+8,P.y0+12],(c=>[c.x-7,c.y-7,c.x+7,c.y+7])(P.campAt()),[RX(90)-3,RY(-41.5)-3,RX(102)+3,RY(-41.5)+3],...(typeof GCAVE!=='undefined'?GCAVE.keep(P):[])];
+  const TREES=(()=>{ const out=[], RR=[], KEEP=[[P.round[0]+12.5-6,P.round[1]+11.5-6,P.round[0]+12.5+6,P.round[1]+11.5+6],[CASTLE.b[0]-3,CASTLE.b[2]-3,CASTLE.b[1]+3,CASTLE.b[3]+3],[P.gate[0]-16,P.y0,P.gate[1]+8,P.y0+12],(c=>[c.x-7,c.y-7,c.x+7,c.y+7])(P.campAt()),[RX(90)-3,RY(-41.5)-3,RX(102)+3,RY(-41.5)+3],...(typeof GCAVE!=='undefined'?GCAVE.keep(P):[])];
     const [cx,cy]=P.round, W=k=>/^Oak/.test(k)?.42:F[k].wide*.45, add=(k,x,y,m,t)=>{ out.push([k,+x.toFixed(1),+y.toFixed(1),+m.toFixed(1),+t.toFixed(2)]); RR.push(m*W(k)); }, near=(x,y,r,f,g)=>out.some((o,j)=>Math.hypot(o[1]-x,o[2]-y)<Math.max(g,(RR[j]+r)*f)),
       ok=(x,y,r)=>!(Math.abs(x-cx-wobX(y))<6.6+r||Math.abs(y-cy-wobY(x))<6.6+r||y<P.y0+TREEY+4||y>P.y1-r-8||x<P.x0+r+10||x>P.x1-r-10||Math.hypot(x-cx,y-cy)<P.round[2]+r+6||KEEP.some(b=>x>b[0]-r&&x<b[2]+r&&y>b[1]-r&&y<b[3]+r)||BK.wet(x,y,r)||FOUNT.lake(x,y)<r*.35+1.5||FOUNT.ter(x,y)<r+.5);
     for(const [k,m,qx,qy,lk] of [['Willow1',19,1,1,1],['Giant1',34,-1,1,0],['Spruce1',28,1,-1,0]]){ const r=m*W(k), tx=(qx<0?P.x0:P.x1)/2+cx/2, ty=(qy<0?P.y0:P.y1)/2+cy/2; let best=null, bs=1e9;

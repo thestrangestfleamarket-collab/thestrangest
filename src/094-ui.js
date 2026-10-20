@@ -233,7 +233,7 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
     const mid=(X,Z,r)=>[(X(r[0])+X(r[2]))/2,(Z(r[1])+Z(r[3]))/2], B=BOD.B0;
     add('THE SHOP',...mid(BOD.X,BOD.Z,[B.x0,BOD.BODOFF,B.x1,B.y1]),'up'); add('THE BACK ROOM',...mid(BOD.X,BOD.Z,[B.x0,B.y0,B.x1,BOD.BODOFF]),'up');
     const R=AWAY.has('apartments')?[]:POOLR.ROOMS||[]; [['THE GYM',0],['THE HALLWAY',3],['THE LOBBY',5],['THE OFFICE',6]].forEach(([n,i])=>R[i]&&add(n,...mid(POOLR.X,POOLR.Z,R[i]),'up'));
-    if(BOD.GD)add('THE BATHS',...mid(BOD.X,BOD.Z,BOD.GD.r),'up');
+    if(BOD.GD)add('THE BATHS',...mid(BOD.X,BOD.Z,BOD.GD.floor||BOD.GD.r),'up');
     if(MODS.apts){ const A=MODS.apts.A, H=MODS.apts.H; for(let f=0;f<(MODS.apts.floors||5);f++)add('APARTMENT HOUSE '+(f?'FLOOR '+(f+1):'GROUND'),BOD.X((A.x0+A.x1)/2),BOD.Z((H.y0+H.y1)/2),f?MODS.apts.lvY(f):'up'); }
     add('THE SUBWAY STAIRS',BOD.XS((MAPSTAIR.x0+MAPSTAIR.x1)/2),BOD.ZS(MAPSTAIR.y1+1.2),'up'); }
   if(STORE.places.length){ const h=document.createElement('h3'); h.textContent='MORE PLACES'; $('#places').parentNode.appendChild(h); const row=document.createElement('div'); row.className='row'; row.id='stored'; $('#places').parentNode.appendChild(row);

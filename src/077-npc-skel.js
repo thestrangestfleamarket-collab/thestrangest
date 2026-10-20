@@ -89,4 +89,4 @@ const SKELGO=()=>SKELGO.p||(SKELGO.p=(async()=>{ const S=await SKEL();
 window.SKELDBG=()=>NPCS.filter(N=>N.mixer).map(N=>({key:N.key,x:+N.st.x.toFixed(2),z:+N.st.z.toFixed(2),y:+N.g.position.y.toFixed(2),to:!!N.st.to,bones:N.me.skeleton.bones.length}));
 if(!MODS.dungeon||QS.get('trouble'))await SKELGO();
 
-const DRAGON=__DATA__("data/dragon.json");
+const DRAGON=__LAZY__("data/dragon.json");

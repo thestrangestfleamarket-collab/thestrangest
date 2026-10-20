@@ -141,7 +141,7 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
   W3.place=(B,x,y,z,hd,yawA,ZY)=>{ if(W3.hideMe)W3.group.traverse(o=>{ if(o.isMesh)o.visible=false; }); W3.group.position.set(x,y,z); W3.group.rotation.set(0,hd,0); W3.group.scale.set(W3.SZ/PPU,ZY*W3.SZ*(W3.BH||1),W3.SZ/PPU);
     const L=R.yaw(LIGHT,-yawA); W3.L.set(L.x,L.y,L.z);
     W3.G.value.set(Math.cos(hd),0,Math.sin(hd),0,1,0,-Math.sin(hd),0,Math.cos(hd)); if(typeof SHL!=='undefined')SHL.forEach((S,i)=>{ W3.LP.value[i].copy(S.position);
-      const wl=typeof POOLR!=='undefined'?POOLR.Y(POOLR.level):-1e9, under=S.position.y<wl, k=!under?1:POOLR.inBasin(x,z)?(y<wl?0.6:0.25):0;
+      const k=1;
       W3.LC.value[i].set(S.color.r,S.color.g,S.color.b).multiplyScalar(Math.min(1.5,S.intensity/2)*k); });
     if(typeof cam!=='undefined')cam.getWorldDirection(W3.CamW.value);
     if(!W3.realL||!(W3.Lw.lengthSq()>.5))W3.Lw.set(L.x/PPU,L.y*ZY,L.z/PPU).applyAxisAngle(new THREE.Vector3(0,1,0),hd).normalize();

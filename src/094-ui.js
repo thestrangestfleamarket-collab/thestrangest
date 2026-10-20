@@ -173,7 +173,7 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
   UI.toggleMenu=()=>toggleMenu(); UI.menuTab=t=>{ if(!UI.menuOpen)toggleMenu(); show(t); };
   function toggleMenu(){ UI.menuOpen=!UI.menuOpen; M.hidden=!UI.menuOpen; keys.clear(); st.runTarget=0; if(UI.menuOpen){ mapLv=LVL; show(tab); } }
   const mcv=$('#mapcv'), mg=mcv.getContext('2d'), rt=new THREE.WebGLRenderTarget(8,8), top=new THREE.OrthographicCamera(-1,1,1,-1,.1,200);
-  const mapRect=lv=>{ const B=lv==='down'?MODS.station.BOUND:AWAY.has('apartments')?MODS.bodega.BOUND:{x0:Math.min(MODS.bodega.BOUND.x0,MODS.pool.BOUND.x0),x1:Math.max(MODS.bodega.BOUND.x1,MODS.pool.BOUND.x1),z0:Math.min(MODS.bodega.BOUND.z0,MODS.pool.BOUND.z0),z1:Math.max(MODS.bodega.BOUND.z1,MODS.pool.BOUND.z1)};
+  const mapRect=lv=>{ const B=lv==='down'?MODS.station.BOUND:MODS.bodega.BOUND;
     const w=B.x1-B.x0, d=B.z1-B.z0, k=Math.min(800/w,420/d); return {x0:B.x0,x1:B.x1,z0:B.z0,z1:B.z1,W:Math.round(w*k),H:Math.round(d*k)}; };
   const GAM=new Uint8Array(256).map((_,i)=>Math.round(255*Math.pow(i/255,1/2.2))), CLP=[new THREE.Plane(new THREE.Vector3(0,-1,0),0),new THREE.Plane(new THREE.Vector3(0,1,0),0)], cc=new THREE.Color();
   UI.topShot=(R,lv,W,H)=>{ const vis={}; rt.setSize(W,H); for(const k in MAPG)vis[k]=MAPG[k].visible; MAPG.down.visible=lv==='down'; for(const k of ['bodega','pool','poolout','parkwall','park','castle'])if(MAPG[k])MAPG[k].visible=lv==='up';
@@ -223,7 +223,7 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
   UI.goTo=goTo;
   mcv.addEventListener('click',e=>{ const r=mcv.getBoundingClientRect(); if(mapLv==='up'){ const Q=plan(), [x,y]=Q.tile((e.clientX-r.left)/r.width*Q.W,(e.clientY-r.top)/r.height*Q.H); return goTo((x-BOD.OX)*TILE,(y-BOD.OY)*TILE,'up'); } const R=mapRect(mapLv); goTo(R.x0+(e.clientX-r.left)/r.width*(R.x1-R.x0),R.z0+(e.clientY-r.top)/r.height*(R.z1-R.z0),mapLv); });
   M.querySelectorAll('[data-lv]').forEach(b=>b.onclick=()=>{ mapLv=b.dataset.lv; drawMap(); });
-  const PLACES=[['THE STREET',-2.2,3.2,'up'],['THE BODEGA',BOD.X((BOD.B0.x0+BOD.B0.x1)/2),BOD.Z(BOD.B0.y1)-3.4,'up'],...(AWAY.has('apartments')?[]:[['THE APARTMENTS',POOLR.X(22.75),POOLR.Z(12),'up'],['THE POOL',POOLR.X(10),POOLR.Z(8.9),'up']]),['THE PLATFORM',MODS.station.plat.x,MODS.station.plat.z,'down'],['CENTRAL PARK',BOD.XS(PARK.round[0]+PARK.ox),BOD.ZS(PARK.y0+7+PARK.oy),'up'],['THE BATH HOUSE',BOD.X(BOD.GD.door[0]),BOD.Z(BOD.GD.door[1]+4.5),'up'],...(STORE.main?STORE.main.doors.map(d=>[...d,'up']):[]),['THE CASTLE',BOD.XS(CASTLE.gate),BOD.ZS(CASTLE.b[2]-3),'up'],['DUNGEON L1',MODS.dungeon.arrive(1).x,MODS.dungeon.arrive(1).z,'down']];
+  const PLACES=[['THE STREET',-2.2,3.2,'up'],['THE BODEGA',BOD.X((BOD.B0.x0+BOD.B0.x1)/2),BOD.Z(BOD.B0.y1)-3.4,'up'],['THE PLATFORM',MODS.station.plat.x,MODS.station.plat.z,'down'],['CENTRAL PARK',BOD.XS(PARK.round[0]+PARK.ox),BOD.ZS(PARK.y0+7+PARK.oy),'up'],['THE BATH HOUSE',BOD.X(BOD.GD.door[0]),BOD.Z(BOD.GD.door[1]+4.5),'up'],...(STORE.main?STORE.main.doors.map(d=>[...d,'up']):[]),['THE CASTLE',BOD.XS(CASTLE.gate),BOD.ZS(CASTLE.b[2]-3),'up'],['DUNGEON L1',MODS.dungeon.arrive(1).x,MODS.dungeon.arrive(1).z,'down']];
   UI.places=()=>PLACES.concat(STORE.places||[]);
   const goPlace=n=>{ if(STORE.ensure)STORE.ensure(); if(STORE.offGo)STORE.offGo(n); const P=PLACES.concat(STORE.places).find(p=>p[0]===n); if(P)goTo(P[1],P[2],P[3]); }; UI.goPlace=goPlace;
   { const q=QS.get('place'); const go=()=>window.__started?goPlace(q.toUpperCase()):setTimeout(go,200); if(q)setTimeout(go,300); }
@@ -232,7 +232,6 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
     const add=(n,x,z,lv)=>{ const b=document.createElement('button'); b.className='btn'; b.textContent=n; b.onclick=()=>goTo(x,z,lv); row.appendChild(b); PLACES.push([n,x,z,lv]); };
     const mid=(X,Z,r)=>[(X(r[0])+X(r[2]))/2,(Z(r[1])+Z(r[3]))/2], B=BOD.B0;
     add('THE SHOP',...mid(BOD.X,BOD.Z,[B.x0,BOD.BODOFF,B.x1,B.y1]),'up'); add('THE BACK ROOM',...mid(BOD.X,BOD.Z,[B.x0,B.y0,B.x1,BOD.BODOFF]),'up');
-    const R=AWAY.has('apartments')?[]:POOLR.ROOMS||[]; [['THE GYM',0],['THE HALLWAY',3],['THE LOBBY',5],['THE OFFICE',6]].forEach(([n,i])=>R[i]&&add(n,...mid(POOLR.X,POOLR.Z,R[i]),'up'));
     if(BOD.GD)add('THE BATHS',...mid(BOD.X,BOD.Z,BOD.GD.floor||BOD.GD.r),'up');
     if(MODS.apts){ const A=MODS.apts.A, H=MODS.apts.H; for(let f=0;f<(MODS.apts.floors||5);f++)add('APARTMENT HOUSE '+(f?'FLOOR '+(f+1):'GROUND'),BOD.X((A.x0+A.x1)/2),BOD.Z((H.y0+H.y1)/2),f?MODS.apts.lvY(f):'up'); }
     add('THE SUBWAY STAIRS',BOD.XS((MAPSTAIR.x0+MAPSTAIR.x1)/2),BOD.ZS(MAPSTAIR.y1+1.2),'up'); }

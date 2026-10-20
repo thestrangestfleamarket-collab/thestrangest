@@ -3656,3 +3656,10 @@ initial download and load super fast"; then "Go")
   `WEEDC` (the page-level `PROPS`, `CITY`, `WEEDS` are untouched). Proof: every reference resolves to the
   same declaration text as before (226,600 compared). What was already true and now shows: none of `014`–`049` touches the scene, the
   lamps or the walls, so the builder's group holds exactly what it held.
+
+## 20 Oct 2026: the club is its own builder (modules, step 4)
+
+- **`058-club.js` is `059a-club.js`**, after the bodega builder closes, wrapped in `await grab('club', ...)`: its room and props land in
+  `MAPG.club`, its own group, instead of the bodega's. It was already a self-contained block using only page-level names and giving
+  none back; the scope proof shows every reference resolving as before. The club's inside still builds on entry (the `club` chunk).
+  Next: the arcade, the dojo, the fire escape, the ghost dojo, the apartments, main street and the store, one each.

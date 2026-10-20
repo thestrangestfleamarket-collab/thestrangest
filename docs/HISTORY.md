@@ -3763,3 +3763,16 @@ initial download and load super fast"; then "Go")
   crowns from inside the park, the skyline just showing over it. Cost: the letters and arc some 180 boxes (2,200 triangles, in the
   gate's instanced mesh, no new draw); the forest 49 trees, about 12,000 triangles in the park's one tree mesh (18,300 in all now),
   drawn only when the far side is in view; no lights or programs.
+
+## 20 Oct 2026: the run's crossing; arriving in front of the doormat
+
+- **The run** (owner, 20 Oct 2026, with a picture at the bodega's door: "at points in the running stance the character has both legs
+  back like this"; `walkPose` in `001-rig.js`): measured through a cycle, both ankles sat behind the pelvis for a tenth of each cycle
+  (2–8 units), while the swing foot crossed under the body after the stance foot had already fallen behind the hip. Running, the swing
+  now comes through earlier (its ease runs 40% faster at full run, held at the landing point before touch-down), so the crossing is one
+  frame with both feet within two units of the hip, under the body. The walk is untouched (the factor scales with the run). The jump
+  test still passes. `tests/runcycle` is the measure (kept in the session's tools, not the repo).
+- **The doormat** (owner, same message: "when you enter a location you should show up in front of their doormat"): every arrival by
+  a place's door (the GO TO menu, the E action at a door, `STORE.enter`) lands you 1.2–1.6 units inside the door, centred on it, facing
+  into the room (`goTo` takes a heading; a room records its door's inward heading, `R.hd`, on its place entry). THE BODEGA's GO TO spot
+  was 3.4 units in, past the mat; it is 1.6 now, in front of it.

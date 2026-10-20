@@ -54,7 +54,7 @@ await grab('store',async()=>{ const K=BOD.STOREK, {X,Y,Z,gbox,faceTex,bq,C,place
   const rec=(id,name,B,door,walls)=>{ const R0=STORE.rooms.find(r=>r.id===id); if(R0)return R0;
     const dx=door?(door.w==='f'||door.w==='b'?door.a:door.w==='w'?B.x0+1.2:B.x1-1.2):(B.x0+B.x1)/2, dy=door?(door.w==='f'?B.y1-1.2:door.w==='b'?B.y0+1.2:door.a):(B.y0+B.y1)/2;
     const R={id,name,B,x0:X(B.x0),x1:X(B.x1),z0:Z(B.y0),z1:Z(B.y1),y0:-1,y1:Y(B.h),walls,at:{x:X(dx),z:Z(dy)},dw:door||null}; R.inside=(x,z)=>x>R.x0&&x<R.x1&&z>R.z0&&z<R.z1&&py>R.y0-.3&&py<R.y1;
-    STORE.rooms.push(R); const pl=STORE.places.find(q=>q[0]===name); if(pl){ pl[1]=R.at.x; pl[2]=R.at.z; pl[3]='up'; } else STORE.places.push([name,R.at.x,R.at.z,'up']); return R; };
+    R.hd=door?door.w==='f'?Math.PI:door.w==='b'?0:door.w==='w'?Math.PI/2:-Math.PI/2:null; STORE.rooms.push(R); const pl=STORE.places.find(q=>q[0]===name); if(pl){ pl[1]=R.at.x; pl[2]=R.at.z; pl[3]='up'; pl[5]=R.hd; } else STORE.places.push([name,R.at.x,R.at.z,'up',undefined,R.hd]); return R; };
 
   const STEPS=[];
   if(!AWAY.has('diner')){ const B=B_('ldiner'), sc=B.s||1; laid('diner',()=>room('diner','THE DINER',B,{floor:K.diner.dinerFloorCol,in:K.diner.dinerWall},{w:'f',a:B.x0+9.5*sc,wd:1.56,h:94},B=>{ PRESETS['Preset Diner 1'].forEach(([k,dx,dy,r])=>put(k,B.x0+dx*sc,B.y0+dy*sc,r)); })); }
@@ -286,12 +286,12 @@ await grab('store',async()=>{ const K=BOD.STOREK, {X,Y,Z,gbox,faceTex,bq,C,place
     const frames=n=>new Promise(r=>{ const f=()=>--n<=0?r():requestAnimationFrame(f); requestAnimationFrame(f); });
     STORE.enter=async(id,walk)=>{ const R=STORE.inside[id]; if(!R||R.busy)return; R.busy=true; const el=document.getElementById('subfade'), name=/^THE /.test(R.name)?R.name:'THE '+R.name;
       if(!R.done){ if(el){ el.textContent='ENTERING '+name; el.style.opacity='1'; } if(typeof keys!=='undefined'&&keys.clear)keys.clear(); await frames(3); await LOAD(...need()); STORE.inGo(id); await frames(2); }
-      if(walk){ const [x,y]=DOORP(R,-1.4); STORE.goTo(X(x),Z(y),'up'); await frames(2); } if(el)el.style.opacity='0'; R.busy=false; };
+      if(walk){ const [x,y]=DOORP(R,-1.4), d=R.door; STORE.goTo(X(x),Z(y),'up',d.w==='f'?Math.PI:d.w==='b'?0:d.w==='w'?Math.PI/2:-Math.PI/2); await frames(2); } if(el)el.style.opacity='0'; R.busy=false; };
     STORE.inAt=(x,z)=>{ for(const id in STORE.inside){ const R=STORE.inside[id]; if(R.done||R.busy)continue; const B=R.B; if(x>X(B.x0)&&x<X(B.x1)&&Math.min(Z(B.y0),Z(B.y1))<z&&z<Math.max(Z(B.y0),Z(B.y1)))STORE.enter(id,false); } };
     STORE.doorThings=()=>{ if(typeof UI==='undefined'||!UI.thing)return; for(const id in STORE.inside){ const R=STORE.inside[id]; if(R.th)continue; const [x,y]=DOORP(R,.35), hb=new THREE.Mesh(new THREE.BoxGeometry(1.4*TILE,2.6*TILE,.5*TILE),new THREE.MeshBasicMaterial({visible:false}));
       hb.position.set(X(x),1.3*TILE,Z(y)); scene.add(hb); R.th={name:/^THE /.test(R.name)?R.name:'THE '+R.name,ghost:1,obj:hb,reach:1.4*TILE,near:2.4*TILE,tall:2.6*TILE,act:()=>STORE.enter(id,true)}; UI.thing(R.th); }
       if(!STORE.xth){ STORE.xth=1; const xd=(name,x,y,ix,iy)=>{ const hb=new THREE.Mesh(new THREE.BoxGeometry(1.4*TILE,2.6*TILE,.5*TILE),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(X(x),1.3*TILE,Z(y)); scene.add(hb);
-          UI.thing({name,ghost:1,obj:hb,reach:1.4*TILE,near:2.4*TILE,tall:2.6*TILE,act:()=>STORE.goTo(X(ix),Z(iy),'up')}); };
+          UI.thing({name,ghost:1,obj:hb,reach:1.4*TILE,near:2.4*TILE,tall:2.6*TILE,act:()=>STORE.goTo(X(ix),Z(iy),'up',Math.PI)}); };
         { const B=BOD.B0, m=(B.x0+B.x1)/2; xd('THE BODEGA',m,B.y1+.35,m,B.y1-1.4); }
         if(BOD.GD){ const [x,y]=BOD.GD.door; xd('THE BATH HOUSE',x,y+.35,x,y-1); } } };
     STORE.offAt=(x,z)=>{ const w=[]; for(const n in OFF){ const [a,b,c,d]=OFF[n].lot; if(!OFF[n].done&&x>X(a)&&x<X(c)&&z>Z(b)&&z<Z(d))w.push(STORE.offGo(n)); } return Promise.all(w); };

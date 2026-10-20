@@ -1,0 +1,174 @@
+{
+ "wx13": {
+  "show": 102,
+  "vis": false,
+  "n": 240,
+  "inst": 2805,
+  "cy": 13.559999999999999,
+  "pos": [
+   30.5,
+   27.1,
+   85.6
+  ],
+  "sun": [
+   0.06,
+   0.67,
+   0.74
+  ]
+ },
+ "mask13": {
+  "V": [
+   0.08761047370934905,
+   1.113196615984238,
+   30.509999999999998,
+   85.5975
+  ],
+  "cc": [
+   30.509999999999998,
+   85.5975
+  ]
+ },
+ "hook13": {
+  "same": false,
+  "v0": 424,
+  "v1": 424,
+  "st": []
+ },
+ "diag13": {
+  "bkl": [],
+  "bkn": 0,
+  "mats": [
+   {
+    "name": "down",
+    "tCS": true,
+    "same": false,
+    "ver": 424,
+    "src": true,
+    "csV": "{\"x\":0.08761047370934905,\"y\":1.113196615984238,\"z\":30.509999999999998,\"w\":85.5975}",
+    "env": 1,
+    "envSrcV": 433,
+    "prog": true,
+    "hasCS": true
+   }
+  ],
+  "P0": [
+   153,
+   0,
+   0
+  ],
+  "texV": 424,
+  "fx": [
+   "cs",
+   "cool"
+  ]
+ },
+ "render": {
+  "head": {
+   "fps": 0,
+   "ms": 0,
+   "calls": 2132,
+   "tris": 455246,
+   "points": 180,
+   "lines": 874,
+   "programs": 218,
+   "progsOnScreen": 61,
+   "geometries": 1070,
+   "textures": 334,
+   "lightsInScene": 11,
+   "lightsLit": 7,
+   "shadows": [
+    "Point 512x6",
+    "Directional 3072",
+    "Directional 2048"
+   ],
+   "lvl": "up",
+   "place": "",
+   "at": [
+    27,
+    75.8
+   ],
+   "drawnObjs": 622,
+   "drawnTris": 234405,
+   "fog": 1769912,
+   "loadedTris": 897623,
+   "geoBytes": 69469680,
+   "texBytes": 453325808
+  }
+ },
+ "info": null,
+ "wx15.5": {
+  "show": 102,
+  "vis": false,
+  "n": 240,
+  "inst": 2805,
+  "cy": 13.559999999999999,
+  "pos": [
+   30.5,
+   27.1,
+   85.6
+  ],
+  "sun": [
+   0.58,
+   0.49,
+   0.65
+  ]
+ },
+ "mask15.5": {
+  "V": [
+   1.1993691383207963,
+   1.3320343749189814,
+   30.509999999999998,
+   85.5975
+  ],
+  "cc": [
+   30.509999999999998,
+   85.5975
+  ]
+ },
+ "hook15.5": {
+  "same": false,
+  "v0": 443,
+  "v1": 445,
+  "st": [
+   "Error\n    at yi.set [as version] (eval at evaluate (:290:30), <anonymous>:1:194)\n    at set needsUpdate (https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js:6:16500)\n    at set needsUpdate (https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js:6:20628)\n    at Nc.copy (https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js:6:19160)\n    at Nc.clone (https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js:6:18412)\n    at Object.Ys [as clone] (https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js:6:121445)\n    at Object.getU",
+   "Error\n    at yi.set [as version] (eval at evaluate (:290:30), <anonymous>:1:194)\n    at set needsUpdate (https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js:6:16500)\n    at set needsUpdate (https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js:6:20628)\n    at Nc.copy (https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js:6:19160)\n    at Nc.clone (https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js:6:18412)\n    at Object.Ys [as clone] (https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js:6:121445)\n    at Object.getU"
+  ]
+ },
+ "diag15.5": {
+  "bkl": [],
+  "bkn": 0,
+  "mats": [
+   {
+    "name": "down",
+    "tCS": true,
+    "same": false,
+    "ver": 445,
+    "src": true,
+    "csV": "{\"x\":1.1993691383207963,\"y\":1.3320343749189814,\"z\":30.509999999999998,\"w\":85.5975}",
+    "env": 1,
+    "envSrcV": 454,
+    "prog": true,
+    "hasCS": true
+   }
+  ],
+  "P0": [
+   153,
+   0,
+   0
+  ],
+  "texV": 445,
+  "fx": [
+   "cs",
+   "cool"
+  ]
+ },
+ "errors": [
+  "13 Fetch API cannot load file:///home/runner/work/thestrangest/thestrangest/dist/market.html?fresh=1&hide=1&hour=13&wx=CLEAR. URL scheme \"file\" is not supported.",
+  "13 THREE.Sprite: \"Raycaster.camera\" needs to be set in order to raycast against sprites.",
+  "13 Fetch API cannot load file:///home/runner/work/thestrangest/thestrangest/dist/market.html?fresh=1&hide=1&hour=13&wx=CLEAR. URL scheme \"file\" is not supported.",
+  "13 Fetch API cannot load file:///home/runner/work/thestrangest/thestrangest/dist/market.html?fresh=1&hide=1&hour=13&wx=CLEAR. URL scheme \"file\" is not supported.",
+  "15.5 Fetch API cannot load file:///home/runner/work/thestrangest/thestrangest/dist/market.html?fresh=1&hide=1&hour=15.5&wx=CLEAR. URL scheme \"file\" is not supported.",
+  "15.5 THREE.Sprite: \"Raycaster.camera\" needs to be set in order to raycast against sprites.",
+  "15.5 Fetch API cannot load file:///home/runner/work/thestrangest/thestrangest/dist/market.html?fresh=1&hide=1&hour=15.5&wx=CLEAR. URL scheme \"file\" is not supported."
+ ]
+}

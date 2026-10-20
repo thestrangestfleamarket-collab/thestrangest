@@ -3583,7 +3583,7 @@ initial download and load super fast"; then "Go")
   as he walks; now and then he lifts his right hand); big padded feet with four toes. **The robe is cloth**: 96 points (16 round,
   6 down, the top row held at his shoulders) under gravity, swung by his starts, stops, turns and pace, kept off his body and pushed
   by his legs, each point a bone the robe hangs on; it settles and stops still when he stands. Built at twice his size (`metres` 3.7).
-  Cost: 11,876 triangles, no lights, no new programs; the cloth's ms a frame not yet measured in the game. Moving pictures: `node tools/charanim.cjs`
+  Cost: 11,876 triangles, no lights (shader programs: see the 4,000-triangle entry); the cloth's ms a frame not yet measured in the game. Moving pictures: `node tools/charanim.cjs`
   (the game's own rig on the character alone, on black: stand, walk, turn, stop).
 
 - **NUMBER 80** (owner, 20 Oct 2026, his photo of a felted kid in a horned helmet and an 80 jersey walking a city street: "bring into
@@ -3594,7 +3594,7 @@ initial download and load super fast"; then "Go")
   a maroon jersey with a gold 80 in raised cord, green sleeves with maroon cuffs, tan mitts; maroon trousers bunched in rings, brown
   boots with gold laces. Arms on shoulder, elbow and hand; legs on hip, knee and foot (knees bend in the swing). Standing, now and
   then he reaches up to set his helmet straight. Built at twice his size (`metres` 2.2). Cost: 14,324 triangles (over the 12k he
-  picked for each: the helmet's horns and studs), no lights, no new programs.
+  picked for each: the helmet's horns and studs), no lights (shader programs: see the 4,000-triangle entry).
 ## 20 Oct 2026: comments allowed, the README set right
 
 - **The no-comments rule relaxed** (owner, 20 Oct 2026, on an audit from another chat that found the rule "saves exactly zero bytes"
@@ -3643,6 +3643,8 @@ initial download and load super fast"; then "Go")
   need to be so big?"; his pick "4000", as 19 Oct's cut of the heaviest pawns): their curves are sampled more coarsely (fewer rings and
   segments on every lathe, tube and surface; the same profiles, proportions, bones, cloth and motion). THE MANATEE 11,876 → 3,748;
   THE RAIN FISH 11,236 → 3,764 with the hood; NUMBER 80 14,324 → 4,048 (his horn four rings, not seven).
+  Measured together by CI's budget check against main: 2,552 more triangles and 4 more shader programs at the start (150 → 154: the
+  hood's see-through material and the new characters' variants), one more draw call; within budget.
 ## 20 Oct 2026: two requests queued (the grass, the bank)
 
 - **The grass** (owner, 20 Oct 2026: "lets make the grass mostly flat again, except on the edges, more natural, and it doesnt move at

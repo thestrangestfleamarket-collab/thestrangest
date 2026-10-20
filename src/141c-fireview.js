@@ -2,12 +2,12 @@
   const ix=x=>x/(T*KK)+BOD.OX, iy=z=>z/(T*KK)+BOD.OY, cl=v=>Math.max(0,Math.min(1,v)), nk=()=>cl((4-CLOCK.elev())/8);
   const L0=CX-3.6, L1=CX+3.6, DO=1.65, STP={x0:CX-.8,x1:CX+.8,y1:WY+.42,z:14}, LX=CX+2.6, AWX=24.7;
   const onL=(x,z)=>{ const u=ix(x), v=iy(z); return u>L0-.3&&u<L1+.3&&v>WY-.4&&v<WY+DO+.4; };
-  const G=new THREE.Group(); G.visible=false; scene.add(G); const MATS=[]; let light=null, CARS=null, busy=false, lp=null;
+  const G=new THREE.Group(); G.visible=false; scene.add(G); const MATS=[]; let light=null, CARS=null, MID=null, busy=false, lp=null;
   F.on=false; F.G=G;
   const wait=ms=>new Promise(r=>setTimeout(r,ms)), frames=k=>new Promise(r=>{ const f=()=>--k<=0?r():requestAnimationFrame(f); requestAnimationFrame(f); });
   const fade=async(txt,fn)=>{ busy=true; const el=document.getElementById('subfade'); el.textContent=txt; el.style.pointerEvents='auto'; el.style.opacity='1'; if(keys.clear)keys.clear(); target=null; await wait(340); await frames(2);
     fn(); await frames(3); await wait(260); el.style.opacity='0'; el.style.pointerEvents='none'; await wait(360); busy=false; };
-  F.out=()=>{ if(busy)return; fade(F.built?'YOUR FIRE ESCAPE':'LOADING YOUR FIRE ESCAPE...',()=>{ STORE.offGo(F.name); UI.goTo(X(CX),Z(WY+1.05),Y(HZ)); heading=0; }); };
+  F.out=()=>{ if(busy)return; fade(F.built?'YOUR FIRE ESCAPE':'LOADING YOUR FIRE ESCAPE...',()=>{ STORE.offGo(F.name); UI.goTo(X(CX),Z(WY+1.05),Y(HZ)); heading=0; if(UI.persp&&window.__dbg)__dbg.face(Math.PI); }); };
   F.back=()=>{ if(busy)return; fade('YOUR APARTMENT',()=>{ if(USE.seat){ USE.seat=null; st.sit=null; } UI.goTo(X(U(AWX)),Z(V(1.1)),APTS.lvY(2)); heading=0; }); };
   const hit=(w,h,d,x,y,z)=>{ const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),new THREE.MeshBasicMaterial({visible:false})); m.position.set(x,y,z); scene.add(m); return m; };
   UI.thing({name:'YOUR FIRE ESCAPE',ghost:1,obj:hit(1.1*T*KK,BOD.Y(52),.3*T,X(U(AWX)),BOD.Y(2*S+68+RZ),Z(V(.2))),reach:1.4*T,near:2.6*T,tall:1.4*T,act:()=>{ if(APTS.in&&APTS.floor()===2)F.out(); }});
@@ -99,9 +99,9 @@
     box({x0:STP.x0,x1:STP.x1,y0:WY,y1:STP.y1,z0:HZ-3,z1:HZ+STP.z,c:[160,154,142],top:(x,y)=>sh([168,162,150],hs(Math.floor(x*24),Math.floor(y*24),77)<.1?.9:1)},24,'L');
     for(const [x,y,c] of [[L0+.45,WY+.4,[150,74,50]],[L1-.55,WY+.45,[90,96,110]],[L1-1.15,WY+.35,[150,74,50]]]){ box({x0:x-.18,x1:x+.18,y0:y-.18,y1:y+.18,z0:HZ,z1:HZ+12,c},24,'L');
       box({x0:x-.24,x1:x+.24,y0:y-.24,y1:y+.24,z0:HZ+12,z1:HZ+26,fs:(nx,ny,X_,Y_,z,f)=>sh(hs(Math.floor(X_*24),Math.floor(z/3),59)<.5?[60,110,52]:[46,90,44],f),top:(x_,y_)=>hs(Math.floor(x_*24),Math.floor(y_*24),58)<.5?[72,128,60]:[52,98,46]},24,'L'); }
-    let x=CX+9, j=0; while(x<CX+72){ const w=8+Math.floor(R(j,1)*8), n=j===0?6:3+Math.floor(R(j,2)*6), c=BRK[Math.floor(R(j,3)*BRK.length)];
+    let x=CX+9, j=0; while(x<CX+72){ const w=8+Math.floor(R(j,1)*8), n=j===0?5:3+Math.floor(R(j,2)*5), c=BRK[Math.floor(R(j,3)*BRK.length)];
       bld(x,x+w,WY-12,WY-(R(j,4)<.3?.3:0),n,{c,sd:20+j,lit:.3,shop:R(j,5)<.5?1:0,door:R(j,5)<.5?null:x+w/2,zb:R(j,6)<.5?28:0}); if(R(j,7)<.5&&n>3)escape(x+1,x+w-1,WY-(R(j,4)<.3?.3:0),Array.from({length:n-1},(_,q)=>(q+1)*S+(R(j,6)<.5?28:0)),x+w-2.2,8); x+=w; j++; }
-    x=CX-9; j=0; while(x>CX-72){ const w=8+Math.floor(R(j,11)*8), n=j===0?6:3+Math.floor(R(j,12)*6), c=BRK[Math.floor(R(j,13)*BRK.length)];
+    x=CX-9; j=0; while(x>CX-72){ const w=8+Math.floor(R(j,11)*8), n=j===0?5:3+Math.floor(R(j,12)*5), c=BRK[Math.floor(R(j,13)*BRK.length)];
       bld(x-w,x,WY-12,WY-(R(j,14)<.3?.3:0),n,{c,sd:40+j,lit:.3,shop:R(j,15)<.5?1:0,door:R(j,15)<.5?null:x-w/2,zb:R(j,16)<.5?28:0}); if(R(j,17)<.5&&n>3)escape(x-w+1,x-1,WY-(R(j,14)<.3?.3:0),Array.from({length:n-1},(_,q)=>(q+1)*S+(R(j,16)<.5?28:0)),x-w+2.2,8); x-=w; j++; }
     const ACR=[[CX-72,AVE0-3],[AVE1+3,CX+72]]; j=0;
     for(const [a,b] of ACR){ let xx=a; while(xx<b-3){ let w=7+Math.floor(R(j,21)*8); if(b-xx-w<5)w=b-xx; const n=3+Math.floor(R(j,22)*2.6), c=BRK[Math.floor(R(j,23)*BRK.length)], y0=WY+15, y1=WY+27, top=n*S+16;
@@ -133,7 +133,7 @@
           let h=(5+10*cl((d-30)/80)+R(cx,cy)*7)*S; if(d>55&&R(cy,cx)<.14)h*=1.8+R(cx,cy+1); Lb.push([cx,cy,w-.4,rowY[1]-rowY[0]-.6,h]); } }
       const g=new THREE.BoxGeometry(1,1,1).translate(0,.5,0), m=new THREE.InstancedMesh(g,FAR3.mesh.material,Lb.length), aV=new Float32Array(Lb.length), aS=new Float32Array(Lb.length), m4=new THREE.Matrix4(), cc=new THREE.Color(1,1,1);
       Lb.forEach(([x_,y_,w,d,h],i)=>{ m.setMatrixAt(i,m4.makeScale(w*T*KK,Y(h),d*T*KK).setPosition(X(x_),0,Z(y_))); m.setColorAt(i,cc); aV[i]=Math.floor(hs(i,3,71)*8); aS[i]=hs(i,5,72)*97; });
-      g.setAttribute('aV',new THREE.InstancedBufferAttribute(aV,1)); g.setAttribute('aS',new THREE.InstancedBufferAttribute(aS,1)); m.frustumCulled=false; G.add(m); F.mid=Lb.length; }
+      g.setAttribute('aV',new THREE.InstancedBufferAttribute(aV,1)); g.setAttribute('aS',new THREE.InstancedBufferAttribute(aS,1)); m.frustumCulled=false; G.add(m); F.mid=Lb.length; const base=Lb.map((_,i)=>{ const q=new THREE.Matrix4(); m.getMatrixAt(i,q); return q; }); MID={m,L:Lb,base,key:'',Z0:new THREE.Matrix4().makeScale(0,0,0)}; }
     { const g=new THREE.PlaneGeometry(300*T*KK,300*T*KK).rotateX(-Math.PI/2), m=new THREE.Mesh(g,new THREE.MeshLambertMaterial({color:new THREE.Color('rgb(52,54,58)')})); m.position.set(X(CX),Y(-3),Z(WY+8)); m.receiveShadow=true; G.add(m); }
     if(FAR3.panels){ const g=FAR3.panels.geometry.clone(); g.computeBoundingBox(); const b=g.boundingBox, cx=(b.min.x+b.max.x)/2, cz=(b.min.z+b.max.z)/2, s=125*T*KK/((b.max.x-b.min.x)/2), E=1.9;
       g.translate(-cx,-E,-cz); g.scale(s,s,s); g.translate(X(CX),E,Z(WY+8)); const m=new THREE.Mesh(g,FAR3.panels.material); m.frustumCulled=false; m.renderOrder=-1; G.add(m); }
@@ -165,6 +165,8 @@
     if(!busy&&!on&&APTS.in&&APTS.floor()===2&&into(U(AWX),V(.55),ix(pos.x),iy(pos.z)))F.out();
     if(!on){ if(light)light.intensity=0; lp={x:pos.x,z:pos.z}; return; }
     if(FAR3.mesh)FAR3.mesh.visible=false; if(FAR3.panels)FAR3.panels.visible=false; if(FAR3.trees)FAR3.trees.visible=false; if(FAR3.FU)FAR3.FU.uMK.value=0; MISTE.x=0; if(SKY.U.uMistK)SKY.U.uMistK.value=0; if(scene.fog===FAR3.fog)scene.fog=null;
+    if(MID){ const o=!UI.persp, cx=cam.position.x-pos.x, cz=cam.position.z-pos.z, hl=Math.hypot(cx,cz)||1, tp=(cam.position.y-py)/hl, key=o?Math.round(Math.atan2(cx,cz)*20)+':'+Math.round(tp*50):'p';
+      if(key!==MID.key){ MID.key=key; const dx=cx/hl, dz=cz/hl; MID.L.forEach((b,i)=>{ const al=(X(b[0])-pos.x)*dx+(Z(b[1])-pos.z)*dz, r=Math.max(b[2],b[3])*T*KK*.75, hide=o&&al+r>0&&Y(b[4])>py+Math.max(0,al-r)*tp-.5; MID.m.setMatrixAt(i,hide?MID.Z0:MID.base[i]); }); MID.m.instanceMatrix.needsUpdate=true; } }
     const k=nk(); for(const m of MATS)m.emissiveIntensity=1.3*k; light.intensity=1.4*k; if(CARS)CARS(dt,k);
     if(!busy&&!USE.seat&&into(CX,WY+.45,ix(pos.x),iy(pos.z)))F.back(); lp={x:pos.x,z:pos.z}; };
   window.FIREDBG=()=>({built:F.built,on:F.on,mid:F.mid,mats:MATS.length,meshes:G.children.length,pos:[+ix(pos.x).toFixed(2),+iy(pos.z).toFixed(2)],py:+py.toFixed(2),apt:{in:APTS.in,floor:APTS.floor()}});

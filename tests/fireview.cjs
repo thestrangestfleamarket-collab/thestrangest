@@ -11,17 +11,18 @@ process.on('unhandledRejection',e=>{ errs.push('TEST '+String(e&&e.message||e).s
   const dbg=async k=>{ rep[k]=await pg.evaluate(()=>window.FIREDBG&&FIREDBG()); };
   const apt=(u,v)=>{ const M=__dbg.MAPK, P=M.MODS.apts, A=P.A; STORE.goTo(M.BOD.X(A.x0+u),M.BOD.Z(A.y0+v),P.lvY(2)); };
   await pg.evaluate(()=>window.DN&&DN.set&&DN.set('day'));
-  await shot('apt-corridor',`(${apt})(23.4,7.2)`,5000); await dbg('corridor');
+  await shot('apt-corridor',`(${apt})(24.6,6.1)`,5000); await pg.mouse.move(480,270); await pg.mouse.wheel(0,600); await shot('apt-corridor2',null,2500); await dbg('corridor');
   await shot('apt-room',`(${apt})(23.4,2.6)`,4000); await dbg('room');
   await shot('apt-window',`(${apt})(24.7,1.0)`,3000);
   await pg.evaluate(()=>FIREV.out()); await pg.waitForTimeout(450); await pg.screenshot({path:path.join(OUT,'fade.png')});
   for(let i=0;i<240;i++){ await pg.waitForTimeout(1000); if(await pg.evaluate(()=>window.FIREDBG&&FIREDBG().on))break; }
   await pg.waitForTimeout(3000); await dbg('escape');
   await shot('esc-iso-day',null,3000);
-  await pg.mouse.move(480,270); for(let i=0;i<4;i++){ await pg.mouse.wheel(0,600); await pg.waitForTimeout(150); }
+  await pg.mouse.move(480,270); for(let i=0;i<3;i++){ await pg.mouse.wheel(0,600); await pg.waitForTimeout(150); }
+  await shot('esc-iso-day-mid',null,3000); for(let i=0;i<4;i++){ await pg.mouse.wheel(0,600); await pg.waitForTimeout(150); }
   await shot('esc-iso-day-wide',null,3000);
   rep.tris=await pg.evaluate(()=>FAR3.frameTris()); rep.lite=await pg.evaluate(()=>LITE.sel.length);
-  await pg.keyboard.press('v'); await shot('esc-behind-day',null,4000); rep.trisBehind=await pg.evaluate(()=>FAR3.frameTris());
+  await pg.keyboard.press('v'); await shot('esc-behind-day',()=>__dbg.face(Math.PI),4000); rep.trisBehind=await pg.evaluate(()=>FAR3.frameTris());
   await pg.keyboard.press('v'); await shot('esc-first-day',null,4000);
   await pg.keyboard.press('v'); await pg.evaluate(()=>DN.set('night')); await shot('esc-iso-night',null,5000);
   await pg.keyboard.press('v'); await shot('esc-behind-night',null,4000); rep.lite2=await pg.evaluate(()=>LITE.sel.length);

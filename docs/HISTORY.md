@@ -3370,3 +3370,24 @@ park's brick wall twice as high", "no ivy on the wall"; `061-park.js`)
   St at the gate: 117 draws, 107,000 triangles drawn (were 1,735 and 728,000). The edge's new parts: the stand-ins about 2,200 triangles,
   the sign about 850, no light; the wall's painted faces twice the area. Going in the first time: 2.2 s under the black (steps of at most
   0.3 s); after that a fade. Inside, the park as before.
+## 19 Oct 2026: the alley built when it is needed
+
+(owner, queued 19 Oct 2026: "alley lazy loading"; then "Go")
+- **Not at start** (`069a-block.js`): the back alley's dressing (the fish restaurant's light box and canopy, every neon and blade
+  sign, the shop signs on the Hudson-side building, AC units, crates, the scooter, the sagging wires, its 9 lamps, the Korean fonts'
+  download) and the Hudson-side building's full-size painted faces are no longer made while the page loads. At start that building
+  stands with its faces painted at half size (`BLK.LO`, the same doors, windows and bricks; a quarter of the painting work), and the
+  apartment house's back fire escape and its drop stair (now their own baked piece, `APTS.back`, `054-apts.js`) are hidden. The
+  garages, the iron gate behind the subway stairs, the river-side buildings and every solid (the crates' too) stay as they were.
+- **When it is built**: the alley is built in the background, a piece a frame (`BLK.job`, never freezing the page), the first time it
+  can be seen: you come within 10 tiles of its line (the two mouths, the subway stairs' gate), or the camera is turned to look from
+  the alley's side within 32 tiles of it (two of the four isometric angles from Market St's row side), or the behind and
+  first-person views there. Step into the alley before it is ready (a jump from the menu, a load) and **ENTERING THE ALLEY** shows on
+  the black `#subfade` until it is, as the rooms do. Once built it is shown only while it can be seen and hidden otherwise (its
+  lamps out of `LITE`'s choice with it), the full faces swapped back for the half-size ones; nothing changes while you are in a room.
+  From the street it looks as it did, since it is always there when it can be seen.
+- Guarded: the neon flicker and wet reflections take signs added later (`BLK.shine`, `069c-shine.js`); the alley's lamps join
+  `LITE.recs` with the group as their switch; the map, the gates and the lane cut read the building records, made at start as before.
+- **Cost**: at start 87 fewer objects in the block (119 to 32), about 2,000 triangles of alley and some 2,500 of back fire escape
+  not drawn, 9 lamp records fewer, the alley's ~50 sign textures and the font download not loaded. On Market St in the default view
+  nothing of it is drawn (15 fewer draw calls). When seen, the same as before. `ALLEYDBG()` (built, shown, ms, steps, tris).

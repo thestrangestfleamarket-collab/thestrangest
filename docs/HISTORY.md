@@ -3285,3 +3285,31 @@ moves in idl animations."; "skin of player just wearing all black like ninja")
   program (the existing sun program picks fine or town map), no triangles. Software rendering in the test: town map 9-36 ms when
   drawn (start, sun change, things added), fine map 2-10 ms when you walk 12 tiles; nothing while standing still (was a fine-map
   redraw every 10 s). `SUNDBG()` shows `far` redraws and the town box; `SUNLOG` rows now carry the ms and which map.
+
+## 19 Oct 2026: slimes on the dungeon's levels 1-3, skeletons on 2-5
+- **The slimes** (owner, 19 Oct 2026, with his shots of the small glowing green slime on the park lawn: "add these slimes to the first
+  level of the dungeon," / "they are easy to kill and give you experience, skill, loot, etc. drop slime and sometimes real loot they
+  picked up. slime needs bottle to store it." / "different colors are dif dificulty and drop diff levels of loot ,etc. they show up on
+  levels 1-3. the skeletons show up on 2-5." and then "Go"; `src/146b-dunmobs.js`): the park slime's own model (its body and eyes, no
+  rig) drawn as one instanced mesh in the game's toon bands, glowing in its colour (its colour added back as light, so it reads in the
+  dark), a hard-edged disc of its colour on the floor under it. Level 1: five GREEN (harmless, 2 hits); level 2: three green, four
+  BLUE (3 hits, hop at you inside 3 tiles, a light bump); level 3: three blue, three PURPLE (5 hits), two RED (7 hits, a bit bigger
+  and faster, harder bump). They hop from spot to spot and sit still between hops (things at rest stay still). J punches, K kicks
+  (one and a half) and the sword's swing (two) hit what's in front of you, more with MARTIAL ARTS; a hit flashes it white and knocks
+  it back. Dead, it swells and flattens into a puddle: the puddle is a pickup (GREEN SLIME etc.); with an empty bottle in your pack
+  it goes into the bottle (BOTTLE OF GREEN/BLUE/PURPLE/RED SLIME, sells $4/8/15/25), without one: YOU NEED A BOTTLE TO HOLD THE SLIME.
+  Sometimes ("real loot they picked up", a quarter of greens to six in ten reds) a second pickup beside it: coins or one of the game's
+  own things, better from the tougher colours (quartz, amethyst, geode, amber, moonstone, opal, emerald; refresh, heal and strength
+  potions; a chanterelle). Each kill tries MARTIAL ARTS (harder colours count for higher skill), with the usual skill line.
+- **The skeletons on 2-5** (same words): the four KayKit skeletons and the gold one load when you first reach level 2 or deeper (under
+  the black, as before), with the four skeleton pawns already there; level 2 has 2 (a light guard, the Minion), 3 has 3, 4 has 4
+  (heavy guard, mage, Warrior, Rogue), 5 has 5 (the reaper, the mage, Warrior, Mage, the gold one), spread away from both stairs.
+  They wander; inside 3.8 tiles they come for you, give up past 9 tiles, and strike every 2 s or so after a wind-up (their own blows;
+  the pawns lean back and lunge), a light hurt (a twentieth to a tenth of your health) that misses if you've stepped out of reach;
+  the Rogue's and the Mage's bolts fly at where you were, so they can be dodged. Hit back: 3-9 hits; the KayKit ones fall
+  (their death), the pawns crumble; coins or a stone or a potion where they fall. Everyone is back when you come to the level again.
+  The four ogre pawns stay on level 1 as they were, wandering, not hostile (to ask). Off their level everyone is kept out of sight
+  and not run; leaving the dungeon puts all of them away and clears the puddles and loot.
+- **Cost**: a slime 1,068 triangles (1,056 the model, 12 its disc): level 1 5,340, level 2 7,476, level 3 8,544, in two draws; no
+  lamps; one new shader program (the slimes' toon). The skeletons as before (their models, no new programs). `DUNMOBDBG()`,
+  `DUNMOBS` (hit/hitRes for tests); `MODS.dungeon.hook(f)` is told the level on each build (0 on leaving).

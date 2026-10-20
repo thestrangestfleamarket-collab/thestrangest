@@ -154,17 +154,13 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
     { const yc=P.y0+.42, xm=(g0+g1)/2, len=(g1-g0)*TILE, B=[], bar=(h,t)=>B.push([X(xm),Y(h),Z(yc),len,Y(t),.1*M,IR[0]]);
       bar(124,4); bar(140,4); for(let u=g0+.25;u<g1-.1;u+=.25){ const n=Math.round(u*4); B.push([X(u),Y(132),Z(yc),.035*M,Y(12),.035*M,IR[n%3]]); if(Math.abs(u-xm)>1.5)B.push([X(u),Y(146+(n%2?3:0)),Z(yc),.03*M,Y(n%2?10:5),.03*M,IR[1]]); }
       for(const u of [g0+.05,g1-.05])B.push([X(u),Y(134),Z(yc),.1*M,Y(26),.1*M,IR[1]]);
-      put([],B); const W=64, H=56, cx=W/2-.5, cy=H/2-.5, rx=W/2, ry=H/2, GD=[[214,176,72],[178,138,44],[120,88,30]], GR=[24,70,48];
-      const pa=(i,j)=>{ const e=((i-cx)/rx)**2+((j-cy)/ry)**2; if(e>1)return null; const hl=(i-cx)+(j-cy)<0;
-        if(e>.8)return speck(hl?GD[0]:GD[1],i/24,j/24,71); if(e>.7)return GD[2];
-        const t=(j-11)/34, hw=13, sw=4.2, l=cx-hw*t, r=cx+hw*t;
-        if(t>=0&&t<=1){ const dl=Math.abs(i-l), dr=Math.abs(i-r), bar=t>.6&&t<.74&&i>l&&i<r, top=t<.1&&i>=l-sw&&i<=r+sw, foot=t>.9&&(Math.abs(i-(cx-hw))<7||Math.abs(i-(cx+hw))<7);
-          if(dl<sw||dr<sw||bar||top||foot)return dl<sw&&i<l-1?GD[0]:dr<sw&&i>r+1?GD[1]:(bar||foot)&&j>=Math.round(11+34*(foot?.97:.7))?GD[1]:GD[0];
-          if(dl<sw+1.2||dr<sw+1.2)return [14,40,28]; }
-        return speck(GR,i/24,j/24,73); };
-      const w=W/24/2, z0=124+(140-124)/2-H/2+14, z1=z0+H;
-      for(const [y,a,b] of [[yc-.075,xm+w,xm-w],[yc+.075,xm-w,xm+w]])BOD.bq([X(a),Y(z0),Z(y)],[X(b),Y(z0),Z(y)],[X(b),Y(z1),Z(y)],[X(a),Y(z1),Z(y)],BOD.faceTex(W,H,pa),'G');
-      PARK.sign={x:X(xm),y:Y((z0+z1)/2),z:Z(yc)}; }
+      { const FONT={C:['.###','#...','#...','#...','.###'],E:['####','#...','###.','#...','####'],N:['#..#','##.#','#.##','#..#','#..#'],T:['###','.#.','.#.','.#.','.#.'],R:['###.','#..#','###.','#.#.','#..#'],A:['.##.','#..#','####','#..#','#..#'],L:['#...','#...','#...','#...','####'],P:['###.','#..#','###.','#...','#...'],K:['#..#','#.#.','##..','#.#.','#..#']};
+        const txt='CENTRAL PARK', cols=[...txt].reduce((a,ch)=>a+(ch===' '?2:FONT[ch][0].length+1),0), half=len*.44, step=half*2/cols, px=step*.95, pz=.07*M, hb=Y(147), ah=Y(13);
+        let u=-half; for(const ch of txt){ if(ch===' '){ u+=2*step; continue; } const G=FONT[ch], w=G[0].length, tc=(u+w*step/2)/half, base=hb+ah*(1-tc*tc);
+          for(let r=0;r<5;r++)for(let c=0;c<w;c++)if(G[r][c]==='#')B.push([X(xm)-(u+(c+.5)*step),base+(4.5-r)*px,Z(yc),step*.96,px*1.04,pz,IR[0]]); u+=(w+1)*step; }
+        for(let i=0;i<24;i++){ const tm=-1+(i+.5)/12, w=half*1.06/12; B.push([X(xm)+tm*half*1.06,hb-Y(4)+ah*(1-tm*tm),Z(yc),w+.005,px*1.3,pz*1.2,IR[1]]); }
+        PARK.sign={x:X(xm),y:hb+ah*.5,z:Z(yc)}; }
+      put([],B); }
     const LB=[], LG=[], LC_=[], HL=[];
     for(const [x,y] of PIERS){ const wx_=X(x), wz_=Z(y), t=Y(PH+18), K=1.4, b=(h0,h,w,c=IR[0])=>LB.push([wx_,t+mv((h0+h/2)*K),wz_,w*M*K,mv(h*K),w*M*K,c]);
       b(0,.22,.62,IR[1]); b(.22,.05,.5); b(.27,.05,.4); for(const [dx,dz] of [[-1,-1],[1,-1],[-1,1],[1,1]])LB.push([wx_+dx*.16*M*K,t+mv(.62*K),wz_+dz*.16*M*K,.045*M*K,mv(.66*K),.045*M*K,IR[0]]);
@@ -221,7 +217,9 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
       if(!ok(x,y,r)||near(x,y,r,.75,12))continue; add(k,x,y,m,hash(i,63,3)*6.28); nm++;
       if(hash(i,65,9)<.45)for(let j=0,nb=1+Math.floor(hash(i,67,5)*2);j<nb;j++){ const a=hash(i,69+j,3)*6.28, mm=m*(.5+.25*hash(i,79+j,5)), kk=hash(i,81+j,7)<.5?k:el?'OakTree'+(1+(i+j)%3):'Elder'+(1+(i+j)%2), rr=mm*W(kk), d=r*.55+rr*.6+2, x2=x+Math.cos(a)*d, y2=y+Math.sin(a)*d;
         if(ok(x2,y2,rr)&&!near(x2,y2,rr,.5,4.5))add(kk,x2,y2,mm,hash(i,83+j,9)*6.28); } }
-    for(const [k0,x,y,m] of FOUNT.S.oaks){ const k=hash(Math.round(x),Math.round(y),87)<.35?'Elder'+(1+Math.abs(Math.round(x))%2):k0; if(!near(x,y,m*W(k),.6,8)&&!BK.wet(x,y,m*.42))add(k,x,y,m,hash(Math.round(x),Math.round(y),89)*6.28); } return out; })();
+    for(const [k0,x,y,m] of FOUNT.S.oaks){ const k=hash(Math.round(x),Math.round(y),87)<.35?'Elder'+(1+Math.abs(Math.round(x))%2):k0; if(!near(x,y,m*W(k),.6,8)&&!BK.wet(x,y,m*.42))add(k,x,y,m,hash(Math.round(x),Math.round(y),89)*6.28); }
+    { const FY=[RING.ny1+6,RING.ny1+20,RING.ny1+36], XA=P.x0-16, XB=P.x1+16; let n=0; for(const [ri,fy] of FY.entries())for(let x=XA+9*ri+6;x<XB;x+=18,n++){ const k=hash(n,201,3)<.3?'Elder'+(1+n%2):'OakTree'+(1+n%3), m=(30+hash(n,203,5)*18)*(1+.18*ri), xx=x+(hash(n,205,7)-.5)*9, yy=fy+(hash(n,207,9)-.5)*8; add(k,xx,yy,m,hash(n,209,11)*6.28); } }
+    return out; })();
   PARK.later(()=>{ PARK.trees=QS.get('trees')==='0'?null:mesh(TREES,true,true,true); });
   PARK.oaks=TREES.map(([k,x,y,m])=>[X(x),Z(y),m]);
   { const LK=new Map(), V=THREE.Vector3, m4=new THREE.Matrix4(), q=new THREE.Quaternion(), c=new THREE.Color(), up=new V(0,1,0), CR=[], SP=[], TK=[], G=new THREE.Group();

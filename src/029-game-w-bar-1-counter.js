@@ -1,40 +1,27 @@
-{ const FP=24, H=2, S=FP*H;
-  const art=(W,Hh,draw)=>{ const a=new Array(W*Hh).fill(null); draw((x,y,c)=>{ x=Math.floor(x); y=Math.floor(y); if(c&&x>=0&&y>=0&&x<W&&y<Hh)a[y*W+x]=c; }); return (x,y)=>x>=0&&y>=0&&x<W&&y<Hh?a[y*W+x]:null; };
-  const F3={A:'010101111101101',B:'110101110101110',C:'111100100100111',D:'110101101101110',E:'111100110100111',F:'111100110100100',G:'111100101101111',H:'101101111101101',I:'111010010010111',J:'001001001101111',K:'101101110101101',L:'100100100100111',M:'101111111101101',N:'110101101101101',O:'111101101101111',P:'111101111100100',Q:'111101101111001',R:'111101110101101',S:'111100111001111',T:'111010010010010',U:'101101101101111',V:'101101101101010',W:'101101111111101',X:'101101010101101',Y:'101101010010010',Z:'111001010100111',0:'111101101101111',1:'010110010010111',2:'111001111100111',3:'111001111001111',4:'101101111001001',5:'111100111001111',6:'111100111101111',7:'111001001001001',8:'111101111101111',9:'111101111001111','-':'000000111000000','.':'000000000000010','&':'010101010101011',"'":'010010000000000','!':'010010010000010','$':'111110111011111'};
-  const txt=(put,s,x0,y0,c,k=2)=>{ [...s].forEach((ch,i)=>{ const g=F3[ch]; if(!g)return; for(let r=0;r<5;r++)for(let q=0;q<3;q++)if(g[r*3+q]==='1')for(let a=0;a<k;a++)for(let b=0;b<k;b++)put(x0+(i*4+q)*k+a,y0+r*k+b,c); }); };
-  const pcVn=(x,y,s=0)=>{ const i=Math.floor(x), j=Math.floor(y), fx=x-i, fy=y-j, u=fx*fx*(3-2*fx), v=fy*fy*(3-2*fy); const a=hash(i,j,s), b=hash(i+1,j,s), c=hash(i,j+1,s), d=hash(i+1,j+1,s); return a+(b-a)*u+(c-a)*v+(a-b-c+d)*u*v; };
-  function pcLathe(cx,cy,z0,z1,rf,col,dz=2,dw=.04,alt=false){ const out=[]; let si=0;
-    for(let z=z0;z<z1-1e-9;z+=dz,si++){ const za=z, zb=Math.min(z1,z+dz), r=rf((za+zb)/2-z0); if(!(r>.004))continue; const n=Math.max(1,Math.round(2*r/dw)), w=2*r/n, sw=alt&&(si&1);
-      for(let i=0;i<n;i++){ const xa=-r+i*w, xm=xa+w/2, hy=Math.sqrt(Math.max(0,r*r-xm*xm)); if(hy<w*.3)continue;
-        const b=sw?{x0:cx-hy,y0:cy+xa,x1:cx+hy,y1:cy+xa+w}:{x0:cx+xa,y0:cy-hy,x1:cx+xa+w,y1:cy+hy};
-        out.push(sided({...b,z0:za,z1:zb,c:[90,90,90],foot:0,nb:1,fs:(nx,ny,X,Y,zr)=>col(X-cx,Y-cy,za+zr-z0,0),top:(X,Y)=>col(X-cx,Y-cy,zb-z0,1)})); } }
-    return out; }
-  const lit=c=>Object.assign([...c],{e:1});
-  const tone=(c,k)=>!c?null:c.e||k===1?c:[Math.round(c[0]*k),Math.round(c[1]*k),Math.round(c[2]*k)];
-  const box=(put,x0,y0,x1,y1,c)=>{ for(let y=y0;y<y1;y++)for(let x=x0;x<x1;x++)put(x,y,c); };
-  const disc=(put,cx,cy,rx,ry,c,ring)=>{ for(let y=Math.floor(cy-ry);y<=cy+ry;y++)for(let x=Math.floor(cx-rx);x<=cx+rx;x++){ const d=((x+.5-cx)/rx)**2+((y+.5-cy)/ry)**2; if(d<=1&&(!ring||d>ring))put(x,y,c); } };
-  const DP={red:[176,46,38],redL:[214,86,70],redH:[240,136,116],redD:[120,28,24],redK:[72,16,12],
-    bar:[128,32,28],barL:[176,58,46],barD:[86,20,16],barTop:[112,46,38],barTopL:[164,86,70],plinth:[136,74,56],plinthD:[96,50,38],
-    wood:[124,80,50],woodL:[160,110,70],woodD:[84,54,32],woodK:[50,32,18],
-    chrome:[156,166,162],chromeL:[226,232,230],chromeD:[74,84,82],pole:[54,70,60],poleL:[110,130,118],
-    steel:[176,184,184],steelL:[226,232,232],steelD:[104,112,112],black:[30,32,34],blackL:[64,68,72],
-    white:[226,228,222],whiteD:[176,180,174],cream:[214,204,170],
-    rug:[148,34,30],rugD:[110,24,22],rugL:[170,50,42],
-    pot:[172,114,82],potD:[132,82,58],potL:[204,144,108],soil:[48,34,24],
-    ink:[30,24,22],gold:[220,180,90]};
-  const T3=(put,s,x,y,c,k=1)=>txt(put,s,x,y,c,k);
-  const fb=(x0,y0,x1,y1,z0,z1,c,f,top,o)=>sided({x0,y0,x1,y1,z0,z1,c,foot:0,...o,top:typeof top==='function'?top:()=>top||c,
-    fs:(nx,ny,X,Y,z,k)=>{ const h=z1-z0, side=nx>0?'px':nx<0?'nx':ny>0?'py':'ny', a=nx>0?(y1-Y)*S:nx<0?(Y-y0)*S:ny>0?(X-x0)*S:(x1-X)*S;
-      return tone(f(side,Math.floor(a),Math.floor((h-z)*H),Math.round((nx?y1-y0:x1-x0)*S),Math.round(h*H)),k); }});
-  const pb=(x0,y0,x1,y1,z0,z1,c,o)=>({x0,y0,x1,y1,z0,z1,c,foot:0,...o});
-  const edge=(X,Y,x0,y0,x1,y1)=>Math.min(X-x0,x1-X,Y-y0,y1-Y);
-  const pic=(w,h,draw)=>art(w,h,draw);
-  const round=(cx,cy,z0,z1,r,col,dz=2,dw=.04)=>pcLathe(cx,cy,z0,z1,typeof r==='function'?r:()=>r,col,dz,dw);
+{
+const {FP,H,S,art,F3,txt,pcVn,pcLathe,lit,tone,box,disc,DP,T3,fb,pb,edge,pic,round,BZ,BT,BD,BO,PL,panel,topCol,glassesRow,barStraight,barRound,barCorner,BOTS,leather,sofa,armchair,rug,LEAF,leavesArt,plant,exitSign,blinds,POSTERS,poster,cupboard,up}=barKit(onBar);
+ 
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
 
-  const BZ=25, BT=3, BD=.92, BO=.12, PL=.22;
-  const panel=(row,h,a)=>{ const z=(h-row)/H; if(z>BZ-5)return z>BZ-1?DP.barD:z>BZ-4.5?(a%40<1?DP.bar:DP.barL):DP.barD; if(z<1)return DP.redK; return (a%32<2)?DP.barD:(a%32<4)?DP.bar:hash(a>>2,row>>3,71)<.04?DP.barL:DP.bar; };
-  const topCol=(e,X,Y)=>e<.03?DP.barTopL:e<.05?DP.barTop:hash(Math.floor(X*S),Math.floor(Y*S),72)<.02?DP.barTopL:pcVn(X*6,Y*6,73)<.3?sh(DP.barTop,.9):DP.barTop;
-  const glassesRow=(x0,x1,y,z,bs)=>{ for(let x=x0;x<x1-.08;x+=.13+hash(Math.floor(x*40),3,74)*.05){ const t=hash(Math.floor(x*50),5,75); bs.push(pb(x,y,x+.07,y+.07,z,z+(t<.5?6:8),t<.3?[200,226,230]:t<.6?[176,204,196]:[226,214,170],{nb:1,top:()=>[236,244,244]})); } };
+  
+  
+  
+  
   function onBar(k,x,x1,y0,y1,bs){ const z=BZ+BT, m=(x+x1)/2, yc=(y0+y1)/2+.1;
     if(k===0){ bs.push(pb(m-.56,yc-.1,m-.34,yc+.1,z,z+1.5,[40,40,44],{top:(X,Y)=>Math.hypot(X-(m-.45),Y-yc)<.06?[20,20,22]:[40,40,44]}),pb(m-.52,yc-.012,m-.38,yc+.012,z+1.5,z+2.2,[236,230,210],{nb:1,top:(X)=>X>m-.4?[250,150,60]:[236,230,210]}),
         fb(m-.15,yc-.08,m+.08,yc+.08,z,z+7,DP.red,(s,a,row)=>row<1?DP.redD:(s==='py'||s==='ny')&&row>3&&row<10?DP.white:DP.red,DP.white),
@@ -44,39 +31,11 @@
         pb(m-.18,yc-.04,m-.1,yc+.04,z,z+6,[160,40,44],{nb:1,top:()=>DP.chromeL}),fb(m-.05,yc-.12,m+.22,yc+.1,z,z+1.5,DP.white,()=>DP.whiteD,(X,Y)=>hash(Math.floor(X*S),Math.floor(Y*S),76)<.2?DP.whiteD:DP.white),
         pb(m+.42,yc,m+.5,yc+.08,z,z+5,[210,226,214],{nb:1,top:()=>[200,170,90]})); }
     if(k===2){ bs.push(pb(m+.2,yc-.02,m+.28,yc+.06,z,z+5,[210,226,214],{nb:1,top:()=>[236,240,236]}),pb(m+.12,yc-.08,m+.36,yc+.12,z,z+.5,[230,226,212])); } }
-  function barStraight(x,y,L,k){ PNAME='bar counter'; const y1=y+BD, bs=[];
-    bs.push(fb(x,y1-BO-.12,x+L,y1-BO,0,BZ,DP.bar,(s,a,row,Lf,h)=>s==='py'?panel(row,h,a):DP.woodD,DP.barD,{foot:1}));
-    bs.push(fb(x,y1-BO,x+L,y1-BO+PL,0,5,DP.plinth,(s,a,row)=>row<1?sh(DP.plinth,1.15):row>8?DP.plinthD:DP.plinth,(X,Y)=>edge(X,Y,x,y1-BO,x+L,y1-BO+PL)<.02?sh(DP.plinth,1.2):DP.plinth,{foot:1}));
-    bs.push(fb(x,y,x+L,y1,BZ,BZ+BT,DP.barTop,(s,a,row)=>row<1?DP.barTopL:row>4?DP.barD:DP.barTop,(X,Y)=>topCol(Math.min(y1-Y,Y-y),X,Y)));
-    for(const z of [1,13])bs.push(fb(x+.02,y+.12,x+L-.02,y1-BO-.12,z,z+1.5,DP.woodD,()=>DP.woodK,DP.wood,{foot:z===1?1:0}));
-    bs.push(fb(x,y+.12,x+.05,y1-BO-.12,0,BZ,DP.woodD,()=>DP.woodD,DP.woodD,{foot:1}),fb(x+L-.05,y+.12,x+L,y1-BO-.12,0,BZ,DP.woodD,()=>DP.woodD,DP.woodD,{foot:1}));
-    glassesRow(x+.1,x+L-.05,y+.2,2.5,bs); glassesRow(x+.12,x+L-.05,y+.25,14.5,bs);
-    if(k!=null)onBar(k,x,x+L,y,y1,bs);
-    return prop(bs,null,{solids:[{x0:x,y0:y+.1,x1:x+L,y1:y1-BO+PL}]}); }
-  function barRound(x,y){ PNAME='bar counter'; const R=1.12, cx=x+R, cy=y, bs=[], dw=.04;
-    for(let X=x;X<cx-1e-6;X+=dw){ const m=X+dw/2-cx, hy=r=>Math.sqrt(Math.max(0,r*r-m*m)), ri=R-BD;
-      const ang=Math.atan2(hy(R),-m), a=Math.floor(ang*R*S);
-      bs.push(fb(X,cy+hy(ri+.12),X+dw,cy+hy(R-BO),0,BZ,DP.bar,(s,aa,row,Lf,h)=>s==='ny'||s==='nx'&&m>-ri?DP.woodD:panel(row,h,a),DP.barD,{foot:1,nb:1}));
-      bs.push(fb(X,cy+hy(R-BO),X+dw,cy+hy(R-BO+PL),0,5,DP.plinth,(s,aa,row)=>row<1?sh(DP.plinth,1.15):row>8?DP.plinthD:DP.plinth,sh(DP.plinth,1.1),{foot:1,nb:1}));
-      bs.push(fb(X,cy+hy(ri),X+dw,cy+hy(R),BZ,BZ+BT,DP.barTop,(s,aa,row)=>row<1?DP.barTopL:row>4?DP.barD:DP.barTop,(XX,YY)=>topCol(Math.min(Math.abs(Math.hypot(XX-cx,YY-cy)-R),Math.abs(Math.hypot(XX-cx,YY-cy)-ri)),XX,YY),{nb:1})); }
-    bs.push(fb(x,cy-.02,x+BD,cy,0,BZ,DP.woodD,()=>DP.woodD,DP.woodD,{foot:1}));
-    return prop(bs,null,{solids:[{x0:x,y0:cy,x1:cx,y1:cy+R-BO+PL}]}); }
-  function barCorner(x,y,len){ PNAME='bar counter'; const x1=x+BD, y1=y+len, rc=.42, bs=[];
-    const inR=(X,Y,o)=>{ const ox=x1-rc, oy=y1-rc; return X<=ox||Y<=oy||Math.hypot(X-ox,Y-oy)<=rc-o; };
-    for(let Y=y;Y<y1-1e-6;Y+=.04){ const ym=Y+.02, cut=ym>y1-rc?(x1-rc)+Math.sqrt(Math.max(0,rc*rc-(ym-(y1-rc))**2)):x1;
-      bs.push(fb(x+.12,Y,cut-BO,Y+.04,0,BZ,DP.bar,(s,a,row,Lf,h)=>s==='px'?panel(row,h,Math.floor((y1-Y)*S)):DP.woodD,DP.barD,{foot:1,nb:1}));
-      bs.push(fb(cut-BO,Y,cut-BO+PL,Y+.04,0,5,DP.plinth,(s,a,row)=>row<1?sh(DP.plinth,1.15):row>8?DP.plinthD:DP.plinth,sh(DP.plinth,1.1),{foot:1,nb:1}));
-      bs.push(fb(x,Y,cut,Y+.04,BZ,BZ+BT,DP.barTop,(s,a,row)=>row<1?DP.barTopL:row>4?DP.barD:DP.barTop,(X,YY)=>topCol(Math.min(X-x,cut-X,y1-YY+(YY>y1-.05?0:1)),X,YY),{nb:1})); }
-    for(let X=x+.12;X<x1-BO-rc;X+=.04)bs.push(fb(X,y1-BO-.12,X+.04,y1-BO,0,BZ,DP.bar,(s,a,row,Lf,h)=>s==='py'?panel(row,h,Math.floor((X-x)*S)):DP.woodD,DP.barD,{foot:1,nb:1}),
-      fb(X,y1-BO,X+.04,y1-BO+PL,0,5,DP.plinth,(s,a,row)=>row<1?sh(DP.plinth,1.15):row>8?DP.plinthD:DP.plinth,sh(DP.plinth,1.1),{foot:1,nb:1}));
-    const z=BZ+BT, tx=x+.18, ty=y+.25;
-    bs.push(fb(tx,ty,tx+.48,ty+.42,z,z+11,DP.cream,(s,a,row,L)=>row<1?sh(DP.cream,1.08):s==='px'&&row>4&&row<12&&a>L*.15&&a<L*.45?lit([90,230,120]):s==='px'&&row>13&&row<20&&a>L*.5&&a<L*.85?((a>>1)&1?[150,140,120]:DP.cream):row>19?sh(DP.cream,.85):DP.cream,
-      (X,Y)=>(Math.floor((X-tx)*S/3)&1)&&Y-ty>.1&&Y-ty<.3?[190,180,150]:sh(DP.cream,1.05)));
-    bs.push(pb(x+.3,y1-.55,x+.37,y1-.48,z,z+5,[210,226,214],{nb:1,top:()=>[220,200,120]}));
-    glassesRow(x+.2,x+.6,y+1.2,2.5,bs);
-    return prop(bs,null,{solids:[{x0:x,y0:y,x1:x1-BO+PL,y1:y1-BO+PL}]}); }
+  
+  
+  
 
-  const BOTS=[[[150,90,30],[200,140,60]],[[40,110,50],[90,170,90]],[[200,214,206],[240,248,244]],[[150,30,30],[210,70,60]],[[90,60,30],[150,110,60]],[[220,180,60],[250,226,120]],[[40,60,120],[90,120,200]]];
+  
   function backBar(x,y,L){ PNAME='back bar'; const y1=y+.62, bs=[], z=26, sx=x+.45, sw=1;
     bs.push(fb(x,y,x+L,y1,0,z-2,DP.wood,(s,a,row,Lf,h)=>{ const c=a%(S*.8|0); if(row<3)return DP.woodD; if(row>h-6)return DP.woodK; if(c<2)return DP.woodK; if(c===2)return DP.woodL; return row%22<1?DP.woodD:(c>S*.8-6&&c<S*.8-4&&row>10&&row<14?DP.chromeL:DP.wood); },DP.wood,{foot:1}));
     bs.push(fb(x,y,sx,y1,z-2,z,DP.steel,(s,a,row)=>row<1?DP.steelL:DP.steel,(X,Y)=>edge(X,Y,x,y,sx,y1)<.02?DP.steelL:DP.steel),

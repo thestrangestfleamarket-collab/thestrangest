@@ -1,19 +1,21 @@
 // THE SAME PICTURE (19 Oct 2026, the move to modules): node tests/samepic.cjs <base page> <head page> [out dir]
-// Opens the base and the pull request at the same places and hour, takes a picture of each, and compares them pixel by pixel in the
+// Opens the base and the pull request at the same places and hour (in:<id> steps inside that address's door, as tests/jobsim.cjs does), takes a picture of each, and compares them pixel by pixel in the
 // browser. Moving code around must not change what is drawn. People and birds walk and the clock runs, so a little always moves:
 // Math.random is seeded the same in every page, and the base is taken twice; the pull request fails only when it differs from the base
 // by more than the base differs from itself, plus 3%. The sun's rays are hidden (they pick a spot near you on a timer, so a page that
 // starts faster gets another beam). The pictures are kept in the out dir for a look.
 const {chromium}=require('playwright'), path=require('path'), fs=require('fs');
 const [BASE,HEAD,OUT='out/samepic']=process.argv.slice(2).map((p,i)=>i<2?path.resolve(p):p);
-const PLACES=['THE STREET','THE DUNGEON','THE CASTLE','THE BODEGA'];
+const PLACES=['THE STREET','THE DUNGEON','THE CASTLE','THE BODEGA','in:diner','in:bar'];
 let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
 (async()=>{ fs.mkdirSync(OUT,{recursive:true}); const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist']});
   const shot=async(page,place,tag)=>{ const pg=await b.newPage({viewport:{width:960,height:540}}); pg.setDefaultTimeout(900000); const errs=[];
     pg.on('pageerror',e=>errs.push(e.message.slice(0,160)));
     await pg.addInitScript(()=>{ let x=123456789; Math.random=()=>{ x^=x<<13; x^=x>>>17; x^=x<<5; return (x>>>0)/4294967296; }; });
-    await pg.goto('file://'+page+'?fresh=1&hour=13&place='+encodeURIComponent(place),{waitUntil:'commit'});
+    const inside=place.startsWith('in:')?place.slice(3):null;
+    await pg.goto('file://'+page+'?fresh=1&hour=13'+(inside?'':'&place='+encodeURIComponent(place)),{waitUntil:'commit'});
     let s=false; for(let i=0;i<900&&!(s=await pg.evaluate(()=>!!window.__started).catch(()=>false));i++)await pg.waitForTimeout(500);
+    if(s&&inside)await pg.evaluate(id=>{ const T=__dbg.cv().TILE, A=MAIL.addr.find(a=>a.id===id); if(!A)return; const st=A.b.step; STORE.goTo(st.x-A.b.F.n.x*1.2*T,st.z-A.b.F.n.z*1.2*T,'up'); },inside);
     await pg.waitForTimeout(20000); await pg.evaluate(()=>{ const R=window.RAYS; if(R)for(const k of ['beams','dust'])if(R[k])Object.defineProperty(R[k],'visible',{get:()=>false,set(){},configurable:true}); }); await pg.waitForTimeout(500); const f=path.join(OUT,place.replace(/\W+/g,'-').toLowerCase()+'-'+tag+'.png'); await pg.screenshot({path:f}); await pg.close(); return {f,s,errs}; };
   const cmp=await b.newPage();
   for(const place of PLACES){ const A=await shot(BASE,place,'base'), A2=await shot(BASE,place,'base2'), B=await shot(HEAD,place,'head');

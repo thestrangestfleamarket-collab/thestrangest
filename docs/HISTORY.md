@@ -3440,3 +3440,13 @@ park's brick wall twice as high", "no ivy on the wall"; `061-park.js`)
   resolves to the same file as before, and the two copies see the same outside names. 28 KB of source and 25 KB of the minified page gone.
 - **The same picture** (`tests/samepic.cjs`, in the CI budget job): the base and the pull request at the street, the dungeon, the castle and
   the bodega at 1pm; fails when more than 3% of the pixels differ, and keeps the pictures in the run's `budget-pictures` artifact.
+
+## 19 Oct 2026: the move to modules, step 2: the bar's kit written once
+
+- **The diner and the bar share one kit** (`026z-barkit.js`): the diner (`027`) carried a copy of 44 of the bar's makers (`029`-`031`): the
+  counter's pieces (`barStraight`, `barRound`, `barCorner`, panels, tops, glasses), the sofa, armchair, rug, plant, posters, exit sign, blinds,
+  cupboard and their palettes. Now `barKit(onBar)` holds them once; the diner and the bar each call it with their own `onBar` (what stands on
+  the counter differs). The makers that differ (`onBar`, `backBar`, `stool`, `fridge`, `table`, `neon`, `tv`, `soffit`, `fan`) stay in each file.
+  Checked with the scope analysis: the moved statements make no calls when they run (only functions and values), every name outside these
+  files resolves as before, and the kit sees the same outside names (`hash`, `sh`, `sided`, `PNAME`, `prop`, `LAMPS`, `zShift`). 18 KB of source gone.
+- **The same picture** now also steps inside the diner and the bar (`in:diner`, `in:bar`).

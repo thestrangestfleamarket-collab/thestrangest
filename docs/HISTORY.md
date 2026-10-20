@@ -3397,4 +3397,5 @@ park's brick wall twice as high", "no ivy on the wall"; `061-park.js`)
   seconds) before it fell back into shape. Now a jump of over 1 m carries the whole draped sheet along as it is (`GHOSTS.move`,
   `149-ghosts.js`); and if the sheet ever slips off the ball while dead, it is dropped and settled at once out of sight (240 steps,
   `GHOSTS.settle`), so the ghost is upright whatever happens until the bath house. The drop at the moment of dying is as it was.
-  Cost: nothing new drawn; a few hundred µs on a teleport. `DEADDBG()` gains `on` and `span`.
+  Cost: nothing new drawn; a teleport moves 289 points (microseconds); a re-form, only if it slips off, about 20-40 ms once.
+  `DEADDBG()` gains `on` and `span`.

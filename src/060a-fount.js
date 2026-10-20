@@ -4,6 +4,7 @@ const FOUNT={ready:false,swim:false}; window.FOUNT=FOUNT;
     return Math.max((e-1)/g-(1.6*Math.sin(a*19+1.3)+.9*Math.sin(a*37+.4))*ss(R+3,R+12,k),R+1.5-k); };
   const lake=FOUNT.lake=(x,y)=>{ if(!FOUNT.S)return 1e9; const L=FOUNT.S.L; return Math.max(raw(x,y),x-L.cx,y-L.cy); };
   const ter=FOUNT.ter=(x,y)=>FOUNT.S?Math.hypot(x-FOUNT.S.C.x,y-FOUNT.S.C.y)-FOUNT.S.R:1e9;
+  FOUNT.bedM=d=>Math.min(3.5,Math.max(0,d)*.42);
   FOUNT.away=(x,y)=>Math.min(lake(x,y)-1,ter(x,y)-1);
   FOUNT.at=P=>{ if(FOUNT.S)return FOUNT.S; const wx1=P.x1-8, wy1=P.y1-8, R=23, cx=wx1-R-8; let yS=-1e9; for(let x=cx-R;x<=cx+R;x+=.5)yS=Math.max(yS,P.round[1]+P.wobY(x)+4.2);
     const C={x:cx,y:Math.ceil(yS+3.5+R)}, L={x:C.x+20,y:C.y+45,rx:95,ry:45,cx:P.x1-1.6,cy:P.y1-1.6};
@@ -45,14 +46,16 @@ const FOUNT={ready:false,swim:false}; window.FOUNT=FOUNT;
     for(const [x,y,s] of S.rocks)if(s>.56)sol(x,y,s*.42,s*24);
     setTimeout(()=>{ try{ build(); }catch(e){ console.warn('FOUNT: not built',e); } },0); };
   const build=()=>{ const P=PARK, S=FOUNT.S, {C,R,L}=S, X=x=>BOD.XS(x+(P.ox||0)), Z=y=>BOD.ZS(y+(P.oy||0)), Y=BOD.YS, T=TILE, WU=T/.84, V3=THREE.Vector3, grp=MAPG.park||scene, CX=X(C.x), CZ=Z(C.y);
-    const LV=-.22*WU, bedM=d=>Math.min(3.5,Math.max(0,d)*.42), bedY=d=>-bedM(d)*WU-.04; FOUNT.LV=LV; FOUNT.bedY=bedY;
+    const LV=-.22*WU, bedM=FOUNT.bedM, BK=P.brook, bk=(a,b)=>{ const h=BK&&BK.h(a,b); return h==null?1e9:h*WU-.5*ZU; }, bedY=d=>-bedM(d)*WU-.04; FOUNT.LV=LV; FOUNT.bedY=bedY;
     FOUNT.bedAt=(x,z)=>{ if(LVL!=='up')return null; const d=-lake(x/T+BOD.OX-(P.ox||0),z/T+BOD.OY-(P.oy||0)); return d>-1?bedY(d):null; };
-    const uT=FOUNT.uT={value:0}, uGl={value:1}, uP=FOUNT.uP={value:new THREE.Vector4()}; FOUNT.uGl=uGl;
+    const uT=FOUNT.uT={value:0}, uGl={value:1}, uP=FOUNT.uP={value:new THREE.Vector4()}, uO={value:new THREE.Vector4()}, uOw={value:new THREE.Vector2()}; FOUNT.uGl=uGl;
+    if(BK&&BK.kM!=null){ const k=BK.kM, c=BK.C[k], a=BK.C[Math.max(0,k-1)], b=BK.C[Math.min(BK.N,k+1)], tx=X(b[0])-X(a[0]), tz=Z(b[1])-Z(a[1]), l=Math.hypot(tx,tz); uO.value.set(X(c[0]),Z(c[1]),tx/l,tz/l); uOw.value.set((BK.W(c[2])+BK.B+.3)*T,10*T); }
     const wmat=(deep,shal,ring)=>{ const m=new THREE.MeshLambertMaterial({color:0xffffff,transparent:true,side:THREE.DoubleSide}), uC={value:new THREE.Vector4(...ring)}, uD={value:new THREE.Color().setRGB(...deep,THREE.SRGBColorSpace)}, uS={value:new THREE.Color().setRGB(...shal,THREE.SRGBColorSpace)};
-      m.onBeforeCompile=sh=>{ Object.assign(sh.uniforms,{uT,uGl,uP,uC,uDeep:uD,uShal:uS});
+      m.onBeforeCompile=sh=>{ Object.assign(sh.uniforms,{uT,uGl,uP,uO,uOw,uC,uDeep:uD,uShal:uS});
         sh.vertexShader='attribute float aD; varying float vD; varying vec3 vWq;\n'+sh.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\n vD=aD;').replace('#include <project_vertex>','#include <project_vertex>\n vWq=(modelMatrix*vec4(transformed,1.)).xyz;');
-        sh.fragmentShader='uniform float uT,uGl; uniform vec4 uC,uP; uniform vec3 uDeep,uShal; varying float vD; varying vec3 vWq; float wg=0.;\nfloat wh(vec2 p){ return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453); }\n'+sh.fragmentShader
+        sh.fragmentShader='uniform float uT,uGl; uniform vec4 uC,uP,uO; uniform vec2 uOw; uniform vec3 uDeep,uShal; varying float vD; varying vec3 vWq; float wg=0.;\nfloat wh(vec2 p){ return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453); }\n'+sh.fragmentShader
           .replace('#include <color_fragment>',`#include <color_fragment>
+ if(uOw.x>0.){ vec2 o=vWq.xz-uO.xy; float a=dot(o,uO.zw); if(a>0.&&a<uOw.y&&abs(o.x*uO.w-o.y*uO.z)<uOw.x)discard; }
  { vec2 p=vWq.xz/${T.toFixed(3)}; float h=sin(p.x*.9+p.y*.35+uT*.8)+sin(p.y*1.3-p.x*.5-uT*.6)+.6*sin((p.x+p.y)*2.1+uT*1.3);
    if(uC.w>0.){ float d=length(vWq.xz-uC.xy)/${T.toFixed(3)}; h+=uC.w*1.8*sin(d*24.-uT*7.)*exp(-abs(d-uC.z)*1.2); }
    if(uP.z>0.){ float d=length(vWq.xz-uP.xy)/${T.toFixed(3)}; h+=uP.z*2.2*sin(d*8.-uT*6.)*exp(-d*.6); }
@@ -62,15 +65,15 @@ const FOUNT={ready:false,swim:false}; window.FOUNT=FOUNT;
           .replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n totalEmissiveRadiance+=vec3(.7,.82,.78)*wg;'); };
       m.customProgramCacheKey=()=>'fwater'; return m; };
     const lakeM=wmat([.13,.25,.18],[.24,.33,.21],[0,0,0,0]); FOUNT.lakeM=lakeM;
-    const chunks=(cell,keep,make)=>{ const x0=Math.floor(S.x0)-2, y0=Math.floor(S.y0)-2, CH=16; let tris=0;
-      for(let cx=x0;cx<L.cx;cx+=CH)for(let cy=y0;cy<L.cy;cy+=CH){ const pos=[], ex=[]; for(let x=cx;x<Math.min(cx+CH,L.cx+cell);x+=cell)for(let y=cy;y<Math.min(cy+CH,L.cy+cell);y+=cell){ const q=[[x,y],[x+cell,y],[x+cell,y+cell],[x,y+cell]], d=q.map(([a,b])=>-lake(a,b)); if(!keep(d))continue; make(q,d,pos,ex); }
+    const chunks=(cell,keep,make)=>{ const x0=Math.floor(S.x0)-6, y0=Math.floor(S.y0)-6, CH=16; let tris=0;
+      for(let cx=x0;cx<L.cx;cx+=CH)for(let cy=y0;cy<L.cy;cy+=CH){ const pos=[], ex=[]; for(let x=cx;x<Math.min(cx+CH,L.cx+cell);x+=cell)for(let y=cy;y<Math.min(cy+CH,L.cy+cell);y+=cell){ const q=[[x,y],[x+cell,y],[x+cell,y+cell],[x,y+cell]], d=q.map(([a,b])=>-lake(a,b)); if(!keep(d,x+cell/2,y+cell/2))continue; make(q,d,pos,ex); }
         if(!pos.length)continue; tris+=pos.length/9; FOUNT.parts.push([pos,ex]); }
       return tris; };
     FOUNT.parts=[]; const BD=[[.36,.32,.22],[.29,.28,.19],[.21,.23,.15],[.14,.18,.12]], lin=new THREE.Color();
-    const bedTris=chunks(1,d=>Math.max(...d)>-1.4,(q,d,pos,col)=>{ const v=q.map(([a,b],k)=>[X(a),bedY(d[k]),Z(b)]); for(const t of [[0,2,1],[0,3,2]]){ const m=(d[t[0]]+d[t[1]]+d[t[2]])/3, dm=bedM(m), h=hs(Math.floor(q[0][0]*3+t[1]),Math.floor(q[0][1]*3),21);
+    const bedTris=chunks(1,(d,a,b)=>Math.max(...d)>-1.4&&!(lake(a,b)>0&&BK&&BK.wet(a,b)),(q,d,pos,col)=>{ const v=q.map(([a,b],k)=>[X(a),Math.min(bedY(d[k]),bk(a,b)),Z(b)]); for(const t of [[0,2,1],[0,3,2]]){ const m=(d[t[0]]+d[t[1]]+d[t[2]])/3, dm=bedM(m), h=hs(Math.floor(q[0][0]*3+t[1]),Math.floor(q[0][1]*3),21);
       const c=lin.setRGB(...BD[dm<.25?0:dm<.7?1:dm<1.6?2:3].map(v=>v*(.88+.24*h)),THREE.SRGBColorSpace).toArray(); for(const k of t){ pos.push(...v[k]); col.push(...c); } } });
     const bedM_=new THREE.MeshLambertMaterial({vertexColors:true}); for(const [pos,col] of FOUNT.parts.splice(0)){ const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3)); g.setAttribute('color',new THREE.Float32BufferAttribute(col,3)); g.computeVertexNormals(); g.computeBoundingSphere(); const me=new THREE.Mesh(g,bedM_); me.receiveShadow=true; grp.add(me); }
-    const wTris=chunks(2,d=>Math.max(...d)>-1,(q,d,pos,ad)=>{ const v=q.map(([a,b])=>[X(a),LV,Z(b)]); for(const t of [[0,2,1],[0,3,2]])for(const k of t){ pos.push(...v[k]); ad.push(Math.max(0,Math.min(1,(bedM(d[k])-.22)/2.4))); } });
+    const wTris=chunks(2,(d,a,b)=>{ if(Math.max(...d)>-1)return true; const r=BK&&BK.q(a,b); return !!r&&r[1]<BK.m+1&&r[0]<BK.W(r[1])+BK.B+1; },(q,d,pos,ad)=>{ const v=q.map(([a,b])=>[X(a),LV,Z(b)]); for(const t of [[0,2,1],[0,3,2]])for(const k of t){ pos.push(...v[k]); ad.push(Math.max(0,Math.min(1,(bedM(d[k])-.22)/2.4))); } });
     for(const [pos,ad] of FOUNT.parts.splice(0)){ const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3)); g.setAttribute('aD',new THREE.Float32BufferAttribute(ad,1)); g.computeVertexNormals(); g.computeBoundingSphere(); const me=new THREE.Mesh(g,lakeM); me.receiveShadow=true; me.renderOrder=1; grp.add(me); }
     { const N=S.rocks.length, me=new THREE.InstancedMesh(new THREE.DodecahedronGeometry(1,0),new THREE.MeshLambertMaterial({color:0xffffff,flatShading:true}),N), m4=new THREE.Matrix4(), q=new THREE.Quaternion(), e=new THREE.Euler(), c=new THREE.Color();
       S.rocks.forEach(([x,y,s,h],i)=>{ const w=s*T*.5, d=-lake(x,y); me.setMatrixAt(i,m4.compose(new V3(X(x),bedY(d)+w*.25,Z(y)),q.setFromEuler(e.set(h*3,h*9,h*2)),new V3(w*(1+.3*h),w*(.55+.3*hs(i,2)),w*(.9-.2*h)))); const g=.4+.16*hs(i,4); me.setColorAt(i,c.setRGB(g,g*.99,g*.95)); });

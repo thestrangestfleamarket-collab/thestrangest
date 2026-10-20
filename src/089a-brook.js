@@ -2,8 +2,8 @@ const BROOK={}; window.BROOK=BROOK;
 { const go=()=>{ if(typeof PARK==='undefined'||!PARK.fire||!PARK.brook||!MODS.land)return setTimeout(go,500);
     const P=PARK, BK=P.brook, {C,N,SL,B,W,L,D,RF}=BK, T=TILE, WU=T/.84, G0=-.5*ZU, X=x=>BOD.XS(x+(P.ox||0)), Z=y=>BOD.ZS(y+(P.oy||0)), grp=(typeof MAPG!=='undefined'&&MAPG.park)||scene;
     const hs=(i,s)=>{ const v=Math.sin(i*12.9898+s*78.233)*43758.5453; return v-Math.floor(v); }, ss=(a,b,v)=>{ const t=Math.max(0,Math.min(1,(v-a)/(b-a))); return t*t*(3-2*t); };
-    const bed=(x,y)=>{ const v=BK.h(x,y); return v==null?0:v; }, E=Math.ceil((W(SL)+B+1)/.5), row=k=>{ const kc=Math.max(0,Math.min(N,k)), c=C[kc], [nx,ny]=BK.nrm(kc), tx=ny, ty=-nx, o=(k-kc)*SL/N; return [c[0]+tx*o,c[1]+ty*o,c[2],nx,ny]; };
-    const pool=s=>ss(SL-18,SL-6,s), rif=s=>RF.reduce((a,r)=>a+Math.exp(-(((s-r)/1.3)**2)),0), spd=s=>Math.max(.12,1+1.6*rif(s)-.9*pool(s));
+    const bed=(x,y)=>{ const v=BK.h(x,y); return v==null?0:v; }, bedL=(x,y)=>{ const v=bed(x,y), d=-FOUNT.lake(x,y); return d>0?Math.min(v,-FOUNT.bedM(d)-(.04+G0)/WU):v; }, E=Math.ceil((W(SL)+B+1)/.5), row=k=>{ const kc=Math.max(0,Math.min(N,k)), c=C[kc], [nx,ny]=BK.nrm(kc), tx=ny, ty=-nx, o=(k-kc)*SL/N; return [c[0]+tx*o,c[1]+ty*o,c[2],nx,ny]; };
+    const pool=s=>ss(SL-18,SL-6,s), rif=s=>[BK.sW,...RF].reduce((a,r)=>a+Math.exp(-(((s-r)/1.3)**2)),0), spd=s=>Math.max(.12,1+1.6*rif(s)-.9*pool(s));
     const tau=new Float32Array(N+1); for(let k=1;k<=N;k++)tau[k]=tau[k-1]+(SL/N)/spd(C[k][2]);
     const CH=Math.ceil(N/40), banks=[], waters=[], U={uT:{value:0},uDay:{value:1},uSky:{value:new THREE.Color(.5,.62,.75)},uSun:{value:new THREE.Color(1,1,1)},uMe:{value:new THREE.Vector4()}};
     const bankMat=new THREE.MeshLambertMaterial({map:MODS.land.material.map,vertexColors:true,polygonOffset:true,polygonOffsetFactor:1,polygonOffsetUnits:1});
@@ -15,28 +15,28 @@ const BROOK={}; window.BROOK=BROOK;
     for(let ci=0;ci<CH;ci++){ const k0=ci*40-(ci===0?E:0), k1=Math.min(N,ci*40+40)+(ci===CH-1?E:0), V=[], UV=[], CO=[], WT=[], I=[], RS=2, rows=[];
       for(let k=k0;k<=k1;k+=RS)rows.push(k); if(rows[rows.length-1]!==k1)rows.push(k1);
       const nl=LT.length*2-1; rows.forEach((k,ri)=>{ const [cx,cy,s,nx,ny]=row(k), R=W(s)+B+.5, lv=L(s);
-        for(let li=0;li<nl;li++){ const f=li<LT.length-1?-LT[LT.length-1-li]:LT[li-LT.length+1], x=cx+nx*f*R, y=cy+ny*f*R, h=bed(x,y), wx=X(x), wz=Z(y);
+        for(let li=0;li<nl;li++){ const f=li<LT.length-1?-LT[LT.length-1-li]:LT[li-LT.length+1], x=cx+nx*f*R, y=cy+ny*f*R, h=bedL(x,y), wx=X(x), wz=Z(y);
           V.push(wx,h*WU+G0,wz); UV.push(wx/T,-wz/T); const wet=1-ss(lv+.05,lv+.15,h); WT.push(wet); CO.push(...(h<lv-.02?[.5,.47,.41]:[.6,.52,.4]));
           if(ri&&li){ const a=(ri-1)*nl+li-1, b=a+1, c=ri*nl+li-1, d=c+1; I.push(a,b,c,b,d,c); } } });
       const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(V,3)); g.setAttribute('uv',new THREE.Float32BufferAttribute(UV,2)); g.setAttribute('color',new THREE.Float32BufferAttribute(CO,3)); g.setAttribute('aWet',new THREE.Float32BufferAttribute(WT,1)); g.setIndex(I); g.computeVertexNormals();
       const me=new THREE.Mesh(g,bankMat); me.receiveShadow=true; grp.add(me); banks.push(me);
       const WV=[], WF=[], WI=[], WL=[-1,-.66,-.33,0,.33,.66,1];
-      for(let k=k0,ri=0;k<=k1;k++,ri++){ const [cx,cy,s,nx,ny]=row(k), R=W(s)+.75*B, lv=L(s), kc=Math.max(0,Math.min(N,k));
+      for(let k=ci?k0:Math.max(k0,BK.kM),ri=0;k<=k1;k++,ri++){ const [cx,cy,s,nx,ny]=row(k), R=W(s)+.75*B, lv=L(s), kc=Math.max(0,Math.min(N,k));
         WL.forEach((f,li)=>{ const x=cx+nx*f*R, y=cy+ny*f*R; WV.push(X(x),lv*WU+G0+.004,Z(y)); WF.push(tau[kc]+(k-kc)*.5,f*R,lv-bed(x,y),spd(s)); if(ri&&li){ const a=(ri-1)*7+li-1, b=a+1, c=ri*7+li-1, d=c+1; WI.push(a,b,c,b,d,c); } }); }
       const wg=new THREE.BufferGeometry(); wg.setAttribute('position',new THREE.Float32BufferAttribute(WV,3)); wg.setAttribute('aF',new THREE.Float32BufferAttribute(WF,4)); wg.setIndex(WI);
-      waters.push({g:wg,k0,k1,rk:[]}); }
+      waters.push({g:wg,k0:ci?k0:BK.kM,k1,rk:[]}); }
     const RK=[], STP=[], PB=[], col=[], add=(x,y,r,sy,top,kind)=>RK.push({x,y,r,sy,top,kind,sd:RK.length});
     const sideAt=(k,f,d)=>{ const c=C[k], [nx,ny]=BK.nrm(k); return [c[0]+nx*f*d,c[1]+ny*f*d]; }, kAt=s=>Math.max(0,Math.min(N,Math.round(s/SL*N))), nearBr=s=>Math.abs(s-C[BK.br.k][2])<BK.br.S+3;
-    for(let i=0;i<10;i++){ const a=-Math.PI*.15+i/9*Math.PI*1.3+hs(i,1)*.3, k=0, [nx,ny]=BK.nrm(0), ba=Math.atan2(ny,nx)+Math.PI*.5+a, r=W(0)+.4+hs(i,2)*1.4, m=.55+hs(i,3)*.75;
-      add(C[0][0]+Math.cos(ba)*r,C[0][1]+Math.sin(ba)*r,m,.7,null,'b'); }
-    for(let s=9,i=0;s<SL-16;s+=4+hs(i,4)*5,i++){ if(nearBr(s))continue; const k=kAt(s), f=hs(i,5)<.5?1:-1, m=.4+hs(i,6)*.75, [x,y]=sideAt(k,f,W(s)+.2+hs(i,7)*.9); add(x,y,m,.65,null,'b');
+    { const s=BK.sW+.35, k=kAt(s), w=W(s)*.98, n=Math.max(4,Math.round(2*w/.62)); for(let j=0;j<n;j++){ const [x,y]=sideAt(k,-1+2*(j+.5)/n,w); add(x,y,.32+hs(j,81)*.06,.32,L(BK.m)-L(s)+.02,'s'); } }
+    for(let i=0;i<6;i++){ const s=BK.m+.6+i*1.3, [x,y]=sideAt(kAt(s),i%2?1:-1,W(s)+.5+hs(i,2)*.7); add(x,y,.55+hs(i,3)*.6,.7,null,'b'); }
+    for(let s=BK.m+9,i=0;s<SL-16;s+=4+hs(i,4)*5,i++){ if(nearBr(s))continue; const k=kAt(s), f=hs(i,5)<.5?1:-1, m=.4+hs(i,6)*.75, [x,y]=sideAt(k,f,W(s)+.2+hs(i,7)*.9); add(x,y,m,.65,null,'b');
       if(hs(i,8)<.45){ const [x2,y2]=sideAt(kAt(s+1.2),f,W(s)+.9+hs(i,9)*.8); add(x2,y2,m*.6,.6,null,'b'); } }
     for(const r of RF){ const k=kAt(r); if(nearBr(r))continue; for(let j=0,n=3+Math.floor(hs(r,1)*3);j<n;j++){ const f=-1+2*(j+.5)/n+(hs(r,j+2)-.5)*.3, m=.18+hs(r,j+9)*.22, [x,y]=sideAt(k,f,W(r)*.85); add(x,y,m,.6,.06+hs(r,j+5)*.14,'m'); } }
-    for(let i=0;i<16;i++){ const s=6+hs(i,21)*(SL-26); if(nearBr(s))continue; const k=kAt(s), [x,y]=sideAt(k,hs(i,22)*1.6-.8,W(s)); add(x,y,.2+hs(i,23)*.35,.6,.05+hs(i,24)*.2,'m'); }
-    for(const s0 of [36,88,140]){ let s=s0; while(nearBr(s)||RF.some(r=>Math.abs(r-s)<4))s+=3; const k=kAt(s), w=W(s)+.6, n=Math.max(3,Math.round(2*w/1.15));
+    for(let i=0;i<16;i++){ const s=BK.m+5+hs(i,21)*(SL-26-BK.m); if(nearBr(s))continue; const k=kAt(s), [x,y]=sideAt(k,hs(i,22)*1.6-.8,W(s)); add(x,y,.2+hs(i,23)*.35,.6,.05+hs(i,24)*.2,'m'); }
+    for(const s0 of [36,88,140]){ let s=s0+BK.sK; while(nearBr(s)||RF.some(r=>Math.abs(r-s)<4))s+=3; const k=kAt(s), w=W(s)+.6, n=Math.max(3,Math.round(2*w/1.15));
       for(let j=0;j<n;j++){ const f=-1+2*(j+.5)/n, [x,y]=sideAt(k,f,w), dd=hs(s,j)*.25-.12, m=.36+hs(s,j+3)*.08; add(x+dd,y-dd,m,.32,.1,'s'); } }
     for(let i=0;i<12;i++){ const a=i/12*Math.PI*2+hs(i,31)*.4, c=C[N], r=W(SL)+.6+hs(i,32)*1.3; if(a>Math.PI*.35&&a<Math.PI*.65)continue; add(c[0]+Math.cos(a)*r,c[1]+Math.sin(a)*r,.45+hs(i,33)*.8,.6,null,'b'); }
-    for(let i=0;i<260;i++){ const s=hs(i,41)*SL, k=kAt(s); if(nearBr(s))continue; const lv=L(s), f=hs(i,42)<.5?1:-1, d0=W(s)*(.7+hs(i,43)*.7), [x,y]=sideAt(k,f,d0), h=bed(x,y); if(h>lv+.25||h<lv-.15)continue; PB.push([x,y,h,.06+hs(i,44)*.1]); }
+    for(let i=0;i<260;i++){ const s=BK.m+hs(i,41)*(SL-BK.m), k=kAt(s); if(nearBr(s))continue; const lv=L(s), f=hs(i,42)<.5?1:-1, d0=W(s)*(.7+hs(i,43)*.7), [x,y]=sideAt(k,f,d0), h=bed(x,y); if(h>lv+.25||h<lv-.15)continue; PB.push([x,y,h,.06+hs(i,44)*.1]); }
     const rgeo=(det,sd)=>{ const g=new THREE.IcosahedronGeometry(1,det), p=g.attributes.position; for(let i=0;i<p.count;i++){ const x=p.getX(i), y=p.getY(i), z=p.getZ(i), n=1+.12*Math.sin(x*3.1+sd)*Math.cos(z*2.7+y*1.9+sd*2)+.06*Math.sin(y*5.3+x*4.1); p.setXYZ(i,x*n,y*n,z*n); } return g; };
     const rmat=new THREE.MeshLambertMaterial({color:0xffffff}), m4=new THREE.Matrix4(), q=new THREE.Quaternion(), e=new THREE.Euler(), cc=new THREE.Color(), V3=THREE.Vector3;
     const NB=5, bin=(x,y)=>{ const r=BK.q(x,y); return Math.min(NB-1,Math.floor((r?r[1]:0)/SL*NB)); }, RG=rgeo(1,3), PG=new THREE.IcosahedronGeometry(1,0); BROOK.rocks=[]; BROOK.pebbles=[];
@@ -87,7 +87,7 @@ const BROOK={}; window.BROOK=BROOK;
         const s=c.createBufferSource(), F=c.createBiquadFilter(), G=c.createGain(); s.buffer=b; s.loop=true; F.type='bandpass'; F.frequency.value=1400; F.Q.value=.8; G.gain.value=0; s.connect(F).connect(G).connect(c.destination); s.start(); snd={ctx:c,F,G}; }
       const v=SFX.on?Math.max(0,1-near/14)**2*(.12+.12*rf)*SFX.vol:0; snd.G.gain.setTargetAtTime(v,c.currentTime,.3); snd.F.frequency.setTargetAtTime(1200+700*rf+300*Math.sin(c.currentTime*.7),c.currentTime,.4); };
     const plash=c=>{ const n=Math.floor(c.sampleRate*.25), b=c.createBuffer(1,n,c.sampleRate), d=b.getChannelData(0); for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*Math.exp(-i/n*7); const s=c.createBufferSource(), F=c.createBiquadFilter(), G=c.createGain(); s.buffer=b; F.type='bandpass'; F.frequency.value=900+Math.random()*600; G.gain.value=.18*SFX.vol; s.connect(F).connect(G).connect(c.destination); s.start(); };
-    BROOK.tick=(dt,pos)=>{ U.uT.value=performance.now()/1000%1000; const px=pos.x/T+72-(P.ox||0), py=pos.z/T-77-(P.oy||0), r=LVL==='up'?BK.q(px,py):null, s=r?r[1]:0, h=r?BK.h(px,py):null, wade=r&&h!=null&&h<L(s)-.04&&!BK.st.some(o=>Math.hypot(px-o[0],py-o[1])<o[2]);
+    BROOK.tick=(dt,pos)=>{ U.uT.value=performance.now()/1000%1000; const px=pos.x/T+72-(P.ox||0), py=pos.z/T-77-(P.oy||0), r=LVL==='up'?BK.q(px,py):null, s=r?r[1]:0, h=r?BK.h(px,py):null, wade=r&&s>=BK.m&&h!=null&&h<L(s)-.04&&!BK.st.some(o=>Math.hypot(px-o[0],py-o[1])<o[2]);
       const mv=wade?Math.min(1,Math.hypot(pos.x-(BROOK.lx||pos.x),pos.z-(BROOK.lz||pos.z))/Math.max(dt,1e-3)/T):0; BROOK.lx=pos.x; BROOK.lz=pos.z; U.uMe.value.set(pos.x,pos.z,0,wade?.35+.65*mv:0); BROOK.wade=!!wade; BROOK.over=!!r;
       if(typeof CLOCK!=='undefined'&&CLOCK.sun){ U.uSun.value.copy(CLOCK.sun.color).multiplyScalar(Math.min(1.2,CLOCK.sun.intensity)); U.uDay.value=Math.max(.15,Math.min(1,(CLOCK.elev()+4)/14)); } if(window.SKY&&SKY.U)U.uSky.value.copy(SKY.U.uH.value);
       try{ const c=typeof SFX!=='undefined'&&SFX.live&&SFX.live(); if(c){ sound(c,r?Math.max(0,r[0]-W(s)):99,r?Math.min(1,rif(s)):0); if(wade&&mv>.3&&(splash-=dt)<0){ splash=.42; plash(c); } if(wade&&!wasIn)plash(c); } }catch(_){ } wasIn=!!wade; };

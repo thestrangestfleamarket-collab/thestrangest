@@ -103,7 +103,7 @@ const MAPED={on:false};
       const a=(b[2]-b[0])*(b[3]-b[1]); if(!best||a<best.a)best={k,a}; } return best&&best.k; };
   const edge3=(gp,e)=>{ '@later'; if(!SIZED[sel]||!gp)return -1; const b=boxOf(sel), r=renderer.domElement.getBoundingClientRect(), d=Math.max(.6*T,10*(cam.isOrthographicCamera?(cam.right-cam.left)/r.width:.05)), inX=gp.x>b[0]-d&&gp.x<b[2]+d, inZ=gp.z>b[1]-d&&gp.z<b[3]+d;
     return inZ&&Math.abs(gp.x-b[0])<d?0:inX&&Math.abs(gp.z-b[1])<d?1:inZ&&Math.abs(gp.x-b[2])<d?2:inX&&Math.abs(gp.z-b[3])<d?3:-1; };
-  MAPED.down=e=>{ if(!MAPED.on||e.button!==0||e.shiftKey||e.altKey)return false; const ray=rayOf(e), gp=ground(ray), ed=edge3(gp,e);
+  MAPED.down=e=>{ '@later'; if(!MAPED.on||e.button!==0||e.shiftKey||e.altKey)return false; const ray=rayOf(e), gp=ground(ray), ed=edge3(gp,e);
     if(ed>=0){ d3={t:'edge',i:ed,g0:gp,g:gp,e:off(WORK,sel).e.slice()}; overlay(); return true; }
     const k=e.ctrlKey||e.metaKey?null:pick3(ray); if(!k||!gp){ d3={t:'orbit',x:e.clientX,y:e.clientY}; return true; } sel=k; const w=off(WORK,k); d3={t:'move',g0:gp,s:{x:w.x,y:w.y}}; changed(); return true; };
   MAPED.move=e=>{ '@later'; if(!d3)return; if(d3.t==='orbit'){ UI.orbit(e.clientX-d3.x,e.clientY-d3.y); d3.x=e.clientX; d3.y=e.clientY; return; } const gp=ground(rayOf(e)); if(!gp)return; const dx=(gp.x-d3.g0.x)/T, dz=(gp.z-d3.g0.z)/T; d3.g=gp;

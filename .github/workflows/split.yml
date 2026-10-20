@@ -44,6 +44,14 @@ jobs:
           (cd ../base && python3 build.py)
           node tests/splitcheck.cjs site ../base out/base-site.json ""
         continue-on-error: true
+      - name: Budget against main (start, street, park; readable builds)
+        run: |
+          { MIN=0 python3 build.py && python3 tools/perfprof.py
+          (cd ../base && MIN=0 python3 build.py && python3 tools/perfprof.py)
+          node tests/startprof.cjs out/base-prof.json ../base/dist/market-prof.html
+          node tests/startprof.cjs out/head-prof.json dist/market-prof.html
+          node tests/budget.cjs out/base-prof.json out/head-prof.json; } 2>&1 | tail -80 > out-budget.log
+        continue-on-error: true
       - name: Publish
         if: always()
         run: |

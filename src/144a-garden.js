@@ -31,7 +31,7 @@ const GARDEN={}; window.GARDEN=GARDEN;
   const STEM=mk(new THREE.CylinderGeometry(.18,.24,1,4,1,true).translate(0,.5,0)), HEAD=mk(new THREE.SphereGeometry(1,6,3)), CTR=mk(new THREE.SphereGeometry(1,4,2)), LEAF=mk(new THREE.SphereGeometry(1,4,2));
   const HB=new THREE.BoxGeometry(.6*T,.5*T,.6*T), HM=new THREE.MeshBasicMaterial({visible:false}), hits=new THREE.Group(); grpG.add(hits);
   const CH=new Map(); let things=[]; const m4=new THREE.Matrix4(), q=new THREE.Quaternion(), V3=THREE.Vector3, col=new THREE.Color(), UPA=new V3(0,1,0), WU=T/.84;
-  const put=(k,x,y,z,s,a,g,n)=>{ '@later'; const [, , , hc,cc,[r,hh,st,cr]]=FL[k], R=r*WU*1.6*s, H=Math.max(.04,st*WU*1.25*s*(g<1?.35+.65*g:1)), top=y+H; q.setFromAxisAngle(UPA,a);
+  const put=(k,x,y,z,s,a,g,n)=>{ const [, , , hc,cc,[r,hh,st,cr]]=FL[k], R=r*WU*1.6*s, H=Math.max(.04,st*WU*1.25*s*(g<1?.35+.65*g:1)), top=y+H; q.setFromAxisAngle(UPA,a);
     STEM.setMatrixAt(n.s,m4.compose(new V3(x,y,z),q,new V3(.05*WU*s,H,.05*WU*s))); STEM.setColorAt(n.s++,col.setHex(0x4a8a3a));
     LEAF.setMatrixAt(n.l,m4.compose(new V3(x,y+H*.3,z),q,new V3(.07*WU*s,.012*WU,.03*WU*s))); LEAF.setColorAt(n.l++,col.setHex(0x3e7a32));
     if(g<.4)return top; const b=g<1?.45:1;

@@ -5,7 +5,7 @@
 // by the park gate; with ?steps=0, so the rooms the store builds in the background (they wait for the later chunk) count as not run.
 // Every function of 300 characters or more that never ran is given '@later'; (its code then comes in x-later.<hash>.js, fetched right
 // after the first frame); every other '@later'; is taken out. Functions already in a place's chunk ('@park' and the like), methods,
-// generators, one-line arrows and arrows that use this/arguments are left alone. Prints how many functions and characters it marked.
+// generators, one-line arrows, arrows that use this/arguments and the ways into places (anything that calls LOAD) are left alone. Prints how many functions and characters it marked.
 const {chromium}=require('playwright'), fs=require('fs'), path=require('path'), http=require('http');
 const {parse}=require('./scope.cjs');
 let PAGE='', Y='if(performance.now()-__YT>40)await __Y();', MARK=" '@later';", MIN=300;
@@ -16,7 +16,7 @@ const coverage=async()=>{
   const ctx=await b.newContext({viewport:{width:960,height:540}}), LEN={}, ran={}, t0=Date.now(), say=m=>console.log('later: '+m+' ('+Math.round((Date.now()-t0)/1000)+' s)');
   let pg, cdp, K, M, src={};
   const snap=async()=>{ const r=await cdp.send('Profiler.takePreciseCoverage'); for(const s of r.result)if(LEN[s.scriptId])for(const f of s.functions){ const g=f.ranges[0], k=LEN[s.scriptId]+':'+g.startOffset+':'+g.endOffset; ran[k]=(ran[k]||0)+g.count; } };
-  const start=async q=>{ if(pg){ await snap(); await pg.close({runBeforeUnload:false}); } pg=await ctx.newPage(); pg.setDefaultTimeout(120000); K=pg.keyboard; M=pg.mouse; pg.on('dialog',d=>d.dismiss().catch(()=>{}));
+  const start=async q=>{ if(pg){ await snap(); await pg.evaluate(()=>{ dispatchEvent(new Event('pagehide')); }).catch(()=>{}); await pg.waitForTimeout(500); await pg.close({runBeforeUnload:false}); } pg=await ctx.newPage(); pg.setDefaultTimeout(120000); K=pg.keyboard; M=pg.mouse; pg.on('dialog',d=>d.dismiss().catch(()=>{}));
     cdp=await ctx.newCDPSession(pg); await cdp.send('Debugger.enable'); cdp.on('Debugger.scriptParsed',e=>{ if(e.length>500000){ LEN[e.scriptId]=e.length; src[e.length]=[cdp,e.scriptId]; } });
     await cdp.send('Profiler.enable'); await cdp.send('Profiler.startPreciseCoverage',{callCount:true,detailed:false});
     await pg.goto(PAGE+q,{waitUntil:'commit',timeout:600000}); let s=false; for(let i=0;i<3000&&!(s=await pg.evaluate(()=>!!window.__started).catch(()=>false));i++)await pg.waitForTimeout(200); say('started '+q+' '+s); };
@@ -52,7 +52,7 @@ const coverage=async()=>{
     for(const k of [120,80,50,30]){ const q=h.slice(0,k), a=body.indexOf(q); if(a>=0&&body.indexOf(q,a+1)<0){ pos=a; break; } }
     const n=at.get(pos), p=n&&up.get(n); if(!n||n.body.type!=='BlockStatement'||n.generator||marked(n)||near(n)||outer(n))continue;
     if(p&&(p.type==='MethodDefinition'||p.type==='Property'&&(p.method||p.kind!=='init')))continue;
-    if(/__(DATA|LAZY|B64)__/.test(body.slice(n.start,n.end))||n.type==='FunctionDeclaration'&&new RegExp('new\\s+'+n.id.name+'\\b').test(body))continue;
+    if(/__(DATA|LAZY|B64)__|\bLOAD\(|\.need\(/.test(body.slice(n.start,n.end))||n.type==='FunctionDeclaration'&&new RegExp('new\\s+'+n.id.name+'\\b').test(body))continue;
     ins.push(n.body.start+1); chars+=n.end-n.start; }
   ins.sort((a,b)=>a-b);
   for(let k=0;k<src.length;k++){ const a=off[k]-I, e=(k+1<src.length?off[k+1]:page.length)-I, mine=ins.filter(x=>x>=a&&x<e); if(!mine.length)continue;

@@ -45,7 +45,7 @@ const TOUR=[
     ok(errs.length===e0&&late.length===l0,name+': no page errors, no slow fetch '+errs.slice(e0).concat(late.slice(l0)).join(' | '));
     await pg.evaluate(`(${back})()`).catch(e=>errs.push(name+' back: '+e.message)); await wait(1500); }
   await pg.evaluate(async()=>{ await DUNGEON.go(2); await new Promise(r=>setTimeout(r,6000)); }); await wait(3000);
-  phase='saved'; const l1=late.length, e1=errs.length; await start('?hour=13&wx=CLEAR'); await wait(10000);
+  phase='saved'; const l1=late.length, e1=errs.length; await start('?hour=13&wx=CLEAR'); for(let i=0;i<60&&!(await pg.evaluate(()=>DUNDBG().objs>0).catch(()=>false));i++)await wait(1000);
   const lv=await pg.evaluate(()=>Object.assign(DUNDBG(),{you:__dbg.you(),saved:(JSON.parse(localStorage.getItem('market-save')||'{}')||{}).where})).catch(e=>'ERR '+e.message);
   ok(lv&&lv.level===2&&lv.objs>0,'a saved spot in the dungeon loads its code at the start ('+JSON.stringify(lv).slice(0,400)+')');
   ok(errs.length===e1&&late.length===l1,'the saved start: no page errors, no slow fetch '+errs.slice(e1).concat(late.slice(l1)).join(' | '));

@@ -3555,12 +3555,13 @@ initial download and load super fast"; then "Go")
 - **Dead code out**: 40 functions and constants nothing used (the old street-scene helpers `box`/`cyl`/`plane`/`worldUV`, `bush`,
   `laundryTile`, the dojo hall's `djWallCol`/`djOpen`/`djIvy`, the guitar's and piano's unused chains, the octopus's `octPic`, the stalls'
   `table`/`basket`...), and five 256-pixel textures (grass, asphalt, concrete, earth, wood) painted at every start and never used.
-- **Measured** (CI, the website under `wrangler dev`, gzipped): the start's download 1,512 KB to 1,306 KB (the game code 838 KB to
-  607 KB; three.js, the rig and the data as before), then 190 KB of later code right after the first frame and each place's file when
-  you go in. First frame about the same here (23.0 s against 24.2 s; under software graphics the building dominates and the files come
-  from the same machine): the gain is the download on a real connection. Same triangles, draws and lights at the start and in the park
-  (the budget check); its start frame median moved (72.6 to 118.5 ms) with twice the frames sampled and a lower 95th percentile
-  (254 against 566 ms): noise of when the background work lands, not a slower frame.
+- **Measured** (CI, the website under `wrangler dev`, gzipped, everything fetched before the first frame): the start's download about
+  1,513 KB to 1,307 KB; the game code 840 KB to 607 KB (2.23 MB to 1.66 MB unzipped); three.js, the rig and the data as before. Right
+  after the first frame the later chunk, 190 KB; going in: park 18 KB, dungeon 12 KB (plus its skeletons' data as before), arcade 12 KB,
+  club 6 KB, VCR repair 6 KB, fire escape 4 KB, dojo 3 KB, bath house 2 KB. First frame about the same here (four runs: 10.5/9.6,
+  23.0/24.2, 18.9/20.3, 12.1/11.6 s against main; under software graphics the building dominates and the files come from the same
+  machine): the gain is the download on a real connection. The budget check: the same triangles, draws and lights at the start and in
+  the park; its frame medians swing both ways between runs (3-4 frames sampled in the park), the systems' own time a frame no higher.
 - **Checked**: `tests/places.cjs` (now in the site workflow) logs in on the real worker, checks the start fetches no chunk, enters every
   place (each fetches its file, builds, no page errors, no late fetch), then reloads with a saved spot inside the dungeon; all pass, the
   site check too.

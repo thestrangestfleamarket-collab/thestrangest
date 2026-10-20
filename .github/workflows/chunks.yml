@@ -21,10 +21,13 @@ jobs:
       - name: Measure website start
         run: node tests/chunkmeasure.cjs web out > out/web.log 2>&1 || true
       - name: Profile start
+        if: hashFiles('QUICK') == ''
         run: (MIN=0 python3 build.py; cp dist/market.html dist/market-min0.html; python3 tests/startcost.py && node tests/chunkmeasure.cjs prof out) > out/prof.log 2>&1 || true
       - name: Early teleports
+        if: hashFiles('QUICK') == ''
         run: node tests/chunkmeasure.cjs early out > out/early.log 2>&1 || true
       - name: Tour
+        if: hashFiles('QUICK') == ''
         timeout-minutes: 25
         run: node tests/chunkmeasure.cjs tour out > out/tour.log 2>&1 || true
       - name: Publish

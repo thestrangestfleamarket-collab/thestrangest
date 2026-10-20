@@ -19,7 +19,7 @@ const stats=pg=>pg.evaluate(()=>new Promise(res=>requestAnimationFrame(()=>reque
       pg.on('pageerror',e=>errs.push(e.message.slice(0,300))); pg.on('console',m=>{ if(m.type()==='error')errs.push(m.text().slice(0,300)); });
       pg.on('response',async r=>{ try{ const u=r.url(); if(!u.includes('/g/'))return; const body=await r.body(); reqs.push({u:u.replace(/.*\/g\//,''),raw:body.length,gzip:gz(body),phase}); }catch(e){} });
       await pg.goto('http://localhost:8123/g/market.html?fresh=1&hour=13&wx=CLEAR',{waitUntil:'commit'});
-      await pg.waitForFunction(()=>window.__started,null,{polling:100,timeout:900000});
+      try{ await pg.waitForFunction(()=>window.__started,null,{polling:100,timeout:240000}); }catch(e){ await pg.screenshot({path:path.join(OUT,'web-fail.png')}); save('web-fail.json',{errs,reqs,html:(await pg.content()).slice(0,3000)}); throw e; }
       const t=await pg.evaluate(()=>new Promise(res=>requestAnimationFrame(()=>requestAnimationFrame(()=>res({firstFrame:Math.round(performance.now()),warm:window.WARMMS})))));
       phase='after'; await pg.waitForTimeout(12000); const s=await stats(pg);
       if(!run)await pg.screenshot({path:path.join(OUT,'web-start.png')});

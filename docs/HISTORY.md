@@ -3672,3 +3672,12 @@ initial download and load super fast"; then "Go")
   "i want things like this that move to be looped to save on render cpu and time"): a thing that sways or stirs by itself (flowers,
   leaves, a flag, a sign) plays a short looped animation made once, instead of being computed every frame. A rule for new things and
   for the queue on the existing ones.
+
+- **THE EMBER KNIGHT** (owner, 20 Oct 2026, his photo of a felted dark knight; built by the same rules as the last three: traced
+  and measured off the photo, curves, twice his size, about 4,000 triangles; `084-npc-toons.js`, `emberknight`): crest tip 1.0 of
+  his height, helmet top .93, a V brow at .84 over two glowing ember eye slits (the NPC eye colour, unlit: no light, no program),
+  a pointed face plate to .73, four crest fins and two side horns; a lumpy red scarf (.65-.74); grey spiked pauldrons; a grey
+  chest plate with an emblem and two ribs; a belt with a buckle and two pouches; grey bracers, dark gauntlets; two brown front
+  flaps that swing with his legs; grey greaves, dark boots; **the cape is cloth** (35 points, 7 across and 5 down, the top row on
+  his shoulders), swung by his starts, stops, turns and pace, pushed by his legs, still when he stands. Now and then, standing,
+  he squares his shoulders. `metres` 2.4. Cost: 3,828 triangles, no lights.

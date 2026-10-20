@@ -129,7 +129,7 @@ function walkPose(st,abd){ const r=st.run||0,rs=r*r,g=gaitOf(r); if(st.smooth){ 
   for(const s of [1,-1]){ const n=s>0?'L':'R',x=s*FOOTX*g.width,qq=q[n];
     let A,a; if(feet[n]){ ({A,a}=feet[n]); LK[n]={on:1,off:sub(A,feet[n].b)}; }
     else {
-      const v=(qq-ST)/(1-ST),e=smooth(v),A0=planted(1,fa(n,ST-1e-6),x,h),A1=planted(0,fa(n,0),x,h),H=add(P.root,hipOff(s));
+      const v=(qq-ST)/(1-ST),e=smooth(Math.min(1,v*(1+.4*rs))),A0=planted(1,fa(n,ST-1e-6),x,h),A1=planted(0,fa(n,0),x,h),H=add(P.root,hipOff(s));
       const F=qq2=>legReach(lab('hip',qq2,ST,rs)*w*g.knee,kn(qq2)*g.knee),F0=F(ST),F1=F(1-1e-6),Fv=F(qq);
       a=fa(n,qq); A=add(lerpV(A0,A1,e),sub(Fv,lerpV(F0,F1,e))); A=V(x,Math.max(A.y,Math.cos(a)*ANKLE+Math.max(Math.sin(a)*1.1,-Math.sin(a)*1.9)+0.1*w),A.z); LK[n]={on:0,e,b0:V(x,0,-0.5*h),b1:V(x,0,0.5*h)};
       if(st.smooth&&typeof GAIT!=='undefined'){ const lg=(G,f)=>GK(G,(n=='L'?0:0.5)+G.st+(1-G.st)*v,f)*D, th=[0,1].map(j=>lg(GAIT.walk,c=>c[n].th[j])*(1-rs)+lg(GAIT.run,c=>c[n].th[j])*rs), sh=[0,1].map(j=>lg(GAIT.walk,c=>c[n].sh[j])*(1-rs)+lg(GAIT.run,c=>c[n].sh[j])*rs);

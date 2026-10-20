@@ -3492,3 +3492,18 @@ initial download and load super fast"; then "Go")
   batches (one draw per 24 cells, frustum-culled). Under software rendering the last far cells are done about a minute after the
   start (the frame rate there is low); at a normal frame rate a few seconds.
 - Not done (left for later): the game code is still one 845 KB download; the creatures, props and pawns still come at the start.
+
+## 20 Oct 2026: the road's painters ask only what's near
+
+- **Painting the first visit faster, the same pixels** (`050-main-8.js`, `014-gamekit.js`): the road's painters (`ROADAT`, `bars`, `lane`,
+  `marks`) tested every road, corner, crosswalk and lane for each of the road's 11 million pixels. Each now keeps, per map tile, the list of
+  only those whose area touches that tile (`TCL`, in their order, so the first match is the same one); `marks` makes its noise only when it
+  draws; `cvNoise` no longer makes a small function on each call. `hash` is left alone: its second multiply goes past exact integers, so any
+  faster form would give other noise. Checked by `tests/texhash.cjs`: every texture identical to the base.
+
+## 20 Oct 2026: multiplayer, more answers
+
+- **Owner's answers** (20 Oct 2026, on the overhaul review): talking between players "yes but not yet"; player trade "yes" (players sell or
+  give each other things, so a trade runs on the block's server with both sides confirming); what happens when a block is full is "future
+  plans"; looks "yes everyone can customize" (the crowd keeps one built body per look). Still open: whether friends always land in the same
+  copy of a block.

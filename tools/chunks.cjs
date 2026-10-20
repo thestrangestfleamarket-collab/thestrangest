@@ -4,7 +4,7 @@ const RT = 'const __CM={}, __CP={};\n'
   + 'const LOAD=(...ns)=>Promise.all(ns.map(n=>!n||__CM[n]?0:__CP[n]||(__CP[n]=__CLOAD(n).then(m=>{ __CM[n]=__CM[n]||m; },e=>{ delete __CP[n]; throw e; }))));\n'
   + 'const LOADED=n=>!n||!!__CM[n];\n'
   + 'const __CF=(n,i,t,s)=>{ let f=null; const w=function(){ return (f||(f=__CI(n,i,t,s))).apply(this,arguments); }; w.chunk=n; return w; };\n'
-  + 'const __CI=(n,i,t,s)=>{ if(!__CM[n]){ console.warn("chunk "+n+" was not loaded before use"); __CM[n]=__CSYNC(n); } return __CM[n][i](...t(),s); };\n'
+  + 'const __CI=(n,i,t,s)=>{ if(!__CM[n]){ console.warn("chunk "+n+" was not loaded before use (#"+i+")"); __CM[n]=__CSYNC(n); } return __CM[n][i](...t(),s); };\n'
   + 'window.LOAD=LOAD; window.LOADED=LOADED;\n';
 function chunks(body) {
   const { parse, analyze } = scope(), ast = parse(body), A = analyze(ast), marks = [], FN = /^(Arrow)?Function(Expression|Declaration)$/;
@@ -76,8 +76,9 @@ function chunks(body) {
   let main = body;
   for (const e of edits) main = main.slice(0, e.s) + e.t + main.slice(e.e);
   const code = {};
-  for (const n in out) code[n] = '{\n' + out[n].join(',\n') + '\n}';
-  return { main, code, report: marks.map(m => ({ name: m.name, at: m.call.start, bytes: m.fn.end - m.fn.start, imm: [...m.cap].filter(([, c]) => !c.live).length, live: [...m.cap].filter(([, c]) => c.live).map(([n]) => n) })) };
+  for (const n in out) { code[n] = '{\n' + out[n].join(',\n') + '\n}'; require('acorn').parse('"use strict";__CREG(' + code[n] + ');', { ecmaVersion: 'latest', sourceType: 'script' }); }
+  parse(main);
+  return { main, code, report: marks.map(m => ({ name: m.name, ix: m.ix, head: body.slice(m.fn.start, m.fn.start + 90).replace(/\s+/g, ' '), bytes: m.fn.end - m.fn.start, imm: [...m.cap].filter(([, c]) => !c.live).length, live: [...m.cap].filter(([, c]) => c.live).map(([n]) => n) })) };
 }
 module.exports = { chunks, RT };
 if (require.main === module) {

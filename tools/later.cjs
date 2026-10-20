@@ -28,7 +28,7 @@ const coverage=async()=>{
   await pg.evaluate(()=>STORE.goTo(PARK.look[0],PARK.look[1],'up')); await pg.waitForTimeout(4000); await start('?hour=13&wx=CLEAR&steps=0'); await pg.waitForTimeout(12000);
   for(const k of ['w','d']){ await K.down(k); await pg.waitForTimeout(300); await K.up(k); } await snap(); say('returned');
   const out=[];
-  for(const len in src){ const [c,id]=src[len], F=[], text=(await c.send('Debugger.getScriptSource',{scriptId:id})).scriptSource;
+  for(const len in src){ const [c,id]=src[len], F=[], text=await c.send('Debugger.getScriptSource',{scriptId:id}).then(r=>r.scriptSource,()=>null); if(!text)continue;
     for(const k in ran){ const [l,a,c]=k.split(':'); if(l===len)F.push({a:+a,b:+c,n:ran[k]}); }
     F.sort((x,y)=>x.a-y.a||y.b-x.b); let end=-1;
     for(const f of F){ if(f.n||f.b-f.a<MIN||f.a<end)continue; end=f.b; out.push(text.slice(f.a,f.a+200)); } }

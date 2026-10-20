@@ -47,7 +47,7 @@ jobs:
       - name: Publish
         if: always()
         run: |
-          mkdir -p out; cp out-*.log out-*.patch out/ || true
+          mkdir -p out; cp out-*.log out-*.patch dist/chunks.txt out/ || true
           ls -la dist/g > out/dist-g.txt; ls -la ../base/dist/g > out/base-g.txt || true
           git config user.email ci@example.com; git config user.name ci
           git checkout --orphan ci-out-split; git rm -rf --cached . >/dev/null; git add -f out; git commit -m out >/dev/null; git push -f origin ci-out-split

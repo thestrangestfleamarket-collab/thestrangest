@@ -31,16 +31,10 @@ process.on('unhandledRejection',e=>{ errs.push('TEST '+String(e&&e.message||e).s
     fs.writeFileSync(path.join(OUT,n+'.png'),Buffer.from(r.png,'base64')); return {n:r.n,noisy:r.noisy}; };
   const vset=()=>pg.evaluate(()=>{ const m={}, V=__dbg.camO().position.constructor, T=33.9/30; __scene.traverseVisible(o=>{ if(!o.isMesh||!o.castShadow)return; const pth=[]; let q=o; while(q&&q!==__scene&&pth.length<5){ pth.push(q.name||q.type); q=q.parent; } const b=new (V.prototype.constructor)(); o.getWorldPosition(b); m[o.uuid]=[pth.join('<'),+(b.x/T).toFixed(0),+(b.z/T).toFixed(0),o.isInstancedMesh?o.count:1]; }); return m; });
   const sdiff=(A,B)=>({gone:Object.keys(A).filter(k=>!B[k]).map(k=>A[k]).slice(0,30),came:Object.keys(B).filter(k=>!A[k]).map(k=>B[k]).slice(0,30),nA:Object.keys(A).length,nB:Object.keys(B).length});
-  if(process.argv[3]==='diag'){ await pg.keyboard.press('v'); await pg.waitForTimeout(1500); await pg.keyboard.press('v'); await pg.keyboard.press('v'); await pg.waitForTimeout(1500);
-    await at(150,-Math.PI/4); await pg.mouse.move(480,270); for(let i=0;i<2;i++){ await pg.mouse.wheel(0,400); await pg.waitForTimeout(2000); }
-    await pg.evaluate(()=>{ const R=__dbg.renderer, o0=R.renderBufferDirect.bind(R), T=33.9/30; window.CAP=null; R.renderBufferDirect=(c,sc,g,m,o,gr)=>{ if(window.CAP&&c===CLOCK.sun.shadow.camera){ const L=CLOCK.sun, d=L.position.clone().sub(L.target.position).normalize(); if(!o.geometry.boundingSphere)o.geometry.computeBoundingSphere(); const bs=o.geometry.boundingSphere, wc=bs.center.clone().applyMatrix4(o.matrixWorld), rr=bs.radius*o.matrixWorld.getMaxScaleOnAxis(), dep=wc.clone().sub(L.target.position).dot(d);
-      if(dep+rr>55*T){ const pth=[]; let q=o; while(q&&q.parent&&pth.length<5){ pth.push(q.name||q.type); q=q.parent; } CAP.push([pth.join('<'),o.isInstancedMesh?'I'+o.count:'M',+(wc.x/T).toFixed(0),+(wc.y/T).toFixed(0),+(wc.z/T).toFixed(0),+(rr/T).toFixed(1),+(dep/T).toFixed(0)]); } } return o0(c,sc,g,m,o,gr); }; });
-    await pg.evaluate(()=>{ window.CAP=[]; CLOCK.sun.shadow.needsUpdate=true; }); await pg.waitForTimeout(2000); rep.far=await pg.evaluate(()=>CAP); await shot('dg-iso');
-    await pg.evaluate(()=>{ window.CAP=null; window.__hid=[]; __scene.traverse(o=>{ if(o.isMesh&&o.castShadow&&o.geometry.boundingSphere){ const L=CLOCK.sun, d=L.position.clone().sub(L.target.position).normalize(), wc=o.geometry.boundingSphere.center.clone().applyMatrix4(o.matrixWorld), rr=o.geometry.boundingSphere.radius*o.matrixWorld.getMaxScaleOnAxis(); if(wc.sub(L.target.position).dot(d)-rr>55*33.9/30){ o.castShadow=false; __hid.push(o); } } }); CLOCK.sun.shadow.needsUpdate=true; }); await pg.waitForTimeout(2000); await shot('dg-iso-nofar');
-    rep.hid=await pg.evaluate(()=>__hid.length); fin(); await b.close(); return; }
+
   await pg.keyboard.press('v'); await pg.waitForTimeout(1500);
   const E=-Math.PI/2, Wd=Math.PI/2, cen=()=>pg.evaluate(()=>window.SUNDBG&&SUNDBG().still);
-  rep.recentre={}; for(const [P,yaw,tag] of [[20,E,'E20'],[60,E,'E60'],[100,E,'E100'],[140,E,'E140'],[40,Wd,'W40'],[80,Wd,'W80'],[120,Wd,'W120']]){
+  rep.recentre={}; if(process.argv[3]!=='diag')for(const [P,yaw,tag] of [[20,E,'E20'],[60,E,'E60'],[100,E,'E100'],[140,E,'E140'],[40,Wd,'W40'],[80,Wd,'W80'],[120,Wd,'W120']]){
     await at(P-40,yaw,2500); await at(P-11,yaw,1200); await at(P,yaw,1200); const a=await shot('rc-'+tag+'-a'); await pg.waitForTimeout(1500); const a2=await shot('rc-'+tag+'-a2'); const n1=await cen();
     await at(P+40,yaw,2500); await at(P,yaw,1200); const b2=await shot('rc-'+tag+'-b'); const n2=await cen();
     rep.recentre[tag]={...(await diffm(a,b2,a2,'rcd-'+tag)),redraws:[n1,n2]}; }
@@ -48,6 +42,11 @@ process.on('unhandledRejection',e=>{ errs.push('TEST '+String(e&&e.message||e).s
   await pg.keyboard.press('v'); await pg.keyboard.press('v'); await pg.waitForTimeout(1500);
   await at(150,-Math.PI/4); await pg.mouse.move(480,270);
   rep.zoom=[]; const z0=await shot('iso-z0'); for(let i=1;i<=4;i++){ await pg.mouse.wheel(0,i<3?400:-400); await pg.waitForTimeout(2500); await shot('iso-z'+i); rep.zoom.push([await pg.evaluate(()=>window.CAMW&&CAMW()),await cen()]); }
+  if(process.argv[3]==='diag'){ await pg.mouse.wheel(0,400); await pg.waitForTimeout(2500); await pg.mouse.wheel(0,400); await pg.waitForTimeout(2500); await shot('dg-0');
+    rep.dg={you:await pg.evaluate(()=>__dbg.pos().map(v=>v/(33.9/30))),near:await pg.evaluate(()=>[CLOCK.sun.target.position.x/(33.9/30),CLOCK.sun.target.position.z/(33.9/30)])};
+    await pg.evaluate(()=>{ CLOCK.sun.shadow.needsUpdate=true; }); await pg.waitForTimeout(2000); await shot('dg-1-nearredraw');
+    await pg.evaluate(()=>{ CLOCK.sunD.castShadow=false; }); await pg.waitForTimeout(3000); await shot('dg-2-nosunD');
+    rep.sunlog=await pg.evaluate(()=>window.SUNLOG); fin(); await b.close(); return; }
   await pg.waitForTimeout(1500); const zb=await shot('iso-zback'); await pg.waitForTimeout(1500); const zb2=await shot('iso-zback2'); rep.zoomBack=await diffm(z0,zb,zb2,'isod-zoom');
   const t0=await pg.evaluate(()=>SUNLOG.length); await pg.waitForTimeout(30000); rep.idle30=await pg.evaluate(t0=>SUNLOG.slice(t0),t0);
   rep.sun=await pg.evaluate(()=>window.SUNDBG&&SUNDBG()); rep.sunlog=await pg.evaluate(()=>window.SUNLOG);

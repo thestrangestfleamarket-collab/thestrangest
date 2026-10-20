@@ -1,8 +1,8 @@
 const BLAZE=window.BLAZE={F:[],D:[]};
 { const T=TILE, M=1/.84*T, G=(x,z)=>MODS.bodega.ground(x,z), F=BLAZE.F, rnd=Math.random, MAX=+(QS.get('fires')||12), WET=3.2, HOLD=240, FADE=360, V3=THREE.Vector3;
-  const ITEMS=[PARK.trees,PARK.under,PARK.underStill,DRESS.trees,DRESS.plants].filter(Boolean).flatMap(m=>m.userData.items||[]).filter(o=>!/rock|stone|pillar/i.test(o.k));
+  const its=L=>L.filter(Boolean).flatMap(m=>m.userData.items||[]).filter(o=>!/rock|stone|pillar/i.test(o.k)), ITEMS=its([PARK.trees,PARK.under,PARK.underStill,DRESS.trees,DRESS.plants]); PARK.later(()=>ITEMS.push(...its([PARK.trees,PARK.under,PARK.underStill])));
   const top=(x,z)=>WEEDS.top?WEEDS.top(x,z):undefined, surf=(x,z)=>{ const t=top(x,z); return typeof t==='number'?t:G(x,z); };
-  const lawn=(x,z)=>{ if(!WEEDS.inPark||!WEEDS.inPark(x,z,1))return false; const a=x/T+BOD.OX-PARK.ox, b=z/T+BOD.OY-PARK.oy; return !PARK.path(a,b)&&!(PARK.brook&&PARK.brook.wet(a,b,.6))&&!(FOUNT.lake&&FOUNT.lake(a,b)<1.5); };
+  const lawn=(x,z)=>{ if(!PARK.in||!WEEDS.inPark||!WEEDS.inPark(x,z,1))return false; const a=x/T+BOD.OX-PARK.ox, b=z/T+BOD.OY-PARK.oy; return !PARK.path(a,b)&&!(PARK.brook&&PARK.brook.wet(a,b,.6))&&!(FOUNT.lake&&FOUNT.lake(a,b)<1.5); };
   const brush=(x,z)=>ITEMS.some(o=>Math.hypot(o.x-x,o.z-z)<Math.max(.5*T,o.r*.6));
   const burnable=BLAZE.burnable=(x,z)=>{ if(G(x,z)<-.01||[PARK.fire,window.GCAVE&&GCAVE.fire].some(c=>c&&Math.hypot(c.x-x,c.z-z)<2*T))return false; const t=top(x,z); return typeof t==='number'||t===undefined&&lawn(x,z)||brush(x,z); };
   const cc=new THREE.Color(), geo=(fn)=>{ const P=[], N=[], C=[]; fn((w,h,d,c,x,y,z,ry=0)=>{ const g=new THREE.BoxGeometry(w,h,d).rotateY(ry).translate(x,y,z).toNonIndexed(); P.push(...g.attributes.position.array); N.push(...g.attributes.normal.array); cc.setHex(c); for(let i=0;i<g.attributes.position.count;i++)C.push(cc.r,cc.g,cc.b); });

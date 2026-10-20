@@ -3285,3 +3285,109 @@ moves in idl animations."; "skin of player just wearing all black like ninja")
   program (the existing sun program picks fine or town map), no triangles. Software rendering in the test: town map 9-36 ms when
   drawn (start, sun change, things added), fine map 2-10 ms when you walk 12 tiles; nothing while standing still (was a fine-map
   redraw every 10 s). `SUNDBG()` shows `far` redraws and the town box; `SUNLOG` rows now carry the ms and which map.
+
+## 19 Oct 2026: slimes on the dungeon's levels 1-3, skeletons on 2-5
+- **The slimes** (owner, 19 Oct 2026, with his shots of the small glowing green slime on the park lawn: "add these slimes to the first
+  level of the dungeon," / "they are easy to kill and give you experience, skill, loot, etc. drop slime and sometimes real loot they
+  picked up. slime needs bottle to store it." / "different colors are dif dificulty and drop diff levels of loot ,etc. they show up on
+  levels 1-3. the skeletons show up on 2-5." and then "Go"; `src/146b-dunmobs.js`): the park slime's own model (its body and eyes, no
+  rig) drawn as one instanced mesh in the game's toon bands, glowing in its colour (its colour added back as light, so it reads in the
+  dark), a hard-edged disc of its colour on the floor under it. Level 1: five GREEN (harmless, 2 hits); level 2: three green, four
+  BLUE (3 hits, hop at you inside 3 tiles, a light bump); level 3: three blue, three PURPLE (5 hits), two RED (7 hits, a bit bigger
+  and faster, harder bump). They hop from spot to spot and sit still between hops (things at rest stay still). J punches, K kicks
+  (one and a half) and the sword's swing (two) hit what's in front of you, more with MARTIAL ARTS; a hit flashes it white and knocks
+  it back. Dead, it swells and flattens into a puddle: the puddle is a pickup (GREEN SLIME etc.); with an empty bottle in your pack
+  it goes into the bottle (BOTTLE OF GREEN/BLUE/PURPLE/RED SLIME, sells $4/8/15/25), without one: YOU NEED A BOTTLE TO HOLD THE SLIME.
+  Sometimes ("real loot they picked up", a quarter of greens to six in ten reds) a second pickup beside it: coins or one of the game's
+  own things, better from the tougher colours (quartz, amethyst, geode, amber, moonstone, opal, emerald; refresh, heal and strength
+  potions; a chanterelle). Each kill tries MARTIAL ARTS (harder colours count for higher skill), with the usual skill line.
+- **The skeletons on 2-5** (same words): the four KayKit skeletons and the gold one load when you first reach level 2 or deeper (under
+  the black, as before), with the four skeleton pawns already there; level 2 has 2 (a light guard, the Minion), 3 has 3, 4 has 4
+  (heavy guard, mage, Warrior, Rogue), 5 has 5 (the reaper, the mage, Warrior, Mage, the gold one), spread away from both stairs.
+  They wander; inside 3.8 tiles they come for you, give up past 9 tiles, and strike every 2 s or so after a wind-up (their own blows;
+  the pawns lean back and lunge), a light hurt (a twentieth to a tenth of your health) that misses if you've stepped out of reach;
+  the Rogue's and the Mage's bolts fly at where you were, so they can be dodged. Hit back: 3-9 hits; the KayKit ones fall
+  (their death), the pawns crumble; coins or a stone or a potion where they fall. Everyone is back when you come to the level again.
+  The four ogre pawns stay on level 1 as they were, wandering, not hostile (to ask). Off their level everyone is kept out of sight
+  and not run; leaving the dungeon puts all of them away and clears the puddles and loot.
+- **Cost**: a slime 1,068 triangles (1,056 the model, 12 its disc): level 1 5,340, level 2 7,476, level 3 8,544, in two draws; no
+  lamps; one new shader program (the slimes' toon). The skeletons as before (their models, no new programs). `DUNMOBDBG()`,
+  `DUNMOBS` (hit/hitRes for tests); `MODS.dungeon.hook(f)` is told the level on each build (0 on leaving).
+## 19 Oct 2026: your apartment and your fire escape (the outside view, off the map)
+(owner, showing a picture of a city seen from a fire escape landing: "i want that to be the view when you go out to your fireescape (but
+it will be off map)"; his pick of the options: "Outside view"; `058c-fireview.js`, `141c-fireview.js`)
+- **Your apartment**: the apartment house's 3rd-floor back east flat (its door 23.4 from the west corner, the corridor side) is yours: a
+  brass plate YOUR APARTMENT over its door (seen from the corridor). The menu's MORE PLACES has YOUR APARTMENT (inside it) and YOUR FIRE
+  ESCAPE. The flat stays empty (the house's rule).
+- **Out the window**: double click its window (24.7 from the west corner, YOUR FIRE ESCAPE) or walk into it: the black `#subfade` fade
+  (LOADING YOUR FIRE ESCAPE... the first time, built then and only then: `K.offmap`), and you stand on your fire escape. Walk into the
+  window behind you (or double click it, BACK INSIDE) and the fade puts you back in the flat by that window.
+- **The fire escape** (off the map, east past the dojo hall): a grated black-iron landing on the 5th floor of a six-storey red brick
+  walk-up, railings, the straight ladder up through the hatch of the 6th-floor landing and down to the 4th, the stack of landings down
+  to the 2nd with its drop ladder; a stone step under your tall window (SIT ON THE STEP: you sit on it, your legs over the grating;
+  walking off stands you up), three potted plants. The window is always lit warm at night; one lamp (the window's light) lights the
+  landing at night (one of the 8).
+- **The view**: the street five storeys below (sidewalks, a two-way street with its yellow line, parking lines, manholes, crosswalks at
+  the avenue, parked cars, ten cars driving both ways with head and tail lights at night, iron street lamps with hard-edged pools of
+  light at night, street trees), the row across the street (3 to 5 storeys, brick of the game's colours, shops with awnings and signs
+  lit at night, windows lit at random at night, parapets, water towers, bulkheads, chimneys and AC boxes on the roofs, kept lower than
+  your landing so the isometric view is never blocked), the neighbours on your side (some with fire escapes and shops), an avenue
+  running away across the street, then blocks of the far city's boxes (`FAR3`'s own facade and lit-window material, taller with
+  distance, some towers) and the far skyline's painted panorama (`FAR3.panels`, its day and night pictures) all round. The sky is the
+  game's (DAY/NIGHT presets); the town's far city, its trees and the mist are hidden while you're out there.
+- **Cost**: built only on the first visit and drawn only while you're on the landing (one group): baked boxes in the game's box way (the
+  near landing and your facade at 24 texels a tile, the rest at 8), one instanced draw of ~200 far boxes (~2,400 triangles, the far
+  city's program), 8 triangles of skyline panels (the panels' program), one ground plane, two instanced draws of cars (~1,100
+  triangles). Measured on the landing (whole frame): 43,800 triangles and 42 draw calls in the isometric view, 45,800 and 48 in the behind view. In the isometric view the far boxes that would stand between the camera and you are left out (worked out again only when the view turns); the neighbours next to your building are at most 5 storeys so they never hide you. One lamp at night. Programs: the store's Lambert ones
+  (front-sided for the buildings), the cars' vertex-colour Lambert and Basic.
+## 19 Oct 2026: Central Park its own place, built when you go in; its wall twice as high, no ivy, an "A" over the gate
+(owner, queued 19 Oct 2026, then "Go": make Central Park its own loaded place: not loaded at the start; through its gate a loading screen
+like the subway's and the dungeon's, one step in, then the park; out through a gate back to the street; "the gate gets a sign 'A'", "the
+park's brick wall twice as high", "no ivy on the wall"; `061-park.js`)
+- **At the start only the edge** (`MAPG.parkwall`): the wall all round (now 96 px, was 48; still 1.5 tiles thick, its street face where
+  it was), the four gates' piers with their lanterns, the railing on the cope, the open gate leaves, the squirrel's tower (it shows over
+  the wall), the mushroom seller's and the tomato's stalls on the sidewalk, the main path from the gate to the round, and stand-ins for
+  the park's trees (one flat crown and trunk each, a cone for the spruce, coloured from each tree's own leaves and bark, instanced) so the
+  park still looks wooded through the gate and over the wall. While the park isn't loaded its ground is the plain lawn with the tall grass.
+- **No ivy** anywhere on the wall or the piers (the painted ivy and its leaf clumps are gone; the moss in the low joints stays).
+- **The "A"**: an iron overthrow between the main gate's piers on Market St (two bars, short balusters, spear tips) carrying an oval
+  medallion, park green with a gold rim and a gold "A", both faces.
+- **The rest when you go in** (`PARK.later(fn)` queues a part, `PARK.load` builds them all under the black, about 50 steps with a breath
+  between): all other paths, the trees, rocks and undergrowth, the campfire, the path lamps, the fountain terrace and lake, the pond and
+  the hills, the brook, the golems' cave, the flowers and bushes, the paths' tufts, the sitting log; then the mine's park hatch is placed
+  again. One step into any gate (0.35 tiles past the wall's outer face): ENTERING CENTRAL PARK on `#subfade` (its fade), built the first
+  time, fade in; one step out: LEAVING CENTRAL PARK and back to the street, the park hidden (kept, not built again). Arriving inside any
+  other way (the teleport list, a saved place, a new player, who still starts in Central Park) goes black at once and does the same. The
+  castle counts as inside. Nothing is drawn while it builds. Inside, the city beyond the wall is drawn as before (my call: same view).
+- **Only while you're in the park**: its creatures (frogs, slime, snake, spiders, bats, wasps; `group:'park'`), the squirrel knight and
+  the golems (`N.park`: not run, not shown); park butterflies, birds, fairy rings, sunbeams on its lawn, falling leaves and mushrooms.
+  The dragons now perch on the street's trees (the park's aren't there at the start). The lake's and brook's holes in the land are cut only
+  inside (`MODS.landHoles`); keep-outs, the menu's map, `OUTWET`, the golden grass and the lake's and brook's shapes still come from the
+  park's numbers at the start (no meshes). `PARKPLACE()` for tests.
+- **Cost** (software rendering, the same machine, `origin/main` against this): at the start 668,000 triangles in the scene (was
+  1,042,000), 2,110 meshes (3,360), 299 geometries (648), 143 textures (178), 127 programs (145), 145 lamp records (177); ready about
+  1 s sooner (27.9 s against 28.9 s), and the cave, pond, brook, fountain and tower no longer build in the first seconds after. On Market
+  St at the gate: 117 draws, 107,000 triangles drawn (were 1,735 and 728,000). The edge's new parts: the stand-ins about 2,200 triangles,
+  the sign about 850, no light; the wall's painted faces twice the area. Going in the first time: 2.2 s under the black (steps of at most
+  0.3 s); after that a fade. Inside, the park as before.
+## 19 Oct 2026: the alley built when it is needed
+
+(owner, queued 19 Oct 2026: "alley lazy loading"; then "Go")
+- **Not at start** (`069a-block.js`): the back alley's dressing (the fish restaurant's light box and canopy, every neon and blade
+  sign, the shop signs on the Hudson-side building, AC units, crates, the scooter, the sagging wires, its 9 lamps, the Korean fonts'
+  download) and the Hudson-side building's full-size painted faces are no longer made while the page loads. At start that building
+  stands with its faces painted at half size (`BLK.LO`, the same doors, windows and bricks; a quarter of the painting work), and the
+  apartment house's back fire escape and its drop stair (now their own baked piece, `APTS.back`, `054-apts.js`) are hidden. The
+  garages, the iron gate behind the subway stairs, the river-side buildings and every solid (the crates' too) stay as they were.
+- **When it is built**: the alley is built in the background, a piece a frame (`BLK.job`, never freezing the page), the first time it
+  can be seen: you come within 10 tiles of its line (the two mouths, the subway stairs' gate), or the camera is turned to look from
+  the alley's side within 32 tiles of it (two of the four isometric angles from Market St's row side), or the behind and
+  first-person views there. Step into the alley before it is ready (a jump from the menu, a load) and **ENTERING THE ALLEY** shows on
+  the black `#subfade` until it is, as the rooms do. Once built it is shown only while it can be seen and hidden otherwise (its
+  lamps out of `LITE`'s choice with it), the full faces swapped back for the half-size ones; nothing changes while you are in a room.
+  From the street it looks as it did, since it is always there when it can be seen.
+- Guarded: the neon flicker and wet reflections take signs added later (`BLK.shine`, `069c-shine.js`); the alley's lamps join
+  `LITE.recs` with the group as their switch; the map, the gates and the lane cut read the building records, made at start as before.
+- **Cost**: at start 87 fewer objects in the block (119 to 32), about 2,000 triangles of alley and some 2,500 of back fire escape
+  not drawn, 9 lamp records fewer, the alley's ~50 sign textures and the font download not loaded. On Market St in the default view
+  nothing of it is drawn (15 fewer draw calls). When seen, the same as before. `ALLEYDBG()` (built, shown, ms, steps, tris).

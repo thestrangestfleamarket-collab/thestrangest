@@ -3521,3 +3521,11 @@ initial download and load super fast"; then "Go")
   per-frame checks for being in it (`075-main-13.js`, `161-perf.js`). `apartments` is no longer an away key; `?bring=apartments` does nothing.
   The keep's lot (`lcastle`, still away) keeps the 1000-tile offset it had through the apartments' layout key, so nothing else moves.
 - **Friends** (owner, 20 Oct 2026: "friends on same block yes theres only 1 right now"): friends always land on the same block.
+
+## 20 Oct 2026: lighter checks on pull requests
+
+- **Fewer, faster checks** (owner, 20 Oct 2026, after a pull request's checks took about 25 minutes: "ok do less checks", then "go"):
+  the budget, the same picture and the same pixels now run side by side as their own jobs (`.github/workflows/site.yml`), so the wait
+  is the slowest one, not all of them. The same picture takes the base once per place, not twice, and allows 5% of the pixels to differ
+  (the base differs from itself by up to 2%; `SAMEPIC_NOISE=1` measures it again). The picture and pixel checks run only when the game
+  changes (`src/`, `data/`, the build) or those checks do; the budget and the lost picture always run.

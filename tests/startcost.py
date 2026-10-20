@@ -11,7 +11,7 @@ page = ''.join(read(f) for f in src).replace('__BUILDV__', '1234567890')
 i = page.index('<script type="module">') + len('<script type="module">')
 j = page.rindex('</script>')
 body, ny = g['yields'](page[i:j])
-body = "window.__YPL=[];const __YP=p=>window.__YPL.push([p,performance.now()]);\n" + body
+body = "window.__YPM={};let __YPP=-1,__YPT=performance.now();window.__YP0=__YPT;const __YP=p=>{ const n=performance.now(); window.__YPM[__YPP]=(window.__YPM[__YPP]||0)+n-__YPT; __YPP=p; __YPT=n; };\n" + body
 open('dist/market-prof.html', 'w').write(data(page[:i] + body + page[j:]))
 off, b = [], 0
 for f in src:

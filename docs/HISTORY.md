@@ -3583,5 +3583,5 @@ initial download and load super fast"; then "Go")
   as he walks; now and then he lifts his right hand); big padded feet with four toes. **The robe is cloth**: 96 points (16 round,
   6 down, the top row held at his shoulders) under gravity, swung by his starts, stops, turns and pace, kept off his body and pushed
   by his legs, each point a bone the robe hangs on; it settles and stops still when he stands. Built at twice his size (`metres` 3.7).
-  Cost: 11,876 triangles, no lights, no new programs, the cloth under 0.1 ms a frame. Moving pictures: `node tools/charanim.cjs`
+  Cost: 11,876 triangles, no lights, no new programs; the cloth's ms a frame not yet measured in the game. Moving pictures: `node tools/charanim.cjs`
   (the game's own rig on the character alone, on black: stand, walk, turn, stop).

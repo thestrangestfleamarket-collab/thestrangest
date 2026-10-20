@@ -3684,3 +3684,10 @@ initial download and load super fast"; then "Go")
 
 - `059d-fireview.js` moves after the bodega builder and is wrapped in `await grab('fire', ...)`: its meshes land in `MAPG.fire`. It was already a
   self-contained block using only page-level names; the scope proof shows every reference resolving as before.
+
+## 20 Oct 2026: the ghost dojo is its own builder (modules)
+
+- **`055-ghostdojo.js` is `059e-ghostdojo.js`**, after the bodega builder: `gdShape` (which `050` calls to lay the lot) stays a page-level
+  function; the rest is wrapped in `await grab('ghostdojo', ...)`. Its `sol()` wrote to the builder's `solids`/`fixed`, which were always
+  the street's arrays; it now names `SOL.up`/`FIX.up` directly (the page-level `solids`/`fixed` switch with the level, so naming them
+  would not be the same). The scope proof shows every other reference resolving as before.

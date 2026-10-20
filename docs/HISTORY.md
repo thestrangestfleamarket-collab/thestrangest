@@ -3391,3 +3391,10 @@ park's brick wall twice as high", "no ivy on the wall"; `061-park.js`)
 - **Cost**: at start 87 fewer objects in the block (119 to 32), about 2,000 triangles of alley and some 2,500 of back fire escape
   not drawn, 9 lamp records fewer, the alley's ~50 sign textures and the font download not loaded. On Market St in the default view
   nothing of it is drawn (15 fewer draw calls). When seen, the same as before. `ALLEYDBG()` (built, shown, ms, steps, tris).
+- **The ghost's sheet stays draped after a teleport** (19 Oct 2026, of the sheet ghost "when you are dead you should look like the
+  sheet ghost"; test shots showed it as a flat white square by the park's statue): any jump of the ball over 2 m in one frame (a
+  PLACES trip, `STORE.goTo`, the menu) dropped the sheet again flat above the ball, so it hung flat for a while (in slow frames for
+  seconds) before it fell back into shape. Now a jump of over 1 m carries the whole draped sheet along as it is (`GHOSTS.move`,
+  `149-ghosts.js`); and if the sheet ever slips off the ball while dead, it is dropped and settled at once out of sight (240 steps,
+  `GHOSTS.settle`), so the ghost is upright whatever happens until the bath house. The drop at the moment of dying is as it was.
+  Cost: nothing new drawn; a few hundred µs on a teleport. `DEADDBG()` gains `on` and `span`.

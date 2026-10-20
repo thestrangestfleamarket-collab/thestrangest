@@ -5,7 +5,7 @@ on:
 jobs:
   measure:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 90
     permissions:
       contents: write
     steps:
@@ -19,7 +19,7 @@ jobs:
       - name: Baseline (main)
         run: |
           mkdir -p out/base; git fetch -q origin main; git worktree add -q base origin/main; ln -s ../node_modules base/node_modules; cp tests/chunkmeasure.cjs tests/startcost.py base/tests/
-          (cd base && python3 build.py && DIST=dist node tests/chunkmeasure.cjs sizes ../out/base && DIST=dist node tests/chunkmeasure.cjs web ../out/base && MIN=0 python3 build.py; python3 tests/startcost.py && DIST=dist node tests/chunkmeasure.cjs prof ../out/base) > out/base.log 2>&1 || true
+          (cd base && python3 build.py && DIST=dist node tests/chunkmeasure.cjs sizes ../out/base && DIST=dist node tests/chunkmeasure.cjs web ../out/base && MIN=0 python3 build.py; python3 tests/startcost.py && DIST=dist node tests/chunkmeasure.cjs prof ../out/base; DIST=dist node tests/chunkmeasure.cjs tour ../out/base) > out/base.log 2>&1 || true
       - name: Build minified
         run: python3 build.py && mkdir -p out && node tests/chunkmeasure.cjs sizes out
       - name: Measure website start
@@ -28,7 +28,7 @@ jobs:
         run: (MIN=0 python3 build.py; python3 tests/startcost.py && node tests/chunkmeasure.cjs prof out) > out/prof.log 2>&1 || true
       - name: Tour
         timeout-minutes: 25
-        run: if [ -f TOUR ]; then node tests/chunkmeasure.cjs tour out > out/tour.log 2>&1; fi || true
+        run: node tests/chunkmeasure.cjs tour out > out/tour.log 2>&1 || true
       - name: Publish
         if: always()
         run: |

@@ -71,7 +71,7 @@ function frame(now){ requestAnimationFrame(frame); if(PARK.hold)return; renderer
       G.lit=blk?0:Math.min(1,(sun.intensity-.6)/1.4); } } G.k+=(G.lit-G.k)*Math.min(1,dt*4); }
   W3.tint.setRGB(.58,.6,.66).lerp(C2.setRGB(1,1,1),Math.max(Math.max(0,lampW)*(ROOMS.cur?0.35:0.7),SUNG.k*.9)); if(ED.on)W3.tint.setRGB(1,1,1);
   DRESS.tick(dt,pos); RINGX.tick(dt); RIVER.tick(dt,pos); FOUNT.tick&&FOUNT.tick(dt,pos); RIVER.hud(); if(window.BROOK&&BROOK.tick)BROOK.tick(dt,pos); SUBX.tick(dt); { const r=MODS.apts.tick(); if(r)solids=r; } { const r2=STORE.stackTick&&STORE.stackTick(); if(r2)solids=r2; } CITY.tick(dt,pos); NPCS.tick(dt,pos); if(FIRE)FIRE.tick(dt); FIGFX.tick(dt,pos); FLAME.tick(dt,pos); MUS.tick(dt); BWK.tick(dt); PNM.tick(dt); SGM.tick(dt); DRM.tick(dt); STAGE.tick(dt);
-  UI.goTick(); UI.runTick(); CLOCK.tick(dt); VIT.tick(dt); LOOK.tick(); WHERE.tick(dt); AMB.tick(dt); LINES.tick(dt);
+  UI.goTick(); UI.runTick(); BODB.gtick(dt); CLOCK.tick(dt); VIT.tick(dt); LOOK.tick(); WHERE.tick(dt); AMB.tick(dt); LINES.tick(dt);
   marker.visible=!!target; if(target){ marker.position.set(target.x,groundY(target.x,target.z)+0.03,target.z); marker.material.opacity=0.5+0.4*Math.sin(t*8); }
   for(const sg of shopGroups)sg.scale.y+=(cut-sg.scale.y)*Math.min(1,dt*8);
   for(const tr of trees){ tr.crown.rotation.z=Math.sin(t*1.3+tr.ph)*0.035+Math.sin(t*3.1+tr.ph)*0.01; tr.crown.rotation.x=Math.sin(t*1.1+tr.ph*1.7)*0.025; }

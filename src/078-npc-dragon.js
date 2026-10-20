@@ -1,4 +1,4 @@
-{ const S=DRAGON;
+{ const DGO=S=>{
   const BN=S.rig.names, JI=Object.fromEntries(BN.map((n,i)=>[n,i]));
   const geomOf=M=>SKIN.geom(M,true,false), rigOf=()=>SKIN.rig(S.rig), CLIPS=SKIN.clips(S.clips,BN);
   const M=S.chars.Dragon, GR=['#0d2410','#163a19','#225023','#2f6630'].map(h=>new THREE.Color(h));
@@ -100,4 +100,4 @@
   window.DRAGONPERCH=(i,k)=>{ const N=DR[i], D=N.D; D.p=PER[k]; D.p.on=1; D.mode='perch'; D.t=999; N.st.x=D.p.x; N.st.z=D.p.z; D.y=D.p.y; return PER.length; };
   window.DRAGONHOME=i=>{ const N=DR[i], D=N.D; if(!D.home)return null; D.p=D.home; D.mode='perch'; D.t=999; N.st.x=D.p.x; N.st.z=D.p.z; D.y=D.p.y; return {x:D.p.x,z:D.p.z,y:D.p.y}; };
   window.DRAGONDBG=()=>DR.map(N=>({mode:N.D.mode,tree:!!N.D.p.tree,ground:!!N.D.p.ground,peek:+N.D.pw.toFixed(2),breath:Math.round(N.D.breath),x:+N.st.x.toFixed(1),y:+N.D.y.toFixed(1),z:+N.st.z.toFixed(1)}));
-}
+}; const go=()=>window.__started?DRAGON().then(DGO).catch(e=>console.warn('DRAGONS',e)):setTimeout(go,400); go(); }

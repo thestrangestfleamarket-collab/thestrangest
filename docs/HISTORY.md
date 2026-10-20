@@ -3568,7 +3568,7 @@ initial download and load super fast"; then "Go")
 
 (owner, 20 Oct 2026, told "the download at the start is still about 1.5 MB, and most of that is the game code in one piece (2.25 MB,
 845 KB gzipped). Splitting it up is a bigger change to how the page is built": "Yes fix game code")
-- **How** (`tools/chunks.cjs`, `tools/scope.cjs`, `build.py`, `tools/bundle.cjs`): a function whose body starts with `'@name';` is cut
+- **How** (`tools/chunks.cjs`, `tools/chunkscope.cjs`, `build.py`, `tools/bundle.cjs`): a function whose body starts with `'@name';` is cut
   out of the page at build time into chunk `name`. On the website each chunk is its own file, `x-name.<hash>.js` (cached for good like the
   rest of `/g/`), fetched by `await LOAD('name')`; in `dist/market.html` the chunks stay in the page and `LOAD` is instant, so every test
   of the single page runs the same cut code. The page keeps a small stand-in for each cut function: on its first call it makes the real
@@ -3589,7 +3589,7 @@ initial download and load super fast"; then "Go")
   the start file until the tool is run again.
 - **Dead code out**: 40 functions and constants nothing used (the old street-scene helpers `box`/`cyl`/`plane`/`worldUV`, `bush`,
   `laundryTile`, the dojo hall's `djWallCol`/`djOpen`/`djIvy`, the guitar's and piano's unused chains, the octopus's `octPic`, the stalls'
-  `table`/`basket`...), and five 256-pixel textures (grass, asphalt, concrete, earth, wood) painted at every start and never used.
+  `table`/`basket`, the bodega's third-floor lot...), and five 256-pixel textures (grass, asphalt, concrete, earth, wood) painted at every start and never used.
 - **Measured** (CI, the website under `wrangler dev`, gzipped, everything fetched before the first frame): the start's download about
   1,513 KB to 1,307 KB; the game code 840 KB to 607 KB (2.23 MB to 1.66 MB unzipped); three.js, the rig and the data as before. Right
   after the first frame the later chunk, 190 KB; going in: park 18 KB, dungeon 12 KB (plus its skeletons' data as before), arcade 12 KB,

@@ -25,8 +25,8 @@ const DN={lk:1,mode:'day'};
         :`<div class="row"><span style="width:230px">${l}</span><input type="range" data-k="${key}" min="${a}" max="${b}" step="${st}" value="${P[key]}" style="flex:1"><span style="width:44px;text-align:right">${fl(P[key])}</span></div>`).join('')
       +`<div class="row"><button class="btn" id="dnsave">SAVE</button><button class="btn" id="dnreset">RESET</button><button class="btn" id="dnexp">EXPORT</button><span class="dim" id="dnmsg">${dirty?'not saved':''}</span></div><textarea id="dnout" hidden style="width:100%;height:60px;font:10px monospace"></textarea>`; };
   if(box){ for(const ev of ['keydown','keyup'])box.addEventListener(ev,e=>{ if(e.target.matches('input,textarea'))e.stopPropagation(); });
-    box.addEventListener('input',e=>{ const k=e.target.dataset.k; if(!k)return; const P=DN.P(); P[k]=e.target.type==='color'?e.target.value:+e.target.value; if(e.target.type==='range')e.target.nextElementSibling.textContent=fl(P[k]); if(k==='cld'||k==='cy'||k==='lamp')fix(); dirty=true; box.querySelector('#dnmsg').textContent='not saved'; });
-    box.addEventListener('click',e=>{ const t=e.target, m=t.dataset.dn, msg=()=>box.querySelector('#dnmsg');
+    box.addEventListener('input',e=>{ '@later'; const k=e.target.dataset.k; if(!k)return; const P=DN.P(); P[k]=e.target.type==='color'?e.target.value:+e.target.value; if(e.target.type==='range')e.target.nextElementSibling.textContent=fl(P[k]); if(k==='cld'||k==='cy'||k==='lamp')fix(); dirty=true; box.querySelector('#dnmsg').textContent='not saved'; });
+    box.addEventListener('click',e=>{ '@later'; const t=e.target, m=t.dataset.dn, msg=()=>box.querySelector('#dnmsg');
       if(m)DN.set(m);
       if(t.id==='dnsave'){ SAVE.set('dn-'+DN.mode,JSON.stringify(DN.P())); dirty=false; msg().textContent='saved'; }
       if(t.id==='dnreset'){ S[DN.mode]={...D0[DN.mode]}; SAVE.del('dn-'+DN.mode); dirty=false; fix(); DN.draw(); msg().textContent='back to the game\'s own'; }

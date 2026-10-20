@@ -2,14 +2,14 @@ const OCTP={b:[150,88,196],B:[104,58,142],m:[214,176,236],M:[124,70,166],k:[18,1
   c:[92,58,34],C:[132,86,50],E:[255,120,40],a:[150,146,140],g:[196,212,220],G:[236,244,248],q:[70,130,176],Q:[150,200,228],r:[206,60,40],R:[236,196,64],y:[176,132,80]};
 const OCTSEAT=13;
 const OCTS=1.25;
-function octArm(L,r,t,bw,r0=3,r1=1,n=11,g=40){ const P=u=>{ const a=(1-u)*(1-u), b=2*u*(1-u), c=u*u; return [a*r[0]+b*bw[0]+c*t[0],a*r[1]+b*bw[1]+c*t[1],a*r[2]+b*bw[2]+c*t[2]]; };
+function octArm(L,r,t,bw,r0=3,r1=1,n=11,g=40){ '@later'; const P=u=>{ const a=(1-u)*(1-u), b=2*u*(1-u), c=u*u; return [a*r[0]+b*bw[0]+c*t[0],a*r[1]+b*bw[1]+c*t[1],a*r[2]+b*bw[2]+c*t[2]]; };
   for(let i=0;i<n;i++){ const u0=i/n, u1=(i+1)/n, p=P(u0), q=P(u1), dx=q[0]-p[0], dy=q[1]-p[1], dz=q[2]-p[2], len=Math.hypot(dx,dy,dz)||1, rad=r0+(r1-r0)*(i+.5)/n;
     const yaw=Math.atan2(dy,dx), pit=Math.atan2(dz,Math.hypot(dx,dy));
     L.push(E((p[0]+q[0])/2,(p[1]+q[1])/2,(p[2]+q[2])/2,len/2+rad*.55,rad,rad,(x,y,z)=>z<-.35?'m':'b',yaw,pit,0,g)); }
   const a=P(.94), b=P(1); return [b[0]-a[0],b[1]-a[1],b[2]-a[2]]; }
 function octStick(L,t,aim){ const dx=aim[0]-t[0], dy=aim[1]-t[1], dz=aim[2]-t[2], l=Math.hypot(dx,dy,dz)||1, k=8/l;
   L.push(E(t[0]+dx*k,t[1]+dy*k,t[2]+dz*k,8,.75,.75,'s',Math.atan2(dy,dx),Math.atan2(dz,Math.hypot(dx,dy)),0,50)); }
-function octBody(A){ const L=[], D=[], z0=OCTSEAT, nod=A.nod||0;
+function octBody(A){ '@later'; const L=[], D=[], z0=OCTSEAT, nod=A.nod||0;
   const root=a=>[Math.cos(a)*4.3*OCTS,Math.sin(a)*4.3*OCTS,z0+5*OCTS];
   let ai=0; const arm=(a,tip,bow,r0,r1)=>octArm(L,root(a),tip,bow,r0*OCTS,r1*OCTS,11,40+ai++);
   const sw=A.sway||0, w=k=>Math.sin(sw*Math.PI*2+k)*2;

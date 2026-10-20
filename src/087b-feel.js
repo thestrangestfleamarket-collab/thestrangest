@@ -14,7 +14,7 @@ window.FEEL=FEEL;
     BALANCED:{},
     FLOATY:{accel:12,brake:14,reverse:20,grip:16,airAccel:4,airBrake:1,turn:420,gravity:14,jumpH:1.25,fallMax:18,fade:.22,camFollow:7}};
   FEEL.DEF=DEF; FEEL.RANGE=RANGE; FEEL.PRE=PRE; FEEL.cfg={...DEF};
-  FEEL.check=o=>{ if(!o||typeof o!=='object'||Array.isArray(o))return {err:['not a JSON object']}; const out={}, err=[];
+  FEEL.check=o=>{ '@later'; if(!o||typeof o!=='object'||Array.isArray(o))return {err:['not a JSON object']}; const out={}, err=[];
     for(const [k,v] of Object.entries(o)){ if(!(k in DEF)){ err.push('unknown: '+k); continue; } if(typeof v!=='number'||!isFinite(v)){ err.push(k+': not a number'); continue; }
       const [a,b]=RANGE[k]; if(v<a||v>b){ err.push(k+': '+v+' outside '+a+'..'+b); continue; } out[k]=v; } return {cfg:out,err}; };
   FEEL.set=o=>{ const r=FEEL.check(o); Object.assign(FEEL.cfg,r.cfg); FEEL.cfgd=true; return r.err; };
@@ -36,13 +36,13 @@ window.FEEL=FEEL;
   const colAt=()=>{ const Y=FEEL.yard; if(Y&&Y.bvh&&Y.in(S.p.x,S.p.z)){ YC.bvh=Y.bvh; return YC; }
     if(!FEEL.street||FEEL.street.src!==solids||FEEL.street.n!==solids.length)FEEL.street=FEEL.boxes(solids);
     SC.bvh=FEEL.street.bvh; return SC; };
-  FEEL.boxes=list=>{ const P=[], q=(a,b,c,d)=>P.push(...a,...b,...c,...a,...c,...d);
+  FEEL.boxes=list=>{ '@later'; const P=[], q=(a,b,c,d)=>P.push(...a,...b,...c,...a,...c,...d);
     for(const [x0,z0,x1,z1] of list){ const a=x0/MH, b=x1/MH, c=z0/MH, d=z1/MH, lo=-60, hi=60;
       q([a,lo,c],[b,lo,c],[b,hi,c],[a,hi,c]); q([b,lo,d],[a,lo,d],[a,hi,d],[b,hi,d]); q([a,lo,d],[a,lo,c],[a,hi,c],[a,hi,d]); q([b,lo,c],[b,lo,d],[b,hi,d],[b,hi,c]); }
     if(!P.length)P.push(1e5,0,1e5,1e5+1,0,1e5,1e5,0,1e5+1);
     const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); return {src:list,n:list.length,geo:g,bvh:new FEEL.lib.MeshBVH(g)}; };
   const segAt=p=>{ const r=K().radius; seg.start.set(p.x,p.y+r,p.z); seg.end.set(p.x,p.y+Math.max(r,hgt()-r),p.z); };
-  const resolve=p=>{ const r=K().radius, cs=cosS(); let pushed=false;
+  const resolve=p=>{ '@later'; const r=K().radius, cs=cosS(); let pushed=false;
     for(let it=0;it<4;it++){ let moved=false; segAt(p); box.makeEmpty(); box.expandByPoint(seg.start); box.expandByPoint(seg.end); box.min.addScalar(-r); box.max.addScalar(r);
       col.bvh.shapecast({intersectsBounds:b=>b.intersectsBox(box),intersectsTriangle:t=>{ const d=t.closestPointToSegment(seg,tp,cp); if(d>=r+.015)return false;
         if(d>1e-6)dn.subVectors(cp,tp).divideScalar(d); else t.getNormal(dn); const dep=r-d; t.getNormal(fn); if(fn.dot(dn)<0)fn.negate(); const wk=dn.y>=cs||(fn.y>=cs&&fn.dot(dn)>.85);
@@ -57,7 +57,7 @@ window.FEEL=FEEL;
   const down=(p,max)=>{ const r=K().radius; ray.origin.set(p.x,p.y+r,p.z); ray.direction.set(0,-1,0); const h=col.bvh.raycastFirst(ray,THREE.DoubleSide); if(!h||h.distance>r+max)return null;
     const f=h.face; tv.copy(f.normal); if(tv.y<0)tv.negate(); return {d:h.distance-r,n:tv,y:h.point.y}; };
   const groundFn=(p,wasG)=>{ if(!col.gf)return; const gy=col.gf(p.x,p.z); if(p.y<=gy+1e-4||(wasG&&S.v.y<=0&&!S.jumpT&&p.y-gy<=K().snap)){ p.y=gy; S.gnd=true; S.gN.set(0,1,0); if(S.v.y<0)S.v.y=0; } };
-  const sim=dt=>{ const c=K(), p=S.p, v=S.v; S.t+=dt; const wasG=S.gnd, vy0=v.y;
+  const sim=dt=>{ '@later'; const c=K(), p=S.p, v=S.v; S.t+=dt; const wasG=S.gnd, vy0=v.y;
     let ix=IN.x, iz=IN.z, il=Math.hypot(ix,iz); if(il>1){ ix/=il; iz/=il; il=1; } const fx=ix, fz=iz, fl=il;
     if(S.wallP&&il>0){ const d=ix*S.wN.x+iz*S.wN.z; if(d<0){ ix-=S.wN.x*d; iz-=S.wN.z*d; il=Math.hypot(ix,iz); } }
     const sp=IN.run?c.run:c.walk, tx=ix*sp, tz=iz*sp, G=wasG;
@@ -91,7 +91,7 @@ window.FEEL=FEEL;
   FEEL.sync=()=>{ S.p.set(pos.x/MH,py/MV,pos.z/MH); S.prev.copy(S.p); S.v.set(0,0,0); S.face=S.facePrev=heading; S.acc=0; S.air=0; S.gnd=true; S.lastG=S.t; S.jumped=false; S.buf=-1; S.sync=false; };
   FEEL.take=()=>(FEEL.on||!!(FEEL.yard&&FEEL.yard.in(pos.x/MH,pos.z/MH)))&&!RAG.on&&!(window.BOAT&&BOAT.on)&&!(st.water&&st.water.in)&&!UI.fly&&!UI.freeCam&&!st.sit&&!ED.on;
   FEEL.input=(mx,mz,run,held)=>{ IN.x=mx; IN.z=mz; IN.run=run; S.held=held; };
-  FEEL.step=(dt,mx,mz)=>{ if(!FEEL.lib)FEEL.load(); FEEL.go=0; if(!FEEL.ready||FEEL.hold)return;
+  FEEL.step=(dt,mx,mz)=>{ '@later'; if(!FEEL.lib)FEEL.load(); FEEL.go=0; if(!FEEL.ready||FEEL.hold)return;
     if(FEEL.yard&&!FEEL.yard.bvh)FEEL.yard.build();
     if(S.sync||Math.abs(pos.x-W.x)>1e-6||Math.abs(pos.z-W.z)>1e-6||Math.abs(py-W.y)>1e-6)FEEL.sync();
     if(Math.abs(heading-W.h)>1e-6){ S.face=S.facePrev=heading; }
@@ -110,7 +110,7 @@ window.FEEL=FEEL;
   FEEL.eye=new V(); let eyeOk=false, ct=0, cdt=0;
   FEEL.camT=T=>{ const n=performance.now(); cdt=ct?Math.min(.1,(n-ct)/1000):0; ct=n; if(!eyeOk||T.distanceTo(FEEL.eye)>8*MH){ FEEL.eye.copy(T); eyeOk=true; } else FEEL.eye.lerp(T,1-Math.exp(-cdt*K().camFollow)); return FEEL.eye; };
   FEEL.applyCam=()=>{ if(typeof UI==='undefined'||!UI.persp||UI.view==='first')return; UI.dist=K().camDist*MH; pitchTo=UI.clampV(K().camPitch); };
-  FEEL.cam=(T,C)=>{ const dt=cdt, Y=FEEL.yard; if(!FEEL.ready||!Y||!Y.bvh||!Y.in(T.x/MH,T.z/MH)){ camD=null; FEEL.camHit=null; const g=groundY(C.x,C.z)+.6*MV; if(C.y<g)C.y=g; return; }
+  FEEL.cam=(T,C)=>{ '@later'; const dt=cdt, Y=FEEL.yard; if(!FEEL.ready||!Y||!Y.bvh||!Y.in(T.x/MH,T.z/MH)){ camD=null; FEEL.camHit=null; const g=groundY(C.x,C.z)+.6*MV; if(C.y<g)C.y=g; return; }
     tm.set(T.x/MH,T.y/MV,T.z/MH); cd.set(C.x/MH,C.y/MV,C.z/MH).sub(tm); const len=cd.length(); if(len<1e-4)return; cd.divideScalar(len);
     cr.crossVectors(cd,tv.set(0,1,0)); if(cr.lengthSq()<1e-6)cr.set(1,0,0); cr.normalize(); cu.crossVectors(cr,cd).normalize();
     const cl=K().camClear; let hit=len;

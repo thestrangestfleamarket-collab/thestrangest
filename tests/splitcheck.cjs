@@ -8,9 +8,9 @@ const TOUR={
   park:{go:async()=>{ const B=__dbg.MAPK.BOD, P=PARK; STORE.goTo(B.XS(P.round[0]+(P.ox||0)+3),B.ZS(P.round[1]+(P.oy||0)+3),'up'); for(let i=0;i<120&&!PARK.ready;i++)await new Promise(r=>setTimeout(r,500)); await new Promise(r=>setTimeout(r,4000)); return {p:PARKPLACE(),f:!!FOUNT.drops}; },back:async()=>{ const B=__dbg.MAPK.BOD; STORE.goTo(B.XS(99),B.ZS((B.CURB+B.FAR)/2),'up'); await new Promise(r=>setTimeout(r,3000)); }},
   dojo:{go:async()=>{ DOJO.enter(); for(let i=0;i<60&&!DOJO.built;i++)await new Promise(r=>setTimeout(r,500)); await new Promise(r=>setTimeout(r,3000)); return {built:DOJO.built,ninja:window.DOJONINJA&&DOJONINJA()}; },back:async()=>{ DOJO.leave(); await new Promise(r=>setTimeout(r,3000)); }},
   fire:{go:async()=>{ FIREV.out(); for(let i=0;i<60&&!FIREV.built;i++)await new Promise(r=>setTimeout(r,500)); await new Promise(r=>setTimeout(r,3000)); return FIREDBG(); },back:async()=>{ FIREV.back(); await new Promise(r=>setTimeout(r,3000)); }},
-  club:{go:async()=>{ await UI.goPlace('CLUB STATIC'); await new Promise(r=>setTimeout(r,6000)); return CLUBDBG(); },back:async()=>{}},
-  arcade:{go:async()=>{ await UI.goPlace('THE ARCADE'); await new Promise(r=>setTimeout(r,3000)); await STORE.enter('arcade',true); await new Promise(r=>setTimeout(r,4000)); return INTDBG(); },back:async()=>{}},
-  vcr:{go:async()=>{ await UI.goPlace('VCR REPAIR'); await new Promise(r=>setTimeout(r,5000)); return Object.keys(STORE.off).filter(k=>STORE.off[k].done); },back:async()=>{}},
+  club:{go:async()=>{ await __dbg.ui().goPlace('CLUB STATIC'); await new Promise(r=>setTimeout(r,6000)); return CLUBDBG(); },back:async()=>{}},
+  arcade:{go:async()=>{ await __dbg.ui().goPlace('THE ARCADE'); await new Promise(r=>setTimeout(r,3000)); await STORE.enter('arcade',true); await new Promise(r=>setTimeout(r,4000)); return INTDBG(); },back:async()=>{}},
+  vcr:{go:async()=>{ await __dbg.ui().goPlace('VCR REPAIR'); await new Promise(r=>setTimeout(r,5000)); return Object.keys(STORE.off).filter(k=>STORE.off[k].done); },back:async()=>{}},
   bath:{go:async()=>{ const M=__dbg.MAPK, G=M.BOD.GD, r=G.r; STORE.goTo(M.BOD.X((r[0]+r[2])/2),M.BOD.Z((r[1]+r[3])/2),'up'); await new Promise(r=>setTimeout(r,7000)); return {inside:G.inside(),int:INTDBG()}; },back:async()=>{ const B=__dbg.MAPK.BOD; STORE.goTo(B.XS(99),B.ZS((B.CURB+B.FAR)/2),'up'); await new Promise(r=>setTimeout(r,3000)); }},
 };
 (async()=>{
@@ -34,7 +34,13 @@ const TOUR={
   const t0=Date.now(); await pg.goto(url,{waitUntil:'commit',timeout:600000});
   let ok=false; for(let i=0;i<3000&&!(ok=await pg.evaluate(()=>!!window.__started).catch(()=>false));i++)await pg.waitForTimeout(200);
   rep.started=ok; rep.startMs=Date.now()-t0; rep.pageStart=await pg.evaluate(()=>({now:Math.round(performance.now()),warm:window.WARMMS})).catch(()=>null);
-  if(process.env.COV){ const A=await snap(); await pg.evaluate(()=>{ const B=__dbg.MAPK.BOD; STORE.goTo(B.XS(99),B.ZS((B.CURB+B.FAR)/2),'up'); }); await pg.waitForTimeout(15000); const Bs=await snap(), L=[];
+  if(process.env.COV){ const A=await snap(); const K=pg.keyboard, M=pg.mouse;
+    await M.move(480,270); await M.move(600,300); await M.click(500,280); await M.wheel(0,300); await M.wheel(0,-300);
+    for(const k of ['w','a','s','d']){ await K.down(k); await pg.waitForTimeout(400); await K.up(k); }
+    await K.down('Shift'); await K.down('w'); await pg.waitForTimeout(600); await K.press(' '); await K.up('w'); await K.up('Shift');
+    for(const k of ['v','v','v','q','e','Escape','Escape']){ await K.press(k); await pg.waitForTimeout(300); }
+    await M.down({button:'right'}); await M.move(520,260); await M.up({button:'right'});
+    await pg.evaluate(()=>{ const B=__dbg.MAPK.BOD; STORE.goTo(B.XS(99),B.ZS((B.CURB+B.FAR)/2),'up'); }); await pg.waitForTimeout(15000); const Bs=await snap(), L=[];
     for(const id in SRC){ const src=(await cdp.send('Debugger.getScriptSource',{scriptId:id})).scriptSource; const F=[];
       for(const k of new Set([...Object.keys(A),...Object.keys(Bs)])){ const [sid,a,b]=k.split(':'); if(sid!==id)continue; F.push({a:+a,b:+b,c:(A[k]||0)+(Bs[k]||0)}); }
       F.sort((x,y)=>x.a-y.a||y.b-x.b); let end=-1;

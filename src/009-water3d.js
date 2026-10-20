@@ -1,11 +1,11 @@
 const WATER={drops:[], uH:{value:null}, uWB:{value:new THREE.Vector4()}, uLevel:{value:0}, uGrid:{value:new THREE.Vector2()}, uCK:{value:+(QS0=>QS0.get('ck')||160)(new URLSearchParams(location.search))}, mats:[]};
-WATER.caustic=m=>{ m.onBeforeCompile=sh=>{ Object.assign(sh.uniforms,{uH:WATER.uH,uWB:WATER.uWB,uLevel:WATER.uLevel,uGrid:WATER.uGrid,uCK:WATER.uCK});
+WATER.caustic=m=>{ '@later'; m.onBeforeCompile=sh=>{ Object.assign(sh.uniforms,{uH:WATER.uH,uWB:WATER.uWB,uLevel:WATER.uLevel,uGrid:WATER.uGrid,uCK:WATER.uCK});
   sh.vertexShader='varying vec3 vWp;\n'+sh.vertexShader.replace('#include <project_vertex>','#include <project_vertex>\n vWp=(modelMatrix*vec4(transformed,1.)).xyz;');
   sh.fragmentShader='uniform sampler2D uH; uniform vec4 uWB; uniform float uLevel,uCK; uniform vec2 uGrid; varying vec3 vWp;\n'+sh.fragmentShader.replace('#include <dithering_fragment>',`#include <dithering_fragment>
   if(vWp.y<uLevel){ vec2 uv=(vWp.xz-uWB.xy)/(uWB.zw-uWB.xy); uv=clamp(uv,0.,1.); vec2 t=1./uGrid; float c=texture2D(uH,uv).r;
     float lap=texture2D(uH,uv+vec2(t.x,0.)).r+texture2D(uH,uv-vec2(t.x,0.)).r+texture2D(uH,uv+vec2(0.,t.y)).r+texture2D(uH,uv-vec2(0.,t.y)).r-4.*c;
     float k=clamp(-lap*uCK,-0.45,1.6)*smoothstep(0.,0.4,uLevel-vWp.y); gl_FragColor.rgb+=gl_FragColor.rgb*k*vec3(.75,.92,1.); }`); }; m.needsUpdate=true; WATER.mats.push(m); };
-const waterBody=(WATER,cfg)=>{ const {X0,X1,Z0,Z1,lvl,GX,GY}=cfg, W=X1-X0, D=Z1-Z0;
+const waterBody=(WATER,cfg)=>{ '@later'; const {X0,X1,Z0,Z1,lvl,GX,GY}=cfg, W=X1-X0, D=Z1-Z0;
   WATER.uWB.value.set(X0,Z0,X1,Z1); WATER.uLevel.value=lvl; WATER.uGrid.value.set(GX,GY); Object.assign(WATER,{X0,Z0,W,D,lvl});
   const o={type:THREE.HalfFloatType,format:THREE.RGBAFormat,minFilter:THREE.LinearFilter,magFilter:THREE.LinearFilter,wrapS:THREE.ClampToEdgeWrapping,wrapT:THREE.ClampToEdgeWrapping,depthBuffer:false};
   WATER.A=new THREE.WebGLRenderTarget(GX,GY,o); WATER.B=new THREE.WebGLRenderTarget(GX,GY,o); WATER.uH.value=WATER.A.texture;

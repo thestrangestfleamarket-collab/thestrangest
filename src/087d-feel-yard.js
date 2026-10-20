@@ -7,7 +7,7 @@
   Y.spots=()=>{ const o=org(); return SP.map(([n,x,y,z,h])=>({n,x:x+o.x,y,z:z+o.z,h})); };
   Object.defineProperty(Y,'spawn',{get:()=>Y.spots()[0]});
   Y.go=i=>{ const s=Y.spots()[i]; pos.x=s.x*MH; pos.z=s.z*MH; py=s.y*MV; heading=s.h; target=null; FEEL.S.sync=true; if(typeof UI!=='undefined'&&UI.off)UI.off.set(0,0,0); };
-  Y.build=()=>{ if(Y.bvh||!FEEL.ready)return; const o=org(), P=[], VP=[], VC=[], C=new THREE.Color(), a=new THREE.Vector3(), b=new THREE.Vector3(), n=new THREE.Vector3();
+  Y.build=()=>{ '@later'; if(Y.bvh||!FEEL.ready)return; const o=org(), P=[], VP=[], VC=[], C=new THREE.Color(), a=new THREE.Vector3(), b=new THREE.Vector3(), n=new THREE.Vector3();
     const tri=(p,q,r,col,vis=true)=>{ const pts=[p,q,r].map(v=>[v[0]+o.x,v[1],v[2]+o.z]); for(const v of pts)P.push(...v); if(!vis)return; C.set(col); for(const v of pts){ VP.push(...v); VC.push(C.r,C.g,C.b); } };
     const quad=(p,q,r,s,col,vis)=>{ tri(p,q,r,col,vis); tri(p,r,s,col,vis); };
     const box=(x0,x1,y0,y1,z0,z1,col,top=col)=>{ quad([x0,y1,z1],[x1,y1,z1],[x1,y1,z0],[x0,y1,z0],top); quad([x0,y0,z1],[x1,y0,z1],[x1,y1,z1],[x0,y1,z1],col); quad([x1,y0,z0],[x0,y0,z0],[x0,y1,z0],[x1,y1,z0],col);

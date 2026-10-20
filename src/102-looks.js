@@ -12,7 +12,7 @@ const LOOKS={};
     for(let i=0;i<n;i++){ const r=W3.ramp[mt[i]|0]; if(r)put(A,i,r); }
     for(const k of ['c0','c1','c2','cd','color'])if(A[k])A[k].needsUpdate=true; };
   const RB={torso:[1.06,1,1.08],hips:[1.12,1,1.12],thighL:[1.14,1,1.14],thighR:[1.14,1,1.14],sleeveL:[1.12,1,1.12],sleeveR:[1.12,1,1.12],upperArmL:[1.08,1,1.08],upperArmR:[1.08,1,1.08]}, WHITE=tones('#f6f4ee'), BELT=tones('#c4ccd8'); let E0=null;
-  LOOKS.robe=on=>{ L.robe=!!on; save(); if(!E0)E0=W3.E.map(e=>e&&{...e,s:e.s.slice()}); recolor();
+  LOOKS.robe=on=>{ '@later'; L.robe=!!on; save(); if(!E0)E0=W3.E.map(e=>e&&{...e,s:e.s.slice()}); recolor();
     W3.pcs.forEach((P,i)=>{ const e=E0[i], k=on&&RB[P.n]; W3.E[i]=k?{s:(e?e.s:[1,1,1]).map((v,j)=>v*k[j]),o:[0,0,0],q:[0,0,0,1]}:e; }); if(!on)return feet();
     const A=W3.mesh.geometry.attributes, n=A.mat.count, ti=W3.idx('torso'), hi=W3.idx('hips'), SK=W3.ramp[MATS.indexOf('skin')]; let y0=1e9, y1=-1e9, h1=-1e9;
     for(let i=0;i<n;i++){ const k=A.pidx.getX(i), y=A.position.getY(i); if(k===ti){ y0=Math.min(y0,y); y1=Math.max(y1,y); } else if(k===hi)h1=Math.max(h1,y); }
@@ -24,7 +24,7 @@ const LOOKS={};
     for(const k of ['c0','c1','c2','cd','color'])if(A[k])A[k].needsUpdate=true; feet(); };
   const feet=()=>{ if(!L.bare)return; const A=W3.mesh.geometry.attributes, n=A.mat.count, SK=W3.ramp[MATS.indexOf('skin')]; if(!SK)return;
     for(let i=0;i<n;i++){ const P=W3.pcs[A.pidx.getX(i)|0]; if(P&&/^shoe/.test(P.n))put(A,i,SK); } for(const k of ['c0','c1','c2','cd','color'])if(A[k])A[k].needsUpdate=true; };
-  LOOKS.shoes=on=>{ on=on===undefined?L.bare:!!on; if(on===!L.bare)return; L.bare=!on; save(); if(typeof RIG!=='undefined'&&RIG.act&&!st.move){ RIG.act(st,'C'); setTimeout(()=>RIG.release(st,'C'),650); }
+  LOOKS.shoes=on=>{ '@later'; on=on===undefined?L.bare:!!on; if(on===!L.bare)return; L.bare=!on; save(); if(typeof RIG!=='undefined'&&RIG.act&&!st.move){ RIG.act(st,'C'); setTimeout(()=>RIG.release(st,'C'),650); }
     setTimeout(()=>{ LOOKS.robe(L.robe); draw(); },320); if(typeof FORAGE!=='undefined'&&FORAGE.say)FORAGE.say(on?'YOU PUT YOUR SHOES BACK ON.':'YOU TAKE OFF YOUR SHOES.'); };
   const apply=()=>{ const set=(m,h)=>{ const i=MATS.indexOf(m); if(i>=0)W3.ramp[i]=tones(h); }; for(const k in COL)set(k,COL[k]); { const i=MATS.indexOf('lid'); if(i>=0)W3.ramp[i]=tones(COL.skin).map(c=>c.multiplyScalar(.78)); } recolor();
     for(const n of HAIRS){ const i=W3.idx(n); if(i>=0)W3.HIDE[i]=n!=='hair'; } for(let k=0;k<6;k++){ const i=W3.idx('eyes'+k); if(i>=0)W3.HIDE[i]=k!==0; } if(W3.reindex)W3.reindex(); };
@@ -41,7 +41,7 @@ const LOOKS={};
     <h3>STATS</h3><div class="row"><span style="width:70px">HEALTH</span><div class="bar"><i id="lhp" style="background:#c84a3a;width:100%"></i></div></div>
     <div class="row" style="margin-top:4px"><span style="width:70px">STAMINA</span><div class="bar"><i id="lst" style="background:#d8b84a;width:100%"></i></div></div>`;
   document.body.appendChild(P);
-  const draw=()=>{ $('#lname').value=L.name; $('#lwear0').setAttribute('aria-pressed',String(!L.robe)); $('#lwear1').setAttribute('aria-pressed',String(L.robe)); $('#lshoe1').setAttribute('aria-pressed',String(!L.bare)); $('#lshoe0').setAttribute('aria-pressed',String(L.bare)); $('#lshoek').textContent='KEY '+UI.keyOf('shoes').toUpperCase(); };
+  const draw=()=>{ '@later'; $('#lname').value=L.name; $('#lwear0').setAttribute('aria-pressed',String(!L.robe)); $('#lwear1').setAttribute('aria-pressed',String(L.robe)); $('#lshoe1').setAttribute('aria-pressed',String(!L.bare)); $('#lshoe0').setAttribute('aria-pressed',String(L.bare)); $('#lshoek').textContent='KEY '+UI.keyOf('shoes').toUpperCase(); };
   $('#lwear0').onclick=()=>{ LOOKS.robe(false); draw(); }; $('#lwear1').onclick=()=>{ LOOKS.robe(true); draw(); }; $('#lshoe1').onclick=()=>LOOKS.shoes(true); $('#lshoe0').onclick=()=>LOOKS.shoes(false);
   $('#lname').oninput=e=>{ L.name=e.target.value; save(); };
   $('#lname').addEventListener('keydown',e=>e.stopPropagation());

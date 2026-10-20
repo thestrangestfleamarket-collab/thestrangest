@@ -71,7 +71,7 @@ function theatreWall(u,z,f){ if(z<7)return sh([18,14,16],f);
   const k=u*2-Math.floor(u*2), c=z>2*STORY?[38,16,24]:[62,24,34]; return sh(speck(c,u,z/24,93),f*(k<.12?.72:k>.6?.9:1)); }
 const FILMW=64, FILMH=36, FILMN=48, FILMS=[];
 const FONT5={1:['00100','01100','00100','00100','00100','00100','01110'],2:['01110','10001','00001','00110','01000','10000','11111'],3:['11110','00001','00001','01110','00001','00001','11110']};
-function filmFrame(k){ if(FILMS[k])return FILMS[k]; const W=FILMW, H=FILMH, d=new Uint8Array(W*H*3), cx=W/2, cy=H/2;
+function filmFrame(k){ '@later'; if(FILMS[k])return FILMS[k]; const W=FILMW, H=FILMH, d=new Uint8Array(W*H*3), cx=W/2, cy=H/2;
   const fl=.9+.1*hash(k,0,301), scr=hash(k,1,302)<.3?Math.floor(hash(k,2,303)*W):-1;
   for(let j=0;j<H;j++)for(let i=0;i<W;i++){ let c;
     if(k<24){ const n=3-Math.floor(k/8), dx=i+.5-cx, dy=j+.5-cy, r=Math.hypot(dx,dy*1.15), a=(Math.atan2(dx,-dy)+2*Math.PI)%(2*Math.PI), sw=(k%8+1)/8*2*Math.PI;
@@ -91,7 +91,7 @@ function filmFrame(k){ if(FILMS[k])return FILMS[k]; const W=FILMW, H=FILMH, d=ne
     const q=(j*W+i)*3; for(let e=0;e<3;e++)d[q+e]=Math.min(255,c[e]*m); }
   return FILMS[k]=d; }
 const ARCN=[[236,64,160],[60,206,230],[238,218,70],[96,220,100],[170,92,236]];
-function arcadeFloor(x,y){ const cx=Math.floor(x*1.25), cy=Math.floor(y*1.25), k=hash(cx,cy,741), base=mt('carpet',speck([24,20,40],x,y,743));
+function arcadeFloor(x,y){ '@later'; const cx=Math.floor(x*1.25), cy=Math.floor(y*1.25), k=hash(cx,cy,741), base=mt('carpet',speck([24,20,40],x,y,743));
   if(k<.15)return base; const t=Math.floor(hash(cx,cy,745)*5), a=hash(cy,cx,747)*Math.PI, ca=Math.cos(a), sa=Math.sin(a);
   const ox=.4+(hash(cx,cy,749)-.5)*.16, oy=.4+(hash(cy,cx,751)-.5)*.16, dx=x-(cx+ox*1.25)/1.25, dy=y-(cy+oy*1.25)/1.25, u=dx*ca+dy*sa, v=-dx*sa+dy*ca;
   const r=Math.hypot(u,v), col=ARCN[Math.floor(hash(cx,cy,753)*ARCN.length)];
@@ -102,7 +102,7 @@ function arcadeFloor(x,y){ const cx=Math.floor(x*1.25), cy=Math.floor(y*1.25), k
   else if(t===3)on=[[-.11,-.05],[0,.08],[.11,-.05]].some(([p,q])=>Math.hypot(u-p,v-q)<.045);
   else on=Math.abs(u)<.03&&Math.abs(v)<.14||Math.abs(v)<.03&&Math.abs(u)<.14;
   return on?mt('carpet',[(col[0]+24)/2,(col[1]+20)/2,(col[2]+40)/2]):base; }
-const arcadeLights=A=>{ const o=[], i=T, n=(a,b)=>Math.max(1,Math.round((b-a)/4)); for(const [y,ny] of [[A.y0+i,1],[A.y1-i,-1]]){ const k=n(A.x0,A.x1); for(let j=0;j<k;j++)o.push([A.x0+(A.x1-A.x0)*(j+.5)/k,y,0,ny]); }
+const arcadeLights=A=>{ '@later'; const o=[], i=T, n=(a,b)=>Math.max(1,Math.round((b-a)/4)); for(const [y,ny] of [[A.y0+i,1],[A.y1-i,-1]]){ const k=n(A.x0,A.x1); for(let j=0;j<k;j++)o.push([A.x0+(A.x1-A.x0)*(j+.5)/k,y,0,ny]); }
   for(const [x,nx] of [[A.x0+i,1],[A.x1-i,-1]]){ const k=n(A.y0,A.y1); for(let j=0;j<k;j++)o.push([x,A.y0+(A.y1-A.y0)*(j+.5)/k,nx,0]); } return o; };
 const arcadeWallOf=ARCS=>function(q,nx,ny,X,Y,z,f){ const zz=z%STORY;
   if(zz<4)return sh([16,14,20],f);
@@ -112,7 +112,7 @@ const arcadeWallOf=ARCS=>function(q,nx,ny,X,Y,z,f){ const zz=z%STORY;
 const ARC=(()=>{ const {art,onF,lit,C,rect,fb,worn,metal}=MLK;
   const W=[232,232,236], WD=[196,198,206], WL=[244,244,248];
   const white=(k)=>(s,t,z)=>{ const c=worn(W,t,z,k); return s==='b'?sh(c,.9):c; };
-  function arcade(x,y,f=[0,1],green=0){ PNAME=green?'arcade cabinet, green':'arcade cabinet, pink'; const r=rect(x,y,f,1.5,1.3), T=green?[110,220,80]:[236,70,160], TD=sh(T,.7), B=[];
+  function arcade(x,y,f=[0,1],green=0){ '@later'; PNAME=green?'arcade cabinet, green':'arcade cabinet, pink'; const r=rect(x,y,f,1.5,1.3), T=green?[110,220,80]:[236,70,160], TD=sh(T,.7), B=[];
     const front=art(36,83,(px,bx)=>{ bx(0,0,72,166,W); bx(0,150,72,166,[120,120,126]); bx(4,154,68,160,[80,80,86]); bx(0,0,72,4,T); bx(0,4,3,166,TD); bx(69,4,72,166,TD);
       bx(6,10,66,24,lit([250,240,230])); bx(10,13,62,21,lit(T));
       bx(8,30,64,86,[20,20,24]); bx(12,34,60,82,lit([40,48,72])); bx(16,38,56,50,lit([90,140,200])); bx(18,60,32,78,lit([230,120,80])); bx(40,58,54,78,lit([120,200,120])); bx(16,52,56,54,lit([240,240,120]));
@@ -122,7 +122,7 @@ const ARC=(()=>{ const {art,onF,lit,C,rect,fb,worn,metal}=MLK;
     B.push(fb(r,0,1,0,1,0,83,W,onF(front,83,(s,t,z)=>z<4?[120,120,126]:s==='b'&&z>50&&z<70&&(Math.floor(z/2)&1)?WD:white(93)(s,t,z)),(t,d)=>d>.6?W:WL));
     B.push(fb(r,0,1,0,.4,83,88,W,(s,t,z)=>s==='f'?lit(T):W,()=>WL,{foot:1}));
     const p=prop(B); LAMPS.push({own:1,room:1,x:r.cx+f[0]*1,y:r.cy+f[1]*1,z:50,r:2.4,c:green?[.5,1,.6]:[1,.5,.8],prop:p,day:true}); return p; }
-  function redStool(x,y){ PNAME='red stool'; const r=rect(x,y,[0,1],.7,.5), B=[fb(r,0,1,0,1,13,19,C.red,(s,t,z)=>z<2?C.redD:z>4?C.redL:C.red,(t,d)=>Math.min(t,1-t,d*1.4,(1-d)*1.4)<.06?C.redD:C.red)];
+  function redStool(x,y){ '@later'; PNAME='red stool'; const r=rect(x,y,[0,1],.7,.5), B=[fb(r,0,1,0,1,13,19,C.red,(s,t,z)=>z<2?C.redD:z>4?C.redL:C.red,(t,d)=>Math.min(t,1-t,d*1.4,(1-d)*1.4)<.06?C.redD:C.red)];
     for(const [a,b,c,d] of [[.05,.12,.08,.22],[.88,.95,.08,.22],[.05,.12,.78,.92],[.88,.95,.78,.92]])B.push(fb(r,a,b,c,d,0,13,C.chrome,(s,t,z)=>metal(C.chrome,t,z),null,{foot:1})); return prop(B); }
   return {arcade,redStool}; })();
 const QR = {
@@ -143,14 +143,14 @@ const grScreen = (pic, strip) => (a, k, w, h, f) => {
   if (strip && a >= w - strip - 1 && a < w - 2) return (a === w - strip + 1 && (k === h - 6 || k === h - 11)) ? QR.greyLight : (k < h >> 1 && k > 2 && k % 2 && a > w - strip) ? QR.black : null;
   return (a < 2 || a >= 2 + sw || k < 2 || k >= h - 2) ? null : grE(pic(a - 2, h - 3 - k, sw, h - 4, f));
 };
-const grCabinet = (x, y, w, h, f) => {
+const grCabinet = (x, y, w, h, f) => { '@later';
   for (const [ly, c] of [[4, QR.pink], [9, QR.cyan], [14, QR.yellow]]) { if (y === ly && x > 1 && x < w - 2 && (x + ly) % 9 > 1) return [60, 110, 230]; if (y === ly - 1 && (x + f * (ly % 2 ? 1 : -1) + 40) % 13 === 3) return c; }
   return y >= h - 2 ? [200, 60, 60] : [10, 10, 18];
 };
 const grVents = (c) => (a, k, w, h) => (k > 2 && k < h - 3 && k % 2 && a > 3 && a < w - 4 ? c : null);
 const grBox = (b, c, f) => ({ b, c, f });
 const GRM = {
-  arcade: () => {
+  arcade: () => { '@later';
     const trim = (a, k, w, h) => (a === 0 || a === w - 1) ? grE(QR.green) : null, cap = (a, k, w, h) => (a === 0 || a === w - 1 || k === h - 1) ? grE(QR.green) : null, foot = (a, k, w, h) => (a === 0 || a === w - 1 || k === 0) ? grE(QR.green) : null;
     return { w: 28, d: 32, h: 64, frames: 4, rate: 3, parts: [
       grBox([0, 0, 0, 28, 24, 27], QR.black, { front: (a, k, w, h) => (a > 3 && a < w - 4 && k > 3 && k < h - 4) ? QR.yellow : foot(a, k, w, h), left: foot, right: foot, back: (a, k, w, h) => (a === 0 || a === w - 1 || k === 0) ? grE(QR.green) : ((a === 5 || a === w - 6) && k > 4 && k < h - 4 || (k === 5 || k === h - 5) && a > 4 && a < w - 5) ? QR.dark : null }),
@@ -161,7 +161,7 @@ const GRM = {
       grBox([0, 0, 52, 28, 25, 64], QR.black, { front: (a, k, w, h) => (k > 1 && k < h - 2 && a > 1 && a < w - 2) ? (grWord('ARCADE', 3, 4, a, h - 1 - k) ? grE(QR.yellow) : grE([196, 48, 60])) : cap(a, k, w, h), left: cap, right: cap, back: cap, top: (x, y, w, h) => (x === 0 || x === w - 1) ? grE(QR.green) : null })
     ] }; },
 };
-function grProp(name,M,x,y,z,o){ PNAME=name; const S=1/FP, F=M.frames||0; let cur=0;
+function grProp(name,M,x,y,z,o){ '@later'; PNAME=name; const S=1/FP, F=M.frames||0; let cur=0;
   const tone=(c,k)=>!c?null:c.e||k===1?c:grSh(c,k);
   const same=(a,b)=>a&&b&&a[0]===b[0]&&a[1]===b[1]&&a[2]===b[2]&&!a.e===!b.e;
   const boxes=M.parts.map((pt,i)=>{ const [x0,y0,z0,x1,y1,z1]=pt.b, fc=pt.f||{}, h=z1-z0, sides=['front','back','left','right'].some(s=>fc[s]);
@@ -177,7 +177,7 @@ function grProp(name,M,x,y,z,o){ PNAME=name; const S=1/FP, F=M.frames||0; let cu
   const p=prop(boxes,null,{...o,hang:M.wall?z:0,walk:!!(M.wall&&z>0||M.h<8),life:F?t=>{ cur=Math.floor(t*12/M.rate)%F; }:undefined,lifeKey:F?()=>cur:undefined});
   if(M.light)LAMPS.push({x:x+M.w*S/2,y:y+M.d*S+.15,z:z+M.h/2,r:M.light.r,c:M.light.c,own:1,room:1,day:true,prop:p}); return p; }
 const VRBG=[212,202,178], VRBLK=[36,38,42], VRRUB=[44,42,40];
-function vrHeadsetBoxes(x,y,z0=0,cable=true){ const H=20, w=.31, sd=(o)=>sided({c:VRBG,...o}), worn=(c,a,z)=>{ const q=hash(Math.floor(a*60),Math.floor(z),181); return z<2.5?sh(c,.82):q<.03?sh(c,.86):q>.985?sh(c,1.07):c; };
+function vrHeadsetBoxes(x,y,z0=0,cable=true){ '@later'; const H=20, w=.31, sd=(o)=>sided({c:VRBG,...o}), worn=(c,a,z)=>{ const q=hash(Math.floor(a*60),Math.floor(z),181); return z<2.5?sh(c,.82):q<.03?sh(c,.86):q>.985?sh(c,1.07):c; };
   const body=sd({x0:x-w,y0:y-.2,x1:x+w,y1:y+.12,z0:z0+2,z1:z0+H+2,foot:1,fs:(nx,ny,X,Y,z,k)=>{ const a=(nx?Y-y:X-x)*24, c=worn(VRBG,nx?Y:X,z);
       if(ny>0){ if(z>4&&z<16){ for(const m of [-3.7,3.7]){ const q=Math.hypot(a-m,(z-10)*1.25); if(q<3.6)return q<1.4?[82,96,110]:q<2.6?[56,64,76]:VRBLK; } return Math.abs(a)>w*24-1?sh(VRBLK,.8):sh(VRBLK,1.1); } if(z>16.5&&z<18)return sh(c,.86*k*1.2); }
       return sh(z>H-1.5?sh(c,1.05):c,k*1.2); },top:(X,Y)=>((X-x)*12+12)%1<.3&&Y>y-.12&&Y<y+.04?sh(VRBG,.7):sh(VRBG,.97)});
@@ -187,7 +187,7 @@ function vrHeadsetBoxes(x,y,z0=0,cable=true){ const H=20, w=.31, sd=(o)=>sided({
     rub({x0:x+w,y0:y-.05,x1:x+w+.06,y1:y+.05,z0:z0+5,z1:z0+10})];
   if(cable)for(let i=0;i<8;i++){ const a=i*.85, cx=x+.42+Math.cos(a)*.14+i*.06, cy=y+.2+Math.sin(a)*.12+i*.03; bs.push({x0:cx-.055,y0:cy-.055,x1:cx+.055,y1:cy+.055,z0,z1:z0+4,c:VRRUB,top:()=>sh(VRRUB,1.15)}); }
   return bs; }
-function vrStation(x,y){ PNAME='VR headset station'; const Z=30, sd=o=>sided(o), BG=VRBG, PK=[232,74,160], BL=[70,140,240];
+function vrStation(x,y){ '@later'; PNAME='VR headset station'; const Z=30, sd=o=>sided(o), BG=VRBG, PK=[232,74,160], BL=[70,140,240];
   const face=(nx,ny,X,Y,z,k)=>{ const a=(nx?Y-y:X-x)*24, c=z<2?sh(BG,.7):z>Z-2?sh(BG,1.05):BG;
     if(ny>0){ if(z>5&&z<Z-6&&Math.abs(a)<13){ if(Math.abs(a-9)<1.6&&Math.abs(z-(Z-10))<1.6)return Object.assign([120,255,150],{e:1}); return Math.abs(z-9)<1?PK:Math.abs(z-11)<1?BL:VRBLK; } }
     return sh(c,k*1.2); };

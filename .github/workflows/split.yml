@@ -16,8 +16,8 @@ jobs:
           cache: npm
       - run: npm ci --no-audit --no-fund
       - run: npx playwright install --with-deps chromium
-      - name: Build readable
-        run: MIN=0 python3 build.py
+      - name: Build readable (later chunk kept inline, for coverage)
+        run: SKIP=later MIN=0 python3 build.py
       - name: Start coverage (readable artifact)
         run: COV=1 node tests/splitcheck.cjs file . out/cov-file.json ""
         continue-on-error: true

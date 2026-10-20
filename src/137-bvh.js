@@ -8,7 +8,7 @@ const BVH={on:QS.get('bvh')!=='0', ready:false, lib:null, built:0, ms:0};
     if(g.boundsTree){ g._bvhT=(g._bvhT||[]).filter(t=>t0-t<2000); g._bvhT.push(t0); if(g._bvhT.length>3){ g.boundsTree=null; g._bvhDyn=true; return null; } }
     try{ g.computeBoundsTree(OPT); }catch(e){ g.boundsTree=null; g._bvhDyn=true; return null; }
     g._bvhK=k; g._bvhI=g.index; g._bvhP=g.attributes.position; BVH.built++; BVH.ms+=performance.now()-t0; return g.boundsTree; };
-  const drawn=(m,out,n0)=>{ const g=m.geometry, d=g.drawRange, n=g.index?g.index.count:g.attributes.position.count, cut=d.start>0||d.count<n, gs=Array.isArray(m.material)&&g.groups.length>0;
+  const drawn=(m,out,n0)=>{ '@later'; const g=m.geometry, d=g.drawRange, n=g.index?g.index.count:g.attributes.position.count, cut=d.start>0||d.count<n, gs=Array.isArray(m.material)&&g.groups.length>0;
     if(!cut&&!gs)return; for(let i=out.length-1;i>=n0;i--){ const f=out[i].faceIndex*3; if(f<d.start||f>=d.start+d.count||(gs&&!g.groups.some(q=>f>=q.start&&f<q.start+q.count)))out.splice(i,1); } };
   THREE.Mesh.prototype.raycast=function(rc,out){
     if(BVH.on)for(let q=this;q;q=q.parent)if(!q.visible)return;

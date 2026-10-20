@@ -11,7 +11,7 @@ await grab('dungeon',async()=>{});
   const ground=(x,z)=>{ const n=lotAt(x,z); if(!n)return dy; const L=lay(n), gx=iX(x), gy=iZ(z), u=tread(L.up,gx,gy), d=tread(L.dn,gx,gy); return dy+Y(u?u*L.up.rise:d?-d*L.dn.rise:0); };
   const PL={}, SIDE={b:[0,1],f:[0,-1],w:[1,0],e:[-1,0]}; for(const k in SIDE)PL['K'+k]=new THREE.Plane(new THREE.Vector3(0,-1,0),1e6);
   let cur=0, busy=false, mine=null; const HK=[];
-  const clear=()=>{ if(!mine)return; const M=mine; mine=null; cur=0;
+  const clear=()=>{ '@later'; if(!mine)return; const M=mine; mine=null; cur=0;
     for(const o of M.objs){ G.remove(o); o.traverse(c=>{ if(c.geometry)c.geometry.dispose(); if(c.material&&c.material!==MODS.castleStairMat)for(const q of [].concat(c.material)){ if(q.map)q.map.dispose(); if(q.emissiveMap)q.emissiveMap.dispose(); q.dispose(); } }); }
     const out=(A,L)=>{ for(const a of L){ const i=A.indexOf(a); if(i>=0)A.splice(i,1); } };
     out(SOL.down,M.sol); out(FIX.down,M.fix); out(LITE.recs,M.lights); out(FLAME.src,M.fl); out(cutWalls,M.cuts); LITE.t=0; for(const f of HK)f(0); };
@@ -55,7 +55,7 @@ await grab('dungeon',async()=>{});
   const wait=ms=>new Promise(r=>setTimeout(r,ms)), frames=k=>new Promise(r=>{ const f=()=>--k<=0?r():requestAnimationFrame(f); requestAnimationFrame(f); });
   const S=CASTLE.stair, top={x:((S.x0+S.x1)/2-72)*TILE,z:(S.y0-.5+77)*TILE};
   const bnd=n=>{ const B=lot(n); return {x0:X(B.x0),x1:X(B.x1),z0:Z(B.y0),z1:Z(B.y1)}; };
-  const go=async(n,how)=>{ if(busy)return; busy=true; const el=document.getElementById('subfade'), tr=el.style.transition;
+  const go=async(n,how)=>{ '@later'; if(busy)return; busy=true; const el=document.getElementById('subfade'), tr=el.style.transition;
     el.style.transition='opacity .3s steps(4)'; el.textContent=n?(cur||how==='load'&&n>1?'':'ENTERING ')+'DUNGEON — LEVEL '+n:'LEAVING DUNGEON'; el.style.pointerEvents='auto'; el.style.opacity='1'; await wait(320);
     keys.clear();
     if(n){ await LOAD('dungeon'); const L=build(n), a=how==='below'?L.atDn:L.atUp; if(how!=='load'){ UI.goTo(a.x,a.z,'down'); heading=a.h; } BOUND=bnd(n); }

@@ -16,7 +16,7 @@ function chunks(body) {
         const name = d.expression.value.slice(1);
         if (!/^[a-z][a-z0-9]*$/.test(name)) throw new Error('bad chunk name ' + name + ' at ' + n.start);
         if (n.generator) throw new Error('chunk "' + name + '": a generator at ' + n.start);
-        marks.push({ call: n, name, fn: n, dir: d, decl: n.type === 'FunctionDeclaration' });
+        if (!(process.env.SKIP || '').split(',').includes(name)) marks.push({ call: n, name, fn: n, dir: d, decl: n.type === 'FunctionDeclaration' });
       }
     }
     for (const k in n) { if (k === 'type') continue; const c = n[k]; if (Array.isArray(c)) c.forEach(w); else if (c && typeof c.type === 'string') w(c); }

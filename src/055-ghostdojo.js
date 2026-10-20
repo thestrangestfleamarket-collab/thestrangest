@@ -3,7 +3,7 @@ function gdShape(GS,K,LAMPS){ const s=K.s, o=K.o, SC=1.5, cx=o[0]+4*s, Y1=o[1]+3
   const G=BOD.GDK={o,s,SC,X0,X1,Y0,Y1,W,D,cx,y1e:o[1]+8.3*s};
   G.ground={x0:X0-1.6,x1:X1+1.6};
   G.pool=[X0+.22,Y0+.22,X1-.22,(Y0+Y1)/2+.15];
-  G.court=(x,y)=>{ const {hash,grain}=BOD.g, sh=BOD.K.sh, px=Math.floor(x*24), py=Math.floor(y*24);
+  G.court=(x,y)=>{ '@later'; const {hash,grain}=BOD.g, sh=BOD.K.sh, px=Math.floor(x*24), py=Math.floor(y*24);
     const out=x<X0||x>X1||y<Y0||y>Y1; if(!out)return x>G.pool[0]&&x<G.pool[2]&&y>G.pool[1]&&y<G.pool[3]?null:[96,90,84];
     const dEave=Math.max(X0-x,x-X1,Y0-y,y-Y1);
     const wet=G.puddles.some(([pcx,pcy,rx,ry])=>{ const u=(x-pcx)/rx, v=(y-pcy)/ry; return u*u+v*v+(grain(x*3,y*3,611,.6)-.5)*.5<1; });
@@ -69,7 +69,7 @@ function gdShape(GS,K,LAMPS){ const s=K.s, o=K.o, SC=1.5, cx=o[0]+4*s, Y1=o[1]+3
         c=plaster(f,a,z); }
       const v=ivy(f,a,z); if(v)c=v; return sh(c,k); };
     const wood=(f=1)=>sh(WD,f);
-    function shoji(a,z,L,door,win,alc,holes){ const n=Math.max(1,Math.round(L/2)), sp=L/n, pa=a-Math.floor(a/sp)*sp;
+    function shoji(a,z,L,door,win,alc,holes){ '@later'; const n=Math.max(1,Math.round(L/2)), sp=L/n, pa=a-Math.floor(a/sp)*sp;
       if(door&&a>door[0]-.1&&a<door[1]+.1){ if(z<DH+4)return wood(z<DH+1?.8:1.12);
         if(z>=DH+6&&z<DH+16&&a>door[0]+.05&&a<door[1]-.05)return (a*8)%1<.22||z%4.5<1.2?wood(1.15):[40,30,26]; }
       for(const h of holes||[])if(a>h[0]-.14&&a<h[1]+.14&&z>h[2]-5&&z<h[3]+5)return wood(z<h[2]?.8:1.05);
@@ -188,7 +188,7 @@ function gdShape(GS,K,LAMPS){ const s=K.s, o=K.o, SC=1.5, cx=o[0]+4*s, Y1=o[1]+3
     for(const [x,y] of [[cx-3.7,yE+.4],[cx+3.3,yE+.4]])thing('bath stool',[bk(x,y,x+.36,y+.3,6,8,HN),bk(x+.03,y+.03,x+.08,y+.27,0,6,[120,90,60]),bk(x+.28,y+.03,x+.33,y+.27,0,6,[120,90,60])],false,1);
     const COP=[[xi0,cx-GAP],[cx+GAP,xi1]], ISL=[[cx-.75,yi0+.02,cx+.75,yi0+1.25,5],[xi0+.4,yi0+.35,xi0+1.1,yi0+1.05,-4],[xi1-1.1,yi0+.35,xi1-.4,yi0+1.05,-4],[xi0+1.9,yi0+.2,xi0+2.6,yi0+.9,3],[xi1-2.6,yi0+.2,xi1-1.9,yi0+.9,3]];
     const PB=[[150,196,198],[138,186,190],[162,206,204],[146,190,196]], SEAM=[70,196,190];
-    const bot=(x,y,deep)=>{ const u=x-xi0, v=y-yi0, row=Math.floor(v/.5), off=hs(row,9,780)*.6, col=Math.floor((u+off)/.7), fu=(u+off)/.7-col, fv=v/.5-row;
+    const bot=(x,y,deep)=>{ '@later'; const u=x-xi0, v=y-yi0, row=Math.floor(v/.5), off=hs(row,9,780)*.6, col=Math.floor((u+off)/.7), fu=(u+off)/.7-col, fv=v/.5-row;
       if(deep)for(const m of [cx-3.4,cx+3.4]){ const dx=x-m, dy=y-(yi0+yL)/2, r=Math.hypot(dx,dy); if(r<.56&&Math.hypot(dx-.22,dy+.1)>.46)return lit([240,214,130]); if(r>.72&&r<.78)return lit(SEAM); if(r<.8)return sh(PB[2],1.04); }
       if(fu<.05||fv<.06)return lit(SEAM); return sh(PB[Math.floor(hs(col,row,781)*4)],.94+.08*hs(Math.floor(x*24),Math.floor(y*24),782)); };
     const bw=(a,z)=>{ const row=Math.floor(-z/10), q=a*24+hs(row,3,783)*14; if(z>WL-2)return [70,84,86]; if(-z%10<1||q%16<1)return lit(SEAM); return sh(PB[Math.floor(hs(Math.floor(q/16),row,784)*4)],.84); };
@@ -221,7 +221,7 @@ function gdShape(GS,K,LAMPS){ const s=K.s, o=K.o, SC=1.5, cx=o[0]+4*s, Y1=o[1]+3
       sol(Math.min(...bs.map(b=>b.x0)),Math.min(...bs.map(b=>b.y0)),Math.max(...bs.map(b=>b.x1)),Math.max(...bs.map(b=>b.y1)),Math.max(...bs.map(b=>b.z1))); }
     for(const [a,b] of COP)sol(a,yR,b,yE,7); for(const px of [cx-1.75,cx+1.75])sol(px-.17,yE-.33,px+.17,yE+.01,129); for(const [a,b,c_,d] of ISL)sol(a,b,c_,d,140);
     const LT=[];
-    const light=(x,y,z,c,r,fl)=>{ const cm=Math.max(...c), L=new THREE.PointLight(new THREE.Color(c[0]/cm,c[1]/cm,c[2]/cm),0,r*TILE*1.25,1.6); L.position.set(X(x),Y(z),Z(y)); if(LITE.recs.length){ L.userData.grp=MAPG.bodega||null; LITE.recs.push(L); } else (MAPG.bodega||scene).add(L); LT.push({L,i:7*cm*Math.min(1.2,r/5),fl,s:Math.round(x*7+y*13)}); return LT[LT.length-1]; };
+    const light=(x,y,z,c,r,fl)=>{ '@later'; const cm=Math.max(...c), L=new THREE.PointLight(new THREE.Color(c[0]/cm,c[1]/cm,c[2]/cm),0,r*TILE*1.25,1.6); L.position.set(X(x),Y(z),Z(y)); if(LITE.recs.length){ L.userData.grp=MAPG.bodega||null; LITE.recs.push(L); } else (MAPG.bodega||scene).add(L); LT.push({L,i:7*cm*Math.min(1.2,r/5),fl,s:Math.round(x*7+y*13)}); return LT[LT.length-1]; };
     let built=false; const build=()=>{ '@bath'; if(built)return; built=true; const keep=BATCH.items.splice(0), m0=BATCH.meshes; BATCH.meshes={};
       for(const b of WB)gbox({...b,skf:(nx,ny)=>!((nx||ny)&&nx===WALLS[b.id].n[0]&&ny===WALLS[b.id].n[1])},'GD'+b.id);
       for(const [name,boxes] of LATER){ BATCH.tag=OBJ('bodega',name); for(const b of boxes)gbox(b,'GDL'); }

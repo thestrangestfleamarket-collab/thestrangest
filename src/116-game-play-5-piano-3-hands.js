@@ -30,7 +30,7 @@ const PNS={t:0,sent:0,song:0,c:null};
 function pnSet(i){ PNS.song=i; PNS.c=pnCompile(PNBOOK[i]); PNS.t=0; PNS.sent=0; }
 const pkAt=(m,u,f)=>RIG.V(pkX(m),PK.Y+(pnBlack(m)?.4:0)+.32-u*.3,pnBlack(m)?13.1:f===1?11.0:11.5), pkOver=(m,f)=>RIG.add(pkAt(m,0,f),RIG.V(0,1.3,-.3));
 const pkDown=(n,t)=>t<n.t0-0.04||t>n.t1+0.05?0:t<n.t0?(t-(n.t0-0.04))/0.04:t<=n.t1?1:1-(t-n.t1)/0.05;
-function pnFingers(h,t){ const ns=PNS.c[h], out=[], w=[]; const home=f=>h==='R'?60+[0,2,4,5,7][f-1]:48+[7,5,4,2,0][f-1];
+function pnFingers(h,t){ '@later'; const ns=PNS.c[h], out=[], w=[]; const home=f=>h==='R'?60+[0,2,4,5,7][f-1]:48+[7,5,4,2,0][f-1];
   for(let f=1;f<=5;f++){ let cur=null, prev=null, next=null; for(const n of ns){ if(n.f!==f)continue; if(n.t0-0.04<=t&&t<=n.t1){ cur=n; } else if(n.t1<t)prev=n; else if(n.t0-0.04>t){ next=n; break; } }
     if(cur){ out[f]=pkAt(cur.m,pkDown(cur,t),f); w[f]=1; continue; }
     if(next&&next.t0-0.04-t<0.12){ const u=gtSm(1-(next.t0-0.04-t)/0.12); out[f]=gtMix(pkOver(next.m,f),pkAt(next.m,0,f),u); w[f]=0.15+0.85*u; continue; }
@@ -39,7 +39,7 @@ function pnFingers(h,t){ const ns=PNS.c[h], out=[], w=[]; const home=f=>h==='R'?
     out[f]=gtMix(A,B,gtSm((t-a)/Math.max(0.05,b-a))); w[f]=0.15; }
   out.w=w; return out; }
 const PNH={L:{y:[0,-.3,.954],z:[1,0,0]},R:{y:[0,-.3,.954],z:[-1,0,0]}}, PNPOLE={L:RIG.V(1,-1,-.3),R:RIG.V(-1,-1,-.3)}, PNSH=13.3+15;
-function pnPose(t){ const {V,add,mul,sub}=RIG, T={L:pnFingers('L',t),R:pnFingers('R',t)}, off={L:V(0,0,0),R:V(0,0,0)}, K={};
+function pnPose(t){ '@later'; const {V,add,mul,sub}=RIG, T={L:pnFingers('L',t),R:pnFingers('R',t)}, off={L:V(0,0,0),R:V(0,0,0)}, K={};
   const pd=PNS.c.ped.find(p=>p.dn-0.08<=t&&t<p.up+0.05), pu=pd?gtSm(Math.min((t-(pd.dn-0.08))/0.08,(pd.up+0.05-t)/0.05)):0;
   const base=RIG.mix(castPose('pianoSit'),castPose('pianoPed'),pu);
   for(const n of 'LR'){ let x=0, W=0; for(let f=1;f<=5;f++){ x+=T[n][f].x*T[n].w[f]; W+=T[n].w[f]; } K[n]=V(x/W+(n==='L'?-1.2:1.2),PK.Y+2.6,8.4); }

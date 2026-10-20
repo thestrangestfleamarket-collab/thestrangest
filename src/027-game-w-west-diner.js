@@ -24,7 +24,7 @@ const {FP,H,S,art,F3,txt,pcVn,pcLathe,lit,tone,box,disc,DP,T3,fb,pb,edge,pic,rou
   
   
   
-  function onBar(k,x,x1,y0,y1,bs){ const z=BZ+BT, m=(x+x1)/2, yc=(y0+y1)/2+.1;
+  function onBar(k,x,x1,y0,y1,bs){ '@later'; const z=BZ+BT, m=(x+x1)/2, yc=(y0+y1)/2+.1;
     if(k===0){ bs.push(fb(m-.5,yc-.04,m-.5+.22,yc+.04,z,z+9,[240,200,60],(s,a,row)=>row<2?[60,60,60]:((a+row)>>2)&1?[240,200,60]:[220,70,50],[60,60,60]),
         fb(m-.15,yc-.08,m+.08,yc+.08,z,z+7,DP.red,(s,a,row)=>row<1?DP.redD:(s==='py'||s==='ny')&&row>3&&row<10?DP.white:DP.red,DP.white),
         pb(m+.2,yc-.06,m+.42,yc+.06,z,z+2,DP.chromeD),pb(m+.22,yc-.04,m+.27,yc+.01,z+2,z+8,[180,40,30],{nb:1}),pb(m+.3,yc-.04,m+.35,yc+.01,z+2,z+8,[220,180,60],{nb:1}),pb(m+.36,yc-.02,m+.41,yc+.03,z+2,z+7,[60,40,30],{nb:1}));
@@ -85,7 +85,7 @@ const {FP,H,S,art,F3,txt,pcVn,pcLathe,lit,tone,box,disc,DP,T3,fb,pb,edge,pic,rou
     bs.push(pb(x1-.08,y1-.12,x1-.06,y1-.08,30,52,DP.chromeL));
     const p=prop(bs); LAMPS.push({own:1,room:1,x:x1+.5,y:(y+y1)/2,z:30,r:3.2,c:[.45,.7,1],prop:p}); return p; }
 
-  function airCooler(x,y){ PNAME='air cooler'; const w=.5, Z=30, G=[150,156,154];
+  function airCooler(x,y){ '@later'; PNAME='air cooler'; const w=.5, Z=30, G=[150,156,154];
     return prop([fb(x,y,x+w,y+w,0,Z,G,(s,a,row,L,h)=>row<2?sh(G,1.1):row>h-4?sh(G,.7):row>8&&row<h-8&&a>3&&a<L-3?((row>>1)&1?sh(G,.62):sh(G,1.05)):G,
       (X,Y)=>edge(X,Y,x,y,x+w,y+w)<.05?sh(G,1.1):(Math.floor((X-x)*S/2)&1)?sh(G,.6):G,{foot:1})]); }
 
@@ -116,7 +116,7 @@ const {FP,H,S,art,F3,txt,pcVn,pcLathe,lit,tone,box,disc,DP,T3,fb,pb,edge,pic,rou
       const i=a>>1, j=row>>1, on=f>.6||f>.3&&((i+j)&1)||f>.08&&!(i&1)&&!(j&1); return on?lit([Math.round(170+85*f),Math.round(116-30*f),Math.round(96-30*f)]):null; },()=>null,{nb:1,em:1}));
     const p=prop(bs,null,{hang:Z0,walk:true,high:true}); LAMPS.push({own:1,room:1,x:x+.6,y:y+w/2,z:h/2,r:5.5,c:[1.5,.36,.28],prop:p}); return p; }
   
-  function doubleDoors(x,y,stick){ PNAME='double doors'; const L=2.1, Z=76, bs=[];
+  function doubleDoors(x,y,stick){ '@later'; PNAME='double doors'; const L=2.1, Z=76, bs=[];
     const A=pic(Math.round(L*S),Z*H,put=>{ const w=Math.round(L*S), h=Z*H, lw=w/2;
       box(put,0,0,w,h,DP.woodD); box(put,0,0,w,4,DP.woodL); box(put,0,0,4,h,DP.woodL); box(put,w-4,0,w,h,DP.woodK);
       for(const o of [4,lw+1]){ box(put,o,4,o+lw-5,h,DP.wood); box(put,o+lw-6,4,o+lw-5,h,DP.woodK);
@@ -130,7 +130,7 @@ const {FP,H,S,art,F3,txt,pcVn,pcLathe,lit,tone,box,disc,DP,T3,fb,pb,edge,pic,rou
     for(const [a,b] of [[y+.12,y+L/2-.15],[y+L/2+.15,y+L-.12]]){ bs.push(pb(x+.1,a,x+.14,b,35,37,DP.chromeL));
       for(const e of [a,b-.04])bs.push(pb(x+.06,e,x+.12,e+.04,34,38,DP.chrome)); }
     return prop(bs,null,{hang:0,walk:true,high:true}); }
-  function woodDoor(x,y){ PNAME='door'; const L=1.3, Z=76;
+  function woodDoor(x,y){ '@later'; PNAME='door'; const L=1.3, Z=76;
     const A=pic(Math.round(L*S),Z*H,put=>{ const w=Math.round(L*S), h=Z*H, lw=w/2;
       box(put,0,0,w,h,DP.wood); box(put,0,0,w,3,DP.woodL);
       for(const o of [0,lw]){ box(put,o,0,o+1,h,DP.woodK); for(const [y0,y1] of [[12,70],[82,h-12]]){ box(put,o+6,y0,o+lw-6,y1,DP.woodD); box(put,o+7,y0+1,o+lw-7,y1-1,DP.wood); box(put,o+7,y0+1,o+lw-7,y0+2,DP.woodL); }
@@ -150,13 +150,13 @@ const {FP,H,S,art,F3,txt,pcVn,pcLathe,lit,tone,box,disc,DP,T3,fb,pb,edge,pic,rou
     LAMPS.push({own:1,room:1,x:x+.9,y:y+L/2,z:Z/2,r:3.5,c:[.55,.8,1],prop:p}); return p; }
   
 
-  function soffit(x,y,L,W){ PNAME='soffit'; const Z0=106+DZ, Z1=126+DZ, rc=.6, bs=[], x1=x+L, y1=y+W;
+  function soffit(x,y,L,W){ '@later'; PNAME='soffit'; const Z0=106+DZ, Z1=126+DZ, rc=.6, bs=[], x1=x+L, y1=y+W;
     const face=(s,a,row,Lf,h)=>s==='px'||s==='py'?(row<12?(row<1?[200,90,70]:[176,64,46]):row<13?[110,40,30]:row>h-2?[120,84,52]:[176,132,86]):[150,110,70];
     for(let X=x;X<x1-1e-6;X+=.04){ const m=X+.02, yy=m>x1-rc?(y1-rc)+Math.sqrt(Math.max(0,rc*rc-(m-(x1-rc))**2)):y1;
       bs.push(fb(X,y,X+.04,yy,Z0,Z1,[176,64,46],face,(XX,YY)=>edge(XX,YY,x,y,x1,yy)<.06?[150,110,70]:pcVn(XX*3,YY*3,102)<.4?[118,124,104]:[126,132,112],{nb:1,foot:1})); }
     return prop(bs,null,{hang:Z0,walk:true,high:true}); }
 
-  function fan(x,y){ PNAME='ceiling fan'; const Zc=126+DZ, bs=[], R=1.15, Zb=106+DZ;
+  function fan(x,y){ '@later'; PNAME='ceiling fan'; const Zc=126+DZ, bs=[], R=1.15, Zb=106+DZ;
     bs.push(pb(x-.02,y-.02,x+.02,y+.02,108+DZ,Zc,DP.black,{nb:1,foot:1}));
     bs.push(...round(x,y,104+DZ,110+DZ,z=>.13-(z>4?.04:0),(dx,dy,z,top)=>top?DP.blackL:z>2&&z<3.5?[180,40,36]:Math.atan2(dy,dx)>1.4?DP.blackL:DP.black,1,.03));
     bs.push(...round(x,y,92+DZ,104+DZ,z=>.17*Math.sqrt(Math.max(.05,1-((z-7)/7)**2)),(dx,dy,z,top)=>z>10?lit([200,190,170]):lit(z<4?[255,250,226]:Math.atan2(dy,dx)>1.2?[255,252,236]:[250,236,200]),1,.03).map(b=>Object.assign(b,{em:1})));
@@ -231,6 +231,6 @@ const dinerVn=(x,y)=>{ const i=Math.floor(x), j=Math.floor(y), fx=x-i, fy=y-j, a
 function dinerFloorCol(x,y){ const a=x*2, b=y*2, i=Math.floor(a), j=Math.floor(b), h=hash(i,j,64), m=dinerVn(x*9,y*9);
   if(a-i<.04||b-j<.04)return [146,130,104];
   return speck(h<.33?[200,184,152]:h<.66?[192,176,144]:[208,194,162],x*3+m*.6,y*3,65); }
-function dinerWall(q,nx,ny,X,Y,z,f){ const u=nx?Y:X, zz=z%STORY, top=q.h-4, b=((u*48)%6+6)%6;
+function dinerWall(q,nx,ny,X,Y,z,f){ '@later'; const u=nx?Y:X, zz=z%STORY, top=q.h-4, b=((u*48)%6+6)%6;
   return sh(zz<4?[50,34,22]:zz<34?(b<1?[62,40,24]:b<2?[118,80,50]:speck([96,64,40],u,zz/24,61)):zz<37?[122,84,52]:zz<38?[60,40,24]:zz>=top-8?(zz<top-7?[60,40,24]:[110,74,46]):speck(dinerVn(u*3,zz/16)<.5?[206,196,160]:[198,188,152],u,zz/24,62),f); }
 { const B=LBLD.find(b=>b.id==='ldiner'); if(B){ B.floorOf=lv=>lv?null:dinerFloorCol; B.inWall=dinerWall; } }

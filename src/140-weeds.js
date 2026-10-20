@@ -66,7 +66,7 @@ WEEDS.lawnInit=()=>{ const T=TILE, CS=8*T, N=16, CELL=CS/N, MG=4, W=N+2*MG, hsh=
     +' pu/=max(1.,length(pu)); rp=clamp(rp,-1.,1.); return k; }\n';
   mat.onBeforeCompile=sh=>{ Object.assign(sh.uniforms,{uMv:WEEDS.UMV,uTr:WEEDS.UTR,uTk:WEEDS.UTK,uSw:PARK.sway,uWk:PARK.windK});
     sh.vertexShader=HEAD+sh.vertexShader.replace('#include <beginnormal_vertex>','#include <beginnormal_vertex>\n vec3 tgW=(modelMatrix*vec4(position,1.)).xyz; vec2 tgU, tgD; float tgR, tgS, tgK=tgP(tgW.xz,tgU,tgR); if(aT>.5){ vec2 tgG=vec2(tgP(tgW.xz+vec2('+F(.15)+',0.),tgD,tgS),tgP(tgW.xz+vec2(0.,'+F(.15)+'),tgD,tgS))-tgK; objectNormal=normalize(objectNormal+vec3(tgG.x,0.,tgG.y)*aH*.9/'+F(.15)+'); }')
-    .replace('#include <begin_vertex>','#include <begin_vertex>\n vG=aG; { float ph=dot(tgW.xz,vec2(.35,.2))/'+F(1)+', g=(.6+.4*sin(uSw*.23-dot(tgW.xz,vec2(.05,.03))/'+F(1)+'))*uWk*(1.-tgK); transformed.x+=sin(uSw*1.6-ph)*aH*.1*g; transformed.z+=sin(uSw*1.2-ph*1.3)*aH*.07*g; transformed.xz+=tgU*aH*.3; transformed.y+=tgR*aH*.15-aH*tgK*.9; }')
+    .replace('#include <begin_vertex>','#include <begin_vertex>\n vG=aG; { transformed.xz+=tgU*aH*.3; transformed.y+=tgR*aH*.15-aH*tgK*.9; }')
     .replace('#include <shadowmap_vertex>',THREE.ShaderChunk.shadowmap_vertex.replace(/(directional|point)LightShadows\[ i \]\.shadowNormalBias/g,'($&+.12)'));
     sh.fragmentShader='uniform float uSw; varying vec3 vG;\n'+sh.fragmentShader.replace('#include <color_fragment>','#include <color_fragment>\n diffuseColor.rgb*=lfn(vWP.xz*.031+7.)>.6?1.07:1.;'
       +' { int gv=int(vG.x+.5); if(vG.z>.5||gv>0&&vG.y>.42){ vec3 gc=gv==1?'+LC(222,184,92)+':gv==2?'+LC(201,140,46)+':gv==3?'+LC(208,172,86)+':'+LC(236,190,40)+';'

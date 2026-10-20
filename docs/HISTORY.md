@@ -3743,3 +3743,14 @@ initial download and load super fast"; then "Go")
 - (owner, 20 Oct 2026: "tomato merchant should be 25% taller, nothing on ground (no loose veggies)"): THE TOMATO is 2.3 m (was 1.84);
   the vegetable stand no longer scatters pumpkins and sacks on the ground in front of it (`081-stalls.js`), and their two collision
   boxes went with them. Cost: fewer instances, nothing else.
+
+## 20 Oct 2026: CENTRAL PARK over the gate; the deep forest behind
+
+- (owner, 20 Oct 2026: "chaneg (A) to (Central Park) mark it arched, small, all metal, the trees towarsd the distance should be much
+  bigger and looks like a deep forest of trees, you should barely be able to see the skyline over it. i dont want the park feeling small";
+  `061-park.js`): the gate's painted oval with its A is gone; CENTRAL PARK stands over the gate in small iron pixel letters (a 5-row
+  font, each pixel a box of the gate's own iron) along a stepped iron arc, reading from the street. Beyond North St, three rows of
+  much bigger oaks and elders (m 30–55, twice the park's) in a band 50 units deep across the park's width and past its ends: a wall of
+  crowns from inside the park, the skyline just showing over it. Cost: the letters and arc some 180 boxes (2,200 triangles, in the
+  gate's instanced mesh, no new draw); the forest 49 trees, about 12,000 triangles in the park's one tree mesh (18,300 in all now),
+  drawn only when the far side is in view; no lights or programs.

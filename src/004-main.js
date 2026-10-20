@@ -8,7 +8,7 @@ const stage=document.getElementById('stage'), statEl=document.getElementById('st
 const renderer=new THREE.WebGLRenderer({antialias:false,powerPreference:'high-performance'}); renderer.info.autoReset=false;
 renderer.setPixelRatio(1); renderer.localClippingEnabled=true; renderer.shadowMap.autoUpdate=false; renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.BasicShadowMap;
 stage.appendChild(renderer.domElement);
-renderer.domElement.addEventListener('webglcontextlost',e=>{ '@later'; e.preventDefault(); let d=document.getElementById('ctxlost'); if(!d){ d=document.createElement('div'); d.id='ctxlost'; d.style.cssText='position:fixed;inset:0;place-items:center;font:12px Silkscreen,monospace;letter-spacing:2px;color:#8a8f9c;background:#0e1016;z-index:60'; d.textContent='THE PICTURE WAS LOST, BRINGING IT BACK'; document.body.append(d); } d.style.display='grid'; });
+renderer.domElement.addEventListener('webglcontextlost',e=>{ e.preventDefault(); let d=document.getElementById('ctxlost'); if(!d){ d=document.createElement('div'); d.id='ctxlost'; d.style.cssText='position:fixed;inset:0;place-items:center;font:12px Silkscreen,monospace;letter-spacing:2px;color:#8a8f9c;background:#0e1016;z-index:60'; d.textContent='THE PICTURE WAS LOST, BRINGING IT BACK'; document.body.append(d); } d.style.display='grid'; });
 renderer.domElement.addEventListener('webglcontextrestored',()=>{ renderer.shadowMap.needsUpdate=true; const d=document.getElementById('ctxlost'); if(d)d.style.display='none'; });
 const scene=new THREE.Scene();
 let composer=null;

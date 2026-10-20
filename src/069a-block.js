@@ -158,7 +158,7 @@ const BLK={blds:[],signs:[],band:()=>null,built:0,in:false,hi:[],LO:.5}; window.
   const vis=v=>{ BLK.shown=v; GA.visible=v; for(const q of BLK.hi)q.m.material=v?q.hi:q.lo; esc(v); };
   const frames=n=>new Promise(r=>{ const f=()=>--n<=0?r():requestAnimationFrame(f); requestAnimationFrame(f); });
   const build=async()=>{ const t0=performance.now(); tl=t0; for(const q of BLK.hi)q.hi=await q.paint(); await make(); BLK.step=Math.max(BLK.step||0,performance.now()-tl); BLK.ms=+(performance.now()-t0).toFixed(1); BLK.built=1; };
-  BLK.go=async()=>{ '@later'; if(BLK.fade||BLK.built)return; BLK.fade=1; const el=document.getElementById('subfade'), live=el&&window.__started;
+  BLK.go=async()=>{ if(BLK.fade||BLK.built)return; BLK.fade=1; const el=document.getElementById('subfade'), live=el&&window.__started;
     if(live){ el.textContent='ENTERING THE ALLEY'; el.style.opacity='1'; if(typeof keys!=='undefined'&&keys.clear)keys.clear(); await frames(2); }
     await (BLK.job||(BLK.job=build())); if(live){ await frames(2); el.style.opacity='0'; } BLK.fade=0; };
   { const zb=ZS(B.back), sg=Math.sign(ZS(B.alley[0])-zb)||-1; BLK.tick=()=>{ if(!window.__started||typeof ROOMS!=='undefined'&&ROOMS.cur||UI.freeCam||ED.on||window.POSOK===false)return; const d=(pos.z-zb)*sg, up=LVL==='up';

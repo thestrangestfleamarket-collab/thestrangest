@@ -20,7 +20,7 @@
   violet:C('#7a4aa8'),violetL:C('#a070d0'),pink:C('#e070b0'),pinkL:C('#f4a0d0'),lilac:C('#b070c8'),lilacL:C('#d8a0e0'),
 };
 function wallPaint(ivyAt,seed,opening){
-  return (f,u,v,W,H,x,y,z)=>{ '@later';
+  return (f,u,v,W,H,x,y,z)=>{
     if(f==='T'){ return (v<2||v>H-2)?PAL.trimD:shd(PAL.trim,0.92+0.12*hh(u>>1,v,seed)); }
     if(opening){const o=opening(f,u,v,x,y,z); if(o!==undefined)return o;}
     if(v<3)return v<1?shd(PAL.trim,1.1):PAL.trimD;
@@ -49,7 +49,7 @@ function wallPaint(ivyAt,seed,opening){
 
 
   item('herb cottage floor',{floor:1});
-  box(0,0,-0.45,LX,LY,0,(f,u,v,W,H,x,y)=>{ '@later';
+  box(0,0,-0.45,LX,LY,0,(f,u,v,W,H,x,y)=>{
     if(f!=='T')return shd(PAL.floorD,0.7+0.1*hh(u>>2,v,1));
     const pw=12, col=Math.floor(u/pw), off=hh(col,0,3)*60, row=Math.floor((v+off)/58);
     let k=0.92+0.12*hh(col,row,4)+0.04*Math.sin(v*0.21+col);
@@ -63,10 +63,10 @@ function wallPaint(ivyAt,seed,opening){
   const onMullion=(x,z)=>Math.abs(x-WIN.mx)<0.035||Math.abs(z-WIN.mz)<0.035;
   const wallW=wallPaint((a,b)=>{const y=LY-a; return 0.18+0.7*sstep(8.5,11.5,y)+0.25*sstep(2,0,y)+0.15*n1(y*1.3,2);},11);
   const wallN=wallPaint((a)=>{const x=a; return 0.16+0.45*sstep(2.5,0,x)+0.3*sstep(8,9,x)+0.15*n1(x*1.5,5)-0.2*sstep(5,5.4,x)*sstep(7,6.6,x);},23,
-    (f,u,v,x,y,z)=>{ '@later'; if(f!=='S')return; const hw=winHalf(z), dx=Math.abs(x-WIN.mx);
+    (f,u,v,x,y,z)=>{ if(f!=='S')return; const hw=winHalf(z), dx=Math.abs(x-WIN.mx);
       if(z>WIN.z0-0.06&&z<WIN.z1+0.06&&hw>-1&&dx<hw+0.07){ if(inWin(x,z)){ return onMullion(x,z)?(Math.abs(x-WIN.mx)<0.015||Math.abs(z-WIN.mz)<0.015?PAL.oakL:PAL.oak):SKY|0x8090a0; } return dx>hw+0.04?PAL.oakD:PAL.oak; }
       if(z>WIN.zs&&z<WIN.z1+0.1&&dx<0.07&&winHalf(z)<0.07)return PAL.oak; });
-  const wallE=wallPaint((a)=>0.15+0.3*n1(a*1.2,8)+0.4*sstep(1.5,0,a),37,(f,u,v,x,y,z)=>{ '@later'; if(f!=='W')return;
+  const wallE=wallPaint((a)=>0.15+0.3*n1(a*1.2,8)+0.4*sstep(1.5,0,a),37,(f,u,v,x,y,z)=>{ if(f!=='W')return;
       if(y>8.5&&y<9.9&&z<2.35+0.25*Math.sqrt(Math.max(0,1-((y-9.2)/0.7)**2))){ const dy=y-8.5; if(y<8.56||y>9.84||z>2.3+0.25*Math.sqrt(Math.max(0,1-((y-9.2)/0.7)**2))-0.05)return PAL.oakD;
         if(Math.abs(z-0.5)<0.05||Math.abs(z-1.9)<0.05)return (Math.abs(dy-0.35)<0.3)?PAL.ironD:PAL.oakD;
         if(Math.abs(y-9.62)<0.05&&Math.abs(z-1.05)<0.06)return PAL.goldL; return shd(PAL.oak,(Math.floor(dy*TX)%7===0?0.75:0.95+0.08*hh(Math.floor(dy*TX/7),Math.floor(z*4),4))); } });
@@ -196,7 +196,7 @@ function wallPaint(ivyAt,seed,opening){
 
   item('long table on tree roots');
   { const x0=1.9,x1=3.1,y0=3.9,y1=8.8,h=0.9;
-    box(x0,y0,h-0.13,x1,y1,h,(f,u,v,W,H,x,y,z)=>{ '@later'; let k=0.95+0.08*hh(Math.floor(u/12),0,7);
+    box(x0,y0,h-0.13,x1,y1,h,(f,u,v,W,H,x,y,z)=>{ let k=0.95+0.08*hh(Math.floor(u/12),0,7);
         if(f==='T'){ if(Math.floor(u)%11===0)k*=0.72; if(hh(Math.floor(u/3),Math.floor(v/9),8)<0.07)k*=0.8; k*=0.95+0.05*Math.sin(v*0.15+u*0.4); if(u<1||v<1)k*=1.15; if(u>W-1||v>H-1)k*=0.8; return shd(PAL.table,k*1.05); }
         return shd(PAL.tableD,(v<1.2?1.3:1)*(0.9+0.1*hh(u>>1,v,2))); });
     for(const ly of [4.8,7.9]){ cyl(2.5,ly,0.36,0,h-0.13,(f,u,v,W,H)=>shd(PAL.bark,(Math.floor(u/3)%2?0.82:1)*(0.9+0.12*hh(u>>2,v>>3,5))),{},0.26);

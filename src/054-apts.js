@@ -224,7 +224,7 @@ const APTS={EMPTY:true};
   APTS.inside=(x,z)=>{ const a=X(A.x0), b=X(A.x1), c=Z(A.y0), d=Z(A.y1); return x>Math.min(a,b)&&x<Math.max(a,b)&&z>Math.min(c,d)&&z<Math.max(c,d); };
   APTS.lvY=lv=>R0+lv*SY; APTS.lvOf=y=>Math.max(0,Math.min(ST-1,Math.floor((y-R0)/SY+.08)));
   APTS.floor=()=>window.POSOK?APTS.lvOf(py):0;
-  const gnd=(x,z,yy)=>{ '@later'; if(yy>RFY)return R0+SY*ST; for(const E of ELS){ const s=SE[ELS.indexOf(E)], a=X(U(s)), b=X(U(s+2.5)), c=Z(V(0)), d=Z(V(2.55)); if(x>Math.min(a,b)&&x<Math.max(a,b)&&z>Math.min(c,d)&&z<Math.max(c,d))return Y(E.z)+.02; }
+  const gnd=(x,z,yy)=>{ if(yy>RFY)return R0+SY*ST; for(const E of ELS){ const s=SE[ELS.indexOf(E)], a=X(U(s)), b=X(U(s+2.5)), c=Z(V(0)), d=Z(V(2.55)); if(x>Math.min(a,b)&&x<Math.max(a,b)&&z>Math.min(c,d)&&z<Math.max(c,d))return Y(E.z)+.02; }
     const f=Math.max(0,Math.min(ST-1,Math.floor((yy-R0)/SY+.08))); return R0+SY*f+(f===0?Y(1)-Y(0):0); };
   const RS=[[10.4,0,15.6,2.75],[3.8,1.2,6.2,3.6],[.25,5.9,1.35,7],[.25,10.4,1.35,11.5],[24.65,5.9,25.75,7],[24.65,10.4,25.75,11.5]].map(r=>{ const a=[X(U(r[0])),Z(V(r[1])),X(U(r[2])),Z(V(r[3]))]; return [Math.min(a[0],a[2]),Math.min(a[1],a[3]),Math.max(a[0],a[2]),Math.max(a[1],a[3])]; });
   RS.push([X(door.a0),Math.min(Z(A.y1-T),Z(A.y1+T)),X(door.a1),Math.max(Z(A.y1-T),Z(A.y1+T))]);

@@ -10,17 +10,17 @@ const INV={items:{},picked:{}}; window.INV=INV;
   INV.count=()=>Object.values(INV.items).reduce((a,b)=>a+b,0);
   INV.random=()=>{ let r=Math.random()*W; for(const g of GEMS){ if((r-=g[3])<0)return g[0]; } return GEMS[0][0]; };
   INV.ready=k=>INV.picked[k]==null||INV.picked[k]<day();
-  INV.pick=k=>{ '@later'; if(!INV.ready(k)){ TRADE.note('NOTHING HERE TODAY. BACK TOMORROW'); return false; } const id=INV.random(), g=byId(id); INV.picked[k]=day(); INV.add(id);
+  INV.pick=k=>{ if(!INV.ready(k)){ TRADE.note('NOTHING HERE TODAY. BACK TOMORROW'); return false; } const id=INV.random(), g=byId(id); INV.picked[k]=day(); INV.add(id);
     TRADE.note('YOU FOUND '+(/^[AEIOU]/.test(g[1])?'AN ':'A ')+g[1]+' · THE GOLEMS PAY $'+g[2]); if(typeof SFX!=='undefined')SFX.play('chirp',{vol:.4}); return true; };
-  INV.sell=(id,n=1)=>{ '@later'; const g=byId(id), have=INV.items[id]||0; n=Math.min(n,have); if(!g||n<1)return 0; INV.items[id]=have-n; if(!INV.items[id])delete INV.items[id]; INV.cash+=g[2]*n; save();
+  INV.sell=(id,n=1)=>{ const g=byId(id), have=INV.items[id]||0; n=Math.min(n,have); if(!g||n<1)return 0; INV.items[id]=have-n; if(!INV.items[id])delete INV.items[id]; INV.cash+=g[2]*n; save();
     if(window.CIVIC&&CIVIC.note)CIVIC.note('you sold '+n+' '+g[1].toLowerCase()+' to the golems for $'+g[2]*n,'park'); if(typeof SFX!=='undefined')SFX.play('clunk',{vol:.5}); return g[2]*n; }; }
 const TRADE={}; window.TRADE=TRADE;
 { const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;'), btn='class="btn" style="margin:0 0 0 6px;font:inherit;color:#ece5d3;background:#0e1016;border:2px solid #3a3f4e;padding:3px 8px;cursor:pointer"';
-  const panel=()=>{ '@later'; let P=document.getElementById('gemp'); if(P)return P; P=document.createElement('div'); P.id='gemp'; P.hidden=true;
+  const panel=()=>{ let P=document.getElementById('gemp'); if(P)return P; P=document.createElement('div'); P.id='gemp'; P.hidden=true;
     P.style.cssText='position:fixed;left:50%;top:10%;transform:translateX(-50%);width:min(460px,92vw);max-height:80vh;overflow:auto;z-index:21;padding:14px 16px;font:11px Silkscreen,monospace;letter-spacing:.4px;color:#d8dae2;background:#0b0d13f2;border:2px solid #3a3f4e;zoom:var(--uiz,1)';
     document.body.appendChild(P); P.addEventListener('keydown',e=>e.stopPropagation()); P.addEventListener('keyup',e=>e.stopPropagation());
     P.addEventListener('click',e=>{ const b=e.target.closest('button[data-s]'); if(!b)return; const id=b.dataset.s, got=INV.sell(id,b.dataset.n==='all'?1e9:1); if(got)TRADE.note('SOLD · +$'+got); TRADE.draw(); }); return P; };
-  TRADE.note=t=>{ '@later'; let n=document.getElementById('gemn'); if(!n){ n=document.createElement('div'); n.id='gemn'; n.style.cssText='position:fixed;left:50%;transform:translateX(-50%);bottom:56px;font:12px Silkscreen,monospace;color:#f2c14e;background:rgba(16,18,26,.88);border:2px solid #2a2e3a;padding:6px 10px;z-index:22;pointer-events:none'; document.body.appendChild(n); }
+  TRADE.note=t=>{ let n=document.getElementById('gemn'); if(!n){ n=document.createElement('div'); n.id='gemn'; n.style.cssText='position:fixed;left:50%;transform:translateX(-50%);bottom:56px;font:12px Silkscreen,monospace;color:#f2c14e;background:rgba(16,18,26,.88);border:2px solid #2a2e3a;padding:6px 10px;z-index:22;pointer-events:none'; document.body.appendChild(n); }
     n.textContent=t; n.hidden=false; clearTimeout(TRADE.nt); TRADE.nt=setTimeout(()=>n.hidden=true,3200); };
   TRADE.draw=()=>{ const P=document.getElementById('gemp'); if(!P||P.hidden)return;
     let o=`<h3 style="margin:0 0 4px;color:#f2c14e;font:12px Silkscreen,monospace">THE GOLEMS BUY</h3><div style="color:#9b9584;margin-bottom:8px">Rare gems and crystals, any kind. Fair prices, paid in coin.</div>

@@ -3,7 +3,7 @@ DRM.make=()=>{ if(!STORE.bar)return; const S=STORE.bar, AT={x:BOD.X(S.drums.x),z
   g.position.set(AT.x,AT.y,AT.z); g.rotation.set(0,AT.hd,0); g.scale.set(1/PPU,ZU,1/PPU);
   const CAP=160, im=new THREE.InstancedMesh(new THREE.SphereGeometry(1,10,8),new THREE.MeshLambertMaterial({}),CAP); im.instanceMatrix.setUsage(THREE.DynamicDrawUsage); im.castShadow=true; im.receiveShadow=true; im.frustumCulled=false; g.add(im);
   const col=new THREE.Color(), M4=new THREE.Matrix4(), Q=new THREE.Quaternion(), EU=new THREE.Euler(0,0,0,'YXZ'), P3=new THREE.Vector3(), S3=new THREE.Vector3();
-  const place=(i,x,y,z,rx,ry,rz,yaw,pit,rol,c)=>{ '@later'; P3.set(y,z,x); EU.set(-pit,yaw,rol); Q.setFromEuler(EU); S3.set(ry,rz,rx); M4.compose(P3,Q,S3); im.setMatrixAt(i,M4);
+  const place=(i,x,y,z,rx,ry,rz,yaw,pit,rol,c)=>{ P3.set(y,z,x); EU.set(-pit,yaw,rol); Q.setFromEuler(EU); S3.set(ry,rz,rx); M4.compose(P3,Q,S3); im.setMatrixAt(i,M4);
     const k=typeof c==='function'?c(0,0,0):c, rgb=OCTP[k]||OCTP.b; col.setRGB(rgb[0]/255,rgb[1]/255,rgb[2]/255,THREE.SRGBColorSpace); im.setColorAt(i,col); };
   const hush=()=>{ const N=IMX.nodes.get('bar|drum kit'); if(N&&SND.ctx)N.g.gain.setTargetAtTime(0,SND.ctx.currentTime,.1); }; DRM.stop=hush;
   DRM.tick=dt=>{ const d=Math.hypot(pos.x-AT.x,pos.z-AT.z); if(!DRM.on||!MAPG.bodega.visible||d>18){ hush(); return; } const now=performance.now();

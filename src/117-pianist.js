@@ -19,7 +19,7 @@ PNM.make=()=>{ if(!STORE.bar)return; const R=RIG, V=R.V, S=STORE.bar, AT={x:BOD.
     R.farOnly(false); PNS.t+=dt; const t=PNS.t, P=pnPose(t); npcSpring(a,P,dt,NPCARMS); pnFing(P,R.build(P,null),P._T); npcSpring(a,P,dt,NPCFING); a.t+=dt; P.nod+=Math.sin(a.t*1.3)*0.7*R.D; musScale(g);
     const B=R.settle(R.build(P,null),0), pr=pnKeys(t); PCS.forEach((pc,i)=>FM.set(i,pc.on==='prop'?(pr[pc.n]||PKBENCH):R.frameOf(pc.on||pc.n,B))); R.farOnly(false);
     pnTones(t,d); };
-  function pnTones(t,d){ '@later'; if(!SND.ctx||SND.ctx.state!=='running')return; if(!pnAudio())return; const c=SND.ctx, ct=c.currentTime, when=x=>ct+Math.max(0,x-t)+0.03, ns=PNS.c.notes;
+  function pnTones(t,d){ if(!SND.ctx||SND.ctx.state!=='running')return; if(!pnAudio())return; const c=SND.ctx, ct=c.currentTime, when=x=>ct+Math.max(0,x-t)+0.03, ns=PNS.c.notes;
     PNA.g.gain.setTargetAtTime(0.5*Math.max(0,1-d/14),ct,0.05);
     const v=new THREE.Vector3(AT.x,1,AT.z).project(cam); PNA.pan.pan.setTargetAtTime(Math.max(-0.8,Math.min(0.8,v.x*0.8)),ct,0.1);
     while(PNS.sent<ns.length&&ns[PNS.sent].t0<=t+0.1){ const n=ns[PNS.sent++]; if(n.t0<t-0.05)continue; pnPlay(n.m,when(n.t0),when(n.off),n.vel); } }

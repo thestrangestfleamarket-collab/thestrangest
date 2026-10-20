@@ -78,7 +78,7 @@ function sofa(x,y){ PNAME='sofa'; const D=.92, L=2.2, x1=x+D, y1=y+L, bs=[], R=D
       (X,Y)=>Math.abs(Y-(a+b)/2)<.05?DP.redH:DP.redL,{foot:1}));
     return prop(bs); }
 function armchair(x,y){ PNAME='armchair'; const R0=.47, Ri=.3, cx=x+.47, cy=y+.475, bs=[], C=DP.red;
-    const fs=(X0,Y0)=>(s,a,row,Lf,h)=>{ '@later'; const nx=s==='px'?1:s==='nx'?-1:0, ny=s==='py'?1:s==='ny'?-1:0, inner=(X0-cx)*nx+(Y0-cy)*ny<0, ang=Math.floor((Math.atan2(Y0-cy,X0-cx)+3.2)*R0*S);
+    const fs=(X0,Y0)=>(s,a,row,Lf,h)=>{ const nx=s==='px'?1:s==='nx'?-1:0, ny=s==='py'?1:s==='ny'?-1:0, inner=(X0-cx)*nx+(Y0-cy)*ny<0, ang=Math.floor((Math.atan2(Y0-cy,X0-cx)+3.2)*R0*S);
       if(row<2)return DP.redH; if(row<4)return DP.redL; if(row>h-3)return DP.redK; if(inner)return ang%9<2?DP.redD:ang%9<4?DP.redL:C; return leather(C,ang/8,row/8,94); };
     for(let Y=cy-R0;Y<cy+R0-1e-6;Y+=.04){ const m=Y+.02-cy, ox=Math.sqrt(Math.max(0,R0*R0-m*m)), ix=Math.abs(m)<Ri?Math.sqrt(Ri*Ri-m*m):null, xf=Math.min(cx+ox,cx+.42);
       const segs=ix!=null?[[cx-ox,cx-ix]]:[[cx-ox,cx-ox*.3],[cx-ox*.3,cx+ox*.3],[cx+ox*.3,xf]];
@@ -105,7 +105,7 @@ function plant(x,y,big){ PNAME=big?'potted palm':'potted plant'; const r=big?.36
 function exitSign(x,y){ PNAME='exit sign'; const w=.62, h=8;
     const p=prop([fb(x,y,x+.1,y+w,0,h,[214,206,186],(s,a,row,L)=>{ if(s!=='px')return [190,180,160]; const A=(a-6)>>1, R=(row-3)>>1; if(row<1||row>=2*h-1||a<1||a>=L-1)return [150,140,120]; return A>=0&&R>=0&&R<5&&'EXIT'.split('').some((ch,i)=>{ const q=A-i*4; return q>=0&&q<3&&F3[ch][R*3+q]==='1'; })?lit([240,80,60]):[226,220,200]; },[200,190,170],{foot:1,em:1})],null,{hang:0,walk:true,high:true});
     LAMPS.push({own:1,room:1,x:x+.3,y:y+w/2,z:h/2,r:1.2,c:[1,.4,.3],prop:p}); return p; }
-function blinds(x,y,L,Z){ '@later'; PNAME='window blinds'; const S2=[132,128,104], S1=[108,104,84];
+function blinds(x,y,L,Z){ PNAME='window blinds'; const S2=[132,128,104], S1=[108,104,84];
     return prop([fb(x,y,x+.04,y+L,0,Z,S2,(s,a,row,Lf,h)=>s!=='px'?S1:row<4||row>h-4||a<4||a>Lf-4?DP.woodD:(row%8<2?[40,38,30]:row%8<3?S1:row%8===7?sh(S2,1.15):S2),S1,{foot:1}),
       fb(x,y-.06,x+.08,y,0,Z,DP.woodD,()=>DP.woodD,DP.wood,{foot:1}),fb(x,y+L,x+.08,y+L+.06,0,Z,DP.woodD,()=>DP.woodD,DP.wood,{foot:1}),fb(x,y-.06,x+.1,y+L+.06,-3,0,DP.woodD,(s,a,row)=>row<1?DP.woodL:DP.woodD,DP.woodL),
       fb(x,y-.06,x+.08,y+L+.06,Z,Z+3,DP.woodD,()=>DP.woodD,DP.wood)],null,{hang:0,walk:true,high:true}); }
@@ -116,12 +116,12 @@ const POSTERS={
     'ghost sale':(put,w,h)=>{ box(put,0,0,w,h,[24,24,28]); disc(put,w/2,h*.4,w*.28,h*.22,[230,232,236]); box(put,w*.22,h*.4,w*.78,h*.62,[230,232,236]);
       for(let i=0;i<4;i++)disc(put,w*.28+i*w*.15,h*.62,w*.07,w*.07,[24,24,28]); box(put,w*.4,h*.34,w*.44,h*.4,[24,24,28]); box(put,w*.56,h*.34,w*.6,h*.4,[24,24,28]);
       T3(put,'GHOST',5,6,[250,90,90],1); T3(put,'SHOP',5,h-14,[230,232,236],1); },
-    'hover taxi':(put,w,h)=>{ '@later'; box(put,0,0,w,h,[240,150,40]); box(put,4,h*.35,w-4,h*.55,[250,220,60]); box(put,8,h*.27,w-10,h*.37,[60,60,70]); for(let x=8;x<w-8;x+=6)put(x,h*.6,[200,90,30]);
+    'hover taxi':(put,w,h)=>{ box(put,0,0,w,h,[240,150,40]); box(put,4,h*.35,w-4,h*.55,[250,220,60]); box(put,8,h*.27,w-10,h*.37,[60,60,70]); for(let x=8;x<w-8;x+=6)put(x,h*.6,[200,90,30]);
       box(put,6,h*.58,w-6,h*.6,[200,90,30]); T3(put,'HOVER',5,5,[30,30,40],1); T3(put,'TAXI',5,13,[30,30,40],1); T3(put,'30S',w-16,h-10,[255,255,255],1); },
     'moon shrine':(put,w,h)=>{ box(put,0,0,w,h,[120,26,30]); disc(put,w/2,h*.3,w*.3,w*.3,[250,236,200]); disc(put,w/2+5,h*.27,w*.24,w*.26,[120,26,30]);
       box(put,w*.3,h*.55,w*.7,h*.57,[30,20,20]); box(put,w*.36,h*.57,w*.4,h*.8,[30,20,20]); box(put,w*.6,h*.57,w*.64,h*.8,[30,20,20]); box(put,w*.26,h*.52,w*.74,h*.54,[30,20,20]);
       T3(put,'MOON',w/2-8,h-24,[250,236,200],1); T3(put,'SHRINE',w/2-12,h-16,[250,236,200],1); T3(put,'ROOF',w/2-8,h-8,[240,180,90],1); },
-    '190 street':(put,w,h)=>{ '@later'; box(put,0,0,w,h,[236,232,220]); box(put,0,0,w,12,[40,90,170]); T3(put,'190',4,3,[255,255,255],1); box(put,w/2-1,14,w/2+1,h-6,[40,160,80]); box(put,6,h/2,w-6,h/2+2,[220,60,50]);
+    '190 street':(put,w,h)=>{ box(put,0,0,w,h,[236,232,220]); box(put,0,0,w,12,[40,90,170]); T3(put,'190',4,3,[255,255,255],1); box(put,w/2-1,14,w/2+1,h-6,[40,160,80]); box(put,6,h/2,w-6,h/2+2,[220,60,50]);
       for(const [cx,cy] of [[w/2,20],[w/2,h/2+1],[w/2,h-10],[10,h/2+1],[w-10,h/2+1]])disc(put,cx,cy,3,3,[30,30,30],.3); },
     'night painting':(put,w,h)=>{ for(let y=0;y<h;y++)box(put,0,y,w,y+1,[18+y/h*30|0,26+y/h*30|0,60+y/h*20|0]); for(let i=0;i<20;i++)put(hash(i,1,100)*w,hash(i,2,100)*h*.5,[220,220,200]);
       disc(put,w*.7,h*.22,5,5,[240,230,190]); for(let x=0;x<w;x++){ const t=h*.7+Math.sin(x*.15)*4+Math.sin(x*.4)*2; box(put,x,t,x+1,h,[14,20,30]); } } };

@@ -11,7 +11,7 @@ const mV=(m,v)=>[m[0]*v[0]+m[1]*v[1]+m[2]*v[2],m[3]*v[0]+m[4]*v[1]+m[5]*v[2],m[6
   mTV=(m,v)=>[m[0]*v[0]+m[3]*v[1]+m[6]*v[2],m[1]*v[0]+m[4]*v[1]+m[7]*v[2],m[2]*v[0]+m[5]*v[1]+m[8]*v[2]];
 const qAxis=(ax,a)=>{ const s=Math.sin(a/2), n=Math.hypot(...ax)||1; return [Math.cos(a/2),ax[0]/n*s,ax[1]/n*s,ax[2]/n*s]; },
   qMul=(a,b)=>[a[0]*b[0]-a[1]*b[1]-a[2]*b[2]-a[3]*b[3],a[0]*b[1]+a[1]*b[0]+a[2]*b[3]-a[3]*b[2],a[0]*b[2]-a[1]*b[3]+a[2]*b[0]+a[3]*b[1],a[0]*b[3]+a[1]*b[2]-a[2]*b[1]+a[3]*b[0]];
-function phyBody(o){ '@later'; const vol=p=>p.t==='box'?8*p.h[0]*p.h[1]*p.h[2]:p.t==='cyl'?2*Math.PI*p.r*p.r*p.hh:p.t==='ell'?4/3*Math.PI*p.r[0]*p.r[1]*p.r[2]:4/3*Math.PI*p.r**3, V=o.parts.reduce((t,p)=>t+vol(p),0);
+function phyBody(o){ const vol=p=>p.t==='box'?8*p.h[0]*p.h[1]*p.h[2]:p.t==='cyl'?2*Math.PI*p.r*p.r*p.hh:p.t==='ell'?4/3*Math.PI*p.r[0]*p.r[1]*p.r[2]:4/3*Math.PI*p.r**3, V=o.parts.reduce((t,p)=>t+vol(p),0);
   const cm=o.parts.reduce((a,p)=>v3a(a,v3k(p.c,vol(p)/V)),[0,0,0]), I=[0,0,0], b={mu:.5,e:.15,...o,q:(o.q||[1,0,0,0]).slice(),v:[0,0,0],w:[0,0,0],awake:false,rest:0,iM:1/o.m};
   for(const p of b.parts){ p.c=v3s(p.c,cm); const m=o.m*vol(p)/V, [x,y,z]=p.c, own=p.t==='box'?[(p.h[1]**2+p.h[2]**2)/3,(p.h[0]**2+p.h[2]**2)/3,(p.h[0]**2+p.h[1]**2)/3]:
       p.t==='cyl'?[(3*p.r*p.r+4*p.hh*p.hh)/12,(3*p.r*p.r+4*p.hh*p.hh)/12,p.r*p.r/2]:p.t==='ell'?[(p.r[1]**2+p.r[2]**2)/5,(p.r[0]**2+p.r[2]**2)/5,(p.r[0]**2+p.r[1]**2)/5]:[.4*p.r*p.r,.4*p.r*p.r,.4*p.r*p.r];
@@ -25,7 +25,7 @@ function phyBody(o){ '@later'; const vol=p=>p.t==='box'?8*p.h[0]*p.h[1]*p.h[2]:p
 const phyWake=b=>{ if(b&&b.iM&&!b.awake){ b.awake=true; b.rest=0; } };
 const phyW=(b,l)=>v3a(b.x,mV(b.m3,l)), phyL=(b,w)=>mTV(b.m3,v3s(w,b.x));
 const phyIw=(b,v)=>{ const l=mTV(b.m3,v); return mV(b.m3,[l[0]*b.iI[0],l[1]*b.iI[1],l[2]*b.iI[2]]); };
-function phyIn(p,P,sk=0){ '@later'; const x=P[0]-p.c[0], y=P[1]-p.c[1], z=P[2]-p.c[2];
+function phyIn(p,P,sk=0){ const x=P[0]-p.c[0], y=P[1]-p.c[1], z=P[2]-p.c[2];
   if(p.t==='box'){ const dx=p.h[0]+sk-Math.abs(x), dy=p.h[1]+sk-Math.abs(y), dz=p.h[2]+sk-Math.abs(z); if(dx<=0||dy<=0||dz<=0)return null;
     return dx<dy&&dx<dz?[dx-sk,[x<0?-1:1,0,0]]:dy<dz?[dy-sk,[0,y<0?-1:1,0]]:[dz-sk,[0,0,z<0?-1:1]]; }
   if(p.t==='cyl'){ const r=Math.hypot(x,y), dr=p.r+sk-r, dz=p.hh+sk-Math.abs(z); if(dr<=0||dz<=0)return null; return dr<dz?[dr-sk,r>1e-6?[x/r,y/r,0]:[1,0,0]]:[dz-sk,[0,0,z<0?-1:1]]; }
@@ -36,7 +36,7 @@ function phyNear(p,P){ const x=P[0]-p.c[0], y=P[1]-p.c[1], z=P[2]-p.c[2], cl=(v,
 let PHYZ0=0; const PHYOU={m:null,vel:[0,0,0],px:null,py:null,D:.2,hit:0,hitN:null,strikes:[]};
 function phyYouNow(dt){ const Y=PHYOU; if(!Y.m)Y.m=new Uint8Array(PW*PICH); for(let i=0;i<PW*PICH;i++)Y.m[i]=(uimg[i]>>>24)>100?1:0;
   if(Y.px!=null&&dt>0){ const vx=(P.x-Y.px)/dt, vy=(P.y-Y.py)/dt; Y.vel=Math.hypot(vx,vy)>8||RAG.on?[0,0,0]:[vx,vy,0]; } Y.px=P.x; Y.py=P.y; }
-function phyYouIn(p){ '@later'; const Y=PHYOU, Mk=Y.m; if(!Mk)return null; const a=view0.a, rx=Math.cos(a), rz=-Math.sin(a), fx=Math.sin(a), fz=Math.cos(a);
+function phyYouIn(p){ const Y=PHYOU, Mk=Y.m; if(!Mk)return null; const a=view0.a, rx=Math.cos(a), rz=-Math.sin(a), fx=Math.sin(a), fz=Math.cos(a);
   const dx=p[0]*TL-pos.x, dz=-p[1]*TL-pos.z, dd=dx*fx+dz*fz, Dw=Y.D*TL; if(Math.abs(dd)>=Dw)return null;
   const fi=AX+(dx*rx+dz*rz)*PPU, fj=AY-((p[2]-PHYZ0)*TL-py)*PPU/VS, i=Math.floor(fi), j=Math.floor(fj); if(i<0||j<0||i>=PW||j>=PICH||!Mk[j*PW+i])return null;
   let l=i, r=i, c=j; while(l>=0&&Mk[j*PW+l])l--; while(r<PW&&Mk[j*PW+r])r++; while(c>=0&&Mk[c*PW+i])c--;
@@ -73,7 +73,7 @@ function phyContacts(bs,st){ const Y=PHYOU, cs=[], add=(A,B,p,n,d)=>cs.push({A,B
   return cs.filter(c=>c.A.awake||c.B&&c.B.awake); }
 const phyVel=(b,r)=>!b?[0,0,0]:b===PHYOU?PHYOU.vel:v3a(b.v,v3x(b.w,r));
 function phySolve(cs,h,js){ const dyn=b=>!!b&&b!==PHYOU&&b.awake, R=[], Q=[];
-  const row=(A,B,d,ra,rb)=>{ '@later'; const da=dyn(A), db=dyn(B), r={d,A:da?A:null,B:db?B:null,you:B===PHYOU,g:B===PHYOU?A.give??1:1,j:0,lo:-1e9,hi:1e9,goal:0};
+  const row=(A,B,d,ra,rb)=>{ const da=dyn(A), db=dyn(B), r={d,A:da?A:null,B:db?B:null,you:B===PHYOU,g:B===PHYOU?A.give??1:1,j:0,lo:-1e9,hi:1e9,goal:0};
     if(da){ r.ra=ra; r.ia=phyIw(A,ra); } if(db){ r.rb=rb; r.ib=phyIw(B,rb); }
     const dd=v3d(d,d); r.k=1/((da?A.iM*dd+v3d(ra,r.ia):0)+(db?B.iM*dd+v3d(rb,r.ib):0)||1e9); return r; };
   for(const c of cs){ const A=c.A, B=c.B, ra=v3s(c.p,A.x), rb=B&&B!==PHYOU?v3s(c.p,B.x):[0,0,0];
@@ -85,14 +85,14 @@ function phySolve(cs,h,js){ const dyn=b=>!!b&&b!==PHYOU&&b.awake, R=[], Q=[];
     for(const d of [[1,0,0],[0,1,0],[0,0,1]]){ const r=row(A,B,d,v3x(ra,d),v3x(rb,d)); r.goal=-Math.max(-2,Math.min(2,v3d(e,d)*.25/h)); Q.push(r); }
     const L=J.lim; if(L){ const wa=mV(A.m3,L.a), wb=B?mV(B.m3,L.b):L.b, ang=Math.acos(Math.max(-1,Math.min(1,v3d(wa,wb)))); if(ang>L.max){ const n0=v3x(wa,wb), nl=Math.hypot(...n0);
       if(nl>1e-6){ const n=v3k(n0,1/nl), r=row(A,B,[0,0,0],n,n); r.lo=0; r.goal=Math.min(2,(ang-L.max)*.25/h); Q.push(r); } } } }
-  const vel=r=>{ '@later'; const d=r.d, A=r.A, B=r.B; let v=0; if(A)v+=A.v[0]*d[0]+A.v[1]*d[1]+A.v[2]*d[2]+A.w[0]*r.ra[0]+A.w[1]*r.ra[1]+A.w[2]*r.ra[2];
+  const vel=r=>{ const d=r.d, A=r.A, B=r.B; let v=0; if(A)v+=A.v[0]*d[0]+A.v[1]*d[1]+A.v[2]*d[2]+A.w[0]*r.ra[0]+A.w[1]*r.ra[1]+A.w[2]*r.ra[2];
       if(B)v-=B.v[0]*d[0]+B.v[1]*d[1]+B.v[2]*d[2]+B.w[0]*r.rb[0]+B.w[1]*r.rb[1]+B.w[2]*r.rb[2]; else if(r.you){ const y=r.yv||PHYOU.vel; v-=(y[0]*d[0]+y[1]*d[1]+y[2]*d[2])*r.g; } return v; },
-    push=(r,j)=>{ '@later'; const d=r.d, A=r.A, B=r.B; if(A){ const m=A.iM*j; A.v[0]+=d[0]*m; A.v[1]+=d[1]*m; A.v[2]+=d[2]*m; A.w[0]+=r.ia[0]*j; A.w[1]+=r.ia[1]*j; A.w[2]+=r.ia[2]*j; }
+    push=(r,j)=>{ const d=r.d, A=r.A, B=r.B; if(A){ const m=A.iM*j; A.v[0]+=d[0]*m; A.v[1]+=d[1]*m; A.v[2]+=d[2]*m; A.w[0]+=r.ia[0]*j; A.w[1]+=r.ia[1]*j; A.w[2]+=r.ia[2]*j; }
       if(B){ const m=B.iM*j; B.v[0]-=d[0]*m; B.v[1]-=d[1]*m; B.v[2]-=d[2]*m; B.w[0]-=r.ib[0]*j; B.w[1]-=r.ib[1]*j; B.w[2]-=r.ib[2]*j; } },
     go=r=>{ const j0=r.j; r.j=Math.max(r.lo,Math.min(r.hi,j0+(r.goal-vel(r))*r.k)); if(r.j!==j0)push(r,r.j-j0); };
   for(let it=0;it<10;it++){ for(const r of Q)go(r);
     for(let i=0;i<R.length;i+=3){ const n=R[i]; go(n); const lim=n.mu*n.j; for(const r of [R[i+1],R[i+2]]){ r.lo=-lim; r.hi=lim; go(r); } } } }
-function phyJointFix(js){ '@later'; for(let it=0;it<8;it++)for(const J of js){ const A=J.A, B=J.B, da=A.awake, db=!!B&&B.awake; if(!da&&!db)continue;
+function phyJointFix(js){ for(let it=0;it<8;it++)for(const J of js){ const A=J.A, B=J.B, da=A.awake, db=!!B&&B.awake; if(!da&&!db)continue;
     const e=v3s(phyW(A,J.la),B?phyW(B,J.lb):J.w), wa=da?A.iM:0, wb=db?B.iM:0, s=wa+wb; if(!s)continue;
     if(da)A.x=v3s(A.x,v3k(e,wa/s)); if(db)B.x=v3a(B.x,v3k(e,wb/s)); } }
 const phyJoin=(A,la,B,lb,w,lim)=>{ if(B){ (A.nc||(A.nc=new Set())).add(B); (B.nc||(B.nc=new Set())).add(A); } return {A,la,B,lb,w,lim}; };
@@ -121,14 +121,14 @@ const ragW=(p,hd=RAG.hd)=>{ const q=RIG.yaw(p,hd), du=(q.x+q.z)/(Math.SQRT2*RT),
   ragWv=p=>{ const q=RIG.yaw(p,RAG.hd), du=(q.x+q.z)/Math.SQRT2, dv=(q.z-q.x)/Math.SQRT2, [dx,dy]=wvV(du,dv), n=Math.hypot(dx,dy,q.y)||1; return [dx/n,dy/n,q.y/n]; },
   ragR=w=>{ const [du,dv]=vwV(w[0]-P.x,w[1]-P.y); return RIG.yaw(RIG.V((du-dv)*RT/Math.SQRT2,w[2]*RT,(du+dv)*RT/Math.SQRT2),-RAG.hd); },
   ragRv=w=>{ const [du,dv]=vwV(w[0],w[1]); return RIG.yaw(RIG.V((du-dv)/Math.SQRT2,w[2],(du+dv)/Math.SQRT2),-RAG.hd); };
-function ragQ(X,Y,Z){ '@later'; const m=[X[0],Y[0],Z[0],X[1],Y[1],Z[1],X[2],Y[2],Z[2]], t=m[0]+m[4]+m[8]; let q;
+function ragQ(X,Y,Z){ const m=[X[0],Y[0],Z[0],X[1],Y[1],Z[1],X[2],Y[2],Z[2]], t=m[0]+m[4]+m[8]; let q;
   if(t>0){ const s=Math.sqrt(t+1)*2; q=[s/4,(m[7]-m[5])/s,(m[2]-m[6])/s,(m[3]-m[1])/s]; }
   else if(m[0]>m[4]&&m[0]>m[8]){ const s=Math.sqrt(1+m[0]-m[4]-m[8])*2; q=[(m[7]-m[5])/s,s/4,(m[1]+m[3])/s,(m[2]+m[6])/s]; }
   else if(m[4]>m[8]){ const s=Math.sqrt(1+m[4]-m[0]-m[8])*2; q=[(m[2]-m[6])/s,(m[1]+m[3])/s,s/4,(m[5]+m[7])/s]; }
   else{ const s=Math.sqrt(1+m[8]-m[0]-m[4])*2; q=[(m[3]-m[1])/s,(m[2]+m[6])/s,(m[5]+m[7])/s,s/4]; }
   const n=Math.hypot(...q); return q.map(v=>v/n); }
 const ragN=v=>{ const n=Math.hypot(...v)||1; return [v[0]/n,v[1]/n,v[2]/n]; }, ragOrth=(x,z)=>ragN(v3s(x,v3k(z,v3d(x,z))));
-function ragStart(B,J0,dt,shove){ '@later'; const J=B.J, m=B.m, u=1/RT, bs=[], js=[], W=k=>ragW(J[k]), st=PH.st; RAG.hd=PH.hd; RAG.t=0; RAG.acc=0; RAG.blend=null;
+function ragStart(B,J0,dt,shove){ const J=B.J, m=B.m, u=1/RT, bs=[], js=[], W=k=>ragW(J[k]), st=PH.st; RAG.hd=PH.hd; RAG.t=0; RAG.acc=0; RAG.blend=null;
   const vOf=k=>J0&&J0[k]&&dt>0?v3k(v3s(W(k),ragW(J0[k])),1/dt):[0,0,0];
   const mk=(name,parts,kg,at,X,Y,Z,joints,a,b)=>{ const o=phyBody({parts,m:kg,at:W(at),q:ragQ(X,Y,Z),mu:.8,e:.05,give:.2}); o.name=name; o.jl={}; for(const k of joints)o.jl[k]=phyL(o,W(k));
     o.v=vOf(a); if(b){ const d=v3s(W(b),W(a)), l2=v3d(d,d); if(l2>1e-6)o.w=v3k(v3x(d,v3s(vOf(b),vOf(a))),1/l2); o.v=v3k(v3a(o.v,vOf(b)),.5); } phyWake(o); bs.push(o); return o; };
@@ -148,7 +148,7 @@ function ragStart(B,J0,dt,shove){ '@later'; const J=B.J, m=B.m, u=1/RT, bs=[], j
     pin(th,pel,'hip'+n,{a:[0,0,1],b:[0,-1,0],max:80*D}); pin(sh,th,'knee'+n,{a:[0,0,1],b:[0,-Math.sin(65*D),Math.cos(65*D)],max:65*D}); }
   if(shove)for(const o of [che,hed])o.v=v3a(o.v,shove);
   RAG.bodies=bs; RAG.joints=js; RAG.on=true; RAG.trip=false; st.target=0; if(P.tx!=null)clearWalk(); }
-function ragStep(dt){ '@later'; const t0=performance.now(), R=PHYROOMS.find(r=>r.on&&P.x>r.x0&&P.x<r.x1&&P.y>r.y0&&P.y<r.y1), st=R?(RAG.stR===R?RAG.st:(RAG.stR=R,RAG.st=R.st.map(b=>[b[0],b[1],b[2]*RZ,b[3],b[4],b[5]*RZ]))):[];
+function ragStep(dt){ const t0=performance.now(), R=PHYROOMS.find(r=>r.on&&P.x>r.x0&&P.x<r.x1&&P.y>r.y0&&P.y<r.y1), st=R?(RAG.stR===R?RAG.st:(RAG.stR=R,RAG.st=R.st.map(b=>[b[0],b[1],b[2]*RZ,b[3],b[4],b[5]*RZ]))):[];
   const now=performance.now();
   if(RAG.toss){ const [x,y]=RAG.toss; RAG.toss=null; for(const b of RAG.bodies){ b.v=v3a(b.v,[x*5,y*5,2.6]); phyWake(b); } RAG.t=Math.min(RAG.t,.5); }
   if(RAG.held){ const H=RAG.held, o=ONLINE.others.get(H.by);
@@ -160,14 +160,14 @@ function ragStep(dt){ '@later'; const t0=performance.now(), R=PHYROOMS.find(r=>r
   const pel=RAG.bodies[0], w=phyW(pel,pel.jl.pelvis); P.x=w[0]; P.y=w[1]; RAG.t+=dt;
   if(!RAG.held&&!(RAG.ko>now)&&(RAG.t>.6&&RAG.bodies.every(b=>!b.awake)||RAG.t>5))ragEnd();
   if(PERF)PERF.add('you: ragdoll',performance.now()-t0); }
-function ragPose(){ '@later'; const J={}, m={foot:{},hf:{},fist:{}}, V=RIG.V, M3=(x,y,z)=>({x:ragRv(x),y:ragRv(y),z:ragRv(z)}), ax=b=>[[b.m3[0],b.m3[3],b.m3[6]],[b.m3[1],b.m3[4],b.m3[7]],[b.m3[2],b.m3[5],b.m3[8]]];
+function ragPose(){ const J={}, m={foot:{},hf:{},fist:{}}, V=RIG.V, M3=(x,y,z)=>({x:ragRv(x),y:ragRv(y),z:ragRv(z)}), ax=b=>[[b.m3[0],b.m3[3],b.m3[6]],[b.m3[1],b.m3[4],b.m3[7]],[b.m3[2],b.m3[5],b.m3[8]]];
   for(const b of RAG.bodies)for(const k in b.jl)J[k]=ragR(phyW(b,b.jl[k]));
   const by={}; for(const b of RAG.bodies)by[b.name]=b; const [px,py,pz]=ax(by.pelvis), [cx,cy,cz]=ax(by.chest), [hx,hy,hz]=ax(by.head);
   m.Rb=M3(px,py,pz); m.Rp=m.Rb; m.Ru=M3(cx,cy,cz); m.Rc=m.Ru; m.Rh=M3(hx,hy,hz);
   for(const n of 'LR'){ const [sx,sy,sz]=ax(by['shin'+n]); m.foot[n]={x:m.Rb.x,y:ragRv(v3k(sz,-1)),z:ragRv(sy)};
     const fa=RIG.nrm(RIG.sub(J['wrist'+n],J['elbow'+n])); m.hf[n]=RIG.hand(J,n,n==='L'?1:-1,fa,m.Ru,{fist:0}); m.fist[n]=0; }
   return {J,m,head:J.head,lift:0}; }
-function ragEnd(){ '@later'; const st=PH.st, by={}; for(const b of RAG.bodies)by[b.name]=b; const pel=phyW(by.pelvis,by.pelvis.jl.pelvis), che=phyW(by.chest,by.chest.jl.chest), dx=che[0]-pel[0], dy=che[1]-pel[1];
+function ragEnd(){ const st=PH.st, by={}; for(const b of RAG.bodies)by[b.name]=b; const pel=phyW(by.pelvis,by.pelvis.jl.pelvis), che=phyW(by.chest,by.chest.jl.chest), dx=che[0]-pel[0], dy=che[1]-pel[1];
   if(Math.hypot(dx,dy)>.05){ const [u,v]=vwV(dx,dy); RAG.hd=PH.hd=Math.atan2(u-v,u+v); }
   const fall=RIG.MOVES.fall, lie=fall.k.find(k=>k.t>fall.topple.T+.5), rz=lie.P.root.z, [u,v]=[(Math.sin(PH.hd)+Math.cos(PH.hd))/2,(Math.cos(PH.hd)-Math.sin(PH.hd))/2], [wx,wy]=wvV(u,v), nw=Math.hypot(wx,wy);
   P.x=pel[0]-wx/nw*rz/RT; P.y=pel[1]-wy/nw*rz/RT; const J0=ragPose().J;

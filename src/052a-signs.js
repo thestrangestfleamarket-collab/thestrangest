@@ -21,21 +21,21 @@ BOD.streetSigns=()=>{ const X=BOD.XS, Z=BOD.ZS, V3=THREE.Vector3, R=48/TILE, h3=
   const back=s=>wear((i,j,W,H)=>W>40&&gl('NYC DOT',i-Math.floor((W-gw('NYC DOT'))/2),j-(H-12))?[118,122,126]:GALV,s+50,{bolts:1});
   const quad=(p,t)=>BOD.bq(p[0].toArray(),p[1].toArray(),p[2].toArray(),p[3].toArray(),t,'L');
   const tex=(w,h,f)=>{ const W=Math.max(1,Math.round(w*R)), H=Math.max(1,Math.round(h*R)); return BOD.faceTex(W,H,(i,j)=>f(i,j,W,H)); };
-  const ob=(c,a,u,n,P,off=0,FW=0)=>{ '@later'; const A=a.length()*2, U=u.length()*2, N=n.length()*2, q=(x,y,z)=>c.clone().addScaledVector(a,x).addScaledVector(u,y).addScaledVector(n,z), FR=P('f'), BA=P('b');
+  const ob=(c,a,u,n,P,off=0,FW=0)=>{ const A=a.length()*2, U=u.length()*2, N=n.length()*2, q=(x,y,z)=>c.clone().addScaledVector(a,x).addScaledVector(u,y).addScaledVector(n,z), FR=P('f'), BA=P('b');
     quad([q(-1,-1,1),q(1,-1,1),q(1,1,1),q(-1,1,1)],tex(A,U,FW?(i,j,W,H)=>FR(i+off,j,FW,H):FR));
     quad([q(1,-1,-1),q(-1,-1,-1),q(-1,1,-1),q(1,1,-1)],tex(A,U,FW?(i,j,W,H)=>BA(i+FW-off-W,j,FW,H):BA));
     quad([q(1,-1,1),q(1,-1,-1),q(1,1,-1),q(1,1,1)],tex(N,U,P('s'))); quad([q(-1,-1,-1),q(-1,-1,1),q(-1,1,1),q(-1,1,-1)],tex(N,U,P('s'))); quad([q(-1,1,1),q(1,1,1),q(1,1,-1),q(-1,1,-1)],tex(A,N,P('t'))); };
-  const frame=(x,y,n,s)=>{ '@later'; const lean=h3(s,1,2)<.25?.03+.04*h3(s,2,3):0, la=h3(s,3,4)*6.28, L=new V3(Math.cos(la)*lean,1,Math.sin(la)*lean).normalize(), N=new V3(n[0],0,n[1]), A=new V3().crossVectors(L,N).normalize();
+  const frame=(x,y,n,s)=>{ const lean=h3(s,1,2)<.25?.03+.04*h3(s,2,3):0, la=h3(s,3,4)*6.28, L=new V3(Math.cos(la)*lean,1,Math.sin(la)*lean).normalize(), N=new V3(n[0],0,n[1]), A=new V3().crossVectors(L,N).normalize();
     N.crossVectors(A,L).normalize(); const B=new V3(X(x),0,Z(y)); return {B,L,N,A,s,at:z=>B.clone().addScaledVector(L,z*ZU)}; };
   const PW=.075*TILE, PD=.05*TILE, T=.03*TILE;
-  const post=(S,top,round)=>{ '@later'; const s=S.s, fl=h3(s,20,1)<.4?42+Math.floor(h3(s,21,1)*20):-99;
+  const post=(S,top,round)=>{ const s=S.s, fl=h3(s,20,1)<.4?42+Math.floor(h3(s,21,1)*20):-99;
     ob(S.at(top/2),S.A.clone().multiplyScalar(PW/2),S.L.clone().multiplyScalar(top*ZU/2),S.N.clone().multiplyScalar(PD/2),k=>k==='t'?()=>[96,100,104]:k==='s'?(i,j,W,H)=>H-j<H*.05?RUST:[118,122,126]:(i,j,W,H)=>{ const z=(H-1-j)/H*top, r=h3(i,j,s);
       if(z<top*.05)return r<.6?RUST:[96,86,72]; if(z>fl&&z<fl+7)return (Math.floor(z)%2&&r<.7)?[60,60,66]:[226,222,208]; if(!round&&i===Math.floor(W/2)&&j%4===0)return [40,42,46]; return round&&i===0?[176,180,184]:GALV.map(v=>v*(.93+.1*r)); }); };
-  const plate=(S,side,z0,z1,w,front,o={})=>{ '@later'; const n=S.N.clone().multiplyScalar(side), a=S.A.clone().multiplyScalar(side), h=(z1-z0)*ZU, c=S.at((z0+z1)/2).addScaledVector(n,o.on?0:PD/2+T/2+.004*TILE), FW=Math.round(w*R);
+  const plate=(S,side,z0,z1,w,front,o={})=>{ const n=S.N.clone().multiplyScalar(side), a=S.A.clone().multiplyScalar(side), h=(z1-z0)*ZU, c=S.at((z0+z1)/2).addScaledVector(n,o.on?0:PD/2+T/2+.004*TILE), FW=Math.round(w*R);
     const b=o.bend||0, a2=a.clone().multiplyScalar(Math.cos(b)).addScaledVector(n,Math.sin(b)), n2=n.clone().multiplyScalar(Math.cos(b)).addScaledVector(a,-Math.sin(b)), u=S.L.clone().multiplyScalar(h/2), BK_=o.both?front:back(S.s+side);
     const P=k=>k==='f'?front:k==='b'?BK_:()=>EDGE, H0=Math.round(w/2*R);
     ob(c.clone().addScaledVector(a,-w/4),a.clone().multiplyScalar(w/4),u,n.clone().multiplyScalar(T/2),P,0,FW); ob(c.clone().addScaledVector(a2,w/4),a2.clone().multiplyScalar(w/4),u,n2.clone().multiplyScalar(T/2),P,H0,FW); };
-  const nopark=(s,dir)=>{ '@later'; const v=Math.floor(h3(s,30,1)*3);
+  const nopark=(s,dir)=>{ const v=Math.floor(h3(s,30,1)*3);
     return wear((i,j,W,H)=>{ if(i===1||j===1||i===W-2||j===H-2)return RED;
       if(v===1){ const cx=(W-1)/2, cy=18, r=Math.hypot(i-cx,j-cy); if(r>10.5&&r<13.5||r<13.5&&Math.abs((i-cx)+(j-cy))*.7<1.3)return RED; if(r<10.5)return tx('P',W,cy-7,2)(i,j)?BK:WH;
         return tx('8AM-6PM',W,36)(i,j)||arrow(W,50,dir)(i,j)?RED:WH; }
@@ -46,7 +46,7 @@ BOD.streetSigns=()=>{ const X=BOD.XS, Z=BOD.ZS, V3=THREE.Vector3, R=48/TILE, h3=
   const blade=(t,s)=>wear((i,j,W,H)=>{ if(i===1||j===1||i===W-2||j===H-2)return WH; return tx(t,W,Math.floor((H-14)/2),2)(i,j)?WH:GN; },s);
   const zT=5.6*TILE/.84/ZU;
   BATCH.tag=OBJ('street','street signs');
-  BOD.signs.forEach((g,k)=>{ '@later'; const {x,y}=g, s=k*7.31+1.7, bend=h3(s,40,1)<.22?(h3(s,41,1)<.5?-1:1)*(.12+.12*h3(s,42,1)):0;
+  BOD.signs.forEach((g,k)=>{ const {x,y}=g, s=k*7.31+1.7, bend=h3(s,40,1)<.22?(h3(s,41,1)<.5?-1:1)*(.12+.12*h3(s,42,1)):0;
     if(g.kind==='name'){ const S=frame(x,y,[0,1],s), z0=g.np?zT+6:107; if(!g.np)post(S,104,1); ob(S.at(z0-1.5),S.A.clone().multiplyScalar(PW*.7),S.L.clone().multiplyScalar(1.5*ZU),S.N.clone().multiplyScalar(PW*.7),()=>()=>[96,100,104]);
       plate(S,1,z0,z0+18,3.5*TILE,blade(g.ax,s),{on:1,both:1}); ob(S.at(z0+19),S.A.clone().multiplyScalar(PW*.7),S.L.clone().multiplyScalar(ZU),S.N.clone().multiplyScalar(PW*.7),()=>()=>[96,100,104]);
       const S2=frame(x,y,[1,0],s); S2.L=S.L; S2.B=S.B; S2.A=new V3().crossVectors(S.L,S2.N).normalize(); plate(S2,1,z0+20,z0+38,3.5*TILE,blade(g.ay,s+3),{on:1,both:1}); }

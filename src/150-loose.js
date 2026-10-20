@@ -42,15 +42,15 @@ const GPH=window.GPH={ms:0,n:0};
       if(best){ best.sol.push([r,f]); owned.add(r); } };
     if(M.length){ for(const L of [SOL.up,SOL.down,...((MODS.apts&&MODS.apts.sol)||[])])for(const r of L)claim(r,false); for(const L of [FIX.up,FIX.down])for(const r of L)claim(r,true); }
     GPH.n=items.length; };
-  const setSol=(it,gone,t,q)=>{ '@later'; let s=!gone&&it.heavy, f=s; if(s){ M4.makeRotationFromQuaternion(q); }
+  const setSol=(it,gone,t,q)=>{ let s=!gone&&it.heavy, f=s; if(s){ M4.makeRotationFromQuaternion(q); }
     const e=M4.elements, ex=(Math.abs(e[0])*it.h[0]+Math.abs(e[4])*it.h[1]+Math.abs(e[8])*it.h[2])*.92, ey=Math.abs(e[1])*it.h[0]+Math.abs(e[5])*it.h[1]+Math.abs(e[9])*it.h[2], ez=(Math.abs(e[2])*it.h[0]+Math.abs(e[6])*it.h[1]+Math.abs(e[10])*it.h[2])*.92;
     for(const [r,isF] of it.sol){ if(isF?f:s){ if(isF){ f=false; r[0]=t.x-ex; r[1]=t.z-ez; r[2]=t.y-ey; r[3]=t.x+ex; r[4]=t.z+ez; r[5]=t.y+ey; } else { s=false; r[0]=t.x-ex; r[1]=t.z-ez; r[2]=t.x+ex; r[3]=t.z+ez; } } else r.fill(1e9); } };
-  const on=it=>{ '@later'; const t=it.t, rb=world.createRigidBody(R.RigidBodyDesc.dynamic().setTranslation(t.x,t.y,t.z).setRotation(it.q).setCanSleep(true).setSleeping(true).setLinearDamping(.15).setAngularDamping(.3).setCcdEnabled(it.m<8));
+  const on=it=>{ const t=it.t, rb=world.createRigidBody(R.RigidBodyDesc.dynamic().setTranslation(t.x,t.y,t.z).setRotation(it.q).setCanSleep(true).setSleeping(true).setLinearDamping(.15).setAngularDamping(.3).setCcdEnabled(it.m<8));
     const cd=R.ColliderDesc.cuboid(it.h[0]*.97,it.h[1]*.97,it.h[2]*.97).setDensity(it.m/vol(it)).setFriction(it.heavy?.5:.6).setRestitution(.1).setCollisionGroups(GI);
     if(it.ov&&hooks)cd.setActiveHooks(R.ActiveHooks.FILTER_CONTACT_PAIRS); world.createCollider(cd,rb); it.rb=rb; byB.set(rb.handle,it); act.add(it); if(!it.heavy)setSol(it,true);
     if(it.k==='m'&&it.rest===undefined){ const g=groundY(it.c[0],it.c[2]); it.rest=isFinite(g)&&it.a[1]>g+.08*T&&!items.some(p=>p!==it&&p.b[1]<=it.a[1]+.02*T&&p.b[1]>it.a[1]-.1*T&&p.a[0]<it.b[0]&&it.a[0]<p.b[0]&&p.a[2]<it.b[2]&&it.a[2]<p.b[2]); } };
   const off=it=>{ const rb=it.rb, t=rb.translation(), r=rb.rotation(); it.t={x:t.x,y:t.y,z:t.z}; it.q={x:r.x,y:r.y,z:r.z,w:r.w}; byB.delete(rb.handle); world.removeRigidBody(rb); it.rb=null; act.delete(it); };
-  const statics=()=>{ '@later'; const W=new Map(), px=pos.x, pz=pos.z, Rr=RF+T, k=LVL+Math.round(py/(1.5*T)), X=BOD.X, Y=BOD.Y, Z=BOD.Z;
+  const statics=()=>{ const W=new Map(), px=pos.x, pz=pos.z, Rr=RF+T, k=LVL+Math.round(py/(1.5*T)), X=BOD.X, Y=BOD.Y, Z=BOD.Z;
     if(k!==lk){ for(const s of stat.values())for(const c of s.cs)world.removeCollider(c,false); stat.clear(); lk=k; }
     const far=(x0,z0,x1,z1)=>Math.hypot(Math.max(x0-px,0,px-x1),Math.max(z0-pz,0,pz-z1))>Rr;
     const add=(key,b,free)=>{ if(stat.has(key)){ W.set(key,b); return; } if(b[3]-b[0]<1e-3||b[4]-b[1]<1e-3||b[5]-b[2]<1e-3)return; if(!free){ let ok=SKIP.get(key); if(ok===undefined){ const p={a:b,b:[b[3],b[4],b[5]]}; ok=!items.some(it=>ov(p,it,.004)); SKIP.set(key,ok); } if(!ok)return; } W.set(key,b); };
@@ -69,16 +69,16 @@ const GPH=window.GPH={ms:0,n:0};
     for(const [key,s] of stat)if(!W.has(key)){ for(const c of s.cs)world.removeCollider(c,false); stat.delete(key); }
     for(const [key,b] of W)if(!stat.has(key))stat.set(key,{b,cs:(Array.isArray(b[0])?b:[b]).map(q=>world.createCollider(R.ColliderDesc.cuboid((q[3]-q[0])/2,(q[4]-q[1])/2,(q[5]-q[2])/2).setTranslation((q[0]+q[3])/2,(q[1]+q[4])/2,(q[2]+q[5])/2).setFriction(.8).setCollisionGroups(G0),fb))}); };
   const pickList=(A=act)=>{ const S=new Set(); for(const it of A){ if(it.k==='v')S.add(gm); else if(it.k==='i')for(const q of it.inst)S.add(q[0]); else for(const p of it.parts)S.add(p.me); } picks=[...S]; };
-  const zone=()=>{ '@later'; if(++zn%40===0)LIGHTS=null; if(!cg||!cc)catalog(); more(); const lo=py-1.1*T, hi=py+2.4*T;
+  const zone=()=>{ if(++zn%40===0)LIGHTS=null; if(!cg||!cc)catalog(); more(); const lo=py-1.1*T, hi=py+2.4*T;
     for(const it of items){ const t=it.rb?it.rb.translation():it.t, d=Math.hypot(t.x-pos.x,t.z-pos.z), b=t.y-it.h[1], inL=b>lo&&b<hi;
       if(!it.rb){ if(d<RS&&inL)on(it); } else if(it!==held&&(d>RF||!inL)&&it.rb.isSleeping())off(it); }
     statics(); pickList(); };
-  function build(){ '@later'; R=PB.R; world=new R.World({x:0,y:-13,z:0}); world.timestep=DT; fb=world.createRigidBody(R.RigidBodyDesc.fixed()); eq=new R.EventQueue(true);
+  function build(){ R=PB.R; world=new R.World({x:0,y:-13,z:0}); world.timestep=DT; fb=world.createRigidBody(R.RigidBodyDesc.fixed()); eq=new R.EventQueue(true);
     if(R.ActiveHooks&&R.SolverFlags)hooks={filterContactPair:(c1,c2,b1,b2)=>{ const p=byB.get(b1), q=byB.get(b2); return p&&q&&p.ov&&p.ov.has(q)?R.SolverFlags.EMPTY:R.SolverFlags.COMPUTE_IMPULSE; },filterIntersectionPair:()=>true};
     you=world.createRigidBody(R.RigidBodyDesc.dynamic().setTranslation(pos.x,py+.8,pos.z).lockRotations().setGravityScale(0).setCanSleep(false));
     world.createCollider(R.ColliderDesc.capsule(.45,.38).setDensity(80/(Math.PI*.38*.38*.9+4/3*Math.PI*.38**3)).setFriction(.3).setCollisionGroups(GY),you);
     catalog(); ready=GPH.ready=true; }
-  const SB=new THREE.Sphere(), draw=it=>{ '@later'; const t=it.rb.translation(), r=it.rb.rotation(); Q.set(r.x,r.y,r.z,r.w); it.moved=true; if(it.o)it.o.seat=null;
+  const SB=new THREE.Sphere(), draw=it=>{ const t=it.rb.translation(), r=it.rb.rotation(); Q.set(r.x,r.y,r.z,r.w); it.moved=true; if(it.o)it.o.seat=null;
     if(it.k==='v'){ const pa=gm.geometry.attributes.position, na=gm.geometry.attributes.normal, A=pa.array, NA=na.array;
       for(let v=it.v0;v<it.v1;v++){ const o=v*3; V.set(P0[o]-it.c[0],P0[o+1]-it.c[1],P0[o+2]-it.c[2]).applyQuaternion(Q); A[o]=V.x+t.x; A[o+1]=V.y+t.y; A[o+2]=V.z+t.z; V.set(N0[o],N0[o+1],N0[o+2]).applyQuaternion(Q); NA[o]=V.x; NA[o+1]=V.y; NA[o+2]=V.z; }
       pa.addUpdateRange(it.v0*3,(it.v1-it.v0)*3); na.addUpdateRange(it.v0*3,(it.v1-it.v0)*3); pa.needsUpdate=na.needsUpdate=true; if(gm.geometry.boundingSphere)gm.geometry.boundingSphere.union(SB.set(V.set(t.x,t.y,t.z),Math.hypot(it.b[0]-it.a[0],it.b[1]-it.a[1],it.b[2]-it.a[2]))); }
@@ -87,7 +87,7 @@ const GPH=window.GPH={ms:0,n:0};
         for(let o=0;o<A.length;o+=3){ V.set(D.B[o],D.B[o+1],D.B[o+2]).applyQuaternion(Q); A[o]=V.x+t.x; A[o+1]=V.y+t.y; A[o+2]=V.z+t.z; V.set(D.N[o],D.N[o+1],D.N[o+2]).applyQuaternion(Q); NA[o]=V.x; NA[o+1]=V.y; NA[o+2]=V.z; }
         pa.needsUpdate=na.needsUpdate=true; g.computeBoundingSphere(); } }
     if(it.heavy&&it.sol.length)setSol(it,false,t,Q); };
-  const detach=it=>{ '@later'; const by=new Map(); for(const p of it.parts)(by.get(p.me)||by.set(p.me,[]).get(p.me)).push(p);
+  const detach=it=>{ const by=new Map(); for(const p of it.parts)(by.get(p.me)||by.set(p.me,[]).get(p.me)).push(p);
     it.dm=[...by].map(([src,L])=>{ const g=src.geometry, G=new THREE.BufferGeometry(), n=L.length*6;
       for(const k in g.attributes){ const A=g.attributes[k], s=A.itemSize, d=new A.array.constructor(n*s); L.forEach((p,j)=>d.set(A.array.subarray(p.v0*s,(p.v0+6)*s),j*6*s)); G.setAttribute(k,new THREE.BufferAttribute(d,s,A.normalized)); }
       const P=g.attributes.position.array; for(const p of L){ const o=p.v0*3; for(let v=3;v<18;v++)P[o+v]=P[o+v%3]; } g.attributes.position.needsUpdate=true; if(typeof BVH!=='undefined')BVH.refit(g);
@@ -100,17 +100,17 @@ const GPH=window.GPH={ms:0,n:0};
   const intent=()=>{ if(USE.seat||ED.on||UI.freeCam)return [0,0]; let mx=0, mz=0; const fx=-Math.sin(yaw), fz=-Math.cos(yaw), k=s=>keys.has(s);
     if(k('w')||k('arrowup')){ mx+=fx; mz+=fz; } if(k('s')||k('arrowdown')){ mx-=fx; mz-=fz; } if(k('d')||k('arrowright')){ mx-=fz; mz+=fx; } if(k('a')||k('arrowleft')){ mx+=fz; mz-=fx; }
     if(!mx&&!mz&&target){ mx=target.x-pos.x; mz=target.z-pos.z; } const l=Math.hypot(mx,mz); return l>1e-6?[mx/l,mz/l]:[0,0]; };
-  const drive=(I,h)=>{ '@later'; const tx=pos.x+I[0]*.14*T, ty=py+.8, tz=pos.z+I[1]*.14*T, p=you.translation();
+  const drive=(I,h)=>{ const tx=pos.x+I[0]*.14*T, ty=py+.8, tz=pos.z+I[1]*.14*T, p=you.translation();
     if(Math.hypot(tx-p.x,tz-p.z)+Math.abs(ty-p.y)>.6*T){ you.setTranslation({x:tx,y:ty,z:tz},true); you.setLinvel({x:0,y:0,z:0},true); return; }
     const v=you.linvel(), m=you.mass(), J=[((tx-p.x)/h*.5-v.x)*m,((ty-p.y)/h*.5-v.y)*m,((tz-p.z)/h*.5-v.z)*m], l=Math.hypot(...J), c=Math.min(1,(I[0]||I[1]?700:120)*h/(l||1)); you.applyImpulse({x:J[0]*c,y:J[1]*c,z:J[2]*c},true); };
   const STRIKE=/jab|cross|upper|hook|slap|punch|kick|sweep|round/i;
-  const strike=()=>{ '@later'; const s=(st.up&&STRIKE.test(st.up.name)&&st.up)||(st.move&&STRIKE.test(st.move.name)&&st.move); if(!s||s===lastHit||s.t<.08)return; lastHit=s;
+  const strike=()=>{ const s=(st.up&&STRIKE.test(st.up.name)&&st.up)||(st.move&&STRIKE.test(st.move.name)&&st.move); if(!s||s===lastHit||s.t<.08)return; lastHit=s;
     const kick=/kick|sweep|round/i.test(s.name), inB=(x,z)=>{ const B=BOD.B0; return x>BOD.X(B.x0)&&x<BOD.X(B.x1)&&z>BOD.Z(B.y0)&&z<BOD.Z(B.y1); }, me0=inB(pos.x,pos.z), fx=Math.sin(heading), fz=Math.cos(heading), hy=py+(kick?.45:1.05)*T;
     for(const it of act){ if(it===held)continue; const p=it.rb.translation(), dx=p.x-pos.x, dz=p.z-pos.z, d=Math.hypot(dx,dz)-Math.max(it.h[0],it.h[2]), f=(dx*fx+dz*fz)/(Math.hypot(dx,dz)||1);
       if(d<1.1*T&&f>.35&&Math.abs(p.y-hy)<.7*T+it.h[1]&&(it.k!=='v'||inB(p.x,p.z)===me0)){ const k=(kick?5.5:3.8)*Math.min(it.m,25), j=k*.02*Math.max(1,it.h[1]/(.15*T));
         it.rb.wakeUp(); it.rb.applyImpulse({x:fx*k,y:k*.35,z:fz*k},true); it.rb.applyTorqueImpulse({x:(Math.random()-.5)*j,y:(Math.random()-.5)*j,z:(Math.random()-.5)*j},true); } } };
   const grab=it=>{ if(held||!it.rb)return; held=it; it.rb.setBodyType(R.RigidBodyType.KinematicPositionBased,true); it.rb.collider(0).setCollisionGroups(GH); RIG.act(st,'carry'); };
-  const throwTo=(it,g)=>{ '@later'; held=null; RIG.release(st,'carry'); it.rb.setBodyType(R.RigidBodyType.Dynamic,true); it.rb.collider(0).setCollisionGroups(GI); const h=hand(), dx=g.x-h.x, dz=g.z-h.z, d=Math.max(.5,Math.hypot(dx,dz)), sp=Math.min(9,3+d*.9)*Math.min(1,Math.sqrt(8/Math.max(8,it.m)));
+  const throwTo=(it,g)=>{ held=null; RIG.release(st,'carry'); it.rb.setBodyType(R.RigidBodyType.Dynamic,true); it.rb.collider(0).setCollisionGroups(GI); const h=hand(), dx=g.x-h.x, dz=g.z-h.z, d=Math.max(.5,Math.hypot(dx,dz)), sp=Math.min(9,3+d*.9)*Math.min(1,Math.sqrt(8/Math.max(8,it.m)));
     it.rb.setLinvel({x:dx/d*sp,y:2.6+d*.25,z:dz/d*sp},true); it.rb.setAngvel({x:(Math.random()-.5)*6,y:(Math.random()-.5)*6,z:(Math.random()-.5)*6},true); };
   const wake=()=>{ if((pt-=1)>0)return false; pt=6; catalog(); more(); const lo=py-1.1*T, hi=py+2.4*T; pre.clear();
       for(const it of items){ const t=it.t, b=t.y-it.h[1]; if(Math.hypot(t.x-pos.x,t.z-pos.z)<RS&&b>lo&&b<hi)pre.add(it); } pickList(pre); return true; };
@@ -127,10 +127,10 @@ const GPH=window.GPH={ms:0,n:0};
     if((live||shade===0)&&(shade-=dt)<=0){ shade=.25; reshade(); }
     GPH.ms=GPH.ms*.95+(performance.now()-t0)*.05; };
   const at=it=>it.rb?it.rb.translation():it.t;
-  const itemOf=(h,A=act)=>{ '@later'; const m=h.object; if(m===gm){ const v=h.face.a; return items.find(q=>q.k==='v'&&v>=q.v0&&v<q.v1); } if(m.userData.loose)return m.userData.loose;
+  const itemOf=(h,A=act)=>{ const m=h.object; if(m===gm){ const v=h.face.a; return items.find(q=>q.k==='v'&&v>=q.v0&&v<q.v1); } if(m.userData.loose)return m.userData.loose;
     if(h.instanceId!=null)return [...A].find(q=>q.k==='i'&&q.inst.some(z=>z[0]===m&&z[1]===h.instanceId));
     const o=m.userData.objOf&&m.userData.objOf[Math.floor(h.faceIndex/2)]; let b=null, bd=1e9; if(o)for(const it of A){ if(it.o!==o||it.dm)continue; const t=at(it), d=Math.hypot(t.x-h.point.x,t.y-h.point.y,t.z-h.point.z); if(d<bd){ bd=d; b=it; } } return b; };
-  GPH.pick=ray=>{ '@later'; if(!ready){ if(!cat||held)return null; const h=ray.intersectObjects(picks,false)[0], it=h&&itemOf(h,pre); if(!it||it.m>CARRY||it.o&&USE.test&&USE.test.kindOf(it.o)&&!keys.has('shift'))return null;
+  GPH.pick=ray=>{ if(!ready){ if(!cat||held)return null; const h=ray.intersectObjects(picks,false)[0], it=h&&itemOf(h,pre); if(!it||it.m>CARRY||it.o&&USE.test&&USE.test.kindOf(it.o)&&!keys.has('shift'))return null;
       const o=new THREE.Object3D(), r=Math.max(it.h[0],it.h[2]); o.position.set(it.t.x,it.t.y-it.h[1],it.t.z);
       return {d:h.distance,th:{name:(it.name||'').replace(/^cottage: /,'').toUpperCase(),pick:true,obj:o,reach:.85*T+r,near:1.6*T+r,tall:Math.max(.4*T,it.h[1]*2),act:()=>{ want=it; }}}; }
     if(held){ const pl=new THREE.Plane(new THREE.Vector3(0,1,0),-py), g=new THREE.Vector3(); if(!ray.ray.intersectPlane(pl,g))return null; const it=held, o=new THREE.Object3D(); o.position.copy(g);

@@ -21,7 +21,7 @@ if(!AWAY.has('apartments')){ const P=POOLR, D=FLOATS.D, gx=x=>x/TL, gy=z=>-z/TL,
     const pts=[...Array(12)].map((_,i)=>[Math.cos(i*Math.PI/6)*R,Math.sin(i*Math.PI/6)*R,0]);
     add({parts:[{t:'cyl',c:[0,0,0],r:R+t,hh:t}],m:0.5,mu:0.5,e:0.3,at:[gx(P.X(P.bx0+6.5)),gy(P.Z(P.by0+3)),toZ(lvl())]},m,pts,2*Math.PI**2*R*t*t); }
   const g0=new THREE.Vector3();
-  FLOATS.step=(dt,walker)=>{ '@later'; FLOATS.acc+=Math.min(dt,0.05); let n=0;
+  FLOATS.step=(dt,walker)=>{ FLOATS.acc+=Math.min(dt,0.05); let n=0;
     while(FLOATS.acc>=PHH&&n<6){ FLOATS.acc-=PHH; n++; const h=PHH;
       for(const b of FLOATS.bodies){ let wet=0; const per=b.vol/b.bp.length;
         if(!b.awake){ const sx=b.x[0]*TL, sz=-b.x[1]*TL; if(!(!WATER.calm&&Math.abs(WATER.hAt(sx,sz))>.003||walker.inWater&&Math.hypot(sx-walker.x,sz-walker.z)<.75+b.rad*TL))continue; }

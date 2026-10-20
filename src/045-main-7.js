@@ -1,6 +1,6 @@
 
 { const {art,onF,lit,C,rect,sub,fb,worn,metal}=MLK, FP=24;
-  function vending(x,y,f=[1,0],red=0){ '@later'; PNAME=red?'vending machine, red':'vending machine, white'; const r=rect(x,y,f,1.1,.85), B=red?[116,30,36]:[220,222,226], BD=sh(B,.7), cans=[[220,60,60],[70,140,220],[240,200,60],[90,180,90],[230,230,230],[240,130,60]];
+  function vending(x,y,f=[1,0],red=0){ PNAME=red?'vending machine, red':'vending machine, white'; const r=rect(x,y,f,1.1,.85), B=red?[116,30,36]:[220,222,226], BD=sh(B,.7), cans=[[220,60,60],[70,140,220],[240,200,60],[90,180,90],[230,230,230],[240,130,60]];
     const IN=lit([200,210,222]), body=(s,t,z)=>z<3?BD:worn(B,t,z,105), hole=[22,22,26], fb1=(t0,t1,d0,d1,z0,z1,c,pt,tp,o)=>fb(r,t0,t1,d0,d1,z0,z1,c,pt,tp,{foot:1,...o}), Q=[];
     Q.push(fb(r,0,1,.04,1,0,3,BD,null,()=>BD));
     for(const [a,b,inn] of [[0,.06,'r'],[.94,1,'l']])Q.push(fb1(a,b,.04,1,3,62,B,(s,t,z)=>s===inn&&z>=19&&z<53?IN:body(s,t,z+3),()=>sh(B,.96)));

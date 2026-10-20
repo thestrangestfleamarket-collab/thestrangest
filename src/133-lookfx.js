@@ -3,7 +3,7 @@
     const h=(x,y)=>{ const s=Math.sin(((x%16+16)%16)*127.1+((y%16+16)%16)*311.7)*43758.5453; return s-Math.floor(s); }, vn=(x,y)=>{ const i=Math.floor(x), j=Math.floor(y), u=x-i, v=y-j, a=u*u*(3-2*u), b=v*v*(3-2*v);
       return (h(i,j)*(1-a)+h(i+1,j)*a)*(1-b)+(h(i,j+1)*(1-a)+h(i+1,j+1)*a)*b; };
     for(let y=0;y<63;y++)for(let x=0;x<64;x++){ const n=vn(x/8,y/8)*.65+vn(x/4+5,y/4+3)*.35; E[(y*64+x)*4]=Math.round(n*255); }
-    if(F.has('ao'))setTimeout(()=>{ '@later'; const A=LFX.AO, W=A.w*A.k, H=A.h*A.k, D=new Float32Array(W*H).fill(1e9);
+    if(F.has('ao'))setTimeout(()=>{ const A=LFX.AO, W=A.w*A.k, H=A.h*A.k, D=new Float32Array(W*H).fill(1e9);
       for(const b of SOL.up){ const i0=Math.max(0,Math.floor((b[0]-A.x0)*A.k)), i1=Math.min(W-1,Math.ceil((b[2]-A.x0)*A.k)), j0=Math.max(0,Math.floor((b[1]-A.z0)*A.k)), j1=Math.min(H-1,Math.ceil((b[3]-A.z0)*A.k)); for(let j=j0;j<=j1;j++)for(let i=i0;i<=i1;i++)D[j*W+i]=0; }
       for(let j=0;j<H;j++)for(let i=0;i<W;i++){ const k=j*W+i; if(i)D[k]=Math.min(D[k],D[k-1]+1); if(j)D[k]=Math.min(D[k],D[k-W]+1,i?D[k-W-1]+1.41:1e9,i<W-1?D[k-W+1]+1.41:1e9); }
       for(let j=H-1;j>=0;j--)for(let i=W-1;i>=0;i--){ const k=j*W+i; if(i<W-1)D[k]=Math.min(D[k],D[k+1]+1); if(j<H-1)D[k]=Math.min(D[k],D[k+W]+1,i<W-1?D[k+W+1]+1.41:1e9,i?D[k+W-1]+1.41:1e9); }
@@ -32,7 +32,7 @@
     const LC=[[.42,.55,.18],[.62,.6,.2],[.78,.48,.16],[.6,.3,.12]]; for(let i=0;i<NL;i++){ ls.push({o:i%16,t:Math.random()*8,ph:Math.random()*6}); lc.set(LC[i%4],i*3); }
     for(let i=0;i<NM;i++)ms.push([(Math.random()-.5)*14*TILE,Math.random()*3*TILE,(Math.random()-.5)*14*TILE,Math.random()*6]);
     for(const o of [BIRDS,LEAVES,MOTES])OUT.add(o,'open');
-    const tick2=LFX.tick; LFX.tick=()=>{ '@later'; tick2(); const t=performance.now()/1000, dt=1/60, up=LVL!=='down', day=cl((CLOCK.elev()+3)/12), park=typeof PARK!=='undefined'&&PARK.in&&PARK.oaks;
+    const tick2=LFX.tick; LFX.tick=()=>{ tick2(); const t=performance.now()/1000, dt=1/60, up=LVL!=='down', day=cl((CLOCK.elev()+3)/12), park=typeof PARK!=='undefined'&&PARK.in&&PARK.oaks;
       const cx=BOD.XS(96+PARK.ox), cz=BOD.ZS(-40+PARK.oy); for(let i=0;i<NB;i++){ const a=t*.18+i*.35, r=(14+i*1.3)*TILE, x=cx+Math.cos(a)*r, z=cz+Math.sin(a)*r*.7, y=(9+Math.sin(i*2.1+t*.5))*TILE, w=.35*TILE, f=Math.sin(t*9+i)*.18*TILE, dx=-Math.sin(a), dz=Math.cos(a)*.7;
         bp.set([x-dz*w,y+f,z+dx*w, x,y,z, x,y,z, x+dz*w,y+f,z-dx*w],i*12); } bg.attributes.position.needsUpdate=true;
       if(park)for(let i=0;i<NL;i++){ const L=ls[i], o=park[L.o%park.length]; L.t+=dt; const T=L.t%9, y=o[2]*.8-T*.9; if(y<.02){ lp.set([o[0]+Math.sin(L.ph)*1.6,.02,o[1]+Math.cos(L.ph)*1.6],i*3); continue; }

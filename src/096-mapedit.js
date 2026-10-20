@@ -37,12 +37,12 @@ const MAPED={on:false};
     +'<textarea id="meT" readonly style="display:none;width:100%;height:60px;margin-top:6px;background:#000;color:#f2c14e;font:10px monospace"></textarea>';
   document.body.appendChild(P); const q=s=>P.querySelector(s), cv2=q('#meC'), g=cv2.getContext('2d');
   P.querySelectorAll('button.btn').forEach(b=>Object.assign(b.style,{font:'10px Silkscreen,monospace',padding:'4px 6px',color:b.style.color||'#ece5d3',background:'#0e1016',border:'2px solid #3a3f4e',cursor:'pointer'}));
-  const fit=()=>{ '@later'; let x0=1e9,z0=1e9,x1=-1e9,z1=-1e9; for(const k of KEYS){ if(k==='land')continue; const b=boxOf(k); if(!b)continue; x0=Math.min(x0,b[0]); z0=Math.min(z0,b[1]); x1=Math.max(x1,b[2]); z1=Math.max(z1,b[3]); }
+  const fit=()=>{ let x0=1e9,z0=1e9,x1=-1e9,z1=-1e9; for(const k of KEYS){ if(k==='land')continue; const b=boxOf(k); if(!b)continue; x0=Math.min(x0,b[0]); z0=Math.min(z0,b[1]); x1=Math.max(x1,b[2]); z1=Math.max(z1,b[3]); }
     const m=4*T; V={cx:(x0+x1)/2,cz:(z0+z1)/2,k:Math.min(cv2.width/(x1-x0+2*m),cv2.height/(z1-z0+2*m))}; };
   const sx=x=>(x-V.cx)*V.k+cv2.width/2, sz=z=>(z-V.cz)*V.k+cv2.height/2, wx=px=>(px-cv2.width/2)/V.k+V.cx, wz=pz=>(pz-cv2.height/2)/V.k+V.cz;
   const R=(b,fill,line,w)=>{ const x=Math.round(sx(b[0])), y=Math.round(sz(b[1])), W=Math.round(sx(b[2]))-x, H=Math.round(sz(b[3]))-y; if(fill){ g.fillStyle=fill; g.fillRect(x,y,W,H); }
     if(line){ g.strokeStyle=line; g.lineWidth=w||1; g.strokeRect(x+.5,y+.5,W-1,H-1); } return [x,y,W,H]; };
-  const draw=()=>{ '@later'; if(!V)fit(); g.fillStyle='#07090d'; g.fillRect(0,0,cv2.width,cv2.height); g.font='8px Silkscreen,monospace'; g.textBaseline='top';
+  const draw=()=>{ if(!V)fit(); g.fillStyle='#07090d'; g.fillRect(0,0,cv2.width,cv2.height); g.font='8px Silkscreen,monospace'; g.textBaseline='top';
     R(boxOf('land'),COL.land,sel==='land'?'#f2c14e':'#2e4a30');
     if(PH){ g.imageSmoothingEnabled=false; g.drawImage(PH.c,sx(PH.R.x0),sz(PH.R.z0),(PH.R.x1-PH.R.x0)*V.k,(PH.R.z1-PH.R.z0)*V.k); }
     const order=KEYS.filter(k=>k!=='land').map(k=>[k,boxOf(k)]).filter(p=>p[1]).sort((a,b)=>(b[1][2]-b[1][0])*(b[1][3]-b[1][1])-(a[1][2]-a[1][0])*(a[1][3]-a[1][1]));
@@ -52,7 +52,7 @@ const MAPED={on:false};
     if(d3&&d3.look){ g.strokeStyle='#ffffff88'; g.strokeRect(Math.round(sx(d3.look.x))-3.5,Math.round(sz(d3.look.z))-3.5,7,7); }
     info(); };
   const n_=(v,a,b)=>v?(v>0?'+'+v+' '+a:v+' '+b):'';
-  const info=()=>{ '@later'; const w=off(WORK,sel), chg=JSON.stringify(clean(WORK))!==JSON.stringify(clean(BUILT));
+  const info=()=>{ const w=off(WORK,sel), chg=JSON.stringify(clean(WORK))!==JSON.stringify(clean(BUILT));
     q('#meI').textContent=LBL[sel]+': '+([n_(w.x,'E','W'),n_(w.y,'S','N')].filter(Boolean).join(', ')||'AS MADE')+(w.e.some(Boolean)?' · EDGES '+w.e.join(' '):'')+(w.h?' · UP '+w.h:'')+' TILES'+(w.s!==1?' · SIZE '+Math.round(w.s*100)+'%':'')+(chg?' · SAVE TO BUILD':'');
     q('#meHS').textContent=LIFTS[sel]?'':'(MOVE ONLY)'; P.querySelectorAll('[data-h],[data-s]').forEach(b=>b.disabled=!LIFTS[sel]);
     q('#meL').querySelectorAll('button').forEach(b=>{ const on=b.dataset.k===sel; b.style.color=on?'#f2c14e':'#ece5d3'; b.style.borderColor=on?'#6b6f80':'#3a3f4e'; }); };
@@ -60,7 +60,7 @@ const MAPED={on:false};
   const LM=(c,o)=>new THREE.LineBasicMaterial({color:c,transparent:true,opacity:o,depthTest:false,depthWrite:false});
   const boxLines=(b,y0,y1)=>{ const [x0,z0,x1,z1]=b, P_=[], c=[[x0,z0],[x1,z0],[x1,z1],[x0,z1]]; for(let i=0;i<4;i++){ const [a,bq]=[c[i],c[(i+1)%4]]; for(const y of [y0,y1])P_.push(a[0],y,a[1],bq[0],y,bq[1]); P_.push(a[0],y0,a[1],a[0],y1,a[1]); } return P_; };
   const seg=(P_,m)=>{ const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.Float32BufferAttribute(P_,3)); const l=new THREE.LineSegments(geo,m); l.renderOrder=999; l.frustumCulled=false; return l; };
-  const overlay=()=>{ '@later'; if(!OV)return; for(const c of OV.children.slice()){ c.geometry.dispose(); OV.remove(c); }
+  const overlay=()=>{ if(!OV)return; for(const c of OV.children.slice()){ c.geometry.dispose(); OV.remove(c); }
     const y=.03, others=[]; for(const k of KEYS){ if(k===sel||k==='land')continue; const b=boxOf(k); if(b){ const l=built(k)+liftOf(k); others.push(...boxLines(b,y+l,HIGH[k]()*off(WORK,k).s/off(BUILT,k).s+l)); } } OV.add(seg(others,OV.userData.dim));
     const b=boxOf(sel), b0=BOX[sel](), h=HIGH[sel](), l0=built(sel), l=l0+liftOf(sel); if(b0&&(b0.some((v,i)=>Math.abs(v-b[i])>1e-4)||Math.abs(l-l0)>1e-4))OV.add(seg(boxLines(b0,y+l0,h+l0),OV.userData.was));
     OV.add(seg(boxLines(b,y+l,h*off(WORK,sel).s/off(BUILT,sel).s+l),OV.userData.hi));
@@ -69,7 +69,7 @@ const MAPED={on:false};
     for(let i=i0;i<=i1;i++){ const x=ox+i*G*T; L.push(x,.02,za,x,.02,zb); } for(let j=j0;j<=j1;j++){ const z=oz+j*G*T; L.push(xa,.02,z,xb,.02,z); }
     const gm=seg(L,OV.userData.grid); OV.add(gm);
     live(); };
-  const live=(reset)=>{ '@later'; for(const k in LIVE){ const a=off(BUILT,k), w=off(WORK,k); for(const nm of LIVE[k]){ const gr=MAPG[nm]; if(gr)gr.position.set(reset?0:(w.x-a.x)*T,0,reset?0:(w.y-a.y)*T); } }
+  const live=(reset)=>{ for(const k in LIVE){ const a=off(BUILT,k), w=off(WORK,k); for(const nm of LIVE[k]){ const gr=MAPG[nm]; if(gr)gr.position.set(reset?0:(w.x-a.x)*T,0,reset?0:(w.y-a.y)*T); } }
     if(MODS.land){ const a=off(BUILT,'land'), w=off(WORK,'land'); MODS.land.position.set(reset?0:(w.x-a.x)*T,MODS.land.position.y,reset?0:(w.y-a.y)*T); } };
   const changed=()=>{ overlay(); carry(); draw(); };
   const nudge=(dx,dy)=>{ const e=ent(sel); e.x=q4((e.x||0)+dx); e.y=q4((e.y||0)+dy); WORK=clean(WORK); changed(); };
@@ -89,9 +89,9 @@ const MAPED={on:false};
   const edge2=(px,pz)=>{ if(!SIZED[sel])return -1; const b=boxOf(sel), x=sx(b[0]), y=sz(b[1]), X=sx(b[2]), Y=sz(b[3]), d=5, inX=px>x-d&&px<X+d, inY=pz>y-d&&pz<Y+d;
     return inY&&Math.abs(px-x)<d?0:inX&&Math.abs(pz-y)<d?1:inY&&Math.abs(px-X)<d?2:inX&&Math.abs(pz-Y)<d?3:-1; };
   const at2=e=>{ const r=cv2.getBoundingClientRect(); return [(e.clientX-r.left)*cv2.width/r.width,(e.clientY-r.top)*cv2.height/r.height]; };
-  cv2.addEventListener('pointerdown',e=>{ '@later'; const [px,pz]=at2(e), ed=edge2(px,pz), k=ed<0?hit2(px,pz):sel; cv2.setPointerCapture(e.pointerId);
+  cv2.addEventListener('pointerdown',e=>{ const [px,pz]=at2(e), ed=edge2(px,pz), k=ed<0?hit2(px,pz):sel; cv2.setPointerCapture(e.pointerId);
     if(ed>=0)act={t:'edge',i:ed,p:[px,pz],e:off(WORK,sel).e.slice()}; else if(k){ sel=k; const w=off(WORK,k); act={t:'move',p:[px,pz],s:{x:w.x,y:w.y}}; } else act={t:'pan',p:[px,pz],c:[V.cx,V.cz]}; changed(); });
-  cv2.addEventListener('pointermove',e=>{ '@later'; const [px,pz]=at2(e); if(!act){ const ed=edge2(px,pz); cv2.style.cursor=ed===0||ed===2?'ew-resize':ed>=0?'ns-resize':hit2(px,pz)?'move':'grab'; return; }
+  cv2.addEventListener('pointermove',e=>{ const [px,pz]=at2(e); if(!act){ const ed=edge2(px,pz); cv2.style.cursor=ed===0||ed===2?'ew-resize':ed>=0?'ns-resize':hit2(px,pz)?'move':'grab'; return; }
     const dx=(px-act.p[0])/V.k/T, dz=(pz-act.p[1])/V.k/T;
     if(act.t==='pan'){ V.cx=act.c[0]-dx*T; V.cz=act.c[1]-dz*T; draw(); return; } if(act.t==='move')moveBy(sel,act.s,dx,dz); else edgeBy(sel,act.e,act.i,dx,dz); changed(); });
   cv2.addEventListener('pointerup',()=>{ act=null; WORK=clean(WORK); changed(); });
@@ -101,12 +101,12 @@ const MAPED={on:false};
   const ground=ray=>ray.intersectPlane(GP,hv)?{x:hv.x,z:hv.z}:null;
   const pick3=ray=>{ let best=null; for(const k of KEYS){ if(k==='land')continue; const b=boxOf(k); if(!b)continue; B3.min.set(b[0],0,b[1]); B3.max.set(b[2],HIGH[k](),b[3]); if(!ray.intersectBox(B3,hv))continue;
       const a=(b[2]-b[0])*(b[3]-b[1]); if(!best||a<best.a)best={k,a}; } return best&&best.k; };
-  const edge3=(gp,e)=>{ '@later'; if(!SIZED[sel]||!gp)return -1; const b=boxOf(sel), r=renderer.domElement.getBoundingClientRect(), d=Math.max(.6*T,10*(cam.isOrthographicCamera?(cam.right-cam.left)/r.width:.05)), inX=gp.x>b[0]-d&&gp.x<b[2]+d, inZ=gp.z>b[1]-d&&gp.z<b[3]+d;
+  const edge3=(gp,e)=>{ if(!SIZED[sel]||!gp)return -1; const b=boxOf(sel), r=renderer.domElement.getBoundingClientRect(), d=Math.max(.6*T,10*(cam.isOrthographicCamera?(cam.right-cam.left)/r.width:.05)), inX=gp.x>b[0]-d&&gp.x<b[2]+d, inZ=gp.z>b[1]-d&&gp.z<b[3]+d;
     return inZ&&Math.abs(gp.x-b[0])<d?0:inX&&Math.abs(gp.z-b[1])<d?1:inZ&&Math.abs(gp.x-b[2])<d?2:inX&&Math.abs(gp.z-b[3])<d?3:-1; };
-  MAPED.down=e=>{ '@later'; if(!MAPED.on||e.button!==0||e.shiftKey||e.altKey)return false; const ray=rayOf(e), gp=ground(ray), ed=edge3(gp,e);
+  MAPED.down=e=>{ if(!MAPED.on||e.button!==0||e.shiftKey||e.altKey)return false; const ray=rayOf(e), gp=ground(ray), ed=edge3(gp,e);
     if(ed>=0){ d3={t:'edge',i:ed,g0:gp,g:gp,e:off(WORK,sel).e.slice()}; overlay(); return true; }
     const k=e.ctrlKey||e.metaKey?null:pick3(ray); if(!k||!gp){ d3={t:'orbit',x:e.clientX,y:e.clientY}; return true; } sel=k; const w=off(WORK,k); d3={t:'move',g0:gp,s:{x:w.x,y:w.y}}; changed(); return true; };
-  MAPED.move=e=>{ '@later'; if(!d3)return; if(d3.t==='orbit'){ UI.orbit(e.clientX-d3.x,e.clientY-d3.y); d3.x=e.clientX; d3.y=e.clientY; return; } const gp=ground(rayOf(e)); if(!gp)return; const dx=(gp.x-d3.g0.x)/T, dz=(gp.z-d3.g0.z)/T; d3.g=gp;
+  MAPED.move=e=>{ if(!d3)return; if(d3.t==='orbit'){ UI.orbit(e.clientX-d3.x,e.clientY-d3.y); d3.x=e.clientX; d3.y=e.clientY; return; } const gp=ground(rayOf(e)); if(!gp)return; const dx=(gp.x-d3.g0.x)/T, dz=(gp.z-d3.g0.z)/T; d3.g=gp;
     if(d3.t==='move')moveBy(sel,d3.s,dx,dz); else edgeBy(sel,d3.e,d3.i,dx,dz); changed(); };
   MAPED.up=()=>{ if(!d3)return; if(d3.t==='orbit'){ d3=null; return; } d3=null; WORK=clean(WORK); changed(); };
   Object.defineProperty(MAPED,'dragging',{get:()=>!!d3});
@@ -114,20 +114,20 @@ const MAPED={on:false};
     const S={w:[0,-1],s:[0,1],a:[-1,0],d:[1,0]}[e.key.toLowerCase()]; if(S&&!e.ctrlKey&&!e.metaKey){ const f=new THREE.Vector3(); cam.getWorldDirection(f); f.y=0; f.normalize(); const r=new THREE.Vector3(-f.z,0,f.x), k=(e.shiftKey?8:2)*T; UI.off.addScaledVector(f,-S[1]*k).addScaledVector(r,S[0]*k); e.preventDefault(); e.stopImmediatePropagation(); return; }
     const V={q:'turnL',e:'turnR',x:'up',z:'down',t:'top',y:'side'}[e.key.toLowerCase()]; if(V&&!e.repeat&&!e.ctrlKey&&!e.metaKey&&!(e.shiftKey&&e.key.toLowerCase()==='e')){ VIEW[V](); e.preventDefault(); e.stopImmediatePropagation(); return; }
     if(A){ nudge(A[0]*m,A[1]*m); e.preventDefault(); e.stopImmediatePropagation(); } else if(e.key==='Escape'){ MAPED.toggle(); e.stopImmediatePropagation(); } },true);
-  MAPED.toggle=()=>{ '@later'; MAPED.on=P.style.display==='none'; P.style.display=MAPED.on?'block':'none';
+  MAPED.toggle=()=>{ MAPED.on=P.style.display==='none'; P.style.display=MAPED.on?'block':'none';
     if(MAPED.on){ if(UI.menuOpen)UI.toggleMenu(); was={view:UI.view,maxw:UI.MAXW}; UI.MAXW=240*T; if(UI.view!=='map')UI.setView('map');
       OV=new THREE.Group(); OV.userData={hi:LM(0xf2c14e,1),was:LM(0xc9ccd6,.55),dim:LM(0x8a8f9c,.35),grid:LM(0xf2c14e,.18)}; OV.userData.grid.depthTest=true; scene.add(OV);
       fit(); if(!PH)shoot(); changed(); }
     else { live(true); carryOff(); d3=null; if(OV){ for(const c of OV.children)c.geometry.dispose(); for(const k in OV.userData)OV.userData[k].dispose(); scene.remove(OV); OV=null; }
       if(was){ UI.MAXW=was.maxw; if(was.view!==UI.view)UI.setView(was.view); was=null; } } };
-  const shoot=()=>{ '@later'; let x0=1e9,z0=1e9,x1=-1e9,z1=-1e9; for(const k of KEYS){ if(k==='land')continue; const b=BOX[k](); if(!b)continue; x0=Math.min(x0,b[0]); z0=Math.min(z0,b[1]); x1=Math.max(x1,b[2]); z1=Math.max(z1,b[3]); }
+  const shoot=()=>{ let x0=1e9,z0=1e9,x1=-1e9,z1=-1e9; for(const k of KEYS){ if(k==='land')continue; const b=BOX[k](); if(!b)continue; x0=Math.min(x0,b[0]); z0=Math.min(z0,b[1]); x1=Math.max(x1,b[2]); z1=Math.max(z1,b[3]); }
     const m=20*T, R_={x0:x0-m,z0:z0-m,x1:x1+m,z1:z1+m}, k=Math.min(6/T,1200/(R_.x1-R_.x0),1200/(R_.z1-R_.z0)), W=Math.round((R_.x1-R_.x0)*k), H=Math.round((R_.z1-R_.z0)*k);
     live(true); try{ const c=document.createElement('canvas'); c.width=W; c.height=H; c.getContext('2d').putImageData(UI.topShot(R_,'up',W,H),0,0); PH={c,R:R_}; }catch(e){ console.warn('map editor: no picture',e); } };
   { const row=document.querySelector('#menu [data-p="map"] .row'); if(row){ const b=document.createElement('button'); b.className='btn'; b.textContent='MAP EDITOR (SHIFT+M)'; b.onclick=()=>MAPED.toggle(); row.appendChild(b); } }
   const CAR={}; const CARRIED={bodega:1,house:1,ghost:1,diner:1,bar:1};
   const npcGroups=()=>{ const S=new Set(); if(typeof NPCS!=='undefined')for(const N of NPCS)if(N.g)S.add(N.g); if(typeof W3!=='undefined'&&W3.group)S.add(W3.group); for(const k of ['MUS','PNM','SGM','DRM']){ const M=window[k]; if(M&&M.g)S.add(M.g); } return S; };
   const under=(o,S)=>{ const is=S instanceof Set?p=>S.has(p):p=>p===S; for(let p=o;p;p=p.parent)if(is(p))return true; return false; };
-  const makeCarry=k=>{ '@later'; const b=BOX[k](); if(!b)return null; const l0=built(k), hi=HIGH[k](), m=.35*T, inBox=(x,y,z)=>x>b[0]-m&&x<b[2]+m&&z>b[1]-m&&z<b[3]+m&&y>l0-.6&&y<l0+hi+3*T;
+  const makeCarry=k=>{ const b=BOX[k](); if(!b)return null; const l0=built(k), hi=HIGH[k](), m=.35*T, inBox=(x,y,z)=>x>b[0]-m&&x<b[2]+m&&z>b[1]-m&&z<b[3]+m&&y>l0-.6&&y<l0+hi+3*T;
     const C={k,g:new THREE.Group(),faces:[],meshes:[],lights:[],pivot:{x:(b[0]+b[2])/2,z:b[3]}}, NG=npcGroups(), M4=new THREE.Matrix4(), v=new THREE.Vector3();
     scene.traverse(o=>{ if(!o.isMesh||o.isSkinnedMesh||o.isInstancedMesh||under(o,NG)||(OV&&under(o,OV)))return; for(const q in CAR)if(under(o,CAR[q].g))return;
       const g=o.geometry, A=g.attributes; o.updateWorldMatrix(true,false); M4.copy(o.matrixWorld);
@@ -141,10 +141,10 @@ const MAPED={on:false};
     for(const {o} of C.meshes){ o.userData.carPos=o.position.clone(); } for(const {o} of C.meshes)C.g.attach(o);
     if(typeof LITE!=='undefined')for(const L of LITE.recs){ const p=L.position; if(inBox(p.x,p.y,p.z))C.lights.push({L,p:p.clone()}); }
     scene.add(C.g); return C; };
-  const carrySet=C=>{ '@later'; const a=off(BUILT,C.k), w=off(WORK,C.k), dx=(w.x-a.x)*T, dz=(w.y-a.y)*T, dy=(w.h-a.h)*T, sc=w.s/a.s, px=C.pivot.x, pz=C.pivot.z;
+  const carrySet=C=>{ const a=off(BUILT,C.k), w=off(WORK,C.k), dx=(w.x-a.x)*T, dz=(w.y-a.y)*T, dy=(w.h-a.h)*T, sc=w.s/a.s, px=C.pivot.x, pz=C.pivot.z;
     C.g.scale.set(sc,sc,sc); C.g.position.set(px*(1-sc)+dx,dy,pz*(1-sc)+dz);
     for(const {L,p} of C.lights){ L.position.set(px+(p.x-px)*sc+dx,p.y+dy,pz+(p.z-pz)*sc+dz); L.distance=(L.userData.d0||(L.userData.d0=L.distance))*sc; } };
-  const carryDrop=C=>{ '@later'; for(const {A,keep} of C.faces){ const O=A.array; for(const f of keep)for(let q=0;q<6;q++)O[f*6+q]=1; A.needsUpdate=true; }
+  const carryDrop=C=>{ for(const {A,keep} of C.faces){ const O=A.array; for(const f of keep)for(let q=0;q<6;q++)O[f*6+q]=1; A.needsUpdate=true; }
     for(const {o,p,s,par} of C.meshes){ par.attach(o); o.position.copy(p); o.scale.copy(s); } for(const {L,p} of C.lights){ L.position.copy(p); if(L.userData.d0)L.distance=L.userData.d0; }
     for(const c of C.g.children.slice())if(c.isMesh){ c.geometry.dispose(); C.g.remove(c); } scene.remove(C.g); };
   const moved=k=>{ const a=off(BUILT,k), w=off(WORK,k); return a.x!==w.x||a.y!==w.y||a.h!==w.h||a.s!==w.s; };

@@ -88,11 +88,11 @@ const STALL=(()=>{ const M=TILE/.84, VS=ZU*24/TILE, mv=m=>m*M*VS;
       pat:()=>[act('pat',S.face,2.5+Math.random()*2.5)],
       look:()=>[],
       wing:()=>{ const w=pick(S.wing); return [...off(),go(w.p),act('pat',w.f,3.2),go(S.home),...on()]; },
-      sweep:()=>{ '@later'; const P=Math.random()<.5?S.sweepIn:S.sweepOut, L=[...off(),go(S.broom.p),act('reach',S.broom.f,1.2,{row:1,mid:{broom:1}})], m=Math.floor(P.length/2);
+      sweep:()=>{ const P=Math.random()<.5?S.sweepIn:S.sweepOut, L=[...off(),go(S.broom.p),act('reach',S.broom.f,1.2,{row:1,mid:{broom:1}})], m=Math.floor(P.length/2);
         P.forEach((p,i)=>{ L.push(go(p,.5,1)); if(i===m)L.push(act('sweep',S.face,2.5+Math.random()*2)); });
         return [...L,go(S.broom.p),act('reach',S.broom.f,1.2,{row:1,mid:{broom:0}}),go(S.home),...on()]; }};
     const set=s=>{ if(!s)return; Object.assign(J,s); if('broom' in s)S.broomOn(!s.broom); };
-    const next=()=>{ '@later'; if(cur)set(cur.end); cur=plan.shift()||null; J.t=0; st.to=null; st.v=v0;
+    const next=()=>{ if(cur)set(cur.end); cur=plan.shift()||null; J.t=0; st.to=null; st.v=v0;
       if(!cur){ J.k='stand'; st.face=S.face; wait=o.wait?o.wait():9+Math.random()*16; return; }
       if(cur.go){ st.to={x:cur.go.x,z:cur.go.z}; st.v=v0*cur.v; J.k=cur.sw?'sweep':'walk'; } else { st.face=cur.f; J.k=cur.k; J.d=cur.d; J.row=cur.row??1; } };
     const rel=p=>wrap(Math.atan2(p.x-st.x,p.z-st.z)-st.h);

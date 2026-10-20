@@ -24,7 +24,7 @@ const SQUIRREL={}; window.SQUIRREL=SQUIRREL;
       part('tail mid',1,'tail2',[ shape(blob(.12,.17,.11,8,6),FUR,[0,.6,-.29],null,[5,0,0]) ]),
       part('tail tip',2,'tail3',[ shape(blob(.12,.1,.12,8,6),FUR2,[0,.8,-.22],null,[40,0,0]) ]) ],
     springs:{ tail1:{f:-.12,s:.12,k:40,c:5,lim:.35}, tail2:{f:-.18,s:.16,k:30,c:4,lim:.45}, tail3:{f:-.24,s:.2,k:24,c:3.4,lim:.6}, plume:{f:-.2,s:.2,y:.2,k:45,c:4,lim:.5}, head:{f:-.03,s:.03,k:90,c:9,lim:.1} },
-    pose:(c,dt)=>{ '@later'; const B=c.B, k=A.k=(A.k||0)+((A.act?1:0)-(A.k||0))*Math.min(1,dt*7), w=A.act==='wave'?1:0; A.wk=(A.wk||0)+(w-(A.wk||0))*Math.min(1,dt*8);
+    pose:(c,dt)=>{ const B=c.B, k=A.k=(A.k||0)+((A.act?1:0)-(A.k||0))*Math.min(1,dt*7), w=A.act==='wave'?1:0; A.wk=(A.wk||0)+(w-(A.wk||0))*Math.min(1,dt*8);
       RIGNPC.walk(c,{arm:.4,leg:.5,bob:.02,rock:.05}); B.head.rotation.y=c.look;
       if(c.sheet)return;
       B.armR.rotation.x=-1.15+.05*Math.sin(c.t*1.3); B.armR.rotation.z=.12; B.armL.rotation.z=-.15;
@@ -39,7 +39,7 @@ const SQUIRREL={}; window.SQUIRREL=SQUIRREL;
   const near=a=>Math.abs(wrap(a-G.TA))<.75, ACTS=['scan','scan','salute','look','flick'];
   const N=RIGNPC.make(def,{key:'squirrel',name:'THE SQUIRREL KNIGHT',eye:0,eyeC:'0.,0.,0.',metres:.55,radius:.18,speed:.3,stride:7,lv:'up',group:'park',x:at.x,z:at.z,
     ground:(x,z)=>onRoof(x,z)?S.top:MODS.bodega.ground(x,z),
-    brain:(dt,you,s,N)=>{ '@later'; if(N.sheet||!G)return; s.hold=true; A.t+=dt; N.li=N.li??3; N.mode=N.mode||'post'; N.tT=N.tT??6;
+    brain:(dt,you,s,N)=>{ if(N.sheet||!G)return; s.hold=true; A.t+=dt; N.li=N.li??3; N.mode=N.mode||'post'; N.tT=N.tT??6;
       const waving=st.up?.name==='wave'&&LVL==='up'&&Math.hypot(you.x-s.x,you.z-s.z)<25*TILE;
       if(waving){ if(N.mode!=='wave'){ N.prev=N.mode==='walk'?'walk':'post'; N.mode='wave'; } N.wT=1.6; }
       if(N.mode==='wave'){ s.to=null; s.face={x:you.x,z:you.z}; if(A.act!=='wave'){ A.act='wave'; A.t=0; } if((N.wT-=dt)<=0){ N.mode=N.prev||'post'; A.act=''; N.tT=2+Math.random()*3; } return; }

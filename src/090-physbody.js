@@ -9,9 +9,9 @@ const PB={on:false,ready:false,loose:0.5};
   for(let i=0;i<PI.length;i++){ const p=PCS[PI[i]|0]; if(p.n!==KEYS[PART[PI[i]|0]])continue; const b=BOX[PART[PI[i]|0]]; for(let k=0;k<3;k++){ b[k]=Math.min(b[k],PA[i*3+k]); b[k+3]=Math.max(b[k+3],PA[i*3+k]); } }
   let RAPIER=null, world=null, bodies=[], ground=null, acc=0, need=true;
   const S=new THREE.Matrix4(), T=new THREE.Matrix4(), Q=new THREE.Quaternion(), P=new THREE.Vector3(), Sc=new THREE.Vector3(), tgt=KEYS.map(()=>({p:new THREE.Vector3(),q:new THREE.Quaternion(),m:new THREE.Matrix4(),p0:new THREE.Vector3(),v:new THREE.Vector3()})), q0=new THREE.Quaternion(), dq=new THREE.Quaternion(), ax=new THREE.Vector3();
-  function targets(B,x,y,z,hd,dt){ '@later'; const k=W3.SZ; T.makeRotationY(hd).setPosition(x*PPU/k,y/ZU/k,z*PPU/k);
+  function targets(B,x,y,z,hd,dt){ const k=W3.SZ; T.makeRotationY(hd).setPosition(x*PPU/k,y/ZU/k,z*PPU/k);
     KEYS.forEach((k,i)=>{ const t=tgt[i]; t.p0.copy(t.p); t.m.multiplyMatrices(T,M(R.frameOf(k,B))); t.m.decompose(t.p,t.q,Sc); t.v.subVectors(t.p,t.p0).divideScalar(Math.max(dt,1e-3)); if(t.v.length()>600)t.v.set(0,0,0); }); }
-  function build(){ '@later'; const G=R.G?R.G():280; world=new RAPIER.World({x:0,y:-G,z:0}); world.timestep=1/120;
+  function build(){ const G=R.G?R.G():280; world=new RAPIER.World({x:0,y:-G,z:0}); world.timestep=1/120;
     ground=world.createRigidBody(RAPIER.RigidBodyDesc.kinematicPositionBased()); world.createCollider(RAPIER.ColliderDesc.cuboid(400,5,400).setTranslation(0,-5,0).setFriction(1.2).setCollisionGroups(0x00020001),ground);
     bodies=KEYS.map((k,i)=>{ const t=tgt[i], b=BOX[i], rb=world.createRigidBody(RAPIER.RigidBodyDesc.dynamic().setTranslation(t.p.x,t.p.y,t.p.z).setRotation({x:t.q.x,y:t.q.y,z:t.q.z,w:t.q.w}).setLinearDamping(0.6).setAngularDamping(1.5).setCcdEnabled(/^(hand|shoe)/.test(k)));
       const h=[0,1,2].map(q=>Math.max(0.6,(b[q+3]-b[q])/2*0.82)), c=[0,1,2].map(q=>(b[q+3]+b[q])/2);
@@ -19,7 +19,7 @@ const PB={on:false,ready:false,loose:0.5};
     KEYS.forEach((k,i)=>{ const p=PARENT[k]; if(!p)return; const j=KEYS.indexOf(p), at=tgt[i].p, inv=new THREE.Matrix4().copy(tgt[j].m).invert(), a1=at.clone().applyMatrix4(inv);
       world.createImpulseJoint(RAPIER.JointData.spherical({x:a1.x,y:a1.y,z:a1.z},{x:0,y:0,z:0}),bodies[j],bodies[i],true); }); need=false; }
   function reset(){ bodies.forEach((rb,i)=>{ const t=tgt[i]; rb.setTranslation(t.p,true); rb.setRotation(t.q,true); rb.setLinvel({x:0,y:0,z:0},true); rb.setAngvel({x:0,y:0,z:0},true); }); }
-  function drive(h,down){ '@later'; const stiff=0.06+0.5*(1-PB.loose), limp=down?0.015:stiff;
+  function drive(h,down){ const stiff=0.06+0.5*(1-PB.loose), limp=down?0.015:stiff;
     bodies.forEach((rb,i)=>{ const t=tgt[i], r=rb.rotation(); q0.set(r.x,r.y,r.z,r.w); dq.copy(t.q).multiply(q0.clone().invert()); if(dq.w<0){ dq.x=-dq.x; dq.y=-dq.y; dq.z=-dq.z; dq.w=-dq.w; }
       const an=2*Math.acos(Math.min(1,dq.w)), s=Math.sqrt(Math.max(1e-9,1-dq.w*dq.w)); ax.set(dq.x/s,dq.y/s,dq.z/s); const w=rb.angvel(), k=(i===0&&!down?Math.max(limp,0.35):limp)*an/h;
       rb.setAngvel({x:w.x+(ax.x*k-w.x)*0.6,y:w.y+(ax.y*k-w.y)*0.6,z:w.z+(ax.z*k-w.z)*0.6},true);
@@ -33,10 +33,10 @@ const PB={on:false,ready:false,loose:0.5};
     W3.group.position.set(0,0,0); W3.group.rotation.set(0,0,0); W3.group.scale.set(W3.SZ/PPU,ZU*W3.SZ*(W3.BH||1),W3.SZ/PPU); W3.L.applyAxisAngle(new THREE.Vector3(0,1,0),hd); W3.G.value.identity();
     const Fb=KEYS.map((k,i)=>{ const rb=bodies[i], p=rb.translation(), r=rb.rotation(); return new THREE.Matrix4().compose(P.set(p.x,p.y,p.z),Q.set(r.x,r.y,r.z,r.w),Sc.set(1,1,1)); });
     const Bm=KEYS.map(k=>M(R.frameOf(k,B)).invert());
-    PCS.forEach((pc,i)=>{ '@later'; const j=PART[i]; if(j<0)return; const O=new THREE.Matrix4().multiplyMatrices(Bm[j],M(R.frameOf(pc.on||pc.n,B))); const PM=W3.PM.value[i].multiplyMatrices(Fb[j],O);
+    PCS.forEach((pc,i)=>{ const j=PART[i]; if(j<0)return; const O=new THREE.Matrix4().multiplyMatrices(Bm[j],M(R.frameOf(pc.on||pc.n,B))); const PM=W3.PM.value[i].multiplyMatrices(Fb[j],O);
       if(W3.E&&W3.E[i])W3.applyE(PM,W3.E[i],new THREE.Vector3().setFromMatrixPosition(PM)); if(W3.HIDE[i])PM.makeScale(0,0,0); });
     return true; };
-  PB.load=()=>{ '@later'; if(RAPIER||PB.loading)return; PB.loading=true; import('https://cdn.jsdelivr.net/npm/@dimforge/rapier3d-compat@0.12.0/rapier.es.js').then(async m=>{ RAPIER=m.default||m; await RAPIER.init(); PB.ready=true; need=true; PB.R=RAPIER; (PB.onReady||[]).forEach(f=>f()); }).catch(e=>{ console.warn('physics body: Rapier did not load',e); PB.on=false; }); };
+  PB.load=()=>{ if(RAPIER||PB.loading)return; PB.loading=true; import('https://cdn.jsdelivr.net/npm/@dimforge/rapier3d-compat@0.12.0/rapier.es.js').then(async m=>{ RAPIER=m.default||m; await RAPIER.init(); PB.ready=true; need=true; PB.R=RAPIER; (PB.onReady||[]).forEach(f=>f()); }).catch(e=>{ console.warn('physics body: Rapier did not load',e); PB.on=false; }); };
   PB.set=(on,now)=>{ PB.on=on; if(on){ if(now)PB.load(); need=true; } try{ SAVE.set('physbody3',on?'1':'0'); }catch(e){} };
   let on0=true; try{ const v=SAVE.get('physbody3'); if(v!=null)on0=v==='1'; const l=SAVE.get('loose'); if(l!=null)PB.loose=+l; }catch(e){} PB.set(on0);
 }

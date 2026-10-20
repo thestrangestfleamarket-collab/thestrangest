@@ -41,7 +41,7 @@ function keepOutWall(b,nx,ny,X,Y,z,f,cap){ const face=ny>0?'f':ny<0?'b':nx>0?'r'
   for(const [w,iu,h] of [['f',1.6,160],['r',6.2,120],['f',8.2,70]])if(face===w){ const c=dgnIvy(u-iu*24,z-2,h,seed+iu); if(c)return sh(c,f); }
   let c=z<24?(z>=21?KPP.trimD:sh(keepStone(u*.7,z*.6,seed+3),.9)):keepStone(u,z,seed);
   return sh(keepWeather(c,u,z,seed),f); }
-function keepInWall(q,nx,ny,X,Y,z,f){ '@later'; const R=KEEPR, dim=z>170?Math.max(.38,1-(z-170)/420):1;
+function keepInWall(q,nx,ny,X,Y,z,f){ const R=KEEPR, dim=z>170?Math.max(.38,1-(z-170)/420):1;
   if(Math.abs(Y-R.my)<T+.02){ let c=null; for(const a of KEEPC.arches)if(!c)c=keepArch((X-a)*24,z,110,19.2,KARCH.in);
     if(!c){ const u=(nx?Y:X)*24, seed=ny>0?51:53; c=dgnRidge(u,z,R.H)||dgnFoot(u,z,seed)||sh(dgnStone(u,z,seed),dgnDamp(u,z,seed,R.H)); }
     return sh(c,f*dim); }
@@ -79,7 +79,7 @@ KMK.drum=(cx,cy,r,H,seed=0)=>{ PNAME='drum tower'; const B=[], sd=4400+seed;
   const n=Math.max(8,Math.round(2*Math.PI*r/.85)); for(let i=0;i<n;i+=1){ if(i&1)continue; const a=i/n*2*Math.PI, mx=cx+Math.cos(a)*(r-.22), my=cy+Math.sin(a)*(r-.22);
     B.push(sided({x0:mx-.2,y0:my-.2,x1:mx+.2,y1:my+.2,z0:H,z1:H+26,c:C.ash[1],foot:0,top:kTop,fs:(nx,ny,X,Y,zr,k)=>face(X,Y,zr+H,k)})); }
   const q=r*.72; return prop(B,null,{solids:[{x0:cx-q,y0:cy-r,x1:cx+q,y1:cy+r},{x0:cx-r,y0:cy-q,x1:cx+r,y1:cy+q}]}); };
-KMK.turret=(cx,cy,sx,sy)=>{ '@later'; PNAME='keep turret'; const B=[], o=1, n=1, sd=4500+Math.round(cx*3+cy*5), X0=Math.min(cx+sx*o,cx-sx*n), X1=Math.max(cx+sx*o,cx-sx*n), Y0=Math.min(cy+sy*o,cy-sy*n), Y1=Math.max(cy+sy*o,cy-sy*n);
+KMK.turret=(cx,cy,sx,sy)=>{ PNAME='keep turret'; const B=[], o=1, n=1, sd=4500+Math.round(cx*3+cy*5), X0=Math.min(cx+sx*o,cx-sx*n), X1=Math.max(cx+sx*o,cx-sx*n), Y0=Math.min(cy+sy*o,cy-sy*n), Y1=Math.max(cy+sy*o,cy-sy*n);
   const paint=(nx,ny,u,z,X,Y)=>{ const e=nx?Math.min(Y-Y0,Y1-Y):Math.min(X-X0,X1-X); if(e<.32&&z>=24){ const j=Math.floor(z/12), long=j&1; if(e<(long?.32:.2))return z-j*12<1?C.mortar:long?C.trim:C.trimD; }
     const m=nx?(Y0+Y1)/2:(X0+X1)/2, du=((nx?Y:X)-m)*24; for(let s=0;s<5;s++){ const z0=70+s*STORY; if(Math.abs(du)<1.5&&z>=z0&&z<z0+26)return C.dark; } return null; };
   const ax0=sx>0?cx:cx+sx*o, ax1=sx>0?cx+sx*o:cx, ay0=sy>0?cy:cy+sy*o, ay1=sy>0?cy+sy*o:cy;
@@ -88,19 +88,19 @@ KMK.turret=(cx,cy,sx,sy)=>{ '@later'; PNAME='keep turret'; const B=[], o=1, n=1,
   B.push(kb(X0,Y0,X1,Y1,KH,KH+110,sd,{foot:0,top:(X,Y)=>Math.min(X-X0,X1-X,Y-Y0,Y1-Y)>.35?(hash(Math.floor(X*6),Math.floor(Y*3),4503)<.5?C.lead:C.leadL):kTop(X,Y)},paint));
   for(const [a,b,s,e,ax] of [[Y0,Y0+.3,X0,X1,'x'],[Y1-.3,Y1,X0,X1,'x'],[X0,X0+.3,Y0+.3,Y1-.3,'y'],[X1-.3,X1,Y0+.3,Y1-.3,'y']])merlons(B,ax,a,b,s,e,KH+110,sd);
   return prop(B,null,{solids:[A,Bq]}); };
-KMK.parapet=(b,side)=>{ '@later'; PNAME='keep parapet'; const B=[], t=.3, x0=b.x0-T, x1=b.x1+T, y0=b.y0-T, y1=b.y1+T, n=1, z0=470, z1=KH+26, sd=4600;
+KMK.parapet=(b,side)=>{ PNAME='keep parapet'; const B=[], t=.3, x0=b.x0-T, x1=b.x1+T, y0=b.y0-T, y1=b.y1+T, n=1, z0=470, z1=KH+26, sd=4600;
   const corb=(nx,ny,u,z)=>z<z0+12?((Math.floor(u/12)&1)?C.dark:z<z0+2?C.trimD:C.trim):z>=z1-3?C.trim:null;
   const q={f:[x0+n,y1,x1-n,y1+t],b:[x0+n,y0-t,x1-n,y0],l:[x0-t,y0+n,x0,y1-n],r:[x1,y0+n,x1+t,y1-n]}[side];
   B.push(kb(q[0],q[1],q[2],q[3],z0,z1,sd,{foot:1},corb)); if(side==='f'||side==='b')merlons(B,'x',q[1],q[3],q[0],q[2],z1,sd); else merlons(B,'y',q[0],q[2],q[1],q[3],z1,sd);
   return prop(B,null,{walk:1}); };
-KMK.keepFace=(b,side,gap)=>{ '@later'; PNAME='keep face'; const B=[], S=[], x0=b.x0-T, x1=b.x1+T, y0=b.y0-T, y1=b.y1+T, n=1, X=side==='f'||side==='b', o=side==='f'||side==='r'?1:-1, sd=4700+side.charCodeAt(0);
+KMK.keepFace=(b,side,gap)=>{ PNAME='keep face'; const B=[], S=[], x0=b.x0-T, x1=b.x1+T, y0=b.y0-T, y1=b.y1+T, n=1, X=side==='f'||side==='b', o=side==='f'||side==='r'?1:-1, sd=4700+side.charCodeAt(0);
   const at=X?(o>0?y1:y0):(o>0?x1:x0), s=X?x0+n:y0+n, e=X?x1-n:y1-n, L=X?b.x1-b.x0:b.y1-b.y0, m0=X?b.x0:b.y0;
   const bx=(a0,a1,d,z0,z1)=>{ const p=o>0?[at,at+d]:[at-d,at]; const q=X?{x0:a0,y0:p[0],x1:a1,y1:p[1]}:{x0:p[0],y0:a0,x1:p[1],y1:a1}; B.push(kb(q.x0,q.y0,q.x1,q.y1,z0,z1,sd)); return q; };
   for(const f of [1/3,2/3]){ const m=m0+L*f; S.push(bx(m-.25,m+.25,.14,24,470)); }
   const runs=gap?[[s,gap[0]],[gap[1],e]]:[[s,e]];
   for(const [a0,a1] of runs){ S.push(bx(a0,a1,.3,0,8)); bx(a0,a1,.2,8,16); bx(a0,a1,.1,16,24); }
   return prop(B,null,{solids:S}); };
-KMK.gate=(gx,wy,H)=>{ '@later'; PNAME='gatehouse'; const y0=wy-.5, y1=wy+1.1, w=.65, sd=4800, ps=[];
+KMK.gate=(gx,wy,H)=>{ PNAME='gatehouse'; const y0=wy-.5, y1=wy+1.1, w=.65, sd=4800, ps=[];
   const arch=(nx,ny,u,z)=>ny>0||ny<0?keepArch(u-gx*24,z,104,15.6,KARCH.out):null;
   const leaf=(x0,x1)=>sided({x0,y0:y0+.05,x1,y1:y1-.05,z0:0,z1:100,c:DGP.oak,foot:1,top:()=>DGP.oakD,fs:(nx,ny,X,Y,z,k)=>{ const u=(nx?Y:X)*24; if([12,48,84].some(b=>z>=b&&z<b+4))return sh(z-Math.floor(z)<.5&&Math.floor(u)%6===0?DGP.ironL:DGP.iron,k); return sh(Math.floor(u)%7===0?DGP.oakD:hash(Math.floor(u),Math.floor(z/3),4801)<.15?DGP.oakL:DGP.oak,k); }});
   for(const [a,b,l0,l1] of [[gx-.9,gx-w,gx-w,gx-w+.08],[gx+w,gx+.9,gx+w-.08,gx+w]]){ const B=[kb(a,y0,b,y1,0,H,sd,{},arch),leaf(l0,l1)]; merlons(B,'x',y1-.3,y1,a,b,H,sd); ps.push(prop(B,null,{solids:[{x0:Math.min(a,l0),y0,x1:Math.max(b,l1),y1}]})); }

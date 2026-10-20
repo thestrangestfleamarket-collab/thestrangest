@@ -21,10 +21,10 @@ const boards=(c,X,Y,n=.3)=>sh(c,((X/n)%1+1)%1<.06||((Y/n)%1+1)%1<.06?.78:.96+.08
 const wood=(k,c,t,z,len)=>worn(mt('wood',grain(c,t*len*FP,z,k)),t,z,k);
 const metal=(c,t,z,k=3)=>worn(mt('frame',c),t,z,k);
 
-function aptMat(x,y,f=[0,1]){ '@later'; PNAME='entrance mat'; const r=rect(x,y,f,1,.66), c=AP.mat;
+function aptMat(x,y,f=[0,1]){ PNAME='entrance mat'; const r=rect(x,y,f,1,.66), c=AP.mat;
   return prop([fb(r,0,1,0,1,0,1,c,null,(t,d,X,Y)=>{ const e=Math.min(t,1-t,d*.66,(1-d)*.66), n=hash(Math.floor(X*48),Math.floor(Y*48),3), m=Math.hypot(t-.5,(d-.5)*.66);
     return mt('carpet',e<.05?sh(c,.6):n<.4?sh(c,.9):n>.9?sh(c,1.1):m<.2?sh(c,1.06):c); })],null,{walk:true,flat:true}); }
-function wardrobe(x,y,f=[0,1]){ '@later'; PNAME='wardrobe'; const r=rect(x,y,f,1.2,.55), H=82, c=AP.oak;
+function wardrobe(x,y,f=[0,1]){ PNAME='wardrobe'; const r=rect(x,y,f,1.2,.55), H=82, c=AP.oak;
   const P=(s,t,z,len)=>{ const k=wood(7,c,t,z,len); if(z<4)return sh(k,.55); if(z>H-5)return sh(k,.8);
     if(s==='f'){ const m=Math.abs(t-.5)*len*FP; if(m<.5)return sh(k,.4); if(z>34&&z<44&&m>1.2&&m<3)return z<35||z>43?AP.steelD:metal(AP.chrome,t,z);
       if(z>8&&z<H-8&&m>3&&m<len*FP/2-2.5&&(z<9.5||z>H-9.5||m<3.8||m>len*FP/2-3.3))return sh(k,.76); }
@@ -37,28 +37,28 @@ function wallShelves(x,y,f=[0,1]){ PNAME='shelves with boxes'; const r=rect(x,y,
   box(.07,.5,.1,.95,Z+2,11,AP.card); box(.56,.93,.15,.9,Z+2,9,sh(AP.card,.9)); box(.1,.62,.2,.9,Z+18,8,sh(AP.card,1.05));
   bs.push(fb(r,.7,.92,.3,.85,Z+18,Z+21,AP.paper,(s,t,z)=>z%2<1?sh(AP.paper,.8):AP.paper,null,{foot:1}));
   return prop(bs,null,{high:true,walk:true}); }
-function vacuum(x,y,f=[0,1]){ '@later'; PNAME='vacuum'; const r=rect(x,y,f,.38,.34), bag=AP.red, pl=AP.plastic;
+function vacuum(x,y,f=[0,1]){ PNAME='vacuum'; const r=rect(x,y,f,.38,.34), bag=AP.red, pl=AP.plastic;
   return prop([fb(r,0,1,0,1,0,7,pl,(s,t,z)=>z<2?sh(pl,.6):worn(pl,t,z,17)),fb(r,.3,.7,.55,.95,7,38,bag,(s,t,z)=>worn(mt('carpet',sh(bag,.9+.1*Math.sin(z*.8))),t,z,19),null,{foot:1}),
     fb(r,.44,.56,.7,.82,38,52,AP.steel,(s,t,z)=>metal(AP.steel,t,z),null,{foot:1}),fb(r,.25,.75,.68,.84,52,55,pl,null,null,{foot:1}),
     fb(r,.12,.22,.1,.3,7,26,pl,null,null,{foot:1}),fb(r,.12,.3,.3,.6,24,28,pl,null,null,{foot:1})]); }
-function tvStand(x,y,f=[0,1]){ '@later'; PNAME='TV on a low stand'; const r=rect(x,y,f,1.4,.5), c=AP.walnut, H=14;
+function tvStand(x,y,f=[0,1]){ PNAME='TV on a low stand'; const r=rect(x,y,f,1.4,.5), c=AP.walnut, H=14;
   const P=(s,t,z,len)=>{ const k=wood(21,c,t,z,len); if(z<2)return sh(k,.6); if(s==='f'){ const m=Math.abs(t-.5)*len*FP; if(m<.5)return sh(k,.45); if(z>5&&z<8&&m>1.5&&m<3.5)return AP.steelD; } return k; };
   const scr=(s,t,z)=>{ if(s!=='f'||z<2||z>22||t<.05||t>.95)return worn(AP.black,t,z,23); const n=hash(Math.floor(t*40),Math.floor(z/3),25); return n<.1?sh(AP.screen,1.4):sh(AP.screen,.8+.4*t); };
   const p=prop([fb(r,0,1,0,1,0,H,c,P,(t,d,X,Y)=>boards(mt('wood',c),X,Y,.7)),fb(r,.14,.86,.42,.56,H,H+24,AP.black,scr,()=>AP.black,{foot:1}),fb(r,.4,.6,.35,.65,H,H+2,AP.black,null,null,{foot:1})]);
   p.opts=()=>[['watch the news',()=>newsOpen()]]; return p; }
-function aptPoster(x,y,f=[0,1]){ '@later'; PNAME='poster'; const r=rect(x,y,f,.7,.04), z0=48, H=26, W=Math.round(.7*FP), paper=AP.paper, ink=[44,40,48], red=AP.red;
+function aptPoster(x,y,f=[0,1]){ PNAME='poster'; const r=rect(x,y,f,.7,.04), z0=48, H=26, W=Math.round(.7*FP), paper=AP.paper, ink=[44,40,48], red=AP.red;
   const A=art(W,H,put=>{ for(let yy=0;yy<H;yy++)for(let a=0;a<W;a++){ const z=H-1-yy; let c=hash(a,yy,27)<.06?sh(paper,.9):paper;
       if(z>=16&&z<24&&a>2&&a<W-3){ const d=Math.hypot(a-W*.5,(z-20)*1.5); c=d<5?red:d<6.5?ink:c; }
       if(z>=6&&z<13&&a>2&&a<W-3&&(z===7||z===10||z===12)&&hash(a,z,29)>.3)c=ink;
       if(z<4&&a<3&&z<3-a)c=null; if((a===1||a===W-2)&&z===H-2)c=AP.steelD; put(a,yy,c); } });
   return prop([fb(r,0,1,0,1,z0,z0+H,paper,(s,t,z,len)=>s==='f'?A(Math.floor(t*len*FP),Math.floor(H-1-z))||null:sh(paper,.7),null,{foot:1})],null,{high:true,walk:true}); }
-function plantShelf(x,y,f=[0,1]){ '@later'; PNAME='wall shelf with plant'; const r=rect(x,y,f,.6,.24), Z=62, pine=AP.pine;
+function plantShelf(x,y,f=[0,1]){ PNAME='wall shelf with plant'; const r=rect(x,y,f,.6,.24), Z=62, pine=AP.pine;
   const leaf=(t0,t1,d0,d1,z,h,c)=>fb(r,t0,t1,d0,d1,z,z+h,c,(s,t,zz)=>hash(Math.floor(t*20),Math.floor(zz),31)<.3?sh(c,.8):c,null,{foot:1});
   return prop([fb(r,0,1,0,1,Z,Z+2,pine,(s,t,z,len)=>wood(33,pine,t,z,len),(t,d,X,Y)=>boards(mt('wood',pine),X,Y,.6),{foot:1}),
     fb(r,.1,.16,.4,.9,Z-6,Z,AP.steelD,null,null,{foot:1}),fb(r,.84,.9,.4,.9,Z-6,Z,AP.steelD,null,null,{foot:1}),
     fb(r,.36,.64,.3,.8,Z+2,Z+9,AP.terra,(s,t,z)=>z>6?sh(AP.terra,.8):worn(AP.terra,t,z,35),()=>[52,40,30],{foot:1}),
     leaf(.3,.7,.2,.85,Z+9,5,AP.leaf),leaf(.2,.45,.1,.6,Z+7,6,AP.leafD),leaf(.55,.85,.3,.95,Z+8,4,AP.leafD),leaf(.1,.3,.5,.9,Z+1,6,AP.leaf),leaf(.4,.6,.5,.7,Z+13,4,AP.leaf)],null,{high:true,walk:true}); }
-function bookcase(x,y,f=[0,1]){ '@later'; PNAME='bookcase'; const r=rect(x,y,f,1.2,.5), H=92, c=AP.oak;
+function bookcase(x,y,f=[0,1]){ PNAME='bookcase'; const r=rect(x,y,f,1.2,.5), H=92, c=AP.oak;
   const face=(s,t,z,len)=>{ if(s!=='f')return wood(43,c,t,z,len); const a=t*len*FP; if(a<2||a>=len*FP-2||z<3||z>=H-3)return grain(c,a,z,37); return (z-3)%22<2?sh(grain(c,a,z,37),.9):sh(c,.5); };
   return prop([fb(r,0,1,0,1,0,3,c,face,()=>sh(mt('wood',c),.9)),fb(r,0,1,.9,1,3,H,c,(s,t,z,len)=>s==='f'?sh(c,.5):wood(43,c,t,z,len),()=>sh(mt('wood',c),.9)),
     fb(r,0,.06,0,.9,3,H,c,(s,t,z,len)=>wood(43,c,t,z,len),()=>sh(mt('wood',c),.9)),fb(r,.94,1,0,.9,3,H,c,(s,t,z,len)=>wood(43,c,t,z,len),()=>sh(mt('wood',c),.9)),

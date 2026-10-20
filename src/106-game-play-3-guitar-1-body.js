@@ -47,7 +47,7 @@ const gtHz=(s,k)=>{ const q=GTSTR[s-1]; return Math.sqrt(q.T/q.mu)/(2*GT.S*Math.
 const GTA={buf:null,busy:false,failed:0,ok:false,g:null,pan:null,at:{},on:[null,null,null,null,null,null]};
 function gtAudio(){ return false; }
 function gtMute(s,when,T){ if(GTPHYS.model&&GTPHYS.ok)gtPhysMute(s,when,0.25); const v=GTA.on[s-1]; if(!v)return; GTA.on[s-1]=null; v.g.gain.setTargetAtTime(0,Math.max(when,v.when),T/3); try{ v.src.stop(Math.max(when,v.when)+T*5); }catch(e){} }
-function gtPlay(s,k,when,amp,tone,r){ '@later'; if(GTPHYS.model&&gtPhys()){ gtMute(s,when,0.012); gtPhysPluck(s,k,when,amp,gtBright(tone),(r==='s'?GT.YS:r&&GTYP[GTRH[r]]||GT.YP)/GT.S); return; }
+function gtPlay(s,k,when,amp,tone,r){ if(GTPHYS.model&&gtPhys()){ gtMute(s,when,0.012); gtPhysPluck(s,k,when,amp,gtBright(tone),(r==='s'?GT.YS:r&&GTYP[GTRH[r]]||GT.YP)/GT.S); return; }
   const c=SND.ctx, m=GTOPEN[s-1]+k; let q=GTSAMP[0]; for(const x of GTSAMP)if(Math.abs(x[0]-m)<Math.abs(q[0]-m))q=x; const A=GTA.at[q[0]]; if(!A)return;
   gtMute(s,when,0.012);
   const src=c.createBufferSource(), f=c.createBiquadFilter(), g=c.createGain(); src.buffer=GTA.buf; src.playbackRate.value=gtHz(s,k)/A.hz; f.type='lowpass'; f.frequency.value=tone; f.Q.value=0.5;

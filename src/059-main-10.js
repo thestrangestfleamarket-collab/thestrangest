@@ -7,11 +7,11 @@ if(!AWAY.has('apartments')){
   const sh=(c,f)=>[Math.min(255,c[0]*f),Math.min(255,c[1]*f),Math.min(255,c[2]*f)];
   const P=POOLR, OX=(P.x0+P.x1)/2, OY=(P.y0+P.y1)/2;
   const X=x=>(x-OX)*BLDK*TILE+PDX, Z=y=>((y-OY)*BLDK+(P.y1-OY)*(1-BLDK))*TILE+PDZ, Y=z=>z*ZU*BLDK; POOLR.X=X; POOLR.Z=Z; POOLR.Y=Y;
-  const faceTex=(w,h,fn)=>{ '@later'; w=Math.max(1,Math.round(w)); h=Math.max(1,Math.round(h)); const im=new ImageData(w,h), d=im.data;
+  const faceTex=(w,h,fn)=>{ w=Math.max(1,Math.round(w)); h=Math.max(1,Math.round(h)); const im=new ImageData(w,h), d=im.data;
     for(let j=0,k=0;j<h;j++)for(let i=0;i<w;i++,k+=4){ const v=fn(i,j); if(!v)continue; d[k]=Math.round(v[0]); d[k+1]=Math.round(v[1]); d[k+2]=Math.round(v[2]); d[k+3]=255; }
     const t=new THREE.CanvasTexture(im); t.magFilter=THREE.NearestFilter; t.minFilter=THREE.NearestMipmapNearestFilter; t.colorSpace=THREE.SRGBColorSpace; return {map:t}; };
   const mat=(tx,basin)=>{ const m=new THREE.MeshLambertMaterial({map:tx.map,alphaTest:.5,side:THREE.DoubleSide}); if(basin)WATER.caustic(m); return m; };
-  const quad=(a,b,c,d,tx,basin)=>{ '@later'; const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute([...a,...b,...c,...a,...c,...d],3));
+  const quad=(a,b,c,d,tx,basin)=>{ const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute([...a,...b,...c,...a,...c,...d],3));
     g.setAttribute('uv',new THREE.Float32BufferAttribute([0,0,1,0,1,1,0,0,1,1,0,1],2)); g.computeVertexNormals(); const me=new THREE.Mesh(g,mat(tx,basin)); me.receiveShadow=true; scene.add(me); return me; };
   const C=v=>v;
   const floor=(x0,y0,x1,y1,z,col)=>quad([X(x0),Y(z),Z(y1)],[X(x1),Y(z),Z(y1)],[X(x1),Y(z),Z(y0)],[X(x0),Y(z),Z(y0)],faceTex((x1-x0)*24,(y1-y0)*24,(i,j)=>C(col(x0+(i+.5)/24,y0+(j+.5)/24))));
@@ -48,7 +48,7 @@ if(!AWAY.has('apartments')){
   cutaway(wallY(P.x0,P.y0,P.y1,0,P.H,(u,z)=>room(P.x0+.1,u)(u,z)),1,0,10); cutaway(wallY(P.x1,P.y0,P.y1,0,P.H,(u,z)=>plaster(u,z)),-1,0,10);
   cutaway(wallX(P.y0,P.x0,P.x1,0,P.H,(u,z)=>room(u,P.y0+.1)(u,z)),0,1,10); cutaway(wallX(P.y1,P.x0,P.x1,0,P.H,(u,z)=>door(u,z,D_)?null:room(u,P.y1-.1)(u,z)),0,-1,10);
   const inner=(me)=>{ const pl=new THREE.Plane(new THREE.Vector3(0,-1,0),1e6); me.material.clippingPlanes=[pl]; cutWalls.push({pl,nx:0,nz:0,always:true,foot:Y(10),me}); };
-  const IW=(ax,at,a0,a1,ds,paint)=>{ '@later'; inner(ax==='x'?wallX(at,a0,a1,0,P.H,(u,z)=>door(u,z,ds)?null:paint(u,z)):wallY(at,a0,a1,0,P.H,(u,z)=>door(u,z,ds)?null:paint(u,z)));
+  const IW=(ax,at,a0,a1,ds,paint)=>{ inner(ax==='x'?wallX(at,a0,a1,0,P.H,(u,z)=>door(u,z,ds)?null:paint(u,z)):wallY(at,a0,a1,0,P.H,(u,z)=>door(u,z,ds)?null:paint(u,z)));
     let a=a0; for(const d of [...ds].sort((p,q)=>p[0]-q[0])){ if(d[0]>a)ax==='x'?solid(a,at-.1,d[0],at+.1,P.H):solid(at-.1,a,at+.1,d[0],P.H); a=d[1]; } if(a<a1)ax==='x'?solid(a,at-.1,a1,at+.1,P.H):solid(at-.1,a,at+.1,a1,P.H); };
   IW('y',RX,P.y0,P.y1,[[HY0+.12,HY1-.12]],plaster);
   IW('x',LY0,RX,P.x1,[[21.97,23.53]],plaster);
@@ -61,7 +61,7 @@ if(!AWAY.has('apartments')){
     const m=new THREE.Mesh(g,mat(tx,true)); m.receiveShadow=true; scene.add(m); }
   wallX(P.by0,P.bx0,P.bx1,POOLR.bedAt(0),0,(u,z)=>basinWall(u,z),true); wallX(P.by1,P.bx0,P.bx1,POOLR.bedAt(0),0,(u,z)=>basinWall(u,z),true);
   wallY(P.bx0,P.by0,P.by1,POOLR.bedAt(0),0,(u,z)=>basinWall(u,z),true); wallY(P.bx1,P.by0,P.by1,POOLR.bedAt(0),0,(u,z)=>basinWall(u,z),true);
-  const FB=[], col=new THREE.Color(), box=(x0,y0,z0,x1,y1,z1,c,hard)=>{ '@later'; const g=new THREE.BoxGeometry(Math.abs(X(x1)-X(x0)),Math.abs(Y(z1)-Y(z0)),Math.abs(Z(y1)-Z(y0))).toNonIndexed(); g.translate((X(x0)+X(x1))/2,(Y(z0)+Y(z1))/2,(Z(y0)+Z(y1))/2);
+  const FB=[], col=new THREE.Color(), box=(x0,y0,z0,x1,y1,z1,c,hard)=>{ const g=new THREE.BoxGeometry(Math.abs(X(x1)-X(x0)),Math.abs(Y(z1)-Y(z0)),Math.abs(Z(y1)-Z(y0))).toNonIndexed(); g.translate((X(x0)+X(x1))/2,(Y(z0)+Y(z1))/2,(Z(y0)+Z(y1))/2);
     col.setRGB(c[0]/255,c[1]/255,c[2]/255,THREE.SRGBColorSpace); const n=g.attributes.position.count, cc=new Float32Array(n*3); for(let i=0;i<n;i++){ const f=g.attributes.normal.getY(i)>.5?1:g.attributes.normal.getY(i)<-.5?.6:.82; cc[i*3]=col.r*f; cc[i*3+1]=col.g*f; cc[i*3+2]=col.b*f; }
     g.setAttribute('color',new THREE.BufferAttribute(cc,3)); FB.push(g); if(hard)solid(x0,y0,x1,y1,z1); };
   box(P.bx0-2.2,12.35,0,P.bx0-1.4,12.95,22,[92,96,104],true); box(P.bx0-2.3,12.4,22,P.bx0+1.1,12.9,26,[232,226,200]); box(P.bx0-2.3,12.4,26,P.bx0+1.1,12.9,26.6,[70,150,190]);
@@ -90,7 +90,7 @@ if(!AWAY.has('apartments')){
   const lz=-(HT-0.04-1.7)*24;
   for(const a of [2.5,6.75,11])for(const b of [0,LY]){ const L=new THREE.PointLight(new THREE.Color(.32,.68,1),+(QS.get('wl')||3.2),8*TILE,1.4); L.position.set(X(P.bx0+a),Y(lz),Z(P.by0+b+(b?-0.15:0.15))); L.userData.i0=L.intensity; scene.add(L); lamps.push(L); lampDisc(P.bx0+a,P.by0+b+(b?-0.02:0.02),lz); }
   { const L=new THREE.PointLight(new THREE.Color(.32,.68,1),+(QS.get('wl')||3.2),8*TILE,1.4); L.position.set(X(P.bx0+0.15),Y(-(HT-0.04-1.4)*24),Z(P.by0+LY/2)); L.userData.i0=L.intensity; scene.add(L); lamps.push(L); }
-  const ceil=(x,y,c,k)=>{ '@later'; const m=new THREE.Mesh(new THREE.BoxGeometry(.9*TILE,.03,.5*TILE),new THREE.MeshBasicMaterial({color:new THREE.Color(...c).multiplyScalar(1.3)})); m.position.set(X(x),Y(P.H-2),Z(y)); scene.add(m); OVERHEAD.push({o:m,y:Y(P.H-4)});
+  const ceil=(x,y,c,k)=>{ const m=new THREE.Mesh(new THREE.BoxGeometry(.9*TILE,.03,.5*TILE),new THREE.MeshBasicMaterial({color:new THREE.Color(...c).multiplyScalar(1.3)})); m.position.set(X(x),Y(P.H-2),Z(y)); scene.add(m); OVERHEAD.push({o:m,y:Y(P.H-4)});
     const L=new THREE.PointLight(new THREE.Color(...c),k,7*TILE,1.6); L.position.set(X(x),Y(P.H-12),Z(y)); L.userData.i0=L.intensity; scene.add(L); lamps.push(L); };
   ceil(22.7,12.4,[1,.88,.7],6); ceil(22.7,3,[1,.92,.8],5); ceil(10.5,7.26,[1,.88,.7],3.5); ceil(8.5,3,[.9,.95,1],6); ceil(2.1,5.2,[1,.9,.75],3);
   solid(P.x0-1,P.y0,P.x0,P.y1,P.H); solid(P.x1,P.y0,P.x1+1,P.y1,P.H); solid(P.x0,P.y0-1,P.x1,P.y0,P.H); solid(P.x0,P.y1,21.97,P.y1+1,P.H); solid(23.53,P.y1,P.x1,P.y1+1,P.H);

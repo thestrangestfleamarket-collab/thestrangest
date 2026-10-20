@@ -108,7 +108,7 @@ const PLS={x0:PLB.x0+.1,x1:PLB.x1-.1,SY,PRY:ay(-47.4),PRX0:PLMID-4.3,PRX1:PLMID+
   rows:[2.4].map(d=>SY-d),SPOT:[PLMID,SY+2.7,1.6],SX0:PLMID-2.5,SX1:PLMID+2.5,lobby:PLB.y0+1.6};
 const PLWALLS=[SY-1.9,SY-4.3], PLCANDLES=[[PLMID-3.5,SY+.25,20],[PLMID-1.4,SY+.25,14],[PLMID+1.4,SY+.25,14],[PLMID+3.5,SY+.25,20],[PLMID+3.9,ay(-45.2),24]];
 const plMark=m=>[PLMID+m[0],PLS.CY+.5+m[1]], PLC=PLS.CY+.5;
-function playFloorCol(x,y){ '@later'; if(y<PLS.lobby)return lobbyCol(x,y);
+function playFloorCol(x,y){ if(y<PLS.lobby)return lobbyCol(x,y);
   { const a=Math.abs(x-PLMID); if(a>PLS.SX1-PLMID+.15&&a<PLS.SX1-PLMID+1.25&&y<PLS.SY)return mt('carpet',speck(a<PLS.SX1-PLMID+.22||a>PLS.SX1-PLMID+1.18?[150,118,58]:[128,26,34],x,y,23)); }
   const r=Math.floor(x*4), b=Math.floor(y/1.5+hash(r,0,41)*3), c=[[86,58,40],[78,52,36],[92,62,42]][Math.floor(hash(b,r,43)*3)];
   return mt('wood',(x*4-r)<.08?sh(c,.7):c); }
@@ -162,10 +162,10 @@ const PLTR=PLAY.scenes.map((sc,si)=>{ const A={}, pos={}, H=[], get=w=>A[w]||(A[
   return {A,H}; });
 const PLCALL=(()=>{ const ws=['stapleton','mortimer','watson','holmes','henry','barrymore'], A={};
   ws.forEach((w,i)=>{ const x=PLMID+(i-2.5)*1.45, y=PLS.CY+1.1; A[w]={walks:[],faces:[[-1e9,'out']],acts:PLAYT.call.bow.map(t=>[t,'crouch']),talk:[],in:-1e9,out:1e9,p0:[x,y]}; }); return {A,H:[]}; })();
-function plPos(a,t){ '@later'; if(t<a.in||t>a.out)return null; let x=a.p0[0], y=a.p0[1], mv=null;
+function plPos(a,t){ if(t<a.in||t>a.out)return null; let x=a.p0[0], y=a.p0[1], mv=null;
   for(const w of a.walks){ if(t<w[0])break; if(t>=w[1]){ x=w[4]; y=w[5]; continue; } const k=(t-w[0])/(w[1]-w[0]); x=w[2]+(w[4]-w[2])*k; y=w[3]+(w[5]-w[3])*k; mv=[w[4]-w[2],w[5]-w[3]]; break; }
   return {x,y,mv}; }
-function plPlayer(a,t,TR){ '@later'; const p=plPos(a,t); if(!p)return null; const {x,y,mv}=p;
+function plPlayer(a,t,TR){ const p=plPos(a,t); if(!p)return null; const {x,y,mv}=p;
   let f=null; for(const e of a.faces)if(e[0]<=t)f=e[1];
   const at=typeof f==='string'&&f!=='out'?(TR.A[f]?plPos(TR.A[f],t):PLAY.marks[f]?(m=>({x:m[0],y:m[1]}))(plAt(f)):null):null;
   const dir=mv||(f&&f.dir)||(at?[at.x-x,at.y-y]:[0,-1]);
@@ -198,7 +198,7 @@ const props=()=>{ const S=PLS, B=PLB, wood=(x,y)=>{ const r=Math.floor(x*5), c=[
     ...arm(a,y),...(i===n-1?arm(b,y):[])]); }
   for(const [x,nx] of [[B.x0+T,1],[B.x1-T,-1]])for(const y of PLWALLS)STOREK.bar.theatreSconce(x,y,[nx,0]);
   };
-function plHoundAt(H,t){ '@later'; if(!H.length||t<H[0][0]||t>=H[H.length-1][1])return null; let s=H[0]; for(const q of H)if(q[0]<=t)s=q;
+function plHoundAt(H,t){ if(!H.length||t<H[0][0]||t>=H[H.length-1][1])return null; let s=H[0]; for(const q of H)if(q[0]<=t)s=q;
   const run=t<s[1], k=run?(t-s[0])/(s[1]-s[0]):1, x=s[2]+(s[4]-s[2])*k, y=s[3]+(s[5]-s[3])*k, a=Math.atan2(s[5]-s[3],s[4]-s[2]);
   return {x,y,a,s:run?(t*2.6)%1:.12+.03*Math.sin(t*9),up:s[6]&&run?Math.sin(k*Math.PI)*.7:0,run}; }
 const PLPRAC={baker:[PLMID-.4,ay(-42.75),30],hall:[PLMID-.2,PLC+2.6,62],moor:null,fog:null};

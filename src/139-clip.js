@@ -59,7 +59,7 @@ const CLIP={moved:[],found:[],added:0,boxes:new Map(),done:new Set(),ms:0}; wind
           st.x=to.x; st.z=to.z; st.to=null; N.home={x:to.x,z:to.z}; }
         else console.warn('CLIP: '+N.key+' stands '+why+' and no clear spot within eight tiles'); }
       ok.push(N); } };
-  CLIP.audit=()=>{ '@later'; const things=[], chars=[];
+  CLIP.audit=()=>{ const things=[], chars=[];
     for(const o of OBJS){ if(!o.parts.length)continue; const c=scan(o,null); if(c.miss)things.push({id:o.id,name:o.name,lvl:c.lvl,miss:c.miss,of:c.tot}); }
     for(const t of CLIPX){ const c=scanX(t,false); if(c.miss)things.push({id:t.place,name:t.name,lvl:'up',miss:c.miss,of:c.tot}); }
     const live=NPCS.filter(N=>!fly(N));

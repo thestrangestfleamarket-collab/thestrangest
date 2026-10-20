@@ -73,25 +73,25 @@ class Imx extends AudioWorkletProcessor{
       this.port.postMessage({m:sh.slice(0),pipe:this.pipe?this.pipe.pr:0}); }
     return true; } }
 registerProcessor('imx',Imx);`};
-function imxReady(){ '@later'; const c=SND.ctx; if(!c||!c.audioWorklet||!SND.on||c.state!=='running')return false; if(IMX.ok||IMX.busy||performance.now()<IMX.failed)return IMX.ok; IMX.busy=true;
+function imxReady(){ const c=SND.ctx; if(!c||!c.audioWorklet||!SND.on||c.state!=='running')return false; if(IMX.ok||IMX.busy||performance.now()<IMX.failed)return IMX.ok; IMX.busy=true;
   c.audioWorklet.addModule('data:application/javascript,'+encodeURIComponent(IMX.src)).then(()=>{ IMX.ok=true; }).catch(e=>{ console.warn('instruments',e); IMX.failed=performance.now()+10000; }).finally(()=>{ IMX.busy=false; }); return false; }
-function imxOut(){ '@later'; const c=SND.ctx; if(IMX.out)return IMX.out; const cv=c.createConvolver(), wet=c.createGain(), dry=c.createGain(), len=Math.floor(c.sampleRate*.8), ir=c.createBuffer(2,len,c.sampleRate);
+function imxOut(){ const c=SND.ctx; if(IMX.out)return IMX.out; const cv=c.createConvolver(), wet=c.createGain(), dry=c.createGain(), len=Math.floor(c.sampleRate*.8), ir=c.createBuffer(2,len,c.sampleRate);
   for(let ch=0;ch<2;ch++){ const q=ir.getChannelData(ch); for(let i=0;i<len;i++){ const t=i/c.sampleRate; q[i]=(Math.random()*2-1)*Math.exp(-t*13.8/.6)*(t<.005?0:1); } for(const ms of [6,11,17,24,31])q[Math.floor(c.sampleRate*ms/1000)+ch*11]+=.5; }
   cv.buffer=ir; wet.gain.value=.18; dry.gain.value=1; dry.connect(SND.out); dry.connect(cv); cv.connect(wet); wet.connect(SND.out); return IMX.out=dry; }
-function imxNode(who,kind){ '@later'; if(!imxReady())return null; const key=who+'|'+kind; let N=IMX.nodes.get(key); if(N){ N.at=performance.now(); return N; }
+function imxNode(who,kind){ if(!imxReady())return null; const key=who+'|'+kind; let N=IMX.nodes.get(key); if(N){ N.at=performance.now(); return N; }
   const I=IMK[kind], c=SND.ctx; if(!I)return null; const node=new AudioWorkletNode(c,'imx',{outputChannelCount:[1],processorOptions:I.dsp}), dry=c.createGain(), g=c.createGain(), pan=c.createStereoPanner();
   g.gain.value=who==='me'?1:0; node.connect(dry); dry.connect(g); g.connect(pan); pan.connect(imxOut());
   N={who,kind,node,dry,g,pan,at:performance.now(),motion:null,pipe:0,on:[]}; node.port.onmessage=e=>{ N.motion=e.data.m; N.pipe=e.data.pipe; }; IMX.nodes.set(key,N); imsLoad(kind); return N; }
 function imxSend(N,evs){ if(!N)return; const t0=SND.ctx.currentTime+.02; N.node.port.postMessage({ev:evs.map(e=>({...e,t:t0+(e.dt||0)}))}); N.at=performance.now(); imxRec(N,evs,t0); }
 const IMSAMP={'classical guitar':{gain:.62},'steel-string guitar':{gain:1.4},'electric guitar':{gain:4.3},'bass guitar':{gain:2}};
-function imsLoad(kind){ '@later'; const S=IMSAMP[kind]; if(!S)return null;
+function imsLoad(kind){ const S=IMSAMP[kind]; if(!S)return null;
   if(kind==='classical guitar')return S.ok||(gtAudio()?(S.ok={buf:GTA.buf,at:GTA.at,list:GTSAMP}):null);
   const c=SND.ctx; if(S.ok)return S.ok; if(S.busy||!c||performance.now()<(S.failed||0))return null; S.busy=true; const D=IMSAMPS[kind];
   fetch(D.file).then(r=>{ if(!r.ok)throw new Error(D.file+': '+r.status); return r.arrayBuffer(); }).then(b=>c.decodeAudioData(b)).then(buf=>{
     const at={}; for(const [m,t,L,hz] of D.n)at[m]={t,L,hz}; S.ok={buf,at,list:D.n}; })
     .catch(e=>{ console.warn(kind+' sound',e); S.failed=performance.now()+10000; }).finally(()=>{ S.busy=false; });
   return null; }
-function imxRec(N,evs,t0){ '@later'; const R=IMSAMP[N.kind]&&imsLoad(N.kind); if(!R)return; const c=SND.ctx; N.dry.gain.setTargetAtTime(0,c.currentTime,.005);
+function imxRec(N,evs,t0){ const R=IMSAMP[N.kind]&&imsLoad(N.kind); if(!R)return; const c=SND.ctx; N.dry.gain.setTargetAtTime(0,c.currentTime,.005);
   if(!N.lim){ const L=N.lim=c.createDynamicsCompressor(); L.threshold.value=-8; L.knee.value=6; L.ratio.value=12; L.attack.value=.002; L.release.value=.15; L.connect(N.g); }
   for(const e of evs){ const t=t0+(e.dt||0), v=N.on[e.s];
     if(e.k==='pluck'){ const m=69+12*Math.log2(e.hz/440); let q=R.list[0]; for(const x of R.list)if(Math.abs(x[0]-m)<Math.abs(q[0]-m))q=x; const A=R.at[q[0]]; if(!A)continue;

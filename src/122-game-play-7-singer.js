@@ -14,10 +14,10 @@ Object.assign(POSES,{
 function singMic(B){ const {add,sub,mul,nrm,cross,V}=RIG, F=RIG.frameOf('head',B), M=add(F.o,add(mul(F.y,-5.2),mul(F.z,7.4))), p=B.J.palmR, y=nrm(sub(M,p));
   let x=cross(y,V(0,0,1)); if(RIG.len(x)<.2)x=cross(y,V(1,0,0)); x=nrm(x); return {o:add(p,mul(y,.2)),x,y,z:cross(x,y)}; }
 const CORDN=52, CORDL=1.4, CORDG=9.8/0.03365;
-function cordNew(a){ '@later'; const {V,add,mul,sub}=RIG, A=add(a.mic.o,mul(a.mic.y,-.3)), B=SINGJACK, pts=[];
+function cordNew(a){ const {V,add,mul,sub}=RIG, A=add(a.mic.o,mul(a.mic.y,-.3)), B=SINGJACK, pts=[];
   for(let i=0;i<CORDN;i++){ const u=i/(CORDN-1), floor=Math.sin(u*Math.PI); const p=add(add(mul(A,1-u),mul(B,u)),V(Math.sin(u*9)*3,-floor*14,floor*7)); pts.push({p,q:{...p}}); }
   a.cord=pts; for(let i=0;i<240;i++)cordStep(a,1/60); }
-function cordStep(a,dt){ '@later'; const P=a.cord, A=RIG.add(a.mic.o,RIG.mul(a.mic.y,-.3)), J=SINGJACK, g=CORDG*dt*dt, S=WOMAN.SKIRT.gown;
+function cordStep(a,dt){ const P=a.cord, A=RIG.add(a.mic.o,RIG.mul(a.mic.y,-.3)), J=SINGJACK, g=CORDG*dt*dt, S=WOMAN.SKIRT.gown;
   for(const c of P){ const p=c.p, q=c.q, onF=p.y<=.32, k=.985, f=onF?.55:1; const vx=(p.x-q.x)*k*f, vy=(p.y-q.y)*k, vz=(p.z-q.z)*k*f; q.x=p.x; q.y=p.y; q.z=p.z; p.x+=vx; p.y+=vy-g; p.z+=vz; }
   for(let it=0;it<12;it++){
     P[0].p={...A}; P[CORDN-1].p={...J};
@@ -28,6 +28,6 @@ function cordStep(a,dt){ '@later'; const P=a.cord, A=RIG.add(a.mic.o,RIG.mul(a.m
     for(let i=1;i<CORDN-1;i++){ const p=P[i].p; if(p.y<.3)p.y=.3;
       if(p.y<22){ const ax=S.a(Math.max(S.hem,p.y))+.3, bz=ax*.7, r=Math.hypot(p.x/ax,(p.z+.4)/bz); if(r<1){ p.x/=r; p.z=(p.z+.4)/r-.4; } }
       if(p.x>6.3&&p.x<19.7&&p.y<12.6&&p.z>-8.7&&p.z<-1.3){ const o=[[p.x-6.3,'x',6.3],[19.7-p.x,'x',19.7],[12.6-p.y,'y',12.6],[p.z+8.7,'z',-8.7],[-1.3-p.z,'z',-1.3]].sort((m,n)=>m[0]-n[0])[0]; p[o[1]]=o[2]; } } } }
-function singStep(a,dt){ '@later'; if(!a.B)return; a.mic=singMic(a.B); for(const n of ['ampBox','ampGrille','ampPanel','ampKnobs','ampLight'])a.B.props[n]=SINGF; a.B.props.mic=a.B.props.micGrille=a.mic;
+function singStep(a,dt){ if(!a.B)return; a.mic=singMic(a.B); for(const n of ['ampBox','ampGrille','ampPanel','ampKnobs','ampLight'])a.B.props[n]=SINGF; a.B.props.mic=a.B.props.micGrille=a.mic;
   if(!a.cord)cordNew(a); const h=Math.min(dt,.05)/2; cordStep(a,h); cordStep(a,h);
   let s=0; for(const c of a.cord)s+=Math.round(c.p.x*4)*7+Math.round(c.p.y*4)*13+Math.round(c.p.z*4); a.sigx=s; }

@@ -15,7 +15,7 @@ if(WALKERS.on){ const T=TILE, X=BOD.XS, Z=BOD.ZS, rnd=Math.random, pick=a=>a[Mat
   const places=()=>CITY.places().filter(p=>p.lv==='up'&&!p.stacked&&p.door);
   const SHOPS=['bodega','store:diner','store:bar','dojo','park'].filter(id=>!/^store:/.test(id)||!AWAY.has(id.slice(6)));
   const CORNERS=[[RING.wx0+1.6,BOD.FAR+.6],[RING.wx0+1.6,RING.cf.y1-1.4],[RING.wx0+1.6,BOD.FAR+.6],[RING.cf.x1-1.6,BOD.FAR+.6]];
-  const spot=(N,W,what)=>{ '@later'; const st=N.st, ok=p=>p&&N.free(p.x,p.z,st.R);
+  const spot=(N,W,what)=>{ const st=N.st, ok=p=>p&&N.free(p.x,p.z,st.R);
     for(let k=0;k<16;k++){ let p=null;
       if(what==='park'){ const b=P0(); p={x:R(b.x0,b.x1),z:R(b.z0,b.z1)}; }
       else if(what==='city'){ const L=STLANE; p={x:R(L.x0,L.x1),z:R(L.z0,L.z1)}; }
@@ -29,12 +29,12 @@ if(WALKERS.on){ const T=TILE, X=BOD.XS, Z=BOD.ZS, rnd=Math.random, pick=a=>a[Mat
       else if(what==='commute'){ W.leg^=1; const P=W.ends[W.leg]; p=P&&{x:P.door.x+R(-.6,.6)*T,z:P.door.z+R(-.3,.3)*T}; }
       if(ok(p))return p; }
     return null; };
-  const next=(N,W)=>{ '@later'; const K=KIND[W.kind], mail=W.home&&window.MAIL&&MAIL.ready&&MAIL.waiting(W.home)&&rnd()<.6, to=mail?spot(N,W,'mailbox'):spot(N,W,K.to()); W.state='going'; N.dwell=null; W.mail=!!(mail&&to); if(!to){ W.state='wait'; W.t=2; return; }
+  const next=(N,W)=>{ const K=KIND[W.kind], mail=W.home&&window.MAIL&&MAIL.ready&&MAIL.waiting(W.home)&&rnd()<.6, to=mail?spot(N,W,'mailbox'):spot(N,W,K.to()); W.state='going'; N.dwell=null; W.mail=!!(mail&&to); if(!to){ W.state='wait'; W.t=2; return; }
     W.where=to; CITY.send(N,to,{v:W.v,then:ok=>{ if(N.errand)return; if(!ok){ W.state='wait'; W.t=1+rnd()*2; return; }
       if(W.mail){ W.mail=false; const got=MAIL.take(W.home.id,N.name); W.state='stay'; W.t=4+got.length*2.5; N.dwell='found_item_idle_a'; N.st.hold=true; N.st.to=null; const F=W.home.b.F; N.st.face={x:N.st.x-F.n.x,z:N.st.z-F.n.z}; return; }
       W.state='stay'; W.t=R(...K.stay)*(W.kind==='jogger'?1:R(.7,1.3)); N.dwell=inPark(N.st.x,N.st.z)||(W.kind!=='parkgoer'&&W.kind!=='golem')?pick(K.idles):'UAL_Idle_Loop'; if(N.dwell==='sit_floor_idle_a'&&!inPark(N.st.x,N.st.z))N.dwell='UAL_Idle_Loop';
       N.st.hold=true; N.st.to=null; const a=rnd()*Math.PI*2; N.st.face={x:N.st.x+Math.sin(a),z:N.st.z+Math.cos(a)}; }}) ; };
-  const start=()=>{ '@later'; let i=0;
+  const start=()=>{ let i=0;
     for(const N of (window.PAWNL||[])){ if(N.staff||N.lv==='down'||N.sheet)continue; const kind=/_\d$/.test(N.key)?'golem':KW[Math.floor(rnd()*KW.length)], K=KIND[kind], g=pick(K.gaits), G=GAIT[g];
       const W={N,kind,gait:g,v:R(...G[2]),state:'wait',t:R(0,4),home:{x:N.st.x,z:N.st.z},leg:0,lap:null};
       if(kind==='loiterer'){ const s=spot(N,W,rnd()<.5?'park':'city'); if(s)W.home=s; }
@@ -43,7 +43,7 @@ if(WALKERS.on){ const T=TILE, X=BOD.XS, Z=BOD.ZS, rnd=Math.random, pick=a=>a[Mat
       N.walker=W; N.gait=G[0]; N.gaitU=G[1]; N.idle=pick(K.idles.filter(c=>c!=='sit_floor_idle_a')); N.name=(N.name||'').replace(/_\d+$/,'')+' ('+kind+')';
       WALKERS.list.push(W); i++; } };
   setTimeout(start,0);
-  let acc=0; const t0=CITY.tick; CITY.tick=(dt,you)=>{ '@later'; t0(dt,you); for(const W of WALKERS.list){ const N=W.N; if(W.job&&W.job.state&&W.job.state!=='off')continue; if(W.state==='going'&&!N.errand){ W.state='wait'; W.t=.5; } if(W.state==='going')continue; if((W.t-=dt)<=0){ N.st.face=null; next(N,W); } }
+  let acc=0; const t0=CITY.tick; CITY.tick=(dt,you)=>{ t0(dt,you); for(const W of WALKERS.list){ const N=W.N; if(W.job&&W.job.state&&W.job.state!=='off')continue; if(W.state==='going'&&!N.errand){ W.state='wait'; W.t=.5; } if(W.state==='going')continue; if((W.t-=dt)<=0){ N.st.face=null; next(N,W); } }
     if((acc+=dt)<1)return; acc=0; const S=WALKERS.list.filter(W=>W.state==='stay'&&!(W.job&&W.job.state&&W.job.state!=='off'));
     for(const A of S)for(const B of S){ if(A===B||A.talk||B.talk)continue; const a=A.N.st, b=B.N.st; if(Math.hypot(a.x-b.x,a.z-b.z)<2.2*T&&A.N.dwell!=='sit_floor_idle_a'&&B.N.dwell!=='sit_floor_idle_a'){ A.talk=B.talk=true; A.N.dwell=B.N.dwell='UAL_Idle_Talking_Loop'; a.face={x:b.x,z:b.z}; b.face={x:a.x,z:a.z}; const m=Math.max(A.t,B.t); A.t=B.t=m; } }
     for(const W of WALKERS.list)if(W.state!=='stay')W.talk=false; };

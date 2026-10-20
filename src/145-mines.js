@@ -23,7 +23,7 @@ const MINE={ready:false}; window.MINE=MINE;
   const RIDE=liftMesh(false); RIDE.visible=false; scene.add(RIDE); const RIDES=liftMesh(true); RIDES.visible=false; scene.add(RIDES);
   const hitBox=(grp,x,y,z,w,h,o)=>{ const hb=new THREE.Mesh(new THREE.BoxGeometry(w,h,w),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(x,y,z); grp.add(hb); const th={obj:hb}; Object.defineProperties(th,Object.getOwnPropertyDescriptors(o)); UI.thing(th); return th; };
   const things=[]; const unthing=()=>{ for(const t of things){ const i=UI.things.indexOf(t); if(i>=0)UI.things.splice(i,1); } things.length=0; };
-  MINE.ride=(L,down)=>{ '@later'; if(ride)return; if(Math.hypot(pos.x-L.x,pos.z-L.z)>1.3*T)return say('STEP ONTO THE LIFT FIRST.','#c8a090');
+  MINE.ride=(L,down)=>{ if(ride)return; if(Math.hypot(pos.x-L.x,pos.z-L.z)>1.3*T)return say('STEP ONTO THE LIFT FIRST.','#c8a090');
     ride={L,y:down?L.top:L.bot,to:down?L.bot:L.top,down}; pos.x=L.x; pos.z=L.z; target=null; const M=L.stone?RIDES:RIDE; M.visible=true; if(L.lid)L.lid.visible=false;
     say(down?(L.stone?'THE STONE SINKS UNDER YOU.':'THE LIFT HUMS AND GOES DOWN.'):'UP YOU GO.'); if(typeof SFX!=='undefined')SFX.play('creak',{vol:.5}); };
   const rideTick=dt=>{ if(!ride)return; const L=ride.L, M=L.stone?RIDES:RIDE, sp=Yp(98)/3.2; ride.y+=Math.sign(ride.to-ride.y)*Math.min(Math.abs(ride.to-ride.y),sp*dt); keys.clear(); target=null; pos.x=L.x; pos.z=L.z;
@@ -105,18 +105,18 @@ const MINE={ready:false}; window.MINE=MINE;
   const beam=new THREE.Mesh(new THREE.BoxGeometry(1,1,1),new THREE.MeshBasicMaterial({color:0x7ff4ff})); beam.visible=false; scene.add(beam);
   const drone=new THREE.Group(); { const m=new THREE.MeshLambertMaterial({color:0x5a6270}); drone.add(new THREE.Mesh(new THREE.BoxGeometry(.3*T,.08*T,.3*T),m)); for(const [a,b] of [[1,1],[1,-1],[-1,1],[-1,-1]]){ const r=new THREE.Mesh(new THREE.BoxGeometry(.16*T,.02*T,.04*T),new THREE.MeshLambertMaterial({color:0x2a2e34})); r.position.set(a*.18*T,.06*T,b*.18*T); drone.add(r); } const e=new THREE.Mesh(new THREE.BoxGeometry(.08*T,.05*T,.08*T),new THREE.MeshBasicMaterial({color:0x48e8ff})); e.position.y=-.05*T; drone.add(e); } drone.visible=false; scene.add(drone);
   const owns=k=>FORAGE.has(k)>0, kb=()=>FORAGE.keen?FORAGE.keen():0;
-  MINE.scan=()=>{ '@later'; if(!MINE.inside(pos.x,pos.z))return say('THE SCANNER ONLY READS ROCK: GO DOWN INTO THE MINE.','#c8a090'); if(!owns('scanner'))return say('YOU NEED A RESONANCE SCANNER (THE DEPOT).','#c8a090'); if(scanCD>0)return;
+  MINE.scan=()=>{ if(!MINE.inside(pos.x,pos.z))return say('THE SCANNER ONLY READS ROCK: GO DOWN INTO THE MINE.','#c8a090'); if(!owns('scanner'))return say('YOU NEED A RESONANCE SCANNER (THE DEPOT).','#c8a090'); if(scanCD>0)return;
     const sk=FORAGE.sk('prosp')+kb(), Rr=(5+sk/12)*T, now=performance.now()/1000; let lit=0, dmax=0; scanCD=2.5; ringT=0; ringR=Rr; ringY=py+.05*T;
     for(const s of built.seams){ if(s.gone||Math.hypot(s.x-pos.x,s.z-pos.z)>Rr)continue; if(s.d>sk+20)continue; s.rev=now+60; lit++; dmax=Math.max(dmax,s.d); }
     FORAGE.use('prosp',(lit?dmax:8)-25,(lit?dmax:8)+25); say(lit?`THE SCANNER LIGHTS ${lit} SEAM${lit>1?'S':''}.`:'THE SCANNER FINDS NOTHING HERE.',lit?'#7ff4ff':'#c8c2b0'); if(typeof SFX!=='undefined')SFX.play('chirp',{vol:.4}); syncSeams(); };
   const win=(s,bonus)=>{ const ok=FORAGE.use('prosp',s.d-25-bonus,s.d+25-bonus); return ok; };
   const got=(s,n=1)=>{ INV.add(s.gem,n); s.gone=true; S.mined[s.id]=1; save(); say(`YOU FREE ${n>1?n+' STONES':'A STONE'}: ${s.name}${n>1?'S':''}.`,'#f2c14e'); if(typeof SFX!=='undefined')SFX.play('clunk',{vol:.5}); syncSeams(); FORAGE.draw(); };
   let job=null; const extra=s=>FORAGE.sk('prosp')>s.d+30&&Math.random()<.3?2:1;
-  MINE.extract=s=>{ '@later'; if(s.gone||job)return; const t=S.tool;
+  MINE.extract=s=>{ if(s.gone||job)return; const t=S.tool;
     if(!owns(t)){ const o=['cutter','sonic','mdrone'].find(owns); if(!o)return say('YOU NEED A CUTTER, A SONIC EXTRACTOR OR A DRONE (THE DEPOT).','#c8a090'); S.tool=o; }
     if(S.tool==='cutter')job={k:'cut',s,t:2.2}; else if(S.tool==='mdrone')job={k:'drone',s,t:0,ph:0,from:new V3(pos.x,py+Yp(60),pos.z)}; else { job={k:'sonic',t:.8}; ringT=0; ringR=2.6*T; ringY=py+.05*T; if(typeof SFX!=='undefined')SFX.play('boom',{vol:.25}); }
     HUD.draw(); };
-  const loose=[]; const drop=(s)=>{ '@later'; const m=new THREE.Mesh(new THREE.OctahedronGeometry(.1*T,0),new THREE.MeshBasicMaterial({color:GEMC[s.gem]||0xffffff})); const x=s.x+(pos.x-s.x)*.3, z=s.z+(pos.z-s.z)*.3; m.position.set(x,groundY(x,z)+.08*T,z); G.add(m);
+  const loose=[]; const drop=(s)=>{ const m=new THREE.Mesh(new THREE.OctahedronGeometry(.1*T,0),new THREE.MeshBasicMaterial({color:GEMC[s.gem]||0xffffff})); const x=s.x+(pos.x-s.x)*.3, z=s.z+(pos.z-s.z)*.3; m.position.set(x,groundY(x,z)+.08*T,z); G.add(m);
     const th={name:'A LOOSE '+s.name,pick:true,obj:m,reach:.8*T,near:1.4*T,tall:.3*T,act:()=>{ INV.add(s.gem); say('YOU PICK UP THE '+s.name+'.','#f2c14e'); m.removeFromParent(); const i=UI.things.indexOf(th); if(i>=0)UI.things.splice(i,1); FORAGE.draw(); }}; UI.thing(th); things.push(th); };
   const jobTick=dt=>{ if(!job)return; job.t-=dt;
     if(job.k==='cut'){ const s=job.s, hx=pos.x, hy=py+Yp(48), hz=pos.z, L=Math.hypot(s.x-hx,s.y-hy,s.z-hz); beam.visible=true; beam.scale.set(.025*T,.025*T,L); beam.position.set((s.x+hx)/2,(s.y+hy)/2,(s.z+hz)/2); beam.lookAt(s.x,s.y,s.z);
@@ -134,7 +134,7 @@ const MINE={ready:false}; window.MINE=MINE;
       drone.rotation.y+=dt*2; } };
   const DEPOT={}; MINE.DEPOT=DEPOT; const Bt='style="margin:0 0 0 4px;font:inherit;color:#ece5d3;background:#0e1016;border:2px solid #3a3f4e;padding:2px 7px;cursor:pointer"';
   const dp=document.createElement('div'); dp.id='minep'; dp.hidden=true; dp.style.cssText='position:fixed;left:50%;top:10%;transform:translateX(-50%);width:min(480px,92vw);max-height:80vh;overflow:auto;z-index:21;padding:14px 16px;font:11px Silkscreen,monospace;letter-spacing:.4px;color:#d8dae2;background:#0b0d13f2;border:2px solid #2a5866;zoom:var(--uiz,1)'; document.body.appendChild(dp);
-  DEPOT.draw=()=>{ '@later'; if(dp.hidden)return; let o=`<h3 style="margin:0 0 4px;color:#7ff4ff;font:12px Silkscreen,monospace">PROSPECTOR'S DEPOT</h3><div style="color:#9b9584;margin-bottom:8px">Tools for the deep rock. The golems in the park buy every stone you free.</div><div style="margin-bottom:8px">YOU HAVE <b style="color:#f2c14e">$${Math.round(INV.cash)}</b> · PROSPECTING ${FORAGE.sk('prosp').toFixed(1)}</div><table style="border-collapse:collapse;width:100%">`;
+  DEPOT.draw=()=>{ if(dp.hidden)return; let o=`<h3 style="margin:0 0 4px;color:#7ff4ff;font:12px Silkscreen,monospace">PROSPECTOR'S DEPOT</h3><div style="color:#9b9584;margin-bottom:8px">Tools for the deep rock. The golems in the park buy every stone you free.</div><div style="margin-bottom:8px">YOU HAVE <b style="color:#f2c14e">$${Math.round(INV.cash)}</b> · PROSPECTING ${FORAGE.sk('prosp').toFixed(1)}</div><table style="border-collapse:collapse;width:100%">`;
     for(const [id,nm,p,txt] of TOOLS){ const h=owns(id), sel=S.tool===id; o+=`<tr style="border-bottom:1px solid #22252f"><td style="padding:4px 2px">${nm}<div style="color:#8a8676;font-size:10px">${txt}</div></td><td style="text-align:right;padding:4px 6px">$${p}</td><td style="text-align:right;white-space:nowrap">${h?(id==='scanner'?'YOURS':`<button ${Bt} data-use="${id}" style="${sel?'color:#7ff4ff;':''}font:inherit;background:#0e1016;border:2px solid ${sel?'#7ff4ff':'#3a3f4e'};padding:2px 7px;cursor:pointer">${sel?'IN HAND':'USE'}</button>`):`<button ${Bt} data-buy="${id}">BUY</button>`}</td></tr>`; }
     o+='</table>'; const x=dp.querySelector(':scope>.pX'); dp.innerHTML=o; if(x)dp.appendChild(x); };
   dp.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b||b.classList.contains('pX'))return; const d=b.dataset;
@@ -142,7 +142,7 @@ const MINE={ready:false}; window.MINE=MINE;
     if(d.use){ S.tool=d.use; save(); } DEPOT.draw(); HUD.draw(); });
   DEPOT.open=()=>{ dp.hidden=false; DEPOT.draw(); };
   const HUD=document.createElement('div'); HUD.id='minehud'; HUD.hidden=true; HUD.style.cssText='position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:7;font:11px Silkscreen,monospace;color:#d8f4ff;background:#0b0d13e0;border:2px solid #2a5866;padding:6px 10px;display:flex;gap:8px;align-items:center;zoom:var(--uiz,1)'; document.body.appendChild(HUD);
-  HUD.draw=()=>{ '@later'; const tb=(id,nm)=>owns(id)?`<button data-t="${id}" style="font:inherit;color:${S.tool===id?'#7ff4ff':'#ece5d3'};background:#0e1016;border:2px solid ${S.tool===id?'#7ff4ff':'#3a3f4e'};padding:2px 7px;cursor:pointer">${nm}</button>`:'';
+  HUD.draw=()=>{ const tb=(id,nm)=>owns(id)?`<button data-t="${id}" style="font:inherit;color:${S.tool===id?'#7ff4ff':'#ece5d3'};background:#0e1016;border:2px solid ${S.tool===id?'#7ff4ff':'#3a3f4e'};padding:2px 7px;cursor:pointer">${nm}</button>`:'';
     HUD.innerHTML=`<span id="mdep">MINE</span><button data-s="1" style="font:inherit;color:#ece5d3;background:#0e1016;border:2px solid #3a3f4e;padding:2px 7px;cursor:pointer">SCAN (P)</button>${tb('cutter','CUTTER')}${tb('sonic','SONIC')}${tb('mdrone','DRONE')}`; };
   HUD.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b)return; if(b.dataset.s)MINE.scan(); if(b.dataset.t){ S.tool=b.dataset.t; save(); HUD.draw(); } });
   addEventListener('keydown',e=>{ if(e.repeat||e.ctrlKey||e.metaKey||e.altKey||e.key.toLowerCase()!=='p')return; if(e.target&&e.target.closest&&e.target.closest('input,textarea,select'))return; if(MINE.inside(pos.x,pos.z))MINE.scan(); });

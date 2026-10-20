@@ -3743,3 +3743,12 @@ initial download and load super fast"; then "Go")
 - (owner, 20 Oct 2026: "tomato merchant should be 25% taller, nothing on ground (no loose veggies)"): THE TOMATO is 2.3 m (was 1.84);
   the vegetable stand no longer scatters pumpkins and sacks on the ground in front of it (`081-stalls.js`), and their two collision
   boxes went with them. Cost: fewer instances, nothing else.
+
+## 20 Oct 2026: the lawn flat inside, standing at its edges, moved only by what walks through it
+
+- (owner, 20 Oct 2026: "lets make the grass mostly flat again, except on the edges, more natural, and it doesnt move at all unless
+  something is moving it (you, npc, character, animal, etc) the environment cant move it"; `WEEDS.lawnInit` in `140-weeds.js`): the
+  tall grass's mass had a low lip at the lawn's edge and its full height inside; now the height curve is the other way round: full height
+  in a band some 0.6 tiles wide along every edge (paths, walls, kerbs, the keep-outs round trees and stalls), falling to a fifth of it
+  inside, the tussock roll kept so the flat part is not a sheet. The wind is out of its shader (the trees' `PARK.sway` no longer reaches
+  it); what still moves it is the treading of you and the walkers near you, as before. Cost: the same mesh; a little less vertex work.

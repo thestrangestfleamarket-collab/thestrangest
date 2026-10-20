@@ -1,0 +1,48 @@
+const {chromium}=require('playwright'); const fs=require('fs'), path=require('path');
+const OUT=process.argv[2]||'parkout', PAGE=path.resolve(__dirname,'../dist/market.html'), errs=[], rep={};
+const fin=()=>{ rep.errors=errs.slice(0,60); fs.writeFileSync(path.join(OUT,'report.json'),JSON.stringify(rep,null,1)); console.log(JSON.stringify(rep).slice(0,6000)); };
+process.on('unhandledRejection',e=>{ errs.push('TEST '+String(e&&e.message||e).slice(0,400)); fin(); process.exit(1); });
+(async()=>{ fs.mkdirSync(OUT,{recursive:true}); const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist']});
+  const pg=await b.newPage({viewport:{width:960,height:540}}); pg.setDefaultTimeout(900000); pg.on('pageerror',e=>errs.push(e.message.slice(0,300))); pg.on('console',m=>{ if(m.type()==='error'||/PARK|park/.test(m.text()))errs.push(m.type()+': '+m.text().slice(0,300)); });
+  await pg.addInitScript(()=>{ const t=setInterval(()=>{ if(window.__started){ window.__startedAt=performance.now(); clearInterval(t); } },20); });
+  await pg.goto('file://'+PAGE+'?fresh=1&hour=13&wx=CLEAR&at=0,0',{waitUntil:'commit'});
+  for(let i=0;i<1800;i++){ await pg.waitForTimeout(250); if(await pg.evaluate(()=>!!window.__dbg))break; }
+  rep.startMs=await pg.evaluate(()=>Math.round(window.__startedAt||0));
+  await pg.waitForTimeout(4000);
+  const stats=()=>pg.evaluate(()=>{ const D=__dbg, R=D.renderer, M=D.MAPG, P=D.MAPK.PARK; let tris=0, objs=0, ptris=0, pobjs=0; const cnt=o=>{ const g=o.geometry; if(!g||!g.attributes||!g.attributes.position)return 0; const c=g.index?g.index.count:g.attributes.position.count; return Math.round((o.isMesh?c/3:0)*(o.isInstancedMesh?o.count:1)); };
+    D.scene.traverse(o=>{ if(o.isMesh){ tris+=cnt(o); objs++; } }); if(M.park)M.park.traverse(o=>{ if(o.isMesh){ ptris+=cnt(o); pobjs++; } });
+    let rl=null; try{ rl=RENDERLIST().head; }catch(e){ rl='ERR '+e.message; }
+    return {sceneTris:tris,sceneMeshes:objs,parkTris:ptris,parkMeshes:pobjs,parkVis:M.park?M.park.visible:null,lamps:D.lamps.length,geos:R.info.memory.geometries,texs:R.info.memory.textures,progs:R.info.programs.length,drawn:R.info.render.triangles,calls:R.info.render.calls,frameTris:D.tris(),rl,loaded:!!(P.ready),inside:!!P.in,lvl:D.lvl(),you:D.you()}; });
+  const shot=async(n,f,w=5000)=>{ try{ if(f)await pg.evaluate(f); await pg.waitForTimeout(w); await pg.screenshot({path:path.join(OUT,n+'.png')}); }catch(e){ errs.push(n+': '+e.message.slice(0,200)); } };
+  const G=()=>{ const M=__dbg.MAPK, P=M.PARK, B=M.BOD, T=window.TILE||1, gx=B.XS((P.gate[0]+P.gate[1])/2+P.ox), wz=B.ZS(P.y0+P.oy), dir=Math.sign(B.ZS(P.y0+P.oy+1)-wz); return {gx,wz,dir,T}; };
+  await pg.evaluate(`window.__G=${G.toString()}`);
+  await shot('street-iso',()=>{ const g=__G(); STORE.goTo(g.gx,g.wz-g.dir*5*g.T,'up'); },6000);
+  rep.start=await stats();
+  await pg.keyboard.press('v'); await shot('street-behind',()=>{ const g=__G(); __dbg.face(g.dir>0?0:Math.PI); },5000);
+  rep.behind=await stats();
+  await pg.keyboard.press('v'); await pg.keyboard.press('v');
+  await shot('gate-iso',()=>{ const g=__G(); STORE.goTo(g.gx,g.wz-g.dir*1.2*g.T,'up'); },3000);
+  await pg.keyboard.press('v'); await pg.evaluate(()=>{ const g=__G(); __dbg.face(g.dir>0?0:Math.PI); }); await pg.waitForTimeout(1500);
+  await pg.keyboard.down('w'); for(let i=0;i<8;i++){ await pg.waitForTimeout(400); await shot('walkin'+i,null,0); } await pg.keyboard.up('w');
+  for(let i=0;i<60;i++){ await pg.waitForTimeout(500); if(await pg.evaluate(()=>{ const P=__dbg.MAPK.PARK; return !P.load||P.ready; }))break; }
+  await pg.waitForTimeout(3000); await shot('inside-gate',null,1000);
+  rep.inside=await stats();
+  await pg.keyboard.press('v'); await pg.keyboard.press('v');
+  await shot('lawn',()=>{ const M=__dbg.MAPK, P=M.PARK; STORE.goTo(M.BOD.XS(P.round[0]+P.ox+9),M.BOD.ZS(P.round[1]+P.oy+6),'up'); },5000);
+  await shot('round',()=>{ const M=__dbg.MAPK, P=M.PARK; STORE.goTo(M.BOD.XS(P.round[0]+P.ox),M.BOD.ZS(P.round[1]+P.oy-10),'up'); },4000);
+  await shot('lake',()=>{ const M=__dbg.MAPK, P=M.PARK, S=window.FOUNT&&FOUNT.S; if(S)STORE.goTo(M.BOD.XS(S.C.x+P.ox),M.BOD.ZS(S.C.y+P.oy-S.R-3),'up'); },5000);
+  await shot('tower',()=>{ const s=window.GTOWER&&GTOWER.site&&GTOWER.site(); if(s)STORE.goTo(s.x+3*(window.TILE||1),s.z+4*(window.TILE||1),'up'); },5000);
+  rep.towerSite=await pg.evaluate(()=>window.GTOWER&&GTOWER.site&&GTOWER.site());
+  await shot('cave',()=>{ const M=__dbg.MAPK, P=M.PARK, S=window.GCAVE&&GCAVE.S; if(S)STORE.goTo(M.BOD.XS(S.c.x+P.ox+3),M.BOD.ZS(S.c.y+P.oy-7),'up'); },4000);
+  rep.parkFull=await stats();
+  await shot('out-gate',()=>{ const g=__G(); STORE.goTo(g.gx,g.wz+g.dir*1.5*g.T,'up'); },3000);
+  await pg.keyboard.press('v'); await pg.evaluate(()=>{ const g=__G(); __dbg.face(g.dir>0?Math.PI:0); }); await pg.waitForTimeout(1500);
+  await pg.keyboard.down('w'); for(let i=0;i<6;i++){ await pg.waitForTimeout(400); await shot('walkout'+i,null,0); } await pg.keyboard.up('w');
+  await pg.waitForTimeout(3000); await pg.keyboard.press('v'); await pg.keyboard.press('v'); await shot('street-after',()=>{ const g=__G(); STORE.goTo(g.gx,g.wz-g.dir*5*g.T,'up'); },4000);
+  rep.after=await stats();
+  await shot('place-park',()=>UI.goPlace('CENTRAL PARK'),8000);
+  rep.placePark=await stats();
+  await shot('place-street',()=>{ const g=__G(); STORE.goTo(g.gx,g.wz-g.dir*8*g.T,'up'); },5000);
+  await shot('place-tower',()=>UI.goPlace("THE SQUIRREL'S TOWER"),8000);
+  rep.end=await stats();
+  fin(); await b.close(); })();

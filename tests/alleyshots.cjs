@@ -9,20 +9,25 @@ process.on('unhandledRejection',e=>{ errs.push('TEST '+String(e&&e.message||e).s
   await pg.waitForTimeout(6000);
   const shot=async(n,f,w=4000)=>{ try{ if(f)await pg.evaluate(f); await pg.waitForTimeout(w); await pg.screenshot({path:path.join(OUT,n+'.png')}); }catch(e){ errs.push(n+': '+e.message.slice(0,200)); } };
   const cost=()=>pg.evaluate(()=>{ const r=__dbg.renderer, i=r.info; let bt=0, bg=0, bo=0; const g=__dbg.scene.getObjectByName('block'); if(g)g.traverse(o=>{ if(!o.geometry)return; bo++; const c=o.geometry.index?o.geometry.index.count:o.geometry.attributes.position.count; bt+=(o.isLine||o.isLineSegments?c/2:c/3)*(o.isInstancedMesh?o.count:1); });
-    return {calls:i.render.calls,tris:i.render.triangles,geoms:i.memory.geometries,tex:i.memory.textures,progs:(i.programs||[]).length,sceneTris:__dbg.tris(),lamps:__dbg.lamps.length,recs:__dbg.LITE.recs.length,sol:__dbg.SOL.up.length,blockObjs:bo,blockTris:Math.round(bt),blockVis:g?g.visible:null,alley:window.ALLEYDBG?ALLEYDBG():null}; });
+    return {calls:i.render.calls,tris:i.render.triangles,geoms:i.memory.geometries,tex:i.memory.textures,progs:(i.programs||[]).length,sceneTris:__dbg.tris(),lamps:__dbg.lamps.length,recs:__dbg.LITE.recs.length,sol:__dbg.SOL.up.length,blockObjs:bo,blockTris:Math.round(bt),blockVis:g?g.visible:null,alley:window.ALLEYDBG?ALLEYDBG():null,visObjs:(()=>{ let n=0,t=0; __dbg.scene.traverseVisible(o=>{ if(!o.geometry||!o.layers.mask)return; n++; const c=o.geometry.index?o.geometry.index.count:o.geometry.attributes.position?o.geometry.attributes.position.count:0; t+=(o.isMesh?c/3:o.isPoints?c:c/2)*(o.isInstancedMesh?o.count:1); }); return [n,Math.round(t)]; })()}; });
   rep.startCost=await cost();
-  rep.start=await pg.evaluate(()=>{ const B=__dbg.MAPK.BOD, T=window.TILE||__dbg.cv().TILE, y=__dbg.you(); return {tile:[+(y.x/T+B.OX).toFixed(2),+(y.z/T+B.OY).toFixed(2)],OX:B.OX,OY:B.OY,MAP:B.MAP,CURB:B.CURB,FAR:B.FAR,T}; });
-  rep.layout=await pg.evaluate(()=>{ const B=__dbg.MAPK.BOD, T=__dbg.cv().TILE, tx=x=>+(x/T+B.OX).toFixed(2), ty=z=>+(z/T+B.OY).toFixed(2);
-    const near=__dbg.SOL.up.filter(s=>{ const a=tx(s[0]),c=tx(s[2]),b=ty(s[1]),d=ty(s[3]); return d>-125&&b<-60&&(c>195||a<-40||(a<105&&c>92)); }).map(s=>[tx(s[0]),ty(s[1]),tx(s[2]),ty(s[3])]);
-    return {block:window.BLOCKDBG&&BLOCKDBG(),gates:window.GATESDBG&&GATESDBG().gaps,stair:__dbg.MAPK.MAPSTAIR&&{x0:__dbg.MAPK.MAPSTAIR.x0,x1:__dbg.MAPK.MAPSTAIR.x1},near:near.slice(0,80),bank:__dbg.MAPK.RING.bank,ff:__dbg.MAPK.RING.ff}; });
   const go=(x,y)=>pg.evaluate(([x,y])=>{ const B=__dbg.MAPK.BOD; STORE.goTo(B.XS(x),B.ZS(y),'up'); },[x,y]);
+  const st=()=>pg.evaluate(()=>window.ALLEYDBG&&ALLEYDBG());
   await shot('start');
   await go(99,-62); await pg.mouse.move(480,270); for(let i=0;i<4;i++){ await pg.mouse.wheel(0,600); await pg.waitForTimeout(150); }
   await shot('street99'); rep.street99=await cost();
-  for(const k of [1,2,3]){ await pg.keyboard.press('q'); await shot('street99-q'+k,null,2500); }
-  await pg.keyboard.press('q');
-  for(const [n,x,y] of [['east',214,-95.9],['west',-51.5,-95.9],['gate99',99,-91.5],['mid94',94,-95.9],['mid130',130,-95.9],['prom',100,-115]]){ await go(x,y); await shot(n); rep['at_'+n]={pos:await pg.evaluate(()=>{ const B=__dbg.MAPK.BOD, T=__dbg.cv().TILE, y=__dbg.you(); return [+(y.x/T+B.OX).toFixed(2),+(y.z/T+B.OY).toFixed(2)]; }),cost:await cost()};
-    if(n==='mid94'||n==='east'){ for(const k of [1,2]){ await pg.keyboard.press('q'); await shot(n+'-q'+k,null,2500); } await pg.keyboard.press('q'); await pg.keyboard.press('q'); } }
-  await go(94,-95.9); await pg.keyboard.press('v'); await shot('mid94-behind',()=>__dbg.face(Math.PI/2),4000); await pg.keyboard.press('v'); await pg.keyboard.press('v');
-  await go(99,-62); await shot('street-back',null,4000); rep.backCost=await cost();
+  await go(99,-91.5); await shot('gate99'); rep.gate99=await st();
+  await go(209,-85); await shot('east-mouth'); rep.mouth=await st();
+  await go(209,-93.6); await pg.waitForTimeout(30); await pg.screenshot({path:path.join(OUT,'fade.png')}); rep.fadeTxt=await pg.evaluate(()=>{ const e=document.getElementById('subfade'); return e&&[e.textContent,e.style.opacity]; });
+  await shot('east-in',null,5000); rep.enter=await st();
+  await go(130,-95.9); await shot('alley130'); rep.alley130=await cost();
+  await go(94,-95.9); await shot('alley94'); rep.alley94=await cost();
+  for(const k of [1,2]){ await pg.keyboard.press('q'); await shot('alley94-q'+k,null,2500); } await pg.keyboard.press('q'); await pg.keyboard.press('q');
+  await pg.keyboard.press('v'); await shot('alley94-behind',()=>__dbg.face(Math.PI/2),4000);
+  await shot('alley130-behind',()=>{ const B=__dbg.MAPK.BOD; STORE.goTo(B.XS(127),B.ZS(-96.5),'up'); __dbg.face(-Math.PI/2); },4000);
+  await pg.evaluate(()=>window.DN&&DN.set&&DN.set('night')); await shot('alley-night-behind',null,4000);
+  await pg.keyboard.press('v'); await pg.keyboard.press('v'); await shot('alley-night-iso',null,4000); await pg.evaluate(()=>window.DN&&DN.set&&DN.set('day'));
+  await go(99,-62); await shot('street-back',null,4000); rep.left=await st(); rep.backCost=await cost();
+  await go(140,-96); await pg.waitForTimeout(40); rep.refade=await pg.evaluate(()=>{ const e=document.getElementById('subfade'); return e&&[e.textContent,e.style.opacity]; }); await shot('reenter',null,3000); rep.reenter=await st();
+  rep.full=await pg.evaluate(()=>{ let t=0,n=0; __dbg.scene.traverseVisible(o=>{ if(!o.geometry)return; n++; }); return n; });
   fin(); await b.close(); })();

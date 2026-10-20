@@ -208,4 +208,46 @@ const TOONS={};
         B.head.rotation.y=c.look; B.head.rotation.z=-Math.sin(ph)*.05*m; B.armLt.rotation.x=sw*.35; B.armRt.rotation.x=-sw*.35; B.tail.rotation.y=Math.sin(ph)*.3*m; B.tailFin.rotation.y=Math.sin(ph-1)*.35*m;
         if(c.sheet)return; if((c.flap=(c.flap??4+Math.random()*5)-dt)<.8){ const f=Math.sin(Math.max(0,c.flap)/.8*Math.PI*2)*Math.sin(Math.max(0,c.flap)/.8*Math.PI); B.armL.rotation.z-=Math.abs(f)*.5; B.armR.rotation.z+=Math.abs(f)*.5; if(c.flap<0)c.flap=5+Math.random()*7; } } };
     TOONS.rainfish=make(def,{key:'rainfish',name:'THE RAIN FISH',metres:2.2,radius:.32,speed:.3,stride:9,at:88},6); }
+  { const {spl,prof,surf,lathe,tube,skin,ss,noise}=PARTSNPC.T, F=(a,b,c,k=90)=>(x,y,z)=>{ const v=noise(x,y,z,k); return v>.68?c:v<.3?b:a; }, TAU=Math.PI*2, D=Math.PI/180;
+    const MAR=F([.5,.12,.14],[.48,.11,.13],[.53,.14,.16]), MAR2=F([.45,.1,.12],[.43,.09,.11],[.48,.12,.14]), GRN=F([.25,.36,.25],[.24,.34,.24],[.27,.38,.27]), TAN=F([.86,.72,.55],[.84,.7,.53],[.88,.75,.58]),
+      HEL=F([.37,.43,.52],[.35,.41,.5],[.4,.46,.55]), VIS=F([.43,.48,.56],[.41,.46,.54],[.46,.51,.59]), GLD=F([.82,.62,.25],[.79,.59,.23],[.85,.66,.29]), CRM=F([.92,.88,.76],[.9,.85,.73],[.94,.9,.8]), BRN=F([.47,.32,.17],[.44,.3,.16],[.5,.35,.19]), SOLE=[.22,.17,.13];
+    const melt=(c,E,nu,nv,k=8)=>surf(nu,nv,(u,v)=>{ const th=v*Math.PI, ph=u*TAU, d=[Math.sin(th)*Math.sin(ph),-Math.cos(th),Math.sin(th)*Math.cos(ph)]; let s=0;
+      for(const [e,R] of E){ const o=[0,1,2].map(i=>(c[i]-e[i])/R[i]), q=[0,1,2].map(i=>d[i]/R[i]), A=q[0]**2+q[1]**2+q[2]**2, B=2*(o[0]*q[0]+o[1]*q[1]+o[2]*q[2]), C=o[0]**2+o[1]**2+o[2]**2-1, h=B*B-4*A*C; if(h>0){ const t=(-B+Math.sqrt(h))/(2*A); if(t>0)s+=t**k; } }
+      const t=s**(1/k); return [c[0]+d[0]*t,c[1]+d[1]*t,c[2]+d[2]*t]; });
+    const TOR=prof([[.07,.25],[.1,.262],[.108,.3],[.108,.4],[.105,.47],[.092,.512],[.06,.533],[0,.54]]), TZ=.78, DOME=prof([[.13,.655],[.133,.69],[.126,.73],[.106,.77],[.07,.8],[.03,.81],[0,.812]]), DZ=.95;
+    const onT=(x,y,o)=>[x,y,Math.sqrt(Math.max(0,TOR.R(y)**2-x*x))*TZ+o], onD=(a,y,o=0)=>{ const r=DOME.R(y)+o; return [r*Math.sin(a),y,r*DZ*Math.cos(a)]; };
+    const loop=(cx,cy,rx,ry)=>shape(tube(Array.from({length:25},(_,i)=>{ const a=i/24*TAU; return onT(cx+rx*Math.sin(a),cy+ry*Math.cos(a),.006); }),[.007,.007],6,40),GLD);
+    const VW=v=>.118*Math.pow(1-v,.85)+.004, visor=(u,v)=>{ const x=u*VW(v), y=.665-v*.19, R=.13; return [x,y,Math.sqrt(Math.max(0,R*R-x*x))*.95+.012*(1-Math.abs(u))-.035*v*v]; };
+    const arm=sx=>{ const s=sx<0?'L':'R'; return skin(shape(tube([[sx*.1,.52,0],[sx*.122,.47,.004],[sx*.13,.42,.01],[sx*.132,.37,.016],[sx*.134,.345,.02]],[.042,.046,.043,.04,.041,.043],14,16),(x,y,z)=>y>.405?GRN(x,y,z):MAR(x,y,z)),
+      (x,y)=>{ const e=ss(.44,.39,y), h=ss(.5,.53,y)*.5; return ['arm'+s,1-e-h,'elbow'+s,e,'chest',h]; }); };
+    const hand=sx=>[shape(blob(.032,.034,.03,12,8),TAN,[sx*.136,.31,.022]), shape(blob(.012,.02,.012,8,6),TAN,[sx*.12,.322,.045],null,[20,0,sx*30])];
+    const leg=sx=>{ const s=sx<0?'L':'R', x=sx*.065; return skin(shape(tube([[x,.31,0],[x,.24,0],[x,.17,.004],[x,.1,0]],[.05,.05,.047,.044,.042],14,18,{d:(p,u,v)=>{ const k=1+.05*Math.sin(v*TAU*5); return [x+(p[0]-x)*k,p[1],p[2]*k]; }}),MAR2),
+      (x,y)=>{ const k=ss(.2,.15,y); return ['leg'+s,1-k,'knee'+s,k]; }); };
+    const boot=sx=>{ const x=sx*.065; return [ shape(melt([x,.06,.02],[[[x,.085,0],[.046,.045,.046]],[[x,.04,.035],[.052,.04,.075]]],24,16),BRN), shape(blob(.055,.012,.08,16,6),SOLE,[x,.008,.035]),
+      ...[0,1,2].map(k=>shape(box(.04,.006,.008),GLD,[x,.075-k*.018,.045+k*.012],null,[-30,0,0])) ]; };
+    const STUDS=[[.755,-55],[.755,-25],[.755,25],[.755,55],[.71,-75],[.71,-45],[.71,45],[.71,75],[.735,-90],[.735,90],[.72,180],[.75,150],[.75,-150],[.72,120],[.72,-120]];
+    const def={ bones:[['root',null,[0,0,0]],['hips','root',[0,.27,0]],['chest','hips',[0,.4,0]],['head','chest',[0,.53,0]],['horn','head',[0,.8,0]],
+        ['armL','chest',[-.1,.515,0]],['elbowL','armL',[-.13,.42,.01]],['handL','elbowL',[-.134,.34,.02]],['armR','chest',[.1,.515,0]],['elbowR','armR',[.13,.42,.01]],['handR','elbowR',[.134,.34,.02]],
+        ['legL','hips',[-.065,.27,0]],['kneeL','legL',[-.065,.17,0]],['footL','kneeL',[-.065,.09,0]],['legR','hips',[.065,.27,0]],['kneeR','legR',[.065,.17,0]],['footR','kneeR',[.065,.09,0]]],
+      parts:[ part('eye holes',4,'head',[-1,1].map(sx=>shape(blob(.022,.017,.008,10,6),BLACK,[...visor(sx*.52,.34).map((q,i)=>i===2?q+.004:q)],null,[0,sx*28,sx*-12]))),
+        part('visor',3,'head',[ shape(surf(16,14,(u,v)=>visor(u*2-1,v)),VIS), shape(tube(Array.from({length:9},(_,i)=>visor(0,i/8*.98).map((q,k)=>k===2?q+.003:q)),[.006,.005],6,12),HEL) ]),
+        part('face',1,'head',[ shape(blob(.094,.088,.09,18,12),TAN,[0,.6,.02]) ]),
+        part('helmet',2,'head',[ shape(surf(40,18,(u,v)=>{ const a=u*TAU, f=Math.min(u,1-u)*TAU, e=.655-.11*ss(1,1.7,f), y=e+(.812-e)*v, r=y<.655?.133+.006*(.655-y)/.11:DOME.R(y); return [r*Math.sin(a),y,r*DZ*Math.cos(a)]; }),HEL), shape(lathe([[.133,.648],[.142,.655],[.142,.672],[.133,.678]],40,3,{sz:DZ}),HEL) ]),
+        part('studs',3,'head',STUDS.map(([y,a])=>shape(sph(.012,8,6),GLD,onD(a*D,y,.004)))),
+        part('crest',3,'head',[ shape(blob(.022,.058,.012,10,10),GLD,onD(0,.75,.004),null,[-28,0,0]), shape(box(.003,.08,.004),[.66,.48,.18],onD(0,.75,.016),null,[-28,0,0]) ]),
+        part('horn',3,'horn',[ shape(tube([[0,.795,0],[0,.86,.004],[0,.93,-.004],[0,1.0,-.012]],[.043,.034,.024,.012,0],14,24,{d:(p,u,v)=>{ const k=1+.08*Math.abs(Math.sin(v*Math.PI*7)); return [p[0]*k,p[1],(p[2]+.004)*k-.004]; }}),GLD) ]),
+        part('side horns',3,'head',[-1,1].map(sx=>shape(tube([[sx*.118,.715,0],[sx*.15,.75,0],[sx*.172,.79,-.004],[sx*.18,.835,-.01]],[.024,.02,.013,.006,0],10,14),CRM))),
+        part('ear cups',3,'head',[-1,1].flatMap(sx=>[ shape(blob(.014,.058,.038,12,10),GLD,[sx*.136,.635,0]), shape(torus(.04,.011,8,20),CRM,[sx*.14,.635,0],[1,1.45,1],[0,90,0]) ])),
+        part('neck guard',2,'chest',[-1,1].map(sx=>shape(blob(.05,.032,.045,12,8),CRM,[sx*.1,.548,.02]))),
+        part('shirt',0,'chest',[ skin(shape(lathe(TOR,36,20,{sz:TZ}),MAR),(x,y)=>{ const k=ss(.3,.42,y); return ['hips',1-k,'chest',k]; }),
+          skin(shape(lathe([[.1,.25],[.104,.256],[.104,.272],[.1,.278]],36,3,{sz:TZ}),MAR2),()=>['hips',1]) ]),
+        part('number',2,'chest',[ loop(-.034,.468,.022,.026), loop(-.034,.41,.026,.032), loop(.04,.44,.026,.058) ]),
+        part('sleeve L',1,'armL',[ arm(-1) ]), part('sleeve R',1,'armR',[ arm(1) ]), part('hand L',2,'handL',hand(-1)), part('hand R',2,'handR',hand(1)),
+        part('leg L',0,'legL',[ leg(-1) ]), part('leg R',0,'legR',[ leg(1) ]), part('boot L',1,'footL',boot(-1)), part('boot R',1,'footR',boot(1)) ],
+      springs:{ horn:{f:-.1,s:.1,k:50,c:4,lim:.25}, head:{f:-.04,s:.04,k:70,c:7,lim:.1}, elbowL:{f:-.12,k:40,c:5,lim:.3}, elbowR:{f:-.12,k:40,c:5,lim:.3} },
+      pose:(c,dt)=>{ const B=c.B, m=c.mv, ph=c.st.ph, sw=Math.sin(ph)*m, cp=Math.cos(ph)*m; RIGNPC.walk(c,{arm:.4,leg:.5,bob:.018,rock:.04}); B.head.rotation.y=c.look;
+        if(c.sheet)return; B.kneeL.rotation.x=Math.max(0,cp)*.8; B.kneeR.rotation.x=Math.max(0,-cp)*.8; B.footL.rotation.x=-B.kneeL.rotation.x*.5; B.footR.rotation.x=-B.kneeR.rotation.x*.5;
+        B.elbowL.rotation.x=-.25-Math.max(0,-sw)*.45; B.elbowR.rotation.x=-.25-Math.max(0,sw)*.45; B.chest.rotation.y=-sw*.08;
+        if((c.fix=(c.fix??8+Math.random()*6)-dt)<2.2&&!m){ const g=Math.sin(Math.max(0,c.fix)/2.2*Math.PI); B.armR.rotation.x-=g*1.1; B.armR.rotation.z+=g*.5; B.elbowR.rotation.x-=g*1.3; B.head.rotation.z=-g*.08; if(c.fix<0)c.fix=9+Math.random()*9; } } };
+    TOONS.eighty=make(def,{key:'eighty',name:'NUMBER 80',metres:2.2,radius:.26,speed:.4,stride:8,at:92},7); }
   window.TOONSDBG=()=>Object.fromEntries(Object.entries(TOONS).map(([k,N])=>[k,{key:N.key,x:+N.st.x.toFixed(2),z:+N.st.z.toFixed(2),tris:N.tris,vis:N.g.visible}])); }

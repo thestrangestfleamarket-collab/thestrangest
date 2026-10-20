@@ -3585,3 +3585,13 @@ initial download and load super fast"; then "Go")
   by his legs, each point a bone the robe hangs on; it settles and stops still when he stands. Built at twice his size (`metres` 3.7).
   Cost: 11,876 triangles, no lights, no new programs; the cloth's ms a frame not yet measured in the game. Moving pictures: `node tools/charanim.cjs`
   (the game's own rig on the character alone, on black: stand, walk, turn, stop).
+
+- **NUMBER 80** (owner, 20 Oct 2026, his photo of a felted kid in a horned helmet and an 80 jersey walking a city street: "bring into
+  game, same rules as other chars you just did"; `084-npc-toons.js`, `eighty`): measured off the photo (horn tip 1.0 of his height,
+  horn base .81, helmet widest .70 and .25 across, rim .66, visor point .48, eye holes .60, shoulders .52, hands .32, hem .26, boot
+  tops .10). A blue-grey felt helmet down to his neck at the back, gold studs and crest, a tall ringed gold horn (wobbles as he
+  walks), two cream side horns, gold ear cups in cream rims, a pointed visor with two eye holes over a tan face, cream neck guards;
+  a maroon jersey with a gold 80 in raised cord, green sleeves with maroon cuffs, tan mitts; maroon trousers bunched in rings, brown
+  boots with gold laces. Arms on shoulder, elbow and hand; legs on hip, knee and foot (knees bend in the swing). Standing, now and
+  then he reaches up to set his helmet straight. Built at twice his size (`metres` 2.2). Cost: 14,324 triangles (over the 12k he
+  picked for each: the helmet's horns and studs), no lights, no new programs.

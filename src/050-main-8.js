@@ -2,6 +2,7 @@
 
 BOD.KC={KMK,KPP,DGN,DGP,LAMPS,CATALOG,dungeonWall,dungeonFloorCol,castleArch,KARCH};
 }
+await grab('bodega',async()=>{ const solids=SOL.up, fixed=FIX.up, SHL=[]; let BOUND, groundY; const c0=cutWalls.length;
 
 {
   const B0=LBLD[0], B00={...B0}, W=LSEED.walk, CURB=LSEED.street, FAR=LSEED.grass, RD=-4;
@@ -67,7 +68,7 @@ BOD.KC={KMK,KPP,DGN,DGP,LAMPS,CATALOG,dungeonWall,dungeonFloorCol,castleArch,KAR
     return rlf(sh(mt('brick',b),f),zz>=4?1:0); }
   const FRAME=[70,72,78];
   const O={}, HUNG=[];
-  const put=(key,kind,x,y,rot=0,hung)=>{ const f=CATALOG[kind]; if(!f){ console.warn('no',kind); return; } const n0=PROPS.length; const p=f(+x.toFixed(3),+y.toFixed(3)); if(!p)return; p.key=key; p.kind=kind; place(p,rot); if(hung)p.high=true; O[key]=p; };
+  const put=(key,kind,x,y,rot=0,hung)=>{ const f=CATALOG[kind]; if(!f){ console.warn('no',kind); return; } const n0=PROPL.length; const p=f(+x.toFixed(3),+y.toFixed(3)); if(!p)return; p.key=key; p.kind=kind; place(p,rot); if(hung)p.high=true; O[key]=p; };
   { const B={...B0,y0:BODOFF}, m=(B.x0+B.x1)/2;
   put('mat','door mat',m,B.y1-.5);
   put('wb1','shop shelf',B.x0+1.1,B.y0+.36); put('wb2','shop shelf',B.x0+3.1,B.y0+.36); put('wb3','shop shelf',B.x0+5.1,B.y0+.36);
@@ -91,24 +92,24 @@ BOD.KC={KMK,KPP,DGN,DGP,LAMPS,CATALOG,dungeonWall,dungeonFloorCol,castleArch,KAR
   BOD.food={x:B.x1-1.05,y:B.y0+6.3};
   }
   const FRONT=[], ROOF=[], STREET=[], GHOSTST=[];
-  { const M=MKS, bo=B0, bm=(bo.x0+bo.x1)/2, n0=PROPS.length;
+  { const M=MKS, bo=B0, bm=(bo.x0+bo.x1)/2, n0=PROPL.length;
     M.pipe(bo.x0+.2,bo.y1,bo.h-6);
     M.neon(bo.x0+1.5,bo.y1,64,'OPEN',[255,90,110]); M.signbox(bo.x0+.45,bo.x0+2.3,bo.y1,36,48,[250,250,246],[40,80,200],'LOTTO',false);
     M.gatebox(bo.x0+.2,bo.x1-.2,bo.y1,114); M.bell(bm,bo.y1,98); M.meterbox(bo.x0+.9,bo.y1,30); M.number(bo.x0+1.6,bo.y1,82,'66');
-    for(const p of PROPS.slice(n0))FRONT.push(p);
-    { const K=GHOSTK.GSK, s=K.s; { const o=LAY.o('ghost'); K.o=[131+o.x/BLDK,W-8.3*s+o.y/BLDK]; } const n3=PROPS.length;
+    for(const p of PROPL.slice(n0))FRONT.push(p);
+    { const K=GHOSTK.GSK, s=K.s; { const o=LAY.o('ghost'); K.o=[131+o.x/BLDK,W-8.3*s+o.y/BLDK]; } const n3=PROPL.length;
       for(const [k,dx,dy] of PRESETS['Preset Ghost Street 1'])if(!/row house|utility pole/.test(k))CATALOG[k](K.o[0]-3.5*s+dx,K.o[1]-.45*s+dy);
-      for(const p of PROPS.slice(n3))GHOSTST.push(p); BOD.GHOSTST=GHOSTST; BOD.GSK=K; gdShape(GHOSTST,K,LAMPS);
+      for(const p of PROPL.slice(n3))GHOSTST.push(p); BOD.GHOSTST=GHOSTST; BOD.GSK=K; gdShape(GHOSTST,K,LAMPS);
     }
-    const n2=PROPS.length, R=(f,x,y,z,...a)=>{ const p=f(x,y,z,bo.y1,...a); p.solids=[]; return p; };
-    R(M.antenna,bo.x0+8,bo.y0+3.5,bo.h); for(const p of PROPS.slice(n2))ROOF.push(p); }
+    const n2=PROPL.length, R=(f,x,y,z,...a)=>{ const p=f(x,y,z,bo.y1,...a); p.solids=[]; return p; };
+    R(M.antenna,bo.x0+8,bo.y0+3.5,bo.h); for(const p of PROPL.slice(n2))ROOF.push(p); }
   BOD.O=O; BOD.FRONT=FRONT; BOD.STREET=STREET; BOD.ROOF=ROOF; BOD.MAP=MAP; BOD.RD=RD;
   const wallOf=p=>{ const cx=(p.x0+p.x1)/2, cy=(p.y0+p.y1)/2; let best=null, bd=.5; for(const w of WALLS){ const a=w.ax==='x'?cx:cy, d=Math.abs((w.ax==='x'?cy:cx)-w.at); if(a>=w.a0-.2&&a<=w.a1+.2&&d<bd){ bd=d; best=w; } } return best; };
   BOD.kindOf=p=>{ if(/fluorescent tube/.test(p.name||''))return 'U'; if(ROOF.includes(p))return 'R';
     if(FRONT.includes(p))return 'Hfront'; if(p.high){ const w=wallOf(p); if(w)return 'H'+w.id; } return 'L'; };
   BOD.paintProps=(L=[...Object.values(O),...FRONT,...STREET,...ROOF,...GHOSTST])=>{ for(const p of L){ const k=BOD.kindOf(p); BATCH.tag=OBJ('bodega',p.name); for(const b of p.boxes)gbox(b,k); } BATCH.tag=null; };
   BOD.g={bodegaWall,grain,speck,COPE,DTBRICK,hash,grassCol,lawnCol,kerbFace,cvNoise}; BOD.CURB=CURB; BOD.FAR=FAR;
-  BOD.gbox=gbox; BOD.faceTex=faceTex; BOD.bq=bq; BOD.C=C; BOD.facade=facade; BOD.FRAME=FRAME; BOD.place=place; BOD.placeAt=placeAt; BOD.MAP=MAP; BOD.K={MKS,CATALOG,PROPS,STUDIO,LSEED,STORY,sh};
+  BOD.gbox=gbox; BOD.faceTex=faceTex; BOD.bq=bq; BOD.C=C; BOD.facade=facade; BOD.FRAME=FRAME; BOD.place=place; BOD.placeAt=placeAt; BOD.MAP=MAP; BOD.K={MKS,CATALOG,PROPS:PROPL,STUDIO,LSEED,STORY,sh};
   const PCX=(50-MAINX.w+LAY.e('park')[0]+AV.x0+LAY.e('park')[2])/2+LAY.o('park').x, PCY=(MAP.y1+RG.ny0-NORTHX)/2+LAY.o('park').y, GATE=[PCX-3.5,PCX+3.5], EGATE=[PCY-2,PCY+2];
   const KR=1.6, RR=[[MAP.x0,CURB,MAP.x1,FAR],[AV.r0,FAR,AV.r1,RG.nr1],[RG.wr0,FAR,RG.wr1,RG.nr1],[RG.wr0,RG.nr0,AV.r1,RG.nr1],[BK.rx,BK.r0,RG.wr0,BK.r1]];
   const CORN=[[RG.wr0,FAR,-1,1,1],[RG.wr1,FAR,1,1,1],[AV.r0,FAR,-1,1,1],[AV.r1,FAR,1,1,1],[RG.wr1,RG.nr0,1,-1,1],[AV.r0,RG.nr0,-1,-1,1],[RG.wr0,RG.nr1,1,-1,0],[AV.r1,RG.nr1,-1,-1,0],[RG.wr0,BK.r0,-1,-1,1],[RG.wr0,BK.r1,-1,1,1]].map(([x,y,sx,sy,cv])=>({x,y,sx,sy,cv,cx:x+sx*KR,cy:y+sy*KR}));

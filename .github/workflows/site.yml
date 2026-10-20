@@ -30,8 +30,11 @@ jobs:
         run: node tests/site.cjs
       - name: Every place's code comes when you go there
         run: node tests/places.cjs out
+      - name: The page's errors, when it did not open
+        if: failure()
+        run: MIN=0 python3 build.py && node tests/pageerr.cjs dist/market.html
   game:
-    if: github.event_name == 'pull_request'
+    if: github.event_name != 'push'
     runs-on: ubuntu-latest
     outputs:
       tests: ${{ steps.c.outputs.tests }}
@@ -42,7 +45,7 @@ jobs:
       - id: c
         name: Did the game change (src, data, build) or these checks?
         run: |
-          if git diff --name-only origin/${{ github.base_ref }}...HEAD | grep -qE '^(src/|data/|build\.py|tools/(yields\.py|minify\.cjs|bundle\.cjs)|package|tests/(samepic|texhash)\.cjs|\.github/workflows/site\.yml)'; then T='["budget","samepic","texhash"]'; else T='["budget"]'; fi; echo "tests=$T" >> "$GITHUB_OUTPUT"; echo "$T"
+          if git diff --name-only origin/${{ github.base_ref || 'main' }}...HEAD | grep -qE '^(src/|data/|build\.py|tools/(yields\.py|minify\.cjs|bundle\.cjs)|package|tests/(samepic|texhash)\.cjs|\.github/workflows/site\.yml)'; then T='["budget","samepic","texhash"]'; else T='["budget"]'; fi; echo "tests=$T" >> "$GITHUB_OUTPUT"; echo "$T"
   check:
     needs: game
     runs-on: ubuntu-latest
@@ -65,7 +68,7 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - name: Build the base and this pull request (readable)
         run: |
-          git fetch --depth=1 origin ${{ github.base_ref }}
+          git fetch --depth=1 origin ${{ github.base_ref || 'main' }}
           git worktree add ../base FETCH_HEAD
           ln -s "$PWD/node_modules" ../base/node_modules
           P="${{ matrix.test == 'budget' && 'python3 tools/perfprof.py' || 'true' }}"

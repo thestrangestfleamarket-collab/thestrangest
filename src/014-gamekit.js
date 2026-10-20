@@ -3,10 +3,10 @@ const hash=(a,b,c=0)=>{ let h=(a*374761393+b*668265263+c*2147483647)|0; h=(h^(h>
 const sh=(c,f)=>{ const o=[Math.min(255,c[0]*f),Math.min(255,c[1]*f),Math.min(255,c[2]*f)]; if(c.e)o.e=c.e; return o; }, mt=(k,c)=>c, TEXUV=[0,0], rlf=(c,t)=>c;
 function cvNoise(u,v,k){ const i=Math.floor(u), j=Math.floor(v), fu=u-i, fv=v-j, su=fu*fu*(3-2*fu), sv=fv*fv*(3-2*fv), a=hash(i,j,k), b=hash(i+1,j,k), c=hash(i,j+1,k), d=hash(i+1,j+1,k); return (a+(b-a)*su)*(1-sv)+(c+(d-c)*su)*sv; }
 let ROT=0; const LIFE={mode:0}; const STORY=130, T=.1, FP=24, chunkAtL=()=>null, LAMPS=[], CATALOG={}, CAT_INFO={}, CAT_DEPTS=[], WORLD={}, KIND_OF={};
-const PROPS=[]; let PNAME='object';
+const PROPL=[]; let PNAME='object';
 function prop(boxes,extra,o){ const fp=boxes.filter(b=>b.z0===0||b.foot);
-  const p={boxes,extra,x0:Math.min(...fp.map(b=>b.x0)),y0:Math.min(...fp.map(b=>b.y0)),x1:Math.max(...fp.map(b=>b.x1)),y1:Math.max(...fp.map(b=>b.y1)),lv:0,id:PROPS.length,name:PNAME,...o};
-  p.chunk=chunkAtL((p.x0+p.x1)/2,(p.y0+p.y1)/2,p.lv); PROPS.push(p); return p; }
+  const p={boxes,extra,x0:Math.min(...fp.map(b=>b.x0)),y0:Math.min(...fp.map(b=>b.y0)),x1:Math.max(...fp.map(b=>b.x1)),y1:Math.max(...fp.map(b=>b.y1)),lv:0,id:PROPL.length,name:PNAME,...o};
+  p.chunk=chunkAtL((p.x0+p.x1)/2,(p.y0+p.y1)/2,p.lv); PROPL.push(p); return p; }
 const sided=b=>b; function zShift(b,dz){ const nb={...b,z0:b.z0+dz,z1:b.z1+dz}; return b.fs?sided(nb):nb; }
 const SQB={lv:-1,hall:{x0:78.5,x1:93.5,y0:-85.2,y1:-77},gym:{x0:78.5,x1:101.24,y0:-99.74,y1:-85.2},lau:{x0:93.5,x1:99.2,y0:-85.2,y1:-77,h:88,lv:-1},H:126,pool:{x0:78.5,x1:101.24,y0:-99.5,y1:-85.5,lv:-2}};
 const LSEED={x0:66,split:76,a0:78.5,x1:93.5,c0:96,deep:-104.5,back:-89.5,walk:-77,street:-70,grass:-64+14,end:-56+14,
@@ -15,7 +15,7 @@ const LSEED={x0:66,split:76,a0:78.5,x1:93.5,c0:96,deep:-104.5,back:-89.5,walk:-7
   bed:[70,74.1,-39.9,-36.66],bedPath:[[42,44,-64,-34],[42,73,-36,-34]],arcade:[46,66,-58,-47.5],
   mkt:[121.6,132.1,-97.4,-77],mktWalk:[132.1,134.6],
   mus:[120,146,-13.5,7.5],musFront:[132.5,146,-55,-44],musPort:-58};
-const CITY={tun:{x0:44,x1:51,y0:-104.5,y1:-79,d:90},brg:{x0:140,x1:147,y0:-104.5,y1:-79,deck:96},yc:(LSEED.street+LSEED.grass)/2,wX:[[41.3,43.6],[51.4,53.7]],eX:[[137.4,139.7]],xMouth:[-77,-74.6]};
+const KCITY={tun:{x0:44,x1:51,y0:-104.5,y1:-79,d:90},brg:{x0:140,x1:147,y0:-104.5,y1:-79,deck:96},yc:(LSEED.street+LSEED.grass)/2,wX:[[41.3,43.6],[51.4,53.7]],eX:[[137.4,139.7]],xMouth:[-77,-74.6]};
 const LBLD=[{id:'lbodega',x0:LSEED.split-8,y0:LSEED.walk-14,x1:LSEED.split,y1:LSEED.walk,h:130,st:1,c:[150,70,56]},{id:'lapts',x0:LSEED.a0,y0:LSEED.walk-7,x1:LSEED.x1,y1:LSEED.walk,h:130,st:1},{id:'lbodega3',x0:.8,y0:-58,x1:8.8,y1:-44,h:130,st:1}];
 const landK=(x,y)=>y>=LSEED.street&&y<LSEED.grass?3:y>=LSEED.walk||y>=LSEED.grass?5:1;
 const SLAB=[[168,163,150],[161,156,143],[173,168,155]], SEAM=[131,126,115];
@@ -26,15 +26,15 @@ function speck(c,x,y,k){ const n=hash(Math.floor(x*24),Math.floor(y*24),k); retu
 function grain(x,y,k,s=1){ return (cvNoise(x/(5*s),y/(5*s),k)*3+cvNoise(x/(1.7*s),y/(1.7*s),k+2)*2+cvNoise(x*2.3/s,y*2.3/s,k+4))/6+(hash(Math.floor(x*48),Math.floor(y*48),k+6)-.5)*.07; }
 function crack(x,y,k,s=1.6,w=.007,on=.55){ return cvNoise(x/(s*4),y/(s*4),k+1)>on&&Math.abs(cvNoise(x/s,y/s,k)-.5)<w; }
 function spot(x,y,k,s,r,p){ const i=Math.floor(x/s), j=Math.floor(y/s); if(hash(i,j,k)>p)return false; const cx=(i+.2+hash(i,j,k+1)*.6)*s, cy=(j+.2+hash(i,j,k+2)*.6)*s; return Math.hypot(x-cx,(y-cy))<r; }
-const GROUT=[86,82,74], WEEDS=[[70,104,50],[92,128,60],[58,86,42],[112,140,70]];
+const GROUT=[86,82,74], WEEDC=[[70,104,50],[92,128,60],[58,86,42],[112,140,70]];
 const SLB=2;
 function slabCol(x,y){ const wy=(y+(cvNoise(x*1.3+9,y*1.3,403)-.5)*.08)/SLB, j=Math.floor(wy), wx=(x+(cvNoise(x*1.3,y*1.3,401)-.5)*.08)/SLB+hash(j,0,425)*.6;
   const i=Math.floor(wx), fx=wx-i, fy=wy-j, ex=Math.min(fx,1-fx)*SLB, ey=Math.min(fy,1-fy)*SLB, e=Math.min(ex,ey), n=grain(x,y,301,1.2), px=Math.floor(x*24), py=Math.floor(y*24), hp=hash(px,py,405);
   const ci=Math.round(wx), cj=Math.round(wy), chip=ex<.14&&ey<.14&&hash(ci,cj,411)<.4&&Math.hypot(ex,ey)<.07+hash(ci,cj,413)*.07;
   const green=cvNoise(x/2.2,y/2.2,415)+(landK(x+.8,y)===1||landK(x-.8,y)===1||landK(x,y+.8)===1||landK(x,y-.8)===1?.2:0);
-  if(e<.042||chip){ if(green>.7&&hp<.7)return mt('pavement',WEEDS[Math.floor(hash(px,py,417)*4)]); return mt('pavement',hp<.2?sh(GROUT,.86):hp>.9?sh(GROUT,1.1):GROUT); }
-  if(e<.07&&green>.78&&hp<.35)return mt('pavement',WEEDS[Math.floor(hash(px,py,419)*4)]);
-  if(hash(i,j,305)<.16&&crack(x,y,307,.9,.014,.3)){ if(green>.55&&hp<.5)return mt('pavement',WEEDS[(px+py)&3]); return mt('pavement',sh(GROUT,.95)); }
+  if(e<.042||chip){ if(green>.7&&hp<.7)return mt('pavement',WEEDC[Math.floor(hash(px,py,417)*4)]); return mt('pavement',hp<.2?sh(GROUT,.86):hp>.9?sh(GROUT,1.1):GROUT); }
+  if(e<.07&&green>.78&&hp<.35)return mt('pavement',WEEDC[Math.floor(hash(px,py,419)*4)]);
+  if(hash(i,j,305)<.16&&crack(x,y,307,.9,.014,.3)){ if(green>.55&&hp<.5)return mt('pavement',WEEDC[(px+py)&3]); return mt('pavement',sh(GROUT,.95)); }
   if(spot(x,y,309,.25,.025,.07))return mt('pavement',[108,104,98]);
   let c=SLAB[Math.floor(hash(i,j,7)*3)]; const tx=(hash(i,j,421)-.5)*.12, ty=(hash(i,j,423)-.5)*.12; c=sh(c,1+tx*(fx-.5)*2+ty*(fy-.5)*2);
   if(e<.084)c=sh(c,(fx*SLB<.084||fy*SLB<.084)?1.08:.86);
@@ -43,7 +43,7 @@ function kerbCol(ax){ return (x,y)=>{ const a=ax==='y'?y:x, px=Math.floor(x*24),
   if(((a%1.5)+1.5)%1.5<.042)return mt('kerb',GROUT); const c=sh([178,174,164],.9+.16*n+(hash(Math.floor(a/1.5),0,435)-.5)*.08); return mt('kerb',hp<.03?sh(c,.75):hp>.97?sh(c,1.12):c); }; }
 function kerbFace(a,z,H){ const hp=hash(Math.floor(a*24),z,437), n=grain(a,z/24,439,.8); if(((a%1.5)+1.5)%1.5<.042)return GROUT;
   let c=sh([150,146,138],.88+.18*n); if(z>=H-1)c=sh(c,1.15); else if(z<1)c=sh(c,.62); else if(z<2)c=sh(c,.8); return hp<.05?sh(c,.8):c; }
-function roadCol(x,y,w){ const c=w?[86,87,90]:[62,64,68], n=grain(x,y,37,1.3), S=LSEED, yc=CITY.yc;
+function roadCol(x,y,w){ const c=w?[86,87,90]:[62,64,68], n=grain(x,y,37,1.3), S=LSEED, yc=KCITY.yc;
   if(crack(x,y,141,1.5,w?.012:.007,w?.4:.56))return mt('road',sh(c,.7));
   const p=cvNoise(x/3.2,y/3.2,143); if(!w&&p>.76)return mt('road',speck(p<.765?[44,45,48]:[54,55,58],x,y,145));
   if(!w&&y>=S.street&&y<S.grass&&Math.abs(Math.abs(y-yc)-1.6)<.45&&cvNoise(x/1.1,y/1.1,147)>.72)return mt('road',speck(sh(c,.82),x,y,149));

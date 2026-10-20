@@ -1,6 +1,6 @@
 // THE START AND THE PARK, WHAT THEY COST (19 Oct 2026): node tests/startprof.cjs <out.json> [page]
 // The page's long tasks from the first byte to the game starting (and after), the time to start, then 12 s of frames at the start and
-// 12 s in the park's south-west (frame times from the frames that drew something: a frame that drew nothing is a loading breath, not a frame) (between the castle, the cave and the moon shrine); with the profiling copy (tools/perfprof.py) each
+// 12 s in the park's south-west (frame times from the frames that rendered, by the renderer's frame counter: a frame that returned early is not a frame) (between the castle, the cave and the moon shrine); with the profiling copy (tools/perfprof.py) each
 // system's share of a frame there, and the renderer's draws and triangles on screen (counted after the sample with shadow redraws paused for five frames, the median of the
 // last three: the lamp's cube shadow redraws every other frame and the town's still shadow map now and then, so a frame swings by 2x).
 const {chromium}=require('playwright'); const fs=require('fs'), path=require('path');
@@ -14,12 +14,12 @@ const OUT=process.argv[2]||'startprof.json', PAGE=path.resolve(process.argv[3]||
   const rep={page:path.basename(PAGE),startMs:started,errs};
   const sample=async(name,go)=>{ await pg.evaluate(()=>{ if(window.BODB&&BODB.gnear)BODB.gnear(0,0,Infinity); }); if(go)await pg.evaluate(go); await pg.waitForTimeout(go?15000:4000);
     const r=await pg.evaluate(()=>new Promise(res=>{ const d=[], s0=performance.now(); let l=performance.now(); const h0=window.__PF?__PF.hist.length:0;
-      const IN=[]; const f=()=>{ const n=performance.now(); d.push(n-l); l=n; if(window.__R){ const I=__R.renderer.info.render; IN.push([I.calls,I.triangles]); } if(n-s0<12000)requestAnimationFrame(f); else {
+      const IN=[]; const f=()=>{ const n=performance.now(); d.push(n-l); l=n; if(window.__R){ const I=__R.renderer.info.render; IN.push([I.calls,I.triangles,I.frame]); } if(n-s0<12000)requestAnimationFrame(f); else {
         const st={}; if(window.__PF){ const H=__PF.hist.slice(-Math.min(__PF.hist.length,d.length)); for(const fr of H)for(const k in fr)(st[k]=st[k]||[]).push(fr[k]); }
         const med=a=>{ const s=[...a].sort((x,y)=>x-y); return +s[Math.floor(s.length/2)].toFixed(2); }, p95=a=>{ const s=[...a].sort((x,y)=>x-y); return +s[Math.floor(s.length*.95)].toFixed(2); };
         const sys=Object.fromEntries(Object.entries(st).map(([k,v])=>[k,{med:med(v),p95:p95(v),max:+Math.max(...v).toFixed(1)}]).sort((a,b)=>b[1].med-a[1].med));
         const R=window.__R, avg=k=>{ if(!IN.length)return null; const F=IN.filter(x=>x[1]>0); if(!F.length)return null; let lo=0; for(let i=1;i<F.length;i++)if(F[i][1]<F[lo][1])lo=i; return F[lo][k]; }, info=R?{calls:avg(0),tris:avg(1),programs:R.renderer.info.programs.length,geos:R.renderer.info.memory.geometries,tex:R.renderer.info.memory.textures}:null;
-        let dd=IN.length===d.length?d.filter((x,i)=>IN[i][1]>0):d; if(!dd.length)dd=d;
+        let dd=IN.length===d.length?d.filter((x,i)=>i>0&&IN[i][2]!==IN[i-1][2]):d; if(!dd.length)dd=d;
         const fin=onScreen=>{ if(info&&onScreen){ info.calls=onScreen[0]; info.tris=onScreen[1]; } res({frames:d.length,drawn:dd.length,dtMed:med(dd),dtP95:p95(dd),dtMax:+Math.max(...dd).toFixed(1),over100:dd.filter(x=>x>100).length,sys,info}); };
         if(!R)return fin(null); const SM=R.renderer.shadowMap, au=SM.autoUpdate; SM.autoUpdate=false; Object.defineProperty(SM,'needsUpdate',{get:()=>false,set(){},configurable:true}); const S=[];
         const g=()=>{ const I=R.renderer.info.render; S.push([I.calls,I.triangles]); if(S.length<5)return requestAnimationFrame(g); delete SM.needsUpdate; SM.needsUpdate=true; SM.autoUpdate=au;

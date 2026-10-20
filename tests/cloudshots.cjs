@@ -18,14 +18,14 @@ const fin=()=>{ rep.errors=errs.slice(0,40); fs.writeFileSync(path.join(OUT,'rep
     return {url:cv.toDataURL(),V:[C.V.x,C.V.y,C.V.z,C.V.w],cc:[cx,cz]}; });
   fs.writeFileSync(path.join(OUT,H+'-mask.png'),Buffer.from(mk.url.split(',')[1],'base64')); rep['mask'+H]={V:mk.V,cc:mk.cc};
   rep['hook'+H]=await pg.evaluate(async()=>{ const S=WX.csm.tex.source, out={same:S===WX.lfx.env.source, v0:S.version}; let v=S.version, st=[]; Object.defineProperty(S,'version',{get(){return v;},set(x){ if(st.length<3)st.push(new Error().stack.slice(0,600)); v=x; }}); await new Promise(r=>setTimeout(r,2000)); out.v1=v; out.st=st; return out; });
-  await shot('allshadow',()=>{ window.__sv=WX.csm.tex.image.data.slice(); WX.csm.tex.image.data.fill(255); WX.csm.tex.needsUpdate=true; },2500); await pg.evaluate(()=>{ WX.csm.tex.image.data.set(__sv); WX.csm.tex.needsUpdate=true; });
   await pg.evaluate(()=>{ WX.bkl=null; });
   rep['diag'+H]=await pg.evaluate(()=>{ const R=WX.dbgR, out=[], seen=new Set(); let n=0; __scene.traverse(o=>{ if(!o.isMesh||n>12)return; const m=Array.isArray(o.material)?o.material[0]:o.material; if(!m||m.type!=='MeshLambertMaterial'||seen.has(m))return; seen.add(m); const p=R.properties.get(m), u=p.uniforms; if(!u)return; n++;
      out.push({name:o.name||o.parent&&o.parent.name, tCS:!!u.tCS, same:u.tCS&&u.tCS.value===WX.csm.tex, ver:u.tCS&&u.tCS.value.version, src:u.tCS&&u.tCS.value.source===WX.csm.tex.source, csV:u.csV&&JSON.stringify(u.csV.value), env:u.tENV&&u.tENV.value.version, envSrcV:u.tENV&&u.tENV.value.source.version, prog:!!p.currentProgram, hasCS:p.currentProgram?R.getContext().getShaderSource(R.getContext().getAttachedShaders(p.currentProgram.program)[1]).includes('tCS'):null}); });
      const E=WX.lfx.env.image.data, row=63*64*4; return {bkl:(WX.bkl||[]).slice(0,10).concat((WX.bkl||[]).slice(-5)),bkn:(WX.bkl||[]).length,mats:out.slice(0,1), P0:[E[row],E[row+1],E[row+2]], texV:WX.csm.tex.version, fx:[...WX.lfx.on]}; });
   await pg.mouse.move(480,270); for(let i=0;i<10;i++){ await pg.mouse.wheel(0,600); await pg.waitForTimeout(150); }
   for(let i=0;i<6;i++)await shot('animal'+i,(g)=>{ const M=__dbg.MAPK, P=M.PARK, T=window.TILE||33.9/30; STORE.goTo(M.BOD.XS(P.round[0]+(P.ox||0))+g[0]*T,M.BOD.ZS(P.round[1]+(P.oy||0))+g[1]*T,'up'); },3000,SPOT[i]);
-  await pg.evaluate(SP=>0,SPOT);
+  await shot('allshadow',()=>{ window.__sv=WX.csm.tex.image.data.slice(); WX.csm.tex.image.data.fill(255); WX.csm.tex.needsUpdate=true; },2500); await shot('noshadow',()=>{ WX.csm.tex.image.data.fill(0); WX.csm.tex.needsUpdate=true; },2500); await pg.evaluate(()=>{ WX.csm.tex.image.data.set(__sv); WX.csm.tex.needsUpdate=true; });
+
   if(H==='13'){
    await shot('wide',()=>{ const M=__dbg.MAPK, P=M.PARK; STORE.goTo(M.BOD.XS(P.round[0]+(P.ox||0)),M.BOD.ZS(P.round[1]+(P.oy||0)),'up'); },3000);
    await pg.keyboard.press('v'); await shot('behind',()=>{ const s=__dbg.clock.sunV; __dbg.face(Math.atan2(-s.x,-s.z)); window.LOOKPITCH&&LOOKPITCH(4); },4000);

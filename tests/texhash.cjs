@@ -4,6 +4,8 @@
 // (after STORE.ensure() and the ground's queue painted out, BODB.gnear, so whatever the start builds a piece at a time afterwards is all built in both) and fails unless the two sets
 // of hashes are identical. The head is opened a second time in the same browser profile, so its ground comes
 // from the paint cache (PAINTC), and that must match too. Prints how many textures and pixels were compared. It also hashes the
+// (a patch is matched by kind, place and height, not by the last part of its key, the hash of its painter's source text: a rename in a
+// painter must not read as different pixels). It also hashes the
 // vertices of every body built at the start (NPCs, with their self-shading `sh`, and the figures built from shapes, with `c0`): the same.
 const {chromium}=require('playwright'), path=require('path');
 const [A,B]=process.argv.slice(2).map(p=>path.resolve(p));
@@ -34,7 +36,8 @@ const run=async(ctx,page,waitSave)=>{ const t0=Date.now(); const pg=await ctx.ne
   
   const sa=new Set(a.h), sc=new Set(c.h), onlyA=a.h.filter(x=>!sc.has(x)), onlyB=c.h.filter(x=>!sa.has(x));
   console.log('base',a.n,'textures',a.px,'pixels | head',c.n,'textures',c.px,'pixels'); if(onlyA.length||onlyB.length)console.log('only in base:',onlyA.slice(0,10).join(' '),'| only in head:',onlyB.slice(0,10).join(' '));
-  const pd=(x,y)=>{ const ks=new Set([...Object.keys(x),...Object.keys(y)]); let d=0; for(const k of ks)if(x[k]!==y[k])d++; return [ks.size,d]; };
+  const spot=o=>{ const r={}; for(const k in o)r[k.replace(/\|[^|]*$/,'')]=o[k]; return r; };
+  const pd=(x,y)=>{ x=spot(x); y=spot(y); const ks=new Set([...Object.keys(x),...Object.keys(y)]); let d=0; for(const k of ks)if(x[k]!==y[k])d++; return [ks.size,d]; };
   const [n1,d1]=pd(a.ph,c.ph), [n2,d2]=pd(c.ph,c2.ph);
   console.log('ground patches: '+n1+' compared base vs head, '+d1+' differ | '+n2+' compared head vs head from the cache, '+d2+' differ');
   console.log('(whole texture sheets: '+(onlyA.length+onlyB.length)+' differ, '+(cacheDiff)+' from the cache; the ground is now painted round you first, so its patches land on the sheets in another order each run: informational only)');

@@ -2,7 +2,7 @@
 import {GTRH, GTSAMP, SND, UI} from './003b-systems.js';
 import {KIT} from './068-kit.js';
 
-if(typeof KIT!=='undefined')for(const th of KIT.things)UI.thing(th);
+for(const th of KIT.things)UI.thing(th);
 
 const CAST={}, PLAY221={seeking:false,pre:0}, PLAYA={}, GTPHYS={model:false,ok:false}, GTWR={R:[-3.22,3.15,2.06]}; Object.assign(SND,{ctx:null,on:true,out:null});
 

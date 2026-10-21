@@ -31,7 +31,7 @@ const FOUNT={ready:false,swim:false}; window.FOUNT=FOUNT;
     const oaks=[]; acc=0; for(let i=0;i<shore.length;i++){ acc+=.25; if(acc<9+3*hs(i,11,5))continue; const [x,y]=shore[i]; if(x>wx1+2||y>wy1+2)continue; const n=nrm(x,y), k=1.6+2.2*hs(i,13,6), ox=x+n[0]*k, oy=y+n[1]*k, m=12+hs(i,17,8)*6, r=m*.42, [rx,ry]=P.round;
       if(ter(ox,oy)<r+.5||P.pd(ox,oy)<r||oy<P.y0+18)continue; acc=0; oaks.push(['OakTree'+(1+Math.floor(hs(i,15,7)*3)),+ox.toFixed(1),+oy.toFixed(1),+m.toFixed(1)]); }
     S.oaks=oaks; S.lamps=[200,228,256,284,312,340].map(a=>[C.x+Math.cos(a*Math.PI/180)*(R-.6),C.y+Math.sin(a*Math.PI/180)*(R-.6)]);
-    if(typeof STORE!=='undefined'&&STORE.places)STORE.places.push(['THE FOUNTAIN',X(C.x),Z(C.y-R-1.6),'up']);
+    if(STORE.places)STORE.places.push(['THE FOUNTAIN',X(C.x),Z(C.y-R-1.6),'up']);
     return S; };
   FOUNT.wet=(x,z,R=0)=>{ const S=FOUNT.S; if(!S)return false; const P=PARK, px=x/TILE+SHARED.BOD.OX-(P.ox||0), py=z/TILE+SHARED.BOD.OY-(P.oy||0); if(px<S.x0-3||py<S.y0-3)return false; return lake(px,py)<R/TILE; };
   FOUNT.paint=({flat,X,Z,Y,hash,grain,speck})=>{ '@park'; const S=FOUNT.S, {C,R}=S, sol=(x,y,b,h)=>{ SOL.up.push([X(x)-b*TILE,Z(y)-b*TILE,X(x)+b*TILE,Z(y)+b*TILE]); FIX.up.push([X(x)-b*TILE,Z(y)-b*TILE,0,X(x)+b*TILE,Z(y)+b*TILE,Y(h)]); };
@@ -128,7 +128,7 @@ const FOUNT={ready:false,swim:false}; window.FOUNT=FOUNT;
     flow(0); FOUNT.drops=drops; FOUNT.flowN=NS;
     FOUNT.tris={bed:bedTris,water:wTris,rocks:FOUNT.rockN*36,balustrade:FOUNT.balN*12,statue:FOUNT.statTris,drops:NS*8,discs:discT};
     const near=(pos,d)=>Math.hypot(pos.x-CX,pos.z-CZ)<d*T;
-    FOUNT.hear=pos=>SHARED.LVL==='up'&&!(typeof ROOMS!=='undefined'&&ROOMS.cur)?Math.pow(Math.max(0,1-Math.hypot(pos.x-CX,pos.z-CZ)/(40*T)),2):0;
+    FOUNT.hear=pos=>SHARED.LVL==='up'&&!(ROOMS.cur)?Math.pow(Math.max(0,1-Math.hypot(pos.x-CX,pos.z-CZ)/(40*T)),2):0;
     let wasIn=false;
     FOUNT.feed=(st,pos,dt,go,keys)=>{ if(SHARED.LVL!=='up'||pos.x<X(S.x0-1)||pos.z<Z(S.y0-1)){ if(FOUNT.swim||wasIn){ FOUNT.swim=false; wasIn=false; uP.value.z=0; } return false; }
       const d=-lake(pos.x/T+SHARED.BOD.OX-(P.ox||0),pos.z/T+SHARED.BOD.OY-(P.oy||0)); if(d<=0){ FOUNT.swim=false; uP.value.z=0; return false; }

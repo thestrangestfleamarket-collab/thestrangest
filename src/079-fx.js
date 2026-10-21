@@ -17,6 +17,6 @@ import {MAPG, TILE} from './006-map-pre.js';
     FX.dust=(x,y,z,R)=>{ '@later'; for(let i=0;i<9;i++){ const a=i/9*6.28+Math.random()*.5, v=(1.2+Math.random()*.8)*TILE; FX.add({x:x+Math.cos(a)*R*.5,y:y+.02,z:z+Math.sin(a)*R*.5,vx:Math.cos(a)*v,vy:.5*TILE,vz:Math.sin(a)*v,gravity:9,floor:y+.02,drag:3,turn:3,life:.5+Math.random()*.25,
         size:u=>.045*(1-u)*TILE/.84,col:()=>[.55,.5,.42]}); } };
     FX.trail=(a,c,col)=>{ '@later'; const d=a.distanceTo(c), n=Math.max(1,Math.ceil(d/(.04*TILE))); for(let i=0;i<n;i++){ const u=(i+.5)/n; FX.add({x:a.x+(c.x-a.x)*u,y:a.y+(c.y-a.y)*u,z:a.z+(c.z-a.z)*u,vx:0,vy:0,vz:0,turn:0,life:.32,glow:true,size:u=>.05*(1-u)*TILE/.84,col:u=>[col[0]*(1-u*.5)+u*.5,col[1]*(1-u*.5)+u*.5,col[2]]}); } }; }
-  FIGFX.tick=(dt,you)=>{ FX.step(dt); if(typeof PARK!=='undefined'){ PARK.tick(you);
+  FIGFX.tick=(dt,you)=>{ FX.step(dt); { PARK.tick(you);
  } };
   FIGFX.FX=FX; }

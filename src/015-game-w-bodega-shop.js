@@ -93,8 +93,8 @@ function bodegaWall(q,nx,ny,X,Y,z,f){ '@later'; const u=nx?Y:X, i=Math.floor(u*1
   const doorBell=(x,y)=>{ SHARED.PNAME='door bell'; return prop([ft(x-.06,y,x+.06,y+.12),{x0:x-.02,y0:y,x1:x+.02,y1:y+.12,z0:76,z1:78,c:[60,60,64],foot:0,nb:1},{x0:x-.06,y0:y,x1:x+.06,y1:y+.1,z0:70,z1:76,c:[220,180,90],foot:0,fj:(u,z)=>z<72?[160,120,50]:[220,180,90]}]); };
   const droneDock=(x,y)=>{ SHARED.PNAME='drone box'; const s=.3, z0=100, z1=114, K=[22,22,26];
     const B=[ft(x-s,y-s,x+s,y+s),{x0:x-s,y0:y-s,x1:x+s,y1:y+s,z0,z1,c:K,foot:0,fi:(v,z)=>z<z0+3?[34,34,40]:K,fj:(u,z)=>z<z0+3?[34,34,40]:K,top:()=>[30,30,36]},
-      sided({x0:x-s-.01,y0:y-s-.01,x1:x+s+.01,y1:y+s+.01,z0:z0+5,z1:z0+7,c:[60,60,64],foot:0,nb:1,life:1,top:()=>null,fs:()=>typeof LIFE==='undefined'||LIFE.mode!==1?null:lit(typeof DRONE!=='undefined'&&DRONE.on?[255,70,60]:[90,230,120])})];
-    const p=prop(B); p.life=()=>{}; p.lifeKey=()=>typeof DRONE!=='undefined'&&DRONE.on?1:0; return p; };
+      sided({x0:x-s-.01,y0:y-s-.01,x1:x+s+.01,y1:y+s+.01,z0:z0+5,z1:z0+7,c:[60,60,64],foot:0,nb:1,life:1,top:()=>null,fs:()=>typeof LIFE==='undefined'||LIFE.mode!==1?null:lit(DRONE.on?[255,70,60]:[90,230,120])})];
+    const p=prop(B); p.life=()=>{}; p.lifeKey=()=>DRONE.on?1:0; return p; };
   const droneFlap=(x,y)=>{ SHARED.PNAME='drone flap'; const W=.6, z0=30, z1=46; return prop([ft(x,y,x+W,y+.05),{x0:x,y0:y,x1:x+W,y1:y+.05,z0,z1,c:[40,40,44],fj:(u,z)=>u-x<.06||x+W-u<.06||z<z0+2||z>z1-2?[150,150,154]:[30,30,34],fi:()=>[120,120,124],top:()=>[150,150,154]}]); };
   const rubberMat=(x,y,L=1.6,D=.6)=>{ SHARED.PNAME='rubber mat'; const c=[34,36,40]; return prop([{x0:x,y0:y,x1:x+L,y1:y+D,z0:0,z1:1,c,foot:1,
     top:(u,v)=>{ const e=Math.min(u-x,x+L-u,v-y,y+D-v); if(e<.04)return [58,60,66]; const a=Math.floor((u-x)*24), b=Math.floor((v-y)*24); if(a%4===1&&b%4===1)return [14,14,16]; return grain(u,v,431,.4)>.62?[48,50,54]:c; },fi:()=>[24,24,28],fj:()=>[28,28,32]}],null,{walk:true}); };

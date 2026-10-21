@@ -28,14 +28,14 @@ window.GRID=GRID;
     if(B&&typeof MODS!=='undefined'&&MODS.apts&&MODS.apts.A){ const A=MODS.apts.A; GRID.serve('house',{box:bx(A.x0,A.y0,A.x1,A.y1)}); }
     
     if(B&&B.grounds){ const g=B.grounds.find(q=>q.id==='ghostst'); if(g)GRID.serve('ghost',{box:bx(g.x0,g.y0,g.x1,g.y1)}); }
-    if(typeof STORE!=='undefined')for(const R of STORE.rooms||[]){ const cx=(R.x0+R.x1)/2, cz=(R.z0+R.z1)/2; if(cx<SHARED.BOUND.x0||cx>SHARED.BOUND.x1||cz<SHARED.BOUND.z0||cz>SHARED.BOUND.z1)continue;
+    for(const R of STORE.rooms||[]){ const cx=(R.x0+R.x1)/2, cz=(R.z0+R.z1)/2; if(cx<SHARED.BOUND.x0||cx>SHARED.BOUND.x1||cz<SHARED.BOUND.z0||cz>SHARED.BOUND.z1)continue;
       GRID.serve(R.id,{box:{x0:R.x0,z0:R.z0,x1:R.x1,z1:R.z1,y0:(R.y0??0)-1,y1:(R.y0??0)+40}}); }
-    if(typeof MAPG!=='undefined'&&MAPG.down&&typeof MAPSTAIR!=='undefined'&&B){ const sx=B.XS((MAPSTAIR.x0+MAPSTAIR.x1)/2), sz=B.ZS(MAPSTAIR.y1);
+    if(MAPG.down&&typeof MAPSTAIR!=='undefined'&&B){ const sx=B.XS((MAPSTAIR.x0+MAPSTAIR.x1)/2), sz=B.ZS(MAPSTAIR.y1);
       GRID.serve('subway',{grp:[MAPG.down,MAPG.stairs,MAPG.dungeon].filter(Boolean),at:[sx,G(sx,sz)+.2,sz],under:true}); }
     for(const s of GRID.servs){ if(!s.at){ const b=s.box, cx=(b.x0+b.x1)/2, cz=(b.z0+b.z1)/2, p=near(cx,cz,['pole'])||src; const x=Math.abs(p.x-b.x0)<Math.abs(p.x-b.x1)?b.x0:b.x1, z=Math.abs(p.z-b.z0)<Math.abs(p.z-b.z1)?b.z0:b.z1;
         const kx=Math.abs(p.z-cz)>Math.abs(p.x-cx), ax=kx?Math.max(b.x0+.5,Math.min(b.x1-.5,p.x)):x, az=kx?z:Math.max(b.z0+.5,Math.min(b.z1-.5,p.z)); s.at=[ax,p.y-.9*M,az]; }
       s.node=near(s.at[0],s.at[2],['pole'])||src; s.drop={a:s.node,at:s.at,n:1}; }
-    const flames=new Set((typeof FLAME!=='undefined'&&FLAME.src||[]).map(f=>f.light).filter(Boolean)); if(typeof PARK!=='undefined'&&PARK.fireL)flames.add(PARK.fireL);
+    const flames=new Set((FLAME.src||[]).map(f=>f.light).filter(Boolean)); if(PARK.fireL)flames.add(PARK.fireL);
     const own=new Map(); for(const n of GRID.nodes){ if(n.L)own.set(n.L,n); if(n.L2)own.set(n.L2,n); }
     const top=o=>{ while(o&&o.parent&&o.parent!==scene)o=o.parent; return o; };
     for(const L of LITE.recs){ if(flames.has(L)||L.userData.pool)continue; const p=L.position; let on=null;
@@ -106,6 +106,6 @@ window.GRID=GRID;
     BL.forEach(([x,y,z,sx,sy,sz,col],i)=>{ me.setMatrixAt(i,m4.compose(new V3(x,y,z),q,new V3(sx,sy,sz))); me.setColorAt(i,c.setHex(col)); }); me.castShadow=me.receiveShadow=true; me.name='grid-hardware'; (MAPG.bodega||scene).add(me); GRID.blocks=me; };
   GRID.init=()=>{ if(!GRID.on||GRID.ready)return; try{ GRID.derive(); GRID.hardware(); GRID.flow(); GRID.wires(); GRID.built=true; GRID.apply();
       const c=QS.get('cut'); if(c)for(const i of c.split(',').map(Number))if(i>=0&&i<GRID.spans.length)GRID.spans[i].cut=true; if(c){ GRID.flow(); GRID.apply(); } }catch(e){ console.warn('GRID:',e); } };
-  let acc=0; const RS=new THREE.Vector2(); GRID.tick=dt=>{ if(!GRID.ready)return; if(typeof renderer!=='undefined'){ renderer.getDrawingBufferSize(RS); GRID.uRes.value.copy(RS); } acc+=dt||0; if(GRID.dirty)GRID.apply(); if(acc<.25)return; acc=0; for(const [L,on] of GRID.lamps)if(!on.pw&&!L.userData.off){ L.userData.off=true; LITE.t=0; } };
-  { const li=LITE.init; LITE.init=()=>{ li(); GRID.init(); }; if(typeof DRESS!=='undefined'){ SYS.add('dress',(d,p)=>{ GRID.tick(d); },'070-grid'); } }
+  let acc=0; const RS=new THREE.Vector2(); GRID.tick=dt=>{ if(!GRID.ready)return; { renderer.getDrawingBufferSize(RS); GRID.uRes.value.copy(RS); } acc+=dt||0; if(GRID.dirty)GRID.apply(); if(acc<.25)return; acc=0; for(const [L,on] of GRID.lamps)if(!on.pw&&!L.userData.off){ L.userData.off=true; LITE.t=0; } };
+  { const li=LITE.init; LITE.init=()=>{ li(); GRID.init(); }; { SYS.add('dress',(d,p)=>{ GRID.tick(d); },'070-grid'); } }
 }

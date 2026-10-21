@@ -63,7 +63,7 @@ Object.assign(USE,{seat:null}); window.USE=USE;
         let nx=uy*wz-uz*wy, ny=uz*wx-ux*wz, nz=ux*wy-uy*wx; const l=Math.hypot(nx,ny,nz)||1; for(let q=0;q<3;q++){ N[j+q*3]=nx/l; N[j+q*3+1]=ny/l; N[j+q*3+2]=nz/l; } }
       tg.add(g); }); for(const g of tg){ g.attributes.position.needsUpdate=g.attributes.normal.needsUpdate=true; } };
   const fridge=(o,th)=>{ const d=doorOf(o); d.to=d.to?0:1.75; DOORS.add(d); th.name=d.to?'OPEN':'SHUT'; const at=box(o).getCenter(new V3()); if(d.to)SFX.play('latch',{at,vol:.8}); else SFX.play('door',{at,vol:.35,pitch:1.6,delay:.25}); };
-  const ac=()=>{ if(!SOUND)return null; if(typeof SND!=='undefined'&&SND.ctx)return SND.ctx; if(!USE.ac)try{ USE.ac=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ return null; } if(USE.ac.state!=='running')USE.ac.resume(); return USE.ac; };
+  const ac=()=>{ if(!SOUND)return null; if(SND.ctx)return SND.ctx; if(!USE.ac)try{ USE.ac=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ return null; } if(USE.ac.state!=='running')USE.ac.resume(); return USE.ac; };
   const BLINK=new Set(), canM=new THREE.MeshLambertMaterial({color:new THREE.Color('rgb(196,44,40)')}), canG=new THREE.BoxGeometry(.07*T,.13*T,.07*T), CANS=[];
   const vend=(o,th)=>{ '@later'; const b=box(o), c=b.getCenter(new V3()); let dx=pos.x-c.x, dz=pos.z-c.z; if(Math.abs(dx)>Math.abs(dz)){ dx=Math.sign(dx); dz=0; } else { dz=Math.sign(dz); dx=0; }
     const m=new THREE.Mesh(canG,canM); m.position.set(dx?(dx>0?b.max.x:b.min.x)+dx*.12*T:c.x+(Math.random()-.5)*.2*T,b.min.y+.45*T,dz?(dz>0?b.max.z:b.min.z)+dz*.12*T:c.z+(Math.random()-.5)*.2*T); m.castShadow=true;
@@ -87,7 +87,7 @@ Object.assign(USE,{seat:null}); window.USE=USE;
   USE.pick=ray=>{ '@later'; if(OBJS.length+(typeof PERFX!=='undefined'?PERFX.gen*1e6:0)!==nO){ nO=OBJS.length+(typeof PERFX!=='undefined'?PERFX.gen*1e6:0); MS=[...new Set(OBJS.flatMap(o=>o.parts.map(p=>p.me)))]; }
     for(const h of ray.intersectObjects(MS.filter(shown),false)){ if(cut(h))continue; const o=h.object.userData.objOf[Math.floor(h.faceIndex/2)], k=o&&kindOf(o); if(!k)return null; const th=goal(o,k); return th?{th,d:h.distance}:null; } return null; };
   for(const th of (typeof KIT!=='undefined'?KIT.things:[]))if(th.name==='BENCH'){ th.act=()=>{ const se=seatOf(tris(th.obj)); if(se)sitOn(se,th); }; th.reach=1.5; th.near=1.5+1.2*T; }
-  if(typeof PARK!=='undefined')PARK.later(()=>{ if(!PARK.sitlog||!PARK.more)return; const [x,z]=PARK.sitlog, hb=new THREE.Mesh(new THREE.BoxGeometry(1.4*T,.6*T,1.4*T),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(x,.3*T,z); scene.add(hb);
+  PARK.later(()=>{ if(!PARK.sitlog||!PARK.more)return; const [x,z]=PARK.sitlog, hb=new THREE.Mesh(new THREE.BoxGeometry(1.4*T,.6*T,1.4*T),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(x,.3*T,z); scene.add(hb);
     let se=null; const th={name:'SITTING LOG',obj:hb,reach:1.3*T,near:2.5*T,tall:.8*T,act:()=>{ se=se||seatOf(tris(PARK.more,[x,z,.9*T])); if(se)sitOn(se,th); }}; UI.thing(th); });
   const sitKeys=new Set(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright',' ','f','j','k','n','b','x','shift']);
   addEventListener('keydown',e=>{ if(USE.seat&&!e.repeat&&(sitKeys.has((e.key||'').toLowerCase())||!/^(q|e|r|z|x|v|c|0|=|-|\+|escape|control|alt|meta|tab)$/i.test(e.key||'')))stand(true); });

@@ -46,7 +46,7 @@ import {figureMesh, MUSGEO, musScale, sheetView, spreadPose} from './110-musicia
   const headE=()=>{ const k=F.head; EH.s[0]=EH.s[1]=EH.s[2]=k; EH.o[1]=-(1-k)*10; EH.o[2]=-1.4; };
   const st={x:SHARED.BOD.XS(60),z:SHARED.BOD.ZS(-74),R:.3*TILE,to:null,next:null,wait:2,hd:Math.PI/2}, S=R.create(); BWK.st=st; BWK.at=st; st.y=0;
   const free=(x,z)=>stfree(x,z,st.R), turn=a=>{ let e=a-st.hd; return Math.atan2(Math.sin(e),Math.cos(e)); };
-  if(typeof NPCS!=='undefined'&&NPCS.extra)NPCS.extra.push(BWK);
+  if(NPCS.extra)NPCS.extra.push(BWK);
   if(SHEET){ st.x=SHARED.BOD.XS(100); st.z=SHARED.BOD.ZS((SHARED.BOD.MAP.y0+SHARED.BOD.MAP.y1)/2); st.hd=Math.PI/4; }
   BWK.on=QS.get('bwk')!=null; BWK.tick=dt=>{ if(!BWK.on&&!SHEET){ g.visible=false; return; } const near=Math.hypot(pos.x-st.x,pos.z-st.z)<40;
     if(SHEET){ R.farOnly(false); const B=R.settle(R.build(spreadPose(),null),0); PCS.forEach((pc,i)=>FM.set(i,R.frameOf(pc.on||pc.n,B)));

@@ -53,9 +53,9 @@ const SHINE=window.SHINE={src:[],porch:[]};
   { const B=SHARED.BOD, B0=B.B0; porch(B.X((B0.x0+B0.x1)/2),B.Z(B0.y1),0); if(MODS.apts&&MODS.apts.A){ const A=MODS.apts.A; porch(B.X(MODS.apts.DX),B.Z(A.y1),0,-1); }
     if(B.GD)porch(B.X(B.GD.door[0]),B.Z(B.GD.door[1]),0,1.6);
     for(const d of STORE.main?STORE.main.doors:[])if(!/THEATRE/.test(d[0]))porch(d[1],d[2]-2.2*TILE,0);
-    if(typeof WROW!=='undefined'){ porch(B.X((WROW.bar.x0+WROW.bar.x1)/2),B.Z(-77),0); const mx=B.X((WROW.mus.x0+WROW.mus.x1)/2), mz=B.Z(WROW.mus.y1); porch(mx,mz,0,1.6,1.5); porch(mx,mz,0,-1.6,1.5); }
+    { porch(B.X((WROW.bar.x0+WROW.bar.x1)/2),B.Z(-77),0); const mx=B.X((WROW.mus.x0+WROW.mus.x1)/2), mz=B.Z(WROW.mus.y1); porch(mx,mz,0,1.6,1.5); porch(mx,mz,0,-1.6,1.5); }
     sconce.computeBoundingSphere(); jar.computeBoundingSphere(); }
-  if(typeof TLX!=='undefined'&&TLX.mesh){ const sm=TLX.mesh, p=V(), s=V(); for(let i=0;i<sm.count;i++){ sm.getMatrixAt(i,m4); m4.decompose(p,q,s); if(Math.max(s.x,s.z)>.15*M&&s.y>.15*M)halo(p.clone(),.36*M,new THREE.Color(),null,{sig:i}); } }
+  if(TLX.mesh){ const sm=TLX.mesh, p=V(), s=V(); for(let i=0;i<sm.count;i++){ sm.getMatrixAt(i,m4); m4.decompose(p,q,s); if(Math.max(s.x,s.z)>.15*M&&s.y>.15*M)halo(p.clone(),.36*M,new THREE.Color(),null,{sig:i}); } }
   if(pool){ const N=160, cv=document.createElement('canvas'); cv.width=cv.height=N; const g=cv.getContext('2d'), im=g.createImageData(N,N), f=r=>{ const d=Math.hypot(.5,r); return .5/d*d**-1.6*Math.max(0,1-d**4)**2; }, f0=f(0);
     for(let j=0;j<N;j++)for(let i=0;i<N;i++){ const r=Math.hypot((i+.5)/N*2-1,(j+.5)/N*2-1), e=r>1?0:f(r*.5)/f0, a=e>.72?.2:e>.45?.13:e>.22?.075:e>.09?.035:0, k=(j*N+i)*4; im.data[k]=255; im.data[k+1]=214; im.data[k+2]=150; im.data[k+3]=Math.round(a*255); }
     g.putImageData(im,0,0); const t=pool.material.map; t.image=cv; t.needsUpdate=true; for(const P of D.pools){ const r=.5*P[0].distance; P[4].scale.set(r,1,r); } }
@@ -108,7 +108,7 @@ void main(){ vec4 c=texture2D(map,vUv); if(c.a<.5)discard; vec2 g=vW*.9, id=floo
   for(const sg of BLK.signs)BLK.shine(sg);
   const hs=(a,b)=>{ const v=Math.sin(a*12.9898+b*78.233)*43758.5453; return v-Math.floor(v); };
   let sigT=0, mo=0; const near=[];
-  SHINE.tick=dt=>{ const t=performance.now()/1000, e=CLOCK.elev(), up=OUT.world, W=(typeof WX!=='undefined'&&WX.now)||{}, wet=up&&typeof LFX!=='undefined'&&LFX.ws?LFX.ws.wet||0:0, night=Math.max(0,Math.min(1,(3-e)/8));
+  SHINE.tick=dt=>{ const t=performance.now()/1000, e=CLOCK.elev(), up=OUT.world, W=(WX.now)||{}, wet=up&&typeof LFX!=='undefined'&&LFX.ws?LFX.ws.wet||0:0, night=Math.max(0,Math.min(1,(3-e)/8));
     U.uT.value=t; U.uWet.value=wet; U.uHaze.value=.7+1.6*(W.fog||0)+.9*(W.rain||0)+.6*(W.snow||0); BM.visible=up;
     for(const P of SHINE.porch){ const on=e<P.on&&!P.L.userData.off; if(on!==P.lit){ P.lit=on; P.L.intensity=on?P.L.userData.i0:0; jar.setColorAt(P.i,on?PJ:PD); jar.instanceColor.needsUpdate=true; } if(P.me)P.me.visible=up&&on&&night>0; if(P.me)P.me.material.opacity=night; }
     let ck=0; if((sigT-=dt)<=0&&TLX.mesh){ sigT=.15; ck=1; }

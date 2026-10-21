@@ -44,7 +44,7 @@ LITE.tick=(dt,x,y,z)=>{ const P=LITE.pool;
 scene.background=new THREE.Color(0x050507);
 const UNDER=(()=>{ let on=false, hid=[]; const keep=new Set(['down','dungeon','castlestairs','stairs','fire']), bb=new THREE.Box3(), skin=o=>{ let k=false; o.traverse(c=>{ if(c.isSkinnedMesh||c.isLight)k=true; }); return k; };
   return dn=>{ if(dn===on)return; on=dn;
-    if(dn){ hid=[]; const npc=new Set((typeof NPCS!=='undefined'?NPCS:[]).map(N=>N.g)); for(const o of scene.children){ if(keep.has(o.name)||o.isLight||o.isCamera||npc.has(o)||(typeof W3!=='undefined'&&o===W3.group)||skin(o))continue;
+    if(dn){ hid=[]; const npc=new Set((typeof NPCS!=='undefined'?NPCS:[]).map(N=>N.g)); for(const o of scene.children){ if(keep.has(o.name)||o.isLight||o.isCamera||npc.has(o)||(o===W3.group)||skin(o))continue;
         if(o.isInstancedMesh){ o.computeBoundingBox(); bb.copy(o.boundingBox).applyMatrix4(o.matrixWorld); } else bb.setFromObject(o); if(bb.isEmpty()||bb.min.y<-1)continue;
         o.traverse(c=>{ if(c.isMesh||c.isPoints||c.isLine||c.isSprite){ c.layers.disable(0); c.layers.enable(1); hid.push(c); } }); } }
     else{ for(const c of hid){ c.layers.enable(0); c.layers.disable(1); } hid=[]; } }; })();

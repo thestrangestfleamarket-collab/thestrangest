@@ -252,8 +252,9 @@ await grab('apts',async()=>{ const {X,Z,faceTex,bq,C,facade,FRAME,place}=SHARED.
   window.APTSDBG=()=>({in:APTS.in,esc:APTS.esc,floor:APTS.floor(),py:SHARED.py,pos:[+pos.x.toFixed(2),+pos.z.toFixed(2)],door:+X(m).toFixed(1),lad:LAD.F?+LAD.y.toFixed(1):null});
   APTS.rects=lv=>[[A.x0,A.y0,A.x1,A.y1]];
   APTS.riding=()=>ELS.some(E=>E.ph==='moving'&&inCab(E));
-  const PF=[]; let PS=null;
-  const furnish=lv=>{ '@apts'; const G=MAPG.apts||scene; if(!PS)PS=ROOMS.part(G,shaft); PF[lv]=ROOMS.part(G,()=>{ paintFloor(lv); lamps(lv); doors(lv); },MKA);
+  const PF=[], FURN=[]; let PS=null; for(let lv=0;lv<ST;lv++)FURN[lv]=[];
+  APTS.furnish=(lv,fn)=>{ FURN[lv].push(fn); const P=PF[lv]; if(P){ const Q=ROOMS.part(P.group,fn); for(const k of ['objs','things','cuts','lights'])P[k].push(...Q[k]); } };
+  const furnish=lv=>{ '@apts'; const G=MAPG.apts||scene; if(!PS)PS=ROOMS.part(G,shaft); PF[lv]=ROOMS.part(G,()=>{ paintFloor(lv); lamps(lv); doors(lv); for(const f of FURN[lv])f(); },MKA);
     if(ROOMS.lazy['apts'+lv])ROOMS.lazy['apts'+lv].done=true; ROOMS.reset(); if(window.CLIP)CLIP.run(); };
   const out=lv=>{ ROOMS.unpart(PF[lv]); PF[lv]=null; for(const E of ELS)E.leaves[lv]=null; for(const L of LIGHTS)if(L.lv===lv)L.light=null;
     if(!PF.some(Boolean)&&PS&&!APTS.in){ ROOMS.unpart(PS); PS=null; for(const E of ELS)E.cab=E.cable=E.cwt=E.cl=null; } };

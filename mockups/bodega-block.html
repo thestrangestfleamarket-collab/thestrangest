@@ -35,17 +35,13 @@ ul{margin:0;padding-left:18px;display:grid;gap:5px}
 <main>
 <header style="display:grid;gap:10px">
   <h1>THE BODEGA BLOCK</h1>
-  <p>The bodega and the shop next door, drawn like the reference you sent: two storeys each, warm brick above, a glass storefront below, and an awning that <b>barely comes out</b> so the isometric view of the door stays clear. In THE MARKET's own painters and colours (flat CEL bands, hard shadow edges). Mockup only — nothing is built yet.</p>
+  <p>The bodega and the florist next door, drawn like the reference you sent, in THE MARKET's own painters and colours (flat CEL bands, hard shadow edges). Two storeys each: the shops below, and <b>the bodega owner's apartment above</b> — he lives over both, so the upper floors are one home (warm windows, curtains, a plant). The awning comes out the <b>shortest it can</b>, so the isometric view of the door stays clear. Mockup only — nothing is built yet.</p>
 </header>
 
 <section>
   <h2>1 · THE TWO FRONTS</h2>
-  <p class="dim">Dusk, the camera square-on. Left: the bodega (8 tiles wide, as its lot is now). Right: its neighbour, a florist with the shutter half down. Pick how far the bodega's awning sticks out — the fronts redraw.</p>
+  <p class="dim">Dusk, the camera square-on. Left: the BODEGA (8 tiles wide, as its lot is now) — a grocery inside, OPEN neon. Right: the FLORIST next door, shutter half down. Above both: the owner's apartment, lived-in. The awning is the flat valance — the shortest, barely off the wall.</p>
   <div class="plate">
-    <div class="tabs" role="group" aria-label="Awning depth">
-      <button id="oa" aria-pressed="true">A · FLAT VALANCE (≈0.1 tile)</button>
-      <button id="ob" aria-pressed="false">B · SHORT BOX (≈0.3 tile)</button>
-    </div>
     <div class="stage" id="stage1" style="aspect-ratio:780/400"><canvas id="cv" width="780" height="400"></canvas><svg id="ov" viewBox="0 0 780 400" preserveAspectRatio="none" font-family="Silkscreen"></svg></div>
     <div class="legend">
       <span><i class="sw" style="background:#92503f"></i>GAME BRICK</span>
@@ -55,7 +51,7 @@ ul{margin:0;padding-left:18px;display:grid;gap:5px}
       <span><i class="sw" style="background:#1b2228"></i>SHOP GLASS</span>
     </div>
   </div>
-  <p class="q"><b>One thing to confirm:</b> the reference calls them <i>Antique Abyss</i> (books, comics, oddments) and <i>Blossom Bros</i> (florist). Our bodega is a grocery with the live OPEN neon. Do you want to <b>keep it a grocery</b> and only borrow the look, or actually <b>rename / re-stock</b> it as the antique shop? I've drawn the signage faithfully — say the word on the names.</p>
+  <p class="q"><b>Locked in:</b> the signs read <b>BODEGA</b> and <b>FLORIST</b>. The bodega keeps its grocery inside and its OPEN neon — only the look is borrowed. The shortest awning (flat valance). And the two upper floors are one home: the bodega owner lives up here, over both shops.</p>
 </section>
 
 <section>
@@ -70,8 +66,8 @@ ul{margin:0;padding-left:18px;display:grid;gap:5px}
 <section>
   <h2>3 · WHAT IT WOULD TAKE</h2>
   <div class="grid2">
-    <div class="plate"><h3>THE BODEGA</h3><p class="dim">Keeps its storefront, door and OPEN neon. Adds: a shallow awning across the shopfront (flat quads + a scalloped skirt, one painted texture), and a second row of brick + two upstairs windows on the facade it already has. No new lights.</p><span class="cost">~900 triangles · 1 extra draw · 0 lamps · awning paints once</span></div>
-    <div class="plate"><h3>THE NEIGHBOUR</h3><p class="dim">A new filler building on the lot east (or a swap of an existing filler): brick box, green sign fascia, a roll-down shutter (corrugated strip + graffiti decal), a dark door bay, and a fire-escape balcony up top. Drawn only when near.</p><span class="cost">~1,600 triangles · 2 draws · 0 lamps by day, 1 shared at night</span></div>
+    <div class="plate"><h3>THE BODEGA</h3><p class="dim">Keeps its grocery, storefront, door and OPEN neon. Adds: the flat valance awning (flat quads + a scalloped skirt, one painted texture), and the owner's apartment on the upper floor — two warm windows (emissive paint, no real lamp), curtains and a window AC.</p><span class="cost">~1,000 triangles · 1 extra draw · 0 lamps · awning + windows paint once</span></div>
+    <div class="plate"><h3>THE FLORIST</h3><p class="dim">A brick box next door: FLORIST sign fascia, a roll-down shutter (corrugated strip + graffiti decal), a dark door bay, and a fire-escape balcony. Its upper floor is the rest of the owner's apartment — a lit window and a plant on the fire escape. Drawn only when near.</p><span class="cost">~1,700 triangles · 2 draws · 0 lamps by day, 1 shared at night</span></div>
   </div>
   <p class="dim">Both stay inside the budget: under 100k on screen, few programs, nothing loaded at start (the block builds when you're on the street). Awnings are flat painted panels — no new shader.</p>
 </section>
@@ -178,7 +174,7 @@ function paint(){
   // ---- BODEGA ----
   wall(bod[0],UP0,bod[1],UP1,11);
   cornice(bod[0],bod[1],CORN);
-  window2(60,98,130,176,false);
+  window2(60,98,130,176,true);
   window2(250,98,320,176,true);
   // storefront frame piers
   R(bod[0],UP1,bod[1]-bod[0],GND1-UP1,[36,34,34]);
@@ -211,7 +207,7 @@ function paint(){
   // ---- FLORIST (neighbour) ----
   wall(flo[0],UP0,flo[1],UP1,29);
   cornice(flo[0],flo[1],CORN);
-  window2(520,96,586,172,false);
+  window2(520,96,586,172,true);
   // sign fascia (green board)
   R(flo[0],UP1,flo[1]-flo[0],30,GREEN);
   R(flo[0],UP1,flo[1]-flo[0],3,sh(GREEN,1.2));
@@ -252,17 +248,31 @@ function rect(x,y,w,h,fill,stroke){ const r=document.createElementNS(NS,'rect');
 function overlay(){
   const ov=$('ov'); ov.innerHTML='';
   // bodega awning text
-  ov.append(text('ENTER  ◈  ANTIQUE ABYSS', 206, 240, 13, '#3a2c10', 'middle', 700));
-  ov.append(text('we sell  ·  books  magazines  comics  things', 206, 252, 7.5, '#5a4418'));
-  ov.append(text('BUY IT ALL   ·   SELL IT ALL', 206, 262, 7, '#6a5020'));
+  ov.append(text('BODEGA', 206, 247, 18, '#3a2c10', 'middle', 700));
+  ov.append(text('COLD BEER · DELI · LOTTO', 206, 262, 7, '#6a5020'));
   // hanging OPEN sign by the door
   ov.append(line(150, 232, 136, 300, '#b8babc', 1.4));
   ov.append(rect(112, 300, 48, 20, '#f2ece0', '#9a3030'));
   ov.append(text('OPEN', 136, 314, 10, '#c62828', 'middle', 700));
   ov.append(text('66', 40, 250, 9, '#cfcabd', 'middle', 700));         // address number
   // florist sign
-  ov.append(text('BLOSSOM BROS', 548, 254, 15, '#eef2ea', 'middle', 700));
-  ov.append(text('florist  ·  craft', 548, 268, 8, '#b9e0c4'));
+  ov.append(text('FLORIST', 548, 256, 16, '#eef2ea', 'middle', 700));
+  ov.append(text('FRESH CUT · PLANTS', 548, 269, 7, '#b9e0c4'));
+  // --- the bodega owner's apartment, upstairs over both shops ---
+  ov.append(text('— THE BODEGA OWNER LIVES UP HERE —', 390, 88, 8.5, '#c6a24e', 'middle'));
+  const leaf=(cx,cy)=>{ const e=document.createElementNS(NS,'ellipse'); e.setAttribute('cx',cx);e.setAttribute('cy',cy);e.setAttribute('rx',5);e.setAttribute('ry',8);e.setAttribute('fill','#4f8a4a'); ov.append(e); };
+  const curtain=(x0,x1,y0,y1)=>{ ov.append(rect(x0,y0,x1-x0,7,'#b9452f'));          // valance
+    ov.append(rect(x0,y0,8,y1-y0,'#d8c48a')); ov.append(rect(x1-8,y0,8,y1-y0,'#d8c48a'));
+    ov.append(rect(x0+3,y0,2,y1-y0,'#b9a76e')); ov.append(rect(x1-5,y0,2,y1-y0,'#b9a76e')); };
+  curtain(63,127,101,150); curtain(253,317,101,150); curtain(523,583,99,146);
+  // window AC on the first bodega window
+  ov.append(rect(78,160,34,17,'#9aa0a6')); ov.append(rect(78,160,34,2,'#c2c6ca'));
+  for(let x=82;x<110;x+=4) ov.append(rect(x,164,2,10,'#73787e'));
+  // a plant in a window box on the second window's sill
+  ov.append(rect(298,177,14,9,'#b4653a')); ov.append(rect(296,186,18,2,'#8a4a28'));
+  leaf(300,167); leaf(305,163); leaf(310,169);
+  // a plant on the fire-escape platform
+  ov.append(rect(600,141,12,9,'#b4653a')); leaf(603,132); leaf(609,134);
   // florist fire-escape / balcony (dark steel), upper floor
   const fe='#3a3d44', feL='#565a62';
   // platform
@@ -293,8 +303,6 @@ function overlay(){
 }
 
 function draw(){ paint(); overlay(); }
-$('oa').onclick=()=>{opt='A'; $('oa').setAttribute('aria-pressed',true); $('ob').setAttribute('aria-pressed',false); draw(); section();};
-$('ob').onclick=()=>{opt='B'; $('ob').setAttribute('aria-pressed',true); $('oa').setAttribute('aria-pressed',false); draw(); section();};
 
 // ---- Section diagram: awning depth vs the isometric sightline ----
 // Side-on. The street (and camera) are to the RIGHT; the camera looks down-left at the

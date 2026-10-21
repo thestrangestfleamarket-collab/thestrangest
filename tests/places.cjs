@@ -1,5 +1,5 @@
 // THE PLACES' CODE (20 Oct 2026, the code split): runs the website's own worker (wrangler dev) on dist/, logs in, and checks that THE
-// MARKET starts with only its start code, then goes into every place whose code is its own file (dungeon, park, dojo, fire escape,
+// MARKET starts with only its start code, then goes into every place whose code is its own file (dungeon, park, fire escape,
 // arcade, bath house), and back. Each must fetch its file, build, and never fall back to a slow fetch ("was not loaded before
 // use"); then a saved spot inside the dungeon must load the dungeon's code at the start. Prints the start's download (gzipped).
 // node tests/places.cjs [out dir]. Exits 1 if anything fails.
@@ -10,7 +10,6 @@ const wait=ms=>new Promise(r=>setTimeout(r,ms));
 const TOUR=[
   ['dungeon','x-dungeon',async()=>{ await DUNGEON.go(3); await new Promise(r=>setTimeout(r,6000)); const d=DUNDBG(), m=DUNMOBDBG(); return d.level===3&&d.objs>0&&m.slimes.length>0; },async()=>{ await DUNGEON.go(0); }],
   ['park','x-park',async()=>{ const B=__dbg.MAPK.BOD, P=PARK; STORE.goTo(B.XS(P.round[0]+(P.ox||0)+3),B.ZS(P.round[1]+(P.oy||0)+3),'up'); for(let i=0;i<120&&!PARK.ready;i++)await new Promise(r=>setTimeout(r,500)); await new Promise(r=>setTimeout(r,3000)); return PARK.ready&&PARK.in&&!!FOUNT.drops; },async()=>{ const B=__dbg.MAPK.BOD; STORE.goTo(B.XS(99),B.ZS((B.CURB+B.FAR)/2),'up'); await new Promise(r=>setTimeout(r,3000)); }],
-  ['dojo','x-dojo',async()=>{ DOJO.enter(); for(let i=0;i<60&&!DOJO.built;i++)await new Promise(r=>setTimeout(r,500)); await new Promise(r=>setTimeout(r,3000)); return DOJO.built&&!!DOJONINJA(); },async()=>{ DOJO.leave(); await new Promise(r=>setTimeout(r,3000)); }],
   ['fire escape','x-fire',async()=>{ FIREV.out(); for(let i=0;i<60&&!FIREV.built;i++)await new Promise(r=>setTimeout(r,500)); await new Promise(r=>setTimeout(r,3000)); return FIREDBG().built; },async()=>{ FIREV.back(); await new Promise(r=>setTimeout(r,3000)); }],
   ['arcade','x-arcade',async()=>{ await __dbg.ui().goPlace('THE ARCADE'); await new Promise(r=>setTimeout(r,3000)); await STORE.enter('arcade',true); await new Promise(r=>setTimeout(r,4000)); return INTDBG().built.includes('arcade'); },async()=>{}],
   ['bath house','x-bath',async()=>{ const M=__dbg.MAPK, G=M.BOD.GD, r=G.r; STORE.goTo(M.BOD.X((r[0]+r[2])/2),M.BOD.Z((r[1]+r[3])/2),'up'); await new Promise(r=>setTimeout(r,7000)); return INTDBG().built.includes('bath'); },async()=>{ const B=__dbg.MAPK.BOD; STORE.goTo(B.XS(99),B.ZS((B.CURB+B.FAR)/2),'up'); await new Promise(r=>setTimeout(r,3000)); }],

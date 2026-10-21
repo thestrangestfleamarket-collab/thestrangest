@@ -3859,5 +3859,5 @@ initial download and load super fast"; then "Go")
   takes their place then), the dojo gate and THE BATH HOUSE where they were (they shift to 147 and 134 in step 3, when the apartments
   have gone), THE MOVIE THEATRE (190 to 205), THE ARCADE (205 to 220), THE HOLODECK (225 to 240: its own front now, the booth across the
   lot's whole width with the HOLODECK sign three times the size, the hall behind as before). The block runs to x 245. CLUB STATIC and
-  VCR REPAIR are deleted (`059a-club.js`, the VCR offmap in `059-store.js`, their place tests). THE DOJO HALL is kept for now: the
-  owner's list keeps THE DOJO at 147, so which one "dojo hall" meant is asked.
+  VCR REPAIR are deleted (`059a-club.js`, the VCR offmap in `059-store.js`, their place tests), and THE DOJO with its hall and the ninja
+  training (owner, 21 Oct 2026, asked whether the hall or both: "both for now, lets hurry"; `059c-dojo.js`, `141a-ninja.js`).

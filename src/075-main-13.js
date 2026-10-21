@@ -4,7 +4,7 @@ import {AMB, BOAT, BROOK, BWK, CITY, CLOCK, CULL, DRESS, DRM, ED, FAR3, FEEL, FI
 import {art, EffectComposer, frustum, OCAM, OutputPass, PPU, pxS, renderer, RenderPass, RES, resize, RESMAX, RH, rppu, RW, scene, SCL, ShaderPass, statEl, V0, vpu, ZMAX} from './004-main.js';
 import {applyTime, ASTEP, BF, C2, cutWalls, lamps, MODS, nightTo, SEEN, shopGroups, STORE, SYS, TILE, ZU} from './006-map-pre.js';
 import {FLAME} from './007-fire.js';
-import {PEEK} from './008-batch.js';
+import {BATCH, PEEK} from './008-batch.js';
 import {WATER} from './009-down.js';
 import {FOUNT} from './060a-fount.js';
 import {MAPLV} from './064-map-post.js';
@@ -87,7 +87,7 @@ function frame(now){ requestAnimationFrame(frame); if(PARK.hold)return; renderer
       G.lit=blk?0:Math.min(1,(sun.intensity-.6)/1.4); } } G.k+=(G.lit-G.k)*Math.min(1,dt*4); }
   W3.tint.setRGB(.58,.6,.66).lerp(C2.setRGB(1,1,1),Math.max(Math.max(0,lampW)*(ROOMS.cur?0.35:0.7),SUNG.k*.9)); if(ED.on)W3.tint.setRGB(1,1,1);
   DRESS.tick(dt,pos); SYS.run('dress',dt,pos); RINGX.tick(dt); SYS.run('ring',dt); RIVER.tick(dt,pos); FOUNT.tick&&FOUNT.tick(dt,pos); RIVER.hud(); if(window.BROOK&&BROOK.tick)BROOK.tick(dt,pos); { const r=MODS.apts.tick(); if(r)SHARED.solids=r; } { const r2=STORE.stackTick&&STORE.stackTick(); if(r2)SHARED.solids=r2; } CITY.tick(dt,pos); SYS.run('city',dt,pos); NPCS.tick(dt,pos); if(SHARED.FIRE)SHARED.FIRE.tick(dt); FIGFX.tick(dt,pos); FLAME.tick(dt,pos); MUS.tick(dt); BWK.tick(dt); PNM.tick(dt); SGM.tick(dt); DRM.tick(dt); STAGE.tick(dt);
-  UI.goTick(); UI.runTick(); SHARED.BODB.gtick(dt); SYS.run('clockPre',dt); CLOCK.tick(dt); SYS.run('sky',dt); SYS.run('life',dt); SYS.run('places',dt); SYS.run('vitalsPre',dt); VIT.tick(dt); SYS.run('vitals',dt); LOOK.tick(); WHERE.tick(dt); AMB.tick(dt); LINES.tick(dt);
+  UI.goTick(); UI.runTick(); BATCH.tick(dt); SYS.run('clockPre',dt); CLOCK.tick(dt); SYS.run('sky',dt); SYS.run('life',dt); SYS.run('places',dt); SYS.run('vitalsPre',dt); VIT.tick(dt); SYS.run('vitals',dt); LOOK.tick(); WHERE.tick(dt); AMB.tick(dt); LINES.tick(dt);
   marker.visible=!!SHARED.target; if(SHARED.target){ marker.position.set(SHARED.target.x,SHARED.groundY(SHARED.target.x,SHARED.target.z)+0.03,SHARED.target.z); marker.material.opacity=0.5+0.4*Math.sin(t*8); }
   for(const sg of shopGroups)sg.scale.y+=(cut-sg.scale.y)*Math.min(1,dt*8);
   if(SHARED.night!==nightTo){ SHARED.night+=(nightTo-SHARED.night)*Math.min(1,dt*2.5); if(Math.abs(nightTo-SHARED.night)<0.002)SHARED.night=nightTo; applyTime(SHARED.night); }

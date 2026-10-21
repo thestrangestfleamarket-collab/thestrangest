@@ -33,6 +33,10 @@ Look there before changing how something looks or behaves, and add a short dated
   come first. **Builders read each other's registrations when they build** (`STORE.kit` from the store, `STORE.main` from
   main street, `MODS.apts` from the apartments), so a builder's file must come after the ones it reads: the imports cannot see that (they are property reads); the build check's error step can. Prove a move with the scope proof, then run the build check.
 
+**Painting far things later (21 Oct 2026)**: something big and far from where you start (the bodega's ground, the park wall) is
+queued with `BATCH.queue({make, cast, group, post, R, done})` and `q.add(x0,z0,x1,z1,()=>paint())` instead of painted in its builder:
+everything within `R` of you is painted before the start ends (`BATCH.near`), the rest a few ms a frame, nearest first (`BATCH.tick`).
+
 ## Build
 
 `python3 build.py`: joins `src/`, puts in the data and the build stamp (`__BUILDV__`), adds the loading breaths

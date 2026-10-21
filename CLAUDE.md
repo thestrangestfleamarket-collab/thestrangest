@@ -10,8 +10,8 @@ Look there before changing how something looks or behaves, and add a short dated
 
 ## Layout (owner, 18 Oct 2026: "smallest download"; the "minimal files" and "no comments" rules were relaxed on 20 Oct 2026)
 
-- `src/NNN-name.{html,js}`: the page, in order. The build joins them as they are, so a file may start or end inside a block
-  of the file before or after it. `000`/`002`/`end` are the page's HTML, `001-rig.js` the Walker's rig, the rest the game's
+- `src/NNN-name.{html,js}`: the page, in order. The build joins them as they are; every file is whole (no block opens in one
+  file and closes in another; 21 Oct 2026). `000`/`002`/`end` are the page's HTML, `001-rig.js` the Walker's rig, the rest the game's
   module. `game-*.js` are the old game's own makers, copied in (the build no longer reads `bralynnb/tsfm`).
   `main*.js` are the page's own glue code between places.
   `src/door/door.html` is the website's door (invite code, login); `worker/door.js` the website's server (`wrangler.jsonc`).
@@ -25,8 +25,8 @@ Look there before changing how something looks or behaves, and add a short dated
 - To add a file, give it a number between its neighbours (e.g. `054a-name.js`, or renumber).
 - **Before reading a file, grep it in `docs/MAP.md`** (made by `node tools/map.cjs`, refreshed by the build): what it needs, what it gives,
   and which builder it sits inside. Each place is its own builder, `await grab(name, async()=>{...})`, one file each (`059-store` to
-  `059h-bank` on the street; the park, castle, dungeon, stairs and station after). The kits (`014`–`049`) and the bodega's own files
-  (`050`–`059`) come first. **Builders read each other's registrations when they build** (`STORE.kit` from the store, `STORE.main` from
+  `059h-bank` on the street; the park, castle, dungeon, stairs and station after). The kits (`014`–`038z`) and the bodega (`039-bodega`, its kits, layout and build)
+  come first. **Builders read each other's registrations when they build** (`STORE.kit` from the store, `STORE.main` from
   main street, `MODS.apts` from the apartments), so a builder's file must come after the ones it reads: the scope proof (`tools/scope.cjs`)
   cannot see that; the build check's error step can. Prove a move with the scope proof, then run the build check.
 

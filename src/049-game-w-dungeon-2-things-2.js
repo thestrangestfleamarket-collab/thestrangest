@@ -1,1 +1,0 @@
-dgnThings(CATALOG,CAT_INFO,LAMPS,CAT_DEPTS,DGP,dgnLit,DGN,dgnWeb);

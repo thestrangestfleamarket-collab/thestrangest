@@ -1,3 +1,4 @@
+// RIGNPC: a character rig from bones and parts (or a baked skinned mesh), its springs, walk and limbs.
 const RIGNPC={};
 { const V1=new THREE.Vector3(), M1=new THREE.Matrix4();
   RIGNPC.make=(def,o)=>{ const bones=[], by={};
@@ -5,11 +6,13 @@ const RIGNPC={};
       if(P){ const q=P.userData.at; B.position.set(at[0]-q[0],at[1]-q[1],at[2]-q[2]); P.add(B); } else B.position.set(at[0],at[1],at[2]);
       B.userData.rest=B.position.clone(); by[n]=B; bones.push(B); }
     bones[0].updateMatrixWorld(true); const skeleton=new THREE.Skeleton(bones);
-    let n=0; for(const p of def.parts)for(const s of p.of)n+=s.P.length/3;
-    const P=new Float32Array(n*3), C=new Float32Array(n*3), R=new Float32Array(n), SI=new Uint16Array(n*4), SW=new Float32Array(n*4), ranges={}; let at=0, top=0;
-    def.parts.forEach((p,pi)=>{ const start=at, bi=bones.indexOf(by[p.bone]); for(const s of p.of){ P.set(s.P,at*3); C.set(s.C,at*3); at+=s.P.length/3; }
-      R.fill(pi,start,at); for(let i=start;i<at;i++){ SI[i*4]=bi; SW[i*4]=1; top=Math.max(top,P[i*3+1]); } ranges[p.name]={start,count:at-start}; });
-    const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.BufferAttribute(P,3)); geo.setAttribute('color',new THREE.BufferAttribute(C,3)); geo.setAttribute('reg',new THREE.BufferAttribute(R,1));
+    let n=0, P, C, R, SI, SW, ranges={}, top=0;
+    if(def.mesh){ const m=def.mesh; n=m.P.length/3; P=m.P; C=m.C; SI=m.SI; SW=m.SW; R=new Float32Array(n); def.parts=[{name:'body',rank:0}]; ranges.body={start:0,count:n}; for(let i=0;i<n;i++)top=Math.max(top,P[i*3+1]); }
+    else{ for(const p of def.parts)for(const s of p.of)n+=s.P.length/3;
+      P=new Float32Array(n*3); C=new Float32Array(n*3); R=new Float32Array(n); SI=new Uint16Array(n*4); SW=new Float32Array(n*4); let at=0;
+      def.parts.forEach((p,pi)=>{ const start=at, bi=bones.indexOf(by[p.bone]); for(const s of p.of){ P.set(s.P,at*3); C.set(s.C,at*3); at+=s.P.length/3; }
+        R.fill(pi,start,at); for(let i=start;i<at;i++){ SI[i*4]=bi; SW[i*4]=1; top=Math.max(top,P[i*3+1]); } ranges[p.name]={start,count:at-start}; }); }
+    const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.BufferAttribute(P,3)); geo.setAttribute('color',new THREE.BufferAttribute(C,3)); geo.setAttribute('reg',new THREE.BufferAttribute(R,1)); if(def.mesh)geo.setIndex(new THREE.BufferAttribute(def.mesh.I,1));
     geo.setAttribute('skinIndex',new THREE.Uint16BufferAttribute(SI,4)); geo.setAttribute('skinWeight',new THREE.BufferAttribute(SW,4));
     const SP=Object.entries(def.springs||{}).map(([b,s])=>({B:by[b],k:s.k||60,c:s.c||7,f:s.f||0,s:s.s||0,y:s.y||0,lim:s.lim||.8,x:0,z:0,w:0,vx:0,vz:0,vw:0}));
     const c={B:by,t:0,mv:0,dist:0,still:0,spd:0,af:0,as:0,turn:0,look:0,lookTo:0,lookT:3+Math.random()*5,o,
@@ -33,7 +36,9 @@ const RIGNPC={};
         if(!moving&&Math.abs(q.x)+Math.abs(q.z)+Math.abs(q.w)<.004&&Math.abs(q.vx)+Math.abs(q.vz)+Math.abs(q.vw)<.03){ q.x=q.z=q.w=q.vx=q.vz=q.vw=0; }
         q.B.rotation.x+=q.x; q.B.rotation.z+=q.z; q.B.rotation.y+=q.w; } };
     const N=makeNPC(null,Object.assign({names:def.parts.map(p=>p.name),rank:def.parts.map(p=>p.rank||0),geo,skin:{bones,skeleton},tall:top,anim},o));
-    N.B=by; N.parts=ranges; N.tris=n/3; N.rig=c;
+    N.B=by; N.parts=ranges; N.tris=def.mesh?def.mesh.I.length/3:n/3; N.rig=c;
+    if(def.glass){ const q=def.glass, gg=new THREE.BufferGeometry(), B=by[q.bone], a=B.userData.at; gg.setAttribute('position',new THREE.BufferAttribute(q.P,3)); gg.setIndex(new THREE.BufferAttribute(q.I,1)); gg.translate(-a[0],-a[1],-a[2]);
+      const gm=new THREE.Mesh(gg,new THREE.MeshBasicMaterial({color:new THREE.Color().setRGB(...q.c,THREE.SRGBColorSpace),transparent:true,opacity:q.a,depthWrite:false,side:THREE.DoubleSide})); gm.renderOrder=2; B.add(gm); N.tris+=q.I.length/3; }
     const p0=N.push; let bumped=false; N.push=p=>{ const d=Math.hypot(p.x-N.st.x,p.z-N.st.z); if(d<N.st.R+.3){ if(!bumped){ bumped=true; for(const q of SP){ q.vx+=(Math.random()-.5)*6; q.vz+=(Math.random()-.5)*6; } } } else if(d>N.st.R+.45)bumped=false; p0(p); };
     const base=Float32Array.from(P), baseC=Float32Array.from(C);
     N.reshape=(name,{scale=[1,1,1],move=[0,0,0]}={})=>{ '@later'; const r=ranges[name]; if(!r)return; const A=geo.attributes.position.array; let cx=0, cy=0, cz=0;
@@ -48,5 +53,15 @@ const RIGNPC={};
     if(arms[0]){ B[arms[0]].rotation.x=sw*arm; B[arms[1]].rotation.x=-sw*arm; B[arms[0]].rotation.z=-.08; B[arms[1]].rotation.z=.08; }
     B[body].position.y+=Math.abs(Math.cos(ph))*bob*m; B[body].rotation.z=Math.sin(ph)*rock*m; B[body].rotation.y=sw*.06;
     if(m<1)B[body].position.y+=Math.sin(c.t*1.7)*.003*(1-m); };
+  const pts=M=>{ const q=new Int16Array(B64(M.p).buffer), P=new Float32Array(q.length); for(let i=0;i<q.length;i++)P[i]=(q[i]+32500)*M.sc+M.lo[i%3]; return P; };
+  RIGNPC.glb=D=>{ const c=B64(D.c), C=new Float32Array(c.length); for(let i=0;i<c.length;i++)C[i]=c[i]/255; const w=B64(D.w), SW=new Float32Array(w.length); for(let i=0;i<w.length;i++)SW[i]=w[i]/255;
+    return {bones:D.bones, mesh:{P:pts(D),C,I:new Uint16Array(B64(D.i).buffer),SI:Uint16Array.from(B64(D.j)),SW}, glass:D.glass&&{P:pts(D.glass),I:new Uint16Array(B64(D.glass.i).buffer),c:D.glass.c,a:D.glass.a,bone:D.glass.bone}}; };
+  RIGNPC.limbs=(c,o={})=>{ const B=c.B, ph=c.st.ph, m=c.mv, sw=Math.sin(ph)*m;
+    RIGNPC.walk(c,Object.assign({body:'hips'},o));
+    if(c.sheet)return;
+    for(const [s,k] of [['L',1],['R',-1]]){ const kn=B['knee'+s], el=B['elbow'+s], ft=B['foot'+s];
+      if(kn)kn.rotation.x=Math.max(0,Math.sin(ph+(k>0?0:Math.PI)+.9))*.75*m; if(ft&&kn)ft.rotation.x=-kn.rotation.x*.45;
+      if(el)el.rotation.x=-.18-Math.max(0,-sw*k)*.35; }
+    if(B.chest)B.chest.rotation.y=-sw*.08; if(B.head)B.head.rotation.y=c.look; };
   RIGNPC.hold=i=>QS.get('toonhold')?{brain:(dt,you,st)=>{ const cx=cam.position.x-you.x, cz=cam.position.z-you.z, d=Math.hypot(cx,cz)||1, k=(i-2)*1.25*TILE;
     st.to=null; st.hold=true; st.x=you.x-cz/d*k; st.z=you.z+cx/d*k; st.face={x:cam.position.x,z:cam.position.z}; }}:{}; }

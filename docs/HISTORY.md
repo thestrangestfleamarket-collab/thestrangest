@@ -3899,3 +3899,20 @@ initial download and load super fast"; then "Go")
   16 along all of them. The brook springs from the fountain's lake and runs south-west into the lake, under the stone bridge where it
   crosses the cross path (the bridge was on the gate path). Trees, flowers, hedges and the lawn keep off every path. Cost: the paths'
   slabs are built in the park's own load as before; some 40 lamp posts more (unlit models; the eight nearest light).
+
+## 21 Oct 2026: a stale open tab auto-refreshes when a place's code is gone
+
+The owner, playing the live site: "bath house isnt loading", with the console 404ing `/g/x-bath.<hash>.js` and a wall of
+uncaught `bath 404`. THE MARKET is one long-lived page: the shell loads `m.<hash>.js`, and that running code fetches each
+place's chunk on demand (`x-name.<hash>.js`). Every deploy content-hashes the files, so a new deploy gives new names and the
+worker (`worker/door.js`) 404s anything not in the current deploy. A tab left open from before a redeploy keeps running the old
+`m.js`, which asks for a chunk by a hash the new deploy replaced — so entering that place 404s and it never builds. (The chunk
+itself is fine: `tests/places.cjs` enters the bath house on every push.) `136-version.js`'s `peek()` already shows A NEW VERSION
+IS READY, but only every 90s and on your action, so a deploy landing just before you walk in slips through.
+
+A failed chunk fetch is proof the page is stale, so the loader now acts on it (owner chose auto-refresh over the notice): a
+404/403 on a chunk saves the spot and reloads once (`__CLOAD`/`__CSYNC` in `build.py`); position is restored on reload
+(`135-where.js`), so you land back where you were on the current build and the place opens. A one-shot guard makes later loads
+wait rather than storm the network before the reload navigates, and `swap()` (`130-rooms.js`) now catches the rejection, so no
+console spam and no wedged entry. The 90s peek stays for the proactive case. (Only the website runtime; the single-file
+`dist/market.html` keeps its chunks in the page and never fetches.)

@@ -63,25 +63,24 @@ let solids=SOL.up, fixed=FIX.up, BOUND, groundY, LVL='up', BOD, BODB, METRO;
 const STORE={rooms:[],places:[],roofs:[]}, BF={list:[]}; window.STORE=STORE;
 const MAPG={}, MODS={};  const OVERHEAD=[]; let RPASS=null, FIRE=null;
 const grab=async(name,fn)=>{ const n0=scene.children.length; await fn(); const g=new THREE.Group(); g.name=name; for(const o of scene.children.slice(n0))g.add(o); scene.add(g); MAPG[name]=g; return g; };
-const LAYOUT0={bodega:{x:-138.8},diner:{x:-24.75},ghost:{x:-8.8},house:{x:-143},subway:{x:14.99},apartments:{x:59},park:{e:[-4,0,0,0]},castle:{x:-13.5,y:29.5}};
-const MEDIT=(()=>{ try{ return QS.get('layout')==='0'?{}:JSON.parse(SAVE.get('mapedit')||'{}')||{}; }catch(e){ return {}; } })(), MED=(k,f)=>+((MEDIT[k]||{})[f])||0;
-for(const [k,id] of [['bodega','bodega'],['house','apts'],['ghost','bath'],['subway','subway']])LAYOUT0[k].x+=MED(id,'dx'); LAYOUT0.castle.x+=MED('castle','dx'); LAYOUT0.castle.y+=MED('castle','dy');
+const LEVEL=__DATA__("data/world.json"), WP=Object.fromEntries(LEVEL.places.map(p=>[p.id,p])), WPP=LEVEL.parkPlaces, BLDK=1.1, LOTX=m=>72+(m-72)/BLDK;
+const LAYOUT0={bodega:{x:WP.bodega.x1-76.4},diner:{x:-24.75},ghost:{x:WP.bath.x0-133.55},house:{x:WP.apts.x0-48.24},subway:{x:WP.subway.x0-60.01},apartments:{x:59},park:{e:[0,0,0,0]},castle:{x:WPP.castle.x0-46,y:WPP.castle.y0+21}};
 const AWAY0=['diner','aquarium','garden','avenue','keep','civic','power'], AWAYLOT=1000;
 const AWAY=(()=>{ const s=new Set(AWAY0), q=QS.get('bring'); if(q==='all')s.clear(); else if(q)for(const k of q.split(','))s.delete(k.trim()); return s; })(); window.AWAY=AWAY;
-const LAY=(()=>{ const q=QS.get('layout'); let o={}; try{ o=q&&q[0]==='{'?JSON.parse(q):q==='0'?{}:JSON.parse(SAVE.get('layout')||'{}')||{}; }catch(e){}
-  const L=Object.assign({},LAYOUT0,o); return {L, o:k=>({x:(+(L[k]&&L[k].x)||0)+(k==='apartments'?AWAYLOT:0),y:+(L[k]&&L[k].y)||0}), e:k=>(L[k]&&L[k].e||[0,0,0,0]).map(v=>+v||0), h:k=>+(L[k]&&L[k].h)||0, s:k=>+(L[k]&&L[k].s)||1}; })();
+const LAY=(()=>{ const L=LAYOUT0; return {L, o:k=>({x:(+(L[k]&&L[k].x)||0)+(k==='apartments'?AWAYLOT:0),y:+(L[k]&&L[k].y)||0}), e:k=>(L[k]&&L[k].e||[0,0,0,0]).map(v=>+v||0), h:k=>+(L[k]&&L[k].h)||0, s:k=>+(L[k]&&L[k].s)||1}; })();
 const STN={DX:(-11+LAY.o('subway').x)*TILE, DZ:(-35+LAY.o('subway').y)*TILE, DY:-98*ZU};
-const BLDK=1.1;
-const MAINX={w:70,e:110}, WID=14, NORTHY=9+WID, NORTHX=145.5, EASTX=152+MAINX.e, WESTX=-130;
-const BLOCK={back:-92.4,alley:[-99.4,-92.4],row2:[-111.4,-99.4],prom:[-119,-111.4],river:-165,x0:-100,x1:245,lots:{play:[-33.6,-19.6],bank:[-9.8,18.8],theatre:[190.5,204.5],arcade:[205.5,219.5],holo:[225.5,239.5]}};
-const ROWID=['apts','bodega','museum','play','bank','bar','subway','hudson','bath','theatre','arcade','holo'], MAINROW=[[-94.8,-80.5],[-80,-62.3],[-62.3,-33.7],[-33.6,-19.6],[-9.8,18.8],[49,60],[75,79],[111,124],[124.75,143.25],[190.5,204.5],[205.5,219.5],[225.5,239.5]].map((r,i)=>r.map(v=>v+MED(ROWID[i],'dx')));
-BLOCK.hudson=[111,124].map(v=>v+MED('hudson','dx')); for(const k in BLOCK.lots)BLOCK.lots[k]=BLOCK.lots[k].map(v=>v+MED(k,'dx'));
-const WROW={bar:{x0:51.09,x1:61.09},mus:{x0:-50.09,y0:-101,x1:-24.09,y1:-80,h:210}}; for(const [k,id] of [['bar','bar'],['mus','museum']]){ WROW[k].x0+=MED(id,'dx')/BLDK; WROW[k].x1+=MED(id,'dx')/BLDK; }
-const RING={wx0:31.5-MAINX.w-WID,wx1:46-MAINX.w,top:12.5+NORTHY+NORTHX}; RING.wr0=RING.wx0+3.2; RING.wr1=RING.wx1-3.2; RING.wy1=RING.top+WID;
+const WESTX=LEVEL.streets.market.x0, EASTX=LEVEL.streets.market.x1, MAINX={w:46-LEVEL.streets.west.x1}; MAINX.e=EASTX-152;
+const WID=31.5-MAINX.w-LEVEL.streets.west.x0, NORTHY=9+WID, NORTHX=LEVEL.park.y1-12.5-NORTHY;
+LAYOUT0.park.e=[LEVEL.park.x0-50+MAINX.w,0,LEVEL.park.x1-EASTX,0];
+const WB=LEVEL.block, BLOCK={back:WB.back,alley:WB.alley,row2:WB.backrow,prom:WB.walk,river:WB.river,x0:WB.x0,x1:WB.x1,lots:{},hudson:[WP.hudson.x0,WP.hudson.x1]};
+for(const k of ['play','bank','theatre','arcade','holo'])BLOCK.lots[k]=[WP[k].x0,WP[k].x1];
+const ROWID=LEVEL.places.map(p=>p.id), MAINROW=LEVEL.places.map(p=>[p.x0,p.x1]);
+const WROW={bar:{x0:LOTX(WP.bar.x0),x1:LOTX(WP.bar.x1)},mus:{x0:LOTX(WP.museum.x0),y0:-101,x1:LOTX(WP.museum.x1),y1:-80,h:210}};
+const RING={wx0:LEVEL.streets.west.x0,wx1:LEVEL.streets.west.x1,top:LEVEL.park.y1}; RING.wr0=RING.wx0+3.2; RING.wr1=RING.wx1-3.2; RING.wy1=RING.top+WID;
 RING.stairs=[]; RING.river={y0:BLOCK.river,y1:BLOCK.river+46}; RING.ff={x0:WESTX,x1:EASTX,y0:RING.river.y0-1.5,y1:RING.top+28};
 const MAPSTAIR={x0:60.01,x1:64.01,y0:-82.9,y1:-76.9, steps:12, depth:98, dir:-1};
 { const o=LAY.o('subway'); MAPSTAIR.x0+=o.x; MAPSTAIR.x1+=o.x; MAPSTAIR.y0+=o.y; MAPSTAIR.y1+=o.y; }
-const PARKGX=112+MED('round','dx'), PARKRY=59.5+MED('round','dy'), PARKLAKE=[151+MED('lake','dx'),10+MED('lake','dy'),Math.max(3,9+MED('lake','dr'))], PARKCAVE=[196.5+MED('cave','dx'),41.5+MED('cave','dy')], PARKTOWER=[-8.5+MED('tower','dx'),-28+MED('tower','dy')];
-const SHELLS=Array.from({length:7},(_,i)=>[MED('shell'+(i+1),'dx'),17.5+22*i+MED('shell'+(i+1),'dy')]);
+const PARKGX=WPP.round.x, PARKRY=WPP.round.y, PARKLAKE=[WPP.lake.x,WPP.lake.y,WPP.lake.r], PARKCAVE=[WPP.cave.x,WPP.cave.y], PARKTOWER=[WPP.tower.x,WPP.tower.y];
+const SHELLS=LEVEL.shells;
 const CASTLE={b:[46,67,-21,-4],gate:58.5,stair:{x0:61.5,x1:63.5,y0:-19.4,y1:-13.4,steps:12,depth:98,dir:1},hall:{x0:51,y0:-20,x1:65,y1:-6.8,h:130}};
 { const o=LAY.o('castle'), C=CASTLE, S=C.stair, H=C.hall; C.b=[C.b[0]+o.x,C.b[1]+o.x,C.b[2]+o.y,C.b[3]+o.y]; C.gate+=o.x; for(const R of [S,H]){ R.x0+=o.x; R.x1+=o.x; R.y0+=o.y; R.y1+=o.y; } }

@@ -4031,3 +4031,12 @@ initial download and load super fast"; then "Go")
   fight), speed, health, home, job, size, scale, color, tint, opacity; the same move, turn, copy, delete, undo; VIEW 360 lends the
   character's own body to the black void. Each tab exports and imports its own file (`market-map-*.json`, `market-characters-*.json`);
   nothing changes in the game.
+
+- **The core, piece 1: one level file** (owner, 21 Oct 2026, after the outside review: "lets not patch things, the fundamental game core
+  needs to make sense", "yes lets do all, dont do heavy checks, lets just get it done"; `data/world.json`, `006-map-pre.js`): every
+  placed thing is in one file in map tiles: the streets, the park's bounds, the block's rows, every front on the block (x0, x1), the
+  seven shells, the park's places (round, lake, cave, tower, castle) and its paths (each a segment). The old constants (`MAINX`, `WID`,
+  `NORTHX`, `EASTX`, `WESTX`, `BLOCK`, `MAINROW`, `WROW`, `RING`, `LAYOUT0`'s offsets, `PARKGX`…, `SHELLS`) are now derived from it at
+  the start and read by the builders as before; the 65 hard numbers, the bodega's `-8`, the saved `layout` and `MEDIT` overrides are
+  gone. The 1.1 lot scale (`BLDK`) stays inside the old building kits only, converted at one place (`LOTX`). The map editor imports and
+  exports `world.json` itself: an exported file dropped into `data/` is the game.

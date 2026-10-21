@@ -2,7 +2,7 @@
 const APTS={EMPTY:true};
 await grab('apts',async()=>{ const {X,Z,faceTex,bq,C,facade,FRAME,place}=BOD,
   RZ=APTS.RZ=28, Y=z=>BOD.Y(z+RZ), gbox=(b,k)=>BOD.gbox({...b,z0:b.z0+RZ,z1:b.z1+RZ},k), R0=APTS.R0=BOD.Y(RZ)-BOD.Y(0), {speck,hash}=BOD.g, {MKS,CATALOG,PROPS,STUDIO,LSEED,STORY,sh}=BOD.K, S=STORY, ST=3, AH=ST*S, W=LSEED.walk, T=.1;
-  const A=(o=>({x0:50.4+o.x/BLDK,x1:63.4+o.x/BLDK,y0:W-14+o.y/BLDK,y1:W+o.y/BLDK}))(LAY.o('house')), m=(A.x0+A.x1)/2, H={y0:A.y0+5.6,y1:A.y0+8.4}, DW=.78, DH=94;
+  const A={x0:LOTX(WP.apts.x0),x1:LOTX(WP.apts.x1),y0:W-14,y1:W}, m=(A.x0+A.x1)/2, H={y0:A.y0+5.6,y1:A.y0+8.4}, DW=.78, DH=94;
   APTS.A=A; APTS.H=H; const TEX={}; for(const k in TEXTURES)TEX[k]={w:TEXTURES[k].w,h:TEXTURES[k].h,c:B64(BY(TEXTURES[k],'c'))};
   const STONE=[176,168,152];
   const LS=[138,60,44], TS=[150,144,132], MO=[172,160,146], GL=[255,214,150], BAR=[30,28,26];

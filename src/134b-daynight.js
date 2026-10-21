@@ -11,13 +11,14 @@ const DN={lk:1,mode:'day'};
   DN.P=()=>S[DN.mode]; DN.S=S; DN.D0=D0;
   const fix=()=>{ const P=DN.P(); WX.fix={cloud:P.cld,rain:0,snow:0,storm:0,wind:DN.mode==='night'?.08:.15,dir:1,fog:0}; WX.cy=P.cy*TILE; window.PARK&&PARK.lampLit&&PARK.lampLit(); };
   DN.set=m=>{ DN.mode=m; if(!DN.test)try{ SAVE.set('dn',m); }catch(e){} fix(); DN.draw(); };
-  const tick0=CLOCK.tick; CLOCK.tick=dt=>{ const P=DN.P(), night=DN.mode==='night', up=LVL!=='down'; if(!CLOCK.run)CLOCK.h=((P.h%24)+24)%24; tick0(dt);
+  SYS.add('clockPre',()=>{ if(!CLOCK.run)CLOCK.h=((DN.P().h%24)+24)%24; },'134b-daynight');
+  SYS.add('world',()=>{ const P=DN.P(), night=DN.mode==='night', up=LVL!=='down';
     CLOCK.sun.intensity*=P.sun; if(up)HEMI.intensity*=P.amb; DN.lk=night?P.lamp:1;
     if(WX.clouds){ const M=WX.clouds.material; M.color.multiplyScalar(P.cb); M.emissive.multiplyScalar(P.cb); }
     if(SKY.dome.visible){ U.uZ.value.set(P.zen); U.uH.value.set(P.hor); U.uM.value.copy(U.uH.value).lerp(U.uZ.value,.45); U.uCov.value=P.cov; U.uCL.value=P.cl;
       if(night){ U.uStar.value=Math.min(2,U.uStar.value*P.star); U.uMoonK.value=Math.min(1,U.uMoonK.value*P.moon); } }
     if(MISTE.x&&FAR3.mist){ MISTE.y=P.m0; MISTE.z=P.m1; const f=FAR3.fog.color.lerp(U.uH.value,P.hz); U.uMistC.value.copy(f); FAR3.FU.uMC.value.copy(f).multiplyScalar(.62); if(scene.background&&scene.background.isColor)scene.background.copy(f).multiplyScalar(.5); }
-    if(!up){ SKY.dome.visible=false; if(scene.background&&scene.background.isColor)scene.background.setRGB(0,0,0); } };
+    if(!up){ SKY.dome.visible=false; if(scene.background&&scene.background.isColor)scene.background.setRGB(0,0,0); } },'134b-daynight');
   const box=document.getElementById('adn'), fl=v=>(+v).toFixed(2); let dirty=false;
   DN.draw=()=>{ if(!box)return; const m=DN.mode, P=S[m], k=m==='night'?'n':'d';
     box.innerHTML=`<h3>DAY OR NIGHT</h3><div class="row" id="dnm"><button class="btn" data-dn="day" aria-pressed="${m==='day'}">DAY</button><button class="btn" data-dn="night" aria-pressed="${m==='night'}">NIGHT</button><span class="dim">N switches them</span></div>

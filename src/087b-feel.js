@@ -1,4 +1,9 @@
-const FEEL={on:false,dbg:false,ready:false,lib:null,S:null,go:0,ev:{jump:0,land:0,imp:0},hs:0};
+// THE FEEL: FEEL tunes how the player moves: speed, grip, jumps, slopes, steps and the follow camera.
+import {SHARED, THREE} from './003-shx.js';
+import {BOAT, ED, FEEL, keys, NPCS, pos, RAG, st, UI, W3} from './003b-systems.js';
+import {SAVE} from './005-save.js';
+import {QS, TILE, ZU} from './006-map-pre.js';
+Object.assign(FEEL,{on:false,dbg:false,ready:false,lib:null,S:null,go:0,ev:{jump:0,land:0,imp:0},hs:0});
 window.FEEL=FEEL;
 { const V=THREE.Vector3, MH=TILE/.84, MV=MH*ZU*24/TILE, H=1/60, D2R=Math.PI/180;
   FEEL.MH=MH; FEEL.MV=MV; FEEL.H=H;

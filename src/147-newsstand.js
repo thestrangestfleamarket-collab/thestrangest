@@ -1,3 +1,9 @@
+// THE NEWSSTAND: NEWS builds the newsstand by the subway stairs, kept by the cat.
+import {SHARED, THREE} from './003-shx.js';
+import {CITY, CIVIC, CLOCK, DRONE, LINES, pos, UI, WALKERS} from './003b-systems.js';
+import {scene} from './004-main.js';
+import {FIX, MAPSTAIR, QS, SOL, SYS, TILE} from './006-map-pre.js';
+import {TOONS} from './084-npc-toons.js';
 const NEWS=window.NEWS={};
 NEWS.init=()=>{ const N=typeof TOONS!=='undefined'&&TOONS.cat; if(!N||typeof SHARED.BOD==='undefined')return;
   const X=SHARED.BOD.XS, Y=z=>SHARED.BOD.YS(z*.64), Z=SHARED.BOD.ZS, T=TILE, xm=(MAPSTAIR.x0+MAPSTAIR.x1)/2-6, x0=xm-1.4, x1=xm+1.4, y1=-74.85, y0=y1-1.5;
@@ -124,3 +130,4 @@ NEWS.init=()=>{ const N=typeof TOONS!=='undefined'&&TOONS.cat; if(!N||typeof SHA
   UI.thing({name:'NEWSSTAND',obj:hb,reach:1.6*T,near:3*T,tall:1.2*T,act:NEWS.open});
   NEWS.stock=stock; NEWS.bundles=bundles; NEWS.deliver=()=>DR.forEach((d,k)=>fly(d,k));
   window.NEWSCLK=(h,s)=>{ if(h!=null)CLOCK.h=h; if(s!=null){ CLOCK.run=true; CLOCK.speed=s; } return CLOCK.h; }; window.NEWSDBG=()=>({h:+CLOCK.h.toFixed(2),sold,cust:cust&&cust.N.key,act:act&&act.n,queue:queue.map(a=>a.n),shut:+shut.toFixed(2),bundles:bundles.length,stock:JSON.parse(JSON.stringify(stock)),drones:DR.map(d=>d.g.visible?d.g.position.toArray().map(v=>+v.toFixed(1)):null),at:[+X(xm).toFixed(2),+Z(y1+2).toFixed(2)]}); };
+export {NEWS};

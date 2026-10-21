@@ -1,3 +1,8 @@
+// THE STALLS: STALL builds the market stalls and the mushrooms and goods laid out on them.
+import {THREE} from './003-shx.js';
+import {CLOCK, NPCS, WEEDS} from './003b-systems.js';
+import {scene} from './004-main.js';
+import {FIX, MAPG, SOL, TILE, ZU} from './006-map-pre.js';
 const STALL=(()=>{ const M=TILE/.84, VS=ZU*24/TILE, mv=m=>m*M*VS;
   const MUSH={
     button:{s:.035,h:1.2,f:(p,s)=>{ p('cyl',0xe8e2d4,0,s*.4,0,s*.35,s*.8,s*.35); p('cap',0xf2ede2,0,s*.7,0,s,s*.7,s); }},
@@ -119,3 +124,4 @@ const STALL=(()=>{ const M=TILE/.84, VS=ZU*24/TILE, mv=m=>m*M*VS;
     B.broom.scale.setScalar(J.broom?1:1e-4); B.held.scale.setScalar(J.item?1:1e-4); if(B.tray)B.tray.scale.setScalar(J.tray?1:1e-4); };
   const made=[]; return {build,made,MUSH,VEG,zones,work,pose,face}; })();
 window.STALL=STALL;
+export {STALL};

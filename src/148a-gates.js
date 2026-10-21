@@ -1,3 +1,8 @@
+// THE GATES: GATES puts gates and fences in the gaps between the block's buildings.
+import {SHARED, THREE} from './003-shx.js';
+import {BLK, MAPED} from './003b-systems.js';
+import {scene} from './004-main.js';
+import {BLDK, BLOCK, FIX, MAPSTAIR, MODS, SOL, TILE, WROW} from './006-map-pre.js';
 const GATES=window.GATES={list:[]};
 GATES.init=()=>{ if(typeof SHARED.BOD==='undefined'||typeof BLOCK==='undefined')return;
   const T=TILE, M=T/.84, XS=SHARED.BOD.XS, ZS=SHARED.BOD.ZS, G=(x,z)=>MODS.bodega.ground(x,z), yF=SHARED.BOD.K.LSEED.walk-.12, yB=BLOCK.back+.15, za=Math.min(ZS(yF),ZS(yB)), zb=Math.max(ZS(yF),ZS(yB));
@@ -23,3 +28,4 @@ GATES.init=()=>{ if(typeof SHARED.BOD==='undefined'||typeof BLOCK==='undefined')
   const CM=new THREE.InstancedMesh(new THREE.ConeGeometry(1,1,4).translate(0,.5,0),mat,Math.max(1,CN.length)); CN.forEach(([x,y,z,r,h],i)=>{ CM.setMatrixAt(i,m4.compose(new V(x,y,z),q,new V(r,h,r))); CM.setColorAt(i,c.setHex(IRON[i%3])); }); CM.count=CN.length;
   for(const me of [BM,CM]){ me.castShadow=me.receiveShadow=true; scene.add(me); }
   GATES.tris=BX.length*12+CN.length*6; window.GATESDBG=()=>({gaps:GATES.list,boxes:BX.length,tips:CN.length,tris:GATES.tris}); };
+export {GATES};

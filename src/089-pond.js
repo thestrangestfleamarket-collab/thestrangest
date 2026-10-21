@@ -1,4 +1,10 @@
-const POND={}; window.POND=POND;
+// THE POND: POND builds the park's pond, its bed, its ring of rocks and its water.
+import {SHARED, THREE} from './003-shx.js';
+import {PARK, POND} from './003b-systems.js';
+import {scene} from './004-main.js';
+import {FIX, MAPG, MODS, SOL, TILE, ZU} from './006-map-pre.js';
+import {WATER} from './009-down.js';
+ window.POND=POND;
 { const go=()=>{ '@park'; if(typeof PARK==='undefined'||!PARK.fire)return setTimeout(go,500);
     const P=PARK, X=x=>SHARED.BOD.XS(x+(P.ox||0)), Z=y=>SHARED.BOD.ZS(y+(P.oy||0)), Y=SHARED.BOD.YS, [cx,cy,R]=P.lake, RIM=9, LV=7;
     const WX=X(cx), WZ=Z(cy), RW=R*TILE;

@@ -1,4 +1,6 @@
 // THE STUDIO KIT (STUDIO): the studio apartment's furniture, computer and rooms.
+import {SHARED} from './003-shx.js';
+import {CAT_DEPTS, CAT_INFO, CATALOG, hash, KIND_OF, LAMPS, LIFE, mt, prop, ROT, sh} from './014-gamekit.js';
 const STUDIO=(()=>{ const FP=24;
 const art=(W,H,draw)=>{ const a=new Array(W*H).fill(null); draw((x,y,c)=>{ x=Math.floor(x); y=Math.floor(y); if(c&&x>=0&&y>=0&&x<W&&y<H)a[y*W+x]=c; }); return (x,y)=>x>=0&&y>=0&&x<W&&y<H?a[y*W+x]:null; };
 const AP={oak:[118,86,52],walnut:[88,60,40],pine:[152,122,80],black:[30,30,32],steel:[146,148,146],steelD:[98,100,100],white:[220,218,210],cream:[204,196,176],
@@ -280,3 +282,4 @@ CAT_DEPTS.push(['apartment','Apartment']);
   'radio':I(30,'Radio','A walnut tabletop radio: a cloth speaker, a dial that lights up, two knobs and an aerial. Plays the stations of the market.','walnut, cloth, glass, bakelite')}); }
 for(const k of Object.keys(CAT_INFO))if(!KIND_OF[k])KIND_OF[k]=k;
 return {face(f,z){ FACE=f; ONZ=z||0; },kit:{FP,AP,rect,sub,fb,worn,wood,metal,z:()=>ONZ}}; })();
+export {STUDIO};

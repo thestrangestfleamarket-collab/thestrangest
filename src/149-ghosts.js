@@ -1,4 +1,9 @@
-const GHOSTS=window.GHOSTS={list:[]};
+// THE GHOSTS: GHOSTS, the cloth ghosts that drift at night, their cloth moved by a small physics step.
+import {SHARED, THREE} from './003-shx.js';
+import {GHOSTS, NPCS, pos, UI} from './003b-systems.js';
+import {scene} from './004-main.js';
+import {SYS, TILE} from './006-map-pre.js';
+
 { const H=1/120, G=-9.8, DAMP=.988;
   GHOSTS.cloth=(R,sq,N,BR,mat,sx,y,sz)=>{ const IN=(i,j)=>sq||Math.hypot(i/(N-1)*2-1,j/(N-1)*2-1)<=1.02, REST=[], idx=[], live=[];
     for(let j=0;j<N;j++)for(let i=0;i<N;i++){ if(!IN(i,j))continue; live.push((j*N+i)*3); for(const [di,dj] of [[1,0],[0,1],[1,1],[1,-1],[2,0],[0,2]]){ const i2=i+di, j2=j+dj; if(i2<0||i2>=N||j2<0||j2>=N||!IN(i2,j2))continue; REST.push([(j*N+i)*3,(j2*N+i2)*3,Math.hypot(di,dj)*2*R/(N-1),di===2||dj===2?.3:1]); } }

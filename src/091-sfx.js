@@ -1,6 +1,11 @@
+// THE SOUNDS: SFX makes every sound effect and loop in code, with the volume and the sound mix.
+import {SHARED, THREE} from './003-shx.js';
+import {pos, SFX, SND, USE} from './003b-systems.js';
+import {SAVE} from './005-save.js';
+import {QS, TILE} from './006-map-pre.js';
 const SOUND=QS.get('sound')==='1';
 const SNDMIX0={fx:{},loops:{},gap:1,blip:1};
-const SFX={on:true,vol:1,mix:{fx:{},loops:{},gap:1,blip:1}};
+Object.assign(SFX,{on:true,vol:1,mix:{fx:{},loops:{},gap:1,blip:1}});
 { const rnd=()=>Math.random()*2-1, TAU=Math.PI*2;
   { const s=SAVE.get('sfx'), v=SAVE.get('vol'); if(s!=null)SFX.on=s==='1'; if(v!=null)SFX.vol=Math.max(0,Math.min(1,+v)); }
   const mixOf=o=>({fx:Object.assign({},SNDMIX0.fx,o&&o.fx||{}),loops:Object.assign({},SNDMIX0.loops,o&&o.loops||{}),gap:o&&o.gap!=null?+o.gap:SNDMIX0.gap,blip:o&&o.blip!=null?+o.blip:SNDMIX0.blip});
@@ -56,3 +61,4 @@ const SFX={on:true,vol:1,mix:{fx:{},loops:{},gap:1,blip:1}};
   SFX.blip=(v,o={})=>{ '@later'; const c=SFX.live(); if(!c||!SFX.on)return; const s=c.createBufferSource(), G=c.createGain(); s.buffer=vbuf(c,v.bank||'low',Math.floor(Math.random()*16)); s.playbackRate.value=(v.pitch||1)*(.96+Math.random()*.08);
     let P=null; if(o.at&&c.createStereoPanner)P=c.createStereoPanner(); const kd=place(o,G,P); if(kd<=0)return; G.gain.value=.22*kd*(SFX.mix.blip==null?1:+SFX.mix.blip); if(P)s.connect(P).connect(G).connect(bus(c)); else s.connect(G).connect(bus(c)); s.start(); };
 }
+export {SOUND};

@@ -1,8 +1,14 @@
+// THE BODY PHYSICS: the ragdoll (RAG, ragStep) and the player's physics step (phyStep), with its small vector maths.
+import {SHARED, THREE} from './003-shx.js';
+import {ONLINE, PH, pos, RAG, st, vwV, wvV} from './003b-systems.js';
+import {PPU} from './004-main.js';
+import {cutWalls, FIX} from './006-map-pre.js';
+import {AX, AY, PICH, PW, uimg, VS} from './071-main-11.js';
+import {OUTL} from './072-walker3d.js';
 
 OUTL.hidden=()=>cutWalls.filter(w=>w.pl.constant<1e5).map(w=>w.me);
 
-const P={x:0,y:0}, PERF=null, TL=33.9/PPU, PH={st,hd:0};
-const wvV=(u,v)=>[(u-v)*Math.SQRT1_2,-(u+v)*Math.SQRT1_2], vwV=(x,y)=>[(x-y)*Math.SQRT1_2,-(x+y)*Math.SQRT1_2];
+const P={x:0,y:0}, PERF=null, TL=33.9/PPU; Object.assign(PH,{st,hd:0});
 const PHG=11.7, PHH=1/120;
 const v3a=(a,b)=>[a[0]+b[0],a[1]+b[1],a[2]+b[2]], v3s=(a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]], v3k=(a,k)=>[a[0]*k,a[1]*k,a[2]*k],
   v3d=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2], v3x=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
@@ -115,7 +121,7 @@ function phyStep(bs,st,h,wind,js){
     if(!(b.you>0)&&(still&&(b.rest+=h)>.25||b.held>.4)){ b.awake=false; b.v=[0,0,0]; b.w=[0,0,0]; b.held=0; } else if(!still)b.rest=0; }
   return cs; }
 const view0={a:Math.PI/4}; let STATIC=[], PHYROOMS=[];
-const RAG={on:false,bodies:[],joints:[],t:0,hd:0,blend:null,acc:0,trip:false,hit:null,held:null,toss:null,ko:0}; window.RAGON=()=>RAG.on;
+Object.assign(RAG,{on:false,bodies:[],joints:[],t:0,hd:0,blend:null,acc:0,trip:false,hit:null,held:null,toss:null,ko:0}); window.RAGON=()=>RAG.on;
 const RT=48/Math.SQRT2/(48/(33.9*Math.SQRT2)), RZ=24*RIG.PX/RT;
 const ragW=(p,hd=RAG.hd)=>{ const q=RIG.yaw(p,hd), du=(q.x+q.z)/(Math.SQRT2*RT), dv=(q.z-q.x)/(Math.SQRT2*RT), [dx,dy]=wvV(du,dv); return [P.x+dx,P.y+dy,q.y/RT]; },
   ragWv=p=>{ const q=RIG.yaw(p,RAG.hd), du=(q.x+q.z)/Math.SQRT2, dv=(q.z-q.x)/Math.SQRT2, [dx,dy]=wvV(du,dv), n=Math.hypot(dx,dy,q.y)||1; return [dx/n,dy/n,q.y/n]; },
@@ -183,3 +189,4 @@ function setPhys(lv){ STATIC=FIX[lv].map(([x0,z0,y0,x1,z1,y1])=>[x0/TL,-z1/TL,y0
 const loose=[]; const CM=new THREE.Matrix3().set(1,0,0,0,0,1,0,-1,0), CMT=CM.clone().transpose(), m3t=new THREE.Matrix3(), m4t=new THREE.Matrix4();
 function looseDraw(){ for(const b of loose){ const m=b.m3; m3t.set(m[0],m[1],m[2],m[3],m[4],m[5],m[6],m[7],m[8]).premultiply(CM).multiply(CMT);
   m4t.setFromMatrix3(m3t).setPosition(b.x[0]*TL,b.x[2]*TL,-b.x[1]*TL); b.g.matrix.copy(m4t); b.g.matrixWorldNeedsUpdate=true; } }
+export {loose, looseDraw, P, PHH, PHYOU, phyStep, phyYouNow, ragBlend, ragPose, ragStart, ragStep, ragStrikes, setPhys, STATIC, TL, view0};

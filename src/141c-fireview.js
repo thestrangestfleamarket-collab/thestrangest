@@ -1,3 +1,9 @@
+// THE FIRE ESCAPE VIEW: the city seen from the apartment's fire escape, built off the map.
+import {SHARED, THREE} from './003-shx.js';
+import {CLOCK, FAR3, pos, SKY, st, UI, USE, W3} from './003b-systems.js';
+import {scene} from './004-main.js';
+import {BLDK, FADE, MISTE, MODS, STORE, SYS, TILE, ZU} from './006-map-pre.js';
+import {BATCH} from './008-batch.js';
 { const APTS=MODS.apts, F=window.FIREV, T=TILE, KK=BLDK, {X,Y,Z}=SHARED.BOD, hs=SHARED.BOD.g.hash, sh=SHARED.BOD.K.sh, bq=SHARED.BOD.bq, {CX,WY,HZ,S}=F, A=APTS.A, RZ=APTS.RZ, U=u=>A.x0+u, V=v=>A.y0+v;
   const ix=x=>x/(T*KK)+SHARED.BOD.OX, iy=z=>z/(T*KK)+SHARED.BOD.OY, cl=v=>Math.max(0,Math.min(1,v)), nk=()=>cl((4-CLOCK.elev())/8);
   const L0=CX-3.6, L1=CX+3.6, DO=1.65, STP={x0:CX-.8,x1:CX+.8,y1:WY+.42,z:14}, LX=CX+2.6, AWX=24.7;

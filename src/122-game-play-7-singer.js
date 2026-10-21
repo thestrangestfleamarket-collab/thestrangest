@@ -1,3 +1,6 @@
+// THE SINGER'S GEAR: SINGMIC, the singer's microphone, amp and cord, and her singing poses.
+import {POSES} from './112-main-14.js';
+import {WOMAN} from './121-game-play-6-woman.js';
 const SINGMIC=(()=>{ const {V,rcone,ell,rbox,box}=RIG;
   return [{n:'mic',on:'prop',m:'tie',d:q=>rcone(q,V(0,-.2,0),V(0,3.0,0),.36,.55),bb:[-1,1,-.8,3.6,-1,1]},
     {n:'micGrille',on:'prop',m:'metal',d:q=>ell(q,V(0,3.65,0),V(.78,.86,.78)),paint:q=>((q.x*3+20|0)+(q.y*3|0)+(q.z*3+20|0))%2?'metal':'hole',bb:[-1.2,1.2,2.5,4.8,-1.2,1.2]},
@@ -31,3 +34,4 @@ function cordStep(a,dt){ '@later'; const P=a.cord, A=RIG.add(a.mic.o,RIG.mul(a.m
 function singStep(a,dt){ '@later'; if(!a.B)return; a.mic=singMic(a.B); for(const n of ['ampBox','ampGrille','ampPanel','ampKnobs','ampLight'])a.B.props[n]=SINGF; a.B.props.mic=a.B.props.micGrille=a.mic;
   if(!a.cord)cordNew(a); const h=Math.min(dt,.05)/2; cordStep(a,h); cordStep(a,h);
   let s=0; for(const c of a.cord)s+=Math.round(c.p.x*4)*7+Math.round(c.p.y*4)*13+Math.round(c.p.z*4); a.sigx=s; }
+export {CORDN, SINGF, singMic, SINGMIC, singStep};

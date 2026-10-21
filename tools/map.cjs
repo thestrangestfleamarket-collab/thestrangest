@@ -6,7 +6,7 @@
 const fs=require('fs'), path=require('path'), {analyse}=require('./scope.cjs');
 const ROOT=path.resolve(__dirname,'..');
 const files=fs.readdirSync(ROOT+'/src').filter(f=>/^\d{3}[a-z]?-.+\.(js|html)$/.test(f)).sort();
-let page='', spans=[]; for(const f of files){ const t=fs.readFileSync(ROOT+'/src/'+f,'utf8'); spans.push({f,a:page.length,b:page.length+t.length}); page+=t; }
+let page='', spans=[]; for(const f of files){ const t=require('./imports.cjs').blank(fs.readFileSync(ROOT+'/src/'+f,'utf8')); spans.push({f,a:page.length,b:page.length+t.length}); page+=t; }
 const open='<script type="module">', i0=page.indexOf(open)+open.length, j0=page.lastIndexOf('</script>'), code=page.slice(i0,j0);
 const fileSpans=spans.map(s=>({f:s.f,a:Math.max(0,s.a-i0),b:Math.min(code.length,s.b-i0)})).filter(s=>s.b>s.a);
 const fileAt=p=>{ for(const s of fileSpans)if(p>=s.a&&p<s.b)return s; return null; };

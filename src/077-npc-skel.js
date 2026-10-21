@@ -1,4 +1,12 @@
+// THE SKELETONS: SKELGO makes the dungeon's skeletons, their walking and fighting; DRAGON holds the dragon's model.
+import {SHARED, THREE} from './003-shx.js';
+import {SKIN} from './003a-skin.js';
+import {CLOCK, LINES, NPCS, pos, VIT} from './003b-systems.js';
+import {MAPG, MAPSTAIR, MODS, QS, SOL, TILE} from './006-map-pre.js';
+import {collide, SKEL} from './075-main-13.js';
+import {DUN, makeNPC, stfree} from './076-npc-map.js';
 const SKELGO=()=>SKELGO.p||(SKELGO.p=LOAD('dungeon').then(async()=>{ '@dungeon'; const S=await SKEL();
+MODS.skel=SKELGO;
   const BN=S.rig.names.map(n=>n.replace(/\./g,'_')), JI=Object.fromEntries(BN.map((n,i)=>[n,i]));
   const geomOf=(M,rigged)=>SKIN.geom(M,rigged), rigOf=()=>SKIN.rig(S.rig,BN), CLIPS=SKIN.clips(S.clips,BN,false,n=>n.replace(/\./g,'_'));
   const LANE={x0:SHARED.BOD.XS(52),x1:SHARED.BOD.XS(106),z0:SHARED.BOD.ZS(-76.3),z1:SHARED.BOD.ZS(SHARED.BOD.FAR+2.8)}, HOLE=[SHARED.BOD.XS(MAPSTAIR.x0-.6),SHARED.BOD.ZS(MAPSTAIR.y0),SHARED.BOD.XS(MAPSTAIR.x1+.6),SHARED.BOD.ZS(MAPSTAIR.y1+.6)],
@@ -90,3 +98,4 @@ window.SKELDBG=()=>NPCS.filter(N=>N.mixer).map(N=>({key:N.key,x:+N.st.x.toFixed(
 if(!MODS.dungeon||QS.get('trouble'))await SKELGO();
 
 const DRAGON=__LAZY__("data/dragon.json");
+export {DRAGON, SKELGO};

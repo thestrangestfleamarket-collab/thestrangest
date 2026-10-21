@@ -1,5 +1,12 @@
 // PERFORMANCE SWITCHES: hiding far rooms, props and water; shadow map size; what runs only when near.
-const PERFX={on:{}, inner:[], gen:0};
+import {SHARED, THREE} from './003-shx.js';
+import {DRM, ED, LITE, MAPED, MUS, NPCS, PERFX, PNM, pos, ROOMS, SELFSH, SGM, UI, W3} from './003b-systems.js';
+import {scene} from './004-main.js';
+import {BF, FREE, QS, SYS, TILE} from './006-map-pre.js';
+import {OBJS} from './008-batch.js';
+import {WATER} from './009-down.js';
+import {VIS} from './129a-vis.js';
+Object.assign(PERFX,{on:{}, inner:[], gen:0});
 { const q=QS.get('perfx'); for(const k of [1,2,4,5,6,7])PERFX.on[k]=q!=='0'&&!(q||'').split(',').includes('-'+k); if(FREE&&!(q||'').split(',').includes('+1'))PERFX.on[1]=false; }
 { const key=b=>[b.x0,b.z0,b.x1,b.z1,b.y0].map(v=>(+v).toFixed(2)).join();
   PERFX.split=()=>{ if(!PERFX.on[1]){ PERFX.chunk(); PERFX.gen++; return; } const RB=ROOMS.boxes(), m=.25*TILE, tol=.05*TILE, list=[];
@@ -42,7 +49,7 @@ const PERFX={on:{}, inner:[], gen:0};
   const ROOMRESET=ROOMS.reset; ROOMS.reset=()=>{ ROOMRESET(); PERFX.split(); };
   PERFX.rooms=()=>{ if(!PERFX.inner.length)return; const cur=ROOMS.cur, ck=cur?key(cur):null, all=UI.freeCam||ED.on||MAPED.on||SHARED.LVL!=='up', d=1.6*TILE;
     for(const me of PERFX.inner){ const B=me.userData.box; VIS.hide(me,'far',!(all||(ck?me.userData.inner===ck:pos.x>B.x0-d&&pos.x<B.x1+d&&pos.z>B.z0-d&&pos.z<B.z1+d&&SHARED.py>B.y0-.3&&SHARED.py<B.y1))); } }; }
-const SELFSH={set:new Set(), off:new THREE.Matrix4().set(0,0,0,-9, 0,0,0,-9, 0,0,0,-9, 0,0,0,1)};
+Object.assign(SELFSH,{set:new Set(), off:new THREE.Matrix4().set(0,0,0,-9, 0,0,0,-9, 0,0,0,-9, 0,0,0,1)});
 SELFSH.pick=()=>{ SELFSH.set.clear(); if(!PERFX.on[2])return; const R=12*TILE, c=[];
   for(const N of NPCS){ if(N.far||!N.g.visible||!N.g.parent||!N.g.parent.visible||!N.shadowPass)continue; const d=Math.hypot(N.g.position.x-pos.x,N.g.position.z-pos.z); if(d<R)c.push([d,N]); }
   c.sort((a,b)=>a[0]-b[0]); for(const [,N] of c.slice(0,2))SELFSH.set.add(N); };

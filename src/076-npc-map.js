@@ -1,5 +1,12 @@
 // NPCs: makeNPC builds a body with self-shading and its cel material; the NPC list, culling and the street lane.
-const NPCS=[], NOYOU={x:1e6,y:0,z:1e6};
+import {SHARED, THREE} from './003-shx.js';
+import {B64} from './003a-skin.js';
+import {CLIP, LIVES, NPCS, PARK, pos, ROOMS, SELFSH, UI, VIT, W3} from './003b-systems.js';
+import {PPU, renderer, rppu} from './004-main.js';
+import {ASTEP, CASTLE, MAPG, MAPSTAIR, MODS, RING, SOL, STN, SYS, TILE, ZU} from './006-map-pre.js';
+import {FOUNT} from './060a-fount.js';
+import {RINGX} from './065-ring.js';
+const NOYOU={x:1e6,y:0,z:1e6};
 const DENIM_GLSL=`vec3 denim(vec3 c,vec3 p){ float u=(p.x+p.z)*0.7071+p.y*0.5, v=(p.x-p.z)*0.7071-p.y*0.5;
   float rib=step(0.5,fract(u*170.)), weft=step(0.55,fract(v*240.)), slub=step(0.93,fract(sin(dot(floor(vec2(u,v)*300.),vec2(12.9898,78.233)))*43758.5));
   vec3 warp=c*vec3(1.22,1.18,1.1), weftc=c*0.78; vec3 o=mix(weftc,warp,rib*0.55+weft*0.25); return mix(o,c*1.3,slub*0.5); }
@@ -139,3 +146,4 @@ const PXSNAP=on=>{ const L=PXSNAP.L;
 PXSNAP.one=(o,D)=>{ if(!o||!o.visible)return false; const u=PXSNAP.u, cr=UI.snR, cu=UI.snU, p=o.position, x=p.dot(cr), y=p.dot(cu), a=Math.round(x*u)/u-x, b=Math.round(y*u)/u-y, dx=D?D.x:cr.x*a+cu.x*b, dy=D?D.y:cr.y*a+cu.y*b, dz=D?D.z:cr.z*a+cu.z*b;
   p.x+=dx; p.y+=dy; p.z+=dz; PXSNAP.L.push(o,dx,dy,dz); return true; };
 PXSNAP.L=[]; window.PXSNAP=PXSNAP;
+export {CSB, CSHOLE, DUN, makeNPC, ROAM, stfree, STHOLE, STLANE};

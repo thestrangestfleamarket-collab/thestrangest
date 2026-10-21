@@ -1,4 +1,11 @@
-const BLK={blds:[],signs:[],band:()=>null,built:0,in:false,hi:[],LO:.5}; window.BLK=BLK;
+// THE BLOCK: BLK builds the buildings and signs of the block across the street.
+import {SHARED, THREE} from './003-shx.js';
+import {BLK, ED, LITE, pos, ROOMS, UI} from './003b-systems.js';
+import {scene} from './004-main.js';
+import {BLOCK, cutWalls, FADE, FIX, lamps, MAINROW, MODS, SHELLS, SOL, SYS, TILE, ZU} from './006-map-pre.js';
+import {PEEK} from './008-batch.js';
+import {BRICKS} from './014-gamekit.js';
+Object.assign(BLK,{blds:[],signs:[],band:()=>null,built:0,in:false,hi:[],LO:.5}); window.BLK=BLK;
 { const T=TILE, XS=SHARED.BOD.XS, ZS=SHARED.BOD.ZS, B=BLOCK, s=T/24, YP=px=>px*ZU;
   let seed=11; const rnd=()=>((seed=(seed*16807)%2147483647)/2147483647);
   const cv=(w,h)=>{ const c=document.createElement('canvas'); c.width=Math.max(1,Math.round(w)); c.height=Math.max(1,Math.round(h)); return c; };

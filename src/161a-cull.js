@@ -1,4 +1,9 @@
-const CULL={L:[],M:new Map(),CS:10*TILE,on:QS.get('cull')!=='0'};
+// THE CULL: CULL splits big meshes into cells and draws only the cells near and in view.
+import {SHARED, THREE} from './003-shx.js';
+import {CULL, PERFX, ROOMS} from './003b-systems.js';
+import {scene} from './004-main.js';
+import {QS, TILE} from './006-map-pre.js';
+Object.assign(CULL,{L:[],M:new Map(),CS:10*TILE,on:QS.get('cull')!=='0'});
 { const m4=new THREE.Matrix4(), w4=new THREE.Matrix4(), v=new THREE.Vector3(), B=new THREE.Box3(), key=(x,z)=>Math.floor(x/CULL.CS)*4096+Math.floor(z/CULL.CS);
   const drop=R=>{ for(const p of R.px){ p.removeFromParent(); if(p.isInstancedMesh)p.dispose(); else p.geometry.dispose(); } R.px=[]; R.ix=[]; };
   const vers=s=>{ const g=s.geometry; return s.isInstancedMesh?s.instanceMatrix.version+'/'+(s.instanceColor?s.instanceColor.version:0)+'/'+s.count:(g.index?g.index.version:0)+'/'+Object.values(g.attributes).map(a=>a.version).join(); };

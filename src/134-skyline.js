@@ -1,4 +1,11 @@
-const FAR3={};
+// THE SKYLINE: FAR3 builds the far city skyline, the fog and the distance haze.
+import {SHARED, THREE} from './003-shx.js';
+import {CLOCK, CULL, FAR3, pos, SKY, WX} from './003b-systems.js';
+import {renderer, RH, RW, scene} from './004-main.js';
+import {SAVE} from './005-save.js';
+import {MAPG, MISTB, MISTE, MISTF, MODS, OUT, PFAR, QS, SYS, TILE, ZU} from './006-map-pre.js';
+import {RINGX} from './065-ring.js';
+
 { const q=QS.get('far'); let on=q!=='0'; try{ if(q==null&&localStorage.getItem('market-haze2')==='0')on=false; }catch(e){}
   const HAZE0=26, HAZE1=q&&+q>0?+q:560;
   const FOG=new THREE.Fog(0x8fa3c0,1,2), fc=new THREE.Color(), pale=new THREE.Color(.74,.84,.98), navy=new THREE.Color(.08,.1,.17), V=new THREE.Vector3();

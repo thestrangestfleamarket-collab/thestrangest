@@ -1,3 +1,5 @@
+// THE POSES: POSES and castPose, the arm poses and arm reaching used by the players.
+import {CAST} from './106-game-play-3-guitar-1-body.js';
 
 const POSES={}, CV=RIG.V; function castStep(){}
 function armIK(P,n,T){ const {V,sub,add,mul,len,nrm,cross,dot}=RIG, s=n=='L'?1:-1, U=7.4, F=6.3, S=V(s*6.8,13.3,0), d0=sub(T,add(S,V(0,RIG.STAND,0)));
@@ -9,4 +11,5 @@ function castPose(name){ let P=POSEC.get(name); if(P)return P; const k=POSES[nam
   if(hands)for(const n in hands){ const T=hands[n], r=P.root; armIK(P,n,CV(T[0]-r.x,T[1]-(r.y-RIG.STAND),T[2]-r.z)); }
   P.hands=!!hands||!!(k.L&&k.L.ua)||!!(k.R&&k.R.ua); POSEC.set(name,P); return P; }
 let CASTSTAND=null; const castStand=()=>CASTSTAND||(CASTSTAND=RIG.apply(RIG.walkPose({ph:0,w:0,run:0},null),RIG.STANDK));
-
+CAST.pose=castPose; CAST.step=castStep;
+export {castPose, POSES};

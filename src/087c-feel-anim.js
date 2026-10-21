@@ -1,3 +1,6 @@
+// THE FEEL ANIMATION: blends the player's idle, walk, jog, sprint and jump clips for FEEL.
+import {SHARED, THREE} from './003-shx.js';
+import {FEEL, pos, SFX} from './003b-systems.js';
 { const LOCO=['Walk_Loop','Jog_Fwd_Loop','Sprint_Loop'], ALL=['Idle_Loop',...LOCO,'Jump_Start','Jump_Loop','Jump_Land'];
   const A={act:{},w:{},tw:{},ph:0,moving:false,mode:'idle',st:0,land:0,landT:0,jump:0,land0:0,lean:new THREE.Vector2(),vx:0,vz:0,ax:0,az:0,comp:0,base:null,stepSt:{ph:0,w:0,run:0}};
   FEEL.A=A;

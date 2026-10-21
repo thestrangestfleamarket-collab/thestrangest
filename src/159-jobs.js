@@ -1,3 +1,7 @@
+// THE JOBS: JOBS sends the town's people to work at the diner, the bar and the rest, by the hour.
+import {SHARED} from './003-shx.js';
+import {CITY, CLIP, CLOCK, MAIL, PARK, ROOMS} from './003b-systems.js';
+import {QS, SOL, SYS, TILE} from './006-map-pre.js';
 const JOBS={on:QS.has('jobs')?QS.get('jobs')!=='0':CITY.on,list:[],plan:null}; window.JOBS=JOBS;
 if(JOBS.on){ const T=TILE, X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, rnd=Math.random;
   const WORK=[['diner','COOK',7,15],['bar','BARKEEP',16,23.5],['aquarium','AQUARIST',10,18],['dojo','BATH ATTENDANT',9,17],['market','LOUNGE HOST',11,22],['museum','CURATOR',10,17],
@@ -36,3 +40,4 @@ if(JOBS.on){ const T=TILE, X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, rnd=Math.random;
       else if(want==='home'&&J.state!=='home'&&J.state!=='homing'){ if(J.state==='work'||J.state==='commute'){ J.state='work'; } goHome(J); } } },'159-jobs');
   window.JOBDBG=()=>JOBS.list.map(J=>({who:J.w.N.name,key:J.w.N.key,id:J.id,title:J.title,hours:J.open+'-'+J.close,state:J.state,home:J.w.home&&J.w.home.label,homeTiles:J.w.home&&J.w.home.step?+(Math.hypot(J.w.home.step.x-(J.S.door.x),J.w.home.step.z-J.S.door.z)/T).toFixed(1):null,at:[+(J.w.N.st.x/T+72).toFixed(1),+(J.w.N.st.z/T-77).toFixed(1)],vis:J.w.N.g.visible}));
 }
+export {JOBS};

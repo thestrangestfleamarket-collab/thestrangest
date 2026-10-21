@@ -1,4 +1,16 @@
 // THE BODEGA: the bodega's kits (dungeon, museum, lounge, theatre, castle), its layout, solids and build (grab('bodega')).
+import {SHARED, THREE} from './003-shx.js';
+import {CLIP, CLOCK, DRESS, LITE, pos, ROOMS, WALKERS} from './003b-systems.js';
+import {scene} from './004-main.js';
+import {BF, BLDK, BLOCK, CASTLE, cutWalls, EASTX, FIX, grab, lamps, LAY, LOTX, MAPG, MAPSTAIR, MODS, NEONS, NORTHX, OVERHEAD, PARKGX, RING, SOL, TILE, WESTX, WP, WROW, ZU} from './006-map-pre.js';
+import {PAINTC} from './006a-paintc.js';
+import {BATCH, OBJ} from './008-batch.js';
+import {BRICKS, CAT_DEPTS, CAT_INFO, CATALOG, COPE, cvNoise, DTBRICK, FP, grain, grassCol, hash, kerbCol, kerbFace, KIND_OF, LAMPS, lawnCol, LBLD, LIFE, LSEED, mt, prop, PROPL, rlf, roadCol, sh, sided, slabCol, speck, STORY, T, zShift} from './014-gamekit.js';
+import {bodegaFloorCol, bodegaWall} from './015-game-w-bodega-shop.js';
+import {MKS} from './016-street-kit.js';
+import {STUDIO} from './020-studio-kit.js';
+import {KEEPC, PRESETS, STOREK} from './023-west-kits.js';
+import {dgnRoom, dgnThings} from './038z-dungeon.js';
 {
 const {DGP,dgnLit,DGN,dgnWeb,dgnIvy,dgnRidge,dgnFoot,dgnStone,dgnDamp,dungeonWall,dungeonFloorCol}=dgnRoom(LBLD);
 dgnThings(CATALOG,CAT_INFO,LAMPS,CAT_DEPTS,DGP,dgnLit,DGN,dgnWeb);
@@ -1859,3 +1871,26 @@ MODS.bodega={BOUND,ground:groundY};
  for(const w of cutWalls.slice(c0))if(!w.when)w.when=()=>SHARED.BODB.inside(); for(const L of SHL)L.removeFromParent(); });
 const FOREST=__DATA__("data/forest.json");
 const PROPS=__DATA__("data/props.json");
+function gdShape(GS,K,LAMPS){ const s=K.s, o=K.o, SC=1.5, cx=o[0]+4*s, Y1=o[1]+3.2*s, W=6.8*s*SC, D=3*s*SC, X0=cx-W/2, X1=cx+W/2, Y0=Y1-D, dx=(W-6.8*s)/2;
+  for(let i=GS.length-1;i>=0;i--){ const p=GS[i]; for(let j=LAMPS.length-1;j>=0;j--)if(LAMPS[j].prop===p)LAMPS.splice(j,1); GS.splice(i,1); }
+  const G=SHARED.BOD.GDK={o,s,SC,X0,X1,Y0,Y1,W,D,cx,y1e:o[1]+8.3*s};
+  G.ground={x0:X0-1.6,x1:X1+1.6};
+  G.pool=[X0+.22,Y0+.22,X1-.22,(Y0+Y1)/2+.15];
+  G.court=(x,y)=>{ const {hash,grain}=SHARED.BOD.g, sh=SHARED.BOD.K.sh, px=Math.floor(x*24), py=Math.floor(y*24);
+    const out=x<X0||x>X1||y<Y0||y>Y1; if(!out)return x>G.pool[0]&&x<G.pool[2]&&y>G.pool[1]&&y<G.pool[3]?null:[96,90,84];
+    const dEave=Math.max(X0-x,x-X1,Y0-y,y-Y1);
+    const wet=G.puddles.some(([pcx,pcy,rx,ry])=>{ const u=(x-pcx)/rx, v=(y-pcy)/ry; return u*u+v*v+(grain(x*3,y*3,611,.6)-.5)*.5<1; });
+    let c;
+    if(dEave<.42){ const cx_=Math.floor(px/3), cy_=Math.floor(py/3), h=hash(cx_,cy_,612), ix=px-cx_*3, iy=py-cy_*3;
+      c=[66,68,76]; }
+    else if(Math.abs(x-(X0+W/2))<1.35&&y>Y1){ const row=Math.floor((y-Y1-.42)/.82), off=hash(row,3,613)*.9, col=Math.floor((x-X0-W/2+1.35+off)/1.05), fu=((x-X0-W/2+1.35+off)/1.05)%1, fv=((y-Y1-.42)/.82)%1;
+      const j=fu<.05||fv<.06, bev=fu<.1||fv<.11?1.1:fu>.93||fv>.92?.84:1, t=hash(col,row,614);
+      if(j)c=grain(x*2,y*2,615,.5)>.55?[66,88,50]:[46,44,46];
+      else c=sh([[132,130,128],[118,118,120],[146,142,136],[124,120,116]][Math.floor(t*4)],bev*(.95+.08*hash(px,py,616)));
+      if(!j&&hash(px>>1,py>>1,617)<.02)c=sh(c,.8); }
+    else{ c=grain(x*.3,y*.3,618,.8)>.6?[124,120,114]:[136,132,126]; if(grain(x*.5,y*.5,619,.8)>.7)c=[90,108,64]; }
+    if(y>G.y1e-.22)c=sh([150,148,144],y>G.y1e-.06?.8:1.05+.05*hash(px,0,620));
+    if(wet)c=sh(c.map((v,i)=>v*[.68,.72,.84][i]),hash(px>>1,py,621)<.1?1.15:1);
+    return c; };
+  G.puddles=[[X0+3.1,Y1+1.75,1.15,.55],[X0+10.7,Y1+1.9,1.3,.6],[X0+W/2+1.8,Y1+3.3,.6,.35]]; }
+export {FOREST, PROPS};

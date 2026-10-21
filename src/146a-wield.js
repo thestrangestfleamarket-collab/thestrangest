@@ -1,4 +1,12 @@
-const WIELD={on:null}; window.WIELD=WIELD;
+// THE WIELD: WIELD lets the player hold and swing a sword, a butterfly net or a bird net.
+import {SHARED, THREE} from './003-shx.js';
+import {FORAGE, pos, RAG, SFX, st, VIT, W3, WEEDS, WIELD} from './003b-systems.js';
+import {renderer, scene} from './004-main.js';
+import {SAVE} from './005-save.js';
+import {BF, QS, TILE} from './006-map-pre.js';
+import {BFLY} from './143-bfly.js';
+import {BIRDS} from './144b-birds.js';
+Object.assign(WIELD,{on:null}); window.WIELD=WIELD;
 { const T=TILE, V3=THREE.Vector3, LIST=['sword','net','bnet'], NM={sword:'SWORD',net:'BUTTERFLY NET',bnet:'BIRD NET'}, say=FORAGE.say;
   FORAGE.add({names:{sword:'SWORD'},prices:{sword:15}});
   if(!FORAGE.has('sword')&&(!SAVE.get('sword0')||QS.get('fresh'))){ FORAGE.give('sword',1); SAVE.set('sword0','1'); }

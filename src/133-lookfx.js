@@ -1,3 +1,8 @@
+// THE LOOK EFFECTS: LFX's shading, ambient occlusion and wetness on the world, by weather and hour.
+import {SHARED, THREE} from './003-shx.js';
+import {CLOCK, LOOK, PARK, pos, ROOMS, WEEDS, WX} from './003b-systems.js';
+import {scene} from './004-main.js';
+import {LFX, OUT, SOL, SYS, TILE} from './006-map-pre.js';
 { const F=LFX.on, cl=v=>Math.max(0,Math.min(1,v));
   if(LFX.shade){ const E=LFX.env.image.data;
     const h=(x,y)=>{ const s=Math.sin(((x%16+16)%16)*127.1+((y%16+16)%16)*311.7)*43758.5453; return s-Math.floor(s); }, vn=(x,y)=>{ const i=Math.floor(x), j=Math.floor(y), u=x-i, v=y-j, a=u*u*(3-2*u), b=v*v*(3-2*v);

@@ -1,4 +1,10 @@
-const BOOKS={}; window.BOOKS=BOOKS;
+// THE BOOKS: BOOKS, the old books the player finds, mends and sells.
+import {SHARED, THREE} from './003-shx.js';
+import {BOOKS, CITY, DRESS, FORAGE, INV, MAIL, SFX, UI} from './003b-systems.js';
+import {scene} from './004-main.js';
+import {SAVE} from './005-save.js';
+import {TILE} from './006-map-pre.js';
+ window.BOOKS=BOOKS;
 { const T=TILE, KEY='books', say=FORAGE.say, use=FORAGE.use;
   const BK=[['paper','TATTERED PAPERBACK','MENDED PAPERBACK',0,2,6,1,{bs_glue:1},[0,45]],['novel','WATER-STAINED NOVEL','RESTORED NOVEL',15,4,14,2,{bs_glue:1,bs_thread:1},[10,55]],
     ['atlas','BROKEN-SPINED ATLAS','RESTORED ATLAS',30,8,30,4,{bs_glue:1,bs_thread:1,bs_cloth:1},[25,70]],['hymnal','LOOSE-LEAFED HYMNAL','REBOUND HYMNAL',40,10,40,5,{bs_thread:2,bs_cloth:1},[35,80]],

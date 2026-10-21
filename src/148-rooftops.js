@@ -1,3 +1,7 @@
+// THE ROOFTOPS: ROOFS dresses the roofs with tanks, vents, ducts and ledges.
+import {SHARED, THREE} from './003-shx.js';
+import {scene} from './004-main.js';
+import {MODS, OUT, TILE} from './006-map-pre.js';
 const ROOFS=window.ROOFS={};
 ROOFS.init=()=>{ if(typeof SHARED.BOD==='undefined'||!MODS.apts||!MODS.apts.A)return;
   const X=SHARED.BOD.X, Y=SHARED.BOD.Y, Z=SHARED.BOD.Z, MH=TILE/.84, MV=SHARED.BOD.YS(24)/.84;
@@ -58,3 +62,4 @@ ROOFS.init=()=>{ if(typeof SHARED.BOD==='undefined'||!MODS.apts||!MODS.apts.A)re
   for(const M of [BM,CM,KM]){ M.castShadow=M.receiveShadow=true; scene.add(M); }
   for(const M of [BM,CM,KM])OUT.add(M,'open');
   ROOFS.tris=BX.length*12+cy.length*32+co.length*16; window.ROOFSDBG=()=>({boxes:BX.length,rounds:cy.length,cones:co.length,tris:ROOFS.tris}); };
+export {ROOFS};

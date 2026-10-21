@@ -1,4 +1,9 @@
 // THE WEST KITS: the laundry room, the ghost street and the west dojo's hall.
+import {SHARED} from './003-shx.js';
+import {vwV} from './003b-systems.js';
+import {WROW} from './006-map-pre.js';
+import {CAT_DEPTS, CAT_INFO, CATALOG, hash, KIND_OF, LAMPS, LBLD, LIFE, LSEED, mt, prop, PROPL, sh, sided, SQB, STORY, T} from './014-gamekit.js';
+import {STUDIO} from './020-studio-kit.js';
 const LAUB=SQB.lau;
 const LAU={b:LAUB,x0:LAUB.x0+T,x1:LAUB.x1-T,y0:LAUB.y0+T,y1:LAUB.y1-T,H:LAUB.h-4,cx:(LAUB.x0+LAUB.x1)/2,cy:(LAUB.y0+LAUB.y1)/2,in:[LAUB.x0-T,LAUB.y0-T,LAUB.x1+T,LAUB.y1+T]};
 const LAC={tile:[226,224,216],tileL:[240,239,234],tileD:[204,202,194],joint:[182,174,162],skirt:[118,98,94],
@@ -371,3 +376,4 @@ SHARED.BOD.GDJ={djAndon,djCandle,djIncense,djHanging,djTokonoma,djBokkenRack,djL
 const STOREK={LAMPS,PRESETS,CATALOG,PROPS:PROPL,LBLD,T,STORY,hash,sh,sided,prop,LSEED}; const SQLV={octo:0}; const DEEPW={ZPX:24};
 LBLD.push({id:'ldiner',label:'DINER',x0:106.5,y0:-84,x1:120,y1:-77,h:130,st:1,c:[176,62,56]},{id:'lbodega2',label:'BAR',x0:WROW.bar.x0,y0:-89.5,x1:WROW.bar.x1,y1:-77,h:130,st:1,c:[146,96,64]},{id:'ldungeon',label:'THE DUNGEON',x0:500,y0:-58,x1:513,y1:-47,h:130,st:1,c:[60,56,52]},{id:'lcastle',label:'THE KEEP',x0:88.75,y0:-94,x1:98.25,y1:-85,h:520,st:4,tall:4,c:[150,142,126]});
 const KEEPC={k:[426,435.5,-86,-77],door:430.75,arches:[428.1,430.75,433.4],b:[422,439,-90,-73],gate:430.5};
+export {DEEPW, KEEPC, PRESETS, SQLV, STOREK};

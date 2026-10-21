@@ -1,3 +1,8 @@
+// THE FOX: FOX builds the fox shopkeeper in parts; CREATURES gathers the creature makers.
+import {THREE} from './003-shx.js';
+import {LINES} from './003b-systems.js';
+import {LAY, MODS, TILE} from './006-map-pre.js';
+import {PARTSNPC} from './080-npc-parts.js';
 const FOX={};
 { const {shape,limb,sph,cyl,box,blob,noise,D2R}=PARTSNPC.T;
   const WHITE=[.95,.93,.88], CREAM=[.93,.85,.7], TAN=[.89,.73,.45], ORANGE=[.84,.42,.24], ORANGE2=[.67,.35,.2], BLUE=[.27,.45,.59], BLUE2=[.36,.53,.67], NAVY=[.15,.17,.27], PANT=[.84,.8,.68], PANT2=[.69,.64,.52], RED=[.53,.24,.18], BLACK=[0,0,0];
@@ -28,3 +33,4 @@ const FOX={};
   FOX.N=N; window.FOXDBG=()=>{ '@later'; const w=N.g.getWorldPosition(new THREE.Vector3()), bb=new THREE.Box3().setFromObject(N.g); return {x:+N.st.x.toFixed(2),z:+N.st.z.toFixed(2),y:+N.g.position.y.toFixed(2),vis:N.g.visible,pvis:N.g.parent&&N.g.parent.visible,far:!!N.far,w:[w.x,w.y,w.z].map(v=>+v.toFixed(2)),size:[bb.max.x-bb.min.x,bb.max.y-bb.min.y].map(v=>+v.toFixed(2)),tris:N.tris}; }; }
 
 const CREATURES=__DATA__("data/creatures.json");
+export {CREATURES};

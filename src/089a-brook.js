@@ -1,4 +1,10 @@
-const BROOK={}; window.BROOK=BROOK;
+// THE BROOK: BROOK builds the park's brook, its banks, riffles, pools and flowing water.
+import {SHARED, THREE} from './003-shx.js';
+import {BROOK, CLOCK, PARK, SFX, SKY} from './003b-systems.js';
+import {scene} from './004-main.js';
+import {FIX, MAPG, MODS, SOL, TILE, ZU} from './006-map-pre.js';
+import {FOUNT} from './060a-fount.js';
+ window.BROOK=BROOK;
 { const go=()=>{ '@park'; if(typeof PARK==='undefined'||!PARK.fire||!PARK.brook||!MODS.land)return setTimeout(go,500);
     const P=PARK, BK=P.brook, {C,N,SL,B,W,L,D,RF}=BK, T=TILE, WU=T/.84, G0=-.5*ZU, X=x=>SHARED.BOD.XS(x+(P.ox||0)), Z=y=>SHARED.BOD.ZS(y+(P.oy||0)), grp=(typeof MAPG!=='undefined'&&MAPG.park)||scene;
     const hs=(i,s)=>{ const v=Math.sin(i*12.9898+s*78.233)*43758.5453; return v-Math.floor(v); }, ss=(a,b,v)=>{ const t=Math.max(0,Math.min(1,(v-a)/(b-a))); return t*t*(3-2*t); };

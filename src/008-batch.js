@@ -1,3 +1,8 @@
+// THE BATCH: BATCH packs painted pictures into atlases and merges them into few meshes; OBJ and OBJS name the objects made.
+import {SHARED, THREE} from './003-shx.js';
+import {ED, pos, ROOMS, UI} from './003b-systems.js';
+import {renderer, RH, RW, scene} from './004-main.js';
+import {QS, TILE} from './006-map-pre.js';
 const BATCH=window.BATCH={items:[],tag:null};
 const OBJS=[]; const OBJ=(place,name)=>{ const o={id:place+':'+OBJS.length,place,name,parts:[]}; OBJS.push(o); return o; };
 BATCH.all=(M,k)=>Object.keys(M||{}).filter(q=>q===k||q.startsWith(k+'~')).map(q=>M[q]);
@@ -57,3 +62,4 @@ PEEK.tick=dt=>{ const on=PEEK.on&&UI.view!=='first'&&!UI.freeCam&&!ED.on&&!ROOMS
   W.copy(c).project(SHARED.cam); H.set(1,0,0).applyQuaternion(SHARED.cam.quaternion).multiplyScalar(1.6*M).add(c).project(SHARED.cam); P.w=Math.max(1e-4,Math.min(.6,Math.hypot((H.x-W.x)*RW/RH,H.y-W.y))); P.x=W.x; P.y=W.y;
   H.copy(c).addScaledVector(R.direction,.5*M).project(SHARED.cam); P.z=H.z; };
 PEEK.stat=()=>({boxes:PEEK.boxes.length,k:PEEK.k,cov:!!PEEK.cov,progs:renderer.info.programs.length});
+export {BATCH, OBJ, OBJS, PEEK};

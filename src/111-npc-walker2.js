@@ -1,4 +1,12 @@
-const BWK={}; window.BWK=BWK;
+// THE SECOND WALKER: BWK, a second Walker in its own colours who roams the street.
+import {SHARED, THREE} from './003-shx.js';
+import {BWK, ED, NPCS, pos, W3} from './003b-systems.js';
+import {PPU} from './004-main.js';
+import {SAVE} from './005-save.js';
+import {ASTEP, MAPG, MODS, TILE} from './006-map-pre.js';
+import {ROAM, stfree} from './076-npc-map.js';
+import {figureMesh, MUSGEO, musScale, sheetView, spreadPose} from './110-musician.js';
+ window.BWK=BWK;
 { const R=RIG, V=R.V, QS=new URLSearchParams(location.search), SHEET=QS.get('sheet')==='walker2', MAT=R.MATS;
   const LOOK={shirt:R.RAMP.shirt,skin:R.RAMP.skin,hair:R.RAMP.hair,pants:R.RAMP.pants,shoes:R.RAMP.shoes,sole:['#3e3226','#352a20','#2a2119','#1c1611'],eye:['#2a2220','#241c1a','#1a1414','#0e0a0a']};
   for(const m in LOOK){ const n='bw_'+m; if(!MAT.includes(n)){ MAT.push(n); W3.ramp.push(LOOK[m].map(h=>new THREE.Color(h))); } }

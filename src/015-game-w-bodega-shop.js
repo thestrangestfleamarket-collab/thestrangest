@@ -1,3 +1,7 @@
+// THE BODEGA PAINT: bodegaFloorCol and bodegaWall paint the bodega's concrete floor and its walls.
+import {SHARED} from './003-shx.js';
+import {DRONE} from './003b-systems.js';
+import {CATALOG, crack, grain, hash, KIND_OF, LAMPS, LBLD, LIFE, mt, prop, sh, sided, spot} from './014-gamekit.js';
 const BLOT=LBLD.find(b=>b.id==='lbodega'), BODOFF=BLOT.y0+3.75, bodegaFloorCol=(x,y)=>bodegaFloorAt(x,y,BLOT);
 function bodegaFloorAt(x,y,B){ '@later'; const off=B===BLOT?y<BODOFF:y>B.y1-3.75, n=grain(x,y,41,1.2), st=grain(x,y,47,2.6), c=off?[106,106,104]:[112,116,124];
   if(!off&&(((x-B.x0)%3+3)%3<.04||((y-B.y1)%3+3)%3<.04))return mt('concrete',[84,88,96]);
@@ -100,3 +104,4 @@ function bodegaWall(q,nx,ny,X,Y,z,f){ '@later'; const u=nx?Y:X, i=Math.floor(u*1
     'radio':(x,y)=>radio(x-.25,y-.12),'convex mirror':(x,y)=>convexMirror(x-.22,y-.04),'extension cord':(x,y)=>cord(x,y,y+3.3,[y+1,y+1.95,y+2.9]),'box fan':(x,y)=>boxFan(x-.25,y-.08),'fly strip':(x,y)=>flyStrip(x,y),
     'fluorescent tube':(x,y)=>tube(x-1,y),'wall clock':(x,y)=>wallClock(x-.2,y-.03),'calendar':(x,y)=>calendar(x,y-.15),'door bell':(x,y)=>doorBell(x,y)});
   for(const k of ['counter','long counter','shelf of goods','shop shelf','door mat','drinks fridge','newspaper rack','drone box','drone flap','cigarette rack','lottery machine','candy jar','paper bags','wall phone','radio','convex mirror','extension cord','box fan','fly strip','wall clock','calendar','door bell','fluorescent tube','rubber mat','counter mat'])KIND_OF[k]=k; }
+export {bodegaFloorCol, bodegaWall};

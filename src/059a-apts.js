@@ -1,4 +1,11 @@
 // THE APARTMENTS: the brownstone apartment block on the street, its stoop, elevator and floors (its own builder).
+import {SHARED, THREE} from './003-shx.js';
+import {B64, BY} from './003a-skin.js';
+import {pos, st, UI} from './003b-systems.js';
+import {scene, TEXTURES} from './004-main.js';
+import {BLDK, cutWalls, FIX, grab, LOTX, MODS, SOL, TILE, WP} from './006-map-pre.js';
+import {BATCH, PEEK} from './008-batch.js';
+import {BRICKS} from './014-gamekit.js';
 const APTS={EMPTY:true};
 await grab('apts',async()=>{ const {X,Z,faceTex,bq,C,facade,FRAME,place}=SHARED.BOD,
   RZ=APTS.RZ=28, Y=z=>SHARED.BOD.Y(z+RZ), gbox=(b,k)=>SHARED.BOD.gbox({...b,z0:b.z0+RZ,z1:b.z1+RZ},k), R0=APTS.R0=SHARED.BOD.Y(RZ)-SHARED.BOD.Y(0), {speck,hash}=SHARED.BOD.g, {MKS,CATALOG,PROPS,STUDIO,LSEED,STORY,sh}=SHARED.BOD.K, S=STORY, ST=3, AH=ST*S, W=LSEED.walk, T=.1;

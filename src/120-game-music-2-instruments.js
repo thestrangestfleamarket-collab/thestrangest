@@ -1,3 +1,5 @@
+// THE INSTRUMENTS: IMK, the instruments' tones and how each is struck.
+import {IMK} from './003b-systems.js';
 const IMNOTE=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
 const imHz=m=>440*Math.pow(2,(m-69)/12), imName=m=>IMNOTE[((m%12)+12)%12]+(Math.floor(m/12)-1);
 const IMR={
@@ -11,7 +13,7 @@ const IMR={
 const IMJ=[[0,2.405],[1,3.832],[2,5.136],[0,5.52],[3,6.38],[1,7.016],[4,7.588],[2,8.417],[0,8.654],[5,8.771]];
 function imString(L,gauge,rho,hz,E=0){ const d=gauge*.0254, mu=rho*Math.PI*d*d/4, T=mu*(2*L*hz)**2, B=E?Math.PI**3*E*(d*.6)**4/(64*T*L*L):0; return {d,mu,T,B,kg:T/9.81}; }
 const imLoop=(hz,t60)=>Math.pow(10,-3/(t60*hz));
-const IMK={};
+
 const imFret=(kind,o)=>{ const S=o.open.map((m,i)=>imString(o.L,o.gauge[i],o.rho[i],imHz(m),o.E?o.E[i]:0)); IMK[kind]={lay:'fret',...o,S,
   dsp:{fam:'pluck',n:o.open.length,body:o.body||[],dry:o.dry??.22,wet:o.wet??.5,gain:o.gain||1,pick:o.pick||0,amp:o.amp||0,pair:o.pair||0}}; };
 imFret('classical guitar',{name:'Classical guitar',L:.65,frets:19,open:[64,59,55,50,45,40],gauge:[.028,.0325,.040,.029,.035,.043],rho:[1140,1140,1140,4500,5500,6500],E:[5e9,5e9,5e9,5e9,5e9,5e9],
@@ -92,3 +94,4 @@ function imShape(I,root,iv,capo=0){ '@later'; const n=I.open.length, pcs=iv.map(
   const walk=s=>{ if(s===n){ const v=score(cur); if(v>best.sc){ best.sc=v; best.sh=cur.slice(); } return; } for(const f of opt[s]){ cur[s]=f; walk(s+1); } };
   walk(0); return best.sh; }
 window.__im={IMK,imAct,imChordName,imShape,imHz,imName};
+export {imAct};

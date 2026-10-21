@@ -1,3 +1,9 @@
+// THE RIVER: RIVER builds the river, its banks and its moving water past the edge of town.
+import {SHARED, THREE} from './003-shx.js';
+import {CLOCK, LITE, pos, SFX, SKY, UI} from './003b-systems.js';
+import {scene} from './004-main.js';
+import {SAVE} from './005-save.js';
+import {FADE, FIX, MODS, OUT, RING, SOL, STORE, TILE, ZU} from './006-map-pre.js';
 const RIVER={way:'fluid',wi:2,step:false,t:0,on:false};
 { const R=RING, XS=SHARED.BOD.XS, ZS=SHARED.BOD.ZS, T=TILE, QSr=new URLSearchParams(location.search);
   const MPU=0.84/T, WU=1/MPU;
@@ -329,3 +335,4 @@ const RIVER={way:'fluid',wi:2,step:false,t:0,on:false};
   RIVER.hud=()=>{ if(!RIVER.swim){ hud.style.display='none'; return; } hud.style.display='block'; document.getElementById('rvd').textContent=RIVER.dep.toFixed(1)+' m'; document.getElementById('rvb').textContent=RIVER.bot.toFixed(1)+' m';
     document.getElementById('rvai').style.width=(RIVER.air*100).toFixed(0)+'%'; document.getElementById('rva').classList.toggle('low',RIVER.air<.3); };
   RIVER.U={SU,uCau,uRipOn,SIM,surf,bed,grass,kit:RIVER.kit}; RIVER.on=true; window.RIVER=RIVER; }
+export {RIVER};

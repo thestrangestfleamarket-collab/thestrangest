@@ -1,3 +1,8 @@
+// THE FAIRY RINGS: FAIRY grows rings of mushrooms in the park.
+import {SHARED, THREE} from './003-shx.js';
+import {FORAGE, PARK, pos, ROOMS, UI, WEEDS} from './003b-systems.js';
+import {scene} from './004-main.js';
+import {SOL, SYS, TILE} from './006-map-pre.js';
 const FAIRY={list:[]}; window.FAIRY=FAIRY;
 { const T=TILE, MAX=3, N=96, g=new THREE.Group(), cap=new THREE.InstancedMesh(new THREE.SphereGeometry(1,6,3,0,Math.PI*2,0,Math.PI/2),new THREE.MeshLambertMaterial({flatShading:true}),N), stem=new THREE.InstancedMesh(new THREE.CylinderGeometry(.6,.8,1,5),new THREE.MeshLambertMaterial({color:0xe8e0cc,flatShading:true}),N);
   cap.count=stem.count=0; cap.castShadow=stem.castShadow=true; cap.frustumCulled=stem.frustumCulled=false; g.add(cap,stem); scene.add(g);

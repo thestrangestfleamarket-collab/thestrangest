@@ -151,8 +151,7 @@ await grab('mainstreet',async()=>{ const K=STORE.kit, {room,STEPS}=K, {X,Y,Z,pla
     const film=now=>{ const M=MS.theatre; if(!M)return; const near=LVL==='up'&&(M.R.inside(pos.x,pos.z)||Math.hypot(pos.x-M.R.at.x,pos.z-M.R.at.z)<6*TILE); M.fm.visible=near; if(!near)return;
       const k=Math.floor(now/125)%TH.FILMN; if(k===M.k)return; M.k=k; const f=TH.filmFrame(k), d=M.tx.image.data, W=TH.FILMW, Hh=TH.FILMH;
       for(let j=0;j<Hh;j++)for(let i=0;i<W;i++){ const s=(j*W+i)*3, o=((Hh-1-j)*W+i)*4; d[o]=f[s]; d[o+1]=f[s+1]; d[o+2]=f[s+2]; d[o+3]=255; } M.tx.needsUpdate=true; };
-    const fade=async(x,z,txt)=>{ '@later'; const H=MS.holo, el=document.getElementById('subfade'); H.busy=true; if(el){ el.textContent=txt; el.style.opacity='1'; } await new Promise(r=>setTimeout(r,340));
-      UI.goTo(x,z,'up'); if(typeof keys!=='undefined'&&keys.clear)keys.clear(); await new Promise(r=>setTimeout(r,420)); if(el)el.style.opacity='0'; H.busy=false; };
+    const fade=async(x,z,txt)=>{ '@later'; const H=MS.holo; H.busy=true; await FADE.run(txt,()=>UI.goTo(x,z,'up'),{hold:300}); H.busy=false; };
     const holo=()=>{ const H=MS.holo; if(!H||H.busy||LVL!=='up'||UI.freeCam)return;
       if(H.F.inside(pos.x,pos.z)&&pos.z<Z(H.B.y1-1))fade(X(H.hx),Z(H.H.y1-1.8),'ENTERING THE HOLODECK');
       else if(pos.x>X(H.H.x0)&&pos.x<X(H.H.x1)&&pos.z>Z(H.H.y1-.3)&&pos.z<Z(H.H.y1+3))fade(X(H.door),Z(H.B.y1+1.4),'LEAVING THE HOLODECK'); };

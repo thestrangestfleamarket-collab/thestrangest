@@ -23,12 +23,18 @@
     const el=document.createElement('div'); el.id='subfade';
     el.style.cssText='position:fixed;inset:0;background:#000;opacity:0;pointer-events:none;transition:opacity .32s steps(4);z-index:60;display:flex;align-items:center;justify-content:center;color:#d8d2c4;font:14px/1 monospace;letter-spacing:3px';
     document.body.appendChild(el);
+    FADE.el=el; FADE.run=async(text,work,o={})=>{ const tr=el.style.transition, w=ms=>new Promise(r=>setTimeout(r,ms)), fr=k=>new Promise(r=>{ const f=()=>--k<=0?r():requestAnimationFrame(f); requestAnimationFrame(f); });
+      const live=window.__started&&!o.silent, was=el.style.opacity==='1'; FADE.busy=(FADE.busy||0)+1;
+      if(live){ el.textContent=text||''; el.style.pointerEvents='auto'; el.style.transition=o.cut?'none':'opacity .3s steps(4)'; el.style.opacity='1'; if(!o.cut&&!was)await w(320); }
+      if(typeof keys!=='undefined'&&keys.clear)keys.clear(); try{ target=null; }catch(e){}
+      try{ if(o.cut)await fr(2); if(work)await work(); }catch(e){ console.warn('FADE: '+(text||'')+' did not finish',e); }
+      if(live){ await fr(o.cut?2:3); if(o.hold)await w(o.hold); if(FADE.busy===1){ el.style.transition=o.cut?'none':'opacity .4s steps(5)'; el.style.opacity='0'; el.style.pointerEvents='none'; if(!o.cut)await w(420); el.style.transition=tr; } }
+      FADE.busy--; };
     const qy=QS.get('subyaw'); M.YAW=-Math.PI/4+(qy!=null?+qy:0)*Math.PI/2;
     let busy=false, lidT=0; const wait=ms=>new Promise(r=>setTimeout(r,ms)), frames=k=>new Promise(r=>{ const f=()=>--k<=0?r():requestAnimationFrame(f); requestAnimationFrame(f); });
-    const go=async dir=>{ '@later'; busy=true; el.textContent=dir==='in'?'ENTERING SUBWAY':'LEAVING SUBWAY'; el.style.pointerEvents='auto'; el.style.opacity='1'; await wait(340);
-      const p=dir==='in'?M.foot:M.street; UI.goTo(p.x,p.z,dir==='in'?'down':'up'); keys.clear();
-      if(UI.view==='iso'||UI.view==='map'){ if(dir==='in'){ yaw=yawTo=M.YAW; } else if(UI.isoTo){ UI.isoTo(); yaw=yawTo; } }
-      await frames(3); await wait(260); el.style.opacity='0'; el.style.pointerEvents='none'; await wait(360); busy=false; };
+    const go=async dir=>{ '@later'; busy=true; await FADE.run(dir==='in'?'ENTERING SUBWAY':'LEAVING SUBWAY',()=>{
+      const p=dir==='in'?M.foot:M.street; UI.goTo(p.x,p.z,dir==='in'?'down':'up');
+      if(UI.view==='iso'||UI.view==='map'){ if(dir==='in'){ yaw=yawTo=M.YAW; } else if(UI.isoTo){ UI.isoTo(); yaw=yawTo; } } },{hold:120}); busy=false; };
     M.door=(py,p)=>{ lid.visible=LVL==='up'; if(!lidT++){ const top=MAPG.bodega; if(top)top.add(lid); } if(busy||UI.freeCam||(typeof RAG!=='undefined'&&RAG.on))return; const k=tread(p.x,p.z);
       if(LVL!=='down'&&k!=null&&k>=3)go('in'); else if(LVL==='down'&&k!=null&&k<=SM.steps-5)go('out'); };
     M.doorBusy=()=>busy; window.SUBGO=(x,z,lv)=>UI.goTo(x,z,lv); }

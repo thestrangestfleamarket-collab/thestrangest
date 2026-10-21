@@ -55,13 +55,10 @@ await grab('dungeon',async()=>{});
   const wait=ms=>new Promise(r=>setTimeout(r,ms)), frames=k=>new Promise(r=>{ const f=()=>--k<=0?r():requestAnimationFrame(f); requestAnimationFrame(f); });
   const S=CASTLE.stair, top={x:((S.x0+S.x1)/2-72)*TILE,z:(S.y0-.5+77)*TILE};
   const bnd=n=>{ const B=lot(n); return {x0:X(B.x0),x1:X(B.x1),z0:Z(B.y0),z1:Z(B.y1)}; };
-  const go=async(n,how)=>{ if(busy)return; busy=true; const el=document.getElementById('subfade'), tr=el.style.transition;
-    el.style.transition='opacity .3s steps(4)'; el.textContent=n?(cur||how==='load'&&n>1?'':'ENTERING ')+'DUNGEON — LEVEL '+n:'LEAVING DUNGEON'; el.style.pointerEvents='auto'; el.style.opacity='1'; await wait(320);
-    keys.clear();
+  const go=async(n,how)=>{ if(busy)return; busy=true; await FADE.run(n?(cur||how==='load'&&n>1?'':'ENTERING ')+'DUNGEON — LEVEL '+n:'LEAVING DUNGEON',async()=>{
     if(n){ await LOAD('dungeon'); const L=build(n), a=how==='below'?L.atDn:L.atUp; if(how!=='load'){ UI.goTo(a.x,a.z,'down'); heading=a.h; } BOUND=bnd(n); }
     else{ clear(); UI.goTo(top.x,top.z,'up'); heading=Math.PI; }
-    if(typeof PH!=='undefined')PH.hd=heading;
-    await frames(3); await wait(140); el.style.transition='opacity .4s steps(5)'; el.style.opacity='0'; el.style.pointerEvents='none'; await wait(420); el.style.transition=tr; busy=false; };
+    if(typeof PH!=='undefined')PH.hd=heading; },{hold:140}); busy=false; };
   MODS.dunDoor=(py,p)=>{ if(busy||UI.freeCam||METRO.doorBusy()||(typeof RAG!=='undefined'&&RAG.on))return; const m=LVL==='down'?lotAt(p.x,p.z):0;
     if(!m){ if(cur&&!busy)clear(); if(LVL!=='down'){ const gx=p.x/TILE+72, gy=p.z/TILE-77; if(gx>=S.x0&&gx<S.x1&&gy>=S.y0&&gy<S.y1)go(1,'top'); } return; }
     if(m!==cur)return go(m,'load');

@@ -24,7 +24,7 @@ const INTERIORS={on:QS.get('interiors')==='1'||(!FREE&&QS.get('interiors')!=='0'
     INTERIORS.tick(true); };
   INTERIORS.tick=force=>{ if(!INTERIORS.on)return; const all=(typeof MAPED!=='undefined'&&MAPED.on);
     for(const I of L){ const d=near2(I,pos.x,pos.z,py), inn=I.inside?I.inside():I.boxes.some(b=>inBox(b,pos.x,py+.5,pos.z,0)), want=all||inn||d<(I.on?INTERIORS.near+TILE:INTERIORS.near);
-      if(want!==I.on||force){ I.on=want; for(const me of I.meshes)reindex(me); for(const me of I.walls)me.visible=want; } } };
-  INTERIORS.cull=on=>{ for(const [I,me] of INTERIORS.water){ if(on){ if(!I.on&&me.visible){ me.visible=false; me._ic=true; } } else if(me._ic){ me.visible=true; me._ic=false; } } };
+      if(want!==I.on||force){ I.on=want; for(const me of I.meshes)reindex(me); for(const me of I.walls)VIS.hide(me,'interior',!want); } } };
+  INTERIORS.cull=on=>{ for(const [I,me] of INTERIORS.water)VIS.hide(me,'interior',on&&!I.on); };
   INTERIORS.state=()=>L.map(I=>[I.id,I.on,I.meshes.size,I.walls.length,Math.round(near2(I,pos.x,pos.z,py)/TILE*10)/10]);
 }

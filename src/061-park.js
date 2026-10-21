@@ -287,9 +287,6 @@ await grab('park',async()=>{});
   P.steps=[]; P.load=async()=>{ await LOAD('park'); const t0=performance.now(); while(P.Q.length){ const t=performance.now(); P.run(P.Q.shift()); P.steps.push(Math.round(performance.now()-t)); await brk(); } P.ready=true; scene.updateMatrixWorld();
     for(const f of [()=>ROOMS.reset(),()=>CLIP.run(),()=>PERFX.chunk(),()=>CULL.scan()])try{ f(); }catch(e){ console.warn('PARK',e); } P.ms=Math.round(performance.now()-t0); };
   P.show=on=>{ P.in=on; G.visible=on&&LVL==='up'; if(P.stand)P.stand.visible=!on; if(MODS.landHoles)MODS.landHoles(on); if(window.WEEDS&&WEEDS.lawnDrop)WEEDS.lawnDrop(P.rect()); for(const f of P.onShow)try{ f(on); }catch(e){ console.warn('PARK',e); } };
-  const go=async(on,jump)=>{ busy=true; const el=document.getElementById('subfade'), tr=el.style.transition; el.style.transition=jump?'none':'opacity .3s steps(4)'; el.textContent=on?'ENTERING CENTRAL PARK':'LEAVING CENTRAL PARK'; el.style.pointerEvents='auto'; el.style.opacity='1';
-    await wait(jump?60:320); if(typeof keys!=='undefined'&&keys.clear)keys.clear(); P.hold=true;
-    try{ if(on&&!P.ready)await P.load(); }catch(e){ console.warn('PARK: not loaded',e); } P.hold=false; P.show(on); await frames(3); await wait(140);
-    el.style.transition='opacity .4s steps(5)'; el.style.opacity='0'; el.style.pointerEvents='none'; await wait(420); el.style.transition=tr; busy=false; };
+  const go=async(on,jump)=>{ busy=true; await FADE.run(on?'ENTERING CENTRAL PARK':'LEAVING CENTRAL PARK',async()=>{ P.hold=true; try{ if(on&&!P.ready)await P.load(); } finally{ P.hold=false; } P.show(on); },{cut:jump,hold:140}); busy=false; };
   P.door=(py,p)=>{ if(busy||!window.__started||LVL!=='up'||py<-1||UI.freeCam)return; const jump=lx!=null&&Math.hypot(p.x-lx,p.z-lz)>2*TILE; lx=p.x; lz=p.z; const w=P.within(p.x,p.z,P.in?-.35:.35); if(w!==P.in)go(w,jump); };
   window.PARKPLACE=()=>({in:P.in,ready:P.ready,busy,ms:P.ms,steps:P.steps,left:P.Q.length,kids:G.children.length}); }

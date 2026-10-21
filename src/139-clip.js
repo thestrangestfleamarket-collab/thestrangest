@@ -61,7 +61,7 @@ Object.assign(CLIP,{moved:[],found:[],added:0,boxes:new Map(),done:new Set(),ms:
       if(b||q){ let to=null; for(let r=D;r<=8*TILE&&!to;r+=D){ const n=Math.max(8,Math.round(2*Math.PI*r/D)); for(let k=0;k<n;k++){ const a=k/n*2*Math.PI, x=st.x+Math.sin(a)*r, z=st.z+Math.cos(a)*r; if(clear(N,x,z,ok)&&!through(L,st.x,st.z,x,z)){ to={x,z}; break; } } }
         const why=b?'inside a solid ['+b.map(v=>v.toFixed(2))+']':'inside '+q.key;
         if(to){ CLIP.moved.push({key:N.key,from:[+st.x.toFixed(2),+st.z.toFixed(2)],to:[+to.x.toFixed(2),+to.z.toFixed(2)],why}); console.warn('CLIP: '+N.key+' stood '+why+' at '+st.x.toFixed(2)+','+st.z.toFixed(2)+'; moved '+Math.hypot(to.x-st.x,to.z-st.z).toFixed(2)+' to '+to.x.toFixed(2)+','+to.z.toFixed(2));
-          st.x=to.x; st.z=to.z; st.to=null; N.home={x:to.x,z:to.z}; }
+          st.x=to.x; st.z=to.z; st.to=null; if(!(N.home&&N.home.r>0))N.home={x:to.x,z:to.z}; }
         else console.warn('CLIP: '+N.key+' stands '+why+' and no clear spot within eight tiles'); }
       ok.push(N); } };
   CLIP.audit=()=>{ '@later'; const things=[], chars=[];

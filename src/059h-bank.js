@@ -1,6 +1,6 @@
-// THE BANK: the bank on the street (its own builder; it moves to the bottom-left corner and gets its own load later, 20 Oct 2026).
-await grab('bank',async()=>{ const K=STORE.kit, {room,rec,STEPS}=K, SK=BOD.STOREK, {CATALOG,LAMPS,T,sh}=SK, MK=SK.museum, M=MK.MUS, MB=M.b, P=RING.bank, OX=BOD.OX, OY=BOD.OY, DEP=16;
-  const x0=OX+(P.x0-OX)/BLDK, y1=OY+(P.y0-OY)/BLDK, B={id:'lbank',x0,x1:x0+(MB.x1-MB.x0),y0:y1-DEP,y1,h:MB.h};
+// THE BANK: the bank on the block, between the playhouse and the bar (its own builder).
+await grab('bank',async()=>{ const K=STORE.kit, {room,rec,STEPS}=K, SK=BOD.STOREK, {CATALOG,LAMPS,T,sh}=SK, MK=SK.museum, M=MK.MUS, MB=M.b, P=BLOCK.lots.bank, OX=BOD.OX, OY=BOD.OY, DEP=14;
+  const x0=OX+(P[0]-OX)/BLDK, y1=OY, B={id:'lbank',x0,x1:x0+(MB.x1-MB.x0),y0:y1-DEP,y1,h:MB.h};
   const SX=MB.x0+MB.x1, SY=MB.y0+MB.y1, dx=B.x0-MB.x0, dy=B.y1-MB.y1, FW=[[0,1],[-1,0],[0,-1],[1,0]], stone=[226,220,204], D={w:'f',a:(B.x0+B.x1)/2,wd:2.5,h:76};
   const RN={x0:MB.x0+T,x1:MB.x1-T,y0:MB.y0+T,y1:MB.y0+DEP-T}, OB={...MB,plain:1}, WO={get P(){ return MK.MUP.bank; },k:'hall'};
   const look={floor:(x,y)=>MK.museumHallCol(SX-x+dx,SY-y+dy,RN),in:(b,nx,ny,x,y,z,f)=>MK.museumWall(b,-nx,-ny,SX-x+dx,SY-y+dy,z,f,WO),out:(nx,ny,x,y,z,f,H)=>MK.museumOutside(OB,-nx,-ny,SX-x+dx,SY-y+dy,z,f,H)||sh(stone,f),cope:stone};

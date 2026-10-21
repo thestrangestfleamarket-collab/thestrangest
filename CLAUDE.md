@@ -44,7 +44,7 @@ by `tools/chunks.cjs` (needs `acorn`, which `npm ci` brings; without it everythi
 sees every name around it (handed in, or read live when it can change). Call `LOAD` (behind the place's black fade) before such a
 function first runs; if one runs before its chunk came, it is fetched there and then (the page waits for it) and the console says
 `chunk name was not loaded before use (#n)` (`dist/chunks.txt` lists every cut function by number): add the missing `LOAD`.
-Places: `dungeon`, `park`, `dojo`, `fire`, `club`, `arcade`, `vcr`, `bath` (on the way in: `STORE.offGo`/`enter`/`ensure`, the
+Places: `dungeon`, `park`, `dojo`, `fire`, `arcade`, `bath` (on the way in: `STORE.offGo`/`enter`/`ensure`, the
 `ROOMS` swap, `PARK.load`, the dungeon's `go`, a saved spot); `later` (code the start never runs, fetched as soon as the start is
 done) is marked by `tools/later.cjs` from what the start runs (re-run it in CI now and then: `SKIP=later MIN=0 python3 build.py &&
 node tools/later.cjs`; new code stays in the start file until then). `tests/places.cjs` enters every place on the website and fails

@@ -119,5 +119,5 @@ void main(){ vec4 c=texture2D(map,vUv); if(c.a<.5)discard; vec2 g=vW*.9, id=floo
       else N.fm.color.copy(N.base).multiplyScalar(off?.25:hum);
       if(N.halo)N.halo.material.opacity=off&&!N.me?.3:hum;
       N.rm.visible=wet>.02; N.rm.material.uniforms.uF.value=off?.4:hum; } };
-  const dt0=D.tick; D.tick=(d,p)=>{ dt0(d,p); for(const P of D.pools)if(P[4].visible&&LITE.sel.some(s=>s[1]===P[0]||s===P[0]))P[4].visible=false; SHINE.tick(d||0); };
+  SYS.add('dress',(d,p)=>{ for(const P of D.pools)if(P[4].visible&&LITE.sel.some(s=>s[1]===P[0]||s===P[0]))P[4].visible=false; SHINE.tick(d||0); },'069c-shine');
   window.SHINEDBG=()=>({lights:S.length,porch:SHINE.porch.map(P=>[+P.L.position.x.toFixed(1),+P.L.position.z.toFixed(1),P.lit]),neon:NL.length,inst:gq.instanceCount,meshes:MS.length,tris:MS.reduce((n,m)=>n+m.geometry.attributes.position.count/3*m.count,0),per:{street:SLB.attributes.position.count/3,head:HOUS.attributes.position.count/3,lens:LENS.index.count/3,sconce:SC.attributes.position.count/3}}); }

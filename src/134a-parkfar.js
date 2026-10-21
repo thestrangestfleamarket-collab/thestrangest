@@ -17,5 +17,5 @@ const PFARM={};
   const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); g.setAttribute('color',new THREE.Float32BufferAttribute(C,3)); g.computeVertexNormals(); g.computeBoundingSphere();
   const mat=new THREE.MeshLambertMaterial({vertexColors:true,flatShading:true,side:THREE.DoubleSide}); mat.defines={PFAR:''};
   const M=new THREE.Mesh(g,mat); M.visible=false; (MAPG.bodega||scene).add(M); PFARM.mesh=M; PFARM.tris=P.length/9; PFARM.r=PFAR;
-  const t0=RINGX.tick; RINGX.tick=dt=>{ t0(dt); M.visible=MISTE.x>.5; };
+  SYS.add('ring',(dt)=>{ M.visible=MISTE.x>.5; },'134a-parkfar');
   window.PFARM=PFARM; }

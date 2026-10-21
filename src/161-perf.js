@@ -47,7 +47,7 @@ SELFSH.pick=()=>{ SELFSH.set.clear(); if(!PERFX.on[2])return; const R=12*TILE, c
   for(const N of NPCS){ if(N.far||!N.g.visible||!N.g.parent||!N.g.parent.visible||!N.shadowPass)continue; const d=Math.hypot(N.g.position.x-pos.x,N.g.position.z-pos.z); if(d<R)c.push([d,N]); }
   c.sort((a,b)=>a[0]-b[0]); for(const [,N] of c.slice(0,2))SELFSH.set.add(N); };
 SELFSH.use=N=>!PERFX.on[2]||SELFSH.set.has(N);
-{ const s0=W3.shadowPass; W3.shadowPass=r=>{ SELFSH.pick(); s0(r); }; }
+SYS.add('shadowPre',()=>SELFSH.pick(),'161-perf');
 PERFX.bounds=()=>{ '@later'; if(!PERFX.on[4])return; const S=new THREE.Sphere();
   scene.traverse(o=>{ if(!o.isMesh||o.frustumCulled||o.userData.nb)return;
     if(o.isSkinnedMesh){ o.userData.nb=true; const g=o.geometry; g.computeBoundingBox(); o.boundingSphere=g.boundingBox.getBoundingSphere(new THREE.Sphere()); o.boundingSphere.radius*=1.6; o.frustumCulled=true; return; }

@@ -168,4 +168,4 @@ WEEDS.lawnInit=()=>{ const T=TILE, CS=8*T, N=16, CELL=CS/N, MG=4, W=N+2*MG, hsh=
     for(const k of [...CH.keys()]){ const [a,b]=k.split(',').map(Number); if(Math.max(Math.abs(a-pcx),Math.abs(b-pcz))>3)drop(k); }
     let best=null, bd=1e9; for(let b=-2;b<=2;b++)for(let a=-2;a<=2;a++){ const k=(pcx+a)+','+(pcz+b); if(CH.has(k))continue; const d=a*a+b*b; if(d<bd){ bd=d; best=[pcx+a,pcz+b,k]; } }
     if(best&&performance.now()>=next){ const t0=performance.now(); const gb=build(best[0],best[1]); CH.set(best[2],gb); if(gb&&WEEDS.onAdd)WEEDS.onAdd(best[2],gb); busy=performance.now()-t0; WEEDS.busy=busy; next=performance.now()+Math.max(120,busy*3); } };
-  const t0=CLOCK.tick; CLOCK.tick=dt=>{ t0(dt); WEEDS.lawnTick(); WEEDS.moveTick(); }; };
+  SYS.add('world',(dt)=>{ WEEDS.lawnTick(); WEEDS.moveTick(); },'140-weeds'); };

@@ -83,7 +83,7 @@ NEWS.init=()=>{ const N=typeof TOONS!=='undefined'&&TOONS.cat; if(!N||typeof BOD
   const passed=(a,h)=>lastH<=h?(a>lastH&&a<=h):(a>lastH||a<=h);
   const work=()=>{
     const b=bundles[0]; if(!b||!isOpen(CLOCK.h))return; doAct('stack',()=>{ doAct('cut',()=>{ bundles.shift(); drawB(); const i=TITLES.reduce((m,_,k)=>stock.papers[k]<stock.papers[m]?k:m,0); stock.papers[i]+=25; stacks(); work(); }); }); };
-  const t0=CLOCK.tick; CLOCK.tick=dt=>{ t0(dt); const h=CLOCK.h;
+  SYS.add('world',(dt)=>{ const h=CLOCK.h;
     if(passed(5.5,h)){ DR.forEach((d,k)=>fly(d,k)); stock.papers=stock.papers.map(v=>Math.floor(v*.2)); stacks(); }
     if(passed(5.75,h)){ wake(); queue=[]; doAct('yawn'); doAct('open'); }
     if(passed(22,h)){ wake(); queue=[]; doAct('close',()=>doAct('doze')); }
@@ -94,7 +94,7 @@ NEWS.init=()=>{ const N=typeof TOONS!=='undefined'&&TOONS.cat; if(!N||typeof BOD
       if(bundles.length&&shut<.1){ work(); }
       else { const d=Math.hypot(pos.x-X(xm),pos.z-Z(y1+1)); if(d<3.2*T&&!waved&&LVL!=='down'){ waved=true; doAct('wave'); } else if(d>5*T)waved=false;
         if((idleT-=dt)<=0){ idleT=14+Math.random()*22; const lull=h>13&&h<15.5&&Math.random()<.5; if(lull){ napT=20+Math.random()*30; doAct('doze'); } else doAct(Math.random()<.6?'arrange':'stretch'); } } }
-    if(act&&act.n==='doze'&&isOpen(h)&&napT>0&&(napT-=dt)<=0)act=null; };
+    if(act&&act.n==='doze'&&isOpen(h)&&napT>0&&(napT-=dt)<=0)act=null; },'147-newsstand');
   const purse=DRONE.purse||{get:()=>0,add:()=>{}};
   const ITEMS=TITLES.map(([n,,p],i)=>({n,p,k:'papers',i}));
   const left=it=>it.k==='papers'?stock.papers[it.i]:stock[it.k];

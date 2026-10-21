@@ -100,7 +100,7 @@ function makeNPC(D,o){ const N={key:o.key,name:o.name,names:o.names,lv:o.lv||'do
   N.shadowPass=renderer=>{ if(W3.lv.value<1.5||N.far||!g.visible||!g.parent.visible)return; if(typeof SELFSH!=='undefined'&&!SELFSH.use(N)){ N.LVP.value.copy(SELFSH.off); return; } const mid=NPCMID.set(g.position.x,g.position.y+H*.45,g.position.z); N.smCam.position.copy(mid).addScaledVector(W3.Lw,7); N.smCam.up.set(0,Math.abs(W3.Lw.y)>.6?0:1,Math.abs(W3.Lw.y)>.6?1:0); N.smCam.lookAt(mid); N.smCam.updateMatrixWorld();
     N.LVP.value.multiplyMatrices(N.smCam.projectionMatrix,N.smCam.matrixWorldInverse); const ms=[]; g.traverse(o=>{ if(o.isMesh){ ms.push([o,o.material]); o.material=N.depthMat; } });
     renderer.setRenderTarget(N.sm); renderer.clear(); renderer.render(g,N.smCam); renderer.setRenderTarget(null); for(const [o,m] of ms)o.material=m; };
-  if(!o.noSelf){ const s0=W3.shadowPass; W3.shadowPass=r=>{ s0(r); N.shadowPass(r); }; }
+  if(!o.noSelf){ SYS.add('shadow',(r)=>{ N.shadowPass(r); },'076-npc-map'); }
   N.g=g; N.st=st; N.body=body; N.H=H; NPCS.push(N); return N; }
 const STLANE={x0:BOD.XS(BOD.MAP.x0+2),x1:Math.min(BOD.XS(BOD.MAP.x1-2),RINGX.bound.x1-TILE),z0:BOD.ZS(-76.3),z1:Math.min(BOD.ZS(RING.wy1-1),RINGX.bound.z1-TILE)}, STHOLE=[BOD.XS(MAPSTAIR.x0-.6),BOD.ZS(MAPSTAIR.y0),BOD.XS(MAPSTAIR.x1+.6),BOD.ZS(MAPSTAIR.y1+.6)],
   CSHOLE=[BOD.XS(CASTLE.stair.x0-.6),BOD.ZS(CASTLE.stair.y0-.6),BOD.XS(CASTLE.stair.x1+.6),BOD.ZS(CASTLE.stair.y1+.6)], CSB=[BOD.XS(CASTLE.b[0]-.5),BOD.ZS(CASTLE.b[2]-.5),BOD.XS(CASTLE.b[1]+.5),BOD.ZS(CASTLE.b[3]+.5)],

@@ -28,11 +28,11 @@ if(JOBS.on){ const T=TILE, X=BOD.XS, Z=BOD.ZS, rnd=Math.random;
   const goHome=J=>{ '@later'; const N=J.w.N, A=homeOf(J); if(!A||!A.step){ if(J.state==='work'||J.state==='commute')offWork(J); else if(J.state!=='leaving')J.state='off'; return; } const wasIn=J.state==='work'||J.state==='commute'||J.state==='leaving'; J.state='homing'; inside(N,wasIn); N.dwell=null; CITY.stop(N); go(J,A.step,J.w.v||1.2,ok=>{ if(J.state!=='homing')return; if(!ok){ J.state='off'; J.t=20; return; }
       J.state='home'; inside(N,false); hide(N,true); if(window.MAIL&&MAIL.ready)MAIL.take(A.id,N.name); }); };
   const pick=a=>a[Math.floor(rnd()*a.length)];
-  let acc=0; const t0=CITY.tick; CITY.tick=(dt,you)=>{ '@later'; t0(dt,you); if((acc+=dt)<.5)return; acc=.0; const h=CLOCK.h;
+  let acc=0; SYS.add('city',(dt,you)=>{ '@later'; if((acc+=dt)<.5)return; acc=.0; const h=CLOCK.h;
     for(const J of JOBS.list){ if(!J.w.home&&!J.started)continue; J.started=true; if(J.t>0&&(J.t-=.5)>0)continue; const want=shouldBe(J,h);
       if(want==='work'&&(J.state===''||J.state==='home'||J.state==='off'||J.state==='lost'||J.state==='homing'))toWork(J);
       else if(want==='off'&&(J.state==='work'||J.state==='commute'))offWork(J);
       else if(want==='off'&&J.state==='')J.state='off';
-      else if(want==='home'&&J.state!=='home'&&J.state!=='homing'){ if(J.state==='work'||J.state==='commute'){ J.state='work'; } goHome(J); } } };
+      else if(want==='home'&&J.state!=='home'&&J.state!=='homing'){ if(J.state==='work'||J.state==='commute'){ J.state='work'; } goHome(J); } } },'159-jobs');
   window.JOBDBG=()=>JOBS.list.map(J=>({who:J.w.N.name,key:J.w.N.key,id:J.id,title:J.title,hours:J.open+'-'+J.close,state:J.state,home:J.w.home&&J.w.home.label,homeTiles:J.w.home&&J.w.home.step?+(Math.hypot(J.w.home.step.x-(J.S.door.x),J.w.home.step.z-J.S.door.z)/T).toFixed(1):null,at:[+(J.w.N.st.x/T+72).toFixed(1),+(J.w.N.st.z/T-77).toFixed(1)],vis:J.w.N.g.visible}));
 }

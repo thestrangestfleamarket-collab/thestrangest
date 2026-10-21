@@ -43,9 +43,9 @@ if(WALKERS.on){ const T=TILE, X=BOD.XS, Z=BOD.ZS, rnd=Math.random, pick=a=>a[Mat
       N.walker=W; N.gait=G[0]; N.gaitU=G[1]; N.idle=pick(K.idles.filter(c=>c!=='sit_floor_idle_a')); N.name=(N.name||'').replace(/_\d+$/,'')+' ('+kind+')';
       WALKERS.list.push(W); i++; } };
   setTimeout(start,0);
-  let acc=0; const t0=CITY.tick; CITY.tick=(dt,you)=>{ '@later'; t0(dt,you); for(const W of WALKERS.list){ const N=W.N; if(W.job&&W.job.state&&W.job.state!=='off')continue; if(W.state==='going'&&!N.errand){ W.state='wait'; W.t=.5; } if(W.state==='going')continue; if((W.t-=dt)<=0){ N.st.face=null; next(N,W); } }
+  let acc=0; SYS.add('city',(dt,you)=>{ '@later'; for(const W of WALKERS.list){ const N=W.N; if(W.job&&W.job.state&&W.job.state!=='off')continue; if(W.state==='going'&&!N.errand){ W.state='wait'; W.t=.5; } if(W.state==='going')continue; if((W.t-=dt)<=0){ N.st.face=null; next(N,W); } }
     if((acc+=dt)<1)return; acc=0; const S=WALKERS.list.filter(W=>W.state==='stay'&&!(W.job&&W.job.state&&W.job.state!=='off'));
     for(const A of S)for(const B of S){ if(A===B||A.talk||B.talk)continue; const a=A.N.st, b=B.N.st; if(Math.hypot(a.x-b.x,a.z-b.z)<2.2*T&&A.N.dwell!=='sit_floor_idle_a'&&B.N.dwell!=='sit_floor_idle_a'){ A.talk=B.talk=true; A.N.dwell=B.N.dwell='UAL_Idle_Talking_Loop'; a.face={x:b.x,z:b.z}; b.face={x:a.x,z:a.z}; const m=Math.max(A.t,B.t); A.t=B.t=m; } }
-    for(const W of WALKERS.list)if(W.state!=='stay')W.talk=false; };
+    for(const W of WALKERS.list)if(W.state!=='stay')W.talk=false; },'158-walkers');
   window.WALKDBG=()=>WALKERS.list.map(W=>({key:W.N.key,kind:W.kind,gait:W.gait,v:+W.v.toFixed(2),state:W.state,dwell:W.N.dwell,x:+(W.N.st.x/T+72).toFixed(1),y:+(W.N.st.z/T-77).toFixed(1),park:inPark(W.N.st.x,W.N.st.z),vis:W.N.g.visible}));
 }

@@ -10,7 +10,7 @@ WEEDS.gold=()=>{ if(WEEDS.GP)return WEEDS.GP; const P=window.PARK; if(!P||P.ox==
   const xa=Math.min(X(P.x0),X(P.x1)), xb=Math.max(X(P.x0),X(P.x1)), za=Math.min(Z(P.y0),Z(P.y1)), zb=Math.max(Z(P.y0),Z(P.y1));
   const SB=SOL.up.filter(b=>b[2]>xa&&b[0]<xb&&b[3]>za&&b[1]<zb), RB=(STORE.rooms||[]).filter(R=>R.walls&&R.x0!=null&&!(R.y0>=1)), SZ=typeof STALL!=='undefined'&&STALL.zones||[];
   const ok=(x,y,r)=>{ if(x<P.x0+5+r||x>P.x1-5-r||y<P.y0+7+r||y>P.y1-5-r)return false;
-    if(Math.min(Math.abs(x-cx-P.wobX(y))-3.6,Math.abs(y-cy-P.wobY(x))-3.6,Math.hypot(x-cx,y-cy)-cr)<r+1.2||BK.wet(x,y,r+1.4)||F.lake(x,y)<r+2||F.ter(x,y)<r+1.5)return false;
+    if(P.pd(x,y)<r+1.2||BK.wet(x,y,r+1.4)||F.lake(x,y)<r+2||F.ter(x,y)<r+1.5)return false;
     if(KEEP.some(b=>x>b[0]-r&&x<b[2]+r&&y>b[1]-r&&y<b[3]+r)||GT.some(([gx,gy])=>Math.hypot(x-gx,y-gy)<r+7))return false;
     const wx=X(x), wz=Z(y), m=(r+.4)*T; if(SB.some(b=>wx>b[0]-m&&wx<b[2]+m&&wz>b[1]-m&&wz<b[3]+m)||RB.some(b=>wx>b.x0-m&&wx<b.x1+m&&wz>b.z0-m&&wz<b.z1+m)||SZ.some(b=>wx>b[0]-m&&wx<b[2]+m&&wz>b[1]-m&&wz<b[3]+m))return false;
     return !(P.oaks||[]).some(o=>Math.hypot(o[0]-wx,o[1]-wz)<(r+o[2]*.55+2)*T); };

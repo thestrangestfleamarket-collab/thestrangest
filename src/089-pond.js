@@ -1,6 +1,6 @@
 const POND={}; window.POND=POND;
 { const go=()=>{ '@park'; if(typeof PARK==='undefined'||!PARK.fire)return setTimeout(go,500);
-    const P=PARK, X=x=>BOD.XS(x+(P.ox||0)), Z=y=>BOD.ZS(y+(P.oy||0)), Y=BOD.YS, [rx,ry]=P.round, cx=rx+12.5, cy=ry+11.5, R=4.2, RIM=9, LV=7;
+    const P=PARK, X=x=>BOD.XS(x+(P.ox||0)), Z=y=>BOD.ZS(y+(P.oy||0)), Y=BOD.YS, [cx,cy,R]=P.lake, RIM=9, LV=7;
     const WX=X(cx), WZ=Z(cy), RW=R*TILE;
     POND.c={x:WX,z:WZ}; POND.r=RW;
     const bed=new THREE.Mesh(new THREE.CircleGeometry(RW,32).rotateX(-Math.PI/2),new THREE.MeshLambertMaterial({color:0x2f3a24})); bed.position.set(WX,.02,WZ); bed.receiveShadow=true;

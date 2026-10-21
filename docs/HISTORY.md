@@ -3784,3 +3784,9 @@ initial download and load super fast"; then "Go")
   aim (0.9 ms), the birds (0.4), the arcade's fog check (0.35), the lawn's trample slots (0.3); the one-off lawn chunk builds (20–100 ms
   each, throttled) are what made CLOCK look like 21 ms in the earlier frame profile. The guitarist no longer walks (and collides against
   the street's solids) while farther than 40 units or out of the bodega map: he stands where he was and resumes when you come near.
+- **The grey half at Market St's west end** (20 Oct 2026, found while building the bank corner; on the live page too): standing near
+  the west end, the isometric camera sits outside the skyline backdrop (four painted panels round the land, 38 tiles past its edge),
+  and the panels were drawn from both sides, so the back of a painted tower filled half the screen as flat grey. The panels now draw
+  from the inside only (`FrontSide`); a camera outside sees through to the scene and the far panels. No cost.
+- **`SKIP=g python3 build.py`** (same day): writes only `dist/market.html` and `dist/door.html`, for a workspace that cannot reach the
+  npm registry (the website's `dist/g/` needs the pinned packages).

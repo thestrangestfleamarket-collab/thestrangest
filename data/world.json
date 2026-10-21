@@ -1,0 +1,292 @@
+{
+ "about": "THE MARKET's level: where every place is. Map tiles, x east, y north; the block runs from front y -77 back to -92.4. The builders read this file; the map editor exports it.",
+ "streets": {
+  "market": {
+   "x0": -130,
+   "x1": 262
+  },
+  "west": {
+   "x0": -52.5,
+   "x1": -24
+  }
+ },
+ "park": {
+  "x0": -24,
+  "x1": 262,
+  "y0": -38,
+  "y1": 181
+ },
+ "block": {
+  "x0": -100,
+  "x1": 245,
+  "front": -77,
+  "back": -92.4,
+  "alley": [
+   -99.4,
+   -92.4
+  ],
+  "backrow": [
+   -111.4,
+   -99.4
+  ],
+  "walk": [
+   -119,
+   -111.4
+  ],
+  "river": -165
+ },
+ "places": [
+  {
+   "id": "apts",
+   "name": "APARTMENTS",
+   "kind": "front",
+   "x0": -94.8,
+   "x1": -80.5
+  },
+  {
+   "id": "bodega",
+   "name": "THE BODEGA",
+   "kind": "front",
+   "x0": -80,
+   "x1": -62.4
+  },
+  {
+   "id": "museum",
+   "name": "MUSEUM OF EARTH",
+   "kind": "front",
+   "x0": -62.3,
+   "x1": -33.7,
+   "y0": -103.4,
+   "back": true
+  },
+  {
+   "id": "play",
+   "name": "THE PLAYHOUSE",
+   "kind": "front",
+   "x0": -33.6,
+   "x1": -19.6
+  },
+  {
+   "id": "bank",
+   "name": "THE BANK",
+   "kind": "front",
+   "x0": -9.8,
+   "x1": 18.8
+  },
+  {
+   "id": "bar",
+   "name": "THE BAR",
+   "kind": "front",
+   "x0": 49,
+   "x1": 60
+  },
+  {
+   "id": "subway",
+   "name": "SUBWAY STAIRS",
+   "kind": "stairs",
+   "x0": 75,
+   "x1": 79
+  },
+  {
+   "id": "hudson",
+   "name": "TO THE HUDSON",
+   "kind": "passage",
+   "x0": 111,
+   "x1": 124
+  },
+  {
+   "id": "bath",
+   "name": "THE BATH HOUSE",
+   "kind": "front",
+   "x0": 124.75,
+   "x1": 143.25
+  },
+  {
+   "id": "theatre",
+   "name": "THE MOVIE THEATRE",
+   "kind": "front",
+   "x0": 190.5,
+   "x1": 204.5
+  },
+  {
+   "id": "arcade",
+   "name": "THE ARCADE",
+   "kind": "front",
+   "x0": 205.5,
+   "x1": 219.5
+  },
+  {
+   "id": "holo",
+   "name": "THE HOLODECK",
+   "kind": "front",
+   "x0": 225.5,
+   "x1": 239.5
+  }
+ ],
+ "shells": [
+  {
+   "id": "shell1",
+   "x0": -69,
+   "x1": -56,
+   "y0": 8.0,
+   "y1": 27.0
+  },
+  {
+   "id": "shell2",
+   "x0": -69,
+   "x1": -56,
+   "y0": 30.0,
+   "y1": 49.0
+  },
+  {
+   "id": "shell3",
+   "x0": -69,
+   "x1": -56,
+   "y0": 52.0,
+   "y1": 71.0
+  },
+  {
+   "id": "shell4",
+   "x0": -69,
+   "x1": -56,
+   "y0": 74.0,
+   "y1": 93.0
+  },
+  {
+   "id": "shell5",
+   "x0": -69,
+   "x1": -56,
+   "y0": 96.0,
+   "y1": 115.0
+  },
+  {
+   "id": "shell6",
+   "x0": -69,
+   "x1": -56,
+   "y0": 118.0,
+   "y1": 137.0
+  },
+  {
+   "id": "shell7",
+   "x0": -69,
+   "x1": -56,
+   "y0": 140.0,
+   "y1": 159.0
+  }
+ ],
+ "parkPlaces": {
+  "round": {
+   "x": 112,
+   "y": 59.5,
+   "r": 7
+  },
+  "lake": {
+   "x": 151,
+   "y": 10,
+   "r": 9
+  },
+  "cave": {
+   "x": 196.5,
+   "y": 41.5
+  },
+  "tower": {
+   "x": -8.5,
+   "y": -28
+  },
+  "castle": {
+   "x0": 32.5,
+   "y0": 8.5
+  }
+ },
+ "paths": [
+  {
+   "id": "path1",
+   "a": [
+    112,
+    -37
+   ],
+   "b": [
+    112,
+    180
+   ]
+  },
+  {
+   "id": "path2",
+   "a": [
+    -23,
+    59.5
+   ],
+   "b": [
+    261,
+    59.5
+   ]
+  },
+  {
+   "id": "path3",
+   "a": [
+    45,
+    59.5
+   ],
+   "b": [
+    45,
+    26.5
+   ]
+  },
+  {
+   "id": "path4",
+   "a": [
+    190,
+    59.5
+   ],
+   "b": [
+    196.5,
+    45
+   ]
+  },
+  {
+   "id": "path5",
+   "a": [
+    196.5,
+    45
+   ],
+   "b": [
+    197.5,
+    36
+   ]
+  },
+  {
+   "id": "path6",
+   "a": [
+    112,
+    25
+   ],
+   "b": [
+    140.5,
+    12
+   ]
+  },
+  {
+   "id": "path7",
+   "a": [
+    112,
+    -20
+   ],
+   "b": [
+    -5,
+    -28
+   ]
+  },
+  {
+   "id": "path8",
+   "a": [
+    112,
+    90
+   ],
+   "b": [
+    195,
+    90
+   ]
+  }
+ ],
+ "pathWidth": 7.2
+}

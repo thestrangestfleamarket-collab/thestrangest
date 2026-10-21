@@ -4,7 +4,7 @@ const DRESS=window.DRESS={gaps:()=>{ const G=[]; for(let i=0;i+1<MAINROW.length;
   DRESS.kerb={sw,far}; DRESS.cans=[];
   const CY=[], cyl=(x,y,z,r,h,c)=>CY.push([x,y,z,r*2,h,r*2,c]);
   const BL=[], blk=(x,y,z,sx,sy,sz,c)=>BL.push([x,y,z,sx,sy,sz,c]), solid=(x,z,r,h)=>{ SOL.up.push([x-r,z-r,x+r,z+r]); FIX.up.push([x-r,z-r,G(x,z),x+r,z+r,G(x,z)+h]); };
-  { const M=1/.84*TILE, CN=[], hs=(a,b)=>{ const v=Math.sin(a*12.9898+b*78.233)*43758.5453; return v-Math.floor(v); }; for(const x of [BX0-1.2,AX0-1.5,BOD.XS(AVE.x0)-2.2]){ const z=sw-.25*M, y=G(x,z); DRESS.cans.push({x,z}); CN.push([x,y,z]); solid(x,z,.28*M,.9*M); }
+  { const M=1/.84*TILE, CN=[], hs=(a,b)=>{ const v=Math.sin(a*12.9898+b*78.233)*43758.5453; return v-Math.floor(v); }; for(const x of [BX0-1.2,AX0-1.5]){ const z=sw-.25*M, y=G(x,z); DRESS.cans.push({x,z}); CN.push([x,y,z]); solid(x,z,.28*M,.9*M); }
     const tex=(W,H,f)=>{ const cv=document.createElement('canvas'); cv.width=W; cv.height=H; const g=cv.getContext('2d'), im=g.createImageData(W,H); for(let j=0;j<H;j++)for(let i=0;i<W;i++){ const c=f(i,j), q=(j*W+i)*4; im.data[q]=c[0]; im.data[q+1]=c[1]; im.data[q+2]=c[2]; im.data[q+3]=255; } g.putImageData(im,0,0); const t=new THREE.CanvasTexture(cv); t.magFilter=t.minFilter=THREE.NearestFilter; t.generateMipmaps=false; t.colorSpace=THREE.SRGBColorSpace; return t; };
     const LIT=[[226,222,210],[196,48,40],[150,120,80],[60,110,170],[40,40,44]], wire=tex(48,24,(i,j)=>{ const r=hs(i,j); if(j<2)return r<.1?[120,80,50]:[44,84,52]; if(j>21)return [38,70,44]; if(i%3===0||j%3===0)return r<.06?[126,84,52]:r<.2?[64,104,66]:[48,88,56];
       return j<9&&hs(Math.floor(i/4),Math.floor(j/3)+9)<.35?LIT[Math.floor(hs(Math.floor(i/4),j>>2)*5)]:[18,22,18]; }), top=tex(16,16,(i,j)=>{ const r=hs(Math.floor(i/3),Math.floor(j/3)); return r<.3?LIT[0]:r<.42?LIT[1]:r<.6?LIT[2]:r<.72?[30,30,32]:r<.8?LIT[3]:[200,196,184]; });
@@ -19,14 +19,12 @@ const DRESS=window.DRESS={gaps:()=>{ const G=[]; for(let i=0;i+1<MAINROW.length;
       for(let j=0;j<N;j++)for(let i=0;i<N;i++){ const d0=Math.hypot((i+.5)/N*2-1,(j+.5)/N*2-1), d=d0+(SMOOTH||CEL?0:(h(i,j)-.5)*.1), a=SMOOTH?Math.max(0,1-d0)**1.6*.24:d<.38?.2:d<.68?.11:d<.96?.05:0, q=(j*N+i)*4; im.data[q]=255; im.data[q+1]=214; im.data[q+2]=150; im.data[q+3]=Math.round(a*255); }
       g.putImageData(im,0,0); const t=new THREE.CanvasTexture(cv); t.magFilter=t.minFilter=SMOOTH?THREE.LinearFilter:THREE.NearestFilter; t.generateMipmaps=false; t.colorSpace=THREE.SRGBColorSpace; return t; })();
     const poolMat=new THREE.MeshBasicMaterial({map:poolTex,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,toneMapped:false,polygonOffset:true,polygonOffsetFactor:-2}), poolGeo=new THREE.PlaneGeometry(2,2).rotateX(-Math.PI/2);
-    const RC=BOD.road.CORN.find(c=>c.x===AVE.r0&&c.y===BOD.FAR), CK=(BOD.road.KR-.45)/Math.SQRT2, CP={x:BOD.XS(RC.cx-RC.sx*CK),z:BOD.ZS(RC.cy-RC.sy*CK)}, ok=(x,z)=>G(x,z)>-.01&&Math.hypot(x-CP.x,z-CP.z)>4*M;
+    const RC=BOD.road.CORN.find(c=>c.x===RING.wr1&&c.y===BOD.FAR), CK=(BOD.road.KR-.45)/Math.SQRT2, CP={x:BOD.XS(RC.cx-RC.sx*CK),z:BOD.ZS(RC.cy-RC.sy*CK)}, ok=(x,z)=>G(x,z)>-.01&&Math.hypot(x-CP.x,z-CP.z)>4*M;
     if(DRESS.tall)for(let i=0;i<n;i++){ const x=x0+i*SP;
       sl(x,sw-.25*M,1).L=light(x,5.8*M,sw+1.4*M,40,13*TILE); heads.push([x,5.8*M,sw+1.4*M]);
-      const xf=x+SP/2; if(xf<SX1-3&&ok(xf,far+.25*M)&&!(xf>BOD.XS(AVE.r0)-1&&xf<BOD.XS(AVE.r1)+1)&&!(xf>BOD.XS(RING.wr0)-1&&xf<BOD.XS(RING.wr1)+1)){ sl(xf,far+.25*M,-1).L=light(xf,5.8*M,far-1.4*M,40,13*TILE); heads.push([xf,5.8*M,far-1.4*M]); } }
-    if(DRESS.tall){ const XS=BOD.XS, ZS=BOD.ZS, R=RING, A=AVE, put=(x,z,d,ax,ring)=>{ if(!ok(x,z))return; const P=sl(x,z,d,ax,ring), hx=ax==='x'?x+d*1.3*M:x, hz=ax==='x'?z:z+d*1.3*M; P.L=light(hx,5.8*M,hz,40,13*TILE); heads.push([hx,5.8*M,hz]); };
-      { const xo=XS(R.wr0)-.25*M, xi=XS(R.wr1)+.25*M, z0=ZS(BOD.FAR)+2*M, z1=ZS(R.nr0)-1*M; for(let z=z0,k=0;z<z1;z+=26*M,k++){ if(k&1)put(xi,z,-1,'x','inner'); else put(xo,z,1,'x','outer'); } }
-      { const xo=XS(A.r1)+.25*M, xi=XS(A.r0)-.25*M, z0=ZS(BOD.FAR)+2*M, z1=ZS(R.nr0)-1*M; for(let z=z0+13*M,k=0;z<z1;z+=26*M,k++){ if(k&1)put(xi,z,1,'x','inner'); else put(xo,z,-1,'x','outer'); } }
-      { const zo=ZS(R.nr1)+.25*M, zi=ZS(R.nr0)-.25*M, x0=XS(R.wr1)+2*M, x1=XS(A.r0)-2*M; for(let x=x0,k=0;x<x1;x+=26*M,k++){ if(k&1)put(x,zi,1,'z','inner'); else put(x,zo,-1,'z','outer'); } } }
+      const xf=x+SP/2; if(xf<SX1-3&&ok(xf,far+.25*M)&&!(xf>BOD.XS(RING.wr0)-1&&xf<BOD.XS(RING.wr1)+1)){ sl(xf,far+.25*M,-1).L=light(xf,5.8*M,far-1.4*M,40,13*TILE); heads.push([xf,5.8*M,far-1.4*M]); } }
+    if(DRESS.tall){ const XS=BOD.XS, ZS=BOD.ZS, R=RING, put=(x,z,d,ax,ring)=>{ if(!ok(x,z))return; const P=sl(x,z,d,ax,ring), hx=ax==='x'?x+d*1.3*M:x, hz=ax==='x'?z:z+d*1.3*M; P.L=light(hx,5.8*M,hz,40,13*TILE); heads.push([hx,5.8*M,hz]); };
+      { const xo=XS(R.wr0)-.25*M, xi=XS(R.wr1)+.25*M, z0=ZS(BOD.FAR)+2*M, z1=ZS(R.wy1)-1*M; for(let z=z0,k=0;z<z1;z+=26*M,k++){ if(k&1)put(xi,z,-1,'x','inner'); else put(xo,z,1,'x','outer'); } } }
     if(DRESS.tall){ const x=CP.x, z=CP.z, y=G(x,z), T8=8.2*M, AL=2.7*M, L2=[];
       for(const [dx,dz] of [[0,-1],[1,0]]){ const ex=x+dx*AL, ez=z+dz*AL, ay=y+T8-.15*M, h=heads.length, L=light(ex,ay-.25*M,ez,55,16*TILE); heads.push([ex,ay-.06*M,ez]); L2.push([L,h]); }
       solid(x,z,.3*M,T8); POLES.push({x,z,d:-1,ax:'z',ring:'inner',y:y+T8-.6*M,h:L2[0][1],h2:L2[1][1],L:L2[0][0],L2:L2[1][0],corner:1}); DRESS.corner={x,z,y,lamps:L2.map(q=>q[0])}; }
@@ -34,7 +32,6 @@ const DRESS=window.DRESS={gaps:()=>{ const G=[]; for(let i=0;i+1<MAINROW.length;
     for(let x=g0-28*M;x>BOD.XS(PARK.x0+PARK.ox)+2;x-=28*M)pts.push([x,pz]); for(let x=g1+28*M;x<px1;x+=28*M)pts.push([x,pz]);
     { const A=MODS.apts&&MODS.apts.A, dz=[BOD.X((BOD.B0.x0+BOD.B0.x1)/2),A?BOD.X(MODS.apts.DX!=null?MODS.apts.DX:A.x1-1):1e9,BOD.XS((MAPSTAIR.x0+MAPSTAIR.x1)/2),...(STORE.main?STORE.main.doors.map(d=>d[1]):[])], sz=sw-.75*M;
       for(const [a,b] of DRESS.gaps())if(b-a>=2.5){ const x=BOD.XS(b-a>6?a+1.2:(a+b)/2); if(dz.every(d=>Math.abs(d-x)>2*M))pts.push([x,sz]); } }
-    { const ax=BOD.XS(AVE.r0)-.95*M, z0=BOD.ZS(BOD.MAP.y1)+5*M, z1=BOD.ZS(AVE.y1)-2; for(let z=z0;z<z1;z+=28*M)pts.push([ax,z]); }
     { const P=RING.bank, zs=BOD.ZS(P.r0-.9), zn=BOD.ZS(P.r1+.9); for(const [x,z] of [[-62,zs],[-95,zs],[-78.5,zn]])pts.push([BOD.XS(x),z]); }
     { const clear=([x,z])=>heads.every(([hx,,hz])=>Math.hypot(hx-x,hz-z)>2.6*M); for(let i=pts.length-1;i>=0;i--)if(!clear(pts[i]))pts.splice(i,1); }
     const xs=pts.map(p=>p[0]);
@@ -58,7 +55,7 @@ const DRESS=window.DRESS={gaps:()=>{ const G=[]; for(let i=0;i+1<MAINROW.length;
       const ped=(x,y,z,f,grp)=>{ blk(...sq(f,x,y,z,.62*M,.42*M,.24*M),HS); const r=[f[1],-f[0]], px=.04*M, fx=x+f[0]*.12*M, fz=z+f[1]*.12*M;
         for(const [G,k,o] of [[HAND,'h',-.15*M],[MAN,'w',.15*M]])G.forEach((row,j)=>{ for(let i=0;i<5;){ if(row[i]!=='#'){ i++; continue; } let n=0; while(row[i+n]==='#')n++;
           const u=o+(i+n/2-2.5)*px, ly=y+(3-j)*px; lampAt(fx+r[0]*u,ly,fz+r[1]*u,f,n*px,px,grp,k); i+=n; } }); };
-      for(const c of [RD.CORN.find(c=>c.x===RING.wr0&&c.y===BOD.FAR),RD.CORN.find(c=>c.x===AVE.r1&&c.y===BOD.FAR)]){ if(!c)continue;
+      for(const c of [RD.CORN.find(c=>c.x===RING.wr0&&c.y===BOD.FAR)]){ if(!c)continue;
         const x=BOD.XS(c.cx-c.sx*CK), z=BOD.ZS(c.cy-c.sy*CK), y=G(x,z), T=5.6*M, AL=3.4*M, sx=c.sx;
         cyl(x,y+.25*M,z,.2*M,.5*M,0x3f4448); cyl(x,y+T/2,z,.09*M,T,GR); cyl(x,y+T+.06*M,z,.11*M,.12*M,0x3f4448);
         blk(x,y+T-.3*M,z-AL/2,.12*M,.14*M,AL,GR); blk(x,y+T-.75*M,z-AL*.22,.06*M,.06*M,AL*.44,GR); blk(x,y+T-.5*M,z-.08*M,.08*M,.5*M,.08*M,GR);

@@ -3,7 +3,7 @@ const CIVIC={row:[],staff:{},log:[],ledger:{treasury:500,day:0,tax:10,wage:20,cu
   CIVIC.note=(what,where)=>{ CIVIC.log.unshift({t:CLOCK.h,day:CITY.day,what,where:where||''}); if(CIVIC.log.length>80)CIVIC.log.length=80; };
   const HOUSES=[['firehouse','THE FIREHOUSE',0x9a2b22,0xe8c070],['clinic','THE CLINIC',0xe8e6e0,0xc8302a],['precinct','THE PRECINCT',0x2b3f7a,0x7f9ad8],['post','THE POST OFFICE',0x2f5f9e,0xe8e4d8],['depot','THE DEPOT',0xb86a1e,0x3a2a1a],['hall','CITY HALL',0x8a8478,0xd8c890]];
   const BL=[], blk=(x,y,z,sx,sy,sz,c)=>BL.push([x,y,z,sx,sy,sz,c]), Wd=10*T, D=6*T, FH=3.2*M, NF=HOUSES.length, H=NF*FH, TK=.22*T, STONE=0xb4aea2;
-  const cx=BOD.XS(125), zf=BOD.ZS(RING.ny1+.6), zb=zf+D, y=G(cx,zf-.5*T), dw=1.8*T, pw=(Wd-dw)/2, DH=2.6*M;
+  const cx=BOD.XS(125), zf=BOD.ZS(RING.top+3), zb=zf+D, y=G(cx,zf-.5*T), dw=1.8*T, pw=(Wd-dw)/2, DH=2.6*M;
   if(AWAY.has('civic')){ const B=BOD.B0, bx=BOD.X(B.x1)+2*T, bz=BOD.Z(B.y1)+2.4*T;
     HOUSES.forEach(([id,name,col],i)=>{ const sx=bx+i*1.1*T; CIVIC.row.push({id,name,x:sx,z:bz,col,floor:i,at:{x:sx,z:bz},door:{x:sx,z:bz},inside:{x:sx,z:bz},kerb:{x:sx,z:BOD.ZS(BOD.CURB)-.6*T}}); }); }
   else {
@@ -16,7 +16,7 @@ const CIVIC={row:[],staff:{},log:[],ledger:{treasury:500,day:0,tax:10,wage:20,cu
     if(i>0)for(const k of [-1,0,1])blk(cx+k*Wd*.32,fy+FH*.48,zf-.03*T,Wd*.16,FH*.42,.06*T,0x26303c);
     if(id==='clinic'){ blk(cx,fy+FH-.22*M,zf-.11*T,.12*M,.3*M,.03*T,0xf4f0e8); blk(cx,fy+FH-.22*M,zf-.11*T,.3*M,.12*M,.03*T,0xf4f0e8); }
     const sx=cx+(i-(NF-1)/2)*1.1*T, dz=zf-1.1*T;
-    CIVIC.row.push({id,name,x:sx,z:zf,col,floor:i,at:{x:sx,z:zf},door:{x:sx,z:dz},inside:{x:sx,z:zf+D/2},kerb:{x:sx,z:BOD.ZS(RING.nr1)+.6*T}}); });
+    CIVIC.row.push({id,name,x:sx,z:zf,col,floor:i,at:{x:sx,z:zf},door:{x:sx,z:dz},inside:{x:sx,z:zf+D/2},kerb:{x:sx,z:BOD.ZS(RING.top)+.6*T}}); });
   blk(cx-Wd*.3,y+H+1.0*M,zb-.6*T,.3*M,.9*M,.3*M,0x6a2a22);
   for(const bx of [[cx-Wd/2,zf,cx-Wd/2+TK,zb],[cx+Wd/2-TK,zf,cx+Wd/2,zb],[cx-Wd/2,zb-TK,cx+Wd/2,zb],[cx-Wd/2,zf,cx-Wd/2+pw,zf+TK],[cx+Wd/2-pw,zf,cx+Wd/2,zf+TK]]){ SOL.up.push(bx); FIX.up.push([bx[0],bx[1],y,bx[2],bx[3],y+H]); }
   FIX.up.push([cx-Wd/2+pw,zf,y+DH,cx+Wd/2-pw,zf+TK,y+H]);

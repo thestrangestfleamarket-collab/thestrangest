@@ -63,7 +63,7 @@ let solids=SOL.up, fixed=FIX.up, BOUND, groundY, LVL='up', BOD, BODB, METRO;
 const STORE={rooms:[],places:[],roofs:[]}, BF={list:[]}; window.STORE=STORE;
 const MAPG={}, MODS={};  const OVERHEAD=[]; let RPASS=null, FIRE=null;
 const grab=async(name,fn)=>{ const n0=scene.children.length; await fn(); const g=new THREE.Group(); g.name=name; for(const o of scene.children.slice(n0))g.add(o); scene.add(g); MAPG[name]=g; return g; };
-const LAYOUT0={bodega:{x:36.4},diner:{x:-24.75},ghost:{x:15.85},house:{x:67.56},subway:{x:14.99},apartments:{x:59},park:{e:[-4,0,0,0]},castle:{x:-70,y:25.5+14}};
+const LAYOUT0={bodega:{x:-138.8},diner:{x:-24.75},ghost:{x:-8.8},house:{x:-143},subway:{x:14.99},apartments:{x:59},park:{e:[-4,0,0,0]},castle:{x:-70,y:25.5+14}};
 const AWAY0=['diner','aquarium','garden','avenue','keep','civic','power'], AWAYLOT=1000;
 const AWAY=(()=>{ const s=new Set(AWAY0), q=QS.get('bring'); if(q==='all')s.clear(); else if(q)for(const k of q.split(','))s.delete(k.trim()); return s; })(); window.AWAY=AWAY;
 const LAY=(()=>{ const q=QS.get('layout'); let o={}; try{ o=q&&q[0]==='{'?JSON.parse(q):q==='0'?{}:JSON.parse(SAVE.get('layout')||'{}')||{}; }catch(e){}
@@ -71,8 +71,9 @@ const LAY=(()=>{ const q=QS.get('layout'); let o={}; try{ o=q&&q[0]==='{'?JSON.p
 const STN={DX:(-11+LAY.o('subway').x)*TILE, DZ:(-35+LAY.o('subway').y)*TILE, DY:-98*ZU};
 const BLDK=1.1;
 const MAINX={w:70,e:110}, WID=14, NORTHY=9+WID, NORTHX=145.5, EASTX=152+MAINX.e, WESTX=-130;
-const BLOCK={back:-92.4,alley:[-99.4,-92.4],row2:[-111.4,-99.4],prom:[-119,-111.4],river:-165,x0:-65,x1:245,lots:{play:[-33.6,-19.6],bank:[-9.8,18.8],theatre:[190.5,204.5],arcade:[205.5,219.5],holo:[225.5,239.5]}};
-const MAINROW=[[-62.3,-33.7],[-33.6,-19.6],[-9.8,18.8],[49,60],[75,79],[104,112.8],[115.8,130.1],[149.4,167.9],[190.5,204.5],[205.5,219.5],[225.5,239.5]];
+const BLOCK={back:-92.4,alley:[-99.4,-92.4],row2:[-111.4,-99.4],prom:[-119,-111.4],river:-165,x0:-100,x1:245,lots:{play:[-33.6,-19.6],bank:[-9.8,18.8],theatre:[190.5,204.5],arcade:[205.5,219.5],holo:[225.5,239.5]}};
+const MAINROW=[[-94.8,-80.5],[-80,-62.3],[-62.3,-33.7],[-33.6,-19.6],[-9.8,18.8],[49,60],[75,79],[111,124],[124.75,143.25],[190.5,204.5],[205.5,219.5],[225.5,239.5]];
+BLOCK.hudson=[111,124];
 const WROW={bar:{x0:51.09,x1:61.09},mus:{x0:-50.09,y0:-101,x1:-24.09,y1:-80,h:210}};
 const RING={wx0:31.5-MAINX.w-WID,wx1:46-MAINX.w,top:12.5+NORTHY+NORTHX}; RING.wr0=RING.wx0+3.2; RING.wr1=RING.wx1-3.2; RING.wy1=RING.top+WID;
 RING.stairs=[]; RING.river={y0:BLOCK.river,y1:BLOCK.river+46}; RING.ff={x0:WESTX,x1:EASTX,y0:RING.river.y0-1.5,y1:RING.top+28};

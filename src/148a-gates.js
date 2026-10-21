@@ -8,7 +8,7 @@ GATES.init=()=>{ if(typeof BOD==='undefined'||typeof BLOCK==='undefined')return;
   if(typeof WROW!=='undefined')for(const k in WROW){ const w=WROW[k], s=u=>BOD.OX+(u-BOD.OX)*BLDK; F.push([s(w.x0),s(w.x1)]); }
   for(const k in BLOCK.lots||{}){ const [a,b]=BLOCK.lots[k], x0=BOD.X(bl(a)+.1), x1=BOD.X(bl(b)-.1); F.push([T0(Math.min(x0,x1)),T0(Math.max(x0,x1))]); }
   F.sort((p,q)=>p[0]-q[0]); const R=[]; for(const f of F){ const l=R[R.length-1]; if(l&&f[0]<=l[1]+.05)l[1]=Math.max(l[1],f[1]); else R.push([...f]); }
-  const gaps=[]; for(let i=1;i<R.length;i++){ const a=R[i-1][1], b=R[i][0]; if(b-a>=.3&&b-a<=30)gaps.push([a,b]); }
+  const gaps=[]; for(let i=1;i<R.length;i++){ const a=R[i-1][1], b=R[i][0]; if(b-a>=.3&&b-a<=30&&!(BLOCK.hudson&&b>BLOCK.hudson[0]&&a<BLOCK.hudson[1]))gaps.push([a,b]); }
   const BX=[], CN=[], IRON=[0x1e2226,0x24282c,0x2a2622], RUST=0x5a3a2a, box=(x,y,z,sx,sy,sz,c)=>BX.push([x,y,z,sx,sy,sz,c]);
   for(const [x0,x1] of gaps){ const st=typeof MAPSTAIR!=='undefined'&&x1>MAPSTAIR.x0&&x0<MAPSTAIR.x1, yy=st?yB:yF, z=ZS(yy), X0=XS(x0), X1=XS(x1), y=G((X0+X1)/2,z), Hg=2.05*M, W=X1-X0;
     GATES.list.push({x0,x1,y:yy});

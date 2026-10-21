@@ -3861,3 +3861,12 @@ initial download and load super fast"; then "Go")
   lot's whole width with the HOLODECK sign three times the size, the hall behind as before). The block runs to x 245. CLUB STATIC and
   VCR REPAIR are deleted (`059a-club.js`, the VCR offmap in `059-store.js`, their place tests), and THE DOJO with its hall and the ninja
   training (owner, 21 Oct 2026, asked whether the hall or both: "both for now, lets hurry"; `059c-dojo.js`, `141a-ninja.js`).
+
+- **West St and the block's west end, step 3 of the new layout** (21 Oct 2026; `006-map-pre.js`, `050-main-8.js`, `069a-block.js`,
+  `148a-gates.js`): the bodega and the apartments can only be built facing Market St (their builders paint and place everything one
+  way), so the owner chose, of "at the Market St corner today" or "rebuilt facing West St, a day+", "1": THE BODEGA is twice as wide
+  (−80 to −62, the west half added; the shop's things where they were) at the block's west end beside the museum, the APARTMENTS west
+  of it (−95 to −80). Up West St's west side SEVEN EMPTY SHELLS (`building()` can face east now: `e:1`), 13 by 19, 22 apart, from
+  y 17.5. THE BATH HOUSE at 134 (its court 125 to 143). THE ENTRANCE TO THE HUDSON AREA at 117.5: a paved way 13 wide through the
+  block and the back row to the alley (`BLOCK.hudson`; no gate across it). 'YOUR APARTMENT' is placed in the half-width building.
+  Still to do: the bodega's second door toward West St.

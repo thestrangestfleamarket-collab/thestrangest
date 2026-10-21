@@ -1,6 +1,5 @@
 import base64, glob, gzip, hashlib, json, os, re, shutil, subprocess, sys, time
 sys.path.insert(0, 'tools')
-from yields import yields
 
 read = lambda f: open(f).read()
 src = sorted(glob.glob('src/[0-9][0-9][0-9]*-*'))
@@ -23,8 +22,10 @@ def npm(m):
 page = ''.join(read(f) for f in src).replace('__BUILDV__', bv)
 i = page.index('<script type="module">') + len('<script type="module">')
 j = page.rindex('</script>')
-body, ny = yields(page[i:j])
 os.makedirs('dist', exist_ok=True)
+open('dist/.raw.js', 'w').write(page[i:j])
+ny = int(subprocess.run(['node', 'tools/yields.cjs', 'dist/.raw.js', 'dist/.body.js'], check=True, capture_output=True, text=True).stdout.strip() or 0)
+os.remove('dist/.raw.js'); body = open('dist/.body.js').read()
 open('dist/.body.js', 'w').write(body)
 subprocess.run(['node', 'tools/chunks.cjs', 'dist/.body.js', 'dist/.main.js', 'dist/.chunks.json'], check=True)
 body, CH = read('dist/.main.js'), json.load(open('dist/.chunks.json'))

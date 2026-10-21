@@ -3,7 +3,7 @@ import {SHARED, THREE} from './003-shx.js';
 import {B64} from './003a-skin.js';
 import {CLIP, LIVES, NPCS, PARK, pos, ROOMS, SELFSH, UI, VIT, W3} from './003b-systems.js';
 import {PPU, renderer, rppu} from './004-main.js';
-import {ASTEP, CASTLE, MAPG, MAPSTAIR, MODS, RING, SOL, STN, SYS, TILE, ZU} from './006-map-pre.js';
+import {ASTEP, CASTLE, LEVEL, MAPG, MAPSTAIR, MODS, RING, SOL, STN, SYS, TILE, ZU} from './006-map-pre.js';
 import {FOUNT} from './060a-fount.js';
 import {RINGX} from './065-ring.js';
 const NOYOU={x:1e6,y:0,z:1e6};
@@ -76,8 +76,9 @@ function makeNPC(D,o){ const N={key:o.key,name:o.name,names:o.names,lv:o.lv||'do
   { const SH=QS.get('sheet'), NA=QS.get('npcat')||(SH&&SH+',field'); if(NA){ const [k,x,z]=NA.split(','); if(k===N.key){ if(x==='field'){ st.x=SH?SHARED.BOUND.x1-.5*TILE:SHARED.BOD.XS(SHARED.BOD.MAP.x1+14); st.z=SHARED.BOD.ZS((SHARED.BOD.MAP.y0+SHARED.BOD.MAP.y1)/2); } else{ st.x=+x; st.z=+z; } st.hold=true;
     if(SH===N.key){ N.sheet=true; st.face={x:st.x+1,z:st.z+1}; st.h=Math.PI/4; } } } }
   const free=N.free=o.free||((x,z,R)=>!CLIP.hit(SOL[N.lv]||SOL.up,x,z,R)); N.ground=ground;
+  Object.defineProperty(N,'home',{get:()=>st.home,set:v=>{ st.home=v&&{r:0,...v}; },enumerable:true}); HOMES.assign(st,N.key,o,free);
   N.pick=()=>pick();
-  const pick=()=>{ '@later'; if(o.pick){ o.pick(st); return; } if(o.roam){ if(!ROAM.pick(st,free)){ st.to=null; st.wait=1; } return; } for(let k=0;k<12;k++){
+  const pick=()=>{ '@later'; if(o.pick){ o.pick(st); return; } if(!o.roam&&HOMES.pick(st,free,LN))return; if(o.roam){ if(!ROAM.pick(st,free)){ st.to=null; st.wait=1; } return; } for(let k=0;k<12;k++){
     const r=(Math.random()<.5?-1:1)*(2+Math.random()*7)*TILE; st.to=longX?{x:Math.max(LX0,Math.min(LX1,st.x+r)),z:LZ0+Math.random()*(LZ1-LZ0)}:{x:LX0+Math.random()*(LX1-LX0),z:Math.max(LZ0,Math.min(LZ1,st.z+r))}; if(free(st.to.x,st.to.z,st.R))return; } st.to=null; st.wait=1; };
   const block=(x,z,R)=>Math.hypot(x-st.x,z-st.z)<st.R+R;
   N.tick=(dt,you)=>{ if(N.sheet&&!N.sheetOn){ N.sheetOn=true; UI.setFree(true); UI.camT.set(st.x,g.position.y+tall*s*ZU*24/TILE*.5,st.z); SHARED.ppu=SHARED.ppuTo=PPU*4; window.SHEETTURN=d=>{ SHARED.yaw=SHARED.yawTo=d*Math.PI/180; };
@@ -116,13 +117,37 @@ const STLANE={x0:SHARED.BOD.XS(SHARED.BOD.MAP.x0+2),x1:Math.min(SHARED.BOD.XS(SH
   inBuilding=(x,z,R)=>ROOMS.boxes().some(b=>b.y0<1&&x>b.x0-R&&x<b.x1+R&&z>b.z0-R&&z<b.z1+R)||(MODS.apts&&MODS.apts.inside&&MODS.apts.inside(x,z))||inBox(CSB,x,z,R),
   stfree=(x,z,R)=>RINGX.inside(x,z,R)&&!inBox(STHOLE,x,z,R)&&!inBox(CSHOLE,x,z,R)&&!inBuilding(x,z,R)&&!SOL.up.some(b=>x>b[0]-R&&x<b[2]+R&&z>b[1]-R&&z<b[3]+R)&&!FOUNT.wet(x,z,R);
 const ROAM={L:STLANE,wallZ:SHARED.BOD.ZS(PARK.y0+PARK.oy),gate:[SHARED.BOD.XS(PARK.gate[0]+PARK.ox+.8),SHARED.BOD.XS(PARK.gate[1]+PARK.ox-.8)]};
-window.ROAMDBG=()=>ROAM; window.STFREE=stfree;
+window.ROAMDBG=()=>ROAM;
+// HOME RANGES: every character has a home, a circle it is usually found in (st.home, also N.home: {x, z, r, id}; r 0 stays put).
+// The level file can place it (LEVEL.homes[id] = [x, y, r] in map tiles; id is the key, then key#2, key#3 for more of the same);
+// otherwise a character first put on Market St takes the next street spot, spread along both sidewalks, and anyone else keeps the spot it was made at.
+const HOMES={R:6,seen:{},slots:null,next:0};
+HOMES.id=key=>{ const n=HOMES.seen[key]=(HOMES.seen[key]||0)+1; return n>1?key+'#'+n:key; };
+HOMES.band=()=>{ const B=SHARED.BOD, M=LEVEL.streets.market, X=B.XS, Z=B.ZS, wall=PARK.y0+PARK.oy; return {x0:X(M.x0+6),x1:X(M.x1-6),z0:Z(B.OY),z1:Z(wall),rows:[Z((B.OY+B.CURB)/2),Z(B.FAR+3)]}; };
+HOMES.street=(x,z)=>{ const b=HOMES.band(); return x>=b.x0&&x<=b.x1&&z>=b.z0&&z<=b.z1; };
+HOMES.slot=()=>{ if(!HOMES.slots){ const b=HOMES.band(), T=TILE, gap=14*T, all=[];
+    for(let x=b.x0, i=0;x<=b.x1;x+=gap, i++){ all.push({x,z:b.rows[i%2]}); if(x+gap/2<=b.x1)all.push({x:x+gap/2,z:b.rows[(i+1)%2]}); }
+    const n=all.length, ord=[], seen=new Set(); for(let i=0;ord.length<n&&i<n*16;i++){ let r=0, h=.5, k=i; while(k){ r+=h*(k&1); k>>=1; h/=2; } const j=Math.floor(r*n); if(!seen.has(j)){ seen.add(j); ord.push(j); } }
+    for(let j=0;j<n;j++)if(!seen.has(j))ord.push(j); HOMES.slots=ord.map(j=>all[j]); }
+  return HOMES.slots[HOMES.next++%HOMES.slots.length]; };
+HOMES.inside=h=>{ const a=Math.random()*Math.PI*2, r=Math.sqrt(Math.random())*h.r; return {x:h.x+Math.sin(a)*r,z:h.z+Math.cos(a)*r}; };
+HOMES.assign=(st,key,o={},free)=>{ const id=HOMES.id(key||'someone'), H=LEVEL.homes&&LEVEL.homes[id], T=TILE; let h;
+  if(H)h={x:SHARED.BOD.XS(H[0]),z:SHARED.BOD.ZS(H[1]),r:(H[2]??HOMES.R)*T};
+  else if(o.home)h={r:HOMES.R*T,...o.home};
+  else if((o.lv||'down')==='up'&&!o.pick&&!o.brain&&HOMES.street(st.x,st.z)){ const s=HOMES.slot(); h={x:s.x,z:s.z,r:HOMES.R*T}; }
+  else h={x:st.x,z:st.z,r:(o.range??HOMES.R)*T};
+  h.id=id; st.home=h;
+  if(h.r>0&&Math.hypot(st.x-h.x,st.z-h.z)>h.r)for(let k=0;k<24;k++){ const p=k<23?HOMES.inside(h):h; if(k===23||!free||(()=>{ try{ return free(p.x,p.z,st.R||.3*T); }catch(e){ return true; } })()){ st.x=p.x; st.z=p.z; st.to=null; break; } } };
+HOMES.pick=(st,free,lane)=>{ const h=st.home; if(!h||!(h.r>0))return false;
+  for(let k=0;k<12;k++){ let to=HOMES.inside(h); if(lane)to={x:Math.max(lane.x0,Math.min(lane.x1,to.x)),z:Math.max(lane.z0,Math.min(lane.z1,to.z))}; if(free(to.x,to.z,st.R)){ st.to=to; st.next=null; return true; } } return false; };
+window.HOMES=HOMES; window.STFREE=stfree;
 const DUN=()=>{ const D=MODS.dungeon; if(!D)return null; const B=D.B, X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, lane={x0:X(B.x0+1.2),x1:X(B.x1-1.2),z0:Z(B.y0+1.2),z1:Z(B.y1-1.2)},
     free=(x,z,R)=>x>lane.x0&&x<lane.x1&&z>lane.z0&&z<lane.z1&&!SOL.down.some(b=>x>b[0]-R&&x<b[2]+R&&z>b[1]-R&&z<b[3]+R);
   let p={x:(lane.x0+lane.x1)/2,z:(lane.z0+lane.z1)/2}; for(let k=0;k<60;k++){ const q={x:lane.x0+Math.random()*(lane.x1-lane.x0),z:lane.z0+Math.random()*(lane.z1-lane.z0)}; if(free(q.x,q.z,.4*TILE)){ p=q; break; } }
   return {lv:'down',group:MAPG.dungeon?'dungeon':'down',lane,free,ground:(x,z)=>D.ground(x,z),roam:false,x:p.x,z:p.z,dun:true}; };
-ROAM.pick=(st,free)=>{ '@later'; const L=ROAM.L; for(let k=0;k<12;k++){ let to;
-    if(Math.random()<.25)to={x:L.x0+Math.random()*(L.x1-L.x0),z:L.z0+Math.random()*(L.z1-L.z0)};
+ROAM.pick=(st,free)=>{ '@later'; const L=ROAM.L, H=st.home&&st.home.r>0?st.home:null; for(let k=0;k<12;k++){ let to;
+    if(H){ const p=HOMES.inside(H); to={x:Math.max(L.x0,Math.min(L.x1,p.x)),z:Math.max(L.z0,Math.min(L.z1,p.z))}; }
+    else if(Math.random()<.25)to={x:L.x0+Math.random()*(L.x1-L.x0),z:L.z0+Math.random()*(L.z1-L.z0)};
     else{ const a=Math.random()*Math.PI*2, r=(2+Math.random()*7)*TILE; to={x:Math.max(L.x0,Math.min(L.x1,st.x+Math.sin(a)*r)),z:Math.max(L.z0,Math.min(L.z1,st.z+Math.cos(a)*r))}; }
     if(!free(to.x,to.z,st.R))continue;
     if((st.z<ROAM.wallZ)!==(to.z<ROAM.wallZ)){ st.next=to; st.to={x:ROAM.gate[0]+Math.random()*(ROAM.gate[1]-ROAM.gate[0]),z:ROAM.wallZ}; } else{ st.to=to; st.next=null; } return true; } return false; };

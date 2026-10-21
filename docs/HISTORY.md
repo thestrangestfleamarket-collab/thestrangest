@@ -3790,3 +3790,9 @@ initial download and load super fast"; then "Go")
   from the inside only (`FrontSide`); a camera outside sees through to the scene and the far panels. No cost.
 - **`SKIP=g python3 build.py`** (same day): writes only `dist/market.html` and `dist/door.html`, for a workspace that cannot reach the
   npm registry (the website's `dist/g/` needs the pinned packages).
+- **Only the place you're at builds at start, step 1: the castle** (owner, 20 Oct 2026: "the only thing that should load is the place
+  you're at (bank, apt, market st, central park, each interior)"): the castle now builds in Central Park's own load (`PARK.later`,
+  chunk `park`), not at the start; it shows with the park, as the trees do. Measured at the start on the street (software rendering,
+  so every number is several times a real machine's): the builders that run at start were down 0.6 s, bodega 0.8, apts 2.4–3.1,
+  ghostdojo 1.0, parkwall 3.4–3.5, castle 0.7 (now 0); the rest under 10 ms. The next ones each need their own pull request with
+  guards, because other files read what they register at start: the apartments (~20 readers), the ghost dojo, the park wall.

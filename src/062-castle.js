@@ -1,3 +1,4 @@
+// THE CASTLE: its curtain walls, drums, gate and well in Central Park (built with the park, not at the start) and the stairs down to the dungeon.
 const gboxS=(b,kind='L',dy=0,ys=1)=>{ const X=BOD.XS, Z=BOD.ZS, Y=z=>BOD.YS(z*ys)+dy, {faceTex,bq,C}=BOD, {x0,x1,y0,y1,z0,z1}=b; if(b.foot&&z1-z0<.05)return; const k=(b.em?2:1)*ys, H=Math.max(1,Math.round((z1-z0)*k));
   if(b.em&&kind==='L')kind='B';
   const side=(nx,ny,P,Q,z)=>C(b.fs?b.fs(nx,ny,P,Q,z-z0,nx?.68:.84):nx&&b.fi?b.fi(Q,z):ny&&b.fj?b.fj(P,z):b.c);
@@ -12,7 +13,7 @@ const castleMat=(k,map,emap,pl)=>new THREE.MeshLambertMaterial({map,emissiveMap:
 const castleSolid=(lv,p,base,ys=1)=>{ const X=BOD.XS, Z=BOD.ZS, Y=z=>BOD.YS(z*ys); if(p.walk)return; const h=Math.max(...p.boxes.map(b=>b.z1));
   for(const s of p.solids||[p]){ SOL[lv].push([X(s.x0),Z(s.y0),X(s.x1),Z(s.y1)]); FIX[lv].push([X(s.x0),Z(s.y0),base,X(s.x1),Z(s.y1),base+Math.max(.05,Y(h))]); } };
 const CYS=.5;
-await grab('castle',async()=>{ const K=BOD.KC, KP=BOD.K.PROPS, X=BOD.XS, Z=BOD.ZS, Y=BOD.YS, [bx0,bx1,by0,by1]=CASTLE.b, H=200, r=1.4, gx=CASTLE.gate, wy=by0, S=CASTLE.stair, n0=KP.length;
+await grab('castle',async()=>{}); PARK.later(()=>{ '@park'; const K=BOD.KC, KP=BOD.K.PROPS, X=BOD.XS, Z=BOD.ZS, Y=BOD.YS, [bx0,bx1,by0,by1]=CASTLE.b, H=200, r=1.4, gx=CASTLE.gate, wy=by0, S=CASTLE.stair, n0=KP.length;
   const run=(a,b,fn)=>{ const n=Math.max(1,Math.round((b-a)/4)), s=(b-a)/n; for(let i=0;i<n;i++)fn(a+i*s,a+(i+1)*s); };
   run(bx0+r,bx1-r,(a,b)=>K.KMK.curtain(a,by1,b,by1,H,'y+')); run(by0+r,by1-r,(a,b)=>K.KMK.curtain(bx0,a,bx0,b,H,'x-')); run(by0+r,by1-r,(a,b)=>K.KMK.curtain(bx1,a,bx1,b,H,'x+'));
   run(bx0+r,gx-3.1,(a,b)=>K.KMK.curtain(a,wy,b,wy,H,'y-')); run(gx+3.1,bx1-r,(a,b)=>K.KMK.curtain(a,wy,b,wy,H,'y-'));

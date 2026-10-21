@@ -3991,6 +3991,12 @@ initial download and load super fast"; then "Go")
   pull requests check more (samepic stays opt-in, owner's "less check heavy"); it widens what that check sees when it is asked for. Still
   uncovered by any measured view: the club, arcade, bank, dojo, fire escape, vcr and bath interiors (each needs an enter step, not a bare
   `?place=`) — a later job. Cost: two more views in the opt-in run, ~1 min each.
+- **Start where you were** (owner, 20 Oct 2026: "it loads me into main street first, no matter where i logged out last, so as soon as
+  i show up i teleport to central park ... you should show up where you were at last and that is the only thing that loads"): the
+  saved spot is read before the first frame (071, like `?at=`), and if it is in Central Park the park loads behind the opening fade
+  (163), so you come back standing where you left, with no street first and no "ENTERING CENTRAL PARK". A first-ever start begins in
+  the park the same way. The second half of his rule — building only that place, not the street under it — is the piece-by-piece
+  work that started with the castle (#155): the park wall, the apartments and the ghost dojo next, each its own pull request.
 
 ## 21 Oct 2026: the Walker's arm-clearance search cached while still
 

@@ -10,8 +10,12 @@ Look there before changing how something looks or behaves, and add a short dated
 
 ## Layout (owner, 18 Oct 2026: "smallest download"; the "minimal files" and "no comments" rules were relaxed on 20 Oct 2026)
 
-- `src/NNN-name.{html,js}`: the page, in order. The build joins them as they are; every file is whole (no block opens in one
-  file and closes in another; 21 Oct 2026). `000`/`002`/`end` are the page's HTML, `001-rig.js` the Walker's rig, the rest the game's
+- `src/NNN-name.{html,js}`: the page, in order. Every `.js` file is a real ES module (21 Oct 2026): after its first comment line come
+  `import {...} from './NNN-x.js';` lines naming everything it uses from other files, and its last line `export {...};` names what
+  later files use. **Never edit those lines by hand: `node tools/imports.cjs` writes them, and the build runs it.** A file may only
+  read names from files before it and only change its own names; the build stops and says which name breaks that. Something an
+  earlier file must reach is declared empty in `003b-systems.js` and filled in its own file (`Object.assign(UI,{...})`). The build
+  blanks the import and export lines and joins the files as they are; every file is whole. `000`/`002`/`end` are the page's HTML, `001-rig.js` the Walker's rig, the rest the game's
   module. `game-*.js` are the old game's own makers, copied in (the build no longer reads `bralynnb/tsfm`).
   `main*.js` are the page's own glue code between places.
   `src/door/door.html` is the website's door (invite code, login); `worker/door.js` the website's server (`wrangler.jsonc`).
@@ -27,8 +31,7 @@ Look there before changing how something looks or behaves, and add a short dated
   and which builder it sits inside. Each place is its own builder, `await grab(name, async()=>{...})`, one file each (`059-store` to
   `059h-bank` on the street; the park, castle, dungeon, stairs and station after). The kits (`014`–`038z`) and the bodega (`039-bodega`, its kits, layout and build)
   come first. **Builders read each other's registrations when they build** (`STORE.kit` from the store, `STORE.main` from
-  main street, `MODS.apts` from the apartments), so a builder's file must come after the ones it reads: the scope proof (`tools/scope.cjs`)
-  cannot see that; the build check's error step can. Prove a move with the scope proof, then run the build check.
+  main street, `MODS.apts` from the apartments), so a builder's file must come after the ones it reads: the imports cannot see that (they are property reads); the build check's error step can. Prove a move with the scope proof, then run the build check.
 
 ## Build
 

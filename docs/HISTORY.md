@@ -3841,3 +3841,12 @@ initial download and load super fast"; then "Go")
   block: the dark alley, a row of empty buildings, the walk by the Hudson, the Hudson. Build order, one pull request each: the map
   skeleton (park size, no Avenue, gate, forcefields), the block's new order, West St's bodega and apartments, the park's inside, the
   Hudson side, the mines and golems, then the zone loading screens.
+
+- **The map skeleton, step 1 of the new layout** (21 Oct 2026; `006-map-pre.js`, `050-main-8.js`, `064-map-post.js`, `065-ring.js`): the park
+  is twice as deep (`NORTHX` 145.5: y −38 to 181) and runs east to the force field (`EASTX` 262); the Avenue, North St and the bank's
+  pocket road are gone, and with them the loop's subway tunnel (`067-sub.js`) and the grid mines under the park (`145-mines.js`; the
+  new mines come with the cave in step 6). Market St runs from the west force field (`WESTX` −130) to the east one (262); West St runs
+  from Market St up the park's west side and dead-ends at the force field past the park's top (`RING.top`, `RING.wy1`). The force field
+  is one box (`RING.ff`). The land's road holes are clipped to the land rect (the old hole was skipped when a corner fell outside it,
+  which buried the road under lawn). The bank stays where it stood until step 2 puts it on the block; the civic tower sits past the
+  park's top wall. The subway's two loop stairs are gone (the subway exit on the block's sidewalk comes in step 2).

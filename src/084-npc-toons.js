@@ -103,7 +103,7 @@ const TOONS={};
         c.fv+=(-300*c.fy-14*c.fv)*dt; c.fy+=c.fv*dt; if(!moving&&Math.abs(c.fy)<.0005&&Math.abs(c.fv)<.005)c.fy=c.fv=0; B.fork.position.y+=c.fy; B.scooter.position.y+=c.fy*.4;
         B.cape1.rotation.x=.5*Math.min(1,c.spd*2)+Math.sin(c.t*11)*.06*m; B.cape2.rotation.x=.3*Math.min(1,c.spd*2)+Math.sin(c.t*13+1)*.1*m;
         B.head.rotation.y=c.sheet?0:c.look; } };
-    const yC=BOD.CURB+.74, yF=BOD.FAR-.74, xa=RING.wr1+3, xb=AVE.r0-3, ym=(yC+yF)/2, LOOP=[[xa,yC],[xb,yC],[xb+1.2,ym],[xb,yF],[xa,yF],[xa-1.2,ym]].map(([x,y])=>({x:BOD.XS(x),z:BOD.ZS(y)}));
+    const yC=BOD.CURB+.74, yF=BOD.FAR-.74, xa=RING.wr1+3, xb=BOD.MAP.x1-3, ym=(yC+yF)/2, LOOP=[[xa,yC],[xb,yC],[xb+1.2,ym],[xb,yF],[xa,yF],[xa-1.2,ym]].map(([x,y])=>({x:BOD.XS(x),z:BOD.ZS(y)}));
     let li=0; const pick=st=>{ li=(li+1)%LOOP.length; st.to=LOOP[li]; st.wait=0; };
     TOONS.frog=make(def,{key:'scooterfrog',name:'THE FROG ON HIS SCOOTER',metres:1.725,radius:.55,speed:.7,stride:4,x:LOOP[0].x,z:LOOP[0].z,pick,roam:false},3); TOONS.frog.cullR=4*TILE; TOONS.frog.farMove=dt=>{ const st=TOONS.frog.st; if(!st.to)pick(st); const dx=st.to.x-st.x, dz=st.to.z-st.z, d=Math.hypot(dx,dz), s2=Math.min(d,st.v*dt); if(d<.05){ pick(st); return; } st.x+=dx/d*s2; st.z+=dz/d*s2; st.h=Math.atan2(dx,dz); TOONS.frog.g.position.set(st.x,TOONS.frog.ground(st.x,st.z),st.z); TOONS.frog.g.rotation.y=st.h; }; }
 

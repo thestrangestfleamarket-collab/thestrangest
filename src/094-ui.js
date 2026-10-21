@@ -209,7 +209,7 @@ const UI={freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()};
     for(let i=0;i<W;i++)for(const j of [0,H-1]){ const o=(j*W+i)*4; im.data[o]=70; im.data[o+1]=200; im.data[o+2]=210; }
     for(let j=0;j<H;j++)for(const i of [0,W-1]){ const o=(j*W+i)*4; im.data[o]=70; im.data[o+1]=200; im.data[o+2]=210; }
     const L=[]; for(const q of B)if(q.n)L.push([q.n,(q.x0+q.x1)/2,q.y1<BOD.road.CORN[0].y?q.y0-2.5:q.y1+1.5]);
-    L.push(['CENTRAL PARK',(px0+px1)/2,(py0+py1)/2+12],['HUDSON RIVER',(F.x0+F.x1)/2,(RV.y0+RV.y1)/2],['MARKET ST',(RING.wr1+AVE.r0)/2-40,(BOD.road.CORN[0]?BOD.road.CORN[0].y:-60)]);
+    L.push(['CENTRAL PARK',(px0+px1)/2,(py0+py1)/2+12],['HUDSON RIVER',(F.x0+F.x1)/2,(RV.y0+RV.y1)/2],['MARKET ST',(RING.wr1+RING.ff.x1)/2-40,(BOD.road.CORN[0]?BOD.road.CORN[0].y:-60)]);
     Object.assign(PLAN,{F,S,W,H,im,L,sx:x=>(x-F.x0)*S,sy:y=>(F.y1-y)*S,tile:(i,j)=>[F.x0+i/S,F.y1-j/S]}); return PLAN; };
   function drawMap(){ M.querySelectorAll('[data-lv]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.lv===mapLv)));
     if(mapLv==='up'){ const Q=plan(); mcv.width=Q.W; mcv.height=Q.H; mcv.style.width='100%'; mg.putImageData(Q.im,0,0); mg.font='8px Silkscreen,monospace'; mg.textAlign='center'; mg.textBaseline='middle';

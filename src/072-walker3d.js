@@ -21,25 +21,31 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
     if(!W3.wholeBox){ const cs=3, cn=[0,2,4].map(a=>Math.ceil((bb[a+1]-bb[a])/cs)+1), lo=[1e9,1e9,1e9], hi=[-1e9,-1e9,-1e9], reach=cs*.87+1.5;
       for(let i=0;i<cn[0];i++)for(let j=0;j<cn[1];j++)for(let k=0;k<cn[2];k++){ const q=[bb[0]+i*cs,bb[2]+j*cs,bb[4]+k*cs]; if(Math.abs(P.d(V(q[0],q[1],q[2])))>reach)continue; for(let a=0;a<3;a++){ lo[a]=Math.min(lo[a],q[a]-cs); hi[a]=Math.max(hi[a],q[a]+cs); } }
       if(lo[0]<1e9){ const N=[nx,ny,nz]; for(let a=0;a<3;a++){ r0[a]=Math.max(0,Math.floor((lo[a]-bb[a*2])/step)-1); r1[a]=Math.min(N[a],Math.ceil((hi[a]-bb[a*2])/step)+2); } } }
-    for(let i=r0[0];i<r1[0];i++)for(let j=r0[1];j<r1[1];j++)for(let k=r0[2];k<r1[2];k++)val[I(i,j,k)]=P.d(at(i,j,k));
+    const MG=2*step, SQ3=Math.sqrt(3)*step/2, Q=[[r0[0],r0[1],r0[2],Math.max(r1[0]-r0[0],r1[1]-r0[1],r1[2]-r0[2])]];
+    while(Q.length){ const [i0,j0,k0,n]=Q.pop(), i1=Math.min(i0+n,r1[0]), j1=Math.min(j0+n,r1[1]), k1=Math.min(k0+n,r1[2]); if(i1<=i0||j1<=j0||k1<=k0)continue;
+      if(n>2&&!W3.wholeBox){ const d=P.d(V(bb[0]+(i0+(n-1)/2)*step,bb[2]+(j0+(n-1)/2)*step,bb[4]+(k0+(n-1)/2)*step));
+        if(Math.abs(d)>(n-1)*SQ3+MG){ for(let i=i0;i<i1;i++)for(let j=j0;j<j1;j++)for(let k=k0;k<k1;k++)val[I(i,j,k)]=d; continue; }
+        const h=Math.ceil(n/2); for(const a of [0,h])for(const b of [0,h])for(const c of [0,h])Q.push([i0+a,j0+b,k0+c,h]); continue; }
+      for(let i=i0;i<i1;i++)for(let j=j0;j<j1;j++)for(let k=k0;k<k1;k++)val[I(i,j,k)]=P.d(at(i,j,k)); }
     const F=P.F0||R.frameOf(P.on||P.n,RB||rest), raw=[], mats=[];
     const vert=p=>{ const e=0.02, g=nrm(V(P.d(V(p.x+e,p.y,p.z))-P.d(V(p.x-e,p.y,p.z)),P.d(V(p.x,p.y+e,p.z))-P.d(V(p.x,p.y-e,p.z)),P.d(V(p.x,p.y,p.z+e))-P.d(V(p.x,p.y,p.z-e))));
       const l=sub(add(p,mul(g,OUT)),F.o); return [dot(l,F.x),dot(l,F.y),dot(l,F.z),dot(g,F.x),dot(g,F.y),dot(g,F.z),MATS.indexOf(P.paint&&P.paint(p)||P.m)]; };
     const VC=new Map(), NT=nx*ny*nz, emit=r=>{ raw.push(r[0],r[1],r[2],r[3],r[4],r[5]); mats.push(r[6]); };
     const OF=CO.map(([a,b,c])=>(a*ny+b)*nz+c);
-    for(let i=r0[0];i<r1[0]-1;i++)for(let j=r0[1];j<r1[1]-1;j++)for(let k=r0[2];k<r1[2]-1;k++){ const o=I(i,j,k); let np=0, nn=0; for(let c=0;c<8;c++){ const x=val[o+OF[c]]; if(x>0)np++; else if(x<=0)nn++; } if(np===8||nn===8)continue; const v=CO.map(([a,b,c])=>val[I(i+a,j+b,k+c)]);
-      const p=CO.map(([a,b,c])=>at(i+a,j+b,k+c)), gi=CO.map(([a,b,c])=>I(i+a,j+b,k+c));
-      for(const t of TET){ const ins=t.filter(c=>v[c]<=0), out=t.filter(c=>v[c]>0); if(!ins.length||!out.length)continue;
-        const E=(a,b)=>{ const key=gi[a]*NT+gi[b]; let r=VC.get(key); if(!r){ const f=v[a]/(v[a]-v[b]); r=vert(add(p[a],mul(sub(p[b],p[a]),f))); VC.set(key,r); } return r; };
-        if(ins.length===1)[E(ins[0],out[0]),E(ins[0],out[1]),E(ins[0],out[2])].forEach(emit);
-        else if(ins.length===3)[E(out[0],ins[0]),E(out[0],ins[1]),E(out[0],ins[2])].forEach(emit);
-        else { const a=E(ins[0],out[0]),b=E(ins[0],out[1]),c=E(ins[1],out[1]),d=E(ins[1],out[0]); [a,b,c,a,c,d].forEach(emit); } } }
+    const cv8=[0,0,0,0,0,0,0,0], cg8=[0,0,0,0,0,0,0,0], ins=[0,0,0,0], out=[0,0,0,0]; let ci=0, cj=0, ck=0;
+    const E=(a,b)=>{ const key=cg8[a]*NT+cg8[b]; let r=VC.get(key); if(!r){ const va=cv8[a], f=va/(va-cv8[b]), A=CO[a], B=CO[b], ax=bb[0]+(ci+A[0])*step, ay=bb[2]+(cj+A[1])*step, az=bb[4]+(ck+A[2])*step, bx=bb[0]+(ci+B[0])*step, by=bb[2]+(cj+B[1])*step, bz=bb[4]+(ck+B[2])*step;
+      r=vert(V(ax+(bx-ax)*f,ay+(by-ay)*f,az+(bz-az)*f)); VC.set(key,r); } return r; };
+    for(let i=r0[0];i<r1[0]-1;i++)for(let j=r0[1];j<r1[1]-1;j++)for(let k=r0[2];k<r1[2]-1;k++){ const o=I(i,j,k); let np=0, nn=0; for(let c=0;c<8;c++){ const x=val[o+OF[c]]; if(x>0)np++; else if(x<=0)nn++; } if(np===8||nn===8)continue; for(let c=0;c<8;c++){ cv8[c]=val[o+OF[c]]; cg8[c]=o+OF[c]; } ci=i; cj=j; ck=k;
+      for(const t of TET){ let ni=0, no=0; for(let q=0;q<4;q++){ const c=t[q]; if(cv8[c]<=0)ins[ni++]=c; if(cv8[c]>0)out[no++]=c; } if(!ni||!no)continue;
+        if(ni===1){ emit(E(ins[0],out[0])); emit(E(ins[0],out[1])); emit(E(ins[0],out[2])); }
+        else if(ni===3){ emit(E(out[0],ins[0])); emit(E(out[0],ins[1])); emit(E(out[0],ins[2])); }
+        else { const a=E(ins[0],out[0]),b=E(ins[0],out[1]),c=E(ins[1],out[1]),d=E(ins[1],out[0]); emit(a); emit(b); emit(c); emit(a); emit(c); emit(d); } } }
     const fit0=R.fitPts(P.n,new Float32Array(raw)), {fit,mats:mts}=simplify(fit0,mats,(P.cell||CELL*(fine?0.5:1))*(/^(head|hair|eye|nose|ear|mouth)/.test(P.n)?1:1.42)); mats.length=0; for(const q of mts)mats.push(q); const n=fit.length/6, pos=new Float32Array(n*3), nor=new Float32Array(n*3), c0=new Float32Array(n*3), c1=new Float32Array(n*3), c2=new Float32Array(n*3), cd=new Float32Array(n*3), mt=new Float32Array(n);
     for(let i=0;i<n;i++){ pos.set([fit[i*6],fit[i*6+1],fit[i*6+2]],i*3); nor.set([fit[i*6+3],fit[i*6+4],fit[i*6+5]],i*3); const r=ramp[mats[i]]||ramp[0]; c0.set([r[0].r,r[0].g,r[0].b],i*3); c1.set([r[1].r,r[1].g,r[1].b],i*3); c2.set([r[2].r,r[2].g,r[2].b],i*3); cd.set([(r[2].r+r[3].r)/2,(r[2].g+r[3].g)/2,(r[2].b+r[3].b)/2],i*3); mt[i]=mats[i]; }
     const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(pos,3)); g.setAttribute('normal',new THREE.BufferAttribute(nor,3));
     g.setAttribute('c0',new THREE.BufferAttribute(c0,3)); g.setAttribute('cd',new THREE.BufferAttribute(cd,3)); g.setAttribute('c1',new THREE.BufferAttribute(c1,3)); g.setAttribute('c2',new THREE.BufferAttribute(c2,3)); g.setAttribute('mat',new THREE.BufferAttribute(mt,1)); return g; }
   function simplify(fit,mats,cell){ const n=fit.length/6, key=new Map(), cid=new Int32Array(n), acc=[];
-    for(let i=0;i<n;i++){ const k=Math.floor(fit[i*6]/cell)+'|'+Math.floor(fit[i*6+1]/cell)+'|'+Math.floor(fit[i*6+2]/cell)+'|'+mats[i]; let c=key.get(k); if(c==null){ c=acc.length; key.set(k,c); acc.push({p:[0,0,0],nn:[0,0,0],k:0,m:mats[i]}); }
+    for(let i=0;i<n;i++){ const fx=Math.floor(fit[i*6]/cell), fy=Math.floor(fit[i*6+1]/cell), fz=Math.floor(fit[i*6+2]/cell), m=mats[i], k=Math.abs(fx)<5e3&&Math.abs(fy)<5e3&&Math.abs(fz)<5e3&&m>=0&&m<256?(((fx+5e3)*1e4+fy+5e3)*1e4+fz+5e3)*256+m:fx+'|'+fy+'|'+fz+'|'+m; let c=key.get(k); if(c==null){ c=acc.length; key.set(k,c); acc.push({p:[0,0,0],nn:[0,0,0],k:0,m:mats[i]}); }
       const a=acc[c]; for(let q=0;q<3;q++){ a.p[q]+=fit[i*6+q]; a.nn[q]+=fit[i*6+3+q]; } a.k++; cid[i]=c; }
     const tri=[]; for(let i=0;i<n;i+=3){ const a=cid[i],b=cid[i+1],c=cid[i+2]; if(a!==b&&b!==c&&a!==c)tri.push(a,b,c); }
     const out=new Float32Array(tri.length*6), om=[]; tri.forEach((c,i)=>{ const a=acc[c], l=Math.hypot(...a.nn)||1; for(let q=0;q<3;q++){ out[i*6+q]=a.p[q]/a.k; out[i*6+3+q]=a.nn[q]/l; } om.push(a.m); }); return {fit:out,mats:om}; }

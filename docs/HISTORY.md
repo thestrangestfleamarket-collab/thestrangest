@@ -3981,6 +3981,7 @@ initial download and load super fast"; then "Go")
   16 along all of them. The brook springs from the fountain's lake and runs south-west into the lake, under the stone bridge where it
   crosses the cross path (the bridge was on the gate path). Trees, flowers, hedges and the lawn keep off every path. Cost: the paths'
   slabs are built in the park's own load as before; some 40 lamp posts more (unlit models; the eight nearest light).
+
 ## 20 Oct 2026: the same-picture check now sees the park and the platform
 
 - An audit of what the gates actually catch: `tests/samepic.cjs` (the pixel gate, run only with the `measure` label) looked at the
@@ -4032,6 +4033,42 @@ initial download and load super fast"; then "Go")
   character's own body to the black void. Each tab exports and imports its own file (`market-map-*.json`, `market-characters-*.json`);
   nothing changes in the game.
 
+## 21 Oct 2026: a stale open tab auto-refreshes when a place's code is gone
+
+The owner, playing the live site: "bath house isnt loading", with the console 404ing `/g/x-bath.<hash>.js` and a wall of
+uncaught `bath 404`. THE MARKET is one long-lived page: the shell loads `m.<hash>.js`, and that running code fetches each
+place's chunk on demand (`x-name.<hash>.js`). Every deploy content-hashes the files, so a new deploy gives new names and the
+worker (`worker/door.js`) 404s anything not in the current deploy. A tab left open from before a redeploy keeps running the old
+`m.js`, which asks for a chunk by a hash the new deploy replaced — so entering that place 404s and it never builds. (The chunk
+itself is fine: `tests/places.cjs` enters the bath house on every push.) `136-version.js`'s `peek()` already shows A NEW VERSION
+IS READY, but only every 90s and on your action, so a deploy landing just before you walk in slips through.
+
+A failed chunk fetch is proof the page is stale, so the loader now acts on it (owner chose auto-refresh over the notice): a
+404/403 on a chunk saves the spot and reloads once (`__CLOAD`/`__CSYNC` in `build.py`); position is restored on reload
+(`135-where.js`), so you land back where you were on the current build and the place opens. A one-shot guard makes later loads
+wait rather than storm the network before the reload navigates, and `swap()` (`130-rooms.js`) now catches the rejection, so no
+console spam and no wedged entry. The 90s peek stays for the proactive case. (Only the website runtime; the single-file
+`dist/market.html` keeps its chunks in the page and never fetches.)
+
+## 21 Oct 2026: butterflies wait for the later chunk (main's build-check green again)
+
+The site's build-check had been red since the new-layout steps (#164–#168): `tests/places.cjs` failed on a returning player whose saved spot is down in the dungeon, with `chunk later was not loaded before use (#269)`. #269 is `BF.add` (`056-butterflies.js`), the butterfly model maker, which lives in the `later` chunk. Butterflies spawn on the lawn and flowerbed chunks as they build around you (`143-bfly.js`); on a saved-dungeon start the surface still builds, so `BF.add` was reached before `later` had come, forcing the synchronous fetch the test forbids. The park's inside (#167) widened where butterflies spawn; `tools/later.cjs` (which only un-marks what runs in its fresh / Market St / park-gate scenarios, not a saved-dungeon start) was not re-run, so `BF.add` stayed in `later`.
+
+Fix (`143-bfly.js`): hold all butterfly spawning — the `WEEDS.onAdd` hook, the first sweep of existing chunks, and the once-a-second turn/weather loop — until the start is up (`window.__started`) and `await LOAD('later')` has resolved. Butterflies belong in `later` (the first frame never needs them), so this keeps them out of the start download and off the saved-spot start's critical path; waiting for `__started` first means the butterflies ride the start's own `LOAD('later')` (fired after the first frame in `163-main-15.js`) instead of pulling the chunk in early, so "no chunk at the start" still holds. Checked: `tests/places.cjs` — every place builds, the saved-dungeon start has no slow fetch, "all good".
+## 21 Oct 2026: the Walker's arm-clearance search cached while still
+
+- A profile of the rig (`src/001-rig.js`, lifted from the built page as `tests/footworld.cjs` lifts it) found `pose()` was the whole
+  per-frame cost (step ~0.05 ms; pose 0.41-0.74 ms a character), and almost all of pose was `clearArms`: a binary search that builds the
+  pose up to ~13 times a frame to swing each arm clear of the body. A still Walker's answer never changes, yet it was recomputed every
+  frame (and standing cost *more* than walking, 0.67 vs 0.41 ms, because at rest the arms hang near the body so the full search fires) —
+  against the owner's "things at rest stay still". Now `clearArms` caches its result keyed on everything `walkPose` reads for the arms,
+  and engages the cache only when fully still (`st.w===0`), where the pose is phase-independent, so the key holds frame to frame; while
+  moving it takes the old path untouched. The one side effect the skipped probes used to have — advancing `walkPose`'s nod-smoothing filter
+  `st.ndS` (~14x a frame) — is replayed exactly on a cache hit (the nod target is 0 while still, so the decay is `*0.94` per skipped probe);
+  `st.pyS` is provably constant while still (feet are phase-independent when `w==0`), so it needs no replay. Measured against the unpatched
+  rig over stand / walk / run / circle / turns / stop / start: **0 joint difference and 0 differing pixels** (300 rendered frames, the stop
+  transient included) — output is bit-identical. Cost: standing ~7x cheaper a frame (0.73 -> 0.10 ms, 86% less); walking and running
+  unchanged (within noise). This matters per visible character, so it scales with the street's Walkers.
 - **The core, piece 1: one level file** (owner, 21 Oct 2026, after the outside review: "lets not patch things, the fundamental game core
   needs to make sense", "yes lets do all, dont do heavy checks, lets just get it done"; `data/world.json`, `006-map-pre.js`): every
   placed thing is in one file in map tiles: the streets, the park's bounds, the block's rows, every front on the block (x0, x1), the

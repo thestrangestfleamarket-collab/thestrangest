@@ -95,8 +95,12 @@ game = ('document.body.insertAdjacentHTML("afterbegin",' + json.dumps(read('dist
     + UNB
     + 'const __DP=Object.fromEntries([' + ','.join('[' + names[f] + ',' + bins.get(f, 'null') + ']' for f in used) + '].map(([n,b])=>[n,__GJ(n,b)]));\n'
     + 'await __RIG;\n'
-    + CH['rt'] + 'const __CU=__CHUNKURLS__, __CE=t=>(0,eval)(t); window.__CREG=m=>m;\nconst __CLOAD=n=>!__CU[n]?Promise.resolve({}):fetch("/g/"+__CU[n]).then(r=>{ if(!r.ok)throw new Error(n+" "+r.status); return r.text(); }).then(__CE);\n'
-    + 'const __CSYNC=n=>{ const x=new XMLHttpRequest(); x.open("GET","/g/"+__CU[n],false); x.send(); if(x.status!==200)throw new Error(n+" "+x.status); return __CE(x.responseText); };\n'
+    + CH['rt'] + 'const __CU=__CHUNKURLS__, __CE=t=>(0,eval)(t); window.__CREG=m=>m;\n'
+    + 'let __STALE=false; const __stale=s=>{ if((s!==404&&s!==403)||__STALE)return; __STALE=true;\n'
+    + '  try{ const k="market-reload", t=+sessionStorage.getItem(k)||0; if(Date.now()-t<30000)return; sessionStorage.setItem(k,""+Date.now()); }catch(e){}\n'
+    + '  try{ WHERE.save(); }catch(e){} try{ location.reload(); }catch(e){} };\n'
+    + 'const __CLOAD=n=>!__CU[n]?Promise.resolve({}):__STALE?new Promise(()=>{}):fetch("/g/"+__CU[n]).then(r=>{ if(!r.ok){ __stale(r.status); throw new Error(n+" "+r.status); } return r.text(); }).then(__CE);\n'
+    + 'const __CSYNC=n=>{ const x=new XMLHttpRequest(); x.open("GET","/g/"+__CU[n],false); x.send(); if(x.status!==200){ __stale(x.status); throw new Error(n+" "+x.status); } return __CE(x.responseText); };\n'
     + re.sub(r'__LAZY__\("([^"]+)"\)', lambda m: '(()=>__GJ(' + names[m.group(1)] + ',' + bins.get(m.group(1), 'null') + '))', re.sub(r'__DATA__\("([^"]+)"\)', lambda m: '(await __DP[' + names[m.group(1)] + '])', body)))
 os.remove('dist/g/page.html')
 open('dist/g/game.js', 'w').write(re.sub(r"'https://cdn\.jsdelivr\.net/npm/((?:@[^/@']+/)?[^/@']+)@([^/']+)[^']*'", npm, data(game)))

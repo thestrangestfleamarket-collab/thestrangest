@@ -77,7 +77,7 @@ import {DRAGON} from './077-npc-skel.js';
           TAIL.forEach((b,k)=>{ bend(b,UP,-D.turn*.18*(k+1)/3+Math.sin(D.tw*1.1+k*.7)*.05*(1+D.gl)); bend(b,RT,D.climb*.08); });
           NECK.forEach((b,k)=>bend(b,UP,D.turn*.12)); } } });
     N.push=()=>{}; N.blocks=()=>false;
-    const tick0=N.tick, st=N.st; st.hold=true; st.h=Math.random()*6; N.g.rotation.order='YXZ'; if(D.home){ D.mode='perch'; D.t=5+Math.random()*80; st.x=D.home.x; st.z=D.home.z; D.y=D.home.y; wI=1; wF=0; }
+    const tick0=N.tick, st=N.st; st.hold=true; st.h=Math.random()*6; N.g.rotation.order='YXZ'; if(D.home){ D.mode='perch'; D.t=5+Math.random()*80; st.x=D.home.x; st.z=D.home.z; N.home={x:D.home.x,z:D.home.z,r:0,id:N.home&&N.home.id}; D.y=D.home.y; wI=1; wF=0; }
     N.tick=(dt,you)=>{ st.to=null; st.face=null; tick0(dt,you); let turn=0; D.snap-=dt;
       { const g=CLOCK.dark()?.35:0; N.toon.emissive.lerp(GLC.setRGB(.04*g,.2*g,.06*g),Math.min(1,dt*.5)); }
       const y0=D.y;

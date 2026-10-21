@@ -37,6 +37,12 @@ Look there before changing how something looks or behaves, and add a short dated
 queued with `BATCH.queue({make, cast, group, post, R, done})` and `q.add(x0,z0,x1,z1,()=>paint())` instead of painted in its builder:
 everything within `R` of you is painted before the start ends (`BATCH.near`), the rest a few ms a frame, nearest first (`BATCH.tick`).
 
+**Insides wait until you go in (21 Oct 2026)**: a building's inside is a lazy room in `ROOMS.lazy` (`{name, need, go, drop}`; its box
+in `ROOMS.boxes` or `MODS.apts.rects` carries `lz`): the start builds only the outside; walking in runs `need` (its chunk) and `go` behind
+the fade, and a lazy room with `drop` is taken away again when you are in another room. Build an inside with `ROOMS.part(group, fn, make)`
+(it records the meshes, lights, things to use and wall cuts) so `ROOMS.unpart` can drop it; something that belongs on an apartment
+floor joins it with `MODS.apts.furnish(floor, fn)`.
+
 ## Build
 
 `python3 build.py`: joins `src/`, puts in the data and the build stamp (`__BUILDV__`), adds the loading breaths
@@ -51,7 +57,7 @@ by `tools/chunks.cjs` (needs `acorn`, which `npm ci` brings; without it everythi
 sees every name around it (handed in, or read live when it can change). Call `LOAD` (behind the place's black fade) before such a
 function first runs; if one runs before its chunk came, it is fetched there and then (the page waits for it) and the console says
 `chunk name was not loaded before use (#n)` (`dist/chunks.txt` lists every cut function by number): add the missing `LOAD`.
-Places: `dungeon`, `park`, `fire`, `arcade`, `bath` (on the way in: `STORE.offGo`/`enter`/`ensure`, the
+Places: `dungeon`, `park`, `fire`, `arcade`, `bath`, `apts` (on the way in: `STORE.offGo`/`enter`/`ensure`, the
 `ROOMS` swap, `PARK.load`, the dungeon's `go`, a saved spot); `later` (code the start never runs, fetched as soon as the start is
 done) is marked by `tools/later.cjs` from what the start runs (re-run it in CI now and then: `SKIP=later MIN=0 python3 build.py &&
 node tools/later.cjs`; new code stays in the start file until then). `tests/places.cjs` enters every place on the website and fails

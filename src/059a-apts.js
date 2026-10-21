@@ -1,9 +1,9 @@
 // THE APARTMENTS: the brownstone apartment block on the street, its stoop, elevator and floors (its own builder).
 import {SHARED, THREE} from './003-shx.js';
 import {B64, BY} from './003a-skin.js';
-import {pos, st, UI} from './003b-systems.js';
+import {CLIP, pos, ROOMS, st, UI} from './003b-systems.js';
 import {scene, TEXTURES} from './004-main.js';
-import {BLDK, cutWalls, FIX, grab, LOTX, MODS, SOL, TILE, WP} from './006-map-pre.js';
+import {BLDK, cutWalls, FIX, grab, LOTX, MAPG, MODS, SOL, TILE, WP} from './006-map-pre.js';
 import {BATCH, PEEK} from './008-batch.js';
 import {BRICKS} from './014-gamekit.js';
 const APTS={EMPTY:true};
@@ -67,15 +67,15 @@ await grab('apts',async()=>{ const {X,Z,faceTex,bq,C,facade,FRAME,place}=SHARED.
     const n=hash(Math.floor(u*24),Math.floor(z),33); return sh(n<.04?[206,200,186]:n>.97?[224,218,206]:[214,208,196],f); };
   const HP=new THREE.Plane(new THREE.Vector3(0,-1,0),1e6), LP=new THREE.Plane(new THREE.Vector3(0,1,0),1e6); APTS.HP=HP; APTS.LP=LP; const WALLM=[];
   const pt=(w,s,a,z)=>w.ax==='x'?[X(a),Y(z),Z(w.at+s*T)]:[X(w.at+s*T),Y(z),Z(a)];
-  const wallMesh=(a,b,c,d,tx,planes)=>{ const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute([...a,...b,...c,...a,...c,...d],3)); g.setAttribute('uv',new THREE.Float32BufferAttribute([0,0,1,0,1,1,0,0,1,1,0,1],2)); g.computeVertexNormals();
+  const wallMesh=(a,b,c,d,tx,planes,keep=true)=>{ const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute([...a,...b,...c,...a,...c,...d],3)); g.setAttribute('uv',new THREE.Float32BufferAttribute([0,0,1,0,1,1,0,0,1,1,0,1],2)); g.computeVertexNormals();
     const mk=cv=>{ const t=new THREE.CanvasTexture(cv); t.magFilter=THREE.NearestFilter; t.minFilter=THREE.NearestMipmapNearestFilter; t.generateMipmaps=true; t.colorSpace=THREE.SRGBColorSpace; return t; };
     const mat=new THREE.MeshLambertMaterial({map:mk(tx.map.image),alphaTest:.5,side:THREE.DoubleSide,clippingPlanes:planes,...(tx.em?{emissiveMap:mk(tx.em.image),emissive:0xffffff,emissiveIntensity:1.2}:{})});
-    const me=new THREE.Mesh(g,mat); me.receiveShadow=true; me.castShadow=true; scene.add(me); WALLM.push(me); PEEK.whole(me); return me; };
+    const me=new THREE.Mesh(g,mat); me.receiveShadow=true; me.castShadow=true; scene.add(me); if(keep)WALLM.push(me); PEEK.whole(me); return me; };
   function wall(w){ const as=new Set([w.a0,w.a1]), zs=new Set([w.z0,w.z1]); for(const h of w.holes){ as.add(Math.max(w.a0,h.a0)); as.add(Math.min(w.a1,h.a1)); zs.add(h.z0); zs.add(h.z1); }
-    const Aa=[...as].sort((p,q)=>p-q), Zs=[...zs].sort((p,q)=>p-q), pl=w.cut?new THREE.Plane(new THREE.Vector3(0,-1,0),1e6):null, planes=pl?[pl,HP,LP]:[HP,LP];
-    if(w.cut)for(const s of [-1,1]){ const W_=(w.a1-w.a0)*24, tx=faceTex(W_,w.z1-w.z0,(ii,jj)=>{ const u=w.a0+(ii+.5)/24, z=w.z1-jj-.5; for(const h of w.holes)if(u>h.a0&&u<h.a1&&z>h.z0&&z<h.z1)return null; return C(w.paint(s,u,z)); });
+    const sides=w.side?[w.side]:[-1,1], Aa=[...as].sort((p,q)=>p-q), Zs=[...zs].sort((p,q)=>p-q), pl=w.cut?new THREE.Plane(new THREE.Vector3(0,-1,0),1e6):null, planes=pl?[pl,HP,LP]:[HP,LP];
+    if(w.cut)for(const s of sides){ const W_=(w.a1-w.a0)*24, tx=faceTex(W_,w.z1-w.z0,(ii,jj)=>{ const u=w.a0+(ii+.5)/24, z=w.z1-jj-.5; for(const h of w.holes)if(u>h.a0&&u<h.a1&&z>h.z0&&z<h.z1)return null; return C(w.paint(s,u,z)); });
       wallMesh(pt(w,s,w.a0,w.z0),pt(w,s,w.a1,w.z0),pt(w,s,w.a1,w.z1),pt(w,s,w.a0,w.z1),tx,planes); }
-    else for(const s of [-1,1])for(let i=0;i+1<Aa.length;i++)for(let j=0;j+1<Zs.length;j++){ const a0=Aa[i], a1=Aa[i+1], z0=Zs[j], z1=Zs[j+1];
+    else for(const s of sides)for(let i=0;i+1<Aa.length;i++)for(let j=0;j+1<Zs.length;j++){ const a0=Aa[i], a1=Aa[i+1], z0=Zs[j], z1=Zs[j+1];
       if(w.holes.some(h=>(a0+a1)/2>h.a0&&(a0+a1)/2<h.a1&&(z0+z1)/2>h.z0&&(z0+z1)/2<h.z1))continue;
       const tx=faceTex((a1-a0)*24,z1-z0,(ii,jj)=>C(w.paint(s,a0+(ii+.5)/24,z1-jj-.5)));
       if(w.cut)wallMesh(pt(w,s,a0,z0),pt(w,s,a1,z0),pt(w,s,a1,z1),pt(w,s,a0,z1),tx,planes); else bq(pt(w,s,a0,z0),pt(w,s,a1,z0),pt(w,s,a1,z1),pt(w,s,a0,z1),tx,'A'); }
@@ -94,9 +94,11 @@ await grab('apts',async()=>{ const {X,Z,faceTex,bq,C,facade,FRAME,place}=SHARED.
   const hole=(u,lv,fw)=>({a0:A.x0+u-.55,a1:A.x0+u+.55,z0:lv*S+(fw?3:42),z1:lv*S+94,fw});
   const door={a0:m-DW,a1:m+DW,z0:0,z1:DH,door:true}, holesF=[door], holesB=[];
   for(let lv=0;lv<ST;lv++){ for(const u of FWU)if(lv||Math.abs(A.x0+u-m)>2)holesF.push(hole(u,lv,lv&&ESC[0].walk.includes(u))); for(const u of BWU)holesB.push(hole(u,lv,lv&&ESC[1].walk.includes(u))); }
-  const outer=(id,ax,at,a0,a1,holes,inS,nx,nz)=>wall({id,ax,at,a0,a1,z0:0,z1:AH,holes,cut:true,nx,nz,rev:[120,115,106],paint:(s,u,z)=>s===inS?plaster(u,z%S,ax==='x'?.84:.68,false):(ax==='y'&&z<AH-30?ivy(u,z,.8,Math.round(at*7),AH-30):null)||stone(u,z,ax==='x'?1:.8,AH,ax==='x'?holes:(BLC[at]||(BLC[at]=blinds(a0+.3,a1-.3,Math.round(at*10)))),a0+(ax==='y'?T:0),a1-(ax==='y'?T:0))});
+  const outer=(id,ax,at,a0,a1,holes,inS,nx,nz)=>wall({id,ax,at,a0,a1,z0:0,z1:AH,holes,cut:true,nx,nz,side:-inS,inS,rev:[120,115,106],paint:(s,u,z)=>s===inS?plaster(u,z%S,ax==='x'?.84:.68,false):(ax==='y'&&z<AH-30?ivy(u,z,.8,Math.round(at*7),AH-30):null)||stone(u,z,ax==='x'?1:.8,AH,ax==='x'?holes:(BLC[at]||(BLC[at]=blinds(a0+.3,a1-.3,Math.round(at*10)))),a0+(ax==='y'?T:0),a1-(ax==='y'?T:0))});
   { let seed=3; for(const h of [...holesF,...holesB])if(!h.door){ h.lit=hash(seed++,1,9)<.55; h.seed=seed; } }
-  outer('front','x',A.y1,A.x0,A.x1,holesF,-1,0,-1); outer('back','x',A.y0,A.x0,A.x1,holesB,1,0,1); outer('west','y',A.x0,A.y0-T,A.y1+T,[],1,1,0); outer('east','y',A.x1,A.y0-T,A.y1+T,[],-1,-1,0);
+  const OUTW=[outer('front','x',A.y1,A.x0,A.x1,holesF,-1,0,-1),outer('back','x',A.y0,A.x0,A.x1,holesB,1,0,1),outer('west','y',A.x0,A.y0-T,A.y1+T,[],1,1,0),outer('east','y',A.x1,A.y0-T,A.y1+T,[],-1,-1,0)];
+  const innerFace=(w,lv)=>{ '@apts'; const s=w.inS, z0=lv*S, z1=lv===ST-1?w.z1:(lv+1)*S, tx=faceTex((w.a1-w.a0)*24,z1-z0,(ii,jj)=>{ const u=w.a0+(ii+.5)/24, z=z1-jj-.5; for(const h of w.holes)if(u>h.a0&&u<h.a1&&z>h.z0&&z<h.z1)return null; return C(w.paint(s,u,z)); });
+    wallMesh(pt(w,s,w.a0,z0),pt(w,s,w.a1,z0),pt(w,s,w.a1,z1),pt(w,s,w.a0,z1),tx,[w.pl,HP,LP],false); };
   for(const h of holesF)if(!h.door&&!h.fw)pane({ax:'x',at:A.y1},h,h.lit,h.seed); for(const h of holesB)if(!h.fw)pane({ax:'x',at:A.y0},h,h.lit,h.seed);
   const SOLS=[]; APTS.sol=SOLS; for(let lv=0;lv<ST;lv++)SOLS[lv]=[];
   const U=u=>A.x0+u, V=v=>A.y0+v;
@@ -128,25 +130,25 @@ await grab('apts',async()=>{ const {X,Z,faceTex,bq,C,facade,FRAME,place}=SHARED.
   const SE=[10.5], LIGHTS=[]; APTS.lights=LIGHTS;
   const sol=(lv,u0,v0,u1,v1)=>{ const b=[X(U(u0)),Z(V(v0)),X(U(u1)),Z(V(v1))], r=[Math.min(b[0],b[2]),Math.min(b[1],b[3]),Math.max(b[0],b[2]),Math.max(b[1],b[3])]; SOLS[lv].push(r); return r; };
   APTS.U=U; APTS.V=V; APTS.lsol=sol;
-  const DLV=[]; {
+  const DLV=[];
     const check=(x,y)=>{ const i=Math.floor((x-A.x0)*2), j=Math.floor((y-A.y0)*2), e=((x-A.x0)*2-i)<.07||((y-A.y0)*2-j)<.07; return e?[120,118,112]:(i+j)&1?[30,30,32]:[226,224,216]; };
     const carpet=(x,y)=>{ const u=x-A.x0, v=y-A.y0, n=hash(Math.floor(x*12),Math.floor(y*12),71), e=Math.abs(v-5.75)<.06||Math.abs(v-8.25)<.06; return v>5.6&&v<8.4||u>10.5&&u<15.5&&v>2.55&&v<5.6?(e&&u<10.4||e&&u>15.6?[176,140,70]:n<.2?[110,30,36]:[128,36,42]):boards(x,y); };
     const SH=[[0,2.55,13,14],[0,0,10.5,2.55]];
     const iw=(lv,id,ax,at,a0,a1,holes,look)=>{ const z=lv*S; return wall({id:id+lv,ax,at,a0,a1,z0:z,z1:z+S-4,holes:holes.map(h=>({...h,z0:z,z1:z+DH,door:true})),cut:true,inner:true,nx:ax==='y'?1:0,nz:ax==='x'?1:0,foot:z+8,
       paint:(sd,u,zz)=>look?look(u,zz-z,ax==='x'?.84:.68):plaster(u,zz-z,ax==='x'?.84:.68,false)}); };
     const wsol=(lv,ax,at,a0,a1,holes)=>{ let a=a0; for(const h of [...holes].sort((p,q)=>p.a0-q.a0)){ if(h.a0>a)(ax==='x'?sol(lv,a-A.x0,at-A.y0-T,h.a0-A.x0,at-A.y0+T):sol(lv,at-A.x0-T,a-A.y0,at-A.x0+T,h.a0-A.y0)); a=h.a1; } if(a1>a)(ax==='x'?sol(lv,a-A.x0,at-A.y0-T,a1-A.x0,at-A.y0+T):sol(lv,at-A.x0-T,a-A.y0,at-A.x0+T,a1-A.y0)); };
-    const wl=(lv,id,ax,at,a0,a1,holes,look)=>{ iw(lv,id,ax,at,a0,a1,holes,look); wsol(lv,ax,at,a0,a1,holes); };
     const dark=(u,zz,f)=>sh([92,96,102],f), ED=SE.map(s=>({a0:U(s+.3),a1:U(s+2.2)})), dr=c=>({a0:U(c-.55),a1:U(c+.55),c});
-    for(let lv=0;lv<ST;lv++){ const z=lv*S;
+    for(let lv=0;lv<ST;lv++){ wsol(lv,'y',U(10.5),V(0),V(2.55),[]); wsol(lv,'x',V(2.55),U(10.5),U(13)-T,ED); }
+  const paintFloor=lv=>{ '@apts'; const z=lv*S;
       if(!lv)flat(A.x0,A.y0,A.x1,A.y1,1,check); else for(const r of SH)flat(U(r[0]),V(r[1]),U(r[2]),V(r[3]),z,boards);
-      if(lv<ST-1)for(const r of SH)flat(U(r[0]),V(r[1]),U(r[2]),V(r[3]),z+S-4,()=>[228,226,220],false);
-      wl(lv,'sh10.5','y',U(10.5),V(0),V(2.55),[],dark);
-      wl(lv,'shF','x',V(2.55),U(10.5),U(13)-T,ED,(u,zz,f)=>zz<DH+10&&ED.some(d=>u>d.a0-.1&&u<d.a1+.1)?sh([150,152,156],f):sh([92,96,102],f));
+      if(lv<ST-1)for(const r of SH)flat(U(r[0]),V(r[1]),U(r[2]),V(r[3]),z+S-4,()=>[228,226,220],false); else flat(A.x0,A.y0,A.x1,A.y1,AH-4,()=>[228,226,220],false);
+      iw(lv,'sh10.5','y',U(10.5),V(0),V(2.55),[],dark);
+      iw(lv,'shF','x',V(2.55),U(10.5),U(13)-T,ED,(u,zz,f)=>zz<DH+10&&ED.some(d=>u>d.a0-.1&&u<d.a1+.1)?sh([150,152,156],f):sh([92,96,102],f));
       for(const s of SE)for(const u of [s+.12,s+2.38])gbox({x0:U(u-.03),x1:U(u+.03),y0:V(1),y1:V(1.1),z0:z,z1:z+S,c:[70,72,78]},'A');
-    } }
+      for(const w of OUTW)innerFace(w,lv); };
   for(let lv=1;lv<ST;lv++)for(const [y,hs] of [[A.y1,holesF],[A.y0,holesB]]){ let a=A.x0-T; for(const h of hs.filter(h=>h.fw&&Math.floor(h.z0/S)===lv)){ SOLS[lv].push([X(a),Z(y-T),X(h.a0),Z(y+T)]); a=h.a1; } SOLS[lv].push([X(a),Z(y-T),X(A.x1+T),Z(y+T)]); }
-  flat(A.x0,A.y0,A.x1,A.y1,AH,roofCol); flat(A.x0,A.y0,A.x1,A.y1,AH-4,()=>[228,226,220],false);
-  { const L=(lv,u,v,c,i)=>LIGHTS.push({x:X(U(u)),y:Y(lv*S+S-14),z:Z(V(v)),c,i});
+  flat(A.x0,A.y0,A.x1,A.y1,AH,roofCol);
+  { const L=(lv,u,v,c,i)=>LIGHTS.push({lv,x:X(U(u)),y:Y(lv*S+S-14),z:Z(V(v)),c,i});
     for(const [u,v] of [[4,7],[9.5,9.5],[5,3]])L(0,u,v,0xf6ecd8,8);
     for(let lv=1;lv<ST;lv++){ L(lv,4,7,0xf2ead6,6); L(lv,9.5,9.5,0xf2ead6,6); L(lv,5,3,0xffd9a8,5); } }
   const ST0={x0:door.a0-.25,x1:door.a1+.25,y0:A.y1,land:.85,tr:.42,n:3}; ST0.y1=A.y1+ST0.land+ST0.n*ST0.tr; APTS.ST0=ST0;
@@ -169,47 +171,48 @@ await grab('apts',async()=>{ const {X,Z,faceTex,bq,C,facade,FRAME,place}=SHARED.
     return null; };
   APTS.stoop=(x,z)=>{ const u=ix(x), v=iy(z); if(u<ST0.x0||u>ST0.x1||v<ST0.y0||v>=ST0.y1)return EG(x,z); const t=v-ST0.y0; if(t<ST0.land)return Y(1);
     const i=Math.floor((t-ST0.land)/ST0.tr); return SHARED.BOD.Y((RZ+1)*(ST0.n-i)/(ST0.n+1)); };
-  BATCH.build((k,map,emap)=>k==='B'?new THREE.MeshBasicMaterial({map,side:THREE.DoubleSide,alphaTest:.5,clippingPlanes:[HP,LP]}):new THREE.MeshLambertMaterial({map,alphaTest:.5,side:THREE.DoubleSide,clippingPlanes:[HP,LP],...(emap?{emissiveMap:emap,emissive:0xffffff,emissiveIntensity:1.3}:{})}));
+  const MKA=(k,map,emap)=>k==='B'?new THREE.MeshBasicMaterial({map,side:THREE.DoubleSide,alphaTest:.5,clippingPlanes:[HP,LP]}):new THREE.MeshLambertMaterial({map,alphaTest:.5,side:THREE.DoubleSide,clippingPlanes:[HP,LP],...(emap?{emissiveMap:emap,emissive:0xffffff,emissiveIntensity:1.3}:{})}); BATCH.build(MKA);
   const AM=Object.values(BATCH.meshes); APTS.back=BATCH.all(BATCH.meshes,'E'); BATCH.meshes={}; APTS.meshes=AM.concat(WALLM); for(const me of AM){ me.castShadow=true; me.receiveShadow=true; }
   const WS=[], osol=(x0,y0,x1,y1,zt,w)=>{ const r=[X(x0),Z(y0),X(x1),Z(y1)]; SOL.up.push(r); if(w)WS.push(r); FIX.up.push([X(x0),Z(y0),0,X(x1),Z(y1),Math.max(.05,Y(zt))]); };
   osol(A.x0-T,A.y1-T,door.a0,A.y1+T,AH,1); osol(door.a1,A.y1-T,A.x1+T,A.y1+T,AH,1); osol(A.x0-T,A.y0-T,A.x1+T,A.y0+T,AH,1); osol(A.x0-T,A.y0,A.x0+T,A.y1,AH); osol(A.x1-T,A.y0,A.x1+T,A.y1,AH);
   for(const [c0,c1] of [[ST0.x0-.22,ST0.x0],[ST0.x1,ST0.x1+.22]])osol(c0,ST0.y0,c1,ST0.y1,0);
   const EB=ESC.map(F=>{ const a=Z(F.yf), b=Z(F.yf+F.o*(DO+.05)); return [X(U(F.ua-.05)),Math.min(a,b),X(U(F.ub+.05)),Math.max(a,b)]; });
   const base=(lv,e)=>lv||e?SOL.up.filter(s=>WS.includes(s)?!lv:!EB.some(b=>s[0]<b[2]&&s[2]>b[0]&&s[1]<b[3]&&s[3]>b[1])):SOL.up;
-  for(const L of LIGHTS){ const P=new THREE.PointLight(L.c,0,6.5*TILE,1.6); P.position.set(L.x,L.y,L.z); P.userData.i0=L.i; P.userData.in=cur=>!!cur&&APTS.in&&P.position.y>cur.y0-.3&&P.position.y<cur.y1-.5; scene.add(P); L.light=P; }
-  const mat=c=>new THREE.MeshLambertMaterial({color:c,clippingPlanes:[HP,LP]}), bx=(w,h,d,m)=>new THREE.Mesh(new THREE.BoxGeometry(Math.abs(w)||.001,Math.abs(h)||.001,Math.abs(d)||.001),m);
+  const lamps=lv=>{ '@apts'; for(const L of LIGHTS)if(L.lv===lv){ const P=new THREE.PointLight(L.c,APTS.in?L.i:0,6.5*TILE,1.6); P.position.set(L.x,L.y,L.z); P.userData.i0=L.i; P.userData.in=cur=>!!cur&&APTS.in&&P.position.y>cur.y0-.3&&P.position.y<cur.y1-.5; scene.add(P); L.light=P; } };
+  const mat=c=>{ const m=new THREE.MeshLambertMaterial({color:c,clippingPlanes:[HP,LP]}); m.userData.keep=1; return m; }, bx=(w,h,d,m)=>new THREE.Mesh(new THREE.BoxGeometry(Math.abs(w)||.001,Math.abs(h)||.001,Math.abs(d)||.001),m);
   const reg=o=>{ o.ghost=1; const f=()=>{ try{ UI.thing(o); }catch(e){ setTimeout(f,400); } }; setTimeout(f,0); };
-  const STEEL=mat(0x8c9098), DARKS=mat(0x5a5e66), IRON=mat(0x22242a), WOOD=mat(0x7a5236), BRASS=mat(0xc8a050), LITB=new THREE.MeshBasicMaterial({color:0xffd27a,clippingPlanes:[HP,LP]}), HIT=new THREE.MeshBasicMaterial({visible:false});
+  const STEEL=mat(0x8c9098), DARKS=mat(0x5a5e66), IRON=mat(0x22242a), WOOD=mat(0x7a5236), BRASS=mat(0xc8a050), LITB=new THREE.MeshBasicMaterial({color:0xffd27a,clippingPlanes:[HP,LP]}), HIT=new THREE.MeshBasicMaterial({visible:false}); LITB.userData.keep=HIT.userData.keep=1;
   const fz=Math.sign(Z(V(2.5))-Z(V(.2)))||1, HH=Y(S-16)-Y(0), th=Y(3)-Y(0), lh=Y(DH)-Y(0), FN=['LOBBY','2ND FLOOR','3RD FLOOR','4TH FLOOR','5TH FLOOR'];
   const inCab=E=>Math.abs(SHARED.py-Y(E.z))<SY*.5&&pos.x>E.cx-E.W/2&&pos.x<E.cx+E.W/2&&pos.z>E.cz-E.D/2&&pos.z<E.cz+E.D/2;
   const MY=ST-1; APTS.my=MY; const ELS=SE.map(s0=>{ const x0=X(U(s0+.05)), x1=X(U(s0+2.35)), cx=(x0+x1)/2, cz=(Z(V(.2))+Z(V(2.5)))/2, W=Math.abs(x1-x0), D=Math.abs(Z(V(2.5))-Z(V(.2))), cw=W/2;
-    const cab=new THREE.Group(), add=(me,x,y,z)=>{ me.position.set(x,y,z); cab.add(me); return me; };
-    add(bx(W,th,D,STEEL),0,th/2,0); add(bx(W,HH,.04,DARKS),0,HH/2,-fz*D/2); add(bx(.04,HH,D,DARKS),-W/2,HH/2,0); add(bx(.04,HH,D,DARKS),W/2,HH/2,0); add(bx(W,.04,D,STEEL),0,HH,0); add(bx(W*.5,.02,D*.5,LITB),0,HH-.03,0);
-    add(bx(W-.1,.04,.02,STEEL),0,Y(36)-Y(0),-fz*(D/2-.04));
-    const cl=[-1,1].map(k=>add(bx(cw,HH,.03,STEEL),k*cw/2,HH/2,fz*(D/2-.02)));
-    add(bx(.03,Y(30)-Y(0),.2,mat(0x2a2c30)),W/2-.03,Y(48)-Y(0),fz*(D/2-.3));
-    cab.position.set(cx,Y(1),cz); scene.add(cab);
-    const cable=bx(.03,1,.03,IRON); cable.geometry.translate(0,.5,0); const cwt=bx(W*.5,Y(40)-Y(0),.08,IRON); scene.add(cable,cwt); cable.position.set(cx,0,cz); cwt.position.set(cx-W*.2,0,Z(V(.1)));
-    const dx0=X(U(s0+.3)), dx1=X(U(s0+2.2)), lw=Math.abs(dx1-dx0)/2, dzl=Z(V(2.55)), leaves=[], gaps=[];
-    const E={z:1,to:null,ph:'idle',door:0,wait:0,at:0,cab,cx,cz,W,D,leaves,gaps};
-    for(let lv=0;lv<ST;lv++){ const y=Y(lv*S+DH/2)+(lv?0:Y(1)-Y(0)), a=bx(lw,lh,.05,STEEL), b=bx(lw,lh,.05,STEEL); a.position.set(Math.min(dx0,dx1)+lw/2,y,dzl); b.position.set(Math.max(dx0,dx1)-lw/2,y,dzl); scene.add(a,b); leaves.push([a,b]);
-      gaps.push(sol(lv,s0+.3,2.45,s0+2.2,2.65));
-      const ix_=X(U(s0+2.36)), hb=bx(.35,Y(30)-Y(0),.25,HIT), bt=bx(.06,Y(12)-Y(0),.03,BRASS), ln=bx(.3,Y(6)-Y(0),.02,LITB); hb.position.set(ix_,Y(lv*S+48),Z(V(2.7))); bt.position.set(ix_,Y(lv*S+48),Z(V(2.58))+fz*.02); ln.position.set((dx0+dx1)/2,Y(lv*S+DH+5),Z(V(2.58))+fz*.02); scene.add(hb,bt,ln);
-      reg({name:'CALL THE ELEVATOR',obj:hb,reach:1.1*TILE,near:2.4*TILE,tall:1*TILE,act:()=>{ if(APTS.floor()===lv)E.call(lv); }});
-      const pb=add(bx(.035,.05,.05,LITB),W/2-.05,Y(38+lv*7)-Y(0),fz*(D/2-.3)), ph=add(bx(.22,Y(6)-Y(0),.22,HIT),W/2-.12,pb.position.y,pb.position.z);
-      if(lv===0)reg({name:'THE ELEVATOR',obj:ph,reach:.7*TILE,near:1.4*TILE,tall:.5*TILE,act:()=>{ if(inCab(E))E.go(E.at===MY?0:MY); }}); }
+    const dx0=X(U(s0+.3)), dx1=X(U(s0+2.2)), lw=Math.abs(dx1-dx0)/2, dzl=Z(V(2.55)), gaps=[];
+    for(let lv=0;lv<ST;lv++)gaps.push(sol(lv,s0+.3,2.45,s0+2.2,2.65));
     const G0=gaps.map(g=>g.slice());
+    const E={z:1,to:null,ph:'idle',door:0,wait:0,at:0,cab:null,cx,cz,W,D,cw,s0,dx0,dx1,lw,dzl,leaves:[],gaps};
     E.call=lv=>{ if(E.ph==='moving'||E.ph==='closing')return; if(E.at===lv){ E.ph='opening'; E.wait=0; } else { E.to=lv; E.ph=E.door>0?'closing':'moving'; } };
     E.go=lv=>{ if(lv===E.at){ E.ph='opening'; return; } E.to=lv; E.ph='closing'; };
     E.tick=dt=>{ if(E.ph==='opening'){ E.door=Math.min(1,E.door+dt/.9); if(E.door>=1){ E.ph='open'; E.wait=0; } }
       else if(E.ph==='open'){ E.wait+=dt; if(E.wait>6&&!inCab(E))E.ph='closingIdle'; }
       else if(E.ph==='closing'||E.ph==='closingIdle'){ E.door=Math.max(0,E.door-dt/.9); if(E.door<=0)E.ph=E.ph==='closing'&&E.to!=null?'moving':'idle'; }
       else if(E.ph==='moving'){ const tz=E.to*S+1, d=tz-E.z, v=60*dt*Math.min(1,.25+Math.abs(d)/40); if(Math.abs(d)<=v){ E.z=tz; E.at=E.to; E.to=null; E.ph='opening'; } else { E.z+=Math.sign(d)*v; E.at=Math.round((E.z-1)/S); } }
-      cab.position.y=Y(E.z); const top=Y(E.z)+HH; cable.position.y=top; cable.scale.y=Math.max(.01,Y(AH)-top); cwt.position.y=Y(AH-60-(E.z-1));
-      cl[0].position.x=-cw/2-E.door*cw*.9; cl[1].position.x=cw/2+E.door*cw*.9;
-      for(let lv=0;lv<ST;lv++){ const o=lv===E.at&&E.ph!=='moving'?E.door:0, [a,b]=leaves[lv], g=gaps[lv]; a.position.x=Math.min(dx0,dx1)+lw/2-o*lw*.95; b.position.x=Math.max(dx0,dx1)-lw/2+o*lw*.95;
+      if(E.cab){ E.cab.position.y=Y(E.z); const top=Y(E.z)+HH; E.cable.position.y=top; E.cable.scale.y=Math.max(.01,Y(AH)-top); E.cwt.position.y=Y(AH-60-(E.z-1)); E.cl[0].position.x=-cw/2-E.door*cw*.9; E.cl[1].position.x=cw/2+E.door*cw*.9; }
+      for(let lv=0;lv<ST;lv++){ const o=lv===E.at&&E.ph!=='moving'?E.door:0, f=E.leaves[lv], g=gaps[lv];
+        if(f){ f[0].position.x=Math.min(dx0,dx1)+lw/2-o*lw*.95; f[1].position.x=Math.max(dx0,dx1)-lw/2+o*lw*.95; }
         if(o>.85){ g[0]=g[2]=1e9; } else { g[0]=G0[lv][0]; g[2]=G0[lv][2]; } } };
     return E; });
+  const shaft=()=>{ '@apts'; for(const E of ELS){ const {W,D,cw,cx,cz}=E, cab=new THREE.Group(), add=(me,x,y,z)=>{ me.position.set(x,y,z); cab.add(me); return me; };
+      add(bx(W,th,D,STEEL),0,th/2,0); add(bx(W,HH,.04,DARKS),0,HH/2,-fz*D/2); add(bx(.04,HH,D,DARKS),-W/2,HH/2,0); add(bx(.04,HH,D,DARKS),W/2,HH/2,0); add(bx(W,.04,D,STEEL),0,HH,0); add(bx(W*.5,.02,D*.5,LITB),0,HH-.03,0);
+      add(bx(W-.1,.04,.02,STEEL),0,Y(36)-Y(0),-fz*(D/2-.04));
+      E.cl=[-1,1].map(k=>add(bx(cw,HH,.03,STEEL),k*cw/2,HH/2,fz*(D/2-.02)));
+      add(bx(.03,Y(30)-Y(0),.2,mat(0x2a2c30)),W/2-.03,Y(48)-Y(0),fz*(D/2-.3));
+      cab.position.set(cx,Y(E.z),cz); scene.add(cab); E.cab=cab;
+      const cable=bx(.03,1,.03,IRON); cable.geometry.translate(0,.5,0); const cwt=bx(W*.5,Y(40)-Y(0),.08,IRON); scene.add(cable,cwt); cable.position.set(cx,0,cz); cwt.position.set(cx-W*.2,0,Z(V(.1))); E.cable=cable; E.cwt=cwt;
+      for(let lv=0;lv<ST;lv++){ const pb=add(bx(.035,.05,.05,LITB),W/2-.05,Y(38+lv*7)-Y(0),fz*(D/2-.3)), ph=add(bx(.22,Y(6)-Y(0),.22,HIT),W/2-.12,pb.position.y,pb.position.z);
+        if(lv===0)UI.thing({name:'THE ELEVATOR',ghost:1,obj:ph,reach:.7*TILE,near:1.4*TILE,tall:.5*TILE,act:()=>{ if(inCab(E))E.go(E.at===MY?0:MY); }}); }
+      E.tick(0); } };
+  const doors=lv=>{ '@apts'; for(const E of ELS){ const {dx0,dx1,lw,dzl,s0}=E, y=Y(lv*S+DH/2)+(lv?0:Y(1)-Y(0)), a=bx(lw,lh,.05,STEEL), b=bx(lw,lh,.05,STEEL); a.position.set(Math.min(dx0,dx1)+lw/2,y,dzl); b.position.set(Math.max(dx0,dx1)-lw/2,y,dzl); scene.add(a,b); E.leaves[lv]=[a,b];
+      const ix_=X(U(s0+2.36)), hb=bx(.35,Y(30)-Y(0),.25,HIT), bt=bx(.06,Y(12)-Y(0),.03,BRASS), ln=bx(.3,Y(6)-Y(0),.02,LITB); hb.position.set(ix_,Y(lv*S+48),Z(V(2.7))); bt.position.set(ix_,Y(lv*S+48),Z(V(2.58))+fz*.02); ln.position.set((dx0+dx1)/2,Y(lv*S+DH+5),Z(V(2.58))+fz*.02); scene.add(hb,bt,ln);
+      UI.thing({name:'CALL THE ELEVATOR',ghost:1,obj:hb,reach:1.1*TILE,near:2.4*TILE,tall:1*TILE,act:()=>{ if(APTS.floor()===lv)E.call(lv); }}); E.tick(0); } };
   window.ELVDBG=()=>ELS.map(E=>({z:E.z,ph:E.ph,at:E.at,door:+E.door.toFixed(2)})); window.ELV=ELS;
   const DL=DLV.map(o=>{ const x0=X(U(o.d.c-.55)), x1=X(U(o.d.c+.55)), w=Math.abs(x1-x0), z=Z(V(o.v)), pv=new THREE.Group(), leaf=bx(w*.96,lh,.05,WOOD), kb=bx(.05,Y(4)-Y(0),.1,BRASS);
     leaf.position.set(w*.48,lh/2,0); kb.position.set(w*.86,Y(46)-Y(0),0); pv.add(leaf,kb); pv.position.set(Math.min(x0,x1),Y(o.lv*S),z); scene.add(pv); leaf.castShadow=leaf.receiveShadow=true;
@@ -241,11 +244,20 @@ await grab('apts',async()=>{ const {X,Z,faceTex,bq,C,facade,FRAME,place}=SHARED.
     lpos(LAD.F); return true; };
   APTS.ground=(x,z)=>!window.POSOK?R0:x==null?R0+SY*APTS.floor():gnd(x,z,SHARED.py);
   APTS.SY=SY; APTS.in=false; APTS.esc=false; let was=-1, dl=performance.now();
-  APTS.tick=()=>{ const ib=APTS.inside(pos.x,pos.z), roof=ib&&window.POSOK&&SHARED.py>RFY, inside=ib&&!roof, eg=!ib&&SHARED.LVL==='up'&&EG(pos.x,pos.z)!=null, inn=inside, lv=APTS.floor(), now=performance.now(), dt=Math.min(.1,(now-dl)/1000); dl=now; APTS.in=inn; APTS.esc=eg;
+  APTS.tick=()=>{ const ib=APTS.inside(pos.x,pos.z), roof=ib&&window.POSOK&&SHARED.py>RFY, inside=ib&&!roof, eg=!ib&&SHARED.LVL==='up'&&EG(pos.x,pos.z)!=null, inn=inside, lv=APTS.floor(), now=performance.now(), dt=Math.min(.1,(now-dl)/1000); dl=now; APTS.in=inn; APTS.esc=eg; if(!inn&&PS&&!PF.some(Boolean)){ ROOMS.unpart(PS); PS=null; for(const E of ELS)E.cab=E.cable=E.cwt=E.cl=null; }
     for(const E of ELS)E.tick(dt);
     for(const D of DL){ const want=inside&&lv===D.lv&&Math.hypot(pos.x-D.at.x,pos.z-D.at.z)<1.6*TILE?1:0; if(want===D.a)continue; D.a=want>D.a?Math.min(1,D.a+dt/.5):Math.max(0,D.a-dt/.7); D.pv.rotation.y=D.sg*1.45*D.a; }
-    const key=(inside?1:0)+(eg?2:0)+(roof?16:0)+lv*4; if(key!==was){ was=key; HP.constant=inn?R0+SY*lv+SY*.93:1e6; LP.constant=inside&&lv>0?-(R0+SY*lv-.02):1e6; for(const L of LIGHTS)L.light.intensity=inn?L.i:0; return inn||eg?base(lv,eg).concat(SOLS[lv]):roof?SOL.up.concat(RS):SOL[SHARED.LVL]||SOL.up; } return null; };
+    const key=(inside?1:0)+(eg?2:0)+(roof?16:0)+lv*4; if(key!==was){ was=key; HP.constant=inn?R0+SY*lv+SY*.93:1e6; LP.constant=inside&&lv>0?-(R0+SY*lv-.02):1e6; for(const L of LIGHTS)if(L.light)L.light.intensity=inn?L.i:0; return inn||eg?base(lv,eg).concat(SOLS[lv]):roof?SOL.up.concat(RS):SOL[SHARED.LVL]||SOL.up; } return null; };
   window.HOUSEAT=(dy=0)=>[SHARED.BOD.X(m),SHARED.BOD.Z(A.y1+dy)];
   window.APTSDBG=()=>({in:APTS.in,esc:APTS.esc,floor:APTS.floor(),py:SHARED.py,pos:[+pos.x.toFixed(2),+pos.z.toFixed(2)],door:+X(m).toFixed(1),lad:LAD.F?+LAD.y.toFixed(1):null});
   APTS.rects=lv=>[[A.x0,A.y0,A.x1,A.y1]];
+  APTS.riding=()=>ELS.some(E=>E.ph==='moving'&&inCab(E));
+  const PF=[], FURN=[]; let PS=null; for(let lv=0;lv<ST;lv++)FURN[lv]=[];
+  APTS.furnish=(lv,fn)=>{ FURN[lv].push(fn); const P=PF[lv]; if(P){ const Q=ROOMS.part(P.group,fn); for(const k of ['objs','things','cuts','lights'])P[k].push(...Q[k]); } };
+  const furnish=lv=>{ '@apts'; const G=MAPG.apts||scene; if(!PS)PS=ROOMS.part(G,shaft); PF[lv]=ROOMS.part(G,()=>{ paintFloor(lv); lamps(lv); doors(lv); for(const f of FURN[lv])f(); },MKA);
+    if(ROOMS.lazy['apts'+lv])ROOMS.lazy['apts'+lv].done=true; ROOMS.reset(); if(window.CLIP)CLIP.run(); };
+  const out=lv=>{ ROOMS.unpart(PF[lv]); PF[lv]=null; for(const E of ELS)E.leaves[lv]=null; for(const L of LIGHTS)if(L.lv===lv)L.light=null;
+    if(!PF.some(Boolean)&&PS&&!APTS.in){ ROOMS.unpart(PS); PS=null; for(const E of ELS)E.cab=E.cable=E.cwt=E.cl=null; } };
+  APTS.built=()=>({shaft:!!PS,floors:PF.map(Boolean)});
+  for(let lv=0;lv<ST;lv++)ROOMS.lazy['apts'+lv]={name:lv?'THE '+FN[lv]:'THE APARTMENT HOUSE',group:'apts',need:()=>LOAD('apts'),go:()=>furnish(lv),drop:()=>out(lv),done:false};
   MODS.apts=APTS; });

@@ -11,7 +11,7 @@ if(MAIL.on){ const T=TILE, M=1/.84*T, X=BOD.XS, Z=BOD.ZS, G=(x,z)=>MODS.bodega.g
 
   const front=(at,door)=>{ const dx=door.x-at.x, dz=door.z-at.z; const n=Math.abs(dx)>Math.abs(dz)?{x:Math.sign(dx),z:0}:{x:0,z:Math.sign(dz)||1}; return {at,n,t:{x:-n.z,z:n.x}}; };
   const parkZ0=()=>Z(PARK.y0+PARK.oy);
-  const streetOf=F=>{ const {at,n}=F; if(n.x<0&&at.x>X(AVE.x0-2))return 'THE AVENUE'; if(n.z<0&&at.z>Z(RING.ny0-2))return 'NORTH STREET'; if(n.x>0&&at.x<X(RING.wx1+2))return 'WEST STREET';
+  const streetOf=F=>{ const {at,n}=F; if(n.x>0&&at.x<X(RING.wx1+2))return 'WEST STREET';
     if(n.z>0&&at.z<parkZ0())return 'MARKET STREET'; return 'CENTRAL PARK'; };
   const along=(st,F)=>st==='THE AVENUE'||st==='WEST STREET'?F.at.z:F.at.x;
   const B=[]; const bld=(id,name,F,kind,units)=>B.push({id,name,F,kind,units:units||null});
@@ -63,7 +63,7 @@ if(MAIL.on){ const T=TILE, M=1/.84*T, X=BOD.XS, Z=BOD.ZS, G=(x,z)=>MODS.bodega.g
         b.up.forEach((u,i)=>{ const q=place(F,off-(.75+i*.5)*T,1.2*M), [bx,bz]=orient(F,.3*M,.16*M); blk(q.x,q.y,q.z,bx,.36*M,bz,0x3c4048); const A=MAIL.addr.find(a=>a.b===b&&a.unit===u.unit&&a.up);
           A.box={x:q.x,y:q.y,z:q.z,F}; A.flag=FL.push({x:q.x+F.t.x*.17*M,y:q.y,z:q.z+F.t.z*.17*M,F,up:false})-1; A.tick=TK.push({x:q.x+F.n.x*.09*M,y:q.y+.07*M,z:q.z+F.n.z*.09*M,F,on:false})-1; A.step=b.upStep; }); } }
     for(const A of MAIL.addr)if(!A.step)A.step=A.b.step;
-    const pm=(PARK.x0+PARK.x1)/2, py=(PARK.y0+PARK.y1)/2, want=[[pm+6,BOD.FAR+.9],[RING.wr1+.9,py+7],[pm+9,RING.nr0-.9],[AVE.r0-.9,py-7]], free=window.STFREE||(()=>true);
+    const pm=(PARK.x0+PARK.x1)/2, py=(PARK.y0+PARK.y1)/2, want=[[pm+6,BOD.FAR+.9],[RING.wr1+.9,py+7],[RING.wr1+.9,py+60]], free=window.STFREE||(()=>true);
     for(const [tx,ty] of want){ let s=null; for(let r=0;r<6&&!s;r+=.5)for(let a=0;a<8&&!s;a++){ const x=X(tx)+Math.cos(a*Math.PI/4)*r*T, z=Z(ty)+Math.sin(a*Math.PI/4)*r*T; if(free(x,z,.6*T))s={x,z}; } if(!s)continue;
       const y=G(s.x,s.z), w=.55*M, d=.5*M, rd=[[0,1],[1,0],[0,-1],[-1,0]].map(([a,b])=>[a,b,[1,2,3,4].findIndex(k=>BOD.road.at(tx+a*k,ty+b*k))]).filter(v=>v[2]>=0).sort((p,q)=>p[2]-q[2])[0]||[0,1];
       UB.push({x:s.x,y,z:s.z,r:Math.atan2(X(tx+rd[0])-X(tx),Z(ty+rd[1])-Z(ty)),k:UB.length});

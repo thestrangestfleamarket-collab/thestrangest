@@ -5,7 +5,7 @@
 // node tests/places.cjs [out dir]. Exits 1 if anything fails.
 const {chromium}=require('playwright'), {spawn}=require('child_process'), fs=require('fs'), path=require('path'), zlib=require('zlib');
 const OUT=process.argv[2]||'out', PORT=8797, BASE='http://127.0.0.1:'+PORT;
-let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
+let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c){ bad++; if(process.env.GITHUB_ACTIONS)console.log('::error title=places::'+String(m).replace(/\n/g,' ').slice(0,900)); } };
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
 const TOUR=[
   ['dungeon','x-dungeon',async()=>{ const U=async(f,ms=90000)=>{ for(const t=Date.now();Date.now()-t<ms;await new Promise(r=>setTimeout(r,250)))if(f())return true; return false; };

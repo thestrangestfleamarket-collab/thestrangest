@@ -3870,3 +3870,23 @@ initial download and load super fast"; then "Go")
   y 17.5. THE BATH HOUSE at 134 (its court 125 to 143). THE ENTRANCE TO THE HUDSON AREA at 117.5: a paved way 13 wide through the
   block and the back row to the alley (`BLOCK.hudson`; no gate across it). 'YOUR APARTMENT' is placed in the half-width building.
   Still to do: the bodega's second door toward West St.
+
+- **Nothing animated unless it's on screen and near; the guitarist shelved; the park's back rows as stand-ins** (owner, 21 Oct 2026, of the
+  park's wide view: "i dont want to over do what the game is processing for things that arent vital", "lets remove musician from showing
+  up for now in game, shelf him. i dont want anything animated unless its on screen to a player in radius", of the three rows of big
+  trees past the park's top: "make these low res that are just background art not important"):
+  - **The rule** (`NPCS.seen(x,y,z,r)`, `NPCS.live(x,y,z,r)` in `076-npc-map.js`; `NPCS.R` 25 tiles): a thing is stepped only while it is
+    in the picture (the camera's frustum) and within 25 tiles of you; out of the picture it is not drawn. The characters had this already
+    (`NPCS.tick`); the birds (`144b-birds.js`) have it now (a bird out of the picture is neither stepped nor placed; one in the picture
+    but past the radius stands still). The trees' and the plants' sway (`PARK.swayAt` in `061-park.js`, the same in `142a-flora.js`)
+    fades out from 85% of that radius to nothing at it: far trees in the view stand still. The sway costs the frame nothing either way
+    (one uniform, a few lines of vertex shader; the sun's shadow is only redrawn when you move 12 tiles or the sun turns), so this is the
+    rule, not a saving. Already gated before and left alone: the butterflies and the pool's floats (near only), the musicians past 18,
+    the ghosts past 45, the wires only in wind and near, the lawn's chunks round you.
+  - **The guitarist shelved** (`MUS.shelf` in `110-musician.js`): he is not built, not drawn, not run, not in `NPCS.extra`, not on the
+    apartment's top floor; THE GUITARIST's hit box and SHARPEN bar are not made. His code and the guitar's tunes stay for when he comes
+    back (`MUS.shelf=false`; `?sheet=guitarist` needs him unshelved). The bar's stage keeps its three.
+  - **The three back rows** (`TREES.back`, `P.standFar` in `061-park.js`): the rows of big oaks and elders past the park's top wall
+    (sizes 30-48) are no longer full models in the forest mesh; they are the low stand-ins (a faceted ball on a post, 30 triangles each,
+    no sway) that the park's trees already turn into when you are outside the park, shown always. Some 20 trees, about 8,000 triangles
+    to about 600; no solids lost (they stood beyond the wall).

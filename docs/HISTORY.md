@@ -4040,3 +4040,8 @@ initial download and load super fast"; then "Go")
   the start and read by the builders as before; the 65 hard numbers, the bodega's `-8`, the saved `layout` and `MEDIT` overrides are
   gone. The 1.1 lot scale (`BLDK`) stays inside the old building kits only, converted at one place (`LOTX`). The map editor imports and
   exports `world.json` itself: an exported file dropped into `data/` is the game.
+
+- **The places test waits for what it checks** (21 Oct 2026; `tests/places.cjs`): each place's check waited a fixed 3 to 7 seconds and
+  then looked, so a slow machine failed it now and then and the pull requests went in on a second run. Each check now waits for its
+  own condition (the dungeon's level and its slimes, the park ready and shown, the fire escape built, the arcade's and the bath
+  house's insides built, no fade running), up to a minute and a half (three for the park), and passes the moment it holds.

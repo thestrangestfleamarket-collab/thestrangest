@@ -31,7 +31,8 @@ function makeNPC(D,o){ const N={key:o.key,name:o.name,names:o.names,lv:o.lv||'do
   geo.computeBoundingBox(); if(!o.skin)geo.translate(0,-geo.boundingBox.min.y,0);
   const tall=o.tall||geo.boundingBox.max.y-geo.boundingBox.min.y;
   N.renorm();
-  { const P=geo.attributes.position.array, Nn=geo.attributes.normal.array, n=P.length/3, rk=o.rank, SH=new Float32Array(n), w=tall*.07, grid=new Map(),
+  { const n0=geo.attributes.position.count; geo.setAttribute('sh',new THREE.BufferAttribute(new Float32Array(n0),1)); if(!geo.attributes.fab)geo.setAttribute('fab',new THREE.BufferAttribute(new Float32Array(n0),1)); }
+  N.shade=()=>{ if(N.shaded)return; N.shaded=true; const P=geo.attributes.position.array, Nn=geo.attributes.normal.array, n=P.length/3, rk=o.rank, SH=geo.attributes.sh.array, w=tall*.07, grid=new Map(),
       CI=new Int32Array(n*3); let cm=0; for(let i=0;i<n*3;i++){ CI[i]=Math.floor(P[i]/w); cm=Math.max(cm,Math.abs(CI[i])); }
     const ck=cm<500?(x,y,z)=>((x+512)*1024+y+512)*1024+z+512:(x,y,z)=>x+','+y+','+z, RK=new Float64Array(n), w2=w*w*1.000001;
     for(let i=0;i<n;i++){ RK[i]=rk[RG[i]]||0; const k=ck(CI[i*3],CI[i*3+1],CI[i*3+2]); (grid.get(k)||grid.set(k,[]).get(k)).push(i); }
@@ -40,7 +41,7 @@ function makeNPC(D,o){ const N={key:o.key,name:o.name,names:o.names,lv:o.lv||'do
         for(let q=0;q<L.length;q++){ const j=L[q]; if(RK[j]<=r)continue; const dx=P[j*3]-px, dy=P[j*3+1]-py, dz=P[j*3+2]-pz;
           if(dy<-w*.25||dx*nx+dy*ny+dz*nz<-w*.15||dx*dx+dy*dy+dz*dz>=w2)continue; const d=Math.hypot(dx,dy,dz); if(d>=w)continue; best=Math.max(best,1-d/w); } }
       SH[i]=best; }
-    geo.setAttribute('sh',new THREE.BufferAttribute(SH,1)); if(!geo.attributes.fab)geo.setAttribute('fab',new THREE.BufferAttribute(new Float32Array(n),1)); }
+    geo.attributes.sh.needsUpdate=true; };
   N.sm=new THREE.WebGLRenderTarget(256,256); N.sm.depthTexture=new THREE.DepthTexture(256,256); N.smCam=new THREE.OrthographicCamera(-1.8,1.8,1.8,-1.8,.1,14); N.LVP={value:new THREE.Matrix4()};
   const EYEC=new THREE.Vector3(...(o.eyeC||'1.,.9,.3').split(',').map(Number));
   const mat=new THREE.ShaderMaterial({side:THREE.DoubleSide,uniforms:{uL:{value:W3.Lw},uTint:{value:W3.tint},uLv:W3.lv,uSM:{value:N.sm.depthTexture},uLVP:N.LVP,uEye:{value:o.eye??-1},uEyeC:{value:EYEC}},
@@ -151,11 +152,13 @@ ROAM.pick=(st,free)=>{ '@later'; const L=ROAM.L, H=st.home&&st.home.r>0?st.home:
     else{ const a=Math.random()*Math.PI*2, r=(2+Math.random()*7)*TILE; to={x:Math.max(L.x0,Math.min(L.x1,st.x+Math.sin(a)*r)),z:Math.max(L.z0,Math.min(L.z1,st.z+Math.cos(a)*r))}; }
     if(!free(to.x,to.z,st.R))continue;
     if((st.z<ROAM.wallZ)!==(to.z<ROAM.wallZ)){ st.next=to; st.to={x:ROAM.gate[0]+Math.random()*(ROAM.gate[1]-ROAM.gate[0]),z:ROAM.wallZ}; } else{ st.to=to; st.next=null; } return true; } return false; };
+NPCS.SHADE=40*TILE; NPCS.near=(x,z,r=NPCS.SHADE)=>{ for(const N of NPCS)if(!N.shaded&&N.lv===SHARED.LVL&&Math.hypot(N.st.x-x,N.st.z-z)<r)N.shade(); };
+SYS.add('near',(x,z)=>NPCS.near(x,z),'npc shading');
 { const FR=new THREE.Frustum(), M4=new THREE.Matrix4(), SP=new THREE.Sphere(), V=new THREE.Vector3(); NPCS.extra=[];
-  NPCS.tick=(dt,you)=>{ M4.multiplyMatrices(SHARED.cam.projectionMatrix,SHARED.cam.matrixWorldInverse); FR.setFromProjectionMatrix(M4); const R=25*TILE, LV=LIVES.on;
+  NPCS.tick=(dt,you)=>{ let shadeN=0; M4.multiplyMatrices(SHARED.cam.projectionMatrix,SHARED.cam.matrixWorldInverse); FR.setFromProjectionMatrix(M4); const R=25*TILE, LV=LIVES.on;
     for(const N of NPCS){ const p=N.g.position, d=Math.hypot(p.x-you.x,p.z-you.z), seen=FR.intersectsSphere(SP.set(p,Math.max(2*TILE,N.cullR||0)));
       const far=N.park&&!PARK.in||(LIVES.force==='near'?false:LIVES.force==='half'&&!('mode' in N)?!!(NPCS.indexOf(N)&1):!('mode' in N)&&!N.sheet&&(!N.g.parent.visible||(LV?(LIVES.ready&&LIVES.hidden(N))||d>4*TILE&&!FR.intersectsSphere(SP.set(p,3*TILE)):d>R&&!seen)));
-      N.far=far; N.hid=!N.sheet&&(far||!seen);
+      N.far=far; N.hid=!N.sheet&&(far||!seen); if(!N.shaded&&(!far||d<NPCS.SHADE)&&shadeN<2){ N.shade(); shadeN++; }
       if(!far)N.tick(dt,you); else if(N.farMove)N.farMove(dt); }
     for(const X of NPCS.extra){ const a=X.at; X.hid=!!a&&!FR.intersectsSphere(SP.set(V.set(a.x,(a.y||0)+1,a.z),2*TILE)); }
     LIVES.tick(dt,you); };

@@ -2,7 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {ED, pos, ROOMS, UI} from './003b-systems.js';
 import {renderer, RH, RW, scene} from './004-main.js';
-import {QS, TILE} from './006-map-pre.js';
+import {QS, SYS, TILE} from './006-map-pre.js';
 const BATCH=window.BATCH={items:[],tag:null};
 const OBJS=[]; const OBJ=(place,name)=>{ const o={id:place+':'+OBJS.length,place,name,parts:[]}; OBJS.push(o); return o; };
 BATCH.all=(M,k)=>Object.keys(M||{}).filter(q=>q===k||q.startsWith(k+'~')).map(q=>M[q]);
@@ -74,4 +74,5 @@ BATCH.queue=({make,cast=false,group,post,R,done})=>{ const q={jobs:[],R:R||BATCH
   BATCH.queues.push(q); return q; };
 BATCH.near=(x,z)=>{ for(const q of BATCH.queues)q.near(x,z); };
 BATCH.tick=dt=>{ for(const q of BATCH.queues)q.tick(dt); };
+SYS.add('near',(x,z)=>BATCH.near(x,z),'008-batch');
 export {BATCH, OBJ, OBJS, PEEK};

@@ -3997,3 +3997,37 @@ initial download and load super fast"; then "Go")
   (163), so you come back standing where you left, with no street first and no "ENTERING CENTRAL PARK". A first-ever start begins in
   the park the same way. The second half of his rule — building only that place, not the street under it — is the piece-by-piece
   work that started with the castle (#155): the park wall, the apartments and the ghost dojo next, each its own pull request.
+
+- **The map editor, a flat mockup** (owner, 21 Oct 2026: "make the map editor just show the same mockup map as the main menu (not a
+  real version). top down view you can move things ... checkbox (streets, buildings, grass, trees, water, walkways, etc.) allow to see
+  whole map, drag to move around and zoom (dont drag items on map when you click to drag to look around) double click on things on
+  map to select them ... show details like x y z coordinates, scale, textures, etc. allow to change"; then "i want to be able to
+  export the new map and import it later, dont update in real time"; `096-mapedit.js`, rebuilt): Shift+M opens a full-screen top-down
+  map painted like the menu's (streets, sidewalks, park paths, alley, grass, water, the park wall) with every building, the empty
+  fronts, the West St shells and the park's places drawn over it, and the park's trees; each layer has its checkbox (and NAMES, GRID).
+  WHOLE MAP fits it; a drag looks around, the wheel zooms; a double click picks the smallest thing under it; a drag that starts on the
+  picked thing moves it (¼ tile; arrows, shift a tile). The panel shows its X, Y, Z, width and depth (or radius), height, scale and
+  texture; what the game lets move is editable (the block's buildings along the street, the shells and the park's places anywhere,
+  the lake's size), the rest is grey. Edits change the mockup only, never the game: EXPORT MAP downloads them as a .json file (with
+  every place's position), IMPORT MAP loads one back; the draft stays in the browser between openings. The game can take such a
+  file later (`MEDIT` in `006-map-pre.js` shifts the map's constants by its edits; nothing writes it yet). The old 3D editor is gone.
+
+- **The GAME EDITOR: the map editor's tools, and the character editor** (owner, 21 Oct 2026: "add redo, undo, rotate, (i want to be
+  able to move paths around and rotate them around exactly how i want)", "add a delete and copy button for things on map (delete or
+  copy a tree to place another one)", "add a View button that if you click it will show you just that item in full 360 rotation view
+  you can look at every angle, in black void", "you can edit the item in that mode, like size, texture, color, tint, opacity, etc",
+  "i want a character editor that allows all the same stuff but for all the sentient characters in game (avatar, characters, npcs,
+  merchants, animals, etc) show properties of things like location they are in, behavior, etc.", "dont include the map editor or
+  character editor in the menu, only if you press shift+escape. dont load at start. (Loading Game Editor)"; `096-mapedit.js`):
+  SHIFT+ESCAPE only (Shift+M and the menu's line are gone) opens THE GAME EDITOR behind a LOADING GAME EDITOR screen; its code is its
+  own file (`'@editor'`, fetched then, nothing at the start). Two tabs on the same flat map. THE MAP EDITOR: every thing is a shape
+  that moves, turns (the ○ handle, R, 15° buttons, or a number) and sizes (the □ handle or numbers), the park's paths each their own
+  piece now, every tree its own; UNDO / REDO (Ctrl+Z, Ctrl+Y, 200 steps), COPY (Ctrl+D) and DELETE; VIEW 360: the thing alone in a
+  black void, dragged all round, as a mockup model from its numbers (turn, height, size, scale, texture pattern, color, tint, opacity
+  all change it at once; the game's own meshes could not be shown alone reliably: its wall cutting and batching hide them from a
+  second camera). THE CHARACTER EDITOR: you, the people, the toons, the merchants, the animals and the monsters as dots facing their
+  way (each kind a checkbox; the map's things faint behind), the underground ones in a list; each with its name, X Y Z, facing, level,
+  LOCATION (the zone or the building it is in), KIND, BEHAVIOR (stand, wander, roam, daily life, work, guard, follow you, sleep,
+  fight), speed, health, home, job, size, scale, color, tint, opacity; the same move, turn, copy, delete, undo; VIEW 360 lends the
+  character's own body to the black void. Each tab exports and imports its own file (`market-map-*.json`, `market-characters-*.json`);
+  nothing changes in the game.

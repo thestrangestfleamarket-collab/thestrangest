@@ -4,10 +4,10 @@ PARK.sway={value:0}; PARK.windK={value:1}; PARK.swayAt={value:new THREE.Vector4(
 PARK.tick=()=>{ PARK.sway.value=performance.now()/1000; const A=PARK.swayAt.value; A.x=pos.x; A.z=pos.z; if(typeof NPCS!=='undefined'&&NPCS.R)A.w=NPCS.R; };
 PARK.Q=[]; PARK.in=false; PARK.ready=false; PARK.onShow=[]; PARK.later=f=>PARK.ready?PARK.run(f):PARK.Q.push(f);
 await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.ox=PO.x; PARK.oy=PO.y; PARK.x0=50-MAINX.w+PE[0]; PARK.x1=EASTX+PE[2]; PARK.y0+=PE[1]; PARK.y1+=PE[3]; const X=x=>BOD.XS(x+PO.x), Z=y=>BOD.ZS(y+PO.y), Y=BOD.YS, {hash,grain,speck,grassCol}=BOD.g, P=PARK, U=TILE/.84, f32=F32, b8=B64;
-  P.round=[PARKGX,59.5,7]; P.gate=[PARKGX-5,PARKGX+5]; P.lake=PARKLAKE; const RX=x=>x-96+P.round[0], RY=y=>y+47+P.round[1];
+  P.round=[PARKGX,PARKRY,7]; P.gate=[PARKGX-5,PARKGX+5]; P.lake=PARKLAKE; const RX=x=>x-96+P.round[0], RY=y=>y+47+P.round[1];
   const WA=3; P.wobX=y=>P.armX(y)-P.round[0]; P.wobY=x=>P.armY(x)-P.round[1];
   const CF=CASTLE.b[3]-PO.y+1, CGX=CASTLE.gate-PO.x, [LX,LY,LR]=P.lake, [RX0,RY0]=P.round;
-  const SEG=P.segs=[[RX0,P.y0+1,RX0,P.y1-1],[P.x0+1,RY0,P.x1-1,RY0],[CGX,RY0,CGX,CF],[190,RY0,196.5,45],[196.5,45,197.5,36],[RX0,25,LX-LR-1.5,LY+2],[RX0,-20,-5,-28],[RX0,90,195,90]];
+  const SEG=P.segs=[[RX0,P.y0+1,RX0,P.y1-1],[P.x0+1,RY0,P.x1-1,RY0],[CGX,RY0,CGX,CF],[PARKCAVE[0]-6.5,RY0,PARKCAVE[0],PARKCAVE[1]+3.5],[PARKCAVE[0],PARKCAVE[1]+3.5,PARKCAVE[0]+1,PARKCAVE[1]-5.5],[RX0,25,LX-LR-1.5,LY+2],[RX0,-20,PARKTOWER[0]+3.5,PARKTOWER[1]],[RX0,90,195,90]];
   const segD=P.segD=(x,y)=>{ let m=1e9; for(const [ax,ay,bx,by] of SEG){ const dx=bx-ax, dy=by-ay, L=Math.hypot(dx,dy), ux=dx/L, uy=dy/L, px=x-ax, py=y-ay, s=px*ux+py*uy; let d; if(s<=0)d=Math.hypot(px,py); else if(s>=L)d=Math.hypot(x-bx,y-by); else d=Math.abs(px*-uy+py*ux-WA*Math.sin(2*Math.PI*Math.round(L/70)*s/L)); if(d<m)m=d; } return m; };
   P.armY=x=>{ const [ax,ay,bx]=SEG[1], L=bx-ax; return ay+WA*Math.sin(2*Math.PI*Math.round(L/70)*(x-ax)/L); }; P.armX=y=>{ const [ax,ay,,by]=SEG[0], L=by-ay; return ax+WA*Math.sin(2*Math.PI*Math.round(L/70)*(y-ay)/L); };
   const pd=P.pd=(x,y)=>{ const [cx,cy,r]=P.round; return Math.min(segD(x,y)-3.6,Math.hypot(x-cx,y-cy)-r); };

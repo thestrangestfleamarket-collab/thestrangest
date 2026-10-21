@@ -8,7 +8,7 @@ import {BATCH, PEEK} from './008-batch.js';
 import {BRICKS} from './014-gamekit.js';
 const APTS={EMPTY:true};
 await grab('apts',async()=>{ const {X,Z,faceTex,bq,C,facade,FRAME,place}=SHARED.BOD,
-  RZ=APTS.RZ=28, Y=z=>SHARED.BOD.Y(z+RZ), gbox=(b,k)=>SHARED.BOD.gbox({...b,z0:b.z0+RZ,z1:b.z1+RZ},k), R0=APTS.R0=SHARED.BOD.Y(RZ)-SHARED.BOD.Y(0), {speck,hash}=SHARED.BOD.g, {MKS,CATALOG,PROPS,STUDIO,LSEED,STORY,sh}=SHARED.BOD.K, S=STORY, ST=3, AH=ST*S, W=LSEED.walk, T=.1;
+  RZ=APTS.RZ=28, Y=z=>SHARED.BOD.Y(z+RZ), gbox=(b,k)=>SHARED.BOD.gbox({...b,z0:b.z0+RZ,z1:b.z1+RZ},k), R0=APTS.R0=SHARED.BOD.Y(RZ)-SHARED.BOD.Y(0), {speck,hash}=SHARED.BOD.g, {MKS,CATALOG,PROPS,STUDIO,LSEED,STORY,sh}=SHARED.BOD.K, S=STORY, ST=5, AH=ST*S, W=LSEED.walk, T=.1;
   const A={x0:LOTX(WP.apts.x0),x1:LOTX(WP.apts.x1),y0:W-14,y1:W}, m=(A.x0+A.x1)/2, H={y0:A.y0+5.6,y1:A.y0+8.4}, DW=.78, DH=94;
   APTS.A=A; APTS.H=H; const TEX={}; for(const k in TEXTURES)TEX[k]={w:TEXTURES[k].w,h:TEXTURES[k].h,c:B64(BY(TEXTURES[k],'c'))};
   const STONE=[176,168,152];
@@ -163,10 +163,9 @@ await grab('apts',async()=>{ const {X,Z,faceTex,bq,C,facade,FRAME,place}=SHARED.
       for(let i=0;i<ST0.n;i++){ const y0=ST0.y0+ST0.land+i*ST0.tr, z=top(i)+7; rail(y0,y0+ST0.tr,z+26); post(y0+ST0.tr*.3,z,z+26); post(y0+ST0.tr*.75,z,z+26); }
       g({x0:xm-.06,x1:xm+.06,y0:ST0.y1-.12,y1:ST0.y1,z0:top(ST0.n-1)+7,z1:top(ST0.n-1)+7+34,c:IRN}); } }
   const SY=Y(S)-Y(0), ix=x=>x/(TILE*BLDK)+SHARED.BOD.OX, iy=z=>z/(TILE*BLDK)+SHARED.BOD.OY, TOL=Y(24)-Y(0);
-  const LAD={F:null,y:0}, LV=38, LS_=[-RZ,S,2*S,AH], RFY=R0+SY*(ST-.3);
+  const LAD={F:null,y:0}, LV=38, LAND=Array.from({length:ST-1},(_,i)=>(i+1)*S), LS_=[-RZ,...LAND,AH], RFY=R0+SY*(ST-.3);
   const EG=(x,z)=>{ if(!window.POSOK||Math.abs(x-pos.x)+Math.abs(z-pos.z)>.5*TILE)return null; if(LAD.F)return Y(LAD.y); const u=ix(x)-A.x0;
-    for(const F of ESC){ const d=(iy(z)-F.yf)*F.o; if(d<0||d>DO||u<F.ua||u>F.ub)continue; const Q=d<DI?[S,2*S]:[];
-      if(d>=DI){ Q.push(S); Q.push(2*S); }
+    for(const F of ESC){ const d=(iy(z)-F.yf)*F.o; if(d<0||d>DO||u<F.ua||u>F.ub)continue; const Q=[...LAND];
       let b=null; for(const c of Q)if(Y(c)<=SHARED.py+TOL&&(b==null||c>b))b=c; return b==null||b<2-RZ?null:Y(b); }
     return null; };
   APTS.stoop=(x,z)=>{ const u=ix(x), v=iy(z); if(u<ST0.x0||u>ST0.x1||v<ST0.y0||v>=ST0.y1)return EG(x,z); const t=v-ST0.y0; if(t<ST0.land)return Y(1);
@@ -232,7 +231,7 @@ await grab('apts',async()=>{ const {X,Z,faceTex,bq,C,facade,FRAME,place}=SHARED.
   const loff=top=>{ const F=LAD.F, [x,z]=lpt(F,top?-1:.45); LAD.F=null; st.climb=null; pos.x=x; pos.z=z; };
   APTS.lad=(dt,up,dn,off)=>{ if(!window.POSOK||SHARED.LVL!=='up')return false;
     if(!LAD.F){ if(!(up||dn))return false; for(const F of ESC){ const u=ix(pos.x)-A.x0, d=(iy(pos.z)-F.yf)*F.o; if(Math.abs(u-F.lx)>.5)continue;
-        if(d>DI&&d<DO)for(const y of [-RZ,S,2*S])if(Math.abs(SHARED.py-Y(y))<SY*.25&&(up||y>S)){ lgo(F,y); return true; }
+        if(d>DI&&d<DO)for(const y of [-RZ,...LAND])if(Math.abs(SHARED.py-Y(y))<SY*.25&&(up||y>S)){ lgo(F,y); return true; }
         if(dn&&d<0&&d>-1.5&&SHARED.py>RFY){ lgo(F,AH); return true; } } return false; }
     const [x,z]=lpt(LAD.F,1.3); if(Math.hypot(pos.x-x,pos.z-z)>1.5*TILE){ LAD.F=null; st.climb=null; return false; }
     const at=LS_.find(y=>Math.abs(LAD.y-y)<4);

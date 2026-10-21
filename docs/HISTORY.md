@@ -3796,15 +3796,18 @@ initial download and load super fast"; then "Go")
   so every number is several times a real machine's): the builders that run at start were down 0.6 s, bodega 0.8, apts 2.4–3.1,
   ghostdojo 1.0, parkwall 3.4–3.5, castle 0.7 (now 0); the rest under 10 ms. The next ones each need their own pull request with
   guards, because other files read what they register at start: the apartments (~20 readers), the ghost dojo, the park wall.
-- **The cove: an enterable torch-lit cave by the water** (owner, 21 Oct 2026, from his reference picture of a misty forest-canyon cove
-  with a warm light in a cliff: "create a mockup of a place like this in central park… match atmosphere, fog, hazy, lights"; of
-  `mockups/park-cove.html` (three options A arch / B cave mouth / C boathouse) he picked **B**, and chose an **enterable room** living in
-  the park at **all hours**, tuned for dusk; `src/060b-cove.js`, global `COVE`): a secluded inlet in the North Woods (park-local
-  ~`(round.x-14, y1-12.5)`, west of the golems' cave), reserved from the trees/hills/undergrowth by `COVE.keep(P)` folded into park.js's
-  three keep lists. A still round pool (`WATER.body`, the park-pond pattern, a circular mask, a rock rim with a gap for the pier), a
-  wooden pier of instanced boxes jutting over it (the newsstand idiom), a mossy schist cave (the golems'-cave dome reskinned, mouth
-  facing the water) with a chunky rock cliff rising behind, two mouth torches + an ember fire inside (`FLAME`, warm `LITE` lights on the
-  budget), and the cave interior an enterable room (`STORE.rooms`, the crown cut above `y1` so the iso camera sees in). All solids are
-  stock `MeshLambertMaterial`, so the owner's teal mist (`FAR3.mist`) fogs them automatically and follows the clock. Registered as the
-  place **THE COVE** (`STORE.places`, no `094-ui.js` edit). Built in Central Park's own load (`PARK.later`, chunk `park`), not at the
-  start. Still a first look pass: the cliff drama, the mood and a stray park lamp beside it are open to tuning.
+- **The cove: a massive glowing cliff in a lake** (owner, 21 Oct 2026, from his reference picture of a misty forest-canyon cove with a
+  warm light in a cliff: "create a mockup of a place like this in central park… match atmosphere, fog, hazy, lights"; of
+  `mockups/park-cove.html` (options A arch / B cave mouth / C boathouse) he picked **B**, an **enterable room** at **all hours**; then of
+  the first in-game cut, pointing at the cel mockup: "i want it to look like this scale, match exactly (not just 1 round cave) i want it
+  massive … and in the middle of the lake"; `src/060b-cove.js`, global `COVE`): in the North Woods (park-local ~`(round.x-14, y1-14)`,
+  west of the golems' cave), reserved from the trees/hills/undergrowth/lamps by `COVE.keep(P)` folded into park.js's keep lists and its
+  lamp grid. A **big lake** (`WATER.body`, the park-pond pattern, a double mask: inside the lake radius and outside the island), with a
+  **towering mossy schist cliff** rising from a rock island in it — ~120 big flat-shaded dodecahedron boulders stacked to ~16 tiles,
+  grey high, mossed low — and the enterable **cavern** carved at its foot (the golems'-cave dome reskinned, mouth to the water). A **long
+  wooden pier** of instanced boxes reaches from the south shore out to the cave mouth; two mouth torches + an ember fire inside (`FLAME`,
+  warm `LITE` lights on the budget); tall dark pines round the shore melt into the mist. All solids are stock `MeshLambertMaterial`, so
+  the owner's teal mist (`FAR3.mist`) fogs them and follows the clock. The cavern is an enterable room (`STORE.rooms`, crown cut above
+  `y1` so the iso camera sees in); its pool water is tinted a deep teal (its own `uDeep`) so it doesn't flash the pond's bright cyan.
+  Registered as the place **THE COVE** (`STORE.places`, no `094-ui.js` edit). Built in Central Park's own load (`PARK.later`, chunk
+  `park`), not at the start. A look pass still in flight: cliff shape, mist and the last trailhead lamp are open to tuning.

@@ -1,4 +1,4 @@
-const LINES={log:[]};
+Object.assign(LINES,{log:[]});
 { const POOL={
     greet:['Hello, {{name}}.','You again. Good.','Welcome to the market.','Watch your step out here.','Quiet tonight, isn\'t it?','Looking for something?','Hm? Oh. Hello.','Don\'t mind me.','The dragons are out again.','Mind the stairs down there.','Nice to see a face.','Hey there, {{name}}.'],
     cheer:['And stay down!','That\'s the last of him.','All clear.','Back to the beat.','They never learn.','Ha! Off he goes.','Street\'s safe, {{name}}.','Nothing to see.'],

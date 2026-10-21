@@ -1,4 +1,4 @@
-const SGM={tick:()=>{}}; STORE.SGM=SGM;
+Object.assign(SGM,{tick:()=>{}}); STORE.SGM=SGM;
 if(!AWAY.has('bar')){ const R=RIG;
   const D=WOMAN.DESIGNS[2], LOOK={...D.look,metal:'#d6d8de',tie:'#1a181c',cover:'#2c2620',linen:'#ece4cc',ember:'#ff3a28',hole:'#2a282e'};
   const tones=h=>{ const c=new THREE.Color(h); return [1.14,1,.72,.46].map(k=>c.clone().multiplyScalar(k)); };

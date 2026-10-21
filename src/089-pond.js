@@ -1,4 +1,4 @@
-const POND={}; window.POND=POND;
+ window.POND=POND;
 { const go=()=>{ '@park'; if(typeof PARK==='undefined'||!PARK.fire)return setTimeout(go,500);
     const P=PARK, X=x=>SHARED.BOD.XS(x+(P.ox||0)), Z=y=>SHARED.BOD.ZS(y+(P.oy||0)), Y=SHARED.BOD.YS, [cx,cy,R]=P.lake, RIM=9, LV=7;
     const WX=X(cx), WZ=Z(cy), RW=R*TILE;

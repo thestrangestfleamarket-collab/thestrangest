@@ -1,4 +1,4 @@
-const WHERE={};
+
 { const KEY='where', test=['at','place','sheet','npcat'].some(k=>QS.get(k)!=null);
   let W=null; try{ if(QS.get('fresh')!=null)SAVE.del(KEY); else W=JSON.parse(SAVE.get(KEY)||'null'); }catch(e){}
   const back=async()=>{ if(!window.__started){ setTimeout(back,200); return; } await LOAD('later'); let w=W; if(!w||![w.x,w.z,w.y,w.hd].every(Number.isFinite))return;

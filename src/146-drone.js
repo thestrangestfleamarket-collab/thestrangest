@@ -1,4 +1,4 @@
-const DRONE=window.DRONE={cam:false,state:'home'};
+
 DRONE.init=()=>{ const H=MODS.apts; if(!H||!H.A||!H.made)return; const A=H.A, T=TILE, X=SHARED.BOD.X, Y=SHARED.BOD.Y, Z=SHARED.BOD.Z;
   const lam=c=>new THREE.MeshLambertMaterial({color:c}), flat=c=>new THREE.MeshBasicMaterial({color:c});
   const bx=(w,h,d,m)=>new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);

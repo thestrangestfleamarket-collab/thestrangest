@@ -1,4 +1,4 @@
-const FEEL={on:false,dbg:false,ready:false,lib:null,S:null,go:0,ev:{jump:0,land:0,imp:0},hs:0};
+Object.assign(FEEL,{on:false,dbg:false,ready:false,lib:null,S:null,go:0,ev:{jump:0,land:0,imp:0},hs:0});
 window.FEEL=FEEL;
 { const V=THREE.Vector3, MH=TILE/.84, MV=MH*ZU*24/TILE, H=1/60, D2R=Math.PI/180;
   FEEL.MH=MH; FEEL.MV=MV; FEEL.H=H;

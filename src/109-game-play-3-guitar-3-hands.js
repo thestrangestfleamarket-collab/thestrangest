@@ -15,7 +15,7 @@ function gtLeft(t){ '@later'; const out=[]; out.w=[]; for(let f=1;f<=4;f++){ let
     const a=(prev?prev.t1:t)+0.08, b=(next?next.t0:t+1)-0.1; out[f]=gtMix(hover(prev||next),hover(next||prev),gtSm((t-a)/Math.max(0.05,b-a))); out.w[f]=0.1; }
   for(let f=1;f<=4;f++)for(let g=f+1;g<=4;g++){ const d=RIG.sub(out[g],out[f]), along=RIG.dot(d,GTF.y), off=RIG.len(d); if(off>=0.42)continue; const push=(0.42-off)/2*(along<0?-1:1); out[f]=RIG.add(out[f],RIG.mul(GTF.y,-push)); out[g]=RIG.add(out[g],RIG.mul(GTF.y,push)); }
   return out; }
-const GTRH={p:0,i:1,m:2,a:3}, GTHOME=[5,3,2,1], GTYP=[GT.YP+1.3,GT.YP+0.65,GT.YP,GT.YP-0.6];
+const GTHOME=[5,3,2,1]; Object.assign(GTRH,{p:0,i:1,m:2,a:3});
 function gtRight(t){ '@later'; const out=[]; out.w=[]; for(const r in GTRH){ const d=GTRH[r]; let last=null, next=null;
     for(const n of GTTUNE){ if(n.r!==r)continue; if(n.t<=t)last=n; else { next=n; break; } }
     const yp=GTYP[d], z0=s=>GT.sz(yp)+0.3, s=next?next.s:last?last.s:GTHOME[d];
@@ -74,7 +74,7 @@ function gtDigitFrom(hf,s,i,T,from,w){ '@later'; const fg=gtDigit(hf,s,i,T), r=R
 function gtPose(t){ '@later'; const {add,mul,sub,dot,V,nrm}=RIG, T={L:gtLeft(t),R:gtRight(t)}, strum=GTSTRUM.some(e=>t>e.t0-.3&&t<e.t0+e.T+.3), off={L:V(0,0,0),R:V(0,0,0)}, sol={L:V(0,0,0),R:V(0,0,0)}, el={L:V(0,0,0),R:V(0,0,0)}; let P, body=null;
   let yw=0, W0=0; for(let f=1;f<=4;f++){ const w=T.L.w[f]||0; yw+=dot(sub(T.L[f],GTF.o),GTF.y)*w; W0+=w; }
   const yc=(GT.mid(Math.round(gtPosAt(t))+1)+GT.mid(Math.round(gtPosAt(t))+2))/2, yT=W0>0.5?(yw/W0)*0.85+yc*0.15:yc, Wr={L:gtAt(2.54,yT-0.43,-1.33),R:gtAt(...GTWR.R)};
-  for(let it=0;it<7;it++){ P=JSON.parse(JSON.stringify(castPose('stand'))); P.bend=0; P.side=0; P.nod=-17*RIG.D; P.look=14*RIG.D; P.cyaw=-4*RIG.D;
+  for(let it=0;it<7;it++){ P=JSON.parse(JSON.stringify(CAST.pose('stand'))); P.bend=0; P.side=0; P.nod=-17*RIG.D; P.look=14*RIG.D; P.cyaw=-4*RIG.D;
     for(const n of 'LR'){ gtArm(P,n,add(add(Wr[n],off[n]),sol[n]),nrm(add(GTPOLE[n],mul(el[n],2)))); P[n].hf=GTH.hf[n]; P[n].hfw=1; }
     const B=RIG.build(P,null); if(!body)body=gtBodyD(B.J);
     T.yT=yT; gtFing(P,B,T);
@@ -99,7 +99,7 @@ const GTSLUNG={o:RIG.V(-1.8,19.2,7.0)};
 
 CAST.walker={id:'walker',name:'the Walker',own:true,tall:69,cos:(J,base)=>base.concat([GT.PIECE]),look:{}};
 { const c=CAST.walker; c.ramp=RIG.ramp32(c.look); c.dens=Math.round(52*c.tall*.0254/1.75)/52; c.cloud=null; c.baker=null; }
-function gtStep(a,dt,now){ '@later'; if(!a.playing){ castStep(a,dt,now); if(a.B)gtSlung(a,a.B); return; }
+function gtStep(a,dt,now){ '@later'; if(!a.playing){ CAST.step(a,dt,now); if(a.B)gtSlung(a,a.B); return; }
   GTS.t+=dt; const t=GTS.t, P=gtPose(t); npcSpring(a,P,dt,NPCARMS); gtFing(P,RIG.build(P,null),P._T); npcSpring(a,P,dt,NPCFING); a.t+=dt;
   a.P=P; a.pose='guitar'; a.to='guitar'; const B=RIG.settle(RIG.build(P,null),0); B.head=B.J.head; B.props={guitar:GTF}; a.B=B;
   for(let i=0;i<6;i++)GTS.env[i]*=Math.exp(-dt*(i>2?0.9:1.6));

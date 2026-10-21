@@ -1,5 +1,5 @@
 // ROOMS: which room you are in, roofs hidden when inside, and roofAt.
-const ROOMS={cur:null}; window.ROOMS=ROOMS;
+Object.assign(ROOMS,{cur:null}); window.ROOMS=ROOMS;
 ROOMS.roofAt=(x,y,z)=>{ const h=new THREE.Raycaster(new THREE.Vector3(x,y,z),new THREE.Vector3(0,1,0),0,12).intersectObjects(scene.children,true).find(i=>{ for(let q=i.object;q;q=q.parent)if(!q.visible)return false; return i.object.isMesh&&!i.object.isSkinnedMesh; }); return h?+h.distance.toFixed(2):null; };
 { const V=THREE.Vector3, PL=[0,1,2,3,4,5].map(()=>new THREE.Plane()), m=.14*TILE; let RL=null;
   const NEAR=[new THREE.Plane(new V(0,-1,0),1e6),new THREE.Plane(new V(1,0,0),1e6),new THREE.Plane(new V(0,0,1),1e6)]; let NEARON=false, NEARIN=false;

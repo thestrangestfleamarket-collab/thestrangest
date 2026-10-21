@@ -1,4 +1,4 @@
-const PB={on:false,ready:false,loose:0.5};
+Object.assign(PB,{on:false,ready:false,loose:0.5});
 { const R=RIG, PCS=W3.pcs, KEYS=['hips','torso','head','upperArmL','forearmL','handL','upperArmR','forearmR','handR','thighL','shinL','shoeL','thighR','shinR','shoeR'];
   const PARENT={torso:'hips',head:'torso',upperArmL:'torso',forearmL:'upperArmL',handL:'forearmL',upperArmR:'torso',forearmR:'upperArmR',handR:'forearmR',thighL:'hips',shinL:'thighL',shoeL:'shinL',thighR:'hips',shinR:'thighR',shoeR:'shinR'};
   const partOf=n=>{ const s=n.slice(-1), sd=s==='L'||s==='R'?s:''; if(/^(head|hair|beard|brow|eye|nose|ear|mouth)/.test(n))return 'head'; if(n==='neck'||n==='torso')return 'torso'; if(n==='hips')return 'hips';

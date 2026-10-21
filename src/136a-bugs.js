@@ -1,4 +1,4 @@
-const BUGS={};
+
 { const SB='https://jvcetttmqseoteidfggn.supabase.co', KEY='sb_publishable_UkzD8hOizW1hPr6hm3duQQ_07ZodPik', LS='sb-jvcetttmqseoteidfggn-auth-token';
   const errs=[], err=m=>{ errs.push(String(m||'').slice(0,240)); if(errs.length>8)errs.shift(); };
   addEventListener('error',e=>err(e.message)); addEventListener('unhandledrejection',e=>err(e.reason&&e.reason.message||e.reason));

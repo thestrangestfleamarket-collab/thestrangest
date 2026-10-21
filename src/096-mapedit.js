@@ -1,5 +1,5 @@
 // THE GAME EDITOR (Shift+Escape only; its own file, fetched then): the MAP EDITOR and the CHARACTER EDITOR on a flat top-down mockup: layers, look around, pick, move, turn, size, copy, delete, undo, a 360 view in a black void; export and import as files, never the game.
-const MAPED={on:false,open:false,dragging:false,down:()=>false,move:()=>{},up:()=>{}};
+Object.assign(MAPED,{on:false,open:false,dragging:false,down:()=>false,move:()=>{},up:()=>{}});
 { const BOX={bodega:()=>{ const B=SHARED.BOD.B0; return [SHARED.BOD.X(B.x0),SHARED.BOD.Z(B.y0),SHARED.BOD.X(B.x1),SHARED.BOD.Z(B.y1)]; },
     house:()=>{ const A=MODS.apts&&MODS.apts.A; return A?[SHARED.BOD.X(A.x0),SHARED.BOD.Z(A.y0),SHARED.BOD.X(A.x1),SHARED.BOD.Z(A.y1)]:null; },
     ghost:()=>{ const g=SHARED.BOD.grounds.find(g=>g.id==='ghostst'); return g?[SHARED.BOD.X(g.x0),SHARED.BOD.Z(g.y0),SHARED.BOD.X(g.x1),SHARED.BOD.Z(g.y1)]:null; },
@@ -8,7 +8,7 @@ const MAPED={on:false,open:false,dragging:false,down:()=>false,move:()=>{},up:()
     castle:()=>{ const b=CASTLE.b; return [SHARED.BOD.XS(b[0]),SHARED.BOD.ZS(b[2]),SHARED.BOD.XS(b[1]),SHARED.BOD.ZS(b[3])]; },
     subway:()=>{ const S=MAPSTAIR; return [SHARED.BOD.XS(S.x0),SHARED.BOD.ZS(S.y0),SHARED.BOD.XS(S.x1),SHARED.BOD.ZS(S.y1)]; }};
   MAPED.box=k=>BOX[k]?BOX[k]():null; }
-const GAMEED={open:false,built:false};
+Object.assign(GAMEED,{open:false,built:false});
 GAMEED.build=()=>{ '@editor'; const T=TILE;
 
   const css=(el,o)=>Object.assign(el.style,o), BTN={font:'10px Silkscreen,monospace',padding:'4px 7px',color:'#ece5d3',background:'#0e1016',border:'2px solid #3a3f4e',cursor:'pointer'};

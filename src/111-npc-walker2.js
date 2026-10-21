@@ -1,4 +1,4 @@
-const BWK={}; window.BWK=BWK;
+ window.BWK=BWK;
 { const R=RIG, V=R.V, QS=new URLSearchParams(location.search), SHEET=QS.get('sheet')==='walker2', MAT=R.MATS;
   const LOOK={shirt:R.RAMP.shirt,skin:R.RAMP.skin,hair:R.RAMP.hair,pants:R.RAMP.pants,shoes:R.RAMP.shoes,sole:['#3e3226','#352a20','#2a2119','#1c1611'],eye:['#2a2220','#241c1a','#1a1414','#0e0a0a']};
   for(const m in LOOK){ const n='bw_'+m; if(!MAT.includes(n)){ MAT.push(n); W3.ramp.push(LOOK[m].map(h=>new THREE.Color(h))); } }

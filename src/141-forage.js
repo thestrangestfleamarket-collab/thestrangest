@@ -1,4 +1,4 @@
-const FORAGE={}; window.FORAGE=FORAGE;
+ window.FORAGE=FORAGE;
 { const PACK={tab:'pack'}; FORAGE.PACK=PACK; const T=TILE, KEY='forage', esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
   const MU={button:['MEADOW BUTTON',0,2,.06,0,0xe8dcc0,0xeee6d2,[1,.6,1,1]],puffball:['PUFFBALL',5,3,.05,0,0xf2efe6,0xf2efe6,[1,1.15,.15,1]],
     chanterelle:['CHANTERELLE',20,8,.1,0,0xe08a2a,0xe8a24a,[1.15,.4,1,.9]],redcap:['RED CAP',30,10,0,1,0xc0321e,0xeee6d2,[1.2,.7,1.2,1]],

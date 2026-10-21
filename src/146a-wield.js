@@ -1,4 +1,4 @@
-const WIELD={on:null}; window.WIELD=WIELD;
+Object.assign(WIELD,{on:null}); window.WIELD=WIELD;
 { const T=TILE, V3=THREE.Vector3, LIST=['sword','net','bnet'], NM={sword:'SWORD',net:'BUTTERFLY NET',bnet:'BIRD NET'}, say=FORAGE.say;
   FORAGE.add({names:{sword:'SWORD'},prices:{sword:15}});
   if(!FORAGE.has('sword')&&(!SAVE.get('sword0')||QS.get('fresh'))){ FORAGE.give('sword',1); SAVE.set('sword0','1'); }

@@ -9,7 +9,7 @@ const VIS={all:false};
   VIS.showAll=on=>{ VIS.all=!!on; for(const [o,r] of M)apply(o,r); };
   VIS.count=()=>M.size;
   window.VIS=VIS; }
-const ZONES={cur:null,list:[['market','MARKET ST'],['cp','CENTRAL PARK'],['secp','SOUTH EAST CENTRAL PARK'],['station','THE SUBWAY STATION'],['dungeon','THE DUNGEON'],['inside','INSIDE']],fns:[]};
+Object.assign(ZONES,{cur:null,list:[['market','MARKET ST'],['cp','CENTRAL PARK'],['secp','SOUTH EAST CENTRAL PARK'],['station','THE SUBWAY STATION'],['dungeon','THE DUNGEON'],['inside','INSIDE']],fns:[]});
 { const mid=()=>{ const P=PARK; return (P.y0+P.y1)/2+(P.oy||0); };
   ZONES.at=(x,z,lv,room)=>{ if(lv==='down')return MODS.dungeon&&MODS.dungeon.inside&&MODS.dungeon.inside(x,z)?{id:'dungeon',name:'THE DUNGEON'+(window.DUNGEON&&DUNGEON.level?' — LEVEL '+DUNGEON.level:'')}:{id:'station',name:'THE SUBWAY STATION'};
     if(room)return {id:'inside',name:String(room.name||room.lz||room.id||'INSIDE').toUpperCase()};

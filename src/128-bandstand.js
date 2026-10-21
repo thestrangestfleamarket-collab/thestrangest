@@ -1,4 +1,4 @@
-const STAGE={}; STORE.STAGE=STAGE;
+ STORE.STAGE=STAGE;
 STAGE.tick=()=>{}; STAGE.who=()=>null;
 STAGE.make=()=>{ if(!STORE.bar)return; const ALL=[['pn',PNM],['sg',SGM],['dr',DRM]], SET=Math.max(5,+(QS.get('set')||180)); let i=0, t=0;
   STAGE.go=k=>{ i=typeof k==='number'?k:Math.max(0,ALL.findIndex(a=>a[0]===k)); t=0;

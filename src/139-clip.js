@@ -1,4 +1,4 @@
-const CLIP={moved:[],found:[],added:0,boxes:new Map(),done:new Set(),ms:0}; window.CLIP=CLIP;
+Object.assign(CLIP,{moved:[],found:[],added:0,boxes:new Map(),done:new Set(),ms:0}); window.CLIP=CLIP;
 { const MH=24*ZU/.84, KNEE=.45*MH, CHEST=1.2*MH, G=TILE/4, E=.04*TILE, GC=2*TILE;
   const GR=new Map(), key=(i,j)=>i*131072+j;
   const grid=L=>{ let g=GR.get(L); if(g&&g.n===L.length)return g; g={n:L.length,m:new Map()};

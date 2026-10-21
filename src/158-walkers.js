@@ -1,4 +1,4 @@
-const WALKERS={list:[],on:QS.get('walkers')==='1'}; window.WALKERS=WALKERS;
+Object.assign(WALKERS,{list:[],on:QS.get('walkers')==='1'}); window.WALKERS=WALKERS;
 if(WALKERS.on){ const T=TILE, X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, rnd=Math.random, pick=a=>a[Math.floor(rnd()*a.length)], R=(a,b)=>a+rnd()*(b-a);
   const GAIT={stroll:['walk_b',1.6,[.75,1]],walk:['UAL_Walk_Loop',1.6,[1,1.3]],brisk:['walk_a',1.6,[1.3,1.7]],formal:['UAL_Walk_Formal_Loop',1.5,[1,1.25]],jog:['UAL_Jog_Fwd_Loop',3.4,[2.4,3]],run:['run_a',5,[3.4,4.2]]};
   const KIND={

@@ -3,7 +3,7 @@
 looseDraw();
 let looseAcc=0, J0=null, J0t=0; SHARED.trip=false; const SUNG={t:0,lit:0,k:0,rc:new THREE.Raycaster(),o:new THREE.Vector3(),hit:[]};
 
-const keys=new Set(), PAD={mv:null,n:0}; SHARED.target=null;
+const PAD={mv:null,n:0}; SHARED.target=null;
 const VIEW0={yaw:Math.PI/4,pitch:Math.PI/6,ppu:PPU}; SHARED.yaw=VIEW0.yaw; SHARED.pitch=VIEW0.pitch; SHARED.yawTo=SHARED.yaw; SHARED.pitchTo=SHARED.pitch; SHARED.ppuTo=SHARED.ppu;
 const PMIN=0.17, PMAX=Math.PI/2-0.002, clampP=v=>Math.max(PMIN,Math.min(PMAX,v));
 renderer.domElement.addEventListener('contextmenu',e=>e.preventDefault());

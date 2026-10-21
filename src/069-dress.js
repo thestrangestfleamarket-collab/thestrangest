@@ -1,4 +1,4 @@
-const DRESS=window.DRESS={gaps:()=>{ const G=[]; for(let i=0;i+1<MAINROW.length;i++){ const a=MAINROW[i][1], b=MAINROW[i+1][0]; if(b-a>1.5)G.push([a,b]); } return G; }}, TLX={tick:()=>{}};
+const TLX={tick:()=>{}}; window.DRESS=Object.assign(DRESS,{gaps:()=>{ const G=[]; for(let i=0;i+1<MAINROW.length;i++){ const a=MAINROW[i][1], b=MAINROW[i+1][0]; if(b-a>1.5)G.push([a,b]); } return G; }});
 { const G=MODS.bodega.ground, xm=(SHARED.BOUND.x0+SHARED.BOUND.x1)/2; let zc=null, zf=null; for(let z=SHARED.BOUND.z0;z<SHARED.BOUND.z1;z+=0.02){ const g=G(xm,z); if(zc==null&&g<-.01)zc=z; if(zc!=null&&zf==null&&g>-.01&&z>zc)zf=z; }
   const sw=zc-.5, far=zf+.6, AX=SHARED.BOD.X(MODS.apts.A.x1), AX0=SHARED.BOD.X(MODS.apts.A.x0), BX0=SHARED.BOD.X(SHARED.BOD.B0.x0);
   DRESS.kerb={sw,far}; DRESS.cans=[];

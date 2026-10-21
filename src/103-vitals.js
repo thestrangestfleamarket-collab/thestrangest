@@ -1,4 +1,4 @@
-const VIT={hp:1,sta:1,out:0,tired:false,fight:0,dead:false};
+Object.assign(VIT,{hp:1,sta:1,out:0,tired:false,fight:0,dead:false});
 VIT.inFight=t=>{ VIT.fight=Math.max(VIT.fight,t||5); };
 { const css=document.createElement('style'); css.textContent=`#vit{position:fixed;left:12px;bottom:12px;width:150px;display:grid;gap:4px;z-index:5;pointer-events:none}
     #vit[hidden]{display:none} #vit div{height:7px;background:#0b0d13cc;border:1px solid #2a3040} #vit i{display:block;height:100%}`; document.head.appendChild(css);

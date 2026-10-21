@@ -1,4 +1,4 @@
-const WEEDS=window.WEEDS={};
+
 WEEDS.movers=[...Array(8)].map(()=>new THREE.Vector4(0,0,0,0)); WEEDS.UMV={value:WEEDS.movers};
 WEEDS.PART=(T,k)=>'{ vec4 w0=modelMatrix*instanceMatrix*vec4(transformed,1.); vec3 dw=vec3(0.); for(int i=0;i<8;i++){ vec4 m=uMv[i]; if(m.w<.5)continue; vec2 d=w0.xz-m.xy; float l=length(d), f=1.-l/m.z; if(f<=0.)continue; f=f*f*(3.-2.*f); dw.xz+=d/max(l,.001)*f*'+(.22*T).toFixed(4)+'; dw.y-=f*'+(.05*T).toFixed(4)+'; } transformed+=inverse(mat3(instanceMatrix))*dw*'+k+'; }';
 WEEDS.clear=r=>{ (WEEDS.clr=WEEDS.clr||[]).push(r); if(WEEDS.lawnDrop)WEEDS.lawnDrop(r); const M=new THREE.Matrix4(), Z=new THREE.Matrix4().makeScale(0,0,0); for(const me of WEEDS.meshes||[]){ let n=0; for(let i=0;i<me.count;i++){ me.getMatrixAt(i,M); const x=M.elements[12], z=M.elements[14]; if(x>r[0]&&x<r[2]&&z>r[1]&&z<r[3]){ me.setMatrixAt(i,Z); n++; } } if(n)me.instanceMatrix.needsUpdate=true; } };

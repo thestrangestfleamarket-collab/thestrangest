@@ -1,4 +1,4 @@
-const FIGFX={};
+
 {
   const FX={items:[],N:220}; { const geo=new THREE.BoxGeometry(1,1,1), lit=new THREE.InstancedMesh(geo,new THREE.MeshLambertMaterial({color:0xffffff}),FX.N), glow=new THREE.InstancedMesh(geo,new THREE.MeshBasicMaterial({color:0xffffff,toneMapped:false}),FX.N);
     for(const m of [lit,glow]){ m.count=0; m.frustumCulled=false; m.instanceMatrix.setUsage(THREE.DynamicDrawUsage); m.castShadow=false; MAPG.bodega.add(m); } FX.lit=lit; FX.glow=glow;

@@ -64,6 +64,6 @@ await grab('dungeon',async()=>{});
     if(m!==cur)return go(m,'load');
     const L=lay(cur), gx=iX(p.x), gy=iZ(p.z); if(tread(L.up,gx,gy))go(cur-1,'below'); else if(tread(L.dn,gx,gy))go(cur+1,'top'); };
   MODS.dungeon={get B(){ return lot(cur||1); },ground,inside:(x,z)=>lotAt(x,z)>0,bound:(x,z)=>bnd(lotAt(x,z)||1),arrive:n=>lay(n).atUp,lay,hook:f=>HK.push(f),tick(){}};
-  window.DUNGEON={get level(){ return cur; },go:n=>go(Math.max(0,Math.min(NL,n|0)),'top'),spawn:async n=>{ if(n&&n!==cur){ await go(n,'top'); } return SKELGO(); },levels:NL};
+  window.DUNGEON={get level(){ return cur; },go:n=>go(Math.max(0,Math.min(NL,n|0)),'top'),spawn:async n=>{ if(n&&n!==cur){ await go(n,'top'); } return MODS.skel(); },levels:NL};
   window.DUNDBG=()=>({level:cur,lv:SHARED.LVL,busy,lot:typeof pos!=='undefined'?lotAt(pos.x,pos.z):0,objs:mine?mine.objs.length:0,lights:mine?mine.lights.length:0,sol:mine?mine.sol.length:0,
-    tris:mine?mine.objs.reduce((a,o)=>{ let t=0; o.traverse(c=>{ if(c.geometry&&c.geometry.attributes.position)t+=(c.geometry.index?c.geometry.index.count:c.geometry.attributes.position.count)/3; }); return a+t; },0):0,skel:!!SKELGO.p}); }
+    tris:mine?mine.objs.reduce((a,o)=>{ let t=0; o.traverse(c=>{ if(c.geometry&&c.geometry.attributes.position)t+=(c.geometry.index?c.geometry.index.count:c.geometry.attributes.position.count)/3; }); return a+t; },0):0,skel:!!(MODS.skel&&MODS.skel.p)}); }

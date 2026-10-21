@@ -1,4 +1,4 @@
-const AMB={on:true};
+Object.assign(AMB,{on:true});
 { const S=SAVE.get('amb'); if(S!=null)AMB.on=S==='1';
   const dB=d=>Math.pow(10,d/20), T=TILE;
   const SETS={

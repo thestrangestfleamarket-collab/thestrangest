@@ -1,4 +1,4 @@
-const LOOK={on:true, glowK:{value:0}, night:{value:0}, cool:{value:0}};
+Object.assign(LOOK,{on:true, glowK:{value:0}, night:{value:0}, cool:{value:0}});
 { let v='1'; try{ v=SAVE.get('look')||'1'; }catch(e){} LOOK.on=v==='1'; }
 LOOK.shader={uniforms:{tDiffuse:{value:null},uRes:{value:new THREE.Vector2(1,1)},uNight:LOOK.night,uGlowK:LOOK.glowK,uCool:LOOK.cool},
   vertexShader:'varying vec2 vUv; void main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.); }',

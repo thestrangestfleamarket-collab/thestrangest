@@ -33,4 +33,4 @@ function octBody(A){ '@later'; const L=[], D=[], z0=OCTSEAT, nod=A.nod||0;
   D.push([7.4*K,3.1*K,hz+1.9*K,'w'],[7.4*K,-3.8*K,hz+1.9*K,'w']);
   D.push([3.4*K,4.7*K,hz+12*K,'M'],[3.8*K,-2.6*K,hz+15*K,'M'],[2.4*K,.9*K,hz+18*K,'M']);
   return {E:L,D}; }
-window.__octo={paint:(A,H,r=1)=>pupPaint(octBody(A),H,OCTP,r,{S:120}),arms:p=>octArms(p)};
+

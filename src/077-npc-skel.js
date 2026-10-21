@@ -1,4 +1,5 @@
 const SKELGO=()=>SKELGO.p||(SKELGO.p=LOAD('dungeon').then(async()=>{ '@dungeon'; const S=await SKEL();
+MODS.skel=SKELGO;
   const BN=S.rig.names.map(n=>n.replace(/\./g,'_')), JI=Object.fromEntries(BN.map((n,i)=>[n,i]));
   const geomOf=(M,rigged)=>SKIN.geom(M,rigged), rigOf=()=>SKIN.rig(S.rig,BN), CLIPS=SKIN.clips(S.clips,BN,false,n=>n.replace(/\./g,'_'));
   const LANE={x0:SHARED.BOD.XS(52),x1:SHARED.BOD.XS(106),z0:SHARED.BOD.ZS(-76.3),z1:SHARED.BOD.ZS(SHARED.BOD.FAR+2.8)}, HOLE=[SHARED.BOD.XS(MAPSTAIR.x0-.6),SHARED.BOD.ZS(MAPSTAIR.y0),SHARED.BOD.XS(MAPSTAIR.x1+.6),SHARED.BOD.ZS(MAPSTAIR.y1+.6)],

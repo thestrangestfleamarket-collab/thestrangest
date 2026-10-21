@@ -1,4 +1,4 @@
-const LOOKS={};
+
 { const $=s=>document.querySelector(s), MATS=RIG.MATS;
   const COL={skin:'#e6c4b0',hair:'#6a5958',eye:'#5a3a26',shirt:'#a9a57e',pants:'#434e58',shoes:'#77614a'}, HAIRS=['hair','hairLong','hairLongA','hairBun','hairPony','hairPonyA'];
   const sz=(w,d=w)=>[w,1,d], LR=(n,v)=>({[n+'L']:v,[n+'R']:v}), arms=(u,f=u)=>({...LR('upperArm',sz(u)),...LR('sleeve',sz(u)),...LR('forearm',sz(f))}), legs=(t,sh=t)=>({...LR('thigh',sz(t)),...LR('shin',sz(sh))});

@@ -63,3 +63,4 @@ function octArms(p){ '@later'; const sh=[[4,7,26],[4,-7,26]], hand=(h,[i,k])=>{ 
   o.CG=mix([1,15*OCTS,Z+9],[9.4,2.6,Z+10],p.puff); o.CGA=mix([.5,1,.55],[.45,1,.05],p.puff);
   o.GL=mix([1,-15*OCTS,Z+7],[8.2,-5.2,Z+6],p.sip); o.GLP=p.sip*.55; o.LEV=p.lev; o.SL=p.sl;
   return o; }
+window.__octo={paint:(A,H,r=1)=>pupPaint(octBody(A),H,OCTP,r,{S:120}),arms:p=>octArms(p)};

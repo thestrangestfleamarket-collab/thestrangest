@@ -1,4 +1,4 @@
-const CITY={on:QS.get('city')==='1',jobs:[],sched:[],day:0,nj:0,extra:[]}; window.CITY=CITY;
+Object.assign(CITY,{on:QS.get('city')==='1',jobs:[],sched:[],day:0,nj:0,extra:[]}); window.CITY=CITY;
 { const T=TILE, R0=.3*T, C=T/2;
   CITY.places=()=>{ '@later'; const P=[], add=(id,name,x,z,dz,lv='up',o={})=>P.push(Object.assign({id,name,lv,at:{x,z},door:{x,z:z+dz}},o));
     { const B=SHARED.BOD.B0; add('bodega','THE BODEGA',SHARED.BOD.X((B.x0+B.x1)/2),SHARED.BOD.Z(B.y1),T); }

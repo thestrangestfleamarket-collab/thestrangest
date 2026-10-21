@@ -1,4 +1,4 @@
-const RINSP={on:false,sel:null,f:''}; window.RINSP=RINSP;
+Object.assign(RINSP,{on:false,sel:null,f:''}); window.RINSP=RINSP;
 { const T=TILE, V=new THREE.Vector3(), P3=new THREE.Vector3(), V2=new THREE.Vector3(), M4=new THREE.Matrix4(), F=new THREE.Frustum(), BX=new THREE.Box3(), BU=new THREE.Box3();
   let el=null, iv=0, raf=0, fc=0, f0=0, n=0, hl=null, hlT=0, last=null, lastH=[];
   const esc=s=>String(s).replace(/[&<>"]/g,c=>'&#'+c.charCodeAt(0)+';'), kb=b=>b<1048576?(b/1024).toFixed(0)+'K':(b/1048576).toFixed(1)+'M';

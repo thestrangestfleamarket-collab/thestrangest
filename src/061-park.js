@@ -7,7 +7,7 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
   P.round=[PARKGX,PARKRY,7]; P.gate=[PARKGX-5,PARKGX+5]; P.lake=PARKLAKE; const RX=x=>x-96+P.round[0], RY=y=>y+47+P.round[1];
   const WA=3; P.wobX=y=>P.armX(y)-P.round[0]; P.wobY=x=>P.armY(x)-P.round[1];
   const CF=CASTLE.b[3]-PO.y+1, CGX=CASTLE.gate-PO.x, [LX,LY,LR]=P.lake, [RX0,RY0]=P.round;
-  const SEG=P.segs=[[RX0,P.y0+1,RX0,P.y1-1],[P.x0+1,RY0,P.x1-1,RY0],[CGX,RY0,CGX,CF],[PARKCAVE[0]-6.5,RY0,PARKCAVE[0],PARKCAVE[1]+3.5],[PARKCAVE[0],PARKCAVE[1]+3.5,PARKCAVE[0]+1,PARKCAVE[1]-5.5],[RX0,25,LX-LR-1.5,LY+2],[RX0,-20,PARKTOWER[0]+3.5,PARKTOWER[1]],[RX0,90,195,90]];
+  const SEG=P.segs=LEVEL.paths.map(q=>[q.a[0]-PO.x,q.a[1]-PO.y,q.b[0]-PO.x,q.b[1]-PO.y]);
   const segD=P.segD=(x,y)=>{ let m=1e9; for(const [ax,ay,bx,by] of SEG){ const dx=bx-ax, dy=by-ay, L=Math.hypot(dx,dy), ux=dx/L, uy=dy/L, px=x-ax, py=y-ay, s=px*ux+py*uy; let d; if(s<=0)d=Math.hypot(px,py); else if(s>=L)d=Math.hypot(x-bx,y-by); else d=Math.abs(px*-uy+py*ux-WA*Math.sin(2*Math.PI*Math.round(L/70)*s/L)); if(d<m)m=d; } return m; };
   P.armY=x=>{ const [ax,ay,bx]=SEG[1], L=bx-ax; return ay+WA*Math.sin(2*Math.PI*Math.round(L/70)*(x-ax)/L); }; P.armX=y=>{ const [ax,ay,,by]=SEG[0], L=by-ay; return ax+WA*Math.sin(2*Math.PI*Math.round(L/70)*(y-ay)/L); };
   const pd=P.pd=(x,y)=>{ const [cx,cy,r]=P.round; return Math.min(segD(x,y)-3.6,Math.hypot(x-cx,y-cy)-r); };

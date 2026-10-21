@@ -3899,3 +3899,13 @@ initial download and load super fast"; then "Go")
   16 along all of them. The brook springs from the fountain's lake and runs south-west into the lake, under the stone bridge where it
   crosses the cross path (the bridge was on the gate path). Trees, flowers, hedges and the lawn keep off every path. Cost: the paths'
   slabs are built in the park's own load as before; some 40 lamp posts more (unlit models; the eight nearest light).
+## 20 Oct 2026: the same-picture check now sees the park and the platform
+
+- An audit of what the gates actually catch: `tests/samepic.cjs` (the pixel gate, run only with the `measure` label) looked at the
+  street, the dungeon, the castle, the bodega, the diner and the bar — but not the park, though it is some of the largest geometry in
+  the game, and not the station platform. A move that changed what is drawn in either would pass every check. Added `CENTRAL PARK` and
+  `THE PLATFORM` to its view list. The park's code comes in a chunk and the fixed 20 s settle could catch it half-built (the reason
+  `tests/startprof.cjs` waits for `PARK.ready`), so the shot now waits for `PARK.ready` at the park before settling. This does not make
+  pull requests check more (samepic stays opt-in, owner's "less check heavy"); it widens what that check sees when it is asked for. Still
+  uncovered by any measured view: the club, arcade, bank, dojo, fire escape, vcr and bath interiors (each needs an enter step, not a bare
+  `?place=`) — a later job. Cost: two more views in the opt-in run, ~1 min each.

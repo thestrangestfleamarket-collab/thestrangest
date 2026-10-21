@@ -164,7 +164,7 @@ import {BATCH} from './008-batch.js';
   F.sit=()=>{ if(!F.on)return; const x=X(CX), z=Z(WY+.5); USE.seat={back:pos.clone(),x,z}; pos.x=x; pos.z=z; SHARED.target=null; SHARED.heading=0; st.sit={z:Math.max(2,Y(STP.z)/(ZU*W3.SZ*(W3.BH||1)))}; };
   const sg0=STORE.stackGround; STORE.stackGround=(x,z)=>{ if(F.built&&onL(x,z)){ const u=ix(x), v=iy(z); return Y(HZ+(u>STP.x0&&u<STP.x1&&v<STP.y1?STP.z:0)); } return sg0?sg0(x,z):null; };
   const into=(u0,v0,u,v)=>Math.abs(u-u0)<.5&&v<v0&&Math.cos(SHARED.heading)<-.6&&lp&&Math.hypot(pos.x-lp.x,pos.z-lp.z)>1e-4;
-  SYS.add('world',(dt)=>{ const on=F.built&&SHARED.LVL==='up'&&onL(pos.x,pos.z);
+  SYS.add('places',(dt)=>{ const on=F.built&&SHARED.LVL==='up'&&onL(pos.x,pos.z);
     if(on!==F.on){ F.on=on; G.visible=on; }
     plaque.visible=!(APTS.in&&iy(pos.z)<V(5.6));
     if(!busy&&!on&&APTS.in&&APTS.floor()===2&&into(U(AWX),V(.55),ix(pos.x),iy(pos.z)))F.out();

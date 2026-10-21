@@ -46,7 +46,7 @@ Object.assign(PERFX,{on:{}, inner:[], gen:0});
         else{ tgt=new THREE.Mesh(G,me.material); tgt.castShadow=me.castShadow; tgt.receiveShadow=me.receiveShadow; tgt.renderOrder=me.renderOrder; tgt.userData.objOf=of; tgt.userData.chunked=true; tgt.userData.chunkOf=me; me.add(tgt); }
         fs.forEach((f,j)=>{ where[f]=j; into[f]=tgt; }); }
       for(const p of byMe.get(me)||[]){ const f=p.v0/6; p.me=into[f]; p.v0=where[f]*6; } g.dispose(); } };
-  const ROOMRESET=ROOMS.reset; ROOMS.reset=()=>{ ROOMRESET(); PERFX.split(); };
+  SYS.add('roomsReset',()=>PERFX.split(),'161-perf');
   PERFX.rooms=()=>{ if(!PERFX.inner.length)return; const cur=ROOMS.cur, ck=cur?key(cur):null, all=UI.freeCam||ED.on||MAPED.on||SHARED.LVL!=='up', d=1.6*TILE;
     for(const me of PERFX.inner){ const B=me.userData.box; VIS.hide(me,'far',!(all||(ck?me.userData.inner===ck:pos.x>B.x0-d&&pos.x<B.x1+d&&pos.z>B.z0-d&&pos.z<B.z1+d&&SHARED.py>B.y0-.3&&SHARED.py<B.y1))); } }; }
 Object.assign(SELFSH,{set:new Set(), off:new THREE.Matrix4().set(0,0,0,-9, 0,0,0,-9, 0,0,0,-9, 0,0,0,1)});
@@ -55,11 +55,12 @@ SELFSH.pick=()=>{ SELFSH.set.clear(); if(!PERFX.on[2])return; const R=12*TILE, c
   c.sort((a,b)=>a[0]-b[0]); for(const [,N] of c.slice(0,2))SELFSH.set.add(N); };
 SELFSH.use=N=>!PERFX.on[2]||SELFSH.set.has(N);
 SYS.add('shadowPre',()=>SELFSH.pick(),'161-perf');
-PERFX.bounds=()=>{ '@later'; if(!PERFX.on[4])return; const S=new THREE.Sphere();
+const PERFX_bounds0=()=>{ '@later'; if(!PERFX.on[4])return; const S=new THREE.Sphere();
   scene.traverse(o=>{ if(!o.isMesh||o.frustumCulled||o.userData.nb)return;
     if(o.isSkinnedMesh){ o.userData.nb=true; const g=o.geometry; g.computeBoundingBox(); o.boundingSphere=g.boundingBox.getBoundingSphere(new THREE.Sphere()); o.boundingSphere.radius*=1.6; o.frustumCulled=true; return; }
     if(o===W3.mesh)return; if(o.material&&o.material.customProgramCacheKey&&/^mus/.test(o.material.customProgramCacheKey())){ o.userData.nb=true; const g=o.geometry; g.computeBoundingBox(); g.boundingBox.getBoundingSphere(S); g.boundingSphere=S.clone(); g.boundingSphere.radius*=1.6; o.frustumCulled=true; return; }
     if(o===WATER.mesh||(WATER.extra||[]).some(w=>w.mesh===o)){ o.userData.nb=true; const g=o.geometry; g.computeBoundingSphere(); g.boundingSphere.radius+=1.5*TILE; o.frustumCulled=true; } }); };
+PERFX.bounds=(...a)=>{ const r=PERFX_bounds0(...a); SYS.run('perfBounds'); return r; };
 PERFX.maps=()=>{ if(!PERFX.on[6])return; const L=LITE.pool[0]; if(L.shadow.mapSize.x>512){ L.shadow.mapSize.set(512,512); if(L.shadow.map){ L.shadow.map.dispose(); L.shadow.map=null; } } };
 PERFX.near=(x,z,r)=>Math.hypot(pos.x-x,pos.z-z)<r;
 PERFX.bfNear=()=>!PERFX.on[7]||BF.list.some(b=>PERFX.near(b.g.position.x,b.g.position.z,25*TILE));

@@ -43,4 +43,4 @@ import {LFX, OUT, SOL, SYS, TILE} from './006-map-pre.js';
       if(park)for(let i=0;i<NL;i++){ const L=ls[i], o=park[L.o%park.length]; L.t+=dt; const T=L.t%9, y=o[2]*.8-T*.9; if(y<.02){ lp.set([o[0]+Math.sin(L.ph)*1.6,.02,o[1]+Math.cos(L.ph)*1.6],i*3); continue; }
         lp.set([o[0]+Math.sin(L.ph+T*.8)*1.6+T*.25,y,o[1]+Math.cos(L.ph)*1.6+Math.sin(T*2.3+L.ph)*.3],i*3); } lg.attributes.position.needsUpdate=true;
       LEAVES.visible=LEAVES.visible&&!!park; MOTES.visible=MOTES.visible&&day>.3; for(let i=0;i<NM;i++){ const m=ms[i]; mp.set([pos.x+m[0]+Math.sin(t*.3+m[3])*.4,SHARED.py+m[1]+Math.sin(t*.5+m[3]*2)*.2,pos.z+m[2]+Math.cos(t*.25+m[3])*.4],i*3); } mg.attributes.position.needsUpdate=true; }; }
-  if(LFX.tick){ SYS.add('world',(dt)=>{ LFX.tick(); },'133-lookfx'); } }
+  if(LFX.tick){ SYS.add('sky',(dt)=>{ LFX.tick(); },'133-lookfx'); } }

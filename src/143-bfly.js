@@ -1,3 +1,4 @@
+// BFLY: wild butterflies spawn on the lawn and flowerbed chunks near you (catch with a net, mount or release); their models come from BF.add, which lives in the later chunk.
 const BFLY={}; window.BFLY=BFLY;
 { const T=TILE, {BF_KINDS}=SHARED.BOD.STOREK.bf, NK=BF_KINDS.length, say=FORAGE.say, use=FORAGE.use, WU=T/.84;
   const hsh=(a,b,s)=>{ let h=(Math.floor(a*97)*374761393+Math.floor(b*89)*668265263+s*1442695041)|0; h=(h^(h>>>13))*1274126177|0; return ((h^(h>>>16))>>>0)/4294967296; };
@@ -22,10 +23,12 @@ const BFLY={}; window.BFLY=BFLY;
   const hit=b=>{ const hb=new THREE.Mesh(HB,HM); hb.position.y=.1*WU; b.g.add(hb); b.th={name:BF_KINDS[b.k][0].toUpperCase(),obj:hb,reach:1.1*T,near:1.4*T,tall:.3*T,act:()=>BFLY.catch(b)}; UI.thing(b.th); };
   const HB=new THREE.BoxGeometry(.5*T,.4*T,.5*T), HM=new THREE.MeshBasicMaterial({visible:false});
   const drop=b=>{ scene.remove(b.g); const i=BF.list.indexOf(b); if(i>=0)BF.list.splice(i,1); if(b.th){ const j=UI.things.indexOf(b.th); if(j>=0)UI.things.splice(j,1); } };
-  { const a0=WEEDS.onAdd, d0=WEEDS.onDrop; WEEDS.onAdd=(key,grp)=>{ if(a0)a0(key,grp); if(!CH.has(key))CH.set(key,spawn(key,grp)); }; WEEDS.onDrop=key=>{ if(d0)d0(key); const L=CH.get(key); if(L){ L.forEach(drop); CH.delete(key); } };
-    if(WEEDS.chunks)for(const [k,g] of WEEDS.chunks)if(g&&g.sq)CH.set(k,spawn(k,g)); }
-  let turn0=-1; setInterval(()=>{ const tn=Math.floor((window.CLOCK?CLOCK.h:12)/2); if(tn!==turn0&&WEEDS.chunks){ const first=turn0<0; turn0=tn; if(!first){ for(const L of CH.values())L.forEach(drop); CH.clear(); for(const [k,g] of WEEDS.chunks)if(g&&g.sq)CH.set(k,spawn(k,g)); } }
-    beds(); const W=window.WX&&WX.now, hide=(window.CLOCK&&CLOCK.dark())||!!(W&&(W.rain>.25||W.snow>.25||W.wind>.8)); for(const L of CH.values())for(const b of L)b.g.visible=!hide; BFLY.out=!hide; },1000);
+  // BF.add is in the later chunk, which the start fetches only after the first frame, so hold every spawn until the start is up and later has loaded: it keeps a saved-spot start from a slow fetch, and keeps the start from pulling the later chunk in early
+  const bfGo=()=>{ if(!window.__started){ setTimeout(bfGo,200); return; } LOAD('later').then(()=>{ const a0=WEEDS.onAdd, d0=WEEDS.onDrop; WEEDS.onAdd=(key,grp)=>{ if(a0)a0(key,grp); if(!CH.has(key))CH.set(key,spawn(key,grp)); }; WEEDS.onDrop=key=>{ if(d0)d0(key); const L=CH.get(key); if(L){ L.forEach(drop); CH.delete(key); } };
+    if(WEEDS.chunks)for(const [k,g] of WEEDS.chunks)if(g&&g.sq)CH.set(k,spawn(k,g));
+    let turn0=-1; setInterval(()=>{ const tn=Math.floor((window.CLOCK?CLOCK.h:12)/2); if(tn!==turn0&&WEEDS.chunks){ const first=turn0<0; turn0=tn; if(!first){ for(const L of CH.values())L.forEach(drop); CH.clear(); for(const [k,g] of WEEDS.chunks)if(g&&g.sq)CH.set(k,spawn(k,g)); } }
+    beds(); const W=window.WX&&WX.now, hide=(window.CLOCK&&CLOCK.dark())||!!(W&&(W.rain>.25||W.snow>.25||W.wind>.8)); for(const L of CH.values())for(const b of L)b.g.visible=!hide; BFLY.out=!hide; },1000); }); };
+  bfGo();
   BFLY.catch=b=>{ '@later'; if(!b.g.parent)return; const p=W3.group.position; if(Math.hypot(p.x-b.g.position.x,p.z-b.g.position.z)>1.8*T)return say('IT FLUTTERS OUT OF REACH.','#c8a090');
     const fly=!!b.dur, net=FORAGE.has('net'); if(fly&&!net)return say('IT IS ON THE WING. YOU NEED A NET (THE MUSHROOM SELLER HAS THEM), OR WAIT TILL IT SETTLES.','#c8a090');
     const d=DIFF(b.k)+(fly?15:0)-(net?10:0); if(typeof SFX!=='undefined')SFX.play('step',{vol:.4});

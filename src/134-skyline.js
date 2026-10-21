@@ -83,7 +83,7 @@ const FAR3={};
       idx.push(b,b+1,b+2,b,b+2,b+3); });
     const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3)); g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2)); g.setIndex(idx);
     const tl=new THREE.TextureLoader(), tx=u=>{ const t=tl.load(u); t.magFilter=t.minFilter=THREE.NearestFilter; t.generateMipmaps=false; t.colorSpace=THREE.SRGBColorSpace; return t; }, TD=tx(FARIMG.day), TN=tx(FARIMG.night), PU={uN:{value:TN},uNK:{value:0}};
-    const pm=new THREE.MeshBasicMaterial({map:TD,alphaTest:.5,side:THREE.DoubleSide,fog:true,toneMapped:true});
+    const pm=new THREE.MeshBasicMaterial({map:TD,alphaTest:.5,fog:true,toneMapped:true});
     pm.onBeforeCompile=sh=>{ Object.assign(sh.uniforms,PU,{uMC:FU.uMC,uMK:FU.uMK,uHN:FU.uHN,uHF:FU.uHF});
       sh.fragmentShader='uniform sampler2D uN; uniform float uNK,uMK,uHN,uHF; uniform vec3 uMC;\n'+sh.fragmentShader.replace('#include <map_fragment>','#include <map_fragment>\n diffuseColor.rgb=mix(diffuseColor.rgb,texture2D(uN,vMapUv).rgb,uNK);')
         .replace('#include <fog_fragment>','if(uMK<=0.){\n#include <fog_fragment>\n} else gl_FragColor.rgb=mix(gl_FragColor.rgb,uMC,mix(uHN,uHF,texture2D(uN,vMapUv).a));'); };

@@ -36,7 +36,7 @@ Look there before changing how something looks or behaves, and add a short dated
 (`tools/yields.py`), minifies with esbuild (`tools/minify.cjs`; `npm install` once) and writes `dist/market.html` and
 `dist/door.html`; it stops if a page has an unclosed `<!--`. For the website it also writes `dist/g/`: THE MARKET
 split like the old game (`market.html` a 4 KB shell, `rig.<hash>.js`, `game.<hash>.js`, each `data/*.json` as `<name>.<hash>.json`
-fetched at start); the worker hands `dist/g/` only to a login, cached for good (a new build, new names). `dist/market.html` is the single-file page the tests drive. `MIN=0 python3 build.py` keeps them readable for debugging.
+fetched at start); the worker hands `dist/g/` only to a login, cached for good (a new build, new names). `dist/market.html` is the single-file page the tests drive. `MIN=0 python3 build.py` keeps them readable for debugging. `SKIP=g python3 build.py` writes only `dist/market.html` and `dist/door.html` (no `dist/g/`, so no npm packages beyond esbuild: for a workspace that cannot reach the registry).
 
 **Code in its own file (chunks, 20 Oct 2026)**: a function whose body starts with `'@name';` (e.g. `()=>{ '@park'; ... }`) is cut out
 by `tools/chunks.cjs` (needs `acorn`, which `npm ci` brings; without it everything stays in the page) into chunk `name`: on the website

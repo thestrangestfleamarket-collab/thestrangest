@@ -63,7 +63,7 @@
   for(const [a,b] of [[SY0+.2,A0-.3],[A1+.3,SY1-.2]])put(W.cables(AVE+.01,a,b),'cables');
   BATCH.build((k,map)=>new THREE.MeshLambertMaterial({map,alphaTest:.5,side:THREE.DoubleSide,clippingPlanes:[PB]})); for(const me of BATCH.all(BATCH.meshes,'L'))cutWalls.push({pl:PB,nx:0,nz:-1,foot:Y(SZ+8),me});
   const TX=z=>AVE+(ZB-z)/TILE, TY=x=>OY+(x-XC)/TILE, at=(x,y)=>{ const p=V(x,y,0); return {x:p[0],z:p[2]}; }, box=(x0,y0,x1,y1)=>{ const a=at(x0,y0), b=at(x1,y1); return {x0:Math.min(a.x,b.x),x1:Math.max(a.x,b.x),z0:Math.min(a.z,b.z),z1:Math.max(a.z,b.z)}; };
-  const M=window.METRO=METRO={V,Y,TX,TY,at,DY:Y(SZ),OY,A0,A1,AVE,PLAT,XC,ZB,MACH:{x:MX+.27,y:MY+.35}};
+  const M=window.METRO=SHARED.METRO={V,Y,TX,TY,at,DY:Y(SZ),OY,A0,A1,AVE,PLAT,XC,ZB,MACH:{x:MX+.27,y:MY+.35}};
   M.inside=(x,z)=>x>BOUND.x0&&x<BOUND.x1&&z>BOUND.z0&&z<ZB+.01;
   M.ground=(x,z)=>{ const tx=TX(z); return Y(SZ+(tx<PLAT?0:W.fzAt(tx,TY(x)))); };
   M.plat=at(AVE+4.2,OY-8.5); M.foot=at(AVE+1.1,OY); M.street={x:XC,z:(SM.y1+77)*TILE+1.4*TILE};

@@ -1,7 +1,7 @@
 const SKELGO=()=>SKELGO.p||(SKELGO.p=LOAD('dungeon').then(async()=>{ '@dungeon'; const S=await SKEL();
   const BN=S.rig.names.map(n=>n.replace(/\./g,'_')), JI=Object.fromEntries(BN.map((n,i)=>[n,i]));
   const geomOf=(M,rigged)=>SKIN.geom(M,rigged), rigOf=()=>SKIN.rig(S.rig,BN), CLIPS=SKIN.clips(S.clips,BN,false,n=>n.replace(/\./g,'_'));
-  const LANE={x0:BOD.XS(52),x1:BOD.XS(106),z0:BOD.ZS(-76.3),z1:BOD.ZS(BOD.FAR+2.8)}, HOLE=[BOD.XS(MAPSTAIR.x0-.6),BOD.ZS(MAPSTAIR.y0),BOD.XS(MAPSTAIR.x1+.6),BOD.ZS(MAPSTAIR.y1+.6)],
+  const LANE={x0:SHARED.BOD.XS(52),x1:SHARED.BOD.XS(106),z0:SHARED.BOD.ZS(-76.3),z1:SHARED.BOD.ZS(SHARED.BOD.FAR+2.8)}, HOLE=[SHARED.BOD.XS(MAPSTAIR.x0-.6),SHARED.BOD.ZS(MAPSTAIR.y0),SHARED.BOD.XS(MAPSTAIR.x1+.6),SHARED.BOD.ZS(MAPSTAIR.y1+.6)],
     free=(x,z,R)=>!(x>HOLE[0]-R&&x<HOLE[2]+R&&z>HOLE[1]-R&&z<HOLE[3]+R)&&!SOL.up.some(b=>x>b[0]-R&&x<b[2]+R&&z>b[1]-R&&z<b[3]+R), WALK=.87;
   const RUNU=2.6;
   const Anim=(mixer)=>{ const A={}, W={}, act=n=>A[n]||(A[n]=mixer.clipAction(CLIPS[n]));
@@ -14,11 +14,11 @@ const SKELGO=()=>SKELGO.p||(SKELGO.p=LOAD('dungeon').then(async()=>{ '@dungeon';
         if(W[n]>.01){ if(!a.isRunning()&&n!==(M.once&&M.once.n)){ a.setLoop(THREE.LoopRepeat,Infinity); a.play(); } a.setEffectiveWeight(W[n]); } else{ a.stop(); delete W[n]; } }
       mixer.update(dt); };
     return M; };
-  const T_=x=>BOD.XS(x), Z_=y=>BOD.ZS(y), d2=(a,b)=>Math.hypot(a.x-b.x,a.z-b.z);
+  const T_=x=>SHARED.BOD.XS(x), Z_=y=>SHARED.BOD.ZS(y), d2=(a,b)=>Math.hypot(a.x-b.x,a.z-b.z);
   const CH=[ ['Warrior','WARRIOR',58,.78,'Walking_A','Idle_A',.55,[['Blade','handslot_r'],['Shield_Large_A','handslot_l']],[[53,-72.3],[79,-72.3]],{hit:'1H_Melee_Attack_Chop',reach:.8,at:.42,dmg:.55}],
              ['Mage','MAGE',69,.75,'Walking_C','Idle_B',.42,[['Staff','handslot_r']],[[52,-67.8],[79,-67.8]],{hit:'Spellcast_Shoot',reach:5,at:.5,bolt:[.8,.4,1.6],dmg:.5}],
              ['Minion','MINION',82,.7,'Walking_B','Idle_A',.6,[],[[81,-66.2],[106,-66.2]],{hit:'Unarmed_Melee_Attack_Punch_A',reach:.65,at:.38,dmg:.35}],
-             ['Rogue','ROGUE',95,.75,'Walking_A','Idle_B',.5,[['Crossbow','handslot_r']],[[55,BOD.FAR+1.4],[104,BOD.FAR+1.4]],{hit:'1H_Ranged_Shoot',reach:6.5,at:.45,bolt:[1.2,1.1,.8],dmg:.45}] ];
+             ['Rogue','ROGUE',95,.75,'Walking_A','Idle_B',.5,[['Crossbow','handslot_r']],[[55,SHARED.BOD.FAR+1.4],[104,SHARED.BOD.FAR+1.4]],{hit:'1H_Ranged_Shoot',reach:6.5,at:.45,bolt:[1.2,1.1,.8],dmg:.45}] ];
   const GUARDS=[], TROUBLE=[], BOLTS=[], RUN=1.9*TILE, SEE=18*TILE;
   const spread=rig=>{ const R=S.rig, W=[], at=i=>W[i]||(W[i]=(R.parent[i]>=0?at(R.parent[i]).clone():new THREE.Quaternion()).multiply(new THREE.Quaternion().fromArray(R.q[i])));
     for(const [bn,deg] of [['upperleg_l',14],['upperleg_r',-14],['upperarm_l',22],['upperarm_r',-22]]){ const i=JI[bn], rz=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,0,1),deg*Math.PI/180); rig.bones[i].quaternion.copy(at(R.parent[i]).clone().invert().multiply(rz).multiply(at(i))); } };
@@ -42,7 +42,7 @@ const SKELGO=()=>SKELGO.p||(SKELGO.p=LOAD('dungeon').then(async()=>{ '@dungeon';
   const bolts=dt=>{ for(const b of BOLTS){ if(!b.on)continue; const T=b.T, to=new THREE.Vector3(T.st.x,T.g.position.y+T.H*.5,T.st.z), d=to.clone().sub(b.m.position), l=d.length(), step=16*TILE*dt;
     b.m.lookAt(to); if(l<=step||T.mode==='hidden'){ b.on=false; b.m.visible=false; if(l<=step)T.knock(b.from,b.dmg); } else b.m.position.addScaledVector(d,step/l); } };
   const SHOVE={x:0,z:0}; const shove=dt=>{ if(Math.abs(SHOVE.x)+Math.abs(SHOVE.z)<1e-3)return; pos.x+=SHOVE.x*dt; pos.z+=SHOVE.z*dt; const k=Math.max(0,1-dt*7); SHOVE.x*=k; SHOVE.z*=k; collide(pos); };
-  const onStreet=()=>LVL==='up'&&!BODB.inside();
+  const onStreet=()=>SHARED.LVL==='up'&&!SHARED.BODB.inside();
   for(const [key,name,tx,metres,walkN,idleN,speed,gear,beat,style] of CH){ const G={beat:beat.map(([x,y])=>({x:T_(x),z:Z_(y)})),leg:0,mode:'patrol',cool:0,look:Math.random()*6,style};
     const DN=DUN();
     const N=skel(key,name,metres,DN?DN.x:T_(tx),DN?DN.z:Z_({58:-67,69:-65.5,82:-68.5,95:-66}[tx]),speed*.9,{walkN,idleN,gear,dun:DN,
@@ -82,7 +82,7 @@ const SKELGO=()=>SKELGO.p||(SKELGO.p=LOAD('dungeon').then(async()=>{ '@dungeon';
       if(free(nx,nz,st.R)){ st.x=nx; st.z=nz; } st.to=null; st.face={x:from.st.x,z:from.st.z};
       N.an.play('Death_A',{hold:true}); setTimeout(()=>{ if(N.mode!=='down')return; N.an.play('Lie_StandUp',{then:()=>{ N.mode='flee'; N.hp=.5; }}); },1600); };
     TROUBLE.push(N); }
-  { const DN=DUN(); skel('Minion','GOLD SKELETON',1.4,DN?DN.x:T_(77),DN?DN.z:Z_(BOD.FAR),.45,{key:'Gold',walkN:'Walking_A',idleN:'Idle_A',gild:true,dun:DN}); }
+  { const DN=DUN(); skel('Minion','GOLD SKELETON',1.4,DN?DN.x:T_(77),DN?DN.z:Z_(SHARED.BOD.FAR),.45,{key:'Gold',walkN:'Walking_A',idleN:'Idle_A',gild:true,dun:DN}); }
   window.GUARDX={TROUBLE,shoot,free,SEE,RUN,LANE,T_,Z_,d2,GUARDS};
   window.GUARDDBG=()=>({guards:GUARDS.map(N=>({k:N.key,mode:N.guard.mode,x:+(N.st.x/TILE).toFixed(1),z:+(N.st.z/TILE).toFixed(1),act:N.an.once&&N.an.once.n})),trouble:TROUBLE.map(N=>({mode:N.mode,x:+(N.st.x/TILE).toFixed(1),z:+(N.st.z/TILE).toFixed(1),act:N.an.once&&N.an.once.n})),next:+next.toFixed(1),dark:CLOCK.dark()});
   }));

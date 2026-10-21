@@ -5,7 +5,7 @@ const lifeOn=()=>typeof LIFE!=='undefined'&&LIFE.mode===1;
 const flipOf=f=>f[1]<0||f[0]>0?1:0;
 const faceArt=(b,f,A,W,zt,back)=>sided({...b,fs:(nx,ny,X,Y,zr)=>{ if(nx!==f[0]||ny!==f[1])return back; const along=f[0]?Y:X, a0=f[0]?b.y0:b.x0, len=f[0]?b.y1-b.y0:b.x1-b.x0, u=flipOf(f)?a0+len-along:along-a0;
   return A(Math.floor(u*FP-(len*FP-W)/2),Math.floor(zt-(zr+b.z0))); }});
-MK.signal=(x,y,arm,heads,grp,peds=[])=>{ '@later'; PNAME='traffic signal'; const bs=[Bx(x-.08,y-.08,x+.08,y+.08,0,156,STEEL,{fj:(u,z)=>z<10?STEELD:STEEL}),Bx(x-.1,y-.1,x+.1,y+.1,156,159,STEELD,{foot:0})];
+MK.signal=(x,y,arm,heads,grp,peds=[])=>{ '@later'; SHARED.PNAME='traffic signal'; const bs=[Bx(x-.08,y-.08,x+.08,y+.08,0,156,STEEL,{fj:(u,z)=>z<10?STEELD:STEEL}),Bx(x-.1,y-.1,x+.1,y+.1,156,159,STEELD,{foot:0})];
   if(arm){ const [ax,ay]=arm; bs.push(Bx(Math.min(x,ax)-.03,Math.min(y,ay)-.03,Math.max(x,ax)+.03,Math.max(y,ay)+.03,150,153,STEEL,{foot:0,nb:1})); }
   const head=(hx,hy,z1,f)=>{ const s=.2, d=.08, X0=f[0]?hx-d:hx-s, X1=f[0]?hx+d:hx+s, Y0=f[0]?hy-s:hy-d, Y1=f[0]?hy+s:hy+d, bp=.29, bk=d+.012;
     bs.push(Bx(X0,Y0,X1,Y1,z1-38,z1,YH,{foot:0,top:()=>sh(YH,.8)}),Bx(hx-.015,hy-.015,hx+.015,hy+.015,z1,z1+3,STEELD,{foot:0,nb:1}));
@@ -23,7 +23,7 @@ MK.signal=(x,y,arm,heads,grp,peds=[])=>{ '@later'; PNAME='traffic signal'; const
     bs.push(sided({...b,x0:f[0]>0?b.x1:f[0]<0?b.x0-.012:b.x0,x1:f[0]>0?b.x1+.012:f[0]<0?b.x0:b.x1,y0:f[1]>0?b.y1:f[1]<0?b.y0-.012:b.y0,y1:f[1]>0?b.y1+.012:f[1]<0?b.y0:b.y1,nb:1,life:1,top:()=>null,
       fs:(nx,ny,X,Y,zr)=>{ if(!lifeOn()||nx!==f[0]||ny!==f[1])return null; const walk=SIGNAL()[q.on]===2, A=walk?AW:AD, along=f[0]?Y:X, a0=f[0]?b.y0:b.x0, u=flipOf(f)?a0+2*w-along:along-a0, c=A(Math.floor(u*FP),Math.floor(92-(zr+74))); return c?glow(c):null; }})); }
   const p=prop(bs); p.life=()=>{}; p.lifeStill=1; p.lifeKey=()=>{ const s=SIGNAL(); return s.main*3+s.cross; }; return p; };
-MK.psign=(x,y,f,W,H,z1,bg,lines,post=true)=>{ '@later'; PNAME='street sign'; const w=W/FP/2, A=art(W,H,put=>{ for(let r=0;r<H;r++)for(let q=0;q<W;q++)put(q,r,bg); if(typeof lines==='function')return lines(put,W,H); for(let r=0;r<H;r++)for(let q=0;q<W;q++)if(r===0||q===0||r===H-1||q===W-1)put(q,r,sh(bg,.75)); for(const [s,c,k,yy] of lines)txt(put,s,Math.floor((W-tw(s,k))/2),yy,c,k); });
+MK.psign=(x,y,f,W,H,z1,bg,lines,post=true)=>{ '@later'; SHARED.PNAME='street sign'; const w=W/FP/2, A=art(W,H,put=>{ for(let r=0;r<H;r++)for(let q=0;q<W;q++)put(q,r,bg); if(typeof lines==='function')return lines(put,W,H); for(let r=0;r<H;r++)for(let q=0;q<W;q++)if(r===0||q===0||r===H-1||q===W-1)put(q,r,sh(bg,.75)); for(const [s,c,k,yy] of lines)txt(put,s,Math.floor((W-tw(s,k))/2),yy,c,k); });
   const b={x0:f[0]?x-.02:x-w,x1:f[0]?x+.02:x+w,y0:f[0]?y-w:y-.02,y1:f[0]?y+w:y+.02,z0:z1-H,z1,c:bg,foot:0,nb:1}, px=x-f[0]*.05, py=y-f[1]*.05;
   const bs=[faceArt({...b,top:()=>[150,150,154]},f,A,W,z1,[150,150,154])]; if(post)bs.unshift(Bx(px-.025,py-.025,px+.025,py+.025,0,z1-3,STEELD)); return prop(bs); };
 const SIGNFACE=(()=>{ const R=[200,36,36], K=[20,20,22];
@@ -38,22 +38,22 @@ const SIGNFACE=(()=>{ const R=[200,36,36], K=[20,20,22];
       for(const [dx,dy] of man)put(Math.round(cx+dx),Math.round(cy+dy+1),K);
       for(let r0=0;r0<H;r0++)for(let q=0;q<W;q++){ const d=Math.hypot(q-cx,r0-cy); if(d<=r&&d>r-2.2)put(q,r0,R); if(d<r-1&&Math.abs((q-cx)-(r0-cy))<1.2)put(q,r0,R); } } }; })();
 MK.signFace=SIGNFACE;
-MK.gantry=(x,y0,y1,f,panels)=>{ '@later'; PNAME='sign gantry'; const bs=[Bx(x-.08,y0-.08,x+.08,y0+.08,0,176,STEEL),Bx(x-.08,y1-.08,x+.08,y1+.08,0,176,STEEL),Bx(x-.05,y0,x+.05,y1,170,176,STEEL,{foot:0}),Bx(x-.04,y0,x+.04,y1,160,163,STEEL,{foot:0,nb:1})];
+MK.gantry=(x,y0,y1,f,panels)=>{ '@later'; SHARED.PNAME='sign gantry'; const bs=[Bx(x-.08,y0-.08,x+.08,y0+.08,0,176,STEEL),Bx(x-.08,y1-.08,x+.08,y1+.08,0,176,STEEL),Bx(x-.05,y0,x+.05,y1,170,176,STEEL,{foot:0}),Bx(x-.04,y0,x+.04,y1,160,163,STEEL,{foot:0,nb:1})];
   for(const P of panels){ const W=Math.round((P.b-P.a)*FP), H=40, bg=P.bg||[30,110,62], A=art(W,H,put=>{ for(let r=0;r<H;r++)for(let q=0;q<W;q++)put(q,r,(r<1||q<1||r>H-2||q>W-2||r===2||q===2||r===H-3||q===W-3)?[236,236,230]:bg); for(const [s,c,k,yy] of P.lines)txt(put,s,Math.floor((W-tw(s,k))/2),yy,c||[236,236,230],k); });
     bs.push(faceArt({x0:x+f[0]*.06-.03,x1:x+f[0]*.06+.03,y0:P.a,y1:P.b,z0:126,z1:166,c:bg,foot:0,top:()=>[90,92,96]},f,A,W,166,[90,92,96])); }
   return prop(bs,null,{solids:[{x0:x-.08,y0:y0-.08,x1:x+.08,y1:y0+.08},{x0:x-.08,y0:y1-.08,x1:x+.08,y1:y1+.08}]}); };
-MK.cobra=(x,y,dy)=>{ '@later'; PNAME='street light'; const ey=y+dy*1.8, bs=[Bx(x-.07,y-.07,x+.07,y+.07,0,148,STEEL,{fj:(u,z)=>z<12?STEELD:STEEL}),Bx(x-.03,Math.min(y,ey),x+.03,Math.max(y,ey),144,147,STEEL,{foot:0,nb:1}),
+MK.cobra=(x,y,dy)=>{ '@later'; SHARED.PNAME='street light'; const ey=y+dy*1.8, bs=[Bx(x-.07,y-.07,x+.07,y+.07,0,148,STEEL,{fj:(u,z)=>z<12?STEELD:STEEL}),Bx(x-.03,Math.min(y,ey),x+.03,Math.max(y,ey),144,147,STEEL,{foot:0,nb:1}),
     Bx(x-.11,ey-.26,x+.11,ey+.26,138,146,[150,150,156],{foot:0,top:()=>[170,170,176]}),Bx(x-.08,ey-.2,x+.08,ey+.2,137,138,[255,206,140],{foot:0,em:1,nb:1})];
   const p=prop(bs); LAMPS.push({x,y:ey,z:136,r:6,c:[1,.78,.5],prop:p}); return p; };
 const RW=[214,212,204], RY=[222,184,52];
-MK.mark=(x0,y0,x1,y1,f,name)=>{ PNAME=name; return prop([Bx(x0,y0,x1,y1,0,.5,RW,{nb:1,top:(u,v)=>{ const k=f(u-x0,v-y0); return k==='w'?mt('lines',speck(RW,u,v,47)):k==='y'?mt('lines',speck(RY,u,v,49)):null; }})],null,{walk:true}); };
+MK.mark=(x0,y0,x1,y1,f,name)=>{ SHARED.PNAME=name; return prop([Bx(x0,y0,x1,y1,0,.5,RW,{nb:1,top:(u,v)=>{ const k=f(u-x0,v-y0); return k==='w'?mt('lines',speck(RW,u,v,47)):k==='y'?mt('lines',speck(RY,u,v,49)):null; }})],null,{walk:true}); };
 const turnArrow=(a,c)=>{ a=Math.floor(a*8)/8; c=Math.floor(c*8)/8; if(a<0||a>2.3)return false; if(Math.abs(c)<.1&&a<1.6)return true; if(a>=1.6&&Math.abs(c)<.32*(2.3-a)/.7)return true;
   return c>0&&c<.45&&a>=.7&&a<.9||c>=.45&&c<.8&&Math.abs(a-.8)<.32*(.8-c)/.35; };
-MK.rail=(x0,y0,x1,y1,z=0)=>{ '@later'; PNAME='railing'; const bs=[], ax=Math.abs(x1-x0)>=Math.abs(y1-y0), L=ax?Math.abs(x1-x0):Math.abs(y1-y0), n=Math.max(1,Math.round(L));
+MK.rail=(x0,y0,x1,y1,z=0)=>{ '@later'; SHARED.PNAME='railing'; const bs=[], ax=Math.abs(x1-x0)>=Math.abs(y1-y0), L=ax?Math.abs(x1-x0):Math.abs(y1-y0), n=Math.max(1,Math.round(L));
   for(let i=0;i<=n;i++){ const t=i/n, px=x0+(x1-x0)*t, py=y0+(y1-y0)*t; bs.push(Bx(px-.04,py-.04,px+.04,py+.04,z,z+36,STEELD,{foot:z?0:1})); }
   for(const h of [18,33])bs.push(Bx(Math.min(x0,x1)-.02,Math.min(y0,y1)-.02,Math.max(x0,x1)+.02,Math.max(y0,y1)+.02,z+h,z+h+3,STEEL,{foot:0,nb:1}));
   if(z)bs.unshift(FOOT(Math.min(x0,x1),Math.min(y0,y1),Math.max(.05,Math.abs(x1-x0)),Math.max(.05,Math.abs(y1-y0)))); return prop(bs); };
-MK.cutseg=(T,ya,yb)=>{ '@later'; PNAME='tunnel cut'; const dep=y=>T.d*(T.y1-y)/(T.y1-T.y0), Z0=-T.d-20, bs=[{...FOOT(T.x0,yb,T.x1-T.x0,ya-yb),nb:1}], m=(T.x0+T.x1)/2;
+MK.cutseg=(T,ya,yb)=>{ '@later'; SHARED.PNAME='tunnel cut'; const dep=y=>T.d*(T.y1-y)/(T.y1-T.y0), Z0=-T.d-20, bs=[{...FOOT(T.x0,yb,T.x1-T.x0,ya-yb),nb:1}], m=(T.x0+T.x1)/2;
   const road=(u,v)=>Math.abs(u-m+.14)<.06||Math.abs(u-m-.14)<.06?[214,176,48]:mt('road',[62,63,68]);
   for(let y=yb;y<ya-1e-6;y+=.5){ const z=-Math.round(dep(y+.25)); bs.push(Bx(T.x0+.4,y,T.x1-.4,Math.min(ya,y+.5),z-3,z,ROADC,{foot:0,nb:1,top:road,fi:()=>[54,54,58],fj:(u,zz)=>road(u,y)})); }
   const wall=(u,z)=>{ const j=Math.floor(u*2)!==Math.floor((u+.04)*2)||z>-3; return j?sh(CONC,.8):sh(mt('concrete',CONC),hash(Math.floor(u*8),Math.floor(z/4),71)<.1?.9:1); };
@@ -67,7 +67,7 @@ MK.cutseg=(T,ya,yb)=>{ '@later'; PNAME='tunnel cut'; const dep=y=>T.d*(T.y1-y)/(
         for(const q of [mx-10,mx+mw+6])for(let r=bot-40;r<bot-32;r++)for(let k=0;k<4;k++)put(q+k,r,glow([255,244,220])); });
     bs.push(Bx(T.x0,T.y0,T.x1,T.y0+.4,Z0,0,CONC,{foot:0,nb:1,top:()=>sh(CONC,1.08),fi:wall,fj:(u,z)=>A(Math.floor((u-T.x0)*FP),Math.floor(-z))||CONC})); }
   const p=prop(bs); p.sunk={x0:T.x0,y0:T.y0,x1:T.x1,y1:T.y1}; return p; };
-MK.brgseg=(B,ya,yb)=>{ '@later'; PNAME='bridge'; const D=B.deck, bs=[], st=[], so=[], m=(B.x0+B.x1)/2;
+MK.brgseg=(B,ya,yb)=>{ '@later'; SHARED.PNAME='bridge'; const D=B.deck, bs=[], st=[], so=[], m=(B.x0+B.x1)/2;
   const top=(u,v)=>u<B.x0+1.3||u>B.x1-1.3?mt('concrete',[166,162,154]):Math.abs(u-m+.14)<.06||Math.abs(u-m-.14)<.06?[214,176,48]:mt('road',[62,63,68]);
   const ret=(u,z)=>hash(Math.floor(u*6),Math.floor(z/5),83)<.08?sh(CONC,.88):Math.floor(z/16)!==Math.floor((z+1)/16)?sh(CONC,.8):CONC;
   const surf=y0=>Math.min(D,3*Math.max(1,Math.round((B.y1-y0)*2)));
@@ -79,5 +79,5 @@ MK.brgseg=(B,ya,yb)=>{ '@later'; PNAME='bridge'; const D=B.deck, bs=[], st=[], s
   for(const py of [-112.5,-117.5])if(py<ya&&py>yb)bs.push(Bx(B.x0+.7,py-.4,B.x1-.7,py+.4,-6,D-12,CONC,{foot:0,top:()=>CONC,fi:ret,fj:ret}));
   if(!bs.some(b=>b.z0===0||b.foot))bs.unshift(FOOT(B.x0,yb,B.x1-B.x0,ya-yb));
   const p=prop(bs); p.stands=st; p.solids=so; return p; };
-MK.brglamp=(x,y,z)=>{ '@later'; PNAME='bridge lamp'; const p=prop([FOOT(x-.1,y-.1,.2,.2),Bx(x-.06,y-.06,x+.06,y+.06,z,z+84,STEEL,{foot:0}),Bx(x-.16,y-.16,x+.16,y+.16,z+84,z+92,[150,150,156],{foot:0}),Bx(x-.1,y-.1,x+.1,y+.1,z+83,z+84,[255,206,140],{foot:0,em:1,nb:1})]);
+MK.brglamp=(x,y,z)=>{ '@later'; SHARED.PNAME='bridge lamp'; const p=prop([FOOT(x-.1,y-.1,.2,.2),Bx(x-.06,y-.06,x+.06,y+.06,z,z+84,STEEL,{foot:0}),Bx(x-.16,y-.16,x+.16,y+.16,z+84,z+92,[150,150,156],{foot:0}),Bx(x-.1,y-.1,x+.1,y+.1,z+83,z+84,[255,206,140],{foot:0,em:1,nb:1})]);
   p.solids=[]; LAMPS.push({x,y,z:z+82,r:5,c:[1,.78,.5],prop:p}); return p; };

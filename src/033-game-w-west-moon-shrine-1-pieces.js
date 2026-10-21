@@ -28,7 +28,7 @@ const msEll=(cx,cy,zc,rx,rz,col)=>msLathe(cx,cy,zc-rz,zc+rz,z=>{ const t=(z-rz)/
 let MST=0;
 const msFlick=k=>.86+.14*Math.sin(MST*7.3+k*1.7)*Math.sin(MST*3.1+k);
 const msLife=(p,k)=>{ p.life=t=>{ MST=t; }; p.lifeKey=()=>Math.floor(MST*8)%16; p.fl=k; return p; };
-const msPut=(name,bs,o={})=>{ PNAME=name; return prop(bs,null,{fine:true,...o}); };
+const msPut=(name,bs,o={})=>{ SHARED.PNAME=name; return prop(bs,null,{fine:true,...o}); };
 const msLamp=(l,p)=>Object.defineProperty(Object.assign(l,{own:1,day:true,prop:p}),'up',{get(){ return this.z-lc('lamps','height'); },enumerable:true});
 function msTerrace(x,y,z0=0){ return msPut('stone terrace',[msStone(x,y,x+5.56,y+5.38,z0,z0+26)]); }
 function msSteps(x,y,z0=0){ '@later'; const sw=[msStone(x-.25,y,x,y+1.2,z0,z0+23),msStone(x+2.4,y,x+2.65,y+1.2,z0,z0+23)];

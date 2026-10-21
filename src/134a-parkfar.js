@@ -1,6 +1,6 @@
 const PFARM={};
-{ const T=TILE, B=RINGX.bound, cvn=BOD.g.cvNoise, hash=BOD.g.hash, ss=(a,b,v)=>{ const t=Math.max(0,Math.min(1,(v-a)/(b-a))); return t*t*(3-2*t); };
-  const xa=PFAR.x/T, ya=PFAR.y/T, xe=B.x1/T, zn=B.z1/T, xl=PFAR.z/T+12, zl=PFAR.w/T+12, y0=BOD.YS(0);
+{ const T=TILE, B=RINGX.bound, cvn=SHARED.BOD.g.cvNoise, hash=SHARED.BOD.g.hash, ss=(a,b,v)=>{ const t=Math.max(0,Math.min(1,(v-a)/(b-a))); return t*t*(3-2*t); };
+  const xa=PFAR.x/T, ya=PFAR.y/T, xe=B.x1/T, zn=B.z1/T, xl=PFAR.z/T+12, zl=PFAR.w/T+12, y0=SHARED.BOD.YS(0);
   const past=(x,z)=>Math.max(x-xe,z-zn);
   const H=(x,z)=>{ const d=past(x,z), e=Math.min(x-xa,z-ya), n=cvn(x/34,z/34,601)*.55+cvn(x/14,z/14,603)*.33+cvn(x/6,z/6,605)*.12;
     return (ss(7,30,d)*ss(0,16,e)*(2.4+8*ss(24,120,d))*Math.pow(Math.max(0,(n-.24)/.76),1.3)-.12*(1-ss(5,6,d)))*T; };

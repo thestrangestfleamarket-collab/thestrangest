@@ -45,7 +45,7 @@ const WE={on:false};
   function frame(){ '@later'; if(box){ scene.remove(box); box=null; } if(!sel||stOf(sel).del)return; const b=new THREE.Box3(); for(const p of sel.parts){ const a=p.me.geometry.attributes.position.array; for(let i=0;i<6;i++)b.expandByPoint(v.fromArray(a,(p.v0+i)*3)); }
     box=new THREE.Box3Helper(b,0xf2c14e); scene.add(box); }
   const change=f=>{ if(!sel)return; f(stOf(sel)); apply(sel); settle(); save(); frame(); draw(); };
-  const ground=()=>{ const r=new THREE.Vector3().setFromMatrixColumn(cam.matrixWorld,0); r.y=0; r.normalize(); const f=new THREE.Vector3(-r.z,0,r.x); return [r,f]; };
+  const ground=()=>{ const r=new THREE.Vector3().setFromMatrixColumn(SHARED.cam.matrixWorld,0); r.y=0; r.normalize(); const f=new THREE.Vector3(-r.z,0,r.x); return [r,f]; };
   P.querySelectorAll('[data-mv]').forEach(b=>b.onclick=()=>{ const [dx,dz]=b.dataset.mv.split(',').map(Number), [r,f]=ground(); change(e=>{ e.t[0]+=(r.x*dx+f.x*dz)*.25*T; e.t[2]+=(r.z*dx+f.z*dz)*.25*T; }); });
   P.querySelectorAll('[data-up]').forEach(b=>b.onclick=()=>change(e=>{ e.t[1]+=+b.dataset.up*.1*T; }));
   P.querySelectorAll('[data-turn]').forEach(b=>b.onclick=()=>change(e=>{ e.r=(e.r+ +b.dataset.turn)%360; }));
@@ -59,11 +59,11 @@ const WE={on:false};
   $('#wout').onclick=()=>WE.toggle();
   WE.toggle=()=>{ WE.on=!WE.on; P.hidden=!WE.on; if(!WE.on){ sel=null; frame(); } draw(); UI.badge&&UI.badge(); };
   const ray=new THREE.Raycaster(), meshes=()=>[...new Set(OBJS.flatMap(o=>o.parts.map(p=>p.me)))].filter(m=>{ let q=m; while(q){ if(!q.visible)return false; q=q.parent; } return true; });
-  const hitAt=e=>{ '@later'; const r=renderer.domElement.getBoundingClientRect(); ray.setFromCamera(new THREE.Vector2((e.clientX-r.left)/r.width*2-1,-((e.clientY-r.top)/r.height*2-1)),cam);
+  const hitAt=e=>{ '@later'; const r=renderer.domElement.getBoundingClientRect(); ray.setFromCamera(new THREE.Vector2((e.clientX-r.left)/r.width*2-1,-((e.clientY-r.top)/r.height*2-1)),SHARED.cam);
     for(const h of ray.intersectObjects(meshes(),false)){ const o=h.object.userData.objOf[Math.floor(h.faceIndex/2)]; if(o&&!(ST[o.id]&&ST[o.id].del))return {o,p:h.point}; return null; } return null; };
   WE.pick=e=>{ const h=hitAt(e); sel=h?h.o:null; if(sel)base(sel); frame(); draw(); };
   WE.down=e=>{ if(!WE.on||!sel||e.button!==0)return false; const h=hitAt(e); if(!h||h.o!==sel)return false; drag={y:h.p.y,last:h.p.clone()}; return true; };
-  WE.move=e=>{ '@later'; if(!drag)return; const r=renderer.domElement.getBoundingClientRect(); ray.setFromCamera(new THREE.Vector2((e.clientX-r.left)/r.width*2-1,-((e.clientY-r.top)/r.height*2-1)),cam);
+  WE.move=e=>{ '@later'; if(!drag)return; const r=renderer.domElement.getBoundingClientRect(); ray.setFromCamera(new THREE.Vector2((e.clientX-r.left)/r.width*2-1,-((e.clientY-r.top)/r.height*2-1)),SHARED.cam);
     const pl=new THREE.Plane(new THREE.Vector3(0,1,0),-drag.y), q=new THREE.Vector3(); if(!ray.ray.intersectPlane(pl,q))return; const dx=q.x-drag.last.x, dz=q.z-drag.last.z; drag.last.copy(q);
     const s=stOf(sel); s.t[0]+=dx; s.t[2]+=dz; apply(sel); frame(); };
   WE.up=()=>{ if(!drag)return; drag=null; settle(); save(); };

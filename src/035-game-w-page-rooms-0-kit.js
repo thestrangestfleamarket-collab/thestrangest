@@ -132,7 +132,7 @@ const PGK=(()=>{ const ZS=27, TX=24, E1=1<<24, E2=2<<24, SKY=3<<24, FIRE=4<<24, 
       const cx=(Math.min(...xs)+Math.max(...xs))/2, cy=(Math.min(...ys)+Math.max(...ys))/2, o=it.o, name=it.name, S=it.scn;
       const high=it.prims.every(p=>wallOfPrim(p,S)||p.wall||(p.t===0?p.z0:p.t===1?p.z0:p.cz-p.rz)>1.0), walls=it.prims.filter(p=>p.wallOf);
       it.c=[cx,cy];
-      CATALOG[name]=(x,y)=>{ '@later'; PNAME=name; const dx=x-cx, dy=y-cy, bs=gameBoxes(it,dx,dy);
+      CATALOG[name]=(x,y)=>{ '@later'; SHARED.PNAME=name; const dx=x-cx, dy=y-cy, bs=gameBoxes(it,dx,dy);
         if(!bs.some(b=>b.z0===0||b.foot))for(const b of bs)b.foot=1;
         const moving=it.flames.length||it.prims.some(p=>p.fire)||o.drape;
         let lf=0; const opts={...(o.wall||high?{walk:true,high:true,hang:Math.max(0,Math.round(Math.min(...it.prims.map(p=>p.t===2?p.cz-p.rz:p.z0))*ZS))}:{}),...(o.flat||o.floor?{flat:true,walk:true}:{}),...(o.walk?{walk:true}:{}),...(o.stands?{walk:true,stands:o.stands.map(([a,b,c,d,z])=>({x0:a+dx,y0:b+dy,x1:c+dx,y1:d+dy,z}))}:{}),

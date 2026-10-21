@@ -1,7 +1,7 @@
 (()=>{ const {FP,rect,fb,worn,art,plane,line,ell,glassCase,plinth,BRZ,BRZL}=MUK, c=MUC;
 const CLOTH=[34,40,58], CLOTHL=[44,52,72];
 const board=(W,H,draw)=>art(W,H,(put,w,h)=>{ for(let z=0;z<h;z++)for(let x=0;x<w;x++)put(x,z,hash(x>>1,z>>1,1901)<.1?CLOTHL:CLOTH); draw(put,w,h); });
-function rosetta(x,y){ PNAME='the Rosetta Stone'; const r=rect(x,y,[0,1],1.3,.9), Z=28, H=40, B=glassCase(r,Z,H,{cab:[52,50,48],floor:[58,54,50]});
+function rosetta(x,y){ SHARED.PNAME='the Rosetta Stone'; const r=rect(x,y,[0,1],1.3,.9), Z=28, H=40, B=glassCase(r,Z,H,{cab:[52,50,48],floor:[58,54,50]});
   const G=[62,64,70], GL=[98,100,106], GD=[44,46,50], INK=[150,150,156], hs=[26,29,31,32,29,24], n=hs.length, w=.84/1.3, d0=.33, d1=.33+.32/.9;
   for(let i=0;i<n;i++){ const t0=.5-w/2+i*w/n, t1=t0+w/n, h=hs[i];
     B.push(fb(r,t0,t1,d0,d1,Z,Z+h,G,(s,t,z,len)=>{ const a=Math.floor((i+t)*len*FP), zz=Math.floor(z); if(zz>=h-1||(s==='l'&&i===0)||(s==='r'&&i===n-1))return GD;
@@ -11,7 +11,7 @@ function rosetta(x,y){ PNAME='the Rosetta Stone'; const r=rect(x,y,[0,1],1.3,.9)
           if(zz>=22&&zz<h-2)return (a%3<2&&zz%3<2)&&hash(a>>1,zz>>1,1907)<.7?INK:G; }
         return hash(a,zz,1909)<.08?GL:G; },()=>GD,{foot:0})); }
   return prop(B); }
-function tablets(x,y){ PNAME='clay tablets'; const r=rect(x,y,[0,1],1.8,.6), Z=26, H=46;
+function tablets(x,y){ SHARED.PNAME='clay tablets'; const r=rect(x,y,[0,1],1.8,.6), Z=26, H=46;
   const back=board(Math.round(1.8*FP),H-2,(put,W,h)=>{ const wedge=(cx,cz,k,dir)=>{ for(let i=0;i<k*3;i++)for(let j=-i/2;j<=i/2;j++)put(dir?cx+i:cx+j,dir?cz+j:cz-i,[200,170,120]); };
     for(let i=0;i<5;i++){ wedge(8+i*8,34,2,1); wedge(10+i*8,26,2,0); } wedge(58,36,3,1); wedge(66,30,3,0); wedge(70,36,2,1); });
   const B=glassCase(r,Z,H,{cab:[52,50,48],back:MUK.plane(r,.86,.9,Z,H-2,back)});
@@ -23,14 +23,14 @@ function tablets(x,y){ PNAME='clay tablets'; const r=rect(x,y,[0,1],1.8,.6), Z=2
   tab(.68,.09/1.8,3,[196,170,130],(a,z)=>z%2?[150,126,96]:null);
   B.push(fb(r,.8,.94,.4,.6,Z,Z+2,[40,40,42],null,()=>[50,50,52],{foot:0}),fb(r,.8,.94,.42,.58,Z+2,Z+5,[176,150,112],(s,t,z)=>Math.floor(t*12)%2&&z>1?[136,110,78]:[176,150,112],()=>[190,166,128],{foot:0}));
   return prop(B); }
-function ishango(x,y){ PNAME='the Ishango bone'; const r=rect(x,y,[0,1],.6,.6), Z=34, H=30;
+function ishango(x,y){ SHARED.PNAME='the Ishango bone'; const r=rect(x,y,[0,1],.6,.6), Z=34, H=30;
   const back=board(Math.round(.6*FP),H-2,(put,W,h)=>{ const bz=12, b0=1, b1=W-2; for(let x=b0;x<b1;x++)for(let z=bz-2;z<=bz+2;z++)put(x,z,z===bz+2?[170,140,100]:z===bz-2?[96,72,48]:[136,106,72]);
     put(b1,bz,[230,230,236]); put(b1+1,bz,[230,230,236]); put(b1,bz+1,[200,200,210]);
     let x=b0+1; for(const g of [3,6,4,8,10,5,5,7]){ for(let i=0;i<g&&x<b1-1;i++,x+=.6)put(Math.floor(x),bz+((i&1)?2:3),[60,44,30]); x+=1; } });
   const B=glassCase(r,Z,H,{cab:[52,50,48],back:MUK.plane(r,.86,.9,Z,H-2,back)});
   B.push(fb(r,.48,.52,.45,.55,Z,Z+5,BRZ,null,()=>BRZL,{foot:0}),fb(r,.36,.36+.11/.6,.47,.53,Z+5,Z+6,[110,82,54],(s,t)=>t>.85?[220,220,228]:[110,82,54],()=>[136,106,72],{foot:0}));
   return prop(B); }
-function antikythera(x,y){ PNAME='the Antikythera mechanism'; const r=rect(x,y,[0,1],1.4,.8), Z=28, H=36;
+function antikythera(x,y){ SHARED.PNAME='the Antikythera mechanism'; const r=rect(x,y,[0,1],1.4,.8), Z=28, H=36;
   const back=board(Math.round(1.4*FP),H-2,(put,W,h)=>{ const gear=(cx,cz,R,spokes)=>{ for(let z=Math.floor(cz-R-2);z<=cz+R+2;z++)for(let x=Math.floor(cx-R-2);x<=cx+R+2;x++){ const dx=x+.5-cx, dz=z+.5-cz, rr=Math.hypot(dx,dz), a=Math.atan2(dz,dx);
         const tooth=rr<=R+1.6&&rr>R&&Math.floor((a+Math.PI)/(2*Math.PI)*Math.max(12,R*3))%2===0, rim=rr<=R&&rr>R-1.5, hub=rr<1.6, sp=rr<R&&spokes&&[0,1,2,3].some(k=>Math.abs(Math.sin(a-k*Math.PI/2))*rr<.8);
         if(tooth||rim||hub||sp)put(x,z,rr>R?[176,140,74]:[150,118,62]); } };

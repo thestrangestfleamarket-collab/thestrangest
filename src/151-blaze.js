@@ -2,7 +2,7 @@ const BLAZE=window.BLAZE={F:[],D:[]};
 { const T=TILE, M=1/.84*T, G=(x,z)=>MODS.bodega.ground(x,z), F=BLAZE.F, rnd=Math.random, MAX=+(QS.get('fires')||12), WET=3.2, HOLD=240, FADE=360, V3=THREE.Vector3;
   const its=L=>L.filter(Boolean).flatMap(m=>m.userData.items||[]).filter(o=>!/rock|stone|pillar/i.test(o.k)), ITEMS=its([PARK.trees,PARK.under,PARK.underStill,DRESS.trees,DRESS.plants]); PARK.later(()=>ITEMS.push(...its([PARK.trees,PARK.under,PARK.underStill])));
   const top=(x,z)=>WEEDS.top?WEEDS.top(x,z):undefined, surf=(x,z)=>{ const t=top(x,z); return typeof t==='number'?t:G(x,z); };
-  const lawn=(x,z)=>{ if(!PARK.in||!WEEDS.inPark||!WEEDS.inPark(x,z,1))return false; const a=x/T+BOD.OX-PARK.ox, b=z/T+BOD.OY-PARK.oy; return !PARK.path(a,b)&&!(PARK.brook&&PARK.brook.wet(a,b,.6))&&!(FOUNT.lake&&FOUNT.lake(a,b)<1.5); };
+  const lawn=(x,z)=>{ if(!PARK.in||!WEEDS.inPark||!WEEDS.inPark(x,z,1))return false; const a=x/T+SHARED.BOD.OX-PARK.ox, b=z/T+SHARED.BOD.OY-PARK.oy; return !PARK.path(a,b)&&!(PARK.brook&&PARK.brook.wet(a,b,.6))&&!(FOUNT.lake&&FOUNT.lake(a,b)<1.5); };
   const brush=(x,z)=>ITEMS.some(o=>Math.hypot(o.x-x,o.z-z)<Math.max(.5*T,o.r*.6));
   const burnable=BLAZE.burnable=(x,z)=>{ if(G(x,z)<-.01||[PARK.fire,window.GCAVE&&GCAVE.fire].some(c=>c&&Math.hypot(c.x-x,c.z-z)<2*T))return false; const t=top(x,z); return typeof t==='number'||t===undefined&&lawn(x,z)||brush(x,z); };
   const cc=new THREE.Color(), geo=(fn)=>{ const P=[], N=[], C=[]; fn((w,h,d,c,x,y,z,ry=0)=>{ const g=new THREE.BoxGeometry(w,h,d).rotateY(ry).translate(x,y,z).toNonIndexed(); P.push(...g.attributes.position.array); N.push(...g.attributes.normal.array); cc.setHex(c); for(let i=0;i<g.attributes.position.count;i++)C.push(cc.r,cc.g,cc.b); });
@@ -47,7 +47,7 @@ const BLAZE=window.BLAZE={F:[],D:[]};
     if(ch)mk.aA.needsUpdate=true; let n=0; BM.forEach((m,i)=>{ if(m)n=i+1; }); mk.me.count=n; mk.me.visible=n>0;
     let b=null, bd=(30*T)**2; for(const f of F){ const d=(f.x-pos.x)**2+(f.z-pos.z)**2; if(d<bd){ bd=d; b=f; } }
     if(b){ L.position.set(b.x,b.y+.5*T,b.z); L.intensity=16*Math.min(1,b.s.w/(.62*T))*FLAME.flick(b.s.sd); } else L.intensity=0; };
-  const CN=BOD.road.CORN.filter(c=>c.cv&&c.x===RING.wr1), PH=2.8*M, ST=CN.map(c=>{ const x=BOD.XS(c.cx), z=BOD.ZS(c.cy); return {x,z,y:G(x,z)}; });
+  const CN=SHARED.BOD.road.CORN.filter(c=>c.cv&&c.x===RING.wr1), PH=2.8*M, ST=CN.map(c=>{ const x=SHARED.BOD.XS(c.cx), z=SHARED.BOD.ZS(c.cy); return {x,z,y:G(x,z)}; });
   for(const s of ST){ SOL.up.push([s.x-.12*M,s.z-.12*M,s.x+.12*M,s.z+.12*M]); FIX.up.push([s.x-.12*M,s.z-.12*M,s.y,s.x+.12*M,s.z+.12*M,s.y+PH]); }
   { const g=geo(add=>{ for(const s of ST){ const a=(w,h,d,c,x,y,z)=>add(w*M,h*M,d*M,c,s.x+x*M,s.y+y*M,s.z+z*M);
       a(.55,.12,.55,0x8a8a84,0,.06,0); a(.13,2.7,.13,0xa8261e,0,1.4,0); a(.22,.06,.22,0x2a2c30,0,2.72,0); a(1.05,.07,1.05,0x2c2e32,0,2.8,0);

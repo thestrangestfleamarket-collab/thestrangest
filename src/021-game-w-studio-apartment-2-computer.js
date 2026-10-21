@@ -1,4 +1,4 @@
-function homeComputer(x,y,f=[0,1]){ PNAME='home computer'; const r=rect(x,y,f,3.6,1.4), c=AP.oak, H=30, lit=q=>Object.assign([...q],{e:1});
+function homeComputer(x,y,f=[0,1]){ SHARED.PNAME='home computer'; const r=rect(x,y,f,3.6,1.4), c=AP.oak, H=30, lit=q=>Object.assign([...q],{e:1});
   const B=[205,194,159], Bl=[222,213,182], Bd=[160,150,120], K=[42,44,47], K2=[58,60,64], Kd=[24,24,27], G=lit([108,94,181]), Gs=lit([100,87,171]), Gl=lit([150,138,214]),
     sl=[150,146,132], on=lit([90,200,96]), cap=[192,184,162], capD=[150,144,126], gap=[96,90,76], paper=[214,208,192], ink=[120,116,104], red=[150,60,52], yel=[228,208,98], pch=[232,160,110];
   const dr=(s,t,z,len)=>{ const k=wood(45,c,t,z,len); if(s!=='f')return k; const q=(z-2)%9; if(t>.72&&q<1)return sh(k,.6); return k; };

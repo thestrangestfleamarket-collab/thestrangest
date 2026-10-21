@@ -1,4 +1,4 @@
-BOD.streetSigns=()=>{ const X=BOD.XS, Z=BOD.ZS, V3=THREE.Vector3, R=48/TILE, h3=(a,b,c)=>{ const v=Math.sin(a*12.9898+b*78.233+c*37.719)*43758.5453; return v-Math.floor(v); };
+SHARED.BOD.streetSigns=()=>{ const X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, V3=THREE.Vector3, R=48/TILE, h3=(a,b,c)=>{ const v=Math.sin(a*12.9898+b*78.233+c*37.719)*43758.5453; return v-Math.floor(v); };
   const F5={A:'ehhvhhh',B:'uhhuhhu',C:'ehggghe',D:'uhhhhhu',E:'vgguggv',F:'vgguggg',G:'ehgnhhf',H:'hhhvhhh',I:'e44444e',K:'hikokih',L:'ggggggv',M:'hrllhhh',N:'hpljhhh',O:'ehhhhhe',
     P:'uhhuggg',R:'uhhukih',S:'fgge11u',T:'v444444',U:'hhhhhhe',V:'hhhhha4',W:'hhhllla',Y:'hha4444',X:'hha4ahh',0:'ehjlphe',1:'4c4444e',2:'eh1248v',3:'v2421he',5:'vgu11he',6:'68guhhe',8:'ehhehhe','-':'000e000'};
   const gl=(s,i,j,sc=1)=>{ if(i<0||j<0)return false; i=Math.floor(i/sc); j=Math.floor(j/sc); const g=F5[s[Math.floor(i/6)]]; return !!g&&i%6<5&&j<7&&!!(parseInt(g[j],32)>>(4-i%6)&1); }, gw=(s,sc=1)=>(s.length*6-1)*sc;
@@ -19,8 +19,8 @@ BOD.streetSigns=()=>{ const X=BOD.XS, Z=BOD.ZS, V3=THREE.Vector3, R=48/TILE, h3=
     const d=i+j*.9-W*.3; if(i<W*.6&&j<H*.6&&(d>=0&&d<1.6||d>=3.2&&d<4))c=mix(c,[255,255,255],.38);
     return c.map(v=>v*(.95+.08*r)); };
   const back=s=>wear((i,j,W,H)=>W>40&&gl('NYC DOT',i-Math.floor((W-gw('NYC DOT'))/2),j-(H-12))?[118,122,126]:GALV,s+50,{bolts:1});
-  const quad=(p,t)=>BOD.bq(p[0].toArray(),p[1].toArray(),p[2].toArray(),p[3].toArray(),t,'L');
-  const tex=(w,h,f)=>{ const W=Math.max(1,Math.round(w*R)), H=Math.max(1,Math.round(h*R)); return BOD.faceTex(W,H,(i,j)=>f(i,j,W,H)); };
+  const quad=(p,t)=>SHARED.BOD.bq(p[0].toArray(),p[1].toArray(),p[2].toArray(),p[3].toArray(),t,'L');
+  const tex=(w,h,f)=>{ const W=Math.max(1,Math.round(w*R)), H=Math.max(1,Math.round(h*R)); return SHARED.BOD.faceTex(W,H,(i,j)=>f(i,j,W,H)); };
   const ob=(c,a,u,n,P,off=0,FW=0)=>{ '@later'; const A=a.length()*2, U=u.length()*2, N=n.length()*2, q=(x,y,z)=>c.clone().addScaledVector(a,x).addScaledVector(u,y).addScaledVector(n,z), FR=P('f'), BA=P('b');
     quad([q(-1,-1,1),q(1,-1,1),q(1,1,1),q(-1,1,1)],tex(A,U,FW?(i,j,W,H)=>FR(i+off,j,FW,H):FR));
     quad([q(1,-1,-1),q(-1,-1,-1),q(-1,1,-1),q(1,1,-1)],tex(A,U,FW?(i,j,W,H)=>BA(i+FW-off-W,j,FW,H):BA));
@@ -46,7 +46,7 @@ BOD.streetSigns=()=>{ const X=BOD.XS, Z=BOD.ZS, V3=THREE.Vector3, R=48/TILE, h3=
   const blade=(t,s)=>wear((i,j,W,H)=>{ if(i===1||j===1||i===W-2||j===H-2)return WH; return tx(t,W,Math.floor((H-14)/2),2)(i,j)?WH:GN; },s);
   const zT=5.6*TILE/.84/ZU;
   BATCH.tag=OBJ('street','street signs');
-  BOD.signs.forEach((g,k)=>{ '@later'; const {x,y}=g, s=k*7.31+1.7, bend=h3(s,40,1)<.22?(h3(s,41,1)<.5?-1:1)*(.12+.12*h3(s,42,1)):0;
+  SHARED.BOD.signs.forEach((g,k)=>{ '@later'; const {x,y}=g, s=k*7.31+1.7, bend=h3(s,40,1)<.22?(h3(s,41,1)<.5?-1:1)*(.12+.12*h3(s,42,1)):0;
     if(g.kind==='name'){ const S=frame(x,y,[0,1],s), z0=g.np?zT+6:107; if(!g.np)post(S,104,1); ob(S.at(z0-1.5),S.A.clone().multiplyScalar(PW*.7),S.L.clone().multiplyScalar(1.5*ZU),S.N.clone().multiplyScalar(PW*.7),()=>()=>[96,100,104]);
       plate(S,1,z0,z0+18,3.5*TILE,blade(g.ax,s),{on:1,both:1}); ob(S.at(z0+19),S.A.clone().multiplyScalar(PW*.7),S.L.clone().multiplyScalar(ZU),S.N.clone().multiplyScalar(PW*.7),()=>()=>[96,100,104]);
       const S2=frame(x,y,[1,0],s); S2.L=S.L; S2.B=S.B; S2.A=new V3().crossVectors(S.L,S2.N).normalize(); plate(S2,1,z0+20,z0+38,3.5*TILE,blade(g.ay,s+3),{on:1,both:1}); }

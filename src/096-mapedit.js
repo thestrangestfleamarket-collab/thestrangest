@@ -1,12 +1,12 @@
 // THE GAME EDITOR (Shift+Escape only; its own file, fetched then): the MAP EDITOR and the CHARACTER EDITOR on a flat top-down mockup: layers, look around, pick, move, turn, size, copy, delete, undo, a 360 view in a black void; export and import as files, never the game.
 const MAPED={on:false,open:false,dragging:false,down:()=>false,move:()=>{},up:()=>{}};
-{ const BOX={bodega:()=>{ const B=BOD.B0; return [BOD.X(B.x0),BOD.Z(B.y0),BOD.X(B.x1),BOD.Z(B.y1)]; },
-    house:()=>{ const A=MODS.apts&&MODS.apts.A; return A?[BOD.X(A.x0),BOD.Z(A.y0),BOD.X(A.x1),BOD.Z(A.y1)]:null; },
-    ghost:()=>{ const g=BOD.grounds.find(g=>g.id==='ghostst'); return g?[BOD.X(g.x0),BOD.Z(g.y0),BOD.X(g.x1),BOD.Z(g.y1)]:null; },
+{ const BOX={bodega:()=>{ const B=SHARED.BOD.B0; return [SHARED.BOD.X(B.x0),SHARED.BOD.Z(B.y0),SHARED.BOD.X(B.x1),SHARED.BOD.Z(B.y1)]; },
+    house:()=>{ const A=MODS.apts&&MODS.apts.A; return A?[SHARED.BOD.X(A.x0),SHARED.BOD.Z(A.y0),SHARED.BOD.X(A.x1),SHARED.BOD.Z(A.y1)]:null; },
+    ghost:()=>{ const g=SHARED.BOD.grounds.find(g=>g.id==='ghostst'); return g?[SHARED.BOD.X(g.x0),SHARED.BOD.Z(g.y0),SHARED.BOD.X(g.x1),SHARED.BOD.Z(g.y1)]:null; },
     bar:()=>{ const R=STORE.rooms.find(r=>r.id==='bar'); return R?[R.x0,R.z0,R.x1,R.z1]:null; },
-    park:()=>[BOD.XS(PARK.x0+PARK.ox),BOD.ZS(PARK.y0+PARK.oy),BOD.XS(PARK.x1+PARK.ox),BOD.ZS(PARK.y1+PARK.oy)],
-    castle:()=>{ const b=CASTLE.b; return [BOD.XS(b[0]),BOD.ZS(b[2]),BOD.XS(b[1]),BOD.ZS(b[3])]; },
-    subway:()=>{ const S=MAPSTAIR; return [BOD.XS(S.x0),BOD.ZS(S.y0),BOD.XS(S.x1),BOD.ZS(S.y1)]; }};
+    park:()=>[SHARED.BOD.XS(PARK.x0+PARK.ox),SHARED.BOD.ZS(PARK.y0+PARK.oy),SHARED.BOD.XS(PARK.x1+PARK.ox),SHARED.BOD.ZS(PARK.y1+PARK.oy)],
+    castle:()=>{ const b=CASTLE.b; return [SHARED.BOD.XS(b[0]),SHARED.BOD.ZS(b[2]),SHARED.BOD.XS(b[1]),SHARED.BOD.ZS(b[3])]; },
+    subway:()=>{ const S=MAPSTAIR; return [SHARED.BOD.XS(S.x0),SHARED.BOD.ZS(S.y0),SHARED.BOD.XS(S.x1),SHARED.BOD.ZS(S.y1)]; }};
   MAPED.box=k=>BOX[k]?BOX[k]():null; }
 const GAMEED={open:false,built:false};
 GAMEED.build=()=>{ '@editor'; const T=TILE;
@@ -61,7 +61,7 @@ GAMEED.build=()=>{ '@editor'; const T=TILE;
     else if(/water/.test(n)){ x.fillStyle=lt; for(let j=4;j<64;j+=10)x.fillRect((j*3)%40,j,24,1); }
     const t=new THREE.CanvasTexture(c); t.magFilter=t.minFilter=THREE.NearestFilter; t.colorSpace=THREE.SRGBColorSpace; t.wrapS=t.wrapT=THREE.RepeatWrapping; PAT[k]=t; return t; };
   const mockup=o=>{ const G=new THREE.Group(), s=o.scale||1, op=o.opacity==null?1:o.opacity, mat=(col,rep)=>{ const t=pattern(o.tex||'',col).clone(); t.needsUpdate=true; t.repeat.set(rep[0],rep[1]); return new THREE.MeshLambertMaterial({map:t,transparent:op<1,opacity:op}); };
-    const hgt=Math.max(.15,BOD.YS(o.h||0)/T), Y0=(o.z||0);
+    const hgt=Math.max(.15,SHARED.BOD.YS(o.h||0)/T), Y0=(o.z||0);
     if(o.ly==='tree'){ const r=o.r*s, th=Math.max(2,hgt*.45), tr=new THREE.Mesh(new THREE.CylinderGeometry(r*.12,r*.16,th,7),mat('#5a4030',[1,2])); tr.position.y=th/2; const cn=new THREE.Mesh(new THREE.IcosahedronGeometry(r,1),mat(o.color||'#24502a',[2,2])); cn.position.y=th+r*.7; cn.material.flatShading=true; G.add(tr,cn); }
     else if(o.sh==='circle'){ const r=o.r*s, h=o.ly==='path'?.12:Math.max(.3,hgt), m=new THREE.Mesh(new THREE.CylinderGeometry(r,r,h,32),mat(o.color,[Math.max(1,r),Math.max(1,h/2)])); m.position.y=h/2; G.add(m); }
     else { const w=o.w*s, d=o.d*s, h=o.ly==='path'?.12:Math.max(.3,hgt), m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat(o.color,[Math.max(1,w/3),Math.max(1,h/3)])); m.position.y=h/2; G.add(m); }
@@ -76,10 +76,10 @@ GAMEED.build=()=>{ '@editor'; const T=TILE;
   const C={void:[11,13,18],water:[40,86,128],quay:[104,104,98],road:[52,54,60],alley:[70,71,76],walk:[142,138,128],land:[60,104,54],lawn:[74,134,60],way:[186,170,128],wall:[48,52,46]};
   const LAYOF={water:'water',quay:'walk',road:'road',alley:'alley',walk:'walk',land:'grass',lawn:'grass',way:'path',wall:'wall'};
   const LCOL={shop:[176,86,62],filler:[110,100,96],shell:[140,106,88],park:[154,148,136],tree:[36,80,42],path:[186,170,128]};
-  const K=BLDK, bt=(x,y)=>[BOD.OX+(x-BOD.OX)*K,BOD.OY+(y-BOD.OY)*K], wt=(x,z)=>[BOD.OX+x/T,BOD.OY+z/T];
+  const K=BLDK, bt=(x,y)=>[SHARED.BOD.OX+(x-SHARED.BOD.OX)*K,SHARED.BOD.OY+(y-SHARED.BOD.OY)*K], wt=(x,z)=>[SHARED.BOD.OX+x/T,SHARED.BOD.OY+z/T];
   const FRONT=-77, BACK=BLOCK.back;
   let TER=null, F=null; const S=2;
-  const terrain=()=>{ F={...RING.cf}; const W=Math.round((F.x1-F.x0)*S), H=Math.round((F.y1-F.y0)*S), P=PARK, px0=P.x0+P.ox, px1=P.x1+P.ox, py0=P.y0+P.oy, py1=P.y1+P.oy, RV=RING.river, G=BOD.grounds.filter(g=>!g.bld), RA=BOD.road.at;
+  const terrain=()=>{ F={...RING.cf}; const W=Math.round((F.x1-F.x0)*S), H=Math.round((F.y1-F.y0)*S), P=PARK, px0=P.x0+P.ox, px1=P.x1+P.ox, py0=P.y0+P.oy, py1=P.y1+P.oy, RV=RING.river, G=SHARED.BOD.grounds.filter(g=>!g.bld), RA=SHARED.BOD.road.at;
     const kind=(x,y)=>{ if(y<RV.y1)return y>RV.y1-1?'quay':'water'; if(RA(x,y))return 'road';
       if(x>px0&&x<px1&&y>py0&&y<py1){ if(x<px0+.5||x>px1-.5||y<py0+.5||y>py1-.5)return 'wall'; const u=x-P.ox, v=y-P.oy; if(FOUNT.lake(u,v)<0)return 'water'; if(FOUNT.ter(u,v)<0)return 'way';
         if(P.brook){ const h=P.brook.h(u,v), q=P.brook.q(u,v); if(h!=null&&q&&h<P.brook.L(q[1]))return 'water'; } return 'lawn'; }
@@ -93,8 +93,8 @@ GAMEED.build=()=>{ '@editor'; const T=TILE;
   const base=()=>{ const L=[], P=PARK, ox=P.ox||0, oy=P.oy||0;
     const R=(n,ly,a,b,h,tex,gid)=>{ const x0=Math.min(a[0],b[0]), x1=Math.max(a[0],b[0]), y0=Math.min(a[1],b[1]), y1=Math.max(a[1],b[1]); L.push({id:nid(),gid:gid||null,n,ly,sh:'rect',x:(x0+x1)/2,y:(y0+y1)/2,w:x1-x0,d:y1-y0,rot:0,z:0,h:h||0,scale:1,tex,color:hex(LCOL[ly]),tint:'#ffffff',opacity:1}); };
     const Cc=(n,ly,x,y,r,h,tex,gid)=>L.push({id:nid(),gid:gid||null,n,ly,sh:'circle',x,y,r,rot:0,z:0,h:h||0,scale:1,tex,color:hex(LCOL[ly]),tint:'#ffffff',opacity:1});
-    { const A=MODS.apts&&MODS.apts.A; if(A)R('APARTMENTS','shop',bt(A.x0,A.y0),bt(A.x1,A.y1),3*BOD.K.STORY,'red brick, painted ivy','apts'); }
-    { const B=BOD.B0; R('THE BODEGA','shop',bt(B.x0,B.y0),bt(B.x1,B.y1),B.h,'bodega painter','bodega'); }
+    { const A=MODS.apts&&MODS.apts.A; if(A)R('APARTMENTS','shop',bt(A.x0,A.y0),bt(A.x1,A.y1),3*SHARED.BOD.K.STORY,'red brick, painted ivy','apts'); }
+    { const B=SHARED.BOD.B0; R('THE BODEGA','shop',bt(B.x0,B.y0),bt(B.x1,B.y1),B.h,'bodega painter','bodega'); }
     { const m=WROW.mus; R('MUSEUM OF EARTH','shop',bt(m.x0,m.y0),bt(m.x1,m.y1),m.h,'museum stone','museum'); }
     const lot=k=>[[BLOCK.lots[k][0],BACK],[BLOCK.lots[k][1],FRONT]];
     R('THE PLAYHOUSE','shop',...lot('play'),150,'red brick, marquee','play');
@@ -102,7 +102,7 @@ GAMEED.build=()=>{ '@editor'; const T=TILE;
     { const w=WROW.bar; R('THE BAR','shop',bt(w.x0,-89.5),bt(w.x1,-77),130,'bar walls','bar'); }
     R('SUBWAY STAIRS','shop',[MAPSTAIR.x0,MAPSTAIR.y0],[MAPSTAIR.x1,MAPSTAIR.y1],8,'concrete pavement','subway');
     R('TO THE HUDSON (PASSAGE)','path',[BLOCK.hudson[0],BLOCK.row2[0]],[BLOCK.hudson[1],FRONT],0,'concrete pavement','hudson');
-    { const g=BOD.grounds.find(q=>q.id==='ghostst'); if(g)R('THE BATH HOUSE','shop',bt(g.x0,g.y0),bt(g.x1,g.y1),170,'wood','bath'); }
+    { const g=SHARED.BOD.grounds.find(q=>q.id==='ghostst'); if(g)R('THE BATH HOUSE','shop',bt(g.x0,g.y0),bt(g.x1,g.y1),170,'wood','bath'); }
     R('THE MOVIE THEATRE','shop',...lot('theatre'),176,'red brick, film front','theatre'); R('THE ARCADE','shop',...lot('arcade'),180,'neon front','arcade'); R('THE HOLODECK','shop',...lot('holo'),132,'neon front','holo');
     if(window.BLK){ let i=0; for(const q of BLK.blds){ if(q.e)R('EMPTY SHELL '+(++i),'shell',[q.x0,q.y0],[q.x1,q.y1],q.h,'brick (block painter)','shell'+i); else R(q.row===1?'EMPTY FRONT':'BACK ROW','filler',[q.x0,q.y0],[q.x1,q.y1],q.h,'brick (block painter)'); } }
     { const c=CASTLE.b; R('THE CASTLE','park',[c[0],c[2]],[c[1],c[3]],200,'castle stone','castle'); }
@@ -125,8 +125,8 @@ GAMEED.build=()=>{ '@editor'; const T=TILE;
   const place=o=>{ if(o.lv==='down')return 'UNDERGROUND (THE STATION OR THE DUNGEON)'; const P=PARK, x=o.x, y=o.y;
     for(const m of (ST.map.items||[]))if((m.ly==='shop'||m.ly==='shell')&&hit(m,x,y))return 'INSIDE '+m.n;
     if(P&&x>P.x0+(P.ox||0)&&x<P.x1+(P.ox||0)&&y>P.y0+(P.oy||0)&&y<P.y1+(P.oy||0))return y>(P.y0+P.y1)/2+(P.oy||0)?'CENTRAL PARK':'SOUTH EAST CENTRAL PARK';
-    if(y<RING.river.y1)return 'THE HUDSON'; if(y<BLOCK.back)return 'THE ALLEY AND THE HUDSON WALK'; if(x>RING.wx0-20&&x<RING.wx1&&y>BOD.FAR)return 'WEST ST'; if(F&&(x<F.x0||x>F.x1||y<F.y0||y>F.y1))return 'OFF THE MAP'; return 'MARKET ST'; };
-  const chStart=()=>{ const L=[]; { const [x,y]=wt(pos.x,pos.z); L.push({id:'c0',gid:'you',key:'you',n:'YOU (THE AVATAR)',ly:'you',sh:'circle',x,y,r:.45,rot:heading*180/Math.PI,z:py,lv:LVL,beh:'YOU',speed:1,hp:1,home:'',job:'',scale:1,color:KCOL.you,tint:'#ffffff',opacity:1}); }
+    if(y<RING.river.y1)return 'THE HUDSON'; if(y<BLOCK.back)return 'THE ALLEY AND THE HUDSON WALK'; if(x>RING.wx0-20&&x<RING.wx1&&y>SHARED.BOD.FAR)return 'WEST ST'; if(F&&(x<F.x0||x>F.x1||y<F.y0||y>F.y1))return 'OFF THE MAP'; return 'MARKET ST'; };
+  const chStart=()=>{ const L=[]; { const [x,y]=wt(pos.x,pos.z); L.push({id:'c0',gid:'you',key:'you',n:'YOU (THE AVATAR)',ly:'you',sh:'circle',x,y,r:.45,rot:SHARED.heading*180/Math.PI,z:SHARED.py,lv:SHARED.LVL,beh:'YOU',speed:1,hp:1,home:'',job:'',scale:1,color:KCOL.you,tint:'#ffffff',opacity:1}); }
     (typeof NPCS!=='undefined'?NPCS:[]).forEach((N,i)=>{ if(!N||!N.st)return; const [x,y]=wt(N.st.x,N.st.z), j=N.rig&&N.rig.job, k=kindOf(N.key);
       L.push({id:'c'+(i+1),gid:'npc'+i,key:N.key,n:String(N.name||N.key).toUpperCase(),ly:k,sh:'circle',x,y,r:Math.max(.25,(N.st.R||.3)/T),rot:(N.st.h||0)*180/Math.PI,z:0,lv:N.lv||'up',beh:behOf(N),speed:+((N.st.v||0)/T).toFixed(3),hp:N.hp==null?1:N.hp,home:N.home?(typeof N.home==='string'?N.home:'x '+(+wt(N.home.x||0,N.home.z||0)[0]).toFixed(1)+', y '+(+wt(N.home.x||0,N.home.z||0)[1]).toFixed(1)):'',job:j?String(j.k||j.name||j.id||'A JOB').toUpperCase():'',scale:1,color:KCOL[k],tint:'#ffffff',opacity:1}); });
     return L; };
@@ -184,7 +184,7 @@ GAMEED.build=()=>{ '@editor'; const T=TILE;
       g.beginPath(); g.arc(sx(H.rot[0]),sy(H.rot[1]),6*dpr,0,7); g.fill(); g.stroke(); g.fillRect(sx(H.size[0])-5*dpr,sy(H.size[1])-5*dpr,10*dpr,10*dpr); g.strokeRect(sx(H.size[0])-5*dpr,sy(H.size[1])-5*dpr,10*dpr,10*dpr); }
     if(SHOW.label){ g.font=Math.round(9*dpr)+'px Silkscreen,monospace'; g.textAlign='center'; g.textBaseline='middle';
       for(const o of ITEMS){ if(!SHOW[o.ly]||o.ly==='filler'||o.ly==='tree'||(o.ly==='path'&&o!==sel)||(o.ly==='shell'&&V.k<3)||(chars&&(!onMap(o)||(V.k<4&&o!==sel))))continue; const t=o.n.replace(/ \(.*\)/,''); g.fillStyle='rgba(0,0,0,.6)'; const w=g.measureText(t).width; g.fillRect(sx(o.x)-w/2-2,sy(o.y)-7*dpr,w+4,14*dpr); g.fillStyle=o===sel?'#f2c14e':'#ece5d3'; g.fillText(t,sx(o.x),sy(o.y)); }
-      g.fillStyle='rgba(236,229,211,.5)'; for(const [t,x,y] of [['MARKET ST',60,(BOD.CURB+BOD.FAR)/2],['WEST ST',(RING.wr0+RING.wr1)/2,90],['CENTRAL PARK',(PARK.x0+PARK.x1)/2+(PARK.ox||0),165],['THE HUDSON',60,(RING.river.y0+RING.river.y1)/2]])g.fillText(t,sx(x),sy(y)); } }
+      g.fillStyle='rgba(236,229,211,.5)'; for(const [t,x,y] of [['MARKET ST',60,(SHARED.BOD.CURB+SHARED.BOD.FAR)/2],['WEST ST',(RING.wr0+RING.wr1)/2,90],['CENTRAL PARK',(PARK.x0+PARK.x1)/2+(PARK.ox||0),165],['THE HUDSON',60,(RING.river.y0+RING.river.y1)/2]])g.fillText(t,sx(x),sy(y)); } }
 
   const f2=v=>(+v||0).toFixed(2), KINDS={shop:'BUILDING',filler:'EMPTY FRONT',shell:'WEST ST SHELL',park:'PARK PLACE',tree:'TREE',path:'PATH'};
   const fld=(lab,k,v,step=.25,type='number')=>'<label style="display:flex;justify-content:space-between;align-items:center;gap:6px">'+lab+(type==='number'?'<input data-f="'+k+'" type="number" step="'+step+'" value="'+f2(v)+'"':'<input data-f="'+k+'" type="'+type+'" value="'+String(v).replace(/"/g,'&quot;')+'"')+' style="width:'+(type==='color'?'60px':'110px')+';font:10px monospace;background:#000;color:#f2c14e;border:1px solid #3a3f4e;padding:2px 4px"></label>';

@@ -9,7 +9,7 @@ function octoWall(q,nx,ny,X,Y,z,f){ '@later'; const c=OCC, u=nx?Y:X;
 function octoFloorCol(x,y){ const c=OCC, n=(cvNoise(x/4,y/4,411)*3+cvNoise(x*1.2,y*1.2,413)*2+cvNoise(x*3.5,y*3.5,415))/6+(hash(Math.floor(x*24),Math.floor(y*24),417)-.5)*.07;
   if(hash(Math.floor(x*24),Math.floor(y*24),419)>.993)return c.fleck; return c.floor[n<.38?0:n<.5?1:n<.62?2:3]; }
 const OCTK={LX:4.4,LY:1.6,Z0:30,ZT:86};
-function octoTank(x,y){ '@later'; PNAME='octopus tank'; const {LX,LY,Z0,ZT}=OCTK, x1=x+LX, y1=y+LY, c=OCC;
+function octoTank(x,y){ '@later'; SHARED.PNAME='octopus tank'; const {LX,LY,Z0,ZT}=OCTK, x1=x+LX, y1=y+LY, c=OCC;
   const plaque=(X,zr)=>{ const u=Math.floor((X-x-LX/2+.6)*24), v=Math.floor(Z0-6-zr); if(u<0||u>28||v<0||v>13)return null;
     if(u===0||u===28||v===0||v===13)return c.brassD; if(u===1||v===1)return sh(c.brass,1.15);
     return v===4&&u>4&&u<24&&hash(u,4,421)>.15||(v===8||v===10)&&u>3&&u<25&&hash(u,v,423)>.35?c.ink:c.brass; };

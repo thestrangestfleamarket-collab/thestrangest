@@ -50,20 +50,20 @@ if(LFX.shade){ const FN='#ifdef FLAT_SHADED\n vec3 nq=normalize(cross(dFdx(vView
   THREE.ShaderLib.lambert.fragmentShader=THREE.ShaderLib.lambert.fragmentShader
   .replace('#include <color_fragment>','#include <color_fragment>\n float lfP=0.;\n { vec4 Q0=texelFetch(tENV,ivec2(0,63),0), Q1=texelFetch(tENV,ivec2(1,63),0);\n if(Q0.g>.01||Q1.b>.01){\n'+FN+' float upq=step(.7,(vec4(nq,0.)*viewMatrix).y); vec3 dc=diffuseColor.rgb; float gr=step(dc.r*1.1,dc.g)*step(dc.b*1.05,dc.g);\n if(Q0.g>.01&&upq>0.){ float w=Q0.g; diffuseColor.rgb*=1.-w*(.34-.22*gr); lfP=w*step(.79,lfn(vWP.xz*.55+3.)*.7+lfn(vWP.xz*1.9+11.)*.3)*(1.-gr)*step(vWP.y,.4); diffuseColor.rgb*=1.-.6*lfP; }\n if(Q1.b>.01&&upq>0.){ float c=step(1.-Q1.b*1.15,lfn(vWP.xz*.8+9.)*.6+lfn(vWP.xz*3.1+5.)*.4); diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.9,.92,.96),c); lfP*=1.-c; } } }')
   .replace('#include <opaque_fragment>',' if(lfP>0.){ vec3 sk=texelFetch(tENV,ivec2(2,63),0).rgb; outgoingLight=mix(outgoingLight,sk*.46+.015,lfP*.8); }\n#include <opaque_fragment>'); }
-const NEONS=[], SHL=[], cutWalls=[], lamps=[], shopGroups=[]; let night=1, nightTo=1; const C2=new THREE.Color(); function applyTime(){}
+const NEONS=[], SHL=[], cutWalls=[], lamps=[], shopGroups=[]; let nightTo=1; SHARED.night=1; const C2=new THREE.Color(); function applyTime(){}
 const ZU=1/(PPU*Math.cos(Math.PI/6)), TILE=33.9/PPU, QS=new URLSearchParams(location.search), LAMPI=8, LAMPD=1.6;
 const SEEN=(o,show)=>{ if(!SEEN.L){ SEEN.L=1; scene.traverse(c=>{ if(c.isLight&&c.shadow)c.shadow.camera.layers.enable(3); }); }
   if(o.userData.seen===show)return; o.userData.seen=show; o.traverse(c=>{ if(c.isMesh||c.isLine||c.isPoints){ if(show)c.layers.enable(0); else c.layers.disable(0); c.layers.enable(3); } }); };
 const OUT=window.OUT={L:[],open:true,world:true,up:true,add(o,k='open'){ OUT.L.push({o,k}); SEEN(o,OUT[k]); return o; },
-  tick(){ const up=LVL!=='down', ins=typeof ROOMS!=='undefined'&&!!ROOMS.cur, open=up&&!ins, world=up&&(FREE||!ins); OUT.up=up; if(open===OUT.open&&world===OUT.world)return;
+  tick(){ const up=SHARED.LVL!=='down', ins=typeof ROOMS!=='undefined'&&!!ROOMS.cur, open=up&&!ins, world=up&&(FREE||!ins); OUT.up=up; if(open===OUT.open&&world===OUT.world)return;
     OUT.open=open; OUT.world=world; for(const e of OUT.L)SEEN(e.o,OUT[e.k]); }};
 const FREE=QS.get('free')!=='0';
 const SOL={up:[],down:[]}, FIX={up:[],down:[]}, CLIPX=[];
-let solids=SOL.up, fixed=FIX.up, BOUND, groundY, LVL='up', BOD, BODB, METRO;
+SHARED.solids=SOL.up; SHARED.fixed=FIX.up; SHARED.BOUND=undefined; SHARED.groundY=undefined; SHARED.LVL='up'; SHARED.BOD=undefined; SHARED.BODB=undefined; SHARED.METRO=undefined;
 const STORE={rooms:[],places:[],roofs:[]}, BF={list:[]}; window.STORE=STORE;
 const SYS={P:{},add:(ph,fn,name)=>{ (SYS.P[ph]=SYS.P[ph]||[]).push({fn,name:name||''}); },run:(ph,...a)=>{ const L=SYS.P[ph]; if(!L)return; for(const s of L){ try{ s.fn(...a); }catch(e){ if(!s.err){ s.err=1; console.warn('SYS '+ph+' '+s.name,e); } } } },list:()=>Object.fromEntries(Object.entries(SYS.P).map(([k,v])=>[k,v.map(s=>s.name)]))}; window.SYS=SYS;
 const FADE={busy:0,run:async(t,w)=>{ if(w)await w(); }}; window.FADE=FADE;
-const MAPG={}, MODS={};  const OVERHEAD=[]; let RPASS=null, FIRE=null;
+const MAPG={}, MODS={};  const OVERHEAD=[]; SHARED.RPASS=null; SHARED.FIRE=null;
 const grab=async(name,fn)=>{ const n0=scene.children.length; await fn(); const g=new THREE.Group(); g.name=name; for(const o of scene.children.slice(n0))g.add(o); scene.add(g); MAPG[name]=g; return g; };
 const LEVEL=__DATA__("data/world.json"), WP=Object.fromEntries(LEVEL.places.map(p=>[p.id,p])), WPP=LEVEL.parkPlaces, BLDK=1.1, LOTX=m=>72+(m-72)/BLDK;
 const LAYOUT0={bodega:{x:WP.bodega.x1-76.4},diner:{x:-24.75},ghost:{x:WP.bath.x0-133.55},house:{x:WP.apts.x0-48.24},subway:{x:WP.subway.x0-60.01},apartments:{x:59},park:{e:[0,0,0,0]},castle:{x:WPP.castle.x0-46,y:WPP.castle.y0+21}};

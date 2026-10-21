@@ -24,8 +24,8 @@ const GHOSTS=window.GHOSTS={list:[]};
   GHOSTS.run=(Q,dt,to,others,MH,MV)=>{ '@later'; Q.acc=Math.min(Q.acc+dt,H*8); const n=Math.max(1,Math.floor(Q.acc/H)); Q.acc=Math.max(0,Q.acc-n*H); const b=Q.ball, b0={...b};
     Q.d={x:(to.x-b0.x)/n,y:(to.y-b0.y)/n,z:(to.z-b0.z)/n}; for(let s=0;s<n;s++){ b.x+=Q.d.x; b.y+=Q.d.y; b.z+=Q.d.z; step(Q,others); } Object.assign(b,to);
     const A=Q.pos.array, P=Q.P; for(const k of Q.live){ A[k]=P[k]*MH; A[k+1]=P[k+1]*MV; A[k+2]=P[k+2]*MH; } Q.pos.needsUpdate=true; Q.geo.computeVertexNormals(); }; }
-GHOSTS.init=()=>{ if(typeof BOD==='undefined'||!BOD.GD)return; const X=BOD.X, Z=BOD.Z, MH=TILE/.84, MV=BOD.YS(24)/.84;
-  const [a0,b0,a1,b1]=BOD.GD.r, Y1=BOD.GD.door[1], fy=Z(Y1)>Z((b0+b1)/2)?1:-1;
+GHOSTS.init=()=>{ if(typeof SHARED.BOD==='undefined'||!SHARED.BOD.GD)return; const X=SHARED.BOD.X, Z=SHARED.BOD.Z, MH=TILE/.84, MV=SHARED.BOD.YS(24)/.84;
+  const [a0,b0,a1,b1]=SHARED.BOD.GD.r, Y1=SHARED.BOD.GD.door[1], fy=Z(Y1)>Z((b0+b1)/2)?1:-1;
   const mx=v=>v/MH, ix0=mx(Math.min(X(a0),X(a1)))+.6, ix1=mx(Math.max(X(a0),X(a1)))-.6, iz0=mx(Math.min(Z(b0),Z(b1)))+.6, iz1=mx(Math.max(Z(b0),Z(b1)))-.6;
   const fz0=mx(Z(Y1))+fy*.5, fz1=mx(Z(Y1+4*fy))-fy*.3, FZ0=Math.min(fz0,fz1), FZ1=Math.max(fz0,fz1);
   const spot=inside=>inside?[ix0+Math.random()*(ix1-ix0),iz0+Math.random()*(iz1-iz0)]:[ix0-1+Math.random()*(ix1-ix0+2),FZ0+Math.random()*(FZ1-FZ0)];
@@ -39,15 +39,15 @@ GHOSTS.init=()=>{ if(typeof BOD==='undefined'||!BOD.GD)return; const X=BOD.X, Z=
     const reg=()=>{ try{ UI.thing({name,obj:me,reach:1.2*TILE,near:2.6*TILE,tall:.9*TILE,act:()=>{}}); }catch(e){ setTimeout(reg,400); } }; setTimeout(reg,0); });
   const others=[];
   const V=new THREE.Vector3();
-  GHOSTS.tick=dt=>{ if(!dt)return; const near=LVL!=='down'&&Math.hypot(pos.x/MH-(ix0+ix1)/2,pos.z/MH-(iz0+iz1)/2)<45*.84;
+  GHOSTS.tick=dt=>{ if(!dt)return; const near=SHARED.LVL!=='down'&&Math.hypot(pos.x/MH-(ix0+ix1)/2,pos.z/MH-(iz0+iz1)/2)<45*.84;
     for(const Q of GHOSTS.list){ Q.me.visible=near; for(const e of Q.eyes)e.visible=near; }
     if(!near)return;
-    others.length=0; others.push({x:pos.x/MH,z:pos.z/MH,y:py/MV+1.7}); if(typeof NPCS!=='undefined')for(const N1 of NPCS){ if(N1.lv!=='up'||N1.far||!N1.st)continue; const x=N1.st.x/MH, z=N1.st.z/MH; if(x>ix0-6&&x<ix1+6&&z>Math.min(iz0,FZ0)-6&&z<Math.max(iz1,FZ1)+6)others.push({x,z,y:1.6}); }
+    others.length=0; others.push({x:pos.x/MH,z:pos.z/MH,y:SHARED.py/MV+1.7}); if(typeof NPCS!=='undefined')for(const N1 of NPCS){ if(N1.lv!=='up'||N1.far||!N1.st)continue; const x=N1.st.x/MH, z=N1.st.z/MH; if(x>ix0-6&&x<ix1+6&&z>Math.min(iz0,FZ0)-6&&z<Math.max(iz1,FZ1)+6)others.push({x,z,y:1.6}); }
     for(const Q of GHOSTS.list){ const b=Q.ball, b0={...b}; Q.t+=dt;
       const dx=Q.to[0]-b.x, dz=Q.to[1]-b.z, dd=Math.hypot(dx,dz);
       if(dd>.12){ const sp=.28, k=Math.min(1,dt*.8); Q.v.x+=((dx/dd)*Math.min(sp,dd*.5)-Q.v.x)*k; Q.v.z+=((dz/dd)*Math.min(sp,dd*.5)-Q.v.z)*k; Q.yawTo=Math.atan2(dx,dz); }
       else { Q.v.x*=1-Math.min(1,dt*2); Q.v.z*=1-Math.min(1,dt*2); if((Q.wait-=dt)<=0){ if(Math.random()<.3)Q.in=!Q.in; Q.to=spot(Q.in); Q.wait=4+Math.random()*10; }
-        else if(Math.random()<dt*.25)Q.yawTo=Math.random()<.7?Math.atan2(cam.position.x/MH-b.x,cam.position.z/MH-b.z)+(Math.random()-.5)*.6:Q.yawTo+(Math.random()-.5)*2; }
+        else if(Math.random()<dt*.25)Q.yawTo=Math.random()<.7?Math.atan2(SHARED.cam.position.x/MH-b.x,SHARED.cam.position.z/MH-b.z)+(Math.random()-.5)*.6:Q.yawTo+(Math.random()-.5)*2; }
       b.x+=Q.v.x*dt; b.z+=Q.v.z*dt; b.y=.52+Math.sin(Q.t*1.6)*.05+Math.sin(Q.t*.55)*.03;
       let dy=Q.yawTo-Q.yaw; dy=Math.atan2(Math.sin(dy),Math.cos(dy)); Q.yaw+=dy*Math.min(1,dt*1.5);
       const b1={...b}; Object.assign(b,b0); GHOSTS.run(Q,dt,b1,others,MH,MV);

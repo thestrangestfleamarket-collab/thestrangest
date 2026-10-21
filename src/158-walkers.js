@@ -1,5 +1,5 @@
 const WALKERS={list:[],on:QS.get('walkers')==='1'}; window.WALKERS=WALKERS;
-if(WALKERS.on){ const T=TILE, X=BOD.XS, Z=BOD.ZS, rnd=Math.random, pick=a=>a[Math.floor(rnd()*a.length)], R=(a,b)=>a+rnd()*(b-a);
+if(WALKERS.on){ const T=TILE, X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, rnd=Math.random, pick=a=>a[Math.floor(rnd()*a.length)], R=(a,b)=>a+rnd()*(b-a);
   const GAIT={stroll:['walk_b',1.6,[.75,1]],walk:['UAL_Walk_Loop',1.6,[1,1.3]],brisk:['walk_a',1.6,[1.3,1.7]],formal:['UAL_Walk_Formal_Loop',1.5,[1,1.25]],jog:['UAL_Jog_Fwd_Loop',3.4,[2.4,3]],run:['run_a',5,[3.4,4.2]]};
   const KIND={
     parkgoer:{w:3,gaits:['stroll','walk','stroll'],stay:[8,26],idles:['sit_floor_idle_a','UAL_Idle_Loop','idle_b','found_item_idle_a'],to:()=>rnd()<.75?'park':'place'},
@@ -14,7 +14,7 @@ if(WALKERS.on){ const T=TILE, X=BOD.XS, Z=BOD.ZS, rnd=Math.random, pick=a=>a[Mat
   const inPark=(x,z)=>{ const p=P0(); return x>p.x0&&x<p.x1&&z>p.z0&&z<p.z1; };
   const places=()=>CITY.places().filter(p=>p.lv==='up'&&!p.stacked&&p.door);
   const SHOPS=['bodega','store:diner','store:bar','dojo','park'].filter(id=>!/^store:/.test(id)||!AWAY.has(id.slice(6)));
-  const CORNERS=[[RING.wx0+1.6,BOD.FAR+.6],[RING.wx0+1.6,RING.cf.y1-1.4],[RING.wx0+1.6,BOD.FAR+.6],[RING.cf.x1-1.6,BOD.FAR+.6]];
+  const CORNERS=[[RING.wx0+1.6,SHARED.BOD.FAR+.6],[RING.wx0+1.6,RING.cf.y1-1.4],[RING.wx0+1.6,SHARED.BOD.FAR+.6],[RING.cf.x1-1.6,SHARED.BOD.FAR+.6]];
   const spot=(N,W,what)=>{ '@later'; const st=N.st, ok=p=>p&&N.free(p.x,p.z,st.R);
     for(let k=0;k<16;k++){ let p=null;
       if(what==='park'){ const b=P0(); p={x:R(b.x0,b.x1),z:R(b.z0,b.z1)}; }

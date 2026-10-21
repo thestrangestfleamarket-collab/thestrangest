@@ -1,4 +1,4 @@
-{ const {BF_KINDS,bfPic}=BOD.STOREK.bf, PICS=new Map(), hash=BOD.g.hash;
+{ const {BF_KINDS,bfPic}=SHARED.BOD.STOREK.bf, PICS=new Map(), hash=SHARED.BOD.g.hash;
   const tex=(k,pose)=>{ '@later'; const key=k+':'+pose; let t=PICS.get(key); if(t)return t; const Q=bfPic(k,16,pose), c=document.createElement('canvas'); c.width=Q.w; c.height=Q.h; const g=c.getContext('2d'), im=g.createImageData(Q.w,Q.h);
     for(let i=0;i<Q.w*Q.h;i++){ const p=Q.px[i]; if(!p)continue; im.data[i*4]=p[0]; im.data[i*4+1]=p[1]; im.data[i*4+2]=p[2]; im.data[i*4+3]=255; } g.putImageData(im,0,0);
     const T=new THREE.CanvasTexture(c); T.magFilter=T.minFilter=THREE.NearestFilter; T.generateMipmaps=false; T.colorSpace=THREE.SRGBColorSpace; t={T,w:Q.w,h:Q.h,oy:Q.oy}; PICS.set(key,t); return t; };

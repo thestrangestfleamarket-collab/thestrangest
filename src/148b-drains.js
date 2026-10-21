@@ -1,6 +1,6 @@
 const DRAINS=window.DRAINS={};
-DRAINS.init=()=>{ const R=typeof BOD!=='undefined'&&BOD.road; if(!R||!R.DR||!R.DR.length)return;
-  const T=TILE, M=T/.84, X=BOD.XS, Z=BOD.ZS, Y0=BOD.YS(BOD.RD)-.003, D=1.15*M, hs=(a,b)=>{ const v=Math.sin(a*12.9898+b*78.233)*43758.5453; return v-Math.floor(v); };
+DRAINS.init=()=>{ const R=typeof SHARED.BOD!=='undefined'&&SHARED.BOD.road; if(!R||!R.DR||!R.DR.length)return;
+  const T=TILE, M=T/.84, X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, Y0=SHARED.BOD.YS(SHARED.BOD.RD)-.003, D=1.15*M, hs=(a,b)=>{ const v=Math.sin(a*12.9898+b*78.233)*43758.5453; return v-Math.floor(v); };
   const P=[], C=[], quad=(a,b,c,d,col)=>{ for(const v of [a,b,c,a,c,d]){ P.push(...v); C.push(col[0]/255,col[1]/255,col[2]/255); } };
   const at=(d,u,w,y)=>d.ax==='x'?[X(d.a+u),y,Z(d.e+d.dir*w)]:[X(d.e+d.dir*w),y,Z(d.a+u)];
   const BAND=[[[74,70,64],0,.18],[[48,46,42],.18,.55],[[30,30,30],.55,.86],[[20,24,22],.86,1]];

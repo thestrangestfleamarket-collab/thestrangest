@@ -76,7 +76,7 @@ const FORAGE={}; window.FORAGE=FORAGE;
   { const TRL=[], shod0=()=>typeof LOOKS!=='undefined'&&LOOKS.L&&!LOOKS.L.bare; let acc=0, lx=pos.x, lz=pos.z;
     const pressed=(x,z,now)=>{ '@later'; if(WEEDS.pressAt)return WEEDS.pressAt(x,z); const R=.8*T; for(const p of TRL)if(now-p[2]<3.5&&Math.hypot(x-p[0],z-p[1])<R)return 1;
       if(typeof NPCS!=='undefined')for(const N of NPCS)if(N.lv==='up'&&!N.far&&N.st&&Math.abs(N.st.x-x)<R&&Math.hypot(N.st.x-x,N.st.z-z)<R)return 1; return 0; };
-    SYS.add('world',(dt)=>{ if((acc+=dt)<.12)return; const h=acc; acc=0; if(!CH.size)return; const now=performance.now()/1e3, up=LVL==='up', mv=Math.hypot(pos.x-lx,pos.z-lz)/h; lx=pos.x; lz=pos.z;
+    SYS.add('world',(dt)=>{ if((acc+=dt)<.12)return; const h=acc; acc=0; if(!CH.size)return; const now=performance.now()/1e3, up=SHARED.LVL==='up', mv=Math.hypot(pos.x-lx,pos.z-lz)/h; lx=pos.x; lz=pos.z;
       if(up&&(!TRL.length||Math.hypot(pos.x-TRL[0][0],pos.z-TRL[0][1])>.3*T)){ TRL.unshift([pos.x,pos.z,now]); if(TRL.length>16)TRL.pop(); } if(up&&TRL.length)TRL[0][2]=now;
       const shod=shod0(), cro=st.move&&st.move.name==='crouch', pc=cro||(st.w||0)<.4?.1:st.run>.5?.7:.35; let ch=false, near=false;
       for(const arr of CH.values())for(const m of arr){ if(m.cr&&m.cr<=now){ m.cr=0; ch=true; } if(S.picked[m.id])continue; const v0=m.pk||m.rv>now;
@@ -96,7 +96,7 @@ const FORAGE={}; window.FORAGE=FORAGE;
     else if(DO[id]){ DO[id](); say(id[0]==='p'?'YOU DRINK THE '+NAME(id)+'.':'YOU EAT THE '+NAME(id)+'.','#b8f0a0'); if(id[0]==='p')give('bottle',1); }
     saveSoon(); INV.add('x',0); delete INV.items.x; PACK.draw(); };
   FORAGE.ident=id=>{ const k=id.slice(2), d=MU[k][1]; if(use('myco',d-30,d+20)){ const n=have(id); take(id,n); give('m_'+k,n); say(`IT IS A ${MU[k][0]}.`,'#c8b0ff'); } else say('YOU CANNOT TELL WHAT IT IS.','#c8a090'); PACK.draw(); };
-  const fire=()=>{ '@later'; if(typeof FLAME==='undefined')return null; const w=new V3(); for(const s of FLAME.src){ if(s.k<0||s.k>2)continue; let o=s.a, vis=true; for(;o;o=o.parent)if(!o.visible){ vis=false; break; } if(!vis)continue; s.a.getWorldPosition(w); if(Math.hypot(w.x-pos.x,w.z-pos.z)<3*T&&Math.abs(w.y-py)<3*T)return s; } return null; };
+  const fire=()=>{ '@later'; if(typeof FLAME==='undefined')return null; const w=new V3(); for(const s of FLAME.src){ if(s.k<0||s.k>2)continue; let o=s.a, vis=true; for(;o;o=o.parent)if(!o.visible){ vis=false; break; } if(!vis)continue; s.a.getWorldPosition(w); if(Math.hypot(w.x-pos.x,w.z-pos.z)<3*T&&Math.abs(w.y-SHARED.py)<3*T)return s; } return null; };
   FORAGE.fire=fire;
   FORAGE.craft=rid=>{ const r=RC.find(x=>x[0]===rid); if(!r)return; const [id,nm,k,[mn,mx],ins]=r;
     for(const m in ins)if(have(iid(m))<ins[m])return say('YOU DO NOT HAVE WHAT IT TAKES.','#c8a090');

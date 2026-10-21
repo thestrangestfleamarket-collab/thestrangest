@@ -1,5 +1,5 @@
 // THE STORE: rooms with doors (diner, bar, museum, keep, cottage, aquarium, avenue) and their places in the menu. Its own builder.
-await grab('store',async()=>{ const K=BOD.STOREK, {X,Y,Z,gbox,faceTex,bq,C,place,facade}=BOD, {CATALOG,PROPS,LAMPS,PRESETS,LBLD,T,sh,hash}=K, {grain,speck,lawnCol:grassCol}=BOD.g;
+await grab('store',async()=>{ const K=SHARED.BOD.STOREK, {X,Y,Z,gbox,faceTex,bq,C,place,facade}=SHARED.BOD, {CATALOG,PROPS,LAMPS,PRESETS,LBLD,T,sh,hash}=K, {grain,speck,lawnCol:grassCol}=SHARED.BOD.g;
   const B_=id=>LBLD.find(b=>b.id===id);
   const LG=k=>{ const o=LAY.o(k); return [o.x/BLDK,o.y/BLDK]; }, AO=LG('apartments');
   for(const [id,k] of [['ldiner','diner'],['lbodega2','bar'],['lcastle','apartments']]){ const b=B_(id), [dx,dy]=LG(k); if(b&&!b.laid){ b.x0+=dx; b.x1+=dx; b.y0+=dy; b.y1+=dy; b.laid=1; } }
@@ -39,7 +39,7 @@ await grab('store',async()=>{ const K=BOD.STOREK, {X,Y,Z,gbox,faceTex,bq,C,place
         const A=[...as].sort((p,q)=>p-q), Zs=[...zs].sort((p,q)=>p-q);
         for(const s of [-1,1])for(let i=0;i+1<A.length;i++)for(let j=0;j+1<Zs.length;j++){ const u0=A[i], u1=A[i+1], z0=Zs[j], z1=Zs[j+1]; if(holes.some(h=>(u0+u1)/2>h.a0&&(u0+u1)/2<h.a1&&(z0+z1)/2>h.z0&&(z0+z1)/2<h.z1))continue;
           bq(pt(u0,z0,s*.1),pt(u1,z0,s*.1),pt(u1,z1,s*.1),pt(u0,z1,s*.1),faceTex((u1-u0)*24,z1-z0,(ii,jj)=>C(paint(s,u0+(ii+.5)/24,z1-jj-.5))),kind); }
-        const fr=(P,len,hg,c)=>bq(...P,faceTex(Math.max(1,len*24),Math.max(1,hg),()=>c),kind), cope=look.cope||BOD.g.COPE, FR=BOD.FRAME;
+        const fr=(P,len,hg,c)=>bq(...P,faceTex(Math.max(1,len*24),Math.max(1,hg),()=>c),kind), cope=look.cope||SHARED.BOD.g.COPE, FR=SHARED.BOD.FRAME;
         fr([pt(a0,H,-.1),pt(a1,H,-.1),pt(a1,H,.1),pt(a0,H,.1)],a1-a0,5,cope);
         for(const h of holes){ for(const a of [h.a0,h.a1])fr([pt(a,h.z0,-.1),pt(a,h.z0,.1),pt(a,h.z1,.1),pt(a,h.z1,-.1)],.2,h.z1-h.z0,FR); fr([pt(h.a0,h.z1,-.1),pt(h.a1,h.z1,-.1),pt(h.a1,h.z1,.1),pt(h.a0,h.z1,.1)],h.a1-h.a0,5,FR); }
         if(door&&door.w===wid){ const d0=door.a-door.wd/2, d1=door.a+door.wd/2, W=Math.max(1,Math.round(door.wd*24)), Hd=door.h, WD=[86,54,34], WL=[104,68,44], WK=[62,38,24], BR=[212,176,84];
@@ -53,7 +53,7 @@ await grab('store',async()=>{ const K=BOD.STOREK, {X,Y,Z,gbox,faceTex,bq,C,place
     return rec(id,name,B,door,!!look.in||!!o.pieceWalls); };
   const rec=(id,name,B,door,walls)=>{ const R0=STORE.rooms.find(r=>r.id===id); if(R0)return R0;
     const dx=door?(door.w==='f'||door.w==='b'?door.a:door.w==='w'?B.x0+1.2:B.x1-1.2):(B.x0+B.x1)/2, dy=door?(door.w==='f'?B.y1-1.2:door.w==='b'?B.y0+1.2:door.a):(B.y0+B.y1)/2;
-    const R={id,name,B,x0:X(B.x0),x1:X(B.x1),z0:Z(B.y0),z1:Z(B.y1),y0:-1,y1:Y(B.h),walls,at:{x:X(dx),z:Z(dy)},dw:door||null}; R.inside=(x,z)=>x>R.x0&&x<R.x1&&z>R.z0&&z<R.z1&&py>R.y0-.3&&py<R.y1;
+    const R={id,name,B,x0:X(B.x0),x1:X(B.x1),z0:Z(B.y0),z1:Z(B.y1),y0:-1,y1:Y(B.h),walls,at:{x:X(dx),z:Z(dy)},dw:door||null}; R.inside=(x,z)=>x>R.x0&&x<R.x1&&z>R.z0&&z<R.z1&&SHARED.py>R.y0-.3&&SHARED.py<R.y1;
     R.hd=door?door.w==='f'?Math.PI:door.w==='b'?0:door.w==='w'?Math.PI/2:-Math.PI/2:null; STORE.rooms.push(R); const pl=STORE.places.find(q=>q[0]===name); if(pl){ pl[1]=R.at.x; pl[2]=R.at.z; pl[3]='up'; pl[5]=R.hd; } else STORE.places.push([name,R.at.x,R.at.z,'up',undefined,R.hd]); return R; };
 
   const STEPS=[];
@@ -82,7 +82,7 @@ await grab('store',async()=>{ const K=BOD.STOREK, {X,Y,Z,gbox,faceTex,bq,C,place
 
   if(!AWAY.has('museum')){ const MK=K.museum, M=MK.MUS, B=M.b, SX=B.x0+B.x1, SY=B.y0+B.y1, FW=[[0,1],[-1,0],[0,-1],[1,0]], D={w:'f',a:SX-M.mid,wd:2.5,h:76}, stone=[226,220,204];
     const look={floor:(x,y)=>MK.museumFloorCol(SX-x,SY-y),in:(b,nx,ny,x,y,z,f)=>MK.museumWall(b,-nx,-ny,SX-x,SY-y,z,f),out:(nx,ny,x,y,z,f,H)=>MK.museumOutside(B,-nx,-ny,SX-x,SY-y,z,f,H)||sh(stone,f),cope:stone};
-    const mp=(k,x,y,rot=0)=>{ const f=CATALOG[k]; BOD.K.STUDIO.face(FW[rot]); let p; try{ p=f(+x.toFixed(3),+y.toFixed(3)); }finally{ BOD.K.STUDIO.face(null); } if(!p)return null; p.kind=k; const cx=(p.x0+p.x1)/2, cy=(p.y0+p.y1)/2; BOD.placeAt(p,2,cx,cy,SX-cx,SY-cy,true); return p; };
+    const mp=(k,x,y,rot=0)=>{ const f=CATALOG[k]; SHARED.BOD.K.STUDIO.face(FW[rot]); let p; try{ p=f(+x.toFixed(3),+y.toFixed(3)); }finally{ SHARED.BOD.K.STUDIO.face(null); } if(!p)return null; p.kind=k; const cx=(p.x0+p.x1)/2, cy=(p.y0+p.y1)/2; SHARED.BOD.placeAt(p,2,cx,cy,SX-cx,SY-cy,true); return p; };
     const L=(r,n,c,z,R)=>{ for(let i=0;i<n;i++){ const t=(i+.5)/n, al=r.y1-r.y0>=r.x1-r.x0; LAMPS.push({own:1,room:1,day:true,x:SX-(al?(r.x0+r.x1)/2:r.x0+(r.x1-r.x0)*t),y:SY-(al?r.y0+(r.y1-r.y0)*t:(r.y0+r.y1)/2),z,r:R,c}); } }, sp=[1.5,1.34,1.06];
     const mr=(lk,set,o)=>()=>room('museum','MUSEUM OF EARTH',B,lk,D,set,o);
     rec('museum','MUSEUM OF EARTH',B,D,true);
@@ -186,8 +186,8 @@ await grab('store',async()=>{ const K=BOD.STOREK, {X,Y,Z,gbox,faceTex,bq,C,place
       hb.position.set(X(x),1.3*TILE,Z(y)); scene.add(hb); R.th={name:/^THE /.test(R.name)?R.name:'THE '+R.name,ghost:1,obj:hb,reach:1.4*TILE,near:2.4*TILE,tall:2.6*TILE,act:()=>STORE.enter(id,true)}; UI.thing(R.th); }
       if(!STORE.xth){ STORE.xth=1; const xd=(name,x,y,ix,iy)=>{ const hb=new THREE.Mesh(new THREE.BoxGeometry(1.4*TILE,2.6*TILE,.5*TILE),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(X(x),1.3*TILE,Z(y)); scene.add(hb);
           UI.thing({name,ghost:1,obj:hb,reach:1.4*TILE,near:2.4*TILE,tall:2.6*TILE,act:()=>STORE.goTo(X(ix),Z(iy),'up',Math.PI)}); };
-        { const B=BOD.B0, m=(B.x0+B.x1)/2; xd('THE BODEGA',m,B.y1+.35,m,B.y1-1.4); }
-        if(BOD.GD){ const [x,y]=BOD.GD.door; xd('THE BATH HOUSE',x,y+.35,x,y-1); } } };
+        { const B=SHARED.BOD.B0, m=(B.x0+B.x1)/2; xd('THE BODEGA',m,B.y1+.35,m,B.y1-1.4); }
+        if(SHARED.BOD.GD){ const [x,y]=SHARED.BOD.GD.door; xd('THE BATH HOUSE',x,y+.35,x,y-1); } } };
     STORE.offAt=(x,z)=>{ const w=[]; for(const n in OFF){ const [a,b,c,d]=OFF[n].lot; if(!OFF[n].done&&x>X(a)&&x<X(c)&&z>Z(b)&&z<Z(d))w.push(STORE.offGo(n)); } return Promise.all(w); };
     const run=()=>{ if(done)return; const c=need().filter(c=>!LOADED(c)); if(c.length){ LOAD(...c).then(run,()=>setTimeout(run,2000)); return; } if(STEPS.length){ step(); setTimeout(run,60); } else finish(); };
     STORE.later=()=>{ if(QS.get('steps')!=='0')setTimeout(run,1500); }; }

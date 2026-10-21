@@ -29,7 +29,7 @@ function gsFloor(x,y){ '@later'; if(!GSK)return null; const o=GSK.o; const s=GSK
   const mix=(a,b,t)=>[Math.round(a[0]+(b[0]-a[0])*t),Math.round(a[1]+(b[1]-a[1])*t),Math.round(a[2]+(b[2]-a[2])*t)];
   const shade=(c,k)=>[Math.round(c[0]*k),Math.round(c[1]*k),Math.round(c[2]*k)];
   const H2=(a,b)=>Math.floor(hash(a,b,0)*4294967296);
-  const GPUT=(PN,bs,o2)=>{ PNAME=PN; return prop(bs,o2&&o2.extra,o2&&o2.o); };
+  const GPUT=(PN,bs,o2)=>{ SHARED.PNAME=PN; return prop(bs,o2&&o2.extra,o2&&o2.o); };
   function kbox(o,u0,v0,u1,v1,z0,z1,f){ const X=u=>o[0]+u*s, Y=v=>o[1]+v*s, c=f.c||QD.wood;
     const b=sided({x0:X(u0),y0:Y(v0),x1:X(u1),y1:Y(v1),z0,z1,c,foot:f.foot??(z0===0?1:0),nb:f.nb,
       top:f.top?(x,y)=>f.top((x-o[0])/s,(y-o[1])/s):()=>c,
@@ -178,7 +178,7 @@ function gsFloor(x,y){ '@later'; if(!GSK)return null; const o=GSK.o; const s=GSK
     'utility pole':info('GS-113','Utility Pole',1800,'A wooden pole, a crossbar, its wires.','wood, copper')});
   PRESETS['Preset Ghost Street 1']=Object.keys(PIECES).map(k=>{ const [u0,v0,u1,v1]=PIECES[k]; return [k,+(((u0+u1)/2+3.5)*s).toFixed(3),+(((v0+v1)/2+.45)*s).toFixed(3),0]; }); }
 
-GHOSTK={GSK,gsFloor};
+SHARED.GHOSTK={GSK,gsFloor};
 }
 
 {

@@ -10,7 +10,7 @@ const AMB={on:true};
   let loops=null, next=0, lastK='', mul=1;
   const bus=c=>{ if(!AMB.g||AMB.g.context!==c){ AMB.g=c.createGain(); AMB.g.gain.value=0; AMB.g.connect(c.destination); } return AMB.g; };
   const mk=(c,k,f0)=>{ const s=c.createBufferSource(), F=c.createBiquadFilter(), G=c.createGain(); s.buffer=SFX.buffer(k,c); s.loop=true; F.type='lowpass'; F.frequency.value=f0; G.gain.value=0; s.connect(F).connect(G).connect(bus(c)); s.start(); return {s,F,G}; };
-  const where=()=>LVL==='down'?'down':(typeof ROOMS!=='undefined'&&ROOMS.cur)?'inside':CLOCK.dark()?'night':'day';
+  const where=()=>SHARED.LVL==='down'?'down':(typeof ROOMS!=='undefined'&&ROOMS.cur)?'inside':CLOCK.dark()?'night':'day';
   const tgt=(p,v,c,k=.4)=>p.setTargetAtTime(v,c.currentTime,k);
   AMB.set=on=>{ AMB.on=on; SAVE.set('amb',on?'1':'0'); };
   AMB.tick=dt=>{ const c=SFX.live(); if(!c)return; const B=bus(c); B.gain.value=AMB.on&&SFX.on?SFX.vol:0; if(!AMB.on||!SFX.on)return;
@@ -21,7 +21,7 @@ const AMB={on:true};
     tgt(loops.rain.G.gain,rain*LM('rain'),c); tgt(loops.rain.F.frequency,ins?900:3200,c); tgt(loops.wind.G.gain,wind*LM('wind'),c); tgt(loops.fount.G.gain,FOUNT.hear?FOUNT.hear(pos)*.07:0,c);
     if(W&&W.flash&&out&&!AMB.thun){ AMB.thun=true; SFX.play('thunder',{vol:.5,delay:.6+Math.random()*1.6,pan:Math.random()*1.2-.6,bus:B}); setTimeout(()=>AMB.thun=false,4000); }
     const now=c.currentTime; if(now<next)return;
-    let near=0; for(const N of NPCS)if(!N.far&&N.lv===LVL&&N.g.visible&&Math.hypot(N.st.x-pos.x,N.st.z-pos.z)<10*T)near++; mul=1.8+(1-1.8)*Math.min(1,near/6);
+    let near=0; for(const N of NPCS)if(!N.far&&N.lv===SHARED.LVL&&N.g.visible&&Math.hypot(N.st.x-pos.x,N.st.z-pos.z)<10*T)near++; mul=1.8+(1-1.8)*Math.min(1,near/6);
     const set=SETS[w].filter(e=>e[0]!==lastK&&!(W&&W.rain>.3&&e[0]==='chirp')); let tot=0; for(const e of set)tot+=e[1]; let r=Math.random()*tot, pick=set[set.length-1]; for(const e of set){ r-=e[1]; if(r<=0){ pick=e; break; } }
     lastK=pick[0]; SFX.play(pick[0],{vol:dB(pick[2]+Math.random()*-3),vary:pick[3],pan:Math.random()*1.4-.7,bus:B});
     next=now+(7+Math.random()*9)*mul*(SFX.mix.gap==null?1:+SFX.mix.gap)*(next?1:(.3+Math.random()*.4)); };

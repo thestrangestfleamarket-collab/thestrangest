@@ -1,5 +1,5 @@
   const BARDARK=true, lt=c=>BARDARK?c:lit(c);
-  function neon(x,y,word){ PNAME='neon sign'; const cw=4, L=(word.length*4-1)*cw+16, w=L/S, Z0=0, h=(5*cw+12)/H, bs=[];
+  function neon(x,y,word){ SHARED.PNAME='neon sign'; const cw=4, L=(word.length*4-1)*cw+16, w=L/S, Z0=0, h=(5*cw+12)/H, bs=[];
     const A=pic(L,5*cw+12,put=>{ [...word].forEach((ch,i)=>{ const g=F3[ch]; for(let r=0;r<5;r++)for(let q=0;q<3;q++)if(g[r*3+q]==='1'){ const X=8+(i*4+q)*cw, Y=6+r*cw;
       box(put,X-1,Y-1,X+cw+1,Y+cw+1,BARDARK?[96,40,38]:lit([210,60,52])); } });
       [...word].forEach((ch,i)=>{ const g=F3[ch], on=(r,q)=>r>=0&&r<5&&q>=0&&q<3&&g[r*3+q]==='1'; for(let r=0;r<5;r++)for(let q=0;q<3;q++)if(on(r,q)){ const X=8+(i*4+q)*cw, Y=6+r*cw; box(put,X,Y,X+cw,Y+cw,BARDARK?[120,58,54]:lit([255,150,130])); }
@@ -14,7 +14,7 @@
   
   
   
-  function tv(x,y){ PNAME='TV'; const L=.86, Z=22;
+  function tv(x,y){ SHARED.PNAME='TV'; const L=.86, Z=22;
     const A=pic(Math.round(L*S),Z*H,put=>{ const w=Math.round(L*S), h=Z*H; box(put,0,0,w,h,DP.black); if(BARDARK){ box(put,3,3,w-3,h-3,[22,26,30]); for(let i=0;i<5;i++)box(put,6+i*3,5+i,8+i*3,6+i,[44,50,58]); return; }
       box(put,3,3,w-3,h-3,lit([40,130,60]));
       for(let y=3;y<h-3;y+=6)box(put,3,y,w-3,y+1,lit([50,150,70])); box(put,3,3,w-3,10,lit([30,40,90])); for(let i=0;i<14;i++)box(put,3+hash(i,1,101)*(w-8),5+hash(i,2,101)*4,5+hash(i,1,101)*(w-8),7+hash(i,2,101)*4,lit([220,220,230]));
@@ -22,8 +22,8 @@
       box(put,w-14,h-8,w-4,h-4,lit([20,20,30])); });
     const p=prop([fb(x,y,x+.12,y+L,0,Z,DP.black,(s,a,row)=>s==='px'?A(a,row):DP.blackL,DP.blackL,{foot:1,em:BARDARK?0:1}),pb(x,y+L/2-.08,x+.05,y+L/2+.08,-6,0,DP.blackL)],null,{hang:0,walk:true,high:true});
     LAMPS.push({own:1,room:1,x:x+.9,y:y+L/2,z:Z/2,r:3.5,c:[.55,.8,1],prop:p,off:BARDARK?1:0}); return p; }
-  function barCandle(x,y){ PNAME='candle'; const FL={ph:0}, bs=tcandle(x,y,BZ+BT,FL); for(const b of bs)if(b.z0===BZ+BT)b.foot=1; const p=prop(bs,null,{hang:BZ+BT}); flick(p,FL,Math.round(x*11+y*17)); LAMPS.push({own:1,room:1,day:true,x,y,z:BZ+BT+8,r:2.6,c:[.72,.4,.15],prop:p}); return p; }
-  function consoleTV(x,y){ PNAME='console TV'; const W=.76, D=.48, x0=x-W/2, x1=x+W/2, y0=y-D/2, y1=y+D/2, LZ=7, CZ=34, wood=[104,66,38], woodD=[70,44,26], woodL=[138,92,54], bs=[];
+  function barCandle(x,y){ SHARED.PNAME='candle'; const FL={ph:0}, bs=tcandle(x,y,BZ+BT,FL); for(const b of bs)if(b.z0===BZ+BT)b.foot=1; const p=prop(bs,null,{hang:BZ+BT}); flick(p,FL,Math.round(x*11+y*17)); LAMPS.push({own:1,room:1,day:true,x,y,z:BZ+BT+8,r:2.6,c:[.72,.4,.15],prop:p}); return p; }
+  function consoleTV(x,y){ SHARED.PNAME='console TV'; const W=.76, D=.48, x0=x-W/2, x1=x+W/2, y0=y-D/2, y1=y+D/2, LZ=7, CZ=34, wood=[104,66,38], woodD=[70,44,26], woodL=[138,92,54], bs=[];
     for(const [lx,ly] of [[x0+.06,y0+.06],[x1-.1,y0+.06],[x0+.06,y1-.1],[x1-.1,y1-.1]])bs.push(pb(lx,ly,lx+.04,ly+.04,0,LZ,woodD));
     bs.push(pb(x0,y0,x1,y1,LZ,LZ+CZ,wood,{top:(X,Y)=>(X-x0)*24%6<1?woodD:woodL,fs:(nx,ny,X,Y,z)=>{ '@later'; const u=nx?Y-y0:X-x0, zr=z-LZ;
       if(ny>0){ const a=(X-x0)/W; if(zr<9&&a>.12&&a<.88)return (Math.floor(a*W*24)+Math.floor(zr))%2?[86,74,58]:[110,96,74];
@@ -54,13 +54,13 @@
       for(const [bu,bv] of balls)if(Math.hypot(u-bu,v-bv)<.035)return .95; if(Math.hypot((u-bx)/.07,(v-.52)/.09)<1)return .8; if(v>.6&&Math.abs(u-bx)<.12-(v-.6)*.1)return .1; return v>.88?.4:bg; } }
   
 
-  function soffit(x,y,L,W){ PNAME='soffit'; const Z0=106, Z1=126, rc=.6, bs=[], x1=x+L, y1=y+W;
+  function soffit(x,y,L,W){ SHARED.PNAME='soffit'; const Z0=106, Z1=126, rc=.6, bs=[], x1=x+L, y1=y+W;
     const face=(s,a,row,Lf,h)=>s==='px'||s==='py'?(row<12?(row<1?[200,90,70]:[176,64,46]):row<13?[110,40,30]:row>h-2?[120,84,52]:[176,132,86]):[150,110,70];
     for(let X=x;X<x1-1e-6;X+=.04){ const m=X+.02, yy=m>x1-rc?(y1-rc)+Math.sqrt(Math.max(0,rc*rc-(m-(x1-rc))**2)):y1;
       bs.push(fb(X,y,X+.04,yy,Z0,Z1,[176,64,46],face,(XX,YY)=>edge(XX,YY,x,y,x1,yy)<.06?[150,110,70]:pcVn(XX*3,YY*3,102)<.4?[118,124,104]:[126,132,112],{nb:1,foot:1})); }
     return prop(bs,null,{hang:Z0,walk:true,high:true}); }
 
-  function fan(x,y){ PNAME='ceiling fan'; const Zc=126, bs=[], R=1.15, Zb=106;
+  function fan(x,y){ SHARED.PNAME='ceiling fan'; const Zc=126, bs=[], R=1.15, Zb=106;
     bs.push(pb(x-.02,y-.02,x+.02,y+.02,108,Zc,DP.black,{nb:1,foot:1}));
     bs.push(...round(x,y,104,110,z=>.13-(z>4?.04:0),(dx,dy,z,top)=>top?DP.blackL:z>2&&z<3.5?[180,40,36]:Math.atan2(dy,dx)>1.4?DP.blackL:DP.black,1,.03));
     bs.push(...round(x,y,92,104,z=>.17*Math.sqrt(Math.max(.05,1-((z-7)/7)**2)),(dx,dy,z,top)=>z>10?lt([200,190,170]):lt(z<4?[255,250,226]:Math.atan2(dy,dx)>1.2?[255,252,236]:[250,236,200]),1,.03).map(b=>Object.assign(b,{em:BARDARK?0:1})));
@@ -75,11 +75,11 @@
     LAMPS.push({own:1,room:1,x,y,z:96,r:9.5,c:[.9,.88,.68],prop:p}); return p; }
 
 
-  function stage(x,y,L,W){ PNAME='stage'; const Z=14, x1=x+L, y1=y+W, K=[22,20,22], G=[188,146,58], bs=[];
+  function stage(x,y,L,W){ SHARED.PNAME='stage'; const Z=14, x1=x+L, y1=y+W, K=[22,20,22], G=[188,146,58], bs=[];
     bs.push(fb(x,y,x1,y1,0,Z,K,(s,a,row,Lf,h)=>row<2?G:row>h-2?[12,10,12]:(a%(S*.5|0))<1?[34,30,32]:K,(X,Y)=>edge(X,Y,x,y,x1,y1)<.04?G:(Math.floor(Y*S/5)&1)?[30,26,30]:[36,32,36],{foot:1}));
     bs.push(fb(x+L/2-.5,y1,x+L/2+.5,y1+.3,0,7,K,(s,a,row)=>row<1?G:K,(X,Y)=>edge(X,Y,x+L/2-.5,y1,x+L/2+.5,y1+.3)<.03?G:[36,32,36],{foot:1}));
     return prop(bs,null,{stands:[{x0:x,y0:y,x1,y1,z:Z}]}); }
-  function micStand(x,y,z0,len,cord){ '@later'; PNAME=cord?'microphone cord':'microphone stand'; const bs=[], Z=v=>z0+v, CH=[208,210,214], CR=[22,20,24], IR=[40,38,44];
+  function micStand(x,y,z0,len,cord){ '@later'; SHARED.PNAME=cord?'microphone cord':'microphone stand'; const bs=[], Z=v=>z0+v, CH=[208,210,214], CR=[22,20,24], IR=[40,38,44];
     if(!cord){
     for(let r=0;r<4;r++){ const w=.09-r*.018; bs.push(fb(x-w,y-w*.8,x+w,y+w*.8,Z(r*.5),Z(r*.5+.5),IR,()=>IR,r===3?[70,68,76]:IR,{foot:r===0?1:0})); }
     bs.push(fb(x-.022,y-.022,x+.022,y+.022,Z(2),Z(34),CH,(s,a,row)=>row%5===0?[240,242,246]:CH,CH));
@@ -90,7 +90,7 @@
     let px=x+.04, py=y; for(let i=1;i<=Math.round(len*40);i++){ const u=i/(len*40), cx=x+.04+Math.sin(u*7.5)*.16*(1-u*.6), cy=y-u*len;
       bs.push(fb(Math.min(px,cx)-.016,Math.min(py,cy)-.016,Math.max(px,cx)+.016,Math.max(py,cy)+.016,Z(0),Z(.6),CR,()=>CR,[34,32,36],{foot:i===1?1:0})); px=cx; py=cy; }
     return prop(bs,null,cord?{walk:true}:{}); }
-  function guitarCase(x,y,z0){ '@later'; PNAME='open guitar case'; const bs=[], Z=v=>z0+v, L=.92, K=[26,22,22], KH=[60,54,52], RD=[138,22,34];
+  function guitarCase(x,y,z0){ '@later'; SHARED.PNAME='open guitar case'; const bs=[], Z=v=>z0+v, L=.92, K=[26,22,22], KH=[60,54,52], RD=[138,22,34];
     const w=u=>u<.2?.36*Math.sqrt(Math.max(.08,1-((u-.2)/.21)**2)):u<.4?.36-.09*Math.sin((u-.2)/.2*Math.PI/2):u<.52?.27+.04*Math.sin((u-.4)/.12*Math.PI/2):u<.62?.31-.18*(u-.52)/.1:.13;
     const N=28, x0=x-L/2, HL=Math.round(.36*33.9*.94);
     for(let i=0;i<N;i++){ const u=(i+.5)/N, W=Math.min(.36,w(u)), X0=x0+L*i/N, X1=x0+L*(i+1)/N, Y0=y-W/2, Y1=y+W/2;
@@ -100,8 +100,8 @@
       for(let k=0;k<HL;k++){ const yb=Y0-(k+1)/HL*W*.34; bs.push(fb(X0,yb,X1,yb+W*.34/HL+.004,Z(3.5+k),Z(4.5+k),K,(s,a,row)=>s==='py'?(k===HL-1?KH:RD):K,k===HL-1?KH:K)); } }
     for(const u of [.15,.55,.85])bs.push(fb(x0+L*u-.012,y+.16,x0+L*u+.012,y+.185,Z(1),Z(2.6),[214,176,72],()=>[190,150,60],[226,190,96]));
     return prop(bs,null,{}); }
-  function stageCloth(x,y,L){ PNAME='stage cloth'; return prop([fb(x,y,x+L,y+.06,0,112,[16,14,18],(s,a,row)=>(a%14<2)?[10,8,10]:[18,16,20],[16,14,18],{foot:1})],null,{hang:0,walk:true,high:true}); }
-  function grand(x,y,z0){ PNAME='grand piano'; const W=1.32, L=1.62, x0=x-W/2, x1=x+W/2, y1=y-.136, y0=y1-L, bs=[], Z=v=>z0+v;
+  function stageCloth(x,y,L){ SHARED.PNAME='stage cloth'; return prop([fb(x,y,x+L,y+.06,0,112,[16,14,18],(s,a,row)=>(a%14<2)?[10,8,10]:[18,16,20],[16,14,18],{foot:1})],null,{hang:0,walk:true,high:true}); }
+  function grand(x,y,z0){ SHARED.PNAME='grand piano'; const W=1.32, L=1.62, x0=x-W/2, x1=x+W/2, y1=y-.136, y0=y1-L, bs=[], Z=v=>z0+v;
     const K=[20,18,22], KH=[64,60,70], tail=t=>y0+L*.55*Math.pow(Math.max(0,Math.min(1,(t-.18)/.82)),1.35)*(1-.0*t);
     const lac=(s,a,row,Lf,h)=>row<1?KH:(a%9===4&&row<h-2)?[30,28,34]:K;
     const N=30; for(let i=0;i<N;i++){ const ta=i/N, tb=(i+1)/N, X0=x0+W*ta, X1=x0+W*tb, Y0=tail((ta+tb)/2);

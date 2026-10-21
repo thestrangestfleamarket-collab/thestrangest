@@ -181,13 +181,13 @@ function playFront(X,z,f){ const P=PFRONT, c=Math.floor((X-PLB.x0)*24),
   zz=Math.floor(z); if(c<0||c>=P.W||zz<0||zz>=P.H)return null; const o=P.a[zz*P.W+c]; if(!o)return null; if(o.e)return o; return sh(o,f); }
 const props=()=>{ const S=PLS, B=PLB, wood=(x,y)=>{ const r=Math.floor(x*5), c=[[150,108,66],[140,100,60],[158,116,72]][Math.floor(hash(r,Math.floor(y/2),61)*3)]; return mt('wood',(x*5-r)<.07?sh(c,.72):c); };
   const BLK=[22,22,24], blk={c:BLK,top:()=>[30,30,32],fi:()=>[18,18,20],fj:()=>[24,24,26]}, GILT=[200,162,78], RED=[132,28,34];
-  PNAME='stage'; prop([{x0:S.x0,y0:S.SY,x1:S.x1,y1:S.back,z0:0,z1:S.SZ,c:[120,86,54],top:wood,fi:(y,z)=>sh(z>S.SZ-3?GILT:[46,30,24],.62),fj:(x,z)=>sh(z>S.SZ-3?GILT:[52,34,26],.8)}
+  SHARED.PNAME='stage'; prop([{x0:S.x0,y0:S.SY,x1:S.x1,y1:S.back,z0:0,z1:S.SZ,c:[120,86,54],top:wood,fi:(y,z)=>sh(z>S.SZ-3?GILT:[46,30,24],.62),fj:(x,z)=>sh(z>S.SZ-3?GILT:[52,34,26],.8)}
   ]);
   const n=Math.round((S.SX1-S.SX0)/1), w=(S.SX1-S.SX0)/n, V=[150,30,42], Vd=[100,16,28], Vh=[186,54,64], Wd=[52,30,22], G=[190,150,70];
   const vel=(c0,top)=>({c:c0,top:()=>top||sh(c0,1.12),fi:()=>sh(c0,.68),fj:()=>sh(c0,.86)});
   const arm=(a,y)=>[{x0:a-.08,y0:y-.42,x1:a+.08,y1:y+.36,z0:0,z1:20,c:Wd,top:()=>Wd,fi:()=>sh(Wd,.7),fj:(x,z)=>z<3?sh(G,.8):Wd},
     {x0:a-.11,y0:y-.4,x1:a+.11,y1:y+.42,z0:20,z1:25,foot:0,...vel(V,Vh),fj:(x,z)=>sh(z>23?Vh:V,.86)}];
-  for(const y of S.rows)for(let i=0;i<n;i++){ const a=S.SX0+i*w, b=a+w; PNAME='playhouse chair'; prop([
+  for(const y of S.rows)for(let i=0;i<n;i++){ const a=S.SX0+i*w, b=a+w; SHARED.PNAME='playhouse chair'; prop([
     {x0:a+.1,y0:y-.4,x1:b-.1,y1:y+.3,z0:0,z1:5,c:Wd,top:()=>Wd,fi:()=>sh(Wd,.7),fj:()=>sh(Wd,.85)},
     {x0:a+.1,y0:y-.24,x1:b-.1,y1:y+.44,z0:5,z1:13,foot:0,...vel(V),fj:(x,z)=>sh(z>10?Vh:V,.86)},
     {x0:a+.16,y0:y-.2,x1:b-.16,y1:y+.38,z0:13,z1:16,foot:0,...vel(V,Vh),fj:()=>sh(Vh,.86)},

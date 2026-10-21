@@ -1,15 +1,15 @@
 // THE BODEGA'S LAYOUT: coordinates (X, Z, Y), the street and ghost street, roads and lanes and their painters; opens grab('bodega').
 
-BOD.KC={KMK,KPP,DGN,DGP,LAMPS,CATALOG,dungeonWall,dungeonFloorCol,castleArch,KARCH};
+SHARED.BOD.KC={KMK,KPP,DGN,DGP,LAMPS,CATALOG,dungeonWall,dungeonFloorCol,castleArch,KARCH};
 }
 await grab('bodega',async()=>{ const solids=SOL.up, fixed=FIX.up, SHL=[]; let BOUND, groundY; const c0=cutWalls.length;
 
 {
   const B0=LBLD[0], B00={...B0}, W=LSEED.walk, CURB=LSEED.street, FAR=LSEED.grass, RD=-4;
-  const OX=(B00.x0+B00.x1)/2, OY=B00.y1, K=BLDK, X=x=>(x-OX)*TILE*K, Z=y=>(y-OY)*TILE*K, Y=z=>z*ZU*K, XS=x=>(x-OX)*TILE, ZS=y=>(y-OY)*TILE, YS=z=>z*ZU; Object.assign(BOD,{X,Z,Y,XS,ZS,YS,OX,OY,B0});
+  const OX=(B00.x0+B00.x1)/2, OY=B00.y1, K=BLDK, X=x=>(x-OX)*TILE*K, Z=y=>(y-OY)*TILE*K, Y=z=>z*ZU*K, XS=x=>(x-OX)*TILE, ZS=y=>(y-OY)*TILE, YS=z=>z*ZU; Object.assign(SHARED.BOD,{X,Z,Y,XS,ZS,YS,OX,OY,B0});
   const MAP={x0:WESTX,x1:EASTX,y0:B00.y0,y1:FAR+12}, RG=RING, WEND=RING.wy1;
   B0.x0=LOTX(WP.bodega.x0); B0.x1=LOTX(WP.bodega.x1);
-  const BODOFF=B0.y0+3.75; BOD.BODOFF=BODOFF;
+  const BODOFF=B0.y0+3.75; SHARED.BOD.BODOFF=BODOFF;
   const holed=f=>(x,y)=>[MAPSTAIR,...RING.stairs].some(S=>x>=S.x0&&x<S.x1&&y>=S.y0&&y<S.y1)?null:f(x,y);
   const C=v=>v&&v.e&&v.length===3?[v[0],v[1],v[2],1]:v;
   const faceTex=(w,h,fn)=>{ w=Math.max(1,Math.round(w)); h=Math.max(1,Math.round(h)); const im=new ImageData(w,h), d=im.data; let ie=null, e=null;
@@ -47,7 +47,7 @@ await grab('bodega',async()=>{ const solids=SOL.up, fixed=FIX.up, SHL=[]; let BO
     wall('west','y',B.x0,B.y0-T,B.y1+T,B.h,[],1,-1,true);
     wall('east','y',B.x1,B.y0-T,B.y1+T,B.h,[],-1,1,true);
     wall('office','x',BODOFF,B.x0+T,B.x1-T,B.h-4,[d(B.x1-.95)],1,-1,false); }
-  BOD.WALLS=WALLS;
+  SHARED.BOD.WALLS=WALLS;
   function facade(nx,ny,X_,Y_,z,f,cap,brick){ const u=nx?Y_:X_, c=brick||DTBRICK;
     if(z>=cap-20){ const r=cap-4-z, px=Math.floor(u*24), pn=Math.floor(u/1.7+hash(Math.floor(u/1.7),3,199)*.4), hp=hash(px,Math.floor(z),203), rs=hash(px>>1,pn,205)<.06&&r>2-8*hash(px>>1,pn,207);
       let t=sh(mt('cope',COPE),f*(.9+.16*hash(pn,7,201))); if(cvNoise(u*3,z/5,209)>.7)t=sh(t,1.1); if(rs)t=[t[0]*.84+16,t[1]*.7+6,t[2]*.6];
@@ -89,7 +89,7 @@ await grab('bodega',async()=>{ const solids=SOL.up, fixed=FIX.up, SHL=[]; let BO
   { const y0=B0.y0, x0=B0.x0; put('of-desk','desk',x0+1.4,y0+.75); put('of-chair','office chair',x0+1.4,y0+1.6); put('of-pc','home computer',x0+1.4,y0+.6);
     put('of-shelf','shelves with boxes',x0+4.6,y0+.5); put('of-boxes','cardboard boxes',x0+6.6,y0+.7); put('of-sink','utility sink',x0+.55,y0+2.6,3);
     put('of-clock','wall clock',x0+3.2,y0+.29); put('of-tube','fluorescent tube',x0+3.6,y0+1.9); }
-  BOD.food={x:B.x1-1.05,y:B.y0+6.3};
+  SHARED.BOD.food={x:B.x1-1.05,y:B.y0+6.3};
   }
   const FRONT=[], ROOF=[], STREET=[], GHOSTST=[];
   { const M=MKS, bo=B0, bm=(bo.x0+bo.x1)/2, n0=PROPL.length;
@@ -97,19 +97,19 @@ await grab('bodega',async()=>{ const solids=SOL.up, fixed=FIX.up, SHL=[]; let BO
     M.neon(bo.x0+1.5,bo.y1,64,'OPEN',[255,90,110]); M.signbox(bo.x0+.45,bo.x0+2.3,bo.y1,36,48,[250,250,246],[40,80,200],'LOTTO',false);
     M.gatebox(bo.x0+.2,bo.x1-.2,bo.y1,114); M.bell(bm,bo.y1,98); M.meterbox(bo.x0+.9,bo.y1,30); M.number(bo.x0+1.6,bo.y1,82,'66');
     for(const p of PROPL.slice(n0))FRONT.push(p);
-    { const K=GHOSTK.GSK, s=K.s; { const o=LAY.o('ghost'); K.o=[131+o.x/BLDK,W-8.3*s+o.y/BLDK]; } const n3=PROPL.length;
+    { const K=SHARED.GHOSTK.GSK, s=K.s; { const o=LAY.o('ghost'); K.o=[131+o.x/BLDK,W-8.3*s+o.y/BLDK]; } const n3=PROPL.length;
       for(const [k,dx,dy] of PRESETS['Preset Ghost Street 1'])if(!/row house|utility pole/.test(k))CATALOG[k](K.o[0]-3.5*s+dx,K.o[1]-.45*s+dy);
-      for(const p of PROPL.slice(n3))GHOSTST.push(p); BOD.GHOSTST=GHOSTST; BOD.GSK=K; gdShape(GHOSTST,K,LAMPS);
+      for(const p of PROPL.slice(n3))GHOSTST.push(p); SHARED.BOD.GHOSTST=GHOSTST; SHARED.BOD.GSK=K; gdShape(GHOSTST,K,LAMPS);
     }
     const n2=PROPL.length, R=(f,x,y,z,...a)=>{ const p=f(x,y,z,bo.y1,...a); p.solids=[]; return p; };
     R(M.antenna,bo.x0+8,bo.y0+3.5,bo.h); for(const p of PROPL.slice(n2))ROOF.push(p); }
-  BOD.O=O; BOD.FRONT=FRONT; BOD.STREET=STREET; BOD.ROOF=ROOF; BOD.MAP=MAP; BOD.RD=RD;
+  SHARED.BOD.O=O; SHARED.BOD.FRONT=FRONT; SHARED.BOD.STREET=STREET; SHARED.BOD.ROOF=ROOF; SHARED.BOD.MAP=MAP; SHARED.BOD.RD=RD;
   const wallOf=p=>{ const cx=(p.x0+p.x1)/2, cy=(p.y0+p.y1)/2; let best=null, bd=.5; for(const w of WALLS){ const a=w.ax==='x'?cx:cy, d=Math.abs((w.ax==='x'?cy:cx)-w.at); if(a>=w.a0-.2&&a<=w.a1+.2&&d<bd){ bd=d; best=w; } } return best; };
-  BOD.kindOf=p=>{ if(/fluorescent tube/.test(p.name||''))return 'U'; if(ROOF.includes(p))return 'R';
+  SHARED.BOD.kindOf=p=>{ if(/fluorescent tube/.test(p.name||''))return 'U'; if(ROOF.includes(p))return 'R';
     if(FRONT.includes(p))return 'Hfront'; if(p.high){ const w=wallOf(p); if(w)return 'H'+w.id; } return 'L'; };
-  BOD.paintProps=(L=[...Object.values(O),...FRONT,...STREET,...ROOF,...GHOSTST])=>{ for(const p of L){ const k=BOD.kindOf(p); BATCH.tag=OBJ('bodega',p.name); for(const b of p.boxes)gbox(b,k); } BATCH.tag=null; };
-  BOD.g={bodegaWall,grain,speck,COPE,DTBRICK,hash,grassCol,lawnCol,kerbFace,cvNoise}; BOD.CURB=CURB; BOD.FAR=FAR;
-  BOD.gbox=gbox; BOD.faceTex=faceTex; BOD.bq=bq; BOD.C=C; BOD.facade=facade; BOD.FRAME=FRAME; BOD.place=place; BOD.placeAt=placeAt; BOD.MAP=MAP; BOD.K={MKS,CATALOG,PROPS:PROPL,STUDIO,LSEED,STORY,sh};
+  SHARED.BOD.paintProps=(L=[...Object.values(O),...FRONT,...STREET,...ROOF,...GHOSTST])=>{ for(const p of L){ const k=SHARED.BOD.kindOf(p); BATCH.tag=OBJ('bodega',p.name); for(const b of p.boxes)gbox(b,k); } BATCH.tag=null; };
+  SHARED.BOD.g={bodegaWall,grain,speck,COPE,DTBRICK,hash,grassCol,lawnCol,kerbFace,cvNoise}; SHARED.BOD.CURB=CURB; SHARED.BOD.FAR=FAR;
+  SHARED.BOD.gbox=gbox; SHARED.BOD.faceTex=faceTex; SHARED.BOD.bq=bq; SHARED.BOD.C=C; SHARED.BOD.facade=facade; SHARED.BOD.FRAME=FRAME; SHARED.BOD.place=place; SHARED.BOD.placeAt=placeAt; SHARED.BOD.MAP=MAP; SHARED.BOD.K={MKS,CATALOG,PROPS:PROPL,STUDIO,LSEED,STORY,sh};
   const PCX=PARKGX+LAY.o('park').x, PCY=(MAP.y1+RG.top-NORTHX)/2+LAY.o('park').y, GATE=[PCX-3.5,PCX+3.5], EGATE=[PCY-2,PCY+2];
   const KR=1.6, RR=[[MAP.x0,CURB,MAP.x1,FAR],[RG.wr0,FAR,RG.wr1,WEND]];
   const CORN=[[RG.wr0,FAR,-1,1,1],[RG.wr1,FAR,1,1,1]].map(([x,y,sx,sy,cv])=>({x,y,sx,sy,cv,cx:x+sx*KR,cy:y+sy*KR}));
@@ -133,7 +133,7 @@ await grab('bodega',async()=>{ const solids=SOL.up, fixed=FIX.up, SHL=[]; let BO
   const rampCol=(u,w,W)=>{ const ti=Math.floor(u*24), tj=Math.floor(w*24); if(ti<1||ti>=Math.floor(W*24)-1)return [188,184,174];
     if(w>.04&&w<.36&&ti>=2&&ti<Math.floor(W*24)-2){ const a=ti%3, b=tj%3; return b===1&&a===1?[246,214,92]:b===1&&a===2||b===2&&a===1?[164,128,30]:[216,178,48]; }
     const n=grain(u*3.1,w*7.3,631,1.4); return tj%2?(n<.4?[150,147,139]:[162,158,149]):(n<.4?[158,154,146]:[170,166,157]); };
-  BOD.ramps={RP,D:RPD,col:rampCol,at:rampAt};
+  SHARED.BOD.ramps={RP,D:RPD,col:rampCol,at:rampAt};
   const XWb=TCL(XW,([a0,a1,ax,l0,h0])=>ax==='x'?[a0,l0,a1,h0]:[l0,a0,h0,a1]), XWm=TCL(XW,([a0,a1,ax,l0,h0])=>ax==='x'?[a0-1.05,l0,a1+1.05,h0]:[l0,a0-1.05,h0,a1+1.05]);
   const bars=(x,y)=>{ for(const [a0,a1,ax,l0,h0] of XWb(x,y)){ const u=ax==='x'?x:y, v=ax==='x'?y:x; if(u<=a0||u>=a1||v<=l0+.15||v>=h0-.15)continue;
       const W=()=>{ const n=grain(x,y,39,2.2); return n<.3?[150,148,142]:[196,194,186]; };
@@ -182,10 +182,10 @@ await grab('bodega',async()=>{ const solids=SOL.up, fixed=FIX.up, SHL=[]; let BO
       const fu=(u+HL-.08)/((HL-.08)*2), fw=(w-.06)/(OUT-.14), cu=fu*4-Math.floor(fu*4), cw=fw*6-Math.floor(fw*6);
       if(cu>.1&&cu<.9&&cw>.24&&cw<.82)return cw<.34||cu<.18?[26,24,24]:HOLE;
       return hash(Math.floor(fu*4),Math.floor(fw*6),639)<.25&&hp<.5?[112,78,54]:hp<.3?[104,102,98]:[78,77,75]; }); };
-  BOD.kerbs=[{ax:'x',at:CURB,a0:MAP.x0,a1:MAP.x1,n:1},{ax:'x',at:FAR,a0:MAP.x0,a1:RG.wr0-KR,n:-1,e1:1},{ax:'x',at:FAR,a0:RG.wr1+KR,a1:MAP.x1,n:-1,e0:1},
+  SHARED.BOD.kerbs=[{ax:'x',at:CURB,a0:MAP.x0,a1:MAP.x1,n:1},{ax:'x',at:FAR,a0:MAP.x0,a1:RG.wr0-KR,n:-1,e1:1},{ax:'x',at:FAR,a0:RG.wr1+KR,a1:MAP.x1,n:-1,e0:1},
     {ax:'y',at:RG.wr0,a0:FAR+KR,a1:WEND,n:1,e0:1},{ax:'y',at:RG.wr1,a0:FAR+KR,a1:WEND,n:-1,e0:1},{ax:'x',at:WEND,a0:RG.wr0,a1:RG.wr1,n:-1},
     {ax:'y',at:MAP.x0,a0:CURB,a1:FAR,n:1},{ax:'y',at:MAP.x1,a0:CURB,a1:FAR,n:-1}].map(k=>({z0:RD,z1:0,...k}));
-  for(const k of BOD.kerbs){ if(k.at===MAP.x0||k.at===MAP.x1||k.at===WEND)continue; const ds=[]; if(k.e0)ds.push(k.a0+1); if(k.e1)ds.push(k.a1-1);
+  for(const k of SHARED.BOD.kerbs){ if(k.at===MAP.x0||k.at===MAP.x1||k.at===WEND)continue; const ds=[]; if(k.e0)ds.push(k.a0+1); if(k.e1)ds.push(k.a1-1);
     for(let a=k.a0+14;a<k.a1-8;a+=28)if(ds.every(b=>Math.abs(b-a)>10))ds.push(a);
     for(const a of ds)if(a>k.a0+.6&&a<k.a1-.6&&!inX(k.ax,k.at,a,1.2))drain(k.ax,k.at,k.n,a); }
   { const yc=(CURB+FAR)/2, xw=(RG.wr0+RG.wr1)/2, ok=(x,y)=>!XW.some(w=>{ const u=w[2]==='x'?x:y, v=w[2]==='x'?y:x; return u>w[0]-1.2&&u<w[1]+1.2&&v>w[3]&&v<w[4]; });
@@ -193,23 +193,23 @@ await grab('bodega',async()=>{ const solids=SOL.up, fixed=FIX.up, SHL=[]; let BO
     let k=0; for(let x=MAP.x0+20;x<MAP.x1-4;x+=40,k++)if(ok(x,yc)&&Math.abs(x-xw)>8)manhole(x,yc+(k&1?1.6:-1.6));
     k=0; for(let y=FAR+20;y<WEND-5;y+=40,k++)if(ok(xw,y))manhole(xw+(k&1?1.6:-1.6),y); }
   const RW=(x,y)=>{ if(!ROADAT(x,y))return null; const L=IX.get(at2(x,y)); if(L)for(const f of L){ const v=f(x,y); if(v)return v; } return bars(x,y)||lane(x,y)||marks(x,y)||roadCol(x,y,0); };
-  BOD.kerbFaceAt=(k,a,z,H)=>{ for(const r of RP)if(r.ax===k.ax&&r.e===k.at&&a>r.u0&&a<r.u1)return null;
+  SHARED.BOD.kerbFaceAt=(k,a,z,H)=>{ for(const r of RP)if(r.ax===k.ax&&r.e===k.at&&a>r.u0&&a<r.u1)return null;
     for(const d of DR)if(d.ax===k.ax&&d.e===k.at&&Math.abs(a-d.a)<.5){ if(z>=H-1)break; if(Math.abs(a-d.a)>.44)return [96,94,88]; return z<1?[120,116,108]:[14,14,16]; } return kerbFace(a,z,H); };
   const arc=(c,rev,n=6)=>{ const a0=Math.atan2(-c.sy,0), a1=Math.atan2(0,-c.sx); let dl=a1-a0; while(dl>Math.PI)dl-=2*Math.PI; while(dl<-Math.PI)dl+=2*Math.PI;
     const P=[]; for(let i=0;i<=n;i++){ const t=a0+dl*i/n; P.push([c.cx+Math.cos(t)*KR,c.cy+Math.sin(t)*KR]); } return rev?P.reverse():P; };
-  BOD.kerbArcs=CORN.map(c=>({P:arc(c),z0:RD,z1:0}));
+  SHARED.BOD.kerbArcs=CORN.map(c=>({P:arc(c),z0:RD,z1:0}));
   { const C=(x,y)=>CORN.find(c=>c.x===x&&c.y===y), M=MAP;
-    BOD.roadPolys=[[[M.x0,CURB],[M.x1,CURB],[M.x1,FAR],...arc(C(RG.wr1,FAR)),[RG.wr1,WEND],[RG.wr0,WEND],...arc(C(RG.wr0,FAR),1),[M.x0,FAR]]]; }
+    SHARED.BOD.roadPolys=[[[M.x0,CURB],[M.x1,CURB],[M.x1,FAR],...arc(C(RG.wr1,FAR)),[RG.wr1,WEND],[RG.wr0,WEND],...arc(C(RG.wr0,FAR),1),[M.x0,FAR]]]; }
   const PATCH=CORN.map(c=>({id:'corner',x0:Math.min(c.x,c.cx),y0:Math.min(c.y,c.cy),x1:Math.max(c.x,c.cx),y1:Math.max(c.y,c.cy),z:c.cv?RD:0,col:c.cv?RW:SW(slabCol),tex:null,rep:2}));
   const SG=[], NM={main:'MARKET ST',west:'WEST ST'}, CN=[['main','west'],['main','west']];
   const TLC=[0], TK=(KR-.45)/Math.SQRT2;
   CORN.forEach((c,i)=>{ const k=c.cv?KR-1.2:KR+1.2, t=TLC.includes(i); SG.push({kind:'name',x:t?c.cx-c.sx*TK:c.cx-c.sx*k/Math.SQRT2,y:t?c.cy-c.sy*TK:c.cy-c.sy*k/Math.SQRT2,ax:NM[CN[i][0]],ay:NM[CN[i][1]],np:t}); });
   SG.push({kind:'name',x:RG.wr1+1,y:CURB-.75,ax:NM.main,ay:NM.west});
-  { let q=0; for(const k of BOD.kerbs){ if(k.at===MAP.x0||k.at===MAP.x1)continue; for(let a=k.a0+6;a<k.a1-4;a+=24){ if(inX(k.ax,k.at,a,2)||inJ(k.ax==='x'?a:k.at,k.ax==='x'?k.at:a,2))continue;
+  { let q=0; for(const k of SHARED.BOD.kerbs){ if(k.at===MAP.x0||k.at===MAP.x1)continue; for(let a=k.a0+6;a<k.a1-4;a+=24){ if(inX(k.ax,k.at,a,2)||inJ(k.ax==='x'?a:k.at,k.ax==='x'?k.at:a,2))continue;
       const kind=q++%3===2?'speed':'nopark', p=k.at-k.n*.8; if(kind!=='speed')SG.push({kind,x:k.ax==='x'?a:p,y:k.ax==='x'?p:a,n:k.ax==='x'?[1,0]:[0,1]}); } } }
-  BOD.signs=[];
-  BOD.road={KR,CORN,RR,at:ROADAT,MH,DR,LN}; window.STREETQ=()=>({...BOD.road,XS:BOD.XS,ZS:BOD.ZS,CURB,FAR,MAP,RG,corner:typeof DRESS!=='undefined'&&DRESS.corner});
-  BOD.grounds=[
+  SHARED.BOD.signs=[];
+  SHARED.BOD.road={KR,CORN,RR,at:ROADAT,MH,DR,LN}; window.STREETQ=()=>({...SHARED.BOD.road,XS:SHARED.BOD.XS,ZS:SHARED.BOD.ZS,CURB,FAR,MAP,RG,corner:typeof DRESS!=='undefined'&&DRESS.corner});
+  SHARED.BOD.grounds=[
     {id:'shop',bld:true,x0:B0.x0,y0:B0.y0,x1:B0.x1,y1:B0.y1,z:.15,col:(x,y)=>bodegaFloorCol(x,y),tex:'concrete_floor_worn_001',tint:[112,116,124],rep:3},
     {id:'walk',x0:MAP.x0,y0:W,x1:MAP.x1,y1:CURB-.16,z:0,col:holed(slabCol),tex:'concrete_pavement',tint:[166,161,148],rep:2},
     {id:'kerb',x0:MAP.x0,y0:CURB-.16,x1:MAP.x1,y1:CURB,z:0,col:kerbCol('x'),tex:'concrete_pavement',tint:[178,174,164],rep:2},
@@ -226,6 +226,6 @@ await grab('bodega',async()=>{ const solids=SOL.up, fixed=FIX.up, SHL=[]; let BO
     {id:'wstKE',x0:RG.wr1,y0:MAP.y1,x1:RG.wr1+.16,y1:WEND,z:0,col:kerbCol('y'),tex:'concrete_pavement',tint:[178,174,164],rep:2},
     {id:'wstE',x0:RG.wr1+.16,y0:MAP.y1,x1:RG.wx1,y1:WEND,z:0,col:slabCol,tex:'concrete_pavement',tint:[166,161,148],rep:2},
     {id:'wstEnd',x0:RG.wx0,y0:WEND,x1:RG.wx1,y1:WEND+3,z:0,col:slabCol,tex:'concrete_pavement',tint:[166,161,148],rep:2},
-    {id:'ghostst',bld:true,x0:BOD.GDK.ground.x0,y0:BOD.GDK.Y0-1.2,x1:BOD.GDK.ground.x1,y1:BOD.GDK.y1e,z:.1,col:BOD.GDK.court,tex:null,rep:2},
+    {id:'ghostst',bld:true,x0:SHARED.BOD.GDK.ground.x0,y0:SHARED.BOD.GDK.Y0-1.2,x1:SHARED.BOD.GDK.ground.x1,y1:SHARED.BOD.GDK.y1e,z:.1,col:SHARED.BOD.GDK.court,tex:null,rep:2},
     {id:'grassW',x0:MAP.x0,y0:B00.y0,x1:B0.x0,y1:W,z:0,col:holed(lawnCol),tex:null,rep:2},...PATCH].map(g=>g.id==='corner'||g.bld||g.id==='alley'||g.id==='prom'||g.id==='grassW'||g.col===RW?g:{...g,col:SW(g.col)});
-  BOD.LAMPS=LAMPS.filter(l=>!l.off&&l.r>0);
+  SHARED.BOD.LAMPS=LAMPS.filter(l=>!l.off&&l.r>0);

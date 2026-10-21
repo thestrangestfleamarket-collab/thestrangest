@@ -32,9 +32,9 @@ window.FEEL=FEEL;
   const K=()=>FEEL.cfg, hgt=FEEL.hgt=()=>K().height||1.85*(W3.SZ||1)-.04, cosS=()=>Math.cos(K().slope*D2R);
   const seg=new THREE.Line3(), box=new THREE.Box3(), tp=new V(), cp=new V(), dn=new V(), nh=new V(), fn=new V(), ray=new THREE.Ray(), tv=new V();
   let col=null;
-  const GF=(x,z)=>groundY(x*MH,z*MH)/MV, YC={bvh:null,gf:null}, SC={bvh:null,gf:GF};
+  const GF=(x,z)=>SHARED.groundY(x*MH,z*MH)/MV, YC={bvh:null,gf:null}, SC={bvh:null,gf:GF};
   const colAt=()=>{ const Y=FEEL.yard; if(Y&&Y.bvh&&Y.in(S.p.x,S.p.z)){ YC.bvh=Y.bvh; return YC; }
-    if(!FEEL.street||FEEL.street.src!==solids||FEEL.street.n!==solids.length)FEEL.street=FEEL.boxes(solids);
+    if(!FEEL.street||FEEL.street.src!==SHARED.solids||FEEL.street.n!==SHARED.solids.length)FEEL.street=FEEL.boxes(SHARED.solids);
     SC.bvh=FEEL.street.bvh; return SC; };
   FEEL.boxes=list=>{ '@later'; const P=[], q=(a,b,c,d)=>P.push(...a,...b,...c,...a,...c,...d);
     for(const [x0,z0,x1,z1] of list){ const a=x0/MH, b=x1/MH, c=z0/MH, d=z1/MH, lo=-60, hi=60;
@@ -82,35 +82,35 @@ window.FEEL=FEEL;
     groundFn(p,wasG);
     if(S.gnd&&v.y<0)v.y=0;
     if(!S.gnd)S.air+=dt; else { if(!wasG&&S.air>.06){ FEEL.ev.land++; FEEL.ev.imp=Math.max(0,-vy0); } S.air=0; }
-    if(col.gf){ const B=BOUND; if(B&&B.x1>B.x0){ p.x=Math.max(B.x0/MH,Math.min(B.x1/MH,p.x)); p.z=Math.max(B.z0/MH,Math.min(B.z1/MH,p.z)); }
-      if(typeof NPCS!=='undefined'){ const q={x:p.x*MH,z:p.z*MH}; for(const N of NPCS)if(N.lv===LVL&&!N.far)N.push(q); p.x=q.x/MH; p.z=q.z/MH; } }
+    if(col.gf){ const B=SHARED.BOUND; if(B&&B.x1>B.x0){ p.x=Math.max(B.x0/MH,Math.min(B.x1/MH,p.x)); p.z=Math.max(B.z0/MH,Math.min(B.z1/MH,p.z)); }
+      if(typeof NPCS!=='undefined'){ const q={x:p.x*MH,z:p.z*MH}; for(const N of NPCS)if(N.lv===SHARED.LVL&&!N.far)N.push(q); p.x=q.x/MH; p.z=q.z/MH; } }
     if(p.y<-40){ FEEL.respawn(); return; }
     FEEL.hsRaw=Math.hypot(p.x-ox,p.z-oz)/dt;
     if(fl>.05){ let d=Math.atan2(fx,fz)-S.face; d=Math.atan2(Math.sin(d),Math.cos(d)); const m=c.turn*D2R*dt*(S.gnd?1:c.airTurn); S.face+=Math.max(-m,Math.min(m,d)); S.face=Math.atan2(Math.sin(S.face),Math.cos(S.face)); } };
   const W={x:0,y:0,z:0,h:0};
-  FEEL.sync=()=>{ S.p.set(pos.x/MH,py/MV,pos.z/MH); S.prev.copy(S.p); S.v.set(0,0,0); S.face=S.facePrev=heading; S.acc=0; S.air=0; S.gnd=true; S.lastG=S.t; S.jumped=false; S.buf=-1; S.sync=false; };
+  FEEL.sync=()=>{ S.p.set(pos.x/MH,SHARED.py/MV,pos.z/MH); S.prev.copy(S.p); S.v.set(0,0,0); S.face=S.facePrev=SHARED.heading; S.acc=0; S.air=0; S.gnd=true; S.lastG=S.t; S.jumped=false; S.buf=-1; S.sync=false; };
   FEEL.take=()=>(FEEL.on||!!(FEEL.yard&&FEEL.yard.in(pos.x/MH,pos.z/MH)))&&!RAG.on&&!(window.BOAT&&BOAT.on)&&!(st.water&&st.water.in)&&!UI.fly&&!UI.freeCam&&!st.sit&&!ED.on;
   FEEL.input=(mx,mz,run,held)=>{ IN.x=mx; IN.z=mz; IN.run=run; S.held=held; };
   FEEL.step=(dt,mx,mz)=>{ '@later'; if(!FEEL.lib)FEEL.load(); FEEL.go=0; if(!FEEL.ready||FEEL.hold)return;
     if(FEEL.yard&&!FEEL.yard.bvh)FEEL.yard.build();
-    if(S.sync||Math.abs(pos.x-W.x)>1e-6||Math.abs(pos.z-W.z)>1e-6||Math.abs(py-W.y)>1e-6)FEEL.sync();
-    if(Math.abs(heading-W.h)>1e-6){ S.face=S.facePrev=heading; }
+    if(S.sync||Math.abs(pos.x-W.x)>1e-6||Math.abs(pos.z-W.z)>1e-6||Math.abs(SHARED.py-W.y)>1e-6)FEEL.sync();
+    if(Math.abs(SHARED.heading-W.h)>1e-6){ S.face=S.facePrev=SHARED.heading; }
     FEEL.input(mx,mz,keys.has('shift')||st.runTarget>0,keys.has(' '));
     S.acc=Math.min(S.acc+dt,H*6); const x0=S.p.x, z0=S.p.z;
     while(S.acc>=H){ S.acc-=H; S.prev.copy(S.p); S.facePrev=S.face; col=colAt(); sim(H); }
     const a=S.acc/H; let df=S.face-S.facePrev; df=Math.atan2(Math.sin(df),Math.cos(df));
-    pos.x=(S.prev.x+(S.p.x-S.prev.x)*a)*MH; pos.z=(S.prev.z+(S.p.z-S.prev.z)*a)*MH; py=(S.prev.y+(S.p.y-S.prev.y)*a)*MV; heading=S.facePrev+df*a;
-    W.x=pos.x; W.y=py; W.z=pos.z; W.h=heading; FEEL.go=Math.hypot(S.p.x-x0,S.p.z-z0)*MH;
+    pos.x=(S.prev.x+(S.p.x-S.prev.x)*a)*MH; pos.z=(S.prev.z+(S.p.z-S.prev.z)*a)*MH; SHARED.py=(S.prev.y+(S.p.y-S.prev.y)*a)*MV; SHARED.heading=S.facePrev+df*a;
+    W.x=pos.x; W.y=SHARED.py; W.z=pos.z; W.h=SHARED.heading; FEEL.go=Math.hypot(S.p.x-x0,S.p.z-z0)*MH;
     const hs=FEEL.hsRaw||0; FEEL.hs+=(hs-FEEL.hs)*(1-Math.exp(-dt*14)); };
   FEEL.spawn=null;
-  FEEL.respawn=()=>{ const s=FEEL.spawn||(FEEL.yard&&FEEL.yard.spawn); if(s){ pos.x=s.x*MH; pos.z=s.z*MH; py=s.y*MV; heading=s.h||0; } S.sync=true; target=null; };
+  FEEL.respawn=()=>{ const s=FEEL.spawn||(FEEL.yard&&FEEL.yard.spawn); if(s){ pos.x=s.x*MH; pos.z=s.z*MH; SHARED.py=s.y*MV; SHARED.heading=s.h||0; } S.sync=true; SHARED.target=null; };
   FEEL.sim=(n,input,dt=H)=>{ col=colAt(); const out=[]; for(let i=0;i<n;i++){ if(input)input(i,IN,S); S.prev.copy(S.p); S.facePrev=S.face; sim(dt); out.push({x:S.p.x,y:S.p.y,z:S.p.z,vx:S.v.x,vy:S.v.y,vz:S.v.z,g:S.gnd,w:S.wall,c:S.ceil,f:S.face}); } return out; };
   FEEL.IN=IN;
   const cr=new V(), cu=new V(), cd=new V(), co=new V(), tm=new V(), OFS=[[0,0],[1,0],[-1,0],[0,1],[0,-1]], CR=FEEL.camRays=OFS.map(()=>[new V(),new V()]); let camD=null;
   FEEL.eye=new V(); let eyeOk=false, ct=0, cdt=0;
   FEEL.camT=T=>{ const n=performance.now(); cdt=ct?Math.min(.1,(n-ct)/1000):0; ct=n; if(!eyeOk||T.distanceTo(FEEL.eye)>8*MH){ FEEL.eye.copy(T); eyeOk=true; } else FEEL.eye.lerp(T,1-Math.exp(-cdt*K().camFollow)); return FEEL.eye; };
-  FEEL.applyCam=()=>{ if(typeof UI==='undefined'||!UI.persp||UI.view==='first')return; UI.dist=K().camDist*MH; pitchTo=UI.clampV(K().camPitch); };
-  FEEL.cam=(T,C)=>{ '@later'; const dt=cdt, Y=FEEL.yard; if(!FEEL.ready||!Y||!Y.bvh||!Y.in(T.x/MH,T.z/MH)){ camD=null; FEEL.camHit=null; const g=groundY(C.x,C.z)+.6*MV; if(C.y<g)C.y=g; return; }
+  FEEL.applyCam=()=>{ if(typeof UI==='undefined'||!UI.persp||UI.view==='first')return; UI.dist=K().camDist*MH; SHARED.pitchTo=UI.clampV(K().camPitch); };
+  FEEL.cam=(T,C)=>{ '@later'; const dt=cdt, Y=FEEL.yard; if(!FEEL.ready||!Y||!Y.bvh||!Y.in(T.x/MH,T.z/MH)){ camD=null; FEEL.camHit=null; const g=SHARED.groundY(C.x,C.z)+.6*MV; if(C.y<g)C.y=g; return; }
     tm.set(T.x/MH,T.y/MV,T.z/MH); cd.set(C.x/MH,C.y/MV,C.z/MH).sub(tm); const len=cd.length(); if(len<1e-4)return; cd.divideScalar(len);
     cr.crossVectors(cd,tv.set(0,1,0)); if(cr.lengthSq()<1e-6)cr.set(1,0,0); cr.normalize(); cu.crossVectors(cr,cd).normalize();
     const cl=K().camClear; let hit=len;

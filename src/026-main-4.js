@@ -1,5 +1,5 @@
 
-BOD.GDJ={djAndon,djCandle,djIncense,djHanging,djTokonoma,djBokkenRack,djLeaf,DJTAT,DJBRD,DJWOOD,DJPAP,DJPLA,setDJ:v=>{ DJ=v; }};
+SHARED.BOD.GDJ={djAndon,djCandle,djIncense,djHanging,djTokonoma,djBokkenRack,djLeaf,DJTAT,DJBRD,DJWOOD,DJPAP,DJPLA,setDJ:v=>{ DJ=v; }};
 }
 
 const STOREK={LAMPS,PRESETS,CATALOG,PROPS:PROPL,LBLD,T,STORY,hash,sh,sided,prop,LSEED}; const SQLV={octo:0}; const DEEPW={ZPX:24};

@@ -37,12 +37,12 @@ function scanBoxes(name,r,z0){ const S=MUSCAN[name], raw=atob(S.runs), sx=r.W/S.
   return B; }
 return {FP,rect,sub,fb,worn,metal,art,plane,line,ell,bone,BONE,glassCase,plinth,column,label,scanBoxes,BRZ,BRZL,MARB,MARBD,MARBL}; })();
 (()=>{ const {FP,rect,fb,worn,art,plane,line,ell,bone,BONE,plinth,column,BRZ,BRZL,MARB,MARBD,MARBL}=MUK, c=MUC;
-function porticoSteps(x,y){ PNAME='museum portico steps'; const W=9, D=3;
+function porticoSteps(x,y){ SHARED.PNAME='museum portico steps'; const W=9, D=3;
   return prop([{x0:x-W/2,y0:y-D/2,x1:x+W/2,y1:y+D/2,z0:0,z1:1,foot:1,c:MARB,top:(X,Y)=>{ const v=Y-(y-D/2); if(v<1.2&&Math.abs(v%.4-.38)<.03||Math.abs(X-(x-W/2))<.05||Math.abs(X-(x+W/2))<.05)return mt('concrete',MARBD);
     const i=Math.floor((X-x+W)/1.2), j=Math.floor(v/.8); if(((X-x+W)%1.2)<.03||(v%.8)<.03&&v>1.2)return mt('concrete',sh(MARBD,.95)); return mt('concrete',hash(i,j,1801)<.4?sh(MARB,.96):MARB); },fi:()=>sh(MARBD,.62),fj:()=>sh(MARBD,.8)}],null,{walk:true,flat:true}); }
-const portColumn=(x,y)=>{ PNAME='museum column'; return prop(column(x,y,150)); };
-const hallColumn=(x,y)=>{ PNAME='museum column'; return prop(column(x,y,190)); };
-function entablature(x,y,nm='MUSEUM OF EARTH',k=1){ PNAME=k>1?'bank entablature':'museum entablature'; const W=8.8, r=rect(x,y,[0,-1],W,.9), Z=150, H=k>1?32:26, B=[];
+const portColumn=(x,y)=>{ SHARED.PNAME='museum column'; return prop(column(x,y,150)); };
+const hallColumn=(x,y)=>{ SHARED.PNAME='museum column'; return prop(column(x,y,190)); };
+function entablature(x,y,nm='MUSEUM OF EARTH',k=1){ SHARED.PNAME=k>1?'bank entablature':'museum entablature'; const W=8.8, r=rect(x,y,[0,-1],W,.9), Z=150, H=k>1?32:26, B=[];
   B.push(fb(r,0,1,0,1,Z,Z+H,MARB,(s,t,z,len)=>{ const a=(1-t)*len*FP, L=len*FP;
     if(z>=H-5)return z>=H-2?MARBL:Math.floor(a/4)%2?MARBD:MARB;
     if(z<10)return z%3===0?MARBD:z<3?sh(MARB,.96):MARB;
@@ -55,7 +55,7 @@ function entablature(x,y,nm='MUSEUM OF EARTH',k=1){ PNAME=k>1?'bank entablature'
     return sh(MARB,.9); };
   B.push(fb(r,0,1,.1,.7,Z+H,Z+H+PH,MARB,ped,()=>null,{foot:0}));
   return prop(B,null,{high:true,walk:true}); }
-function infoDesk(x,y){ PNAME='information desk'; const r=rect(x,y,[0,1],3,.8), H=30, wal=[84,58,40], nm='INFORMATION', B=[];
+function infoDesk(x,y){ SHARED.PNAME='information desk'; const r=rect(x,y,[0,1],3,.8), H=30, wal=[84,58,40], nm='INFORMATION', B=[];
   B.push(fb(r,0,1,0,1,0,H-2,wal,(s,t,z,len)=>{ const a=(1-t)*len*FP, L=len*FP; if(z<2)return sh(wal,.6);
     if(s==='f'){ const tw=muTW(nm,1), l=Math.floor((L-tw)/2), cc=Math.floor(a-l), zz=Math.floor(z-15); if(cc>=-2&&cc<tw+2&&zz>=-2&&zz<9){ const g=cc>=0&&cc<tw&&zz>=0&&zz<7&&MUF[nm[Math.floor(cc/6)]], q=cc%6; return g&&q<5&&g[(6-zz)*5+q]==='#'?BRZL:[46,34,26]; }
       if(Math.floor(a)%24<1)return sh(wal,.8); }
@@ -65,7 +65,7 @@ function infoDesk(x,y){ PNAME='information desk'; const r=rect(x,y,[0,1],3,.8), 
   B.push(fb(r,.7,.86,.5,.75,H,H+12,[40,40,44],(s,t,z)=>s==='f'?(z>2&&t>.1&&t<.9?muLit([90,130,160]):[40,40,44]):[48,48,52],()=>[44,44,48]));
   B.push(fb(r,.5,.54,.3,.4,H,H+3,BRZL,null,()=>BRZL));
   return prop(B); }
-function museumBench(x,y){ PNAME='museum bench'; const r=rect(x,y,[0,1],2,.6), L=[70,46,36], S=[34,34,36], B=[];
+function museumBench(x,y){ SHARED.PNAME='museum bench'; const r=rect(x,y,[0,1],2,.6), L=[70,46,36], S=[34,34,36], B=[];
   for(const t of [.04,.92])B.push(fb(r,t,t+.04,.05,.95,0,12,S,null,()=>S));
   B.push(fb(r,0,1,0,1,12,17,L,(s,t,z)=>z<1?sh(L,.7):L,(t,d)=>{ const a=Math.floor(t*48), b=Math.floor(d*14); return (a%6===3&&b%4===2)?sh(L,.7):(a+b)%7===0?sh(L,1.08):L; }));
   return prop(B); }

@@ -1,5 +1,5 @@
 await grab('dungeon',async()=>{});
-{ const K=BOD.KC, KP=BOD.K.PROPS, Kc=K.CATALOG, sh=BOD.K.sh, X=BOD.XS, Z=BOD.ZS, Y=BOD.YS, {faceTex,bq,C}=BOD, P0=K.DGP, D0=K.DGN, dy=STN.DY, T=.1, NL=5, GAP=40, G=MAPG.dungeon;
+{ const K=SHARED.BOD.KC, KP=SHARED.BOD.K.PROPS, Kc=K.CATALOG, sh=SHARED.BOD.K.sh, X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, Y=SHARED.BOD.YS, {faceTex,bq,C}=SHARED.BOD, P0=K.DGP, D0=K.DGN, dy=STN.DY, T=.1, NL=5, GAP=40, G=MAPG.dungeon;
   const iX=x=>(x-X(0))/TILE, iZ=z=>(z-Z(0))/TILE, lot=n=>({x0:900+(n-1)*GAP,y0:-20,x1:914+(n-1)*GAP,y1:-6.8,h:130});
   const lotAt=(x,z)=>{ const gx=iX(x), gy=iZ(z), n=Math.floor((gx-900)/GAP)+1; if(n<1||n>NL)return 0; const B=lot(n); return gx>B.x0&&gx<B.x1&&gy>B.y0&&gy<B.y1?n:0; };
   const lay=n=>{ const B=lot(n), m=!(n&1), R={...D0,b:B,x0:B.x0+T,x1:B.x1-T,y0:B.y0+T,y1:B.y1-T,cx:(B.x0+B.x1)/2,cy:(B.y0+B.y1)/2,in:[B.x0-T,B.y0-T,B.x1+T,B.y1+T],
@@ -25,7 +25,7 @@ await grab('dungeon',async()=>{});
     for(const t of R.torches){ const [x,y]=t.w==='l'?[R.x0+.16,R.y0+t.u]:[R.x1-.16,R.y0+t.u]; Kc['wall torch'](x,y,t.w); }
     const made=KP.slice(n0); KP.length=n0; BATCH.meshes={}; BATCH.cast=true; for(const [k,b] of WB)gboxS(b,k,dy); for(const p of made)for(const b of p.boxes)gboxS(b,'L',dy);
     BATCH.build((k,map,emap)=>castleMat(k,map,emap,PL[k])); BATCH.cast=false;
-    for(const k in PL)for(const me of BATCH.all(BATCH.meshes,k)){ const s=SIDE[k[1]], w={pl:PL[k],nx:s[0],nz:s[1],foot:dy+Y(6),me,when:()=>LVL==='down'&&cur>0}; cutWalls.push(w); M.cuts.push(w); } BATCH.meshes={}; BATCH.items=keep;
+    for(const k in PL)for(const me of BATCH.all(BATCH.meshes,k)){ const s=SIDE[k[1]], w={pl:PL[k],nx:s[0],nz:s[1],foot:dy+Y(6),me,when:()=>SHARED.LVL==='down'&&cur>0}; cutWalls.push(w); M.cuts.push(w); } BATCH.meshes={}; BATCH.items=keep;
     const P=[], Cc=[], c3=new THREE.Color(), ST=[88,84,78], ST2=[74,70,66];
     const quad=(a,b,c,d,col)=>{ c3.setRGB(col[0]/255,col[1]/255,col[2]/255,THREE.SRGBColorSpace); for(const v of [a,b,c,a,c,d]){ P.push(...v); Cc.push(c3.r,c3.g,c3.b); } };
     const box=(x0,y0,z0,x1,y1,z1,col)=>{ const [a,b,c,d]=[X(x0),X(x1),Z(y0),Z(y1)], [e,f]=[Y(z0)+dy,Y(z1)+dy], dk=col.map(v=>v*.8), lt=col.map(v=>Math.min(255,v*1.08));
@@ -56,14 +56,14 @@ await grab('dungeon',async()=>{});
   const S=CASTLE.stair, top={x:((S.x0+S.x1)/2-72)*TILE,z:(S.y0-.5+77)*TILE};
   const bnd=n=>{ const B=lot(n); return {x0:X(B.x0),x1:X(B.x1),z0:Z(B.y0),z1:Z(B.y1)}; };
   const go=async(n,how)=>{ if(busy)return; busy=true; await FADE.run(n?(cur||how==='load'&&n>1?'':'ENTERING ')+'DUNGEON — LEVEL '+n:'LEAVING DUNGEON',async()=>{
-    if(n){ await LOAD('dungeon'); const L=build(n), a=how==='below'?L.atDn:L.atUp; if(how!=='load'){ UI.goTo(a.x,a.z,'down'); heading=a.h; } BOUND=bnd(n); }
-    else{ clear(); UI.goTo(top.x,top.z,'up'); heading=Math.PI; }
-    if(typeof PH!=='undefined')PH.hd=heading; },{hold:140}); busy=false; };
-  MODS.dunDoor=(py,p)=>{ if(busy||UI.freeCam||METRO.doorBusy()||(typeof RAG!=='undefined'&&RAG.on))return; const m=LVL==='down'?lotAt(p.x,p.z):0;
-    if(!m){ if(cur&&!busy)clear(); if(LVL!=='down'){ const gx=p.x/TILE+72, gy=p.z/TILE-77; if(gx>=S.x0&&gx<S.x1&&gy>=S.y0&&gy<S.y1)go(1,'top'); } return; }
+    if(n){ await LOAD('dungeon'); const L=build(n), a=how==='below'?L.atDn:L.atUp; if(how!=='load'){ UI.goTo(a.x,a.z,'down'); SHARED.heading=a.h; } SHARED.BOUND=bnd(n); }
+    else{ clear(); UI.goTo(top.x,top.z,'up'); SHARED.heading=Math.PI; }
+    if(typeof PH!=='undefined')PH.hd=SHARED.heading; },{hold:140}); busy=false; };
+  MODS.dunDoor=(py,p)=>{ if(busy||UI.freeCam||SHARED.METRO.doorBusy()||(typeof RAG!=='undefined'&&RAG.on))return; const m=SHARED.LVL==='down'?lotAt(p.x,p.z):0;
+    if(!m){ if(cur&&!busy)clear(); if(SHARED.LVL!=='down'){ const gx=p.x/TILE+72, gy=p.z/TILE-77; if(gx>=S.x0&&gx<S.x1&&gy>=S.y0&&gy<S.y1)go(1,'top'); } return; }
     if(m!==cur)return go(m,'load');
     const L=lay(cur), gx=iX(p.x), gy=iZ(p.z); if(tread(L.up,gx,gy))go(cur-1,'below'); else if(tread(L.dn,gx,gy))go(cur+1,'top'); };
   MODS.dungeon={get B(){ return lot(cur||1); },ground,inside:(x,z)=>lotAt(x,z)>0,bound:(x,z)=>bnd(lotAt(x,z)||1),arrive:n=>lay(n).atUp,lay,hook:f=>HK.push(f),tick(){}};
   window.DUNGEON={get level(){ return cur; },go:n=>go(Math.max(0,Math.min(NL,n|0)),'top'),spawn:async n=>{ if(n&&n!==cur){ await go(n,'top'); } return SKELGO(); },levels:NL};
-  window.DUNDBG=()=>({level:cur,lv:LVL,busy,lot:typeof pos!=='undefined'?lotAt(pos.x,pos.z):0,objs:mine?mine.objs.length:0,lights:mine?mine.lights.length:0,sol:mine?mine.sol.length:0,
+  window.DUNDBG=()=>({level:cur,lv:SHARED.LVL,busy,lot:typeof pos!=='undefined'?lotAt(pos.x,pos.z):0,objs:mine?mine.objs.length:0,lights:mine?mine.lights.length:0,sol:mine?mine.sol.length:0,
     tris:mine?mine.objs.reduce((a,o)=>{ let t=0; o.traverse(c=>{ if(c.geometry&&c.geometry.attributes.position)t+=(c.geometry.index?c.geometry.index.count:c.geometry.attributes.position.count)/3; }); return a+t; },0):0,skel:!!SKELGO.p}); }

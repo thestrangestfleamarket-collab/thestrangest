@@ -2,7 +2,7 @@
   const TIER={green:{c:0x5ce04a,hp:2,v:.9,dmg:0,s:1,loot:.25,sk:[-10,40],nm:'GREEN',p:4,see:0},blue:{c:0x3fa2ff,hp:3,v:1.1,dmg:.03,s:1.06,loot:.35,sk:[0,50],nm:'BLUE',p:8,see:3},
     purple:{c:0xb058ff,hp:5,v:1.3,dmg:.05,s:1.14,loot:.45,sk:[15,65],nm:'PURPLE',p:15,see:3.6},red:{c:0xff4434,hp:7,v:1.5,dmg:.07,s:1.24,loot:.6,sk:[30,80],nm:'RED',p:25,see:4.2}};
   FORAGE.add({names:Object.fromEntries(Object.keys(TIER).map(k=>['slime_'+k,'BOTTLE OF '+TIER[k].nm+' SLIME'])),prices:Object.fromEntries(Object.keys(TIER).map(k=>['slime_'+k,TIER[k].p]))});
-  const init=()=>{ '@dungeon'; const T=TILE, X=BOD.XS, Z=BOD.ZS, say=FORAGE.say, G=new THREE.Group(), PK=new THREE.Group(); PK.visible=false; MAPG.dungeon.add(G); scene.add(PK);
+  const init=()=>{ '@dungeon'; const T=TILE, X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, say=FORAGE.say, G=new THREE.Group(), PK=new THREE.Group(); PK.visible=false; MAPG.dungeon.add(G); scene.add(PK);
   const SLV={1:['green','green','green','green','green'],2:['green','green','green','blue','blue','blue','blue'],3:['blue','blue','blue','purple','purple','purple','red','red']};
   const LOOT={green:[['$',1,3,7],['quartz',0,0,3]],blue:[['$',2,6,5],['quartz',0,0,2],['amethyst',0,0,2],['p_refresh',0,0,1]],
     purple:[['$',5,12,4],['amethyst',0,0,2],['geode',0,0,2],['amber',0,0,1],['p_heal',0,0,1],['m_chanterelle',0,0,1]],
@@ -56,7 +56,7 @@
   const strikes=()=>{ const out=[], s=(st.up&&STR.test(st.up.name)&&st.up)||(st.move&&STR.test(st.move.name)&&st.move);
     if(s&&s!==last&&s.t>=.08){ last=s; const k=/kick|sweep|round/i.test(s.name); out.push({r:(k?1.15:1)*T,d:k?1.5:1}); }
     if(swAt&&performance.now()>=swAt){ swAt=0; if(WIELD.on==='sword')out.push({r:1.55*T,d:2}); } return out; };
-  const inCone=(s,x,z,y,rad)=>{ const dx=x-pos.x, dz=z-pos.z, d=Math.hypot(dx,dz); if(Math.abs(y-py)>1.4*T||d>s.r+rad)return false; return d<.35*T||(dx*Math.sin(heading)+dz*Math.cos(heading))/d>.3; };
+  const inCone=(s,x,z,y,rad)=>{ const dx=x-pos.x, dz=z-pos.z, d=Math.hypot(dx,dz); if(Math.abs(y-SHARED.py)>1.4*T||d>s.r+rad)return false; return d<.35*T||(dx*Math.sin(SHARED.heading)+dz*Math.cos(SHARED.heading))/d>.3; };
   const resolve=()=>{ if(!RES){ RES=[]; for(const N of NPCS){ const k=N.key, lv=OGRE.includes(k)?[1]:Object.keys(SKL).filter(n=>SKL[n].includes(k)).map(Number);
       if(!lv.length||N.name==='TROUBLEMAKER'||KK.includes(k)&&!(window.GUARDX&&(GUARDX.GUARDS.includes(N)||k==='Gold')))continue; if(RES.some(r=>r.N===N))continue;
       RES.push({N,key:k,lv,kk:KK.includes(k),ogre:OGRE.includes(k),v0:N.st.v,hp:0,style:N.guard?N.guard.style:{hit:'Unarmed_Melee_Attack_Punch_A',reach:.65,at:.38}}); } } return RES; };
@@ -98,13 +98,13 @@
     if(r.lunge){ const l=r.lunge; l.t+=dt; x=l.t<.4?-l.t*.6:l.t<.55?-.24+(l.t-.4)*4.6:Math.max(0,.45-(l.t-.55)*1.5); if(!l.done&&l.t>=.5){ l.done=true; l.hit(); } if(l.t>.9)r.lunge=null; }
     me.rotation.x=x; };
   const shoot=(r,col)=>{ const N=r.N, m=new THREE.Mesh(new THREE.BoxGeometry(.06*T,.06*T,.3*T),new THREE.MeshBasicMaterial({color:new THREE.Color(...col),toneMapped:false})), y=N.g.position.y+N.H*.55;
-    m.position.set(N.st.x,y,N.st.z); G.add(m); const to=new THREE.Vector3(pos.x,py+.9*T,pos.z); m.lookAt(to); bolts.push({m,to,dmg:r.dmg}); };
+    m.position.set(N.st.x,y,N.st.z); G.add(m); const to=new THREE.Vector3(pos.x,SHARED.py+.9*T,pos.z); m.lookAt(to); bolts.push({m,to,dmg:r.dmg}); };
   const boltTick=dt=>{ for(const b of [...bolts]){ const d=b.to.clone().sub(b.m.position), l=d.length(), stp=11*T*dt;
     if(l<=stp){ b.m.removeFromParent(); b.m.geometry.dispose(); bolts.splice(bolts.indexOf(b),1); if(!VIT.dead&&Math.hypot(pos.x-b.to.x,pos.z-b.to.z)<.5*T)VIT.hurt(b.dmg); } else b.m.position.addScaledVector(d,stp/l); } };
   const resTick=(r,dt,you,alive)=>{ const N=r.N, st=N.st; if(!r.kk)pawnTick(r,dt); if(r.dead||!r.on)return;
     const d=Math.hypot(you.x-st.x,you.z-st.z); r.cool-=dt;
     if(r.ogre){ if(!st.to&&(r.w-=dt)<=0){ st.to=near(st.x,st.z,1.5*T,4*T,st.R); st.v=r.v0; r.w=3+Math.random()*5; } return; }
-    const see=alive&&Math.abs(py-N.g.position.y)<1.6*T&&(r.agg?d<9*T:d<3.8*T); r.agg=see&&(r.agg||d<3.8*T);
+    const see=alive&&Math.abs(SHARED.py-N.g.position.y)<1.6*T&&(r.agg?d<9*T:d<3.8*T); r.agg=see&&(r.agg||d<3.8*T);
     if(!see){ N.alert=false; st.face=null; if(!st.to&&(r.w-=dt)<=0){ st.to=near(st.x,st.z,1.5*T,4*T,st.R); st.v=r.v0; r.w=3+Math.random()*5; } return; }
     N.alert=true; const busy=r.kk?!!N.an.once:!!r.lunge||r.jolt>0, ranged=!!r.style.bolt, R=(ranged?5.5:r.style.reach||.8)*T;
     if(busy){ st.to=null; st.face={x:you.x,z:you.z}; return; }
@@ -113,7 +113,7 @@
     if(r.cool>0||off>.45)return; r.cool=1.8+Math.random()*.7;
     const land=()=>{ if(VIT.dead||r.dead)return; if(ranged)return shoot(r,r.style.bolt); if(Math.hypot(pos.x-st.x,pos.z-st.z)<R*1.45)VIT.hurt(r.dmg); };
     if(r.kk)N.an.play(r.style.hit,{at:[r.style.at,land]}); else r.lunge={t:0,hit:land}; };
-  const tick=dt=>{ if(!lvl||!L)return; const you={x:pos.x,z:pos.z}, alive=!VIT.dead&&LVL==='down';
+  const tick=dt=>{ if(!lvl||!L)return; const you={x:pos.x,z:pos.z}, alive=!VIT.dead&&SHARED.LVL==='down';
     const S=alive?strikes():[]; for(const s of S){ const m=strength(); for(const sl of slimes)if(!sl.dead&&inCone(s,sl.x,sl.z,D.ground(sl.x,sl.z),.2*T))hitSlime(sl,s.d*m,you);
       if(RES)for(const r of RES)if(r.on&&!r.dead&&!r.ogre&&inCone(s,r.N.st.x,r.N.st.z,r.N.g.position.y,.25*T))hitRes(r,s.d*m,you); }
     if(slimeTick(dt,you,alive)||S.length)draw(); if(RES)for(const r of RES)if(r.on)resTick(r,dt,you,alive); boltTick(dt); };

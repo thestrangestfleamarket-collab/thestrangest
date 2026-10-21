@@ -66,14 +66,14 @@ function makeNPC(D,o){ const N={key:o.key,name:o.name,names:o.names,lv:o.lv||'do
   const H=o.metres/.84*TILE, s=H/tall, body=new THREE.Group(), g=new THREE.Group(); body.add(me); body.scale.set(s,s*ZU*24/TILE,s); g.add(body); MAPG[o.group||'down'].add(g);
   const TX=x=>(x+27)*TILE+STN.DX, TZ=y=>(y+73)*TILE+STN.DZ, LN=o.lane||{x0:TX(-29.5),x1:TX(-28.6),z0:TZ(-84.2),z1:TZ(-61.9)}, LX0=LN.x0, LX1=LN.x1, LZ0=LN.z0, LZ1=LN.z1, QS=new URLSearchParams(location.search), ground=o.ground||MODS.station.ground, longX=LX1-LX0>LZ1-LZ0;
   const st={x:o.x??TX(-29),z:o.z??TZ(o.at),h:Math.PI/2,to:null,wait:+(QS.get('npcwait')||2),ph:Math.random()*6,R:o.radius*TILE,v:o.speed*TILE};
-  { const SH=QS.get('sheet'), NA=QS.get('npcat')||(SH&&SH+',field'); if(NA){ const [k,x,z]=NA.split(','); if(k===N.key){ if(x==='field'){ st.x=SH?BOUND.x1-.5*TILE:BOD.XS(BOD.MAP.x1+14); st.z=BOD.ZS((BOD.MAP.y0+BOD.MAP.y1)/2); } else{ st.x=+x; st.z=+z; } st.hold=true;
+  { const SH=QS.get('sheet'), NA=QS.get('npcat')||(SH&&SH+',field'); if(NA){ const [k,x,z]=NA.split(','); if(k===N.key){ if(x==='field'){ st.x=SH?SHARED.BOUND.x1-.5*TILE:SHARED.BOD.XS(SHARED.BOD.MAP.x1+14); st.z=SHARED.BOD.ZS((SHARED.BOD.MAP.y0+SHARED.BOD.MAP.y1)/2); } else{ st.x=+x; st.z=+z; } st.hold=true;
     if(SH===N.key){ N.sheet=true; st.face={x:st.x+1,z:st.z+1}; st.h=Math.PI/4; } } } }
   const free=N.free=o.free||((x,z,R)=>!CLIP.hit(SOL[N.lv]||SOL.up,x,z,R)); N.ground=ground;
   N.pick=()=>pick();
   const pick=()=>{ '@later'; if(o.pick){ o.pick(st); return; } if(o.roam){ if(!ROAM.pick(st,free)){ st.to=null; st.wait=1; } return; } for(let k=0;k<12;k++){
     const r=(Math.random()<.5?-1:1)*(2+Math.random()*7)*TILE; st.to=longX?{x:Math.max(LX0,Math.min(LX1,st.x+r)),z:LZ0+Math.random()*(LZ1-LZ0)}:{x:LX0+Math.random()*(LX1-LX0),z:Math.max(LZ0,Math.min(LZ1,st.z+r))}; if(free(st.to.x,st.to.z,st.R))return; } st.to=null; st.wait=1; };
   const block=(x,z,R)=>Math.hypot(x-st.x,z-st.z)<st.R+R;
-  N.tick=(dt,you)=>{ if(N.sheet&&!N.sheetOn){ N.sheetOn=true; UI.setFree(true); UI.camT.set(st.x,g.position.y+tall*s*ZU*24/TILE*.5,st.z); ppu=ppuTo=PPU*4; window.SHEETTURN=d=>{ yaw=yawTo=d*Math.PI/180; };
+  N.tick=(dt,you)=>{ if(N.sheet&&!N.sheetOn){ N.sheetOn=true; UI.setFree(true); UI.camT.set(st.x,g.position.y+tall*s*ZU*24/TILE*.5,st.z); SHARED.ppu=SHARED.ppuTo=PPU*4; window.SHEETTURN=d=>{ SHARED.yaw=SHARED.yawTo=d*Math.PI/180; };
       for(const G of Object.values(MAPG))for(const c of G.children)if(c!==g)c.visible=false; const r0=renderer.render.bind(renderer); renderer.render=(s,c)=>{ if(s.background&&s.background.isColor)s.background.set(0); r0(s,c); }; }
     if(o.brain)o.brain(dt,VIT.dead?NOYOU:you,st,N);
     if(N.mode==='hidden'&&!g.visible)return;
@@ -83,7 +83,7 @@ function makeNPC(D,o){ const N={key:o.key,name:o.name,names:o.names,lv:o.lv||'do
       else{ want=Math.atan2(ex,ez); const turn=Math.abs(((want-st.h+Math.PI*3)%(Math.PI*2))-Math.PI);
         if(turn<.5){ const step=Math.min(d,st.v*dt), nx=st.x+ex/d*step, nz=st.z+ez/d*step;
           if(!N.free(nx,nz,st.R)){ st.to=null; st.wait=.5; }
-          else if(!VIT.dead&&Math.hypot(you.x-nx,you.z-nz)<st.R+.35&&Math.abs(py-g.position.y)<2||NPCS.some(q=>q!==N&&!q.far&&q.lv===N.lv&&q.key!=='dragon'&&q.mode!=='hidden'&&q.blocks(nx,nz,st.R)&&q.gap(nx,nz)<q.gap(st.x,st.z))){ if((st.held=(st.held||0)+dt)>2){ st.to=null; st.held=0; st.wait=1; } }
+          else if(!VIT.dead&&Math.hypot(you.x-nx,you.z-nz)<st.R+.35&&Math.abs(SHARED.py-g.position.y)<2||NPCS.some(q=>q!==N&&!q.far&&q.lv===N.lv&&q.key!=='dragon'&&q.mode!=='hidden'&&q.blocks(nx,nz,st.R)&&q.gap(nx,nz)<q.gap(st.x,st.z))){ if((st.held=(st.held||0)+dt)>2){ st.to=null; st.held=0; st.wait=1; } }
           else{ st.x=nx; st.z=nz; moving=true; st.held=0; } } } }
     else{ if(st.face)want=Math.atan2(st.face.x-st.x,st.face.z-st.z); if(!st.hold&&(st.wait-=dt)<=0)pick(); }
     let dh=((want-st.h+Math.PI*3)%(Math.PI*2))-Math.PI; st.h+=dh*Math.min(1,dt*5);
@@ -102,14 +102,14 @@ function makeNPC(D,o){ const N={key:o.key,name:o.name,names:o.names,lv:o.lv||'do
     renderer.setRenderTarget(N.sm); renderer.clear(); renderer.render(g,N.smCam); renderer.setRenderTarget(null); for(const [o,m] of ms)o.material=m; };
   if(!o.noSelf){ SYS.add('shadow',(r)=>{ N.shadowPass(r); },'076-npc-map'); }
   N.g=g; N.st=st; N.body=body; N.H=H; NPCS.push(N); return N; }
-const STLANE={x0:BOD.XS(BOD.MAP.x0+2),x1:Math.min(BOD.XS(BOD.MAP.x1-2),RINGX.bound.x1-TILE),z0:BOD.ZS(-76.3),z1:Math.min(BOD.ZS(RING.wy1-1),RINGX.bound.z1-TILE)}, STHOLE=[BOD.XS(MAPSTAIR.x0-.6),BOD.ZS(MAPSTAIR.y0),BOD.XS(MAPSTAIR.x1+.6),BOD.ZS(MAPSTAIR.y1+.6)],
-  CSHOLE=[BOD.XS(CASTLE.stair.x0-.6),BOD.ZS(CASTLE.stair.y0-.6),BOD.XS(CASTLE.stair.x1+.6),BOD.ZS(CASTLE.stair.y1+.6)], CSB=[BOD.XS(CASTLE.b[0]-.5),BOD.ZS(CASTLE.b[2]-.5),BOD.XS(CASTLE.b[1]+.5),BOD.ZS(CASTLE.b[3]+.5)],
+const STLANE={x0:SHARED.BOD.XS(SHARED.BOD.MAP.x0+2),x1:Math.min(SHARED.BOD.XS(SHARED.BOD.MAP.x1-2),RINGX.bound.x1-TILE),z0:SHARED.BOD.ZS(-76.3),z1:Math.min(SHARED.BOD.ZS(RING.wy1-1),RINGX.bound.z1-TILE)}, STHOLE=[SHARED.BOD.XS(MAPSTAIR.x0-.6),SHARED.BOD.ZS(MAPSTAIR.y0),SHARED.BOD.XS(MAPSTAIR.x1+.6),SHARED.BOD.ZS(MAPSTAIR.y1+.6)],
+  CSHOLE=[SHARED.BOD.XS(CASTLE.stair.x0-.6),SHARED.BOD.ZS(CASTLE.stair.y0-.6),SHARED.BOD.XS(CASTLE.stair.x1+.6),SHARED.BOD.ZS(CASTLE.stair.y1+.6)], CSB=[SHARED.BOD.XS(CASTLE.b[0]-.5),SHARED.BOD.ZS(CASTLE.b[2]-.5),SHARED.BOD.XS(CASTLE.b[1]+.5),SHARED.BOD.ZS(CASTLE.b[3]+.5)],
   inBox=(b,x,z,R)=>x>b[0]-R&&x<b[2]+R&&z>b[1]-R&&z<b[3]+R,
   inBuilding=(x,z,R)=>ROOMS.boxes().some(b=>b.y0<1&&x>b.x0-R&&x<b.x1+R&&z>b.z0-R&&z<b.z1+R)||(MODS.apts&&MODS.apts.inside&&MODS.apts.inside(x,z))||inBox(CSB,x,z,R),
   stfree=(x,z,R)=>RINGX.inside(x,z,R)&&!inBox(STHOLE,x,z,R)&&!inBox(CSHOLE,x,z,R)&&!inBuilding(x,z,R)&&!SOL.up.some(b=>x>b[0]-R&&x<b[2]+R&&z>b[1]-R&&z<b[3]+R)&&!FOUNT.wet(x,z,R);
-const ROAM={L:STLANE,wallZ:BOD.ZS(PARK.y0+PARK.oy),gate:[BOD.XS(PARK.gate[0]+PARK.ox+.8),BOD.XS(PARK.gate[1]+PARK.ox-.8)]};
+const ROAM={L:STLANE,wallZ:SHARED.BOD.ZS(PARK.y0+PARK.oy),gate:[SHARED.BOD.XS(PARK.gate[0]+PARK.ox+.8),SHARED.BOD.XS(PARK.gate[1]+PARK.ox-.8)]};
 window.ROAMDBG=()=>ROAM; window.STFREE=stfree;
-const DUN=()=>{ const D=MODS.dungeon; if(!D)return null; const B=D.B, X=BOD.XS, Z=BOD.ZS, lane={x0:X(B.x0+1.2),x1:X(B.x1-1.2),z0:Z(B.y0+1.2),z1:Z(B.y1-1.2)},
+const DUN=()=>{ const D=MODS.dungeon; if(!D)return null; const B=D.B, X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, lane={x0:X(B.x0+1.2),x1:X(B.x1-1.2),z0:Z(B.y0+1.2),z1:Z(B.y1-1.2)},
     free=(x,z,R)=>x>lane.x0&&x<lane.x1&&z>lane.z0&&z<lane.z1&&!SOL.down.some(b=>x>b[0]-R&&x<b[2]+R&&z>b[1]-R&&z<b[3]+R);
   let p={x:(lane.x0+lane.x1)/2,z:(lane.z0+lane.z1)/2}; for(let k=0;k<60;k++){ const q={x:lane.x0+Math.random()*(lane.x1-lane.x0),z:lane.z0+Math.random()*(lane.z1-lane.z0)}; if(free(q.x,q.z,.4*TILE)){ p=q; break; } }
   return {lv:'down',group:MAPG.dungeon?'dungeon':'down',lane,free,ground:(x,z)=>D.ground(x,z),roam:false,x:p.x,z:p.z,dun:true}; };
@@ -119,7 +119,7 @@ ROAM.pick=(st,free)=>{ '@later'; const L=ROAM.L; for(let k=0;k<12;k++){ let to;
     if(!free(to.x,to.z,st.R))continue;
     if((st.z<ROAM.wallZ)!==(to.z<ROAM.wallZ)){ st.next=to; st.to={x:ROAM.gate[0]+Math.random()*(ROAM.gate[1]-ROAM.gate[0]),z:ROAM.wallZ}; } else{ st.to=to; st.next=null; } return true; } return false; };
 { const FR=new THREE.Frustum(), M4=new THREE.Matrix4(), SP=new THREE.Sphere(), V=new THREE.Vector3(); NPCS.extra=[];
-  NPCS.tick=(dt,you)=>{ M4.multiplyMatrices(cam.projectionMatrix,cam.matrixWorldInverse); FR.setFromProjectionMatrix(M4); const R=25*TILE, LV=LIVES.on;
+  NPCS.tick=(dt,you)=>{ M4.multiplyMatrices(SHARED.cam.projectionMatrix,SHARED.cam.matrixWorldInverse); FR.setFromProjectionMatrix(M4); const R=25*TILE, LV=LIVES.on;
     for(const N of NPCS){ const p=N.g.position, d=Math.hypot(p.x-you.x,p.z-you.z), seen=FR.intersectsSphere(SP.set(p,Math.max(2*TILE,N.cullR||0)));
       const far=N.park&&!PARK.in||(LIVES.force==='near'?false:LIVES.force==='half'&&!('mode' in N)?!!(NPCS.indexOf(N)&1):!('mode' in N)&&!N.sheet&&(!N.g.parent.visible||(LV?(LIVES.ready&&LIVES.hidden(N))||d>4*TILE&&!FR.intersectsSphere(SP.set(p,3*TILE)):d>R&&!seen)));
       N.far=far; N.hid=!N.sheet&&(far||!seen);

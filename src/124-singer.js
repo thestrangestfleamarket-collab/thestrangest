@@ -4,7 +4,7 @@ if(!AWAY.has('bar')){ const R=RIG;
   const tones=h=>{ const c=new THREE.Color(h); return [1.14,1,.72,.46].map(k=>c.clone().multiplyScalar(k)); };
   for(const m in LOOK){ const n='sg_'+m; if(!R.MATS.includes(n)){ R.MATS.push(n); W3.ramp.push(tones(LOOK[m])); } }
 }
-SGM.make=()=>{ if(!STORE.bar)return; const R=RIG, V=R.V, S=STORE.bar, AT={x:BOD.X(S.singer.x),z:BOD.Z(S.singer.y),hd:0,y:BOD.Y(S.stage.z)};
+SGM.make=()=>{ if(!STORE.bar)return; const R=RIG, V=R.V, S=STORE.bar, AT={x:SHARED.BOD.X(S.singer.x),z:SHARED.BOD.Z(S.singer.y),hd:0,y:SHARED.BOD.Y(S.stage.z)};
   const own=p=>{ const q=Object.assign({},p), pm=p.paint; q.m='sg_'+(p.m||'skin'); if(pm)q.paint=x=>{ const r=pm(x); return r?'sg_'+r:null; }; return q; };
   const B0=R.settle(R.build(castPose('singA'),null),0), MIC0=singMic(B0), MI=n=>R.MATS.indexOf(n), SH=MI('shirt'), PA=MI('pants'), SO=MI('shoes'), SK=MI('skin'), RED=MI('sg_shirt'), SRED=MI('sg_shoes');
   const FEM=['',.95,{torso:[.82,.98,1],neck:[.84,1.04,.84],head:[.95,1,.95],hips:[1.08,1.04,1.04],upperArmL:[.8,1,.8],upperArmR:[.8,1,.8],sleeveL:[.8,1,.8],sleeveR:[.8,1,.8],forearmL:[.8,1,.8],forearmR:[.8,1,.8],handL:[.84,.9,.84],handR:[.84,.9,.84],thighL:[1.02,1,1.02],thighR:[1.02,1,1.02],shinL:[.9,1,.9],shinR:[.9,1,.9],shoeL:[.85,.92,.85],shoeR:[.85,.92,.85]},1], GS=WOMAN.SKIRT.gown, top=22.4, bare=WOMAN.NECK.strapless;
@@ -18,7 +18,7 @@ SGM.make=()=>{ if(!STORE.bar)return; const R=RIG, V=R.V, S=STORE.bar, AT={x:BOD.
   g.position.set(AT.x,AT.y,AT.z); g.rotation.set(0,AT.hd,0); musScale(g,FEM[1]);
   const cg=new THREE.BufferGeometry(); cg.setAttribute('position',new THREE.BufferAttribute(new Float32Array(CORDN*3),3)); const cord=new THREE.Line(cg,new THREE.LineBasicMaterial({color:0x1a1618})); cord.frustumCulled=false; g.add(cord);
   const a={pose:'singA',from:null,P:null,B:null,bt:1,bT:1.6,t:0,next:2.5,props:{}};
-  SGM.dist=()=>Math.hypot(pos.x-AT.x,pos.z-AT.z); SGM.pan=()=>{ const v=new THREE.Vector3(AT.x,1,AT.z).project(cam); return Math.max(-.8,Math.min(.8,v.x*.8)); };
+  SGM.dist=()=>Math.hypot(pos.x-AT.x,pos.z-AT.z); SGM.pan=()=>{ const v=new THREE.Vector3(AT.x,1,AT.z).project(SHARED.cam); return Math.max(-.8,Math.min(.8,v.x*.8)); };
   SGM.stop=()=>voxStop();
   SGM.tick=dt=>{ const d=SGM.dist(); if(!SGM.on||!MAPG.bodega.visible||d>18){ voxStop(); return; } musScale(g,FEM[1]);
     a.t+=dt; a.next-=dt; if(a.next<=0){ a.next=1.8+Math.random()*1.6; const ps=['singA','singB','singC'].filter(p=>p!==a.pose); a.from=a.P?JSON.parse(JSON.stringify(a.P)):null; a.pose=ps[Math.random()*ps.length|0]; a.bt=0; a.bT=1.4+Math.random()*.6; }

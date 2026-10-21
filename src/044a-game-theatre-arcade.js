@@ -31,38 +31,38 @@ const THFRONT=(()=>{ let f=null; const build=()=>{ const W=480, H=392, a=new Arr
   brick(U(16.1),0,480,99); box(U(16.1),99,480,111,CREAM); box(U(16.1),99,480,100,CREAMD);
   return (u,z)=>{ const c=Math.floor(u*24), q=Math.floor(z); return c>=0&&c<W&&q>=0&&q<H?a[q*W+c]:null; }; }; return (u,z)=>(f||(f=build()))(u,z); })();
 let THX0=0, THY=0; const THX=u=>THX0-u, thAt=(x,y)=>{ THX0=x; THY=y; };
-function thOut(parts,o,more=[]){ PNAME='theatre front'; const x0=THX0; return prop([...parts.map(([u0,u1,z0,z1,d,side,top,foot])=>sided({x0:THX(u1),x1:THX(u0),y0:THY-d,y1:THY,z0,z1,c:side,foot:foot?1:0,top:()=>top||side,
+function thOut(parts,o,more=[]){ SHARED.PNAME='theatre front'; const x0=THX0; return prop([...parts.map(([u0,u1,z0,z1,d,side,top,foot])=>sided({x0:THX(u1),x1:THX(u0),y0:THY-d,y1:THY,z0,z1,c:side,foot:foot?1:0,top:()=>top||side,
   fs:(nx,ny,X,Y,z,k)=>{ if(ny<0){ const c=THFRONT(x0-X,z+z0); if(c)return c.e?c:sh(c,k); } return sh(side,k); }})),...more],null,o); }
 const thFront=clip=>{ const RB=[164,58,48], CR=[234,228,206], GR=[112,122,144], SL=[74,80,98], C=L=>L.map(p=>clip(p)).filter(Boolean);
   for(const [L,o,m] of [[[[0,4.73,0,99,.5,RB,[150,52,44],1],[0,4.83,99,111,.62,CR,[246,242,228]]]],[[[16.1,20,0,99,.5,RB,[150,52,44],1],[16,20,99,111,.62,CR,[246,242,228]]]],
     [[[6.1,14.4,98,134,.15,SL,[96,102,122]],[8.5,12.1,106,131,.2,[250,248,240],[250,248,240]]],{walk:true}],
     [[[4.73,16.1,92,152,.2,RB,[150,52,44],1],[4.4,16.1,152,168,.42,CR,[246,242,228]]],{walk:true}],
     [[[8.4,12.5,0,2,.35,[200,204,210],[214,218,222],1]],{walk:true}]]){ const ps=C(L); if(ps.length||(m&&m.length))thOut(ps,o,m); } };
-function theatreScreen(S){ PNAME='cinema screen'; const b=S.m/24, y0=S.y-.06, Bk=[12,10,12], bk={c:Bk,top:()=>Bk,fi:()=>Bk,fj:()=>Bk,foot:0};
+function theatreScreen(S){ SHARED.PNAME='cinema screen'; const b=S.m/24, y0=S.y-.06, Bk=[12,10,12], bk={c:Bk,top:()=>Bk,fi:()=>Bk,fj:()=>Bk,foot:0};
   const film=(x,z)=>{ const f=filmFrame(30), i=Math.min(FILMW-1,Math.max(0,Math.floor((x-S.x0)/(S.x1-S.x0)*FILMW))), j=Math.min(FILMH-1,Math.max(0,Math.floor((S.z1-z)/(S.z1-S.z0)*FILMH))), q=(j*FILMW+i)*3; return [f[q],f[q+1],f[q+2]]; };
   return prop([{x0:S.x0,y0,x1:S.x1,y1:S.y,z0:S.z0,z1:S.z1,foot:1,em:1,c:[200,200,196],top:()=>Bk,fi:()=>Bk,fj:film},
     {x0:S.x0-b,y0,x1:S.x1+b,y1:S.y,z0:S.z1,z1:S.z1+S.m,...bk},{x0:S.x0-b,y0,x1:S.x1+b,y1:S.y,z0:S.z0-S.m,z1:S.z0,...bk},
     {x0:S.x0-b,y0,x1:S.x0,y1:S.y,z0:S.z0,z1:S.z1,...bk},{x0:S.x1,y0,x1:S.x1+b,y1:S.y,z0:S.z0,z1:S.z1,...bk}],null,{high:true}); }
 const VELVET=[138,20,34];
 const fold=(u,z,f)=>sh(speck(VELVET,u,z/24,307),f*(.72+.28*Math.sin(u*Math.PI*5)**2));
-function theatreDrape(x0,x1,S){ PNAME='stage curtain';
+function theatreDrape(x0,x1,S){ SHARED.PNAME='stage curtain';
   return prop([{x0,y0:S.y-.5,x1,y1:S.y,z0:0,z1:S.z1+S.m+44,c:VELVET,top:()=>sh(VELVET,.8),fi:(y,z)=>fold(y,z,.8),fj:(x,z)=>fold(x,z,1)}],null,{high:true}); }
-function theatreValance(S){ PNAME='stage curtain'; const b=S.m/24, z0=S.z1+S.m, G=[188,146,58], fr=(u,z,f)=>z<z0+5?sh((Math.floor(u*24)&1)?G:sh(G,.7),f):fold(u,z,f);
+function theatreValance(S){ SHARED.PNAME='stage curtain'; const b=S.m/24, z0=S.z1+S.m, G=[188,146,58], fr=(u,z,f)=>z<z0+5?sh((Math.floor(u*24)&1)?G:sh(G,.7),f):fold(u,z,f);
   return prop([{x0:S.x0-b,y0:S.y-.6,x1:S.x1+b,y1:S.y,z0,z1:z0+44,foot:0,c:VELVET,top:()=>sh(VELVET,.8),fi:(y,z)=>fr(y,z,.8),fj:(x,z)=>fr(x,z,1)}],null,{walk:true,high:true}); }
 const PLUSH=[150,22,36], SEATZ=10;
-function theatreSeat(a,y1,w,end){ PNAME='cinema chair'; const y0=y1-.7, P=PLUSH, Dk=[26,20,22], Ar=[40,30,28], pl={c:P,top:()=>sh(P,1.18),fi:()=>sh(P,.66),fj:()=>sh(P,.84)};
+function theatreSeat(a,y1,w,end){ SHARED.PNAME='cinema chair'; const y0=y1-.7, P=PLUSH, Dk=[26,20,22], Ar=[40,30,28], pl={c:P,top:()=>sh(P,1.18),fi:()=>sh(P,.66),fj:()=>sh(P,.84)};
   const arm=a=>({x0:a-.06,y0:y0+.08,x1:a+.06,y1:y1-.1,z0:0,z1:16,c:Ar,top:()=>[64,50,42],fi:()=>sh(Ar,.7),fj:()=>Ar});
   return prop([{x0:a+.08,y0:y0+.12,x1:a+w-.08,y1:y1-.08,z0:0,z1:4,c:Dk,top:()=>Dk,fi:()=>sh(Dk,.7),fj:()=>Dk},
     {x0:a+.09,y0:y0+.16,x1:a+w-.09,y1:y1-.03,z0:4,z1:SEATZ,foot:0,...pl},{x0:a+.08,y0,x1:a+w-.08,y1:y0+.18,z0:4,z1:30,foot:0,...pl,top:()=>sh(P,1.1)},arm(a),...(end?[arm(a+w)]:[])]); }
-function theatreAisleLights(xs,ys){ PNAME='aisle lights'; const A=[255,168,80], out=[];
+function theatreAisleLights(xs,ys){ SHARED.PNAME='aisle lights'; const A=[255,168,80], out=[];
   for(const x of xs)for(const y of ys)out.push({x0:x-.06,y0:y-.06,x1:x+.06,y1:y+.06,z0:0,z1:2,em:1,c:A,top:()=>A,fi:()=>A,fj:()=>A});
   return prop(out,null,{walk:true}); }
 const FONT3={E:['111','100','110','100','111'],X:['101','101','010','101','101'],I:['111','010','010','010','111'],T:['111','010','010','010','010']};
-function theatreExit(x,y){ PNAME='exit sign'; const x0=x-.6, x1=x+.6, z0=68, z1=80;
+function theatreExit(x,y){ SHARED.PNAME='exit sign'; const x0=x-.6, x1=x+.6, z0=68, z1=80;
   const face=(u,z)=>{ const c=Math.floor((x1-u)/(x1-x0)*17)-1, r=Math.floor((z1-2-z)/1.6), L='EXIT'[Math.floor(c/4)], k=c%4;
     return c>=0&&c<16&&k<3&&r>=0&&r<5&&FONT3[L][r][k]==='1'?[255,70,48]:[52,8,8]; };
   return prop([{x0,y0:y,x1,y1:y+.1,z0,z1,foot:1,em:1,c:[52,8,8],top:()=>[30,6,6],fi:()=>[40,8,8],fj:(u,z)=>face(u,z)}],null,{high:true}); }
-function theatrePort(x,y,z=296){ PNAME='projection port'; const W=[255,226,168], F=[24,20,18];
+function theatrePort(x,y,z=296){ SHARED.PNAME='projection port'; const W=[255,226,168], F=[24,20,18];
   return prop([{x0:x-.45,y0:y,x1:x+.45,y1:y+.05,z0:z,z1:z+22,foot:1,c:F,top:()=>F,fi:()=>F,fj:()=>F},{x0:x-.32,y0:y+.05,x1:x+.32,y1:y+.07,z0:z+4,z1:z+18,foot:0,em:1,c:W,top:()=>W,fi:()=>W,fj:()=>W}],null,{high:true}); }
 function theatreCarpet(x,y){ const a=(x+y)*1.5, b=(x-y)*1.5, fa=a-Math.floor(a), fb=b-Math.floor(b), n=hash(Math.floor(x*12),Math.floor(y*12),23);
   return mt('carpet',Math.abs(fa-.5)<.08&&Math.abs(fb-.5)<.08?[172,128,56]:fa<.06||fb<.06?[56,14,24]:n<.02?[48,90,100]:speck([104,28,40],x,y,24)); }
@@ -112,7 +112,7 @@ const arcadeWallOf=ARCS=>function(q,nx,ny,X,Y,z,f){ const zz=z%STORY;
 const ARC=(()=>{ const {art,onF,lit,C,rect,fb,worn,metal}=MLK;
   const W=[232,232,236], WD=[196,198,206], WL=[244,244,248];
   const white=(k)=>(s,t,z)=>{ const c=worn(W,t,z,k); return s==='b'?sh(c,.9):c; };
-  function arcade(x,y,f=[0,1],green=0){ '@later'; PNAME=green?'arcade cabinet, green':'arcade cabinet, pink'; const r=rect(x,y,f,1.5,1.3), T=green?[110,220,80]:[236,70,160], TD=sh(T,.7), B=[];
+  function arcade(x,y,f=[0,1],green=0){ '@later'; SHARED.PNAME=green?'arcade cabinet, green':'arcade cabinet, pink'; const r=rect(x,y,f,1.5,1.3), T=green?[110,220,80]:[236,70,160], TD=sh(T,.7), B=[];
     const front=art(36,83,(px,bx)=>{ bx(0,0,72,166,W); bx(0,150,72,166,[120,120,126]); bx(4,154,68,160,[80,80,86]); bx(0,0,72,4,T); bx(0,4,3,166,TD); bx(69,4,72,166,TD);
       bx(6,10,66,24,lit([250,240,230])); bx(10,13,62,21,lit(T));
       bx(8,30,64,86,[20,20,24]); bx(12,34,60,82,lit([40,48,72])); bx(16,38,56,50,lit([90,140,200])); bx(18,60,32,78,lit([230,120,80])); bx(40,58,54,78,lit([120,200,120])); bx(16,52,56,54,lit([240,240,120]));
@@ -122,7 +122,7 @@ const ARC=(()=>{ const {art,onF,lit,C,rect,fb,worn,metal}=MLK;
     B.push(fb(r,0,1,0,1,0,83,W,onF(front,83,(s,t,z)=>z<4?[120,120,126]:s==='b'&&z>50&&z<70&&(Math.floor(z/2)&1)?WD:white(93)(s,t,z)),(t,d)=>d>.6?W:WL));
     B.push(fb(r,0,1,0,.4,83,88,W,(s,t,z)=>s==='f'?lit(T):W,()=>WL,{foot:1}));
     const p=prop(B); LAMPS.push({own:1,room:1,x:r.cx+f[0]*1,y:r.cy+f[1]*1,z:50,r:2.4,c:green?[.5,1,.6]:[1,.5,.8],prop:p,day:true}); return p; }
-  function redStool(x,y){ '@later'; PNAME='red stool'; const r=rect(x,y,[0,1],.7,.5), B=[fb(r,0,1,0,1,13,19,C.red,(s,t,z)=>z<2?C.redD:z>4?C.redL:C.red,(t,d)=>Math.min(t,1-t,d*1.4,(1-d)*1.4)<.06?C.redD:C.red)];
+  function redStool(x,y){ '@later'; SHARED.PNAME='red stool'; const r=rect(x,y,[0,1],.7,.5), B=[fb(r,0,1,0,1,13,19,C.red,(s,t,z)=>z<2?C.redD:z>4?C.redL:C.red,(t,d)=>Math.min(t,1-t,d*1.4,(1-d)*1.4)<.06?C.redD:C.red)];
     for(const [a,b,c,d] of [[.05,.12,.08,.22],[.88,.95,.08,.22],[.05,.12,.78,.92],[.88,.95,.78,.92]])B.push(fb(r,a,b,c,d,0,13,C.chrome,(s,t,z)=>metal(C.chrome,t,z),null,{foot:1})); return prop(B); }
   return {arcade,redStool}; })();
 const QR = {
@@ -161,7 +161,7 @@ const GRM = {
       grBox([0, 0, 52, 28, 25, 64], QR.black, { front: (a, k, w, h) => (k > 1 && k < h - 2 && a > 1 && a < w - 2) ? (grWord('ARCADE', 3, 4, a, h - 1 - k) ? grE(QR.yellow) : grE([196, 48, 60])) : cap(a, k, w, h), left: cap, right: cap, back: cap, top: (x, y, w, h) => (x === 0 || x === w - 1) ? grE(QR.green) : null })
     ] }; },
 };
-function grProp(name,M,x,y,z,o){ '@later'; PNAME=name; const S=1/FP, F=M.frames||0; let cur=0;
+function grProp(name,M,x,y,z,o){ '@later'; SHARED.PNAME=name; const S=1/FP, F=M.frames||0; let cur=0;
   const tone=(c,k)=>!c?null:c.e||k===1?c:grSh(c,k);
   const same=(a,b)=>a&&b&&a[0]===b[0]&&a[1]===b[1]&&a[2]===b[2]&&!a.e===!b.e;
   const boxes=M.parts.map((pt,i)=>{ const [x0,y0,z0,x1,y1,z1]=pt.b, fc=pt.f||{}, h=z1-z0, sides=['front','back','left','right'].some(s=>fc[s]);
@@ -187,7 +187,7 @@ function vrHeadsetBoxes(x,y,z0=0,cable=true){ '@later'; const H=20, w=.31, sd=(o
     rub({x0:x+w,y0:y-.05,x1:x+w+.06,y1:y+.05,z0:z0+5,z1:z0+10})];
   if(cable)for(let i=0;i<8;i++){ const a=i*.85, cx=x+.42+Math.cos(a)*.14+i*.06, cy=y+.2+Math.sin(a)*.12+i*.03; bs.push({x0:cx-.055,y0:cy-.055,x1:cx+.055,y1:cy+.055,z0,z1:z0+4,c:VRRUB,top:()=>sh(VRRUB,1.15)}); }
   return bs; }
-function vrStation(x,y){ '@later'; PNAME='VR headset station'; const Z=30, sd=o=>sided(o), BG=VRBG, PK=[232,74,160], BL=[70,140,240];
+function vrStation(x,y){ '@later'; SHARED.PNAME='VR headset station'; const Z=30, sd=o=>sided(o), BG=VRBG, PK=[232,74,160], BL=[70,140,240];
   const face=(nx,ny,X,Y,z,k)=>{ const a=(nx?Y-y:X-x)*24, c=z<2?sh(BG,.7):z>Z-2?sh(BG,1.05):BG;
     if(ny>0){ if(z>5&&z<Z-6&&Math.abs(a)<13){ if(Math.abs(a-9)<1.6&&Math.abs(z-(Z-10))<1.6)return Object.assign([120,255,150],{e:1}); return Math.abs(z-9)<1?PK:Math.abs(z-11)<1?BL:VRBLK; } }
     return sh(c,k*1.2); };

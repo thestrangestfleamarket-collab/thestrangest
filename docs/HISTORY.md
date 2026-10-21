@@ -3870,3 +3870,13 @@ initial download and load super fast"; then "Go")
   y 17.5. THE BATH HOUSE at 134 (its court 125 to 143). THE ENTRANCE TO THE HUDSON AREA at 117.5: a paved way 13 wide through the
   block and the back row to the alley (`BLOCK.hudson`; no gate across it). 'YOUR APARTMENT' is placed in the half-width building.
   Still to do: the bodega's second door toward West St.
+
+- **The park's inside, step 4 of the new layout** (21 Oct 2026; `061-park.js`, `006-map-pre.js`, `089-pond.js`, `089a-brook.js`,
+  `060-cave.js`, `060a-fount.js`): the round at the owner's spot (`PARKGX` 112, 59.5) and the gate centred under it; the paths are
+  a network of segments (`PARK.segs`, `PARK.segD`, `PARK.pd`) that "go all the way": the gate path up the middle to the north gate,
+  the cross path from the west gate to the east gate, spurs to the castle (43, 17: `LAYOUT0.castle`), the lake (`PARKLAKE` 151, 10,
+  the pond made three times the size), the cave (196.5, 41.5) and the camp past it, the tower (−8.5, −28) and the fountain (which
+  keeps its corner with its lake: the owner's lake is the one at 151, 10). Every path is paved, edged and lit: lamp posts every 13 to
+  16 along all of them. The brook springs from the fountain's lake and runs south-west into the lake, under the stone bridge where it
+  crosses the cross path (the bridge was on the gate path). Trees, flowers, hedges and the lawn keep off every path. Cost: the paths'
+  slabs are built in the park's own load as before; some 40 lamp posts more (unlit models; the eight nearest light).

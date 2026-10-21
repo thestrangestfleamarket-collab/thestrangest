@@ -98,12 +98,11 @@ await grab('apts',async()=>{ const {X,Z,faceTex,bq,C,facade,FRAME,place}=BOD,
     const rail=(lv,u0,u1,d0,d1)=>{ rs(lv,u0,u1,d0,d1); const z=lv*S, al=u1-u0>d1-d0, L=al?u1-u0:d1-d0, n=Math.max(1,Math.round(L/.36));
       B(u0,u1,d0,d1,z+30,z+33); B(u0,u1,d0,d1,z+14,z+16); for(let i=0;i<=n;i++){ const t=i/n*L; al?B(u0+t-.02,u0+t+.02,d0,d1,z,z+30):B(u0,u1,d0+t-.02,d0+t+.02,z,z+30); } };
     for(const lv of [1,2]){ const z=lv*S; B(F.ua,F.ub,0,DI,z-3,z,1);
-      if(lv===1)B(F.d1,F.ub,DI,DO,z-3,z,1); else { B(F.ua,F.lx-.4,DI,DO,z-3,z,1); B(F.lx+.4,F.ub,DI,DO,z-3,z,1); }
+      B(F.ua,F.lx-.4,DI,DO,z-3,z,1); B(F.lx+.4,F.ub,DI,DO,z-3,z,1);
       B(F.ua,F.ub,DO-.06,DO,z-9,z); for(let u=F.ua+.3;u<F.ub;u+=2.4)B(u,u+.06,0,DO,z-12,z-3);
-      rail(lv,F.ua,F.ub,DO-.05,DO); rail(lv,F.ua,F.ua+.05,0,DO); rail(lv,F.ub-.05,F.ub,0,DO); if(lv===1)rail(1,F.ua,F.d1-.1,DI-.025,DI+.025); }
-    rs(0,F.d0+.4,F.d1,DI-.025,DI+.025); rs(0,F.d0+.4,F.d1,DO-.05,DO);
-    const l=F.lx; for(const u of [l-.24,l+.2]){ B(u,u+.04,DI+.03,DI+.07,S,AH+38); B(u,u+.04,-.35,DI+.07,AH+34,AH+38); B(u,u+.04,-.39,-.35,AH,AH+38); }
-    for(let h=S+10;h<AH+32;h+=12)B(l-.2,l+.2,DI+.04,DI+.06,h,h+2); }
+      rail(lv,F.ua,F.ub,DO-.05,DO); rail(lv,F.ua,F.ua+.05,0,DO); rail(lv,F.ub-.05,F.ub,0,DO); }
+    const l=F.lx; for(const u of [l-.24,l+.2]){ B(u,u+.04,DI+.03,DI+.07,-RZ,AH+38); B(u,u+.04,-.35,DI+.07,AH+34,AH+38); B(u,u+.04,-.39,-.35,AH,AH+38); }
+    for(let h=-RZ+10;h<AH+32;h+=12)B(l-.2,l+.2,DI+.04,DI+.06,h,h+2); }
   { const L=LS, ST2=[134,128,118], g=b=>gbox({...b,c:b.c||L,...rock(b.c||L,61,.9,14)},'A'), xa=A.x0, xb=A.x1, yf=A.y1, yb=A.y0;
     g({x0:xa-.1,x1:xb+.1,y0:yf,y1:yf+.1,z0:S-8,z1:S}); g({x0:xa-.1,x1:xa,y0:yb,y1:yf,z0:S-8,z1:S}); g({x0:xb,x1:xb+.1,y0:yb,y1:yf,z0:S-8,z1:S});
     const z=S+22, b0=xa+13.1; g({x0:b0,x1:xb-.08,y0:yf,y1:yf+.42,z0:z,z1:z+6});
@@ -155,11 +154,10 @@ await grab('apts',async()=>{ const {X,Z,faceTex,bq,C,facade,FRAME,place}=BOD,
       for(let i=0;i<ST0.n;i++){ const y0=ST0.y0+ST0.land+i*ST0.tr, z=top(i)+7; rail(y0,y0+ST0.tr,z+26); post(y0+ST0.tr*.3,z,z+26); post(y0+ST0.tr*.75,z,z+26); }
       g({x0:xm-.06,x1:xm+.06,y0:ST0.y1-.12,y1:ST0.y1,z0:top(ST0.n-1)+7,z1:top(ST0.n-1)+7+34,c:IRN}); } }
   const SY=Y(S)-Y(0), ix=x=>x/(TILE*BLDK)+BOD.OX, iy=z=>z/(TILE*BLDK)+BOD.OY, TOL=Y(24)-Y(0);
-  const LAD={F:null,y:0}, LV=70, LS_=[S,2*S,AH], RFY=R0+SY*(ST-.3);
+  const LAD={F:null,y:0}, LV=38, LS_=[-RZ,S,2*S,AH], RFY=R0+SY*(ST-.3);
   const EG=(x,z)=>{ if(!window.POSOK||Math.abs(x-pos.x)+Math.abs(z-pos.z)>.5*TILE)return null; if(LAD.F)return Y(LAD.y); const u=ix(x)-A.x0;
     for(const F of ESC){ const d=(iy(z)-F.yf)*F.o; if(d<0||d>DO||u<F.ua||u>F.ub)continue; const Q=d<DI?[S,2*S]:[];
-      if(d>=DI){ if(u>=F.d1)Q.push(S); Q.push(2*S);
-        if(u>=F.d0&&u<=F.d1){ if(F.k>.95)Q.push(-RZ+(S+RZ)*(u-F.d0)/RD); else if(F.k<.05)Q.push(S); } }
+      if(d>=DI){ Q.push(S); Q.push(2*S); }
       let b=null; for(const c of Q)if(Y(c)<=py+TOL&&(b==null||c>b))b=c; return b==null||b<2-RZ?null:Y(b); }
     return null; };
   APTS.stoop=(x,z)=>{ const u=ix(x), v=iy(z); if(u<ST0.x0||u>ST0.x1||v<ST0.y0||v>=ST0.y1)return EG(x,z); const t=v-ST0.y0; if(t<ST0.land)return Y(1);
@@ -212,12 +210,6 @@ await grab('apts',async()=>{ const {X,Z,faceTex,bq,C,facade,FRAME,place}=BOD,
   const lpt=(F,d)=>[X(U(F.lx)),Z(F.yf+F.o*d)];
   for(const F of ESC)for(const y of LS_){ const [x,z]=lpt(F,y===AH?-.6:1.1), hb=bx(.5*TILE,Y(60)-Y(0),.5*TILE,HIT); hb.position.set(x,Y(y+30),z); scene.add(hb);
     reg({name:'FIRE ESCAPE LADDER',obj:hb,reach:.6*TILE,near:2.2*TILE,tall:1*TILE,act:()=>{ if(!LAD.F&&Math.abs(py-Y(y))<SY*.3)lgo(F,y); }}); }
-  const DROP=ESC.map(F=>{ const xt=X(U(F.d1)), L=Math.abs(xt-X(U(F.d0))), Hh=Y(S)-Y(-RZ), w=Math.abs(Z(F.yf+F.o*DO)-Z(F.yf+F.o*DI))-.04, th_=Math.atan2(Hh,L), len=Math.hypot(L,Hh), g=new THREE.Group(), n=15;
-    for(const k of [-1,1]){ for(const dy of [0,Y(32)-Y(0)]){ const s=bx(len,dy?.03:.08,.03,IRON); s.position.set(-L/2,-Hh/2+dy,k*w/2); s.rotation.z=th_; g.add(s); } }
-    for(let i=0;i<n;i++){ const t=bx(L/n*1.05,.025,w,IRON); t.position.set(-L+(i+.5)*L/n,-Hh+(i+1)*Hh/(n+1),0); g.add(t); }
-    const cwg=bx(.18*TILE,Y(26)-Y(0),.18*TILE,IRON); cwg.position.set(.25*TILE,-Y(10)+Y(0),0); g.add(cwg);
-    g.position.set(xt,Y(S),(Z(F.yf+F.o*DI)+Z(F.yf+F.o*DO))/2); scene.add(g); g.traverse(o=>{ if(o.isMesh)o.castShadow=true; });
-    if(F.o<0)APTS.back.push(g); return {F,g,th:th_,foot:{x:X(U(F.d0)),z:(Z(F.yf+F.o*DI)+Z(F.yf+F.o*DO))/2}}; });
   APTS.inside=(x,z)=>{ const a=X(A.x0), b=X(A.x1), c=Z(A.y0), d=Z(A.y1); return x>Math.min(a,b)&&x<Math.max(a,b)&&z>Math.min(c,d)&&z<Math.max(c,d); };
   APTS.lvY=lv=>R0+lv*SY; APTS.lvOf=y=>Math.max(0,Math.min(ST-1,Math.floor((y-R0)/SY+.08)));
   APTS.floor=()=>window.POSOK?APTS.lvOf(py):0;
@@ -226,17 +218,18 @@ await grab('apts',async()=>{ const {X,Z,faceTex,bq,C,facade,FRAME,place}=BOD,
   const RS=[[10.4,0,15.6,2.75],[3.8,1.2,6.2,3.6],[.25,5.9,1.35,7],[.25,10.4,1.35,11.5],[24.65,5.9,25.75,7],[24.65,10.4,25.75,11.5]].map(r=>{ const a=[X(U(r[0])),Z(V(r[1])),X(U(r[2])),Z(V(r[3]))]; return [Math.min(a[0],a[2]),Math.min(a[1],a[3]),Math.max(a[0],a[2]),Math.max(a[1],a[3])]; });
   RS.push([X(door.a0),Math.min(Z(A.y1-T),Z(A.y1+T)),X(door.a1),Math.max(Z(A.y1-T),Z(A.y1+T))]);
   const lpos=F=>{ const [x,z]=lpt(F,1.3); pos.x=x; pos.z=z; heading=Math.atan2(0,Math.sign(Z(F.yf)-z)||1); };
-  const lgo=(F,y)=>{ LAD.F=F; LAD.y=y; lpos(F); st.climb={z:0,slide:true}; target=null; };
+  const lgo=(F,y)=>{ LAD.F=F; LAD.y=y; lpos(F); st.climb={z:0,ph:y}; target=null; };
   const loff=top=>{ const F=LAD.F, [x,z]=lpt(F,top?-1:.45); LAD.F=null; st.climb=null; pos.x=x; pos.z=z; };
   APTS.lad=(dt,up,dn,off)=>{ if(!window.POSOK||LVL!=='up')return false;
     if(!LAD.F){ if(!(up||dn))return false; for(const F of ESC){ const u=ix(pos.x)-A.x0, d=(iy(pos.z)-F.yf)*F.o; if(Math.abs(u-F.lx)>.5)continue;
-        if(d>DI&&d<DO)for(const y of [S,2*S])if(Math.abs(py-Y(y))<SY*.25&&(up||y>S)){ lgo(F,y); return true; }
+        if(d>DI&&d<DO)for(const y of [-RZ,S,2*S])if(Math.abs(py-Y(y))<SY*.25&&(up||y>S)){ lgo(F,y); return true; }
         if(dn&&d<0&&d>-1.5&&py>RFY){ lgo(F,AH); return true; } } return false; }
     const [x,z]=lpt(LAD.F,1.3); if(Math.hypot(pos.x-x,pos.z-z)>1.5*TILE){ LAD.F=null; st.climb=null; return false; }
     const at=LS_.find(y=>Math.abs(LAD.y-y)<4);
     if(at!=null&&off&&!up&&!dn){ loff(at===AH); return false; }
-    if(up){ if(LAD.y>=AH){ loff(1); return false; } LAD.y=Math.min(AH,LAD.y+LV*dt); }
-    else if(dn){ if(LAD.y<=S){ loff(0); return false; } LAD.y=Math.max(S,LAD.y-LV*dt); }
+    if(up){ if(LAD.y>=AH-22){ loff(1); RIG.act(st,'mantle'); return false; } LAD.y=Math.min(AH,LAD.y+LV*dt); }
+    else if(dn){ if(LAD.y<=-RZ){ loff(0); return false; } LAD.y=Math.max(-RZ,LAD.y-LV*dt); }
+    if(st.climb)st.climb.ph=LAD.y;
     else { const n=LS_.reduce((p,q)=>Math.abs(q-LAD.y)<Math.abs(p-LAD.y)?q:p); if(Math.abs(n-LAD.y)<10)LAD.y+=(n-LAD.y)*Math.min(1,dt*8); }
     lpos(LAD.F); return true; };
   APTS.ground=(x,z)=>!window.POSOK?R0:x==null?R0+SY*APTS.floor():gnd(x,z,py);
@@ -244,9 +237,8 @@ await grab('apts',async()=>{ const {X,Z,faceTex,bq,C,facade,FRAME,place}=BOD,
   APTS.tick=()=>{ const ib=APTS.inside(pos.x,pos.z), roof=ib&&window.POSOK&&py>RFY, inside=ib&&!roof, eg=!ib&&LVL==='up'&&EG(pos.x,pos.z)!=null, inn=inside, lv=APTS.floor(), now=performance.now(), dt=Math.min(.1,(now-dl)/1000); dl=now; APTS.in=inn; APTS.esc=eg;
     for(const E of ELS)E.tick(dt);
     for(const D of DL){ const want=inside&&lv===D.lv&&Math.hypot(pos.x-D.at.x,pos.z-D.at.z)<1.6*TILE?1:0; if(want===D.a)continue; D.a=want>D.a?Math.min(1,D.a+dt/.5):Math.max(0,D.a-dt/.7); D.pv.rotation.y=D.sg*1.45*D.a; }
-    for(const D of DROP){ const F=D.F, want=eg||py<R0+SY*.5&&Math.hypot(pos.x-D.foot.x,pos.z-D.foot.z)<3*TILE?1:0; if(want===F.k)continue; F.k=want>F.k?Math.min(1,F.k+dt/.8):Math.max(0,F.k-dt/1.6); D.g.rotation.z=-D.th*(1-F.k); }
     const key=(inside?1:0)+(eg?2:0)+(roof?16:0)+lv*4; if(key!==was){ was=key; HP.constant=inn?R0+SY*lv+SY*.93:1e6; LP.constant=inside&&lv>0?-(R0+SY*lv-.02):1e6; for(const L of LIGHTS)L.light.intensity=inn?L.i:0; return inn||eg?base(lv,eg).concat(SOLS[lv]):roof?SOL.up.concat(RS):SOL[LVL]||SOL.up; } return null; };
   window.HOUSEAT=(dy=0)=>[BOD.X(m),BOD.Z(A.y1+dy)];
-  window.APTSDBG=()=>({in:APTS.in,esc:APTS.esc,floor:APTS.floor(),py,pos:[+pos.x.toFixed(2),+pos.z.toFixed(2)],door:+X(m).toFixed(1),drop:ESC.map(F=>+F.k.toFixed(2)),lad:LAD.F?+LAD.y.toFixed(1):null});
+  window.APTSDBG=()=>({in:APTS.in,esc:APTS.esc,floor:APTS.floor(),py,pos:[+pos.x.toFixed(2),+pos.z.toFixed(2)],door:+X(m).toFixed(1),lad:LAD.F?+LAD.y.toFixed(1):null});
   APTS.rects=lv=>[[A.x0,A.y0,A.x1,A.y1]];
   MODS.apts=APTS; });

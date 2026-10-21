@@ -439,7 +439,7 @@ const grabMove=n=>{ const s=n=='R'?1:-1; return move({keys:[[0,{}],[0.24,{bend:5
 MOVES.grab=grabMove('R'); MOVES.grabL=grabMove('L');
 MOVES.carry=move({hold:0.24,keys:[[0,{}],[0.24,{R:{ua:[104,6],fa:[108,2],fist:1}},'out'],[0.5,{R:{ua:[9,8],fa:[19,8],fist:0}}]]});
 MOVES.mantle=(()=>{ const m=climbOut(); m.deck=false; return m; })();
-function climbPose(st){ const z=st.climb.z,u=st.climb.slide?0.5:0.5-0.5*Math.cos(2*Math.PI*z/28),P=neutral(),Q=neutral();
+function climbPose(st){ const z=st.climb.z,u=st.climb.slide?0.5:0.5-0.5*Math.cos(2*Math.PI*(st.climb.ph??z)/28),P=neutral(),Q=neutral();
   for(const [A,hi,lo] of [[P,'L','R'],[Q,'R','L']]){ A.root=V(0,z+STAND-1,-1.5); A.bend=8*D; A.nod=-18*D;
     A[hi].ua=[168*D,12*D]; A[hi].fa=[176*D,8*D]; A[lo].ua=[118*D,16*D]; A[lo].fa=[158*D,10*D]; A.L.fist=A.R.fist=1;
     A[lo].th=[64*D,8*D]; A[lo].sh=[-14*D,8*D]; A[hi].th=[8*D,6*D]; A[hi].sh=[-4*D,6*D]; A.L.foot=A.R.foot=0; }

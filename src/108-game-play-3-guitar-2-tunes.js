@@ -1,3 +1,5 @@
+// THE GUITAR TUNES: GTBOOK, the guitar's songs as tabs, and the playing of them in time.
+import {GT} from './106-game-play-3-guitar-1-body.js';
 const GTTAB=[
   ['-7-----7-----7-----|-7-----5-----3-----|-3-----2-----0-----|-0-----3-----7-----','---0-----0-----0---|---0-----0-----0---|---0-----0-----0---|---0-----0-----0---',
    '-----0-----0-----0-|-----0-----0-----0-|-----0-----0-----0-|-----0-----0-----0-','','','-0-----------------|-0-----------------|-0-----------------|-0-----------------'],
@@ -75,4 +77,4 @@ function gtSet(i){ const T=GTBOOK[i], c=gtCompile(T); GTSONG=i; GTTUNE=c.tune; G
 const gtNext=i=>{ do i=(i+1)%GTBOOK.length; while(GTBOOK[i].kept); return i; };
 for(const T of GTBOOK)gtCompile(T); gtSet(0);
 const gtPosAt=t=>{ let a=GTPOS[0]; for(const q of GTPOS){ if(q.t-0.15>t)break; a=q; } const i=GTPOS.indexOf(a), pv=i>0?GTPOS[i-1]:a, u=Math.max(0,Math.min(1,(t-(a.t-0.15))/0.13)); return pv.p+(a.p-pv.p)*u*u*(3-2*u); };
-
+export {GTBEAT, GTBOOK, GTDAMP, GTEND, GTEV, GTLH, gtNext, gtPosAt, GTS, gtSet, GTSONG, GTSTRUM, GTTUNE};

@@ -1,9 +1,24 @@
 // THE FRAME: the main loop (frame): movement, collision, water, sun shade, lamps, rooms, culling, then the render.
+import {SHARED, THREE} from './003-shx.js';
+import {AMB, BOAT, BROOK, BWK, CITY, CLOCK, CULL, DRESS, DRM, ED, FAR3, FEEL, FIGFX, INTERIORS, keys, LINES, LITE, LOOK, MUS, NPCS, PARK, PB, PERFX, PH, PNM, pos, RAG, ROOMS, SFX, SGM, st, STAGE, UI, VIT, W3, WHERE, WIELD, wvV, ZONES} from './003b-systems.js';
+import {art, EffectComposer, frustum, OCAM, OutputPass, PPU, pxS, renderer, RenderPass, RES, resize, RESMAX, RH, rppu, RW, scene, SCL, ShaderPass, statEl, V0, vpu, ZMAX} from './004-main.js';
+import {applyTime, ASTEP, BF, C2, cutWalls, lamps, MODS, nightTo, SEEN, shopGroups, STORE, SYS, TILE, ZU} from './006-map-pre.js';
+import {FLAME} from './007-fire.js';
+import {BATCH, PEEK} from './008-batch.js';
+import {WATER} from './009-down.js';
+import {FOUNT} from './060a-fount.js';
+import {MAPLV} from './064-map-post.js';
+import {RINGX} from './065-ring.js';
+import {RIVER} from './066-river.js';
+import {AX, AY, cloud, PICH, PW, uimg, you} from './071-main-11.js';
+import {OUTL} from './072-walker3d.js';
+import {loose, looseDraw, P, PHH, PHYOU, phyStep, phyYouNow, ragBlend, ragPose, ragStart, ragStep, ragStrikes, setPhys, STATIC, TL, view0} from './073-main-12.js';
+import {FLOATS} from './074-floats.js';
 
 looseDraw();
 let looseAcc=0, J0=null, J0t=0; SHARED.trip=false; const SUNG={t:0,lit:0,k:0,rc:new THREE.Raycaster(),o:new THREE.Vector3(),hit:[]};
 
-const keys=new Set(), PAD={mv:null,n:0}; SHARED.target=null;
+const PAD={mv:null,n:0}; SHARED.target=null;
 const VIEW0={yaw:Math.PI/4,pitch:Math.PI/6,ppu:PPU}; SHARED.yaw=VIEW0.yaw; SHARED.pitch=VIEW0.pitch; SHARED.yawTo=SHARED.yaw; SHARED.pitchTo=SHARED.pitch; SHARED.ppuTo=SHARED.ppu;
 const PMIN=0.17, PMAX=Math.PI/2-0.002, clampP=v=>Math.max(PMIN,Math.min(PMAX,v));
 renderer.domElement.addEventListener('contextmenu',e=>e.preventDefault());
@@ -22,7 +37,7 @@ addEventListener('blur',()=>{ keys.clear(); st.runTarget=0; FEEL.IN.press=0; });
 const ray=new THREE.Raycaster(), gplane=new THREE.Plane(new THREE.Vector3(0,1,0),0), hit=new THREE.Vector3();
 const marker=new THREE.Mesh(new THREE.PlaneGeometry(0.5,0.5).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({color:0xf2c14e,transparent:true,opacity:0.8})); marker.visible=false; scene.add(marker);
 
-function collide(p){ if(typeof NPCS!=='undefined'&&!VIT.dead)for(const N of NPCS)if(N.lv===SHARED.LVL&&!N.far)N.push(p); const r=0.36; p.x=Math.max(SHARED.BOUND.x0,Math.min(SHARED.BOUND.x1,p.x)); p.z=Math.max(SHARED.BOUND.z0,Math.min(SHARED.BOUND.z1,p.z));
+function collide(p){ if(!VIT.dead)for(const N of NPCS)if(N.lv===SHARED.LVL&&!N.far)N.push(p); const r=0.36; p.x=Math.max(SHARED.BOUND.x0,Math.min(SHARED.BOUND.x1,p.x)); p.z=Math.max(SHARED.BOUND.z0,Math.min(SHARED.BOUND.z1,p.z));
   for(const [x0,z0,x1,z1] of SHARED.solids){ const cx=Math.max(x0,Math.min(x1,p.x)), cz=Math.max(z0,Math.min(z1,p.z)), dx=p.x-cx, dz=p.z-cz, d2=dx*dx+dz*dz;
     if(d2>=r*r)continue; if(d2>1e-8){ const d=Math.sqrt(d2); p.x=cx+dx/d*r; p.z=cz+dz/d*r; }
     else { const o=[p.x-x0+r,x1-p.x+r,p.z-z0+r,z1-p.z+r], m=Math.min(...o); if(m===o[0])p.x=x0-r; else if(m===o[1])p.x=x1+r; else if(m===o[2])p.z=z0-r; else p.z=z1+r; } } }
@@ -53,7 +68,7 @@ function frame(now){ requestAnimationFrame(frame); if(PARK.hold)return; renderer
     else{
     if(window.WIELD)WIELD.pre(dt);
     if(ml>0&&!(busy&&busy.def.below!=null)){ const tk=busy?.5:1; let dh=Math.atan2(mx,mz)-SHARED.heading; dh=Math.atan2(Math.sin(dh),Math.cos(dh)); const turn=3*Math.PI*dt*tk; const dd=Math.max(-turn,Math.min(turn,dh*(1-Math.exp(-dt*12*tk)))); SHARED.heading+=dd; st.yr=dd/Math.max(dt,1e-3); } else st.yr=0;
-    if(window.BOAT&&BOAT.on){ BOAT.carry(st,pos); SHARED.heading=BOAT.hd; } else if(!RIVER.feed(st,pos,dt,ml>0,keys)&&!(FOUNT.feed&&FOUNT.feed(st,pos,dt,ml>0,keys))&&!(SHARED.BOD.GD&&SHARED.BOD.GD.feed&&SHARED.BOD.GD.feed(st,pos,dt,ml>0,keys)))WATER.feed(st,pos,dt,ml>0,keys); st.target=ml>0?1:0; const before=st.dist; RIG.step(st,dt); const go=(st.dist-before)*W3.SZ/PPU*(VIT.dead&&NPCS.some(N=>N.lv===SHARED.LVL&&!N.far&&N.mode!=='hidden'&&N.blocks(pos.x,pos.z,.3*TILE))?.75:1); if(typeof SFX!=='undefined')SFX.steps(st,go);
+    if(window.BOAT&&BOAT.on){ BOAT.carry(st,pos); SHARED.heading=BOAT.hd; } else if(!RIVER.feed(st,pos,dt,ml>0,keys)&&!(FOUNT.feed&&FOUNT.feed(st,pos,dt,ml>0,keys))&&!(SHARED.BOD.GD&&SHARED.BOD.GD.feed&&SHARED.BOD.GD.feed(st,pos,dt,ml>0,keys)))WATER.feed(st,pos,dt,ml>0,keys); st.target=ml>0?1:0; const before=st.dist; RIG.step(st,dt); const go=(st.dist-before)*W3.SZ/PPU*(VIT.dead&&NPCS.some(N=>N.lv===SHARED.LVL&&!N.far&&N.mode!=='hidden'&&N.blocks(pos.x,pos.z,.3*TILE))?.75:1); SFX.steps(st,go);
     if(go){ const ox=pos.x,oz=pos.z; pos.x+=Math.sin(SHARED.heading)*go; pos.z+=Math.cos(SHARED.heading)*go; if(UI.fly)UI.flyStep(0); else collide(pos); if(st.water&&st.water.in&&RIVER.swim)RIVER.clamp(pos);
     if(SHARED.target&&Math.hypot(pos.x-ox,pos.z-oz)<go*0.2)SHARED.target=null; }
     if(UI.fly)UI.flyStep(dt); else if(window.BOAT&&BOAT.on)SHARED.py=BOAT.py; else { let g=SHARED.groundY(pos.x,pos.z); if(st.fk)for(const n of 'LR'){ const f=st.fk[n]; if(f&&f.on&&Math.hypot(f.x-pos.x,f.z-pos.z)<1)g=Math.min(g,f.y); } SHARED.py+=(g-SHARED.py)*Math.min(1,dt*20); } }
@@ -65,14 +80,14 @@ function frame(now){ requestAnimationFrame(frame); if(PARK.hold)return; renderer
   W3.place(B,pos.x,SHARED.py,pos.z,RAG.on?RAG.hd:SHARED.heading,hdA,ZU); if(window.WIELD)WIELD.post(B); FEEL.ui(dt); PB.step(dt,B,pos.x,SHARED.py,pos.z,RAG.on?RAG.hd:SHARED.heading,SHARED.groundY(pos.x,pos.z),RAG.on); if(ED.on)ED.tick();
   phyYouNow(dt); looseAcc+=dt; let nst=0; while(looseAcc>=PHH&&nst<6){ looseAcc-=PHH; nst++; phyStep(loose,STATIC,PHH,null,null); } if(nst>=6)looseAcc=0; looseDraw();
 
-  if(typeof UI!=='undefined'&&UI.freeCam)LITE.tick(dt,UI.camT.x,UI.camT.y,UI.camT.z); else LITE.tick(dt,pos.x,SHARED.py+1.2*TILE,pos.z);
+  if(UI.freeCam)LITE.tick(dt,UI.camT.x,UI.camT.y,UI.camT.z); else LITE.tick(dt,pos.x,SHARED.py+1.2*TILE,pos.z);
   let lampW=0; for(const L of lamps){ if(!L.visible||!(L.intensity>0)||!L.parent)continue; const d=Math.hypot(L.position.x-pos.x,L.position.z-pos.z); if(d<6)lampW=Math.max(lampW,(1-d/6)*Math.min(1,L.intensity/(L.userData.i0||L.intensity))); }
   { const G=SUNG, sun=CLOCK.sun, out=SHARED.LVL==='up'&&!ROOMS.cur&&sun&&sun.intensity>.6&&CLOCK.dir&&CLOCK.dir.y>.05; if((G.t-=dt)<=0){ G.t=.15; G.lit=0; if(out){ G.rc.set(G.o.set(pos.x,SHARED.py+1.1*TILE,pos.z),CLOCK.dir); G.rc.camera=SHARED.cam; G.rc.far=40*TILE; G.hit.length=0; let blk=false;
       for(const h of G.rc.intersectObjects(scene.children,true,G.hit)){ const o=h.object, m=Array.isArray(o.material)?o.material[0]:o.material; let v=true; for(let q=o;q;q=q.parent)if(!q.visible||q===W3.group){ v=false; break; } if(!v||o.isSprite||!m||m.transparent||m.depthWrite===false||o.isPoints||o.isSprite||o.isLine)continue; blk=true; break; }
       G.lit=blk?0:Math.min(1,(sun.intensity-.6)/1.4); } } G.k+=(G.lit-G.k)*Math.min(1,dt*4); }
   W3.tint.setRGB(.58,.6,.66).lerp(C2.setRGB(1,1,1),Math.max(Math.max(0,lampW)*(ROOMS.cur?0.35:0.7),SUNG.k*.9)); if(ED.on)W3.tint.setRGB(1,1,1);
   DRESS.tick(dt,pos); SYS.run('dress',dt,pos); RINGX.tick(dt); SYS.run('ring',dt); RIVER.tick(dt,pos); FOUNT.tick&&FOUNT.tick(dt,pos); RIVER.hud(); if(window.BROOK&&BROOK.tick)BROOK.tick(dt,pos); { const r=MODS.apts.tick(); if(r)SHARED.solids=r; } { const r2=STORE.stackTick&&STORE.stackTick(); if(r2)SHARED.solids=r2; } CITY.tick(dt,pos); SYS.run('city',dt,pos); NPCS.tick(dt,pos); if(SHARED.FIRE)SHARED.FIRE.tick(dt); FIGFX.tick(dt,pos); FLAME.tick(dt,pos); MUS.tick(dt); BWK.tick(dt); PNM.tick(dt); SGM.tick(dt); DRM.tick(dt); STAGE.tick(dt);
-  UI.goTick(); UI.runTick(); SHARED.BODB.gtick(dt); SYS.run('clockPre',dt); CLOCK.tick(dt); SYS.run('world',dt); SYS.run('vitalsPre',dt); VIT.tick(dt); SYS.run('vitals',dt); LOOK.tick(); WHERE.tick(dt); AMB.tick(dt); LINES.tick(dt);
+  UI.goTick(); UI.runTick(); BATCH.tick(dt); SYS.run('clockPre',dt); CLOCK.tick(dt); SYS.run('sky',dt); SYS.run('life',dt); SYS.run('places',dt); SYS.run('vitalsPre',dt); VIT.tick(dt); SYS.run('vitals',dt); LOOK.tick(); WHERE.tick(dt); AMB.tick(dt); LINES.tick(dt);
   marker.visible=!!SHARED.target; if(SHARED.target){ marker.position.set(SHARED.target.x,SHARED.groundY(SHARED.target.x,SHARED.target.z)+0.03,SHARED.target.z); marker.material.opacity=0.5+0.4*Math.sin(t*8); }
   for(const sg of shopGroups)sg.scale.y+=(cut-sg.scale.y)*Math.min(1,dt*8);
   if(SHARED.night!==nightTo){ SHARED.night+=(nightTo-SHARED.night)*Math.min(1,dt*2.5); if(Math.abs(nightTo-SHARED.night)<0.002)SHARED.night=nightTo; applyTime(SHARED.night); }
@@ -89,3 +104,4 @@ SHARED.composer.addPass(new OutputPass());
 { const SH={on:true,lv:2}, el=document.getElementById('shd'), draw=()=>{ W3.lv.value=SH.on?(SH.lv>=2?2:1):0; el.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.s?String(SH.on):String(SH.on&&SH.lv===+b.dataset.l))); el.querySelector('[data-s]').textContent=SH.on?'ON':'OFF'; };
   el.querySelectorAll('button').forEach(b=>b.onclick=()=>{ if(b.dataset.s)SH.on=!SH.on; else{ SH.lv=+b.dataset.l; SH.on=true; } b.blur(); draw(); }); draw(); }
 const SKEL=__LAZY__("data/skel.json");
+export {clampP, collide, disp, frame, gplane, hit, marker, PAD, PMAX, PMIN, ray, SKEL, VIEW0};

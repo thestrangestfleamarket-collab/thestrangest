@@ -1,3 +1,8 @@
+// THE PIANO HANDS: PK sets out the keyboard; pnPose and pnFing put the pianist's hands on the keys.
+import {gtArm, gtMix, gtReach, gtSm} from './109-game-play-3-guitar-3-hands.js';
+import {castPose, POSES} from './112-main-14.js';
+import {PNA} from './114-game-play-5-piano-1-sound.js';
+import {pnBlack, PNBOOK, pnCompile, pnWhite} from './115-game-play-5-piano-2-music.js';
 const PK={W:0.698,Y:21.4,Z:10,LW:4.46,LB:2.8,PIV:9};
 const pkX=m=>(25.5-pnWhite(m))*PK.W;
 const PKEYS=[]; for(let m=21;m<=108;m++)PKEYS.push(m);
@@ -53,3 +58,4 @@ function pnPose(t){ '@later'; const {V,add,mul,sub}=RIG, T={L:pnFingers('L',t),R
 const pnFing=(P,B,T)=>{ for(const n of 'LR'){ const s=n==='L'?1:-1; P[n].fg=[0,1,2,3,4].map(i=>gtReach(RIG.digitBase(B.m.hf[n],s,i),i,T[n][i+1])); } };
 function pnKeys(t){ const pr=Object.assign({},PNKF); for(const n of PNS.c.notes){ if(n.t0-0.05>t)break; if(n.t1+0.06<t)continue; const u=pkDown(n,t); if(u>0)pr['pk'+n.m]=pkFrame(n.m,u); } pr.bench=pr.benchTop=PKBENCH; return pr; }
 window.__piano={PNS,PNBOOK,PNA,set:pnSet,compile:pnCompile,pose:pnPose,keys:pnKeys,x:pkX};
+export {PK, PKBENCH, pnFing, pnKeys, PNKF, PNPIECES, pnPose, PNS, pnSet};

@@ -1,4 +1,10 @@
-const BOOKS={}; window.BOOKS=BOOKS;
+// THE BOOKS: BOOKS, the old books the player finds, mends and sells.
+import {SHARED, THREE} from './003-shx.js';
+import {BOOKS, CITY, DRESS, FORAGE, INV, MAIL, SFX, UI} from './003b-systems.js';
+import {scene} from './004-main.js';
+import {SAVE} from './005-save.js';
+import {TILE} from './006-map-pre.js';
+ window.BOOKS=BOOKS;
 { const T=TILE, KEY='books', say=FORAGE.say, use=FORAGE.use;
   const BK=[['paper','TATTERED PAPERBACK','MENDED PAPERBACK',0,2,6,1,{bs_glue:1},[0,45]],['novel','WATER-STAINED NOVEL','RESTORED NOVEL',15,4,14,2,{bs_glue:1,bs_thread:1},[10,55]],
     ['atlas','BROKEN-SPINED ATLAS','RESTORED ATLAS',30,8,30,4,{bs_glue:1,bs_thread:1,bs_cloth:1},[25,70]],['hymnal','LOOSE-LEAFED HYMNAL','REBOUND HYMNAL',40,10,40,5,{bs_thread:2,bs_cloth:1},[35,80]],
@@ -18,7 +24,7 @@ const BOOKS={}; window.BOOKS=BOOKS;
   BOOKS.chest=()=>BOOKS.find([['atlas',3],['ledger',3],['herbal',2],['first',1]],'ALSO IN THE CHEST, WRAPPED IN OILCLOTH');
   for(const [i,c] of ((window.DRESS&&DRESS.cans)||[]).entries()){ const hb=new THREE.Mesh(new THREE.BoxGeometry(.6*T,.9*T,.6*T),new THREE.MeshBasicMaterial({visible:false})), y=typeof SHARED.groundY!=='undefined'?SHARED.groundY(c.x,c.z):0; hb.position.set(c.x,y+.45*T,c.z); scene.add(hb);
     UI.thing({name:'TRASH CAN',pick:true,obj:hb,reach:1*T,near:1.8*T,tall:1*T,act:()=>{ '@later'; const k='c'+i; if(S.cans[k]===day())return say('YOU HAVE BEEN THROUGH THIS ONE TODAY. NOTHING BUT WRAPPERS.','#c8c2b0');
-      S.cans[k]=day(); save(); if(typeof SFX!=='undefined')SFX.play('clunk',{vol:.3}); if(Math.random()<.4)BOOKS.find([['paper',6],['novel',3],['atlas',1],['hymnal',1]],'UNDER THE NEWSPAPERS');
+      S.cans[k]=day(); save(); SFX.play('clunk',{vol:.3}); if(Math.random()<.4)BOOKS.find([['paper',6],['novel',3],['atlas',1],['hymnal',1]],'UNDER THE NEWSPAPERS');
       else say(['NOTHING BUT WRAPPERS AND A BENT FORK.','A SODA CAN, A SHOE, NOTHING YOU WANT.','JUST YESTERDAY\'S PAPERS.'][Math.floor(Math.random()*3)],'#c8c2b0'); }}); }
   const B='style="margin:0 0 0 4px;font:inherit;color:#ece5d3;background:#0e1016;border:2px solid #3a3f4e;padding:2px 7px;cursor:pointer"';
   const row=(a,b,c,d)=>`<tr style="border-bottom:1px solid #22252f"><td style="padding:4px 2px">${a}</td><td style="text-align:right;padding:4px 6px">${b}</td><td style="text-align:right">${c}</td><td style="text-align:right;white-space:nowrap">${d}</td></tr>`;
@@ -37,7 +43,7 @@ const BOOKS={}; window.BOOKS=BOOKS;
     if(d.gem){ P.hidden=true; INV.pick('stall'); return; }
     if(d.buy){ const n=+d.n||1, bk=d.buy.startsWith('bk_'), id=d.buy.slice(3), p=bk?BK.find(x=>x[0]===id)[4]:SUP.find(x=>x[0]===d.buy)[2], c=p*n;
       if(bk&&!(S.stock[id]>0))say('NONE LEFT TODAY.','#c8a090'); else if(INV.cash<c)say('YOU CANNOT AFFORD THAT.','#c8a090'); else { INV.cash-=c; FORAGE.give(d.buy,n); if(bk){ S.stock[id]--; save(); } say(`YOU DROP $${c} IN THE TIN AND TAKE ${n>1?n+' ':''}${NM[d.buy]}.`); } }
-    if(d.sell){ const n=d.n==='all'?FORAGE.has(d.sell):1, v=PR[d.sell]*n; FORAGE.take(d.sell,n); INV.cash+=v; say(`YOU SELL ${n} ${NM[d.sell]} FOR $${v}.`,'#f2c14e'); if(typeof SFX!=='undefined')SFX.play('clunk',{vol:.5}); }
+    if(d.sell){ const n=d.n==='all'?FORAGE.has(d.sell):1, v=PR[d.sell]*n; FORAGE.take(d.sell,n); INV.cash+=v; say(`YOU SELL ${n} ${NM[d.sell]} FOR $${v}.`,'#f2c14e'); SFX.play('clunk',{vol:.5}); }
     INV.add('x',0); delete INV.items.x; draw(); FORAGE.draw(); });
   BOOKS.open=()=>{ P.hidden=false; draw(); };
   for(const th of UI.things)if(th.name==='THE ODDITIES STALL')th.act=BOOKS.open;

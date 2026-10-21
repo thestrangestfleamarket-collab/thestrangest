@@ -1,10 +1,16 @@
+// THE NAV: NAV builds the walking navmesh the town's people find their way on.
+import {SHARED} from './003-shx.js';
+import {CITY, ROOMS} from './003b-systems.js';
+import {MODS, QS, SOL, TILE} from './006-map-pre.js';
+import {FOUNT} from './060a-fount.js';
+import {CSB, CSHOLE, STHOLE} from './076-npc-map.js';
 const NAV=window.NAV={on:QS.get('nav')!=='0', ready:false, lib:null, M:{}, n:{nav:0,a:0,bad:0,ms:0}};
 {
   const T=TILE, CORE='https://cdn.jsdelivr.net/npm/@recast-navigation/core@0.43.1/+esm', GEN='https://cdn.jsdelivr.net/npm/@recast-navigation/generators@0.43.1/+esm';
   const CS=CITY.R0/2, CH=.1*T, BH=2*T;
   const rects=(lv,street)=>{ const R=(SOL[lv]||[]).map(b=>[b[0],b[1],b[2],b[3]]); if(lv!=='up')return R;
-    if(typeof STHOLE!=='undefined')R.push(STHOLE.slice(0,4)); if(FOUNT.S)R.push(...FOUNT.S.strips); if(!street)return R;
-    if(typeof CSHOLE!=='undefined')R.push(CSHOLE.slice(0,4)); if(typeof CSB!=='undefined')R.push(CSB.slice(0,4));
+    R.push(STHOLE.slice(0,4)); if(FOUNT.S)R.push(...FOUNT.S.strips); if(!street)return R;
+    R.push(CSHOLE.slice(0,4)); R.push(CSB.slice(0,4));
     for(const b of ROOMS.boxes())if(b.y0<1)R.push([b.x0,b.z0,b.x1,b.z1]);
     if(MODS.apts&&MODS.apts.A){ const A=MODS.apts.A; R.push([SHARED.BOD.X(A.x0),SHARED.BOD.Z(A.y0),SHARED.BOD.X(A.x1),SHARED.BOD.Z(A.y1)]); }
     return R; };
@@ -45,3 +51,4 @@ onmessage=async e=>{ const {id,R,B,cfg,bh}=e.data, P=[], I=[]; try{ await ok; }c
   const ASTAR=CITY.route; CITY.route=(lv,a,b,free,own)=>{ if(!own&&NAV.on){ const r=NAV.route(lv,a,b,free); if(r){ CITY.ms=NAV.n.ms/NAV.n.nav; return r; } } NAV.n.a++; return ASTAR(lv,a,b,free); };
   NAV.stats=()=>({ready:NAV.ready,meshes:Object.fromEntries(Object.entries(NAV.M).map(([k,m])=>[k,{ms:m.ms,tris:m.tris,kb:m.bytes&&Math.round(m.bytes/1024),busy:!!m.busy,failed:!!m.failed}])),routes:{nav:NAV.n.nav,astar:NAV.n.a,failedCheck:NAV.n.bad,navAvgMs:NAV.n.nav?+(NAV.n.ms/NAV.n.nav).toFixed(2):null}});
 }
+export {NAV};

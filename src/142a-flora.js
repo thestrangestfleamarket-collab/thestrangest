@@ -1,3 +1,10 @@
+// THE FLORA: FLORA plants the bushes and flower beds in the park and on the street.
+import {SHARED, THREE} from './003-shx.js';
+import {DRESS, PARK, WEEDS} from './003b-systems.js';
+import {CASTLE, FIX, MAPG, SOL, STORE, TILE} from './006-map-pre.js';
+import {GCAVE} from './060-cave.js';
+import {FOUNT} from './060a-fount.js';
+import {STALL} from './081-stalls.js';
 const FLORA={bushes:[],beds:[],tris:0,n:{}}; window.FLORA=FLORA;
 { const T=TILE, WU=T/.84, V3=THREE.Vector3, VB=1.25, VF=1.4;
   const hsh=(a,b,s)=>{ let h=(Math.floor(a*97)*374761393+Math.floor(b*89)*668265263+s*1442695041)|0; h=(h^(h>>>13))*1274126177|0; return ((h^(h>>>16))>>>0)/4294967296; };
@@ -43,7 +50,7 @@ const FLORA={bushes:[],beds:[],tris:0,n:{}}; window.FLORA=FLORA;
     const KEEP=[[cx+12.5-6.5,cy+11.5-6.5,cx+12.5+6.5,cy+11.5+6.5],[CASTLE.b[0]-P.ox-2,CASTLE.b[2]-P.oy-2,CASTLE.b[1]-P.ox+2,CASTLE.b[3]-P.oy+2],...(P.campAt?[(c=>[c.x-4,c.y-4,c.x+4,c.y+4])(P.campAt())]:[]),...(typeof GCAVE!=='undefined'?GCAVE.keep(P):[])];
     const GT=[[(P.gate[0]+P.gate[1])/2,P.y0],...(P.egate?[[P.x1,(P.egate[0]+P.egate[1])/2]]:[]),...(P.wgate?[[P.x0,(P.wgate[0]+P.wgate[1])/2]]:[]),...(P.ngate?[[(P.ngate[0]+P.ngate[1])/2,P.y1]]:[])];
     const xa=Math.min(X(P.x0),X(P.x1))-T, xb=Math.max(X(P.x0),X(P.x1))+T, za=Math.min(Z(P.y0),Z(P.y1))-T, zb=Math.max(Z(P.y0),Z(P.y1))+T;
-    const SB=SOL.up.filter(b=>b[2]>xa&&b[0]<xb&&b[3]>za&&b[1]<zb), RB=(STORE.rooms||[]).filter(R=>R.walls&&R.x0!=null&&!(R.y0>=1)), SZ=typeof STALL!=='undefined'&&STALL.zones||[];
+    const SB=SOL.up.filter(b=>b[2]>xa&&b[0]<xb&&b[3]>za&&b[1]<zb), RB=(STORE.rooms||[]).filter(R=>R.walls&&R.x0!=null&&!(R.y0>=1)), SZ=STALL.zones||[];
     const GP=WEEDS.gold&&WEEDS.gold()||[];
     const ok=(x,y,r,bush)=>{ if(GP.some(g=>Math.hypot(g.x-x,g.y-y)<g.r*1.4+r)||x<P.x0+2.2+r||x>P.x1-2.2-r||y<P.y0+2.8+r||y>P.y1-2.4-r||pd(x,y)<r+(bush?1.4:.45)||BK.wet(x,y,r+.7)||F.lake(x,y)<r+1.2||F.ter(x,y)<r+.5)return false;
       if(KEEP.some(b=>x>b[0]-r&&x<b[2]+r&&y>b[1]-r&&y<b[3]+r)||GT.some(([gx,gy])=>Math.hypot(x-gx,y-gy)<(bush?6:3.5)))return false;
@@ -98,3 +105,4 @@ const FLORA={bushes:[],beds:[],tris:0,n:{}}; window.FLORA=FLORA;
   FLORA.near=(x,z,R,what)=>(what==='bed'?FLORA.beds:FLORA.bushes).filter(o=>Math.hypot(o.x-x,o.z-z)<R);
   FLORA.cover=(bx,bz,px,pz,R=8*T)=>{ let best=null, bd=1e9; for(const b of FLORA.bushes){ const d=Math.hypot(b.x-bx,b.z-bz); if(d>R)continue; const dp=Math.hypot(b.x-px,b.z-pz); if(dp<2.2*T||dp<Math.hypot(bx-px,bz-pz)*.7)continue; const s=d-dp*.3; if(s<bd){ bd=s; best=b; } } return best; };
   window.FLORADBG=()=>({bushes:FLORA.bushes.length,flowers:FLORA.flowers,beds:FLORA.beds.length,tris:FLORA.tris,n:FLORA.n,K:FLORA.K}); }
+export {FLORA};

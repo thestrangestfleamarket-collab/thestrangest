@@ -1,5 +1,10 @@
 // THE GAME EDITOR (Shift+Escape only; its own file, fetched then): the MAP EDITOR and the CHARACTER EDITOR on a flat top-down mockup: layers, look around, pick, move, turn, size, copy, delete, undo, a 360 view in a black void; export and import as files, never the game.
-const MAPED={on:false,open:false,dragging:false,down:()=>false,move:()=>{},up:()=>{}};
+import {SHARED, THREE} from './003-shx.js';
+import {BLK, GAMEED, keys, MAPED, NPCS, PARK, pos, W3} from './003b-systems.js';
+import {renderer} from './004-main.js';
+import {BLDK, BLOCK, CASTLE, FADE, LEVEL, MAPSTAIR, MODS, PARKCAVE, PARKTOWER, RING, STORE, TILE, WROW} from './006-map-pre.js';
+import {FOUNT} from './060a-fount.js';
+Object.assign(MAPED,{on:false,open:false,dragging:false,down:()=>false,move:()=>{},up:()=>{}});
 { const BOX={bodega:()=>{ const B=SHARED.BOD.B0; return [SHARED.BOD.X(B.x0),SHARED.BOD.Z(B.y0),SHARED.BOD.X(B.x1),SHARED.BOD.Z(B.y1)]; },
     house:()=>{ const A=MODS.apts&&MODS.apts.A; return A?[SHARED.BOD.X(A.x0),SHARED.BOD.Z(A.y0),SHARED.BOD.X(A.x1),SHARED.BOD.Z(A.y1)]:null; },
     ghost:()=>{ const g=SHARED.BOD.grounds.find(g=>g.id==='ghostst'); return g?[SHARED.BOD.X(g.x0),SHARED.BOD.Z(g.y0),SHARED.BOD.X(g.x1),SHARED.BOD.Z(g.y1)]:null; },
@@ -8,7 +13,7 @@ const MAPED={on:false,open:false,dragging:false,down:()=>false,move:()=>{},up:()
     castle:()=>{ const b=CASTLE.b; return [SHARED.BOD.XS(b[0]),SHARED.BOD.ZS(b[2]),SHARED.BOD.XS(b[1]),SHARED.BOD.ZS(b[3])]; },
     subway:()=>{ const S=MAPSTAIR; return [SHARED.BOD.XS(S.x0),SHARED.BOD.ZS(S.y0),SHARED.BOD.XS(S.x1),SHARED.BOD.ZS(S.y1)]; }};
   MAPED.box=k=>BOX[k]?BOX[k]():null; }
-const GAMEED={open:false,built:false};
+Object.assign(GAMEED,{open:false,built:false});
 GAMEED.build=()=>{ '@editor'; const T=TILE;
 
   const css=(el,o)=>Object.assign(el.style,o), BTN={font:'10px Silkscreen,monospace',padding:'4px 7px',color:'#ece5d3',background:'#0e1016',border:'2px solid #3a3f4e',cursor:'pointer'};
@@ -289,7 +294,7 @@ GAMEED.build=()=>{ '@editor'; const T=TILE;
     const d={arrowleft:[-1,0],arrowright:[1,0],arrowup:[0,1],arrowdown:[0,-1]}[k]; if(d){ e.preventDefault(); nudge(d[0]*(e.shiftKey?1:.25),d[1]*(e.shiftKey?1:.25)); } },true);
   addEventListener('keyup',e=>{ if(MAPED.open&&!(e.target&&/INPUT|TEXTAREA|SELECT/.test(e.target.tagName)))e.stopImmediatePropagation(); },true);
   addEventListener('resize',()=>{ if(MAPED.open){ size(); draw(); } });
-  GAMEED.show=on=>{ MAPED.open=GAMEED.open=on; R.style.display=on?'block':'none'; if(!on){ if(VIEW.on)VIEW.close(); return; } if(typeof keys!=='undefined'&&keys.clear)keys.clear();
+  GAMEED.show=on=>{ MAPED.open=GAMEED.open=on; R.style.display=on?'block':'none'; if(!on){ if(VIEW.on)VIEW.close(); return; } if(keys.clear)keys.clear();
     size(); if(!TER)terrain(); if(!GAMEED.inited){ GAMEED.inited=true; setMode(MODE,true); } fit(); panel(); draw(); };
   window.MAPED=MAPED; };
 GAMEED.toggle=async()=>{ if(GAMEED.busy)return; if(GAMEED.built){ GAMEED.show(!GAMEED.open); return; } GAMEED.busy=true;

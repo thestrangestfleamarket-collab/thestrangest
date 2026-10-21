@@ -1,4 +1,12 @@
+// THE SKELETONS: SKELGO makes the dungeon's skeletons, their walking and fighting; DRAGON holds the dragon's model.
+import {SHARED, THREE} from './003-shx.js';
+import {SKIN} from './003a-skin.js';
+import {CLOCK, LINES, NPCS, pos, VIT} from './003b-systems.js';
+import {MAPG, MAPSTAIR, MODS, QS, SOL, TILE} from './006-map-pre.js';
+import {collide, SKEL} from './075-main-13.js';
+import {DUN, makeNPC, stfree} from './076-npc-map.js';
 const SKELGO=()=>SKELGO.p||(SKELGO.p=LOAD('dungeon').then(async()=>{ '@dungeon'; const S=await SKEL();
+MODS.skel=SKELGO;
   const BN=S.rig.names.map(n=>n.replace(/\./g,'_')), JI=Object.fromEntries(BN.map((n,i)=>[n,i]));
   const geomOf=(M,rigged)=>SKIN.geom(M,rigged), rigOf=()=>SKIN.rig(S.rig,BN), CLIPS=SKIN.clips(S.clips,BN,false,n=>n.replace(/\./g,'_'));
   const LANE={x0:SHARED.BOD.XS(52),x1:SHARED.BOD.XS(106),z0:SHARED.BOD.ZS(-76.3),z1:SHARED.BOD.ZS(SHARED.BOD.FAR+2.8)}, HOLE=[SHARED.BOD.XS(MAPSTAIR.x0-.6),SHARED.BOD.ZS(MAPSTAIR.y0),SHARED.BOD.XS(MAPSTAIR.x1+.6),SHARED.BOD.ZS(MAPSTAIR.y1+.6)],
@@ -56,7 +64,7 @@ const SKELGO=()=>SKELGO.p||(SKELGO.p=LOAD('dungeon').then(async()=>{ '@dungeon';
           else{ st.to=null; st.face={x:t.st.x,z:t.st.z}; const off=Math.abs(((Math.atan2(t.st.x-st.x,t.st.z-st.z)-st.h+Math.PI*3)%(Math.PI*2))-Math.PI);
             if(G.cool<=0&&off<.35){ G.cool=1.4+Math.random()*.6; N.an.play(style.hit,{at:[style.at,()=>{ if(style.bolt)shoot(N,t,style.bolt,style.dmg); else if(d2(t.st,st)<R*1.5)t.knock(N,style.dmg); }]}); } }
           return; }
-        if(G.mode==='fight'){ G.mode='cheer'; st.to=null; st.face=null; if(typeof LINES!=='undefined')LINES.say(N,'cheer'); N.an.play('Cheer',{then:()=>{ G.mode='patrol'; st.hold=false; st.wait=.5; N.alert=false; }}); return; }
+        if(G.mode==='fight'){ G.mode='cheer'; st.to=null; st.face=null; LINES.say(N,'cheer'); N.an.play('Cheer',{then:()=>{ G.mode='patrol'; st.hold=false; st.wait=.5; N.alert=false; }}); return; }
         if(G.mode==='cheer')return;
         N.alert=!st.to; if(st.to)st.h0=null; else{ if(st.h0==null)st.h0=st.h; const a=st.h0+Math.sin(G.look*.7)*1.1; st.face={x:st.x+Math.sin(a),z:st.z+Math.cos(a)}; } }});
     GUARDS.push(N); N.guard=G; }
@@ -75,7 +83,7 @@ const SKELGO=()=>SKELGO.p||(SKELGO.p=LOAD('dungeon').then(async()=>{ '@dungeon';
         const d=d2(st,you); N.mode=d<.9*TILE?'fight':'come';
         if(N.mode==='come'){ const k=(d-.5*TILE)/d; st.to={x:st.x+(you.x-st.x)*k,z:st.z+(you.z-st.z)*k}; st.v=d>4*TILE&&!N.tired?RUN*.85:st.v0||(st.v0=st.v); st.face=null; }
         else{ st.to=null; st.face={x:you.x,z:you.z};
-          if((N.cool=(N.cool||0)-dt)<=0){ N.cool=2.2; if(typeof LINES!=='undefined'&&Math.random()<.5)LINES.say(N,'trouble'); N.an.play('Unarmed_Melee_Attack_Punch_A',{at:[.36,()=>{ VIT.inFight(5); const dx=pos.x-st.x, dz=pos.z-st.z, l=Math.hypot(dx,dz)||1; if(l<1.1*TILE&&onStreet()){ SHOVE.x=dx/l*3.2*TILE; SHOVE.z=dz/l*3.2*TILE; VIT.hurt(.12); } }]}); } } }});
+          if((N.cool=(N.cool||0)-dt)<=0){ N.cool=2.2; if(Math.random()<.5)LINES.say(N,'trouble'); N.an.play('Unarmed_Melee_Attack_Punch_A',{at:[.36,()=>{ VIT.inFight(5); const dx=pos.x-st.x, dz=pos.z-st.z, l=Math.hypot(dx,dz)||1; if(l<1.1*TILE&&onStreet()){ SHOVE.x=dx/l*3.2*TILE; SHOVE.z=dz/l*3.2*TILE; VIT.hurt(.12); } }]}); } } }});
     N.mode='hidden'; N.g.visible=false; N.st.hold=true;
     N.knock=(from,dmg=.5)=>{ if(N.mode!=='come'&&N.mode!=='fight')return; N.hp-=dmg; if(N.hp>0){ N.an.play('Hit_A'); return; }
       N.mode='down'; const st=N.st, dx=st.x-from.st.x, dz=st.z-from.st.z, l=Math.hypot(dx,dz)||1, nx=st.x+dx/l*.35*TILE, nz=st.z+dz/l*.35*TILE;
@@ -90,3 +98,4 @@ window.SKELDBG=()=>NPCS.filter(N=>N.mixer).map(N=>({key:N.key,x:+N.st.x.toFixed(
 if(!MODS.dungeon||QS.get('trouble'))await SKELGO();
 
 const DRAGON=__LAZY__("data/dragon.json");
+export {DRAGON, SKELGO};

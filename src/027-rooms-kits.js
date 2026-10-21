@@ -1,4 +1,9 @@
 // THE ROOMS' KITS: the diner, the bar, the music room, the moon shrine, the page rooms' cottage and the octopus room.
+import {SHARED} from './003-shx.js';
+import {vwV, wvV} from './003b-systems.js';
+import {CAT_DEPTS, CAT_INFO, CATALOG, cvNoise, hash, KIND_OF, LAMPS, LBLD, LIFE, prop, sh, sided, speck, STORY, T, woodCol, zShift} from './014-gamekit.js';
+import {DEEPW, PRESETS, SQLV, STOREK} from './023-west-kits.js';
+import {barKit} from './026z-barkit.js';
 {
 {
 const {FP,H,S,art,F3,txt,pcVn,pcLathe,lit,tone,box,disc,DP,T3,fb,pb,edge,pic,round,BZ,BT,BD,BO,PL,panel,topCol,glassesRow,barStraight,barRound,barCorner,BOTS,leather,sofa,armchair,rug,LEAF,leavesArt,plant,exitSign,blinds,POSTERS,poster,cupboard,up}=barKit(onBar);

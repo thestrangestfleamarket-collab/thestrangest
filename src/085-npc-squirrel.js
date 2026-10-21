@@ -1,3 +1,10 @@
+// THE SQUIRREL: SQUIRREL builds the armoured squirrel knight who keeps the tower.
+import {SHARED} from './003-shx.js';
+import {PARK, st} from './003b-systems.js';
+import {MODS, TILE} from './006-map-pre.js';
+import {GTOWER} from './063-tower.js';
+import {PARTSNPC} from './080-npc-parts.js';
+import {RIGNPC} from './083-npc-rig.js';
 const SQUIRREL={}; window.SQUIRREL=SQUIRREL;
 { const {shape,limb,sph,cyl,box,blob}=PARTSNPC.T, part=(name,rank,bone,of)=>({name,rank,bone,of});
   const FUR=[.52,.41,.32], FUR2=[.62,.5,.38], CREAM=[.88,.82,.7], STEEL=[.55,.59,.66], STEEL2=[.4,.43,.5], DARK=[.08,.08,.1], RED=[.78,.14,.12], LEATH=[.42,.27,.16], GOLD=[.86,.68,.26], BLACK=[0,0,0], PINK=[.42,.26,.26];

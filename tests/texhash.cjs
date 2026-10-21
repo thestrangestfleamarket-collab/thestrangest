@@ -1,7 +1,7 @@
 // THE SAME PIXELS (19-20 Oct 2026, faster painting): node tests/texhash.cjs <base page> <head page>
 // The ground, walls and floors are painted in code at the start. A faster painter must paint exactly the same pixels: this opens both
 // pages (Math.random seeded the same), and once each has started hashes every texture in the scene (ImageData, canvases, data textures),
-// (after STORE.ensure() and the ground's queue painted out, BODB.gnear, so whatever the start builds a piece at a time afterwards is all built in both) and fails unless the two sets
+// (after STORE.ensure() and the painting queues painted out, BATCH.queues (BODB.gnear before 21 Oct), so whatever the start builds a piece at a time afterwards is all built in both) and fails unless the two sets
 // of hashes are identical. The head is opened a second time in the same browser profile, so its ground comes
 // from the paint cache (PAINTC), and that must match too. Prints how many textures and pixels were compared. It also hashes the
 // (a patch is matched by kind, place and height, not by the last part of its key, the hash of its painter's source text: a rename in a
@@ -15,7 +15,7 @@ const run=async(ctx,page,waitSave)=>{ const t0=Date.now(); const pg=await ctx.ne
     Object.defineProperty(window,'PAINTC',{configurable:true,get:()=>P,set:v=>{ P=v; if(!v||v.__w)return; v.__w=1; const g=v.get, p=v.put;
       v.get=(k,w,h,fn)=>{ const im=g(k,w,h,fn); if(im)__PH[k]=fnv(im.data); return im; }; v.put=(k,im)=>{ __PH[k]=fnv(im.data); return p(k,im); }; }}); });
   await pg.goto('file://'+page+'?fresh=1&hour=13&wx=CLEAR',{waitUntil:'commit'}); await pg.waitForFunction(()=>window.__started,null,{polling:200,timeout:900000});
-  await pg.evaluate(()=>{ if(window.STORE&&STORE.ensure)STORE.ensure(); if(window.BODB&&BODB.gnear)BODB.gnear(0,0,Infinity); }); await pg.waitForTimeout(3000);
+  await pg.evaluate(()=>{ if(window.STORE&&STORE.ensure)STORE.ensure(); if(window.BATCH&&BATCH.queues)for(const q of BATCH.queues)q.near(0,0,Infinity); else if(window.BODB&&BODB.gnear)BODB.gnear(0,0,Infinity); }); await pg.waitForTimeout(3000);
   const r=await pg.evaluate(()=>{ const seen=new Set(), out=[]; let px=0; const cv=document.createElement('canvas'), g=cv.getContext('2d',{willReadFrequently:true});
     const fnv=d=>{ let h=2166136261; for(let i=0;i<d.length;i++){ h^=d[i]; h=Math.imul(h,16777619); } return (h>>>0).toString(16); };
     const bytes=im=>{ if(!im)return null; if(im.data&&im.width&&im.height&&!(im instanceof HTMLCanvasElement))return im.data; const w=im.width, h=im.height; if(!w||!h)return null; cv.width=w; cv.height=h; g.clearRect(0,0,w,h); g.drawImage(im,0,0); return g.getImageData(0,0,w,h).data; };

@@ -1,3 +1,9 @@
+// THE FIRE ESCAPE VIEW: the city seen from the apartment's fire escape, built off the map.
+import {SHARED, THREE} from './003-shx.js';
+import {CLOCK, FAR3, pos, SKY, st, UI, USE, W3} from './003b-systems.js';
+import {scene} from './004-main.js';
+import {BLDK, FADE, MISTE, MODS, STORE, SYS, TILE, ZU} from './006-map-pre.js';
+import {BATCH} from './008-batch.js';
 { const APTS=MODS.apts, F=window.FIREV, T=TILE, KK=BLDK, {X,Y,Z}=SHARED.BOD, hs=SHARED.BOD.g.hash, sh=SHARED.BOD.K.sh, bq=SHARED.BOD.bq, {CX,WY,HZ,S}=F, A=APTS.A, RZ=APTS.RZ, U=u=>A.x0+u, V=v=>A.y0+v;
   const ix=x=>x/(T*KK)+SHARED.BOD.OX, iy=z=>z/(T*KK)+SHARED.BOD.OY, cl=v=>Math.max(0,Math.min(1,v)), nk=()=>cl((4-CLOCK.elev())/8);
   const L0=CX-3.6, L1=CX+3.6, DO=1.65, STP={x0:CX-.8,x1:CX+.8,y1:WY+.42,z:14}, LX=CX+2.6, AWX=24.7;
@@ -158,7 +164,7 @@
   F.sit=()=>{ if(!F.on)return; const x=X(CX), z=Z(WY+.5); USE.seat={back:pos.clone(),x,z}; pos.x=x; pos.z=z; SHARED.target=null; SHARED.heading=0; st.sit={z:Math.max(2,Y(STP.z)/(ZU*W3.SZ*(W3.BH||1)))}; };
   const sg0=STORE.stackGround; STORE.stackGround=(x,z)=>{ if(F.built&&onL(x,z)){ const u=ix(x), v=iy(z); return Y(HZ+(u>STP.x0&&u<STP.x1&&v<STP.y1?STP.z:0)); } return sg0?sg0(x,z):null; };
   const into=(u0,v0,u,v)=>Math.abs(u-u0)<.5&&v<v0&&Math.cos(SHARED.heading)<-.6&&lp&&Math.hypot(pos.x-lp.x,pos.z-lp.z)>1e-4;
-  SYS.add('world',(dt)=>{ const on=F.built&&SHARED.LVL==='up'&&onL(pos.x,pos.z);
+  SYS.add('places',(dt)=>{ const on=F.built&&SHARED.LVL==='up'&&onL(pos.x,pos.z);
     if(on!==F.on){ F.on=on; G.visible=on; }
     plaque.visible=!(APTS.in&&iy(pos.z)<V(5.6));
     if(!busy&&!on&&APTS.in&&APTS.floor()===2&&into(U(AWX),V(.55),ix(pos.x),iy(pos.z)))F.out();

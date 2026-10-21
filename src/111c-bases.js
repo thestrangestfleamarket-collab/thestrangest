@@ -1,4 +1,6 @@
 // THE MAN AND THE WOMAN: two low-poly base bodies (data/bases.json, baked by tools/bases-bake.py), skinned to two bones a vertex, for BODIES.
+import {THREE} from './003-shx.js';
+import {BODIES} from './111a-bodies.js';
 { const D=__DATA__("data/bases.json"), BONES=BODIES.BONES, PARENT={torso:'hips',head:'torso',upperArmL:'torso',upperArmR:'torso',forearmL:'upperArmL',forearmR:'upperArmR',handL:'forearmL',handR:'forearmR',thighL:'hips',thighR:'hips',shinL:'thighL',shinR:'thighR',shoeL:'shinL',shoeR:'shinR'};
   const PAL={skin:['#e6c4b0',.05],under:['#434e58',.06]}, V3=THREE.Vector3;
   const hash=i=>{ const h=Math.sin(i*127.1+311.7)*43758.5453; return h-Math.floor(h); };

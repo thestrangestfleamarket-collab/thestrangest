@@ -1,3 +1,7 @@
+// THE DRAINS: DRAINS paints the storm drains along the road.
+import {SHARED, THREE} from './003-shx.js';
+import {scene} from './004-main.js';
+import {TILE} from './006-map-pre.js';
 const DRAINS=window.DRAINS={};
 DRAINS.init=()=>{ const R=typeof SHARED.BOD!=='undefined'&&SHARED.BOD.road; if(!R||!R.DR||!R.DR.length)return;
   const T=TILE, M=T/.84, X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, Y0=SHARED.BOD.YS(SHARED.BOD.RD)-.003, D=1.15*M, hs=(a,b)=>{ const v=Math.sin(a*12.9898+b*78.233)*43758.5453; return v-Math.floor(v); };
@@ -14,3 +18,4 @@ DRAINS.init=()=>{ const R=typeof SHARED.BOD!=='undefined'&&SHARED.BOD.road; if(!
   const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); g.setAttribute('color',new THREE.Float32BufferAttribute(C,3)); g.computeVertexNormals();
   const basin=new THREE.Mesh(g,new THREE.MeshLambertMaterial({vertexColors:true,side:THREE.DoubleSide})); basin.receiveShadow=true; basin.userData.cull=1; scene.add(basin);
   window.DRAINSDBG=()=>({drains:R.DR.length,tris:P.length/9}); };
+export {DRAINS};

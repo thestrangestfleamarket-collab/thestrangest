@@ -1,3 +1,5 @@
+// THE OCTOPUS BODY: octBody builds the drumming octopus, its colours and its arms.
+import {E} from './124-singer.js';
 const OCTP={b:[150,88,196],B:[104,58,142],m:[214,176,236],M:[124,70,166],k:[18,16,22],w:[236,236,250],s:[218,184,124],h:[52,54,62],H:[76,78,88],e:[18,16,22],
   c:[92,58,34],C:[132,86,50],E:[255,120,40],a:[150,146,140],g:[196,212,220],G:[236,244,248],q:[70,130,176],Q:[150,200,228],r:[206,60,40],R:[236,196,64],y:[176,132,80]};
 const OCTSEAT=13;
@@ -33,4 +35,4 @@ function octBody(A){ '@later'; const L=[], D=[], z0=OCTSEAT, nod=A.nod||0;
   D.push([7.4*K,3.1*K,hz+1.9*K,'w'],[7.4*K,-3.8*K,hz+1.9*K,'w']);
   D.push([3.4*K,4.7*K,hz+12*K,'M'],[3.8*K,-2.6*K,hz+15*K,'M'],[2.4*K,.9*K,hz+18*K,'M']);
   return {E:L,D}; }
-window.__octo={paint:(A,H,r=1)=>pupPaint(octBody(A),H,OCTP,r,{S:120}),arms:p=>octArms(p)};
+export {octBody, OCTP, OCTS, OCTSEAT};

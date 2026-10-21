@@ -1,4 +1,13 @@
-const PNM={tick:()=>{}}; STORE.PNM=PNM;
+// THE PIANIST: PNM, the pianist at the bar, in his tuxedo at the piano.
+import {SHARED, THREE} from './003-shx.js';
+import {ONLINE, PNM, pos, SND, W3} from './003b-systems.js';
+import {AWAY, MAPG, STORE} from './006-map-pre.js';
+import {NPCARMS, NPCFING, npcSpring} from './109-game-play-3-guitar-3-hands.js';
+import {figureMesh, musBody, MUSGEO, musScale} from './110-musician.js';
+import {PNA, pnAudio, pnPlay, pnStop} from './114-game-play-5-piano-1-sound.js';
+import {pnBlack, PNBOOK} from './115-game-play-5-piano-2-music.js';
+import {PK, PKBENCH, pnFing, pnKeys, PNKF, PNPIECES, pnPose, PNS, pnSet} from './116-game-play-5-piano-3-hands.js';
+Object.assign(PNM,{tick:()=>{}}); STORE.PNM=PNM;
 if(!AWAY.has('bar')){ const R=RIG;
   const ADD={tux:['#3a3a40','#2c2c31','#1d1d21','#111114'],linen:['#f4f2ea','#e6e3da','#c9c6bc','#8a887f'],tie:['#26262a','#1c1c20','#121214','#0a0a0c'],vest:['#4a4a52','#3a3a42','#28282e','#161619'],
     wood:['#6a4a30','#573a24','#3f2a19','#261810'],cover:['#2e2a2a','#232020','#181616','#0e0d0d'],paper:['#f6f1e2','#e9e3d2','#cfc9b8','#8f8a7c'],hole:['#2a2a2c','#1c1c1e','#111112','#070708'],gold:['#d9b24a','#c49a38','#946f22','#5a4212']};
@@ -25,5 +34,5 @@ PNM.make=()=>{ if(!STORE.bar)return; const R=RIG, V=R.V, S=STORE.bar, AT={x:SHAR
     while(PNS.sent<ns.length&&ns[PNS.sent].t0<=t+0.1){ const n=ns[PNS.sent++]; if(n.t0<t-0.05)continue; pnPlay(n.m,when(n.t0),when(n.off),n.vel); } }
   function pnHush(){ if(PNA.g&&SND.ctx)PNA.g.gain.setTargetAtTime(0,SND.ctx.currentTime,0.2); } };
 
-const IMV={on:false}, ONLINE={others:new Map()}, BARM={on:false}; const IMKITBAR={k:1.1,sp:1.35};
-
+const IMV={on:false}, BARM={on:false}; Object.assign(ONLINE,{others:new Map()}); const IMKITBAR={k:1.1,sp:1.35};
+export {IMKITBAR};

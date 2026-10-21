@@ -1,4 +1,12 @@
-const BWK={}; window.BWK=BWK;
+// THE SECOND WALKER: BWK, a second Walker in its own colours who roams the street.
+import {SHARED, THREE} from './003-shx.js';
+import {BWK, ED, NPCS, pos, W3} from './003b-systems.js';
+import {PPU} from './004-main.js';
+import {SAVE} from './005-save.js';
+import {ASTEP, MAPG, MODS, TILE} from './006-map-pre.js';
+import {ROAM, stfree} from './076-npc-map.js';
+import {figureMesh, MUSGEO, musScale, sheetView, spreadPose} from './110-musician.js';
+ window.BWK=BWK;
 { const R=RIG, V=R.V, QS=new URLSearchParams(location.search), SHEET=QS.get('sheet')==='walker2', MAT=R.MATS;
   const LOOK={shirt:R.RAMP.shirt,skin:R.RAMP.skin,hair:R.RAMP.hair,pants:R.RAMP.pants,shoes:R.RAMP.shoes,sole:['#3e3226','#352a20','#2a2119','#1c1611'],eye:['#2a2220','#241c1a','#1a1414','#0e0a0a']};
   for(const m in LOOK){ const n='bw_'+m; if(!MAT.includes(n)){ MAT.push(n); W3.ramp.push(LOOK[m].map(h=>new THREE.Color(h))); } }
@@ -38,7 +46,7 @@ const BWK={}; window.BWK=BWK;
   const headE=()=>{ const k=F.head; EH.s[0]=EH.s[1]=EH.s[2]=k; EH.o[1]=-(1-k)*10; EH.o[2]=-1.4; };
   const st={x:SHARED.BOD.XS(60),z:SHARED.BOD.ZS(-74),R:.3*TILE,to:null,next:null,wait:2,hd:Math.PI/2}, S=R.create(); BWK.st=st; BWK.at=st; st.y=0;
   const free=(x,z)=>stfree(x,z,st.R), turn=a=>{ let e=a-st.hd; return Math.atan2(Math.sin(e),Math.cos(e)); };
-  if(typeof NPCS!=='undefined'&&NPCS.extra)NPCS.extra.push(BWK);
+  if(NPCS.extra)NPCS.extra.push(BWK);
   if(SHEET){ st.x=SHARED.BOD.XS(100); st.z=SHARED.BOD.ZS((SHARED.BOD.MAP.y0+SHARED.BOD.MAP.y1)/2); st.hd=Math.PI/4; }
   BWK.on=QS.get('bwk')!=null; BWK.tick=dt=>{ if(!BWK.on&&!SHEET){ g.visible=false; return; } const near=Math.hypot(pos.x-st.x,pos.z-st.z)<40;
     if(SHEET){ R.farOnly(false); const B=R.settle(R.build(spreadPose(),null),0); PCS.forEach((pc,i)=>FM.set(i,R.frameOf(pc.on||pc.n,B)));

@@ -1,4 +1,6 @@
 // THE KNIGHT: a faceted plate-armoured knight made in parts, baked once into one body for BODIES (you can be him; one walks main street).
+import {THREE} from './003-shx.js';
+import {BODIES} from './111a-bodies.js';
 { const V3=THREE.Vector3, BONES=BODIES.BONES, HIPY=1.02;
   const PAL={steel:['#7d8187',.1],steelDark:['#4e5156',.08],cloth:['#3d3a37',.08],mail:['#4a4c50',.14],leather:['#4b2f1f',.08],skinFlat:['#c99273',.04],
     brow:['#3b2719',.05],eyeW:['#e6dfd6',0],iris:['#7c8e98',0],pupil:['#0d0b0a',0],bronze:['#8a6a3c',.06],gold:['#d1ad62',.05],nose:['#cf9475',.03],hairA:['#5b3d27',.06],hairB:['#6e4b31',.06],hairC:['#4c3221',.06],hairD:['#7a5638',.06]};

@@ -1,4 +1,11 @@
 // THE BODIES YOU CAN BE: the Walker, or a body moved by his rig (each of its 15 bones takes the turn of the rig piece it stands for); YOU's BODY row; one of each walks main street.
+import {SHARED, THREE} from './003-shx.js';
+import {NPCS, pos, W3} from './003b-systems.js';
+import {PPU} from './004-main.js';
+import {SAVE} from './005-save.js';
+import {ASTEP, MAPG, MODS, SYS, TILE} from './006-map-pre.js';
+import {ROAM, stfree} from './076-npc-map.js';
+import {musScale, sheetView, spreadPose} from './110-musician.js';
 const BODIES={list:[],by:{}}; window.BODIES=BODIES;
 { const R=RIG, QS=new URLSearchParams(location.search), V3=THREE.Vector3;
   const BONES=BODIES.BONES=['hips','torso','head','upperArmL','forearmL','handL','upperArmR','forearmR','handR','thighL','shinL','shoeL','thighR','shinR','shoeR'];
@@ -71,3 +78,4 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
   BODIES.add=body=>{ body.S=WALKER_H/body.height; body.KL=body.hipY*body.S/R.STAND; BODIES.list.push(body); BODIES.by[body.key]=body;
     body.tris=()=>(body.GEO||(body.GEO=body.geo())).attributes.position.count/3; addButton(body.key,body.label); walker(body); };
 }
+export {BODIES};

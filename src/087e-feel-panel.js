@@ -1,3 +1,8 @@
+// THE FEEL PANEL: the panel of sliders that tunes FEEL's movement, animation and camera settings.
+import {SHARED, THREE} from './003-shx.js';
+import {FEEL, pos, UI} from './003b-systems.js';
+import {renderer, scene} from './004-main.js';
+import {QS} from './006-map-pre.js';
 { const MH=FEEL.MH, MV=FEEL.MV;
   const ROWS=[['MOVE',[['walk','WALK m/s',.1],['run','RUN m/s',.1],['accel','ACCELERATION m/s²',1],['brake','BRAKING m/s²',1],['reverse','REVERSAL BRAKING m/s²',1],['grip','TURN GRIP m/s²',1]]],
     ['AIR',[['gravity','GRAVITY m/s²',.5],['jumpH','JUMP HEIGHT m',.05],['fallMax','MAX FALL m/s',.5],['airAccel','AIR CONTROL m/s²',.5],['airBrake','AIR DRAG m/s²',.5],['coyote','COYOTE TIME s',.01],['buffer','JUMP BUFFER s',.01],['variable','SHORT HOP ON RELEASE (0/1)',1],['jumpCut','SHORT HOP KEEPS',.05]]],

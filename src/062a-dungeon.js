@@ -1,3 +1,11 @@
+// THE DUNGEON: the dungeon under the castle, its rooms, stairs, torches and walls (closes its own builder).
+import {SHARED, THREE} from './003-shx.js';
+import {LITE, PH, pos, RAG, UI} from './003b-systems.js';
+import {scene} from './004-main.js';
+import {CASTLE, cutWalls, FADE, FIX, grab, MAPG, MODS, SOL, STN, TILE} from './006-map-pre.js';
+import {FLAME} from './007-fire.js';
+import {BATCH} from './008-batch.js';
+import {castleMat, gboxS} from './062-castle.js';
 await grab('dungeon',async()=>{});
 { const K=SHARED.BOD.KC, KP=SHARED.BOD.K.PROPS, Kc=K.CATALOG, sh=SHARED.BOD.K.sh, X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, Y=SHARED.BOD.YS, {faceTex,bq,C}=SHARED.BOD, P0=K.DGP, D0=K.DGN, dy=STN.DY, T=.1, NL=5, GAP=40, G=MAPG.dungeon;
   const iX=x=>(x-X(0))/TILE, iZ=z=>(z-Z(0))/TILE, lot=n=>({x0:900+(n-1)*GAP,y0:-20,x1:914+(n-1)*GAP,y1:-6.8,h:130});
@@ -58,12 +66,12 @@ await grab('dungeon',async()=>{});
   const go=async(n,how)=>{ if(busy)return; busy=true; await FADE.run(n?(cur||how==='load'&&n>1?'':'ENTERING ')+'DUNGEON — LEVEL '+n:'LEAVING DUNGEON',async()=>{
     if(n){ await LOAD('dungeon'); const L=build(n), a=how==='below'?L.atDn:L.atUp; if(how!=='load'){ UI.goTo(a.x,a.z,'down'); SHARED.heading=a.h; } SHARED.BOUND=bnd(n); }
     else{ clear(); UI.goTo(top.x,top.z,'up'); SHARED.heading=Math.PI; }
-    if(typeof PH!=='undefined')PH.hd=SHARED.heading; },{hold:140}); busy=false; };
-  MODS.dunDoor=(py,p)=>{ if(busy||UI.freeCam||SHARED.METRO.doorBusy()||(typeof RAG!=='undefined'&&RAG.on))return; const m=SHARED.LVL==='down'?lotAt(p.x,p.z):0;
+    PH.hd=SHARED.heading; },{hold:140}); busy=false; };
+  MODS.dunDoor=(py,p)=>{ if(busy||UI.freeCam||SHARED.METRO.doorBusy()||(RAG.on))return; const m=SHARED.LVL==='down'?lotAt(p.x,p.z):0;
     if(!m){ if(cur&&!busy)clear(); if(SHARED.LVL!=='down'){ const gx=p.x/TILE+72, gy=p.z/TILE-77; if(gx>=S.x0&&gx<S.x1&&gy>=S.y0&&gy<S.y1)go(1,'top'); } return; }
     if(m!==cur)return go(m,'load');
     const L=lay(cur), gx=iX(p.x), gy=iZ(p.z); if(tread(L.up,gx,gy))go(cur-1,'below'); else if(tread(L.dn,gx,gy))go(cur+1,'top'); };
   MODS.dungeon={get B(){ return lot(cur||1); },ground,inside:(x,z)=>lotAt(x,z)>0,bound:(x,z)=>bnd(lotAt(x,z)||1),arrive:n=>lay(n).atUp,lay,hook:f=>HK.push(f),tick(){}};
-  window.DUNGEON={get level(){ return cur; },go:n=>go(Math.max(0,Math.min(NL,n|0)),'top'),spawn:async n=>{ if(n&&n!==cur){ await go(n,'top'); } return SKELGO(); },levels:NL};
+  window.DUNGEON={get level(){ return cur; },go:n=>go(Math.max(0,Math.min(NL,n|0)),'top'),spawn:async n=>{ if(n&&n!==cur){ await go(n,'top'); } return MODS.skel(); },levels:NL};
   window.DUNDBG=()=>({level:cur,lv:SHARED.LVL,busy,lot:typeof pos!=='undefined'?lotAt(pos.x,pos.z):0,objs:mine?mine.objs.length:0,lights:mine?mine.lights.length:0,sol:mine?mine.sol.length:0,
-    tris:mine?mine.objs.reduce((a,o)=>{ let t=0; o.traverse(c=>{ if(c.geometry&&c.geometry.attributes.position)t+=(c.geometry.index?c.geometry.index.count:c.geometry.attributes.position.count)/3; }); return a+t; },0):0,skel:!!SKELGO.p}); }
+    tris:mine?mine.objs.reduce((a,o)=>{ let t=0; o.traverse(c=>{ if(c.geometry&&c.geometry.attributes.position)t+=(c.geometry.index?c.geometry.index.count:c.geometry.attributes.position.count)/3; }); return a+t; },0):0,skel:!!(MODS.skel&&MODS.skel.p)}); }

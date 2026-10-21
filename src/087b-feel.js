@@ -1,4 +1,9 @@
-const FEEL={on:false,dbg:false,ready:false,lib:null,S:null,go:0,ev:{jump:0,land:0,imp:0},hs:0};
+// THE FEEL: FEEL tunes how the player moves: speed, grip, jumps, slopes, steps and the follow camera.
+import {SHARED, THREE} from './003-shx.js';
+import {BOAT, ED, FEEL, keys, NPCS, pos, RAG, st, UI, W3} from './003b-systems.js';
+import {SAVE} from './005-save.js';
+import {QS, TILE, ZU} from './006-map-pre.js';
+Object.assign(FEEL,{on:false,dbg:false,ready:false,lib:null,S:null,go:0,ev:{jump:0,land:0,imp:0},hs:0});
 window.FEEL=FEEL;
 { const V=THREE.Vector3, MH=TILE/.84, MV=MH*ZU*24/TILE, H=1/60, D2R=Math.PI/180;
   FEEL.MH=MH; FEEL.MV=MV; FEEL.H=H;
@@ -83,7 +88,7 @@ window.FEEL=FEEL;
     if(S.gnd&&v.y<0)v.y=0;
     if(!S.gnd)S.air+=dt; else { if(!wasG&&S.air>.06){ FEEL.ev.land++; FEEL.ev.imp=Math.max(0,-vy0); } S.air=0; }
     if(col.gf){ const B=SHARED.BOUND; if(B&&B.x1>B.x0){ p.x=Math.max(B.x0/MH,Math.min(B.x1/MH,p.x)); p.z=Math.max(B.z0/MH,Math.min(B.z1/MH,p.z)); }
-      if(typeof NPCS!=='undefined'){ const q={x:p.x*MH,z:p.z*MH}; for(const N of NPCS)if(N.lv===SHARED.LVL&&!N.far)N.push(q); p.x=q.x/MH; p.z=q.z/MH; } }
+      { const q={x:p.x*MH,z:p.z*MH}; for(const N of NPCS)if(N.lv===SHARED.LVL&&!N.far)N.push(q); p.x=q.x/MH; p.z=q.z/MH; } }
     if(p.y<-40){ FEEL.respawn(); return; }
     FEEL.hsRaw=Math.hypot(p.x-ox,p.z-oz)/dt;
     if(fl>.05){ let d=Math.atan2(fx,fz)-S.face; d=Math.atan2(Math.sin(d),Math.cos(d)); const m=c.turn*D2R*dt*(S.gnd?1:c.airTurn); S.face+=Math.max(-m,Math.min(m,d)); S.face=Math.atan2(Math.sin(S.face),Math.cos(S.face)); } };

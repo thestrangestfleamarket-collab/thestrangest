@@ -1,4 +1,8 @@
 // THE MAP, BEFORE THE PLACES: lots and layout (LBLD, LAY), the away list (AWAY), the grab() that groups a place's meshes, shared state (SOL, FIX, MODS).
+import {SHARED, THREE} from './003-shx.js';
+import {ROOMS} from './003b-systems.js';
+import {PPU, scene} from './004-main.js';
+import {SAVE} from './005-save.js';
 const CEL=(()=>{ const q=+new URLSearchParams(location.search).get('cel'); let v=null; try{ v=+SAVE.get('bands'); }catch(e){} const n=q||v||4; return Math.max(3,Math.min(5,n|0)); })();
 const HUE=(()=>{ const q=new URLSearchParams(location.search).get('hue'); return (q!=null?+q:1).toFixed(3); })();
 const SMOOTH=false;
@@ -55,7 +59,7 @@ const ZU=1/(PPU*Math.cos(Math.PI/6)), TILE=33.9/PPU, QS=new URLSearchParams(loca
 const SEEN=(o,show)=>{ if(!SEEN.L){ SEEN.L=1; scene.traverse(c=>{ if(c.isLight&&c.shadow)c.shadow.camera.layers.enable(3); }); }
   if(o.userData.seen===show)return; o.userData.seen=show; o.traverse(c=>{ if(c.isMesh||c.isLine||c.isPoints){ if(show)c.layers.enable(0); else c.layers.disable(0); c.layers.enable(3); } }); };
 const OUT=window.OUT={L:[],open:true,world:true,up:true,add(o,k='open'){ OUT.L.push({o,k}); SEEN(o,OUT[k]); return o; },
-  tick(){ const up=SHARED.LVL!=='down', ins=typeof ROOMS!=='undefined'&&!!ROOMS.cur, open=up&&!ins, world=up&&(FREE||!ins); OUT.up=up; if(open===OUT.open&&world===OUT.world)return;
+  tick(){ const up=SHARED.LVL!=='down', ins=!!ROOMS.cur, open=up&&!ins, world=up&&(FREE||!ins); OUT.up=up; if(open===OUT.open&&world===OUT.world)return;
     OUT.open=open; OUT.world=world; for(const e of OUT.L)SEEN(e.o,OUT[e.k]); }};
 const FREE=QS.get('free')!=='0';
 const SOL={up:[],down:[]}, FIX={up:[],down:[]}, CLIPX=[];
@@ -86,3 +90,4 @@ const PARKGX=WPP.round.x, PARKRY=WPP.round.y, PARKLAKE=[WPP.lake.x,WPP.lake.y,WP
 const SHELLS=LEVEL.shells;
 const CASTLE={b:[46,67,-21,-4],gate:58.5,stair:{x0:61.5,x1:63.5,y0:-19.4,y1:-13.4,steps:12,depth:98,dir:1},hall:{x0:51,y0:-20,x1:65,y1:-6.8,h:130}};
 { const o=LAY.o('castle'), C=CASTLE, S=C.stair, H=C.hall; C.b=[C.b[0]+o.x,C.b[1]+o.x,C.b[2]+o.y,C.b[3]+o.y]; C.gate+=o.x; for(const R of [S,H]){ R.x0+=o.x; R.x1+=o.x; R.y0+=o.y; R.y1+=o.y; } }
+export {applyTime, ASTEP, AWAY, BF, BLDK, BLOCK, C2, CASTLE, CEL, CLIPX, cutWalls, DITH, EASTX, FADE, FIX, FREE, grab, LAMPD, LAMPI, lamps, LAY, LEVEL, LFX, LOTX, MAINROW, MAINX, MAPG, MAPSTAIR, MISTB, MISTB2, MISTE, MISTF, MODS, NEONS, nightTo, NORTHX, NORTHY, OUT, OVERHEAD, PARKCAVE, PARKGX, PARKLAKE, PARKRY, PARKTOWER, PFAR, QS, RING, SEEN, SHELLS, SHL, shopGroups, SMOOTH, SOL, STN, STORE, SYS, TILE, WESTX, WP, WROW, ZU};

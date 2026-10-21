@@ -1,3 +1,10 @@
+// THE LOOSE THINGS: GPH lets the light furniture and goods be pushed, kicked, picked up and carried.
+import {SHARED, THREE} from './003-shx.js';
+import {DRESS, ED, keys, PB, PERFX, pos, st, UI, USE, W3} from './003b-systems.js';
+import {scene} from './004-main.js';
+import {FIX, MODS, QS, SOL, SYS, TILE} from './006-map-pre.js';
+import {OBJS} from './008-batch.js';
+import {BVH} from './137-bvh.js';
 const GPH=window.GPH={ms:0,n:0};
 { const T=TILE, M1=T/.84, RS=12*T, RF=15*T, CARRY=30, G0=0x00040001, GI=0x00010007, GH=0x00010005, GY=0x00020001, DT=1/60;
   const CLS=[[/drinks fridge|shelf|shelves|sink|counter|back bar|fern bush|drone|wall|DJ|stove|meter|planted/i,0],
@@ -90,12 +97,12 @@ const GPH=window.GPH={ms:0,n:0};
   const detach=it=>{ '@later'; const by=new Map(); for(const p of it.parts)(by.get(p.me)||by.set(p.me,[]).get(p.me)).push(p);
     it.dm=[...by].map(([src,L])=>{ const g=src.geometry, G=new THREE.BufferGeometry(), n=L.length*6;
       for(const k in g.attributes){ const A=g.attributes[k], s=A.itemSize, d=new A.array.constructor(n*s); L.forEach((p,j)=>d.set(A.array.subarray(p.v0*s,(p.v0+6)*s),j*6*s)); G.setAttribute(k,new THREE.BufferAttribute(d,s,A.normalized)); }
-      const P=g.attributes.position.array; for(const p of L){ const o=p.v0*3; for(let v=3;v<18;v++)P[o+v]=P[o+v%3]; } g.attributes.position.needsUpdate=true; if(typeof BVH!=='undefined')BVH.refit(g);
+      const P=g.attributes.position.array; for(const p of L){ const o=p.v0*3; for(let v=3;v<18;v++)P[o+v]=P[o+v%3]; } g.attributes.position.needsUpdate=true; BVH.refit(g);
       const me=new THREE.Mesh(G,src.material); me.castShadow=src.castShadow; me.receiveShadow=src.receiveShadow; me.renderOrder=src.renderOrder; me.userData={objOf:L.map(()=>it.o),split:true,chunked:true,loose:it}; src.add(me);
       L.forEach((p,j)=>{ p.me=me; p.v0=j*6; }); const B=G.attributes.position.array.slice(); for(let i=0;i<B.length;i++)B[i]-=it.c[i%3]; return {me,B,N:G.attributes.normal.array.slice()}; });
-    if(typeof PERFX!=='undefined')PERFX.gen++; pickList(); };
+    PERFX.gen++; pickList(); };
   const reshade=()=>{ if(!LIGHTS){ LIGHTS=[]; scene.traverse(L=>{ if(L.isLight&&L.castShadow&&L.shadow)LIGHTS.push(L); }); } for(const L of LIGHTS)if(L.shadow.autoUpdate===false&&Math.hypot(L.position.x-pos.x,L.position.z-pos.z)<RS)L.shadow.needsUpdate=true; };
-  const hand=()=>({x:pos.x+Math.sin(SHARED.heading)*.42*T+Math.cos(SHARED.heading)*-.12*T,y:SHARED.py+1.0*T*(typeof W3!=='undefined'&&W3.SZ?W3.SZ:1),z:pos.z+Math.cos(SHARED.heading)*.42*T-Math.sin(SHARED.heading)*-.12*T});
+  const hand=()=>({x:pos.x+Math.sin(SHARED.heading)*.42*T+Math.cos(SHARED.heading)*-.12*T,y:SHARED.py+1.0*T*(W3.SZ?W3.SZ:1),z:pos.z+Math.cos(SHARED.heading)*.42*T-Math.sin(SHARED.heading)*-.12*T});
   const holdAt=it=>{ const h=hand(), r=Math.max(it.h[0],it.h[2]); return {x:h.x+Math.sin(SHARED.heading)*r,y:Math.max(h.y,SHARED.py+it.h[1]+.05*T),z:h.z+Math.cos(SHARED.heading)*r}; };
   const intent=()=>{ if(USE.seat||ED.on||UI.freeCam)return [0,0]; let mx=0, mz=0; const fx=-Math.sin(SHARED.yaw), fz=-Math.cos(SHARED.yaw), k=s=>keys.has(s);
     if(k('w')||k('arrowup')){ mx+=fx; mz+=fz; } if(k('s')||k('arrowdown')){ mx-=fx; mz-=fz; } if(k('d')||k('arrowright')){ mx-=fz; mz+=fx; } if(k('a')||k('arrowleft')){ mx+=fz; mz-=fx; }
@@ -139,7 +146,7 @@ const GPH=window.GPH={ms:0,n:0};
     const o=new THREE.Object3D(), p=it.rb.translation(), r=Math.max(it.h[0],it.h[2]); o.position.set(p.x,p.y-it.h[1],p.z);
     return {d:h.distance,th:{name:(it.name||'').replace(/^cottage: /,'').toUpperCase(),pick:true,obj:o,reach:.85*T+r,near:1.6*T+r,tall:Math.max(.4*T,it.h[1]*2),act:()=>grab(it)}}; };
   GPH.init=()=>{ if(typeof USE==='undefined'){ setTimeout(GPH.init,500); return; } const p0=USE.pick; USE.pick=ray=>{ const a=p0(ray), b=GPH.pick(ray); return b&&(!a||b.d<=a.d)?b:a; };
-    SYS.add('world',(dt)=>{ GPH.tick(dt); },'150-loose'); };
+    SYS.add('life',(dt)=>{ GPH.tick(dt); },'150-loose'); };
   const nearest=f=>{ let b=null, bd=1e9; for(const it of ready?act:pre){ if(!f(it))continue; const p=at(it), d=Math.hypot(p.x-pos.x,p.z-pos.z); if(d<bd){ bd=d; b=it; } } return b; };
   const rx=s=>s instanceof RegExp?s:new RegExp(s||'.','i');
   window.GOODSGRAB=(n)=>{ const b=nearest(it=>it.m<=CARRY&&(n?rx(n).test(it.name):it.k==='v')); if(!b)return null; grab(b); return b.name; };
@@ -152,3 +159,4 @@ const GPH=window.GPH={ms:0,n:0};
     nearest:n=>{ const it=nearest(q=>rx(n).test(q.name)); return it&&{name:it.name,m:it.m,heavy:it.heavy,awake:it===held||!!it.rb&&!it.rb.isSleeping(),at:(p=>[p.x,p.y,p.z])(at(it)),h:it.h,sols:it.sol.map(([r])=>r.slice()),dm:!!it.dm}; },
     pickAt:(n)=>{ const it=nearest(q=>rx(n).test(q.name)); if(!it)return null; const p=it.rb.translation(), rc=new THREE.Raycaster(); rc.setFromCamera(new THREE.Vector2().copy(new THREE.Vector3(p.x,p.y,p.z).project(SHARED.cam)),SHARED.cam); const r=USE.pick(rc); return r&&r.th.name; }};
 }
+export {GPH};

@@ -1,3 +1,5 @@
+// THE WOMAN: WOMAN builds the woman figure, her hair and her designs.
+import {hash3} from './004-main.js';
 const WOMAN=(()=>{ const {V,add,sub,mul,dot,rcone,ell,rbox}=RIG;
   const slim=(pc,A,B,k)=>Object.assign({},pc,{d:q=>{ const ab=sub(B,A), u=Math.max(0,Math.min(1,dot(sub(q,A),ab)/dot(ab,ab))), c=add(A,mul(ab,u)); return pc.d(add(c,mul(sub(q,c),1/k)))*k; }});
   const kx=y=>y>=30?.86:y>=24?.84+(y-24)/6*.02:y>=19?.84+(24-y)/5*.14:.98;
@@ -58,3 +60,4 @@ const WOMAN=(()=>{ const {V,add,sub,mul,dot,rcone,ell,rbox}=RIG;
     {name:'velvet gown',hair:'rolls',skirt:'velvet',neck:'sweet',sleeve:'none',gloves:true,look:{skin:'#f0ccb4',hair:'#5a2a1a',coat:'#7a3a24',shirt:'#8a0c1c',vest:'#e8e2d6',pants:'#f0ccb4',shoes:'#8a0c1c'}},
     {name:'tea dress',hair:'fringe',skirt:'tea',neck:'round',sleeve:'short',belt:true,look:{skin:'#e6bea0',hair:'#3a2418',coat:'#5a3a26',shirt:'#c8202e',tie:'#141214',pants:'#e6bea0',shoes:'#141214'}}];
   return {pieces,DESIGNS,HAIR,SKIRT,NECK}; })();
+export {WOMAN};

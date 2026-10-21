@@ -1,3 +1,12 @@
+// THE DRAGON: the green dragon that flies over the town, breathes fire and lights its own glow.
+import {SHARED, THREE} from './003-shx.js';
+import {SKIN} from './003a-skin.js';
+import {BLAZE, CLOCK, DRESS, NPCS, PARK, pos, SFX, VIT, WEEDS} from './003b-systems.js';
+import {MAPG, MODS, TILE} from './006-map-pre.js';
+import {FLAME} from './007-fire.js';
+import {WIRES} from './069b-poles.js';
+import {makeNPC} from './076-npc-map.js';
+import {DRAGON} from './077-npc-skel.js';
 { const DFL=[0,1].map(()=>{ const L=new THREE.PointLight(0xff8a30,0,7*TILE,1.6); MAPG.bodega.add(L); return L; }), DGO=S=>{
   const BN=S.rig.names, JI=Object.fromEntries(BN.map((n,i)=>[n,i]));
   const geomOf=M=>SKIN.geom(M,true,false), rigOf=()=>SKIN.rig(S.rig), CLIPS=SKIN.clips(S.clips,BN);
@@ -26,7 +35,7 @@
       f.g.add(h); MAPG.bodega.add(f.g); f.fl=FLAME.add({kind:'ball',x:0,y:0,z:0,w:.95*TI,h:.95*TI,parent:f.g}); FB.push(f); }
     f.on=f.fl.on=true; f.t=0; f.g.visible=true; f.g.position.copy(from); f.v=dir.clone(); };
   const spark=(p,v,life)=>FLAME.part(4,p.x,p.y,p.z,v.x,v.y,v.z,life,.11*TI,undefined,G*1.6);
-  const burst=p=>{ '@later'; if(typeof SFX!=='undefined')SFX.play('boom',{at:p,far:40*TI,vol:.9,vary:.2}); for(let k=0;k<18;k++){ const a=Math.random()*Math.PI*2, u=Math.random(); spark(p,new THREE.Vector3(Math.cos(a)*u*3*TI,(1+Math.random()*2.5)*TI,Math.sin(a)*u*3*TI),.6+Math.random()*.6); }
+  const burst=p=>{ '@later'; SFX.play('boom',{at:p,far:40*TI,vol:.9,vary:.2}); for(let k=0;k<18;k++){ const a=Math.random()*Math.PI*2, u=Math.random(); spark(p,new THREE.Vector3(Math.cos(a)*u*3*TI,(1+Math.random()*2.5)*TI,Math.sin(a)*u*3*TI),.6+Math.random()*.6); }
     for(let k=0;k<4;k++)FLAME.puff(p.x+(Math.random()-.5)*.5*TI,p.y+.2*TI,p.z+(Math.random()-.5)*.5*TI,2.2);
     if(window.BLAZE)BLAZE.land(p); const hit=(x,z)=>Math.hypot(x-p.x,z-p.z)<1.3*TI; if(SHARED.LVL==='up'&&hit(pos.x,pos.z))VIT.hurt(.25); for(const N of NPCS)if(N.lv==='up'&&N.key!=='dragon'&&N.g.visible&&hit(N.st.x,N.st.z))N.hp=Math.max(0,N.hp-.25); };
   const G=9.8/.84*TI*.35;

@@ -1,4 +1,9 @@
-const GHOSTS=window.GHOSTS={list:[]};
+// THE GHOSTS: GHOSTS, the cloth ghosts that drift at night, their cloth moved by a small physics step.
+import {SHARED, THREE} from './003-shx.js';
+import {GHOSTS, NPCS, pos, UI} from './003b-systems.js';
+import {scene} from './004-main.js';
+import {SYS, TILE} from './006-map-pre.js';
+
 { const H=1/120, G=-9.8, DAMP=.988;
   GHOSTS.cloth=(R,sq,N,BR,mat,sx,y,sz)=>{ const IN=(i,j)=>sq||Math.hypot(i/(N-1)*2-1,j/(N-1)*2-1)<=1.02, REST=[], idx=[], live=[];
     for(let j=0;j<N;j++)for(let i=0;i<N;i++){ if(!IN(i,j))continue; live.push((j*N+i)*3); for(const [di,dj] of [[1,0],[0,1],[1,1],[1,-1],[2,0],[0,2]]){ const i2=i+di, j2=j+dj; if(i2<0||i2>=N||j2<0||j2>=N||!IN(i2,j2))continue; REST.push([(j*N+i)*3,(j2*N+i2)*3,Math.hypot(di,dj)*2*R/(N-1),di===2||dj===2?.3:1]); } }
@@ -42,7 +47,7 @@ GHOSTS.init=()=>{ if(typeof SHARED.BOD==='undefined'||!SHARED.BOD.GD)return; con
   GHOSTS.tick=dt=>{ if(!dt)return; const near=SHARED.LVL!=='down'&&Math.hypot(pos.x/MH-(ix0+ix1)/2,pos.z/MH-(iz0+iz1)/2)<45*.84;
     for(const Q of GHOSTS.list){ Q.me.visible=near; for(const e of Q.eyes)e.visible=near; }
     if(!near)return;
-    others.length=0; others.push({x:pos.x/MH,z:pos.z/MH,y:SHARED.py/MV+1.7}); if(typeof NPCS!=='undefined')for(const N1 of NPCS){ if(N1.lv!=='up'||N1.far||!N1.st)continue; const x=N1.st.x/MH, z=N1.st.z/MH; if(x>ix0-6&&x<ix1+6&&z>Math.min(iz0,FZ0)-6&&z<Math.max(iz1,FZ1)+6)others.push({x,z,y:1.6}); }
+    others.length=0; others.push({x:pos.x/MH,z:pos.z/MH,y:SHARED.py/MV+1.7}); for(const N1 of NPCS){ if(N1.lv!=='up'||N1.far||!N1.st)continue; const x=N1.st.x/MH, z=N1.st.z/MH; if(x>ix0-6&&x<ix1+6&&z>Math.min(iz0,FZ0)-6&&z<Math.max(iz1,FZ1)+6)others.push({x,z,y:1.6}); }
     for(const Q of GHOSTS.list){ const b=Q.ball, b0={...b}; Q.t+=dt;
       const dx=Q.to[0]-b.x, dz=Q.to[1]-b.z, dd=Math.hypot(dx,dz);
       if(dd>.12){ const sp=.28, k=Math.min(1,dt*.8); Q.v.x+=((dx/dd)*Math.min(sp,dd*.5)-Q.v.x)*k; Q.v.z+=((dz/dd)*Math.min(sp,dd*.5)-Q.v.z)*k; Q.yawTo=Math.atan2(dx,dz); }
@@ -53,5 +58,5 @@ GHOSTS.init=()=>{ if(typeof SHARED.BOD==='undefined'||!SHARED.BOD.GD)return; con
       const b1={...b}; Object.assign(b,b0); GHOSTS.run(Q,dt,b1,others,MH,MV);
       const fx=Math.sin(Q.yaw), fz=Math.cos(Q.yaw);
       Q.eyes.forEach((e,k)=>{ const sd=k===2?0:k?1:-1, ey=b.y+(k===2?-.035:.02), ex=b.x+fx*(BR+.045)+fz*sd*.05, ez=b.z+fz*(BR+.045)-fx*sd*.05; e.position.set(ex*MH,ey*MV,ez*MH); e.lookAt(V.set((ex+fx)*MH,ey*MV,(ez+fz)*MH)); }); } };
-  SYS.add('world',(dt)=>{ GHOSTS.tick(dt); },'149-ghosts');
+  SYS.add('life',(dt)=>{ GHOSTS.tick(dt); },'149-ghosts');
   window.GHOSTDBG=()=>GHOSTS.list.map(Q=>{ let hem=9, top=-9; for(const k of Q.live){ hem=Math.min(hem,Q.P[k+1]); top=Math.max(top,Q.P[k+1]); } return {name:Q.name,x:+Q.ball.x.toFixed(2),z:+Q.ball.z.toFixed(2),in:Q.in,hem:+hem.toFixed(2),top:+top.toFixed(2),vis:Q.me.visible,world:[+(Q.ball.x*MH).toFixed(2),+(Q.ball.z*MH).toFixed(2)]}; }); };

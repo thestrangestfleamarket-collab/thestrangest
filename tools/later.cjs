@@ -40,7 +40,7 @@ const coverage=async()=>{
   const heads=await coverage();
   const src=fs.readdirSync('src').filter(f=>/^\d{3}/.test(f)).sort();
   for(const f of src){ const t=fs.readFileSync('src/'+f,'utf8'), u=t.split(MARK).join(''); if(u!==t)fs.writeFileSync('src/'+f,u); }
-  let page='', off=[]; for(const f of src){ off.push(page.length); page+=fs.readFileSync('src/'+f,'utf8'); }
+  let page='', off=[]; for(const f of src){ off.push(page.length); page+=require('./imports.cjs').blank(fs.readFileSync('src/'+f,'utf8')); }
   const I=page.indexOf('<script type="module">')+22, body=page.slice(I,page.lastIndexOf('</script>')), FN=/^(Arrow)?Function(Expression|Declaration)$/, at=new Map(), up=new Map();
   (function w(n,p){ if(!n||typeof n.type!=='string')return; up.set(n,p); if(FN.test(n.type))at.set(n.start,n); for(const k in n){ if(k==='type')continue; const c=n[k]; if(Array.isArray(c))c.forEach(x=>w(x,n)); else if(c&&typeof c.type==='string')w(c,n); } })(parse(body),null);
   const walk=(n,f)=>{ (function w(q,d){ if(!q||typeof q.type!=='string')return; f(q,d); const e=d+(q!==n&&(q.type==='FunctionExpression'||q.type==='FunctionDeclaration')?1:0); for(const k in q){ if(k==='type')continue; const c=q[k]; if(Array.isArray(c))c.forEach(x=>w(x,e)); else if(c&&typeof c.type==='string')w(c,e); } })(n,0); };

@@ -31,6 +31,8 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - name: Build
         run: python3 build.py
+      - name: The core's own logic (imports, level file, SYS, ZONES, VIS, FADE, collision)
+        run: node tests/core.cjs dist/market.html
       - name: Check the site opens (door, then THE MARKET)
         run: node tests/site.cjs
       - name: Every place's code comes when you go there
@@ -87,8 +89,8 @@ jobs:
         if: matrix.test == 'budget'
         run: |
           set -o pipefail
-          node tests/startprof.cjs out/base.json ../base/dist/market-prof.html
-          node tests/startprof.cjs out/head.json dist/market-prof.html
+          node tests/startprof.cjs out/base.json ../base/dist/market-prof.html 2>&1 | tee out/startprof-base.log
+          node tests/startprof.cjs out/head.json dist/market-prof.html 2>&1 | tee out/startprof-head.log
           node tests/budget.cjs out/base.json out/head.json | tee out/budget.log
       - name: The lost picture comes back
         if: matrix.test == 'budget' && (success() || failure())

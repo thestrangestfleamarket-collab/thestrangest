@@ -1,4 +1,14 @@
-const MUS={shelf:true,tick:()=>{}}; STORE.MUS=MUS;
+// THE MUSICIAN: MUS, the street musician, and the shared figure makers (musBody, figureMesh) the players use.
+import {SHARED, THREE} from './003-shx.js';
+import {MUS, NPCS, pos, SND, UI, W3} from './003b-systems.js';
+import {PPU, renderer, RES, resize, RESL, RESMAX, scene} from './004-main.js';
+import {SAVE} from './005-save.js';
+import {ASTEP, MAPG, MODS, STORE, TILE, ZU} from './006-map-pre.js';
+import {SOUND} from './091-sfx.js';
+import {GT, GTA, gtAudio, gtMute, gtPlay, GTWR} from './106-game-play-3-guitar-1-body.js';
+import {GTBEAT, GTEND, GTEV, gtNext, GTS, gtSet} from './108-game-play-3-guitar-2-tunes.js';
+import {GTF, gtFing, GTH, GTPOLE, gtPose, NPCARMS, NPCFING, npcSpring} from './109-game-play-3-guitar-3-hands.js';
+Object.assign(MUS,{shelf:true,tick:()=>{}}); STORE.MUS=MUS;
 function musBody(){ const R=RIG; if(!musBody.FG){ R.farOnly(false); R.fine(true); const J=R.build(R.walkPose({ph:0,w:0},null),null).J, FG=R.shell(J,0).filter(p=>/^fing\d\d[LR]$/.test(p.n)); R.fine(false);
     const around=(ps,m)=>{ const b=[1e9,-1e9,1e9,-1e9,1e9,-1e9]; for(const p of ps){ b[0]=Math.min(b[0],p.x-m); b[1]=Math.max(b[1],p.x+m); b[2]=Math.min(b[2],p.y-m); b[3]=Math.max(b[3],p.y+m); b[4]=Math.min(b[4],p.z-m); b[5]=Math.max(b[5],p.z+m); } return b; };
     for(const p of FG){ const f=/^fing(\d)(\d)([LR])$/.exec(p.n); p.bb=around([J['k'+f[1]+f[2]+f[3]],J['k'+f[1]+(+f[2]+1)+f[3]]],1); p.step=.12; p.cell=.12; p.share=p; }
@@ -83,7 +93,7 @@ function gtBody(a,dt){ '@later'; const R=RIG; R.farOnly(false); GTS.t+=dt; const
   P.nod+=Math.sin(a.t*1.6)*0.6*R.D+Math.sin(t/GTBEAT*Math.PI)*0.8*R.D; a.P=P; return R.settle(R.build(P,null),0); }
 if(!MUS.shelf){ const R=RIG, V=R.V, AT={x:SHARED.BOD.XS(70),z:SHARED.BOD.ZS(-73),hd:Math.PI/2,y:0};
   const g=new THREE.Group(); MAPG.bodega.add(g); MUS.g=g; const SF=sheetFig(g), PCS=SF.PCS; MUS.tris=SF.FM.tris; MUS.per=SF.FM.per; MUS.ghost=SF.stat;
-  g.position.set(AT.x,AT.y,AT.z); g.rotation.set(0,AT.hd,0); musScale(g); MUS.at=AT; MUS.on=true; if(typeof NPCS!=='undefined'&&NPCS.extra&&!NPCS.extra.includes(MUS))NPCS.extra.push(MUS);
+  g.position.set(AT.x,AT.y,AT.z); g.rotation.set(0,AT.hd,0); musScale(g); MUS.at=AT; MUS.on=true; if(NPCS.extra&&!NPCS.extra.includes(MUS))NPCS.extra.push(MUS);
   const F0={o:{...GTF.o},x:{...GTF.x},y:{...GTF.y},z:{...GTF.z}};
   MUS.hold=(drop,tilt,wr,pole)=>{ const c=Math.cos(tilt), s=Math.sin(tilt), rot=v=>V(v.x*c-v.y*s,v.x*s+v.y*c,v.z), P0=V(F0.o.x,F0.o.y,F0.o.z);
     GTF.x=rot(F0.x); GTF.y=rot(F0.y); GTF.z=rot(F0.z); GTF.o=R.add(rot(P0),V(0,-drop,0));
@@ -141,3 +151,4 @@ if(!MUS.shelf){ const R=RIG, V=R.V, AT={x:SHARED.BOD.XS(70),z:SHARED.BOD.ZS(-73)
   shIn.oninput=()=>{ SHARED.RESI=+shIn.value; resize(); shV.textContent=RES()+'x'; try{ SAVE.set('gtsharp',String(SHARED.RESI)); }catch(e){} };
   shIn.addEventListener('pointerdown',e=>e.stopPropagation()); shIn.addEventListener('keydown',e=>e.stopPropagation());
 }
+export {figureMesh, musBody, MUSGEO, musScale, sheetView, spreadPose};

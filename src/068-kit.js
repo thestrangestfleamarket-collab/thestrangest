@@ -1,3 +1,8 @@
+// THE KIT: KIT turns the baked kit models into meshes and puts them in the world by name.
+import {THREE} from './003-shx.js';
+import {B64, I16, U16} from './003a-skin.js';
+import {KITD} from './004-main.js';
+import {CLIPX, FIX, MAPG, MODS, SOL, TILE, ZU} from './006-map-pre.js';
 const KIT={data:KITD,geos:{},things:[]};
 { const b=B64, i16=I16, u16=U16, u32=s=>new Uint32Array(b(s).buffer), YS=ZU*24/TILE;
   KIT.geo=name=>{ '@later'; if(KIT.geos[name])return KIT.geos[name]; const M=KITD[name]; if(!M){ console.warn('kit: no',name); return null; }
@@ -14,3 +19,4 @@ const KIT={data:KITD,geos:{},things:[]};
     CLIPX.push({place:'kit',name,obj:g});
     if(o.name)KIT.things.push({name:o.name,obj:g,reach:1.2,tall:tall*s*YS,act:()=>{}});
     return g; }; }
+export {KIT};

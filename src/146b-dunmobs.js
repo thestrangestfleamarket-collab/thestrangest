@@ -1,3 +1,12 @@
+// THE DUNGEON SLIMES: the coloured slimes that roam the dungeon, fight and drop slime.
+import {SHARED, THREE} from './003-shx.js';
+import {SKIN} from './003a-skin.js';
+import {FORAGE, INV, NPCS, pos, SFX, st, UI, VIT, W3, WIELD} from './003b-systems.js';
+import {scene} from './004-main.js';
+import {MAPG, MODS, SOL, SYS, TILE, ZU} from './006-map-pre.js';
+import {SKELGO} from './077-npc-skel.js';
+import {CREATURES} from './086-npc-fox.js';
+import {GEMS} from './101-gems.js';
 { const D=MODS.dungeon; let M=null;
   const TIER={green:{c:0x5ce04a,hp:2,v:.9,dmg:0,s:1,loot:.25,sk:[-10,40],nm:'GREEN',p:4,see:0},blue:{c:0x3fa2ff,hp:3,v:1.1,dmg:.03,s:1.06,loot:.35,sk:[0,50],nm:'BLUE',p:8,see:3},
     purple:{c:0xb058ff,hp:5,v:1.3,dmg:.05,s:1.14,loot:.45,sk:[15,65],nm:'PURPLE',p:15,see:3.6},red:{c:0xff4434,hp:7,v:1.5,dmg:.07,s:1.24,loot:.6,sk:[30,80],nm:'RED',p:25,see:4.2}};
@@ -13,7 +22,7 @@
   const SST={skeleton_guard_light:[3,.06],skeleton_guard_heavy:[5,.08],skeleton_mage:[3,.06],skeleton_reaper:[6,.1],Minion:[3,.05],Warrior:[5,.08],Rogue:[3,.05],Mage:[3,.06],Gold:[9,.1]}, KK=['Minion','Warrior','Rogue','Mage','Gold'];
   const OGRE=['ogre','ogre_mage','ogre_guard_light','ogre_guard_heavy'];
   const nameOf=id=>id==='$'?'COINS':GEMS.find(g=>g[0]===id)?GEMS.find(g=>g[0]===id)[1]:id.startsWith('m_')?FORAGE.MU[id.slice(2)][0]:(FORAGE.RC.find(r=>r[0]===id)||[0,id])[1];
-  const sfx=(k,o)=>{ if(typeof SFX!=='undefined')SFX.play(k,o); };
+  const sfx=(k,o)=>{ SFX.play(k,o); };
   const SD=CREATURES.Slime, g0=SKIN.geom(SD.mesh,false); g0.deleteAttribute('sh'); g0.computeBoundingBox(); g0.translate(0,-g0.boundingBox.min.y,0);
   { const P=g0.attributes.position.array, R=g0.attributes.reg.array, n=P.length/3, C=new Float32Array(n*3), h=(x,y,z)=>{ const v=Math.sin(x*127.1+y*311.7+z*74.7)*43758.5; return v-Math.floor(v); };
     for(let i=0;i<n;i++){ const x=P[i*3], y=P[i*3+1], z=P[i*3+2], q=y/SD.tall, b=h(Math.floor(x*5),Math.floor(y*5),Math.floor(z*5))>.82, v=R[i]>.5?.03:b?1:q>.8?.95:.62+.22*q; C[i*3]=C[i*3+1]=C[i*3+2]=v; }
@@ -52,7 +61,7 @@
   const hitRes=(r,dmg,from)=>{ if(r.dead)return; r.hp-=dmg; r.agg=true; const N=r.N, st=N.st, dx=st.x-from.x, dz=st.z-from.z, l=Math.hypot(dx,dz)||1; st.sx=dx/l*2.2*T; st.sz=dz/l*2.2*T;
     sfx('clunk',{vol:.5,pitch:1.5,vary:.2}); if(r.hp<=0)return killRes(r); if(r.kk){ r.act=0; N.an.play('Hit_A'); } else{ r.lunge=null; r.jolt=.25; } };
   const STR=/jab|cross|upper|hook|slap|punch|kick|sweep|round/i; let last=null, swT=0, swAt=0;
-  const w0=WIELD.strike; WIELD.strike=()=>{ w0(); const now=performance.now(); if(WIELD.on==='sword'&&now-swT>220){ swT=now; swAt=now+90; } };
+  SYS.add('strike',()=>{ const now=performance.now(); if(WIELD.on==='sword'&&now-swT>220){ swT=now; swAt=now+90; } },'146b-dunmobs');
   const strikes=()=>{ const out=[], s=(st.up&&STR.test(st.up.name)&&st.up)||(st.move&&STR.test(st.move.name)&&st.move);
     if(s&&s!==last&&s.t>=.08){ last=s; const k=/kick|sweep|round/i.test(s.name); out.push({r:(k?1.15:1)*T,d:k?1.5:1}); }
     if(swAt&&performance.now()>=swAt){ swAt=0; if(WIELD.on==='sword')out.push({r:1.55*T,d:2}); } return out; };
@@ -121,4 +130,4 @@
   window.DUNMOBDBG=()=>({level:lvl,slimes:slimes.map(S=>({k:S.k,hp:S.hp,dead:S.dead,gone:!!S.gone,x:+(S.x/T).toFixed(1),z:+(S.z/T).toFixed(1)})),
     res:(RES||[]).filter(r=>r.on).map(r=>({k:r.key,hp:r.hp,dead:r.dead,agg:r.agg,x:+(r.N.st.x/T).toFixed(1),z:+(r.N.st.z/T).toFixed(1),in:r.N.g.parent===MAPG.dungeon})),things:things.map(t=>t.name),bolts:bolts.length,tris:slimes.length*(g0.index.count/3+12)}); return {onLevel,tick}; };
   D.hook(n=>{ if(!M){ if(!n)return; M=init(); } M.onLevel(n); });
-  SYS.add('world',(dt)=>{ if(M)M.tick(dt); },'146b-dunmobs'); }
+  SYS.add('life',(dt)=>{ if(M)M.tick(dt); },'146b-dunmobs'); }

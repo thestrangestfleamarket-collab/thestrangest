@@ -1,8 +1,14 @@
+// THE GOLEMS' CAVE: GCAVE builds the golems' cave in the park and sets out the squirrel's tower site.
+import {SHARED, THREE} from './003-shx.js';
+import {CITY, CLOCK, INV, LITE, MAIL, PARK, ROOMS, TRADE, UI} from './003b-systems.js';
+import {scene} from './004-main.js';
+import {FIX, MAPG, PARKCAVE, PARKTOWER, SOL, STORE, TILE} from './006-map-pre.js';
+import {FLAME} from './007-fire.js';
 const GCAVE={ready:false}; window.GCAVE=GCAVE;
 {
   GCAVE.keep=P=>{ if(!GCAVE.S){ const [rx,ry]=P.round, c={x:PARKCAVE[0],y:PARKCAVE[1]}, R=5, tw={x:PARKTOWER[0]-3.4,y:PARKTOWER[1],w:9.5/3,d:3};
       GCAVE.S={c,R,tw}; const X=x=>SHARED.BOD.XS(x+(P.ox||0)), Z=y=>SHARED.BOD.ZS(y+(P.oy||0));
-      if(typeof STORE!=='undefined'&&STORE.places){ STORE.places.push(["THE GOLEMS' CAVE",X(c.x),Z(c.y),'up']); STORE.places.push(["THE SQUIRREL'S TOWER",X(tw.x+3.4),Z(tw.y),'up']); } }
+      if(STORE.places){ STORE.places.push(["THE GOLEMS' CAVE",X(c.x),Z(c.y),'up']); STORE.places.push(["THE SQUIRREL'S TOWER",X(tw.x+3.4),Z(tw.y),'up']); } }
     const {c,R,tw}=GCAVE.S; return [[c.x-R-3,c.y-R-2,c.x+R+5,c.y+R+2],[tw.x-tw.w/2-2.5,tw.y-tw.d/2-2.5,tw.x+tw.w/2+3,tw.y+tw.d/2+3]]; };
   const hs=(a,b,c=0)=>{ const s=Math.sin(a*127.1+b*311.7+c*74.7)*43758.5453; return s-Math.floor(s); };
   const foot=(R,a)=>R/Math.pow(Math.pow(Math.abs(Math.cos(a)),3)+Math.pow(Math.abs(Math.sin(a)),3),1/3);
@@ -67,3 +73,4 @@ const GCAVE={ready:false}; window.GCAVE=GCAVE;
     GCAVE.tris=dg.attributes.position.count/3; GCAVE.ready=true;
     for(const N of (window.PAWNL||[]))if(/_\d$/.test(N.key)&&!N.sheet){ const p=GCAVE.spot('cave'); if(!p)continue; try{ CITY.stop(N); }catch(e){} N.st.x=p.x; N.st.z=p.z; N.st.to=null; N.g.position.x=p.x; N.g.position.z=p.z; } };
   GCAVE.build=()=>{ try{ build(); }catch(e){ console.warn('CAVE: not built',e); } }; }
+export {GCAVE};

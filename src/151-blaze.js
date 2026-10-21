@@ -1,4 +1,12 @@
-const BLAZE=window.BLAZE={F:[],D:[]};
+// THE BLAZE: BLAZE starts fires that spread through grass and brush and go out in the wet.
+import {SHARED, THREE} from './003-shx.js';
+import {BLAZE, DRESS, PARK, pos, WEEDS} from './003b-systems.js';
+import {scene} from './004-main.js';
+import {FIX, MAPG, MODS, QS, RING, SOL, SYS, TILE} from './006-map-pre.js';
+import {FLAME} from './007-fire.js';
+import {GCAVE} from './060-cave.js';
+import {FOUNT} from './060a-fount.js';
+
 { const T=TILE, M=1/.84*T, G=(x,z)=>MODS.bodega.ground(x,z), F=BLAZE.F, rnd=Math.random, MAX=+(QS.get('fires')||12), WET=3.2, HOLD=240, FADE=360, V3=THREE.Vector3;
   const its=L=>L.filter(Boolean).flatMap(m=>m.userData.items||[]).filter(o=>!/rock|stone|pillar/i.test(o.k)), ITEMS=its([PARK.trees,PARK.under,PARK.underStill,DRESS.trees,DRESS.plants]); PARK.later(()=>ITEMS.push(...its([PARK.trees,PARK.under,PARK.underStill])));
   const top=(x,z)=>WEEDS.top?WEEDS.top(x,z):undefined, surf=(x,z)=>{ const t=top(x,z); return typeof t==='number'?t:G(x,z); };
@@ -99,7 +107,7 @@ const BLAZE=window.BLAZE={F:[],D:[]};
     let n=0; for(const q of DROPS)DROP.setMatrixAt(n++,m4.compose(p3.set(q.x,q.y,q.z),q4.identity(),s3.set(1,1,1)));
     DROP.count=n; DROP.visible=n>0; if(n)DROP.instanceMatrix.needsUpdate=true; };
   droneTick(0);
-  { SYS.add('world',(dt)=>{ if(!(dt>0))return; dt=Math.min(dt,.1); fireTick(dt); droneTick(dt); },'151-blaze'); }
+  { SYS.add('life',(dt)=>{ if(!(dt>0))return; dt=Math.min(dt,.1); fireTick(dt); droneTick(dt); },'151-blaze'); }
   window.FIREAT=(x,z)=>{ const f=start(x,z,true); return f?{x:+f.x.toFixed(2),y:+f.y.toFixed(2),z:+f.z.toFixed(2)}:null; };
   window.BLAZEDBG=()=>({fires:F.map(f=>({x:+f.x.toFixed(1),z:+f.z.toFixed(1),age:Math.round(f.age),wet:+f.wet.toFixed(1),by:f.by?f.by.i:null})),drones:DR.map(d=>({st:d.st,x:+d.p.x.toFixed(1),y:+d.p.y.toFixed(1),z:+d.p.z.toFixed(1)})),marks:BM.filter(Boolean).length,docks:ST.length,cruise:+CRUISE.toFixed(1),light:+L.intensity.toFixed(1)});
   if(QS.get('fire')==='1'){ const go=()=>{ if(!window.__started)return setTimeout(go,500); setTimeout(()=>window.FIREAT(pos.x+2.4*T,pos.z+1.6*T),1500); }; go(); }

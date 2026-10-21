@@ -1,3 +1,5 @@
+// THE SKIN: SKIN unpacks baked skinned models into geometry, bones and clips, with the B64 and typed-array readers.
+import {THREE} from './003-shx.js';
 
 const B64=s=>{ if(typeof s!=='string')return s; if(Uint8Array.fromBase64)return Uint8Array.fromBase64(s); const t=atob(s), u=new Uint8Array(t.length); for(let i=0;i<t.length;i++)u[i]=t.charCodeAt(i); return u; }, F32=s=>new Float32Array(B64(s).buffer), I16=s=>new Int16Array(B64(s).buffer), U16=s=>new Uint16Array(B64(s).buffer), BY=(M,k)=>M.$b&&M.$b[k]||M[k];
 const SKIN=(()=>{ const GC=new WeakMap(), IC=new WeakMap(), CC=new WeakMap();
@@ -14,3 +16,4 @@ const SKIN=(()=>{ const GC=new WeakMap(), IC=new WeakMap(), CC=new WeakMap();
       for(const bn of Object.keys(C.p))if(root||bn!=='root')tracks.push(new THREE.VectorKeyframeTrack(pn(bn)+'.position',T,F32(BY(C.p,bn))));
       out[name]=new THREE.AnimationClip(name,C.dur,tracks); } return out; };
   return {pts,dec,geom,rig,clips}; })();
+export {B64, BY, F32, I16, SKIN, U16};

@@ -1,4 +1,9 @@
-const CLIP={moved:[],found:[],added:0,boxes:new Map(),done:new Set(),ms:0}; window.CLIP=CLIP;
+// THE CLIP: CLIP finds things placed inside walls and moves them out, and checks where things can stand.
+import {SHARED, THREE} from './003-shx.js';
+import {CLIP, NPCS} from './003b-systems.js';
+import {CLIPX, FIX, MODS, QS, SOL, STORE, TILE, ZU} from './006-map-pre.js';
+import {OBJS} from './008-batch.js';
+Object.assign(CLIP,{moved:[],found:[],added:0,boxes:new Map(),done:new Set(),ms:0}); window.CLIP=CLIP;
 { const MH=24*ZU/.84, KNEE=.45*MH, CHEST=1.2*MH, G=TILE/4, E=.04*TILE, GC=2*TILE;
   const GR=new Map(), key=(i,j)=>i*131072+j;
   const grid=L=>{ let g=GR.get(L); if(g&&g.n===L.length)return g; g={n:L.length,m:new Map()};

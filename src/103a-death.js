@@ -1,3 +1,9 @@
+// THE DEATH: what happens when you die: the YOU ARE DEAD note, the fall, and the walk to the bath house to come back.
+import {SHARED, THREE} from './003-shx.js';
+import {GHOSTS, keys, LOOKS, PH, pos, RAG, st, VIT, W3} from './003b-systems.js';
+import {scene} from './004-main.js';
+import {SAVE} from './005-save.js';
+import {FADE, QS, STORE, SYS, TILE} from './006-map-pre.js';
 { const T=TILE, el=document.createElement('div'), css=document.createElement('style'); el.id='dead'; el.hidden=true;
   css.textContent='#dead{position:fixed;left:50%;top:calc(12px + env(safe-area-inset-top,0px));transform:translateX(-50%);font:12px var(--pixel);color:var(--key);background:var(--panel);border:2px solid var(--line);padding:6px 10px;z-index:15;pointer-events:none;zoom:var(--uiz,1)} #dead[hidden]{display:none}';
   document.head.appendChild(css); document.body.appendChild(el);
@@ -11,7 +17,7 @@
   VIT.die=()=>{ if(VIT.dead)return; VIT.dead=true; VIT.hp=0; VIT.out=2.4; SHARED.trip=true; gh=0; rise=-1; try{ SAVE.set('dead','1'); }catch(e){} note(DEAD); };
   const back=async()=>{ '@later'; busy=true; await FADE.run('REFRESHED',async()=>{ await wait(1500);
     const G=SHARED.BOD.GD, K=SHARED.BOD.GDK, dx=G.door[0], oy=K?K.y1e+.6:G.door[1]+3;
-    STORE.goTo(SHARED.BOD.X(dx),SHARED.BOD.Z(oy),'up'); SHARED.heading=SHARED.BOD.Z(oy+1)>SHARED.BOD.Z(oy)?0:Math.PI; if(typeof PH!=='undefined')PH.hd=SHARED.heading; keys.clear(); SHARED.target=null;
+    STORE.goTo(SHARED.BOD.X(dx),SHARED.BOD.Z(oy),'up'); SHARED.heading=SHARED.BOD.Z(oy+1)>SHARED.BOD.Z(oy)?0:Math.PI; PH.hd=SHARED.heading; keys.clear(); SHARED.target=null;
     VIT.dead=false; VIT.hp=1; VIT.sta=1; VIT.out=0; gh=0; rise=-1; look(false); try{ SAVE.del('dead'); }catch(e){} LOOKS.robe(true);
     },{hold:200}); note('You feel refreshed.',5); busy=false; };
   SYS.add('vitals',(dt)=>{ if(!VIT.dead||busy)return; VIT.hp=0;

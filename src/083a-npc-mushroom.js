@@ -1,3 +1,10 @@
+// THE MUSHROOM FOLK: MUSH builds the mushroom characters in parts.
+import {SHARED, THREE} from './003-shx.js';
+import {PARK} from './003b-systems.js';
+import {MODS} from './006-map-pre.js';
+import {PARTSNPC} from './080-npc-parts.js';
+import {STALL} from './081-stalls.js';
+import {RIGNPC} from './083-npc-rig.js';
 const MUSH={};
 { const {shape,limb,sph,cyl,box,torus,blob,noise}=PARTSNPC.T;
   const CREAM=[.93,.87,.7], BONE=[.95,.95,.93], HAT=[.72,.47,.2], HAT2=[.66,.42,.17], CAP=[.74,.5,.22], RUST=[.74,.42,.14], OLIVE=[.47,.43,.18], ROPE=[.58,.42,.2], BAG=[.7,.53,.3], TRAY=[.68,.44,.19], BLACK=[0,0,0], WOOD=[.55,.4,.22], STRAW=[.8,.66,.34];
@@ -51,3 +58,4 @@ const MUSH={};
   const N=RIGNPC.make(def,Object.assign({key:'mushroom',name:'THE MUSHROOM SELLER',eye:0,eyeC:'0.,0.,0.',metres:3.16, radius:.3,speed:.4,stride:6},PARTSNPC.street(72,-70),{roam:false}));
   { const wait=()=>{ if(!MODS.park)return setTimeout(wait,500); BOOTH(); if(!N.sheet)STALL.work(N,MUSH.booth,{tray:1,jobs:['look'],wait:()=>2+Math.random()*3}); }; wait(); }
   MUSH.N=N; window.MUSHDBG=()=>({booth:!!MUSH.booth,life:!!N.life,fire:!!PARK.fire,key:N.key,x:+N.st.x.toFixed(2),z:+N.st.z.toFixed(2),y:+N.g.position.y.toFixed(2),to:!!N.st.to,vis:N.g.visible,tris:N.tris,job:N.rig.job&&N.rig.job.k}); }
+export {MUSH};

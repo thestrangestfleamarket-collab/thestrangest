@@ -1,4 +1,6 @@
 // THE DUNGEON KIT: dgnRoom(LBLD) measures the dungeon and its rooms; dgnThings(...) registers its props, lamps and web.
+import {SHARED} from './003-shx.js';
+import {cvNoise, hash, LIFE, prop, sh, sided, T} from './014-gamekit.js';
 const dgnRoom=LBLD=>{
 const DGN=(B=>({b:B,x0:B.x0+T,x1:B.x1-T,y0:B.y0+T,y1:B.y1-T,cx:(B.x0+B.x1)/2,cy:(B.y0+B.y1)/2,H:B.h-4,in:[B.x0-T,B.y0-T,B.x1+T,B.y1+T],
   torches:[{w:'b',u:2.6},{w:'b',u:10.2},{w:'l',u:2.4},{w:'l',u:8.2},{w:'r',u:3.2},{w:'r',u:8},{w:'f',u:6.4}],
@@ -225,3 +227,4 @@ CATALOG['sarcophagus']=(x,y)=>{ '@later'; SHARED.PNAME='sarcophagus'; const W=.8
 CAT_INFO['sarcophagus']={no:'P-964',name:'Stone Sarcophagus',dept:'Dungeon',price:500,desc:'A coffer of dressed stone under a heavy lid, a cross cut in it. Sealed.',mat:'stone'};
 if(!CAT_DEPTS.some(d=>d[0]==='Dungeon'))CAT_DEPTS.push(['Dungeon','Dungeon']);
 };
+export {dgnRoom, dgnThings};

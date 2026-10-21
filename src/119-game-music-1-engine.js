@@ -1,3 +1,7 @@
+// THE MUSIC ENGINE: IMX, the sound engine that plays plucked strings and the instruments.
+import {GTSAMP, IMK, SND} from './003b-systems.js';
+import {GTA, gtAudio} from './106-game-play-3-guitar-1-body.js';
+import {IMSAMPS} from './118-game-music-1b-samples-data.js';
 const IMX={ok:false,busy:false,failed:0,nodes:new Map(),out:null,src:`
 const TAU=2*Math.PI;
 const clip=x=>x<-1?-1:x>1?1:x;
@@ -102,3 +106,4 @@ function imxRec(N,evs,t0){ '@later'; const R=IMSAMP[N.kind]&&imsLoad(N.kind); if
     else if(e.k==='stop'&&v)v.src.playbackRate.setValueAtTime(e.hz/v.hz,t);
     else if(e.k==='mute'&&v&&e.v<1){ v.g.gain.setTargetAtTime(0,t,.02); try{ v.src.stop(t+.2); }catch(err){} N.on[e.s]=null; } } }
 window.__imx=IMX;
+export {IMX, imxNode, imxOut, imxSend};

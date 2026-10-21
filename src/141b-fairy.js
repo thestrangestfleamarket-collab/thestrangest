@@ -1,3 +1,8 @@
+// THE FAIRY RINGS: FAIRY grows rings of mushrooms in the park.
+import {SHARED, THREE} from './003-shx.js';
+import {FORAGE, PARK, pos, ROOMS, UI, WEEDS} from './003b-systems.js';
+import {scene} from './004-main.js';
+import {SOL, SYS, TILE} from './006-map-pre.js';
 const FAIRY={list:[]}; window.FAIRY=FAIRY;
 { const T=TILE, MAX=3, N=96, g=new THREE.Group(), cap=new THREE.InstancedMesh(new THREE.SphereGeometry(1,6,3,0,Math.PI*2,0,Math.PI/2),new THREE.MeshLambertMaterial({flatShading:true}),N), stem=new THREE.InstancedMesh(new THREE.CylinderGeometry(.6,.8,1,5),new THREE.MeshLambertMaterial({color:0xe8e0cc,flatShading:true}),N);
   cap.count=stem.count=0; cap.castShadow=stem.castShadow=true; cap.frustumCulled=stem.frustumCulled=false; g.add(cap,stem); scene.add(g);
@@ -17,7 +22,7 @@ const FAIRY={list:[]}; window.FAIRY=FAIRY;
         stem.setMatrixAt(k,m4.compose(new THREE.Vector3(x,y+h*.5*w,z),q,new THREE.Vector3(h*.35*w,h*w,h*.35*w))); cap.setMatrixAt(k,m4.compose(new THREE.Vector3(x,y+h*w,z),q,new THREE.Vector3(h*.75*w*bob,h*.55*w,h*.75*w*bob)));
         cap.setColorAt(k,c.setHex(COL[r.kind][ph<.7?0:1])); k++; } }
     cap.count=stem.count=k; cap.instanceMatrix.needsUpdate=stem.instanceMatrix.needsUpdate=true; if(cap.instanceColor)cap.instanceColor.needsUpdate=true; };
-  SYS.add('world',(dt)=>{ const up=SHARED.LVL==='up'&&!ROOMS.cur&&PARK.in; g.visible=up; if(!up)return;
+  SYS.add('life',(dt)=>{ const up=SHARED.LVL==='up'&&!ROOMS.cur&&PARK.in; g.visible=up; if(!up)return;
     if((next-=dt)<=0){ next=70+Math.random()*90; if(FAIRY.list.length<MAX)spawn(); }
     for(const r of FAIRY.list.slice()){ r.t+=dt; if(r.t>r.life||Math.hypot(r.x-pos.x,r.z-pos.z)>60*T)drop(r); } if(FAIRY.list.length||cap.count)draw(); },'141b-fairy');
   window.FAIRYAT=()=>spawn(); }

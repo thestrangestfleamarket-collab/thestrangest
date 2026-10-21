@@ -1,4 +1,9 @@
 // BFLY: wild butterflies spawn on the lawn and flowerbed chunks near you (catch with a net, mount or release); their models come from BF.add, which lives in the later chunk.
+import {SHARED, THREE} from './003-shx.js';
+import {CLOCK, FORAGE, MAIL, PARK, pos, SFX, UI, W3, WEEDS, WX} from './003b-systems.js';
+import {scene} from './004-main.js';
+import {BF, SYS, TILE} from './006-map-pre.js';
+import {FLORA} from './142a-flora.js';
 const BFLY={}; window.BFLY=BFLY;
 { const T=TILE, {BF_KINDS}=SHARED.BOD.STOREK.bf, NK=BF_KINDS.length, say=FORAGE.say, use=FORAGE.use, WU=T/.84;
   const hsh=(a,b,s)=>{ let h=(Math.floor(a*97)*374761393+Math.floor(b*89)*668265263+s*1442695041)|0; h=(h^(h>>>13))*1274126177|0; return ((h^(h>>>16))>>>0)/4294967296; };
@@ -24,14 +29,14 @@ const BFLY={}; window.BFLY=BFLY;
   const HB=new THREE.BoxGeometry(.5*T,.4*T,.5*T), HM=new THREE.MeshBasicMaterial({visible:false});
   const drop=b=>{ scene.remove(b.g); const i=BF.list.indexOf(b); if(i>=0)BF.list.splice(i,1); if(b.th){ const j=UI.things.indexOf(b.th); if(j>=0)UI.things.splice(j,1); } };
   // BF.add is in the later chunk, which the start fetches only after the first frame, so hold every spawn until the start is up and later has loaded: it keeps a saved-spot start from a slow fetch, and keeps the start from pulling the later chunk in early
-  const bfGo=()=>{ if(!window.__started){ setTimeout(bfGo,200); return; } LOAD('later').then(()=>{ const a0=WEEDS.onAdd, d0=WEEDS.onDrop; WEEDS.onAdd=(key,grp)=>{ if(a0)a0(key,grp); if(!CH.has(key))CH.set(key,spawn(key,grp)); }; WEEDS.onDrop=key=>{ if(d0)d0(key); const L=CH.get(key); if(L){ L.forEach(drop); CH.delete(key); } };
+  const bfGo=()=>{ if(!window.__started){ setTimeout(bfGo,200); return; } LOAD('later').then(()=>{ SYS.add('weedsAdd',(key,grp)=>{ if(!CH.has(key))CH.set(key,spawn(key,grp)); },'143-bfly'); SYS.add('weedsDrop',key=>{ const L=CH.get(key); if(L){ L.forEach(drop); CH.delete(key); } },'143-bfly');
     if(WEEDS.chunks)for(const [k,g] of WEEDS.chunks)if(g&&g.sq)CH.set(k,spawn(k,g));
     let turn0=-1; setInterval(()=>{ const tn=Math.floor((window.CLOCK?CLOCK.h:12)/2); if(tn!==turn0&&WEEDS.chunks){ const first=turn0<0; turn0=tn; if(!first){ for(const L of CH.values())L.forEach(drop); CH.clear(); for(const [k,g] of WEEDS.chunks)if(g&&g.sq)CH.set(k,spawn(k,g)); } }
     beds(); const W=window.WX&&WX.now, hide=(window.CLOCK&&CLOCK.dark())||!!(W&&(W.rain>.25||W.snow>.25||W.wind>.8)); for(const L of CH.values())for(const b of L)b.g.visible=!hide; BFLY.out=!hide; },1000); }); };
   bfGo();
   BFLY.catch=b=>{ '@later'; if(!b.g.parent)return; const p=W3.group.position; if(Math.hypot(p.x-b.g.position.x,p.z-b.g.position.z)>1.8*T)return say('IT FLUTTERS OUT OF REACH.','#c8a090');
     const fly=!!b.dur, net=FORAGE.has('net'); if(fly&&!net)return say('IT IS ON THE WING. YOU NEED A NET (THE MUSHROOM SELLER HAS THEM), OR WAIT TILL IT SETTLES.','#c8a090');
-    const d=DIFF(b.k)+(fly?15:0)-(net?10:0); if(typeof SFX!=='undefined')SFX.play('step',{vol:.4});
+    const d=DIFF(b.k)+(fly?15:0)-(net?10:0); SFX.play('step',{vol:.4});
     if(use('ento',d-25,d+25)){ const known=DIFF(b.k)<12||use('ento',DIFF(b.k)-30,DIFF(b.k)+20); FORAGE.give((known?'b_':'bu_')+b.k,1);
       say(known?`YOU CATCH A ${BF_KINDS[b.k][0].toUpperCase()}${b.k>=12?'. A RARE ONE!':'.'}`:'YOU CATCH A BUTTERFLY YOU DO NOT KNOW.',b.k>=12?'#f2c14e':known?'#e8e2cc':'#c8b0ff');
       const L=CH.get(b.chunk); if(L){ const i=L.indexOf(b); if(i>=0)L.splice(i,1); } drop(b); }
@@ -44,3 +49,4 @@ const BFLY={}; window.BFLY=BFLY;
   FORAGE.ACT.bfree=id=>{ '@later'; const k=+id.slice(2); FORAGE.take(id,1); const p=W3.group.position, P=[[p.x,p.y+1.2*WU,p.z]]; for(let i=0;i<4;i++){ const a=i*1.7; P.push([p.x+Math.cos(a)*(3+i)*T,p.y+(1+i*.4)*WU,p.z+Math.sin(a)*(3+i)*T]); }
     const b=BF.add(k,P); b.until=0; setTimeout(()=>drop(b),20000); say('YOU LET IT GO. IT FLUTTERS AWAY.','#9fe07f'); };
   BFLY.list=()=>BF.list; window.BFLYDBG=()=>({near:[...CH.values()].reduce((a,L)=>a+L.length,0),chunks:CH.size,out:BFLY.out,kinds:[...CH.values()].flat().map(b=>BF_KINDS[b.k][0]),ento:FORAGE.sk('ento')}); }
+export {BFLY};

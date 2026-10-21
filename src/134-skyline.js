@@ -1,4 +1,11 @@
-const FAR3={};
+// THE SKYLINE: FAR3 builds the far city skyline, the fog and the distance haze.
+import {SHARED, THREE} from './003-shx.js';
+import {CLOCK, CULL, FAR3, pos, SKY, WX} from './003b-systems.js';
+import {renderer, RH, RW, scene} from './004-main.js';
+import {SAVE} from './005-save.js';
+import {MAPG, MISTB, MISTE, MISTF, MODS, OUT, PFAR, QS, SYS, TILE, ZU} from './006-map-pre.js';
+import {RINGX} from './065-ring.js';
+
 { const q=QS.get('far'); let on=q!=='0'; try{ if(q==null&&localStorage.getItem('market-haze2')==='0')on=false; }catch(e){}
   const HAZE0=26, HAZE1=q&&+q>0?+q:560;
   const FOG=new THREE.Fog(0x8fa3c0,1,2), fc=new THREE.Color(), pale=new THREE.Color(.74,.84,.98), navy=new THREE.Color(.08,.1,.17), V=new THREE.Vector3();
@@ -95,14 +102,14 @@ const FAR3={};
     P.forEach(([x,z,r,h,g],i)=>{ m4.compose(new THREE.Vector3(x,h-r*.7,z),q.setFromEuler(new THREE.Euler(0,g*6,0)),new THREE.Vector3(r,r*1.1,r)); TM.setMatrixAt(i*2,m4); TM.setColorAt(i*2,c.setHSL(.27+g*.06,.32,.2+g*.08));
       m4.compose(new THREE.Vector3(x+(g-.5)*r,h*.55,z+(g-.4)*r),q,new THREE.Vector3(r*.8,r*.9,r*.8)); TM.setMatrixAt(i*2+1,m4); TM.setColorAt(i*2+1,c.setHSL(.25+g*.05,.3,.17+g*.06)); });
     TM.frustumCulled=false; TM.receiveShadow=false; (MAPG.bodega||scene).add(TM); FAR3.trees=TM; FAR3.treeN=P.length; }
-  SYS.add('world',(dt)=>{
+  SYS.add('sky',(dt)=>{
     const up=SHARED.LVL!=='down', inside=!OUT.open; me.visible=FAR3.on&&up; if(TM){ TM.visible=up; TM.material.color.setRGB(1,1,1).lerp(FU.uMC.value,FU.uMK.value>0?.45:0); } if(pan){ pan.visible=me.visible; } if(me.visible&&!CULL.seen(FSP))me.visible=false; if(pan){ FAR3.PU.uNK.value=Math.max(0,Math.min(1,(FU.uLit.value-FL.wd)/Math.max(1e-3,FL.wn-FL.wd))); }
     FU.uHN.value=FL.hn; FU.uHF.value=FL.hf; FU.uHD.value=FL.hd; FU.uHS.value=Math.round(FL.hs); FU.uDT.value=FL.dt; if(SKY.U.uCov){ SKY.U.uZk.value=FL.zk; SKY.U.uHk.value=FL.hk; }
     FU.uLit.value=FL.wd+(FL.wn-FL.wd)*Math.max(0,Math.min(1,(1-CLOCK.elev())/6)); FU.uTW.value=performance.now()/1000/23;
     FU.uAmb.value=.55*Math.max(0,Math.min(1,(CLOCK.elev()+3)/12));
     FU.uMK.value=0; MISTE.x=0; if(SKY.U.uMistK)SKY.U.uMistK.value=0; if(!FAR3.on||inside||(scene.fog&&scene.fog!==FOG)){ if(scene.fog===FOG)scene.fog=null; return; }
     const day=Math.max(0,Math.min(1,(CLOCK.elev()+4)/14)), d=-V.copy(pos).applyMatrix4(SHARED.cam.matrixWorldInverse).z;
-    if(FAR3.mist){ const k=Math.max(0,Math.min(1,(CLOCK.elev()+6)/12)); FOG.color.copy(MN).lerp(MD,k).lerp(MH,Math.max(0,Math.min(1,(CLOCK.elev()-6)/40))); { const Wn=typeof WX!=='undefined'&&WX.now||{cloud:.2}, dk=Math.max(0,Math.min(1,(CLOCK.elev()-3)/10))*(1-Math.max(0,Math.min(1,(Wn.cloud-.4)/.5))); FOG.color.lerp(SKY.U.uH.value,Math.max(SKY.SC&&SKY.SC.sky?SKY.SC.sky*.45:0,dk*.6)); } if(SKY.SC&&SKY.SC.blood)FOG.color.lerp(SKY.MB,.4*SKY.SC.blood*(1-k)); FU.uMC.value.copy(FOG.color).multiplyScalar(.62); FU.uMK.value=.8; FU.uMP.value.copy(pos); FOG.near=1e6; FOG.far=2e6; MISTE.x=1; MISTE.y=FL.m0; MISTE.z=FL.m1; MISTF.x=FL.md; scene.fog=FOG; SKY.dome.visible=true; SKY.U.uMistK.value=1; SKY.U.uMistC.value.copy(FOG.color); scene.background.copy(FOG.color).multiplyScalar(.5); if(WX.cloudMist)WX.cloudMist(FOG.color); return; }
+    if(FAR3.mist){ const k=Math.max(0,Math.min(1,(CLOCK.elev()+6)/12)); FOG.color.copy(MN).lerp(MD,k).lerp(MH,Math.max(0,Math.min(1,(CLOCK.elev()-6)/40))); { const Wn=WX.now||{cloud:.2}, dk=Math.max(0,Math.min(1,(CLOCK.elev()-3)/10))*(1-Math.max(0,Math.min(1,(Wn.cloud-.4)/.5))); FOG.color.lerp(SKY.U.uH.value,Math.max(SKY.SC&&SKY.SC.sky?SKY.SC.sky*.45:0,dk*.6)); } if(SKY.SC&&SKY.SC.blood)FOG.color.lerp(SKY.MB,.4*SKY.SC.blood*(1-k)); FU.uMC.value.copy(FOG.color).multiplyScalar(.62); FU.uMK.value=.8; FU.uMP.value.copy(pos); FOG.near=1e6; FOG.far=2e6; MISTE.x=1; MISTE.y=FL.m0; MISTE.z=FL.m1; MISTF.x=FL.md; scene.fog=FOG; SKY.dome.visible=true; SKY.U.uMistK.value=1; SKY.U.uMistC.value.copy(FOG.color); scene.background.copy(FOG.color).multiplyScalar(.5); if(WX.cloudMist)WX.cloudMist(FOG.color); return; }
     FOG.color.copy(SKY.U.uH.value).lerp(SKY.U.uA.value,.4); FOG.near=d+HAZE0*TILE; FOG.far=d+HAZE1*TILE; scene.fog=FOG; },'134-skyline');
   const g=document.querySelector('#atmhaze'); if(g){ const b=document.createElement('button'); b.className='btn'; b.id='dhaze'; const draw=()=>{ b.textContent='DISTANCE HAZE '+(!FAR3.on?'OFF':FAR3.mist?'MIST':'FAR'); b.setAttribute('aria-pressed',String(FAR3.on)); };
     b.onclick=()=>{ if(!FAR3.on){ FAR3.on=true; FAR3.mist=true; } else if(FAR3.mist)FAR3.mist=false; else FAR3.on=false; try{ localStorage.setItem('market-haze2',!FAR3.on?'0':FAR3.mist?'1':'2'); }catch(e){} draw(); }; g.appendChild(b); draw(); }

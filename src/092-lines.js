@@ -1,4 +1,10 @@
-const LINES={log:[]};
+// THE LINES: LINES holds what characters say and shows it over their heads.
+import {SHARED, THREE} from './003-shx.js';
+import {CLOCK, LINES, LOOKS, SFX} from './003b-systems.js';
+import {renderer} from './004-main.js';
+import {SAVE} from './005-save.js';
+import {TILE} from './006-map-pre.js';
+Object.assign(LINES,{log:[]});
 { const POOL={
     greet:['Hello, {{name}}.','You again. Good.','Welcome to the market.','Watch your step out here.','Quiet tonight, isn\'t it?','Looking for something?','Hm? Oh. Hello.','Don\'t mind me.','The dragons are out again.','Mind the stairs down there.','Nice to see a face.','Hey there, {{name}}.'],
     cheer:['And stay down!','That\'s the last of him.','All clear.','Back to the beat.','They never learn.','Ha! Off he goes.','Street\'s safe, {{name}}.','Nothing to see.'],
@@ -20,7 +26,7 @@ const LINES={log:[]};
   LINES.recent=()=>recent.slice();
   const st=document.createElement('style'); st.textContent='.said2{position:fixed;transform:translate(-50%,-100%);font:12px var(--pixel);color:var(--fg);background:var(--panel);border:2px solid var(--line);padding:3px 7px;pointer-events:none;z-index:14;white-space:nowrap;max-width:240px}'; document.head.appendChild(st);
   const ON=[], MAX=3, V=new THREE.Vector3();
-  const you=()=>(typeof LOOKS!=='undefined'&&LOOKS.L&&LOOKS.L.name)||'';
+  const you=()=>(LOOKS.L&&LOOKS.L.name)||'';
   LINES.say=(N,k,ctx)=>{ '@later'; if(!N||!N.g)return ''; const text=POOL[k]?LINES.pick(k,Object.assign({name:you()},ctx||{})):String(k); if(!text)return '';
     const old=ON.findIndex(o=>o.N===N); if(old>=0){ ON[old].el.remove(); ON.splice(old,1); } while(ON.length>=MAX){ ON[0].el.remove(); ON.shift(); }
     const el=document.createElement('div'); el.className='said2'; document.body.appendChild(el);

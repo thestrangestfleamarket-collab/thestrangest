@@ -1,4 +1,11 @@
-const CLOCK={h:17.4,run:false,speed:1440/600,sunV:new THREE.Vector3(0,1,0),moonV:new THREE.Vector3(0,1,0)};
+// THE CLOCK: CLOCK keeps the hour and moves the sun and moon, their light and their shadows.
+import {SHARED, THREE} from './003-shx.js';
+import {CLOCK, NPCS, pos, ROOMS, W3} from './003b-systems.js';
+import {renderer, scene} from './004-main.js';
+import {QS, RING, TILE} from './006-map-pre.js';
+import {WATER} from './009-down.js';
+import {HEMI} from './064-map-post.js';
+Object.assign(CLOCK,{h:17.4,run:false,speed:1440/600,sunV:new THREE.Vector3(0,1,0),moonV:new THREE.Vector3(0,1,0)});
 { const D=Math.PI/180, sunL=new THREE.DirectionalLight(0xffffff,0), sunD=new THREE.DirectionalLight(0xffffff,0), sunF=new THREE.DirectionalLight(0xffffff,0), R=32*TILE, RD=20*TILE, FM=Math.min(4096,renderer.capabilities.maxTextureSize);
   for(const [L,r,m] of [[sunL,R,3072],[sunD,RD,2048],[sunF,R,FM]]){ L.castShadow=true; L.shadow.mapSize.set(m,m); Object.assign(L.shadow.camera,{left:-r,right:r,top:r,bottom:-r,near:.5,far:260*TILE}); L.shadow.camera.updateProjectionMatrix();
     L.shadow.bias=-.06/260; L.shadow.normalBias=+(QS.get("snb")||.12); L.shadow.autoUpdate=false; scene.add(L,L.target); }
@@ -31,7 +38,7 @@ const CLOCK={h:17.4,run:false,speed:1440/600,sunV:new THREE.Vector3(0,1,0),moonV
       const sc=sunF.shadow.camera, hr=(hi[0]-lo[0])/2, hu=(hi[1]-lo[1])/2, hd=(hi[2]-lo[2])/2+2*TILE; Object.assign(sc,{left:-hr,right:hr,top:hu,bottom:-hu,near:.5,far:2*hd+150*TILE}); sc.updateProjectionMatrix();
       sunF.target.position.copy(SR).multiplyScalar((lo[0]+hi[0])/2).addScaledVector(SU,(lo[1]+hi[1])/2).addScaledVector(dir,(lo[2]+hi[2])/2); sunF.position.copy(sunF.target.position).addScaledVector(dir,hd+150*TILE);
       sunF.target.updateMatrixWorld(); sunF.updateMatrixWorld(); sunF.shadow.bias=-.06*TILE/sc.far; sunF.shadow.normalBias=Math.max(sunL.shadow.normalBias,1.5*2*Math.max(hr,hu)/FM); };
-    const strong=sunL.intensity>.3, now=performance.now(), out=up&&!(typeof ROOMS!=='undefined'&&ROOMS.cur)&&sunL.intensity>0;
+    const strong=sunL.intensity>.3, now=performance.now(), out=up&&!(ROOMS.cur)&&sunL.intensity>0;
     if(out&&now-SC.st>1000){ SC.st=now; const g=sig(); if(g!==SC.g){ SC.g=g; SC.dirty=SC.fdirty=1; } }
     const stale=out&&(SC.d.dot(dir)<Math.cos(.4*D)||Math.hypot(SC.c.x-pos.x,SC.c.z-pos.z)>12*TILE||SC.lv!==SHARED.LVL);
     if(stale){ aim(sunL); SC.c.set(pos.x,SHARED.py,pos.z); SC.d.copy(dir); SC.lv=SHARED.LVL; sunL.shadow.needsUpdate=true; }
@@ -40,7 +47,7 @@ const CLOCK={h:17.4,run:false,speed:1440/600,sunV:new THREE.Vector3(0,1,0),moonV
     if(out&&SC.fdirty&&now-SC.ft>1e4){ SC.fdirty=0; SC.ft=now; sunF.shadow.needsUpdate=true; }
     sunD.intensity=0;
     if(sunL.intensity>0&&(strong||now-lastS>100||stale)){ aim(sunD); sunD.shadow.needsUpdate=true; lastS=now; }
-    if(typeof WATER!=='undefined')WATER.glowK=(typeof ROOMS!=='undefined'&&ROOMS.cur)||!up?1:Math.max(0,Math.min(1,(3-e)/8)); };
+    WATER.glowK=(ROOMS.cur)||!up?1:Math.max(0,Math.min(1,(3-e)/8)); };
   CLOCK.farBox=()=>{ const C=RING.cf, M=SHARED.BOD.MAP, T=TILE, xa=[C.x0,C.x1,M.x0,M.x1].map(SHARED.BOD.XS), za=[C.y0,C.y1,M.y0,M.y1].map(SHARED.BOD.ZS); return [Math.min(...xa)-8*T,-4*T,Math.min(...za)-8*T,Math.max(...xa)+8*T,40*T,Math.max(...za)+8*T]; };
   const sig=()=>{ const dy=DYN(); let g=0; const f=o=>{ if(!o.visible||dy.has(o))return; if(o.isMesh&&o.castShadow)g=(g*31+o.id+(o.isInstancedMesh?o.count*7919:0))|0; for(const c of o.children)f(c); }; f(scene); return g; };
   CLOCK.set=h=>{ CLOCK.h=((h%24)+24)%24; };

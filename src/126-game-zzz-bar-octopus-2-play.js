@@ -1,3 +1,10 @@
+// THE OCTOPUS PLAYING: the octopus's beats, moods and arm swings on the drums.
+import {hash3} from './004-main.js';
+import {IMKITBAR} from './117-pianist.js';
+import {imxNode, imxSend} from './119-game-music-1-engine.js';
+import {imAct} from './120-game-music-2-instruments.js';
+import {pupPaint} from './124-singer.js';
+import {octBody, OCTP, OCTS, OCTSEAT} from './125-game-zzz-bar-octopus-1-body.js';
 const OCT={t:0,g:0,gbar:0,last:-1,src:null,hits:{L:[],R:[],K:[],A:[],B:[]},mood:'groove',puff:{next:4000,at:-1e9},sip:{next:9000,at:-1e9},lev:.85,cig:null,slo:{th:0,w:0,px:null,vx:0},hat:false,pics:new Map(),key:'',cur:null,L:[1,1,1],lk:'',lightAt:-1e9,b:{octo:true,inst:true,playing:true,c:{name:'the drummer',dress:''}}};
 const OCTBK=.8, OCTD=(()=>{ const sp=IMKITBAR.sp, k=IMKITBAR.k, at=(dx,dy,z)=>[(dy*sp+OCTBK)*24,-dx*sp*24,z*k]; return [at(0,0,2),at(-.42,-.1,20),at(-.12,.12,30),at(.14,.12,31),at(.46,-.08,15),at(-.62,0,22),at(-.42,.34,40),at(.56,.3,36)]; })();
 const OCTG={rock:{beats:4,sub:2,bpm:104,kick:'X...XX..',sn:'..X...X.',hat:'xxxxxxxx'},
@@ -63,3 +70,5 @@ function octArms(p){ '@later'; const sh=[[4,7,26],[4,-7,26]], hand=(h,[i,k])=>{ 
   o.CG=mix([1,15*OCTS,Z+9],[9.4,2.6,Z+10],p.puff); o.CGA=mix([.5,1,.55],[.45,1,.05],p.puff);
   o.GL=mix([1,-15*OCTS,Z+7],[8.2,-5.2,Z+6],p.sip); o.GLP=p.sip*.55; o.LEV=p.lev; o.SL=p.sl;
   return o; }
+window.__octo={paint:(A,H,r=1)=>pupPaint(octBody(A),H,OCTP,r,{S:120}),arms:p=>octArms(p)};
+export {octArms, OCTBK, octHabits, octPose, octStep};

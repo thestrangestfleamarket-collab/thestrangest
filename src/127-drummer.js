@@ -1,4 +1,12 @@
-const DRM={tick:()=>{}}; STORE.DRM=DRM;
+// THE DRUMMER: DRM puts the octopus drummer and its drum kit in the bar.
+import {SHARED, THREE} from './003-shx.js';
+import {DRM, pos, SND} from './003b-systems.js';
+import {PPU} from './004-main.js';
+import {MAPG, STORE, ZU} from './006-map-pre.js';
+import {IMX} from './119-game-music-1-engine.js';
+import {octBody, OCTP} from './125-game-zzz-bar-octopus-1-body.js';
+import {octArms, OCTBK, octHabits, octPose, octStep} from './126-game-zzz-bar-octopus-2-play.js';
+Object.assign(DRM,{tick:()=>{}}); STORE.DRM=DRM;
 DRM.make=()=>{ if(!STORE.bar)return; const S=STORE.bar, AT={x:SHARED.BOD.X(S.drums.x),z:SHARED.BOD.Z(S.drums.y-OCTBK),hd:0,y:SHARED.BOD.Y(S.stage.z)}, g=new THREE.Group(); MAPG.bodega.add(g); DRM.g=g; DRM.at=AT;
   g.position.set(AT.x,AT.y,AT.z); g.rotation.set(0,AT.hd,0); g.scale.set(1/PPU,ZU,1/PPU);
   const CAP=160, im=new THREE.InstancedMesh(new THREE.SphereGeometry(1,10,8),new THREE.MeshLambertMaterial({}),CAP); im.instanceMatrix.setUsage(THREE.DynamicDrawUsage); im.castShadow=true; im.receiveShadow=true; im.frustumCulled=false; g.add(im);

@@ -1,3 +1,8 @@
+// THE FAR PARK: PFARM shapes the hills and land past the park's edge.
+import {SHARED, THREE} from './003-shx.js';
+import {scene} from './004-main.js';
+import {MAPG, MISTE, PFAR, SYS, TILE} from './006-map-pre.js';
+import {RINGX} from './065-ring.js';
 const PFARM={};
 { const T=TILE, B=RINGX.bound, cvn=SHARED.BOD.g.cvNoise, hash=SHARED.BOD.g.hash, ss=(a,b,v)=>{ const t=Math.max(0,Math.min(1,(v-a)/(b-a))); return t*t*(3-2*t); };
   const xa=PFAR.x/T, ya=PFAR.y/T, xe=B.x1/T, zn=B.z1/T, xl=PFAR.z/T+12, zl=PFAR.w/T+12, y0=SHARED.BOD.YS(0);

@@ -1,6 +1,12 @@
-const BROOK={}; window.BROOK=BROOK;
+// THE BROOK: BROOK builds the park's brook, its banks, riffles, pools and flowing water.
+import {SHARED, THREE} from './003-shx.js';
+import {BROOK, CLOCK, PARK, SFX, SKY} from './003b-systems.js';
+import {scene} from './004-main.js';
+import {FIX, MAPG, MODS, SOL, TILE, ZU} from './006-map-pre.js';
+import {FOUNT} from './060a-fount.js';
+ window.BROOK=BROOK;
 { const go=()=>{ '@park'; if(typeof PARK==='undefined'||!PARK.fire||!PARK.brook||!MODS.land)return setTimeout(go,500);
-    const P=PARK, BK=P.brook, {C,N,SL,B,W,L,D,RF}=BK, T=TILE, WU=T/.84, G0=-.5*ZU, X=x=>SHARED.BOD.XS(x+(P.ox||0)), Z=y=>SHARED.BOD.ZS(y+(P.oy||0)), grp=(typeof MAPG!=='undefined'&&MAPG.park)||scene;
+    const P=PARK, BK=P.brook, {C,N,SL,B,W,L,D,RF}=BK, T=TILE, WU=T/.84, G0=-.5*ZU, X=x=>SHARED.BOD.XS(x+(P.ox||0)), Z=y=>SHARED.BOD.ZS(y+(P.oy||0)), grp=(MAPG.park)||scene;
     const hs=(i,s)=>{ const v=Math.sin(i*12.9898+s*78.233)*43758.5453; return v-Math.floor(v); }, ss=(a,b,v)=>{ const t=Math.max(0,Math.min(1,(v-a)/(b-a))); return t*t*(3-2*t); };
     const bed=(x,y)=>{ const v=BK.h(x,y); return v==null?0:v; }, bedL=(x,y)=>{ const v=bed(x,y), d=-FOUNT.lake(x,y); return d>0?Math.min(v,-FOUNT.bedM(d)-(.04+G0)/WU):v; }, E=Math.ceil((W(SL)+B+1)/.5), row=k=>{ const kc=Math.max(0,Math.min(N,k)), c=C[kc], [nx,ny]=BK.nrm(kc), tx=ny, ty=-nx, o=(k-kc)*SL/N; return [c[0]+tx*o,c[1]+ty*o,c[2],nx,ny]; };
     const pool=s=>ss(SL-18,SL-6,s), rif=s=>[BK.sW,...RF].reduce((a,r)=>a+Math.exp(-(((s-r)/1.3)**2)),0), spd=s=>Math.max(.12,1+1.6*rif(s)-.9*pool(s));
@@ -89,8 +95,8 @@ const BROOK={}; window.BROOK=BROOK;
     const plash=c=>{ const n=Math.floor(c.sampleRate*.25), b=c.createBuffer(1,n,c.sampleRate), d=b.getChannelData(0); for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*Math.exp(-i/n*7); const s=c.createBufferSource(), F=c.createBiquadFilter(), G=c.createGain(); s.buffer=b; F.type='bandpass'; F.frequency.value=900+Math.random()*600; G.gain.value=.18*SFX.vol; s.connect(F).connect(G).connect(c.destination); s.start(); };
     BROOK.tick=(dt,pos)=>{ U.uT.value=performance.now()/1000%1000; const px=pos.x/T+72-(P.ox||0), py=pos.z/T-77-(P.oy||0), r=SHARED.LVL==='up'?BK.q(px,py):null, s=r?r[1]:0, h=r?BK.h(px,py):null, wade=r&&s>=BK.m&&h!=null&&h<L(s)-.04&&!BK.st.some(o=>Math.hypot(px-o[0],py-o[1])<o[2]);
       const mv=wade?Math.min(1,Math.hypot(pos.x-(BROOK.lx||pos.x),pos.z-(BROOK.lz||pos.z))/Math.max(dt,1e-3)/T):0; BROOK.lx=pos.x; BROOK.lz=pos.z; U.uMe.value.set(pos.x,pos.z,0,wade?.35+.65*mv:0); BROOK.wade=!!wade; BROOK.over=!!r;
-      if(typeof CLOCK!=='undefined'&&CLOCK.sun){ U.uSun.value.copy(CLOCK.sun.color).multiplyScalar(Math.min(1.2,CLOCK.sun.intensity)); U.uDay.value=Math.max(.15,Math.min(1,(CLOCK.elev()+4)/14)); } if(window.SKY&&SKY.U)U.uSky.value.copy(SKY.U.uH.value);
-      try{ const c=typeof SFX!=='undefined'&&SFX.live&&SFX.live(); if(c){ sound(c,r?Math.max(0,r[0]-W(s)):99,r?Math.min(1,rif(s)):0); if(wade&&mv>.3&&(splash-=dt)<0){ splash=.42; plash(c); } if(wade&&!wasIn)plash(c); } }catch(_){ } wasIn=!!wade; };
+      if(CLOCK.sun){ U.uSun.value.copy(CLOCK.sun.color).multiplyScalar(Math.min(1.2,CLOCK.sun.intensity)); U.uDay.value=Math.max(.15,Math.min(1,(CLOCK.elev()+4)/14)); } if(window.SKY&&SKY.U)U.uSky.value.copy(SKY.U.uH.value);
+      try{ const c=SFX.live&&SFX.live(); if(c){ sound(c,r?Math.max(0,r[0]-W(s)):99,r?Math.min(1,rif(s)):0); if(wade&&mv>.3&&(splash-=dt)<0){ splash=.42; plash(c); } if(wade&&!wasIn)plash(c); } }catch(_){ } wasIn=!!wade; };
     BROOK.tris=()=>[...banks,...waters.map(w=>w.me)].reduce((a,m)=>a+m.geometry.index.count/3,0)+BROOK.rocks.reduce((t,m)=>t+m.count*80,0)+BROOK.pebbles.reduce((t,m)=>t+m.count*20,0);
     BROOK.ready=true; };
   PARK.later(go); }

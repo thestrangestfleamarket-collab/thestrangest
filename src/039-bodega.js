@@ -1,4 +1,16 @@
 // THE BODEGA: the bodega's kits (dungeon, museum, lounge, theatre, castle), its layout, solids and build (grab('bodega')).
+import {SHARED, THREE} from './003-shx.js';
+import {CLIP, CLOCK, DRESS, LITE, pos, ROOMS, WALKERS} from './003b-systems.js';
+import {scene} from './004-main.js';
+import {BF, BLDK, BLOCK, CASTLE, cutWalls, EASTX, FIX, grab, lamps, LAY, LOTX, MAPG, MAPSTAIR, MODS, NEONS, NORTHX, OVERHEAD, PARKGX, RING, SOL, TILE, WESTX, WP, WROW, ZU} from './006-map-pre.js';
+import {PAINTC} from './006a-paintc.js';
+import {BATCH, OBJ} from './008-batch.js';
+import {BRICKS, CAT_DEPTS, CAT_INFO, CATALOG, COPE, cvNoise, DTBRICK, FP, grain, grassCol, hash, kerbCol, kerbFace, KIND_OF, LAMPS, lawnCol, LBLD, LIFE, LSEED, mt, prop, PROPL, rlf, roadCol, sh, sided, slabCol, speck, STORY, T, zShift} from './014-gamekit.js';
+import {bodegaFloorCol, bodegaWall} from './015-game-w-bodega-shop.js';
+import {MKS} from './016-street-kit.js';
+import {STUDIO} from './020-studio-kit.js';
+import {KEEPC, PRESETS, STOREK} from './023-west-kits.js';
+import {dgnRoom, dgnThings} from './038z-dungeon.js';
 {
 const {DGP,dgnLit,DGN,dgnWeb,dgnIvy,dgnRidge,dgnFoot,dgnStone,dgnDamp,dungeonWall,dungeonFloorCol}=dgnRoom(LBLD);
 dgnThings(CATALOG,CAT_INFO,LAMPS,CAT_DEPTS,DGP,dgnLit,DGN,dgnWeb);
@@ -1505,7 +1517,7 @@ await grab('bodega',async()=>{ const solids=SOL.up, fixed=FIX.up, SHL=[]; let BO
   { let q=0; for(const k of SHARED.BOD.kerbs){ if(k.at===MAP.x0||k.at===MAP.x1)continue; for(let a=k.a0+6;a<k.a1-4;a+=24){ if(inX(k.ax,k.at,a,2)||inJ(k.ax==='x'?a:k.at,k.ax==='x'?k.at:a,2))continue;
       const kind=q++%3===2?'speed':'nopark', p=k.at-k.n*.8; if(kind!=='speed')SG.push({kind,x:k.ax==='x'?a:p,y:k.ax==='x'?p:a,n:k.ax==='x'?[1,0]:[0,1]}); } } }
   SHARED.BOD.signs=[];
-  SHARED.BOD.road={KR,CORN,RR,at:ROADAT,MH,DR,LN}; window.STREETQ=()=>({...SHARED.BOD.road,XS:SHARED.BOD.XS,ZS:SHARED.BOD.ZS,CURB,FAR,MAP,RG,corner:typeof DRESS!=='undefined'&&DRESS.corner});
+  SHARED.BOD.road={KR,CORN,RR,at:ROADAT,MH,DR,LN}; window.STREETQ=()=>({...SHARED.BOD.road,XS:SHARED.BOD.XS,ZS:SHARED.BOD.ZS,CURB,FAR,MAP,RG,corner:DRESS.corner});
   SHARED.BOD.grounds=[
     {id:'shop',bld:true,x0:B0.x0,y0:B0.y0,x1:B0.x1,y1:B0.y1,z:.15,col:(x,y)=>bodegaFloorCol(x,y),tex:'concrete_floor_worn_001',tint:[112,116,124],rep:3},
     {id:'walk',x0:MAP.x0,y0:W,x1:MAP.x1,y1:CURB-.16,z:0,col:holed(slabCol),tex:'concrete_pavement',tint:[166,161,148],rep:2},
@@ -1660,7 +1672,7 @@ SHARED.BOD.streetSigns=()=>{ const X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, V3=THREE.Ve
     else if(g.kind==='nopark'){ const S=frame(x,y,g.n,s); post(S,108); plate(S,1,70,106,1.1*TILE,nopark(s,h3(s,31,1)<.5?0:1),{bend}); plate(S,-1,70,106,1.1*TILE,nopark(s+11,h3(s,31,1)<.5?0:-1)); }
     else if(g.kind==='speed'){ const S=frame(x,y,g.n,s); post(S,124); plate(S,-1,62,122,2*TILE,speed(s),{bend:bend*.6}); } });
   BATCH.tag=null; };
-// BUILDING THE BODEGA: faces batched into meshes, the ground painted a patch at a time round you (BODB.gnear), lamps and goods.
+// BUILDING THE BODEGA: faces batched into meshes, the ground painted a patch at a time round you (a BATCH.queue), lamps and goods.
 SHARED.BODB={};
 { const {X,Y,Z,B0,BODOFF}=SHARED.BOD, {bodegaWall,grain,speck,COPE,hash}=SHARED.BOD.g, H=B0.h, KINDS={};
   const inside=()=>SHARED.BOD.inside(pos.x,pos.z)||!!(window.ROOMS&&ROOMS.cur&&ROOMS.cur.lz==='bodega'); SHARED.BODB.inside=inside;
@@ -1769,13 +1781,7 @@ SHARED.BODB={};
     for(const w of SHARED.BOD.WALLS)for(const me of BATCH.all(M,'W'+w.id))cutWalls.push({pl:planes[w.id],nx:NRM[w.id][0],nz:NRM[w.id][1],foot:Y(8),me,when:inside}); };
   BATCH.cast=true; BATCH.build(MK); BATCH.cast=false; Object.assign(KINDS,BATCH.meshes); BATCH.meshes={}; post(KINDS);
   SHARED.BODB.roof=BATCH.all(KINDS,'R');
-  { const gd=(j,x,z)=>Math.hypot(Math.max(j.x0-x,0,x-j.x1),Math.max(j.z0-z,0,z-j.z1)); let HOLD=[], hn=0, gt=0; window.BODB=SHARED.BODB;
-    const paint=L=>{ const keep=BATCH.items.splice(0), tg=BATCH.tag; BATCH.tag=null; for(const j of L){ GQ.splice(GQ.indexOf(j),1); j.go(); hn++; } HOLD.push(...BATCH.items.splice(0)); BATCH.items=keep; BATCH.tag=tg; };
-    const flush=()=>{ if(!HOLD.length)return; const keep=BATCH.items.splice(0), m0=BATCH.meshes; BATCH.meshes={}; BATCH.items=HOLD; HOLD=[]; hn=0;
-      BATCH.cast=false; BATCH.build(MK); const M=BATCH.meshes||{}; BATCH.meshes=m0; BATCH.items=keep; for(const k in M)(MAPG.bodega||scene).add(M[k]); post(M); };
-    SHARED.BODB.gnear=(x,z,R)=>{ const L=GQ.filter(j=>gd(j,x,z)<R); if(L.length){ paint(L); flush(); } };
-    SHARED.BODB.gtick=dt=>{ if(!GQ.length&&!HOLD.length)return; SHARED.BODB.gnear(pos.x,pos.z,SHARED.BODB.GR); if((gt+=dt)<.05)return; gt=0;
-      const t0=performance.now(); while(GQ.length&&performance.now()-t0<6){ let b=null, bd=1e9; for(const j of GQ){ const d=gd(j,pos.x,pos.z); if(d<bd){ bd=d; b=j; } } paint([b]); } if(hn>=24||!GQ.length){ flush(); if(!GQ.length&&window.PAINTC)PAINTC.save(); } }; SHARED.BODB.GR=48*TILE; }
+  { window.BODB=SHARED.BODB; const Q=BATCH.queue({make:MK,cast:false,group:()=>MAPG.bodega||scene,post,R:48*TILE,done:()=>{ if(window.PAINTC)PAINTC.save(); }}); for(const g of GQ)Q.jobs.push(g); GQ.length=0; SHARED.BODB.GQ=Q.jobs; }
   const goods=()=>{ '@later'; const {GOOD,GLAY}=SHARED.BOD, O=SHARED.BOD.O, list=[];
     const row=(p,f,zpx,items)=>{ const along=f[0]?1:0, a1=along?p.y1:p.x1, yaw=Math.atan2(-f[0],f[1]); let a=(along?p.y0:p.x0)+.08, last=null;
       for(const [k,n,...args] of items){ if(last&&last!==k)a+=.04; last=k;
@@ -1844,7 +1850,7 @@ SHARED.BODB={};
     { const t=tex(k,2); up.scale.set(t.w*s,t.h*s,1); up.position.y=t.h*s/2; } g.add(flat,up); flat.visible=false;
     const b={k,name:BF_KINDS[k][0],g,flat,up,M,perches,at:0,to:0,t0:0,dur:0,until:2+Math.random()*6,span:s,t:Math.random()*10,pose:2};
     g.position.set(...perches[0]); scene.add(g); BF.list.push(b); return b; };
-  BF.tick=dt=>{ '@later'; const dark=typeof CLOCK!=='undefined'&&CLOCK.dark();
+  BF.tick=dt=>{ '@later'; const dark=CLOCK.dark();
     for(const b of BF.list){ b.t+=dt; const t=b.t; let pose=2, P;
       if(b.dur&&t<b.t0+b.dur){ const u=(t-b.t0)/b.dur, A=b.perches[b.at], Cc=b.perches[b.to], dx=Cc[0]-A[0], dz=Cc[2]-A[2], L=Math.hypot(dx,dz)||1, hump=Math.sin(Math.PI*u)*.35*TILE, zig=Math.sin(u*Math.PI*5)*.06*TILE;
         P=[A[0]+dx*u+zig*dz/L,A[1]+(Cc[1]-A[1])*u+hump+Math.sin(t*9)*.05,A[2]+dz*u-zig*dx/L]; pose=[0,1,2,1][Math.floor(t*12)%4]; b.g.rotation.y=Math.atan2(dx,dz); }
@@ -1859,3 +1865,26 @@ MODS.bodega={BOUND,ground:groundY};
  for(const w of cutWalls.slice(c0))if(!w.when)w.when=()=>SHARED.BODB.inside(); for(const L of SHL)L.removeFromParent(); });
 const FOREST=__DATA__("data/forest.json");
 const PROPS=__DATA__("data/props.json");
+function gdShape(GS,K,LAMPS){ const s=K.s, o=K.o, SC=1.5, cx=o[0]+4*s, Y1=o[1]+3.2*s, W=6.8*s*SC, D=3*s*SC, X0=cx-W/2, X1=cx+W/2, Y0=Y1-D, dx=(W-6.8*s)/2;
+  for(let i=GS.length-1;i>=0;i--){ const p=GS[i]; for(let j=LAMPS.length-1;j>=0;j--)if(LAMPS[j].prop===p)LAMPS.splice(j,1); GS.splice(i,1); }
+  const G=SHARED.BOD.GDK={o,s,SC,X0,X1,Y0,Y1,W,D,cx,y1e:o[1]+8.3*s};
+  G.ground={x0:X0-1.6,x1:X1+1.6};
+  G.pool=[X0+.22,Y0+.22,X1-.22,(Y0+Y1)/2+.15];
+  G.court=(x,y)=>{ const {hash,grain}=SHARED.BOD.g, sh=SHARED.BOD.K.sh, px=Math.floor(x*24), py=Math.floor(y*24);
+    const out=x<X0||x>X1||y<Y0||y>Y1; if(!out)return x>G.pool[0]&&x<G.pool[2]&&y>G.pool[1]&&y<G.pool[3]?null:[96,90,84];
+    const dEave=Math.max(X0-x,x-X1,Y0-y,y-Y1);
+    const wet=G.puddles.some(([pcx,pcy,rx,ry])=>{ const u=(x-pcx)/rx, v=(y-pcy)/ry; return u*u+v*v+(grain(x*3,y*3,611,.6)-.5)*.5<1; });
+    let c;
+    if(dEave<.42){ const cx_=Math.floor(px/3), cy_=Math.floor(py/3), h=hash(cx_,cy_,612), ix=px-cx_*3, iy=py-cy_*3;
+      c=[66,68,76]; }
+    else if(Math.abs(x-(X0+W/2))<1.35&&y>Y1){ const row=Math.floor((y-Y1-.42)/.82), off=hash(row,3,613)*.9, col=Math.floor((x-X0-W/2+1.35+off)/1.05), fu=((x-X0-W/2+1.35+off)/1.05)%1, fv=((y-Y1-.42)/.82)%1;
+      const j=fu<.05||fv<.06, bev=fu<.1||fv<.11?1.1:fu>.93||fv>.92?.84:1, t=hash(col,row,614);
+      if(j)c=grain(x*2,y*2,615,.5)>.55?[66,88,50]:[46,44,46];
+      else c=sh([[132,130,128],[118,118,120],[146,142,136],[124,120,116]][Math.floor(t*4)],bev*(.95+.08*hash(px,py,616)));
+      if(!j&&hash(px>>1,py>>1,617)<.02)c=sh(c,.8); }
+    else{ c=grain(x*.3,y*.3,618,.8)>.6?[124,120,114]:[136,132,126]; if(grain(x*.5,y*.5,619,.8)>.7)c=[90,108,64]; }
+    if(y>G.y1e-.22)c=sh([150,148,144],y>G.y1e-.06?.8:1.05+.05*hash(px,0,620));
+    if(wet)c=sh(c.map((v,i)=>v*[.68,.72,.84][i]),hash(px>>1,py,621)<.1?1.15:1);
+    return c; };
+  G.puddles=[[X0+3.1,Y1+1.75,1.15,.55],[X0+10.7,Y1+1.9,1.3,.6],[X0+W/2+1.8,Y1+3.3,.6,.35]]; }
+export {FOREST, PROPS};

@@ -1,3 +1,4 @@
+// THE SHARED START: loads three.js, makes the SHARED object, and watches shader edits (SHX) that miss their target.
 
 
 import * as THREE from 'three';
@@ -11,3 +12,4 @@ const SHX=window.SHX={miss:[],seen:new Set(),on:new URLSearchParams(location.sea
     get(){ return this._obc||D.value; },
     set(f){ if(typeof f!=='function'){ this._obc=f; return; } const m=this, w=function(sh,r){ const pc=cur; cur=m; String.prototype.replace=rep; try{ return f.call(this,sh,r); } finally{ cur=pc; if(!cur)String.prototype.replace=R; } };
       w.toString=()=>f.toString(); this._obc=w; }}); }
+export {SHARED, THREE};

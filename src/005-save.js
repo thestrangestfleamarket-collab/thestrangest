@@ -1,3 +1,4 @@
+// THE SAVE: SAVE keeps the player's saved settings and progress in one local storage key, moving old saves forward.
 const SAVE=(()=>{ const KEY='market-save', V=4;
   const migrate=o=>{
     if(+o.v<2){ for(const k of ['looks','walker','body','face'])delete o[k]; try{ for(const k of ['market-avatar','market-toe','market-wear','market-bodytype','market-avatarpick','market-speed'])localStorage.removeItem(k); }catch(e){} }
@@ -16,3 +17,4 @@ const SAVE=(()=>{ const KEY='market-save', V=4;
     all:()=>Object.assign({},S),
     clear:()=>{ S={v:V}; try{ localStorage.removeItem(KEY); }catch(e){} }};
   return A; })();
+export {SAVE};

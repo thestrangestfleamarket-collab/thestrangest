@@ -1,4 +1,11 @@
-const DN={lk:1,mode:'day'};
+// THE DAY AND NIGHT: DN sets the day and night looks and the panel for tuning them.
+import {SHARED} from './003-shx.js';
+import {CLOCK, DN, FAR3, PARK, SKY, WX} from './003b-systems.js';
+import {scene} from './004-main.js';
+import {SAVE} from './005-save.js';
+import {MISTE, QS, SYS, TILE} from './006-map-pre.js';
+import {HEMI} from './064-map-post.js';
+Object.assign(DN,{lk:1,mode:'day'});
 { const U=SKY.U, Q=k=>(QS.get(k)??''), D0={day:{h:15.5,sun:1,amb:1,zen:'#3d7ed8',hor:'#cfe2f4',cld:.15,cy:12,cb:1.05,cov:.6,cl:1.25,m0:48,m1:34,hz:.6,lamp:1,star:1,moon:1},
     night:{h:22.5,sun:1.3,amb:1.25,zen:'#04060e',hor:'#141c40',cld:.1,cy:4,cb:.75,cov:.62,cl:.85,m0:34,m1:26,hz:.25,lamp:1.25,star:1.3,moon:1}};
   const F=[['h','SUN HEIGHT (THE HOUR)',7.5,18,.05,'d'],['h','NIGHT HOUR (WHERE THE MOON IS)',19.5,29.5,.05,'n'],['sun','SUNLIGHT',0,2,.01,'d'],['sun','MOONLIGHT',0,3,.01,'n'],['amb','LIGHT ALL ROUND',0,3,.01],
@@ -12,7 +19,7 @@ const DN={lk:1,mode:'day'};
   const fix=()=>{ const P=DN.P(); WX.fix={cloud:P.cld,rain:0,snow:0,storm:0,wind:DN.mode==='night'?.08:.15,dir:1,fog:0}; WX.cy=P.cy*TILE; window.PARK&&PARK.lampLit&&PARK.lampLit(); };
   DN.set=m=>{ DN.mode=m; if(!DN.test)try{ SAVE.set('dn',m); }catch(e){} fix(); DN.draw(); };
   SYS.add('clockPre',()=>{ if(!CLOCK.run)CLOCK.h=((DN.P().h%24)+24)%24; },'134b-daynight');
-  SYS.add('world',()=>{ const P=DN.P(), night=DN.mode==='night', up=SHARED.LVL!=='down';
+  SYS.add('sky',()=>{ const P=DN.P(), night=DN.mode==='night', up=SHARED.LVL!=='down';
     CLOCK.sun.intensity*=P.sun; if(up)HEMI.intensity*=P.amb; DN.lk=night?P.lamp:1;
     if(WX.clouds){ const M=WX.clouds.material; M.color.multiplyScalar(P.cb); M.emissive.multiplyScalar(P.cb); }
     if(SKY.dome.visible){ U.uZ.value.set(P.zen); U.uH.value.set(P.hor); U.uM.value.copy(U.uH.value).lerp(U.uZ.value,.45); U.uCov.value=P.cov; U.uCL.value=P.cl;

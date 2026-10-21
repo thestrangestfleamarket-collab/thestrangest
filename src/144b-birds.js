@@ -1,3 +1,12 @@
+// THE BIRDS: BIRDS, the town's birds that hop, walk and fly, and that the player can catch.
+import {SHARED, THREE} from './003-shx.js';
+import {CLOCK, DRESS, FORAGE, INV, MAIL, NPCS, PARK, pos, ROOMS, SFX, UI, WEEDS, WX} from './003b-systems.js';
+import {scene} from './004-main.js';
+import {SAVE} from './005-save.js';
+import {SYS, TILE} from './006-map-pre.js';
+import {PARTSNPC} from './080-npc-parts.js';
+import {FLORA} from './142a-flora.js';
+import {GARDEN} from './144a-garden.js';
 const BIRDS={list:[]}; window.BIRDS=BIRDS;
 { const T=TILE, WU=T/.84, say=FORAGE.say, use=FORAGE.use, KEY='birds', {shape,sph,cyl,box,blob}=PARTSNPC.T, VIS=1.5;
   const K=[['HOUSE SPARROW','Passer domesticus',.15,0,3,6,'hop',{body:0x8a6a4a,breast:0xb8ae9c,head:0x8a8a86,cap:0x6e6e70,mask:0x2a2622,wing:0x7a5232,bar:0xe8e0d0,tail:0x5a4632,beak:0x2a2622,leg:0xb08a70}],
@@ -41,8 +50,8 @@ const BIRDS={list:[]}; window.BIRDS=BIRDS;
     if(park&&!PARK.in||hsh(cx/T+d,cz/T,703)>(park?.75:.3))return; const k=pickC(hsh(cx/T+d*3,cz/T,705),deep&&hsh(cz/T,cx/T+d,707)<.25); if(k===HAWK)return; const n=flockN(k,hsh(cx/T,cz/T+d,709)), sp=[];
     for(let i=0;i<Q.length&&sp.length<8;i+=3){ const x=Q[i], z=Q[i+2]; if(Math.hypot(x-cx,z-cz)>3*T||hsh(x/T+d,z/T,711)>.3)continue; sp.push([x,grp.top(x,Q[i+1],z),z]); } if(sp.length<2)return;
     for(let j=0;j<n;j++){ const p=sp[j%sp.length], b=add(k,p[0]+(Math.random()-.5)*.6*T,p[1],p[2]+(Math.random()-.5)*.6*T,{src:key,spots:sp}); } };
-  const CHK=new Set(); { const a0=WEEDS.onAdd, d0=WEEDS.onDrop; WEEDS.onAdd=(key,grp)=>{ if(a0)a0(key,grp); if(!CHK.has(key)){ CHK.add(key); chunk(key,grp); } };
-    WEEDS.onDrop=key=>{ if(d0)d0(key); CHK.delete(key); for(const b of [...BIRDS.list])if(b.src===key)drop(b); }; if(WEEDS.chunks)for(const [k,g] of WEEDS.chunks)if(g&&g.sq){ CHK.add(k); chunk(k,g); } }
+  const CHK=new Set(); { SYS.add('weedsAdd',(key,grp)=>{ if(!CHK.has(key)){ CHK.add(key); chunk(key,grp); } },'144b-birds');
+    SYS.add('weedsDrop',key=>{ CHK.delete(key); for(const b of [...BIRDS.list])if(b.src===key)drop(b); },'144b-birds'); if(WEEDS.chunks)for(const [k,g] of WEEDS.chunks)if(g&&g.sq){ CHK.add(k); chunk(k,g); } }
   const street=()=>{ if(!window.DRESS||!DRESS.kerb||typeof SHARED.groundY==='undefined')return; const {sw,far}=DRESS.kerb, side=Math.abs(pos.z-sw)<Math.abs(pos.z-far)?-1:1, zk=side<0?sw:far;
     if(Math.abs(pos.z-zk)>14*T||BIRDS.list.filter(b=>b.src==='street').length>=6)return; const x=Math.min(SHARED.BOUND.x1-T,Math.max(SHARED.BOUND.x0+T,pos.x+(Math.random()<.5?-1:1)*(7+Math.random()*9)*T));
     const r=Math.random(), k=r<.6?1:r<.88?0:2, sp=[]; for(let i=0;i<6;i++){ const sx=x+(Math.random()-.5)*3*T, sz=zk+side*(.4+Math.random()*1.2)*T; sp.push([sx,SHARED.groundY(sx,sz),sz]); }
@@ -99,7 +108,7 @@ const BIRDS={list:[]}; window.BIRDS=BIRDS;
     if(S.seed){ S.seed.t-=dt; if(S.seed.t<=0)S.seed=null; } const n={};
     for(const b of [...BIRDS.list]){ const pet=b.st==='pet', show=pet||out; b.hb.visible=show&&!pet&&b.st!=='hid'; if(!show)continue; if(!pet&&(Math.hypot(b.x-pos.x,b.z-pos.z)>45*T||!NPCS.seen(b.x,b.y,b.z,1.5*T)))continue; if(pet||NPCS.live(b.x,b.y,b.z,1.5*T))step(b,dt); if(BIRDS.list.includes(b))place(b,n); }
     for(const p in ME){ const me=ME[p]; me.count=n[p]||0; me.instanceMatrix.needsUpdate=true; if(me.instanceColor)me.instanceColor.needsUpdate=true; } BIRDS.shown=n.body||0; };
-  { SYS.add('world',(dt)=>{ BIRDS.tick(dt); },'144b-birds'); }
+  { SYS.add('life',(dt)=>{ BIRDS.tick(dt); },'144b-birds'); }
   const B='style="margin:0 4px 0 0;font:inherit;color:#ece5d3;background:#0e1016;border:2px solid #3a3f4e;padding:3px 8px;cursor:pointer"';
   const P=document.createElement('div'); P.id='birdp'; P.hidden=true; P.style.cssText='position:fixed;left:50%;top:14%;transform:translateX(-50%);width:min(380px,92vw);z-index:21;padding:12px 14px;font:11px Silkscreen,monospace;letter-spacing:.4px;color:#d8dae2;background:#0b0d13f2;border:2px solid #3a3f4e;zoom:var(--uiz,1)';
   document.body.appendChild(P); P.addEventListener('keydown',ev=>ev.stopPropagation());
@@ -118,7 +127,7 @@ const BIRDS={list:[]}; window.BIRDS=BIRDS;
     tame:b=>{ '@later'; if(b.k===HAWK)return say('A HAWK WILL NOT TAKE SEED FROM YOUR HAND.','#c8a090'); if(!FORAGE.has('bseed'))return say('YOU NEED BIRDSEED (THE MUSHROOM SELLER HAS IT).','#c8a090');
       FORAGE.take('bseed',1); const d=DIFF(b.k)+15; if(use('bird',d-20,d+30)){ if(!S.seen[b.k])log(b); makePet(b.k,b); } else { say('IT TAKES THE SEED AND FLIES OFF.','#c8a090'); flush(b); } },
     catch:b=>{ '@later'; if(!FORAGE.has('bnet'))return say('YOU NEED A BIRD NET (THE MUSHROOM SELLER HAS THEM).','#c8a090'); if(b.k===HAWK)return say('A HAWK IS FAR TOO BIG FOR YOUR NET.','#c8a090');
-      if(!FORAGE.has('cage'))return say('YOU NEED AN EMPTY CAGE TO PUT IT IN.','#c8a090'); const d=DIFF(b.k)+10; if(typeof SFX!=='undefined')SFX.play('step',{vol:.4});
+      if(!FORAGE.has('cage'))return say('YOU NEED AN EMPTY CAGE TO PUT IT IN.','#c8a090'); const d=DIFF(b.k)+10; SFX.play('step',{vol:.4});
       if(use('bird',d-25,d+25)){ FORAGE.take('cage',1); FORAGE.give('bd_'+b.k,1); if(!S.seen[b.k])log(b); say(`YOU NET THE ${K[b.k][0]} AND CAGE IT.`,'#b8f0a0'); drop(b); } else { say('YOUR NET SWISHES THROUGH EMPTY AIR.','#c8a090'); flush(b); } },
     free:b=>{ freePet(); }};
   BIRDS.net=b=>{ ACT.catch(b); FORAGE.draw(); };
@@ -140,3 +149,4 @@ const BIRDS={list:[]}; window.BIRDS=BIRDS;
   { const pk=Object.keys(INV.items).find(id=>id.startsWith('pet_')); if(pk){ const k=+pk.slice(4); const b=add(k,pos.x,SHARED.py+1.4*WU,pos.z); b.st='pet'; b.src='pet'; b.th.name='YOUR TAME '+K[k][0]; } }
   BIRDS.K=K; BIRDS.T=T; BIRDS.ME=ME; BIRDS.add=add; BIRDS.drop=drop; BIRDS.S=S;
   window.BIRDDBG=()=>({out:BIRDS.out,n:BIRDS.list.length,shown:BIRDS.shown,tris:TRIS,kinds:BIRDS.list.map(b=>K[b.k][0]+':'+b.st),seen:{...S.seen},seed:S.seed,bird:FORAGE.sk('bird')}); }
+export {BIRDS};

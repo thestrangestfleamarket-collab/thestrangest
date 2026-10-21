@@ -1,4 +1,8 @@
 // RIGNPC: a character rig from bones and parts (smooth skin weights, see-through parts) or a baked skinned mesh; its springs, walk and limbs.
+import {SHARED, THREE} from './003-shx.js';
+import {B64} from './003a-skin.js';
+import {QS, TILE} from './006-map-pre.js';
+import {makeNPC} from './076-npc-map.js';
 const RIGNPC={};
 { const V1=new THREE.Vector3(), M1=new THREE.Matrix4();
   RIGNPC.make=(def,o)=>{ const bones=[], by={}, GL=(def.parts||[]).filter(p=>p.glass); def=Object.assign({},def,{parts:(def.parts||[]).filter(p=>!p.glass)});
@@ -69,3 +73,4 @@ const RIGNPC={};
     if(B.chest)B.chest.rotation.y=-sw*.08; if(B.head)B.head.rotation.y=c.look; };
   RIGNPC.hold=i=>QS.get('toonhold')?{brain:(dt,you,st)=>{ const cx=SHARED.cam.position.x-you.x, cz=SHARED.cam.position.z-you.z, d=Math.hypot(cx,cz)||1, k=(i-2)*1.25*TILE;
     st.to=null; st.hold=true; st.x=you.x-cz/d*k; st.z=you.z+cx/d*k; st.face={x:SHARED.cam.position.x,z:SHARED.cam.position.z}; }}:{}; }
+export {RIGNPC};

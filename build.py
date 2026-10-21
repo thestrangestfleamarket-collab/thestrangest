@@ -19,7 +19,11 @@ def npm(m):
         sys.exit(p + '@' + v + ' in the code, but package.json has another version')
     return 'location.origin+"/g/__NAV__"' if p.startswith('@recast-navigation/') else json.dumps(p)
 
-page = ''.join(read(f) for f in src).replace('__BUILDV__', bv)
+imp = subprocess.run(['node', '--stack-size=8000', 'tools/imports.cjs'], capture_output=True, text=True)
+if imp.returncode: sys.exit(imp.stderr or imp.stdout)
+LOCAL = re.compile(r"^(?:import \{[^}\n]*\} from '\./[^'\n]+';|export \{[^}\n]*\};)[ \t]*$", re.M)
+blank = lambda t: LOCAL.sub(lambda m: ' ' * len(m.group(0)), t)
+page = ''.join(blank(read(f)) for f in src).replace('__BUILDV__', bv)
 i = page.index('<script type="module">') + len('<script type="module">')
 j = page.rindex('</script>')
 os.makedirs('dist', exist_ok=True)

@@ -1,4 +1,9 @@
-const CIVIC={row:[],staff:{},log:[],ledger:{treasury:500,day:0,tax:10,wage:20,curfew:[23,5]},shops:{},mail:{bag:[],boxes:{}},fires:[],cans:[]}; window.CIVIC=CIVIC;
+// THE CIVIC: CIVIC builds the firehouse, clinic and precinct and keeps the town's staff, ledger and log.
+import {SHARED, THREE} from './003-shx.js';
+import {CITY, CIVIC, CLOCK, FAR3, MAIL, UI} from './003b-systems.js';
+import {AWAY, FIX, MAPG, MODS, RING, SOL, TILE, ZU} from './006-map-pre.js';
+import {PEEK} from './008-batch.js';
+Object.assign(CIVIC,{row:[],staff:{},log:[],ledger:{treasury:500,day:0,tax:10,wage:20,curfew:[23,5]},shops:{},mail:{bag:[],boxes:{}},fires:[],cans:[]}); window.CIVIC=CIVIC;
 { const T=TILE, M=1/.84*T, YS=ZU*24/TILE, G=(x,z)=>MODS.bodega.ground(x,z);
   CIVIC.note=(what,where)=>{ CIVIC.log.unshift({t:CLOCK.h,day:CITY.day,what,where:where||''}); if(CIVIC.log.length>80)CIVIC.log.length=80; };
   const HOUSES=[['firehouse','THE FIREHOUSE',0x9a2b22,0xe8c070],['clinic','THE CLINIC',0xe8e6e0,0xc8302a],['precinct','THE PRECINCT',0x2b3f7a,0x7f9ad8],['post','THE POST OFFICE',0x2f5f9e,0xe8e4d8],['depot','THE DEPOT',0xb86a1e,0x3a2a1a],['hall','CITY HALL',0x8a8478,0xd8c890]];

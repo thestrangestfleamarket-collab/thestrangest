@@ -1,3 +1,9 @@
+// THE DUTIES: the town staff's calls out, putting out fires, treating the hurt and picking up the trash.
+import {SHARED, THREE} from './003-shx.js';
+import {B64, SKIN} from './003a-skin.js';
+import {CITY, CIVIC, CLOCK, DRESS, LITE, NPCS, pos, VIT, WX} from './003b-systems.js';
+import {MAPG, MODS, SYS, TILE, ZU} from './006-map-pre.js';
+import {FLAME} from './007-fire.js';
 const VEHD=__DATA__("data/trashbag.json");
 if(CITY.on){ const T=TILE, S_=CIVIC.staff, H_=CIVIC.house, log=CIVIC.note, G=(x,z)=>MODS.bodega.ground(x,z);
   const far=(a,b)=>Math.hypot(a.x-b.x,a.z-b.z)>18*T;

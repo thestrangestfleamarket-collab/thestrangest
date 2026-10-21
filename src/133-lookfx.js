@@ -1,3 +1,8 @@
+// THE LOOK EFFECTS: LFX's shading, ambient occlusion and wetness on the world, by weather and hour.
+import {SHARED, THREE} from './003-shx.js';
+import {CLOCK, LOOK, PARK, pos, ROOMS, WEEDS, WX} from './003b-systems.js';
+import {scene} from './004-main.js';
+import {LFX, OUT, SOL, SYS, TILE} from './006-map-pre.js';
 { const F=LFX.on, cl=v=>Math.max(0,Math.min(1,v));
   if(LFX.shade){ const E=LFX.env.image.data;
     const h=(x,y)=>{ const s=Math.sin(((x%16+16)%16)*127.1+((y%16+16)%16)*311.7)*43758.5453; return s-Math.floor(s); }, vn=(x,y)=>{ const i=Math.floor(x), j=Math.floor(y), u=x-i, v=y-j, a=u*u*(3-2*u), b=v*v*(3-2*v);
@@ -9,14 +14,14 @@
       for(let j=H-1;j>=0;j--)for(let i=W-1;i>=0;i--){ const k=j*W+i; if(i<W-1)D[k]=Math.min(D[k],D[k+1]+1); if(j<H-1)D[k]=Math.min(D[k],D[k+W]+1,i<W-1?D[k+W+1]+1.41:1e9,i?D[k+W-1]+1.41:1e9); }
       const R=.42*TILE*A.k, O=LFX.ao.image.data; for(let k=0;k<W*H;k++)O[k]=Math.round(255*(.62+.38*cl(D[k]/R))); LFX.ao.needsUpdate=true; },200);
     const sky=new THREE.Color(); let t0=performance.now(); const WS={wet:null,snow:0,h:null,t:t0}; window.WETQ=o=>{ if(o)Object.assign(WS,o); return {...WS}; };
-    LFX.tick=()=>{ const day=cl((CLOCK.elev()+3)/12), W=typeof WX!=='undefined'&&WX.now||{cloud:.3,wind:.3,rain:0}, inside=!OUT.open, t=(performance.now()-t0)/1000, row=63*64*4;
+    LFX.tick=()=>{ const day=cl((CLOCK.elev()+3)/12), W=WX.now||{cloud:.3,wind:.3,rain:0}, inside=!OUT.open, t=(performance.now()-t0)/1000, row=63*64*4;
       E[row]=F.has('cs')&&!inside?Math.round(255*day*(.55+.45*cl(W.cloud*1.4))):0;
       const now=performance.now(), dt=Math.min(1,(now-WS.t)/1000); let dh=WS.h==null?0:CLOCK.h-WS.h; if(dh<0)dh+=24; if(dh>2)dh=0; WS.t=now; WS.h=CLOCK.h;
       if(WS.wet==null&&typeof WX!=='undefined'&&WX.now){ if(WX.hold||WX.fix&&!WX.nat){ WS.wet=W.rain>.05?1:0; WS.snow=W.snow>.05?1:0; } else { const Tm=Math.floor(Date.now()/86400000)*1440+CLOCK.h*60; WS.wet=WS.snow=0; for(let k=0;k<=180;k+=10){ const p=WX.at(Tm-k); if(p.rain>.05)WS.wet=Math.max(WS.wet,1-k/120); if(p.snow>.05)WS.snow=Math.max(WS.snow,1-k/180); } } }
       if(WS.wet==null){} else if(W.rain>.05)WS.wet=Math.min(1,WS.wet+dt/25*(.5+W.rain)); else WS.wet=Math.max(0,WS.wet-Math.max(dt/240,dh/2));
       if(WS.wet==null){} else if(W.snow>.05)WS.snow=Math.min(1,WS.snow+dt/90*(.5+W.snow)); else WS.snow=Math.max(0,WS.snow-Math.max(dt/(W.rain>.05?60:300),dh/3));
       E[row+1]=inside?0:Math.round(255*(F.has('wet')?1:WS.wet||0)); E[row+6]=inside?0:Math.round(255*WS.snow); LFX.ws=WS;
-      if(typeof WEEDS!=='undefined'){ const v=inside||WS.snow<.6; if(!v||WS.bv===false){ WS.bv=v; if(WEEDS.meshes)for(const m of WEEDS.meshes)m.visible=v; if(WEEDS.chunks)for(const m of WEEDS.chunks.values())if(m)m.visible=v; } }
+      { const v=inside||WS.snow<.6; if(!v||WS.bv===false){ WS.bv=v; if(WEEDS.meshes)for(const m of WEEDS.meshes)m.visible=v; if(WEEDS.chunks)for(const m of WEEDS.chunks.values())if(m)m.visible=v; } }
       E[row+2]=F.has('ao')?255:0; E[row+3]=F.has('var')?255:0;
       const sp=.004+W.wind*.02; E[row+4]=Math.round(((t*sp)%1)*255); E[row+5]=Math.round(((t*sp*.6)%1)*255);
       sky.copy(scene.background); E[row+8]=Math.round(sky.r*255); E[row+9]=Math.round(sky.g*255); E[row+10]=Math.round(sky.b*255);
@@ -32,10 +37,10 @@
     const LC=[[.42,.55,.18],[.62,.6,.2],[.78,.48,.16],[.6,.3,.12]]; for(let i=0;i<NL;i++){ ls.push({o:i%16,t:Math.random()*8,ph:Math.random()*6}); lc.set(LC[i%4],i*3); }
     for(let i=0;i<NM;i++)ms.push([(Math.random()-.5)*14*TILE,Math.random()*3*TILE,(Math.random()-.5)*14*TILE,Math.random()*6]);
     for(const o of [BIRDS,LEAVES,MOTES])OUT.add(o,'open');
-    const tick2=LFX.tick; LFX.tick=()=>{ '@later'; tick2(); const t=performance.now()/1000, dt=1/60, up=SHARED.LVL!=='down', day=cl((CLOCK.elev()+3)/12), park=typeof PARK!=='undefined'&&PARK.in&&PARK.oaks;
+    const tick2=LFX.tick; LFX.tick=()=>{ '@later'; tick2(); const t=performance.now()/1000, dt=1/60, up=SHARED.LVL!=='down', day=cl((CLOCK.elev()+3)/12), park=PARK.in&&PARK.oaks;
       const cx=SHARED.BOD.XS(96+PARK.ox), cz=SHARED.BOD.ZS(-40+PARK.oy); for(let i=0;i<NB;i++){ const a=t*.18+i*.35, r=(14+i*1.3)*TILE, x=cx+Math.cos(a)*r, z=cz+Math.sin(a)*r*.7, y=(9+Math.sin(i*2.1+t*.5))*TILE, w=.35*TILE, f=Math.sin(t*9+i)*.18*TILE, dx=-Math.sin(a), dz=Math.cos(a)*.7;
         bp.set([x-dz*w,y+f,z+dx*w, x,y,z, x,y,z, x+dz*w,y+f,z-dx*w],i*12); } bg.attributes.position.needsUpdate=true;
       if(park)for(let i=0;i<NL;i++){ const L=ls[i], o=park[L.o%park.length]; L.t+=dt; const T=L.t%9, y=o[2]*.8-T*.9; if(y<.02){ lp.set([o[0]+Math.sin(L.ph)*1.6,.02,o[1]+Math.cos(L.ph)*1.6],i*3); continue; }
         lp.set([o[0]+Math.sin(L.ph+T*.8)*1.6+T*.25,y,o[1]+Math.cos(L.ph)*1.6+Math.sin(T*2.3+L.ph)*.3],i*3); } lg.attributes.position.needsUpdate=true;
       LEAVES.visible=LEAVES.visible&&!!park; MOTES.visible=MOTES.visible&&day>.3; for(let i=0;i<NM;i++){ const m=ms[i]; mp.set([pos.x+m[0]+Math.sin(t*.3+m[3])*.4,SHARED.py+m[1]+Math.sin(t*.5+m[3]*2)*.2,pos.z+m[2]+Math.cos(t*.25+m[3])*.4],i*3); } mg.attributes.position.needsUpdate=true; }; }
-  if(LFX.tick){ SYS.add('world',(dt)=>{ LFX.tick(); },'133-lookfx'); } }
+  if(LFX.tick){ SYS.add('sky',(dt)=>{ LFX.tick(); },'133-lookfx'); } }

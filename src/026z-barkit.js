@@ -1,4 +1,6 @@
 // THE BAR KIT: barKit(onBar) returns the 44 makers the bar and the diner build their furniture with.
+import {SHARED} from './003-shx.js';
+import {hash, LAMPS, prop, sh, sided, zShift} from './014-gamekit.js';
 const barKit=onBar=>{
 const FP=24, H=2, S=FP*H;
 const art=(W,Hh,draw)=>{ const a=new Array(W*Hh).fill(null); draw((x,y,c)=>{ x=Math.floor(x); y=Math.floor(y); if(c&&x>=0&&y>=0&&x<W&&y<Hh)a[y*W+x]=c; }); return (x,y)=>x>=0&&y>=0&&x<W&&y<Hh?a[y*W+x]:null; };
@@ -136,3 +138,4 @@ function cupboard(x,y){ SHARED.PNAME='cupboard'; const D=.62, L=.92, Z=34, bs=[]
     return prop(bs); }
 const up=(p,dz)=>{ p.boxes=p.boxes.map(b=>zShift(b,dz)); for(const l of LAMPS)if(l.prop===p)l.z+=dz; p.hang=(p.hang||0)+dz; return p; };
 return {FP,H,S,art,F3,txt,pcVn,pcLathe,lit,tone,box,disc,DP,T3,fb,pb,edge,pic,round,BZ,BT,BD,BO,PL,panel,topCol,glassesRow,barStraight,barRound,barCorner,BOTS,leather,sofa,armchair,rug,LEAF,leavesArt,plant,exitSign,blinds,POSTERS,poster,cupboard,up}; };
+export {barKit};

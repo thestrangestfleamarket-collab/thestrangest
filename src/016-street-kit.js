@@ -1,4 +1,7 @@
 // THE STREET KIT (MKS): the old game's street makers: kit, furniture, city and catalog.
+import {SHARED} from './003-shx.js';
+import {NEONS} from './006-map-pre.js';
+import {CAT_DEPTS, CAT_INFO, CATALOG, hash, KIND_OF, LAMPS, LIFE, LSEED, mt, prop, sh, sided, speck, STORY} from './014-gamekit.js';
 const MKS=(()=>{ const MK={}, FP=24;
 const art=(W,H,draw)=>{ const a=new Array(W*H).fill(null); draw((x,y,c)=>{ x=Math.floor(x); y=Math.floor(y); if(c&&x>=0&&y>=0&&x<W&&y<H)a[y*W+x]=c; }); return (x,y)=>x>=0&&y>=0&&x<W&&y<H?a[y*W+x]:null; };
 const onFace=(a0,zt,A,els,flip=0,len=0)=>(u,z)=>{ const x=Math.floor(flip?(a0+len-u)*FP:(u-a0)*FP), c=A(x,Math.floor(zt-z)); return c||els(u,z); };
@@ -226,7 +229,7 @@ MK.stoop=(x,y)=>{ SHARED.PNAME='stoop'; const c=[150,146,136]; return prop([Bx(x
 const STEEL=[96,98,104], STEELD=[70,72,78], YH=[206,164,30], CONC=[150,146,138], ROADC=[64,64,70], DARK=[22,22,24];
 const glow=c=>Object.assign([...c],{e:1});
 const SIGNAL=()=>{ const t=(performance.now()/1000)%60; return {main:t<28?0:t<32?1:2,cross:t<34?2:t<56?0:1}; };
-const lifeOn=()=>typeof LIFE!=='undefined'&&LIFE.mode===1;
+const lifeOn=()=>LIFE.mode===1;
 const flipOf=f=>f[1]<0||f[0]>0?1:0;
 const faceArt=(b,f,A,W,zt,back)=>sided({...b,fs:(nx,ny,X,Y,zr)=>{ if(nx!==f[0]||ny!==f[1])return back; const along=f[0]?Y:X, a0=f[0]?b.y0:b.x0, len=f[0]?b.y1-b.y0:b.x1-b.x0, u=flipOf(f)?a0+len-along:along-a0;
   return A(Math.floor(u*FP-(len*FP-W)/2),Math.floor(zt-(zr+b.z0))); }});
@@ -354,3 +357,4 @@ const G=[[220,60,50],[240,240,230]];
    ['turn arrow',1012,0,'A white arrow in a lane: ahead and turn right.',(x,y)=>MK.mark(x-1.15,y-.8,x+1.15,y+.8,(a,b)=>turnArrow(a,b-.8)?'w':null,'turn arrow')]].forEach(([k,no,p,d,mk])=>K(k,no,p,d,mk)); }
 CAT_DEPTS.push(['street','Street']);
 return MK; })();
+export {MKS};

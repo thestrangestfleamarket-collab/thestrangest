@@ -1,4 +1,13 @@
-const SGM={tick:()=>{}}; STORE.SGM=SGM;
+// THE SINGER: SGM, the singer at the bar, dressed and posed.
+import {SHARED, THREE} from './003-shx.js';
+import {pos, SGM, SND, W3} from './003b-systems.js';
+import {AWAY, MAPG, STORE} from './006-map-pre.js';
+import {figureMesh, musBody, MUSGEO, musScale} from './110-musician.js';
+import {castPose} from './112-main-14.js';
+import {WOMAN} from './121-game-play-6-woman.js';
+import {CORDN, SINGF, singMic, SINGMIC, singStep} from './122-game-play-7-singer.js';
+import {voxStep, voxStop} from './123-game-zzz-bar-singer.js';
+Object.assign(SGM,{tick:()=>{}}); STORE.SGM=SGM;
 if(!AWAY.has('bar')){ const R=RIG;
   const D=WOMAN.DESIGNS[2], LOOK={...D.look,metal:'#d6d8de',tie:'#1a181c',cover:'#2c2620',linen:'#ece4cc',ember:'#ff3a28',hole:'#2a282e'};
   const tones=h=>{ const c=new THREE.Color(h); return [1.14,1,.72,.46].map(k=>c.clone().multiplyScalar(k)); };
@@ -30,4 +39,4 @@ SGM.make=()=>{ if(!STORE.bar)return; const R=RIG, V=R.V, S=STORE.bar, AT={x:SHAR
     if(SND.ctx&&SND.ctx.state==='running')voxStep(dt,performance.now()); }; };
 
 const E=(x,y,z,rx,ry,rz,c,yaw=0,pit=0,rol=0,grp)=>[x,y,z,rx,ry,rz,yaw,pit,rol,c,grp]; const pupPaint=()=>null; const BARP={lead:'d'};
-
+export {E, pupPaint};

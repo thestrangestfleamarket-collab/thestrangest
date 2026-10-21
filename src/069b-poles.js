@@ -1,3 +1,8 @@
+// THE WIRES: WIRES strings the street's telephone poles and wires, with perches for birds.
+import {SHARED, THREE} from './003-shx.js';
+import {DRESS, pos} from './003b-systems.js';
+import {scene} from './004-main.js';
+import {BLOCK, FIX, MAPSTAIR, MODS, OUT, SOL, STORE, SYS, TILE} from './006-map-pre.js';
 const WIRES=window.WIRES={perch:[],poles:[],tick:()=>{}};
 { const M=TILE/.84, V3=THREE.Vector3, G=MODS.bodega.ground, h3=(a,b,c)=>{ const v=Math.sin(a*12.9898+b*78.233+c*37.719)*43758.5453; return v-Math.floor(v); };
   const X0=SHARED.BOD.XS(BLOCK.x0), X1=SHARED.BOD.XS(BLOCK.x1), zp=DRESS.kerb.sw+.5-.5*M, A=MODS.apts&&MODS.apts.A;
@@ -85,3 +90,4 @@ const WIRES=window.WIRES={perch:[],poles:[],tick:()=>{}};
     SYS.add('dress',(dt,p)=>{ WIRES.tick(dt||0,p||pos); },'069b-poles'); }
   window.WIRESDBG=()=>({x:XS.map(x=>+x.toFixed(1)),z:+zp.toFixed(2),perch:WIRES.perch.map(p=>[+p.x.toFixed(1),+p.y.toFixed(2),+p.z.toFixed(1),p.on|0]),cost:WIRES.cost});
 }
+export {WIRES};

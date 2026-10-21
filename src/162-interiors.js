@@ -1,4 +1,11 @@
-const INTERIORS={on:QS.get('interiors')==='1'||(!FREE&&QS.get('interiors')!=='0'),list:[],near:5*TILE,seen:3*TILE,water:[]};
+// THE INTERIORS: INTERIORS keeps track of rooms with doors and what to show when you are inside them.
+import {SHARED, THREE} from './003-shx.js';
+import {INTERIORS, MAPED, pos} from './003b-systems.js';
+import {scene} from './004-main.js';
+import {FREE, MODS, QS, STORE, TILE} from './006-map-pre.js';
+import {WATER} from './009-down.js';
+import {VIS} from './129a-vis.js';
+Object.assign(INTERIORS,{on:QS.get('interiors')==='1'||(!FREE&&QS.get('interiors')!=='0'),list:[],near:5*TILE,seen:3*TILE,water:[]});
 { const m=.14*TILE, L=INTERIORS.list;
   const box=(X,Z,t,y0,y1)=>{ const a=X(t[0]), b=X(t[2]), c=Z(t[1]), d=Z(t[3]); return {x0:Math.min(a,b),x1:Math.max(a,b),z0:Math.min(c,d),z1:Math.max(c,d),y0,y1}; };
   const inBox=(b,x,y,z,e)=>x>b.x0+e&&x<b.x1-e&&z>b.z0+e&&z<b.z1-e&&y>b.y0+.05&&y<b.y1-.05;
@@ -20,9 +27,9 @@ const INTERIORS={on:QS.get('interiors')==='1'||(!FREE&&QS.get('interiors')!=='0'
     me.geometry.setIndex(new THREE.BufferAttribute(idx,1)); };
   INTERIORS.build=()=>{ if(!INTERIORS.on)return; places(); scene.traverse(o=>{ if(o.isMesh)classify(o); });
     const H=L.find(I=>I.id==='house'); if(H&&MODS.apts&&!H.walls.length){ const b=H.boxes[0], bb=new THREE.Box3(), c=new THREE.Vector3(); for(const me of MODS.apts.meshes){ if(me.geometry.attributes.aOp)continue; bb.setFromObject(me); bb.getCenter(c); if(inBox(b,c.x,c.y,c.z,m))H.walls.push(me); } }
-    const W=INTERIORS.water; W.length=0; const P=L.find(I=>I.id==='poolbld'); if(P&&typeof WATER!=='undefined'&&WATER.mesh)W.push([P,WATER.mesh]); for(const w of (typeof WATER!=='undefined'&&WATER.extra)||[])if(w.mesh){ const I=owner(w.mesh.position.x,w.mesh.position.y+.1,w.mesh.position.z); if(I)W.push([I,w.mesh]); }
+    const W=INTERIORS.water; W.length=0; const P=L.find(I=>I.id==='poolbld'); if(P&&typeof WATER!=='undefined'&&WATER.mesh)W.push([P,WATER.mesh]); for(const w of (WATER.extra)||[])if(w.mesh){ const I=owner(w.mesh.position.x,w.mesh.position.y+.1,w.mesh.position.z); if(I)W.push([I,w.mesh]); }
     INTERIORS.tick(true); };
-  INTERIORS.tick=force=>{ if(!INTERIORS.on)return; const all=(typeof MAPED!=='undefined'&&MAPED.on);
+  INTERIORS.tick=force=>{ if(!INTERIORS.on)return; const all=(MAPED.on);
     for(const I of L){ const d=near2(I,pos.x,pos.z,SHARED.py), inn=I.inside?I.inside():I.boxes.some(b=>inBox(b,pos.x,SHARED.py+.5,pos.z,0)), want=all||inn||d<(I.on?INTERIORS.near+TILE:INTERIORS.near);
       if(want!==I.on||force){ I.on=want; for(const me of I.meshes)reindex(me); for(const me of I.walls)VIS.hide(me,'interior',!want); } } };
   INTERIORS.cull=on=>{ for(const [I,me] of INTERIORS.water)VIS.hide(me,'interior',on&&!I.on); };

@@ -63,7 +63,7 @@ let solids=SOL.up, fixed=FIX.up, BOUND, groundY, LVL='up', BOD, BODB, METRO;
 const STORE={rooms:[],places:[],roofs:[]}, BF={list:[]}; window.STORE=STORE;
 const MAPG={}, MODS={};  const OVERHEAD=[]; let RPASS=null, FIRE=null;
 const grab=async(name,fn)=>{ const n0=scene.children.length; await fn(); const g=new THREE.Group(); g.name=name; for(const o of scene.children.slice(n0))g.add(o); scene.add(g); MAPG[name]=g; return g; };
-const LAYOUT0={bodega:{x:-138.8},diner:{x:-24.75},ghost:{x:-8.8},house:{x:-143},subway:{x:14.99},apartments:{x:59},park:{e:[-4,0,0,0]},castle:{x:-70,y:25.5+14}};
+const LAYOUT0={bodega:{x:-138.8},diner:{x:-24.75},ghost:{x:-8.8},house:{x:-143},subway:{x:14.99},apartments:{x:59},park:{e:[-4,0,0,0]},castle:{x:-13.5,y:29.5}};
 const AWAY0=['diner','aquarium','garden','avenue','keep','civic','power'], AWAYLOT=1000;
 const AWAY=(()=>{ const s=new Set(AWAY0), q=QS.get('bring'); if(q==='all')s.clear(); else if(q)for(const k of q.split(','))s.delete(k.trim()); return s; })(); window.AWAY=AWAY;
 const LAY=(()=>{ const q=QS.get('layout'); let o={}; try{ o=q&&q[0]==='{'?JSON.parse(q):q==='0'?{}:JSON.parse(SAVE.get('layout')||'{}')||{}; }catch(e){}
@@ -79,5 +79,6 @@ const RING={wx0:31.5-MAINX.w-WID,wx1:46-MAINX.w,top:12.5+NORTHY+NORTHX}; RING.wr
 RING.stairs=[]; RING.river={y0:BLOCK.river,y1:BLOCK.river+46}; RING.ff={x0:WESTX,x1:EASTX,y0:RING.river.y0-1.5,y1:RING.top+28};
 const MAPSTAIR={x0:60.01,x1:64.01,y0:-82.9,y1:-76.9, steps:12, depth:98, dir:-1};
 { const o=LAY.o('subway'); MAPSTAIR.x0+=o.x; MAPSTAIR.x1+=o.x; MAPSTAIR.y0+=o.y; MAPSTAIR.y1+=o.y; }
+const PARKGX=112, PARKLAKE=[151,10,9];
 const CASTLE={b:[46,67,-21,-4],gate:58.5,stair:{x0:61.5,x1:63.5,y0:-19.4,y1:-13.4,steps:12,depth:98,dir:1},hall:{x0:51,y0:-20,x1:65,y1:-6.8,h:130}};
 { const o=LAY.o('castle'), C=CASTLE, S=C.stair, H=C.hall; C.b=[C.b[0]+o.x,C.b[1]+o.x,C.b[2]+o.y,C.b[3]+o.y]; C.gate+=o.x; for(const R of [S,H]){ R.x0+=o.x; R.x1+=o.x; R.y0+=o.y; R.y1+=o.y; } }

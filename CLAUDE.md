@@ -1,6 +1,6 @@
 # The Strangest Flea Market in 3D (three.js)
 
-The owner (Bralynn) is rebuilding The Strangest Flea Market in three.js, one piece at a time. This repo is `bralynnb/thestrangest` (`bralynnbell` was the owner's old GitHub name: start sessions from `bralynnb/thestrangest`, or pull request updates never reach them).
+The owner (Bralynn) is rebuilding The Strangest Flea Market in three.js, one piece at a time. This repo is `thestrangestfleamarket-collab/thestrangest` (once `bralynnbell/thestrangest`, then `bralynnb/thestrangest`, under the owner's old GitHub names; it moved to the `thestrangestfleamarket-collab` account on 19 Oct 2026): start sessions from `thestrangestfleamarket-collab/thestrangest`, or pull request updates never reach them.
 It is not the live game (`bralynnb/tsfm`); since 18 Oct 2026 (after tsfm#803) nothing here reads it or goes there. The game is THE MARKET, one page,
 live on the website thestrangestfleamarket.com (Cloudflare Workers Builds deploy `main`). There is no claude.ai copy any more
 (owner, 20 Oct 2026): never publish the game as a claude.ai artifact.

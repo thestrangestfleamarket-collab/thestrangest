@@ -3819,3 +3819,25 @@ initial download and load super fast"; then "Go")
   and nothing else; each upper floor one open apartment, boards, no corridor, no doors. The elevator has one button: it takes you to
   your floor (the top one, `APTS.my`) and from there back to the lobby; the floor panel is gone. The lot where the east half stood
   is empty for now.
+- **THE NEW LAYOUT** (owner, 20 Oct 2026, 23:00–23:50, settled over nine mockups and an editable map; his positions in map units, north
+  up; this entry is the plan every later piece builds to). Market St is one zone (the street, West St, the bodega block, the alley);
+  Central Park is two zones, CENTRAL PARK (the top half) and SOUTH EAST CENTRAL PARK (the bottom); every interior is its own zone;
+  "anything that brings up a loading screen" is a zone. "Only the place you're at loads." Market St no longer dead-ends: it runs on
+  past West St to a forcefield at x −130 and east to one at x 262. The Avenue is gone: "there shouldn't be a road on right side,
+  central park just keeps going that way". The park is "2x up north" (y −38 to 181), West St runs with it to a forcefield at its end.
+  The bodega block (south side, west to east): MUSEUM OF EARTH (−48), THE PLAYHOUSE (−32), THE BANK (4.5, on the block now, not
+  West St), THE BAR (54.5), the SUBWAY EXIT on the sidewalk (77), the ENTRANCE TO THE HUDSON AREA (117.5, "directly across from CP
+  gate", a passage through the block and the empty row to the river walk), BATH HOUSE (134), THE DOJO (147), MOVIE THEATRE (197.5),
+  THE ARCADE (212.5), THE HOLODECK (232.5). Club Static, VCR Repair and the Dojo Hall are deleted from the game. THE BODEGA and the
+  APARTMENTS move to West St's west side: the bodega at the corner (−66.5, −27), "2x bigger and have entrance on both sides of
+  street"; the apartments above it (−67, −5); above them seven empty apartment fronts, "all empty front shells (low render nothing
+  inside)" (−67, 17.5 … 149.5). The park gate at the centre of the park's bottom edge (112, −36). In the park: the castle (43, 17),
+  the fountain (72, 137), the round (112, 59.5), a lake (151, 10, in place of the pond), a stream from the north edge under a bridge
+  (201.5, 72.5) into the lake, the campfire (197.5, 32.5), the tower (−8.5, −28), paths that "go all the way (realistic)" between
+  all of them with lamp posts, trees, "fleshed out lived in". A huge hill in the east with a large cave (196.5, 41.5): "the cave leads
+  down through long tunnels underground that have gems you mine (get more expensive the longer you go down) the rock golems guard
+  it. once you get near they wake up and if you kill them they break into small pieces (boulders, rocks), then after 10–60 seconds
+  they start to form back together and come back at you". The mines are NEW (the dungeon under the castle stays). South of the
+  block: the dark alley, a row of empty buildings, the walk by the Hudson, the Hudson. Build order, one pull request each: the map
+  skeleton (park size, no Avenue, gate, forcefields), the block's new order, West St's bodega and apartments, the park's inside, the
+  Hudson side, the mines and golems, then the zone loading screens.

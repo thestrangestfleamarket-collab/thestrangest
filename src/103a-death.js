@@ -14,7 +14,11 @@
     STORE.goTo(BOD.X(dx),BOD.Z(oy),'up'); heading=BOD.Z(oy+1)>BOD.Z(oy)?0:Math.PI; if(typeof PH!=='undefined')PH.hd=heading; keys.clear(); target=null;
     VIT.dead=false; VIT.hp=1; VIT.sta=1; VIT.out=0; gh=0; rise=-1; look(false); try{ SAVE.del('dead'); }catch(e){} LOOKS.robe(true);
     },{hold:200}); note('You feel refreshed.',5); busy=false; };
+<<<<<<< HEAD
   SYS.add('vitals',(dt)=>{ if(!VIT.dead||busy)return; VIT.hp=0;
+=======
+  const t0=VIT.tick; VIT.tick=dt=>{ t0(dt); if(!VIT.dead||busy)return; VIT.hp=0;
+>>>>>>> origin/main
     if(gh>=1&&!RAG.on&&st.move&&st.move.name==='fall'&&st.move.held)RIG.release(st,'F');
     if(VIT.out>0||!sheet())return;
     if(!gh){ look(true); S.ball={x:pos.x/MH,y:py/S.MV+1.5,z:pos.z/MH}; S.drop(); }

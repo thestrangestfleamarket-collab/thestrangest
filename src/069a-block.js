@@ -157,14 +157,12 @@ const BLK={blds:[],signs:[],band:()=>null,built:0,in:false,hi:[],LO:.5}; window.
   const vis=v=>{ BLK.shown=v; GA.visible=v; for(const q of BLK.hi)q.m.material=v?q.hi:q.lo; esc(v); };
   const frames=n=>new Promise(r=>{ const f=()=>--n<=0?r():requestAnimationFrame(f); requestAnimationFrame(f); });
   const build=async()=>{ const t0=performance.now(); tl=t0; for(const q of BLK.hi)q.hi=await q.paint(); await make(); BLK.step=Math.max(BLK.step||0,performance.now()-tl); BLK.ms=+(performance.now()-t0).toFixed(1); BLK.built=1; };
-  BLK.go=async()=>{ '@later'; if(BLK.fade||BLK.built)return; BLK.fade=1; const el=document.getElementById('subfade'), live=el&&window.__started;
-    if(live){ el.textContent='ENTERING THE ALLEY'; el.style.opacity='1'; if(typeof keys!=='undefined'&&keys.clear)keys.clear(); await frames(2); }
-    await (BLK.job||(BLK.job=build())); if(live){ await frames(2); el.style.opacity='0'; } BLK.fade=0; };
+  BLK.go=async()=>{ '@later'; if(BLK.fade||BLK.built)return; BLK.fade=1; await FADE.run('ENTERING THE ALLEY',()=>BLK.job||(BLK.job=build()),{cut:true}); BLK.fade=0; };
   { const zb=ZS(B.back), sg=Math.sign(ZS(B.alley[0])-zb)||-1; BLK.tick=()=>{ if(!window.__started||typeof ROOMS!=='undefined'&&ROOMS.cur||UI.freeCam||ED.on||window.POSOK===false)return; const d=(pos.z-zb)*sg, up=LVL==='up';
       BLK.in=up&&d>.2*T; const need=BLK.in||up&&(d>-10*T||d>-32*T&&(UI.persp||(cam.position.z-pos.z)*sg>0));
       if(BLK.in&&!BLK.built)BLK.go(); else if(need&&!BLK.job)BLK.job=build();
       const v=need&&!!BLK.built; if(v!==!!BLK.shown)vis(v); };
-    const t0=DRESS.tick; DRESS.tick=(dt,p)=>{ if(t0)t0(dt,p); BLK.tick(); }; }
+    SYS.add('dress',(dt,p)=>{ BLK.tick(); },'069a-block'); }
   window.ALLEYDBG=()=>({in:BLK.in,shown:!!BLK.shown,built:BLK.built,ms:BLK.ms,step:BLK.step&&+BLK.step.toFixed(1),steps:BLK.steps,kids:GA.children.length,signs:BLK.signs.length,lamps:GA.children.filter(o=>o.isLight).length+LITE.recs.filter(L=>L.userData.grp===GA).length,hi:BLK.hi.map(q=>q.m.material===q.hi?1:0),tris:(()=>{ let t=0; const f=o=>{ const g=o.geometry; if(g){ const c=g.index?g.index.count:g.attributes.position.count; t+=(o.isLineSegments?c/2:c/3)*(o.isInstancedMesh?o.count:1); } }; GA.traverse(f); for(const m of MODS.apts&&MODS.apts.back||[])m.traverse(f); return Math.round(t); })(),esc:(MODS.apts&&MODS.apts.back||[]).map(m=>m.visible?1:0)});
   window.BLOCKDBG=()=>({blds:BLK.blds.map(q=>[q.row,q.x0,q.x1,q.h]),signs:BLK.signs.length,boxes:BX.length+GL.length,band:BLK.band(pos.x,pos.z)});
 }

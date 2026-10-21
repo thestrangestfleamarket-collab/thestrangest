@@ -4045,3 +4045,21 @@ initial download and load super fast"; then "Go")
   then looked, so a slow machine failed it now and then and the pull requests went in on a second run. Each check now waits for its
   own condition (the dungeon's level and its slimes, the park ready and shown, the fire escape built, the arcade's and the bath
   house's insides built, no fade running), up to a minute and a half (three for the park), and passes the moment it holds.
+- **The core, pieces 2 and 3: one fade, one answer to "which zone", one place that hides things** (owner, 21 Oct 2026, the same
+  words; `006-map-pre.js`, `013a-day1.js`, `129a-vis.js`): `FADE.run(text, work, {cut, hold})` is the one loading screen: the
+  subway, the shops' insides, the holodeck, Central Park, the dungeon, the deep river, the alley, the rooms' swap, the fire escape,
+  waking up and the game editor all go through it (eleven copies of the fade code gone). `ZONES.at(x, z, level, room)` is the one
+  answer to where you are (MARKET ST, CENTRAL PARK, SOUTH EAST CENTRAL PARK, the room you are in, THE SUBWAY STATION, THE DUNGEON with
+  its level); `ZONES.cur` follows you and `ZONES.on(fn)` hears each change. `VIS.hide(thing, why, on)`: each system gives its
+  reason (room, roof, far, perf, interior) and a thing shows only when no reason is left, so the rooms, the interiors and the
+  performance switches no longer overwrite each other's `.visible` or layer masks; `VIS.showAll` shows everything (for the editor).
+  Not changed: each zone's own build code (the park's, the dungeon's, the shops'), and Market St still built at the start (step 7).
+
+- **The core, piece 4: systems in phases** (owner, 21 Oct 2026, the same words; `006-map-pre.js` `SYS`, `075-main-13.js`): the 33
+  patches that wrapped another system's tick (`const t0=CLOCK.tick; CLOCK.tick=dt=>{ t0(dt); … }`, twenty of them on the clock, three on
+  the city, four on the street dressing, two on your vitals, one each on the rooms, the ring and the shadow pass) are named entries
+  in phases now: `SYS.add(phase, fn, name)`; the frame runs `clockPre`, `world`, `vitalsPre`, `vitals`, `city`, `dress`, `ring`,
+  `rooms`, and the shadow pass runs `shadowPre` and `shadow`, each in file order (the order the wrappers ran in). A failing entry
+  warns once with its name instead of breaking every system wrapped after it. `SYS.list()` shows them all. Still wrappers: the few
+  that change what a lookup returns (the park's ground height, the weather in the arcade, picking things, the stack ground, the
+  sword's strike, the mail's restock); each is the only one on its function.

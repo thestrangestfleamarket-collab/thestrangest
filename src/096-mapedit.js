@@ -292,8 +292,6 @@ GAMEED.build=()=>{ '@editor'; const T=TILE;
   GAMEED.show=on=>{ MAPED.open=GAMEED.open=on; R.style.display=on?'block':'none'; if(!on){ if(VIEW.on)VIEW.close(); return; } if(typeof keys!=='undefined'&&keys.clear)keys.clear();
     size(); if(!TER)terrain(); if(!GAMEED.inited){ GAMEED.inited=true; setMode(MODE,true); } fit(); panel(); draw(); };
   window.MAPED=MAPED; };
-GAMEED.toggle=async()=>{ if(GAMEED.busy)return; if(GAMEED.built){ GAMEED.show(!GAMEED.open); return; } GAMEED.busy=true; const el=document.getElementById('subfade');
-  if(el){ el.textContent='LOADING GAME EDITOR'; el.style.transition='none'; el.style.opacity='1'; el.style.pointerEvents='auto'; }
-  try{ await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))); await LOAD('editor'); GAMEED.build(); GAMEED.built=true; GAMEED.show(true); }catch(e){ console.warn('GAME EDITOR: not loaded',e); }
-  finally{ if(el){ el.style.opacity='0'; el.style.pointerEvents='none'; } GAMEED.busy=false; } };
+GAMEED.toggle=async()=>{ if(GAMEED.busy)return; if(GAMEED.built){ GAMEED.show(!GAMEED.open); return; } GAMEED.busy=true;
+  await FADE.run('LOADING GAME EDITOR',async()=>{ await LOAD('editor'); GAMEED.build(); GAMEED.built=true; },{cut:true}); if(GAMEED.built)GAMEED.show(true); GAMEED.busy=false; };
 MAPED.toggle=()=>GAMEED.toggle(); window.GAMEED=GAMEED;

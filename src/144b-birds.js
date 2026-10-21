@@ -99,7 +99,7 @@ const BIRDS={list:[]}; window.BIRDS=BIRDS;
     if(S.seed){ S.seed.t-=dt; if(S.seed.t<=0)S.seed=null; } const n={};
     for(const b of [...BIRDS.list]){ const pet=b.st==='pet', show=pet||out; b.hb.visible=show&&!pet&&b.st!=='hid'; if(!show)continue; if(!pet&&(Math.hypot(b.x-pos.x,b.z-pos.z)>45*T||!NPCS.seen(b.x,b.y,b.z,1.5*T)))continue; if(pet||NPCS.live(b.x,b.y,b.z,1.5*T))step(b,dt); if(BIRDS.list.includes(b))place(b,n); }
     for(const p in ME){ const me=ME[p]; me.count=n[p]||0; me.instanceMatrix.needsUpdate=true; if(me.instanceColor)me.instanceColor.needsUpdate=true; } BIRDS.shown=n.body||0; };
-  { const t0=CLOCK.tick; CLOCK.tick=dt=>{ t0(dt); BIRDS.tick(dt); }; }
+  { SYS.add('world',(dt)=>{ BIRDS.tick(dt); },'144b-birds'); }
   const B='style="margin:0 4px 0 0;font:inherit;color:#ece5d3;background:#0e1016;border:2px solid #3a3f4e;padding:3px 8px;cursor:pointer"';
   const P=document.createElement('div'); P.id='birdp'; P.hidden=true; P.style.cssText='position:fixed;left:50%;top:14%;transform:translateX(-50%);width:min(380px,92vw);z-index:21;padding:12px 14px;font:11px Silkscreen,monospace;letter-spacing:.4px;color:#d8dae2;background:#0b0d13f2;border:2px solid #3a3f4e;zoom:var(--uiz,1)';
   document.body.appendChild(P); P.addEventListener('keydown',ev=>ev.stopPropagation());

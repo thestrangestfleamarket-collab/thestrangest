@@ -5,8 +5,7 @@
   const G=new THREE.Group(); G.visible=false; scene.add(G); const MATS=[]; let light=null, CARS=null, MID=null, busy=false, lp=null;
   F.on=false; F.G=G;
   const wait=ms=>new Promise(r=>setTimeout(r,ms)), frames=k=>new Promise(r=>{ const f=()=>--k<=0?r():requestAnimationFrame(f); requestAnimationFrame(f); });
-  const fade=async(txt,fn)=>{ busy=true; const el=document.getElementById('subfade'); el.textContent=txt; el.style.pointerEvents='auto'; el.style.opacity='1'; if(keys.clear)keys.clear(); target=null; await wait(340); await frames(2);
-    await fn(); await frames(3); await wait(260); el.style.opacity='0'; el.style.pointerEvents='none'; await wait(360); busy=false; };
+  const fade=async(txt,fn)=>{ busy=true; await FADE.run(txt,fn,{hold:200}); busy=false; };
   F.out=()=>{ if(busy)return; fade(F.built?'YOUR FIRE ESCAPE':'LOADING YOUR FIRE ESCAPE...',async()=>{ await STORE.offGo(F.name); UI.goTo(X(CX),Z(WY+1.05),Y(HZ)); heading=0; if(UI.persp&&window.__dbg)__dbg.face(Math.PI); }); };
   F.back=()=>{ if(busy)return; fade('YOUR APARTMENT',()=>{ if(USE.seat){ USE.seat=null; st.sit=null; } UI.goTo(X(U(AWX)),Z(V(1.1)),APTS.lvY(2)); heading=0; }); };
   const hit=(w,h,d,x,y,z)=>{ const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),new THREE.MeshBasicMaterial({visible:false})); m.position.set(x,y,z); scene.add(m); return m; };
@@ -159,7 +158,7 @@
   F.sit=()=>{ if(!F.on)return; const x=X(CX), z=Z(WY+.5); USE.seat={back:pos.clone(),x,z}; pos.x=x; pos.z=z; target=null; heading=0; st.sit={z:Math.max(2,Y(STP.z)/(ZU*W3.SZ*(W3.BH||1)))}; };
   const sg0=STORE.stackGround; STORE.stackGround=(x,z)=>{ if(F.built&&onL(x,z)){ const u=ix(x), v=iy(z); return Y(HZ+(u>STP.x0&&u<STP.x1&&v<STP.y1?STP.z:0)); } return sg0?sg0(x,z):null; };
   const into=(u0,v0,u,v)=>Math.abs(u-u0)<.5&&v<v0&&Math.cos(heading)<-.6&&lp&&Math.hypot(pos.x-lp.x,pos.z-lp.z)>1e-4;
-  const t0=CLOCK.tick; CLOCK.tick=dt=>{ t0(dt); const on=F.built&&LVL==='up'&&onL(pos.x,pos.z);
+  SYS.add('world',(dt)=>{ const on=F.built&&LVL==='up'&&onL(pos.x,pos.z);
     if(on!==F.on){ F.on=on; G.visible=on; }
     plaque.visible=!(APTS.in&&iy(pos.z)<V(5.6));
     if(!busy&&!on&&APTS.in&&APTS.floor()===2&&into(U(AWX),V(.55),ix(pos.x),iy(pos.z)))F.out();
@@ -168,6 +167,6 @@
     if(MID){ const o=!UI.persp, cx=cam.position.x-pos.x, cz=cam.position.z-pos.z, hl=Math.hypot(cx,cz)||1, tp=(cam.position.y-py)/hl, key=o?Math.round(Math.atan2(cx,cz)*20)+':'+Math.round(tp*50):'p';
       if(key!==MID.key){ MID.key=key; const dx=cx/hl, dz=cz/hl; MID.L.forEach((b,i)=>{ const al=(X(b[0])-pos.x)*dx+(Z(b[1])-pos.z)*dz, r=Math.max(b[2],b[3])*T*KK*.75, hide=o&&al+r>0&&Y(b[4])>py+Math.max(0,al-r)*tp-.5; MID.m.setMatrixAt(i,hide?MID.Z0:MID.base[i]); }); MID.m.instanceMatrix.needsUpdate=true; } }
     const k=nk(); for(const m of MATS)m.emissiveIntensity=1.3*k; light.intensity=1.4*k; if(CARS)CARS(dt,k);
-    if(!busy&&!USE.seat&&into(CX,WY+.45,ix(pos.x),iy(pos.z)))F.back(); lp={x:pos.x,z:pos.z}; };
+    if(!busy&&!USE.seat&&into(CX,WY+.45,ix(pos.x),iy(pos.z)))F.back(); lp={x:pos.x,z:pos.z}; },'141c-fireview');
   window.FIREDBG=()=>({built:F.built,on:F.on,mid:F.mid,mats:MATS.length,meshes:G.children.length,pos:[+ix(pos.x).toFixed(2),+iy(pos.z).toFixed(2)],py:+py.toFixed(2),apt:{in:APTS.in,floor:APTS.floor()}});
 }

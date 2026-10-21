@@ -61,6 +61,8 @@ const FREE=QS.get('free')!=='0';
 const SOL={up:[],down:[]}, FIX={up:[],down:[]}, CLIPX=[];
 let solids=SOL.up, fixed=FIX.up, BOUND, groundY, LVL='up', BOD, BODB, METRO;
 const STORE={rooms:[],places:[],roofs:[]}, BF={list:[]}; window.STORE=STORE;
+const SYS={P:{},add:(ph,fn,name)=>{ (SYS.P[ph]=SYS.P[ph]||[]).push({fn,name:name||''}); },run:(ph,...a)=>{ const L=SYS.P[ph]; if(!L)return; for(const s of L){ try{ s.fn(...a); }catch(e){ if(!s.err){ s.err=1; console.warn('SYS '+ph+' '+s.name,e); } } } },list:()=>Object.fromEntries(Object.entries(SYS.P).map(([k,v])=>[k,v.map(s=>s.name)]))}; window.SYS=SYS;
+const FADE={busy:0,run:async(t,w)=>{ if(w)await w(); }}; window.FADE=FADE;
 const MAPG={}, MODS={};  const OVERHEAD=[]; let RPASS=null, FIRE=null;
 const grab=async(name,fn)=>{ const n0=scene.children.length; await fn(); const g=new THREE.Group(); g.name=name; for(const o of scene.children.slice(n0))g.add(o); scene.add(g); MAPG[name]=g; return g; };
 const LEVEL=__DATA__("data/world.json"), WP=Object.fromEntries(LEVEL.places.map(p=>[p.id,p])), WPP=LEVEL.parkPlaces, BLDK=1.1, LOTX=m=>72+(m-72)/BLDK;

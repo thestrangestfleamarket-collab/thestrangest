@@ -222,8 +222,7 @@ const RIVER={way:'fluid',wi:2,step:false,t:0,on:false};
   RIVER.deep=false; let dbusy=false; const wait=ms=>new Promise(r=>setTimeout(r,ms)), frames=k=>new Promise(r=>{ const f=()=>--k<=0?r():requestAnimationFrame(f); requestAnimationFrame(f); });
   const deepGo=()=>{ '@later'; if(RIVER.deep)return; RIVER.deep=true; for(const [m,c,g] of [[surf,surfF,PG(DZ,NX,NZ,0)],[bed,bedF,PG(DZ,BN[0],BN[1],0)]]){ m.remove(c); c.geometry.dispose(); m.geometry.dispose(); m.geometry=g; }
     fishM=new THREE.InstancedMesh(fishG,new THREE.MeshBasicMaterial({color:0xffffff}),NF); fishM.frustumCulled=false; scene.add(fishM); seedFish(); seedJunk(); RIVER.cx=1e9; };
-  RIVER.load=async()=>{ '@later'; if(RIVER.deep||dbusy)return; dbusy=true; const el=document.getElementById('subfade'); if(el){ el.textContent='LOADING...'; el.style.opacity='1'; await wait(340); }
-    deepGo(); await frames(3); if(el)el.style.opacity='0'; dbusy=false; };
+  RIVER.load=async()=>{ '@later'; if(RIVER.deep||dbusy)return; dbusy=true; await FADE.run('LOADING...',()=>deepGo()); dbusy=false; };
   RIVER.over=(x,z)=>LVL==='up'&&x>lx0&&x<lx1&&z>rz0&&z<rz1;
   RIVER.air=1; RIVER.dep=0; RIVER.bot=0; let wasIn=false, wake=0, noAir=false, wasUnder=false;
   RIVER.feed=(st,pos,dt,go,keys)=>{ if(!RIVER.over(pos.x,pos.z)||!RIVER.swim&&onPier(pos.x,pos.z)){ RIVER.swim=false; if(wasIn)wasIn=false; return false; }

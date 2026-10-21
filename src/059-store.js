@@ -178,9 +178,9 @@ await grab('store',async()=>{ const K=BOD.STOREK, {X,Y,Z,gbox,faceTex,bq,C,place
       if(ROOMS.reset)ROOMS.reset(); if(window.CLIP)window.CLIP.run(); if(typeof INTERIORS!=='undefined')INTERIORS.build(); };
     const DOORP=(R,k)=>{ const d=R.door, B=R.B; return d.w==='f'?[d.a,B.y1+k]:d.w==='b'?[d.a,B.y0-k]:d.w==='w'?[B.x0-k,d.a]:[B.x1+k,d.a]; };
     const frames=n=>new Promise(r=>{ const f=()=>--n<=0?r():requestAnimationFrame(f); requestAnimationFrame(f); });
-    STORE.enter=async(id,walk)=>{ const R=STORE.inside[id]; if(!R||R.busy)return; R.busy=true; const el=document.getElementById('subfade'), name=/^THE /.test(R.name)?R.name:'THE '+R.name;
-      if(!R.done){ if(el){ el.textContent='ENTERING '+name; el.style.opacity='1'; } if(typeof keys!=='undefined'&&keys.clear)keys.clear(); await frames(3); await LOAD(...need()); STORE.inGo(id); await frames(2); }
-      if(walk){ const [x,y]=DOORP(R,-1.4), d=R.door; STORE.goTo(X(x),Z(y),'up',d.w==='f'?Math.PI:d.w==='b'?0:d.w==='w'?Math.PI/2:-Math.PI/2); await frames(2); } if(el)el.style.opacity='0'; R.busy=false; };
+    STORE.enter=async(id,walk)=>{ const R=STORE.inside[id]; if(!R||R.busy)return; R.busy=true; const name=/^THE /.test(R.name)?R.name:'THE '+R.name;
+      await FADE.run(R.done?'':'ENTERING '+name,async()=>{ if(!R.done){ await LOAD(...need()); STORE.inGo(id); }
+        if(walk){ const [x,y]=DOORP(R,-1.4), d=R.door; STORE.goTo(X(x),Z(y),'up',d.w==='f'?Math.PI:d.w==='b'?0:d.w==='w'?Math.PI/2:-Math.PI/2); } },{cut:true,silent:R.done&&!walk}); R.busy=false; };
     STORE.inAt=(x,z)=>{ for(const id in STORE.inside){ const R=STORE.inside[id]; if(R.done||R.busy)continue; const B=R.B; if(x>X(B.x0)&&x<X(B.x1)&&Math.min(Z(B.y0),Z(B.y1))<z&&z<Math.max(Z(B.y0),Z(B.y1)))STORE.enter(id,false); } };
     STORE.doorThings=()=>{ if(typeof UI==='undefined'||!UI.thing)return; for(const id in STORE.inside){ const R=STORE.inside[id]; if(R.th)continue; const [x,y]=DOORP(R,.35), hb=new THREE.Mesh(new THREE.BoxGeometry(1.4*TILE,2.6*TILE,.5*TILE),new THREE.MeshBasicMaterial({visible:false}));
       hb.position.set(X(x),1.3*TILE,Z(y)); scene.add(hb); R.th={name:/^THE /.test(R.name)?R.name:'THE '+R.name,ghost:1,obj:hb,reach:1.4*TILE,near:2.4*TILE,tall:2.6*TILE,act:()=>STORE.enter(id,true)}; UI.thing(R.th); }

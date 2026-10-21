@@ -151,15 +151,14 @@ await grab('mainstreet',async()=>{ const K=STORE.kit, {room,STEPS}=K, {X,Y,Z,pla
     const film=now=>{ const M=MS.theatre; if(!M)return; const near=LVL==='up'&&(M.R.inside(pos.x,pos.z)||Math.hypot(pos.x-M.R.at.x,pos.z-M.R.at.z)<6*TILE); M.fm.visible=near; if(!near)return;
       const k=Math.floor(now/125)%TH.FILMN; if(k===M.k)return; M.k=k; const f=TH.filmFrame(k), d=M.tx.image.data, W=TH.FILMW, Hh=TH.FILMH;
       for(let j=0;j<Hh;j++)for(let i=0;i<W;i++){ const s=(j*W+i)*3, o=((Hh-1-j)*W+i)*4; d[o]=f[s]; d[o+1]=f[s+1]; d[o+2]=f[s+2]; d[o+3]=255; } M.tx.needsUpdate=true; };
-    const fade=async(x,z,txt)=>{ '@later'; const H=MS.holo, el=document.getElementById('subfade'); H.busy=true; if(el){ el.textContent=txt; el.style.opacity='1'; } await new Promise(r=>setTimeout(r,340));
-      UI.goTo(x,z,'up'); if(typeof keys!=='undefined'&&keys.clear)keys.clear(); await new Promise(r=>setTimeout(r,420)); if(el)el.style.opacity='0'; H.busy=false; };
+    const fade=async(x,z,txt)=>{ '@later'; const H=MS.holo; H.busy=true; await FADE.run(txt,()=>UI.goTo(x,z,'up'),{hold:300}); H.busy=false; };
     const holo=()=>{ const H=MS.holo; if(!H||H.busy||LVL!=='up'||UI.freeCam)return;
       if(H.F.inside(pos.x,pos.z)&&pos.z<Z(H.B.y1-1))fade(X(H.hx),Z(H.H.y1-1.8),'ENTERING THE HOLODECK');
       else if(pos.x>X(H.H.x0)&&pos.x<X(H.H.x1)&&pos.z>Z(H.H.y1-.3)&&pos.z<Z(H.H.y1+3))fade(X(H.door),Z(H.B.y1+1.4),'LEAVING THE HOLODECK'); };
     const lane=()=>{ if(MS.laned||!BLK.lane||!STORE.meshes)return; const ms=new Set(); for(const id of ['theatre','arcade','playhouse','holofront'])for(const w of ['f','b','w','e','lobby'])for(const me of BATCH.all(STORE.meshes,'W'+id+':'+w))ms.add(me); if(!ms.size)return; MS.laned=1;
       for(const w of cutWalls){ if(!ms.has(w.me))continue; const wh=w.when, al=Object.getOwnPropertyDescriptor(w,'always'), was=al?(al.get?()=>al.get.call(w):()=>al.value):()=>false;
         w.when=()=>BLK.lane()||(wh?wh():true); Object.defineProperty(w,'always',{get:()=>BLK.lane()||was(),configurable:true}); } };
-    let t0=performance.now(); const tick0=CLOCK.tick; CLOCK.tick=dt=>{ tick0(dt); const now=performance.now(), d=Math.min(.25,(now-t0)/1000); t0=now; lane(); film(now); show(d,now); holo(); };
+    let t0=performance.now(); SYS.add('world',(dt)=>{ const now=performance.now(), d=Math.min(.25,(now-t0)/1000); t0=now; lane(); film(now); show(d,now); holo(); },'059-street');
     window.MAINDBG=()=>({rooms:STORE.rooms.filter(r=>['theatre','arcade','playhouse','holofront','holodeck'].includes(r.id)).map(r=>[r.id,+r.x0.toFixed(1),+r.z0.toFixed(1),+r.x1.toFixed(1),+r.z1.toFixed(1)]),play:MS.play&&{t0:MS.play.SH.t0,cue:MS.play.SH.cue,lights:MS.play.L.map(e=>[e[0],!!e[2]]),sets:Object.keys(MS.play.SETM)},laned:!!MS.laned,tris:(()=>{ const C={}; for(const o of OBJS){ const m=/^store:(theatre|arcade|playhouse|holofront|holodeck)/.exec(o.id||''); if(m)C[m[1]]=(C[m[1]]||0)+o.parts.length*2; }
       for(const k in STORE.meshes){ const m=/^[WR](theatre|arcade|playhouse|holofront|holodeck)/.exec(k)||/^P(set)/.exec(k); if(m)C[m[1]]=(C[m[1]]||0)+STORE.meshes[k].geometry.attributes.position.count/3; } return C; })(),lamps:MS.lamps}); });
 });

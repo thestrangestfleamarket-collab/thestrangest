@@ -3796,3 +3796,26 @@ initial download and load super fast"; then "Go")
   so every number is several times a real machine's): the builders that run at start were down 0.6 s, bodega 0.8, apts 2.4–3.1,
   ghostdojo 1.0, parkwall 3.4–3.5, castle 0.7 (now 0); the rest under 10 ms. The next ones each need their own pull request with
   guards, because other files read what they register at start: the apartments (~20 readers), the ghost dojo, the park wall.
+- **One rule for body moves** (owner, 20 Oct 2026: "you shouldnt be able to do another cartwheel until your feet are back on the ground,
+  you shouldnt be able to do a cartwheel when jumping ... figure out how movements should work in general ... write a core rule that
+  handles it, dont patch it. dont overcomplicate it"): in the rig's key handler, a body move runs to its end, and while it runs a key does
+  nothing — except what the move itself allows: its own in-air variant (the jump's air punch and kick), its combo follow-up (a kick's
+  next kick or jab), and a fall. Gone with it: the queued next move (pressed mid-move, started on landing), the air spin (a flip key
+  pressed during a jump added a somersault), and restarting a free move by pressing its key again. Held keys still repeat a move
+  (`again`) once it has ended. Arm moves (jab, cross, block, wave) are their own layer and unchanged.
+- **The fire escape's ladder** (owner, 20 Oct 2026: "dont have the fire escape drop like this, it should be a ladder all the way up to
+  top. make sure avatar has a climbing animation. slow down climbing. needs animation that lets them pull themselves up and stand"):
+  the counterweighted drop stair is gone; one ladder runs from the sidewalk to above the roof, through a hole in every landing. You
+  climb on with W standing at its foot (or at any landing, or down from the roof with S), at 38 units a second (was 70), with the
+  arms and legs alternating rung by rung (`climbPose` now takes a phase from the ladder's height; the old climb held one frame).
+  At the top, 22 units below the roof, the climb hands over to the rig's mantle (pull up and stand).
+- **The apartments, half as wide** (owner, 20 Oct 2026: "change the apartment size to just this part in image (about 50% width as it now).
+  each floor is its own apartment (empty for now), the elevator takes you to your floor when you use it" and "red brick, make it look
+  realistic, ivy on sides ... add the ivy then set it as image so we dont have to render it every time ... the door for apartment should
+  be in the middle of building. inside 1st floor is the lobby. empty for now. (elevator only)"): the building is 13 wide (was 26), the
+  stoop and door in its middle, the fire escape at its east end. Red brick courses (14 by 6 px, grey mortar) above a stone ground
+  course, with stone bands, quoins and window surrounds. Ivy painted into the side walls' textures (strands from the ground, leaf
+  clusters, sparser towards the top; a painter like the cottage's, painted once with the wall). Inside: the lobby with one elevator
+  and nothing else; each upper floor one open apartment, boards, no corridor, no doors. The elevator has one button: it takes you to
+  your floor (the top one, `APTS.my`) and from there back to the lobby; the floor panel is gone. The lot where the east half stood
+  is empty for now.

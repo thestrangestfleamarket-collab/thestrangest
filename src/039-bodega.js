@@ -1672,7 +1672,7 @@ SHARED.BOD.streetSigns=()=>{ const X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, V3=THREE.Ve
     else if(g.kind==='nopark'){ const S=frame(x,y,g.n,s); post(S,108); plate(S,1,70,106,1.1*TILE,nopark(s,h3(s,31,1)<.5?0:1),{bend}); plate(S,-1,70,106,1.1*TILE,nopark(s+11,h3(s,31,1)<.5?0:-1)); }
     else if(g.kind==='speed'){ const S=frame(x,y,g.n,s); post(S,124); plate(S,-1,62,122,2*TILE,speed(s),{bend:bend*.6}); } });
   BATCH.tag=null; };
-// BUILDING THE BODEGA: faces batched into meshes, the ground painted a patch at a time round you (BODB.gnear), lamps and goods.
+// BUILDING THE BODEGA: faces batched into meshes, the ground painted a patch at a time round you (a BATCH.queue), lamps and goods.
 SHARED.BODB={};
 { const {X,Y,Z,B0,BODOFF}=SHARED.BOD, {bodegaWall,grain,speck,COPE,hash}=SHARED.BOD.g, H=B0.h, KINDS={};
   const inside=()=>SHARED.BOD.inside(pos.x,pos.z)||!!(window.ROOMS&&ROOMS.cur&&ROOMS.cur.lz==='bodega'); SHARED.BODB.inside=inside;
@@ -1781,13 +1781,7 @@ SHARED.BODB={};
     for(const w of SHARED.BOD.WALLS)for(const me of BATCH.all(M,'W'+w.id))cutWalls.push({pl:planes[w.id],nx:NRM[w.id][0],nz:NRM[w.id][1],foot:Y(8),me,when:inside}); };
   BATCH.cast=true; BATCH.build(MK); BATCH.cast=false; Object.assign(KINDS,BATCH.meshes); BATCH.meshes={}; post(KINDS);
   SHARED.BODB.roof=BATCH.all(KINDS,'R');
-  { const gd=(j,x,z)=>Math.hypot(Math.max(j.x0-x,0,x-j.x1),Math.max(j.z0-z,0,z-j.z1)); let HOLD=[], hn=0, gt=0; window.BODB=SHARED.BODB;
-    const paint=L=>{ const keep=BATCH.items.splice(0), tg=BATCH.tag; BATCH.tag=null; for(const j of L){ GQ.splice(GQ.indexOf(j),1); j.go(); hn++; } HOLD.push(...BATCH.items.splice(0)); BATCH.items=keep; BATCH.tag=tg; };
-    const flush=()=>{ if(!HOLD.length)return; const keep=BATCH.items.splice(0), m0=BATCH.meshes; BATCH.meshes={}; BATCH.items=HOLD; HOLD=[]; hn=0;
-      BATCH.cast=false; BATCH.build(MK); const M=BATCH.meshes||{}; BATCH.meshes=m0; BATCH.items=keep; for(const k in M)(MAPG.bodega||scene).add(M[k]); post(M); };
-    SHARED.BODB.gnear=(x,z,R)=>{ const L=GQ.filter(j=>gd(j,x,z)<R); if(L.length){ paint(L); flush(); } };
-    SHARED.BODB.gtick=dt=>{ if(!GQ.length&&!HOLD.length)return; SHARED.BODB.gnear(pos.x,pos.z,SHARED.BODB.GR); if((gt+=dt)<.05)return; gt=0;
-      const t0=performance.now(); while(GQ.length&&performance.now()-t0<6){ let b=null, bd=1e9; for(const j of GQ){ const d=gd(j,pos.x,pos.z); if(d<bd){ bd=d; b=j; } } paint([b]); } if(hn>=24||!GQ.length){ flush(); if(!GQ.length&&window.PAINTC)PAINTC.save(); } }; SHARED.BODB.GR=48*TILE; }
+  { window.BODB=SHARED.BODB; const Q=BATCH.queue({make:MK,cast:false,group:()=>MAPG.bodega||scene,post,R:48*TILE,done:()=>{ if(window.PAINTC)PAINTC.save(); }}); for(const g of GQ)Q.jobs.push(g); GQ.length=0; SHARED.BODB.GQ=Q.jobs; }
   const goods=()=>{ '@later'; const {GOOD,GLAY}=SHARED.BOD, O=SHARED.BOD.O, list=[];
     const row=(p,f,zpx,items)=>{ const along=f[0]?1:0, a1=along?p.y1:p.x1, yaw=Math.atan2(-f[0],f[1]); let a=(along?p.y0:p.x0)+.08, last=null;
       for(const [k,n,...args] of items){ if(last&&last!==k)a+=.04; last=k;

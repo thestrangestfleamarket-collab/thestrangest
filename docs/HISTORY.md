@@ -2,7 +2,7 @@
 
 A separate project from the game: the owner (Bralynn) is building **a new version of The Strangest Flea Market in three.js**, one
 piece at a time. It is **not** the live game and never ships to it. The live game is the repo `bralynnb/tsfm` (thestrangestfleamarket.com);
-this repo is `bralynnb/thestrangest` (once `bralynnbell/thestrangest`, the owner's old GitHub name).
+this repo is `thestrangestfleamarket-collab/thestrangest` (once `bralynnbell/thestrangest`, then `bralynnb/thestrangest`, under the owner's old GitHub names; moved to the `thestrangestfleamarket-collab` account on 19 Oct 2026).
 
 ## The game's repo: data only, never the rules
 
@@ -3724,3 +3724,260 @@ initial download and load super fast"; then "Go")
   through objects ( dont just patch this tray look for root cause)"): a bug to take at the root: why a prop can be walked through at all
   (the solids pass in `052` skips props by name and by box size; stall furniture may be placed after the solids are built), not a box
   added to that one tray.
+
+## 20 Oct 2026: the bodega builder opens at 050 (modules, step 3)
+
+- **The kits and the old game's makers are the page's own code** (`013a-day1.js`, `050-main-8.js`): the builder
+  `await grab('bodega', ...)` now opens in `050-main-8.js`, between the block it closes and the block that lays the bodega out, so it
+  spans `050` to `059` (274 KB) instead of `013a` to `059` (787 KB); `014`–`049` run at the page's top level. Four names that the
+  builder's scope used to shadow were renamed first, each by its resolved declaration with the scope tool, never by text: the page's
+  `hash` in `004-main.js` (`Math.imul`, 22 uses in `004`, `115`, `121`, `123`, `126`) is `hash3`, so the kits' `hash` (the one the
+  painted textures depend on, 499 uses) keeps its name; the kit's prop list `PROPS` is `PROPL` (still `PROPS` as a key of the bags `BOD.K` and `STOREK`,
+  which `055`, `062` and `062a` read by name: the first try renamed the shorthand keys too and the game did not start; a rename by
+  reference must leave `{PROPS}` shorthand as `PROPS:PROPL`), its tunnel-and-bridge `CITY` is `KCITY`, its weed colours `WEEDS` is
+  `WEEDC` (the page-level `PROPS`, `CITY`, `WEEDS` are untouched). Proof: every reference resolves to the
+  same declaration text as before (226,600 compared). What was already true and now shows: none of `014`–`049` touches the scene, the
+  lamps or the walls, so the builder's group holds exactly what it held.
+
+## 20 Oct 2026: the sun rays off
+
+- **Done** (owner, 20 Oct 2026: "lets take off sun rays for now from game -queue"): `133a-sunrays.js` is deleted (the beams, the dust
+  and the full-screen shader pass it put in the composer, with its tick on the clock), with its test `tests/sunrays.cjs`; the day and
+  night panel loses its LIGHT SHAFTS AND RAYS and DUST IN THE LIGHT sliders and the presets their `ray`/`dust` keys. Cost taken off
+  every frame outdoors by day: one full-screen pass, 16 beam cylinders and the dust points; one shader program fewer. The picture
+  check no longer needs to hide them (it still can, harmlessly, on older pages).
+
+## 20 Oct 2026: the club is its own builder (modules, step 4)
+
+- **`058-club.js` is `059a-club.js`**, after the bodega builder closes, wrapped in `await grab('club', ...)`: its room and props land in
+  `MAPG.club`, its own group, instead of the bodega's. It was already a self-contained block using only page-level names and giving
+  none back; the scope proof shows every reference resolving as before. The club's inside still builds on entry (the `club` chunk).
+  Next: the arcade, the dojo, the fire escape, the ghost dojo, the apartments, main street and the store, one each.
+
+## 20 Oct 2026: the arcade is its own builder (modules)
+
+- `059b-arcade.js` moves after the bodega builder and is wrapped in `await grab('arcade', ...)`: its meshes land in `MAPG.arcade`. It was already a
+
+## 20 Oct 2026: the dojo is its own builder (modules)
+
+- `059c-dojo.js` moves after the bodega builder and is wrapped in `await grab('dojo', ...)`: its meshes land in `MAPG.dojo`. It was already a
+
+## 20 Oct 2026: your fire escape is its own builder (modules)
+
+- `059d-fireview.js` moves after the bodega builder and is wrapped in `await grab('fire', ...)`: its meshes land in `MAPG.fire`. It was already a
+  self-contained block using only page-level names; the scope proof shows every reference resolving as before.
+- **The running stance and the doormat** (owner, 20 Oct 2026, with two pictures, the Walker at the bodega's door and just inside:
+  "at points in the running stance the character has both legs back like this. when you enter a location you should show up in front
+  of their doormat. - queue"): the run has frames with both legs trailing behind the body (to fix in the gait); on entering a place you
+  appear in front of its doormat, facing in, not to the side of it.
+
+## 20 Oct 2026: checks only when needed
+
+- **Light by default** (owner, 20 Oct 2026, after GitHub refused to start jobs for the day's minutes: "lets try to not be as check heavy,
+  only check when errors or really need to to be safe"): a pull request runs the build check only (build; the door opens and THE MARKET
+  starts under the real worker; every place's code arrives: one machine, 2–3 minutes). The measuring checks (budget, the same picture,
+  the same pixels) run only with the `measure` label on the pull request or the `measure` box when the workflow is started by hand.
+  The rule for asking: anything touching painting, what is drawn, the frame loop or the start; a move the scope proof covers does not.
+
+## 20 Oct 2026: the ghost dojo is its own builder (modules)
+
+- **`055-ghostdojo.js` is `059e-ghostdojo.js`**, after the bodega builder: `gdShape` (which `050` calls to lay the lot) stays a page-level
+  function; the rest is wrapped in `await grab('ghostdojo', ...)`. Its `sol()` wrote to the builder's `solids`/`fixed`, which were always
+  the street's arrays; it now names `SOL.up`/`FIX.up` directly (the page-level `solids`/`fixed` switch with the level, so naming them
+  would not be the same). The scope proof shows every other reference resolving as before.
+
+## 20 Oct 2026: the apartments are their own builder (modules)
+
+- **`054-apts.js` is `059a-apts.js`** (before `059a-club`, since your fire escape reads `MODS.apts` when it builds), wrapped in
+  `await grab('apts', ...)`; `APTS` is a page-level const now. Its `osol()` names `SOL.up`/`FIX.up` directly, as the ghost dojo's does.
+  Scope proof: every other reference resolves as before.
+
+## 20 Oct 2026: main street is its own builder (modules)
+
+- `057a-mainstreet.js` is `059-street.js` (ahead of the dojo, which reads `STORE.main.doors` when it builds), after the bodega builder, wrapped in `await grab('mainstreet', ...)`. It used none of the
+  builder's locals. Scope proof: 0 differences.
+
+## 20 Oct 2026: the store and the bank are their own builders (modules)
+
+- `057-store.js` is `059-store.js` (first after the builder: the club, the arcade, main street and the bank read `STORE.kit` when they build) (`await grab('store', ...)`; its one direct `solids.push` names `SOL.up`) and `057b-bank.js`, which
+  needs `STORE.kit` from it, follows as `059h-bank.js` (`await grab('bank', ...)`: the bank will get its own load, so its own builder
+  is the first step). Scope proof: every reference resolves as before. The bodega builder now holds only the bodega: its layout,
+  solids, signs, building and the butterflies.
+
+## 20 Oct 2026: the move to modules, done for the street
+
+- **Every place on the street is its own builder**: the store (`059-store`), main street (`059-street`), the apartments (`059a-apts`),
+  the club, the arcade, the dojo, your fire escape, the ghost dojo, the bank (`059h-bank`); the bodega builder (`050`–`059`) holds only
+  the bodega (169 KB, from 787 KB that morning). `docs/MAP.md` lists them. Two lessons, now in CLAUDE.md: a rename by reference must
+  leave `{name}` shorthand keys alone, and builders read each other's registrations at build time, so file order between them is a
+  dependency the scope proof cannot see (main street before the dojo, the store first of all).
+
+## 20 Oct 2026: nobody walks through what an NPC holds
+
+- **Root cause** (owner, 20 Oct 2026, with a picture of the Walker inside a merchant's tray: "shouldnt be able to walk through
+  objects ( dont just patch this tray look for root cause)"): an NPC pushed you out of one circle round its body (`N.push`, `076`),
+  so a tray, a broom or an item held out in front stuck out past it and you could stand in it. Props themselves were already solid
+  above ankle height. Now an NPC whose job holds something (`rig.job.tray|broom|item`) also pushes you out of a second circle where
+  the held thing is, 0.42 tiles ahead of it, without moving the NPC. Cost: nothing on screen; one extra distance per nearby NPC.
+
+## 20 Oct 2026: the tomato merchant
+
+- (owner, 20 Oct 2026: "tomato merchant should be 25% taller, nothing on ground (no loose veggies)"): THE TOMATO is 2.3 m (was 1.84);
+  the vegetable stand no longer scatters pumpkins and sacks on the ground in front of it (`081-stalls.js`), and their two collision
+  boxes went with them. Cost: fewer instances, nothing else.
+
+## 20 Oct 2026: the lawn flat inside, standing at its edges, moved only by what walks through it
+
+- (owner, 20 Oct 2026: "lets make the grass mostly flat again, except on the edges, more natural, and it doesnt move at all unless
+  something is moving it (you, npc, character, animal, etc) the environment cant move it"; `WEEDS.lawnInit` in `140-weeds.js`): the
+  tall grass's mass had a low lip at the lawn's edge and its full height inside; now the height curve is the other way round: full height
+  in a band some 0.6 tiles wide along every edge (paths, walls, kerbs, the keep-outs round trees and stalls), falling to a fifth of it
+  inside, the tussock roll kept so the flat part is not a sheet. The wind is out of its shader (the trees' `PARK.sway` no longer reaches
+  it); what still moves it is the treading of you and the walkers near you, as before. Cost: the same mesh; a little less vertex work.
+
+## 20 Oct 2026: CENTRAL PARK over the gate; the deep forest behind
+
+- (owner, 20 Oct 2026: "chaneg (A) to (Central Park) mark it arched, small, all metal, the trees towarsd the distance should be much
+  bigger and looks like a deep forest of trees, you should barely be able to see the skyline over it. i dont want the park feeling small";
+  `061-park.js`): the gate's painted oval with its A is gone; CENTRAL PARK stands over the gate in small iron pixel letters (a 5-row
+  font, each pixel a box of the gate's own iron) along a stepped iron arc, reading from the street. Beyond North St, three rows of
+  much bigger oaks and elders (m 30–55, twice the park's) in a band 50 units deep across the park's width and past its ends: a wall of
+  crowns from inside the park, the skyline just showing over it. Cost: the letters and arc some 180 boxes (2,200 triangles, in the
+  gate's instanced mesh, no new draw); the forest 49 trees, about 12,000 triangles in the park's one tree mesh (18,300 in all now),
+  drawn only when the far side is in view; no lights or programs.
+
+## 20 Oct 2026: the run's crossing; arriving in front of the doormat
+
+- **The run** (owner, 20 Oct 2026, with a picture at the bodega's door: "at points in the running stance the character has both legs
+  back like this"; `walkPose` in `001-rig.js`): measured through a cycle, both ankles sat behind the pelvis for a tenth of each cycle
+  (2–8 units), while the swing foot crossed under the body after the stance foot had already fallen behind the hip. Running, the swing
+  now comes through earlier (its ease runs 40% faster at full run, held at the landing point before touch-down), so the crossing is one
+  frame with both feet within two units of the hip, under the body. The walk is untouched (the factor scales with the run). The jump
+  test still passes. `tests/runcycle` is the measure (kept in the session's tools, not the repo).
+- **The doormat** (owner, same message: "when you enter a location you should show up in front of their doormat"): every arrival by
+  a place's door (the GO TO menu, the E action at a door, `STORE.enter`) lands you 1.2–1.6 units inside the door, centred on it, facing
+  into the room (`goTo` takes a heading; a room records its door's inward heading, `R.hd`, on its place entry). THE BODEGA's GO TO spot
+  was 3.4 units in, past the mat; it is 1.6 now, in front of it.
+- **Loops for things that move by themselves** (owner, 20 Oct 2026: "i want things like this that move to be looped to save on render
+  cpu and time", of the flower boxes): measured before building. The flower boxes, the trees, the gold grass and the lawn's edges
+  already sway in their vertex shader (one sine per vertex on the GPU, no CPU and no per-frame upload), which is cheaper than any
+  made-once loop could be; nothing there to convert. The CPU side of everything that moves by itself (every tick chained to the clock,
+  timed one by one on the street at noon, software rendering): about 3 ms a frame in all, the largest the clock's own sun and lamp
+  aim (0.9 ms), the birds (0.4), the arcade's fog check (0.35), the lawn's trample slots (0.3); the one-off lawn chunk builds (20–100 ms
+  each, throttled) are what made CLOCK look like 21 ms in the earlier frame profile. The guitarist no longer walks (and collides against
+  the street's solids) while farther than 40 units or out of the bodega map: he stands where he was and resumes when you come near.
+- **The grey half at Market St's west end** (20 Oct 2026, found while building the bank corner; on the live page too): standing near
+  the west end, the isometric camera sits outside the skyline backdrop (four painted panels round the land, 38 tiles past its edge),
+  and the panels were drawn from both sides, so the back of a painted tower filled half the screen as flat grey. The panels now draw
+  from the inside only (`FrontSide`); a camera outside sees through to the scene and the far panels. No cost.
+- **`SKIP=g python3 build.py`** (same day): writes only `dist/market.html` and `dist/door.html`, for a workspace that cannot reach the
+  npm registry (the website's `dist/g/` needs the pinned packages).
+- **Only the place you're at builds at start, step 1: the castle** (owner, 20 Oct 2026: "the only thing that should load is the place
+  you're at (bank, apt, market st, central park, each interior)"): the castle now builds in Central Park's own load (`PARK.later`,
+  chunk `park`), not at the start; it shows with the park, as the trees do. Measured at the start on the street (software rendering,
+  so every number is several times a real machine's): the builders that run at start were down 0.6 s, bodega 0.8, apts 2.4–3.1,
+  ghostdojo 1.0, parkwall 3.4–3.5, castle 0.7 (now 0); the rest under 10 ms. The next ones each need their own pull request with
+  guards, because other files read what they register at start: the apartments (~20 readers), the ghost dojo, the park wall.
+- **One rule for body moves** (owner, 20 Oct 2026: "you shouldnt be able to do another cartwheel until your feet are back on the ground,
+  you shouldnt be able to do a cartwheel when jumping ... figure out how movements should work in general ... write a core rule that
+  handles it, dont patch it. dont overcomplicate it"): in the rig's key handler, a body move runs to its end, and while it runs a key does
+  nothing — except what the move itself allows: its own in-air variant (the jump's air punch and kick), its combo follow-up (a kick's
+  next kick or jab), and a fall. Gone with it: the queued next move (pressed mid-move, started on landing), the air spin (a flip key
+  pressed during a jump added a somersault), and restarting a free move by pressing its key again. Held keys still repeat a move
+  (`again`) once it has ended. Arm moves (jab, cross, block, wave) are their own layer and unchanged.
+- **The fire escape's ladder** (owner, 20 Oct 2026: "dont have the fire escape drop like this, it should be a ladder all the way up to
+  top. make sure avatar has a climbing animation. slow down climbing. needs animation that lets them pull themselves up and stand"):
+  the counterweighted drop stair is gone; one ladder runs from the sidewalk to above the roof, through a hole in every landing. You
+  climb on with W standing at its foot (or at any landing, or down from the roof with S), at 38 units a second (was 70), with the
+  arms and legs alternating rung by rung (`climbPose` now takes a phase from the ladder's height; the old climb held one frame).
+  At the top, 22 units below the roof, the climb hands over to the rig's mantle (pull up and stand).
+- **The apartments, half as wide** (owner, 20 Oct 2026: "change the apartment size to just this part in image (about 50% width as it now).
+  each floor is its own apartment (empty for now), the elevator takes you to your floor when you use it" and "red brick, make it look
+  realistic, ivy on sides ... add the ivy then set it as image so we dont have to render it every time ... the door for apartment should
+  be in the middle of building. inside 1st floor is the lobby. empty for now. (elevator only)"): the building is 13 wide (was 26), the
+  stoop and door in its middle, the fire escape at its east end. Red brick courses (14 by 6 px, grey mortar) above a stone ground
+  course, with stone bands, quoins and window surrounds. Ivy painted into the side walls' textures (strands from the ground, leaf
+  clusters, sparser towards the top; a painter like the cottage's, painted once with the wall). Inside: the lobby with one elevator
+  and nothing else; each upper floor one open apartment, boards, no corridor, no doors. The elevator has one button: it takes you to
+  your floor (the top one, `APTS.my`) and from there back to the lobby; the floor panel is gone. The lot where the east half stood
+  is empty for now.
+- **THE NEW LAYOUT** (owner, 20 Oct 2026, 23:00–23:50, settled over nine mockups and an editable map; his positions in map units, north
+  up; this entry is the plan every later piece builds to). Market St is one zone (the street, West St, the bodega block, the alley);
+  Central Park is two zones, CENTRAL PARK (the top half) and SOUTH EAST CENTRAL PARK (the bottom); every interior is its own zone;
+  "anything that brings up a loading screen" is a zone. "Only the place you're at loads." Market St no longer dead-ends: it runs on
+  past West St to a forcefield at x −130 and east to one at x 262. The Avenue is gone: "there shouldn't be a road on right side,
+  central park just keeps going that way". The park is "2x up north" (y −38 to 181), West St runs with it to a forcefield at its end.
+  The bodega block (south side, west to east): MUSEUM OF EARTH (−48), THE PLAYHOUSE (−32), THE BANK (4.5, on the block now, not
+  West St), THE BAR (54.5), the SUBWAY EXIT on the sidewalk (77), the ENTRANCE TO THE HUDSON AREA (117.5, "directly across from CP
+  gate", a passage through the block and the empty row to the river walk), BATH HOUSE (134), THE DOJO (147), MOVIE THEATRE (197.5),
+  THE ARCADE (212.5), THE HOLODECK (232.5). Club Static, VCR Repair and the Dojo Hall are deleted from the game. THE BODEGA and the
+  APARTMENTS move to West St's west side: the bodega at the corner (−66.5, −27), "2x bigger and have entrance on both sides of
+  street"; the apartments above it (−67, −5); above them seven empty apartment fronts, "all empty front shells (low render nothing
+  inside)" (−67, 17.5 … 149.5). The park gate at the centre of the park's bottom edge (112, −36). In the park: the castle (43, 17),
+  the fountain (72, 137), the round (112, 59.5), a lake (151, 10, in place of the pond), a stream from the north edge under a bridge
+  (201.5, 72.5) into the lake, the campfire (197.5, 32.5), the tower (−8.5, −28), paths that "go all the way (realistic)" between
+  all of them with lamp posts, trees, "fleshed out lived in". A huge hill in the east with a large cave (196.5, 41.5): "the cave leads
+  down through long tunnels underground that have gems you mine (get more expensive the longer you go down) the rock golems guard
+  it. once you get near they wake up and if you kill them they break into small pieces (boulders, rocks), then after 10–60 seconds
+  they start to form back together and come back at you". The mines are NEW (the dungeon under the castle stays). South of the
+  block: the dark alley, a row of empty buildings, the walk by the Hudson, the Hudson. Build order, one pull request each: the map
+  skeleton (park size, no Avenue, gate, forcefields), the block's new order, West St's bodega and apartments, the park's inside, the
+  Hudson side, the mines and golems, then the zone loading screens.
+
+- **The map skeleton, step 1 of the new layout** (21 Oct 2026; `006-map-pre.js`, `050-main-8.js`, `064-map-post.js`, `065-ring.js`): the park
+  is twice as deep (`NORTHX` 145.5: y −38 to 181) and runs east to the force field (`EASTX` 262); the Avenue, North St and the bank's
+  pocket road are gone, and with them the loop's subway tunnel (`067-sub.js`) and the grid mines under the park (`145-mines.js`; the
+  new mines come with the cave in step 6). Market St runs from the west force field (`WESTX` −130) to the east one (262); West St runs
+  from Market St up the park's west side and dead-ends at the force field past the park's top (`RING.top`, `RING.wy1`). The force field
+  is one box (`RING.ff`). The land's road holes are clipped to the land rect (the old hole was skipped when a corner fell outside it,
+  which buried the road under lawn). The bank stays where it stood until step 2 puts it on the block; the civic tower sits past the
+  park's top wall. The subway's two loop stairs are gone (the subway exit on the block's sidewalk comes in step 2).
+
+- **The block's new order, step 2 of the new layout** (21 Oct 2026; `006-map-pre.js` `BLOCK`, `MAINROW`, `WROW`, `LAYOUT0.subway`;
+  `059h-bank.js`, `059-street.js`, `069a-block.js`): the south side of Market St, west to east, each centred on the owner's x at its real
+  width: MUSEUM OF EARTH (−62 to −34), THE PLAYHOUSE (−34 to −20), THE BANK (−10 to 19, on the block now at the museum's width, its hall
+  14 deep; the pocket off West St and its three glass buildings are gone), THE BAR (49 to 60), the SUBWAY stairs (75 to 79; the station
+  moves under them), the bodega and the apartments where they were (they go to West St in step 3, and the ENTRANCE TO THE HUDSON AREA
+  takes their place then), the dojo gate and THE BATH HOUSE where they were (they shift to 147 and 134 in step 3, when the apartments
+  have gone), THE MOVIE THEATRE (190 to 205), THE ARCADE (205 to 220), THE HOLODECK (225 to 240: its own front now, the booth across the
+  lot's whole width with the HOLODECK sign three times the size, the hall behind as before). The block runs to x 245. CLUB STATIC and
+  VCR REPAIR are deleted (`059a-club.js`, the VCR offmap in `059-store.js`, their place tests), and THE DOJO with its hall and the ninja
+  training (owner, 21 Oct 2026, asked whether the hall or both: "both for now, lets hurry"; `059c-dojo.js`, `141a-ninja.js`).
+
+- **West St and the block's west end, step 3 of the new layout** (21 Oct 2026; `006-map-pre.js`, `050-main-8.js`, `069a-block.js`,
+  `148a-gates.js`): the bodega and the apartments can only be built facing Market St (their builders paint and place everything one
+  way), so the owner chose, of "at the Market St corner today" or "rebuilt facing West St, a day+", "1": THE BODEGA is twice as wide
+  (−80 to −62, the west half added; the shop's things where they were) at the block's west end beside the museum, the APARTMENTS west
+  of it (−95 to −80). Up West St's west side SEVEN EMPTY SHELLS (`building()` can face east now: `e:1`), 13 by 19, 22 apart, from
+  y 17.5. THE BATH HOUSE at 134 (its court 125 to 143). THE ENTRANCE TO THE HUDSON AREA at 117.5: a paved way 13 wide through the
+  block and the back row to the alley (`BLOCK.hudson`; no gate across it). 'YOUR APARTMENT' is placed in the half-width building.
+  Still to do: the bodega's second door toward West St.
+
+- **Nothing animated unless it's on screen and near; the guitarist shelved; the park's back rows as stand-ins** (owner, 21 Oct 2026, of the
+  park's wide view: "i dont want to over do what the game is processing for things that arent vital", "lets remove musician from showing
+  up for now in game, shelf him. i dont want anything animated unless its on screen to a player in radius", of the three rows of big
+  trees past the park's top: "make these low res that are just background art not important"):
+  - **The rule** (`NPCS.seen(x,y,z,r)`, `NPCS.live(x,y,z,r)` in `076-npc-map.js`; `NPCS.R` 25 tiles): a thing is stepped only while it is
+    in the picture (the camera's frustum) and within 25 tiles of you; out of the picture it is not drawn. The characters had this already
+    (`NPCS.tick`); the birds (`144b-birds.js`) have it now (a bird out of the picture is neither stepped nor placed; one in the picture
+    but past the radius stands still). The trees' and the plants' sway (`PARK.swayAt` in `061-park.js`, the same in `142a-flora.js`)
+    fades out from 85% of that radius to nothing at it: far trees in the view stand still. The sway costs the frame nothing either way
+    (one uniform, a few lines of vertex shader; the sun's shadow is only redrawn when you move 12 tiles or the sun turns), so this is the
+    rule, not a saving. Already gated before and left alone: the butterflies and the pool's floats (near only), the musicians past 18,
+    the ghosts past 45, the wires only in wind and near, the lawn's chunks round you.
+  - **The guitarist shelved** (`MUS.shelf` in `110-musician.js`): he is not built, not drawn, not run, not in `NPCS.extra`, not on the
+    apartment's top floor; THE GUITARIST's hit box and SHARPEN bar are not made. His code and the guitar's tunes stay for when he comes
+    back (`MUS.shelf=false`; `?sheet=guitarist` needs him unshelved). The bar's stage keeps its three.
+  - **The three back rows** (`TREES.back`, `P.standFar` in `061-park.js`): the rows of big oaks and elders past the park's top wall
+    (sizes 30-48) are no longer full models in the forest mesh; they are the low stand-ins (a faceted ball on a post, 30 triangles each,
+    no sway) that the park's trees already turn into when you are outside the park, shown always. Some 20 trees, about 8,000 triangles
+    to about 600; no solids lost (they stood beyond the wall).
+- **The park's inside, step 4 of the new layout** (21 Oct 2026; `061-park.js`, `006-map-pre.js`, `089-pond.js`, `089a-brook.js`,
+  `060-cave.js`, `060a-fount.js`): the round at the owner's spot (`PARKGX` 112, 59.5) and the gate centred under it; the paths are
+  a network of segments (`PARK.segs`, `PARK.segD`, `PARK.pd`) that "go all the way": the gate path up the middle to the north gate,
+  the cross path from the west gate to the east gate, spurs to the castle (43, 17: `LAYOUT0.castle`), the lake (`PARKLAKE` 151, 10,
+  the pond made three times the size), the cave (196.5, 41.5) and the camp past it, the tower (−8.5, −28) and the fountain (which
+  keeps its corner with its lake: the owner's lake is the one at 151, 10). Every path is paved, edged and lit: lamp posts every 13 to
+  16 along all of them. The brook springs from the fountain's lake and runs south-west into the lake, under the stone bridge where it
+  crosses the cross path (the bridge was on the gate path). Trees, flowers, hedges and the lawn keep off every path. Cost: the paths'
+  slabs are built in the park's own load as before; some 40 lamp posts more (unlit models; the eight nearest light).

@@ -68,18 +68,18 @@ const BROOK={}; window.BROOK=BROOK;
       const arr=[]; for(let i=0;i<24;i++){ const o=mine[i]; if(!o){ arr.push(new THREE.Vector4()); continue; } const k=kAt(BK.q(o.x,o.y)[1]), [nx,ny]=BK.nrm(k); arr.push(new THREE.Vector4(o.wx,o.wz,o.wr*(o.kind==='s'?.95:.8),Math.atan2(nx,-ny))); }
       const m=new THREE.ShaderMaterial({uniforms:{...U,uRk:{value:arr}},vertexShader:VS,fragmentShader:FS,fog:false}); m.customProgramCacheKey=()=>'brookwater';
       const me=new THREE.Mesh(w.g,m); grp.add(me); w.me=me; }
-    { const br=BK.br, yc=br.yc, S=br.S, cx=P.round[0], ex=(y,f)=>cx+P.wobX(y)+f*3.6, kc=C[br.k], lv=L(kc[2]), a=W(kc[2])+.4, U0=S+2, hump=BK.hump;
+    { const br=BK.br, yc=br.yc, xc=br.xc, S=br.S, ey=(x,f)=>P.armY(x)+f*3.6, kc=C[br.k], lv=L(kc[2]), a=W(kc[2])+.4, U0=S+2, hump=BK.hump;
       const cv=document.createElement('canvas'); cv.width=cv.height=48; const g2=cv.getContext('2d'), id=g2.createImageData(48,48);
       for(let y=0;y<48;y++)for(let x=0;x<48;x++){ const ro=Math.floor(y/12), xo=x+(ro%2)*12, bi=Math.floor(xo/24), j=y%12===0||xo%24===0, t=hs(bi*7+ro,71), v=j?70:(118+40*t)*(y%12===1?1.1:y%12===11?.86:1), k=(y*48+x)*4; id.data[k]=v; id.data[k+1]=v*.97; id.data[k+2]=v*.9; id.data[k+3]=255; }
       g2.putImageData(id,0,0); const tx=new THREE.CanvasTexture(cv); tx.magFilter=tx.minFilter=THREE.NearestFilter; tx.generateMipmaps=false; tx.colorSpace=THREE.SRGBColorSpace; tx.wrapS=tx.wrapT=THREE.RepeatWrapping; tx.repeat.set(1/1.4,1/1.4);
       const smat=new THREE.MeshLambertMaterial({map:tx,side:THREE.DoubleSide}), vb=(-D(kc[2])-.3)*WU, par=.5*WU;
-      for(const f of [-1,1]){ const sh=new THREE.Shape(); sh.moveTo(-U0,vb); sh.lineTo(U0,vb); for(let i=16;i>=0;i--){ const u=-U0+2*U0*i/16; sh.lineTo(u,hump(ex(yc+u,f)-f*.1,yc+u)*WU+par); }
+      for(const f of [-1,1]){ const sh=new THREE.Shape(); sh.moveTo(-U0,vb); sh.lineTo(U0,vb); for(let i=16;i>=0;i--){ const u=-U0+2*U0*i/16; sh.lineTo(u,hump(xc+u,ey(xc+u,f)-f*.1)*WU+par); }
         const ho=new THREE.Path(), sp=(lv-.1)*WU, cr=(br.H-.14)*WU; ho.moveTo(-a,sp); for(let i=1;i<16;i++){ const t=Math.PI*(1-i/16); ho.lineTo(Math.cos(t)*a,sp+Math.sin(t)*(cr-sp)); } ho.lineTo(a,sp); sh.holes.push(ho);
         const geo=new THREE.ExtrudeGeometry(sh,{depth:.45,bevelEnabled:false,curveSegments:4}), p=geo.attributes.position;
-        for(let i=0;i<p.count;i++){ const u=p.getX(i), v=p.getY(i), w=p.getZ(i); p.setXYZ(i,X(ex(yc+u,f)+f*w),v+G0,Z(yc+u)); } geo.computeVertexNormals();
+        for(let i=0;i<p.count;i++){ const u=p.getX(i), v=p.getY(i), w=p.getZ(i); p.setXYZ(i,X(xc+u),v+G0,Z(ey(xc+u,f)+f*w)); } geo.computeVertexNormals();
         const me=new THREE.Mesh(geo,smat); me.castShadow=me.receiveShadow=true; grp.add(me);
-        for(let i=0;i<8;i++){ const u0=-U0+2*U0*i/8, u1=u0+2*U0/8, xa=X(ex(yc+(u0+u1)/2,f)), xb=X(ex(yc+(u0+u1)/2,f)+f*.45); SOL.up.push([Math.min(xa,xb),Z(yc+u0),Math.max(xa,xb),Z(yc+u1)]); FIX.up.push([Math.min(xa,xb),Z(yc+u0),vb+G0,Math.max(xa,xb),Z(yc+u1),Math.max(hump(ex(yc+u0,f)-f*.1,yc+u0),hump(ex(yc+u1,f)-f*.1,yc+u1))*WU+par+G0]); } }
-      const dv=[], di=[], n=24; for(let i=0;i<=n;i++){ const y=yc-U0+2*U0*i/n; for(const f of [-1,1]){ const x=ex(y,f)-f*.02; dv.push(X(x),hump(ex(y,0),y)*WU+.003,Z(y)); } if(i)di.push(2*i-2,2*i,2*i-1,2*i-1,2*i,2*i+1); }
+        for(let i=0;i<8;i++){ const u0=-U0+2*U0*i/8, u1=u0+2*U0/8, xm=xc+(u0+u1)/2, za=Z(ey(xm,f)), zb=Z(ey(xm,f)+f*.45); SOL.up.push([X(xc+u0),Math.min(za,zb),X(xc+u1),Math.max(za,zb)]); FIX.up.push([X(xc+u0),Math.min(za,zb),vb+G0,X(xc+u1),Math.max(za,zb),Math.max(hump(xc+u0,ey(xc+u0,f)-f*.1),hump(xc+u1,ey(xc+u1,f)-f*.1))*WU+par+G0]); } }
+      const dv=[], di=[], n=24; for(let i=0;i<=n;i++){ const x=xc-U0+2*U0*i/n; for(const f of [-1,1]){ const y=ey(x,f)-f*.02; dv.push(X(x),hump(x,ey(x,0))*WU+.003,Z(y)); } if(i)di.push(2*i-2,2*i,2*i-1,2*i-1,2*i,2*i+1); }
       const dg=new THREE.BufferGeometry(); dg.setAttribute('position',new THREE.Float32BufferAttribute(dv,3)); dg.setIndex(di); dg.computeVertexNormals(); const uv=[]; for(let i=0;i<dv.length;i+=3)uv.push(dv[i]/T*1.2,dv[i+2]/T*1.2); dg.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));
       const dk=new THREE.Mesh(dg,new THREE.MeshLambertMaterial({map:tx,polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-1,side:THREE.DoubleSide})); dk.receiveShadow=true; grp.add(dk); BROOK.bridge=dk; }
     let snd=null, splash=0, wasIn=false;

@@ -1,6 +1,6 @@
 # The Strangest Flea Market in 3D (three.js)
 
-The owner (Bralynn) is rebuilding The Strangest Flea Market in three.js, one piece at a time. This repo is `bralynnb/thestrangest` (`bralynnbell` was the owner's old GitHub name: start sessions from `bralynnb/thestrangest`, or pull request updates never reach them).
+The owner (Bralynn) is rebuilding The Strangest Flea Market in three.js, one piece at a time. This repo is `thestrangestfleamarket-collab/thestrangest` (once `bralynnbell/thestrangest`, then `bralynnb/thestrangest`, under the owner's old GitHub names; it moved to the `thestrangestfleamarket-collab` account on 19 Oct 2026): start sessions from `thestrangestfleamarket-collab/thestrangest`, or pull request updates never reach them.
 It is not the live game (`bralynnb/tsfm`); since 18 Oct 2026 (after tsfm#803) nothing here reads it or goes there. The game is THE MARKET, one page,
 live on the website thestrangestfleamarket.com (Cloudflare Workers Builds deploy `main`). There is no claude.ai copy any more
 (owner, 20 Oct 2026): never publish the game as a claude.ai artifact.
@@ -24,8 +24,11 @@ Look there before changing how something looks or behaves, and add a short dated
   After re-baking a character, run `python3 tools/trim-clips.py` (keeps only clips the code names, at 12 fps).
 - To add a file, give it a number between its neighbours (e.g. `054a-name.js`, or renumber).
 - **Before reading a file, grep it in `docs/MAP.md`** (made by `node tools/map.cjs`, refreshed by the build): what it needs, what it gives,
-  and which function it sits inside. `await grab('bodega', ...)` is one function from `013a` to `059` (787 KB): names defined in those
-  files are its locals, not globals. The move to modules (20 Oct 2026) is lifting the shared kits out of it, then one place per pull request.
+  and which builder it sits inside. Each place is its own builder, `await grab(name, async()=>{...})`, one file each (`059-store` to
+  `059h-bank` on the street; the park, castle, dungeon, stairs and station after). The kits (`014`–`049`) and the bodega's own files
+  (`050`–`059`) come first. **Builders read each other's registrations when they build** (`STORE.kit` from the store, `STORE.main` from
+  main street, `MODS.apts` from the apartments), so a builder's file must come after the ones it reads: the scope proof (`tools/scope.cjs`)
+  cannot see that; the build check's error step can. Prove a move with the scope proof, then run the build check.
 
 ## Build
 
@@ -33,7 +36,7 @@ Look there before changing how something looks or behaves, and add a short dated
 (`tools/yields.py`), minifies with esbuild (`tools/minify.cjs`; `npm install` once) and writes `dist/market.html` and
 `dist/door.html`; it stops if a page has an unclosed `<!--`. For the website it also writes `dist/g/`: THE MARKET
 split like the old game (`market.html` a 4 KB shell, `rig.<hash>.js`, `game.<hash>.js`, each `data/*.json` as `<name>.<hash>.json`
-fetched at start); the worker hands `dist/g/` only to a login, cached for good (a new build, new names). `dist/market.html` is the single-file page the tests drive. `MIN=0 python3 build.py` keeps them readable for debugging.
+fetched at start); the worker hands `dist/g/` only to a login, cached for good (a new build, new names). `dist/market.html` is the single-file page the tests drive. `MIN=0 python3 build.py` keeps them readable for debugging. `SKIP=g python3 build.py` writes only `dist/market.html` and `dist/door.html` (no `dist/g/`, so no npm packages beyond esbuild: for a workspace that cannot reach the registry).
 
 **Code in its own file (chunks, 20 Oct 2026)**: a function whose body starts with `'@name';` (e.g. `()=>{ '@park'; ... }`) is cut out
 by `tools/chunks.cjs` (needs `acorn`, which `npm ci` brings; without it everything stays in the page) into chunk `name`: on the website
@@ -41,7 +44,7 @@ by `tools/chunks.cjs` (needs `acorn`, which `npm ci` brings; without it everythi
 sees every name around it (handed in, or read live when it can change). Call `LOAD` (behind the place's black fade) before such a
 function first runs; if one runs before its chunk came, it is fetched there and then (the page waits for it) and the console says
 `chunk name was not loaded before use (#n)` (`dist/chunks.txt` lists every cut function by number): add the missing `LOAD`.
-Places: `dungeon`, `park`, `dojo`, `fire`, `club`, `arcade`, `vcr`, `bath` (on the way in: `STORE.offGo`/`enter`/`ensure`, the
+Places: `dungeon`, `park`, `fire`, `arcade`, `bath` (on the way in: `STORE.offGo`/`enter`/`ensure`, the
 `ROOMS` swap, `PARK.load`, the dungeon's `go`, a saved spot); `later` (code the start never runs, fetched as soon as the start is
 done) is marked by `tools/later.cjs` from what the start runs (re-run it in CI now and then: `SKIP=later MIN=0 python3 build.py &&
 node tools/later.cjs`; new code stays in the start file until then). `tests/places.cjs` enters every place on the website and fails
@@ -58,7 +61,13 @@ Several chats work at once, each on its own branch. Every time:
 
 Moving here from `bralynnb/tsfm` (owner, 18 Oct 2026). This repo is the whole site: `worker/door.js` serves `/` (THE MARKET to a
 checked login, the door to anyone else) from `dist/`. `.github/workflows/site.yml` builds and runs `tests/site.cjs` (the real worker
-under `wrangler dev`: the door shows, THE MARKET starts) on every push and pull request. Never copy `market.html` anywhere by hand.
+under `wrangler dev`: the door shows, THE MARKET starts) and `tests/places.cjs` on every push and pull request. Never copy `market.html` anywhere by hand.
+**Checks are light by default** (owner, 20 Oct 2026: "lets try to not be as check heavy, only check when errors or really need to to be
+safe"): a pull request gets the build check only. The measuring checks (budget, same picture, same pixels: four machines, 8–10 minutes)
+run only when asked: put the `measure` label on the pull request (`gh api -X POST repos/<owner>/<repo>/issues/<n>/labels -f 'labels[]=measure'`,
+then start the workflow by hand or push), or start the workflow by hand with `measure` ticked. Ask for them when a change touches
+painting, what is drawn, the frame loop or the start; a move the scope proof covers does not need them. If GitHub drops a pull request's
+event (it happens), start the workflow by hand: `gh api -X POST repos/<owner>/<repo>/actions/workflows/site.yml/dispatches -f ref=<branch>`.
 
 ## Bug reports and the owner's queue
 

@@ -33,9 +33,9 @@ const RESMAX=FULLRES?10:3, vpu=()=>V0*ppu/PPU, art=()=>PPU*RES(), PCAP=()=>Math.
 function frustum(){ const u=rppu(); cam.left=-RW/2/u; cam.right=RW/2/u; cam.top=RH/2/u; cam.bottom=-RH/2/u; cam.updateProjectionMatrix(); }
 addEventListener('resize',resize);
 
-const hash=(x,y,s)=>{ let h=(Math.imul(x,374761393)+Math.imul(y,668265263)+Math.imul(s,982451653))|0; h=Math.imul(h^(h>>>13),1274126177); h^=h>>>16; return (h>>>0)/4294967296; };
+const hash3=(x,y,s)=>{ let h=(Math.imul(x,374761393)+Math.imul(y,668265263)+Math.imul(s,982451653))|0; h=Math.imul(h^(h>>>13),1274126177); h^=h>>>16; return (h>>>0)/4294967296; };
 const vnoise=(x,y,p,s)=>{ const xi=Math.floor(x),yi=Math.floor(y),fx=x-xi,fy=y-yi,u=fx*fx*(3-2*fx),v=fy*fy*(3-2*fy),m=a=>((a%p)+p)%p;
-  const a=hash(m(xi),m(yi),s),b=hash(m(xi+1),m(yi),s),c=hash(m(xi),m(yi+1),s),d=hash(m(xi+1),m(yi+1),s); return a+(b-a)*u+(c-a)*v+(a-b-c+d)*u*v; };
+  const a=hash3(m(xi),m(yi),s),b=hash3(m(xi+1),m(yi),s),c=hash3(m(xi),m(yi+1),s),d=hash3(m(xi+1),m(yi+1),s); return a+(b-a)*u+(c-a)*v+(a-b-c+d)*u*v; };
 const fbm=(x,y,px,py,s)=>vnoise(x,y,px,s)*.55+vnoise(x*2,y*2,px*2,s+1)*.3+vnoise(x*4,y*4,px*4,s+2)*.15;
 const B4=[0,8,2,10,12,4,14,6,3,11,1,9,15,7,13,5], dith=(x,y)=>B4[(y&3)*4+(x&3)]/16-.47;
 const rgb=h=>[h>>16&255,h>>8&255,h&255];
@@ -44,7 +44,7 @@ function tex(w,h,fn){ const c=document.createElement('canvas'); c.width=w; c.hei
   for(let y=0;y<h;y++)for(let x=0;x<w;x++){ const [r,gg,b]=rgb(fn(x,y)), i=(y*w+x)*4; im.data[i]=r; im.data[i+1]=gg; im.data[i+2]=b; im.data[i+3]=255; }
   g.putImageData(im,0,0); const t=new THREE.CanvasTexture(c); t.magFilter=THREE.NearestFilter; t.minFilter=THREE.NearestMipmapNearestFilter; t.generateMipmaps=true;
   t.wrapS=t.wrapT=THREE.RepeatWrapping; t.colorSpace=THREE.SRGBColorSpace; return t; }
-const grainT=tex(64,64,(x,y)=>hash(x,y,51)<.03?0xc4c4c4:tone(fbm(x/16,y/16,4,4,50),x,y,[0xd2d2d2,0xe0e0e0,0xeeeeee,0xffffff]));
+const grainT=tex(64,64,(x,y)=>hash3(x,y,51)<.03?0xc4c4c4:tone(fbm(x/16,y/16,4,4,50),x,y,[0xd2d2d2,0xe0e0e0,0xeeeeee,0xffffff]));
 
 const grad=new THREE.DataTexture(new Uint8Array([70,140,205,255]),4,1,THREE.RedFormat); grad.magFilter=grad.minFilter=THREE.NearestFilter; grad.needsUpdate=true;
 const mcache={};

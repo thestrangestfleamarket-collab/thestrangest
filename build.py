@@ -76,6 +76,8 @@ if os.environ.get('MIN', '1') != '0':
     if not os.path.exists('node_modules/esbuild'):
         subprocess.run(['npm', 'install', '--no-audit', '--no-fund'], check=True)
     subprocess.run(['node', 'tools/minify.cjs'] + pages, check=True)
+if 'g' in os.environ.get('SKIP', '').split(','):
+    sys.exit(print('built', pages[0], 'and', pages[1], 'only (SKIP=g: no dist/g, no npm packages needed)'))
 elif not os.path.exists('node_modules/three'):
     subprocess.run(['npm', 'install', '--no-audit', '--no-fund'], check=True)
 used = [f for f in names if '__DATA__("' + f + '")' in body]

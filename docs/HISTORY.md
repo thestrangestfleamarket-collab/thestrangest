@@ -3557,6 +3557,44 @@ initial download and load super fast"; then "Go")
   (every reference's declaration before and after, 226,800 references) shows the only other change is `BRICKS` reaching its own
   `const` instead of the same object through `window`. Next: open the builder just before `052`, so `014`–`051` are top-level code.
 
+- **Character screenshots in a black void, always** (owner, 20 Oct 2026: "set a hard rule to do screenshots of characters in black
+  voids"): every screenshot of a character shows only it on black: no ground, sky, scenery or other characters. A shot with
+  anything else in it is retaken, not shown. In CLAUDE.md's rules.
+
+- **Characters from smooth curves, not stacked shapes; THE RAIN FISH** (owner, 20 Oct 2026: "i dont want blocky looking toy characters";
+  "try to match the character exactly, curves, every angle"; "keep proportions correct"; "give him fish tail"; "make these characters
+  2x bigger than they need to be so we can scale down and up as needed"; his picks: about 12k triangles each, sides and back inferred
+  from the one photo and corrected by him). New shared kit in `080-npc-parts.js` (`PARTSNPC.T`): `spl` (a curve through traced points),
+  `prof`/`lathe` (a body turned from a profile traced off the photo), `surf` (any surface by a function), `tube` (a smooth limb along a
+  curve, its width along it), `skin` (a shape's points weighted between bones, so a limb bends smoothly); `RIGNPC.make` takes those
+  weights and see-through parts (`glass`: one more skinned mesh on the same bones, clear with white streaks).
+  **THE RAIN FISH** (`084-npc-toons.js`, `rainfish`), from his photo of a felted orange fish in a yellow felt raincoat under a clear
+  plastic hood: measured off the photo (eye height .73, mouth .65, head width .49, coat width .59 of his height); big glossy eyes in
+  cream rims, a pink pout, the coat with collar, lapels, pocket flaps and the seam, flipper arms that bend at a second bone and lag,
+  stubby feet, and a fish tail, just the forked fin out the back of the coat ("just the flipper part"), swaying as he waddles. Built at twice his size (`metres` 2.2).
+  Cost: 11,236 triangles with the hood (9,476 without), one more draw and program (the hood), no lights. Pictures: `node tools/charview.cjs` (the character alone on
+  black, front, side, back; not the game).
+
+- **THE MANATEE rebuilt in smooth curves, its robe real cloth** (owner, 20 Oct 2026: "i want things like robes flowing and arms with
+  movements"; "yes" to rebuilding it as the rain fish was; `084-npc-toons.js`, `manatee`): measured off his photo (eye .92 of his
+  height, mouth .87, chin .72, cowl .69-.76, shoulders .64, hands .33, hem .06; robe .52 wide at the hem, face .21, feet .18 each).
+  One smooth head (`melt`: skull, snout and jaw blended, not three lumps), small glossy eyes, nostrils, a long smile; a wool hood
+  framing the face with a rolled edge, a thick lumpy cowl; bell sleeves on shoulder, elbow and hand bones (the elbows lag and bend
+  as he walks; now and then he lifts his right hand); big padded feet with four toes. **The robe is cloth**: 96 points (16 round,
+  6 down, the top row held at his shoulders) under gravity, swung by his starts, stops, turns and pace, kept off his body and pushed
+  by his legs, each point a bone the robe hangs on; it settles and stops still when he stands. Built at twice his size (`metres` 3.7).
+  Cost: 11,876 triangles, no lights (shader programs: see the 4,000-triangle entry); the cloth's ms a frame not yet measured in the game. Moving pictures: `node tools/charanim.cjs`
+  (the game's own rig on the character alone, on black: stand, walk, turn, stop).
+
+- **NUMBER 80** (owner, 20 Oct 2026, his photo of a felted kid in a horned helmet and an 80 jersey walking a city street: "bring into
+  game, same rules as other chars you just did"; `084-npc-toons.js`, `eighty`): measured off the photo (horn tip 1.0 of his height,
+  horn base .81, helmet widest .70 and .25 across, rim .66, visor point .48, eye holes .60, shoulders .52, hands .32, hem .26, boot
+  tops .10). A blue-grey felt helmet down to his neck at the back, gold studs and crest, a tall ringed gold horn (wobbles as he
+  walks), two cream side horns, gold ear cups in cream rims, a pointed visor with two eye holes over a tan face, cream neck guards;
+  a maroon jersey with a gold 80 in raised cord, green sleeves with maroon cuffs, tan mitts; maroon trousers bunched in rings, brown
+  boots with gold laces. Arms on shoulder, elbow and hand; legs on hip, knee and foot (knees bend in the swing). Standing, now and
+  then he reaches up to set his helmet straight. Built at twice his size (`metres` 2.2). Cost: 14,324 triangles (over the 12k he
+  picked for each: the helmet's horns and studs), no lights (shader programs: see the 4,000-triangle entry).
 ## 20 Oct 2026: comments allowed, the README set right
 
 - **The no-comments rule relaxed** (owner, 20 Oct 2026, on an audit from another chat that found the rule "saves exactly zero bytes"
@@ -3601,6 +3639,12 @@ initial download and load super fast"; then "Go")
   place (each fetches its file, builds, no page errors, no late fetch), then reloads with a saved spot inside the dungeon; all pass, the
   site check too.
 
+- **The three new characters cut to about 4,000 triangles each** (owner, 20 Oct 2026: "these are for a low res pixel game, do they really
+  need to be so big?"; his pick "4000", as 19 Oct's cut of the heaviest pawns): their curves are sampled more coarsely (fewer rings and
+  segments on every lathe, tube and surface; the same profiles, proportions, bones, cloth and motion). THE MANATEE 11,876 → 3,748;
+  THE RAIN FISH 11,236 → 3,764 with the hood; NUMBER 80 14,324 → 4,048 (his horn four rings, not seven).
+  Measured together by CI's budget check against main: 2,552 more triangles and 4 more shader programs at the start (150 → 154: the
+  hood's see-through material and the new characters' variants), one more draw call; within budget.
 ## 20 Oct 2026: two requests queued (the grass, the bank)
 
 - **The grass** (owner, 20 Oct 2026: "lets make the grass mostly flat again, except on the edges, more natural, and it doesnt move at
@@ -3628,6 +3672,44 @@ initial download and load super fast"; then "Go")
   "i want things like this that move to be looped to save on render cpu and time"): a thing that sways or stirs by itself (flowers,
   leaves, a flag, a sign) plays a short looped animation made once, instead of being computed every frame. A rule for new things and
   for the queue on the existing ones.
+
+- **THE EMBER KNIGHT** (owner, 20 Oct 2026, his photo of a felted dark knight; built by the same rules as the last three: traced
+  and measured off the photo, curves, twice his size, about 4,000 triangles; `084-npc-toons.js`, `emberknight`): crest tip 1.0 of
+  his height, helmet top .93, a V brow at .84 over two glowing ember eye slits (the NPC eye colour, unlit: no light, no program),
+  a pointed face plate to .73, four crest fins and two side horns; a lumpy red scarf (.65-.74); grey spiked pauldrons; a grey
+  chest plate with an emblem and two ribs; a belt with a buckle and two pouches; grey bracers, dark gauntlets; two brown front
+  flaps that swing with his legs; grey greaves, dark boots; **the cape is cloth** (35 points, 7 across and 5 down, the top row on
+  his shoulders), swung by his starts, stops, turns and pace, pushed by his legs, still when he stands. Now and then, standing,
+  he squares his shoulders. `metres` 2.4. Cost: 3,828 triangles, no lights.
+
+- **MR. BLOCKS** (owner, 20 Oct 2026, his photo of a blue felt fellow in a brown hat whose legs are building blocks; same rules;
+  `084-npc-toons.js`, `blocks`): measured off the photo (hat 1.0-.85 and .37 across, brim .80-.83 and .67 across, tilted 9 degrees;
+  eyes .655, nose .595, mouth slot .53, a green bar badge at .41; a pear-shaped body .6 across low down; arms at .43); a yellow block
+  thigh and yellow foot on his right, an orange block thigh and orange foot on his left, in front of his body as in the photo;
+  rounded blocks (`rbox`, a superellipsoid). He waddles (the rock .1), the hat and the arms lag on springs, and standing he now and
+  then tips his hat. `metres` 2.0. Cost: 2,944 triangles, no lights.
+
+- **The mushroom house, as a model only** (owner, 20 Oct 2026, his photo of a felted blue mushroom cottage: "same, but this shold be
+  scale of place you can go inside, (like a bodega), should be height of 2 stories"; his answers: "just create it as glb", the
+  rooms "Empty rooms"; not in THE MARKET yet). `node tools/mushroom-house.cjs <out>` writes `<out>.glb` and pictures (front, side,
+  back, above, the door open, inside). In metres, measured off the photo at 9 m tall: the blue felt body (bulging foot, waist,
+  flaring under the cap) to 5.8 m, the spotted brown cap from 5.6 m (6 m across) to 9 m, the chimney to 8 m; the porch on the right
+  with its own roof, the arched wooden door (1.06 x 2.6 m, sill at 1.34 m, four stone steps, iron rails, a planter) and a round
+  window; windows glowing warm (an arched one with a balcony and a round one upstairs at 4.2-5.4 m, an arched one and a round one
+  with flower boxes below at 2.2-3.3 m), a little mushroom on the wall, felt dots. Inside, empty: the ground floor at 1.34 m, the
+  porch open into it, a curved stair of 13 steps up the back wall to the upper floor at 3.95 m (a railed stairwell), the upper room
+  open up into the cap. Three parts: `house`, `windows` (emissive), and the door on a hinge node that swings on y.
+  15,560 + 1,108 + 312 triangles; 436 KB.
+
+- **THE BEAR IN THE COAT, fuzzy** (owner, 20 Oct 2026, his photo of a felted grey bear in a shaggy coat over a striped blue
+  sweater and brown trousers: "make sure the bear is fuzzy and jacket and legs are same texture"; asked, "One fur for both";
+  `084-npc-toons.js`, `coatbear`): measured off the photo (ears .95 of his height, eyes .90, muzzle .86, chin .81; collar .75-.82,
+  sweater .47-.76 with stripes at .69/.65/.62/.58, belt .44-.47, coat hem .31, paws .36-.40, trousers .08-.44, feet 0-.09).
+  **The fur, in shape, not texture** (no photo textures; CEL bands as ever): every furry surface is pushed out by fine noise along
+  its outward normal (`shag`) and carries short fur strands, each one flat triangle lying outward and down (`hair`); the coat and
+  the trousers share the same fur (`furry`: the same push, strand length and density), each in its own colour with felt flecks; the
+  head and ears the same, finer. The coat open at the front (tan facing, a button), its fronts and back on springs that swing as he
+  walks; ears flick now and then; he tilts his head. `metres` 3.6. Cost: 4,806 triangles (about 1,300 of them fur strands), no lights.
 - **The sun rays off** (owner, 20 Oct 2026, with a picture of the street under the beams: "lets take off sun rays for now from game
   -queue"): the light beams and their dust (`133a-sunrays.js`, `RAYS`) come out of the game for now. Queued; small enough to go as its
   own pull request before the next module step (the picture check then no longer needs to hide them).

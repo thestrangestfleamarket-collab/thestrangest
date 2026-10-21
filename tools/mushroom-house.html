@@ -1,0 +1,84 @@
+<!doctype html><html><body style="margin:0;background:#000"><script type="importmap">{"imports":{"three":"/three.module.js","three/addons/":"/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three'; import {GLTFExporter} from 'three/addons/exporters/GLTFExporter.js'; import {mergeVertices} from 'three/addons/utils/BufferGeometryUtils.js';
+window.THREE=THREE; const PARTSNPC={}; new Function('PARTSNPC','THREE',await (await fetch('/parts.js')).text())(PARTSNPC,THREE);
+const {shape,sph,cyl,box,torus,blob,spl,prof,surf,tube,ss,noise}=PARTSNPC.T, TAU=Math.PI*2, D=Math.PI/180;
+const F=(a,b,c,k=4)=>(x,y,z)=>{ const v=noise(x,y,z,k); return v>.68?c:v<.3?b:a; };
+const BLUE=F([.24,.45,.66],[.22,.42,.62],[.27,.48,.69]), CAP=F([.6,.44,.34],[.57,.41,.31],[.63,.47,.37]), PATCH=[.42,.29,.22], CREAM=[.9,.86,.76], WOOD=F([.47,.3,.17],[.44,.28,.16],[.5,.33,.19]),
+  FRAME=[.33,.21,.13], GREY=F([.55,.55,.56],[.52,.52,.53],[.58,.58,.59]), CHIM=F([.42,.44,.47],[.4,.42,.45],[.45,.47,.5]), RUST=[.42,.23,.16], IRON=[.06,.06,.06], POT=F([.38,.26,.18],[.35,.24,.16],[.41,.28,.2]),
+  MOSS=F([.38,.48,.18],[.33,.43,.15],[.43,.53,.21]), FLOOR=F([.5,.37,.25],[.47,.34,.23],[.53,.4,.27]), GLOW=[1,.74,.32];
+const felt=[], glow=[], door=[], V=new THREE.Vector3(), Q=new THREE.Quaternion(), UP=new THREE.Vector3(0,1,0);
+const put=(L,g,col,p,n,spin=0)=>{ g=g.toNonIndexed(); if(spin)g.rotateY(spin); if(n){ Q.setFromUnitVectors(UP,V.set(...n).normalize()); g.applyQuaternion(Q); } g.translate(...p); L.push(shape(g,col)); };
+const BODY=prof([[1.95,0],[2.12,.25],[2.15,.6],[2.08,1.9],[1.95,3.3],[2.05,4.4],[2.25,5.2],[2.34,5.8]]), wob=a=>1+.02*Math.sin(3*a+1)+.015*Math.sin(5*a);
+const BR=(a,y)=>BODY.R(Math.max(0,Math.min(5.8,y)))*wob(a), onB=(a,y,o=0)=>{ const r=BR(a,y)+o; return [r*Math.sin(a),y,r*Math.cos(a)]; }, nB=a=>[Math.sin(a),0,Math.cos(a)];
+const AN=[48*D,102*D];
+felt.push(shape(surf(48,22,(u,v)=>onB(u*TAU,v*5.8),(u,v)=>{ const a=u*TAU, y=v*5.8; return !(a>AN[0]&&a<AN[1]&&y>1.34&&y<3.75); }),BLUE));
+const CAPP=prof([[0,9.0],[.5,8.95],[1.0,8.65],[1.45,8.05],[1.9,7.25],[2.4,6.55],[2.85,6.1],[3.0,5.85],[2.95,5.62],[2.7,5.52],[2.3,5.58],[2.25,5.75]]), CS=spl(CAPP.S,200);
+felt.push(shape(surf(36,18,(u,v)=>{ const q=CS[Math.round(v*200)], a=u*TAU; return [q[0]*Math.sin(a),q[1],q[0]*Math.cos(a)]; }),CAP));
+const capAt=(a,t,o=0)=>{ const i=Math.round(t*200), q=CS[i], q2=CS[Math.min(200,i+1)], q1=CS[Math.max(0,i-1)], dr=q2[0]-q1[0], dy=q2[1]-q1[1], l=Math.hypot(dr,dy)||1, nr=dy/l, ny=-dr/l;
+  return {p:[(q[0]+nr*o)*Math.sin(a),q[1]+ny*o,(q[0]+nr*o)*Math.cos(a)],n:[nr*Math.sin(a),ny,nr*Math.cos(a)]}; };
+{ let s=11; const r=()=>{ s=(s*16807)%2147483647; return s/2147483647; };
+  for(let i=0;i<14;i++){ const a=r()*TAU, t=.12+r()*.55, R=.22+r()*.16, c=capAt(a,t,.012); put(felt,cyl(R,R,.02,12),PATCH,c.p,c.n); put(felt,torus(R,.035,3,12).rotateX(Math.PI/2),CREAM,capAt(a,t,.02).p,c.n); }
+  for(let i=0;i<70;i++){ const a=r()*TAU, t=.05+r()*.78, c=capAt(a,t,.02); put(felt,sph(.04+r()*.035,4,3).scale(1,.5,1),CREAM,c.p,c.n); }
+  for(let i=0;i<16;i++){ const a=r()*TAU, y=.4+r()*4.9; if(a>AN[0]-.2&&a<AN[1]+.2&&y<4.2)continue; put(felt,sph(.05,4,3).scale(1,1,.5),CREAM,onB(a,y,.02),null,a); } }
+const archW=(a0,y0,w,h,o)=>{ const R=BR(a0,y0+h/2)+o, x2a=x=>a0+x/R, top=x=>y0+h-w/2+Math.sqrt(Math.max(0,(w/2)**2-x*x));
+  return {pane:surf(8,8,(u,v)=>{ const x=(u*2-1)*w/2, a=x2a(x), y=y0+v*(top(x)-y0), r=BR(a,y)+o; return [r*Math.sin(a),y,r*Math.cos(a)]; }),
+    edge:[...Array.from({length:13},(_,i)=>{ const x=-w/2+i/12*w; return [x,i===0||i===12?y0+h-w/2:top(x)]; }).reverse(),[w/2,y0],[-w/2,y0],[-w/2,y0+h-w/2]].map(([x,y])=>onB(x2a(x),y,o+.03)),
+    bars:[[[0,y0],[0,y0+h]],[[-w/2,y0+(h-w/2)*.55],[w/2,y0+(h-w/2)*.55]]].map(L=>L.map(([x,y])=>onB(x2a(x),y,o+.025)))}; };
+const roundW=(a0,yc,rad,o)=>{ const R=BR(a0,yc)+o, P=(x,y,oo)=>onB(a0+x/R,y,oo);
+  return {pane:surf(16,4,(u,v)=>{ const t=u*TAU, x=Math.cos(t)*rad*v, y=yc+Math.sin(t)*rad*v; return P(x,y,o); }), edge:Array.from({length:21},(_,i)=>{ const t=i/20*TAU; return P(Math.cos(t)*rad,yc+Math.sin(t)*rad,o+.03); }),
+    bars:[[P(0,yc-rad,o+.025),P(0,yc+rad,o+.025)],[P(-rad,yc,o+.025),P(rad,yc,o+.025)]]}; };
+const WIN=[['arch',-36*D,4.21,.81,1.1],['round',31*D,5.12,.31],['arch',-32*D,2.44,.6,.86],['round',5*D,2.65,.4]];
+for(const w of WIN)for(const o of [.012,-.03]){ const W=w[0]==='arch'?archW(w[1],w[2],w[3],w[4],o):roundW(w[1],w[2],w[3],o); glow.push(shape(W.pane,GLOW)); if(o>0){ felt.push(shape(tube(W.edge,[.06,.06],5,24),FRAME)); for(const b of W.bars)felt.push(shape(tube(b,[.025,.025],4,4),FRAME)); } }
+{ const a=-36*D, y=4.18; put(felt,blob(.62,.09,.32,12,6),POT,onB(a,y,.18),null,a); felt.push(shape(tube(Array.from({length:9},(_,i)=>{ const t=(i/8-.5)*Math.PI; return onB(a+Math.sin(t)*.26,y+.45,.18+Math.cos(t)*.3); }),[.025,.025],4,24),IRON));
+  for(let i=0;i<9;i++){ const t=(i/8-.5)*Math.PI; put(felt,cyl(.015,.015,.45,4),IRON,onB(a+Math.sin(t)*.26,y+.23,.18+Math.cos(t)*.3)); } }
+for(const [a,y] of [[-32*D,2.25],[5*D,1.9]]){ put(felt,blob(.45,.13,.22,12,6),POT,onB(a,y,.18),null,a); for(let i=0;i<5;i++)put(felt,blob(.13,.1,.12,8,5),MOSS,onB(a+(i-2)*.07,y+.13,.2+(i%2)*.04),null,a); }
+{ const a=17*D, y=4.25, p=onB(a,y,.55); put(felt,surf(16,6,(u,v)=>{ const t=v*Math.PI/2, r=.6*Math.sin(t)+.02, aa=u*TAU; return [r*Math.sin(aa),.32*Math.cos(t),r*Math.cos(aa)]; }),CAP,p,null);
+  put(felt,cyl(.1,.11,.6,8),BLUE,[p[0],p[1]-.32,p[2]]); for(let i=0;i<9;i++){ const aa=i/9*TAU+.3, t=.35+(i%3)*.25, r=.6*Math.sin(t*Math.PI/2); put(felt,sph(.05,4,3).scale(1,.5,1),CREAM,[p[0]+r*Math.sin(aa),p[1]+.32*Math.cos(t*Math.PI/2)+.02,p[2]+r*Math.cos(aa)]); } }
+put(felt,cyl(.19,.19,.04,12),[.25,.2,.17],onB(44*D,2.1,.01),nB(44*D));
+const AX0=1.3, AX1=4.4, AZ0=-.9, AZ1=1.7, AH=3.95, CR=.5, DX0=1.72, DX1=2.78, DS=1.34, DT=x=>DS+2.07+Math.sqrt(Math.max(0,.53**2-(x-2.25)**2));
+const plane=(x0,x1,yb,yt,z)=>surf(Math.max(1,Math.round((x1-x0)/.25)),10,(u,v)=>{ const x=x0+(x1-x0)*u, b=yb(x), t=yt(x); return [x,b+(t-b)*v,z]; });
+felt.push(shape(plane(1.1,DX0,()=>0,()=>AH,AZ1),BLUE), shape(plane(DX1,AX1-CR,()=>0,()=>AH,AZ1),BLUE), shape(plane(DX0,DX1,DT,()=>AH,AZ1),BLUE), shape(plane(DX0,DX1,()=>0,()=>DS,AZ1),BLUE));
+{ const path=[]; const arc=(cx,cz,a0,a1)=>{ for(let i=0;i<=6;i++){ const a=a0+(a1-a0)*i/6; path.push([cx+CR*Math.sin(a),cz+CR*Math.cos(a)]); } };
+  arc(AX1-CR,AZ1-CR,0,Math.PI/2); arc(AX1-CR,AZ0+CR,Math.PI/2,Math.PI); path.push([1.45,AZ0]);
+  const L=[0]; for(let i=1;i<path.length;i++)L.push(L[i-1]+Math.hypot(path[i][0]-path[i-1][0],path[i][1]-path[i-1][1]));
+  const at=s=>{ s*=L[L.length-1]; let i=1; while(i<L.length-1&&L[i]<s)i++; const f=(s-L[i-1])/(L[i]-L[i-1]||1); return [path[i-1][0]+(path[i][0]-path[i-1][0])*f,path[i-1][1]+(path[i][1]-path[i-1][1])*f]; };
+  felt.push(shape(surf(36,10,(u,v)=>{ const p=at(u); return [p[0],v*AH,p[1]]; }),BLUE)); }
+{ const R=.17, c=[3.62,2.9]; glow.push(shape(surf(12,3,(u,v)=>{ const t=u*TAU; return [c[0]+Math.cos(t)*R*v,c[1]+Math.sin(t)*R*v,AZ1+.012]; }),GLOW)); felt.push(shape(tube(Array.from({length:17},(_,i)=>{ const t=i/16*TAU; return [c[0]+Math.cos(t)*R,c[1]+Math.sin(t)*R,AZ1+.03]; }),[.045,.045],6,32),FRAME)); }
+felt.push(shape(tube([[DX0-.04,DS,AZ1+.03],...Array.from({length:11},(_,i)=>{ const x=DX0+(DX1-DX0)*i/10; return [x,DT(x)+.04,AZ1+.03]; }),[DX1+.04,DS,AZ1+.03]],[.07,.07],5,24),FRAME));
+{ const rb=(hx,hy,hz,e=.45)=>surf(20,10,(u,v)=>{ const th=v*Math.PI-Math.PI/2, ph=u*TAU, f=(c,p)=>Math.sign(c)*Math.pow(Math.abs(c),p), cy=Math.cos(th); return [hx*f(cy,e)*f(Math.sin(ph),e),hy*f(Math.sin(th),e),hz*f(cy,e)*f(Math.cos(ph),e)]; });
+  put(felt,rb(1.8,.3,1.55),CAP,[2.9,AH+.18,.4]); let s=5; const r=()=>{ s=(s*16807)%2147483647; return s/2147483647; }; for(let i=0;i<22;i++)put(felt,sph(.045,4,3).scale(1,.5,1),CREAM,[1.3+r()*3.2,AH+.47,-.9+r()*2.6]);
+  for(let i=0;i<4;i++){ const top=DS-.335*i, z0=AZ1+(i?.4+.35*(i-1):0), z1=AZ1+.4+.35*i; put(felt,rb((DX1-DX0+.3)/2,top/2,(z1-z0+.06)/2,.3),GREY,[(DX0+DX1)/2,top/2,(z0+z1)/2]); }
+  put(felt,rb(.45,.6,.32,.5),POT,[3.45,.6,AZ1+.42]); }
+for(let i=0;i<6;i++){ const x=3.05+i*.16; put(felt,cyl(.02,.02,1.0,4),IRON,[x,1.7,AZ1+.42]); } felt.push(shape(tube([[3.0,2.2,AZ1+.42],[3.9,2.2,AZ1+.42]],[.03,.03],4,4),IRON));
+felt.push(shape(tube([[DX0-.12,DS+.9,AZ1+.05],[DX0-.12,1.25,AZ1+.6],[DX0-.12,.95,AZ1+1.1],[DX0-.18,.7,AZ1+1.5],[DX0-.3,.75,AZ1+1.55]],[.03,.03],4,24),IRON));
+for(const [z,h] of [[AZ1+.05,DS+.9],[AZ1+.75,1.65],[AZ1+1.15,1.4]])put(felt,cyl(.03,.03,h-(z>AZ1+.5?.6:DS-.1),4),IRON,[DX0-.12,(h+(z>AZ1+.5?.6:DS-.1))/2,z]);
+{ const c=[2.8,-.5]; felt.push(shape(surf(14,6,(u,v)=>{ const a=u*TAU, y=4.6+v*2.85, r=.45*(1+.05*Math.sin(v*Math.PI)); return [c[0]+r*Math.sin(a),y,c[1]+r*Math.cos(a)]; }),CHIM));
+  put(felt,cyl(.3,.33,.55,12),RUST,[c[0],7.72,c[1]]); put(felt,cyl(.36,.36,.1,12),RUST,[c[0],7.98,c[1]]); }
+{ const fl=(y,R0,keep,col)=>felt.push(shape(surf(36,4,(u,v)=>{ const a=u*TAU, r=v*(BR(a,y)-.03); return [r*Math.sin(a),y,r*Math.cos(a)]; },keep),col));
+  const hole=(u,v)=>{ const a=u*TAU*180/Math.PI; return !(a>210&&a<300&&v>.4); };
+  fl(DS,0,null,FLOOR); fl(3.95,0,hole,FLOOR); fl(3.8,0,hole,BLUE);
+  felt.push(shape(surf(40,1,(u,v)=>{ const a=u*TAU, r=BR(a,3.9)-.03; return [r*Math.sin(a),3.8+.15*v,r*Math.cos(a)]; }),FLOOR));
+  put(felt,box(AX1-AX0-.3,.1,AZ1-AZ0-.3),FLOOR,[(AX0+AX1)/2,DS-.05,(AZ0+AZ1)/2]);
+  const N=13, RISE=(3.95-DS)/N; for(let i=0;i<N;i++){ const a=(145+i*(150/N))*D, y=DS+RISE*(i+1); put(felt,box(.32,RISE,.85),FLOOR,[Math.sin(a)*1.38,y-RISE/2,Math.cos(a)*1.38],null,a+Math.PI/2); }
+  for(let i=0;i<=6;i++){ const a=(210+i*15)*D; put(felt,cyl(.025,.025,.95,4),IRON,[Math.sin(a)*.85,3.95+.47,Math.cos(a)*.85]); }
+  felt.push(shape(tube(Array.from({length:7},(_,i)=>{ const a=(210+i*15)*D; return [Math.sin(a)*.85,4.9,Math.cos(a)*.85]; }),[.03,.03],4,18),IRON)); }
+{ const W=DX1-DX0, top=x=>2.07+Math.sqrt(Math.max(0,.53**2-(x-W/2)**2)); door.push(shape(surf(6,8,(u,v)=>{ const x=u*W; return [x,v*top(x),0]; }),WOOD));
+  for(const x of [.27,.53,.79])door.push(shape(box(.02,top(x)-.05,.03),FRAME,[x,top(x)/2,.012]));
+  glow.push(shape(box(.22,.32,.02),GLOW,[.2,1.95,.02])); door.push(shape(box(.02,.32,.03),FRAME,[.2,1.95,.03]), shape(box(.22,.02,.03),FRAME,[.2,1.95,.03]), shape(cyl(.07,.07,.03,10),[.08,.07,.06],[.6,1.85,.03],null,[90,0,0]), shape(torus(.06,.012,4,10),[.15,.13,.1],[.2,1.4,.05]), shape(sph(.04,6,4),[.15,.13,.1],[.88,1.2,.05])); }
+const lin=c=>Math.pow(c,2.2), mesh=(L,mat)=>{ let n=0; for(const s of L)n+=s.P.length; const P=new Float32Array(n), C=new Float32Array(n); let o=0; for(const s of L){ P.set(s.P,o); C.set(s.C.map(lin),o); o+=s.P.length; }
+  let g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(P,3)); g.setAttribute('color',new THREE.BufferAttribute(C,3)); g=mergeVertices(g,1e-4); g.computeVertexNormals(); return new THREE.Mesh(g,mat); };
+const house=new THREE.Group(); house.name='MUSHROOM HOUSE';
+const walls=mesh(felt,new THREE.MeshStandardMaterial({vertexColors:true,roughness:1,side:THREE.DoubleSide})); walls.name='house';
+const wins=mesh(glow,new THREE.MeshStandardMaterial({vertexColors:true,emissive:new THREE.Color(1,.6,.2),emissiveIntensity:.6,roughness:.6,side:THREE.DoubleSide})); wins.name='windows';
+const dm=mesh(door,new THREE.MeshStandardMaterial({vertexColors:true,roughness:1,side:THREE.DoubleSide})); dm.name='door panel'; const hinge=new THREE.Group(); hinge.name='door (hinge, swings on y)'; hinge.position.set(DX0,DS,AZ1); hinge.add(dm);
+house.add(walls,wins,hinge);
+window.TRIS={house:walls.geometry.index.count/3,windows:wins.geometry.index.count/3,door:dm.geometry.index.count/3};
+const sc=new THREE.Scene(); sc.background=new THREE.Color(0); sc.add(house,new THREE.AmbientLight(0xffffff,.9)); const L=new THREE.DirectionalLight(0xffffff,2.2); sc.add(L);
+const r=new THREE.WebGLRenderer({antialias:true}); r.setSize(innerWidth,innerHeight); r.outputColorSpace=THREE.SRGBColorSpace; document.body.appendChild(r.domElement);
+const cam=new THREE.PerspectiveCamera(32,innerWidth/innerHeight,.05,100); const lamp=new THREE.PointLight(0xffd090,30,12); sc.add(lamp);
+window.shot=(px,py,pz,tx,ty,tz,lx,ly,lz,inside)=>{ cam.position.set(px,py,pz); cam.lookAt(tx,ty,tz); L.position.set(lx,ly,lz); lamp.visible=!!inside; lamp.position.set(px,py+.3,pz); r.render(sc,cam); };
+window.open=a=>{ hinge.rotation.y=-a; };
+window.exp=async()=>{ hinge.rotation.y=0; const b=await new GLTFExporter().parseAsync(house,{binary:true}); let s=''; const u=new Uint8Array(b); for(let i=0;i<u.length;i+=32768)s+=String.fromCharCode(...u.subarray(i,i+32768)); return btoa(s); };
+window.ready=true;
+</script></body></html>

@@ -4005,3 +4005,23 @@ initial download and load super fast"; then "Go")
   the lake's size), the rest is grey. Edits change the mockup only, never the game: EXPORT MAP downloads them as a .json file (with
   every place's position), IMPORT MAP loads one back; the draft stays in the browser between openings. The game can take such a
   file later (`MEDIT` in `006-map-pre.js` shifts the map's constants by its edits; nothing writes it yet). The old 3D editor is gone.
+
+- **The GAME EDITOR: the map editor's tools, and the character editor** (owner, 21 Oct 2026: "add redo, undo, rotate, (i want to be
+  able to move paths around and rotate them around exactly how i want)", "add a delete and copy button for things on map (delete or
+  copy a tree to place another one)", "add a View button that if you click it will show you just that item in full 360 rotation view
+  you can look at every angle, in black void", "you can edit the item in that mode, like size, texture, color, tint, opacity, etc",
+  "i want a character editor that allows all the same stuff but for all the sentient characters in game (avatar, characters, npcs,
+  merchants, animals, etc) show properties of things like location they are in, behavior, etc.", "dont include the map editor or
+  character editor in the menu, only if you press shift+escape. dont load at start. (Loading Game Editor)"; `096-mapedit.js`):
+  SHIFT+ESCAPE only (Shift+M and the menu's line are gone) opens THE GAME EDITOR behind a LOADING GAME EDITOR screen; its code is its
+  own file (`'@editor'`, fetched then, nothing at the start). Two tabs on the same flat map. THE MAP EDITOR: every thing is a shape
+  that moves, turns (the ○ handle, R, 15° buttons, or a number) and sizes (the □ handle or numbers), the park's paths each their own
+  piece now, every tree its own; UNDO / REDO (Ctrl+Z, Ctrl+Y, 200 steps), COPY (Ctrl+D) and DELETE; VIEW 360: the thing alone in a
+  black void, dragged all round, as a mockup model from its numbers (turn, height, size, scale, texture pattern, color, tint, opacity
+  all change it at once; the game's own meshes could not be shown alone reliably: its wall cutting and batching hide them from a
+  second camera). THE CHARACTER EDITOR: you, the people, the toons, the merchants, the animals and the monsters as dots facing their
+  way (each kind a checkbox; the map's things faint behind), the underground ones in a list; each with its name, X Y Z, facing, level,
+  LOCATION (the zone or the building it is in), KIND, BEHAVIOR (stand, wander, roam, daily life, work, guard, follow you, sleep,
+  fight), speed, health, home, job, size, scale, color, tint, opacity; the same move, turn, copy, delete, undo; VIEW 360 lends the
+  character's own body to the black void. Each tab exports and imports its own file (`market-map-*.json`, `market-characters-*.json`);
+  nothing changes in the game.

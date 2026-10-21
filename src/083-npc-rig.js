@@ -67,5 +67,5 @@ const RIGNPC={};
       if(kn)kn.rotation.x=Math.max(0,Math.sin(ph+(k>0?0:Math.PI)+.9))*.75*m; if(ft&&kn)ft.rotation.x=-kn.rotation.x*.45;
       if(el)el.rotation.x=-.18-Math.max(0,-sw*k)*.35; }
     if(B.chest)B.chest.rotation.y=-sw*.08; if(B.head)B.head.rotation.y=c.look; };
-  RIGNPC.hold=i=>QS.get('toonhold')?{brain:(dt,you,st)=>{ const cx=cam.position.x-you.x, cz=cam.position.z-you.z, d=Math.hypot(cx,cz)||1, k=(i-2)*1.25*TILE;
-    st.to=null; st.hold=true; st.x=you.x-cz/d*k; st.z=you.z+cx/d*k; st.face={x:cam.position.x,z:cam.position.z}; }}:{}; }
+  RIGNPC.hold=i=>QS.get('toonhold')?{brain:(dt,you,st)=>{ const cx=SHARED.cam.position.x-you.x, cz=SHARED.cam.position.z-you.z, d=Math.hypot(cx,cz)||1, k=(i-2)*1.25*TILE;
+    st.to=null; st.hold=true; st.x=you.x-cz/d*k; st.z=you.z+cx/d*k; st.face={x:SHARED.cam.position.x,z:SHARED.cam.position.z}; }}:{}; }

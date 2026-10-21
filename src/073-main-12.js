@@ -38,7 +38,7 @@ function phyYouNow(dt){ const Y=PHYOU; if(!Y.m)Y.m=new Uint8Array(PW*PICH); for(
   if(Y.px!=null&&dt>0){ const vx=(P.x-Y.px)/dt, vy=(P.y-Y.py)/dt; Y.vel=Math.hypot(vx,vy)>8||RAG.on?[0,0,0]:[vx,vy,0]; } Y.px=P.x; Y.py=P.y; }
 function phyYouIn(p){ '@later'; const Y=PHYOU, Mk=Y.m; if(!Mk)return null; const a=view0.a, rx=Math.cos(a), rz=-Math.sin(a), fx=Math.sin(a), fz=Math.cos(a);
   const dx=p[0]*TL-pos.x, dz=-p[1]*TL-pos.z, dd=dx*fx+dz*fz, Dw=Y.D*TL; if(Math.abs(dd)>=Dw)return null;
-  const fi=AX+(dx*rx+dz*rz)*PPU, fj=AY-((p[2]-PHYZ0)*TL-py)*PPU/VS, i=Math.floor(fi), j=Math.floor(fj); if(i<0||j<0||i>=PW||j>=PICH||!Mk[j*PW+i])return null;
+  const fi=AX+(dx*rx+dz*rz)*PPU, fj=AY-((p[2]-PHYZ0)*TL-SHARED.py)*PPU/VS, i=Math.floor(fi), j=Math.floor(fj); if(i<0||j<0||i>=PW||j>=PICH||!Mk[j*PW+i])return null;
   let l=i, r=i, c=j; while(l>=0&&Mk[j*PW+l])l--; while(r<PW&&Mk[j*PW+r])r++; while(c>=0&&Mk[c*PW+i])c--;
   const L=(fi-l-1)/PPU, R=(r-fi)/PPU, U=(fj-c-1)*VS/PPU, F=Dw-Math.abs(dd), m=Math.min(L,R,U,F), s=dd<0?-1:1;
   const n=m===F?[fx*s,0,fz*s]:m===U?[0,1,0]:m===L?[-rx,0,-rz]:[rx,0,rz]; return [m/TL,[n[0],-n[2],n[1]]]; }
@@ -177,7 +177,7 @@ function ragStrikes(B,J0,dt){ const S=[]; if(!J0||!(dt>0)||RAG.on){ PHYOU.strike
   PHYOU.strikes=S; }
 function ragBlend(B){ const b=RAG.blend; if(!b)return; const k=(performance.now()-b.t)/350; if(k>=1){ RAG.blend=null; return; } const w=k*k*(3-2*k);
   for(const n in B.J)if(b.J0[n]){ const a=b.J0[n], c=B.J[n]; B.J[n]=RIG.V(a.x+(c.x-a.x)*w,a.y+(c.y-a.y)*w,a.z+(c.z-a.z)*w); } B.head=B.J.head; }
-STATIC=fixed.map(([x0,z0,y0,x1,z1,y1])=>[x0/TL,-z1/TL,y0/TL,x1/TL,-z0/TL,y1/TL]); PHYROOMS=[{on:true,x0:-1e9,x1:1e9,y0:-1e9,y1:1e9,st:STATIC.map(b=>[b[0],b[1],b[2]/RZ,b[3],b[4],b[5]/RZ])}];
+STATIC=SHARED.fixed.map(([x0,z0,y0,x1,z1,y1])=>[x0/TL,-z1/TL,y0/TL,x1/TL,-z0/TL,y1/TL]); PHYROOMS=[{on:true,x0:-1e9,x1:1e9,y0:-1e9,y1:1e9,st:STATIC.map(b=>[b[0],b[1],b[2]/RZ,b[3],b[4],b[5]/RZ])}];
 function setPhys(lv){ STATIC=FIX[lv].map(([x0,z0,y0,x1,z1,y1])=>[x0/TL,-z1/TL,y0/TL,x1/TL,-z0/TL,y1/TL]); PHYROOMS[0].st=STATIC.map(b=>[b[0],b[1],b[2]/RZ,b[3],b[4],b[5]/RZ]); }
 
 const loose=[]; const CM=new THREE.Matrix3().set(1,0,0,0,0,1,0,-1,0), CMT=CM.clone().transpose(), m3t=new THREE.Matrix3(), m4t=new THREE.Matrix4();

@@ -20,4 +20,4 @@ LOOK.tick=()=>{ const dark=typeof CLOCK!=='undefined'&&CLOCK.dark()?1:0, inside=
   LOOK.night.value+=(dark-LOOK.night.value)*.1; if(Math.abs(dark-LOOK.night.value)<.01)LOOK.night.value=dark;
   LOOK.glowK.value=LOOK.on?(dark||inside?1.28:.5):0; if(LOOK.sp){ LOOK.sp.enabled=LOOK.on; LOOK.sp.uniforms.uRes.value.set(RW,RH); } };
 
-LOOK.sp=new ShaderPass(LOOK.shader); composer.addPass(LOOK.sp); LOOK.sp.uniforms.uNight=LOOK.night; LOOK.sp.uniforms.uCool=LOOK.cool; LOOK.sp.uniforms.uGlowK=LOOK.glowK;
+LOOK.sp=new ShaderPass(LOOK.shader); SHARED.composer.addPass(LOOK.sp); LOOK.sp.uniforms.uNight=LOOK.night; LOOK.sp.uniforms.uCool=LOOK.cool; LOOK.sp.uniforms.uGlowK=LOOK.glowK;

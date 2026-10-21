@@ -5,14 +5,21 @@
 // node tests/places.cjs [out dir]. Exits 1 if anything fails.
 const {chromium}=require('playwright'), {spawn}=require('child_process'), fs=require('fs'), path=require('path'), zlib=require('zlib');
 const OUT=process.argv[2]||'out', PORT=8797, BASE='http://127.0.0.1:'+PORT;
-let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
+let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c){ bad++; if(process.env.GITHUB_ACTIONS)console.log('::error title=places::'+String(m).replace(/\n/g,' ').slice(0,900)); } };
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
 const TOUR=[
-  ['dungeon','x-dungeon',async()=>{ await DUNGEON.go(3); await new Promise(r=>setTimeout(r,6000)); const d=DUNDBG(), m=DUNMOBDBG(); return d.level===3&&d.objs>0&&m.slimes.length>0; },async()=>{ await DUNGEON.go(0); }],
-  ['park','x-park',async()=>{ const B=__dbg.MAPK.BOD, P=PARK; STORE.goTo(B.XS(P.round[0]+(P.ox||0)+3),B.ZS(P.round[1]+(P.oy||0)+3),'up'); for(let i=0;i<120&&!PARK.ready;i++)await new Promise(r=>setTimeout(r,500)); await new Promise(r=>setTimeout(r,3000)); return PARK.ready&&PARK.in&&!!FOUNT.drops; },async()=>{ const B=__dbg.MAPK.BOD; STORE.goTo(B.XS(99),B.ZS((B.CURB+B.FAR)/2),'up'); await new Promise(r=>setTimeout(r,3000)); }],
-  ['fire escape','x-fire',async()=>{ FIREV.out(); for(let i=0;i<60&&!FIREV.built;i++)await new Promise(r=>setTimeout(r,500)); await new Promise(r=>setTimeout(r,3000)); return FIREDBG().built; },async()=>{ FIREV.back(); await new Promise(r=>setTimeout(r,3000)); }],
-  ['arcade','x-arcade',async()=>{ await __dbg.ui().goPlace('THE ARCADE'); await new Promise(r=>setTimeout(r,3000)); await STORE.enter('arcade',true); await new Promise(r=>setTimeout(r,4000)); return INTDBG().built.includes('arcade'); },async()=>{}],
-  ['bath house','x-bath',async()=>{ const M=__dbg.MAPK, G=M.BOD.GD, r=G.r; STORE.goTo(M.BOD.X((r[0]+r[2])/2),M.BOD.Z((r[1]+r[3])/2),'up'); await new Promise(r=>setTimeout(r,7000)); return INTDBG().built.includes('bath'); },async()=>{ const B=__dbg.MAPK.BOD; STORE.goTo(B.XS(99),B.ZS((B.CURB+B.FAR)/2),'up'); await new Promise(r=>setTimeout(r,3000)); }],
+  ['dungeon','x-dungeon',async()=>{ const U=async(f,ms=90000)=>{ for(const t=Date.now();Date.now()-t<ms;await new Promise(r=>setTimeout(r,250)))if(f())return true; return false; };
+    await DUNGEON.go(3); return await U(()=>{ const d=DUNDBG(), m=DUNMOBDBG(); return d.level===3&&d.objs>0&&m.slimes.length>0; }); },async()=>{ await DUNGEON.go(0); }],
+  ['park','x-park',async()=>{ const U=async(f,ms=180000)=>{ for(const t=Date.now();Date.now()-t<ms;await new Promise(r=>setTimeout(r,250)))if(f())return true; return false; };
+    const B=__dbg.MAPK.BOD, P=PARK; STORE.goTo(B.XS(P.round[0]+(P.ox||0)+3),B.ZS(P.round[1]+(P.oy||0)+3),'up'); return await U(()=>PARK.ready&&PARK.in&&!!FOUNT.drops&&!(window.FADE&&FADE.busy)); },
+    async()=>{ const B=__dbg.MAPK.BOD; STORE.goTo(B.XS(99),B.ZS((B.CURB+B.FAR)/2),'up'); for(const t=Date.now();Date.now()-t<30000&&(PARK.in||(window.FADE&&FADE.busy));)await new Promise(r=>setTimeout(r,250)); }],
+  ['fire escape','x-fire',async()=>{ const U=async(f,ms=90000)=>{ for(const t=Date.now();Date.now()-t<ms;await new Promise(r=>setTimeout(r,250)))if(f())return true; return false; };
+    FIREV.out(); return await U(()=>FIREDBG().built&&!(window.FADE&&FADE.busy)); },async()=>{ FIREV.back(); for(const t=Date.now();Date.now()-t<30000&&(window.FADE&&FADE.busy);)await new Promise(r=>setTimeout(r,250)); }],
+  ['arcade','x-arcade',async()=>{ const U=async(f,ms=90000)=>{ for(const t=Date.now();Date.now()-t<ms;await new Promise(r=>setTimeout(r,250)))if(f())return true; return false; };
+    await __dbg.ui().goPlace('THE ARCADE'); await U(()=>!(window.FADE&&FADE.busy),20000); await STORE.enter('arcade',true); return await U(()=>INTDBG().built.includes('arcade')); },async()=>{}],
+  ['bath house','x-bath',async()=>{ const U=async(f,ms=90000)=>{ for(const t=Date.now();Date.now()-t<ms;await new Promise(r=>setTimeout(r,250)))if(f())return true; return false; };
+    const M=__dbg.MAPK, G=M.BOD.GD, r=G.r; STORE.goTo(M.BOD.X((r[0]+r[2])/2),M.BOD.Z((r[1]+r[3])/2),'up'); return await U(()=>INTDBG().built.includes('bath')); },
+    async()=>{ const B=__dbg.MAPK.BOD; STORE.goTo(B.XS(99),B.ZS((B.CURB+B.FAR)/2),'up'); for(const t=Date.now();Date.now()-t<30000&&(window.FADE&&FADE.busy);)await new Promise(r=>setTimeout(r,250)); }],
 ];
 (async()=>{
   fs.mkdirSync(OUT,{recursive:true});
@@ -42,7 +49,7 @@ const TOUR=[
     ok(req.some(q=>q.f.startsWith(file+'.')),name+': its code fetched ('+file+')');
     ok(errs.length===e0&&late.length===l0,name+': no page errors, no slow fetch '+errs.slice(e0).concat(late.slice(l0)).join(' | '));
     await pg.evaluate(`(${back})()`).catch(e=>errs.push(name+' back: '+e.message)); await wait(1500); }
-  await pg.evaluate(async()=>{ await DUNGEON.go(2); await new Promise(r=>setTimeout(r,6000)); }); await wait(3000);
+  await pg.evaluate(async()=>{ await DUNGEON.go(2); for(const t=Date.now();Date.now()-t<60000&&!(DUNDBG().level===2&&DUNDBG().objs>0);)await new Promise(r=>setTimeout(r,250)); await new Promise(r=>setTimeout(r,2500)); }); await wait(1000);
   phase='saved'; const l1=late.length, e1=errs.length; await start('?hour=13&wx=CLEAR'); for(let i=0;i<60&&!(await pg.evaluate(()=>DUNDBG().objs>0).catch(()=>false));i++)await wait(1000);
   const lv=await pg.evaluate(()=>Object.assign(DUNDBG(),{you:__dbg.you(),saved:(JSON.parse(localStorage.getItem('market-save')||'{}')||{}).where})).catch(e=>'ERR '+e.message);
   ok(lv&&lv.level===2&&lv.objs>0,'a saved spot in the dungeon loads its code at the start ('+JSON.stringify(lv).slice(0,400)+')');

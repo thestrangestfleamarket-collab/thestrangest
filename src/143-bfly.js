@@ -1,5 +1,5 @@
 const BFLY={}; window.BFLY=BFLY;
-{ const T=TILE, {BF_KINDS}=BOD.STOREK.bf, NK=BF_KINDS.length, say=FORAGE.say, use=FORAGE.use, WU=T/.84;
+{ const T=TILE, {BF_KINDS}=SHARED.BOD.STOREK.bf, NK=BF_KINDS.length, say=FORAGE.say, use=FORAGE.use, WU=T/.84;
   const hsh=(a,b,s)=>{ let h=(Math.floor(a*97)*374761393+Math.floor(b*89)*668265263+s*1442695041)|0; h=(h^(h>>>13))*1274126177|0; return ((h^(h>>>16))>>>0)/4294967296; };
   const COMMON=[2,3,1.2,1,.8,1.5,1.5,.7,.7,2,2,2], CS=COMMON.reduce((a,b)=>a+b,0);
   const DIFF=k=>k<12?Math.round(30-COMMON[k]*10):50+Math.round((k-12)/(NK-13)*40), PR=k=>k<12?Math.max(3,Math.round(14-COMMON[k]*4)):Math.round(40+(k-12)/(NK-13)*210);
@@ -17,7 +17,7 @@ const BFLY={}; window.BFLY=BFLY;
     const P=d.p.concat(...FLORA.beds.filter(o=>o!==d&&!o.street&&Math.hypot(o.x-d.x,o.z-d.z)<7*T).slice(0,2).map(o=>o.p)); if(P.length<2)return out; const deep=WEEDS.inPark&&WEEDS.inPark(d.x,d.z,DEEP);
     for(let j=0;j<n;j++){ const k=deep&&hsh(d.z/T+j,d.x/T+dd,323)<.06?12+Math.floor(hsh(d.x/T,d.z/T+j+dd,325)*(NK-12)):pickC(hsh(d.x/T+dd*3,d.z/T+j,327)), b=BF.add(k,P), i=Math.floor(hsh(j,d.id+dd,329)*P.length);
       b.at=b.to=i; b.g.position.set(...P[i]); b.wild=true; b.chunk='bed:'+d.id; out.push(b); hit(b); } return out; };
-  const beds=()=>{ if(!window.FLORA||!FLORA.beds.length||LVL!=='up')return; for(const d of FLORA.beds){ const key='bed:'+d.id, far=!d.street&&!PARK.in?1e9:Math.hypot(d.x-pos.x,d.z-pos.z);
+  const beds=()=>{ if(!window.FLORA||!FLORA.beds.length||SHARED.LVL!=='up')return; for(const d of FLORA.beds){ const key='bed:'+d.id, far=!d.street&&!PARK.in?1e9:Math.hypot(d.x-pos.x,d.z-pos.z);
     if(far<BEDR&&!CH.has(key))CH.set(key,bedSpawn(d)); else if(far>BEDR+10*T&&CH.has(key)){ CH.get(key).forEach(drop); CH.delete(key); } } };
   const hit=b=>{ const hb=new THREE.Mesh(HB,HM); hb.position.y=.1*WU; b.g.add(hb); b.th={name:BF_KINDS[b.k][0].toUpperCase(),obj:hb,reach:1.1*T,near:1.4*T,tall:.3*T,act:()=>BFLY.catch(b)}; UI.thing(b.th); };
   const HB=new THREE.BoxGeometry(.5*T,.4*T,.5*T), HM=new THREE.MeshBasicMaterial({visible:false});

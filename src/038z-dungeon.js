@@ -118,7 +118,7 @@ function skull(cx,cy,z,r=.14){ '@later'; const h=r*46, bone=(u,v)=>{ const e=u*u
     if(Math.abs(u)<.08&&v>.3&&v<.44)return C.dark; return e>.72?sh(C.bone,.82):v>.7&&u<-.1?sh(C.bone,1.08):C.bone; };
   return {x0:cx-r,y0:cy-r*.85,x1:cx+r,y1:cy+r*.85,z0:z,z1:z+h,foot:z===0?1:0,c:C.bone,top:(X,Y)=>{ const u=(X-cx)/r, v=(Y-cy)/(r*.85); return u*u+v*v>1?null:Math.abs(u)<.06&&v<0?sh(C.bone,.8):sh(C.bone,1.06); },
     fi:(y,zz)=>{ const c=bone((y-cy)/(r*.85),(zz-z)/h); return c&&sh(c,.74); },fj:(x,zz)=>{ const c=bone((x-cx)/r,(zz-z)/h); return c&&sh(c,.88); }}; }
-CATALOG['skull']=(x,y)=>{ PNAME='skull'; return prop([skull(x,y,0)],null,{}); };
+CATALOG['skull']=(x,y)=>{ SHARED.PNAME='skull'; return prop([skull(x,y,0)],null,{}); };
 CAT_INFO['skull']={no:'P-951',name:'Skull',dept:'Dungeon',price:0,desc:'A human skull on the stones, its sockets dark. Whose, nobody left to say.',mat:'bone'};
 function bone(x,y,len,alongX,z,seed){ '@later'; const w=.1, L=len/2, sh2=hash(seed,1,0)<.5?.94:1.04, col=sh(C.bone,sh2);
   const shape=(a,b)=>{ const A=Math.abs(a), B=Math.abs(b); if(A>L)return null; if(A>L-.06)return Math.hypot((A-(L-.03))/.05,b/.05)<1||Math.hypot((A-(L-.03))/.05,(B-.03)/.04)<1?col:null; return B<.022?col:null; };
@@ -126,12 +126,12 @@ function bone(x,y,len,alongX,z,seed){ '@later'; const w=.1, L=len/2, sh2=hash(se
     fi:(Y,zz)=>shape(alongX?0:Y-y,alongX?Y-y:0)&&sh(col,.72),fj:(X,zz)=>shape(alongX?X-x:0,alongX?0:X-x)&&sh(col,.86)}; return b; }
 function ribs(x,y,z){ '@later'; return {x0:x-.22,y0:y-.16,x1:x+.22,y1:y+.16,z0:z,z1:z+1,foot:z===0?1:0,nb:1,c:C.bone,top:(X,Y)=>{ const u=X-x, v=Y-y; if(Math.abs(u)<.02&&v>-.14&&v<.14)return sh(C.bone,.9);
     for(let k=0;k<4;k++){ const r=.06+k*.045, d=Math.abs(Math.hypot(u*1.3,v)-r); if(d<.012&&v>-.02)return k&1?C.bone:sh(C.bone,.92); } return null; },fi:()=>null,fj:()=>null}; }
-CATALOG['bone pile']=(x,y)=>{ PNAME='bone pile'; const s=Math.round(x*13+y*7);
+CATALOG['bone pile']=(x,y)=>{ SHARED.PNAME='bone pile'; const s=Math.round(x*13+y*7);
   return prop([bone(x-.05,y+.1,.5,true,0,s),bone(x+.12,y-.12,.42,false,0,s+1),ribs(x-.2,y-.1,0),bone(x+.02,y+.02,.46,true,1.6,s+2),skull(x+.14,y+.1,2.6,.12)],null,{}); };
 CAT_INFO['bone pile']={no:'P-952',name:'Bone Pile',dept:'Dungeon',price:0,desc:'Long bones crossed over a rib cage, a skull on top of the heap.',mat:'bone'};
-CATALOG['bones']=(x,y)=>{ PNAME='bones'; const s=Math.round(x*11+y*5); return prop([bone(x,y,.46,hash(s,0,0)<.5,0,s),bone(x+.1,y-.14,.3,hash(s,0,0)>=.5,0,s+3)],null,{walk:1}); };
+CATALOG['bones']=(x,y)=>{ SHARED.PNAME='bones'; const s=Math.round(x*11+y*5); return prop([bone(x,y,.46,hash(s,0,0)<.5,0,s),bone(x+.1,y-.14,.3,hash(s,0,0)>=.5,0,s+3)],null,{walk:1}); };
 CAT_INFO['bones']={no:'P-953',name:'Bones',dept:'Dungeon',price:0,desc:'Two long bones dropped on the stones. You walk over them.',mat:'bone'};
-CATALOG['wall torch']=(x,y,dir)=>{ '@later'; PNAME='wall torch'; const R=DGN; dir=dir||[['b',y-R.y0],['f',R.y1-y],['l',x-R.x0],['r',R.x1-x]].sort((a,b)=>a[1]-b[1])[0][0];
+CATALOG['wall torch']=(x,y,dir)=>{ '@later'; SHARED.PNAME='wall torch'; const R=DGN; dir=dir||[['b',y-R.y0],['f',R.y1-y],['l',x-R.x0],['r',R.x1-x]].sort((a,b)=>a[1]-b[1])[0][0];
   const nx=dir==='l'?1:dir==='r'?-1:0, ny=dir==='b'?1:dir==='f'?-1:0, FL={ph:0}, B=[], I=C.iron, IL=C.ironL;
   const bx=(ax,ay,bx2,by2,z0,z1,c,o)=>({x0:Math.min(ax,bx2),y0:Math.min(ay,by2),x1:Math.max(ax,bx2),y1:Math.max(ay,by2),z0,z1,foot:0,nb:1,c,top:()=>sh(c,1.1),fi:()=>sh(c,.7),fj:()=>sh(c,.86),...o});
   B.push(bx(x-nx*.16-.02,y-ny*.16-.02,x+.02,y+.02,62,64.5,I,{foot:1}));
@@ -144,7 +144,7 @@ CATALOG['wall torch']=(x,y,dir)=>{ '@later'; PNAME='wall torch'; const R=DGN; di
   B.push({x0:x-.09,y0:y-.09,x1:x+.09,y1:y+.09,z0:82,z1:96,c:[255,170,50],foot:0,nb:1,life:1,top:()=>null,fi:(v,z)=>flame(v-y,z-82),fj:(u,z)=>flame(u-x,z-82)});
   const p=prop(B,null,{walk:1}); flick(p,FL,Math.round(x*7+y*13)); LAMPS.push({x,y,z:88,r:4.8,c:[.98,.61,.29],own:1,room:1,day:true,prop:p,flick:1}); return p; };
 CAT_INFO['wall torch']={no:'P-954',name:'Wall Torch',dept:'Dungeon',price:30,desc:'A pitch torch in an iron bracket, burning; the wall above it black with its soot.',mat:'iron, ash, pitch'};
-function mover(kind,bx,draw,o){ '@later'; PNAME=kind; const p=prop([{...bx,foot:1,nb:1,c:[0,0,0],top:()=>null,fi:()=>null,fj:()=>null}],null,{walk:1,...o});
+function mover(kind,bx,draw,o){ '@later'; SHARED.PNAME=kind; const p=prop([{...bx,foot:1,nb:1,c:[0,0,0],top:()=>null,fi:()=>null,fj:()=>null}],null,{walk:1,...o});
   const S={K:1,D:null,W:0,H:0,ox:0,oy:0}, LC=new Map();
   const g={light:(x,y,z,glow)=>{ const k=Math.round(x*2)+','+Math.round(y*2); let L=LC.get(k); if(!L||g.t-L.t>1){ const env=envNear(x,y); L={t:g.t,c:env?lightAt(env,x,y,(LVZ(p.lv)+z)/24,null).map(v=>glow+(1-glow)*Math.max(v,CHARMIN)):[1,1,1]}; LC.set(k,L); } return L.c; },
     at:(x,y,z)=>{ const [vx,vy]=vw(x,y); return [Math.round((vx-vy)*HW-S.ox)*S.K,Math.round((vx+vy)*HH-LVZ(p.lv)-z-S.oy)*S.K]; },
@@ -175,31 +175,31 @@ CATALOG['mouse run']=(x0,y0,x1,y1)=>{ '@later'; const ax=Math.abs(x1-x0)>Math.ab
       P(f*3,1,m.st==='sniff'&&(Math.floor(t*10)&1)?PK:G); P(f*2,2,EY);
       const fl=run?(ph?1:0):(Math.floor(t*3+i)&1); for(let k=3;k<=6;k++)P(B*k,k>4?fl:0,k>5?GD:G); }); },{}); };
 CAT_INFO['mouse run']={no:'P-956',name:'Mice',dept:'Dungeon',price:0,desc:'Three mice between two holes in the wall: out, a dash, a sniff, a dash, and back in.',mat:'mouse'};
-CATALOG['stone column']=(x,y)=>{ '@later'; PNAME='stone column'; const H=DGN.H, B=[], hw=.3, d=.09;
+CATALOG['stone column']=(x,y)=>{ '@later'; SHARED.PNAME='stone column'; const H=DGN.H, B=[], hw=.3, d=.09;
   const face=(nx,ny,X,Y,z,k,hi)=>{ const u=(nx?Y-y:X-x)*24, a=Math.abs(u); let c=stone(u+(nx?0:50),z,41); if(a>hw*24-3)c=u>0?C.hi:C.lo; if(hi&&z>H-30){ const w=dgnWeb(hw*24-a,H-5-z,14,43+(nx?1:0)); if(w)return sh(w,k); } return sh(c,k); };
   const oct=(h,z0,z1,hi)=>{ B.push(sided({x0:x-h,y0:y-h+d,x1:x+h,y1:y+h-d,z0,z1,foot:z0===0?1:0,c:C.st[1],top:()=>C.hi,fs:(nx,ny,X,Y,z,k)=>face(nx,ny,X,Y,z+z0,k,hi)}));
     B.push(sided({x0:x-h+d,y0:y-h,x1:x+h-d,y1:y+h,z0,z1,foot:z0===0?1:0,c:C.st[1],top:()=>C.hi,fs:(nx,ny,X,Y,z,k)=>face(nx,ny,X,Y,z+z0,k,hi)})); };
   oct(hw+.12,0,5); oct(hw+.06,5,9); oct(hw,9,H-18,true); oct(hw+.05,H-18,H-13); oct(hw+.1,H-13,H-8); oct(hw+.15,H-8,H-3);
   return prop(B,null,{}); };
 CAT_INFO['stone column']={no:'P-957',name:'Stone Column',dept:'Dungeon',price:600,desc:'An eight-sided column of rough stone, ridged at its edges, stepped at its foot and its head; cobwebs in its corners.',mat:'stone'};
-CATALOG['oak barrel']=(x,y)=>{ '@later'; PNAME='oak barrel'; const H=28, OK=[C.oakD,C.oak,C.oakL];
+CATALOG['oak barrel']=(x,y)=>{ '@later'; SHARED.PNAME='oak barrel'; const H=28, OK=[C.oakD,C.oak,C.oakL];
   const col=(dx,dy,z,top)=>{ if(top){ const k=Math.floor((dy+.3)/.08); return Math.hypot(dx,dy)>.24?C.oakD:((dy+.3)-k*.08<.012)?C.oakD:k&1?C.oak:sh(C.oak,1.06); }
     const a=Math.atan2(dy,dx), st=Math.floor((a+Math.PI)/(2*Math.PI/14)), c=OK[Math.floor(hash(st,0,51)*3)], e=((a+Math.PI)%(2*Math.PI/14))<.07;
     for(const hz of [4,14,24])if(z>=hz&&z<hz+3)return z<hz+1?C.ironL:(hash(st,hz,53)<.3?C.rust:C.iron);
     return e?C.oakD:hash(st,z|0,55)<.08?sh(c,.88):c; };
   return prop([...lathe(x,y,0,H,z=>.24+.05*Math.sin(Math.PI*z/H),col,2,.04)].map((b,i)=>i===0?{...b,foot:1}:b),null,{}); };
 CAT_INFO['oak barrel']={no:'P-958',name:'Oak Barrel',dept:'Dungeon',price:40,desc:'An oak barrel bound with three rusted hoops. Whatever was in it is long gone.',mat:'oak, iron'};
-CATALOG['crate']=(x,y)=>{ '@later'; PNAME='crate'; const w=.36, H=16, planks=(u,z,k)=>{ const row=Math.floor(z/4), seam=(z%4)<.7, pu=Math.floor((u+.5)*24); let c=[C.oak,C.oakL,sh(C.oak,.9)][row%3]; if(seam)c=C.oakD; if(pu%7===3&&(z%4)>1.5&&(z%4)<2.5&&row%3!==1)c=C.ironL; if(hash(pu,z|0,61)<.1)c=sh(c,.88); return sh(c,k); };
+CATALOG['crate']=(x,y)=>{ '@later'; SHARED.PNAME='crate'; const w=.36, H=16, planks=(u,z,k)=>{ const row=Math.floor(z/4), seam=(z%4)<.7, pu=Math.floor((u+.5)*24); let c=[C.oak,C.oakL,sh(C.oak,.9)][row%3]; if(seam)c=C.oakD; if(pu%7===3&&(z%4)>1.5&&(z%4)<2.5&&row%3!==1)c=C.ironL; if(hash(pu,z|0,61)<.1)c=sh(c,.88); return sh(c,k); };
   return prop([sided({x0:x-w,y0:y-w,x1:x+w,y1:y+w,z0:0,z1:H,foot:1,c:C.oak,top:(X,Y)=>{ const k=Math.floor((Y-y+w)/.12); return ((Y-y+w)-k*.12)<.015?C.oakD:hash(Math.floor(X*40),Math.floor(Y*40),63)<.3?sh(C.dust,.9):sh(C.oakL,.92); },fs:(nx,ny,X,Y,z,k)=>planks(nx?Y-y:X-x,z,k)})],null,{}); };
 CAT_INFO['crate']={no:'P-959',name:'Crate',dept:'Dungeon',price:12,desc:'A plank crate, nailed shut, dust on its lid.',mat:'wood'};
-CATALOG['iron chest']=(x,y)=>{ '@later'; PNAME='iron chest'; const W=.42, D=.26, H=12, LH=5;
+CATALOG['iron chest']=(x,y)=>{ '@later'; SHARED.PNAME='iron chest'; const W=.42, D=.26, H=12, LH=5;
   const band=(u,z,k,lid)=>{ const bu=Math.abs(((u+W)%(W*.95))-W*.475); if(bu<.025)return sh(z%3<1?C.ironL:C.iron,k); return null; };
   const side=(nx,ny,X,Y,z,k,lid)=>{ const u=nx?Y-y:X-x; const b=band(u,z,k); if(b)return b; if(ny>0&&!lid&&Math.abs(u)<.05&&z>H-6){ if(Math.abs(u)<.012&&z>H-5&&z<H-2)return C.dark; return sh(C.ironL,k); }
     if(lid&&z<1)return sh(C.ironL,k); return sh(hash(Math.floor(u*48),z|0,71)<.12?C.oakD:(Math.floor(z/3)&1)?C.oak:sh(C.oak,.94),k); };
   return prop([sided({x0:x-W,y0:y-D,x1:x+W,y1:y+D,z0:0,z1:H,foot:1,c:C.oak,top:()=>C.oak,fs:(nx,ny,X,Y,z,k)=>side(nx,ny,X,Y,z,k,false)}),
     sided({x0:x-W-.02,y0:y-D-.02,x1:x+W+.02,y1:y+D+.02,z0:H,z1:H+LH,foot:0,c:C.oak,top:(X,Y)=>band(X-x,0,1)||(Math.abs(Math.abs(Y-y)-D*.5)<.015?C.oakD:C.oakL),fs:(nx,ny,X,Y,z,k)=>side(nx,ny,X,Y,z,k,true)})],null,{}); };
 CAT_INFO['iron chest']={no:'P-960',name:'Iron-Banded Chest',dept:'Dungeon',price:80,desc:'An oak chest banded with iron, its lock plate rusted shut.',mat:'oak, iron'};
-CATALOG['brazier']=(x,y)=>{ '@later'; PNAME='brazier'; const FL={ph:0}, B=[], I=C.iron, IL=C.ironL;
+CATALOG['brazier']=(x,y)=>{ '@later'; SHARED.PNAME='brazier'; const FL={ph:0}, B=[], I=C.iron, IL=C.ironL;
   for(let k=0;k<3;k++){ const a=k*2.094+.5, lx=x+Math.cos(a)*.2, ly=y+Math.sin(a)*.2; B.push({x0:lx-.025,y0:ly-.025,x1:lx+.025,y1:ly+.025,z0:0,z1:12,foot:1,nb:1,c:I,top:()=>IL,fi:()=>sh(I,.7),fj:()=>sh(I,.86)}); }
   const coal=(dx,dy,z,top)=>{ if(!top)return z<1||z>8?IL:hash(Math.floor(Math.atan2(dy,dx)*6),z|0,81)<.1?C.rust:I; const r=Math.hypot(dx,dy); if(r>.25)return IL; const n=hash(Math.floor(dx*60),Math.floor(dy*60),83); return n<.2?lit([250,110,30]):n<.3?lit([180,60,20]):n<.5?[40,28,24]:[26,20,18]; };
   B.push(...lathe(x,y,10,19,z=>.15+z*.018,coal,1.5,.035));
@@ -207,18 +207,18 @@ CATALOG['brazier']=(x,y)=>{ '@later'; PNAME='brazier'; const FL={ph:0}, B=[], I=
   B.push({x0:x-.26,y0:y-.26,x1:x+.26,y1:y+.26,z0:18.5,z1:21,c:[250,110,30],foot:0,nb:1,life:1,top:()=>null,fi:(v,z)=>ember(v-y,0,z-18.5),fj:(u,z)=>ember(u-x,0,z-18.5)});
   const p=prop(B,null,{}); flick(p,FL,Math.round(x*11+y*7)); LAMPS.push({x,y,z:24,r:3.6,c:[.85,.32,.11],own:1,room:1,day:true,prop:p,flick:1}); return p; };
 CAT_INFO['brazier']={no:'P-961',name:'Brazier',dept:'Dungeon',price:60,desc:'An iron bowl of coals on three legs, the embers breathing red.',mat:'iron, coal'};
-CATALOG['gibbet']=(x,y)=>{ '@later'; PNAME='gibbet'; const H=DGN.H, Z0=44, Z1=78, hw=.22, I=C.iron, IL=C.ironL;
+CATALOG['gibbet']=(x,y)=>{ '@later'; SHARED.PNAME='gibbet'; const H=DGN.H, Z0=44, Z1=78, hw=.22, I=C.iron, IL=C.ironL;
   const bars=(nx,ny,X,Y,z,k)=>{ const u=((nx?Y-y:X-x)+hw)*24, zz=z; if(zz<2||zz>=Z1-Z0-2||Math.abs(zz-(Z1-Z0)/2)<1.2)return sh(zz%2<1?IL:I,k); return (Math.floor(u)%4===0)?sh(I,k*(1+.1*(Math.floor(u)%8===0))):null; };
   const B=[sided({x0:x-hw,y0:y-hw,x1:x+hw,y1:y+hw,z0:Z0,z1:Z1,foot:1,c:I,top:(X,Y)=>Math.hypot(X-x,Y-y)>hw*.9||Math.abs(X-x)<.015||Math.abs(Y-y)<.015?IL:null,fs:bars}),
     {x0:x-hw+.02,y0:y-hw+.02,x1:x+hw-.02,y1:y+hw-.02,z0:Z0,z1:Z0+1.5,foot:0,nb:1,c:I,top:()=>sh(I,1.2),fi:()=>sh(I,.7),fj:()=>sh(I,.86)},skull(x,y,Z0+1.5,.11),
     {x0:x-.02,y0:y-.02,x1:x+.02,y1:y+.02,z0:Z1,z1:H-3,foot:0,nb:1,c:I,top:()=>null,fi:(v,z)=>(Math.floor(z/3)&1)?IL:I,fj:(u,z)=>(Math.floor(z/3)&1)?sh(IL,.9):sh(I,.9)}];
   return prop(B,null,{walk:1}); };
 CAT_INFO['gibbet']={no:'P-962',name:'Gibbet',dept:'Dungeon',price:0,desc:'An iron cage on a chain from the ceiling, a skull at the bottom of it. Walk under it if you dare.',mat:'iron, bone'};
-CATALOG['straw']=(x,y)=>{ '@later'; PNAME='straw'; const w=.4, d=.3, s=Math.round(x*7+y*3);
+CATALOG['straw']=(x,y)=>{ '@later'; SHARED.PNAME='straw'; const w=.4, d=.3, s=Math.round(x*7+y*3);
   const st=(u,v)=>{ if((u/w)**2+(v/d)**2>1)return null; for(let k=0;k<14;k++){ const a=hash(s,k,91)*3.14, cu=(hash(s,k,93)-.5)*w*1.4, cv=(hash(s,k,95)-.5)*d*1.4, t=(u-cu)*Math.cos(a)+(v-cv)*Math.sin(a), n=Math.abs(-(u-cu)*Math.sin(a)+(v-cv)*Math.cos(a)); if(n<.012&&Math.abs(t)<.16)return k&1?C.straw:C.strawD; } return sh(C.strawD,.8); };
   return prop([{x0:x-w,y0:y-d,x1:x+w,y1:y+d,z0:0,z1:2.5,foot:1,nb:1,c:C.strawD,top:(X,Y)=>st(X-x,Y-y),fi:(Y,z)=>Math.abs(Y-y)<d*.9?sh(hash(Math.floor(Y*48),z|0,97)<.5?C.straw:C.strawD,.72):null,fj:(X,z)=>Math.abs(X-x)<w*.9?sh(hash(Math.floor(X*48),z|0,99)<.5?C.straw:C.strawD,.86):null}],null,{walk:1}); };
 CAT_INFO['straw']={no:'P-963',name:'Straw',dept:'Dungeon',price:2,desc:'A heap of old straw, dry and pale. Something sleeps in it.',mat:'straw'};
-CATALOG['sarcophagus']=(x,y)=>{ '@later'; PNAME='sarcophagus'; const W=.8, D=.34, H=16, LH=6, S1=C.st[1];
+CATALOG['sarcophagus']=(x,y)=>{ '@later'; SHARED.PNAME='sarcophagus'; const W=.8, D=.34, H=16, LH=6, S1=C.st[1];
   const side=(nx,ny,X,Y,z,k)=>{ const u=(nx?Y-y:X-x)*24; let c=stone(u,z,101); if(z<2)c=C.lo; if(z>=6&&z<9){ const q=Math.floor(u/6); return sh((q&1)?C.lo:C.hi,k); } return sh(c,k); };
   const top=(X,Y)=>{ const u=X-x, v=Y-y, bu=W-Math.abs(u), bv=D-Math.abs(v), b=Math.min(bu*1.4,bv*2.4); if(b<.025)return C.lo; if(b<.045)return C.mo; if(Math.abs(v)<.02&&u>-W*.6&&u<W*.4||Math.abs(u+W*.2)<.02&&Math.abs(v)<D*.55)return C.mo; return hash(Math.floor(X*40),Math.floor(Y*40),103)<.08?C.lo:C.hi; };
   return prop([sided({x0:x-W,y0:y-D,x1:x+W,y1:y+D,z0:0,z1:H,foot:1,c:S1,top:()=>S1,fs:side}),sided({x0:x-W-.04,y0:y-D-.04,x1:x+W+.04,y1:y+D+.04,z0:H,z1:H+LH,foot:0,c:C.hi,top,fs:(nx,ny,X,Y,z,k)=>sh(z<1?C.lo:z>LH-1.5?C.hi:stone((nx?Y-y:X-x)*24,z,105),k)})],null,{}); };

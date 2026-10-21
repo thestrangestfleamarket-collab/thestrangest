@@ -16,17 +16,17 @@ const WIELD={on:null}; window.WIELD=WIELD;
   let sw=null, side=1, spd=0, turning=false, cutT=0;
   renderer.domElement.addEventListener('pointermove',e=>{ ms.x=e.clientX; ms.y=e.clientY; });
   WIELD.set=id=>{ '@later'; if(MESH[WIELD.on])MESH[WIELD.on].visible=false; WIELD.on=null; if(!id||!FORAGE.has(id)){ if(id)say('YOU HAVE NO '+NM[id]+'.','#c8a090'); return; }
-    const m=MESH[id]||(MESH[id]=MK[id]()); if(!m.parent){ m.matrixAutoUpdate=false; scene.add(m); } WIELD.on=id; target=null; say('YOU HOLD THE '+NM[id]+'. THE MOUSE AIMS IT, A CLICK SWINGS.','#e8e2cc'); FORAGE.draw(); };
+    const m=MESH[id]||(MESH[id]=MK[id]()); if(!m.parent){ m.matrixAutoUpdate=false; scene.add(m); } WIELD.on=id; SHARED.target=null; say('YOU HOLD THE '+NM[id]+'. THE MOUSE AIMS IT, A CLICK SWINGS.','#e8e2cc'); FORAGE.draw(); };
   WIELD.next=()=>{ const own=LIST.filter(k=>FORAGE.has(k)), i=own.indexOf(WIELD.on); WIELD.set(i+1<own.length?own[i+1]:null); if(!WIELD.on)say('YOUR HANDS ARE FREE.','#e8e2cc'); };
   WIELD.strike=()=>{ if(!WIELD.on||sw&&sw.t<.18)return; sw={t:0,T:.3,s:side}; side=-side; if(typeof SFX!=='undefined')SFX.play('step',{vol:.3,pitch:2.2}); };
   FORAGE.ROWB.push(id=>LIST.includes(id)?[[WIELD.on===id?'PUT AWAY':'HOLD','wield']]:[]); FORAGE.ACT.wield=id=>WIELD.set(WIELD.on===id?null:id);
   const free=()=>!(RAG.on||st.water&&st.water.in||st.ride||st.climb||st.hang||st.sit||VIT.dead);
   WIELD.pre=dt=>{ const on=!!WIELD.on&&free();
-    if(on){ const r=renderer.domElement.getBoundingClientRect(); if(ms.x>=0){ rc.setFromCamera(new THREE.Vector2((ms.x-r.left)/r.width*2-1,-((ms.y-r.top)/r.height*2-1)),cam); pl.constant=-(py+.9*T); if(rc.ray.intersectPlane(pl,hit)){ aim.subVectors(hit,sh.lengthSq()?sh:new V3(pos.x,py+1.3*T,pos.z)); aim.y=Math.min(aim.y,0); if(aim.lengthSq()>1e-6)aim0.copy(aim.normalize()); } } aim.copy(aim0);
+    if(on){ const r=renderer.domElement.getBoundingClientRect(); if(ms.x>=0){ rc.setFromCamera(new THREE.Vector2((ms.x-r.left)/r.width*2-1,-((ms.y-r.top)/r.height*2-1)),SHARED.cam); pl.constant=-(SHARED.py+.9*T); if(rc.ray.intersectPlane(pl,hit)){ aim.subVectors(hit,sh.lengthSq()?sh:new V3(pos.x,SHARED.py+1.3*T,pos.z)); aim.y=Math.min(aim.y,0); if(aim.lengthSq()>1e-6)aim0.copy(aim.normalize()); } } aim.copy(aim0);
       if(sw){ sw.t+=dt; const u=Math.min(1,sw.t/sw.T), e=u*u*(3-2*u); aim.applyAxisAngle(UP,sw.s*(1.5-3*e)).setY(aim.y-.25*Math.sin(Math.PI*u)).normalize(); if(sw.t>=sw.T)sw=null; }
       const was=cur.clone(); cur.lerp(aim,1-Math.exp(-dt*(sw?40:20))).normalize(); spd=dt>0?was.angleTo(cur)/dt:0;
-      const moving=st.target>0||target, d=Math.atan2(Math.sin(Math.atan2(cur.x,cur.z)-heading),Math.cos(Math.atan2(cur.x,cur.z)-heading)); if(!moving&&Math.abs(d)>1.1)turning=true; if(Math.abs(d)<.3)turning=false;
-      if(turning&&!moving&&!st.move)heading+=Math.max(-7*dt,Math.min(7*dt,d)); }
+      const moving=st.target>0||SHARED.target, d=Math.atan2(Math.sin(Math.atan2(cur.x,cur.z)-SHARED.heading),Math.cos(Math.atan2(cur.x,cur.z)-SHARED.heading)); if(!moving&&Math.abs(d)>1.1)turning=true; if(Math.abs(d)<.3)turning=false;
+      if(turning&&!moving&&!st.move)SHARED.heading+=Math.max(-7*dt,Math.min(7*dt,d)); }
     const w0=st.aim?st.aim.w:0, w=w0+((on&&!(st.move&&st.move.name==='pick')?1:0)-w0)*Math.min(1,dt*10);
     if(!on&&w<.02){ st.aim=null; return; } IM.copy(W3.group.matrixWorld).invert(); const v=cur.clone().transformDirection(IM); st.aim={v:RIG.V(v.x,v.y,v.z),w}; };
   WIELD.post=B=>{ const m=MESH[WIELD.on], on=m&&free()&&st.aim&&st.aim.w>.3; for(const k in MESH)MESH[k].visible=on&&MESH[k]===m; if(!on){ trail.visible=false; pts.length=0; return; }
@@ -34,7 +34,7 @@ const WIELD={on:null}; window.WIELD=WIELD;
     P(J.shoulderR,sh); P(J.elbowR,ax); P(J.palmR,base); ax.subVectors(P(J.wristR,tip),ax).normalize();
     bx2.crossVectors(ax,UP); if(bx2.lengthSq()<1e-4)bx2.set(1,0,0); bx2.normalize(); bz.crossVectors(bx2,ax);
     M.makeBasis(bx2,ax,bz).setPosition(base); m.matrix.copy(M); m.matrixWorld.copy(M); head.copy(m.head).applyMatrix4(M); tip.copy(base).addScaledVector(ax,m.head.y+(m.r||0)*2);
-    const fast=spd>7||sw, now=performance.now(); if(WEEDS.moveTick&&!WEEDS.moveTick.w){ const m0=WEEDS.moveTick; WEEDS.moveTick=()=>{ m0(); if(performance.now()<cutT)WEEDS.movers[7].set(tip.x,tip.z,.6*T,1); }; WEEDS.moveTick.w=1; } if(fast){ pts.unshift([base.clone().addScaledVector(ax,.25),tip.clone(),now]); if(WIELD.on==='sword'&&tip.y<py+.6*T)cutT=now+400; }
+    const fast=spd>7||sw, now=performance.now(); if(WEEDS.moveTick&&!WEEDS.moveTick.w){ const m0=WEEDS.moveTick; WEEDS.moveTick=()=>{ m0(); if(performance.now()<cutT)WEEDS.movers[7].set(tip.x,tip.z,.6*T,1); }; WEEDS.moveTick.w=1; } if(fast){ pts.unshift([base.clone().addScaledVector(ax,.25),tip.clone(),now]); if(WIELD.on==='sword'&&tip.y<SHARED.py+.6*T)cutT=now+400; }
     while(pts.length&&(pts.length>N||now-pts[pts.length-1][2]>120))pts.pop();
     trail.visible=pts.length>2; if(trail.visible){ for(let i=0;i<N;i++){ const q=pts[Math.min(i,pts.length-1)]; q[0].toArray(TP,i*6); q[1].toArray(TP,i*6+3); } TG.attributes.position.needsUpdate=true; }
     if(!(spd>4||sw)||WIELD.on==='sword')return;

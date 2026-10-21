@@ -4,7 +4,7 @@ WEEDS.PART=(T,k)=>'{ vec4 w0=modelMatrix*instanceMatrix*vec4(transformed,1.); ve
 WEEDS.clear=r=>{ (WEEDS.clr=WEEDS.clr||[]).push(r); if(WEEDS.lawnDrop)WEEDS.lawnDrop(r); const M=new THREE.Matrix4(), Z=new THREE.Matrix4().makeScale(0,0,0); for(const me of WEEDS.meshes||[]){ let n=0; for(let i=0;i<me.count;i++){ me.getMatrixAt(i,M); const x=M.elements[12], z=M.elements[14]; if(x>r[0]&&x<r[2]&&z>r[1]&&z<r[3]){ me.setMatrixAt(i,Z); n++; } } if(n)me.instanceMatrix.needsUpdate=true; } };
 WEEDS.GV=['','GOLDEN WHEAT','GOLDEN TUSSOCK','DRY GOLD REEDS','GILDED GRASS'];
 WEEDS.gold=()=>{ if(WEEDS.GP)return WEEDS.GP; const P=window.PARK; if(!P||P.ox==null||!P.brook||!P.campAt||typeof FOUNT==='undefined'||!FOUNT.S)return null;
-  const T=TILE, X=x=>BOD.XS(x+P.ox), Z=y=>BOD.ZS(y+P.oy), [cx,cy,cr]=P.round, BK=P.brook, F=FOUNT, CF=P.campAt(), h=(a,b,c)=>{ const v=Math.sin(a*127.1+b*311.7+c*74.7)*43758.5453; return v-Math.floor(v); };
+  const T=TILE, X=x=>SHARED.BOD.XS(x+P.ox), Z=y=>SHARED.BOD.ZS(y+P.oy), [cx,cy,cr]=P.round, BK=P.brook, F=FOUNT, CF=P.campAt(), h=(a,b,c)=>{ const v=Math.sin(a*127.1+b*311.7+c*74.7)*43758.5453; return v-Math.floor(v); };
   const KEEP=[[cx+12.5-7,cy+11.5-7,cx+12.5+7,cy+11.5+7],[CASTLE.b[0]-P.ox-3,CASTLE.b[2]-P.oy-3,CASTLE.b[1]-P.ox+3,CASTLE.b[3]-P.oy+3],[CF.x-5,CF.y-5,CF.x+5,CF.y+5],...(typeof GCAVE!=='undefined'?GCAVE.keep(P):[]),...(window.GCAVE&&GCAVE.S?[(t=>[t.x-12,t.y-12,t.x+12,t.y+12])(GCAVE.S.tw)]:[])];
   const GT=[[(P.gate[0]+P.gate[1])/2,P.y0],...(P.egate?[[P.x1,(P.egate[0]+P.egate[1])/2]]:[]),...(P.wgate?[[P.x0,(P.wgate[0]+P.wgate[1])/2]]:[]),...(P.ngate?[[(P.ngate[0]+P.ngate[1])/2,P.y1]]:[])];
   const xa=Math.min(X(P.x0),X(P.x1)), xb=Math.max(X(P.x0),X(P.x1)), za=Math.min(Z(P.y0),Z(P.y1)), zb=Math.max(Z(P.y0),Z(P.y1));
@@ -26,7 +26,7 @@ WEEDS.init=()=>{ WEEDS.dbg=f=>f({FIX,SOL,TILE,MODS}); const T=TILE, hsh=(a,b,s)=
   const solidAt=(x,z)=>B.some(b=>x>b[0]&&x<b[3]&&z>b[1]&&z<b[4]);
   const gy=(x,z)=>MODS.bodega&&MODS.bodega.ground?MODS.bodega.ground(x,z):0;
   const TUFT=[], FLOW=[]; WEEDS.drop=[0,0,0];
-  for(const b of B){ const [x0,z0,,x1,z1]=b; if(x1<BOUND.x0||x0>BOUND.x1||z1<BOUND.z0||z0>BOUND.z1)continue; const edges=[[x0,z0,x1,z0,0,-1],[x1,z0,x1,z1,1,0],[x1,z1,x0,z1,0,1],[x0,z1,x0,z0,-1,0]];
+  for(const b of B){ const [x0,z0,,x1,z1]=b; if(x1<SHARED.BOUND.x0||x0>SHARED.BOUND.x1||z1<SHARED.BOUND.z0||z0>SHARED.BOUND.z1)continue; const edges=[[x0,z0,x1,z0,0,-1],[x1,z0,x1,z1,1,0],[x1,z1,x0,z1,0,1],[x0,z1,x0,z0,-1,0]];
     for(const [ax,az,bx,bz,nx,nz] of edges){ const L=Math.hypot(bx-ax,bz-az), n=Math.max(1,Math.round(L/(.2*T)));
       for(let i=0;i<n;i++){ const t=(i+hsh(ax*7+i,az*3,11))/n, ex=ax+(bx-ax)*t, ez=az+(bz-az)*t, wild=vn(ex/(3*T),ez/(3*T),13);
         if(wild<.3||hsh(ex*13,ez*17,15)>wild*1.7){ WEEDS.drop[0]++; continue; }
@@ -53,7 +53,7 @@ WEEDS.init=()=>{ WEEDS.dbg=f=>f({FIX,SOL,TILE,MODS}); const T=TILE, hsh=(a,b,s)=
     for(const f of FLOW){ const k=Math.floor(f[0]/cs)+','+Math.floor(f[2]/cs); if(!FC.has(k))FC.set(k,[]); FC.get(k).push(f); }
     for(const list of FC.values()){ const fm=new THREE.InstancedMesh(fg,fmt,list.length); list.forEach(([x,y,z],i)=>{ M.compose(new THREE.Vector3(x,y,z),q.identity(),new THREE.Vector3(1,1,1)); fm.setMatrixAt(i,M); }); fm.computeBoundingSphere(); scene.add(fm); WEEDS.meshes.push(fm); } }
   WEEDS.n+=TUFT.length; WEEDS.flowers+=FLOW.length; };
-  put(TUFT,FLOW); WEEDS.more=L=>put(L.map(([px,py,r])=>{ const x=BOD.XS(px+PARK.ox), z=BOD.ZS(py+PARK.oy); return [x,gy(x,z),z,(.22+.24*r)*T,r*31%6.28,(r*7)%1]; }),[]); };
+  put(TUFT,FLOW); WEEDS.more=L=>put(L.map(([px,py,r])=>{ const x=SHARED.BOD.XS(px+PARK.ox), z=SHARED.BOD.ZS(py+PARK.oy); return [x,gy(x,z),z,(.22+.24*r)*T,r*31%6.28,(r*7)%1]; }),[]); };
 WEEDS.lawnInit=()=>{ const T=TILE, CS=8*T, N=16, CELL=CS/N, MG=4, W=N+2*MG, hsh=(a,b,s)=>{ let h=(Math.floor(a*97)*374761393+Math.floor(b*89)*668265263+s*1442695041)|0; h=(h^(h>>>13))*1274126177|0; return ((h^(h>>>16))>>>0)/4294967296; };
   const LC=(r,g,b)=>{ const c=new THREE.Color().setRGB(r/255,g/255,b/255,THREE.SRGBColorSpace); return 'vec3('+c.r.toFixed(4)+','+c.g.toFixed(4)+','+c.b.toFixed(4)+')'; }, MV=WEEDS.movers, NT=12, TR=[...Array(NT)].map(()=>new THREE.Vector4(0,0,0,0)), TK=[...Array(NT)].map(()=>new THREE.Vector4(0,0,0,0)), TT=new Float64Array(NT).fill(-1e9), TM=new Int8Array(NT), F=x=>(x*T).toFixed(4);
   const MODE=[[.7,.85,3,0,0],[1.05,.9,1.5,1,1],[.5,.32,1,0,0],[1.5,.95,3,0,0],[1.15,1,5,0,0]]; WEEDS.UTR={value:TR}; WEEDS.UTK={value:TK};
@@ -84,7 +84,7 @@ WEEDS.lawnInit=()=>{ const T=TILE, CS=8*T, N=16, CELL=CS/N, MG=4, W=N+2*MG, hsh=
   const near=[]; WEEDS.moveTick=()=>{ near.length=0; near.push([pos.x,pos.z,0]); if(typeof NPCS!=='undefined')for(const N of NPCS){ if(N.lv!=='up'||N.far||!N.st)continue; const small=!!(window.CREATS&&CREATS.includes(N)), gy=N.ground?N.ground(N.st.x,N.st.z):0, fly=N.g.position.y-gy>.35*T, tp=small&&!fly&&WEEDS.top?WEEDS.top(N.st.x,N.st.z):null, hide=tp!=null&&isFinite(tp);
       if(hide!==!!N._ing){ N._ing=hide; N.g.visible=!hide; } if(fly||!N.g.visible&&!hide)continue; const d=Math.hypot(N.st.x-pos.x,N.st.z-pos.z); if(d<14*T)near.push([N.st.x,N.st.z,d,small]); }
     near.sort((a,b)=>a[2]-b[2]); for(let i=0;i<8;i++){ const n=near[i]; if(n)MV[i].set(n[0],n[1],n[3]?.3*T:.55*T,n[3]?.6:1); else MV[i].w=0; }
-    const now=performance.now()/1e3, up=LVL==='up', md=up?modeNow():-1, air=md<0&&!!(st.move&&st.move.def&&st.move.def.air);
+    const now=performance.now()/1e3, up=SHARED.LVL==='up', md=up?modeNow():-1, air=md<0&&!!(st.move&&st.move.def&&st.move.def.air);
     if(Math.hypot(pos.x-TR[0].x,pos.z-TR[0].y)>3*T||!up)TT.fill(-1e9);
     if(air0&&!air&&up)push(3,now); else if(md>=0&&(Math.hypot(pos.x-TR[1].x,pos.z-TR[1].y)>.5*T||TT[1]<0||TM[1]!==md&&TM[1]!==3))push(md,now); air0=air;
     if(st.target>0||Math.hypot(pos.x-px0,pos.z-pz0)>.02*T||md!==0)stop0=now; px0=pos.x; pz0=pos.z; TR[0].set(pos.x,pos.z,0,0); TT[0]=md<0?-1e9:now; TM[0]=Math.max(0,md);
@@ -104,10 +104,10 @@ WEEDS.lawnInit=()=>{ const T=TILE, CS=8*T, N=16, CELL=CS/N, MG=4, W=N+2*MG, hsh=
   const ghgt=(v,x,z)=>v===1?T*(.9+.12*vn(x/T/1.4,z/T/1.4,501)):v===2?T*(.32+.62*lump(x*.5,z*.5)):v===3?T*(1+.3*vn(x/T/.7,z/T/.7,503)):T*(.58+.14*lump(x,z));
   const gat=(x,z)=>WEEDS.goldAt?WEEDS.goldAt(x,z):null, hgtA=(x,z,g=gat(x,z))=>{ const b=hgt(x,z); if(!g||g[1]<=0)return b; const f=Math.min(1,g[1]*1.6), s=f*f*(3-2*f); return b+(ghgt(g[0],x,z)-b)*s; };
   const WK=[3,2,2,1.5,1,1.5,3], WS=WK.reduce((a,b)=>a+b,0), pickK=r=>{ r*=WS; for(let i=0;i<WK.length;i++)if((r-=WK[i])<0)return KINDS[i]; return 'flat'; };
-  const inPark=(x,z,m=0)=>{ if(typeof PARK==='undefined'||PARK.ox==null)return false; const xa=BOD.XS(PARK.x0+PARK.ox+m), xb=BOD.XS(PARK.x1+PARK.ox-m), za=BOD.ZS(PARK.y0+PARK.oy+m), zb=BOD.ZS(PARK.y1+PARK.oy-m);
+  const inPark=(x,z,m=0)=>{ if(typeof PARK==='undefined'||PARK.ox==null)return false; const xa=SHARED.BOD.XS(PARK.x0+PARK.ox+m), xb=SHARED.BOD.XS(PARK.x1+PARK.ox-m), za=SHARED.BOD.ZS(PARK.y0+PARK.oy+m), zb=SHARED.BOD.ZS(PARK.y1+PARK.oy-m);
     return x>Math.min(xa,xb)&&x<Math.max(xa,xb)&&z>Math.min(za,zb)&&z<Math.max(za,zb); };
   WEEDS.inPark=inPark;
-  const deep=(x,z)=>{ if(typeof PARK==='undefined'||PARK.ox==null)return 0; const tx=x/T, tz=z/T, xa=BOD.XS(PARK.x0+PARK.ox)/T, xb=BOD.XS(PARK.x1+PARK.ox)/T, za=BOD.ZS(PARK.y0+PARK.oy)/T, zb=BOD.ZS(PARK.y1+PARK.oy)/T;
+  const deep=(x,z)=>{ if(typeof PARK==='undefined'||PARK.ox==null)return 0; const tx=x/T, tz=z/T, xa=SHARED.BOD.XS(PARK.x0+PARK.ox)/T, xb=SHARED.BOD.XS(PARK.x1+PARK.ox)/T, za=SHARED.BOD.ZS(PARK.y0+PARK.oy)/T, zb=SHARED.BOD.ZS(PARK.y1+PARK.oy)/T;
     return Math.min(tx-Math.min(xa,xb),Math.max(xa,xb)-tx,tz-Math.min(za,zb),Math.max(za,zb)-tz)+10*(vn(tx/11,tz/11,97)-.5); };
   WEEDS.deep=deep;
   const patch=(x,z)=>{ const k=patch0(x,z); if(k==='flat'||k==='tuft')return k; const d=inPark(x,z)?deep(x,z):0;
@@ -164,8 +164,8 @@ WEEDS.lawnInit=()=>{ const T=TILE, CS=8*T, N=16, CELL=CS/N, MG=4, W=N+2*MG, hsh=
   const drop=k=>{ const me=CH.get(k); if(me){ MAPG.bodega.remove(me); me.dispose(); WEEDS.lawnN-=me.tri; } CH.delete(k); if(WEEDS.onDrop)WEEDS.onDrop(k); };
   { const RC=new THREE.Raycaster(), DN=new THREE.Vector3(0,-1,0), O=new THREE.Vector3(); WEEDS.top=(x,z)=>{ const k=Math.floor(x/CS)+','+Math.floor(z/CS); if(!CH.has(k))return undefined; const me=CH.get(k); if(!me)return null; RC.set(O.set(x,60*T,z),DN); const h=RC.intersectObject(me,false)[0]; return h?h.point.y:null; }; }
   WEEDS.lawnDrop=r=>{ for(const k of [...CH.keys()]){ const [a,b]=k.split(',').map(Number); if(r[2]>a*CS-MG*CELL&&r[0]<(a+1)*CS+MG*CELL&&r[3]>b*CS-MG*CELL&&r[1]<(b+1)*CS+MG*CELL)drop(k); } };
-  let busy=0, next=0; WEEDS.lawnTick=()=>{ if(LVL!=='up'||(ROOMS&&ROOMS.cur))return; const pcx=Math.floor(pos.x/CS), pcz=Math.floor(pos.z/CS);
+  let busy=0, next=0; WEEDS.lawnTick=()=>{ if(SHARED.LVL!=='up'||(ROOMS&&ROOMS.cur))return; const pcx=Math.floor(pos.x/CS), pcz=Math.floor(pos.z/CS);
     for(const k of [...CH.keys()]){ const [a,b]=k.split(',').map(Number); if(Math.max(Math.abs(a-pcx),Math.abs(b-pcz))>3)drop(k); }
     let best=null, bd=1e9; for(let b=-2;b<=2;b++)for(let a=-2;a<=2;a++){ const k=(pcx+a)+','+(pcz+b); if(CH.has(k))continue; const d=a*a+b*b; if(d<bd){ bd=d; best=[pcx+a,pcz+b,k]; } }
     if(best&&performance.now()>=next){ const t0=performance.now(); const gb=build(best[0],best[1]); CH.set(best[2],gb); if(gb&&WEEDS.onAdd)WEEDS.onAdd(best[2],gb); busy=performance.now()-t0; WEEDS.busy=busy; next=performance.now()+Math.max(120,busy*3); } };
-  const t0=CLOCK.tick; CLOCK.tick=dt=>{ t0(dt); WEEDS.lawnTick(); WEEDS.moveTick(); }; };
+  SYS.add('world',(dt)=>{ WEEDS.lawnTick(); WEEDS.moveTick(); },'140-weeds'); };

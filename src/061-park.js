@@ -122,7 +122,7 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
     let c=122+16*grain(i/24,j/24,k,1.2)+(hash(n,co,k+5)-.5)*34; if(w<2)c*=.42; else if(w===2)c*=1.18; else if(w===ch-1)c*=.78; else if(p===0)c*=.62; else if(p===1)c*=1.06; else if(hash(i,j,k+11)>.993)c*=.7;
     c*=1-.26*(j/H)*(j/H); const sc=i>>1; if(hash(sc>>2,k,631)<.35&&hash(sc,k,633)<.55&&j<H*(.1+.5*hash(sc,k,635)))c*=.82;
     let col=[c*1.02,c,c*.95]; if(w<2&&j/H>.6&&hash(i>>1,j,k+13)<.5)col=[58,78,44]; else if(hash(i>>1,j>>1,k+17)>.988)col=[150,156,108]; return speck(col,i/24,j/24,k+23); };
-  const WQ=BATCH.queue({make:(k,m,e)=>BM(k,m,e),cast:true,group:()=>MAPG.parkwall||scene,R:60*TILE});
+  const WQ=BATCH.queue({make:(k,m,e)=>BM(k,m,e),cast:true,group:()=>MAPG.parkwall||scene});
   const wall=(x0,y0,x1,y1,k)=>{ if(x1-x0<=.05||y1-y0<=.05)return; const ax=x1-x0>=y1-y0, L=ax?x1-x0:y1-y0, n=Math.ceil(L/36);
     for(let p=0;p<n;p++){ const a=(ax?x0:y0)+L*p/n, b=(ax?x0:y0)+L*(p+1)/n, [qx0,qy0,qx1,qy1]=ax?[a,y0,b,y1]:[x0,a,x1,b], kp=k*7+p*5, W=(qx1-qx0)*24, D=(qy1-qy0)*24;
       RUNS.push([qx0,qy0,qx1,qy1,kp]); const wx=v=>SHARED.BOD.XS(v+PO.x), wz=v=>SHARED.BOD.ZS(v+PO.y); WQ.add(wx(qx0),wz(qy0),wx(qx1),wz(qy1),()=>block(qx0,qy0,qx1,qy1,0,WH,kp,undefined,0,WH,wallF)); } };

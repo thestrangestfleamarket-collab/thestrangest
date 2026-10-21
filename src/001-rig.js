@@ -1,4 +1,5 @@
 
+// the Walker: the rig (skeleton, gaits, IK, foot-lock, moves), the SDF body baker, and the software rasterizer
 const WDRAWN={"pal":["#9c9873","#5e4e4d","#ddb8a3","#353e47","#6e4e39","#1c252e","#362827","#4b4936","#382c20","#533127","#38424b","#68533e","#b4896e","#4e3f30","#838060","#362720","#433531","#73635d","#685855","#564747","#312424","#c9a797","#dfbba5","#4e4042","#413429","#775842","#b7978c","#644735","#a78882","#3e3c2e","#2d2122","#8e8a6b","#817d63","#a29d79","#76715c","#8b8767","#444232","#5b4031","#6d6952","#8b7070","#987b78","#95705f","#303842","#2c333d","#242a34","#b98f74","#171e28","#282e39","#1a212b","#4c2c24","#42494f","#564435","#2e241b","#5f4b39","#4f3e31","#33281e","#777459","#533a2d","#2b3238","#362a23","#47392c","#2a2119","#151b25","#3b2f26","#43342b","#31231e","#39362b","#452822","#635f4c","#5e3d31","#6b6655","#3f241f","#333c46","#45382b","#e1bfa8","#473a3d","#a47c66","#57543f","#343128","#2e3640","#454d53","#4c342a","#2a313c","#886658","#5a4a3a","#725d47","#625c4f","#48382e","#2f2c25","#131922"],"role":["shirt","hair","skin","pants","skin","pants","hair","shirt","shoes","skin","pants","shoes","skin","shoes","shirt","shoes","hair","hair","hair","hair","hair","skin","skin","hair","shoes","skin","skin","skin","skin","shirt","hair","shirt","shirt","shirt","shirt","shirt","shirt","skin","shirt","skin","skin","skin","pants","pants","pants","skin","pants","pants","pants","skin","pants","shoes","shoes","shoes","shoes","shoes","shirt","skin","pants","shoes","shoes","shoes","pants","shoes","shoes","shoes","shirt","skin","shirt","skin","shirt","skin","pants","shoes","skin","hair","skin","shirt","shirt","pants","pants","skin","pants","skin","shoes","shoes","shirt","shoes","shirt","pants"]};
 const RIG=(()=>{
 const V=(x,y,z)=>({x,y,z}),add=(a,b)=>V(a.x+b.x,a.y+b.y,a.z+b.z),sub=(a,b)=>V(a.x-b.x,a.y-b.y,a.z-b.z),mul=(a,k)=>V(a.x*k,a.y*k,a.z*k),
@@ -272,11 +273,19 @@ function settle(B,fl,drop,sm){ fl=fl||0; let lift=0; for(const [k,r] of FLOOR) i
 
 function armPoints(J,n){ const E=J['elbow'+n],W=J['wrist'+n];
   return [[E,2.4],[add(E,mul(sub(W,E),0.5)),2.28],[W,2.1],[J['palm'+n],1.2],[J['fingers'+n],0.4]]; }
-function clearArms(st,dev){ const abd={L:0,R:0};
-  const clips=(n,a)=>{ abd[n]=a; LITE=true; const B=build(walkPose(st,abd),dev); LITE=false; for(const [p,r] of armPoints(B.J,n)) for(const k of ['torso','hips','thighL','thighR']) if(pieceD(k,B,p)<r+0.05) return true; return false; };
-  for(const n of 'LR'){ let lo=0,hi=40*D; if(!clips(n,0)){ abd[n]=0; continue; }
-    for(let i=0;i<(FAR?6:9);i++){ const a=(lo+hi)/2; if(clips(n,a)) lo=a; else hi=a; } abd[n]=hi; }
-  return abd; }
+function clearArms(st,dev){
+  // this clearance search probes the pose up to ~13 times a frame; a still Walker's answer never changes, so cache it (owner's "at rest stays still").
+  // only a fully still pose (w==0) repeats frame to frame, and then it's phase-independent; while moving, the probe is cheap and unchanged, so skip the cache machinery.
+  let key=null;
+  if(st.w===0){ key=st.run+'|'+(st.anim||1)+'|'+(st.smooth?1:0)+'|'+(st.bank||0)+'|'+(st.stop?st.stop.t:-1)+'|'+RIGGEN+'|'+(FAR?1:0);
+    const c=st._abdC;
+    // a hit only lands while fully still, where walkPose's nod smoothing eases toward 0: replay the exact decay the skipped probes would have applied, so the pose is bit-identical.
+    if(c&&c.key===key){ if(st.smooth) st.ndS=st.ndS==null?0:st.ndS*Math.pow(0.94,c.n); return c.abd; } }
+  const abd={L:0,R:0}; let n=0;
+  const clips=(nn,a)=>{ abd[nn]=a; LITE=true; const B=build(walkPose(st,abd),dev); LITE=false; n++; for(const [p,r] of armPoints(B.J,nn)) for(const k of ['torso','hips','thighL','thighR']) if(pieceD(k,B,p)<r+0.05) return true; return false; };
+  for(const nn of 'LR'){ let lo=0,hi=40*D; if(!clips(nn,0)){ abd[nn]=0; continue; }
+    for(let i=0;i<(FAR?6:9);i++){ const a=(lo+hi)/2; if(clips(nn,a)) lo=a; else hi=a; } abd[nn]=hi; }
+  if(key!=null) st._abdC={key,abd,n}; return abd; }
 const ARMBODY=['torso','hips','thighL','thighR'];
 function armClips(B,n){ for(const [p,r] of armPoints(B.J,n)) for(const k of ARMBODY) if(pieceD(k,B,p)<r+0.02) return true; return false; }
 function clearPose(P,dev){ let B=build(P,dev);

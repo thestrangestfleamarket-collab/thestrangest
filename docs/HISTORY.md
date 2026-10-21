@@ -3890,3 +3890,12 @@ initial download and load super fast"; then "Go")
     (sizes 30-48) are no longer full models in the forest mesh; they are the low stand-ins (a faceted ball on a post, 30 triangles each,
     no sway) that the park's trees already turn into when you are outside the park, shown always. Some 20 trees, about 8,000 triangles
     to about 600; no solids lost (they stood beyond the wall).
+- **The park's inside, step 4 of the new layout** (21 Oct 2026; `061-park.js`, `006-map-pre.js`, `089-pond.js`, `089a-brook.js`,
+  `060-cave.js`, `060a-fount.js`): the round at the owner's spot (`PARKGX` 112, 59.5) and the gate centred under it; the paths are
+  a network of segments (`PARK.segs`, `PARK.segD`, `PARK.pd`) that "go all the way": the gate path up the middle to the north gate,
+  the cross path from the west gate to the east gate, spurs to the castle (43, 17: `LAYOUT0.castle`), the lake (`PARKLAKE` 151, 10,
+  the pond made three times the size), the cave (196.5, 41.5) and the camp past it, the tower (−8.5, −28) and the fountain (which
+  keeps its corner with its lake: the owner's lake is the one at 151, 10). Every path is paved, edged and lit: lamp posts every 13 to
+  16 along all of them. The brook springs from the fountain's lake and runs south-west into the lake, under the stone bridge where it
+  crosses the cross path (the bridge was on the gate path). Trees, flowers, hedges and the lawn keep off every path. Cost: the paths'
+  slabs are built in the park's own load as before; some 40 lamp posts more (unlit models; the eight nearest light).

@@ -3809,3 +3809,13 @@ initial download and load super fast"; then "Go")
   climb on with W standing at its foot (or at any landing, or down from the roof with S), at 38 units a second (was 70), with the
   arms and legs alternating rung by rung (`climbPose` now takes a phase from the ladder's height; the old climb held one frame).
   At the top, 22 units below the roof, the climb hands over to the rig's mantle (pull up and stand).
+- **The apartments, half as wide** (owner, 20 Oct 2026: "change the apartment size to just this part in image (about 50% width as it now).
+  each floor is its own apartment (empty for now), the elevator takes you to your floor when you use it" and "red brick, make it look
+  realistic, ivy on sides ... add the ivy then set it as image so we dont have to render it every time ... the door for apartment should
+  be in the middle of building. inside 1st floor is the lobby. empty for now. (elevator only)"): the building is 13 wide (was 26), the
+  stoop and door in its middle, the fire escape at its east end. Red brick courses (14 by 6 px, grey mortar) above a stone ground
+  course, with stone bands, quoins and window surrounds. Ivy painted into the side walls' textures (strands from the ground, leaf
+  clusters, sparser towards the top; a painter like the cottage's, painted once with the wall). Inside: the lobby with one elevator
+  and nothing else; each upper floor one open apartment, boards, no corridor, no doors. The elevator has one button: it takes you to
+  your floor (the top one, `APTS.my`) and from there back to the lobby; the floor panel is gone. The lot where the east half stood
+  is empty for now.

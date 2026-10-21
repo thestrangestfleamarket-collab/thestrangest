@@ -4074,3 +4074,17 @@ initial download and load super fast"; then "Go")
 
 - 21 Oct 2026, the core, piece 5 (owner: "yes" to the simpler plan, "one shared state object ... stop there"): the 26 `let`s that many files wrote to (the camera's yaw/pitch/zoom, the player's heading/target/py, `BOD`, `BODB`, `LVL`, `night`, `composer` and the rest) now live on one object, `SHARED` (`src/003-shx.js`), so a file that reads or writes them says so (`SHARED.yaw`). Done by a scope-aware rename over 149 files.
 - 21 Oct 2026, the core, piece 5 (a) (owner: "Make every file whole"): the six runs of files that opened a block in one file and closed it in another are now one file each: `009-down`, `016-street-kit`, `020-studio-kit`, `023-west-kits`, `027-rooms-kits`, `039-bodega` (56 files became 6). Every file in `src/` now starts and ends outside any block.
+
+## 21 Oct 2026: the knight, your body or a passer-by
+
+- **The knight** (owner, 21 Oct 2026, of his reference picture of a bearded knight in plate with a longsword: "can we do a mockup like this
+  exactly"; then "lets add the knight to real game", his pick "1 and 3": your avatar as a switch, and one on the street; `src/111a-knight.js`):
+  the mockup's knight made in parts (a faceted face from a shaped sphere, his beard and swept-back hair, breastplate, pauldrons, gauntlets,
+  mail skirt, sabatons, a dark cowl) and baked once into one mesh, every face flat and coloured from the game's own palette (no textures),
+  lit in the game's bands (`W3.GP`, the same toon material and self-light as the musicians). **Moved by the Walker's rig**: each of his 15
+  bones (hips, torso, head, arms, hands, legs, feet) takes the turn of the rig's piece it stands for (`RIG.frameOf`), and his own bone
+  lengths place them, so he walks, runs, jumps, climbs and falls exactly as you do, at his own proportions. His longsword is sheathed on
+  his left hip (the hands stay free for what you carry). **YOU's BODY**: WALKER / KNIGHT, kept in the browser (`body`); `?avatar=knight`
+  or `?avatar=walker`. The Walker's placement now draws the chosen body in his place (`W3.body.place(B)`, set by the knight's file).
+  **On the street**: one knight walks main street like the bearded Walker (`KNIGHT.npc`, `?knight=0` keeps him off); his sheet is
+  `?sheet=knight`. Cost: 4,993 triangles a knight, one draw call (and one in the shadow pass), no lamps, 15 matrices a frame.

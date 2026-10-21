@@ -533,7 +533,6 @@ const AIRV={
   roll:air({yaw:-90,nod:-20,L:{ua:[0,150],fa:[0,150],th:[0,38],sh:[0,38],foot:0},R:{ua:[0,150],fa:[0,150],th:[0,38],sh:[0,38],foot:0}}),
   pitch:air({bend:26,nod:12,L:{ua:[62,24],fa:[82,24],th:[96,13],sh:[-32,13],foot:-20},R:{ua:[62,24],fa:[82,24],th:[96,13],sh:[-32,13],foot:-20}}),
 };
-const AIRSPIN={frontflip:'pitch',backflip:'pitch'};
 for(const n of ['jab','cross','uppercut'])MOVES['b'+n]=move({lead:MOVES[n].lead,window:MOVES[n].window,keys:MOVES[n].keys.map(([t,c,e])=>[t,c===GUARD?BGUARD:c,e])});
 const KEYMOVE={J:'jab',K:'frontKick',N:'slap',' ':'jump',Q:'backflip',G:'backflip',E:'frontflip',F:'fall',R:'roll',C:'crouch',V:'wave',B:'block',X:'legSweep',U:'cartwheel'};
 
@@ -551,7 +550,6 @@ function moveAtOf(mv){ const def=mv.def,t=Math.min(mv.t,def.dur),ks=def.kl&&t>de
   const a=def.air; if(a&&t>=a.t0&&t<=a.t0+a.T){ const tau=t-a.t0,i2=Math.min(240,Math.round(tau/a.T*240));
     P.root=V(P.root.x,P.root.y+a.v0*tau-a.g*tau*tau/2,P.root.z); P.pv=a.c; if(a.spin) P.pitch+=a.spin[i2];
     if(mv.variant){ const v=mv.variant,w=Math.min(1,(t-v.t)/0.08)*(1-smooth(clamp((tau/a.T-0.8)/0.17,0,1))); if(w>0){ const Q=apply(P,AIRV[v.name]); P=mix(P,Q,w); } }
-    if(mv.spin){ const s=mv.spin,u=clamp((t-s.t)/s.T,0,1); P=mix(P,apply(P,AIRV[s.k]),Math.min(1,3*Math.sin(Math.PI*u))); P[s.k]+=s.s*2*Math.PI*smooth(u); P.pv=lerp(a.c,9,Math.min(1,u*6)); }
     for(const n of 'LR') delete P[n].ik; }
   const tp=def.topple; if(tp&&t<tp.T){ const th=tp.tab[Math.min(tp.tab.length-1,Math.round(t*240))]; P.pitch=th; P.root=V(0,STAND*Math.cos(th),STAND*Math.sin(th)); for(const n of 'LR') if(P[n].ik) legIK(P,n,n=='L'?1:-1,P[n].ik); }
   for(const k of ['yaw','roll','pitch']) P[k]=wrap(P[k]);
@@ -643,13 +641,13 @@ function act(st,key){ const W=st.water;
   const name=KEYMOVE[key]; if(!name) return; const mv=st.move;
   if(ARMMOVES.has(name)&&!(st.climb||st.hang||st.ride)){ if(mv){ const d=mv.def,a=d.air; if(a&&d.airv&&d.airv[key]&&!mv.variant&&mv.t>a.t0&&mv.t<a.t0+a.T*0.75){ mv.variant={name:d.airv[key],t:mv.t}; return; } }
     const u=st.up; if(!u||name=='block'){ beginUp(st,name); return; } const ud=u.def; if(ud.combo&&ARMMOVES.has(ud.combo[key])){ if(u.t>=ud.window[0]*RIGT.combo) beginUp(st,ud.combo[key]); else st.upNext=ud.combo[key]; } else st.upNext=name; return; }
-  if(MOVES[name]&&MOVES[name].again&&(st.climb||st.hang||st.ride||mv&&(!free(mv)||mv.def.air&&mv.t>=mv.def.air.t0&&mv.t<mv.def.air.t0+mv.def.air.T))) return;
+  if(MOVES[name]&&MOVES[name].again&&(st.climb||st.hang||st.ride)) return;
   if(!mv){ begin(st,pick(st,name)); return; }
-  const d=mv.def,a=d.air,left=a?a.t0+a.T-mv.t:0;
-  if(a&&d.airv&&d.airv[key]&&!mv.variant&&mv.t>a.t0&&mv.t<a.t0+a.T*0.75){ mv.variant={name:d.airv[key],t:mv.t}; return; }
-  if(name!='fall'&&(!free(mv)||a&&mv.t>=a.t0&&left>0)){ if(free(mv)&&AIRSPIN[name]&&!mv.spin&&!a.spin&&left>.22) mv.spin={k:AIRSPIN[name],t:mv.t,T:left-.04,s:name=='backflip'?-1:1}; else st.next=name; return; }
-  if(a&&mv.t<a.t0&&name=='jump') return;
-  begin(st,d.combo&&d.combo[key]||pick(st,name)); }
+  const d=mv.def,a=d.air,airborne=!!a&&mv.t>=a.t0&&mv.t<a.t0+a.T;
+  // the one rule for body moves: a move runs to its end, and a key does nothing meanwhile except what the move itself allows (its in-air variant, its combo follow-up) or a fall
+  if(a&&d.airv&&d.airv[key]&&!mv.variant&&airborne&&mv.t<a.t0+a.T*0.75){ mv.variant={name:d.airv[key],t:mv.t}; return; }
+  if(name=='fall'){ begin(st,'fall'); return; }
+  if(d.combo&&d.combo[key]&&free(mv)&&!airborne) begin(st,d.combo[key]); }
 function release(st,key){ if(key=='carry'){ if(st.up&&st.up.name=='carry') st.up.held=false; return; } if(st.move&&KEYMOVE[key]==st.move.name) st.move.held=false; if(st.up&&KEYMOVE[key]==st.up.name) st.up.held=false; }
 function tick(st,h){ st.run+=(st.runTarget-st.run)*Math.min(1,h*RIGT.blend); const g=gaitOf(st.run);
   if(st.up){ const u=st.up,d=u.def; if(!(d.hold&&u.held&&u.t+h>=d.hold)) u.t+=h*RIGT.moves*(st.anim||1); else u.t=d.hold; if(st.upNext&&d.window&&u.t>=d.window[0]*RIGT.combo) beginUp(st,st.upNext); else if(u.t>=d.dur){ st.up=null; if(st.upNext) beginUp(st,st.upNext); } }

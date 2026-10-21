@@ -89,8 +89,8 @@ jobs:
         if: matrix.test == 'budget'
         run: |
           set -o pipefail
-          node tests/startprof.cjs out/base.json ../base/dist/market-prof.html
-          node tests/startprof.cjs out/head.json dist/market-prof.html
+          node tests/startprof.cjs out/base.json ../base/dist/market-prof.html 2>&1 | tee out/startprof-base.log
+          node tests/startprof.cjs out/head.json dist/market-prof.html 2>&1 | tee out/startprof-head.log
           node tests/budget.cjs out/base.json out/head.json | tee out/budget.log
       - name: The lost picture comes back
         if: matrix.test == 'budget' && (success() || failure())

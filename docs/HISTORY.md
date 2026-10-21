@@ -3991,3 +3991,17 @@ initial download and load super fast"; then "Go")
   pull requests check more (samepic stays opt-in, owner's "less check heavy"); it widens what that check sees when it is asked for. Still
   uncovered by any measured view: the club, arcade, bank, dojo, fire escape, vcr and bath interiors (each needs an enter step, not a bare
   `?place=`) — a later job. Cost: two more views in the opt-in run, ~1 min each.
+
+- **The map editor, a flat mockup** (owner, 21 Oct 2026: "make the map editor just show the same mockup map as the main menu (not a
+  real version). top down view you can move things ... checkbox (streets, buildings, grass, trees, water, walkways, etc.) allow to see
+  whole map, drag to move around and zoom (dont drag items on map when you click to drag to look around) double click on things on
+  map to select them ... show details like x y z coordinates, scale, textures, etc. allow to change"; then "i want to be able to
+  export the new map and import it later, dont update in real time"; `096-mapedit.js`, rebuilt): Shift+M opens a full-screen top-down
+  map painted like the menu's (streets, sidewalks, park paths, alley, grass, water, the park wall) with every building, the empty
+  fronts, the West St shells and the park's places drawn over it, and the park's trees; each layer has its checkbox (and NAMES, GRID).
+  WHOLE MAP fits it; a drag looks around, the wheel zooms; a double click picks the smallest thing under it; a drag that starts on the
+  picked thing moves it (¼ tile; arrows, shift a tile). The panel shows its X, Y, Z, width and depth (or radius), height, scale and
+  texture; what the game lets move is editable (the block's buildings along the street, the shells and the park's places anywhere,
+  the lake's size), the rest is grey. Edits change the mockup only, never the game: EXPORT MAP downloads them as a .json file (with
+  every place's position), IMPORT MAP loads one back; the draft stays in the browser between openings. The game can take such a
+  file later (`MEDIT` in `006-map-pre.js` shifts the map's constants by its edits; nothing writes it yet). The old 3D editor is gone.

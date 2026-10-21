@@ -65,7 +65,7 @@ ROOMS.roofAt=(x,y,z)=>{ const h=new THREE.Raycaster(new THREE.Vector3(x,y,z),new
     if(LVL==='up'&&!UI.freeCam&&!ED.on&&!MAPED.on&&!(window.DRONE&&DRONE.cam)){
       const IN=-.55*TILE; hit=RL.find(b=>(within(b,pos.x,pos.z,0)||!!b.band&&within(b.band,pos.x,pos.z,0))&&py>b.y0-.3&&py<b.y1)||null;
       const A=MODS.apts; if(!hit&&A&&A.in){ const lv=A.floor(), S=BOD.K.STORY; for(const t of A.rects(lv)){ const b=box(BOD.X,BOD.Z,t,A.lvY(lv)-.5,A.lvY(lv+1)); if(within(b,pos.x,pos.z,lv>0?0:IN)){ hit=b; break; } } } }
-    ROOMS.cur=hit; { const w=hit?{key:kOf(hit),b:hit}:null; IV.want=w; const wk=w?w.key:null; if(wk!==IV.key&&!IV.busy){ if(wk&&wk===IV.re&&!lazyOf(hit))apply(w); else swap(); } IV.re=null; }
+    ROOMS.cur=hit; { const w=hit?{key:kOf(hit),b:hit}:null; IV.want=w; const wk=w?w.key:null; if(wk!==IV.key&&!IV.busy){ if(wk&&wk===IV.re&&!lazyOf(hit))apply(w); else swap().catch(()=>{ IV.busy=false; }); } IV.re=null; }
     if(BODB.card)BODB.card.visible=!(IV.b&&IV.b.lz==='bodega'); if(BOD.GDK&&BOD.GDK.card)BOD.GDK.card.visible=!(IV.b&&IV.b.lz==='bath'); if(IV.key&&scene.background)scene.background.setRGB(0,0,0);
     UI.isoPlace(); if(BOD.GD)BOD.GD.tick(); if(MODS.dungeon)MODS.dungeon.tick();
     for(const h of OVERHEAD)SEEN(h.o,cam.position.y<h.y);

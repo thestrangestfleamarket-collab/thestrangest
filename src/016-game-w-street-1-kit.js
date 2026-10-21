@@ -18,6 +18,11 @@ MK.awning=(x0,x1,y,z,ca,cb,name,sub)=>{ '@later'; PNAME='awning'; const d=.9, W=
   return prop([WF(x0,x1,y),Bw(x0,x1,y,-.1,d,z-4,z,ca,{foot:0,top,fj:(u,z2)=>sh(ca,.9),fi:(v,z2)=>sh(cb,.7)}),
     Bw(x0,x1,y,d-.08,d,z-30,z-4,cb,{foot:0,fj:val,fi:()=>sh(cb,.7),top:()=>cb}),
     Bw(x0+.05,x0+.11,y,d-.06,d,0,z-24,[60,62,66],{foot:0}),Bw(x1-.11,x1-.05,y,d-.06,d,0,z-24,[60,62,66],{foot:0})],null,{solids:[Bw(x0+.05,x0+.11,y,d-.06,d,0,z-24,[0,0,0]),Bw(x1-.11,x1-.05,y,d-.06,d,0,z-24,[0,0,0])]}); };
+MK.valance=(x0,x1,y,z,ca,cb,name,sub)=>{ '@later'; PNAME='awning'; const d=.13, W=Math.round((x1-x0)*FP), lines=[[name,[250,246,230],3,4]]; if(sub)lines.push([sub,[250,246,230],1,20]);
+  const val0=face(W,26,cb,lines,FL(y),x0,z-2,x1-x0), val=(u,zz)=>{ const c=val0(u,zz); return c&&hash(Math.floor(u*24),Math.floor(zz),88)<.08?sh(c,.9):c; };
+  const top=(u,v)=>{ const n=hash(Math.floor(u*12),Math.floor(v*12),87); return n<.12?sh(ca,.92):n>.96?sh(ca,1.06):ca; };
+  return prop([WF(x0,x1,y),Bw(x0,x1,y,-.04,d,z-2,z,ca,{foot:0,top,fj:(u,z2)=>sh(ca,.9),fi:(v,z2)=>sh(cb,.7)}),
+    Bw(x0,x1,y,d-.05,d,z-26,z-2,cb,{foot:0,fj:val,fi:()=>sh(cb,.7),top:()=>cb})]); };
 MK.gatebox=(x0,x1,y,z)=>{ PNAME='security gate'; const c=[96,100,106]; return prop([WF(x0,x1,y),Bw(x0,x1,y,0,.3,z,z+12,c,{foot:0,fj:(u,zz)=>(Math.floor(zz-z)&1)?sh(c,.85):sh(c,1.08),fi:()=>sh(c,.7),top:()=>sh(c,.9)})]); };
 MK.bell=(x,y,z)=>{ PNAME='door bell'; return prop([WF(x-.1,x+.1,y),Bw(x-.02,x+.02,y,0,.14,z+6,z+8,[60,60,64],{foot:0,nb:1}),Bw(x-.06,x+.06,y,.06,.16,z,z+6,[220,180,90],{foot:0,fj:(u,zz)=>zz<z+2?[160,120,50]:[220,180,90]})]); };
 MK.signbox=(x0,x1,y,z0,z1,bg,fg,s,lit)=>{ PNAME='shop sign'; const W=Math.round((x1-x0)*FP), H=z1-z0, f=face(W,H,(x,y2)=>Math.min(x,W-1-x,y2,H-1-y2)<1?sh(bg,.6):bg,[[s,fg,2,Math.floor((H-10)/2)]],FL(y),x0,z1,x1-x0);

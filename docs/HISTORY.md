@@ -3819,3 +3819,27 @@ initial download and load super fast"; then "Go")
   and nothing else; each upper floor one open apartment, boards, no corridor, no doors. The elevator has one button: it takes you to
   your floor (the top one, `APTS.my`) and from there back to the lobby; the floor panel is gone. The lot where the east half stood
   is empty for now.
+
+## 21 Oct 2026: the bodega a two-storey, the owner's apartment above it, and its short awning
+
+- **The bodega block, like his reference** (owner, 21 Oct 2026, of a NYC-storefront picture he sent: "lets do mockup of bodega and
+  building next to it exactly like this. the awnings should barely going out at all, very short (doesn't block view of door). two story
+  matches too"; then, of the mockup https://claude.ai/artifact/7f5nRQiqa3MUNShkTPZ7kT (`mockups/bodega-block.html`): "names BODEGA &
+  FLORIST on other one. stays the bodega inside on left. awning comes out shortest version", and "above each place is where the owner of
+  the bodega lives"). The mockup drew the pair (a BODEGA and a FLORIST next door) in the game's own CEL palette; what's built so far is
+  the bodega itself:
+  - **A second storey, the owner's apartment** (`053-bodbuild.js`): a hollow brick shell on top of the one-storey shop (z130→208, the
+    game's own `facade` brick, its cornice at the top), so the ground-floor shop and its lighting are untouched — the shell is exterior
+    only, hidden when you're inside (kind `R`, removed with the roof so you see in). Two front windows (a dark one and a warm-lit one),
+    stone sills, a window AC on one and a window box of plants on the other. The whole roof — its tar, parapet, AC, skylight, antenna and
+    drainpipe — moved up to the new top.
+  - **A short awning** (`MK.valance` in `016-game-w-street-1-kit.js`; the old deep `MK.awning` with ground posts stays unused): a flat
+    valance that projects ~0.13 tile and hangs over the storefront head, reading `BODEGA` over `COLD BEER · DELI · LOTTO`. Shortest on
+    purpose: a side section in the mockup shows that at the 2:1 isometric angle its shadow stops above the door head, so the door reads
+    clear — the deep awning pulled on 17 Oct crossed that sightline. The house number moved up onto the upper floor.
+  - **Still to do — the florist.** The bodega sits at the west end of its block (the cross-street to its west, the subway stairs and the
+    apartment house to its east), so there is no 8-tile lot next to it for a florist. Where the FLORIST goes is still the owner's call
+    (an open spot on the main row, or a swap); not built yet.
+  - Cost: the second storey and awning are flat painted brick/quads, no new shader and no new light; the warm apartment window is
+    emissive paint. Verified the page builds and runs without error; the cloud sandbox can't read back the software-GL frame, so the
+    look wants the owner's eye (and the `measure` checks) on the pull request.

@@ -1,6 +1,6 @@
 // BUILDING THE BODEGA: faces batched into meshes, the ground painted a patch at a time round you (BODB.gnear), lamps and goods.
 BODB={};
-{ const {X,Y,Z,B0,BODOFF}=BOD, {bodegaWall,grain,speck,COPE,hash}=BOD.g, H=B0.h, KINDS={};
+{ const {X,Y,Z,B0,BODOFF}=BOD, {bodegaWall,grain,speck,COPE,hash}=BOD.g, GH=B0.h, H=B0.h+78, KINDS={};
   const inside=()=>BOD.inside(pos.x,pos.z)||!!(window.ROOMS&&ROOMS.cur&&ROOMS.cur.lz==='bodega'); BODB.inside=inside;
   const paint=(w,s,u,z)=>{ const nx=w.ax==='y'?s:0, ny=w.ax==='x'?s:0, Xw=w.ax==='y'?w.at+s*.1:u, Yw=w.ax==='x'?w.at+s*.1:u;
     return (!w.outer||s===w.inS)?bodegaWall(null,nx,ny,Xw,Yw,z,1):BOD.facade(nx,ny,Xw,Yw,z,1,w.H); };
@@ -65,6 +65,20 @@ BODB={};
       gb({x0:sx0+.05,x1:sx1-.05,y0:sy0+.05,y1:sy1-.05,z0:H+CH,z1:H+CH+1.4,c:[70,88,96],fs:(nx,ny,P,Q,z,k)=>sh([96,98,98],k),top:(P,Q)=>{ const u=P-sx0, v=Q-sy0, hp=hash(Math.floor(P*24),Math.floor(Q*24),287), e=Math.min(u-.05,sx1-.05-P,v-.05,sy1-.05-Q);
         if(e<.05||Math.abs(u-(sx1-sx0)/2)<.025||Math.abs(v-(sy1-sy0)/2)<.025)return [92,94,94]; if(Math.abs(((u+v)*24/5)%1-.5)<.1||Math.abs(((u-v)*24/5+100)%1-.5)<.1)return [104,118,124];
         if(e<.14&&hp<.6)return [60,62,56]; if(Math.abs(v-.3-u*.5)<.015&&u>.6)return [150,170,176]; if(cvNoise(u*5,v*5,289)>.76)return hp<.5?[96,82,48]:[70,86,46]; return hp<.5?[62,80,90]:[56,72,82]; }}); } }
+  { const gb=b=>BOD.gbox(b,'R'), t2=.34, FR=[70,72,78], fac=(nx,ny,P,Q,z,k)=>BOD.facade(nx,ny,P,Q,z,k,H);  // second storey: the owner's apartment
+    const wz0=GH+16, wz1=GH+52, mid=(B0.x0+B0.x1)/2, winU=[[B0.x0+1.5,B0.x0+3.1],[B0.x1-3.1,B0.x1-1.5]];
+    const frontFs=(nx,ny,P,Q,z,k)=>{ const u=nx?Q:P; for(const [a0,a1] of winU){ if(u>a0&&u<a1&&z>wz0&&z<wz1){
+        const ew=Math.min(u-a0,a1-u)*24, ez=Math.min(z-wz0,wz1-z); if(ew<2.2||ez<2.2)return sh(FR,k);
+        if(Math.abs(u-(a0+a1)/2)*24<.9||Math.abs(z-(wz0+wz1)/2)<.9)return sh(FR,k*1.05);
+        return sh(a0>mid?[66,56,42]:[24,30,36],k*1.02); } } return fac(nx,ny,P,Q,z,k); };
+    gb({x0:B0.x0,x1:B0.x1,y0:B0.y1-t2,y1:B0.y1,z0:GH,z1:H,c:[120,60,48],fs:frontFs,top:()=>sh(COPE,.9)});
+    gb({x0:B0.x0,x1:B0.x1,y0:B0.y0,y1:B0.y0+t2,z0:GH,z1:H,c:[120,60,48],fs:fac,top:()=>sh(COPE,.9)});
+    gb({x0:B0.x0,x1:B0.x0+t2,y0:B0.y0,y1:B0.y1,z0:GH,z1:H,c:[120,60,48],fs:fac,top:()=>sh(COPE,.9)});
+    gb({x0:B0.x1-t2,x1:B0.x1,y0:B0.y0,y1:B0.y1,z0:GH,z1:H,c:[120,60,48],fs:fac,top:()=>sh(COPE,.9)});
+    for(const [a0,a1] of winU)gb({x0:a0-.1,x1:a1+.1,y0:B0.y1-.02,y1:B0.y1+.13,z0:wz0-3,z1:wz0,c:COPE,fs:(nx,ny,P,Q,z,k)=>sh(COPE,k*.9),top:()=>COPE});  // sills
+    { const [a0,a1]=winU[0], cx=(a0+a1)/2; gb({x0:cx-.28,x1:cx+.28,y0:B0.y1,y1:B0.y1+.26,z0:wz0+2,z1:wz0+13,c:[150,154,158],fs:(nx,ny,P,Q,z,k)=>sh(Math.floor(z)%2?[120,124,128]:[158,162,166],k),top:()=>[150,154,158]}); }  // window AC
+    { const [a0,a1]=winU[1]; gb({x0:a0,x1:a1,y0:B0.y1,y1:B0.y1+.2,z0:wz0-5,z1:wz0-1,c:[110,66,40],top:()=>[110,66,40]});  // window box
+      gb({x0:a0,x1:a1,y0:B0.y1+.02,y1:B0.y1+.18,z0:wz0-1,z1:wz0+6,c:[74,120,66],fs:(nx,ny,P,Q,z,k)=>sh(hash(Math.floor(P*24),Math.floor(z),9)<.4?[60,100,52]:[90,140,72],k),top:(P,Q)=>sh(hash(Math.floor(P*24),Math.floor(Q*24),11)<.4?[70,118,60]:[96,150,78],1)}); } }
   await PAINTC.ready;
   const GQ=BODB.GQ=[]; for(const g of BOD.grounds)if(g.id!=='shop'){ const S=!g.bld, gx=S?BOD.XS:BOD.X, gz=S?BOD.ZS:BOD.Z;
     for(let a=g.x0;a<g.x1;a+=20)for(let b=g.y0;b<g.y1;b+=20){ const x1=Math.min(g.x1,a+20), y1=Math.min(g.y1,b+20), xa=gx(a), xb=gx(x1), za=gz(b), zb=gz(y1);

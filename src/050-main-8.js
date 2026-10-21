@@ -93,16 +93,17 @@ await grab('bodega',async()=>{ const solids=SOL.up, fixed=FIX.up, SHL=[]; let BO
   }
   const FRONT=[], ROOF=[], STREET=[], GHOSTST=[];
   { const M=MKS, bo=B0, bm=(bo.x0+bo.x1)/2, n0=PROPL.length;
-    M.pipe(bo.x0+.2,bo.y1,bo.h-6);
+    M.pipe(bo.x0+.2,bo.y1,bo.h+72);
     M.neon(bo.x0+1.5,bo.y1,64,'OPEN',[255,90,110]); M.signbox(bo.x0+.45,bo.x0+2.3,bo.y1,36,48,[250,250,246],[40,80,200],'LOTTO',false);
-    M.gatebox(bo.x0+.2,bo.x1-.2,bo.y1,114); M.bell(bm,bo.y1,98); M.meterbox(bo.x0+.9,bo.y1,30); M.number(bo.x0+1.6,bo.y1,82,'66');
+    M.valance(bo.x0+.25,bo.x1-.25,bo.y1,104,[198,168,78],[150,122,54],'BODEGA','COLD BEER  DELI  LOTTO');
+    M.gatebox(bo.x0+.2,bo.x1-.2,bo.y1,114); M.bell(bm,bo.y1,98); M.meterbox(bo.x0+.9,bo.y1,30); M.number(bo.x0+3.4,bo.y1,132,'66');
     for(const p of PROPL.slice(n0))FRONT.push(p);
     { const K=GHOSTK.GSK, s=K.s; { const o=LAY.o('ghost'); K.o=[131+o.x/BLDK,W-8.3*s+o.y/BLDK]; } const n3=PROPL.length;
       for(const [k,dx,dy] of PRESETS['Preset Ghost Street 1'])if(!/row house|utility pole/.test(k))CATALOG[k](K.o[0]-3.5*s+dx,K.o[1]-.45*s+dy);
       for(const p of PROPL.slice(n3))GHOSTST.push(p); BOD.GHOSTST=GHOSTST; BOD.GSK=K; gdShape(GHOSTST,K,LAMPS);
     }
     const n2=PROPL.length, R=(f,x,y,z,...a)=>{ const p=f(x,y,z,bo.y1,...a); p.solids=[]; return p; };
-    R(M.antenna,bo.x0+8,bo.y0+3.5,bo.h); for(const p of PROPL.slice(n2))ROOF.push(p); }
+    R(M.antenna,bo.x0+8,bo.y0+3.5,bo.h+78); for(const p of PROPL.slice(n2))ROOF.push(p); }
   BOD.O=O; BOD.FRONT=FRONT; BOD.STREET=STREET; BOD.ROOF=ROOF; BOD.MAP=MAP; BOD.RD=RD;
   const wallOf=p=>{ const cx=(p.x0+p.x1)/2, cy=(p.y0+p.y1)/2; let best=null, bd=.5; for(const w of WALLS){ const a=w.ax==='x'?cx:cy, d=Math.abs((w.ax==='x'?cy:cx)-w.at); if(a>=w.a0-.2&&a<=w.a1+.2&&d<bd){ bd=d; best=w; } } return best; };
   BOD.kindOf=p=>{ if(/fluorescent tube/.test(p.name||''))return 'U'; if(ROOF.includes(p))return 'R';

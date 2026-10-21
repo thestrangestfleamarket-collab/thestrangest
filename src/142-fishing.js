@@ -83,5 +83,5 @@ const FISHING={}, BOAT={on:false}; window.FISHING=FISHING; window.BOAT=BOAT;
       if(FORAGE.use('fish',d-25,d+25)){ if(f[0]==='chest'){ const g=INV.random(), c=10+Math.floor(Math.random()*31); INV.add(g); INV.cash+=c; say(`A SUNKEN CHEST! INSIDE: $${c} AND A ${GEMS.find(x=>x[0]===g)[1]}.`,'#f2c14e');  if(window.BOOKS&&Math.random()<.4)BOOKS.chest(); }
         else { FORAGE.give(f[0]); say(`YOU PULL OUT ${/^[AEIOU]/.test(f[1])?'AN':'A'} ${f[1]}!`,f[0].match(/boot|can/)?'#c8c2b0':'#b8f0a0'); } if(typeof SFX!=='undefined')SFX.play('drip',{vol:.6}); }
       else say('THE FISH GOT AWAY.','#c8a090'); FORAGE.draw(); } };
-  { const t0=CLOCK.tick; CLOCK.tick=dt=>{ t0(dt); FISHING.tick(dt); }; }
+  { SYS.add('world',(dt)=>{ FISHING.tick(dt); },'142-fishing'); }
   window.FISHDBG=()=>({rod:FORAGE.has('rod'),fishing:!!F,boat:BOAT.on?{x:+BOAT.x.toFixed(2),z:+BOAT.z.toFixed(2),v:+BOAT.v.toFixed(2)}:null,stand:{x:SX,z:SZ},pier:PX,skill:FORAGE.sk('fish')}); }

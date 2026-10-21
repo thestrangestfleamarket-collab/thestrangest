@@ -71,7 +71,7 @@ const WX={hold:null,now:null};
   const sg=new THREE.BufferGeometry(); sg.setAttribute('position',new THREE.BufferAttribute(sp,3).setUsage(THREE.DynamicDrawUsage));
   const SNOW=new THREE.Points(sg,new THREE.PointsMaterial({color:0xffffff,size:2,sizeAttenuation:false})); SNOW.frustumCulled=false; scene.add(SNOW);
   const FOG=new THREE.Fog(0x9aa3ad,2,200), cA=new THREE.Color(), cB=new THREE.Color(); let flashT=0, ft=0;
-  const tick0=CLOCK.tick; CLOCK.tick=dt=>{ tick0(dt);
+  SYS.add('world',(dt)=>{
     if((ft-=dt)<=0){ ft=.5; WX.now=WX.hold?Object.assign({flash:(WX.hold==='STORM'||WX.flashK>0)&&Math.random()<(WX.flashK||.04)},HOLDS[WX.hold]):WX.fix&&!WX.nat?{...WX.fix,flash:false}:WX.at(T()); }
     const W=WX.now, up=LVL!=='down', inside=!OUT.open, day=cl((CLOCK.elev()+4)/14), t=performance.now()/1000;
     if(!ends.length)build(); WX.cloudCut(); const show=Math.min(NC,Math.round(90+W.cloud*150)); WX.show=show; cg.instanceCount=ends[show-1];
@@ -88,5 +88,5 @@ const WX={hold:null,now:null};
       rg.setDrawRange(0,nr*2); rg.attributes.position.needsUpdate=true; RAIN.material.opacity=.4+.25*day; }
     const ns=inside?0:Math.round(NS*W.snow); SNOW.visible=ns>0; if(ns){ for(let i=0;i<ns;i++){ let y=ss[i*4+1]-1.1*TILE*dt; if(y<0)y+=RH; ss[i*4+1]=y; const a=ss[i*4+3]+t*.8;
         const x=((ss[i*4]+wx*t/3+Math.sin(a)*.4*TILE)%(2*RB)+3*RB)%(2*RB)-RB+pos.x, z=((ss[i*4+2]+wz*t/3+Math.cos(a*.7)*.4*TILE)%(2*RB)+3*RB)%(2*RB)-RB+pos.z; sp.set([x,py+y,z],i*3); }
-      sg.setDrawRange(0,ns); sg.attributes.position.needsUpdate=true; } };
+      sg.setDrawRange(0,ns); sg.attributes.position.needsUpdate=true; } },'131-weather');
   window.WX=WX; window.WXDBG=()=>WX.now; }

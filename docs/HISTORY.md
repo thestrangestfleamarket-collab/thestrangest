@@ -4049,3 +4049,12 @@ initial download and load super fast"; then "Go")
   reason (room, roof, far, perf, interior) and a thing shows only when no reason is left, so the rooms, the interiors and the
   performance switches no longer overwrite each other's `.visible` or layer masks; `VIS.showAll` shows everything (for the editor).
   Not changed: each zone's own build code (the park's, the dungeon's, the shops'), and Market St still built at the start (step 7).
+
+- **The core, piece 4: systems in phases** (owner, 21 Oct 2026, the same words; `006-map-pre.js` `SYS`, `075-main-13.js`): the 33
+  patches that wrapped another system's tick (`const t0=CLOCK.tick; CLOCK.tick=dt=>{ t0(dt); … }`, twenty of them on the clock, three on
+  the city, four on the street dressing, two on your vitals, one each on the rooms, the ring and the shadow pass) are named entries
+  in phases now: `SYS.add(phase, fn, name)`; the frame runs `clockPre`, `world`, `vitalsPre`, `vitals`, `city`, `dress`, `ring`,
+  `rooms`, and the shadow pass runs `shadowPre` and `shadow`, each in file order (the order the wrappers ran in). A failing entry
+  warns once with its name instead of breaking every system wrapped after it. `SYS.list()` shows them all. Still wrappers: the few
+  that change what a lookup returns (the park's ground height, the weather in the arcade, picking things, the stack ground, the
+  sword's strike, the mail's restock); each is the only one on its function.

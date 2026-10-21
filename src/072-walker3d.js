@@ -184,6 +184,6 @@ OUTL.render=(renderer,scene,cam)=>{ '@later'; const w=renderer.domElement.width,
   const m0=W3.mesh.material; W3.mesh.material=W3.idMat; renderer.render(W3.group,cam); W3.mesh.material=m0;
   renderer.autoClear=ac; renderer.setRenderTarget(null); };
 
-W3.shadowPass=renderer=>{ if(W3.lv.value<1.5)return; if(W3.selfOff){ if(!W3.smClr){ W3.smClr=true; renderer.setRenderTarget(W3.sm); renderer.clear(); renderer.setRenderTarget(null); } return; } const m0=W3.mesh.material; W3.mesh.material=W3.depthMat;
+W3.shadowPass=renderer=>{ SYS.run('shadowPre',renderer); W3.shadowBase(renderer); SYS.run('shadow',renderer); }; W3.shadowBase=renderer=>{ if(W3.lv.value<1.5)return; if(W3.selfOff){ if(!W3.smClr){ W3.smClr=true; renderer.setRenderTarget(W3.sm); renderer.clear(); renderer.setRenderTarget(null); } return; } const m0=W3.mesh.material; W3.mesh.material=W3.depthMat;
   renderer.setRenderTarget(W3.sm); renderer.clear(); renderer.render(W3.group,W3.smCam); renderer.setRenderTarget(null); W3.mesh.material=m0; };
 window.W3=W3;

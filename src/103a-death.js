@@ -14,7 +14,7 @@
     STORE.goTo(BOD.X(dx),BOD.Z(oy),'up'); heading=BOD.Z(oy+1)>BOD.Z(oy)?0:Math.PI; if(typeof PH!=='undefined')PH.hd=heading; keys.clear(); target=null;
     VIT.dead=false; VIT.hp=1; VIT.sta=1; VIT.out=0; gh=0; rise=-1; look(false); try{ SAVE.del('dead'); }catch(e){} LOOKS.robe(true);
     },{hold:200}); note('You feel refreshed.',5); busy=false; };
-  const t0=VIT.tick; VIT.tick=dt=>{ t0(dt); if(!VIT.dead||busy)return; VIT.hp=0;
+  SYS.add('vitals',(dt)=>{ if(!VIT.dead||busy)return; VIT.hp=0;
     if(gh>=1&&!RAG.on&&st.move&&st.move.name==='fall'&&st.move.held)RIG.release(st,'F');
     if(VIT.out>0||!sheet())return;
     if(!gh){ look(true); S.ball={x:pos.x/MH,y:py/S.MV+1.5,z:pos.z/MH}; S.drop(); }
@@ -24,7 +24,7 @@
     if(Math.hypot(to.x-b.x,to.z-b.z)>1||Math.abs(to.y-b.y)>1)GHOSTS.move(S,to);
     if(gh>=1&&rise<0&&!GHOSTS.on(S)){ S.ball={...to}; S.drop(); GHOSTS.settle(S,240); }
     GHOSTS.run(S,dt,to,[],MH,S.MV); const a=gh<=1?gh:2-gh; S.mat.opacity=.5*a; S.em.opacity=.85*a;
-    const fx=Math.sin(heading), fz=Math.cos(heading); S.eyes.forEach((e,k)=>{ const sd=k?1:-1, ex=to.x+fx*(S.BR+.05)+fz*sd*.09, ey=to.y+.03, ez=to.z+fz*(S.BR+.05)-fx*sd*.09; e.position.set(ex*MH,ey*S.MV,ez*MH); e.lookAt(V.set((ex+fx)*MH,ey*S.MV,(ez+fz)*MH)); }); };
+    const fx=Math.sin(heading), fz=Math.cos(heading); S.eyes.forEach((e,k)=>{ const sd=k?1:-1, ex=to.x+fx*(S.BR+.05)+fz*sd*.09, ey=to.y+.03, ez=to.z+fz*(S.BR+.05)-fx*sd*.09; e.position.set(ex*MH,ey*S.MV,ez*MH); e.lookAt(V.set((ex+fx)*MH,ey*S.MV,(ez+fz)*MH)); }); },'103a-death');
   window.KILLME=()=>VIT.die(); window.DEADDBG=()=>({gh,rise,busy,out:VIT.out,lvl:LVL,py,sheet:!!S,pool:!!(BOD.GD&&BOD.GD.inPool&&BOD.GD.inPool(pos.x,pos.z)),on:S?GHOSTS.on(S):null,span:S?(()=>{ let lo=9,hi=-9; for(const k of S.live){ lo=Math.min(lo,S.P[k+1]); hi=Math.max(hi,S.P[k+1]); } return +(hi-lo).toFixed(2); })():null});
   if(SAVE.get('dead')==='1'){ VIT.dead=true; VIT.hp=0; note(DEAD); }
   if(QS.get('die')){ const go=()=>window.__started?VIT.die():setTimeout(go,200); setTimeout(go,300); } }

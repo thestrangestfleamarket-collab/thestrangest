@@ -52,11 +52,11 @@ if(CITY.on){ const T=TILE, S_=CIVIC.staff, H_=CIVIC.house, log=CIVIC.note, G=(x,
   const h=CLOCK.h; CITY.at(CIVIC.ledger.curfew[0],()=>log('curfew: the street is the police\'s till '+CIVIC.ledger.curfew[1]+':00','precinct'),'curfew');
   let flashed=false; const wxTick=()=>{ '@later'; const W=window.WX&&WX.now; if(!W)return; if(W.flash&&!flashed){ flashed=true; const r=Math.random(); if(r<.25)CIVIC.outage(BOD.X((BOD.B0.x0+BOD.B0.x1)/2)+(Math.random()-.5)*40*T); else if(r<.4){ const s=SPOTS(); CIVIC.fire(s[Math.floor(Math.random()*s.length)],'lightning'); } } if(!W.flash)flashed=false; };
   for(let hh=0;hh<24;hh++)CITY.at(hh+.25,()=>{ if(Math.random()<.06){ const s=SPOTS(); CIVIC.fire(s[Math.floor(Math.random()*s.length)],'an accident'); } },'fire chance');
-  let acc=0; const d0=CITY.tick; CITY.tick=(dt,you)=>{ '@later'; d0(dt,you); fireTick(dt); wxTick();
+  let acc=0; SYS.add('city',(dt,you)=>{ '@later'; fireTick(dt); wxTick();
     jetTick(dt); BEAM.visible=false; for(const S of Object.values(S_)){ S.pose=S.state==='hosing'?'hosing':S.busy>0?({medic:'beam',officer1:'beam',works:'kneel'}[S.id]||null):S.state==='on the round'&&S.N.st.wait>0?'hand':null; if(S.id==='medic'&&S.busy>0&&LVL==='up')beamTo(S.N,new THREE.Vector3(pos.x,G(pos.x,pos.z)+.4*T,pos.z),S.busy); }
     for(const S of Object.values(S_)){ if(S.state==='hosing'&&S.hose){ if(hose(S,S.hose,dt)){ S.hose=null; S.state='on a call'; const f=S.after; S.after=null; f&&f(); } }
       else if(S.state==='standing by'&&S.wait&&(S.wait.out||!S.wait.s.on)){ S.wait=null; const f=S.after; S.after=null; f&&f(); }
       else if(S.busy>0){ S.busy-=dt; if(S.busy<=0){ const f=S.after; S.after=null; f&&f(); } } }
-    if((acc+=dt)>1){ acc=0; worksJob(); fireJob(); medTick(); policeTick(); } };
+    if((acc+=dt)>1){ acc=0; worksJob(); fireJob(); medTick(); policeTick(); } },'156-duties');
   window.CIVDBG=()=>({staff:Object.values(S_).map(S=>[S.id,S.state,S.job&&S.job.kind,+(S.N.st.x/T).toFixed(1),+(S.N.st.z/T).toFixed(1),S.N.g.visible]),fires:CIVIC.fires.map(f=>[+(f.x/T).toFixed(1),+(f.z/T).toFixed(1),+f.k.toFixed(2),f.out]),cans:CIVIC.cans.map(c=>[c.id,c.fill,c.heap&&c.heap.visible]),jobs:CITY.jobs.map(j=>j.kind+':'+j.state),bag:CIVIC.mail.bag.length,boxes:Object.fromEntries(Object.entries(CIVIC.mail.boxes).map(([k,v])=>[k,v.length])),treasury:CIVIC.ledger.treasury,log:CIVIC.log.slice(0,6).map(e=>e.what)});
 }

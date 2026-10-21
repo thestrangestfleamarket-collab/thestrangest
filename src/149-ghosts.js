@@ -53,5 +53,5 @@ GHOSTS.init=()=>{ if(typeof BOD==='undefined'||!BOD.GD)return; const X=BOD.X, Z=
       const b1={...b}; Object.assign(b,b0); GHOSTS.run(Q,dt,b1,others,MH,MV);
       const fx=Math.sin(Q.yaw), fz=Math.cos(Q.yaw);
       Q.eyes.forEach((e,k)=>{ const sd=k===2?0:k?1:-1, ey=b.y+(k===2?-.035:.02), ex=b.x+fx*(BR+.045)+fz*sd*.05, ez=b.z+fz*(BR+.045)-fx*sd*.05; e.position.set(ex*MH,ey*MV,ez*MH); e.lookAt(V.set((ex+fx)*MH,ey*MV,(ez+fz)*MH)); }); } };
-  const t0=CLOCK.tick; CLOCK.tick=dt=>{ t0(dt); GHOSTS.tick(dt); };
+  SYS.add('world',(dt)=>{ GHOSTS.tick(dt); },'149-ghosts');
   window.GHOSTDBG=()=>GHOSTS.list.map(Q=>{ let hem=9, top=-9; for(const k of Q.live){ hem=Math.min(hem,Q.P[k+1]); top=Math.max(top,Q.P[k+1]); } return {name:Q.name,x:+Q.ball.x.toFixed(2),z:+Q.ball.z.toFixed(2),in:Q.in,hem:+hem.toFixed(2),top:+top.toFixed(2),vis:Q.me.visible,world:[+(Q.ball.x*MH).toFixed(2),+(Q.ball.z*MH).toFixed(2)]}; }); };

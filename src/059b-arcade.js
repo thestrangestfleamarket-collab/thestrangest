@@ -197,9 +197,9 @@ await grab('arcade',async()=>{ const K=STORE.kit, {room,flat}=K, {X,Y,Z}=BOD, {h
     const LOT={x0:X(B.x0-14),x1:X(B.x1+14),z0:Z(B.y0-6),z1:Z(B.y1+15)}, on=()=>LVL==='up'&&pos.x>LOT.x0&&pos.x<LOT.x1&&pos.z>LOT.z0&&pos.z<LOT.z1;
     if(window.WX){ const at0=WX.at; WX.at=t=>{ const w=at0(t); return on()?Object.assign({},w,{cloud:1,rain:.8,storm:0,snow:0,fog:0,wind:Math.max(.2,w.wind||0)}):w; }; }
     const FG=new THREE.Fog(0x2a2e3a,2,200), V3=new THREE.Vector3(); let was=false;
-    const tick0=CLOCK.tick; CLOCK.tick=dt=>{ tick0(dt); const here=on(); ceil.visible=here&&UI.persp&&R.inside(pos.x,pos.z);
+    SYS.add('world',(dt)=>{ const here=on(); ceil.visible=here&&UI.persp&&R.inside(pos.x,pos.z);
       if(!here){ if(was){ was=false; if(scene.fog===FG)scene.fog=null; } return; } was=true;
       if(window.FAR3&&FAR3.mesh){ FAR3.mesh.visible=false; if(FAR3.panels)FAR3.panels.visible=false; }
       if(ROOMS.cur){ if(scene.fog===FG)scene.fog=null; return; }
-      const d=-V3.copy(pos).applyMatrix4(cam.matrixWorldInverse).z; if(typeof MISTE!=='undefined')MISTE.x=0; FG.near=d+8*TILE; FG.far=d+44*TILE; scene.fog=FG; scene.background.copy(FG.color); }; });
+      const d=-V3.copy(pos).applyMatrix4(cam.matrixWorldInverse).z; if(typeof MISTE!=='undefined')MISTE.x=0; FG.near=d+8*TILE; FG.far=d+44*TILE; scene.fog=FG; scene.background.copy(FG.color); },'059b-arcade'); });
 });

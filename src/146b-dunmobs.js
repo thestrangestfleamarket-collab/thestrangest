@@ -61,7 +61,7 @@ import {GEMS} from './101-gems.js';
   const hitRes=(r,dmg,from)=>{ if(r.dead)return; r.hp-=dmg; r.agg=true; const N=r.N, st=N.st, dx=st.x-from.x, dz=st.z-from.z, l=Math.hypot(dx,dz)||1; st.sx=dx/l*2.2*T; st.sz=dz/l*2.2*T;
     sfx('clunk',{vol:.5,pitch:1.5,vary:.2}); if(r.hp<=0)return killRes(r); if(r.kk){ r.act=0; N.an.play('Hit_A'); } else{ r.lunge=null; r.jolt=.25; } };
   const STR=/jab|cross|upper|hook|slap|punch|kick|sweep|round/i; let last=null, swT=0, swAt=0;
-  const w0=WIELD.strike; WIELD.strike=()=>{ w0(); const now=performance.now(); if(WIELD.on==='sword'&&now-swT>220){ swT=now; swAt=now+90; } };
+  SYS.add('strike',()=>{ const now=performance.now(); if(WIELD.on==='sword'&&now-swT>220){ swT=now; swAt=now+90; } },'146b-dunmobs');
   const strikes=()=>{ const out=[], s=(st.up&&STR.test(st.up.name)&&st.up)||(st.move&&STR.test(st.move.name)&&st.move);
     if(s&&s!==last&&s.t>=.08){ last=s; const k=/kick|sweep|round/i.test(s.name); out.push({r:(k?1.15:1)*T,d:k?1.5:1}); }
     if(swAt&&performance.now()>=swAt){ swAt=0; if(WIELD.on==='sword')out.push({r:1.55*T,d:2}); } return out; };
@@ -130,4 +130,4 @@ import {GEMS} from './101-gems.js';
   window.DUNMOBDBG=()=>({level:lvl,slimes:slimes.map(S=>({k:S.k,hp:S.hp,dead:S.dead,gone:!!S.gone,x:+(S.x/T).toFixed(1),z:+(S.z/T).toFixed(1)})),
     res:(RES||[]).filter(r=>r.on).map(r=>({k:r.key,hp:r.hp,dead:r.dead,agg:r.agg,x:+(r.N.st.x/T).toFixed(1),z:+(r.N.st.z/T).toFixed(1),in:r.N.g.parent===MAPG.dungeon})),things:things.map(t=>t.name),bolts:bolts.length,tris:slimes.length*(g0.index.count/3+12)}); return {onLevel,tick}; };
   D.hook(n=>{ if(!M){ if(!n)return; M=init(); } M.onLevel(n); });
-  SYS.add('world',(dt)=>{ if(M)M.tick(dt); },'146b-dunmobs'); }
+  SYS.add('life',(dt)=>{ if(M)M.tick(dt); },'146b-dunmobs'); }

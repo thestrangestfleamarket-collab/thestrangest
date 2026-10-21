@@ -83,5 +83,5 @@ DRONE.init=()=>{ const H=MODS.apts; if(!H||!H.A||!H.made)return; const A=H.A, T=
     P.querySelector('#pccam').onclick=()=>{ P.hidden=true; DRONE.setCam(true); }; P.querySelector('#pcx').onclick=()=>{ P.hidden=true; }; };
   DRONE.open=()=>{ draw(); P.hidden=false; };
   UI.thing({name:'COMPUTER',obj:hit,reach:1.1*T,near:2.4*T,tall:1.3*T,act:DRONE.open});
-  SYS.add('world',(dt)=>{ DRONE.tick(dt); SHARED.BODB.tick&&SHARED.BODB.tick(dt); if(DRONE.cam){ const s=hud.querySelector('#dhst'); s.textContent=(DRONE.state==='home'?'PARKED AT THE BODEGA':legs[0]&&legs[0][0]==='wait'?'AT YOUR ROOF':'IN FLIGHT')+' · ALT '+Math.max(0,Math.round(D.position.y/1.13*.84))+' M'; } },'146-drone');
+  SYS.add('life',(dt)=>{ DRONE.tick(dt); SHARED.BODB.tick&&SHARED.BODB.tick(dt); if(DRONE.cam){ const s=hud.querySelector('#dhst'); s.textContent=(DRONE.state==='home'?'PARKED AT THE BODEGA':legs[0]&&legs[0][0]==='wait'?'AT YOUR ROOF':'IN FLIGHT')+' · ALT '+Math.max(0,Math.round(D.position.y/1.13*.84))+' M'; } },'146-drone');
   window.DRONEDBG=()=>({state:DRONE.state,pos:D.position.toArray().map(v=>+v.toFixed(2)),legs:legs.length,parcels:parcels.length,cash:purse.get()}); };

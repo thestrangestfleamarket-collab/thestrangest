@@ -19,7 +19,7 @@ Object.assign(DN,{lk:1,mode:'day'});
   const fix=()=>{ const P=DN.P(); WX.fix={cloud:P.cld,rain:0,snow:0,storm:0,wind:DN.mode==='night'?.08:.15,dir:1,fog:0}; WX.cy=P.cy*TILE; window.PARK&&PARK.lampLit&&PARK.lampLit(); };
   DN.set=m=>{ DN.mode=m; if(!DN.test)try{ SAVE.set('dn',m); }catch(e){} fix(); DN.draw(); };
   SYS.add('clockPre',()=>{ if(!CLOCK.run)CLOCK.h=((DN.P().h%24)+24)%24; },'134b-daynight');
-  SYS.add('world',()=>{ const P=DN.P(), night=DN.mode==='night', up=SHARED.LVL!=='down';
+  SYS.add('sky',()=>{ const P=DN.P(), night=DN.mode==='night', up=SHARED.LVL!=='down';
     CLOCK.sun.intensity*=P.sun; if(up)HEMI.intensity*=P.amb; DN.lk=night?P.lamp:1;
     if(WX.clouds){ const M=WX.clouds.material; M.color.multiplyScalar(P.cb); M.emissive.multiplyScalar(P.cb); }
     if(SKY.dome.visible){ U.uZ.value.set(P.zen); U.uH.value.set(P.hor); U.uM.value.copy(U.uH.value).lerp(U.uZ.value,.45); U.uCov.value=P.cov; U.uCL.value=P.cl;

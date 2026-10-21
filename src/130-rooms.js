@@ -22,7 +22,7 @@ ROOMS.roofAt=(x,y,z)=>{ const h=new THREE.Raycaster(new THREE.Vector3(x,y,z),new
     for(const R of STORE.rooms)if(R.walls){ if(R.dw&&R.B&&!R.band)R.band=sband(R); RL.push(R); }
     if(window.CIVIC&&CIVIC.tower){ const t=CIVIC.tower; RL.push({id:'civic',x0:t.x0,x1:t.x1,z0:t.z0,z1:t.z1,y0:t.y-1,y1:t.y+t.H}); } };
   ROOMS.boxes=()=>{ if(!RL)build(); return RL; };
-  ROOMS.reset=()=>{ RL=null; if(IV.key){ IV.re=IV.key; leave(); } IV.C.clear(); };
+  ROOMS.reset=()=>{ RL=null; if(IV.key){ IV.re=IV.key; leave(); } IV.C.clear(); SYS.run('roomsReset'); };
   const within=(b,x,z,e=0)=>x>b.x0-e&&x<b.x1+e&&z>b.z0-e&&z<b.z1+e;
   ROOMS.nearAll=()=>{ NEARON=true; const skip=new Set([W3.group,...NPCS.map(N=>N.g),...NPCS.extra.map(X=>X.g).filter(Boolean)]); for(const o of [typeof MUS!=='undefined'&&MUS.g,typeof PNM!=='undefined'&&PNM.g,typeof SGM!=='undefined'&&SGM.g,typeof DRM!=='undefined'&&DRM.g])if(o)skip.add(o);
         const own=new Set(); for(const g of skip)g.traverse(c=>{ if(c.material)for(const mt of [].concat(c.material))own.add(mt); });

@@ -3,7 +3,7 @@ import {SHARED, THREE} from './003-shx.js';
 import {FORAGE, pos, RAG, SFX, st, VIT, W3, WEEDS, WIELD} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {SAVE} from './005-save.js';
-import {BF, QS, TILE} from './006-map-pre.js';
+import {BF, QS, SYS, TILE} from './006-map-pre.js';
 import {BFLY} from './143-bfly.js';
 import {BIRDS} from './144b-birds.js';
 Object.assign(WIELD,{on:null}); window.WIELD=WIELD;
@@ -26,7 +26,8 @@ Object.assign(WIELD,{on:null}); window.WIELD=WIELD;
   WIELD.set=id=>{ '@later'; if(MESH[WIELD.on])MESH[WIELD.on].visible=false; WIELD.on=null; if(!id||!FORAGE.has(id)){ if(id)say('YOU HAVE NO '+NM[id]+'.','#c8a090'); return; }
     const m=MESH[id]||(MESH[id]=MK[id]()); if(!m.parent){ m.matrixAutoUpdate=false; scene.add(m); } WIELD.on=id; SHARED.target=null; say('YOU HOLD THE '+NM[id]+'. THE MOUSE AIMS IT, A CLICK SWINGS.','#e8e2cc'); FORAGE.draw(); };
   WIELD.next=()=>{ const own=LIST.filter(k=>FORAGE.has(k)), i=own.indexOf(WIELD.on); WIELD.set(i+1<own.length?own[i+1]:null); if(!WIELD.on)say('YOUR HANDS ARE FREE.','#e8e2cc'); };
-  WIELD.strike=()=>{ if(!WIELD.on||sw&&sw.t<.18)return; sw={t:0,T:.3,s:side}; side=-side; if(typeof SFX!=='undefined')SFX.play('step',{vol:.3,pitch:2.2}); };
+  const WIELD_strike0=()=>{ if(!WIELD.on||sw&&sw.t<.18)return; sw={t:0,T:.3,s:side}; side=-side; if(typeof SFX!=='undefined')SFX.play('step',{vol:.3,pitch:2.2}); };
+  WIELD.strike=(...a)=>{ const r=WIELD_strike0(...a); SYS.run('strike'); return r; };
   FORAGE.ROWB.push(id=>LIST.includes(id)?[[WIELD.on===id?'PUT AWAY':'HOLD','wield']]:[]); FORAGE.ACT.wield=id=>WIELD.set(WIELD.on===id?null:id);
   const free=()=>!(RAG.on||st.water&&st.water.in||st.ride||st.climb||st.hang||st.sit||VIT.dead);
   WIELD.pre=dt=>{ const on=!!WIELD.on&&free();
@@ -42,7 +43,7 @@ Object.assign(WIELD,{on:null}); window.WIELD=WIELD;
     P(J.shoulderR,sh); P(J.elbowR,ax); P(J.palmR,base); ax.subVectors(P(J.wristR,tip),ax).normalize();
     bx2.crossVectors(ax,UP); if(bx2.lengthSq()<1e-4)bx2.set(1,0,0); bx2.normalize(); bz.crossVectors(bx2,ax);
     M.makeBasis(bx2,ax,bz).setPosition(base); m.matrix.copy(M); m.matrixWorld.copy(M); head.copy(m.head).applyMatrix4(M); tip.copy(base).addScaledVector(ax,m.head.y+(m.r||0)*2);
-    const fast=spd>7||sw, now=performance.now(); if(WEEDS.moveTick&&!WEEDS.moveTick.w){ const m0=WEEDS.moveTick; WEEDS.moveTick=()=>{ m0(); if(performance.now()<cutT)WEEDS.movers[7].set(tip.x,tip.z,.6*T,1); }; WEEDS.moveTick.w=1; } if(fast){ pts.unshift([base.clone().addScaledVector(ax,.25),tip.clone(),now]); if(WIELD.on==='sword'&&tip.y<SHARED.py+.6*T)cutT=now+400; }
+    const fast=spd>7||sw, now=performance.now(); if(!WIELD.mv){ WIELD.mv=1; SYS.add('weedsMove',()=>{ if(performance.now()<cutT)WEEDS.movers[7].set(tip.x,tip.z,.6*T,1); },'146a-wield'); } if(fast){ pts.unshift([base.clone().addScaledVector(ax,.25),tip.clone(),now]); if(WIELD.on==='sword'&&tip.y<SHARED.py+.6*T)cutT=now+400; }
     while(pts.length&&(pts.length>N||now-pts[pts.length-1][2]>120))pts.pop();
     trail.visible=pts.length>2; if(trail.visible){ for(let i=0;i<N;i++){ const q=pts[Math.min(i,pts.length-1)]; q[0].toArray(TP,i*6); q[1].toArray(TP,i*6+3); } TG.attributes.position.needsUpdate=true; }
     if(!(spd>4||sw)||WIELD.on==='sword')return;

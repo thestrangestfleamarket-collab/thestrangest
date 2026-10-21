@@ -77,7 +77,7 @@ Object.assign(WX,{hold:null,now:null});
   const sg=new THREE.BufferGeometry(); sg.setAttribute('position',new THREE.BufferAttribute(sp,3).setUsage(THREE.DynamicDrawUsage));
   const SNOW=new THREE.Points(sg,new THREE.PointsMaterial({color:0xffffff,size:2,sizeAttenuation:false})); SNOW.frustumCulled=false; scene.add(SNOW);
   const FOG=new THREE.Fog(0x9aa3ad,2,200), cA=new THREE.Color(), cB=new THREE.Color(); let flashT=0, ft=0;
-  SYS.add('world',(dt)=>{
+  SYS.add('sky',(dt)=>{
     if((ft-=dt)<=0){ ft=.5; WX.now=WX.hold?Object.assign({flash:(WX.hold==='STORM'||WX.flashK>0)&&Math.random()<(WX.flashK||.04)},HOLDS[WX.hold]):WX.fix&&!WX.nat?{...WX.fix,flash:false}:WX.at(T()); }
     const W=WX.now, up=SHARED.LVL!=='down', inside=!OUT.open, day=cl((CLOCK.elev()+4)/14), t=performance.now()/1000;
     if(!ends.length)build(); WX.cloudCut(); const show=Math.min(NC,Math.round(90+W.cloud*150)); WX.show=show; cg.instanceCount=ends[show-1];

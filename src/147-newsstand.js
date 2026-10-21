@@ -89,7 +89,7 @@ NEWS.init=()=>{ const N=typeof TOONS!=='undefined'&&TOONS.cat; if(!N||typeof SHA
   const passed=(a,h)=>lastH<=h?(a>lastH&&a<=h):(a>lastH||a<=h);
   const work=()=>{
     const b=bundles[0]; if(!b||!isOpen(CLOCK.h))return; doAct('stack',()=>{ doAct('cut',()=>{ bundles.shift(); drawB(); const i=TITLES.reduce((m,_,k)=>stock.papers[k]<stock.papers[m]?k:m,0); stock.papers[i]+=25; stacks(); work(); }); }); };
-  SYS.add('world',(dt)=>{ const h=CLOCK.h;
+  SYS.add('life',(dt)=>{ const h=CLOCK.h;
     if(passed(5.5,h)){ DR.forEach((d,k)=>fly(d,k)); stock.papers=stock.papers.map(v=>Math.floor(v*.2)); stacks(); }
     if(passed(5.75,h)){ wake(); queue=[]; doAct('yawn'); doAct('open'); }
     if(passed(22,h)){ wake(); queue=[]; doAct('close',()=>doAct('doze')); }

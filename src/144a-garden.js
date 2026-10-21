@@ -3,7 +3,7 @@ import {SHARED, THREE} from './003-shx.js';
 import {CITY, CLOCK, FORAGE, MAIL, pos, ROOMS, SFX, UI, WEEDS} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {SAVE} from './005-save.js';
-import {MAPG, TILE} from './006-map-pre.js';
+import {MAPG, SYS, TILE} from './006-map-pre.js';
 import {VEG} from './144-veggies.js';
 const GARDEN={}; window.GARDEN=GARDEN;
 { const T=TILE, KEY='garden', say=FORAGE.say, use=FORAGE.use, sk=FORAGE.sk, CS=8*T;
@@ -51,7 +51,7 @@ const GARDEN={}; window.GARDEN=GARDEN;
       add(`YOUR ${FL[p.k][0]} (${g>=1?'IN BLOOM':g<.4?'SPROUTING':'IN BUD'})`,p.x,p.y,p.z,()=>GARDEN.harvest(p)); }
     for(const [me,c] of [[STEM,n.s],[HEAD,n.h],[CTR,n.c],[LEAF,n.l]]){ me.count=c; me.instanceMatrix.needsUpdate=true; if(me.instanceColor)me.instanceColor.needsUpdate=true; } GARDEN.shown=n.s; };
   GARDEN.sync=sync;
-  { const a0=WEEDS.onAdd, d0=WEEDS.onDrop; WEEDS.onAdd=(key,grp)=>{ if(a0)a0(key,grp); CH.set(key,spawns(key,grp)); sync(); }; WEEDS.onDrop=key=>{ if(d0)d0(key); if(CH.delete(key))sync(); };
+  { SYS.add('weedsAdd',(key,grp)=>{ CH.set(key,spawns(key,grp)); sync(); },'144a-garden'); SYS.add('weedsDrop',key=>{ if(CH.delete(key))sync(); },'144a-garden');
     if(WEEDS.chunks)for(const [k,g] of WEEDS.chunks)if(g&&g.sq)CH.set(k,spawns(k,g)); sync(); }
   let st0=-1; setInterval(()=>{ const d=day(); if(d!==S.pd){ const old=S.pd; S.pd=d; for(const k in S.picked)if(!k.startsWith(d+':'))delete S.picked[k]; if(old!==-1&&WEEDS.chunks){ CH.clear(); for(const [k,g] of WEEDS.chunks)if(g&&g.sq)CH.set(k,spawns(k,g)); } save(); sync(); }
     const st=S.plots.map(p=>Math.min(1,(now()-p.t)/GROW)<1?Math.floor((now()-p.t)/GROW*5):9).join(); if(st!==st0){ st0=st; sync(); } },2000);

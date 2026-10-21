@@ -107,5 +107,5 @@ window.GRID=GRID;
   GRID.init=()=>{ if(!GRID.on||GRID.ready)return; try{ GRID.derive(); GRID.hardware(); GRID.flow(); GRID.wires(); GRID.built=true; GRID.apply();
       const c=QS.get('cut'); if(c)for(const i of c.split(',').map(Number))if(i>=0&&i<GRID.spans.length)GRID.spans[i].cut=true; if(c){ GRID.flow(); GRID.apply(); } }catch(e){ console.warn('GRID:',e); } };
   let acc=0; const RS=new THREE.Vector2(); GRID.tick=dt=>{ if(!GRID.ready)return; if(typeof renderer!=='undefined'){ renderer.getDrawingBufferSize(RS); GRID.uRes.value.copy(RS); } acc+=dt||0; if(GRID.dirty)GRID.apply(); if(acc<.25)return; acc=0; for(const [L,on] of GRID.lamps)if(!on.pw&&!L.userData.off){ L.userData.off=true; LITE.t=0; } };
-  { const li=LITE.init; LITE.init=()=>{ li(); GRID.init(); }; if(typeof DRESS!=='undefined'){ SYS.add('dress',(d,p)=>{ GRID.tick(d); },'070-grid'); } }
+  { SYS.add('liteInit',()=>GRID.init(),'070-grid'); if(typeof DRESS!=='undefined'){ SYS.add('dress',(d,p)=>{ GRID.tick(d); },'070-grid'); } }
 }

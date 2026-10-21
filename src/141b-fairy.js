@@ -22,7 +22,7 @@ const FAIRY={list:[]}; window.FAIRY=FAIRY;
         stem.setMatrixAt(k,m4.compose(new THREE.Vector3(x,y+h*.5*w,z),q,new THREE.Vector3(h*.35*w,h*w,h*.35*w))); cap.setMatrixAt(k,m4.compose(new THREE.Vector3(x,y+h*w,z),q,new THREE.Vector3(h*.75*w*bob,h*.55*w,h*.75*w*bob)));
         cap.setColorAt(k,c.setHex(COL[r.kind][ph<.7?0:1])); k++; } }
     cap.count=stem.count=k; cap.instanceMatrix.needsUpdate=stem.instanceMatrix.needsUpdate=true; if(cap.instanceColor)cap.instanceColor.needsUpdate=true; };
-  SYS.add('world',(dt)=>{ const up=SHARED.LVL==='up'&&!ROOMS.cur&&PARK.in; g.visible=up; if(!up)return;
+  SYS.add('life',(dt)=>{ const up=SHARED.LVL==='up'&&!ROOMS.cur&&PARK.in; g.visible=up; if(!up)return;
     if((next-=dt)<=0){ next=70+Math.random()*90; if(FAIRY.list.length<MAX)spawn(); }
     for(const r of FAIRY.list.slice()){ r.t+=dt; if(r.t>r.life||Math.hypot(r.x-pos.x,r.z-pos.z)>60*T)drop(r); } if(FAIRY.list.length||cap.count)draw(); },'141b-fairy');
   window.FAIRYAT=()=>spawn(); }

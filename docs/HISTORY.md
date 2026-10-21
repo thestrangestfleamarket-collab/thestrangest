@@ -4040,3 +4040,12 @@ initial download and load super fast"; then "Go")
   the start and read by the builders as before; the 65 hard numbers, the bodega's `-8`, the saved `layout` and `MEDIT` overrides are
   gone. The 1.1 lot scale (`BLDK`) stays inside the old building kits only, converted at one place (`LOTX`). The map editor imports and
   exports `world.json` itself: an exported file dropped into `data/` is the game.
+
+- **The core, piece 5 begun: the loading breaths on the parser** (owner, 21 Oct 2026, the same words; `tools/yields.cjs`, `build.py`):
+  the breaths that keep the page answering while the world builds are put in by reading the code with the parser (acorn, as the
+  chunk tool does): after each statement of the module's top level, of every place's builder (`grab(name, async()=>{…})`) and of the
+  braced bodies of if, for, while and try inside them, never inside another function. The hand-written tokenizer (`tools/yields.py`,
+  which broke today on one apostrophe) is gone; 4,158 breaths where it put 4,198. Not done yet, and why: real modules. 56 files in
+  six groups are one shared closure cut across files (the old game's kits, the bodega's builder from 039 to 059), and some twenty
+  shared variables (`pos`, `heading`, `py`, `LVL`, `BOUND`, `solids`, `target`, `yaw`…) are written from many files, which modules
+  do not allow; both need the shared state made explicit first (hundreds of edits; days, not hours).

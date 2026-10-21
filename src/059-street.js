@@ -86,7 +86,7 @@ await grab('mainstreet',async()=>{ const K=STORE.kit, {room,STEPS}=K, {X,Y,Z,pla
       MS.play.rigN=t0; };
     unplace('PLAYHOUSE'); MS.play={R,P,B,cx,cy,mx,my,L,SETM,fog,SH:{t0:null,cue:null,set:null,lv:-1,from:null,to:null,tc:0,step:-1,last:-1,cap:''},FIG:{},hound:null,up:0}; { const I=STORE.inside.playhouse; if(I){ const go=I.go; I.go=()=>{ go(); rig(); }; } else rig(); } });
 
-  STEPS.push(()=>{ const L=lot('holo',0), B={x0:L.x0,x1:L.x1,y0:L.y1-3,y1:L.y1,h:116}, W=B.x1-B.x0, door=(L.x0+L.x1)/2, k=3, c0=Math.floor((W*24-47*k)/2), on=word('HOLODECK',c0,100,k), H={x0:520,y0:-88,x1:536,y1:-72,h:120}, hx=(H.x0+H.x1)/2;
+  STEPS.push(()=>{ const L=lot('holo',0), B={x0:L.x0,x1:L.x1,y0:L.y1-3,y1:L.y1,h:132}, W=B.x1-B.x0, door=(L.x0+L.x1)/2, k=3, c0=Math.floor((W*24-47*k)/2), on=word('HOLODECK',c0,100,k), H={x0:520,y0:-88,x1:536,y1:-72,h:120}, hx=(H.x0+H.x1)/2;
     const front=(u,z,f)=>{ const c=Math.floor(u*24), d=Math.abs(B.x0+u-door);
       if(d<.62&&z<100&&(d>.5||z>=94))return HO.HOLOL; if(z<3)return HO.HOLOM;
       if(z>=98&&z<124)return neon(on,c,z,k,[96,200,255],f)||sh([10,12,18],f);

@@ -2,11 +2,11 @@
 // Opens the base and the pull request at the same places and hour (in:<id> steps inside that address's door, as tests/jobsim.cjs does), takes a picture of each, and compares them pixel by pixel in the
 // browser. Moving code around must not change what is drawn. People and birds walk and the clock runs, so a little always moves:
 // Math.random is seeded the same in every page; the pull request fails when it differs from the base by more than 5% of the pixels
-// (the base differs from itself by up to 2% at the street and the dungeon: SAMEPIC_NOISE=1 takes the base twice and measures it). The sun's rays are hidden (they pick a spot near you on a timer, so a page that
+// (the base differs from itself by up to 2% at the street and the dungeon: SAMEPIC_NOISE=1 takes the base twice and measures it; the park waits for PARK.ready before its shot, as tests/startprof.cjs does). The sun's rays are hidden (they pick a spot near you on a timer, so a page that
 // starts faster gets another beam). The pictures are kept in the out dir for a look.
 const {chromium}=require('playwright'), path=require('path'), fs=require('fs');
 const [BASE,HEAD,OUT='out/samepic']=process.argv.slice(2).map((p,i)=>i<2?path.resolve(p):p);
-const PLACES=['THE STREET','THE DUNGEON','THE CASTLE','THE BODEGA','in:diner','in:bar'];
+const PLACES=['THE STREET','THE DUNGEON','THE CASTLE','CENTRAL PARK','THE PLATFORM','THE BODEGA','in:diner','in:bar'];
 let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
 (async()=>{ fs.mkdirSync(OUT,{recursive:true}); const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist']});
   const shot=async(page,place,tag)=>{ const pg=await b.newPage({viewport:{width:960,height:540}}); pg.setDefaultTimeout(900000); const errs=[];
@@ -16,6 +16,7 @@ let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
     await pg.goto('file://'+page+'?fresh=1&hour=13'+(inside?'':'&place='+encodeURIComponent(place)),{waitUntil:'commit'});
     let s=false; for(let i=0;i<900&&!(s=await pg.evaluate(()=>!!window.__started).catch(()=>false));i++)await pg.waitForTimeout(500);
     if(s&&inside)await pg.evaluate(id=>{ const T=__dbg.cv().TILE, A=MAIL.addr.find(a=>a.id===id); if(!A)return; const st=A.b.step; STORE.goTo(st.x-A.b.F.n.x*1.2*T,st.z-A.b.F.n.z*1.2*T,'up'); },inside);
+    if(s&&place==='CENTRAL PARK')await pg.waitForFunction(()=>window.PARK&&PARK.ready,null,{polling:500,timeout:600000}).catch(()=>{});
     await pg.waitForTimeout(20000); await pg.evaluate(()=>{ const R=window.RAYS; if(R)for(const k of ['beams','dust'])if(R[k])Object.defineProperty(R[k],'visible',{get:()=>false,set(){},configurable:true}); }); await pg.waitForTimeout(500); const f=path.join(OUT,place.replace(/\W+/g,'-').toLowerCase()+'-'+tag+'.png'); await pg.screenshot({path:f}); await pg.close(); return {f,s,errs}; };
   const cmp=await b.newPage();
   const TWICE=!!process.env.SAMEPIC_NOISE;

@@ -126,6 +126,7 @@ ROAM.pick=(st,free)=>{ '@later'; const L=ROAM.L; for(let k=0;k<12;k++){ let to;
       if(!far)N.tick(dt,you); else if(N.farMove)N.farMove(dt); }
     for(const X of NPCS.extra){ const a=X.at; X.hid=!!a&&!FR.intersectsSphere(SP.set(V.set(a.x,(a.y||0)+1,a.z),2*TILE)); }
     LIVES.tick(dt,you); };
+  NPCS.R=25*TILE; NPCS.seen=(x,y,z,r)=>FR.intersectsSphere(SP.set(V.set(x,y,z),r||2*TILE)); NPCS.live=(x,y,z,r)=>Math.hypot(x-pos.x,z-pos.z)<NPCS.R&&NPCS.seen(x,y,z,r);
   NPCS.cull=on=>{ const one=(o,g)=>{ if(on){ if(o.hid&&g.visible){ g.visible=false; o._cv=true; } } else if(o._cv){ g.visible=true; o._cv=false; } };
     for(const N of NPCS)one(N,N.g); for(const X of NPCS.extra)if(X.g)one(X,X.g); PXSNAP(on); }; }
 const PXSNAP=on=>{ const L=PXSNAP.L;

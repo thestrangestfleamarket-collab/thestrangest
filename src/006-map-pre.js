@@ -59,7 +59,7 @@ const ZU=1/(PPU*Math.cos(Math.PI/6)), TILE=33.9/PPU, QS=new URLSearchParams(loca
 const SEEN=(o,show)=>{ if(!SEEN.L){ SEEN.L=1; scene.traverse(c=>{ if(c.isLight&&c.shadow)c.shadow.camera.layers.enable(3); }); }
   if(o.userData.seen===show)return; o.userData.seen=show; o.traverse(c=>{ if(c.isMesh||c.isLine||c.isPoints){ if(show)c.layers.enable(0); else c.layers.disable(0); c.layers.enable(3); } }); };
 const OUT=window.OUT={L:[],open:true,world:true,up:true,add(o,k='open'){ OUT.L.push({o,k}); SEEN(o,OUT[k]); return o; },
-  tick(){ const up=SHARED.LVL!=='down', ins=typeof ROOMS!=='undefined'&&!!ROOMS.cur, open=up&&!ins, world=up&&(FREE||!ins); OUT.up=up; if(open===OUT.open&&world===OUT.world)return;
+  tick(){ const up=SHARED.LVL!=='down', ins=!!ROOMS.cur, open=up&&!ins, world=up&&(FREE||!ins); OUT.up=up; if(open===OUT.open&&world===OUT.world)return;
     OUT.open=open; OUT.world=world; for(const e of OUT.L)SEEN(e.o,OUT[e.k]); }};
 const FREE=QS.get('free')!=='0';
 const SOL={up:[],down:[]}, FIX={up:[],down:[]}, CLIPX=[];

@@ -11,7 +11,7 @@ Object.assign(SFX,{on:true,vol:1,mix:{fx:{},loops:{},gap:1,blip:1}});
   const mixOf=o=>({fx:Object.assign({},SNDMIX0.fx,o&&o.fx||{}),loops:Object.assign({},SNDMIX0.loops,o&&o.loops||{}),gap:o&&o.gap!=null?+o.gap:SNDMIX0.gap,blip:o&&o.blip!=null?+o.blip:SNDMIX0.blip});
   try{ SFX.mix=mixOf(JSON.parse(SAVE.get('sndmix')||'null')); }catch(e){ SFX.mix=mixOf(null); }
   SFX.saveMix=()=>SAVE.set('sndmix',JSON.stringify(SFX.mix)); SFX.resetMix=()=>{ SFX.mix={fx:{},loops:{},gap:1,blip:1}; SAVE.del('sndmix'); }; SFX.fxLevel=k=>SFX.mix.fx[k]==null?1:+SFX.mix.fx[k];
-  SFX.ctx=()=>{ if(!SOUND)return null; if(typeof SND!=='undefined'&&SND.ctx)return SND.ctx; if(typeof USE!=='undefined'&&USE.ac)return USE.ac; if(!SFX.ac)try{ SFX.ac=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ return null; } return SFX.ac; };
+  SFX.ctx=()=>{ if(!SOUND)return null; if(SND.ctx)return SND.ctx; if(USE.ac)return USE.ac; if(!SFX.ac)try{ SFX.ac=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ return null; } return SFX.ac; };
   SFX.live=()=>{ const c=SFX.ctx(); return c&&c.state==='running'?c:null; };
   const bus=c=>{ if(!SFX.g||SFX.g.context!==c){ SFX.g=c.createGain(); SFX.g.connect(c.destination); } SFX.g.gain.value=SFX.on?SFX.vol:0; return SFX.g; };
   SFX.set=(on,vol)=>{ if(on!=null)SFX.on=on; if(vol!=null)SFX.vol=vol; SAVE.set('sfx',SFX.on?'1':'0'); SAVE.set('vol',String(SFX.vol)); const c=SFX.ctx(); if(c)bus(c); };

@@ -5,7 +5,7 @@ import {scene} from './004-main.js';
 import {FIX, MAPSTAIR, QS, SOL, SYS, TILE} from './006-map-pre.js';
 import {TOONS} from './084-npc-toons.js';
 const NEWS=window.NEWS={};
-NEWS.init=()=>{ const N=typeof TOONS!=='undefined'&&TOONS.cat; if(!N||typeof SHARED.BOD==='undefined')return;
+NEWS.init=()=>{ const N=TOONS.cat; if(!N||typeof SHARED.BOD==='undefined')return;
   const X=SHARED.BOD.XS, Y=z=>SHARED.BOD.YS(z*.64), Z=SHARED.BOD.ZS, T=TILE, xm=(MAPSTAIR.x0+MAPSTAIR.x1)/2-6, x0=xm-1.4, x1=xm+1.4, y1=-74.85, y0=y1-1.5;
   const STEEL=0x5c6268, DARK=0x22262a, WOOD=0x8a6440, PAPER=0xe6e2d6, TW=0xa8844e;
   const BX=[]; const box=(a,b,c,d,z0,z1,col,L=BX,r=0)=>{ L.push([(X(a)+X(b))/2,(Y(z0)+Y(z1))/2,(Z(c)+Z(d))/2,Math.abs(X(b)-X(a)),Y(z1)-Y(z0),Math.abs(Z(d)-Z(c)),col,r]); };
@@ -115,7 +115,7 @@ NEWS.init=()=>{ const N=typeof TOONS!=='undefined'&&TOONS.cat; if(!N||typeof SHA
       return s+`<div class="row"><span class="it">${it.n}</span><span>${l} LEFT</span><span>$${it.p}</span><button class="btn" data-i="${i}" ${open&&l>0?'':'disabled'}>BUY</button></div>`; }).join('')+`<div class="st">${msg}</div>${page}<div class="row" style="margin-top:8px"><button class="btn" id="nsx">CLOSE</button></div>`;
     P.querySelectorAll('[data-i]').forEach(b=>b.onclick=()=>{ const it=ITEMS[+b.dataset.i]; if(purse.get()<it.p){ draw('NOT ENOUGH MONEY.'); return; } if(left(it)<=0){ draw('SOLD OUT.'); return; }
       purse.add(-it.p); if(it.k==='papers'){ stock.papers[it.i]--; stacks(); } else stock[it.k]--; if(window.CIVIC&&CIVIC.note)CIVIC.note('you bought '+it.n.toLowerCase()+' at the newsstand ($'+it.p+')','newsstand');
-      wake(); queue=[]; act=null; doAct('serve',()=>doAct('change')); if(typeof LINES!=='undefined'&&LINES.say)try{ LINES.say(N,'thanks'); }catch(e){}
+      wake(); queue=[]; act=null; doAct('serve',()=>doAct('change')); if(LINES.say)try{ LINES.say(N,'thanks'); }catch(e){}
       draw('THANK YOU. ENJOY YOUR '+it.n+'.',it.k==='papers'?front(it.i):''); });
     P.querySelector('#nsx').onclick=()=>{ P.hidden=true; }; };
   const FRONT={x:X(xm),z:Z(y1+1.15)}; NEWS.front=FRONT;

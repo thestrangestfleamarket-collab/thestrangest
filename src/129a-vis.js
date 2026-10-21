@@ -16,7 +16,7 @@ Object.assign(ZONES,{cur:null,list:[['market','MARKET ST'],['cp','CENTRAL PARK']
 { const mid=()=>{ const P=PARK; return (P.y0+P.y1)/2+(P.oy||0); };
   ZONES.at=(x,z,lv,room)=>{ if(lv==='down')return MODS.dungeon&&MODS.dungeon.inside&&MODS.dungeon.inside(x,z)?{id:'dungeon',name:'THE DUNGEON'+(window.DUNGEON&&DUNGEON.level?' — LEVEL '+DUNGEON.level:'')}:{id:'station',name:'THE SUBWAY STATION'};
     if(room)return {id:'inside',name:String(room.name||room.lz||room.id||'INSIDE').toUpperCase()};
-    if(typeof PARK!=='undefined'&&PARK.within&&PARK.within(x,z)){ const y=z/TILE+SHARED.BOD.OY; return y>mid()?{id:'cp',name:'CENTRAL PARK'}:{id:'secp',name:'SOUTH EAST CENTRAL PARK'}; }
+    if(PARK.within&&PARK.within(x,z)){ const y=z/TILE+SHARED.BOD.OY; return y>mid()?{id:'cp',name:'CENTRAL PARK'}:{id:'secp',name:'SOUTH EAST CENTRAL PARK'}; }
     return {id:'market',name:'MARKET ST'}; };
   ZONES.on=f=>ZONES.fns.push(f);
   ZONES.tick=()=>{ if(!window.__started)return; const r=typeof ROOMS!=='undefined'?ROOMS.cur:null, z=ZONES.at(pos.x,pos.z,SHARED.LVL,r), k=z.id+'|'+z.name;

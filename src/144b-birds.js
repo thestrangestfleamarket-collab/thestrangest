@@ -127,7 +127,7 @@ const BIRDS={list:[]}; window.BIRDS=BIRDS;
     tame:b=>{ '@later'; if(b.k===HAWK)return say('A HAWK WILL NOT TAKE SEED FROM YOUR HAND.','#c8a090'); if(!FORAGE.has('bseed'))return say('YOU NEED BIRDSEED (THE MUSHROOM SELLER HAS IT).','#c8a090');
       FORAGE.take('bseed',1); const d=DIFF(b.k)+15; if(use('bird',d-20,d+30)){ if(!S.seen[b.k])log(b); makePet(b.k,b); } else { say('IT TAKES THE SEED AND FLIES OFF.','#c8a090'); flush(b); } },
     catch:b=>{ '@later'; if(!FORAGE.has('bnet'))return say('YOU NEED A BIRD NET (THE MUSHROOM SELLER HAS THEM).','#c8a090'); if(b.k===HAWK)return say('A HAWK IS FAR TOO BIG FOR YOUR NET.','#c8a090');
-      if(!FORAGE.has('cage'))return say('YOU NEED AN EMPTY CAGE TO PUT IT IN.','#c8a090'); const d=DIFF(b.k)+10; if(typeof SFX!=='undefined')SFX.play('step',{vol:.4});
+      if(!FORAGE.has('cage'))return say('YOU NEED AN EMPTY CAGE TO PUT IT IN.','#c8a090'); const d=DIFF(b.k)+10; SFX.play('step',{vol:.4});
       if(use('bird',d-25,d+25)){ FORAGE.take('cage',1); FORAGE.give('bd_'+b.k,1); if(!S.seen[b.k])log(b); say(`YOU NET THE ${K[b.k][0]} AND CAGE IT.`,'#b8f0a0'); drop(b); } else { say('YOUR NET SWISHES THROUGH EMPTY AIR.','#c8a090'); flush(b); } },
     free:b=>{ freePet(); }};
   BIRDS.net=b=>{ ACT.catch(b); FORAGE.draw(); };

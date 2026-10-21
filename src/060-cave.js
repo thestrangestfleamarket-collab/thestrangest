@@ -8,7 +8,7 @@ const GCAVE={ready:false}; window.GCAVE=GCAVE;
 {
   GCAVE.keep=P=>{ if(!GCAVE.S){ const [rx,ry]=P.round, c={x:PARKCAVE[0],y:PARKCAVE[1]}, R=5, tw={x:PARKTOWER[0]-3.4,y:PARKTOWER[1],w:9.5/3,d:3};
       GCAVE.S={c,R,tw}; const X=x=>SHARED.BOD.XS(x+(P.ox||0)), Z=y=>SHARED.BOD.ZS(y+(P.oy||0));
-      if(typeof STORE!=='undefined'&&STORE.places){ STORE.places.push(["THE GOLEMS' CAVE",X(c.x),Z(c.y),'up']); STORE.places.push(["THE SQUIRREL'S TOWER",X(tw.x+3.4),Z(tw.y),'up']); } }
+      if(STORE.places){ STORE.places.push(["THE GOLEMS' CAVE",X(c.x),Z(c.y),'up']); STORE.places.push(["THE SQUIRREL'S TOWER",X(tw.x+3.4),Z(tw.y),'up']); } }
     const {c,R,tw}=GCAVE.S; return [[c.x-R-3,c.y-R-2,c.x+R+5,c.y+R+2],[tw.x-tw.w/2-2.5,tw.y-tw.d/2-2.5,tw.x+tw.w/2+3,tw.y+tw.d/2+3]]; };
   const hs=(a,b,c=0)=>{ const s=Math.sin(a*127.1+b*311.7+c*74.7)*43758.5453; return s-Math.floor(s); };
   const foot=(R,a)=>R/Math.pow(Math.pow(Math.abs(Math.cos(a)),3)+Math.pow(Math.abs(Math.sin(a)),3),1/3);

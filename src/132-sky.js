@@ -56,10 +56,10 @@ import {HEMI} from './064-map-post.js';
   const ca=new THREE.Color(), cb=new THREE.Color(), mixC=(a,b,t,out)=>out.copy(ca.setHex(a)).lerp(cb.setHex(b),t), D=Math.PI/180;
   SYS.add('sky',(dt)=>{
     const up=SHARED.LVL!=='down'; 
-    if(typeof LOOK!=='undefined'&&!(typeof LFX!=='undefined'&&LFX.on&&LFX.on.has&&LFX.on.has('cool')))LOOK.cool.value=dome.visible?.7*cl(1-Math.abs(CLOCK.elev()-3)/10):0;
+    if(!(LFX.on&&LFX.on.has&&LFX.on.has('cool')))LOOK.cool.value=dome.visible?.7*cl(1-Math.abs(CLOCK.elev()-3)/10):0;
     U.uT.value+=dt; if(!dome.visible)return;
     const e=CLOCK.elev(); let i=0; while(i<P.length-2&&e>P[i+1][0])i++; const A=P[i], B=P[i+1], t=cl((e-A[0])/(B[0]-A[0]));
-    const W=typeof WX!=='undefined'&&WX.now||{cloud:.2,storm:0,fog:0,flash:false}, day=cl((e+4)/14);
+    const W=WX.now||{cloud:.2,storm:0,fog:0,flash:false}, day=cl((e+4)/14);
     { const hold=SKY.moodHold, ws=hold==='soft'?1:hold?0:cl(W0.s+cl((W.cloud-.35)/.4)*.7), wf=hold==='fire'?1:hold?0:W0.f*(1-ws); SKY.mood.f=wf; SKY.mood.s=ws; }
     mixS(A,B,1,t,U.uH.value); mixS(A,B,2,t,U.uM.value); mixS(A,B,3,t,U.uZ.value); mixS(A,B,4,t,U.uS.value); mixS(A,B,5,t,U.uA.value);
     U.uSideK.value=1-.6*cl((e-8)/20);

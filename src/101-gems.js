@@ -15,9 +15,9 @@ Object.assign(INV,{items:{},picked:{}}); window.INV=INV;
   INV.random=()=>{ let r=Math.random()*W; for(const g of GEMS){ if((r-=g[3])<0)return g[0]; } return GEMS[0][0]; };
   INV.ready=k=>INV.picked[k]==null||INV.picked[k]<day();
   INV.pick=k=>{ '@later'; if(!INV.ready(k)){ TRADE.note('NOTHING HERE TODAY. BACK TOMORROW'); return false; } const id=INV.random(), g=byId(id); INV.picked[k]=day(); INV.add(id);
-    TRADE.note('YOU FOUND '+(/^[AEIOU]/.test(g[1])?'AN ':'A ')+g[1]+' · THE GOLEMS PAY $'+g[2]); if(typeof SFX!=='undefined')SFX.play('chirp',{vol:.4}); return true; };
+    TRADE.note('YOU FOUND '+(/^[AEIOU]/.test(g[1])?'AN ':'A ')+g[1]+' · THE GOLEMS PAY $'+g[2]); SFX.play('chirp',{vol:.4}); return true; };
   INV.sell=(id,n=1)=>{ '@later'; const g=byId(id), have=INV.items[id]||0; n=Math.min(n,have); if(!g||n<1)return 0; INV.items[id]=have-n; if(!INV.items[id])delete INV.items[id]; INV.cash+=g[2]*n; save();
-    if(window.CIVIC&&CIVIC.note)CIVIC.note('you sold '+n+' '+g[1].toLowerCase()+' to the golems for $'+g[2]*n,'park'); if(typeof SFX!=='undefined')SFX.play('clunk',{vol:.5}); return g[2]*n; }; }
+    if(window.CIVIC&&CIVIC.note)CIVIC.note('you sold '+n+' '+g[1].toLowerCase()+' to the golems for $'+g[2]*n,'park'); SFX.play('clunk',{vol:.5}); return g[2]*n; }; }
  window.TRADE=TRADE;
 { const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;'), btn='class="btn" style="margin:0 0 0 6px;font:inherit;color:#ece5d3;background:#0e1016;border:2px solid #3a3f4e;padding:3px 8px;cursor:pointer"';
   const panel=()=>{ '@later'; let P=document.getElementById('gemp'); if(P)return P; P=document.createElement('div'); P.id='gemp'; P.hidden=true;

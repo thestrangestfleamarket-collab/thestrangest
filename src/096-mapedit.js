@@ -294,7 +294,7 @@ GAMEED.build=()=>{ '@editor'; const T=TILE;
     const d={arrowleft:[-1,0],arrowright:[1,0],arrowup:[0,1],arrowdown:[0,-1]}[k]; if(d){ e.preventDefault(); nudge(d[0]*(e.shiftKey?1:.25),d[1]*(e.shiftKey?1:.25)); } },true);
   addEventListener('keyup',e=>{ if(MAPED.open&&!(e.target&&/INPUT|TEXTAREA|SELECT/.test(e.target.tagName)))e.stopImmediatePropagation(); },true);
   addEventListener('resize',()=>{ if(MAPED.open){ size(); draw(); } });
-  GAMEED.show=on=>{ MAPED.open=GAMEED.open=on; R.style.display=on?'block':'none'; if(!on){ if(VIEW.on)VIEW.close(); return; } if(typeof keys!=='undefined'&&keys.clear)keys.clear();
+  GAMEED.show=on=>{ MAPED.open=GAMEED.open=on; R.style.display=on?'block':'none'; if(!on){ if(VIEW.on)VIEW.close(); return; } if(keys.clear)keys.clear();
     size(); if(!TER)terrain(); if(!GAMEED.inited){ GAMEED.inited=true; setMode(MODE,true); } fit(); panel(); draw(); };
   window.MAPED=MAPED; };
 GAMEED.toggle=async()=>{ if(GAMEED.busy)return; if(GAMEED.built){ GAMEED.show(!GAMEED.open); return; } GAMEED.busy=true;

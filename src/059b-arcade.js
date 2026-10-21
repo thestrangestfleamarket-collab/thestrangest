@@ -205,5 +205,5 @@ await grab('arcade',async()=>{ const K=STORE.kit, {room,flat}=K, {X,Y,Z}=SHARED.
       if(!here){ if(was){ was=false; if(scene.fog===FG)scene.fog=null; } return; } was=true;
       if(window.FAR3&&FAR3.mesh){ FAR3.mesh.visible=false; if(FAR3.panels)FAR3.panels.visible=false; }
       if(ROOMS.cur){ if(scene.fog===FG)scene.fog=null; return; }
-      const d=-V3.copy(pos).applyMatrix4(SHARED.cam.matrixWorldInverse).z; if(typeof MISTE!=='undefined')MISTE.x=0; FG.near=d+8*TILE; FG.far=d+44*TILE; scene.fog=FG; scene.background.copy(FG.color); },'059b-arcade'); });
+      const d=-V3.copy(pos).applyMatrix4(SHARED.cam.matrixWorldInverse).z; MISTE.x=0; FG.near=d+8*TILE; FG.far=d+44*TILE; scene.fog=FG; scene.background.copy(FG.color); },'059b-arcade'); });
 });

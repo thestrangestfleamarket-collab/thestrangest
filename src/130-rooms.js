@@ -24,7 +24,7 @@ ROOMS.roofAt=(x,y,z)=>{ const h=new THREE.Raycaster(new THREE.Vector3(x,y,z),new
   ROOMS.boxes=()=>{ if(!RL)build(); return RL; };
   ROOMS.reset=()=>{ RL=null; if(IV.key){ IV.re=IV.key; leave(); } IV.C.clear(); SYS.run('roomsReset'); };
   const within=(b,x,z,e=0)=>x>b.x0-e&&x<b.x1+e&&z>b.z0-e&&z<b.z1+e;
-  ROOMS.nearAll=()=>{ NEARON=true; const skip=new Set([W3.group,...NPCS.map(N=>N.g),...NPCS.extra.map(X=>X.g).filter(Boolean)]); for(const o of [typeof MUS!=='undefined'&&MUS.g,typeof PNM!=='undefined'&&PNM.g,typeof SGM!=='undefined'&&SGM.g,typeof DRM!=='undefined'&&DRM.g])if(o)skip.add(o);
+  ROOMS.nearAll=()=>{ NEARON=true; const skip=new Set([W3.group,...NPCS.map(N=>N.g),...NPCS.extra.map(X=>X.g).filter(Boolean)]); for(const o of [MUS.g,PNM.g,SGM.g,DRM.g])if(o)skip.add(o);
         const own=new Set(); for(const g of skip)g.traverse(c=>{ if(c.material)for(const mt of [].concat(c.material))own.add(mt); });
         const walk=o=>{ if(skip.has(o)||o.isSkinnedMesh)return; const ms=o.material?(Array.isArray(o.material)?o.material:[o.material]):[]; for(const mt of ms){ if(own.has(mt)||mt.clippingPlanes===NEAR||(mt.isShaderMaterial&&!mt.clipping)||(mt.clippingPlanes&&mt.clippingPlanes.length))continue; mt.clippingPlanes=NEAR; mt.clipIntersection=true; mt.needsUpdate=true; } for(const c of o.children)walk(c); };
         walk(scene); };
@@ -39,8 +39,8 @@ ROOMS.roofAt=(x,y,z)=>{ const h=new THREE.Raycaster(new THREE.Vector3(x,y,z),new
   const scan=(b,roots)=>{ '@later'; const e=.15*TILE, R={x0:b.x0-e,x1:b.x1+e,z0:b.z0-e,z1:b.z1+e,y0:b.y0-.3,y1:b.y1+.1*TILE}, D=b.band?{x0:b.band.x0,x1:b.band.x1,z0:b.band.z0,z1:b.band.z1,y0:R.y0,y1:R.y1}:null;
     const inn=(x,y,z)=>pin(R,x,y,z)||!!D&&pin(D,x,y,z), T={H:[],L:[],S:[],top:new Set(roots)};
     const skip=new Set([W3.group,...NPCS.map(N=>N.g),...(NPCS.extra||[]).map(q=>q&&q.g),FLAME.me,WATER.mesh,...(WATER.extra||[]).map(w=>w.mesh),
-      typeof MUS!=='undefined'&&MUS.g,typeof PNM!=='undefined'&&PNM.g,typeof SGM!=='undefined'&&SGM.g,typeof DRM!=='undefined'&&DRM.g].filter(Boolean));
-    const batch=o=>o.isMesh&&!o.isInstancedMesh&&!o.isSkinnedMesh&&!!o.geometry.attributes.aOp&&!o.geometry.index&&!(typeof CULL!=='undefined'&&CULL.M.has(o))&&!(o.userData.intr&&typeof o.userData.intr==='object');
+      MUS.g,PNM.g,SGM.g,DRM.g].filter(Boolean));
+    const batch=o=>o.isMesh&&!o.isInstancedMesh&&!o.isSkinnedMesh&&!!o.geometry.attributes.aOp&&!o.geometry.index&&!(CULL.M.has(o))&&!(o.userData.intr&&typeof o.userData.intr==='object');
     const st=o=>{ const g=o.geometry; BX.makeEmpty(); if(o.isInstancedMesh){ o.computeBoundingBox(); if(o.boundingBox)BX.copy(o.boundingBox); } else if(g&&!o.isSprite){ if(!g.boundingBox)g.computeBoundingBox(); BX.copy(g.boundingBox); }
       if(BX.isEmpty()){ o.getWorldPosition(V3); return inn(V3.x,V3.y,V3.z)?1:0; } BX.applyMatrix4(o.matrixWorld);
       if(con(BX,R)||D&&con(BX,D))return 1; if(!ovl(BX,R)&&!(D&&ovl(BX,D)))return 0; if(batch(o))return 2; BX.getCenter(V3);
@@ -54,7 +54,7 @@ ROOMS.roofAt=(x,y,z)=>{ const h=new THREE.Raycaster(new THREE.Vector3(x,y,z),new
     for(const c of roots)if(!walk(c))T.H.push(c); return T; };
   const put=T=>{ for(const o of T.H){ IV.H.push([o]); VIS.hide(o,'room'); } for(const o of T.L){ IV.L.push([o]); VIS.hide(o,'room',true,true); } for(const q of T.S)if(q.o.geometry===q.g){ IV.S.push([q.g,q.g.index]); q.g.setIndex(q.ix); } };
   const leave=()=>{ if(!IV.key)return; for(const [o] of IV.H)VIS.hide(o,'room',false); for(const [o] of IV.L)VIS.hide(o,'room',false); for(const [g,i] of IV.S)g.setIndex(i); IV.H=[]; IV.L=[]; IV.S=[]; IV.key=null; IV.b=null;
-    if(typeof LITE!=='undefined')for(const L of LITE.pool)if(L.castShadow)L.shadow.needsUpdate=true; };
+    for(const L of LITE.pool)if(L.castShadow)L.shadow.needsUpdate=true; };
   const apply=w=>{ leave(); if(!w)return; let T=IV.C.get(w.key); if(!T){ scene.updateMatrixWorld(); T=scan(w.b,scene.children.slice()); IV.C.set(w.key,T); } put(T); IV.top=new Set(T.top); IV.nc=-1; IV.key=w.key; IV.b=w.b; };
   const frames=n=>new Promise(r=>{ const f=()=>--n<=0?r():requestAnimationFrame(f); requestAnimationFrame(f); });
   const swap=async()=>{ const w=IV.want, lz=w&&lazyOf(w.b);
@@ -66,7 +66,7 @@ ROOMS.roofAt=(x,y,z)=>{ const h=new THREE.Raycaster(new THREE.Vector3(x,y,z),new
   ROOMS.dark=()=>!!IV.key;
   window.INTDBG=()=>({inside:IV.key?IV.b.lz||IV.b.id||IV.key:null,built:[...Object.keys(ROOMS.lazy).filter(k=>ROOMS.lazy[k].done),...Object.keys(STORE.inside||{}).filter(k=>STORE.inside[k].done)],hidden:IV.H.length+IV.L.length+IV.S.length,busy:IV.busy});
   const unclip=g=>{ if(g)g.traverse(c=>{ if(c.material)for(const mt of [].concat(c.material))if(mt.clippingPlanes===NEAR){ mt.clippingPlanes=null; mt.needsUpdate=true; } }); };
-  ROOMS.tick=()=>{ if(!RL)build(); let hit=null, bnd=null; if(NEARON)unclip(W3.group); if(typeof LOOKS!=='undefined'&&LOOKS.light)LOOKS.light();
+  ROOMS.tick=()=>{ if(!RL)build(); let hit=null, bnd=null; if(NEARON)unclip(W3.group); if(LOOKS.light)LOOKS.light();
     if(SHARED.LVL==='up'&&!UI.freeCam&&!ED.on&&!MAPED.on&&!(window.DRONE&&DRONE.cam)){
       const IN=-.55*TILE; hit=RL.find(b=>(within(b,pos.x,pos.z,0)||!!b.band&&within(b.band,pos.x,pos.z,0))&&SHARED.py>b.y0-.3&&SHARED.py<b.y1)||null;
       const A=MODS.apts; if(!hit&&A&&A.in){ const lv=A.floor(), S=SHARED.BOD.K.STORY; for(const t of A.rects(lv)){ const b=box(SHARED.BOD.X,SHARED.BOD.Z,t,A.lvY(lv)-.5,A.lvY(lv+1)); if(within(b,pos.x,pos.z,lv>0?0:IN)){ hit=b; break; } } } }
@@ -89,7 +89,7 @@ ROOMS.roofAt=(x,y,z)=>{ const h=new THREE.Raycaster(new THREE.Vector3(x,y,z),new
     else if(renderer.clippingPlanes.length)renderer.clippingPlanes=[];
     const HB=IV.key?IV.b:FREE?null:hit, show=(g,x,z,o,y)=>{ const sh=!HB||within(HB,x,z,.4*TILE)&&(y==null||y>HB.y0-.3&&y<HB.y1); VIS.hide(g,'roof',!sh); };
     for(const N of NPCS){ if(N.lv!=='up'||N.mode==='hidden'||N.hid)continue; show(N.g,N.g.position.x,N.g.position.z,N,N.g.position.y); }
-    if(typeof MUS!=='undefined'&&MUS.g)show(MUS.g,MUS.at.x,MUS.at.z,MUS,MUS.at.y); if(typeof PNM!=='undefined'&&PNM.g)show(PNM.g,PNM.at.x,PNM.at.z,PNM); if(typeof SGM!=='undefined'&&SGM.g)show(SGM.g,SGM.at.x,SGM.at.z,SGM); if(typeof DRM!=='undefined'&&DRM.g)show(DRM.g,DRM.at.x,DRM.at.z,DRM);
-    if(typeof WATER!=='undefined'&&WATER.mesh){ show(WATER.mesh,WATER.mesh.position.x,WATER.mesh.position.z,WATER); for(const w of WATER.extra)if(w.mesh)show(w.mesh,w.mesh.position.x,w.mesh.position.z,w); } };
+    if(MUS.g)show(MUS.g,MUS.at.x,MUS.at.z,MUS,MUS.at.y); if(PNM.g)show(PNM.g,PNM.at.x,PNM.at.z,PNM); if(SGM.g)show(SGM.g,SGM.at.x,SGM.at.z,SGM); if(DRM.g)show(DRM.g,DRM.at.x,DRM.at.z,DRM);
+    if(WATER.mesh){ show(WATER.mesh,WATER.mesh.position.x,WATER.mesh.position.z,WATER); for(const w of WATER.extra)if(w.mesh)show(w.mesh,w.mesh.position.x,w.mesh.position.z,w); } };
 }
 { SYS.add('rooms',()=>{ OUT.tick(); },'130-rooms'); }

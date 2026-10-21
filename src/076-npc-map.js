@@ -104,7 +104,7 @@ function makeNPC(D,o){ const N={key:o.key,name:o.name,names:o.names,lv:o.lv||'do
     const dx=p.x-st.x, dz=p.z-st.z, d=Math.hypot(dx,dz), R=st.R+.3; if(!(d<R&&d>1e-4))return;
     const ux=dx/d, uz=dz/d, sp=Math.hypot(p.x-pos.x,p.z-pos.z), k=Math.min(.75,.4+sp*3/TILE), nx=st.x-ux*(R-d)*k, nz=st.z-uz*(R-d)*k;
     if(N.free(nx,nz,st.R)){ st.x=nx; st.z=nz; } if(sp>.05*TILE&&!(st.sx||st.sz)){ const v=Math.min(sp,.12*TILE)*28; st.sx=-ux*v; st.sz=-uz*v; } p.x=st.x+ux*R; p.z=st.z+uz*R; };
-  N.shadowPass=renderer=>{ if(W3.lv.value<1.5||N.far||!g.visible||!g.parent.visible)return; if(typeof SELFSH!=='undefined'&&!SELFSH.use(N)){ N.LVP.value.copy(SELFSH.off); return; } const mid=NPCMID.set(g.position.x,g.position.y+H*.45,g.position.z); N.smCam.position.copy(mid).addScaledVector(W3.Lw,7); N.smCam.up.set(0,Math.abs(W3.Lw.y)>.6?0:1,Math.abs(W3.Lw.y)>.6?1:0); N.smCam.lookAt(mid); N.smCam.updateMatrixWorld();
+  N.shadowPass=renderer=>{ if(W3.lv.value<1.5||N.far||!g.visible||!g.parent.visible)return; if(!SELFSH.use(N)){ N.LVP.value.copy(SELFSH.off); return; } const mid=NPCMID.set(g.position.x,g.position.y+H*.45,g.position.z); N.smCam.position.copy(mid).addScaledVector(W3.Lw,7); N.smCam.up.set(0,Math.abs(W3.Lw.y)>.6?0:1,Math.abs(W3.Lw.y)>.6?1:0); N.smCam.lookAt(mid); N.smCam.updateMatrixWorld();
     N.LVP.value.multiplyMatrices(N.smCam.projectionMatrix,N.smCam.matrixWorldInverse); const ms=[]; g.traverse(o=>{ if(o.isMesh){ ms.push([o,o.material]); o.material=N.depthMat; } });
     renderer.setRenderTarget(N.sm); renderer.clear(); renderer.render(g,N.smCam); renderer.setRenderTarget(null); for(const [o,m] of ms)o.material=m; };
   N.selfSh=!o.noSelf;
@@ -140,7 +140,7 @@ ROAM.pick=(st,free)=>{ '@later'; const L=ROAM.L; for(let k=0;k<12;k++){ let to;
 const PXSNAP=on=>{ const L=PXSNAP.L;
   if(!on){ for(let i=0;i<L.length;i+=4){ const p=L[i].position; p.x-=L[i+1]; p.y-=L[i+2]; p.z-=L[i+3]; } L.length=0; return; }
   if(UI.persp||!UI.snR)return; PXSNAP.u=rppu(); const one=PXSNAP.one;
-  if(typeof W3!=='undefined'&&W3.group&&one(W3.group,UI.snD)){ const c=W3.smCam, M=W3.LVP, n=L.length, dx=L[n-3], dy=L[n-2], dz=L[n-1];
+  if(W3.group&&one(W3.group,UI.snD)){ const c=W3.smCam, M=W3.LVP, n=L.length, dx=L[n-3], dy=L[n-2], dz=L[n-1];
     c.position.x+=dx; c.position.y+=dy; c.position.z+=dz; L.push(c,dx,dy,dz); c.updateMatrixWorld(); if(M)M.value.multiplyMatrices(c.projectionMatrix,c.matrixWorldInverse); }
   for(const N of NPCS)if(!N.far)one(N.g);
   for(const X of NPCS.extra)if(X.g)one(X.g); };

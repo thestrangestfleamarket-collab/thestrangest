@@ -36,7 +36,7 @@ const BFLY={}; window.BFLY=BFLY;
   bfGo();
   BFLY.catch=b=>{ '@later'; if(!b.g.parent)return; const p=W3.group.position; if(Math.hypot(p.x-b.g.position.x,p.z-b.g.position.z)>1.8*T)return say('IT FLUTTERS OUT OF REACH.','#c8a090');
     const fly=!!b.dur, net=FORAGE.has('net'); if(fly&&!net)return say('IT IS ON THE WING. YOU NEED A NET (THE MUSHROOM SELLER HAS THEM), OR WAIT TILL IT SETTLES.','#c8a090');
-    const d=DIFF(b.k)+(fly?15:0)-(net?10:0); if(typeof SFX!=='undefined')SFX.play('step',{vol:.4});
+    const d=DIFF(b.k)+(fly?15:0)-(net?10:0); SFX.play('step',{vol:.4});
     if(use('ento',d-25,d+25)){ const known=DIFF(b.k)<12||use('ento',DIFF(b.k)-30,DIFF(b.k)+20); FORAGE.give((known?'b_':'bu_')+b.k,1);
       say(known?`YOU CATCH A ${BF_KINDS[b.k][0].toUpperCase()}${b.k>=12?'. A RARE ONE!':'.'}`:'YOU CATCH A BUTTERFLY YOU DO NOT KNOW.',b.k>=12?'#f2c14e':known?'#e8e2cc':'#c8b0ff');
       const L=CH.get(b.chunk); if(L){ const i=L.indexOf(b); if(i>=0)L.splice(i,1); } drop(b); }

@@ -97,12 +97,12 @@ const GPH=window.GPH={ms:0,n:0};
   const detach=it=>{ '@later'; const by=new Map(); for(const p of it.parts)(by.get(p.me)||by.set(p.me,[]).get(p.me)).push(p);
     it.dm=[...by].map(([src,L])=>{ const g=src.geometry, G=new THREE.BufferGeometry(), n=L.length*6;
       for(const k in g.attributes){ const A=g.attributes[k], s=A.itemSize, d=new A.array.constructor(n*s); L.forEach((p,j)=>d.set(A.array.subarray(p.v0*s,(p.v0+6)*s),j*6*s)); G.setAttribute(k,new THREE.BufferAttribute(d,s,A.normalized)); }
-      const P=g.attributes.position.array; for(const p of L){ const o=p.v0*3; for(let v=3;v<18;v++)P[o+v]=P[o+v%3]; } g.attributes.position.needsUpdate=true; if(typeof BVH!=='undefined')BVH.refit(g);
+      const P=g.attributes.position.array; for(const p of L){ const o=p.v0*3; for(let v=3;v<18;v++)P[o+v]=P[o+v%3]; } g.attributes.position.needsUpdate=true; BVH.refit(g);
       const me=new THREE.Mesh(G,src.material); me.castShadow=src.castShadow; me.receiveShadow=src.receiveShadow; me.renderOrder=src.renderOrder; me.userData={objOf:L.map(()=>it.o),split:true,chunked:true,loose:it}; src.add(me);
       L.forEach((p,j)=>{ p.me=me; p.v0=j*6; }); const B=G.attributes.position.array.slice(); for(let i=0;i<B.length;i++)B[i]-=it.c[i%3]; return {me,B,N:G.attributes.normal.array.slice()}; });
-    if(typeof PERFX!=='undefined')PERFX.gen++; pickList(); };
+    PERFX.gen++; pickList(); };
   const reshade=()=>{ if(!LIGHTS){ LIGHTS=[]; scene.traverse(L=>{ if(L.isLight&&L.castShadow&&L.shadow)LIGHTS.push(L); }); } for(const L of LIGHTS)if(L.shadow.autoUpdate===false&&Math.hypot(L.position.x-pos.x,L.position.z-pos.z)<RS)L.shadow.needsUpdate=true; };
-  const hand=()=>({x:pos.x+Math.sin(SHARED.heading)*.42*T+Math.cos(SHARED.heading)*-.12*T,y:SHARED.py+1.0*T*(typeof W3!=='undefined'&&W3.SZ?W3.SZ:1),z:pos.z+Math.cos(SHARED.heading)*.42*T-Math.sin(SHARED.heading)*-.12*T});
+  const hand=()=>({x:pos.x+Math.sin(SHARED.heading)*.42*T+Math.cos(SHARED.heading)*-.12*T,y:SHARED.py+1.0*T*(W3.SZ?W3.SZ:1),z:pos.z+Math.cos(SHARED.heading)*.42*T-Math.sin(SHARED.heading)*-.12*T});
   const holdAt=it=>{ const h=hand(), r=Math.max(it.h[0],it.h[2]); return {x:h.x+Math.sin(SHARED.heading)*r,y:Math.max(h.y,SHARED.py+it.h[1]+.05*T),z:h.z+Math.cos(SHARED.heading)*r}; };
   const intent=()=>{ if(USE.seat||ED.on||UI.freeCam)return [0,0]; let mx=0, mz=0; const fx=-Math.sin(SHARED.yaw), fz=-Math.cos(SHARED.yaw), k=s=>keys.has(s);
     if(k('w')||k('arrowup')){ mx+=fx; mz+=fz; } if(k('s')||k('arrowdown')){ mx-=fx; mz-=fz; } if(k('d')||k('arrowright')){ mx-=fz; mz+=fx; } if(k('a')||k('arrowleft')){ mx+=fz; mz-=fx; }

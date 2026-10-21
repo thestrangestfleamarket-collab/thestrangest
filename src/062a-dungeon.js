@@ -66,8 +66,8 @@ await grab('dungeon',async()=>{});
   const go=async(n,how)=>{ if(busy)return; busy=true; await FADE.run(n?(cur||how==='load'&&n>1?'':'ENTERING ')+'DUNGEON — LEVEL '+n:'LEAVING DUNGEON',async()=>{
     if(n){ await LOAD('dungeon'); const L=build(n), a=how==='below'?L.atDn:L.atUp; if(how!=='load'){ UI.goTo(a.x,a.z,'down'); SHARED.heading=a.h; } SHARED.BOUND=bnd(n); }
     else{ clear(); UI.goTo(top.x,top.z,'up'); SHARED.heading=Math.PI; }
-    if(typeof PH!=='undefined')PH.hd=SHARED.heading; },{hold:140}); busy=false; };
-  MODS.dunDoor=(py,p)=>{ if(busy||UI.freeCam||SHARED.METRO.doorBusy()||(typeof RAG!=='undefined'&&RAG.on))return; const m=SHARED.LVL==='down'?lotAt(p.x,p.z):0;
+    PH.hd=SHARED.heading; },{hold:140}); busy=false; };
+  MODS.dunDoor=(py,p)=>{ if(busy||UI.freeCam||SHARED.METRO.doorBusy()||(RAG.on))return; const m=SHARED.LVL==='down'?lotAt(p.x,p.z):0;
     if(!m){ if(cur&&!busy)clear(); if(SHARED.LVL!=='down'){ const gx=p.x/TILE+72, gy=p.z/TILE-77; if(gx>=S.x0&&gx<S.x1&&gy>=S.y0&&gy<S.y1)go(1,'top'); } return; }
     if(m!==cur)return go(m,'load');
     const L=lay(cur), gx=iX(p.x), gy=iZ(p.z); if(tread(L.up,gx,gy))go(cur-1,'below'); else if(tread(L.dn,gx,gy))go(cur+1,'top'); };

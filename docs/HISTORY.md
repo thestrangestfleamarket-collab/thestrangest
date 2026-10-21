@@ -3796,3 +3796,9 @@ initial download and load super fast"; then "Go")
   so every number is several times a real machine's): the builders that run at start were down 0.6 s, bodega 0.8, apts 2.4–3.1,
   ghostdojo 1.0, parkwall 3.4–3.5, castle 0.7 (now 0); the rest under 10 ms. The next ones each need their own pull request with
   guards, because other files read what they register at start: the apartments (~20 readers), the ghost dojo, the park wall.
+- **Start where you were** (owner, 20 Oct 2026: "it loads me into main street first, no matter where i logged out last, so as soon as
+  i show up i teleport to central park ... you should show up where you were at last and that is the only thing that loads"): the
+  saved spot is read before the first frame (071, like `?at=`), and if it is in Central Park the park loads behind the opening fade
+  (163), so you come back standing where you left, with no street first and no "ENTERING CENTRAL PARK". A first-ever start begins in
+  the park the same way. The second half of his rule — building only that place, not the street under it — is the piece-by-piece
+  work that started with the castle (#155): the park wall, the apartments and the ghost dojo next, each its own pull request.

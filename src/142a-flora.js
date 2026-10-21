@@ -38,7 +38,7 @@ const FLORA={bushes:[],beds:[],tris:0,n:{}}; window.FLORA=FLORA;
   let BU=[], FL=[], BEDS=[], cur=null; FLORA.meshes=[]; FLORA.flowers=0;
   const bedOpen=()=>{ cur=[]; }, bedClose=()=>{ if(cur&&cur.length>=3)BEDS.push(cur); cur=null; };
   const grow=park=>{ BU=[]; FL=[]; BEDS=[]; const b0=FLORA.beds.length;
-  if(park&&typeof PARK!=='undefined'&&PARK.ox!=null&&PARK.brook&&PARK.hill){ const P=PARK, X=x=>BOD.XS(x+P.ox), Z=y=>BOD.ZS(y+P.oy), [cx,cy,cr]=P.round, BK=P.brook, F=FOUNT;
+  if(park&&typeof PARK!=='undefined'&&PARK.ox!=null&&PARK.brook&&PARK.hill){ const P=PARK, X=x=>SHARED.BOD.XS(x+P.ox), Z=y=>SHARED.BOD.ZS(y+P.oy), [cx,cy,cr]=P.round, BK=P.brook, F=FOUNT;
     const pd=P.pd, RX=x=>x-96+cx, RY=y=>y+47+cy;
     const KEEP=[[cx+12.5-6.5,cy+11.5-6.5,cx+12.5+6.5,cy+11.5+6.5],[CASTLE.b[0]-P.ox-2,CASTLE.b[2]-P.oy-2,CASTLE.b[1]-P.ox+2,CASTLE.b[3]-P.oy+2],...(P.campAt?[(c=>[c.x-4,c.y-4,c.x+4,c.y+4])(P.campAt())]:[]),...(typeof GCAVE!=='undefined'?GCAVE.keep(P):[])];
     const GT=[[(P.gate[0]+P.gate[1])/2,P.y0],...(P.egate?[[P.x1,(P.egate[0]+P.egate[1])/2]]:[]),...(P.wgate?[[P.x0,(P.wgate[0]+P.wgate[1])/2]]:[]),...(P.ngate?[[(P.ngate[0]+P.ngate[1])/2,P.y1]]:[])];
@@ -65,7 +65,7 @@ const FLORA={bushes:[],beds:[],tris:0,n:{}}; window.FLORA=FLORA;
     if(F.S){ const {C,R}=F.S, FK=[[0,3],[5,6],[3,9],[0,1],[6,5]], BKF=[0,9,1];
       for(let i=0;i<28;i++){ const a=i/28*Math.PI*2; bedOpen(); for(let t=-2;t<=2;t++){ const b=a+t*.5/(R+1.2); fl(FK[i%5][(t+2)%2],C.x+Math.cos(b)*(R+1.1),C.y+Math.sin(b)*(R+1.1)); fl(FK[i%5][(t+3)%2],C.x+Math.cos(b+.01)*(R+1.6),C.y+Math.sin(b+.01)*(R+1.6)); } bedClose();
         if(i%2===0)bu(BKF[(i/2|0)%3],C.x+Math.cos(a+.08)*(R+3.4),C.y+Math.sin(a+.08)*(R+3.4)); } }
-    const OK=(P.oaks||[]).map(([wx,wz,m])=>[wx/T+BOD.OX-P.ox,wz/T+BOD.OY-P.oy,m]).filter(([x,y])=>x>P.x0&&x<P.x1&&y>P.y0&&y<P.y1), TK=[2,1,3,8,8,2];
+    const OK=(P.oaks||[]).map(([wx,wz,m])=>[wx/T+SHARED.BOD.OX-P.ox,wz/T+SHARED.BOD.OY-P.oy,m]).filter(([x,y])=>x>P.x0&&x<P.x1&&y>P.y0&&y<P.y1), TK=[2,1,3,8,8,2];
     OK.forEach(([x,y,m],i)=>{ const cR=m*.42; for(let j=0;j<3;j++){ if(hsh(i,j,61)<.3)continue; const a=hsh(j,i,63)*6.28, d=2.2+hsh(i+j,7,65)*Math.min(2.6,cR*.5); bu(TK[Math.floor(hsh(i,j,67)*TK.length)],x+Math.cos(a)*d,y+Math.sin(a)*d); }
       const a=hsh(i,9,69)*6.28, d=1.5+hsh(9,i,71); clump(x+Math.cos(a)*d,y+Math.sin(a)*d,.9,4+Math.floor(hsh(i,11,73)*3),hsh(i,13,75)<.5?[7,7,8]:[7,8,8],i); });
     { const WK=[4,7,6,5,4,6], L=[[P.x0+5,P.y0+4.6,1,0,P.x1-P.x0-10],[P.x0+5,P.y1-4.2,1,0,P.x1-P.x0-10],[P.x0+4.3,P.y0+6,0,1,P.y1-P.y0-11],[P.x1-4.3,P.y0+6,0,1,P.y1-P.y0-11]];

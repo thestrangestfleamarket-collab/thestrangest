@@ -49,13 +49,13 @@ const LOOKS={};
   LOOKS.open=()=>{ draw(); P.hidden=false; }; LOOKS.L=L;
   LOOKS.stats=(hp,st)=>{ if(P.hidden)return; $('#lhp').style.width=Math.round(hp*100)+'%'; $('#lst').style.width=Math.round(st*100)+'%'; };
   const hit=new THREE.Mesh(new THREE.BoxGeometry(.8*TILE,2.2*TILE,.8*TILE),new THREE.MeshBasicMaterial({visible:false})); scene.add(hit);
-  renderer.domElement.addEventListener('pointerdown',()=>{ hit.position.set(pos.x,py+1.1*TILE,pos.z); hit.updateMatrixWorld(); },true);
+  renderer.domElement.addEventListener('pointerdown',()=>{ hit.position.set(pos.x,SHARED.py+1.1*TILE,pos.z); hit.updateMatrixWorld(); },true);
   UI.thing({name:'YOU',ghost:1,obj:hit,reach:99,tall:2,act:()=>LOOKS.open()});
   W3.E=W3.pcs.map(()=>null); for(const [n,v] of Object.entries(MALE)){ const i=W3.idx(n); if(i>=0)W3.E[i]={s:v.slice(),o:[0,0,0],q:[0,0,0,1]}; }
   const LT=new THREE.Vector3(), LS=new THREE.Vector3(), LSTEP=+(QS.get('lstep')??7)*Math.PI/180; let lt0=performance.now();
   LOOKS.light=()=>{ const now=performance.now(), k=1-Math.exp(-Math.min(.1,(now-lt0)/1000)*7); lt0=now; const sun=CLOCK.sun;
-    if(sun&&sun.intensity>.3&&LVL==='up')LT.copy(sun.position).sub(sun.target.position).normalize();
-    else{ const best=SHL.find(S=>S.intensity>0); if(!best)return; LT.set(best.position.x-pos.x,Math.max(.25*TILE,best.position.y-(py+1.2*TILE)),best.position.z-pos.z).normalize(); }
+    if(sun&&sun.intensity>.3&&SHARED.LVL==='up')LT.copy(sun.position).sub(sun.target.position).normalize();
+    else{ const best=SHL.find(S=>S.intensity>0); if(!best)return; LT.set(best.position.x-pos.x,Math.max(.25*TILE,best.position.y-(SHARED.py+1.2*TILE)),best.position.z-pos.z).normalize(); }
     if(!(LS.lengthSq()>.5))LS.copy(LT); else LS.lerp(LT,k).normalize();
     if(!W3.realL||!(W3.Lw.lengthSq()>.5)||W3.Lw.angleTo(LS)>LSTEP)W3.Lw.copy(LS); W3.realL=true; };
   apply(); if(L.robe)LOOKS.robe(true); else feet(); }

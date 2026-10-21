@@ -1,5 +1,5 @@
 const LIVES={on:QS.has('lives')?QS.get('lives')!=='0':CITY.on,ready:false,ms:0,stepMs:0,list:[],force:null,skips:0};
-{ const T=TILE, X=BOD.XS, Z=BOD.ZS, XB=BOD.X, ZB=BOD.Z, M=BOD.MAP, LS=BOD.K.LSEED, HZ=.25, d2=(a,b)=>Math.hypot(a.x-b.x,a.z-b.z);
+{ const T=TILE, X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, XB=SHARED.BOD.X, ZB=SHARED.BOD.Z, M=SHARED.BOD.MAP, LS=SHARED.BOD.K.LSEED, HZ=.25, d2=(a,b)=>Math.hypot(a.x-b.x,a.z-b.z);
   const ZS_=Z(LS.street-1.5), ZR=Z((LS.street+LS.grass)/2), ZF=Z((LS.grass+M.y1)/2), HOLE=[X(MAPSTAIR.x0-.6),Z(MAPSTAIR.y0),X(MAPSTAIR.x1+.6),Z(MAPSTAIR.y1+.6)];
   const inHole=(x,z)=>x>HOLE[0]&&x<HOLE[2]&&z>HOLE[1]&&z<HOLE[3];
   const P={}; const place=(id,o)=>{ P[id]=Object.assign({id,lv:'up',walls:false,reach:1.5*T,path:[]},o); return P[id]; };
@@ -7,9 +7,9 @@ const LIVES={on:QS.has('lives')?QS.get('lives')!=='0':CITY.on,ready:false,ms:0,s
   const mid=(Xf,Zf,r)=>({x:(Xf(r[0])+Xf(r[2]))/2,z:(Zf(r[1])+Zf(r[3]))/2});
   LIVES.build=()=>{ '@later';
     place('street',{door:null,reach:0});
-    { const B=BOD.B0, dx=XB((B.x0+B.x1)/2); place('bodega',{walls:true,door:{x:dx,z:ZS_},path:[{x:dx,z:ZB(B.y1)+.6*T},{x:dx,z:ZB(B.y1)-3.4}],box:bx(XB,ZB,[B.x0+1,BOD.BODOFF+1,B.x1-1,B.y1-1]),reach:2.5*T}); }
+    { const B=SHARED.BOD.B0, dx=XB((B.x0+B.x1)/2); place('bodega',{walls:true,door:{x:dx,z:ZS_},path:[{x:dx,z:ZB(B.y1)+.6*T},{x:dx,z:ZB(B.y1)-3.4}],box:bx(XB,ZB,[B.x0+1,SHARED.BOD.BODOFF+1,B.x1-1,B.y1-1]),reach:2.5*T}); }
     
-    if(BOD.GD){ const G=BOD.GD, dx=XB(G.door[0]); place('dojo',{walls:true,door:{x:dx,z:ZS_},path:[{x:dx,z:ZB(G.door[1])+.8*T},{x:dx,z:ZB(G.door[1])-1.5*T},mid(XB,ZB,G.floor||G.r)],box:bx(XB,ZB,G.floor?[G.floor[0]+1.2,G.floor[1]+.3,G.floor[2]-1.2,G.floor[3]-.6]:[G.r[0]+1.2,G.r[1]+1.2,G.r[2]-1.2,G.r[3]-1.2]),reach:3*T}); }
+    if(SHARED.BOD.GD){ const G=SHARED.BOD.GD, dx=XB(G.door[0]); place('dojo',{walls:true,door:{x:dx,z:ZS_},path:[{x:dx,z:ZB(G.door[1])+.8*T},{x:dx,z:ZB(G.door[1])-1.5*T},mid(XB,ZB,G.floor||G.r)],box:bx(XB,ZB,G.floor?[G.floor[0]+1.2,G.floor[1]+.3,G.floor[2]-1.2,G.floor[3]-.6]:[G.r[0]+1.2,G.r[1]+1.2,G.r[2]-1.2,G.r[3]-1.2]),reach:3*T}); }
     for(const [id,nm] of [['diner','diner'],['bar','bar']]){ const Rr=STORE.rooms.find(r=>r.id===nm); if(!Rr||Rr.fy)continue;
       place(id,{walls:true,door:{x:Rr.at.x,z:ZS_},path:[{x:Rr.at.x,z:Rr.z1+.6*T},{x:Rr.at.x,z:Rr.at.z}],box:{x0:Rr.x0+.8*T,z0:Rr.z0+.8*T,x1:Rr.x1-.8*T,z1:Rr.z1-.8*T},reach:3*T}); }
     { const gx=X((PARK.gate[0]+PARK.gate[1])/2+PARK.ox), gz=Z(PARK.y0+PARK.oy), rd={x:X(PARK.round[0]+PARK.ox),z:Z(PARK.round[1]+PARK.oy)};
@@ -67,7 +67,7 @@ const LIVES={on:QS.has('lives')?QS.get('lives')!=='0':CITY.on,ready:false,ms:0,s
     LIVES.ready=true; };
   const within=(b,x,z,e)=>x>b.x0-e&&x<b.x1+e&&z>b.z0-e&&z<b.z1+e;
   LIVES.hidden=N=>{ const L=N.life; if(!L)return false; const cur=ROOMS.cur; if(cur&&!FREE)return !within(cur,N.st.x,N.st.z,.4*T);
-    const inn=L.inside?P[L.inside]:null; return !!(inn&&inn.walls&&(N.lv!=='down'||LVL==='down')); };
+    const inn=L.inside?P[L.inside]:null; return !!(inn&&inn.walls&&(N.lv!=='down'||SHARED.LVL==='down')); };
   const passed=(N,g)=>{ const L=N.life; if(L.tmp){ L.tmp=null; return; } L.i++; L.inside=g.in; L.at=g.in||'street';
     if(g.in){ const j=P[g.in].path.findIndex(p=>p.x===g.x&&p.z===g.z); if(j>=0)L.k=g.in===L.to?j+1:j; } };
   const stepFar=(N,dt)=>{ const L=N.life, st=N.st, g=L.tmp||(L.wp&&L.wp[L.i]); if(!g){ arrive(N,dt); return; }
@@ -95,7 +95,7 @@ const LIVES={on:QS.has('lives')?QS.get('lives')!=='0':CITY.on,ready:false,ms:0,s
     if(!(st.v>.05*T))st.v=N.v0;
     const d=d2(st.to,st); if(d<.1*T){ st.to=null; st.wait=N.guard?2.5:1.5+Math.random()*4; return; } const s=Math.min(d,st.v*dt), nx=st.x+(st.to.x-st.x)/d*s, nz=st.z+(st.to.z-st.z)/d*s;
     if(N.free&&!N.free(nx,nz,st.R)){ st.to=null; st.wait=1; return; } st.h=Math.atan2(st.to.x-st.x,st.to.z-st.z); st.x=nx; st.z=nz; N.g.position.set(st.x,N.ground(st.x,st.z),st.z); N.g.rotation.y=st.h; };
-  LIVES.dbg=()=>NPCS.map(N=>{ const L=N.life, dr=N.key==='dragon'; return {key:N.key,state:L?L.state:dr?'flying':N.guard?(N.st.to?'walking':'standing'):N.st.to?'walking':'standing',place:L?(L.wp?'to '+L.to:L.at):dr?'the sky':N.guard?'beat':N.lv==='down'?'platform':'street',drawn:!N.far&&N.g.visible&&N.g.parent.visible&&(N.lv===LVL||N.g.parent.visible),far:!!N.far,lv:N.lv,x:+N.st.x.toFixed(1),z:+N.st.z.toFixed(1),y:+N.g.position.y.toFixed(2)}; });
+  LIVES.dbg=()=>NPCS.map(N=>{ const L=N.life, dr=N.key==='dragon'; return {key:N.key,state:L?L.state:dr?'flying':N.guard?(N.st.to?'walking':'standing'):N.st.to?'walking':'standing',place:L?(L.wp?'to '+L.to:L.at):dr?'the sky':N.guard?'beat':N.lv==='down'?'platform':'street',drawn:!N.far&&N.g.visible&&N.g.parent.visible&&(N.lv===SHARED.LVL||N.g.parent.visible),far:!!N.far,lv:N.lv,x:+N.st.x.toFixed(1),z:+N.st.z.toFixed(1),y:+N.g.position.y.toFixed(2)}; });
   LIVES.places=()=>Object.values(P).map(p=>({id:p.id,lv:p.lv,door:p.door,path:p.path,box:p.box}));
   LIVES.lineFree=(key,a,b,lv)=>{ const N=NPCS.find(n=>n.key===key), l0=N.lv; if(lv)N.lv=lv; const r=lineFree(N,a,b); N.lv=l0; return r; };
   LIVES.legHit=(key,a,b,lv)=>{ const N=NPCS.find(n=>n.key===key), L=SOL[lv||N.lv], n=Math.ceil(d2(a,b)/(.33*T)); for(let k=1;k<=n;k++){ const t=k/n, h=CLIP.hit(L,a.x+(b.x-a.x)*t,a.z+(b.z-a.z)*t,N.st.R); if(h)return {box:h,at:[a.x+(b.x-a.x)*t,a.z+(b.z-a.z)*t]}; } return null; };

@@ -36,7 +36,7 @@ const BZ=25, BT=3, BD=.92, BO=.12, PL=.22;
 const panel=(row,h,a)=>{ const z=(h-row)/H; if(z>BZ-5)return z>BZ-1?DP.barD:z>BZ-4.5?(a%40<1?DP.bar:DP.barL):DP.barD; if(z<1)return DP.redK; return (a%32<2)?DP.barD:(a%32<4)?DP.bar:hash(a>>2,row>>3,71)<.04?DP.barL:DP.bar; };
 const topCol=(e,X,Y)=>e<.03?DP.barTopL:e<.05?DP.barTop:hash(Math.floor(X*S),Math.floor(Y*S),72)<.02?DP.barTopL:pcVn(X*6,Y*6,73)<.3?sh(DP.barTop,.9):DP.barTop;
 const glassesRow=(x0,x1,y,z,bs)=>{ for(let x=x0;x<x1-.08;x+=.13+hash(Math.floor(x*40),3,74)*.05){ const t=hash(Math.floor(x*50),5,75); bs.push(pb(x,y,x+.07,y+.07,z,z+(t<.5?6:8),t<.3?[200,226,230]:t<.6?[176,204,196]:[226,214,170],{nb:1,top:()=>[236,244,244]})); } };
-function barStraight(x,y,L,k){ PNAME='bar counter'; const y1=y+BD, bs=[];
+function barStraight(x,y,L,k){ SHARED.PNAME='bar counter'; const y1=y+BD, bs=[];
     bs.push(fb(x,y1-BO-.12,x+L,y1-BO,0,BZ,DP.bar,(s,a,row,Lf,h)=>s==='py'?panel(row,h,a):DP.woodD,DP.barD,{foot:1}));
     bs.push(fb(x,y1-BO,x+L,y1-BO+PL,0,5,DP.plinth,(s,a,row)=>row<1?sh(DP.plinth,1.15):row>8?DP.plinthD:DP.plinth,(X,Y)=>edge(X,Y,x,y1-BO,x+L,y1-BO+PL)<.02?sh(DP.plinth,1.2):DP.plinth,{foot:1}));
     bs.push(fb(x,y,x+L,y1,BZ,BZ+BT,DP.barTop,(s,a,row)=>row<1?DP.barTopL:row>4?DP.barD:DP.barTop,(X,Y)=>topCol(Math.min(y1-Y,Y-y),X,Y)));
@@ -45,7 +45,7 @@ function barStraight(x,y,L,k){ PNAME='bar counter'; const y1=y+BD, bs=[];
     glassesRow(x+.1,x+L-.05,y+.2,2.5,bs); glassesRow(x+.12,x+L-.05,y+.25,14.5,bs);
     if(k!=null)onBar(k,x,x+L,y,y1,bs);
     return prop(bs,null,{solids:[{x0:x,y0:y+.1,x1:x+L,y1:y1-BO+PL}]}); }
-function barRound(x,y){ PNAME='bar counter'; const R=1.12, cx=x+R, cy=y, bs=[], dw=.04;
+function barRound(x,y){ SHARED.PNAME='bar counter'; const R=1.12, cx=x+R, cy=y, bs=[], dw=.04;
     for(let X=x;X<cx-1e-6;X+=dw){ const m=X+dw/2-cx, hy=r=>Math.sqrt(Math.max(0,r*r-m*m)), ri=R-BD;
       const ang=Math.atan2(hy(R),-m), a=Math.floor(ang*R*S);
       bs.push(fb(X,cy+hy(ri+.12),X+dw,cy+hy(R-BO),0,BZ,DP.bar,(s,aa,row,Lf,h)=>s==='ny'||s==='nx'&&m>-ri?DP.woodD:panel(row,h,a),DP.barD,{foot:1,nb:1}));
@@ -53,7 +53,7 @@ function barRound(x,y){ PNAME='bar counter'; const R=1.12, cx=x+R, cy=y, bs=[], 
       bs.push(fb(X,cy+hy(ri),X+dw,cy+hy(R),BZ,BZ+BT,DP.barTop,(s,aa,row)=>row<1?DP.barTopL:row>4?DP.barD:DP.barTop,(XX,YY)=>topCol(Math.min(Math.abs(Math.hypot(XX-cx,YY-cy)-R),Math.abs(Math.hypot(XX-cx,YY-cy)-ri)),XX,YY),{nb:1})); }
     bs.push(fb(x,cy-.02,x+BD,cy,0,BZ,DP.woodD,()=>DP.woodD,DP.woodD,{foot:1}));
     return prop(bs,null,{solids:[{x0:x,y0:cy,x1:cx,y1:cy+R-BO+PL}]}); }
-function barCorner(x,y,len){ PNAME='bar counter'; const x1=x+BD, y1=y+len, rc=.42, bs=[];
+function barCorner(x,y,len){ SHARED.PNAME='bar counter'; const x1=x+BD, y1=y+len, rc=.42, bs=[];
     for(let Y=y;Y<y1-1e-6;Y+=.04){ const ym=Y+.02, cut=ym>y1-rc?(x1-rc)+Math.sqrt(Math.max(0,rc*rc-(ym-(y1-rc))**2)):x1;
       bs.push(fb(x+.12,Y,cut-BO,Y+.04,0,BZ,DP.bar,(s,a,row,Lf,h)=>s==='px'?panel(row,h,Math.floor((y1-Y)*S)):DP.woodD,DP.barD,{foot:1,nb:1}));
       bs.push(fb(cut-BO,Y,cut-BO+PL,Y+.04,0,5,DP.plinth,(s,a,row)=>row<1?sh(DP.plinth,1.15):row>8?DP.plinthD:DP.plinth,sh(DP.plinth,1.1),{foot:1,nb:1}));
@@ -68,7 +68,7 @@ function barCorner(x,y,len){ PNAME='bar counter'; const x1=x+BD, y1=y+len, rc=.4
     return prop(bs,null,{solids:[{x0:x,y0:y,x1:x1-BO+PL,y1:y1-BO+PL}]}); }
 const BOTS=[[[150,90,30],[200,140,60]],[[40,110,50],[90,170,90]],[[200,214,206],[240,248,244]],[[150,30,30],[210,70,60]],[[90,60,30],[150,110,60]],[[220,180,60],[250,226,120]],[[40,60,120],[90,120,200]]];
 const leather=(c,u,v,s)=>{ const n=pcVn(u,v,s); return n>.78?DP.redH:n>.62?DP.redL:n<.18?DP.redD:c; };
-function sofa(x,y){ PNAME='sofa'; const D=.92, L=2.2, x1=x+D, y1=y+L, bs=[], R=DP.red;
+function sofa(x,y){ SHARED.PNAME='sofa'; const D=.92, L=2.2, x1=x+D, y1=y+L, bs=[], R=DP.red;
     const lf=(seed)=>(s,a,row,Lf,h)=>row<2?DP.redL:row>h-3?DP.redK:leather(R,a/9,row/9,seed);
     bs.push(fb(x+.08,y+.22,x1,y1-.22,0,6,DP.redD,(s,a,row)=>row<1?DP.red:DP.redK,DP.redD,{foot:1}));
     for(const [a,b] of [[y+.24,y+L/2],[y+L/2,y1-.24]])bs.push(fb(x+.3,a+.01,x1-.02,b-.01,6,14,R,lf(81),(X,Y)=>{ const e=edge(X,Y,x+.3,a,x1-.02,b); return e<.04?DP.redL:leather(R,X*9,Y*9,82); }));
@@ -78,7 +78,7 @@ function sofa(x,y){ PNAME='sofa'; const D=.92, L=2.2, x1=x+D, y1=y+L, bs=[], R=D
     for(const [a,b] of [[y,y+.24],[y1-.24,y1]])bs.push(fb(x,a,x1,b,0,20,R,(s,a2,row,Lf,h)=>row<3?DP.redL:row<5?DP.redH:(s==='px'&&Math.hypot(a2-Lf/2,row-11)<8)?(Math.hypot(a2-Lf/2,row-11)<6?DP.redL:DP.redD):row>h-3?DP.redK:leather(R,a2/9,row/9,86),
       (X,Y)=>Math.abs(Y-(a+b)/2)<.05?DP.redH:DP.redL,{foot:1}));
     return prop(bs); }
-function armchair(x,y){ PNAME='armchair'; const R0=.47, Ri=.3, cx=x+.47, cy=y+.475, bs=[], C=DP.red;
+function armchair(x,y){ SHARED.PNAME='armchair'; const R0=.47, Ri=.3, cx=x+.47, cy=y+.475, bs=[], C=DP.red;
     const fs=(X0,Y0)=>(s,a,row,Lf,h)=>{ '@later'; const nx=s==='px'?1:s==='nx'?-1:0, ny=s==='py'?1:s==='ny'?-1:0, inner=(X0-cx)*nx+(Y0-cy)*ny<0, ang=Math.floor((Math.atan2(Y0-cy,X0-cx)+3.2)*R0*S);
       if(row<2)return DP.redH; if(row<4)return DP.redL; if(row>h-3)return DP.redK; if(inner)return ang%9<2?DP.redD:ang%9<4?DP.redL:C; return leather(C,ang/8,row/8,94); };
     for(let Y=cy-R0;Y<cy+R0-1e-6;Y+=.04){ const m=Y+.02-cy, ox=Math.sqrt(Math.max(0,R0*R0-m*m)), ix=Math.abs(m)<Ri?Math.sqrt(Ri*Ri-m*m):null, xf=Math.min(cx+ox,cx+.42);
@@ -87,14 +87,14 @@ function armchair(x,y){ PNAME='armchair'; const R0=.47, Ri=.3, cx=x+.47, cy=y+.4
         bs.push(fb(a,Y,b,Y+.04,0,h,C,fs((a+b)/2,Y+.02),(X,YY)=>DP.redL,{foot:1,nb:1})); } }
     bs.push(fb(cx-.3,cy-Ri+.02,cx+.42,cy+Ri-.02,0,13,C,(s,a,row,L,h)=>row<2?DP.redL:row>h-12?DP.redD:leather(C,a/8,row/8,95),(X,Y)=>{ const e=edge(X,Y,cx-.3,cy-Ri+.02,cx+.42,cy+Ri-.02); return e<.04?DP.redL:leather(C,X*9,Y*9,96); },{foot:1}));
     return prop(bs); }
-function rug(x,y,L,W){ PNAME='rug'; const x1=x+L, y1=y+W;
+function rug(x,y,L,W){ SHARED.PNAME='rug'; const x1=x+L, y1=y+W;
     return prop([pb(x,y,x1,y1,0,.5,DP.rug,{foot:1,top:(X,Y)=>{ const e=edge(X,Y,x,y,x1,y1); if(e<.03)return DP.rugD; if(e<.14&&e>.1)return DP.rugD; const n=hash(Math.floor(X*48),Math.floor(Y*48),92); return n<.12?DP.rugD:n>.94?DP.rugL:pcVn(X*4,Y*4,93)<.25?sh(DP.rug,.92):DP.rug; },fi:()=>DP.rugD,fj:()=>DP.rugD})],null,{walk:true,flat:true}); }
 const LEAF=[[24,60,34],[36,84,44],[56,110,56],[86,140,70],[20,44,28]];
 function leavesArt(Wp,Hp,seed,n,len,droop,z0f){ return pic(Wp,Hp,put=>{ const cx=Wp/2;
     for(let i=0;i<n;i++){ const s=hash(i,seed,94)*2-1, side=Math.sign(s)||1, el=.25+hash(i,seed,95)*1.15, L=len*(.55+.45*hash(i,seed,96)), base=Hp*(z0f+(1-z0f)*hash(i,seed,97)*.25);
       for(let t=0;t<1;t+=.004){ const d=side*Math.cos(el)*L*t*(.3+.7*Math.abs(s)), h=Math.sin(el)*L*t-droop*L*t*t*(1.2-el*.4), X=cx+d, Y=base-h, w=Math.max(.6,2.4*(1-t));
         for(let o=-w;o<=w;o+=.5){ const c=LEAF[Math.min(4,Math.floor((1-t*.4)*2+hash(i,seed,98)*2+(o>0?1:0)))]; put(X,Y+o,t>.92&&o>0?LEAF[4]:c); } } } }); }
-function plant(x,y,big){ PNAME=big?'potted palm':'potted plant'; const r=big?.36:.28, ph=big?20:24, Hp=big?220:190, Wp=big?160:110, bs=[];
+function plant(x,y,big){ SHARED.PNAME=big?'potted palm':'potted plant'; const r=big?.36:.28, ph=big?20:24, Hp=big?220:190, Wp=big?160:110, bs=[];
     bs.push(...round(x,y,0,ph,z=>r*(.78+.22*z/ph)+(z>ph-2?.03:0),(dx,dy,z,top)=>top?(Math.hypot(dx,dy)>r-.02?DP.potL:DP.soil):z>ph-2?DP.potL:Math.atan2(dy,dx)>1.4?DP.potL:z<2?DP.potD:big?DP.pot:[184,176,160],2,.04));
     if(big)bs.push(...round(x,y,0,1.5,r+.08,(dx,dy,z,top)=>top?DP.potL:DP.potD,1.5,.05));
     bs.push(pb(x-.03,y-.03,x+.03,y+.03,ph,ph+(big?30:14),[90,70,40],{nb:1}));
@@ -103,10 +103,10 @@ function plant(x,y,big){ PNAME=big?'potted palm':'potted plant'; const r=big?.36
     bs.push(pane(0,true),pane(1,false),pane(2,true),pane(3,false));
     bs[bs.length-2].x0+=.01; bs[bs.length-2].x1+=.01; bs[bs.length-1].y0+=.01; bs[bs.length-1].y1+=.01;
     return prop(bs,null,{solids:[{x0:x-r,y0:y-r,x1:x+r,y1:y+r}]}); }
-function exitSign(x,y){ PNAME='exit sign'; const w=.62, h=8;
+function exitSign(x,y){ SHARED.PNAME='exit sign'; const w=.62, h=8;
     const p=prop([fb(x,y,x+.1,y+w,0,h,[214,206,186],(s,a,row,L)=>{ if(s!=='px')return [190,180,160]; const A=(a-6)>>1, R=(row-3)>>1; if(row<1||row>=2*h-1||a<1||a>=L-1)return [150,140,120]; return A>=0&&R>=0&&R<5&&'EXIT'.split('').some((ch,i)=>{ const q=A-i*4; return q>=0&&q<3&&F3[ch][R*3+q]==='1'; })?lit([240,80,60]):[226,220,200]; },[200,190,170],{foot:1,em:1})],null,{hang:0,walk:true,high:true});
     LAMPS.push({own:1,room:1,x:x+.3,y:y+w/2,z:h/2,r:1.2,c:[1,.4,.3],prop:p}); return p; }
-function blinds(x,y,L,Z){ '@later'; PNAME='window blinds'; const S2=[132,128,104], S1=[108,104,84];
+function blinds(x,y,L,Z){ '@later'; SHARED.PNAME='window blinds'; const S2=[132,128,104], S1=[108,104,84];
     return prop([fb(x,y,x+.04,y+L,0,Z,S2,(s,a,row,Lf,h)=>s!=='px'?S1:row<4||row>h-4||a<4||a>Lf-4?DP.woodD:(row%8<2?[40,38,30]:row%8<3?S1:row%8===7?sh(S2,1.15):S2),S1,{foot:1}),
       fb(x,y-.06,x+.08,y,0,Z,DP.woodD,()=>DP.woodD,DP.wood,{foot:1}),fb(x,y+L,x+.08,y+L+.06,0,Z,DP.woodD,()=>DP.woodD,DP.wood,{foot:1}),fb(x,y-.06,x+.1,y+L+.06,-3,0,DP.woodD,(s,a,row)=>row<1?DP.woodL:DP.woodD,DP.woodL),
       fb(x,y-.06,x+.08,y+L+.06,Z,Z+3,DP.woodD,()=>DP.woodD,DP.wood)],null,{hang:0,walk:true,high:true}); }
@@ -126,9 +126,9 @@ const POSTERS={
       for(const [cx,cy] of [[w/2,20],[w/2,h/2+1],[w/2,h-10],[10,h/2+1],[w-10,h/2+1]])disc(put,cx,cy,3,3,[30,30,30],.3); },
     'night painting':(put,w,h)=>{ for(let y=0;y<h;y++)box(put,0,y,w,y+1,[18+y/h*30|0,26+y/h*30|0,60+y/h*20|0]); for(let i=0;i<20;i++)put(hash(i,1,100)*w,hash(i,2,100)*h*.5,[220,220,200]);
       disc(put,w*.7,h*.22,5,5,[240,230,190]); for(let x=0;x<w;x++){ const t=h*.7+Math.sin(x*.15)*4+Math.sin(x*.4)*2; box(put,x,t,x+1,h,[14,20,30]); } } };
-function poster(x,y,name,L,Hh){ PNAME='poster'; const w=Math.round(L*S), h=Hh*H, A=pic(w,h,put=>POSTERS[name](put,w,h));
+function poster(x,y,name,L,Hh){ SHARED.PNAME='poster'; const w=Math.round(L*S), h=Hh*H, A=pic(w,h,put=>POSTERS[name](put,w,h));
     return prop([fb(x,y,x+.04,y+L,0,Hh,[40,30,24],(s,a,row,Lf,hh)=>s!=='px'?[40,30,24]:a<2||a>=Lf-2||row<2||row>=hh-2?[40,30,24]:A(a,row)||[200,200,200],[60,46,34],{foot:1})],null,{hang:0,walk:true,high:true}); }
-function cupboard(x,y){ PNAME='cupboard'; const D=.62, L=.92, Z=34, bs=[];
+function cupboard(x,y){ SHARED.PNAME='cupboard'; const D=.62, L=.92, Z=34, bs=[];
     bs.push(fb(x,y,x+D,y+L,0,Z,DP.black,(s,a,row,Lf,h)=>row<2?DP.blackL:s==='px'&&(Math.abs(a-Lf/2)<1||row>h-4)?[16,16,18]:s==='px'&&row>20&&row<26&&Math.abs(a-Lf/2)<5&&Math.abs(a-Lf/2)>2?DP.chromeL:DP.black,(X,Y)=>edge(X,Y,x,y,x+D,y+L)<.03?DP.blackL:[40,42,46],{foot:1}));
     bs.push(...round(x+.3,y+.3,Z,Z+9,.09,(dx,dy,z,top)=>top?[214,200,170]:Math.atan2(dy,dx)>1.5?[220,226,224]:[180,190,188],1,.04));
     for(let i=0;i<5;i++){ const a=x+.26+(i%3)*.04, b=y+.26+(i>>1)*.04; bs.push(pb(a,b,a+.015,b+.015,Z+9,Z+15,[[240,240,240],[220,60,60],[60,140,220]][i%3],{nb:1})); }

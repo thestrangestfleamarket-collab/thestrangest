@@ -4063,3 +4063,6 @@ initial download and load super fast"; then "Go")
   warns once with its name instead of breaking every system wrapped after it. `SYS.list()` shows them all. Still wrappers: the few
   that change what a lookup returns (the park's ground height, the weather in the arcade, picking things, the stack ground, the
   sword's strike, the mail's restock); each is the only one on its function.
+
+- 21 Oct 2026, the core, piece 5 (owner: "yes" to the simpler plan, "one shared state object ... stop there"): the 26 `let`s that many files wrote to (the camera's yaw/pitch/zoom, the player's heading/target/py, `BOD`, `BODB`, `LVL`, `night`, `composer` and the rest) now live on one object, `SHARED` (`src/003-shx.js`), so a file that reads or writes them says so (`SHARED.yaw`). Done by a scope-aware rename over 149 files.
+- 21 Oct 2026, the core, piece 5 (a) (owner: "Make every file whole"): the six runs of files that opened a block in one file and closed it in another are now one file each: `009-down`, `016-street-kit`, `020-studio-kit`, `023-west-kits`, `027-rooms-kits`, `039-bodega` (56 files became 6). Every file in `src/` now starts and ends outside any block.

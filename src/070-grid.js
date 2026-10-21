@@ -7,22 +7,22 @@ window.GRID=GRID;
   GRID.serve=(key,o)=>{ const s=Object.assign({key,box:null,grp:null,at:null,node:null,pw:false,cut:false,lamps:[],faces:[]},o); GRID.servs.push(s); return s; };
   const near=(x,z,kinds)=>{ let b=null, bd=1e9; for(const n of GRID.nodes){ if(kinds&&!kinds.includes(n.kind))continue; const d=(n.x-x)**2+(n.z-z)**2; if(d<bd){ bd=d; b=n; } } return b; };
   const inBox=(b,p,m=0)=>p.x>b.x0-m&&p.x<b.x1+m&&p.z>b.z0-m&&p.z<b.z1+m&&(b.y0==null||(p.y>b.y0-m&&p.y<b.y1+m));
-  GRID.derive=()=>{ '@later'; const D=typeof DRESS!=='undefined'?DRESS:{}, poles=D.poles||[], G=(x,z)=>groundY(x,z);
+  GRID.derive=()=>{ '@later'; const D=typeof DRESS!=='undefined'?DRESS:{}, poles=D.poles||[], G=(x,z)=>SHARED.groundY(x,z);
     const o=LAY.o('power'), sw=poles.length?poles.find(p=>p.d>0):null, far=poles.length?poles.find(p=>p.d<0):null;
-    const PH={w:6*TILE,d:5*TILE,h:5.2*M, x:BOUND.x0-4.6*TILE+o.x*TILE, z:(sw?sw.z:BOUND.z0+2*TILE)+o.y*TILE+1.6*TILE};
+    const PH={w:6*TILE,d:5*TILE,h:5.2*M, x:SHARED.BOUND.x0-4.6*TILE+o.x*TILE, z:(sw?sw.z:SHARED.BOUND.z0+2*TILE)+o.y*TILE+1.6*TILE};
     PH.y=G(PH.x,PH.z); GRID.house=PH; const src=GRID.node(PH.x+PH.w/2,PH.y+PH.h-.6*M,PH.z-.4*TILE,'source',{house:PH});
-    const cx=BOD.XS(PARK.round[0]+PARK.ox), cz=BOD.ZS(PARK.round[1]+PARK.oy);
+    const cx=SHARED.BOD.XS(PARK.round[0]+PARK.ox), cz=SHARED.BOD.ZS(PARK.round[1]+PARK.oy);
     for(const ring of ['outer','inner']){ const line=poles.filter(p=>(p.ring||(p.d>0?'outer':'inner'))===ring).sort((p,q)=>Math.atan2(p.z-cz,p.x-cx)-Math.atan2(q.z-cz,q.x-cx)); if(!line.length)continue;
       const ns=line.map(p=>GRID.node(p.x,p.y,p.z,'pole',{L:p.L||null,h:p.h,d:p.d,L2:p.L2||null,h2:p.h2}));
       for(let i=0;i<ns.length;i++){ const a=ns[i], b=ns[(i+1)%ns.length]; if(Math.hypot(a.x-b.x,a.z-b.z)<40*TILE)GRID.span(a,b,2); }
       let f=ns[0], fd=1e18; for(const n of ns){ const d=(n.x-src.x)**2+(n.z-src.z)**2; if(d<fd){ fd=d; f=n; } } GRID.span(src,f,3); }
     for(const p of (D.lampposts||[])){ const n=GRID.node(p.x,p.y,p.z,'post',{L:p.L||null,i:p.i}), f=near(p.x,p.z,['pole']); if(f)GRID.span(f,n,1); }
-    const B=typeof BOD!=='undefined'?BOD:null, bx=(x0,y0,x1,y1,S)=>({x0:(S?B.XS:B.X)(x0),z0:(S?B.ZS:B.Z)(y0),x1:(S?B.XS:B.X)(x1),z1:(S?B.ZS:B.Z)(y1),y0:-1,y1:40});
+    const B=typeof SHARED.BOD!=='undefined'?SHARED.BOD:null, bx=(x0,y0,x1,y1,S)=>({x0:(S?B.XS:B.X)(x0),z0:(S?B.ZS:B.Z)(y0),x1:(S?B.XS:B.X)(x1),z1:(S?B.ZS:B.Z)(y1),y0:-1,y1:40});
     if(B&&B.B0)GRID.serve('bodega',{box:bx(B.B0.x0,B.B0.y0,B.B0.x1,B.B0.y1)});
     if(B&&typeof MODS!=='undefined'&&MODS.apts&&MODS.apts.A){ const A=MODS.apts.A; GRID.serve('house',{box:bx(A.x0,A.y0,A.x1,A.y1)}); }
     
     if(B&&B.grounds){ const g=B.grounds.find(q=>q.id==='ghostst'); if(g)GRID.serve('ghost',{box:bx(g.x0,g.y0,g.x1,g.y1)}); }
-    if(typeof STORE!=='undefined')for(const R of STORE.rooms||[]){ const cx=(R.x0+R.x1)/2, cz=(R.z0+R.z1)/2; if(cx<BOUND.x0||cx>BOUND.x1||cz<BOUND.z0||cz>BOUND.z1)continue;
+    if(typeof STORE!=='undefined')for(const R of STORE.rooms||[]){ const cx=(R.x0+R.x1)/2, cz=(R.z0+R.z1)/2; if(cx<SHARED.BOUND.x0||cx>SHARED.BOUND.x1||cz<SHARED.BOUND.z0||cz>SHARED.BOUND.z1)continue;
       GRID.serve(R.id,{box:{x0:R.x0,z0:R.z0,x1:R.x1,z1:R.z1,y0:(R.y0??0)-1,y1:(R.y0??0)+40}}); }
     if(typeof MAPG!=='undefined'&&MAPG.down&&typeof MAPSTAIR!=='undefined'&&B){ const sx=B.XS((MAPSTAIR.x0+MAPSTAIR.x1)/2), sz=B.ZS(MAPSTAIR.y1);
       GRID.serve('subway',{grp:[MAPG.down,MAPG.stairs,MAPG.dungeon].filter(Boolean),at:[sx,G(sx,sz)+.2,sz],under:true}); }

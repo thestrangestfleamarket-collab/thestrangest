@@ -1,13 +1,13 @@
 const CITY={on:QS.get('city')==='1',jobs:[],sched:[],day:0,nj:0,extra:[]}; window.CITY=CITY;
 { const T=TILE, R0=.3*T, C=T/2;
   CITY.places=()=>{ '@later'; const P=[], add=(id,name,x,z,dz,lv='up',o={})=>P.push(Object.assign({id,name,lv,at:{x,z},door:{x,z:z+dz}},o));
-    { const B=BOD.B0; add('bodega','THE BODEGA',BOD.X((B.x0+B.x1)/2),BOD.Z(B.y1),T); }
+    { const B=SHARED.BOD.B0; add('bodega','THE BODEGA',SHARED.BOD.X((B.x0+B.x1)/2),SHARED.BOD.Z(B.y1),T); }
     
-    if(MODS.apts&&MODS.apts.A){ const A=MODS.apts.A; add('house','APARTMENT HOUSE',BOD.X(MODS.apts.DX),BOD.Z(A.y1),T); }
-    if(BOD.GD)add('dojo','THE BATH HOUSE',BOD.X(BOD.GD.door[0]),BOD.Z(BOD.GD.door[1]),T);
-    add('park','CENTRAL PARK',BOD.XS((PARK.gate[0]+PARK.gate[1])/2+PARK.ox),BOD.ZS(PARK.y0+PARK.oy),-T);
-    add('castle','THE CASTLE',BOD.XS(CASTLE.gate),BOD.ZS(CASTLE.b[2]),-1.5*T);
-    add('subway','THE SUBWAY',BOD.XS((MAPSTAIR.x0+MAPSTAIR.x1)/2),BOD.ZS(MAPSTAIR.y1),.8*T);
+    if(MODS.apts&&MODS.apts.A){ const A=MODS.apts.A; add('house','APARTMENT HOUSE',SHARED.BOD.X(MODS.apts.DX),SHARED.BOD.Z(A.y1),T); }
+    if(SHARED.BOD.GD)add('dojo','THE BATH HOUSE',SHARED.BOD.X(SHARED.BOD.GD.door[0]),SHARED.BOD.Z(SHARED.BOD.GD.door[1]),T);
+    add('park','CENTRAL PARK',SHARED.BOD.XS((PARK.gate[0]+PARK.gate[1])/2+PARK.ox),SHARED.BOD.ZS(PARK.y0+PARK.oy),-T);
+    add('castle','THE CASTLE',SHARED.BOD.XS(CASTLE.gate),SHARED.BOD.ZS(CASTLE.b[2]),-1.5*T);
+    add('subway','THE SUBWAY',SHARED.BOD.XS((MAPSTAIR.x0+MAPSTAIR.x1)/2),SHARED.BOD.ZS(MAPSTAIR.y1),.8*T);
     add('platform','THE PLATFORM',MODS.station.plat.x,MODS.station.plat.z,0,'down');
     for(const [n,x,z,lv,off] of STORE.places)if((x||z)&&!off)add('store:'+n.toLowerCase().replace(/^the /,'').replace(/\s+/g,'-'),n,x,z,0,lv,{inside:true,stacked:typeof lv==='number'});
     for(const e of CITY.extra)P.push(e);

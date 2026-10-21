@@ -1,6 +1,6 @@
 const NEWS=window.NEWS={};
-NEWS.init=()=>{ const N=typeof TOONS!=='undefined'&&TOONS.cat; if(!N||typeof BOD==='undefined')return;
-  const X=BOD.XS, Y=z=>BOD.YS(z*.64), Z=BOD.ZS, T=TILE, xm=(MAPSTAIR.x0+MAPSTAIR.x1)/2-6, x0=xm-1.4, x1=xm+1.4, y1=-74.85, y0=y1-1.5;
+NEWS.init=()=>{ const N=typeof TOONS!=='undefined'&&TOONS.cat; if(!N||typeof SHARED.BOD==='undefined')return;
+  const X=SHARED.BOD.XS, Y=z=>SHARED.BOD.YS(z*.64), Z=SHARED.BOD.ZS, T=TILE, xm=(MAPSTAIR.x0+MAPSTAIR.x1)/2-6, x0=xm-1.4, x1=xm+1.4, y1=-74.85, y0=y1-1.5;
   const STEEL=0x5c6268, DARK=0x22262a, WOOD=0x8a6440, PAPER=0xe6e2d6, TW=0xa8844e;
   const BX=[]; const box=(a,b,c,d,z0,z1,col,L=BX,r=0)=>{ L.push([(X(a)+X(b))/2,(Y(z0)+Y(z1))/2,(Z(c)+Z(d))/2,Math.abs(X(b)-X(a)),Y(z1)-Y(z0),Math.abs(Z(d)-Z(c)),col,r]); };
   const rnd=(()=>{ let t=11; return ()=>{ t=(t*16807)%2147483647; return t/2147483647; }; })();
@@ -92,7 +92,7 @@ NEWS.init=()=>{ const N=typeof TOONS!=='undefined'&&TOONS.cat; if(!N||typeof BOD
     lastH=h; flyTick(dt);
     if(isOpen(h)&&!act&&!queue.length){
       if(bundles.length&&shut<.1){ work(); }
-      else { const d=Math.hypot(pos.x-X(xm),pos.z-Z(y1+1)); if(d<3.2*T&&!waved&&LVL!=='down'){ waved=true; doAct('wave'); } else if(d>5*T)waved=false;
+      else { const d=Math.hypot(pos.x-X(xm),pos.z-Z(y1+1)); if(d<3.2*T&&!waved&&SHARED.LVL!=='down'){ waved=true; doAct('wave'); } else if(d>5*T)waved=false;
         if((idleT-=dt)<=0){ idleT=14+Math.random()*22; const lull=h>13&&h<15.5&&Math.random()<.5; if(lull){ napT=20+Math.random()*30; doAct('doze'); } else doAct(Math.random()<.6?'arrange':'stretch'); } } }
     if(act&&act.n==='doze'&&isOpen(h)&&napT>0&&(napT-=dt)<=0)act=null; },'147-newsstand');
   const purse=DRONE.purse||{get:()=>0,add:()=>{}};

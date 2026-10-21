@@ -1,12 +1,12 @@
 const GCAVE={ready:false}; window.GCAVE=GCAVE;
 {
   GCAVE.keep=P=>{ if(!GCAVE.S){ const [rx,ry]=P.round, c={x:PARKCAVE[0],y:PARKCAVE[1]}, R=5, tw={x:PARKTOWER[0]-3.4,y:PARKTOWER[1],w:9.5/3,d:3};
-      GCAVE.S={c,R,tw}; const X=x=>BOD.XS(x+(P.ox||0)), Z=y=>BOD.ZS(y+(P.oy||0));
+      GCAVE.S={c,R,tw}; const X=x=>SHARED.BOD.XS(x+(P.ox||0)), Z=y=>SHARED.BOD.ZS(y+(P.oy||0));
       if(typeof STORE!=='undefined'&&STORE.places){ STORE.places.push(["THE GOLEMS' CAVE",X(c.x),Z(c.y),'up']); STORE.places.push(["THE SQUIRREL'S TOWER",X(tw.x+3.4),Z(tw.y),'up']); } }
     const {c,R,tw}=GCAVE.S; return [[c.x-R-3,c.y-R-2,c.x+R+5,c.y+R+2],[tw.x-tw.w/2-2.5,tw.y-tw.d/2-2.5,tw.x+tw.w/2+3,tw.y+tw.d/2+3]]; };
   const hs=(a,b,c=0)=>{ const s=Math.sin(a*127.1+b*311.7+c*74.7)*43758.5453; return s-Math.floor(s); };
   const foot=(R,a)=>R/Math.pow(Math.pow(Math.abs(Math.cos(a)),3)+Math.pow(Math.abs(Math.sin(a)),3),1/3);
-  const build=()=>{ '@park'; const P=PARK, S=GCAVE.S, X=x=>BOD.XS(x+P.ox), Z=y=>BOD.ZS(y+P.oy), Y=BOD.YS, T=TILE, CX=X(S.c.x), CZ=Z(S.c.y), R=S.R, grp=MAPG.park||scene, V3=THREE.Vector3;
+  const build=()=>{ '@park'; const P=PARK, S=GCAVE.S, X=x=>SHARED.BOD.XS(x+P.ox), Z=y=>SHARED.BOD.ZS(y+P.oy), Y=SHARED.BOD.YS, T=TILE, CX=X(S.c.x), CZ=Z(S.c.y), R=S.R, grp=MAPG.park||scene, V3=THREE.Vector3;
     const H=130, NI=30, NJ=6, SEG=Math.PI*2/NI, A0=-1.5*SEG, MOUTH=i=>i<3, MJ=3;
     const pt=(i,j)=>{ if(j>=NJ)return new V3(CX,Y(H),CZ); const a=A0+(i%NI)*SEG, f=j/NJ*Math.PI/2, n=hs(i%NI,j,3)-.5, r=foot(R,a)*Math.pow(Math.cos(f),.7)*(1+n*.16)*(j?1:1.02);
       return new V3(CX+Math.cos(a)*r*T,Y(H*Math.sin(f)*(1+(hs(i%NI,j,5)-.5)*.14)),CZ+Math.sin(a)*r*T); };
@@ -52,7 +52,7 @@ const GCAVE={ready:false}; window.GCAVE=GCAVE;
     for(const s of [-1,1]){ const x=CX+(R+.2)*T, z=CZ+s*1.75*T; sol(x-.5*T,z-.45*T,x+.5*T,z+.45*T,Y(66)); }
     sol(CX+(TS[0]-.45)*T,CZ-.8*T,CX+(TS[0]+.45)*T,CZ+.8*T,Y(36));
     const B={x0:CX-(R+.25)*T,x1:CX+(R+.25)*T,z0:CZ-(R+.25)*T,z1:CZ+(R+.25)*T};
-    const Rm={id:'cave',name:"THE GOLEMS' CAVE",...B,y0:-1,y1:Y(100),walls:true,at:{x:CX+1.5*T,z:CZ},dw:null}; Rm.inside=(x,z)=>x>Rm.x0&&x<Rm.x1&&z>Rm.z0&&z<Rm.z1&&py>Rm.y0-.3&&py<Rm.y1;
+    const Rm={id:'cave',name:"THE GOLEMS' CAVE",...B,y0:-1,y1:Y(100),walls:true,at:{x:CX+1.5*T,z:CZ},dw:null}; Rm.inside=(x,z)=>x>Rm.x0&&x<Rm.x1&&z>Rm.z0&&z<Rm.z1&&SHARED.py>Rm.y0-.3&&SHARED.py<Rm.y1;
     STORE.rooms.push(Rm); if(ROOMS.reset)ROOMS.reset();
     GCAVE.box=[B.x0,B.z0,B.x1,B.z1]; GCAVE.c={x:CX,z:CZ};
     GCAVE.inBox=(x,z,r=0)=>x>B.x0-r&&x<B.x1+r&&z>B.z0-r&&z<B.z1+r;

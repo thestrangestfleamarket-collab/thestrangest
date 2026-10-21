@@ -1,20 +1,20 @@
-{ const APTS=MODS.apts, F=window.FIREV, T=TILE, KK=BLDK, {X,Y,Z}=BOD, hs=BOD.g.hash, sh=BOD.K.sh, bq=BOD.bq, {CX,WY,HZ,S}=F, A=APTS.A, RZ=APTS.RZ, U=u=>A.x0+u, V=v=>A.y0+v;
-  const ix=x=>x/(T*KK)+BOD.OX, iy=z=>z/(T*KK)+BOD.OY, cl=v=>Math.max(0,Math.min(1,v)), nk=()=>cl((4-CLOCK.elev())/8);
+{ const APTS=MODS.apts, F=window.FIREV, T=TILE, KK=BLDK, {X,Y,Z}=SHARED.BOD, hs=SHARED.BOD.g.hash, sh=SHARED.BOD.K.sh, bq=SHARED.BOD.bq, {CX,WY,HZ,S}=F, A=APTS.A, RZ=APTS.RZ, U=u=>A.x0+u, V=v=>A.y0+v;
+  const ix=x=>x/(T*KK)+SHARED.BOD.OX, iy=z=>z/(T*KK)+SHARED.BOD.OY, cl=v=>Math.max(0,Math.min(1,v)), nk=()=>cl((4-CLOCK.elev())/8);
   const L0=CX-3.6, L1=CX+3.6, DO=1.65, STP={x0:CX-.8,x1:CX+.8,y1:WY+.42,z:14}, LX=CX+2.6, AWX=24.7;
   const onL=(x,z)=>{ const u=ix(x), v=iy(z); return u>L0-.3&&u<L1+.3&&v>WY-.4&&v<WY+DO+.4; };
   const G=new THREE.Group(); G.visible=false; scene.add(G); const MATS=[]; let light=null, CARS=null, MID=null, busy=false, lp=null;
   F.on=false; F.G=G;
   const wait=ms=>new Promise(r=>setTimeout(r,ms)), frames=k=>new Promise(r=>{ const f=()=>--k<=0?r():requestAnimationFrame(f); requestAnimationFrame(f); });
   const fade=async(txt,fn)=>{ busy=true; await FADE.run(txt,fn,{hold:200}); busy=false; };
-  F.out=()=>{ if(busy)return; fade(F.built?'YOUR FIRE ESCAPE':'LOADING YOUR FIRE ESCAPE...',async()=>{ await STORE.offGo(F.name); UI.goTo(X(CX),Z(WY+1.05),Y(HZ)); heading=0; if(UI.persp&&window.__dbg)__dbg.face(Math.PI); }); };
-  F.back=()=>{ if(busy)return; fade('YOUR APARTMENT',()=>{ if(USE.seat){ USE.seat=null; st.sit=null; } UI.goTo(X(U(AWX)),Z(V(1.1)),APTS.lvY(2)); heading=0; }); };
+  F.out=()=>{ if(busy)return; fade(F.built?'YOUR FIRE ESCAPE':'LOADING YOUR FIRE ESCAPE...',async()=>{ await STORE.offGo(F.name); UI.goTo(X(CX),Z(WY+1.05),Y(HZ)); SHARED.heading=0; if(UI.persp&&window.__dbg)__dbg.face(Math.PI); }); };
+  F.back=()=>{ if(busy)return; fade('YOUR APARTMENT',()=>{ if(USE.seat){ USE.seat=null; st.sit=null; } UI.goTo(X(U(AWX)),Z(V(1.1)),APTS.lvY(2)); SHARED.heading=0; }); };
   const hit=(w,h,d,x,y,z)=>{ const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),new THREE.MeshBasicMaterial({visible:false})); m.position.set(x,y,z); scene.add(m); return m; };
-  UI.thing({name:'YOUR FIRE ESCAPE',ghost:1,obj:hit(1.1*T*KK,BOD.Y(52),.3*T,X(U(AWX)),BOD.Y(2*S+68+RZ),Z(V(.2))),reach:1.4*T,near:2.6*T,tall:1.4*T,act:()=>{ if(APTS.in&&APTS.floor()===2)F.out(); }});
+  UI.thing({name:'YOUR FIRE ESCAPE',ghost:1,obj:hit(1.1*T*KK,SHARED.BOD.Y(52),.3*T,X(U(AWX)),SHARED.BOD.Y(2*S+68+RZ),Z(V(.2))),reach:1.4*T,near:2.6*T,tall:1.4*T,act:()=>{ if(APTS.in&&APTS.floor()===2)F.out(); }});
   const F3={Y:'101101010010010',O:'111101101101111',U:'101101101101111',R:'110101110101101',A:'010101111101101',P:'110101110100100',T:'111010010010010',M:'101111101101101',E:'111100110100111',N:'110101101101101'};
   const plaque=(()=>{ const txt='YOUR APARTMENT', W=61, H=9, cv=document.createElement('canvas'); cv.width=W; cv.height=H; const g=cv.getContext('2d'); g.fillStyle='#7a5a24'; g.fillRect(0,0,W,H); g.fillStyle='#c8a050'; g.fillRect(1,1,W-2,H-2);
     let x=3; g.fillStyle='#2a1e10'; for(const ch of txt){ const q=F3[ch]; if(q)for(let r=0;r<5;r++)for(let c=0;c<3;c++)if(q[r*3+c]==='1')g.fillRect(x+c,2+r,1,1); x+=ch===' '?2:4; }
     const t=new THREE.CanvasTexture(cv); t.magFilter=t.minFilter=THREE.NearestFilter; t.generateMipmaps=false; t.colorSpace=THREE.SRGBColorSpace;
-    const m=new THREE.Mesh(new THREE.PlaneGeometry(W/24*T*KK,BOD.Y(H)),new THREE.MeshLambertMaterial({map:t,clippingPlanes:[APTS.HP,APTS.LP]})); m.position.set(X(U(23.4)),BOD.Y(2*S+105+RZ),Z(V(5.6)+.1)+.01); scene.add(m); return m; })();
+    const m=new THREE.Mesh(new THREE.PlaneGeometry(W/24*T*KK,SHARED.BOD.Y(H)),new THREE.MeshLambertMaterial({map:t,clippingPlanes:[APTS.HP,APTS.LP]})); m.position.set(X(U(23.4)),SHARED.BOD.Y(2*S+105+RZ),Z(V(5.6)+.1)+.01); scene.add(m); return m; })();
   const P3=(x,y,z)=>[X(x),Y(z),Z(y)];
   const tx=(w,h,fn)=>{ '@later'; const im=new ImageData(w,h), d=im.data; let ie=null, e=null;
     for(let j=0,k=0;j<h;j++)for(let i=0;i<w;i++,k+=4){ const v=fn(i,j); if(!v)continue; d[k]=v[0]; d[k+1]=v[1]; d[k+2]=v[2]; d[k+3]=255; if(v.length>3){ if(!ie){ ie=new ImageData(w,h); e=ie.data; } e[k]=v[3]; e[k+1]=v[4]; e[k+2]=v[5]; e[k+3]=255; } }
@@ -155,18 +155,18 @@
     UI.thing({name:'SIT ON THE STEP',ghost:1,obj:hit(1.6*T*KK,Y(16),.45*T,X(CX),Y(HZ+8),Z(WY+.22)),reach:1.3*T,near:2.4*T,tall:.6*T,act:()=>F.sit()});
     const pl=STORE.places.find(q=>q[0]===F.name); if(pl){ pl[1]=X(CX); pl[2]=Z(WY+1.05); pl[3]=Y(HZ); }
     F.built=true; };
-  F.sit=()=>{ if(!F.on)return; const x=X(CX), z=Z(WY+.5); USE.seat={back:pos.clone(),x,z}; pos.x=x; pos.z=z; target=null; heading=0; st.sit={z:Math.max(2,Y(STP.z)/(ZU*W3.SZ*(W3.BH||1)))}; };
+  F.sit=()=>{ if(!F.on)return; const x=X(CX), z=Z(WY+.5); USE.seat={back:pos.clone(),x,z}; pos.x=x; pos.z=z; SHARED.target=null; SHARED.heading=0; st.sit={z:Math.max(2,Y(STP.z)/(ZU*W3.SZ*(W3.BH||1)))}; };
   const sg0=STORE.stackGround; STORE.stackGround=(x,z)=>{ if(F.built&&onL(x,z)){ const u=ix(x), v=iy(z); return Y(HZ+(u>STP.x0&&u<STP.x1&&v<STP.y1?STP.z:0)); } return sg0?sg0(x,z):null; };
-  const into=(u0,v0,u,v)=>Math.abs(u-u0)<.5&&v<v0&&Math.cos(heading)<-.6&&lp&&Math.hypot(pos.x-lp.x,pos.z-lp.z)>1e-4;
-  SYS.add('world',(dt)=>{ const on=F.built&&LVL==='up'&&onL(pos.x,pos.z);
+  const into=(u0,v0,u,v)=>Math.abs(u-u0)<.5&&v<v0&&Math.cos(SHARED.heading)<-.6&&lp&&Math.hypot(pos.x-lp.x,pos.z-lp.z)>1e-4;
+  SYS.add('world',(dt)=>{ const on=F.built&&SHARED.LVL==='up'&&onL(pos.x,pos.z);
     if(on!==F.on){ F.on=on; G.visible=on; }
     plaque.visible=!(APTS.in&&iy(pos.z)<V(5.6));
     if(!busy&&!on&&APTS.in&&APTS.floor()===2&&into(U(AWX),V(.55),ix(pos.x),iy(pos.z)))F.out();
     if(!on){ if(light)light.intensity=0; lp={x:pos.x,z:pos.z}; return; }
     if(FAR3.mesh)FAR3.mesh.visible=false; if(FAR3.panels)FAR3.panels.visible=false; if(FAR3.trees)FAR3.trees.visible=false; if(FAR3.FU)FAR3.FU.uMK.value=0; MISTE.x=0; if(SKY.U.uMistK)SKY.U.uMistK.value=0; if(scene.fog===FAR3.fog)scene.fog=null;
-    if(MID){ const o=!UI.persp, cx=cam.position.x-pos.x, cz=cam.position.z-pos.z, hl=Math.hypot(cx,cz)||1, tp=(cam.position.y-py)/hl, key=o?Math.round(Math.atan2(cx,cz)*20)+':'+Math.round(tp*50):'p';
-      if(key!==MID.key){ MID.key=key; const dx=cx/hl, dz=cz/hl; MID.L.forEach((b,i)=>{ const al=(X(b[0])-pos.x)*dx+(Z(b[1])-pos.z)*dz, r=Math.max(b[2],b[3])*T*KK*.75, hide=o&&al+r>0&&Y(b[4])>py+Math.max(0,al-r)*tp-.5; MID.m.setMatrixAt(i,hide?MID.Z0:MID.base[i]); }); MID.m.instanceMatrix.needsUpdate=true; } }
+    if(MID){ const o=!UI.persp, cx=SHARED.cam.position.x-pos.x, cz=SHARED.cam.position.z-pos.z, hl=Math.hypot(cx,cz)||1, tp=(SHARED.cam.position.y-SHARED.py)/hl, key=o?Math.round(Math.atan2(cx,cz)*20)+':'+Math.round(tp*50):'p';
+      if(key!==MID.key){ MID.key=key; const dx=cx/hl, dz=cz/hl; MID.L.forEach((b,i)=>{ const al=(X(b[0])-pos.x)*dx+(Z(b[1])-pos.z)*dz, r=Math.max(b[2],b[3])*T*KK*.75, hide=o&&al+r>0&&Y(b[4])>SHARED.py+Math.max(0,al-r)*tp-.5; MID.m.setMatrixAt(i,hide?MID.Z0:MID.base[i]); }); MID.m.instanceMatrix.needsUpdate=true; } }
     const k=nk(); for(const m of MATS)m.emissiveIntensity=1.3*k; light.intensity=1.4*k; if(CARS)CARS(dt,k);
     if(!busy&&!USE.seat&&into(CX,WY+.45,ix(pos.x),iy(pos.z)))F.back(); lp={x:pos.x,z:pos.z}; },'141c-fireview');
-  window.FIREDBG=()=>({built:F.built,on:F.on,mid:F.mid,mats:MATS.length,meshes:G.children.length,pos:[+ix(pos.x).toFixed(2),+iy(pos.z).toFixed(2)],py:+py.toFixed(2),apt:{in:APTS.in,floor:APTS.floor()}});
+  window.FIREDBG=()=>({built:F.built,on:F.on,mid:F.mid,mats:MATS.length,meshes:G.children.length,pos:[+ix(pos.x).toFixed(2),+iy(pos.z).toFixed(2)],py:+SHARED.py.toFixed(2),apt:{in:APTS.in,floor:APTS.floor()}});
 }

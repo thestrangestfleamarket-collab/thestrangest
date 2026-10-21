@@ -1,5 +1,5 @@
 const BLK={blds:[],signs:[],band:()=>null,built:0,in:false,hi:[],LO:.5}; window.BLK=BLK;
-{ const T=TILE, XS=BOD.XS, ZS=BOD.ZS, B=BLOCK, s=T/24, YP=px=>px*ZU;
+{ const T=TILE, XS=SHARED.BOD.XS, ZS=SHARED.BOD.ZS, B=BLOCK, s=T/24, YP=px=>px*ZU;
   let seed=11; const rnd=()=>((seed=(seed*16807)%2147483647)/2147483647);
   const cv=(w,h)=>{ const c=document.createElement('canvas'); c.width=Math.max(1,Math.round(w)); c.height=Math.max(1,Math.round(h)); return c; };
   const tex=c=>{ const t=new THREE.CanvasTexture(c); t.magFilter=t.minFilter=THREE.NearestFilter; t.generateMipmaps=false; t.colorSpace=THREE.SRGBColorSpace; return t; };
@@ -46,7 +46,7 @@ const BLK={blds:[],signs:[],band:()=>null,built:0,in:false,hi:[],LO:.5}; window.
   const TINTS=[[1.3,.82,.66],[1.12,1,.84],[.92,.95,1.02],[1.2,.95,.8],[1.05,.9,.92],[.98,1.02,.92],[1.25,.88,.72],[1.1,1.04,.95],[.9,.9,.96]];
   [[B.x0,-62.4],[-33.6,30],[30,90],[90,111],[124,150],[150,B.x1]].forEach(([a,b],i)=>building({x0:a,x1:b,y0:B.row2[0],y1:B.row2[1],h:140,n:0,k:300+i*7,tint:TINTS[3+i],front:'shut',back:'glass',lit:.2,row:2,lazy:1,doors:Math.max(1,Math.round((b-a)/14)),blankSide:true,cheap:true}));
   for(const [i,S] of SHELLS.entries()){ building({x0:S.x0,x1:S.x1,y0:S.y0,y1:S.y1,h:150,e:1,k:600+i*13,tint:TINTS[(i+2)%TINTS.length],front:'shut',back:'shut',lit:.12,row:4,doors:1,blankSide:true,cheap:true}); }
-  for(let i=0;i+1<MAINROW.length;i++){ const a=MAINROW[i][1]+.1, b=MAINROW[i+1][0]-.1; if(b-a>1.5)building({x0:a,x1:b,y0:B.back,y1:BOD.OY,h:130,n:0,k:400+i*11,tint:TINTS[i%TINTS.length],front:'shut',back:'shut',lit:0,blankFace:true,blankSide:true,cheap:true,row:1}); }
+  for(let i=0;i+1<MAINROW.length;i++){ const a=MAINROW[i][1]+.1, b=MAINROW[i+1][0]-.1; if(b-a>1.5)building({x0:a,x1:b,y0:B.back,y1:SHARED.BOD.OY,h:130,n:0,k:400+i*11,tint:TINTS[i%TINTS.length],front:'shut',back:'shut',lit:0,blankFace:true,blankSide:true,cheap:true,row:1}); }
   const BX=[], GL=[], zA=B.alley[1], zB=B.alley[0], mid=(zA+zB)/2;
   const CR=[[98.5,zA-.5,.9,.9,22,[.18,.42,.36]],[98.5,zA-.5,.9,.9,44,[.22,.48,.62]],[121,zA-.6,1.1,1.1,40,[.2,.34,.24]],[73,zB+.6,1.3,.9,30,[.54,.42,.26]],[140,zB+.6,1,1,40,[.2,.34,.24]],[63,zB+.5,.8,.8,24,[.6,.18,.16]]];
   for(const [x,y,w,d,hp] of CR)solid(x-w/2,Math.min(y-d/2,y+d/2),x+w/2,Math.max(y-d/2,y+d/2),hp);
@@ -147,9 +147,9 @@ const BLK={blds:[],signs:[],band:()=>null,built:0,in:false,hi:[],LO:.5}; window.
   { const ln=document.createElement('link'); ln.rel='stylesheet'; ln.href='https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Do+Hyeon&display=swap'; document.head.appendChild(ln);
     Promise.race([Promise.all([document.fonts.load('40px "Black Han Sans"','바다'),document.fonts.load('40px "Do Hyeon"','오징')]),new Promise(r=>setTimeout(r,8000))]).then(()=>{ for(const s of BLK.signs)s.paint(); }).catch(()=>{}); }
     if(BLK.shine)for(const sg of BLK.signs)BLK.shine(sg); };
-  { const zr=a=>[Math.min(ZS(a[0]),ZS(a[1])),Math.max(ZS(a[0]),ZS(a[1]))], AL=zr(B.alley), PR=zr(B.prom), mx0=XS(BOD.MAP.x0), mx1=XS(BOD.MAP.x1);
+  { const zr=a=>[Math.min(ZS(a[0]),ZS(a[1])),Math.max(ZS(a[0]),ZS(a[1]))], AL=zr(B.alley), PR=zr(B.prom), mx0=XS(SHARED.BOD.MAP.x0), mx1=XS(SHARED.BOD.MAP.x1);
     BLK.band=(x,z)=>x<mx0||x>mx1?null:z>AL[0]&&z<AL[1]?{z0:AL[0],z1:AL[1]}:z>PR[0]&&z<PR[1]?{z0:PR[0],z1:PR[1]}:null; }
-  { const lane=()=>!UI.persp&&(UI.view==='iso'||UI.view==='map')&&LVL!=='down'&&!ROOMS.cur&&BLK.band(pos.x,pos.z)&&cam.position.z>pos.z, z0=ZS(B.back)-.6*T, z1=ZS(-77)+.6*T, bb=new THREE.Box3(); BLK.lane=lane;
+  { const lane=()=>!UI.persp&&(UI.view==='iso'||UI.view==='map')&&SHARED.LVL!=='down'&&!ROOMS.cur&&BLK.band(pos.x,pos.z)&&SHARED.cam.position.z>pos.z, z0=ZS(B.back)-.6*T, z1=ZS(-77)+.6*T, bb=new THREE.Box3(); BLK.lane=lane;
     let n=0; for(const w of cutWalls){ if(!w.me||!w.me.geometry)continue; bb.setFromObject(w.me); if(bb.isEmpty()||bb.max.y<.1||bb.min.z<z0||bb.max.z>z1)continue;
       const wh=w.when, al=Object.getOwnPropertyDescriptor(w,'always'), was=al?(al.get?()=>al.get.call(w):()=>al.value):()=>false;
       w.when=()=>lane()||(wh?wh():true); Object.defineProperty(w,'always',{get:()=>lane()||was(),configurable:true}); n++; } BLK.walls=n; }
@@ -158,8 +158,8 @@ const BLK={blds:[],signs:[],band:()=>null,built:0,in:false,hi:[],LO:.5}; window.
   const frames=n=>new Promise(r=>{ const f=()=>--n<=0?r():requestAnimationFrame(f); requestAnimationFrame(f); });
   const build=async()=>{ const t0=performance.now(); tl=t0; for(const q of BLK.hi)q.hi=await q.paint(); await make(); BLK.step=Math.max(BLK.step||0,performance.now()-tl); BLK.ms=+(performance.now()-t0).toFixed(1); BLK.built=1; };
   BLK.go=async()=>{ '@later'; if(BLK.fade||BLK.built)return; BLK.fade=1; await FADE.run('ENTERING THE ALLEY',()=>BLK.job||(BLK.job=build()),{cut:true}); BLK.fade=0; };
-  { const zb=ZS(B.back), sg=Math.sign(ZS(B.alley[0])-zb)||-1; BLK.tick=()=>{ if(!window.__started||typeof ROOMS!=='undefined'&&ROOMS.cur||UI.freeCam||ED.on||window.POSOK===false)return; const d=(pos.z-zb)*sg, up=LVL==='up';
-      BLK.in=up&&d>.2*T; const need=BLK.in||up&&(d>-10*T||d>-32*T&&(UI.persp||(cam.position.z-pos.z)*sg>0));
+  { const zb=ZS(B.back), sg=Math.sign(ZS(B.alley[0])-zb)||-1; BLK.tick=()=>{ if(!window.__started||typeof ROOMS!=='undefined'&&ROOMS.cur||UI.freeCam||ED.on||window.POSOK===false)return; const d=(pos.z-zb)*sg, up=SHARED.LVL==='up';
+      BLK.in=up&&d>.2*T; const need=BLK.in||up&&(d>-10*T||d>-32*T&&(UI.persp||(SHARED.cam.position.z-pos.z)*sg>0));
       if(BLK.in&&!BLK.built)BLK.go(); else if(need&&!BLK.job)BLK.job=build();
       const v=need&&!!BLK.built; if(v!==!!BLK.shown)vis(v); };
     SYS.add('dress',(dt,p)=>{ BLK.tick(); },'069a-block'); }

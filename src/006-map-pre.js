@@ -70,7 +70,7 @@ const LAY=(()=>{ const q=QS.get('layout'); let o={}; try{ o=q&&q[0]==='{'?JSON.p
   const L=Object.assign({},LAYOUT0,o); return {L, o:k=>({x:(+(L[k]&&L[k].x)||0)+(k==='apartments'?AWAYLOT:0),y:+(L[k]&&L[k].y)||0}), e:k=>(L[k]&&L[k].e||[0,0,0,0]).map(v=>+v||0), h:k=>+(L[k]&&L[k].h)||0, s:k=>+(L[k]&&L[k].s)||1}; })();
 const STN={DX:(-11+LAY.o('subway').x)*TILE, DZ:(-35+LAY.o('subway').y)*TILE, DY:-98*ZU};
 const BLDK=1.1;
-const MAINX={w:70,e:70}, WID=14, NORTHY=9+WID, NORTHX=36;
+const MAINX={w:70,e:110}, WID=14, NORTHY=9+WID, NORTHX=145.5;
 const AVE={x0:152+MAINX.e,x1:166.5+MAINX.e+WID,y1:57.5}; AVE.r0=AVE.x0+3.2; AVE.r1=AVE.x1-3.2;
 const BLOCK={back:-92.4,alley:[-99.4,-92.4],row2:[-111.4,-99.4],prom:[-119,-111.4],river:-165,x0:-50,x1:212,lots:{play:[46.7,60.7],theatre:[172.9,186.9],arcade:[191.9,205.9]}};
 const MAINROW=[[-50,-39],[-18.3,10.3],[46.7,60.7],[97,101],[104,112.8],[115.8,144.4],[149.4,167.9],[172.9,186.9],[191.9,205.9]];

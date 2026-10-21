@@ -1,0 +1,350 @@
+<title>Bodega Block</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<style>
+/* layout: a column of dark street panels, each a painted front or diagram with captions under it */
+:root{
+  --ink:#0d0e14; --panel:#16171f; --line:#2c2d3a; --fg:#e9e4d8; --dim:#9a97a6; --amber:#f2b54a; --gold:#c6a84e; --green:#5bbf7a; --cyan:#59d6e8;
+  --disp:"Silkscreen",ui-monospace,monospace; --body:"Atkinson Hyperlegible",system-ui,sans-serif;
+  color-scheme:dark;
+}
+body{background:var(--ink);color:var(--fg);font:15px/1.55 var(--body);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 60px}
+main{max-width:1000px;margin:0 auto;display:grid;gap:44px}
+h1,h2,h3{font-family:var(--disp);font-weight:700;letter-spacing:.04em;text-wrap:balance;margin:0}
+h1{font-size:clamp(22px,4vw,34px);color:var(--amber)}
+h2{font-size:18px;color:var(--fg)}
+h3{font-size:13px;color:var(--amber)}
+p{margin:0;max-width:70ch;color:var(--fg)}
+.dim{color:var(--dim)}
+section{display:grid;gap:14px}
+.plate{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:14px;display:grid;gap:12px;min-width:0}
+.stage{position:relative;width:100%;border-radius:4px;overflow:hidden;background:#07080c}
+.stage canvas,.stage svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.stage canvas{image-rendering:pixelated}
+.tabs{display:flex;gap:8px;flex-wrap:wrap}
+.tabs button{font:12px var(--disp);background:transparent;color:var(--dim);border:1px solid var(--line);border-radius:4px;padding:6px 10px;cursor:pointer}
+.tabs button[aria-pressed="true"]{color:var(--ink);background:var(--amber);border-color:var(--amber)}
+.tabs button:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+.cost{font:11px/1.5 var(--disp);color:var(--cyan);letter-spacing:.03em}
+.q{border-left:3px solid var(--amber);padding:8px 12px;background:#1d1a14}
+ul{margin:0;padding-left:18px;display:grid;gap:5px}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font:11px var(--disp);color:var(--dim)}
+.sw{display:inline-block;width:10px;height:10px;margin-right:5px;vertical-align:-1px;border-radius:2px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:14px}
+</style>
+<main>
+<header style="display:grid;gap:10px">
+  <h1>THE BODEGA BLOCK</h1>
+  <p>The bodega and the shop next door, drawn like the reference you sent: two storeys each, warm brick above, a glass storefront below, and an awning that <b>barely comes out</b> so the isometric view of the door stays clear. In THE MARKET's own painters and colours (flat CEL bands, hard shadow edges). Mockup only — nothing is built yet.</p>
+</header>
+
+<section>
+  <h2>1 · THE TWO FRONTS</h2>
+  <p class="dim">Dusk, the camera square-on. Left: the bodega (8 tiles wide, as its lot is now). Right: its neighbour, a florist with the shutter half down. Pick how far the bodega's awning sticks out — the fronts redraw.</p>
+  <div class="plate">
+    <div class="tabs" role="group" aria-label="Awning depth">
+      <button id="oa" aria-pressed="true">A · FLAT VALANCE (≈0.1 tile)</button>
+      <button id="ob" aria-pressed="false">B · SHORT BOX (≈0.3 tile)</button>
+    </div>
+    <div class="stage" id="stage1" style="aspect-ratio:780/400"><canvas id="cv" width="780" height="400"></canvas><svg id="ov" viewBox="0 0 780 400" preserveAspectRatio="none" font-family="Silkscreen"></svg></div>
+    <div class="legend">
+      <span><i class="sw" style="background:#92503f"></i>GAME BRICK</span>
+      <span><i class="sw" style="background:#c6a84e"></i>AWNING (BODEGA)</span>
+      <span><i class="sw" style="background:#2a6e48"></i>FLORIST GREEN</span>
+      <span><i class="sw" style="background:#9a9ea2"></i>ROLL SHUTTER</span>
+      <span><i class="sw" style="background:#1b2228"></i>SHOP GLASS</span>
+    </div>
+  </div>
+  <p class="q"><b>One thing to confirm:</b> the reference calls them <i>Antique Abyss</i> (books, comics, oddments) and <i>Blossom Bros</i> (florist). Our bodega is a grocery with the live OPEN neon. Do you want to <b>keep it a grocery</b> and only borrow the look, or actually <b>rename / re-stock</b> it as the antique shop? I've drawn the signage faithfully — say the word on the names.</p>
+</section>
+
+<section>
+  <h2>2 · HOW FAR THE AWNING COMES OUT</h2>
+  <p class="dim">Side section. The camera looks down the 2:1 isometric ray. The awning only blocks the door if its front edge crosses that ray above the door head. A short awning never does; the old deep one (ghosted) did — which is why it was pulled.</p>
+  <div class="plate">
+    <div class="stage" id="stage2" style="aspect-ratio:780/300"><svg id="sec" viewBox="0 0 780 300" font-family="Silkscreen"></svg></div>
+    <span class="cost" id="seccost"></span>
+  </div>
+</section>
+
+<section>
+  <h2>3 · WHAT IT WOULD TAKE</h2>
+  <div class="grid2">
+    <div class="plate"><h3>THE BODEGA</h3><p class="dim">Keeps its storefront, door and OPEN neon. Adds: a shallow awning across the shopfront (flat quads + a scalloped skirt, one painted texture), and a second row of brick + two upstairs windows on the facade it already has. No new lights.</p><span class="cost">~900 triangles · 1 extra draw · 0 lamps · awning paints once</span></div>
+    <div class="plate"><h3>THE NEIGHBOUR</h3><p class="dim">A new filler building on the lot east (or a swap of an existing filler): brick box, green sign fascia, a roll-down shutter (corrugated strip + graffiti decal), a dark door bay, and a fire-escape balcony up top. Drawn only when near.</p><span class="cost">~1,600 triangles · 2 draws · 0 lamps by day, 1 shared at night</span></div>
+  </div>
+  <p class="dim">Both stay inside the budget: under 100k on screen, few programs, nothing loaded at start (the block builds when you're on the street). Awnings are flat painted panels — no new shader.</p>
+</section>
+</main>
+
+<script>
+const $=id=>document.getElementById(id), NS='http://www.w3.org/2000/svg';
+const cv=$('cv'), g=cv.getContext('2d'); g.imageSmoothingEnabled=false;
+const W=780, H=400;
+
+// ---- game palette (BRICK/MORTAR/COPE/FRAME from src/014-gamekit.js) ----
+const BRICK=[[146,80,63],[137,73,58],[154,88,70],[128,68,54]], MORTAR=[92,54,45], COPE=[182,176,164], FRAME=[70,72,78];
+const TINT=[[1,1,1],[1.05,1,.93],[.95,.98,1.05],[1.07,1.02,.88],[.99,.96,.95]];
+const GOLD=[198,168,78], GOLDSH=[150,122,54];          // faded awning mustard
+const GREEN=[34,86,58], GREENSH=[22,58,40];             // florist sign green
+const GALV=[154,158,162], GALVD=[108,112,118];          // galvanised shutter
+const GLASS=[24,32,38];                                 // dark shop glass
+const SKY=[[58,54,74],[92,76,86],[138,106,92],[176,140,104]]; // dusk bands, top→horizon
+const SIDE=0.8, SIDEX=0.62;                             // three-tone side multipliers
+
+function hash(x,y,s){ const v=Math.sin(x*127.1+y*311.7+s*74.7)*43758.5453; return v-Math.floor(v); }
+const clamp=v=>v<0?0:v>255?255:v;
+const sh=(c,k)=>[c[0]*k,c[1]*k,c[2]*k];
+const rgb=c=>'rgb('+clamp(c[0]|0)+','+clamp(c[1]|0)+','+clamp(c[2]|0)+')';
+function R(x,y,w,h,c){ if(w<=0||h<=0)return; g.fillStyle=Array.isArray(c)?rgb(c):c; g.fillRect(x|0,y|0,Math.ceil(w),Math.ceil(h)); }
+
+// brick wall, three-tone front face, mortar gaps, per-brick tint + grain
+function wall(x0,y0,x1,y1,seed){
+  const bw=15, bh=7;
+  R(x0,y0,x1-x0,y1-y0,MORTAR);
+  for(let row=0; y0+row*bh<y1; row++){
+    const by=y0+row*bh, off=(row&1)?bw/2:0;
+    for(let bx=x0-bw; bx<x1; bx+=bw){
+      const px=bx+off, col=Math.floor((px-x0)/bw);
+      const base=BRICK[Math.floor(hash(col,row,seed)*BRICK.length)];
+      const tn=TINT[Math.floor(hash(col,row+1,seed+3)*TINT.length)];
+      const gr=0.9+0.2*hash(col*3,row*5,seed+7);
+      let c=[base[0]*tn[0]*gr, base[1]*tn[1]*gr, base[2]*tn[2]*gr];
+      const x=Math.max(px+1,x0), w=Math.min(px+bw,x1)-x, y=Math.max(by+1,y0), h=Math.min(by+bh,y1)-y;
+      // soot streaks near the top edge of the wall
+      if(hash(col,1,seed+9)<.1 && by<y0+40) c=sh(c,.72);
+      R(x,y,w,h,c);
+    }
+  }
+}
+// cornice / parapet cap
+function cornice(x0,x1,y){
+  R(x0-3,y,(x1-x0)+6,5,COPE);
+  R(x0-3,y+5,(x1-x0)+6,3,sh(COPE,SIDE));
+  for(let x=x0; x<x1; x+=10) R(x,y+8,6,3,sh(COPE,.7));   // dentils
+  R(x0-3,y-2,(x1-x0)+6,2,sh(COPE,1.08));
+}
+// upstairs window: reveal (side tones), frame, dark glass, maybe lit
+function window2(x0,y0,x1,y1,lit){
+  R(x0-3,y0-3,(x1-x0)+6,(y1-y0)+6,sh(FRAME,.82));        // trim
+  R(x0,y0,x1-x0,y1-y0,FRAME);
+  R(x0+3,y0+3,x1-x0-6,y1-y0-6,lit?[120,96,56]:GLASS);     // glass
+  if(lit){ R(x0+5,y0+5,x1-x0-10,(y1-y0)/2-6,[150,120,66]); R(x0+6,y1-14,10,9,[40,34,30]); } // warm panes + a shape
+  R(Math.round((x0+x1)/2)-1,y0+2,2,y1-y0-4,sh(FRAME,1.1)); // mullion
+  R(x0+2,Math.round((y0+y1)/2)-1,x1-x0-4,2,sh(FRAME,1.1));
+  R(x0-5,y1+1,(x1-x0)+10,4,sh(COPE,.9));                  // sill
+  R(x0-5,y1+5,(x1-x0)+10,2,sh(COPE,.6));
+}
+// storefront glass with goods silhouettes behind
+function shopglass(x0,y0,x1,y1,goods){
+  R(x0,y0,x1-x0,y1-y0,GLASS);
+  R(x0,y0,x1-x0,3,sh(GLASS,.6));
+  const pal=goods==='books'?[[150,70,54],[70,96,120],[200,180,90],[90,140,90],[180,110,70],[120,100,150]]
+                           :[[200,80,70],[230,200,90],[90,150,120],[210,150,60],[120,110,200]];
+  for(let sy=y1-10; sy>y0+8; sy-=14){                     // shelves
+    R(x0+4,sy,x1-x0-8,2,[46,40,36]);
+    for(let sx=x0+6; sx<x1-8; sx+=8){
+      if(hash(sx,sy,goods.length)<.25)continue;
+      const c=pal[Math.floor(hash(sx,sy,3)*pal.length)];
+      R(sx,sy-6-Math.floor(hash(sx,sy,5)*4),6,6+Math.floor(hash(sx,sy,5)*4),sh(c,.7));
+    }
+  }
+  // warm interior glow + a diagonal reflection streak
+  R(x0+2,y0+4,x1-x0-4,10,[70,54,40]);
+  for(let k=0;k<(y1-y0);k+=3){ const rx=x0+6+k*0.7; if(rx<x1-4) R(rx,y0+4+k,2,3,[60,70,78]); }
+}
+function corrugated(x0,y0,x1,y1){                          // roll-down shutter
+  for(let x=x0; x<x1; x+=4){
+    R(x,y0,2,y1-y0,GALV); R(x+2,y0,2,y1-y0,GALVD);
+  }
+  for(let y=y0; y<y1; y+=6) R(x0,y,x1-x0,1,sh(GALVD,.8));  // horizontal slat seams
+  R(x0,y0,x1-x0,2,sh(GALVD,.6));
+}
+
+const AW={A:{skirt:6, proj:0.1}, B:{skirt:13, proj:0.3}}; // awning options
+let opt='A';
+
+function paint(){
+  g.clearRect(0,0,W,H);
+  // sky bands
+  for(let i=0;i<SKY.length;i++) R(0, i*16, W, 16, SKY[i]);
+  R(0, SKY.length*16, W, 72-SKY.length*16, SKY[SKY.length-1]);
+  // far rooftops hint
+  R(0,58,W,8,[40,34,42]);
+
+  const bod=[20,392], flo=[392,760];                       // building x-spans
+  const CORN=64, UP0=72, UP1=232, GND1=352, WALK=400;
+
+  // ---- BODEGA ----
+  wall(bod[0],UP0,bod[1],UP1,11);
+  cornice(bod[0],bod[1],CORN);
+  window2(60,98,130,176,false);
+  window2(250,98,320,176,true);
+  // storefront frame piers
+  R(bod[0],UP1,bod[1]-bod[0],GND1-UP1,[36,34,34]);
+  R(bod[0]+6,258,bod[1]-bod[0]-12,GND1-258-12,[20,20,22]);
+  // glass bays + centre door
+  const dx0=150, dx1=206;
+  shopglass(bod[0]+10,262,dx0-6,GND1-14,'books');
+  shopglass(dx1+6,262,bod[1]-10,GND1-14,'books');
+  // door
+  R(dx0,258,dx1-dx0,GND1-258,[48,50,54]);
+  R(dx0+4,264,dx1-dx0-8,GND1-258-10,GLASS);
+  R(dx0+4,290,dx1-dx0-8,5,[150,154,158]);                  // push bar
+  R(dx0+6,GND1-20,dx1-dx0-12,14,[70,72,78]);               // kick plate
+  // bulkhead
+  R(bod[0],GND1-12,bod[1]-bod[0],12,[48,42,38]);
+  R(bod[0],GND1-12,bod[1]-bod[0],3,[64,56,50]);
+
+  // awning: short valance across the shopfront, with a sloped top sliver + scallops
+  const aw=AW[opt], ax0=bod[0]+4, ax1=bod[1]-4, ay=226, ah=30;
+  R(ax0,ay-aw.skirt,ax1-ax0,aw.skirt,GOLDSH);              // sloped top (the bit that projects)
+  R(ax0,ay,ax1-ax0,ah,GOLD);                               // face
+  R(ax0,ay-aw.skirt,ax1-ax0,2,sh(GOLD,1.12));              // top highlight
+  R(ax0,ay+2,ax1-ax0,3,sh(GOLD,1.08));
+  for(let i=0;i<4;i++) R(ax0,ay+6+i*5,ax1-ax0,2,sh(GOLD,.9-i*.04)); // faded ribs
+  for(let x=ax0; x<ax1; x+=14){                             // scalloped bottom
+    R(x,ay+ah,10,4,GOLD); R(x+10,ay+ah,4,2,GOLDSH);
+  }
+  R(ax0,ay+ah,ax1-ax0,1,GOLDSH);
+
+  // ---- FLORIST (neighbour) ----
+  wall(flo[0],UP0,flo[1],UP1,29);
+  cornice(flo[0],flo[1],CORN);
+  window2(520,96,586,172,false);
+  // sign fascia (green board)
+  R(flo[0],UP1,flo[1]-flo[0],30,GREEN);
+  R(flo[0],UP1,flo[1]-flo[0],3,sh(GREEN,1.2));
+  R(flo[0],UP1+30,flo[1]-flo[0],3,GREENSH);
+  // shutter box + roll-down shutter (half down), graffiti, dark door bay
+  R(flo[0]+6,UP1+33,flo[1]-flo[0]-12,7,[56,58,62]);        // shutter housing
+  const sb0=flo[0]+6, sb1=690, st0=UP1+40, st1=336;
+  R(sb0,st0,sb1-sb0,st1-st0,[16,18,20]);                   // recess behind
+  corrugated(sb0,st0,sb1,st1);
+  // graffiti blobs on the shutter
+  const graf=[[460,290,52,26,[120,70,170]],[500,300,60,22,[60,170,180]],[600,286,46,28,[210,90,150]]];
+  for(const [x,y,w,h,c] of graf){
+    R(x,y,w,h,sh(c,.85)); R(x+3,y+3,w-6,h-6,c); R(x+6,y+h,3,8,sh(c,.7)); // drip
+  }
+  // door bay on the right (open, person-height dark)
+  R(690,UP1+33,flo[1]-6-690,GND1-(UP1+33),[30,32,36]);
+  R(694,UP1+40,flo[1]-10-694,GND1-(UP1+40)-10,GLASS);
+  R(696,300,8,30,[150,120,80]);                            // a warm doorway glint
+  // bulkhead
+  R(flo[0],GND1-12,flo[1]-flo[0],12,[40,46,40]);
+
+  // ---- street: sidewalk + a strip of road ----
+  R(0,GND1,W,WALK-GND1,[150,150,142]);
+  for(let x=0;x<W;x+=44) R(x,GND1,2,WALK-GND1,[128,128,120]); // slab seams
+  R(0,WALK-10,W,10,[78,80,84]);                             // curb/road lip
+  R(0,GND1,W,3,[128,128,120]);
+}
+
+// ---- SVG overlay: sign text, fire escape, street lamp, OPEN sign, labels ----
+function text(s,x,y,size,fill,anchor,weight){ const t=document.createElementNS(NS,'text'); t.setAttribute('x',x); t.setAttribute('y',y);
+  t.setAttribute('font-size',size); t.setAttribute('fill',fill); t.setAttribute('text-anchor',anchor||'middle'); if(weight)t.setAttribute('font-weight',weight);
+  t.setAttribute('letter-spacing','.03em'); t.textContent=s; return t; }
+function line(x1,y1,x2,y2,stroke,w){ const l=document.createElementNS(NS,'line'); l.setAttribute('x1',x1);l.setAttribute('y1',y1);l.setAttribute('x2',x2);l.setAttribute('y2',y2);
+  l.setAttribute('stroke',stroke);l.setAttribute('stroke-width',w||1.4); return l; }
+function rect(x,y,w,h,fill,stroke){ const r=document.createElementNS(NS,'rect'); r.setAttribute('x',x);r.setAttribute('y',y);r.setAttribute('width',w);r.setAttribute('height',h);
+  if(fill)r.setAttribute('fill',fill); if(stroke){r.setAttribute('stroke',stroke);r.setAttribute('fill','none');r.setAttribute('stroke-width',1.4);} return r; }
+
+function overlay(){
+  const ov=$('ov'); ov.innerHTML='';
+  // bodega awning text
+  ov.append(text('ENTER  ◈  ANTIQUE ABYSS', 206, 240, 13, '#3a2c10', 'middle', 700));
+  ov.append(text('we sell  ·  books  magazines  comics  things', 206, 252, 7.5, '#5a4418'));
+  ov.append(text('BUY IT ALL   ·   SELL IT ALL', 206, 262, 7, '#6a5020'));
+  // hanging OPEN sign by the door
+  ov.append(line(150, 232, 136, 300, '#b8babc', 1.4));
+  ov.append(rect(112, 300, 48, 20, '#f2ece0', '#9a3030'));
+  ov.append(text('OPEN', 136, 314, 10, '#c62828', 'middle', 700));
+  ov.append(text('66', 40, 250, 9, '#cfcabd', 'middle', 700));         // address number
+  // florist sign
+  ov.append(text('BLOSSOM BROS', 548, 254, 15, '#eef2ea', 'middle', 700));
+  ov.append(text('florist  ·  craft', 548, 268, 8, '#b9e0c4'));
+  // florist fire-escape / balcony (dark steel), upper floor
+  const fe='#3a3d44', feL='#565a62';
+  // platform
+  ov.append(rect(430, 150, 250, 6, fe));
+  for(let x=432;x<680;x+=10) ov.append(line(x,150,x,156,feL,0.8)); // grating
+  // railing
+  ov.append(line(430,150,430,132,fe,2)); ov.append(line(680,150,680,132,fe,2));
+  ov.append(line(430,132,680,132,fe,2)); ov.append(line(430,141,680,141,feL,1));
+  for(let x=445;x<680;x+=18) ov.append(line(x,132,x,150,feL,0.8));
+  // brackets under platform
+  ov.append(line(440,156,448,172,fe,2)); ov.append(line(670,156,662,172,fe,2));
+  // ladder down to the right
+  ov.append(line(655,156,648,200,fe,1.8)); ov.append(line(670,156,663,200,fe,1.8));
+  for(let y=162;y<200;y+=8) ov.append(line(655-(y-156)*0.16,y,670-(y-156)*0.16,y,feL,1));
+
+  // street lamp at the curb between the shops (warm head, like the reference)
+  const lx=382;
+  ov.append(line(lx,390,lx,120,'#4a4c52',3));
+  const arm=document.createElementNS(NS,'path'); arm.setAttribute('d',`M ${lx} 120 Q ${lx} 104 ${lx-26} 104`);
+  arm.setAttribute('stroke','#4a4c52'); arm.setAttribute('stroke-width',3); arm.setAttribute('fill','none'); ov.append(arm);
+  ov.append(rect(lx-40,104,16,7,'#2c2e33'));
+  const glow=document.createElementNS(NS,'ellipse'); glow.setAttribute('cx',lx-32);glow.setAttribute('cy',112);glow.setAttribute('rx',22);glow.setAttribute('ry',14);
+  glow.setAttribute('fill','#ffd98a'); glow.setAttribute('opacity','.28'); ov.append(glow);
+  ov.append(rect(lx-37,108,10,4,'#ffe6a8'));
+  // a small traffic light
+  ov.append(rect(lx+8,150,10,26,'#24262b'));
+  ['#d84040','#e0b040','#52c070'].forEach((c,i)=>{ const d=document.createElementNS(NS,'circle'); d.setAttribute('cx',lx+13);d.setAttribute('cy',156+i*7);d.setAttribute('r',2.4);d.setAttribute('fill',i===2?c:'#3a3a3a'); ov.append(d); });
+}
+
+function draw(){ paint(); overlay(); }
+$('oa').onclick=()=>{opt='A'; $('oa').setAttribute('aria-pressed',true); $('ob').setAttribute('aria-pressed',false); draw(); section();};
+$('ob').onclick=()=>{opt='B'; $('ob').setAttribute('aria-pressed',true); $('oa').setAttribute('aria-pressed',false); draw(); section();};
+
+// ---- Section diagram: awning depth vs the isometric sightline ----
+// Side-on. The street (and camera) are to the RIGHT; the camera looks down-left at the
+// 2:1 iso angle (atan(1/2) ≈ 26.6°). An awning projecting out by P throws its shadow
+// down the wall face by P*0.5; the door is hidden only if that shadow reaches past the door head.
+function section(){
+  const sec=$('sec'); sec.innerHTML='';
+  const TILE=84, wallX=150, ground=250, awnY=130, doorTop=150;
+  const dirx=Math.cos(Math.atan(1/2)), diry=Math.sin(Math.atan(1/2));
+  // ground, street tint, wall (section cut)
+  sec.append(rect(0,ground,780,50,'#2a2420'));
+  sec.append(rect(540,ground,240,50,'#343036'));
+  sec.append(text('STREET / CAMERA SIDE',772,ground+30,9,'#6f6c78','end'));
+  sec.append(rect(wallX-42,34,42,ground-34,'#5a3a30'));
+  sec.append(rect(wallX-42,34,42,7,'#8a5a48'));
+  sec.append(text('WALL',wallX-21,28,9,'#9a97a6','middle'));
+  // door on the street face of the wall
+  sec.append(rect(wallX,doorTop,7,ground-doorTop,'#121820'));
+  sec.append(rect(wallX+7,doorTop,2,ground-doorTop,'#3a3230'));
+  sec.append(text('DOOR',wallX+24,ground-6,9,'#c8c4ba','start'));
+  sec.append(line(wallX,doorTop,wallX+180,doorTop,'#55525c',1));
+  sec.append(text('DOOR HEAD',wallX+184,doorTop-4,8,'#7a7784','start'));
+
+  // the iso camera, up and to the right, with its view direction
+  const camx=662, camy=66;
+  sec.append(rect(camx-16,camy-9,30,18,'#2c2e33')); sec.append(rect(camx-24,camy-4,9,9,'#2c2e33'));
+  sec.append(text('ISO CAMERA',camx,camy-14,9,'#59d6e8','middle'));
+  sec.append(line(camx-22,camy+8,camx-22-dirx*64,camy+8+diry*64,'#59d6e8',1.6));
+
+  // chosen awning, its grazing sightline, and the shadow it casts on the wall
+  const aw=AW[opt], proj=aw.proj*TILE, edgeX=wallX+proj, shadowBot=awnY+proj*0.5;
+  const ray=line(edgeX,awnY,edgeX+dirx*560,awnY-diry*560,'#59d6e8',1.6); ray.setAttribute('stroke-dasharray','5 4'); sec.append(ray);
+  sec.append(line(edgeX,awnY,wallX,shadowBot,'#59d6e8',1.2));            // shadow line to the wall
+  sec.append(rect(wallX,awnY,6,shadowBot-awnY,'rgba(89,214,232,.32)')); // occluded band
+  sec.append(rect(wallX,awnY-3,proj,8,'#c6a84e')); sec.append(rect(wallX,awnY+5,proj,5,'#967a36'));
+  sec.append(text(opt==='A'?'FLAT VALANCE · 0.1 TILE OUT':'SHORT BOX · 0.3 TILE OUT', edgeX+10, awnY+2, 9,'#f2b54a','start'));
+
+  // ghost of the old deep awning and where its shadow fell (across the door)
+  const dProj=TILE, dBot=awnY+dProj*0.5;
+  sec.append(rect(wallX,awnY-3,dProj,6,'rgba(198,168,78,.16)'));
+  sec.append(line(wallX+dProj,awnY,wallX,dBot,'rgba(216,64,64,.55)',1.2));
+  sec.append(rect(wallX,doorTop,6,dBot-doorTop,'rgba(216,64,64,.32)'));
+  sec.append(text('OLD 1-TILE AWNING',wallX+dProj+6,awnY-14,8,'#8a6a4a','start'));
+
+  const clears = shadowBot <= doorTop;
+  sec.append(text(clears?'✓ SHADOW STOPS ABOVE THE DOOR — DOOR STAYS VISIBLE':'× SHADOW CROSSES THE DOOR',
+    wallX, ground+42, 9, clears?'#5bbf7a':'#d84040','start'));
+  $('seccost').textContent=(opt==='A'?'A · FLAT VALANCE':'B · SHORT BOX')+': projecting '+(opt==='A'?'~0.1':'~0.3')+' tile, the awning’s shadow stops '+Math.round(doorTop-shadowBot)+' px above the door head, so the door reads clear. The old 1-tile awning’s shadow fell over the door.';
+}
+
+const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
+draw(); section();
+</script>

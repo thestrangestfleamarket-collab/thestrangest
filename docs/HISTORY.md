@@ -3819,6 +3819,48 @@ initial download and load super fast"; then "Go")
   and nothing else; each upper floor one open apartment, boards, no corridor, no doors. The elevator has one button: it takes you to
   your floor (the top one, `APTS.my`) and from there back to the lobby; the floor panel is gone. The lot where the east half stood
   is empty for now.
+- **THE NEW LAYOUT** (owner, 20 Oct 2026, 23:00–23:50, settled over nine mockups and an editable map; his positions in map units, north
+  up; this entry is the plan every later piece builds to). Market St is one zone (the street, West St, the bodega block, the alley);
+  Central Park is two zones, CENTRAL PARK (the top half) and SOUTH EAST CENTRAL PARK (the bottom); every interior is its own zone;
+  "anything that brings up a loading screen" is a zone. "Only the place you're at loads." Market St no longer dead-ends: it runs on
+  past West St to a forcefield at x −130 and east to one at x 262. The Avenue is gone: "there shouldn't be a road on right side,
+  central park just keeps going that way". The park is "2x up north" (y −38 to 181), West St runs with it to a forcefield at its end.
+  The bodega block (south side, west to east): MUSEUM OF EARTH (−48), THE PLAYHOUSE (−32), THE BANK (4.5, on the block now, not
+  West St), THE BAR (54.5), the SUBWAY EXIT on the sidewalk (77), the ENTRANCE TO THE HUDSON AREA (117.5, "directly across from CP
+  gate", a passage through the block and the empty row to the river walk), BATH HOUSE (134), THE DOJO (147), MOVIE THEATRE (197.5),
+  THE ARCADE (212.5), THE HOLODECK (232.5). Club Static, VCR Repair and the Dojo Hall are deleted from the game. THE BODEGA and the
+  APARTMENTS move to West St's west side: the bodega at the corner (−66.5, −27), "2x bigger and have entrance on both sides of
+  street"; the apartments above it (−67, −5); above them seven empty apartment fronts, "all empty front shells (low render nothing
+  inside)" (−67, 17.5 … 149.5). The park gate at the centre of the park's bottom edge (112, −36). In the park: the castle (43, 17),
+  the fountain (72, 137), the round (112, 59.5), a lake (151, 10, in place of the pond), a stream from the north edge under a bridge
+  (201.5, 72.5) into the lake, the campfire (197.5, 32.5), the tower (−8.5, −28), paths that "go all the way (realistic)" between
+  all of them with lamp posts, trees, "fleshed out lived in". A huge hill in the east with a large cave (196.5, 41.5): "the cave leads
+  down through long tunnels underground that have gems you mine (get more expensive the longer you go down) the rock golems guard
+  it. once you get near they wake up and if you kill them they break into small pieces (boulders, rocks), then after 10–60 seconds
+  they start to form back together and come back at you". The mines are NEW (the dungeon under the castle stays). South of the
+  block: the dark alley, a row of empty buildings, the walk by the Hudson, the Hudson. Build order, one pull request each: the map
+  skeleton (park size, no Avenue, gate, forcefields), the block's new order, West St's bodega and apartments, the park's inside, the
+  Hudson side, the mines and golems, then the zone loading screens.
+
+- **The map skeleton, step 1 of the new layout** (21 Oct 2026; `006-map-pre.js`, `050-main-8.js`, `064-map-post.js`, `065-ring.js`): the park
+  is twice as deep (`NORTHX` 145.5: y −38 to 181) and runs east to the force field (`EASTX` 262); the Avenue, North St and the bank's
+  pocket road are gone, and with them the loop's subway tunnel (`067-sub.js`) and the grid mines under the park (`145-mines.js`; the
+  new mines come with the cave in step 6). Market St runs from the west force field (`WESTX` −130) to the east one (262); West St runs
+  from Market St up the park's west side and dead-ends at the force field past the park's top (`RING.top`, `RING.wy1`). The force field
+  is one box (`RING.ff`). The land's road holes are clipped to the land rect (the old hole was skipped when a corner fell outside it,
+  which buried the road under lawn). The bank stays where it stood until step 2 puts it on the block; the civic tower sits past the
+  park's top wall. The subway's two loop stairs are gone (the subway exit on the block's sidewalk comes in step 2).
+
+- **The block's new order, step 2 of the new layout** (21 Oct 2026; `006-map-pre.js` `BLOCK`, `MAINROW`, `WROW`, `LAYOUT0.subway`;
+  `059h-bank.js`, `059-street.js`, `069a-block.js`): the south side of Market St, west to east, each centred on the owner's x at its real
+  width: MUSEUM OF EARTH (−62 to −34), THE PLAYHOUSE (−34 to −20), THE BANK (−10 to 19, on the block now at the museum's width, its hall
+  14 deep; the pocket off West St and its three glass buildings are gone), THE BAR (49 to 60), the SUBWAY stairs (75 to 79; the station
+  moves under them), the bodega and the apartments where they were (they go to West St in step 3, and the ENTRANCE TO THE HUDSON AREA
+  takes their place then), the dojo gate and THE BATH HOUSE where they were (they shift to 147 and 134 in step 3, when the apartments
+  have gone), THE MOVIE THEATRE (190 to 205), THE ARCADE (205 to 220), THE HOLODECK (225 to 240: its own front now, the booth across the
+  lot's whole width with the HOLODECK sign three times the size, the hall behind as before). The block runs to x 245. CLUB STATIC and
+  VCR REPAIR are deleted (`059a-club.js`, the VCR offmap in `059-store.js`, their place tests), and THE DOJO with its hall and the ninja
+  training (owner, 21 Oct 2026, asked whether the hall or both: "both for now, lets hurry"; `059c-dojo.js`, `141a-ninja.js`).
 
 ## 21 Oct 2026: the bodega a two-storey, the owner's apartment above it, and its short awning
 
@@ -3837,9 +3879,9 @@ initial download and load super fast"; then "Go")
     valance that projects ~0.13 tile and hangs over the storefront head, reading `BODEGA` over `COLD BEER · DELI · LOTTO`. Shortest on
     purpose: a side section in the mockup shows that at the 2:1 isometric angle its shadow stops above the door head, so the door reads
     clear — the deep awning pulled on 17 Oct crossed that sightline. The house number moved up onto the upper floor.
-  - **Still to do — the florist.** The bodega sits at the west end of its block (the cross-street to its west, the subway stairs and the
-    apartment house to its east), so there is no 8-tile lot next to it for a florist. Where the FLORIST goes is still the owner's call
-    (an open spot on the main row, or a swap); not built yet.
+  - **Built on the bodega where it stands now**, before the new layout's step 3 moves it to the West St corner (−66.5, −27), "2x bigger
+    with entrances on both sides", apartment shells above. This two-storey + awning + apartment look is meant to carry into that step;
+    the FLORIST next door is not built (the new layout has no lot for it yet). To reconcile with step 3 before it ships.
   - Cost: the second storey and awning are flat painted brick/quads, no new shader and no new light; the warm apartment window is
-    emissive paint. Verified the page builds and runs without error; the cloud sandbox can't read back the software-GL frame, so the
-    look wants the owner's eye (and the `measure` checks) on the pull request.
+    emissive paint. Budget check passes; the bodega picture changes 1.43% (no new errors) on CI's real renderer; the cloud sandbox
+    can't read back the software-GL frame, so the look wants the owner's eye.

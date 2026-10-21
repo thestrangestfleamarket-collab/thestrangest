@@ -63,21 +63,19 @@ let solids=SOL.up, fixed=FIX.up, BOUND, groundY, LVL='up', BOD, BODB, METRO;
 const STORE={rooms:[],places:[],roofs:[]}, BF={list:[]}; window.STORE=STORE;
 const MAPG={}, MODS={};  const OVERHEAD=[]; let RPASS=null, FIRE=null;
 const grab=async(name,fn)=>{ const n0=scene.children.length; await fn(); const g=new THREE.Group(); g.name=name; for(const o of scene.children.slice(n0))g.add(o); scene.add(g); MAPG[name]=g; return g; };
-const LAYOUT0={bodega:{x:36.4},diner:{x:-24.75},ghost:{x:15.85},house:{x:67.56},subway:{x:36.99},apartments:{x:59},park:{e:[-4,0,0,0]},castle:{x:-70,y:25.5+14}};
+const LAYOUT0={bodega:{x:36.4},diner:{x:-24.75},ghost:{x:15.85},house:{x:67.56},subway:{x:14.99},apartments:{x:59},park:{e:[-4,0,0,0]},castle:{x:-70,y:25.5+14}};
 const AWAY0=['diner','aquarium','garden','avenue','keep','civic','power'], AWAYLOT=1000;
 const AWAY=(()=>{ const s=new Set(AWAY0), q=QS.get('bring'); if(q==='all')s.clear(); else if(q)for(const k of q.split(','))s.delete(k.trim()); return s; })(); window.AWAY=AWAY;
 const LAY=(()=>{ const q=QS.get('layout'); let o={}; try{ o=q&&q[0]==='{'?JSON.parse(q):q==='0'?{}:JSON.parse(SAVE.get('layout')||'{}')||{}; }catch(e){}
   const L=Object.assign({},LAYOUT0,o); return {L, o:k=>({x:(+(L[k]&&L[k].x)||0)+(k==='apartments'?AWAYLOT:0),y:+(L[k]&&L[k].y)||0}), e:k=>(L[k]&&L[k].e||[0,0,0,0]).map(v=>+v||0), h:k=>+(L[k]&&L[k].h)||0, s:k=>+(L[k]&&L[k].s)||1}; })();
 const STN={DX:(-11+LAY.o('subway').x)*TILE, DZ:(-35+LAY.o('subway').y)*TILE, DY:-98*ZU};
 const BLDK=1.1;
-const MAINX={w:70,e:70}, WID=14, NORTHY=9+WID, NORTHX=36;
-const AVE={x0:152+MAINX.e,x1:166.5+MAINX.e+WID,y1:57.5}; AVE.r0=AVE.x0+3.2; AVE.r1=AVE.x1-3.2;
-const BLOCK={back:-92.4,alley:[-99.4,-92.4],row2:[-111.4,-99.4],prom:[-119,-111.4],river:-165,x0:-50,x1:212,lots:{play:[46.7,60.7],theatre:[172.9,186.9],arcade:[191.9,205.9]}};
-const MAINROW=[[-50,-39],[-18.3,10.3],[46.7,60.7],[97,101],[104,112.8],[115.8,144.4],[149.4,167.9],[172.9,186.9],[191.9,205.9]];
-const WROW={bar:{x0:-38.91,x1:-28.91},mus:{x0:-10.09,y0:-101,x1:15.91,y1:-80,h:210}};
-const RING={wx0:31.5-MAINX.w-WID,wx1:46-MAINX.w,ny0:12.5+NORTHY+NORTHX,ny1:27+NORTHY+WID+NORTHX}; RING.wr0=RING.wx0+3.2; RING.wr1=RING.wx1-3.2; RING.nr0=RING.ny0+3.2; RING.nr1=RING.ny1-3.2;
-{ const x0=(RING.wr0+RING.wr1)/2+2.7, raw=((50-MAINX.w)+AVE.x0)/2+9; RING.mine={x:x0+(Math.floor((raw-x0)/2.5)+.5)*2.5}; } AVE.y1=RING.ny1; AVE.ey1=RING.ny1+11.5; RING.stairs=[{x0:RING.wx0+.6,x1:RING.wx0+2.6,y0:-2,y1:4,steps:12,depth:98,dir:-1,leg:'w'},{x0:AVE.r1+.6,x1:AVE.r1+2.6,y0:-2.4,y1:3.6,steps:12,depth:98,dir:-1,leg:'e'}]; RING.river={y0:BLOCK.river,y1:BLOCK.river+46}; RING.ff={x0:RING.wx0-1.5,x1:AVE.x1+25.5,y0:RING.river.y0-1.5,y1:40.5+NORTHY+NORTHX};
-RING.bank={x0:-102.5,rx:-96,y0:6.7,r0:17,r1:37,y1:44,ys:-10.9,yn:56,bx1:-73.9};
+const MAINX={w:70,e:110}, WID=14, NORTHY=9+WID, NORTHX=145.5, EASTX=152+MAINX.e, WESTX=-130;
+const BLOCK={back:-92.4,alley:[-99.4,-92.4],row2:[-111.4,-99.4],prom:[-119,-111.4],river:-165,x0:-65,x1:245,lots:{play:[-33.6,-19.6],bank:[-9.8,18.8],theatre:[190.5,204.5],arcade:[205.5,219.5],holo:[225.5,239.5]}};
+const MAINROW=[[-62.3,-33.7],[-33.6,-19.6],[-9.8,18.8],[49,60],[75,79],[104,112.8],[115.8,130.1],[149.4,167.9],[190.5,204.5],[205.5,219.5],[225.5,239.5]];
+const WROW={bar:{x0:51.09,x1:61.09},mus:{x0:-50.09,y0:-101,x1:-24.09,y1:-80,h:210}};
+const RING={wx0:31.5-MAINX.w-WID,wx1:46-MAINX.w,top:12.5+NORTHY+NORTHX}; RING.wr0=RING.wx0+3.2; RING.wr1=RING.wx1-3.2; RING.wy1=RING.top+WID;
+RING.stairs=[]; RING.river={y0:BLOCK.river,y1:BLOCK.river+46}; RING.ff={x0:WESTX,x1:EASTX,y0:RING.river.y0-1.5,y1:RING.top+28};
 const MAPSTAIR={x0:60.01,x1:64.01,y0:-82.9,y1:-76.9, steps:12, depth:98, dir:-1};
 { const o=LAY.o('subway'); MAPSTAIR.x0+=o.x; MAPSTAIR.x1+=o.x; MAPSTAIR.y0+=o.y; MAPSTAIR.y1+=o.y; }
 const CASTLE={b:[46,67,-21,-4],gate:58.5,stair:{x0:61.5,x1:63.5,y0:-19.4,y1:-13.4,steps:12,depth:98,dir:1},hall:{x0:51,y0:-20,x1:65,y1:-6.8,h:130}};

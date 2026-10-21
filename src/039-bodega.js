@@ -1517,7 +1517,7 @@ await grab('bodega',async()=>{ const solids=SOL.up, fixed=FIX.up, SHL=[]; let BO
   { let q=0; for(const k of SHARED.BOD.kerbs){ if(k.at===MAP.x0||k.at===MAP.x1)continue; for(let a=k.a0+6;a<k.a1-4;a+=24){ if(inX(k.ax,k.at,a,2)||inJ(k.ax==='x'?a:k.at,k.ax==='x'?k.at:a,2))continue;
       const kind=q++%3===2?'speed':'nopark', p=k.at-k.n*.8; if(kind!=='speed')SG.push({kind,x:k.ax==='x'?a:p,y:k.ax==='x'?p:a,n:k.ax==='x'?[1,0]:[0,1]}); } } }
   SHARED.BOD.signs=[];
-  SHARED.BOD.road={KR,CORN,RR,at:ROADAT,MH,DR,LN}; window.STREETQ=()=>({...SHARED.BOD.road,XS:SHARED.BOD.XS,ZS:SHARED.BOD.ZS,CURB,FAR,MAP,RG,corner:typeof DRESS!=='undefined'&&DRESS.corner});
+  SHARED.BOD.road={KR,CORN,RR,at:ROADAT,MH,DR,LN}; window.STREETQ=()=>({...SHARED.BOD.road,XS:SHARED.BOD.XS,ZS:SHARED.BOD.ZS,CURB,FAR,MAP,RG,corner:DRESS.corner});
   SHARED.BOD.grounds=[
     {id:'shop',bld:true,x0:B0.x0,y0:B0.y0,x1:B0.x1,y1:B0.y1,z:.15,col:(x,y)=>bodegaFloorCol(x,y),tex:'concrete_floor_worn_001',tint:[112,116,124],rep:3},
     {id:'walk',x0:MAP.x0,y0:W,x1:MAP.x1,y1:CURB-.16,z:0,col:holed(slabCol),tex:'concrete_pavement',tint:[166,161,148],rep:2},
@@ -1856,7 +1856,7 @@ SHARED.BODB={};
     { const t=tex(k,2); up.scale.set(t.w*s,t.h*s,1); up.position.y=t.h*s/2; } g.add(flat,up); flat.visible=false;
     const b={k,name:BF_KINDS[k][0],g,flat,up,M,perches,at:0,to:0,t0:0,dur:0,until:2+Math.random()*6,span:s,t:Math.random()*10,pose:2};
     g.position.set(...perches[0]); scene.add(g); BF.list.push(b); return b; };
-  BF.tick=dt=>{ '@later'; const dark=typeof CLOCK!=='undefined'&&CLOCK.dark();
+  BF.tick=dt=>{ '@later'; const dark=CLOCK.dark();
     for(const b of BF.list){ b.t+=dt; const t=b.t; let pose=2, P;
       if(b.dur&&t<b.t0+b.dur){ const u=(t-b.t0)/b.dur, A=b.perches[b.at], Cc=b.perches[b.to], dx=Cc[0]-A[0], dz=Cc[2]-A[2], L=Math.hypot(dx,dz)||1, hump=Math.sin(Math.PI*u)*.35*TILE, zig=Math.sin(u*Math.PI*5)*.06*TILE;
         P=[A[0]+dx*u+zig*dz/L,A[1]+(Cc[1]-A[1])*u+hump+Math.sin(t*9)*.05,A[2]+dz*u-zig*dx/L]; pose=[0,1,2,1][Math.floor(t*12)%4]; b.g.rotation.y=Math.atan2(dx,dz); }

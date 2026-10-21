@@ -229,7 +229,7 @@ MK.stoop=(x,y)=>{ SHARED.PNAME='stoop'; const c=[150,146,136]; return prop([Bx(x
 const STEEL=[96,98,104], STEELD=[70,72,78], YH=[206,164,30], CONC=[150,146,138], ROADC=[64,64,70], DARK=[22,22,24];
 const glow=c=>Object.assign([...c],{e:1});
 const SIGNAL=()=>{ const t=(performance.now()/1000)%60; return {main:t<28?0:t<32?1:2,cross:t<34?2:t<56?0:1}; };
-const lifeOn=()=>typeof LIFE!=='undefined'&&LIFE.mode===1;
+const lifeOn=()=>LIFE.mode===1;
 const flipOf=f=>f[1]<0||f[0]>0?1:0;
 const faceArt=(b,f,A,W,zt,back)=>sided({...b,fs:(nx,ny,X,Y,zr)=>{ if(nx!==f[0]||ny!==f[1])return back; const along=f[0]?Y:X, a0=f[0]?b.y0:b.x0, len=f[0]?b.y1-b.y0:b.x1-b.x0, u=flipOf(f)?a0+len-along:along-a0;
   return A(Math.floor(u*FP-(len*FP-W)/2),Math.floor(zt-(zr+b.z0))); }});

@@ -66,7 +66,7 @@ const STALL=(()=>{ const M=TILE/.84, VS=ZU*24/TILE, mv=m=>m*M*VS;
       }
     { const bx=xg-gate*.16, fz=Z(wy-.46), tz=Z(yb-.04), dy=mv(1.3), dz=tz-fz, a=Math.atan2(dz,dy), L=Math.hypot(dz,dy);
       TG.push(inst('cyl',0x8a6a3e,X(bx),dy/2,(fz+tz)/2,.02*M,L,.02*M,a), inst('box',0xc8a85a,X(bx),mv(.13),fz+.02*M,.3*M,mv(.26),.07*M,a), inst('box',0x9a3a2a,X(bx),mv(.27),fz+.05*M,.2*M,mv(.04),.06*M,a)); }
-    const grp=(typeof MAPG!=='undefined'&&MAPG.parkwall)||scene, c=new THREE.Color(), ME={}; let tris=0;
+    const grp=(MAPG.parkwall)||scene, c=new THREE.Color(), ME={}; let tris=0;
     const lam=new THREE.MeshLambertMaterial({color:0xffffff}), glow=new THREE.MeshBasicMaterial({color:0xffffff});
     for(const [g,L] of Object.entries(I)){ if(!L.length)continue; const geo=G[g==='glow'?'cap':g], me=ME[g]=new THREE.InstancedMesh(geo,g==='glow'?glow:lam,L.length);
       L.forEach(([m,col],i)=>{ me.setMatrixAt(i,m); me.setColorAt(i,c.setHex(col)); }); me.computeBoundingSphere&&me.computeBoundingSphere(); me.castShadow=g!=='glow'; me.receiveShadow=true; if(g==='glow')me.onBeforeRender=()=>{ glow.color.setScalar(CLOCK.dark&&CLOCK.dark()?1.25:.55); }; grp.add(me);

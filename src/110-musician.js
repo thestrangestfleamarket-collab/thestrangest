@@ -93,7 +93,7 @@ function gtBody(a,dt){ '@later'; const R=RIG; R.farOnly(false); GTS.t+=dt; const
   P.nod+=Math.sin(a.t*1.6)*0.6*R.D+Math.sin(t/GTBEAT*Math.PI)*0.8*R.D; a.P=P; return R.settle(R.build(P,null),0); }
 if(!MUS.shelf){ const R=RIG, V=R.V, AT={x:SHARED.BOD.XS(70),z:SHARED.BOD.ZS(-73),hd:Math.PI/2,y:0};
   const g=new THREE.Group(); MAPG.bodega.add(g); MUS.g=g; const SF=sheetFig(g), PCS=SF.PCS; MUS.tris=SF.FM.tris; MUS.per=SF.FM.per; MUS.ghost=SF.stat;
-  g.position.set(AT.x,AT.y,AT.z); g.rotation.set(0,AT.hd,0); musScale(g); MUS.at=AT; MUS.on=true; if(typeof NPCS!=='undefined'&&NPCS.extra&&!NPCS.extra.includes(MUS))NPCS.extra.push(MUS);
+  g.position.set(AT.x,AT.y,AT.z); g.rotation.set(0,AT.hd,0); musScale(g); MUS.at=AT; MUS.on=true; if(NPCS.extra&&!NPCS.extra.includes(MUS))NPCS.extra.push(MUS);
   const F0={o:{...GTF.o},x:{...GTF.x},y:{...GTF.y},z:{...GTF.z}};
   MUS.hold=(drop,tilt,wr,pole)=>{ const c=Math.cos(tilt), s=Math.sin(tilt), rot=v=>V(v.x*c-v.y*s,v.x*s+v.y*c,v.z), P0=V(F0.o.x,F0.o.y,F0.o.z);
     GTF.x=rot(F0.x); GTF.y=rot(F0.y); GTF.z=rot(F0.z); GTF.o=R.add(rot(P0),V(0,-drop,0));

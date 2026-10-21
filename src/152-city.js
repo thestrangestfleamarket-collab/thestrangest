@@ -20,7 +20,7 @@ Object.assign(CITY,{on:QS.get('city')==='1',jobs:[],sched:[],day:0,nj:0,extra:[]
   CITY.place=id=>CITY.places().find(p=>p.id===id||p.name===String(id).toUpperCase());
   const GRID=new Map();
   const bounds=lv=>{ if(lv==='down'){ const L=SOL.down; let x0=1e9,z0=1e9,x1=-1e9,z1=-1e9; for(const b of L){ x0=Math.min(x0,b[0]); z0=Math.min(z0,b[1]); x1=Math.max(x1,b[2]); z1=Math.max(z1,b[3]); } return [x0-2*T,z0-2*T,x1+2*T,z1+2*T]; }
-    let x0=1e9,z0=1e9,x1=-1e9,z1=-1e9; for(const k of ['bodega','house','apartments','ghost','park','castle','subway']){ const b=typeof MAPED!=='undefined'&&MAPED.box&&MAPED.box(k); if(!b)continue; x0=Math.min(x0,b[0]); z0=Math.min(z0,b[1]); x1=Math.max(x1,b[2]); z1=Math.max(z1,b[3]); }
+    let x0=1e9,z0=1e9,x1=-1e9,z1=-1e9; for(const k of ['bodega','house','apartments','ghost','park','castle','subway']){ const b=MAPED.box&&MAPED.box(k); if(!b)continue; x0=Math.min(x0,b[0]); z0=Math.min(z0,b[1]); x1=Math.max(x1,b[2]); z1=Math.max(z1,b[3]); }
     for(const e of CITY.extra)if(e.box){ x0=Math.min(x0,e.box[0]); z0=Math.min(z0,e.box[1]); x1=Math.max(x1,e.box[2]); z1=Math.max(z1,e.box[3]); }
     return [x0-4*T,z0-4*T,x1+4*T,z1+4*T]; };
   const grid=(lv,free)=>{ '@later'; const L=SOL[lv], gk=lv+':'+(free?free.name||'f':''); let g=GRID.get(free||lv); if(g&&g.n===L.length)return g; const b=bounds(lv), w=Math.ceil((b[2]-b[0])/C), h=Math.ceil((b[3]-b[1])/C);

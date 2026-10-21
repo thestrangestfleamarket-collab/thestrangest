@@ -35,6 +35,6 @@ import {FEEL, pos, SFX} from './003b-systems.js';
     A.comp*=Math.exp(-dt*9);
     C.g.position.set(pos.x,SHARED.py,pos.z); C.g.rotation.set(A.lean.x,h,A.lean.y); C.g.scale.y=A.base.sy*(1-A.comp);
     if(C.relax)C.relax(dt,A.w.Idle_Loop/sum>.6);
-    const ss=A.stepSt; ss.ph=A.ph; ss.w=A.moving&&!air?1:0; ss.run=hs>2.6?1:0; if(typeof SFX!=='undefined')SFX.steps(ss,FEEL.go); };
+    const ss=A.stepSt; ss.ph=A.ph; ss.w=A.moving&&!air?1:0; ss.run=hs>2.6?1:0; SFX.steps(ss,FEEL.go); };
   const IN_MOVE=()=>Math.hypot(FEEL.IN.x,FEEL.IN.z)>.1;
 }

@@ -14,7 +14,7 @@ import {WATER} from './009-down.js';
     for(let i=0;i<N;i++){ const a=i/N*Math.PI*2, h=Math.sin(i*12.9898)*43758.5453%1, s=(.38+.14*Math.abs(h))*TILE, r=RW+s*.25;
       rocks.setMatrixAt(i,m4.compose(new THREE.Vector3(WX+Math.cos(a)*r,Y(RIM)*.45,WZ+Math.sin(a)*r),q.setFromEuler(e.set(h*3,a+h,h*2)),new THREE.Vector3(s,Y(RIM)*.75,s*.8))); const g=.42+.12*Math.abs(Math.sin(i*7.3)); rocks.setColorAt(i,c.setRGB(g,g*.98,g*.94)); }
     rocks.castShadow=rocks.receiveShadow=true;
-    const grp=(typeof MAPG!=='undefined'&&MAPG.park)||scene; grp.add(bed,rocks);
+    const grp=(MAPG.park)||scene; grp.add(bed,rocks);
     const W=WATER.body({name:'parkpond',X0:WX-RW,X1:WX+RW,Z0:WZ-RW,Z1:WZ+RW,lvl:Y(LV),GX:72,GY:72,dep:()=>.35});
     W.mat.fragmentShader=W.mat.fragmentShader.replace('void main(){ vec2 t=1./uGrid;','void main(){ if(length(vWp.xz-vec2('+WX.toFixed(3)+','+WZ.toFixed(3)+'))>'+(RW-.02*TILE).toFixed(3)+')discard; vec2 t=1./uGrid;');
     W.mat.customProgramCacheKey=()=>'parkpond'; W.mat.needsUpdate=true;

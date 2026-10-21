@@ -47,7 +47,7 @@ GHOSTS.init=()=>{ if(typeof SHARED.BOD==='undefined'||!SHARED.BOD.GD)return; con
   GHOSTS.tick=dt=>{ if(!dt)return; const near=SHARED.LVL!=='down'&&Math.hypot(pos.x/MH-(ix0+ix1)/2,pos.z/MH-(iz0+iz1)/2)<45*.84;
     for(const Q of GHOSTS.list){ Q.me.visible=near; for(const e of Q.eyes)e.visible=near; }
     if(!near)return;
-    others.length=0; others.push({x:pos.x/MH,z:pos.z/MH,y:SHARED.py/MV+1.7}); if(typeof NPCS!=='undefined')for(const N1 of NPCS){ if(N1.lv!=='up'||N1.far||!N1.st)continue; const x=N1.st.x/MH, z=N1.st.z/MH; if(x>ix0-6&&x<ix1+6&&z>Math.min(iz0,FZ0)-6&&z<Math.max(iz1,FZ1)+6)others.push({x,z,y:1.6}); }
+    others.length=0; others.push({x:pos.x/MH,z:pos.z/MH,y:SHARED.py/MV+1.7}); for(const N1 of NPCS){ if(N1.lv!=='up'||N1.far||!N1.st)continue; const x=N1.st.x/MH, z=N1.st.z/MH; if(x>ix0-6&&x<ix1+6&&z>Math.min(iz0,FZ0)-6&&z<Math.max(iz1,FZ1)+6)others.push({x,z,y:1.6}); }
     for(const Q of GHOSTS.list){ const b=Q.ball, b0={...b}; Q.t+=dt;
       const dx=Q.to[0]-b.x, dz=Q.to[1]-b.z, dd=Math.hypot(dx,dz);
       if(dd>.12){ const sp=.28, k=Math.min(1,dt*.8); Q.v.x+=((dx/dd)*Math.min(sp,dd*.5)-Q.v.x)*k; Q.v.z+=((dz/dd)*Math.min(sp,dd*.5)-Q.v.z)*k; Q.yawTo=Math.atan2(dx,dz); }

@@ -59,7 +59,7 @@
   FEEL.ui=dt=>{ FEEL.yard.tick(); fN++; fT+=dt; if(fT>.5){ fps=fN/fT; ms=fT/fN*1000; fN=0; fT=0; } if(!P.hidden&&Math.random()<.1)sync(); if(!FEEL.dbg)return;
     const S=FEEL.S, A=FEEL.A, c=FEEL.cfg, on=FEEL.take(), h=FEEL.hgt(), r=c.radius, k=r.toFixed(3)+h.toFixed(3);
     if(k!==capK){ capK=k; cap.geometry.dispose(); cap.geometry=new THREE.WireframeGeometry(new THREE.CapsuleGeometry(r,Math.max(.01,h-2*r),3,10)); }
-    const px=pos.x/MH, pz=pos.z/MH, pyy=py/MV; cap.position.set(px,pyy+h/2,pz); cap.visible=on;
+    const px=pos.x/MH, pz=pos.z/MH, pyy=SHARED.py/MV; cap.position.set(px,pyy+h/2,pz); cap.visible=on;
     aG.visible=on&&S.gnd; aG.position.set(px,pyy,pz); aG.setDirection(S.gN); aW.visible=on&&S.wall; aW.position.set(px,pyy+.5,pz); aW.setDirection(S.wN);
     const Y=FEEL.yard, src=Y.bvh&&Y.in(px,pz)?Y.geo:FEEL.street&&FEEL.street.geo; if(src!==wireSrc){ wireSrc=src; wire.geometry=src||new THREE.BufferGeometry(); } wire.visible=!!src&&on;
     const R=FEEL.camRays; if(R&&FEEL.camHit!=null){ const a=[]; for(const [p,q] of R)a.push(p.x,p.y,p.z,q.x,q.y,q.z); camL.geometry.setAttribute('position',new THREE.Float32BufferAttribute(a,3)); camL.visible=true; } else camL.visible=false;

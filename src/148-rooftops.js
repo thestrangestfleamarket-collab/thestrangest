@@ -1,6 +1,6 @@
 const ROOFS=window.ROOFS={};
-ROOFS.init=()=>{ if(typeof BOD==='undefined'||!MODS.apts||!MODS.apts.A)return;
-  const X=BOD.X, Y=BOD.Y, Z=BOD.Z, MH=TILE/.84, MV=BOD.YS(24)/.84;
+ROOFS.init=()=>{ if(typeof SHARED.BOD==='undefined'||!MODS.apts||!MODS.apts.A)return;
+  const X=SHARED.BOD.X, Y=SHARED.BOD.Y, Z=SHARED.BOD.Z, MH=TILE/.84, MV=SHARED.BOD.YS(24)/.84;
   const BX=[], CY=[], m4=new THREE.Matrix4(), q=new THREE.Quaternion(), e=new THREE.Euler(), V=THREE.Vector3, col=new THREE.Color();
   const b=(x,y,z,sx,sy,sz,c)=>BX.push([x,y,z,sx,sy,sz,c]), cyl=(x,y,z,r,h,c,cone=0)=>CY.push([x,y,z,r,h,c,cone]);
   const rnd=(()=>{ let t=19; return ()=>{ t=(t*16807)%2147483647; return t/2147483647; }; })();
@@ -32,7 +32,7 @@ ROOFS.init=()=>{ if(typeof BOD==='undefined'||!MODS.apts||!MODS.apts.A)return;
     for(const [u,v] of [[3,6.5],[5.6,8.2],[2.4,11.6],[9.2,12.4],[17.5,6.5],[20.6,8.2],[23.4,11.6]])vent(U(u),top,Vv(v)); for(const [u,v] of [[4.4,5.6],[8.3,9.4],[18.2,10.8],[24.2,4.4]])stack(U(u),top,Vv(v));
     { const ax=U(19.8), az=Vv(12.8), h=3.2*MV; b(ax,top+h/2,az,.05*MH,h,.05*MH,0x9aa0a6); for(const [y,w] of [[.75,1.4],[.88,1.1],[.97,.8]])b(ax,top+h*y,az,w*MH,.03*MV,.04*MH,0x9aa0a6); } }
 
-  { const B=BOD.B0, x0=Math.min(X(B.x0),X(B.x1)), x1=Math.max(X(B.x0),X(B.x1)), z0=Math.min(Z(B.y0),Z(B.y1)), z1=Math.max(Z(B.y0),Z(B.y1)), top=Y(B.h||130);
+  { const B=SHARED.BOD.B0, x0=Math.min(X(B.x0),X(B.x1)), x1=Math.max(X(B.x0),X(B.x1)), z0=Math.min(Z(B.y0),Z(B.y1)), z1=Math.max(Z(B.y0),Z(B.y1)), top=Y(B.h||130);
     const fz=Z(B.y1)>Z(B.y0)?1:-1, front=fz>0?z1:z0, GALV=0x8a8e92, mx=(x0+x1)/2, mz=(z0+z1)/2;
     for(const x of [x0+.22*MH,x1-.22*MH])leader(x,front+fz*.1*MH,0,fz,top+.8*MV,GALV);
     const turb=(x,z)=>{ cyl(x,top,z,.2*MH,.25*MV,0x2a2a2c); cyl(x,top+.25*MV,z,.14*MH,.5*MV,0x8a8e90); for(let k=0;k<4;k++)cyl(x,top+.75*MV+k*.09*MV,z,(.3-k*.035)*MH,.09*MV,k&1?0x6e7274:0xa4a8aa); cyl(x,top+1.11*MV,z,.12*MH,.1*MV,0x7a7e80,1); };
@@ -40,9 +40,9 @@ ROOFS.init=()=>{ if(typeof BOD==='undefined'||!MODS.apts||!MODS.apts.A)return;
     turb(x0+2.6*MH,z1-2.4*MH); soil(x1-1.6*MH,z0+1.5*MH,.7); soil(mx+1.8*MH,mz-2*MH,.45); soil(x0+1.2*MH,mz+3.2*MH,.55);
     { const gx=x0+1.6*MH, gz=z0+2.1*MH; cyl(gx,top,gz,.22*MH,.1*MV,0x2c2c2e); cyl(gx,top+.1*MV,gz,.12*MH,.75*MV,0x8a8e8a); b(gx+.1*MH,top+.85*MV,gz,.34*MH,.24*MV,.26*MH,0x8a8e8a); b(gx+.26*MH,top+.72*MV,gz,.08*MH,.2*MV,.3*MH,0x6a6e6a); } }
 
-  if(BOD.GD&&BOD.GD.r){ const [a0,b0,a1,b1]=BOD.GD.r, x0=Math.min(X(a0),X(a1))-.15*MH, x1=Math.max(X(a0),X(a1))+.15*MH, fzz=Math.max(Z(b0),Z(b1))+.15*MH, top=Y(BOD.GD.eave||100);
+  if(SHARED.BOD.GD&&SHARED.BOD.GD.r){ const [a0,b0,a1,b1]=SHARED.BOD.GD.r, x0=Math.min(X(a0),X(a1))-.15*MH, x1=Math.max(X(a0),X(a1))+.15*MH, fzz=Math.max(Z(b0),Z(b1))+.15*MH, top=Y(SHARED.BOD.GD.eave||100);
     for(const x of [x0+.12*MH,x1-.12*MH])leader(x,fzz+.1*MH,0,1,top,0x9a6a40); }
-  { const R=(BOD.GHOSTST||[]).find(p=>/shop roof/.test(p.name||p.key||'')); if(R&&R.boxes&&R.boxes.length){ const bs=R.boxes, xa=Math.min(...bs.map(o=>o.x0)), xb=Math.max(...bs.map(o=>o.x1)), ya=Math.min(...bs.map(o=>o.y0)), yb=Math.max(...bs.map(o=>o.y1)), ze=Math.min(...bs.map(o=>o.z0)), zr=Math.max(...bs.map(o=>o.z1));
+  { const R=(SHARED.BOD.GHOSTST||[]).find(p=>/shop roof/.test(p.name||p.key||'')); if(R&&R.boxes&&R.boxes.length){ const bs=R.boxes, xa=Math.min(...bs.map(o=>o.x0)), xb=Math.max(...bs.map(o=>o.x1)), ya=Math.min(...bs.map(o=>o.y0)), yb=Math.max(...bs.map(o=>o.y1)), ze=Math.min(...bs.map(o=>o.z0)), zr=Math.max(...bs.map(o=>o.z1));
     const ym=(ya+yb)/2, half=(yb-ya)/2, zAt=y=>zr-(zr-ze)*Math.min(1,Math.abs(y-ym)/half), back=Z(ya)<Z(yb)?-1:1, yB=y=>ym+(ya<yb?-1:1)*y, yF=y=>ym-(ya<yb?-1:1)*y;
     { const cx=xb-(xb-xa)*.2, c0=yB(half*.25), c1=yB(half*.25+.5), lo=zAt(Math.max(Math.abs(c0-ym),Math.abs(c1-ym))*(1)+ym)-2, hi=zr+16;
       box(X(cx-.3),X(cx+.3),Z(c0),Z(c1),Y(lo),Y(hi),0x7a3a2c); box(X(cx-.36),X(cx+.36),Z(c0)-back*.06*MH,Z(c1)+back*.06*MH,Y(hi),Y(hi+2.5),0xa8a296); cyl(X(cx),Y(hi+2.5),(Z(c0)+Z(c1))/2,.12*MH,.35*MV,0xa0563a); }

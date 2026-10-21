@@ -65,7 +65,7 @@ const CLIP={moved:[],found:[],added:0,boxes:new Map(),done:new Set(),ms:0}; wind
     const live=NPCS.filter(N=>!fly(N));
     for(const N of live){ const st=N.st, b=CLIP.hit(SOL[N.lv]||SOL.up,st.x,st.z,st.R*.98), q=live.find(q=>q!==N&&q.lv===N.lv&&Math.hypot(q.st.x-st.x,q.st.z-st.z)<(q.st.R+st.R)*.98);
       if(b||q)chars.push({key:N.key,at:[+st.x.toFixed(2),+st.z.toFixed(2)],R:+st.R.toFixed(2),solid:b?b.map(v=>+v.toFixed(2)):null,other:q?q.key:null}); }
-    const closed=[]; for(const lv of ['up','down']){ const L=SOL[lv], B=BOUND, S=TILE/4, r=.3, nx=Math.ceil((B.x1-B.x0)/S), seeds=[];
+    const closed=[]; for(const lv of ['up','down']){ const L=SOL[lv], B=SHARED.BOUND, S=TILE/4, r=.3, nx=Math.ceil((B.x1-B.x0)/S), seeds=[];
       if(lv==='up'){ seeds.push([-2.2,3.2]); for(const R of STORE.rooms)if(!R.solids)seeds.push([R.at.x,R.at.z]); }
       for(const N of live)if(N.lv===lv)seeds.push([N.st.x,N.st.z]);
       const flood=skip=>{ const seen=new Set(), q=[]; const ok=(x,z)=>{ const g=grid(L); for(let i=Math.floor((x-r)/GC);i<=Math.floor((x+r)/GC);i++)for(let j=Math.floor((z-r)/GC);j<=Math.floor((z+r)/GC);j++){ const c=g.m.get(key(i,j)); if(c)for(const b of c){ if(skip&&CLIP.boxes.has(b))continue; const dx=x-Math.max(b[0],Math.min(b[2],x)), dz=z-Math.max(b[1],Math.min(b[3],z)); if(dx*dx+dz*dz<r*r)return false; } } return true; };

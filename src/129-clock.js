@@ -16,14 +16,14 @@ const CLOCK={h:17.4,run:false,speed:1440/600,sunV:new THREE.Vector3(0,1,0),moonV
   let lastS=0;
   CLOCK.tick=dt=>{ if(CLOCK.run)CLOCK.h=(CLOCK.h+dt*CLOCK.speed/60)%24;
     const e=elev(CLOCK.h); let i=0; while(i<K.length-2&&e>K[i+1][0])i++; const A=K[i], B=K[i+1], t=Math.max(0,Math.min(1,(e-A[0])/(B[0]-A[0])));
-    const up=LVL!=='down';
+    const up=SHARED.LVL!=='down';
     if(up){ mixC(A[1],B[1],t,scene.background); mixC(A[2],B[2],t,HEMI.color); mixC(A[3],B[3],t,HEMI.groundColor); HEMI.intensity=A[4]+(B[4]-A[4])*t; }
     const sun=e>-1, az=sun?azim(CLOCK.h):azim(CLOCK.h+12)*.5+.6, el=sun?Math.max(3,e)*D:48*D;
     mixC(A[5],B[5],t,sunL.color); sunL.intensity=up?A[6]+(B[6]-A[6])*t:0;
     const dir=new THREE.Vector3(Math.sin(az)*Math.cos(el),Math.sin(el),Math.cos(az)*Math.cos(el)); CLOCK.dir=dir;
     { const sa=azim(CLOCK.h), se=e*D; CLOCK.sunV.set(Math.sin(sa)*Math.cos(se),Math.sin(se),Math.cos(sa)*Math.cos(se));
       const ma=azim(CLOCK.h+12)*.5+.6, me=48*D; CLOCK.moonV.set(Math.sin(ma)*Math.cos(me),Math.sin(me),Math.cos(ma)*Math.cos(me)); }
-    const aim=L=>{ const sc=L.shadow.camera, tx=(sc.right-sc.left)/L.shadow.mapSize.x; SNM.lookAt(dir,ORG,UPV); SR.setFromMatrixColumn(SNM,0); SU.setFromMatrixColumn(SNM,1); SP.set(pos.x,py,pos.z);
+    const aim=L=>{ const sc=L.shadow.camera, tx=(sc.right-sc.left)/L.shadow.mapSize.x; SNM.lookAt(dir,ORG,UPV); SR.setFromMatrixColumn(SNM,0); SU.setFromMatrixColumn(SNM,1); SP.set(pos.x,SHARED.py,pos.z);
       const a=Math.round(SP.dot(SR)/tx)*tx, b=Math.round(SP.dot(SU)/tx)*tx, c=SP.dot(dir); L.target.position.copy(SR).multiplyScalar(a).addScaledVector(SU,b).addScaledVector(dir,c);
       L.position.copy(L.target.position).addScaledVector(dir,200*TILE); L.target.updateMatrixWorld(); L.updateMatrixWorld(); };
     const fit=()=>{ const B=SC.fb||(SC.fb=CLOCK.farBox()); SNM.lookAt(dir,ORG,UPV); SR.setFromMatrixColumn(SNM,0); SU.setFromMatrixColumn(SNM,1); const lo=[1e9,1e9,1e9], hi=[-1e9,-1e9,-1e9];
@@ -33,15 +33,15 @@ const CLOCK={h:17.4,run:false,speed:1440/600,sunV:new THREE.Vector3(0,1,0),moonV
       sunF.target.updateMatrixWorld(); sunF.updateMatrixWorld(); sunF.shadow.bias=-.06*TILE/sc.far; sunF.shadow.normalBias=Math.max(sunL.shadow.normalBias,1.5*2*Math.max(hr,hu)/FM); };
     const strong=sunL.intensity>.3, now=performance.now(), out=up&&!(typeof ROOMS!=='undefined'&&ROOMS.cur)&&sunL.intensity>0;
     if(out&&now-SC.st>1000){ SC.st=now; const g=sig(); if(g!==SC.g){ SC.g=g; SC.dirty=SC.fdirty=1; } }
-    const stale=out&&(SC.d.dot(dir)<Math.cos(.4*D)||Math.hypot(SC.c.x-pos.x,SC.c.z-pos.z)>12*TILE||SC.lv!==LVL);
-    if(stale){ aim(sunL); SC.c.set(pos.x,py,pos.z); SC.d.copy(dir); SC.lv=LVL; sunL.shadow.needsUpdate=true; }
-    if(out&&(SC.fd.dot(dir)<Math.cos(.4*D)||SC.flv!==LVL)){ fit(); SC.fd.copy(dir); SC.flv=LVL; SC.ft=now; sunF.shadow.needsUpdate=true; }
+    const stale=out&&(SC.d.dot(dir)<Math.cos(.4*D)||Math.hypot(SC.c.x-pos.x,SC.c.z-pos.z)>12*TILE||SC.lv!==SHARED.LVL);
+    if(stale){ aim(sunL); SC.c.set(pos.x,SHARED.py,pos.z); SC.d.copy(dir); SC.lv=SHARED.LVL; sunL.shadow.needsUpdate=true; }
+    if(out&&(SC.fd.dot(dir)<Math.cos(.4*D)||SC.flv!==SHARED.LVL)){ fit(); SC.fd.copy(dir); SC.flv=SHARED.LVL; SC.ft=now; sunF.shadow.needsUpdate=true; }
     if(out&&SC.dirty){ SC.dirty=0; sunL.shadow.needsUpdate=true; }
     if(out&&SC.fdirty&&now-SC.ft>1e4){ SC.fdirty=0; SC.ft=now; sunF.shadow.needsUpdate=true; }
     sunD.intensity=0;
     if(sunL.intensity>0&&(strong||now-lastS>100||stale)){ aim(sunD); sunD.shadow.needsUpdate=true; lastS=now; }
     if(typeof WATER!=='undefined')WATER.glowK=(typeof ROOMS!=='undefined'&&ROOMS.cur)||!up?1:Math.max(0,Math.min(1,(3-e)/8)); };
-  CLOCK.farBox=()=>{ const C=RING.cf, M=BOD.MAP, T=TILE, xa=[C.x0,C.x1,M.x0,M.x1].map(BOD.XS), za=[C.y0,C.y1,M.y0,M.y1].map(BOD.ZS); return [Math.min(...xa)-8*T,-4*T,Math.min(...za)-8*T,Math.max(...xa)+8*T,40*T,Math.max(...za)+8*T]; };
+  CLOCK.farBox=()=>{ const C=RING.cf, M=SHARED.BOD.MAP, T=TILE, xa=[C.x0,C.x1,M.x0,M.x1].map(SHARED.BOD.XS), za=[C.y0,C.y1,M.y0,M.y1].map(SHARED.BOD.ZS); return [Math.min(...xa)-8*T,-4*T,Math.min(...za)-8*T,Math.max(...xa)+8*T,40*T,Math.max(...za)+8*T]; };
   const sig=()=>{ const dy=DYN(); let g=0; const f=o=>{ if(!o.visible||dy.has(o))return; if(o.isMesh&&o.castShadow)g=(g*31+o.id+(o.isInstancedMesh?o.count*7919:0))|0; for(const c of o.children)f(c); }; f(scene); return g; };
   CLOCK.set=h=>{ CLOCK.h=((h%24)+24)%24; };
   CLOCK.dark=()=>elev(CLOCK.h)<-2;

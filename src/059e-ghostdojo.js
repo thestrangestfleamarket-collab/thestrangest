@@ -1,10 +1,10 @@
 // THE GHOST DOJO: the ghost street's dojo (gdShape lays its lot for 050; its own builder for the court, the pool and the ghosts inside).
 function gdShape(GS,K,LAMPS){ const s=K.s, o=K.o, SC=1.5, cx=o[0]+4*s, Y1=o[1]+3.2*s, W=6.8*s*SC, D=3*s*SC, X0=cx-W/2, X1=cx+W/2, Y0=Y1-D, dx=(W-6.8*s)/2;
   for(let i=GS.length-1;i>=0;i--){ const p=GS[i]; for(let j=LAMPS.length-1;j>=0;j--)if(LAMPS[j].prop===p)LAMPS.splice(j,1); GS.splice(i,1); }
-  const G=BOD.GDK={o,s,SC,X0,X1,Y0,Y1,W,D,cx,y1e:o[1]+8.3*s};
+  const G=SHARED.BOD.GDK={o,s,SC,X0,X1,Y0,Y1,W,D,cx,y1e:o[1]+8.3*s};
   G.ground={x0:X0-1.6,x1:X1+1.6};
   G.pool=[X0+.22,Y0+.22,X1-.22,(Y0+Y1)/2+.15];
-  G.court=(x,y)=>{ const {hash,grain}=BOD.g, sh=BOD.K.sh, px=Math.floor(x*24), py=Math.floor(y*24);
+  G.court=(x,y)=>{ const {hash,grain}=SHARED.BOD.g, sh=SHARED.BOD.K.sh, px=Math.floor(x*24), py=Math.floor(y*24);
     const out=x<X0||x>X1||y<Y0||y>Y1; if(!out)return x>G.pool[0]&&x<G.pool[2]&&y>G.pool[1]&&y<G.pool[3]?null:[96,90,84];
     const dEave=Math.max(X0-x,x-X1,Y0-y,y-Y1);
     const wet=G.puddles.some(([pcx,pcy,rx,ry])=>{ const u=(x-pcx)/rx, v=(y-pcy)/ry; return u*u+v*v+(grain(x*3,y*3,611,.6)-.5)*.5<1; });
@@ -21,7 +21,7 @@ function gdShape(GS,K,LAMPS){ const s=K.s, o=K.o, SC=1.5, cx=o[0]+4*s, Y1=o[1]+3
     if(wet)c=sh(c.map((v,i)=>v*[.68,.72,.84][i]),hash(px>>1,py,621)<.1?1.15:1);
     return c; };
   G.puddles=[[X0+3.1,Y1+1.75,1.15,.55],[X0+10.7,Y1+1.9,1.3,.6],[X0+W/2+1.8,Y1+3.3,.6,.35]]; }
-await grab('ghostdojo',async()=>{ const {X,Y,Z,gbox,faceTex,bq,C}=BOD, J=BOD.GDJ, GK=BOD.GDK, {hash,grain}=BOD.g, sh=BOD.K.sh;
+await grab('ghostdojo',async()=>{ const {X,Y,Z,gbox,faceTex,bq,C}=SHARED.BOD, J=SHARED.BOD.GDJ, GK=SHARED.BOD.GDK, {hash,grain}=SHARED.BOD.g, sh=SHARED.BOD.K.sh;
   if(GK){ const {X0,X1,Y0,Y1,W,D}=GK, T=.22, H=168, H2=300, DH=118, hs=hash;
     const xi0=X0+T, xi1=X1-T, yi0=Y0+T, yi1=Y1-T, cx=(xi0+xi1)/2, cy=(yi0+yi1)/2, WD=J.DJWOOD;
     const lit=c=>Object.assign([Math.min(255,c[0]),Math.min(255,c[1]),Math.min(255,c[2])],{e:1});
@@ -212,7 +212,7 @@ await grab('ghostdojo',async()=>{ const {X,Y,Z,gbox,faceTex,bq,C}=BOD, J=BOD.GDJ
     const cuts=M=>{ for(const id in WALLS)for(const me of BATCH.all(M,'GD'+id))cutWalls.push({pl:PLN[id],nx:WALLS[id].n[0],nz:WALLS[id].n[1],foot:Y(8),me,when:inside}); }; cuts(KM);
     { const ca=new THREE.Mesh(new THREE.PlaneGeometry(X(X0+DOOR.a1)-X(X0+DOOR.a0),Y(DH)),new THREE.MeshBasicMaterial({color:0x07070a})); ca.position.set((X(X0+DOOR.a0)+X(X0+DOOR.a1))/2,Y(DH)/2,Z(Y1-T-.06)); ca.raycast=()=>{}; scene.add(ca); GK.card=ca; }
     const HIDE=[...BATCH.all(KM,'GDU'),...BATCH.all(KM,'GDR')];
-    if(BOD.GHOSTST)BOD.GHOSTST.push({name:'ghost street shop roof',boxes:ROOF.filter(b=>b.z0>=H2).map(b=>({...b,x0:Math.max(b.x0,X0),x1:Math.min(b.x1,X1)})),high:1});
+    if(SHARED.BOD.GHOSTST)SHARED.BOD.GHOSTST.push({name:'ghost street shop roof',boxes:ROOF.filter(b=>b.z0>=H2).map(b=>({...b,x0:Math.max(b.x0,X0),x1:Math.min(b.x1,X1)})),high:1});
     const sol=(x0,y0,x1,y1,zt)=>{ SOL.up.push([X(x0),Z(y0),X(x1),Z(y1)]); FIX.up.push([X(x0),Z(y0),0,X(x1),Z(y1),Math.max(.05,Y(zt))]); };
     for(const b of WB)if(b.z0===0)sol(b.x0,b.y0,b.x1,b.y1,H);
     sol(X0+BAY.a0,Y1,X0+BAY.a1,Y1+BAY.out,BAY.z0);
@@ -230,7 +230,7 @@ await grab('ghostdojo',async()=>{ const {X,Y,Z,gbox,faceTex,bq,C}=BOD, J=BOD.GDJ
       BATCH.tag=OBJ('bodega','healing pool'); flat(xi0,yi0,xi1,yL,BD,(x,y)=>bot(x,y,1),'GDL'); flat(xi0,yL,xi1,yR,BS,(x,y)=>bot(x,y,0),'GDL');
       { const wq=(a,b,c_,d,z0,z1)=>bq([X(a),Y(z0),Z(b)],[X(c_),Y(z0),Z(d)],[X(c_),Y(z1),Z(d)],[X(a),Y(z1),Z(b)],faceTex(Math.hypot(c_-a,d-b)*24,z1-z0,(i,j)=>C(bw((i+.5)/24,z1-j-.5))),'GDP');
         wq(xi0,yi0,xi1,yi0,BD,0); wq(xi0,yL,xi0,yi0,BD,0); wq(xi1,yi0,xi1,yL,BD,0); wq(xi0,yR,xi0,yL,BS,0); wq(xi1,yL,xi1,yR,BS,0); wq(xi0,yL,xi1,yL,BD,BS); }
-      { const SK=BOD.STOREK, SR=SK.shrine, n0=SK.PROPS.length, l0=SK.LAMPS.length, P=[];
+      { const SK=SHARED.BOD.STOREK, SR=SK.shrine, n0=SK.PROPS.length, l0=SK.LAMPS.length, P=[];
         P.push({name:'pool coping',boxes:[...COP.map(([a,b])=>SR.msStone(a,yR,b,yE,BS,7)),...[0,1,2].map(k=>SR.msStone(cx-GAP,yE-(k+1)*.7/3,cx+GAP,yE-k*.7/3,BS,-5-5*k))]},{name:'stone island',boxes:ISL.map(([a,b,c_,d,zt])=>SR.msStone(a,b,c_,d,BD,zt))});
         P.push(SR.msGate(cx,yE-.16,7),SR.msStatue(cx,yi0+.62,5),SR.msToro(xi0+.75,yi0+.7,-4),SR.msToro(xi1-.75,yi0+.7,-4),SR.msBlossom(xi0+2.25,yi0+.55,3,.34,12),SR.msBlossom(xi1-2.25,yi0+.55,3,.34,12),
           SR.msBlossom(cx-.6,yi0+1,5,.16,7),SR.msBlossom(cx+.62,yi0+.95,5,.15,6),SR.msFern(xi0+.45,yE-.16,7,.3,9),SR.msFern(xi1-.45,yE-.16,7,.3,9));
@@ -276,12 +276,12 @@ await grab('ghostdojo',async()=>{ const {X,Y,Z,gbox,faceTex,bq,C}=BOD, J=BOD.GDJ
       const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3)); g.computeBoundingSphere();
       const m=new THREE.Mesh(g,new THREE.MeshBasicMaterial({color:0xffc890,transparent:true,opacity:.2,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide,fog:false})); m.renderOrder=3; m.userData.k=2.4; scene.add(m); SHX.push(m); }
     let was=null, hid=null, step=-1, wIn=false;
-    const PW={uT:{value:0},uP:{value:new THREE.Vector4()},me:null}, KT=TILE*BLDK, tx=x=>x/KT+BOD.OX, ty=z=>z/KT+BOD.OY, inPool=(x,z)=>{ const a=tx(x), b=ty(z); return a>xi0&&a<xi1&&b>yi0&&b<yR-.1; };
+    const PW={uT:{value:0},uP:{value:new THREE.Vector4()},me:null}, KT=TILE*BLDK, tx=x=>x/KT+SHARED.BOD.OX, ty=z=>z/KT+SHARED.BOD.OY, inPool=(x,z)=>{ const a=tx(x), b=ty(z); return a>xi0&&a<xi1&&b>yi0&&b<yR-.1; };
     const poke=(x,z,k=1)=>{ PW.uP.value.set(x,z,Math.max(PW.uP.value.z,k),0); };
-    BOD.GD={r:[xi0,yi0,xi1,yi1],floor:[xi0,yE+.3,xi1,yi1],door:[X0+W/2,Y1],dw:DOOR.a1-DOOR.a0,H:H+2,eave:H,y0:Y(BD-6),deep:Y(BD),inside:inBox,build,inPool,poke,deepAt:(x,z)=>[x,Z(Math.min(ty(z),yL-.55))],
+    SHARED.BOD.GD={r:[xi0,yi0,xi1,yi1],floor:[xi0,yE+.3,xi1,yi1],door:[X0+W/2,Y1],dw:DOOR.a1-DOOR.a0,H:H+2,eave:H,y0:Y(BD-6),deep:Y(BD),inside:inBox,build,inPool,poke,deepAt:(x,z)=>[x,Z(Math.min(ty(z),yL-.55))],
       ground(x,z){ const a=tx(x), b=ty(z); if(a<=xi0||a>=xi1||b<=yi0||b>=yE)return null; if(b>yS)return Math.abs(a-cx)<GAP?Y(BS*(yE-b)/(yE-yS)):b<yR?Y(BS):null; return Y(BS); },
-      feed(st,pos,dt,go,keys){ if(LVL!=='up'||!built||VIT.dead||!inPool(pos.x,pos.z)){ if(wIn){ wIn=false; if(st.water)st.water.in=false; } return false; }
-        const b=ty(pos.z), W=RIG.water(st,{level:(Y(WL)-py)/ZU,floor:(Y(b<yL?BD:BS)-py)/ZU}); W.go=!!go; W.fast=W.in&&(keys.has('k')||keys.has('shift'))?1:0;
+      feed(st,pos,dt,go,keys){ if(SHARED.LVL!=='up'||!built||VIT.dead||!inPool(pos.x,pos.z)){ if(wIn){ wIn=false; if(st.water)st.water.in=false; } return false; }
+        const b=ty(pos.z), W=RIG.water(st,{level:(Y(WL)-SHARED.py)/ZU,floor:(Y(b<yL?BD:BS)-SHARED.py)/ZU}); W.go=!!go; W.fast=W.in&&(keys.has('k')||keys.has('shift'))?1:0;
         if(W.in&&W.floor>=W.level-30&&!st.move&&!W.dive){ W.in=false; if(st.last)st.out={pose:JSON.parse(JSON.stringify(st.last)),t:0,T:.4}; }
         for(const e of W.events)if(e.k==='splash')poke(pos.x,pos.z,Math.min(1.4,.4+e.v*.01)); W.events.length=0; if(!wIn)poke(pos.x,pos.z,1); wIn=true; if(go)poke(pos.x,pos.z,W.in?.6:.4); return true; },
       tick(){ const t=performance.now()/1000, inn=inside(); if(PW.me&&inn){ const dt=Math.min(.1,t-(PW.t||t)); PW.uT.value+=dt; PW.uP.value.z=Math.max(0,PW.uP.value.z-dt*.5); } PW.t=t;
@@ -289,8 +289,8 @@ await grab('ghostdojo',async()=>{ const {X,Y,Z,gbox,faceTex,bq,C}=BOD, J=BOD.GDJ
       if(hid!==inn){ hid=inn; for(const me of HIDE)SEEN(me,!inn); }
       const e=typeof CLOCK!=='undefined'&&CLOCK.elev?CLOCK.elev():0, n=Math.max(0,Math.min(1,(12-e)/22)), st=inn?-1:Math.round(n*3);
       if(st!==step){ step=st; for(const m of SHX){ m.visible=st>=0; m.material.opacity=[.05,.08,.12,.16][Math.max(0,st)]*(m.userData.k||1); } } }};
-    window.GSDBG=()=>({X0,X1,Y0,Y1,door:BOD.GD.door,step,shafts:SHX.length,tris:SH.length});
-    window.LOOKAT=(x,z,k=1,y=0)=>{ UI.setFree(true); UI.camT.set(x,y,z); ppu=ppuTo=PPU*k; return [x,z]; };
-    window.LOOKYAW=d=>{ yaw=yawTo=d*Math.PI/180; }; window.LOOKPITCH=d=>{ pitch=pitchTo=d*Math.PI/180; return pitch; };
+    window.GSDBG=()=>({X0,X1,Y0,Y1,door:SHARED.BOD.GD.door,step,shafts:SHX.length,tris:SH.length});
+    window.LOOKAT=(x,z,k=1,y=0)=>{ UI.setFree(true); UI.camT.set(x,y,z); SHARED.ppu=SHARED.ppuTo=PPU*k; return [x,z]; };
+    window.LOOKYAW=d=>{ SHARED.yaw=SHARED.yawTo=d*Math.PI/180; }; window.LOOKPITCH=d=>{ SHARED.pitch=SHARED.pitchTo=d*Math.PI/180; return SHARED.pitch; };
     window.GSLOOK=(dx=0,dy=0,k=.5,d)=>{ if(d!=null)LOOKYAW(d); return LOOKAT(X(X0+W/2+dx),Z(Y1+dy),k); };
     window.GSGO=(dx=0,dy=4)=>{ if(window.SUBGO)SUBGO(X(X0+W/2+dx),Z(Y1+dy),'up'); return [X(X0+W/2+dx),Z(Y1+dy)]; }; } });

@@ -1,5 +1,5 @@
 const MAIL={on:QS.has('mail')?QS.get('mail')!=='0':CITY.on,addr:[],L:[],nid:0,day0:0,you:{cash:100},cboxes:[],ready:false}; window.MAIL=MAIL;
-if(MAIL.on){ const T=TILE, M=1/.84*T, X=BOD.XS, Z=BOD.ZS, G=(x,z)=>MODS.bodega.ground(x,z), rnd=Math.random, pick=a=>a[Math.floor(rnd()*a.length)], log=(w,p)=>CIVIC.note(w,p||'post');
+if(MAIL.on){ const T=TILE, M=1/.84*T, X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, G=(x,z)=>MODS.bodega.ground(x,z), rnd=Math.random, pick=a=>a[Math.floor(rnd()*a.length)], log=(w,p)=>CIVIC.note(w,p||'post');
   const hs=s=>{ let h=2166136261; for(const c of String(s))h=Math.imul(h^c.charCodeAt(0),16777619); return (h>>>0)/4294967296; };
   const FIRST=['ADA','BEN','CORA','DEV','EDIE','FINN','GUS','HAZEL','IVO','JUNE','KAI','LENA','MILO','NELL','OTIS','PIA','QUINN','ROSA','SAUL','TESS','URI','VERA','WES','YARA','ZEKE'];
   const LAST=['ODELL','PRATT','QUAN','RUIZ','SOLE','TANAKA','UNGER','VOSS','WEBB','YATES','ABARA','BRINK','CALLO','DUNNE','EZRA','FONTE','GRAY','HOLT','IBSEN','JUNG','KOVAC','LUND','MERCER','NAVA'];
@@ -63,9 +63,9 @@ if(MAIL.on){ const T=TILE, M=1/.84*T, X=BOD.XS, Z=BOD.ZS, G=(x,z)=>MODS.bodega.g
         b.up.forEach((u,i)=>{ const q=place(F,off-(.75+i*.5)*T,1.2*M), [bx,bz]=orient(F,.3*M,.16*M); blk(q.x,q.y,q.z,bx,.36*M,bz,0x3c4048); const A=MAIL.addr.find(a=>a.b===b&&a.unit===u.unit&&a.up);
           A.box={x:q.x,y:q.y,z:q.z,F}; A.flag=FL.push({x:q.x+F.t.x*.17*M,y:q.y,z:q.z+F.t.z*.17*M,F,up:false})-1; A.tick=TK.push({x:q.x+F.n.x*.09*M,y:q.y+.07*M,z:q.z+F.n.z*.09*M,F,on:false})-1; A.step=b.upStep; }); } }
     for(const A of MAIL.addr)if(!A.step)A.step=A.b.step;
-    const pm=(PARK.x0+PARK.x1)/2, py=(PARK.y0+PARK.y1)/2, want=[[pm+6,BOD.FAR+.9],[RING.wr1+.9,py+7],[RING.wr1+.9,py+60]], free=window.STFREE||(()=>true);
+    const pm=(PARK.x0+PARK.x1)/2, py=(PARK.y0+PARK.y1)/2, want=[[pm+6,SHARED.BOD.FAR+.9],[RING.wr1+.9,py+7],[RING.wr1+.9,py+60]], free=window.STFREE||(()=>true);
     for(const [tx,ty] of want){ let s=null; for(let r=0;r<6&&!s;r+=.5)for(let a=0;a<8&&!s;a++){ const x=X(tx)+Math.cos(a*Math.PI/4)*r*T, z=Z(ty)+Math.sin(a*Math.PI/4)*r*T; if(free(x,z,.6*T))s={x,z}; } if(!s)continue;
-      const y=G(s.x,s.z), w=.55*M, d=.5*M, rd=[[0,1],[1,0],[0,-1],[-1,0]].map(([a,b])=>[a,b,[1,2,3,4].findIndex(k=>BOD.road.at(tx+a*k,ty+b*k))]).filter(v=>v[2]>=0).sort((p,q)=>p[2]-q[2])[0]||[0,1];
+      const y=G(s.x,s.z), w=.55*M, d=.5*M, rd=[[0,1],[1,0],[0,-1],[-1,0]].map(([a,b])=>[a,b,[1,2,3,4].findIndex(k=>SHARED.BOD.road.at(tx+a*k,ty+b*k))]).filter(v=>v[2]>=0).sort((p,q)=>p[2]-q[2])[0]||[0,1];
       UB.push({x:s.x,y,z:s.z,r:Math.atan2(X(tx+rd[0])-X(tx),Z(ty+rd[1])-Z(ty)),k:UB.length});
       SOL.up.push([s.x-w/2-.05*T,s.z-d/2-.05*T,s.x+w/2+.05*T,s.z+d/2+.05*T]); FIX.up.push([s.x-w/2,s.z-d/2,y,s.x+w/2,s.z+d/2,y+1.15*M]);
       MAIL.cboxes.push({id:'cb'+MAIL.cboxes.length,x:s.x,z:s.z,y,in:[],name:'COLLECTION BOX'}); }

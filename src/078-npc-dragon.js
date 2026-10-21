@@ -6,15 +6,15 @@
     const so=[...L].sort((a,b)=>a-b), q=[so[Math.floor(n*.25)],so[Math.floor(n*.5)],so[Math.floor(n*.75)]], arr=new Uint8Array(n*3);
     for(let i=0;i<n;i++){ const k=L[i]<q[0]?0:L[i]<q[1]?1:L[i]<q[2]?2:3, C=GR[k]; arr[i*3]=C.r*255; arr[i*3+1]=C.g*255; arr[i*3+2]=C.b*255; }
     g.setAttribute('color',new THREE.BufferAttribute(arr,3,true)); return g; };
-  const B0=BOD.B0, TI=TILE, PER=[
-    {x:BOD.X(MODS.apts.A.x0+3.7),z:BOD.Z(MODS.apts.A.y1)-.6*TI,y:BOD.Y(650),h:0},{x:BOD.X((B0.x0+B0.x1)/2),z:BOD.Z(B0.y1)-.6*TI,y:BOD.Y(B0.h),h:0},
+  const B0=SHARED.BOD.B0, TI=TILE, PER=[
+    {x:SHARED.BOD.X(MODS.apts.A.x0+3.7),z:SHARED.BOD.Z(MODS.apts.A.y1)-.6*TI,y:SHARED.BOD.Y(650),h:0},{x:SHARED.BOD.X((B0.x0+B0.x1)/2),z:SHARED.BOD.Z(B0.y1)-.6*TI,y:SHARED.BOD.Y(B0.h),h:0},
     ...WIRES.perch];
   const gy=(x,z)=>{ const t=window.WEEDS&&WEEDS.top&&WEEDS.top(x,z); return typeof t==='number'?t:MODS.bodega.ground(x,z); };
   const TREES=[PARK.trees,DRESS.trees].filter(Boolean).flatMap(m=>m.userData.items||[]).filter(o=>o.top-o.y>2*TI&&o.r>.5*TI);
   const spot=(o,a,k)=>({x:o.x+Math.sin(a)*o.r*k,z:o.z+Math.cos(a)*o.r*k,y:o.y+(o.top-o.y)*(k>.8?.58:.64),h:a,tree:o});
   const HOMES=TREES.map((o,i)=>[Math.sin(i*91.7+o.x)*43758.5%1,o]).sort((a,b)=>a[0]-b[0]).map(q=>q[1]);
-  const sky=()=>{ const r=Math.random(), x=BOUND.x0+Math.random()*(BOUND.x1-BOUND.x0);
-    return r<.4?{x,z:BOUND.z0-(4+Math.random()*22)*TI}:r<.75?{x,z:BOUND.z1+(3+Math.random()*20)*TI}:{x,z:BOUND.z0+Math.random()*(BOUND.z1-BOUND.z0)}; };
+  const sky=()=>{ const r=Math.random(), x=SHARED.BOUND.x0+Math.random()*(SHARED.BOUND.x1-SHARED.BOUND.x0);
+    return r<.4?{x,z:SHARED.BOUND.z0-(4+Math.random()*22)*TI}:r<.75?{x,z:SHARED.BOUND.z1+(3+Math.random()*20)*TI}:{x,z:SHARED.BOUND.z0+Math.random()*(SHARED.BOUND.z1-SHARED.BOUND.z0)}; };
   const ease=(a,b,k)=>a+(b-a)*k, turnTo=(h,want,max)=>{ let d=((want-h+Math.PI*3)%(Math.PI*2))-Math.PI; d=Math.max(-max,Math.min(max,d)); return [h+d,d]; };
   const haloTex=(c,W)=>{ const cv=document.createElement('canvas'); cv.width=cv.height=W; const g=cv.getContext('2d'), im=g.createImageData(W,W), Bm=[0,8,2,10,12,4,14,6,3,11,1,9,15,7,13,5];
     for(let j=0;j<W;j++)for(let i=0;i<W;i++){ const d=Math.hypot((i+.5)/W*2-1,(j+.5)/W*2-1), t=(Bm[(j%4)*4+i%4]+.5)/16, a=d<.35+(t-.5)*.1?.9:d<.6+(t-.5)*.12?.45:d<.95+(t-.5)*.1?.15:0, q=(j*W+i)*4; im.data[q]=c[0]; im.data[q+1]=c[1]; im.data[q+2]=c[2]; im.data[q+3]=a*255; }
@@ -28,9 +28,9 @@
   const spark=(p,v,life)=>FLAME.part(4,p.x,p.y,p.z,v.x,v.y,v.z,life,.11*TI,undefined,G*1.6);
   const burst=p=>{ '@later'; if(typeof SFX!=='undefined')SFX.play('boom',{at:p,far:40*TI,vol:.9,vary:.2}); for(let k=0;k<18;k++){ const a=Math.random()*Math.PI*2, u=Math.random(); spark(p,new THREE.Vector3(Math.cos(a)*u*3*TI,(1+Math.random()*2.5)*TI,Math.sin(a)*u*3*TI),.6+Math.random()*.6); }
     for(let k=0;k<4;k++)FLAME.puff(p.x+(Math.random()-.5)*.5*TI,p.y+.2*TI,p.z+(Math.random()-.5)*.5*TI,2.2);
-    if(window.BLAZE)BLAZE.land(p); const hit=(x,z)=>Math.hypot(x-p.x,z-p.z)<1.3*TI; if(LVL==='up'&&hit(pos.x,pos.z))VIT.hurt(.25); for(const N of NPCS)if(N.lv==='up'&&N.key!=='dragon'&&N.g.visible&&hit(N.st.x,N.st.z))N.hp=Math.max(0,N.hp-.25); };
+    if(window.BLAZE)BLAZE.land(p); const hit=(x,z)=>Math.hypot(x-p.x,z-p.z)<1.3*TI; if(SHARED.LVL==='up'&&hit(pos.x,pos.z))VIT.hurt(.25); for(const N of NPCS)if(N.lv==='up'&&N.key!=='dragon'&&N.g.visible&&hit(N.st.x,N.st.z))N.hp=Math.max(0,N.hp-.25); };
   const G=9.8/.84*TI*.35;
-  FIRE={tick:dt=>{ let li=0;
+  SHARED.FIRE={tick:dt=>{ let li=0;
     for(const f of FB){ if(!f.on)continue; f.t+=dt; f.v.y-=G*dt; f.g.position.addScaledVector(f.v,dt); const q=f.g.position; f.fl.x=q.x; f.fl.y=q.y; f.fl.z=q.z;
       if(Math.random()<dt*30)spark(q,new THREE.Vector3((Math.random()-.5)*.6*TI,.4*TI,(Math.random()-.5)*.6*TI),.4);
       if(li<2){ FL[li].position.copy(f.g.position); FL[li].intensity=6; li++; }
@@ -45,7 +45,7 @@
   const make=(i)=>{ const rig=rigOf(), mixer=new THREE.AnimationMixer(rig.bones[0]), act=n=>mixer.clipAction(CLIPS[n]);
     const idle=act('Idle_loop'), fly=act('Flying_loop'), lift=act('GroundToFly'), attack=act('Attack');
     idle.play(); fly.play(); fly.time=Math.random()*CLIPS.Flying_loop.duration; lift.setLoop(THREE.LoopOnce); lift.clampWhenFinished=true;
-    const D={mode:'fly',p:PER[i%PER.length],t:0,y:0,bank:0,pitch:0,v:.8*TI,to:sky(),fly:60+Math.random()*100,cruise:BOD.Y(240+Math.random()*420),breath:40+Math.random()*200,pw:0,peek:false,pk:5,next:null,snap:0,style:'flap',bt:Math.random()*3,gl:0,turn:0,climb:0,tw:0}; D.y=D.cruise;
+    const D={mode:'fly',p:PER[i%PER.length],t:0,y:0,bank:0,pitch:0,v:.8*TI,to:sky(),fly:60+Math.random()*100,cruise:SHARED.BOD.Y(240+Math.random()*420),breath:40+Math.random()*200,pw:0,peek:false,pk:5,next:null,snap:0,style:'flap',bt:Math.random()*3,gl:0,turn:0,climb:0,tw:0}; D.y=D.cruise;
     const BN_=n=>rig.bones.find(b=>b.name===n), TAIL=['Tail','Tail_001','Tail_002','Tail_003','Tail_004'].map(BN_), NECK=['Head','Head_001','Head_002'].map(BN_), FW=new THREE.Vector3(), RT=new THREE.Vector3();
     let wI=0, wF=1, wL=0; const s0=sky(), HT0=HOMES.length?HOMES[i%HOMES.length]:null, ha=i*2.4+1;
     if(HT0){ D.home=spot(HT0,ha,.42); D.p=D.home; }
@@ -56,7 +56,7 @@
       if(r<.75){ const o=P.tree, a=Math.random()*6.28, d=o.r*(1.1+Math.random()*.6)+.5*TI, x=o.x+Math.sin(a)*d, z=o.z+Math.cos(a)*d; if(MODS.bodega.ground(x,z)>-.01)return {x,z,y:gy(x,z),h:a,ground:1}; }
       return null; };
     const spit=(hp,v)=>{ const vy=v.y, h=Math.max(0,hp.y-gy(hp.x,hp.z)), t=(vy+Math.sqrt(vy*vy+2*G*h))/G, lx=hp.x+v.x*t, lz=hp.z+v.z*t;
-      if(LVL==='up'&&Math.hypot(lx-pos.x,lz-pos.z)<4*TI)return false; D.snap=.6; fire(hp,v); return true; };
+      if(SHARED.LVL==='up'&&Math.hypot(lx-pos.x,lz-pos.z)<4*TI)return false; D.snap=.6; fire(hp,v); return true; };
     const N=makeNPC(null,{key:'dragon',name:'A DRAGON',names:M.parts,lv:'up',group:'bodega',geo:greenGeo(),skin:rig,tall:M.tall,eye:-1,rank:[0],metres:.64,x:s0.x,z:s0.z,lane:{x0:s0.x,x1:s0.x,z0:s0.z,z1:s0.z},ground:()=>0,radius:.3,speed:0,stride:0,rock:0,bob:0,noSelf:true,
       anim:(dt)=>{ const k=Math.min(1,dt*3); wI=ease(wI,D.mode==='perch'?1:0,k); wF=ease(wF,D.mode==='fly'||D.mode==='come'?1:0,k); wL=ease(wL,D.mode==='lift'?1:0,Math.min(1,dt*8));
         idle.setEffectiveWeight(wI); fly.setEffectiveWeight(wF); lift.setEffectiveWeight(wL); attack.setEffectiveWeight(D.snap>0?1:0);

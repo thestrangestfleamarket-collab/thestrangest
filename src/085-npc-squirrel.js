@@ -35,12 +35,12 @@ const SQUIRREL={}; window.SQUIRREL=SQUIRREL;
       c.vT=(c.vT??6)-dt; if(c.vT<0){ c.up=!c.up; c.vT=c.up?2.5+Math.random()*2:7+Math.random()*9; } if(A.act==='wave'||A.act==='scan')c.up=true; c.vis=(c.vis||0)+((c.up?1:0)-(c.vis||0))*Math.min(1,dt*6); B.visor.rotation.x=-1.2*c.vis; } };
   const A={act:'',t:0}, G=GTOWER.ring(), S=GTOWER.site(), PI=Math.PI;
   const RR=G?G.RI-.36:0, rp=a=>({x:G.X(G.cx+Math.cos(a)*RR),z:G.Z(G.cy+Math.sin(a)*RR)}), angOf=(x,z)=>Math.atan2((z-G.Z(G.cy))/TILE,(x-G.X(G.cx))/TILE), wrap=a=>((a+PI*3)%(PI*2))-PI;
-  const LOOK=[-PI/3,0,PI/4,PI/2,PI*.75,PI], at=G?rp(LOOK[3]):{x:BOD.XS(PARK.x0+4),z:BOD.ZS(PARK.y0+4)}, onRoof=(x,z)=>S&&Math.hypot(x-S.x,z-S.z)<S.r;
+  const LOOK=[-PI/3,0,PI/4,PI/2,PI*.75,PI], at=G?rp(LOOK[3]):{x:SHARED.BOD.XS(PARK.x0+4),z:SHARED.BOD.ZS(PARK.y0+4)}, onRoof=(x,z)=>S&&Math.hypot(x-S.x,z-S.z)<S.r;
   const near=a=>Math.abs(wrap(a-G.TA))<.75, ACTS=['scan','scan','salute','look','flick'];
   const N=RIGNPC.make(def,{key:'squirrel',name:'THE SQUIRREL KNIGHT',eye:0,eyeC:'0.,0.,0.',metres:.55,radius:.18,speed:.3,stride:7,lv:'up',group:'park',x:at.x,z:at.z,
     ground:(x,z)=>onRoof(x,z)?S.top:MODS.bodega.ground(x,z),
     brain:(dt,you,s,N)=>{ '@later'; if(N.sheet||!G)return; s.hold=true; A.t+=dt; N.li=N.li??3; N.mode=N.mode||'post'; N.tT=N.tT??6;
-      const waving=st.up?.name==='wave'&&LVL==='up'&&Math.hypot(you.x-s.x,you.z-s.z)<25*TILE;
+      const waving=st.up?.name==='wave'&&SHARED.LVL==='up'&&Math.hypot(you.x-s.x,you.z-s.z)<25*TILE;
       if(waving){ if(N.mode!=='wave'){ N.prev=N.mode==='walk'?'walk':'post'; N.mode='wave'; } N.wT=1.6; }
       if(N.mode==='wave'){ s.to=null; s.face={x:you.x,z:you.z}; if(A.act!=='wave'){ A.act='wave'; A.t=0; } if((N.wT-=dt)<=0){ N.mode=N.prev||'post'; A.act=''; N.tT=2+Math.random()*3; } return; }
       if(N.mode==='walk'){ A.act=''; const ca=angOf(s.x,s.z), ta=LOOK[N.li], d=wrap(ta-ca), dir=N.dir||Math.sign(d)||1;
@@ -51,4 +51,4 @@ const SQUIRREL={}; window.SQUIRREL=SQUIRREL;
         if(n==='flick'||Math.random()<.3){ N.rig.kick('tail2','x',-6); N.rig.kick('tail3','x',-9); N.rig.kick('tail3','z',(Math.random()-.5)*8); } }
       if((N.tT-=dt)<=0&&!A.act){ const step=Math.random()<.5?1:-1; let li=(N.li+step+LOOK.length)%LOOK.length; const ca=angOf(s.x,s.z);
         const d=wrap(LOOK[li]-ca); N.dir=Math.sign(d)||1; if([.25,.5,.75].some(f=>near(ca+d*f)))N.dir=-N.dir; N.li=li; N.mode='walk'; } }});
-  N.st.hold=true; N.park=true; N.free=()=>true; SQUIRREL.N=N; SQUIRREL.A=A; SQUIRREL.cam=()=>cam; window.SQDBG=()=>({x:N.st.x,z:N.st.z,y:N.g.position.y,vis:N.g.visible,tris:N.tris,top:S&&S.top,mode:N.mode,act:A.act,li:N.li,tower:GTOWER.tris}); }
+  N.st.hold=true; N.park=true; N.free=()=>true; SQUIRREL.N=N; SQUIRREL.A=A; SQUIRREL.cam=()=>SHARED.cam; window.SQDBG=()=>({x:N.st.x,z:N.st.z,y:N.g.position.y,vis:N.g.visible,tris:N.tris,top:S&&S.top,mode:N.mode,act:A.act,li:N.li,tower:GTOWER.tris}); }

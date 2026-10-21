@@ -20,8 +20,8 @@ const USE={seat:null}; window.USE=USE;
     return [Math.max(x0,Math.min(x1,pos.x)),Math.max(z0,Math.min(z1,pos.z))]; };
   const stand=back=>{ const s=USE.seat; if(!s)return; USE.seat=null; st.sit=null; if(back){ pos.x=s.back.x; pos.z=s.back.z; } };
   const sitOn=(se,th)=>{ '@later'; SFX.play('creak',{vol:.5,vary:.3,delay:.4}); const [x,z]=near(se.S,.4*T); let fx=se.fx, fz=se.fz; if(!fx&&!fz){ fx=pos.x-x; fz=pos.z-z; const l=Math.hypot(fx,fz)||1; fx/=l; fz/=l; }
-    const sx=x-fx*.06*T, sz=z-fz*.06*T, g=groundY(sx,sz);
-    USE.seat={back:pos.clone(),x:sx,z:sz}; pos.x=sx; pos.z=sz; target=null; heading=Math.atan2(fx,fz);
+    const sx=x-fx*.06*T, sz=z-fz*.06*T, g=SHARED.groundY(sx,sz);
+    USE.seat={back:pos.clone(),x:sx,z:sz}; pos.x=sx; pos.z=sz; SHARED.target=null; SHARED.heading=Math.atan2(fx,fz);
     st.sit={z:Math.max(2,(se.y-g)/(ZU*W3.SZ*(W3.BH||1)))}; };
   const lightsOf=b=>{ const e=.8*T; return LITE.recs.filter(L=>{ const p=L.position; return p.x>b.min.x-e&&p.x<b.max.x+e&&p.y>b.min.y-e&&p.y<b.max.y+e&&p.z>b.min.z-e&&p.z<b.max.z+e; }); };
   const tint=(o,c,which)=>{ for(const p of o.parts){ if(!which(p))continue; const g=p.me.geometry, C=g.attributes.aCol; for(let i=0;i<18;i++)C.array[p.v0*3+i]=c[i%3]; C.needsUpdate=true; } };
@@ -85,10 +85,10 @@ const USE={seat:null}; window.USE=USE;
   addEventListener('keydown',e=>{ if(USE.seat&&!e.repeat&&(sitKeys.has((e.key||'').toLowerCase())||!/^(q|e|r|z|x|v|c|0|=|-|\+|escape|control|alt|meta|tab)$/i.test(e.key||'')))stand(true); });
   const g0=UI.goTick; let last=performance.now();
   UI.goTick=()=>{ g0(); const now=performance.now(), dt=Math.min(.05,(now-last)/1000); last=now;
-    const S=USE.seat; if(S){ if(target||st.move||RAG.on)stand(!RAG.on); else if(Math.hypot(pos.x-S.x,pos.z-S.z)>.3*T){ USE.seat=null; st.sit=null; } else { pos.x=S.x; pos.z=S.z; } }
+    const S=USE.seat; if(S){ if(SHARED.target||st.move||RAG.on)stand(!RAG.on); else if(Math.hypot(pos.x-S.x,pos.z-S.z)>.3*T){ USE.seat=null; st.sit=null; } else { pos.x=S.x; pos.z=S.z; } }
     for(const d of DOORS){ const step=dt*9, k=d.to-d.a; d.a=Math.abs(k)<=step?d.to:d.a+Math.sign(k)*step; turnDoor(d); if(d.a===d.to)DOORS.delete(d); }
     for(let i=0;i<CANS.length;i++){ const m=CANS[i], u=m.userData; if(u.rest)continue; u.vy-=30*T*dt; m.position.y+=u.vy*dt; if(m.position.y<=u.floor){ m.position.y=u.floor; if(Math.abs(u.vy)>2*T){ u.vy*=-.3; } else { u.rest=true; m.rotation.z=Math.PI/2; m.position.y=u.floor-.03*T; } } }
     for(const o of BLINK){ o.blink-=dt; tint(o,o.blink>0&&Math.floor(o.blink/.125)%2===0?[1.8,1.8,1.8]:[1,1,1],glows); if(!(o.blink>0))BLINK.delete(o); }
     if(USE.radio)radioTick(); };
-  USE.test={kindOf,goal,seatOf,tris,doorOf,stand,CANS,DOORS,box,pos:()=>[pos.x,py,pos.z],sit:()=>st.sit,hits:(x,y)=>{ const r=renderer.domElement.getBoundingClientRect(); ray0.setFromCamera(new THREE.Vector2((x-r.left)/r.width*2-1,-((y-r.top)/r.height*2-1)),cam); if(OBJS.length!==nO){ nO=OBJS.length; MS=[...new Set(OBJS.flatMap(o=>o.parts.map(p=>p.me)))]; } return ray0.intersectObjects(MS.filter(shown),false).slice(0,6).map(h=>{ const o=h.object.userData.objOf[Math.floor(h.faceIndex/2)]; return [o&&o.name,+h.distance.toFixed(2),cut(h)]; }); },pick:(x,y)=>{ const r=renderer.domElement.getBoundingClientRect(); ray0.setFromCamera(new THREE.Vector2((x-r.left)/r.width*2-1,-((y-r.top)/r.height*2-1)),cam); const u=USE.pick(ray0); return u&&[u.th.name,u.d]; },scr:p=>{ const q=p.clone().project(cam), r=renderer.domElement.getBoundingClientRect(); return [r.left+(q.x+1)/2*r.width,r.top+(1-q.y)/2*r.height]; }};
+  USE.test={kindOf,goal,seatOf,tris,doorOf,stand,CANS,DOORS,box,pos:()=>[pos.x,SHARED.py,pos.z],sit:()=>st.sit,hits:(x,y)=>{ const r=renderer.domElement.getBoundingClientRect(); ray0.setFromCamera(new THREE.Vector2((x-r.left)/r.width*2-1,-((y-r.top)/r.height*2-1)),SHARED.cam); if(OBJS.length!==nO){ nO=OBJS.length; MS=[...new Set(OBJS.flatMap(o=>o.parts.map(p=>p.me)))]; } return ray0.intersectObjects(MS.filter(shown),false).slice(0,6).map(h=>{ const o=h.object.userData.objOf[Math.floor(h.faceIndex/2)]; return [o&&o.name,+h.distance.toFixed(2),cut(h)]; }); },pick:(x,y)=>{ const r=renderer.domElement.getBoundingClientRect(); ray0.setFromCamera(new THREE.Vector2((x-r.left)/r.width*2-1,-((y-r.top)/r.height*2-1)),SHARED.cam); const u=USE.pick(ray0); return u&&[u.th.name,u.d]; },scr:p=>{ const q=p.clone().project(SHARED.cam), r=renderer.domElement.getBoundingClientRect(); return [r.left+(q.x+1)/2*r.width,r.top+(1-q.y)/2*r.height]; }};
 }

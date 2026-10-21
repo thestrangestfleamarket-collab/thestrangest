@@ -1,6 +1,7 @@
 
 
 import * as THREE from 'three';
+const SHARED={}; window.SHARED=SHARED;
 const SHX=window.SHX={miss:[],seen:new Set(),on:new URLSearchParams(location.search).get('shx')!=='0'};
 { const R=String.prototype.replace, P=THREE.Material.prototype, D=Object.getOwnPropertyDescriptor(P,'onBeforeCompile');
   let cur=null;

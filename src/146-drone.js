@@ -1,5 +1,5 @@
 const DRONE=window.DRONE={cam:false,state:'home'};
-DRONE.init=()=>{ const H=MODS.apts; if(!H||!H.A||!H.made)return; const A=H.A, T=TILE, X=BOD.X, Y=BOD.Y, Z=BOD.Z;
+DRONE.init=()=>{ const H=MODS.apts; if(!H||!H.A||!H.made)return; const A=H.A, T=TILE, X=SHARED.BOD.X, Y=SHARED.BOD.Y, Z=SHARED.BOD.Z;
   const lam=c=>new THREE.MeshLambertMaterial({color:c}), flat=c=>new THREE.MeshBasicMaterial({color:c});
   const bx=(w,h,d,m)=>new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);
   const desk=H.made.find(p=>p.kind==='writing desk with a pink lamp'); if(!desk)return;
@@ -23,7 +23,7 @@ DRONE.init=()=>{ const H=MODS.apts; if(!H||!H.A||!H.made)return; const A=H.A, T=
   const dot=bx(.05,.03,.05,flat(0x3cff6a)); dot.position.set(0,.055,.1); D.add(dot);
   const PAR=lam(0xa77a48), parcel=bx(.2,.15,.2,PAR); parcel.position.set(0,-.13,0); parcel.visible=false; D.add(parcel);
   D.scale.setScalar(T/1.13); MAPG.bodega.add(D);
-  const B=BOD.B0, bx0=X(B.x1-.85), bz0=Z(BOD.BODOFF+.85), RB=Y(B.h), HOME=new THREE.Vector3(bx0,Y(97),bz0), hout=Z(A.y1)>Z(A.y0)?1:-1, RA=H.lvY?H.lvY(5):Y(CZ+150);
+  const B=SHARED.BOD.B0, bx0=X(B.x1-.85), bz0=Z(SHARED.BOD.BODOFF+.85), RB=Y(B.h), HOME=new THREE.Vector3(bx0,Y(97),bz0), hout=Z(A.y1)>Z(A.y0)?1:-1, RA=H.lvY?H.lvY(5):Y(CZ+150);
   const DROP=new THREE.Vector3(X((A.x0+A.x1)/2),Y(CZ)+.02,Z(A.y1)-hout*.9*T), ax0=X(A.x0+4.4), az0=Z(A.y0+7.4), CRUISE=Math.max(9,RA+2.2);
   const BOXES=[]; DRONE.roofBox=(x,z,y)=>{ '@later'; const g=new THREE.Group(), W=.62*T, Hb=.42*T, P=[], N=[], C=[], cc=new THREE.Color(); g.position.set(x,y,z);
     const add=(w,h,d,c,px,py,pz)=>{ const G=new THREE.BoxGeometry(w,h,d).translate(px,py,pz).toNonIndexed(); P.push(...G.attributes.position.array); N.push(...G.attributes.normal.array); cc.setHex(c); for(let i=0;i<G.attributes.position.count;i++)C.push(cc.r,cc.g,cc.b); };
@@ -56,9 +56,9 @@ DRONE.init=()=>{ const H=MODS.apts; if(!H||!H.A||!H.made)return; const A=H.A, T=
       const hz=Math.hypot(V.x,V.z); if(hz>1e-3)yaw+=((((Math.atan2(V.x,V.z)-yaw)%(2*Math.PI))+3*Math.PI)%(2*Math.PI)-Math.PI)*Math.min(1,dt*4); if(k>=1){ legs.shift(); mv=null; } }
     const sp=Math.hypot(V.x,V.z)/Math.max(dt,1e-3); D.rotation.set(Math.min(.28,sp*.05)+Math.sin(tt*5.3)*.025,yaw,Math.sin(tt*6.7)*.035+Math.sin(tt*2.3)*.02,'YXZ'); spin+=dt*40; for(const r of rot)r.rotation.y=spin; };
   const vb=UI.view3b, E=new THREE.Vector3(), F=new THREE.Vector3();
-  UI.view3b=a=>{ '@later'; if(!DRONE.cam)return vb(a); cam=PCAM; if(RPASS)RPASS.camera=cam; if(Math.abs(PCAM.aspect-RW/RH)>1e-3){ PCAM.aspect=RW/RH; PCAM.updateProjectionMatrix(); }
-    F.set(Math.sin(D.rotation.y),0,Math.cos(D.rotation.y)); cam.position.copy(D.position).addScaledVector(F,-1.7).add(E.set(0,.65,0)); cam.lookAt(E.copy(D.position).addScaledVector(F,2.2).add(V.set(0,-.7,0)));
-    cam.updateMatrixWorld(); W3.group.visible=true; if(H.HP)H.HP.constant=1e6; };
+  UI.view3b=a=>{ '@later'; if(!DRONE.cam)return vb(a); SHARED.cam=PCAM; if(SHARED.RPASS)SHARED.RPASS.camera=SHARED.cam; if(Math.abs(PCAM.aspect-RW/RH)>1e-3){ PCAM.aspect=RW/RH; PCAM.updateProjectionMatrix(); }
+    F.set(Math.sin(D.rotation.y),0,Math.cos(D.rotation.y)); SHARED.cam.position.copy(D.position).addScaledVector(F,-1.7).add(E.set(0,.65,0)); SHARED.cam.lookAt(E.copy(D.position).addScaledVector(F,2.2).add(V.set(0,-.7,0)));
+    SHARED.cam.updateMatrixWorld(); W3.group.visible=true; if(H.HP)H.HP.constant=1e6; };
   const hud=document.createElement('div'); hud.id='dhud'; hud.hidden=true; hud.style.cssText='position:fixed;inset:12px;border:2px solid #6cf08a;z-index:14;pointer-events:none;font:12px var(--pixel,monospace);color:#8cf0a8';
   hud.innerHTML='<div style="position:absolute;left:10px;top:8px">DRONE 01 · <span id="dhst"></span></div><div style="position:absolute;right:10px;top:8px">● REC</div><button class="btn" id="dhx" style="position:absolute;right:10px;bottom:8px;pointer-events:auto">LEAVE DRONE CAM</button>';
   document.body.appendChild(hud);
@@ -78,5 +78,5 @@ DRONE.init=()=>{ const H=MODS.apts; if(!H||!H.A||!H.made)return; const A=H.A, T=
     P.querySelector('#pccam').onclick=()=>{ P.hidden=true; DRONE.setCam(true); }; P.querySelector('#pcx').onclick=()=>{ P.hidden=true; }; };
   DRONE.open=()=>{ draw(); P.hidden=false; };
   UI.thing({name:'COMPUTER',obj:hit,reach:1.1*T,near:2.4*T,tall:1.3*T,act:DRONE.open});
-  const t0=CLOCK.tick; CLOCK.tick=dt=>{ t0(dt); DRONE.tick(dt); BODB.tick&&BODB.tick(dt); if(DRONE.cam){ const s=hud.querySelector('#dhst'); s.textContent=(DRONE.state==='home'?'PARKED AT THE BODEGA':legs[0]&&legs[0][0]==='wait'?'AT YOUR ROOF':'IN FLIGHT')+' · ALT '+Math.max(0,Math.round(D.position.y/1.13*.84))+' M'; } };
+  SYS.add('world',(dt)=>{ DRONE.tick(dt); SHARED.BODB.tick&&SHARED.BODB.tick(dt); if(DRONE.cam){ const s=hud.querySelector('#dhst'); s.textContent=(DRONE.state==='home'?'PARKED AT THE BODEGA':legs[0]&&legs[0][0]==='wait'?'AT YOUR ROOF':'IN FLIGHT')+' · ALT '+Math.max(0,Math.round(D.position.y/1.13*.84))+' M'; } },'146-drone');
   window.DRONEDBG=()=>({state:DRONE.state,pos:D.position.toArray().map(v=>+v.toFixed(2)),legs:legs.length,parcels:parcels.length,cash:purse.get()}); };

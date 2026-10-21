@@ -20,31 +20,31 @@ const RINSP={on:false,sel:null,f:''}; window.RINSP=RINSP;
   const label=o0=>{ '@later'; let o=o0.userData.cullOf||o0, leaf=null, top=null, bt=null; for(let q=o;q&&q!==scene;q=q.parent){ const k=NM.get(q); if(k){ if(k[0]==='M')top=top||k; else if(k[0]==='B')bt=bt||k; else leaf=leaf||k; } else if(!leaf&&q.name)leaf=q.name; }
     const r=objOf(o)||(o.parent&&objOf(o.parent)); if(!leaf&&(bt||r))leaf=(bt||'BATCH')+(r&&r.top?' · '+r.top:''); if(!leaf){ const m=mats(o)[0]; leaf=(o.parent&&o.parent!==scene&&o.parent.name?o.parent.name+' › ':'')+(o.geometry?o.geometry.type.replace('Geometry',''):o.type)+(m?' '+m.type.replace('Material',''):''); }
     if(o.userData.inner)leaf+=' (room part)'; return (top?top.slice(4)+' / ':'')+leaf; };
-  const youIn=b=>pos.x>b.x0&&pos.x<b.x1&&pos.z>b.z0&&pos.z<b.z1&&py>b.y0-.3&&py<b.y1;
+  const youIn=b=>pos.x>b.x0&&pos.x<b.x1&&pos.z>b.z0&&pos.z<b.z1&&SHARED.py>b.y0-.3&&SHARED.py<b.y1;
   const wbox=o=>{ if(o.isInstancedMesh){ if(!o.boundingBox)o.computeBoundingBox(); return BX.copy(o.boundingBox).applyMatrix4(o.matrixWorld); } const g=o.geometry; if(!g)return BX.makeEmpty(); if(!g.boundingBox)g.computeBoundingBox(); return BX.copy(g.boundingBox).applyMatrix4(o.matrixWorld); };
-  const collect=full=>{ '@later'; names(); M4.multiplyMatrices(cam.projectionMatrix,cam.matrixWorldInverse); F.setFromProjectionMatrix(M4); P3.set(pos.x,py,pos.z);
+  const collect=full=>{ '@later'; names(); M4.multiplyMatrices(SHARED.cam.projectionMatrix,SHARED.cam.matrixWorldInverse); F.setFromProjectionMatrix(M4); P3.set(pos.x,SHARED.py,pos.z);
     const RB=ROOMS.boxes(), fg=scene.fog&&scene.fog.isFog?scene.fog:null, seen=new Set(), drawn=new Set(), rows=new Map(), progs=new Set(), lights=[];
     const TH=(UI.things||[]).filter(th=>th.obj&&th.obj.visible&&(!th.obj.parent||th.obj.parent.visible)).map(th=>[th.name,th.obj.getWorldPosition(new THREE.Vector3()),th.near||th.reach||T]);
     scene.traverseVisible(o=>{ seen.add(o); if(o.isLight){ lights.push(o); return; } if(o.userData.rin||o.userData.cullOf||!(o.isMesh||o.isPoints||o.isLine||o.isSprite))return;
-      const ms=mats(o); if(!ms.some(m=>m.visible)||!o.layers.test(cam.layers))return; const R=CULL.M&&CULL.M.get(o); let tr=0, inV;
+      const ms=mats(o); if(!ms.some(m=>m.visible)||!o.layers.test(SHARED.cam.layers))return; const R=CULL.M&&CULL.M.get(o); let tr=0, inV;
       if(R&&!R.off&&R.px.length){ inV=false; for(const p of R.px)if(F.intersectsObject(p)){ inV=true; tr+=tris(p); } } else { inV=o.isSprite||!o.geometry?true:F.intersectsObject(o); tr=tris(o); }
       if(o.frustumCulled&&!inV)return; drawn.add(o); for(const m of ms)progs.add(prog(m));
       const b=wbox(o), d=b.isEmpty()?o.getWorldPosition(V).distanceTo(P3):b.distanceToPoint(P3), why=[];
       if(!inV)why.push('OFFSCREEN NO-CULL'); if(d>60*T)why.push('FAR');
-      if(!b.isEmpty()){ if(LVL==='up'&&b.max.y<-.6)why.push('BELOW GROUND'); if(LVL!=='up'&&b.min.y>.5)why.push('ABOVE YOU');
+      if(!b.isEmpty()){ if(SHARED.LVL==='up'&&b.max.y<-.6)why.push('BELOW GROUND'); if(SHARED.LVL!=='up'&&b.min.y>.5)why.push('ABOVE YOU');
         for(const r of RB)if(b.min.x>r.x0-.2*T&&b.max.x<r.x1+.2*T&&b.min.z>r.z0-.2*T&&b.max.z<r.z1+.2*T&&b.min.y>r.y0-.5&&!youIn(r)){ why.push('SHUT IN '+(r.name||r.id||'ROOM')); break; }
-        if(fg){ const c=b.getCenter(V).applyMatrix4(cam.matrixWorldInverse), rad=b.getSize(V2).length()/2; if(-c.z-rad>fg.far)why.push('IN FOG'); } }
+        if(fg){ const c=b.getCenter(V).applyMatrix4(SHARED.cam.matrixWorldInverse), rad=b.getSize(V2).length()/2; if(-c.z-rad>fg.far)why.push('IN FOG'); } }
       let act=null; if(!b.isEmpty()&&b.max.distanceTo(b.min)<8*T)for(const [nm,p,r] of TH)if(b.distanceToPoint(p)<r){ act=nm; break; }
       const k=label(o); let w=rows.get(k); if(!w)rows.set(k,w={name:k,tris:0,calls:0,n:0,sh:0,dist:1e9,inView:false,why:new Set(),act:null,objs:[]});
       w.tris+=tr; w.calls+=calls(o); w.n++; if(o.castShadow)w.sh++; w.dist=Math.min(w.dist,d); w.inView=w.inView||inV; for(const y of why)w.why.add(y); if(act)w.act=act; if(w.objs.length<40)w.objs.push(o); });
     const out=[...rows.values()].map(w=>({...w,dist:+(w.dist/T).toFixed(1),why:[...w.why]})).sort((a,b)=>b.tris-a.tris), I=renderer.info, lit=lights.filter(l=>(l.isPointLight||l.isSpotLight)&&l.intensity>0);
     const head={fps:Math.round(RINSP.fps||0),ms:+(RINSP.ms||0).toFixed(1),calls:I.render.calls,tris:I.render.triangles,points:I.render.points,lines:I.render.lines,programs:(I.programs||[]).length,progsOnScreen:progs.size,
       geometries:I.memory.geometries,textures:I.memory.textures,lightsInScene:0,lightsLit:lit.length,shadows:lights.filter(l=>l.castShadow).map(l=>l.type.replace('Light','')+' '+(l.shadow&&l.shadow.mapSize?l.shadow.mapSize.x:'?')+(l.isPointLight?'x6':'')),
-      lvl:LVL,place:ROOMS.cur?(ROOMS.cur.name||ROOMS.cur.id||'room'):'',at:[+(pos.x/T).toFixed(1),+(pos.z/T).toFixed(1)],drawnObjs:drawn.size,drawnTris:out.reduce((a,w)=>a+w.tris,0),fog:fg?+(fg.far/T).toFixed(0):null};
+      lvl:SHARED.LVL,place:ROOMS.cur?(ROOMS.cur.name||ROOMS.cur.id||'room'):'',at:[+(pos.x/T).toFixed(1),+(pos.z/T).toFixed(1)],drawnObjs:drawn.size,drawnTris:out.reduce((a,w)=>a+w.tris,0),fog:fg?+(fg.far/T).toFixed(0):null};
     let hid=lastH; if(full){ const H=new Map(), gs=new Set(), ts=new Set(); let all=0, gB=0, tB=0;
       scene.traverse(o=>{ if(o.isLight){ head.lightsInScene++; return; } if(!(o.isMesh||o.isPoints||o.isLine)||o.userData.rin||o.userData.cullOf)return; const ms=mats(o), t=tris(o); all+=t;
         let g0=0, t0=0; if(o.geometry&&!gs.has(o.geometry)){ gs.add(o.geometry); g0=gb(o.geometry); gB+=g0; } for(const m of ms)for(const x of texs(m))if(!ts.has(x)){ ts.add(x); t0+=tsz(x)[2]; } tB+=t0;
-        if(drawn.has(o)||!ms.some(m=>m.visible))return; const why=!seen.has(o)?'HIDDEN':!o.layers.test(cam.layers)?(o.castShadow?'LAYER OFF, STILL CASTS SHADOW':'LAYER OFF'):'OUT OF VIEW';
+        if(drawn.has(o)||!ms.some(m=>m.visible))return; const why=!seen.has(o)?'HIDDEN':!o.layers.test(SHARED.cam.layers)?(o.castShadow?'LAYER OFF, STILL CASTS SHADOW':'LAYER OFF'):'OUT OF VIEW';
         const k=label(o); let w=H.get(k); if(!w)H.set(k,w={name:k,tris:0,n:0,geoB:0,texB:0,why:new Set(),objs:[]}); w.tris+=t; w.n++; if(w.objs.length<40)w.objs.push(o); w.geoB+=g0; w.texB+=t0; w.why.add(why); });
       hid=lastH=[...H.values()].map(w=>({...w,why:[...w.why]})).sort((a,b)=>b.geoB+b.texB+b.tris*30-(a.geoB+a.texB+a.tris*30)); head.loadedTris=all; head.geoBytes=gB; head.texBytes=tB; RINSP.tot={all,gB,tB,L:head.lightsInScene}; }
     else if(RINSP.tot){ head.loadedTris=RINSP.tot.all; head.geoBytes=RINSP.tot.gB; head.texBytes=RINSP.tot.tB; head.lightsInScene=RINSP.tot.L; }
@@ -54,7 +54,7 @@ const RINSP={on:false,sel:null,f:''}; window.RINSP=RINSP;
         ms.map(m=>'<br>&nbsp;'+esc(m.type+(m.name?' "'+m.name+'"':'')+' · '+prog(m)+(m.customProgramCacheKey&&m.customProgramCacheKey()?' · key '+m.customProgramCacheKey().slice(0,60):'')+(m.transparent?' · transparent':''))+texs(m).map(t=>{ const [a,b,c]=tsz(t); return '<br>&nbsp;&nbsp;'+esc('texture '+a+'x'+b+' '+kb(c)); }).join('')).join('')+
         (r?'<br>&nbsp;'+esc('holds: '+r.objs.join(', ')):'')+'</div>'; }).join('')+(w.objs.length>6?'<div class="o">… '+(w.n-6)+' more</div>':''); };
   const mark=w=>{ '@later'; if(hl){ hl.removeFromParent(); hl.geometry.dispose(); hl.material.dispose(); hl=null; } if(!w)return; BU.makeEmpty(); for(const o of w.objs){ const b=wbox(o); if(!b.isEmpty())BU.union(b); } if(BU.isEmpty())return;
-    hl=new THREE.Box3Helper(BU.clone(),0xff3df0); hl.material.depthTest=false; hl.material.transparent=true; hl.renderOrder=9999; hl.frustumCulled=false; hl.layers.mask=cam.layers.mask; hl.userData.rin=1; scene.add(hl); hlT=performance.now()+5000; };
+    hl=new THREE.Box3Helper(BU.clone(),0xff3df0); hl.material.depthTest=false; hl.material.transparent=true; hl.renderOrder=9999; hl.frustumCulled=false; hl.layers.mask=SHARED.cam.layers.mask; hl.userData.rin=1; scene.add(hl); hlT=performance.now()+5000; };
   const row=(w,i,h)=>'<tr data-i="'+i+'"'+(RINSP.sel===w.name?' class="s"':'')+'><td>'+esc(w.name)+(w.n>1?' <span class="d">×'+w.n+'</span>':'')+'</td><td>'+w.tris.toLocaleString()+'</td>'+
     (h?'<td>'+kb(w.geoB+w.texB)+'</td><td class="w">'+esc(w.why.join(', '))+'</td>':'<td>'+w.calls+'</td><td>'+(w.sh?'Y':'')+'</td><td>'+w.dist+'</td><td>'+(w.inView?'Y':'<b>N</b>')+'</td><td class="w">'+esc(w.why.join(', '))+(w.act?' <span class="a">USE: '+esc(w.act)+'</span>':'')+'</td>')+'</tr>';
   const draw=()=>{ '@later'; if(!el)return; const D=collect(n++%4===0), h=D.head, f=RINSP.f.toLowerCase(), ok=w=>!f||w.name.toLowerCase().includes(f)||w.why.join(' ').toLowerCase().includes(f), dr=D.drawn.filter(ok).slice(0,60), hd=D.hidden.filter(ok).slice(0,30);

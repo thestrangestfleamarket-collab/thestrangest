@@ -4049,3 +4049,28 @@ initial download and load super fast"; then "Go")
   six groups are one shared closure cut across files (the old game's kits, the bodega's builder from 039 to 059), and some twenty
   shared variables (`pos`, `heading`, `py`, `LVL`, `BOUND`, `solids`, `target`, `yaw`…) are written from many files, which modules
   do not allow; both need the shared state made explicit first (hundreds of edits; days, not hours).
+- **The places test waits for what it checks** (21 Oct 2026; `tests/places.cjs`): each place's check waited a fixed 3 to 7 seconds and
+  then looked, so a slow machine failed it now and then and the pull requests went in on a second run. Each check now waits for its
+  own condition (the dungeon's level and its slimes, the park ready and shown, the fire escape built, the arcade's and the bath
+  house's insides built, no fade running), up to a minute and a half (three for the park), and passes the moment it holds.
+- **The core, pieces 2 and 3: one fade, one answer to "which zone", one place that hides things** (owner, 21 Oct 2026, the same
+  words; `006-map-pre.js`, `013a-day1.js`, `129a-vis.js`): `FADE.run(text, work, {cut, hold})` is the one loading screen: the
+  subway, the shops' insides, the holodeck, Central Park, the dungeon, the deep river, the alley, the rooms' swap, the fire escape,
+  waking up and the game editor all go through it (eleven copies of the fade code gone). `ZONES.at(x, z, level, room)` is the one
+  answer to where you are (MARKET ST, CENTRAL PARK, SOUTH EAST CENTRAL PARK, the room you are in, THE SUBWAY STATION, THE DUNGEON with
+  its level); `ZONES.cur` follows you and `ZONES.on(fn)` hears each change. `VIS.hide(thing, why, on)`: each system gives its
+  reason (room, roof, far, perf, interior) and a thing shows only when no reason is left, so the rooms, the interiors and the
+  performance switches no longer overwrite each other's `.visible` or layer masks; `VIS.showAll` shows everything (for the editor).
+  Not changed: each zone's own build code (the park's, the dungeon's, the shops'), and Market St still built at the start (step 7).
+
+- **The core, piece 4: systems in phases** (owner, 21 Oct 2026, the same words; `006-map-pre.js` `SYS`, `075-main-13.js`): the 33
+  patches that wrapped another system's tick (`const t0=CLOCK.tick; CLOCK.tick=dt=>{ t0(dt); … }`, twenty of them on the clock, three on
+  the city, four on the street dressing, two on your vitals, one each on the rooms, the ring and the shadow pass) are named entries
+  in phases now: `SYS.add(phase, fn, name)`; the frame runs `clockPre`, `world`, `vitalsPre`, `vitals`, `city`, `dress`, `ring`,
+  `rooms`, and the shadow pass runs `shadowPre` and `shadow`, each in file order (the order the wrappers ran in). A failing entry
+  warns once with its name instead of breaking every system wrapped after it. `SYS.list()` shows them all. Still wrappers: the few
+  that change what a lookup returns (the park's ground height, the weather in the arcade, picking things, the stack ground, the
+  sword's strike, the mail's restock); each is the only one on its function.
+
+- 21 Oct 2026, the core, piece 5 (owner: "yes" to the simpler plan, "one shared state object ... stop there"): the 26 `let`s that many files wrote to (the camera's yaw/pitch/zoom, the player's heading/target/py, `BOD`, `BODB`, `LVL`, `night`, `composer` and the rest) now live on one object, `SHARED` (`src/003-shx.js`), so a file that reads or writes them says so (`SHARED.yaw`). Done by a scope-aware rename over 149 files.
+- 21 Oct 2026, the core, piece 5 (a) (owner: "Make every file whole"): the six runs of files that opened a block in one file and closed it in another are now one file each: `009-down`, `016-street-kit`, `020-studio-kit`, `023-west-kits`, `027-rooms-kits`, `039-bodega` (56 files became 6). Every file in `src/` now starts and ends outside any block.

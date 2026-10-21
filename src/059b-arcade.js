@@ -1,5 +1,5 @@
 // THE ARCADE: the arcade (its own builder; cabinets, the counter, the games you can play).
-await grab('arcade',async()=>{ const K=STORE.kit, {room,flat}=K, {X,Y,Z}=BOD, {hash:hs,grain}=BOD.g, sh=BOD.K.sh, {PROPS,LAMPS}=BOD.STOREK;
+await grab('arcade',async()=>{ const K=STORE.kit, {room,flat}=K, {X,Y,Z}=SHARED.BOD, {hash:hs,grain}=SHARED.BOD.g, sh=SHARED.BOD.K.sh, {PROPS,LAMPS}=SHARED.BOD.STOREK;
   const B={id:'larcade',x0:480,y0:-104,x1:512,y1:-81.6,h:140}, S=1.6, ZM=38, mx=m=>B.x0+m*S, my=m=>B.y0+m*S, PX=mx(11);
   STORE.bound.x1=Math.max(STORE.bound.x1,X(530));
   K.offmap('THE ARCADE',[474,-110,518,-70],()=>{ '@arcade';
@@ -194,12 +194,12 @@ await grab('arcade',async()=>{ const K=STORE.kit, {room,flat}=K, {X,Y,Z}=BOD, {h
     OP.forEach(([a,b,h0,h1],i)=>{ const w=(b-a)*S, geo=new THREE.PlaneGeometry(w*TILE,Y((h1-h0)*ZM)-Y(0)), at=[X(mx((a+b)/2)),(Y(h0*ZM)+Y(h1*ZM))/2,Z(B.y1-.02)];
       for(const m of [new THREE.Mesh(geo,glassM),new THREE.Mesh(geo,new THREE.MeshBasicMaterial({map:drops(w,(h1-h0)*ZM,i),alphaTest:.5,side:THREE.DoubleSide,clippingPlanes:pl?[pl]:[]}))]){ m.position.set(...at); m.renderOrder=5; scene.add(m); } });
     const ceil=new THREE.Mesh(new THREE.PlaneGeometry((B.x1-B.x0)*TILE,(B.y1-B.y0)*TILE).rotateX(Math.PI/2),new THREE.MeshBasicMaterial({color:0x15101e})); ceil.position.set(X((B.x0+B.x1)/2),Y(B.h-1),Z((B.y0+B.y1)/2)); ceil.visible=false; scene.add(ceil);
-    const LOT={x0:X(B.x0-14),x1:X(B.x1+14),z0:Z(B.y0-6),z1:Z(B.y1+15)}, on=()=>LVL==='up'&&pos.x>LOT.x0&&pos.x<LOT.x1&&pos.z>LOT.z0&&pos.z<LOT.z1;
+    const LOT={x0:X(B.x0-14),x1:X(B.x1+14),z0:Z(B.y0-6),z1:Z(B.y1+15)}, on=()=>SHARED.LVL==='up'&&pos.x>LOT.x0&&pos.x<LOT.x1&&pos.z>LOT.z0&&pos.z<LOT.z1;
     if(window.WX){ const at0=WX.at; WX.at=t=>{ const w=at0(t); return on()?Object.assign({},w,{cloud:1,rain:.8,storm:0,snow:0,fog:0,wind:Math.max(.2,w.wind||0)}):w; }; }
     const FG=new THREE.Fog(0x2a2e3a,2,200), V3=new THREE.Vector3(); let was=false;
-    const tick0=CLOCK.tick; CLOCK.tick=dt=>{ tick0(dt); const here=on(); ceil.visible=here&&UI.persp&&R.inside(pos.x,pos.z);
+    SYS.add('world',(dt)=>{ const here=on(); ceil.visible=here&&UI.persp&&R.inside(pos.x,pos.z);
       if(!here){ if(was){ was=false; if(scene.fog===FG)scene.fog=null; } return; } was=true;
       if(window.FAR3&&FAR3.mesh){ FAR3.mesh.visible=false; if(FAR3.panels)FAR3.panels.visible=false; }
       if(ROOMS.cur){ if(scene.fog===FG)scene.fog=null; return; }
-      const d=-V3.copy(pos).applyMatrix4(cam.matrixWorldInverse).z; if(typeof MISTE!=='undefined')MISTE.x=0; FG.near=d+8*TILE; FG.far=d+44*TILE; scene.fog=FG; scene.background.copy(FG.color); }; });
+      const d=-V3.copy(pos).applyMatrix4(SHARED.cam.matrixWorldInverse).z; if(typeof MISTE!=='undefined')MISTE.x=0; FG.near=d+8*TILE; FG.far=d+44*TILE; scene.fog=FG; scene.background.copy(FG.color); },'059b-arcade'); });
 });

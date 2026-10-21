@@ -3,10 +3,10 @@ const INTERIORS={on:QS.get('interiors')==='1'||(!FREE&&QS.get('interiors')!=='0'
   const box=(X,Z,t,y0,y1)=>{ const a=X(t[0]), b=X(t[2]), c=Z(t[1]), d=Z(t[3]); return {x0:Math.min(a,b),x1:Math.max(a,b),z0:Math.min(c,d),z1:Math.max(c,d),y0,y1}; };
   const inBox=(b,x,y,z,e)=>x>b.x0+e&&x<b.x1-e&&z>b.z0+e&&z<b.z1-e&&y>b.y0+.05&&y<b.y1-.05;
   const mk=(id,boxes,doors,inside)=>{ if(L.some(I=>I.id===id))return; L.push({id,boxes,doors,inside,meshes:new Set(),walls:[],on:true}); };
-  const places=()=>{ '@later'; const B=BOD.B0, mB=(B.x0+B.x1)/2;
-    mk('bodega',[box(BOD.X,BOD.Z,[B.x0,B.y0,B.x1,B.y1],-1,BOD.Y(B.h))],[[BOD.X(mB),BOD.Z(B.y1)]]);
-    if(BOD.GD)mk('dojo',[box(BOD.X,BOD.Z,BOD.GD.r,-1,BOD.Y(BOD.GD.H))],[[BOD.X(BOD.GD.door[0]),BOD.Z(BOD.GD.door[1])]]);
-    if(MODS.apts){ const A=MODS.apts.A; mk('house',[box(BOD.X,BOD.Z,[A.x0,A.y0,A.x1,A.y1],-1,MODS.apts.SY*5)],[[BOD.X(MODS.apts.DX),BOD.Z(A.y1)]],()=>MODS.apts.in); }
+  const places=()=>{ '@later'; const B=SHARED.BOD.B0, mB=(B.x0+B.x1)/2;
+    mk('bodega',[box(SHARED.BOD.X,SHARED.BOD.Z,[B.x0,B.y0,B.x1,B.y1],-1,SHARED.BOD.Y(B.h))],[[SHARED.BOD.X(mB),SHARED.BOD.Z(B.y1)]]);
+    if(SHARED.BOD.GD)mk('dojo',[box(SHARED.BOD.X,SHARED.BOD.Z,SHARED.BOD.GD.r,-1,SHARED.BOD.Y(SHARED.BOD.GD.H))],[[SHARED.BOD.X(SHARED.BOD.GD.door[0]),SHARED.BOD.Z(SHARED.BOD.GD.door[1])]]);
+    if(MODS.apts){ const A=MODS.apts.A; mk('house',[box(SHARED.BOD.X,SHARED.BOD.Z,[A.x0,A.y0,A.x1,A.y1],-1,MODS.apts.SY*5)],[[SHARED.BOD.X(MODS.apts.DX),SHARED.BOD.Z(A.y1)]],()=>MODS.apts.in); }
     for(const R of STORE.rooms)if(R.walls)mk('store:'+R.id,[{x0:R.x0,x1:R.x1,z0:R.z0,z1:R.z1,y0:R.y0,y1:R.y1}],[[R.at.x,R.at.z]],()=>R.inside(pos.x,pos.z)); };
   const near2=(I,x,z,y)=>Math.min(...I.doors.map(d=>Math.hypot(x-d[0],z-d[1],y==null?0:(y-Math.max(0,I.boxes[0].y0))*1.5)));
   const owner=(x,y,z)=>{ for(const I of L)for(const b of I.boxes)if(inBox(b,x,y,z,m))return I; return null; };
@@ -23,8 +23,8 @@ const INTERIORS={on:QS.get('interiors')==='1'||(!FREE&&QS.get('interiors')!=='0'
     const W=INTERIORS.water; W.length=0; const P=L.find(I=>I.id==='poolbld'); if(P&&typeof WATER!=='undefined'&&WATER.mesh)W.push([P,WATER.mesh]); for(const w of (typeof WATER!=='undefined'&&WATER.extra)||[])if(w.mesh){ const I=owner(w.mesh.position.x,w.mesh.position.y+.1,w.mesh.position.z); if(I)W.push([I,w.mesh]); }
     INTERIORS.tick(true); };
   INTERIORS.tick=force=>{ if(!INTERIORS.on)return; const all=(typeof MAPED!=='undefined'&&MAPED.on);
-    for(const I of L){ const d=near2(I,pos.x,pos.z,py), inn=I.inside?I.inside():I.boxes.some(b=>inBox(b,pos.x,py+.5,pos.z,0)), want=all||inn||d<(I.on?INTERIORS.near+TILE:INTERIORS.near);
-      if(want!==I.on||force){ I.on=want; for(const me of I.meshes)reindex(me); for(const me of I.walls)me.visible=want; } } };
-  INTERIORS.cull=on=>{ for(const [I,me] of INTERIORS.water){ if(on){ if(!I.on&&me.visible){ me.visible=false; me._ic=true; } } else if(me._ic){ me.visible=true; me._ic=false; } } };
-  INTERIORS.state=()=>L.map(I=>[I.id,I.on,I.meshes.size,I.walls.length,Math.round(near2(I,pos.x,pos.z,py)/TILE*10)/10]);
+    for(const I of L){ const d=near2(I,pos.x,pos.z,SHARED.py), inn=I.inside?I.inside():I.boxes.some(b=>inBox(b,pos.x,SHARED.py+.5,pos.z,0)), want=all||inn||d<(I.on?INTERIORS.near+TILE:INTERIORS.near);
+      if(want!==I.on||force){ I.on=want; for(const me of I.meshes)reindex(me); for(const me of I.walls)VIS.hide(me,'interior',!want); } } };
+  INTERIORS.cull=on=>{ for(const [I,me] of INTERIORS.water)VIS.hide(me,'interior',on&&!I.on); };
+  INTERIORS.state=()=>L.map(I=>[I.id,I.on,I.meshes.size,I.walls.length,Math.round(near2(I,pos.x,pos.z,SHARED.py)/TILE*10)/10]);
 }

@@ -1,5 +1,5 @@
 const SHINE=window.SHINE={src:[],porch:[]};
-{ const MS=[], M=1/.84*TILE, G=(x,z)=>groundY(x,z), V=(x=0,y=0,z=0)=>new THREE.Vector3(x,y,z), m4=new THREE.Matrix4(), q=new THREE.Quaternion(), Y1=V(0,1,0), cc=new THREE.Color();
+{ const MS=[], M=1/.84*TILE, G=(x,z)=>SHARED.groundY(x,z), V=(x=0,y=0,z=0)=>new THREE.Vector3(x,y,z), m4=new THREE.Matrix4(), q=new THREE.Quaternion(), Y1=V(0,1,0), cc=new THREE.Color();
   const lat=(pr,n=8)=>new THREE.LatheGeometry(pr.map(([r,y])=>new THREE.Vector2(r*M,y*M)),n);
   const flu=g=>{ const p=g.attributes.position; for(let i=0;i<p.count;i++){ const x=p.getX(i), z=p.getZ(i), f=Math.cos(Math.atan2(z,x)*8)>0?1:.8; p.setX(i,x*f); p.setZ(i,z*f); } return g; };
   const tube=(P,r)=>new THREE.TubeGeometry(new THREE.CubicBezierCurve3(...P.map(p=>V(p[0]*M,p[1]*M,(p[2]||0)*M))),6,r*M,4);
@@ -44,7 +44,7 @@ const SHINE=window.SHINE={src:[],porch:[]};
     const v=Math.sin(x*12.9898+z*78.233)*43758.5453, P={i,L,on:.8-(v-Math.floor(v))*3,lit:null,me:null};
     if(pool){ const me=new THREE.Mesh(pool.geometry,pool.material), r=.5*L.distance; me.scale.set(r,1,r); me.position.set(lx+nx*r*.45,y+.03,lz+nz*r*.45); me.renderOrder=1; me.visible=false; scene.add(me); P.me=me; }
     SHINE.porch.push(P); halo(L.position.clone(),.42*M*k,PORCH,L,{beam:[.06*M,.8*M]}); };
-  { const B=BOD, B0=B.B0; porch(B.X((B0.x0+B0.x1)/2),B.Z(B0.y1),0); if(MODS.apts&&MODS.apts.A){ const A=MODS.apts.A; porch(B.X(MODS.apts.DX),B.Z(A.y1),0,-1); }
+  { const B=SHARED.BOD, B0=B.B0; porch(B.X((B0.x0+B0.x1)/2),B.Z(B0.y1),0); if(MODS.apts&&MODS.apts.A){ const A=MODS.apts.A; porch(B.X(MODS.apts.DX),B.Z(A.y1),0,-1); }
     if(B.GD)porch(B.X(B.GD.door[0]),B.Z(B.GD.door[1]),0,1.6);
     for(const d of STORE.main?STORE.main.doors:[])if(!/THEATRE/.test(d[0]))porch(d[1],d[2]-2.2*TILE,0);
     if(typeof WROW!=='undefined'){ porch(B.X((WROW.bar.x0+WROW.bar.x1)/2),B.Z(-77),0); const mx=B.X((WROW.mus.x0+WROW.mus.x1)/2), mz=B.Z(WROW.mus.y1); porch(mx,mz,0,1.6,1.5); porch(mx,mz,0,-1.6,1.5); }
@@ -119,5 +119,5 @@ void main(){ vec4 c=texture2D(map,vUv); if(c.a<.5)discard; vec2 g=vW*.9, id=floo
       else N.fm.color.copy(N.base).multiplyScalar(off?.25:hum);
       if(N.halo)N.halo.material.opacity=off&&!N.me?.3:hum;
       N.rm.visible=wet>.02; N.rm.material.uniforms.uF.value=off?.4:hum; } };
-  const dt0=D.tick; D.tick=(d,p)=>{ dt0(d,p); for(const P of D.pools)if(P[4].visible&&LITE.sel.some(s=>s[1]===P[0]||s===P[0]))P[4].visible=false; SHINE.tick(d||0); };
+  SYS.add('dress',(d,p)=>{ for(const P of D.pools)if(P[4].visible&&LITE.sel.some(s=>s[1]===P[0]||s===P[0]))P[4].visible=false; SHINE.tick(d||0); },'069c-shine');
   window.SHINEDBG=()=>({lights:S.length,porch:SHINE.porch.map(P=>[+P.L.position.x.toFixed(1),+P.L.position.z.toFixed(1),P.lit]),neon:NL.length,inst:gq.instanceCount,meshes:MS.length,tris:MS.reduce((n,m)=>n+m.geometry.attributes.position.count/3*m.count,0),per:{street:SLB.attributes.position.count/3,head:HOUS.attributes.position.count/3,lens:LENS.index.count/3,sconce:SC.attributes.position.count/3}}); }

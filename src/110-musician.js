@@ -29,7 +29,7 @@ function musBox(P){ const [cx,cy,cz,hx,hy,hz]=P.box, F=P.F0, g=new THREE.BoxGeom
     pos.set([d(x,y,z,F.x),d(x,y,z,F.y),d(x,y,z,F.z)],i*3); nor.set([d(a,b,c,F.x),d(a,b,c,F.y),d(a,b,c,F.z)],i*3); c1.set([r[1].r,r[1].g,r[1].b],i*3); }
   const o=new THREE.BufferGeometry(); o.setAttribute('position',new THREE.BufferAttribute(pos,3)); o.setAttribute('normal',new THREE.BufferAttribute(nor,3)); o.setAttribute('c1',new THREE.BufferAttribute(c1,3)); o.setAttribute('mat',new THREE.BufferAttribute(new Float32Array(n).fill(mi),1)); return o; }
 const musScale=(g,bh)=>g.scale.set(W3.SZ/PPU,ZU*W3.SZ*(bh||W3.BH||1),W3.SZ/PPU);
-const sheetView=(g,y)=>{ '@later'; UI.setFree(true); UI.camT.set(g.position.x,y,g.position.z); ppu=ppuTo=PPU*4; window.SHEETTURN=d=>{ yaw=yawTo=d*Math.PI/180; }; window.SHEETZOOM=k=>{ ppu=ppuTo=PPU*k; };
+const sheetView=(g,y)=>{ '@later'; UI.setFree(true); UI.camT.set(g.position.x,y,g.position.z); SHARED.ppu=SHARED.ppuTo=PPU*4; window.SHEETTURN=d=>{ SHARED.yaw=SHARED.yawTo=d*Math.PI/180; }; window.SHEETZOOM=k=>{ SHARED.ppu=SHARED.ppuTo=PPU*k; };
   for(const G of Object.values(MAPG))for(const c of G.children)if(c!==g)c.visible=false; for(const c of scene.children)if(!c.isLight&&!c.isCamera&&c!==MAPG.bodega)c.visible=false;
   const K=new THREE.Color(0), r0=renderer.render.bind(renderer); renderer.render=(s,c)=>{ if(s===scene){ s.background=K; s.fog=null; } r0(s,c); }; };
 const spreadPose=()=>{ const P=RIG.walkPose({ph:0,w:0},null), D=RIG.D; P.L.ua=[0,65*D]; P.R.ua=[0,65*D]; P.L.fa=[0,70*D]; P.R.fa=[0,70*D]; return P; };
@@ -81,7 +81,7 @@ function sheetFig(g){ const V=RIG.V, MT=RIG.MATS; if(!MT.includes('sheet')){ MT.
   return {PCS,FM,P,stat,cloth,tris:FM.tris+idx.length/3,pose:(dt,B,F,fr,fl)=>{ PCS.forEach((pc,i)=>FM.set(i,pc.n==='guitar'?F:fr?fr(pc.on||pc.n):R.frameOf(pc.on||pc.n,B))); M(F,sg.matrix); sg.matrixWorldNeedsUpdate=true; cloth(dt,B,F,fl); }}; }
 function gtBody(a,dt){ '@later'; const R=RIG; R.farOnly(false); GTS.t+=dt; const t=GTS.t, P=gtPose(t); npcSpring(a,P,dt,NPCARMS); gtFing(P,R.build(P,null),P._T); npcSpring(a,P,dt,NPCFING); a.t+=dt;
   P.nod+=Math.sin(a.t*1.6)*0.6*R.D+Math.sin(t/GTBEAT*Math.PI)*0.8*R.D; a.P=P; return R.settle(R.build(P,null),0); }
-if(!MUS.shelf){ const R=RIG, V=R.V, AT={x:BOD.XS(70),z:BOD.ZS(-73),hd:Math.PI/2,y:0};
+if(!MUS.shelf){ const R=RIG, V=R.V, AT={x:SHARED.BOD.XS(70),z:SHARED.BOD.ZS(-73),hd:Math.PI/2,y:0};
   const g=new THREE.Group(); MAPG.bodega.add(g); MUS.g=g; const SF=sheetFig(g), PCS=SF.PCS; MUS.tris=SF.FM.tris; MUS.per=SF.FM.per; MUS.ghost=SF.stat;
   g.position.set(AT.x,AT.y,AT.z); g.rotation.set(0,AT.hd,0); musScale(g); MUS.at=AT; MUS.on=true; if(typeof NPCS!=='undefined'&&NPCS.extra&&!NPCS.extra.includes(MUS))NPCS.extra.push(MUS);
   const F0={o:{...GTF.o},x:{...GTF.x},y:{...GTF.y},z:{...GTF.z}};
@@ -93,7 +93,7 @@ if(!MUS.shelf){ const R=RIG, V=R.V, AT={x:BOD.XS(70),z:BOD.ZS(-73),hd:Math.PI/2,
   MUS.elbow=()=>MUS.B&&['shoulderR','elbowR','wristR','shoulderL','elbowL','wristL'].map(k=>{ const p=MUS.B.J[k]; return k+' '+[p.x,p.y,p.z].map(v=>v.toFixed(1)).join(','); });
   const a={t:0}; let song=0;
   MUS.start=()=>{ song=gtNext(song); gtSet(song); }; MUS.stop=()=>gtHush(); MUS.rest=()=>{ if(WK.mode==='play'){ WK.mode='stop'; WK.t=2; } }; MUS.tones=(t,d,x,z)=>gtTones(t,d,x,z); MUS.hush=()=>gtHush();
-  const WK={mode:'stop',t:1+Math.random()*3,dir:1,to:AT.x,st:R.create(),d0:0}, X0=BOD.XS(36), X1=BOD.XS(165), Z0=AT.z, RAD=.3*TILE; MUS.wk=WK;
+  const WK={mode:'stop',t:1+Math.random()*3,dir:1,to:AT.x,st:R.create(),d0:0}, X0=SHARED.BOD.XS(36), X1=SHARED.BOD.XS(165), Z0=AT.z, RAD=.3*TILE; MUS.wk=WK;
   const free=(x,z)=>typeof STFREE!=='function'||STFREE(x,z,RAD), turn=hd=>{ let e=hd-AT.hd; e=Math.atan2(Math.sin(e),Math.cos(e)); return e; };
   const pickTo=()=>{ if(Math.random()<.35)WK.dir=-WK.dir; let x=AT.x+WK.dir*(6+Math.random()*22)*TILE; if(x<X0||x>X1){ WK.dir=-WK.dir; x=AT.x+WK.dir*(6+Math.random()*22)*TILE; } WK.to=Math.max(X0,Math.min(X1,x)); };
   MUS.ask=()=>{ if(MUS.lent)MUS.lent(); WK.mode='play'; WK.st.target=0; AT.hd=Math.atan2(pos.x-AT.x,pos.z-AT.z); g.rotation.y=AT.hd; song=gtNext(song); gtSet(song); };
@@ -111,10 +111,10 @@ if(!MUS.shelf){ const R=RIG, V=R.V, AT={x:BOD.XS(70),z:BOD.ZS(-73),hd:Math.PI/2,
     R.farOnly(false); const B=R.pose(S,true); MUS.wB=B; return B; };
   const BACK={}; const backOf=()=>{ for(const k of ['x','y','z'])BACK[k]={x:-GTF[k].x,y:GTF[k].y,z:-GTF[k].z}; BACK.o={x:-GTF.o.x,y:GTF.o.y+2,z:-GTF.o.z-1}; return BACK; };
   const SHEET=new URLSearchParams(location.search).get('sheet')==='guitarist';
-  MUS.tick=dt=>{ if(SHEET){ R.farOnly(false); const B=MUS.B=R.settle(R.build(spreadPose(),null),0), F=backOf(); AT.x=BOD.XS(100); AT.z=BOD.ZS((BOD.MAP.y0+BOD.MAP.y1)/2); AT.hd=Math.PI/4; AT.y=MODS.bodega.ground(AT.x,AT.z);
+  MUS.tick=dt=>{ if(SHEET){ R.farOnly(false); const B=MUS.B=R.settle(R.build(spreadPose(),null),0), F=backOf(); AT.x=SHARED.BOD.XS(100); AT.z=SHARED.BOD.ZS((SHARED.BOD.MAP.y0+SHARED.BOD.MAP.y1)/2); AT.hd=Math.PI/4; AT.y=MODS.bodega.ground(AT.x,AT.z);
       g.position.set(AT.x,AT.y,AT.z); g.rotation.y=AT.hd; musScale(g); SF.pose(dt,B,F);
       if(!MUS.sheetOn){ MUS.sheetOn=true; sheetView(g,AT.y+g.scale.y*27); } return; }
-    if(MUS.watch&&!UI.freeCam){ MUS.watch=false; SHB.hidden=true; SHB.style.display='none'; if(MUS.res0!=null){ RESI=MUS.res0; MUS.res0=null; resize(); } } const d=Math.hypot(pos.x-AT.x,pos.z-AT.z);
+    if(MUS.watch&&!UI.freeCam){ MUS.watch=false; SHB.hidden=true; SHB.style.display='none'; if(MUS.res0!=null){ SHARED.RESI=MUS.res0; MUS.res0=null; resize(); } } const d=Math.hypot(pos.x-AT.x,pos.z-AT.z);
     if(WK.mode==='play'&&(d>18&&!MUS.watch||GTS.t>GTEND+1.5)){ WK.mode='stop'; WK.t=1.5+Math.random()*2; }
     if(WK.mode!=='play'){ if(!MUS.lent)gtHush(); const near=MAPG.bodega.visible&&d<40, B=MUS.on&&near?walkTick(dt,near):null; if(!B)return SF.cloth(dt,null); MUS.B=B; SF.pose(dt,B,backOf()); musScale(g); return; }
     if(!MUS.on||!MAPG.bodega.visible){ gtHush(); return; }
@@ -125,19 +125,19 @@ if(!MUS.shelf){ const R=RIG, V=R.V, AT={x:BOD.XS(70),z:BOD.ZS(-73),hd:Math.PI/2,
   function gtTones(t,d,x,z){ '@later'; if(!SND.ctx||SND.ctx.state!=='running')return; if(!gtAudio())return; const c=SND.ctx, ct=c.currentTime, A=t+0.1, when=x=>ct+Math.max(0,x-t)+0.03;
     if(GTA.wet)GTA.wet.gain.value=.08;
     GTA.g.gain.setTargetAtTime(0.5*Math.max(0,1-d/16),ct,0.05);
-    const v=new THREE.Vector3(x,1,z).project(cam); GTA.pan.pan.setTargetAtTime(Math.max(-0.8,Math.min(0.8,v.x*0.8)),ct,0.1);
+    const v=new THREE.Vector3(x,1,z).project(SHARED.cam); GTA.pan.pan.setTargetAtTime(Math.max(-0.8,Math.min(0.8,v.x*0.8)),ct,0.1);
     while(GTS.sent<GTEV.length&&GTEV[GTS.sent].t<=A){ const e=GTEV[GTS.sent++]; if(e.t<t-0.05)continue; if(e.n)gtPlay(e.n.s,e.n.at,when(e.t),e.n.amp,e.n.tone,e.n.r); else gtMute(e.s,when(e.t),0.04); } }
   function gtHush(){ if(GTA.g&&SND.ctx)GTA.g.gain.setTargetAtTime(0,SND.ctx.currentTime,0.2); }
   const wake=()=>{ if(!SOUND)return; if(!SND.ctx){ try{ SND.ctx=new (window.AudioContext||window.webkitAudioContext)(); SND.out=SND.ctx.destination; }catch(e){ return; } } if(SND.ctx.state!=='running')SND.ctx.resume(); };
   addEventListener('pointerdown',wake); addEventListener('keydown',wake);
   const hitBox=new THREE.Mesh(new THREE.BoxGeometry(22,58,24),new THREE.MeshBasicMaterial({visible:false})); hitBox.position.set(0,29,2); g.add(hitBox);
   UI.thing({name:'THE GUITARIST',obj:hitBox,reach:1.6,tall:1.9,act:()=>{ '@later'; MUS.ask(); const p=new THREE.Vector3().setFromMatrixPosition(new THREE.Matrix4().multiplyMatrices(g.matrixWorld,new THREE.Matrix4().makeTranslation(GTF.o.x,GTF.o.y,GTF.o.z)));
-    UI.setFree(true); UI.camT.copy(p); ppuTo=PPU*16; MUS.watch=true; MUS.res0=RESI; RESI=MUS.sharp(); resize(); SHB.show(); }});
+    UI.setFree(true); UI.camT.copy(p); SHARED.ppuTo=PPU*16; MUS.watch=true; MUS.res0=SHARED.RESI; SHARED.RESI=MUS.sharp(); resize(); SHB.show(); }});
   const SHB=document.createElement('div'); SHB.id='shbar'; SHB.hidden=true; SHB.style.cssText='position:fixed;left:50%;bottom:52px;transform:translateX(-50%);z-index:6;display:none;gap:10px;align-items:center;padding:8px 12px;background:#0b0d13e0;border:2px solid #2a3040;font:11px Silkscreen,monospace;letter-spacing:1px;color:#c9ccd6';
   SHB.innerHTML='<span>SHARPEN</span><input type="range" min="0" step="1" style="width:220px"><span class="v" style="width:52px;text-align:right"></span><span style="color:#8a8f9c">C BACK</span>'; document.body.appendChild(SHB);
   const shIn=SHB.querySelector('input'), shV=SHB.querySelector('.v'); shIn.max=RESL.length-1;
   MUS.sharp=()=>{ let v=null; try{ v=SAVE.get('gtsharp'); }catch(e){} return v!=null?+v:Math.min(RESL.length-1,RESMAX+2); };
-  SHB.show=()=>{ shIn.value=RESI; shV.textContent=RES()+'x'; SHB.hidden=false; SHB.style.display='flex'; };
-  shIn.oninput=()=>{ RESI=+shIn.value; resize(); shV.textContent=RES()+'x'; try{ SAVE.set('gtsharp',String(RESI)); }catch(e){} };
+  SHB.show=()=>{ shIn.value=SHARED.RESI; shV.textContent=RES()+'x'; SHB.hidden=false; SHB.style.display='flex'; };
+  shIn.oninput=()=>{ SHARED.RESI=+shIn.value; resize(); shV.textContent=RES()+'x'; try{ SAVE.set('gtsharp',String(SHARED.RESI)); }catch(e){} };
   shIn.addEventListener('pointerdown',e=>e.stopPropagation()); shIn.addEventListener('keydown',e=>e.stopPropagation());
 }

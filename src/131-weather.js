@@ -22,7 +22,7 @@ const WX={hold:null,now:null};
     [[0,0,2.8],[-2,.5,2.4],[-3.5,.8,2,-9,2.5,.4],[2,-2,1.6],[3.5,-3.8,1.8],[5.2,-3.6,1.3],[5,-2.6,.9],[2.8,0,.45,3.8,.6,.35],[0,2,1.8,.6,4.6,1],[.6,4.6,1,1.8,6,.8],[-1.8,2,1.6,-1.6,5,.9],[-1.6,5,.9,-.4,6.2,.7]],
     [[-.5,-1,3.2],[-4,2.3,1,5,2.3,1.1],[5,.7,1.1],[5,0,.4,5.6,-2.5,.3],[5.7,-2.8,.55],[4.4,0,.4,4.1,-2.3,.3],[4,-2.6,.5]]];
   const SPOT=[[-13,-15],[13,-15],[-14,3],[14,3],[-12,21],[13,21]], sunAt=h=>{ const e=Math.max(12,50*Math.cos(2*Math.PI*(h-12.7)/24)-8)*Math.PI/180, a=2*Math.PI*(h-12.7)/24; return [Math.sin(a)/Math.tan(e),Math.cos(a)/Math.tan(e)]; };
-  const build=()=>{ const P=window.PARK, B=typeof BOD!=='undefined'?BOD:null; if(P&&B&&B.XS){ CC.x=B.XS(P.round[0]+(P.ox||0)); CC.z=B.ZS(P.round[1]+(P.oy||0)); }
+  const build=()=>{ const P=window.PARK, B=typeof SHARED.BOD!=='undefined'?SHARED.BOD:null; if(P&&B&&B.XS){ CC.x=B.XS(P.round[0]+(P.ox||0)); CC.z=B.ZS(P.round[1]+(P.oy||0)); }
     const T=TILE, hy=2*(WX.cy||0), [sx,sz]=sunAt(window.DN&&DN.S?DN.S.day.h:15.5), tg=WX.spot=[], O=P&&P.oaks||[], WD=window.WEEDS;
     if(WD&&WD.inPark){ const C=[]; for(let i=-45;i<=45;i+=3)for(let j=-45;j<=45;j+=3){ const x=CC.x+i*T, z=CC.z+j*T; if(WD.inPark(x,z)&&!O.some(o=>Math.hypot(o[0]-x,o[1]-z)<8*T))C.push([i*T,j*T]); } C.sort((a,b)=>Math.hypot(a[0],a[1])-Math.hypot(b[0],b[1])); for(const c of C)if(tg.length<6&&tg.every(g=>Math.hypot(g[0]-c[0],g[1]-c[1])>20*T))tg.push(c); }
     for(const g of SPOT)if(tg.length<6)tg.push([g[0]*T,g[1]*T]);
@@ -52,7 +52,7 @@ const WX={hold:null,now:null};
         #include <colorspace_fragment>
       }`});
   cmat.color=CU.uCol.value; cmat.emissive=CU.uEm.value;
-  WX.cloudCut=()=>{ if(mistT>0&&--mistT<=0)CU.uCM.value.w=0; const f=new THREE.Vector3(); cam.getWorldDirection(f); f.y=0; if(f.lengthSq()<1e-6)f.set(0,0,1); f.normalize(); CU.uCF.value.copy(f); CU.uCO.value.set(pos.x,0,pos.z); };
+  WX.cloudCut=()=>{ if(mistT>0&&--mistT<=0)CU.uCM.value.w=0; const f=new THREE.Vector3(); SHARED.cam.getWorldDirection(f); f.y=0; if(f.lengthSq()<1e-6)f.set(0,0,1); f.normalize(); CU.uCF.value.copy(f); CU.uCO.value.set(pos.x,0,pos.z); };
   const CL=new THREE.Mesh(cg,cmat); CL.frustumCulled=false; CL.visible=false; scene.add(CL); WX.clouds=CL;
   CL.onBeforeRender=()=>{ const S=CLOCK.sun; CU.uSunD.value.copy(CLOCK.dir||CLOCK.sunV); CU.uSunC.value.copy(S.color).multiplyScalar(S.intensity); CU.uSky.value.copy(HEMI.color).multiplyScalar(HEMI.intensity); CU.uGnd.value.copy(HEMI.groundColor).multiplyScalar(HEMI.intensity); };
   const CSEE=n=>{ const f=CU.uCF.value, o=CL.position; return CULL.seen(CSPH.slice(0,n),o,S=>(S.center.x+o.x-pos.x)*f.x+(S.center.z+o.z-pos.z)*f.z+S.radius<12); };
@@ -71,9 +71,9 @@ const WX={hold:null,now:null};
   const sg=new THREE.BufferGeometry(); sg.setAttribute('position',new THREE.BufferAttribute(sp,3).setUsage(THREE.DynamicDrawUsage));
   const SNOW=new THREE.Points(sg,new THREE.PointsMaterial({color:0xffffff,size:2,sizeAttenuation:false})); SNOW.frustumCulled=false; scene.add(SNOW);
   const FOG=new THREE.Fog(0x9aa3ad,2,200), cA=new THREE.Color(), cB=new THREE.Color(); let flashT=0, ft=0;
-  const tick0=CLOCK.tick; CLOCK.tick=dt=>{ tick0(dt);
+  SYS.add('world',(dt)=>{
     if((ft-=dt)<=0){ ft=.5; WX.now=WX.hold?Object.assign({flash:(WX.hold==='STORM'||WX.flashK>0)&&Math.random()<(WX.flashK||.04)},HOLDS[WX.hold]):WX.fix&&!WX.nat?{...WX.fix,flash:false}:WX.at(T()); }
-    const W=WX.now, up=LVL!=='down', inside=!OUT.open, day=cl((CLOCK.elev()+4)/14), t=performance.now()/1000;
+    const W=WX.now, up=SHARED.LVL!=='down', inside=!OUT.open, day=cl((CLOCK.elev()+4)/14), t=performance.now()/1000;
     if(!ends.length)build(); WX.cloudCut(); const show=Math.min(NC,Math.round(90+W.cloud*150)); WX.show=show; cg.instanceCount=ends[show-1];
     cmat.color.setRGB(1,1,1).multiplyScalar(1-.35*W.rain-.35*W.storm); cmat.emissive.setRGB(.16,.2,.27).multiplyScalar(.4+.6*day);
     CL.position.set(CC.x,2*(WX.cy||0),CC.z); CL.visible=up&&CSEE(show); { const D=CLOCK.dir||CLOCK.sunV, y=Math.max(.2079,D.y), L=[D.x/y,D.z/y], key=show+'|'+CL.position.y.toFixed(1)+'|'+Math.round(L[0]*40)+'|'+Math.round(L[1]*40); if(key!==bk){ bk=key; bake(show,L); } }
@@ -84,9 +84,9 @@ const WX={hold:null,now:null};
     if(up&&!inside&&W.fog>.02){ scene.fog=FOG; FOG.color.setRGB(.7,.72,.74).multiplyScalar(.15+.85*day).lerp(scene.background,.25); FOG.near=2*TILE; FOG.far=(11+70*Math.pow(1-W.fog,2))*TILE; scene.background.lerp(FOG.color,cl(W.fog*1.3)); } else if(scene.fog===FOG)scene.fog=null;
     const wx=Math.cos(W.dir)*W.wind*5*TILE, wz=Math.sin(W.dir)*W.wind*5*TILE;
     const nr=inside?0:Math.round(NR*W.rain); RAIN.visible=nr>0; if(nr){ const v=14*TILE, L=.45*TILE, sx=wx/v*L, sz=wz/v*L; for(let i=0;i<nr;i++){ let y=rs[i*3+1]-v*dt; if(y<0)y+=RH; rs[i*3+1]=y;
-        const x=((rs[i*3]+wx*t/4)%(2*RB)+3*RB)%(2*RB)-RB+pos.x, z=((rs[i*3+2]+wz*t/4)%(2*RB)+3*RB)%(2*RB)-RB+pos.z, gy=py+y; rp.set([x,gy,z,x-sx,gy+L,z-sz],i*6); }
+        const x=((rs[i*3]+wx*t/4)%(2*RB)+3*RB)%(2*RB)-RB+pos.x, z=((rs[i*3+2]+wz*t/4)%(2*RB)+3*RB)%(2*RB)-RB+pos.z, gy=SHARED.py+y; rp.set([x,gy,z,x-sx,gy+L,z-sz],i*6); }
       rg.setDrawRange(0,nr*2); rg.attributes.position.needsUpdate=true; RAIN.material.opacity=.4+.25*day; }
     const ns=inside?0:Math.round(NS*W.snow); SNOW.visible=ns>0; if(ns){ for(let i=0;i<ns;i++){ let y=ss[i*4+1]-1.1*TILE*dt; if(y<0)y+=RH; ss[i*4+1]=y; const a=ss[i*4+3]+t*.8;
-        const x=((ss[i*4]+wx*t/3+Math.sin(a)*.4*TILE)%(2*RB)+3*RB)%(2*RB)-RB+pos.x, z=((ss[i*4+2]+wz*t/3+Math.cos(a*.7)*.4*TILE)%(2*RB)+3*RB)%(2*RB)-RB+pos.z; sp.set([x,py+y,z],i*3); }
-      sg.setDrawRange(0,ns); sg.attributes.position.needsUpdate=true; } };
+        const x=((ss[i*4]+wx*t/3+Math.sin(a)*.4*TILE)%(2*RB)+3*RB)%(2*RB)-RB+pos.x, z=((ss[i*4+2]+wz*t/3+Math.cos(a*.7)*.4*TILE)%(2*RB)+3*RB)%(2*RB)-RB+pos.z; sp.set([x,SHARED.py+y,z],i*3); }
+      sg.setDrawRange(0,ns); sg.attributes.position.needsUpdate=true; } },'131-weather');
   window.WX=WX; window.WXDBG=()=>WX.now; }

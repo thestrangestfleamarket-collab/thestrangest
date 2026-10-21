@@ -33,7 +33,7 @@ const BUGS={};
     c.width=Math.round(s.width*k); c.height=Math.round(s.height*k); const g=c.getContext('2d'); g.imageSmoothingEnabled=false; g.drawImage(s,0,0,c.width,c.height);
     let q=.85, u; do{ u=c.toDataURL('image/jpeg',q); q-=.15; }while(u.length>300000&&q>.2); res(u.length>300000?null:u); }catch(e){ res(null); } }));
   const where=()=>{ '@later'; let near='', d=1e9; try{ for(const p of UI.places()){ const q=Math.hypot(p[1]-pos.x,p[2]-pos.z); if(q<d){ d=q; near=p[0]; } } }catch(e){}
-    return {build:BUILDV, at:[+pos.x.toFixed(2),+pos.z.toFixed(2),+py.toFixed(2)], hd:+heading.toFixed(2), lvl:LVL, near, far:Math.round(d), hour:+CLOCK.h.toFixed(2), view:UI.view,
+    return {build:BUILDV, at:[+pos.x.toFixed(2),+pos.z.toFixed(2),+SHARED.py.toFixed(2)], hd:+SHARED.heading.toFixed(2), lvl:SHARED.LVL, near, far:Math.round(d), hour:+CLOCK.h.toFixed(2), view:UI.view,
       screen:[innerWidth,innerHeight,devicePixelRatio], ua:navigator.userAgent.slice(0,200), errs:errs.slice(), url:location.search.slice(0,200), from:window.claude?'artifact':'site'}; };
   const ST=[['new','NEW'],['approved','APPROVED'],['later','LATER'],['fixed','FIXED'],['no','NO']];
   let shot=null, ctx=null, filt='new', rows=[], el=null;
@@ -63,6 +63,6 @@ const BUGS={};
     $('#bugq').onclick=async e=>{ const b=e.target.closest('button'), box=e.target.closest('[data-id]'); if(!b||!box)return; const r=rows.find(x=>x.id===box.dataset.id);
       if(b.dataset.s){ b.disabled=true; try{ await be.mark(r.id,b.dataset.s); queue(); }catch(x){ b.textContent='FAILED'; } return; }
       if(b.dataset.a==='pic'){ const im=box.querySelector('img'); if(!im.hidden){ im.hidden=true; return; } b.textContent='...'; try{ const u=await be.shot(r); if(u){ im.src=u; im.hidden=false; } }catch(x){} b.textContent='PICTURE'; }
-      if(b.dataset.a==='go'){ const a=r.context.at; UI.toggleMenu(); STORE.goTo(a[0],a[1],a[2]); if(r.context.hd!=null)heading=r.context.hd; if(r.context.hour!=null)CLOCK.set(r.context.hour); } }; };
+      if(b.dataset.a==='go'){ const a=r.context.at; UI.toggleMenu(); STORE.goTo(a[0],a[1],a[2]); if(r.context.hd!=null)SHARED.heading=r.context.hd; if(r.context.hour!=null)CLOCK.set(r.context.hour); } }; };
   BUGS.open=async e=>{ el=e; ctx=where(); el.innerHTML='<div class="dim">...</div>'; shot=await grab(); draw(); };
   addEventListener('keydown',e=>{ if(e.key==='F8'&&!e.repeat){ e.preventDefault(); UI.menuTab('bug'); } }); }

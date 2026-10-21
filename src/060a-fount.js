@@ -15,7 +15,7 @@ const FOUNT={ready:false,swim:false}; window.FOUNT=FOUNT;
       if(ins)poly.push(p); else if(prev&&prev[0]<L.cx&&prev[1]<L.cy){ const t=(L.cx-prev[0])/(p[0]-prev[0]); poly.push([L.cx,prev[1]+(p[1]-prev[1])*t]); break; }
       prev=p; }
     poly.push([L.cx,L.cy]); S.poly=poly; S.x0=Math.min(...poly.map(p=>p[0])); S.y0=Math.min(...poly.map(p=>p[1]));
-    const X=x=>BOD.XS(x+(P.ox||0)), Z=y=>BOD.ZS(y+(P.oy||0)), strips=[];
+    const X=x=>SHARED.BOD.XS(x+(P.ox||0)), Z=y=>SHARED.BOD.ZS(y+(P.oy||0)), strips=[];
     for(let x=Math.floor(S.x0);x<L.cx;x+=2){ const x2=Math.min(x+2,L.cx-.01), w=y=>lake(x,y)<0||lake(x+1,y)<0||lake(x2,y)<0; let y0=null; for(let y=S.y0-1;y<=L.cy+.5;y+=.5){ const i_=y<L.cy&&w(y); if(i_&&y0===null)y0=y; if(!i_&&y0!==null){ strips.push([X(x),Z(y0),X(x2),Z(Math.min(y,L.cy))]); y0=null; } } }
     S.strips=strips;
     const nrm=(x,y)=>{ const e=.25, gx=lake(x+e,y)-lake(x-e,y), gy=lake(x,y+e)-lake(x,y-e), n=Math.hypot(gx,gy)||1; return [gx/n,gy/n]; };
@@ -28,10 +28,10 @@ const FOUNT={ready:false,swim:false}; window.FOUNT=FOUNT;
     S.oaks=oaks; S.lamps=[200,228,256,284,312,340].map(a=>[C.x+Math.cos(a*Math.PI/180)*(R-.6),C.y+Math.sin(a*Math.PI/180)*(R-.6)]);
     if(typeof STORE!=='undefined'&&STORE.places)STORE.places.push(['THE FOUNTAIN',X(C.x),Z(C.y-R-1.6),'up']);
     return S; };
-  FOUNT.wet=(x,z,R=0)=>{ const S=FOUNT.S; if(!S)return false; const P=PARK, px=x/TILE+BOD.OX-(P.ox||0), py=z/TILE+BOD.OY-(P.oy||0); if(px<S.x0-3||py<S.y0-3)return false; return lake(px,py)<R/TILE; };
+  FOUNT.wet=(x,z,R=0)=>{ const S=FOUNT.S; if(!S)return false; const P=PARK, px=x/TILE+SHARED.BOD.OX-(P.ox||0), py=z/TILE+SHARED.BOD.OY-(P.oy||0); if(px<S.x0-3||py<S.y0-3)return false; return lake(px,py)<R/TILE; };
   FOUNT.paint=({flat,X,Z,Y,hash,grain,speck})=>{ '@park'; const S=FOUNT.S, {C,R}=S, sol=(x,y,b,h)=>{ SOL.up.push([X(x)-b*TILE,Z(y)-b*TILE,X(x)+b*TILE,Z(y)+b*TILE]); FIX.up.push([X(x)-b*TILE,Z(y)-b*TILE,0,X(x)+b*TILE,Z(y)+b*TILE,Y(h)]); };
     const RB=8.6, slab=(u,j,k,x,y)=>{ const n=Math.floor(u); let c=(146+22*grain(x,y,k,1.3))*(.92+.16*hash(n,k,713)); if(j||u-n<.04)c*=.62; return speck([c,c*.96,c*.88],x,y,k+2); };
-    const pav=(x,y)=>{ const dx=x-C.x, dy=y-C.y, r=Math.hypot(dx,dy); if(r>R)return null; const a=Math.atan2(dy,dx)+Math.PI, wear=BOD.g.cvNoise(x*1.3,y*1.3,707);
+    const pav=(x,y)=>{ const dx=x-C.x, dy=y-C.y, r=Math.hypot(dx,dy); if(r>R)return null; const a=Math.atan2(dy,dx)+Math.PI, wear=SHARED.BOD.g.cvNoise(x*1.3,y*1.3,707);
       if(r>R-.4)return slab(a*R/.9,r>R-.045||Math.abs(r-(R-.4))<.04,711,x,y);
       if(r<RB+.9)return slab(a*r/.9,Math.abs(r-(RB+.45))<.04||Math.abs(r-(RB+.9))<.04,741,x,y);
       { const sp=a*16/(2*Math.PI), sw=Math.abs(sp-Math.round(sp))*2*Math.PI/16*r; if(sw<.16)return slab((r-RB)/1.1,sw>.12,751,x,y); }
@@ -45,9 +45,9 @@ const FOUNT={ready:false,swim:false}; window.FOUNT=FOUNT;
     for(let a=8;a<=172;a+=.5/(R-.14)*180/Math.PI){ const t=a*Math.PI/180; sol(C.x+Math.cos(t)*(R-.14),C.y+Math.sin(t)*(R-.14),.28,30); }
     for(const [x,y,s] of S.rocks)if(s>.56)sol(x,y,s*.42,s*24);
     PARK.later(()=>{ try{ build(); }catch(e){ console.warn('FOUNT: not built',e); } }); };
-  const build=()=>{ '@park'; const P=PARK, S=FOUNT.S, {C,R,L}=S, X=x=>BOD.XS(x+(P.ox||0)), Z=y=>BOD.ZS(y+(P.oy||0)), Y=BOD.YS, T=TILE, WU=T/.84, V3=THREE.Vector3, grp=MAPG.park||scene, CX=X(C.x), CZ=Z(C.y);
+  const build=()=>{ '@park'; const P=PARK, S=FOUNT.S, {C,R,L}=S, X=x=>SHARED.BOD.XS(x+(P.ox||0)), Z=y=>SHARED.BOD.ZS(y+(P.oy||0)), Y=SHARED.BOD.YS, T=TILE, WU=T/.84, V3=THREE.Vector3, grp=MAPG.park||scene, CX=X(C.x), CZ=Z(C.y);
     const LV=-.22*WU, bedM=FOUNT.bedM, BK=P.brook, bk=(a,b)=>{ const h=BK&&BK.h(a,b); return h==null?1e9:h*WU-.5*ZU; }, bedY=d=>-bedM(d)*WU-.04; FOUNT.LV=LV; FOUNT.bedY=bedY;
-    FOUNT.bedAt=(x,z)=>{ if(LVL!=='up')return null; const d=-lake(x/T+BOD.OX-(P.ox||0),z/T+BOD.OY-(P.oy||0)); return d>-1?bedY(d):null; };
+    FOUNT.bedAt=(x,z)=>{ if(SHARED.LVL!=='up')return null; const d=-lake(x/T+SHARED.BOD.OX-(P.ox||0),z/T+SHARED.BOD.OY-(P.oy||0)); return d>-1?bedY(d):null; };
     const uT=FOUNT.uT={value:0}, uGl={value:1}, uP=FOUNT.uP={value:new THREE.Vector4()}, uO={value:new THREE.Vector4()}, uOw={value:new THREE.Vector2()}; FOUNT.uGl=uGl;
     if(BK&&BK.kM!=null){ const k=BK.kM, c=BK.C[k], a=BK.C[Math.max(0,k-1)], b=BK.C[Math.min(BK.N,k+1)], tx=X(b[0])-X(a[0]), tz=Z(b[1])-Z(a[1]), l=Math.hypot(tx,tz); uO.value.set(X(c[0]),Z(c[1]),tx/l,tz/l); uOw.value.set((BK.W(c[2])+BK.B+.3)*T,10*T); }
     const wmat=(deep,shal,ring)=>{ const m=new THREE.MeshLambertMaterial({color:0xffffff,transparent:true,side:THREE.DoubleSide}), uC={value:new THREE.Vector4(...ring)}, uD={value:new THREE.Color().setRGB(...deep,THREE.SRGBColorSpace)}, uS={value:new THREE.Color().setRGB(...shal,THREE.SRGBColorSpace)};
@@ -123,15 +123,15 @@ const FOUNT={ready:false,swim:false}; window.FOUNT=FOUNT;
     flow(0); FOUNT.drops=drops; FOUNT.flowN=NS;
     FOUNT.tris={bed:bedTris,water:wTris,rocks:FOUNT.rockN*36,balustrade:FOUNT.balN*12,statue:FOUNT.statTris,drops:NS*8,discs:discT};
     const near=(pos,d)=>Math.hypot(pos.x-CX,pos.z-CZ)<d*T;
-    FOUNT.hear=pos=>LVL==='up'&&!(typeof ROOMS!=='undefined'&&ROOMS.cur)?Math.pow(Math.max(0,1-Math.hypot(pos.x-CX,pos.z-CZ)/(40*T)),2):0;
+    FOUNT.hear=pos=>SHARED.LVL==='up'&&!(typeof ROOMS!=='undefined'&&ROOMS.cur)?Math.pow(Math.max(0,1-Math.hypot(pos.x-CX,pos.z-CZ)/(40*T)),2):0;
     let wasIn=false;
-    FOUNT.feed=(st,pos,dt,go,keys)=>{ if(LVL!=='up'||pos.x<X(S.x0-1)||pos.z<Z(S.y0-1)){ if(FOUNT.swim||wasIn){ FOUNT.swim=false; wasIn=false; uP.value.z=0; } return false; }
-      const d=-lake(pos.x/T+BOD.OX-(P.ox||0),pos.z/T+BOD.OY-(P.oy||0)); if(d<=0){ FOUNT.swim=false; uP.value.z=0; return false; }
+    FOUNT.feed=(st,pos,dt,go,keys)=>{ if(SHARED.LVL!=='up'||pos.x<X(S.x0-1)||pos.z<Z(S.y0-1)){ if(FOUNT.swim||wasIn){ FOUNT.swim=false; wasIn=false; uP.value.z=0; } return false; }
+      const d=-lake(pos.x/T+SHARED.BOD.OX-(P.ox||0),pos.z/T+SHARED.BOD.OY-(P.oy||0)); if(d<=0){ FOUNT.swim=false; uP.value.z=0; return false; }
       const W=RIG.water(st,{level:LV/ZU,floor:bedY(d)/ZU}); W.go=!!go; W.fast=W.in&&(keys.has('k')||keys.has('shift'))?1:0;
       if(W.in&&W.floor>=W.level-30&&!st.move&&!W.dive){ W.in=false; if(st.last)st.out={pose:JSON.parse(JSON.stringify(st.last)),t:0,T:.4}; }
       let kick=0; for(const e of W.events)if(e.k==='splash')kick=Math.max(kick,Math.min(1.6,.4+e.v*.01)); W.events.length=0; if(W.in&&!wasIn)kick=1.4; wasIn=W.in; FOUNT.swim=W.in;
       const wet=W.in||W.floor<W.level, z=wet?Math.max(kick,W.in?(go?.9:.35):(go?.55:0)):0; uP.value.set(pos.x,pos.z,uP.value.z+(z-uP.value.z)*Math.min(1,dt*(z>uP.value.z?12:2)),0); return true; };
-    FOUNT.tick=(dt,pos)=>{ if(LVL!=='up'||!grp.visible)return; const fn=near(pos,80), ln=pos.x>X(S.x0-50)&&pos.z>Z(S.y0-50); if(!fn&&!ln)return; uT.value+=dt;
+    FOUNT.tick=(dt,pos)=>{ if(SHARED.LVL!=='up'||!grp.visible)return; const fn=near(pos,80), ln=pos.x>X(S.x0-50)&&pos.z>Z(S.y0-50); if(!fn&&!ln)return; uT.value+=dt;
       try{ uGl.value=Math.max(0,Math.min(1,(CLOCK.elev()+2)/10)); }catch(e){} drops.visible=fn; if(fn)flow(uT.value); };
     const UF=new THREE.Fog(0,0,1), bg0=new THREE.Color(); let fog0=null, uw=false, dome=true;
     FOUNT.pre=(scene,cam)=>{ const c=cam.position; uw=!cam.isOrthographicCamera&&grp.visible&&c.y<LV&&FOUNT.bedAt(c.x,c.z)!=null&&!!(scene.background&&scene.background.isColor); if(!uw)return;

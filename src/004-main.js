@@ -12,25 +12,25 @@ stage.appendChild(renderer.domElement);
 renderer.domElement.addEventListener('webglcontextlost',e=>{ '@later'; e.preventDefault(); let d=document.getElementById('ctxlost'); if(!d){ d=document.createElement('div'); d.id='ctxlost'; d.style.cssText='position:fixed;inset:0;place-items:center;font:12px Silkscreen,monospace;letter-spacing:2px;color:#8a8f9c;background:#0e1016;z-index:60'; d.textContent='THE PICTURE WAS LOST, BRINGING IT BACK'; document.body.append(d); } d.style.display='grid'; });
 renderer.domElement.addEventListener('webglcontextrestored',()=>{ renderer.shadowMap.needsUpdate=true; const d=document.getElementById('ctxlost'); if(d)d.style.display='none'; });
 const scene=new THREE.Scene();
-let composer=null;
+SHARED.composer=null;
 const PPU=30;
 let PXS=Math.max(2,Math.round(2*(devicePixelRatio||1)));
 let RW=0,RH=0;
-let cam=new THREE.OrthographicCamera(-1,1,1,-1,0.1,800); const OCAM=cam, PCAM=new THREE.PerspectiveCamera(60,1,.05,600);
+SHARED.cam=new THREE.OrthographicCamera(-1,1,1,-1,0.1,800); const OCAM=SHARED.cam, PCAM=new THREE.PerspectiveCamera(60,1,.05,600);
 const FRAMEK=(()=>{ const q=+new URLSearchParams(location.search).get('frame'); return q>0&&q<=1?q:.866; })();
 function resize(){ const dpr=devicePixelRatio||1, pw=innerWidth*FRAMEK*dpr, ph=innerHeight*FRAMEK*dpr; document.body.style.background=document.documentElement.style.background='#000';
   const S=pxS(); SCL=S; RW=Math.ceil(pw/S/2)*2; RH=Math.ceil(ph/S/2)*2;
-  renderer.setSize(RW,RH,false); if(composer)composer.setSize(RW,RH);
+  renderer.setSize(RW,RH,false); if(SHARED.composer)SHARED.composer.setSize(RW,RH);
   const c=renderer.domElement, cw=RW*S/dpr, ch=RH*S/dpr; c.style.width=cw+'px'; c.style.height=ch+'px';
   c.style.left=Math.floor((innerWidth-cw)/2)+'px'; c.style.top=Math.floor((innerHeight-ch)/2)+'px'; c.style.borderRadius=FRAMEK<1?'18px':'0';
   frustum(); }
-let ppu=PPU, SCL=1, RESI=2;
-const FULLRES=+(new URLSearchParams(location.search).get('fullres')||0); if(FULLRES)RESI=FULLRES;
+let SCL=1; SHARED.ppu=PPU; SHARED.RESI=2;
+const FULLRES=+(new URLSearchParams(location.search).get('fullres')||0); if(FULLRES)SHARED.RESI=FULLRES;
 const RESL=[.5,.75,1,1.5,2,3,4,6,8,12,16,24,32,48,64], V0=PPU*PXS;
-const ZUPX=6, RES=()=>RESL[Math.min(RESL.length-1,RESI+(V0*ppu/PPU/(PPU*RESL[RESI])>=ZUPX?1:0))];
+const ZUPX=6, RES=()=>RESL[Math.min(RESL.length-1,SHARED.RESI+(V0*SHARED.ppu/PPU/(PPU*RESL[SHARED.RESI])>=ZUPX?1:0))];
 const MINPX=()=>Math.max(1,Math.round(PXS/RES())), ZMAX=PPU*80;
-const RESMAX=FULLRES?10:3, vpu=()=>V0*ppu/PPU, art=()=>PPU*RES(), PCAP=()=>Math.max(1,Math.round(PXS/RESL[RESI])), pxS=()=>Math.min(Math.max(MINPX(),PCAP()),Math.max(MINPX(),Math.round(vpu()/art()))), rppu=()=>{ const r=Math.round(vpu()/art()); return r<MINPX()||r>Math.max(MINPX(),PCAP())?vpu()/pxS():art(); };
-function frustum(){ const u=rppu(); cam.left=-RW/2/u; cam.right=RW/2/u; cam.top=RH/2/u; cam.bottom=-RH/2/u; cam.updateProjectionMatrix(); }
+const RESMAX=FULLRES?10:3, vpu=()=>V0*SHARED.ppu/PPU, art=()=>PPU*RES(), PCAP=()=>Math.max(1,Math.round(PXS/RESL[SHARED.RESI])), pxS=()=>Math.min(Math.max(MINPX(),PCAP()),Math.max(MINPX(),Math.round(vpu()/art()))), rppu=()=>{ const r=Math.round(vpu()/art()); return r<MINPX()||r>Math.max(MINPX(),PCAP())?vpu()/pxS():art(); };
+function frustum(){ const u=rppu(); SHARED.cam.left=-RW/2/u; SHARED.cam.right=RW/2/u; SHARED.cam.top=RH/2/u; SHARED.cam.bottom=-RH/2/u; SHARED.cam.updateProjectionMatrix(); }
 addEventListener('resize',resize);
 
 const hash3=(x,y,s)=>{ let h=(Math.imul(x,374761393)+Math.imul(y,668265263)+Math.imul(s,982451653))|0; h=Math.imul(h^(h>>>13),1274126177); h^=h>>>16; return (h>>>0)/4294967296; };

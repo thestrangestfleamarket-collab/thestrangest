@@ -6,7 +6,7 @@ const NAV=window.NAV={on:QS.get('nav')!=='0', ready:false, lib:null, M:{}, n:{na
     if(typeof STHOLE!=='undefined')R.push(STHOLE.slice(0,4)); if(FOUNT.S)R.push(...FOUNT.S.strips); if(!street)return R;
     if(typeof CSHOLE!=='undefined')R.push(CSHOLE.slice(0,4)); if(typeof CSB!=='undefined')R.push(CSB.slice(0,4));
     for(const b of ROOMS.boxes())if(b.y0<1)R.push([b.x0,b.z0,b.x1,b.z1]);
-    if(MODS.apts&&MODS.apts.A){ const A=MODS.apts.A; R.push([BOD.X(A.x0),BOD.Z(A.y0),BOD.X(A.x1),BOD.Z(A.y1)]); }
+    if(MODS.apts&&MODS.apts.A){ const A=MODS.apts.A; R.push([SHARED.BOD.X(A.x0),SHARED.BOD.Z(A.y0),SHARED.BOD.X(A.x1),SHARED.BOD.Z(A.y1)]); }
     return R; };
   const sig=(lv,street)=>(SOL[lv]||[]).length+':'+(street?ROOMS.boxes().length:0)+':'+CITY.bounds(lv).map(v=>Math.round(v)).join(',');
   const WORKER=`let L=null; const ok=Promise.all([import('${CORE}'),import('${GEN}')]).then(async([c,g])=>{ await c.init(); L={exportNavMesh:c.exportNavMesh,generateTiledNavMesh:g.generateTiledNavMesh}; });

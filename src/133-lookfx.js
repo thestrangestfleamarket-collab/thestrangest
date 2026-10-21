@@ -21,7 +21,7 @@
       const sp=.004+W.wind*.02; E[row+4]=Math.round(((t*sp)%1)*255); E[row+5]=Math.round(((t*sp*.6)%1)*255);
       sky.copy(scene.background); E[row+8]=Math.round(sky.r*255); E[row+9]=Math.round(sky.g*255); E[row+10]=Math.round(sky.b*255);
       LFX.env.needsUpdate=true; }; }
-  const tick1=LFX.tick||(()=>{}); LFX.tick=()=>{ tick1(); if(F.has('cool')&&typeof LOOK!=='undefined')LOOK.cool.value=LFX.cool??Math.max(.5*cl((CLOCK.elev()+3)/12),.7*cl(1-Math.abs(CLOCK.elev()-3)/10))*(LVL==='down'||ROOMS.cur?0:1); };
+  const tick1=LFX.tick||(()=>{}); LFX.tick=()=>{ tick1(); if(F.has('cool')&&typeof LOOK!=='undefined')LOOK.cool.value=LFX.cool??Math.max(.5*cl((CLOCK.elev()+3)/12),.7*cl(1-Math.abs(CLOCK.elev()-3)/10))*(SHARED.LVL==='down'||ROOMS.cur?0:1); };
   if(F.has('life')){ const NB=9, NL=60, NM=80;
     const bg=new THREE.BufferGeometry(), bp=new Float32Array(NB*12); bg.setAttribute('position',new THREE.BufferAttribute(bp,3).setUsage(THREE.DynamicDrawUsage));
     const BIRDS=new THREE.LineSegments(bg,new THREE.LineBasicMaterial({color:0x1d2026})); BIRDS.frustumCulled=false; scene.add(BIRDS);
@@ -32,10 +32,10 @@
     const LC=[[.42,.55,.18],[.62,.6,.2],[.78,.48,.16],[.6,.3,.12]]; for(let i=0;i<NL;i++){ ls.push({o:i%16,t:Math.random()*8,ph:Math.random()*6}); lc.set(LC[i%4],i*3); }
     for(let i=0;i<NM;i++)ms.push([(Math.random()-.5)*14*TILE,Math.random()*3*TILE,(Math.random()-.5)*14*TILE,Math.random()*6]);
     for(const o of [BIRDS,LEAVES,MOTES])OUT.add(o,'open');
-    const tick2=LFX.tick; LFX.tick=()=>{ '@later'; tick2(); const t=performance.now()/1000, dt=1/60, up=LVL!=='down', day=cl((CLOCK.elev()+3)/12), park=typeof PARK!=='undefined'&&PARK.in&&PARK.oaks;
-      const cx=BOD.XS(96+PARK.ox), cz=BOD.ZS(-40+PARK.oy); for(let i=0;i<NB;i++){ const a=t*.18+i*.35, r=(14+i*1.3)*TILE, x=cx+Math.cos(a)*r, z=cz+Math.sin(a)*r*.7, y=(9+Math.sin(i*2.1+t*.5))*TILE, w=.35*TILE, f=Math.sin(t*9+i)*.18*TILE, dx=-Math.sin(a), dz=Math.cos(a)*.7;
+    const tick2=LFX.tick; LFX.tick=()=>{ '@later'; tick2(); const t=performance.now()/1000, dt=1/60, up=SHARED.LVL!=='down', day=cl((CLOCK.elev()+3)/12), park=typeof PARK!=='undefined'&&PARK.in&&PARK.oaks;
+      const cx=SHARED.BOD.XS(96+PARK.ox), cz=SHARED.BOD.ZS(-40+PARK.oy); for(let i=0;i<NB;i++){ const a=t*.18+i*.35, r=(14+i*1.3)*TILE, x=cx+Math.cos(a)*r, z=cz+Math.sin(a)*r*.7, y=(9+Math.sin(i*2.1+t*.5))*TILE, w=.35*TILE, f=Math.sin(t*9+i)*.18*TILE, dx=-Math.sin(a), dz=Math.cos(a)*.7;
         bp.set([x-dz*w,y+f,z+dx*w, x,y,z, x,y,z, x+dz*w,y+f,z-dx*w],i*12); } bg.attributes.position.needsUpdate=true;
       if(park)for(let i=0;i<NL;i++){ const L=ls[i], o=park[L.o%park.length]; L.t+=dt; const T=L.t%9, y=o[2]*.8-T*.9; if(y<.02){ lp.set([o[0]+Math.sin(L.ph)*1.6,.02,o[1]+Math.cos(L.ph)*1.6],i*3); continue; }
         lp.set([o[0]+Math.sin(L.ph+T*.8)*1.6+T*.25,y,o[1]+Math.cos(L.ph)*1.6+Math.sin(T*2.3+L.ph)*.3],i*3); } lg.attributes.position.needsUpdate=true;
-      LEAVES.visible=LEAVES.visible&&!!park; MOTES.visible=MOTES.visible&&day>.3; for(let i=0;i<NM;i++){ const m=ms[i]; mp.set([pos.x+m[0]+Math.sin(t*.3+m[3])*.4,py+m[1]+Math.sin(t*.5+m[3]*2)*.2,pos.z+m[2]+Math.cos(t*.25+m[3])*.4],i*3); } mg.attributes.position.needsUpdate=true; }; }
-  if(LFX.tick){ const tick0=CLOCK.tick; CLOCK.tick=dt=>{ tick0(dt); LFX.tick(); }; } }
+      LEAVES.visible=LEAVES.visible&&!!park; MOTES.visible=MOTES.visible&&day>.3; for(let i=0;i<NM;i++){ const m=ms[i]; mp.set([pos.x+m[0]+Math.sin(t*.3+m[3])*.4,SHARED.py+m[1]+Math.sin(t*.5+m[3]*2)*.2,pos.z+m[2]+Math.cos(t*.25+m[3])*.4],i*3); } mg.attributes.position.needsUpdate=true; }; }
+  if(LFX.tick){ SYS.add('world',(dt)=>{ LFX.tick(); },'133-lookfx'); } }

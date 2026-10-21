@@ -1,8 +1,8 @@
 const WIRES=window.WIRES={perch:[],poles:[],tick:()=>{}};
 { const M=TILE/.84, V3=THREE.Vector3, G=MODS.bodega.ground, h3=(a,b,c)=>{ const v=Math.sin(a*12.9898+b*78.233+c*37.719)*43758.5453; return v-Math.floor(v); };
-  const X0=BOD.XS(BLOCK.x0), X1=BOD.XS(BLOCK.x1), zp=DRESS.kerb.sw+.5-.5*M, A=MODS.apts&&MODS.apts.A;
-  const doors=[BOD.X((BOD.B0.x0+BOD.B0.x1)/2),A?BOD.X(MODS.apts.DX):1e9,BOD.GD?BOD.X(BOD.GD.door[0]):1e9,BOD.XS((MAPSTAIR.x0+MAPSTAIR.x1)/2),...(STORE.main?STORE.main.doors.map(d=>d[1]):[])];
-  const free=x=>DRESS.poles.every(p=>Math.abs(p.z-zp)>3*M||Math.abs(p.x-x)>3*M)&&BOD.signs.every(s=>Math.abs(BOD.ZS(s.y)-zp)>3*M||Math.abs(BOD.XS(s.x)-x)>2*M)&&DRESS.cans.every(c=>Math.abs(c.x-x)>1.6*M)
+  const X0=SHARED.BOD.XS(BLOCK.x0), X1=SHARED.BOD.XS(BLOCK.x1), zp=DRESS.kerb.sw+.5-.5*M, A=MODS.apts&&MODS.apts.A;
+  const doors=[SHARED.BOD.X((SHARED.BOD.B0.x0+SHARED.BOD.B0.x1)/2),A?SHARED.BOD.X(MODS.apts.DX):1e9,SHARED.BOD.GD?SHARED.BOD.X(SHARED.BOD.GD.door[0]):1e9,SHARED.BOD.XS((MAPSTAIR.x0+MAPSTAIR.x1)/2),...(STORE.main?STORE.main.doors.map(d=>d[1]):[])];
+  const free=x=>DRESS.poles.every(p=>Math.abs(p.z-zp)>3*M||Math.abs(p.x-x)>3*M)&&SHARED.BOD.signs.every(s=>Math.abs(SHARED.BOD.ZS(s.y)-zp)>3*M||Math.abs(SHARED.BOD.XS(s.x)-x)>2*M)&&DRESS.cans.every(c=>Math.abs(c.x-x)>1.6*M)
     &&doors.every(d=>Math.abs(d-x)>3.2*M)&&!SOL.up.some(b=>x>b[0]-.8*M&&x<b[2]+.8*M&&zp>b[1]-.8*M&&zp<b[3]+.8*M);
   const XS=[]; for(let i=0;i<4;i++){ const c=X0+(X1-X0)*(i+.5)/4; for(let k=0;k<60;k++){ const x=c+(k&1?-1:1)*Math.ceil(k/2)*.4*M; if(free(x)){ XS.push(x); break; } } }
   const HP=8*M, AY=7.35*M, AW=1.2*M, IW=1*M, AT=256, AH=512, cv=document.createElement('canvas'); cv.width=AT; cv.height=AH;
@@ -77,11 +77,11 @@ const WIRES=window.WIRES={perch:[],poles:[],tick:()=>{}};
       if(near&&(wind>0||busy||still!==0)){ still=wind>0||busy?1:0; let o=0; for(const S of spans){ for(let i=0;i<NS;i++){ pt(S,i/NS,T,wind,q); pt(S,(i+1)/NS,T,wind,q2);
           for(let r=0;r<4;r++){ const A=RING[r], B=RING[(r+1)%4], C=[[q,A],[q2,A],[q2,B],[q,A],[q2,B],[q,B]]; for(const [p,d] of C){ wp[o++]=p.x; wp[o++]=p.y+d[0]; wp[o++]=p.z+d[1]; } } } }
         wg.attributes.position.needsUpdate=true; }
-      if(near){ you.set(P.x,(P.y||0)+.9*M,P.z).project(cam); cam.getWorldDirection(nd); cam0.copy(cam.position);
-        WIRES.poles.forEach((pl,i)=>{ q.set(pl.x,pl.y0+1*M,pl.z).project(cam); q2.copy(pl.top).project(cam); const dy=Math.abs(q.x-q2.x), w=Math.abs(q.x-you.x)<.07+dy, yy=you.y>Math.min(q.y,q2.y)&&you.y<Math.max(q.y,q2.y);
+      if(near){ you.set(P.x,(P.y||0)+.9*M,P.z).project(SHARED.cam); SHARED.cam.getWorldDirection(nd); cam0.copy(SHARED.cam.position);
+        WIRES.poles.forEach((pl,i)=>{ q.set(pl.x,pl.y0+1*M,pl.z).project(SHARED.cam); q2.copy(pl.top).project(SHARED.cam); const dy=Math.abs(q.x-q2.x), w=Math.abs(q.x-you.x)<.07+dy, yy=you.y>Math.min(q.y,q2.y)&&you.y<Math.max(q.y,q2.y);
           const behind=new V3(P.x,0,P.z).sub(cam0).dot(nd)>new V3(pl.x,0,pl.z).sub(cam0).dot(nd)+.3*M, k=['x','y','z','w'][i], want=1; uF.value[k]+=(want-uF.value[k])*Math.min(1,dt*6); if(Math.abs(uF.value[k]-want)<.01)uF.value[k]=want; }); } };
     WIRES.tick(0,{x:xm,z:zp,y:0});
     WIRES.cost={tris:Pp.length/9+NV/3,spans:spans.length};
-    const t0=DRESS.tick; DRESS.tick=(dt,p)=>{ t0(dt,p); WIRES.tick(dt||0,p||pos); }; }
+    SYS.add('dress',(dt,p)=>{ WIRES.tick(dt||0,p||pos); },'069b-poles'); }
   window.WIRESDBG=()=>({x:XS.map(x=>+x.toFixed(1)),z:+zp.toFixed(2),perch:WIRES.perch.map(p=>[+p.x.toFixed(1),+p.y.toFixed(2),+p.z.toFixed(1),p.on|0]),cost:WIRES.cost});
 }

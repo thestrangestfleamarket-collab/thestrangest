@@ -6,7 +6,7 @@
   const init=C=>{ '@later'; C.mx.stopAllAction(); for(const n of ALL){ const cl=C.CL[n]; if(!cl)continue; const a=C.mx.clipAction(cl); a.enabled=true;
       if(/Start|Land/.test(n)){ a.setLoop(THREE.LoopOnce,1); a.clampWhenFinished=true; } else a.setLoop(THREE.LoopRepeat,Infinity);
       a.setEffectiveWeight(0); a.play(); A.act[n]=a; A.w[n]=n==='Idle_Loop'?1:0; A.tw[n]=A.w[n]; } A.C=C; A.base={sy:C.g.scale.y}; C.g.rotation.order='YXZ'; };
-  FEEL.release=()=>{ if(!A.C)return; A.C.mx.stopAllAction(); A.C.g.rotation.set(0,heading,0); A.C.g.scale.y=A.base.sy; A.C=null; };
+  FEEL.release=()=>{ if(!A.C)return; A.C.mx.stopAllAction(); A.C.g.rotation.set(0,SHARED.heading,0); A.C.g.scale.y=A.base.sy; A.C=null; };
   FEEL.anim=(dt,C)=>{ '@later'; if(A.C!==C)init(C); const c=FEEL.cfg, S=FEEL.S, ev=FEEL.ev, hs=FEEL.hs, k=c.animK;
     if(!A.moving&&hs>.3)A.moving=true; else if(A.moving&&hs<.12)A.moving=false;
     const air=!S.gnd&&(S.jumped||S.air>Math.max(.12,c.coyote));
@@ -27,10 +27,10 @@
       else if(n==='Idle_Loop'||n==='Jump_Loop')a.timeScale=k; }
     C.mx.update(dt);
     const vx=FEEL.S.v.x, vz=FEEL.S.v.z, e=1-Math.exp(-dt*10); A.ax+=((vx-A.vx)/Math.max(dt,1e-3)-A.ax)*e; A.az+=((vz-A.vz)/Math.max(dt,1e-3)-A.az)*e; A.vx=vx; A.vz=vz;
-    const h=heading, lx=A.ax*Math.cos(h)-A.az*Math.sin(h), lz=A.ax*Math.sin(h)+A.az*Math.cos(h), m=c.leanMax*Math.PI/180*c.lean, G=S.gnd?1:0;
+    const h=SHARED.heading, lx=A.ax*Math.cos(h)-A.az*Math.sin(h), lz=A.ax*Math.sin(h)+A.az*Math.cos(h), m=c.leanMax*Math.PI/180*c.lean, G=S.gnd?1:0;
     const tp=Math.max(-m,Math.min(m,lz*.012*G)), tr=Math.max(-m,Math.min(m,-lx*.012*G)); A.lean.x+=(tp-A.lean.x)*e; A.lean.y+=(tr-A.lean.y)*e;
     A.comp*=Math.exp(-dt*9);
-    C.g.position.set(pos.x,py,pos.z); C.g.rotation.set(A.lean.x,h,A.lean.y); C.g.scale.y=A.base.sy*(1-A.comp);
+    C.g.position.set(pos.x,SHARED.py,pos.z); C.g.rotation.set(A.lean.x,h,A.lean.y); C.g.scale.y=A.base.sy*(1-A.comp);
     if(C.relax)C.relax(dt,A.w.Idle_Loop/sum>.6);
     const ss=A.stepSt; ss.ph=A.ph; ss.w=A.moving&&!air?1:0; ss.run=hs>2.6?1:0; if(typeof SFX!=='undefined')SFX.steps(ss,FEEL.go); };
   const IN_MOVE=()=>Math.hypot(FEEL.IN.x,FEEL.IN.z)>.1;

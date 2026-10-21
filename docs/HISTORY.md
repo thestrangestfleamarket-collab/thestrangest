@@ -4031,3 +4031,13 @@ initial download and load super fast"; then "Go")
   fight), speed, health, home, job, size, scale, color, tint, opacity; the same move, turn, copy, delete, undo; VIEW 360 lends the
   character's own body to the black void. Each tab exports and imports its own file (`market-map-*.json`, `market-characters-*.json`);
   nothing changes in the game.
+
+- **The core, pieces 2 and 3: one fade, one answer to "which zone", one place that hides things** (owner, 21 Oct 2026, the same
+  words; `006-map-pre.js`, `013a-day1.js`, `129a-vis.js`): `FADE.run(text, work, {cut, hold})` is the one loading screen: the
+  subway, the shops' insides, the holodeck, Central Park, the dungeon, the deep river, the alley, the rooms' swap, the fire escape,
+  waking up and the game editor all go through it (eleven copies of the fade code gone). `ZONES.at(x, z, level, room)` is the one
+  answer to where you are (MARKET ST, CENTRAL PARK, SOUTH EAST CENTRAL PARK, the room you are in, THE SUBWAY STATION, THE DUNGEON with
+  its level); `ZONES.cur` follows you and `ZONES.on(fn)` hears each change. `VIS.hide(thing, why, on)`: each system gives its
+  reason (room, roof, far, perf, interior) and a thing shows only when no reason is left, so the rooms, the interiors and the
+  performance switches no longer overwrite each other's `.visible` or layer masks; `VIS.showAll` shows everything (for the editor).
+  Not changed: each zone's own build code (the park's, the dungeon's, the shops'), and Market St still built at the start (step 7).

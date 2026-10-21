@@ -61,6 +61,7 @@ const FREE=QS.get('free')!=='0';
 const SOL={up:[],down:[]}, FIX={up:[],down:[]}, CLIPX=[];
 let solids=SOL.up, fixed=FIX.up, BOUND, groundY, LVL='up', BOD, BODB, METRO;
 const STORE={rooms:[],places:[],roofs:[]}, BF={list:[]}; window.STORE=STORE;
+const FADE={busy:0,run:async(t,w)=>{ if(w)await w(); }}; window.FADE=FADE;
 const MAPG={}, MODS={};  const OVERHEAD=[]; let RPASS=null, FIRE=null;
 const grab=async(name,fn)=>{ const n0=scene.children.length; await fn(); const g=new THREE.Group(); g.name=name; for(const o of scene.children.slice(n0))g.add(o); scene.add(g); MAPG[name]=g; return g; };
 const LAYOUT0={bodega:{x:-138.8},diner:{x:-24.75},ghost:{x:-8.8},house:{x:-143},subway:{x:14.99},apartments:{x:59},park:{e:[-4,0,0,0]},castle:{x:-13.5,y:29.5}};

@@ -22,7 +22,7 @@ const PERFX={on:{}, inner:[], gen:0};
       for(const [j,fs] of groups){ const G=make(fs), of=objOf?fs.map(f=>objOf[f]):undefined; let tgt;
         if(j<0){ tgt=me; me.geometry=G; me.userData.objOf=of; }
         else{ tgt=new THREE.Mesh(G,me.material); tgt.castShadow=me.castShadow; tgt.receiveShadow=me.receiveShadow; tgt.renderOrder=me.renderOrder; tgt.userData.objOf=of; tgt.userData.inner=key(RB[j]); tgt.userData.box=RB[j];
-          tgt.visible=false; me.add(tgt); PERFX.inner.push(tgt); }
+          VIS.hide(tgt,'far'); me.add(tgt); PERFX.inner.push(tgt); }
         fs.forEach((f,k)=>{ where[f]=k; into[f]=tgt; }); }
       for(const p of byMe.get(me)||[]){ const f=p.v0/6; p.me=into[f]; p.v0=where[f]*6; }
       g.dispose(); } PERFX.chunk(); PERFX.gen++; };
@@ -41,7 +41,7 @@ const PERFX={on:{}, inner:[], gen:0};
       for(const p of byMe.get(me)||[]){ const f=p.v0/6; p.me=into[f]; p.v0=where[f]*6; } g.dispose(); } };
   const ROOMRESET=ROOMS.reset; ROOMS.reset=()=>{ ROOMRESET(); PERFX.split(); };
   PERFX.rooms=()=>{ if(!PERFX.inner.length)return; const cur=ROOMS.cur, ck=cur?key(cur):null, all=UI.freeCam||ED.on||MAPED.on||LVL!=='up', d=1.6*TILE;
-    for(const me of PERFX.inner){ const B=me.userData.box; me.visible=all||(ck?me.userData.inner===ck:pos.x>B.x0-d&&pos.x<B.x1+d&&pos.z>B.z0-d&&pos.z<B.z1+d&&py>B.y0-.3&&py<B.y1); } }; }
+    for(const me of PERFX.inner){ const B=me.userData.box; VIS.hide(me,'far',!(all||(ck?me.userData.inner===ck:pos.x>B.x0-d&&pos.x<B.x1+d&&pos.z>B.z0-d&&pos.z<B.z1+d&&py>B.y0-.3&&py<B.y1))); } }; }
 const SELFSH={set:new Set(), off:new THREE.Matrix4().set(0,0,0,-9, 0,0,0,-9, 0,0,0,-9, 0,0,0,1)};
 SELFSH.pick=()=>{ SELFSH.set.clear(); if(!PERFX.on[2])return; const R=12*TILE, c=[];
   for(const N of NPCS){ if(N.far||!N.g.visible||!N.g.parent||!N.g.parent.visible||!N.shadowPass)continue; const d=Math.hypot(N.g.position.x-pos.x,N.g.position.z-pos.z); if(d<R)c.push([d,N]); }
@@ -56,7 +56,7 @@ PERFX.bounds=()=>{ '@later'; if(!PERFX.on[4])return; const S=new THREE.Sphere();
 PERFX.maps=()=>{ if(!PERFX.on[6])return; const L=LITE.pool[0]; if(L.shadow.mapSize.x>512){ L.shadow.mapSize.set(512,512); if(L.shadow.map){ L.shadow.map.dispose(); L.shadow.map=null; } } };
 PERFX.near=(x,z,r)=>Math.hypot(pos.x-x,pos.z-z)<r;
 PERFX.bfNear=()=>!PERFX.on[7]||BF.list.some(b=>PERFX.near(b.g.position.x,b.g.position.z,25*TILE));
-PERFX.hide=(g,h)=>{ if(!g||!!g.userData.ph===h)return; g.userData.ph=h; g.traverse(o=>{ if(o.userData.lm0===undefined)o.userData.lm0=o.layers.mask; o.layers.mask=h?0:o.userData.lm0; }); };
+PERFX.hide=(g,h)=>{ if(!g||!!g.userData.ph===h)return; g.userData.ph=h; VIS.hide(g,'perf',h); };
 PERFX.tick=()=>{ PERFX.rooms();
   if((PERFX.fc=(PERFX.fc||0)+1)%120===30)PERFX.bounds();
  

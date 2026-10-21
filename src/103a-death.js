@@ -9,12 +9,11 @@
   const look=on=>{ W3.mesh.visible=!on; if(S){ S.me.visible=on; for(const e of S.eyes)e.visible=on; } };
   const V=new THREE.Vector3();
   VIT.die=()=>{ if(VIT.dead)return; VIT.dead=true; VIT.hp=0; VIT.out=2.4; trip=true; gh=0; rise=-1; try{ SAVE.set('dead','1'); }catch(e){} note(DEAD); };
-  const back=async()=>{ '@later'; busy=true; const f=document.getElementById('subfade');
-    if(f){ f.textContent='REFRESHED'; f.style.pointerEvents='auto'; f.style.opacity='1'; } await wait(1800);
+  const back=async()=>{ '@later'; busy=true; await FADE.run('REFRESHED',async()=>{ await wait(1500);
     const G=BOD.GD, K=BOD.GDK, dx=G.door[0], oy=K?K.y1e+.6:G.door[1]+3;
     STORE.goTo(BOD.X(dx),BOD.Z(oy),'up'); heading=BOD.Z(oy+1)>BOD.Z(oy)?0:Math.PI; if(typeof PH!=='undefined')PH.hd=heading; keys.clear(); target=null;
     VIT.dead=false; VIT.hp=1; VIT.sta=1; VIT.out=0; gh=0; rise=-1; look(false); try{ SAVE.del('dead'); }catch(e){} LOOKS.robe(true);
-    await frames(3); await wait(260); if(f){ f.style.opacity='0'; f.style.pointerEvents='none'; } note('You feel refreshed.',5); busy=false; };
+    },{hold:200}); note('You feel refreshed.',5); busy=false; };
   const t0=VIT.tick; VIT.tick=dt=>{ t0(dt); if(!VIT.dead||busy)return; VIT.hp=0;
     if(gh>=1&&!RAG.on&&st.move&&st.move.name==='fall'&&st.move.held)RIG.release(st,'F');
     if(VIT.out>0||!sheet())return;

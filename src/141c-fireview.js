@@ -5,8 +5,7 @@
   const G=new THREE.Group(); G.visible=false; scene.add(G); const MATS=[]; let light=null, CARS=null, MID=null, busy=false, lp=null;
   F.on=false; F.G=G;
   const wait=ms=>new Promise(r=>setTimeout(r,ms)), frames=k=>new Promise(r=>{ const f=()=>--k<=0?r():requestAnimationFrame(f); requestAnimationFrame(f); });
-  const fade=async(txt,fn)=>{ busy=true; const el=document.getElementById('subfade'); el.textContent=txt; el.style.pointerEvents='auto'; el.style.opacity='1'; if(keys.clear)keys.clear(); target=null; await wait(340); await frames(2);
-    await fn(); await frames(3); await wait(260); el.style.opacity='0'; el.style.pointerEvents='none'; await wait(360); busy=false; };
+  const fade=async(txt,fn)=>{ busy=true; await FADE.run(txt,fn,{hold:200}); busy=false; };
   F.out=()=>{ if(busy)return; fade(F.built?'YOUR FIRE ESCAPE':'LOADING YOUR FIRE ESCAPE...',async()=>{ await STORE.offGo(F.name); UI.goTo(X(CX),Z(WY+1.05),Y(HZ)); heading=0; if(UI.persp&&window.__dbg)__dbg.face(Math.PI); }); };
   F.back=()=>{ if(busy)return; fade('YOUR APARTMENT',()=>{ if(USE.seat){ USE.seat=null; st.sit=null; } UI.goTo(X(U(AWX)),Z(V(1.1)),APTS.lvY(2)); heading=0; }); };
   const hit=(w,h,d,x,y,z)=>{ const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),new THREE.MeshBasicMaterial({visible:false})); m.position.set(x,y,z); scene.add(m); return m; };

@@ -3803,17 +3803,41 @@ initial download and load super fast"; then "Go")
   next kick or jab), and a fall. Gone with it: the queued next move (pressed mid-move, started on landing), the air spin (a flip key
   pressed during a jump added a somersault), and restarting a free move by pressing its key again. Held keys still repeat a move
   (`again`) once it has ended. Arm moves (jab, cross, block, wave) are their own layer and unchanged.
-
-## 20 Oct 2026: the owner's .glb toons on the street; the rain cat's new body
-- **Eight new characters** (owner, 20 Oct 2026, ten .glb files: "lets add these to the game"): THE DONUT, THE ORIGAMI FOX, THE BEAR
-  IN THE COAT, MR. BLOCKS, THE EMBER KNIGHT, NUMBER 80, THE RAIN FISH (his glass bowl see-through), THE MANATEE. Exported from the
-  game's own RIGNPC rig (each bone's rest point in its extras), skinned with weights; `tools/glbtoons-bake.py` bakes them into
-  `data/toons-glb.json` (colours to sRGB, the game's packed points), fetched after the start (`__LAZY__`, `src/084b-npc-glbtoons.js`),
-  walking the street like the other toons (no place given, so the street, by the rule). `RIGNPC.make` takes a skinned mesh
-  (`def.mesh`); `RIGNPC.limbs` walks them with knees, elbows and feet; ears, coat flaps, scarf, hood, horn, hat, umbrella and tail on
-  springs; the knight's surcoat and the manatee's dress (rings of bones from waist to hem) follow the legs. Cost: 2,900–5,000
-  triangles each (about 31,000 for all eight), no lamps, one more shader program (the bowl's glass); 254 KB gzipped, after the start.
-- **The rain cat's new body** (same day, raincat.glb, the same cat with chest, elbows, knees and feet): his code-built body gone,
-  `data/raincat.json` in its place (3,630 triangles, at the start: he keeps the newsstand); his pose, springs and job unchanged;
-  the ink jar he set down is no longer drawn (the model has none).
-- **The mushroom house** (same file set; 16,980 triangles, a door on a hinge, glowing windows): not placed yet, waiting for where it goes.
+- **The fire escape's ladder** (owner, 20 Oct 2026: "dont have the fire escape drop like this, it should be a ladder all the way up to
+  top. make sure avatar has a climbing animation. slow down climbing. needs animation that lets them pull themselves up and stand"):
+  the counterweighted drop stair is gone; one ladder runs from the sidewalk to above the roof, through a hole in every landing. You
+  climb on with W standing at its foot (or at any landing, or down from the roof with S), at 38 units a second (was 70), with the
+  arms and legs alternating rung by rung (`climbPose` now takes a phase from the ladder's height; the old climb held one frame).
+  At the top, 22 units below the roof, the climb hands over to the rig's mantle (pull up and stand).
+- **The apartments, half as wide** (owner, 20 Oct 2026: "change the apartment size to just this part in image (about 50% width as it now).
+  each floor is its own apartment (empty for now), the elevator takes you to your floor when you use it" and "red brick, make it look
+  realistic, ivy on sides ... add the ivy then set it as image so we dont have to render it every time ... the door for apartment should
+  be in the middle of building. inside 1st floor is the lobby. empty for now. (elevator only)"): the building is 13 wide (was 26), the
+  stoop and door in its middle, the fire escape at its east end. Red brick courses (14 by 6 px, grey mortar) above a stone ground
+  course, with stone bands, quoins and window surrounds. Ivy painted into the side walls' textures (strands from the ground, leaf
+  clusters, sparser towards the top; a painter like the cottage's, painted once with the wall). Inside: the lobby with one elevator
+  and nothing else; each upper floor one open apartment, boards, no corridor, no doors. The elevator has one button: it takes you to
+  your floor (the top one, `APTS.my`) and from there back to the lobby; the floor panel is gone. The lot where the east half stood
+  is empty for now.
+- **THE NEW LAYOUT** (owner, 20 Oct 2026, 23:00–23:50, settled over nine mockups and an editable map; his positions in map units, north
+  up; this entry is the plan every later piece builds to). Market St is one zone (the street, West St, the bodega block, the alley);
+  Central Park is two zones, CENTRAL PARK (the top half) and SOUTH EAST CENTRAL PARK (the bottom); every interior is its own zone;
+  "anything that brings up a loading screen" is a zone. "Only the place you're at loads." Market St no longer dead-ends: it runs on
+  past West St to a forcefield at x −130 and east to one at x 262. The Avenue is gone: "there shouldn't be a road on right side,
+  central park just keeps going that way". The park is "2x up north" (y −38 to 181), West St runs with it to a forcefield at its end.
+  The bodega block (south side, west to east): MUSEUM OF EARTH (−48), THE PLAYHOUSE (−32), THE BANK (4.5, on the block now, not
+  West St), THE BAR (54.5), the SUBWAY EXIT on the sidewalk (77), the ENTRANCE TO THE HUDSON AREA (117.5, "directly across from CP
+  gate", a passage through the block and the empty row to the river walk), BATH HOUSE (134), THE DOJO (147), MOVIE THEATRE (197.5),
+  THE ARCADE (212.5), THE HOLODECK (232.5). Club Static, VCR Repair and the Dojo Hall are deleted from the game. THE BODEGA and the
+  APARTMENTS move to West St's west side: the bodega at the corner (−66.5, −27), "2x bigger and have entrance on both sides of
+  street"; the apartments above it (−67, −5); above them seven empty apartment fronts, "all empty front shells (low render nothing
+  inside)" (−67, 17.5 … 149.5). The park gate at the centre of the park's bottom edge (112, −36). In the park: the castle (43, 17),
+  the fountain (72, 137), the round (112, 59.5), a lake (151, 10, in place of the pond), a stream from the north edge under a bridge
+  (201.5, 72.5) into the lake, the campfire (197.5, 32.5), the tower (−8.5, −28), paths that "go all the way (realistic)" between
+  all of them with lamp posts, trees, "fleshed out lived in". A huge hill in the east with a large cave (196.5, 41.5): "the cave leads
+  down through long tunnels underground that have gems you mine (get more expensive the longer you go down) the rock golems guard
+  it. once you get near they wake up and if you kill them they break into small pieces (boulders, rocks), then after 10–60 seconds
+  they start to form back together and come back at you". The mines are NEW (the dungeon under the castle stays). South of the
+  block: the dark alley, a row of empty buildings, the walk by the Hudson, the Hudson. Build order, one pull request each: the map
+  skeleton (park size, no Avenue, gate, forcefields), the block's new order, West St's bodega and apartments, the park's inside, the
+  Hudson side, the mines and golems, then the zone loading screens.

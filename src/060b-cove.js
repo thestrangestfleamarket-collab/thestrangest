@@ -59,6 +59,7 @@ const COVE={ready:false}; window.COVE=COVE;
     const W=WATER.body({name:'cove',X0:WX-RW,X1:WX+RW,Z0:WZ-RW,Z1:WZ+RW,lvl:Y(LV),GX:64,GY:64,dep:()=>.5});
     W.mat.fragmentShader=W.mat.fragmentShader.replace('void main(){ vec2 t=1./uGrid;','void main(){ if(length(vWp.xz-vec2('+WX.toFixed(3)+','+WZ.toFixed(3)+'))>'+(RW-.02*TILE).toFixed(3)+')discard; vec2 t=1./uGrid;');
     W.mat.customProgramCacheKey=()=>'cove'; W.mat.needsUpdate=true;
+    if(W.mat.uniforms){ W.mat.uniforms.uDeep.value.setRGB(.05,.2,.22); W.mat.uniforms.uGlow.value.setRGB(.01,.07,.08); W.mat.uniforms.uRoom.value.setRGB(.03,.05,.07); }   // a deep, moody teal, not the pond's bright cyan
 
     // ---- the wooden pier: planks on posts jutting from the south shore out over the water (instanced boxes, newsstand idiom) ----
     const BX=[], V=V3, geo=new THREE.BoxGeometry(1,1,1);

@@ -3850,3 +3850,14 @@ initial download and load super fast"; then "Go")
   is one box (`RING.ff`). The land's road holes are clipped to the land rect (the old hole was skipped when a corner fell outside it,
   which buried the road under lawn). The bank stays where it stood until step 2 puts it on the block; the civic tower sits past the
   park's top wall. The subway's two loop stairs are gone (the subway exit on the block's sidewalk comes in step 2).
+
+- **The block's new order, step 2 of the new layout** (21 Oct 2026; `006-map-pre.js` `BLOCK`, `MAINROW`, `WROW`, `LAYOUT0.subway`;
+  `059h-bank.js`, `059-street.js`, `069a-block.js`): the south side of Market St, west to east, each centred on the owner's x at its real
+  width: MUSEUM OF EARTH (−62 to −34), THE PLAYHOUSE (−34 to −20), THE BANK (−10 to 19, on the block now at the museum's width, its hall
+  14 deep; the pocket off West St and its three glass buildings are gone), THE BAR (49 to 60), the SUBWAY stairs (75 to 79; the station
+  moves under them), the bodega and the apartments where they were (they go to West St in step 3, and the ENTRANCE TO THE HUDSON AREA
+  takes their place then), the dojo gate and THE BATH HOUSE where they were (they shift to 147 and 134 in step 3, when the apartments
+  have gone), THE MOVIE THEATRE (190 to 205), THE ARCADE (205 to 220), THE HOLODECK (225 to 240: its own front now, the booth across the
+  lot's whole width with the HOLODECK sign three times the size, the hall behind as before). The block runs to x 245. CLUB STATIC and
+  VCR REPAIR are deleted (`059a-club.js`, the VCR offmap in `059-store.js`, their place tests), and THE DOJO with its hall and the ninja
+  training (owner, 21 Oct 2026, asked whether the hall or both: "both for now, lets hurry"; `059c-dojo.js`, `141a-ninja.js`).

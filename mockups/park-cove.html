@@ -1,0 +1,171 @@
+<title>Misty Park Cove</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: a short head, then the cove three ways as wide picture cards one under another, each with what it is and its sizes */
+:root{
+  --bg:#101917; --panel:#182523; --ink:#e6eee8; --dim:#9fb3aa; --line:#294038; --accent:#c9a45a;
+  --display:"Silkscreen","Courier New",monospace; --body:"IBM Plex Sans",system-ui,sans-serif; --mono:"IBM Plex Mono",ui-monospace,monospace;
+  color-scheme:dark;
+}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 40px}
+.wrap{max-width:1120px;margin:0 auto;display:grid;gap:26px}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(22px,3.4vw,34px);letter-spacing:.04em;margin:0;text-wrap:balance}
+.lede{color:var(--dim);margin:0;max-width:76ch;line-height:1.55}
+figure{margin:0;background:var(--panel);border:1px solid var(--line);min-width:0;display:grid}
+canvas{display:block;width:100%;aspect-ratio:400/230;image-rendering:pixelated;cursor:grab;touch-action:none;max-width:100%;background:#12201e}
+canvas:active{cursor:grabbing}
+figcaption{padding:12px 16px 16px;display:grid;gap:6px}
+.tag{font-family:var(--display);color:var(--accent);font-size:14px;letter-spacing:.08em}
+h2{margin:0;font-size:18px;font-weight:600}
+.what{margin:0;color:var(--dim);font-size:14px;line-height:1.5;max-width:95ch}
+.size{font-family:var(--mono);font-size:12.5px;color:var(--dim);font-variant-numeric:tabular-nums}
+.foot{color:var(--dim);font-size:13px;line-height:1.5;max-width:92ch;margin:0}
+.foot b{color:var(--ink);font-weight:600}
+</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Silkscreen&family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono&display=swap">
+<div class="wrap">
+  <h1>A MISTY COVE IN CENTRAL PARK</h1>
+  <p class="lede">Your picture, built the game's way. A still corner of the North Woods by the Loch: a wooden landing out over the water, a mossy schist cliff, and a warm light glowing out of an opening in it, all drowned in the teal mist you already picked for the whole game ("the exact look… that foggy misty haze, perfect", 18 Oct — <code>0x3a6e68</code>). Flat bands, hard shadows, one warm lamp, no gradients. A lone figure stands on the dock, back to us, looking across the water — like yours. Three ways to do the glowing opening. Drag a picture to turn it.</p>
+
+  <figure><canvas id="A" width="400" height="230"></canvas><figcaption><div class="tag">A · THE GLOWING ARCH</div><h2>A rustic stone arch in the cliff, lantern-light pouring out</h2>
+    <p class="what">Closest to your picture. A dry-laid schist arch set into the mossy rock — the North Woods really has these (Glen Span, Huddlestone) — with a warm lantern burning somewhere inside, so amber light spills out across the dock and lays a shaking gold streak on the water against all that cold blue. The way deeper into the park goes through it.</p>
+    <div class="size">cliff ~9 m, climbs out of frame · arch 2.4 m wide · dock 6 m long, 2 m wide · 1 warm lamp (no shadow) + the sun · teal mist 10→38 tiles</div></figcaption></figure>
+
+  <figure><canvas id="B" width="400" height="230"></canvas><figcaption><div class="tag">B · THE CAVE MOUTH</div><h2>A natural rock cave, torches burning deep inside</h2>
+    <p class="what">Wilder and darker. No cut stone — just a ragged hole in the cliff, kin to the golems' cave the game already has, with two torches guttering back in the dark so the glow is deeper and redder and the mouth stays black at its edges. More dread, less welcome. Reeds and a leaning boulder at the shore.</p>
+    <div class="size">cave mouth ~2.6 m · two torch lamps (nearest casts, on budget) · same cliff, dock and figure · mist as A</div></figcaption></figure>
+
+  <figure><canvas id="C" width="400" height="230"></canvas><figcaption><div class="tag">C · THE BOATHOUSE</div><h2>A little log boathouse tucked under the cliff, a rowboat moored</h2>
+    <p class="what">Lived-in, not wild. A small rustic boathouse of dark logs against the rock, a pitched shingle roof, an open doorway and two small windows all lit warm from within, and a rowboat tied up at the end of the dock. The warmest and friendliest of the three; the light has edges and a shape to it.</p>
+    <div class="size">boathouse 3.6 × 2.8 m, 2.6 m to the ridge · door + 2 windows, 1 warm lamp inside · rowboat 2.2 m · dock and figure as A</div></figcaption></figure>
+
+  <p class="foot">All three share the same cove and the same owner-set teal mist, so distant pines melt into the haze and the background sits a shade darker than the fog (<b>mist &times; 0.5</b>), exactly as <code>skyline.js</code> does it in the game. Cel throughout: a 4-band toon ramp with hard edges, a dim cool sky-fill, a weak overcast sun casting the only hard shadow, and <b>one</b> warm point light at the opening — the cold/warm clash is the whole picture. Pick one (or mix — A's arch with C's lit windows, say). Once you choose, I'll build it into the park by the Loch, name it a place, and log it in HISTORY.</p>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+<script>
+(()=>{
+// ---- the game's cel kit, as the other mockups do it: a 4-step toon ramp (hard edges, no gradient), MeshBasic for anything that glows ----
+const grad=(()=>{ const d=new Uint8Array([64,124,180,255]); const t=new THREE.DataTexture(d,4,1,THREE.RedFormat); t.minFilter=t.magFilter=THREE.NearestFilter; t.needsUpdate=true; return t; })();
+const MT={}, mat=(c,glow)=>{ const k=c+'|'+(glow||0); return MT[k]||(MT[k]=glow?new THREE.MeshBasicMaterial({color:c}):new THREE.MeshToonMaterial({color:c,gradientMap:grad})); };
+let seed=1; const rnd=()=>{ seed=(seed*16807)%2147483647; return (seed-1)/2147483646; }, R=(a,b)=>a+rnd()*(b-a), pick=a=>a[Math.floor(rnd()*a.length)];
+const GEO={box:new THREE.BoxGeometry(1,1,1),ball0:new THREE.IcosahedronGeometry(1,0),ball1:new THREE.IcosahedronGeometry(1,1),cyl:new THREE.CylinderGeometry(1,1,1,7),cone:new THREE.ConeGeometry(1,1,7),cap:new THREE.SphereGeometry(1,7,3,0,Math.PI*2,0,Math.PI/2)};
+const put=(G,g,m,x,y,z,sx=1,sy=1,sz=1,rx=0,ry=0,rz=0)=>{ const me=new THREE.Mesh(GEO[g],m); me.position.set(x,y,z); me.scale.set(sx,sy,sz); me.rotation.set(rx,ry,rz); me.castShadow=me.receiveShadow=true; G.add(me); return me; };
+const box=(G,w,h,d,x,y,z,c,ry=0)=>put(G,'box',mat(c),x,y+h/2,z,w,h,d,0,ry);
+
+// ---- the game's park colours (src/061-park.js, src/134-skyline.js) ----
+const MIST=0x3a6e68, BG=0x1d3734;                                    // the owner's teal mist, background a shade darker
+const ROCK=[0x6b6860,0x5c5a54,0x797468,0x565a5a], ROCKD=0x42403a;    // schist, grey-brown
+const MOSS=[0x385628,0x2c4622,0x486a2e], TURF=[0x284820,0x365c28,0x487232], SOIL=0x4e4232;
+const WOOD=0x5a4430, WOODD=0x42301f, PINEC=[0x2e4a2a,0x244a3a,0x274a30], TRUNK=0x3a2e22;
+const GLOWW=0xffcf8a, FLAME=0xffb24a;                                // warm fill behind an opening; a flame
+const DARK=0x12201e;
+
+// a chunky jittered rock
+const rock=(G,x,y,z,s,c)=>put(G,'ball0',mat(c||pick(ROCK)),x,y,z,s*R(.8,1.3),s*R(.7,1.1),s*R(.8,1.3),R(0,6.28),R(0,6.28),R(0,6.28));
+// the cliff on the right: a wall of rock rising out of frame, mossed along its top, curving to face the water
+const cliff=(G)=>{
+  for(let i=0;i<70;i++){ const u=rnd(); const z=R(-9,5), x=8.2+u*5.5+Math.abs(z+2)*.18, y=R(.2,8.5)*(1-u*.3); rock(G,x,y,z,R(.9,2.1)); }
+  for(let i=0;i<22;i++){ const z=R(-8,4.4); rock(G,7.6+Math.abs(z+2)*.16,R(.3,3.1),z,R(.7,1.3),pick(ROCK)); }           // the near face
+  for(let i=0;i<26;i++){ const z=R(-8,4); const h=R(2.2,5.5); rock(G,8.0+Math.abs(z+2)*.17,h,z,R(.5,1.0),pick(MOSS)); } // moss up the face
+  rock(G,6.9,.25,2.6,1.0,pick(ROCK)); rock(G,5.3,.2,3.4,.8,pick(MOSS));                                                  // a boulder or two at the waterline
+};
+// the water: a flat teal toon plane, a few paler ripple bands, and a warm streak reflected from the opening
+const water=(G,warmX)=>{
+  const w=new THREE.Mesh(new THREE.PlaneGeometry(60,54),mat(0x274f50)); w.rotation.x=-Math.PI/2; w.position.y=0; w.receiveShadow=true; G.add(w);
+  const band=(z,len,x,c,o)=>{ const m=new THREE.Mesh(new THREE.PlaneGeometry(len,.22),new THREE.MeshBasicMaterial({color:c,transparent:true,opacity:o,depthWrite:false})); m.rotation.x=-Math.PI/2; m.position.set(x,.012,z); G.add(m); };
+  for(let i=0;i<5;i++)band(R(-9,3),R(4,9),R(-6,2),0x3f6f6c,R(.06,.14));                                                  // still-water ripple lines
+  for(let i=0;i<6;i++){ const z=warmX.z+1.4+i*1.15; band(z,Math.max(.3,2.0-i*.26),warmX.x-.2+R(-.3,.3),0xffb060,.36-i*.045); } // the warm reflection, shaking toward us
+};
+// the dock: planks on posts, out over the water from the right-front toward the opening
+const dock=(G)=>{
+  const x0=3.3,x1=9.2,z0=1.4,z1=4.2,y=.62;
+  for(let x=x0;x<x1-.1;x+=.52)box(G,.46,.1,z1-z0,x+.23,y-.1,(z0+z1)/2,x%1.04<.52?WOOD:WOODD);                            // planks
+  box(G,x1-x0,.08,.14,(x0+x1)/2,y,z0,WOODD); box(G,x1-x0,.08,.14,(x0+x1)/2,y,z1,WOODD);                                  // edge rails
+  for(const [px,pz] of [[x0+.2,z0+.1],[x0+.2,z1-.1],[x1-.3,z0+.1],[x1-.3,z1-.1],[(x0+x1)/2,z0+.1],[(x0+x1)/2,z1-.1]])
+    box(G,.16,y+.9,.16,px,-.9,pz,WOODD);                                                                                // pilings into the water
+  box(G,.14,.5,.14,x0+.2,y,z1,0x2e2318); put(G,'cap',mat(0x2e2318),x0+.2,y+.5,z1,.12,.12,.12);                          // a bollard at the near corner
+};
+// the lone figure: a dark coat silhouette, back to us, looking across the water
+const figure=(G,x,z)=>{
+  const g=new THREE.Group(); g.position.set(x,.67,z); g.rotation.y=-2.3; G.add(g);
+  put(g,'cone',mat(0x1b2330),0,.42,0,.22,1.0,.2,Math.PI);                                                               // the long coat
+  put(g,'cyl',mat(0x1b2330),0,.86,0,.17,.42,.15);                                                                       // shoulders/chest
+  put(g,'cap',mat(0x151b27),0,1.02,0,.17,.12,.17);                                                                      // collar
+  put(g,'ball0',mat(0x11161f),0,1.2,0,.12,.14,.12);                                                                     // head
+};
+// a pine, stacked cones, for the forest that melts into the mist
+const pine=(G,x,z,h,c)=>{ box(G,.12,h*.3,.12,x,0,z,TRUNK); for(let i=0;i<3;i++){ const s=1-i*.26; put(G,'cone',mat(c),x,h*.32+i*h*.22,z,h*.42*s,h*.34,h*.42*s); } };
+// a fern/undergrowth clump to frame the foreground
+const fern=(G,x,z,s,c)=>{ for(let i=0;i<5;i++){ const a=i*1.256+R(0,.4); put(G,'cone',mat(c),x+Math.cos(a)*s*.3,s*.5,z+Math.sin(a)*s*.3,s*.22,s*1.4,s*.22,R(.5,.9),a,0); } };
+// an overhanging limb draping in from the top-left corner (its tree off-frame), a dark silhouette framing the shot like the branches over your picture
+const branch=(G)=>{
+  const g=new THREE.Group(); g.position.set(-8.6,9.3,3.8); g.rotation.set(0,0,-.12); G.add(g);
+  put(g,'cyl',mat(0x14231b),2.4,.1,0,.14,5.0,.14,0,.1,Math.PI/2);
+  for(let i=0;i<14;i++)put(g,'ball1',mat(pick([0x16271d,0x1f3625,0x122018])),R(0,5.0),R(-1.2,1.1),R(-1.3,1.3),R(.9,1.6),R(.7,1.15),R(.9,1.6),R(0,6.28),R(0,6.28),0);
+};
+
+// ---- the three openings in the cliff; each sets its own warm light(s) ----
+const warmAt=(G,x,y,z,col,kcd,reach)=>{ const L=new THREE.PointLight(new THREE.Color(col),kcd,reach,1.6); L.position.set(x,y,z); G.add(L); return L; };
+const OPEN={
+  // A: a dry-laid stone arch, warm fill behind it, a lantern inside
+  A:(G)=>{ const ax=7.7,az=-1.4,wd=1.2,ht=2.0;
+    put(G,'box',mat(GLOWW,1),ax,ht*.7,az+.1,wd*1.9,ht*1.5,.1);                                                          // the warm glow filling the opening
+    for(let i=-1;i<=1;i+=2){ for(let s=0;s<6;s++)rock(G,ax+i*(wd+.15),s*.42+.2,az,.42,pick(ROCK)); }                     // the two jambs
+    for(let i=0;i<=8;i++){ const a=Math.PI*i/8, vx=ax-Math.cos(a)*(wd+.25), vy=ht+.1+Math.sin(a)*.9; rock(G,vx,vy,az,.36,pick(i>2&&i<6?MOSS:ROCK)); } // the voussoirs
+    put(G,'cyl',mat(0xffe6a8,1),ax,1.1,az+.5,.09,.5,.09); warmAt(G,ax,1.3,az+.9,0xff9940,16,11);                        // the lantern + its light
+  },
+  // B: a ragged natural cave, torches deep inside, the mouth black at the edges
+  B:(G)=>{ const ax=7.9,az=-1.2;
+    put(G,'box',mat(DARK,1),ax,1.4,az-.2,2.4,2.8,.1);                                                                    // the dark throat
+    put(G,'box',mat(0x6a3a22,1),ax,1.1,az-.1,1.3,1.8,.1);                                                               // a deeper red core
+    for(let i=0;i<16;i++){ const a=R(0,6.28); rock(G,ax+Math.cos(a)*1.6,1.4+Math.sin(a)*1.4,az+.1,R(.5,.95),pick(a>2&&a<4?MOSS:ROCK)); } // the ragged rim
+    for(const tx of [ax-.55,ax+.6]){ put(G,'cyl',mat(0x241a12),tx,.7,az+.2,.06,1.4,.06); put(G,'cone',mat(FLAME,1),tx,1.5,az+.2,.14,.4,.14); }
+    warmAt(G,ax-.3,1.2,az+.4,0xff7a30,15,9); warmAt(G,ax+.5,1.4,az+.3,0xff6a28,10,7);
+  },
+  // C: a small log boathouse, door and windows lit, tucked under the cliff
+  C:(G)=>{ const ax=7.4,az=-1.0,w=3.6,d=2.8,h=2.0;
+    for(let i=0;i<Math.round(h/.3);i++)box(G,w,.3,d,ax,i*.3,az,i%2?0x4a3826:WOODD);                                     // stacked log walls
+    put(G,'box',mat(0x3a2c1d),ax,h+.42,az-d*.27,w+.4,.1,d*.62,.5,0,0); put(G,'box',mat(0x3a2c1d),ax,h+.42,az+d*.27,w+.4,.1,d*.62,-.5,0,0); // the pitched roof, an A over the ridge
+    box(G,w+.2,.14,.16,ax,h+.66,az,0x2e2318);                                                                           // the ridge beam
+    put(G,'box',mat(GLOWW,1),ax,.9,az+d/2,.9,1.5,.06);                                                                  // the open doorway, lit
+    put(G,'box',mat(0xffe3a2,1),ax-1.2,1.3,az+d/2,.55,.55,.06); put(G,'box',mat(0xffe3a2,1),ax+1.2,1.3,az+d/2,.55,.55,.06); // two lit windows
+    box(G,.12,1.6,.12,ax-.5,0,az+d/2+.03,WOODD); box(G,.12,1.6,.12,ax+.5,0,az+d/2+.03,WOODD);                          // door posts
+    warmAt(G,ax,1.1,az+d/2-.2,0xffa94e,16,10);
+    // a rowboat moored at the dock's end
+    const b=new THREE.Group(); b.position.set(4.1,.2,3.3); b.rotation.y=.5; G.add(b);
+    put(b,'cap',mat(0x6a4a2c),0,0,0,1.1,.32,.46,Math.PI,0,0); put(b,'box',mat(0x7a5636),0,0,0,.12,.1,1.4); for(const bz of [-.55,.55])put(b,'box',mat(0x5a3f26),0,.07,bz,1.6,.07,.12);
+  }
+};
+
+function card(id){
+  seed=id.charCodeAt(0)*71+13;
+  const cv=document.getElementById(id), Rn=new THREE.WebGLRenderer({canvas:cv,antialias:false});
+  Rn.setPixelRatio(1); Rn.setSize(cv.width,cv.height,false); Rn.shadowMap.enabled=true; Rn.shadowMap.type=THREE.BasicShadowMap;
+  const S=new THREE.Scene(); S.background=new THREE.Color(BG); S.fog=new THREE.Fog(MIST,15,46);
+  const G=new THREE.Group(); S.add(G);
+  const warm={x:7.7,z:-1.2};
+  water(G,warm); cliff(G); dock(G); figure(G,5.0,2.7); OPEN[id](G);
+  // the forest, back and left, melting into the mist; a near pine or two at the edges
+  for(let i=0;i<20;i++)pine(G,R(-16,2),R(-16,-5)-Math.max(0,R(-2,6)),R(3.4,6.5),pick(PINEC));
+  for(let i=0;i<7;i++)pine(G,R(-13,-6),R(-6,2),R(3.0,5.0),pick(PINEC));
+  // a mossy bank where the cliff meets the water
+  for(let i=0;i<10;i++)rock(G,R(5,9),R(.1,.5),R(3.5,5.5),R(.4,.8),pick(MOSS));
+  // undergrowth framing the foreground corners
+  for(let i=0;i<9;i++)fern(G,R(-9,-3),R(3,6),R(.7,1.3),pick([0x2f5a2c,0x26492a,0x386a30]));
+  for(let i=0;i<5;i++)fern(G,R(2,4),R(4.5,6),R(.6,1.1),pick([0x2f5a2c,0x26492a]));
+  branch(G);
+
+  // lights: a dim cool sky-fill, a weak overcast sun (the one hard shadow), plus each opening's own warm lamp
+  S.add(new THREE.HemisphereLight(0x6f8a92,0x152e2a,.75));
+  const L=new THREE.DirectionalLight(0xaebccb,1.15); L.position.set(-6,11,5); L.castShadow=true; L.shadow.mapSize.set(2048,2048);
+  Object.assign(L.shadow.camera,{left:-16,right:16,top:14,bottom:-12}); S.add(L);
+
+  const a=cv.width/cv.height, v=6.2, cam=new THREE.OrthographicCamera(-v*a,v*a,v,-v,.1,120); let yaw=-.5;
+  const place=()=>{ const r=17,p=.3; cam.position.set(Math.sin(yaw)*Math.cos(p)*r,2.0+Math.sin(p)*r,Math.cos(yaw)*Math.cos(p)*r); cam.lookAt(3.2,1.2,-0.6); Rn.render(S,cam); };
+  let drag=null; cv.addEventListener('pointerdown',e=>{ drag=e.clientX; cv.setPointerCapture(e.pointerId); });
+  cv.addEventListener('pointermove',e=>{ if(drag==null)return; yaw-=(e.clientX-drag)*.009; drag=e.clientX; place(); });
+  cv.addEventListener('pointerup',()=>drag=null); cv.addEventListener('pointercancel',()=>drag=null); place();
+}
+for(const id of 'ABC')card(id);
+})();
+</script>

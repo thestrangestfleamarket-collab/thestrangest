@@ -1,14 +1,9 @@
-// THE KNIGHT: a faceted plate-armoured knight made in parts, moved by the Walker's rig; you can be him (YOU's BODY) and one walks main street.
-const KNIGHT={}; window.KNIGHT=KNIGHT;
-{ const R=RIG, QS=new URLSearchParams(location.search), V3=THREE.Vector3;
-  const BONES=['hips','torso','head','upperArmL','forearmL','handL','upperArmR','forearmR','handR','thighL','shinL','shoeL','thighR','shinR','shoeR'];
-  const LIMB=/^(upperArm|forearm|hand|thigh|shin)/, NB=BONES.length;
-  const HIPY=1.02, S=52/1.89, KL=HIPY*S/R.STAND;
-  const OFF={torso:['hips',0,.06,0],head:['torso',0,.5,0],upperArmL:['torso',.215,.405,0],upperArmR:['torso',-.215,.405,0],forearmL:['upperArmL',0,-.28,0],forearmR:['upperArmR',0,-.28,0],
-    handL:['forearmL',0,-.26,0],handR:['forearmR',0,-.26,0],thighL:['hips',.105,-.03,0],thighR:['hips',-.105,-.03,0],shinL:['thighL',0,-.43,0],shinR:['thighR',0,-.43,0],shoeL:['shinL',0,-.43,0],shoeR:['shinR',0,-.43,0]};
+// THE KNIGHT: a faceted plate-armoured knight made in parts, baked once into one body for BODIES (you can be him; one walks main street).
+{ const V3=THREE.Vector3, BONES=BODIES.BONES, HIPY=1.02;
   const PAL={steel:['#7d8187',.1],steelDark:['#4e5156',.08],cloth:['#3d3a37',.08],mail:['#4a4c50',.14],leather:['#4b2f1f',.08],skinFlat:['#c99273',.04],
     brow:['#3b2719',.05],eyeW:['#e6dfd6',0],iris:['#7c8e98',0],pupil:['#0d0b0a',0],bronze:['#8a6a3c',.06],gold:['#d1ad62',.05],nose:['#cf9475',.03],hairA:['#5b3d27',.06],hairB:['#6e4b31',.06],hairC:['#4c3221',.06],hairD:['#7a5638',.06]};
-
+  const OFF={torso:['hips',0,.06,0],head:['torso',0,.5,0],upperArmL:['torso',.215,.405,0],upperArmR:['torso',-.215,.405,0],forearmL:['upperArmL',0,-.28,0],forearmR:['upperArmR',0,-.28,0],
+    handL:['forearmL',0,-.26,0],handR:['forearmR',0,-.26,0],thighL:['hips',.105,-.03,0],thighR:['hips',-.105,-.03,0],shinL:['thighL',0,-.43,0],shinR:['thighR',0,-.43,0],shoeL:['shinL',0,-.43,0],shoeR:['shinR',0,-.43,0]};
   /* ---------- the model, built once in his rest pose (metres, feet at 0, facing +z, his left at +x) ---------- */
   const hash3=(x,y,z)=>{ const h=Math.sin(x*127.1+y*311.7+z*74.7)*43758.5453; return h-Math.floor(h); };
   const jit=(g,a)=>{ const p=g.attributes.position; for(let i=0;i<p.count;i++){ const x=p.getX(i),y=p.getY(i),z=p.getZ(i),kx=Math.round(x*997),ky=Math.round(y*997),kz=Math.round(z*997);
@@ -103,77 +98,18 @@ const KNIGHT={}; window.KNIGHT=KNIGHT;
     mk(sw,CYL(.016,.019,.17,8),'leather'); mk(sw,CYL(.022,.022,.012,8),'steel',[0,-.09,0]); mk(sw,jit(new THREE.SphereGeometry(.034,8,6),.002),'steel',[0,-.125,0]); mk(sw,ICO(.012),'steel',[0,-.163,0]);
     return {root,B}; }
 
-  /* ---------- one mesh: every part's faces flat, coloured, tagged with its bone ---------- */
+  /* ---------- baked: every part's faces flat, coloured, each held by its one bone ---------- */
   function bake(){ const {root,B}=model(); root.updateMatrixWorld(true);
     const inv={}; for(const n of BONES)inv[n]=B[n].matrixWorld.clone().invert();
-    const P=[],N=[],C=[],I=[], va=new V3(),vb=new V3(),vc=new V3(),e1=new V3(),e2=new V3(),nn=new V3(),col=new THREE.Color(), M=new THREE.Matrix4();
+    const P=[],N=[],C=[],I=[],W=[], va=new V3(),vb=new V3(),vc=new V3(),e1=new V3(),e2=new V3(),nn=new V3(),col=new THREE.Color(), M=new THREE.Matrix4();
     root.traverse(o=>{ if(!o.isMesh)return; let b=o; while(b&&!b.userData.bone)b=b.parent; const bi=BONES.indexOf(b.userData.bone);
       M.multiplyMatrices(inv[b.userData.bone],o.matrixWorld); const g=o.geometry.index?o.geometry.toNonIndexed():o.geometry, p=g.attributes.position, gc=g.attributes.color, spec=o.userData.c, pal=PAL[spec];
       if(pal)col.set(pal[0]);
       for(let f=0;f<p.count;f+=3){ va.fromBufferAttribute(p,f).applyMatrix4(M); vb.fromBufferAttribute(p,f+1).applyMatrix4(M); vc.fromBufferAttribute(p,f+2).applyMatrix4(M);
         nn.crossVectors(e1.subVectors(vb,va),e2.subVectors(vc,va)); if(nn.lengthSq()<1e-14)continue; nn.normalize();
         let r,gg,bb; if(gc){ r=gc.getX(f); gg=gc.getY(f); bb=gc.getZ(f); } else { const k=1+(hash3(Math.round((va.x+vb.x+vc.x)*3e3),Math.round((va.y+vb.y+vc.y)*3e3),Math.round((va.z+vb.z+vc.z)*3e3))-.5)*2*pal[1]; r=col.r*k; gg=col.g*k; bb=col.b*k; }
-        for(const v of [va,vb,vc]){ P.push(v.x,v.y,v.z); N.push(nn.x,nn.y,nn.z); C.push(r,gg,bb); I.push(bi); } } });
+        for(const v of [va,vb,vc]){ P.push(v.x,v.y,v.z); N.push(nn.x,nn.y,nn.z); C.push(r,gg,bb); I.push(bi,bi); W.push(1); } } });
     const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); geo.setAttribute('normal',new THREE.Float32BufferAttribute(N,3));
-    geo.setAttribute('color',new THREE.Float32BufferAttribute(C,3)); geo.setAttribute('pidx',new THREE.Float32BufferAttribute(I,1)); geo.computeBoundingSphere(); return geo; }
-  let GEO=null; const geo=()=>GEO||(GEO=bake());
-  function mesh(){ const PM={value:Array.from({length:NB},()=>new THREE.Matrix4())};
-    const MOVE=`attribute float pidx; uniform mat4 uPM[${NB}];`, AT_=`mat4 PM=uPM[int(pidx+0.5)];`;
-    const mat=new THREE.MeshToonMaterial({vertexColors:true,gradientMap:W3.GP,side:THREE.DoubleSide});
-    mat.onBeforeCompile=sh=>{ sh.uniforms.uPM=PM; sh.vertexShader=MOVE+'\n'+sh.vertexShader.replace('#include <beginnormal_vertex>',AT_+' vec3 objectNormal=mat3(PM)*normal;').replace('#include <begin_vertex>','vec3 transformed=(PM*vec4(position,1.)).xyz;');
-      sh.fragmentShader=sh.fragmentShader.replace('#include <normal_fragment_begin>','float faceDirection=1.0; vec3 normal=normalize(vNormal); vec3 nonPerturbedNormal=normal;').replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n totalEmissiveRadiance+=diffuseColor.rgb*0.16;'); };
-    mat.customProgramCacheKey=()=>'knight'+NB;
-    const dist=new THREE.MeshDistanceMaterial({side:THREE.DoubleSide}); dist.onBeforeCompile=sh=>{ sh.uniforms.uPM=PM; sh.vertexShader=MOVE+'\n'+sh.vertexShader.replace('#include <begin_vertex>',AT_+' vec3 transformed=(PM*vec4(position,1.)).xyz;'); }; dist.customProgramCacheKey=()=>'knightdist'+NB;
-    const depth=new THREE.MeshDepthMaterial({side:THREE.DoubleSide,depthPacking:THREE.RGBADepthPacking}); depth.onBeforeCompile=sh=>{ sh.uniforms.uPM=PM; sh.vertexShader=MOVE+'\n'+sh.vertexShader.replace('#include <begin_vertex>',AT_+' vec3 transformed=(PM*vec4(position,1.)).xyz;'); }; depth.customProgramCacheKey=()=>'knightdepth'+NB;
-    const me=new THREE.Mesh(geo(),mat); me.customDistanceMaterial=dist; me.customDepthMaterial=depth; me.castShadow=me.receiveShadow=true; me.frustumCulled=false;
-    return {me,PM}; }
-
-  /* ---------- posing: each bone takes the turn of the rig's piece it stands for; his own bone lengths place them ---------- */
-  const X=new V3(),Y=new V3(),Z=new V3(), ROT={}, POS={}, OFV=new V3(), M3=new THREE.Matrix3();
-  for(const n of BONES){ ROT[n]=new THREE.Matrix4(); POS[n]=new V3(); }
-  function pose(B,PM){ for(let i=0;i<NB;i++){ const n=BONES[i], F=R.frameOf(n,B), l=LIMB.test(n);
-      X.set(F.x.x,F.x.y,F.x.z); Y.set(F.y.x,F.y.y,F.y.z); Z.set(F.z.x,F.z.y,F.z.z); if(l){ Y.negate(); Z.negate(); }
-      ROT[n].makeBasis(X,Y,Z);
-      if(n==='hips')POS[n].set(B.J.pelvis.x*KL,B.J.pelvis.y*KL,B.J.pelvis.z*KL);
-      else{ const o=OFF[n]; M3.setFromMatrix4(ROT[o[0]]); OFV.set(o[1]*S,o[2]*S,o[3]*S).applyMatrix3(M3); POS[n].copy(POS[o[0]]).add(OFV); }
-      PM.value[i].copy(ROT[n]).scale(OFV.set(S,S,S)).setPosition(POS[n]); } }
-  KNIGHT.bones=BONES; KNIGHT.pose=pose; KNIGHT.mesh=mesh; KNIGHT.tris=()=>geo().attributes.position.count/3;
-
-  /* ---------- you, as the knight (YOU's BODY: WALKER / KNIGHT, kept in the browser) ---------- */
-  let pick=null; try{ pick=SAVE.get('body'); }catch(e){} const qa=QS.get('avatar'); if(qa==='knight'||qa==='walker')pick=qa;
-  KNIGHT.me=pick==='knight'; let ME=null, hid=false;
-  W3.body={place:B=>{
-    if(!KNIGHT.me){ if(ME)ME.me.visible=false; if(hid){ hid=false; for(const m of W3.meshes)m.visible=!W3.hideMe; } return; }
-    if(!ME){ ME=mesh(); W3.group.add(ME.me); } hid=true; for(const m of W3.meshes)m.visible=false; ME.me.visible=!W3.hideMe; pose(B,ME.PM); }};
-  KNIGHT.set=on=>{ KNIGHT.me=!!on; try{ SAVE.set('body',on?'knight':'walker'); }catch(e){} drawRow(); };
-  const LP=document.getElementById('looks');
-  if(LP){ const at=LP.querySelector('h3'), row=document.createElement('div');
-    row.innerHTML='<h3>BODY</h3><div class="row"><button id="lbody0">WALKER</button><button id="lbody1">KNIGHT</button></div>';
-    while(row.firstChild)LP.insertBefore(row.firstChild,at);
-    document.getElementById('lbody0').onclick=()=>KNIGHT.set(false); document.getElementById('lbody1').onclick=()=>KNIGHT.set(true); }
-  function drawRow(){ const a=document.getElementById('lbody0'), b=document.getElementById('lbody1'); if(!a)return; a.setAttribute('aria-pressed',String(!KNIGHT.me)); b.setAttribute('aria-pressed',String(KNIGHT.me)); }
-  drawRow();
-
-  /* ---------- the knight who walks main street ---------- */
-  const SHEET=QS.get('sheet')==='knight', NPC=KNIGHT.npc={}, g=new THREE.Group(), FIG=mesh(); g.add(FIG.me); MAPG.bodega.add(g); NPC.g=g;
-  const st={x:SHARED.BOD.XS(52),z:SHARED.BOD.ZS(-74),R:.3*TILE,to:null,next:null,wait:3,hd:-Math.PI/2,y:0}, SR=R.create(); NPC.st=st; NPC.at=st;
-  const free=(x,z)=>stfree(x,z,st.R), turn=a=>{ const e=a-st.hd; return Math.atan2(Math.sin(e),Math.cos(e)); };
-  if(SHEET){ st.x=SHARED.BOD.XS(100); st.z=SHARED.BOD.ZS((SHARED.BOD.MAP.y0+SHARED.BOD.MAP.y1)/2); st.hd=Math.PI/4; }
-  if(NPCS.extra)NPCS.extra.push(NPC);
-  NPC.on=QS.get('knight')!=='0';
-  NPC.tick=dt=>{ if(!NPC.on&&!SHEET){ g.visible=false; return; } g.visible=true;
-    if(SHEET){ R.farOnly(false); const B=R.settle(R.build(spreadPose(),null),0); st.y=MODS.bodega.ground(st.x,st.z); g.position.set(st.x,st.y,st.z); g.rotation.y=st.hd; musScale(g,1); pose(B,FIG.PM);
-      if(!NPC.sheetOn){ NPC.sheetOn=true; sheetView(g,st.y+g.scale.y*27); } return; }
-    const near=Math.hypot(pos.x-st.x,pos.z-st.z)<40;
-    if(!free(st.x,st.z)){ for(let k=0;k<80;k++){ const a=k*2.4, r=(k>>2)*.25*TILE; if(free(st.x+Math.sin(a)*r,st.z+Math.cos(a)*r)){ st.x+=Math.sin(a)*r; st.z+=Math.cos(a)*r; break; } } }
-    if(!st.to){ SR.target=0; st.wait-=dt; if(st.wait<=0&&!ROAM.pick(st,(x,z)=>free(x,z)))st.wait=1; }
-    if(st.to){ const ex=st.to.x-st.x, ez=st.to.z-st.z, d=Math.hypot(ex,ez);
-      if(d<.15*TILE){ st.to=st.next||null; st.next=null; if(!st.to)st.wait=3+Math.random()*7; }
-      else{ const e=turn(Math.atan2(ex,ez)); st.hd+=Math.sign(e)*Math.min(Math.abs(e),dt*3); SR.target=Math.abs(e)<.6?1:0; } }
-    const d0=SR.dist; R.step(SR,dt); const go=(SR.dist-d0)*W3.SZ/PPU*.85;
-    if(go>0){ const nx=st.x+Math.sin(st.hd)*go, nz=st.z+Math.cos(st.hd)*go; if(free(nx,nz)){ st.x=nx; st.z=nz; } else { st.to=null; st.next=null; st.wait=.5+Math.random(); } }
-    st.y=MODS.bodega.ground(st.x,st.z); g.position.set(st.x,st.y,st.z); g.rotation.y=st.hd; musScale(g,1);
-    if(!near||!MAPG.bodega.visible||NPC.hid)return; if(NPC.B&&!ASTEP.gate(NPC,dt))return;
-    R.farOnly(false); const B=R.pose(SR,true); NPC.B=B; pose(B,FIG.PM); };
-  SYS.add('dress',dt=>NPC.tick(dt||0),'111a-knight');
+    geo.setAttribute('color',new THREE.Float32BufferAttribute(C,3)); geo.setAttribute('bi',new THREE.Float32BufferAttribute(I,2)); geo.setAttribute('bw',new THREE.Float32BufferAttribute(W,1)); geo.computeBoundingSphere(); return geo; }
+  BODIES.add({key:'knight',label:'KNIGHT',geo:bake,height:1.89,hipY:HIPY,off:OFF,binv:null,at:52});
 }

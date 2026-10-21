@@ -4115,7 +4115,7 @@ Fix (`143-bfly.js`): hold all butterfly spawning — the `WEEDS.onAdd` hook, the
 ## 21 Oct 2026: the knight, your body or a passer-by
 
 - **The knight** (owner, 21 Oct 2026, of his reference picture of a bearded knight in plate with a longsword: "can we do a mockup like this
-  exactly"; then "lets add the knight to real game", his pick "1 and 3": your avatar as a switch, and one on the street; `src/111a-knight.js`):
+  exactly"; then "lets add the knight to real game", his pick "1 and 3": your avatar as a switch, and one on the street; `src/111b-knight.js`, moved by `src/111a-bodies.js`):
   the mockup's knight made in parts (a faceted face from a shaped sphere, his beard and swept-back hair, breastplate, pauldrons, gauntlets,
   mail skirt, sabatons, a dark cowl) and baked once into one mesh, every face flat and coloured from the game's own palette (no textures),
   lit in the game's bands (`W3.GP`, the same toon material and self-light as the musicians). **Moved by the Walker's rig**: each of his 15
@@ -4123,5 +4123,14 @@ Fix (`143-bfly.js`): hold all butterfly spawning — the `WEEDS.onAdd` hook, the
   lengths place them, so he walks, runs, jumps, climbs and falls exactly as you do, at his own proportions. His longsword is sheathed on
   his left hip (the hands stay free for what you carry). **YOU's BODY**: WALKER / KNIGHT, kept in the browser (`body`); `?avatar=knight`
   or `?avatar=walker`. The Walker's placement now draws the chosen body in his place (`W3.body.place(B)`, set by the knight's file).
-  **On the street**: one knight walks main street like the bearded Walker (`KNIGHT.npc`, `?knight=0` keeps him off); his sheet is
+  **On the street**: one knight walks main street like the bearded Walker (`?knight=0` keeps him off); his sheet is
   `?sheet=knight`. Cost: 4,993 triangles a knight, one draw call (and one in the shadow pass), no lamps, 15 matrices a frame.
+
+- **The man and the woman** (owner, 21 Oct 2026, his file `low_poly_mesh_bases_version_2.glb`: "lets add this as game character playable
+  too"; `src/111c-bases.js`): the two low-poly base bodies in it ("Low Poly Mesh Bases Version 2" by justice2free on Sketchfab, CC BY 4.0;
+  the credit shown under YOU's BODY row; the original kept in `data/full/low-poly-mesh-bases-v2.glb`) baked by `tools/bases-bake.py` into
+  `data/bases.json`: their faces, a skeleton fitted to each (the same 15 bones the knight has, its joints found from the mesh), every vertex
+  held by its bone and that bone's parent or child, weighted by distance (so elbows and knees bend instead of tearing), painted in the
+  game's skin colour with dark shorts (and a band on the woman). Moved by the Walker's rig the way the knight is, through `BODIES`
+  (`src/111a-bodies.js`: one body's mesh, its posing, YOU's BODY row, the street walker), now WALKER / KNIGHT / MAN / WOMAN; one of each walks
+  main street (`?man=0`, `?woman=0`), sheets `?sheet=man`, `?sheet=woman`. Cost: 676 and 708 triangles, one draw call each, no lamps.

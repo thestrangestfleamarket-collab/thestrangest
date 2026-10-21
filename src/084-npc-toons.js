@@ -1,4 +1,5 @@
-const TOONS={};
+// The street's toons built in code (tomato, rain cat, TV cat, scooter frog, shark); the rain cat's body is the owner's .glb (data/raincat.json).
+const TOONS={}, RAINCAT=__DATA__("data/raincat.json");
 { const {shape,limb,sph,cyl,box,torus,blob,shell}=PARTSNPC.T;
   const part=(name,rank,bone,of)=>({name,rank,bone,of}), BLACK=[0,0,0], WHITE=[.96,.95,.9];
   const make=(def,o,i)=>RIGNPC.make(def,Object.assign({eye:0,eyeC:'0.,0.,0.',stride:6},PARTSNPC.street(o.at,-70),o,RIGNPC.hold(i)));
@@ -23,25 +24,12 @@ const TOONS={};
       pose:(c)=>{ RIGNPC.walk(c,{legs:[],arm:.5,bob:.03,rock:.05}); c.B.head.rotation.y=c.look; c.B.head.rotation.z=Math.sin(c.st.ph*2)*.03*c.mv; STALL.pose(c,TA); } }, TA={put:.75,reach:[.3,1.1,1.9,2.4],lean:[.35,.12,0,-.05],sw:[-.75,-.95,-.75,.95]};
     TOONS.tomato=make(def,{key:'tomato',name:'THE TOMATO',metres:2.3, radius:.32,speed:.45,stride:6.5,at:60},0); }
 
-  { const YEL=[.95,.78,.16], YEL2=[.82,.64,.1], FUR=[.92,.86,.68], FUR2=[.8,.72,.52], PINK=[.9,.6,.55], BOOT=[.12,.11,.1], PAPER=[.88,.86,.8], INK=[.95,.92,.82], LID=[.15,.15,.17], HEAD=[.75,.2,.18], INKP=[.45,.45,.45];
-    const def={ bones:[['root',null,[0,0,0]],['hips','root',[0,.42,0]],['head','hips',[0,.7,0]],['earL','head',[-.14,.98,-.02]],['earR','head',[.14,.98,-.02]],
-        ['armL','hips',[-.17,.66,0]],['armR','hips',[.17,.66,0]],['legL','hips',[-.08,.38,0]],['legR','hips',[.08,.38,0]],
-        ['paper','root',[0,.6,.22]],['page','paper',[0,.6,.22]],['jar','root',[.22,0,.1]]],
-      parts:[ part('eyes',0,'head',[-1,1].map(sx=>shape(cyl(.03,.03,.02,8),BLACK,[sx*.065,.86,.2],[1,1,.5],[90,0,0]))),
-        part('face',2,'head',[ shape(sph(.14,10,7),FUR,[0,.85,.1],[1,.9,.8]) ]),
-        part('nose',3,'head',[ shape(sph(.02,4,3),PINK,[0,.81,.215]) ]),
-        part('hood',4,'head',[ shape(sph(.19,10,7),YEL,[0,.89,-.06]), shape(torus(.135,.03,4,12),YEL,[0,.86,.1],[1,1.05,1]), shape(cyl(.002,.05,.14,4),YEL2,[0,1.06,0],[2.6,1,1],[-30,0,0]) ]),
-        ...[['L',-1],['R',1]].map(([s,sx])=>part('ear '+s,3,'ear'+s,[ shape(cyl(.002,.065,.14,4),FUR,[sx*.17,1.02,-.03],[1,1,.45],[0,0,sx*-35]) ])),
-        part('coat',1,'hips',[ shape(cyl(.15,.24,.38,10),YEL,[0,.5,0]) ]),
-        ...[['L',-1],['R',1]].flatMap(([s,sx])=>[ ...arm(s,sx,[sx*.16,.66,0],[sx*.2,.44,.04],YEL,FUR,YEL2,.05),
-          part('leg '+s,0,'leg'+s,[ shape(cyl(.065,.065,.3,8),YEL,[sx*.08,.23,0]) ]), part('boot '+s,1,'leg'+s,[ shape(blob(.07,.06,.1,6,4),BOOT,[sx*.08,.05,.04]) ]) ]),
-        part('newspaper',2,'paper',[ shape(box(.22,.3,.006),PAPER,[-.11,.6,.22]), shape(box(.2,.04,.008),HEAD,[-.11,.72,.22]), shape(box(.09,.08,.008),INKP,[-.11-.045,.645,.22]), ...[.66,.63,.6,.55,.52,.49,.46].map((y,k)=>shape(box(k<3?.08:.18,.008,.008),INKP,[-.11+(k<3?.05:0),y,.22])) ]),
-        part('page',2,'page',[ shape(box(.22,.3,.006),PAPER,[.11,.6,.22]), shape(box(.2,.04,.008),HEAD,[.11,.72,.22]), shape(box(.09,.08,.008),INKP,[.11-.045,.645,.22]), ...[.66,.63,.6,.55,.52,.49,.46].map((y,k)=>shape(box(k<3?.08:.18,.008,.008),INKP,[.11+(k<3?.05:0),y,.22])) ]),
-        part('ink jar',1,'jar',[ shape(cyl(.04,.04,.09,8),INK,[.22,.045,.1]), shape(cyl(.037,.037,.025,8),LID,[.22,.1,.1]) ]) ],
+  {
+    const def={
       springs:{ earL:{f:-.15,s:.12,k:70,c:6,lim:.4}, earR:{f:-.15,s:.12,k:70,c:6,lim:.4}, head:{f:-.04,s:.04,k:90,c:9,lim:.12}, page:{y:.3,k:30,c:3,lim:.5} },
       pose:(c,dt)=>{ const B=c.B, V=c.v||(c.v=new THREE.Vector3());
         c.read=Math.max(0,Math.min(1,(c.read||0)+(c.still>.4&&!c.sheet&&!c.busy?dt:-dt)*2.5)); const r=c.read*c.read*(3-2*c.read);
-        RIGNPC.walk(c,{arm:.4,leg:.55,bob:.02,rock:.05}); B.head.rotation.y=c.look*(1-r); B.head.rotation.x=r*.25;
+        RIGNPC.limbs(c,{arm:.4,leg:.55,bob:.02,rock:.05}); B.head.rotation.y=c.look*(1-r); B.head.rotation.x=r*.25;
         if(!c.sheet){ B.armL.rotation.x=B.armL.rotation.x*(1-r)-1.05*r; B.armR.rotation.x=B.armR.rotation.x*(1-r)-1.05*r; B.armL.rotation.z=-.2*(1-r)+.32*r; B.armR.rotation.z=.08*(1-r)-.32*r; }
         const tuck=[-.23,.52,.02], open=[0,.5,.3]; B.paper.position.set(tuck[0]+(open[0]-tuck[0])*r,tuck[1]+(open[1]-tuck[1])*r,tuck[2]+(open[2]-tuck[2])*r);
         B.paper.rotation.set(-.6*r,(Math.PI/2)*(1-r)+.18*r,0); B.page.rotation.y=-Math.PI*(1-r)-.36*r;
@@ -49,7 +37,8 @@ const TOONS={};
         if(r>.9&&(c.turnT=(c.turnT??5)-dt)<=0){ c.turnT=4+Math.random()*5; c.kick('page','w',-3); }
         c.at('armR',[.2,.38,.05],V); V.y-=.11; const g=[.25,0,.16]; B.jar.position.set(V.x+(g[0]-V.x)*r,V.y+(g[1]-V.y)*r,V.z+(g[2]-V.z)*r);
         if(c.extra)c.extra(c,dt,r); } };
-    TOONS.cat=make(def,{key:'raincat',name:'THE CAT IN THE RAINCOAT',metres:1.1,radius:.25,speed:.32,stride:8,at:66},1); }
+    { const G=RIGNPC.glb(RAINCAT.chars.raincat); def.bones=[...G.bones,['jar','root',[.22,0,.1]]]; def.mesh=G.mesh; }
+    TOONS.cat=make(def,{key:'raincat',name:'THE CAT IN THE RAINCOAT',eye:-1,metres:1.1,radius:.25,speed:.32,stride:8,at:66},1); }
 
   { const ORA=[.84,.47,.32], ORA2=[.7,.36,.24], FUR=[.74,.53,.3], FUR2=[.62,.42,.22], CHROME=[.82,.82,.8], DARK=[.1,.1,.11], SCREEN=[.2,.24,.27];
     const CAB=[[-.25,.3,-.02],[-.34,.14,-.08],[-.4,.03,-.24],[-.42,.02,-.46],[-.44,.02,-.7]];

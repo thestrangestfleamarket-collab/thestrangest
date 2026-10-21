@@ -3796,3 +3796,17 @@ initial download and load super fast"; then "Go")
   so every number is several times a real machine's): the builders that run at start were down 0.6 s, bodega 0.8, apts 2.4–3.1,
   ghostdojo 1.0, parkwall 3.4–3.5, castle 0.7 (now 0); the rest under 10 ms. The next ones each need their own pull request with
   guards, because other files read what they register at start: the apartments (~20 readers), the ghost dojo, the park wall.
+
+## 20 Oct 2026: the owner's .glb toons on the street; the rain cat's new body
+- **Eight new characters** (owner, 20 Oct 2026, ten .glb files: "lets add these to the game"): THE DONUT, THE ORIGAMI FOX, THE BEAR
+  IN THE COAT, MR. BLOCKS, THE EMBER KNIGHT, NUMBER 80, THE RAIN FISH (his glass bowl see-through), THE MANATEE. Exported from the
+  game's own RIGNPC rig (each bone's rest point in its extras), skinned with weights; `tools/glbtoons-bake.py` bakes them into
+  `data/toons-glb.json` (colours to sRGB, the game's packed points), fetched after the start (`__LAZY__`, `src/084b-npc-glbtoons.js`),
+  walking the street like the other toons (no place given, so the street, by the rule). `RIGNPC.make` takes a skinned mesh
+  (`def.mesh`); `RIGNPC.limbs` walks them with knees, elbows and feet; ears, coat flaps, scarf, hood, horn, hat, umbrella and tail on
+  springs; the knight's surcoat and the manatee's dress (rings of bones from waist to hem) follow the legs. Cost: 2,900–5,000
+  triangles each (about 31,000 for all eight), no lamps, one more shader program (the bowl's glass); 254 KB gzipped, after the start.
+- **The rain cat's new body** (same day, raincat.glb, the same cat with chest, elbows, knees and feet): his code-built body gone,
+  `data/raincat.json` in its place (3,630 triangles, at the start: he keeps the newsstand); his pose, springs and job unchanged;
+  the ink jar he set down is no longer drawn (the model has none).
+- **The mushroom house** (same file set; 16,980 triangles, a door on a hinge, glowing windows): not placed yet, waiting for where it goes.

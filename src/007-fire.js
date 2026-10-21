@@ -1,3 +1,7 @@
+// THE FLAME: FLAME draws every candle, torch, ember and wisp of smoke as instanced billboards in one shader.
+import {THREE} from './003-shx.js';
+import {scene} from './004-main.js';
+import {TILE} from './006-map-pre.js';
 const FLAME=(()=>{ const N=640, K={candle:0,torch:1,bed:2,ball:3,ember:4,smoke:5}, SRC=[], PT=[];
   const VS=`attribute vec4 iP; attribute vec4 iS; varying vec2 vUv; varying float vK, vSd, vA;
 #include <clipping_planes_pars_vertex>
@@ -76,3 +80,4 @@ void main(){
     g.instanceCount=n; aP.needsUpdate=n>0; aS.needsUpdate=n>0; me.visible=n>0; FLAME.n=n; };
   return {add,props,tick,flick,ember,puff,part,src:SRC,pt:PT,me,K}; })(); window.FLAMES=FLAME.src;
 window.FLAME=FLAME;
+export {FLAME};

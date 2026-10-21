@@ -1,3 +1,8 @@
+// THE GUITAR HANDS: places the player's arms and fingers on the guitar's frets and strings.
+import {GTRH, SND} from './003b-systems.js';
+import {P} from './073-main-12.js';
+import {CAST, GT, GTA, gtAudio, gtHz, gtMute, GTPHYS, gtPlay, GTWR, GTYP, PLAY221, PLAYA} from './106-game-play-3-guitar-1-body.js';
+import {GTBOOK, GTDAMP, GTEV, GTLH, gtNext, gtPosAt, GTS, gtSet, GTSONG, GTSTRUM, GTTUNE} from './108-game-play-3-guitar-2-tunes.js';
 const GTF=(()=>{ const {V,add,mul,nrm,cross,dot,sub}=RIG, y=nrm(V(0.9,0.38,0.12)), z0=V(-0.1,0.16,1), z=nrm(sub(z0,mul(y,dot(z0,y)))), x=cross(y,z);
   return {o:V(-4,22.5,8.2),x,y,z}; })();
 const gtAt=(x,y,z)=>RIG.add(GTF.o,RIG.add(RIG.add(RIG.mul(GTF.x,x),RIG.mul(GTF.y,y)),RIG.mul(GTF.z,z)));
@@ -113,3 +118,4 @@ function gtSound(a,t){ '@later'; if(PLAY221.seeking)return; const ok=GTPHYS.mode
     if(e.n)gtPlay(e.n.s,e.n.at,when(e.t),e.n.amp,e.n.tone,e.n.r); else gtMute(e.s,when(e.t),0.04); } }
 function gtSlung(a,B){ const {V,nrm,cross,sub,mul,dot}=RIG, y=nrm(V(0.75,0.62,0.1)), z0=V(-0.2,0.1,1), z=nrm(sub(z0,mul(y,dot(z0,y)))); B.props.guitar={o:GTSLUNG.o,x:cross(y,z),y,z}; }
 window.__gtStep=gtStep; window.__guitar={GTA,GTS,get GTTUNE(){ return GTTUNE; },get GTLH(){ return GTLH; },get GTSTRUM(){ return GTSTRUM; },GTBOOK,get song(){ return GTSONG; },set:gtSet,next:gtNext,PLAY221,PLAYA,get SND(){ return SND; },pre:()=>PLAY221.pre,hz:gtHz,get pm(){ return GTPM; }};
+export {gtArm, GTF, gtFing, GTH, gtMix, GTPOLE, gtPose, gtReach, gtSm, NPCARMS, NPCFING, npcSpring};

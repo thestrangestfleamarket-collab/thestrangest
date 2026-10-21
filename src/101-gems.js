@@ -1,3 +1,7 @@
+// THE GEMS: GEMS lists the gems, INV keeps what the player carries, and TRADE buys and sells them.
+import {CITY, CIVIC, INV, LINES, MAIL, pos, SFX, TRADE, UI} from './003b-systems.js';
+import {SAVE} from './005-save.js';
+import {QS} from './006-map-pre.js';
 const GEMS=[['quartz','QUARTZ CRYSTAL',6,30],['amethyst','AMETHYST',14,22],['geode','GEODE',18,16],['amber','FOSSIL AMBER',24,12],['moonstone','MOONSTONE',30,10],
   ['opal','OPAL',45,7],['emerald','EMERALD',70,5],['sapphire','SAPPHIRE',85,4],['ruby','RUBY',100,3],['meteor','STAR METEORITE',150,1]];
 Object.assign(INV,{items:{},picked:{}}); window.INV=INV;
@@ -35,3 +39,4 @@ Object.assign(INV,{items:{},picked:{}}); window.INV=INV;
   TRADE.close=()=>{ const P=document.getElementById('gemp'); if(P)P.hidden=true; };
   { const isG=N=>N&&N.walker&&N.walker.kind==='golem'; for(const th of UI.things)if(th.npc){ const a0=th.act; th.act=()=>{ if(isG(th.npc))TRADE.open(th.npc); else a0(); }; } }
   window.GEMDBG=()=>({cash:INV.cash,items:INV.items,picked:INV.picked,open:!!(document.getElementById('gemp')&&!document.getElementById('gemp').hidden)}); }
+export {GEMS};

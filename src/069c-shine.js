@@ -1,3 +1,9 @@
+// THE SHINE: SHINE adds street lamps, porch lights, neon flicker and wet reflections to the street.
+import {SHARED, THREE} from './003-shx.js';
+import {BLK, CLOCK, DRESS, LITE, pos, WX} from './003b-systems.js';
+import {scene} from './004-main.js';
+import {lamps, LFX, MODS, NEONS, OUT, STORE, SYS, TILE, WROW} from './006-map-pre.js';
+import {TLX} from './069-dress.js';
 const SHINE=window.SHINE={src:[],porch:[]};
 { const MS=[], M=1/.84*TILE, G=(x,z)=>SHARED.groundY(x,z), V=(x=0,y=0,z=0)=>new THREE.Vector3(x,y,z), m4=new THREE.Matrix4(), q=new THREE.Quaternion(), Y1=V(0,1,0), cc=new THREE.Color();
   const lat=(pr,n=8)=>new THREE.LatheGeometry(pr.map(([r,y])=>new THREE.Vector2(r*M,y*M)),n);

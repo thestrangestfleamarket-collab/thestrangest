@@ -1,3 +1,10 @@
+// THE INTERIORS: INTERIORS keeps track of rooms with doors and what to show when you are inside them.
+import {SHARED, THREE} from './003-shx.js';
+import {INTERIORS, MAPED, pos} from './003b-systems.js';
+import {scene} from './004-main.js';
+import {FREE, MODS, QS, STORE, TILE} from './006-map-pre.js';
+import {WATER} from './009-down.js';
+import {VIS} from './129a-vis.js';
 Object.assign(INTERIORS,{on:QS.get('interiors')==='1'||(!FREE&&QS.get('interiors')!=='0'),list:[],near:5*TILE,seen:3*TILE,water:[]});
 { const m=.14*TILE, L=INTERIORS.list;
   const box=(X,Z,t,y0,y1)=>{ const a=X(t[0]), b=X(t[2]), c=Z(t[1]), d=Z(t[3]); return {x0:Math.min(a,b),x1:Math.max(a,b),z0:Math.min(c,d),z1:Math.max(c,d),y0,y1}; };

@@ -1,3 +1,7 @@
+// THE VITALS: VIT keeps the player's health and stamina and shows their bars.
+import {SHARED} from './003-shx.js';
+import {keys, LOOKS, pos, SFX, st, UI, VIT} from './003b-systems.js';
+import {TILE} from './006-map-pre.js';
 Object.assign(VIT,{hp:1,sta:1,out:0,tired:false,fight:0,dead:false});
 VIT.inFight=t=>{ VIT.fight=Math.max(VIT.fight,t||5); };
 { const css=document.createElement('style'); css.textContent=`#vit{position:fixed;left:12px;bottom:12px;width:150px;display:grid;gap:4px;z-index:5;pointer-events:none}

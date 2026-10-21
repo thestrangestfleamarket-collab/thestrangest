@@ -1,3 +1,9 @@
+// THE SQUIRREL'S TOWER: GTOWER builds the tall round tower beside the golems' cave.
+import {SHARED, THREE} from './003-shx.js';
+import {PARK} from './003b-systems.js';
+import {FIX, MAPG, SOL, TILE} from './006-map-pre.js';
+import {BATCH, OBJ} from './008-batch.js';
+import {GCAVE} from './060-cave.js';
 const GTOWER={}; window.GTOWER=GTOWER;
 { const H=173, PH=4, MH=8, TH=212, TC=58, R=1.5, RB=R+.1, RI=R-.06, TA=-Math.PI*.75, TD=R+.22, TR=.46;
   GTOWER.ring=()=>{ const S=GCAVE.S; if(!S)return null; const t=S.tw, P=PARK; return {cx:t.x,cy:t.y,R,RI,TA,X:x=>SHARED.BOD.XS(x+P.ox),Z:y=>SHARED.BOD.ZS(y+P.oy)}; };
@@ -41,3 +47,4 @@ const GTOWER={}; window.GTOWER=GTOWER;
     const q=RB*.72; sol(cx-q,cy-RB,cx+q,cy+RB,H+PH); sol(cx-RB,cy-q,cx+RB,cy+q,H+PH); sol(tx-TR,ty-TR,tx+TR,ty+TR,TH); GTOWER.ready=true; };
   const go=()=>{ if(!window.__started||typeof GCAVE==='undefined'||!GCAVE.S||!MAPG.parkwall)return setTimeout(go,400); setTimeout(()=>{ try{ build(); }catch(e){ console.warn('TOWER: not built',e); } },600); };
   go(); }
+export {GTOWER};

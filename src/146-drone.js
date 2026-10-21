@@ -1,3 +1,8 @@
+// THE DRONE: DRONE, the little drone that flies from the desk in your apartment.
+import {SHARED, THREE} from './003-shx.js';
+import {CIVIC, DRONE, INV, UI, W3} from './003b-systems.js';
+import {PCAM, RH, RW} from './004-main.js';
+import {MAPG, MODS, QS, SYS, TILE} from './006-map-pre.js';
 
 DRONE.init=()=>{ const H=MODS.apts; if(!H||!H.A||!H.made)return; const A=H.A, T=TILE, X=SHARED.BOD.X, Y=SHARED.BOD.Y, Z=SHARED.BOD.Z;
   const lam=c=>new THREE.MeshLambertMaterial({color:c}), flat=c=>new THREE.MeshBasicMaterial({color:c});

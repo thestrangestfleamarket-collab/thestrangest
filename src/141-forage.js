@@ -1,3 +1,12 @@
+// THE FORAGE: FORAGE lets the player gather mushrooms and things, keeps their pack, and sells them.
+import {SHARED, THREE} from './003-shx.js';
+import {CITY, CIVIC, ED, FORAGE, INV, LINES, LOOKS, MAIL, NPCS, pos, SFX, st, UI, VIT, WE, WEEDS} from './003b-systems.js';
+import {scene} from './004-main.js';
+import {SAVE} from './005-save.js';
+import {MAPG, QS, SYS, TILE} from './006-map-pre.js';
+import {FLAME} from './007-fire.js';
+import {MUSH} from './083a-npc-mushroom.js';
+import {GEMS} from './101-gems.js';
  window.FORAGE=FORAGE;
 { const PACK={tab:'pack'}; FORAGE.PACK=PACK; const T=TILE, KEY='forage', esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
   const MU={button:['MEADOW BUTTON',0,2,.06,0,0xe8dcc0,0xeee6d2,[1,.6,1,1]],puffball:['PUFFBALL',5,3,.05,0,0xf2efe6,0xf2efe6,[1,1.15,.15,1]],

@@ -1,3 +1,8 @@
+// THE GAMEPAD: PAD lets the player play with an Xbox or PlayStation controller.
+import {FORAGE, keys, UI} from './003b-systems.js';
+import {renderer} from './004-main.js';
+import {SAVE} from './005-save.js';
+import {PAD} from './075-main-13.js';
 {
   const css=document.createElement('style'); css.textContent='.padon{outline:2px solid #f2c14e!important;outline-offset:2px}.padgrab{outline-color:#5cc337!important}body.padcur,body.padcur *{cursor:none!important}#keytab img.padi,#movesp img.padi{width:18px;height:18px;image-rendering:pixelated;vertical-align:middle}';
   document.head.appendChild(css);

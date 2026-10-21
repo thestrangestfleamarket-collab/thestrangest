@@ -1,3 +1,8 @@
+// THE TOWN WALL: RINGX sets the town's outer bounds and the invisible walls around them.
+import {SHARED} from './003-shx.js';
+import {PARK} from './003b-systems.js';
+import {scene} from './004-main.js';
+import {FIX, MISTB, MISTE, MODS, PFAR, RING, SOL, TILE} from './006-map-pre.js';
 const RINGX={};
 { const R=RING, XS=SHARED.BOD.XS, ZS=SHARED.BOD.ZS, F=R.ff, T=TILE, C=R.cf={x0:F.x0,x1:PARK.x1+(PARK.ox||0)-8,y0:F.y0,y1:PARK.y1+(PARK.oy||0)-8};
   const box=f=>({x0:XS(f.x0),x1:XS(f.x1),z0:Math.min(ZS(f.y0),ZS(f.y1)),z1:Math.max(ZS(f.y0),ZS(f.y1))}), W=box(F), {x0,x1,z0,z1}=box(C), H=26*T;
@@ -8,3 +13,4 @@ const RINGX={};
   RINGX.inside=(x,z,R=0)=>x>x0+R&&x<x1-R&&z>z0+R&&z<z1-R;
   RINGX.tick=()=>{ if(SHARED.LVL==='down')scene.background.setRGB(0,0,0); };
   window.RINGX=RINGX; }
+export {RINGX};

@@ -1,3 +1,8 @@
+// THE CIVIC: CIVIC builds the firehouse, clinic and precinct and keeps the town's staff, ledger and log.
+import {SHARED, THREE} from './003-shx.js';
+import {CITY, CIVIC, CLOCK, FAR3, MAIL, UI} from './003b-systems.js';
+import {AWAY, FIX, MAPG, MODS, RING, SOL, TILE, ZU} from './006-map-pre.js';
+import {PEEK} from './008-batch.js';
 Object.assign(CIVIC,{row:[],staff:{},log:[],ledger:{treasury:500,day:0,tax:10,wage:20,curfew:[23,5]},shops:{},mail:{bag:[],boxes:{}},fires:[],cans:[]}); window.CIVIC=CIVIC;
 { const T=TILE, M=1/.84*T, YS=ZU*24/TILE, G=(x,z)=>MODS.bodega.ground(x,z);
   CIVIC.note=(what,where)=>{ CIVIC.log.unshift({t:CLOCK.h,day:CITY.day,what,where:where||''}); if(CIVIC.log.length>80)CIVIC.log.length=80; };

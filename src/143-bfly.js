@@ -1,4 +1,9 @@
 // BFLY: wild butterflies spawn on the lawn and flowerbed chunks near you (catch with a net, mount or release); their models come from BF.add, which lives in the later chunk.
+import {SHARED, THREE} from './003-shx.js';
+import {CLOCK, FORAGE, MAIL, PARK, pos, SFX, UI, W3, WEEDS, WX} from './003b-systems.js';
+import {scene} from './004-main.js';
+import {BF, TILE} from './006-map-pre.js';
+import {FLORA} from './142a-flora.js';
 const BFLY={}; window.BFLY=BFLY;
 { const T=TILE, {BF_KINDS}=SHARED.BOD.STOREK.bf, NK=BF_KINDS.length, say=FORAGE.say, use=FORAGE.use, WU=T/.84;
   const hsh=(a,b,s)=>{ let h=(Math.floor(a*97)*374761393+Math.floor(b*89)*668265263+s*1442695041)|0; h=(h^(h>>>13))*1274126177|0; return ((h^(h>>>16))>>>0)/4294967296; };
@@ -44,3 +49,4 @@ const BFLY={}; window.BFLY=BFLY;
   FORAGE.ACT.bfree=id=>{ '@later'; const k=+id.slice(2); FORAGE.take(id,1); const p=W3.group.position, P=[[p.x,p.y+1.2*WU,p.z]]; for(let i=0;i<4;i++){ const a=i*1.7; P.push([p.x+Math.cos(a)*(3+i)*T,p.y+(1+i*.4)*WU,p.z+Math.sin(a)*(3+i)*T]); }
     const b=BF.add(k,P); b.until=0; setTimeout(()=>drop(b),20000); say('YOU LET IT GO. IT FLUTTERS AWAY.','#9fe07f'); };
   BFLY.list=()=>BF.list; window.BFLYDBG=()=>({near:[...CH.values()].reduce((a,L)=>a+L.length,0),chunks:CH.size,out:BFLY.out,kinds:[...CH.values()].flat().map(b=>BF_KINDS[b.k][0]),ento:FORAGE.sk('ento')}); }
+export {BFLY};

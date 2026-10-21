@@ -1,3 +1,9 @@
+// THE LOOKS: LOOKS keeps the player's name, colours, hair and body shape and puts them on the Walker.
+import {SHARED, THREE} from './003-shx.js';
+import {CLOCK, FORAGE, LOOKS, pos, st, UI, W3} from './003b-systems.js';
+import {renderer, scene} from './004-main.js';
+import {SAVE} from './005-save.js';
+import {QS, SHL, TILE} from './006-map-pre.js';
 
 { const $=s=>document.querySelector(s), MATS=RIG.MATS;
   const COL={skin:'#e6c4b0',hair:'#6a5958',eye:'#5a3a26',shirt:'#a9a57e',pants:'#434e58',shoes:'#77614a'}, HAIRS=['hair','hairLong','hairLongA','hairBun','hairPony','hairPonyA'];

@@ -1,3 +1,8 @@
+// THE TEST YARD: FEEL.yard, a yard of walls, ramps, steps and ledges for trying out movement.
+import {SHARED, THREE} from './003-shx.js';
+import {FEEL, pos, UI} from './003b-systems.js';
+import {M, scene} from './004-main.js';
+import {MISTB, MISTB2, STORE} from './006-map-pre.js';
 { const MH=FEEL.MH, MV=FEEL.MV, R=22;
   const Y=FEEL.yard={bvh:null,mesh:null,o:null};
   const org=()=>Y.o||(Y.o={x:(STORE.bound.x1+900)/MH,z:(STORE.bound.z0+STORE.bound.z1)/2/MH});

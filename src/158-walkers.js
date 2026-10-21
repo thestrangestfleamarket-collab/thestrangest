@@ -1,3 +1,9 @@
+// THE WALKERS: WALKERS, the passers-by who stroll the streets and the park.
+import {SHARED} from './003-shx.js';
+import {CITY, MAIL, PARK, WALKERS} from './003b-systems.js';
+import {AWAY, QS, RING, SOL, SYS, TILE} from './006-map-pre.js';
+import {GCAVE} from './060-cave.js';
+import {STLANE} from './076-npc-map.js';
 Object.assign(WALKERS,{list:[],on:QS.get('walkers')==='1'}); window.WALKERS=WALKERS;
 if(WALKERS.on){ const T=TILE, X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, rnd=Math.random, pick=a=>a[Math.floor(rnd()*a.length)], R=(a,b)=>a+rnd()*(b-a);
   const GAIT={stroll:['walk_b',1.6,[.75,1]],walk:['UAL_Walk_Loop',1.6,[1,1.3]],brisk:['walk_a',1.6,[1.3,1.7]],formal:['UAL_Walk_Formal_Loop',1.5,[1,1.25]],jog:['UAL_Jog_Fwd_Loop',3.4,[2.4,3]],run:['run_a',5,[3.4,4.2]]};

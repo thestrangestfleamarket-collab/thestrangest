@@ -1,3 +1,9 @@
+// THE WORLD EDITOR: WE lets you pick, move, turn, scale, recolour and hide objects in the world.
+import {SHARED, THREE} from './003-shx.js';
+import {UI, WE} from './003b-systems.js';
+import {renderer, scene} from './004-main.js';
+import {TILE} from './006-map-pre.js';
+import {OBJS} from './008-batch.js';
 Object.assign(WE,{on:false});
 { const T=TILE, ST={}; let sel=null, box=null, drag=null;
   const base=o=>{ '@later'; if(o.base)return o.base; const B=o.parts.map(p=>p.me.geometry.attributes.position.array.slice(p.v0*3,p.v0*3+18)); const c=new THREE.Vector3(); let n=0, y0=1e9;

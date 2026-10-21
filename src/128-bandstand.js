@@ -1,3 +1,10 @@
+// THE BANDSTAND: STAGE takes turns between the pianist, the singer and the drummer at the bar.
+import {DRM, MUS, NPCS, PNM, pos, SGM, STAGE} from './003b-systems.js';
+import {AWAY, MAPG, QS, STORE} from './006-map-pre.js';
+import {GTA} from './106-game-play-3-guitar-1-body.js';
+import {PNA} from './114-game-play-5-piano-1-sound.js';
+import {IMX} from './119-game-music-1-engine.js';
+import {VOX} from './123-game-zzz-bar-singer.js';
  STORE.STAGE=STAGE;
 STAGE.tick=()=>{}; STAGE.who=()=>null;
 STAGE.make=()=>{ if(!STORE.bar)return; const ALL=[['pn',PNM],['sg',SGM],['dr',DRM]], SET=Math.max(5,+(QS.get('set')||180)); let i=0, t=0;

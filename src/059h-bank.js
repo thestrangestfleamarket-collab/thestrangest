@@ -1,4 +1,6 @@
 // THE BANK: the bank on the block, between the playhouse and the bar (its own builder).
+import {SHARED} from './003-shx.js';
+import {BLDK, BLOCK, grab, STORE} from './006-map-pre.js';
 await grab('bank',async()=>{ const K=STORE.kit, {room,rec,STEPS}=K, SK=SHARED.BOD.STOREK, {CATALOG,LAMPS,T,sh}=SK, MK=SK.museum, M=MK.MUS, MB=M.b, P=BLOCK.lots.bank, OX=SHARED.BOD.OX, OY=SHARED.BOD.OY, DEP=14;
   const x0=OX+(P[0]-OX)/BLDK, y1=OY, B={id:'lbank',x0,x1:x0+(MB.x1-MB.x0),y0:y1-DEP,y1,h:MB.h};
   const SX=MB.x0+MB.x1, SY=MB.y0+MB.y1, dx=B.x0-MB.x0, dy=B.y1-MB.y1, FW=[[0,1],[-1,0],[0,-1],[1,0]], stone=[226,220,204], D={w:'f',a:(B.x0+B.x1)/2,wd:2.5,h:76};

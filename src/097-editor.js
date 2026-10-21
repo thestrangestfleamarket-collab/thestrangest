@@ -1,3 +1,6 @@
+// THE EDITOR: ED holds the character editor's state and head shapes, and W3.applyE places edits.
+import {THREE} from './003-shx.js';
+import {ED, W3} from './003b-systems.js';
 Object.assign(ED,{on:false,anim:false});
 { const mS=new THREE.Matrix4(), mT=new THREE.Matrix4(), mQ=new THREE.Matrix4(), qq=new THREE.Quaternion();
   W3.applyE=(M,E,o)=>{ M.multiply(mS.makeScale(E.s[0],E.s[1],E.s[2])); M.premultiply(mT.makeTranslation(-o.x,-o.y,-o.z)); M.premultiply(mQ.makeRotationFromQuaternion(qq.set(...E.q))); M.premultiply(mT.makeTranslation(o.x+E.o[0],o.y+E.o[1],o.z+E.o[2])); }; }

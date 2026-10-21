@@ -1,4 +1,16 @@
 // THE BODEGA: the bodega's kits (dungeon, museum, lounge, theatre, castle), its layout, solids and build (grab('bodega')).
+import {SHARED, THREE} from './003-shx.js';
+import {CLIP, CLOCK, DRESS, LITE, pos, ROOMS, WALKERS} from './003b-systems.js';
+import {scene} from './004-main.js';
+import {BF, BLDK, BLOCK, CASTLE, cutWalls, EASTX, FIX, grab, lamps, LAY, LOTX, MAPG, MAPSTAIR, MODS, NEONS, NORTHX, OVERHEAD, PARKGX, RING, SOL, TILE, WESTX, WP, WROW, ZU} from './006-map-pre.js';
+import {PAINTC} from './006a-paintc.js';
+import {BATCH, OBJ} from './008-batch.js';
+import {BRICKS, CAT_DEPTS, CAT_INFO, CATALOG, COPE, cvNoise, DTBRICK, FP, grain, grassCol, hash, kerbCol, kerbFace, KIND_OF, LAMPS, lawnCol, LBLD, LIFE, LSEED, mt, prop, PROPL, rlf, roadCol, sh, sided, slabCol, speck, STORY, T, zShift} from './014-gamekit.js';
+import {bodegaFloorCol, bodegaWall} from './015-game-w-bodega-shop.js';
+import {MKS} from './016-street-kit.js';
+import {STUDIO} from './020-studio-kit.js';
+import {KEEPC, PRESETS, STOREK} from './023-west-kits.js';
+import {dgnRoom, dgnThings} from './038z-dungeon.js';
 {
 const {DGP,dgnLit,DGN,dgnWeb,dgnIvy,dgnRidge,dgnFoot,dgnStone,dgnDamp,dungeonWall,dungeonFloorCol}=dgnRoom(LBLD);
 dgnThings(CATALOG,CAT_INFO,LAMPS,CAT_DEPTS,DGP,dgnLit,DGN,dgnWeb);
@@ -1881,3 +1893,4 @@ function gdShape(GS,K,LAMPS){ const s=K.s, o=K.o, SC=1.5, cx=o[0]+4*s, Y1=o[1]+3
     if(wet)c=sh(c.map((v,i)=>v*[.68,.72,.84][i]),hash(px>>1,py,621)<.1?1.15:1);
     return c; };
   G.puddles=[[X0+3.1,Y1+1.75,1.15,.55],[X0+10.7,Y1+1.9,1.3,.6],[X0+W/2+1.8,Y1+3.3,.6,.35]]; }
+export {FOREST, PROPS};

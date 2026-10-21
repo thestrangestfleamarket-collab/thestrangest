@@ -1,4 +1,15 @@
 // THE PARK: its layout, the forest (instanced trees with sway in the shader), paths and the park wall.
+import {SHARED, THREE} from './003-shx.js';
+import {B64, F32} from './003a-skin.js';
+import {CLIP, CLOCK, CULL, DN, LITE, NPCS, PARK, PERFX, pos, ROOMS, UI, WEEDS} from './003b-systems.js';
+import {renderer, scene} from './004-main.js';
+import {CASTLE, CLIPX, EASTX, FADE, FIX, grab, lamps, LAY, LEVEL, MAINX, MAPG, MODS, NORTHX, NORTHY, PARKGX, PARKLAKE, PARKRY, QS, SOL, TILE, ZU} from './006-map-pre.js';
+import {FLAME} from './007-fire.js';
+import {BATCH, OBJ, PEEK} from './008-batch.js';
+import {BRICKS} from './014-gamekit.js';
+import {FOREST, PROPS} from './039-bodega.js';
+import {GCAVE} from './060-cave.js';
+import {FOUNT} from './060a-fount.js';
 window.PARK=Object.assign(PARK,{x0:50,x1:108,y0:-61+NORTHY,y1:12.5+NORTHY+NORTHX,gate:[92.5,99.5],round:[96,-47,7]});
 PARK.sway={value:0}; PARK.windK={value:1}; PARK.swayAt={value:new THREE.Vector4(0,0,0,25*TILE)};
 PARK.tick=()=>{ PARK.sway.value=performance.now()/1000; const A=PARK.swayAt.value; A.x=pos.x; A.z=pos.z; if(typeof NPCS!=='undefined'&&NPCS.R)A.w=NPCS.R; };

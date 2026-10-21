@@ -1,3 +1,10 @@
+// THE GARDEN: GARDEN, the wild flowers and the garden plots the player can plant.
+import {SHARED, THREE} from './003-shx.js';
+import {CITY, CLOCK, FORAGE, MAIL, pos, ROOMS, SFX, UI, WEEDS} from './003b-systems.js';
+import {scene} from './004-main.js';
+import {SAVE} from './005-save.js';
+import {MAPG, TILE} from './006-map-pre.js';
+import {VEG} from './144-veggies.js';
 const GARDEN={}; window.GARDEN=GARDEN;
 { const T=TILE, KEY='garden', say=FORAGE.say, use=FORAGE.use, sk=FORAGE.sk, CS=8*T;
   const FL={dandelion:['DANDELION',0,1,0xf2c81e,0xe0a810,[.05,.4,.14,.5]],clover:['RED CLOVER',5,1,0xc86a9a,0,[.042,1,.1,0]],daisy:['OXEYE DAISY',15,2,0xf4f2ea,0xf2c81e,[.065,.28,.3,.38]],
@@ -67,3 +74,4 @@ const GARDEN={}; window.GARDEN=GARDEN;
     save(); sync(); FORAGE.draw(); };
   const wait=()=>{ if(!VEG.add)return setTimeout(wait,500); VEG.add(Object.fromEntries(Object.keys(SEED).map(k=>['sd_'+k,SEED[k][1]])),Object.assign({},PR,BP)); }; wait();
   window.GARDDBG=()=>({shown:GARDEN.shown,chunks:CH.size,plots:S.plots.map(p=>({k:p.k,g:+Math.min(1,(now()-p.t)/GROW).toFixed(2)})),garden:sk('garden'),lawn:lawnAt(pos.x,pos.z)}); }
+export {GARDEN};

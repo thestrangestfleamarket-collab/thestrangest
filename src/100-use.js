@@ -1,3 +1,11 @@
+// THE USE: USE lets the player sit on, switch, open and pick up the things around them.
+import {SHARED, THREE} from './003-shx.js';
+import {LITE, PARK, PERFX, pos, RAG, SFX, SND, st, UI, USE, W3} from './003b-systems.js';
+import {renderer, scene} from './004-main.js';
+import {TILE, ZU} from './006-map-pre.js';
+import {OBJS} from './008-batch.js';
+import {KIT} from './068-kit.js';
+import {SOUND} from './091-sfx.js';
 Object.assign(USE,{seat:null}); window.USE=USE;
 { const T=TILE, V3=THREE.Vector3, v=new V3(), KINDS=[[/bench|chair|stool|sofa|armchair|couch|sitting log/i,'sit'],[/lamp|lantern|wall light|fluorescent tube|andon/i,'lamp'],[/drinks fridge/i,'fridge'],[/drinks machine/i,'vend'],[/^radio$/i,'radio']];
   const kindOf=o=>{ if(o.useK!==undefined)return o.useK; const k=KINDS.find(([r])=>r.test(o.name||'')); return o.useK=k?k[1]:null; };

@@ -1,3 +1,12 @@
+// THE BIRDS: BIRDS, the town's birds that hop, walk and fly, and that the player can catch.
+import {SHARED, THREE} from './003-shx.js';
+import {CLOCK, DRESS, FORAGE, INV, MAIL, NPCS, PARK, pos, ROOMS, SFX, UI, WEEDS, WX} from './003b-systems.js';
+import {scene} from './004-main.js';
+import {SAVE} from './005-save.js';
+import {SYS, TILE} from './006-map-pre.js';
+import {PARTSNPC} from './080-npc-parts.js';
+import {FLORA} from './142a-flora.js';
+import {GARDEN} from './144a-garden.js';
 const BIRDS={list:[]}; window.BIRDS=BIRDS;
 { const T=TILE, WU=T/.84, say=FORAGE.say, use=FORAGE.use, KEY='birds', {shape,sph,cyl,box,blob}=PARTSNPC.T, VIS=1.5;
   const K=[['HOUSE SPARROW','Passer domesticus',.15,0,3,6,'hop',{body:0x8a6a4a,breast:0xb8ae9c,head:0x8a8a86,cap:0x6e6e70,mask:0x2a2622,wing:0x7a5232,bar:0xe8e0d0,tail:0x5a4632,beak:0x2a2622,leg:0xb08a70}],
@@ -140,3 +149,4 @@ const BIRDS={list:[]}; window.BIRDS=BIRDS;
   { const pk=Object.keys(INV.items).find(id=>id.startsWith('pet_')); if(pk){ const k=+pk.slice(4); const b=add(k,pos.x,SHARED.py+1.4*WU,pos.z); b.st='pet'; b.src='pet'; b.th.name='YOUR TAME '+K[k][0]; } }
   BIRDS.K=K; BIRDS.T=T; BIRDS.ME=ME; BIRDS.add=add; BIRDS.drop=drop; BIRDS.S=S;
   window.BIRDDBG=()=>({out:BIRDS.out,n:BIRDS.list.length,shown:BIRDS.shown,tris:TRIS,kinds:BIRDS.list.map(b=>K[b.k][0]+':'+b.st),seen:{...S.seen},seed:S.seed,bird:FORAGE.sk('bird')}); }
+export {BIRDS};

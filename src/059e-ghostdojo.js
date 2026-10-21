@@ -1,4 +1,10 @@
 // THE GHOST DOJO: the ghost street's dojo (gdShape lays its lot for 050; its own builder for the court, the pool and the ghosts inside).
+import {SHARED, THREE} from './003-shx.js';
+import {CLIP, CLOCK, LITE, pos, ROOMS, UI, VIT} from './003b-systems.js';
+import {PPU, scene} from './004-main.js';
+import {BF, BLDK, cutWalls, FIX, grab, MAPG, SEEN, SOL, TILE, ZU} from './006-map-pre.js';
+import {FLAME} from './007-fire.js';
+import {BATCH, OBJ} from './008-batch.js';
 
 await grab('ghostdojo',async()=>{ const {X,Y,Z,gbox,faceTex,bq,C}=SHARED.BOD, J=SHARED.BOD.GDJ, GK=SHARED.BOD.GDK, {hash,grain}=SHARED.BOD.g, sh=SHARED.BOD.K.sh;
   if(GK){ const {X0,X1,Y0,Y1,W,D}=GK, T=.22, H=168, H2=300, DH=118, hs=hash;

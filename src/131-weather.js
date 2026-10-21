@@ -1,3 +1,9 @@
+// THE WEATHER: WX makes the day's weather (clouds, rain, mist and wind) from the date and hour.
+import {SHARED, THREE} from './003-shx.js';
+import {CLOCK, CULL, DN, PARK, pos, WX} from './003b-systems.js';
+import {scene} from './004-main.js';
+import {LFX, OUT, QS, SYS, TILE} from './006-map-pre.js';
+import {HEMI} from './064-map-post.js';
 Object.assign(WX,{hold:null,now:null});
 { const hsh=(i,s)=>{ let h=(Math.imul(i|0,374761393)+Math.imul(s|0,668265263))|0; h=Math.imul(h^(h>>>13),1274126177); return ((h^(h>>>16))>>>0)/4294967296; };
   const noise=(t,s,oct=2)=>{ let v=0,a=1,n=0; for(let o=0;o<oct;o++){ const i=Math.floor(t), f=t-i, u=f*f*(3-2*f); v+=a*(hsh(i,s+o*7)*(1-u)+hsh(i+1,s+o*7)*u); n+=a; a*=.5; t=t*2.1+11.7; } return v/n; };

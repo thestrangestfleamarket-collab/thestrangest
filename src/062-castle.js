@@ -1,4 +1,9 @@
 // THE CASTLE: its curtain walls, drums, gate and well in Central Park (built with the park, not at the start) and the stairs down to the dungeon.
+import {SHARED, THREE} from './003-shx.js';
+import {PARK, pos} from './003b-systems.js';
+import {scene} from './004-main.js';
+import {CASTLE, cutWalls, FIX, grab, lamps, MODS, SOL, STN, TILE} from './006-map-pre.js';
+import {BATCH, OBJ} from './008-batch.js';
 const gboxS=(b,kind='L',dy=0,ys=1)=>{ const X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, Y=z=>SHARED.BOD.YS(z*ys)+dy, {faceTex,bq,C}=SHARED.BOD, {x0,x1,y0,y1,z0,z1}=b; if(b.foot&&z1-z0<.05)return; const k=(b.em?2:1)*ys, H=Math.max(1,Math.round((z1-z0)*k));
   if(b.em&&kind==='L')kind='B';
   const side=(nx,ny,P,Q,z)=>C(b.fs?b.fs(nx,ny,P,Q,z-z0,nx?.68:.84):nx&&b.fi?b.fi(Q,z):ny&&b.fj?b.fj(P,z):b.c);
@@ -44,3 +49,4 @@ await grab('castlestairs',async()=>{ const X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, Y=S
   const m=new THREE.Mesh(geo,new THREE.MeshLambertMaterial({vertexColors:true,side:THREE.DoubleSide,clippingPlanes:[MODS.castleStairCut]})); m.receiveShadow=true; m.castShadow=true; scene.add(m); MODS.castleStairMat=m.material;
   for(const lv of ['up','down'])for(const x of [S.x0-.2,S.x1]){ const base=lv==='down'?sd:0; SOL[lv].push([X(x),Z(S.y0),X(x+.2),Z(S.y1)]); FIX[lv].push([X(x),Z(S.y0),base,X(x+.2),Z(S.y1),base+Y(lv==='down'?98:30)]); }
   const L=new THREE.PointLight(new THREE.Color(1,.82,.58),5,7*TILE,1.6); L.position.set(X((S.x0+S.x1)/2),Y(-44),Z((S.y0+S.y1)/2)); L.userData.i0=L.intensity; scene.add(L); lamps.push(L); });
+export {castleMat, gboxS};

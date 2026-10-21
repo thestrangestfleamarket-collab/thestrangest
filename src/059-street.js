@@ -1,4 +1,9 @@
 // MAIN STREET: the lots along Main Street (the theatre, the holodeck, the playhouse and the rest; its own builder).
+import {SHARED, THREE} from './003-shx.js';
+import {BLK, LITE, pos, SFX, UI, USE} from './003b-systems.js';
+import {scene} from './004-main.js';
+import {BLDK, BLOCK, cutWalls, FADE, grab, STORE, SYS, TILE} from './006-map-pre.js';
+import {BATCH, OBJ, OBJS} from './008-batch.js';
 await grab('mainstreet',async()=>{ const K=STORE.kit, {room,STEPS}=K, {X,Y,Z,placeAt,facade,gbox}=SHARED.BOD, sh=SHARED.BOD.K.sh, SK=SHARED.BOD.STOREK, {PROPS,LAMPS}=SK, T=SK.T, TH=SK.theatre, HO=SK.holo, PY=SK.play, hs=SHARED.BOD.g.hash;
   const bx=m=>SHARED.BOD.OX+(m-SHARED.BOD.OX)/BLDK, by=m=>SHARED.BOD.OY+(m-SHARED.BOD.OY)/BLDK, lot=(k,h)=>({x0:bx(BLOCK.lots[k][0])+.1,x1:bx(BLOCK.lots[k][1])-.1,y0:by(BLOCK.back)+.1,y1:SHARED.BOD.OY,h});
   const turn=(B,n0,l0)=>{ const cx=(B.x0+B.x1)/2, cy=(B.y0+B.y1)/2; for(const p of PROPS.slice(n0))placeAt(p,2,cx,cy,cx,cy); for(const l of LAMPS.slice(l0)){ l.x=2*cx-l.x; l.y=2*cy-l.y; } };

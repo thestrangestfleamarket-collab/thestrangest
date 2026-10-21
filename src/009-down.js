@@ -1,4 +1,9 @@
 // UNDER THE STREET: the water's shader, the station and platform under the street (grab('down')), the day's start and FADE.
+import {SHARED, THREE} from './003-shx.js';
+import {keys, LINES, pos, RAG, SFX, UI} from './003b-systems.js';
+import {scene} from './004-main.js';
+import {cutWalls, FADE, FIX, grab, LAMPD, LAMPI, lamps, MAPG, MAPSTAIR, MODS, QS, SOL, STN, TILE, ZU} from './006-map-pre.js';
+import {BATCH, OBJ} from './008-batch.js';
 const WATER={drops:[], uH:{value:null}, uWB:{value:new THREE.Vector4()}, uLevel:{value:0}, uGrid:{value:new THREE.Vector2()}, uCK:{value:+(QS0=>QS0.get('ck')||160)(new URLSearchParams(location.search))}, mats:[]};
 WATER.caustic=m=>{ '@later'; m.onBeforeCompile=sh=>{ Object.assign(sh.uniforms,{uH:WATER.uH,uWB:WATER.uWB,uLevel:WATER.uLevel,uGrid:WATER.uGrid,uCK:WATER.uCK});
   sh.vertexShader='varying vec3 vWp;\n'+sh.vertexShader.replace('#include <project_vertex>','#include <project_vertex>\n vWp=(modelMatrix*vec4(transformed,1.)).xyz;');
@@ -354,3 +359,4 @@ const WSUB=(()=>{ const ox=-90, oy=-105;
 MODS.station={BOUND,ground:(x,z)=>SHARED.METRO.inside(x,z)?SHARED.METRO.ground(x,z):STN.DY,DY:SHARED.METRO.DY,plat:SHARED.METRO.plat,lane:SHARED.METRO.lane,path:SHARED.METRO.path};
  for(const w of cutWalls.slice(c0))if(!w.when)w.when=()=>SHARED.LVL==='down'; for(const L of SHL)L.removeFromParent(); });
 SHARED.BOD={meshes:[], walls:{}, lamps:[]};
+export {WATER};

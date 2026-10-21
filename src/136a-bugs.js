@@ -1,3 +1,9 @@
+// THE BUG REPORTS: BUGS, the REPORT A BUG form and the owner's queue, sent to the reports database.
+import {SHARED} from './003-shx.js';
+import {BUGS, CLOCK, pos, UI} from './003b-systems.js';
+import {renderer} from './004-main.js';
+import {STORE} from './006-map-pre.js';
+import {BUILDV} from './135-where.js';
 
 { const SB='https://jvcetttmqseoteidfggn.supabase.co', KEY='sb_publishable_UkzD8hOizW1hPr6hm3duQQ_07ZodPik', LS='sb-jvcetttmqseoteidfggn-auth-token';
   const errs=[], err=m=>{ errs.push(String(m||'').slice(0,240)); if(errs.length>8)errs.shift(); };

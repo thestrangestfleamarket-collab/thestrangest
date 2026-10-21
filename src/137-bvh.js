@@ -1,4 +1,7 @@
 // FAST RAYS: three-mesh-bvh behind three's raycast for big still meshes, loaded after the start.
+import {THREE} from './003-shx.js';
+import {scene} from './004-main.js';
+import {QS} from './006-map-pre.js';
 const BVH={on:QS.get('bvh')!=='0', ready:false, lib:null, built:0, ms:0};
 {
   const orig=THREE.Mesh.prototype.raycast, MIN=100, OPT={indirect:true, setBoundingBox:false, verbose:false, maxLeafTris:10};
@@ -26,3 +29,4 @@ const BVH={on:QS.get('bvh')!=='0', ready:false, lib:null, built:0, ms:0};
   BVH.refit=g=>{ if(!g.boundsTree)return; try{ g.boundsTree.refit(); g._bvhK=key(g); }catch(e){ g.boundsTree=null; } };
   BVH.stats=()=>{ let n=0,t=0,d=0; const seen=new Set(); scene.traverse(o=>{ const g=o.geometry; if(!g||seen.has(g))return; seen.add(g); if(g.boundsTree){ n++; t+=tris(g); } if(g._bvhDyn)d++; }); return {ready:BVH.ready,trees:n,tris:t,dynamic:d,built:BVH.built,ms:+BVH.ms.toFixed(1)}; };
 }
+export {BVH};

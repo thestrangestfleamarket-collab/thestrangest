@@ -1,3 +1,7 @@
+// THE HIT BITS: FIGFX throws small lit and glowing cubes for hits, sparks and bursts.
+import {THREE} from './003-shx.js';
+import {FIGFX, PARK} from './003b-systems.js';
+import {MAPG, TILE} from './006-map-pre.js';
 
 {
   const FX={items:[],N:220}; { const geo=new THREE.BoxGeometry(1,1,1), lit=new THREE.InstancedMesh(geo,new THREE.MeshLambertMaterial({color:0xffffff}),FX.N), glow=new THREE.InstancedMesh(geo,new THREE.MeshBasicMaterial({color:0xffffff,toneMapped:false}),FX.N);

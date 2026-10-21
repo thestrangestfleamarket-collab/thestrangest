@@ -1,3 +1,8 @@
+// THE WHERE: WHERE saves where the player is and puts them back there on return; BUILDV is the build stamp.
+import {SHARED} from './003-shx.js';
+import {CLIP, PH, pos, RAG, UI, WHERE} from './003b-systems.js';
+import {SAVE} from './005-save.js';
+import {MODS, QS, SOL, STORE, TILE} from './006-map-pre.js';
 
 { const KEY='where', test=['at','place','sheet','npcat'].some(k=>QS.get(k)!=null);
   let W=null; try{ if(QS.get('fresh')!=null)SAVE.del(KEY); else W=JSON.parse(SAVE.get(KEY)||'null'); }catch(e){}
@@ -14,3 +19,4 @@
   WHERE.save=save; WHERE.saved=()=>W; }
 
 const BUILDV=__BUILDV__;
+export {BUILDV};

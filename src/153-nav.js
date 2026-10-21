@@ -1,3 +1,9 @@
+// THE NAV: NAV builds the walking navmesh the town's people find their way on.
+import {SHARED} from './003-shx.js';
+import {CITY, ROOMS} from './003b-systems.js';
+import {MODS, QS, SOL, TILE} from './006-map-pre.js';
+import {FOUNT} from './060a-fount.js';
+import {CSB, CSHOLE, STHOLE} from './076-npc-map.js';
 const NAV=window.NAV={on:QS.get('nav')!=='0', ready:false, lib:null, M:{}, n:{nav:0,a:0,bad:0,ms:0}};
 {
   const T=TILE, CORE='https://cdn.jsdelivr.net/npm/@recast-navigation/core@0.43.1/+esm', GEN='https://cdn.jsdelivr.net/npm/@recast-navigation/generators@0.43.1/+esm';
@@ -45,3 +51,4 @@ onmessage=async e=>{ const {id,R,B,cfg,bh}=e.data, P=[], I=[]; try{ await ok; }c
   const ASTAR=CITY.route; CITY.route=(lv,a,b,free,own)=>{ if(!own&&NAV.on){ const r=NAV.route(lv,a,b,free); if(r){ CITY.ms=NAV.n.ms/NAV.n.nav; return r; } } NAV.n.a++; return ASTAR(lv,a,b,free); };
   NAV.stats=()=>({ready:NAV.ready,meshes:Object.fromEntries(Object.entries(NAV.M).map(([k,m])=>[k,{ms:m.ms,tris:m.tris,kb:m.bytes&&Math.round(m.bytes/1024),busy:!!m.busy,failed:!!m.failed}])),routes:{nav:NAV.n.nav,astar:NAV.n.a,failedCheck:NAV.n.bad,navAvgMs:NAV.n.nav?+(NAV.n.ms/NAV.n.nav).toFixed(2):null}});
 }
+export {NAV};

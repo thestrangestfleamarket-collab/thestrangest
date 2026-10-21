@@ -1,4 +1,8 @@
 // THE ARCADE: the arcade (its own builder; cabinets, the counter, the games you can play).
+import {SHARED, THREE} from './003-shx.js';
+import {FAR3, pos, ROOMS, UI, WX} from './003b-systems.js';
+import {scene} from './004-main.js';
+import {grab, MISTE, STORE, SYS, TILE} from './006-map-pre.js';
 await grab('arcade',async()=>{ const K=STORE.kit, {room,flat}=K, {X,Y,Z}=SHARED.BOD, {hash:hs,grain}=SHARED.BOD.g, sh=SHARED.BOD.K.sh, {PROPS,LAMPS}=SHARED.BOD.STOREK;
   const B={id:'larcade',x0:480,y0:-104,x1:512,y1:-81.6,h:140}, S=1.6, ZM=38, mx=m=>B.x0+m*S, my=m=>B.y0+m*S, PX=mx(11);
   STORE.bound.x1=Math.max(STORE.bound.x1,X(530));

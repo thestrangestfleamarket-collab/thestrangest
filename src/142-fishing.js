@@ -1,3 +1,10 @@
+// THE FISHING: FISHING and BOAT let the player row the river and catch fish.
+import {SHARED, THREE} from './003-shx.js';
+import {BOAT, BOOKS, CLOCK, FORAGE, INV, pos, SFX, st, UI, VIT, W3} from './003b-systems.js';
+import {scene} from './004-main.js';
+import {FIX, MAPG, SOL, SYS, TILE, ZU} from './006-map-pre.js';
+import {RIVER} from './066-river.js';
+import {GEMS} from './101-gems.js';
 const FISHING={}; Object.assign(BOAT,{on:false}); window.FISHING=FISHING; window.BOAT=BOAT;
 { const T=TILE, RB=RIVER.box, rz0=RB.z0, rz1=RB.z1, WU=T/.84, cl=(v,a,b)=>v<a?a:v>b?b:v;
   const FI=[['x_sunfish','SUNFISH',0,3,0,4,5,.07],['x_perch','WHITE PERCH',5,4,0,5,5,.08],['x_crab','BLUE CRAB',15,8,0,4,2,.06],['x_eel','AMERICAN EEL',20,9,0,9,3,.08],

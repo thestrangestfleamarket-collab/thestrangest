@@ -1,3 +1,5 @@
+// THE PIANO MUSIC: PNBOOK, the piano's pieces, and pnCompile turns them into notes.
+import {hash3} from './004-main.js';
 const PNBOOK=[
   {name:'Prelude in C (Bach)',q:0.19,bar:16,pickup:0,vel:{R:.5,L:.46},pedal:true,gen:()=>{ const C=('C4 E4 G4 C5 E5|C4 D4 A4 D5 F5|B3 D4 G4 D5 F5|C4 E4 G4 C5 E5|C4 E4 A4 E5 A5|C4 D4 F#4 A4 D5|B3 D4 G4 D5 G5|B3 C4 E4 G4 C5|A3 C4 E4 G4 C5|'+
       'D3 A3 D4 F#4 C5|G3 B3 D4 G4 B4|G3 A#3 E4 G4 C#5|F3 A3 D4 A4 D5|F3 G#3 D4 F4 B4|E3 G3 C4 G4 C5|E3 F3 A3 C4 F4|D3 F3 A3 C4 F4|G2 D3 G3 B3 F4|C3 E3 G3 C4 E4|C3 G3 A#3 C4 E4|'+
@@ -39,3 +41,4 @@ function pnCompile(T){ if(T.c)return T.c; const S=T.gen(), notes=[], q=T.q, T0=1
   for(const n of notes){ const p=pedAt(n.t1); n.off=p?Math.max(n.t1,p.up):n.t1; }
   const len=notes.reduce((x,n)=>Math.max(x,n.off),0)+1.5;
   return T.c={notes,ped,len,R:notes.filter(n=>n.h==='R'),L:notes.filter(n=>n.h==='L')}; }
+export {pnBlack, PNBOOK, pnCompile, pnWhite};

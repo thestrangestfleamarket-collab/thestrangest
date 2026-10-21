@@ -1,3 +1,5 @@
+// THE INSTRUMENTS: IMK, the instruments' tones and how each is struck.
+import {IMK} from './003b-systems.js';
 const IMNOTE=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
 const imHz=m=>440*Math.pow(2,(m-69)/12), imName=m=>IMNOTE[((m%12)+12)%12]+(Math.floor(m/12)-1);
 const IMR={
@@ -92,3 +94,4 @@ function imShape(I,root,iv,capo=0){ '@later'; const n=I.open.length, pcs=iv.map(
   const walk=s=>{ if(s===n){ const v=score(cur); if(v>best.sc){ best.sc=v; best.sh=cur.slice(); } return; } for(const f of opt[s]){ cur[s]=f; walk(s+1); } };
   walk(0); return best.sh; }
 window.__im={IMK,imAct,imChordName,imShape,imHz,imName};
+export {imAct};

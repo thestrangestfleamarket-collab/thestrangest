@@ -1,4 +1,17 @@
 // THE UI: the camera (isometric, behind, first person), zoom and turn, the menu, places, and the top-down shot.
+import {SHARED, THREE} from './003-shx.js';
+import {AMB, BLK, BUGS, DN, ED, FEEL, FORAGE, GAMEED, keys, LINES, LOOK, LOOKS, MAPED, MUS, NPCS, PARK, PB, pos, RINSP, ROOMS, SFX, SNDED, st, UI, USE, VIT, W3, WE, WIELD} from './003b-systems.js';
+import {art, OCAM, PCAM, PPU, pxS, renderer, RES, resize, RESL, RESMAX, RH, RW, scene, SCL, vpu, ZMAX} from './004-main.js';
+import {SAVE} from './005-save.js';
+import {ASTEP, BLDK, CASTLE, CEL, MAPG, MAPSTAIR, MODS, QS, RING, STORE, TILE} from './006-map-pre.js';
+import {GCAVE} from './060-cave.js';
+import {FOUNT} from './060a-fount.js';
+import {GTOWER} from './063-tower.js';
+import {HEMI} from './064-map-post.js';
+import {RIVER} from './066-river.js';
+import {OUTL} from './072-walker3d.js';
+import {clampP, disp, gplane, hit, marker, PMAX, PMIN, ray, VIEW0} from './075-main-13.js';
+import {SOUND} from './091-sfx.js';
 Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()});
 {
   const ACTS=[['w','walk up (screen)'],['s','walk down'],['a','walk left'],['d','walk right'],['shift','run · sink (free camera, fly)'],[' ','jump · rise (free camera, fly) · dive (swimming)'],

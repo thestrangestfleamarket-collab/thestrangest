@@ -1,3 +1,5 @@
+// THE SOUND EDITOR: SNDED, the panel for setting each sound's level and trying it out.
+import {SFX, SNDED} from './003b-systems.js';
 
 { const P=document.createElement('div'); P.id='snded'; P.className='sndx'; P.hidden=true; document.body.appendChild(P);
   const css=document.createElement('style'); css.textContent='#snded{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(560px,calc(100vw - 32px));max-height:calc(100vh - 40px);overflow:auto;font:12px var(--pixel);color:var(--fg);background:var(--panel);border:2px solid var(--line);padding:14px 16px 12px;z-index:16;user-select:none}'

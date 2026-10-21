@@ -1,4 +1,11 @@
 // THE PAWNS: the baked characters (data/pawns.json) given arms, cloth colours and animation.
+import {SHARED, THREE} from './003-shx.js';
+import {BY, F32, SKIN} from './003a-skin.js';
+import {UI} from './003b-systems.js';
+import {PPU} from './004-main.js';
+import {MODS, QS, TILE} from './006-map-pre.js';
+import {DUN, makeNPC, stfree, STLANE} from './076-npc-map.js';
+import {PAWNS} from './087-npc-creatures.js';
 { const PW=PAWNS, geomOf=M=>SKIN.geom(M), rigOf=R=>SKIN.rig(R);
   const R0=PW.hero_m.rig, CLD=PW.hero_m.clips, CLIPS=SKIN.clips(CLD,R0.names,false);
   const HOLD=QS.get('pawnclip'), WALKC=QS.get('pawnwalk')||'UAL_Walk_Loop', IDLEC=QS.get('pawnidle')||'UAL_Idle_Loop', WALK=1.6, RUNU=5.5, STILLC=new Set(['UAL_Idle_Loop','idle_a','idle_b','sit_floor_idle_a']);

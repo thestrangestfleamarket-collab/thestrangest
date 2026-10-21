@@ -1,3 +1,9 @@
+// THE LINES: LINES holds what characters say and shows it over their heads.
+import {SHARED, THREE} from './003-shx.js';
+import {CLOCK, LINES, LOOKS, SFX} from './003b-systems.js';
+import {renderer} from './004-main.js';
+import {SAVE} from './005-save.js';
+import {TILE} from './006-map-pre.js';
 Object.assign(LINES,{log:[]});
 { const POOL={
     greet:['Hello, {{name}}.','You again. Good.','Welcome to the market.','Watch your step out here.','Quiet tonight, isn\'t it?','Looking for something?','Hm? Oh. Hello.','Don\'t mind me.','The dragons are out again.','Mind the stairs down there.','Nice to see a face.','Hey there, {{name}}.'],

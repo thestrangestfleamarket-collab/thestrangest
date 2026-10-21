@@ -1,3 +1,8 @@
+// THE GHOSTS: GHOSTS, the cloth ghosts that drift at night, their cloth moved by a small physics step.
+import {SHARED, THREE} from './003-shx.js';
+import {GHOSTS, NPCS, pos, UI} from './003b-systems.js';
+import {scene} from './004-main.js';
+import {SYS, TILE} from './006-map-pre.js';
 
 { const H=1/120, G=-9.8, DAMP=.988;
   GHOSTS.cloth=(R,sq,N,BR,mat,sx,y,sz)=>{ const IN=(i,j)=>sq||Math.hypot(i/(N-1)*2-1,j/(N-1)*2-1)<=1.02, REST=[], idx=[], live=[];

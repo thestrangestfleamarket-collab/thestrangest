@@ -1,3 +1,8 @@
+// THE LIVES: LIVES gives the town's people their places, homes and paths through the day.
+import {SHARED} from './003-shx.js';
+import {CITY, CLIP, CLOCK, LIVES, NPCS, PARK, ROOMS} from './003b-systems.js';
+import {CASTLE, FREE, MAPG, MAPSTAIR, MODS, QS, SOL, STORE, TILE, ZU} from './006-map-pre.js';
+import {inStair} from './064-map-post.js';
 Object.assign(LIVES,{on:QS.has('lives')?QS.get('lives')!=='0':CITY.on,ready:false,ms:0,stepMs:0,list:[],force:null,skips:0});
 { const T=TILE, X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, XB=SHARED.BOD.X, ZB=SHARED.BOD.Z, M=SHARED.BOD.MAP, LS=SHARED.BOD.K.LSEED, HZ=.25, d2=(a,b)=>Math.hypot(a.x-b.x,a.z-b.z);
   const ZS_=Z(LS.street-1.5), ZR=Z((LS.street+LS.grass)/2), ZF=Z((LS.grass+M.y1)/2), HOLE=[X(MAPSTAIR.x0-.6),Z(MAPSTAIR.y0),X(MAPSTAIR.x1+.6),Z(MAPSTAIR.y1+.6)];

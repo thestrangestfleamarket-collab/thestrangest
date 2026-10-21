@@ -1,4 +1,11 @@
 // THE STORE: rooms with doors (diner, bar, museum, keep, cottage, aquarium, avenue) and their places in the menu. Its own builder.
+import {SHARED, THREE} from './003-shx.js';
+import {INTERIORS, LITE, pos, ROOMS, UI} from './003b-systems.js';
+import {scene} from './004-main.js';
+import {AWAY, BF, BLDK, cutWalls, EASTX, FADE, FIX, grab, lamps, LAY, QS, SOL, STORE, TILE, ZU} from './006-map-pre.js';
+import {FLAME} from './007-fire.js';
+import {BATCH, OBJ} from './008-batch.js';
+import {WATER} from './009-down.js';
 await grab('store',async()=>{ const K=SHARED.BOD.STOREK, {X,Y,Z,gbox,faceTex,bq,C,place,facade}=SHARED.BOD, {CATALOG,PROPS,LAMPS,PRESETS,LBLD,T,sh,hash}=K, {grain,speck,lawnCol:grassCol}=SHARED.BOD.g;
   const B_=id=>LBLD.find(b=>b.id===id);
   const LG=k=>{ const o=LAY.o(k); return [o.x/BLDK,o.y/BLDK]; }, AO=LG('apartments');

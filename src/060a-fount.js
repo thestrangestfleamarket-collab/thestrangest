@@ -1,3 +1,8 @@
+// THE FOUNTAIN LAKE: FOUNT shapes the lake and its fountain in the park: its shore, bed, water and swimming.
+import {SHARED, THREE} from './003-shx.js';
+import {CLOCK, PARK, ROOMS, SKY} from './003b-systems.js';
+import {scene} from './004-main.js';
+import {FIX, MAPG, SOL, STORE, TILE, ZU} from './006-map-pre.js';
 const FOUNT={ready:false,swim:false}; window.FOUNT=FOUNT;
 { const ss=(a,b,v)=>{ const t=Math.max(0,Math.min(1,(v-a)/(b-a))); return t*t*(3-2*t); }, hs=(a,b,c=0)=>{ const s=Math.sin(a*127.1+b*311.7+c*74.7)*43758.5453; return s-Math.floor(s); };
   const raw=(x,y)=>{ const {C,R,L}=FOUNT.S, dx=x-L.x, dy=y-L.y, e=Math.hypot(dx/L.rx,dy/L.ry)||1e-6, g=Math.hypot(dx/(L.rx*L.rx),dy/(L.ry*L.ry))/e||1e-6, a=Math.atan2(dy,dx), k=Math.hypot(x-C.x,y-C.y);
@@ -141,3 +146,4 @@ const FOUNT={ready:false,swim:false}; window.FOUNT=FOUNT;
     FOUNT.post=scene=>{ if(!uw)return; scene.fog=fog0; scene.background.copy(bg0); if(window.SKY&&SKY.dome)SKY.dome.visible=dome; uw=false; };
     FOUNT.ready=true; };
 }
+export {FOUNT};

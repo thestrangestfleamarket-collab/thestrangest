@@ -1,4 +1,5 @@
 // THE GAME'S SYSTEMS, DECLARED FIRST: every system another file uses before its own file runs is made here (empty, or its first value) and filled in its own file, so each file only reads names from files before it.
+import {THREE} from './003-shx.js';
 const ROOMS={},
   UI={},
   ED={},
@@ -71,3 +72,4 @@ const ROOMS={},
   GTSAMP=[],
   IMK={},
   BOOKS={};
+export {AMB, BLAZE, BLK, BOAT, BOOKS, BROOK, BUGS, BWK, CITY, CIVIC, CLIP, CLOCK, CULL, DN, DRESS, DRM, DRONE, ED, FAR3, FEEL, FIGFX, FORAGE, GAMEED, GHOSTS, GTRH, GTSAMP, IMK, INTERIORS, INV, keys, LINES, LITE, LIVES, LOOK, LOOKS, MAIL, MAPED, MUS, NPCS, ONLINE, PARK, PB, PERFX, PH, PNM, POND, pos, RAG, RINSP, ROOMS, SELFSH, SFX, SGM, SKY, SND, SNDED, st, STAGE, TRADE, UI, USE, VIT, vwV, W3, WALKERS, WE, WEEDS, WHERE, WIELD, wvV, WX, ZONES};

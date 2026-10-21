@@ -1,3 +1,6 @@
+// THE GUITAR BODY: GT builds the guitar's shape and strings; SND and GTA set up its sound.
+import {GTRH, GTSAMP, SND, UI} from './003b-systems.js';
+import {KIT} from './068-kit.js';
 
 if(typeof KIT!=='undefined')for(const th of KIT.things)UI.thing(th);
 
@@ -53,3 +56,4 @@ function gtPlay(s,k,when,amp,tone,r){ '@later'; if(GTPHYS.model&&gtPhys()){ gtMu
   const src=c.createBufferSource(), f=c.createBiquadFilter(), g=c.createGain(); src.buffer=GTA.buf; src.playbackRate.value=gtHz(s,k)/A.hz; f.type='lowpass'; f.frequency.value=tone; f.Q.value=0.5;
   g.gain.value=amp; src.connect(f); f.connect(g); g.connect(GTA.g); src.start(when,A.t,A.L); GTA.on[s-1]={src,g,when}; }
 const GTYP=[GT.YP+1.3,GT.YP+0.65,GT.YP,GT.YP-0.6];
+export {CAST, GT, GTA, gtAudio, gtHz, gtMute, GTPHYS, gtPlay, GTWR, GTYP, PLAY221, PLAYA};

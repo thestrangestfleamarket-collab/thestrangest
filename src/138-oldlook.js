@@ -1,3 +1,9 @@
+// THE OLD LOOK: LOOK, the picture's last pass, giving the old game's colour and glow.
+import {SHARED, THREE} from './003-shx.js';
+import {CLOCK, LOOK} from './003b-systems.js';
+import {RH, RW, ShaderPass} from './004-main.js';
+import {SAVE} from './005-save.js';
+import {OUT} from './006-map-pre.js';
 Object.assign(LOOK,{on:true, glowK:{value:0}, night:{value:0}, cool:{value:0}});
 { let v='1'; try{ v=SAVE.get('look')||'1'; }catch(e){} LOOK.on=v==='1'; }
 LOOK.shader={uniforms:{tDiffuse:{value:null},uRes:{value:new THREE.Vector2(1,1)},uNight:LOOK.night,uGlowK:LOOK.glowK,uCool:LOOK.cool},

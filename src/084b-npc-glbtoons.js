@@ -1,4 +1,7 @@
 // The owner's eight .glb toons (donut, origami fox, bear in the coat, Mr. Blocks, ember knight, Number 80, rain fish, manatee): fetched after the start, walking the street.
+import {QS} from './006-map-pre.js';
+import {PARTSNPC} from './080-npc-parts.js';
+import {RIGNPC} from './083-npc-rig.js';
 const GLBTOONS={list:[]}; window.GLBTOONS=GLBTOONS;
 { const DATA=__LAZY__("data/toons-glb.json");
   const SPR={ earL:{f:-.15,s:.12,k:70,c:6,lim:.4}, earR:{f:-.15,s:.12,k:70,c:6,lim:.4}, jL:{f:-.25,s:.1,k:45,c:5,lim:.35}, jR:{f:-.25,s:.1,k:45,c:5,lim:.35}, jB:{f:-.3,k:40,c:5,lim:.4},

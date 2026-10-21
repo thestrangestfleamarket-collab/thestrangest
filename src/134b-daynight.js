@@ -1,3 +1,10 @@
+// THE DAY AND NIGHT: DN sets the day and night looks and the panel for tuning them.
+import {SHARED} from './003-shx.js';
+import {CLOCK, DN, FAR3, PARK, SKY, WX} from './003b-systems.js';
+import {scene} from './004-main.js';
+import {SAVE} from './005-save.js';
+import {MISTE, QS, SYS, TILE} from './006-map-pre.js';
+import {HEMI} from './064-map-post.js';
 Object.assign(DN,{lk:1,mode:'day'});
 { const U=SKY.U, Q=k=>(QS.get(k)??''), D0={day:{h:15.5,sun:1,amb:1,zen:'#3d7ed8',hor:'#cfe2f4',cld:.15,cy:12,cb:1.05,cov:.6,cl:1.25,m0:48,m1:34,hz:.6,lamp:1,star:1,moon:1},
     night:{h:22.5,sun:1.3,amb:1.25,zen:'#04060e',hor:'#141c40',cld:.1,cy:4,cb:.75,cov:.62,cl:.85,m0:34,m1:26,hz:.25,lamp:1.25,star:1.3,moon:1}};

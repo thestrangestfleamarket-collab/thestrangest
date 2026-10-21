@@ -1,4 +1,19 @@
 // THE FRAME: the main loop (frame): movement, collision, water, sun shade, lamps, rooms, culling, then the render.
+import {SHARED, THREE} from './003-shx.js';
+import {AMB, BOAT, BROOK, BWK, CITY, CLOCK, CULL, DRESS, DRM, ED, FAR3, FEEL, FIGFX, INTERIORS, keys, LINES, LITE, LOOK, MUS, NPCS, PARK, PB, PERFX, PH, PNM, pos, RAG, ROOMS, SFX, SGM, st, STAGE, UI, VIT, W3, WHERE, WIELD, wvV, ZONES} from './003b-systems.js';
+import {art, EffectComposer, frustum, OCAM, OutputPass, PPU, pxS, renderer, RenderPass, RES, resize, RESMAX, RH, rppu, RW, scene, SCL, ShaderPass, statEl, V0, vpu, ZMAX} from './004-main.js';
+import {applyTime, ASTEP, BF, C2, cutWalls, lamps, MODS, nightTo, SEEN, shopGroups, STORE, SYS, TILE, ZU} from './006-map-pre.js';
+import {FLAME} from './007-fire.js';
+import {PEEK} from './008-batch.js';
+import {WATER} from './009-down.js';
+import {FOUNT} from './060a-fount.js';
+import {MAPLV} from './064-map-post.js';
+import {RINGX} from './065-ring.js';
+import {RIVER} from './066-river.js';
+import {AX, AY, cloud, PICH, PW, uimg, you} from './071-main-11.js';
+import {OUTL} from './072-walker3d.js';
+import {loose, looseDraw, P, PHH, PHYOU, phyStep, phyYouNow, ragBlend, ragPose, ragStart, ragStep, ragStrikes, setPhys, STATIC, TL, view0} from './073-main-12.js';
+import {FLOATS} from './074-floats.js';
 
 looseDraw();
 let looseAcc=0, J0=null, J0t=0; SHARED.trip=false; const SUNG={t:0,lit:0,k:0,rc:new THREE.Raycaster(),o:new THREE.Vector3(),hit:[]};
@@ -89,3 +104,4 @@ SHARED.composer.addPass(new OutputPass());
 { const SH={on:true,lv:2}, el=document.getElementById('shd'), draw=()=>{ W3.lv.value=SH.on?(SH.lv>=2?2:1):0; el.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.s?String(SH.on):String(SH.on&&SH.lv===+b.dataset.l))); el.querySelector('[data-s]').textContent=SH.on?'ON':'OFF'; };
   el.querySelectorAll('button').forEach(b=>b.onclick=()=>{ if(b.dataset.s)SH.on=!SH.on; else{ SH.lv=+b.dataset.l; SH.on=true; } b.blur(); draw(); }); draw(); }
 const SKEL=__LAZY__("data/skel.json");
+export {clampP, collide, disp, frame, gplane, hit, marker, PAD, PMAX, PMIN, ray, SKEL, VIEW0};

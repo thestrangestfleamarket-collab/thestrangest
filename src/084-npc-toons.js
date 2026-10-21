@@ -1,4 +1,9 @@
 // THE STREET'S TOONS: the tomato, the cat in the raincoat (the owner's .glb body, data/raincat.json), the TV cat, the frog on his scooter, the shark, the manatee, the rain fish, NUMBER 80, the ember knight, MR. BLOCKS and the bear in the coat.
+import {SHARED, THREE} from './003-shx.js';
+import {RING, TILE} from './006-map-pre.js';
+import {PARTSNPC} from './080-npc-parts.js';
+import {STALL} from './081-stalls.js';
+import {RIGNPC} from './083-npc-rig.js';
 const TOONS={}, RAINCAT=__DATA__("data/raincat.json");
 { const {shape,limb,sph,cyl,box,torus,blob,shell}=PARTSNPC.T;
   const part=(name,rank,bone,of)=>({name,rank,bone,of}), BLACK=[0,0,0], WHITE=[.96,.95,.9];
@@ -373,3 +378,4 @@ const TOONS={}, RAINCAT=__DATA__("data/raincat.json");
         if((c.tilt=(c.tilt??9+Math.random()*6)-dt)<1.6&&!m){ const g=Math.sin(Math.max(0,c.tilt)/1.6*Math.PI); B.head.rotation.z=g*.2; if(c.tilt<0)c.tilt=10+Math.random()*8; } } };
     TOONS.bear=make(def,{key:'coatbear',name:'THE BEAR IN THE COAT',metres:3.6,radius:.36,speed:.36,stride:6.5,at:104},10); }
   window.TOONSDBG=()=>Object.fromEntries(Object.entries(TOONS).map(([k,N])=>[k,{key:N.key,x:+N.st.x.toFixed(2),z:+N.st.z.toFixed(2),tris:N.tris,vis:N.g.visible}])); }
+export {TOONS};

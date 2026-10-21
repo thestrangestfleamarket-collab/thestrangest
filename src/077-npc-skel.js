@@ -1,3 +1,10 @@
+// THE SKELETONS: SKELGO makes the dungeon's skeletons, their walking and fighting; DRAGON holds the dragon's model.
+import {SHARED, THREE} from './003-shx.js';
+import {SKIN} from './003a-skin.js';
+import {CLOCK, LINES, NPCS, pos, VIT} from './003b-systems.js';
+import {MAPG, MAPSTAIR, MODS, QS, SOL, TILE} from './006-map-pre.js';
+import {collide, SKEL} from './075-main-13.js';
+import {DUN, makeNPC, stfree} from './076-npc-map.js';
 const SKELGO=()=>SKELGO.p||(SKELGO.p=LOAD('dungeon').then(async()=>{ '@dungeon'; const S=await SKEL();
 MODS.skel=SKELGO;
   const BN=S.rig.names.map(n=>n.replace(/\./g,'_')), JI=Object.fromEntries(BN.map((n,i)=>[n,i]));
@@ -91,3 +98,4 @@ window.SKELDBG=()=>NPCS.filter(N=>N.mixer).map(N=>({key:N.key,x:+N.st.x.toFixed(
 if(!MODS.dungeon||QS.get('trouble'))await SKELGO();
 
 const DRAGON=__LAZY__("data/dragon.json");
+export {DRAGON, SKELGO};

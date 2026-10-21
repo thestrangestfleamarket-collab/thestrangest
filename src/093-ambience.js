@@ -1,3 +1,9 @@
+// THE AMBIENCE: AMB plays background sounds for day, night, indoors and underground.
+import {SHARED} from './003-shx.js';
+import {AMB, CLOCK, NPCS, pos, ROOMS, SFX, WX} from './003b-systems.js';
+import {SAVE} from './005-save.js';
+import {TILE} from './006-map-pre.js';
+import {FOUNT} from './060a-fount.js';
 Object.assign(AMB,{on:true});
 { const S=SAVE.get('amb'); if(S!=null)AMB.on=S==='1';
   const dB=d=>Math.pow(10,d/20), T=TILE;

@@ -1,3 +1,12 @@
+// THE DRAGON: the green dragon that flies over the town, breathes fire and lights its own glow.
+import {SHARED, THREE} from './003-shx.js';
+import {SKIN} from './003a-skin.js';
+import {BLAZE, CLOCK, DRESS, NPCS, PARK, pos, SFX, VIT, WEEDS} from './003b-systems.js';
+import {MAPG, MODS, TILE} from './006-map-pre.js';
+import {FLAME} from './007-fire.js';
+import {WIRES} from './069b-poles.js';
+import {makeNPC} from './076-npc-map.js';
+import {DRAGON} from './077-npc-skel.js';
 { const DFL=[0,1].map(()=>{ const L=new THREE.PointLight(0xff8a30,0,7*TILE,1.6); MAPG.bodega.add(L); return L; }), DGO=S=>{
   const BN=S.rig.names, JI=Object.fromEntries(BN.map((n,i)=>[n,i]));
   const geomOf=M=>SKIN.geom(M,true,false), rigOf=()=>SKIN.rig(S.rig), CLIPS=SKIN.clips(S.clips,BN);

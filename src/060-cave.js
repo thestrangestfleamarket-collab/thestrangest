@@ -1,3 +1,9 @@
+// THE GOLEMS' CAVE: GCAVE builds the golems' cave in the park and sets out the squirrel's tower site.
+import {SHARED, THREE} from './003-shx.js';
+import {CITY, CLOCK, INV, LITE, MAIL, PARK, ROOMS, TRADE, UI} from './003b-systems.js';
+import {scene} from './004-main.js';
+import {FIX, MAPG, PARKCAVE, PARKTOWER, SOL, STORE, TILE} from './006-map-pre.js';
+import {FLAME} from './007-fire.js';
 const GCAVE={ready:false}; window.GCAVE=GCAVE;
 {
   GCAVE.keep=P=>{ if(!GCAVE.S){ const [rx,ry]=P.round, c={x:PARKCAVE[0],y:PARKCAVE[1]}, R=5, tw={x:PARKTOWER[0]-3.4,y:PARKTOWER[1],w:9.5/3,d:3};
@@ -67,3 +73,4 @@ const GCAVE={ready:false}; window.GCAVE=GCAVE;
     GCAVE.tris=dg.attributes.position.count/3; GCAVE.ready=true;
     for(const N of (window.PAWNL||[]))if(/_\d$/.test(N.key)&&!N.sheet){ const p=GCAVE.spot('cave'); if(!p)continue; try{ CITY.stop(N); }catch(e){} N.st.x=p.x; N.st.z=p.z; N.st.to=null; N.g.position.x=p.x; N.g.position.z=p.z; } };
   GCAVE.build=()=>{ try{ build(); }catch(e){ console.warn('CAVE: not built',e); } }; }
+export {GCAVE};

@@ -1,3 +1,8 @@
+// THE SINGER'S VOICE: VOX sings the songs' chords in a made voice.
+import {SGM, SND} from './003b-systems.js';
+import {hash3} from './004-main.js';
+import {GTBOOK} from './108-game-play-3-guitar-2-tunes.js';
+import {imxOut} from './119-game-music-1-engine.js';
 const VOX={song:-1,bar:0,t:0,at:0,q:[],out:null,pan:null,prev:69,on:false,nodes:new Set()};
 const VOXF={a:[[800,1],[1150,.5],[2900,.12]],o:[[450,1],[800,.45],[2830,.1]],u:[[325,1],[700,.35],[2530,.08]]};
 const VOXSONGS=()=>GTBOOK.map((T,i)=>T.chords?i:-1).filter(i=>i>=0);
@@ -26,3 +31,4 @@ function voxStep(dt,now){ '@later'; if(!voxChain())return; const c=SND.ctx, ct=c
     for(const nt of voxBar(T,VOX.bar,C,key)){ if(nt.n!=null)voxNote(440*Math.pow(2,(nt.n-69)/12),VOX.at,nt.d*beat*.96,vow,nt.d>=2?1:.85); VOX.at+=nt.d*beat; }
     VOX.bar++; } }
 function voxStop(){ if(!VOX.on)return; VOX.on=false; const c=SND.ctx; if(VOX.out&&c)VOX.out.gain.setTargetAtTime(0,c.currentTime,.05); for(const all of VOX.nodes)try{ all[0].stop(c.currentTime+.08); }catch(e){} }
+export {VOX, voxStep, voxStop};

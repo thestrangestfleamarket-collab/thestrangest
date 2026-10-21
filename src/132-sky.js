@@ -1,3 +1,9 @@
+// THE SKY: SKY paints the sky's colours through the day, at sunrise, sunset and night.
+import {SHARED, THREE} from './003-shx.js';
+import {CLOCK, LOOK, SKY, WX} from './003b-systems.js';
+import {scene} from './004-main.js';
+import {CEL, LFX, OUT, QS, SMOOTH, SYS} from './006-map-pre.js';
+import {HEMI} from './064-map-post.js';
 
 { const cl=v=>Math.max(0,Math.min(1,v));
   const P=[[-90,0x0b1024,0x060918,0x030409,0x0b1024,0x0b1024],[-18,0x0b1024,0x060918,0x030409,0x0b1024,0x0b1024],[-12,0x1a2048,0x0e1430,0x070a1c,0x2a2440,0x141a38],

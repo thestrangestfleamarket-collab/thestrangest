@@ -1,3 +1,13 @@
+// THE MUSICIAN: MUS, the street musician, and the shared figure makers (musBody, figureMesh) the players use.
+import {SHARED, THREE} from './003-shx.js';
+import {MUS, NPCS, pos, SND, UI, W3} from './003b-systems.js';
+import {PPU, renderer, RES, resize, RESL, RESMAX, scene} from './004-main.js';
+import {SAVE} from './005-save.js';
+import {ASTEP, MAPG, MODS, STORE, TILE, ZU} from './006-map-pre.js';
+import {SOUND} from './091-sfx.js';
+import {GT, GTA, gtAudio, gtMute, gtPlay, GTWR} from './106-game-play-3-guitar-1-body.js';
+import {GTBEAT, GTEND, GTEV, gtNext, GTS, gtSet} from './108-game-play-3-guitar-2-tunes.js';
+import {GTF, gtFing, GTH, GTPOLE, gtPose, NPCARMS, NPCFING, npcSpring} from './109-game-play-3-guitar-3-hands.js';
 Object.assign(MUS,{shelf:true,tick:()=>{}}); STORE.MUS=MUS;
 function musBody(){ const R=RIG; if(!musBody.FG){ R.farOnly(false); R.fine(true); const J=R.build(R.walkPose({ph:0,w:0},null),null).J, FG=R.shell(J,0).filter(p=>/^fing\d\d[LR]$/.test(p.n)); R.fine(false);
     const around=(ps,m)=>{ const b=[1e9,-1e9,1e9,-1e9,1e9,-1e9]; for(const p of ps){ b[0]=Math.min(b[0],p.x-m); b[1]=Math.max(b[1],p.x+m); b[2]=Math.min(b[2],p.y-m); b[3]=Math.max(b[3],p.y+m); b[4]=Math.min(b[4],p.z-m); b[5]=Math.max(b[5],p.z+m); } return b; };
@@ -141,3 +151,4 @@ if(!MUS.shelf){ const R=RIG, V=R.V, AT={x:SHARED.BOD.XS(70),z:SHARED.BOD.ZS(-73)
   shIn.oninput=()=>{ SHARED.RESI=+shIn.value; resize(); shV.textContent=RES()+'x'; try{ SAVE.set('gtsharp',String(SHARED.RESI)); }catch(e){} };
   shIn.addEventListener('pointerdown',e=>e.stopPropagation()); shIn.addEventListener('keydown',e=>e.stopPropagation());
 }
+export {figureMesh, musBody, MUSGEO, musScale, sheetView, spreadPose};

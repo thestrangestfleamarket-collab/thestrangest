@@ -1,3 +1,9 @@
+// THE POWER GRID: GRID links sources, poles, spans and lamps so lights go out when a line is cut.
+import {SHARED, THREE} from './003-shx.js';
+import {DRESS, LITE, PARK} from './003b-systems.js';
+import {renderer, scene} from './004-main.js';
+import {AWAY, FIX, LAY, MAPG, MAPSTAIR, MODS, QS, SOL, STORE, SYS, TILE} from './006-map-pre.js';
+import {FLAME} from './007-fire.js';
 const GRID={on:(()=>{ if(AWAY.has('power'))return false; const q=QS.get('grid'); if(q!=null)return q!=='0'; let v=null; try{ v=localStorage.getItem('market-grid'); }catch(e){} return v!=='0'; })(),
   nodes:[], spans:[], drops:[], servs:[], lamps:new Map(), ready:false, dirty:false, built:false};
 window.GRID=GRID;

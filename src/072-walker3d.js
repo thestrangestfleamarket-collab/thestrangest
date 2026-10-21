@@ -11,6 +11,7 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
   const TET=[[0,5,1,6],[0,1,2,6],[0,2,3,6],[0,3,7,6],[0,7,4,6],[0,4,5,6]], CO=[[0,0,0],[1,0,0],[1,1,0],[0,1,0],[0,0,1],[1,0,1],[1,1,1],[0,1,1]];
   const ramp=MATS.map(m=>(R.RAMP[m]||['#ff00ff','#ff00ff','#ff00ff','#ff00ff']).map(h=>new THREE.Color(h)));
   W3.wholeBox=/wholebox/.test(location.search);
+  W3.lite=QS.get('walker')==='lite';
   W3.ramp=ramp; W3.meshOf=(P,step,fine,RB)=>meshOf(P,step,fine,RB); W3.legs=R.PIECES.map(n=>/^(thigh|shin|shoe)/.test(n)?(n.endsWith('L')?1:2):0);
   const PRE=new WeakMap(); W3.warm=(P,step,fine,RB)=>{ PRE.set(P,{step,fine,RB,g:meshOf0(P,step,fine,RB)}); };
   W3.fine=P=>P.step<1||/^(head|hair|beard|brow|eye|nose|ear|mouth)/.test(P.n);
@@ -43,9 +44,28 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
       const a=acc[c]; for(let q=0;q<3;q++){ a.p[q]+=fit[i*6+q]; a.nn[q]+=fit[i*6+3+q]; } a.k++; cid[i]=c; }
     const tri=[]; for(let i=0;i<n;i+=3){ const a=cid[i],b=cid[i+1],c=cid[i+2]; if(a!==b&&b!==c&&a!==c)tri.push(a,b,c); }
     const out=new Float32Array(tri.length*6), om=[]; tri.forEach((c,i)=>{ const a=acc[c], l=Math.hypot(...a.nn)||1; for(let q=0;q<3;q++){ out[i*6+q]=a.p[q]/a.k; out[i*6+3+q]=a.nn[q]/l; } om.push(a.m); }); return {fit:out,mats:om}; }
-  R.fine(true); const PCS0=R.shell(rest.J,0).filter(P=>P.on!=='prop'&&P.on!=='world'&&P.n!=='beard'); R.fine(false);
   const around=(ps,m)=>{ const b=[1e9,-1e9,1e9,-1e9,1e9,-1e9]; for(const p of ps){ b[0]=Math.min(b[0],p.x-m); b[1]=Math.max(b[1],p.x+m); b[2]=Math.min(b[2],p.y-m); b[3]=Math.max(b[3],p.y+m); b[4]=Math.min(b[4],p.z-m); b[5]=Math.max(b[5],p.z+m); } return b; };
-  const PCS=[]; for(const P of PCS0){ const f=/^fing(\d)(\d)([LR])$/.exec(P.n); if(!f){ if(/^hand[LR]$/.test(P.n)){ P.bb=around([rest.J['wrist'+P.n.slice(-1)]],4.5); P.step=.25; P.cell=.2; } PCS.push(P); continue; }
+  function liteShell(){ const J=rest.J, {V,add,sub,mul,ell,rcone,rbox,box}=R, P=[], put=(n,m,d,ps,mrg,st,cl)=>P.push({n,m,d,bb:around(ps,mrg),step:st,cell:cl});
+    const sw=Math.abs(J.shoulderL.x)*0.72+2.2, hc=add(J.head,mul(sub(J.headTop,J.head),0.44)), hr=V(5.3,6.1,5.6), hhc=add(hc,V(0,0.9,-0.5));
+    put('head','skin',p=>ell(p,hc,hr),[J.head,J.headTop],7,1.5,1.5);
+    put('hair','hair',p=>Math.max(ell(p,hhc,V(hr.x+0.6,hr.y+0.5,hr.z+0.8)),(hc.y-2.0)-p.y,p.z-(hc.z+2.0)),[J.head,J.headTop],8,1.7,1.9);
+    put('neck','skin',p=>rcone(p,J.neck,J.headBase,2.6,2.2),[J.neck,J.headBase],4,1.6,2.0);
+    const tc=add(mul(add(J.chest,J.pelvis),0.5),V(0,0.3,0)), th=V(sw,(J.chest.y-J.pelvis.y)/2+2.4,4.4);
+    put('torso','shirt',p=>rbox(p,tc,th,2.3),[J.chest,J.pelvis,J.shoulderL,J.shoulderR],6,1.6,2.4);
+    put('hips','pants',p=>rbox(p,add(J.pelvis,V(0,-0.4,0)),V(sw*0.92,3.0,4.1),2.0),[J.pelvis,J.hipL,J.hipR],5,1.6,2.4);
+    for(const n of 'LR'){ const S=J['shoulder'+n],E=J['elbow'+n],W=J['wrist'+n],H=J['hip'+n],K=J['knee'+n],Ak=J['ankle'+n],toe=J['toe'+n],heel=J['heel'+n],tip=J['fingers'+n]||W;
+      put('sleeve'+n,'shirt',p=>rcone(p,S,add(S,mul(sub(E,S),0.34)),2.9,2.5),[S,E],4,2,2.4);
+      put('upperArm'+n,'skin',p=>rcone(p,S,E,2.4,2.05),[S,E],4,2,2.4);
+      put('forearm'+n,'skin',p=>rcone(p,E,W,2.05,1.7),[E,W],4,2,2.4);
+      put('hand'+n,'skin',p=>rcone(p,add(W,mul(sub(tip,W),0.15)),tip,1.9,1.2),[W,tip],4,1.7,2.0);
+      put('thigh'+n,'pants',p=>rcone(p,H,K,3.3,2.6),[H,K],5,2,2.4);
+      put('shin'+n,'pants',p=>rcone(p,K,Ak,2.6,2.0),[K,Ak],5,2,2.4);
+      put('shoe'+n,'shoes',p=>box(p,add(mul(add(heel,toe),0.5),V(0,0.9,0.4)),V(2.2,1.7,3.4)),[heel,toe,Ak],4,1.7,2.2); }
+    return P; }
+  let PCS=[];
+  if(W3.lite) PCS=liteShell();
+  else{ R.fine(true); const PCS0=R.shell(rest.J,0).filter(P=>P.on!=='prop'&&P.on!=='world'&&P.n!=='beard'); R.fine(false);
+  for(const P of PCS0){ const f=/^fing(\d)(\d)([LR])$/.exec(P.n); if(!f){ if(/^hand[LR]$/.test(P.n)){ P.bb=around([rest.J['wrist'+P.n.slice(-1)]],4.5); P.step=.25; P.cell=.2; } PCS.push(P); continue; }
     if(f[2]!=='0')continue; const sib=[1,2].map(j=>PCS0.find(q=>q.n==='fing'+f[1]+j+f[3])), d0=P.d, J=rest.J, k=j=>J['k'+f[1]+j+f[3]];
     PCS.push({...P,d:p=>Math.min(d0(p),...sib.map(q=>q.d(p))),bb:around([k(0),k(1),k(2),k(3)],1.2),step:.18,cell:.14}); }
   { const H=rest.J.head, {rbox,ell,box}=R, Vv=R.V, ad=R.add, HB=[H.x-11,H.x+11,H.y-14,H.y+11,H.z-11,H.z+11];
@@ -70,7 +90,7 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
     EYES.forEach((E,k)=>{ const R2=E.map(r=>({x:RX(r),y:RY(r),m:r[4],o:r[5]})), sx=p=>-Math.abs(p.x-H.x);
       const r2=(p,r)=>{ const x=sx(p), y=p.y-H.y; if(r.o){ const cx=(r.x[0]+r.x[1])/2, cy=(r.y[0]+r.y[1])/2; return Math.hypot(x-cx,y-cy)-(r.x[1]-r.x[0])*.45; } return Math.max(r.x[0]-x,x-r.x[1],r.y[0]-y,y-r.y[1]); };
       PCS.push({n:'eyes'+k,on:'head',m:E[0][4],bb:[H.x-5.5,H.x+5.5,H.y-1.5,H.y+3.5,H.z+1,H.z+12],step:.18,cell:.14,
-        d:p=>Math.max(hd(p)-.22,Math.min(...R2.map(r=>r2(p,r))),H.z+2-p.z), paint:p=>{ let m=null; for(const r of R2)if(r2(p,r)<.03)m=r.m; return m; }}); }); }
+        d:p=>Math.max(hd(p)-.22,Math.min(...R2.map(r=>r2(p,r))),H.z+2-p.z), paint:p=>{ let m=null; for(const r of R2)if(r2(p,r)<.03)m=r.m; return m; }}); }); } }
   const NP=PCS.length; W3.HIDE=new Array(NP).fill(false); W3.idx=n=>PCS.findIndex(P=>P.n===n); W3.PM={value:PCS.map(()=>new THREE.Matrix4())}; W3.pcs=PCS;
   const MOVE=`attribute float pidx; uniform mat4 uPM[${NP}];`, AT=`mat4 PM=uPM[int(pidx+0.5)];`;
   const VS=MOVE+`attribute vec3 c0,c1,c2,cd; varying vec3 vC0,vC1,vC2,vCd,vN,vW; void main(){ `+AT+` vN=mat3(PM)*normal; vC0=c0; vC1=c1; vC2=c2; vCd=cd; vec4 w=modelMatrix*(PM*vec4(position,1.)); vW=w.xyz; gl_Position=projectionMatrix*viewMatrix*w; }`;

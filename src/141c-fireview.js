@@ -13,9 +13,9 @@ import {BATCH} from './008-batch.js';
   const wait=ms=>new Promise(r=>setTimeout(r,ms)), frames=k=>new Promise(r=>{ const f=()=>--k<=0?r():requestAnimationFrame(f); requestAnimationFrame(f); });
   const fade=async(txt,fn)=>{ busy=true; await FADE.run(txt,fn,{hold:200}); busy=false; };
   F.out=()=>{ if(busy)return; fade(F.built?'YOUR FIRE ESCAPE':'LOADING YOUR FIRE ESCAPE...',async()=>{ await STORE.offGo(F.name); UI.goTo(X(CX),Z(WY+1.05),Y(HZ)); SHARED.heading=0; if(UI.persp&&window.__dbg)__dbg.face(Math.PI); }); };
-  F.back=()=>{ if(busy)return; fade('YOUR APARTMENT',()=>{ if(USE.seat){ USE.seat=null; st.sit=null; } UI.goTo(X(U(AWX)),Z(V(1.1)),APTS.lvY(2)); SHARED.heading=0; }); };
+  F.back=()=>{ if(busy)return; fade('YOUR APARTMENT',()=>{ if(USE.seat){ USE.seat=null; st.sit=null; } UI.goTo(X(U(AWX)),Z(V(1.1)),APTS.lvY(APTS.my)); SHARED.heading=0; }); };
   const hit=(w,h,d,x,y,z)=>{ const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),new THREE.MeshBasicMaterial({visible:false})); m.position.set(x,y,z); scene.add(m); return m; };
-  let plaque=null; APTS.furnish(2,()=>{ UI.thing({name:'YOUR FIRE ESCAPE',ghost:1,obj:hit(1.1*T*KK,SHARED.BOD.Y(52),.3*T,X(U(AWX)),SHARED.BOD.Y(2*S+68+RZ),Z(V(.2))),reach:1.4*T,near:2.6*T,tall:1.4*T,act:()=>{ if(APTS.in&&APTS.floor()===2)F.out(); }});
+  let plaque=null; APTS.furnish(APTS.my,()=>{ UI.thing({name:'YOUR FIRE ESCAPE',ghost:1,obj:hit(1.1*T*KK,SHARED.BOD.Y(52),.3*T,X(U(AWX)),SHARED.BOD.Y(APTS.my*S+68+RZ),Z(V(.2))),reach:1.4*T,near:2.6*T,tall:1.4*T,act:()=>{ if(APTS.in&&APTS.floor()===APTS.my)F.out(); }});
   const F3={Y:'101101010010010',O:'111101101101111',U:'101101101101111',R:'110101110101101',A:'010101111101101',P:'110101110100100',T:'111010010010010',M:'101111101101101',E:'111100110100111',N:'110101101101101'};
   plaque=(()=>{ const txt='YOUR APARTMENT', W=61, H=9, cv=document.createElement('canvas'); cv.width=W; cv.height=H; const g=cv.getContext('2d'); g.fillStyle='#7a5a24'; g.fillRect(0,0,W,H); g.fillStyle='#c8a050'; g.fillRect(1,1,W-2,H-2);
     let x=3; g.fillStyle='#2a1e10'; for(const ch of txt){ const q=F3[ch]; if(q)for(let r=0;r<5;r++)for(let c=0;c<3;c++)if(q[r*3+c]==='1')g.fillRect(x+c,2+r,1,1); x+=ch===' '?2:4; }
@@ -167,7 +167,7 @@ import {BATCH} from './008-batch.js';
   SYS.add('places',(dt)=>{ const on=F.built&&SHARED.LVL==='up'&&onL(pos.x,pos.z);
     if(on!==F.on){ F.on=on; G.visible=on; }
     if(plaque&&plaque.parent)plaque.visible=!(APTS.in&&iy(pos.z)<V(5.6));
-    if(!busy&&!on&&APTS.in&&APTS.floor()===2&&into(U(AWX),V(.55),ix(pos.x),iy(pos.z)))F.out();
+    if(!busy&&!on&&APTS.in&&APTS.floor()===APTS.my&&into(U(AWX),V(.55),ix(pos.x),iy(pos.z)))F.out();
     if(!on){ if(light)light.intensity=0; lp={x:pos.x,z:pos.z}; return; }
     if(FAR3.mesh)FAR3.mesh.visible=false; if(FAR3.panels)FAR3.panels.visible=false; if(FAR3.trees)FAR3.trees.visible=false; if(FAR3.FU)FAR3.FU.uMK.value=0; MISTE.x=0; if(SKY.U.uMistK)SKY.U.uMistK.value=0; if(scene.fog===FAR3.fog)scene.fog=null;
     if(MID){ const o=!UI.persp, cx=SHARED.cam.position.x-pos.x, cz=SHARED.cam.position.z-pos.z, hl=Math.hypot(cx,cz)||1, tp=(SHARED.cam.position.y-SHARED.py)/hl, key=o?Math.round(Math.atan2(cx,cz)*20)+':'+Math.round(tp*50):'p';

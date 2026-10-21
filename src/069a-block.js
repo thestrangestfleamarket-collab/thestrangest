@@ -45,7 +45,7 @@ const BLK={blds:[],signs:[],band:()=>null,built:0,in:false,hi:[],LO:.5}; window.
     solid(o.x0,o.y0,o.x1,o.y1,o.h); BLK.blds.push({...o,mesh:m}); return m; }
   const TINTS=[[1.3,.82,.66],[1.12,1,.84],[.92,.95,1.02],[1.2,.95,.8],[1.05,.9,.92],[.98,1.02,.92],[1.25,.88,.72],[1.1,1.04,.95],[.9,.9,.96]];
   [[B.x0,-62.4],[-33.6,30],[30,90],[90,111],[124,150],[150,B.x1]].forEach(([a,b],i)=>building({x0:a,x1:b,y0:B.row2[0],y1:B.row2[1],h:140,n:0,k:300+i*7,tint:TINTS[3+i],front:'shut',back:'glass',lit:.2,row:2,lazy:1,doors:Math.max(1,Math.round((b-a)/14)),blankSide:true,cheap:true}));
-  for(let i=0;i<7;i++){ const y=17.5+22*i; building({x0:RING.wx0-16.5,x1:RING.wx0-3.5,y0:y-9.5,y1:y+9.5,h:150,e:1,k:600+i*13,tint:TINTS[(i+2)%TINTS.length],front:'shut',back:'shut',lit:.12,row:4,doors:1,blankSide:true,cheap:true}); }
+  for(let i=0;i<7;i++){ const [dx,y]=SHELLS[i]; building({x0:RING.wx0-16.5+dx,x1:RING.wx0-3.5+dx,y0:y-9.5,y1:y+9.5,h:150,e:1,k:600+i*13,tint:TINTS[(i+2)%TINTS.length],front:'shut',back:'shut',lit:.12,row:4,doors:1,blankSide:true,cheap:true}); }
   for(let i=0;i+1<MAINROW.length;i++){ const a=MAINROW[i][1]+.1, b=MAINROW[i+1][0]-.1; if(b-a>1.5)building({x0:a,x1:b,y0:B.back,y1:BOD.OY,h:130,n:0,k:400+i*11,tint:TINTS[i%TINTS.length],front:'shut',back:'shut',lit:0,blankFace:true,blankSide:true,cheap:true,row:1}); }
   const BX=[], GL=[], zA=B.alley[1], zB=B.alley[0], mid=(zA+zB)/2;
   const CR=[[98.5,zA-.5,.9,.9,22,[.18,.42,.36]],[98.5,zA-.5,.9,.9,44,[.22,.48,.62]],[121,zA-.6,1.1,1.1,40,[.2,.34,.24]],[73,zB+.6,1.3,.9,30,[.54,.42,.26]],[140,zB+.6,1,1,40,[.2,.34,.24]],[63,zB+.5,.8,.8,24,[.6,.18,.16]]];

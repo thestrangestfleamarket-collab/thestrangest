@@ -3804,8 +3804,9 @@ initial download and load super fast"; then "Go")
   west of the golems' cave), reserved from the trees/hills/undergrowth/lamps by `COVE.keep(P)` folded into park.js's keep lists and its
   lamp grid. A **big lake** (`WATER.body`, the park-pond pattern, a double mask: inside the lake radius and outside the island), with a
   **towering mossy schist cliff** rising from a rock island in it — ~120 big flat-shaded dodecahedron boulders stacked to ~16 tiles,
-  grey high, mossed low — and the enterable **cavern** carved at its foot (the golems'-cave dome reskinned, mouth to the water). A **long
-  wooden pier** of instanced boxes reaches from the south shore out to the cave mouth; two mouth torches + an ember fire inside (`FLAME`,
+  grey high, mossed low — and the enterable **cavern** at its foot, its dome shell **buried in boulders** too (owner, 21 Oct: "make it
+  look like its made out of lots of boulders, not one smooth cave … cover it with moss"). A **stone bridge** of rough mossy slabs on
+  boulder piers reaches from the south shore out to the cave mouth; two mouth torches + an ember fire inside (`FLAME`,
   warm `LITE` lights on the budget); tall dark pines round the shore melt into the mist. All solids are stock `MeshLambertMaterial`, so
   the owner's teal mist (`FAR3.mist`) fogs them and follows the clock. The cavern is an enterable room (`STORE.rooms`, crown cut above
   `y1` so the iso camera sees in); its pool water is tinted a deep teal (its own `uDeep`) so it doesn't flash the pond's bright cyan.

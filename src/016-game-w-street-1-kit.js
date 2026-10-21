@@ -18,7 +18,7 @@ MK.awning=(x0,x1,y,z,ca,cb,name,sub)=>{ '@later'; PNAME='awning'; const d=.9, W=
   return prop([WF(x0,x1,y),Bw(x0,x1,y,-.1,d,z-4,z,ca,{foot:0,top,fj:(u,z2)=>sh(ca,.9),fi:(v,z2)=>sh(cb,.7)}),
     Bw(x0,x1,y,d-.08,d,z-30,z-4,cb,{foot:0,fj:val,fi:()=>sh(cb,.7),top:()=>cb}),
     Bw(x0+.05,x0+.11,y,d-.06,d,0,z-24,[60,62,66],{foot:0}),Bw(x1-.11,x1-.05,y,d-.06,d,0,z-24,[60,62,66],{foot:0})],null,{solids:[Bw(x0+.05,x0+.11,y,d-.06,d,0,z-24,[0,0,0]),Bw(x1-.11,x1-.05,y,d-.06,d,0,z-24,[0,0,0])]}); };
-MK.valance=(x0,x1,y,z,ca,cb,name,sub)=>{ '@later'; PNAME='awning'; const d=.13, W=Math.round((x1-x0)*FP), lines=[[name,[250,246,230],3,4]]; if(sub)lines.push([sub,[250,246,230],1,20]);
+MK.valance=(x0,x1,y,z,ca,cb,name,sub)=>{ PNAME='awning'; const d=.13, W=Math.round((x1-x0)*FP), lines=[[name,[250,246,230],3,4]]; if(sub)lines.push([sub,[250,246,230],1,20]);
   const val0=face(W,26,cb,lines,FL(y),x0,z-2,x1-x0), val=(u,zz)=>{ const c=val0(u,zz); return c&&hash(Math.floor(u*24),Math.floor(zz),88)<.08?sh(c,.9):c; };
   const top=(u,v)=>{ const n=hash(Math.floor(u*12),Math.floor(v*12),87); return n<.12?sh(ca,.92):n>.96?sh(ca,1.06):ca; };
   return prop([WF(x0,x1,y),Bw(x0,x1,y,-.04,d,z-2,z,ca,{foot:0,top,fj:(u,z2)=>sh(ca,.9),fi:(v,z2)=>sh(cb,.7)}),

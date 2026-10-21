@@ -1,7 +1,7 @@
 // RIGNPC: a character rig from bones and parts (smooth skin weights, see-through parts) or a baked skinned mesh; its springs, walk and limbs.
 const RIGNPC={};
 { const V1=new THREE.Vector3(), M1=new THREE.Matrix4();
-  RIGNPC.make=(def,o)=>{ const bones=[], by={}, GL=def.parts.filter(p=>p.glass); def=Object.assign({},def,{parts:def.parts.filter(p=>!p.glass)});
+  RIGNPC.make=(def,o)=>{ const bones=[], by={}, GL=(def.parts||[]).filter(p=>p.glass); def=Object.assign({},def,{parts:(def.parts||[]).filter(p=>!p.glass)});
     for(const [n,pa,at] of def.bones){ const B=new THREE.Bone(); B.name=n; B.userData.at=at; const P=pa&&by[pa];
       if(P){ const q=P.userData.at; B.position.set(at[0]-q[0],at[1]-q[1],at[2]-q[2]); P.add(B); } else B.position.set(at[0],at[1],at[2]);
       B.userData.rest=B.position.clone(); by[n]=B; bones.push(B); }

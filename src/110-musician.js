@@ -1,4 +1,4 @@
-const MUS={}; STORE.MUS=MUS;
+const MUS={shelf:true,tick:()=>{}}; STORE.MUS=MUS;
 function musBody(){ const R=RIG; if(!musBody.FG){ R.farOnly(false); R.fine(true); const J=R.build(R.walkPose({ph:0,w:0},null),null).J, FG=R.shell(J,0).filter(p=>/^fing\d\d[LR]$/.test(p.n)); R.fine(false);
     const around=(ps,m)=>{ const b=[1e9,-1e9,1e9,-1e9,1e9,-1e9]; for(const p of ps){ b[0]=Math.min(b[0],p.x-m); b[1]=Math.max(b[1],p.x+m); b[2]=Math.min(b[2],p.y-m); b[3]=Math.max(b[3],p.y+m); b[4]=Math.min(b[4],p.z-m); b[5]=Math.max(b[5],p.z+m); } return b; };
     for(const p of FG){ const f=/^fing(\d)(\d)([LR])$/.exec(p.n); p.bb=around([J['k'+f[1]+f[2]+f[3]],J['k'+f[1]+(+f[2]+1)+f[3]]],1); p.step=.12; p.cell=.12; p.share=p; }
@@ -81,7 +81,7 @@ function sheetFig(g){ const V=RIG.V, MT=RIG.MATS; if(!MT.includes('sheet')){ MT.
   return {PCS,FM,P,stat,cloth,tris:FM.tris+idx.length/3,pose:(dt,B,F,fr,fl)=>{ PCS.forEach((pc,i)=>FM.set(i,pc.n==='guitar'?F:fr?fr(pc.on||pc.n):R.frameOf(pc.on||pc.n,B))); M(F,sg.matrix); sg.matrixWorldNeedsUpdate=true; cloth(dt,B,F,fl); }}; }
 function gtBody(a,dt){ '@later'; const R=RIG; R.farOnly(false); GTS.t+=dt; const t=GTS.t, P=gtPose(t); npcSpring(a,P,dt,NPCARMS); gtFing(P,R.build(P,null),P._T); npcSpring(a,P,dt,NPCFING); a.t+=dt;
   P.nod+=Math.sin(a.t*1.6)*0.6*R.D+Math.sin(t/GTBEAT*Math.PI)*0.8*R.D; a.P=P; return R.settle(R.build(P,null),0); }
-{ const R=RIG, V=R.V, AT={x:BOD.XS(70),z:BOD.ZS(-73),hd:Math.PI/2,y:0};
+if(!MUS.shelf){ const R=RIG, V=R.V, AT={x:BOD.XS(70),z:BOD.ZS(-73),hd:Math.PI/2,y:0};
   const g=new THREE.Group(); MAPG.bodega.add(g); MUS.g=g; const SF=sheetFig(g), PCS=SF.PCS; MUS.tris=SF.FM.tris; MUS.per=SF.FM.per; MUS.ghost=SF.stat;
   g.position.set(AT.x,AT.y,AT.z); g.rotation.set(0,AT.hd,0); musScale(g); MUS.at=AT; MUS.on=true; if(typeof NPCS!=='undefined'&&NPCS.extra&&!NPCS.extra.includes(MUS))NPCS.extra.push(MUS);
   const F0={o:{...GTF.o},x:{...GTF.x},y:{...GTF.y},z:{...GTF.z}};

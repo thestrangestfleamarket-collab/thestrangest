@@ -1,6 +1,6 @@
 # The Strangest Flea Market in 3D (three.js)
 
-The owner (Bralynn) is rebuilding The Strangest Flea Market in three.js, one piece at a time. This repo is `bralynnb/thestrangest` (`bralynnbell` was the owner's old GitHub name: start sessions from `bralynnb/thestrangest`, or pull request updates never reach them).
+The owner (Bralynn) is rebuilding The Strangest Flea Market in three.js, one piece at a time. This repo is `thestrangestfleamarket-collab/thestrangest` (once `bralynnbell/thestrangest`, then `bralynnb/thestrangest`, under the owner's old GitHub names; it moved to the `thestrangestfleamarket-collab` account on 19 Oct 2026): start sessions from `thestrangestfleamarket-collab/thestrangest`, or pull request updates never reach them.
 It is not the live game (`bralynnb/tsfm`); since 18 Oct 2026 (after tsfm#803) nothing here reads it or goes there. The game is THE MARKET, one page,
 live on the website thestrangestfleamarket.com (Cloudflare Workers Builds deploy `main`). There is no claude.ai copy any more
 (owner, 20 Oct 2026): never publish the game as a claude.ai artifact.
@@ -44,7 +44,7 @@ by `tools/chunks.cjs` (needs `acorn`, which `npm ci` brings; without it everythi
 sees every name around it (handed in, or read live when it can change). Call `LOAD` (behind the place's black fade) before such a
 function first runs; if one runs before its chunk came, it is fetched there and then (the page waits for it) and the console says
 `chunk name was not loaded before use (#n)` (`dist/chunks.txt` lists every cut function by number): add the missing `LOAD`.
-Places: `dungeon`, `park`, `dojo`, `fire`, `club`, `arcade`, `vcr`, `bath` (on the way in: `STORE.offGo`/`enter`/`ensure`, the
+Places: `dungeon`, `park`, `fire`, `arcade`, `bath` (on the way in: `STORE.offGo`/`enter`/`ensure`, the
 `ROOMS` swap, `PARK.load`, the dungeon's `go`, a saved spot); `later` (code the start never runs, fetched as soon as the start is
 done) is marked by `tools/later.cjs` from what the start runs (re-run it in CI now and then: `SKIP=later MIN=0 python3 build.py &&
 node tools/later.cjs`; new code stays in the start file until then). `tests/places.cjs` enters every place on the website and fails

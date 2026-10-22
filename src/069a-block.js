@@ -170,8 +170,10 @@ Object.assign(BLK,{blds:[],signs:[],band:()=>null,built:0,in:false,hi:[],LO:.5})
   const frames=n=>new Promise(r=>{ const f=()=>--n<=0?r():requestAnimationFrame(f); requestAnimationFrame(f); });
   const build=async()=>{ const t0=performance.now(); tl=t0; for(const q of BLK.hi)q.hi=await q.paint(); await make(); BLK.step=Math.max(BLK.step||0,performance.now()-tl); BLK.ms=+(performance.now()-t0).toFixed(1); BLK.built=1; };
   BLK.go=async()=>{ '@later'; if(BLK.fade||BLK.built)return; BLK.fade=1; await FADE.run('ENTERING THE ALLEY',()=>BLK.job||(BLK.job=build()),{cut:true}); BLK.fade=0; };
-  { const zb=ZS(B.back), sg=Math.sign(ZS(B.alley[0])-zb)||-1; BLK.tick=()=>{ if(!window.__started||ROOMS.cur||UI.freeCam||ED.on||window.POSOK===false)return; const d=(pos.z-zb)*sg, up=SHARED.LVL==='up';
-      BLK.in=up&&d>.2*T; const need=BLK.in||up&&(d>-10*T||d>-32*T&&(UI.persp||(SHARED.cam.position.z-pos.z)*sg>0));
+  { const za=Math.min(ZS(B.alley[0]),ZS(B.alley[1])), zc=Math.max(ZS(B.alley[0]),ZS(B.alley[1])), h0=Math.min(XS(B.hudson[0]),XS(B.hudson[1])), h1=Math.max(XS(B.hudson[0]),XS(B.hudson[1])), x0=Math.min(XS(B.x0),XS(B.x1)), x1=Math.max(XS(B.x0),XS(B.x1));
+    BLK.inAlley=(x,z)=>z>za&&z<zc&&x>x0&&x<x1&&!(x>h0&&x<h1);
+    BLK.tick=()=>{ if(!window.__started||ROOMS.cur||UI.freeCam||ED.on||window.POSOK===false)return; const up=SHARED.LVL==='up';
+      BLK.in=up&&BLK.inAlley(pos.x,pos.z); const need=BLK.in;
       if(BLK.in&&!BLK.built)BLK.go(); else if(need&&!BLK.job)BLK.job=build();
       const v=need&&!!BLK.built; if(v!==!!BLK.shown)vis(v); };
     SYS.add('dress',(dt,p)=>{ BLK.tick(); },'069a-block'); }

@@ -4309,3 +4309,6 @@ Owner: "west st buildings, make sure the front of all buildings face the street 
 
 ## 22 Oct 2026: no neon in the alley
 Owner: "remove all the neons signs for now", then "i just meant remove neon signs from alley, leave in other places". The alley's neon signs are off (`?neon=1` brings them back); every other neon stays.
+
+## 22 Oct 2026: the alley gated and half as wide; the Hudson loads when you go in
+Owner: "the alley should be 50% as narrow and have a gate on both entrances on the central park to promanade path ... the alley should not load unless you go in there. for now its blocked off by gates, both alleys in both directions. (4 gate total) the hudson promanade also shouldnt load untli you go into it" (his loading-zones mockup, mockups/loading-zones.html). The alley is 3.5 wide (the back row moved up, the promenade wider); four iron gates close both alleys at both ends; the alley builds only when you're in it. The river and the fishing pier build the first time you walk down the path past the alley ("ENTERING THE HUDSON") and are drawn only while you're south of the front row.

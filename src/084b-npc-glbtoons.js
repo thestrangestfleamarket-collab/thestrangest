@@ -27,5 +27,5 @@ const GLBTOONS={list:[]}; window.GLBTOONS=GLBTOONS;
       pose:c=>{ RIGNPC.limbs(c,K.o); if(sk)sk(c); } };
     const N=RIGNPC.make(def,Object.assign({key,name:D.name,eye:-1,metres:K.metres,radius:K.radius,speed:K.speed,stride:K.stride},PARTSNPC.street(K.at,-70)));
     GLBTOONS.list.push(N); GLBTOONS[key]=N; return N; };
-  GLBTOONS.load=()=>GLBTOONS.wait||(GLBTOONS.wait=DATA().then(J=>{ for(const k in KIND)if(J.chars[k])make(k,J.chars[k]); return GLBTOONS.list; }));
+  GLBTOONS.load=()=>GLBTOONS.wait||(GLBTOONS.wait=DATA().then(J=>{ for(const k in KIND)if(J.chars[k])make(k,J.chars[k]); if(window.SHOPS&&window.SHOPS.sync)window.SHOPS.sync(); return GLBTOONS.list; }));
   const SH=QS.get('sheet'), go=()=>window.__started||SH&&KIND[SH]?GLBTOONS.load().catch(e=>console.warn('GLBTOONS',e)):setTimeout(go,600); go(); }

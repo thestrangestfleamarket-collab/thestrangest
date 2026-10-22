@@ -56,11 +56,7 @@ await grab('apts',async()=>{ const {X,Z,faceTex,bq,C,facade,FRAME,place}=SHARED.
       if(!arch&&lv===0&&ax<hw+4&&dz>=0&&dz<9){ if(ax<3)return sh(TS,f*1.1); const sl=(dx*(1+dz/(hw*1.5)))/5; return sh(TS,f*(sl-Math.floor(sl)<.2?.62:1)); }
       if(ax<hw&&z<h.z0-5&&z>h.z0-50&&hash(Math.floor(ui/2),7,h.seed|0)<.5)f*=.93; }
     const dq=Math.min(u-a0,a1-u), q=Math.floor(z/22);
-    if(z>=S-8&&z<S)return sh(TS,f*(z===S-1?1.15:z===S-8?.6:1.02));
-    if(dq<((q&1)?.36:.56)){ const qz=z%22; return sh(TS,f*1.06*(qz<2?.58:qz===21?1.12:Math.abs(dq-((q&1)?.36:.56))<.05?.62:tone(q,dq<.2?1:2))); }
-    if(z<S-8){ const c=Math.floor(z/13), zz=z%13, p=ui+(c&1)*15; if(zz<2)return sh(TS,f*.5); if(p%30<2)return sh(TS,f*(p%30<1?.55:.75)); return sh(TS,f*(z<10?.86:1)*(.9+.2*hash(Math.floor(p/30),c+100,19))*(p%30<2?.6:1)); }
-    const s=z%S; if(s>=S-6||s<1)return sh(TS,f*(s===S-6?.66:s===0?1.14:1));
-    const c=Math.floor(z/6), p=ui+(c&1)*7; if(z%6===0||p%14<1)return sh(MO,f*.9); return blk(Math.floor(p/14),c,f,p%14,z%6,14,6); };
+    const c=Math.floor(z/6), p=ui+(c&1)*7, pm=((p%14)+14)%14; if(z%6===0||pm<1)return sh(MO,f*.9); return blk(Math.floor(p/14),c,f,pm,z%6,14,6); };
   const BLC={}, blinds=(a0,a1,seed)=>{ const o=[]; for(let lv=1;lv<ST;lv++)for(const k of [.22,.5,.78]){ const c=a0+(a1-a0)*k; o.push({a0:c-.55,a1:c+.55,z0:lv*S+42,z1:lv*S+94,blind:true,seed:seed+lv*7+k*10|0,lit:hash(seed,lv,k*10|0)<.4}); } return o; };
   const plaster=(u,z,f,tiled)=>{ if(z<6)return sh([96,70,48],f*(z<1?.7:z>4?1.15:1)); if(z>S-10)return sh([200,196,186],f*.9);
     if(tiled&&z<60){ const i=Math.floor(u*24/9), k=Math.floor((z-6)/9), g=(u*24/9-i)<.12||((z-6)/9-k)<.12; return sh(g?[190,188,180]:(i+k)&1?[236,234,226]:[228,226,216],f); }
@@ -86,27 +82,25 @@ await grab('apts',async()=>{ const {X,Z,faceTex,bq,C,facade,FRAME,place}=SHARED.
     if(pl){ const o={pl,foot:Y(w.foot||8),when:()=>APTS.in};
       if(w.inner){ const at=w.ax==='x'?Z(w.at):X(w.at); if(w.ax==='x'){ o.nx=0; Object.defineProperty(o,'nz',{get:()=>Math.sign(pos.z-at)||1}); } else { o.nz=0; Object.defineProperty(o,'nx',{get:()=>Math.sign(pos.x-at)||1}); } } else { o.nx=w.nx; o.nz=w.nz; }
       cutWalls.push(o); } w.pl=pl; return w; }
-  const pane=(w,h,lit,seed)=>{ const cur=hash(seed,2,7)<.5, cc=[[220,200,170],[180,120,110],[150,170,200],[230,230,220]][seed%4], hw=(h.a1-h.a0)*12, hh=h.z1-h.z0;
-    bq(pt(w,0,h.a0,h.z0),pt(w,0,h.a1,h.z0),pt(w,0,h.a1,h.z1),pt(w,0,h.a0,h.z1),faceTex(hw*2,hh,(i,j)=>{ const dx=i+.5-hw, g=glass(dx,hh-j-.5,hw,hh,lit,seed);
-      if(g===BAR)return g; const u=(i+.5)/(hw*2); if(cur&&(u<.2||u>.8))return lit?[cc[0]*.8,cc[1]*.8,cc[2]*.8,1]:sh(cc,.35); return g; }),'A'); };
-  const steel=[34,36,40], FWU=[1.6,4.9,8.1,11.4], BWU=[1.3,3.95,6.55,9.2], DI=.85, DO=1.65, RD=5.3;
-  const ESC=[{yf:A.y1,o:1,walk:[4.9,8.1],lx:11.9},{yf:A.y0,o:-1,walk:[3.95,6.55],lx:9.4}].map(F=>{ const ua=.8, d0=ua+.3; return {...F,ua,d0,d1:d0+RD,ub:12.6,k:0}; });
+  const pane=(w,h,lit,seed)=>SHARED.BOD.window([pt(w,0,h.a0,h.z0),pt(w,0,h.a1,h.z0),pt(w,0,h.a1,h.z1),pt(w,0,h.a0,h.z1)],h.a1-h.a0,h.z1-h.z0,lit,seed,'A',!!h.fw);
+  const steel=[34,36,40], FWU=[3.25,9.75], BWU=[3.25,9.75], DU=6.5, DI=.85, DO=1.65, RD=5.3;
+  const ESC=[{yf:A.y1,o:1,walk:[DU],lx:11.9},{yf:A.y0,o:-1,walk:[DU],lx:1.1}].map(F=>{ const ua=.8, d0=ua+.3; return {...F,ua,d0,d1:d0+RD,ub:12.6,k:0}; });
   const hole=(u,lv,fw)=>({a0:A.x0+u-.55,a1:A.x0+u+.55,z0:lv*S+(fw?3:42),z1:lv*S+94,fw});
-  const door={a0:m-DW,a1:m+DW,z0:0,z1:DH,door:true}, holesF=[door], holesB=[];
-  for(let lv=0;lv<ST;lv++){ for(const u of FWU)if(lv||Math.abs(A.x0+u-m)>2)holesF.push(hole(u,lv,lv&&ESC[0].walk.includes(u))); for(const u of BWU)holesB.push(hole(u,lv,lv&&ESC[1].walk.includes(u))); }
+  const door={a0:m-DW,a1:m+DW,z0:0,z1:DH,door:true}, holesF=[door], holesB=[{...door}];
+  for(let lv=0;lv<ST;lv++){ for(const u of FWU)holesF.push(hole(u,lv,false)); for(const u of BWU)holesB.push(hole(u,lv,false)); if(lv){ holesF.push(hole(DU,lv,true)); holesB.push(hole(DU,lv,true)); } }
   const outer=(id,ax,at,a0,a1,holes,inS,nx,nz)=>wall({id,ax,at,a0,a1,z0:0,z1:AH,holes,cut:true,nx,nz,side:-inS,inS,rev:[120,115,106],paint:(s,u,z)=>s===inS?plaster(u,z%S,ax==='x'?.84:.68,false):(ax==='y'&&z<AH-30?ivy(u,z,.8,Math.round(at*7),AH-30):null)||stone(u,z,ax==='x'?1:.8,AH,ax==='x'?holes:(BLC[at]||(BLC[at]=blinds(a0+.3,a1-.3,Math.round(at*10)))),a0+(ax==='y'?T:0),a1-(ax==='y'?T:0))});
   { let seed=3; for(const h of [...holesF,...holesB])if(!h.door){ h.lit=hash(seed++,1,9)<.55; h.seed=seed; } }
   const OUTW=[outer('front','x',A.y1,A.x0,A.x1,holesF,-1,0,-1),outer('back','x',A.y0,A.x0,A.x1,holesB,1,0,1),outer('west','y',A.x0,A.y0-T,A.y1+T,[],1,1,0),outer('east','y',A.x1,A.y0-T,A.y1+T,[],-1,-1,0)];
   const innerFace=(w,lv)=>{ '@apts'; const s=w.inS, z0=lv*S, z1=lv===ST-1?w.z1:(lv+1)*S, tx=faceTex((w.a1-w.a0)*24,z1-z0,(ii,jj)=>{ const u=w.a0+(ii+.5)/24, z=z1-jj-.5; for(const h of w.holes)if(u>h.a0&&u<h.a1&&z>h.z0&&z<h.z1)return null; return C(w.paint(s,u,z)); });
     wallMesh(pt(w,s,w.a0,z0),pt(w,s,w.a1,z0),pt(w,s,w.a1,z1),pt(w,s,w.a0,z1),tx,[w.pl,HP,LP],false); };
-  for(const h of holesF)if(!h.door&&!h.fw)pane({ax:'x',at:A.y1},h,h.lit,h.seed); for(const h of holesB)if(!h.fw)pane({ax:'x',at:A.y0},h,h.lit,h.seed);
+  for(const h of holesF)if(!h.door)pane({ax:'x',at:A.y1},h,h.lit,h.seed); for(const h of holesB)if(!h.door)pane({ax:'x',at:A.y0},h,h.lit,h.seed);
   const SOLS=[]; APTS.sol=SOLS; for(let lv=0;lv<ST;lv++)SOLS[lv]=[];
   const U=u=>A.x0+u, V=v=>A.y0+v;
   for(const F of ESC){ const Yd=d=>F.yf+F.o*d, B=(u0,u1,d0,d1,z0,z1,top)=>gbox({x0:U(u0),x1:U(u1),y0:Math.min(Yd(d0),Yd(d1)),y1:Math.max(Yd(d0),Yd(d1)),z0,z1,c:steel,foot:0,top:top?(x,y)=>(Math.floor(x*10)+Math.floor(y*10))&1?sh(steel,.6):steel:null},F.o<0?'E':'A');
     const rs=(lv,u0,u1,d0,d1)=>{ const a=Z(Yd(d0)), b=Z(Yd(d1)); SOLS[lv].push([X(U(u0)),Math.min(a,b),X(U(u1)),Math.max(a,b)]); };
     const rail=(lv,u0,u1,d0,d1)=>{ rs(lv,u0,u1,d0,d1); const z=lv*S, al=u1-u0>d1-d0, L=al?u1-u0:d1-d0, n=Math.max(1,Math.round(L/.36));
       B(u0,u1,d0,d1,z+30,z+33); B(u0,u1,d0,d1,z+14,z+16); for(let i=0;i<=n;i++){ const t=i/n*L; al?B(u0+t-.02,u0+t+.02,d0,d1,z,z+30):B(u0,u1,d0+t-.02,d0+t+.02,z,z+30); } };
-    for(const lv of [1,2]){ const z=lv*S; B(F.ua,F.ub,0,DI,z-3,z,1);
+    for(let lv=1;lv<ST;lv++){ const z=lv*S; B(F.ua,F.ub,0,DI,z-3,z,1);
       B(F.ua,F.lx-.4,DI,DO,z-3,z,1); B(F.lx+.4,F.ub,DI,DO,z-3,z,1);
       B(F.ua,F.ub,DO-.06,DO,z-9,z); for(let u=F.ua+.3;u<F.ub;u+=2.4)B(u,u+.06,0,DO,z-12,z-3);
       rail(lv,F.ua,F.ub,DO-.05,DO); rail(lv,F.ua,F.ua+.05,0,DO); rail(lv,F.ub-.05,F.ub,0,DO); }

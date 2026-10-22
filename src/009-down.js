@@ -109,7 +109,7 @@ await grab('down',async()=>{ const solids=SOL.down, fixed=FIX.down, SHL=[]; let 
   const mod=(a,n)=>((a%n)+n)%n, mix=(a,b,t)=>[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t];
   const vn=(x,y,c)=>{ const i=Math.floor(x), j=Math.floor(y), u=x-i, v=y-j, su=u*u*(3-2*u), sv=v*v*(3-2*v), a=hash(i,j,c), b=hash(i+1,j,c), d=hash(i,j+1,c), e=hash(i+1,j+1,c); return (a+(b-a)*su)*(1-sv)+(d+(e-d)*su)*sv; };
   const fbm=(x,y,c)=>vn(x,y,c)*.55+vn(x*2.7,y*2.7,c+1)*.3+vn(x*7.3,y*7.3,c+2)*.15;
-const SL=(()=>{ const W={TK:4.4,P0:4.4,P1:17.4,XW:21.8,L:46,TE:2.5,H:196,XS:12.4,TR:[2.3,19.5],CARL:22.4,CARW:1.8};
+const SL=(()=>{ const W={TK:4.4,P0:4.4,P1:17.4,XW:21.8,L:46,TE:0,H:196,XS:12.4,TR:[2.2,19.6],CARL:22.4,CARW:1.8,MY0:-46.6,EAST:258,WN:-31.5,WS:-44.5,TOP:186};
   W.MID=(W.P0+W.P1)/2; W.COLX=[W.P0+1.5,W.P1-2.2]; W.COLY=[3.5,9,14.5,20,25.5,31,36.5,42]; W.FIXY=[9.25,14.75,20.25,25.75,31.25,36.75,42.25];
   W.BENCH=[11.2,22.4,32.8]; W.BINS=[17.1,28.5]; W.STEPS=[[[44.4,45.6]],[[.6,1.8],[44.4,45.6]]]; W.CARS=[-2.2,20.4]; W.EX0=W.XS-1.5; W.EX1=W.XS+1.5; W.ED=3;
   W.fzAt=(x,y)=>{ const e=x<W.P0?W.P0-x:x-W.P1, s=W.STEPS[x<W.P0?0:1]; return e<.75&&s.some(([a,b])=>y>=a&&y<b)?-8*(1+Math.floor(e/.25)):-32; };
@@ -160,7 +160,7 @@ const SSUB=(()=>{ const W={};
     return prop([{x0,y0,x1,y1,z0:0,z1:46,foot:1,c:Q4.mach,top:()=>Q4.machT,fj:()=>Q4.machD,fi:(v,z)=>z>26&&z<40&&v>y0+.12&&v<y1-.12?Q4.scr:z>15&&z<18&&v>y0+.2&&v<y1-.2?Q4.slot:Q4.mach}]); };
   return W; })();
   const W=SSUB, SZ=-UH, SM=MAPSTAIR, H2=SL.H, {P0,P1,XW,L:LEN,TE,MID}=SL, LT=SL.TR[0];
-  const XC=((SM.x0+SM.x1)/2-72)*TILE, ZB=(SM.y0+77)*TILE, ZT=(SM.y1+77)*TILE, Y=z=>(z-SZ)*ZU+STN.DY, V=(x,y,z)=>[XC-(x-SL.XS)*TILE,Y(z),ZT-y*TILE];
+  const XC=((SM.x0+SM.x1)/2-72)*TILE, ZB=(SM.y0+77)*TILE, ZT=(SM.y1+77)*TILE, Y=z=>(z-SZ)*ZU+STN.DY, XS0=(SM.x0+SM.x1)/2-SL.L/2, V=(x,y,z)=>[(XS0+y-72)*TILE,Y(z),(SL.MY0-x+77)*TILE];
   const faceTex=(w,h,fn)=>{ w=Math.max(1,Math.round(w)); h=Math.max(1,Math.round(h)); const im=new ImageData(w,h), d=im.data; let ie=null, e=null;
     for(let j=0,k=0;j<h;j++)for(let i=0;i<w;i++,k+=4){ const v=fn(i,j); if(!v)continue; d[k]=Math.round(v[0]); d[k+1]=Math.round(v[1]); d[k+2]=Math.round(v[2]); d[k+3]=255;
       if(v.length>3){ if(!ie){ ie=new ImageData(w,h); e=ie.data; } e[k]=d[k]; e[k+1]=d[k+1]; e[k+2]=d[k+2]; e[k+3]=255; } }
@@ -184,7 +184,7 @@ const SSUB=(()=>{ const W={};
   const put=(p,name,dz=SZ)=>{ BATCH.tag=OBJ('station',name); p.boxes.forEach(b=>gbox(b,dz)); BATCH.tag=null; };
   const solid=(x0,y0,x1,y1,zt)=>{ const a=V(x0,y0,0), b=V(x1,y1,0), q=[Math.min(a[0],b[0]),Math.min(a[2],b[2]),Math.max(a[0],b[0]),Math.max(a[2],b[2])]; solids.push(q); fixed.push([q[0],q[1],0,q[2],q[3],Math.max(.05,zt*ZU)]); };
   const plane=()=>new THREE.Plane(new THREE.Vector3(0,-1,0),1e6);
-  const cutaway=(me,nx,ny,foot,pl=plane())=>{ me.material.clippingPlanes=[pl]; cutWalls.push({pl,nx:-nx,nz:-ny,foot:Y(foot+SZ),me}); return me; };
+  const cutaway=(me,nx,ny,foot,pl=plane())=>{ me.material.clippingPlanes=[pl]; cutWalls.push({pl,nx:ny,nz:-nx,foot:Y(foot+SZ),me}); return me; };
   const wallY=(x,y0,y1,z0,z1,paint,r=24)=>quad(V(x,y0,z0+SZ),V(x,y1,z0+SZ),V(x,y1,z1+SZ),V(x,y0,z1+SZ),faceTex((y1-y0)*r,z1-z0,(i,j)=>C(paint(y0+(i+.5)/r,z1-j-.5))),true);
   const wallX=(y,x0,x1,z0,z1,paint,r=24)=>quad(V(x0,y,z0+SZ),V(x1,y,z0+SZ),V(x1,y,z1+SZ),V(x0,y,z1+SZ),faceTex((x1-x0)*r,z1-z0,(i,j)=>C(paint(x0+(i+.5)/r,z1-j-.5))),true);
   const flat=(x0,y0,x1,y1,z,col,r=24,down=false)=>{ const p=down?[V(x0,y0,z+SZ),V(x1,y0,z+SZ),V(x1,y1,z+SZ),V(x0,y1,z+SZ)]:[V(x0,y1,z+SZ),V(x1,y1,z+SZ),V(x1,y0,z+SZ),V(x0,y0,z+SZ)];
@@ -293,7 +293,7 @@ const SSUB=(()=>{ const W={};
     return prop(out); };
   const PB=plane(), PF=plane(), PC=plane();
   flat(P0,0,P1,LEN,0,floorPaint);
-  for(const [x0,x1] of [[0,P0],[P1,XW]])flat(x0,-TE,x1,LEN+TE,-32,trackPaint,16);
+  for(const [x0,x1] of [[0,P0],[P1,XW]])flat(x0,0,x1,LEN,-32,trackPaint,16);
   wallY(P0,0,LEN,-32,0,edgePaint); wallY(P1,0,LEN,-32,0,edgePaint);
   const portal=(u,z,c)=>{ const d=Math.abs(u-c)/2.05; return d<1&&z<110+30*Math.sqrt(1-d*d); };
   const lw=hallWall(LEN,401,{plates:[LEN-31.5,LEN-11.5],t0:-24,t1:60}), rw=hallWall(LEN,402,{plates:[8.5,28.5],t0:-24,t1:60,tags:.4});
@@ -302,8 +302,6 @@ const SSUB=(()=>{ const W={};
   const ew0=hallWall(XW,403,{tags:1.2,t0:4,t1:96,hole:(u,z)=>portal(u,z,LT)||portal(u,z,SL.TR[1])||exitHole(u,z)}), ew=(u,z)=>{ if(exitHole(u,z))return null; const c=exSign.at(Math.floor((u-(SL.XS-exSign.w/48))*24),Math.floor(118-z)); return c||ew0(u,z); };
   const fw=hallWall(XW,404,{tags:1.4,t0:4,t1:96,hole:(u,z)=>portal(u,z,XW-LT)||portal(u,z,XW-SL.TR[1]),big:(g,r,pick,w,h)=>{ g.save(); g.font='900 58px sans-serif'; g.lineWidth=2; g.strokeStyle='rgb(14,14,16)'; g.transform(1,0,-.2,1,0,0); g.strokeText('EPPIE',w*.36,196-62); g.restore(); GRAF.arrow(g,w*.55,196-70,40,GRAF.P.blk,2); }});
   cutaway(wallX(0,0,XW,-32,H2,(u,z)=>ew(u,z)),0,1,-24); cutaway(wallX(LEN,0,XW,-32,H2,(u,z)=>fw(XW-u,z)),0,-1,-24);
-  for(const [x0,x1] of [[0,P0],[P1,XW]]){ for(const [a,b,n] of [[-TE,0,1],[LEN,LEN+TE,-1]]){ cutaway(wallY(x0,a,b,-32,140,tun,12),0,n,-24); cutaway(wallY(x1,a,b,-32,140,tun,12),0,n,-24); }
-    cutaway(wallX(-TE,x0,x1,-32,140,dark,12),0,1,-24); cutaway(wallX(LEN+TE,x0,x1,-32,140,dark,12),0,-1,-24); }
   { const X0=SL.EX0, X1=SL.EX1, D=SL.ED, dk=(u,z)=>sh(tileWall(u+D,z,409),.32+.2*Math.max(0,(u+D)/D));
     cutaway(wallY(X0,-D,0,0,86,dk),0,1,-24); cutaway(wallY(X1,-D,0,0,86,dk),0,1,-24);
     flat(X0,-D,X1,0,0,(x,y)=>sh(floorPaint(x,y+8),.4+.35*Math.max(0,(y+D)/D)));
@@ -337,7 +335,6 @@ const SSUB=(()=>{ const W={};
   const lid=(x0,y0,x1,y1,z,c)=>{ const g=new THREE.BufferGeometry(), p=[V(x0,y0,z+SZ),V(x1,y0,z+SZ),V(x1,y1,z+SZ),V(x0,y1,z+SZ)]; g.setAttribute('position',new THREE.Float32BufferAttribute([...p[0],...p[1],...p[2],...p[0],...p[2],...p[3]],3)); g.computeVertexNormals();
       if(g.attributes.normal.getY(0)>0){ const a=g.attributes.position.array; for(let i=0;i<a.length;i+=9)for(let k=0;k<3;k++){ const t=a[i+3+k]; a[i+3+k]=a[i+6+k]; a[i+6+k]=t; } g.computeVertexNormals(); }
       const me=new THREE.Mesh(g,new THREE.MeshLambertMaterial({color:c,clippingPlanes:[plane()]})); me.receiveShadow=true; scene.add(me); return me; };
-  for(const [x0,x1] of [[0,P0],[P1,XW]]){ lid(x0,-TE,x1,0,140,0x141416); lid(x0,LEN,x1,LEN+TE,140,0x141416); }
   lid(SL.EX0,-SL.ED,SL.EX1,0,86,0x050506);
   { const BEAM=new THREE.MeshBasicMaterial({color:new THREE.Color(.5,.62,.56),transparent:true,opacity:.014,depthWrite:false,side:THREE.DoubleSide,blending:THREE.AdditiveBlending,clippingPlanes:[PF]});
     const g=new THREE.BufferGeometry(), P=[], q=(a,b,c,d)=>P.push(...a,...b,...c,...a,...c,...d);
@@ -346,15 +343,40 @@ const SSUB=(()=>{ const W={};
     g.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); const me=new THREE.Mesh(g,BEAM); me.renderOrder=5; scene.add(me); }
   { const R=new THREE.PointLight(new THREE.Color(1,.18,.12),1.4,6*TILE,1.6); R.position.set(...V(LT,SL.CARS[SL.CARS.length-1]+SL.CARL+.5,SZ+40)); R.userData.i0=R.intensity; scene.add(R); lamps.push(R); }
   cutWalls.push({pl:PF,nx:0,nz:0,foot:Y(SZ+100),always:true,me:null},{pl:PC,nx:0,nz:0,foot:Y(SZ+72),always:true,me:null});
-  solid(-1,-TE-1,0,LEN+TE+1,UH*2); solid(XW,-TE-1,XW+1,LEN+TE+1,UH*2); solid(P0,-TE-1,SL.EX0,0,UH*2); solid(SL.EX1,-TE-1,P1,0,UH*2); solid(SL.EX0,-SL.ED-1,SL.EX1,-SL.ED,UH*2); solid(P0,LEN,P1,LEN+TE+1,UH*2);
-  for(const [x0,x1] of [[0,P0],[P1,XW]]){ solid(x0,-TE-1,x1,-TE,UH); solid(x0,LEN+TE,x1,LEN+TE+1,UH); }
+  solid(-1,0,0,LEN,UH*2); solid(XW,0,XW+1,LEN,UH*2); solid(P0,-1,SL.EX0,0,UH*2); solid(SL.EX1,-1,P1,0,UH*2); solid(SL.EX0,-SL.ED-1,SL.EX1,-SL.ED,UH*2); solid(P0,LEN,P1,LEN+1,UH*2);
+  const TUN=(()=>{ const R=(mx0,mx1,my0,my1,k)=>({x0:SL.MY0-my1,x1:SL.MY0-my0,y0:mx0-XS0,y1:mx1-XS0,k}), N=[SL.MY0-4.4,SL.MY0], S=[SL.MY0-21.8,SL.MY0-17.4], {EAST,WN,WS,TOP}=SL, E0=XS0+LEN;
+    return [R(E0,EAST,...N,'y'),R(E0,EAST,...S,'y'),R(WN+2.2,XS0,...N,'y'),R(WN-2.2,WN+2.2,...N,'c'),R(WN-2.2,WN+2.2,N[1],TOP,'x'),R(WS+2.2,XS0,...S,'y'),R(WS-2.2,WS+2.2,...S,'c'),R(WS-2.2,WS+2.2,S[1],TOP,'x')]; })();
+  { const PT=plane(), STA={x0:0,x1:XW,y0:0,y1:LEN}, all=[...TUN,STA], e=1e-3, tp=(u,v)=>{ const r=Math.abs(Math.abs(u)-.7);
+      if(r<.07)return r<.025?[202,204,208]:sh([116,112,108],.85+.2*vn(v*2,u,7)); if(r<.14&&mod(v,1.1)<.34)return [70,52,40];
+      const t3=Math.abs(u-1.42); if(t3<.12)return t3<.08?sh([150,118,64],.8+.25*vn(v*3,1,9)):[40,36,32];
+      if(Math.abs(u)<.98&&mod(v,1.1)<.34)return sh([96,66,44],.7+.35*hash(Math.floor(v/1.1),3,11));
+      const n=hash(Math.floor(u*14),Math.floor(v*14),103); return sh(n<.3?[34,32,34]:n<.6?[26,25,26]:[46,42,40],.8+.4*vn(u*.7,v*.7,105)); };
+    const tw=(u,z)=>{ const c=sh(concreteCol(u,z/24),.78*(.8+.4*vn(u*.5,z/30,141))); return z<-26?sh(c,.55):Math.abs(z-30)<3?sh(c,.6):mod(u,9)<.12?sh(c,.55):c; };
+    const free=(lo,hi,cut)=>{ let iv=[[lo,hi]]; for(const [a,b] of cut){ const nx=[]; for(const [p,q] of iv){ if(b<=p||a>=q){ nx.push([p,q]); continue; } if(a>p)nx.push([p,a]); if(b<q)nx.push([b,q]); } iv=nx; } return iv.filter(([p,q])=>q-p>.05); };
+    const bw=(ax,c,a,b,ch)=>{ for(let p=a;p<b-.01;p+=ch){ const q=Math.min(b,p+ch), R=12, tx=faceTex((q-p)*R,172,(i,j)=>tw(p+(i+.5)/R,140-j-.5));
+        if(ax==='x')bq(V(c,p,-32+SZ),V(c,q,-32+SZ),V(c,q,140+SZ),V(c,p,140+SZ),tx,true); else bq(V(p,c,-32+SZ),V(q,c,-32+SZ),V(q,c,140+SZ),V(p,c,140+SZ),tx,true); } };
+    for(const r of TUN){ const other=all.filter(o=>o!==r);
+      for(const [x,side] of [[r.x0,-1],[r.x1,1]]){ const cut=other.filter(o=>Math.abs((side<0?o.x1:o.x0)-x)<e).map(o=>[o.y0,o.y1]); for(const [a,b] of free(r.y0,r.y1,cut)){ bw('x',x,a,b,40); solid(side<0?x-.4:x,a,side<0?x:x+.4,b,UH*2); } }
+      for(const [y,side] of [[r.y0,-1],[r.y1,1]]){ const cut=other.filter(o=>Math.abs((side<0?o.y1:o.y0)-y)<e).map(o=>[o.x0,o.x1]); for(const [a,b] of free(r.x0,r.x1,cut)){ bw('y',y,a,b,40); solid(a,side<0?y-.4:y,b,side<0?y:y+.4,UH*2); } }
+      const xm=(r.x0+r.x1)/2, ym=(r.y0+r.y1)/2, paint=r.k==='y'?(x,y)=>tp(x-xm,y):r.k==='x'?(x,y)=>tp(y-ym,x):(x,y)=>{ const d=Math.hypot(x-r.x0,y-r.y1); return tp(d-2.2,Math.atan2(r.y1-y,x-r.x0)*2.2); };
+      const L=r.k==='x'?r.x1-r.x0:r.y1-r.y0;
+      for(let p=0;p<L-.01;p+=40){ const q=Math.min(L,p+40), [x0,x1,y0,y1]=r.k==='x'?[r.x0+p,r.x0+q,r.y0,r.y1]:[r.x0,r.x1,r.y0+p,r.y0+q], R=12;
+        bq(V(x0,y1,-32+SZ),V(x1,y1,-32+SZ),V(x1,y0,-32+SZ),V(x0,y0,-32+SZ),faceTex((x1-x0)*R,(y1-y0)*R,(i,j)=>paint(x0+(i+.5)/R,y0+(j+.5)/R)),true); }
+      if(r.k!=='c')for(let p=4;p<L-2;p+=9){ const [lx,ly,px,py]=r.k==='y'?[r.x0+.06,r.y0+p,xm,r.y0+p]:[r.x0+p,r.y0+.06,r.x0+p,ym];
+        put(prop([r.k==='y'?{x0:lx,x1:lx+.12,y0:ly-.3,y1:ly+.3,z0:62,z1:70,c:[40,40,44],em:1,fs:nx=>nx?[255,226,160,1]:[40,40,44]}:{x0:lx-.3,x1:lx+.3,y0:ly,y1:ly+.12,z0:62,z1:70,c:[40,40,44],em:1,fs:(nx,ny)=>ny?[255,226,160,1]:[40,40,44]}]),'tunnel lamp',SZ-32);
+        const Lt=new THREE.PointLight(new THREE.Color(1,.86,.62),LAMPI*.9,10*TILE,LAMPD); Lt.position.set(...V(px,py,SZ+30)); Lt.userData.i0=Lt.intensity; scene.add(Lt); lamps.push(Lt); } }
+    BATCH.build((k,map,emap)=>k==='B'?new THREE.MeshBasicMaterial({map,alphaTest:.5,side:THREE.DoubleSide}):new THREE.MeshLambertMaterial({map,alphaTest:.5,side:THREE.DoubleSide,clippingPlanes:[PT]}));
+    cutWalls.push({pl:PT,nx:0,nz:0,foot:Y(SZ+40),always:true,me:null});
+    for(const r of TUN)lid(r.x0,r.y0,r.x1,r.y1,140,0x141416); }
   for(const [e,st] of [[P0,SL.STEPS[0]],[P1,SL.STEPS[1]]]){ let y=0; for(const [a,b] of st){ if(a>y)solid(e-.05,y,e+.05,a,0); y=b; } if(y<LEN)solid(e-.05,y,e+.05,LEN,0); }
-  { const a=V(-1,-TE-1,0), b=V(XW+1,LEN+TE+1,0); BOUND={x0:Math.min(a[0],b[0]),x1:Math.max(a[0],b[0]),z0:Math.min(a[2],b[2]),z1:Math.max(a[2],b[2])}; }
-  const TX=wx=>SL.XS-(wx-XC)/TILE, TY=wz=>(ZT-wz)/TILE, at=(x,y)=>{ const p=V(x,y,0); return {x:p[0],z:p[2]}; }, box=(x0,y0,x1,y1)=>{ const a=at(x0,y0), b=at(x1,y1); return {x0:Math.min(a.x,b.x),x1:Math.max(a.x,b.x),z0:Math.min(a.z,b.z),z1:Math.max(a.z,b.z)}; };
+  { const P=[[-1,-SL.ED-2],[XW+1,LEN+1]]; for(const r of TUN)P.push([r.x0,r.y0],[r.x1,r.y1]); const Q=P.map(([x,y])=>V(x,y,0)); BOUND={x0:Math.min(...Q.map(q=>q[0])),x1:Math.max(...Q.map(q=>q[0])),z0:Math.min(...Q.map(q=>q[2])),z1:Math.max(...Q.map(q=>q[2]))}; }
+  const TX=(wx,wz)=>SL.MY0+77-wz/TILE, TY=(wx,wz)=>wx/TILE+72-XS0, at=(x,y)=>{ const p=V(x,y,0); return {x:p[0],z:p[2]}; }, box=(x0,y0,x1,y1)=>{ const a=at(x0,y0), b=at(x1,y1); return {x0:Math.min(a.x,b.x),x1:Math.max(a.x,b.x),z0:Math.min(a.z,b.z),z1:Math.max(a.z,b.z)}; };
   const M=window.METRO=SHARED.METRO={V,Y,TX,TY,at,DY:Y(SZ),XC,ZB,SL,MACH:{x:MX+.28,y:MY+.35}};
   LEVELS.of.station={name:'THE SUBWAY STATION',floor:'down',base:true,groups:['down'],ceil:Y(SZ+H2)};
-  M.inside=(x,z)=>x>BOUND.x0&&x<BOUND.x1&&z>BOUND.z0&&z<BOUND.z1;
-  M.ground=(x,z)=>{ const tx=TX(x), ty=TY(z); return Y(SZ+(tx>=P0&&tx<=P1?0:SL.fzAt(tx,ty))); };
+  const inTun=(tx,ty)=>TUN.some(r=>tx>=r.x0-.3&&tx<=r.x1+.3&&ty>=r.y0-.3&&ty<=r.y1+.3), inSta=(tx,ty)=>tx>-1&&tx<XW+1&&ty>-SL.ED-1&&ty<LEN+1;
+  M.inside=(x,z)=>{ const tx=TX(x,z), ty=TY(x,z); return inSta(tx,ty)||inTun(tx,ty); };
+  M.ground=(x,z)=>{ const tx=TX(x,z), ty=TY(x,z); return Y(SZ+(inSta(tx,ty)&&ty>=-SL.ED-.5&&ty<=LEN&&tx>=P0&&tx<=P1?0:inSta(tx,ty)&&ty>=0&&ty<=LEN?SL.fzAt(tx,ty):-32)); };
+  M.tunnels=TUN;
   M.plat=at(8.2,16); M.foot=at(SL.XS,1.1); M.street={x:XC,z:(SM.y1+77)*TILE+1.4*TILE};
   M.lane=box(P0+.6,7.5,P1-.6,LEN-.6); M.edge=box(P1-.75,7,P1-.15,LEN-.6); M.track=box(P1+.3,1,XW-.3,LEN-1);
   M.rats=[[M.lane,8.6,27.2],[M.lane,13.8,19.6],[M.edge,P1-.4,25],[M.track,SL.TR[1],30]].map(([lane,x,y])=>({lane,...at(x,y)}));
@@ -396,13 +418,13 @@ const SSUB=(()=>{ const W={};
       try{ if(o.cut)await fr(2); if(work)await work(); }catch(e){ console.warn('FADE: '+(text||'')+' did not finish',e); }
       if(live){ await fr(o.cut?2:3); if(o.hold)await w(o.hold); if(FADE.busy===1){ el.style.transition=o.cut?'none':'opacity .4s steps(5)'; el.style.opacity='0'; el.style.pointerEvents='none'; if(!o.cut)await w(420); el.style.transition=tr; } }
       FADE.busy--; };
-    const qy=QS.get('subyaw'); M.YAW=Math.PI/4+(qy!=null?+qy:0)*Math.PI/2;
+    const qy=QS.get('subyaw'); M.YAW=-Math.PI/4+(qy!=null?+qy:0)*Math.PI/2;
     let busy=false, lidT=0; const wait=ms=>new Promise(r=>setTimeout(r,ms)), frames=k=>new Promise(r=>{ const f=()=>--k<=0?r():requestAnimationFrame(f); requestAnimationFrame(f); });
     const go=async dir=>{ '@later'; busy=true; await FADE.run(dir==='in'?'ENTERING SUBWAY':'LEAVING SUBWAY',()=>{
       const p=dir==='in'?M.foot:M.street; UI.goTo(p.x,p.z,dir==='in'?'down':'up');
       if(UI.view==='iso'||UI.view==='map'){ if(dir==='in'){ SHARED.yaw=SHARED.yawTo=M.YAW; } else if(UI.isoTo){ UI.isoTo(); SHARED.yaw=SHARED.yawTo; } } },{hold:120}); busy=false; };
-    const inExit=p=>{ const tx=TX(p.x), ty=TY(p.z); return tx>SL.EX0&&tx<SL.EX1&&ty<-2.5&&ty>-SL.ED-1; };
-    M.door=(py,p)=>{ lid.visible=SHARED.LVL==='up'; if(MAPG.stairs)MAPG.stairs.visible=SHARED.LVL!=='down'; if(!lidT++){ const top=MAPG.bodega; if(top)top.add(lid); } if(busy||UI.freeCam||(RAG.on))return; const k=tread(p.x,p.z);
+    const inExit=p=>{ const tx=TX(p.x,p.z), ty=TY(p.x,p.z); return tx>SL.EX0&&tx<SL.EX1&&ty<-2.5&&ty>-SL.ED-1; };
+    M.door=(py,p)=>{ lid.visible=SHARED.LVL==='up'; if(!lidT++){ const top=MAPG.bodega; if(top)top.add(lid); } if(busy||UI.freeCam||(RAG.on))return; const k=tread(p.x,p.z);
       if(SHARED.LVL!=='down'&&k!=null&&k>=3)go('in'); else if(SHARED.LVL==='down'&&inExit(p))go('out'); };
     { const S=SM; S.has=(x,z)=>{ if(SHARED.LVL==='down')return false; const gx=x/TILE+72, gy=z/TILE-77; return gx>=S.x0&&gx<S.x1&&gy>=S.y0&&gy<S.y1; }; }
     M.doorBusy=()=>busy; window.SUBGO=(x,z,lv)=>UI.goTo(x,z,lv); }

@@ -4204,3 +4204,7 @@ Owner left the next step to me. The world editor (WE, 099-worldedit) gains pitch
 ## 22 Oct 2026: world edits keyed by what a thing is, not load order
 
 World edits (WE, 099-worldedit) are now keyed by place + name + rounded position, not the creation-order id, so an exported world-edits.json re-applies to the right things after a rebuild (identical same-spot things get a stable suffix). Added an IMPORT button beside EXPORT to load an edits file back. Still to do for "everyone sees it": the build baking a committed world-edits.json and applying it at start (edits are still per-browser until then).
+
+## 22 Oct 2026: committed world edits load at start
+
+The build bakes data/world-edits.json (empty for now) and the world editor applies it at start — after __started and LOAD('later'), the butterflies pattern, so it never drags the later chunk into the start. Your own browser edits overlay the committed baseline. The flow: edit, EXPORT world-edits.json, drop it in data/, and the edits ship for everyone.

@@ -24,7 +24,11 @@ Object.assign(WE,{on:false});
       g.attributes.position.needsUpdate=g.attributes.normal.needsUpdate=g.attributes.aCol.needsUpdate=g.attributes.aOp.needsUpdate=true; touched.add(g); }); }
   let reshade=0; const settle=()=>{ for(const g of touched)g.computeBoundingSphere(); touched.clear(); clearTimeout(reshade); reshade=setTimeout(()=>{ scene.traverse(L=>{ if(L.isLight&&L.castShadow&&L.shadow&&L.shadow.autoUpdate===false)L.shadow.needsUpdate=true; }); },250); };
   const save=()=>{ try{ localStorage.setItem('market-world',JSON.stringify(ST)); }catch(e){} };
-  try{ Object.assign(ST,JSON.parse(localStorage.getItem('market-world')||'{}')); if(Object.keys(ST).length){ for(const o of OBJS)if(ST[kid(o)])apply(o); settle(); } }catch(e){}
+  let BAKED={}; try{ BAKED=__DATA__("data/world-edits.json")||{}; }catch(e){}
+  try{ Object.assign(ST,BAKED); }catch(e){}
+  try{ Object.assign(ST,JSON.parse(localStorage.getItem('market-world')||'{}')); }catch(e){}
+  { const applyAll=()=>{ if(!Object.keys(ST).length)return; for(const o of OBJS)if(ST[kid(o)])apply(o); settle(); };
+    const go=()=>{ if(!Object.keys(ST).length)return; if(!window.__started){ setTimeout(go,300); return; } (window.LOAD?LOAD('later'):Promise.resolve()).then(applyAll).catch(applyAll); }; go(); }
   const css=document.createElement('style'); css.textContent=`
   #we{position:fixed;right:calc(12px + env(safe-area-inset-right,0px));top:12px;width:300px;max-height:calc(100vh - 24px);overflow:auto;background:var(--bg);border:2px solid var(--line);font:12px var(--pixel);color:var(--fg);z-index:20}
   #we[hidden]{display:none} #we h2{font:12px var(--pixel);color:var(--key);margin:0;padding:12px 14px;border-bottom:2px solid var(--line)} #we .pane{padding:10px 14px}

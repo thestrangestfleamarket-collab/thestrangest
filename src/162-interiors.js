@@ -2,7 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {INTERIORS, MAPED, pos} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {FREE, MODS, QS, STORE, TILE} from './006-map-pre.js';
+import {FREE, QS, STORE, TILE} from './006-map-pre.js';
 import {WATER} from './009-down.js';
 import {VIS} from './129a-vis.js';
 Object.assign(INTERIORS,{on:QS.get('interiors')==='1'||(!FREE&&QS.get('interiors')!=='0'),list:[],near:5*TILE,seen:3*TILE,water:[]});
@@ -13,7 +13,6 @@ Object.assign(INTERIORS,{on:QS.get('interiors')==='1'||(!FREE&&QS.get('interiors
   const places=()=>{ '@later'; const B=SHARED.BOD.B0, mB=(B.x0+B.x1)/2;
     mk('bodega',[box(SHARED.BOD.X,SHARED.BOD.Z,[B.x0,B.y0,B.x1,B.y1],-1,SHARED.BOD.Y(B.h))],[[SHARED.BOD.X(mB),SHARED.BOD.Z(B.y1)]]);
     if(SHARED.BOD.GD)mk('dojo',[box(SHARED.BOD.X,SHARED.BOD.Z,SHARED.BOD.GD.r,-1,SHARED.BOD.Y(SHARED.BOD.GD.H))],[[SHARED.BOD.X(SHARED.BOD.GD.door[0]),SHARED.BOD.Z(SHARED.BOD.GD.door[1])]]);
-    if(MODS.apts){ const A=MODS.apts.A; mk('house',[box(SHARED.BOD.X,SHARED.BOD.Z,[A.x0,A.y0,A.x1,A.y1],-1,MODS.apts.SY*5)],[[SHARED.BOD.X(MODS.apts.DX),SHARED.BOD.Z(A.y1)]],()=>MODS.apts.in); }
     for(const R of STORE.rooms)if(R.walls)mk('store:'+R.id,[{x0:R.x0,x1:R.x1,z0:R.z0,z1:R.z1,y0:R.y0,y1:R.y1}],[[R.at.x,R.at.z]],()=>R.inside(pos.x,pos.z)); };
   const near2=(I,x,z,y)=>Math.min(...I.doors.map(d=>Math.hypot(x-d[0],z-d[1],y==null?0:(y-Math.max(0,I.boxes[0].y0))*1.5)));
   const owner=(x,y,z)=>{ for(const I of L)for(const b of I.boxes)if(inBox(b,x,y,z,m))return I; return null; };
@@ -26,7 +25,6 @@ Object.assign(INTERIORS,{on:QS.get('interiors')==='1'||(!FREE&&QS.get('interiors
   const reindex=me=>{ '@later'; const T=me.userData.intr, parts=[T.always]; for(const k in T.per)if(L.find(I=>I.id===k).on)parts.push(T.per[k]); let n=0; for(const a of parts)n+=a.length; const idx=new Uint32Array(n); let o=0; for(const a of parts){ idx.set(a,o); o+=a.length; }
     me.geometry.setIndex(new THREE.BufferAttribute(idx,1)); };
   INTERIORS.build=()=>{ if(!INTERIORS.on)return; places(); scene.traverse(o=>{ if(o.isMesh)classify(o); });
-    const H=L.find(I=>I.id==='house'); if(H&&MODS.apts&&!H.walls.length){ const b=H.boxes[0], bb=new THREE.Box3(), c=new THREE.Vector3(); for(const me of MODS.apts.meshes){ if(me.geometry.attributes.aOp)continue; bb.setFromObject(me); bb.getCenter(c); if(inBox(b,c.x,c.y,c.z,m))H.walls.push(me); } }
     const W=INTERIORS.water; W.length=0; const P=L.find(I=>I.id==='poolbld'); if(P&&typeof WATER!=='undefined'&&WATER.mesh)W.push([P,WATER.mesh]); for(const w of (WATER.extra)||[])if(w.mesh){ const I=owner(w.mesh.position.x,w.mesh.position.y+.1,w.mesh.position.z); if(I)W.push([I,w.mesh]); }
     INTERIORS.tick(true); };
   INTERIORS.tick=force=>{ if(!INTERIORS.on)return; const all=(MAPED.on);

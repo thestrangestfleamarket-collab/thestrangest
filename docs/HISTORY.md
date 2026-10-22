@@ -4244,6 +4244,9 @@ LAND (152a-landscape) paints the ground: drag a box on the ground and it lays a 
 
 The item editor (shift+7) now shows the game's actual items to click-add, not just a blank field: FORAGE.ids() (a read-only hook on forage's own maps — mushrooms, potions, foods, recipes, priced goods) and the loose things (GPH.loose names), normalised to ids. A FROM THE GAME list adds a type with one click; its name matches what burnable checks, so the fire wiring lines up.
 
+## 22 Oct 2026: edible wired to eating
+
+An item marked EDIBLE (item editor, shift+7) can now be eaten through the existing eating path: FORAGE.eat feeds you when you eat one, and the pack shows an EAT button for it — the same for every item of that kind (ITEMS.prop(id,'edible')). The second property to do something, after burnable.
 ## 22 Oct 2026: no drag-to-turn while playing (owner: "remove the click and drag view when playing")
 
 Dragging no longer turns or tilts the camera in play, in any view: right/middle/shift+drag do nothing, and third/first person no longer look round on drag. Left drag still moves the map in the overhead views; turn and tilt with Q/E, Z/X and the buttons. Drag still turns the view in the free camera (C) and the editors (gated by UI.camFree). Reverses the 17-19 Oct drag-to-turn, iso-spin and free-look decisions.

@@ -4164,3 +4164,7 @@ Owner: "set rules as far as how to add things into the game. where things go whe
 ## 22 Oct 2026: the rules, rebuilt
 
 Owner, after scrutiny: a full lean set in four groups. The game not just the code (player first, never break play, build for many and cheap per player, run only what's near or seen). Stay duplicable (section is copy-rename-retheme, standard seams, one cel look with the theme varying). Adding/changing/removing (mechanic not instance only when core or a second case, one path, where it goes, read HISTORY/MAP first, removal needs the owner + a HISTORY line, ships with its check). The owner decides (nothing undone without him, options first, done = builds + tests + his approval).
+
+## 22 Oct 2026: properties are schema-wide
+
+Owner: "when we change something in game that could affect similar properties they should be reanalyzed ... if we add a property to an item like (can burn) then that property needs to be addressed with similar items and gamewide. dont just patch each item." A property is a field on the shared entity model resolved by one system; adding or changing one re-evaluates every entity of that class and every system that reacts to it, never a per-item patch.

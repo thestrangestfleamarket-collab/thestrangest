@@ -1,1 +1,3 @@
-{}
+{
+ "airshroom": {"edible": true, "offworld": true, "stackable": true, "breath": 20}
+}

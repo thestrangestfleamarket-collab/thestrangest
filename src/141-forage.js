@@ -42,6 +42,7 @@ import {GEMS} from './101-gems.js';
   FORAGE.add=(o)=>{ Object.assign(NM,o.names||{}); Object.assign(FORAGE.RAW,o.raw||{}); Object.assign(PRICE,o.prices||{}); Object.assign(DO,o.does||{}); if(o.recipes)RC.push(...o.recipes); };
   FORAGE.ids=()=>{ const s=new Set(); for(const k in NM)s.add(k); for(const k in PRICE)s.add(k); for(const k in DO)s.add(k); for(const r of RC)if(r&&r[0])s.add(r[0]); for(const k in MU)s.add(iid(k)); return [...s].sort(); };
   FORAGE.SELLP=[]; FORAGE.SELLS=[]; FORAGE.ROWB=[]; FORAGE.ACT={}; FORAGE.CK={}; FORAGE.HELP=[]; FORAGE.TABS=[];
+  FORAGE.add({names:{airshroom:'AIRCAP MUSHROOM'},prices:{airshroom:8}}); FORAGE.SELLS.push(['airshroom',8,()=>true]);   // off-world: the seller's one wares, lets you hold your breath longer underwater
   FORAGE.feed=f=>feed(f); FORAGE.buff=(k,s)=>buff(k,s);
   const sk=k=>S.sk[k]/10, tot=()=>Object.values(S.sk).reduce((a,b)=>a+b,0);
   const use=(k,min,max,bonus=0)=>{ '@later'; const v=sk(k)+bonus, c=Math.max(0,Math.min(1,(v-min)/(max-min))), ok=Math.random()<c;
@@ -101,7 +102,8 @@ import {GEMS} from './101-gems.js';
     else if(Math.random()<.3){ S.picked[m.id]=1; say('IT CRUMBLES IN YOUR HAND.','#c8a090'); } else say('YOU FAIL TO PICK IT CLEANLY.','#c8a090');
     saveSoon(); FORAGE.sync(); PACK.draw(); };
   FORAGE.eat=id=>{ '@later'; if(!have(id))return; take(id,1); let k=id.slice(2);
-    if(id.startsWith('m_')||id.startsWith('u_')){ const [, , , food,harm]=MU[k]; if(harm){ S.fx.poison=Math.max(S.fx.poison||0,40); say('YOU FEEL VERY ILL. YOU HAVE BEEN POISONED!','#9fe07f'); SFX.play('cough',{vol:.6}); } else { feed(food); say('YOU EAT IT. NOT BAD.'); } }
+    if(window.ITEMS&&ITEMS.prop&&ITEMS.prop(id,'breath')){ const s=+ITEMS.prop(id,'breath')||0; if(VIT.breathe)VIT.breathe(s); say('YOU EAT THE '+NAME(id)+'. YOU CAN HOLD YOUR BREATH '+s+'S LONGER UNDERWATER.','#9fd8ff'); SFX.play('chirp',{vol:.4}); }
+    else if(id.startsWith('m_')||id.startsWith('u_')){ const [, , , food,harm]=MU[k]; if(harm){ S.fx.poison=Math.max(S.fx.poison||0,40); say('YOU FEEL VERY ILL. YOU HAVE BEEN POISONED!','#9fe07f'); SFX.play('cough',{vol:.6}); } else { feed(food); say('YOU EAT IT. NOT BAD.'); } }
     else if(FORAGE.RAW[id]){ const [food,harm]=FORAGE.RAW[id]; if(harm&&Math.random()<harm){ S.fx.poison=Math.max(S.fx.poison||0,25); say('IT DISAGREES WITH YOU. YOU HAVE BEEN POISONED!','#9fe07f'); } else { feed(food); say('YOU EAT IT RAW. CHEWY.'); } }
     else if(DO[id]){ DO[id](); say(id[0]==='p'?'YOU DRINK THE '+NAME(id)+'.':'YOU EAT THE '+NAME(id)+'.','#b8f0a0'); if(id[0]==='p')give('bottle',1); }
     else if(window.ITEMS&&ITEMS.prop&&ITEMS.prop(id,'edible')){ feed(.25); say('YOU EAT IT.'); }

@@ -40,7 +40,6 @@ Object.assign(WE,{on:false}); window.WE=WE;
   const drainWED=()=>{ let t=800; const re=()=>{ applyWED(); if((t*=2)<40000)setTimeout(re,t); }; setTimeout(re,t); };
   { const go=()=>{ if(!Object.keys(ST).length)return; if(!window.__started){ setTimeout(go,300); return; } (window.LOAD?LOAD('later'):Promise.resolve()).then(applyAll).catch(applyAll); drainWED(); }; go(); }
   WE.getState=()=>ST;
-  WE.applyServer=obj=>{ if(!obj||typeof obj!=='object')return; let any=false; for(const k in obj)if(!(k in LOCAL)){ ST[k]=obj[k]; any=true; } if(any){ applyAll(); drainWED(); } };
   const css=document.createElement('style'); css.textContent=`
   #we{position:fixed;right:calc(12px + env(safe-area-inset-right,0px));top:12px;width:300px;max-height:calc(100vh - 24px);overflow:auto;background:var(--bg);border:2px solid var(--line);font:12px var(--pixel);color:var(--fg);z-index:20}
   #we[hidden]{display:none} #we h2{font:12px var(--pixel);color:var(--key);margin:0;padding:12px 14px;border-bottom:2px solid var(--line)} #we .pane{padding:10px 14px}

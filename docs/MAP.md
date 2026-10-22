@@ -102,7 +102,7 @@ Places built with `await grab(name, async()=>{...})` are one function each, ofte
 | `095-sndedit.js` | 4.6 | top level |  | 003b: SFX SNDED |
 | `096-mapedit.js` | 47.2 | top level |  | 003: SHARED THREE; 003b: BLK GAMEED MAPED NPCS PARK W3 keys pos; 004: renderer; 006: BLDK BLOCK CASTLE FADE LEVEL MAPSTAIR MODS PARKCAVE PARKTOWER RING STORE TILE WROW; 060a: FOUNT |
 | `097-editor.js` | 0.8 | top level |  | 003: THREE; 003b: ED W3 |
-| `099-worldedit.js` | 14.3 | top level |  | 003: SHARED THREE; 003b: LEVELS UI WE WED; 004: renderer scene; 006: TILE; 008: OBJS |
+| `099-worldedit.js` | 14.1 | top level |  | 003: SHARED THREE; 003b: LEVELS UI WE WED; 004: renderer scene; 006: TILE; 008: OBJS |
 | `100-use.js` | 14.6 | top level |  | 003: SHARED THREE; 003b: LEVELS LITE PARK PERFX RAG SFX SND UI USE W3 pos st; 004: renderer scene; 006: TILE ZU; 008: OBJS; 068: KIT; 091: SOUND |
 | `101-gems.js` | 5.7 | top level | GEMS (141 142 146b) | 003b: CITY CIVIC INV LINES MAIL SFX TRADE UI pos; 005: OWNED; 006: QS |
 | `102-looks.js` | 8.2 | top level |  | 003: SHARED THREE; 003b: CLOCK FORAGE LEVELS LOOKS UI W3 pos st; 004: renderer scene; 005: SAVE; 006: QS SHL TILE |
@@ -148,7 +148,7 @@ Places built with `await grab(name, async()=>{...})` are one function each, ofte
 | `135-where.js` | 1.8 | top level | BUILDV (136 136a) | 003: SHARED; 003b: CLIP PH RAG UI WHERE pos; 005: SAVE; 006: MODS QS SOL STORE TILE |
 | `136-version.js` | 2.0 | top level |  | 135: BUILDV |
 | `136a-bugs.js` | 9.5 | top level |  | 003: SHARED; 003b: BUGS CLOCK UI pos; 004: renderer; 006: STORE; 135: BUILDV |
-| `136b-worldpub.js` | 1.4 | top level |  | 003b: BUGS WE |
+| `136b-worldpub.js` | 1.3 | top level |  | 003b: BUGS WE |
 | `137-bvh.js` | 3.5 | top level | BVH (150 163) | 003: THREE; 004: scene; 006: QS |
 | `138-oldlook.js` | 2.7 | top level |  | 003: SHARED THREE; 003b: CLOCK DN LOOK; 004: RH RW ShaderPass; 005: SAVE; 006: OUT |
 | `139-clip.js` | 10.5 | top level |  | 003: SHARED THREE; 003b: CLIP NPCS; 006: CLIPX FIX MODS QS SOL STORE TILE ZU; 008: OBJS |

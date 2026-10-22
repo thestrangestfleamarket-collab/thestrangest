@@ -4297,3 +4297,9 @@ Owner: "add the ability to look around freely when in any view (rotating around 
 
 ## 22 Oct 2026: the floor you're on changes only by a way down
 Owner: "i keep dropping underground when i walk around, make sure the game mechanics are strong to avoid that from happening (remember no patches, look at root cause)". The level (street or underground) was read from your height, so the sunk THE LAKE dropped you into the station. Rule: you (and every character) change floor only on a stairway or through a way in or out (`LEVELS.floor`), never from height alone; your saved spot keeps its floor.
+
+## 22 Oct 2026: swim in THE LAKE and the stream
+Owner: "lake, if water is more than waist high you can swim in it." The stream and THE LAKE are water like the river and the big lake: deeper than your waist you swim, shallower you wade (`BROOK.feed`).
+
+## 22 Oct 2026: townspeople wander, no routes
+Owner: "townspeople shouldnt have routes. they sould wander freely"; his picks: wander anywhere, and delete the switched-off route code. Each next stop is a free spot a short walk from where they stand, street or park, through the park's gate; a home only sets where they start (no circle, no trips to doors); a home with no circle still stands still. Deleted: the daily routes (`LIVES`, 157) and the walkers' ways of life (`WALKERS`, 158) with their tests; the newsstand and the post had only walkers as customers and residents (both off with the city).

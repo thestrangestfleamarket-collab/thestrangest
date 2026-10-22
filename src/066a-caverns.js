@@ -5,7 +5,7 @@ import {scene} from './004-main.js';
 import {FADE, FIX, grab, MAPG, MODS, SOL, STN, SYS, TILE} from './006-map-pre.js';
 import {GCAVE} from './060-cave.js';
 import {RIVER} from './066-river.js';
-await grab('gemcave',async()=>{}); await grab('hudson',async()=>{});
+await grab('gemcave',async()=>{}); await grab('hudson',async()=>{}); await grab('lake',async()=>{}); await grab('falls',async()=>{});
 const CAVERNS={}; window.CAVERNS=CAVERNS; MODS.waters=MODS.waters||[];
 { const X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, Y=SHARED.BOD.YS, T=TILE, dy=STN.DY, hs=(a,b)=>{ const s=Math.sin(a*127.1+b*311.7)*43758.5453; return s-Math.floor(s); };
   const iX=x=>(x-X(0))/T, iZ=z=>(z-Z(0))/T;
@@ -18,10 +18,10 @@ const CAVERNS={}; window.CAVERNS=CAVERNS; MODS.waters=MODS.waters||[];
     quad([X(B.x0),dy+Y(.3),Z(B.y1)],[X(B.x1),dy+Y(.3),Z(B.y1)],[X(B.x1),dy+Y(.3),Z(B.y0)],[X(B.x0),dy+Y(.3),Z(B.y0)],FL);
     quad([X(B.x0),dy+Y(H),Z(B.y0)],[X(B.x1),dy+Y(H),Z(B.y0)],[X(B.x1),dy+Y(H),Z(B.y1)],[X(B.x0),dy+Y(H),Z(B.y1)],ST.map(v=>v*.55));
     for(const [x0,y0,x1,y1] of [[B.x0-w,B.y0-w,B.x1+w,B.y0+w],[B.x0-w,B.y1-w,B.x1+w,B.y1+w],[B.x0-w,B.y0,B.x0+w,B.y1],[B.x1-w,B.y0,B.x1+w,B.y1]]){ box(x0,y0,0,x1,y1,H+2,ST); sol(x0,y0,x1,y1,H+2); }
-    for(let i=0;i<7;i++){ const x=B.x0+2+hs(i,1)*(B.x1-B.x0-4), y=B.y0+2+hs(i,2)*(B.y1-B.y0-4), s=.6+.9*hs(i,3); box(x,y,0,x+s,y+s*.8,8+14*hs(i,4),ST.map(v=>v*.9)); sol(x,y,x+s,y+s*.8,8+14*hs(i,4)); }
+    if(!C.empty)for(let i=0;i<7;i++){ const x=B.x0+2+hs(i,1)*(B.x1-B.x0-4), y=B.y0+2+hs(i,2)*(B.y1-B.y0-4), s=.6+.9*hs(i,3); box(x,y,0,x+s,y+s*.8,8+14*hs(i,4),ST.map(v=>v*.9)); sol(x,y,x+s,y+s*.8,8+14*hs(i,4)); }
     const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); geo.setAttribute('color',new THREE.Float32BufferAttribute(Cc,3)); geo.computeVertexNormals();
     const rock=new THREE.Mesh(geo,new THREE.MeshLambertMaterial({vertexColors:true,side:THREE.DoubleSide})); rock.receiveShadow=true; G.add(rock); m.objs.push(rock);
-    for(let i=0;i<6;i++){ const cr=new THREE.Mesh(new THREE.OctahedronGeometry(.5,0),new THREE.MeshBasicMaterial({color:C.gem})); cr.position.set(X(B.x0+2.5+hs(i,5)*(B.x1-B.x0-5)),dy+Y(.3),Z(B.y0+2.5+hs(i,6)*(B.y1-B.y0-5))); cr.scale.set(.2*T,.45*T,.2*T); cr.rotation.set(.3,i,.2); G.add(cr); m.objs.push(cr); }
+    if(!C.empty)for(let i=0;i<6;i++){ const cr=new THREE.Mesh(new THREE.OctahedronGeometry(.5,0),new THREE.MeshBasicMaterial({color:C.gem})); cr.position.set(X(B.x0+2.5+hs(i,5)*(B.x1-B.x0-5)),dy+Y(.3),Z(B.y0+2.5+hs(i,6)*(B.y1-B.y0-5))); cr.scale.set(.2*T,.45*T,.2*T); cr.rotation.set(.3,i,.2); G.add(cr); m.objs.push(cr); }
     for(const [fx,fz,fy,c,i,r] of C.lights){ const L=new THREE.PointLight(c,i,r*T,1.6); L.position.set(X(B.x0+fx*(B.x1-B.x0)),dy+Y(fy),Z(B.y0+fz*(B.y1-B.y0))); L.userData.i0=i; L.userData.grp=G; LITE.recs.push(L); m.lights.push(L); }
     const hb=new THREE.Mesh(new THREE.BoxGeometry(1.2*T,Y(40),1.2*T),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(X(B.x0+1.2),dy+Y(20),Z(cy)); G.add(hb); m.objs.push(hb);
     const th={name:C.exitName,obj:hb,reach:1.4*T,near:2.6*T,tall:Y(50),act:()=>C.api.go(0)}; UI.thing(th); m.things.push(th);
@@ -54,4 +54,24 @@ const CAVERNS={}; window.CAVERNS=CAVERNS; MODS.waters=MODS.waters||[];
         const hole=new THREE.Mesh(new THREE.CircleGeometry(1.15*T,14),new THREE.MeshBasicMaterial({color:0x000000})); hole.rotation.x=-Math.PI/2; hole.position.set(mx,by+.04*T,mz); g.add(hole);
         const hb=new THREE.Mesh(new THREE.BoxGeometry(2.4*T,Y(34),2.4*T),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(mx,by+Y(17),mz); g.add(hb); scene.add(g); MO={x:mx,z:mz,y:by};
         UI.thing({name:'A CAVE MOUTH',obj:hb,reach:2*T,near:3.4*T,tall:Y(34),act:()=>{ if(!(st.water&&st.water.in&&RIVER.dep>4.5)){ if(window.FORAGE&&FORAGE.say)FORAGE.say('DIVE DOWN TO THE MOUTH.','#9fd8ff'); return; } api.go(1); }}); }); },
-      out:()=>{ if(!RIVER.on)RIVER.build(); const m=MO||mouthAt(); UI.goTo(m.x,m.z+1.6*T,'up'); SHARED.heading=Math.PI; }}); } }
+      out:()=>{ if(!RIVER.on)RIVER.build(); const m=MO||mouthAt(); UI.goTo(m.x,m.z+1.6*T,'up'); SHARED.heading=Math.PI; }}); }
+  { const PX=x=>SHARED.BOD.XS(x+(PARK.ox||0)), PZ=y=>SHARED.BOD.ZS(y+(PARK.oy||0));
+    const mouth=(g,mx,by,mz,name,gate,api)=>{ const rk=new THREE.MeshLambertMaterial({color:0x2e3a34});   // a ring of rocks round a black hole on a bed, double-clicked to go down
+      for(let i=0;i<7;i++){ const a=i/7*Math.PI*2, r=new THREE.Mesh(new THREE.DodecahedronGeometry(.5,0),rk); r.position.set(mx+Math.cos(a)*1.5*T,by+.25*T,mz+Math.sin(a)*1.5*T); r.scale.set(T*(.7+.3*hs(i,1)),T*(.9+.5*hs(i,2)),T*(.7+.3*hs(i,3))); r.rotation.y=hs(i,4)*3; g.add(r); }
+      const hole=new THREE.Mesh(new THREE.CircleGeometry(1.15*T,14),new THREE.MeshBasicMaterial({color:0x000000})); hole.rotation.x=-Math.PI/2; hole.position.set(mx,by+.04*T,mz); g.add(hole);
+      const hb=new THREE.Mesh(new THREE.BoxGeometry(2.4*T,Y(34),2.4*T),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(mx,by+Y(17),mz); g.add(hb);
+      UI.thing({name,obj:hb,reach:2*T,near:3.4*T,tall:Y(34),act:()=>{ const m=gate(); if(m){ if(window.FORAGE&&FORAGE.say)FORAGE.say(m,'#9fd8ff'); return; } api.go(1); }}); };
+    { const LK={m:null}; CAVERNS.make({id:'lake',name:'THE LAKE CAVERN',leaving:'UP TO THE LAKE',lot:{x0:1500,y0:-40,x1:1518,y1:-26},H:70,wet:true,murk:0x14301e,wall:[52,70,58],floor:[36,52,42],gem:0xffd060,exitName:'UP TO THE LAKE',
+        lights:[[.5,.5,50,0x60c080,12,10],[.8,.3,30,0xd0e060,8,7]],
+        enter:api=>{ PARK.later(()=>{ '@park'; const g=MAPG.park||scene, mx=PX(151), mz=PZ(10), by=(PARK.hill?PARK.hill(151,10):0)+.05*T; LK.m={x:mx,z:mz}; mouth(g,mx,by,mz,'A CAVE MOUTH',()=>st.water&&st.water.in?null:'SWIM DOWN TO THE MOUTH.',api); }); },
+        out:()=>{ const m=LK.m||{x:PX(151),z:PZ(10)}; UI.goTo(m.x,m.z+1.5*T,'up'); SHARED.heading=Math.PI; }}); }
+    CAVERNS.make({id:'falls',name:'THE CAVERN BEHIND THE FALLS',leaving:'OUT THROUGH THE FALLS',lot:{x0:1400,y0:-50,x1:1432,y1:-20},H:90,empty:true,wall:[84,80,74],floor:[58,54,50],gem:0,exitName:'OUT THROUGH THE FALLS',
+      lights:[[.5,.5,70,0x8fb0d0,14,14],[.15,.5,40,0xb0c8e0,8,9]],
+      enter:api=>{ PARK.later(()=>{ '@park'; const g=MAPG.park||scene, P=[], Cc=[], c3=new THREE.Color(), q=(a,b,c,d,col)=>{ c3.setRGB(col[0]/255,col[1]/255,col[2]/255,THREE.SRGBColorSpace); for(const v of [a,b,c,a,c,d]){ P.push(...v); Cc.push(c3.r,c3.g,c3.b); } };
+        const bx=(x0,y0,x1,y1,h,col)=>{ const [a,b,c,d]=[PX(x0),PX(x1),PZ(y0),PZ(y1)], e=0, f=Y(h), dk=col.map(v=>v*.78); q([a,f,d],[b,f,d],[b,f,c],[a,f,c],col.map(v=>v*1.08)); q([a,e,d],[b,e,d],[b,f,d],[a,f,d],col); q([b,e,c],[a,e,c],[a,f,c],[b,f,c],col); q([a,e,c],[a,e,d],[a,f,d],[a,f,c],dk); q([b,e,d],[b,e,c],[b,f,c],[b,f,d],dk); SOL.up.push([a,c,b,d]); FIX.up.push([a,c,0,b,d,f]); };
+        const RC=[108,102,94]; bx(238,170,258,181,220,RC); bx(234,174,238,181,150,RC.map(v=>v*.94)); bx(258,172,262,181,170,RC.map(v=>v*.9)); bx(241,166,245,170,60,RC.map(v=>v*.85)); bx(251,166,255,170,70,RC.map(v=>v*.85));   // the cliff in the park's top-right corner, the stream's head between its two feet
+        const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); geo.setAttribute('color',new THREE.Float32BufferAttribute(Cc,3)); geo.computeVertexNormals(); const cliff=new THREE.Mesh(geo,new THREE.MeshLambertMaterial({vertexColors:true})); cliff.castShadow=cliff.receiveShadow=true; g.add(cliff);
+        const fx=PX(248), fz=PZ(170)-.12*T, sheet=new THREE.Mesh(new THREE.PlaneGeometry(6*T,Y(218)),new THREE.MeshBasicMaterial({color:0x8fd0ff,transparent:true,opacity:.5,side:THREE.DoubleSide,depthWrite:false})); sheet.position.set(fx,Y(110),fz); g.add(sheet);
+        for(let i=0;i<5;i++){ const fm=new THREE.Mesh(new THREE.BoxGeometry(1.1*T,.25*T,.9*T),new THREE.MeshBasicMaterial({color:0xeaf6ff,transparent:true,opacity:.75})); fm.position.set(fx+(i-2)*1.15*T,.12*T,fz-.5*T); g.add(fm); }
+        const hb=new THREE.Mesh(new THREE.BoxGeometry(3*T,Y(60),.9*T),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(fx,Y(30),fz); g.add(hb); UI.thing({name:'THE WATERFALL',obj:hb,reach:1.8*T,near:3.2*T,tall:Y(60),act:()=>api.go(1)}); }); },
+      out:()=>{ UI.goTo(PX(248),PZ(165),'up'); SHARED.heading=Math.PI; }}); } }

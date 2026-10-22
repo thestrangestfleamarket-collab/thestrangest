@@ -4334,3 +4334,8 @@ Owner, planning the diving/mining systems: "the caverns will be its own off worl
 - **One cavern maker** (`CAVERNS.make`, 066a): an underground level off the map, built when you go in and dropped when you leave, each with its own way in and out. Two now: THE GEM CAVE (dry; a crack in the golems' cave floor, back up the stone lift) and THE HUDSON CAVERN (flooded to the roof, so your air drains the whole way; a cave mouth on the river bed you must dive down to, back up to the river). The lake's caverns and the waterfall cave come as more instances.
 - **Down levels plug in** (rule): a down level gives its own `has`, `ground` and `bound` in `LEVELS.of`; the ground, the walk bounds and `goTo` read the registry (dungeon and station unchanged). Waters plug in the same way (`MODS.waters`: feed, pre, post) for swimming and the underwater murk.
 - Placeholder rooms for now; daily tunnels, gems and gear come in the next steps.
+
+## 22 Oct 2026: the gem places, step C1b — the lake cavern and the waterfall
+Owner: "i want to make the top right corner of the map a large water fall and cliff that goes into the lake. you can go into the waterfall into large empty cavern. or swim under the lake to find other caverns (like in hudson but with diff gems and jewles etc)".
+- Two more instances of the cavern maker: THE LAKE CAVERN (flooded; a cave mouth on THE LAKE's bed you swim down to, its own gems later) and THE CAVERN BEHIND THE FALLS (dry, large and empty for now; walk into the falls, out through them).
+- The stream now starts in the park's top-right corner: a rock cliff there with a waterfall sheet pouring into the stream's head, which runs down to THE LAKE. Crude first pass (the owner: "nothing is precious on map right now").

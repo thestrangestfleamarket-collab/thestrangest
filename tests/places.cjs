@@ -11,7 +11,7 @@ const TOUR=[
   ['dungeon','x-dungeon',async()=>{ const U=async(f,ms=90000)=>{ for(const t=Date.now();Date.now()-t<ms;await new Promise(r=>setTimeout(r,250)))if(f())return true; return false; };
     await DUNGEON.go(3); return await U(()=>{ const d=DUNDBG(), m=DUNMOBDBG(); return d.level===3&&d.objs>0&&m.slimes.length>0; }); },async()=>{ await DUNGEON.go(0); }],
   ['park','x-park',async()=>{ const U=async(f,ms=180000)=>{ for(const t=Date.now();Date.now()-t<ms;await new Promise(r=>setTimeout(r,250)))if(f())return true; return false; };
-    const B=__dbg.MAPK.BOD, P=PARK; STORE.goTo(B.XS(P.round[0]+(P.ox||0)+3),B.ZS(P.round[1]+(P.oy||0)+3),'up'); return await U(()=>PARK.ready&&PARK.in&&!!FOUNT.drops&&!(window.FADE&&FADE.busy)); },
+    const B=__dbg.MAPK.BOD, P=PARK; STORE.goTo(B.XS(P.round[0]+(P.ox||0)+3),B.ZS(P.round[1]+(P.oy||0)+3),'up'); return await U(()=>PARK.ready&&PARK.in&&(!FOUNT.on||!!FOUNT.drops)&&!(window.FADE&&FADE.busy)); },
     async()=>{ const B=__dbg.MAPK.BOD; STORE.goTo(B.XS(99),B.ZS((B.CURB+B.FAR)/2),'up'); for(const t=Date.now();Date.now()-t<30000&&(PARK.in||(window.FADE&&FADE.busy));)await new Promise(r=>setTimeout(r,250)); }],
   ['fire escape','x-fire',async()=>{ const U=async(f,ms=90000)=>{ for(const t=Date.now();Date.now()-t<ms;await new Promise(r=>setTimeout(r,250)))if(f())return true; return false; };
     FIREV.out(); return await U(()=>FIREDBG().built&&!(window.FADE&&FADE.busy)); },async()=>{ FIREV.back(); for(const t=Date.now();Date.now()-t<30000&&(window.FADE&&FADE.busy);)await new Promise(r=>setTimeout(r,250)); }],

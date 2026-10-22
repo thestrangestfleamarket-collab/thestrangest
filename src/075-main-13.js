@@ -23,7 +23,7 @@ const VIEW0={yaw:Math.PI/4,pitch:Math.PI/6,ppu:PPU}; SHARED.yaw=VIEW0.yaw; SHARE
 const PMIN=0.17, PMAX=Math.PI/2-0.002, clampP=v=>Math.max(PMIN,Math.min(PMAX,v));
 renderer.domElement.addEventListener('contextmenu',e=>e.preventDefault());
 let drag=null;
-renderer.domElement.addEventListener('pointerdown',e=>{ if((e.button===2||e.button===1)&&UI.camFree()){ drag={x:e.clientX,y:e.clientY}; UI.grab(e); renderer.domElement.setPointerCapture(e.pointerId); } });
+renderer.domElement.addEventListener('pointerdown',e=>{ if(e.button===2||e.button===1){ drag={x:e.clientX,y:e.clientY}; UI.grab(e); renderer.domElement.setPointerCapture(e.pointerId); } });
 renderer.domElement.addEventListener('pointermove',e=>{ if(!drag)return; UI.orbit(e.clientX-drag.x,e.clientY-drag.y); drag={x:e.clientX,y:e.clientY}; });
 renderer.domElement.addEventListener('pointerup',()=>drag=null);
 UI.holdUp=new THREE.Vector3();
@@ -46,7 +46,7 @@ function collide(p){ if(!VIT.dead)for(const N of NPCS)if(N.lv===SHARED.LVL&&!N.f
 const R=new THREE.Vector3(),U=new THREE.Vector3(),F=new THREE.Vector3(),disp=new THREE.Vector3();
 let last=performance.now(), fpsT=0, fpsN=0, t=0;
 function frame(now){ requestAnimationFrame(frame); if(PARK.hold)return; renderer.info.reset(); const dt=Math.max(0,Math.min(0.05,(now-last)/1000)); last=now; SHARED.METRO.tick(dt,pos); t+=dt;
-  if(UI.freeCam?MAPLV(UI.camT.y-.9,UI.camT):MAPLV(SHARED.py,pos))setPhys(SHARED.LVL);
+  if(UI.freeCam?MAPLV(UI.camT.y-.9,UI.camT,true):MAPLV(SHARED.py,pos))setPhys(SHARED.LVL);
   if(UI.view!=='iso'){ if(keys.has('q'))SHARED.yawTo+=dt*1.8; if(keys.has('e'))SHARED.yawTo-=dt*1.8; if(keys.has('z'))SHARED.pitchTo=UI.clampV(SHARED.pitchTo-dt*1.2); if(keys.has('x'))SHARED.pitchTo=UI.clampV(SHARED.pitchTo+dt*1.2); }
   if(UI.hold&&!UI.persp){ const H=UI.hold; SHARED.yawTo=H.yaw; SHARED.pitchTo=H.pitch; SHARED.ppuTo=H.ppu; if(UI.off){ H.off?UI.off.copy(H.off):UI.off.set(0,0,0); if(H.look){ const c=SHARED.cam, lim=H.look*(c.top-c.bottom)/(c.zoom||1); H.dy=Math.max(-lim,Math.min(lim,H.dy||0)); UI.off.addScaledVector(UI.holdUp.setFromMatrixColumn(c.matrixWorld,1),H.dy); } } }
   const FT=FEEL.take(), ease=FT?1-Math.exp(-dt*FEEL.cfg.camDamp):Math.min(1,dt*12); SHARED.yaw=Math.abs(SHARED.yawTo-SHARED.yaw)<1e-4?SHARED.yawTo:SHARED.yaw+(SHARED.yawTo-SHARED.yaw)*ease; SHARED.pitch=Math.abs(SHARED.pitchTo-SHARED.pitch)<1e-4?SHARED.pitchTo:SHARED.pitch+(SHARED.pitchTo-SHARED.pitch)*ease; const zk0=UI.zk(); SHARED.ppu=Math.abs(SHARED.ppuTo/SHARED.ppu-1)<1e-4?SHARED.ppuTo:SHARED.ppu*Math.pow(SHARED.ppuTo/SHARED.ppu,ease); if(pxS()!==SCL)resize(); else frustum(); UI.zoomStep(zk0);

@@ -38,7 +38,7 @@ queued with `BATCH.queue({make, cast, group, post, R, done})` and `q.add(x0,z0,x
 everything within `R` of you is painted before the start ends (`BATCH.near`), the rest a few ms a frame, nearest first (`BATCH.tick`).
 
 **Buildings are blocks, insides are off the map (owner, 21 Oct 2026: "all interiors could be off map and buildings can be blocks")**:
-a building's outside is one painted block (`BLOCKS.make` in 058-blocks: four walls and a roof, each one low-res picture painted once,
+a building's outside is one painted block (`BLOCKS.make` in 038zb-blocks: four walls and a roof, each one low-res picture painted once,
 no holes, no clipping planes; `BLOCKS.facade` paints brick, windows, flower boxes, ivy and doors; `BLOCKS.card` a plant), plus only what
 sticks out (fire escapes, stoops). Its inside is registered in `ROOMS.off[id]` (`{name, box, need, build, unbuild, spawn, out, door, exit,
 inAt, outAt}`, 130-rooms) away from the map: built behind the fade only when you go in (`ROOMS.enter(id)`, the door's thing, walking into

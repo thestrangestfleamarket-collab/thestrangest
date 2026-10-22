@@ -1,6 +1,7 @@
 // THE FOX: FOX builds the fox shopkeeper in parts; CREATURES gathers the creature makers.
-import {THREE} from './003-shx.js';
+import {SHARED, THREE} from './003-shx.js';
 import {LINES} from './003b-systems.js';
+import {scene} from './004-main.js';
 import {LAY, MODS, TILE} from './006-map-pre.js';
 import {PARTSNPC} from './080-npc-parts.js';
 const FOX={};
@@ -24,13 +25,13 @@ const FOX={};
     part('brows',5,[-1,1].map(sx=>shape(box(.1,.025,.02),BLACK,[sx*.085,1.315,.2],null,[0,sx*-25,sx*-22]))),
     part('ears',2,[-1,1].map(sx=>shape(cyl(.002,.1,.42,8),WHITE,[sx*.13,1.6,-.01],[1,1,.42],[0,0,sx*-11]))),
     part('ear insides',3,[-1,1].map(sx=>shape(cyl(.002,.07,.34,8),TAN,[sx*.128,1.585,.03],[1,1,.3],[0,0,sx*-11]))) ];
-  const AT={x:4.51+LAY.o('bodega').x*TILE,z:-6.1+LAY.o('bodega').y*TILE}, FACE=-Math.PI/2, TURN=35*Math.PI/180;
+  const AT={x:4.51+LAY.o('bodega').x*TILE+SHARED.BOD.SHOPDX,z:-6.1+LAY.o('bodega').y*TILE}, FACE=-Math.PI/2, TURN=35*Math.PI/180;
   const N=PARTSNPC.make(PARTS,{key:'fox',name:'THE FOX',eye:0,eyeC:'0.,0.,0.',metres:2.0,radius:.27,speed:.4,stride:6,rock:0,bob:.015,lv:'up',group:'bodega',
     x:AT.x,z:AT.z,ground:(x,z)=>MODS.bodega.ground(x,z),
     brain:(dt,you,st,N)=>{ if(N.sheet)return; st.to=null; st.hold=true; const H=N.home||AT; st.x=H.x; st.z=H.z;
       let a=FACE; if(Math.hypot(you.x-st.x,you.z-st.z)<4.5*TILE){ if(Math.hypot(you.x-st.x,you.z-st.z)<2.6*TILE&&!((N.greet=(N.greet||0)-dt)>0)&&typeof LINES!=='undefined'){ N.greet=60; LINES.say(N,'fox'); } const w=Math.atan2(you.x-st.x,you.z-st.z), d=((w-FACE+Math.PI*3)%(Math.PI*2))-Math.PI; a=FACE+Math.max(-TURN,Math.min(TURN,d)); }
       st.face={x:st.x+Math.sin(a),z:st.z+Math.cos(a)}; }});
-  FOX.N=N; window.FOXDBG=()=>{ '@later'; const w=N.g.getWorldPosition(new THREE.Vector3()), bb=new THREE.Box3().setFromObject(N.g); return {x:+N.st.x.toFixed(2),z:+N.st.z.toFixed(2),y:+N.g.position.y.toFixed(2),vis:N.g.visible,pvis:N.g.parent&&N.g.parent.visible,far:!!N.far,w:[w.x,w.y,w.z].map(v=>+v.toFixed(2)),size:[bb.max.x-bb.min.x,bb.max.y-bb.min.y].map(v=>+v.toFixed(2)),tris:N.tris}; }; }
+  scene.add(N.g); FOX.N=N; window.FOXDBG=()=>{ '@later'; const w=N.g.getWorldPosition(new THREE.Vector3()), bb=new THREE.Box3().setFromObject(N.g); return {x:+N.st.x.toFixed(2),z:+N.st.z.toFixed(2),y:+N.g.position.y.toFixed(2),vis:N.g.visible,pvis:N.g.parent&&N.g.parent.visible,far:!!N.far,w:[w.x,w.y,w.z].map(v=>+v.toFixed(2)),size:[bb.max.x-bb.min.x,bb.max.y-bb.min.y].map(v=>+v.toFixed(2)),tris:N.tris}; }; }
 
 const CREATURES=__DATA__("data/creatures.json");
 export {CREATURES};

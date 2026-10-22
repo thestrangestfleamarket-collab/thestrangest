@@ -17,7 +17,7 @@ const GPH=window.GPH={ms:0,n:0};
   const SPLIT=/boxes|crates|glasses|empties|tapes|bones|bottles/i, cls=n=>{ for(const [r,d] of CLS)if(r.test(n))return d; return 0; };
   const mk=(o,k,a,b,x)=>({o,k,a,b,c:[0,1,2].map(i=>(a[i]+b[i])/2),h:[0,1,2].map(i=>Math.max(.02*T,(b[i]-a[i])/2)),q:{x:0,y:0,z:0,w:1},rb:null,sol:[],still:0,name:o?o.name:'',...x});
   const vol=it=>8*it.h[0]*it.h[1]*it.h[2];
-  const near=()=>{ if(!SHARED.BOD.B0||SHARED.LVL!=='up')return false; const B=SHARED.BOD.B0, x0=SHARED.BOD.X(B.x0)-4*T, x1=SHARED.BOD.X(B.x1)+4*T, z0=SHARED.BOD.Z(B.y0)-4*T, z1=SHARED.BOD.Z(B.y1)+4*T; return pos.x>x0&&pos.x<x1&&pos.z>z0&&pos.z<z1; };
+  const near=()=>{ if(!SHARED.BOD.SB||SHARED.LVL!=='up')return false; const B=SHARED.BOD.SB, x0=SHARED.BOD.X(B.x0)-4*T, x1=SHARED.BOD.X(B.x1)+4*T, z0=SHARED.BOD.Z(B.y0)-4*T, z1=SHARED.BOD.Z(B.y1)+4*T; return pos.x>x0&&pos.x<x1&&pos.z>z0&&pos.z<z1; };
   const comps=o=>{ const L=o.parts.map(p=>{ const A=p.me.geometry.attributes.position.array, a=[1e9,1e9,1e9], b=[-1e9,-1e9,-1e9]; for(let v=p.v0;v<p.v0+6;v++)for(let k=0;k<3;k++){ const q=A[v*3+k]; if(q<a[k])a[k]=q; if(q>b[k])b[k]=q; } return {p,a,b}; }).filter(q=>q.b[0]-q.a[0]+q.b[1]-q.a[1]+q.b[2]-q.a[2]>1e-4);
     const U=L.map((_,i)=>i), f=i=>U[i]===i?i:(U[i]=f(U[i])), e=.02*T;
     for(let i=0;i<L.length;i++)for(let j=i+1;j<L.length;j++){ const A=L[i], B=L[j]; if(A.a[0]<=B.b[0]+e&&B.a[0]<=A.b[0]+e&&A.a[1]<=B.b[1]+e&&B.a[1]<=A.b[1]+e&&A.a[2]<=B.b[2]+e&&B.a[2]<=A.b[2]+e)U[f(i)]=f(j); }
@@ -112,7 +112,7 @@ const GPH=window.GPH={ms:0,n:0};
     const v=you.linvel(), m=you.mass(), J=[((tx-p.x)/h*.5-v.x)*m,((ty-p.y)/h*.5-v.y)*m,((tz-p.z)/h*.5-v.z)*m], l=Math.hypot(...J), c=Math.min(1,(I[0]||I[1]?700:120)*h/(l||1)); you.applyImpulse({x:J[0]*c,y:J[1]*c,z:J[2]*c},true); };
   const STRIKE=/jab|cross|upper|hook|slap|punch|kick|sweep|round/i;
   const strike=()=>{ '@later'; const s=(st.up&&STRIKE.test(st.up.name)&&st.up)||(st.move&&STRIKE.test(st.move.name)&&st.move); if(!s||s===lastHit||s.t<.08)return; lastHit=s;
-    const kick=/kick|sweep|round/i.test(s.name), inB=(x,z)=>{ const B=SHARED.BOD.B0; return x>SHARED.BOD.X(B.x0)&&x<SHARED.BOD.X(B.x1)&&z>SHARED.BOD.Z(B.y0)&&z<SHARED.BOD.Z(B.y1); }, me0=inB(pos.x,pos.z), fx=Math.sin(SHARED.heading), fz=Math.cos(SHARED.heading), hy=SHARED.py+(kick?.45:1.05)*T;
+    const kick=/kick|sweep|round/i.test(s.name), inB=(x,z)=>{ const B=SHARED.BOD.SB; return x>SHARED.BOD.X(B.x0)&&x<SHARED.BOD.X(B.x1)&&z>SHARED.BOD.Z(B.y0)&&z<SHARED.BOD.Z(B.y1); }, me0=inB(pos.x,pos.z), fx=Math.sin(SHARED.heading), fz=Math.cos(SHARED.heading), hy=SHARED.py+(kick?.45:1.05)*T;
     for(const it of act){ if(it===held)continue; const p=it.rb.translation(), dx=p.x-pos.x, dz=p.z-pos.z, d=Math.hypot(dx,dz)-Math.max(it.h[0],it.h[2]), f=(dx*fx+dz*fz)/(Math.hypot(dx,dz)||1);
       if(d<1.1*T&&f>.35&&Math.abs(p.y-hy)<.7*T+it.h[1]&&(it.k!=='v'||inB(p.x,p.z)===me0)){ const k=(kick?5.5:3.8)*Math.min(it.m,25), j=k*.02*Math.max(1,it.h[1]/(.15*T));
         it.rb.wakeUp(); it.rb.applyImpulse({x:fx*k,y:k*.35,z:fz*k},true); it.rb.applyTorqueImpulse({x:(Math.random()-.5)*j,y:(Math.random()-.5)*j,z:(Math.random()-.5)*j},true); } } };

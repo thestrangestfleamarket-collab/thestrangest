@@ -68,7 +68,7 @@ const SYS={P:{},add:(ph,fn,name)=>{ (SYS.P[ph]=SYS.P[ph]||[]).push({fn,name:name
 const FADE={busy:0,run:async(t,w)=>{ if(w)await w(); }}; window.FADE=FADE;
 const MAPG={}, MODS={};  const OVERHEAD=[]; SHARED.RPASS=null; SHARED.FIRE=null;
 const grab=async(name,fn)=>{ const n0=scene.children.length; await fn(); const g=new THREE.Group(); g.name=name; for(const o of scene.children.slice(n0))g.add(o); scene.add(g); MAPG[name]=g; return g; };
-const LEVEL=__DATA__("data/world.json"), WP=Object.fromEntries(LEVEL.places.map(p=>[p.id,p])), WPP=LEVEL.parkPlaces, BLDK=1.1, LOTX=m=>72+(m-72)/BLDK;
+const LEVEL=__DATA__("data/world.json"), WP=Object.fromEntries(LEVEL.places.map(p=>[p.id,p])), WPP=LEVEL.parkPlaces, BLDK=1.1, LOTX=m=>72+(m-72)/BLDK, LOTY=m=>-77+(m+77)/BLDK;
 const SECTION=LEVEL.section||{id:'A'}; SHARED.SECTION=SECTION;
 try{ LEVEL.homes=Object.assign(LEVEL.homes||{},__DATA__("data/behaviour.json")); }catch(e){}
 const LAYOUT0={bodega:{x:WP.bodega.x1-76.4},diner:{x:-24.75},ghost:{x:WP.bath.x0-133.55},house:{x:WP.apts.x0-48.24},subway:{x:WP.subway.x0-60.01},apartments:{x:59},park:{e:[0,0,0,0]},castle:{x:WPP.castle.x0-46,y:WPP.castle.y0+21}};
@@ -81,8 +81,8 @@ const WID=31.5-MAINX.w-LEVEL.streets.west.x0, NORTHY=9+WID, NORTHX=LEVEL.park.y1
 LAYOUT0.park.e=[LEVEL.park.x0-50+MAINX.w,0,LEVEL.park.x1-EASTX,0];
 const WB=LEVEL.block, BLOCK={back:WB.back,alley:WB.alley,row2:WB.backrow,prom:WB.walk,river:WB.river,x0:WB.x0,x1:WB.x1,lots:{},hudson:[WP.hudson.x0,WP.hudson.x1]};
 for(const k of ['play','bank','theatre','arcade'])BLOCK.lots[k]=[WP[k].x0,WP[k].x1];
-const ROWID=LEVEL.places.map(p=>p.id), MAINROW=LEVEL.places.map(p=>[p.x0,p.x1]);
-const WROW={bar:{x0:LOTX(WP.bar.x0),x1:LOTX(WP.bar.x1)},mus:{x0:LOTX(WP.museum.x0),y0:-101,x1:LOTX(WP.museum.x1),y1:-80,h:210}};
+const ROWP=LEVEL.places.filter(p=>p.y1==null).sort((a,b)=>a.x0-b.x0), ROWID=ROWP.map(p=>p.id), MAINROW=ROWP.map(p=>[p.x0,p.x1]);
+const WROW={bar:{x0:LOTX(WP.bar.x0),x1:LOTX(WP.bar.x1),y0:WP.bar.y1!=null?LOTY(WP.bar.y0):-89.5,y1:WP.bar.y1!=null?LOTY(WP.bar.y1):-77},mus:{x0:LOTX(WP.museum.x0),y0:WP.museum.y1!=null?LOTY(WP.museum.y0):-101,x1:LOTX(WP.museum.x1),y1:WP.museum.y1!=null?LOTY(WP.museum.y1):-80,h:210}};
 const RING={wx0:LEVEL.streets.west.x0,wx1:LEVEL.streets.west.x1,top:LEVEL.park.y1}; RING.wr0=RING.wx0+3.2; RING.wr1=RING.wx1-3.2; RING.wy1=RING.top+WID;
 RING.stairs=[]; RING.river={y0:BLOCK.river,y1:BLOCK.river+46}; RING.ff={x0:WESTX,x1:EASTX,y0:RING.river.y0-1.5,y1:RING.top+28};
 const MAPSTAIR={x0:60.01,x1:64.01,y0:-82.9,y1:-76.9, steps:12, depth:98, dir:-1};
@@ -91,4 +91,4 @@ const PARKGX=WPP.round.x, PARKRY=WPP.round.y, PARKLAKE=[WPP.lake.x,WPP.lake.y,WP
 const SHELLS=LEVEL.shells;
 const CASTLE={b:[46,67,-21,-4],gate:58.5,stair:{x0:61.5,x1:63.5,y0:-19.4,y1:-13.4,steps:12,depth:98,dir:1},hall:{x0:51,y0:-20,x1:65,y1:-6.8,h:130}};
 { const o=LAY.o('castle'), C=CASTLE, S=C.stair, H=C.hall; C.b=[C.b[0]+o.x,C.b[1]+o.x,C.b[2]+o.y,C.b[3]+o.y]; C.gate+=o.x; for(const R of [S,H]){ R.x0+=o.x; R.x1+=o.x; R.y0+=o.y; R.y1+=o.y; } }
-export {applyTime, ASTEP, AWAY, BF, BLDK, BLOCK, C2, CASTLE, CEL, CLIPX, cutWalls, DITH, EASTX, FADE, FIX, FREE, grab, LAMPD, LAMPI, lamps, LAY, LEVEL, LFX, LOTX, MAINROW, MAINX, MAPG, MAPSTAIR, MISTB, MISTB2, MISTE, MISTF, MODS, NEONS, nightTo, NORTHX, NORTHY, OUT, OVERHEAD, PARKCAVE, PARKGX, PARKLAKE, PARKRY, PARKTOWER, PFAR, QS, RING, SEEN, SHELLS, SHL, shopGroups, SMOOTH, SOL, STN, STORE, SYS, TILE, WESTX, WP, WROW, ZU};
+export {applyTime, ASTEP, AWAY, BF, BLDK, BLOCK, C2, CASTLE, CEL, CLIPX, cutWalls, DITH, EASTX, FADE, FIX, FREE, grab, LAMPD, LAMPI, lamps, LAY, LEVEL, LFX, LOTX, LOTY, MAINROW, MAINX, MAPG, MAPSTAIR, MISTB, MISTB2, MISTE, MISTF, MODS, NEONS, nightTo, NORTHX, NORTHY, OUT, OVERHEAD, PARKCAVE, PARKGX, PARKLAKE, PARKRY, PARKTOWER, PFAR, QS, RING, SEEN, SHELLS, SHL, shopGroups, SMOOTH, SOL, STN, STORE, SYS, TILE, WESTX, WP, WROW, ZU};

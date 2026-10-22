@@ -104,7 +104,7 @@ GAMEED.build=()=>{ '@editor'; const T=TILE;
     const lot=k=>[[BLOCK.lots[k][0],BACK],[BLOCK.lots[k][1],FRONT]];
     R('THE PLAYHOUSE','shop',...lot('play'),150,'red brick, marquee','play');
     { const b=STORE.bank&&STORE.bank.B; if(b)R('THE BANK','shop',bt(b.x0,b.y0),bt(b.x1,b.y1),b.h,'museum stone','bank'); else R('THE BANK','shop',...lot('bank'),200,'museum stone','bank'); }
-    { const w=WROW.bar; R('THE BAR','shop',bt(w.x0,-89.5),bt(w.x1,-77),130,'bar walls','bar'); }
+    { const w=WROW.bar; R('THE BAR','shop',bt(w.x0,w.y0),bt(w.x1,w.y1),130,'bar walls','bar'); }
     R('SUBWAY STAIRS','shop',[MAPSTAIR.x0,MAPSTAIR.y0],[MAPSTAIR.x1,MAPSTAIR.y1],8,'concrete pavement','subway');
     R('TO THE HUDSON (PASSAGE)','path',[BLOCK.hudson[0],BLOCK.row2[0]],[BLOCK.hudson[1],FRONT],0,'concrete pavement','hudson');
     { const g=SHARED.BOD.grounds.find(q=>q.id==='ghostst'); if(g)R('THE BATH HOUSE','shop',bt(g.x0,g.y0),bt(g.x1,g.y1),170,'wood','bath'); }

@@ -26,7 +26,7 @@ import {SYS, TILE} from './006-map-pre.js';
   GHOSTS.move=(Q,to)=>{ const b=Q.ball, x=to.x-b.x, y=to.y-b.y, z=to.z-b.z; for(const k of Q.live){ Q.P[k]+=x; Q.P[k+1]+=y; Q.P[k+2]+=z; Q.O[k]+=x; Q.O[k+1]+=y; Q.O[k+2]+=z; } Object.assign(b,to); };
   GHOSTS.on=Q=>{ const b=Q.ball; for(const k of Q.live)if(Q.P[k+1]>b.y)return true; return false; };
   GHOSTS.settle=(Q,n)=>{ Q.d={x:0,y:0,z:0}; for(let s=0;s<n;s++)step(Q,[]); };
-  GHOSTS.run=(Q,dt,to,others,MH,MV)=>{ '@later'; Q.acc=Math.min(Q.acc+dt,H*8); const n=Math.max(1,Math.floor(Q.acc/H)); Q.acc=Math.max(0,Q.acc-n*H); const b=Q.ball, b0={...b};
+  GHOSTS.run=(Q,dt,to,others,MH,MV)=>{ Q.acc=Math.min(Q.acc+dt,H*8); const n=Math.max(1,Math.floor(Q.acc/H)); Q.acc=Math.max(0,Q.acc-n*H); const b=Q.ball, b0={...b};
     Q.d={x:(to.x-b0.x)/n,y:(to.y-b0.y)/n,z:(to.z-b0.z)/n}; for(let s=0;s<n;s++){ b.x+=Q.d.x; b.y+=Q.d.y; b.z+=Q.d.z; step(Q,others); } Object.assign(b,to);
     const A=Q.pos.array, P=Q.P; for(const k of Q.live){ A[k]=P[k]*MH; A[k+1]=P[k+1]*MV; A[k+2]=P[k+2]*MH; } Q.pos.needsUpdate=true; Q.geo.computeVertexNormals(); }; }
 GHOSTS.init=()=>{ if(typeof SHARED.BOD==='undefined'||!SHARED.BOD.GD)return; const X=SHARED.BOD.X, Z=SHARED.BOD.Z, MH=TILE/.84, MV=SHARED.BOD.YS(24)/.84;

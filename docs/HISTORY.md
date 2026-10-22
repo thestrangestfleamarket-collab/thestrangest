@@ -4272,3 +4272,4 @@ The landscape editor (shift+9) now has a BORDER mode beside BOX: click points on
 - 22 Oct 2026, the bodega's shop windows glow at night with the shelves showing through (owner: "you pick, finish list").
 - 22 Oct 2026, the bath house like the other shops (owner: "just do all", "you pick, finish list"): its door and windows are solid and painted; in and out only by double-clicking the door.
 - 22 Oct 2026, characters go into shops (owner: "just do all", "you pick, finish list"): a character whose home is by a building (THE BAR, THE ARCADE, THE BODEGA, THE THEATRE so far) now and then walks to its door, goes in for a while and comes back out; your apartment is only yours.
+- 22 Oct 2026, character sheets in a black void again: the sky was showing behind them; the sheet view now keeps it off (owner's rule: "Screenshots of characters: always in a black void").

@@ -1,6 +1,6 @@
 // THE MUSICIAN: MUS, the street musician, and the shared figure makers (musBody, figureMesh) the players use.
 import {SHARED, THREE} from './003-shx.js';
-import {MUS, NPCS, pos, SND, UI, W3} from './003b-systems.js';
+import {MUS, NPCS, pos, SKY, SND, UI, W3} from './003b-systems.js';
 import {PPU, renderer, RES, resize, RESL, RESMAX, scene} from './004-main.js';
 import {SAVE} from './005-save.js';
 import {ASTEP, MAPG, MODS, STORE, TILE, ZU} from './006-map-pre.js';
@@ -41,7 +41,7 @@ function musBox(P){ const [cx,cy,cz,hx,hy,hz]=P.box, F=P.F0, g=new THREE.BoxGeom
 const musScale=(g,bh)=>g.scale.set(W3.SZ/PPU,ZU*W3.SZ*(bh||W3.BH||1),W3.SZ/PPU);
 const sheetView=(g,y)=>{ '@later'; UI.setFree(true); UI.camT.set(g.position.x,y,g.position.z); SHARED.ppu=SHARED.ppuTo=PPU*4; window.SHEETTURN=d=>{ SHARED.yaw=SHARED.yawTo=d*Math.PI/180; }; window.SHEETZOOM=k=>{ SHARED.ppu=SHARED.ppuTo=PPU*k; };
   for(const G of Object.values(MAPG))for(const c of G.children)if(c!==g)c.visible=false; for(const c of scene.children)if(!c.isLight&&!c.isCamera&&c!==MAPG.bodega)c.visible=false;
-  const K=new THREE.Color(0), r0=renderer.render.bind(renderer); renderer.render=(s,c)=>{ if(s===scene){ s.background=K; s.fog=null; } r0(s,c); }; };
+  const K=new THREE.Color(0), r0=renderer.render.bind(renderer); renderer.render=(s,c)=>{ if(s===scene){ s.background=K; s.fog=null; if(SKY.dome)SKY.dome.visible=false; } r0(s,c); }; };
 const spreadPose=()=>{ const P=RIG.walkPose({ph:0,w:0},null), D=RIG.D; P.L.ua=[0,65*D]; P.R.ua=[0,65*D]; P.L.fa=[0,70*D]; P.R.fa=[0,70*D]; return P; };
 function sheetFig(g){ const V=RIG.V, MT=RIG.MATS; if(!MT.includes('sheet')){ MT.push('sheet'); W3.ramp.push(['#e6e4dc','#d8d6cd','#b6b3a9','#78756d'].map(h=>new THREE.Color(h))); } const SHI=MT.indexOf('sheet');
   const PCS=musBody().PCS.filter(p=>/^(sleeve|upperArm|forearm|hand|fing)/.test(p.n)); for(const p of PCS)p.recol=()=>SHI;

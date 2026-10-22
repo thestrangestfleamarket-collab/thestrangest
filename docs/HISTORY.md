@@ -4336,3 +4336,6 @@ The ? controls list shows what you can actually press: dropped the stale KEYMOVE
 
 ## 22 Oct 2026: gear in the item model (slot + grants) — the backbone for merchants
 The item editor (shift+7) gains two fields on the shared item model: WORN/HELD (slot — none/hand/body) and GRANTS (an ability — catch/fight/guard/float). Ship via items.json. A merchant can sell any item (Phase 2 shops); gear with a slot is held (hand → the existing WIELD) or worn (body → a worn layer, built when armor/coats land). The existing gear is now in the model: sword (hand, fight), butterfly net and bird net (hand, catch). The worn layer and the fight/guard/float abilities land with the merchants that need them (sword, armor, bear). Step 2 of the merchant epic.
+
+## 22 Oct 2026: the nature merchant sells the nets (Step 3)
+The origami fox is now THE NATURE MERCHANT (its body reused — owner: "reuse existing toon bodies"): it sells the butterfly net and the bird net through the Phase 2 shop and the gear item model (Step 2), priced by each net's value. Buying gives the net; hold it (WIELD, the 1 key) to catch butterflies and birds. SHOPS re-binds after the glb toons load, so a merchant that spawns after the start still gets its shop. Pin it in place or re-theme it in the character editor.

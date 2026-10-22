@@ -1,5 +1,5 @@
 // THE EDITORS LAUNCHER: EDITORS holds the shift+0 menu and the shift+1-8 keys that open each editor.
-import {EDITORS, GAMEED, LIGHTED, UI, WE} from './003b-systems.js';
+import {EDITORS, GAMEED, ITEMED, LIGHTED, UI, WE} from './003b-systems.js';
 { const ge=async mode=>{ hide(); if(!GAMEED.open)await GAMEED.toggle(); const b=document.getElementById(mode==='map'?'meTM':'meTC'); if(b&&b.dataset.hot!=='1')b.click(); };
   const list=[
     {key:1,n:'WORLD',d:'double-click a thing to move, size, turn, colour it',go:()=>{ if(!WE.on)WE.toggle(); }},
@@ -8,7 +8,7 @@ import {EDITORS, GAMEED, LIGHTED, UI, WE} from './003b-systems.js';
     {key:4,n:'ATMOSPHERE',d:'weather, sky, sun, fog',go:()=>UI.menuTab('atmo')},
     {key:5,n:'LIGHTING',d:'render system and quality; cel is the floor',go:()=>LIGHTED.toggle()},
     {key:6,n:'SOUND',d:'each sound and its level',go:()=>UI.menuTab('sound')},
-    {key:7,n:'ITEM',d:'item types and their properties',soon:1},
+    {key:7,n:'ITEM',d:'item types and their properties',go:()=>ITEMED.toggle()},
     {key:8,n:'BEHAVIOUR',d:'homes, routines, jobs',soon:1}];
   const css=document.createElement('style'); css.textContent=`
   #edmenu{position:fixed;inset:0;z-index:30;display:none;align-items:center;justify-content:center;background:#05070bcc;font:13px var(--pixel,monospace);color:var(--fg,#e9e6dd)}

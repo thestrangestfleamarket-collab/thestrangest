@@ -4208,3 +4208,7 @@ World edits (WE, 099-worldedit) are now keyed by place + name + rounded position
 ## 22 Oct 2026: committed world edits load at start
 
 The build bakes data/world-edits.json (empty for now) and the world editor applies it at start — after __started and LOAD('later'), the butterflies pattern, so it never drags the later chunk into the start. Your own browser edits overlay the committed baseline. The flow: edit, EXPORT world-edits.json, drop it in data/, and the edits ship for everyone.
+
+## 22 Oct 2026: the item model and editor (shift+7)
+
+A shared item-property model (ITEMS, 141d-items) and its editor (ITEMED): each item type carries properties shared by its kind (burnable, edible, stackable, pickup, sellable, weight, value). Baked from data/items.json (empty for now) and overlaid by browser edits; EXPORT writes items.json to ship. The home for schema-wide properties, as the rules require; not yet wired to fire/crafting — it defines what they will read. Replaces the shift+7 placeholder.

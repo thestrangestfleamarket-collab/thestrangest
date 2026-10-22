@@ -1846,8 +1846,7 @@ SHARED.BODB={};
   SHARED.BODB.unbuild=()=>{ if(SHARED.BODB.SG)SHARED.BODB.SG.removeFromParent(); SHARED.BODB.SG=null; SHARED.BOD.goodsMesh=null; };
   { const SB=SHARED.BOD.SB, m0=(B0.x0+B0.x1)/2, mS=(SB.x0+SB.x1)/2, bx=(x0,y0,x1,y1)=>[Math.min(X(x0),X(x1)),Math.min(Z(y0),Z(y1)),Math.max(X(x0),X(x1)),Math.max(Z(y0),Z(y1))], wb=bx(SB.x0-.2,SB.y0-.2,SB.x1+.2,SB.y1+.2);
     ROOMS.off.bodega={name:'THE BODEGA',keep:true,box:{x0:wb[0],z0:wb[1],x1:wb[2],z1:wb[3],y0:-1,y1:Y(SB.h)},need:()=>LOAD(SHARED.BODB.build.chunk),build:SHARED.BODB.build,unbuild:SHARED.BODB.unbuild,
-      spawn:[X(mS),Z(SB.y1-1.3),0,Math.PI],out:[X(m0),Z(B0.y1+.7),0,0],door:[X(m0),Y(0),Z(B0.y1+.25)],exit:[X(mS),0,Z(SB.y1-.25)],exitName:'OUT TO THE STREET',
-      inAt:[...bx(m0-.6,B0.y1,m0+.6,B0.y1+.4),0],outAt:[...bx(mS-.7,SB.y1-.5,mS+.7,SB.y1),0]}; }
+      spawn:[X(mS),Z(SB.y1-1.3),0,Math.PI],out:[X(m0),Z(B0.y1+.7),0,0],door:[X(m0),Y(0),Z(B0.y1+.25)],exit:[X(mS),0,Z(SB.y1-.25)],exitName:'OUT TO THE STREET'}; }
 }
 { const {BF_KINDS,bfPic}=SHARED.BOD.STOREK.bf, PICS=new Map(), hash=SHARED.BOD.g.hash;
   const tex=(k,pose)=>{ '@later'; const key=k+':'+pose; let t=PICS.get(key); if(t)return t; const Q=bfPic(k,16,pose), c=document.createElement('canvas'); c.width=Q.w; c.height=Q.h; const g=c.getContext('2d'), im=g.createImageData(Q.w,Q.h);

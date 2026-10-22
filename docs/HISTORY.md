@@ -4243,8 +4243,20 @@ LAND (152a-landscape) paints the ground: drag a box on the ground and it lays a 
 ## 22 Oct 2026: the item editor lists the game's real items
 
 The item editor (shift+7) now shows the game's actual items to click-add, not just a blank field: FORAGE.ids() (a read-only hook on forage's own maps — mushrooms, potions, foods, recipes, priced goods) and the loose things (GPH.loose names), normalised to ids. A FROM THE GAME list adds a type with one click; its name matches what burnable checks, so the fire wiring lines up.
+- 21 Oct 2026, the bodega a block (owner: "can we do this for all buildings to save? all interiors could be off map and buildings can be blocks", then "just do all"): the bodega's outside is one painted block (shelves seen through the glass, its door and sign); its inside, the fox and the goods are built off the map when you first go in.
+- 21 Oct 2026, the arcade and its holodeck (owner: "lets put the knight as a character that shows up in the holodeck as a training swords program. the holodeck should be on the back wall of the arcade. the sign above door should be infinity symbol, green, grid wall, rest of arcade wall is black, 3 arcade cabinets on each side"; "no the back wall should only be the holodeck, the left side and right side of arcade room have the cabinets (3 on each side)"; "any 6"): the arcade is a block on Main Street, its inside off the map: black walls, three cabinets on each side wall, the back wall the holodeck's green grid with the infinity sign over its door. Inside the holodeck the knight runs SWORD TRAINING. The holodeck's own lot and the old arcade cafe are gone; the knight no longer walks the street.
+
+## 22 Oct 2026: edible wired to eating
+
+An item marked EDIBLE (item editor, shift+7) can now be eaten through the existing eating path: FORAGE.eat feeds you when you eat one, and the pack shows an EAT button for it — the same for every item of that kind (ITEMS.prop(id,'edible')). The second property to do something, after burnable.
+## 22 Oct 2026: no drag-to-turn while playing (owner: "remove the click and drag view when playing")
+
+Dragging no longer turns or tilts the camera in play, in any view: right/middle/shift+drag do nothing, and third/first person no longer look round on drag. Left drag still moves the map in the overhead views; turn and tilt with Q/E, Z/X and the buttons. Drag still turns the view in the free camera (C) and the editors (gated by UI.camFree). Reverses the 17-19 Oct drag-to-turn, iso-spin and free-look decisions.
 - 21 Oct 2026, the apartment house all brick (owner: "you pick", after "entire building same red brick"): the stone base, window trim and cornice are brick too.
 
 ## 22 Oct 2026: levels (what is drawn underground)
 
 Owner, of street buildings, plants and a box floating in the dark around the subway station: "this shouldnt be a patch for this room, this should be a solution for all unground levels and platforms, subway tunnels, etc" / "yes build it". Every place is a level (`LEVELS`, 129a): the street, the station with its tunnels, the dungeon. Only your level is drawn; levels meet only at connectors (the subway stairs, the castle stairs), and a connector is drawn only in the levels it stands in. Rule: a new underground place or platform registers its level (`LEVELS.of`) and its stairs (`LEVELS.ways`), never a height test.
+## 22 Oct 2026: sellable wired to shops
+
+An item marked SELLABLE (item editor, shift+7) now shows in the mushroom seller's shop and sells for its VALUE — the same for every item of that kind (the shop's sell list and price read ITEMS.prop(id,'sellable') and 'value'). Third property to do something, after burnable and edible.

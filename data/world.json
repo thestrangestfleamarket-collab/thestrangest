@@ -131,13 +131,6 @@
    "kind": "front",
    "x0": 205.5,
    "x1": 219.5
-  },
-  {
-   "id": "holo",
-   "name": "THE HOLODECK",
-   "kind": "front",
-   "x0": 225.5,
-   "x1": 239.5
   }
  ],
  "shells": [

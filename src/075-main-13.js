@@ -23,7 +23,7 @@ const VIEW0={yaw:Math.PI/4,pitch:Math.PI/6,ppu:PPU}; SHARED.yaw=VIEW0.yaw; SHARE
 const PMIN=0.17, PMAX=Math.PI/2-0.002, clampP=v=>Math.max(PMIN,Math.min(PMAX,v));
 renderer.domElement.addEventListener('contextmenu',e=>e.preventDefault());
 let drag=null;
-renderer.domElement.addEventListener('pointerdown',e=>{ if(e.button===2||e.button===1){ drag={x:e.clientX,y:e.clientY}; UI.grab(e); renderer.domElement.setPointerCapture(e.pointerId); } });
+renderer.domElement.addEventListener('pointerdown',e=>{ if((e.button===2||e.button===1)&&UI.camFree()){ drag={x:e.clientX,y:e.clientY}; UI.grab(e); renderer.domElement.setPointerCapture(e.pointerId); } });
 renderer.domElement.addEventListener('pointermove',e=>{ if(!drag)return; UI.orbit(e.clientX-drag.x,e.clientY-drag.y); drag={x:e.clientX,y:e.clientY}; });
 renderer.domElement.addEventListener('pointerup',()=>drag=null);
 UI.holdUp=new THREE.Vector3();

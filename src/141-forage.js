@@ -1,6 +1,6 @@
 // THE FORAGE: FORAGE lets the player gather mushrooms and things, keeps their pack, and sells them.
 import {SHARED, THREE} from './003-shx.js';
-import {CITY, CIVIC, ED, FORAGE, INV, LINES, LOOKS, MAIL, NPCS, pos, SFX, st, UI, VIT, WE, WEEDS} from './003b-systems.js';
+import {CITY, CIVIC, ED, FORAGE, INV, ITEMS, LINES, LOOKS, MAIL, NPCS, pos, SFX, st, UI, VIT, WE, WEEDS} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
 import {MAPG, QS, SYS, TILE} from './006-map-pre.js';
@@ -27,8 +27,8 @@ import {GEMS} from './101-gems.js';
     p_gheal:()=>{ VIT.hp=1; buff('regen',60); },f_roast:()=>feed(.33),f_fritter:()=>{ feed(.33); VIT.sta=1; },f_skewer:()=>{ feed(.4); buff('regen',60); },f_soup:()=>{ feed(.6); VIT.hp=Math.min(1,VIT.hp+.3); },f_morel:()=>{ feed(.4); buff('swift',180); }};
   const PRICE=FORAGE.PRICE={p_refresh:12,p_heal:20,p_str:28,p_keen:28,p_cure:40,p_gheal:110,f_roast:8,f_fritter:10,f_skewer:16,f_soup:30,f_morel:56,bottle:2};
   const NM=FORAGE.NM={}, NAME=id=>NM[id]?NM[id]:id==='bottle'?'EMPTY BOTTLE':id==='mortar'?'MORTAR AND PESTLE':id.startsWith('m_')?MU[id.slice(2)][0]:id.startsWith('u_')?'STRANGE MUSHROOM ('+['','PALE','PUFFY','ORANGE','RED','SHAGGY','BROWN','PITTED','GLOWING'][MK.indexOf(id.slice(2))+1]+')':(RC.find(r=>r[0]===id)||[0,id])[1];
-  const SK=[['forage','FORAGING'],['alchemy','ALCHEMY'],['cooking','COOKING'],['myco','MYCOLOGY'],['fish','FISHING'],['prosp','PROSPECTING'],['ento','ENTOMOLOGY'],['garden','GARDENING'],['bird','BIRDING'],['bind','BOOKBINDING']], CAP=6000;
-  const S={v:1,sk:{forage:200,alchemy:200,cooking:200,myco:150,fish:150,prosp:100,ento:150,garden:100,bird:100,bind:100},lock:{forage:'up',alchemy:'up',cooking:'up',myco:'up',fish:'up',prosp:'up',ento:'up',garden:'up',bird:'up',bind:'up'},food:.8,fx:{},picked:{},pd:-1};
+  const SK=[['forage','FORAGING'],['alchemy','ALCHEMY'],['cooking','COOKING'],['myco','MYCOLOGY'],['fish','FISHING'],['prosp','PROSPECTING'],['ento','ENTOMOLOGY'],['garden','GARDENING'],['bird','BIRDING'],['bind','BOOKBINDING'],['sword','SWORDSMANSHIP']], CAP=6000;
+  const S={v:1,sk:{forage:200,alchemy:200,cooking:200,myco:150,fish:150,prosp:100,ento:150,garden:100,bird:100,bind:100,sword:100},lock:{forage:'up',alchemy:'up',cooking:'up',myco:'up',fish:'up',prosp:'up',ento:'up',garden:'up',bird:'up',bind:'up',sword:'up'},food:.8,fx:{},picked:{},pd:-1};
   try{ const D=JSON.parse(OWNED.get(KEY)||'null'); if(D&&D.v===1){ const sk0={...S.sk}, lk0={...S.lock}; Object.assign(S,D); S.sk={...sk0,...S.sk}; S.lock={...lk0,...S.lock}; } }catch(e){} if(QS.get('fresh')&&QS.get('keepinv')!=='1'){ S.picked={}; }
   if(!INV.items.mortar&&!S.given){ INV.items.mortar=1; INV.items.bottle=(INV.items.bottle||0)+3; S.given=1; }
   let saveT=0; const save=()=>{ OWNED.set(KEY,JSON.stringify(S)); }, saveSoon=()=>{ clearTimeout(saveT); saveT=setTimeout(save,800); };
@@ -104,6 +104,7 @@ import {GEMS} from './101-gems.js';
     if(id.startsWith('m_')||id.startsWith('u_')){ const [, , , food,harm]=MU[k]; if(harm){ S.fx.poison=Math.max(S.fx.poison||0,40); say('YOU FEEL VERY ILL. YOU HAVE BEEN POISONED!','#9fe07f'); SFX.play('cough',{vol:.6}); } else { feed(food); say('YOU EAT IT. NOT BAD.'); } }
     else if(FORAGE.RAW[id]){ const [food,harm]=FORAGE.RAW[id]; if(harm&&Math.random()<harm){ S.fx.poison=Math.max(S.fx.poison||0,25); say('IT DISAGREES WITH YOU. YOU HAVE BEEN POISONED!','#9fe07f'); } else { feed(food); say('YOU EAT IT RAW. CHEWY.'); } }
     else if(DO[id]){ DO[id](); say(id[0]==='p'?'YOU DRINK THE '+NAME(id)+'.':'YOU EAT THE '+NAME(id)+'.','#b8f0a0'); if(id[0]==='p')give('bottle',1); }
+    else if(window.ITEMS&&ITEMS.prop&&ITEMS.prop(id,'edible')){ feed(.25); say('YOU EAT IT.'); }
     saveSoon(); INV.add('x',0); delete INV.items.x; PACK.draw(); };
   FORAGE.ident=id=>{ const k=id.slice(2), d=MU[k][1]; if(use('myco',d-30,d+20)){ const n=have(id); take(id,n); give('m_'+k,n); say(`IT IS A ${MU[k][0]}.`,'#c8b0ff'); } else say('YOU CANNOT TELL WHAT IT IS.','#c8a090'); PACK.draw(); };
   const fire=()=>{ '@later'; if(typeof FLAME==='undefined')return null; const w=new V3(); for(const s of FLAME.src){ if(s.k<0||s.k>2)continue; let o=s.a, vis=true; for(;o;o=o.parent)if(!o.visible){ vis=false; break; } if(!vis)continue; s.a.getWorldPosition(w); if(Math.hypot(w.x-pos.x,w.z-pos.z)<3*T&&Math.abs(w.y-SHARED.py)<3*T)return s; } return null; };
@@ -130,7 +131,7 @@ import {GEMS} from './101-gems.js';
     if(xt)o+=xt.draw(); else if(PACK.tab==='pack'){ o+=`<div id="pbars" style="display:grid;gap:3px;margin-bottom:8px">${bars()}</div><div style="margin-bottom:6px">$${Math.round(INV.cash)}</div><table style="border-collapse:collapse;width:100%">`;
       const ids=Object.keys(INV.items).filter(id=>INV.items[id]>0&&!GEMS.some(g=>g[0]===id&&!id.startsWith('m_'))).sort();
       if(!ids.length)o+='<tr><td style="color:#7d7a70">NOTHING. FIND MUSHROOMS ON THE LAWNS: A DOUBLE CLICK PICKS ONE.</td></tr>';
-      for(const id of ids){ const eat=id.startsWith('m_')||id.startsWith('u_')||id.startsWith('f_')||id.startsWith('p_')||!!FORAGE.RAW[id];
+      for(const id of ids){ const eat=id.startsWith('m_')||id.startsWith('u_')||id.startsWith('f_')||id.startsWith('p_')||!!FORAGE.RAW[id]||(window.ITEMS&&ITEMS.prop&&ITEMS.prop(id,'edible'));
         o+=`<tr style="border-bottom:1px solid #22252f"><td style="padding:4px 2px;${id.startsWith('u_')?'color:#c8b0ff':''}">${esc(NAME(id))}</td><td style="text-align:right;padding:4px 6px">x${INV.items[id]}</td><td style="text-align:right;white-space:nowrap">${eat?`<button ${B} data-eat="${id}">${id.startsWith('p_')?'DRINK':'EAT'}</button>`:''}${id.startsWith('u_')?`<button ${B} data-id="${id}">IDENTIFY</button>`:''}${FORAGE.ROWB.flatMap(f=>f(id)).map(([l,a])=>`<button ${B} data-act="${a}" data-aid="${id}">${l}</button>`).join('')}</td></tr>`; }
       o+=`</table><div style="color:#7d7a70;margin-top:8px">${INV.count()} gem${INV.count()===1?'':'s'} too (the golems' panel). I opens and closes this.</div>`; }
     else if(PACK.tab==='skills'){ o+=`<table style="border-collapse:collapse;width:100%">`;
@@ -146,9 +147,9 @@ import {GEMS} from './101-gems.js';
     if(d.tab){ PACK.tab=d.tab; } else if(d.eat)FORAGE.eat(d.eat); else if(d.id)FORAGE.ident(d.id); else if(d.craft)FORAGE.craft(d.craft); else if(d.act&&FORAGE.ACT[d.act]){ FORAGE.ACT[d.act](d.aid); saveSoon(); } else if(d.lock){ S.lock[d.lock]={up:'down',down:'lock',lock:'up'}[S.lock[d.lock]]; saveSoon(); } PACK.draw(); });
   PACK.toggle=t=>{ pk.hidden=!pk.hidden; if(t)PACK.tab=t; PACK.open=!pk.hidden; PACK.draw(); };
   addEventListener('keydown',e=>{ if(e.repeat||e.ctrlKey||e.metaKey||e.altKey||e.shiftKey||e.key.toLowerCase()!=='i')return; if(e.target&&e.target.closest&&e.target.closest('input,textarea,select'))return; if(UI.menuOpen||ED.on||WE.on)return; PACK.toggle(); });
-  const SHOP={}; FORAGE.SHOP=SHOP; const val=id=>id.startsWith('m_')?MU[id.slice(2)][2]:id.startsWith('u_')?Math.floor(MU[id.slice(2)][2]/2):PRICE[id]||0;
+  const SHOP={}; FORAGE.SHOP=SHOP; const val=id=>id.startsWith('m_')?MU[id.slice(2)][2]:id.startsWith('u_')?Math.floor(MU[id.slice(2)][2]/2):PRICE[id]||(window.ITEMS&&ITEMS.prop&&ITEMS.prop(id,'value'))||0;
   const sp=panel('shopp','left:50%;top:10%;transform:translateX(-50%);width:min(460px,92vw)');
-  SHOP.draw=()=>{ '@later'; if(sp.hidden)return; const ids=Object.keys(INV.items).filter(id=>INV.items[id]>0&&(/^(m_|u_|p_|f_)/.test(id)||FORAGE.SELLP.some(p=>id.startsWith(p)))).sort();
+  SHOP.draw=()=>{ '@later'; if(sp.hidden)return; const ids=Object.keys(INV.items).filter(id=>INV.items[id]>0&&(/^(m_|u_|p_|f_)/.test(id)||FORAGE.SELLP.some(p=>id.startsWith(p))||(window.ITEMS&&ITEMS.prop&&ITEMS.prop(id,'sellable')))).sort();
     let o=`<h3 style="margin:0 0 4px;color:#f2c14e;font:12px Silkscreen,monospace">THE MUSHROOM SELLER</h3><div style="color:#9b9584;margin-bottom:8px">"Caps, stems, brews and broths. I'll take them all. Strange ones at half: I have to look them up."</div><div style="margin-bottom:8px">YOU HAVE <b style="color:#f2c14e">$${Math.round(INV.cash)}</b></div><table style="border-collapse:collapse;width:100%">`;
     o+=`<tr style="border-bottom:1px solid #22252f"><td style="padding:4px 2px">EMPTY BOTTLE</td><td style="text-align:right;padding:4px 6px">$2</td><td style="text-align:right">${have('bottle')}</td><td style="text-align:right;white-space:nowrap"><button ${B} data-buy="bottle">BUY</button><button ${B} data-buy="bottle" data-n="5">BUY 5</button></td></tr>`;
     for(const [sid,pr,show] of FORAGE.SELLS)if(show())o+=`<tr style="border-bottom:1px solid #22252f"><td style="padding:4px 2px">${esc(NAME(sid))}</td><td style="text-align:right;padding:4px 6px">$${pr}</td><td style="text-align:right">${have(sid)||''}</td><td style="text-align:right"><button ${B} data-buy="${sid}">BUY</button></td></tr>`;

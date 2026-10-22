@@ -6,7 +6,7 @@ import {FADE, FIX, grab, MAPG, MODS, SOL, STN, SYS, TILE} from './006-map-pre.js
 import {GCAVE} from './060-cave.js';
 import {RIVER} from './066-river.js';
 await grab('gemcave',async()=>{}); await grab('hudson',async()=>{}); await grab('lake',async()=>{}); await grab('falls',async()=>{});
-const CAVERNS={}; window.CAVERNS=CAVERNS; MODS.waters=MODS.waters||[];
+const CAVERNS={hooks:[],day:()=>0}; window.CAVERNS=CAVERNS; MODS.waters=MODS.waters||[];   // hooks: later systems add to a cavern as it builds (the day's gems); day: the calendar day that seeds it
 { const X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, Y=SHARED.BOD.YS, T=TILE, dy=STN.DY, hs=(a,b)=>{ const s=Math.sin(a*127.1+b*311.7)*43758.5453; return s-Math.floor(s); };
   const iX=x=>(x-X(0))/T, iZ=z=>(z-Z(0))/T;
   const build=(C,G)=>{ '@caverns'; const B=C.lot, H=C.H, P=[], Cc=[], c3=new THREE.Color(), m={objs:[],sol:[],fix:[],lights:[],things:[]};
@@ -18,13 +18,15 @@ const CAVERNS={}; window.CAVERNS=CAVERNS; MODS.waters=MODS.waters||[];
     quad([X(B.x0),dy+Y(.3),Z(B.y1)],[X(B.x1),dy+Y(.3),Z(B.y1)],[X(B.x1),dy+Y(.3),Z(B.y0)],[X(B.x0),dy+Y(.3),Z(B.y0)],FL);
     quad([X(B.x0),dy+Y(H),Z(B.y0)],[X(B.x1),dy+Y(H),Z(B.y0)],[X(B.x1),dy+Y(H),Z(B.y1)],[X(B.x0),dy+Y(H),Z(B.y1)],ST.map(v=>v*.55));
     for(const [x0,y0,x1,y1] of [[B.x0-w,B.y0-w,B.x1+w,B.y0+w],[B.x0-w,B.y1-w,B.x1+w,B.y1+w],[B.x0-w,B.y0,B.x0+w,B.y1],[B.x1-w,B.y0,B.x1+w,B.y1]]){ box(x0,y0,0,x1,y1,H+2,ST); sol(x0,y0,x1,y1,H+2); }
-    if(!C.empty)for(let i=0;i<7;i++){ const x=B.x0+2+hs(i,1)*(B.x1-B.x0-4), y=B.y0+2+hs(i,2)*(B.y1-B.y0-4), s=.6+.9*hs(i,3); box(x,y,0,x+s,y+s*.8,8+14*hs(i,4),ST.map(v=>v*.9)); sol(x,y,x+s,y+s*.8,8+14*hs(i,4)); }
+    const D=CAVERNS.day()*17;   // the day's seed: new rocks and finds every day, the same for everyone
+    if(!C.empty)for(let i=0;i<7;i++){ const x=B.x0+2+hs(i+D,1)*(B.x1-B.x0-4), y=B.y0+2+hs(i+D,2)*(B.y1-B.y0-4), s=.6+.9*hs(i+D,3); box(x,y,0,x+s,y+s*.8,8+14*hs(i+D,4),ST.map(v=>v*.9)); sol(x,y,x+s,y+s*.8,8+14*hs(i+D,4)); }
     const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); geo.setAttribute('color',new THREE.Float32BufferAttribute(Cc,3)); geo.computeVertexNormals();
     const rock=new THREE.Mesh(geo,new THREE.MeshLambertMaterial({vertexColors:true,side:THREE.DoubleSide})); rock.receiveShadow=true; G.add(rock); m.objs.push(rock);
     if(!C.empty)for(let i=0;i<6;i++){ const cr=new THREE.Mesh(new THREE.OctahedronGeometry(.5,0),new THREE.MeshBasicMaterial({color:C.gem})); cr.position.set(X(B.x0+2.5+hs(i,5)*(B.x1-B.x0-5)),dy+Y(.3),Z(B.y0+2.5+hs(i,6)*(B.y1-B.y0-5))); cr.scale.set(.2*T,.45*T,.2*T); cr.rotation.set(.3,i,.2); G.add(cr); m.objs.push(cr); }
     for(const [fx,fz,fy,c,i,r] of C.lights){ const L=new THREE.PointLight(c,i,r*T,1.6); L.position.set(X(B.x0+fx*(B.x1-B.x0)),dy+Y(fy),Z(B.y0+fz*(B.y1-B.y0))); L.userData.i0=i; L.userData.grp=G; LITE.recs.push(L); m.lights.push(L); }
     const hb=new THREE.Mesh(new THREE.BoxGeometry(1.2*T,Y(40),1.2*T),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(X(B.x0+1.2),dy+Y(20),Z(cy)); G.add(hb); m.objs.push(hb);
     const th={name:C.exitName,obj:hb,reach:1.4*T,near:2.6*T,tall:Y(50),act:()=>C.api.go(0)}; UI.thing(th); m.things.push(th);
+    for(const f of CAVERNS.hooks)f(C,G,m);
     LITE.t=0; return m; };
   CAVERNS.make=C=>{ const B=C.lot, G=MAPG[C.id]; let M=null, busy=false;
     const inside=(x,z)=>{ const gx=iX(x), gy=iZ(z); return gx>B.x0&&gx<B.x1&&gy>B.y0&&gy<B.y1; }, ground=()=>dy+Y(.3), bound=()=>({x0:X(B.x0+.4),x1:X(B.x1-.4),z0:Z(B.y0+.4),z1:Z(B.y1-.4)}), SP={x:X(B.x0+2.6),z:Z((B.y0+B.y1)/2),h:Math.PI/2};
@@ -75,3 +77,4 @@ const CAVERNS={}; window.CAVERNS=CAVERNS; MODS.waters=MODS.waters||[];
         for(let i=0;i<5;i++){ const fm=new THREE.Mesh(new THREE.BoxGeometry(1.1*T,.25*T,.9*T),new THREE.MeshBasicMaterial({color:0xeaf6ff,transparent:true,opacity:.75})); fm.position.set(fx+(i-2)*1.15*T,.12*T,fz-.5*T); g.add(fm); }
         const hb=new THREE.Mesh(new THREE.BoxGeometry(3*T,Y(60),.9*T),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(fx,Y(30),fz); g.add(hb); UI.thing({name:'THE WATERFALL',obj:hb,reach:1.8*T,near:3.2*T,tall:Y(60),act:()=>api.go(1)}); }); },
       out:()=>{ UI.goTo(PX(248),PZ(165),'up'); SHARED.heading=Math.PI; }}); } }
+export {CAVERNS};

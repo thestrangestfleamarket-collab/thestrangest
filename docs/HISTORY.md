@@ -4242,3 +4242,7 @@ LAND (152a-landscape) paints the ground: drag a box on the ground and it lays a 
 ## 22 Oct 2026: the item editor lists the game's real items
 
 The item editor (shift+7) now shows the game's actual items to click-add, not just a blank field: FORAGE.ids() (a read-only hook on forage's own maps — mushrooms, potions, foods, recipes, priced goods) and the loose things (GPH.loose names), normalised to ids. A FROM THE GAME list adds a type with one click; its name matches what burnable checks, so the fire wiring lines up.
+
+## 22 Oct 2026: edible wired to eating
+
+An item marked EDIBLE (item editor, shift+7) can now be eaten through the existing eating path: FORAGE.eat feeds you when you eat one, and the pack shows an EAT button for it — the same for every item of that kind (ITEMS.prop(id,'edible')). The second property to do something, after burnable.

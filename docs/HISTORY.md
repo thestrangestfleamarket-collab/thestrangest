@@ -4220,3 +4220,7 @@ A fire now catches any loose thing whose item type is burnable — the fire syst
 ## 22 Oct 2026: burnable things char and are consumed
 
 A loose thing a fire catches now burns for a few seconds and is then consumed — gone from the world. Done inside the loose system (GPH.burn), which hides the thing its own way per kind (goods, instanced, part meshes) and frees its body; the fire just calls GPH.burn when it ignites a burnable thing. Guarded so an unexpected shape no-ops instead of breaking.
+
+## 22 Oct 2026: the behaviour editor (shift+8) — all eight editors live
+
+BEHAV (159a-behav) edits a character's home range: pick a character, set its home where you stand, set how far it roams (or STAYS PUT), with a ring showing the range. Saved per browser and EXPORTed as behaviour.json; committed behaviour.json merges into LEVEL.homes at start (006), so it ships through the existing home path. Routine, job and gait are noted for later. This is the last of the eight editors (shift+0 menu; 1 world, 2 map, 3 character, 4 atmosphere, 5 lighting, 6 sound, 7 item, 8 behaviour).

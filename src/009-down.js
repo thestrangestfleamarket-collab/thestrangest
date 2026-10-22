@@ -111,8 +111,7 @@ await grab('down',async()=>{ const solids=SOL.down, fixed=FIX.down, SHL=[]; let 
   const fbm=(x,y,c)=>vn(x,y,c)*.55+vn(x*2.7,y*2.7,c+1)*.3+vn(x*7.3,y*7.3,c+2)*.15;
 const SL=(()=>{ const W={TK:4.4,P0:4.4,P1:17.4,XW:21.8,L:46,TE:2.5,H:196,XS:12.4,TR:[2.3,19.5],CARL:22.4,CARW:1.8};
   W.MID=(W.P0+W.P1)/2; W.COLX=[W.P0+1.5,W.P1-2.2]; W.COLY=[3.5,9,14.5,20,25.5,31,36.5,42]; W.FIXY=[9.25,14.75,20.25,25.75,31.25,36.75,42.25];
-  W.BENCH=[11.2,22.4,32.8]; W.BINS=[17.1,28.5]; W.STEPS=[[[44.4,45.6]],[[.6,1.8],[44.4,45.6]]]; W.CARS=[-2.2,20.4]; W.EX0=W.XS-1.5; W.EX1=W.XS+1.5; W.ED=3; W.EV=(new URLSearchParams(location.search).get('exitv')||'a');
-  W.SX0=W.XS-2, W.SX1=W.XS+2, W.SY=6;
+  W.BENCH=[11.2,22.4,32.8]; W.BINS=[17.1,28.5]; W.STEPS=[[[44.4,45.6]],[[.6,1.8],[44.4,45.6]]]; W.CARS=[-2.2,20.4]; W.EX0=W.XS-1.5; W.EX1=W.XS+1.5; W.ED=3;
   W.fzAt=(x,y)=>{ const e=x<W.P0?W.P0-x:x-W.P1, s=W.STEPS[x<W.P0?0:1]; return e<.75&&s.some(([a,b])=>y>=a&&y<b)?-8*(1+Math.floor(e/.25)):-32; };
   return W; })();
 const GRAF=(()=>{ const P={yel:[246,208,44],ora:[246,132,38],red:[224,48,52],grn:[64,204,84],lim:[168,232,64],blu:[48,122,236],sky:[84,196,244],pur:[152,72,212],pnk:[246,100,180],wht:[242,242,234],blk:[18,18,22],cyn:[44,212,200]};
@@ -305,12 +304,10 @@ const SSUB=(()=>{ const W={};
   cutaway(wallX(0,0,XW,-32,H2,(u,z)=>ew(u,z)),0,1,-24); cutaway(wallX(LEN,0,XW,-32,H2,(u,z)=>fw(XW-u,z)),0,-1,-24);
   for(const [x0,x1] of [[0,P0],[P1,XW]]){ for(const [a,b,n] of [[-TE,0,1],[LEN,LEN+TE,-1]]){ cutaway(wallY(x0,a,b,-32,140,tun,12),0,n,-24); cutaway(wallY(x1,a,b,-32,140,tun,12),0,n,-24); }
     cutaway(wallX(-TE,x0,x1,-32,140,dark,12),0,1,-24); cutaway(wallX(LEN+TE,x0,x1,-32,140,dark,12),0,-1,-24); }
-  { const X0=SL.EX0, X1=SL.EX1, D=SL.ED, B=SL.EV==='b', ex=hallWall(D,408,{tags:B?1:.3,t0:6,t1:70}), dk=(u,z)=>sh(tileWall(u,z,409),.32+.2*Math.max(0,(u+D)/D));
-    const sideP=(u,z)=>B?ex(u+D,z):dk(u+D,z);
-    cutaway(wallY(X0,-D,0,0,86,(u,z)=>sideP(u,z)),0,1,-24); cutaway(wallY(X1,-D,0,0,86,(u,z)=>sideP(u,z)),0,1,-24);
-    flat(X0,-D,X1,0,0,(x,y)=>sh(floorPaint(x,y+8),B?.85:.4+.35*Math.max(0,(y+D)/D)));
-    cutaway(wallX(-D,X0,X1,0,86,B?(u,z)=>{ const r=Math.hypot((u-SL.XS)/1.3,(z-34)/44); return r<1?sh([238,226,196],1-.18*Math.floor(r*4)).concat(1):ex(u-X0,z); }:()=>[6,6,8]),0,1,-24);
-    if(B){ const Lx=new THREE.PointLight(new THREE.Color(1,.9,.72),LAMPI*.9,6*TILE,LAMPD); Lx.position.set(...V(SL.XS,-D+.6,SZ+50)); Lx.userData.i0=Lx.intensity; scene.add(Lx); lamps.push(Lx); } }
+  { const X0=SL.EX0, X1=SL.EX1, D=SL.ED, dk=(u,z)=>sh(tileWall(u+D,z,409),.32+.2*Math.max(0,(u+D)/D));
+    cutaway(wallY(X0,-D,0,0,86,dk),0,1,-24); cutaway(wallY(X1,-D,0,0,86,dk),0,1,-24);
+    flat(X0,-D,X1,0,0,(x,y)=>sh(floorPaint(x,y+8),.4+.35*Math.max(0,(y+D)/D)));
+    cutaway(wallX(-D,X0,X1,0,86,()=>[6,6,8]),0,1,-24); }
   for(const [a,b] of [[0,SL.STEPS[0]],[1,SL.STEPS[1]]])for(const [y0,y1] of b)for(let k=0;k<3;k++){ const c=[150,146,138], e=a?P1:P0, s=a?1:-1, xa=e+s*k*.25, xb=e+s*(k+1)*.25; gbox({x0:Math.min(xa,xb),x1:Math.max(xa,xb),y0,y1,z0:-32,z1:-8*(k+1),c,top:()=>c,fi:()=>sh(c,.62),fj:()=>sh(c,.8)},SZ); }
   BATCH.cast=true;
   SL.COLX.forEach((cx,i)=>SL.COLY.forEach((cy,j)=>{ const p=colFace(i*10+j); put(prop([{x0:cx,y0:cy,x1:cx+.7,y1:cy+.7,z0:0,z1:H2,noTop:true,fs:(nx,ny,X,Yy,zr,b)=>p(nx,ny,X,Yy,zr,b)}]),'column'); solid(cx,cy,cx+.7,cy+.7,H2); }));
@@ -341,7 +338,7 @@ const SSUB=(()=>{ const W={};
       if(g.attributes.normal.getY(0)>0){ const a=g.attributes.position.array; for(let i=0;i<a.length;i+=9)for(let k=0;k<3;k++){ const t=a[i+3+k]; a[i+3+k]=a[i+6+k]; a[i+6+k]=t; } g.computeVertexNormals(); }
       const me=new THREE.Mesh(g,new THREE.MeshLambertMaterial({color:c,clippingPlanes:[plane()]})); me.receiveShadow=true; scene.add(me); return me; };
   for(const [x0,x1] of [[0,P0],[P1,XW]]){ lid(x0,-TE,x1,0,140,0x141416); lid(x0,LEN,x1,LEN+TE,140,0x141416); }
-  lid(SL.EX0,-SL.ED,SL.EX1,0,86,SL.EV==='b'?0x3a3e3c:0x050506);
+  lid(SL.EX0,-SL.ED,SL.EX1,0,86,0x050506);
   { const BEAM=new THREE.MeshBasicMaterial({color:new THREE.Color(.5,.62,.56),transparent:true,opacity:.014,depthWrite:false,side:THREE.DoubleSide,blending:THREE.AdditiveBlending,clippingPlanes:[PF]});
     const g=new THREE.BufferGeometry(), P=[], q=(a,b,c,d)=>P.push(...a,...b,...c,...a,...c,...d);
     for(const {fy} of FIXL){ const t=[V(MID-.18,fy-1.5,SZ+150),V(MID+.18,fy-1.5,SZ+150),V(MID+.18,fy+1.5,SZ+150),V(MID-.18,fy+1.5,SZ+150)], b=[V(MID-1.1,fy-2.2,SZ),V(MID+1.1,fy-2.2,SZ),V(MID+1.1,fy+2.2,SZ),V(MID-1.1,fy+2.2,SZ)];

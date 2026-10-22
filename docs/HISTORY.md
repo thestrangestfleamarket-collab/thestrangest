@@ -4172,3 +4172,7 @@ Owner: "when we change something in game that could affect similar properties th
 ## 22 Oct 2026: this map is Section A
 
 Owner named the sections and their layout (2x4 grid covering Central Park, A bottom-left): "[b][][][] / [a][c][][]". A is col 0 row 0; B is north (col 0 row 1), C is east (col 1 row 0). First piece of the section model: a `section` block in data/world.json ({id, grid:{col,row}, neighbours:{north,east}}), read as `SECTION` in 006-map-pre and put on `SHARED.SECTION`. Seam per edge (subway/street/water) still to be decided; the map editor does not yet carry the block.
+
+## 22 Oct 2026: the section model, set up for the future
+
+Owner: the eight blocks connect like his map, by subway, street and water ("subway connected, streets, etc."); this is future scaffolding, not built for a while. The `section` block in world.json now records the whole grid (`grid.cols` 4, `grid.rows` 2 = eight) and each neighbour edge carries a list of connection types (`seams`: subway, street, water) instead of one. Still future, not done now: seam positions/geometry, the physical bounds of each section, the other six sections, and the map editor carrying the block.

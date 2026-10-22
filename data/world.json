@@ -4,16 +4,26 @@
   "id": "A",
   "grid": {
    "col": 0,
-   "row": 0
+   "row": 0,
+   "cols": 4,
+   "rows": 2
   },
   "neighbours": {
    "north": {
     "id": "B",
-    "seam": null
+    "seams": [
+     "subway",
+     "street",
+     "water"
+    ]
    },
    "east": {
     "id": "C",
-    "seam": null
+    "seams": [
+     "subway",
+     "street",
+     "water"
+    ]
    }
   }
  },

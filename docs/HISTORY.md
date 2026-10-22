@@ -4168,3 +4168,7 @@ Owner, after scrutiny: a full lean set in four groups. The game not just the cod
 ## 22 Oct 2026: properties are schema-wide
 
 Owner: "when we change something in game that could affect similar properties they should be reanalyzed ... if we add a property to an item like (can burn) then that property needs to be addressed with similar items and gamewide. dont just patch each item." A property is a field on the shared entity model resolved by one system; adding or changing one re-evaluates every entity of that class and every system that reacts to it, never a per-item patch.
+
+## 22 Oct 2026: this map is Section A
+
+Owner named the sections and their layout (2x4 grid covering Central Park, A bottom-left): "[b][][][] / [a][c][][]". A is col 0 row 0; B is north (col 0 row 1), C is east (col 1 row 0). First piece of the section model: a `section` block in data/world.json ({id, grid:{col,row}, neighbours:{north,east}}), read as `SECTION` in 006-map-pre and put on `SHARED.SECTION`. Seam per edge (subway/street/water) still to be decided; the map editor does not yet carry the block.

@@ -1418,7 +1418,13 @@ await grab('bodega',async()=>{ const solids=SOL.up, fixed=FIX.up, SHL=[]; let BO
     if(FRONT.includes(p))return 'Hfront'; if(p.high){ const w=wallOf(p); if(w)return 'H'+w.id; } return 'L'; };
   SHARED.BOD.paintProps=(L=[...Object.values(O),...FRONT,...STREET,...ROOF,...GHOSTST])=>{ for(const p of L){ const k=SHARED.BOD.kindOf(p); BATCH.tag=OBJ('bodega',p.name); for(const b of p.boxes)gbox(b,k); } BATCH.tag=null; };
   SHARED.BOD.g={bodegaWall,grain,speck,COPE,DTBRICK,hash,grassCol,lawnCol,kerbFace,cvNoise}; SHARED.BOD.CURB=CURB; SHARED.BOD.FAR=FAR;
-  SHARED.BOD.gbox=gbox; SHARED.BOD.faceTex=faceTex; SHARED.BOD.bq=bq; SHARED.BOD.C=C; SHARED.BOD.facade=facade; SHARED.BOD.FRAME=FRAME; SHARED.BOD.place=place; SHARED.BOD.placeAt=placeAt; SHARED.BOD.MAP=MAP; SHARED.BOD.K={MKS,CATALOG,PROPS:PROPL,STUDIO,LSEED,STORY,sh};
+  SHARED.BOD.gbox=gbox; SHARED.BOD.faceTex=faceTex; SHARED.BOD.bq=bq;
+  SHARED.BOD.windowTex=(wPx,hPx,lit,seed,door)=>{ const W=Math.max(4,Math.round(wPx)), H=Math.max(4,Math.round(hPx)), hw=W/2, tr=H*.68, cur=hash(seed,2,7)<.5, cc=[[220,200,170],[180,120,110],[150,170,200],[230,230,220]][seed%4], BAR=[172,162,142], GL=[255,214,150];
+    return faceTex(W,H,(i,j)=>{ const dx=i+.5-hw, dz=H-j-.5, ax=Math.abs(dx); if(door&&dz<H*.42){ if(ax>hw-1.5||dz<1.5||Math.abs(dz-H*.42+1)<1)return BAR; const px=ax>hw*.5?ax-hw*.5:ax; return px<1.2||Math.abs(dz-H*.21)<1?[62,38,24]:[86,54,34]; }
+      if(ax>hw-1.5||dz<1.5||dz>H-1.5||ax<1||Math.abs(dz-tr)<1.2||(dz>tr&&Math.abs(ax-hw/2)<.8))return BAR;
+      const u=(i+.5)/W; if(cur&&(u<.2||u>.8))return lit?[cc[0]*.8,cc[1]*.8,cc[2]*.8,1]:[cc[0]*.35,cc[1]*.35,cc[2]*.35];
+      if(lit){ const n=hash(Math.floor(dx+40),Math.floor(dz/3),seed); return [GL[0],GL[1]*(.94+.06*n),GL[2]*(.9+.12*n),1]; } const sheen=Math.abs(((dx+dz*.6)%14+14)%14-7)<1.4; return sheen?[86,100,122]:[46,54,70]; }); };
+  SHARED.BOD.window=(P,wTiles,hPx,lit,seed,kind,door)=>bq(P[0],P[1],P[2],P[3],SHARED.BOD.windowTex(wTiles*24,hPx,lit,seed,door),kind); SHARED.BOD.C=C; SHARED.BOD.facade=facade; SHARED.BOD.FRAME=FRAME; SHARED.BOD.place=place; SHARED.BOD.placeAt=placeAt; SHARED.BOD.MAP=MAP; SHARED.BOD.K={MKS,CATALOG,PROPS:PROPL,STUDIO,LSEED,STORY,sh};
   const PCX=PARKGX+LAY.o('park').x, PCY=(MAP.y1+RG.top-NORTHX)/2+LAY.o('park').y, GATE=[PCX-3.5,PCX+3.5], EGATE=[PCY-2,PCY+2];
   const KR=1.6, RR=[[MAP.x0,CURB,MAP.x1,FAR],[RG.wr0,FAR,RG.wr1,WEND]];
   const CORN=[[RG.wr0,FAR,-1,1,1],[RG.wr1,FAR,1,1,1]].map(([x,y,sx,sy,cv])=>({x,y,sx,sy,cv,cx:x+sx*KR,cy:y+sy*KR}));
@@ -1691,6 +1697,7 @@ SHARED.BODB={};
     fr([pt(w.a0,w.H,-.1),pt(w.a1,w.H,-.1),pt(w.a1,w.H,.1),pt(w.a0,w.H,.1)],w.a1-w.a0,5,COPE);
     for(const h of w.holes){ for(const a of [h.a0,h.a1])fr([pt(a,h.z0,-.1),pt(a,h.z0,.1),pt(a,h.z1,.1),pt(a,h.z1,-.1)],.2,h.z1-h.z0,SHARED.BOD.FRAME);
       fr([pt(h.a0,h.z1,-.1),pt(h.a1,h.z1,-.1),pt(h.a1,h.z1,.1),pt(h.a0,h.z1,.1)],h.a1-h.a0,5,SHARED.BOD.FRAME); if(h.z0>0)fr([pt(h.a0,h.z0,-.1),pt(h.a1,h.z0,-.1),pt(h.a1,h.z0,.1),pt(h.a0,h.z0,.1)],h.a1-h.a0,5,SHARED.BOD.FRAME);
+      if(!h.glass&&!h.door&&!h.open){ const sd=Math.floor(Math.abs(h.a0*7+w.at*13+h.z0)); SHARED.BOD.window([pt(h.a0,h.z0,0),pt(h.a1,h.z0,0),pt(h.a1,h.z1,0),pt(h.a0,h.z1,0)],h.a1-h.a0,h.z1-h.z0,hash(sd,3,11)<.5,sd,kind); }
       if(h.glass&&!h.door){ const m=new THREE.Mesh(new THREE.PlaneGeometry((h.a1-h.a0)*TILE,Y(h.z1)-Y(h.z0)),glassMat.clone()); m.material.clippingPlanes=[planes[w.id]];
         if(w.ax==='x')m.position.set(X((h.a0+h.a1)/2),Y((h.z0+h.z1)/2),Z(w.at)); else{ m.position.set(X(w.at),Y((h.z0+h.z1)/2),Z((h.a0+h.a1)/2)); m.rotation.y=Math.PI/2; } scene.add(m); } } };
   for(const w of SHARED.BOD.WALLS)if(w.outer){ wallF(w,false); wallR(w); }

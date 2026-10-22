@@ -4251,3 +4251,7 @@ An item marked EDIBLE (item editor, shift+7) can now be eaten through the existi
 
 Dragging no longer turns or tilts the camera in play, in any view: right/middle/shift+drag do nothing, and third/first person no longer look round on drag. Left drag still moves the map in the overhead views; turn and tilt with Q/E, Z/X and the buttons. Drag still turns the view in the free camera (C) and the editors (gated by UI.camFree). Reverses the 17-19 Oct drag-to-turn, iso-spin and free-look decisions.
 - 21 Oct 2026, the apartment house all brick (owner: "you pick", after "entire building same red brick"): the stone base, window trim and cornice are brick too.
+
+## 22 Oct 2026: sellable wired to shops
+
+An item marked SELLABLE (item editor, shift+7) now shows in the mushroom seller's shop and sells for its VALUE — the same for every item of that kind (the shop's sell list and price read ITEMS.prop(id,'sellable') and 'value'). Third property to do something, after burnable and edible.

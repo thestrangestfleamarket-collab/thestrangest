@@ -37,7 +37,7 @@ import {OWNED} from './005-save.js';
         ${NUM.map(([k,n,a,b,st])=>`<div class="num"><span style="width:70px">${n}</span><input type="range" data-id="${esc(id)}" data-n="${k}" min="${a}" max="${b}" step="${st}" value="${d[k]}"><span data-v="${esc(id)}:${k}">${d[k]}</span></div>`).join('')}</div>`; }).join(''):'<div class="dim" style="margin:10px 0">No item types yet. Add one above.</div>'}
       ${(()=>{ const d=discovered(); return d.length?`<div class="dim" style="margin-top:10px">FROM THE GAME — click to add (${d.length})</div><div class="props" style="margin:6px 0">${d.map(id=>`<button class="chip" data-add="${esc(id)}" title="${esc(nameOf(id))}">${esc(id)}</button>`).join('')}</div>`:''; })()}
       <div class="row"><button class="btn" id="itexp">EXPORT</button><button class="btn" id="itdone">DONE</button></div>
-      <div class="dim">Export writes items.json; drop it in data/ to ship. BURNS (fire) and EDIBLE (eating) react in-game; the rest define properties systems will read.</div></div>`; }
+      <div class="dim">Export writes items.json; drop it in data/ to ship. BURNS (fire), EDIBLE (eating) and SELLABLE (shops) react in-game; the rest define properties systems will read.</div></div>`; }
   P.addEventListener('click',e=>{ const b=e.target.closest&&e.target.closest('button'); if(!b)return;
     if(b.id==='itadd'){ const v=(P.querySelector('#itnew').value||'').trim().toLowerCase().replace(/\s+/g,'_'); if(v&&!ITEMS.defs[v]){ ITEMS.defs[v]=DEF(); save(); draw(); } return; }
     if(b.dataset.add){ const id=b.dataset.add; if(!ITEMS.defs[id]){ ITEMS.defs[id]=DEF(); save(); draw(); } return; }

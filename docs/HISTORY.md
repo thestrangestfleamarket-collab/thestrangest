@@ -4265,3 +4265,7 @@ A ground patch (landscape editor, shift+9) is now subdivided a cell per tile and
 ## 22 Oct 2026: landscape freehand borders
 
 The landscape editor (shift+9) now has a BORDER mode beside BOX: click points on the ground to draw a border around an area, FINISH to fill it with the chosen ground (a triangulated patch, conformed to the ground like a box). Fills the owner's original ask to "draw borders around areas". Patches are double-sided now so a border drawn either way shows.
+
+## 22 Oct 2026: behaviour is the home range; routine/gait/job deferred
+
+Owner, asked whether to extend the behaviour editor (shift+8): "1" — skip it. Home range is the one general per-character behaviour mechanic and the editor covers it. Routine and gait live only on the opt-in walkers subsystem (default off) and job only on the civic droids, so they are not a uniform field and are not worth a niche editor now.

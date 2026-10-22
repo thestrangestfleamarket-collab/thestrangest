@@ -1,6 +1,6 @@
 // THE MAIL: MAIL, the town's mail: names, addresses, letters, parcels and the mail carrier's round.
 import {SHARED, THREE} from './003-shx.js';
-import {CITY, CIVIC, CLOCK, MAIL, PARK, UI, WALKERS} from './003b-systems.js';
+import {CITY, CIVIC, CLOCK, MAIL, PARK, UI} from './003b-systems.js';
 import {OWNED} from './005-save.js';
 import {FIX, MAPG, MODS, QS, RING, SOL, STORE, TILE} from './006-map-pre.js';
 import {JOBS} from './159-jobs.js';
@@ -27,13 +27,13 @@ if(MAIL.on){ const T=TILE, M=1/.84*T, X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, G=(x,z)=
     if(w==='f'){ at={x:xOf(a),z:R.z1}; n={x:0,z:1}; } else if(w==='b'){ at={x:xOf(a),z:R.z0}; n={x:0,z:-1}; } else if(w==='w'){ at={x:R.x0,z:zOf(a)}; n={x:-1,z:0}; } else { at={x:R.x1,z:zOf(a)}; n={x:1,z:0}; }
     if(R.z1<R.z0){ n.z=-n.z; }
     bld(id,name,{at,n,t:{x:-n.z,z:n.x}},kind); };
-  MAIL.build=()=>{ '@later'; if(MAIL.ready)return; const W=(window.WALKERS&&WALKERS.list||[]).filter(w=>w.N&&!w.N.staff);
+  MAIL.build=()=>{ '@later'; if(MAIL.ready)return; 
     fromPlace('bodega','bodega','THE BODEGA','shop'); fromPlace('dojo','dojo','THE BATH HOUSE','shop');
     fromRoom('diner','diner','THE DINER','shop'); fromRoom('bar','bar','THE BAR','shop'); fromRoom('octo','aquarium','THE AQUARIUM','biz'); fromRoom('museum','museum','MUSEUM OF EARTH','biz');
     for(const R of (STORE.rooms||[]))if(/^av_/.test(R.id))fromRoom(R.id,R.id.slice(3),R.name,'biz');
     fromRoom('keep','keep','THE KEEP','biz'); fromRoom('cottage','cottage','THE HERB COTTAGE','biz');
     { const T0=CITY.place('tower'); if(T0)bld('tower','THE CIVIC TOWER',front(T0.at,T0.door),'flats',(CIVIC.row||[]).map(h=>({unit:h.name,dept:h.id,who:{type:'civic',ref:h.id,name:h.name}}))); }
-    if(window.JOBS&&JOBS.plan)JOBS.plan(B,W);
+    if(window.JOBS&&JOBS.plan)JOBS.plan(B,[]);
     for(const b of B)for(const u of b.up||[])if(u.who&&u.who.type==='walker')u.who.name=person(u.who.ref.N.key);
     const byS={}; for(const b of B){ b.street=streetOf(b.F); (byS[b.street]=byS[b.street]||[]).push(b); }
     for(const [s,L] of Object.entries(byS)){ L.sort((a,b)=>along(s,a.F)-along(s,b.F)); let last=-1; for(const b of L){ const s0=s==='MARKET STREET'?X(30):s==='THE AVENUE'?Z(-80):s==='NORTH STREET'?X(30):Z(-80);
@@ -44,7 +44,6 @@ if(MAIL.on){ const T=TILE, M=1/.84*T, X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, G=(x,z)=
       for(const u of b.up||[]){ const A={id:b.id+'-'+u.unit,b,unit:u.unit,up:true,name:u.who.name,who:u.who,kind:'home',label:'APT '+u.unit+', '+line}; MAIL.addr.push(A); if(u.who.type==='walker')u.who.ref.home=A; } }
     MAIL.office=MAIL.addr.find(a=>a.id==='tower-postoffice')||MAIL.addr.find(a=>/POST/.test(a.unit||''));
     MAIL.hall=MAIL.addr.find(a=>/CITY HALL/.test(a.unit||'')); MAIL.depot=MAIL.addr.find(a=>/DEPOT/.test(a.unit||''));
-    for(const w of W)if(w.home&&w.home.id){ w.N.name=w.home.name; w.cash=w.cash??60; }
     const ORD={'MARKET STREET':[0,1],'THE AVENUE':[1,1],'NORTH STREET':[2,-1],'WEST STREET':[3,-1],'CENTRAL PARK':[4,1]};
     B.sort((a,b)=>ORD[a.street][0]-ORD[b.street][0]||ORD[a.street][1]*(along(a.street,a.F)-along(b.street,b.F)));
     MAIL.B=B; boxes(); MAIL.ready=true; restore(); log('the post office opened: '+MAIL.addr.length+' addresses'); };
@@ -213,7 +212,7 @@ if(MAIL.on){ const T=TILE, M=1/.84*T, X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, G=(x,z)=
     for(const l of MAIL.L)if(l.state==='out')l.state='sorted'; refresh(); };
   setInterval(save,30000); addEventListener('beforeunload',save); MAIL.save=save;
 
-  const wait=()=>{ const ok=(STORE.places||[]).every(p=>p[1]||p[2]||p[4]==='off')||performance.now()-(MAIL.t0||(MAIL.t0=performance.now()))>90000; if(ok&&window.WALKERS&&(WALKERS.list.length||!WALKERS.on))MAIL.build(); else setTimeout(wait,1500); };
+  const wait=()=>{ const ok=(STORE.places||[]).every(p=>p[1]||p[2]||p[4]==='off')||performance.now()-(MAIL.t0||(MAIL.t0=performance.now()))>90000; if(ok)MAIL.build(); else setTimeout(wait,1500); };
   setTimeout(wait,1500);
   window.MAILDBG=()=>({ready:MAIL.ready,addr:MAIL.addr.length,boxes:MAIL.cboxes.length,you:MAIL.you,states:MAIL.L.reduce((a,l)=>(a[l.state]=(a[l.state]||0)+1,a),{}),carrier:S_()&&S_().state,day:MAIL.day()});
 }

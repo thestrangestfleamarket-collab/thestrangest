@@ -4300,3 +4300,6 @@ Owner: "i keep dropping underground when i walk around, make sure the game mecha
 
 ## 22 Oct 2026: swim in THE LAKE and the stream
 Owner: "lake, if water is more than waist high you can swim in it." The stream and THE LAKE are water like the river and the big lake: deeper than your waist you swim, shallower you wade (`BROOK.feed`).
+
+## 22 Oct 2026: townspeople wander, no routes
+Owner: "townspeople shouldnt have routes. they sould wander freely"; his picks: wander anywhere, and delete the switched-off route code. Each next stop is a free spot a short walk from where they stand, street or park, through the park's gate; a home only sets where they start (no circle, no trips to doors); a home with no circle still stands still. Deleted: the daily routes (`LIVES`, 157) and the walkers' ways of life (`WALKERS`, 158) with their tests; the newsstand and the post had only walkers as customers and residents (both off with the city).

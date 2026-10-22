@@ -1,6 +1,6 @@
 // THE NEWSSTAND: NEWS builds the newsstand by the subway stairs, kept by the cat.
 import {SHARED, THREE} from './003-shx.js';
-import {CITY, CIVIC, CLOCK, DRONE, LINES, pos, UI, WALKERS} from './003b-systems.js';
+import {CITY, CIVIC, CLOCK, DRONE, LINES, pos, UI} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {FIX, MAPSTAIR, QS, SOL, SYS, TILE} from './006-map-pre.js';
 import {TOONS} from './084-npc-toons.js';
@@ -63,7 +63,7 @@ NEWS.init=()=>{ const N=TOONS.cat; if(!N||typeof SHARED.BOD==='undefined')return
     else { const v=new V().subVectors(L[0],d.g.position), l=v.length(), s=L[1]*dt; if(l<=s){ d.g.position.copy(L[0]); d.legs.shift(); } else d.g.position.addScaledVector(v,s/l); d.g.rotation.x=v.y>-.1&&Math.hypot(v.x,v.z)>.1?.15:0; d.g.rotation.y=Math.atan2(v.x,v.z); }
     d.spin+=dt*40; for(const c of d.g.children)if(c.userData.rot)c.rotation.y=d.spin; } };
   const ACT={serve:1.6,change:2,wave:2,stack:2.6,cut:1.8,arrange:3,stretch:3,open:2.6,close:2.6,doze:1e9,yawn:2.2};
-  let cust=null, sold=0, act=null, queue=[], idleT=12, waved=false, napT=0;
+  let sold=0, act=null, queue=[], idleT=12, waved=false, napT=0;
   const doAct=(n,then)=>queue.push({n,d:ACT[n],t:0,then});
   const cat=N.rig; N.home={x:X(xm),z:Z(y1-.82)};
   N.st.hold=true; N.st.to=null; N.st.x=X(xm); N.st.z=Z(y1-.82); N.key==='raincat'&&(N.life=null);
@@ -93,8 +93,6 @@ NEWS.init=()=>{ const N=TOONS.cat; if(!N||typeof SHARED.BOD==='undefined')return
     if(passed(5.5,h)){ DR.forEach((d,k)=>fly(d,k)); stock.papers=stock.papers.map(v=>Math.floor(v*.2)); stacks(); }
     if(passed(5.75,h)){ wake(); queue=[]; doAct('yawn'); doAct('open'); }
     if(passed(22,h)){ wake(); queue=[]; doAct('close',()=>doAct('doze')); }
-    if(isOpen(h)&&!cust&&lastH!==h){ const dh=((h-lastH)+24)%24; if(dh<.5&&Math.random()<dh*(h<10?6:2.5))NEWS.call(); }
-    if(cust&&(cust.t-=dt)<0)cust=null;
     lastH=h; flyTick(dt);
     if(isOpen(h)&&!act&&!queue.length){
       if(bundles.length&&shut<.1){ work(); }
@@ -119,15 +117,9 @@ NEWS.init=()=>{ const N=TOONS.cat; if(!N||typeof SHARED.BOD==='undefined')return
       draw('THANK YOU. ENJOY YOUR '+it.n+'.',it.k==='papers'?front(it.i):''); });
     P.querySelector('#nsx').onclick=()=>{ P.hidden=true; }; };
   const FRONT={x:X(xm),z:Z(y1+1.15)}; NEWS.front=FRONT;
-  NEWS.customer=C=>{ '@later'; if(!isOpen(CLOCK.h))return false; const i=[0,1,2,3].filter(k=>stock.papers[k]>0).sort(()=>Math.random()-.5)[0]; if(i==null)return false;
-    stock.papers[i]--; stacks(); sold++; wake(); queue=queue.filter(a=>a.n!=='arrange'&&a.n!=='stretch'); if(!act||act.n!=='serve'&&act.n!=='change')doAct('serve',()=>doAct('change'));
-    if(window.CIVIC&&CIVIC.note)CIVIC.note((C&&C.name||'someone').replace(/ \(.*\)$/,'').toLowerCase()+' bought '+TITLES[i][0].toLowerCase()+' at the newsstand','newsstand'); return true; };
-  NEWS.call=()=>{ '@later'; const WL=(window.WALKERS&&WALKERS.list)||[], ok=WL.filter(W=>(W.state==='stay'||W.state==='wait')&&W.kind!=='golem'&&!(W.job&&W.job.state&&W.job.state!=='off')&&W.N.lv==='up'&&Math.hypot(W.N.st.x-FRONT.x,W.N.st.z-FRONT.z)<30*T);
-    const W=ok[Math.floor(Math.random()*ok.length)]; if(!W)return null; const N=W.N, to={x:FRONT.x+(Math.random()-.5)*.8*T,z:FRONT.z}; cust={N,t:90}; W.state='going'; N.dwell=null; N.st.face=null;
-    CITY.send(N,to,{v:W.v,then:ok=>{ cust=null; if(!ok){ W.state='wait'; W.t=1; return; } const got=NEWS.customer(N); W.state='stay'; W.t=got?5+Math.random()*4:1.5; N.dwell=got?'found_item_idle_a':null; N.st.hold=true; N.st.to=null; N.st.face={x:X(xm),z:Z(y1-.8)}; }}); return N.key; };
   NEWS.open=()=>{ draw(); P.hidden=false; if(isOpen(CLOCK.h)&&!act){ doAct('wave'); } };
   const hb=new THREE.Mesh(new THREE.BoxGeometry(Math.abs(X(x1)-X(x0)),Y(30)-Y(0),Math.abs(Z(y1)-Z(y0))),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(X(xm),(Y(30)+Y(0))/2,(Z(y0)+Z(y1))/2); scene.add(hb);
   UI.thing({name:'NEWSSTAND',obj:hb,reach:1.6*T,near:3*T,tall:1.2*T,act:NEWS.open});
   NEWS.stock=stock; NEWS.bundles=bundles; NEWS.deliver=()=>DR.forEach((d,k)=>fly(d,k));
-  window.NEWSCLK=(h,s)=>{ if(h!=null)CLOCK.h=h; if(s!=null){ CLOCK.run=true; CLOCK.speed=s; } return CLOCK.h; }; window.NEWSDBG=()=>({h:+CLOCK.h.toFixed(2),sold,cust:cust&&cust.N.key,act:act&&act.n,queue:queue.map(a=>a.n),shut:+shut.toFixed(2),bundles:bundles.length,stock:JSON.parse(JSON.stringify(stock)),drones:DR.map(d=>d.g.visible?d.g.position.toArray().map(v=>+v.toFixed(1)):null),at:[+X(xm).toFixed(2),+Z(y1+2).toFixed(2)]}); };
+  window.NEWSCLK=(h,s)=>{ if(h!=null)CLOCK.h=h; if(s!=null){ CLOCK.run=true; CLOCK.speed=s; } return CLOCK.h; }; window.NEWSDBG=()=>({h:+CLOCK.h.toFixed(2),sold,act:act&&act.n,queue:queue.map(a=>a.n),shut:+shut.toFixed(2),bundles:bundles.length,stock:JSON.parse(JSON.stringify(stock)),drones:DR.map(d=>d.g.visible?d.g.position.toArray().map(v=>+v.toFixed(1)):null),at:[+X(xm).toFixed(2),+Z(y1+2).toFixed(2)]}); };
 export {NEWS};

@@ -73,4 +73,4 @@ window.MAPDBG=()=>({LVL:SHARED.LVL,cut:MODS.stairCut.constant,vis:Object.fromEnt
   const mk=()=>{ const geo=new THREE.ShapeGeometry(sh); geo.rotateX(-Math.PI/2); geo.scale(TILE,1,TILE); geo.translate(0,-.5*ZU,0); return geo; }, geo=mk(); let geoH=null;
   MODS.landHoles=on=>{ if(on&&!geoH&&window.PARK&&PARK.brook&&FOUNT.S){ for(const H of PARK.wetHole())sh.holes.push(new THREE.Path(H.map(([x,y])=>new THREE.Vector2(tt(XS(x+(PARK.ox||0))),-tt(ZS(y+(PARK.oy||0))))))); geoH=mk(); } m.geometry=on&&geoH?geoH:geo; };
   const m=new THREE.Mesh(geo,new THREE.MeshLambertMaterial({map:t})); m.receiveShadow=true; MAPG.bodega.add(m); MODS.land=m; }
-export {HEMI, inStair, MAPLV};
+export {HEMI, MAPLV};

@@ -1,7 +1,7 @@
 // NPCs: makeNPC builds a body with self-shading and its cel material; the NPC list, culling and the street lane.
 import {SHARED, THREE} from './003-shx.js';
 import {B64} from './003a-skin.js';
-import {CLIP, LEVELS, LIVES, NPCS, PARK, pos, ROOMS, SELFSH, UI, VIT, W3} from './003b-systems.js';
+import {CLIP, LEVELS, NPCS, PARK, pos, ROOMS, SELFSH, UI, VIT, W3} from './003b-systems.js';
 import {PPU, renderer, rppu} from './004-main.js';
 import {ASTEP, CASTLE, LEVEL, MAPG, MAPSTAIR, MODS, RING, SOL, STN, STORE, SYS, TILE, ZU} from './006-map-pre.js';
 import {FOUNT} from './060a-fount.js';
@@ -158,22 +158,18 @@ const DUN=()=>{ const D=MODS.dungeon; if(!D)return null; const B=D.B, X=SHARED.B
     free=(x,z,R)=>x>lane.x0&&x<lane.x1&&z>lane.z0&&z<lane.z1&&!SOL.down.some(b=>x>b[0]-R&&x<b[2]+R&&z>b[1]-R&&z<b[3]+R);
   let p={x:(lane.x0+lane.x1)/2,z:(lane.z0+lane.z1)/2}; for(let k=0;k<60;k++){ const q={x:lane.x0+Math.random()*(lane.x1-lane.x0),z:lane.z0+Math.random()*(lane.z1-lane.z0)}; if(free(q.x,q.z,.4*TILE)){ p=q; break; } }
   return {lv:'down',group:MAPG.dungeon?'dungeon':'down',lane,free,ground:(x,z)=>D.ground(x,z),roam:false,x:p.x,z:p.z,dun:true}; };
-ROAM.pick=(st,free)=>{ '@later'; if(st.home&&!(st.home.r>0))return false; if(HOMES.goIn(st))return true; const L=ROAM.L, H=st.home&&st.home.r>0?st.home:null; for(let k=0;k<12;k++){ let to;
-    if(H){ const p=HOMES.inside(H); to={x:Math.max(L.x0,Math.min(L.x1,p.x)),z:Math.max(L.z0,Math.min(L.z1,p.z))}; }
-    else if(Math.random()<.25)to={x:L.x0+Math.random()*(L.x1-L.x0),z:L.z0+Math.random()*(L.z1-L.z0)};
-    else{ const a=Math.random()*Math.PI*2, r=(2+Math.random()*7)*TILE; to={x:Math.max(L.x0,Math.min(L.x1,st.x+Math.sin(a)*r)),z:Math.max(L.z0,Math.min(L.z1,st.z+Math.cos(a)*r))}; }
+ROAM.pick=(st,free)=>{ '@later'; if(st.home&&!(st.home.r>0))return false; for(let k=0;k<12;k++){ const a=Math.random()*Math.PI*2, r=(2+Math.random()*7)*TILE, to={x:st.x+Math.sin(a)*r,z:st.z+Math.cos(a)*r};
     if(!free(to.x,to.z,st.R))continue;
     if((st.z<ROAM.wallZ)!==(to.z<ROAM.wallZ)){ st.next=to; st.to={x:ROAM.gate[0]+Math.random()*(ROAM.gate[1]-ROAM.gate[0]),z:ROAM.wallZ}; } else{ st.to=to; st.next=null; } return true; } return false; };
 NPCS.SHADE=40*TILE; NPCS.near=(x,z,r=NPCS.SHADE)=>{ for(const N of NPCS)if(!N.shaded&&N.lv===SHARED.LVL&&Math.hypot(N.st.x-x,N.st.z-z)<r)N.shade(); };
 SYS.add('near',(x,z)=>NPCS.near(x,z),'npc shading');
 { const FR=new THREE.Frustum(), M4=new THREE.Matrix4(), SP=new THREE.Sphere(), V=new THREE.Vector3(); NPCS.extra=[];
-  NPCS.tick=(dt,you)=>{ let shadeN=0; M4.multiplyMatrices(SHARED.cam.projectionMatrix,SHARED.cam.matrixWorldInverse); FR.setFromProjectionMatrix(M4); const R=25*TILE, LV=LIVES.on;
+  NPCS.tick=(dt,you)=>{ let shadeN=0; M4.multiplyMatrices(SHARED.cam.projectionMatrix,SHARED.cam.matrixWorldInverse); FR.setFromProjectionMatrix(M4); const R=25*TILE;
     for(const N of NPCS){ const p=N.st?V.set(N.st.x,N.g.position.y,N.st.z):N.g.position, d=Math.hypot(p.x-you.x,p.z-you.z), seen=FR.intersectsSphere(SP.set(p,Math.max(2*TILE,N.cullR||0)));
-      const far=N.park&&!PARK.in||(LIVES.force==='near'?false:LIVES.force==='half'&&!('mode' in N)?!!(NPCS.indexOf(N)&1):!('mode' in N)&&!N.sheet&&(!N.g.parent.visible||!LEVELS.drawn(N.g)||(LV?(LIVES.ready&&LIVES.hidden(N))||d>4*TILE&&!FR.intersectsSphere(SP.set(p,3*TILE)):d>R&&!seen)));
+      const far=N.park&&!PARK.in||!('mode' in N)&&!N.sheet&&(!N.g.parent.visible||!LEVELS.drawn(N.g)||d>R&&!seen);
       N.far=far; N.hid=!N.sheet&&(far||!seen); if(!N.shaded&&(!far||d<NPCS.SHADE)&&shadeN<2){ N.shade(); shadeN++; }
       if(!far)N.tick(dt,you); else if(N.farMove)N.farMove(dt); }
-    for(const X of NPCS.extra){ const a=X.at; X.hid=!!a&&!FR.intersectsSphere(SP.set(V.set(a.x,(a.y||0)+1,a.z),2*TILE)); }
-    LIVES.tick(dt,you); };
+    for(const X of NPCS.extra){ const a=X.at; X.hid=!!a&&!FR.intersectsSphere(SP.set(V.set(a.x,(a.y||0)+1,a.z),2*TILE)); } };
   NPCS.R=25*TILE; NPCS.seen=(x,y,z,r)=>FR.intersectsSphere(SP.set(V.set(x,y,z),r||2*TILE)); NPCS.live=(x,y,z,r)=>Math.hypot(x-pos.x,z-pos.z)<NPCS.R&&NPCS.seen(x,y,z,r);
   NPCS.cull=on=>{ const one=(o,g)=>{ if(on){ if(o.hid&&g.visible){ g.visible=false; o._cv=true; } } else if(o._cv){ g.visible=true; o._cv=false; } };
     for(const N of NPCS)one(N,N.g); for(const X of NPCS.extra)if(X.g)one(X,X.g); PXSNAP(on); }; }

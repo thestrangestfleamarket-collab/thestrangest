@@ -4298,6 +4298,11 @@ Owner: "add the ability to look around freely when in any view (rotating around 
 ## 22 Oct 2026: the floor you're on changes only by a way down
 Owner: "i keep dropping underground when i walk around, make sure the game mechanics are strong to avoid that from happening (remember no patches, look at root cause)". The level (street or underground) was read from your height, so the sunk THE LAKE dropped you into the station. Rule: you (and every character) change floor only on a stairway or through a way in or out (`LEVELS.floor`), never from height alone; your saved spot keeps its floor.
 
+## 22 Oct 2026: the world editor reaches the park's scenery
+Owner: "the world editor needs to allow editing rocks, trees, bushes, etc. anything but moving the map"; do it now and bake it in once the world is built, and (on finding the park's props are real 3D geometry, not the editor's painted cards) grab each prop's own instance handle rather than re-make it as cards. The park's trees, rocks, bushes, flowers, grass, mushrooms, logs and the rest register in `WED` (003b); shift+1 now picks them like its painted things — move, turn, pitch, roll, size, delete — kept and exported with the rest. Rule: placed scenery is edited through its existing per-prop handle; colour and see-through stay only for the editor's painted things for now, and what he bumps into still stays put.
+
+## 22 Oct 2026: the world editor can send to the server
+Owner: "can you add a send to server button..."; then "just send it as an update that claude can look at later and implement for now". So for now the editor's SEND TO SERVER (owner only; a row in `admins`) submits its edits as an update — a `bug_reports` row marked `worldedit` with the edit set in its context — for a later Claude session to bake into the game; it is not yet served live to players. Reuses the reports store, so no new table.
 ## 22 Oct 2026: swim in THE LAKE and the stream
 Owner: "lake, if water is more than waist high you can swim in it." The stream and THE LAKE are water like the river and the big lake: deeper than your waist you swim, shallower you wade (`BROOK.feed`).
 
@@ -4317,6 +4322,8 @@ Owner: "remove all the neons signs for now", then "i just meant remove neon sign
 ## 22 Oct 2026: the alley gated and half as wide; the Hudson loads when you go in
 Owner: "the alley should be 50% as narrow and have a gate on both entrances on the central park to promanade path ... the alley should not load unless you go in there. for now its blocked off by gates, both alleys in both directions. (4 gate total) the hudson promanade also shouldnt load untli you go into it" (his loading-zones mockup, mockups/loading-zones.html). The alley is 3.5 wide (the back row moved up, the promenade wider); four iron gates close both alleys at both ends; the alley builds only when you're in it. The river and the fishing pier build the first time you walk down the path past the alley ("ENTERING THE HUDSON") and are drawn only while you're south of the front row.
 
+## 22 Oct 2026: the Hudson's far side is open water
+Owner: "the edge of the hudson ... shouldnt have this wall, it should just have water"; "open water but in the distance you can see the same skyline as other parts of map"; "trees should be 80% smaller and further away, 50% blurrier". The river's far wall is gone and the water runs out to the skyline (066-river); the swim force field stays at the old bank for now. The far backdrop trees (FAR3, 134-skyline) are 80% smaller, pushed further out, and drawn in the distance blur, so they read as a faint far shore instead of a near hedge.
 ## 22 Oct 2026: a better character editor (Phase 2) — merchants sell, set in the editor
 Picks: a general shop for any merchant (the mushroom and tomato sellers keep their own); price = the item's shared VALUE, buy freely; bought goods use their item properties.
 
@@ -4329,3 +4336,8 @@ The ? controls list shows what you can actually press: dropped the stale KEYMOVE
 
 ## 22 Oct 2026: the sunny day — warm glow, light rays you can see, dust
 Owner: "i want it to have a warm glow and light ray that you can see, shadows, etc", then "add all but dither as the default day, have the sun rays coming from the sun way high in sky." The DAY look now runs warm, with visible hard-edged sun rays (stepped, no haze), dust in the air, and the sun's halo and shadows on — no dither. New schema fields `ray` and `dust` on each look (ATMOSPHERE panel, day/golden only; a SUN RAYS and a DUST slider); off at night, indoors and underground. `138a-sunrays.js` (shaft beams + dust); DAY/GOLDEN warmed in `134b-daynight.js`.
+## 22 Oct 2026: gear in the item model (slot + grants) — the backbone for merchants
+The item editor (shift+7) gains two fields on the shared item model: WORN/HELD (slot — none/hand/body) and GRANTS (an ability — catch/fight/guard/float). Ship via items.json. A merchant can sell any item (Phase 2 shops); gear with a slot is held (hand → the existing WIELD) or worn (body → a worn layer, built when armor/coats land). The existing gear is now in the model: sword (hand, fight), butterfly net and bird net (hand, catch). The worn layer and the fight/guard/float abilities land with the merchants that need them (sword, armor, bear). Step 2 of the merchant epic.
+
+## 22 Oct 2026: the nature merchant sells the nets (Step 3)
+The origami fox is now THE NATURE MERCHANT (its body reused — owner: "reuse existing toon bodies"): it sells the butterfly net and the bird net through the Phase 2 shop and the gear item model (Step 2), priced by each net's value. Buying gives the net; hold it (WIELD, the 1 key) to catch butterflies and birds. SHOPS re-binds after the glb toons load, so a merchant that spawns after the start still gets its shop. Pin it in place or re-theme it in the character editor.

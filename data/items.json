@@ -1,1 +1,5 @@
-{}
+{
+ "sword": {"slot":"hand","grants":"fight","value":15},
+ "net": {"slot":"hand","grants":"catch","value":8},
+ "bnet": {"slot":"hand","grants":"catch","value":12}
+}

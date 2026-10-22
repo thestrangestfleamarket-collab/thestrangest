@@ -20,8 +20,16 @@ import {TILE} from './006-map-pre.js';
   const mat=t=>{ const m=new THREE.MeshToonMaterial({map:tex(t)}); if(W3.GP)m.gradientMap=W3.GP; return m; };
   let regions; try{ const B=__DATA__("data/landscape.json")||[]; const L=JSON.parse(SAVE.get('land')||'null'); regions=Array.isArray(L)?L:B.slice(); }catch(e){ regions=[]; }
   const save=()=>{ try{ SAVE.set('land',JSON.stringify(regions.map(r=>({x0:r.x0,x1:r.x1,z0:r.z0,z1:r.z1,y:r.y,t:r.t})))); }catch(e){} };
-  const make=r=>{ const w=r.x1-r.x0, h=r.z1-r.z0; if(w<=0||h<=0)return; const geo=new THREE.PlaneGeometry(w,h); geo.rotateX(-Math.PI/2);
-    const me=new THREE.Mesh(geo,mat(r.t)); me.position.set((r.x0+r.x1)/2,(r.y||0)+.05,(r.z0+r.z1)/2); me.receiveShadow=true; me.renderOrder=1; me.userData.landPatch=1;
+  const make=r=>{ const w=r.x1-r.x0, h=r.z1-r.z0; if(w<=0||h<=0)return;
+    const nx=Math.max(1,Math.min(24,Math.round(w/T))), nz=Math.max(1,Math.min(24,Math.round(h/T)));
+    const geo=new THREE.PlaneGeometry(w,h,nx,nz); geo.rotateX(-Math.PI/2);
+    const cx=(r.x0+r.x1)/2, cz=(r.z0+r.z1)/2, P=geo.attributes.position.array;
+    const rc=new THREE.Raycaster(), O=new THREE.Vector3(), D=new THREE.Vector3(0,-1,0);
+    for(let i=0;i<P.length;i+=3){ const wx=cx+P[i], wz=cz+P[i+2]; O.set(wx,(r.y||0)+30,wz); rc.set(O,D); let y=r.y||0;
+      for(const hh of rc.intersectObjects(scene.children,true)){ if(hh.object.isSkinnedMesh||hh.object.userData.landPatch)continue; let q=hh.object, ok=true; for(;q;q=q.parent){ if(!q.visible||q===W3.group){ ok=false; break; } } if(ok&&hh.object.isMesh){ y=hh.point.y; break; } }
+      P[i+1]=y+.05; }
+    geo.attributes.position.needsUpdate=true; geo.computeVertexNormals(); geo.computeBoundingSphere();
+    const me=new THREE.Mesh(geo,mat(r.t)); me.position.set(cx,0,cz); me.receiveShadow=true; me.renderOrder=1; me.frustumCulled=false; me.userData.landPatch=1;
     const mp=me.material.map; if(mp){ mp.repeat.set(Math.max(1,Math.round(w/T)),Math.max(1,Math.round(h/T))); } scene.add(me); r.mesh=me; };
   const unmake=r=>{ if(r.mesh){ scene.remove(r.mesh); r.mesh.geometry.dispose(); r.mesh.material.dispose(); r.mesh=null; } };
   { const go=()=>{ if(!window.__started)return setTimeout(go,500); for(const r of regions)make(r); }; if(regions.length)go(); }

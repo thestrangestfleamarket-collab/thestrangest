@@ -1,10 +1,10 @@
 // THE WORLD EDITOR: WE lets you pick, move, turn, scale, recolour and hide objects in the world.
 import {SHARED, THREE} from './003-shx.js';
-import {LEVELS, UI, WE} from './003b-systems.js';
+import {LEVELS, UI, WE, WED} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {TILE} from './006-map-pre.js';
 import {OBJS} from './008-batch.js';
-Object.assign(WE,{on:false});
+Object.assign(WE,{on:false}); window.WE=WE;
 { const T=TILE, ST={}; let sel=null, box=null, drag=null;
   const base=o=>{ '@later'; if(o.base)return o.base; const B=o.parts.map(p=>p.me.geometry.attributes.position.array.slice(p.v0*3,p.v0*3+18)); const c=new THREE.Vector3(); let n=0, y0=1e9;
     for(const a of B)for(let i=0;i<18;i+=3){ c.x+=a[i]; c.y+=a[i+1]; c.z+=a[i+2]; n++; y0=Math.min(y0,a[i+1]); } c.divideScalar(n||1); c.y=y0; o.base=B; o.c=c; return B; };
@@ -12,8 +12,17 @@ Object.assign(WE,{on:false});
   let KMAP=null;
   const kraw=o=>{ base(o); const c=o.c; return o.place+'|'+o.name+'|'+Math.round(c.x*10)/10+','+Math.round(c.y*10)/10+','+Math.round(c.z*10)/10; };
   const kid=o=>{ if(!KMAP){ KMAP=new Map(); const g={}; for(const q of OBJS){ const r=kraw(q); (g[r]||(g[r]=[])).push(q); } for(const r in g){ const L=g[r]; if(L.length<2)KMAP.set(L[0],r); else { L.sort((a,b)=>a.id<b.id?-1:a.id>b.id?1:0); L.forEach((q,i)=>KMAP.set(q,r+'#'+i)); } } } return KMAP.get(o)||kraw(o); };
-  const stOf=o=>{ const k=kid(o); return ST[k]||(ST[k]=E0()); };
+  const rp=p=>Math.round(p*10)/10, keyOf=o=>o.prop?o.place+'|'+o.name+'|'+rp(o.pivot[0])+','+rp(o.pivot[1])+','+rp(o.pivot[2]):kid(o);
+  const stOf=o=>{ const k=keyOf(o); return ST[k]||(ST[k]=E0()); };
   const v=new THREE.Vector3(), vv=new THREE.Vector3(), E3=new THREE.Euler(), col=new THREE.Color(), touched=new Set();
+  const D2R=Math.PI/180, Mx=new THREE.Matrix4(), Tx=new THREE.Matrix4(), Ex=new THREE.Euler(), PB=new THREE.Box3();
+  function applyProp(o){ const e=stOf(o), me=o.me, id=o.id, pv=o.pivot; if(!me.setMatrixAt)return;
+    if(e.del){ me.setVisibleAt&&me.setVisibleAt(id,false); return; } me.setVisibleAt&&me.setVisibleAt(id,true);
+    Ex.set((e.rx||0)*D2R,(e.r||0)*D2R,(e.rz||0)*D2R,'YXZ'); Mx.makeRotationFromEuler(Ex); Mx.multiply(Tx.makeScale(e.s[0],e.s[1],e.s[2]));
+    Mx.multiply(Tx.makeTranslation(-pv[0],-pv[1],-pv[2])); Mx.premultiply(Tx.makeTranslation(pv[0]+e.t[0],pv[1]+e.t[1],pv[2]+e.t[2])); me.setMatrixAt(id,Mx); if(me.computeBoundingSphere)me.computeBoundingSphere(); }
+  const propHandle=(en,bid)=>{ const it=en.items[en.ids[bid]]; return {prop:true,me:en.me,id:bid,place:en.place,name:it.k,pivot:[it.x,it.y,it.z]}; };
+  const applyWED=()=>{ for(const en of WED.meshes)for(let bid=0;bid<en.ids.length;bid++){ const h=propHandle(en,bid); if(ST[keyOf(h)])applyProp(h); } };
+  const applySel=o=>o.prop?applyProp(o):apply(o);
   function apply(o){ '@later'; const B=base(o), e=stOf(o), c=o.c; E3.set((e.rx||0)*Math.PI/180,(e.r||0)*Math.PI/180,(e.rz||0)*Math.PI/180,'YXZ'); col.set(e.col).multiplyScalar(e.bri==null?1:e.bri);
     o.parts.forEach((p,k)=>{ const g=p.me.geometry, P=g.attributes.position.array, N=g.attributes.normal.array, C=g.attributes.aCol.array, O=g.attributes.aOp.array, a=B[k];
       for(let i=0;i<6;i++){ vv.set((a[i*3]-c.x)*e.s[0],(a[i*3+1]-c.y)*e.s[1],(a[i*3+2]-c.z)*e.s[2]).applyEuler(E3);
@@ -27,8 +36,9 @@ Object.assign(WE,{on:false});
   let BAKED={}; try{ BAKED=__DATA__("data/world-edits.json")||{}; }catch(e){}
   try{ Object.assign(ST,BAKED); }catch(e){}
   try{ Object.assign(ST,JSON.parse(localStorage.getItem('market-world')||'{}')); }catch(e){}
-  { const applyAll=()=>{ if(!Object.keys(ST).length)return; for(const o of OBJS)if(ST[kid(o)])apply(o); settle(); };
-    const go=()=>{ if(!Object.keys(ST).length)return; if(!window.__started){ setTimeout(go,300); return; } (window.LOAD?LOAD('later'):Promise.resolve()).then(applyAll).catch(applyAll); }; go(); }
+  { const applyAll=()=>{ if(!Object.keys(ST).length)return; for(const o of OBJS)if(ST[kid(o)])apply(o); applyWED(); settle(); };
+    const go=()=>{ if(!Object.keys(ST).length)return; if(!window.__started){ setTimeout(go,300); return; } (window.LOAD?LOAD('later'):Promise.resolve()).then(applyAll).catch(applyAll);
+      let t=800; const re=()=>{ applyWED(); if((t*=2)<40000)setTimeout(re,t); }; setTimeout(re,t); }; go(); }
   const css=document.createElement('style'); css.textContent=`
   #we{position:fixed;right:calc(12px + env(safe-area-inset-right,0px));top:12px;width:300px;max-height:calc(100vh - 24px);overflow:auto;background:var(--bg);border:2px solid var(--line);font:12px var(--pixel);color:var(--fg);z-index:20}
   #we[hidden]{display:none} #we h2{font:12px var(--pixel);color:var(--key);margin:0;padding:12px 14px;border-bottom:2px solid var(--line)} #we .pane{padding:10px 14px}
@@ -48,19 +58,22 @@ Object.assign(WE,{on:false});
       <div class="row"><span class="lab">WIDTH</span><input type="range" data-ax="0" min="0.2" max="3" step="0.01"></div>
       <div class="row"><span class="lab">HEIGHT</span><input type="range" data-ax="1" min="0.2" max="3" step="0.01"></div>
       <div class="row"><span class="lab">DEPTH</span><input type="range" data-ax="2" min="0.2" max="3" step="0.01"></div>
-      <div class="row"><span class="lab">COLOUR</span><input type="color" id="wcol"><button class="btn" id="wcol0">NONE</button></div>
-      <div class="row"><span class="lab">BRIGHTNESS</span><input type="range" id="wbri" min="0.2" max="2" step="0.01"></div>
-      <div class="row"><span class="lab">SEE-THROUGH</span><input type="range" id="wop" min="0" max="0.9" step="0.01"></div>
+      <div class="row" data-prow><span class="lab">COLOUR</span><input type="color" id="wcol"><button class="btn" id="wcol0">NONE</button></div>
+      <div class="row" data-prow><span class="lab">BRIGHTNESS</span><input type="range" id="wbri" min="0.2" max="2" step="0.01"></div>
+      <div class="row" data-prow><span class="lab">SEE-THROUGH</span><input type="range" id="wop" min="0" max="0.9" step="0.01"></div>
       <div class="row"><button class="btn" id="wdel">DELETE</button><button class="btn" id="wback">BACK AS IT WAS</button></div>
 </div>
     <div class="row" style="margin-top:10px"><button class="btn" id="wall">EVERYTHING BACK</button><button class="btn" id="wexp">EXPORT</button><button class="btn" id="wimp">IMPORT</button><input type="file" id="wimpf" accept="application/json" style="display:none"><button class="btn" id="wout">DONE (SHIFT+E)</button></div>
     <div class="dim">what he bumps into stays where it was, for now</div></div>`;
   document.body.appendChild(P); const $=s=>P.querySelector(s);
   function draw(){ '@later'; $('#wtools').hidden=!sel; $('#wname').textContent=sel?'PICKED: '+sel.name.toUpperCase()+' ('+sel.place+')':'double-click a thing to pick it'; if(!sel)return; const e=stOf(sel);
+    P.querySelectorAll('[data-prow]').forEach(r=>r.style.display=sel.prop?'none':'');
     $('#wsz').value=Math.cbrt(e.s[0]*e.s[1]*e.s[2]); P.querySelectorAll('[data-ax]').forEach(i=>i.value=e.s[+i.dataset.ax]); $('#wcol').value=e.col; $('#wop').value=1-e.op; $('#wrx').value=e.rx||0; $('#wrz').value=e.rz||0; $('#wbri').value=e.bri==null?1:e.bri; }
-  function frame(){ '@later'; if(box){ scene.remove(box); box=null; } if(!sel||stOf(sel).del)return; const b=new THREE.Box3(); for(const p of sel.parts){ const a=p.me.geometry.attributes.position.array; for(let i=0;i<6;i++)b.expandByPoint(v.fromArray(a,(p.v0+i)*3)); }
-    box=new THREE.Box3Helper(b,0xf2c14e); scene.add(LEVELS.own(box,'*')); }
-  const change=f=>{ if(!sel)return; f(stOf(sel)); apply(sel); settle(); save(); frame(); draw(); };
+  function frame(){ '@later'; if(box){ scene.remove(box); box=null; } if(!sel||stOf(sel).del)return; const b=new THREE.Box3();
+    if(sel.prop){ if(sel.me.getBoundingBoxAt){ sel.me.getBoundingBoxAt(sel.id,PB); b.copy(PB); } if(sel.me.getMatrixAt){ sel.me.getMatrixAt(sel.id,Mx); b.applyMatrix4(Mx); } }
+    else for(const p of sel.parts){ const a=p.me.geometry.attributes.position.array; for(let i=0;i<6;i++)b.expandByPoint(v.fromArray(a,(p.v0+i)*3)); }
+    if(b.isEmpty())return; box=new THREE.Box3Helper(b,0xf2c14e); scene.add(LEVELS.own(box,'*')); }
+  const change=f=>{ if(!sel)return; f(stOf(sel)); applySel(sel); settle(); save(); frame(); draw(); };
   const ground=()=>{ const r=new THREE.Vector3().setFromMatrixColumn(SHARED.cam.matrixWorld,0); r.y=0; r.normalize(); const f=new THREE.Vector3(-r.z,0,r.x); return [r,f]; };
   P.querySelectorAll('[data-mv]').forEach(b=>b.onclick=()=>{ const [dx,dz]=b.dataset.mv.split(',').map(Number), [r,f]=ground(); change(e=>{ e.t[0]+=(r.x*dx+f.x*dz)*.25*T; e.t[2]+=(r.z*dx+f.z*dz)*.25*T; }); });
   P.querySelectorAll('[data-up]').forEach(b=>b.onclick=()=>change(e=>{ e.t[1]+=+b.dataset.up*.1*T; }));
@@ -73,20 +86,27 @@ Object.assign(WE,{on:false});
   $('#wbri').oninput=ev=>change(e=>{ e.bri=+ev.target.value; });
   $('#wexp').onclick=()=>{ const blob=new Blob([JSON.stringify(ST,null,1)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='world-edits.json'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),2e3); };
   $('#wimp').onclick=()=>$('#wimpf').click();
-  $('#wimpf').onchange=async ev=>{ const f=ev.target.files&&ev.target.files[0]; ev.target.value=''; if(!f)return; try{ const j=JSON.parse(await f.text()); Object.assign(ST,j); for(const o of OBJS)if(ST[kid(o)])apply(o); settle(); save(); frame(); draw(); }catch(e){} };
+  $('#wimpf').onchange=async ev=>{ const f=ev.target.files&&ev.target.files[0]; ev.target.value=''; if(!f)return; try{ const j=JSON.parse(await f.text()); Object.assign(ST,j); for(const o of OBJS)if(ST[kid(o)])apply(o); applyWED(); settle(); save(); frame(); draw(); }catch(e){} };
   $('#wdel').onclick=()=>{ change(e=>{ e.del=true; }); sel=null; frame(); draw(); };
   $('#wback').onclick=()=>change(e=>{ Object.assign(e,E0()); });
-  $('#wall').onclick=()=>{ if(!confirm('Put everything back as it was?'))return; for(const o of OBJS){ const k=kid(o); if(ST[k]){ ST[k]=E0(); apply(o); delete ST[k]; } } settle(); save(); frame(); draw(); };
+  $('#wall').onclick=()=>{ if(!confirm('Put everything back as it was?'))return; for(const o of OBJS){ const k=kid(o); if(ST[k]){ ST[k]=E0(); apply(o); delete ST[k]; } }
+    for(const en of WED.meshes)for(let bid=0;bid<en.ids.length;bid++){ const h=propHandle(en,bid), k=keyOf(h); if(ST[k]){ ST[k]=E0(); applyProp(h); delete ST[k]; } } settle(); save(); frame(); draw(); };
   $('#wout').onclick=()=>WE.toggle();
   WE.toggle=()=>{ WE.on=!WE.on; P.hidden=!WE.on; if(!WE.on){ sel=null; frame(); } draw(); UI.badge&&UI.badge(); };
-  const ray=new THREE.Raycaster(), meshes=()=>[...new Set(OBJS.flatMap(o=>o.parts.map(p=>p.me)))].filter(m=>{ let q=m; while(q){ if(!q.visible)return false; q=q.parent; } return true; });
+  const vis=m=>{ let q=m; while(q){ if(!q.visible)return false; q=q.parent; } return true; };
+  const ray=new THREE.Raycaster(), meshes=()=>[...new Set(OBJS.flatMap(o=>o.parts.map(p=>p.me)))].filter(vis);
+  const wedOf=o=>{ for(const en of WED.meshes)if(en.me===o)return en; return null; };
+  const pickSet=()=>{ const s=meshes(); for(const en of WED.meshes)if(vis(en.me))s.push(en.me); return s; };
   const hitAt=e=>{ '@later'; const r=renderer.domElement.getBoundingClientRect(); ray.setFromCamera(new THREE.Vector2((e.clientX-r.left)/r.width*2-1,-((e.clientY-r.top)/r.height*2-1)),SHARED.cam);
-    for(const h of ray.intersectObjects(meshes(),false)){ const o=h.object.userData.objOf[Math.floor(h.faceIndex/2)]; if(o&&!(ST[kid(o)]&&ST[kid(o)].del))return {o,p:h.point}; return null; } return null; };
-  WE.pick=e=>{ const h=hitAt(e); sel=h?h.o:null; if(sel)base(sel); frame(); draw(); };
-  WE.down=e=>{ if(!WE.on||!sel||e.button!==0)return false; const h=hitAt(e); if(!h||h.o!==sel)return false; drag={y:h.p.y,last:h.p.clone()}; return true; };
+    for(const h of ray.intersectObjects(pickSet(),false)){ const en=wedOf(h.object);
+      if(en){ const bid=h.batchId==null?h.instanceId:h.batchId; if(bid==null||en.ids[bid]==null)return null; const o=propHandle(en,bid), s=ST[keyOf(o)]; if(s&&s.del)return null; return {o,p:h.point}; }
+      const o=h.object.userData.objOf&&h.object.userData.objOf[Math.floor(h.faceIndex/2)]; if(o&&!(ST[kid(o)]&&ST[kid(o)].del))return {o,p:h.point}; return null; } return null; };
+  WE.pick=e=>{ const h=hitAt(e); sel=h?h.o:null; if(sel&&!sel.prop)base(sel); frame(); draw(); };
+  WE.down=e=>{ if(!WE.on||!sel||e.button!==0)return false; const h=hitAt(e); if(!h||keyOf(h.o)!==keyOf(sel))return false; drag={y:h.p.y,last:h.p.clone()}; return true; };
   WE.move=e=>{ '@later'; if(!drag)return; const r=renderer.domElement.getBoundingClientRect(); ray.setFromCamera(new THREE.Vector2((e.clientX-r.left)/r.width*2-1,-((e.clientY-r.top)/r.height*2-1)),SHARED.cam);
     const pl=new THREE.Plane(new THREE.Vector3(0,1,0),-drag.y), q=new THREE.Vector3(); if(!ray.ray.intersectPlane(pl,q))return; const dx=q.x-drag.last.x, dz=q.z-drag.last.z; drag.last.copy(q);
-    const s=stOf(sel); s.t[0]+=dx; s.t[2]+=dz; apply(sel); frame(); };
+    const s=stOf(sel); s.t[0]+=dx; s.t[2]+=dz; applySel(sel); frame(); };
   WE.up=()=>{ if(!drag)return; drag=null; settle(); save(); };
   Object.defineProperty(WE,'dragging',{get:()=>!!drag});
+  WE.dbgProps=()=>WED.meshes; WE.dbgPick=(mi,bid)=>{ const en=WED.meshes[mi]; if(!en||en.ids[bid]==null)return null; sel=propHandle(en,bid); frame(); draw(); return keyOf(sel); };
 }

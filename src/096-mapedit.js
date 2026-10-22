@@ -1,4 +1,4 @@
-// THE GAME EDITOR (Shift+Escape only; its own file, fetched then): the MAP EDITOR and the CHARACTER EDITOR on a flat top-down mockup: layers, look around, pick, move, turn, size, copy, delete, undo, a 360 view in a black void; export and import as files, never the game.
+// THE MAP EDITOR (Shift+Escape, or the EDITORS menu; its own file, fetched then): the Market on a flat top-down mockup — layers, look around, pick, move, turn, size, copy, delete, undo, a 360 view in a black void; exports world.json. (Characters are edited in the list editor, 096b-charedit.js; it reuses this file's 360 VIEW.)
 import {SHARED, THREE} from './003-shx.js';
 import {BLK, GAMEED, keys, MAPED, NPCS, PARK, pos, W3} from './003b-systems.js';
 import {renderer} from './004-main.js';
@@ -146,7 +146,7 @@ GAMEED.build=()=>{ '@editor'; const T=TILE;
   const reuid=()=>{ uid=1+Math.max(0,...ITEMS.map(o=>+String(o.id).slice(1)||0)); };
   const setMode=(m,first)=>{ if(!first)ST[MODE]={items:ITEMS,undo:UNDO,redo:REDO,ex:ST[MODE].ex}; MODE=m; const S2=ST[m];
     if(!S2.items){ let d=null; try{ d=JSON.parse(localStorage.getItem(DRAFT[m])||'null'); }catch(e){} S2.items=Array.isArray(d)&&d.length?d:(m==='map'?base():chStart()); }
-    ITEMS=S2.items; UNDO=S2.undo; REDO=S2.redo; sel=null; reuid(); lyHTML(); q('#meTM').dataset.hot=m==='map'?'1':''; q('#meTC').dataset.hot=m==='chars'?'1':''; skin(R); panel(); draw(); };
+    ITEMS=S2.items; UNDO=S2.undo; REDO=S2.redo; sel=null; reuid(); lyHTML(); skin(R); panel(); draw(); };
   const restore=s=>{ const id=sel&&sel.id; ITEMS=JSON.parse(s); sel=ITEMS.find(o=>o.id===id)||null; reuid(); save(); panel(); draw(); };
   const undo=()=>{ if(!UNDO.length)return; REDO.push(snap()); restore(UNDO.pop()); }, redo=()=>{ if(!REDO.length)return; UNDO.push(snap()); restore(REDO.pop()); };
 
@@ -158,14 +158,14 @@ GAMEED.build=()=>{ '@editor'; const T=TILE;
 
   const R=document.createElement('div'); R.id='maped'; css(R,{position:'fixed',inset:'0',zIndex:'60',display:'none',background:'#07090d',font:'10px Silkscreen,monospace',color:'#c9ccd6'});
   R.innerHTML='<canvas id="meC" style="position:absolute;inset:0;width:100%;height:100%;cursor:grab;touch-action:none;image-rendering:pixelated"></canvas>'
-    +'<div style="position:absolute;left:12px;top:12px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;max-width:calc(100% - 360px)"><b style="font-size:12px;color:#ece5d3">GAME EDITOR</b><button class="mb" id="meTM">MAP EDITOR</button><button class="mb" id="meTC">CHARACTER EDITOR</button><span style="width:10px"></span><button class="mb" id="meFit">WHOLE MAP</button><button class="mb" id="meIn">ZOOM +</button><button class="mb" id="meOut">ZOOM −</button><button class="mb" id="meU">↶ UNDO</button><button class="mb" id="meRd">REDO ↷</button>'
+    +'<div style="position:absolute;left:12px;top:12px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;max-width:calc(100% - 360px)"><b style="font-size:12px;color:#ece5d3">GAME EDITOR</b><span style="width:10px"></span><button class="mb" id="meFit">WHOLE MAP</button><button class="mb" id="meIn">ZOOM +</button><button class="mb" id="meOut">ZOOM −</button><button class="mb" id="meU">↶ UNDO</button><button class="mb" id="meRd">REDO ↷</button>'
     +'<span style="color:#8a8f9c;width:100%">DRAG: LOOK AROUND · WHEEL: ZOOM · DOUBLE CLICK: PICK · DRAG THE PICKED THING: MOVE · ITS ○ HANDLE: TURN (SHIFT: 15°) · ITS □ HANDLE: SIZE · R: TURN 15° · CTRL+Z / CTRL+Y · DEL · CTRL+D: COPY</span></div>'
     +'<div id="meSide" style="position:absolute;right:12px;top:12px;bottom:12px;width:320px;max-width:calc(100vw - 24px);overflow:auto;padding:10px 12px;background:#0b0d13f2;border:2px solid #2a3040;box-sizing:border-box">'
     +'<b style="color:#ece5d3">SHOW</b><div id="meLy" style="display:grid;grid-template-columns:1fr 1fr;gap:3px 8px;margin:6px 0 10px"></div>'
     +'<b style="color:#ece5d3">PICKED</b><div id="meSel" style="margin-top:6px;line-height:1.7;color:#8a8f9c"></div>'
     +'<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:10px"><button class="mb" id="meRA">START OVER (THE GAME AS IT IS)</button><button class="mb" id="meE" data-hot="1">EXPORT</button><button class="mb" id="meI">IMPORT</button><input id="meF" type="file" accept=".json,application/json" style="display:none"></div>'
     +'<div id="meN" style="margin-top:6px;color:#f2c14e;min-height:12px"></div>'
-    +'<div style="margin-top:8px;color:#8a8f9c;line-height:1.6">EDITS CHANGE THIS MOCKUP ONLY, NEVER THE RUNNING GAME. THE MAP EDITOR EXPORTS world.json, THE GAME\'S OWN LEVEL FILE: PUT IT IN data/ AND THE GAME IS BUILT FROM IT. THE CHARACTER EDITOR EXPORTS ITS OWN FILE. IMPORT LOADS EITHER BACK. THE DRAFTS STAY IN THIS BROWSER.</div></div>';
+    +'<div style="margin-top:8px;color:#8a8f9c;line-height:1.6">EDITS CHANGE THIS MOCKUP ONLY, NEVER THE RUNNING GAME. THE MAP EDITOR EXPORTS world.json, THE GAME\'S OWN LEVEL FILE: PUT IT IN data/ AND THE GAME IS BUILT FROM IT. IMPORT LOADS IT BACK. THE DRAFT STAYS IN THIS BROWSER.</div></div>';
   document.body.appendChild(R); const q=s=>R.querySelector(s), cv=q('#meC'), g=cv.getContext('2d'); skin(R);
   const lyHTML=()=>{ q('#meLy').innerHTML=(MODE==='map'?LAYERS:LAYERS_CH).map(([k,n])=>'<label style="display:flex;gap:5px;align-items:center;cursor:pointer"><input type="checkbox" data-ly="'+k+'"'+(SHOW[k]?' checked':'')+'>'+n+'</label>').join(''); };
   q('#meLy').addEventListener('change',e=>{ const k=e.target.dataset.ly; if(!k)return; SHOW[k]=e.target.checked; try{ localStorage.setItem('maped-show',JSON.stringify(SHOW)); }catch(_){} if(TER&&['road','walk','alley','grass','water','wall','path'].includes(k))paint(); draw(); });
@@ -263,7 +263,6 @@ GAMEED.build=()=>{ '@editor'; const T=TILE;
   const zoom=f=>{ V.k=Math.max(.5,Math.min(60,V.k*f)); draw(); };
   q('#meFit').onclick=()=>{ fit(); draw(); }; q('#meIn').onclick=()=>zoom(1.4); q('#meOut').onclick=()=>zoom(1/1.4); q('#meU').onclick=undo; q('#meRd').onclick=redo;
   q('#meRA').onclick=()=>{ push(); uid=1; ITEMS=MODE==='map'?base():chStart(); sel=null; save(); panel(); draw(); q('#meN').textContent='BACK TO THE GAME AS IT IS (UNDO TO GO BACK)'; };
-  q('#meTM').onclick=()=>{ if(MODE!=='map')setMode('map'); }; q('#meTC').onclick=()=>{ if(MODE!=='chars')setMode('chars'); };
   const stamp=()=>new Date().toISOString().slice(0,16).replace(/[:T]/g,'-');
   const download=(name,obj)=>{ const b=new Blob([JSON.stringify(obj,null,1)],{type:'application/json'}), a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),2000); };
   Object.assign(MAPED,{download,stamp,skin,css,fld,texSel,TEX});
@@ -303,6 +302,7 @@ GAMEED.build=()=>{ '@editor'; const T=TILE;
   GAMEED.show=on=>{ MAPED.open=GAMEED.open=on; R.style.display=on?'block':'none'; if(!on){ if(VIEW.on)VIEW.close(); return; } if(keys.clear)keys.clear();
     size(); if(!TER)terrain(); if(!GAMEED.inited){ GAMEED.inited=true; setMode(MODE,true); } fit(); panel(); draw(); };
   window.MAPED=MAPED; };
+GAMEED.ensure=async()=>{ if(GAMEED.built)return; await LOAD('editor'); GAMEED.build(); GAMEED.built=true; };
 GAMEED.toggle=async()=>{ if(GAMEED.busy)return; if(GAMEED.built){ GAMEED.show(!GAMEED.open); return; } GAMEED.busy=true;
-  await FADE.run('LOADING GAME EDITOR',async()=>{ await LOAD('editor'); GAMEED.build(); GAMEED.built=true; },{cut:true}); if(GAMEED.built)GAMEED.show(true); GAMEED.busy=false; };
+  await FADE.run('LOADING GAME EDITOR',async()=>{ await GAMEED.ensure(); },{cut:true}); if(GAMEED.built)GAMEED.show(true); GAMEED.busy=false; };
 MAPED.toggle=()=>GAMEED.toggle(); window.GAMEED=GAMEED;

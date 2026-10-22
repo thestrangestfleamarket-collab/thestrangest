@@ -41,7 +41,7 @@ ROOMS.roofAt=(x,y,z)=>{ const h=new THREE.Raycaster(new THREE.Vector3(x,y,z),new
         walk(scene); };
   const IV={key:null,b:null,want:null,re:null,busy:false,H:[],L:[],S:[],top:new Set(),nc:0,C:new Map()}; ROOMS.iv=IV;
   Object.assign(ROOMS.lazy,{bath:{name:'THE BATH HOUSE',go:()=>SHARED.BOD.GD&&SHARED.BOD.GD.build&&SHARED.BOD.GD.build(),need:()=>LOAD(SHARED.BOD.GD&&SHARED.BOD.GD.build&&SHARED.BOD.GD.build.chunk),done:false}});
-  // Insides off the map (ROOMS.off[id]: name, box, need, build -> ROOMS.part, spawn/out [x,z,y,heading], door/exit [x,y,z], inAt/outAt [x0,z0,x1,z1,y], rooms [{x0,z0,x1,z1}] when the inside is several rooms, keep): built on the way in, the street not drawn while you are in, dropped on the way out unless keep.
+  // Insides off the map (ROOMS.off[id]: name, box, need, build -> ROOMS.part, spawn/out [x,z,y,heading], door/exit [x,y,z], rooms [{x0,z0,x1,z1}] when the inside is several rooms, keep): gone in and out of only by double-clicking the door's thing (door outside, exit inside; doors never move, walking into one does nothing), built on the way in, the street not drawn while you are in, dropped on the way out unless keep.
   const offL=id=>{ const o=ROOMS.off[id]; if(ROOMS.lazy[id])return ROOMS.lazy[id]; const L=ROOMS.lazy[id]={name:o.name,off:1,need:()=>o.need&&o.need(),go:()=>{ o.P=o.build(); L.done=true; },done:false};
     if(!o.keep)L.drop=()=>{ ROOMS.unpart(o.P); o.P=null; if(o.unbuild)o.unbuild(); }; return L; };
   for(const id in ROOMS.off)offL(id);
@@ -50,14 +50,12 @@ ROOMS.roofAt=(x,y,z)=>{ const h=new THREE.Raycaster(new THREE.Vector3(x,y,z),new
     if(o.door)hb(o.door,o.name,()=>ROOMS.enter(id)); if(o.exit)hb(o.exit,o.exitName||'OUTSIDE',()=>ROOMS.exit(id)); };
   const offHide=on=>{ for(const k in MAPG)VIS.hide(MAPG[k],'off',on); };
   ROOMS.goIn=async(id,at)=>{ const o=ROOMS.off[id], L=offL(id); if(!RL)build(); if(!L.done){ await L.need(); if(!L.done)L.go(); } const s=at||o.spawn; UI.goTo(s[0],s[1],s[2],s[3]);
-    scene.updateMatrixWorld(); const bb=o.bs.find(b=>within(b,s[0],s[1]))||o.b, w={key:kOf(bb),b:bb}; ROOMS.cur=bb; IV.want=w; apply(w); o.arm=false; };
-  ROOMS.goOut=id=>{ const o=ROOMS.off[id]; UI.goTo(o.out[0],o.out[1],o.out[2],o.out[3]); ROOMS.cur=null; IV.want=null; apply(null); o.arm=false; };
+    scene.updateMatrixWorld(); const bb=o.bs.find(b=>within(b,s[0],s[1]))||o.b, w={key:kOf(bb),b:bb}; ROOMS.cur=bb; IV.want=w; apply(w); };
+  ROOMS.goOut=id=>{ const o=ROOMS.off[id]; UI.goTo(o.out[0],o.out[1],o.out[2],o.out[3]); ROOMS.cur=null; IV.want=null; apply(null); };
   const offRun=(id,txt,fn)=>{ if(!ROOMS.off[id]||FADE.busy||IV.busy)return; IV.busy=true; return FADE.run(txt,fn,{cut:true}).finally(()=>{ IV.busy=false; }); };
   ROOMS.enter=id=>offRun(id,ROOMS.lazy[id]&&ROOMS.lazy[id].done?'':'ENTERING '+ROOMS.off[id].name,()=>ROOMS.goIn(id));
   ROOMS.exit=id=>ROOMS.off[id]&&IV.b&&IV.b.off===id?offRun(id,'',()=>ROOMS.goOut(id)):null;
   ROOMS.offIn=()=>IV.b&&IV.b.off||null;
-  const inR=(r,e=.6*TILE)=>pos.x>Math.min(r[0],r[2])&&pos.x<Math.max(r[0],r[2])&&pos.z>Math.min(r[1],r[3])&&pos.z<Math.max(r[1],r[3])&&Math.abs(SHARED.py-(r[4]||0))<e;
-  const offWalk=()=>{ for(const id in ROOMS.off){ const o=ROOMS.off[id], r=IV.b&&IV.b.off===id?o.outAt:!IV.key?o.inAt:null; if(!r){ o.arm=false; continue; } const on=inR(r); if(on&&o.arm){ o.arm=false; (IV.b&&IV.b.off===id?ROOMS.exit:ROOMS.enter)(id); } else o.arm=!on; } };
   const kOf=b=>[b.x0,b.z0,b.x1,b.z1,b.y0].map(v=>(+v).toFixed(2)).join();
   const lazyOf=b=>{ if(!b||b.noBuild)return null; const L=b.lz&&ROOMS.lazy[b.lz]; if(L)return L.done?null:L; const S=b.id&&STORE.inside&&STORE.inside[b.id];
     return S&&!S.done?{name:/^THE /.test(S.name)?S.name:'THE '+S.name,S,go:()=>{ S.busy=false; STORE.inGo(b.id); },need:()=>STORE.need&&STORE.need()}:null; };
@@ -97,8 +95,7 @@ ROOMS.roofAt=(x,y,z)=>{ const h=new THREE.Raycaster(new THREE.Vector3(x,y,z),new
   const unclip=g=>{ if(g)g.traverse(c=>{ if(c.material)for(const mt of [].concat(c.material))if(mt.clippingPlanes===NEAR){ mt.clippingPlanes=null; mt.needsUpdate=true; } }); };
   ROOMS.tick=()=>{ if(!RL)build(); let hit=null, bnd=null; if(NEARON)unclip(W3.group); if(LOOKS.light)LOOKS.light();
     if(SHARED.LVL==='up'&&!UI.freeCam&&!ED.on&&!MAPED.on&&!(window.DRONE&&DRONE.cam)){
-      hit=RL.find(b=>(within(b,pos.x,pos.z,0)||!!b.band&&within(b.band,pos.x,pos.z,0))&&SHARED.py>b.y0-.3&&SHARED.py<b.y1)||null;
-      if(window.__started&&!FADE.busy&&!IV.busy)offWalk(); }
+      hit=RL.find(b=>(within(b,pos.x,pos.z,0)||!!b.band&&within(b.band,pos.x,pos.z,0))&&SHARED.py>b.y0-.3&&SHARED.py<b.y1)||null; }
     if(!hit&&!IV.key&&!IV.busy)drop(null);
     ROOMS.cur=hit; { const w=hit?{key:kOf(hit),b:hit}:null; IV.want=w; const wk=w?w.key:null; if(wk!==IV.key&&!IV.busy){ if(wk&&wk===IV.re&&!lazyOf(hit))apply(w); else swap().catch(()=>{ IV.busy=false; }); } IV.re=null; }
     if(SHARED.BOD.GDK&&SHARED.BOD.GDK.card)VIS.hide(SHARED.BOD.GDK.card,'room',!!(IV.b&&IV.b.lz==='bath')); if(IV.key&&scene.background)scene.background.setRGB(0,0,0);

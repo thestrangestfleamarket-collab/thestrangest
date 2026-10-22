@@ -299,5 +299,10 @@
   }
  ],
  "pathWidth": 7.2,
- "homes": {}
+ "homes": {
+  "donut": [-71.2, -74.2, 5, "bodega"],
+  "number80": [54.5, -74.1, 5, "bar"],
+  "origamifox": [212.5, -74.2, 5, "arcade"],
+  "manatee": [195.5, -74.1, 5, "theatre"]
+ }
 }

@@ -4279,3 +4279,6 @@ The landscape editor (shift+9) now has a BORDER mode beside BOX: click points on
 
 ## 22 Oct 2026: the station's stairs replaced by an exit tunnel
 Owner, of the stairs in the station and the black tunnel boxes seen from above: "lets remove the stairs, make it just an exit tunnel you walk into to leave, the tunnels should come out like a wall, just go into wall, show mockups"; his pick of two mockups: "A" (a dark tunnel mouth). No stairs in the station: an EXIT TO STREET tunnel in the end wall, walk in to leave; the track tunnels are dark arches in the end walls.
+
+## 22 Oct 2026: start where you left off
+Owner: "the game is also still starting me on main street then taking me to last place i was logged out afterwards instead of just starting me where i started." The saved spot is now restored behind the loading screen, so you open where you were.

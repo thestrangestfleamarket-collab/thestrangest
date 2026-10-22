@@ -4,7 +4,6 @@ import {CLOCK, FAR3, pos, ROOMS, SKY, UI} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {BLDK, FADE, MISTE, MODS, STORE, SYS, TILE} from './006-map-pre.js';
 import {BATCH} from './008-batch.js';
-import {BLOCKS} from './058-blocks.js';
 { const APTS=MODS.apts, F=window.FIREV, T=TILE, KK=BLDK, {X,Z}=SHARED.BOD, Y=SHARED.BOD.Y, {CX,WY,HZ,S}=F, A=APTS.A, FE=APTS.ESC[0], DU=APTS.DU, DO=APTS.DO, LV=F.lv;
   const ix=x=>x/(T*KK)+SHARED.BOD.OX, iy=z=>z/(T*KK)+SHARED.BOD.OY, cl=v=>Math.max(0,Math.min(1,v)), nk=()=>cl((4-CLOCK.elev())/8);
   const du=CX-(A.x0+A.x1)/2, U=u=>A.x0+u+du, L0=U(FE.ua), L1=U(FE.ub), DX=U(DU);

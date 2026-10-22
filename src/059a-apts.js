@@ -4,7 +4,6 @@ import {pos, ROOMS, st, UI} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {BLDK, FIX, grab, LOTX, MODS, SOL, TILE, WP} from './006-map-pre.js';
 import {BATCH} from './008-batch.js';
-import {BLOCKS} from './058-blocks.js';
 const APTS={EMPTY:true};
 await grab('apts',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Yr=SHARED.BOD.Y,
   RZ=APTS.RZ=28, Y=z=>Yr(z+RZ), gbox=(b,k)=>SHARED.BOD.gbox({...b,z0:b.z0+RZ,z1:b.z1+RZ},k), R0=APTS.R0=Yr(RZ)-Yr(0), {hash}=SHARED.BOD.g, {LSEED,STORY,sh}=SHARED.BOD.K, S=STORY, ST=5, AH=ST*S, TOP=RZ+AH, W=LSEED.walk, T=.1;

@@ -10,8 +10,7 @@ Object.assign(INTERIORS,{on:QS.get('interiors')==='1'||(!FREE&&QS.get('interiors
   const box=(X,Z,t,y0,y1)=>{ const a=X(t[0]), b=X(t[2]), c=Z(t[1]), d=Z(t[3]); return {x0:Math.min(a,b),x1:Math.max(a,b),z0:Math.min(c,d),z1:Math.max(c,d),y0,y1}; };
   const inBox=(b,x,y,z,e)=>x>b.x0+e&&x<b.x1-e&&z>b.z0+e&&z<b.z1-e&&y>b.y0+.05&&y<b.y1-.05;
   const mk=(id,boxes,doors,inside)=>{ if(L.some(I=>I.id===id))return; L.push({id,boxes,doors,inside,meshes:new Set(),walls:[],on:true}); };
-  const places=()=>{ '@later'; const B=SHARED.BOD.B0, mB=(B.x0+B.x1)/2;
-    mk('bodega',[box(SHARED.BOD.X,SHARED.BOD.Z,[B.x0,B.y0,B.x1,B.y1],-1,SHARED.BOD.Y(B.h))],[[SHARED.BOD.X(mB),SHARED.BOD.Z(B.y1)]]);
+  const places=()=>{ '@later';
     if(SHARED.BOD.GD)mk('dojo',[box(SHARED.BOD.X,SHARED.BOD.Z,SHARED.BOD.GD.r,-1,SHARED.BOD.Y(SHARED.BOD.GD.H))],[[SHARED.BOD.X(SHARED.BOD.GD.door[0]),SHARED.BOD.Z(SHARED.BOD.GD.door[1])]]);
     for(const R of STORE.rooms)if(R.walls)mk('store:'+R.id,[{x0:R.x0,x1:R.x1,z0:R.z0,z1:R.z1,y0:R.y0,y1:R.y1}],[[R.at.x,R.at.z]],()=>R.inside(pos.x,pos.z)); };
   const near2=(I,x,z,y)=>Math.min(...I.doors.map(d=>Math.hypot(x-d[0],z-d[1],y==null?0:(y-Math.max(0,I.boxes[0].y0))*1.5)));

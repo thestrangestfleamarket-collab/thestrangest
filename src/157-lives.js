@@ -12,7 +12,7 @@ Object.assign(LIVES,{on:QS.has('lives')?QS.get('lives')!=='0':CITY.on,ready:fals
   const mid=(Xf,Zf,r)=>({x:(Xf(r[0])+Xf(r[2]))/2,z:(Zf(r[1])+Zf(r[3]))/2});
   LIVES.build=()=>{ '@later';
     place('street',{door:null,reach:0});
-    { const B=SHARED.BOD.B0, dx=XB((B.x0+B.x1)/2); place('bodega',{walls:true,door:{x:dx,z:ZS_},path:[{x:dx,z:ZB(B.y1)+.6*T},{x:dx,z:ZB(B.y1)-3.4}],box:bx(XB,ZB,[B.x0+1,SHARED.BOD.BODOFF+1,B.x1-1,B.y1-1]),reach:2.5*T}); }
+    { const B=SHARED.BOD.B0, dx=XB((B.x0+B.x1)/2); place('bodega',{walls:true,door:{x:dx,z:ZS_},path:[{x:dx,z:ZB(B.y1)+.6*T}],reach:.8*T}); }
     
     if(SHARED.BOD.GD){ const G=SHARED.BOD.GD, dx=XB(G.door[0]); place('dojo',{walls:true,door:{x:dx,z:ZS_},path:[{x:dx,z:ZB(G.door[1])+.8*T},{x:dx,z:ZB(G.door[1])-1.5*T},mid(XB,ZB,G.floor||G.r)],box:bx(XB,ZB,G.floor?[G.floor[0]+1.2,G.floor[1]+.3,G.floor[2]-1.2,G.floor[3]-.6]:[G.r[0]+1.2,G.r[1]+1.2,G.r[2]-1.2,G.r[3]-1.2]),reach:3*T}); }
     for(const [id,nm] of [['diner','diner'],['bar','bar']]){ const Rr=STORE.rooms.find(r=>r.id===nm); if(!Rr||Rr.fy)continue;

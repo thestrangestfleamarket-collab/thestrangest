@@ -4253,6 +4253,7 @@ An item marked EDIBLE (item editor, shift+7) can now be eaten through the existi
 
 Dragging no longer turns or tilts the camera in play, in any view: right/middle/shift+drag do nothing, and third/first person no longer look round on drag. Left drag still moves the map in the overhead views; turn and tilt with Q/E, Z/X and the buttons. Drag still turns the view in the free camera (C) and the editors (gated by UI.camFree). Reverses the 17-19 Oct drag-to-turn, iso-spin and free-look decisions.
 - 21 Oct 2026, the apartment house all brick (owner: "you pick", after "entire building same red brick"): the stone base, window trim and cornice are brick too.
+- 21 Oct 2026, doors (owner, 23:10: "doors dont move, you just double click them to go in side or outside"): every building's door is gone through only by double-clicking it, outside to go in and inside to go out; walking into a door does nothing, and the fire escape is reached the same way.
 
 ## 22 Oct 2026: sellable wired to shops
 

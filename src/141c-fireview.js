@@ -8,7 +8,7 @@ import {BATCH} from './008-batch.js';
   const ix=x=>x/(T*KK)+SHARED.BOD.OX, iy=z=>z/(T*KK)+SHARED.BOD.OY, cl=v=>Math.max(0,Math.min(1,v)), nk=()=>cl((4-CLOCK.elev())/8);
   const du=CX-(A.x0+A.x1)/2, U=u=>A.x0+u+du, L0=U(FE.ua), L1=U(FE.ub), DX=U(DU);
   const onL=(x,z)=>{ const u=ix(x), v=iy(z); return u>L0-.3&&u<L1+.3&&v>WY-.4&&v<WY+DO+.4; };
-  const G=new THREE.Group(); G.visible=false; scene.add(G); let light=null, busy=false, lp=null, HOLD=null;
+  const G=new THREE.Group(); G.visible=false; scene.add(G); let light=null, busy=false, HOLD=null;
   F.on=false; F.G=G;
   const fade=async(txt,fn)=>{ busy=true; await FADE.run(txt,fn,{hold:200}); busy=false; };
   F.out=()=>{ if(busy)return; fade(F.built?'YOUR FIRE ESCAPE':'LOADING YOUR FIRE ESCAPE...',async()=>{ await STORE.offGo(F.name); UI.goTo(X(DX),Z(WY+.9),Y(HZ)); SHARED.heading=0; if(UI.persp&&window.__dbg)__dbg.face(Math.PI); }); };
@@ -33,14 +33,11 @@ import {BATCH} from './008-batch.js';
     const pl=STORE.places.find(q=>q[0]===F.name); if(pl){ pl[1]=X(DX); pl[2]=Z(WY+.9); pl[3]=Y(HZ); }
     F.built=true; };
   const sg0=STORE.stackGround; STORE.stackGround=(x,z)=>F.built&&onL(x,z)?Y(HZ):sg0?sg0(x,z):null;
-  const into=(u0,v0,u,v)=>Math.abs(u-u0)<.5&&v<v0&&Math.cos(SHARED.heading)<-.6&&lp&&Math.hypot(pos.x-lp.x,pos.z-lp.z)>1e-4;
   SYS.add('places',()=>{ const on=F.built&&SHARED.LVL==='up'&&onL(pos.x,pos.z);
     if(on!==F.on){ F.on=on; G.visible=on; if(on)UI.hold=HOLD={yaw:F.yaw,pitch:Math.PI/6,ppu:SHARED.ppu,look:.2,off:new THREE.Vector3(Math.cos(F.yaw),0,-Math.sin(F.yaw)).multiplyScalar(F.shift*T*KK)}; else if(UI.hold===HOLD)UI.hold=null; }
-    if(!busy&&!on&&APTS.in&&into(APTS.fw[0],APTS.fw[1]+.35,ix(pos.x),iy(pos.z)))F.out();
-    if(!on){ if(light)light.intensity=0; lp={x:pos.x,z:pos.z}; return; }
+    if(!on){ if(light)light.intensity=0; return; }
     HOLD.ppu=renderer.domElement.clientHeight/((Y(F.span*S)-Y(0))*Math.cos(HOLD.pitch));
     if(FAR3.mesh)FAR3.mesh.visible=false; if(FAR3.panels)FAR3.panels.visible=false; if(FAR3.trees)FAR3.trees.visible=false; if(FAR3.FU)FAR3.FU.uMK.value=0; MISTE.x=0; if(SKY.U.uMistK)SKY.U.uMistK.value=0; if(scene.fog===FAR3.fog)scene.fog=null;
-    light.intensity=2.4*nk();
-    if(!busy&&into(DX,WY+.45,ix(pos.x),iy(pos.z)))F.back(); lp={x:pos.x,z:pos.z}; },'141c-fireview');
+    light.intensity=2.4*nk(); },'141c-fireview');
   window.FIREDBG=()=>({built:F.built,on:F.on,meshes:G.children.length,hold:!!HOLD&&UI.hold===HOLD,pos:[+ix(pos.x).toFixed(2),+iy(pos.z).toFixed(2)],py:+SHARED.py.toFixed(2),apt:{in:APTS.in,floor:APTS.floor()}});
 }

@@ -133,8 +133,8 @@ await grab('apts',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Yr=SHARED.BOD.
       for(const f of FURN)f(); },MKA);
     K.PROPS.length=n0; SHARED.BOD.STOREK.LAMPS.length=l0; return PA; };
   const unbuild=()=>{ for(const r of AS){ const i=SOL.up.indexOf(r); if(i>=0)SOL.up.splice(i,1); } AS=[]; PA=null; if(AG){ AG.removeFromParent(); AG=null; } };
-  const wb=box4(AR.x0-.2,AR.y0-.2,AR.x1+.2,AR.y1+.2), dd=box4(DC-.7,AR.y1-.5,DC+.7,AR.y1);
+  const wb=box4(AR.x0-.2,AR.y0-.2,AR.x1+.2,AR.y1+.2);
   ROOMS.off.apt={name:'YOUR APARTMENT',box:{x0:wb[0],z0:wb[1],x1:wb[2],z1:wb[3],y0:-1,y1:Yr(S)},need:()=>LOAD('apts','later'),build,unbuild,spawn:[X(DC),Z(AR.y1-1.3),0,Math.PI],out:[X(m),Z(A.y1+.7),Y(1),0],
-    door:[X(m),Y(0),Z(A.y1+.25)],exit:[X(DC),0,Z(AR.y1-.25)],exitName:'OUT TO THE STREET',inAt:[...box4(m-.6,A.y1,m+.6,A.y1+.4),Y(1)],outAt:[...dd,0]};
+    door:[X(m),Y(0),Z(A.y1+.25)],exit:[X(DC),0,Z(AR.y1-.25)],exitName:'OUT TO THE STREET'};
   APTS.spawn=ROOMS.off.apt.spawn;
   MODS.apts=APTS; });

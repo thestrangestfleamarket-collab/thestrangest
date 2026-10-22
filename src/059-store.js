@@ -36,11 +36,20 @@ await grab('store',async()=>{ const K=SHARED.BOD.STOREK, {X,Y,Z,gbox,faceTex,bq,
       L.position.set(X(l.x),Y(l.z),Z(l.y)); L.userData.i0=L.intensity; scene.add(L); lamps.push(L);
       if(l.r>=3||l.neon){ L.castShadow=true; L.shadow.mapSize.set(256,256); L.shadow.camera.near=.05; L.shadow.camera.far=l.r*TILE*1.3; L.shadow.bias=-.004; L.shadow.normalBias=.06; L.shadow.autoUpdate=false; L.shadow.needsUpdate=true; } }
     };
-    const inside=()=>{ boxes(inner); if(B.h>0&&!o.noCeil)CEIL(X(B.x0),Z(B.y0),X(B.x1),Z(B.y1),Y(B.h)-.02); if(look.floor)flat(B.x0,B.y0,B.x1,B.y1,o.z??.15,look.floor,'L'); solids_(inner); lamps_(lin); FLAME.props(inner,X,Y,Z,lamps); };
+    let inFaces0=[]; const inside=()=>{ for(const f of inFaces0)f(); boxes(inner); if(B.h>0&&!o.noCeil)CEIL(X(B.x0),Z(B.y0),X(B.x1),Z(B.y1),Y(B.h)-.02); if(look.floor)flat(B.x0,B.y0,B.x1,B.y1,o.z??.15,look.floor,'L'); solids_(inner); lamps_(lin); FLAME.props(inner,X,Y,Z,lamps); };
     boxes(outer);
     if(look.in){ const H=B.h, walls=(o.xo?[]:[['f','x',B.y1,B.x0,B.x1,-1],['b','x',B.y0,B.x0,B.x1,1],['w','y',B.x0,B.y0-T,B.y1+T,1],['e','y',B.x1,B.y0-T,B.y1+T,-1]]).concat(o.xw||[]);
+      const DPX=(W,Hd)=>{ const WD=[86,54,34], WL=[104,68,44], WK=[62,38,24], BR=[212,176,84]; return (ii,jj)=>{ const z=Hd-jj, m=(ii+.5)/W; if(ii<2||ii>=W-2||z>Hd-2)return WK; if(m>.82&&m<.9&&Math.abs(z-Hd*.42)<2)return BR; const top=z>Hd*.55; if(m>.16&&m<.84&&(top?z>Hd*.6&&z<Hd*.92:z>Hd*.1&&z<Hd*.48))return (ii+jj)%7?WL:WD; return WD; }; };
+      const solidWall=(wid,ax,at,a0,a1,inS,holes,s,kind,paint)=>{ const pt=(a,z,off)=>ax==='x'?[X(a),Y(z),Z(at+off)]:[X(at+off),Y(z),Z(a)], W=Math.max(1,Math.round((a1-a0)*24));
+        const px=(u,z)=>{ for(const h of holes){ if(u<h.a0||u>h.a1||z<h.z0||z>h.z1)continue; const Wd=Math.max(1,Math.round((h.a1-h.a0)*24)), ii=Math.min(Wd-1,Math.floor((u-h.a0)*24)), jj=Math.floor(h.z1-z);
+            if(h.z0===0&&door&&door.w===wid)return DPX(Wd,h.z1-h.z0)(ii,jj); const e=Math.min(u-h.a0,h.a1-u)*24, t=Math.min(z-h.z0,h.z1-z); if(e<2||t<2||Math.abs(u-(h.a0+h.a1)/2)*24<1)return [46,42,40];
+            if(s!==inS&&hash(Math.floor(h.a0*7+at*13),Math.floor(h.z0),11)<.5)return [255,206,140,1]; return (Math.floor(u*24)+Math.floor(z))%9===0?[58,64,74]:[34,38,46]; } return paint(s,u,z); };
+        bq(pt(a0,0,s*.1),pt(a1,0,s*.1),pt(a1,H,s*.1),pt(a0,H,s*.1),faceTex(W,H,(ii,jj)=>C(px(a0+(ii+.5)/W,H-jj-.5))),kind); };
+      const inFaces=[];
       for(const [wid,ax,at,a0,a1,inS,holes0,inner] of walls){ const holes=(holes0||[]).concat(o.holes&&o.holes[wid]||[],door&&door.w===wid?[{a0:door.a-door.wd/2,a1:door.a+door.wd/2,z0:0,z1:door.h}]:[]), kind='W'+id+':'+wid, pl=planes[kind]=new THREE.Plane(new THREE.Vector3(0,-1,0),1e6);
         const paint=(s,u,z)=>{ const nx=ax==='y'?s:0, ny=ax==='x'?s:0, Xw=ax==='y'?at+s*.1:u, Yw=ax==='x'?at+s*.1:u; return (inner||s===inS)?look.in(B,nx,ny,Xw,Yw,z,1):(look.out||facade)(nx,ny,Xw,Yw,z,1,H); };
+        if(lazy&&!inner){ solidWall(wid,ax,at,a0,a1,inS,holes,-inS,'R'+id,paint); if(ax==='x')sol(a0,at-.1,a1,at+.1,H); else sol(at-.1,a0,at+.1,a1,H);
+          inFaces.push(()=>{ solidWall(wid,ax,at,a0,a1,inS,holes,inS,kind,paint); cuts.push({kind,nx:ax==='y'?inS:0,nz:ax==='x'?inS:0,id,dyn:null}); }); continue; }
         const pt=(a,z,off)=>ax==='x'?[X(a),Y(z),Z(at+off)]:[X(at+off),Y(z),Z(a)];
         const as=new Set([a0,a1]), zs=new Set([0,H]); for(const h of holes){ as.add(Math.max(a0,h.a0)); as.add(Math.min(a1,h.a1)); zs.add(h.z0); zs.add(h.z1); }
         const A=[...as].sort((p,q)=>p-q), Zs=[...zs].sort((p,q)=>p-q);
@@ -55,9 +64,9 @@ await grab('store',async()=>{ const K=SHARED.BOD.STOREK, {X,Y,Z,gbox,faceTex,bq,
           for(const s2 of [-1,1])bq(pt(d0,0,s2*.02),pt(d1,0,s2*.02),pt(d1,Hd,s2*.02),pt(d0,Hd,s2*.02),faceTex(W,Hd,(ii,jj)=>C(dp(ii,jj))),kind); }
         let a=a0; const ds=holes.filter(h=>h.z0===0).sort((p,q)=>p.a0-q.a0), seg=(p,q)=>{ if(q-p<.01)return; if(ax==='x')sol(p,at-.1,q,at+.1,H); else sol(at-.1,p,at+.1,q,H); }; for(const d of ds){ seg(a,d.a0); a=d.a1; } seg(a,a1);
         cuts.push({kind,nx:ax==='y'?inS:0,nz:ax==='x'?inS:0,id,dyn:inner?(ax==='y'?X(at):Z(at)):null}); }
-      if(!o.xo)flat(B.x0-.1,B.y0-.1,B.x1+.1,B.y1+.1,H,look.roof||roofCol,'R'+id); }
+      inFaces0=inFaces; if(!o.xo)flat(B.x0-.1,B.y0-.1,B.x1+.1,B.y1+.1,H,look.roof||roofCol,'R'+id); }
     solids_(outer); lamps_(lout); FLAME.props(outer,X,Y,Z,lamps);
-    if(lazy)STORE.inside[id]={id,name,B,door,go:inside,done:false}; else inside();
+    if(lazy){ const P0=STORE.inside[id]; STORE.inside[id]={id,name,B,door,go:P0&&!P0.done?()=>{ P0.go(); inside(); }:inside,done:false}; } else inside();
     return rec(id,name,B,door,!!look.in||!!o.pieceWalls); };
   const rec=(id,name,B,door,walls)=>{ const R0=STORE.rooms.find(r=>r.id===id); if(R0)return R0;
     const dx=door?(door.w==='f'||door.w==='b'?door.a:door.w==='w'?B.x0+1.2:B.x1-1.2):(B.x0+B.x1)/2, dy=door?(door.w==='f'?B.y1-1.2:door.w==='b'?B.y0+1.2:door.a):(B.y0+B.y1)/2;
@@ -189,9 +198,12 @@ await grab('store',async()=>{ const K=SHARED.BOD.STOREK, {X,Y,Z,gbox,faceTex,bq,
     STORE.enter=async(id,walk)=>{ const R=STORE.inside[id]; if(!R||R.busy)return; R.busy=true; const name=/^THE /.test(R.name)?R.name:'THE '+R.name;
       await FADE.run(R.done?'':'ENTERING '+name,async()=>{ if(!R.done){ await LOAD(...need()); STORE.inGo(id); }
         if(walk){ const [x,y]=DOORP(R,-1.4), d=R.door; STORE.goTo(X(x),Z(y),'up',d.w==='f'?Math.PI:d.w==='b'?0:d.w==='w'?Math.PI/2:-Math.PI/2); } },{cut:true,silent:R.done&&!walk}); R.busy=false; };
-    STORE.inAt=(x,z)=>{ for(const id in STORE.inside){ const R=STORE.inside[id]; if(R.done||R.busy)continue; const B=R.B; if(x>X(B.x0)&&x<X(B.x1)&&Math.min(Z(B.y0),Z(B.y1))<z&&z<Math.max(Z(B.y0),Z(B.y1)))STORE.enter(id,false); } };
+    STORE.exit=async id=>{ const R=STORE.inside[id]; if(!R||R.busy||FADE.busy)return; R.busy=true; const d=R.door, [x,y]=DOORP(R,1.4);
+      await FADE.run('',async()=>{ STORE.goTo(X(x),Z(y),'up',d.w==='f'?0:d.w==='b'?Math.PI:d.w==='w'?-Math.PI/2:Math.PI/2); },{cut:true}); R.busy=false; };
     STORE.doorThings=()=>{ if(typeof UI==='undefined'||!UI.thing)return; for(const id in STORE.inside){ const R=STORE.inside[id]; if(R.th)continue; const [x,y]=DOORP(R,.35), hb=new THREE.Mesh(new THREE.BoxGeometry(1.4*TILE,2.6*TILE,.5*TILE),new THREE.MeshBasicMaterial({visible:false}));
-      hb.position.set(X(x),1.3*TILE,Z(y)); scene.add(hb); R.th={name:/^THE /.test(R.name)?R.name:'THE '+R.name,ghost:1,obj:hb,reach:1.4*TILE,near:2.4*TILE,tall:2.6*TILE,act:()=>STORE.enter(id,true)}; UI.thing(R.th); }
+      hb.position.set(X(x),1.3*TILE,Z(y)); scene.add(hb); R.th={name:/^THE /.test(R.name)?R.name:'THE '+R.name,ghost:1,obj:hb,reach:1.4*TILE,near:2.4*TILE,tall:2.6*TILE,act:()=>STORE.enter(id,true)}; UI.thing(R.th);
+        const [ex,ey]=DOORP(R,-.35), he=new THREE.Mesh(new THREE.BoxGeometry(1.4*TILE,2.6*TILE,.5*TILE),new THREE.MeshBasicMaterial({visible:false})); he.position.set(X(ex),1.3*TILE,Z(ey)); scene.add(he);
+        UI.thing({name:'OUT TO THE STREET',ghost:1,obj:he,reach:1.4*TILE,near:2.4*TILE,tall:2.6*TILE,act:()=>STORE.exit(id)}); }
       if(!STORE.xth){ STORE.xth=1; const xd=(name,x,y,ix,iy)=>{ const hb=new THREE.Mesh(new THREE.BoxGeometry(1.4*TILE,2.6*TILE,.5*TILE),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(X(x),1.3*TILE,Z(y)); scene.add(hb);
           UI.thing({name,ghost:1,obj:hb,reach:1.4*TILE,near:2.4*TILE,tall:2.6*TILE,act:()=>STORE.goTo(X(ix),Z(iy),'up',Math.PI)}); };
         if(SHARED.BOD.GD){ const [x,y]=SHARED.BOD.GD.door; xd('THE BATH HOUSE',x,y+.35,x,y-1); } } };

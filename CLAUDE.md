@@ -43,8 +43,8 @@ no holes, no clipping planes; `BLOCKS.facade` paints brick, windows, flower boxe
 sticks out (fire escapes, stoops). Its inside is registered in `ROOMS.off[id]` (`{name, box, need, build, unbuild, spawn, out, door, exit,
 rooms, keep}`, 130-rooms) away from the map: built behind the fade only when you go in (`ROOMS.enter(id)`: double-clicking the door's thing,
 the menu, a saved spot; doors never move and walking into one does nothing, owner 21 Oct 2026), the street not drawn while you are in, dropped when you leave (`ROOMS.exit(id)`). The apartment house
-(059a) and the arcade (059b; an inside of several rooms lists them in `rooms`) are blocks; the bodega and the shops still build their insides in place, as lazy rooms in `ROOMS.lazy` (`{name, need, go,
-drop}`, box in `ROOMS.boxes` with `lz`). Build any inside with `ROOMS.part(group, fn, make)` (it records the meshes, lights, things to
+(059a) and the arcade (059b; an inside of several rooms lists them in `rooms`) and the bodega are blocks off the map. The street's shops (bar, museum, bank, theatre, playhouse; 059-store) have solid painted outsides (no cuts)
+and build their insides in place behind the fade when you double-click the door (`STORE.enter`; out by the inside door, `STORE.exit`); the bath is a lazy room in `ROOMS.lazy`. Build any inside with `ROOMS.part(group, fn, make)` (it records the meshes, lights, things to
 use and wall cuts) so `ROOMS.unpart` can drop it; something that belongs in your apartment joins it with `MODS.apts.furnish(lv, fn)`.
 
 ## Build

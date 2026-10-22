@@ -4262,3 +4262,4 @@ An item marked SELLABLE (item editor, shift+7) now shows in the mushroom seller'
 ## 22 Oct 2026: landscape patches follow the ground
 
 A ground patch (landscape editor, shift+9) is now subdivided a cell per tile and each vertex raycast down to the real ground, so a patch follows slopes and bumps instead of clipping as one flat sheet. Flat floors still read flat. (Freehand borders still later.)
+- 22 Oct 2026, the shops as blocks (owner: "can we do this for all buildings to save? all interiors could be off map and buildings can be blocks", "just do all", 21 Oct; "you pick, finish list", 22 Oct): the bar, museum, bank, theatre and playhouse are solid painted outsides; their insides are built only when you double-click the door, and you leave by the inside door.

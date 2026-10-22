@@ -53,4 +53,4 @@ function M(color,map=grainT,o={}){ const k=color+'|'+(map?map.id:0)+'|'+JSON.str
 
 const TEXTURES=__DATA__("data/textures.json");
 const KITD=__DATA__("data/kit.json");
-export {art, EffectComposer, frustum, hash3, KITD, M, OCAM, OutputPass, PCAM, PPU, pxS, renderer, RenderPass, RES, resize, RESL, RESMAX, RH, rppu, RW, scene, SCL, ShaderPass, statEl, TEXTURES, V0, vpu, ZMAX};
+export {art, EffectComposer, frustum, hash3, KITD, M, OCAM, OutputPass, PCAM, PPU, pxS, renderer, RenderPass, RES, resize, RESL, RESMAX, RH, rppu, RW, scene, SCL, ShaderPass, statEl, V0, vpu, ZMAX};

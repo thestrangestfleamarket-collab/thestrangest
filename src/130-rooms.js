@@ -2,7 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {BLK, CIVIC, CULL, DRM, DRONE, ED, LITE, LOOKS, MAPED, MUS, NPCS, PNM, pos, ROOMS, SGM, UI, W3} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
-import {cutWalls, FADE, FREE, MODS, OUT, OVERHEAD, SEEN, STORE, SYS, TILE, ZU} from './006-map-pre.js';
+import {cutWalls, FADE, FREE, MAPG, MODS, OUT, OVERHEAD, SEEN, STORE, SYS, TILE, ZU} from './006-map-pre.js';
 import {FLAME} from './007-fire.js';
 import {BATCH} from './008-batch.js';
 import {WATER} from './009-down.js';
@@ -31,7 +31,8 @@ ROOMS.roofAt=(x,y,z)=>{ const h=new THREE.Raycaster(new THREE.Vector3(x,y,z),new
     sb.lz=ob.lz='bodega'; sb.band=box(SHARED.BOD.X,SHARED.BOD.Z,[mB-.98,B.y1-.05,mB+.98,B.y1+.55],-1,0); RL.push(sb,ob);
     if(SHARED.BOD.GD){ const G=SHARED.BOD.GD, h=(G.dw||2.4)/2+.2, gb=box(SHARED.BOD.X,SHARED.BOD.Z,G.r,G.y0||-1,SHARED.BOD.Y(G.H)); gb.lz='bath'; gb.band=box(SHARED.BOD.X,SHARED.BOD.Z,[G.door[0]-h,G.door[1]-.3,G.door[0]+h,G.door[1]+.55],-1,0); RL.push(gb); }
     for(const R of STORE.rooms)if(R.walls){ if(R.dw&&R.B&&!R.band)R.band=sband(R); RL.push(R); }
-    if(window.CIVIC&&CIVIC.tower){ const t=CIVIC.tower; RL.push({id:'civic',x0:t.x0,x1:t.x1,z0:t.z0,z1:t.z1,y0:t.y-1,y1:t.y+t.H}); } };
+    if(window.CIVIC&&CIVIC.tower){ const t=CIVIC.tower; RL.push({id:'civic',x0:t.x0,x1:t.x1,z0:t.z0,z1:t.z1,y0:t.y-1,y1:t.y+t.H}); }
+    for(const id in ROOMS.off){ const o=ROOMS.off[id]; o.b={...o.box,lz:id,off:id}; RL.push(o.b); offL(id); offThings(id); } };
   ROOMS.boxes=()=>{ if(!RL)build(); return RL; };
   ROOMS.reset=()=>{ RL=null; if(IV.key){ IV.re=IV.key; leave(); } IV.C.clear(); SYS.run('roomsReset'); };
   const within=(b,x,z,e=0)=>x>b.x0-e&&x<b.x1+e&&z>b.z0-e&&z<b.z1+e;
@@ -41,6 +42,22 @@ ROOMS.roofAt=(x,y,z)=>{ const h=new THREE.Raycaster(new THREE.Vector3(x,y,z),new
         walk(scene); };
   const IV={key:null,b:null,want:null,re:null,busy:false,H:[],L:[],S:[],top:new Set(),nc:0,C:new Map()}; ROOMS.iv=IV;
   Object.assign(ROOMS.lazy,{bodega:{name:'THE BODEGA',go:()=>SHARED.BODB.build&&SHARED.BODB.build(),need:()=>LOAD(SHARED.BODB.build&&SHARED.BODB.build.chunk),done:false},bath:{name:'THE BATH HOUSE',go:()=>SHARED.BOD.GD&&SHARED.BOD.GD.build&&SHARED.BOD.GD.build(),need:()=>LOAD(SHARED.BOD.GD&&SHARED.BOD.GD.build&&SHARED.BOD.GD.build.chunk),done:false}});
+  // Insides off the map (ROOMS.off[id]: name, box, need, build -> ROOMS.part, spawn/out [x,z,y,heading], door/exit [x,y,z], inAt/outAt [x0,z0,x1,z1,y]): built on the way in, the street not drawn while you are in, dropped on the way out.
+  const offL=id=>{ const o=ROOMS.off[id]; if(ROOMS.lazy[id])return ROOMS.lazy[id]; const L=ROOMS.lazy[id]={name:o.name,off:1,need:()=>o.need&&o.need(),go:()=>{ o.P=o.build(); L.done=true; },drop:()=>{ ROOMS.unpart(o.P); o.P=null; if(o.unbuild)o.unbuild(); },done:false}; return L; };
+  for(const id in ROOMS.off)offL(id);
+  const offThings=id=>{ const o=ROOMS.off[id]; if(o.th||!UI.thing)return; o.th=1; const hb=(p,name,act)=>{ const m=new THREE.Mesh(new THREE.BoxGeometry(1.3*TILE,2.4*TILE,.5*TILE),new THREE.MeshBasicMaterial({visible:false}));
+      m.position.set(p[0],p[1]+1.2*TILE,p[2]); scene.add(m); UI.thing({name,ghost:1,obj:m,reach:1.4*TILE,near:2.6*TILE,tall:2.4*TILE,act}); };
+    if(o.door)hb(o.door,o.name,()=>ROOMS.enter(id)); if(o.exit)hb(o.exit,o.exitName||'OUTSIDE',()=>ROOMS.exit(id)); };
+  const offHide=on=>{ for(const k in MAPG)VIS.hide(MAPG[k],'off',on); };
+  ROOMS.goIn=async(id,at)=>{ const o=ROOMS.off[id], L=offL(id); if(!RL)build(); if(!L.done){ await L.need(); if(!L.done)L.go(); } const s=at||o.spawn; UI.goTo(s[0],s[1],s[2],s[3]);
+    scene.updateMatrixWorld(); const w={key:kOf(o.b),b:o.b}; ROOMS.cur=o.b; IV.want=w; apply(w); o.arm=false; };
+  ROOMS.goOut=id=>{ const o=ROOMS.off[id]; UI.goTo(o.out[0],o.out[1],o.out[2],o.out[3]); ROOMS.cur=null; IV.want=null; apply(null); o.arm=false; };
+  const offRun=(id,txt,fn)=>{ if(!ROOMS.off[id]||FADE.busy||IV.busy)return; IV.busy=true; return FADE.run(txt,fn,{cut:true}).finally(()=>{ IV.busy=false; }); };
+  ROOMS.enter=id=>offRun(id,ROOMS.lazy[id]&&ROOMS.lazy[id].done?'':'ENTERING '+ROOMS.off[id].name,()=>ROOMS.goIn(id));
+  ROOMS.exit=id=>ROOMS.off[id]&&IV.b===ROOMS.off[id].b?offRun(id,'',()=>ROOMS.goOut(id)):null;
+  ROOMS.offIn=()=>IV.b&&IV.b.off||null;
+  const inR=(r,e=.6*TILE)=>pos.x>Math.min(r[0],r[2])&&pos.x<Math.max(r[0],r[2])&&pos.z>Math.min(r[1],r[3])&&pos.z<Math.max(r[1],r[3])&&Math.abs(SHARED.py-(r[4]||0))<e;
+  const offWalk=()=>{ for(const id in ROOMS.off){ const o=ROOMS.off[id], r=IV.b===o.b?o.outAt:!IV.key?o.inAt:null; if(!r){ o.arm=false; continue; } const on=inR(r); if(on&&o.arm){ o.arm=false; (IV.b===o.b?ROOMS.exit:ROOMS.enter)(id); } else o.arm=!on; } };
   const kOf=b=>[b.x0,b.z0,b.x1,b.z1,b.y0].map(v=>(+v).toFixed(2)).join();
   const lazyOf=b=>{ if(!b||b.noBuild)return null; const L=b.lz&&ROOMS.lazy[b.lz]; if(L)return L.done?null:L; const S=b.id&&STORE.inside&&STORE.inside[b.id];
     return S&&!S.done?{name:/^THE /.test(S.name)?S.name:'THE '+S.name,S,go:()=>{ S.busy=false; STORE.inGo(b.id); },need:()=>STORE.need&&STORE.need()}:null; };
@@ -64,10 +81,10 @@ ROOMS.roofAt=(x,y,z)=>{ const h=new THREE.Raycaster(new THREE.Vector3(x,y,z),new
       if(!kept&&own<=0)return false; for(const c of outs)T.H.push(c); if(own===0)T.L.push(o); else if(own===2)sub(o); return true; };
     for(const c of roots)if(!walk(c))T.H.push(c); return T; };
   const put=T=>{ for(const o of T.H){ IV.H.push([o]); VIS.hide(o,'room'); } for(const o of T.L){ IV.L.push([o]); VIS.hide(o,'room',true,true); } for(const q of T.S)if(q.o.geometry===q.g){ IV.S.push([q.g,q.g.index]); q.g.setIndex(q.ix); } };
-  const leave=()=>{ if(!IV.key)return; for(const [o] of IV.H)VIS.hide(o,'room',false); for(const [o] of IV.L)VIS.hide(o,'room',false); for(const [g,i] of IV.S)g.setIndex(i); IV.H=[]; IV.L=[]; IV.S=[]; IV.key=null; IV.b=null;
+  const leave=()=>{ if(!IV.key)return; for(const [o] of IV.H)VIS.hide(o,'room',false); for(const [o] of IV.L)VIS.hide(o,'room',false); for(const [g,i] of IV.S)g.setIndex(i); IV.H=[]; IV.L=[]; IV.S=[]; if(IV.b&&IV.b.off)offHide(false); IV.key=null; IV.b=null;
     for(const L of LITE.pool)if(L.castShadow)L.shadow.needsUpdate=true; };
   const drop=w=>{ if(w&&w.b.noBuild)return; const k=w&&w.b.lz; for(const n in ROOMS.lazy){ const L=ROOMS.lazy[n]; if(n!==k&&L.done&&L.drop){ L.drop(); L.done=false; IV.C.clear(); } } };
-  const apply=w=>{ leave(); drop(w); if(!w)return; let T=IV.C.get(w.key); if(!T){ scene.updateMatrixWorld(); T=scan(w.b,scene.children.slice()); IV.C.set(w.key,T); } put(T); IV.top=new Set(T.top); IV.nc=-1; IV.key=w.key; IV.b=w.b; };
+  const apply=w=>{ leave(); drop(w); if(!w)return; let T=IV.C.get(w.key); if(!T){ scene.updateMatrixWorld(); T=scan(w.b,scene.children.slice()); IV.C.set(w.key,T); } put(T); NEARIN=false; if(w.b.off)offHide(true); IV.top=new Set(T.top); IV.nc=-1; IV.key=w.key; IV.b=w.b; };
   const frames=n=>new Promise(r=>{ const f=()=>--n<=0?r():requestAnimationFrame(f); requestAnimationFrame(f); });
   const swap=async()=>{ const w=IV.want, lz=w&&lazyOf(w.b);
     if(!window.__started||FADE.busy){ if(lz){ await lz.need(); lz.go(); } apply(IV.want); return; }
@@ -80,8 +97,9 @@ ROOMS.roofAt=(x,y,z)=>{ const h=new THREE.Raycaster(new THREE.Vector3(x,y,z),new
   const unclip=g=>{ if(g)g.traverse(c=>{ if(c.material)for(const mt of [].concat(c.material))if(mt.clippingPlanes===NEAR){ mt.clippingPlanes=null; mt.needsUpdate=true; } }); };
   ROOMS.tick=()=>{ if(!RL)build(); let hit=null, bnd=null; if(NEARON)unclip(W3.group); if(LOOKS.light)LOOKS.light();
     if(SHARED.LVL==='up'&&!UI.freeCam&&!ED.on&&!MAPED.on&&!(window.DRONE&&DRONE.cam)){
-      const IN=-.55*TILE; hit=RL.find(b=>(within(b,pos.x,pos.z,0)||!!b.band&&within(b.band,pos.x,pos.z,0))&&SHARED.py>b.y0-.3&&SHARED.py<b.y1)||null;
-      const A=MODS.apts; if(!hit&&A&&A.in){ const lv=A.floor(), S=SHARED.BOD.K.STORY; for(const t of A.rects(lv)){ const b=box(SHARED.BOD.X,SHARED.BOD.Z,t,A.lvY(lv)-.5,A.lvY(lv+1)); b.lz='apts'+lv; b.noBuild=!!(A.riding&&A.riding()); if(within(b,pos.x,pos.z,lv>0?0:IN)){ hit=b; break; } } } }
+      hit=RL.find(b=>(within(b,pos.x,pos.z,0)||!!b.band&&within(b.band,pos.x,pos.z,0))&&SHARED.py>b.y0-.3&&SHARED.py<b.y1)||null;
+      if(window.__started&&!FADE.busy&&!IV.busy)offWalk(); }
+    if(!hit&&!IV.key&&!IV.busy)drop(null);
     ROOMS.cur=hit; { const w=hit?{key:kOf(hit),b:hit}:null; IV.want=w; const wk=w?w.key:null; if(wk!==IV.key&&!IV.busy){ if(wk&&wk===IV.re&&!lazyOf(hit))apply(w); else swap().catch(()=>{ IV.busy=false; }); } IV.re=null; }
     if(SHARED.BODB.card)VIS.hide(SHARED.BODB.card,'room',!!(IV.b&&IV.b.lz==='bodega')); if(SHARED.BOD.GDK&&SHARED.BOD.GDK.card)VIS.hide(SHARED.BOD.GDK.card,'room',!!(IV.b&&IV.b.lz==='bath')); if(IV.key&&scene.background)scene.background.setRGB(0,0,0);
     UI.isoPlace(); if(SHARED.BOD.GD)SHARED.BOD.GD.tick(); if(MODS.dungeon)MODS.dungeon.tick();

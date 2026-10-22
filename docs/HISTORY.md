@@ -4148,6 +4148,82 @@ Fix (`143-bfly.js`): hold all butterfly spawning — the `WEEDS.onAdd` hook, the
 - 21 Oct 2026, characters shaded when near (owner: "do 1-4 of what youd change as well"): a character's self-shading (the shadow it casts on itself, 2.7 s of the 3.4 s every character took at the start) is worked out when it first comes within 40 tiles of you (two a frame) instead of when it is made; the same numbers as before. The start's "get ready around here" step is one SYS event, `near` (x, z), that the painting queues and the characters both listen to.
 - 21 Oct 2026, the apartment house five storeys (owner: "the building looks like its 5 stories from outside", then "U decide" on whether the inside should match): the house is five storeys, outside and in, from one number (`ST` in 059a-apts): the lobby and four floors, each built only when you stop at it; the fire escape lands on every floor; your floor is the top one (`APTS.my`), as the fire escape's view already said ("the street five storeys below"), and the fire escape, the plaque and YOUR APARTMENT in the menu follow it.
 - 21 Oct 2026, the body mesher faster (owner: "Go" to the rest of the start-time list): the mesher every body is made with (the Walker, the walkers, the musicians; `meshOf` in 072-walker3d) now skips the far parts of each piece's box a cube at a time (an octree: a whole cube is filled when its centre is further from the body than the cube is wide), marches the surface without making new arrays per cell, and groups vertices by number instead of by text. The same bodies to the byte (every piece's positions, normals, colours and materials hashed against main: identical); about a third less time (4.4 s to 3.0 s for the 71 pieces made at the start here).
+
+## 22 Oct 2026: lean entries, nothing verbose
+
+Owner: "i dont want anything verbose". HISTORY entries, commit messages, pull requests and replies stay short: the decision, his words, the date, any rule. Detail and mechanics go in git, not in prose.
+
+## 22 Oct 2026: rules cleared, starting over
+
+Owner: "remove all rules, lets start over with them". The rules block in CLAUDE.md is emptied; new rules added as he gives them.
+
+## 22 Oct 2026: rules for adding things
+
+Owner: "set rules as far as how to add things into the game. where things go when they are added and safeguards to make sure we dont undo or add things as patches or without thinking of all other gameplay". First rules back in the block: where a new thing goes, and the safeguards before adding or changing anything (read HISTORY/MAP first, mechanic not instance, one shared path, no reaching into another system, think through all gameplay, stay duplicable, owner decides look/behaviour).
+
+## 22 Oct 2026: the rules, rebuilt
+
+Owner, after scrutiny: a full lean set in four groups. The game not just the code (player first, never break play, build for many and cheap per player, run only what's near or seen). Stay duplicable (section is copy-rename-retheme, standard seams, one cel look with the theme varying). Adding/changing/removing (mechanic not instance only when core or a second case, one path, where it goes, read HISTORY/MAP first, removal needs the owner + a HISTORY line, ships with its check). The owner decides (nothing undone without him, options first, done = builds + tests + his approval).
+
+## 22 Oct 2026: properties are schema-wide
+
+Owner: "when we change something in game that could affect similar properties they should be reanalyzed ... if we add a property to an item like (can burn) then that property needs to be addressed with similar items and gamewide. dont just patch each item." A property is a field on the shared entity model resolved by one system; adding or changing one re-evaluates every entity of that class and every system that reacts to it, never a per-item patch.
+
+## 22 Oct 2026: this map is Section A
+
+Owner named the sections and their layout (2x4 grid covering Central Park, A bottom-left): "[b][][][] / [a][c][][]". A is col 0 row 0; B is north (col 0 row 1), C is east (col 1 row 0). First piece of the section model: a `section` block in data/world.json ({id, grid:{col,row}, neighbours:{north,east}}), read as `SECTION` in 006-map-pre and put on `SHARED.SECTION`. Seam per edge (subway/street/water) still to be decided; the map editor does not yet carry the block.
+
+## 22 Oct 2026: the section model, set up for the future
+
+Owner: the eight blocks connect like his map, by subway, street and water ("subway connected, streets, etc."); this is future scaffolding, not built for a while. The `section` block in world.json now records the whole grid (`grid.cols` 4, `grid.rows` 2 = eight) and each neighbour edge carries a list of connection types (`seams`: subway, street, water) instead of one. Still future, not done now: seam positions/geometry, the physical bounds of each section, the other six sections, and the map editor carrying the block.
+
+## 22 Oct 2026: section adjacency only, not travel methods
+
+Owner: you can also cross by sky, walking, etc. — the specific methods (subway, street, water) shouldn't be baked into the section model unless they matter as a future mechanic. The `section` neighbours now record adjacency only (north: B, east: C); how you travel between sections is a separate mechanic to model when it exists.
+
+## 22 Oct 2026: rules refreshed after the section work
+
+Two rules added from naming Section A: scaffold the future, don't build it early (the section grid is set up, not implemented); model the essence, not premature specifics (adjacency, not how you travel). The seams rule no longer names subway/street/water — how you cross sections is its own mechanic, not baked into the map.
+
+## 22 Oct 2026: the editor set and keymap; editors stay in sync
+
+Owner adopted the full editor set and a keymap: shift+0 a menu of all editors; shift+1 world (double-click any item in-world to move/resize/rotate/tone/brightness/opacity/snap, indoor or out, export), shift+2 map, shift+3 character, shift+4 atmosphere (weather, sky, sun, fog), shift+5 lighting, plus sound (already in code), item/entity (defines types and their schema-wide properties), and behaviour (home, routine, job, combat). Lighting is global and sets the render system and quality: cel is the floor; its high tiers are a temporary tool to find the look, then the top settings are removed and the game ships the chosen low one. New rule: any game change considers the editors and updates them so they don't fall out of sync. Rule changed: cel is the look and quality floor, not an absolute. Mockup of all eight panels made for review (claude.ai artifact, editor chrome only, not the game).
+
+## 22 Oct 2026: the editors launcher and keymap, in game
+
+Owner: "just put in game". One launcher (EDITORS, 134c-editors): shift+0 opens a menu of all editors; shift+1 world (WE), shift+2 map and shift+3 character (GAMEED), shift+4 atmosphere and shift+6 sound (menu tabs), shift+5 lighting, shift+7 item, shift+8 behaviour. The five that exist open for real; lighting, item and behaviour are placeholders to build next. Dispatch added to UI.key in 094 (shift+digit by e.code); the old Shift+E and Shift+Escape still work.
+
+## 22 Oct 2026: the lighting editor (shift+5)
+
+Owner: "build lighting next". LIGHTED (133a-lightedit) is the global render-system and quality panel: quality tiers (LOWEST = the cel floor, up to MAX), sharpness (RESI), shadows on/off and edge (hard/PCF/soft/VSM), tone mapping and exposure. Drives the real renderer; saved in the browser; export to a file. Cel stays the floor; the high tiers are for finding a look and get taken out after. Opens from the shift+0 launcher and shift+5 (replaces the placeholder). Ambient/sun stay in ATMOSPHERE.
+
+## 22 Oct 2026: the world editor to spec — pitch, roll, brightness, export
+
+Owner left the next step to me. The world editor (WE, 099-worldedit) gains pitch and roll (3-axis rotation, not just turn), a brightness slider, and an EXPORT button that downloads the edits as world-edits.json. Still to do: snap to nearest wall/floor/ceiling, and making the export re-apply after a rebuild (edits are keyed by object id, which is not yet stable across builds).
+
+## 22 Oct 2026: world edits keyed by what a thing is, not load order
+
+World edits (WE, 099-worldedit) are now keyed by place + name + rounded position, not the creation-order id, so an exported world-edits.json re-applies to the right things after a rebuild (identical same-spot things get a stable suffix). Added an IMPORT button beside EXPORT to load an edits file back. Still to do for "everyone sees it": the build baking a committed world-edits.json and applying it at start (edits are still per-browser until then).
+
+## 22 Oct 2026: committed world edits load at start
+
+The build bakes data/world-edits.json (empty for now) and the world editor applies it at start — after __started and LOAD('later'), the butterflies pattern, so it never drags the later chunk into the start. Your own browser edits overlay the committed baseline. The flow: edit, EXPORT world-edits.json, drop it in data/, and the edits ship for everyone.
+
+## 22 Oct 2026: the item model and editor (shift+7)
+
+A shared item-property model (ITEMS, 141d-items) and its editor (ITEMED): each item type carries properties shared by its kind (burnable, edible, stackable, pickup, sellable, weight, value). Baked from data/items.json (empty for now) and overlaid by browser edits; EXPORT writes items.json to ship. The home for schema-wide properties, as the rules require; not yet wired to fire/crafting — it defines what they will read. Replaces the shift+7 placeholder.
+
+## 22 Oct 2026: burnable wired to fire
+
+A fire now catches any loose thing whose item type is burnable — the fire system asks ITEMS.prop(name,'burnable') for every loose thing near a flame, the same way for all of them (BLAZE.burns; the loose system exposes GPH.loose). First property that does something: mark an item BURNS in the item editor (shift+7) and flames spread to it. Additive and guarded; it lights a flame on the thing, doesn't yet char or consume it.
+
+## 22 Oct 2026: burnable things char and are consumed
+
+A loose thing a fire catches now burns for a few seconds and is then consumed — gone from the world. Done inside the loose system (GPH.burn), which hides the thing its own way per kind (goods, instanced, part meshes) and frees its body; the fire just calls GPH.burn when it ignites a burnable thing. Guarded so an unexpected shape no-ops instead of breaking.
+
+## 22 Oct 2026: the behaviour editor (shift+8) — all eight editors live
+
+BEHAV (159a-behav) edits a character's home range: pick a character, set its home where you stand, set how far it roams (or STAYS PUT), with a ring showing the range. Saved per browser and EXPORTed as behaviour.json; committed behaviour.json merges into LEVEL.homes at start (006), so it ships through the existing home path. Routine, job and gait are noted for later. This is the last of the eight editors (shift+0 menu; 1 world, 2 map, 3 character, 4 atmosphere, 5 lighting, 6 sound, 7 item, 8 behaviour).
 - 21 Oct 2026, a window in every window hole (owner: "all buildsing should haev windows covering window holes."): one window maker for every building, `SHARED.BOD.window` / `windowTex` (039-bodega: glass, bars, a curtain or not, lit warm or dark, or a glazed door with a wooden lower panel); the apartments, the shops' rooms (059-store) and the bodega's walls put it in every hole that isn't a door or already glazed (a hole marked `open` stays open). Since insides wait until you go in, an empty hole showed the black behind it.
 - 21 Oct 2026, the apartment house's front and back (owner: "entire building same red brick, all floors have 2 windows and door and fire esacpe across all the way. in frnot and back."): every floor, front and back, has two windows and a door in the middle (the ground floor's door the entrance, front and back; the floors above open onto the fire escape), and the fire escape runs the whole width with a landing on every floor. The whole house is the same red brick: no stone base, corner stones or floor bands. The brick had never shown: its pattern used `%` on the house's position, which went negative when the house moved west (20 Oct), so every pixel painted as mortar; the pattern now wraps for negative positions.
 - 21 Oct 2026, buildings are blocks, insides are off the map (owner, 20:20-20:26: "put things like potted plants and various ivy on walls, more lived. make sure they are baked in along with brick walls. its static and doesnt change so low res easy render on time as possible. no interior at all. building is solid block. except the fireescapes that extend out"; "the building itelf represents the real building but is just a solid block. when you double click on the doors to entre you go into regular floors that exist. that dont need to exist on map though because you will always only see yourself in your apartment."; "can we do this for all buildings to save? all interiors could be off map and buildings can be blocks."; "just do all"): two core mechanisms, the apartment house first. (1) `BLOCKS` (058-blocks): a building's outside is one painted block, four walls and a roof, each one low-res picture (12 pixels a lot unit) painted once with the game's painters and no clipping planes: brick, windows from the shared window maker, flower boxes with flowers and trailing green under most windows, ivy climbing from the ground, the doors; `BLOCKS.card` paints a plant (pot, flowers, fern, tall, hanging basket) on a crossed pair of low-res cards. (2) `ROOMS.off` (130-rooms): an inside lives away from the map (`{name, box, need, build, unbuild, spawn, out, door, exit, inAt, outAt}`), built behind the fade only when you go in (using or double-clicking the door, walking into it, the menu or a saved spot), every map group hidden while you are in (`VIS` reason `off`), dropped when you are in no room; `ROOMS.enter(id)` / `ROOMS.exit(id)` with the fade, `ROOMS.goIn` / `goOut` inside one. The apartment house is now a block (red brick, two windows and a door on every floor front and back, flower boxes, ivy), its fire escapes stay 3D with potted and hanging plants on every landing, the stoop keeps its two pots; its door takes you to YOUR APARTMENT (one floor, furnished, off the map), whose fire escape door still opens onto YOUR FIRE ESCAPE. Gone: the in-place lobby and floors, the elevator, the cut walls and clip planes. The house on the street: 13 meshes drawn and 8,968 triangles, 8.86 Mpx of textures and 13 clipped meshes before; 8 drawn, 7,074 triangles, 3.33 Mpx and none clipped after.

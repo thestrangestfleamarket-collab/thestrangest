@@ -1,5 +1,22 @@
 {
  "about": "THE MARKET's level: where every place is. Map tiles, x east, y north; the block runs from front y -77 back to -92.4. The builders read this file; the map editor exports it.",
+ "section": {
+  "id": "A",
+  "grid": {
+   "col": 0,
+   "row": 0,
+   "cols": 4,
+   "rows": 2
+  },
+  "neighbours": {
+   "north": {
+    "id": "B"
+   },
+   "east": {
+    "id": "C"
+   }
+  }
+ },
  "streets": {
   "market": {
    "x0": -130,

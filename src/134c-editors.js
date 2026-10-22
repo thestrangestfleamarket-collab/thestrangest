@@ -26,7 +26,7 @@ import {CHARED, EDITORS, GAMEED, ITEMED, LAND, LIGHTED, UI, WE} from './003b-sys
   #edsoon .btn{font:inherit;color:var(--fg,#e9e6dd);background:#0e1016;border:2px solid #3a3f4e;padding:6px 10px;cursor:pointer}`;
   document.head.appendChild(css);
   const menu=document.createElement('div'); menu.id='edmenu';
-  menu.innerHTML='<div class="box"><h2>EDITORS</h2>'+list.map(it=>`<button class="btn${it.soon?' soon':''}" data-k="${it.key}"><span class="k">⇧${it.key}</span><span class="n">${it.n}</span><span class="d">${it.d}</span></button>`).join('')+'<div class="hint">SHIFT+0 OR ESC CLOSES</div></div>';
+  menu.innerHTML='<div class="box"><h2>EDITORS</h2>'+list.map(it=>`<button class="btn${it.soon?' soon':''}" data-k="${it.key}"><span class="n">${it.n}</span><span class="d">${it.d}</span></button>`).join('')+'<div class="hint">PICK AN EDITOR · SHIFT+0 OR ESC CLOSES</div></div>';
   document.body.appendChild(menu);
   const soon=document.createElement('div'); soon.id='edsoon'; document.body.appendChild(soon);
   const show=()=>menu.classList.add('on'), hide=()=>menu.classList.remove('on');

@@ -4200,3 +4200,7 @@ Owner: "build lighting next". LIGHTED (133a-lightedit) is the global render-syst
 ## 22 Oct 2026: the world editor to spec — pitch, roll, brightness, export
 
 Owner left the next step to me. The world editor (WE, 099-worldedit) gains pitch and roll (3-axis rotation, not just turn), a brightness slider, and an EXPORT button that downloads the edits as world-edits.json. Still to do: snap to nearest wall/floor/ceiling, and making the export re-apply after a rebuild (edits are keyed by object id, which is not yet stable across builds).
+
+## 22 Oct 2026: world edits keyed by what a thing is, not load order
+
+World edits (WE, 099-worldedit) are now keyed by place + name + rounded position, not the creation-order id, so an exported world-edits.json re-applies to the right things after a rebuild (identical same-spot things get a stable suffix). Added an IMPORT button beside EXPORT to load an edits file back. Still to do for "everyone sees it": the build baking a committed world-edits.json and applying it at start (edits are still per-browser until then).

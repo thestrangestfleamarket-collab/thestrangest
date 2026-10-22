@@ -9,7 +9,10 @@ Object.assign(WE,{on:false});
   const base=o=>{ '@later'; if(o.base)return o.base; const B=o.parts.map(p=>p.me.geometry.attributes.position.array.slice(p.v0*3,p.v0*3+18)); const c=new THREE.Vector3(); let n=0, y0=1e9;
     for(const a of B)for(let i=0;i<18;i+=3){ c.x+=a[i]; c.y+=a[i+1]; c.z+=a[i+2]; n++; y0=Math.min(y0,a[i+1]); } c.divideScalar(n||1); c.y=y0; o.base=B; o.c=c; return B; };
   const E0=()=>({t:[0,0,0],r:0,rx:0,rz:0,s:[1,1,1],col:'#ffffff',bri:1,op:1,del:false});
-  const stOf=o=>ST[o.id]||(ST[o.id]=E0());
+  let KMAP=null;
+  const kraw=o=>{ base(o); const c=o.c; return o.place+'|'+o.name+'|'+Math.round(c.x*10)/10+','+Math.round(c.y*10)/10+','+Math.round(c.z*10)/10; };
+  const kid=o=>{ if(!KMAP){ KMAP=new Map(); const g={}; for(const q of OBJS){ const r=kraw(q); (g[r]||(g[r]=[])).push(q); } for(const r in g){ const L=g[r]; if(L.length<2)KMAP.set(L[0],r); else { L.sort((a,b)=>a.id<b.id?-1:a.id>b.id?1:0); L.forEach((q,i)=>KMAP.set(q,r+'#'+i)); } } } return KMAP.get(o)||kraw(o); };
+  const stOf=o=>{ const k=kid(o); return ST[k]||(ST[k]=E0()); };
   const v=new THREE.Vector3(), vv=new THREE.Vector3(), E3=new THREE.Euler(), col=new THREE.Color(), touched=new Set();
   function apply(o){ '@later'; const B=base(o), e=stOf(o), c=o.c; E3.set((e.rx||0)*Math.PI/180,(e.r||0)*Math.PI/180,(e.rz||0)*Math.PI/180,'YXZ'); col.set(e.col).multiplyScalar(e.bri==null?1:e.bri);
     o.parts.forEach((p,k)=>{ const g=p.me.geometry, P=g.attributes.position.array, N=g.attributes.normal.array, C=g.attributes.aCol.array, O=g.attributes.aOp.array, a=B[k];
@@ -21,7 +24,7 @@ Object.assign(WE,{on:false});
       g.attributes.position.needsUpdate=g.attributes.normal.needsUpdate=g.attributes.aCol.needsUpdate=g.attributes.aOp.needsUpdate=true; touched.add(g); }); }
   let reshade=0; const settle=()=>{ for(const g of touched)g.computeBoundingSphere(); touched.clear(); clearTimeout(reshade); reshade=setTimeout(()=>{ scene.traverse(L=>{ if(L.isLight&&L.castShadow&&L.shadow&&L.shadow.autoUpdate===false)L.shadow.needsUpdate=true; }); },250); };
   const save=()=>{ try{ localStorage.setItem('market-world',JSON.stringify(ST)); }catch(e){} };
-  try{ Object.assign(ST,JSON.parse(localStorage.getItem('market-world')||'{}')); for(const o of OBJS)if(ST[o.id])apply(o); settle(); }catch(e){}
+  try{ Object.assign(ST,JSON.parse(localStorage.getItem('market-world')||'{}')); if(Object.keys(ST).length){ for(const o of OBJS)if(ST[kid(o)])apply(o); settle(); } }catch(e){}
   const css=document.createElement('style'); css.textContent=`
   #we{position:fixed;right:calc(12px + env(safe-area-inset-right,0px));top:12px;width:300px;max-height:calc(100vh - 24px);overflow:auto;background:var(--bg);border:2px solid var(--line);font:12px var(--pixel);color:var(--fg);z-index:20}
   #we[hidden]{display:none} #we h2{font:12px var(--pixel);color:var(--key);margin:0;padding:12px 14px;border-bottom:2px solid var(--line)} #we .pane{padding:10px 14px}
@@ -46,7 +49,7 @@ Object.assign(WE,{on:false});
       <div class="row"><span class="lab">SEE-THROUGH</span><input type="range" id="wop" min="0" max="0.9" step="0.01"></div>
       <div class="row"><button class="btn" id="wdel">DELETE</button><button class="btn" id="wback">BACK AS IT WAS</button></div>
 </div>
-    <div class="row" style="margin-top:10px"><button class="btn" id="wall">EVERYTHING BACK</button><button class="btn" id="wexp">EXPORT</button><button class="btn" id="wout">DONE (SHIFT+E)</button></div>
+    <div class="row" style="margin-top:10px"><button class="btn" id="wall">EVERYTHING BACK</button><button class="btn" id="wexp">EXPORT</button><button class="btn" id="wimp">IMPORT</button><input type="file" id="wimpf" accept="application/json" style="display:none"><button class="btn" id="wout">DONE (SHIFT+E)</button></div>
     <div class="dim">what he bumps into stays where it was, for now</div></div>`;
   document.body.appendChild(P); const $=s=>P.querySelector(s);
   function draw(){ '@later'; $('#wtools').hidden=!sel; $('#wname').textContent=sel?'PICKED: '+sel.name.toUpperCase()+' ('+sel.place+')':'double-click a thing to pick it'; if(!sel)return; const e=stOf(sel);
@@ -65,14 +68,16 @@ Object.assign(WE,{on:false});
   $('#wrx').oninput=ev=>change(e=>{ e.rx=+ev.target.value; }); $('#wrz').oninput=ev=>change(e=>{ e.rz=+ev.target.value; });
   $('#wbri').oninput=ev=>change(e=>{ e.bri=+ev.target.value; });
   $('#wexp').onclick=()=>{ const blob=new Blob([JSON.stringify(ST,null,1)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='world-edits.json'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),2e3); };
+  $('#wimp').onclick=()=>$('#wimpf').click();
+  $('#wimpf').onchange=async ev=>{ const f=ev.target.files&&ev.target.files[0]; ev.target.value=''; if(!f)return; try{ const j=JSON.parse(await f.text()); Object.assign(ST,j); for(const o of OBJS)if(ST[kid(o)])apply(o); settle(); save(); frame(); draw(); }catch(e){} };
   $('#wdel').onclick=()=>{ change(e=>{ e.del=true; }); sel=null; frame(); draw(); };
   $('#wback').onclick=()=>change(e=>{ Object.assign(e,E0()); });
-  $('#wall').onclick=()=>{ if(!confirm('Put everything back as it was?'))return; for(const o of OBJS)if(ST[o.id]){ ST[o.id]=E0(); apply(o); delete ST[o.id]; } settle(); save(); frame(); draw(); };
+  $('#wall').onclick=()=>{ if(!confirm('Put everything back as it was?'))return; for(const o of OBJS){ const k=kid(o); if(ST[k]){ ST[k]=E0(); apply(o); delete ST[k]; } } settle(); save(); frame(); draw(); };
   $('#wout').onclick=()=>WE.toggle();
   WE.toggle=()=>{ WE.on=!WE.on; P.hidden=!WE.on; if(!WE.on){ sel=null; frame(); } draw(); UI.badge&&UI.badge(); };
   const ray=new THREE.Raycaster(), meshes=()=>[...new Set(OBJS.flatMap(o=>o.parts.map(p=>p.me)))].filter(m=>{ let q=m; while(q){ if(!q.visible)return false; q=q.parent; } return true; });
   const hitAt=e=>{ '@later'; const r=renderer.domElement.getBoundingClientRect(); ray.setFromCamera(new THREE.Vector2((e.clientX-r.left)/r.width*2-1,-((e.clientY-r.top)/r.height*2-1)),SHARED.cam);
-    for(const h of ray.intersectObjects(meshes(),false)){ const o=h.object.userData.objOf[Math.floor(h.faceIndex/2)]; if(o&&!(ST[o.id]&&ST[o.id].del))return {o,p:h.point}; return null; } return null; };
+    for(const h of ray.intersectObjects(meshes(),false)){ const o=h.object.userData.objOf[Math.floor(h.faceIndex/2)]; if(o&&!(ST[kid(o)]&&ST[kid(o)].del))return {o,p:h.point}; return null; } return null; };
   WE.pick=e=>{ const h=hitAt(e); sel=h?h.o:null; if(sel)base(sel); frame(); draw(); };
   WE.down=e=>{ if(!WE.on||!sel||e.button!==0)return false; const h=hitAt(e); if(!h||h.o!==sel)return false; drag={y:h.p.y,last:h.p.clone()}; return true; };
   WE.move=e=>{ '@later'; if(!drag)return; const r=renderer.domElement.getBoundingClientRect(); ray.setFromCamera(new THREE.Vector2((e.clientX-r.left)/r.width*2-1,-((e.clientY-r.top)/r.height*2-1)),SHARED.cam);

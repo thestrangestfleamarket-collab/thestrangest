@@ -54,7 +54,7 @@ if(LFX.shade){ const FN='#ifdef FLAT_SHADED\n vec3 nq=normalize(cross(dFdx(vView
   .replace('#include <color_fragment>','#include <color_fragment>\n float lfP=0.;\n { vec4 Q0=texelFetch(tENV,ivec2(0,63),0), Q1=texelFetch(tENV,ivec2(1,63),0);\n if(Q0.g>.01||Q1.b>.01){\n'+FN+' float upq=step(.7,(vec4(nq,0.)*viewMatrix).y); vec3 dc=diffuseColor.rgb; float gr=step(dc.r*1.1,dc.g)*step(dc.b*1.05,dc.g);\n if(Q0.g>.01&&upq>0.){ float w=Q0.g; diffuseColor.rgb*=1.-w*(.34-.22*gr); lfP=w*step(.79,lfn(vWP.xz*.55+3.)*.7+lfn(vWP.xz*1.9+11.)*.3)*(1.-gr)*step(vWP.y,.4); diffuseColor.rgb*=1.-.6*lfP; }\n if(Q1.b>.01&&upq>0.){ float c=step(1.-Q1.b*1.15,lfn(vWP.xz*.8+9.)*.6+lfn(vWP.xz*3.1+5.)*.4); diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.9,.92,.96),c); lfP*=1.-c; } } }')
   .replace('#include <opaque_fragment>',' if(lfP>0.){ vec3 sk=texelFetch(tENV,ivec2(2,63),0).rgb; outgoingLight=mix(outgoingLight,sk*.46+.015,lfP*.8); }\n#include <opaque_fragment>'); }
 const NEONS=[], SHL=[], cutWalls=[], lamps=[], shopGroups=[]; let nightTo=1; SHARED.night=1; const C2=new THREE.Color(); function applyTime(){}
-const ZU=1/(PPU*Math.cos(Math.PI/6)), TILE=33.9/PPU, QS=new URLSearchParams(location.search), LAMPI=8, LAMPD=1.6;
+const ZU=1/(PPU*Math.cos(Math.PI/6)), TILE=33.9/PPU, QS=new URLSearchParams(location.search), ALLEYNEON=QS.get('neon')==='1', LAMPI=8, LAMPD=1.6;
 const SEEN=(o,show)=>{ if(!SEEN.L){ SEEN.L=1; scene.traverse(c=>{ if(c.isLight&&c.shadow)c.shadow.camera.layers.enable(3); }); }
   if(o.userData.seen===show)return; o.userData.seen=show; o.traverse(c=>{ if(c.isMesh||c.isLine||c.isPoints){ if(show)c.layers.enable(0); else c.layers.disable(0); c.layers.enable(3); } }); };
 const OUT=window.OUT={L:[],open:true,world:true,up:true,add(o,k='open'){ OUT.L.push({o,k}); SEEN(o,OUT[k]); return o; },
@@ -85,6 +85,11 @@ const WB=LEVEL.block, BLOCK={back:WB.back,alley:WB.alley,row2:WB.backrow,prom:WB
 for(const k of ['play','bank','theatre','arcade'])BLOCK.lots[k]=[WP[k].x0,WP[k].x1];
 const ROWP=LEVEL.places.filter(p=>p.y1==null).sort((a,b)=>a.x0-b.x0), ROWID=ROWP.map(p=>p.id), MAINROW=ROWP.map(p=>[p.x0,p.x1]);
 const WROW={bar:{x0:LOTX(WP.bar.x0),x1:LOTX(WP.bar.x1),y0:WP.bar.y1!=null?LOTY(WP.bar.y0):-89.5,y1:WP.bar.y1!=null?LOTY(WP.bar.y1):-77},mus:{x0:LOTX(WP.museum.x0),y0:WP.museum.y1!=null?LOTY(WP.museum.y0):-101,x1:LOTX(WP.museum.x1),y1:WP.museum.y1!=null?LOTY(WP.museum.y1):-80,h:210}};
+const TURN=(R,face)=>{ const q={n:0,w:1,s:2,e:3}[face||'n']||0, cx=(R.x0+R.x1)/2, cy=(R.y0+R.y1)/2, hw=((q&1?R.y1-R.y0:R.x1-R.x0))/2, hd=((q&1?R.x1-R.x0:R.y1-R.y0))/2, S=['f','w','b','e'];
+  const pt=(u,v)=>{ let dx=u-cx, dy=v-cy; for(let i=0;i<q;i++){ const t=dx; dx=-dy; dy=t; } return [cx+dx,cy+dy]; };
+  const back=(x,y)=>{ let dx=x-cx, dy=y-cy; for(let i=0;i<q;i++){ const t=dx; dx=dy; dy=-t; } return [cx+dx,cy+dy]; };
+  return {q,face:face||'n',cx,cy,L:{...R,x0:cx-hw,x1:cx+hw,y0:cy-hd,y1:cy+hd},pt,back,side:s=>S[(S.indexOf(s)+q)%4],unside:s=>S[(S.indexOf(s)+4-q)%4],hd:h=>h-q*Math.PI/2,
+    box:(x0,y0,x1,y1)=>{ const a=pt(x0,y0), b=pt(x1,y1); return {x0:Math.min(a[0],b[0]),y0:Math.min(a[1],b[1]),x1:Math.max(a[0],b[0]),y1:Math.max(a[1],b[1])}; }}; };
 const RING={wx0:LEVEL.streets.west.x0,wx1:LEVEL.streets.west.x1,top:LEVEL.park.y1}; RING.wr0=RING.wx0+3.2; RING.wr1=RING.wx1-3.2; RING.wy1=RING.top+WID;
 RING.stairs=[]; RING.river={y0:BLOCK.river,y1:BLOCK.river+46}; RING.ff={x0:WESTX,x1:EASTX,y0:RING.river.y0-1.5,y1:RING.top+28};
 const MAPSTAIR={x0:60.01,x1:64.01,y0:-82.9,y1:-76.9, steps:12, depth:98, dir:-1};
@@ -93,4 +98,4 @@ const PARKGX=WPP.round.x, PARKRY=WPP.round.y, PARKLAKE=[WPP.lake.x,WPP.lake.y,WP
 const SHELLS=LEVEL.shells;
 const CASTLE={b:[46,67,-21,-4],gate:58.5,stair:{x0:61.5,x1:63.5,y0:-19.4,y1:-13.4,steps:12,depth:98,dir:1},hall:{x0:51,y0:-20,x1:65,y1:-6.8,h:130}};
 { const o=LAY.o('castle'), C=CASTLE, S=C.stair, H=C.hall; C.b=[C.b[0]+o.x,C.b[1]+o.x,C.b[2]+o.y,C.b[3]+o.y]; C.gate+=o.x; for(const R of [S,H]){ R.x0+=o.x; R.x1+=o.x; R.y0+=o.y; R.y1+=o.y; } }
-export {applyTime, ASTEP, AWAY, BF, BLDK, BLOCK, C2, CASTLE, CEL, CLIPX, cutWalls, DITH, EASTX, FADE, FIX, FREE, grab, LAMPD, LAMPI, lamps, LAY, LEVEL, LFX, LOTX, LOTY, MAINROW, MAINX, MAPG, MAPSTAIR, MISTB, MISTB2, MISTE, MISTF, MODS, NEONS, nightTo, NORTHX, NORTHY, OUT, OVERHEAD, PARKCAVE, PARKGX, PARKLAKE, PARKRY, PARKTOWER, PFAR, QS, RING, SEEN, SHELLS, SHL, shopGroups, SMOOTH, SOL, STN, STORE, SYS, TILE, WESTX, WP, WROW, ZU};
+export {ALLEYNEON, applyTime, ASTEP, AWAY, BF, BLDK, BLOCK, C2, CASTLE, CEL, CLIPX, cutWalls, DITH, EASTX, FADE, FIX, FREE, grab, LAMPD, LAMPI, lamps, LAY, LEVEL, LFX, LOTX, LOTY, MAINROW, MAINX, MAPG, MAPSTAIR, MISTB, MISTB2, MISTE, MISTF, MODS, NEONS, nightTo, NORTHX, NORTHY, OUT, OVERHEAD, PARKCAVE, PARKGX, PARKLAKE, PARKRY, PARKTOWER, PFAR, QS, RING, SEEN, SHELLS, SHL, shopGroups, SMOOTH, SOL, STN, STORE, SYS, TILE, TURN, WESTX, WP, WROW, ZU};

@@ -64,7 +64,7 @@ const FREE=QS.get('free')!=='0';
 const SOL={up:[],down:[]}, FIX={up:[],down:[]}, CLIPX=[];
 SHARED.solids=SOL.up; SHARED.fixed=FIX.up; SHARED.BOUND=undefined; SHARED.groundY=undefined; SHARED.LVL='up'; SHARED.BOD=undefined; SHARED.BODB=undefined; SHARED.METRO=undefined;
 const STORE={rooms:[],places:[],roofs:[]}, BF={list:[]}; window.STORE=STORE;
-const SYS={P:{},add:(ph,fn,name)=>{ (SYS.P[ph]=SYS.P[ph]||[]).push({fn,name:name||''}); },run:(ph,...a)=>{ const L=SYS.P[ph]; if(!L)return; for(const s of L){ try{ s.fn(...a); }catch(e){ if(!s.err){ s.err=1; console.warn('SYS '+ph+' '+s.name,e); } } } },list:()=>Object.fromEntries(Object.entries(SYS.P).map(([k,v])=>[k,v.map(s=>s.name)]))}; window.SYS=SYS;
+const SYS={P:{},add:(ph,fn,name)=>{ (SYS.P[ph]=SYS.P[ph]||[]).push({fn,name:name||''}); },run:(ph,...a)=>{ const L=SYS.P[ph]; if(!L)return; for(const s of L){ try{ s.fn(...a); }catch(e){ if(!s.err){ s.err=1; console.warn('SYS '+ph+' '+s.name,e); } } } },list:()=>Object.fromEntries(Object.entries(SYS.P).map(([k,v])=>[k,v.map(s=>s.name)])),bad:new Set(),go:(fn,name)=>{ try{ fn(); }catch(e){ if(!SYS.bad.has(name)){ SYS.bad.add(name); console.warn('SYS '+name,e); } } }}; window.SYS=SYS;
 const FADE={busy:0,run:async(t,w)=>{ if(w)await w(); }}; window.FADE=FADE;
 const MAPG={}, MODS={};  const OVERHEAD=[]; SHARED.RPASS=null; SHARED.FIRE=null;
 const grab=async(name,fn)=>{ const n0=scene.children.length; await fn(); const g=new THREE.Group(); g.name=name; for(const o of scene.children.slice(n0))g.add(o); scene.add(g); MAPG[name]=g; return g; };

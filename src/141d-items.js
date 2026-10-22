@@ -1,16 +1,16 @@
 // THE ITEM MODEL AND EDITOR: ITEMS holds each item type's shared properties (burnable, edible, ...); ITEMED edits them (shift+7).
 import {FORAGE, ITEMED, ITEMS} from './003b-systems.js';
-import {SAVE} from './005-save.js';
+import {OWNED} from './005-save.js';
 { const BOOL=[['burnable','BURNS'],['edible','EDIBLE'],['stackable','STACKS'],['pickup','PICK UP'],['sellable','SELLABLE']];
   const NUM=[['weight','WEIGHT',0,50,0.1,1],['value','VALUE',0,500,1,0]];
   const DEF=()=>{ const d={}; for(const [k] of BOOL)d[k]=false; for(const [k,,,,,v] of NUM)d[k]=v; return d; };
   let BAKED={}; try{ BAKED=__DATA__("data/items.json")||{}; }catch(e){}
   try{ for(const id in BAKED)ITEMS.defs[id]=Object.assign(DEF(),BAKED[id]); }catch(e){}
-  try{ const L=JSON.parse(SAVE.get('items')||'{}'); for(const id in L)ITEMS.defs[id]=Object.assign(ITEMS.defs[id]||DEF(),L[id]); }catch(e){}
+  try{ const L=JSON.parse(OWNED.get('items')||'{}'); for(const id in L)ITEMS.defs[id]=Object.assign(ITEMS.defs[id]||DEF(),L[id]); }catch(e){}
   ITEMS.def=id=>ITEMS.defs[id];
   ITEMS.prop=(id,k)=>{ const d=ITEMS.defs[id]; return d?d[k]:undefined; };
   ITEMS.ids=()=>Object.keys(ITEMS.defs).sort();
-  const save=()=>{ try{ SAVE.set('items',JSON.stringify(ITEMS.defs)); }catch(e){} };
+  const save=()=>{ try{ OWNED.set('items',JSON.stringify(ITEMS.defs)); }catch(e){} };
   const css=document.createElement('style'); css.textContent=`
   #ited{position:fixed;right:calc(12px + env(safe-area-inset-right,0px));top:12px;width:330px;max-height:calc(100vh - 24px);overflow:auto;background:var(--bg);border:2px solid var(--line);font:12px var(--pixel);color:var(--fg);z-index:20}
   #ited[hidden]{display:none} #ited h2{font:12px var(--pixel);color:var(--key);margin:0;padding:12px 14px;border-bottom:2px solid var(--line)} #ited .pane{padding:10px 14px}

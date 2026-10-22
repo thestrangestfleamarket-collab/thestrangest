@@ -2,7 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {BOOKS, CITY, DRESS, FORAGE, INV, MAIL, SFX, UI} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {SAVE} from './005-save.js';
+import {OWNED} from './005-save.js';
 import {TILE} from './006-map-pre.js';
  window.BOOKS=BOOKS;
 { const T=TILE, KEY='books', say=FORAGE.say, use=FORAGE.use;
@@ -17,7 +17,7 @@ import {TILE} from './006-map-pre.js';
     status:()=>FORAGE.has('bs_kit')?"BINDER'S KIT":"NO BINDER'S KIT"};
   FORAGE.HELP.push("BOOKBINDING restores worn books (a binder's kit, glue, thread, cloth, leather); find them in trash cans and the river, or buy them at the oddities stall, which buys them back mended.");
   const day=()=>window.MAIL&&MAIL.ready?MAIL.day():window.CITY?CITY.day||0:0;
-  const S={v:1,cans:{},sd:-1,stock:{}}; try{ const D=JSON.parse(SAVE.get(KEY)||'null'); if(D&&D.v===1)Object.assign(S,D); }catch(e){} const save=()=>SAVE.set(KEY,JSON.stringify(S));
+  const S={v:1,cans:{},sd:-1,stock:{}}; try{ const D=JSON.parse(OWNED.get(KEY)||'null'); if(D&&D.v===1)Object.assign(S,D); }catch(e){} const save=()=>OWNED.set(KEY,JSON.stringify(S));
   const restock=()=>{ if(S.sd===day())return; S.sd=day(); S.stock={paper:4,novel:3,atlas:2,hymnal:2,ledger:1}; save(); };
   const roll=L=>{ let s=L.reduce((a,b)=>a+b[1],0)*Math.random(); for(const [id,w] of L)if((s-=w)<0)return id; return L[0][0]; };
   BOOKS.find=(L,where)=>{ const id=roll(L); FORAGE.give('bk_'+id,1); say(`${where}: ${/^[AEIOU]/.test(NM['bk_'+id])?'AN':'A'} ${NM['bk_'+id]}.`,id==='first'||id==='herbal'?'#f2c14e':'#c8b0ff'); FORAGE.draw(); };

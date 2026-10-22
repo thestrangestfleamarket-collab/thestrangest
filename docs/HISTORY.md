@@ -4348,3 +4348,8 @@ Owner: "i want them to be automatically generated every day with new tunnels and
 Owner: "yes tools (must buy, and goggles, and headlight to see)"; "scuba shop that has those needs (shark merchant)".
 - **THE SHARK's scuba shop** (`data/characters.json`, through SHOPS): DIVING GOGGLES $30, HEADLIGHT $45, RESONANCE SCANNER $40, CUTTER BEAM $60, SONIC EXTRACTOR $90 — all off-world, so only bought. He stands by the way down to the Hudson.
 - **The gear** (`146d-gear.js`): goggles and headlight are worn from the pack (WEAR / TAKE OFF, kept with your owned things); the caverns are dark now and the headlight is how you see; goggles see three times as far through the murk. A find needs the CUTTER BEAM to work free; the SCANNER lights the seams your prospecting can't spot for a minute; the EXTRACTOR frees every lit find near you. Tools are pack actions, so they work underwater too.
+
+## 22 Oct 2026: the gem places, step C4 — the golem guards
+Owner: "golems protect the caves ... they guard the entrance and the cave. the move slow. if you kill them they crumble to rocks. but will reform after X amount of time".
+- **The golem guards** (`146e-golems.js`): the twelve rock golems guard the golems' cave. Come within the cave or its mouth and the near ones lumber at you (seven tenths of their walk) and hit when they reach you; your punches, kicks and sword land on them; at zero they crumble into a heap of rocks and, 10 to 60 s later, the rocks gather and the golem stands again.
+- **One set of strikes** (rule): your strikes (`STRIKES`: what you swing, its reach, your fight strength) are read by every mob system — the dungeon's slimes and skeletons and the cave's golems — not written twice.

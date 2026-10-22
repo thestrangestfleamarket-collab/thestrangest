@@ -11,6 +11,13 @@ import {GEMS} from './101-gems.js';
   const TIER={green:{c:0x5ce04a,hp:2,v:.9,dmg:0,s:1,loot:.25,sk:[-10,40],nm:'GREEN',p:4,see:0},blue:{c:0x3fa2ff,hp:3,v:1.1,dmg:.03,s:1.06,loot:.35,sk:[0,50],nm:'BLUE',p:8,see:3},
     purple:{c:0xb058ff,hp:5,v:1.3,dmg:.05,s:1.14,loot:.45,sk:[15,65],nm:'PURPLE',p:15,see:3.6},red:{c:0xff4434,hp:7,v:1.5,dmg:.07,s:1.24,loot:.6,sk:[30,80],nm:'RED',p:25,see:4.2}};
   FORAGE.add({names:Object.fromEntries(Object.keys(TIER).map(k=>['slime_'+k,'BOTTLE OF '+TIER[k].nm+' SLIME'])),prices:Object.fromEntries(Object.keys(TIER).map(k=>['slime_'+k,TIER[k].p]))});
+  const STRIKES=(()=>{ const STR=/jab|cross|upper|hook|slap|punch|kick|sweep|round/i, T=TILE; let last=null, swT=0, swAt=0;   // your strikes, read by every mob system (the dungeon's, the cave's golems)
+    SYS.add('strike',()=>{ const now=performance.now(); if(WIELD.on==='sword'&&now-swT>220){ swT=now; swAt=now+90; } },'146b-dunmobs');
+    const strikes=()=>{ const out=[], s=(st.up&&STR.test(st.up.name)&&st.up)||(st.move&&STR.test(st.move.name)&&st.move);
+      if(s&&s!==last&&s.t>=.08){ last=s; const k=/kick|sweep|round/i.test(s.name); out.push({r:(k?1.15:1)*T,d:k?1.5:1}); }
+      if(swAt&&performance.now()>=swAt){ swAt=0; if(WIELD.on==='sword')out.push({r:1.55*T,d:2}); } return out; };
+    const inCone=(s,x,z,y,rad)=>{ const dx=x-pos.x, dz=z-pos.z, d=Math.hypot(dx,dz); if(Math.abs(y-SHARED.py)>1.4*T||d>s.r+rad)return false; return d<.35*T||(dx*Math.sin(SHARED.heading)+dz*Math.cos(SHARED.heading))/d>.3; };
+    const strength=()=>1+(FORAGE.sk('fight')||0)/100; return {strikes,inCone,strength}; })(); window.STRIKES=STRIKES;
   const init=()=>{ '@dungeon'; const T=TILE, X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, say=FORAGE.say, G=new THREE.Group(), PK=new THREE.Group(); PK.visible=false; MAPG.dungeon.add(G); scene.add(LEVELS.own(PK,'dungeon'));
   const SLV={1:['green','green','green','green','green'],2:['green','green','green','blue','blue','blue','blue'],3:['blue','blue','blue','purple','purple','purple','red','red']};
   const LOOT={green:[['$',1,3,7],['quartz',0,0,3]],blue:[['$',2,6,5],['quartz',0,0,2],['amethyst',0,0,2],['p_refresh',0,0,1]],
@@ -50,7 +57,6 @@ import {GEMS} from './101-gems.js';
       sfx('clunk',{vol:.4,pitch:1.6}); unthing(th); FORAGE.draw(); },m); };
   const goo=S=>{ const t=TIER[S.k]; S.th=thing(t.nm+' SLIME',S.x,S.z,th=>{ if(!FORAGE.has('bottle'))return say('YOU NEED A BOTTLE TO HOLD THE SLIME.','#c8a090');
     FORAGE.take('bottle',1); FORAGE.give('slime_'+S.k,1); say('YOU SCOOP THE '+t.nm+' SLIME INTO A BOTTLE.','#b8f0a0'); sfx('drip',{vol:.5,pitch:.7}); unthing(th); S.gone=true; FORAGE.draw(); }); };
-  const strength=()=>1+(FORAGE.sk('fight')||0)/100;
   const hitSlime=(S,dmg,from)=>{ if(S.dead)return; const t=TIER[S.k]; S.hp-=dmg; S.flash=.12; S.agg=true; sfx('step',{vol:.6,pitch:.55,vary:.2});
     const dx=S.x-from.x, dz=S.z-from.z, l=Math.hypot(dx,dz)||1, p={x:S.x+dx/l*.45*T,z:S.z+dz/l*.45*T}; if(free(p.x,p.z,.18*T)){ S.kb={x:p.x,z:p.z}; }
     if(S.hp>0)return; S.dead=true; S.pop=0; S.air=0; sfx('drip',{vol:.8,pitch:.45}); sfx('boom',{vol:.15,pitch:2.4});
@@ -60,12 +66,7 @@ import {GEMS} from './101-gems.js';
     FORAGE.use('fight',10+lvl*8,60+lvl*8); const n=r.key==='Gold'?2:1; for(let i=0;i<n;i++)drop(r.key==='Gold'?'gold':'bone',N.st.x,N.st.z); };
   const hitRes=(r,dmg,from)=>{ if(r.dead)return; r.hp-=dmg; r.agg=true; const N=r.N, st=N.st, dx=st.x-from.x, dz=st.z-from.z, l=Math.hypot(dx,dz)||1; st.sx=dx/l*2.2*T; st.sz=dz/l*2.2*T;
     sfx('clunk',{vol:.5,pitch:1.5,vary:.2}); if(r.hp<=0)return killRes(r); if(r.kk){ r.act=0; N.an.play('Hit_A'); } else{ r.lunge=null; r.jolt=.25; } };
-  const STR=/jab|cross|upper|hook|slap|punch|kick|sweep|round/i; let last=null, swT=0, swAt=0;
-  SYS.add('strike',()=>{ const now=performance.now(); if(WIELD.on==='sword'&&now-swT>220){ swT=now; swAt=now+90; } },'146b-dunmobs');
-  const strikes=()=>{ const out=[], s=(st.up&&STR.test(st.up.name)&&st.up)||(st.move&&STR.test(st.move.name)&&st.move);
-    if(s&&s!==last&&s.t>=.08){ last=s; const k=/kick|sweep|round/i.test(s.name); out.push({r:(k?1.15:1)*T,d:k?1.5:1}); }
-    if(swAt&&performance.now()>=swAt){ swAt=0; if(WIELD.on==='sword')out.push({r:1.55*T,d:2}); } return out; };
-  const inCone=(s,x,z,y,rad)=>{ const dx=x-pos.x, dz=z-pos.z, d=Math.hypot(dx,dz); if(Math.abs(y-SHARED.py)>1.4*T||d>s.r+rad)return false; return d<.35*T||(dx*Math.sin(SHARED.heading)+dz*Math.cos(SHARED.heading))/d>.3; };
+  const {strikes,inCone,strength}=STRIKES;
   const resolve=()=>{ if(!RES){ RES=[]; for(const N of NPCS){ const k=N.key, lv=OGRE.includes(k)?[1]:Object.keys(SKL).filter(n=>SKL[n].includes(k)).map(Number);
       if(!lv.length||N.name==='TROUBLEMAKER'||KK.includes(k)&&!(window.GUARDX&&(GUARDX.GUARDS.includes(N)||k==='Gold')))continue; if(RES.some(r=>r.N===N))continue;
       RES.push({N,key:k,lv,kk:KK.includes(k),ogre:OGRE.includes(k),v0:N.st.v,hp:0,style:N.guard?N.guard.style:{hit:'Unarmed_Melee_Attack_Punch_A',reach:.65,at:.38}}); } } return RES; };

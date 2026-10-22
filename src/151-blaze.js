@@ -51,7 +51,7 @@ import {GPH} from './150-loose.js';
       f.m.a=Math.max(f.m.a,.1+.9*Math.min(1,f.age/30));
       if((f.sp-=dt)<=0&&f.wet<=0){ f.sp=20+rnd()*20; if(rnd()<.75){ const a=rnd()*6.28, d=(.8+rnd()*.45)*T; start(f.x+Math.cos(a)*d,f.z+Math.sin(a)*d); } }
       if(f.age>=f.life||f.wet>=WET){ end(f); F.splice(i,1); } }
-    if(fx&&F.length&&window.GPH&&GPH.loose){ try{ for(const it of GPH.loose()){ if(!it||it._burnt)continue; const p=it.t||(it.c&&{x:it.c[0],z:it.c[2]}); if(!p||!burns(it.name))continue; if(F.some(f=>!f.out&&Math.hypot(f.x-p.x,f.z-p.z)<1.2*T)){ it._burnt=1; start(p.x,p.z,true); } } }catch(e){} }
+    if(fx&&F.length&&window.GPH&&GPH.loose){ try{ for(const it of GPH.loose()){ if(!it||it._burnt)continue; const p=it.t||(it.c&&{x:it.c[0],z:it.c[2]}); if(!p||!burns(it.name))continue; if(F.some(f=>!f.out&&Math.hypot(f.x-p.x,f.z-p.z)<1.2*T)){ it._burnt=1; start(p.x,p.z,true); if(GPH.burn)GPH.burn(it); } } }catch(e){} }
     let ch=false; for(const m of BM){ if(!m)continue; if(fx&&m.fix&&top(m.x,m.z)!==undefined){ m.fix=false; m.y=surf(m.x,m.z); remark(m); }
       const a=m.t<0?m.a:(m.t+=dt)<HOLD?m.a0:m.a0*(1-(m.t-HOLD)/FADE); if(a<=0){ BM[m.i]=null; mk.me.setMatrixAt(m.i,Z0); mk.me.instanceMatrix.needsUpdate=true; mk.aA.array[m.i]=0; ch=true; continue; }
       if(Math.abs(mk.aA.array[m.i]-a)>.004){ mk.aA.array[m.i]=a; ch=true; } }

@@ -4216,3 +4216,7 @@ A shared item-property model (ITEMS, 141d-items) and its editor (ITEMED): each i
 ## 22 Oct 2026: burnable wired to fire
 
 A fire now catches any loose thing whose item type is burnable — the fire system asks ITEMS.prop(name,'burnable') for every loose thing near a flame, the same way for all of them (BLAZE.burns; the loose system exposes GPH.loose). First property that does something: mark an item BURNS in the item editor (shift+7) and flames spread to it. Additive and guarded; it lights a flame on the thing, doesn't yet char or consume it.
+
+## 22 Oct 2026: burnable things char and are consumed
+
+A loose thing a fire catches now burns for a few seconds and is then consumed — gone from the world. Done inside the loose system (GPH.burn), which hides the thing its own way per kind (goods, instanced, part meshes) and frees its body; the fire just calls GPH.burn when it ignites a burnable thing. Guarded so an unexpected shape no-ops instead of breaking.

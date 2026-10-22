@@ -13,7 +13,7 @@ import {SYS, TILE} from './006-map-pre.js';
     const me=new THREE.Mesh(geo,mat); me.frustumCulled=false; me.renderOrder=3; scene.add(me);
     const Q={R,N,BR,P,O,ST,REST,live,geo,pos,me,ball:{x:sx,y,z:sz},d:{x:0,y:0,z:0},gnd:0,acc:0};
     Q.drop=()=>{ const b=Q.ball; for(let j=0;j<N;j++)for(let i=0;i<N;i++){ const k=(j*N+i)*3; P[k]=b.x+((i/(N-1))*2-1)*R; P[k+1]=b.y+BR+.35; P[k+2]=b.z+((j/(N-1))*2-1)*R; } O.set(P); ST.fill(NaN); }; Q.drop(); return Q; };
-  const step=(Q,others)=>{ '@later'; const {P,O,ST,REST,live,ball:b,d}=Q, rr=Q.BR+.012, g0=Q.gnd+.004;
+  const step=(Q,others)=>{ const {P,O,ST,REST,live,ball:b,d}=Q, rr=Q.BR+.012, g0=Q.gnd+.004;
     for(const k of live){ const x=P[k], y=P[k+1], z=P[k+2]; P[k]=x+(x-O[k])*DAMP; P[k+1]=y+(y-O[k+1])*DAMP+G*H*H; P[k+2]=z+(z-O[k+2])*DAMP; O[k]=x; O[k+1]=y; O[k+2]=z; }
     for(let it=0;it<10;it++){
       for(const [ia,ib,L,s] of REST){ const dx=P[ib]-P[ia], dy=P[ib+1]-P[ia+1], dz=P[ib+2]-P[ia+2], l=Math.hypot(dx,dy,dz)||1e-6; let f=(l-L)/l*.5*s; if(l<L){ if(s<1)continue; f*=.15; }

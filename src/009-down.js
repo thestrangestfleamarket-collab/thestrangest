@@ -346,7 +346,7 @@ const SSUB=(()=>{ const W={};
   solid(-1,0,0,LEN,UH*2); solid(XW,0,XW+1,LEN,UH*2); solid(P0,-1,SL.EX0,0,UH*2); solid(SL.EX1,-1,P1,0,UH*2); solid(SL.EX0,-SL.ED-1,SL.EX1,-SL.ED,UH*2); solid(P0,LEN,P1,LEN+1,UH*2);
   const TUN=(()=>{ const R=(mx0,mx1,my0,my1,k)=>({x0:SL.MY0-my1,x1:SL.MY0-my0,y0:mx0-XS0,y1:mx1-XS0,k}), N=[SL.MY0-4.4,SL.MY0], S=[SL.MY0-21.8,SL.MY0-17.4], {EAST,WN,WS,TOP}=SL, E0=XS0+LEN;
     return [R(E0,EAST,...N,'y'),R(E0,EAST,...S,'y'),R(WN+2.2,XS0,...N,'y'),R(WN-2.2,WN+2.2,...N,'c'),R(WN-2.2,WN+2.2,N[1],TOP,'x'),R(WS+2.2,XS0,...S,'y'),R(WS-2.2,WS+2.2,...S,'c'),R(WS-2.2,WS+2.2,S[1],TOP,'x')]; })();
-  { const PT=plane(), STA={x0:0,x1:XW,y0:0,y1:LEN}, all=[...TUN,STA], e=1e-3, tp=(u,v)=>{ const r=Math.abs(Math.abs(u)-.7);
+  const buildTun=()=>{ const PT=plane(), STA={x0:0,x1:XW,y0:0,y1:LEN}, all=[...TUN,STA], e=1e-3, tp=(u,v)=>{ const r=Math.abs(Math.abs(u)-.7);
       if(r<.07)return r<.025?[202,204,208]:sh([116,112,108],.85+.2*vn(v*2,u,7)); if(r<.14&&mod(v,1.1)<.34)return [70,52,40];
       const t3=Math.abs(u-1.42); if(t3<.12)return t3<.08?sh([150,118,64],.8+.25*vn(v*3,1,9)):[40,36,32];
       if(Math.abs(u)<.98&&mod(v,1.1)<.34)return sh([96,66,44],.7+.35*hash(Math.floor(v/1.1),3,11));
@@ -367,7 +367,8 @@ const SSUB=(()=>{ const W={};
         const Lt=new THREE.PointLight(new THREE.Color(1,.86,.62),LAMPI*.9,10*TILE,LAMPD); Lt.position.set(...V(px,py,SZ+30)); Lt.userData.i0=Lt.intensity; scene.add(Lt); lamps.push(Lt); } }
     BATCH.build((k,map,emap)=>k==='B'?new THREE.MeshBasicMaterial({map,alphaTest:.5,side:THREE.DoubleSide}):new THREE.MeshLambertMaterial({map,alphaTest:.5,side:THREE.DoubleSide,clippingPlanes:[PT]}));
     cutWalls.push({pl:PT,nx:0,nz:0,foot:Y(SZ+40),always:true,me:null});
-    for(const r of TUN)lid(r.x0,r.y0,r.x1,r.y1,140,0x141416); }
+    for(const r of TUN)lid(r.x0,r.y0,r.x1,r.y1,140,0x141416); };
+  buildTun();
   for(const [e,st] of [[P0,SL.STEPS[0]],[P1,SL.STEPS[1]]]){ let y=0; for(const [a,b] of st){ if(a>y)solid(e-.05,y,e+.05,a,0); y=b; } if(y<LEN)solid(e-.05,y,e+.05,LEN,0); }
   { const P=[[-1,-SL.ED-2],[XW+1,LEN+1]]; for(const r of TUN)P.push([r.x0,r.y0],[r.x1,r.y1]); const Q=P.map(([x,y])=>V(x,y,0)); BOUND={x0:Math.min(...Q.map(q=>q[0])),x1:Math.max(...Q.map(q=>q[0])),z0:Math.min(...Q.map(q=>q[2])),z1:Math.max(...Q.map(q=>q[2]))}; }
   const TX=(wx,wz)=>SL.MY0+77-wz/TILE, TY=(wx,wz)=>wx/TILE+72-XS0, at=(x,y)=>{ const p=V(x,y,0); return {x:p[0],z:p[2]}; }, box=(x0,y0,x1,y1)=>{ const a=at(x0,y0), b=at(x1,y1); return {x0:Math.min(a.x,b.x),x1:Math.max(a.x,b.x),z0:Math.min(a.z,b.z),z1:Math.max(a.z,b.z)}; };

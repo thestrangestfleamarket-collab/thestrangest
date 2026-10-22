@@ -7,10 +7,10 @@ import {MISTE, QS, SYS} from './006-map-pre.js';
 import {HEMI} from './064-map-post.js';
 Object.assign(DN,{lk:1,mode:'day',modes:['day','golden','night'],names:{day:'DAY',golden:'GOLDEN',night:'NIGHT'}});
 { const U=SKY.U, Q=k=>(QS.get(k)??''),
-    D0={day:{h:13.2,sun:1.35,amb:1.2,sunc:'#ffffff',zen:'#2370ec',hor:'#9ccbf6',cld:.02,cov:.92,cl:1.25,m0:70,m1:100,hz:.8,mist:'#86baf0',skym:.1,farb:1.15,grade:'#ffffff',lift:'#000000',liftk:0,lamp:1,star:1,moon:1},
-      golden:{h:16.3,sun:1.2,amb:1.2,sunc:'#ffe2a8',zen:'#f2c46a',hor:'#fff1bc',cld:.04,cov:.9,cl:1.1,m0:8,m1:60,hz:1,mist:'#f6d68e',skym:.5,farb:1,grade:'#fff2d2',lift:'#f2c463',liftk:.2,lamp:1,star:1,moon:1},
-      night:{h:22.5,sun:1.3,amb:1.25,sunc:'#ffffff',zen:'#04060e',hor:'#141c40',cld:.1,cov:.62,cl:.85,m0:34,m1:26,hz:.25,mist:'',skym:1,farb:.62,grade:'#ffffff',lift:'#000000',liftk:0,lamp:1.25,star:1.3,moon:1}};
-  const F=[['h','SUN HEIGHT (THE HOUR)',7.5,18.5,.05,'dg'],['h','NIGHT HOUR (WHERE THE MOON IS)',19.5,29.5,.05,'n'],['sun','SUNLIGHT',0,2,.01,'dg'],['sun','MOONLIGHT',0,3,.01,'n'],['sunc','SUNLIGHT COLOUR','c','dg'],['amb','LIGHT ALL ROUND',0,3,.01],
+    D0={day:{h:13.2,sun:1.35,amb:1.2,sunc:'#fff0d6',zen:'#2370ec',hor:'#9ccbf6',cld:.02,cov:.92,cl:1.25,m0:70,m1:100,hz:.8,mist:'#86baf0',skym:.1,farb:1.15,grade:'#fff7ee',lift:'#000000',liftk:0,lamp:1,star:1,moon:1,ray:.8,dust:.5},
+      golden:{h:16.3,sun:1.2,amb:1.2,sunc:'#ffe2a8',zen:'#f2c46a',hor:'#fff1bc',cld:.04,cov:.9,cl:1.1,m0:8,m1:60,hz:1,mist:'#f6d68e',skym:.5,farb:1,grade:'#fff2d2',lift:'#f2c463',liftk:.2,lamp:1,star:1,moon:1,ray:1,dust:.6},
+      night:{h:22.5,sun:1.3,amb:1.25,sunc:'#ffffff',zen:'#04060e',hor:'#141c40',cld:.1,cov:.62,cl:.85,m0:34,m1:26,hz:.25,mist:'',skym:1,farb:.62,grade:'#ffffff',lift:'#000000',liftk:0,lamp:1.25,star:1.3,moon:1,ray:0,dust:0}};
+  const F=[['h','SUN HEIGHT (THE HOUR)',7.5,18.5,.05,'dg'],['h','NIGHT HOUR (WHERE THE MOON IS)',19.5,29.5,.05,'n'],['sun','SUNLIGHT',0,2,.01,'dg'],['sun','MOONLIGHT',0,3,.01,'n'],['sunc','SUNLIGHT COLOUR','c','dg'],['amb','LIGHT ALL ROUND',0,3,.01],['ray','SUN RAYS',0,2,.01,'dg'],['dust','DUST IN THE AIR',0,1,.01,'dg'],
     ['zen','SKY OVERHEAD','c'],['hor','SKY AT THE HORIZON','c'],['cld','CLOUDY (DIMS THE SUN)',0,1,.01],['cov','HIGH CLOUD COVER (LOWER = MORE)',.2,.95,.01],['cl','HIGH CLOUD BRIGHTNESS',.5,1.6,.01],
     ['m0','MIST STARTS (TILES PAST TOWN)',-10,120,1],['m1','MIST DEPTH (TILES)',4,160,1],['hz','MIST TINTED BY THE SKY',0,1,.01],['mist','MIST COLOUR','c','dg'],['skym','SKY HIDDEN BY THE MIST',0,1,.01],['farb','FAR CITY HAZE BRIGHTNESS',.3,1.3,.01],
     ['grade','COLOUR OF EVERYTHING','c'],['lift','HAZE OVER EVERYTHING','c'],['liftk','HAZE OVER EVERYTHING (HOW MUCH)',0,.6,.01],

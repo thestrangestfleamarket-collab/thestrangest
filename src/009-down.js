@@ -109,9 +109,9 @@ await grab('down',async()=>{ const solids=SOL.down, fixed=FIX.down, SHL=[]; let 
   const mod=(a,n)=>((a%n)+n)%n, mix=(a,b,t)=>[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t];
   const vn=(x,y,c)=>{ const i=Math.floor(x), j=Math.floor(y), u=x-i, v=y-j, su=u*u*(3-2*u), sv=v*v*(3-2*v), a=hash(i,j,c), b=hash(i+1,j,c), d=hash(i,j+1,c), e=hash(i+1,j+1,c); return (a+(b-a)*su)*(1-sv)+(d+(e-d)*su)*sv; };
   const fbm=(x,y,c)=>vn(x,y,c)*.55+vn(x*2.7,y*2.7,c+1)*.3+vn(x*7.3,y*7.3,c+2)*.15;
-const SL=(()=>{ const W={TK:4.4,P0:4.4,P1:17.4,XW:21.8,L:40,TE:36,H:196,XS:12.4,TR:[2.3,19.5],CARL:22.4,CARW:1.8};
-  W.MID=(W.P0+W.P1)/2; W.COLX=[W.P0+1.5,W.P1-2.2]; W.COLY=[3.5,9,14.5,20,25.5,31,36.5]; W.FIXY=[9.25,14.75,20.25,25.75,31.25,36.75];
-  W.BENCH=[11.2,22.4,32.8]; W.BINS=[17.1,28.5]; W.STEPS=[[[38.4,39.6]],[[.6,1.8],[38.4,39.6]]]; W.CARS=[-8.6,14];
+const SL=(()=>{ const W={TK:4.4,P0:4.4,P1:17.4,XW:21.8,L:46,TE:2.5,H:196,XS:12.4,TR:[2.3,19.5],CARL:22.4,CARW:1.8};
+  W.MID=(W.P0+W.P1)/2; W.COLX=[W.P0+1.5,W.P1-2.2]; W.COLY=[3.5,9,14.5,20,25.5,31,36.5,42]; W.FIXY=[9.25,14.75,20.25,25.75,31.25,36.75,42.25];
+  W.BENCH=[11.2,22.4,32.8]; W.BINS=[17.1,28.5]; W.STEPS=[[[44.4,45.6]],[[.6,1.8],[44.4,45.6]]]; W.CARS=[-2.2,20.4]; W.EX0=W.XS-1.5; W.EX1=W.XS+1.5; W.ED=3; W.EV=(new URLSearchParams(location.search).get('exitv')||'a');
   W.SX0=W.XS-2, W.SX1=W.XS+2, W.SY=6;
   W.fzAt=(x,y)=>{ const e=x<W.P0?W.P0-x:x-W.P1, s=W.STEPS[x<W.P0?0:1]; return e<.75&&s.some(([a,b])=>y>=a&&y<b)?-8*(1+Math.floor(e/.25)):-32; };
   return W; })();
@@ -147,7 +147,7 @@ const SSUB=(()=>{ const W={};
   W.tile=(u,z,f)=>sh([186,190,197],f);
   const LED35={P:'111101111100100',L:'100100100100111',E:'111100110100111',A:'010101111101101',S:'011100010001110',M:'101111111101101',I:'111010010010111',O:'111101101101111',U:'101101101101111',
     N:'101111111111101',D:'110101101101110',T:'111010010010010',H:'101101111101101',G:'011100101101011',R:'110101110101101',V:'101101101101010',W:'101101111111101',' ':'000000000000000',C:'111100100100111',K:'101101110101101',
-    Y:'101101010010010',0:'111101101101111',1:'010110010010111',2:'111001111100111',3:'111001011001111',4:'101101111001001',':':'000010000010000','^':'010111010010010','>':'100010001010100','<':'001010100010001'};
+    Y:'101101010010010',0:'111101101101111',1:'010110010010111',2:'111001111100111',3:'111001011001111',4:'101101111001001',':':'000010000010000','^':'010111010010010','>':'100010001010100',X:'101101010101101','<':'001010100010001'};
   W.text=(s,k,ink,bg,rim,pad)=>{ const w=(s.length*4-1)*k+2*pad, h=5*k+2*pad, a=new Array(w*h).fill(bg);
     if(rim)for(let y=0;y<h;y++)for(let x=0;x<w;x++)if(x<1||y<1||x>=w-1||y>=h-1)a[y*w+x]=rim;
     [...s].forEach((ch,i)=>{ const g=LED35[ch]; if(g)for(let r=0;r<5;r++)for(let q=0;q<3;q++)if(g[r*3+q]==='1')for(let u=0;u<k;u++)for(let v=0;v<k;v++)a[(pad+r*k+v)*w+pad+(i*4+q)*k+u]=ink; });
@@ -299,16 +299,18 @@ const SSUB=(()=>{ const W={};
   const portal=(u,z,c)=>{ const d=Math.abs(u-c)/2.05; return d<1&&z<110+30*Math.sqrt(1-d*d); };
   const lw=hallWall(LEN,401,{plates:[LEN-31.5,LEN-11.5],t0:-24,t1:60}), rw=hallWall(LEN,402,{plates:[8.5,28.5],t0:-24,t1:60,tags:.4});
   cutaway(wallY(0,0,LEN,-32,H2,(u,z)=>lw(LEN-u,z)),1,0,-24); cutaway(wallY(XW,0,LEN,-32,H2,(u,z)=>rw(u,z)),-1,0,-24);
-  const ew=hallWall(XW,403,{tags:1.2,t0:4,t1:96,hole:(u,z)=>portal(u,z,LT)||portal(u,z,SL.TR[1])});
+  const exitHole=(u,z)=>u>SL.EX0&&u<SL.EX1&&z<72+14*Math.sqrt(Math.max(0,1-((u-SL.XS)/1.5)**2)), exSign=W.text('EXIT TO STREET',2,[255,250,236,1],[16,110,60,1],[200,230,210],4);
+  const ew0=hallWall(XW,403,{tags:1.2,t0:4,t1:96,hole:(u,z)=>portal(u,z,LT)||portal(u,z,SL.TR[1])||exitHole(u,z)}), ew=(u,z)=>{ if(exitHole(u,z))return null; const c=exSign.at(Math.floor((u-(SL.XS-exSign.w/48))*24),Math.floor(118-z)); return c||ew0(u,z); };
   const fw=hallWall(XW,404,{tags:1.4,t0:4,t1:96,hole:(u,z)=>portal(u,z,XW-LT)||portal(u,z,XW-SL.TR[1]),big:(g,r,pick,w,h)=>{ g.save(); g.font='900 58px sans-serif'; g.lineWidth=2; g.strokeStyle='rgb(14,14,16)'; g.transform(1,0,-.2,1,0,0); g.strokeText('EPPIE',w*.36,196-62); g.restore(); GRAF.arrow(g,w*.55,196-70,40,GRAF.P.blk,2); }});
   cutaway(wallX(0,0,XW,-32,H2,(u,z)=>ew(u,z)),0,1,-24); cutaway(wallX(LEN,0,XW,-32,H2,(u,z)=>fw(XW-u,z)),0,-1,-24);
-  for(const [x0,x1] of [[0,P0],[P1,XW]]){ for(const [a,b] of [[-TE,0],[LEN,LEN+TE]]){ cutaway(wallY(x0,a,b,-32,140,tun,12),1,0,-24); cutaway(wallY(x1,a,b,-32,140,tun,12),-1,0,-24); }
+  for(const [x0,x1] of [[0,P0],[P1,XW]]){ for(const [a,b,n] of [[-TE,0,1],[LEN,LEN+TE,-1]]){ cutaway(wallY(x0,a,b,-32,140,tun,12),0,n,-24); cutaway(wallY(x1,a,b,-32,140,tun,12),0,n,-24); }
     cutaway(wallX(-TE,x0,x1,-32,140,dark,12),0,1,-24); cutaway(wallX(LEN+TE,x0,x1,-32,140,dark,12),0,-1,-24); }
-  { const sw=hallWall(SL.SY,405,{tags:1.5,t0:6,t1:90}), sw2=hallWall(SL.SY,406,{tags:1.2,t0:6,t1:90}), SX0=SL.SX0-.1, SX1=SL.SX1+.1;
-    const sign=W.text('TO STREET ^',2,[255,250,236,1],[18,18,22,1],[90,90,96],5), fr=hallWall(SX1-SX0+.4,407,{tags:2,t0:8,t1:100});
-    cutaway(wallY(SX0,0,SL.SY,0,H2,(u,z)=>sw(SL.SY-u,z)),1,0,8); cutaway(wallY(SX1,0,SL.SY,0,H2,(u,z)=>sw2(u,z)),-1,0,8);
-    const pf=cutaway(wallX(SL.SY,SX0,SX1,0,H2,(u,z)=>{ if(u>SL.SX0&&u<SL.SX1&&z<UH)return null; const c=sign.at(Math.floor((u-(SL.XS-sign.w/48))*24),Math.floor(UH+30-z)); return c||fr(u-SX0,z); }),0,-1,8), pb=cutaway(wallX(SL.SY-.02,SX0,SX1,0,H2,(u,z)=>u>SL.SX0&&u<SL.SX1&&z<UH?null:fr(SX1-u,z)),0,-1,8);
-    for(const [me,o] of [[pf,1],[pb,-1]]){ const n=me.geometry.attributes.normal, w=new THREE.Vector3(n.getX(0),n.getY(0),n.getZ(0)), f=new THREE.Vector3(...V(0,1,0)).sub(new THREE.Vector3(...V(0,0,0))); me.material.side=w.dot(f)*o>0?THREE.FrontSide:THREE.BackSide; } }
+  { const X0=SL.EX0, X1=SL.EX1, D=SL.ED, B=SL.EV==='b', ex=hallWall(D,408,{tags:B?1:.3,t0:6,t1:70}), dk=(u,z)=>sh(tileWall(u,z,409),.32+.2*Math.max(0,(u+D)/D));
+    const sideP=(u,z)=>B?ex(u+D,z):dk(u+D,z);
+    cutaway(wallY(X0,-D,0,0,86,(u,z)=>sideP(u,z)),0,1,-24); cutaway(wallY(X1,-D,0,0,86,(u,z)=>sideP(u,z)),0,1,-24);
+    flat(X0,-D,X1,0,0,(x,y)=>sh(floorPaint(x,y+8),B?.85:.4+.35*Math.max(0,(y+D)/D)));
+    cutaway(wallX(-D,X0,X1,0,86,B?(u,z)=>{ const r=Math.hypot((u-SL.XS)/1.3,(z-34)/44); return r<1?sh([238,226,196],1-.18*Math.floor(r*4)).concat(1):ex(u-X0,z); }:()=>[6,6,8]),0,1,-24);
+    if(B){ const Lx=new THREE.PointLight(new THREE.Color(1,.9,.72),LAMPI*.9,6*TILE,LAMPD); Lx.position.set(...V(SL.XS,-D+.6,SZ+50)); Lx.userData.i0=Lx.intensity; scene.add(Lx); lamps.push(Lx); } }
   for(const [a,b] of [[0,SL.STEPS[0]],[1,SL.STEPS[1]]])for(const [y0,y1] of b)for(let k=0;k<3;k++){ const c=[150,146,138], e=a?P1:P0, s=a?1:-1, xa=e+s*k*.25, xb=e+s*(k+1)*.25; gbox({x0:Math.min(xa,xb),x1:Math.max(xa,xb),y0,y1,z0:-32,z1:-8*(k+1),c,top:()=>c,fi:()=>sh(c,.62),fj:()=>sh(c,.8)},SZ); }
   BATCH.cast=true;
   SL.COLX.forEach((cx,i)=>SL.COLY.forEach((cy,j)=>{ const p=colFace(i*10+j); put(prop([{x0:cx,y0:cy,x1:cx+.7,y1:cy+.7,z0:0,z1:H2,noTop:true,fs:(nx,ny,X,Yy,zr,b)=>p(nx,ny,X,Yy,zr,b)}]),'column'); solid(cx,cy,cx+.7,cy+.7,H2); }));
@@ -316,7 +318,7 @@ const SSUB=(()=>{ const W={};
   SL.BENCH.forEach((y,i)=>{ put(benchBoxes(MID,y,3.2,i+1),'bench'); solid(MID-.75,y,MID+.75,y+3.2,36); });
   SL.BINS.forEach(y=>{ put(binBoxes(MID,y),'trash bin'); solid(MID-.28,y-.28,MID+.28,y+.28,32); });
   litter.forEach(p=>put(p,'litter'));
-  const MX=SL.SX0-.1-.56, MY=4.6; put(W.mach(MX,MY),'passport machine'); solid(MX,MY,MX+.56,MY+.7,46);
+  const MX=SL.EX0-.95, MY=.06; put(W.mach(MX,MY),'passport machine'); solid(MX,MY,MX+.56,MY+.7,46);
   put(W.signal(XW-.35,-1.4,1),'signal',SZ-32); put(W.signal(XW-.35,LEN+1.4,0),'signal',SZ-32); put(W.signal(.35,LEN+1.4,0),'signal',SZ-32);
   SL.CARS.forEach((y0,i)=>{ put(carBoxes(y0,i+1,i===SL.CARS.length-1),'train car',SZ-32); solid(LT-SL.CARW,y0,LT+SL.CARW,y0+SL.CARL,144-32); });
   BATCH.build((k,map,emap)=>k==='B'?new THREE.MeshBasicMaterial({map,alphaTest:.5,side:THREE.DoubleSide}):new THREE.MeshLambertMaterial({map,alphaTest:.5,side:THREE.DoubleSide,...(emap?{emissiveMap:emap,emissive:0xffffff,emissiveIntensity:1.6}:{})}));
@@ -339,7 +341,7 @@ const SSUB=(()=>{ const W={};
       if(g.attributes.normal.getY(0)>0){ const a=g.attributes.position.array; for(let i=0;i<a.length;i+=9)for(let k=0;k<3;k++){ const t=a[i+3+k]; a[i+3+k]=a[i+6+k]; a[i+6+k]=t; } g.computeVertexNormals(); }
       const me=new THREE.Mesh(g,new THREE.MeshLambertMaterial({color:c,clippingPlanes:[plane()]})); me.receiveShadow=true; scene.add(me); return me; };
   for(const [x0,x1] of [[0,P0],[P1,XW]]){ lid(x0,-TE,x1,0,140,0x141416); lid(x0,LEN,x1,LEN+TE,140,0x141416); }
-  lid(SL.SX0,0,SL.SX1,SL.SY,UH-.5,0x000000);
+  lid(SL.EX0,-SL.ED,SL.EX1,0,86,SL.EV==='b'?0x3a3e3c:0x050506);
   { const BEAM=new THREE.MeshBasicMaterial({color:new THREE.Color(.5,.62,.56),transparent:true,opacity:.014,depthWrite:false,side:THREE.DoubleSide,blending:THREE.AdditiveBlending,clippingPlanes:[PF]});
     const g=new THREE.BufferGeometry(), P=[], q=(a,b,c,d)=>P.push(...a,...b,...c,...a,...c,...d);
     for(const {fy} of FIXL){ const t=[V(MID-.18,fy-1.5,SZ+150),V(MID+.18,fy-1.5,SZ+150),V(MID+.18,fy+1.5,SZ+150),V(MID-.18,fy+1.5,SZ+150)], b=[V(MID-1.1,fy-2.2,SZ),V(MID+1.1,fy-2.2,SZ),V(MID+1.1,fy+2.2,SZ),V(MID-1.1,fy+2.2,SZ)];
@@ -347,7 +349,7 @@ const SSUB=(()=>{ const W={};
     g.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); const me=new THREE.Mesh(g,BEAM); me.renderOrder=5; scene.add(me); }
   { const R=new THREE.PointLight(new THREE.Color(1,.18,.12),1.4,6*TILE,1.6); R.position.set(...V(LT,SL.CARS[SL.CARS.length-1]+SL.CARL+.5,SZ+40)); R.userData.i0=R.intensity; scene.add(R); lamps.push(R); }
   cutWalls.push({pl:PF,nx:0,nz:0,foot:Y(SZ+100),always:true,me:null},{pl:PC,nx:0,nz:0,foot:Y(SZ+72),always:true,me:null});
-  solid(-1,-TE-1,0,LEN+TE+1,UH*2); solid(XW,-TE-1,XW+1,LEN+TE+1,UH*2); solid(P0,-TE-1,P1,0,UH*2); solid(P0,LEN,P1,LEN+TE+1,UH*2);
+  solid(-1,-TE-1,0,LEN+TE+1,UH*2); solid(XW,-TE-1,XW+1,LEN+TE+1,UH*2); solid(P0,-TE-1,SL.EX0,0,UH*2); solid(SL.EX1,-TE-1,P1,0,UH*2); solid(SL.EX0,-SL.ED-1,SL.EX1,-SL.ED,UH*2); solid(P0,LEN,P1,LEN+TE+1,UH*2);
   for(const [x0,x1] of [[0,P0],[P1,XW]]){ solid(x0,-TE-1,x1,-TE,UH); solid(x0,LEN+TE,x1,LEN+TE+1,UH); }
   for(const [e,st] of [[P0,SL.STEPS[0]],[P1,SL.STEPS[1]]]){ let y=0; for(const [a,b] of st){ if(a>y)solid(e-.05,y,e+.05,a,0); y=b; } if(y<LEN)solid(e-.05,y,e+.05,LEN,0); }
   { const a=V(-1,-TE-1,0), b=V(XW+1,LEN+TE+1,0); BOUND={x0:Math.min(a[0],b[0]),x1:Math.max(a[0],b[0]),z0:Math.min(a[2],b[2]),z1:Math.max(a[2],b[2])}; }
@@ -355,7 +357,7 @@ const SSUB=(()=>{ const W={};
   const M=window.METRO=SHARED.METRO={V,Y,TX,TY,at,DY:Y(SZ),XC,ZB,SL,MACH:{x:MX+.28,y:MY+.35}};
   M.inside=(x,z)=>x>BOUND.x0&&x<BOUND.x1&&z>BOUND.z0&&z<BOUND.z1;
   M.ground=(x,z)=>{ const tx=TX(x), ty=TY(z); return Y(SZ+(tx>=P0&&tx<=P1?0:SL.fzAt(tx,ty))); };
-  M.plat=at(8.2,16); M.foot=at(SL.XS,6.9); M.street={x:XC,z:(SM.y1+77)*TILE+1.4*TILE};
+  M.plat=at(8.2,16); M.foot=at(SL.XS,1.1); M.street={x:XC,z:(SM.y1+77)*TILE+1.4*TILE};
   M.lane=box(P0+.6,7.5,P1-.6,LEN-.6); M.edge=box(P1-.75,7,P1-.15,LEN-.6); M.track=box(P1+.3,1,XW-.3,LEN-1);
   M.rats=[[M.lane,8.6,27.2],[M.lane,13.8,19.6],[M.edge,P1-.4,25],[M.track,SL.TR[1],30]].map(([lane,x,y])=>({lane,...at(x,y)}));
   M.path=[{x:XC,z:(SM.y1-.3+77)*TILE},{x:XC,z:(SM.y0+.3+77)*TILE,lv:'down'}].concat([at(SL.XS,7.4),at(SL.XS-3.2,10.6),M.plat].map(p=>({...p,lv:'down'})));
@@ -381,7 +383,7 @@ const SSUB=(()=>{ const W={};
     mk(TR,[MODS.stairCut]); cutWalls.push({pl:SW,nx:0,nz:0,foot:Y(SZ+8),me:mk(WL,[MODS.stairCut,SW]),get always(){ return SHARED.LVL==='down'&&MODS.inStair(pos.x,pos.z)==null; }});
     for(const [y,z,c,i] of [[S.y1-.3,60,[1,.92,.78],5],[S.y0+.6,-40,[.5,.54,.64],6]]){ const L=new THREE.PointLight(new THREE.Color(...c),i,7*TILE,1.6); L.position.set(XC,z*ZU,Z(y)); L.userData.i0=i; scene.add(L); lamps.push(L); }
     const sol=(lv,x0,y0,x1,y1,h)=>{ SOL[lv].push([X(x0),Z(y0),X(x1),Z(y1)]); FIX[lv].push([X(x0),Z(y0),0,X(x1),Z(y1),h]); };
-    for(const lv of ['up','down'])for(const x of [S.x0-.2,S.x1])sol(lv,x,S.y0,x+.2,S.y1,30*ZU);
+    for(const x of [S.x0-.2,S.x1])sol('up',x,S.y0,x+.2,S.y1,30*ZU);
     sol('up',S.x0-.2,S.y0-.2,S.x1+.2,S.y0,30*ZU); };
   { const run=(SM.y1-SM.y0)/SM.steps, tread=(x,z)=>{ const gx=x/TILE+72, gy=z/TILE-77; return gx>=SM.x0&&gx<SM.x1&&gy>=SM.y0&&gy<SM.y1?Math.min(SM.steps,Math.floor((SM.y1-gy)/run)+1):null; };
     const lid=new THREE.Mesh(new THREE.PlaneGeometry(1,1).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({color:0x000000,fog:false}));
@@ -401,8 +403,10 @@ const SSUB=(()=>{ const W={};
     const go=async dir=>{ '@later'; busy=true; await FADE.run(dir==='in'?'ENTERING SUBWAY':'LEAVING SUBWAY',()=>{
       const p=dir==='in'?M.foot:M.street; UI.goTo(p.x,p.z,dir==='in'?'down':'up');
       if(UI.view==='iso'||UI.view==='map'){ if(dir==='in'){ SHARED.yaw=SHARED.yawTo=M.YAW; } else if(UI.isoTo){ UI.isoTo(); SHARED.yaw=SHARED.yawTo; } } },{hold:120}); busy=false; };
-    M.door=(py,p)=>{ lid.visible=SHARED.LVL==='up'; if(!lidT++){ const top=MAPG.bodega; if(top)top.add(lid); } if(busy||UI.freeCam||(RAG.on))return; const k=tread(p.x,p.z);
-      if(SHARED.LVL!=='down'&&k!=null&&k>=3)go('in'); else if(SHARED.LVL==='down'&&k!=null&&k<=SM.steps-5)go('out'); };
+    const inExit=p=>{ const tx=TX(p.x), ty=TY(p.z); return tx>SL.EX0&&tx<SL.EX1&&ty<-2.5&&ty>-SL.ED-1; };
+    M.door=(py,p)=>{ lid.visible=SHARED.LVL==='up'; if(MAPG.stairs)MAPG.stairs.visible=SHARED.LVL!=='down'; if(!lidT++){ const top=MAPG.bodega; if(top)top.add(lid); } if(busy||UI.freeCam||(RAG.on))return; const k=tread(p.x,p.z);
+      if(SHARED.LVL!=='down'&&k!=null&&k>=3)go('in'); else if(SHARED.LVL==='down'&&inExit(p))go('out'); };
+    { const S=SM; S.has=(x,z)=>{ if(SHARED.LVL==='down')return false; const gx=x/TILE+72, gy=z/TILE-77; return gx>=S.x0&&gx<S.x1&&gy>=S.y0&&gy<S.y1; }; }
     M.doorBusy=()=>busy; window.SUBGO=(x,z,lv)=>UI.goTo(x,z,lv); }
   { const G=new THREE.Group(), lam=c=>new THREE.MeshLambertMaterial({color:c}), flat=c=>new THREE.MeshBasicMaterial({color:c}), R=.2, H=46*ZU, S0=Y(SZ)+H+R+.02, SAY='THANK YOU FOR YOUR COOPERATION.';
     const BODY=lam(0xb8bec8), RIM=lam(0x3a3e48), DK=lam(0x2a2d34), LENS=flat(0x4dff86), TALK=flat(0x9be8ff), BEAM=new THREE.MeshBasicMaterial({color:0x5dff8e,transparent:true,opacity:.16,depthWrite:false,side:THREE.DoubleSide});

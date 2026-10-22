@@ -4180,3 +4180,7 @@ Owner: the eight blocks connect like his map, by subway, street and water ("subw
 ## 22 Oct 2026: section adjacency only, not travel methods
 
 Owner: you can also cross by sky, walking, etc. — the specific methods (subway, street, water) shouldn't be baked into the section model unless they matter as a future mechanic. The `section` neighbours now record adjacency only (north: B, east: C); how you travel between sections is a separate mechanic to model when it exists.
+
+## 22 Oct 2026: rules refreshed after the section work
+
+Two rules added from naming Section A: scaffold the future, don't build it early (the section grid is set up, not implemented); model the essence, not premature specifics (adjacency, not how you travel). The seams rule no longer names subway/street/water — how you cross sections is its own mechanic, not baked into the map.

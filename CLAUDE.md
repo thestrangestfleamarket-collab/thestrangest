@@ -100,12 +100,14 @@ Set 22 Oct 2026. Every change to the game goes by these.
 - Draw, load and run only what's near or seen; state a new thing's cost; if it won't fit, say so before adding it.
 
 **Stay duplicable**
-- Build so a section is copy-rename-retheme: nothing hard-wired to this section's name, bounds or neighbours (the section namespace is still to be built; add no new "only one section" assumptions).
-- Sections meet only at standard seams (subway, street, water), built as reusable connectors — never reach into another section's internals.
+- Build so a section is copy-rename-retheme: nothing hard-wired to this section (its identity is `SECTION` in `data/world.json`; the full section namespace is still to be built; add no new "only one section" assumptions).
+- Scaffold the future, don't build it early: set up the shape so later sections and mechanics slot in (the section grid, its id), without implementing what isn't needed yet.
+- Sections meet only at reusable connectors, never by reaching into another section's internals (how you cross — subway, street, water, sky, walking — is its own mechanic, modelled when it exists, not baked into the map).
 - One cel look for every section; the theme (palette, props, mood) is what varies. No glow, gradient, blur or photo texture unless the owner asks.
 
 **Adding, changing, removing**
 - Mechanic, not instance — but only when it's core or has a second case; don't build a system for one thing.
+- Model the essence, not premature specifics: capture the minimal true shape of a thing (e.g. which sections are adjacent) and add detail only when it becomes a real mechanic — don't bake in values or methods you don't need yet.
 - Properties are schema-wide, not per-instance: a new or changed property (e.g. an item's `burnable`) is a field on the shared entity model, resolved by one system; adding or changing it means re-evaluating every entity of that class for it and every system that reacts to it (fire, physics, crafting, AI, …), resolved uniformly through that system — never special-cased on one item.
 - One path: a character through `makeNPC` + a home, a body through the rig, a place through its builder + chunk + lazy room, a placed thing in `data/world.json`. About to write a second way to do something that exists? Stop and extend the first.
 - Where it goes: a new file numbered between its neighbours, after the files it reads; cross-file needs declared in `003b-systems.js`; state on `SHARED`; per-frame work a `SYS` entry, never a wrapper; baked assets in `data/` (originals in `data/full/`); the reason in HISTORY and the commit, never a source comment.

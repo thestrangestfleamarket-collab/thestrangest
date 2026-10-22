@@ -4321,3 +4321,8 @@ Owner: "the alley should be 50% as narrow and have a gate on both entrances on t
 Picks: a general shop for any merchant (the mushroom and tomato sellers keep their own); price = the item's shared VALUE, buy freely; bought goods use their item properties.
 
 The character editor's new JOB tab marks a character a shopkeeper and lists which item types it sells (from the shared ITEMS model, shift+7); price is each item's VALUE. Ships via characters.json (`trade.sells`). In game any such merchant is interactable (walk up / double-click) and opens a buy panel (`SHOPS`, 159b-shops): buying deducts your cash and drops the goods in your pack, where they behave by their item properties (edible → eat, sellable → resell) — all through the one inventory and cash the game already has. Rule: a merchant's goods are a character property in characters.json, resolved once by SHOPS for every merchant.
+
+## 22 Oct 2026: character editor tint; one key for the editors; the ? list made true
+Per-character tint (Phase 3 of the character editor): a colour grade over a character's whole body, shipped via characters.json and applied live by CHARS on each NPC's own material (`uCTint`, default white — no change unless set). The 360 view shows the real tinted body. Body swap and part palette stay a larger effort for later; routines stay out.
+The editors now open only from SHIFT+0 — a menu of all of them; pick one to open it, close it to return to the game (not the menu). The per-editor SHIFT+1–9 shortcuts are gone (owner).
+The ? controls list shows what you can actually press: dropped the stale KEYMOVE dump (it listed moves on keys that are now the camera — Q/E/Z/X/C), and added SHIFT+0 (the editors) and the arrows.

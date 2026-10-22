@@ -1,8 +1,8 @@
 // THE BODEGA: the bodega's kits (dungeon, museum, lounge, theatre, castle), its layout, solids and build (grab('bodega')).
 import {SHARED, THREE} from './003-shx.js';
-import {CLIP, CLOCK, DRESS, LITE, pos, ROOMS, WALKERS} from './003b-systems.js';
+import {CLOCK, DRESS, pos, ROOMS} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {BF, BLDK, BLOCK, CASTLE, cutWalls, EASTX, FIX, grab, lamps, LAY, LOTX, MAPG, MAPSTAIR, MODS, NEONS, NORTHX, OVERHEAD, PARKGX, RING, SOL, TILE, WESTX, WP, WROW, ZU} from './006-map-pre.js';
+import {BF, BLDK, BLOCK, CASTLE, cutWalls, EASTX, FIX, grab, lamps, LAY, LOTX, MAPG, MAPSTAIR, MODS, NEONS, NORTHX, PARKGX, RING, SOL, TILE, WESTX, WP, WROW, ZU} from './006-map-pre.js';
 import {PAINTC} from './006a-paintc.js';
 import {BATCH, OBJ} from './008-batch.js';
 import {BRICKS, CAT_DEPTS, CAT_INFO, CATALOG, COPE, cvNoise, DTBRICK, FP, grain, grassCol, hash, kerbCol, kerbFace, KIND_OF, LAMPS, lawnCol, LBLD, LIFE, LSEED, mt, prop, PROPL, rlf, roadCol, sh, sided, slabCol, speck, STORY, T, zShift} from './014-gamekit.js';
@@ -1319,6 +1319,7 @@ await grab('bodega',async()=>{ const solids=SOL.up, fixed=FIX.up, SHL=[]; let BO
   const MAP={x0:WESTX,x1:EASTX,y0:B00.y0,y1:FAR+12}, RG=RING, WEND=RING.wy1;
   B0.x0=LOTX(WP.bodega.x0); B0.x1=LOTX(WP.bodega.x1);
   const BODOFF=B0.y0+3.75; SHARED.BOD.BODOFF=BODOFF;
+  const SB={...B0,x0:1330,x1:1330+(B0.x1-B0.x0)}; SHARED.BOD.SB=SB; SHARED.BOD.SHOPDX=X(SB.x0)-X(B0.x0);
   const holed=f=>(x,y)=>[MAPSTAIR,...RING.stairs].some(S=>x>=S.x0&&x<S.x1&&y>=S.y0&&y<S.y1)?null:f(x,y);
   const C=v=>v&&v.e&&v.length===3?[v[0],v[1],v[2],1]:v;
   const faceTex=(w,h,fn)=>{ w=Math.max(1,Math.round(w)); h=Math.max(1,Math.round(h)); const im=new ImageData(w,h), d=im.data; let ie=null, e=null;
@@ -1349,7 +1350,7 @@ await grab('bodega',async()=>{ const solids=SOL.up, fixed=FIX.up, SHL=[]; let BO
     if(own)for(const l of LAMPS)if(l.prop===p){ l.at0=l.at0||[l.x,l.y]; [l.x,l.y]=fw(...l.at0); } }
   const WALLS=[];
   const wall=(id,ax,at,a0,a1,H,holes,inS,outS,outer)=>{ WALLS.push({id,ax,at,a0,a1,H,holes,inS,outS,outer}); };
-  { const B=B0, m=(B.x0+B.x1)/2, d=(m0)=>({a0:m0-.78,a1:m0+.78,z0:0,z1:94,door:true});
+  { const B=SB, m=(B.x0+B.x1)/2, d=(m0)=>({a0:m0-.78,a1:m0+.78,z0:0,z1:94,door:true});
     const cuts=[B.x0+.35,m-.95,m+.95,B.x1-.35], win=[]; for(let i=0;i+1<cuts.length;i+=2)win.push({a0:cuts[i],a1:cuts[i+1],z0:16,z1:94,glass:true});
     wall('front','x',B.y1,B.x0,B.x1,B.h,[{...d(m),glass:true},...win],-1,1,true);
     wall('back','x',B.y0,B.x0,B.x1,B.h,[],1,-1,true);
@@ -1378,7 +1379,7 @@ await grab('bodega',async()=>{ const solids=SOL.up, fixed=FIX.up, SHL=[]; let BO
   const FRAME=[70,72,78];
   const O={}, HUNG=[];
   const put=(key,kind,x,y,rot=0,hung)=>{ const f=CATALOG[kind]; if(!f){ console.warn('no',kind); return; } const n0=PROPL.length; const p=f(+x.toFixed(3),+y.toFixed(3)); if(!p)return; p.key=key; p.kind=kind; place(p,rot); if(hung)p.high=true; O[key]=p; };
-  { const B={...B0,y0:BODOFF}, m=(B.x0+B.x1)/2;
+  { const B={...SB,y0:BODOFF}, m=(B.x0+B.x1)/2;
   put('mat','door mat',m,B.y1-.5);
   put('wb1','shop shelf',B.x0+1.1,B.y0+.36); put('wb2','shop shelf',B.x0+3.1,B.y0+.36); put('wb3','shop shelf',B.x0+5.1,B.y0+.36);
   for(const [i,dy] of [[1,1.0],[2,1.95],[3,2.9]])put('fridge'+i,'drinks fridge',B.x0+.5,B.y0+dy);
@@ -1392,10 +1393,10 @@ await grab('bodega',async()=>{ const solids=SOL.up, fixed=FIX.up, SHL=[]; let BO
   put('clock','wall clock',B.x0+3.1,B.y0+.14,0,1); put('mirror','convex mirror',B.x0+.42,B.y0+.15,0,1); put('calendar','calendar',B.x0+.11,B.y0+1.95,0,1); put('cord','extension cord',B.x0+.11,B.y0+.12,0,1);
   put('tube1','fluorescent tube',m,B.y0+2.5); put('tube2','fluorescent tube',m,B.y0+6.5);
   put('fan','box fan',B.x0+5.1,B.y0+.36); put('fly','fly strip',m-.8,B.y0+4.5); put('bell','door bell',m,B.y1-.24);
-  put('news','newspaper rack',B.x0+.6,B.y1-.5); put('dock','drone box',B.x1-.85,B.y0+.85); O.dock.boxes.push({x0:B.x1-1.05,y0:B.y0+.65,x1:B.x1-.65,y1:B.y0+1.05,z0:114,z1:B0.h,c:[120,122,122],fi:(v,z)=>Math.floor(z)%6===0?[96,98,98]:[124,126,126],fj:(u,z)=>Math.floor(z)%6===0?[96,98,98]:[124,126,126]});
+  put('news','newspaper rack',B.x0+.6,B.y1-.5); put('dock','drone box',B.x1-.85,B.y0+.85); O.dock.boxes.push({x0:B.x1-1.05,y0:B.y0+.65,x1:B.x1-.65,y1:B.y0+1.05,z0:114,z1:SB.h,c:[120,122,122],fi:(v,z)=>Math.floor(z)%6===0?[96,98,98]:[124,126,126],fj:(u,z)=>Math.floor(z)%6===0?[96,98,98]:[124,126,126]});
   put('wl3','shop shelf',B.x0+.36,B.y0+8.5,3);
   put('mat-fox','counter mat',B.x1-.42,B.y0+5.3); put('mat-run','rubber mat',B.x1-1.75,B.y0+5.3,1);
-  { const y0=B0.y0, x0=B0.x0; put('of-desk','desk',x0+1.4,y0+.75); put('of-chair','office chair',x0+1.4,y0+1.6); put('of-pc','home computer',x0+1.4,y0+.6);
+  { const y0=SB.y0, x0=SB.x0; put('of-desk','desk',x0+1.4,y0+.75); put('of-chair','office chair',x0+1.4,y0+1.6); put('of-pc','home computer',x0+1.4,y0+.6);
     put('of-shelf','shelves with boxes',x0+4.6,y0+.5); put('of-boxes','cardboard boxes',x0+6.6,y0+.7); put('of-sink','utility sink',x0+.55,y0+2.6,3);
     put('of-clock','wall clock',x0+3.2,y0+.29); put('of-tube','fluorescent tube',x0+3.6,y0+1.9); }
   SHARED.BOD.food={x:B.x1-1.05,y:B.y0+6.3};
@@ -1413,9 +1414,7 @@ await grab('bodega',async()=>{ const solids=SOL.up, fixed=FIX.up, SHL=[]; let BO
     const n2=PROPL.length, R=(f,x,y,z,...a)=>{ const p=f(x,y,z,bo.y1,...a); p.solids=[]; return p; };
     R(M.antenna,bo.x0+8,bo.y0+3.5,bo.h); for(const p of PROPL.slice(n2))ROOF.push(p); }
   SHARED.BOD.O=O; SHARED.BOD.FRONT=FRONT; SHARED.BOD.STREET=STREET; SHARED.BOD.ROOF=ROOF; SHARED.BOD.MAP=MAP; SHARED.BOD.RD=RD;
-  const wallOf=p=>{ const cx=(p.x0+p.x1)/2, cy=(p.y0+p.y1)/2; let best=null, bd=.5; for(const w of WALLS){ const a=w.ax==='x'?cx:cy, d=Math.abs((w.ax==='x'?cy:cx)-w.at); if(a>=w.a0-.2&&a<=w.a1+.2&&d<bd){ bd=d; best=w; } } return best; };
-  SHARED.BOD.kindOf=p=>{ if(/fluorescent tube/.test(p.name||''))return 'U'; if(ROOF.includes(p))return 'R';
-    if(FRONT.includes(p))return 'Hfront'; if(p.high){ const w=wallOf(p); if(w)return 'H'+w.id; } return 'L'; };
+  SHARED.BOD.kindOf=p=>/fluorescent tube/.test(p.name||'')?'U':ROOF.includes(p)?'R':'L';
   SHARED.BOD.paintProps=(L=[...Object.values(O),...FRONT,...STREET,...ROOF,...GHOSTST])=>{ for(const p of L){ const k=SHARED.BOD.kindOf(p); BATCH.tag=OBJ('bodega',p.name); for(const b of p.boxes)gbox(b,k); } BATCH.tag=null; };
   SHARED.BOD.g={bodegaWall,grain,speck,COPE,DTBRICK,hash,grassCol,lawnCol,kerbFace,cvNoise}; SHARED.BOD.CURB=CURB; SHARED.BOD.FAR=FAR;
   SHARED.BOD.gbox=gbox; SHARED.BOD.faceTex=faceTex; SHARED.BOD.bq=bq;
@@ -1525,7 +1524,7 @@ await grab('bodega',async()=>{ const solids=SOL.up, fixed=FIX.up, SHL=[]; let BO
   SHARED.BOD.signs=[];
   SHARED.BOD.road={KR,CORN,RR,at:ROADAT,MH,DR,LN}; window.STREETQ=()=>({...SHARED.BOD.road,XS:SHARED.BOD.XS,ZS:SHARED.BOD.ZS,CURB,FAR,MAP,RG,corner:DRESS.corner});
   SHARED.BOD.grounds=[
-    {id:'shop',bld:true,x0:B0.x0,y0:B0.y0,x1:B0.x1,y1:B0.y1,z:.15,col:(x,y)=>bodegaFloorCol(x,y),tex:'concrete_floor_worn_001',tint:[112,116,124],rep:3},
+    {id:'shop',bld:true,x0:SB.x0,y0:SB.y0,x1:SB.x1,y1:SB.y1,z:.15,col:(x,y)=>bodegaFloorCol(x,y),tex:'concrete_floor_worn_001',tint:[112,116,124],rep:3},
     {id:'walk',x0:MAP.x0,y0:W,x1:MAP.x1,y1:CURB-.16,z:0,col:holed(slabCol),tex:'concrete_pavement',tint:[166,161,148],rep:2},
     {id:'kerb',x0:MAP.x0,y0:CURB-.16,x1:MAP.x1,y1:CURB,z:0,col:kerbCol('x'),tex:'concrete_pavement',tint:[178,174,164],rep:2},
     {id:'road',x0:MAP.x0,y0:CURB,x1:MAP.x1,y1:FAR,z:RD,col:RW,tex:'asphalt_02',tint:[62,64,68],rep:3},
@@ -1620,7 +1619,8 @@ const GLAY={
     sol(r.x0,r.y0,r.x1,r.y1,Math.max(...bs.map(b=>b.z1))); }
   BOUND={x0:XS(MAP.x0),x1:XS(MAP.x1),z0:Z(B00.y0),z1:ZS(MAP.y1)};
   groundY=(x,z)=>{ const gx=x/TILE+OX, gy=z/TILE+OY, rw=rampAt(gx,gy); if(rw!=null)return YS(RD*(1-rw/RPD)); return ROADAT(gx,gy)?YS(RD):(window.HILL?HILL(x,z):0); };
-  SHARED.BOD.inside=(x,z)=>{ const gx=x/TILE/K+OX, gy=z/TILE/K+OY; return gx>B0.x0&&gx<B0.x1&&gy>B0.y0&&gy<B0.y1; };
+  sol(B0.x0,B0.y0,B0.x1,B0.y1,B0.h);
+  SHARED.BOD.inside=(x,z)=>{ const gx=x/TILE/K+OX, gy=z/TILE/K+OY; return gx>SB.x0&&gx<SB.x1&&gy>SB.y0&&gy<SB.y1; };
 }
 SHARED.BOD.streetSigns=()=>{ const X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, V3=THREE.Vector3, R=48/TILE, h3=(a,b,c)=>{ const v=Math.sin(a*12.9898+b*78.233+c*37.719)*43758.5453; return v-Math.floor(v); };
   const F5={A:'ehhvhhh',B:'uhhuhhu',C:'ehggghe',D:'uhhhhhu',E:'vgguggv',F:'vgguggg',G:'ehgnhhf',H:'hhhvhhh',I:'e44444e',K:'hikokih',L:'ggggggv',M:'hrllhhh',N:'hpljhhh',O:'ehhhhhe',
@@ -1681,12 +1681,12 @@ SHARED.BOD.streetSigns=()=>{ const X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, V3=THREE.Ve
 // BUILDING THE BODEGA: faces batched into meshes, the ground painted a patch at a time round you (a BATCH.queue), lamps and goods.
 SHARED.BODB={};
 { const {X,Y,Z,B0,BODOFF}=SHARED.BOD, {bodegaWall,grain,speck,COPE,hash}=SHARED.BOD.g, H=B0.h, KINDS={};
-  const inside=()=>SHARED.BOD.inside(pos.x,pos.z)||!!(window.ROOMS&&ROOMS.cur&&ROOMS.cur.lz==='bodega'); SHARED.BODB.inside=inside;
+  const inside=()=>SHARED.BOD.inside(pos.x,pos.z); SHARED.BODB.inside=inside;
   const paint=(w,s,u,z)=>{ const nx=w.ax==='y'?s:0, ny=w.ax==='x'?s:0, Xw=w.ax==='y'?w.at+s*.1:u, Yw=w.ax==='x'?w.at+s*.1:u;
     return (!w.outer||s===w.inS)?bodegaWall(null,nx,ny,Xw,Yw,z,1):SHARED.BOD.facade(nx,ny,Xw,Yw,z,1,w.H); };
   const wallPt=(w,s,a,z)=>w.ax==='x'?[X(a),Y(z),Z(w.at+s*.1)]:[X(w.at+s*.1),Y(z),Z(a)];
-  const planes={}; for(const w of SHARED.BOD.WALLS)planes[w.id]=new THREE.Plane(new THREE.Vector3(0,-1,0),1e6);
-  const glassMat=new THREE.MeshLambertMaterial({color:new THREE.Color(.09,.11,.14),side:THREE.DoubleSide});
+  const glassMat=new THREE.MeshLambertMaterial({color:new THREE.Color(.09,.11,.14),side:THREE.DoubleSide}), glassIn=new THREE.MeshBasicMaterial({color:0x8fa6b8,side:THREE.DoubleSide}); glassIn.userData.keep=true;
+  SHARED.BODB.tick=()=>{ if(SHARED.BODB.SG)glassIn.color.setHex(CLOCK.dark()?0x141a24:0x8fa6b8); };
   const wallF=(w,inn)=>{ const as=new Set([w.a0,w.a1]), zs=new Set([0,w.H]), kind='W'+w.id;
     for(const h of w.holes){ as.add(Math.max(w.a0,h.a0)); as.add(Math.min(w.a1,h.a1)); zs.add(h.z0); zs.add(h.z1); }
     const A=[...as].sort((p,q)=>p-q), Zs=[...zs].sort((p,q)=>p-q);
@@ -1698,9 +1698,16 @@ SHARED.BODB={};
     for(const h of w.holes){ for(const a of [h.a0,h.a1])fr([pt(a,h.z0,-.1),pt(a,h.z0,.1),pt(a,h.z1,.1),pt(a,h.z1,-.1)],.2,h.z1-h.z0,SHARED.BOD.FRAME);
       fr([pt(h.a0,h.z1,-.1),pt(h.a1,h.z1,-.1),pt(h.a1,h.z1,.1),pt(h.a0,h.z1,.1)],h.a1-h.a0,5,SHARED.BOD.FRAME); if(h.z0>0)fr([pt(h.a0,h.z0,-.1),pt(h.a1,h.z0,-.1),pt(h.a1,h.z0,.1),pt(h.a0,h.z0,.1)],h.a1-h.a0,5,SHARED.BOD.FRAME);
       if(!h.glass&&!h.door&&!h.open){ const sd=Math.floor(Math.abs(h.a0*7+w.at*13+h.z0)); SHARED.BOD.window([pt(h.a0,h.z0,0),pt(h.a1,h.z0,0),pt(h.a1,h.z1,0),pt(h.a0,h.z1,0)],h.a1-h.a0,h.z1-h.z0,hash(sd,3,11)<.5,sd,kind); }
-      if(h.glass&&!h.door){ const m=new THREE.Mesh(new THREE.PlaneGeometry((h.a1-h.a0)*TILE,Y(h.z1)-Y(h.z0)),glassMat.clone()); m.material.clippingPlanes=[planes[w.id]];
+      if(h.glass){ const m=new THREE.Mesh(new THREE.PlaneGeometry((h.a1-h.a0)*TILE,Y(h.z1)-Y(h.z0)),glassIn);
         if(w.ax==='x')m.position.set(X((h.a0+h.a1)/2),Y((h.z0+h.z1)/2),Z(w.at)); else{ m.position.set(X(w.at),Y((h.z0+h.z1)/2),Z((h.a0+h.a1)/2)); m.rotation.y=Math.PI/2; } scene.add(m); } } };
-  for(const w of SHARED.BOD.WALLS)if(w.outer){ wallF(w,false); wallR(w); }
+  { const fw=SHARED.BOD.WALLS.find(w=>w.id==='front'), sx=B0.x0-SHARED.BOD.SB.x0, HO=fw.holes.map(h=>({...h,a0:h.a0+sx,a1:h.a1+sx})), NS={f:[0,1],b:[0,-1],w:[-1,0],e:[1,0]};
+    const PAL=[[200,60,50],[60,110,190],[230,190,60],[80,150,80],[220,220,210],[190,110,60],[150,80,150]];
+    const glimpse=(a,z)=>{ const i=Math.floor(a*24), sn=Math.abs(((i+z*.7)%22+22)%22-11)<1.6; if(z>84&&z<87)return [226,234,222,1];
+      if(z>16&&z<78){ const r=Math.floor((z-16)/16), zz=(z-16)%16; if(zz<2)return sn?[78,88,104]:[58,62,70]; if(zz<12&&hash(i>>1,r,317)<.78){ const c=PAL[Math.floor(hash(i>>1,r,319)*PAL.length)]; return [c[0]*.42+8,c[1]*.42+10,c[2]*.42+14]; } }
+      return sn?[70,84,104]:[23,28,36]; };
+    const paintB=(side,u,z)=>{ if(side==='f')for(const h of HO)if(u>h.a0&&u<h.a1&&z>h.z0&&z<h.z1){ const e=Math.min(u-h.a0,h.a1-u)*24; return e<2.4||h.z1-z<2.4||h.z0>0&&z-h.z0<2.4?SHARED.BOD.FRAME:glimpse(u-h.a0,z); }
+      const [nx,ny]=NS[side]; return SHARED.BOD.facade(nx,ny,side==='w'?B0.x0:side==='e'?B0.x1:u,side==='f'?B0.y1:side==='b'?B0.y0:u,z,1,B0.h); };
+    BLOCKS.make({x0:B0.x0,y0:B0.y0,x1:B0.x1,y1:B0.y1-.1,z0:0,z1:B0.h,kind:'K',px:24,paint:paintB}); }
   const {cvNoise}=SHARED.BOD.g, sh=SHARED.BOD.K.sh, RW=B0.x1-B0.x0, RH=B0.y1-B0.y0, PATCH=[[1.2,2.5,3.6,4.4,0],[4.6,8.2,7.1,9.6,0],[2.1,10.6,3.4,11.5,1],[5.3,1.1,6.9,2.3,2],[.7,6.4,1.7,8.8,2],[5.9,5.2,6.6,5.9,0]], POND=[[3.2,6.3,1.2,.8],[6.2,12.1,.9,.6],[1.5,12.7,.7,.5],[4.5,3.4,.5,.4]];
   const roofCol=(x,y)=>{ const u=x-B0.x0, v=y-B0.y0, i=Math.floor(x*24), j=Math.floor(y*24), h1=hash(i,j,71), sN=Math.floor(v/1.45), sv=v-sN*1.45, wob=(cvNoise(u*3,sN,73)-.5)*.07;
     let c=sh([[50,50,52],[57,56,56],[45,45,48],[54,53,50]][Math.floor(hash(sN,1,75)*4)],.9+.2*grain(x,y,61,1.4));
@@ -1759,33 +1766,25 @@ SHARED.BODB={};
       if(up)SHARED.BOD.bq(a,b,c,d,tx,'G'); else SHARED.BOD.bq(b,a,d,c,tx,'G');
       for(const u of [r.u0,r.u1])SHARED.BOD.bq(P(u,0,RD),P(u,D,0),P(u,D,0),P(u,0,0),SHARED.BOD.faceTex(D*24,H,(i,j)=>SHARED.BOD.g.kerbFace(u*7+i/24,H-1-j,H)),'G'); } }
   SHARED.BOD.streetSigns();
-  { const fw=SHARED.BOD.WALLS.find(w=>w.id==='front'), dh=fw.holes.find(h=>h.door), a0=dh.a0, a1=dh.a1, yf=fw.at, AL=[156,158,156], d=Z(yf+1)>Z(yf)?1:-1;
-    const gw=(x0,x1,z0,z1,c=AL,e=.06,o=0)=>SHARED.BOD.gbox({x0,x1,y0:yf-e+o,y1:yf+e+o,z0,z1,c,fs:(nx,ny,P,Q,z,k)=>sh(c,k*(.92+.12*hash(Math.floor(P*48),Math.floor(z),301))),top:()=>c},'Wfront');
+  { const fw=SHARED.BOD.WALLS.find(w=>w.id==='front'), sx=B0.x0-SHARED.BOD.SB.x0, dh=fw.holes.find(h=>h.door), a0=dh.a0+sx, a1=dh.a1+sx, yf=fw.at, AL=[156,158,156], d=Z(yf+1)>Z(yf)?1:-1;
+    const gw=(x0,x1,z0,z1,c=AL,e=.06,o=0)=>SHARED.BOD.gbox({x0,x1,y0:yf-e+o,y1:yf+e+o,z0,z1,c,fs:(nx,ny,P,Q,z,k)=>sh(c,k*(.92+.12*hash(Math.floor(P*48),Math.floor(z),301))),top:()=>c},'L');
     gw(a0,a0+.07,0,94,AL,.1); gw(a1-.07,a1,0,94,AL,.1); gw(a0,a1,88,94,AL,.1); gw(a0+.07,a1-.07,78,81); gw(a0+.5,a0+.57,0,78); gw(a0+.07,a0+.5,0,8);
     for(const [x0,x1,z0,z1,c] of [[a0+.12,a0+.42,60,66,[200,40,36]],[a0+.12,a0+.42,63,64,[240,236,226]],[a0+.14,a0+.26,50,54,[40,80,170]],[a0+.28,a0+.4,50,54,[236,190,40]],[a0+.16,a0+.36,20,26,[236,232,220]]])gw(x0,x1,z0,z1,c,.006,.065*d);
-    const win=fw.holes.filter(h=>h.glass&&!h.door); for(const [k,h] of win.entries()){ const L=h.a1-h.a0, st=k?[[.1,.5,20,27,[30,60,150]],[.55,.85,20,24,[200,40,36]],[L-.6,L-.25,20,30,[236,232,214]],[L-.55,L-.3,26,27,[60,60,60]]]:[[L-.45,L-.15,20,26,[60,140,70]],[L-.42,L-.18,22,23,[240,240,230]],[.2,.4,82,88,[236,232,220]]];
+    const win=fw.holes.filter(h=>h.glass&&!h.door).map(h=>({...h,a0:h.a0+sx,a1:h.a1+sx})); for(const [k,h] of win.entries()){ const L=h.a1-h.a0, st=k?[[.1,.5,20,27,[30,60,150]],[.55,.85,20,24,[200,40,36]],[L-.6,L-.25,20,30,[236,232,214]],[L-.55,L-.3,26,27,[60,60,60]]]:[[L-.45,L-.15,20,26,[60,140,70]],[L-.42,L-.18,22,23,[240,240,230]],[.2,.4,82,88,[236,232,220]]];
       for(const [u0,u1,z0,z1,c] of st)gw(h.a0+u0,h.a0+u1,z0,z1,c,.006,.105*d); gw(h.a0,h.a1,h.z0,h.z0+2,[96,98,98],.12); }
-    const hx=a1-.07, lw=(a0+.57)-hx, U=v=>X(hx+v)-X(hx), Hh=v=>Y(v)-Y(0), cl=[planes.front], mat=new THREE.MeshLambertMaterial({clippingPlanes:cl}), BXS=[], bx=(u0,u1,z0,z1,dp,c)=>BXS.push([(U(u0)+U(u1))/2,(Hh(z0)+Hh(z1))/2,0,Math.abs(U(u1)-U(u0)),Hh(z1)-Hh(z0),dp,c]);
+    const hx=a1-.07, lw=(a0+.57)-hx, U=v=>X(hx+v)-X(hx), Hh=v=>Y(v)-Y(0), mat=new THREE.MeshLambertMaterial(), BXS=[], bx=(u0,u1,z0,z1,dp,c)=>BXS.push([(U(u0)+U(u1))/2,(Hh(z0)+Hh(z1))/2,0,Math.abs(U(u1)-U(u0)),Hh(z1)-Hh(z0),dp,c]);
     bx(0,.07*Math.sign(lw),0,78,.05,0x9c9e9c); bx(lw-.07*Math.sign(lw),lw,0,78,.05,0x9c9e9c); bx(0,lw,72,78,.05,0x9c9e9c); bx(0,lw,0,12,.06,0xb4b6b4); bx(.1*Math.sign(lw),lw-.1*Math.sign(lw),38,41,.12,0x6e706e);
     for(const [u0,u1,z0,z1,c] of [[.15,.45,62,68,0xc8282a],[.17,.43,64.5,65.5,0xf0ece2],[.5,.62,52,55,0x2850a8],[.64,.76,52,55,0xe8b828],[.3,.55,45,47,0xf0ece2]])bx(u0*Math.sign(lw),u1*Math.sign(lw),z0,z1,.07,c);
     const lf=new THREE.InstancedMesh(new THREE.BoxGeometry(1,1,1),mat,BXS.length), m4=new THREE.Matrix4(), q=new THREE.Quaternion(), cc=new THREE.Color(); BXS.forEach(([x,y,z,a,b,c2,col],i)=>{ lf.setMatrixAt(i,m4.compose(new THREE.Vector3(x,y,z),q,new THREE.Vector3(a,b,c2*TILE))); lf.setColorAt(i,cc.setHex(col)); });
-    const gl=new THREE.Mesh(new THREE.PlaneGeometry(Math.abs(U(lw))-.12*TILE,Hh(60)),glassMat.clone()); gl.material.clippingPlanes=cl; gl.position.set(U(lw)/2,Hh(42),0);
-    const sl=new THREE.Mesh(new THREE.PlaneGeometry(Math.abs(X(a0+.5)-X(a0+.07)),Hh(70)),glassMat.clone()); sl.material.clippingPlanes=cl; sl.position.set((X(a0+.07)+X(a0+.5))/2,Hh(43),Z(yf)); scene.add(sl);
-    const tr=new THREE.Mesh(new THREE.PlaneGeometry(Math.abs(X(a1-.07)-X(a0+.07)),Hh(7)),glassMat.clone()); tr.material.clippingPlanes=cl; tr.position.set((X(a0)+X(a1))/2,Hh(84.5),Z(yf)); scene.add(tr);
+    const gl=new THREE.Mesh(new THREE.PlaneGeometry(Math.abs(U(lw))-.12*TILE,Hh(60)),glassMat); gl.position.set(U(lw)/2,Hh(42),0);
+    const sl=new THREE.Mesh(new THREE.PlaneGeometry(Math.abs(X(a0+.5)-X(a0+.07)),Hh(70)),glassMat); sl.position.set((X(a0+.07)+X(a0+.5))/2,Hh(43),Z(yf)); scene.add(sl);
+    const tr=new THREE.Mesh(new THREE.PlaneGeometry(Math.abs(X(a1-.07)-X(a0+.07)),Hh(7)),glassMat); tr.position.set((X(a0)+X(a1))/2,Hh(84.5),Z(yf)); scene.add(tr);
     const leaf=new THREE.Group(); leaf.add(lf,gl); leaf.position.set(X(hx),0,Z(yf)); lf.castShadow=true; scene.add(leaf);
-    const cx=(X(a0)+X(a1))/2, cz=Z(yf), sg=-d*Math.sign(U(lw)); let ang=0;
-    SHARED.BODB.door={leaf,a:()=>ang}; SHARED.BODB.tick=dt=>{ const near=Math.hypot(pos.x-cx,pos.z-cz)<1.5*TILE||((window.WALKERS&&WALKERS.list)||[]).some(W=>W.N&&W.N.st&&Math.hypot(W.N.st.x-cx,W.N.st.z-cz)<1.4*TILE);
-      const to=near?1.35:0; ang+=(to-ang)*Math.min(1,dt*(near?5:2.2)); if(!near&&ang<.01)ang=0; leaf.rotation.y=sg*ang; }; }
-  { const fw=SHARED.BOD.WALLS.find(w=>w.id==='front'), dh=fw.holes.find(h=>h.door), ca=new THREE.Mesh(new THREE.PlaneGeometry(X(dh.a1)-X(dh.a0),Y(dh.z1)-Y(0)),new THREE.MeshBasicMaterial({color:0x07070a}));
-    ca.position.set((X(dh.a0)+X(dh.a1))/2,Y(dh.z1)/2,Z(fw.at-.35)); ca.raycast=()=>{}; scene.add(ca); SHARED.BODB.card=ca; }
+    }
   SHARED.BOD.paintProps([...SHARED.BOD.FRONT,...SHARED.BOD.STREET,...SHARED.BOD.ROOF,...(SHARED.BOD.GHOSTST||[])]);
-  const MK=(k,map,emap)=>{ const pl=k[0]==='W'||k[0]==='H'?planes[k.slice(1)]:null, cp=pl?{clippingPlanes:[pl]}:{};
-    if(k==='B')return new THREE.MeshBasicMaterial({map,side:THREE.DoubleSide,alphaTest:.5,...cp});
-    return new THREE.MeshLambertMaterial({map,alphaTest:.5,side:THREE.DoubleSide,...(emap?{emissiveMap:emap,emissive:0xffffff,emissiveIntensity:1.4}:{}),...cp}); };
-  const NRM={front:[0,-1],back:[0,1],west:[1,0],east:[-1,0],office:[0,1]};
-  const post=M=>{ for(const me of BATCH.all(M,'G'))me.castShadow=false;
-    for(const U of BATCH.all(M,'U')){ const O=SHARED.BOD.O, zs=Object.values(O).filter(p=>/fluorescent tube/.test(p.name||'')).flatMap(p=>p.boxes.map(b=>b.z0)); OVERHEAD.push({o:U,y:SHARED.BOD.Y(Math.min(...zs))}); }
-    for(const w of SHARED.BOD.WALLS)for(const me of BATCH.all(M,'W'+w.id))cutWalls.push({pl:planes[w.id],nx:NRM[w.id][0],nz:NRM[w.id][1],foot:Y(8),me,when:inside}); };
+  const MK=(k,map,emap)=>{ if(k==='B')return new THREE.MeshBasicMaterial({map,side:THREE.DoubleSide,alphaTest:.5});
+    return new THREE.MeshLambertMaterial({map,alphaTest:.5,side:THREE.DoubleSide,...(emap?{emissiveMap:emap,emissive:0xffffff,emissiveIntensity:1.4}:{})}); };
+  const post=M=>{ for(const me of BATCH.all(M,'G'))me.castShadow=false; };
   BATCH.cast=true; BATCH.build(MK); BATCH.cast=false; Object.assign(KINDS,BATCH.meshes); BATCH.meshes={}; post(KINDS);
   SHARED.BODB.roof=BATCH.all(KINDS,'R');
   { window.BODB=SHARED.BODB; const Q=BATCH.queue({make:MK,cast:false,group:()=>MAPG.bodega||scene,post,done:()=>{ if(window.PAINTC)PAINTC.save(); }}); for(const g of GQ)Q.jobs.push(g); GQ.length=0; SHARED.BODB.GQ=Q.jobs; }
@@ -1824,7 +1823,7 @@ SHARED.BODB={};
           for(const s of [1,-1])emit(it,pa,[[[0,0,s*hh],[0,0,s]],[[Math.cos(a0)*r,Math.sin(a0)*r,s*hh],[0,0,s]],[[Math.cos(a1)*r,Math.sin(a1)*r,s*hh],[0,0,s]]]); } } }
       GL.push({k:it.k,m:it.g.m||.5,v0,v1:P.length/3}); }
     const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); geo.setAttribute('normal',new THREE.Float32BufferAttribute(N,3)); geo.setAttribute('color',new THREE.Float32BufferAttribute(Cc,3));
-    const me=new THREE.Mesh(geo,new THREE.MeshLambertMaterial({vertexColors:true,side:THREE.DoubleSide})); me.receiveShadow=true; me.userData.goods=true; (MAPG.bodega||scene).add(me); SHARED.BOD.goodsMesh=me; };
+    const me=new THREE.Mesh(geo,new THREE.MeshLambertMaterial({vertexColors:true,side:THREE.DoubleSide})); me.receiveShadow=true; me.userData.goods=true; scene.add(me); SHARED.BOD.goodsMesh=me; };
   const HALO=(c,W,H)=>{ const cv=document.createElement('canvas'); cv.width=W; cv.height=H; const g=cv.getContext('2d'), im=g.createImageData(W,H), B=[0,8,2,10,12,4,14,6,3,11,1,9,15,7,13,5];
     for(let j=0;j<H;j++)for(let i=0;i<W;i++){ const dx=(i+.5)/W*2-1, dy=(j+.5)/H*2-1, d=Math.hypot(dx,dy), t=(s0=>s0-Math.floor(s0))(Math.sin(i*12.9898+j*78.233)*43758.5453), s=d<.42+(t-.5)*.12?.5:d<.68+(t-.5)*.14?.26:d<.96+(t-.5)*.12?.1:0, q=(j*W+i)*4;
       im.data[q]=c[0]; im.data[q+1]=c[1]; im.data[q+2]=c[2]; im.data[q+3]=Math.round(s*255); }
@@ -1835,17 +1834,20 @@ SHARED.BODB={};
     { const w=N.W*k*TILE*2, h=(Y(14)-Y(0))*2.6, m=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshBasicMaterial({map:HALO(N.c,Math.round(N.W*k*24*2/1.2),Math.round(14*2.6/1.2)),transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,toneMapped:false}));
       const at=new THREE.Vector3(X(N.x),Y(N.z),Z(N.y-.08)), f=new THREE.Vector3(); m.position.copy(at); m.renderOrder=2;
       m.onBeforeRender=(r,s,c)=>{ m.quaternion.copy(c.quaternion); c.getWorldDirection(f); m.position.copy(at).addScaledVector(f,-.3); m.updateMatrixWorld(); }; scene.add(m); N.halo=m; } }
-  const inB=l=>l.x>B0.x0&&l.x<B0.x1&&l.y>B0.y0&&l.y<B0.y1;
+  const SB=SHARED.BOD.SB, inB=l=>l.x>SB.x0&&l.x<SB.x1&&l.y>SB.y0&&l.y<SB.y1;
   const lampsOf=inn=>{ for(const l of SHARED.BOD.LAMPS){ const cm=Math.max(...l.c); if(!(cm>0)||inB(l)!==inn)continue; const L=new THREE.PointLight(new THREE.Color(l.c[0]/cm,l.c[1]/cm,l.c[2]/cm),7*cm*Math.min(1.2,l.r/5),l.r*TILE*1.25,1.6);
-    L.position.set(X(l.x),Y(l.z),Z(l.y)); L.userData.i0=L.intensity; L.userData.both=!!l.neon; lamps.push(L); if(inn&&LITE.recs.length){ L.userData.grp=MAPG.bodega||null; LITE.recs.push(L); } else scene.add(L); } };
+    L.position.set(X(l.x),Y(l.z),Z(l.y)); L.userData.i0=L.intensity; L.userData.both=!!l.neon; if(!inn)lamps.push(L); scene.add(L); } };
   lampsOf(false);
-  SHARED.BODB.build=()=>{ '@later'; if(SHARED.BODB.built)return; SHARED.BODB.built=1; const keep=BATCH.items.splice(0), m0=BATCH.meshes; BATCH.meshes={};
-    for(const w of SHARED.BOD.WALLS){ wallF(w,true); if(!w.outer)wallR(w); }
-    const g=SHARED.BOD.grounds.find(q=>q.id==='shop'); if(g)flat(g.x0,g.y0,g.x1,g.y1,g.z,g.col,'G',!g.bld);
-    SHARED.BOD.paintProps(Object.values(SHARED.BOD.O));
-    BATCH.cast=true; BATCH.build(MK); BATCH.cast=false; const M=BATCH.meshes||{}; BATCH.meshes=m0; BATCH.items=keep;
-    for(const k in M)(MAPG.bodega||scene).add(M[k]); post(M); goods(); lampsOf(true);
-    if(window.ROOMS&&ROOMS.lazy.bodega)ROOMS.lazy.bodega.done=true; if(window.ROOMS)ROOMS.reset(); if(window.CLIP)CLIP.run(); };
+  SHARED.BODB.build=()=>{ '@later'; const SG=new THREE.Group(); SG.name='bodega-in'; scene.add(SG); SHARED.BODB.SG=SG;
+    const P=ROOMS.part(SG,()=>{ for(const w of SHARED.BOD.WALLS){ wallF(w,true); wallR(w); }
+      const g=SHARED.BOD.grounds.find(q=>q.id==='shop'); if(g)flat(g.x0,g.y0,g.x1,g.y1,g.z,g.col,'G',!g.bld);
+      SHARED.BOD.paintProps(Object.values(SHARED.BOD.O)); goods(); lampsOf(true); },MK);
+    SG.traverse(o=>{ if(o.isMesh)o.receiveShadow=true; }); SHARED.BODB.tick(); return P; };
+  SHARED.BODB.unbuild=()=>{ if(SHARED.BODB.SG)SHARED.BODB.SG.removeFromParent(); SHARED.BODB.SG=null; SHARED.BOD.goodsMesh=null; };
+  { const SB=SHARED.BOD.SB, m0=(B0.x0+B0.x1)/2, mS=(SB.x0+SB.x1)/2, bx=(x0,y0,x1,y1)=>[Math.min(X(x0),X(x1)),Math.min(Z(y0),Z(y1)),Math.max(X(x0),X(x1)),Math.max(Z(y0),Z(y1))], wb=bx(SB.x0-.2,SB.y0-.2,SB.x1+.2,SB.y1+.2);
+    ROOMS.off.bodega={name:'THE BODEGA',keep:true,box:{x0:wb[0],z0:wb[1],x1:wb[2],z1:wb[3],y0:-1,y1:Y(SB.h)},need:()=>LOAD(SHARED.BODB.build.chunk),build:SHARED.BODB.build,unbuild:SHARED.BODB.unbuild,
+      spawn:[X(mS),Z(SB.y1-1.3),0,Math.PI],out:[X(m0),Z(B0.y1+.7),0,0],door:[X(m0),Y(0),Z(B0.y1+.25)],exit:[X(mS),0,Z(SB.y1-.25)],exitName:'OUT TO THE STREET',
+      inAt:[...bx(m0-.6,B0.y1,m0+.6,B0.y1+.4),0],outAt:[...bx(mS-.7,SB.y1-.5,mS+.7,SB.y1),0]}; }
 }
 { const {BF_KINDS,bfPic}=SHARED.BOD.STOREK.bf, PICS=new Map(), hash=SHARED.BOD.g.hash;
   const tex=(k,pose)=>{ '@later'; const key=k+':'+pose; let t=PICS.get(key); if(t)return t; const Q=bfPic(k,16,pose), c=document.createElement('canvas'); c.width=Q.w; c.height=Q.h; const g=c.getContext('2d'), im=g.createImageData(Q.w,Q.h);

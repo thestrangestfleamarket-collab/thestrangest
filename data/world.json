@@ -1,5 +1,5 @@
 {
- "about": "THE MARKET's level: where every place is. Map tiles, x east, y north; the block runs from front y -77 back to -92.4. The builders read this file; the map editor exports it.",
+ "about": "THE MARKET's level: where every place is. Map tiles, x east, y north; the block runs from front y -77 back to -92.4. The builders read this file; the map editor exports it. A place's face (n, e, s or w; n if none) is the side its front looks out of, onto its street.",
  "section": {
   "id": "A",
   "grid": {
@@ -57,10 +57,11 @@
    "id": "apts",
    "name": "APARTMENTS",
    "kind": "front",
-   "x0": -67.65,
-   "x1": -53.35,
-   "y0": -48.95,
-   "y1": -33.55
+   "x0": -67.9,
+   "x1": -52.5,
+   "y0": -37.5,
+   "y1": -23.2,
+   "face": "e"
   },
   {
    "id": "bodega",
@@ -73,20 +74,22 @@
    "id": "museum",
    "name": "MUSEUM OF EARTH",
    "kind": "front",
-   "x0": -85.05,
-   "x1": -56.45,
-   "y0": 118.95,
+   "x0": -75.6,
+   "x1": -52.5,
+   "y0": 116.2,
    "back": true,
-   "y1": 142.05
+   "y1": 144.8,
+   "face": "e"
   },
   {
    "id": "play",
    "name": "THE PLAYHOUSE",
    "kind": "front",
-   "x0": -71.5,
-   "x1": -57.5,
-   "y0": 76.3,
-   "y1": 91.7
+   "x0": -67.9,
+   "x1": -52.5,
+   "y0": 77.0,
+   "y1": 91.0,
+   "face": "e"
   },
   {
    "id": "bank",
@@ -99,10 +102,11 @@
    "id": "bar",
    "name": "THE BAR",
    "kind": "front",
-   "x0": -65,
-   "x1": -54,
-   "y0": -33.125,
-   "y1": -19.375
+   "x0": -66.26,
+   "x1": -52.5,
+   "y0": -22.2,
+   "y1": -11.2,
+   "face": "e"
   },
   {
    "id": "subway",
@@ -136,31 +140,32 @@
    "id": "arcade",
    "name": "THE ARCADE",
    "kind": "front",
-   "x0": -71.25,
-   "x1": -57.25,
-   "y0": 31.8,
-   "y1": 47.2
+   "x0": -67.9,
+   "x1": -52.5,
+   "y0": 32.5,
+   "y1": 46.5,
+   "face": "e"
   }
  ],
  "shells": [
   {
    "id": "shell1",
-   "x0": -69,
-   "x1": -56,
+   "x0": -65.5,
+   "x1": -52.5,
    "y0": 8,
    "y1": 27
   },
   {
    "id": "shell3",
-   "x0": -69,
-   "x1": -56,
+   "x0": -65.5,
+   "x1": -52.5,
    "y0": 52,
    "y1": 71
   },
   {
    "id": "shell5",
-   "x0": -69,
-   "x1": -56,
+   "x0": -65.5,
+   "x1": -52.5,
    "y0": 96,
    "y1": 115
   }

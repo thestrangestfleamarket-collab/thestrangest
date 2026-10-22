@@ -13,7 +13,7 @@ if(!AWAY.has('bar')){ const R=RIG;
   const tones=h=>{ const c=new THREE.Color(h); return [1.14,1,.72,.46].map(k=>c.clone().multiplyScalar(k)); };
   for(const m in LOOK){ const n='sg_'+m; if(!R.MATS.includes(n)){ R.MATS.push(n); W3.ramp.push(tones(LOOK[m])); } }
 }
-SGM.make=()=>{ if(!STORE.bar)return; const R=RIG, V=R.V, S=STORE.bar, AT={x:SHARED.BOD.X(S.singer.x),z:SHARED.BOD.Z(S.singer.y),hd:0,y:SHARED.BOD.Y(S.stage.z)};
+SGM.make=()=>{ if(!STORE.bar)return; const R=RIG, V=R.V, S=STORE.bar, AT={...S.at(S.singer.x,S.singer.y),hd:S.hd,y:SHARED.BOD.Y(S.stage.z)};
   const own=p=>{ const q=Object.assign({},p), pm=p.paint; q.m='sg_'+(p.m||'skin'); if(pm)q.paint=x=>{ const r=pm(x); return r?'sg_'+r:null; }; return q; };
   const B0=R.settle(R.build(castPose('singA'),null),0), MIC0=singMic(B0), MI=n=>R.MATS.indexOf(n), SH=MI('shirt'), PA=MI('pants'), SO=MI('shoes'), SK=MI('skin'), RED=MI('sg_shirt'), SRED=MI('sg_shoes');
   const FEM=['',.95,{torso:[.82,.98,1],neck:[.84,1.04,.84],head:[.95,1,.95],hips:[1.08,1.04,1.04],upperArmL:[.8,1,.8],upperArmR:[.8,1,.8],sleeveL:[.8,1,.8],sleeveR:[.8,1,.8],forearmL:[.8,1,.8],forearmR:[.8,1,.8],handL:[.84,.9,.84],handR:[.84,.9,.84],thighL:[1.02,1,1.02],thighR:[1.02,1,1.02],shinL:[.9,1,.9],shinR:[.9,1,.9],shoeL:[.85,.92,.85],shoeR:[.85,.92,.85]},1], GS=WOMAN.SKIRT.gown, top=22.4, bare=WOMAN.NECK.strapless;

@@ -4303,3 +4303,9 @@ Owner: "lake, if water is more than waist high you can swim in it." The stream a
 
 ## 22 Oct 2026: townspeople wander, no routes
 Owner: "townspeople shouldnt have routes. they sould wander freely"; his picks: wander anywhere, and delete the switched-off route code. Each next stop is a free spot a short walk from where they stand, street or park, through the park's gate; a home only sets where they start (no circle, no trips to doors); a home with no circle still stands still. Deleted: the daily routes (`LIVES`, 157) and the walkers' ways of life (`WALKERS`, 158) with their tests; the newsstand and the post had only walkers as customers and residents (both off with the city).
+
+## 22 Oct 2026: buildings face their street; both streets filled in
+Owner: "west st buildings, make sure the front of all buildings face the street they are on (add front of building markers on each building when viewing map editor) and allow to rotate"; "make them align with street and fix map, my map was just estimation"; "fill in empty buildings to flesh out both streets". Rules: a place's `face` (n, e, s, w) in `data/world.json` is the side its front looks out of; the five West St places face east, fronts on West St's sidewalk line, from Market St to the north street; the map editor shows each building's front in red and turns West St buildings a quarter at a time (export keeps `face` and `y`). Every gap on West St and on Market St's front row is filled with empty buildings. The playhouse's and the museum's insides are now off the map (their outsides are blocks), like the arcade's and the apartments'.
+
+## 22 Oct 2026: no neon in the alley
+Owner: "remove all the neons signs for now", then "i just meant remove neon signs from alley, leave in other places". The alley's neon signs are off (`?neon=1` brings them back); every other neon stays.

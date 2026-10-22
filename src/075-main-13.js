@@ -23,10 +23,11 @@ const VIEW0={yaw:Math.PI/4,pitch:Math.PI/6,ppu:PPU}; SHARED.yaw=VIEW0.yaw; SHARE
 const PMIN=0.17, PMAX=Math.PI/2-0.002, clampP=v=>Math.max(PMIN,Math.min(PMAX,v));
 renderer.domElement.addEventListener('contextmenu',e=>e.preventDefault());
 let drag=null;
-renderer.domElement.addEventListener('pointerdown',e=>{ if(e.button===2||e.button===1){ drag={x:e.clientX,y:e.clientY}; UI.grab(e); renderer.domElement.setPointerCapture(e.pointerId); } });
+renderer.domElement.addEventListener('pointerdown',e=>{ if((e.button===2||e.button===1)&&UI.camFree()){ drag={x:e.clientX,y:e.clientY}; UI.grab(e); renderer.domElement.setPointerCapture(e.pointerId); } });
 renderer.domElement.addEventListener('pointermove',e=>{ if(!drag)return; UI.orbit(e.clientX-drag.x,e.clientY-drag.y); drag={x:e.clientX,y:e.clientY}; });
 renderer.domElement.addEventListener('pointerup',()=>drag=null);
-renderer.domElement.addEventListener('wheel',e=>{ e.preventDefault(); let lo=3; if(e.deltaY>0&&!UI.persp){ const w=SHARED.cam.right-SHARED.cam.left; if(w>=UI.MAXW*.99)return; lo=Math.max(lo,SHARED.ppu*w/UI.MAXW); } SHARED.ppuTo=Math.max(lo,Math.min(ZMAX,SHARED.ppuTo*Math.pow(1.0015,-e.deltaY))); UI.wheelAt(e); },{passive:false});
+UI.holdUp=new THREE.Vector3();
+renderer.domElement.addEventListener('wheel',e=>{ e.preventDefault(); if(UI.hold&&UI.hold.look&&!UI.persp){ const c=SHARED.cam; UI.hold.dy=(UI.hold.dy||0)-e.deltaY*(c.top-c.bottom)/(c.zoom||1)/1500; return; } let lo=3; if(e.deltaY>0&&!UI.persp){ const w=SHARED.cam.right-SHARED.cam.left; if(w>=UI.MAXW*.99)return; lo=Math.max(lo,SHARED.ppu*w/UI.MAXW); } SHARED.ppuTo=Math.max(lo,Math.min(ZMAX,SHARED.ppuTo*Math.pow(1.0015,-e.deltaY))); UI.wheelAt(e); },{passive:false});
 addEventListener('keydown',e=>{ const k=UI.key(e); if(!k)return; if(FEEL.key(k,e))return; const FT=FEEL.take(); if(k===' '&&!e.repeat&&FT)FEEL.press(); keys.add(k); if(['arrowup','arrowdown','arrowleft','arrowright',' '].includes(k))e.preventDefault();
   if(k==='0'){ SHARED.yawTo=VIEW0.yaw; SHARED.pitchTo=VIEW0.pitch; SHARED.ppuTo=VIEW0.ppu; UI.home(); } if(k==='h')document.getElementById('hud').hidden^=1; if(k==='1'&&!e.repeat&&!ED.on&&window.WIELD)WIELD.next();
   if(k==='-'||k==='_'){SHARED.RESI=Math.max(0,SHARED.RESI-1);resize();} if(k==='='||k==='+'){ if(pxS()>1||vpu()>art())SHARED.RESI=Math.min(RESMAX,SHARED.RESI+1); resize(); }
@@ -47,6 +48,7 @@ let last=performance.now(), fpsT=0, fpsN=0, t=0;
 function frame(now){ requestAnimationFrame(frame); if(PARK.hold)return; renderer.info.reset(); const dt=Math.max(0,Math.min(0.05,(now-last)/1000)); last=now; SHARED.METRO.tick(dt,pos); t+=dt;
   if(UI.freeCam?MAPLV(UI.camT.y-.9,UI.camT):MAPLV(SHARED.py,pos))setPhys(SHARED.LVL);
   if(UI.view!=='iso'){ if(keys.has('q'))SHARED.yawTo+=dt*1.8; if(keys.has('e'))SHARED.yawTo-=dt*1.8; if(keys.has('z'))SHARED.pitchTo=UI.clampV(SHARED.pitchTo-dt*1.2); if(keys.has('x'))SHARED.pitchTo=UI.clampV(SHARED.pitchTo+dt*1.2); }
+  if(UI.hold&&!UI.persp){ const H=UI.hold; SHARED.yawTo=H.yaw; SHARED.pitchTo=H.pitch; SHARED.ppuTo=H.ppu; if(UI.off){ H.off?UI.off.copy(H.off):UI.off.set(0,0,0); if(H.look){ const c=SHARED.cam, lim=H.look*(c.top-c.bottom)/(c.zoom||1); H.dy=Math.max(-lim,Math.min(lim,H.dy||0)); UI.off.addScaledVector(UI.holdUp.setFromMatrixColumn(c.matrixWorld,1),H.dy); } } }
   const FT=FEEL.take(), ease=FT?1-Math.exp(-dt*FEEL.cfg.camDamp):Math.min(1,dt*12); SHARED.yaw=Math.abs(SHARED.yawTo-SHARED.yaw)<1e-4?SHARED.yawTo:SHARED.yaw+(SHARED.yawTo-SHARED.yaw)*ease; SHARED.pitch=Math.abs(SHARED.pitchTo-SHARED.pitch)<1e-4?SHARED.pitchTo:SHARED.pitch+(SHARED.pitchTo-SHARED.pitch)*ease; const zk0=UI.zk(); SHARED.ppu=Math.abs(SHARED.ppuTo/SHARED.ppu-1)<1e-4?SHARED.ppuTo:SHARED.ppu*Math.pow(SHARED.ppuTo/SHARED.ppu,ease); if(pxS()!==SCL)resize(); else frustum(); UI.zoomStep(zk0);
   const a=SHARED.yaw, fx=-Math.sin(a), fz=-Math.cos(a);
   let mx=0,mz=0, up=keys.has('w')||keys.has('arrowup'), dn=keys.has('s')||keys.has('arrowdown'), lf=keys.has('a')||keys.has('arrowleft'), rt=keys.has('d')||keys.has('arrowright');

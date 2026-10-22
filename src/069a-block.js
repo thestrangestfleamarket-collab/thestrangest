@@ -2,7 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {BLK, ED, LITE, pos, ROOMS, UI} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {BLOCK, cutWalls, FADE, FIX, lamps, MAINROW, MODS, SHELLS, SOL, SYS, TILE, ZU} from './006-map-pre.js';
+import {ALLEYNEON, BLOCK, cutWalls, FADE, FIX, lamps, LEVEL, MAINROW, MODS, RING, SHELLS, SOL, SYS, TILE, ZU} from './006-map-pre.js';
 import {PEEK} from './008-batch.js';
 import {BRICKS} from './014-gamekit.js';
 Object.assign(BLK,{blds:[],signs:[],band:()=>null,built:0,in:false,hi:[],LO:.5}); window.BLK=BLK;
@@ -53,7 +53,12 @@ Object.assign(BLK,{blds:[],signs:[],band:()=>null,built:0,in:false,hi:[],LO:.5})
   const TINTS=[[1.3,.82,.66],[1.12,1,.84],[.92,.95,1.02],[1.2,.95,.8],[1.05,.9,.92],[.98,1.02,.92],[1.25,.88,.72],[1.1,1.04,.95],[.9,.9,.96]];
   [[B.x0,-62.4],[-33.6,30],[30,90],[90,111],[124,150],[150,B.x1]].forEach(([a,b],i)=>building({x0:a,x1:b,y0:B.row2[0],y1:B.row2[1],h:140,n:0,k:300+i*7,tint:TINTS[3+i],front:'shut',back:'glass',lit:.2,row:2,lazy:1,doors:Math.max(1,Math.round((b-a)/14)),blankSide:true,cheap:true}));
   for(const [i,S] of SHELLS.entries()){ building({x0:S.x0,x1:S.x1,y0:S.y0,y1:S.y1,h:150,e:1,k:600+i*13,tint:TINTS[(i+2)%TINTS.length],front:'shut',back:'shut',lit:.12,row:4,doors:1,blankSide:true,cheap:true}); }
-  for(let i=0;i+1<MAINROW.length;i++){ const a=MAINROW[i][1]+.1, b=MAINROW[i+1][0]-.1; if(b-a>1.5)building({x0:a,x1:b,y0:B.back,y1:SHARED.BOD.OY,h:130,n:0,k:400+i*11,tint:TINTS[i%TINTS.length],front:'shut',back:'shut',lit:0,blankFace:true,blankSide:true,cheap:true,row:1}); }
+  const fill=(a,b,mk)=>{ let x=a, i=0; while(b-x>1.5){ const r=((Math.sin(x*12.9898+i*78.233)*43758.5453)%1+1)%1, w=12+r*8, e=b-x-w<6?b:x+w; mk(x,e,i++,r); x=e; } };
+  const holes=(on,a0,a1)=>{ const g=[]; let y=a0; for(const [a,b] of on.slice().sort((p,q)=>p[0]-q[0])){ if(a-.1>y)g.push([y,a-.1]); y=Math.max(y,b+.1); } if(a1>y)g.push([y,a1]); return g; };
+  { const gaps=holes(MAINROW,B.x0,B.x1); let n=0;
+    for(const [a,b] of gaps)fill(a,b,(x0,x1,i,r)=>{ n++; building({x0,x1,y0:B.back,y1:SHARED.BOD.OY,h:120+Math.round(r*50),n:0,k:400+n*11,tint:TINTS[n%TINTS.length],front:'shut',back:'shut',lit:.12,doors:Math.max(1,Math.round((x1-x0)/14)),blankSide:true,cheap:true,row:1}); }); }
+  { const F=RING.wx0, gaps=holes([...LEVEL.places,...SHELLS].filter(p=>p.y1!=null&&Math.abs(p.x1-F)<.6).map(p=>[p.y0,p.y1]),LEVEL.park.y0+.5,RING.top-1); let n=0;
+    for(const [a,b] of gaps)fill(a,b,(y0,y1,i,r)=>{ n++; building({x0:F-13,x1:F,y0,y1,h:120+Math.round(r*50),e:1,k:700+n*13,tint:TINTS[(n+3)%TINTS.length],front:'shut',back:'shut',lit:.12,row:5,doors:Math.max(1,Math.round((y1-y0)/14)),blankSide:true,cheap:true}); }); }
   const BX=[], GL=[], zA=B.alley[1], zB=B.alley[0], mid=(zA+zB)/2;
   const CR=[[98.5,zA-.5,.9,.9,22,[.18,.42,.36]],[98.5,zA-.5,.9,.9,44,[.22,.48,.62]],[121,zA-.6,1.1,1.1,40,[.2,.34,.24]],[73,zB+.6,1.3,.9,30,[.54,.42,.26]],[140,zB+.6,1,1,40,[.2,.34,.24]],[63,zB+.5,.8,.8,24,[.6,.18,.16]]];
   for(const [x,y,w,d,hp] of CR)solid(x-w/2,Math.min(y-d/2,y+d/2),x+w/2,Math.max(y-d/2,y+d/2),hp);
@@ -75,7 +80,7 @@ Object.assign(BLK,{blds:[],signs:[],band:()=>null,built:0,in:false,hi:[],LO:.5})
     const fr=new THREE.Mesh(new THREE.BoxGeometry(o.w*T+.12*T,o.h*T+.12*T,(o.d||.3)*T),new THREE.MeshLambertMaterial({color:o.frame||0x2b2a33})); grp.add(fr);
     for(const sd of (o.f==='E'?[1,-1]:[1])){ const p=new THREE.Mesh(new THREE.PlaneGeometry(o.w*T,o.h*T),m); p.position.z=sd*((o.d||.3)/2+.01)*T; if(sd<0)p.rotation.y=Math.PI; grp.add(p); }
     const sg={paint(){ g.clearRect(0,0,c.width,c.height); o.paint(g,c.width,c.height); m.map.needsUpdate=true; }}; sg.paint(); BLK.signs.push(sg); return grp; }
-  function neon(o){ const c=cv(o.w*24,o.h*24), g=c.getContext('2d'), grp=place(o,RY[o.f]);
+  function neon(o){ if(!ALLEYNEON)return; const c=cv(o.w*24,o.h*24), g=c.getContext('2d'), grp=place(o,RY[o.f]);
     const fm=new THREE.MeshBasicMaterial({map:tex(c),alphaTest:.5,side:THREE.DoubleSide}), bm=new THREE.MeshBasicMaterial({color:0x0e0d18,map:fm.map,alphaTest:.5,side:THREE.DoubleSide});
     const f=new THREE.Mesh(new THREE.PlaneGeometry(o.w*T,o.h*T),fm); f.position.z=.04*T; grp.add(f);
     const b=new THREE.Mesh(new THREE.PlaneGeometry(o.w*T,o.h*T),bm); b.position.set(.03*T,-.03*T,-.03*T); grp.add(b);
@@ -165,8 +170,10 @@ Object.assign(BLK,{blds:[],signs:[],band:()=>null,built:0,in:false,hi:[],LO:.5})
   const frames=n=>new Promise(r=>{ const f=()=>--n<=0?r():requestAnimationFrame(f); requestAnimationFrame(f); });
   const build=async()=>{ const t0=performance.now(); tl=t0; for(const q of BLK.hi)q.hi=await q.paint(); await make(); BLK.step=Math.max(BLK.step||0,performance.now()-tl); BLK.ms=+(performance.now()-t0).toFixed(1); BLK.built=1; };
   BLK.go=async()=>{ '@later'; if(BLK.fade||BLK.built)return; BLK.fade=1; await FADE.run('ENTERING THE ALLEY',()=>BLK.job||(BLK.job=build()),{cut:true}); BLK.fade=0; };
-  { const zb=ZS(B.back), sg=Math.sign(ZS(B.alley[0])-zb)||-1; BLK.tick=()=>{ if(!window.__started||ROOMS.cur||UI.freeCam||ED.on||window.POSOK===false)return; const d=(pos.z-zb)*sg, up=SHARED.LVL==='up';
-      BLK.in=up&&d>.2*T; const need=BLK.in||up&&(d>-10*T||d>-32*T&&(UI.persp||(SHARED.cam.position.z-pos.z)*sg>0));
+  { const za=Math.min(ZS(B.alley[0]),ZS(B.alley[1])), zc=Math.max(ZS(B.alley[0]),ZS(B.alley[1])), h0=Math.min(XS(B.hudson[0]),XS(B.hudson[1])), h1=Math.max(XS(B.hudson[0]),XS(B.hudson[1])), x0=Math.min(XS(B.x0),XS(B.x1)), x1=Math.max(XS(B.x0),XS(B.x1));
+    BLK.inAlley=(x,z)=>z>za&&z<zc&&x>x0&&x<x1&&!(x>h0&&x<h1);
+    BLK.tick=()=>{ if(!window.__started||ROOMS.cur||UI.freeCam||ED.on||window.POSOK===false)return; const up=SHARED.LVL==='up';
+      BLK.in=up&&BLK.inAlley(pos.x,pos.z); const need=BLK.in;
       if(BLK.in&&!BLK.built)BLK.go(); else if(need&&!BLK.job)BLK.job=build();
       const v=need&&!!BLK.built; if(v!==!!BLK.shown)vis(v); };
     SYS.add('dress',(dt,p)=>{ BLK.tick(); },'069a-block'); }

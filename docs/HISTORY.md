@@ -4156,3 +4156,7 @@ Owner: "i dont want anything verbose". HISTORY entries, commit messages, pull re
 ## 22 Oct 2026: rules cleared, starting over
 
 Owner: "remove all rules, lets start over with them". The rules block in CLAUDE.md is emptied; new rules added as he gives them.
+
+## 22 Oct 2026: rules for adding things
+
+Owner: "set rules as far as how to add things into the game. where things go when they are added and safeguards to make sure we dont undo or add things as patches or without thinking of all other gameplay". First rules back in the block: where a new thing goes, and the safeguards before adding or changing anything (read HISTORY/MAP first, mechanic not instance, one shared path, no reaching into another system, think through all gameplay, stay duplicable, owner decides look/behaviour).

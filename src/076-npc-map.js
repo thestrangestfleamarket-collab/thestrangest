@@ -146,7 +146,7 @@ const DUN=()=>{ const D=MODS.dungeon; if(!D)return null; const B=D.B, X=SHARED.B
     free=(x,z,R)=>x>lane.x0&&x<lane.x1&&z>lane.z0&&z<lane.z1&&!SOL.down.some(b=>x>b[0]-R&&x<b[2]+R&&z>b[1]-R&&z<b[3]+R);
   let p={x:(lane.x0+lane.x1)/2,z:(lane.z0+lane.z1)/2}; for(let k=0;k<60;k++){ const q={x:lane.x0+Math.random()*(lane.x1-lane.x0),z:lane.z0+Math.random()*(lane.z1-lane.z0)}; if(free(q.x,q.z,.4*TILE)){ p=q; break; } }
   return {lv:'down',group:MAPG.dungeon?'dungeon':'down',lane,free,ground:(x,z)=>D.ground(x,z),roam:false,x:p.x,z:p.z,dun:true}; };
-ROAM.pick=(st,free)=>{ '@later'; const L=ROAM.L, H=st.home&&st.home.r>0?st.home:null; for(let k=0;k<12;k++){ let to;
+ROAM.pick=(st,free)=>{ '@later'; if(st.home&&!(st.home.r>0))return false; const L=ROAM.L, H=st.home&&st.home.r>0?st.home:null; for(let k=0;k<12;k++){ let to;
     if(H){ const p=HOMES.inside(H); to={x:Math.max(L.x0,Math.min(L.x1,p.x)),z:Math.max(L.z0,Math.min(L.z1,p.z))}; }
     else if(Math.random()<.25)to={x:L.x0+Math.random()*(L.x1-L.x0),z:L.z0+Math.random()*(L.z1-L.z0)};
     else{ const a=Math.random()*Math.PI*2, r=(2+Math.random()*7)*TILE; to={x:Math.max(L.x0,Math.min(L.x1,st.x+Math.sin(a)*r)),z:Math.max(L.z0,Math.min(L.z1,st.z+Math.cos(a)*r))}; }
@@ -175,4 +175,4 @@ const PXSNAP=on=>{ const L=PXSNAP.L;
 PXSNAP.one=(o,D)=>{ if(!o||!o.visible)return false; const u=PXSNAP.u, cr=UI.snR, cu=UI.snU, p=o.position, x=p.dot(cr), y=p.dot(cu), a=Math.round(x*u)/u-x, b=Math.round(y*u)/u-y, dx=D?D.x:cr.x*a+cu.x*b, dy=D?D.y:cr.y*a+cu.y*b, dz=D?D.z:cr.z*a+cu.z*b;
   p.x+=dx; p.y+=dy; p.z+=dz; PXSNAP.L.push(o,dx,dy,dz); return true; };
 PXSNAP.L=[]; window.PXSNAP=PXSNAP;
-export {CSB, CSHOLE, DUN, makeNPC, ROAM, stfree, STHOLE, STLANE};
+export {CSB, CSHOLE, DUN, HOMES, makeNPC, ROAM, stfree, STHOLE, STLANE};

@@ -1,17 +1,17 @@
-// MAIN STREET: the lots along Main Street (the theatre, the holodeck, the playhouse and the rest; its own builder).
+// MAIN STREET: the lots along Main Street (the theatre, the arcade, the playhouse and the rest; its own builder).
 import {SHARED, THREE} from './003-shx.js';
-import {BLK, LITE, pos, SFX, UI, USE} from './003b-systems.js';
+import {BLK, LITE, pos, SFX, USE} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {BLDK, BLOCK, cutWalls, FADE, grab, STORE, SYS, TILE} from './006-map-pre.js';
+import {BLDK, BLOCK, cutWalls, grab, STORE, SYS, TILE} from './006-map-pre.js';
 import {BATCH, OBJ, OBJS} from './008-batch.js';
-await grab('mainstreet',async()=>{ const K=STORE.kit, {room,STEPS}=K, {X,Y,Z,placeAt,facade,gbox}=SHARED.BOD, sh=SHARED.BOD.K.sh, SK=SHARED.BOD.STOREK, {PROPS,LAMPS}=SK, T=SK.T, TH=SK.theatre, HO=SK.holo, PY=SK.play, hs=SHARED.BOD.g.hash;
+await grab('mainstreet',async()=>{ const K=STORE.kit, {room,STEPS}=K, {X,Y,Z,placeAt,facade,gbox}=SHARED.BOD, sh=SHARED.BOD.K.sh, SK=SHARED.BOD.STOREK, {PROPS,LAMPS}=SK, T=SK.T, TH=SK.theatre, PY=SK.play, hs=SHARED.BOD.g.hash;
   const bx=m=>SHARED.BOD.OX+(m-SHARED.BOD.OX)/BLDK, by=m=>SHARED.BOD.OY+(m-SHARED.BOD.OY)/BLDK, lot=(k,h)=>({x0:bx(BLOCK.lots[k][0])+.1,x1:bx(BLOCK.lots[k][1])-.1,y0:by(BLOCK.back)+.1,y1:SHARED.BOD.OY,h});
   const turn=(B,n0,l0)=>{ const cx=(B.x0+B.x1)/2, cy=(B.y0+B.y1)/2; for(const p of PROPS.slice(n0))placeAt(p,2,cx,cy,cx,cy); for(const l of LAMPS.slice(l0)){ l.x=2*cx-l.x; l.y=2*cy-l.y; } };
   const lit=c=>Object.assign(c.slice(),{e:1}), FONT={...TH.THFONT,D:'####.#...##...##...##...##...#####.',L:'#....#....#....#....#....#....#####'};
   const word=(s,c0,z0,k)=>(c,z)=>{ const i=Math.floor((c-c0)/k), r=6-Math.floor((z-z0)/k); if(c<c0||z<z0||i>=s.length*6-1||r<0||r>6)return false; const q=i%6, g=FONT[s[Math.floor(i/6)]]; return q<5&&!!g&&g[r*5+q]==='#'; };
   const neon=(on,c,z,k,col,f)=>{ if(on(c,z))return lit(col); for(const [a,b] of [[-k,0],[k,0],[0,-k],[0,k]])if(on(c+a,z+b))return sh(col,.42*f); return null; };
   const unplace=n=>{ const i=STORE.places.findIndex(p=>p[0]===n); if(i>=0)STORE.places.splice(i,1); }, door=(k,f)=>{ const L=lot(k); return [X(L.x0+f(L)),Z(L.y1)+2.2*TILE]; };
-  const MS=STORE.main={doors:[['THE MOVIE THEATRE',...door('theatre',()=>4.4)],['THE ARCADE',...door('arcade',L=>(L.x1-L.x0)/2)],['THE PLAYHOUSE',...door('play',L=>(L.x1-L.x0)/2)]]};
+  const MS=STORE.main={lot,word,neon,unplace,doors:[['THE MOVIE THEATRE',...door('theatre',()=>4.4)],['THE ARCADE',...door('arcade',L=>(L.x1-L.x0)/2)],['THE PLAYHOUSE',...door('play',L=>(L.x1-L.x0)/2)]]};
 
   STEPS.push(()=>{ const B=lot('theatre',176), W=B.x1-B.x0, cx=(B.x0+B.x1)/2, LOB=B.y1-4.6, door=B.x0+4.4;
     const SEG=[[6,14.65,-6],[16.6,19.5,-7.95],[2.8,2.8+W-11.55,8.75]];
@@ -30,19 +30,6 @@ await grab('mainstreet',async()=>{ const K=STORE.kit, {room,STEPS}=K, {X,Y,Z,pla
     const tx=new THREE.DataTexture(new Uint8Array(TH.FILMW*TH.FILMH*4),TH.FILMW,TH.FILMH); tx.magFilter=tx.minFilter=THREE.NearestFilter; tx.colorSpace=THREE.SRGBColorSpace;
     const fm=new THREE.Mesh(new THREE.PlaneGeometry(X(S.x1)-X(S.x0),Y(S.z1)-Y(S.z0)),new THREE.MeshBasicMaterial({map:tx})); fm.position.set(X(cx),Y((S.z0+S.z1)/2),Z(B.y0+T+.075)); fm.visible=false; scene.add(fm);
     unplace('MOVIE THEATRE'); MS.theatre={R,fm,tx,k:-1}; });
-
-  STEPS.push(()=>{ const B=lot('arcade',180), W=B.x1-B.x0, cx=(B.x0+B.x1)/2, A=TH.ARC, k=6, c0=Math.floor((W*24-35*k)/2), on=word('ARCADE',c0,118,k);
-    const front=(u,z,f)=>{ const c=Math.floor(u*24);
-      if(z<8)return sh([44,34,52],f);
-      if(z<96&&u>.5&&u<W-.5){ const m=(u-.5)%2.1; return m<.08||z<11||z>93?sh([58,40,70],f):sh([20,16,32],f); }
-      if(z>=98&&z<102)return lit([236,64,160]); if(z>=104&&z<106)return lit([60,206,230]);
-      if(z>=110&&z<170&&c>=c0-8&&c<c0+35*k+8)return neon(on,c,z,k,[255,80,200],f)||sh([24,16,32],f);
-      return null; };
-    const out=(nx,ny,Xw,Yw,z,f,cap)=>{ if(ny>0){ const c=front(Xw-B.x0,z,f); if(c)return c; } return facade(nx,ny,Xw,Yw,z,f,cap,[96,58,80]); };
-    const y0=B.y0, y1=B.y1;
-    MS.arcade={R:room('arcade','ARCADE',B,{floor:(x,yq)=>sh([46,40,54],.94+.12*hs(x*2|0,yq*2|0,995)),in:(q,nx,ny,X_,Y_,z,f)=>z<3?sh([30,24,36],f):sh([70,60,82],f),
-      out,cope:[60,44,70]},{w:'f',a:cx,wd:1.56,h:94},()=>{
-      LAMPS.push({x:cx,y:(y0+y1)/2,z:120,r:10,c:[1,.92,1.05]},{x:cx,y:y1+1,z:140,r:5,c:[1,.3,.75]}); })}; unplace('ARCADE'); });
 
   STEPS.push(()=>{ const B=lot('play',190), cx=(B.x0+B.x1)/2, cy=(B.y0+B.y1)/2, P=PY.PLAYK(B), mx=x=>2*cx-x, my=y=>2*cy-y, L=[];
     const out=(nx,ny,Xw,Yw,z,f,cap)=>{ if(ny>0){ const c=P.playFront(Xw,z,f); if(c)return c; } return facade(nx,ny,Xw,Yw,z,f,cap,[118,50,44]); };
@@ -91,20 +78,6 @@ await grab('mainstreet',async()=>{ const K=STORE.kit, {room,STEPS}=K, {X,Y,Z,pla
       MS.play.rigN=t0; };
     unplace('PLAYHOUSE'); MS.play={R,P,B,cx,cy,mx,my,L,SETM,fog,SH:{t0:null,cue:null,set:null,lv:-1,from:null,to:null,tc:0,step:-1,last:-1,cap:''},FIG:{},hound:null,up:0}; { const I=STORE.inside.playhouse; if(I){ const go=I.go; I.go=()=>{ go(); rig(); }; } else rig(); } });
 
-  STEPS.push(()=>{ const L=lot('holo',0), B={x0:L.x0,x1:L.x1,y0:L.y1-3,y1:L.y1,h:132}, W=B.x1-B.x0, door=(L.x0+L.x1)/2, k=3, c0=Math.floor((W*24-47*k)/2), on=word('HOLODECK',c0,100,k), H={x0:520,y0:-88,x1:536,y1:-72,h:120}, hx=(H.x0+H.x1)/2;
-    const front=(u,z,f)=>{ const c=Math.floor(u*24), d=Math.abs(B.x0+u-door);
-      if(d<.62&&z<100&&(d>.5||z>=94))return HO.HOLOL; if(z<3)return HO.HOLOM;
-      if(z>=98&&z<124)return neon(on,c,z,k,[96,200,255],f)||sh([10,12,18],f);
-      const a=u-Math.floor(u); return a<.03||a>.97||z%24<1?sh([30,40,56],f):sh(HO.HOLOK,f); };
-    const pan=(q,nx,ny,X_,Y_,z,f)=>HO.holoWall(f)(nx?Y_:X_,z);
-    const F=room('holofront','HOLODECK',B,{floor:HO.holoFloor,in:pan,out:(nx,ny,Xw,Yw,z,f,cap)=>ny>0?front(Xw-B.x0,z,f):sh(HO.HOLOK,f),cope:[20,24,32],roof:()=>[18,20,26]},{w:'f',a:door,wd:1,h:94},()=>{
-      LAMPS.push({x:door,y:B.y1+1,z:104,r:4,c:[.4,.8,1]}); },{now:1,z:.3});
-    STORE.bound.x1=Math.max(STORE.bound.x1,X(H.x1+10)); STORE.bound.z0=Math.min(STORE.bound.z0,Z(H.y0-10)); STORE.bound.z1=Math.max(STORE.bound.z1,Z(H.y1+10));
-    const R=room('holodeck','HOLODECK HALL',H,{floor:HO.holoFloor,in:pan,out:(nx,ny,Xw,Yw,z,f)=>sh(HO.HOLOK,f),cope:[20,24,32],roof:()=>[18,20,26]},{w:'f',a:hx,wd:3,h:96},()=>{
-      LAMPS.push({x:hx-4,y:(H.y0+H.y1)/2,z:108,r:10,c:[.55,.75,1]},{x:hx+4,y:(H.y0+H.y1)/2,z:108,r:10,c:[.55,.75,1]}); },{now:1});
-    unplace('HOLODECK HALL'); { const p=STORE.places.find(q=>q[0]==='HOLODECK'); if(p)p[0]='THE HOLODECK'; }
-    const gnd=new THREE.Mesh(new THREE.PlaneGeometry(40*TILE*BLDK,40*TILE*BLDK).rotateX(-Math.PI/2),new THREE.MeshLambertMaterial({color:0x0a0b10})); gnd.position.set(X(hx),Y(.02),Z((H.y0+H.y1)/2)); scene.add(gnd);
-    MS.holo={F,R,B,H,door,hx,busy:false}; });
 
   STEPS.push(()=>{ const V=new THREE.Vector3(), MAT={}, mat=c=>MAT[c]||(MAT[c]=new THREE.MeshLambertMaterial({color:new THREE.Color(c)}));
     const KINDS={holmes:'hero_m',watson:'villager_m',mortimer:'villager_m',henry:'hero_m',stapleton:'hero_m',barrymore:'villager_m'}, CLIP={wave:'cheer_idle_a',crouch:'sit_floor_idle_a',fall:'sit_floor_idle_a',block:'found_item_idle_a'};
@@ -156,14 +129,10 @@ await grab('mainstreet',async()=>{ const K=STORE.kit, {room,STEPS}=K, {X,Y,Z,pla
     const film=now=>{ const M=MS.theatre; if(!M)return; const near=SHARED.LVL==='up'&&(M.R.inside(pos.x,pos.z)||Math.hypot(pos.x-M.R.at.x,pos.z-M.R.at.z)<6*TILE); M.fm.visible=near; if(!near)return;
       const k=Math.floor(now/125)%TH.FILMN; if(k===M.k)return; M.k=k; const f=TH.filmFrame(k), d=M.tx.image.data, W=TH.FILMW, Hh=TH.FILMH;
       for(let j=0;j<Hh;j++)for(let i=0;i<W;i++){ const s=(j*W+i)*3, o=((Hh-1-j)*W+i)*4; d[o]=f[s]; d[o+1]=f[s+1]; d[o+2]=f[s+2]; d[o+3]=255; } M.tx.needsUpdate=true; };
-    const fade=async(x,z,txt)=>{ '@later'; const H=MS.holo; H.busy=true; await FADE.run(txt,()=>UI.goTo(x,z,'up'),{hold:300}); H.busy=false; };
-    const holo=()=>{ const H=MS.holo; if(!H||H.busy||SHARED.LVL!=='up'||UI.freeCam)return;
-      if(H.F.inside(pos.x,pos.z)&&pos.z<Z(H.B.y1-1))fade(X(H.hx),Z(H.H.y1-1.8),'ENTERING THE HOLODECK');
-      else if(pos.x>X(H.H.x0)&&pos.x<X(H.H.x1)&&pos.z>Z(H.H.y1-.3)&&pos.z<Z(H.H.y1+3))fade(X(H.door),Z(H.B.y1+1.4),'LEAVING THE HOLODECK'); };
-    const lane=()=>{ if(MS.laned||!BLK.lane||!STORE.meshes)return; const ms=new Set(); for(const id of ['theatre','arcade','playhouse','holofront'])for(const w of ['f','b','w','e','lobby'])for(const me of BATCH.all(STORE.meshes,'W'+id+':'+w))ms.add(me); if(!ms.size)return; MS.laned=1;
+    const lane=()=>{ if(MS.laned||!BLK.lane||!STORE.meshes)return; const ms=new Set(); for(const id of ['theatre','arcade','playhouse'])for(const w of ['f','b','w','e','lobby'])for(const me of BATCH.all(STORE.meshes,'W'+id+':'+w))ms.add(me); if(!ms.size)return; MS.laned=1;
       for(const w of cutWalls){ if(!ms.has(w.me))continue; const wh=w.when, al=Object.getOwnPropertyDescriptor(w,'always'), was=al?(al.get?()=>al.get.call(w):()=>al.value):()=>false;
         w.when=()=>BLK.lane()||(wh?wh():true); Object.defineProperty(w,'always',{get:()=>BLK.lane()||was(),configurable:true}); } };
-    let t0=performance.now(); SYS.add('places',(dt)=>{ const now=performance.now(), d=Math.min(.25,(now-t0)/1000); t0=now; lane(); film(now); show(d,now); holo(); },'059-street');
-    window.MAINDBG=()=>({rooms:STORE.rooms.filter(r=>['theatre','arcade','playhouse','holofront','holodeck'].includes(r.id)).map(r=>[r.id,+r.x0.toFixed(1),+r.z0.toFixed(1),+r.x1.toFixed(1),+r.z1.toFixed(1)]),play:MS.play&&{t0:MS.play.SH.t0,cue:MS.play.SH.cue,lights:MS.play.L.map(e=>[e[0],!!e[2]]),sets:Object.keys(MS.play.SETM)},laned:!!MS.laned,tris:(()=>{ const C={}; for(const o of OBJS){ const m=/^store:(theatre|arcade|playhouse|holofront|holodeck)/.exec(o.id||''); if(m)C[m[1]]=(C[m[1]]||0)+o.parts.length*2; }
-      for(const k in STORE.meshes){ const m=/^[WR](theatre|arcade|playhouse|holofront|holodeck)/.exec(k)||/^P(set)/.exec(k); if(m)C[m[1]]=(C[m[1]]||0)+STORE.meshes[k].geometry.attributes.position.count/3; } return C; })(),lamps:MS.lamps}); });
+    let t0=performance.now(); SYS.add('places',(dt)=>{ const now=performance.now(), d=Math.min(.25,(now-t0)/1000); t0=now; lane(); film(now); show(d,now); },'059-street');
+    window.MAINDBG=()=>({rooms:STORE.rooms.filter(r=>['theatre','arcade','playhouse','holodeck'].includes(r.id)).map(r=>[r.id,+r.x0.toFixed(1),+r.z0.toFixed(1),+r.x1.toFixed(1),+r.z1.toFixed(1)]),play:MS.play&&{t0:MS.play.SH.t0,cue:MS.play.SH.cue,lights:MS.play.L.map(e=>[e[0],!!e[2]]),sets:Object.keys(MS.play.SETM)},laned:!!MS.laned,tris:(()=>{ const C={}; for(const o of OBJS){ const m=/^store:(theatre|arcade|playhouse|holodeck)/.exec(o.id||''); if(m)C[m[1]]=(C[m[1]]||0)+o.parts.length*2; }
+      for(const k in STORE.meshes){ const m=/^[WR](theatre|arcade|playhouse|holodeck)/.exec(k)||/^P(set)/.exec(k); if(m)C[m[1]]=(C[m[1]]||0)+STORE.meshes[k].geometry.attributes.position.count/3; } return C; })(),lamps:MS.lamps}); });
 });

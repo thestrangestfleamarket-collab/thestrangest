@@ -23,7 +23,7 @@ const CAVERNS={hooks:[],day:()=>0}; window.CAVERNS=CAVERNS; MODS.waters=MODS.wat
     const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); geo.setAttribute('color',new THREE.Float32BufferAttribute(Cc,3)); geo.computeVertexNormals();
     const rock=new THREE.Mesh(geo,new THREE.MeshLambertMaterial({vertexColors:true,side:THREE.DoubleSide})); rock.receiveShadow=true; G.add(rock); m.objs.push(rock);
     if(!C.empty)for(let i=0;i<6;i++){ const cr=new THREE.Mesh(new THREE.OctahedronGeometry(.5,0),new THREE.MeshBasicMaterial({color:C.gem})); cr.position.set(X(B.x0+2.5+hs(i,5)*(B.x1-B.x0-5)),dy+Y(.3),Z(B.y0+2.5+hs(i,6)*(B.y1-B.y0-5))); cr.scale.set(.2*T,.45*T,.2*T); cr.rotation.set(.3,i,.2); G.add(cr); m.objs.push(cr); }
-    for(const [fx,fz,fy,c,i,r] of C.lights){ const L=new THREE.PointLight(c,i,r*T,1.6); L.position.set(X(B.x0+fx*(B.x1-B.x0)),dy+Y(fy),Z(B.y0+fz*(B.y1-B.y0))); L.userData.i0=i; L.userData.grp=G; LITE.recs.push(L); m.lights.push(L); }
+    for(const [fx,fz,fy,c,i,r] of C.lights){ const L=new THREE.PointLight(c,i*.25,r*T,1.6); L.position.set(X(B.x0+fx*(B.x1-B.x0)),dy+Y(fy),Z(B.y0+fz*(B.y1-B.y0))); L.userData.i0=i; L.userData.grp=G; LITE.recs.push(L); m.lights.push(L); }
     const hb=new THREE.Mesh(new THREE.BoxGeometry(1.2*T,Y(40),1.2*T),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(X(B.x0+1.2),dy+Y(20),Z(cy)); G.add(hb); m.objs.push(hb);
     const th={name:C.exitName,obj:hb,reach:1.4*T,near:2.6*T,tall:Y(50),act:()=>C.api.go(0)}; UI.thing(th); m.things.push(th);
     for(const f of CAVERNS.hooks)f(C,G,m);
@@ -40,7 +40,7 @@ const CAVERNS={hooks:[],day:()=>0}; window.CAVERNS=CAVERNS; MODS.waters=MODS.wat
     if(C.wet){ const H=C.H, feed=(st,pos,dt,go,keys)=>{ if(SHARED.LVL!=='down'||!inside(pos.x,pos.z))return false; const W=RIG.water(st,{level:H+60,floor:0}); W.go=!!go; W.fast=W.in&&(keys.has('k')||keys.has('shift'))?1:0;
         if(W.y>H-30){ W.y=H-30; W.vy=Math.min(0,W.vy); } W.events.length=0; return true; };   // flooded to the roof: always under, so your air drains the whole way
       const UF=new THREE.Fog(C.murk,0,7*T), bg0=new THREE.Color(); let fog0=null, uw=false;
-      MODS.waters.push({feed,pre:scene=>{ uw=!!M&&SHARED.LVL==='down'&&inside(pos.x,pos.z)&&!!(scene.background&&scene.background.isColor); if(!uw)return; fog0=scene.fog; bg0.copy(scene.background); scene.fog=UF; scene.background.copy(UF.color); },
+      MODS.waters.push({feed,pre:scene=>{ uw=!!M&&SHARED.LVL==='down'&&inside(pos.x,pos.z)&&!!(scene.background&&scene.background.isColor); if(!uw)return; UF.far=(MODS.gear&&MODS.gear.on&&MODS.gear.on('goggles')?18:6)*T; fog0=scene.fog; bg0.copy(scene.background); scene.fog=UF; scene.background.copy(UF.color); },   // goggles see three times as far through the murk
         post:scene=>{ if(!uw)return; scene.fog=fog0; scene.background.copy(bg0); uw=false; }}); }
     SYS.add('places',()=>{ if(!window.__started||busy||FADE.busy)return; if(SHARED.LVL==='down'&&inside(pos.x,pos.z)&&!M)go(1,'load'); },'066a-caverns '+C.id);   // a saved spot down here builds it at the start
     const K=C.id.toUpperCase(); window[K]={go,get built(){ return !!M; }}; window[K+'DBG']=()=>({built:!!M,lv:SHARED.LVL,inside:inside(pos.x,pos.z),objs:M?M.objs.length:0,swim:!!(st.water&&st.water.in)});

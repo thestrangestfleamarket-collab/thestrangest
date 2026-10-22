@@ -2,7 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {FORAGE, pos, ROOMS, UI, WIELD} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {FIX, grab, SOL, STORE, SYS, TILE} from './006-map-pre.js';
+import {FIX, grab, SOL, STORE, SYS, TILE, TURN, WP} from './006-map-pre.js';
 import {BATCH} from './008-batch.js';
 import {LAMPS} from './014-gamekit.js';
 await grab('arcade',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Y=SHARED.BOD.Y, {hash:hs}=SHARED.BOD.g, sh=SHARED.BOD.K.sh, MS=STORE.main;
@@ -20,7 +20,7 @@ await grab('arcade',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Y=SHARED.BOD
 
   const box4=(x0,y0,x1,y1)=>{ const a=X(x0), b=X(x1), c=Z(y0), d=Z(y1); return [Math.min(a,b),Math.min(c,d),Math.max(a,b),Math.max(c,d)]; };
   const MKA=(k,map,emap)=>k==='B'?new THREE.MeshBasicMaterial({map,side:THREE.DoubleSide,alphaTest:.5}):new THREE.MeshLambertMaterial({map,alphaTest:.5,side:THREE.DoubleSide,...(emap?{emissiveMap:emap,emissive:0xffffff,emissiveIntensity:1.3}:{})});
-  const L=MS.lot('arcade',180), W=L.x1-L.x0, lcx=(L.x0+L.x1)/2, k6=6, c0=Math.floor((W*24-35*k6)/2), on=MS.word('ARCADE',c0,118,k6), litc=c=>Object.assign(c.slice(),{e:1});
+  const LW=MS.lot('arcade',180), TA=TURN(LW,WP.arcade.face), L=TA.L, W=L.x1-L.x0, lcx=(L.x0+L.x1)/2, at=(u,v)=>{ const p=TA.pt(u,v); return [X(p[0]),Z(p[1])]; }, k6=6, c0=Math.floor((W*24-35*k6)/2), on=MS.word('ARCADE',c0,118,k6), litc=c=>Object.assign(c.slice(),{e:1});
   const front=(u,z,f)=>{ const c=Math.floor(u*24), dd=Math.abs(u-W/2);
     if(z<8)return sh([44,34,52],f);
     if(z<96&&dd<.78)return dd>.7||z>90?litc([255,80,200]):z>60?sh([40,24,52],f):sh([30,20,40],f*(Math.floor(u*24)%6===0?.8:1));
@@ -29,10 +29,10 @@ await grab('arcade',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Y=SHARED.BOD
     if(z>=110&&z<170&&c>=c0-8&&c<c0+35*k6+8)return MS.neon(on,c,z,k6,[255,80,200],f)||sh([24,16,32],f);
     return null; };
   const wall=BLOCKS.brick([96,58,80]);
-  BLOCKS.make({x0:L.x0,x1:L.x1,y0:L.y0,y1:L.y1,z0:0,z1:L.h,kind:'A',roof:(x,y)=>sh([40,36,44],.92+.12*hs(Math.floor(x*4),Math.floor(y*4),61)),
+  BLOCKS.make({x0:LW.x0,x1:LW.x1,y0:LW.y0,y1:LW.y1,z0:0,z1:L.h,kind:'A',turn:TA,roof:(x,y)=>sh([40,36,44],.92+.12*hs(Math.floor(x*4),Math.floor(y*4),61)),
     paint:(side,u,z,f)=>(side==='f'&&front(u-L.x0,z,f))||(z>L.h-10?sh([60,44,70],f):wall(u,z,f))});
   BATCH.build(MKA); for(const me of Object.values(BATCH.meshes)){ me.castShadow=true; me.receiveShadow=true; } BATCH.meshes={};
-  { const r=box4(L.x0,L.y0,L.x1,L.y1); SOL.up.push(r); FIX.up.push([r[0],r[1],0,r[2],r[3],Y(L.h)]); }
+  { const r=box4(LW.x0,LW.y0,LW.x1,LW.y1); SOL.up.push(r); FIX.up.push([r[0],r[1],0,r[2],r[3],Y(L.h)]); }
   MS.unplace('ARCADE'); MS.unplace('THE ARCADE');
 
   const AR={x0:480,x1:496,y0:-100,y1:-87}, HD={x0:480,x1:496,y0:-113,y1:-100}, cx=(AR.x0+AR.x1)/2, hy=(HD.y0+HD.y1)/2, WH=130, DW=.8, DH=95;
@@ -133,7 +133,7 @@ await grab('arcade',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Y=SHARED.BOD
   const rb=r=>{ const q=box4(r.x0,r.y0,r.x1,r.y1); return {x0:q[0],z0:q[1],x1:q[2],z1:q[3]}; };
   ROOMS.off.arcade={name:'THE ARCADE',box:{x0:wb[0],z0:wb[1],x1:wb[2],z1:wb[3],y0:-1,y1:Y(WH+40)},rooms:[rb(AR),rb(HD)],need:()=>LOAD('arcade','later'),
     build:()=>{ AG=new THREE.Group(); AG.name='arcade-in'; scene.add(AG); AS=[]; PA=ROOMS.part(AG,build,MKA); return PA; },unbuild,
-    spawn:[X(cx),Z(AR.y1-1.3),0,Math.PI],out:[X(lcx),Z(L.y1+.9),0,0],door:[X(lcx),Y(0),Z(L.y1+.25)],exit:[X(cx),0,Z(AR.y1-.25)],exitName:'OUT TO MAIN STREET'};
+    spawn:[X(cx),Z(AR.y1-1.3),0,Math.PI],out:[...at(lcx,L.y1+.9),0,TA.hd(0)],door:(d=>[d[0],Y(0),d[1]])(at(lcx,L.y1+.25)),exit:[X(cx),0,Z(AR.y1-.25)],exitName:'OUT TO MAIN STREET'};
   STORE.places.push(['THE ARCADE',...ROOMS.off.arcade.spawn],['THE HOLODECK',X(cx),Z(hy+3),0,Math.PI]);
   window.ARCDBG=()=>({built:!!PA,cabs:PA?PA.things.filter(t=>/SWORD/.test(t.name)).length:0,things:PA?PA.things.map(t=>t.name):[],knight:(q=>!!(q&&q.by.knight&&q.by.knight.npc&&q.by.knight.npc.on))(window.BODIES)});
 });

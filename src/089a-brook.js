@@ -97,9 +97,14 @@ import {FOUNT} from './060a-fount.js';
       const v=SFX.on?Math.max(0,1-near/14)**2*(.12+.12*rf)*SFX.vol:0; snd.G.gain.setTargetAtTime(v,c.currentTime,.3); snd.F.frequency.setTargetAtTime(1200+700*rf+300*Math.sin(c.currentTime*.7),c.currentTime,.4); };
     const plash=c=>{ const n=Math.floor(c.sampleRate*.25), b=c.createBuffer(1,n,c.sampleRate), d=b.getChannelData(0); for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*Math.exp(-i/n*7); const s=c.createBufferSource(), F=c.createBiquadFilter(), G=c.createGain(); s.buffer=b; F.type='bandpass'; F.frequency.value=900+Math.random()*600; G.gain.value=.18*SFX.vol; s.connect(F).connect(G).connect(c.destination); s.start(); };
     BROOK.tick=(dt,pos)=>{ U.uT.value=performance.now()/1000%1000; const px=pos.x/T+72-(P.ox||0), py=pos.z/T-77-(P.oy||0), r=SHARED.LVL==='up'?BK.q(px,py):null, s=r?r[1]:0, h=r?BK.h(px,py):null, wade=r&&s>=BK.m&&h!=null&&h<L(s)-.04&&!BK.st.some(o=>Math.hypot(px-o[0],py-o[1])<o[2]);
-      const mv=wade||FOUNT.swim?Math.min(1,Math.hypot(pos.x-(BROOK.lx||pos.x),pos.z-(BROOK.lz||pos.z))/Math.max(dt,1e-3)/T):0; BROOK.lx=pos.x; BROOK.lz=pos.z; U.uMe.value.set(pos.x,pos.z,0,wade||FOUNT.swim?.35+.65*mv:0); BROOK.wade=!!wade; BROOK.over=!!r;
+      const mv=wade||FOUNT.swim||BROOK.swim?Math.min(1,Math.hypot(pos.x-(BROOK.lx||pos.x),pos.z-(BROOK.lz||pos.z))/Math.max(dt,1e-3)/T):0; BROOK.lx=pos.x; BROOK.lz=pos.z; U.uMe.value.set(pos.x,pos.z,0,wade||FOUNT.swim||BROOK.swim?.35+.65*mv:0); BROOK.wade=!!wade; BROOK.over=!!r;
       if(CLOCK.sun){ U.uSun.value.copy(CLOCK.sun.color).multiplyScalar(Math.min(1.2,CLOCK.sun.intensity)); U.uDay.value=Math.max(.15,Math.min(1,(CLOCK.elev()+4)/14)); } if(window.SKY&&SKY.U)U.uSky.value.copy(SKY.U.uH.value);
       try{ const c=SFX.live&&SFX.live(); if(c){ sound(c,r?Math.max(0,r[0]-W(s)):99,r?Math.min(1,rif(s)):0); if(wade&&mv>.3&&(splash-=dt)<0){ splash=.42; plash(c); } if(wade&&!wasIn)plash(c); } }catch(_){ } wasIn=!!wade; };
     BROOK.tris=()=>[...banks,...waters.map(w=>w.me)].reduce((a,m)=>a+m.geometry.index.count/3,0)+BROOK.rocks.reduce((t,m)=>t+m.count*80,0)+BROOK.pebbles.reduce((t,m)=>t+m.count*20,0);
+    BROOK.feed=(st,pos,dt,go,keys)=>{ const px=pos.x/T+72-(P.ox||0), py=pos.z/T-77-(P.oy||0), r=SHARED.LVL==='up'?BK.q(px,py):null;
+      if(!r||r[0]>=W(r[1])){ if(BROOK.swim&&st.water)st.water.in=false; BROOK.swim=false; return false; }
+      const W1=RIG.water(st,{level:(L(r[1])*WU+G0)/ZU,floor:SHARED.groundY(pos.x,pos.z)/ZU}); W1.go=!!go; W1.fast=W1.in&&(keys.has('k')||keys.has('shift'))?1:0;
+      if(W1.in&&W1.floor>=W1.level-30&&!st.move&&!W1.dive){ W1.in=false; if(st.last)st.out={pose:JSON.parse(JSON.stringify(st.last)),t:0,T:.4}; }
+      W1.events.length=0; BROOK.swim=W1.in; return true; };
     BROOK.ready=true; };
   PARK.later(go); }

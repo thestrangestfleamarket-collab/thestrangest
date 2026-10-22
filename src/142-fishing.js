@@ -6,7 +6,7 @@ import {FIX, MAPG, SOL, SYS, TILE, ZU} from './006-map-pre.js';
 import {RIVER} from './066-river.js';
 import {GEMS} from './101-gems.js';
 const FISHING={}; Object.assign(BOAT,{on:false}); window.FISHING=FISHING; window.BOAT=BOAT;
-{ const T=TILE, RB=RIVER.box, rz0=RB.z0, rz1=RB.z1, WU=T/.84, cl=(v,a,b)=>v<a?a:v>b?b:v;
+RIVER.onBuild.push(()=>{ const T=TILE, RB=RIVER.box, rz0=RB.z0, rz1=RB.z1, WU=T/.84, cl=(v,a,b)=>v<a?a:v>b?b:v;
   const FI=[['x_sunfish','SUNFISH',0,3,0,4,5,.07],['x_perch','WHITE PERCH',5,4,0,5,5,.08],['x_crab','BLUE CRAB',15,8,0,4,2,.06],['x_eel','AMERICAN EEL',20,9,0,9,3,.08],
     ['x_catfish','CHANNEL CATFISH',25,10,2,9,3,.1],['x_flounder','FLOUNDER',30,12,3,9,2,.1],['x_shad','AMERICAN SHAD',35,11,3,9,2,.09],['x_bluefish','BLUEFISH',45,16,4,9,2,.12],
     ['x_bass','STRIPED BASS',50,20,4,9,3,.14],['x_sturgeon','ATLANTIC STURGEON',75,60,6,9,.6,.2]];
@@ -91,4 +91,4 @@ const FISHING={}; Object.assign(BOAT,{on:false}); window.FISHING=FISHING; window
         else { FORAGE.give(f[0]); say(`YOU PULL OUT ${/^[AEIOU]/.test(f[1])?'AN':'A'} ${f[1]}!`,f[0].match(/boot|can/)?'#c8c2b0':'#b8f0a0'); } SFX.play('drip',{vol:.6}); }
       else say('THE FISH GOT AWAY.','#c8a090'); FORAGE.draw(); } };
   { SYS.add('life',(dt)=>{ FISHING.tick(dt); },'142-fishing'); }
-  window.FISHDBG=()=>({rod:FORAGE.has('rod'),fishing:!!F,boat:BOAT.on?{x:+BOAT.x.toFixed(2),z:+BOAT.z.toFixed(2),v:+BOAT.v.toFixed(2)}:null,stand:{x:SX,z:SZ},pier:PX,skill:FORAGE.sk('fish')}); }
+  window.FISHDBG=()=>({rod:FORAGE.has('rod'),fishing:!!F,boat:BOAT.on?{x:+BOAT.x.toFixed(2),z:+BOAT.z.toFixed(2),v:+BOAT.v.toFixed(2)}:null,stand:{x:SX,z:SZ},pier:PX,skill:FORAGE.sk('fish')}); });

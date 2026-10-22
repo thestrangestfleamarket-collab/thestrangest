@@ -36,7 +36,8 @@ const BLOCKS={PX:12};
       return wall(u,z,f); }; };
   BLOCKS.make=o=>{ const {X,Y,Z,faceTex,bq,C}=SHARED.BOD, px=o.px||BLOCKS.PX, {x0,y0,x1,y1}=o, z0=o.z0||0, z1=o.z1, k=o.kind||'A', H=Math.max(1,Math.round((z1-z0)*px/24));
     const face=(side,a0,a1,P)=>{ const W=Math.max(1,Math.round((a1-a0)*px)), f=side==='f'||side==='b'?1:.8;
-      const tx=faceTex(W,H,(i,j)=>C(o.paint(side,a0+(i+.5)/px,z1-(j+.5)*(z1-z0)/H,f)));
+      const T=o.turn, ls=T?T.unside(side):side, pa=T?a=>{ const l=T.back(side==='f'||side==='b'?a:side==='w'?x0:x1,side==='f'?y1:side==='b'?y0:a); return ls==='f'||ls==='b'?l[0]:l[1]; }:a=>a;
+      const tx=faceTex(W,H,(i,j)=>C(o.paint(ls,pa(a0+(i+.5)/px),z1-(j+.5)*(z1-z0)/H,f)));
       bq(P(a0,z0),P(a1,z0),P(a1,z1),P(a0,z1),tx,k); };
     face('f',x0,x1,(a,z)=>[X(a),Y(z),Z(y1)]); face('b',x0,x1,(a,z)=>[X(a),Y(z),Z(y0)]);
     face('w',y0,y1,(a,z)=>[X(x0),Y(z),Z(a)]); face('e',y0,y1,(a,z)=>[X(x1),Y(z),Z(a)]);
@@ -50,8 +51,8 @@ const BLOCKS={PX:12};
     const ph=kind==='tall'?.22:.3; if(y<ph){ const tw=.26+.08*y/ph; if(Math.abs(x)<tw)return sh(pc,y>ph-.05?1.15:Math.abs(x)>tw-.05?.72:.95); return null; }
     const cy=kind==='tall'?.6:.55, ry=kind==='tall'?.42:.3, rx=kind==='fern'?.5:.4, d=(x/rx)**2+((y-cy)/ry)**2+.35*(n-.5);
     if(d>1)return null; if((kind==='flower')&&n>.62)return FLC[Math.floor(hs(Math.floor(i/2),Math.floor(j/2),seed+2)*FLC.length)]; return PLC[d<.3&&y>cy?3:d<.6?2:d>.85?0:1]; });
-  BLOCKS.card=(x,y,z,w,h,kind,seed,k,cross=true)=>{ const {X,Y,Z,bq}=SHARED.BOD, W=Math.max(4,Math.round(w*24)), Hh=Math.max(4,Math.round(h)), t=BLOCKS.plantTex(kind,W,Hh,seed);
-    bq([X(x-w/2),Y(z),Z(y)],[X(x+w/2),Y(z),Z(y)],[X(x+w/2),Y(z+h),Z(y)],[X(x-w/2),Y(z+h),Z(y)],t,k);
-    if(cross)bq([X(x),Y(z),Z(y-w/2)],[X(x),Y(z),Z(y+w/2)],[X(x),Y(z+h),Z(y+w/2)],[X(x),Y(z+h),Z(y-w/2)],t,k); };
+  BLOCKS.card=(x,y,z,w,h,kind,seed,k,cross=true,ns=false)=>{ const {X,Y,Z,bq}=SHARED.BOD, W=Math.max(4,Math.round(w*24)), Hh=Math.max(4,Math.round(h)), t=BLOCKS.plantTex(kind,W,Hh,seed);
+    if(!ns||cross)bq([X(x-w/2),Y(z),Z(y)],[X(x+w/2),Y(z),Z(y)],[X(x+w/2),Y(z+h),Z(y)],[X(x-w/2),Y(z+h),Z(y)],t,k);
+    if(cross||ns)bq([X(x),Y(z),Z(y-w/2)],[X(x),Y(z),Z(y+w/2)],[X(x),Y(z+h),Z(y+w/2)],[X(x),Y(z+h),Z(y-w/2)],t,k); };
 }
 export {BLOCKS};

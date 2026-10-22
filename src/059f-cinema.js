@@ -61,6 +61,7 @@ import {FADE, STORE, SYS, TILE} from './006-map-pre.js';
 
   let lastSync=0;
   const tick=()=>{ const mt=STORE.main&&STORE.main.theatre; CINEMA.on=false; if(!mt||!mt.fm)return;
+    const up=SHARED.LVL==='up'; if(marq)marq.mesh.visible=up; if(post)post.mesh.visible=up;
     const inside=SHARED.LVL==='up'&&mt.R.inside(pos.x,pos.z), id=vid(cur().video_id);
     if(!inside||!id||FADE.busy){ if(wrap&&wrap.style.display!=='none'){ wrap.style.display='none'; try{ player&&player.pauseVideo(); }catch(e){} } return; }
     CINEMA.on=true; mkWrap(); wrap.style.display='block'; placeOver(mt.fm); makePlayer(id);
@@ -71,7 +72,28 @@ import {FADE, STORE, SYS, TILE} from './006-map-pre.js';
   const onRec=()=>{ const id=vid(cur().video_id); CINEMA.title='';
     if(id)fetch('https://www.youtube.com/oembed?format=json&url=https://youtu.be/'+id).then(r=>r.ok?r.json():null).then(j=>{ if(j&&j.title){ CINEMA.title=j.title; sign(); } }).catch(()=>{});
     sign(); };
-  const sign=()=>{ const m=STORE.main&&STORE.main.theatre; if(m&&m.sign)m.sign(); };
+  let marq=null, post=null;
+  const makePanel=(w,h,pw,ph)=>{ const cv=document.createElement('canvas'); cv.width=pw; cv.height=ph; const g=cv.getContext('2d');
+    const tex=new THREE.CanvasTexture(cv); tex.magFilter=tex.minFilter=THREE.NearestFilter; tex.generateMipmaps=false; tex.colorSpace=THREE.SRGBColorSpace;
+    const mesh=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshBasicMaterial({map:tex})); return {cv,g,tex,mesh}; };
+  const fit=(g,t,maxW,px)=>{ let s=px; do{ g.font='bold '+Math.round(s)+'px system-ui'; s-=1; }while(g.measureText(t).width>maxW&&s>8); };
+  const qz=v=>Math.min(255,Math.round(v/56)*56), title=()=>(CINEMA.title||'THE STRANGEST CINEMA').toUpperCase();
+  const drawMarq=()=>{ if(!marq)return; const {g,cv,tex}=marq, W=cv.width, H=cv.height; g.fillStyle='#141018'; g.fillRect(0,0,W,H); g.fillStyle='#20161e'; g.fillRect(8,8,W-16,H-16);
+    g.fillStyle='#ffd98a'; for(let x=16;x<W-12;x+=26){ g.beginPath(); g.arc(x,9,4,0,7); g.fill(); g.beginPath(); g.arc(x,H-9,4,0,7); g.fill(); }
+    g.textAlign='center'; g.textBaseline='middle'; g.fillStyle='#f6ba2c'; g.font='bold '+Math.round(H*0.2)+'px system-ui'; g.fillText('NOW SHOWING',W/2,H*0.3);
+    g.fillStyle='#faf8f0'; fit(g,title(),W-28,H*0.4); g.fillText(title(),W/2,H*0.66); tex.needsUpdate=true; };
+  const drawPoster=()=>{ if(!post)return; const {g,cv,tex}=post, W=cv.width, H=cv.height, band=Math.round(H*0.17), id=vid(cur().video_id);
+    const cap=()=>{ g.fillStyle='#0f1218'; g.fillRect(0,H-band,W,band); g.fillStyle='#faf8f0'; g.textAlign='center'; g.textBaseline='middle'; fit(g,title(),W-12,band*0.5); g.fillText(title(),W/2,H-band/2); tex.needsUpdate=true; };
+    g.fillStyle='#2b3340'; g.fillRect(0,0,W,H-band); cap();
+    if(!id)return; const img=new Image(); img.crossOrigin='anonymous';
+    img.onload=()=>{ try{ g.drawImage(img,0,0,W,H-band); const d=g.getImageData(0,0,W,H-band), a=d.data; for(let i=0;i<a.length;i+=4){ a[i]=qz(a[i]); a[i+1]=qz(a[i+1]); a[i+2]=qz(a[i+2]); } g.putImageData(d,0,0); }catch(e){} cap(); };
+    img.src='/yt/'+id+'.jpg'; };
+  const buildSigns=m=>{ const dd=(STORE.main.doors||[]).find(d=>d[0]==='THE MOVIE THEATRE'); if(!dd||marq)return; const fm=m.fm, fw=fm.geometry.parameters.width, fh=fm.geometry.parameters.height;
+    const bx=dd[3], bz=dd[4]; let ox=dd[1]-bx, oz=dd[2]-bz; const L=Math.hypot(ox,oz)||1; ox/=L; oz/=L; const sx=-oz, sz=ox;
+    marq=makePanel(fw*0.78,fw*0.195,512,128); const my=fm.position.y+fh*0.22; marq.mesh.position.set(bx+ox*0.3,my,bz+oz*0.3); marq.mesh.lookAt(bx+ox*2,my,bz+oz*2); scene.add(marq.mesh);
+    post=makePanel(fw*0.16,fw*0.227,240,340); const py=fm.position.y-fh*0.02, po=fw*0.34; post.mesh.position.set(bx+sx*po+ox*0.3,py,bz+sz*po+oz*0.3); post.mesh.lookAt(bx+sx*po+ox*2,py,bz+sz*po+oz*2); scene.add(post.mesh);
+    sign(); };
+  const sign=()=>{ drawMarq(); drawPoster(); };
 
   let dlg=null; const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
   const openAdmin=async()=>{ '@later'; if(!await isAdmin())return; const c=cur();
@@ -105,8 +127,8 @@ import {FADE, STORE, SYS, TILE} from './006-map-pre.js';
   const attach=()=>{ if(attached)return; const m=STORE.main&&STORE.main.theatre; if(!m||!m.fm)return; attached=true;
     const fm=m.fm, hb=new THREE.Mesh(new THREE.BoxGeometry(fm.geometry.parameters.width,fm.geometry.parameters.height,.4*TILE),new THREE.MeshBasicMaterial({visible:false}));
     hb.position.copy(fm.position); scene.add(hb);
-    UI.thing({name:'THE SCREEN',ghost:1,obj:hb,reach:3.2*TILE,near:6.5*TILE,tall:fm.geometry.parameters.height,act:async()=>{ if(await isAdmin())openAdmin(); }}); };
+    UI.thing({name:'THE SCREEN',ghost:1,obj:hb,reach:3.2*TILE,near:6.5*TILE,tall:fm.geometry.parameters.height,act:async()=>{ if(await isAdmin())openAdmin(); }}); buildSigns(m); };
 
-  SYS.add('cinema',()=>{ attach(); tick(); },'059f-cinema');
+  window.CINEMA=CINEMA; SYS.add('places',()=>{ attach(); tick(); },'059f-cinema');
   isAdmin(); pull(); setInterval(()=>{ if(document.visibilityState!=='hidden')pull(); },5000);
 }

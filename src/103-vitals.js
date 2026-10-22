@@ -14,7 +14,7 @@ VIT.breathe=s=>{ VIT.air=Math.min(AIRCEIL,VIT.air+(+s||0)); };   // a breathing 
   VIT.tick=dt=>{ const sp=Math.hypot(pos.x-lx,pos.z-lz)/Math.max(dt,1e-3); lx=pos.x; lz=pos.z; const running=st.run>.55&&sp>.6*TILE&&!UI.fly&&!UI.freeCam;
     if(running){ VIT.sta=Math.max(0,VIT.sta-dt/12); rest=0; } else if((rest+=dt)>.8)VIT.sta=Math.min(1,VIT.sta+dt/7);
     VIT.tired=false;
-    const under=!!(st.water&&st.water.in&&st.water.under>.5);     // your head is below the surface
+    const W=st.water, under=!!(W&&W.in&&W.level!=null&&W.y<W.level-34);     // fully under, by the river's own measure
     if(under){ VIT.air=Math.max(0,VIT.air-dt);
       if(VIT.air<=0&&!VIT.dead){ VIT.hp=Math.max(0,VIT.hp-dt/18); if((glug-=dt)<=0){ SFX.play('thud',{vol:.4,pitch:.6,vary:.2}); glug=1; } if(VIT.hp<=0)VIT.die(); } }
     else { if(VIT.air<VIT.airMax)VIT.air=Math.min(VIT.airMax,VIT.air+dt*VIT.airMax/2.5); glug=0; }   // a plain breath comes back at the surface; banked air stays

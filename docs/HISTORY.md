@@ -4261,3 +4261,7 @@ An item marked SELLABLE (item editor, shift+7) now shows in the mushroom seller'
 ## 22 Oct 2026: landscape patches follow the ground
 
 A ground patch (landscape editor, shift+9) is now subdivided a cell per tile and each vertex raycast down to the real ground, so a patch follows slopes and bumps instead of clipping as one flat sheet. Flat floors still read flat. (Freehand borders still later.)
+
+## 22 Oct 2026: landscape freehand borders
+
+The landscape editor (shift+9) now has a BORDER mode beside BOX: click points on the ground to draw a border around an area, FINISH to fill it with the chosen ground (a triangulated patch, conformed to the ground like a box). Fills the owner's original ask to "draw borders around areas". Patches are double-sided now so a border drawn either way shows.

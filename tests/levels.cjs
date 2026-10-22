@@ -23,7 +23,7 @@ const fails=[], ok=(c,m)=>{ if(!c){ fails.push(m); console.log((process.env.GITH
   const SB=await pg.evaluate(()=>{ const B=__dbg.MAPK.MODS.station.BOUND, L=LEVELS.of.station, m=1.13*3; return {x0:B.x0-m,x1:B.x1+m,z0:B.z0-m,z1:B.z1+m,y0:L.ceil-40,y1:L.ceil+.05}; });
   const ls=await leaks(SB); ok(!ls.length,'nothing outside the station is drawn from the platform'+(ls.length?': '+ls.slice(0,12).join(' | '):''));
   ok(await pg.evaluate(()=>Math.abs(__dbg.MAPK.MODS.stairCut.constant-LEVELS.of.station.ceil)<1e-6),'from the platform the subway stairs are cut at the station ceiling');
-  ok(await pg.evaluate(()=>{ const H=LEVELS.hide(), r=__dbg.MAPG.down.visible&&__dbg.MAPG.stairs.visible&&!__dbg.MAPG.bodega.visible; LEVELS.show(H); return r; }),'the station and its stairs are drawn, the street is not');
+  ok(await pg.evaluate(()=>{ const H=LEVELS.hide(), r=__dbg.MAPG.down.visible&&!__dbg.MAPG.stairs.visible&&!__dbg.MAPG.bodega.visible; LEVELS.show(H); return r; }),'the station is drawn, the street and its stairs are not (no stairs in the station, owner 22 Oct 2026)');
   await pg.evaluate(()=>__dbg.cam(null,null,6)); await pg.waitForTimeout(2500); await pg.screenshot({path:out+'/levels-station.png'});
 
   await pg.evaluate(()=>DUNGEON.go(1)); const inD=await until(()=>LEVELS.cur==='dungeon'&&DUNGEON.level===1); await pg.waitForTimeout(2500);

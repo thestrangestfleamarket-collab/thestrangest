@@ -1,7 +1,7 @@
 // THE MAIL: MAIL, the town's mail: names, addresses, letters, parcels and the mail carrier's round.
 import {SHARED, THREE} from './003-shx.js';
 import {CITY, CIVIC, CLOCK, MAIL, PARK, UI, WALKERS} from './003b-systems.js';
-import {SAVE} from './005-save.js';
+import {OWNED} from './005-save.js';
 import {FIX, MAPG, MODS, QS, RING, SOL, STORE, TILE} from './006-map-pre.js';
 import {JOBS} from './159-jobs.js';
 Object.assign(MAIL,{on:QS.has('mail')?QS.get('mail')!=='0':CITY.on,addr:[],L:[],nid:0,day0:0,you:{cash:100},cboxes:[],ready:false}); window.MAIL=MAIL;
@@ -205,8 +205,8 @@ if(MAIL.on){ const T=TILE, M=1/.84*T, X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, G=(x,z)=
   const openBox=b=>{ const As=MAIL.addr.filter(a=>a.b===b&&!a.up), n=As.filter(a=>MAIL.waiting(a)).length, out=MAIL.L.some(l=>l.state==='posted'&&As.some(a=>a.id===l.at));
     note((b.units?b.name+' · '+As.length+' BOXES':As[0].label)+(n?' · MAIL IN '+n:' · EMPTY')+(out?' · FLAG UP':'')); };
 
-  const save=()=>{ if(!MAIL.ready)return; try{ SAVE.set('mail',JSON.stringify({v:1,day:MAIL.day(),h:CLOCK.h,nid:MAIL.nid,you:MAIL.you,L:MAIL.L.slice(-500),cb:MAIL.cboxes.map(c=>c.in),cash:Object.fromEntries(MAIL.addr.filter(a=>a.who&&a.who.type==='walker').map(a=>[a.id,a.who.ref.cash||0]))})); }catch(e){} };
-  const restore=()=>{ '@later'; let D=null; try{ D=JSON.parse(SAVE.get('mail')||'null'); }catch(e){} if(QS.get('fresh')&&QS.get('keepmail')!=='1')D=null;
+  const save=()=>{ if(!MAIL.ready)return; try{ OWNED.set('mail',JSON.stringify({v:1,day:MAIL.day(),h:CLOCK.h,nid:MAIL.nid,you:MAIL.you,L:MAIL.L.slice(-500),cb:MAIL.cboxes.map(c=>c.in),cash:Object.fromEntries(MAIL.addr.filter(a=>a.who&&a.who.type==='walker').map(a=>[a.id,a.who.ref.cash||0]))})); }catch(e){} };
+  const restore=()=>{ '@later'; let D=null; try{ D=JSON.parse(OWNED.get('mail')||'null'); }catch(e){} if(QS.get('fresh')&&QS.get('keepmail')!=='1')D=null;
     if(!D||D.v!==1)return;
     MAIL.day0=Math.max(0,(D.day||0)+((D.h||0)>CLOCK.h?1:0)); MAIL.nid=D.nid||0; MAIL.you=D.you||MAIL.you; MAIL.L=(D.L||[]).filter(l=>l&&l.id);
     (D.cb||[]).forEach((a,i)=>{ if(MAIL.cboxes[i])MAIL.cboxes[i].in=a||[]; }); for(const [id,v] of Object.entries(D.cash||{})){ const A=MAIL.byId(id); if(A&&A.who&&A.who.ref)A.who.ref.cash=v; }

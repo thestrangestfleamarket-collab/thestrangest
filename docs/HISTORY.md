@@ -4285,3 +4285,6 @@ Owner: "the game is also still starting me on main street then taking me to last
 
 ## 22 Oct 2026: the subway tunnels follow the streets
 Owner: "the tunnels are real connected tunnels that follow the same path as the streets (around central park). so the play should be able to go into both tunnels"; "there should be two tunnels going each direction that loop around under the streets (remember the [][][][] 8 sections map)"; his pick of two mockups: "option 1" (the loop under the outside streets round all 8 sections). The station now runs east-west under Market St; two walkable, lamp-lit tunnels leave each end, east under Market St to Section C's edge and west then north under West St to Section B's edge, where the other sections will join them.
+
+## 22 Oct 2026: the fountain gone, one water from lake to lake
+Owner, of the fountain's terrace by the big lake: "lets remove the fountain for now and have the stream go into the lake. all the water in lake stream and big lake should all be same water flowing around". The fountain is off (`FOUNT.on`, kept to bring back); the big lake's shore closes over its terrace; the stream runs out of the big lake and widens into THE LAKE (151, 10), sunk to its level in place of the raised pond; the big lake, the stream and THE LAKE are one water.

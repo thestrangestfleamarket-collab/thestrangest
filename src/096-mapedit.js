@@ -115,7 +115,7 @@ GAMEED.build=()=>{ '@editor'; const T=TILE;
     Cc('THE ROUND','path',P.round[0]+ox,P.round[1]+oy,P.round[2],0,'park slabs','round');
     Cc("THE GOLEMS' CAVE",'park',PARKCAVE[0]+ox,PARKCAVE[1]+oy,5,120,'cave rock','cave');
     R("THE SQUIRREL'S TOWER",'park',[PARKTOWER[0]-4+ox,PARKTOWER[1]-4+oy],[PARKTOWER[0]+4+ox,PARKTOWER[1]+4+oy],120,'castle stone','tower');
-    if(FOUNT.S)Cc('THE FOUNTAIN','park',FOUNT.S.C.x+ox,FOUNT.S.C.y+oy,FOUNT.S.R,40,'park slabs','fountain');
+    if(FOUNT.S&&FOUNT.on)Cc('THE FOUNTAIN','park',FOUNT.S.C.x+ox,FOUNT.S.C.y+oy,FOUNT.S.R,40,'park slabs','fountain');
     if(P.campAt){ const c=P.campAt(); Cc('THE CAMPFIRE','park',c.x+ox,c.y+oy,2.5,20,'wood','camp'); }
     R('THE PARK GATE','park',[P.gate[0]+ox,P.y0+oy-1],[P.gate[1]+ox,P.y0+oy+1],150,'iron','gate');
     if(P.segs)P.segs.forEach(([ax,ay,bx,by],i)=>{ const L2=Math.hypot(bx-ax,by-ay); if(L2<.5)return; L.push({id:nid(),gid:(LEVEL.paths[i]&&LEVEL.paths[i].id)||'path'+i,n:'PARK PATH '+(i+1),ly:'path',sh:'rect',x:(ax+bx)/2+ox,y:(ay+by)/2+oy,w:L2,d:7.2,rot:Math.atan2(by-ay,bx-ax)*180/Math.PI,z:0,h:0,scale:1,tex:'park slabs',color:hex(LCOL.path),tint:'#ffffff',opacity:1}); });

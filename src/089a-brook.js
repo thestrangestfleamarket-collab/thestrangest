@@ -59,7 +59,7 @@ import {FOUNT} from './060a-fount.js';
     const FS=`uniform float uT,uDay; uniform vec3 uSky,uSun; uniform vec4 uMe, uRk[24]; varying vec4 vF; varying vec3 vW;
       float h1(vec2 p){ return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453); }
       float vn(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.-2.*f); return mix(mix(h1(i),h1(i+vec2(1,0)),f.x),mix(h1(i+vec2(0,1)),h1(i+vec2(1,1)),f.x),f.y); }
-      void main(){ float sp=vF.w, ta=vF.x-uT*.8, u=vF.y, pl=step(sp,.3); vec2 wp=vW.xz/${T.toFixed(4)};
+      void main(){ if(vF.z<-.5)discard; float sp=vF.w, ta=vF.x-uT*.8, u=vF.y, pl=step(sp,.3); vec2 wp=vW.xz/${T.toFixed(4)};
         vec2 fp=mix(vec2(ta*.8,u*2.4),wp*.7+vec2(uT*.05,0.),pl); float n=vn(fp)*.65+vn(fp*2.3+7.)*.35, n2=vn(vec2(ta*2.2,u*5.)+3.);
         vec3 deep=vec3(.05,.13,.17)*(.3+.7*uDay), sky=uSky*(.3+.45*uDay)+vec3(.06,.09,.13)*(1.-uDay)+vec3(.02,.04,.06), c=deep;
         if(n>.6)c=mix(deep,sky,.3); if(n>.76-.04*pl&&n2>.45)c=mix(deep,sky,.6);
@@ -74,6 +74,9 @@ import {FOUNT} from './060a-fount.js';
       const arr=[]; for(let i=0;i<24;i++){ const o=mine[i]; if(!o){ arr.push(new THREE.Vector4()); continue; } const k=kAt(BK.q(o.x,o.y)[1]), [nx,ny]=BK.nrm(k); arr.push(new THREE.Vector4(o.wx,o.wz,o.wr*(o.kind==='s'?.95:.8),Math.atan2(nx,-ny))); }
       const m=new THREE.ShaderMaterial({uniforms:{...U,uRk:{value:arr}},vertexShader:VS,fragmentShader:FS,fog:false}); m.customProgramCacheKey=()=>'brookwater';
       const me=new THREE.Mesh(w.g,m); grp.add(me); w.me=me; }
+    const still=new THREE.ShaderMaterial({uniforms:{...U,uRk:{value:Array.from({length:24},()=>new THREE.Vector4())}},vertexShader:VS,fragmentShader:FS,fog:false}); still.customProgramCacheKey=()=>'brookwater';
+    BROOK.still=ms=>{ for(const me of ms){ const g=me.geometry, d=g.attributes.aD, n=g.attributes.position.count, f=new Float32Array(n*4); const ps=g.attributes.position; for(let i=0;i<n;i++){ const mx=ps.getX(i)/T+SHARED.BOD.OX-(P.ox||0), my=ps.getZ(i)/T+SHARED.BOD.OY-(P.oy||0); const r=BK.q(mx,my), out=FOUNT.lake(mx,my)>0; f[i*4+2]=r&&r[1]>BK.m+.5&&r[0]<W(r[1])?-1:out?.5:d?d.getX(i):1; } g.setAttribute('aF',new THREE.BufferAttribute(f,4)); me.material=still; } };
+    if(FOUNT.waters)BROOK.still(FOUNT.waters);
     { const br=BK.br, yc=br.yc, xc=br.xc, S=br.S, ey=(x,f)=>P.armY(x)+f*3.6, kc=C[br.k], lv=L(kc[2]), a=W(kc[2])+.4, U0=S+2, hump=BK.hump;
       const cv=document.createElement('canvas'); cv.width=cv.height=48; const g2=cv.getContext('2d'), id=g2.createImageData(48,48);
       for(let y=0;y<48;y++)for(let x=0;x<48;x++){ const ro=Math.floor(y/12), xo=x+(ro%2)*12, bi=Math.floor(xo/24), j=y%12===0||xo%24===0, t=hs(bi*7+ro,71), v=j?70:(118+40*t)*(y%12===1?1.1:y%12===11?.86:1), k=(y*48+x)*4; id.data[k]=v; id.data[k+1]=v*.97; id.data[k+2]=v*.9; id.data[k+3]=255; }
@@ -94,7 +97,7 @@ import {FOUNT} from './060a-fount.js';
       const v=SFX.on?Math.max(0,1-near/14)**2*(.12+.12*rf)*SFX.vol:0; snd.G.gain.setTargetAtTime(v,c.currentTime,.3); snd.F.frequency.setTargetAtTime(1200+700*rf+300*Math.sin(c.currentTime*.7),c.currentTime,.4); };
     const plash=c=>{ const n=Math.floor(c.sampleRate*.25), b=c.createBuffer(1,n,c.sampleRate), d=b.getChannelData(0); for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*Math.exp(-i/n*7); const s=c.createBufferSource(), F=c.createBiquadFilter(), G=c.createGain(); s.buffer=b; F.type='bandpass'; F.frequency.value=900+Math.random()*600; G.gain.value=.18*SFX.vol; s.connect(F).connect(G).connect(c.destination); s.start(); };
     BROOK.tick=(dt,pos)=>{ U.uT.value=performance.now()/1000%1000; const px=pos.x/T+72-(P.ox||0), py=pos.z/T-77-(P.oy||0), r=SHARED.LVL==='up'?BK.q(px,py):null, s=r?r[1]:0, h=r?BK.h(px,py):null, wade=r&&s>=BK.m&&h!=null&&h<L(s)-.04&&!BK.st.some(o=>Math.hypot(px-o[0],py-o[1])<o[2]);
-      const mv=wade?Math.min(1,Math.hypot(pos.x-(BROOK.lx||pos.x),pos.z-(BROOK.lz||pos.z))/Math.max(dt,1e-3)/T):0; BROOK.lx=pos.x; BROOK.lz=pos.z; U.uMe.value.set(pos.x,pos.z,0,wade?.35+.65*mv:0); BROOK.wade=!!wade; BROOK.over=!!r;
+      const mv=wade||FOUNT.swim?Math.min(1,Math.hypot(pos.x-(BROOK.lx||pos.x),pos.z-(BROOK.lz||pos.z))/Math.max(dt,1e-3)/T):0; BROOK.lx=pos.x; BROOK.lz=pos.z; U.uMe.value.set(pos.x,pos.z,0,wade||FOUNT.swim?.35+.65*mv:0); BROOK.wade=!!wade; BROOK.over=!!r;
       if(CLOCK.sun){ U.uSun.value.copy(CLOCK.sun.color).multiplyScalar(Math.min(1.2,CLOCK.sun.intensity)); U.uDay.value=Math.max(.15,Math.min(1,(CLOCK.elev()+4)/14)); } if(window.SKY&&SKY.U)U.uSky.value.copy(SKY.U.uH.value);
       try{ const c=SFX.live&&SFX.live(); if(c){ sound(c,r?Math.max(0,r[0]-W(s)):99,r?Math.min(1,rif(s)):0); if(wade&&mv>.3&&(splash-=dt)<0){ splash=.42; plash(c); } if(wade&&!wasIn)plash(c); } }catch(_){ } wasIn=!!wade; };
     BROOK.tris=()=>[...banks,...waters.map(w=>w.me)].reduce((a,m)=>a+m.geometry.index.count/3,0)+BROOK.rocks.reduce((t,m)=>t+m.count*80,0)+BROOK.pebbles.reduce((t,m)=>t+m.count*20,0);

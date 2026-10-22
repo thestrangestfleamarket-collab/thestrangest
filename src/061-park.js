@@ -35,7 +35,7 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
     const acc=[0]; for(let i=1;i<Q.length;i++)acc.push(acc[i-1]+Math.hypot(Q[i][0]-Q[i-1][0],Q[i][1]-Q[i-1][1])); const SL=acc[acc.length-1], N=Math.round(SL/.5), C=[];
     for(let k=0,j=0;k<=N;k++){ const s=k*SL/N; while(j<Q.length-2&&acc[j+1]<s)j++; const t=(s-acc[j])/(acc[j+1]-acc[j]||1); C.push([Q[j][0]+(Q[j+1][0]-Q[j][0])*t,Q[j][1]+(Q[j+1][1]-Q[j][1])*t,s]); }
     const sK=bs?acc[16]:0; let kC=0; while(kC<N&&FOUNT.lake(C[kC][0],C[kC][1])<0)kC++; const sC=C[kC][2], LK=-.22+(.5*ZU-.004)*.84/TILE;
-    const RF=[20,47,74,101,127,150].map(r=>Math.round(sK+r*(SL-sK)/185)), B=1.4, W=s=>1.45+.3*Math.sin((s-sK)*.13+1)+.15*Math.sin((s-sK)*.41)+1.8*(1-ss(sC,sC+8,s))+5*ss(SL-18,SL-4,s),
+    const RF=[20,47,74,101,127,150].map(r=>Math.round(sK+r*(SL-sK)/185)), B=1.4, W=s=>1.45+.3*Math.sin((s-sK)*.13+1)+.15*Math.sin((s-sK)*.41)+1.8*(1-ss(sC,sC+8,s))+(LR-1.45-B)*ss(SL-2.2*LR,SL-.4*LR,s),
       L=s=>-.3-RF.reduce((a,r)=>a+.045*ss(r-.5,r+.5,s),0)+(LK+.3)*(1-ss(sW-.25,sW+.25,s)), D=s=>.42-L(s)+.5*ss(SL-18,SL-6,s), G=new Map(), gk=(i,j)=>i*4096+j, st=[];
     for(let k=0;k<N;k++){ const [x0,y0]=C[k], [x1,y1]=C[k+1], r=W(C[k][2])+B+6; for(let i=Math.floor((Math.min(x0,x1)-r)/4);i<=Math.floor((Math.max(x0,x1)+r)/4);i++)for(let j=Math.floor((Math.min(y0,y1)-r)/4);j<=Math.floor((Math.max(y0,y1)+r)/4);j++){ const g=gk(i,j); if(!G.has(g))G.set(g,[]); G.get(g).push(k); } }
     const q=(x,y)=>{ const l=G.get(gk(Math.floor(x/4),Math.floor(y/4))); if(!l)return null; let bd=1e9, bs=0, sg=1;

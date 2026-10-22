@@ -4288,3 +4288,6 @@ Owner: "the tunnels are real connected tunnels that follow the same path as the 
 
 ## 22 Oct 2026: the fountain gone, one water from lake to lake
 Owner, of the fountain's terrace by the big lake: "lets remove the fountain for now and have the stream go into the lake. all the water in lake stream and big lake should all be same water flowing around". The fountain is off (`FOUNT.on`, kept to bring back); the big lake's shore closes over its terrace; the stream runs out of the big lake and widens into THE LAKE (151, 10), sunk to its level in place of the raised pond; the big lake, the stream and THE LAKE are one water.
+
+## 22 Oct 2026: the map moved to the owner's screenshots
+Owner: "match the map based on my screenshots"; "nothing is precious on map right now so just move them crudely to get them to the spots. i can clean up later. just make sure follow map rules"; the buildings in central park and on the street left out; the subway stairs at the screenshot spot (x ~116). Places, park places, paths and homes from his export; the bar, museum, playhouse, arcade and apartments now stand on West St (their own y in `data/world.json`), crude, facing north. Rule: a place with `y0`/`y1` stands where they say, off the Market St row.

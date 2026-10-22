@@ -1,6 +1,6 @@
 // THE STAIRS AND GROUND: inStair and SHARED.groundY say how high the ground is everywhere; LITE and HEMI set the lamps and sky light.
 import {SHARED, THREE} from './003-shx.js';
-import {BROOK, LEVELS, LITE, NPCS, PARK, pos, ROOMS, st} from './003b-systems.js';
+import {LEVELS, LITE, NPCS, PARK, pos, ROOMS} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {CASTLE, FIX, grab, lamps, LAY, MAPG, MAPSTAIR, MODS, RING, SEEN, SHL, SOL, STORE, SYS, TILE, ZU} from './006-map-pre.js';
 import {FOUNT} from './060a-fount.js';
@@ -44,8 +44,8 @@ LITE.tick=(dt,x,y,z)=>{ const P=LITE.pool;
   if(L0.intensity>0&&typeof NPCS!=='undefined'){ const r=(L0.distance||8*TILE)**2; for(const N of NPCS){ if(!N.g||!N.g.visible||!N.st)continue; const p=N.g.position, dx=p.x-L0.position.x, dz=p.z-L0.position.z; if(dx*dx+dz*dz>r)continue; const k=p.x*7.13+p.z*3.31+p.y*1.7+N.st.h; if(N._lk!==k){ N._lk=k; mv=true; } } }
   L0.shadow.autoUpdate=L0.intensity>0&&mv; };
 scene.background=new THREE.Color(0x050507);
-const OUTWET=p=>SHARED.LVL==='up'&&!!((st.water&&st.water.in)||window.BROOK&&BROOK.over||window.FOUNT&&FOUNT.wet&&FOUNT.wet(p.x,p.z,TILE));
-const MAPLV=(py,pos)=>{ SHARED.METRO.door(py,pos); if(MODS.dunDoor)MODS.dunDoor(py,pos); PARK.door(py,pos); const wet=OUTWET(pos), lv=py<-1.6&&!wet?'down':'up', si=inStair(pos.x,pos.z), cur=LEVELS.set(lv,pos.x,pos.z,si);
+SHARED.floor='up';
+const MAPLV=(py,pos,cam)=>{ SHARED.METRO.door(py,pos); if(MODS.dunDoor)MODS.dunDoor(py,pos); PARK.door(py,pos); const si=inStair(pos.x,pos.z), lv=cam?(py<-1.6?'down':'up'):(SHARED.floor=LEVELS.floor(SHARED.floor,py,si)), cur=LEVELS.set(lv,pos.x,pos.z,si);
   if(MAPG.park)MAPG.park.visible=cur==='street'&&!!PARK.in;
   for(const w of LEVELS.ways)if(w.cut)w.cut.constant=LEVELS.way?py+.25:cur===w.b&&LEVELS.of[w.b].ceil!=null?LEVELS.of[w.b].ceil:1e6;
   if(lv===SHARED.LVL)return false; SHARED.LVL=lv; SHARED.solids=SOL[lv]; SHARED.fixed=FIX[lv]; HEMI.color.set(lv==='down'?0x8a93a8:0x55607a); HEMI.groundColor.set(lv==='down'?0x1a1814:0x14110e); HEMI.intensity=lv==='down'?.1:.3; return true; };

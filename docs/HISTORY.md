@@ -4291,3 +4291,9 @@ Owner, of the fountain's terrace by the big lake: "lets remove the fountain for 
 
 ## 22 Oct 2026: the map moved to the owner's screenshots
 Owner: "match the map based on my screenshots"; "nothing is precious on map right now so just move them crudely to get them to the spots. i can clean up later. just make sure follow map rules"; the buildings in central park and on the street left out; the subway stairs at the screenshot spot (x ~116). Places, park places, paths and homes from his export; the bar, museum, playhouse, arcade and apartments now stand on West St (their own y in `data/world.json`), crude, facing north. Rule: a place with `y0`/`y1` stands where they say, off the Market St row.
+
+## 22 Oct 2026: drag looks round in every view again
+Owner: "add the ability to look around freely when in any view (rotating around view and dragging to look around)". Reverses the same day's "no drag-to-turn while playing": a right drag (or Shift + drag) turns and tilts every view, the isometric one too; a left drag looks round in the close views and still moves the map in the overhead ones; Q / E still step the isometric view.
+
+## 22 Oct 2026: the floor you're on changes only by a way down
+Owner: "i keep dropping underground when i walk around, make sure the game mechanics are strong to avoid that from happening (remember no patches, look at root cause)". The level (street or underground) was read from your height, so the sunk THE LAKE dropped you into the station. Rule: you (and every character) change floor only on a stairway or through a way in or out (`LEVELS.floor`), never from height alone; your saved spot keeps its floor.

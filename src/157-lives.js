@@ -1,6 +1,6 @@
 // THE LIVES: LIVES gives the town's people their places, homes and paths through the day.
 import {SHARED} from './003-shx.js';
-import {CITY, CLIP, CLOCK, LIVES, NPCS, PARK, ROOMS} from './003b-systems.js';
+import {CITY, CLIP, CLOCK, LEVELS, LIVES, NPCS, PARK, ROOMS} from './003b-systems.js';
 import {CASTLE, FREE, MAPG, MAPSTAIR, MODS, QS, SOL, STORE, TILE, ZU} from './006-map-pre.js';
 import {inStair} from './064-map-post.js';
 Object.assign(LIVES,{on:QS.has('lives')?QS.get('lives')!=='0':CITY.on,ready:false,ms:0,stepMs:0,list:[],force:null,skips:0});
@@ -32,7 +32,7 @@ Object.assign(LIVES,{on:QS.has('lives')?QS.get('lives')!=='0':CITY.on,ready:fals
   const lineFree=(N,a,b)=>{ const n=Math.ceil(d2(a,b)/(.33*T)); for(let k=1;k<=n;k++){ const t=k/n; if(!freeAt(N,a.x+(b.x-a.x)*t,a.z+(b.z-a.z)*t))return false; } return true; };
   const gnd=(N,x,z)=>{ '@later'; const s=inStair(x,z,N.lv); if(s){ const S=s.S; if(S.ground)return S.ground(x,z,N.lv); const t=S.dir>0?s.gy-S.y0:S.y1-s.gy, k=Math.min(S.steps,Math.max(1,Math.floor(t/((S.y1-S.y0)/S.steps))+1)); return -k*S.depth/S.steps*ZU; }
     return N.lv==='down'?(MODS.dungeon&&MODS.dungeon.inside(x,z)?MODS.dungeon.ground(x,z):MODS.station.ground(x,z)):MODS.bodega.ground(x,z); };
-  const level=N=>{ const y=gnd(N,N.st.x,N.st.z), lv=y<-1.6?'down':'up'; if(lv!==N.lv){ N.lv=lv; const g=lv==='down'?(MODS.dungeon&&MODS.dungeon.inside(N.st.x,N.st.z)&&MAPG.dungeon?MAPG.dungeon:MAPG.down):MAPG.bodega; if(N.g.parent!==g)g.add(N.g); } return y; };
+  const level=N=>{ const y=gnd(N,N.st.x,N.st.z), lv=LEVELS.floor(N.lv,y,inStair(N.st.x,N.st.z,N.lv)); if(lv!==N.lv){ N.lv=lv; const g=lv==='down'?(MODS.dungeon&&MODS.dungeon.inside(N.st.x,N.st.z)&&MAPG.dungeon?MAPG.dungeon:MAPG.down):MAPG.bodega; if(N.g.parent!==g)g.add(N.g); } return y; };
   const side=(N,from,n,g)=>{ const dx=g.x-from.x, dz=g.z-from.z, l=Math.hypot(dx,dz)||1, px=-dz/l, pz=dx/l;
     for(const k of [.5,-.5,1,-1,1.6,-1.6,2.3,-2.3]){ const q={x:n.x+px*k*T,z:n.z+pz*k*T}; if(freeAt(N,q.x,q.z,true)&&lineFree(N,from,q))return q; } return null; };
   const route=(N,to)=>{ '@later'; const L=N.life, st=N.st, wp=[], at=P[L.at];

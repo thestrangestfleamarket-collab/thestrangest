@@ -47,7 +47,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
       const K=RIG.KEYMOVE||{}; if(Object.keys(K).length){ o+=h('YOUR OWN MOVES (HIS SHAPE → ANIMATE)'); for(const [k,n] of Object.entries(K))o+=row(k,n.toUpperCase()); }
       if(UI.padMoves)o+=UI.padMoves(row,h);
       o+=h('THE MOUSE')+row('DOUBLE CLICK','WALK THERE (RUN IF FAR) · ON A SEAT: SIT · A LAMP: ON / OFF · A FRIDGE: OPEN · THE DRINKS MACHINE: A CAN · THE RADIO: MUSIC · A CHARACTER: GO UP AND GREET · YOURSELF: YOUR NAME, HEALTH AND BODY · THE GUITARIST: WATCH HIS HANDS · A MUSHROOM: PICK IT · THE MUSHROOM SELLER: HIS SHOP')
-        +row('LEFT DRAG','MOVE THE VIEW (ISOMETRIC, MAP)')+row('WHEEL','ZOOM');
+        +row('LEFT DRAG','MOVE THE VIEW (ISOMETRIC, MAP) · LOOK ROUND (THIRD PERSON, BEHIND, FIRST)')+row('RIGHT DRAG, SHIFT + DRAG','TURN AND TILT THE VIEW')+row('WHEEL','ZOOM');
       P.innerHTML=o; P.style.display='block'; };
     addEventListener('keydown',e=>{ if(e.key==='Escape'&&P.style.display!=='none'){ P.style.display='none'; e.stopImmediatePropagation(); } },true); }
   const badge=document.createElement('div'); badge.id='mode'; document.body.appendChild(badge);
@@ -68,8 +68,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
   UI.grab=e=>{ if(ED.on&&ED.pickW){ const p=ED.pickW(e); if(p){ piv.copy(p); return; } }
     ray.setFromCamera(ndc(e),SHARED.cam); const h=ray.intersectObjects(scene.children,true).find(h=>shown(h.object)); if(h)piv.copy(h.point); else ray.ray.closestPointToPoint(disp,piv); };
   UI.isoStep=d=>{ const A=Math.PI/2, k=(SHARED.yawTo-Math.PI/4)/A; SHARED.yawTo=Math.PI/4+(d>0?Math.floor(k+1e-6)+1:Math.ceil(k-1e-6)-1)*A; SHARED.yaw=SHARED.yawTo; };
-  UI.camFree=()=>UI.freeCam||ED.on||WE.on||MAPED.on||LAND.on;
-  UI.orbit=(dx,dy)=>{ '@later'; if(UI.view==='iso'){ SHARED.yawTo-=dx*.008; SHARED.yaw=SHARED.yawTo; return; }
+  UI.orbit=(dx,dy)=>{ '@later'; if(UI.view==='iso'){ SHARED.yawTo-=dx*.008; SHARED.pitchTo=clampP(SHARED.pitchTo+dy*.006); SHARED.yaw=SHARED.yawTo; SHARED.pitch=SHARED.pitchTo; return; }
     if(UI.persp){ SHARED.yawTo-=dx*.006; SHARED.pitchTo=UI.clampV(SHARED.pitchTo+dy*.005); SHARED.yaw=SHARED.yawTo; SHARED.pitch=SHARED.pitchTo; return; }
     q0.setFromEuler(UI.eul.set(-SHARED.pitch,SHARED.yaw,0,'YXZ')); SHARED.yawTo-=dx*0.008; SHARED.pitchTo=clampP(SHARED.pitchTo+dy*0.006); SHARED.yaw=SHARED.yawTo; SHARED.pitch=SHARED.pitchTo; q1.setFromEuler(UI.eul.set(-SHARED.pitch,SHARED.yaw,0,'YXZ'));
     tv.subVectors(disp,piv); const t0=tv.clone(); tv.applyQuaternion(q0.invert()).applyQuaternion(q1); viewV().add(tv.sub(t0)); disp.add(tv);
@@ -117,7 +116,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     fv.set(pos.x,SHARED.py+.9,pos.z).project(SHARED.cam); if(Math.abs(fv.x)>.92||Math.abs(fv.y)>.92){ UI.off.set(0,0,0); zAt=null; } };
   cv.addEventListener('pointerdown',e=>{ '@later'; if(e.button!==0||ED.on)return; if(window.WIELD&&WIELD.on&&!MAPED.on&&!WE.on&&!LAND.on&&!UI.freeCam){ WIELD.strike(); return; } if(MAPED.down(e)||WE.down(e)||LAND.down(e)){ cv.setPointerCapture(e.pointerId); return; } L={x:e.clientX,y:e.clientY,x0:e.clientX,y0:e.clientY,moved:false}; UI.grab(e); cv.setPointerCapture(e.pointerId); });
   cv.addEventListener('pointermove',e=>{ if(MAPED.dragging){ MAPED.move(e); return; } if(WE.dragging){ WE.move(e); return; } if(LAND.dragging){ LAND.move(e); return; } if(!L)return; if(!L.moved&&Math.hypot(e.clientX-L.x0,e.clientY-L.y0)>5)L.moved=true;
-    if(L.moved){ const dx=e.clientX-L.x, dy=e.clientY-L.y; if(UI.camFree()){ if(!e.shiftKey&&!e.altKey&&!UI.persp)UI.pan(dx,dy); else UI.orbit(dx,dy); } else if(!UI.persp)UI.pan(dx,dy); } L.x=e.clientX; L.y=e.clientY; });
+    if(L.moved){ const dx=e.clientX-L.x, dy=e.clientY-L.y; if(!e.shiftKey&&!e.altKey&&!UI.persp)UI.pan(dx,dy); else UI.orbit(dx,dy); } L.x=e.clientX; L.y=e.clientY; });
   cv.addEventListener('pointerup',()=>{ MAPED.up(); WE.up(); if(LAND.up)LAND.up(); L=null; });
   const THINGS=[]; UI.thing=o=>THINGS.push(o); UI.things=THINGS;
   let goal=null; const said=document.createElement('div'); said.id='said'; said.hidden=true; document.body.appendChild(said);
@@ -234,9 +233,9 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
       if(SHARED.LVL==='up'){ const a=Math.round(Q.sx(SHARED.BOD.OX+pos.x/TILE)), b=Math.round(Q.sy(SHARED.BOD.OY+pos.z/TILE)); mg.fillStyle='#000'; mg.fillRect(a-4,b-4,9,9); mg.fillStyle='#f2c14e'; mg.fillRect(a-3,b-3,7,7); } return; }
     mcv.style.width=''; const R=mapRect(mapLv), W=R.W, H=R.H; mcv.width=W; mcv.height=H; mg.putImageData(UI.topShot(R,mapLv,W,H),0,0);
     const sx=x=>(x-R.x0)/(R.x1-R.x0)*W, sz=z=>(z-R.z0)/(R.z1-R.z0)*H; if((SHARED.LVL)===mapLv){ mg.fillStyle='#f2c14e'; mg.fillRect(Math.round(sx(pos.x))-3,Math.round(sz(pos.z))-3,7,7); mg.fillStyle='#000'; mg.fillRect(Math.round(sx(pos.x))-1,Math.round(sz(pos.z))-1,3,3); } }
-  STORE.goTo=(x,z,lv,hd)=>goTo(x,z,lv,hd);
+  STORE.goTo=(x,z,lv,hd,fl)=>goTo(x,z,lv,hd,fl);
   window.__UI=UI;
-  const goTo=(x,z,lv,hd)=>{ pos.set(x,0,z); SHARED.target=null; if(hd!=null)SHARED.heading=hd; SHARED.py=typeof lv==='number'?lv:lv==='down'?(MODS.dungeon&&MODS.dungeon.inside(x,z)?MODS.dungeon.ground(x,z):MODS.station.ground(x,z)):0; if(UI.freeCam)UI.camT.set(x,SHARED.py+.9,z); else UI.off.set(0,0,0); if(UI.menuOpen)toggleMenu(); };
+  const goTo=(x,z,lv,hd,fl)=>{ pos.set(x,0,z); SHARED.target=null; if(hd!=null)SHARED.heading=hd; SHARED.floor=fl||(typeof lv==='number'?(lv<-1.6?'down':'up'):lv==='down'?'down':'up'); SHARED.py=typeof lv==='number'?lv:lv==='down'?(MODS.dungeon&&MODS.dungeon.inside(x,z)?MODS.dungeon.ground(x,z):MODS.station.ground(x,z)):0; if(UI.freeCam)UI.camT.set(x,SHARED.py+.9,z); else UI.off.set(0,0,0); if(UI.menuOpen)toggleMenu(); };
   UI.goTo=goTo;
   mcv.addEventListener('click',e=>{ '@later'; const r=mcv.getBoundingClientRect(); if(mapLv==='up'){ const Q=plan(), [x,y]=Q.tile((e.clientX-r.left)/r.width*Q.W,(e.clientY-r.top)/r.height*Q.H); return goTo((x-SHARED.BOD.OX)*TILE,(y-SHARED.BOD.OY)*TILE,'up'); } const R=mapRect(mapLv); goTo(R.x0+(e.clientX-r.left)/r.width*(R.x1-R.x0),R.z0+(e.clientY-r.top)/r.height*(R.z1-R.z0),mapLv); });
   M.querySelectorAll('[data-lv]').forEach(b=>b.onclick=()=>{ mapLv=b.dataset.lv; drawMap(); });

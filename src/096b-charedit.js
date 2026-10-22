@@ -1,6 +1,6 @@
 // THE CHARACTER EDITOR: a list of every character in the game; pick one to edit its name, look, home and stats, with the 360 view. Writes characters.json; the game reads it (CHARS). shift+3 opens it; the behaviour editor (shift+8) opens it on the BEHAVIOUR tab.
 import {SHARED} from './003-shx.js';
-import {CHARED, CHARS, GAMEED, keys, MAPED, NPCS, pos} from './003b-systems.js';
+import {CHARED, CHARS, FORAGE, GAMEED, ITEMS, keys, MAPED, NPCS, pos, SHOPS} from './003b-systems.js';
 import {FADE, TILE} from './006-map-pre.js';
 Object.assign(CHARED,{on:false,built:false});
 { const ANIMALS=['squirrel','fox','rat','frog','snake','spider','bat','wasp','slime','dragon','raincat','tvcat','scooterfrog','shark','manatee','rainfish','coatbear','origamifox'], MONST=/^(ogre|skeleton|slime|golem)/, PEOPLE=/^(hero|villager)/, MERCH=['tomato'];
@@ -10,7 +10,14 @@ Object.assign(CHARED,{on:false,built:false});
 
 CHARED.build=()=>{ '@editor';
   const skin=MAPED.skin, fld=MAPED.fld, download=MAPED.download, stamp=MAPED.stamp, VIEW=MAPED.VIEW;
-  const TABS=[['id','IDENTITY'],['look','APPEARANCE'],['beh','BEHAVIOUR']];
+  const TABS=[['id','IDENTITY'],['look','APPEARANCE'],['beh','BEHAVIOUR'],['job','JOB']];
+  const itemIds=()=>{ try{ return (window.ITEMS&&ITEMS.ids)?ITEMS.ids():[]; }catch(e){ return []; } };
+  const itemVal=id=>{ try{ const v=(window.ITEMS&&ITEMS.prop)?ITEMS.prop(id,'value'):0; return +v>0?Math.round(+v):1; }catch(e){ return 1; } };
+  const itemName=id=>{ try{ return (window.FORAGE&&FORAGE.NM&&FORAGE.NM[id])||id; }catch(e){ return id; } };
+  const sellsOf=N=>{ const r=recR(N); return (r.trade&&Array.isArray(r.trade.sells))?r.trade.sells:[]; };
+  const toggleSell=(N,id)=>{ const r=rec(N); r.trade=r.trade||{}; const a=Array.isArray(r.trade.sells)?r.trade.sells:(r.trade.sells=[]); const i=a.indexOf(id);
+    if(i<0)a.push(id); else a.splice(i,1); if(!a.length){ delete r.trade.sells; if(!Object.keys(r.trade).length)delete r.trade; }
+    CHARS.save(); if(window.SHOPS&&SHOPS.sync){ SHOPS.sync(); if(SHOPS.draw)SHOPS.draw(); } };
   let sel=null, tab='id', exported='';
 
   const css=document.createElement('style'); css.textContent=`
@@ -63,15 +70,19 @@ CHARED.build=()=>{ '@editor';
       +'<div class="kv">SECTION <span>'+esc((SHARED.SECTION&&SHARED.SECTION.id)||'A')+'</span></div>'
       +'<div class="kv">LEVEL <span>'+(N.lv==='down'?'UNDERGROUND':'STREET')+'</span></div>'; }
     else if(tab==='look'){ b=fld('SCALE','scale',cur(N,'scale'),.05)+fld('TINT','tint',cur(N,'tint'),0,'color')
-      +'<div class="dim">Scale ships; tint previews in the 360 view (body &amp; palette: a later phase).</div>'
+      +'<div class="dim">Scale and tint both ship — tint is a colour grade over the whole body. (Body swap &amp; part palette: a larger effort, not yet.)</div>'
       +'<div style="margin-top:8px"><button class="mb hot" id="chV">VIEW 360</button></div>'; }
-    else { const ht=homeTiles(N); b='<div class="sec">HOME</div>'
+    else if(tab==='beh'){ const ht=homeTiles(N); b='<div class="sec">HOME</div>'
       +fld('HOME X (TILES)','homex',ht[0],.5)+fld('HOME Y (TILES)','homey',ht[1],.5)+fld('RANGE (TILES)','range',ht[2],.5)
       +'<div style="display:flex;gap:4px;flex-wrap:wrap;margin:6px 0"><button class="mb" id="chHere">HOME = MY SPOT</button><button class="mb" id="chPut">STAYS PUT</button></div>'
       +'<div class="dim">A character keeps to its home range — a circle it is usually found in. Range 0 stays put.</div>'
       +'<div class="sec">STATS</div><div class="kv">BEHAVIOR <span>'+behOf(N)+'</span></div>'
-      +fld('HEALTH','hp',cur(N,'hp'),.1)+fld('STAMINA','stamina',cur(N,'stamina'),.1)+fld('SPEED (TILES/S)','speed',cur(N,'speed'),.05)+fld('SIZE (RADIUS)','size',cur(N,'size'),.05)
-      +'<div class="dim">Job &amp; trade: the next phase.</div>'; }
+      +fld('HEALTH','hp',cur(N,'hp'),.1)+fld('STAMINA','stamina',cur(N,'stamina'),.1)+fld('SPEED (TILES/S)','speed',cur(N,'speed'),.05)+fld('SIZE (RADIUS)','size',cur(N,'size'),.05); }
+    else { const sells=sellsOf(N), ids=itemIds(); b='<div class="sec">SHOPKEEPER</div>'
+      +'<div class="dim">Pick the item types this character sells. Price is each item\'s VALUE (set in the item editor, shift+7). Buyers walk up and get them into their pack.</div>';
+      if(!ids.length)b+='<div class="dim" style="color:#c8a060">No item types yet — add some in the item editor (shift+7), then they show here.</div>';
+      else b+='<div style="display:flex;flex-wrap:wrap;gap:4px;margin:6px 0">'+ids.map(id=>'<button class="chip" data-sell="'+esc(id)+'" style="padding:4px 8px;border:2px solid '+(sells.includes(id)?'#f2c14e':'#3a3f4e')+';background:#0e1016;color:'+(sells.includes(id)?'#f2c14e':'#9b9584')+';cursor:pointer;font:inherit">'+esc(itemName(id))+' <span style="color:#6f7686">$'+itemVal(id)+'</span></button>').join('')+'</div>';
+      if(sells.length)b+='<div class="dim">Sells '+sells.length+' item'+(sells.length===1?'':'s')+'. Walk up to '+esc(N.name||'them')+' in game to buy.</div>'; }
     return '<div class="dhdr">'+esc(N.name||N.key)+'</div><div class="tabs">'+tabs+'</div><div class="fields">'+b+'</div>'; };
   const draw=()=>{ q('#chL').innerHTML=listHTML(); q('#chD').innerHTML=detailHTML(); skin(R); dirty(); };
 
@@ -79,7 +90,7 @@ CHARED.build=()=>{ '@editor';
   const setField=(N,f,raw)=>{ const r=rec(N);
     if(f==='name'){ const v=String(raw).slice(0,60); r.name=v; CHARS.live(N,'name',v); }
     else if(f==='scale'){ const v=Math.max(.05,+raw||1); r.scale=v; CHARS.live(N,'scale',v); }
-    else if(f==='tint'){ r.tint=/^#[0-9a-f]{6}$/i.test(raw)?raw:'#ffffff'; }
+    else if(f==='tint'){ r.tint=/^#[0-9a-f]{6}$/i.test(raw)?raw:'#ffffff'; CHARS.live(N,'tint',r.tint); }
     else if(f==='hp'){ const v=Math.max(0,+raw||0); r.hp=v; CHARS.live(N,'hp',v); }
     else if(f==='stamina'){ const v=Math.max(0,+raw||0); r.stamina=v; CHARS.live(N,'stamina',v); }
     else if(f==='speed'){ const v=Math.max(0,+raw||0); r.speed=v; CHARS.live(N,'speed',v); }
@@ -93,13 +104,14 @@ CHARED.build=()=>{ '@editor';
     side.addEventListener('input',e=>{ const f=e.target.dataset.f; if(f){ setField(N,f,e.target.value); VIEW.redo(); } });
     side.addEventListener('click',e=>{ if(e.target.id==='vwX')VIEW.close(); });
     VIEW.onclose=()=>draw();
-    VIEW.open({name:N.name||N.key,lend:()=>N.g?[N.g]:[],lendScale:()=>1,opacity:()=>1,look:()=>({tint:cur(N,'tint')})},side); };
+    VIEW.open({name:N.name||N.key,lend:()=>N.g?[N.g]:[],lendScale:()=>1,opacity:()=>1,look:()=>({})},side); };
 
   q('#chL').addEventListener('click',e=>{ const b=e.target.closest&&e.target.closest('button[data-i]'); if(!b)return; sel=NPCS[+b.dataset.i]||null; draw(); });
   q('#chD').addEventListener('click',e=>{ const b=e.target.closest&&e.target.closest('button'); if(!b||!sel)return;
     if(b.dataset.tab){ tab=b.dataset.tab; draw(); } else if(b.id==='chV')openView(sel);
     else if(b.id==='chHere'){ const ht=homeTiles(sel); setField(sel,'homex',CHARS.tx(pos.x)); setField(sel,'homey',CHARS.tz(pos.z)); if(!(ht[2]>0))setField(sel,'range',6); draw(); }
-    else if(b.id==='chPut'){ setField(sel,'range',0); draw(); } });
+    else if(b.id==='chPut'){ setField(sel,'range',0); draw(); }
+    else if(b.dataset.sell){ toggleSell(sel,b.dataset.sell); draw(); } });
   q('#chD').addEventListener('change',e=>{ const f=e.target.dataset.f; if(f&&sel){ setField(sel,f,e.target.value); draw(); } });
   q('#chD').addEventListener('input',e=>{ const f=e.target.dataset.f; if(f&&sel&&e.target.type!=='color')setField(sel,f,e.target.value); });
 

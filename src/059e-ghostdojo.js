@@ -197,10 +197,19 @@ await grab('ghostdojo',async()=>{ const {X,Y,Z,gbox,faceTex,bq,C}=SHARED.BOD, J=
     const cuts=M=>{ for(const id in WALLS)for(const me of BATCH.all(M,'GD'+id))cutWalls.push({pl:PLN[id],nx:WALLS[id].n[0],nz:WALLS[id].n[1],foot:Y(8),me,when:inside}); }; cuts(KM);
     { const ca=new THREE.Mesh(new THREE.PlaneGeometry(X(X0+DOOR.a1)-X(X0+DOOR.a0),Y(DH)),new THREE.MeshBasicMaterial({color:0x07070a})); ca.position.set((X(X0+DOOR.a0)+X(X0+DOOR.a1))/2,Y(DH)/2,Z(Y1-T-.06)); ca.raycast=()=>{}; scene.add(ca); GK.card=ca; }
     const HIDE=[...BATCH.all(KM,'GDU'),...BATCH.all(KM,'GDR')];
+    { const pane=(h,yf,fn,glow)=>{ const W=Math.max(1,Math.round((h.a1-h.a0)*24)), Hh=Math.max(1,Math.round(h.z1-h.z0)), cv=document.createElement('canvas'), ce=document.createElement('canvas'); cv.width=ce.width=W; cv.height=ce.height=Hh;
+        const g=cv.getContext('2d'), ge=ce.getContext('2d'), im=g.createImageData(W,Hh), ie=ge.createImageData(W,Hh);
+        for(let j=0;j<Hh;j++)for(let i=0;i<W;i++){ const c=fn(h.a0+(i+.5)/24,h.z1-(j+.5)), k=(j*W+i)*4; im.data.set([c[0],c[1],c[2],255],k); ie.data.set(c.e?[c[0],c[1],c[2],255]:[0,0,0,255],k); }
+        g.putImageData(im,0,0); ge.putImageData(ie,0,0); const tex=x=>{ const t=new THREE.CanvasTexture(x); t.magFilter=t.minFilter=THREE.NearestFilter; t.generateMipmaps=false; t.colorSpace=THREE.SRGBColorSpace; return t; };
+        const m=new THREE.Mesh(new THREE.PlaneGeometry(X(X0+h.a1)-X(X0+h.a0),Y(h.z1)-Y(h.z0)),new THREE.MeshLambertMaterial({map:tex(cv),emissiveMap:tex(ce),emissive:0xffffff,emissiveIntensity:glow?1.2:0}));
+        m.position.set((X(X0+h.a0)+X(X0+h.a1))/2,(Y(h.z0)+Y(h.z1))/2,Z(yf)); m.raycast=()=>{}; scene.add(m); HIDE.push(m); return m; };
+      pane(BAY,Y1+BAY.out+.02,(a,z)=>lattice(a,BAY.a0,BAY.a1,z,BAY.z0,BAY.z1,PINK),1); pane(EW,Y1+.02,(a,z)=>lattice(a,EW.a0,EW.a1,z,EW.z0,EW.z1,WARM),1);
+      const DK=[46,28,22], DW=[104,66,44], NO=[34,40,70], BR=[212,176,84];
+      pane(DOOR,Y1+.02,(a,z)=>{ const u=(a-DOOR.a0)/(DOOR.a1-DOOR.a0); if(u<.04||u>.96||z>DOOR.z1-4)return DK; if(Math.abs(u-.5)<.012)return DK; if(z>DOOR.z1-40)return Math.floor(u*24)%3?NO:sh(NO,.8); if(Math.abs(u-.5)<.06&&Math.abs(z-48)<2)return BR; return sh(DW,(Math.floor(a*24/5)&1)?.9:1.04); },0); }
     if(SHARED.BOD.GHOSTST)SHARED.BOD.GHOSTST.push({name:'ghost street shop roof',boxes:ROOF.filter(b=>b.z0>=H2).map(b=>({...b,x0:Math.max(b.x0,X0),x1:Math.min(b.x1,X1)})),high:1});
     const sol=(x0,y0,x1,y1,zt)=>{ SOL.up.push([X(x0),Z(y0),X(x1),Z(y1)]); FIX.up.push([X(x0),Z(y0),0,X(x1),Z(y1),Math.max(.05,Y(zt))]); };
     for(const b of WB)if(b.z0===0)sol(b.x0,b.y0,b.x1,b.y1,H);
-    sol(X0+BAY.a0,Y1,X0+BAY.a1,Y1+BAY.out,BAY.z0);
+    sol(X0+BAY.a0,Y1,X0+BAY.a1,Y1+BAY.out,BAY.z0); sol(X0+DOOR.a0,Y1-T,X0+DOOR.a1,Y1,DH);
     for(const [a,b,c_,d] of BEDS)sol(a,b,c_,d,8);
     for(const t of THINGS)if(t.solid)sol(Math.min(...t.boxes.map(b=>b.x0)),Math.min(...t.boxes.map(b=>b.y0)),Math.max(...t.boxes.map(b=>b.x1)),Math.max(...t.boxes.map(b=>b.y1)),Math.max(...t.boxes.map(b=>b.z1)));
     for(const p of ITEMS){ const bs=p.boxes.filter(b=>b.z0<30&&b.z1-b.z0>3); if(!bs.length||/incense/.test(p.name))continue;

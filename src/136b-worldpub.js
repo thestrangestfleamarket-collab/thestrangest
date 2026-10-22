@@ -7,5 +7,5 @@ import {BUGS, WE} from './003b-systems.js';
     catch(e){ b.textContent='FAILED — '+(e.message||'try again'); }
     setTimeout(()=>{ b.textContent=t0; b.disabled=false; },2500); };
   const wire=async()=>{ const b=document.getElementById('wsend'); if(!b||b.dataset.on)return; let own=false; try{ own=await BUGS.owner(); }catch(e){} if(!own)return; b.dataset.on='1'; b.hidden=false; b.onclick=()=>send(b); };
-  const w=()=>{ if(!window.__started||!document.getElementById('wsend')){ setTimeout(w,500); return; } wire(); }; w();
+  const w=()=>{ if(!window.__started||!document.getElementById('wsend')){ setTimeout(w,500); return; } (window.LOAD?LOAD('later'):Promise.resolve()).then(wire).catch(()=>{}); }; w();
 }

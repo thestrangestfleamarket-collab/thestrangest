@@ -4259,6 +4259,8 @@ Dragging no longer turns or tilts the camera in play, in any view: right/middle/
 
 An item marked SELLABLE (item editor, shift+7) now shows in the mushroom seller's shop and sells for its VALUE — the same for every item of that kind (the shop's sell list and price read ITEMS.prop(id,'sellable') and 'value'). Third property to do something, after burnable and edible.
 
+## 22 Oct 2026: the subway station remade after a photo
+Owner, with a photo of a grimy graffiti platform and its clay render: "I want to create a replica of this subway platform in the game. realistic textures, lighting, atmosphere, dynamic lighting, lights, shadows, textures, etc. as close to this as possible." The station is now an island platform between two tracks (the street's stair rises at its end, in a tiled enclosure), two rows of tiled columns, wooden back-to-back benches, hanging fluorescent tubes (each a real light; one flickers), a graffiti-covered train with lit marker lights, litter and puddles, and a green haze (ATMOSPHERE: STATION HAZE). Kept from Day 1: the passport machine and its drones, the arrival board, MARKET ST. Heights unchanged (station 2x, train 1.5x).
 ## 22 Oct 2026: landscape patches follow the ground
 
 A ground patch (landscape editor, shift+9) is now subdivided a cell per tile and each vertex raycast down to the real ground, so a patch follows slopes and bumps instead of clipping as one flat sheet. Flat floors still read flat. (Freehand borders still later.)

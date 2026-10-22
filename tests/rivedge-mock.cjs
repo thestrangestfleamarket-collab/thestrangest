@@ -11,11 +11,12 @@ const shot=async(pg,f,ms=3500)=>{ await pg.waitForTimeout(ms); await pg.screensh
   await pg.evaluate(async()=>{ if(!RIVER.on)await (window.FADE?FADE.run('x',()=>RIVER.build()):Promise.resolve(RIVER.build())); });
   await pg.waitForFunction(()=>window.RIVER.box&&document.querySelector('#rvpan [data-go="1"]'),{timeout:60000});
   await pg.evaluate(()=>{ document.querySelector('#rvpan [data-go="1"]').click(); }); await pg.waitForTimeout(3500);
-  await pg.evaluate(()=>{ RIVER.set&&RIVER.set({way:'flat',wi:0}); __dbg.UI.setView('first'); }); await pg.waitForTimeout(1500);
-  console.log('at', await pg.evaluate(()=>({pos:__dbg.pos(), box:RIVER.box})));
-  const HDS=[0,Math.PI/2,Math.PI,3*Math.PI/2], DEG=[0,90,180,270];
-  for(let i=0;i<4;i++){ await pg.evaluate(h=>__dbg.setHd(h),HDS[i]); await shot(pg,'before-'+DEG[i],1800); }
-  // THE PROPOSAL, applied live for the picture only
+  // first person, aim the camera across the water (yaw 0 looks toward -z, the far bank), tilt down a touch
+  await pg.evaluate(()=>{ RIVER.set&&RIVER.set({way:'flat',wi:0}); __dbg.UI.setView('first'); __dbg.face(0); __dbg.cam(0,0.12); }); await pg.waitForTimeout(1800);
+  await pg.evaluate(()=>{ __dbg.face(0); }); await pg.waitForTimeout(600);
+  console.log('at', await pg.evaluate(()=>({pos:__dbg.pos(), yaw:__dbg.yaw(), box:RIVER.box})));
+  await shot(pg,'before');
+  // THE PROPOSAL, applied live for the picture only: far wall gone, water out to a hazy horizon
   await pg.evaluate(()=>{ const THREE=__dbg.THREE, scene=__dbg.scene, B=RIVER.box, T=__dbg.cv().TILE;
     if(RIVER.wallS)RIVER.wallS.visible=false;
     const bg=scene.background&&scene.background.isColor?scene.background.clone():new THREE.Color(0.62,0.69,0.78);
@@ -23,5 +24,6 @@ const shot=async(pg,f,ms=3500)=>{ await pg.waitForTimeout(ms); await pg.screensh
     const m=new THREE.Mesh(geo,new THREE.MeshBasicMaterial({color:new THREE.Color(0.13,0.30,0.37), fog:true}));
     m.position.set((B.x0+B.x1)/2, B.lv-0.04, (B.z1+far)/2); m.renderOrder=-1; scene.add(m);
     scene.fog=new THREE.Fog(bg, 30*T, 340*T); });
-  for(let i=0;i<4;i++){ await pg.evaluate(h=>__dbg.setHd(h),HDS[i]); await shot(pg,'after-'+DEG[i],1800); }
+  await pg.evaluate(()=>__dbg.face(0)); await shot(pg,'after-open');
+  await pg.evaluate(()=>{ const THREE=__dbg.THREE, scene=__dbg.scene, T=__dbg.cv().TILE; scene.fog=new THREE.Fog(scene.fog.color.clone(), 18*T, 190*T); __dbg.face(0); }); await shot(pg,'after-hazy');
   await b.close(); })();

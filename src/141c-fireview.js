@@ -1,26 +1,26 @@
 // THE FIRE ESCAPE VIEW: the city seen from the apartment's fire escape, built off the map.
 import {SHARED, THREE} from './003-shx.js';
-import {CLOCK, FAR3, pos, SKY, st, UI, USE, W3} from './003b-systems.js';
+import {CLOCK, FAR3, pos, ROOMS, SKY, st, UI, USE, W3} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {BLDK, FADE, MISTE, MODS, STORE, SYS, TILE, ZU} from './006-map-pre.js';
 import {BATCH} from './008-batch.js';
-{ const APTS=MODS.apts, F=window.FIREV, T=TILE, KK=BLDK, {X,Y,Z}=SHARED.BOD, hs=SHARED.BOD.g.hash, sh=SHARED.BOD.K.sh, bq=SHARED.BOD.bq, {CX,WY,HZ,S}=F, A=APTS.A, RZ=APTS.RZ, U=u=>A.x0+u, V=v=>A.y0+v;
+{ const APTS=MODS.apts, F=window.FIREV, T=TILE, KK=BLDK, {X,Y,Z}=SHARED.BOD, hs=SHARED.BOD.g.hash, sh=SHARED.BOD.K.sh, bq=SHARED.BOD.bq, {CX,WY,HZ,S}=F;
   const ix=x=>x/(T*KK)+SHARED.BOD.OX, iy=z=>z/(T*KK)+SHARED.BOD.OY, cl=v=>Math.max(0,Math.min(1,v)), nk=()=>cl((4-CLOCK.elev())/8);
-  const L0=CX-3.6, L1=CX+3.6, DO=1.65, STP={x0:CX-.8,x1:CX+.8,y1:WY+.42,z:14}, LX=CX+2.6, AWX=24.7;
+  const L0=CX-3.6, L1=CX+3.6, DO=1.65, STP={x0:CX-.8,x1:CX+.8,y1:WY+.42,z:14}, LX=CX+2.6;
   const onL=(x,z)=>{ const u=ix(x), v=iy(z); return u>L0-.3&&u<L1+.3&&v>WY-.4&&v<WY+DO+.4; };
   const G=new THREE.Group(); G.visible=false; scene.add(G); const MATS=[]; let light=null, CARS=null, MID=null, busy=false, lp=null;
   F.on=false; F.G=G;
   const wait=ms=>new Promise(r=>setTimeout(r,ms)), frames=k=>new Promise(r=>{ const f=()=>--k<=0?r():requestAnimationFrame(f); requestAnimationFrame(f); });
   const fade=async(txt,fn)=>{ busy=true; await FADE.run(txt,fn,{hold:200}); busy=false; };
   F.out=()=>{ if(busy)return; fade(F.built?'YOUR FIRE ESCAPE':'LOADING YOUR FIRE ESCAPE...',async()=>{ await STORE.offGo(F.name); UI.goTo(X(CX),Z(WY+1.05),Y(HZ)); SHARED.heading=0; if(UI.persp&&window.__dbg)__dbg.face(Math.PI); }); };
-  F.back=()=>{ if(busy)return; fade('YOUR APARTMENT',()=>{ if(USE.seat){ USE.seat=null; st.sit=null; } UI.goTo(X(U(AWX)),Z(V(1.1)),APTS.lvY(APTS.my)); SHARED.heading=0; }); };
+  F.back=()=>{ if(busy)return; fade('YOUR APARTMENT',async()=>{ if(USE.seat){ USE.seat=null; st.sit=null; } await ROOMS.goIn('apt',[X(APTS.fw[0]),Z(APTS.fw[1]+.9),0,0]); SHARED.heading=0; }); };
   const hit=(w,h,d,x,y,z)=>{ const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),new THREE.MeshBasicMaterial({visible:false})); m.position.set(x,y,z); scene.add(m); return m; };
-  let plaque=null; APTS.furnish(APTS.my,()=>{ UI.thing({name:'YOUR FIRE ESCAPE',ghost:1,obj:hit(1.1*T*KK,SHARED.BOD.Y(52),.3*T,X(U(AWX)),SHARED.BOD.Y(APTS.my*S+68+RZ),Z(V(.2))),reach:1.4*T,near:2.6*T,tall:1.4*T,act:()=>{ if(APTS.in&&APTS.floor()===APTS.my)F.out(); }});
+  let plaque=null; APTS.furnish(APTS.my,()=>{ UI.thing({name:'YOUR FIRE ESCAPE',ghost:1,obj:hit(1.1*T*KK,SHARED.BOD.Y(52),.3*T,X(APTS.fw[0]),SHARED.BOD.Y(68),Z(APTS.fw[1]+.2)),reach:1.4*T,near:2.6*T,tall:1.4*T,act:()=>{ if(APTS.in)F.out(); }});
   const F3={Y:'101101010010010',O:'111101101101111',U:'101101101101111',R:'110101110101101',A:'010101111101101',P:'110101110100100',T:'111010010010010',M:'101111101101101',E:'111100110100111',N:'110101101101101'};
   plaque=(()=>{ const txt='YOUR APARTMENT', W=61, H=9, cv=document.createElement('canvas'); cv.width=W; cv.height=H; const g=cv.getContext('2d'); g.fillStyle='#7a5a24'; g.fillRect(0,0,W,H); g.fillStyle='#c8a050'; g.fillRect(1,1,W-2,H-2);
     let x=3; g.fillStyle='#2a1e10'; for(const ch of txt){ const q=F3[ch]; if(q)for(let r=0;r<5;r++)for(let c=0;c<3;c++)if(q[r*3+c]==='1')g.fillRect(x+c,2+r,1,1); x+=ch===' '?2:4; }
     const t=new THREE.CanvasTexture(cv); t.magFilter=t.minFilter=THREE.NearestFilter; t.generateMipmaps=false; t.colorSpace=THREE.SRGBColorSpace;
-    const m=new THREE.Mesh(new THREE.PlaneGeometry(W/24*T*KK,SHARED.BOD.Y(H)),new THREE.MeshLambertMaterial({map:t,clippingPlanes:[APTS.HP,APTS.LP]})); m.position.set(X(U(23.4)),SHARED.BOD.Y(2*S+105+RZ),Z(V(5.6)+.1)+.01); scene.add(m); return m; })(); });
+    const m=new THREE.Mesh(new THREE.PlaneGeometry(W/24*T*KK,SHARED.BOD.Y(H)),new THREE.MeshLambertMaterial({map:t})); m.position.set(X(APTS.door[0]),SHARED.BOD.Y(104),Z(APTS.door[1]-.04)); scene.add(m); return m; })(); });
   const P3=(x,y,z)=>[X(x),Y(z),Z(y)];
   const tx=(w,h,fn)=>{ '@later'; const im=new ImageData(w,h), d=im.data; let ie=null, e=null;
     for(let j=0,k=0;j<h;j++)for(let i=0;i<w;i++,k+=4){ const v=fn(i,j); if(!v)continue; d[k]=v[0]; d[k+1]=v[1]; d[k+2]=v[2]; d[k+3]=255; if(v.length>3){ if(!ie){ ie=new ImageData(w,h); e=ie.data; } e[k]=v[3]; e[k+1]=v[4]; e[k+2]=v[5]; e[k+3]=255; } }
@@ -166,8 +166,7 @@ import {BATCH} from './008-batch.js';
   const into=(u0,v0,u,v)=>Math.abs(u-u0)<.5&&v<v0&&Math.cos(SHARED.heading)<-.6&&lp&&Math.hypot(pos.x-lp.x,pos.z-lp.z)>1e-4;
   SYS.add('places',(dt)=>{ const on=F.built&&SHARED.LVL==='up'&&onL(pos.x,pos.z);
     if(on!==F.on){ F.on=on; G.visible=on; }
-    if(plaque&&plaque.parent)plaque.visible=!(APTS.in&&iy(pos.z)<V(5.6));
-    if(!busy&&!on&&APTS.in&&APTS.floor()===APTS.my&&into(U(AWX),V(.55),ix(pos.x),iy(pos.z)))F.out();
+    if(!busy&&!on&&APTS.in&&into(APTS.fw[0],APTS.fw[1]+.35,ix(pos.x),iy(pos.z)))F.out();
     if(!on){ if(light)light.intensity=0; lp={x:pos.x,z:pos.z}; return; }
     if(FAR3.mesh)FAR3.mesh.visible=false; if(FAR3.panels)FAR3.panels.visible=false; if(FAR3.trees)FAR3.trees.visible=false; if(FAR3.FU)FAR3.FU.uMK.value=0; MISTE.x=0; if(SKY.U.uMistK)SKY.U.uMistK.value=0; if(scene.fog===FAR3.fog)scene.fog=null;
     if(MID){ const o=!UI.persp, cx=SHARED.cam.position.x-pos.x, cz=SHARED.cam.position.z-pos.z, hl=Math.hypot(cx,cz)||1, tp=(SHARED.cam.position.y-SHARED.py)/hl, key=o?Math.round(Math.atan2(cx,cz)*20)+':'+Math.round(tp*50):'p';

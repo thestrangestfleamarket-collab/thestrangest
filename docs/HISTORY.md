@@ -4233,4 +4233,4 @@ The frame loop hand-wired ~30 system ticks before the render, so a throw in any 
 
 ## 22 Oct 2026: owned state goes through one seam (OWNED), off the browser later
 
-Cash, inventory, items, mail and forage persisted straight to the browser (SAVE), against the rule that owned things save server-side. Added OWNED (005-save) as the one seam those systems persist through; device settings stay on SAVE. OWNED is backed by SAVE today (same local-storage key, same data — no change for anyone), so moving owned state to the server is a swap in that one place, not a hunt across the game. The server backend itself is still to build (owner's call).
+Cash, inventory, items, mail, forage, birds and books persisted straight to the browser (SAVE), against the rule that owned things save server-side. Added OWNED (005-save) as the one seam those systems persist through; device settings stay on SAVE. OWNED is backed by SAVE today (same local-storage key, same data — no change for anyone), so moving owned state to the server is a swap in that one place, not a hunt across the game. The server backend itself is still to build (owner's call).

@@ -6,6 +6,7 @@ import {FIX, MAPG, MODS, QS, RING, SOL, SYS, TILE} from './006-map-pre.js';
 import {FLAME} from './007-fire.js';
 import {GCAVE} from './060-cave.js';
 import {FOUNT} from './060a-fount.js';
+import {GPH} from './150-loose.js';
 
 { const T=TILE, M=1/.84*T, G=(x,z)=>MODS.bodega.ground(x,z), F=BLAZE.F, rnd=Math.random, MAX=+(QS.get('fires')||12), WET=3.2, HOLD=240, FADE=360, V3=THREE.Vector3;
   const its=L=>L.filter(Boolean).flatMap(m=>m.userData.items||[]).filter(o=>!/rock|stone|pillar/i.test(o.k)), ITEMS=its([PARK.trees,PARK.under,PARK.underStill,DRESS.trees,DRESS.plants]); PARK.later(()=>ITEMS.push(...its([PARK.trees,PARK.under,PARK.underStill])));
@@ -40,6 +41,7 @@ import {FOUNT} from './060a-fount.js';
     const y=surf(x,z), s=src(); s.x=x; s.y=y; s.z=z; s.a.position.set(x,y,z); s.w=s.h=0; s.sd=rnd()*50; s.steam=5;
     const f={x,z,y,s,age:0,life:70+rnd()*60,sp:20+rnd()*20,wet:0,by:null,m:mark(x,z,y),sz:.85+rnd()*.35,fix:top(x,z)===undefined,out:false}; F.push(f); return f; };
   BLAZE.land=p=>{ if(burnable(p.x,p.z)&&rnd()<.6)start(p.x,p.z); };
+  const norm=s=>String(s||'').toLowerCase().replace(/\s+/g,'_'), burns=BLAZE.burns=id=>!!(window.ITEMS&&ITEMS.prop&&ITEMS.prop(norm(id),'burnable'));
   const end=f=>{ f.out=true; f.s.on=false; f.s.free=true; f.m.t=0; f.m.a0=Math.max(.6,f.m.a); for(let k=0;k<4;k++)FLAME.puff(f.x+(rnd()-.5)*.4*T,f.y+.2*T,f.z+(rnd()-.5)*.4*T,1.3,f.wet>=WET?6:5); };
   let fixT=0;
   const fireTick=dt=>{ fixT-=dt; const fx=fixT<=0; if(fx)fixT=2;
@@ -49,6 +51,7 @@ import {FOUNT} from './060a-fount.js';
       f.m.a=Math.max(f.m.a,.1+.9*Math.min(1,f.age/30));
       if((f.sp-=dt)<=0&&f.wet<=0){ f.sp=20+rnd()*20; if(rnd()<.75){ const a=rnd()*6.28, d=(.8+rnd()*.45)*T; start(f.x+Math.cos(a)*d,f.z+Math.sin(a)*d); } }
       if(f.age>=f.life||f.wet>=WET){ end(f); F.splice(i,1); } }
+    if(fx&&F.length&&window.GPH&&GPH.loose){ try{ for(const it of GPH.loose()){ if(!it||it._burnt)continue; const p=it.t||(it.c&&{x:it.c[0],z:it.c[2]}); if(!p||!burns(it.name))continue; if(F.some(f=>!f.out&&Math.hypot(f.x-p.x,f.z-p.z)<1.2*T)){ it._burnt=1; start(p.x,p.z,true); if(GPH.burn)GPH.burn(it); } } }catch(e){} }
     let ch=false; for(const m of BM){ if(!m)continue; if(fx&&m.fix&&top(m.x,m.z)!==undefined){ m.fix=false; m.y=surf(m.x,m.z); remark(m); }
       const a=m.t<0?m.a:(m.t+=dt)<HOLD?m.a0:m.a0*(1-(m.t-HOLD)/FADE); if(a<=0){ BM[m.i]=null; mk.me.setMatrixAt(m.i,Z0); mk.me.instanceMatrix.needsUpdate=true; mk.aA.array[m.i]=0; ch=true; continue; }
       if(Math.abs(mk.aA.array[m.i]-a)>.004){ mk.aA.array[m.i]=a; ch=true; } }

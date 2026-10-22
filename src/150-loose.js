@@ -123,7 +123,11 @@ const GPH=window.GPH={ms:0,n:0};
       for(const it of items){ const t=it.t, b=t.y-it.h[1]; if(Math.hypot(t.x-pos.x,t.z-pos.z)<RS&&b>lo&&b<hi)pre.add(it); } pickList(pre); return true; };
   const asks=()=>{ if(want)return true; const s=(st.up&&STRIKE.test(st.up.name))||(st.move&&STRIKE.test(st.move.name)), I=intent(), mv=I[0]||I[1];
     if(!s&&!mv)return false; for(const it of pre){ const t=it.t, d=Math.hypot(Math.max(it.a[0]-pos.x,0,pos.x-it.b[0]),Math.max(it.a[2]-pos.z,0,pos.z-it.b[2])); if(s?d<1.1*T:!it.heavy&&d<.6*T&&(t.x-pos.x)*I[0]+(t.z-pos.z)*I[1]>0)return true; } return false; };
+  const burning=new Map(), BURN=4;
+  const hideMesh=it=>{ try{ if(it.k==='v'&&gm){ const A=gm.geometry.attributes.position.array; for(let vx=it.v0;vx<it.v1;vx++){ A[vx*3]=it.c[0]; A[vx*3+1]=it.c[1]-60*T; A[vx*3+2]=it.c[2]; } gm.geometry.attributes.position.needsUpdate=true; } else if(it.k==='i'&&it.inst){ const Z=new THREE.Matrix4().makeScale(0,0,0); for(const z of it.inst){ z[0].setMatrixAt(z[1],Z); z[0].instanceMatrix.needsUpdate=true; } } else if(it.parts){ for(const p of it.parts)if(p.me)p.me.visible=false; } }catch(e){} };
+  GPH.burn=it=>{ if(it&&!it.gone&&!burning.has(it))burning.set(it,0); };
   GPH.tick=dt=>{ if(!ready){ if(PB.R)build(); else if(!PB.loading){ wake(); if(asks()||QS.get('physics'))PB.load(); } return; } const t0=performance.now();
+    if(burning.size)for(const [it,t] of burning){ const nt=t+dt; if(nt>=BURN){ burning.delete(it); it.gone=1; if(it.rb)try{ off(it); }catch(e){} hideMesh(it); } else burning.set(it,nt); }
     if((zt-=dt)<=0){ zt=.25; zone(); } strike(); if(want&&want.rb){ grab(want); want=null; }
     if(held){ const h=holdAt(held); held.rb.setNextKinematicTranslation(h); held.rb.setNextKinematicRotation({x:0,y:Math.sin(SHARED.heading/2),z:0,w:Math.cos(SHARED.heading/2)}); }
     const I=intent(), mv=I[0]||I[1]||Math.abs(pos.x-lx)+Math.abs(pos.z-lz)+Math.abs(SHARED.py-ly)>1e-4; lx=pos.x; lz=pos.z; ly=SHARED.py;
@@ -145,6 +149,7 @@ const GPH=window.GPH={ms:0,n:0};
     const h=ray.intersectObjects(picks,false)[0]; if(!h)return null; const it=itemOf(h); if(!it||!it.rb||it.m>CARRY)return null; if(it.o&&USE.test&&USE.test.kindOf(it.o)&&!keys.has('shift'))return null;
     const o=new THREE.Object3D(), p=it.rb.translation(), r=Math.max(it.h[0],it.h[2]); o.position.set(p.x,p.y-it.h[1],p.z);
     return {d:h.distance,th:{name:(it.name||'').replace(/^cottage: /,'').toUpperCase(),pick:true,obj:o,reach:.85*T+r,near:1.6*T+r,tall:Math.max(.4*T,it.h[1]*2),act:()=>grab(it)}}; };
+  GPH.loose=()=>items;
   GPH.init=()=>{ if(typeof USE==='undefined'){ setTimeout(GPH.init,500); return; } const p0=USE.pick; USE.pick=ray=>{ const a=p0(ray), b=GPH.pick(ray); return b&&(!a||b.d<=a.d)?b:a; };
     SYS.add('life',(dt)=>{ GPH.tick(dt); },'150-loose'); };
   const nearest=f=>{ let b=null, bd=1e9; for(const it of ready?act:pre){ if(!f(it))continue; const p=at(it), d=Math.hypot(p.x-pos.x,p.z-pos.z); if(d<bd){ bd=d; b=it; } } return b; };

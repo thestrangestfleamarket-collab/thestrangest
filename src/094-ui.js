@@ -1,6 +1,6 @@
 // THE UI: the camera (isometric, behind, first person), zoom and turn, the menu, places, and the top-down shot.
 import {SHARED, THREE} from './003-shx.js';
-import {AMB, BLK, BUGS, DN, ED, EDITORS, FEEL, FORAGE, GAMEED, keys, LINES, LOOK, LOOKS, MAPED, MUS, NPCS, PARK, PB, pos, RINSP, ROOMS, SFX, SNDED, st, UI, USE, VIT, W3, WE, WIELD} from './003b-systems.js';
+import {AMB, BLK, BUGS, DN, ED, EDITORS, FEEL, FORAGE, GAMEED, keys, LAND, LINES, LOOK, LOOKS, MAPED, MUS, NPCS, PARK, PB, pos, RINSP, ROOMS, SFX, SNDED, st, UI, USE, VIT, W3, WE, WIELD} from './003b-systems.js';
 import {art, OCAM, PCAM, PPU, pxS, renderer, RES, resize, RESL, RESMAX, RH, RW, scene, SCL, vpu, ZMAX} from './004-main.js';
 import {SAVE} from './005-save.js';
 import {ASTEP, BLDK, CASTLE, CEL, MAPG, MAPSTAIR, MODS, QS, RING, STORE, TILE} from './006-map-pre.js';
@@ -27,7 +27,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     if(raw==='escape'&&e.shiftKey&&!ED.on){ if(e.type==='keydown'&&!e.repeat)GAMEED.toggle(); return null; }
     if(raw==='escape'){ if(e.type==='keydown'){ if(ED.on)ED.exit(); else if(WE.on)WE.toggle(); else toggleMenu(); } return null; }
     if(e.target&&/^(TEXTAREA|INPUT|SELECT)$/.test(e.target.tagName))return null;
-    if(e.shiftKey&&/^Digit[0-8]$/.test(e.code)){ if(e.type==='keydown'&&!e.repeat&&EDITORS.key)EDITORS.key(+e.code.slice(5)); return null; }
+    if(e.shiftKey&&/^Digit[0-9]$/.test(e.code)){ if(e.type==='keydown'&&!e.repeat&&EDITORS.key)EDITORS.key(+e.code.slice(5)); return null; }
     if(raw==='?'){ if(e.type==='keydown'&&!e.repeat)UI.moves(); return null; }
     if(raw==='e'&&e.shiftKey&&!ED.on&&!UI.menuOpen){ if(e.type==='keydown'&&!e.repeat)WE.toggle(); return null; }
     if(UI.view==='iso'&&!ED.on&&(raw==='q'||raw==='e'||raw==='r')){ if(e.type==='keydown'&&!e.repeat)UI.isoStep(raw==='q'?1:-1); return null; }
@@ -114,23 +114,23 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
   let fx=null, fz=null; const fv=new THREE.Vector3();
   UI.follow=()=>{ const mv=fx!=null&&Math.hypot(pos.x-fx,pos.z-fz)>1e-4; fx=pos.x; fz=pos.z; if(!mv||UI.off.lengthSq()<1e-8)return;
     fv.set(pos.x,SHARED.py+.9,pos.z).project(SHARED.cam); if(Math.abs(fv.x)>.92||Math.abs(fv.y)>.92){ UI.off.set(0,0,0); zAt=null; } };
-  cv.addEventListener('pointerdown',e=>{ '@later'; if(e.button!==0||ED.on)return; if(window.WIELD&&WIELD.on&&!MAPED.on&&!WE.on&&!UI.freeCam){ WIELD.strike(); return; } if(MAPED.down(e)||WE.down(e)){ cv.setPointerCapture(e.pointerId); return; } L={x:e.clientX,y:e.clientY,x0:e.clientX,y0:e.clientY,moved:false}; UI.grab(e); cv.setPointerCapture(e.pointerId); });
-  cv.addEventListener('pointermove',e=>{ if(MAPED.dragging){ MAPED.move(e); return; } if(WE.dragging){ WE.move(e); return; } if(!L)return; if(!L.moved&&Math.hypot(e.clientX-L.x0,e.clientY-L.y0)>5)L.moved=true;
+  cv.addEventListener('pointerdown',e=>{ '@later'; if(e.button!==0||ED.on)return; if(window.WIELD&&WIELD.on&&!MAPED.on&&!WE.on&&!LAND.on&&!UI.freeCam){ WIELD.strike(); return; } if(MAPED.down(e)||WE.down(e)||LAND.down(e)){ cv.setPointerCapture(e.pointerId); return; } L={x:e.clientX,y:e.clientY,x0:e.clientX,y0:e.clientY,moved:false}; UI.grab(e); cv.setPointerCapture(e.pointerId); });
+  cv.addEventListener('pointermove',e=>{ if(MAPED.dragging){ MAPED.move(e); return; } if(WE.dragging){ WE.move(e); return; } if(LAND.dragging){ LAND.move(e); return; } if(!L)return; if(!L.moved&&Math.hypot(e.clientX-L.x0,e.clientY-L.y0)>5)L.moved=true;
     if(L.moved&&!e.shiftKey&&!e.altKey&&!UI.persp)UI.pan(e.clientX-L.x,e.clientY-L.y);
     else if(L.moved)UI.orbit(e.clientX-L.x,e.clientY-L.y); L.x=e.clientX; L.y=e.clientY; });
-  cv.addEventListener('pointerup',()=>{ MAPED.up(); WE.up(); L=null; });
+  cv.addEventListener('pointerup',()=>{ MAPED.up(); WE.up(); if(LAND.up)LAND.up(); L=null; });
   const THINGS=[]; UI.thing=o=>THINGS.push(o); UI.things=THINGS;
   let goal=null; const said=document.createElement('div'); said.id='said'; said.hidden=true; document.body.appendChild(said);
   const say=(txt,at)=>{ '@later'; const r=cv.getBoundingClientRect(), v=at.clone().project(SHARED.cam); said.textContent=txt; said.style.left=Math.round(r.left+(v.x+1)/2*r.width)+'px'; said.style.top=Math.round(r.top+(1-v.y)/2*r.height)+'px'; said.hidden=false; clearTimeout(say.t); say.t=setTimeout(()=>said.hidden=true,2500); };
   const thAt=th=>th.obj.getWorldPosition(new THREE.Vector3());
-  cv.addEventListener('dblclick',e=>{ '@later'; if(MAPED.on)return; if(window.WIELD&&WIELD.on&&!WE.on)return; if(WE.on){ WE.pick(e); return; } if(ED.on||UI.freeCam)return; const r=cv.getBoundingClientRect(); ray.setFromCamera(new THREE.Vector2((e.clientX-r.left)/r.width*2-1,-((e.clientY-r.top)/r.height*2-1)),SHARED.cam);
+  cv.addEventListener('dblclick',e=>{ '@later'; if(MAPED.on||LAND.on)return; if(window.WIELD&&WIELD.on&&!WE.on)return; if(WE.on){ WE.pick(e); return; } if(ED.on||UI.freeCam)return; const r=cv.getBoundingClientRect(); ray.setFromCamera(new THREE.Vector2((e.clientX-r.left)/r.width*2-1,-((e.clientY-r.top)/r.height*2-1)),SHARED.cam);
     const live=THINGS.filter(th=>th.obj.visible&&(!th.obj.parent||th.obj.parent.visible)); const hits=ray.intersectObjects(live.map(th=>th.obj),true);
     let best=null, bd=1e9; if(hits.length){ let o=hits[0].object; const th=live.find(th=>{ let q=o; while(q){ if(q===th.obj)return true; q=q.parent; } return false; }); if(th){ best=th; bd=hits[0].distance; } }
     const u=USE.pick(ray); if(u&&u.d<bd)best=u.th;
     if(best){ best.started=false; goal=best; return; }
     if(window.RIVER&&RIVER.pick&&!VIT.dead&&RIVER.pick(ray.ray,pos))return;
     goal=null; if(UI.fly)return; gplane.constant=-SHARED.py; if(ray.ray.intersectPlane(gplane,hit)){ SHARED.target=hit.clone(); UI.go(Math.hypot(hit.x-pos.x,hit.z-pos.z)); } });
-  UI.useNear=()=>{ '@later'; if(ED.on||UI.freeCam||MAPED.on||WE.on)return false; const hx=Math.sin(SHARED.heading), hz=Math.cos(SHARED.heading); let best=null, bs=1e9;
+  UI.useNear=()=>{ '@later'; if(ED.on||UI.freeCam||MAPED.on||WE.on||LAND.on)return false; const hx=Math.sin(SHARED.heading), hz=Math.cos(SHARED.heading); let best=null, bs=1e9;
     for(const th of THINGS){ if(!th.obj.visible||th.obj.parent&&!th.obj.parent.visible)continue; const p=thAt(th), dx=p.x-pos.x, dz=p.z-pos.z, d=Math.hypot(dx,dz);
       if(d>(th.near||(th.reach||1)+1.2*TILE)||Math.abs(p.y-SHARED.py)>2*TILE)continue; const s=d-(dx*hx+dz*hz)/(d||1)*.6*TILE; if(s<bs){ bs=s; best=th; } }
     if(!best&&typeof USE!=='undefined')for(const dy of [0,-.5,-1.2]){ ray.set(new THREE.Vector3(pos.x,SHARED.py+TILE,pos.z),new THREE.Vector3(hx,dy,hz).normalize()); ray.far=2.4*TILE; const u=USE.pick(ray); ray.far=Infinity; if(u){ best=u.th; break; } }

@@ -2,7 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {CLOCK, DRESS, FORAGE, INV, MAIL, NPCS, PARK, pos, ROOMS, SFX, UI, WEEDS, WX} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {SAVE} from './005-save.js';
+import {OWNED} from './005-save.js';
 import {SYS, TILE} from './006-map-pre.js';
 import {PARTSNPC} from './080-npc-parts.js';
 import {FLORA} from './142a-flora.js';
@@ -26,7 +26,7 @@ const BIRDS={list:[]}; window.BIRDS=BIRDS;
   const NM={bseed:'BIRDSEED (A HANDFUL)',bnet:'BIRD NET',cage:'EMPTY BIRD CAGE'}, PR={}; for(let k=0;k<NK;k++){ NM['bd_'+k]=K[k][0]+' (IN A CAGE)'; NM['pet_'+k]='YOUR TAME '+K[k][0]; PR['bd_'+k]=K[k][4]; }
   FORAGE.add({names:NM,prices:PR}); FORAGE.SELLP.push('bd_'); FORAGE.SELLS.push(['bseed',1,()=>true],['bnet',20,()=>!FORAGE.has('bnet')],['cage',5,()=>true]);
   FORAGE.HELP.push('BIRDING: double click a bird to watch it (your journal), tame it with birdseed, or catch it (a bird net and a cage).');
-  const S={v:1,seen:{}}; try{ const D=JSON.parse(SAVE.get(KEY)||'null'); if(D&&D.v===1)Object.assign(S,D); }catch(e){} const save=()=>SAVE.set(KEY,JSON.stringify(S));
+  const S={v:1,seen:{}}; try{ const D=JSON.parse(OWNED.get(KEY)||'null'); if(D&&D.v===1)Object.assign(S,D); }catch(e){} const save=()=>OWNED.set(KEY,JSON.stringify(S));
   const PART=[['body',[shape(blob(.2,.19,.4,8,5),[1,1,1],[0,.36,-.02])]],['breast',[shape(blob(.17,.17,.24,6,4),[1,1,1],[0,.31,.12])]],['head',[shape(blob(.15,.15,.16,6,4),[1,1,1],[0,.55,.3])]],
     ['cap',[shape(blob(.135,.07,.13,6,3),[1,1,1],[0,.64,.29])]],['crest',[shape(cyl(0,.07,.22,4),[1,1,1],[0,.72,.21],null,[-35,0,0])]],['mask',[shape(blob(.155,.09,.08,6,3),[1,1,1],[0,.5,.37])]],
     ['beak',[shape(cyl(0,.045,.15,4),[1,1,1],[0,.53,.49],null,[90,0,0])]],['eye',[-1,1].map(s=>shape(sph(.028,4,3),[1,1,1],[s*.125,.58,.37]))],

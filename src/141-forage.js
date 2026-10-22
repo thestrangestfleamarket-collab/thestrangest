@@ -2,7 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {CITY, CIVIC, ED, FORAGE, INV, LINES, LOOKS, MAIL, NPCS, pos, SFX, st, UI, VIT, WE, WEEDS} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {SAVE} from './005-save.js';
+import {OWNED} from './005-save.js';
 import {MAPG, QS, SYS, TILE} from './006-map-pre.js';
 import {FLAME} from './007-fire.js';
 import {MUSH} from './083a-npc-mushroom.js';
@@ -29,9 +29,9 @@ import {GEMS} from './101-gems.js';
   const NM=FORAGE.NM={}, NAME=id=>NM[id]?NM[id]:id==='bottle'?'EMPTY BOTTLE':id==='mortar'?'MORTAR AND PESTLE':id.startsWith('m_')?MU[id.slice(2)][0]:id.startsWith('u_')?'STRANGE MUSHROOM ('+['','PALE','PUFFY','ORANGE','RED','SHAGGY','BROWN','PITTED','GLOWING'][MK.indexOf(id.slice(2))+1]+')':(RC.find(r=>r[0]===id)||[0,id])[1];
   const SK=[['forage','FORAGING'],['alchemy','ALCHEMY'],['cooking','COOKING'],['myco','MYCOLOGY'],['fish','FISHING'],['prosp','PROSPECTING'],['ento','ENTOMOLOGY'],['garden','GARDENING'],['bird','BIRDING'],['bind','BOOKBINDING']], CAP=6000;
   const S={v:1,sk:{forage:200,alchemy:200,cooking:200,myco:150,fish:150,prosp:100,ento:150,garden:100,bird:100,bind:100},lock:{forage:'up',alchemy:'up',cooking:'up',myco:'up',fish:'up',prosp:'up',ento:'up',garden:'up',bird:'up',bind:'up'},food:.8,fx:{},picked:{},pd:-1};
-  try{ const D=JSON.parse(SAVE.get(KEY)||'null'); if(D&&D.v===1){ const sk0={...S.sk}, lk0={...S.lock}; Object.assign(S,D); S.sk={...sk0,...S.sk}; S.lock={...lk0,...S.lock}; } }catch(e){} if(QS.get('fresh')&&QS.get('keepinv')!=='1'){ S.picked={}; }
+  try{ const D=JSON.parse(OWNED.get(KEY)||'null'); if(D&&D.v===1){ const sk0={...S.sk}, lk0={...S.lock}; Object.assign(S,D); S.sk={...sk0,...S.sk}; S.lock={...lk0,...S.lock}; } }catch(e){} if(QS.get('fresh')&&QS.get('keepinv')!=='1'){ S.picked={}; }
   if(!INV.items.mortar&&!S.given){ INV.items.mortar=1; INV.items.bottle=(INV.items.bottle||0)+3; S.given=1; }
-  let saveT=0; const save=()=>{ SAVE.set(KEY,JSON.stringify(S)); }, saveSoon=()=>{ clearTimeout(saveT); saveT=setTimeout(save,800); };
+  let saveT=0; const save=()=>{ OWNED.set(KEY,JSON.stringify(S)); }, saveSoon=()=>{ clearTimeout(saveT); saveT=setTimeout(save,800); };
   FORAGE.S=S; const day=()=>window.MAIL&&MAIL.ready?MAIL.day():window.CITY?CITY.day||0:0;
   INV.count=()=>GEMS.reduce((a,g)=>a+(INV.items[g[0]]||0),0);
   const have=id=>INV.items[id]||0, take=(id,n)=>{ INV.items[id]=have(id)-n; if(INV.items[id]<=0)delete INV.items[id]; }, give=(id,n=1)=>INV.add(id,n);
@@ -40,6 +40,7 @@ import {GEMS} from './101-gems.js';
   const say=(t,c='#e8e2cc')=>{ const d=document.createElement('div'); d.textContent=t; d.style.cssText=`color:${c};text-shadow:1px 1px 0 #000,-1px 0 0 #000`; J.appendChild(d); while(J.children.length>5)J.firstChild.remove(); setTimeout(()=>d.remove(),6500); };
   FORAGE.say=say; FORAGE.RAW={}; FORAGE.has=id=>have(id); FORAGE.take=(id,n=1)=>{ take(id,n); saveSoon(); }; FORAGE.give=(id,n=1)=>give(id,n); FORAGE.sk=k=>sk(k); FORAGE.draw=()=>PACK.draw();
   FORAGE.add=(o)=>{ Object.assign(NM,o.names||{}); Object.assign(FORAGE.RAW,o.raw||{}); Object.assign(PRICE,o.prices||{}); Object.assign(DO,o.does||{}); if(o.recipes)RC.push(...o.recipes); };
+  FORAGE.ids=()=>{ const s=new Set(); for(const k in NM)s.add(k); for(const k in PRICE)s.add(k); for(const k in DO)s.add(k); for(const r of RC)if(r&&r[0])s.add(r[0]); for(const k in MU)s.add(iid(k)); return [...s].sort(); };
   FORAGE.SELLP=[]; FORAGE.SELLS=[]; FORAGE.ROWB=[]; FORAGE.ACT={}; FORAGE.CK={}; FORAGE.HELP=[]; FORAGE.TABS=[];
   FORAGE.feed=f=>feed(f); FORAGE.buff=(k,s)=>buff(k,s);
   const sk=k=>S.sk[k]/10, tot=()=>Object.values(S.sk).reduce((a,b)=>a+b,0);

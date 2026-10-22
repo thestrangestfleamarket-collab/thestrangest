@@ -17,4 +17,7 @@ const SAVE=(()=>{ const KEY='market-save', V=4;
     all:()=>Object.assign({},S),
     clear:()=>{ S={v:V}; try{ localStorage.removeItem(KEY); }catch(e){} }};
   return A; })();
-export {SAVE};
+// THE OWNED STORE: player-owned state — cash, inventory, items, mail, forage. The one seam between the game and where that state
+// lives, so owned things can move to the server (the owner's rule) without touching the game. Backed by SAVE today; swap here.
+const OWNED={ get:k=>SAVE.get(k), set:(k,v)=>SAVE.set(k,v), del:k=>SAVE.del(k) };
+export {OWNED, SAVE};

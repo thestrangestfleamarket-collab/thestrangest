@@ -1,5 +1,5 @@
 // THE EDITORS LAUNCHER: EDITORS holds the shift+0 menu and the shift+1-8 keys that open each editor.
-import {BEHAV, EDITORS, GAMEED, ITEMED, LIGHTED, UI, WE} from './003b-systems.js';
+import {BEHAV, EDITORS, GAMEED, ITEMED, LAND, LIGHTED, UI, WE} from './003b-systems.js';
 { const ge=async mode=>{ hide(); if(!GAMEED.open)await GAMEED.toggle(); const b=document.getElementById(mode==='map'?'meTM':'meTC'); if(b&&b.dataset.hot!=='1')b.click(); };
   const list=[
     {key:1,n:'WORLD',d:'double-click a thing to move, size, turn, colour it',go:()=>{ if(!WE.on)WE.toggle(); }},
@@ -9,7 +9,8 @@ import {BEHAV, EDITORS, GAMEED, ITEMED, LIGHTED, UI, WE} from './003b-systems.js
     {key:5,n:'LIGHTING',d:'render system and quality; cel is the floor',go:()=>LIGHTED.toggle()},
     {key:6,n:'SOUND',d:'each sound and its level',go:()=>UI.menuTab('sound')},
     {key:7,n:'ITEM',d:'item types and their properties',go:()=>ITEMED.toggle()},
-    {key:8,n:'BEHAVIOUR',d:'homes, routines, jobs',go:()=>BEHAV.toggle()}];
+    {key:8,n:'BEHAVIOUR',d:'homes, routines, jobs',go:()=>BEHAV.toggle()},
+    {key:9,n:'LANDSCAPE',d:'paint ground patches (grass, cobble, ...)',go:()=>LAND.toggle()}];
   const css=document.createElement('style'); css.textContent=`
   #edmenu{position:fixed;inset:0;z-index:30;display:none;align-items:center;justify-content:center;background:#05070bcc;font:13px var(--pixel,monospace);color:var(--fg,#e9e6dd)}
   #edmenu.on{display:flex} #edmenu .box{background:var(--bg,#0c0e12);border:2px solid var(--line,#2a303a);min-width:300px;max-width:min(94vw,440px);padding:16px 18px}

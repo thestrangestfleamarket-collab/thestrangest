@@ -4176,3 +4176,7 @@ Owner named the sections and their layout (2x4 grid covering Central Park, A bot
 ## 22 Oct 2026: the section model, set up for the future
 
 Owner: the eight blocks connect like his map, by subway, street and water ("subway connected, streets, etc."); this is future scaffolding, not built for a while. The `section` block in world.json now records the whole grid (`grid.cols` 4, `grid.rows` 2 = eight) and each neighbour edge carries a list of connection types (`seams`: subway, street, water) instead of one. Still future, not done now: seam positions/geometry, the physical bounds of each section, the other six sections, and the map editor carrying the block.
+
+## 22 Oct 2026: section adjacency only, not travel methods
+
+Owner: you can also cross by sky, walking, etc. — the specific methods (subway, street, water) shouldn't be baked into the section model unless they matter as a future mechanic. The `section` neighbours now record adjacency only (north: B, east: C); how you travel between sections is a separate mechanic to model when it exists.

@@ -10,20 +10,10 @@
   },
   "neighbours": {
    "north": {
-    "id": "B",
-    "seams": [
-     "subway",
-     "street",
-     "water"
-    ]
+    "id": "B"
    },
    "east": {
-    "id": "C",
-    "seams": [
-     "subway",
-     "street",
-     "water"
-    ]
+    "id": "C"
    }
   }
  },

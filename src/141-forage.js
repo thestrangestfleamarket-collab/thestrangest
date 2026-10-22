@@ -40,6 +40,7 @@ import {GEMS} from './101-gems.js';
   const say=(t,c='#e8e2cc')=>{ const d=document.createElement('div'); d.textContent=t; d.style.cssText=`color:${c};text-shadow:1px 1px 0 #000,-1px 0 0 #000`; J.appendChild(d); while(J.children.length>5)J.firstChild.remove(); setTimeout(()=>d.remove(),6500); };
   FORAGE.say=say; FORAGE.RAW={}; FORAGE.has=id=>have(id); FORAGE.take=(id,n=1)=>{ take(id,n); saveSoon(); }; FORAGE.give=(id,n=1)=>give(id,n); FORAGE.sk=k=>sk(k); FORAGE.draw=()=>PACK.draw();
   FORAGE.add=(o)=>{ Object.assign(NM,o.names||{}); Object.assign(FORAGE.RAW,o.raw||{}); Object.assign(PRICE,o.prices||{}); Object.assign(DO,o.does||{}); if(o.recipes)RC.push(...o.recipes); };
+  FORAGE.ids=()=>{ const s=new Set(); for(const k in NM)s.add(k); for(const k in PRICE)s.add(k); for(const k in DO)s.add(k); for(const r of RC)if(r&&r[0])s.add(r[0]); for(const k in MU)s.add(iid(k)); return [...s].sort(); };
   FORAGE.SELLP=[]; FORAGE.SELLS=[]; FORAGE.ROWB=[]; FORAGE.ACT={}; FORAGE.CK={}; FORAGE.HELP=[]; FORAGE.TABS=[];
   FORAGE.feed=f=>feed(f); FORAGE.buff=(k,s)=>buff(k,s);
   const sk=k=>S.sk[k]/10, tot=()=>Object.values(S.sk).reduce((a,b)=>a+b,0);

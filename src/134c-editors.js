@@ -1,12 +1,12 @@
 // THE EDITORS LAUNCHER: EDITORS holds the shift+0 menu and the shift+1-8 keys that open each editor.
-import {EDITORS, GAMEED, UI, WE} from './003b-systems.js';
+import {EDITORS, GAMEED, LIGHTED, UI, WE} from './003b-systems.js';
 { const ge=async mode=>{ hide(); if(!GAMEED.open)await GAMEED.toggle(); const b=document.getElementById(mode==='map'?'meTM':'meTC'); if(b&&b.dataset.hot!=='1')b.click(); };
   const list=[
     {key:1,n:'WORLD',d:'double-click a thing to move, size, turn, colour it',go:()=>{ if(!WE.on)WE.toggle(); }},
     {key:2,n:'MAP',d:'the top-down layout',go:()=>ge('map')},
     {key:3,n:'CHARACTER',d:'bodies and NPCs',go:()=>ge('chars')},
     {key:4,n:'ATMOSPHERE',d:'weather, sky, sun, fog',go:()=>UI.menuTab('atmo')},
-    {key:5,n:'LIGHTING',d:'render system and quality; cel is the floor',soon:1},
+    {key:5,n:'LIGHTING',d:'render system and quality; cel is the floor',go:()=>LIGHTED.toggle()},
     {key:6,n:'SOUND',d:'each sound and its level',go:()=>UI.menuTab('sound')},
     {key:7,n:'ITEM',d:'item types and their properties',soon:1},
     {key:8,n:'BEHAVIOUR',d:'homes, routines, jobs',soon:1}];

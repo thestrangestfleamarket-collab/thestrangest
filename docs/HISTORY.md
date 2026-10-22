@@ -4192,3 +4192,7 @@ Owner adopted the full editor set and a keymap: shift+0 a menu of all editors; s
 ## 22 Oct 2026: the editors launcher and keymap, in game
 
 Owner: "just put in game". One launcher (EDITORS, 134c-editors): shift+0 opens a menu of all editors; shift+1 world (WE), shift+2 map and shift+3 character (GAMEED), shift+4 atmosphere and shift+6 sound (menu tabs), shift+5 lighting, shift+7 item, shift+8 behaviour. The five that exist open for real; lighting, item and behaviour are placeholders to build next. Dispatch added to UI.key in 094 (shift+digit by e.code); the old Shift+E and Shift+Escape still work.
+
+## 22 Oct 2026: the lighting editor (shift+5)
+
+Owner: "build lighting next". LIGHTED (133a-lightedit) is the global render-system and quality panel: quality tiers (LOWEST = the cel floor, up to MAX), sharpness (RESI), shadows on/off and edge (hard/PCF/soft/VSM), tone mapping and exposure. Drives the real renderer; saved in the browser; export to a file. Cel stays the floor; the high tiers are for finding a look and get taken out after. Opens from the shift+0 launcher and shift+5 (replaces the placeholder). Ambient/sun stay in ATMOSPHERE.

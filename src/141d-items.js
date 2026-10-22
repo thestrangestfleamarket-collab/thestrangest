@@ -1,5 +1,5 @@
 // THE ITEM MODEL AND EDITOR: ITEMS holds each item type's shared properties (burnable, edible, ...); ITEMED edits them (shift+7).
-import {ITEMED, ITEMS} from './003b-systems.js';
+import {FORAGE, ITEMED, ITEMS} from './003b-systems.js';
 import {SAVE} from './005-save.js';
 { const BOOL=[['burnable','BURNS'],['edible','EDIBLE'],['stackable','STACKS'],['pickup','PICK UP'],['sellable','SELLABLE']];
   const NUM=[['weight','WEIGHT',0,50,0.1,1],['value','VALUE',0,500,1,0]];
@@ -22,6 +22,12 @@ import {SAVE} from './005-save.js';
   document.head.appendChild(css);
   const P=document.createElement('div'); P.id='ited'; P.hidden=true; document.body.appendChild(P);
   const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const norm=s=>String(s||'').toLowerCase().replace(/\s+/g,'_');
+  const discovered=()=>{ const s=new Set();
+    try{ if(window.FORAGE&&FORAGE.ids)for(const id of FORAGE.ids())s.add(norm(id)); }catch(e){}
+    try{ const G=window.GPH; if(G&&G.loose)for(const it of G.loose())if(it&&it.name)s.add(norm(it.name)); }catch(e){}
+    for(const id in ITEMS.defs)s.delete(id); return [...s].sort(); };
+  const nameOf=id=>{ try{ return (window.FORAGE&&FORAGE.NM&&FORAGE.NM[id])||id; }catch(e){ return id; } };
   function draw(){ const ids=ITEMS.ids();
     P.innerHTML=`<h2>ITEMS — PROPERTIES</h2><div class="pane">
       <div class="dim">A property is shared by every item of its kind. Turn one on here and the systems that react to it (fire, crafting, …) use it the same way everywhere.</div>
@@ -29,10 +35,12 @@ import {SAVE} from './005-save.js';
       ${ids.length?ids.map(id=>{ const d=ITEMS.defs[id]; return `<div class="it"><div class="nm"><span>${esc(id)}</span><button data-del="${esc(id)}">remove</button></div>
         <div class="props">${BOOL.map(([k,n])=>`<button class="chip" data-id="${esc(id)}" data-k="${k}" aria-pressed="${!!d[k]}">${n}</button>`).join('')}</div>
         ${NUM.map(([k,n,a,b,st])=>`<div class="num"><span style="width:70px">${n}</span><input type="range" data-id="${esc(id)}" data-n="${k}" min="${a}" max="${b}" step="${st}" value="${d[k]}"><span data-v="${esc(id)}:${k}">${d[k]}</span></div>`).join('')}</div>`; }).join(''):'<div class="dim" style="margin:10px 0">No item types yet. Add one above.</div>'}
+      ${(()=>{ const d=discovered(); return d.length?`<div class="dim" style="margin-top:10px">FROM THE GAME — click to add (${d.length})</div><div class="props" style="margin:6px 0">${d.map(id=>`<button class="chip" data-add="${esc(id)}" title="${esc(nameOf(id))}">${esc(id)}</button>`).join('')}</div>`:''; })()}
       <div class="row"><button class="btn" id="itexp">EXPORT</button><button class="btn" id="itdone">DONE</button></div>
-      <div class="dim">Export writes items.json; drop it in data/ to ship. Not yet wired to fire/crafting — it defines the properties they will read.</div></div>`; }
+      <div class="dim">Export writes items.json; drop it in data/ to ship. BURNS reacts in-game (fire); the rest define properties systems will read.</div></div>`; }
   P.addEventListener('click',e=>{ const b=e.target.closest&&e.target.closest('button'); if(!b)return;
     if(b.id==='itadd'){ const v=(P.querySelector('#itnew').value||'').trim().toLowerCase().replace(/\s+/g,'_'); if(v&&!ITEMS.defs[v]){ ITEMS.defs[v]=DEF(); save(); draw(); } return; }
+    if(b.dataset.add){ const id=b.dataset.add; if(!ITEMS.defs[id]){ ITEMS.defs[id]=DEF(); save(); draw(); } return; }
     if(b.dataset.del){ delete ITEMS.defs[b.dataset.del]; save(); draw(); return; }
     if(b.dataset.k){ const d=ITEMS.defs[b.dataset.id]; d[b.dataset.k]=!d[b.dataset.k]; b.setAttribute('aria-pressed',String(d[b.dataset.k])); save(); return; }
     if(b.id==='itexp'){ const blob=new Blob([JSON.stringify(ITEMS.defs,null,1)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='items.json'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),2e3); return; }

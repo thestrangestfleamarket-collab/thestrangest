@@ -4152,3 +4152,7 @@ Fix (`143-bfly.js`): hold all butterfly spawning — the `WEEDS.onAdd` hook, the
 ## 22 Oct 2026: lean entries, nothing verbose
 
 Owner: "i dont want anything verbose". HISTORY entries, commit messages, pull requests and replies stay short: the decision, his words, the date, any rule. Detail and mechanics go in git, not in prose.
+
+## 22 Oct 2026: rules cleared, starting over
+
+Owner: "remove all rules, lets start over with them". The rules block in CLAUDE.md is emptied; new rules added as he gives them.

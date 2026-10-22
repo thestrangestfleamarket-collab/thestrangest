@@ -4160,3 +4160,7 @@ Owner: "remove all rules, lets start over with them". The rules block in CLAUDE.
 ## 22 Oct 2026: rules for adding things
 
 Owner: "set rules as far as how to add things into the game. where things go when they are added and safeguards to make sure we dont undo or add things as patches or without thinking of all other gameplay". First rules back in the block: where a new thing goes, and the safeguards before adding or changing anything (read HISTORY/MAP first, mechanic not instance, one shared path, no reaching into another system, think through all gameplay, stay duplicable, owner decides look/behaviour).
+
+## 22 Oct 2026: the rules, rebuilt
+
+Owner, after scrutiny: a full lean set in four groups. The game not just the code (player first, never break play, build for many and cheap per player, run only what's near or seen). Stay duplicable (section is copy-rename-retheme, standard seams, one cel look with the theme varying). Adding/changing/removing (mechanic not instance only when core or a second case, one path, where it goes, read HISTORY/MAP first, removal needs the owner + a HISTORY line, ships with its check). The owner decides (nothing undone without him, options first, done = builds + tests + his approval).

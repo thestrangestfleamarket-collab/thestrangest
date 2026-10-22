@@ -4196,3 +4196,7 @@ Owner: "just put in game". One launcher (EDITORS, 134c-editors): shift+0 opens a
 ## 22 Oct 2026: the lighting editor (shift+5)
 
 Owner: "build lighting next". LIGHTED (133a-lightedit) is the global render-system and quality panel: quality tiers (LOWEST = the cel floor, up to MAX), sharpness (RESI), shadows on/off and edge (hard/PCF/soft/VSM), tone mapping and exposure. Drives the real renderer; saved in the browser; export to a file. Cel stays the floor; the high tiers are for finding a look and get taken out after. Opens from the shift+0 launcher and shift+5 (replaces the placeholder). Ambient/sun stay in ATMOSPHERE.
+
+## 22 Oct 2026: the world editor to spec — pitch, roll, brightness, export
+
+Owner left the next step to me. The world editor (WE, 099-worldedit) gains pitch and roll (3-axis rotation, not just turn), a brightness slider, and an EXPORT button that downloads the edits as world-edits.json. Still to do: snap to nearest wall/floor/ceiling, and making the export re-apply after a rebuild (edits are keyed by object id, which is not yet stable across builds).

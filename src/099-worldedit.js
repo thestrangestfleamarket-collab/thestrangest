@@ -8,13 +8,13 @@ Object.assign(WE,{on:false});
 { const T=TILE, ST={}; let sel=null, box=null, drag=null;
   const base=o=>{ '@later'; if(o.base)return o.base; const B=o.parts.map(p=>p.me.geometry.attributes.position.array.slice(p.v0*3,p.v0*3+18)); const c=new THREE.Vector3(); let n=0, y0=1e9;
     for(const a of B)for(let i=0;i<18;i+=3){ c.x+=a[i]; c.y+=a[i+1]; c.z+=a[i+2]; n++; y0=Math.min(y0,a[i+1]); } c.divideScalar(n||1); c.y=y0; o.base=B; o.c=c; return B; };
-  const E0=()=>({t:[0,0,0],r:0,s:[1,1,1],col:'#ffffff',op:1,del:false});
+  const E0=()=>({t:[0,0,0],r:0,rx:0,rz:0,s:[1,1,1],col:'#ffffff',bri:1,op:1,del:false});
   const stOf=o=>ST[o.id]||(ST[o.id]=E0());
-  const v=new THREE.Vector3(), col=new THREE.Color(), touched=new Set();
-  function apply(o){ '@later'; const B=base(o), e=stOf(o), c=o.c, ca=Math.cos(e.r*Math.PI/180), sa=Math.sin(e.r*Math.PI/180); col.set(e.col);
+  const v=new THREE.Vector3(), vv=new THREE.Vector3(), E3=new THREE.Euler(), col=new THREE.Color(), touched=new Set();
+  function apply(o){ '@later'; const B=base(o), e=stOf(o), c=o.c; E3.set((e.rx||0)*Math.PI/180,(e.r||0)*Math.PI/180,(e.rz||0)*Math.PI/180,'YXZ'); col.set(e.col).multiplyScalar(e.bri==null?1:e.bri);
     o.parts.forEach((p,k)=>{ const g=p.me.geometry, P=g.attributes.position.array, N=g.attributes.normal.array, C=g.attributes.aCol.array, O=g.attributes.aOp.array, a=B[k];
-      for(let i=0;i<6;i++){ let x=(a[i*3]-c.x)*e.s[0], y=(a[i*3+1]-c.y)*e.s[1], z=(a[i*3+2]-c.z)*e.s[2]; const X=x*ca+z*sa, Z=-x*sa+z*ca;
-        const j=(p.v0+i)*3; if(e.del){ P[j]=c.x; P[j+1]=c.y-50; P[j+2]=c.z; } else { P[j]=c.x+X+e.t[0]; P[j+1]=c.y+y+e.t[1]; P[j+2]=c.z+Z+e.t[2]; }
+      for(let i=0;i<6;i++){ vv.set((a[i*3]-c.x)*e.s[0],(a[i*3+1]-c.y)*e.s[1],(a[i*3+2]-c.z)*e.s[2]).applyEuler(E3);
+        const j=(p.v0+i)*3; if(e.del){ P[j]=c.x; P[j+1]=c.y-50; P[j+2]=c.z; } else { P[j]=c.x+vv.x+e.t[0]; P[j+1]=c.y+vv.y+e.t[1]; P[j+2]=c.z+vv.z+e.t[2]; }
         C[j]=col.r; C[j+1]=col.g; C[j+2]=col.b; O[p.v0+i]=e.op; }
       for(const t0 of [p.v0,p.v0+3]){ const j=t0*3, ux=P[j+3]-P[j], uy=P[j+4]-P[j+1], uz=P[j+5]-P[j+2], wx=P[j+6]-P[j], wy=P[j+7]-P[j+1], wz=P[j+8]-P[j+2];
         let nx=uy*wz-uz*wy, ny=uz*wx-ux*wz, nz=ux*wy-uy*wx; const l=Math.hypot(nx,ny,nz)||1; for(let q=0;q<3;q++){ N[j+q*3]=nx/l; N[j+q*3+1]=ny/l; N[j+q*3+2]=nz/l; } }
@@ -35,19 +35,22 @@ Object.assign(WE,{on:false});
       <div class="row"><span class="lab">MOVE</span><button class="btn" data-mv="-1,0">◀</button><button class="btn" data-mv="1,0">▶</button><button class="btn" data-mv="0,-1">▲</button><button class="btn" data-mv="0,1">▼</button><button class="btn" data-up="1">UP</button><button class="btn" data-up="-1">DOWN</button></div>
       <div class="dim">or drag it along the ground</div>
       <div class="row"><span class="lab">TURN</span><button class="btn" data-turn="-15">⟲ 15°</button><button class="btn" data-turn="15">⟳ 15°</button><button class="btn" data-turn="90">90°</button></div>
+      <div class="row"><span class="lab">PITCH</span><input type="range" id="wrx" min="-180" max="180" step="1"></div>
+      <div class="row"><span class="lab">ROLL</span><input type="range" id="wrz" min="-180" max="180" step="1"></div>
       <div class="row"><span class="lab">SIZE</span><input type="range" id="wsz" min="0.2" max="3" step="0.01"></div>
       <div class="row"><span class="lab">WIDTH</span><input type="range" data-ax="0" min="0.2" max="3" step="0.01"></div>
       <div class="row"><span class="lab">HEIGHT</span><input type="range" data-ax="1" min="0.2" max="3" step="0.01"></div>
       <div class="row"><span class="lab">DEPTH</span><input type="range" data-ax="2" min="0.2" max="3" step="0.01"></div>
       <div class="row"><span class="lab">COLOUR</span><input type="color" id="wcol"><button class="btn" id="wcol0">NONE</button></div>
+      <div class="row"><span class="lab">BRIGHTNESS</span><input type="range" id="wbri" min="0.2" max="2" step="0.01"></div>
       <div class="row"><span class="lab">SEE-THROUGH</span><input type="range" id="wop" min="0" max="0.9" step="0.01"></div>
       <div class="row"><button class="btn" id="wdel">DELETE</button><button class="btn" id="wback">BACK AS IT WAS</button></div>
 </div>
-    <div class="row" style="margin-top:10px"><button class="btn" id="wall">EVERYTHING BACK</button><button class="btn" id="wout">DONE (SHIFT+E)</button></div>
+    <div class="row" style="margin-top:10px"><button class="btn" id="wall">EVERYTHING BACK</button><button class="btn" id="wexp">EXPORT</button><button class="btn" id="wout">DONE (SHIFT+E)</button></div>
     <div class="dim">what he bumps into stays where it was, for now</div></div>`;
   document.body.appendChild(P); const $=s=>P.querySelector(s);
   function draw(){ '@later'; $('#wtools').hidden=!sel; $('#wname').textContent=sel?'PICKED: '+sel.name.toUpperCase()+' ('+sel.place+')':'double-click a thing to pick it'; if(!sel)return; const e=stOf(sel);
-    $('#wsz').value=Math.cbrt(e.s[0]*e.s[1]*e.s[2]); P.querySelectorAll('[data-ax]').forEach(i=>i.value=e.s[+i.dataset.ax]); $('#wcol').value=e.col; $('#wop').value=1-e.op; }
+    $('#wsz').value=Math.cbrt(e.s[0]*e.s[1]*e.s[2]); P.querySelectorAll('[data-ax]').forEach(i=>i.value=e.s[+i.dataset.ax]); $('#wcol').value=e.col; $('#wop').value=1-e.op; $('#wrx').value=e.rx||0; $('#wrz').value=e.rz||0; $('#wbri').value=e.bri==null?1:e.bri; }
   function frame(){ '@later'; if(box){ scene.remove(box); box=null; } if(!sel||stOf(sel).del)return; const b=new THREE.Box3(); for(const p of sel.parts){ const a=p.me.geometry.attributes.position.array; for(let i=0;i<6;i++)b.expandByPoint(v.fromArray(a,(p.v0+i)*3)); }
     box=new THREE.Box3Helper(b,0xf2c14e); scene.add(box); }
   const change=f=>{ if(!sel)return; f(stOf(sel)); apply(sel); settle(); save(); frame(); draw(); };
@@ -59,6 +62,9 @@ Object.assign(WE,{on:false});
   P.querySelectorAll('[data-ax]').forEach(i=>i.oninput=()=>change(e=>{ e.s[+i.dataset.ax]=+i.value; }));
   $('#wcol').oninput=ev=>change(e=>{ e.col=ev.target.value; }); $('#wcol0').onclick=()=>change(e=>{ e.col='#ffffff'; });
   $('#wop').oninput=ev=>change(e=>{ e.op=1-+ev.target.value; });
+  $('#wrx').oninput=ev=>change(e=>{ e.rx=+ev.target.value; }); $('#wrz').oninput=ev=>change(e=>{ e.rz=+ev.target.value; });
+  $('#wbri').oninput=ev=>change(e=>{ e.bri=+ev.target.value; });
+  $('#wexp').onclick=()=>{ const blob=new Blob([JSON.stringify(ST,null,1)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='world-edits.json'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),2e3); };
   $('#wdel').onclick=()=>{ change(e=>{ e.del=true; }); sel=null; frame(); draw(); };
   $('#wback').onclick=()=>change(e=>{ Object.assign(e,E0()); });
   $('#wall').onclick=()=>{ if(!confirm('Put everything back as it was?'))return; for(const o of OBJS)if(ST[o.id]){ ST[o.id]=E0(); apply(o); delete ST[o.id]; } settle(); save(); frame(); draw(); };

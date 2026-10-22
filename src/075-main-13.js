@@ -55,7 +55,7 @@ function frame(now){ requestAnimationFrame(frame); if(PARK.hold)return; renderer
   UI.camStep(dt,a,up,dn,lf,rt); if(UI.freeCam||ED.on)up=dn=lf=rt=false;
   if(up){mx+=fx;mz+=fz;} if(dn){mx-=fx;mz-=fz;} if(rt){mx+=-fz;mz+=fx;} if(lf){mx-=-fz;mz-=fx;}
   if(PAD.mv&&(up||dn||lf||rt)){ const [lx,ly]=PAD.mv; mx=-ly*fx-lx*fz; mz=-ly*fz+lx*fx; }
-  if(!RAG.on&&MODS.apts.lad&&MODS.apts.lad(dt,up,dn,lf||rt||!!SHARED.target)){ up=dn=lf=rt=false; mx=mz=0; SHARED.target=null; }
+  if(!RAG.on&&(MODS.apts.lad&&MODS.apts.lad(dt,up,dn,lf||rt||!!SHARED.target)||(MODS.climbs||[]).some(c=>c(dt,up,dn,lf||rt||!!SHARED.target)))){ up=dn=lf=rt=false; mx=mz=0; SHARED.target=null; }
   if(mx||mz)SHARED.target=null; else if(SHARED.target){ const dx=SHARED.target.x-pos.x, dz=SHARED.target.z-pos.z, d=Math.hypot(dx,dz); if(d<0.12)SHARED.target=null; else {mx=dx/d;mz=dz/d;} }
   view0.a=a; P.x=pos.x/TL; P.y=-pos.z/TL; PH.hd=SHARED.heading;
   const hit=PHYOU.hit||0, hn=PHYOU.hitN; PHYOU.hit=0;

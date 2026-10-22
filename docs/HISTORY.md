@@ -4353,3 +4353,8 @@ Owner: "yes tools (must buy, and goggles, and headlight to see)"; "scuba shop th
 Owner: "golems protect the caves ... they guard the entrance and the cave. the move slow. if you kill them they crumble to rocks. but will reform after X amount of time".
 - **The golem guards** (`146e-golems.js`): the twelve rock golems guard the golems' cave. Come within the cave or its mouth and the near ones lumber at you (seven tenths of their walk) and hit when they reach you; your punches, kicks and sword land on them; at zero they crumble into a heap of rocks and, 10 to 60 s later, the rocks gather and the golem stands again.
 - **One set of strikes** (rule): your strikes (`STRIKES`: what you swing, its reach, your fight strength) are read by every mob system — the dungeon's slimes and skeletons and the cave's golems — not written twice.
+
+## 22 Oct 2026: B — climb the trees for blossoms and fruit; butterflies take a jump
+Owner: "climb trees to pick flowers, fruits on tall trees"; "the tomato merchant will buy fruits and veggies"; "when catching butterflys you need to be able to jump and use your net to catch them".
+- **Climbing** (`144e-trees.js`): hold up at a park tree's trunk, or double-click it, and you climb it in the rig's climbing pose; up and down move you, left or right steps off. The crowns hold three pickings a day: OAK BLOSSOMS on the oaks (GARDENING), APPLES, PEARS, PLUMS and FIGS on the tall trees (FORAGING); too high to reach from the ground. Fruit is edible; the tomato buys fruit and blossoms. One climb input for ladders and trees (`MODS.climbs`).
+- **Butterflies**: the net only takes one mid-jump now.

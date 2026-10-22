@@ -4242,3 +4242,4 @@ LAND (152a-landscape) paints the ground: drag a box on the ground and it lays a 
 ## 22 Oct 2026: the item editor lists the game's real items
 
 The item editor (shift+7) now shows the game's actual items to click-add, not just a blank field: FORAGE.ids() (a read-only hook on forage's own maps — mushrooms, potions, foods, recipes, priced goods) and the loose things (GPH.loose names), normalised to ids. A FROM THE GAME list adds a type with one click; its name matches what burnable checks, so the fire wiring lines up.
+- 21 Oct 2026, the bodega a block (owner: "can we do this for all buildings to save? all interiors could be off map and buildings can be blocks", then "just do all"): the bodega's outside is one painted block (shelves seen through the glass, its door and sign); its inside, the fox and the goods are built off the map when you first go in.

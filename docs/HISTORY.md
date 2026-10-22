@@ -4184,3 +4184,7 @@ Owner: you can also cross by sky, walking, etc. — the specific methods (subway
 ## 22 Oct 2026: rules refreshed after the section work
 
 Two rules added from naming Section A: scaffold the future, don't build it early (the section grid is set up, not implemented); model the essence, not premature specifics (adjacency, not how you travel). The seams rule no longer names subway/street/water — how you cross sections is its own mechanic, not baked into the map.
+
+## 22 Oct 2026: the editor set and keymap; editors stay in sync
+
+Owner adopted the full editor set and a keymap: shift+0 a menu of all editors; shift+1 world (double-click any item in-world to move/resize/rotate/tone/brightness/opacity/snap, indoor or out, export), shift+2 map, shift+3 character, shift+4 atmosphere (weather, sky, sun, fog), shift+5 lighting, plus sound (already in code), item/entity (defines types and their schema-wide properties), and behaviour (home, routine, job, combat). Lighting is global and sets the render system and quality: cel is the floor; its high tiers are a temporary tool to find the look, then the top settings are removed and the game ships the chosen low one. New rule: any game change considers the editors and updates them so they don't fall out of sync. Rule changed: cel is the look and quality floor, not an absolute. Mockup of all eight panels made for review (claude.ai artifact, editor chrome only, not the game).

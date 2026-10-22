@@ -103,7 +103,7 @@ Set 22 Oct 2026. Every change to the game goes by these.
 - Build so a section is copy-rename-retheme: nothing hard-wired to this section (its identity is `SECTION` in `data/world.json`; the full section namespace is still to be built; add no new "only one section" assumptions).
 - Scaffold the future, don't build it early: set up the shape so later sections and mechanics slot in (the section grid, its id), without implementing what isn't needed yet.
 - Sections meet only at reusable connectors, never by reaching into another section's internals (how you cross — subway, street, water, sky, walking — is its own mechanic, modelled when it exists, not baked into the map).
-- One cel look for every section; the theme (palette, props, mood) is what varies. No glow, gradient, blur or photo texture unless the owner asks.
+- Cel is the look and the quality floor; the lighting editor (global, the owner's choice) can select richer render systems up to high. Per section only the theme — palette, props, mood — varies.
 
 **Adding, changing, removing**
 - Mechanic, not instance — but only when it's core or has a second case; don't build a system for one thing.
@@ -114,6 +114,7 @@ Set 22 Oct 2026. Every change to the game goes by these.
 - Before you touch it: grep `docs/HISTORY.md` and `docs/MAP.md` for what exists and what was decided. Don't reach into another system's internals — use its registration or a `SYS` event.
 - Before you remove or replace it: find who depends on it (MAP's "who uses it"); a removal is a decision — it needs the owner and a HISTORY line.
 - A new place, character or system ships with the check that proves it; list what it touches and run `tests/core.cjs` and the affected place tests before the pull request.
+- Keep the editors in sync: any change that could affect an editor — a new item property, a placeable or editable thing, a lighting or atmosphere setting — updates that editor too. A change isn't done while an editor it touches is left out of date.
 
 **The owner decides**
 - Nothing that changes how the game looks or plays is added, changed or undone without the owner; a decision already made is not reversed without him.

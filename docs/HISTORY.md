@@ -4247,3 +4247,4 @@ The item editor (shift+7) now shows the game's actual items to click-add, not ju
 ## 22 Oct 2026: edible wired to eating
 
 An item marked EDIBLE (item editor, shift+7) can now be eaten through the existing eating path: FORAGE.eat feeds you when you eat one, and the pack shows an EAT button for it — the same for every item of that kind (ITEMS.prop(id,'edible')). The second property to do something, after burnable.
+- 21 Oct 2026, the apartment house all brick (owner: "you pick", after "entire building same red brick"): the stone base, window trim and cornice are brick too.

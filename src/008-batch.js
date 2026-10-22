@@ -1,6 +1,6 @@
 // THE BATCH: BATCH packs painted pictures into atlases and merges them into few meshes; BATCH.queue paints far things later, near ones first; OBJ and OBJS name the objects made.
 import {SHARED, THREE} from './003-shx.js';
-import {ED, pos, ROOMS, UI} from './003b-systems.js';
+import {ED, LEVELS, pos, ROOMS, UI} from './003b-systems.js';
 import {renderer, RH, RW, scene} from './004-main.js';
 import {QS, SYS, TILE} from './006-map-pre.js';
 const BATCH=window.BATCH={items:[],tag:null};
@@ -57,7 +57,7 @@ PEEK.batch=(me,L)=>{ const M=TILE/.84, q=.05*TILE, C=6*M, G={}, K=[], V=PEEK.V, 
   if(!any)return; const A=new Uint8Array(L.length*6); K.forEach((k,n)=>{ if(k)A.fill(G[k].w,n*6,n*6+6); }); PEEK.mark(me.geometry,A); };
 PEEK.tick=dt=>{ const on=PEEK.on&&UI.view!=='first'&&!UI.freeCam&&!ED.on&&!ROOMS.cur&&PEEK.boxes.length, M=TILE/.84, c=PEEK.V.set(pos.x,SHARED.py+1.1*TILE,pos.z), R=PEEK.ray, W=PEEK.W, H=PEEK.H, P=PEEK.uDP, K=PEEK.uDK;
   R.origin.copy(c); if(UI.persp)R.direction.copy(SHARED.cam.position).sub(c).normalize(); else R.direction.set(0,0,1).applyQuaternion(SHARED.cam.quaternion);
-  let cov=false; if(on){ const far=UI.persp?c.distanceTo(SHARED.cam.position):1e5; W.copy(c).project(SHARED.cam); if(far>1.5*M&&Math.abs(W.x)<1.1&&Math.abs(W.y)<1.1&&W.z<1)for(const o of PEEK.boxes){ const me=o.me; if(!me.visible||(me.parent&&!me.parent.visible))continue; if(R.intersectBox(o.b,H)&&H.distanceTo(c)<far){ cov=true; break; } } }
+  let cov=false; if(on){ const far=UI.persp?c.distanceTo(SHARED.cam.position):1e5; W.copy(c).project(SHARED.cam); if(far>1.5*M&&Math.abs(W.x)<1.1&&Math.abs(W.y)<1.1&&W.z<1)for(const o of PEEK.boxes){ const me=o.me; if(!me.visible||(me.parent&&!me.parent.visible)||!LEVELS.drawn(me))continue; if(R.intersectBox(o.b,H)&&H.distanceTo(c)<far){ cov=true; break; } } }
   PEEK.k=Math.max(0,Math.min(1,PEEK.k+(cov?dt:-dt)/.25)); PEEK.cov=cov; K.x=PEEK.k; K.y=RW/RH; K.z=SHARED.py+2.6*TILE; if(!PEEK.k)return;
   W.copy(c).project(SHARED.cam); H.set(1,0,0).applyQuaternion(SHARED.cam.quaternion).multiplyScalar(1.6*M).add(c).project(SHARED.cam); P.w=Math.max(1e-4,Math.min(.6,Math.hypot((H.x-W.x)*RW/RH,H.y-W.y))); P.x=W.x; P.y=W.y;
   H.copy(c).addScaledVector(R.direction,.5*M).project(SHARED.cam); P.z=H.z; };

@@ -1,6 +1,6 @@
 // THE DEATH: what happens when you die: the YOU ARE DEAD note, the fall, and the walk to the bath house to come back.
 import {SHARED, THREE} from './003-shx.js';
-import {GHOSTS, keys, LOOKS, PH, pos, RAG, st, VIT, W3} from './003b-systems.js';
+import {GHOSTS, keys, LEVELS, LOOKS, PH, pos, RAG, st, VIT, W3} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {SAVE} from './005-save.js';
 import {FADE, QS, STORE, SYS, TILE} from './006-map-pre.js';
@@ -11,7 +11,7 @@ import {FADE, QS, STORE, SYS, TILE} from './006-map-pre.js';
   const wait=ms=>new Promise(r=>setTimeout(r,ms)), frames=k=>new Promise(r=>{ const f=()=>--k<=0?r():requestAnimationFrame(f); requestAnimationFrame(f); });
   const MH=T/.84; let S=null, gh=0, rise=-1, busy=false, dp=null;
   const sheet=()=>{ '@later'; if(S||!window.GHOSTS||!GHOSTS.cloth)return S; const MV=SHARED.BOD.YS(24)/.84, mat=new THREE.MeshToonMaterial({color:0xf2f0ea,emissive:0x2a3040,gradientMap:W3.GP,transparent:true,opacity:0,side:THREE.DoubleSide,depthWrite:false}), em=new THREE.MeshBasicMaterial({color:0x0c0c10,transparent:true,opacity:0}), eg=new THREE.CircleGeometry(1,10);
-    S=GHOSTS.cloth(1.15,true,17,.24,mat,pos.x/MH,SHARED.py/MV+1.5,pos.z/MH); S.MV=MV; S.mat=mat; S.em=em; S.eyes=[-1,1].map(()=>{ const e=new THREE.Mesh(eg,em); e.scale.set(.05*MH,.075*MV,1); e.renderOrder=4; scene.add(e); return e; }); return S; };
+    S=GHOSTS.cloth(1.15,true,17,.24,mat,pos.x/MH,SHARED.py/MV+1.5,pos.z/MH); S.MV=MV; S.mat=mat; S.em=em; S.eyes=[-1,1].map(()=>{ const e=new THREE.Mesh(eg,em); e.scale.set(.05*MH,.075*MV,1); e.renderOrder=4; scene.add(LEVELS.own(e,'*')); return e; }); return S; };
   const look=on=>{ W3.mesh.visible=!on; if(S){ S.me.visible=on; for(const e of S.eyes)e.visible=on; } };
   const V=new THREE.Vector3();
   VIT.die=()=>{ if(VIT.dead)return; VIT.dead=true; VIT.hp=0; VIT.out=2.4; SHARED.trip=true; gh=0; rise=-1; try{ SAVE.set('dead','1'); }catch(e){} note(DEAD); };

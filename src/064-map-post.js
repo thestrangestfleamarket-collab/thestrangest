@@ -1,12 +1,13 @@
 // THE STAIRS AND GROUND: inStair and SHARED.groundY say how high the ground is everywhere; LITE and HEMI set the lamps and sky light.
 import {SHARED, THREE} from './003-shx.js';
-import {BROOK, LITE, NPCS, PARK, pos, ROOMS, st, W3} from './003b-systems.js';
+import {BROOK, LEVELS, LITE, NPCS, PARK, pos, ROOMS, st} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {CASTLE, FIX, grab, lamps, LAY, MAPG, MAPSTAIR, MODS, RING, SEEN, SHL, SOL, STORE, SYS, TILE, ZU} from './006-map-pre.js';
 import {FOUNT} from './060a-fount.js';
 await grab('stairs',async()=>SHARED.METRO.exit());
 const STAIRS=[MAPSTAIR,CASTLE.stair,...RING.stairs], inStair=(x,z,lv)=>{ const gx=x/TILE+72, gy=z/TILE-77; for(const S of STAIRS)if(S.has?S.has(x,z,lv):gx>=S.x0&&gx<S.x1&&gy>=S.y0&&gy<S.y1)return {S,gy}; return null; };
 MODS.inStair=inStair;
+LEVELS.ways.push({id:'subway stairs',stair:MAPSTAIR,a:'street',b:'station',groups:['stairs'],cut:MODS.stairCut},{id:'castle stairs',stair:CASTLE.stair,a:'street',b:'dungeon',at:['street'],groups:['castlestairs'],cut:MODS.castleStairCut});
 SHARED.groundY=(x,z)=>{ const s=inStair(x,z); if(s){ const S=s.S; if(S.ground)return S.ground(x,z); const t=S.dir>0?s.gy-S.y0:S.y1-s.gy, k=Math.min(S.steps,Math.max(1,Math.floor(t/((S.y1-S.y0)/S.steps))+1)); return -k*S.depth/S.steps*ZU; }
   { const st=SHARED.LVL==='up'&&STORE.stackGround?STORE.stackGround(x,z):null; if(st!=null)return st; }
   { const bg=SHARED.LVL==='up'&&SHARED.BOD.GD&&SHARED.BOD.GD.ground?SHARED.BOD.GD.ground(x,z):null; if(bg!=null)return bg; }
@@ -43,17 +44,10 @@ LITE.tick=(dt,x,y,z)=>{ const P=LITE.pool;
   if(L0.intensity>0&&typeof NPCS!=='undefined'){ const r=(L0.distance||8*TILE)**2; for(const N of NPCS){ if(!N.g||!N.g.visible||!N.st)continue; const p=N.g.position, dx=p.x-L0.position.x, dz=p.z-L0.position.z; if(dx*dx+dz*dz>r)continue; const k=p.x*7.13+p.z*3.31+p.y*1.7+N.st.h; if(N._lk!==k){ N._lk=k; mv=true; } } }
   L0.shadow.autoUpdate=L0.intensity>0&&mv; };
 scene.background=new THREE.Color(0x050507);
-const UNDER=(()=>{ let on=false, hid=[]; const keep=new Set(['down','dungeon','castlestairs','stairs','fire']), bb=new THREE.Box3(), skin=o=>{ let k=false; o.traverse(c=>{ if(c.isSkinnedMesh||c.isLight)k=true; }); return k; };
-  return dn=>{ if(dn===on)return; on=dn;
-    if(dn){ hid=[]; const npc=new Set((typeof NPCS!=='undefined'?NPCS:[]).map(N=>N.g)); for(const o of scene.children){ if(keep.has(o.name)||o.isLight||o.isCamera||npc.has(o)||(o===W3.group)||skin(o))continue;
-        if(o.isInstancedMesh){ o.computeBoundingBox(); bb.copy(o.boundingBox).applyMatrix4(o.matrixWorld); } else bb.setFromObject(o); if(bb.isEmpty()||bb.min.y<-1)continue;
-        o.traverse(c=>{ if(c.isMesh||c.isPoints||c.isLine||c.isSprite){ c.layers.disable(0); c.layers.enable(1); hid.push(c); } }); } }
-    else{ for(const c of hid){ c.layers.enable(0); c.layers.disable(1); } hid=[]; } }; })();
 const OUTWET=p=>SHARED.LVL==='up'&&!!((st.water&&st.water.in)||window.BROOK&&BROOK.over||window.FOUNT&&FOUNT.wet&&FOUNT.wet(p.x,p.z,TILE));
-const MAPLV=(py,pos)=>{ SHARED.METRO.door(py,pos); if(MODS.dunDoor)MODS.dunDoor(py,pos); PARK.door(py,pos); const wet=OUTWET(pos), lv=py<-1.6&&!wet?'down':'up', si=inStair(pos.x,pos.z), st=si!=null, sd=st&&si.S!==MAPSTAIR;
-  MAPG.down.visible=(lv==='down'||sd)&&!(lv==='down'&&MODS.dungeon.inside(pos.x,pos.z)); if(MAPG.dungeon)MAPG.dungeon.visible=lv==='down'||st; for(const k of ['bodega','pool','poolout','parkwall','park','castle'])if(MAPG[k])MAPG[k].visible=lv==='up'&&!(sd&&py<-1)&&(k!=='park'||PARK.in);
-  UNDER(py<-1&&!wet&&!(st&&!sd&&SHARED.LVL==='up'));
-  MODS.stairCut.constant=st?py+.25:1e6; if(MODS.castleStairCut)MODS.castleStairCut.constant=st?py+.25:1e6;
+const MAPLV=(py,pos)=>{ SHARED.METRO.door(py,pos); if(MODS.dunDoor)MODS.dunDoor(py,pos); PARK.door(py,pos); const wet=OUTWET(pos), lv=py<-1.6&&!wet?'down':'up', si=inStair(pos.x,pos.z), cur=LEVELS.set(lv,pos.x,pos.z,si);
+  if(MAPG.park)MAPG.park.visible=cur==='street'&&!!PARK.in;
+  for(const w of LEVELS.ways)if(w.cut)w.cut.constant=LEVELS.way?py+.25:cur===w.b&&LEVELS.of[w.b].ceil!=null?LEVELS.of[w.b].ceil:1e6;
   if(lv===SHARED.LVL)return false; SHARED.LVL=lv; SHARED.solids=SOL[lv]; SHARED.fixed=FIX[lv]; HEMI.color.set(lv==='down'?0x8a93a8:0x55607a); HEMI.groundColor.set(lv==='down'?0x1a1814:0x14110e); HEMI.intensity=lv==='down'?.1:.3; return true; };
 
 { const MB=SHARED.BOUND; STORE.tick=()=>{ STORE.pos=pos; STORE.cur=ROOMS.cur?ROOMS.cur.id:null; STORE.nl=lamps.length; STORE.lon=LITE.sel.length;

@@ -1,6 +1,6 @@
 // THE BEHAVIOUR EDITOR: BEHAV edits how a character acts — its home range for now (shift+8).
 import {SHARED, THREE} from './003-shx.js';
-import {BEHAV, NPCS, pos} from './003b-systems.js';
+import {BEHAV, LEVELS, NPCS, pos} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {SAVE} from './005-save.js';
 import {TILE} from './006-map-pre.js';
@@ -14,7 +14,7 @@ import {TILE} from './006-map-pre.js';
   const rec=N=>{ const h=N&&N.home; if(!h||!h.id)return; store[h.id]=[ix(h.x),iz(h.z),+(h.r/T).toFixed(2)]; save(); };
   const applyStore=()=>{ for(const N of NPCS){ const h=N.home; if(!h||!h.id)continue; const s=store[h.id]; if(s)N.home={id:h.id,x:sx(s[0]),z:sz(s[1]),r:(s[2]||0)*T}; } };
   { const go=()=>{ if(!window.__started)return setTimeout(go,500); applyStore(); }; if(Object.keys(store).length)go(); }
-  const mkRing=()=>{ const pts=[]; for(let i=0;i<=64;i++){ const a=i/64*6.2832; pts.push(new THREE.Vector3(Math.cos(a),0,Math.sin(a))); } ring=new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(pts),new THREE.LineBasicMaterial({color:0xffbf5e})); ring.renderOrder=999; ring.frustumCulled=false; scene.add(ring); ring.visible=false; };
+  const mkRing=()=>{ const pts=[]; for(let i=0;i<=64;i++){ const a=i/64*6.2832; pts.push(new THREE.Vector3(Math.cos(a),0,Math.sin(a))); } ring=new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(pts),new THREE.LineBasicMaterial({color:0xffbf5e})); ring.renderOrder=999; ring.frustumCulled=false; scene.add(LEVELS.own(ring,'*')); ring.visible=false; };
   const showRing=()=>{ if(!ring)mkRing(); const h=sel&&sel.home; if(!h||!(h.r>0)){ ring.visible=false; return; } const y=((sel.g&&sel.g.position.y)||0)+.1; ring.position.set(h.x,y,h.z); ring.scale.set(h.r,1,h.r); ring.visible=true; };
   const setHome=(x,z,r)=>{ if(!sel)return; const h=sel.home||{}; sel.home={id:h.id,x:x==null?h.x:x,z:z==null?h.z:z,r:r==null?h.r:r}; rec(sel); showRing(); draw(); };
   const css=document.createElement('style'); css.textContent=`

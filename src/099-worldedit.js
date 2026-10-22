@@ -1,6 +1,6 @@
 // THE WORLD EDITOR: WE lets you pick, move, turn, scale, recolour and hide objects in the world.
 import {SHARED, THREE} from './003-shx.js';
-import {UI, WE} from './003b-systems.js';
+import {LEVELS, UI, WE} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {TILE} from './006-map-pre.js';
 import {OBJS} from './008-batch.js';
@@ -59,7 +59,7 @@ Object.assign(WE,{on:false});
   function draw(){ '@later'; $('#wtools').hidden=!sel; $('#wname').textContent=sel?'PICKED: '+sel.name.toUpperCase()+' ('+sel.place+')':'double-click a thing to pick it'; if(!sel)return; const e=stOf(sel);
     $('#wsz').value=Math.cbrt(e.s[0]*e.s[1]*e.s[2]); P.querySelectorAll('[data-ax]').forEach(i=>i.value=e.s[+i.dataset.ax]); $('#wcol').value=e.col; $('#wop').value=1-e.op; $('#wrx').value=e.rx||0; $('#wrz').value=e.rz||0; $('#wbri').value=e.bri==null?1:e.bri; }
   function frame(){ '@later'; if(box){ scene.remove(box); box=null; } if(!sel||stOf(sel).del)return; const b=new THREE.Box3(); for(const p of sel.parts){ const a=p.me.geometry.attributes.position.array; for(let i=0;i<6;i++)b.expandByPoint(v.fromArray(a,(p.v0+i)*3)); }
-    box=new THREE.Box3Helper(b,0xf2c14e); scene.add(box); }
+    box=new THREE.Box3Helper(b,0xf2c14e); scene.add(LEVELS.own(box,'*')); }
   const change=f=>{ if(!sel)return; f(stOf(sel)); apply(sel); settle(); save(); frame(); draw(); };
   const ground=()=>{ const r=new THREE.Vector3().setFromMatrixColumn(SHARED.cam.matrixWorld,0); r.y=0; r.normalize(); const f=new THREE.Vector3(-r.z,0,r.x); return [r,f]; };
   P.querySelectorAll('[data-mv]').forEach(b=>b.onclick=()=>{ const [dx,dz]=b.dataset.mv.split(',').map(Number), [r,f]=ground(); change(e=>{ e.t[0]+=(r.x*dx+f.x*dz)*.25*T; e.t[2]+=(r.z*dx+f.z*dz)*.25*T; }); });

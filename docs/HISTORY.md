@@ -4244,3 +4244,7 @@ LAND (152a-landscape) paints the ground: drag a box on the ground and it lays a 
 
 The item editor (shift+7) now shows the game's actual items to click-add, not just a blank field: FORAGE.ids() (a read-only hook on forage's own maps — mushrooms, potions, foods, recipes, priced goods) and the loose things (GPH.loose names), normalised to ids. A FROM THE GAME list adds a type with one click; its name matches what burnable checks, so the fire wiring lines up.
 - 21 Oct 2026, the apartment house all brick (owner: "you pick", after "entire building same red brick"): the stone base, window trim and cornice are brick too.
+
+## 22 Oct 2026: levels (what is drawn underground)
+
+Owner, of street buildings, plants and a box floating in the dark around the subway station: "this shouldnt be a patch for this room, this should be a solution for all unground levels and platforms, subway tunnels, etc" / "yes build it". Every place is a level (`LEVELS`, 129a): the street, the station with its tunnels, the dungeon. Only your level is drawn; levels meet only at connectors (the subway stairs, the castle stairs), and a connector is drawn only in the levels it stands in. Rule: a new underground place or platform registers its level (`LEVELS.of`) and its stairs (`LEVELS.ways`), never a height test.

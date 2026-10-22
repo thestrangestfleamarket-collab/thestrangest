@@ -1,5 +1,6 @@
 // THE FLAME: FLAME draws every candle, torch, ember and wisp of smoke as instanced billboards in one shader.
 import {THREE} from './003-shx.js';
+import {LEVELS} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {TILE} from './006-map-pre.js';
 const FLAME=(()=>{ const N=640, K={candle:0,torch:1,bed:2,ball:3,ember:4,smoke:5}, SRC=[], PT=[];
@@ -46,7 +47,7 @@ void main(){
   const P=new Float32Array(N*4), S=new Float32Array(N*4), aP=new THREE.InstancedBufferAttribute(P,4), aS=new THREE.InstancedBufferAttribute(S,4); aP.setUsage(THREE.DynamicDrawUsage); aS.setUsage(THREE.DynamicDrawUsage);
   g.setAttribute('iP',aP); g.setAttribute('iS',aS); g.instanceCount=0;
   const uT={value:0}, mat=new THREE.ShaderMaterial({uniforms:{uT},vertexShader:VS,fragmentShader:FS,clipping:true,toneMapped:false,side:THREE.DoubleSide});
-  const me=new THREE.Mesh(g,mat); me.frustumCulled=false; me.raycast=()=>{}; me.name='fire'; scene.add(me);
+  const me=new THREE.Mesh(g,mat); me.frustumCulled=false; me.raycast=()=>{}; me.name='fire'; scene.add(LEVELS.own(me,'*'));
   const n1=(t,s)=>{ const i=Math.floor(t), f=t-i, u=f*f*(3-2*f), h=k=>{ const v=Math.sin((k+s*31.7)*127.1)*43758.5453; return v-Math.floor(v); }; return h(i)+(h(i+1)-h(i))*u; };
   const flick=(s,t=performance.now()/1000)=>.8+.12*n1(t*5.3,s)+.1*n1(t*13.1,s+7)-.1*Math.max(0,n1(t*1.7,s+3)-.7)/.3;
   const add=o=>{ const s={name:o.name||o.kind,k:K[o.kind]??-1,x:o.x,y:o.y,z:o.z,w:o.w||.1,h:o.h||.2,sd:o.seed??Math.random()*50,embers:o.embers||0,smoke:o.smoke||0,steam:o.steam?6:5,sk:o.sk||1,light:o.light||null,li:o.light?o.light.intensity:0,ride:o.ride||o.light||null,ea:Math.random(),sa:Math.random(),a:new THREE.Object3D(),on:true};

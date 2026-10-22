@@ -1,6 +1,6 @@
 // THE LOOKS: LOOKS keeps the player's name, colours, hair and body shape and puts them on the Walker.
 import {SHARED, THREE} from './003-shx.js';
-import {CLOCK, FORAGE, LOOKS, pos, st, UI, W3} from './003b-systems.js';
+import {CLOCK, FORAGE, LEVELS, LOOKS, pos, st, UI, W3} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {SAVE} from './005-save.js';
 import {QS, SHL, TILE} from './006-map-pre.js';
@@ -54,7 +54,7 @@ import {QS, SHL, TILE} from './006-map-pre.js';
   $('#lclose').onclick=()=>{ P.hidden=true; };
   LOOKS.open=()=>{ draw(); P.hidden=false; }; LOOKS.L=L;
   LOOKS.stats=(hp,st)=>{ if(P.hidden)return; $('#lhp').style.width=Math.round(hp*100)+'%'; $('#lst').style.width=Math.round(st*100)+'%'; };
-  const hit=new THREE.Mesh(new THREE.BoxGeometry(.8*TILE,2.2*TILE,.8*TILE),new THREE.MeshBasicMaterial({visible:false})); scene.add(hit);
+  const hit=new THREE.Mesh(new THREE.BoxGeometry(.8*TILE,2.2*TILE,.8*TILE),new THREE.MeshBasicMaterial({visible:false})); scene.add(LEVELS.own(hit,'*'));
   renderer.domElement.addEventListener('pointerdown',()=>{ hit.position.set(pos.x,SHARED.py+1.1*TILE,pos.z); hit.updateMatrixWorld(); },true);
   UI.thing({name:'YOU',ghost:1,obj:hit,reach:99,tall:2,act:()=>LOOKS.open()});
   W3.E=W3.pcs.map(()=>null); for(const [n,v] of Object.entries(MALE)){ const i=W3.idx(n); if(i>=0)W3.E[i]={s:v.slice(),o:[0,0,0],q:[0,0,0,1]}; }

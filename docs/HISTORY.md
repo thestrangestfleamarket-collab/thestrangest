@@ -4282,3 +4282,6 @@ Owner, of the stairs in the station and the black tunnel boxes seen from above: 
 
 ## 22 Oct 2026: start where you left off
 Owner: "the game is also still starting me on main street then taking me to last place i was logged out afterwards instead of just starting me where i started." The saved spot is now restored behind the loading screen, so you open where you were.
+
+## 22 Oct 2026: the subway tunnels follow the streets
+Owner: "the tunnels are real connected tunnels that follow the same path as the streets (around central park). so the play should be able to go into both tunnels"; "there should be two tunnels going each direction that loop around under the streets (remember the [][][][] 8 sections map)"; his pick of two mockups: "option 1" (the loop under the outside streets round all 8 sections). The station now runs east-west under Market St; two walkable, lamp-lit tunnels leave each end, east under Market St to Section C's edge and west then north under West St to Section B's edge, where the other sections will join them.

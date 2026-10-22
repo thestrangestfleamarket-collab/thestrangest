@@ -4253,6 +4253,7 @@ An item marked EDIBLE (item editor, shift+7) can now be eaten through the existi
 
 Dragging no longer turns or tilts the camera in play, in any view: right/middle/shift+drag do nothing, and third/first person no longer look round on drag. Left drag still moves the map in the overhead views; turn and tilt with Q/E, Z/X and the buttons. Drag still turns the view in the free camera (C) and the editors (gated by UI.camFree). Reverses the 17-19 Oct drag-to-turn, iso-spin and free-look decisions.
 - 21 Oct 2026, the apartment house all brick (owner: "you pick", after "entire building same red brick"): the stone base, window trim and cornice are brick too.
+- 21 Oct 2026, doors (owner, 23:10: "doors dont move, you just double click them to go in side or outside"): every building's door is gone through only by double-clicking it, outside to go in and inside to go out; walking into a door does nothing, and the fire escape is reached the same way.
 
 ## 22 Oct 2026: sellable wired to shops
 
@@ -4260,3 +4261,13 @@ An item marked SELLABLE (item editor, shift+7) now shows in the mushroom seller'
 
 ## 22 Oct 2026: the subway station remade after a photo
 Owner, with a photo of a grimy graffiti platform and its clay render: "I want to create a replica of this subway platform in the game. realistic textures, lighting, atmosphere, dynamic lighting, lights, shadows, textures, etc. as close to this as possible." The station is now an island platform between two tracks (the street's stair rises at its end, in a tiled enclosure), two rows of tiled columns, wooden back-to-back benches, hanging fluorescent tubes (each a real light; one flickers), a graffiti-covered train with lit marker lights, litter and puddles, and a green haze (ATMOSPHERE: STATION HAZE). Kept from Day 1: the passport machine and its drones, the arrival board, MARKET ST. Heights unchanged (station 2x, train 1.5x).
+## 22 Oct 2026: landscape patches follow the ground
+
+A ground patch (landscape editor, shift+9) is now subdivided a cell per tile and each vertex raycast down to the real ground, so a patch follows slopes and bumps instead of clipping as one flat sheet. Flat floors still read flat. (Freehand borders still later.)
+- 22 Oct 2026, the shops as blocks (owner: "can we do this for all buildings to save? all interiors could be off map and buildings can be blocks", "just do all", 21 Oct; "you pick, finish list", 22 Oct): the bar, museum, bank, theatre and playhouse are solid painted outsides; their insides are built only when you double-click the door, and you leave by the inside door.
+
+## 22 Oct 2026: landscape freehand borders
+
+The landscape editor (shift+9) now has a BORDER mode beside BOX: click points on the ground to draw a border around an area, FINISH to fill it with the chosen ground (a triangulated patch, conformed to the ground like a box). Fills the owner's original ask to "draw borders around areas". Patches are double-sided now so a border drawn either way shows.
+- 22 Oct 2026, the bodega's shop windows glow at night with the shelves showing through (owner: "you pick, finish list").
+- 22 Oct 2026, the bath house like the other shops (owner: "just do all", "you pick, finish list"): its door and windows are solid and painted; in and out only by double-clicking the door.

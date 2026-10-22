@@ -1703,8 +1703,8 @@ SHARED.BODB={};
   { const fw=SHARED.BOD.WALLS.find(w=>w.id==='front'), sx=B0.x0-SHARED.BOD.SB.x0, HO=fw.holes.map(h=>({...h,a0:h.a0+sx,a1:h.a1+sx})), NS={f:[0,1],b:[0,-1],w:[-1,0],e:[1,0]};
     const PAL=[[200,60,50],[60,110,190],[230,190,60],[80,150,80],[220,220,210],[190,110,60],[150,80,150]];
     const glimpse=(a,z)=>{ const i=Math.floor(a*24), sn=Math.abs(((i+z*.7)%22+22)%22-11)<1.6; if(z>84&&z<87)return [226,234,222,1];
-      if(z>16&&z<78){ const r=Math.floor((z-16)/16), zz=(z-16)%16; if(zz<2)return sn?[78,88,104]:[58,62,70]; if(zz<12&&hash(i>>1,r,317)<.78){ const c=PAL[Math.floor(hash(i>>1,r,319)*PAL.length)]; return [c[0]*.42+8,c[1]*.42+10,c[2]*.42+14]; } }
-      return sn?[70,84,104]:[23,28,36]; };
+      if(z>16&&z<78){ const r=Math.floor((z-16)/16), zz=(z-16)%16; if(zz<2)return sn?[118,112,100,1]:[92,86,76,1]; if(zz<12&&hash(i>>1,r,317)<.78){ const c=PAL[Math.floor(hash(i>>1,r,319)*PAL.length)]; return [c[0]*.62+20,c[1]*.62+18,c[2]*.62+12,1]; } }
+      return sn?[120,118,104,1]:[64,60,50,1]; };
     const paintB=(side,u,z)=>{ if(side==='f')for(const h of HO)if(u>h.a0&&u<h.a1&&z>h.z0&&z<h.z1){ const e=Math.min(u-h.a0,h.a1-u)*24; return e<2.4||h.z1-z<2.4||h.z0>0&&z-h.z0<2.4?SHARED.BOD.FRAME:glimpse(u-h.a0,z); }
       const [nx,ny]=NS[side]; return SHARED.BOD.facade(nx,ny,side==='w'?B0.x0:side==='e'?B0.x1:u,side==='f'?B0.y1:side==='b'?B0.y0:u,z,1,B0.h); };
     BLOCKS.make({x0:B0.x0,y0:B0.y0,x1:B0.x1,y1:B0.y1-.1,z0:0,z1:B0.h,kind:'K',px:24,paint:paintB}); }
@@ -1846,8 +1846,7 @@ SHARED.BODB={};
   SHARED.BODB.unbuild=()=>{ if(SHARED.BODB.SG)SHARED.BODB.SG.removeFromParent(); SHARED.BODB.SG=null; SHARED.BOD.goodsMesh=null; };
   { const SB=SHARED.BOD.SB, m0=(B0.x0+B0.x1)/2, mS=(SB.x0+SB.x1)/2, bx=(x0,y0,x1,y1)=>[Math.min(X(x0),X(x1)),Math.min(Z(y0),Z(y1)),Math.max(X(x0),X(x1)),Math.max(Z(y0),Z(y1))], wb=bx(SB.x0-.2,SB.y0-.2,SB.x1+.2,SB.y1+.2);
     ROOMS.off.bodega={name:'THE BODEGA',keep:true,box:{x0:wb[0],z0:wb[1],x1:wb[2],z1:wb[3],y0:-1,y1:Y(SB.h)},need:()=>LOAD(SHARED.BODB.build.chunk),build:SHARED.BODB.build,unbuild:SHARED.BODB.unbuild,
-      spawn:[X(mS),Z(SB.y1-1.3),0,Math.PI],out:[X(m0),Z(B0.y1+.7),0,0],door:[X(m0),Y(0),Z(B0.y1+.25)],exit:[X(mS),0,Z(SB.y1-.25)],exitName:'OUT TO THE STREET',
-      inAt:[...bx(m0-.6,B0.y1,m0+.6,B0.y1+.4),0],outAt:[...bx(mS-.7,SB.y1-.5,mS+.7,SB.y1),0]}; }
+      spawn:[X(mS),Z(SB.y1-1.3),0,Math.PI],out:[X(m0),Z(B0.y1+.7),0,0],door:[X(m0),Y(0),Z(B0.y1+.25)],exit:[X(mS),0,Z(SB.y1-.25)],exitName:'OUT TO THE STREET'}; }
 }
 { const {BF_KINDS,bfPic}=SHARED.BOD.STOREK.bf, PICS=new Map(), hash=SHARED.BOD.g.hash;
   const tex=(k,pose)=>{ '@later'; const key=k+':'+pose; let t=PICS.get(key); if(t)return t; const Q=bfPic(k,16,pose), c=document.createElement('canvas'); c.width=Q.w; c.height=Q.h; const g=c.getContext('2d'), im=g.createImageData(Q.w,Q.h);

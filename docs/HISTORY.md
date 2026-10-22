@@ -4255,6 +4255,9 @@ Dragging no longer turns or tilts the camera in play, in any view: right/middle/
 - 21 Oct 2026, the apartment house all brick (owner: "you pick", after "entire building same red brick"): the stone base, window trim and cornice are brick too.
 - 21 Oct 2026, doors (owner, 23:10: "doors dont move, you just double click them to go in side or outside"): every building's door is gone through only by double-clicking it, outside to go in and inside to go out; walking into a door does nothing, and the fire escape is reached the same way.
 
+## 22 Oct 2026: levels (what is drawn underground)
+
+Owner, of street buildings, plants and a box floating in the dark around the subway station: "this shouldnt be a patch for this room, this should be a solution for all unground levels and platforms, subway tunnels, etc" / "yes build it". Every place is a level (`LEVELS`, 129a): the street, the station with its tunnels, the dungeon. Only your level is drawn; levels meet only at connectors (the subway stairs, the castle stairs), and a connector is drawn only in the levels it stands in. Rule: a new underground place or platform registers its level (`LEVELS.of`) and its stairs (`LEVELS.ways`), never a height test.
 ## 22 Oct 2026: sellable wired to shops
 
 An item marked SELLABLE (item editor, shift+7) now shows in the mushroom seller's shop and sells for its VALUE — the same for every item of that kind (the shop's sell list and price read ITEMS.prop(id,'sellable') and 'value'). Third property to do something, after burnable and edible.

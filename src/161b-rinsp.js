@@ -1,6 +1,6 @@
 // THE RENDER INSPECTOR: RINSP, the panel showing what is drawn, its triangles, materials and cost.
 import {SHARED, THREE} from './003-shx.js';
-import {CULL, NPCS, pos, RINSP, ROOMS, UI, W3} from './003b-systems.js';
+import {CULL, LEVELS, NPCS, pos, RINSP, ROOMS, UI, W3} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {MAPG, STORE, TILE} from './006-map-pre.js';
 import {BATCH} from './008-batch.js';
@@ -30,7 +30,7 @@ Object.assign(RINSP,{on:false,sel:null,f:''}); window.RINSP=RINSP;
   const wbox=o=>{ if(o.isInstancedMesh){ if(!o.boundingBox)o.computeBoundingBox(); return BX.copy(o.boundingBox).applyMatrix4(o.matrixWorld); } const g=o.geometry; if(!g)return BX.makeEmpty(); if(!g.boundingBox)g.computeBoundingBox(); return BX.copy(g.boundingBox).applyMatrix4(o.matrixWorld); };
   const collect=full=>{ '@later'; names(); M4.multiplyMatrices(SHARED.cam.projectionMatrix,SHARED.cam.matrixWorldInverse); F.setFromProjectionMatrix(M4); P3.set(pos.x,SHARED.py,pos.z);
     const RB=ROOMS.boxes(), fg=scene.fog&&scene.fog.isFog?scene.fog:null, seen=new Set(), drawn=new Set(), rows=new Map(), progs=new Set(), lights=[];
-    const TH=(UI.things||[]).filter(th=>th.obj&&th.obj.visible&&(!th.obj.parent||th.obj.parent.visible)).map(th=>[th.name,th.obj.getWorldPosition(new THREE.Vector3()),th.near||th.reach||T]);
+    const TH=(UI.things||[]).filter(th=>th.obj&&th.obj.visible&&(!th.obj.parent||th.obj.parent.visible)&&LEVELS.drawn(th.obj)).map(th=>[th.name,th.obj.getWorldPosition(new THREE.Vector3()),th.near||th.reach||T]);
     scene.traverseVisible(o=>{ seen.add(o); if(o.isLight){ lights.push(o); return; } if(o.userData.rin||o.userData.cullOf||!(o.isMesh||o.isPoints||o.isLine||o.isSprite))return;
       const ms=mats(o); if(!ms.some(m=>m.visible)||!o.layers.test(SHARED.cam.layers))return; const R=CULL.M&&CULL.M.get(o); let tr=0, inV;
       if(R&&!R.off&&R.px.length){ inV=false; for(const p of R.px)if(F.intersectsObject(p)){ inV=true; tr+=tris(p); } } else { inV=o.isSprite||!o.geometry?true:F.intersectsObject(o); tr=tris(o); }
@@ -60,7 +60,7 @@ Object.assign(RINSP,{on:false,sel:null,f:''}); window.RINSP=RINSP;
         ms.map(m=>'<br>&nbsp;'+esc(m.type+(m.name?' "'+m.name+'"':'')+' · '+prog(m)+(m.customProgramCacheKey&&m.customProgramCacheKey()?' · key '+m.customProgramCacheKey().slice(0,60):'')+(m.transparent?' · transparent':''))+texs(m).map(t=>{ const [a,b,c]=tsz(t); return '<br>&nbsp;&nbsp;'+esc('texture '+a+'x'+b+' '+kb(c)); }).join('')).join('')+
         (r?'<br>&nbsp;'+esc('holds: '+r.objs.join(', ')):'')+'</div>'; }).join('')+(w.objs.length>6?'<div class="o">… '+(w.n-6)+' more</div>':''); };
   const mark=w=>{ '@later'; if(hl){ hl.removeFromParent(); hl.geometry.dispose(); hl.material.dispose(); hl=null; } if(!w)return; BU.makeEmpty(); for(const o of w.objs){ const b=wbox(o); if(!b.isEmpty())BU.union(b); } if(BU.isEmpty())return;
-    hl=new THREE.Box3Helper(BU.clone(),0xff3df0); hl.material.depthTest=false; hl.material.transparent=true; hl.renderOrder=9999; hl.frustumCulled=false; hl.layers.mask=SHARED.cam.layers.mask; hl.userData.rin=1; scene.add(hl); hlT=performance.now()+5000; };
+    hl=new THREE.Box3Helper(BU.clone(),0xff3df0); hl.material.depthTest=false; hl.material.transparent=true; hl.renderOrder=9999; hl.frustumCulled=false; hl.layers.mask=SHARED.cam.layers.mask; hl.userData.rin=1; scene.add(LEVELS.own(hl,'*')); hlT=performance.now()+5000; };
   const row=(w,i,h)=>'<tr data-i="'+i+'"'+(RINSP.sel===w.name?' class="s"':'')+'><td>'+esc(w.name)+(w.n>1?' <span class="d">×'+w.n+'</span>':'')+'</td><td>'+w.tris.toLocaleString()+'</td>'+
     (h?'<td>'+kb(w.geoB+w.texB)+'</td><td class="w">'+esc(w.why.join(', '))+'</td>':'<td>'+w.calls+'</td><td>'+(w.sh?'Y':'')+'</td><td>'+w.dist+'</td><td>'+(w.inView?'Y':'<b>N</b>')+'</td><td class="w">'+esc(w.why.join(', '))+(w.act?' <span class="a">USE: '+esc(w.act)+'</span>':'')+'</td>')+'</tr>';
   const draw=()=>{ '@later'; if(!el)return; const D=collect(n++%4===0), h=D.head, f=RINSP.f.toLowerCase(), ok=w=>!f||w.name.toLowerCase().includes(f)||w.why.join(' ').toLowerCase().includes(f), dr=D.drawn.filter(ok).slice(0,60), hd=D.hidden.filter(ok).slice(0,30);

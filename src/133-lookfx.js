@@ -1,6 +1,6 @@
 // THE LOOK EFFECTS: LFX's shading, ambient occlusion and wetness on the world, by weather and hour.
 import {SHARED, THREE} from './003-shx.js';
-import {CLOCK, LOOK, PARK, pos, ROOMS, WEEDS, WX} from './003b-systems.js';
+import {CLOCK, LEVELS, LOOK, PARK, pos, ROOMS, WEEDS, WX} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {LFX, OUT, SOL, SYS, TILE} from './006-map-pre.js';
 { const F=LFX.on, cl=v=>Math.max(0,Math.min(1,v));
@@ -33,7 +33,7 @@ import {LFX, OUT, SOL, SYS, TILE} from './006-map-pre.js';
     const lg=new THREE.BufferGeometry(), lp=new Float32Array(NL*3), lc=new Float32Array(NL*3), ls=[]; lg.setAttribute('position',new THREE.BufferAttribute(lp,3).setUsage(THREE.DynamicDrawUsage)); lg.setAttribute('color',new THREE.BufferAttribute(lc,3));
     const LEAVES=new THREE.Points(lg,new THREE.PointsMaterial({size:3,sizeAttenuation:false,vertexColors:true})); LEAVES.frustumCulled=false; scene.add(LEAVES);
     const mg=new THREE.BufferGeometry(), mp=new Float32Array(NM*3), ms=[]; mg.setAttribute('position',new THREE.BufferAttribute(mp,3).setUsage(THREE.DynamicDrawUsage));
-    const MOTES=new THREE.Points(mg,new THREE.PointsMaterial({size:1.5,sizeAttenuation:false,color:0xfff2c8,transparent:true,opacity:.7})); MOTES.frustumCulled=false; scene.add(MOTES);
+    const MOTES=new THREE.Points(mg,new THREE.PointsMaterial({size:1.5,sizeAttenuation:false,color:0xfff2c8,transparent:true,opacity:.7})); MOTES.frustumCulled=false; scene.add(LEVELS.own(MOTES,'*'));
     const LC=[[.42,.55,.18],[.62,.6,.2],[.78,.48,.16],[.6,.3,.12]]; for(let i=0;i<NL;i++){ ls.push({o:i%16,t:Math.random()*8,ph:Math.random()*6}); lc.set(LC[i%4],i*3); }
     for(let i=0;i<NM;i++)ms.push([(Math.random()-.5)*14*TILE,Math.random()*3*TILE,(Math.random()-.5)*14*TILE,Math.random()*6]);
     for(const o of [BIRDS,LEAVES,MOTES])OUT.add(o,'open');

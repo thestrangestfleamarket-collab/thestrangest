@@ -1,6 +1,7 @@
 // THE GAME'S SYSTEMS, DECLARED FIRST: every system another file uses before its own file runs is made here (empty, or its first value) and filled in its own file, so each file only reads names from files before it.
 import {THREE} from './003-shx.js';
 const ROOMS={lazy:{},off:{}},
+  LEVELS={of:{},ways:[],own:(o,id)=>{ o.userData.level=id; return o; }},
   UI={},
   ED={},
   pos=new THREE.Vector3(-2.2,0,3.2),
@@ -78,4 +79,4 @@ const ROOMS={lazy:{},off:{}},
   GTSAMP=[],
   IMK={},
   BOOKS={};
-export {AMB, BEHAV, BLAZE, BLK, BOAT, BOOKS, BROOK, BUGS, BWK, CITY, CIVIC, CLIP, CLOCK, CULL, DN, DRESS, DRM, DRONE, ED, EDITORS, FAR3, FEEL, FIGFX, FORAGE, GAMEED, GHOSTS, GTRH, GTSAMP, IMK, INTERIORS, INV, ITEMED, ITEMS, keys, LAND, LIGHTED, LINES, LITE, LIVES, LOOK, LOOKS, MAIL, MAPED, MUS, NPCS, ONLINE, PARK, PB, PERFX, PH, PNM, POND, pos, RAG, RINSP, ROOMS, SELFSH, SFX, SGM, SKY, SND, SNDED, st, STAGE, TRADE, UI, USE, VIT, vwV, W3, WALKERS, WE, WEEDS, WHERE, WIELD, wvV, WX, ZONES};
+export {AMB, BEHAV, BLAZE, BLK, BOAT, BOOKS, BROOK, BUGS, BWK, CITY, CIVIC, CLIP, CLOCK, CULL, DN, DRESS, DRM, DRONE, ED, EDITORS, FAR3, FEEL, FIGFX, FORAGE, GAMEED, GHOSTS, GTRH, GTSAMP, IMK, INTERIORS, INV, ITEMED, ITEMS, keys, LAND, LEVELS, LIGHTED, LINES, LITE, LIVES, LOOK, LOOKS, MAIL, MAPED, MUS, NPCS, ONLINE, PARK, PB, PERFX, PH, PNM, POND, pos, RAG, RINSP, ROOMS, SELFSH, SFX, SGM, SKY, SND, SNDED, st, STAGE, TRADE, UI, USE, VIT, vwV, W3, WALKERS, WE, WEEDS, WHERE, WIELD, wvV, WX, ZONES};

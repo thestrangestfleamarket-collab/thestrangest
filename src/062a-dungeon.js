@@ -1,6 +1,6 @@
 // THE DUNGEON: the dungeon under the castle, its rooms, stairs, torches and walls (closes its own builder).
 import {SHARED, THREE} from './003-shx.js';
-import {LITE, PH, pos, RAG, UI} from './003b-systems.js';
+import {LEVELS, LITE, PH, pos, RAG, UI} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {CASTLE, cutWalls, FADE, FIX, grab, MAPG, MODS, SOL, STN, TILE} from './006-map-pre.js';
 import {FLAME} from './007-fire.js';
@@ -51,7 +51,7 @@ await grab('dungeon',async()=>{});
       const mid=Y(-S.rise*2)+dy; quad([b,mid,z1],[a,mid,z1],[a,top,z1],[b,top,z1],ST2.map(v=>v*.6)); quad([b,bot,z1],[a,bot,z1],[a,mid,z1],[b,mid,z1],DK);
       for(const x of [S.x0-.2,S.x1]){ box(x,S.y0,0,x+.2,S.y1+.2,8,ST2); sol(x,S.y0,x+.2,S.y1+.2,8); } box(S.x0,S.y1,0,S.x1,S.y1+.2,8,ST2); sol(S.x0,S.y1,S.x1,S.y1+.2,8); }
     const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); geo.setAttribute('color',new THREE.Float32BufferAttribute(Cc,3)); geo.computeVertexNormals();
-    const sm=new THREE.Mesh(geo,MODS.castleStairMat); sm.receiveShadow=true; sm.castShadow=true; scene.add(sm);
+    const sm=new THREE.Mesh(geo,MODS.castleStairMat); sm.receiveShadow=true; sm.castShadow=true; scene.add(LEVELS.own(sm,'dungeon'));
     for(const [,b] of WB)sol(b.x0,b.y0,b.x1,b.y1,R.H);
     const LF=[], light=l=>{ const cm=Math.max(...l.c), Lt=new THREE.PointLight(new THREE.Color(l.c[0]/cm,l.c[1]/cm,l.c[2]/cm),22*cm*Math.min(1.2,l.r/5),l.r*TILE*1.4,1.6);
       Lt.position.set(X(l.x),Y(l.z)+dy,Z(l.y)); Lt.userData.i0=Lt.intensity; Lt.userData.grp=G; LITE.recs.push(Lt); M.lights.push(Lt); return Lt; };
@@ -71,6 +71,7 @@ await grab('dungeon',async()=>{});
     if(!m){ if(cur&&!busy)clear(); if(SHARED.LVL!=='down'){ const gx=p.x/TILE+72, gy=p.z/TILE-77; if(gx>=S.x0&&gx<S.x1&&gy>=S.y0&&gy<S.y1)go(1,'top'); } return; }
     if(m!==cur)return go(m,'load');
     const L=lay(cur), gx=iX(p.x), gy=iZ(p.z); if(tread(L.up,gx,gy))go(cur-1,'below'); else if(tread(L.dn,gx,gy))go(cur+1,'top'); };
+  LEVELS.of.dungeon={name:'THE DUNGEON',label:()=>'THE DUNGEON'+(cur?' — LEVEL '+cur:''),floor:'down',groups:['dungeon'],has:(x,z)=>lotAt(x,z)>0};
   MODS.dungeon={get B(){ return lot(cur||1); },ground,inside:(x,z)=>lotAt(x,z)>0,bound:(x,z)=>bnd(lotAt(x,z)||1),arrive:n=>lay(n).atUp,lay,hook:f=>HK.push(f),tick(){}};
   window.DUNGEON={get level(){ return cur; },go:n=>go(Math.max(0,Math.min(NL,n|0)),'top'),spawn:async n=>{ if(n&&n!==cur){ await go(n,'top'); } return MODS.skel(); },levels:NL};
   window.DUNDBG=()=>({level:cur,lv:SHARED.LVL,busy,lot:typeof pos!=='undefined'?lotAt(pos.x,pos.z):0,objs:mine?mine.objs.length:0,lights:mine?mine.lights.length:0,sol:mine?mine.sol.length:0,

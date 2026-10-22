@@ -1,6 +1,6 @@
 // THE WIELD: WIELD lets the player hold and swing a sword, a butterfly net or a bird net.
 import {SHARED, THREE} from './003-shx.js';
-import {FORAGE, pos, RAG, SFX, st, VIT, W3, WEEDS, WIELD} from './003b-systems.js';
+import {FORAGE, LEVELS, pos, RAG, SFX, st, VIT, W3, WEEDS, WIELD} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {SAVE} from './005-save.js';
 import {BF, QS, SYS, TILE} from './006-map-pre.js';
@@ -18,7 +18,7 @@ Object.assign(WIELD,{on:null}); window.WIELD=WIELD;
     net:()=>net(.2,0xc8c2b0,0xf4f0e4), bnet:()=>net(.3,0x5a4a3a,0xb8b4a8)}, MESH={};
   const N=8, TP=new Float32Array(N*2*3), TG=new THREE.BufferGeometry(), TI=[]; for(let i=0;i<N-1;i++){ const a=i*2; TI.push(a,a+1,a+2,a+1,a+3,a+2); }
   TG.setAttribute('position',new THREE.BufferAttribute(TP,3)); TG.setIndex(TI);
-  const trail=new THREE.Mesh(TG,new THREE.MeshBasicMaterial({color:0xf4f0e4,transparent:true,opacity:.55,side:THREE.DoubleSide,depthWrite:false})); trail.frustumCulled=false; trail.visible=false; scene.add(trail);
+  const trail=new THREE.Mesh(TG,new THREE.MeshBasicMaterial({color:0xf4f0e4,transparent:true,opacity:.55,side:THREE.DoubleSide,depthWrite:false})); trail.frustumCulled=false; trail.visible=false; scene.add(LEVELS.own(trail,'*'));
   const pts=[], M=new THREE.Matrix4(), IM=new THREE.Matrix4(), UP=new V3(0,1,0), rc=new THREE.Raycaster(), pl=new THREE.Plane(new V3(0,1,0),0), hit=new V3(), ms={x:-1,y:-1};
   const cur=new V3(0,-.3,1).normalize(), aim=new V3(), aim0=new V3(0,-.3,1).normalize(), sh=new V3(), head=new V3(), tip=new V3(), base=new V3(), ax=new V3(), bx2=new V3(), bz=new V3();
   let sw=null, side=1, spd=0, turning=false, cutT=0;

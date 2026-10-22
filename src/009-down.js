@@ -1,6 +1,6 @@
 // UNDER THE STREET: the water's shader, the station and platform under the street (grab('down')), the day's start and FADE.
 import {SHARED, THREE} from './003-shx.js';
-import {keys, LINES, pos, RAG, SFX, UI} from './003b-systems.js';
+import {keys, LEVELS, LINES, pos, RAG, SFX, UI} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {SAVE} from './005-save.js';
 import {cutWalls, FADE, FIX, grab, LAMPD, LAMPI, lamps, MAPG, MAPSTAIR, MODS, QS, SOL, STN, SYS, TILE, ZU} from './006-map-pre.js';
@@ -352,6 +352,7 @@ const SSUB=(()=>{ const W={};
   { const a=V(-1,-TE-1,0), b=V(XW+1,LEN+TE+1,0); BOUND={x0:Math.min(a[0],b[0]),x1:Math.max(a[0],b[0]),z0:Math.min(a[2],b[2]),z1:Math.max(a[2],b[2])}; }
   const TX=wx=>SL.XS-(wx-XC)/TILE, TY=wz=>(ZT-wz)/TILE, at=(x,y)=>{ const p=V(x,y,0); return {x:p[0],z:p[2]}; }, box=(x0,y0,x1,y1)=>{ const a=at(x0,y0), b=at(x1,y1); return {x0:Math.min(a.x,b.x),x1:Math.max(a.x,b.x),z0:Math.min(a.z,b.z),z1:Math.max(a.z,b.z)}; };
   const M=window.METRO=SHARED.METRO={V,Y,TX,TY,at,DY:Y(SZ),XC,ZB,SL,MACH:{x:MX+.28,y:MY+.35}};
+  LEVELS.of.station={name:'THE SUBWAY STATION',floor:'down',base:true,groups:['down'],ceil:Y(SZ+H2)};
   M.inside=(x,z)=>x>BOUND.x0&&x<BOUND.x1&&z>BOUND.z0&&z<BOUND.z1;
   M.ground=(x,z)=>{ const tx=TX(x), ty=TY(z); return Y(SZ+(tx>=P0&&tx<=P1?0:SL.fzAt(tx,ty))); };
   M.plat=at(8.2,16); M.foot=at(SL.XS,1.1); M.street={x:XC,z:(SM.y1+77)*TILE+1.4*TILE};

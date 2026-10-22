@@ -1,6 +1,6 @@
 // THE USE: USE lets the player sit on, switch, open and pick up the things around them.
 import {SHARED, THREE} from './003-shx.js';
-import {LITE, PARK, PERFX, pos, RAG, SFX, SND, st, UI, USE, W3} from './003b-systems.js';
+import {LEVELS, LITE, PARK, PERFX, pos, RAG, SFX, SND, st, UI, USE, W3} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {TILE, ZU} from './006-map-pre.js';
 import {OBJS} from './008-batch.js';
@@ -76,7 +76,7 @@ Object.assign(USE,{seat:null}); window.USE=USE;
     while(R.t<c.currentTime+.3){ const [s,len]=TUNE[R.n%TUNE.length], dur=len*.42; R.n++; if(s!=null)for(const [k,typ,amp] of [[0,'square',.5],[-12,'triangle',.8]]){ const os=c.createOscillator(), G=c.createGain(); os.type=typ; os.frequency.value=392*Math.pow(2,(s+k)/12);
         G.gain.setValueAtTime(amp,R.t); G.gain.setTargetAtTime(0,R.t+dur*.6,.04); os.connect(G).connect(USE.rg); os.start(R.t); os.stop(R.t+dur+.2); } R.t+=dur; } };
   const ray0=new THREE.Raycaster(); let MS=[], nO=-1;
-  const shown=m=>{ let q=m; while(q){ if(!q.visible)return false; q=q.parent; } return true; };
+  const shown=m=>{ let q=m; while(q){ if(!q.visible)return false; q=q.parent; } return LEVELS.drawn(m); };
   const cut=h=>{ const P=[...(renderer.clippingPlanes||[]),...(h.object.material.clippingPlanes||[])]; return P.some(pl=>pl.distanceToPoint(h.point)<0); };
   const goal=(o,k)=>{ '@later'; const b=box(o), c=b.getCenter(new V3()), hx=(b.max.x-b.min.x)/2, hz=(b.max.z-b.min.z)/2, th={name:(o.name||'').toUpperCase(),obj:new THREE.Object3D(),tall:b.max.y-b.min.y+.3*T};
     let at=[c.x,c.z], reach=Math.max(hx,hz)+.9*T;

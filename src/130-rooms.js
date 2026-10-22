@@ -1,6 +1,6 @@
 // ROOMS: which room you are in, roofs hidden when inside, and roofAt.
 import {SHARED, THREE} from './003-shx.js';
-import {BLK, CIVIC, CULL, DRM, DRONE, ED, LITE, LOOKS, MAPED, MUS, NPCS, PNM, pos, ROOMS, SGM, UI, W3} from './003b-systems.js';
+import {BLK, CIVIC, CULL, DRM, DRONE, ED, LEVELS, LITE, LOOKS, MAPED, MUS, NPCS, PNM, pos, ROOMS, SGM, UI, W3} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {cutWalls, FADE, FREE, MAPG, MODS, OUT, OVERHEAD, SEEN, STORE, SYS, TILE, ZU} from './006-map-pre.js';
 import {FLAME} from './007-fire.js';
@@ -18,7 +18,7 @@ ROOMS.part=(group,fn,make,cast=true)=>{ const n0=scene.children.length, t0=UI.th
 ROOMS.unpart=P=>{ if(!P)return; const out=(A,L)=>{ for(const a of L){ const i=A.indexOf(a); if(i>=0)A.splice(i,1); } };
   out(UI.things,P.things); out(cutWalls,P.cuts); out(LITE.recs,P.lights); LITE.t=0;
   for(const o of P.objs){ o.removeFromParent(); o.traverse(c=>{ if(c.geometry&&!c.geometry.userData.keep)c.geometry.dispose(); for(const q of c.material?[].concat(c.material):[]){ if(q.userData.keep)continue; if(q.map)q.map.dispose(); if(q.emissiveMap)q.emissiveMap.dispose(); q.dispose(); } }); } };
-ROOMS.roofAt=(x,y,z)=>{ const h=new THREE.Raycaster(new THREE.Vector3(x,y,z),new THREE.Vector3(0,1,0),0,12).intersectObjects(scene.children,true).find(i=>{ for(let q=i.object;q;q=q.parent)if(!q.visible)return false; return i.object.isMesh&&!i.object.isSkinnedMesh; }); return h?+h.distance.toFixed(2):null; };
+ROOMS.roofAt=(x,y,z)=>{ const h=new THREE.Raycaster(new THREE.Vector3(x,y,z),new THREE.Vector3(0,1,0),0,12).intersectObjects(scene.children,true).find(i=>{ for(let q=i.object;q;q=q.parent)if(!q.visible)return false; if(!LEVELS.drawn(i.object))return false; return i.object.isMesh&&!i.object.isSkinnedMesh; }); return h?+h.distance.toFixed(2):null; };
 { const V=THREE.Vector3, PL=[0,1,2,3,4,5].map(()=>new THREE.Plane()), m=.14*TILE; let RL=null;
   const NEAR=[new THREE.Plane(new V(0,-1,0),1e6),new THREE.Plane(new V(1,0,0),1e6),new THREE.Plane(new V(0,0,1),1e6)]; let NEARON=false, NEARIN=false;
   { const C=THREE.ShaderChunk, k='clipping_planes_fragment', a0='clipped = ( dot( vClipPosition, plane.xyz ) > plane.w ) && clipped;', a1='if ( clipped ) discard;';

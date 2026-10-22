@@ -1,6 +1,6 @@
 // THE WALKER'S BODY: pieces built from shapes (meshOf0: distance fields, tetrahedra, simplify), warmed before first use.
 import {SHARED, THREE} from './003-shx.js';
-import {CLOCK, W3} from './003b-systems.js';
+import {CLOCK, LEVELS, W3} from './003b-systems.js';
 import {PPU, scene} from './004-main.js';
 import {SAVE} from './005-save.js';
 import {QS, SHL, SYS} from './006-map-pre.js';
@@ -165,7 +165,7 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
       .replace('#include <opaque_fragment>','#include <opaque_fragment>\n if(uLv>1.5){ vec4 sp=uLVP*vec4(vWW,1.); vec3 q=sp.xyz/sp.w*0.5+0.5; if(q.x>0.&&q.x<1.&&q.y>0.&&q.y<1.&&q.z-0.006>texture2D(uSM,q.xy).r) gl_FragColor.rgb*=uSelf; }\n { float ld=max(dot(diffuseColor.rgb,vec3(.3,.5,.2)),.001), r=dot(gl_FragColor.rgb,vec3(.3,.5,.2))/ld, q=r<1.?max(uFl,floor(r*4.+.35)/4.):r; gl_FragColor.rgb=r<.02?diffuseColor.rgb*q:gl_FragColor.rgb*q/r; }'); };
   toon.customProgramCacheKey=()=>'w3toon'+NP; W3.flat=m.material; W3.toon=toon; m.receiveShadow=true;
   W3.group.add(m); W3.meshes.push(m); W3.mesh=m;
-  scene.add(W3.group);
+  scene.add(LEVELS.own(W3.group,'*'));
   const LIGHT=nrm(V(-0.55,0.75,0.5)), m4=new THREE.Matrix4();
   W3.SZ=1.2;
   { const HI=PCS.findIndex(P=>P.n==='head'), EYEL=new THREE.Vector3(); W3.eyeAt=out=>{ if(HI<0||!W3.mesh)return null; W3.mesh.updateWorldMatrix(true,false); return out.copy(EYEL.set(0,2,7)).applyMatrix4(W3.PM.value[HI]).applyMatrix4(W3.mesh.matrixWorld); }; }

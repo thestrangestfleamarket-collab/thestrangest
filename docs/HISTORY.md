@@ -4212,3 +4212,7 @@ The build bakes data/world-edits.json (empty for now) and the world editor appli
 ## 22 Oct 2026: the item model and editor (shift+7)
 
 A shared item-property model (ITEMS, 141d-items) and its editor (ITEMED): each item type carries properties shared by its kind (burnable, edible, stackable, pickup, sellable, weight, value). Baked from data/items.json (empty for now) and overlaid by browser edits; EXPORT writes items.json to ship. The home for schema-wide properties, as the rules require; not yet wired to fire/crafting — it defines what they will read. Replaces the shift+7 placeholder.
+
+## 22 Oct 2026: burnable wired to fire
+
+A fire now catches any loose thing whose item type is burnable — the fire system asks ITEMS.prop(name,'burnable') for every loose thing near a flame, the same way for all of them (BLAZE.burns; the loose system exposes GPH.loose). First property that does something: mark an item BURNS in the item editor (shift+7) and flames spread to it. Additive and guarded; it lights a flame on the thing, doesn't yet char or consume it.

@@ -32,7 +32,7 @@ ROOMS.roofAt=(x,y,z)=>{ const h=new THREE.Raycaster(new THREE.Vector3(x,y,z),new
     if(SHARED.BOD.GD){ const G=SHARED.BOD.GD, h=(G.dw||2.4)/2+.2, gb=box(SHARED.BOD.X,SHARED.BOD.Z,G.r,G.y0||-1,SHARED.BOD.Y(G.H)); gb.lz='bath'; gb.band=box(SHARED.BOD.X,SHARED.BOD.Z,[G.door[0]-h,G.door[1]-.3,G.door[0]+h,G.door[1]+.55],-1,0); RL.push(gb); }
     for(const R of STORE.rooms)if(R.walls){ if(R.dw&&R.B&&!R.band)R.band=sband(R); RL.push(R); }
     if(window.CIVIC&&CIVIC.tower){ const t=CIVIC.tower; RL.push({id:'civic',x0:t.x0,x1:t.x1,z0:t.z0,z1:t.z1,y0:t.y-1,y1:t.y+t.H}); }
-    for(const id in ROOMS.off){ const o=ROOMS.off[id]; o.b={...o.box,lz:id,off:id}; RL.push(o.b); offL(id); offThings(id); } };
+    for(const id in ROOMS.off){ const o=ROOMS.off[id]; o.bs=(o.rooms||[o.box]).map(r=>({...o.box,...r,lz:id,off:id})); o.b=o.bs[0]; RL.push(...o.bs); offL(id); offThings(id); } };
   ROOMS.boxes=()=>{ if(!RL)build(); return RL; };
   ROOMS.reset=()=>{ RL=null; if(IV.key){ IV.re=IV.key; leave(); } IV.C.clear(); SYS.run('roomsReset'); };
   const within=(b,x,z,e=0)=>x>b.x0-e&&x<b.x1+e&&z>b.z0-e&&z<b.z1+e;
@@ -42,7 +42,7 @@ ROOMS.roofAt=(x,y,z)=>{ const h=new THREE.Raycaster(new THREE.Vector3(x,y,z),new
         walk(scene); };
   const IV={key:null,b:null,want:null,re:null,busy:false,H:[],L:[],S:[],top:new Set(),nc:0,C:new Map()}; ROOMS.iv=IV;
   Object.assign(ROOMS.lazy,{bodega:{name:'THE BODEGA',go:()=>SHARED.BODB.build&&SHARED.BODB.build(),need:()=>LOAD(SHARED.BODB.build&&SHARED.BODB.build.chunk),done:false},bath:{name:'THE BATH HOUSE',go:()=>SHARED.BOD.GD&&SHARED.BOD.GD.build&&SHARED.BOD.GD.build(),need:()=>LOAD(SHARED.BOD.GD&&SHARED.BOD.GD.build&&SHARED.BOD.GD.build.chunk),done:false}});
-  // Insides off the map (ROOMS.off[id]: name, box, need, build -> ROOMS.part, spawn/out [x,z,y,heading], door/exit [x,y,z], inAt/outAt [x0,z0,x1,z1,y]): built on the way in, the street not drawn while you are in, dropped on the way out.
+  // Insides off the map (ROOMS.off[id]: name, box, need, build -> ROOMS.part, spawn/out [x,z,y,heading], door/exit [x,y,z], inAt/outAt [x0,z0,x1,z1,y], rooms [{x0,z0,x1,z1}] when the inside is several rooms): built on the way in, the street not drawn while you are in, dropped on the way out.
   const offL=id=>{ const o=ROOMS.off[id]; if(ROOMS.lazy[id])return ROOMS.lazy[id]; const L=ROOMS.lazy[id]={name:o.name,off:1,need:()=>o.need&&o.need(),go:()=>{ o.P=o.build(); L.done=true; },drop:()=>{ ROOMS.unpart(o.P); o.P=null; if(o.unbuild)o.unbuild(); },done:false}; return L; };
   for(const id in ROOMS.off)offL(id);
   const offThings=id=>{ const o=ROOMS.off[id]; if(o.th||!UI.thing)return; o.th=1; const hb=(p,name,act)=>{ const m=new THREE.Mesh(new THREE.BoxGeometry(1.3*TILE,2.4*TILE,.5*TILE),new THREE.MeshBasicMaterial({visible:false}));
@@ -50,14 +50,14 @@ ROOMS.roofAt=(x,y,z)=>{ const h=new THREE.Raycaster(new THREE.Vector3(x,y,z),new
     if(o.door)hb(o.door,o.name,()=>ROOMS.enter(id)); if(o.exit)hb(o.exit,o.exitName||'OUTSIDE',()=>ROOMS.exit(id)); };
   const offHide=on=>{ for(const k in MAPG)VIS.hide(MAPG[k],'off',on); };
   ROOMS.goIn=async(id,at)=>{ const o=ROOMS.off[id], L=offL(id); if(!RL)build(); if(!L.done){ await L.need(); if(!L.done)L.go(); } const s=at||o.spawn; UI.goTo(s[0],s[1],s[2],s[3]);
-    scene.updateMatrixWorld(); const w={key:kOf(o.b),b:o.b}; ROOMS.cur=o.b; IV.want=w; apply(w); o.arm=false; };
+    scene.updateMatrixWorld(); const bb=o.bs.find(b=>within(b,s[0],s[1]))||o.b, w={key:kOf(bb),b:bb}; ROOMS.cur=bb; IV.want=w; apply(w); o.arm=false; };
   ROOMS.goOut=id=>{ const o=ROOMS.off[id]; UI.goTo(o.out[0],o.out[1],o.out[2],o.out[3]); ROOMS.cur=null; IV.want=null; apply(null); o.arm=false; };
   const offRun=(id,txt,fn)=>{ if(!ROOMS.off[id]||FADE.busy||IV.busy)return; IV.busy=true; return FADE.run(txt,fn,{cut:true}).finally(()=>{ IV.busy=false; }); };
   ROOMS.enter=id=>offRun(id,ROOMS.lazy[id]&&ROOMS.lazy[id].done?'':'ENTERING '+ROOMS.off[id].name,()=>ROOMS.goIn(id));
-  ROOMS.exit=id=>ROOMS.off[id]&&IV.b===ROOMS.off[id].b?offRun(id,'',()=>ROOMS.goOut(id)):null;
+  ROOMS.exit=id=>ROOMS.off[id]&&IV.b&&IV.b.off===id?offRun(id,'',()=>ROOMS.goOut(id)):null;
   ROOMS.offIn=()=>IV.b&&IV.b.off||null;
   const inR=(r,e=.6*TILE)=>pos.x>Math.min(r[0],r[2])&&pos.x<Math.max(r[0],r[2])&&pos.z>Math.min(r[1],r[3])&&pos.z<Math.max(r[1],r[3])&&Math.abs(SHARED.py-(r[4]||0))<e;
-  const offWalk=()=>{ for(const id in ROOMS.off){ const o=ROOMS.off[id], r=IV.b===o.b?o.outAt:!IV.key?o.inAt:null; if(!r){ o.arm=false; continue; } const on=inR(r); if(on&&o.arm){ o.arm=false; (IV.b===o.b?ROOMS.exit:ROOMS.enter)(id); } else o.arm=!on; } };
+  const offWalk=()=>{ for(const id in ROOMS.off){ const o=ROOMS.off[id], r=IV.b&&IV.b.off===id?o.outAt:!IV.key?o.inAt:null; if(!r){ o.arm=false; continue; } const on=inR(r); if(on&&o.arm){ o.arm=false; (IV.b&&IV.b.off===id?ROOMS.exit:ROOMS.enter)(id); } else o.arm=!on; } };
   const kOf=b=>[b.x0,b.z0,b.x1,b.z1,b.y0].map(v=>(+v).toFixed(2)).join();
   const lazyOf=b=>{ if(!b||b.noBuild)return null; const L=b.lz&&ROOMS.lazy[b.lz]; if(L)return L.done?null:L; const S=b.id&&STORE.inside&&STORE.inside[b.id];
     return S&&!S.done?{name:/^THE /.test(S.name)?S.name:'THE '+S.name,S,go:()=>{ S.busy=false; STORE.inGo(b.id); },need:()=>STORE.need&&STORE.need()}:null; };

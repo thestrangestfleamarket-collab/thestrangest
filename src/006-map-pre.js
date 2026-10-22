@@ -80,7 +80,7 @@ const WESTX=LEVEL.streets.market.x0, EASTX=LEVEL.streets.market.x1, MAINX={w:46-
 const WID=31.5-MAINX.w-LEVEL.streets.west.x0, NORTHY=9+WID, NORTHX=LEVEL.park.y1-12.5-NORTHY;
 LAYOUT0.park.e=[LEVEL.park.x0-50+MAINX.w,0,LEVEL.park.x1-EASTX,0];
 const WB=LEVEL.block, BLOCK={back:WB.back,alley:WB.alley,row2:WB.backrow,prom:WB.walk,river:WB.river,x0:WB.x0,x1:WB.x1,lots:{},hudson:[WP.hudson.x0,WP.hudson.x1]};
-for(const k of ['play','bank','theatre','arcade','holo'])BLOCK.lots[k]=[WP[k].x0,WP[k].x1];
+for(const k of ['play','bank','theatre','arcade'])BLOCK.lots[k]=[WP[k].x0,WP[k].x1];
 const ROWID=LEVEL.places.map(p=>p.id), MAINROW=LEVEL.places.map(p=>[p.x0,p.x1]);
 const WROW={bar:{x0:LOTX(WP.bar.x0),x1:LOTX(WP.bar.x1)},mus:{x0:LOTX(WP.museum.x0),y0:-101,x1:LOTX(WP.museum.x1),y1:-80,h:210}};
 const RING={wx0:LEVEL.streets.west.x0,wx1:LEVEL.streets.west.x1,top:LEVEL.park.y1}; RING.wr0=RING.wx0+3.2; RING.wr1=RING.wx1-3.2; RING.wy1=RING.top+WID;

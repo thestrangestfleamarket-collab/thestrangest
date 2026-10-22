@@ -71,7 +71,7 @@ await grab('dungeon',async()=>{});
     if(!m){ if(cur&&!busy)clear(); if(SHARED.LVL!=='down'){ const gx=p.x/TILE+72, gy=p.z/TILE-77; if(gx>=S.x0&&gx<S.x1&&gy>=S.y0&&gy<S.y1)go(1,'top'); } return; }
     if(m!==cur)return go(m,'load');
     const L=lay(cur), gx=iX(p.x), gy=iZ(p.z); if(tread(L.up,gx,gy))go(cur-1,'below'); else if(tread(L.dn,gx,gy))go(cur+1,'top'); };
-  LEVELS.of.dungeon={name:'THE DUNGEON',label:()=>'THE DUNGEON'+(cur?' — LEVEL '+cur:''),floor:'down',groups:['dungeon'],has:(x,z)=>lotAt(x,z)>0};
+  LEVELS.of.dungeon={name:'THE DUNGEON',label:()=>'THE DUNGEON'+(cur?' — LEVEL '+cur:''),floor:'down',groups:['dungeon'],has:(x,z)=>lotAt(x,z)>0,ground,bound:(x,z)=>bnd(lotAt(x,z)||1)};
   MODS.dungeon={get B(){ return lot(cur||1); },ground,inside:(x,z)=>lotAt(x,z)>0,bound:(x,z)=>bnd(lotAt(x,z)||1),arrive:n=>lay(n).atUp,lay,hook:f=>HK.push(f),tick(){}};
   window.DUNGEON={get level(){ return cur; },go:n=>go(Math.max(0,Math.min(NL,n|0)),'top'),spawn:async n=>{ if(n&&n!==cur){ await go(n,'top'); } return MODS.skel(); },levels:NL};
   window.DUNDBG=()=>({level:cur,lv:SHARED.LVL,busy,lot:typeof pos!=='undefined'?lotAt(pos.x,pos.z):0,objs:mine?mine.objs.length:0,lights:mine?mine.lights.length:0,sol:mine?mine.sol.length:0,

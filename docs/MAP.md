@@ -157,7 +157,7 @@ Places built with `await grab(name, async()=>{...})` are one function each, ofte
 | `141-forage.js` | 27.5 | top level |  | 003: SHARED THREE; 003b: CITY CIVIC ED FORAGE INV ITEMS LINES LOOKS MAIL NPCS SFX UI VIT WE WEEDS pos st; 004: scene; 005: OWNED; 006: MAPG QS SYS TILE; 007: FLAME; 083a: MUSH; 101: GEMS |
 | `141b-fairy.js` | 3.5 | top level |  | 003: SHARED THREE; 003b: FORAGE PARK ROOMS UI WEEDS pos; 004: scene; 006: SOL SYS TILE |
 | `141c-fireview.js` | 5.2 | top level |  | 003: SHARED THREE; 003b: CLOCK FAR3 ROOMS SKY UI pos; 004: renderer scene; 006: BLDK FADE MISTE MODS STORE SYS TILE; 008: BATCH |
-| `141d-items.js` | 6.3 | top level |  | 003b: FORAGE ITEMED ITEMS; 005: OWNED |
+| `141d-items.js` | 6.9 | top level |  | 003b: FORAGE ITEMED ITEMS; 005: OWNED |
 | `142-fishing.js` | 14.5 | top level |  | 003: SHARED THREE; 003b: BOAT BOOKS CLOCK FORAGE INV SFX UI VIT W3 pos st; 004: scene; 006: FIX MAPG SOL SYS TILE ZU; 066: RIVER; 101: GEMS |
 | `142a-flora.js` | 15.7 | top level | FLORA (143 144b) | 003: SHARED THREE; 003b: DRESS PARK WEEDS; 006: CASTLE FIX MAPG SOL STORE TILE; 060: GCAVE; 060a: FOUNT; 081: STALL |
 | `143-bfly.js` | 7.6 | top level | BFLY (146a) | 003: SHARED THREE; 003b: CLOCK FORAGE MAIL PARK SFX UI W3 WEEDS WX pos; 004: scene; 006: BF SYS TILE; 142a: FLORA |

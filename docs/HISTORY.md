@@ -4316,3 +4316,8 @@ Owner: "remove all the neons signs for now", then "i just meant remove neon sign
 
 ## 22 Oct 2026: the alley gated and half as wide; the Hudson loads when you go in
 Owner: "the alley should be 50% as narrow and have a gate on both entrances on the central park to promanade path ... the alley should not load unless you go in there. for now its blocked off by gates, both alleys in both directions. (4 gate total) the hudson promanade also shouldnt load untli you go into it" (his loading-zones mockup, mockups/loading-zones.html). The alley is 3.5 wide (the back row moved up, the promenade wider); four iron gates close both alleys at both ends; the alley builds only when you're in it. The river and the fishing pier build the first time you walk down the path past the alley ("ENTERING THE HUDSON") and are drawn only while you're south of the front row.
+
+## 22 Oct 2026: a better character editor (Phase 2) — merchants sell, set in the editor
+Picks: a general shop for any merchant (the mushroom and tomato sellers keep their own); price = the item's shared VALUE, buy freely; bought goods use their item properties.
+
+The character editor's new JOB tab marks a character a shopkeeper and lists which item types it sells (from the shared ITEMS model, shift+7); price is each item's VALUE. Ships via characters.json (`trade.sells`). In game any such merchant is interactable (walk up / double-click) and opens a buy panel (`SHOPS`, 159b-shops): buying deducts your cash and drops the goods in your pack, where they behave by their item properties (edible → eat, sellable → resell) — all through the one inventory and cash the game already has. Rule: a merchant's goods are a character property in characters.json, resolved once by SHOPS for every merchant.

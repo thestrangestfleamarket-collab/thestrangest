@@ -19,7 +19,7 @@ const GT=(()=>{ const {V,add,sub,mul,nrm,cross,dot,rcone,ell,box,D}=RIG;
   const TW=0.08, hole=p=>Math.max(Math.hypot(p.x,p.y-SH)-SR,Math.abs(p.z+TW/2)-TW), inner=p=>Math.max(out2(p.x,p.y)+TW,p.z+TW,-p.z-dep(p.y)+TW);
   const brace=(p,a,b,w)=>rcone(p,V(a[0],a[1],-TW-w),V(b[0],b[1],-TW-w),w,w*0.8), BRACES=[[[0,SH-1.3],[-2.6,-3.6]],[[0,SH-1.3],[-1.3,-4.0]],[[0,SH-1.3],[0,-4.2]],[[0,SH-1.3],[1.3,-4.0]],[[0,SH-1.3],[2.6,-3.6]],[[-2.2,SH-2.2],[-3.4,-1.8]],[[2.2,SH-2.2],[3.4,-1.8]]];
   const bars=p=>Math.min(rcone(p,V(-4.2,SH+1.6,-TW-0.16),V(4.2,SH+1.6,-TW-0.16),0.16,0.16),rcone(p,V(-4.4,SH-1.75,-TW-0.16),V(4.4,SH-1.75,-TW-0.16),0.16,0.16),box(p,V(0,YB1-0.4,-1.3),V(1.7,0.9,1.25)));
-  function shape(p,solid){ let b=Math.max(out2(p.x,p.y)+0.15,p.z+0.15,-p.z-dep(p.y)+0.15)-0.15;
+  function shape(p,solid){ '@later'; let b=Math.max(out2(p.x,p.y)+0.15,p.z+0.15,-p.z-dep(p.y)+0.15)-0.15;
     if(!solid){ b=Math.max(b,-inner(p)); b=Math.max(b,-hole(p)); b=Math.min(b,bars(p)); for(const [a,c] of BRACES)b=Math.min(b,brace(p,a,c,0.12)); }
     const yn=Math.max(YB1-0.6,Math.min(S,p.y)), w=nw(yn);
     const fb=Math.max(Math.abs(p.x)-nw(Math.max(YF,Math.min(S,p.y))),box(p,V(0,(YF+S)/2,FB/2+0.02),V(9,(S-YF)/2,FB/2)));
@@ -29,7 +29,7 @@ const GT=(()=>{ const {V,add,sub,mul,nrm,cross,dot,rcone,ell,box,D}=RIG;
     let tn=1e9; for(const s of [1,-1])for(const k of [1.4,2.7,4.0])tn=Math.min(tn,rcone(p,V(s*hw,S+k,0.1-k*0.21),V(s*(hw+0.5),S+k,0.1-k*0.21),0.16,0.3));
     const br=box(p,V(0,-0.25,0.14),V(2.6,0.55,0.14)), tie=box(p,V(0,-0.62,0.2),V(1.45,0.2,0.2)), sd=box(p,V(0,0,0.36),V(1.35,0.05,0.1)), nut=box(p,V(0,S+0.08,0.2),V(nw(S),0.08,0.13));
     return Math.min(b,fb,nk,hd,tn,br,tie,sd,nut); }
-  function paint(p){ const top=p.z>-0.1&&p.z<0.12, r=Math.hypot(p.x,p.y-SH), o=out2(p.x,p.y);
+  function paint(p){ '@later'; const top=p.z>-0.1&&p.z<0.12, r=Math.hypot(p.x,p.y-SH), o=out2(p.x,p.y);
     if(p.y>S+0.16&&p.y<S+6)return Math.abs(p.x)>1.15?'tuner':p.z>0.1-(p.y-S)*0.21+0.15?'rose':'wood';
     if(Math.abs(p.y)<0.07&&p.z>0.26||p.y>S-0.02&&p.y<S+0.18&&p.z>0.15)return 'linen';
     if(p.z>0.04&&p.y>YF-0.02&&p.y<S&&Math.abs(p.x)<nw(p.y)+0.02)return 'rose';

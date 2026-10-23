@@ -30,7 +30,7 @@ const CAVERNS={hooks:[],day:()=>0}; window.CAVERNS=CAVERNS; MODS.waters=MODS.wat
     LITE.t=0; return m; };
   CAVERNS.make=C=>{ const B=C.lot, G=MAPG[C.id]; let M=null, busy=false;
     const inside=(x,z)=>{ const gx=iX(x), gy=iZ(z); return gx>B.x0&&gx<B.x1&&gy>B.y0&&gy<B.y1; }, ground=()=>dy+Y(.3), bound=()=>({x0:X(B.x0+.4),x1:X(B.x1-.4),z0:Z(B.y0+.4),z1:Z(B.y1-.4)}), SP={x:X(B.x0+2.6),z:Z((B.y0+B.y1)/2),h:Math.PI/2};
-    const clear=()=>{ if(!M)return; for(const o of M.objs){ G.remove(o); o.traverse(c=>{ if(c.geometry)c.geometry.dispose(); if(c.material)c.material.dispose(); }); }
+    const clear=()=>{ '@later'; if(!M)return; for(const o of M.objs){ G.remove(o); o.traverse(c=>{ if(c.geometry)c.geometry.dispose(); if(c.material)c.material.dispose(); }); }
       const out=(A,L)=>{ for(const a of L){ const i=A.indexOf(a); if(i>=0)A.splice(i,1); } }; out(SOL.down,M.sol); out(FIX.down,M.fix); out(LITE.recs,M.lights); out(UI.things,M.things); LITE.t=0; M=null; };
     const go=async(n,how)=>{ if(busy)return; busy=true; await FADE.run(n?(M?'':'ENTERING '+C.name):C.leaving,async()=>{
       if(n){ await LOAD('caverns'); if(!M)M=build(C,G); if(how!=='load'){ UI.goTo(SP.x,SP.z,'down'); SHARED.heading=SP.h; } SHARED.BOUND=bound(); }
@@ -51,7 +51,7 @@ const CAVERNS={hooks:[],day:()=>0}; window.CAVERNS=CAVERNS; MODS.waters=MODS.wat
   { let MO=null; const mouthAt=()=>{ const RB=RIVER.box; return {x:X(117.5),z:(RB.z0+RB.z1)/2}; };
     CAVERNS.make({id:'hudson',name:'THE HUDSON CAVERN',leaving:'UP TO THE RIVER',lot:{x0:1300,y0:-40,x1:1318,y1:-26},H:70,wet:true,murk:0x0a2a3a,wall:[60,72,86],floor:[40,56,70],gem:0x4ae0c8,exitName:'UP TO THE RIVER',
       lights:[[.5,.5,50,0x4a9ad0,12,10],[.8,.3,30,0x60e0c0,8,7]],
-      enter:api=>{ RIVER.onBuild.push(()=>{ const RB=RIVER.box, WU=T/.84, {x:mx,z:mz}=mouthAt(), by=RB.lv-RIVER.depthAt(mx,mz)*WU, g=new THREE.Group(); g.name='cavern-mouth';
+      enter:api=>{ RIVER.onBuild.push(()=>{ '@later'; const RB=RIVER.box, WU=T/.84, {x:mx,z:mz}=mouthAt(), by=RB.lv-RIVER.depthAt(mx,mz)*WU, g=new THREE.Group(); g.name='cavern-mouth';
         const rk=new THREE.MeshLambertMaterial({color:0x3a3f46}); for(let i=0;i<7;i++){ const a=i/7*Math.PI*2, r=new THREE.Mesh(new THREE.DodecahedronGeometry(.5,0),rk); r.position.set(mx+Math.cos(a)*1.5*T,by+.25*T,mz+Math.sin(a)*1.5*T); r.scale.set(T*(.7+.3*hs(i,1)),T*(.9+.5*hs(i,2)),T*(.7+.3*hs(i,3))); r.rotation.y=hs(i,4)*3; g.add(r); }
         const hole=new THREE.Mesh(new THREE.CircleGeometry(1.15*T,14),new THREE.MeshBasicMaterial({color:0x000000})); hole.rotation.x=-Math.PI/2; hole.position.set(mx,by+.04*T,mz); g.add(hole);
         const hb=new THREE.Mesh(new THREE.BoxGeometry(2.4*T,Y(34),2.4*T),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(mx,by+Y(17),mz); g.add(hb); scene.add(g); MO={x:mx,z:mz,y:by};

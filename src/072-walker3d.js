@@ -51,7 +51,7 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
     const tri=[]; for(let i=0;i<n;i+=3){ const a=cid[i],b=cid[i+1],c=cid[i+2]; if(a!==b&&b!==c&&a!==c)tri.push(a,b,c); }
     const out=new Float32Array(tri.length*6), om=[]; tri.forEach((c,i)=>{ const a=acc[c], l=Math.hypot(...a.nn)||1; for(let q=0;q<3;q++){ out[i*6+q]=a.p[q]/a.k; out[i*6+3+q]=a.nn[q]/l; } om.push(a.m); }); return {fit:out,mats:om}; }
   const around=(ps,m)=>{ const b=[1e9,-1e9,1e9,-1e9,1e9,-1e9]; for(const p of ps){ b[0]=Math.min(b[0],p.x-m); b[1]=Math.max(b[1],p.x+m); b[2]=Math.min(b[2],p.y-m); b[3]=Math.max(b[3],p.y+m); b[4]=Math.min(b[4],p.z-m); b[5]=Math.max(b[5],p.z+m); } return b; };
-  function liteShell(){ const J=rest.J, {V,add,sub,mul,ell,rcone,rbox,box}=R, P=[], put=(n,m,d,ps,mrg,st,cl)=>P.push({n,m,d,bb:around(ps,mrg),step:st,cell:cl});
+  function liteShell(){ '@later'; const J=rest.J, {V,add,sub,mul,ell,rcone,rbox,box}=R, P=[], put=(n,m,d,ps,mrg,st,cl)=>P.push({n,m,d,bb:around(ps,mrg),step:st,cell:cl});
     const sw=Math.abs(J.shoulderL.x)*0.72+2.2, hc=add(J.head,mul(sub(J.headTop,J.head),0.44)), hr=V(5.3,6.1,5.6), hhc=add(hc,V(0,0.9,-0.5));
     put('head','skin',p=>ell(p,hc,hr),[J.head,J.headTop],7,1.5,1.5);
     put('hair','hair',p=>Math.max(ell(p,hhc,V(hr.x+0.6,hr.y+0.5,hr.z+0.8)),(hc.y-2.0)-p.y,p.z-(hc.z+2.0)),[J.head,J.headTop],8,1.7,1.9);

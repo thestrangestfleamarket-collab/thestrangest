@@ -4392,6 +4392,8 @@ New worn layer (EQUIP, 146c): body-slot gear you WEAR from the pack, its granted
 Rule: gear is a schema-wide property (slot + grants on the shared item model), resolved once — held by WIELD, worn by EQUIP — never special-cased per item.
 First pass, still to do (owner's call): worn gear has no body mesh yet (the cloud coat's "real moving clouds", visible armour); the bear's coat-rack prop and its flowing-fur reshape (spikes → fur); the armourer uses the street knight toon, not the arcade's VR knight model.
 
+## 23 Oct 2026: you can see the gear you wear — plate armour and a coat of moving clouds
+Worn body gear now shows on the Walker, posed from the rig's joints each frame (a child of the body's group, the space WIELD already draws the held tool in). ARMOUR is the knight's faceted steel — a breastplate, two pauldrons, a gorget — so buying it makes you the plate knight. The CLOUD COAT is nine soft cloud puffs that drift around your shoulders while you float. Each shows only while its item is worn; the ability is unchanged (guard halves hits, float lifts you). No body mesh is baked — the gear is built once, the first time you wear something.
 ## 23 Oct 2026: one worn layer
 Owner: "fold GEAR into EQUIP then merge it". The goggles and the headlight are worn through EQUIP like the armour and the cloud coat: EQUIP now wears one thing a slot (body, head, eyes) and two new grants do the work — `light` (the headlight lights the caverns) and `sight` (goggles see further through the murk). What you wear stays on between visits. The scanner and extractor stay pack actions.
 

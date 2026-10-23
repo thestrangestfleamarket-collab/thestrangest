@@ -2,7 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {CLOCK, pos, ROOMS, st, UI} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {BLDK, FIX, grab, LOTX, LOTY, MODS, SOL, SYS, TILE, TURN, WP} from './006-map-pre.js';
+import {BLDK, FADE, FIX, grab, LOTX, LOTY, MODS, SOL, STORE, SYS, TILE, TURN, WP} from './006-map-pre.js';
 import {BATCH} from './008-batch.js';
 const APTS={EMPTY:true};
 await grab('apts',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Yr=SHARED.BOD.Y,
@@ -178,4 +178,42 @@ await grab('apts',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Yr=SHARED.BOD.
     const uid=JSON.parse(atob(s.access_token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/'))).sub, r=await fetch(SB+'/rest/v1/players?select=apt&id=eq.'+uid,{headers:{apikey:KEY,Authorization:'Bearer '+s.access_token}}); if(!r.ok)return; const a=await r.json(), n=a&&a[0]&&a[0].apt;
     if(n!=null&&String(n)!==APTS.num){ APTS.num=String(n); try{ localStorage.setItem('market-apt',APTS.num); }catch(e){} if(window.FIREV&&FIREV.setPlaque)FIREV.setPlaque(); } }catch(e){} };
   APTS.loadNum();
+  // --- THE REAL APARTMENT: built in place at its true floor in the house, so the live sky and city show through real open windows (owner, 23 Oct 2026) ---
+  { const RLV=Math.min(APTS.my,APTS.floors-2), RHZ=RZ+RLV*S, CH=S-4, WW=.82, sill=16, lint=CH-16;
+    let RG=null; APTS.inReal=false; APTS.RHZ=RHZ; const rsol=[];
+    const P3=(x,y,z)=>{ const p=XZ(x,y); return [p[0],Yr(RHZ+z),p[1]]; };
+    const ftex=(wPx,hPx,fn)=>faceTex(Math.max(1,Math.round(wPx)),Math.max(1,Math.round(hPx)),fn);
+    const woodP=(i,j)=>{ const pw=11, col=Math.floor(i/pw), off=(hash(col,2,3)*50)|0, row=j+off, n=hash(col,Math.floor(row/10),4); let k=.84+.18*n+.05*Math.sin(i*.4+col*1.3); if(i-col*pw<1)k*=.56; if((row%10)<1)k*=.8; return C(sh(hash(col,0,8)>.88?[122,74,42]:[150,96,56],k)); };
+    const brickP=(i,j)=>{ const bh=6,bw=13,crs=Math.floor(j/bh),x=i+(crs&1)*(bw/2),bi=Math.floor(x/bw),fy=j-crs*bh,fx=x-bi*bw; if(fy<1||fx<1)return C(sh([66,38,32],.7)); return C(sh([152,68,52],.8+.3*hash(bi,crs,5)+.05*(hash(bi,crs,9)-.5))); };
+    const plasterP=(i,j)=>{ const n=hash(Math.floor(i/4),Math.floor(j/4),7); return C(sh([226,218,200],.95+.11*n+(j<2?-.12:0))); };
+    const ceilP=(i,j)=>C(sh([74,66,58],.9+.1*hash(Math.floor(i/5),Math.floor(j/5),3)));
+    const steelP=()=>C([46,42,38]);
+    const wq=(ax,ay,bx,by,za,zb,fn)=>bq(P3(ax,ay,za),P3(bx,by,za),P3(bx,by,zb),P3(ax,ay,zb),ftex(Math.hypot(bx-ax,by-ay)*24,zb-za,fn),'A');
+    const wqAt=(yy,ax,az,bx,bz,fn)=>bq([XZ(ax,yy)[0],Yr(RHZ+az),XZ(ax,yy)[1]],[XZ(bx,yy)[0],Yr(RHZ+az),XZ(bx,yy)[1]],[XZ(bx,yy)[0],Yr(RHZ+bz),XZ(bx,yy)[1]],[XZ(ax,yy)[0],Yr(RHZ+bz),XZ(ax,yy)[1]],ftex(Math.abs(bx-ax)*24+2,Math.abs(bz-az)+2,fn),'A');
+    const SL=Math.round(CH*.14), LT=Math.round(CH*.87), WD=1.3;   // loft windows span ~73% of the wall height (owner: not floor-to-ceiling), wide
+    const buildReal=()=>{ if(RG)return; RG=new THREE.Group(); RG.name='apt-real'; RG.visible=false; scene.add(RG);
+      ROOMS.part(RG,()=>{
+        bq(P3(A.x0,A.y1,.2),P3(A.x1,A.y1,.2),P3(A.x1,A.y0,.2),P3(A.x0,A.y0,.2),ftex((A.x1-A.x0)*24,(A.y1-A.y0)*24,woodP),'A');
+        bq(P3(A.x0,A.y1,CH),P3(A.x1,A.y1,CH),P3(A.x1,A.y0,CH),P3(A.x0,A.y0,CH),ftex((A.x1-A.x0)*24,(A.y1-A.y0)*24,ceilP),'A');
+        for(const [wy,ny] of [[A.y0,1],[A.y1,-1]]){ const wins=[A.x0+FWU[0],A.x0+FWU[1]];
+          wq(A.x0,wy,A.x1,wy,0,SL,plasterP); wq(A.x0,wy,A.x1,wy,LT,CH,plasterP);
+          const edges=[A.x0]; for(const w of wins)edges.push(w-WD,w+WD); edges.push(A.x1);
+          for(let k=0;k<edges.length;k+=2)wq(edges[k],wy,edges[k+1],wy,SL,LT,plasterP);
+          for(const wx of wins){ const yo=wy+ny*.09;   // dark steel frame + a centre mullion, set just inside the opening
+            wqAt(yo,wx-WD,SL-1.5,wx-WD+.16,LT+1.5,steelP); wqAt(yo,wx+WD-.16,SL-1.5,wx+WD,LT+1.5,steelP);
+            wqAt(yo,wx-WD,SL-1.5,wx+WD,SL+1,steelP); wqAt(yo,wx-WD,LT-1,wx+WD,LT+1.5,steelP);
+            wqAt(yo,wx-.07,SL,wx+.07,LT,steelP); wqAt(yo,wx-WD,(SL+LT)/2-.8,wx+WD,(SL+LT)/2+.8,steelP); } }
+        wq(A.x0,A.y0,A.x0,A.y1,0,CH,brickP); wq(A.x1,A.y0,A.x1,A.y1,0,CH,brickP);
+        for(const [fx,fy,ci,ii] of [[(A.x0+A.x1)/2,(A.y0+A.y1)/2,0xffe4b8,6],[A.x0+FWU[0],A.y0+1.4,0xe6edff,7],[A.x0+FWU[1],A.y1-1.4,0xe6edff,7]]){ const p=XZ(fx,fy); const L=new THREE.PointLight(ci,ii,13*TILE,1.3); L.position.set(p[0],Yr(RHZ+CH-12),p[1]); scene.add(L); }
+        scene.add(new THREE.HemisphereLight(0xdbe6ff,0x6a5a46,1.25));   // soft daylight fill so the room isn't cave-dark
+      },MKA);
+      for(const [x0,y0,x1,y1] of [[A.x0,A.y0,A.x1,A.y0],[A.x0,A.y1,A.x1,A.y1],[A.x0,A.y0,A.x0,A.y1],[A.x1,A.y0,A.x1,A.y1]])rsol.push(tbox4(x0-.1,y0-.1,x1+.1,y1+.1)); };
+    const showBlock=v=>{ for(const me of APTS.meshes)me.visible=v; };
+    APTS.enterReal=async()=>{ await FADE.run('YOUR APARTMENT',async()=>{ buildReal(); RG.visible=true; showBlock(false); APTS.inReal=true;
+        for(const r of rsol)SOL.up.push(r); const c=XZ((A.x0+A.x1)/2,A.y1-1.4); UI.goTo(c[0],c[1],Yr(RHZ+6)); SHARED.heading=0; },{hold:200}); };
+    APTS.exitReal=async()=>{ await FADE.run('OUT TO THE STREET',async()=>{ if(RG)RG.visible=false; showBlock(true); APTS.inReal=false;
+        for(const r of rsol){ const i=SOL.up.indexOf(r); if(i>=0)SOL.up.splice(i,1); } const d=XZ(m,A.y1+.7); UI.goTo(d[0],d[1],Yr(1)); },{hold:200}); };
+    const sg0=STORE.stackGround; STORE.stackGround=(x,z)=>{ if(APTS.inReal){ const l=loc(x,z); if(l[0]>A.x0-.3&&l[0]<A.x1+.3&&l[1]>A.y0-.3&&l[1]<A.y1+.3)return Yr(RHZ); } return sg0?sg0(x,z):null; };
+    window.ENTERAPT=()=>APTS.enterReal(); window.EXITAPT=()=>APTS.exitReal();
+    APTS.REALDBG=()=>({inReal:APTS.inReal,built:!!RG,rhz:RHZ,floorY:+Yr(RHZ).toFixed(2)}); }
   MODS.apts=APTS; });

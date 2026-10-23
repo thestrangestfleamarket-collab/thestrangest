@@ -3,6 +3,7 @@ import {THREE} from './003-shx.js';
 import {CHARP, CINEMA, EQUIP, FORAGE, INV, ITEMS, LOOKS, UI, VIT, W3, WE, WIELD} from './003b-systems.js';
 import {renderer} from './004-main.js';
 { const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+  const CLOG=__CHANGELOG__;   // [date, summary] of every HISTORY update, newest first; baked by build.py
   const SLOTS=[['head','HEAD'],['eyes','EYES'],['body','BODY'],['hand','HAND']];
   const name=id=>(FORAGE.NM&&FORAGE.NM[id])||id, short=id=>{ const n=name(id); return n.length>11?n.slice(0,10)+'…':n; };
   const slotOf=id=>ITEMS&&ITEMS.prop?ITEMS.prop(id,'slot'):null, holdable=id=>slotOf(id)==='hand'||(WIELD.LIST&&WIELD.LIST.includes(id));
@@ -35,8 +36,12 @@ import {renderer} from './004-main.js';
     el.querySelector('#cpbtns').innerHTML=B.map((b,i)=>`<button class="cp-btn${b[3]?' cp-adm':''}" data-i="${i}">${b[0]}<span class="cp-tag">${b[1]}</span></button>`).join(''); el._btns=B; };
   const openPack=t=>{ if(UI.menuOpen)UI.toggleMenu(); if(FORAGE.PACK){ if(!FORAGE.PACK.open)FORAGE.PACK.toggle(t); else { FORAGE.PACK.tab=t; FORAGE.PACK.draw(); } } };
   const logout=()=>{ if(!confirm('Log out of The Strangest Flea Market?'))return; try{ document.cookie='tsfm-pass=; path=/; max-age=0; samesite=strict'; }catch(e){} try{ localStorage.removeItem('sb-jvcetttmqseoteidfggn-auth-token'); }catch(e){} location.replace('/'); };
-  let ap=null; const adminOpen=()=>{ if(UI.menuOpen)UI.toggleMenu(); if(!ap){ ap=document.createElement('div'); ap.id='cpadmin'; ap.hidden=true; ap.style.cssText='position:fixed;left:50%;top:14%;transform:translateX(-50%);z-index:21;width:min(420px,92vw);padding:16px 18px;font:11px Silkscreen,monospace;letter-spacing:.4px;color:#d8dae2;background:#0b0d13f2;border:2px solid #7a3524;zoom:var(--uiz,1)';
-      ap.innerHTML='<div style="color:#e0633f;font:12px Silkscreen,monospace;letter-spacing:.14em;margin-bottom:10px">ADMIN</div><div style="color:#9b9584;line-height:1.6;margin-bottom:12px">Admin tools live here. More arrive as they are built.</div><button class="cp-btn cp-adm" id="cpaq" style="width:100%">BUG / REPORT QUEUE</button>';
+  let ap=null; const adminOpen=()=>{ if(UI.menuOpen)UI.toggleMenu(); if(!ap){ ap=document.createElement('div'); ap.id='cpadmin'; ap.hidden=true; ap.style.cssText='position:fixed;left:50%;top:10%;transform:translateX(-50%);z-index:21;width:min(460px,92vw);max-height:84vh;overflow:auto;padding:16px 18px;font:11px Silkscreen,monospace;letter-spacing:.4px;color:#d8dae2;background:#0b0d13f2;border:2px solid #7a3524;zoom:var(--uiz,1)';
+      ap.innerHTML=`<div style="color:#e0633f;font:12px Silkscreen,monospace;letter-spacing:.14em;margin-bottom:10px">ADMIN</div>
+        <button class="cp-btn cp-adm" id="cpaq" style="width:100%;margin-bottom:14px">BUG / REPORT QUEUE</button>
+        <div style="color:#f2c14e;letter-spacing:.1em;margin-bottom:6px">GAME LOG</div>
+        <div style="color:#9b9584;margin-bottom:8px">every update, newest first — ${CLOG.length}</div>
+        <ul style="margin:0;padding-left:16px;max-height:52vh;overflow:auto;line-height:1.55">${CLOG.map(([d,t])=>`<li style="margin-bottom:5px"><b style="color:#f2c14e">${esc(d)}</b> — ${esc(t)}</li>`).join('')}</ul>`;
       document.body.appendChild(ap); ap.addEventListener('keydown',e=>e.stopPropagation()); ap.querySelector('#cpaq').onclick=()=>{ ap.hidden=true; UI.menuTab('bug'); }; }
     ap.hidden=false; };
 
@@ -58,7 +63,7 @@ import {renderer} from './004-main.js';
 
   Object.assign(CHARP,{ show:host=>{ build(host); btns(); refresh(); if(!raf)raf=requestAnimationFrame(loop);
       if(!isAdmin&&CINEMA.isAdmin)CINEMA.isAdmin().then(a=>{ if(a){ isAdmin=true; if(el&&UI.menuOpen)btns(); } }); },
-    hide:()=>{ if(raf){ cancelAnimationFrame(raf); raf=0; } } });
+    hide:()=>{ if(raf){ cancelAnimationFrame(raf); raf=0; } }, admin:adminOpen, log:CLOG }); window.CHARP=CHARP;
 
   const css=document.createElement('style'); css.textContent=`
   #dhome .cp-wrap{display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start}

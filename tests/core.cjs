@@ -71,7 +71,9 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
       o.charp = (() => { const U = window.__UI; if (!U || typeof U.toggleMenu !== 'function') return { ok: false };
         U.toggleMenu(); const home = document.querySelector('#dhome'), tabs = document.querySelector('#menu .tabs');
         const built = !!(home && home.querySelector('#cpav') && home.querySelector('#cpbtns button')), tabsHidden = !!(tabs && tabs.style.display === 'none'), open = U.menuOpen === true;
-        U.toggleMenu(); return { ok: true, open, built, tabsHidden, closed: U.menuOpen === false }; })();
+        U.toggleMenu();
+        let log = 0; if (window.CHARP && typeof CHARP.admin === 'function') { CHARP.admin(); const ap = document.querySelector('#cpadmin'); log = ap ? ap.querySelectorAll('ul li').length : 0; if (ap) ap.hidden = true; }
+        return { ok: true, open, built, tabsHidden, closed: U.menuOpen === false, log }; })();
       return o;
     });
     for (const p of ['dress', 'ring', 'sky', 'life', 'vitals', 'rooms', 'shadow', 'weedsAdd', 'roomsReset']) ok(r.phases.includes(p), 'SYS step "' + p + '" has systems');
@@ -104,7 +106,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
     ok(r.rack.ok && r.rack.pinned && r.rack.near && r.rack.free && r.rack.thing && r.rack.drawn && r.rack.rackBy, 'the bear merchant is pinned on free ground beside the nature merchant, his coat rack beside him and usable: ' + JSON.stringify(r.rack));
     ok(r.knight.ok && r.knight.street && r.knight.bound && r.knight.borrowed && r.knight.back, 'the plate knight walks the street as THE ARMOURER, is a shop, and comes back after the holodeck borrows him: ' + JSON.stringify(r.knight));
     ok(r.equip.ok && r.equip.slots && r.equip.d0 && r.equip.guard && r.equip.float && r.equip.off, 'EQUIP wears body gear and resolves its grant (guard softens blows, float lifts), one off at a time: ' + JSON.stringify(r.equip));
-    ok(r.charp.ok && r.charp.open && r.charp.built && r.charp.tabsHidden && r.charp.closed, 'the character page is the menu home (ESC): avatar + buttons built, the old tabs hidden, and it opens and closes: ' + JSON.stringify(r.charp));
+    ok(r.charp.ok && r.charp.open && r.charp.built && r.charp.tabsHidden && r.charp.closed && r.charp.log >= 50, 'the character page is the menu home (ESC): avatar + buttons built, the old tabs hidden, opens and closes, and the admin menu game log is baked from HISTORY: ' + JSON.stringify(r.charp));
   }
   ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.slice(0, 3).join(' | ') : ''));
   await b.close();

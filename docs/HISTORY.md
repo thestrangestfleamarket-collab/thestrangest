@@ -4478,3 +4478,7 @@ Owner: "i want to add multiplayer ... look for best, free options. work with sup
 ## 23 Oct 2026: the owner's TENANTS panel
 
 Owner: "how can i manage users without having to use supabase SQL editor?", then picked: "see all user details, send message, edit everything", make invite codes, see codes and who used them, see all players, remove or ban; messages live, as a letter waiting next login, to everyone, and by real email; "panel first, move data later" (cash, inventory, furniture and looks still live in each player's browser, so the panel can't edit them yet). TENANTS is a menu tab only owners (the `admins` table) see; letters show when a player comes in. Email goes out through Resend once its key is set (Cloudflare's own email sending needs the paid plan).
+
+## 23 Oct 2026: the game log in the admin menu
+
+Owner: "lets add a game log that shows a log of all the updates done in game. list bulleted, summary. in admin menu." The admin menu (ESC → ADMIN, admins only) now shows GAME LOG: every update bulleted, newest first, each with its date and summary. It is built from this file's dated `## ` headers at build time (`__CHANGELOG__` in `build.py`), so every entry here appears there — one source of truth, no second list to keep.

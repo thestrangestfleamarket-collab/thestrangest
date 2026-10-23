@@ -4451,3 +4451,11 @@ Owner: "when you take your sword off it glitches and stays in same spot you left
 
 Owner: "simple bbs they can order things from bodega or catalog. catalog lists basic furniture for apartment. bodega as essential needs. all delivery ... dropped off by drone on front fire escape" (drone drops on the fire escape and you carry it in; ordered furniture auto-places).
 The 1980s computer in your apartment opens THE MARKET BBS (green terminal): THE BODEGA (essentials) and CATALOG (basic furniture), prices from the item catalog, paid from `INV.cash`. Ordering sends the drone to your front fire escape with a parcel; double-click it to bring it in — furniture places itself in an open spot and is kept (`OWNED` `apt-furn`), bodega items are flavour for now. Revives the dormant drone (146-drone) onto the open-plan apartment; the old roof-box delivery and drone cam are gone (`APTS.put` lets the drone reuse the apartment's own placement).
+
+## 23 Oct 2026: no more dust in the air
+
+Owner: "remove the dust from air completely." The floating motes are gone everywhere: the look's air motes (`133-lookfx` MOTES, dropped), the sun-shaft dust (`134d-shafts`, `dk=0`; the sun beams stay), and the dungeon/store "dust in the air" prop (drawn nothing now). The ATMOSPHERE editor's DUST IN THE AIR slider is removed with it.
+
+## 23 Oct 2026: a live day-night cycle and the sun's rays
+
+Owner: "i want to sunrays to come from the suns locations, and the sun should rise and set like normal time, sky shoudl change to colors of sunset/sunrise... the rays should always be shining during day all the way down from sun, around 10-15 rays on average, ranges in sizes. they only move with sun, very slow. dont invent new systems... plug into current system." He chose a full live cycle over the pinned looks, and "just build your best" over ray mockups. The clock now runs (LIVE is the new default look in ATMOSPHERE); the sky, sun and stars already arced by the hour, so LIVE lets that show and the picked looks (DAY/GOLDEN/SOFT DAY/NIGHT) stay as fixed overrides. Rays: 10–15 of them, each a different width, fan from the sun and fade out, all through the day, turning slowly with it. `?hour=` and `?look=` still pin the time (tests stay fixed). Day is about 24 minutes.

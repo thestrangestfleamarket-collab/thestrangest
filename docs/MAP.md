@@ -65,7 +65,7 @@ Places built with `await grab(name, async()=>{...})` are one function each, ofte
 | `062-castle.js` | 6.5 | top level, opens grab(castle) | castleMat (062a), gboxS (062a) | 003: SHARED THREE; 003b: PARK pos; 004: scene; 006: CASTLE FIX MODS SOL STN TILE cutWalls grab lamps; 008: BATCH OBJ |
 | `062a-dungeon.js` | 10.0 | top level, opens grab(dungeon) |  | 003: SHARED THREE; 003b: LEVELS LITE PH RAG UI pos; 004: scene; 006: CASTLE FADE FIX MAPG MODS SOL STN TILE cutWalls grab; 007: FLAME; 008: BATCH; 062: castleMat gboxS |
 | `063-tower.js` | 5.7 | top level | GTOWER (085 094) | 003: SHARED THREE; 003b: PARK; 006: FIX LEVEL MAPG SOL TILE; 008: BATCH OBJ; 060: GCAVE |
-| `064-map-post.js` | 10.7 | top level, opens grab(stairs) | HEMI (094 129 131 132 134b), MAPLV (075) | 003: SHARED THREE; 003b: LEVELS LITE NPCS PARK ROOMS pos; 004: scene; 006: CASTLE FIX LAY MAPG MAPSTAIR MODS RING SEEN SHL SOL STORE SYS TILE ZU grab lamps; 060a: FOUNT |
+| `064-map-post.js` | 10.9 | top level, opens grab(stairs) | HEMI (094 129 131 132 134b), MAPLV (075) | 003: SHARED THREE; 003b: LEVELS LITE NPCS PARK ROOMS pos; 004: scene; 006: CASTLE FIX LAY MAPG MAPSTAIR MODS RING SEEN SHL SOL STORE SYS TILE ZU grab lamps; 060a: FOUNT |
 | `065-ring.js` | 1.4 | top level | RINGX (075 076 134 134a 140) | 003: SHARED; 003b: PARK; 004: scene; 006: FIX MISTB MISTE MODS PFAR RING SOL TILE |
 | `066-river.js` | 44.6 | top level | RIVER (066a 075 094 142) | 003: SHARED THREE; 003b: CLOCK LITE ROOMS SFX SKY UI pos; 004: scene; 005: SAVE; 006: BLOCK FADE FIX MODS OUT RING SOL STORE SYS TILE ZU |
 | `066a-caverns.js` | 12.7 | top level, opens grab(gemcave) | CAVERNS (146c) | 003: SHARED THREE; 003b: EQUIP FORAGE LEVELS LITE PARK UI pos st; 004: scene; 006: FADE FIX MAPG MODS SOL STN SYS TILE grab; 060: GCAVE; 066: RIVER |
@@ -105,7 +105,7 @@ Places built with `await grab(name, async()=>{...})` are one function each, ofte
 | `091-sfx.js` | 9.1 | top level | SOUND (094 100 110) | 003: SHARED THREE; 003b: SFX SND USE pos; 005: SAVE; 006: QS TILE |
 | `092-lines.js` | 4.6 | top level |  | 003: SHARED THREE; 003b: CLOCK LEVELS LINES LOOKS SFX; 004: renderer; 005: SAVE; 006: TILE |
 | `093-ambience.js` | 3.3 | top level |  | 003: SHARED; 003b: AMB CLOCK NPCS ROOMS SFX WX pos; 005: SAVE; 006: TILE; 060a: FOUNT |
-| `094-ui.js` | 47.4 | top level |  | 003: SHARED THREE; 003b: AMB BLK BUGS DN ED EDITORS FEEL FORAGE GAMEED LAND LEVELS LINES LOOK LOOKS MAPED MUS NPCS PARK PB RINSP ROOMS SFX SNDED UI USE VIT W3 WE WIELD keys pos st; 004: OCAM PCAM PPU RES RESL RESMAX RH RW SCL ZMAX art pxS renderer resize scene vpu; 005: SAVE; 006: ASTEP BLDK CASTLE CEL MAPG MAPSTAIR MODS QS RING STORE TILE; 060: GCAVE; 060a: FOUNT; 063: GTOWER; 064: HEMI; 066: RIVER; 072: OUTL; 075: PMAX PMIN VIEW0 clampP disp gplane hit marker ray; 091: SOUND |
+| `094-ui.js` | 47.7 | top level |  | 003: SHARED THREE; 003b: AMB BLK BUGS DN ED EDITORS FEEL FORAGE GAMEED LAND LEVELS LINES LOOK LOOKS MAPED MUS NPCS PARK PB RINSP ROOMS SFX SNDED UI USE VIT W3 WE WIELD keys pos st; 004: OCAM PCAM PPU RES RESL RESMAX RH RW SCL ZMAX art pxS renderer resize scene vpu; 005: SAVE; 006: ASTEP BLDK CASTLE CEL MAPG MAPSTAIR MODS QS RING STORE TILE; 060: GCAVE; 060a: FOUNT; 063: GTOWER; 064: HEMI; 066: RIVER; 072: OUTL; 075: PMAX PMIN VIEW0 clampP disp gplane hit marker ray; 091: SOUND |
 | `095-sndedit.js` | 4.6 | top level |  | 003b: SFX SNDED |
 | `096-mapedit.js` | 48.6 | top level |  | 003: SHARED THREE; 003b: BLK GAMEED MAPED NPCS PARK W3 keys pos; 004: renderer; 006: BLDK BLOCK CASTLE FADE LEVEL MAPSTAIR MODS PARKCAVE PARKTOWER RING STORE TILE WP WROW; 060a: FOUNT |
 | `096b-charedit.js` | 13.4 | top level |  | 003: SHARED; 003b: CHARED CHARS FORAGE GAMEED ITEMS MAPED NPCS SHOPS keys pos; 006: FADE TILE |
@@ -144,7 +144,7 @@ Places built with `await grab(name, async()=>{...})` are one function each, ofte
 | `128-bandstand.js` | 1.5 | top level |  | 003b: DRM MUS NPCS PNM SGM STAGE pos; 006: AWAY MAPG QS STORE; 106: GTA; 114: PNA; 119: IMX; 123: VOX |
 | `129-clock.js` | 8.5 | top level |  | 003: SHARED THREE; 003b: CLOCK NPCS ROOMS W3 pos; 004: renderer scene; 006: QS RING TILE; 009: WATER; 064: HEMI |
 | `129a-vis.js` | 3.6 | top level | VIS (130 161 162) | 003: SHARED; 003b: LEVELS PARK ROOMS ZONES pos; 004: scene; 006: TILE |
-| `130-rooms.js` | 16.5 | top level |  | 003: SHARED THREE; 003b: BLK CIVIC CULL DRM DRONE ED LEVELS LITE LOOKS MAPED MUS NPCS PNM ROOMS SGM UI W3 pos; 004: renderer scene; 006: FADE FREE MAPG MODS OUT OVERHEAD SEEN STORE SYS TILE ZU cutWalls; 007: FLAME; 008: BATCH; 009: WATER; 129a: VIS |
+| `130-rooms.js` | 16.9 | top level |  | 003: SHARED THREE; 003b: BLK CIVIC CULL DRM DRONE ED LEVELS LITE LOOKS MAPED MUS NPCS PNM ROOMS SGM UI W3 pos; 004: renderer scene; 006: FADE FREE MAPG MODS OUT OVERHEAD SEEN STORE SYS TILE ZU cutWalls; 007: FLAME; 008: BATCH; 009: WATER; 129a: VIS |
 | `131-weather.js` | 6.0 | top level |  | 003: SHARED THREE; 003b: CLOCK PARK WX pos; 004: scene; 006: OUT QS SYS TILE; 064: HEMI |
 | `132-sky.js` | 9.7 | top level |  | 003: SHARED THREE; 003b: CLOCK LOOK SKY WX; 004: scene; 006: CEL LFX OUT QS SMOOTH SYS; 064: HEMI |
 | `133-lookfx.js` | 6.5 | top level |  | 003: SHARED THREE; 003b: CLOCK LEVELS LOOK PARK ROOMS WEEDS WX pos; 004: scene; 006: LFX OUT SOL SYS TILE |

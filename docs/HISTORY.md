@@ -4445,3 +4445,7 @@ Owner: "pin the bear near the nature merchant and build the coat rack". The coat
 
 ## 23 Oct 2026: the put-away sword no longer hangs in the air
 Owner: "when you take your sword off it glitches and stays in same spot you left it." A blade you put away stayed drawn, frozen where you left it. Rule: a mesh's `.visible` is always set to a real `true`/`false`, never a truthy-or-undefined expression — three.js only skips drawing on `visible===false`.
+## 23 Oct 2026: the apartment BBS and drone delivery (PR2)
+
+Owner: "simple bbs they can order things from bodega or catalog. catalog lists basic furniture for apartment. bodega as essential needs. all delivery ... dropped off by drone on front fire escape" (drone drops on the fire escape and you carry it in; ordered furniture auto-places).
+The 1980s computer in your apartment opens THE MARKET BBS (green terminal): THE BODEGA (essentials) and CATALOG (basic furniture), prices from the item catalog, paid from `INV.cash`. Ordering sends the drone to your front fire escape with a parcel; double-click it to bring it in — furniture places itself in an open spot and is kept (`OWNED` `apt-furn`), bodega items are flavour for now. Revives the dormant drone (146-drone) onto the open-plan apartment; the old roof-box delivery and drone cam are gone (`APTS.put` lets the drone reuse the apartment's own placement).

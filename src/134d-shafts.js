@@ -18,7 +18,7 @@ const SHAFTS={on:0,dust:0,occ:0,list:[]}; window.SHAFTS=SHAFTS;
     fragmentShader:`#include <packing>
       uniform sampler2D uMap; uniform vec3 uCol; uniform float uOp; varying vec2 vUv; varying vec3 vW; ${LIT}
       void main(){ float a=texture2D(uMap,vUv).a*uOp*lit(vW); if(a<.002)discard; gl_FragColor=vec4(uCol,a); }`});
-  const RU=LOOK.rays={uSun:{value:new THREE.Vector2(.5,.5)},uRayK:{value:0},uRayCol:{value:new THREE.Color(1,.9,.75)},uAsp:{value:1}}, sv=new THREE.Vector3(), WARM=new THREE.Color(1,.92,.8);   // read by the look's last pass (138), which streaks the rays
+  const RU=LOOK.rays={uSun:{value:new THREE.Vector2(.5,.5)},uRayK:{value:0},uRayCol:{value:new THREE.Color(1,.9,.75)},uAsp:{value:1},uRayT:{value:0}}, sv=new THREE.Vector3(), WARM=new THREE.Color(1,.92,.8);   // read by the look's last pass (138), which draws the sun's rays
   const G=new THREE.Group(); G.visible=false; scene.add(G); OUT.add(G,'open'); const geo=new THREE.PlaneGeometry(1,1);
   for(let i=0;i<N;i++){ const m=new THREE.Mesh(geo,mat), m2=new THREE.Mesh(geo,mat); for(const q of [m,m2]){ q.frustumCulled=false; q.matrixAutoUpdate=false; q.renderOrder=850; G.add(q); } m.cross=m2; SHAFTS.list.push(m); }
   // the dust: square motes on a lattice of the world, drifting and slowly falling, tiled in a box that follows the camera; each one lit by the same sun test, so the dust shows only where the sun reaches
@@ -39,8 +39,8 @@ const SHAFTS={on:0,dust:0,occ:0,list:[]}; window.SHAFTS=SHAFTS;
       SU.uOcc.value=occ?1:0; SHAFTS.occ=occ?1:0; if(occ){ SU.uShadow.value=sh.map.texture; SU.uShMat.value=sh.matrix; SU.uTx.value=1/sh.mapSize.x; } }
     SHAFTS.on=k; SHAFTS.dust=dk; G.visible=k>.01; BU.uOp.value=(cam.isOrthographicCamera?.045:.09)*k; BU.uCol.value.copy(CLOCK.sun.color).lerp(WARM,.5);
     DU.uK.value=dk*.6; DU.uCam.value.copy(cam.position); pts.visible=dk>.01;
-    { let kk=0; if(k>.01){ sv.copy(CLOCK.sunV).multiplyScalar(600).add(cam.position).project(cam); if(sv.z<1&&Math.abs(sv.x)<2.2&&Math.abs(sv.y)<2.2){ kk=k*.55*(1-Math.max(0,Math.min(1,(Math.max(Math.abs(sv.x),Math.abs(sv.y))-1.2)/1))); RU.uSun.value.set(sv.x*.5+.5,sv.y*.5+.5); } }
-      RU.uRayK.value=kk; RU.uAsp.value=cam.aspect||1; RU.uRayCol.value.copy(BU.uCol.value); }
+    { sv.copy(CLOCK.sunV).multiplyScalar(600).add(cam.position).project(cam);   // the sun's rays always shine from its place through the day, even when it is off the top of the screen
+      RU.uRayK.value=up&&sv.z<1?sunK*.9:0; RU.uSun.value.set(sv.x*.5+.5,sv.y*.5+.5); RU.uRayT.value=CLOCK.h*.12; RU.uAsp.value=cam.aspect||1; RU.uRayCol.value.copy(BU.uCol.value); }
     if(!G.visible)return;
     sd.copy(CLOCK.sunV).normalize(); rt.crossVectors(sd,UP); if(rt.lengthSq()<1e-6)rt.set(1,0,0); rt.normalize(); nm.crossVectors(rt,sd);   // the two sheets' directions, fixed in the world (never turned to face you)
     const L=140*T, cx=Math.floor(pos.x/CELL), cz=Math.floor(pos.z/CELL); let n=0; SHAFTS.at.length=0;   // beams stand on a fixed lattice of the world: the same spots whoever walks by

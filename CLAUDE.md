@@ -78,7 +78,8 @@ Several chats work at once, each on its own branch. Every time:
 
 Moving here from `bralynnb/tsfm` (owner, 18 Oct 2026). This repo is the whole site: `worker/door.js` serves `/` (THE MARKET to a
 checked login, the door to anyone else) from `dist/`. `.github/workflows/site.yml` builds and runs `tests/site.cjs` (the real worker
-under `wrangler dev`: the door shows, THE MARKET starts) and `tests/places.cjs` on every push and pull request. Never copy `market.html` anywhere by hand.
+under `wrangler dev`: the door shows, THE MARKET starts) and `tests/places.cjs` on every push and pull request.
+**Multiplayer (23 Oct 2026)**: `src/111d-online.js` (`ONLINE`: the other players' bodies, name tags, the list, chat) talks to the `Block` Durable Object in `worker/door.js` (partyserver; one per section, `/parties/block/s-<id>`, the login cookie checked); `tests/online.cjs` checks it without a network. Never copy `market.html` anywhere by hand.
 **Checks are light by default** (owner, 20 Oct 2026: "lets try to not be as check heavy, only check when errors or really need to to be
 safe"): a pull request gets the build check only. The measuring checks (budget, same picture, same pixels: four machines, 8–10 minutes)
 run only when asked: put the `measure` label on the pull request (`gh api -X POST repos/<owner>/<repo>/issues/<n>/labels -f 'labels[]=measure'`,

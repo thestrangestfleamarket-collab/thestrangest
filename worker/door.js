@@ -1,7 +1,8 @@
+import { routePartykitRequest, Server } from "partyserver";
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i, CODE = /^[A-Z0-9-]{6,32}$/, MAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 const json = (o, status = 200) => Response.json(o, { status, headers: { "cache-control": "no-store" } });
 const loopback = ip => !ip || ip === "::1" || ip === "localhost" || /^127\./.test(ip) || /^::ffff:127\./.test(ip);
-const GUESS_MAX = 20, guesses = new Map(), passed = new Map(), FILE = /^\/g\/[a-z0-9-]+\.[0-9a-f]{10}\.(js|json|bin)$/;
+const ROOM = /^[a-z0-9-]{1,32}$/, GUESS_MAX = 20, guesses = new Map(), passed = new Map(), FILE = /^\/g\/[a-z0-9-]+\.[0-9a-f]{10}\.(js|json|bin)$/;
 const YT = /^\/yt\/([A-Za-z0-9_-]{11})\.jpg$/, BLANK = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYGD4DwABBAEAHnOcQAAAAABJRU5ErkJggg==";
 function tooMany(ip) { const min = Math.floor(Date.now() / 60000), g = guesses.get(ip);
   if (!g || g.min !== min) { if (guesses.size > 5000) for (const [k, v] of guesses) if (v.min !== min) guesses.delete(k); guesses.set(ip, { n: 1, min }); return false; }
@@ -28,6 +29,12 @@ export default {
       const miss = !r || !r.ok, out = miss ? new Response(Uint8Array.from(atob(BLANK), c => c.charCodeAt(0)), { status: 200 }) : new Response(r.body, { status: r.status });
       out.headers.set("content-type", miss ? "image/png" : "image/jpeg"); out.headers.set("access-control-allow-origin", "*");
       out.headers.set("cache-control", "public, max-age=86400"); out.headers.set("x-robots-tag", "noindex"); return out; } }
+    if (p.startsWith("/parties/")) return (await routePartykitRequest(request, env, {
+      onBeforeConnect: async (req, { party, name }) => {
+        if (party !== "block" || !ROOM.test(name) || (request.headers.get("Origin") !== url.origin && !dev)) return new Response("not found", { status: 404 });
+        const id = await who(env, request, dev); if (!id) return new Response("login", { status: 401 });
+        const r = new Request(req); r.headers.set("x-tsfm-id", id); r.headers.set("x-partykit-room", name); return r; },
+      onBeforeRequest: () => new Response("not found", { status: 404 }) })) || new Response("not found", { status: 404 });
     if (request.method !== "POST" || !["/enter", "/join/check", "/join"].includes(p)) return new Response("not found", { status: 404 });
     if (request.headers.get("Origin") !== url.origin && !(dev && !request.headers.get("Origin"))) return json({ why: "not from the game's page" }, 403);
     if (tooMany(request.headers.get("CF-Connecting-IP") || "local")) return json({ why: "too many tries, wait a minute" }, 429);
@@ -39,13 +46,14 @@ export default {
   }
 };
 
-async function inside(env, request, dev) {
-  const m = /(?:^|;\s*)tsfm-pass=([^;]+)/.exec(request.headers.get("Cookie") || ""); if (!m) return false;
-  const t = decodeURIComponent(m[1]), now = Date.now(), seen = passed.get(t); if (seen && seen > now) return true;
-  const ok = !!(await pass(env, t, dev)).ok;
-  if (ok) { if (passed.size > 2000) for (const [k, v] of passed) if (v <= now) passed.delete(k); passed.set(t, now + 300000); }
-  return ok;
+async function who(env, request, dev) {
+  const m = /(?:^|;\s*)tsfm-pass=([^;]+)/.exec(request.headers.get("Cookie") || ""); if (!m) return "";
+  const t = decodeURIComponent(m[1]), now = Date.now(), seen = passed.get(t); if (seen && seen.until > now) return seen.id;
+  const r = await pass(env, t, dev); if (!r.ok) return "";
+  if (passed.size > 2000) for (const [k, v] of passed) if (v.until <= now) passed.delete(k); passed.set(t, { until: now + 300000, id: r.id });
+  return r.id;
 }
+const inside = async (env, request, dev) => !!(await who(env, request, dev));
 
 async function page(env, url, path, request, cache) {
   const h = new Headers(); const inm = request.headers.get("If-None-Match"); if (inm) h.set("If-None-Match", inm);
@@ -54,12 +62,12 @@ async function page(env, url, path, request, cache) {
 }
 
 async function pass(env, token, dev) {
-  if (dev && token.startsWith("dev:")) return { ok: true };
+  if (dev && token.startsWith("dev:")) return { ok: true, id: "dev-" + token.slice(4, 40) };
   const headers = { apikey: env.SUPABASE_KEY, Authorization: "Bearer " + token }, get = path => fetch(env.SUPABASE_URL + path, { headers });
   const r = await get("/auth/v1/user"); if (!r.ok) return { why: "login" };
   const u = await r.json(); if (!u || !UUID.test(u.id || "")) return { why: "login" };
   const pr = await get("/rest/v1/players?select=id&id=eq." + u.id);
-  return pr.ok && (await pr.json()).length > 0 ? { ok: true } : { why: "code" };
+  return pr.ok && (await pr.json()).length > 0 ? { ok: true, id: u.id } : { why: "code" };
 }
 
 const svc = env => { const k = env.SUPABASE_SERVICE_KEY; return k ? { apikey: k, ...(k.startsWith("ey") ? { Authorization: "Bearer " + k } : {}) } : null; };
@@ -82,4 +90,29 @@ async function join(env, k, code, body) {
   const joined = (await call("/rest/v1/rpc/join_beta", { method: "POST", headers: { apikey: env.SUPABASE_KEY, Authorization: "Bearer " + s.access_token, ...J }, body: JSON.stringify({ invite: code }) })).ok;
   if (!joined) { await gone(); return { why: "code" }; }
   return { ok: true, access_token: s.access_token, refresh_token: s.refresh_token };
+}
+
+const num = (v, lo, hi) => typeof v === "number" && isFinite(v) ? Math.max(lo, Math.min(hi, v)) : 0;
+const word = (v, n) => String(v ?? "").replace(/[\u0000-\u001f\u007f<>]/g, "").trim().slice(0, n);
+export class Block extends Server {
+  static options = { hibernate: true };
+  roster(skip) { const by = new Map(); for (const c of this.getConnections()) if (c.id !== skip && c.state && c.state.id) by.set(c.state.id, c.state); return [...by.values()]; }
+  onConnect(c, ctx) {
+    const id = ctx.request.headers.get("x-tsfm-id") || ""; if (!id) return c.close(4001, "login");
+    for (const o of this.getConnections()) if (o.id !== c.id && o.state && o.state.id === id) o.close(4000, "joined again");
+    c.setState({ id, name: "", look: "", at: null });
+    c.send(JSON.stringify({ t: "hi", you: id, all: this.roster().filter(p => p.id !== id) }));
+  }
+  onMessage(c, raw) {
+    const s = c.state; if (!s || typeof raw !== "string" || raw.length > 600) return; let m; try { m = JSON.parse(raw); } catch (e) { return; }
+    if (m.t === "mv" && Array.isArray(m.at)) {
+      const a = m.at, at = [num(a[0], -1e5, 1e5), num(a[1], -1e5, 1e5), num(a[2], -1e4, 1e4), num(a[3], -10, 10), word(a[4], 8), word(a[5], 60)];
+      c.setState({ ...s, at }); this.broadcast(JSON.stringify({ t: "mv", id: s.id, at }), [c.id]);
+    } else if (m.t === "me") {
+      const p = { ...s, name: word(m.name, 24), look: word(m.look, 24) }; c.setState(p); this.broadcast(JSON.stringify({ t: "in", p }), [c.id]);
+    } else if (m.t === "say") {
+      const text = word(m.text, 200); if (text) this.broadcast(JSON.stringify({ t: "say", id: s.id, name: s.name, text }), [c.id]);
+    }
+  }
+  onClose(c) { const s = c.state; if (s && s.id && !this.roster(c.id).some(p => p.id === s.id)) this.broadcast(JSON.stringify({ t: "out", id: s.id })); }
 }

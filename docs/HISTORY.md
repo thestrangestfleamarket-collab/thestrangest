@@ -4463,3 +4463,7 @@ Owner: "i want to sunrays to come from the suns locations, and the sun should ri
 ## 23 Oct 2026: reuse, don't hand-write (rule)
 
 Owner: "dont write anything by hand that is already created for what were doing an a better fit", then made it a hard rule with a caveat: not without asking first, "especailly if you have a better idea or improvement way of doing it". In CLAUDE.md's rules.
+
+## 23 Oct 2026: multiplayer, the first piece
+
+Owner: "i want to add multiplayer ... look for best, free options. work with supabase,cloudlfare, etc current setup". His first piece: see everyone online, see them move, their name and look, and chat. He picked Supabase Realtime first, then said "yes" to one Cloudflare Durable Object per block instead once its free limits showed movement would not fit (every message counted once per listener; going over restricts the whole Supabase project, login included). Rule: each block (section) is its own server; Supabase stays for login and saved things. ENTER talks (in the controls).

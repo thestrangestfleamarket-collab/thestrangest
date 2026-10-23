@@ -18,8 +18,8 @@ await grab('mainstreet',async()=>{ const K=STORE.kit, {room,STEPS}=K, {X,Y,Z,pla
     const pic=(X_,z)=>{ const u=X_-B.x0; for(const [a,b,o] of SEG)if(u>=a+o&&u<b+o)return TH.THFRONT(u-o,z); return null; };
     const out=(nx,ny,Xw,Yw,z,f,cap)=>{ if(ny>0){ const c=pic(Xw,z); if(c)return c.e?c:sh(c,f); } const u=(nx?Yw:Xw)*24|0, r=z|0; if(r>B.h-8)return sh([200,192,170],f); return sh(r%8<1||(u+(r>>3&1)*8)%16<1?[120,52,44]:[156,66,54],f); };
     const cy=(B.y0+B.y1)/2, tz=(X(1)-X(0))/(Y(1)-Y(0)), S={y0:cy-6,y1:cy+6,x:B.x0+T,z0:30,m:.4}; S.z1=S.z0+(S.y1-S.y0)*tz*9/16;
-    const FX=B.x0+5.35, P=.98, RISE=17, NR=Math.min(5,Math.floor((B.x1-T-FX-1.2)/P)), HT=NR*RISE, TX=FX+NR*P, by=cy+3.2;
-    const BN=[B.y0+1.2,cy-.55], BS_=[cy+.55,B.y1-1.75], AIS=[[B.y0+T,B.y0+1.2],[cy-.55,cy+.55],[B.y1-1.75,B.y1-T]], PIL=[1.6,4.6,7.6,10.4].map(d=>B.x0+d), DL=[], LZ=150;
+    const FX=B.x0+5.35, P=.98, RISE=17, NR=Math.min(5,Math.floor((B.x1-T-FX-1.2)/P)), HT=NR*RISE, TX=FX+NR*P, by=cy;
+    const BN=[B.y0+1.2,cy-.55], BS_=[cy+.55,B.y1-1.75], AIS=[[cy-.55,cy+.55]], EXN=(B.y0+T+B.y0+1.2)/2, EXS=(B.y1-1.75+B.y1-T)/2, PIL=[1.6,4.6,7.6,10.4].map(d=>B.x0+d), DL=[], LZ=150;
     for(let y=B.y0+1;y<B.y1-.6;y+=1.6)DL.push(y);
     const wash=(u,z,L,top,w0)=>{ let g=0; for(const p of L){ const dz=Math.abs(z-top), w=w0+dz*.004; g=Math.max(g,Math.max(0,1-Math.abs(u-p)/w)*Math.exp(-dz/85)); } return g; };
     const glow=(c,g,to)=>lit([c[0]+(to[0]-c[0])*g|0,c[1]+(to[1]-c[1])*g|0,c[2]+(to[2]-c[2])*g|0]);
@@ -49,8 +49,14 @@ await grab('mainstreet',async()=>{ const K=STORE.kit, {room,STEPS}=K, {X,Y,Z,pla
       for(let i=0;i<NR;i++){ const h=(i+1)*RISE, xf=FX+i*P, xb=xf+P;
         for(const [a,b] of [BN,BS_]){ tier(xf,xb,a,b,h); const n=Math.floor((b-a)/.64), w=(b-a)/n; for(let s=0;s<n;s++)seat(a+s*w,w,xb-.74,h,s===n-1); }
         for(const [a,b] of AIS){ const xm=(xf+xb)/2; tier(xf,xm,a,b,h-RISE/2,'aisle steps'); tier(xm,xb,a,b,h,'aisle steps'); } }
-      tier(TX,B.x1-T,B.y0+T,B.y1-T,HT,'landing steps');
+      tier(TX,B.x1-T,BN[0],BS_[1],HT,'landing steps');
       for(const [a,b] of [BN,BS_])K.sol(FX,a,TX,b,HT+44);
+      SHARED.PNAME='rail'; const rail=(x0,x1,y0,y1,h)=>prop([sided({x0,y0,x1,y1,z0:0,z1:h+30,foot:1,c:[30,29,33],top:()=>[150,140,120],fs:(nx,ny,x,y,z,k)=>z>h+27?sh([150,140,120],k):z>h?sh([40,44,50],k*.9):sh([34,33,38],k)})],null,{walk:true});
+      for(let i=0;i<=NR;i++){ const x0=FX+i*P, x1=i<NR?x0+P:B.x1-T, h=Math.min(i+1,NR)*RISE; rail(x0,x1,BN[0]-.06,BN[0],h); rail(x0,x1,BS_[1],BS_[1]+.06,h); }
+      K.sol(FX,BN[0]-.08,B.x1-T,BN[0],HT+30); K.sol(FX,BS_[1],B.x1-T,BS_[1]+.08,HT+30);
+      SHARED.PNAME='exit door'; for(const ey of [EXN,EXS])prop([{x0:B.x1-T-.05,y0:ey-.45,x1:B.x1-T,y1:ey+.45,z0:0,z1:94,foot:1,c:[40,38,42],top:()=>[40,38,42],fi:(y,z)=>Math.abs(y-ey)>.4||z>90?[20,19,22]:z>40&&z<46?[150,150,156]:[44,42,48],fj:()=>[30,29,33]},
+        {x0:B.x1-T-.07,y0:ey-.3,x1:B.x1-T,y1:ey+.3,z0:100,z1:110,em:1,c:[200,30,30],top:()=>[60,8,8],fi:(y,z)=>z>101.5&&z<108.5&&Math.abs(y-ey)<.25&&Math.floor((y-ey)*24+40)%4?[255,70,60]:[70,10,10],fj:()=>[60,8,8]}],null,{high:true});
+      for(const ey of [EXN,EXS])LAMPS.push({x:B.x1-.6,y:ey,z:105,r:2.2,c:[.55,.08,.06]});
       SHARED.PNAME='wall light'; for(const x of PIL){ const y=B.y0+T;
         prop([{x0:x-.26,y0:y,x1:x+.26,y1:y+.16,z0:0,z1:284,foot:1,c:[60,23,27],top:()=>[48,19,23],fj:(xx,z)=>sh([60,23,27],Math.abs(xx-x)>.21?.62:.84),fi:()=>sh([50,19,23],.7)},
           {x0:x-.12,y0:y+.16,x1:x+.12,y1:y+.3,z0:LZ-7,z1:LZ+7,c:[24,22,24],top:()=>lit([255,214,160]),fj:(xx,z)=>z>LZ+5||z<LZ-5?lit([255,200,140]):[26,24,26],fi:()=>[26,24,26]}],null,{high:true});
@@ -65,12 +71,12 @@ await grab('mainstreet',async()=>{ const K=STORE.kit, {room,STEPS}=K, {X,Y,Z,pla
     const tx=new THREE.DataTexture(new Uint8Array(TH.FILMW*TH.FILMH*4),TH.FILMW,TH.FILMH); tx.magFilter=tx.minFilter=THREE.NearestFilter; tx.colorSpace=THREE.SRGBColorSpace;
     const fm=new THREE.Mesh(new THREE.PlaneGeometry(Math.abs(Z(S.y1)-Z(S.y0)),Y(S.z1)-Y(S.z0)),new THREE.MeshBasicMaterial({map:tx})); fm.rotation.y=Math.PI/2; fm.position.set(X(S.x+.075),Y((S.z0+S.z1)/2),Z(cy)); fm.visible=false; scene.add(fm); fm.updateMatrixWorld();
     const ix=x=>x/(TILE*BLDK)+SHARED.BOD.OX, iy=z=>z/(TILE*BLDK)+SHARED.BOD.OY;
-    const gr=(wx,wz)=>{ const x=ix(wx), y=iy(wz); if(x<FX||x>B.x1)return null; const i=Math.floor((x-FX)/P); if(i>=NR)return Y(HT); const h=(i+1)*RISE; return Y(AIS.some(([a,b])=>y>=a&&y<=b)&&x-FX-i*P<P/2?h-RISE/2:h); };
+    const gr=(wx,wz)=>{ const x=ix(wx), y=iy(wz); if(x<FX||x>B.x1||y<BN[0]||y>BS_[1])return null; const i=Math.floor((x-FX)/P); if(i>=NR)return Y(HT); const h=(i+1)*RISE; return Y(AIS.some(([a,b])=>y>=a&&y<=b)&&x-FX-i*P<P/2?h-RISE/2:h); };
     const sg0=STORE.stackGround; STORE.stackGround=(x,z)=>{ const I=STORE.inside.theatre; if(SHARED.LVL==='up'&&I&&I.done&&R.inside(x,z)){ const g=gr(x,z); if(g!=null)return g; } return sg0?sg0(x,z):null; };
     const BB={x0:502,x1:508,y0:-100,y1:-95}, bw=[X(BB.x0),Z(BB.y0),X(BB.x1),Z(BB.y1)];
     ROOMS.off.booth={name:'THE PROJECTION BOOTH',box:{x0:Math.min(bw[0],bw[2]),z0:Math.min(bw[1],bw[3]),x1:Math.max(bw[0],bw[2]),z1:Math.max(bw[1],bw[3]),y0:-1,y1:Y(220)},need:()=>LOAD('later'),
       build:()=>CINEMA.booth.build(BB),unbuild:()=>CINEMA.booth.unbuild(),spawn:[X(BB.x0+.9),Z(-96.2),0,Math.PI/2],out:[X(B.x1-.9),Z(by),Y(HT),-Math.PI/2],door:[X(B.x1-T-.1),Y(HT),Z(by)],exit:[X(BB.x0+.12),0,Z(-96.2)],exitName:'DOWN TO THE THEATRE'};
-    unplace('MOVIE THEATRE'); MS.theatre={R,fm,tx,k:-1,port:[X(B.x1-T-.06),Y(213),Z(cy-.5)],booth:BB}; });
+    unplace('MOVIE THEATRE'); MS.theatre={R,fm,tx,k:-1,exits:[EXN,EXS].map(ey=>[X(B.x1-T-.1),Z(ey)]),port:[X(B.x1-T-.06),Y(213),Z(cy-.5)],booth:BB}; });
 
   // the playhouse lot is solid from the start; only its painting waits for its step (the soak found a pawn sealed in when the step landed)
   { const LW=lot('play',190), TP=TURN(LW,WP.play.face); if(TP.q){ const a=X(LW.x0), b=X(LW.x1), c=Z(LW.y0), d=Z(LW.y1); SOL.up.push([Math.min(a,b),Math.min(c,d),Math.max(a,b),Math.max(c,d)]); FIX.up.push([Math.min(a,b),Math.min(c,d),0,Math.max(a,b),Math.max(c,d),Y(TP.L.h)]); } }

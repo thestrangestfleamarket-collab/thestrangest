@@ -316,6 +316,7 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
 
   let attached=false;
   const attach=()=>{ if(attached)return; const m=STORE.main&&STORE.main.theatre; if(!m||!m.fm)return; attached=true;
+    for(const [x,z] of m.exits||[]){ const hb=new THREE.Mesh(new THREE.BoxGeometry(.5*TILE,2.4*TILE,1.2*TILE),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(x,1.2*TILE,z); scene.add(hb); UI.thing({name:'EXIT',ghost:1,obj:hb,reach:1.4*TILE,near:2.6*TILE,tall:2.4*TILE,act:()=>STORE.exit('theatre')}); }
     buildSigns(m); buildRig(m); };
 
   window.CINEMA=CINEMA; SYS.add('places',()=>{ mkCut(); attach(); tick(); },'059f-cinema');

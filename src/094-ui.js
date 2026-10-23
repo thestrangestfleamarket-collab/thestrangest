@@ -15,7 +15,7 @@ import {SOUND} from './091-sfx.js';
 Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()});
 {
   const ACTS=[['w','walk up (screen)'],['s','walk down'],['a','walk left'],['d','walk right'],['shift','run · sink (free camera, fly)'],[' ','jump · rise (free camera, fly) · dive (swimming)'],
-    ['view','change the view (map, third person, behind, first person, isometric)'],['rot','turn the view a quarter (four angles)'],['j','punch'],['k','kick'],['r','roll'],['u','cartwheel'],['1','hold: sword · net · bird net · nothing (the mouse aims it, a click swings)'],['v','wave'],['t','the ghost\'s guitar: off the back and play · back on'],['f','fall'],['shoes','shoes off / on (barefoot to forage)'],['q','turn left'],['e','turn right'],['z','tilt down'],['x','tilt up'],['0','reset the view'],
+    ['view','change the view (map, third person, behind, first person, isometric)'],['rot','turn the view a quarter (four angles)'],['j','punch'],['k','kick'],['r','roll'],['u','cartwheel'],['1','hold: sword · net · bird net · nothing (the mouse aims it, a click swings)'],['p','block (hold, with a sword): a blow caught on the beat staggers them'],['v','wave'],['t','the ghost\'s guitar: off the back and play · back on'],['f','fall'],['shoes','shoes off / on (barefoot to forage)'],['q','turn left'],['e','turn right'],['z','tilt down'],['x','tilt up'],['0','reset the view'],
     ['c','free camera'],['g','fly (through walls)'],['=','sharper'],['-','coarser'],['h','hide the help']];
   const NAME=k=>k===' '?'SPACE':k.length===1?k.toUpperCase():k.toUpperCase();
   let BIND={}; try{ BIND=JSON.parse(SAVE.get('keys')||'{}')||{}; }catch(e){}

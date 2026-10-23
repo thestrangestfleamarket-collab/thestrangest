@@ -7,23 +7,23 @@ import {FADE, STORE, SYS, TILE} from './006-map-pre.js';
 { const SB='https://jvcetttmqseoteidfggn.supabase.co', KEY='sb_publishable_UkzD8hOizW1hPr6hm3duQQ_07ZodPik', LS='sb-jvcetttmqseoteidfggn-auth-token', ROW='theatre';
   const jw=t=>{ try{ return JSON.parse(atob(t.split('.')[1].replace(/-/g,'+').replace(/_/g,'/'))); }catch(e){ return {}; } };
   const ck=()=>{ const m=/(?:^|;\s*)tsfm-pass=([^;]+)/.exec(document.cookie); return m?decodeURIComponent(m[1]):''; };
-  let T=''; const renew=async()=>{ const s=JSON.parse(localStorage.getItem(LS)||'null'); if(!s||!s.refresh_token)return '';
+  let T=''; const renew=async()=>{ '@later'; const s=JSON.parse(localStorage.getItem(LS)||'null'); if(!s||!s.refresh_token)return '';
     const r=await fetch(SB+'/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:{apikey:KEY,'content-type':'application/json'},body:JSON.stringify({refresh_token:s.refresh_token})}); if(!r.ok)return '';
     const n=await r.json(); localStorage.setItem(LS,JSON.stringify({...s,...n})); document.cookie='tsfm-pass='+n.access_token+'; path=/; max-age=3600; secure; samesite=strict'; return T=n.access_token; };
-  const tok=async()=>{ let t=ck()||T; if(t.startsWith('dev:'))return ''; if(!t||(jw(t).exp||0)*1000<Date.now()+60000)t=await renew().catch(()=>''); return t; };
+  const tok=async()=>{ '@later'; let t=ck()||T; if(t.startsWith('dev:'))return ''; if(!t||(jw(t).exp||0)*1000<Date.now()+60000)t=await renew().catch(()=>''); return t; };
   const vid=u=>{ u=String(u||'').trim(); const m=/(?:youtu\.be\/|v=|embed\/|shorts\/)([A-Za-z0-9_-]{11})/.exec(u)||/^([A-Za-z0-9_-]{11})$/.exec(u); return m?m[1]:''; };
 
   let rec=null, adm=null;
   const DEF={id:ROW,playlist:[],idx:0,video_id:'',started_at:null,size:1,brightness:.8,loop:true,autoplay:true};
   const cur=()=>rec||DEF; CINEMA.now=()=>cur(); CINEMA.title='';
 
-  const pull=async()=>{ try{ const r=await fetch(SB+'/rest/v1/now_playing?select=*&id=eq.'+ROW,{headers:{apikey:KEY}}); if(!r.ok)return;
+  const pull=async()=>{ '@later'; if(location.protocol==='file:')return; try{ const r=await fetch('/now'); if(!r.ok)return;
     const a=await r.json(); rec=a[0]||null; onRec(); }catch(e){} };
   const push=async patch=>{ '@later'; const t=await tok(); if(!t)return false; try{
     const r=await fetch(SB+'/rest/v1/now_playing?id=eq.'+ROW,{method:'PATCH',headers:{apikey:KEY,Authorization:'Bearer '+t,'content-type':'application/json',Prefer:'return=representation'},body:JSON.stringify({...patch,updated_at:new Date().toISOString()})});
     if(!r.ok)return false; const a=await r.json(); if(a[0]){ rec=a[0]; onRec(); } return true; }catch(e){ return false; } };
   CINEMA.push=push;
-  const isAdmin=async()=>{ if(adm!=null)return adm; const t=await tok(); if(!t)return adm=false;
+  const isAdmin=async()=>{ '@later'; if(adm!=null)return adm; const t=await tok(); if(!t)return adm=false;
     try{ const r=await fetch(SB+'/rest/v1/admins?select=user_id&user_id=eq.'+jw(t).sub,{headers:{apikey:KEY,Authorization:'Bearer '+t}}); adm=r.ok&&(await r.json()).length>0; }catch(e){ adm=false; } return adm; };
   CINEMA.isAdmin=isAdmin;
 
@@ -33,7 +33,7 @@ import {FADE, STORE, SYS, TILE} from './006-map-pre.js';
   let wrap=null, holder=null, player=null, soundBtn=null, haveVid='', ytP=null, making=false;
   const ensureYT=()=>ytP||(ytP=new Promise(res=>{ if(window.YT&&window.YT.Player)return res(); const prev=window.onYouTubeIframeAPIReady;
     window.onYouTubeIframeAPIReady=()=>{ try{ prev&&prev(); }catch(e){} res(); }; const s=document.createElement('script'); s.src='https://www.youtube.com/iframe_api'; s.async=1; document.head.appendChild(s); }));
-  const mkWrap=()=>{ '@later'; if(wrap)return; wrap=document.createElement('div'); wrap.id='cinema';
+  const mkWrap=()=>{ if(wrap)return; wrap=document.createElement('div'); wrap.id='cinema';
     wrap.style.cssText='position:fixed;z-index:1;pointer-events:none;display:none;overflow:hidden;background:#000';
     holder=document.createElement('div'); holder.style.cssText='position:absolute;inset:0;width:100%;height:100%'; wrap.appendChild(holder);
     soundBtn=document.createElement('button'); soundBtn.textContent='🔇 tap for sound';
@@ -53,7 +53,7 @@ import {FADE, STORE, SYS, TILE} from './006-map-pre.js';
 
   const corners=fm=>{ const w=fm.geometry.parameters.width/2, h=fm.geometry.parameters.height/2, p=fm.position, out=[];
     for(const sx of [-1,1])for(const sy of [-1,1])out.push(new THREE.Vector3(p.x+sx*w,p.y+sy*h,p.z)); return out; };
-  const placeOver=fm=>{ '@later'; const cv=renderer.domElement, r=cv.getBoundingClientRect(); let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
+  const placeOver=fm=>{ const cv=renderer.domElement, r=cv.getBoundingClientRect(); let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
     for(const c of corners(fm)){ const v=c.clone().project(SHARED.cam), sx=r.left+(v.x+1)/2*r.width, sy=r.top+(1-v.y)/2*r.height; x0=Math.min(x0,sx); x1=Math.max(x1,sx); y0=Math.min(y0,sy); y1=Math.max(y1,sy); }
     const sz=Math.max(.4,Math.min(1,cur().size??1)), cx=(x0+x1)/2, cy=(y0+y1)/2, ww=(x1-x0)*sz, hh=(y1-y0)*sz;
     wrap.style.left=Math.round(cx-ww/2)+'px'; wrap.style.top=Math.round(cy-hh/2)+'px'; wrap.style.width=Math.round(ww)+'px'; wrap.style.height=Math.round(hh)+'px';
@@ -130,5 +130,5 @@ import {FADE, STORE, SYS, TILE} from './006-map-pre.js';
     UI.thing({name:'THE SCREEN',ghost:1,obj:hb,reach:3.2*TILE,near:6.5*TILE,tall:fm.geometry.parameters.height,act:async()=>{ if(await isAdmin())openAdmin(); }}); buildSigns(m); };
 
   window.CINEMA=CINEMA; SYS.add('places',()=>{ attach(); tick(); },'059f-cinema');
-  isAdmin(); pull(); setInterval(()=>{ if(document.visibilityState!=='hidden')pull(); },5000);
+  (async()=>{ while(!window.__started)await new Promise(r=>setTimeout(r,250)); await LOAD('later'); isAdmin(); pull(); setInterval(()=>{ if(document.visibilityState!=='hidden')pull(); },5000); })();   // after the start, so the later chunk is not pulled in early
 }

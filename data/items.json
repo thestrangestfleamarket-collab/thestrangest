@@ -59,7 +59,8 @@
  "sword": {
   "slot": "hand",
   "grants": "fight",
-  "value": 15
+  "value": 15,
+  "damage": 2
  },
  "net": {
   "slot": "hand",
@@ -80,5 +81,23 @@
   "slot": "body",
   "grants": "float",
   "value": 60
+ },
+ "sword_wood": {
+  "slot": "hand",
+  "grants": "fight",
+  "value": 8,
+  "damage": 1
+ },
+ "sword_steel": {
+  "slot": "hand",
+  "grants": "fight",
+  "value": 40,
+  "damage": 3
+ },
+ "sword_ench": {
+  "slot": "hand",
+  "grants": "fight",
+  "value": 120,
+  "damage": 5
  }
 }

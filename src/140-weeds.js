@@ -1,4 +1,4 @@
-// THE WEEDS: WEEDS grows the grass, weeds and gold reeds, bending them as things move through.
+// THE WEEDS: WEEDS grows the grass (flat combed blades and small tufts over every lawn), the weeds and the gold reeds, bending them as things move through.
 import {SHARED, THREE} from './003-shx.js';
 import {NPCS, PARK, POND, pos, RAG, ROOMS, st, UI, W3, WEEDS} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
@@ -67,7 +67,7 @@ WEEDS.lawnInit=()=>{ const T=TILE, CS=8*T, N=16, CELL=CS/N, MG=4, W=N+2*MG, hsh=
   const LC=(r,g,b)=>{ const c=new THREE.Color().setRGB(r/255,g/255,b/255,THREE.SRGBColorSpace); return 'vec3('+c.r.toFixed(4)+','+c.g.toFixed(4)+','+c.b.toFixed(4)+')'; }, MV=WEEDS.movers, NT=12, TR=[...Array(NT)].map(()=>new THREE.Vector4(0,0,0,0)), TK=[...Array(NT)].map(()=>new THREE.Vector4(0,0,0,0)), TT=new Float64Array(NT).fill(-1e9), TM=new Int8Array(NT), F=x=>(x*T).toFixed(4);
   const MODE=[[.7,.85,3,0,0],[1.05,.9,1.5,1,1],[.5,.32,1,0,0],[1.5,.95,3,0,0],[1.15,1,5,0,0]]; WEEDS.UTR={value:TR}; WEEDS.UTK={value:TK};
   const mat=new THREE.MeshLambertMaterial({color:new THREE.Color().setRGB(70/255,122/255,52/255,THREE.SRGBColorSpace)});
-  const HEAD='attribute float aH; attribute float aT; attribute vec3 aG; varying vec3 vG; uniform vec4 uMv[8]; uniform vec4 uTr[12]; uniform vec4 uTk[12]; uniform float uSw, uWk;\n'
+  const HEAD='attribute float aH; attribute float aT; attribute vec3 aG; attribute float aL; attribute float aC; varying vec3 vG; varying vec2 vB; uniform vec4 uMv[8]; uniform vec4 uTr[12]; uniform vec4 uTk[12]; uniform float uSw, uWk;\n'
     +'void tgA(vec2 d, float r, float w, vec4 q, inout float k, inout vec2 pu, inout float rp){ float l=length(d), e=l-r, bd=clamp(1.-abs(e)/'+F(.45)+',0.,1.); k=max(k,w*clamp(-e/'+F(.2)+',0.,1.)); pu+=d/max(l,.001)*q.x*w*bd; rp+=q.y*sin(e*'+(6.2832/(.5*T)).toFixed(4)+'-q.z*12.)*bd; }\n'
     +'float tgP(vec2 p, out vec2 pu, out float rp){ float k=0.; pu=vec2(0.); rp=0.; for(int i=1;i<8;i++){ vec4 m=uMv[i]; if(m.w<.5)continue; k=max(k,clamp(('+F(.7)+'-length(p-m.xy))/'+F(.2)+',0.,1.)); }\n'
     +' for(int i=0;i<12;i++){ vec4 a=uTr[i]; if(a.w<=0.)continue; vec4 q=uTk[i]; vec2 d=p-a.xy; tgA(d,a.z,a.w,q,k,pu,rp);\n'
@@ -75,15 +75,15 @@ WEEDS.lawnInit=()=>{ const T=TILE, CS=8*T, N=16, CELL=CS/N, MG=4, W=N+2*MG, hsh=
     +' pu/=max(1.,length(pu)); rp=clamp(rp,-1.,1.); return k; }\n';
   mat.onBeforeCompile=sh=>{ Object.assign(sh.uniforms,{uMv:WEEDS.UMV,uTr:WEEDS.UTR,uTk:WEEDS.UTK,uSw:PARK.sway,uWk:PARK.windK});
     sh.vertexShader=HEAD+sh.vertexShader.replace('#include <beginnormal_vertex>','#include <beginnormal_vertex>\n vec3 tgW=(modelMatrix*vec4(position,1.)).xyz; vec2 tgU, tgD; float tgR, tgS, tgK=tgP(tgW.xz,tgU,tgR); if(aT>.5){ vec2 tgG=vec2(tgP(tgW.xz+vec2('+F(.15)+',0.),tgD,tgS),tgP(tgW.xz+vec2(0.,'+F(.15)+'),tgD,tgS))-tgK; objectNormal=normalize(objectNormal+vec3(tgG.x,0.,tgG.y)*aH*.9/'+F(.15)+'); }')
-    .replace('#include <begin_vertex>','#include <begin_vertex>\n vG=aG; { transformed.xz+=tgU*aH*.3; transformed.y+=tgR*aH*.15-aH*tgK*.9; }')
+    .replace('#include <begin_vertex>','#include <begin_vertex>\n vG=aG; vB=vec2(aH,aC); { transformed.xz+=tgU*(aH*.3+aL*.45); transformed.y+=tgR*aH*.15-aH*tgK*.9; transformed.xz+=vec2(sin(uSw*1.3+tgW.x*.8+tgW.z*.3),cos(uSw*1.1+tgW.z*.7))*uWk*(aH*.1+aL*.04); }')
     .replace('#include <shadowmap_vertex>',THREE.ShaderChunk.shadowmap_vertex.replace(/(directional|point)LightShadows\[ i \]\.shadowNormalBias/g,'($&+.12)'));
-    sh.fragmentShader='uniform float uSw; varying vec3 vG;\n'+sh.fragmentShader.replace('#include <color_fragment>','#include <color_fragment>\n diffuseColor.rgb*=lfn(vWP.xz*.031+7.)>.6?1.07:1.;'
+    sh.fragmentShader='uniform float uSw; varying vec3 vG; varying vec2 vB;\n'+sh.fragmentShader.replace('#include <color_fragment>','#include <color_fragment>\n diffuseColor.rgb*=lfn(vWP.xz*.031+7.)>.6?1.07:1.; diffuseColor.rgb*=mix(vec3(.74,.8,.66),vec3(1.1,1.12,.9),clamp(vB.x/'+F(.3)+',0.,1.))*mix(vec3(.9,.96,.84),vec3(1.06,1.03,.9),vB.y);'
       +' { int gv=int(vG.x+.5); if(vG.z>.5||gv>0&&vG.y>.42){ vec3 gc=gv==1?'+LC(222,184,92)+':gv==2?'+LC(201,140,46)+':gv==3?'+LC(208,172,86)+':'+LC(236,190,40)+';'
       +' if(vG.z>3.5)gc='+LC(255,246,200)+'; else if(vG.z>2.5)gc='+LC(238,222,170)+'; else if(vG.z>1.5)gc=gv==2?'+LC(232,200,120)+':'+LC(160,128,70)+'; else if(vG.z>.5)gc='+LC(186,132,44)+';'
       +' diffuseColor.rgb=gc*(lfn(vWP.xz*.11+float(gv)*3.7)>.58?1.08:1.); } }')
       .replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n { int gv=int(vG.x+.5); float tw=0.; if(vG.z>3.5){ float r=fract(sin(dot(floor(vWP.xz/'+F(.3)+'),vec2(127.1,311.7)))*43758.5453); tw=step(.45,fract(uSw*.4+r*7.)); }'
       +' else if(gv==4&&vG.y>.42&&vG.z<.5){ float r=fract(sin(dot(floor(vWP.xz/'+F(.08)+'),vec2(12.9898,78.233)))*43758.5453); tw=step(.965,r)*step(.7,fract(uSw*.5+r*13.)); } totalEmissiveRadiance+=vec3(1.,.82,.4)*(tw*.9+(vG.z>3.5?.35:0.)); }'); };
-  mat.customProgramCacheKey=()=>'tallgrass3';
+  mat.customProgramCacheKey=()=>'flatgrass4'; mat.side=THREE.DoubleSide;
   const seg=(px,pz,ax,az,bx,bz)=>{ const ux=bx-ax, uz=bz-az, t=Math.max(0,Math.min(1,((px-ax)*ux+(pz-az)*uz)/Math.max(ux*ux+uz*uz,1e-4))); return [Math.hypot(px-ax-ux*t,pz-az-uz*t),t]; };
   WEEDS.pressAt=(x,z)=>{ '@later'; let k=0; const E=.2*T, c=(e,w)=>{ k=Math.max(k,w*Math.max(0,Math.min(1,-e/E))); };
     for(let i=1;i<8;i++){ const m=MV[i]; if(m.w>=.5)c(Math.hypot(x-m.x,z-m.y)-.7*T,1); }
@@ -117,7 +117,7 @@ WEEDS.lawnInit=()=>{ const T=TILE, CS=8*T, N=16, CELL=CS/N, MG=4, W=N+2*MG, hsh=
   const inPark=(x,z,m=0)=>{ if(typeof PARK==='undefined'||PARK.ox==null)return false; const xa=SHARED.BOD.XS(PARK.x0+PARK.ox+m), xb=SHARED.BOD.XS(PARK.x1+PARK.ox-m), za=SHARED.BOD.ZS(PARK.y0+PARK.oy+m), zb=SHARED.BOD.ZS(PARK.y1+PARK.oy-m);
     return x>Math.min(xa,xb)&&x<Math.max(xa,xb)&&z>Math.min(za,zb)&&z<Math.max(za,zb); };
   WEEDS.inPark=inPark;
-  const deep=(x,z)=>{ if(typeof PARK==='undefined'||PARK.ox==null)return 0; const tx=x/T, tz=z/T, xa=SHARED.BOD.XS(PARK.x0+PARK.ox)/T, xb=SHARED.BOD.XS(PARK.x1+PARK.ox)/T, za=SHARED.BOD.ZS(PARK.y0+PARK.oy)/T, zb=SHARED.BOD.ZS(PARK.y1+PARK.oy)/T;
+  const deep=(x,z)=>{ '@later'; if(typeof PARK==='undefined'||PARK.ox==null)return 0; const tx=x/T, tz=z/T, xa=SHARED.BOD.XS(PARK.x0+PARK.ox)/T, xb=SHARED.BOD.XS(PARK.x1+PARK.ox)/T, za=SHARED.BOD.ZS(PARK.y0+PARK.oy)/T, zb=SHARED.BOD.ZS(PARK.y1+PARK.oy)/T;
     return Math.min(tx-Math.min(xa,xb),Math.max(xa,xb)-tx,tz-Math.min(za,zb),Math.max(za,zb)-tz)+10*(vn(tx/11,tz/11,97)-.5); };
   WEEDS.deep=deep;
   const patch=(x,z)=>{ const k=patch0(x,z); if(k==='flat'||k==='tuft')return k; const d=inPark(x,z)?deep(x,z):0;
@@ -137,7 +137,7 @@ WEEDS.lawnInit=()=>{ const T=TILE, CS=8*T, N=16, CELL=CS/N, MG=4, W=N+2*MG, hsh=
     const prism=(x,y,z,y0,y1,r,lx,lz,g,v,pt)=>{ const ym=(y0+y1)/2, o=new V3(x+lx*(ym-y),ym,z+lz*(ym-y)), at=(yy,a)=>new V3(x+lx*(yy-y)+Math.cos(a)*r,yy,z+lz*(yy-y)+Math.sin(a)*r), a0=hsh(z,x,613)*6.28;
       for(let k=0;k<3;k++){ const a=a0+k*2.094, b=a+2.094, p=at(y0,a), q=at(y0,b), u=at(y1,a), w=at(y1,b); tri(p,q,w,o,g,v,pt); tri(p,w,u,o,g,v,pt); } };
     for(let j=0;j<N;j++)for(let i=0;i<N;i++){ const c=ci(i,j); if(!I[c])continue; const x=x0+(i+.2+.6*hsh(i+x0,j+z0,601))*CELL, z=z0+(j+.2+.6*hsh(j+z0,i+x0,602))*CELL, gd=gat(x,z); if(!gd||gd[1]<.7)continue;
-      const v=gd[0], r=hsh(x,z,603), g=G[c], top=g+hgtA(x,z,gd), la=hsh(z,x,604)*6.28, ll=.12+.25*hsh(x,z,605), lx=Math.cos(la)*ll, lz=Math.sin(la)*ll;
+      const v=gd[0], r=hsh(x,z,603), g=G[c], top=g+.05*T, la=hsh(z,x,604)*6.28, ll=.12+.25*hsh(x,z,605), lx=Math.cos(la)*ll, lz=Math.sin(la)*ll;
       if(v===1&&r<.42)spin(x,top,z,top-.06*T,top+(.24+.1*hsh(x,z,606))*T,.045*T,4,lx,lz,g,1,1,.4);
       else if(v===2&&r<.07)for(let k=0;k<3;k++){ const a=la+k*2.1, f=.35+.2*hsh(x,z,620+k); prism(x,top,z,top-.25*T,top+(.28+.22*hsh(z,x,630+k))*T,.018*T,Math.cos(a)*f,Math.sin(a)*f,g,2,2); }
       else if(v===3&&r<.11){ const yt=top+(.45+.3*hsh(x,z,607))*T; prism(x,top,z,top-.3*T,yt,.022*T,lx*.5,lz*.5,g,3,2); spin(x,top,z,yt-.04*T,yt+.26*T,.05*T,3,lx*.5,lz*.5,g,3,3,.35); }
@@ -155,24 +155,25 @@ WEEDS.lawnInit=()=>{ const T=TILE, CS=8*T, N=16, CELL=CS/N, MG=4, W=N+2*MG, hsh=
     const G=new Float32Array(W*W), I=new Uint8Array(W*W), SQ=[], P=[], AH=[], AT=[], AG=[], IX=[], N1=N+1, VI=new Int32Array(N1*N1).fill(-1), VQ=[], ci=(i,j)=>(j+MG)*W+i+MG;
     for(let r=0;r<W;r++)for(let u=0;u<W;u++){ const k=(r*W+u)*4, i=u-MG, j=N+MG-1-r, x=x0+(i+.5)*CELL, z=z0+(j+.5)*CELL; if(PIX[k]<128||clr.some(q=>x>q[0]&&x<q[2]&&z>q[1]&&z<q[3]))continue; I[ci(i,j)]=1; G[ci(i,j)]=PIX[k+1]/255*4-.5; }
     for(let j=0;j<N;j+=2)for(let i=0;i<N;i+=2){ const c=ci(i,j); if(I[c])SQ.push(x0+(i+1)*CELL,G[c],z0+(j+1)*CELL); }
-    for(let b=0;b<=N;b++)for(let a=0;a<=N;a++){ let k=0, g=0, ox=0, oz=0; for(const [di,dj] of [[-1,-1],[0,-1],[-1,0],[0,0]]){ const c=ci(a+di,b+dj); if(I[c]){ k++; g+=G[c]; ox+=di+.5; oz+=dj+.5; } }
-      if(!k)continue; let e2=1e9; for(let j=b-MG;j<b+MG;j++)for(let i=a-MG;i<a+MG;i++)if(!I[ci(i,j)])e2=Math.min(e2,(i+.5-a)**2+(j+.5-b)**2);
-      const gx=x0+a*CELL, gz=z0+b*CELL, wob=(vn(gx/(.55*T),gz/(.55*T),421)-.5)*2, de=Math.min(MG,Math.sqrt(e2))-.707+.2+wob*.4, sm=u=>{ u=Math.max(0,Math.min(1,u)); return u*u*(3-2*u); }, t=sm(de/.5)*(1-.8*sm((de-1.2)/1.6));
-      const f=k===1?.5:k===3?-.5:0, jg=k<4?.6*CELL:0, x=gx+ox*f*CELL+(vn(gx/(.4*T),gz/(.4*T),433)-.5)*jg, z=gz+oz*f*CELL+(vn(gx/(.4*T),gz/(.4*T),434)-.5)*jg, gd=gat(x,z), h=hgtA(x,z,gd)*t*(.62+.76*vn(gx/(.31*T),gz/(.31*T),447)), ga=gd?[gd[0],gd[1],0]:[0,0,0]; g/=k;
-      VI[b*N1+a]=P.length/3; VQ[b*N1+a]=[x,g,z,h,ga]; P.push(x,g+h,z); AH.push(h); AT.push(1); AG.push(...ga); }
-    const wall=(p,q,nx,nz)=>{ const ex=q[0]-p[0], ez=q[2]-p[2]; if(Math.abs(ex)+Math.abs(ez)<1e-4)return; const v=P.length/3, lo=-.06*T, so=u=>(.12+.3*vn(u[0]/(.37*T),u[2]/(.37*T),451))*T;
-      P.push(p[0],p[1]+p[3],p[2],q[0],q[1]+q[3],q[2],q[0]+nx*so(q),q[1]+lo,q[2]+nz*so(q),p[0]+nx*so(p),p[1]+lo,p[2]+nz*so(p)); AH.push(p[3],q[3],0,0); AT.push(0,0,0,0); AG.push(...p[4],...q[4],...q[4],...p[4]);
-      if(ez*nx-ex*nz>0)IX.push(v,v+1,v+2,v,v+2,v+3); else IX.push(v,v+2,v+1,v,v+3,v+2); };
-    for(let j=0;j<N;j++)for(let i=0;i<N;i++){ if(!I[ci(i,j)])continue; const A=j*N1+i, B=A+1, C=A+N1, D=C+1;
-      const cr=(p,q,r)=>(VQ[q][2]-VQ[p][2])*(VQ[r][0]-VQ[p][0])-(VQ[q][0]-VQ[p][0])*(VQ[r][2]-VQ[p][2]);
-      if(cr(A,C,B)>0&&cr(B,C,D)>0)IX.push(VI[A],VI[C],VI[B],VI[B],VI[C],VI[D]); else IX.push(VI[A],VI[C],VI[D],VI[A],VI[D],VI[B]);
-      if(!I[ci(i,j-1)])wall(VQ[A],VQ[B],0,-1); if(!I[ci(i+1,j)])wall(VQ[B],VQ[D],1,0); if(!I[ci(i,j+1)])wall(VQ[C],VQ[D],0,1); if(!I[ci(i-1,j)])wall(VQ[A],VQ[C],-1,0); }
+    const comb=hsh(cx,cz,471)*6.28, AL=[], AC=[];   // flat blades combed one way per chunk, drifting with a noise; tufts stand up in small bunches
+    const blade=(x,g,z,ang,len,rise,w,h,c)=>{ const dx=Math.cos(ang), dz=Math.sin(ang), v=P.length/3, g0=g+.04*T; P.push(x-dz*w,g0,z+dx*w, x+dz*w,g0,z-dx*w, x+dx*len,g0+rise,z+dz*len); AH.push(0,0,h); AL.push(0,0,len); AT.push(0,0,0); AG.push(0,0,0,0,0,0,0,0,0); AC.push(c,c,c); IX.push(v,v+1,v+2); };
+    const bx0=x0-1.5*T, bz0=z0-1.5*T, bx1=x0+CS+1.5*T, bz1=z0+CS+1.5*T;   // tufts scattered out from the foot of every small solid thing on the lawn (posts, rocks, logs, trunks), thickest against it
+    for(const b of SOL.up){ if(b[2]<bx0||b[0]>bx1||b[3]<bz0||b[1]>bz1)continue; const w=b[2]-b[0], d=b[3]-b[1]; if(Math.max(w,d)>5*T||Math.min(w,d)<.05*T)continue; const per=2*(w+d), n=Math.ceil(per/(.22*T));
+      for(let q=0;q<n;q++){ const u=q/n*per; let px,pz,nx,nz; if(u<w){ px=b[0]+u; pz=b[1]; nx=0; nz=-1; } else if(u<w+d){ px=b[2]; pz=b[1]+u-w; nx=1; nz=0; } else if(u<2*w+d){ px=b[2]-(u-w-d); pz=b[3]; nx=0; nz=1; } else { px=b[0]; pz=b[3]-(u-2*w-d); nx=-1; nz=0; }
+        const r1=hsh(px,pz,531), r2=hsh(pz,px,532), dist=(.08+r1*r1*1.2)*T, x=px+nx*dist+(r2-.5)*.2*T, z=pz+nz*dist+(r2-.5)*.2*T; if(x<x0||x>=x0+CS||z<z0||z>=z0+CS||x>b[0]&&x<b[2]&&z>b[1]&&z<b[3])continue;
+        const c=ci(Math.floor((x-x0)/CELL),Math.floor((z-z0)/CELL)); if(!I[c])continue; const s=.75+.55*(1-Math.min(1,dist/(1.2*T))), nb=3+Math.floor(r2*3);
+        for(let k=0;k<nb;k++){ const a=hsh(x,z+k,533)*6.28, len=(.08+.1*hsh(x+k,z,534))*T*s, rise=(.22+.14*hsh(z,x+k,535))*T*s; blade(x,G[c],z,a,len,rise,.03*T*s,rise,.5+.3*r1); } } }
+    for(let j=0;j<N;j++)for(let i=0;i<N;i++){ const c=ci(i,j); if(!I[c])continue; const g=G[c], x=x0+(i+.5)*CELL, z=z0+(j+.5)*CELL, k=patch(x,z), tint=vn(x/T/5,z/T/5,481), n=k==='tuft'?5:6;
+      for(let q=0;q<n;q++){ const r1=hsh(x+q*7,z,491+q), r2=hsh(z,x+q*7,492+q), r3=hsh(x,z+q*7,493+q), px=x+(r1-.5)*CELL*.9, pz=z+(r2-.5)*CELL*.9, cc=Math.max(0,Math.min(1,tint*.7+r3*.3));
+        if(k==='tuft'){ const ang=r3*6.28, len=(.1+.1*r1)*T, rise=(.26+.16*r2)*T; blade(px,g,pz,ang,len,rise,.03*T,rise,cc); }
+        else { const ang=comb+(vn(x/T/3,z/T/3,483)-.5)*1.6+(r3-.5)*.5, len=(.42+.28*r1)*T, rise=Math.tan((6+8*r2)*Math.PI/180)*len; blade(px,g,pz,ang,len,rise,.045*T,rise,cc); } } }
     if(!IX.length)return null; if(WEEDS.GP&&WEEDS.GP.some(p=>p.wx+p.wr*1.6>x0&&p.wx-p.wr*1.6<x0+CS&&p.wz+p.wr*1.6>z0&&p.wz-p.wr*1.6<z0+CS))stalks(x0,z0,G,I,ci,P,AH,AT,AG,IX);
-    const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); geo.setAttribute('aH',new THREE.Float32BufferAttribute(AH,1)); geo.setAttribute('aT',new THREE.Float32BufferAttribute(AT,1)); geo.setAttribute('aG',new THREE.Float32BufferAttribute(AG,3));
-    geo.setIndex(IX); const gf=geo.toNonIndexed(); geo.dispose(); gf.computeVertexNormals(); const me=new THREE.Mesh(gf,mat); me.receiveShadow=true; me.tri=IX.length/3; me.sq=SQ; me.top=(x,y,z)=>y+hgtA(x,z); me.dispose=()=>gf.dispose();
+    while(AL.length<AH.length){ AL.push(0); AC.push(.5); }   // the reeds' vertices
+    const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); geo.setAttribute('aH',new THREE.Float32BufferAttribute(AH,1)); geo.setAttribute('aT',new THREE.Float32BufferAttribute(AT,1)); geo.setAttribute('aG',new THREE.Float32BufferAttribute(AG,3)); geo.setAttribute('aL',new THREE.Float32BufferAttribute(AL,1)); geo.setAttribute('aC',new THREE.Float32BufferAttribute(AC,1));
+    geo.setIndex(IX); const gf=geo.toNonIndexed(); geo.dispose(); gf.computeVertexNormals(); const me=new THREE.Mesh(gf,mat); me.receiveShadow=true; me.tri=IX.length/3; me.sq=SQ; me.top=(x,y,z)=>y; me.dispose=()=>gf.dispose();
     MAPG.bodega.add(me); WEEDS.lawnN+=me.tri; return me; };
   const drop=k=>{ const me=CH.get(k); if(me){ MAPG.bodega.remove(me); me.dispose(); WEEDS.lawnN-=me.tri; } CH.delete(k); SYS.run('weedsDrop',k); };
-  { const RC=new THREE.Raycaster(), DN=new THREE.Vector3(0,-1,0), O=new THREE.Vector3(); WEEDS.top=(x,z)=>{ const k=Math.floor(x/CS)+','+Math.floor(z/CS); if(!CH.has(k))return undefined; const me=CH.get(k); if(!me)return null; RC.set(O.set(x,60*T,z),DN); const h=RC.intersectObject(me,false)[0]; return h?h.point.y:null; }; }
+  { const RC=new THREE.Raycaster(), DN=new THREE.Vector3(0,-1,0), O=new THREE.Vector3(); WEEDS.top=(x,z)=>null; WEEDS.tall=false; }   // flat grass: nothing stands on it or hides in it (the raycast top went with the tall mass, 23 Oct)
   WEEDS.lawnDrop=r=>{ for(const k of [...CH.keys()]){ const [a,b]=k.split(',').map(Number); if(r[2]>a*CS-MG*CELL&&r[0]<(a+1)*CS+MG*CELL&&r[3]>b*CS-MG*CELL&&r[1]<(b+1)*CS+MG*CELL)drop(k); } };
   let busy=0, next=0; WEEDS.lawnTick=()=>{ if(SHARED.LVL!=='up'||(ROOMS&&ROOMS.cur))return; const pcx=Math.floor(pos.x/CS), pcz=Math.floor(pos.z/CS);
     for(const k of [...CH.keys()]){ const [a,b]=k.split(',').map(Number); if(Math.max(Math.abs(a-pcx),Math.abs(b-pcz))>3)drop(k); }

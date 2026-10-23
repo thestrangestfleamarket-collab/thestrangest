@@ -65,7 +65,7 @@ Object.assign(BLK,{blds:[],signs:[],band:()=>null,built:0,in:false,hi:[],LO:.5})
   for(const [x,y,w,d,hp] of CR)solid(x-w/2,Math.min(y-d/2,y+d/2),x+w/2,Math.max(y-d/2,y+d/2),hp);
   const GA=new THREE.Group(); GA.name='alley'; GA.visible=false; scene.add(GA);
   let tl=0; const Y=()=>{ const n=performance.now(); if(n-tl<20)return Promise.resolve(); BLK.step=Math.max(BLK.step||0,n-tl); (BLK.steps||(BLK.steps=[])).push(Math.round(n-tl)); return new Promise(r=>requestAnimationFrame(r)).then(()=>{ tl=performance.now(); }); };
-  const make=async()=>{ const G=GA, bx=(L,x0,y0,p0,x1,y1,p1,c)=>L.push([XS(Math.min(x0,x1)),YP(Math.min(p0,p1)),ZS(Math.min(y0,y1)),XS(Math.max(x0,x1)),YP(Math.max(p0,p1)),ZS(Math.max(y0,y1)),c]);
+  const make=async()=>{ '@later'; const G=GA, bx=(L,x0,y0,p0,x1,y1,p1,c)=>L.push([XS(Math.min(x0,x1)),YP(Math.min(p0,p1)),ZS(Math.min(y0,y1)),XS(Math.max(x0,x1)),YP(Math.max(p0,p1)),ZS(Math.max(y0,y1)),c]);
   const KO='"Black Han Sans","Do Hyeon","Noto Sans KR",sans-serif', KO2='"Do Hyeon","Black Han Sans","Noto Sans KR",sans-serif';
   const words=(g,t,x,y,w,h,font,vert)=>{ g.textAlign='center'; g.textBaseline='middle';
     if(vert){ const n=[...t].length, sz=Math.min(w*.9,h/n*.95); g.font=`${sz|0}px ${font}`; [...t].forEach((ch,i)=>g.fillText(ch,x+w/2,y+h/n*(i+.5))); return; }
@@ -170,7 +170,7 @@ Object.assign(BLK,{blds:[],signs:[],band:()=>null,built:0,in:false,hi:[],LO:.5})
   const vis=v=>{ BLK.shown=v; GA.visible=v; for(const q of BLK.hi)q.m.material=v?q.hi:q.lo; esc(v); };
   const frames=n=>new Promise(r=>{ const f=()=>--n<=0?r():requestAnimationFrame(f); requestAnimationFrame(f); });
   const build=async()=>{ const t0=performance.now(); tl=t0; for(const q of BLK.hi)q.hi=await q.paint(); await make(); BLK.step=Math.max(BLK.step||0,performance.now()-tl); BLK.ms=+(performance.now()-t0).toFixed(1); BLK.built=1; };
-  BLK.go=async()=>{ '@later'; if(BLK.fade||BLK.built)return; BLK.fade=1; await FADE.run('ENTERING THE ALLEY',()=>BLK.job||(BLK.job=build()),{cut:true}); BLK.fade=0; };
+  BLK.go=async()=>{ if(BLK.fade||BLK.built)return; BLK.fade=1; await FADE.run('ENTERING THE ALLEY',()=>BLK.job||(BLK.job=build()),{cut:true}); BLK.fade=0; };
   { const za=Math.min(ZS(B.alley[0]),ZS(B.alley[1])), zc=Math.max(ZS(B.alley[0]),ZS(B.alley[1])), h0=Math.min(XS(B.hudson[0]),XS(B.hudson[1])), h1=Math.max(XS(B.hudson[0]),XS(B.hudson[1])), x0=Math.min(XS(B.x0),XS(B.x1)), x1=Math.max(XS(B.x0),XS(B.x1));
     BLK.inAlley=(x,z)=>z>za&&z<zc&&x>x0&&x<x1&&!(x>h0&&x<h1);
     BLK.tick=()=>{ if(!window.__started||ROOMS.cur||UI.freeCam||ED.on||window.POSOK===false)return; const up=SHARED.LVL==='up';

@@ -114,7 +114,7 @@ import {BODIES} from './111a-bodies.js';
         for(const v of [va,vb,vc]){ P.push(v.x,v.y,v.z); N.push(nn.x,nn.y,nn.z); C.push(r,gg,bb); I.push(bi,bi); W.push(1); } } });
     const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); geo.setAttribute('normal',new THREE.Float32BufferAttribute(N,3));
     geo.setAttribute('color',new THREE.Float32BufferAttribute(C,3)); geo.setAttribute('bi',new THREE.Float32BufferAttribute(I,2)); geo.setAttribute('bw',new THREE.Float32BufferAttribute(W,1)); geo.computeBoundingSphere(); return geo; }
-  BODIES.add({key:'knight',label:'KNIGHT',geo:bake,height:1.89,hipY:HIPY,off:OFF,binv:null,at:null});
+  BODIES.add({key:'knight',label:'KNIGHT',geo:bake,height:1.89,hipY:HIPY,off:OFF,binv:null,at:76});
   if(STORE.holo)STORE.holo.programs.push({name:'SWORD TRAINING',skill:'sword',tool:'sword',intro:'SWORD TRAINING. THE KNIGHT RAISES HIS SWORD: SWING YOURS WHEN HE CALLS STRIKE.',cue:'STRIKE!',
-    place:(x,z,hd,G)=>BODIES.place('knight',x,z,hd,G),hide:()=>BODIES.hide('knight')});
+    place:(x,z,hd,G)=>BODIES.place('knight',x,z,hd,G),hide:()=>BODIES.restore('knight')});
 }

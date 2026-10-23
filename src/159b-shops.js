@@ -36,7 +36,7 @@ Object.assign(SHOPS,{bound:new Set(),cur:null});
     if(!N.g||!UI.thing)return; const sc=N.g.scale.y||1, H=(N.H||1.8*T)/sc;
     const hb=new THREE.Mesh(new THREE.BoxGeometry(1.4*T/sc,H,1.4*T/sc),new THREE.MeshBasicMaterial({visible:false})); hb.position.y=H/2; N.g.add(hb);
     UI.thing({name:N.name||'A MERCHANT',npc:N,obj:hb,reach:1.6*T,near:3*T,tall:(N.H||1.8*T)+.3*T,act:()=>SHOPS.open(N)}); };
-  SHOPS.sync=()=>{ for(const N of NPCS)try{ bind(N); }catch(e){} };
+  SHOPS.sync=()=>{ for(const N of NPCS.concat(NPCS.extra||[]))try{ bind(N); }catch(e){} };
   { const go=()=>{ if(!window.__started)return setTimeout(go,800); SHOPS.sync(); }; go(); }
   window.SHOPS=SHOPS;
   window.SHOPDBG=()=>({bound:[...SHOPS.bound],cur:SHOPS.cur&&SHOPS.cur.name,cash:window.INV&&INV.cash,things:(UI.things||[]).filter(t=>t.npc&&SHOPS.bound.has(CHARS.id(t.npc))).map(t=>t.name)}); }

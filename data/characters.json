@@ -43,14 +43,6 @@
    "line": "A blade for every purse. Hold P to block; catch the blow on the beat and they stagger."
   }
  },
- "emberknight": {
-  "name": "THE ARMOURER",
-  "trade": {
-   "sells": [
-    "armor"
-   ]
-  }
- },
  "coatbear": {
   "name": "THE BEAR MERCHANT",
   "trade": {
@@ -60,5 +52,14 @@
   },
   "scale": 0.5,
   "tint": "#a86e3c"
+ },
+ "knight": {
+  "name": "THE ARMOURER",
+  "trade": {
+   "sells": [
+    "armor"
+   ],
+   "line": "Plate for the road. Catch me in the holodeck if you want to train."
+  }
  }
 }

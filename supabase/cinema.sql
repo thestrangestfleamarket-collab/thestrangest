@@ -1,6 +1,6 @@
 -- The cinema's shared "now playing" state. Run once in the Supabase SQL editor (project jvcetttmqseoteidfggn).
--- Without this table the theatre's poll finds nothing and the screen plays nothing; the client degrades
--- quietly, but the cinema only actually works once this table exists.
+-- The game reads this through the site's own /now worker (which answers quietly when the row is missing, so there
+-- is no error either way), but the cinema only actually plays once this table exists and holds the theatre row.
 
 create table if not exists now_playing (
   id          text primary key,

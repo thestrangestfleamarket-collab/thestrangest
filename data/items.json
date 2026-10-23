@@ -1,5 +1,7 @@
 {
  "sword": {"slot":"hand","grants":"fight","value":15},
  "net": {"slot":"hand","grants":"catch","value":8},
- "bnet": {"slot":"hand","grants":"catch","value":12}
+ "bnet": {"slot":"hand","grants":"catch","value":12},
+ "armor": {"slot":"body","grants":"guard","value":40},
+ "cloudcoat": {"slot":"body","grants":"float","value":60}
 }

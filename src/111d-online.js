@@ -50,7 +50,7 @@ Object.assign(ONLINE,{others:new Map(),on:false,me:'',log:[]}); window.ONLINE=ON
   const fig=o=>{ '@later'; unfig(o); const k=o.look||'w00', b=built(k), g=new THREE.Group();
     if(b.body){ const M=BODIES.mesh(b.body); g.add(M.me); o.fig={g,me:M.me,body:b.body,PM:M.PM}; }
     else{ const FM=figureMesh(b.PCS,'online'); g.add(FM.me); o.fig={g,me:FM.me,FM,PCS:b.PCS}; }
-    o.key=k; o.B=null; scene.add(g); };
+    o.key=k; o.B=null; g.userData.anyRoom=true; scene.add(g); };
   const unfig=o=>{ if(o.fig){ scene.remove(o.fig.g); const me=o.fig.me; for(const m of [me.material,me.customDistanceMaterial,me.customDepthMaterial])if(m)m.dispose(); o.fig=null; }
     if(o.tag){ scene.remove(o.tag); o.tag.material.map.dispose(); o.tag.material.dispose(); o.tag=null; o.tagS=''; } };
 
@@ -61,19 +61,23 @@ Object.assign(ONLINE,{others:new Map(),on:false,me:'',log:[]}); window.ONLINE=ON
       x.fillStyle='rgba(11,13,19,.88)'; x.fillRect(256-w/2,28,w,44); x.fillStyle='#f4f2ea'; x.fillText(t,256,51); }
     x.lineWidth=6; x.strokeStyle='#0b0d13'; x.strokeText(nm,256,100); x.fillStyle='#ffd27a'; x.fillText(nm,256,100);
     const tx=new THREE.CanvasTexture(c); tx.magFilter=tx.minFilter=THREE.NearestFilter; tx.generateMipmaps=false; tx.colorSpace=THREE.SRGBColorSpace;
-    if(!o.tag){ o.tag=new THREE.Sprite(new THREE.SpriteMaterial({map:tx,transparent:true,depthWrite:false,toneMapped:false,fog:false})); o.tag.scale.set(5.2*TILE,1.3*TILE,1); o.tag.renderOrder=5; scene.add(o.tag); }
+    if(!o.tag){ o.tag=new THREE.Sprite(new THREE.SpriteMaterial({map:tx,transparent:true,depthWrite:false,toneMapped:false,fog:false})); o.tag.scale.set(5.2*TILE,1.3*TILE,1); o.tag.renderOrder=5; o.tag.userData.anyRoom=true; scene.add(o.tag); }
     else{ o.tag.material.map.dispose(); o.tag.material.map=tx; } };
 
   /* ---------- each frame: the nearest twenty on your level and in your room, walking where they were sent ---------- */
   const hide=o=>{ if(o.fig)o.fig.g.visible=false; if(o.tag)o.tag.visible=false; };
+  const boxAt=(x,z,y)=>{ const L=ROOMS.boxes?ROOMS.boxes():[]; return L.find(b=>!b.off&&(x>b.x0&&x<b.x1&&z>b.z0&&z<b.z1||b.band&&x>b.band.x0&&x<b.band.x1&&z>b.band.z0&&z<b.band.z1)&&y>b.y0-.3&&y<b.y1)||null; };
+  const same=(p,rk)=>{ const off=s=>String(s||'').split(',')[0]; if(off(p.rm)||off(rk))return p.rm===rk; return boxAt(p.x,p.z,p.y)===boxAt(pos.x,pos.z,SHARED.py); };   // a room off the map by its name (apartments share one box); one on the map by where they stand, not by what their game last said
+  ONLINE.same=same;
   const draw=(dt,now)=>{ '@later'; const lv=SHARED.LVL||'up', rk=roomKey(), C=[];
-    for(const o of ONLINE.others.values()){ const p=o.p=place(o,now), d=p?Math.hypot(p.x-pos.x,p.z-pos.z):1e9; if(p&&p.lv===lv&&p.rm===rk&&d<FAR){ o.dd=d; C.push(o); } else hide(o); }
+    for(const o of ONLINE.others.values()){ const p=o.p=place(o,now), d=p?Math.hypot(p.x-pos.x,p.z-pos.z):1e9; if(p&&p.lv===lv&&same(p,rk)&&d<FAR){ o.dd=d; C.push(o); } else hide(o); }
     C.sort((a,b)=>a.dd-b.dd); for(const o of C.slice(MAXN))hide(o);
-    for(const o of C.slice(0,MAXN)){ const p=o.p; if(!o.fig||o.key!==(o.look||'w00'))fig(o); const F=o.fig, g=F.g;
+    for(const o of C.slice(0,MAXN)){ try{ const p=o.p; if(!o.fig||o.key!==(o.look||'w00'))fig(o); const F=o.fig, g=F.g;
       const sp=o.q?Math.hypot(p.x-o.q.x,p.z-o.q.z)/Math.max(dt,1e-3):0; o.q={x:p.x,z:p.z}; o.S.target=sp>.4*TILE?1:0; R.step(o.S,dt);
       g.visible=true; g.position.set(p.x,p.y,p.z); g.rotation.y=p.hd; if(F.body)musScale(g,1); else musScale(g); o.d=((Math.round(p.hd/PI4)%8)+8)%8;
       if(!o.B||ASTEP.gate(o,dt)){ R.farOnly(false); const B=o.B=R.pose(o.S,true); if(F.body)BODIES.pose(B,F.PM,F.body); else F.PCS.forEach((pc,i)=>F.FM.set(i,R.frameOf(pc.on||pc.n,B))); }
-      tag(o); o.tag.visible=true; o.tag.position.set(p.x,p.y+2.65*TILE,p.z); } };
+      tag(o); o.tag.visible=true; o.tag.position.set(p.x,p.y+2.65*TILE,p.z); }catch(e){ hide(o); if(!o.err){ o.err=1; console.warn('ONLINE: could not draw '+(o.name||o.id),e); } } } };
+  window.ONLINEDBG=()=>({me:{lv:SHARED.LVL,rk:roomKey(),at:[+pos.x.toFixed(1),+pos.z.toFixed(1),+SHARED.py.toFixed(2)]},on:ONLINE.on,others:[...ONLINE.others.values()].map(o=>({name:o.name,look:o.look,p:o.p&&{x:+o.p.x.toFixed(1),z:+o.p.z.toFixed(1),y:+o.p.y.toFixed(2),lv:o.p.lv,rm:o.p.rm},same:!!(o.p&&same(o.p,roomKey())),shown:!!(o.fig&&o.fig.g.visible),err:!!o.err}))});
 
   /* ---------- the chat and who's online (ENTER talks; the key is in the controls) ---------- */
   const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);

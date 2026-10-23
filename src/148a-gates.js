@@ -8,7 +8,7 @@ GATES.init=()=>{ if(typeof SHARED.BOD==='undefined'||typeof BLOCK==='undefined')
   const T=TILE, M=T/.84, XS=SHARED.BOD.XS, ZS=SHARED.BOD.ZS, G=(x,z)=>MODS.bodega.ground(x,z), yF=SHARED.BOD.K.LSEED.walk-.12, yB=BLOCK.back+.15, za=Math.min(ZS(yF),ZS(yB)), zb=Math.max(ZS(yF),ZS(yB));
   const hs=(a,b)=>{ const v=Math.sin(a*12.9898+b*78.233)*43758.5453; return v-Math.floor(v); };
   const T0=x=>x/T+SHARED.BOD.OX, F=[]; for(const b of BLK.blds)if(b.y1>yF-3&&b.y0<yB+3)F.push([b.x0,b.x1]);
-  for(const k of ['house','bodega','ghost','bar','museum','theatre','arcade','playhouse']){ const b=MAPED.box&&MAPED.box(k); if(b&&b[3]/T+SHARED.BOD.OY>yF-3&&b[1]/T+SHARED.BOD.OY<yB+3)F.push([T0(b[0]),T0(b[2])]); }
+  for(const k of ['house','bodega','ghost','bar','museum','arcade','playhouse']){ const b=MAPED.box&&MAPED.box(k); if(b&&b[3]/T+SHARED.BOD.OY>yF-3&&b[1]/T+SHARED.BOD.OY<yB+3)F.push([T0(b[0]),T0(b[2])]); }
   const bl=m=>SHARED.BOD.OX+(m-SHARED.BOD.OX)/BLDK;
   for(const k in WROW){ const w=WROW[k], s=u=>SHARED.BOD.OX+(u-SHARED.BOD.OX)*BLDK; F.push([s(w.x0),s(w.x1)]); }
   for(const k in BLOCK.lots||{}){ const [a,b]=BLOCK.lots[k], x0=SHARED.BOD.X(bl(a)+.1), x1=SHARED.BOD.X(bl(b)-.1); F.push([T0(Math.min(x0,x1)),T0(Math.max(x0,x1))]); }

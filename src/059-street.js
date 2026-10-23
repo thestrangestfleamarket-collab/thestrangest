@@ -1,4 +1,4 @@
-// MAIN STREET: the lots along Main Street (the theatre, the arcade, the playhouse and the rest; its own builder).
+// MAIN STREET: the lots along Main Street (the arcade, the playhouse and the rest; the theatre is shelved; its own builder).
 import {SHARED, THREE} from './003-shx.js';
 import {BLK, LITE, pos, SFX, USE} from './003b-systems.js';
 import {scene} from './004-main.js';
@@ -11,25 +11,8 @@ await grab('mainstreet',async()=>{ const K=STORE.kit, {room,STEPS}=K, {X,Y,Z,pla
   const word=(s,c0,z0,k)=>(c,z)=>{ const i=Math.floor((c-c0)/k), r=6-Math.floor((z-z0)/k); if(c<c0||z<z0||i>=s.length*6-1||r<0||r>6)return false; const q=i%6, g=FONT[s[Math.floor(i/6)]]; return q<5&&!!g&&g[r*5+q]==='#'; };
   const neon=(on,c,z,k,col,f)=>{ if(on(c,z))return lit(col); for(const [a,b] of [[-k,0],[k,0],[0,-k],[0,k]])if(on(c+a,z+b))return sh(col,.42*f); return null; };
   const unplace=n=>{ const i=STORE.places.findIndex(p=>p[0]===n); if(i>=0)STORE.places.splice(i,1); }, door=(k,f)=>{ const T=TURN(lot(k),WP[k].face), L=T.L, u=L.x0+f(L), a=T.pt(u,L.y1+2.2/BLDK), b=T.pt(u,L.y1); return [X(a[0]),Z(a[1]),X(b[0]),Z(b[1]),T.hd(0)]; };
-  const MS=STORE.main={lot,word,neon,unplace,doors:[['THE MOVIE THEATRE',...door('theatre',()=>4.4)],['THE ARCADE',...door('arcade',L=>(L.x1-L.x0)/2)],['THE PLAYHOUSE',...door('play',L=>(L.x1-L.x0)/2)]]};
+  const MS=STORE.main={lot,word,neon,unplace,doors:[['THE ARCADE',...door('arcade',L=>(L.x1-L.x0)/2)],['THE PLAYHOUSE',...door('play',L=>(L.x1-L.x0)/2)]]};
 
-  STEPS.push(()=>{ const B=lot('theatre',176), W=B.x1-B.x0, cx=(B.x0+B.x1)/2, LOB=B.y1-4.6, door=B.x0+4.4;
-    const SEG=[[6,14.65,-6],[16.6,19.5,-7.95],[2.8,2.8+W-11.55,8.75]];
-    const pic=(X_,z)=>{ const u=X_-B.x0; for(const [a,b,o] of SEG)if(u>=a+o&&u<b+o)return TH.THFRONT(u-o,z); return null; };
-    const out=(nx,ny,Xw,Yw,z,f,cap)=>{ if(ny>0){ const c=pic(Xw,z); if(c)return c.e?c:sh(c,f); } const u=(nx?Yw:Xw)*24|0, r=z|0; return sh(r%8<1||(u+(r>>3&1)*8)%16<1?[120,52,44]:[156,66,54],f); };
-    const S={x0:B.x0+2.2,x1:B.x1-2.2,y:B.y1-T,z0:60,z1:172,m:12};
-    const R=room('theatre','MOVIE THEATRE',B,{floor:TH.theatreCarpet,in:(q,nx,ny,X_,Y_,z,f)=>TH.theatreWall(nx?Y_:X_,z,f),out,cope:[200,192,170]},{w:'f',a:door,wd:1.56,h:94},(B_,l0)=>{
-      const n0=PROPS.length, oL=B.y0+4.6, odx=2*cx-door, w=.85, rx0=cx-2*w, rows=[3.6].map(d=>B.y1-d);
-      TH.theatreScreen(S); TH.theatreDrape(B.x0+T,S.x0-S.m/24,S); TH.theatreDrape(S.x1+S.m/24,B.x1-T,S); TH.theatreValance(S);
-      for(const y of rows)for(let i=0;i<4;i++)TH.theatreSeat(rx0+i*w,y,w,i===3);
-      for(const [x,n] of [[B.x0+T,[1,0]],[B.x1-T,[-1,0]]])for(const y of [2.4,6].map(d=>B.y1-d)){ SK.bar.theatreSconce(x,y,n); LAMPS.push({x:x+n[0]*.35,y,z:68,r:3.4,c:[1,.62,.34]}); }
-      LAMPS.push({x:cx,y:S.y-2.5,z:110,r:8,c:[.62,.66,.78]},{x:cx,y:B.y0+2.3,z:100,r:5,c:[1,.86,.6]});
-      TH.theatreAisleLights([rx0-.35,rx0+4*w+.35],rows.map(y=>y-.45)); TH.theatreExit(odx,oL+.1); TH.theatrePort(odx,oL+.1,190);
-      for(const [a,b,o] of SEG){ TH.thAt(B.x1-o,B.y0); TH.thFront(p=>{ const u0=Math.max(p[0],a), u1=Math.min(p[1],b); return u1-u0>.01?[u0,u1,...p.slice(2)]:null; }); }
-      turn(B,n0,l0); },{xw:[['lobby','x',LOB,B.x0+T,B.x1-T,-1,[{a0:door-.8,a1:door+.8,z0:0,z1:96}],true]]});
-    const tx=new THREE.DataTexture(new Uint8Array(TH.FILMW*TH.FILMH*4),TH.FILMW,TH.FILMH); tx.magFilter=tx.minFilter=THREE.NearestFilter; tx.colorSpace=THREE.SRGBColorSpace;
-    const fm=new THREE.Mesh(new THREE.PlaneGeometry(X(S.x1)-X(S.x0),Y(S.z1)-Y(S.z0)),new THREE.MeshBasicMaterial({map:tx})); fm.position.set(X(cx),Y((S.z0+S.z1)/2),Z(B.y0+T+.075)); fm.visible=false; scene.add(fm);
-    unplace('MOVIE THEATRE'); MS.theatre={R,fm,tx,k:-1}; });
 
   STEPS.push(()=>{ const LW=lot('play',190), TP=TURN(LW,WP.play.face), OX=TP.q?760-TP.cx:0, B=TP.q?{...TP.L,x0:TP.L.x0+OX,x1:TP.L.x1+OX}:LW, cx=(B.x0+B.x1)/2, cy=(B.y0+B.y1)/2, P=PY.PLAYK(B), mx=x=>2*cx-x, my=y=>2*cy-y, L=[];
     const out=(nx,ny,Xw,Yw,z,f,cap)=>{ if(ny>0){ const c=P.playFront(Xw,z,f); if(c)return c; } return facade(nx,ny,Xw,Yw,z,f,cap,[118,50,44]); };

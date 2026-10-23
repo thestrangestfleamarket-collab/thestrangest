@@ -109,7 +109,7 @@ GAMEED.build=()=>{ '@editor'; const T=TILE;
     R('SUBWAY STAIRS','shop',[MAPSTAIR.x0,MAPSTAIR.y0],[MAPSTAIR.x1,MAPSTAIR.y1],8,'concrete pavement','subway');
     R('TO THE HUDSON (PASSAGE)','path',[BLOCK.hudson[0],BLOCK.row2[0]],[BLOCK.hudson[1],FRONT],0,'concrete pavement','hudson');
     { const g=SHARED.BOD.grounds.find(q=>q.id==='ghostst'); if(g)R('THE BATH HOUSE','shop',bt(g.x0,g.y0),bt(g.x1,g.y1),170,'wood','bath'); }
-    R('THE MOVIE THEATRE','shop',...lot('theatre'),176,'red brick, film front','theatre'); R('THE ARCADE','shop',...lot('arcade'),180,'neon front','arcade');
+    R('THE ARCADE','shop',...lot('arcade'),180,'neon front','arcade');
     if(window.BLK){ let i=0; for(const q of BLK.blds){ if(q.e)R('EMPTY SHELL '+(++i),'shell',[q.x0,q.y0],[q.x1,q.y1],q.h,'brick (block painter)','shell'+i); else R(q.row===1?'EMPTY FRONT':'BACK ROW','filler',[q.x0,q.y0],[q.x1,q.y1],q.h,'brick (block painter)'); } }
     { const c=CASTLE.b; R('THE CASTLE','park',[c[0],c[2]],[c[1],c[3]],200,'castle stone','castle'); }
     Cc('THE LAKE','park',P.lake[0]+ox,P.lake[1]+oy,P.lake[2],0,'pond water','lake'); L[L.length-1].color='#3a74aa';

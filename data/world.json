@@ -130,13 +130,6 @@
    "x1": 110.99
   },
   {
-   "id": "theatre",
-   "name": "THE MOVIE THEATRE",
-   "kind": "front",
-   "x0": 229.75,
-   "x1": 243.75
-  },
-  {
    "id": "arcade",
    "name": "THE ARCADE",
    "kind": "front",

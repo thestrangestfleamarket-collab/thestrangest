@@ -153,7 +153,7 @@ Places built with `await grab(name, async()=>{...})` are one function each, ofte
 | `134a-parkfar.js` | 2.9 | top level |  | 003: SHARED THREE; 004: scene; 006: MAPG MISTE PFAR SYS TILE; 065: RINGX |
 | `134b-daynight.js` | 7.9 | top level |  | 003: SHARED THREE; 003b: CLOCK DN FAR3 PARK SKY WX; 004: scene; 005: SAVE; 006: MISTE MISTS MISTSC QS SYS; 064: HEMI |
 | `134c-editors.js` | 4.4 | top level |  | 003b: CHARED EDITORS GAMEED ITEMED LAND LIGHTED UI WE |
-| `134d-shafts.js` | 3.9 | top level |  | 003: SHARED THREE; 003b: CLOCK DN LOOK WX pos; 004: scene; 006: OUT SYS TILE |
+| `134d-shafts.js` | 4.4 | top level |  | 003: SHARED THREE; 003b: CLOCK DN LOOK WX pos; 004: scene; 006: OUT SYS TILE |
 | `135-where.js` | 1.8 | top level | BUILDV (136 136a) | 003: SHARED; 003b: CLIP PH RAG UI WHERE pos; 005: SAVE; 006: MODS QS SOL STORE TILE |
 | `136-version.js` | 2.0 | top level |  | 135: BUILDV |
 | `136a-bugs.js` | 9.5 | top level |  | 003: SHARED; 003b: BUGS CLOCK UI pos; 004: renderer; 006: STORE; 135: BUILDV |

@@ -3,7 +3,8 @@ import {FORAGE, ITEMED, ITEMS} from './003b-systems.js';
 import {OWNED} from './005-save.js';
 { const BOOL=[['burnable','BURNS'],['edible','EDIBLE'],['stackable','STACKS'],['pickup','PICK UP'],['sellable','SELLABLE'],['offworld','OFF-WORLD']];
   const NUM=[['weight','WEIGHT',0,50,0.1,1],['value','VALUE',0,500,1,0],['breath','BREATH s',0,180,5,0]];
-  const DEF=()=>{ const d={}; for(const [k] of BOOL)d[k]=false; for(const [k,,,,,v] of NUM)d[k]=v; return d; };
+  const SEL=[['slot','WORN / HELD',['none','hand','body']],['grants','GRANTS (ABILITY)',['none','catch','fight','guard','float']]];
+  const DEF=()=>{ const d={}; for(const [k] of BOOL)d[k]=false; for(const [k,,,,,v] of NUM)d[k]=v; for(const [k,,opts] of SEL)d[k]=opts[0]; return d; };
   let BAKED={}; try{ BAKED=__DATA__("data/items.json")||{}; }catch(e){}
   try{ for(const id in BAKED)ITEMS.defs[id]=Object.assign(DEF(),BAKED[id]); }catch(e){}
   try{ const L=JSON.parse(OWNED.get('items')||'{}'); for(const id in L)ITEMS.defs[id]=Object.assign(ITEMS.defs[id]||DEF(),L[id]); }catch(e){}
@@ -34,10 +35,11 @@ import {OWNED} from './005-save.js';
       <div class="row"><input type="text" id="itnew" placeholder="new item id, e.g. crate"><button class="btn" id="itadd">ADD</button></div>
       ${ids.length?ids.map(id=>{ const d=ITEMS.defs[id]; return `<div class="it"><div class="nm"><span>${esc(id)}</span><button data-del="${esc(id)}">remove</button></div>
         <div class="props">${BOOL.map(([k,n])=>`<button class="chip" data-id="${esc(id)}" data-k="${k}" aria-pressed="${!!d[k]}">${n}</button>`).join('')}</div>
-        ${NUM.map(([k,n,a,b,st])=>`<div class="num"><span style="width:70px">${n}</span><input type="range" data-id="${esc(id)}" data-n="${k}" min="${a}" max="${b}" step="${st}" value="${d[k]}"><span data-v="${esc(id)}:${k}">${d[k]}</span></div>`).join('')}</div>`; }).join(''):'<div class="dim" style="margin:10px 0">No item types yet. Add one above.</div>'}
+        ${NUM.map(([k,n,a,b,st])=>`<div class="num"><span style="width:70px">${n}</span><input type="range" data-id="${esc(id)}" data-n="${k}" min="${a}" max="${b}" step="${st}" value="${d[k]}"><span data-v="${esc(id)}:${k}">${d[k]}</span></div>`).join('')}
+        ${SEL.map(([k,n,opts])=>`<div class="num"><span style="width:92px">${n}</span><select data-id="${esc(id)}" data-sel="${k}">${opts.map(o=>`<option${d[k]===o?' selected':''}>${o}</option>`).join('')}</select></div>`).join('')}</div>`; }).join(''):'<div class="dim" style="margin:10px 0">No item types yet. Add one above.</div>'}
       ${(()=>{ const d=discovered(); return d.length?`<div class="dim" style="margin-top:10px">FROM THE GAME — click to add (${d.length})</div><div class="props" style="margin:6px 0">${d.map(id=>`<button class="chip" data-add="${esc(id)}" title="${esc(nameOf(id))}">${esc(id)}</button>`).join('')}</div>`:''; })()}
       <div class="row"><button class="btn" id="itexp">EXPORT</button><button class="btn" id="itdone">DONE</button></div>
-      <div class="dim">Export writes items.json; drop it in data/ to ship. BURNS (fire), EDIBLE and BREATH (eating), SELLABLE (shops) and OFF-WORLD (merchant-only) react in-game; the rest define properties systems will read.</div></div>`; }
+      <div class="dim">Export writes items.json; drop it in data/ to ship. BURNS (fire), EDIBLE and BREATH (eating), SELLABLE (shops), OFF-WORLD (merchant-only) and WORN/HELD + GRANTS (gear: a merchant sells it, you hold or wear it) react in-game; the rest define properties systems will read.</div></div>`; }
   P.addEventListener('click',e=>{ const b=e.target.closest&&e.target.closest('button'); if(!b)return;
     if(b.id==='itadd'){ const v=(P.querySelector('#itnew').value||'').trim().toLowerCase().replace(/\s+/g,'_'); if(v&&!ITEMS.defs[v]){ ITEMS.defs[v]=DEF(); save(); draw(); } return; }
     if(b.dataset.add){ const id=b.dataset.add; if(!ITEMS.defs[id]){ ITEMS.defs[id]=DEF(); save(); draw(); } return; }
@@ -46,6 +48,7 @@ import {OWNED} from './005-save.js';
     if(b.id==='itexp'){ const blob=new Blob([JSON.stringify(ITEMS.defs,null,1)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='items.json'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),2e3); return; }
     if(b.id==='itdone'){ ITEMED.toggle(); return; } });
   P.addEventListener('input',e=>{ const t=e.target; if(t.dataset&&t.dataset.n){ ITEMS.defs[t.dataset.id][t.dataset.n]=+t.value; const s=P.querySelector(`[data-v="${t.dataset.id}:${t.dataset.n}"]`); if(s)s.textContent=t.value; save(); } });
+  P.addEventListener('change',e=>{ const t=e.target; if(t.dataset&&t.dataset.sel){ ITEMS.defs[t.dataset.id][t.dataset.sel]=t.value; save(); } });
   for(const ev of ['keydown','keyup'])P.addEventListener(ev,e=>{ if(e.target.matches('input,textarea'))e.stopPropagation(); });
   ITEMED.toggle=()=>{ ITEMED.on=!ITEMED.on; if(ITEMED.on)draw(); P.hidden=!ITEMED.on; };
 }

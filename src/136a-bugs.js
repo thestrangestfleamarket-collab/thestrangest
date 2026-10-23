@@ -70,5 +70,6 @@ import {BUILDV} from './135-where.js';
       if(b.dataset.s){ b.disabled=true; try{ await be.mark(r.id,b.dataset.s); queue(); }catch(x){ b.textContent='FAILED'; } return; }
       if(b.dataset.a==='pic'){ const im=box.querySelector('img'); if(!im.hidden){ im.hidden=true; return; } b.textContent='...'; try{ const u=await be.shot(r); if(u){ im.src=u; im.hidden=false; } }catch(x){} b.textContent='PICTURE'; }
       if(b.dataset.a==='go'){ const a=r.context.at; UI.toggleMenu(); STORE.goTo(a[0],a[1],a[2],null,r.context.lvl); if(r.context.hd!=null)SHARED.heading=r.context.hd; if(r.context.hour!=null)CLOCK.set(r.context.hour); } }; };
+  Object.assign(BUGS,{sb,tok,owner:SITE.owner});
   BUGS.open=async e=>{ el=e; ctx=where(); el.innerHTML='<div class="dim">...</div>'; shot=await grab(); draw(); };
   addEventListener('keydown',e=>{ if(e.key==='F8'&&!e.repeat){ e.preventDefault(); UI.menuTab('bug'); } }); }

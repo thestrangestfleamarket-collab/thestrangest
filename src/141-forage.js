@@ -1,6 +1,6 @@
 // THE FORAGE: FORAGE lets the player gather mushrooms and things, keeps their pack, and sells them.
 import {SHARED, THREE} from './003-shx.js';
-import {CITY, CIVIC, ED, FORAGE, INV, ITEMS, LINES, LOOKS, MAIL, NPCS, pos, SFX, st, UI, VIT, WE, WEEDS} from './003b-systems.js';
+import {CITY, CIVIC, ED, EQUIP, FORAGE, INV, ITEMS, LINES, LOOKS, MAIL, NPCS, pos, SFX, st, UI, VIT, WE, WEEDS} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
 import {MAPG, QS, SYS, TILE} from './006-map-pre.js';
@@ -97,7 +97,7 @@ import {GEMS} from './101-gems.js';
       const shod=shod0(), cro=st.move&&st.move.name==='crouch', pc=cro||(st.w||0)<.4?.1:st.run>.5?.7:.35; let ch=false, near=false;
       for(const arr of CH.values())for(const m of arr){ if(m.cr&&m.cr<=now){ m.cr=0; ch=true; } if(S.picked[m.id])continue; const v0=m.pk||m.rv>now;
         if(up&&pressed(m.x,m.z,now)>.3)m.rv=now+20; if(v0!==(m.pk||m.rv>now))ch=true; const d=Math.hypot(pos.x-m.x,pos.z-m.z); if(d<8*T)near=true;
-        if(d>.55*T){ m.st=0; continue; } if(m.st||!up||d>.35*T)continue; m.st=1; if(shod&&mv>.2*T&&Math.random()<pc){ S.picked[m.id]=1; m.cr=now+90; m.rv=now+20; say('SQUISH.','#c8a090'); saveSoon(); ch=true; } }
+        if(d>.55*T){ m.st=0; continue; } if(m.st||!up||d>.35*T)continue; m.st=1; if(shod&&!(window.EQUIP&&EQUIP.float)&&mv>.2*T&&Math.random()<pc){ S.picked[m.id]=1; m.cr=now+90; m.rv=now+20; say('SQUISH.','#c8a090'); saveSoon(); ch=true; } }
       if(near&&shod&&up&&!S.shoeHint&&WEEDS.inPark&&WEEDS.inPark(pos.x,pos.z)){ S.shoeHint=1; say('TAKE OFF YOUR SHOES TO FORAGE SAFELY.','#f2c14e'); saveSoon(); }
       if(ch)FORAGE.sync(); },'141-forage');
     window.MUSHDBG=()=>{ '@later'; const now=performance.now()/1e3, o={hidden:0,revealed:0,peek:0,crushed:0,picked:0,barefoot:!shod0(),gold:{},lawn:{}}; for(const arr of CH.values())for(const m of arr){ const gk=m.g?WEEDS.GV[m.g]+': '+m.k:m.k, gb=m.g?o.gold:o.lawn; gb[gk]=(gb[gk]||0)+1; if(m.cr>now)o.crushed++; else if(S.picked[m.id])o.picked++; else if(m.pk)o.peek++; else if(m.rv>now)o.revealed++; else o.hidden++; } return o; }; }

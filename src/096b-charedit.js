@@ -70,7 +70,7 @@ CHARED.build=()=>{ '@editor';
       +'<div class="kv">SECTION <span>'+esc((SHARED.SECTION&&SHARED.SECTION.id)||'A')+'</span></div>'
       +'<div class="kv">LEVEL <span>'+(N.lv==='down'?'UNDERGROUND':'STREET')+'</span></div>'; }
     else if(tab==='look'){ b=fld('SCALE','scale',cur(N,'scale'),.05)+fld('TINT','tint',cur(N,'tint'),0,'color')
-      +'<div class="dim">Scale ships; tint previews in the 360 view (body &amp; palette: a later phase).</div>'
+      +'<div class="dim">Scale and tint both ship — tint is a colour grade over the whole body. (Body swap &amp; part palette: a larger effort, not yet.)</div>'
       +'<div style="margin-top:8px"><button class="mb hot" id="chV">VIEW 360</button></div>'; }
     else if(tab==='beh'){ const ht=homeTiles(N); b='<div class="sec">HOME</div>'
       +fld('HOME X (TILES)','homex',ht[0],.5)+fld('HOME Y (TILES)','homey',ht[1],.5)+fld('RANGE (TILES)','range',ht[2],.5)
@@ -90,7 +90,7 @@ CHARED.build=()=>{ '@editor';
   const setField=(N,f,raw)=>{ const r=rec(N);
     if(f==='name'){ const v=String(raw).slice(0,60); r.name=v; CHARS.live(N,'name',v); }
     else if(f==='scale'){ const v=Math.max(.05,+raw||1); r.scale=v; CHARS.live(N,'scale',v); }
-    else if(f==='tint'){ r.tint=/^#[0-9a-f]{6}$/i.test(raw)?raw:'#ffffff'; }
+    else if(f==='tint'){ r.tint=/^#[0-9a-f]{6}$/i.test(raw)?raw:'#ffffff'; CHARS.live(N,'tint',r.tint); }
     else if(f==='hp'){ const v=Math.max(0,+raw||0); r.hp=v; CHARS.live(N,'hp',v); }
     else if(f==='stamina'){ const v=Math.max(0,+raw||0); r.stamina=v; CHARS.live(N,'stamina',v); }
     else if(f==='speed'){ const v=Math.max(0,+raw||0); r.speed=v; CHARS.live(N,'speed',v); }
@@ -104,7 +104,7 @@ CHARED.build=()=>{ '@editor';
     side.addEventListener('input',e=>{ const f=e.target.dataset.f; if(f){ setField(N,f,e.target.value); VIEW.redo(); } });
     side.addEventListener('click',e=>{ if(e.target.id==='vwX')VIEW.close(); });
     VIEW.onclose=()=>draw();
-    VIEW.open({name:N.name||N.key,lend:()=>N.g?[N.g]:[],lendScale:()=>1,opacity:()=>1,look:()=>({tint:cur(N,'tint')})},side); };
+    VIEW.open({name:N.name||N.key,lend:()=>N.g?[N.g]:[],lendScale:()=>1,opacity:()=>1,look:()=>({})},side); };
 
   q('#chL').addEventListener('click',e=>{ const b=e.target.closest&&e.target.closest('button[data-i]'); if(!b)return; sel=NPCS[+b.dataset.i]||null; draw(); });
   q('#chD').addEventListener('click',e=>{ const b=e.target.closest&&e.target.closest('button'); if(!b||!sel)return;

@@ -1,6 +1,6 @@
 // THE FRAME: the main loop (frame): movement, collision, water, sun shade, lamps, rooms, culling, then the render.
 import {SHARED, THREE} from './003-shx.js';
-import {AMB, BOAT, BROOK, BWK, CITY, CLOCK, CULL, DRESS, DRM, ED, FAR3, FEEL, FIGFX, INTERIORS, keys, LEVELS, LINES, LITE, LOOK, MUS, NPCS, PARK, PB, PERFX, PH, PNM, pos, RAG, ROOMS, SFX, SGM, st, STAGE, UI, VIT, W3, WHERE, WIELD, wvV, ZONES} from './003b-systems.js';
+import {AMB, BOAT, BROOK, BWK, CITY, CLOCK, CULL, DRESS, DRM, ED, EQUIP, FAR3, FEEL, FIGFX, INTERIORS, keys, LEVELS, LINES, LITE, LOOK, MUS, NPCS, PARK, PB, PERFX, PH, PNM, pos, RAG, ROOMS, SFX, SGM, st, STAGE, UI, VIT, W3, WHERE, WIELD, wvV, ZONES} from './003b-systems.js';
 import {art, EffectComposer, frustum, OCAM, OutputPass, PPU, pxS, renderer, RenderPass, RES, resize, RESMAX, RH, rppu, RW, scene, SCL, ShaderPass, statEl, V0, vpu, ZMAX} from './004-main.js';
 import {applyTime, ASTEP, BF, C2, cutWalls, lamps, MODS, nightTo, SEEN, shopGroups, STORE, SYS, TILE, ZU} from './006-map-pre.js';
 import {FLAME} from './007-fire.js';
@@ -73,7 +73,7 @@ function frame(now){ requestAnimationFrame(frame); if(PARK.hold)return; renderer
     if(window.BOAT&&BOAT.on){ BOAT.carry(st,pos); SHARED.heading=BOAT.hd; } else if(!RIVER.feed(st,pos,dt,ml>0,keys)&&!(FOUNT.feed&&FOUNT.feed(st,pos,dt,ml>0,keys))&&!(BROOK.feed&&BROOK.feed(st,pos,dt,ml>0,keys))&&!(SHARED.BOD.GD&&SHARED.BOD.GD.feed&&SHARED.BOD.GD.feed(st,pos,dt,ml>0,keys)))WATER.feed(st,pos,dt,ml>0,keys); st.target=ml>0?1:0; const before=st.dist; RIG.step(st,dt); const go=(st.dist-before)*W3.SZ/PPU*(VIT.dead&&NPCS.some(N=>N.lv===SHARED.LVL&&!N.far&&N.mode!=='hidden'&&N.blocks(pos.x,pos.z,.3*TILE))?.75:1); SFX.steps(st,go);
     if(go){ const ox=pos.x,oz=pos.z; pos.x+=Math.sin(SHARED.heading)*go; pos.z+=Math.cos(SHARED.heading)*go; if(UI.fly)UI.flyStep(0); else collide(pos); if(st.water&&st.water.in&&RIVER.swim)RIVER.clamp(pos);
     if(SHARED.target&&Math.hypot(pos.x-ox,pos.z-oz)<go*0.2)SHARED.target=null; }
-    if(UI.fly)UI.flyStep(dt); else if(window.BOAT&&BOAT.on)SHARED.py=BOAT.py; else { let g=SHARED.groundY(pos.x,pos.z); if(st.fk)for(const n of 'LR'){ const f=st.fk[n]; if(f&&f.on&&Math.hypot(f.x-pos.x,f.z-pos.z)<1)g=Math.min(g,f.y); } SHARED.py+=(g-SHARED.py)*Math.min(1,dt*20); } }
+    if(UI.fly)UI.flyStep(dt); else if(window.BOAT&&BOAT.on)SHARED.py=BOAT.py; else { let g=SHARED.groundY(pos.x,pos.z); if(st.fk)for(const n of 'LR'){ const f=st.fk[n]; if(f&&f.on&&Math.hypot(f.x-pos.x,f.z-pos.z)<1)g=Math.min(g,f.y); } if(window.EQUIP&&EQUIP.float)g+=.6*TILE; SHARED.py+=(g-SHARED.py)*Math.min(1,dt*20); } }
     P.x=pos.x/TL;
     P.y=-pos.z/TL; PH.hd=SHARED.heading;
     { st.world=RAG.on?null:{x:pos.x,z:pos.z,y:SHARED.py,hd:SHARED.heading,kx:1/W3.group.scale.x,ky:1/W3.group.scale.y,gnd:SHARED.groundY,t:now/1000}; B=ED.anim?ED.animPose():RIG.pose(st); ragBlend(B); ragStrikes(B,J0,J0t?(now-J0t)/1000:0); J0=B.J; J0t=now; ASTEP.you.B=B; } }

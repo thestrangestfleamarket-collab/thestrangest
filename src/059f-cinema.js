@@ -126,7 +126,7 @@ import {FADE, STORE, SYS, TILE} from './006-map-pre.js';
   const rails=(g,W,H,n)=>{ g.fillStyle='rgba(60,70,84,.5)'; for(let i=1;i<n;i++){ const y=Math.round(6+i*(H-12)/n); g.fillRect(0,y-1,W,2); } g.fillStyle='#8f98a3'; g.fillRect(0,0,W,6); g.fillRect(0,H-6,W,6); };
   const drawCanopy=()=>{ const {front,side}=canopy, L=lines(), n=L.length, auto=!own('marquee');
     { const {g,cv,tex}=front, W=cv.width, H=cv.height, rh=(H-12)/n; litBg(g,W,H); rails(g,W,H,n); g.fillStyle='#111214'; g.textAlign='center'; g.textBaseline='middle'; if('letterSpacing' in g)g.letterSpacing='3px';
-      L.forEach((t,i)=>{ fit(g,t,W-80,rh*(auto&&n>1&&i===0?.42:.74)); g.fillText(t,W/2,6+rh*(i+.54)); }); tex.needsUpdate=true; }
+      L.forEach((t,i)=>{ fit(g,t,W-80,rh*(auto&&n>1&&i===0?.5:.74)); g.fillText(t,W/2,6+rh*(i+.54)); }); tex.needsUpdate=true; }
     { const {g,cv,tex}=side; litBg(g,cv.width,cv.height); rails(g,cv.width,cv.height,n); tex.needsUpdate=true; } };
   const posterSrc=()=>{ const o=own('poster'), y=vid(o); if(o)return y?'/yt/'+y+'.jpg':o; const id=vid(cur().video_id); return id?'/yt/'+id+'.jpg':''; };
   const drawPoster=()=>{ const {g,cv,tex}=post, W=cv.width, H=cv.height, src=posterSrc(), mine=!!own('poster'), band=mine?0:Math.round(H*.16);
@@ -148,10 +148,10 @@ import {FADE, STORE, SYS, TILE} from './006-map-pre.js';
     const pl=canv(512,128); { const g=pl.g; for(let i=0;i<5;i++){ const x=52+i*102, gr=g.createRadialGradient(x,64,0,x,64,60); gr.addColorStop(0,'rgba(255,233,184,.55)'); gr.addColorStop(1,'rgba(255,233,184,0)'); g.fillStyle=gr; g.fillRect(x-60,4,120,120); } pl.tex.needsUpdate=true; }
     const pool=new THREE.Mesh(new THREE.PlaneGeometry(cw,cd*1.4).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({map:pl.tex,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false}));
     const gp=at(cS,cd*.7,0); gp.y=SHARED.groundY(gp.x,gp.z)+.03; pool.position.copy(gp); pool.rotation.y=ry; scene.add(pool); canopy={box,pool,front,side,key:''};
-    const dS=alongX?bx:bz, pS=cS+Math.sign(cS-dS||1)*Wb*.3, ph=Yb(84)-Yb(22), pw=ph*27/40, pc=canv(270,400);
+    const dS=alongX?bx:bz, pS=dS+Math.sign(cS-dS||1)*2.3*tw, ph=Yb(70)-Yb(14), pw=ph*27/40, pc=canv(270,400);
     const frame=new THREE.Mesh(new THREE.BoxGeometry(pw*1.12,ph*1.08,.06*tw),new THREE.MeshLambertMaterial({color:0xb7bdc5}));
     const plane=new THREE.Mesh(new THREE.PlaneGeometry(pw,ph),new THREE.MeshBasicMaterial({map:pc.tex})); plane.position.z=.035*tw;
-    const group=new THREE.Group(); group.add(frame,plane); group.position.copy(at(pS,.14*tw,(Yb(84)+Yb(22))/2)); group.rotation.y=ry; scene.add(group); post={...pc,group,key:''};
+    const group=new THREE.Group(); group.add(frame,plane); group.position.copy(at(pS,.14*tw,(Yb(70)+Yb(14))/2)); group.rotation.y=ry; scene.add(group); post={...pc,group,key:''};
     sign(); };
   const sign=()=>{ if(canopy){ const k=lines().join('|'); if(k!==canopy.key){ canopy.key=k; drawCanopy(); } }
     if(post){ const k=posterSrc()+'|'+title()+'|'+own('poster'); if(k!==post.key){ post.key=k; drawPoster(); } } };

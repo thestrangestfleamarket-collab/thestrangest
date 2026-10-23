@@ -24,7 +24,7 @@ const BLOCKS={PX:12};
       for(const w of F){ if(w.side!==side||u<w.a0-.35||u>w.a1+.35||z<w.z0-34||z>w.z1+(w.arch?40:12))continue; const cx=(w.a0+w.a1)/2, hw=(w.a1-w.a0)/2, ax=Math.abs(u-cx);
         if(ax<hw&&z>=w.z0&&z<w.z1){ const t=wtex(w,px), i=Math.min(t.W-1,Math.floor((u-w.a0)*px)), j=Math.min(t.H-1,Math.max(0,Math.floor((w.z1-z)*px/24))), q=(j*t.W+i)*4;
           if(w.box&&z<w.z0+12+6*hs(Math.floor(u*px),1,w.seed)){ const fl=BLOCKS.flowers(u,z,w,w.seed+5); if(fl)return sh(fl,f); }
-          const c=[t.d[q],t.d[q+1],t.d[q+2]]; return t.e&&t.e[q+3]?[c[0],c[1],c[2],1]:c; }
+          if(w.open)return null; const c=[t.d[q],t.d[q+1],t.d[q+2]]; return t.e&&t.e[q+3]?[c[0],c[1],c[2],1]:c; }   // open: a real see-through hole in the wall
         if(w.arch&&z>=w.z1&&ax<hw+.25){ const dz=(z-w.z1)/24, d=Math.hypot(u-cx,dz); if(d<hw)return d<hw-.08&&(Math.floor(Math.atan2(dz,u-cx)*5)&1)?[255,214,150,1]:sh(TS,f*.7); if(d<hw+.22)return sh(TS,f*(d>hw+.15?.75:1.08)); }
         if(w.box&&ax<hw+.12&&z>=w.z0-12&&z<w.z0){ return sh(BOX,f*(z>=w.z0-3?1.15:z<w.z0-10?.62:.92)); }
         if(w.box&&ax<hw+.1&&z<w.z0-12&&z>w.z0-12-30*hs(Math.floor(u*px),3,w.seed)){ const x=Math.floor(u*px); if(md(x,3)===0&&hs(x,Math.floor(z/2),w.seed+7)<.75)return sh(IVC[1],f); }

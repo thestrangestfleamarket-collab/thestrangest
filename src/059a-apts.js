@@ -6,7 +6,7 @@ import {BLDK, FADE, FIX, grab, LOTX, LOTY, MODS, SOL, STORE, SYS, TILE, TURN, WP
 import {BATCH} from './008-batch.js';
 const APTS={EMPTY:true};
 await grab('apts',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Yr=SHARED.BOD.Y,
-  RZ=APTS.RZ=28, Y=z=>Yr(z+RZ), gbox=(b,k)=>tgbox({...b,z0:b.z0+RZ,z1:b.z1+RZ},k), R0=APTS.R0=Yr(RZ)-Yr(0), {hash}=SHARED.BOD.g, {LSEED,STORY,sh}=SHARED.BOD.K, S=STORY, ST=5, AH=ST*S, TOP=RZ+AH, W=LSEED.walk, T=.1;
+  RZ=APTS.RZ=28, Y=z=>Yr(z+RZ), gbox=(b,k)=>tgbox({...b,z0:b.z0+RZ,z1:b.z1+RZ},k), R0=APTS.R0=Yr(RZ)-Yr(0), {hash}=SHARED.BOD.g, {LSEED,STORY,sh}=SHARED.BOD.K, S=STORY, ST=12, AH=ST*S, TOP=RZ+AH, W=LSEED.walk, T=.1;
   const AY=WP.apts.y1!=null?LOTY(WP.apts.y1):W, AW=WP.apts.y1!=null?{x0:LOTX(WP.apts.x0),x1:LOTX(WP.apts.x1),y0:LOTY(WP.apts.y0),y1:AY}:{x0:LOTX(WP.apts.x0),x1:LOTX(WP.apts.x1),y0:AY-14,y1:AY}, TA=TURN(AW,WP.apts.face), A=TA.L, m=(A.x0+A.x1)/2, H={y0:A.y0+5.6,y1:A.y0+8.4}, DW=.78, DH=94;
   const XZ=(x,y)=>{ const p=TA.pt(x,y); return [X(p[0]),Z(p[1])]; }, loc=(x,z)=>TA.back(x/(TILE*BLDK)+SHARED.BOD.OX,z/(TILE*BLDK)+SHARED.BOD.OY);
   const tgbox=(b,k)=>{ if(!TA.q)return SHARED.BOD.gbox(b,k); const p={boxes:[b],x0:b.x0,y0:b.y0,x1:b.x1,y1:b.y1}; SHARED.BOD.placeAt(p,TA.q,TA.cx,TA.cy,TA.cx,TA.cy); return SHARED.BOD.gbox(p.boxes[0],k); };
@@ -18,14 +18,25 @@ await grab('apts',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Yr=SHARED.BOD.
       if(fy<1||fx<1)return sh(base,f*.7); let k=(.9+.16*TN(bi,bc,sd))*(1+.14*(gr(ui/24,z/24,sd+4,1)-.5))*(z<5?.8+.04*z:1); if(fy>=bh-1)k*=1.08; return sh(base,f*k); };
     return {fs:(nx,ny,X_,Y_,z,f)=>P(nx?Y_:X_,z,f),top:(x,y)=>{ let k=1+.12*(gr(x,y,sd+10,.5)-.5); if(mid)k*=1+.1*Math.max(0,1-Math.abs(x-mid[0])/mid[1]); return sh(base,k); }}; };
 
-  const FWU=[3.25,9.75], DU=6.5, DI=.85, DO=1.65, RD=5.3, steel=[34,36,40];
+  const FWU=[3.25,9.75], DU=6.5, DI=.85, DO=1.65, RD=5.3, steel=[34,36,40], WINA=Math.round(S*.12), WINB=Math.round(S*.88), WDH=1.5;
   const feats=[]; let seed=3; const win=(side,a,z0,z1,o={})=>{ seed++; feats.push({side,a0:a-.55,a1:a+.55,z0,z1,lit:hash(seed,1,9)<.45,seed,box:!o.door&&hash(seed,4,9)<.78,...o}); };
   for(const [side] of [['f'],['b']])for(let lv=0;lv<ST;lv++){ const z=RZ+lv*S; for(const u of FWU)win(side,A.x0+u,z+42,z+94); if(lv)win(side,A.x0+DU,z+3,z+94,{door:true,lit:false}); }
   feats.push({side:'f',a0:m-DW,a1:m+DW,z0:RZ,z1:RZ+DH,door:true,arch:true,lit:false,seed:41},{side:'b',a0:m-DW,a1:m+DW,z0:RZ,z1:RZ+DH,door:true,lit:false,seed:43});
   for(const [side,a0,a1] of [['w',A.y0,A.y1],['e',A.y0,A.y1]])for(let lv=1;lv<ST;lv++)for(const k of [.22,.5,.78])win(side,a0+(a1-a0)*k,RZ+lv*S+42,RZ+lv*S+94,{box:false});
   const ivy=[{side:'f',a0:A.x0,a1:A.x0+2.4,h:RZ+S*1.7,seed:5,fall:.6},{side:'f',a0:A.x1-2,a1:A.x1,h:RZ+S*2.4,seed:7,fall:.6},{side:'w',a0:A.y1-4.5,a1:A.y1,h:RZ+S*2.2,seed:9,fall:.8},{side:'e',a0:A.y0+4,a1:A.y1-.4,h:RZ+S*2.1,seed:11},{side:'b',a0:A.x0+10,a1:A.x1,h:RZ+S*1.4,seed:13,fall:.6}];
   const roofCol=(x,y)=>{ const n=hash(Math.floor(x*4),Math.floor(y*4),61), e=Math.min(x-A.x0,A.x1-x,y-A.y0,A.y1-y); return e<.25?sh([118,50,38],e<.1?.8:1.05):n<.3?[50,50,52]:n>.7?[66,64,62]:[58,57,57]; };
-  const PAINT=APTS.paint=BLOCKS.facade({feats,ivy,top:TOP,wall:BLOCKS.brick([138,60,44]),trim:[118,50,38],base:{z1:RZ,paint:BLOCKS.brick([120,52,40])}}), BB=BLOCKS.make({...AW,z0:0,z1:TOP,kind:'A',turn:TA,roof:(x,y)=>roofCol(...TA.back(x,y)),paint:PAINT});
+  const PAINT=APTS.paint=BLOCKS.facade({feats,ivy,top:TOP,wall:BLOCKS.brick([138,60,44]),trim:[118,50,38],base:{z1:RZ,paint:BLOCKS.brick([120,52,40])}});
+  // the building is a REAL brick structure: four walls with real window holes (front and back), floors at every level — its own inside is the exposed-brick loft, so inside and outside are one object (owner, 23 Oct 2026)
+  const BB=(()=>{ const px=12, OB=BLOCKS.brick([138,60,44]), cols=FWU.map(u=>A.x0+u), pt=(x,y,z)=>{ const p=XZ(x,y); return [p[0],Yr(z),p[1]]; };
+    const Q=(x0,y0,x1,y1,z0,z1,f)=>{ const ax=x1-x0, ay=y1-y0, W=Math.max(1,Math.round(Math.hypot(ax,ay)*px)), H=Math.max(1,Math.round((z1-z0)*px/24));
+      bq(pt(x0,y0,z0),pt(x1,y1,z0),pt(x1,y1,z1),pt(x0,y0,z1),faceTex(W,H,(i,j)=>{ const t=(i+.5)/W; return C(OB(ay===0?x0+t*ax:y0+t*ay, z1-(j+.5)*(z1-z0)/H, f)); }),'A'); };
+    for(const y of [A.y0,A.y1]){ const xs=[A.x0]; for(const c of cols)xs.push(c-WDH,c+WDH); xs.push(A.x1);
+      for(let k=0;k<xs.length;k+=2)Q(xs[k],y,xs[k+1],y,RZ,TOP,1);
+      for(const c of cols){ const zs=[RZ]; for(let lv=0;lv<ST;lv++)zs.push(RZ+lv*S+WINA,RZ+lv*S+WINB); zs.push(TOP); for(let k=0;k<zs.length;k+=2)Q(c-WDH,y,c+WDH,y,zs[k],zs[k+1],1); } }
+    for(const x of [A.x0,A.x1])Q(x,A.y0,x,A.y1,RZ,TOP,.8);
+    { const W=Math.max(1,Math.round((A.x1-A.x0)*px)), D=Math.max(1,Math.round((A.y1-A.y0)*px)); bq(pt(A.x0,A.y1,TOP),pt(A.x1,A.y1,TOP),pt(A.x1,A.y0,TOP),pt(A.x0,A.y0,TOP),faceTex(W,D,(i,j)=>C(roofCol(A.x0+(i+.5)/px,A.y1-(j+.5)/px))),'A'); }
+    for(let lv=1;lv<ST;lv++){ const fz=RZ+lv*S; tgbox({x0:A.x0+.05,x1:A.x1-.05,y0:A.y0+.05,y1:A.y1-.05,z0:fz-2.5,z1:fz,c:[54,40,26],top:(x,y)=>{ const n=hash(Math.floor(x*4),Math.floor(y*4),71); return sh([138,94,56],.82+.22*n); }},'A'); }
+    const a=XZ(A.x0,A.y0), b=XZ(A.x1,A.y1); return {x0:Math.min(a[0],b[0]),z0:Math.min(a[1],b[1]),x1:Math.max(a[0],b[0]),z1:Math.max(a[1],b[1])}; })();
   { const CN=[118,50,38]; tgbox({x0:A.x0-.3,x1:A.x1+.3,y0:A.y0-.3,y1:A.y1+.3,z0:TOP-12,z1:TOP,c:CN,...rock(CN,61,.9,14)},'A'); }
 
   const SOLS=[]; APTS.sol=SOLS; for(let lv=0;lv<ST;lv++)SOLS[lv]=[];
@@ -179,40 +190,11 @@ await grab('apts',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Yr=SHARED.BOD.
     if(n!=null&&String(n)!==APTS.num){ APTS.num=String(n); try{ localStorage.setItem('market-apt',APTS.num); }catch(e){} if(window.FIREV&&FIREV.setPlaque)FIREV.setPlaque(); } }catch(e){} };
   APTS.loadNum();
   // --- THE REAL APARTMENT: built in place at its true floor in the house, so the live sky and city show through real open windows (owner, 23 Oct 2026) ---
-  { const RLV=Math.min(APTS.my,APTS.floors-2), RHZ=RZ+RLV*S, CH=S-4, WW=.82, sill=16, lint=CH-16;
-    let RG=null; APTS.inReal=false; APTS.RHZ=RHZ; const rsol=[];
-    const P3=(x,y,z)=>{ const p=XZ(x,y); return [p[0],Yr(RHZ+z),p[1]]; };
-    const ftex=(wPx,hPx,fn)=>faceTex(Math.max(1,Math.round(wPx)),Math.max(1,Math.round(hPx)),fn);
-    const woodP=(i,j)=>{ const pw=11, col=Math.floor(i/pw), off=(hash(col,2,3)*50)|0, row=j+off, n=hash(col,Math.floor(row/10),4); let k=.84+.18*n+.05*Math.sin(i*.4+col*1.3); if(i-col*pw<1)k*=.56; if((row%10)<1)k*=.8; return C(sh(hash(col,0,8)>.88?[122,74,42]:[150,96,56],k)); };
-    const brickP=(i,j)=>{ const bh=6,bw=13,crs=Math.floor(j/bh),x=i+(crs&1)*(bw/2),bi=Math.floor(x/bw),fy=j-crs*bh,fx=x-bi*bw; if(fy<1||fx<1)return C(sh([66,38,32],.7)); return C(sh([152,68,52],.8+.3*hash(bi,crs,5)+.05*(hash(bi,crs,9)-.5))); };
-    const plasterP=(i,j)=>{ const n=hash(Math.floor(i/4),Math.floor(j/4),7); return C(sh([226,218,200],.95+.11*n+(j<2?-.12:0))); };
-    const ceilP=(i,j)=>C(sh([74,66,58],.9+.1*hash(Math.floor(i/5),Math.floor(j/5),3)));
-    const steelP=()=>C([46,42,38]);
-    const wq=(ax,ay,bx,by,za,zb,fn)=>bq(P3(ax,ay,za),P3(bx,by,za),P3(bx,by,zb),P3(ax,ay,zb),ftex(Math.hypot(bx-ax,by-ay)*24,zb-za,fn),'A');
-    const wqAt=(yy,ax,az,bx,bz,fn)=>bq([XZ(ax,yy)[0],Yr(RHZ+az),XZ(ax,yy)[1]],[XZ(bx,yy)[0],Yr(RHZ+az),XZ(bx,yy)[1]],[XZ(bx,yy)[0],Yr(RHZ+bz),XZ(bx,yy)[1]],[XZ(ax,yy)[0],Yr(RHZ+bz),XZ(ax,yy)[1]],ftex(Math.abs(bx-ax)*24+2,Math.abs(bz-az)+2,fn),'A');
-    const SL=Math.round(CH*.14), LT=Math.round(CH*.87), WD=1.3;   // loft windows span ~73% of the wall height (owner: not floor-to-ceiling), wide
-    const buildReal=()=>{ if(RG)return; RG=new THREE.Group(); RG.name='apt-real'; RG.visible=false; scene.add(RG);
-      ROOMS.part(RG,()=>{
-        bq(P3(A.x0,A.y1,.2),P3(A.x1,A.y1,.2),P3(A.x1,A.y0,.2),P3(A.x0,A.y0,.2),ftex((A.x1-A.x0)*24,(A.y1-A.y0)*24,woodP),'A');
-        bq(P3(A.x0,A.y1,CH),P3(A.x1,A.y1,CH),P3(A.x1,A.y0,CH),P3(A.x0,A.y0,CH),ftex((A.x1-A.x0)*24,(A.y1-A.y0)*24,ceilP),'A');
-        for(const [wy,ny] of [[A.y0,1],[A.y1,-1]]){ const wins=[A.x0+FWU[0],A.x0+FWU[1]];
-          wq(A.x0,wy,A.x1,wy,0,SL,plasterP); wq(A.x0,wy,A.x1,wy,LT,CH,plasterP);
-          const edges=[A.x0]; for(const w of wins)edges.push(w-WD,w+WD); edges.push(A.x1);
-          for(let k=0;k<edges.length;k+=2)wq(edges[k],wy,edges[k+1],wy,SL,LT,plasterP);
-          for(const wx of wins){ const yo=wy+ny*.09;   // dark steel frame + a centre mullion, set just inside the opening
-            wqAt(yo,wx-WD,SL-1.5,wx-WD+.16,LT+1.5,steelP); wqAt(yo,wx+WD-.16,SL-1.5,wx+WD,LT+1.5,steelP);
-            wqAt(yo,wx-WD,SL-1.5,wx+WD,SL+1,steelP); wqAt(yo,wx-WD,LT-1,wx+WD,LT+1.5,steelP);
-            wqAt(yo,wx-.07,SL,wx+.07,LT,steelP); wqAt(yo,wx-WD,(SL+LT)/2-.8,wx+WD,(SL+LT)/2+.8,steelP); } }
-        wq(A.x0,A.y0,A.x0,A.y1,0,CH,brickP); wq(A.x1,A.y0,A.x1,A.y1,0,CH,brickP);
-        for(const [fx,fy,ci,ii] of [[(A.x0+A.x1)/2,(A.y0+A.y1)/2,0xffe4b8,6],[A.x0+FWU[0],A.y0+1.4,0xe6edff,7],[A.x0+FWU[1],A.y1-1.4,0xe6edff,7]]){ const p=XZ(fx,fy); const L=new THREE.PointLight(ci,ii,13*TILE,1.3); L.position.set(p[0],Yr(RHZ+CH-12),p[1]); scene.add(L); }
-        scene.add(new THREE.HemisphereLight(0xdbe6ff,0x6a5a46,1.25));   // soft daylight fill so the room isn't cave-dark
-      },MKA);
-      for(const [x0,y0,x1,y1] of [[A.x0,A.y0,A.x1,A.y0],[A.x0,A.y1,A.x1,A.y1],[A.x0,A.y0,A.x0,A.y1],[A.x1,A.y0,A.x1,A.y1]])rsol.push(tbox4(x0-.1,y0-.1,x1+.1,y1+.1)); };
-    const showBlock=v=>{ for(const me of APTS.meshes)me.visible=v; };
-    APTS.enterReal=async()=>{ await FADE.run('YOUR APARTMENT',async()=>{ buildReal(); RG.visible=true; showBlock(false); APTS.inReal=true;
-        for(const r of rsol)SOL.up.push(r); const c=XZ((A.x0+A.x1)/2,A.y1-1.4); UI.goTo(c[0],c[1],Yr(RHZ+6)); SHARED.heading=0; },{hold:200}); };
-    APTS.exitReal=async()=>{ await FADE.run('OUT TO THE STREET',async()=>{ if(RG)RG.visible=false; showBlock(true); APTS.inReal=false;
-        for(const r of rsol){ const i=SOL.up.indexOf(r); if(i>=0)SOL.up.splice(i,1); } const d=XZ(m,A.y1+.7); UI.goTo(d[0],d[1],Yr(1)); },{hold:200}); };
+  { const RLV=Math.min(APTS.my,APTS.floors-2), RHZ=RZ+RLV*S; APTS.inReal=false; APTS.RHZ=RHZ;
+    let lamps=null; const mkLamps=()=>{ if(lamps)return; lamps=new THREE.Group(); lamps.visible=false; scene.add(lamps); lamps.add(new THREE.HemisphereLight(0xeaf0ff,0x8a7a60,2.7));
+      for(const [fx,fy,ci,ii] of [[(A.x0+A.x1)/2,(A.y0+A.y1)/2,0xffe8c0,7],[A.x0+FWU[0],(A.y0+A.y1)/2,0xdfe8ff,6],[A.x0+FWU[1],(A.y0+A.y1)/2,0xdfe8ff,6]]){ const p=XZ(fx,fy); const L=new THREE.PointLight(ci,ii,18*TILE,1.1); L.position.set(p[0],Yr(RHZ+S*.7),p[1]); lamps.add(L); } };
+    APTS.enterReal=async()=>{ await FADE.run('YOUR APARTMENT',async()=>{ mkLamps(); lamps.visible=true; APTS.inReal=true; const c=XZ((A.x0+A.x1)/2,(A.y0+A.y1)/2); UI.goTo(c[0],c[1],Yr(RHZ+6)); SHARED.heading=0; },{hold:200}); };
+    APTS.exitReal=async()=>{ await FADE.run('OUT TO THE STREET',async()=>{ if(lamps)lamps.visible=false; APTS.inReal=false; const d=XZ(m,A.y1+.9); UI.goTo(d[0],d[1],Yr(1)); },{hold:200}); };
     const sg0=STORE.stackGround; STORE.stackGround=(x,z)=>{ if(APTS.inReal){ const l=loc(x,z); if(l[0]>A.x0-.3&&l[0]<A.x1+.3&&l[1]>A.y0-.3&&l[1]<A.y1+.3)return Yr(RHZ); } return sg0?sg0(x,z):null; };
     window.ENTERAPT=()=>APTS.enterReal(); window.EXITAPT=()=>APTS.exitReal();
     APTS.REALDBG=()=>({inReal:APTS.inReal,built:!!RG,rhz:RHZ,floorY:+Yr(RHZ).toFixed(2)}); }

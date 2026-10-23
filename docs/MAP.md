@@ -57,7 +57,7 @@ Places built with `await grab(name, async()=>{...})` are one function each, ofte
 | `059c-market.js` | 11.7 | top level, opens grab(nightmkt) |  | 003: SHARED THREE; 003b: FAR3 ROOMS pos; 004: scene; 006: MISTE STORE SYS TILE grab |
 | `059d-fireview.js` | 0.7 | top level, opens grab(fire) |  | 003: SHARED; 006: MODS STORE grab |
 | `059e-ghostdojo.js` | 38.0 | top level, opens grab(ghostdojo) |  | 003: SHARED THREE; 003b: CLIP CLOCK LITE ROOMS UI VIT pos; 004: PPU scene; 006: BF BLDK FIX MAPG SEEN SOL TILE ZU cutWalls grab; 007: FLAME; 008: BATCH OBJ |
-| `059f-cinema.js` | 43.2 | top level |  | 003: SHARED THREE; 003b: CINEMA CLOCK ROOMS SIGNS UI pos; 004: ShaderPass renderer scene; 006: FADE SOL STORE SYS TILE |
+| `059f-cinema.js` | 44.2 | top level |  | 003: SHARED THREE; 003b: CINEMA CLOCK ROOMS SIGNS UI pos; 004: ShaderPass renderer scene; 006: FADE SOL STORE SYS TILE |
 | `059h-bank.js` | 2.0 | top level, opens grab(bank) |  | 003: SHARED; 006: BLDK BLOCK STORE grab |
 | `060-cave.js` | 11.3 | top level | GCAVE (061 063 066a 094 140 142a 146e 151) | 003: SHARED THREE; 003b: CITY CLOCK INV LITE MAIL PARK ROOMS TRADE UI; 004: scene; 006: FIX MAPG MODS PARKCAVE PARKTOWER SOL STORE TILE; 007: FLAME |
 | `060a-fount.js` | 21.6 | top level | FOUNT (061 064 075 076 080 087 089a 093 094 096 140 142 142a 151 153) | 003: SHARED THREE; 003b: BROOK CLOCK PARK ROOMS SKY; 004: scene; 006: FIX MAPG SOL STORE TILE ZU |

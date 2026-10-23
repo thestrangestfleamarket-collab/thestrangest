@@ -4492,3 +4492,6 @@ Owner: "how can i manage users without having to use supabase SQL editor?", then
 
 ## 23 Oct 2026: the cinema's stairs climbable, seats fixed, softer light
 Owner (a picture on the side stairs): "i cant walk up the stairs, the chairs are all loose and wobbly (they should be solid and not moveable, clear easy path to get up to projection booth, screen is too washed out and bright, ligth is too bright, should be softer, dimmer". The seats and the screen are fixed (no longer loose things); the aisles and the top landing are steps you walk up (the side aisle wider, the landing to the booth door 1.2 tiles); the beam, the screen's glow and the wall lights dimmer and softer; the screen no longer takes the night grading over the picture. Rule: anything walked on in a room is named as steps (CLIP leaves steps open).
+
+## 23 Oct 2026: the cinema screen never shows a broken page
+Owner (tenant 204 saw a white screen with a broken-page icon where he saw the movie): the screen keeps its own picture until the video is really playing; if YouTube won't load, it tries YouTube's other address, then says so on the screen. Rule: a viewer only sees through the screen to a playing video.

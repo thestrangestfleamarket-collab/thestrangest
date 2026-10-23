@@ -1,6 +1,6 @@
 // THE WORLD, SENT TO CLAUDE: the world editor's SEND TO SERVER submits its changes as an update (a reports row marked 'worldedit') for a later Claude session to bake into the game. Owner only.
 import {BUGS, WE} from './003b-systems.js';
-{ const send=async b=>{ const st=WE.getState&&WE.getState(); if(!st)return; const n=Object.keys(st).length;
+{ const send=async b=>{ '@later'; const st=WE.getState&&WE.getState(); if(!st)return; const n=Object.keys(st).length;
     if(!confirm('Send these '+n+' world change'+(n===1?'':'s')+' to the server for Claude to bake in?'))return;
     b.disabled=true; const t0=b.textContent; b.textContent='SENDING...';
     try{ await BUGS.sb('/rest/v1/bug_reports',{method:'POST',headers:{Prefer:'return=minimal'},body:JSON.stringify({id:crypto.randomUUID(),body:'WORLD EDIT — '+n+' change'+(n===1?'':'s'),context:{kind:'worldedit',count:n,edits:st},status:'new'})}); b.textContent='SENT'; }

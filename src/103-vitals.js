@@ -1,4 +1,4 @@
-// THE VITALS: VIT keeps the player's health, stamina and breath and shows their bars.
+// THE VITALS: VIT keeps the player's health, stamina and breath and shows their bars; every blow goes through VIT.hurt (and the guard the swords set on it).
 import {SHARED} from './003-shx.js';
 import {keys, LOOKS, pos, SFX, st, UI, VIT} from './003b-systems.js';
 import {TILE} from './006-map-pre.js';
@@ -10,7 +10,9 @@ VIT.breathe=s=>{ VIT.air=Math.min(AIRCEIL,VIT.air+(+s||0)); };   // a breathing 
     #vit[hidden]{display:none} #vit div{height:7px;background:#0b0d13cc;border:1px solid #2a3040} #vit i{display:block;height:100%} #vit #vairrow{position:relative} #vit #vairn{position:absolute;right:2px;top:-11px;font:9px Silkscreen,monospace;color:#8fd0ff;text-shadow:1px 1px 0 #000}`; document.head.appendChild(css);
   const B=document.createElement('div'); B.id='vit'; B.hidden=true; B.innerHTML='<div><i id="vhp" style="background:#c84a3a"></i></div><div><i id="vst" style="background:#d8b84a"></i></div><div id="vairrow"><i id="vair" style="background:#4aa6e0"></i><span id="vairn"></span></div>'; document.body.appendChild(B);
   const hpI=B.querySelector('#vhp'), stI=B.querySelector('#vst'), airRow=B.querySelector('#vairrow'), airI=B.querySelector('#vair'), airN=B.querySelector('#vairn'); let lx=pos.x, lz=pos.z, rest=0, glug=0;
-  VIT.hurt=(d)=>{ if(VIT.out>0||VIT.dead)return; SFX.play('thud',{vol:.7,vary:.2}); VIT.hp=Math.max(0,VIT.hp-d*(1-Math.max(0,Math.min(.9,VIT.def||0)))); VIT.inFight(5); if(VIT.hp<=0)VIT.die(); };
+  VIT.guard=null;   // set by the swordplay: (d, from) -> {d: what gets through, parry}
+  VIT.hurt=(d,from)=>{ if(VIT.out>0||VIT.dead)return 0; let parry=false; if(VIT.guard){ const g=VIT.guard(d,from); d=g.d; parry=!!g.parry; }
+    if(d>0){ SFX.play('thud',{vol:.7,vary:.2}); VIT.hp=Math.max(0,VIT.hp-d*(1-Math.max(0,Math.min(.9,VIT.def||0)))); } VIT.inFight(5); if(VIT.hp<=0)VIT.die(); return parry?2:1; };
   VIT.tick=dt=>{ const sp=Math.hypot(pos.x-lx,pos.z-lz)/Math.max(dt,1e-3); lx=pos.x; lz=pos.z; const running=st.run>.55&&sp>.6*TILE&&!UI.fly&&!UI.freeCam;
     if(running){ VIT.sta=Math.max(0,VIT.sta-dt/12); rest=0; } else if((rest+=dt)>.8)VIT.sta=Math.min(1,VIT.sta+dt/7);
     VIT.tired=false;

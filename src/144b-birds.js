@@ -75,7 +75,7 @@ const BIRDS={list:[]}; window.BIRDS=BIRDS;
     if(far.length&&Math.random()<.6){ const s=far[Math.floor(Math.random()*far.length)]; flyTo(b,s[0],s[1],s[2],false,s[3]); } else flyTo(b,b.x+Math.sin(a)*28*T,b.y+9*WU,b.z+Math.cos(a)*28*T,true); };
   BIRDS.flush=flush; let lx=0, lz=0, still=0, spd=0; const m4=new THREE.Matrix4(), mw=new THREE.Matrix4(), mr=new THREE.Matrix4(), q=new THREE.Quaternion(), e=new THREE.Euler(), V3=THREE.Vector3, sv=new V3(), pv=new V3(), col=new THREE.Color();
   const seedAt=()=>S.seed&&S.seed.t>0?S.seed:null;
-  const step=(b,dt)=>{ b.t+=dt; if(b.st==='still')return; const ws=b.k===HAWK?.45:1;
+  const step=(b,dt)=>{ '@later'; b.t+=dt; if(b.st==='still')return; const ws=b.k===HAWK?.45:1;
     if(b.st==='pet'){ const hd=SHARED.heading, rx=Math.cos(hd), rz=-Math.sin(hd), on=still>1.2, tx=on?pos.x+rx*.2*WU:pos.x-Math.sin(hd)*.7*T+rx*.4*T, tz=on?pos.z+rz*.2*WU:pos.z-Math.cos(hd)*.7*T+rz*.4*T, ty=SHARED.py+(on?1.42:1.9)*WU;
       const k=Math.min(1,dt*(on?6:3)); b.x+=(tx-b.x)*k; b.y+=(ty-b.y)*k; b.z+=(tz-b.z)*k; const moving=Math.hypot(tx-b.x,tz-b.z)>.05*T||!on; b.yaw=on||spd>.2*T?hd:Math.atan2(pos.x-b.x,pos.z-b.z);
       b.wing=moving?1+.9*Math.sin(b.t*20):Math.max(0,b.wing-dt*6); b.pitch=moving?.2:0; b.lift=0; return; }
@@ -94,7 +94,7 @@ const BIRDS={list:[]}; window.BIRDS=BIRDS;
         if(Math.hypot(hx-h[0],hz-h[2])<3.5*T){ b.yaw=a; b.hop={a:[b.x,b.z],c:[hx,hz],t:0,d:walk?.5:.18}; } else b.yaw=Math.atan2(h[0]-b.x,h[2]-b.z); }
       else if(r<.93&&!near&&b.spots.length>1){ const s=b.spots[Math.floor(Math.random()*b.spots.length)]; if(Math.hypot(s[0]-b.x,s[2]-b.z)>.8*T)flyTo(b,s[0],s[1],s[2],false,s[3]); }
       else b.yaw+=(Math.random()-.5)*1.6; } };
-  const place=(b,n)=>{ const P=K[b.k][7]; mw.compose(pv.set(b.x,b.y+b.lift,b.z),q.setFromEuler(e.set(b.pitch,b.yaw,0,'YXZ')),sv.set(b.s,b.s,b.s));
+  const place=(b,n)=>{ '@later'; const P=K[b.k][7]; mw.compose(pv.set(b.x,b.y+b.lift,b.z),q.setFromEuler(e.set(b.pitch,b.yaw,0,'YXZ')),sv.set(b.s,b.s,b.s));
     for(const p of ['body','breast','head','cap','crest','mask','beak','eye','tail','leg']){ const c=p==='eye'?0x0a0a0a:P[p]; if(c==null)continue; const me=ME[p], i=n[p]=(n[p]||0); if(i>=MAXI)continue; me.setMatrixAt(i,mw); me.setColorAt(i,col.setHex(c)); n[p]++; }
     for(const [s,sg] of [['R',1],['L',-1]])for(const p of ['wing','bar']){ const c=P[p]; if(c==null)continue; const me=ME[p+s], i=n[p+s]=(n[p+s]||0); if(i>=MAXI)continue;
       m4.makeTranslation(sg*PIV[0],PIV[1],PIV[2]).multiply(mr.makeRotationZ(sg*b.wing)); me.setMatrixAt(i,m4.premultiply(mw)); me.setColorAt(i,col.setHex(c)); n[p+s]++; }
@@ -145,7 +145,7 @@ const BIRDS={list:[]}; window.BIRDS=BIRDS;
   FORAGE.ACT.bscatter=()=>{ '@later'; if(SHARED.LVL!=='up'||(window.ROOMS&&ROOMS.cur))return say('SCATTER IT OUTDOORS.','#c8a090'); FORAGE.take('bseed',1); S.seed={x:pos.x,y:(GARDEN.lawnAt&&GARDEN.lawnAt(pos.x,pos.z))??(typeof SHARED.groundY!=='undefined'?SHARED.groundY(pos.x,pos.z):pos.y),z:pos.z,t:90};
     say('YOU SCATTER A HANDFUL OF SEED. STAND STILL AND THE BIRDS WILL COME.','#9fe07f'); };
   FORAGE.ACT.bletgo=()=>freePet();
-  FORAGE.ACT.bcage=id=>{ const k=+id.slice(4); if(!FORAGE.has('cage'))return say('YOU NEED AN EMPTY CAGE (THE MUSHROOM SELLER HAS THEM).','#c8a090'); FORAGE.take('cage',1); const b=petOf(); for(const q of Object.keys(INV.items))if(q.startsWith('pet_'))delete INV.items[q]; if(b)drop(b); FORAGE.give('bd_'+k,1); say(`YOU PUT YOUR TAME ${K[k][0]} IN THE CAGE.`,'#b8f0a0'); };
+  FORAGE.ACT.bcage=id=>{ '@later'; const k=+id.slice(4); if(!FORAGE.has('cage'))return say('YOU NEED AN EMPTY CAGE (THE MUSHROOM SELLER HAS THEM).','#c8a090'); FORAGE.take('cage',1); const b=petOf(); for(const q of Object.keys(INV.items))if(q.startsWith('pet_'))delete INV.items[q]; if(b)drop(b); FORAGE.give('bd_'+k,1); say(`YOU PUT YOUR TAME ${K[k][0]} IN THE CAGE.`,'#b8f0a0'); };
   FORAGE.TABS.push({id:'birds',draw:()=>{ '@later'; const n=Object.keys(S.seen).length; let o=`<div style="margin-bottom:6px">YOUR JOURNAL · ${n} OF ${NK} BIRDS</div><table style="border-collapse:collapse;width:100%">`;
     for(let k=0;k<NK;k++){ const s=S.seen[k]; o+=`<tr style="border-bottom:1px solid #22252f;${s?'':'color:#5d5a52'}"><td style="padding:4px 2px">${s?K[k][0]+(RARE(k)?' <span style="color:#f2c14e">RARE</span>':''):'? ? ?'}<div style="color:#8a8676;font-size:10px">${s?'<i>'+K[k][1]+'</i>':''}</div></td><td style="text-align:right;padding:4px 6px">${s?'SEEN '+s:''}</td></tr>`; }
     return o+`</table><div style="color:#9b9584;margin-top:8px;line-height:1.5">Double click a bird to watch it. Birds are out by day, in fair weather; most in the park. Scatter seed and stand still to bring them near.</div>`; }});

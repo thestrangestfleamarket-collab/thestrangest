@@ -14,7 +14,7 @@ import {BATCH} from './008-batch.js';
   F.out=()=>{ if(busy)return; fade(F.built?'YOUR FIRE ESCAPE':'LOADING YOUR FIRE ESCAPE...',async()=>{ await STORE.offGo(F.name); UI.goTo(X(DX),Z(WY+.9),Y(HZ)); SHARED.heading=0; if(UI.persp&&window.__dbg)__dbg.face(Math.PI); }); };
   F.back=()=>{ if(busy)return; fade('YOUR APARTMENT',async()=>{ await ROOMS.goIn('apt',[X(APTS.fw[0]),Z(APTS.fw[1]+.9),0,0]); SHARED.heading=0; }); };
   const hit=(w,h,d,x,y,z)=>{ const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),new THREE.MeshBasicMaterial({visible:false})); m.position.set(x,y,z); scene.add(m); return m; };
-  let plaque=null; APTS.furnish(APTS.my,()=>{ UI.thing({name:'YOUR FIRE ESCAPE',ghost:1,obj:hit(1.1*T*KK,SHARED.BOD.Y(52),.3*T,X(APTS.fw[0]),SHARED.BOD.Y(68),Z(APTS.fw[1]+.2)),reach:1.4*T,near:2.6*T,tall:1.4*T,act:()=>{ if(APTS.in)F.out(); }});
+  let plaque=null; APTS.furnish(APTS.my,()=>{ '@later'; UI.thing({name:'YOUR FIRE ESCAPE',ghost:1,obj:hit(1.1*T*KK,SHARED.BOD.Y(52),.3*T,X(APTS.fw[0]),SHARED.BOD.Y(68),Z(APTS.fw[1]+.2)),reach:1.4*T,near:2.6*T,tall:1.4*T,act:()=>{ if(APTS.in)F.out(); }});
   const F3={Y:'101101010010010',O:'111101101101111',U:'101101101101111',R:'110101110101101',A:'010101111101101',P:'110101110100100',T:'111010010010010',M:'101111101101101',E:'111100110100111',N:'110101101101101'};
   plaque=(()=>{ const txt='YOUR APARTMENT', W=61, H=9, cv=document.createElement('canvas'); cv.width=W; cv.height=H; const g=cv.getContext('2d'); g.fillStyle='#7a5a24'; g.fillRect(0,0,W,H); g.fillStyle='#c8a050'; g.fillRect(1,1,W-2,H-2);
     let x=3; g.fillStyle='#2a1e10'; for(const ch of txt){ const q=F3[ch]; if(q)for(let r=0;r<5;r++)for(let c=0;c<3;c++)if(q[r*3+c]==='1')g.fillRect(x+c,2+r,1,1); x+=ch===' '?2:4; }

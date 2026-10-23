@@ -78,7 +78,8 @@ Several chats work at once, each on its own branch. Every time:
 
 Moving here from `bralynnb/tsfm` (owner, 18 Oct 2026). This repo is the whole site: `worker/door.js` serves `/` (THE MARKET to a
 checked login, the door to anyone else) from `dist/`. `.github/workflows/site.yml` builds and runs `tests/site.cjs` (the real worker
-under `wrangler dev`: the door shows, THE MARKET starts) and `tests/places.cjs` on every push and pull request. Never copy `market.html` anywhere by hand.
+under `wrangler dev`: the door shows, THE MARKET starts) and `tests/places.cjs` on every push and pull request.
+**Multiplayer (23 Oct 2026)**: `src/111d-online.js` (`ONLINE`: the other players' bodies, name tags, the list, chat) talks to the `Block` Durable Object in `worker/door.js` (partyserver; one per section, `/parties/block/s-<id>`, the login cookie checked); `tests/online.cjs` checks it without a network. Never copy `market.html` anywhere by hand.
 **Checks are light by default** (owner, 20 Oct 2026: "lets try to not be as check heavy, only check when errors or really need to to be
 safe"): a pull request gets the build check only. The measuring checks (budget, same picture, same pixels: four machines, 8–10 minutes)
 run only when asked: put the `measure` label on the pull request (`gh api -X POST repos/<owner>/<repo>/issues/<n>/labels -f 'labels[]=measure'`,
@@ -114,6 +115,7 @@ Set 22 Oct 2026. Every change to the game goes by these.
 - Model the essence, not premature specifics: capture the minimal true shape of a thing (e.g. which sections are adjacent) and add detail only when it becomes a real mechanic — don't bake in values or methods you don't need yet.
 - Properties are schema-wide, not per-instance: a new or changed property (e.g. an item's `burnable`) is a field on the shared entity model, resolved by one system; adding or changing it means re-evaluating every entity of that class for it and every system that reacts to it (fire, physics, crafting, AI, …), resolved uniformly through that system — never special-cased on one item.
 - One path: a character through `makeNPC` + a home, a body through the rig, a place through its builder + chunk + lazy room, an underground place or platform through its level (`LEVELS.of`, 129a) and its stairs (`LEVELS.ways`), never a height test, a placed thing in `data/world.json`. About to write a second way to do something that exists? Stop and extend the first.
+- Reuse, don't hand-write: never write by hand what already exists and fits (in the repo, a library, or a free service in our setup: Supabase, Cloudflare) without asking the owner first — especially when you have a better idea or an improvement: propose it, then build.
 - Where it goes: a new file numbered between its neighbours, after the files it reads; cross-file needs declared in `003b-systems.js`; state on `SHARED`; per-frame work a `SYS` entry, never a wrapper; baked assets in `data/` (originals in `data/full/`); the reason in HISTORY and the commit, never a source comment.
 - Before you touch it: grep `docs/HISTORY.md` and `docs/MAP.md` for what exists and what was decided. Don't reach into another system's internals — use its registration or a `SYS` event.
 - Before you remove or replace it: find who depends on it (MAP's "who uses it"); a removal is a decision — it needs the owner and a HISTORY line.

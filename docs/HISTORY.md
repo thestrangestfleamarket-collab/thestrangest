@@ -4461,3 +4461,11 @@ Owner: "remove the dust from air completely." The floating motes are gone everyw
 ## 23 Oct 2026: a live day-night cycle and the sun's rays
 
 Owner: "i want to sunrays to come from the suns locations, and the sun should rise and set like normal time, sky shoudl change to colors of sunset/sunrise... the rays should always be shining during day all the way down from sun, around 10-15 rays on average, ranges in sizes. they only move with sun, very slow. dont invent new systems... plug into current system." He chose a full live cycle over the pinned looks, and "just build your best" over ray mockups. The clock now runs (LIVE is the new default look in ATMOSPHERE); the sky, sun and stars already arced by the hour, so LIVE lets that show and the picked looks (DAY/GOLDEN/SOFT DAY/NIGHT) stay as fixed overrides. Rays: 10–15 of them, each a different width, fan from the sun and fade out, all through the day, turning slowly with it. `?hour=` and `?look=` still pin the time (tests stay fixed). Day is about 24 minutes.
+
+## 23 Oct 2026: reuse, don't hand-write (rule)
+
+Owner: "dont write anything by hand that is already created for what were doing an a better fit", then made it a hard rule with a caveat: not without asking first, "especailly if you have a better idea or improvement way of doing it". In CLAUDE.md's rules.
+
+## 23 Oct 2026: multiplayer, the first piece
+
+Owner: "i want to add multiplayer ... look for best, free options. work with supabase,cloudlfare, etc current setup". His first piece: see everyone online, see them move, their name and look, and chat. He picked Supabase Realtime first, then said "yes" to one Cloudflare Durable Object per block instead once its free limits showed movement would not fit (every message counted once per listener; going over restricts the whole Supabase project, login included). Rule: each block (section) is its own server; Supabase stays for login and saved things. ENTER talks (in the controls).

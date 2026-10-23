@@ -9,5 +9,8 @@
     "three": "0.160.0",
     "three-mesh-bvh": "0.8.3",
     "wrangler": "^4.42.0"
+  },
+  "dependencies": {
+    "partyserver": "0.5.10"
   }
 }

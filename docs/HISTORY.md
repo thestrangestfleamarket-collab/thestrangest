@@ -4449,3 +4449,7 @@ Owner: "when you take your sword off it glitches and stays in same spot you left
 
 Owner: "simple bbs they can order things from bodega or catalog. catalog lists basic furniture for apartment. bodega as essential needs. all delivery ... dropped off by drone on front fire escape" (drone drops on the fire escape and you carry it in; ordered furniture auto-places).
 The 1980s computer in your apartment opens THE MARKET BBS (green terminal): THE BODEGA (essentials) and CATALOG (basic furniture), prices from the item catalog, paid from `INV.cash`. Ordering sends the drone to your front fire escape with a parcel; double-click it to bring it in — furniture places itself in an open spot and is kept (`OWNED` `apt-furn`), bodega items are flavour for now. Revives the dormant drone (146-drone) onto the open-plan apartment; the old roof-box delivery and drone cam are gone (`APTS.put` lets the drone reuse the apartment's own placement).
+
+## 23 Oct 2026: no more dust in the air
+
+Owner: "remove the dust from air completely." The floating motes are gone everywhere: the look's air motes (`133-lookfx` MOTES, dropped), the sun-shaft dust (`134d-shafts`, `dk=0`; the sun beams stay), and the dungeon/store "dust in the air" prop (drawn nothing now). The ATMOSPHERE editor's DUST IN THE AIR slider is removed with it.

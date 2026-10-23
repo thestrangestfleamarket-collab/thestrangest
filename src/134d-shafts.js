@@ -1,4 +1,4 @@
-// THE SUN SHAFTS: SHAFTS hangs beams of light along the sun through the air (fixed spots of the world, two crossed sheets each, never turning with you) and dust in the sunlit air; every beam and mote is lit by the sun's shadow map, so what the sun does not reach (trees, buildings, the ground) blocks it with a soft fade. It also streaks rays out from the sun on the screen when the look asks for them (SUN SHAFTS in ATMOSPHERE); the rays are drawn by the look's last pass.
+// THE SUN SHAFTS: SHAFTS hangs beams of light along the sun through the air (fixed spots of the world, two crossed sheets each, never turning with you); every beam is lit by the sun's shadow map, so what the sun does not reach (trees, buildings, the ground) blocks it with a soft fade. It also streaks rays out from the sun on the screen when the look asks for them (SUN SHAFTS in ATMOSPHERE); the rays are drawn by the look's last pass. (The sunlit dust is off: no dust in the air, owner 23 Oct 2026.)
 import {SHARED, THREE} from './003-shx.js';
 import {CLOCK, DN, LOOK, pos, WX} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
@@ -34,7 +34,7 @@ const SHAFTS={on:0,dust:0,occ:0,list:[]}; window.SHAFTS=SHAFTS;
   const pts=new THREE.Points(dg,dmat); pts.frustumCulled=false; pts.visible=false; pts.renderOrder=851; scene.add(pts); OUT.add(pts,'open'); SHAFTS.pts=pts;
   const sd=new THREE.Vector3(), rt=new THREE.Vector3(), nm=new THREE.Vector3(), UP=new THREE.Vector3(0,1,0), M=new THREE.Matrix4(), c=new THREE.Vector3(), X=new THREE.Vector3(), Y=new THREE.Vector3(); let t=0; SHAFTS.at=[];
   SYS.add('sky',dt=>{ t+=dt; DU.uT.value+=dt; const P=DN.P?DN.P():null, e=CLOCK.elev(), W=WX.now||{cloud:0}, up=SHARED.LVL!=='down'&&OUT.open, cam=SHARED.cam;
-    const sunK=up&&P?Math.max(0,Math.min(1,(e-4)/8))*(1-Math.max(0,Math.min(1,(W.cloud-.4)/.5))):0, k=P&&P.shaft?P.shaft*sunK:0, dk=P&&P.dust?P.dust*sunK:0;
+    const sunK=up&&P?Math.max(0,Math.min(1,(e-4)/8))*(1-Math.max(0,Math.min(1,(W.cloud-.4)/.5))):0, k=P&&P.shaft?P.shaft*sunK:0, dk=0;
     { const sun=CLOCK.sun, sh=sun&&sun.shadow, occ=!!(sh&&sh.map&&renderer.shadowMap.enabled&&renderer.shadowMap.type!==THREE.VSMShadowMap);   // VSM keeps moments, not depths: then the beams go unblocked
       SU.uOcc.value=occ?1:0; SHAFTS.occ=occ?1:0; if(occ){ SU.uShadow.value=sh.map.texture; SU.uShMat.value=sh.matrix; SU.uTx.value=1/sh.mapSize.x; } }
     SHAFTS.on=k; SHAFTS.dust=dk; G.visible=k>.01; BU.uOp.value=(cam.isOrthographicCamera?.045:.09)*k; BU.uCol.value.copy(CLOCK.sun.color).lerp(WARM,.5);

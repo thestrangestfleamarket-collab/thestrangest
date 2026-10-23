@@ -4397,3 +4397,13 @@ Owner: "fold GEAR into EQUIP then merge it". The goggles and the headlight are w
 
 ## 23 Oct 2026: the cinema off the start's critical path
 `main` went red with the cinema (#235): its admin check and first pull ran as the page loaded and dragged the `later` chunk in at the start, and its polls hit a Supabase table that is not there yet (404 every 5 s). Now both wait until the start is up and `later` has come, and the poll and the poster go through the website's own server, which answers quietly on a miss. No change to what players see.
+
+## 23 Oct 2026: fighting with swords
+Owner: "Let's add a fighting system with swords"; asked for prebuilt systems first ("Look for prebuilt systems that might be better match longterm"): none fit three.js (Knight's Waltz is GPL and physics-only), so the sword layer sits on the one strike path, data-driven; the KayKit skeleton clips (CC0) give the guards their block and slices. Then "Go".
+- **Blades on the item model**: DAMAGE is a shared item property (editor shift+7); wooden $8 (1), iron $15 (2), steel $40 (3), enchanted $120 (5), all from the swordsmith. Any hand item that grants FIGHT is a sword.
+- **SWORDSMANSHIP**: blows that land, parries and the duel teach it; the swordsmith gives lessons (`trade.teaches` in characters.json, any merchant can). It raises damage and how much a block stops.
+- **Combos and stamina**: swings chain, the third is heavy (harder, longer, knocks back, staggers); each costs stamina, winded you swing slow and soft.
+- **Block and parry (hold P)**: the blade comes up; a blow from the front is halved; caught on the beat (within .28 s of raising it) it is parried: no damage, they stagger. Rebindable like every key.
+- **Enemies fight back the same way**: skeleton guards block light blows (more on deeper levels), a heavy one gets through; slimes, skeletons, bolts and golems all go through `VIT.hurt(d, from)`.
+- **THE DUEL** in the holodeck ($15, dearer than the drills): the knight winds up, you block or parry, strike while he is open; six exchanges, no health lost, trains SWORDSMANSHIP to 80.
+Rule: a fight is one strike path (`STRIKES`) and one blow path (`VIT.hurt` through `VIT.guard`); weapons are rows on the item model, never code per blade.

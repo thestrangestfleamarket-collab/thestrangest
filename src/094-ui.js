@@ -157,7 +157,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
   document.head.appendChild(css);
   const M=document.createElement('div'); M.id='menu'; M.hidden=true; M.innerHTML=`<div class="box" role="dialog" aria-label="Menu">
     <div class="tabs" role="tablist"><button role="tab" data-t="map">MAP</button><button role="tab" data-t="display">DISPLAY</button><button role="tab" data-t="atmo">ATMOSPHERE</button><button role="tab" data-t="graphics">GRAPHICS</button><button role="tab" data-t="sound">SOUND</button><button role="tab" data-t="keys">KEYS</button><button role="tab" data-t="bug">REPORT A BUG</button></div>
-    <div class="pane" data-p="map"><div class="row"><button class="btn" data-lv="up">THE STREET</button><button class="btn" data-lv="down">UNDERGROUND</button><span class="dim">click the map to go there</span></div>
+    <div class="pane" data-p="map"><div class="row"><button class="btn" data-lv="up">THE STREET</button><button class="btn" data-lv="down">UNDERGROUND</button><button class="btn" id="myapt">MY APARTMENT</button><span class="dim">click the map to go there</span></div>
       <canvas id="mapcv"></canvas><h3>GO TO</h3><div class="row"><select id="placesel" class="btn" style="font:inherit;min-width:min(340px,80vw);padding:6px 8px;background:#0e1016;color:#ece5d3;border:2px solid #3a3f4e"></select></div><div class="row" id="places" hidden></div></div>
     <div class="pane" data-p="display">
       <h3>VIEW</h3><div class="row"><span style="width:60px">ZOOM</span><input type="range" id="dzoom" min="0" max="1" step="0.001"></div>
@@ -238,6 +238,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
   UI.goTo=goTo;
   mcv.addEventListener('click',e=>{ '@later'; const r=mcv.getBoundingClientRect(); if(mapLv==='up'){ const Q=plan(), [x,y]=Q.tile((e.clientX-r.left)/r.width*Q.W,(e.clientY-r.top)/r.height*Q.H); return goTo((x-SHARED.BOD.OX)*TILE,(y-SHARED.BOD.OY)*TILE,'up'); } const R=mapRect(mapLv); goTo(R.x0+(e.clientX-r.left)/r.width*(R.x1-R.x0),R.z0+(e.clientY-r.top)/r.height*(R.z1-R.z0),mapLv); });
   M.querySelectorAll('[data-lv]').forEach(b=>b.onclick=()=>{ mapLv=b.dataset.lv; drawMap(); });
+  $('#myapt').onclick=()=>{ if(UI.menuOpen)toggleMenu(); if(ROOMS.off&&ROOMS.off.apt)ROOMS.enter('apt'); };
   const PLACES=[['THE STREET',-2.2,3.2,'up'],['THE BODEGA',SHARED.BOD.X((SHARED.BOD.SB.x0+SHARED.BOD.SB.x1)/2),SHARED.BOD.Z(SHARED.BOD.SB.y1)-1.6,'up',null,Math.PI],['THE PLATFORM',MODS.station.plat.x,MODS.station.plat.z,'down'],['CENTRAL PARK',SHARED.BOD.XS(PARK.round[0]+PARK.ox),SHARED.BOD.ZS(PARK.y0+7+PARK.oy),'up'],['THE BATH HOUSE',SHARED.BOD.X(SHARED.BOD.GD.door[0]),SHARED.BOD.Z(SHARED.BOD.GD.door[1]+4.5),'up'],...(STORE.main?STORE.main.doors.map(d=>[...d,'up']):[]),['THE CASTLE',SHARED.BOD.XS(CASTLE.gate),SHARED.BOD.ZS(CASTLE.b[2]-3),'up'],['DUNGEON L1',MODS.dungeon.arrive(1).x,MODS.dungeon.arrive(1).z,'down']];
   UI.places=()=>PLACES.concat(STORE.places||[]);
   const goPlace=async n=>{ if(STORE.ensure)await STORE.ensure(); if(STORE.offGo)await STORE.offGo(n); const P=PLACES.concat(STORE.places).find(p=>p[0]===n); if(P)goTo(P[1],P[2],P[3],P[5]); }; UI.goPlace=goPlace;

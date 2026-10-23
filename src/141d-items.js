@@ -1,9 +1,9 @@
 // THE ITEM MODEL AND EDITOR: ITEMS holds each item type's shared properties (burnable, edible, ...); ITEMED edits them (shift+7).
 import {FORAGE, ITEMED, ITEMS} from './003b-systems.js';
 import {OWNED} from './005-save.js';
-{ const BOOL=[['burnable','BURNS'],['edible','EDIBLE'],['stackable','STACKS'],['pickup','PICK UP'],['sellable','SELLABLE']];
-  const NUM=[['weight','WEIGHT',0,50,0.1,1],['value','VALUE',0,500,1,0]];
-  const SEL=[['slot','WORN / HELD',['none','hand','body']],['grants','GRANTS (ABILITY)',['none','catch','fight','guard','float']]];
+{ const BOOL=[['burnable','BURNS'],['edible','EDIBLE'],['stackable','STACKS'],['pickup','PICK UP'],['sellable','SELLABLE'],['offworld','OFF-WORLD']];
+  const NUM=[['weight','WEIGHT',0,50,0.1,1],['value','VALUE',0,500,1,0],['breath','BREATH s',0,180,5,0]];
+  const SEL=[['slot','WORN / HELD',['none','hand','body','head','eyes']],['grants','GRANTS (ABILITY)',['none','catch','fight','guard','float','light','sight']]];
   const DEF=()=>{ const d={}; for(const [k] of BOOL)d[k]=false; for(const [k,,,,,v] of NUM)d[k]=v; for(const [k,,opts] of SEL)d[k]=opts[0]; return d; };
   let BAKED={}; try{ BAKED=__DATA__("data/items.json")||{}; }catch(e){}
   try{ for(const id in BAKED)ITEMS.defs[id]=Object.assign(DEF(),BAKED[id]); }catch(e){}
@@ -39,7 +39,7 @@ import {OWNED} from './005-save.js';
         ${SEL.map(([k,n,opts])=>`<div class="num"><span style="width:92px">${n}</span><select data-id="${esc(id)}" data-sel="${k}">${opts.map(o=>`<option${d[k]===o?' selected':''}>${o}</option>`).join('')}</select></div>`).join('')}</div>`; }).join(''):'<div class="dim" style="margin:10px 0">No item types yet. Add one above.</div>'}
       ${(()=>{ const d=discovered(); return d.length?`<div class="dim" style="margin-top:10px">FROM THE GAME — click to add (${d.length})</div><div class="props" style="margin:6px 0">${d.map(id=>`<button class="chip" data-add="${esc(id)}" title="${esc(nameOf(id))}">${esc(id)}</button>`).join('')}</div>`:''; })()}
       <div class="row"><button class="btn" id="itexp">EXPORT</button><button class="btn" id="itdone">DONE</button></div>
-      <div class="dim">Export writes items.json; drop it in data/ to ship. BURNS (fire), EDIBLE (eating), SELLABLE (shops) and WORN/HELD + GRANTS (gear: a merchant sells it, you hold or wear it) react in-game as each system lands; the rest define properties systems will read.</div></div>`; }
+      <div class="dim">Export writes items.json; drop it in data/ to ship. BURNS (fire), EDIBLE and BREATH (eating), SELLABLE (shops), OFF-WORLD (merchant-only) and WORN/HELD + GRANTS (gear: a merchant sells it, you hold or wear it) react in-game; the rest define properties systems will read.</div></div>`; }
   P.addEventListener('click',e=>{ const b=e.target.closest&&e.target.closest('button'); if(!b)return;
     if(b.id==='itadd'){ const v=(P.querySelector('#itnew').value||'').trim().toLowerCase().replace(/\s+/g,'_'); if(v&&!ITEMS.defs[v]){ ITEMS.defs[v]=DEF(); save(); draw(); } return; }
     if(b.dataset.add){ const id=b.dataset.add; if(!ITEMS.defs[id]){ ITEMS.defs[id]=DEF(); save(); draw(); } return; }

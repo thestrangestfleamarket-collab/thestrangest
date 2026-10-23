@@ -74,7 +74,7 @@ import {GEMS} from './101-gems.js';
   const spawns=(key,grp)=>{ const d=day(), Q=grp.sq, out=[]; for(let i=0;i<Q.length;i+=3){ const x=Q[i], y=Q[i+1], z=Q[i+2], gd=WEEDS.goldAt&&WEEDS.goldAt(x,z), gv=gd&&gd[1]>.5?gd[0]:0;
       if(gv?hsh(x/T+d*.37,z/T,207)>.05:gd&&gd[1]>0||hsh(x/T+d*.37,z/T,201)>.016||!WEEDS.inPark||!WEEDS.inPark(x,z,10)||(WEEDS.mushAt&&!WEEDS.mushAt(x,z)))continue;
       const k=gv?GOLD[gv]:pickKind(WEEDS.kindAt(x,z),hsh(x/T,z/T+d*.53,202)), px=x+(hsh(x,z,203)-.5)*(gv?.2:.4)*T, pz=z+(hsh(z,x,204)-.5)*(gv?.2:.4)*T;
-      out.push({k,g:gv,x:px,z:pz,y,top:grp.top(px,y,pz),pk:hsh(x,z,206)<.2,rv:0,cr:0,id:d+':'+Math.round(px*10)+','+Math.round(pz*10),s:.8+.5*hsh(x,z,205)}); } return out; };
+      out.push({k,g:gv,x:px,z:pz,y,top:grp.top(px,y,pz),pk:WEEDS.tall===false||hsh(x,z,206)<.2,rv:0,cr:0,id:d+':'+Math.round(px*10)+','+Math.round(pz*10),s:.8+.5*hsh(x,z,205)}); } return out; };
   const m4=new THREE.Matrix4(), q=new THREE.Quaternion(), V3=THREE.Vector3, col=new THREE.Color(); let things=[];
   FORAGE.sync=()=>{ let nc=0, ng=0, ns=0; const list=[]; hits.clear(); for(const t of things){ const i=UI.things.indexOf(t); if(i>=0)UI.things.splice(i,1); } things=[];
     const now=performance.now()/1e3;

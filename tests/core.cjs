@@ -58,7 +58,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
         return { ok: true, slots, d0, guard, float, off }; })();
       o.rack = (() => { const R = window.RACK, G = window.GLBTOONS, bear = G && G.coatbear, fox = G && G.origamifox; if (!R || !R.at || !bear || !fox) return { ok: false };
         const h = bear.st.home, f = fox.st.home, near = Math.hypot(h.x - f.x, h.z - f.z) < 5 * __dbg.MAPK.BOD.XS(1) - 5 * __dbg.MAPK.BOD.XS(0), c = __dbg.collide(h.x, h.z), free = Math.hypot(c[0] - h.x, c[1] - h.z) < 1e-6;
-        return { ok: true, pinned: h.r === 0, near, free, thing: __dbg.ui().things.some(t => /COAT RACK/.test(t.name)), rackBy: Math.hypot(R.at.x - h.x, R.at.z - h.z) < 4 }; })();
+        return { ok: true, pinned: h.r === 0 && Math.hypot(bear.st.x - h.x, bear.st.z - h.z) < 1, near, free, thing: __dbg.ui().things.some(t => /COAT RACK/.test(t.name)), rackBy: Math.hypot(R.at.x - h.x, R.at.z - h.z) < 4 }; })();
       o.knight = (() => { const B = window.BODIES, K = B && B.by && B.by.knight && B.by.knight.npc; if (!K) return { ok: false }; const T = __dbg.THREE, g0 = K.g.parent, G = new T.Group();
         const street = K.on === true && K.st.home.id === 'knight' && K.name === 'THE ARMOURER', bound = SHOPDBG().bound.includes('knight');
         B.place('knight', K.st.x + 1, K.st.z + 1, 0, G); const borrowed = K.g.parent === G && K.st.home.r === 0; B.restore('knight'); const back = K.g.parent === g0 && K.on === true && K.st.home.id === 'knight' && K.st.home.r > 0 && !K.prev;

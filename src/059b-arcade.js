@@ -11,10 +11,10 @@ await grab('arcade',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Y=SHARED.BOD
       const hb=new THREE.Mesh(new THREE.BoxGeometry(.8*TILE,2*TILE,.8*TILE),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(px,TILE,z); scene.add(hb);
       UI.thing({name:P.name,obj:hb,reach:1.6*TILE,near:2.6*TILE,tall:2*TILE,act:()=>HOLO.start(P,px,z)}); }); };
   HOLO.close=()=>{ HOLO.run=null; for(const P of HOLO.programs)if(P.hide)P.hide(); };
-  HOLO.start=(P,x,z)=>{ if(HOLO.run)return; if(INV.cash<8)return say('THE HOLODECK TAKES $8 A PROGRAM.','#c8a090'); INV.cash-=8; if(P.tool){ if(!FORAGE.has(P.tool))FORAGE.give(P.tool,1); if(WIELD.on!==P.tool)WIELD.set(P.tool); }
+  HOLO.start=(P,x,z)=>{ if(HOLO.run)return; const c=P.cost||8; if(INV.cash<c)return say('THE HOLODECK TAKES $'+c+' FOR THIS PROGRAM.','#c8a090'); INV.cash-=c; if(P.tool){ if(!FORAGE.has(P.tool))FORAGE.give(P.tool,1); if(WIELD.on!==P.tool)WIELD.set(P.tool); }
     HOLO.run={P,x,z,n:0,good:0,cue:false,t:2}; say(P.intro,'#7dffa4'); };
-  SYS.add('strike',()=>{ const D=HOLO.run; if(!D||!D.cue||Math.hypot(pos.x-D.x,pos.z-D.z)>2.6*TILE)return; D.cue=false; D.good++; D.n++; D.t=1.2+Math.random()*1.6; say('GOOD.','#7dffa4'); if(D.P.skill)FORAGE.use(D.P.skill,0,100); },'holodeck drill');
-  SYS.add('places',dt=>{ const D=HOLO.run; if(!D)return; D.t-=dt; if(D.t>0)return;
+  SYS.add('strike',()=>{ const D=HOLO.run; if(!D)return; if(D.P.strike)return D.P.strike(D); if(!D.cue||Math.hypot(pos.x-D.x,pos.z-D.z)>2.6*TILE)return; D.cue=false; D.good++; D.n++; D.t=1.2+Math.random()*1.6; say('GOOD.','#7dffa4'); if(D.P.skill)FORAGE.use(D.P.skill,0,100); },'holodeck drill');
+  SYS.add('places',dt=>{ const D=HOLO.run; if(!D)return; if(D.P.run)return D.P.run(D,dt); D.t-=dt; if(D.t>0)return;
     if(D.cue){ D.cue=false; D.n++; D.t=1.2+Math.random()*1.6; say('TOO SLOW.','#c8a090'); return; }
     if(D.n>=5){ say('PROGRAM COMPLETE: '+D.good+' OF 5.','#7dffa4'); if(D.P.skill&&D.good)FORAGE.train(D.P.skill,600,0,D.good*4); HOLO.run=null; return; } D.cue=true; D.t=1.1; say(D.P.cue,'#5dff8f'); },'holodeck drill');
 

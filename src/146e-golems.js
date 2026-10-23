@@ -12,10 +12,10 @@ const GOLEMS={on:true,list:[]}; window.GOLEMS=GOLEMS;
     SFX.play('clunk',{vol:.7,pitch:.6,vary:.2}); say('THE GOLEM CRUMBLES TO ROCKS.','#e8e2cc'); };
   const reform=r=>{ const N=r.N; for(const m of r.deb)m.removeFromParent(); r.deb=[]; r.dead=false; r.agg=false; r.hp=HP; N.g.visible=true; N.st.hold=false; N.far=false; SFX.play('clunk',{vol:.6,pitch:.8}); say('THE ROCKS GATHER: THE GOLEM STANDS AGAIN.','#c8c2b0'); };
   SYS.add('life',dt=>{ find(); if(!GOLEMS.on||!GOLEMS.list.length)return; const you={x:pos.x,z:pos.z}, alive=!VIT.dead&&SHARED.LVL==='up', near=!!(GCAVE.inBox&&GCAVE.inBox(pos.x,pos.z,4*T)), ST=window.STRIKES;
-    const S=alive&&ST?ST.strikes():[], m=ST?ST.strength():1;
+    const S=alive&&ST?ST.strikes():[];
     for(const r of GOLEMS.list){ const N=r.N, st=N.st; if(r.dead){ if((r.t-=dt)<=0)reform(r); continue; }
-      for(const s of S)if(ST.inCone(s,st.x,st.z,N.g.position.y,.3*T)){ r.hp-=s.d*m; r.agg=true; const dx=st.x-you.x, dz=st.z-you.z, l=Math.hypot(dx,dz)||1; st.sx=dx/l*1.2*T; st.sz=dz/l*1.2*T; SFX.play('clunk',{vol:.5,pitch:.9,vary:.2}); if(r.hp<=0){ crumble(r); break; } }
+      for(const s of S)if(ST.inCone(s,st.x,st.z,N.g.position.y,.3*T)){ r.hp-=s.d*ST.strength(s); r.agg=true; ST.landed(s); const dx=st.x-you.x, dz=st.z-you.z, l=Math.hypot(dx,dz)||1, kb=1.2*T*(s.kb||1); st.sx=dx/l*kb; st.sz=dz/l*kb; if(s.heavy)r.cool=Math.max(r.cool,2.5); SFX.play('clunk',{vol:.5,pitch:.9,vary:.2}); if(r.hp<=0){ crumble(r); break; } }
       if(r.dead)continue; const d=Math.hypot(st.x-you.x,st.z-you.z);
-      if(alive&&(r.agg?d<9*T:near&&d<6*T)){ r.agg=true; st.v=r.v0*.7; if(d>1.3*T)st.to={x:you.x,z:you.z}; else { st.to=null; st.face={x:you.x,z:you.z}; if((r.cool-=dt)<=0){ r.cool=2.2; VIT.hurt(.07); SFX.play('thud',{vol:.6,pitch:.7}); } } }
+      if(alive&&(r.agg?d<9*T:near&&d<6*T)){ r.agg=true; st.v=r.v0*.7; if(d>1.3*T)st.to={x:you.x,z:you.z}; else { st.to=null; st.face={x:you.x,z:you.z}; if((r.cool-=dt)<=0){ r.cool=2.2; if(VIT.hurt(.07,st)===2){ r.cool=4; const dx=st.x-you.x, dz=st.z-you.z, l=Math.hypot(dx,dz)||1; st.sx=dx/l*T; st.sz=dz/l*T; } else SFX.play('thud',{vol:.6,pitch:.7}); } } }
       else if(r.agg&&d>12*T){ r.agg=false; st.v=r.v0; st.to=null; } } },'146e-golems');
   window.GOLEMDBG=()=>GOLEMS.list.map(r=>({k:r.N.key,hp:r.hp,dead:r.dead,agg:r.agg,t:+r.t.toFixed(1)})); }

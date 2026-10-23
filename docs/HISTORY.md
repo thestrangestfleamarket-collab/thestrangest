@@ -4394,3 +4394,23 @@ First pass, still to do (owner's call): worn gear has no body mesh yet (the clou
 
 ## 23 Oct 2026: one worn layer
 Owner: "fold GEAR into EQUIP then merge it". The goggles and the headlight are worn through EQUIP like the armour and the cloud coat: EQUIP now wears one thing a slot (body, head, eyes) and two new grants do the work — `light` (the headlight lights the caverns) and `sight` (goggles see further through the murk). What you wear stays on between visits. The scanner and extractor stay pack actions.
+
+## 23 Oct 2026: the cinema off the start's critical path
+`main` went red with the cinema (#235): its admin check and first pull ran as the page loaded and dragged the `later` chunk in at the start, and its polls hit a Supabase table that is not there yet (404 every 5 s). Now both wait until the start is up and `later` has come, and the poll and the poster go through the website's own server, which answers quietly on a miss. No change to what players see.
+
+## 23 Oct 2026: fighting with swords
+Owner: "Let's add a fighting system with swords"; asked for prebuilt systems first ("Look for prebuilt systems that might be better match longterm"): none fit three.js (Knight's Waltz is GPL and physics-only), so the sword layer sits on the one strike path, data-driven; the KayKit skeleton clips (CC0) give the guards their block and slices. Then "Go".
+- **Blades on the item model**: DAMAGE is a shared item property (editor shift+7); wooden $8 (1), iron $15 (2), steel $40 (3), enchanted $120 (5), all from the swordsmith. Any hand item that grants FIGHT is a sword.
+- **SWORDSMANSHIP**: blows that land, parries and the duel teach it; the swordsmith gives lessons (`trade.teaches` in characters.json, any merchant can). It raises damage and how much a block stops.
+- **Combos and stamina**: swings chain, the third is heavy (harder, longer, knocks back, staggers); each costs stamina, winded you swing slow and soft.
+- **Block and parry (hold P)**: the blade comes up; a blow from the front is halved; caught on the beat (within .28 s of raising it) it is parried: no damage, they stagger. Rebindable like every key.
+- **Enemies fight back the same way**: skeleton guards block light blows (more on deeper levels), a heavy one gets through; slimes, skeletons, bolts and golems all go through `VIT.hurt(d, from)`.
+- **THE DUEL** in the holodeck ($15, dearer than the drills): the knight winds up, you block or parry, strike while he is open; six exchanges, no health lost, trains SWORDSMANSHIP to 80.
+Rule: a fight is one strike path (`STRIKES`) and one blow path (`VIT.hurt` through `VIT.guard`); weapons are rows on the item model, never code per blade.
+
+## 23 Oct 2026: the sparring ring
+Owner: "can you add npcs in game to test these out?" A ring on Market St by the swordsmith (`146g-sparring.js`): SPAR with a sword in hand and two skeleton partners (blade and shield) come at you, block, take your hits, fall and get up. Light blows (a scratch of health each); parries, hits and a partner going down teach SWORDSMANSHIP. Nothing until you spar: the partners are made on the first bout.
+
+## 23 Oct 2026: SOFT DAY, a fourth look
+Owner, with a picture of a soft painterly valley (sun shafts through pastel clouds, blue-grey haze stacking the far cliffs, warm glow on the grass): "how can we make the atmopshere during the day look like this in game?" then "go". A fourth look, SOFT DAY (N cycles to it; ATMOSPHERE edits it): a lower warm sun, pastel sky, the high clouds in their own colour, the mist warming toward the sun, sun shafts hung in the air, and more glow. New dials on every look (HIGH CLOUD COLOUR, MIST TOWARD THE SUN, SUN SHAFTS, GLOW); the old looks keep theirs at zero. Cost: seven additive planes and two uniforms; nothing new per pixel. Cel stays the floor.
+- Owner: "What about the sun rays and shadows". The rays now also streak out from the sun on the screen (one radial pass, on only while SUN SHAFTS is up and the sun is in view) and the air beams are stronger; the sun sits lower (longer shadows) and a new dial on every look, LIGHT ALL ROUND COLOUR, tints the shadows (SOFT DAY: blue). Shadow edges stay the lighting editor's global choice (SHADOW EDGE: SOFT).

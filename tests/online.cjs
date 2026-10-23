@@ -27,6 +27,10 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     await pg.waitForTimeout(1500);
     const r2 = await pg.evaluate(() => { const o = ONLINE.others.get('a'); return { x: o.fig.g.position.x, walk: o.S.target }; });
     ok(r2.x > x0 + 1.5, 'ROSA walks where the server sends her (' + x0.toFixed(2) + ' -> ' + r2.x.toFixed(2) + ')');
+    await pg.evaluate(() => ONLINE.feed({ t: 'tell', from: 'THE MARKET', text: 'the bodega closes early tonight' }));
+    await pg.waitForTimeout(500);
+    const r4 = await pg.evaluate(() => { const b = document.getElementById('onltell'); return { shown: !!b && !b.hidden && /bodega closes early/.test(b.textContent), log: /THE MARKET/.test(document.querySelector('#onllog').textContent) }; });
+    ok(r4.shown && r4.log, 'a message from the owner shows over the game and in the chat');
     await pg.evaluate(() => { const P = __dbg.you(); ONLINE.feed({ t: 'mv', id: 'b', at: [P.x, P.z, SHARED.py, 0, SHARED.LVL === 'up' ? 'down' : 'up', ''] }); ONLINE.feed({ t: 'out', id: 'a' }); });
     await pg.waitForTimeout(800);
     const r3 = await pg.evaluate(() => ({ n: ONLINE.others.size, bShown: !!(ONLINE.others.get('b').fig && ONLINE.others.get('b').fig.g.visible), who: document.querySelector('#onlwho').textContent, err: Object.entries(SYS.P).flatMap(([k, v]) => v.filter(s => s.err).map(s => k + ':' + s.name)) }));

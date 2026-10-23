@@ -33,6 +33,7 @@ Object.assign(ONLINE,{others:new Map(),on:false,me:'',log:[]}); window.ONLINE=ON
     if(m.t==='hi'){ ONLINE.me=m.you||''; const keep=new Set(); for(const p of m.all||[])if(p&&p.id){ keep.add(p.id); up(p.id,p); } for(const id of [...ONLINE.others.keys()])if(!keep.has(id))drop(id); }
     else if(m.t==='in'&&m.p&&m.p.id)up(m.p.id,m.p);
     else if(m.t==='out')drop(m.id);
+    else if(m.t==='tell'&&m.text){ line(m.from||'THE MARKET',m.text); banner(m.from||'THE MARKET',m.text); }
     else if(m.t==='say'&&m.text){ const o=m.id&&ONLINE.others.get(m.id); if(o){ o.say=String(m.text); o.sayT=performance.now(); } line(m.name||(o&&o.name)||'TENANT',m.text); }
     list(); };
 
@@ -77,7 +78,7 @@ Object.assign(ONLINE,{others:new Map(),on:false,me:'',log:[]}); window.ONLINE=ON
   /* ---------- the chat and who's online (ENTER talks; the key is in the controls) ---------- */
   const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
   const ui=()=>{ '@later'; if(EL)return;
-    const css=document.createElement('style'); css.textContent=`#onl{position:fixed;left:12px;bottom:12px;width:min(360px,calc(100vw - 24px));z-index:6;font:11px Silkscreen,monospace;letter-spacing:1px;color:#d8dbe4;pointer-events:none}
+    const css=document.createElement('style'); css.textContent=`#onl{position:fixed;right:calc(12px + env(safe-area-inset-right,0px));bottom:calc(12px + env(safe-area-inset-bottom,0px));width:min(360px,calc(100vw - 24px));z-index:6;font:11px Silkscreen,monospace;letter-spacing:1px;color:#d8dbe4;pointer-events:none}
       #onl .hd{display:flex;gap:8px;align-items:center} #onl button{pointer-events:auto;font:inherit;color:#ffd27a;background:#0b0d13d0;border:2px solid #2a3040;padding:2px 6px;cursor:pointer} #onl .k{color:#8a8f9c;text-shadow:0 1px 0 #000}
       #onllist{pointer-events:auto;background:#0b0d13e8;border:2px solid #2a3040;padding:6px;margin-top:4px;max-height:40vh;overflow:auto} #onllist div{padding:1px 0}
       #onllog{margin-top:4px} #onllog div{background:#0b0d13b0;padding:2px 6px;margin-top:2px;word-wrap:break-word} #onllog div.old{display:none} #onl.open #onllog div.old{display:block} #onllog b{color:#ffd27a;font-weight:normal}
@@ -95,6 +96,8 @@ Object.assign(ONLINE,{others:new Map(),on:false,me:'',log:[]}); window.ONLINE=ON
   const shut=()=>{ if(!EL)return; const I=EL.querySelector('#onlin'); I.value=''; I.hidden=true; EL.classList.remove('open'); I.blur(); };
   ONLINE.open=()=>{ if(!EL||EL.hidden)return; const I=EL.querySelector('#onlin'); EL.classList.add('open'); I.hidden=false; I.focus(); };
   const line=(name,text)=>{ '@later'; ui(); const d=document.createElement('div'); d.dataset.t=String(performance.now()); d.innerHTML='<b>'+esc(name)+'</b> '+esc(text); const G=EL.querySelector('#onllog'); G.appendChild(d); while(G.children.length>30)G.firstChild.remove(); ONLINE.log.push([name,text]); if(ONLINE.log.length>30)ONLINE.log.shift(); };
+  let BN=null; const banner=(from,text)=>{ if(!BN){ BN=document.createElement('div'); BN.id='onltell'; BN.setAttribute('role','status'); BN.style.cssText='position:fixed;left:50%;top:14%;transform:translateX(-50%);max-width:min(60ch,90vw);padding:10px 16px;background:#0b0d13f0;border:2px solid #ffd27a;color:#f4f2ea;font:12px/1.6 Silkscreen,monospace;letter-spacing:1px;text-align:center;z-index:41;pointer-events:none;white-space:pre-wrap'; document.body.appendChild(BN); }
+    BN.innerHTML='<div style="color:#ffd27a">'+esc(from)+'</div>'+esc(text); BN.hidden=false; clearTimeout(BN.t); BN.t=setTimeout(()=>{ BN.hidden=true; },12000); };
   const list=()=>{ if(!EL)return; const all=[...ONLINE.others.values()], who=EL.querySelector('#onlwho'), L=EL.querySelector('#onllist');
     who.textContent='ONLINE '+(all.length+1)+(ONLINE.on||!sock?'':' · OFF'); EL.querySelector('.k').textContent=UI.keyOf?UI.keyOf('chat').toUpperCase()+' TO TALK':'';
     if(!L.hidden)L.innerHTML='<div><b>'+esc(myName())+'</b> (you)</div>'+all.map(o=>'<div>'+esc(o.name||'TENANT')+'</div>').join(''); };

@@ -4469,3 +4469,7 @@ Owner: "dont write anything by hand that is already created for what were doing 
 ## 23 Oct 2026: multiplayer, the first piece
 
 Owner: "i want to add multiplayer ... look for best, free options. work with supabase,cloudlfare, etc current setup". His first piece: see everyone online, see them move, their name and look, and chat. He picked Supabase Realtime first, then said "yes" to one Cloudflare Durable Object per block instead once its free limits showed movement would not fit (every message counted once per listener; going over restricts the whole Supabase project, login included). Rule: each block (section) is its own server; Supabase stays for login and saved things. ENTER talks (in the controls).
+
+## 23 Oct 2026: the owner's TENANTS panel
+
+Owner: "how can i manage users without having to use supabase SQL editor?", then picked: "see all user details, send message, edit everything", make invite codes, see codes and who used them, see all players, remove or ban; messages live, as a letter waiting next login, to everyone, and by real email; "panel first, move data later" (cash, inventory, furniture and looks still live in each player's browser, so the panel can't edit them yet). TENANTS is a menu tab only owners (the `admins` table) see; letters show when a player comes in. Email goes out through Resend once its key is set (Cloudflare's own email sending needs the paid plan).

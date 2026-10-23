@@ -1,14 +1,14 @@
 // THE SQUIRREL'S TOWER: GTOWER builds the tall round tower beside the golems' cave.
 import {SHARED, THREE} from './003-shx.js';
 import {PARK} from './003b-systems.js';
-import {FIX, MAPG, SOL, TILE} from './006-map-pre.js';
+import {FIX, LEVEL, MAPG, SOL, TILE} from './006-map-pre.js';
 import {BATCH, OBJ} from './008-batch.js';
 import {GCAVE} from './060-cave.js';
 const GTOWER={}; window.GTOWER=GTOWER;
 { const H=173, PH=4, MH=8, TH=212, TC=58, R=1.5, RB=R+.1, RI=R-.06, TA=-Math.PI*.75, TD=R+.22, TR=.46;
   GTOWER.ring=()=>{ const S=GCAVE.S; if(!S)return null; const t=S.tw, P=PARK; return {cx:t.x,cy:t.y,R,RI,TA,X:x=>SHARED.BOD.XS(x+P.ox),Z:y=>SHARED.BOD.ZS(y+P.oy)}; };
   GTOWER.site=()=>{ const S=GCAVE.S; if(!S)return null; const P=PARK, t=S.tw; return {x:SHARED.BOD.XS(t.x+P.ox),z:SHARED.BOD.ZS(t.y+P.oy),w:2*RB*TILE,d:2*RB*TILE,r:RI*TILE,top:SHARED.BOD.YS(H)}; };
-  const build=()=>{ const P=PARK, t=GCAVE.S.tw, X=x=>SHARED.BOD.XS(x+P.ox), Z=y=>SHARED.BOD.ZS(y+P.oy), Y=SHARED.BOD.YS, {bq,faceTex,C}=SHARED.BOD, K=SHARED.BOD.STOREK.keep, sh=SHARED.BOD.K.sh, cx=t.x, cy=t.y;
+  const build=(t=GCAVE.S.tw)=>{ const P=PARK, X=x=>SHARED.BOD.XS(x+P.ox), Z=y=>SHARED.BOD.ZS(y+P.oy), Y=SHARED.BOD.YS, {bq,faceTex,C}=SHARED.BOD, K=SHARED.BOD.STOREK.keep, sh=SHARED.BOD.K.sh, cx=t.x, cy=t.y;
     const KB={x0:426,x1:435.5,y0:-86,y1:-77,h:520}, lum=c=>c[0]+c[1]+c[2], TRIM=[184,174,150], TRD=[150,140,120];
     const paint=(face,u,z,cap=520)=>{ let best=null; for(let k=0;k<3;k++){ const U=(u*3+k)/24, Zb=z*3+k, nx=face==='l'?-1:face==='r'?1:0, ny=face==='f'?1:face==='b'?-1:0;
         const c=K.keepOutWall(KB,nx,ny,nx?(nx<0?KB.x0:KB.x1):KB.x0+U,ny?(ny>0?KB.y1:KB.y0):KB.y0+U,Zb,1,cap); if(!best||lum(c)<lum(best))best=c; } return best; };
@@ -45,6 +45,6 @@ const GTOWER={}; window.GTOWER=GTOWER;
     const Ms=BATCH.meshes||{}; BATCH.meshes={}; for(const me of Object.values(Ms)){ MAPG.parkwall.add(me); GTOWER.me=me; GTOWER.tris=me.geometry.attributes.position.count/3; }
     const sol=(a0,b0,a1,b1,h)=>{ SOL.up.push([X(a0),Z(b0),X(a1),Z(b1)]); FIX.up.push([X(a0),Z(b0),0,X(a1),Z(b1),Y(h)]); };
     const q=RB*.72; sol(cx-q,cy-RB,cx+q,cy+RB,H+PH); sol(cx-RB,cy-q,cx+RB,cy+q,H+PH); sol(tx-TR,ty-TR,tx+TR,ty+TR,TH); GTOWER.ready=true; };
-  const go=()=>{ if(!window.__started||typeof GCAVE==='undefined'||!GCAVE.S||!MAPG.parkwall)return setTimeout(go,400); setTimeout(()=>{ try{ build(); }catch(e){ console.warn('TOWER: not built',e); } },600); };
+  const go=()=>{ if(!window.__started||typeof GCAVE==='undefined'||!GCAVE.S||!MAPG.parkwall)return setTimeout(go,400); setTimeout(()=>{ try{ build(); const PP=LEVEL.parkPlaces||{}; for(const k of ['tower2','tower3'])if(PP[k])build({x:PP[k].x,y:PP[k].y}); }catch(e){ console.warn('TOWER: not built',e); } },600); };   // more towers stand where world.json puts them (the park's borders)
   go(); }
 export {GTOWER};

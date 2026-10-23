@@ -3,6 +3,7 @@ import {SHARED, THREE} from './003-shx.js';
 import {BOAT, BOOKS, CLOCK, FORAGE, INV, pos, SFX, st, UI, VIT, W3} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {FIX, MAPG, SOL, SYS, TILE, ZU} from './006-map-pre.js';
+import {FOUNT} from './060a-fount.js';
 import {RIVER} from './066-river.js';
 import {GEMS} from './101-gems.js';
 const FISHING={}; Object.assign(BOAT,{on:false}); window.FISHING=FISHING; window.BOAT=BOAT;
@@ -11,7 +12,8 @@ RIVER.onBuild.push(()=>{ const T=TILE, RB=RIVER.box, rz0=RB.z0, rz1=RB.z1, WU=T/
     ['x_catfish','CHANNEL CATFISH',25,10,2,9,3,.1],['x_flounder','FLOUNDER',30,12,3,9,2,.1],['x_shad','AMERICAN SHAD',35,11,3,9,2,.09],['x_bluefish','BLUEFISH',45,16,4,9,2,.12],
     ['x_bass','STRIPED BASS',50,20,4,9,3,.14],['x_sturgeon','ATLANTIC STURGEON',75,60,6,9,.6,.2]];
   const JUNK=[['x_boot','OLD BOOT',0,1,0,9,1.2],['x_can','TIN CAN',0,1,0,9,.9],['x_note','MESSAGE IN A BOTTLE',40,5,2,9,.3],['bk_novel','WATER-STAINED NOVEL',10,1,0,9,.5],['chest','SUNKEN CHEST',70,0,5,9,.25]];
-  FORAGE.add({names:Object.fromEntries([...FI,...JUNK].map(f=>[f[0],f[1]]).concat([['rod','FISHING ROD']])),raw:Object.fromEntries(FI.map(f=>[f[0],[f[7],.3]])),
+  const LF=[['x_bluegill','BLUEGILL',0,3,0,9,5,.07],['x_yperch','YELLOW PERCH',5,4,0,9,5,.08],['x_trout','RAINBOW TROUT',25,9,0,9,3,.1],['x_carp','CARP',30,8,0,9,3,.1],['x_lbass','LARGEMOUTH BASS',45,15,0,9,2,.14],['x_pike','NORTHERN PIKE',60,25,0,9,1,.16]];   // the lake's fish
+  FORAGE.add({names:Object.fromEntries([...FI,...LF,...JUNK].map(f=>[f[0],f[1]]).concat([['rod','FISHING ROD'],['bait','BAIT (A WORM)']])),raw:Object.fromEntries([...FI,...LF].map(f=>[f[0],[f[7],.3]])),
     prices:{f_fishfry:12,f_grillbass:34,f_chowder:30,f_smokeeel:22,f_sturgeon:90},
     recipes:[['f_fishfry','FISH FRY','cooking',[10,50],{x_perch:2},'fills a third'],['f_smokeeel','SMOKED EEL','cooking',[25,70],{x_eel:2},'fills two fifths, strong 2 min'],
       ['f_grillbass','GRILLED STRIPED BASS','cooking',[30,75],{x_bass:1},'fills half, mends you a minute'],['f_chowder','FISH CHOWDER','cooking',[40,85],{x_catfish:1,m_button:2},'fills more than half, some health'],
@@ -46,10 +48,10 @@ RIVER.onBuild.push(()=>{ const T=TILE, RB=RIVER.box, rz0=RB.z0, rz1=RB.z1, WU=T/
     o+=`<tr style="border-bottom:1px solid #22252f"><td style="padding:4px 2px">ROWBOAT · A TRIP</td><td style="text-align:right;padding:4px 6px">$5</td><td style="text-align:right">${BOAT.on?'OUT':`<button ${B} data-boat="1">RENT</button>`}</td></tr></table>`;
     o+=`<div style="margin:10px 0 4px;color:#9b9584">YOUR CATCH</div><table style="border-collapse:collapse;width:100%">`;
     for(const id of ids){ const v=PRICE[id], n=INV.items[id]; o+=`<tr style="border-bottom:1px solid #22252f"><td style="padding:4px 2px">${FORAGE.NM[id]}</td><td style="text-align:right;padding:4px 6px">$${v}</td><td style="text-align:right">x${n}</td><td style="text-align:right;white-space:nowrap"><button ${B} data-sell="${id}">SELL</button>${n>1?`<button ${B} data-sell="${id}" data-n="all">ALL $${v*n}</button>`:''}</td></tr>`; }
-    o+=`</table>${ids.length?'':'<div style="color:#7d7a70;margin-top:6px">Nothing yet. With a rod, double click the water near you to cast. Deeper water, bigger fish.</div>'}`;
+    o+=FORAGE.trainRows(['fish'])+`</table>${ids.length?'':'<div style="color:#7d7a70;margin-top:6px">Nothing yet. With a rod, double click the water near you to cast. Deeper water, bigger fish.</div>'}`;
     const x=sp.querySelector(':scope>.pX'); sp.innerHTML=o; if(x)sp.appendChild(x); };
   sp.addEventListener('click',e=>{ '@later'; const b=e.target.closest('button'); if(!b||b.classList.contains('pX'))return; const d=b.dataset;
-    if(d.buy==='rod'){ if(INV.cash<15)say('YOU CANNOT AFFORD THAT.','#c8a090'); else { INV.cash-=15; FORAGE.give('rod'); say('YOU TAKE A ROD AND DROP $15 IN THE BOX.'); } }
+    if(d.train){ FORAGE.train(d.train,+d.cap); STAND.draw(); return; } if(d.buy==='rod'){ if(INV.cash<15)say('YOU CANNOT AFFORD THAT.','#c8a090'); else { INV.cash-=15; FORAGE.give('rod'); say('YOU TAKE A ROD AND DROP $15 IN THE BOX.'); } }
     if(d.boat){ if(INV.cash<5)say('YOU CANNOT AFFORD THAT.','#c8a090'); else { INV.cash-=5; sp.hidden=true; BOAT.launch(); } }
     if(d.sell){ const n=d.n==='all'?FORAGE.has(d.sell):1, v=PRICE[d.sell]*n; FORAGE.take(d.sell,n); INV.cash+=v; say(`YOU SELL ${n} ${FORAGE.NM[d.sell]} FOR $${v}.`,'#f2c14e'); SFX.play('clunk',{vol:.5}); }
     STAND.draw(); FORAGE.draw(); });
@@ -81,12 +83,14 @@ RIVER.onBuild.push(()=>{ const T=TILE, RB=RIVER.box, rz0=RB.z0, rz1=RB.z1, WU=T/
   const pick0=RIVER.pick; RIVER.pick=(ray,p)=>{ '@later'; if(FORAGE.has('rod')&&!RIVER.swim&&ray.intersectPlane(pl,hp)&&hp.x>RB.x0&&hp.x<RB.x1&&hp.z>rz0&&hp.z<rz1){ const d=Math.hypot(hp.x-p.x,hp.z-p.z);
       if(d<9*T&&d>.8*T&&!RIVER.piers.some(x=>Math.abs(hp.x-x)<1.2*T&&hp.z>rz1-9*T)){ FISHING.cast(hp.x,hp.z); return true; } }
     return pick0(ray,p); };
-  FISHING.cast=(x,z)=>{ if(!BOAT.on)SHARED.heading=Math.atan2(x-pos.x,z-pos.z); F={x,z,t:3+Math.random()*5,dip:0,ax:pos.x,az:pos.z}; line.visible=bob.visible=true; say('YOU CAST YOUR LINE.'); SFX.play('click',{vol:.4}); };
-  const pickFish=(dep)=>{ const night=CLOCK.h<6||CLOCK.h>=20, L=[...FI,...JUNK].filter(f=>dep>=f[4]&&dep<=f[5]+1).map(f=>[f,f[6]*(f[0]==='x_eel'&&night?2:1)]); let s=L.reduce((a,b)=>a+b[1],0)*Math.random(); for(const [f,w] of L)if((s-=w)<0)return f; return FI[0]; };
+  FISHING.cast=(x,z,lake)=>{ if(!FORAGE.has('bait'))return say('YOU NEED BAIT. THE SHARK SELLS IT.','#c8a090'); FORAGE.take('bait',1); if(!BOAT.on)SHARED.heading=Math.atan2(x-pos.x,z-pos.z); F={x,z,t:3+Math.random()*5,dip:0,ax:pos.x,az:pos.z,lake:lake!=null?lake:null}; line.visible=bob.visible=true; say('YOU CAST YOUR LINE.'); SFX.play('click',{vol:.4}); };
+  const lakeAt=(x,z)=>{ const b=FOUNT.bedAt&&FOUNT.bedAt(x,z); if(b!=null)return FOUNT.LV; const h=window.HILL?HILL(x,z):0; return h<-.35*T?-.25*T:null; };   // still water: the big lake, the stream and THE LAKE
+  FORAGE.ROWB.push(id=>id==='rod'?[[F?'REEL IN':'CAST','fcast']]:[]); FORAGE.ACT.fcast=()=>{ if(F)return FISHING.reel(); const x=pos.x+Math.sin(SHARED.heading)*3*T, z=pos.z+Math.cos(SHARED.heading)*3*T, w=lakeAt(x,z); if(w==null)return say('NO STILL WATER AHEAD TO CAST INTO.','#c8a090'); FISHING.cast(x,z,w); };
+  const pickFish=(dep,lake)=>{ const night=CLOCK.h<6||CLOCK.h>=20, sk=FORAGE.sk('fish'), T0=lake?LF:FI, L=[...T0,...(lake?[]:JUNK)].filter(f=>dep>=f[4]&&dep<=f[5]+1&&f[2]<=sk+25).map(f=>[f,f[6]*(f[0]==='x_eel'&&night?2:1)]); let s=L.reduce((a,b)=>a+b[1],0)*Math.random(); for(const [f,w] of L)if((s-=w)<0)return f; return T0[0]; };   // what bites: by the depth, and by your skill
   FISHING.tick=dt=>{ if(!F)return; if(Math.hypot(pos.x-F.ax,pos.z-F.az)>(BOAT.on?2.5*T:.5*T)){ FISHING.reel(); return say('YOU REEL IN YOUR LINE.'); }
-    const h=RIVER.hAt(F.x,F.z); F.t-=dt; if(F.t<0)F.dip+=dt; bob.position.set(F.x,RB.lv+h+.02*T-(F.dip>0?.08*T*Math.abs(Math.sin(F.dip*14)):0),F.z);
+    const h=RIVER.hAt(F.x,F.z); F.t-=dt; if(F.t<0)F.dip+=dt; bob.position.set(F.x,(F.lake!=null?F.lake:RB.lv+h)+.02*T-(F.dip>0?.08*T*Math.abs(Math.sin(F.dip*14)):0),F.z);
     const a=line.geometry.attributes.position; a.setXYZ(0,pos.x+Math.sin(SHARED.heading)*.5*T,SHARED.py+Y(1.6),pos.z+Math.cos(SHARED.heading)*.5*T); a.setXYZ(1,bob.position.x,bob.position.y,bob.position.z); a.needsUpdate=true;
-    if(F.dip>.7){ const f=pickFish(RIVER.depthAt(F.x,F.z)), d=f[2]; FISHING.reel();
+    if(F.dip>.7){ const f=pickFish(F.lake!=null?2.5:RIVER.depthAt(F.x,F.z),F.lake!=null), d=f[2]; FISHING.reel();
       if(FORAGE.use('fish',d-25,d+25)){ if(f[0]==='chest'){ const g=INV.random(), c=10+Math.floor(Math.random()*31); INV.add(g); INV.cash+=c; say(`A SUNKEN CHEST! INSIDE: $${c} AND A ${GEMS.find(x=>x[0]===g)[1]}.`,'#f2c14e');  if(window.BOOKS&&Math.random()<.4)BOOKS.chest(); }
         else { FORAGE.give(f[0]); say(`YOU PULL OUT ${/^[AEIOU]/.test(f[1])?'AN':'A'} ${f[1]}!`,f[0].match(/boot|can/)?'#c8c2b0':'#b8f0a0'); } SFX.play('drip',{vol:.6}); }
       else say('THE FISH GOT AWAY.','#c8a090'); FORAGE.draw(); } };

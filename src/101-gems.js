@@ -1,5 +1,5 @@
 // THE GEMS: GEMS lists the gems, INV keeps what the player carries, and TRADE buys and sells them.
-import {CITY, CIVIC, INV, LINES, MAIL, pos, SFX, TRADE, UI} from './003b-systems.js';
+import {CITY, CIVIC, FORAGE, INV, LINES, MAIL, pos, SFX, TRADE, UI} from './003b-systems.js';
 import {OWNED} from './005-save.js';
 import {QS} from './006-map-pre.js';
 const GEMS=[['quartz','QUARTZ CRYSTAL',6,30],['amethyst','AMETHYST',14,22],['geode','GEODE',18,16],['amber','FOSSIL AMBER',24,12],['moonstone','MOONSTONE',30,10],
@@ -23,7 +23,7 @@ Object.assign(INV,{items:{},picked:{}}); window.INV=INV;
   const panel=()=>{ '@later'; let P=document.getElementById('gemp'); if(P)return P; P=document.createElement('div'); P.id='gemp'; P.hidden=true;
     P.style.cssText='position:fixed;left:50%;top:10%;transform:translateX(-50%);width:min(460px,92vw);max-height:80vh;overflow:auto;z-index:21;padding:14px 16px;font:11px Silkscreen,monospace;letter-spacing:.4px;color:#d8dae2;background:#0b0d13f2;border:2px solid #3a3f4e;zoom:var(--uiz,1)';
     document.body.appendChild(P); P.addEventListener('keydown',e=>e.stopPropagation()); P.addEventListener('keyup',e=>e.stopPropagation());
-    P.addEventListener('click',e=>{ const b=e.target.closest('button[data-s]'); if(!b)return; const id=b.dataset.s, got=INV.sell(id,b.dataset.n==='all'?1e9:1); if(got)TRADE.note('SOLD · +$'+got); TRADE.draw(); }); return P; };
+    P.addEventListener('click',e=>{ const b=e.target.closest('button[data-s],button[data-train]'); if(!b)return; if(b.dataset.train){ FORAGE.train(b.dataset.train,+b.dataset.cap); TRADE.draw(); return; } const id=b.dataset.s, got=INV.sell(id,b.dataset.n==='all'?1e9:1); if(got)TRADE.note('SOLD · +$'+got); TRADE.draw(); }); return P; };
   TRADE.note=t=>{ '@later'; let n=document.getElementById('gemn'); if(!n){ n=document.createElement('div'); n.id='gemn'; n.style.cssText='position:fixed;left:50%;transform:translateX(-50%);bottom:56px;font:12px Silkscreen,monospace;color:#f2c14e;background:rgba(16,18,26,.88);border:2px solid #2a2e3a;padding:6px 10px;z-index:22;pointer-events:none'; document.body.appendChild(n); }
     n.textContent=t; n.hidden=false; clearTimeout(TRADE.nt); TRADE.nt=setTimeout(()=>n.hidden=true,3200); };
   TRADE.draw=()=>{ const P=document.getElementById('gemp'); if(!P||P.hidden)return;
@@ -31,7 +31,7 @@ Object.assign(INV,{items:{},picked:{}}); window.INV=INV;
       <div style="margin-bottom:8px">YOU HAVE <b style="color:#f2c14e">$${Math.round(INV.cash)}</b> · ${INV.count()} STONE${INV.count()===1?'':'S'}</div><table style="border-collapse:collapse;width:100%">`;
     for(const [id,name,price] of GEMS){ const n=INV.items[id]||0;
       o+=`<tr style="border-bottom:1px solid #22252f;${n?'':'color:#7d7a70'}"><td style="padding:4px 2px">${esc(name)}</td><td style="text-align:right;padding:4px 6px">$${price}</td><td style="text-align:right;padding:4px 6px">${n?'x'+n:'-'}</td><td style="text-align:right;white-space:nowrap">${n?`<button ${btn} data-s="${id}">SELL</button>${n>1?`<button ${btn} data-s="${id}" data-n="all">ALL $${price*n}</button>`:''}`:''}</td></tr>`; }
-    o+=`</table><div style="color:#9b9584;margin-top:10px">Find them: the glints on the cave's floor (back each day).</div>`;
+    o+=(window.FORAGE&&FORAGE.trainRows?FORAGE.trainRows(['prosp']):'')+`</table><div style="color:#9b9584;margin-top:10px">Find them: the glints on the cave's floor (back each day).</div>`;
     const x=P.querySelector(':scope>.pX'); P.innerHTML=o; if(x)P.appendChild(x); };
   TRADE.open=N=>{ const P=panel(); P.hidden=false; TRADE.draw();
     if(N&&N.walker&&N.walker.state==='stay'){ N.walker.t=Math.max(N.walker.t,14); N.st.face={x:pos.x,z:pos.z}; }

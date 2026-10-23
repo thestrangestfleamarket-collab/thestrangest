@@ -46,5 +46,5 @@ Object.assign(WIELD,{on:null}); window.WIELD=WIELD;
     while(pts.length&&(pts.length>N||now-pts[pts.length-1][2]>120))pts.pop();
     trail.visible=pts.length>2; if(trail.visible){ for(let i=0;i<N;i++){ const q=pts[Math.min(i,pts.length-1)]; q[0].toArray(TP,i*6); q[1].toArray(TP,i*6+3); } TG.attributes.position.needsUpdate=true; }
     if(!(spd>4||sw)||WIELD.on==='sword')return;
-    if(WIELD.on==='net'&&BFLY.out)for(const b of [...BF.list]){ if(!b.g.parent||!b.th||(b.nt||0)>now)continue; if(b.g.position.distanceTo(head)<m.r+.25*T){ b.nt=now+1500; BFLY.catch(b); } }
+    if(WIELD.on==='net'&&BFLY.out&&st.move&&st.move.def.air)for(const b of [...BF.list]){ if(!b.g.parent||!b.th||(b.nt||0)>now)continue; if(b.g.position.distanceTo(head)<m.r+.25*T){ b.nt=now+1500; BFLY.catch(b); } }
     if(WIELD.on==='bnet'&&BIRDS.net)for(const b of [...BIRDS.list]){ if(b.st==='pet'||b.st==='hid'||(b.nt||0)>now)continue; if(Math.hypot(b.x-head.x,b.y-head.y,b.z-head.z)<m.r+.3*T){ b.nt=now+1500; BIRDS.net(b); } } }; }

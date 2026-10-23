@@ -1,4 +1,9 @@
 {
+ "shark": {
+  "name": "THE SHARK",
+  "trade": {"sells": ["goggles", "headlight", "scanner", "cutter", "extractor", "rod", "bait"], "line": "Going down? You'll want the kit."},
+  "home": [117.5, -113, 3]
+ },
  "origamifox": {"name":"THE NATURE MERCHANT","trade":{"sells":["net","bnet"]}},
  "mrblocks": {"name":"THE SWORDSMITH","trade":{"sells":["sword"]}},
  "emberknight": {"name":"THE ARMOURER","trade":{"sells":["armor"]}},

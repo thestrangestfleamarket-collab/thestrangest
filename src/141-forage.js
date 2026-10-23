@@ -42,6 +42,7 @@ import {GEMS} from './101-gems.js';
   FORAGE.add=(o)=>{ Object.assign(NM,o.names||{}); Object.assign(FORAGE.RAW,o.raw||{}); Object.assign(PRICE,o.prices||{}); Object.assign(DO,o.does||{}); if(o.recipes)RC.push(...o.recipes); };
   FORAGE.ids=()=>{ const s=new Set(); for(const k in NM)s.add(k); for(const k in PRICE)s.add(k); for(const k in DO)s.add(k); for(const r of RC)if(r&&r[0])s.add(r[0]); for(const k in MU)s.add(iid(k)); return [...s].sort(); };
   FORAGE.SELLP=[]; FORAGE.SELLS=[]; FORAGE.ROWB=[]; FORAGE.ACT={}; FORAGE.CK={}; FORAGE.HELP=[]; FORAGE.TABS=[];
+  FORAGE.add({names:{airshroom:'AIRCAP MUSHROOM'},prices:{airshroom:8}}); FORAGE.SELLS.push(['airshroom',8,()=>true]);   // off-world: the seller's one wares, lets you hold your breath longer underwater
   FORAGE.feed=f=>feed(f); FORAGE.buff=(k,s)=>buff(k,s);
   const sk=k=>S.sk[k]/10, tot=()=>Object.values(S.sk).reduce((a,b)=>a+b,0);
   const use=(k,min,max,bonus=0)=>{ '@later'; const v=sk(k)+bonus, c=Math.max(0,Math.min(1,(v-min)/(max-min))), ok=Math.random()<c;
@@ -51,6 +52,11 @@ import {GEMS} from './101-gems.js';
         if(n>0)S.sk[k]=Math.min(1000,S.sk[k]+n); say(`YOUR SKILL IN ${SK.find(s=>s[0]===k)[1]} HAS INCREASED. IT IS NOW ${(S.sk[k]/10).toFixed(1)}.`,'#7fd0ff'); saveSoon(); PACK.draw(); if(k==='forage')FORAGE.sync(); } }
     return ok; };
   FORAGE.use=use; FORAGE.SK=SK; FORAGE.save=saveSoon;
+  // a lesson: pay a trainer (a merchant who buys the category, an arcade game, the holodeck) to raise a skill up to that trainer's cap
+  FORAGE.train=(k,cap=300,cost,amt=10)=>{ '@later'; const nm=(SK.find(s=>s[0]===k)||[0,k])[1], c=cost??(8+Math.round(S.sk[k]/20)); if(S.sk[k]>=cap)return say('THERE IS NOTHING MORE TO TEACH YOU IN '+nm+' HERE.','#c8a090');
+    if(INV.cash<c)return say('YOU CANNOT AFFORD THE LESSON ($'+c+').','#c8a090'); if(tot()+amt>CAP)return say('YOU KNOW ALL YOU CAN HOLD. LOWER A SKILL FIRST.','#c8a090');
+    INV.cash-=c; S.sk[k]=Math.min(cap,S.sk[k]+amt); saveSoon(); SFX.play('clunk',{vol:.4}); say(`A LESSON IN ${nm}: IT IS NOW ${(S.sk[k]/10).toFixed(1)}.`,'#7fd0ff'); PACK.draw(); };
+  FORAGE.trainRows=(ks,cap=300)=>ks.map(k=>{ const nm=(SK.find(s=>s[0]===k)||[0,k])[1], c=8+Math.round(S.sk[k]/20); return `<tr style="border-bottom:1px solid #22252f"><td style="padding:4px 2px">TRAIN ${nm}</td><td style="text-align:right;padding:4px 6px">$${c}</td><td style="text-align:right">${(S.sk[k]/10).toFixed(1)}</td><td style="text-align:right"><button ${B} data-train="${k}" data-cap="${cap}">LESSON</button></td></tr>`; }).join('');
   const feed=f=>{ S.food=Math.min(1,S.food+f); saveSoon(); }, buff=(k,s)=>{ S.fx[k]=Math.max(S.fx[k]||0,s); if(k==='swift')swift(); };
   let base=null; const swift=()=>{ if(base==null)base=[st.wk||1,st.rk||1]; st.wk=base[0]*1.25; st.rk=base[1]*1.25; };
   FORAGE.keen=()=>S.fx.keen?20:0;
@@ -101,7 +107,8 @@ import {GEMS} from './101-gems.js';
     else if(Math.random()<.3){ S.picked[m.id]=1; say('IT CRUMBLES IN YOUR HAND.','#c8a090'); } else say('YOU FAIL TO PICK IT CLEANLY.','#c8a090');
     saveSoon(); FORAGE.sync(); PACK.draw(); };
   FORAGE.eat=id=>{ '@later'; if(!have(id))return; take(id,1); let k=id.slice(2);
-    if(id.startsWith('m_')||id.startsWith('u_')){ const [, , , food,harm]=MU[k]; if(harm){ S.fx.poison=Math.max(S.fx.poison||0,40); say('YOU FEEL VERY ILL. YOU HAVE BEEN POISONED!','#9fe07f'); SFX.play('cough',{vol:.6}); } else { feed(food); say('YOU EAT IT. NOT BAD.'); } }
+    if(window.ITEMS&&ITEMS.prop&&ITEMS.prop(id,'breath')){ const s=+ITEMS.prop(id,'breath')||0; if(VIT.breathe)VIT.breathe(s); say('YOU EAT THE '+NAME(id)+'. YOU CAN HOLD YOUR BREATH '+s+'S LONGER UNDERWATER.','#9fd8ff'); SFX.play('chirp',{vol:.4}); }
+    else if(id.startsWith('m_')||id.startsWith('u_')){ const [, , , food,harm]=MU[k]; if(harm){ S.fx.poison=Math.max(S.fx.poison||0,40); say('YOU FEEL VERY ILL. YOU HAVE BEEN POISONED!','#9fe07f'); SFX.play('cough',{vol:.6}); } else { feed(food); say('YOU EAT IT. NOT BAD.'); } }
     else if(FORAGE.RAW[id]){ const [food,harm]=FORAGE.RAW[id]; if(harm&&Math.random()<harm){ S.fx.poison=Math.max(S.fx.poison||0,25); say('IT DISAGREES WITH YOU. YOU HAVE BEEN POISONED!','#9fe07f'); } else { feed(food); say('YOU EAT IT RAW. CHEWY.'); } }
     else if(DO[id]){ DO[id](); say(id[0]==='p'?'YOU DRINK THE '+NAME(id)+'.':'YOU EAT THE '+NAME(id)+'.','#b8f0a0'); if(id[0]==='p')give('bottle',1); }
     else if(window.ITEMS&&ITEMS.prop&&ITEMS.prop(id,'edible')){ feed(.25); say('YOU EAT IT.'); }
@@ -153,11 +160,11 @@ import {GEMS} from './101-gems.js';
     let o=`<h3 style="margin:0 0 4px;color:#f2c14e;font:12px Silkscreen,monospace">THE MUSHROOM SELLER</h3><div style="color:#9b9584;margin-bottom:8px">"Caps, stems, brews and broths. I'll take them all. Strange ones at half: I have to look them up."</div><div style="margin-bottom:8px">YOU HAVE <b style="color:#f2c14e">$${Math.round(INV.cash)}</b></div><table style="border-collapse:collapse;width:100%">`;
     o+=`<tr style="border-bottom:1px solid #22252f"><td style="padding:4px 2px">EMPTY BOTTLE</td><td style="text-align:right;padding:4px 6px">$2</td><td style="text-align:right">${have('bottle')}</td><td style="text-align:right;white-space:nowrap"><button ${B} data-buy="bottle">BUY</button><button ${B} data-buy="bottle" data-n="5">BUY 5</button></td></tr>`;
     for(const [sid,pr,show] of FORAGE.SELLS)if(show())o+=`<tr style="border-bottom:1px solid #22252f"><td style="padding:4px 2px">${esc(NAME(sid))}</td><td style="text-align:right;padding:4px 6px">$${pr}</td><td style="text-align:right">${have(sid)||''}</td><td style="text-align:right"><button ${B} data-buy="${sid}">BUY</button></td></tr>`;
-    if(!have('mortar'))o+=`<tr style="border-bottom:1px solid #22252f"><td style="padding:4px 2px">MORTAR AND PESTLE</td><td style="text-align:right;padding:4px 6px">$10</td><td></td><td style="text-align:right"><button ${B} data-buy="mortar">BUY</button></td></tr>`;
+    o+=FORAGE.trainRows(['forage','myco','alchemy','cooking']); if(!have('mortar'))o+=`<tr style="border-bottom:1px solid #22252f"><td style="padding:4px 2px">MORTAR AND PESTLE</td><td style="text-align:right;padding:4px 6px">$10</td><td></td><td style="text-align:right"><button ${B} data-buy="mortar">BUY</button></td></tr>`;
     for(const id of ids){ const v=val(id), n=INV.items[id]; o+=`<tr style="border-bottom:1px solid #22252f"><td style="padding:4px 2px;${id.startsWith('u_')?'color:#c8b0ff':''}">${esc(NAME(id))}</td><td style="text-align:right;padding:4px 6px">$${v}</td><td style="text-align:right">x${n}</td><td style="text-align:right;white-space:nowrap"><button ${B} data-sell="${id}">SELL</button>${n>1?`<button ${B} data-sell="${id}" data-n="all">ALL $${v*n}</button>`:''}</td></tr>`; }
     o+=`</table>${ids.length?'':'<div style="color:#7d7a70;margin-top:8px">Nothing of mine to buy on you. The lawns grow them: each grass its own kinds.</div>'}`; const x=sp.querySelector(':scope>.pX'); sp.innerHTML=o; if(x)sp.appendChild(x); };
   sp.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b||b.classList.contains('pX'))return; const d=b.dataset;
-    if(d.buy){ const n=+d.n||1, xs=FORAGE.SELLS.find(s=>s[0]===d.buy), c=(xs?xs[1]:d.buy==='mortar'?10:2)*n; if(INV.cash<c)say('YOU CANNOT AFFORD THAT.','#c8a090'); else { INV.cash-=c; give(d.buy,n); if(window.CIVIC&&CIVIC.note)CIVIC.note('you bought '+n+' '+NAME(d.buy).toLowerCase()+' from the mushroom seller','park'); } }
+    if(d.train){ FORAGE.train(d.train,+d.cap); SHOP.draw(); return; } if(d.buy){ const n=+d.n||1, xs=FORAGE.SELLS.find(s=>s[0]===d.buy), c=(xs?xs[1]:d.buy==='mortar'?10:2)*n; if(INV.cash<c)say('YOU CANNOT AFFORD THAT.','#c8a090'); else { INV.cash-=c; give(d.buy,n); if(window.CIVIC&&CIVIC.note)CIVIC.note('you bought '+n+' '+NAME(d.buy).toLowerCase()+' from the mushroom seller','park'); } }
     if(d.sell){ const n=d.n==='all'?have(d.sell):1, v=val(d.sell)*n; take(d.sell,n); INV.cash+=v; INV.add('x',0); delete INV.items.x; say(`YOU SELL ${n} ${NAME(d.sell)} FOR $${v}.`,'#f2c14e'); SFX.play('clunk',{vol:.5}); }
     SHOP.draw(); PACK.draw(); });
   SHOP.open=()=>{ sp.hidden=false; SHOP.draw(); if(MUSH.N)LINES.say(MUSH.N,'greet'); };

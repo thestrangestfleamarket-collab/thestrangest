@@ -12,7 +12,8 @@ SHARED.groundY=(x,z)=>{ const s=inStair(x,z); if(s){ const S=s.S; if(S.ground)re
   { const st=SHARED.LVL==='up'&&STORE.stackGround?STORE.stackGround(x,z):null; if(st!=null)return st; }
   { const bg=SHARED.LVL==='up'&&SHARED.BOD.GD&&SHARED.BOD.GD.ground?SHARED.BOD.GD.ground(x,z):null; if(bg!=null)return bg; }
   { const sp=SHARED.LVL==='up'&&MODS.apts&&MODS.apts.stoop?MODS.apts.stoop(x,z):null; if(sp!=null)return sp; }
-  return SHARED.LVL==='down'?(MODS.dungeon&&MODS.dungeon.inside(x,z)?MODS.dungeon.ground(x,z):MODS.station.ground(x,z)):MODS.apts&&MODS.apts.inside(x,z)?MODS.apts.ground(x,z):MODS.bodega.ground(x,z); };
+  if(SHARED.LVL==='down'){ const L=LEVELS.at?LEVELS.of[LEVELS.at(x,z,'down')]:null; return L&&L.ground?L.ground(x,z):MODS.station.ground(x,z); }   // each down level says its own ground
+  return MODS.apts&&MODS.apts.inside(x,z)?MODS.apts.ground(x,z):MODS.bodega.ground(x,z); };
 { const PB=MODS.bodega.BOUND;
   SHARED.BOUND={x0:Math.min(MODS.bodega.BOUND.x0,MODS.station.BOUND.x0),x1:Math.max(MODS.bodega.BOUND.x1,PB.x1),z0:Math.min(MODS.station.BOUND.z0,PB.z0),z1:Math.max(MODS.bodega.BOUND.z1,MODS.park.BOUND.z1)}; }
 { const g=(k,x0,z0,x1,z1)=>{ if(!LAY.L[k])return; SHARED.BOUND.x0=Math.min(SHARED.BOUND.x0,x0); SHARED.BOUND.z0=Math.min(SHARED.BOUND.z0,z0); SHARED.BOUND.x1=Math.max(SHARED.BOUND.x1,x1); SHARED.BOUND.z1=Math.max(SHARED.BOUND.z1,z1); }, B=SHARED.BOD.B0, A=MODS.apts.A, C=CASTLE.b, G=SHARED.BOD.grounds.find(q=>q.id==='ghostst');
@@ -51,7 +52,7 @@ const MAPLV=(py,pos,cam)=>{ SHARED.METRO.door(py,pos); if(MODS.dunDoor)MODS.dunD
   if(lv===SHARED.LVL)return false; SHARED.LVL=lv; SHARED.solids=SOL[lv]; SHARED.fixed=FIX[lv]; HEMI.color.set(lv==='down'?0x8a93a8:0x55607a); HEMI.groundColor.set(lv==='down'?0x1a1814:0x14110e); HEMI.intensity=lv==='down'?.1:.3; return true; };
 
 { const MB=SHARED.BOUND; STORE.tick=()=>{ STORE.pos=pos; STORE.cur=ROOMS.cur?ROOMS.cur.id:null; STORE.nl=lamps.length; STORE.lon=LITE.sel.length;
-    for(const r of STORE.roofs)SEEN(r.me,!(r.R.inside(pos.x,pos.z)||ROOMS.cur===r.R)); SHARED.BOUND=SHARED.LVL==='down'&&MODS.dungeon.inside(pos.x,pos.z)?MODS.dungeon.bound(pos.x,pos.z):STORE.inStore(pos.x,pos.z)?STORE.bound:MB; }; }
+    for(const r of STORE.roofs)SEEN(r.me,!(r.R.inside(pos.x,pos.z)||ROOMS.cur===r.R)); const L=SHARED.LVL==='down'&&LEVELS.at?LEVELS.of[LEVELS.at(pos.x,pos.z,'down')]:null; SHARED.BOUND=L&&L.bound?L.bound(pos.x,pos.z):STORE.inStore(pos.x,pos.z)?STORE.bound:MB; }; }
 window.MAPDBG=()=>({LVL:SHARED.LVL,cut:MODS.stairCut.constant,vis:Object.fromEntries(Object.entries(MAPG).map(([k,g])=>[k,g.visible])),stairLamp:lamps.filter(L=>L.parent===MAPG.stairs).map(L=>L.intensity),py:typeof SHARED.py!=='undefined'?SHARED.py:null,pos:typeof pos!=='undefined'?[pos.x,pos.z]:null});
 
 { const K=32, N=K*24, c=document.createElement('canvas'); c.width=c.height=N; const g=c.getContext('2d'), im=g.createImageData(N,N), GC=SHARED.BOD.g.lawnCol;

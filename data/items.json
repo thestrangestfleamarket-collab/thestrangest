@@ -1,7 +1,84 @@
 {
- "sword": {"slot":"hand","grants":"fight","value":15},
- "net": {"slot":"hand","grants":"catch","value":8},
- "bnet": {"slot":"hand","grants":"catch","value":12},
- "armor": {"slot":"body","grants":"guard","value":40},
- "cloudcoat": {"slot":"body","grants":"float","value":60}
+ "airshroom": {
+  "edible": true,
+  "offworld": true,
+  "stackable": true,
+  "breath": 20
+ },
+ "goggles": {
+  "offworld": true,
+  "value": 30,
+  "slot": "eyes",
+  "grants": "sight"
+ },
+ "headlight": {
+  "offworld": true,
+  "value": 45,
+  "slot": "head",
+  "grants": "light"
+ },
+ "scanner": {
+  "offworld": true,
+  "value": 40
+ },
+ "cutter": {
+  "offworld": true,
+  "value": 60
+ },
+ "extractor": {
+  "offworld": true,
+  "value": 90
+ },
+ "rod": {
+  "value": 15
+ },
+ "bait": {
+  "stackable": true,
+  "value": 1
+ },
+ "fr_apple": {
+  "edible": true,
+  "stackable": true,
+  "value": 3
+ },
+ "fr_pear": {
+  "edible": true,
+  "stackable": true,
+  "value": 3
+ },
+ "fr_plum": {
+  "edible": true,
+  "stackable": true,
+  "value": 4
+ },
+ "fr_fig": {
+  "edible": true,
+  "stackable": true,
+  "value": 5
+ },
+ "sword": {
+  "slot": "hand",
+  "grants": "fight",
+  "value": 15
+ },
+ "net": {
+  "slot": "hand",
+  "grants": "catch",
+  "value": 8
+ },
+ "bnet": {
+  "slot": "hand",
+  "grants": "catch",
+  "value": 12
+ },
+ "armor": {
+  "slot": "body",
+  "grants": "guard",
+  "value": 40
+ },
+ "cloudcoat": {
+  "slot": "body",
+  "grants": "float",
+  "value": 60
+ }
 }

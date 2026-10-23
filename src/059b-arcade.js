@@ -1,6 +1,6 @@
 // THE ARCADE: the arcade on Main Street as one painted block (its neon ARCADE front); its inside is built off the map when you go in: black walls, three cabinets along each side wall, and the holodeck behind the back wall with its training programs.
 import {SHARED, THREE} from './003-shx.js';
-import {FORAGE, pos, ROOMS, UI, WIELD} from './003b-systems.js';
+import {FORAGE, INV, pos, ROOMS, UI, WIELD} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {FIX, grab, SOL, STORE, SYS, TILE, TURN, WP} from './006-map-pre.js';
 import {BATCH} from './008-batch.js';
@@ -11,12 +11,12 @@ await grab('arcade',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Y=SHARED.BOD
       const hb=new THREE.Mesh(new THREE.BoxGeometry(.8*TILE,2*TILE,.8*TILE),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(px,TILE,z); scene.add(hb);
       UI.thing({name:P.name,obj:hb,reach:1.6*TILE,near:2.6*TILE,tall:2*TILE,act:()=>HOLO.start(P,px,z)}); }); };
   HOLO.close=()=>{ HOLO.run=null; for(const P of HOLO.programs)if(P.hide)P.hide(); };
-  HOLO.start=(P,x,z)=>{ if(HOLO.run)return; if(P.tool){ if(!FORAGE.has(P.tool))FORAGE.give(P.tool,1); if(WIELD.on!==P.tool)WIELD.set(P.tool); }
+  HOLO.start=(P,x,z)=>{ if(HOLO.run)return; if(INV.cash<8)return say('THE HOLODECK TAKES $8 A PROGRAM.','#c8a090'); INV.cash-=8; if(P.tool){ if(!FORAGE.has(P.tool))FORAGE.give(P.tool,1); if(WIELD.on!==P.tool)WIELD.set(P.tool); }
     HOLO.run={P,x,z,n:0,good:0,cue:false,t:2}; say(P.intro,'#7dffa4'); };
   SYS.add('strike',()=>{ const D=HOLO.run; if(!D||!D.cue||Math.hypot(pos.x-D.x,pos.z-D.z)>2.6*TILE)return; D.cue=false; D.good++; D.n++; D.t=1.2+Math.random()*1.6; say('GOOD.','#7dffa4'); if(D.P.skill)FORAGE.use(D.P.skill,0,100); },'holodeck drill');
   SYS.add('places',dt=>{ const D=HOLO.run; if(!D)return; D.t-=dt; if(D.t>0)return;
     if(D.cue){ D.cue=false; D.n++; D.t=1.2+Math.random()*1.6; say('TOO SLOW.','#c8a090'); return; }
-    if(D.n>=5){ say('PROGRAM COMPLETE: '+D.good+' OF 5.','#7dffa4'); HOLO.run=null; return; } D.cue=true; D.t=1.1; say(D.P.cue,'#5dff8f'); },'holodeck drill');
+    if(D.n>=5){ say('PROGRAM COMPLETE: '+D.good+' OF 5.','#7dffa4'); if(D.P.skill&&D.good)FORAGE.train(D.P.skill,600,0,D.good*4); HOLO.run=null; return; } D.cue=true; D.t=1.1; say(D.P.cue,'#5dff8f'); },'holodeck drill');
 
   const box4=(x0,y0,x1,y1)=>{ const a=X(x0), b=X(x1), c=Z(y0), d=Z(y1); return [Math.min(a,b),Math.min(c,d),Math.max(a,b),Math.max(c,d)]; };
   const MKA=(k,map,emap)=>k==='B'?new THREE.MeshBasicMaterial({map,side:THREE.DoubleSide,alphaTest:.5}):new THREE.MeshLambertMaterial({map,alphaTest:.5,side:THREE.DoubleSide,...(emap?{emissiveMap:emap,emissive:0xffffff,emissiveIntensity:1.3}:{})});
@@ -51,7 +51,9 @@ await grab('arcade',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Y=SHARED.BOD
   const bx=(x0,y0,x1,y1,z0,z1,c,o={})=>({x0:Math.min(x0,x1),y0:Math.min(y0,y1),x1:Math.max(x0,x1),y1:Math.max(y0,y1),z0,z1,c,...o});
   const pb=(b,sd,p,glow)=>{ const [ax,ay]=SIDE[sd]; b.fs=(nx,ny,P,Q,z,s)=>{ if(nx===ax&&ny===ay){ const r=p(fu(sd,b,P,Q),1-z/(b.z1-b.z0)); if(r)return glow&&!b.em?lit(r):r; } return b.em?b.c:sh(b.c,s); }; return b; };
   const mb=(x0,z0,x1,z1,h0,h1,c,o)=>bx(mx(x0),my(z0),mx(x1),my(z1),h0*ZM,h1*ZM,c,o);
-  const thing=(name,boxes,o={})=>{ for(const b of boxes)SHARED.BOD.gbox(b,'A'); if(!o.high&&boxes.length){ sol(Math.min(...boxes.map(b=>b.x0)),Math.min(...boxes.map(b=>b.y0)),Math.max(...boxes.map(b=>b.x1)),Math.max(...boxes.map(b=>b.y1))); } };
+  const thing=(name,boxes,o={})=>{ for(const b of boxes)SHARED.BOD.gbox(b,'A'); if(!o.high&&boxes.length){ sol(Math.min(...boxes.map(b=>b.x0)),Math.min(...boxes.map(b=>b.y0)),Math.max(...boxes.map(b=>b.x1)),Math.max(...boxes.map(b=>b.y1))); }
+    if(o.skill&&boxes.length){ const x0=Math.min(...boxes.map(b=>b.x0)), x1=Math.max(...boxes.map(b=>b.x1)), y0=Math.min(...boxes.map(b=>b.y0)), y1=Math.max(...boxes.map(b=>b.y1)), hb=new THREE.Mesh(new THREE.BoxGeometry(Math.abs(X(x1)-X(x0))+.4*TILE,Y(70),Math.abs(Z(y1)-Z(y0))+.4*TILE),new THREE.MeshBasicMaterial({visible:false}));
+      hb.position.set((X(x0)+X(x1))/2,Y(35),(Z(y0)+Z(y1))/2); scene.add(hb); UI.thing({name:'PLAY '+o.title,obj:hb,reach:1.5*TILE,near:2.5*TILE,tall:Y(70),act:()=>FORAGE.train(o.skill,400,2,3)}); } };
   const lamp=(x,z,h,r,c,o={})=>LAMPS.push({own:1,room:1,day:true,x:mx(x),y:my(z),z:h*ZM,r,c,...o});
   const wallAt={b:m=>[mx(m),B.y0+.1],f:m=>[mx(m),B.y1-.1],e:m=>[B.x0+.1,my(m)],w:m=>[B.x1-.1,my(m)],pw:m=>[PX-.13,my(m)],pe:m=>[PX+.13,my(m)]};
   const FACE={b:'f',f:'b',e:'e',w:'w',pw:'w',pe:'e'};
@@ -96,6 +98,7 @@ await grab('arcade',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Y=SHARED.BOD
     WALL(PY(HD.x0),PY(HD.x0),HD.y0,HD.y1,(u,z)=>GRID(u,z/24)); WALL(PY(HD.x1),PY(HD.x1),HD.y0,HD.y1,(u,z)=>GRID(u,z/24)); WALL(PX(HD.y0),PX(HD.y0),HD.x0,HD.x1,(u,z)=>GRID(u,z/24));
     sol(AR.x0-.1,HD.y0,AR.x0+.1,AR.y1); sol(AR.x1-.1,HD.y0,AR.x1+.1,AR.y1); sol(AR.x0,AR.y1-.1,AR.x1,AR.y1+.1); sol(HD.x0,HD.y0-.1,HD.x1,HD.y0+.1); sol(AR.x0,AR.y0-.1,cx-DW,AR.y0+.1); sol(cx+DW,AR.y0-.1,AR.x1,AR.y0+.1);
     const SIDE2={e:[1,0],w:[-1,0]}, dk=[16,14,20];
+    const CABSK={'RAINBOW RUN':'bird','GALAXY RAID':'sword','MAZE':'prosp','ROAD 85':'fish','TELEMAK':'ento','ISTANBUL TAKSI':'forage'};   // each game trains a skill, a token a play
     const cab=(sd,yc,o)=>{ const [ax]=SIDE2[sd], w=(o.w||.74)*S, xb=sd==='e'?AR.x0+.1:AR.x1-.1, yb=yc, bs=[];
       const R_=(a0,a1,d0,d1)=>ax>0?[xb+d0*S,yb+a0*w,xb+d1*S,yb+a1*w]:[xb-d1*S,yb-a1*w,xb-d0*S,yb-a0*w];
       const art=pic(32,64,(g,W_,H_)=>{ g.fillStyle=o.body; g.fillRect(0,0,W_,H_);
@@ -112,7 +115,7 @@ await grab('arcade',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Y=SHARED.BOD
       const mq=pic(64,14,(g)=>{ g.fillStyle=o.mbg||'#141016'; g.fillRect(0,0,64,14); const k=tw(o.name,1)>60?1:2; ctxt(g,o.name,32,k===2?2:4,k,o.mcol||'#fff'); });
       part(-.46,.46,.8,.82,1.58,1.82,[20,18,24],mq,1);
       if(o.edge)for(const a of [-.52,.5]){ const [x0,y0,x1,y1]=R_(a,a+.02,.74,.8); bs.push(bx(x0,y0,x1,y1,0,1.84*ZM,o.edge,{em:1})); }
-      thing('arcade cabinet: '+o.name.toLowerCase(),bs); };
+      thing('arcade cabinet: '+o.name.toLowerCase(),bs,{skill:CABSK[o.name],title:o.name}); };
       const scr=k=>pic(48,40,(g,W,H)=>{ g.fillStyle='#05060c'; g.fillRect(0,0,W,H);
         if(k==='paddles'){ g.fillStyle='#e8f0ff'; g.fillRect(3,14,2,8); g.fillRect(43,10,2,8); g.fillRect(26,20,2,2); for(let y=1;y<H;y+=4)g.fillRect(23,y,2,2); txt(g,'3',14,3,1,'#e8f0ff'); txt(g,'7',30,3,1,'#e8f0ff'); }
         else if(k==='raid'){ const C=['#ff4fd8','#4ff0ff','#5aff6a']; for(let r=0;r<3;r++)for(let i=0;i<5;i++){ g.fillStyle=C[r]; const x=4+i*8, y=4+r*6; g.fillRect(x,y,5,3); g.fillRect(x+1,y+3,1,1); g.fillRect(x+3,y+3,1,1); } g.fillStyle='#ffe83c'; g.fillRect(21,35,6,3); g.fillRect(23,33,2,2); }

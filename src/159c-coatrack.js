@@ -1,6 +1,6 @@
 // THE COAT RACK: the bear merchant's rack beside him on Main Street — two plain coats and the cloud coat, a coat of drifting clouds; use it to buy from the bear.
 import {SHARED, THREE} from './003-shx.js';
-import {FORAGE, LEVELS, SHOPS, UI} from './003b-systems.js';
+import {FORAGE, SHOPS, UI} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {FIX, LEVEL, SOL, SYS, TILE} from './006-map-pre.js';
 import {GLBTOONS} from './084b-npc-glbtoons.js';
@@ -16,7 +16,7 @@ const RACK={};
     const cloud=new THREE.MeshLambertMaterial({color:0xf2f5ff,emissive:0x8ea2c8,transparent:true,opacity:.9,flatShading:true}), puffs=[], a0=HOOK[3], cx0=Math.cos(a0)*.3*T, cz0=Math.sin(a0)*.3*T;
     for(let i=0;i<7;i++){ const p=mesh(new THREE.IcosahedronGeometry(1,0),cloud,0,0,0); p.userData.sd=i*1.7; puffs.push(p); }
     const drift=t=>{ for(let k=0;k<7;k++){ const p=puffs[k], sd=p.userData.sd, u=k/7; p.position.set(cx0+Math.sin(u*6.3+t*.6+sd)*.11*T, 1.55*T-u*.75*T+Math.sin(t*.8+sd)*.05*T, cz0+Math.cos(u*6.3+t*.5+sd)*.11*T); p.scale.setScalar(T*(.13+.035*Math.sin(t*.9+sd))); } }; drift(0);
-    scene.add(LEVELS.own(g,'up')); SYS.add('life',()=>{ if(g.visible)drift(performance.now()/1000); },'159c-coatrack');
+    scene.add(g); SYS.add('life',()=>{ if(g.visible)drift(performance.now()/1000); },'159c-coatrack');
     SOL.up.push([x-.3*T,z-.3*T,x+.3*T,z+.3*T]); FIX.up.push([x-.3*T,z-.3*T,y,x+.3*T,z+.3*T,y+1.95*T]);
     const hb=new THREE.Mesh(new THREE.BoxGeometry(.9*T,2*T,.9*T),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(x,y+T,z); scene.add(hb);
     UI.thing({name:'THE BEAR MERCHANT\'S COAT RACK',obj:hb,reach:1.6*T,near:3*T,tall:2*T,act:()=>{ const N=GLBTOONS.coatbear; if(N&&SHOPS.open)SHOPS.open(N); else if(FORAGE.say)FORAGE.say('THE BEAR IS NOT HERE YET.','#c8a090'); }});

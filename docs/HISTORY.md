@@ -4491,3 +4491,12 @@ Owner: "i want to add multiplayer ... look for best, free options. work with sup
 ## 23 Oct 2026: the owner's TENANTS panel
 
 Owner: "how can i manage users without having to use supabase SQL editor?", then picked: "see all user details, send message, edit everything", make invite codes, see codes and who used them, see all players, remove or ban; messages live, as a letter waiting next login, to everyone, and by real email; "panel first, move data later" (cash, inventory, furniture and looks still live in each player's browser, so the panel can't edit them yet). TENANTS is a menu tab only owners (the `admins` table) see; letters show when a player comes in. Email goes out through Resend once its key is set (Cloudflare's own email sending needs the paid plan).
+
+## 23 Oct 2026: the cinema's stairs climbable, seats fixed, softer light
+Owner (a picture on the side stairs): "i cant walk up the stairs, the chairs are all loose and wobbly (they should be solid and not moveable, clear easy path to get up to projection booth, screen is too washed out and bright, ligth is too bright, should be softer, dimmer". The seats and the screen are fixed (no longer loose things); the aisles and the top landing are steps you walk up (the side aisle wider, the landing to the booth door 1.2 tiles); the beam, the screen's glow and the wall lights dimmer and softer; the screen no longer takes the night grading over the picture. Rule: anything walked on in a room is named as steps (CLIP leaves steps open).
+
+## 23 Oct 2026: the cinema screen never shows a broken page
+Owner (tenant 204 saw a white screen with a broken-page icon where he saw the movie): the screen keeps its own picture until the video is really playing; if YouTube won't load, it tries YouTube's other address, then says so on the screen. Rule: a viewer only sees through the screen to a playing video.
+
+## 23 Oct 2026: the cinema's side exits, one staircase
+Owner: "the left and right side shouldnt be stairs, they should be exits out (with rails on side to block stairs) only middle part should have stair case ... the entrance to the projetor booth should be behind the stairs. double click to enter the room."; of the mockup: "exits lead to outside yes, booth entrance at top of stairs". The side aisles are flat walkways behind rails to a red EXIT door each at the back (double-click: out to the street); the middle aisle is the only staircase, and the booth's door is on the back wall at its top (double-click to enter).

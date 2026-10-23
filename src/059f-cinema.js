@@ -45,12 +45,12 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
     clip.style.cssText='position:absolute;left:0;top:0;width:0;height:0;overflow:hidden;pointer-events:none;display:none';
     wrap=document.createElement('div'); wrap.style.cssText='position:absolute;left:0;top:0;width:'+W0+'px;height:'+H0+'px;transform-origin:0 0;overflow:hidden;background:#000;will-change:transform';
     holder=document.createElement('div'); holder.style.cssText='position:absolute;inset:0;width:100%;height:100%'; wrap.appendChild(holder);
-    if(!document.getElementById('cinema-css')){ const st=document.createElement('style'); st.id='cinema-css'; st.textContent='@keyframes cmgrain{0%{background-position:0 0}20%{background-position:-61px 37px}40%{background-position:43px -83px}60%{background-position:-97px -21px}80%{background-position:71px 89px}100%{background-position:0 0}}@keyframes cmflick{0%,100%{opacity:.05}13%{opacity:.11}27%{opacity:.03}52%{opacity:.09}71%{opacity:.04}88%{opacity:.1}}'; document.head.appendChild(st); }
+    if(!document.getElementById('cinema-css')){ const st=document.createElement('style'); st.id='cinema-css'; st.textContent='@keyframes cmgrain{0%{background-position:0 0}20%{background-position:-61px 37px}40%{background-position:43px -83px}60%{background-position:-97px -21px}80%{background-position:71px 89px}100%{background-position:0 0}}@keyframes cmflick{0%,100%{opacity:.02}13%{opacity:.05}27%{opacity:.01}52%{opacity:.04}71%{opacity:.02}88%{opacity:.05}}'; document.head.appendChild(st); }
     const nz=document.createElement('canvas'); nz.width=nz.height=192; { const g=nz.getContext('2d'), d=g.createImageData(192,192); for(let i=0;i<d.data.length;i+=4){ const v=Math.random()*255|0; d.data[i]=d.data[i+1]=d.data[i+2]=v; d.data[i+3]=255; } g.putImageData(d,0,0); }
     const lay=css=>{ const d=document.createElement('div'); d.style.cssText='position:absolute;inset:0;pointer-events:none;'+css; wrap.appendChild(d); return d; };
-    lay('background:radial-gradient(circle,rgba(0,0,0,.28) .8px,rgba(0,0,0,0) 1.4px) 0 0/5px 5px;opacity:.6');
-    lay('background:url('+nz.toDataURL()+') 0 0/384px 384px;mix-blend-mode:overlay;opacity:.16;animation:cmgrain .42s steps(1) infinite');
-    lay('background:radial-gradient(ellipse 60% 55% at 50% 47%,rgba(255,246,228,.09) 0%,rgba(0,0,0,0) 55%,rgba(0,0,0,.5) 100%);box-shadow:inset 0 0 90px 18px rgba(0,0,0,.6)');
+    lay('background:radial-gradient(circle,rgba(0,0,0,.28) .8px,rgba(0,0,0,0) 1.4px) 0 0/5px 5px;opacity:.3');
+    lay('background:url('+nz.toDataURL()+') 0 0/384px 384px;mix-blend-mode:overlay;opacity:.07;animation:cmgrain .42s steps(1) infinite');
+    lay('background:radial-gradient(ellipse 60% 55% at 50% 47%,rgba(255,246,228,0) 0%,rgba(0,0,0,0) 55%,rgba(0,0,0,.5) 100%);box-shadow:inset 0 0 90px 18px rgba(0,0,0,.6)');
     lay('background:#000;animation:cmflick 2.3s steps(1) infinite');
     soundBtn=document.createElement('button'); soundBtn.textContent='🔇 tap for sound';
     soundBtn.style.cssText='position:fixed;left:0;top:0;transform:translate(-50%,-100%);display:none;z-index:3;pointer-events:auto;font:600 13px system-ui;color:#fff;background:rgba(0,0,0,.6);border:2px solid rgba(255,255,255,.4);border-radius:999px;padding:6px 14px;cursor:pointer';
@@ -86,17 +86,17 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
   const placeOver=(me,dim=1)=>{ const {r,q}=corners(me), cv=renderer.domElement, k=coef(q[0],q[1],q[2],q[3]), V=vrect();
     clip.style.left=r.left+'px'; clip.style.top=r.top+'px'; clip.style.width=r.width+'px'; clip.style.height=r.height+'px'; clip.style.borderRadius=getComputedStyle(cv.parentElement||cv).borderRadius;
     const u0=-V.x/V.w, u1=(W0-V.x)/V.w, v0=-V.y/V.h, v1=(H0-V.y)/V.h;
-    wrap.style.transform=m3d(coef(ap(k,u0,v0),ap(k,u1,v0),ap(k,u1,v1),ap(k,u0,v1))); wrap.style.filter='brightness('+((cur().brightness??.8)*dim)+') contrast(1.04) saturate(.92) sepia(.05) blur(.5px)';
+    wrap.style.transform=m3d(coef(ap(k,u0,v0),ap(k,u1,v0),ap(k,u1,v1),ap(k,u0,v1))); wrap.style.filter='brightness('+((cur().brightness??.8)*dim)+') contrast(1.08) saturate(1.02) blur(.4px)';
     if(CUT){ CUT.uniforms.uOn.value=1; q.forEach((p,i)=>CUT.uniforms.uQ.value[i].set(p.u,p.v)); }
     if(!snd.on){ const b=ap(k,.5,1); soundBtn.style.display='block'; soundBtn.style.left=(r.left+b.x)+'px'; soundBtn.style.top=(r.top+b.y-6)+'px'; } else soundBtn.style.display='none'; };
   // the screen's see-through face (the video shows through it, darker at its edges) and the last pass that keeps the rest of the picture solid
   const HOLE=new THREE.ShaderMaterial({blending:THREE.NoBlending,depthWrite:true,vertexShader:'varying vec2 vU; void main(){ vU=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.); }',
-    fragmentShader:'varying vec2 vU; void main(){ vec2 d=(vU-.5)*vec2(1.,1.12); float v=smoothstep(.12,.62,length(d)); float a=.05+.4*v*v; gl_FragColor=vec4(vec3(.012,.012,.014)+vec3(.03,.03,.034)*(1.-v),a); }'});
+    fragmentShader:'varying vec2 vU; void main(){ vec2 d=(vU-.5)*vec2(1.,1.12); float v=smoothstep(.12,.62,length(d)); float a=.04+.45*v*v; gl_FragColor=vec4(0.,0.,0.,a); }'});
   let CUT=null;
   const mkCut=()=>{ if(CUT||!SHARED.composer)return; CUT=new ShaderPass({uniforms:{tDiffuse:{value:null},uOn:{value:0},uQ:{value:[0,1,2,3].map(()=>new THREE.Vector2())}},
     vertexShader:'varying vec2 vUv; void main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.); }',
     fragmentShader:'uniform sampler2D tDiffuse; uniform float uOn; uniform vec2 uQ[4]; varying vec2 vUv; float s(vec2 a,vec2 b,vec2 p){ return (b.x-a.x)*(p.y-a.y)-(b.y-a.y)*(p.x-a.x); }\n'
-      +'void main(){ vec4 c=texture2D(tDiffuse,vUv); float a=1.; if(uOn>.5){ float s0=s(uQ[0],uQ[1],vUv), s1=s(uQ[1],uQ[2],vUv), s2=s(uQ[2],uQ[3],vUv), s3=s(uQ[3],uQ[0],vUv); if((s0>=0.&&s1>=0.&&s2>=0.&&s3>=0.)||(s0<=0.&&s1<=0.&&s2<=0.&&s3<=0.))a=c.a; } gl_FragColor=vec4(c.rgb,a); }'});
+      +'void main(){ vec4 c=texture2D(tDiffuse,vUv); float a=1.; vec3 rgb=c.rgb; if(uOn>.5){ float s0=s(uQ[0],uQ[1],vUv), s1=s(uQ[1],uQ[2],vUv), s2=s(uQ[2],uQ[3],vUv), s3=s(uQ[3],uQ[0],vUv); if((s0>=0.&&s1>=0.&&s2>=0.&&s3>=0.)||(s0<=0.&&s1<=0.&&s2<=0.&&s3<=0.)){ a=c.a; if(a<.99)rgb=vec3(0.); } } gl_FragColor=vec4(rgb,a); }'});
     SHARED.composer.addPass(CUT); };
   const facing=me=>{ me.updateMatrixWorld(); const n=new THREE.Vector3(0,0,1).transformDirection(me.matrixWorld), p=new THREE.Vector3().setFromMatrixPosition(me.matrixWorld); return n.dot(new THREE.Vector3().subVectors(SHARED.cam.position,p))>0; };
 
@@ -108,7 +108,7 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
   const buildRig=m=>{ if(rig||!m.port)return; const fm=m.fm; fm.updateMatrixWorld(); const w=fm.geometry.parameters.width/2, h=fm.geometry.parameters.height/2, P=new THREE.Vector3(...m.port);
     const W_=(x,y,z=0)=>new THREE.Vector3(x,y,z).applyMatrix4(fm.matrixWorld), p=W_(0,0), N=new THREE.Vector3(0,0,1).transformDirection(fm.matrixWorld);
     const Q=[[-1,1],[1,1],[1,-1],[-1,-1]].map(([sx,sy])=>W_(sx*w,sy*h));
-    const g=new THREE.BufferGeometry(), ps=[], cs=[], A=[1,1,1], B=[.1,.1,.1];
+    const g=new THREE.BufferGeometry(), ps=[], cs=[], A=[.5,.5,.5], B=[.14,.14,.14];
     for(let i=0;i<4;i++){ const q0=Q[i], q1=Q[(i+1)%4]; ps.push(P.x,P.y,P.z,q0.x,q0.y,q0.z,q1.x,q1.y,q1.z); cs.push(...A,...B,...B); }
     g.setAttribute('position',new THREE.Float32BufferAttribute(ps,3)); g.setAttribute('color',new THREE.Float32BufferAttribute(cs,3));
     const beam=new THREE.Mesh(g,new THREE.MeshBasicMaterial({vertexColors:true,transparent:true,opacity:.05,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}));
@@ -122,8 +122,8 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
   const fitHole=()=>{ const u=holeM.u, sz=Math.max(.4,Math.min(1,cur().size??1)); let hw=u.w, hh=u.w/aspect; if(hh>u.h){ hh=u.h; hw=u.h*aspect; } holeM.scale.set(hw*sz,hh*sz,1); };
   const bcol=c=>new THREE.Color().setRGB(.62+.16*c.warm,.64+.02*c.warm,.76-.32*c.warm);
   const animRig=now=>{ if(!rig)return; const u=rig.u, c=bcfg(); if(!rig.visible){ u.spill.intensity=0; return; } const t=now/1000; u.lv+=(Math.random()-.5)*.06*c.flicker*2; u.lv=Math.max(.25,Math.min(1,u.lv+(.6-u.lv)*.01));
-    const f=1+(.06*Math.sin(t*23)+.04*Math.sin(t*5.1))*c.flicker*2, b=(cur().brightness??.8)*(.6+.4*u.lv)*f; u.beam.visible=!!c.on; u.beam.material.color.copy(bcol(c)); u.beam.material.opacity=(.016+.014*b)*c.power;
-    u.halo.material.opacity=(.06+.12*b)*c.spill; u.pool.material.opacity=(.04+.08*b)*c.spill; u.spill.intensity=7*b*c.spill; u.spill.color.copy(bcol(c)).lerp(new THREE.Color(0xc8d4ff),.6); };
+    const f=1+(.06*Math.sin(t*23)+.04*Math.sin(t*5.1))*c.flicker*2, b=(cur().brightness??.8)*(.6+.4*u.lv)*f; u.beam.visible=!!c.on; u.beam.material.color.copy(bcol(c)); u.beam.material.opacity=(.008+.008*b)*c.power;
+    u.halo.material.opacity=(.03+.05*b)*c.spill; u.pool.material.opacity=(.02+.04*b)*c.spill; u.spill.intensity=3*b*c.spill; u.spill.color.copy(bcol(c)).lerp(new THREE.Color(0xc8d4ff),.6); };
 
   let lastSync=0, adminThings=false;
   const tick=()=>{ const mt=STORE.main&&STORE.main.theatre; CINEMA.on=false; if(!mt||!mt.fm)return;

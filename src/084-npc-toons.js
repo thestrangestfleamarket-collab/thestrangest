@@ -60,7 +60,7 @@ const TOONS={}, RAINCAT=__DATA__("data/raincat.json");
         ...[['FL',-1,1],['FR',1,1],['BL',-1,-1],['BR',1,-1]].map(([s,sx,sz])=>part('leg '+s,1,'leg'+s,[ shape(blob(.075,.11,.08,6,4),FUR,[sx*.15,.12,sz*.1]), shape(blob(.075,.04,.09,6,4),FUR2,[sx*.15,.03,sz*.1+.02]) ])),
         ...[0,1,2,3].map(i=>part('cable '+i,2,'cab'+i,[ limb(CAB[i],CAB[i+1],.01,.01,DARK,4) ])) ],
       springs:{ body:{f:-.06,s:.05,k:110,c:10,lim:.12}, cab1:{y:.25,k:25,c:4,lim:.5}, cab2:{y:.35,k:20,c:3.5,lim:.6}, cab3:{y:.45,k:16,c:3,lim:.7} },
-      pose:(c,dt)=>{ const B=c.B, ph=c.st.ph, m=c.mv, sw=Math.sin(ph)*m;
+      pose:(c,dt)=>{ '@later'; const B=c.B, ph=c.st.ph, m=c.mv, sw=Math.sin(ph)*m;
         if(c.sheet){ B.legFL.rotation.set(.3,0,-.3); B.legFR.rotation.set(.3,0,.3); B.legBL.rotation.set(-.3,0,-.3); B.legBR.rotation.set(-.3,0,.3); }
         else{ B.legFL.rotation.x=B.legBR.rotation.x=-sw*.6; B.legFR.rotation.x=B.legBL.rotation.x=sw*.6; }
         B.body.position.y+=Math.abs(Math.cos(ph))*.015*m; B.body.rotation.z=Math.sin(ph*2)*.02*m; B.body.rotation.y=c.look*.4;
@@ -89,7 +89,7 @@ const TOONS={}, RAINCAT=__DATA__("data/raincat.json");
         part('rear wheels',1,'wheelR',[ ...[-1,1].flatMap(sx=>wheel(.13,.06,[sx*.21,.13,-.24])), limb([-.21,.13,-.24],[.21,.13,-.24],.012,.012,CHROME,4) ]),
         part('box',2,'box',[ shape(box(.32,.26,.24),CARD,[0,.47,-.4]) ]) ],
       springs:{ head:{f:-.05,s:.06,k:80,c:8,lim:.2}, frog:{f:-.05,s:.04,k:70,c:7,lim:.15}, cape1:{f:.25,s:-.15,k:30,c:4,lim:.7}, cape2:{f:.3,s:-.2,k:24,c:3.5,lim:.8}, box:{f:.06,s:-.05,k:120,c:8,lim:.1} },
-      pose:(c,dt,moving)=>{ const B=c.B, m=c.mv;
+      pose:(c,dt,moving)=>{ '@later'; const B=c.B, m=c.mv;
         B.armL.rotation.x=B.armR.rotation.x=-.05; if(c.sheet){ B.armL.rotation.z=-1.1; B.armR.rotation.z=1.1; }
         B.scooter.rotation.z=Math.max(-.25,Math.min(.25,-c.turn*c.spd*.25));
         B.wheelF.rotation.x=c.dist/(.16*1.12); B.wheelR.rotation.x=c.dist/(.13*1.12);
@@ -115,7 +115,7 @@ const TOONS={}, RAINCAT=__DATA__("data/raincat.json");
         ...[['L',-1],['R',1]].flatMap(([s,sx])=>[ ...arm(s,sx,[sx*.23,1.36,0],[sx*.29,1.0,.06],COAT,TEAL,COAT2,.07),
           part('leg '+s,0,'leg'+s,[ shape(cyl(.075,.065,.84,8),TROU,[sx*.1,.5,0]) ]), part('shoe '+s,1,'leg'+s,[ shape(blob(.065,.05,.12,6,4),SHOE,[sx*.1,.05,.04]) ]) ]) ],
       springs:{ fin:{f:-.2,s:.2,k:50,c:5,lim:.4}, skirt:{f:.12,s:-.1,k:40,c:6,lim:.3}, head:{f:-.03,s:.03,k:90,c:9,lim:.12}, jaw:{f:.05,k:60,c:6,lim:.2} },
-      pose:(c,dt)=>{ const B=c.B, ph=c.st.ph, m=c.mv; RIGNPC.walk(c,{arm:.35,leg:.45,bob:.035,rock:.03});
+      pose:(c,dt)=>{ '@later'; const B=c.B, ph=c.st.ph, m=c.mv; RIGNPC.walk(c,{arm:.35,leg:.45,bob:.035,rock:.03});
         B.skirt.rotation.z=Math.sin(ph)*.05*m; B.head.rotation.y=c.look;
         if((c.snap=(c.snap??6)-dt)<.5){ B.jaw.rotation.x=Math.sin(Math.max(0,c.snap)/.5*Math.PI)*.35; if(c.snap<0)c.snap=6+Math.random()*8; } else B.jaw.rotation.x=.08;
         if(c.sheet)B.jaw.rotation.x=.2; } };

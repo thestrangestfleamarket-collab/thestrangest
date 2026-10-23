@@ -11,10 +11,10 @@ import {BUILDV} from './135-where.js';
   const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
   const jw=t=>{ try{ return JSON.parse(atob(t.split('.')[1].replace(/-/g,'+').replace(/_/g,'/'))); }catch(e){ return {}; } };
   const ck=()=>{ const m=/(?:^|;\s*)tsfm-pass=([^;]+)/.exec(document.cookie); return m?decodeURIComponent(m[1]):''; };
-  const renew=async()=>{ '@later'; const s=JSON.parse(localStorage.getItem(LS)||'null'); if(!s||!s.refresh_token)return '';
+  const renew=async()=>{ const s=JSON.parse(localStorage.getItem(LS)||'null'); if(!s||!s.refresh_token)return '';
     const r=await fetch(SB+'/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:{apikey:KEY,'content-type':'application/json'},body:JSON.stringify({refresh_token:s.refresh_token})}); if(!r.ok)return '';
     const n=await r.json(); localStorage.setItem(LS,JSON.stringify({...s,...n})); document.cookie='tsfm-pass='+n.access_token+'; path=/; max-age=3600; secure; samesite=strict'; return T=n.access_token; };
-  let T=''; const tok=async()=>{ '@later'; let t=ck()||T; if(t.startsWith('dev:'))return ''; if(!t||(jw(t).exp||0)*1000<Date.now()+60000)t=await renew().catch(()=>''); return t; };
+  let T=''; const tok=async()=>{ let t=ck()||T; if(t.startsWith('dev:'))return ''; if(!t||(jw(t).exp||0)*1000<Date.now()+60000)t=await renew().catch(()=>''); return t; };
   const sb=async(path,o={})=>{ const t=await tok(); if(!t)throw new Error('log in again to send it');
     const r=await fetch(SB+path,{...o,headers:{apikey:KEY,Authorization:'Bearer '+t,'content-type':'application/json',...(o.headers||{})}}); if(!r.ok)throw new Error('the server said '+r.status); return r; };
   const SITE={
@@ -32,7 +32,7 @@ import {BUILDV} from './135-where.js';
     list:async()=>(await db.collection('bugs').orderBy('at','desc').limit(300).get()).docs.map(d=>({id:d.id,...d.data()})),
     shot:async r=>{ const s=await db.doc('bugshots/'+r.id).get(); return s.exists?s.data().jpg:''; },
     mark:(id,status)=>db.doc('bugs/'+id).update({status}) });
-  let BE=null; const backend=async()=>{ '@later'; if(BE)return BE; const c=window.claude;
+  let BE=null; const backend=async()=>{ if(BE)return BE; const c=window.claude;
     if(c&&c.use){ const db=await c.use('db').catch(()=>null); if(db){ const u=await c.use('user').catch(()=>null); return BE=ART(db,u); } }
     if(ck()||localStorage.getItem(LS))return BE=SITE; return null; };
   const grab=()=>new Promise(res=>requestAnimationFrame(()=>{ try{ const s=renderer.domElement, k=s.width>=1280?1280/s.width:Math.min(3,Math.floor(1280/s.width)), c=document.createElement('canvas');

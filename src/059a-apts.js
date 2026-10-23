@@ -127,10 +127,12 @@ await grab('apts',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Yr=SHARED.BOD.
         const dp=(ii,jj)=>{ const z=DH-jj, q=(ii+.5)/Wd; if(ii<2||ii>=Wd-2||z>DH-2)return WK; if(q>.82&&q<.9&&Math.abs(z-DH*.42)<2)return BR; const tp=z>DH*.55; if(q>.16&&q<.84&&(tp?z>DH*.6&&z<DH*.92:z>DH*.1&&z<DH*.48))return (ii+jj)%7?WL:WD; return WD; };
         const P=px(AR.y1,-.03); bq(P(d0,0),P(d1,0),P(d1,DH),P(d0,DH),faceTex(Wd,DH,(ii,jj)=>C(dp(ii,jj))),'A'); APTS.door=[(d0+d1)/2,AR.y1]; }
       const put=(k,x,y,r=0,solid=true)=>{ const f=K.CATALOG[k]; if(!f)return null; const p=f(+x.toFixed(3),+y.toFixed(3)); if(!p)return null; SHARED.BOD.place(p,r); for(const b of p.boxes)SHARED.BOD.gbox(b,'A');
-        const bs=p.boxes.filter(b=>!b.nb&&b.z0<30&&b.z1-b.z0>3); if(solid&&!p.walk&&!p.high&&bs.length)sol(Math.min(...bs.map(b=>b.x0)),Math.min(...bs.map(b=>b.y0)),Math.max(...bs.map(b=>b.x1)),Math.max(...bs.map(b=>b.y1))); return p; };
-      const x0=AR.x0, y0=AR.y0, x1=AR.x1, y1=AR.y1;
-      put('patterned rug',x0+3,y0+5,0,false); put('sofa',x0+.7,y0+5,1); put('coffee table',x0+2.6,y0+5); put('TV on a low stand',x0+5.1,y0+5,3); put('floor lamp',x0+.5,y0+7.6);
+        const bs=p.boxes.filter(b=>!b.nb&&b.z0<30&&b.z1-b.z0>3); if(solid&&!p.walk&&!p.high&&bs.length)sol(Math.min(...bs.map(b=>b.x0)),Math.min(...bs.map(b=>b.y0)),Math.max(...bs.map(b=>b.x1)),Math.max(...bs.map(b=>b.y1))); p.kind=k; made.push(p); return p; };
+      const x0=AR.x0, y0=AR.y0, x1=AR.x1, y1=AR.y1, made=APTS.made=[];
+      put('patterned rug',x0+3,y0+5,0,false); put('sofa',x0+.7,y0+5,1); put('coffee table',x0+2.6,y0+5); put('TV on a low stand',x0+5.1,y0+5,3); put('floor lamp',x0+.4,y0+6.2);
       put('single bed',x1-1.2,y0+1.7,0); put('fiddle-leaf fig',x1-.5,y0+4); put('bookcase',x0+.35,y0+2.2,1); put('plant pot',x0+4.5,y0+.5);
+      put('home computer',x0+6.8,y0+.9,0); put('office chair',x0+6.8,y0+2); put('wall phone',x0+.03,y0+3.2,0,false);
+      put('bath',x0+1.3,y1-.6,0); put('toilet',x0+2.7,y1-.6,0); put('bathroom sink',x0+2.3,y1-1.7,0);
       put('sink and counter',x1-2.2,y1-.45,2); put('stove',x1-3.6,y1-.45,2); put('fridge',x1-.6,y1-.5,2); put('dining table',x1-2.4,y1-2.8); put('pothos shelf',x0+.2,y0+7.2,1,false);
       put('hanging pothos',x1-2.75,y0+.5,0,false); put('hanging pothos',x0+.5,y0+4.5,1,false); put('stack of books with a candle',x0+5.1,y0+6.2);
       for(const [lx,ly] of [[x0+3,y0+5],[x1-2.6,y0+3]]){ const L=new THREE.PointLight(0xffe2b8,5,7*TILE,1.6); L.position.set(X(lx),Yr(WH-14),Z(ly)); scene.add(L); }
@@ -141,4 +143,9 @@ await grab('apts',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Yr=SHARED.BOD.
   ROOMS.off.apt={name:'YOUR APARTMENT',mine:true,box:{x0:wb[0],z0:wb[1],x1:wb[2],z1:wb[3],y0:-1,y1:Yr(S)},need:()=>LOAD('apts','later'),build,unbuild,spawn:[X(DC),Z(AR.y1-1.3),0,Math.PI],out:[...XZ(m,A.y1+.7),Y(1),TA.hd(0)],
     door:(d=>[d[0],Y(0),d[1]])(XZ(m,A.y1+.25)),exit:[X(DC),0,Z(AR.y1-.25)],exitName:'OUT TO THE STREET'};
   APTS.spawn=ROOMS.off.apt.spawn;
+  APTS.num=(()=>{ try{ return localStorage.getItem('market-apt')||null; }catch(e){ return null; } })();
+  APTS.loadNum=async()=>{ try{ const SB='https://jvcetttmqseoteidfggn.supabase.co', KEY='sb_publishable_UkzD8hOizW1hPr6hm3duQQ_07ZodPik', raw=localStorage.getItem('sb-jvcetttmqseoteidfggn-auth-token'); if(!raw)return; const s=JSON.parse(raw); if(!s||!s.access_token)return;
+    const uid=JSON.parse(atob(s.access_token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/'))).sub, r=await fetch(SB+'/rest/v1/players?select=apt&id=eq.'+uid,{headers:{apikey:KEY,Authorization:'Bearer '+s.access_token}}); if(!r.ok)return; const a=await r.json(), n=a&&a[0]&&a[0].apt;
+    if(n!=null&&String(n)!==APTS.num){ APTS.num=String(n); try{ localStorage.setItem('market-apt',APTS.num); }catch(e){} if(window.FIREV&&FIREV.setPlaque)FIREV.setPlaque(); } }catch(e){} };
+  APTS.loadNum();
   MODS.apts=APTS; });

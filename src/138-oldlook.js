@@ -26,7 +26,7 @@ LOOK.shader={uniforms:{tDiffuse:{value:null},uRes:{value:new THREE.Vector2(1,1)}
       col=mix(col,vec3(l),k)*mix(vec3(1.),vec3(.62,.87,1.31),k);
       col=mix(col,vec3(.039,.063,.188),uNight*.3*(1.-l)*(1.-l));
       col=mix(col*uGrade,uLift,uLiftK);
-      gl_FragColor=vec4(col,1.); }`};
+      gl_FragColor=vec4(col,texture2D(tDiffuse,vUv).a); }`};
 LOOK.tick=()=>{ const dark=CLOCK.dark()?1:0, inside=!OUT.open;
   LOOK.night.value+=(dark-LOOK.night.value)*.1; if(Math.abs(dark-LOOK.night.value)<.01)LOOK.night.value=dark;
   LOOK.glowK.value=(LOOK.on?(dark||inside?1.28:.5):0)*(DN.P&&DN.P().glow!=null?DN.P().glow:1); if(LOOK.sp){ LOOK.sp.enabled=LOOK.on||LOOK.rays.uRayK.value>0||DN.U.liftK.value>0||DN.U.grade.value.r+DN.U.grade.value.g+DN.U.grade.value.b<2.99; LOOK.sp.uniforms.uRes.value.set(RW,RH); } };

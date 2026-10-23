@@ -4465,3 +4465,14 @@ Owner: "i want to sunrays to come from the suns locations, and the sun should ri
 ## 23 Oct 2026: the character page (ESC) — your avatar, your gear, the menu
 
 Owner wanted a paperdoll-with-menu-buttons like Ultima Online's "but in our game"; then "replace, esc current" (it replaces the old menu); "should be full body shot of actual avatar of each player, will change as you change clothes. you can drag an drop items on and off of your body"; and admins get "an admin button that opens up the admin menu". ESC now opens the character page: your live avatar (rendered from `W3.group`), the gear you wear in drag-drop slots (head/eyes/body via `EQUIP`, hand via `WIELD`; click or drag off to remove), your name and HP/stamina, and the menu buttons — HELP, MAP, PACK/SKILLS/CRAFT, SETTINGS, EDIT WORLD, REPORT A BUG, ADMIN (admins only, `CINEMA.isAdmin`), LOG OUT. The old tabbed menu is now the SETTINGS sub-screen (◀ CHARACTER goes back). `162b-charp.js` fills the menu's home tab (`CHARP`, wired in `094-ui.js`). ADMIN is a scaffold for now: its one tool is the bug/report queue.
+## 23 Oct 2026: reuse, don't hand-write (rule)
+
+Owner: "dont write anything by hand that is already created for what were doing an a better fit", then made it a hard rule with a caveat: not without asking first, "especailly if you have a better idea or improvement way of doing it". In CLAUDE.md's rules.
+
+## 23 Oct 2026: multiplayer, the first piece
+
+Owner: "i want to add multiplayer ... look for best, free options. work with supabase,cloudlfare, etc current setup". His first piece: see everyone online, see them move, their name and look, and chat. He picked Supabase Realtime first, then said "yes" to one Cloudflare Durable Object per block instead once its free limits showed movement would not fit (every message counted once per listener; going over restricts the whole Supabase project, login included). Rule: each block (section) is its own server; Supabase stays for login and saved things. ENTER talks (in the controls).
+
+## 23 Oct 2026: the owner's TENANTS panel
+
+Owner: "how can i manage users without having to use supabase SQL editor?", then picked: "see all user details, send message, edit everything", make invite codes, see codes and who used them, see all players, remove or ban; messages live, as a letter waiting next login, to everyone, and by real email; "panel first, move data later" (cash, inventory, furniture and looks still live in each player's browser, so the panel can't edit them yet). TENANTS is a menu tab only owners (the `admins` table) see; letters show when a player comes in. Email goes out through Resend once its key is set (Cloudflare's own email sending needs the paid plan).

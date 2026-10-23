@@ -18,8 +18,10 @@ import {QS, SHL, TILE} from './006-map-pre.js';
     for(let i=0;i<n;i++){ const r=W3.ramp[mt[i]|0]; if(r)put(A,i,r); }
     for(const k of ['c0','c1','c2','cd','color'])if(A[k])A[k].needsUpdate=true; };
   const RB={torso:[1.06,1,1.08],hips:[1.12,1,1.12],thighL:[1.14,1,1.14],thighR:[1.14,1,1.14],sleeveL:[1.12,1,1.12],sleeveR:[1.12,1,1.12],upperArmL:[1.08,1,1.08],upperArmR:[1.08,1,1.08]}, WHITE=tones('#f6f4ee'), BELT=tones('#c4ccd8'); let E0=null;
-  LOOKS.robe=on=>{ '@later'; L.robe=!!on; save(); if(!E0)E0=W3.E.map(e=>e&&{...e,s:e.s.slice()}); recolor();
-    W3.pcs.forEach((P,i)=>{ const e=E0[i], k=on&&RB[P.n]; W3.E[i]=k?{s:(e?e.s:[1,1,1]).map((v,j)=>v*k[j]),o:[0,0,0],q:[0,0,0,1]}:e; }); if(!on)return feet();
+  const shape=on=>W3.pcs.map((P,i)=>{ const e=E0[i], k=on&&RB[P.n]; return k?{s:(e?e.s:[1,1,1]).map((v,j)=>v*k[j]),o:[0,0,0],q:[0,0,0,1]}:e; });
+  LOOKS.shape=shape; LOOKS.robed=n=>!!RB[n];
+  LOOKS.robe=on=>{ '@later'; L.robe=!!on; save(); recolor();
+    shape(on).forEach((e,i)=>{ W3.E[i]=e; }); if(!on)return feet();
     const A=W3.mesh.geometry.attributes, n=A.mat.count, ti=W3.idx('torso'), hi=W3.idx('hips'), SK=W3.ramp[MATS.indexOf('skin')]; let y0=1e9, y1=-1e9, h1=-1e9;
     for(let i=0;i<n;i++){ const k=A.pidx.getX(i), y=A.position.getY(i); if(k===ti){ y0=Math.min(y0,y); y1=Math.max(y1,y); } else if(k===hi)h1=Math.max(h1,y); }
     for(let i=0;i<n;i++){ const P=W3.pcs[A.pidx.getX(i)|0], x=A.position.getX(i), y=A.position.getY(i), z=A.position.getZ(i); if(!P)continue;
@@ -58,6 +60,7 @@ import {QS, SHL, TILE} from './006-map-pre.js';
   renderer.domElement.addEventListener('pointerdown',()=>{ hit.position.set(pos.x,SHARED.py+1.1*TILE,pos.z); hit.updateMatrixWorld(); },true);
   UI.thing({name:'YOU',ghost:1,obj:hit,reach:99,tall:2,act:()=>LOOKS.open()});
   W3.E=W3.pcs.map(()=>null); for(const [n,v] of Object.entries(MALE)){ const i=W3.idx(n); if(i>=0)W3.E[i]={s:v.slice(),o:[0,0,0],q:[0,0,0,1]}; }
+  E0=W3.E.map(e=>e&&{...e,s:e.s.slice()});
   const LT=new THREE.Vector3(), LS=new THREE.Vector3(), LSTEP=+(QS.get('lstep')??7)*Math.PI/180; let lt0=performance.now();
   LOOKS.light=()=>{ const now=performance.now(), k=1-Math.exp(-Math.min(.1,(now-lt0)/1000)*7); lt0=now; const sun=CLOCK.sun;
     if(sun&&sun.intensity>.3&&SHARED.LVL==='up')LT.copy(sun.position).sub(sun.target.position).normalize();

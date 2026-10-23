@@ -1,0 +1,122 @@
+// THE OTHER PLAYERS: ONLINE, everyone on your block (one server a section, worker/door.js Block): their bodies and name tags, who's online, and the chat.
+import {SHARED, THREE} from './003-shx.js';
+import {BUGS, LOOKS, ONLINE, pos, ROOMS, UI, W3} from './003b-systems.js';
+import {scene} from './004-main.js';
+import {ASTEP, MODS, QS, SYS, TILE} from './006-map-pre.js';
+import {TL} from './073-main-12.js';
+import {figureMesh, musBody, MUSGEO, musScale} from './110-musician.js';
+import {BODIES} from './111a-bodies.js';
+Object.assign(ONLINE,{others:new Map(),on:false,me:'',log:[]}); window.ONLINE=ONLINE;
+{ const R=RIG, PI4=Math.PI/4, LAG=160, SEND=1/6, FAR=60*TILE, MAXN=20, FADE_S=15000;
+  const ROOM='s-'+String((SHARED.SECTION&&SHARED.SECTION.id)||'a').toLowerCase().replace(/[^a-z0-9-]/g,'');
+  const V8=Array.from({length:8},(_,d)=>[Math.sin(d*PI4),-Math.cos(d*PI4)]);
+  let sock=null, last=null, acc=0, meAcc=1, meSent='', EL=null;
+
+  const roomKey=()=>{ const c=ROOMS.cur; if(!c)return ''; return [c.off||'',(+c.x0).toFixed(1),(+c.z0).toFixed(1),(+c.y0||0).toFixed(1)].join()+(c.off==='apt'&&MODS.apts&&MODS.apts.num?'#'+MODS.apts.num:''); };
+  const lookKey=()=>{ const b=BODIES.pick(), L=LOOKS.L||{}; return b!=='walker'&&BODIES.by[b]?'b:'+b:'w'+(L.robe?1:0)+(L.bare?1:0); };
+  const myName=()=>((LOOKS.L&&LOOKS.L.name)||'').trim()||('TENANT'+(MODS.apts&&MODS.apts.num?' '+MODS.apts.num:''));
+  const send=m=>{ if(sock&&sock.readyState===1)sock.send(JSON.stringify(m)); };
+
+  /* ---------- where someone is: their last moves, drawn a little behind so the steps between them are smooth ---------- */
+  const place=(o,now)=>{ const s=o.s, n=s.length-1; if(n<0)return null; const t=now-LAG; if(t<=s[0].t)return s[0]; if(t>=s[n].t)return s[n];
+    for(let i=n;i>0;i--)if(s[i-1].t<=t){ const a=s[i-1], b=s[i]; if(Math.hypot(b.x-a.x,b.z-a.z)>4*TILE||a.lv!==b.lv||a.rm!==b.rm)return b;
+      const k=(t-a.t)/(b.t-a.t||1), dh=Math.atan2(Math.sin(b.hd-a.hd),Math.cos(b.hd-a.hd)); return {x:a.x+(b.x-a.x)*k,z:a.z+(b.z-a.z)*k,y:a.y+(b.y-a.y)*k,hd:a.hd+dh*k,lv:b.lv,rm:b.rm}; }
+    return s[n]; };
+  ONLINE.at=(o,now)=>{ const p=place(o,now)||{x:0,z:0}; return [p.x/TL,-p.z/TL]; }; ONLINE.V=V8;
+
+  const push=(o,a)=>{ o.s.push({t:performance.now(),x:+a[0]||0,z:+a[1]||0,y:+a[2]||0,hd:+a[3]||0,lv:a[4]||'up',rm:a[5]||''}); if(o.s.length>8)o.s.shift(); };
+  const up=(id,p)=>{ let o=ONLINE.others.get(id); if(!o){ o={id,name:'',look:'',s:[],S:R.create(),fig:null,key:'',say:'',sayT:0,tag:null,tagS:'',d:0}; ONLINE.others.set(id,o); }
+    if(p){ if(p.name!=null)o.name=String(p.name); if(p.look!=null)o.look=String(p.look); if(p.at)push(o,p.at); } return o; };
+  const drop=id=>{ const o=ONLINE.others.get(id); if(o){ unfig(o); ONLINE.others.delete(id); } };
+  ONLINE.feed=m=>{ '@later'; if(!m||typeof m!=='object')return; ui();
+    if(m.t==='mv'&&m.id&&Array.isArray(m.at)){ push(up(m.id),m.at); return; }
+    if(m.t==='hi'){ ONLINE.me=m.you||''; const keep=new Set(); for(const p of m.all||[])if(p&&p.id){ keep.add(p.id); up(p.id,p); } for(const id of [...ONLINE.others.keys()])if(!keep.has(id))drop(id); }
+    else if(m.t==='in'&&m.p&&m.p.id)up(m.p.id,m.p);
+    else if(m.t==='out')drop(m.id);
+    else if(m.t==='tell'&&m.text){ line(m.from||'THE MARKET',m.text); banner(m.from||'THE MARKET',m.text); }
+    else if(m.t==='say'&&m.text){ const o=m.id&&ONLINE.others.get(m.id); if(o){ o.say=String(m.text); o.sayT=performance.now(); } line(m.name||(o&&o.name)||'TENANT',m.text); }
+    list(); };
+
+  /* ---------- their bodies: one built body per look (the Walker in clothes, a robe or barefoot, or a body from YOU's BODY row), shared by everyone wearing it ---------- */
+  const BUILT=new Map();
+  const robeMat=()=>{ const M=R.MATS; if(!M.includes('robe')){ M.push('robe'); W3.ramp.push(['#f6f4ee','#dddbd6','#acaaa7','#676664'].map(h=>new THREE.Color(h))); } return M.indexOf('robe'); };
+  const built=k=>{ '@later'; let b=BUILT.get(k); if(b)return b;
+    if(k.startsWith('b:')){ const body=BODIES.by[k.slice(2)]; b=body?{body}:built('w00'); BUILT.set(k,b); return b; }
+    const robe=k[1]==='1', bare=k[2]==='1', MI=n=>R.MATS.indexOf(n), SK=MI('skin'), PA=MI('pants'), RO=robe?robeMat():-1, E=LOOKS.shape(robe), PCS=musBody().PCS;
+    for(const p of PCS){ if(p.e!=null)p.E=E[p.e]||null;
+      if(bare&&/^shoe/.test(p.n))p.recol=()=>SK; else if(robe&&LOOKS.robed(p.n))p.recol=()=>RO; else if(robe&&/^shin/.test(p.n))p.recol=m=>m===PA?SK:undefined; }
+    for(const P of PCS)if(!P.box&&!MUSGEO.has(P.share)){ const fine=W3.fine(P); W3.warm(P,P.step||(fine?.5:1),fine,null); }
+    b={PCS}; BUILT.set(k,b); return b; };
+  const fig=o=>{ '@later'; unfig(o); const k=o.look||'w00', b=built(k), g=new THREE.Group();
+    if(b.body){ const M=BODIES.mesh(b.body); g.add(M.me); o.fig={g,me:M.me,body:b.body,PM:M.PM}; }
+    else{ const FM=figureMesh(b.PCS,'online'); g.add(FM.me); o.fig={g,me:FM.me,FM,PCS:b.PCS}; }
+    o.key=k; o.B=null; scene.add(g); };
+  const unfig=o=>{ if(o.fig){ scene.remove(o.fig.g); const me=o.fig.me; for(const m of [me.material,me.customDistanceMaterial,me.customDepthMaterial])if(m)m.dispose(); o.fig=null; }
+    if(o.tag){ scene.remove(o.tag); o.tag.material.map.dispose(); o.tag.material.dispose(); o.tag=null; o.tagS=''; } };
+
+  /* ---------- the name over their head, and what they last said for a few seconds ---------- */
+  const tag=o=>{ const say=o.say&&performance.now()-o.sayT<7000?o.say:'', nm=o.name||'TENANT', s=nm+'\n'+say; if(o.tag&&o.tagS===s)return; o.tagS=s;
+    const c=document.createElement('canvas'); c.width=512; c.height=128; const x=c.getContext('2d'); x.font='28px Silkscreen, monospace'; x.textAlign='center'; x.textBaseline='middle';
+    if(say){ let t=say; while(t.length>3&&x.measureText(t+'…').width>480)t=t.slice(0,-1); if(t!==say)t+='…'; const w=Math.min(504,x.measureText(t).width+20);
+      x.fillStyle='rgba(11,13,19,.88)'; x.fillRect(256-w/2,28,w,44); x.fillStyle='#f4f2ea'; x.fillText(t,256,51); }
+    x.lineWidth=6; x.strokeStyle='#0b0d13'; x.strokeText(nm,256,100); x.fillStyle='#ffd27a'; x.fillText(nm,256,100);
+    const tx=new THREE.CanvasTexture(c); tx.magFilter=tx.minFilter=THREE.NearestFilter; tx.generateMipmaps=false; tx.colorSpace=THREE.SRGBColorSpace;
+    if(!o.tag){ o.tag=new THREE.Sprite(new THREE.SpriteMaterial({map:tx,transparent:true,depthWrite:false,toneMapped:false,fog:false})); o.tag.scale.set(5.2*TILE,1.3*TILE,1); o.tag.renderOrder=5; scene.add(o.tag); }
+    else{ o.tag.material.map.dispose(); o.tag.material.map=tx; } };
+
+  /* ---------- each frame: the nearest twenty on your level and in your room, walking where they were sent ---------- */
+  const hide=o=>{ if(o.fig)o.fig.g.visible=false; if(o.tag)o.tag.visible=false; };
+  const draw=(dt,now)=>{ '@later'; const lv=SHARED.LVL||'up', rk=roomKey(), C=[];
+    for(const o of ONLINE.others.values()){ const p=o.p=place(o,now), d=p?Math.hypot(p.x-pos.x,p.z-pos.z):1e9; if(p&&p.lv===lv&&p.rm===rk&&d<FAR){ o.dd=d; C.push(o); } else hide(o); }
+    C.sort((a,b)=>a.dd-b.dd); for(const o of C.slice(MAXN))hide(o);
+    for(const o of C.slice(0,MAXN)){ const p=o.p; if(!o.fig||o.key!==(o.look||'w00'))fig(o); const F=o.fig, g=F.g;
+      const sp=o.q?Math.hypot(p.x-o.q.x,p.z-o.q.z)/Math.max(dt,1e-3):0; o.q={x:p.x,z:p.z}; o.S.target=sp>.4*TILE?1:0; R.step(o.S,dt);
+      g.visible=true; g.position.set(p.x,p.y,p.z); g.rotation.y=p.hd; if(F.body)musScale(g,1); else musScale(g); o.d=((Math.round(p.hd/PI4)%8)+8)%8;
+      if(!o.B||ASTEP.gate(o,dt)){ R.farOnly(false); const B=o.B=R.pose(o.S,true); if(F.body)BODIES.pose(B,F.PM,F.body); else F.PCS.forEach((pc,i)=>F.FM.set(i,R.frameOf(pc.on||pc.n,B))); }
+      tag(o); o.tag.visible=true; o.tag.position.set(p.x,p.y+2.65*TILE,p.z); } };
+
+  /* ---------- the chat and who's online (ENTER talks; the key is in the controls) ---------- */
+  const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
+  const ui=()=>{ '@later'; if(EL)return;
+    const css=document.createElement('style'); css.textContent=`#onl{position:fixed;right:calc(12px + env(safe-area-inset-right,0px));bottom:calc(12px + env(safe-area-inset-bottom,0px));width:min(360px,calc(100vw - 24px));z-index:6;font:11px Silkscreen,monospace;letter-spacing:1px;color:#d8dbe4;pointer-events:none}
+      #onl .hd{display:flex;gap:8px;align-items:center} #onl button{pointer-events:auto;font:inherit;color:#ffd27a;background:#0b0d13d0;border:2px solid #2a3040;padding:2px 6px;cursor:pointer} #onl .k{color:#8a8f9c;text-shadow:0 1px 0 #000}
+      #onllist{pointer-events:auto;background:#0b0d13e8;border:2px solid #2a3040;padding:6px;margin-top:4px;max-height:40vh;overflow:auto} #onllist div{padding:1px 0}
+      #onllog{margin-top:4px} #onllog div{background:#0b0d13b0;padding:2px 6px;margin-top:2px;word-wrap:break-word} #onllog div.old{display:none} #onl.open #onllog div.old{display:block} #onllog b{color:#ffd27a;font-weight:normal}
+      #onlin{pointer-events:auto;width:100%;box-sizing:border-box;margin-top:4px;font:inherit;background:#0b0d13;color:inherit;border:2px solid #ffd27a;padding:4px}`;
+    document.head.appendChild(css);
+    EL=document.createElement('div'); EL.id='onl'; EL.hidden=true;
+    EL.innerHTML=`<div class="hd"><button id="onlwho" aria-expanded="false">ONLINE 1</button><span class="k"></span></div><div id="onllist" hidden></div><div id="onllog" aria-live="polite"></div><input id="onlin" type="text" maxlength="200" placeholder="say something · enter sends · esc closes" hidden>`;
+    document.body.appendChild(EL); EL.hidden=false;
+    const who=EL.querySelector('#onlwho'), L=EL.querySelector('#onllist'), I=EL.querySelector('#onlin');
+    who.onclick=()=>{ L.hidden=!L.hidden; who.setAttribute('aria-expanded',String(!L.hidden)); list(); };
+    for(const ev of ['keydown','keyup'])I.addEventListener(ev,e=>{ e.stopPropagation(); if(ev!=='keydown')return;
+      if(e.key==='Enter'){ const t=I.value.trim(); if(t){ send({t:'say',text:t}); line(myName(),t); } shut(); }
+      else if(e.key==='Escape')shut(); });
+    I.addEventListener('blur',()=>setTimeout(shut,0)); };
+  const shut=()=>{ if(!EL)return; const I=EL.querySelector('#onlin'); I.value=''; I.hidden=true; EL.classList.remove('open'); I.blur(); };
+  ONLINE.open=()=>{ if(!EL||EL.hidden)return; const I=EL.querySelector('#onlin'); EL.classList.add('open'); I.hidden=false; I.focus(); };
+  const line=(name,text)=>{ '@later'; ui(); const d=document.createElement('div'); d.dataset.t=String(performance.now()); d.innerHTML='<b>'+esc(name)+'</b> '+esc(text); const G=EL.querySelector('#onllog'); G.appendChild(d); while(G.children.length>30)G.firstChild.remove(); ONLINE.log.push([name,text]); if(ONLINE.log.length>30)ONLINE.log.shift(); };
+  let BN=null; const banner=(from,text)=>{ if(!BN){ BN=document.createElement('div'); BN.id='onltell'; BN.setAttribute('role','status'); BN.style.cssText='position:fixed;left:50%;top:14%;transform:translateX(-50%);max-width:min(60ch,90vw);padding:10px 16px;background:#0b0d13f0;border:2px solid #ffd27a;color:#f4f2ea;font:12px/1.6 Silkscreen,monospace;letter-spacing:1px;text-align:center;z-index:41;pointer-events:none;white-space:pre-wrap'; document.body.appendChild(BN); }
+    BN.innerHTML='<div style="color:#ffd27a">'+esc(from)+'</div>'+esc(text); BN.hidden=false; clearTimeout(BN.t); BN.t=setTimeout(()=>{ BN.hidden=true; },12000); };
+  const list=()=>{ if(!EL)return; const all=[...ONLINE.others.values()], who=EL.querySelector('#onlwho'), L=EL.querySelector('#onllist');
+    who.textContent='ONLINE '+(all.length+1)+(ONLINE.on||!sock?'':' · OFF'); EL.querySelector('.k').textContent=UI.keyOf?UI.keyOf('chat').toUpperCase()+' TO TALK':'';
+    if(!L.hidden)L.innerHTML='<div><b>'+esc(myName())+'</b> (you)</div>'+all.map(o=>'<div>'+esc(o.name||'TENANT')+'</div>').join(''); };
+  let fadeT=0; const fade=dt=>{ if(!EL||(fadeT+=dt)<1)return; fadeT=0; const now=performance.now(); for(const d of EL.querySelector('#onllog').children)d.classList.toggle('old',now-+d.dataset.t>FADE_S); };
+
+  /* ---------- the connection: partysocket (it reconnects by itself); your moves at most six times a second, only when you move ---------- */
+  const connect=async()=>{ '@later'; let PS=null; try{ const m=await import('https://cdn.jsdelivr.net/npm/partysocket@1.3.0/+esm'); PS=m.PartySocket||m.default; }catch(e){ console.warn('ONLINE: no connection',e); return; }
+    ui(); sock=new PS({host:location.host,party:'block',room:ROOM,query:async()=>{ try{ if(BUGS.tok)await BUGS.tok(); }catch(e){} return {}; }});
+    sock.addEventListener('open',()=>{ ONLINE.on=true; last=null; meSent=''; meAcc=1; list(); });
+    sock.addEventListener('close',e=>{ ONLINE.on=false; for(const id of [...ONLINE.others.keys()])drop(id);
+      if(e.code===4000||e.code===4001){ sock.close(); line('THE MARKET',e.code===4000?'you came in from another window; this one is alone now':'log in again to see the others'); } list(); });
+    sock.addEventListener('message',e=>{ let m=null; try{ m=JSON.parse(e.data); }catch(x){} if(m)ONLINE.feed(m); }); };
+  ONLINE.tick=dt=>{ const now=performance.now();
+    if(ONLINE.on){ acc+=dt; meAcc+=dt;
+      if(meAcc>1){ meAcc=0; const n=myName(), k=lookKey(), s=n+'|'+k; if(s!==meSent){ meSent=s; send({t:'me',name:n,look:k}); } }
+      if(acc>=SEND){ acc=0; const a=[+pos.x.toFixed(2),+pos.z.toFixed(2),+SHARED.py.toFixed(2),+SHARED.heading.toFixed(2),SHARED.LVL||'up',roomKey()];
+        if(!last||Math.abs(a[0]-last[0])+Math.abs(a[1]-last[1])+Math.abs(a[2]-last[2])>.01||Math.abs(a[3]-last[3])>.04||a[4]!==last[4]||a[5]!==last[5]){ last=a; send({t:'mv',at:a}); } } }
+    if(ONLINE.others.size)draw(dt,now); fade(dt); };
+  SYS.add('life',dt=>ONLINE.tick(dt||0),'111d-online');
+  const go=async()=>{ while(!window.__started)await new Promise(r=>setTimeout(r,500)); await LOAD('later');
+    if(QS.get('online')==='0'||!/(?:^|;\s*)tsfm-pass=/.test(document.cookie))return; connect(); };
+  go(); }

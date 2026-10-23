@@ -159,7 +159,7 @@ function ragStep(dt){ '@later'; const t0=performance.now(), R=PHYROOMS.find(r=>r
   if(RAG.toss){ const [x,y]=RAG.toss; RAG.toss=null; for(const b of RAG.bodies){ b.v=v3a(b.v,[x*5,y*5,2.6]); phyWake(b); } RAG.t=Math.min(RAG.t,.5); }
   if(RAG.held){ const H=RAG.held, o=ONLINE.others.get(H.by);
     if(!o||now-H.at>10000)RAG.held=null;
-    else{ const [cx,cy]=onlineAt(o,now), f=ONL_V[o.d|0], n=Math.hypot(f[0],f[1]), T=[cx+f[0]/n*.55,cy+f[1]/n*.55,1.05], ch=RAG.bodies.find(b=>b.name==='chest');
+    else{ const [cx,cy]=ONLINE.at(o,now), f=ONLINE.V[o.d|0], n=Math.hypot(f[0],f[1]), T=[cx+f[0]/n*.55,cy+f[1]/n*.55,1.05], ch=RAG.bodies.find(b=>b.name==='chest');
       if(ch){ const d=v3s(T,ch.x); ch.v=v3a(v3k(ch.v,.8),v3k(d,2.2)); } for(const b of RAG.bodies)phyWake(b); RAG.t=Math.min(RAG.t,.5); } }
   RAG.acc+=Math.min(dt,.05); let n=0; while(RAG.acc>=PHH&&n<6){ RAG.acc-=PHH; n++; phyStep(RAG.bodies,st,PHH,null,RAG.joints); } if(n>=6)RAG.acc=0;
   if(RAG.t>1&&!RAG.held)for(const b of RAG.bodies){ b.v=v3k(b.v,Math.max(0,1-3*dt)); b.w=v3k(b.w,Math.max(0,1-3*dt)); }

@@ -4394,3 +4394,6 @@ First pass, still to do (owner's call): worn gear has no body mesh yet (the clou
 
 ## 23 Oct 2026: one worn layer
 Owner: "fold GEAR into EQUIP then merge it". The goggles and the headlight are worn through EQUIP like the armour and the cloud coat: EQUIP now wears one thing a slot (body, head, eyes) and two new grants do the work — `light` (the headlight lights the caverns) and `sight` (goggles see further through the murk). What you wear stays on between visits. The scanner and extractor stay pack actions.
+
+## 23 Oct 2026: the cinema off the start's critical path
+`main` went red with the cinema (#235): its admin check and first pull ran as the page loaded and dragged the `later` chunk in at the start, and its polls hit a Supabase table that is not there yet (404 every 5 s). Now both wait until the start is up and `later` has come, and the poll and the poster go through the website's own server, which answers quietly on a miss. No change to what players see.

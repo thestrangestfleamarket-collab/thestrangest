@@ -17,7 +17,7 @@ import {FADE, STORE, SYS, TILE} from './006-map-pre.js';
   const DEF={id:ROW,playlist:[],idx:0,video_id:'',started_at:null,size:1,brightness:.8,loop:true,autoplay:true};
   const cur=()=>rec||DEF; CINEMA.now=()=>cur(); CINEMA.title='';
 
-  const pull=async()=>{ '@later'; try{ const r=await fetch(SB+'/rest/v1/now_playing?select=*&id=eq.'+ROW,{headers:{apikey:KEY}}); if(!r.ok)return;
+  const pull=async()=>{ '@later'; try{ const r=await fetch('/now'); if(!r.ok)return;
     const a=await r.json(); rec=a[0]||null; onRec(); }catch(e){} };
   const push=async patch=>{ '@later'; const t=await tok(); if(!t)return false; try{
     const r=await fetch(SB+'/rest/v1/now_playing?id=eq.'+ROW,{method:'PATCH',headers:{apikey:KEY,Authorization:'Bearer '+t,'content-type':'application/json',Prefer:'return=representation'},body:JSON.stringify({...patch,updated_at:new Date().toISOString()})});
@@ -130,5 +130,5 @@ import {FADE, STORE, SYS, TILE} from './006-map-pre.js';
     UI.thing({name:'THE SCREEN',ghost:1,obj:hb,reach:3.2*TILE,near:6.5*TILE,tall:fm.geometry.parameters.height,act:async()=>{ if(await isAdmin())openAdmin(); }}); buildSigns(m); };
 
   window.CINEMA=CINEMA; SYS.add('places',()=>{ attach(); tick(); },'059f-cinema');
-  isAdmin(); pull(); setInterval(()=>{ if(document.visibilityState!=='hidden')pull(); },5000);
+  (async()=>{ while(!window.__started)await new Promise(r=>setTimeout(r,250)); await LOAD('later'); isAdmin(); pull(); setInterval(()=>{ if(document.visibilityState!=='hidden')pull(); },5000); })();   // after the start, so the later chunk is not pulled in early
 }

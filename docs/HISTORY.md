@@ -4410,3 +4410,6 @@ Rule: a fight is one strike path (`STRIKES`) and one blow path (`VIT.hurt` throu
 
 ## 23 Oct 2026: the sparring ring
 Owner: "can you add npcs in game to test these out?" A ring on Market St by the swordsmith (`146g-sparring.js`): SPAR with a sword in hand and two skeleton partners (blade and shield) come at you, block, take your hits, fall and get up. Light blows (a scratch of health each); parries, hits and a partner going down teach SWORDSMANSHIP. Nothing until you spar: the partners are made on the first bout.
+
+## 23 Oct 2026: SOFT DAY, a fourth look
+Owner, with a picture of a soft painterly valley (sun shafts through pastel clouds, blue-grey haze stacking the far cliffs, warm glow on the grass): "how can we make the atmopshere during the day look like this in game?" then "go". A fourth look, SOFT DAY (N cycles to it; ATMOSPHERE edits it): a lower warm sun, pastel sky, the high clouds in their own colour, the mist warming toward the sun, sun shafts hung in the air, and more glow. New dials on every look (HIGH CLOUD COLOUR, MIST TOWARD THE SUN, SUN SHAFTS, GLOW); the old looks keep theirs at zero. Cost: seven additive planes and two uniforms; nothing new per pixel. Cel stays the floor.

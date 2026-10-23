@@ -117,7 +117,7 @@ WEEDS.lawnInit=()=>{ const T=TILE, CS=8*T, N=16, CELL=CS/N, MG=4, W=N+2*MG, hsh=
   const inPark=(x,z,m=0)=>{ if(typeof PARK==='undefined'||PARK.ox==null)return false; const xa=SHARED.BOD.XS(PARK.x0+PARK.ox+m), xb=SHARED.BOD.XS(PARK.x1+PARK.ox-m), za=SHARED.BOD.ZS(PARK.y0+PARK.oy+m), zb=SHARED.BOD.ZS(PARK.y1+PARK.oy-m);
     return x>Math.min(xa,xb)&&x<Math.max(xa,xb)&&z>Math.min(za,zb)&&z<Math.max(za,zb); };
   WEEDS.inPark=inPark;
-  const deep=(x,z)=>{ if(typeof PARK==='undefined'||PARK.ox==null)return 0; const tx=x/T, tz=z/T, xa=SHARED.BOD.XS(PARK.x0+PARK.ox)/T, xb=SHARED.BOD.XS(PARK.x1+PARK.ox)/T, za=SHARED.BOD.ZS(PARK.y0+PARK.oy)/T, zb=SHARED.BOD.ZS(PARK.y1+PARK.oy)/T;
+  const deep=(x,z)=>{ '@later'; if(typeof PARK==='undefined'||PARK.ox==null)return 0; const tx=x/T, tz=z/T, xa=SHARED.BOD.XS(PARK.x0+PARK.ox)/T, xb=SHARED.BOD.XS(PARK.x1+PARK.ox)/T, za=SHARED.BOD.ZS(PARK.y0+PARK.oy)/T, zb=SHARED.BOD.ZS(PARK.y1+PARK.oy)/T;
     return Math.min(tx-Math.min(xa,xb),Math.max(xa,xb)-tx,tz-Math.min(za,zb),Math.max(za,zb)-tz)+10*(vn(tx/11,tz/11,97)-.5); };
   WEEDS.deep=deep;
   const patch=(x,z)=>{ const k=patch0(x,z); if(k==='flat'||k==='tuft')return k; const d=inPark(x,z)?deep(x,z):0;

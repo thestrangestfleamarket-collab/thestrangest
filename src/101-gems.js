@@ -26,7 +26,7 @@ Object.assign(INV,{items:{},picked:{}}); window.INV=INV;
     P.addEventListener('click',e=>{ const b=e.target.closest('button[data-s],button[data-train]'); if(!b)return; if(b.dataset.train){ FORAGE.train(b.dataset.train,+b.dataset.cap); TRADE.draw(); return; } const id=b.dataset.s, got=INV.sell(id,b.dataset.n==='all'?1e9:1); if(got)TRADE.note('SOLD · +$'+got); TRADE.draw(); }); return P; };
   TRADE.note=t=>{ '@later'; let n=document.getElementById('gemn'); if(!n){ n=document.createElement('div'); n.id='gemn'; n.style.cssText='position:fixed;left:50%;transform:translateX(-50%);bottom:56px;font:12px Silkscreen,monospace;color:#f2c14e;background:rgba(16,18,26,.88);border:2px solid #2a2e3a;padding:6px 10px;z-index:22;pointer-events:none'; document.body.appendChild(n); }
     n.textContent=t; n.hidden=false; clearTimeout(TRADE.nt); TRADE.nt=setTimeout(()=>n.hidden=true,3200); };
-  TRADE.draw=()=>{ const P=document.getElementById('gemp'); if(!P||P.hidden)return;
+  TRADE.draw=()=>{ '@later'; const P=document.getElementById('gemp'); if(!P||P.hidden)return;
     let o=`<h3 style="margin:0 0 4px;color:#f2c14e;font:12px Silkscreen,monospace">THE GOLEMS BUY</h3><div style="color:#9b9584;margin-bottom:8px">Rare gems and crystals, any kind. Fair prices, paid in coin.</div>
       <div style="margin-bottom:8px">YOU HAVE <b style="color:#f2c14e">$${Math.round(INV.cash)}</b> · ${INV.count()} STONE${INV.count()===1?'':'S'}</div><table style="border-collapse:collapse;width:100%">`;
     for(const [id,name,price] of GEMS){ const n=INV.items[id]||0;

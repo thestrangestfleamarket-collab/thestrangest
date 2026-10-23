@@ -29,7 +29,7 @@ import {SAVE} from './005-save.js';
   const P=document.createElement('div'); P.id='led'; P.hidden=true; document.body.appendChild(P);
   const tierBtns=o=>Object.keys(TIERS).map(k=>`<button class="btn" data-q="${k}" aria-pressed="${st.q===k}">${k.toUpperCase()}</button>`).join('');
   const sel=(k,opts)=>opts.map(([v,n])=>`<button class="btn" data-${k}="${v}" aria-pressed="${st[k==='sh'?'shadowType':k==='tn'?'tone':k]===v}">${n}</button>`).join('');
-  function draw(){ P.innerHTML=`<h2>LIGHTING — GLOBAL</h2><div class="pane">
+  function draw(){ '@later'; P.innerHTML=`<h2>LIGHTING — GLOBAL</h2><div class="pane">
     <div class="dim">Cel is the floor. High tiers are for finding a look; take the top ones out after.</div>
     <div class="row"><span class="lab">QUALITY</span>${tierBtns()}</div>
     <div class="row"><span class="lab">SHARPNESS</span><input type="range" id="lsharp" min="0" max="${RESMAX}" step="1" value="${st.sharp}"><span id="lsharpv">${st.sharp}</span></div>
@@ -40,7 +40,7 @@ import {SAVE} from './005-save.js';
     <div class="row"><button class="btn" id="lreset">RESET TO CEL</button><button class="btn" id="lexport">EXPORT</button><button class="btn" id="ldone">DONE</button></div>
     <div class="dim" id="lmsg"></div></div>`; }
   const refresh=()=>{ draw(); };
-  P.addEventListener('click',e=>{ const b=e.target.closest&&e.target.closest('button'); if(!b)return;
+  P.addEventListener('click',e=>{ '@later'; const b=e.target.closest&&e.target.closest('button'); if(!b)return;
     if(b.dataset.q){ st.q=b.dataset.q; Object.assign(st,TIERS[st.q]); apply(true); save(); refresh(); return; }
     if(b.dataset.shadows!==undefined){ st.shadows=b.dataset.shadows==='1'; st.q='custom'; apply(true); save(); refresh(); return; }
     if(b.dataset.sh){ st.shadowType=b.dataset.sh; st.q='custom'; apply(true); save(); refresh(); return; }
@@ -48,7 +48,7 @@ import {SAVE} from './005-save.js';
     if(b.id==='lreset'){ Object.assign(st,D(),{q:'lowest',shadowType:'basic',tone:'none',exposure:1,shadows:true}); apply(true); save(); refresh(); return; }
     if(b.id==='ldone'){ LIGHTED.toggle(); return; }
     if(b.id==='lexport'){ const blob=new Blob([JSON.stringify(st,null,1)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='lighting.json'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),2e3); P.querySelector('#lmsg').textContent='exported lighting.json'; return; } });
-  P.addEventListener('input',e=>{ if(e.target.id==='lsharp'){ st.sharp=+e.target.value; st.q='custom'; P.querySelector('#lsharpv').textContent=st.sharp; apply(false); save(); }
+  P.addEventListener('input',e=>{ '@later'; if(e.target.id==='lsharp'){ st.sharp=+e.target.value; st.q='custom'; P.querySelector('#lsharpv').textContent=st.sharp; apply(false); save(); }
     if(e.target.id==='lexp'){ st.exposure=+e.target.value; st.q='custom'; P.querySelector('#lexpv').textContent=st.exposure.toFixed(2); apply(false); save(); } });
   for(const ev of ['keydown','keyup'])P.addEventListener(ev,e=>{ if(e.target.matches('input,textarea'))e.stopPropagation(); });
   LIGHTED.toggle=()=>{ LIGHTED.on=!LIGHTED.on; if(LIGHTED.on)draw(); P.hidden=!LIGHTED.on; };

@@ -26,7 +26,7 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
   /* ---------- posing: the rig's turns, the body's own bone lengths ---------- */
   const X=new V3(),Y=new V3(),Z=new V3(), ROT={}, POS={}, OFV=new V3(), M3=new THREE.Matrix3();
   for(const n of BONES){ ROT[n]=new THREE.Matrix4(); POS[n]=new V3(); }
-  function pose(B,PM,body){ const S=body.S, KL=body.KL;
+  function pose(B,PM,body){ '@later'; const S=body.S, KL=body.KL;
     for(let i=0;i<NB;i++){ const n=BONES[i], F=R.frameOf(n,B);
       X.set(F.x.x,F.x.y,F.x.z); Y.set(F.y.x,F.y.y,F.y.z); Z.set(F.z.x,F.z.y,F.z.z); if(LIMB.test(n)){ Y.negate(); Z.negate(); }
       ROT[n].makeBasis(X,Y,Z);

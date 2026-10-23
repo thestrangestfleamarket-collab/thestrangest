@@ -127,7 +127,7 @@ CHARED.build=()=>{ '@editor';
 
   CHARED.show=(on,tab0)=>{ CHARED.on=on; R.style.display=on?'flex':'none'; if(on){ if(tab0)tab=tab0; if(keys.clear)keys.clear(); if(sel&&NPCS.indexOf(sel)<0)sel=null; draw(); } else if(VIEW&&VIEW.on)VIEW.close(); };
 };
-CHARED.toggle=async tab0=>{ if(CHARED.busy)return;
+CHARED.toggle=async tab0=>{ '@later'; if(CHARED.busy)return;
   if(CHARED.built){ if(CHARED.on){ if(tab0)CHARED.show(true,tab0); else CHARED.show(false); } else CHARED.show(true,tab0); return; }
   CHARED.busy=true; await FADE.run('LOADING CHARACTER EDITOR',async()=>{ await GAMEED.ensure(); CHARED.build(); CHARED.built=true; },{cut:true}); if(CHARED.built)CHARED.show(true,tab0); CHARED.busy=false; };
 window.CHARED=CHARED; }

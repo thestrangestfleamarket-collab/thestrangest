@@ -31,7 +31,7 @@ import {CHARED, EDITORS, GAMEED, ITEMED, LAND, LIGHTED, UI, WE} from './003b-sys
   const soon=document.createElement('div'); soon.id='edsoon'; document.body.appendChild(soon);
   const show=()=>menu.classList.add('on'), hide=()=>menu.classList.remove('on');
   EDITORS.menu=()=>menu.classList.contains('on')?hide():show();
-  EDITORS.open=it=>{ if(!it)return; hide(); soon.classList.remove('on');
+  EDITORS.open=it=>{ '@later'; if(!it)return; hide(); soon.classList.remove('on');
     if(it.soon){ soon.innerHTML=`<h3>${it.n} EDITOR</h3><p>Not built yet — ${it.d}.</p><button class="btn" id="edsx">OK</button>`; soon.classList.add('on'); soon.querySelector('#edsx').onclick=()=>soon.classList.remove('on'); return; }
     if(it.go)it.go(); };
   EDITORS.key=d=>{ soon.classList.remove('on'); if(d===0){ EDITORS.menu(); return; } EDITORS.open(list.find(x=>x.key===d)); };

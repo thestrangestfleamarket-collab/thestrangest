@@ -43,7 +43,7 @@ const sheetView=(g,y)=>{ '@later'; UI.setFree(true); UI.camT.set(g.position.x,y,
   for(const G of Object.values(MAPG))for(const c of G.children)if(c!==g)c.visible=false; for(const c of scene.children)if(!c.isLight&&!c.isCamera&&c!==MAPG.bodega)c.visible=false;
   const K=new THREE.Color(0), r0=renderer.render.bind(renderer); renderer.render=(s,c)=>{ if(s===scene){ s.background=K; s.fog=null; if(SKY.dome)SKY.dome.visible=false; } r0(s,c); }; };
 const spreadPose=()=>{ const P=RIG.walkPose({ph:0,w:0},null), D=RIG.D; P.L.ua=[0,65*D]; P.R.ua=[0,65*D]; P.L.fa=[0,70*D]; P.R.fa=[0,70*D]; return P; };
-function sheetFig(g){ const V=RIG.V, MT=RIG.MATS; if(!MT.includes('sheet')){ MT.push('sheet'); W3.ramp.push(['#e6e4dc','#d8d6cd','#b6b3a9','#78756d'].map(h=>new THREE.Color(h))); } const SHI=MT.indexOf('sheet');
+function sheetFig(g){ '@later'; const V=RIG.V, MT=RIG.MATS; if(!MT.includes('sheet')){ MT.push('sheet'); W3.ramp.push(['#e6e4dc','#d8d6cd','#b6b3a9','#78756d'].map(h=>new THREE.Color(h))); } const SHI=MT.indexOf('sheet');
   const PCS=musBody().PCS.filter(p=>/^(sleeve|upperArm|forearm|hand|fing)/.test(p.n)); for(const p of PCS)p.recol=()=>SHI;
   PCS.push(Object.assign({},GT.PIECE,{d:GT.SOLID,F0:{o:V(0,0,0),x:V(1,0,0),y:V(0,1,0),z:V(0,0,1)},step:.25,cell:.25,share:GT.PIECE}));
   for(const P of PCS)if(!MUSGEO.has(P.share||P)){ const fine=W3.fine(P); W3.warm(P,P.step||(fine?.5:1),fine,null); }
@@ -95,7 +95,7 @@ if(!MUS.shelf){ const R=RIG, V=R.V, AT={x:SHARED.BOD.XS(70),z:SHARED.BOD.ZS(-73)
   const g=new THREE.Group(); MAPG.bodega.add(g); MUS.g=g; const SF=sheetFig(g), PCS=SF.PCS; MUS.tris=SF.FM.tris; MUS.per=SF.FM.per; MUS.ghost=SF.stat;
   g.position.set(AT.x,AT.y,AT.z); g.rotation.set(0,AT.hd,0); musScale(g); MUS.at=AT; MUS.on=true; if(NPCS.extra&&!NPCS.extra.includes(MUS))NPCS.extra.push(MUS);
   const F0={o:{...GTF.o},x:{...GTF.x},y:{...GTF.y},z:{...GTF.z}};
-  MUS.hold=(drop,tilt,wr,pole)=>{ const c=Math.cos(tilt), s=Math.sin(tilt), rot=v=>V(v.x*c-v.y*s,v.x*s+v.y*c,v.z), P0=V(F0.o.x,F0.o.y,F0.o.z);
+  MUS.hold=(drop,tilt,wr,pole)=>{ '@later'; const c=Math.cos(tilt), s=Math.sin(tilt), rot=v=>V(v.x*c-v.y*s,v.x*s+v.y*c,v.z), P0=V(F0.o.x,F0.o.y,F0.o.z);
     GTF.x=rot(F0.x); GTF.y=rot(F0.y); GTF.z=rot(F0.z); GTF.o=R.add(rot(P0),V(0,-drop,0));
     const {add,mul,nrm}=R; GTH.L={y:GTF.z,z:nrm(add(mul(GTF.x,-0.225),mul(GTF.y,-0.974)))}; GTH.R={y:nrm(add(GTF.x,mul(GTF.z,-0.017))),z:nrm(add(add(mul(GTF.x,-0.008),mul(GTF.y,-0.891)),mul(GTF.z,-0.454)))};
     const arr=v=>[v.x,v.y,v.z]; GTH.hf={L:{y:arr(GTH.L.y),z:arr(GTH.L.z)},R:{y:arr(GTH.R.y),z:arr(GTH.R.z)}}; if(wr)GTWR.R=wr; if(pole)GTPOLE.R=V(...pole); };
@@ -108,7 +108,7 @@ if(!MUS.shelf){ const R=RIG, V=R.V, AT={x:SHARED.BOD.XS(70),z:SHARED.BOD.ZS(-73)
   const pickTo=()=>{ if(Math.random()<.35)WK.dir=-WK.dir; let x=AT.x+WK.dir*(6+Math.random()*22)*TILE; if(x<X0||x>X1){ WK.dir=-WK.dir; x=AT.x+WK.dir*(6+Math.random()*22)*TILE; } WK.to=Math.max(X0,Math.min(X1,x)); };
   MUS.ask=()=>{ if(MUS.lent)MUS.lent(); WK.mode='play'; WK.st.target=0; AT.hd=Math.atan2(pos.x-AT.x,pos.z-AT.z); g.rotation.y=AT.hd; song=gtNext(song); gtSet(song); };
   const clear=()=>{ for(let k=0;k<160;k++){ const dx=(k>>1)*.25*TILE*(k&1?-1:1); for(const dz of [0,.6,-.6,1.2]){ const x=AT.x+dx, z=AT.z+dz*TILE; if(free(x,z)){ AT.x=x; AT.z=z; return; } } } };
-  const walkTick=(dt,near)=>{ const S=WK.st; if(!free(AT.x,AT.z))clear();
+  const walkTick=(dt,near)=>{ '@later'; const S=WK.st; if(!free(AT.x,AT.z))clear();
     if(WK.mode==='stop'){ S.target=0; WK.t-=dt; if(WK.t<=0){ pickTo(); WK.mode='walk'; } }
     if(WK.mode==='walk'){ const want=WK.to>AT.x?Math.PI/2:-Math.PI/2, e=turn(want); AT.hd+=Math.sign(e)*Math.min(Math.abs(e),dt*4); S.target=Math.abs(e)<.6?1:0;
       if(Math.abs(WK.to-AT.x)<.2*TILE){ WK.mode='stop'; WK.t=3+Math.random()*7; S.target=0; } }
@@ -121,7 +121,7 @@ if(!MUS.shelf){ const R=RIG, V=R.V, AT={x:SHARED.BOD.XS(70),z:SHARED.BOD.ZS(-73)
     R.farOnly(false); const B=R.pose(S,true); MUS.wB=B; return B; };
   const BACK={}; const backOf=()=>{ for(const k of ['x','y','z'])BACK[k]={x:-GTF[k].x,y:GTF[k].y,z:-GTF[k].z}; BACK.o={x:-GTF.o.x,y:GTF.o.y+2,z:-GTF.o.z-1}; return BACK; };
   const SHEET=new URLSearchParams(location.search).get('sheet')==='guitarist';
-  MUS.tick=dt=>{ if(SHEET){ R.farOnly(false); const B=MUS.B=R.settle(R.build(spreadPose(),null),0), F=backOf(); AT.x=SHARED.BOD.XS(100); AT.z=SHARED.BOD.ZS((SHARED.BOD.MAP.y0+SHARED.BOD.MAP.y1)/2); AT.hd=Math.PI/4; AT.y=MODS.bodega.ground(AT.x,AT.z);
+  MUS.tick=dt=>{ '@later'; if(SHEET){ R.farOnly(false); const B=MUS.B=R.settle(R.build(spreadPose(),null),0), F=backOf(); AT.x=SHARED.BOD.XS(100); AT.z=SHARED.BOD.ZS((SHARED.BOD.MAP.y0+SHARED.BOD.MAP.y1)/2); AT.hd=Math.PI/4; AT.y=MODS.bodega.ground(AT.x,AT.z);
       g.position.set(AT.x,AT.y,AT.z); g.rotation.y=AT.hd; musScale(g); SF.pose(dt,B,F);
       if(!MUS.sheetOn){ MUS.sheetOn=true; sheetView(g,AT.y+g.scale.y*27); } return; }
     if(MUS.watch&&!UI.freeCam){ MUS.watch=false; SHB.hidden=true; SHB.style.display='none'; if(MUS.res0!=null){ SHARED.RESI=MUS.res0; MUS.res0=null; resize(); } } const d=Math.hypot(pos.x-AT.x,pos.z-AT.z);

@@ -241,6 +241,16 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
         if(ok(x2,y2,rr)&&!near(x2,y2,rr,.5,4.5))add(kk,x2,y2,mm,hash(i,83+j,9)*6.28); } }
     for(const [k0,x,y,m] of FOUNT.S.oaks){ const k=hash(Math.round(x),Math.round(y),87)<.35?'Elder'+(1+Math.abs(Math.round(x))%2):k0; if(!near(x,y,m*W(k),.6,8)&&!BK.wet(x,y,m*.42))add(k,x,y,m,hash(Math.round(x),Math.round(y),89)*6.28); }
     { const FY=[P.y1+6,P.y1+20,P.y1+36], XA=P.x0-16, XB=P.x1+16, BACK=out.back=[]; let n=0; for(const [ri,fy] of FY.entries())for(let x=XA+9*ri+6;x<XB;x+=18,n++){ const k=hash(n,201,3)<.3?'Elder'+(1+n%2):'OakTree'+(1+n%3), m=(30+hash(n,203,5)*18)*(1+.18*ri), xx=x+(hash(n,205,7)-.5)*9, yy=fy+(hash(n,207,9)-.5)*8; BACK.push([k,+xx.toFixed(1),+yy.toFixed(1),+m.toFixed(1),+(hash(n,209,11)*6.28).toFixed(2)]); } }
+    // a dense ring of tall trees just inside the wall, right round the park, so from outside only trees show at the edge
+    { const TK=['OakTree1','OakTree2','OakTree3','Elder1','Elder2','Giant1','OakTree1','OakTree2','Spruce1','Willow1'];
+      const gap=(v,g,pad)=>g&&v>g[0]-pad&&v<g[1]+pad, PAD=4.5;
+      const edgeOK=(x,y)=>!(FOUNT.lake(x,y)<2.4||FOUNT.ter(x,y)<2.2||BK.wet(x,y,2)||path(x,y)||(x>CB[0]-3.5&&x<CB[1]+3.5&&y>CB[2]-3.5&&y<CB[3]+3.5));
+      const ringAdd=(x,y,s)=>{ const jx=x+(hash(s,5,23)-.5)*2.2, jy=y+(hash(s,6,29)-.5)*2.2; if(!edgeOK(jx,jy))return;
+        const k=TK[Math.floor(hash(s,1,11)*TK.length)%TK.length], m=(20+hash(s,2,13)*6)*(1+(hash(s,3,17)-.5)*.5); add(k,jx,jy,m,hash(s,4,19)*6.28); };
+      const STEP=6.4; let s=5000;
+      for(let i=0;i<2;i++){ const off=2.6+i*4.6, st=i*STEP/2;
+        for(let x=P.x0+off+1+st;x<=P.x1-off-1;x+=STEP){ if(!gap(x,P.gate,PAD))ringAdd(x,P.y0+off,s++); if(!gap(x,PARK.ngate,PAD))ringAdd(x,P.y1-off,s++); }
+        for(let y=P.y0+off+1+st;y<=P.y1-off-1;y+=STEP){ if(!gap(y,PARK.wgate,PAD))ringAdd(P.x0+off,y,s++); if(!gap(y,PARK.egate,PAD))ringAdd(P.x1-off,y,s++); } } }
     return out; })();
   PARK.later(()=>{ PARK.trees=QS.get('trees')==='0'?null:mesh(TREES,true,true,true); });
   PARK.oaks=TREES.map(([k,x,y,m])=>[X(x),Z(y),m]);

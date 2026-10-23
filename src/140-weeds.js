@@ -157,6 +157,12 @@ WEEDS.lawnInit=()=>{ const T=TILE, CS=8*T, N=16, CELL=CS/N, MG=4, W=N+2*MG, hsh=
     for(let j=0;j<N;j+=2)for(let i=0;i<N;i+=2){ const c=ci(i,j); if(I[c])SQ.push(x0+(i+1)*CELL,G[c],z0+(j+1)*CELL); }
     const comb=hsh(cx,cz,471)*6.28, AL=[], AC=[];   // flat blades combed one way per chunk, drifting with a noise; tufts stand up in small bunches
     const blade=(x,g,z,ang,len,rise,w,h,c)=>{ const dx=Math.cos(ang), dz=Math.sin(ang), v=P.length/3, g0=g+.04*T; P.push(x-dz*w,g0,z+dx*w, x+dz*w,g0,z-dx*w, x+dx*len,g0+rise,z+dz*len); AH.push(0,0,h); AL.push(0,0,len); AT.push(0,0,0); AG.push(0,0,0,0,0,0,0,0,0); AC.push(c,c,c); IX.push(v,v+1,v+2); };
+    const bx0=x0-1.5*T, bz0=z0-1.5*T, bx1=x0+CS+1.5*T, bz1=z0+CS+1.5*T;   // tufts scattered out from the foot of every small solid thing on the lawn (posts, rocks, logs, trunks), thickest against it
+    for(const b of SOL.up){ if(b[2]<bx0||b[0]>bx1||b[3]<bz0||b[1]>bz1)continue; const w=b[2]-b[0], d=b[3]-b[1]; if(Math.max(w,d)>5*T||Math.min(w,d)<.05*T)continue; const per=2*(w+d), n=Math.ceil(per/(.22*T));
+      for(let q=0;q<n;q++){ const u=q/n*per; let px,pz,nx,nz; if(u<w){ px=b[0]+u; pz=b[1]; nx=0; nz=-1; } else if(u<w+d){ px=b[2]; pz=b[1]+u-w; nx=1; nz=0; } else if(u<2*w+d){ px=b[2]-(u-w-d); pz=b[3]; nx=0; nz=1; } else { px=b[0]; pz=b[3]-(u-2*w-d); nx=-1; nz=0; }
+        const r1=hsh(px,pz,531), r2=hsh(pz,px,532), dist=(.08+r1*r1*1.2)*T, x=px+nx*dist+(r2-.5)*.2*T, z=pz+nz*dist+(r2-.5)*.2*T; if(x<x0||x>=x0+CS||z<z0||z>=z0+CS||x>b[0]&&x<b[2]&&z>b[1]&&z<b[3])continue;
+        const c=ci(Math.floor((x-x0)/CELL),Math.floor((z-z0)/CELL)); if(!I[c])continue; const s=.75+.55*(1-Math.min(1,dist/(1.2*T))), nb=3+Math.floor(r2*3);
+        for(let k=0;k<nb;k++){ const a=hsh(x,z+k,533)*6.28, len=(.08+.1*hsh(x+k,z,534))*T*s, rise=(.22+.14*hsh(z,x+k,535))*T*s; blade(x,G[c],z,a,len,rise,.03*T*s,rise,.5+.3*r1); } } }
     for(let j=0;j<N;j++)for(let i=0;i<N;i++){ const c=ci(i,j); if(!I[c])continue; const g=G[c], x=x0+(i+.5)*CELL, z=z0+(j+.5)*CELL, k=patch(x,z), tint=vn(x/T/5,z/T/5,481), n=k==='tuft'?5:6;
       for(let q=0;q<n;q++){ const r1=hsh(x+q*7,z,491+q), r2=hsh(z,x+q*7,492+q), r3=hsh(x,z+q*7,493+q), px=x+(r1-.5)*CELL*.9, pz=z+(r2-.5)*CELL*.9, cc=Math.max(0,Math.min(1,tint*.7+r3*.3));
         if(k==='tuft'){ const ang=r3*6.28, len=(.1+.1*r1)*T, rise=(.26+.16*r2)*T; blade(px,g,pz,ang,len,rise,.03*T,rise,cc); }

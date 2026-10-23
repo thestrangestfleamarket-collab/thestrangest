@@ -59,7 +59,7 @@ Places built with `await grab(name, async()=>{...})` are one function each, ofte
 | `059e-ghostdojo.js` | 38.0 | top level, opens grab(ghostdojo) |  | 003: SHARED THREE; 003b: CLIP CLOCK LITE ROOMS UI VIT pos; 004: PPU scene; 006: BF BLDK FIX MAPG SEEN SOL TILE ZU cutWalls grab; 007: FLAME; 008: BATCH OBJ |
 | `059f-cinema.js` | 15.6 | top level |  | 003: SHARED THREE; 003b: CINEMA UI pos; 004: renderer scene; 006: FADE STORE SYS TILE |
 | `059h-bank.js` | 2.0 | top level, opens grab(bank) |  | 003: SHARED; 006: BLDK BLOCK STORE grab |
-| `060-cave.js` | 10.1 | top level | GCAVE (061 063 066a 094 140 142a 146e 151) | 003: SHARED THREE; 003b: CITY CLOCK INV LITE MAIL PARK ROOMS TRADE UI; 004: scene; 006: FIX MAPG MODS PARKCAVE PARKTOWER SOL STORE TILE; 007: FLAME |
+| `060-cave.js` | 11.3 | top level | GCAVE (061 063 066a 094 140 142a 146e 151) | 003: SHARED THREE; 003b: CITY CLOCK INV LITE MAIL PARK ROOMS TRADE UI; 004: scene; 006: FIX MAPG MODS PARKCAVE PARKTOWER SOL STORE TILE; 007: FLAME |
 | `060a-fount.js` | 21.6 | top level | FOUNT (061 064 075 076 080 087 089a 093 094 096 140 142 142a 151 153) | 003: SHARED THREE; 003b: BROOK CLOCK PARK ROOMS SKY; 004: scene; 006: FIX MAPG SOL STORE TILE ZU |
 | `061-park.js` | 47.3 | top level, opens grab(parkwall) |  | 003: SHARED THREE; 003a: B64 F32; 003b: CLIP CLOCK CULL DN LITE NPCS PARK PERFX ROOMS UI WED WEEDS pos; 004: renderer scene; 006: CASTLE CLIPX EASTX FADE FIX LAY LEVEL MAINX MAPG MODS NORTHX NORTHY PARKGX PARKLAKE PARKRY QS SOL TILE ZU grab lamps; 007: FLAME; 008: BATCH OBJ PEEK; 014: BRICKS; 039: FOREST PROPS; 060: GCAVE; 060a: FOUNT |
 | `062-castle.js` | 6.5 | top level, opens grab(castle) | castleMat (062a), gboxS (062a) | 003: SHARED THREE; 003b: PARK pos; 004: scene; 006: CASTLE FIX MODS SOL STN TILE cutWalls grab lamps; 008: BATCH OBJ |
@@ -161,7 +161,7 @@ Places built with `await grab(name, async()=>{...})` are one function each, ofte
 | `137-bvh.js` | 3.5 | top level | BVH (150 163) | 003: THREE; 004: scene; 006: QS |
 | `138-oldlook.js` | 3.5 | top level |  | 003: SHARED THREE; 003b: CLOCK DN LOOK; 004: RH RW ShaderPass; 005: SAVE; 006: OUT |
 | `139-clip.js` | 10.5 | top level |  | 003: SHARED THREE; 003b: CLIP NPCS; 006: CLIPX FIX MODS QS SOL STORE TILE ZU; 008: OBJS |
-| `140-weeds.js` | 27.0 | top level |  | 003: SHARED THREE; 003b: NPCS PARK POND RAG ROOMS UI W3 WEEDS pos st; 004: renderer scene; 006: CASTLE FIX MAPG MODS SOL STORE SYS TILE; 060: GCAVE; 060a: FOUNT; 065: RINGX; 081: STALL |
+| `140-weeds.js` | 28.1 | top level |  | 003: SHARED THREE; 003b: NPCS PARK POND RAG ROOMS UI W3 WEEDS pos st; 004: renderer scene; 006: CASTLE FIX MAPG MODS SOL STORE SYS TILE; 060: GCAVE; 060a: FOUNT; 065: RINGX; 081: STALL |
 | `141-forage.js` | 29.3 | top level |  | 003: SHARED THREE; 003b: CITY CIVIC ED EQUIP FORAGE INV ITEMS LINES LOOKS MAIL NPCS SFX UI VIT WE WEEDS pos st; 004: scene; 005: OWNED; 006: MAPG QS SYS TILE; 007: FLAME; 083a: MUSH; 101: GEMS |
 | `141b-fairy.js` | 3.5 | top level |  | 003: SHARED THREE; 003b: FORAGE PARK ROOMS UI WEEDS pos; 004: scene; 006: SOL SYS TILE |
 | `141c-fireview.js` | 5.2 | top level |  | 003: SHARED THREE; 003b: CLOCK FAR3 ROOMS SKY UI pos; 004: renderer scene; 006: BLDK FADE MISTE MODS STORE SYS TILE; 008: BATCH |

@@ -37,6 +37,8 @@ jobs:
         run: node tests/site.cjs
       - name: Every place's code comes when you go there
         run: node tests/places.cjs out
+      - name: Every editor opens and its controls work
+        run: node tests/editors.cjs dist/market.html
       - name: The page's errors, when it did not open
         if: failure()
         run: MIN=0 python3 build.py && node tests/pageerr.cjs dist/market.html

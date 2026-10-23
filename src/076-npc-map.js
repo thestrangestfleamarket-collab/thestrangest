@@ -144,14 +144,14 @@ HOMES.assign=(st,key,o={},free)=>{ const id=HOMES.id(key||'someone'), H=LEVEL.ho
   h.id=id; st.home=h;
   if(h.r>0&&Math.hypot(st.x-h.x,st.z-h.z)>h.r)for(let k=0;k<24;k++){ const p=k<23?HOMES.inside(h):h; if(k===23||!free||(()=>{ try{ return free(p.x,p.z,st.R||.3*T); }catch(e){ return true; } })()){ st.x=p.x; st.z=p.z; st.to=null; break; } } };
 HOMES.IN=.3; HOMES.NEAR=4;
-HOMES.doors=()=>{ const B=SHARED.BOD, L=[]; for(const id in ROOMS.off){ const o=ROOMS.off[id]; if(o.door&&!o.mine)L.push({id,x:o.door[0],z:o.door[2]}); }
+HOMES.doors=()=>{ '@later'; const B=SHARED.BOD, L=[]; for(const id in ROOMS.off){ const o=ROOMS.off[id]; if(o.door&&!o.mine)L.push({id,x:o.door[0],z:o.door[2]}); }
   for(const id in STORE.inside||{}){ const R=STORE.inside[id]; if(R.th)L.push({id,x:R.th.obj.position.x,z:R.th.obj.position.z}); }
   if(B.GD&&B.GD.door)L.push({id:'bath',x:B.X(B.GD.door[0]),z:B.Z(B.GD.door[1]+.35)}); return L; };
-HOMES.door=h=>{ if(h.shop===null)return null; const L=HOMES.doors(); if(!L.length)return null;
+HOMES.door=h=>{ '@later'; if(h.shop===null)return null; const L=HOMES.doors(); if(!L.length)return null;
   if(h.shop===undefined){ let b=null, bd=h.r+HOMES.NEAR*TILE; for(const d of L){ const k=Math.hypot(d.x-h.x,d.z-h.z); if(k<bd){ bd=k; b=d; } } h.shop=b?b.id:null; return b; }
   return L.find(d=>d.id===h.shop)||null; };
 HOMES.goIn=st=>{ const h=st.home; st.goIn=null; if(!h||!(h.r>0)||Math.random()>=HOMES.IN)return false; const d=HOMES.door(h); if(!d)return false; st.to={x:d.x,z:d.z}; st.next=null; st.goIn=d.id; return true; };
-HOMES.pick=(st,free,lane)=>{ const h=st.home; if(!h||!(h.r>0))return false; if(HOMES.goIn(st))return true;
+HOMES.pick=(st,free,lane)=>{ '@later'; const h=st.home; if(!h||!(h.r>0))return false; if(HOMES.goIn(st))return true;
   for(let k=0;k<12;k++){ let to=HOMES.inside(h); if(lane)to={x:Math.max(lane.x0,Math.min(lane.x1,to.x)),z:Math.max(lane.z0,Math.min(lane.z1,to.z))}; if(free(to.x,to.z,st.R)){ st.to=to; st.next=null; return true; } } return false; };
 window.HOMES=HOMES; window.STFREE=stfree;
 window.HOMESDBG=wake=>NPCS.filter(N=>{ if(wake&&N.st)N.st.wait=0; return true; }).filter(N=>N.st&&N.st.home&&N.st.home.r>0).map(N=>[N.key,N.st.home.shop===undefined?'?':N.st.home.shop,N.st.goIn||'',N.st.inT!=null?+N.st.inT.toFixed(0):'',N.far?'far':'near']);

@@ -13,11 +13,11 @@ import {FADE, STORE, SYS, TILE} from './006-map-pre.js';
   const tok=async()=>{ '@later'; let t=ck()||T; if(t.startsWith('dev:'))return ''; if(!t||(jw(t).exp||0)*1000<Date.now()+60000)t=await renew().catch(()=>''); return t; };
   const vid=u=>{ u=String(u||'').trim(); const m=/(?:youtu\.be\/|v=|embed\/|shorts\/)([A-Za-z0-9_-]{11})/.exec(u)||/^([A-Za-z0-9_-]{11})$/.exec(u); return m?m[1]:''; };
 
-  let rec=null, adm=null, dead=false, pullT=null, titleId='';
+  let rec=null, adm=null, titleId='';
   const DEF={id:ROW,playlist:[],idx:0,video_id:'',started_at:null,size:1,brightness:.8,loop:true,autoplay:true};
   const cur=()=>rec||DEF; CINEMA.now=()=>cur(); CINEMA.title='';
 
-  const pull=async()=>{ '@later'; if(dead)return; try{ const r=await fetch(SB+'/rest/v1/now_playing?select=*&id=eq.'+ROW,{headers:{apikey:KEY}}); if(!r.ok){ if(r.status===404){ dead=true; if(pullT){ clearInterval(pullT); pullT=null; } } return; }
+  const pull=async()=>{ '@later'; if(location.protocol==='file:')return; try{ const r=await fetch('/now'); if(!r.ok)return;
     const a=await r.json(); rec=a[0]||null; onRec(); }catch(e){} };
   const push=async patch=>{ '@later'; const t=await tok(); if(!t)return false; try{
     const r=await fetch(SB+'/rest/v1/now_playing?id=eq.'+ROW,{method:'PATCH',headers:{apikey:KEY,Authorization:'Bearer '+t,'content-type':'application/json',Prefer:'return=representation'},body:JSON.stringify({...patch,updated_at:new Date().toISOString()})});
@@ -131,6 +131,5 @@ import {FADE, STORE, SYS, TILE} from './006-map-pre.js';
     UI.thing({name:'THE SCREEN',ghost:1,obj:hb,reach:3.2*TILE,near:6.5*TILE,tall:fm.geometry.parameters.height,act:async()=>{ if(await isAdmin())openAdmin(); }}); buildSigns(m); };
 
   window.CINEMA=CINEMA; SYS.add('places',()=>{ attach(); tick(); },'059f-cinema');
-  const boot=async()=>{ isAdmin(); await pull(); if(!dead&&!pullT)pullT=setInterval(()=>{ if(document.visibilityState!=='hidden')pull(); },5000); };
-  const waitStart=()=>{ if(!window.__started){ setTimeout(waitStart,200); return; } (window.LOAD?LOAD('later'):Promise.resolve()).then(boot).catch(()=>{}); }; waitStart();
+  (async()=>{ while(!window.__started)await new Promise(r=>setTimeout(r,250)); await LOAD('later'); isAdmin(); pull(); setInterval(()=>{ if(document.visibilityState!=='hidden')pull(); },5000); })();   // after the start, so the later chunk is not pulled in early
 }

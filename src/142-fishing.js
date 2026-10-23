@@ -7,7 +7,7 @@ import {FOUNT} from './060a-fount.js';
 import {RIVER} from './066-river.js';
 import {GEMS} from './101-gems.js';
 const FISHING={}; Object.assign(BOAT,{on:false}); window.FISHING=FISHING; window.BOAT=BOAT;
-RIVER.onBuild.push(()=>{ const T=TILE, RB=RIVER.box, rz0=RB.z0, rz1=RB.z1, WU=T/.84, cl=(v,a,b)=>v<a?a:v>b?b:v;
+RIVER.onBuild.push(()=>{ '@later'; const T=TILE, RB=RIVER.box, rz0=RB.z0, rz1=RB.z1, WU=T/.84, cl=(v,a,b)=>v<a?a:v>b?b:v;
   const FI=[['x_sunfish','SUNFISH',0,3,0,4,5,.07],['x_perch','WHITE PERCH',5,4,0,5,5,.08],['x_crab','BLUE CRAB',15,8,0,4,2,.06],['x_eel','AMERICAN EEL',20,9,0,9,3,.08],
     ['x_catfish','CHANNEL CATFISH',25,10,2,9,3,.1],['x_flounder','FLOUNDER',30,12,3,9,2,.1],['x_shad','AMERICAN SHAD',35,11,3,9,2,.09],['x_bluefish','BLUEFISH',45,16,4,9,2,.12],
     ['x_bass','STRIPED BASS',50,20,4,9,3,.14],['x_sturgeon','ATLANTIC STURGEON',75,60,6,9,.6,.2]];
@@ -42,7 +42,7 @@ RIVER.onBuild.push(()=>{ const T=TILE, RB=RIVER.box, rz0=RB.z0, rz1=RB.z1, WU=T/
   const STAND={}; FISHING.STAND=STAND; const B='style="margin:0 0 0 4px;font:inherit;color:#ece5d3;background:#0e1016;border:2px solid #3a3f4e;padding:2px 7px;cursor:pointer"';
   const sp=document.createElement('div'); sp.id='fishp'; sp.hidden=true; sp.style.cssText='position:fixed;left:50%;top:10%;transform:translateX(-50%);width:min(460px,92vw);max-height:80vh;overflow:auto;z-index:21;padding:14px 16px;font:11px Silkscreen,monospace;letter-spacing:.4px;color:#d8dae2;background:#0b0d13f2;border:2px solid #3a3f4e;zoom:var(--uiz,1)';
   document.body.appendChild(sp); sp.addEventListener('keydown',e=>e.stopPropagation());
-  STAND.draw=()=>{ '@later'; if(sp.hidden)return; const ids=Object.keys(INV.items).filter(id=>INV.items[id]>0&&PRICE[id]!=null).sort();
+  STAND.draw=()=>{ if(sp.hidden)return; const ids=Object.keys(INV.items).filter(id=>INV.items[id]>0&&PRICE[id]!=null).sort();
     let o=`<h3 style="margin:0 0 4px;color:#f2c14e;font:12px Silkscreen,monospace">BAIT & BOATS</h3><div style="color:#9b9584;margin-bottom:8px">Self serve. Pay in the box. Catches bought at the board's price.</div><div style="margin-bottom:8px">YOU HAVE <b style="color:#f2c14e">$${Math.round(INV.cash)}</b> · FISHING ${FORAGE.sk('fish').toFixed(1)}</div><table style="border-collapse:collapse;width:100%">`;
     o+=`<tr style="border-bottom:1px solid #22252f"><td style="padding:4px 2px">FISHING ROD</td><td style="text-align:right;padding:4px 6px">$15</td><td style="text-align:right">${FORAGE.has('rod')?'YOURS':`<button ${B} data-buy="rod">BUY</button>`}</td></tr>`;
     o+=`<tr style="border-bottom:1px solid #22252f"><td style="padding:4px 2px">ROWBOAT · A TRIP</td><td style="text-align:right;padding:4px 6px">$5</td><td style="text-align:right">${BOAT.on?'OUT':`<button ${B} data-boat="1">RENT</button>`}</td></tr></table>`;
@@ -50,7 +50,7 @@ RIVER.onBuild.push(()=>{ const T=TILE, RB=RIVER.box, rz0=RB.z0, rz1=RB.z1, WU=T/
     for(const id of ids){ const v=PRICE[id], n=INV.items[id]; o+=`<tr style="border-bottom:1px solid #22252f"><td style="padding:4px 2px">${FORAGE.NM[id]}</td><td style="text-align:right;padding:4px 6px">$${v}</td><td style="text-align:right">x${n}</td><td style="text-align:right;white-space:nowrap"><button ${B} data-sell="${id}">SELL</button>${n>1?`<button ${B} data-sell="${id}" data-n="all">ALL $${v*n}</button>`:''}</td></tr>`; }
     o+=FORAGE.trainRows(['fish'])+`</table>${ids.length?'':'<div style="color:#7d7a70;margin-top:6px">Nothing yet. With a rod, double click the water near you to cast. Deeper water, bigger fish.</div>'}`;
     const x=sp.querySelector(':scope>.pX'); sp.innerHTML=o; if(x)sp.appendChild(x); };
-  sp.addEventListener('click',e=>{ '@later'; const b=e.target.closest('button'); if(!b||b.classList.contains('pX'))return; const d=b.dataset;
+  sp.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b||b.classList.contains('pX'))return; const d=b.dataset;
     if(d.train){ FORAGE.train(d.train,+d.cap); STAND.draw(); return; } if(d.buy==='rod'){ if(INV.cash<15)say('YOU CANNOT AFFORD THAT.','#c8a090'); else { INV.cash-=15; FORAGE.give('rod'); say('YOU TAKE A ROD AND DROP $15 IN THE BOX.'); } }
     if(d.boat){ if(INV.cash<5)say('YOU CANNOT AFFORD THAT.','#c8a090'); else { INV.cash-=5; sp.hidden=true; BOAT.launch(); } }
     if(d.sell){ const n=d.n==='all'?FORAGE.has(d.sell):1, v=PRICE[d.sell]*n; FORAGE.take(d.sell,n); INV.cash+=v; say(`YOU SELL ${n} ${FORAGE.NM[d.sell]} FOR $${v}.`,'#f2c14e'); SFX.play('clunk',{vol:.5}); }
@@ -65,12 +65,12 @@ RIVER.onBuild.push(()=>{ const T=TILE, RB=RIVER.box, rz0=RB.z0, rz1=RB.z1, WU=T/
   const atShore=()=>{ const L=RIVER.ladders.find(x=>Math.abs(x-BOAT.x)<1.3*T&&BOAT.z>rz1-1.6*T); if(L!=null)return {x:L,z:rz1+.7*T}; const P=RIVER.piers.find(x=>Math.abs(x-BOAT.x)<2.6*T&&BOAT.z>rz1-9.5*T); if(P!=null)return {x:P,z:rz1+.7*T}; return null; };
   BOAT.launch=()=>{ BOAT.x=PX+2.5*T; BOAT.z=rz1-1.8*T; BOAT.hd=Math.PI; BOAT.v=0; BOAT.on=true; boat.visible=true; SHARED.target=null; say('YOU STEP INTO THE ROWBOAT. ROW WITH W A S D.'); HUD.hidden=false; BOAT.place(); };
   BOAT.ashore=()=>{ const s=atShore(); if(!s)return say('ROW TO A LADDER OR A PIER FIRST.','#c8a090'); BOAT.on=false; boat.visible=false; st.sit=null; pos.x=s.x; pos.z=s.z; SHARED.py=0; HUD.hidden=true; FISHING.reel(); say('YOU TIE UP THE BOAT AND CLIMB OUT.'); };
-  BOAT.steer=(dt,mx,mz)=>{ '@later'; const m=Math.hypot(mx,mz); if(m>0){ let dh=Math.atan2(mx,mz)-BOAT.hd; dh=Math.atan2(Math.sin(dh),Math.cos(dh)); BOAT.hd+=cl(dh,-1.7*dt,1.7*dt); if(Math.abs(dh)<1.2)BOAT.v=Math.min(3.2*T,BOAT.v+3.6*T*dt); row+=dt*5; }
+  BOAT.steer=(dt,mx,mz)=>{ const m=Math.hypot(mx,mz); if(m>0){ let dh=Math.atan2(mx,mz)-BOAT.hd; dh=Math.atan2(Math.sin(dh),Math.cos(dh)); BOAT.hd+=cl(dh,-1.7*dt,1.7*dt); if(Math.abs(dh)<1.2)BOAT.v=Math.min(3.2*T,BOAT.v+3.6*T*dt); row+=dt*5; }
     else BOAT.v*=Math.exp(-dt*1.1); if(BOAT.v<.03*T&&!m)BOAT.v=0;
     const o={x:BOAT.x+Math.sin(BOAT.hd)*BOAT.v*dt,z:BOAT.z+Math.cos(BOAT.hd)*BOAT.v*dt}; o.x=cl(o.x,RB.x0+1.5*T,RB.x1-1.5*T); o.z=cl(o.z,rz0+1*T,rz1-.9*T);
     for(const px of RIVER.piers)if(Math.abs(o.x-px)<1.9*T&&o.z>rz1-9.6*T){ if(Math.abs(BOAT.x-px)>=1.9*T)o.x=BOAT.x; else o.z=Math.min(o.z,rz1-9.6*T); }
     if(Math.hypot(o.x-BOAT.x,o.z-BOAT.z)<.001)BOAT.v=Math.min(BOAT.v,.5*T); BOAT.x=o.x; BOAT.z=o.z; BOAT.place(); };
-  BOAT.place=()=>{ '@later'; const h=RIVER.hAt(BOAT.x,BOAT.z); BOAT.py=RB.lv+h+Y(.12); boat.position.set(BOAT.x,RB.lv+h-Y(.05),BOAT.z); boat.rotation.y=BOAT.hd;
+  BOAT.place=()=>{ const h=RIVER.hAt(BOAT.x,BOAT.z); BOAT.py=RB.lv+h+Y(.12); boat.position.set(BOAT.x,RB.lv+h-Y(.05),BOAT.z); boat.rotation.y=BOAT.hd;
     const a=Math.sin(row)*.6; BOAT.oars[0].rotation.y=-a; BOAT.oars[1].rotation.y=a; BOAT.oars[0].rotation.z=.2+.15*Math.cos(row); BOAT.oars[1].rotation.z=-.2-.15*Math.cos(row); };
   BOAT.carry=(st,pos)=>{ pos.x=BOAT.x; pos.z=BOAT.z; st.sit={z:Math.max(2,Y(.3)/(ZU*W3.SZ*(W3.BH||1)))}; if(RIVER.swim)RIVER.swim=false; if(st.water)st.water.in=false; };
   const HUD=document.createElement('div'); HUD.id='boathud'; HUD.hidden=true; { const c=document.createElement('style'); c.textContent='#boathud[hidden],#minehud[hidden],#fjour:empty{display:none!important}'; document.head.appendChild(c); } HUD.style.cssText='position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:7;font:11px Silkscreen,monospace;color:#e8e2cc;background:#0b0d13e0;border:2px solid #3a3f4e;padding:6px 10px;display:flex;gap:10px;align-items:center;zoom:var(--uiz,1)';
@@ -80,7 +80,7 @@ RIVER.onBuild.push(()=>{ const T=TILE, RB=RIVER.box, rz0=RB.z0, rz1=RB.z1, WU=T/
   const bob=new THREE.Mesh(new THREE.OctahedronGeometry(.09*T,0),new THREE.MeshLambertMaterial({color:0xd8402e,flatShading:true})); bob.visible=false; scene.add(bob);
   const pl=new THREE.Plane(new THREE.Vector3(0,1,0),-RB.lv), hp=new THREE.Vector3(); let F=null;
   FISHING.reel=()=>{ F=null; line.visible=bob.visible=false; };
-  const pick0=RIVER.pick; RIVER.pick=(ray,p)=>{ '@later'; if(FORAGE.has('rod')&&!RIVER.swim&&ray.intersectPlane(pl,hp)&&hp.x>RB.x0&&hp.x<RB.x1&&hp.z>rz0&&hp.z<rz1){ const d=Math.hypot(hp.x-p.x,hp.z-p.z);
+  const pick0=RIVER.pick; RIVER.pick=(ray,p)=>{ if(FORAGE.has('rod')&&!RIVER.swim&&ray.intersectPlane(pl,hp)&&hp.x>RB.x0&&hp.x<RB.x1&&hp.z>rz0&&hp.z<rz1){ const d=Math.hypot(hp.x-p.x,hp.z-p.z);
       if(d<9*T&&d>.8*T&&!RIVER.piers.some(x=>Math.abs(hp.x-x)<1.2*T&&hp.z>rz1-9*T)){ FISHING.cast(hp.x,hp.z); return true; } }
     return pick0(ray,p); };
   FISHING.cast=(x,z,lake)=>{ if(!FORAGE.has('bait'))return say('YOU NEED BAIT. THE SHARK SELLS IT.','#c8a090'); FORAGE.take('bait',1); if(!BOAT.on)SHARED.heading=Math.atan2(x-pos.x,z-pos.z); F={x,z,t:3+Math.random()*5,dip:0,ax:pos.x,az:pos.z,lake:lake!=null?lake:null}; line.visible=bob.visible=true; say('YOU CAST YOUR LINE.'); SFX.play('click',{vol:.4}); };

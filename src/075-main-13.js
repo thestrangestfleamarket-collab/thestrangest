@@ -27,7 +27,7 @@ renderer.domElement.addEventListener('pointerdown',e=>{ if(e.button===2||e.butto
 renderer.domElement.addEventListener('pointermove',e=>{ if(!drag)return; UI.orbit(e.clientX-drag.x,e.clientY-drag.y); drag={x:e.clientX,y:e.clientY}; });
 renderer.domElement.addEventListener('pointerup',()=>drag=null);
 UI.holdUp=new THREE.Vector3();
-renderer.domElement.addEventListener('wheel',e=>{ e.preventDefault(); if(UI.hold&&UI.hold.look&&!UI.persp){ const c=SHARED.cam; UI.hold.dy=(UI.hold.dy||0)-e.deltaY*(c.top-c.bottom)/(c.zoom||1)/1500; return; } let lo=3; if(e.deltaY>0&&!UI.persp){ const w=SHARED.cam.right-SHARED.cam.left; if(w>=UI.MAXW*.99)return; lo=Math.max(lo,SHARED.ppu*w/UI.MAXW); } SHARED.ppuTo=Math.max(lo,Math.min(ZMAX,SHARED.ppuTo*Math.pow(1.0015,-e.deltaY))); UI.wheelAt(e); },{passive:false});
+renderer.domElement.addEventListener('wheel',e=>{ '@later'; e.preventDefault(); if(UI.hold&&UI.hold.look&&!UI.persp){ const c=SHARED.cam; UI.hold.dy=(UI.hold.dy||0)-e.deltaY*(c.top-c.bottom)/(c.zoom||1)/1500; return; } let lo=3; if(e.deltaY>0&&!UI.persp){ const w=SHARED.cam.right-SHARED.cam.left; if(w>=UI.MAXW*.99)return; lo=Math.max(lo,SHARED.ppu*w/UI.MAXW); } SHARED.ppuTo=Math.max(lo,Math.min(ZMAX,SHARED.ppuTo*Math.pow(1.0015,-e.deltaY))); UI.wheelAt(e); },{passive:false});
 addEventListener('keydown',e=>{ const k=UI.key(e); if(!k)return; if(FEEL.key(k,e))return; const FT=FEEL.take(); if(k===' '&&!e.repeat&&FT)FEEL.press(); keys.add(k); if(['arrowup','arrowdown','arrowleft','arrowright',' '].includes(k))e.preventDefault();
   if(k==='0'){ SHARED.yawTo=VIEW0.yaw; SHARED.pitchTo=VIEW0.pitch; SHARED.ppuTo=VIEW0.ppu; UI.home(); } if(k==='h')document.getElementById('hud').hidden^=1; if(k==='1'&&!e.repeat&&!ED.on&&window.WIELD)WIELD.next();
   if(k==='-'||k==='_'){SHARED.RESI=Math.max(0,SHARED.RESI-1);resize();} if(k==='='||k==='+'){ if(pxS()>1||vpu()>art())SHARED.RESI=Math.min(RESMAX,SHARED.RESI+1); resize(); }
@@ -79,7 +79,7 @@ function frame(now){ requestAnimationFrame(frame); if(PARK.hold)return; renderer
     { st.world=RAG.on?null:{x:pos.x,z:pos.z,y:SHARED.py,hd:SHARED.heading,kx:1/W3.group.scale.x,ky:1/W3.group.scale.y,gnd:SHARED.groundY,t:now/1000}; B=ED.anim?ED.animPose():RIG.pose(st); ragBlend(B); ragStrikes(B,J0,J0t?(now-J0t)/1000:0); J0=B.J; J0t=now; ASTEP.you.B=B; } }
   const hdA=(RAG.on?RAG.hd:SHARED.heading)-a;
   if(loose.length||FLOATS.bodies.some(b=>Math.hypot(b.x[0]*TL-pos.x,-b.x[1]*TL-pos.z)<2.5))RIG.draw(B,cloud,hdA,uimg,PW,PICH,AX,AY,1,false);
-  W3.place(B,pos.x,SHARED.py,pos.z,RAG.on?RAG.hd:SHARED.heading,hdA,ZU); if(window.WIELD)WIELD.post(B); FEEL.ui(dt); PB.step(dt,B,pos.x,SHARED.py,pos.z,RAG.on?RAG.hd:SHARED.heading,SHARED.groundY(pos.x,pos.z),RAG.on); if(ED.on)ED.tick();
+  W3.place(B,pos.x,SHARED.py,pos.z,RAG.on?RAG.hd:SHARED.heading,hdA,ZU); if(window.WIELD)WIELD.post(B); if(window.EQUIP&&EQUIP.post)EQUIP.post(B); FEEL.ui(dt); PB.step(dt,B,pos.x,SHARED.py,pos.z,RAG.on?RAG.hd:SHARED.heading,SHARED.groundY(pos.x,pos.z),RAG.on); if(ED.on)ED.tick();
   phyYouNow(dt); looseAcc+=dt; let nst=0; while(looseAcc>=PHH&&nst<6){ looseAcc-=PHH; nst++; phyStep(loose,STATIC,PHH,null,null); } if(nst>=6)looseAcc=0; looseDraw();
 
   if(UI.freeCam)LITE.tick(dt,UI.camT.x,UI.camT.y,UI.camT.z); else LITE.tick(dt,pos.x,SHARED.py+1.2*TILE,pos.z);

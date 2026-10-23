@@ -11,12 +11,12 @@ Object.assign(WE,{on:false}); window.WE=WE;
   const E0=()=>({t:[0,0,0],r:0,rx:0,rz:0,s:[1,1,1],col:'#ffffff',bri:1,op:1,del:false});
   let KMAP=null;
   const kraw=o=>{ base(o); const c=o.c; return o.place+'|'+o.name+'|'+Math.round(c.x*10)/10+','+Math.round(c.y*10)/10+','+Math.round(c.z*10)/10; };
-  const kid=o=>{ if(!KMAP){ KMAP=new Map(); const g={}; for(const q of OBJS){ const r=kraw(q); (g[r]||(g[r]=[])).push(q); } for(const r in g){ const L=g[r]; if(L.length<2)KMAP.set(L[0],r); else { L.sort((a,b)=>a.id<b.id?-1:a.id>b.id?1:0); L.forEach((q,i)=>KMAP.set(q,r+'#'+i)); } } } return KMAP.get(o)||kraw(o); };
+  const kid=o=>{ '@later'; if(!KMAP){ KMAP=new Map(); const g={}; for(const q of OBJS){ const r=kraw(q); (g[r]||(g[r]=[])).push(q); } for(const r in g){ const L=g[r]; if(L.length<2)KMAP.set(L[0],r); else { L.sort((a,b)=>a.id<b.id?-1:a.id>b.id?1:0); L.forEach((q,i)=>KMAP.set(q,r+'#'+i)); } } } return KMAP.get(o)||kraw(o); };
   const rp=p=>Math.round(p*10)/10, keyOf=o=>o.prop?o.place+'|'+o.name+'|'+rp(o.pivot[0])+','+rp(o.pivot[1])+','+rp(o.pivot[2]):kid(o);
   const stOf=o=>{ const k=keyOf(o); return ST[k]||(ST[k]=E0()); };
   const v=new THREE.Vector3(), vv=new THREE.Vector3(), E3=new THREE.Euler(), col=new THREE.Color(), touched=new Set();
   const D2R=Math.PI/180, Mx=new THREE.Matrix4(), Tx=new THREE.Matrix4(), Ex=new THREE.Euler(), PB=new THREE.Box3();
-  function applyProp(o){ const e=stOf(o), me=o.me, id=o.id, pv=o.pivot; if(!me.setMatrixAt)return;
+  function applyProp(o){ '@later'; const e=stOf(o), me=o.me, id=o.id, pv=o.pivot; if(!me.setMatrixAt)return;
     if(e.del){ me.setVisibleAt&&me.setVisibleAt(id,false); return; } me.setVisibleAt&&me.setVisibleAt(id,true);
     Ex.set((e.rx||0)*D2R,(e.r||0)*D2R,(e.rz||0)*D2R,'YXZ'); Mx.makeRotationFromEuler(Ex); Mx.multiply(Tx.makeScale(e.s[0],e.s[1],e.s[2]));
     Mx.multiply(Tx.makeTranslation(-pv[0],-pv[1],-pv[2])); Mx.premultiply(Tx.makeTranslation(pv[0]+e.t[0],pv[1]+e.t[1],pv[2]+e.t[2])); me.setMatrixAt(id,Mx); if(me.computeBoundingSphere)me.computeBoundingSphere(); }
@@ -90,7 +90,7 @@ Object.assign(WE,{on:false}); window.WE=WE;
   $('#wimpf').onchange=async ev=>{ const f=ev.target.files&&ev.target.files[0]; ev.target.value=''; if(!f)return; try{ const j=JSON.parse(await f.text()); Object.assign(ST,j); for(const o of OBJS)if(ST[kid(o)])apply(o); applyWED(); settle(); save(); frame(); draw(); }catch(e){} };
   $('#wdel').onclick=()=>{ change(e=>{ e.del=true; }); sel=null; frame(); draw(); };
   $('#wback').onclick=()=>change(e=>{ Object.assign(e,E0()); });
-  $('#wall').onclick=()=>{ if(!confirm('Put everything back as it was?'))return; for(const o of OBJS){ const k=kid(o); if(ST[k]){ ST[k]=E0(); apply(o); delete ST[k]; } }
+  $('#wall').onclick=()=>{ '@later'; if(!confirm('Put everything back as it was?'))return; for(const o of OBJS){ const k=kid(o); if(ST[k]){ ST[k]=E0(); apply(o); delete ST[k]; } }
     for(const en of WED.meshes)for(let bid=0;bid<en.ids.length;bid++){ const h=propHandle(en,bid), k=keyOf(h); if(ST[k]){ ST[k]=E0(); applyProp(h); delete ST[k]; } } settle(); save(); frame(); draw(); };
   $('#wout').onclick=()=>WE.toggle();
   WE.toggle=()=>{ WE.on=!WE.on; P.hidden=!WE.on; if(!WE.on){ sel=null; frame(); } draw(); UI.badge&&UI.badge(); };

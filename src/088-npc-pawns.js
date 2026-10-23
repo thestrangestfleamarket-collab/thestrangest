@@ -1,9 +1,9 @@
 // THE PAWNS: the baked characters (data/pawns.json) given arms, cloth colours and animation.
 import {SHARED, THREE} from './003-shx.js';
 import {BY, F32, SKIN} from './003a-skin.js';
-import {UI} from './003b-systems.js';
+import {pos, UI} from './003b-systems.js';
 import {PPU} from './004-main.js';
-import {MODS, QS, TILE} from './006-map-pre.js';
+import {MODS, QS, SOL, SYS, TILE} from './006-map-pre.js';
 import {DUN, makeNPC, stfree, STLANE} from './076-npc-map.js';
 import {PAWNS} from './087-npc-creatures.js';
 { const PW=PAWNS, geomOf=M=>SKIN.geom(M), rigOf=R=>SKIN.rig(R);
@@ -85,4 +85,15 @@ import {PAWNS} from './087-npc-creatures.js';
   ALL.forEach((k,i)=>(k[2]||!PEOPLE.includes(k[0])||QS.get('sheet')===k[0])&&MK(k,i));
   window.PAWNNEW=(kind,key,X)=>MK([key,kind,0],0,X);
   window.PAWNCAM=(i=0,k=1.6)=>{ const N=PAWNL[i]; UI.setFree(true); UI.camT.set(N.st.x,N.g.position.y+N.H*.5,N.st.z); SHARED.ppu=SHARED.ppuTo=PPU*k; };
-  window.PAWNDBG=()=>PAWNL.map(N=>({key:N.key,x:+N.st.x.toFixed(1),z:+N.st.z.toFixed(1),to:!!N.st.to,vis:N.g.visible})); }
+  window.PAWNDBG=()=>PAWNL.map(N=>({key:N.key,x:+N.st.x.toFixed(1),z:+N.st.z.toFixed(1),to:!!N.st.to,vis:N.g.visible}));
+  // THE SOAK (tests/soak.cjs): n extra pawns scattered over the walkable map, roaming wide, not in the crowd; PAWNSOAKDBG reports the ones breaking an invariant.
+  const SOAK={list:[],t:0}; window.PAWNSOAK=(n=100)=>{ '@later'; const B=SHARED.BOUND, T=TILE, R=.3*T; let tries=0;
+    while(SOAK.list.length<n&&tries++<n*300){ const x=B.x0+Math.random()*(B.x1-B.x0), z=B.z0+Math.random()*(B.z1-B.z0); if(!stfree(x,z,R))continue;
+      const i=SOAK.list.length, P=ALL.filter(([k])=>!/^(skeleton|ogre)/.test(k)), N=MK(P[i%P.length],900+i,{npc:{x,z,home:{x,z,r:40*T},roam:true}}); N.soak={lx:x,lz:z,still:0,hops:0,ticks:0,toSeen:false,t0:SOAK.t}; N.farMove=dt=>{ N.soak.ticks++; N.tick(dt,pos); }; SOAK.list.push(N); } return SOAK.list.length; };
+  SYS.add('life',dt=>{ if(!SOAK.list.length)return; SOAK.t+=dt; for(const N of SOAK.list){ const s=N.st, k=N.soak; if(s.to)k.toSeen=true; if(Math.hypot(s.x-k.lx,s.z-k.lz)>.05*TILE){ k.still=0; k.hops++; k.lx=s.x; k.lz=s.z; } else if(s.to)k.still+=dt; } },'088 soak');
+  window.PAWNSOAKDBG=()=>{ '@later'; const B=SHARED.BOUND, bad=[]; for(const N of SOAK.list){ const s=N.st, k=N.soak, why=[];
+      if(!isFinite(s.x)||!isFinite(s.z))why.push('nan'); else { if(s.x<B.x0||s.x>B.x1||s.z<B.z0||s.z>B.z1)why.push('out of bounds'); if(!stfree(s.x,s.z,s.R)){ const b=SOL.up.find(b=>s.x>b[0]-s.R&&s.x<b[2]+s.R&&s.z>b[1]-s.R&&s.z<b[3]+s.R); why.push(b?'inside solid ['+b.map(v=>+v.toFixed(1)).join(',')+']':'inside a building, the ring edge or water'); } if(!isFinite(N.ground(s.x,s.z)))why.push('no ground'); }
+      if(k.still>25)why.push('stuck '+k.still.toFixed(0)+'s'); if(why.length)bad.push({key:N.key,x:+s.x.toFixed(1),z:+s.z.toFixed(1),far:!!N.far,why}); }
+    const exits=(s)=>{ let n=0; for(let i=0;i<16;i++){ const a=i/16*Math.PI*2; if(stfree(s.x+Math.sin(a)*3*TILE,s.z+Math.cos(a)*3*TILE,s.R))n++; } return n; };
+    const still=SOAK.list.filter(N=>!N.soak.hops).map(N=>({key:N.key,x:+N.st.x.toFixed(1),z:+N.st.z.toFixed(1),far:!!N.far,ticks:N.soak.ticks,toSeen:N.soak.toSeen,exits:exits(N.st),wait:+(N.st.wait||0).toFixed(1)}));
+    return {n:SOAK.list.length,simT:+SOAK.t.toFixed(1),moved:SOAK.list.filter(N=>N.soak.hops>0).length,still,bad,errs:Object.entries(SYS.P).flatMap(([k,v])=>v.filter(q=>q.err).map(q=>k+':'+q.name))}; }; }

@@ -37,7 +37,8 @@ Object.assign(BLK,{blds:[],signs:[],band:()=>null,built:0,in:false,hi:[],LO:.5})
         g.fillStyle='rgba(255,255,255,.1)'; for(let k=0;k<6;k++)g.fillRect(x0+4+k,gt+4+k*2,1,6);
         g.fillStyle='#2c2a30'; g.fillRect(x0+Math.round(gw/2)-1,gt,2,gb-gt); g.fillStyle='#3a3842'; g.fillRect(x0,gb,gw,bot-gb); } }
     if(o.shop){ g.fillStyle=o.band||'#24222c'; g.fillRect(4,py(124),w-8,py(100)-py(124)); g.fillStyle='rgba(255,255,255,.08)'; g.fillRect(4,py(124),w-8,1); }
-    for(const dx of o.doors?Array.from({length:o.doors},(_,k)=>Math.round((k+.5)*w/o.doors)-19):[o.door==='l'?14:w-14-38]){ g.fillStyle='#2e2a26'; g.fillRect(dx,py(94),38,h-py(94)); g.fillStyle='#4a443c'; g.fillRect(dx+2,py(92),34,h-py(92)-1); g.fillStyle='#c8b070'; g.fillRect(dx+30,py(46),3,3); }
+    if(o.garage){ const gw=Math.min(72,w-16), gx=Math.round((w-gw)/2); g.fillStyle='#56534d'; g.fillRect(gx,py(96),gw,h-py(96)); g.fillStyle='#3b3934'; for(let k=1;k<7;k++)g.fillRect(gx,py(96)+Math.round(k*(h-py(96))/7),gw,2); g.fillStyle='#2e2c28'; g.fillRect(gx-2,py(98),2,h-py(98)); g.fillRect(gx+gw,py(98),2,h-py(98)); }
+    else for(const dx of o.doors?Array.from({length:o.doors},(_,k)=>Math.round((k+.5)*w/o.doors)-19):[o.door==='l'?14:w-14-38]){ g.fillStyle='#2e2a26'; g.fillRect(dx,py(94),38,h-py(94)); g.fillStyle='#4a443c'; g.fillRect(dx+2,py(92),34,h-py(92)-1); g.fillStyle='#c8b070'; g.fillRect(dx+30,py(46),3,3); }
     g.fillStyle='rgba(20,18,16,.35)'; g.fillRect(0,h-4,w,4);
     return {map:tex(c),em:tex(e)}; }
   const roofM=new THREE.MeshLambertMaterial({color:0x3a3840}), sideCache={};
@@ -52,13 +53,13 @@ Object.assign(BLK,{blds:[],signs:[],band:()=>null,built:0,in:false,hi:[],LO:.5})
     solid(o.x0,o.y0,o.x1,o.y1,o.h); BLK.blds.push({...o,mesh:m}); return m; }
   const TINTS=[[1.3,.82,.66],[1.12,1,.84],[.92,.95,1.02],[1.2,.95,.8],[1.05,.9,.92],[.98,1.02,.92],[1.25,.88,.72],[1.1,1.04,.95],[.9,.9,.96]];
   [[B.x0,-62.4],[-33.6,30],[30,90],[90,111],[124,150],[150,B.x1]].forEach(([a,b],i)=>building({x0:a,x1:b,y0:B.row2[0],y1:B.row2[1],h:140,n:0,k:300+i*7,tint:TINTS[3+i],front:'shut',back:'glass',lit:.2,row:2,lazy:1,doors:Math.max(1,Math.round((b-a)/14)),blankSide:true,cheap:true}));
-  for(const [i,S] of SHELLS.entries()){ building({x0:S.x0,x1:S.x1,y0:S.y0,y1:S.y1,h:150,e:1,k:600+i*13,tint:TINTS[(i+2)%TINTS.length],front:'shut',back:'shut',lit:.12,row:4,doors:1,blankSide:true,cheap:true}); }
+  for(const [i,S] of SHELLS.entries()){ building({x0:S.x0,x1:S.x1,y0:S.y0,y1:S.y1,h:150,e:1,k:600+i*13,tint:TINTS[(i+2)%TINTS.length],front:'shut',back:'shut',lit:.12,garage:true,row:4,doors:1,blankSide:true,cheap:true}); }
   const fill=(a,b,mk)=>{ let x=a, i=0; while(b-x>1.5){ const r=((Math.sin(x*12.9898+i*78.233)*43758.5453)%1+1)%1, w=12+r*8, e=b-x-w<6?b:x+w; mk(x,e,i++,r); x=e; } };
   const holes=(on,a0,a1)=>{ const g=[]; let y=a0; for(const [a,b] of on.slice().sort((p,q)=>p[0]-q[0])){ if(a-.1>y)g.push([y,a-.1]); y=Math.max(y,b+.1); } if(a1>y)g.push([y,a1]); return g; };
   { const gaps=holes(MAINROW,B.x0,B.x1); let n=0;
-    for(const [a,b] of gaps)fill(a,b,(x0,x1,i,r)=>{ n++; building({x0,x1,y0:B.back,y1:SHARED.BOD.OY,h:120+Math.round(r*50),n:0,k:400+n*11,tint:TINTS[n%TINTS.length],front:'shut',back:'shut',lit:.12,doors:Math.max(1,Math.round((x1-x0)/14)),blankSide:true,cheap:true,row:1}); }); }
+    for(const [a,b] of gaps)fill(a,b,(x0,x1,i,r)=>{ n++; building({x0,x1,y0:B.back,y1:SHARED.BOD.OY,h:120+Math.round(r*50),n:0,k:400+n*11,tint:TINTS[n%TINTS.length],front:'shut',back:'shut',lit:.12,garage:true,doors:Math.max(1,Math.round((x1-x0)/14)),blankSide:true,cheap:true,row:1}); }); }
   { const F=RING.wx0, gaps=holes([...LEVEL.places,...SHELLS].filter(p=>p.y1!=null&&Math.abs(p.x1-F)<.6).map(p=>[p.y0,p.y1]),LEVEL.park.y0+.5,RING.top-1); let n=0;
-    for(const [a,b] of gaps)fill(a,b,(y0,y1,i,r)=>{ n++; building({x0:F-13,x1:F,y0,y1,h:120+Math.round(r*50),e:1,k:700+n*13,tint:TINTS[(n+3)%TINTS.length],front:'shut',back:'shut',lit:.12,row:5,doors:Math.max(1,Math.round((y1-y0)/14)),blankSide:true,cheap:true}); }); }
+    for(const [a,b] of gaps)fill(a,b,(y0,y1,i,r)=>{ n++; building({x0:F-13,x1:F,y0,y1,h:120+Math.round(r*50),e:1,k:700+n*13,tint:TINTS[(n+3)%TINTS.length],front:'shut',back:'shut',lit:.12,garage:true,row:5,doors:Math.max(1,Math.round((y1-y0)/14)),blankSide:true,cheap:true}); }); }
   const BX=[], GL=[], zA=B.alley[1], zB=B.alley[0], mid=(zA+zB)/2;
   const CR=[[98.5,zA-.5,.9,.9,22,[.18,.42,.36]],[98.5,zA-.5,.9,.9,44,[.22,.48,.62]],[121,zA-.6,1.1,1.1,40,[.2,.34,.24]],[73,zB+.6,1.3,.9,30,[.54,.42,.26]],[140,zB+.6,1,1,40,[.2,.34,.24]],[63,zB+.5,.8,.8,24,[.6,.18,.16]]];
   for(const [x,y,w,d,hp] of CR)solid(x-w/2,Math.min(y-d/2,y+d/2),x+w/2,Math.max(y-d/2,y+d/2),hp);

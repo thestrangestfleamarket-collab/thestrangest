@@ -4440,3 +4440,8 @@ Owner: "Add 100 npcs and test out the map. Have them report errors." A manual so
 
 ## 23 Oct 2026: the bear merchant stands by the nature merchant, with his coat rack
 Owner: "pin the bear near the nature merchant and build the coat rack". The coat bear no longer roams: his home is pinned on Main Street beside the nature merchant (characters.json `home`, r 0). Beside him stands his coat rack — two plain coats and the cloud coat, a coat of drifting clouds; using the rack opens his shop. Rule: a pinned home (r 0) means the character stands there — it is put on the spot when it spawns.
+
+## 23 Oct 2026: the apartment BBS and drone delivery (PR2)
+
+Owner: "simple bbs they can order things from bodega or catalog. catalog lists basic furniture for apartment. bodega as essential needs. all delivery ... dropped off by drone on front fire escape" (drone drops on the fire escape and you carry it in; ordered furniture auto-places).
+The 1980s computer in your apartment opens THE MARKET BBS (green terminal): THE BODEGA (essentials) and CATALOG (basic furniture), prices from the item catalog, paid from `INV.cash`. Ordering sends the drone to your front fire escape with a parcel; double-click it to bring it in — furniture places itself in an open spot and is kept (`OWNED` `apt-furn`), bodega items are flavour for now. Revives the dormant drone (146-drone) onto the open-plan apartment; the old roof-box delivery and drone cam are gone (`APTS.put` lets the drone reuse the apartment's own placement).

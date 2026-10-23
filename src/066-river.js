@@ -233,11 +233,11 @@ RIVER.build=()=>{ if(RIVER.on)return; const n0=scene.children.length; const R=RI
     fishM=new THREE.InstancedMesh(fishG,new THREE.MeshBasicMaterial({color:0xffffff}),NF); fishM.frustumCulled=false; scene.add(fishM); seedFish(); seedJunk(); RIVER.cx=1e9; };
   RIVER.load=async()=>{ '@later'; if(RIVER.deep||dbusy)return; dbusy=true; await FADE.run('LOADING...',()=>deepGo()); dbusy=false; };
   RIVER.over=(x,z)=>SHARED.LVL==='up'&&x>lx0&&x<lx1&&z>rz0&&z<rz1;
-  RIVER.air=1; RIVER.dep=0; RIVER.bot=0; let wasIn=false, wake=0, noAir=false, wasUnder=false;
+  RIVER.dep=0; RIVER.bot=0; let wasIn=false, wake=0, wasUnder=false;
   RIVER.feed=(st,pos,dt,go,keys)=>{ if(!RIVER.over(pos.x,pos.z)||!RIVER.swim&&onPier(pos.x,pos.z)){ RIVER.swim=false; if(wasIn)wasIn=false; return false; }
     const h=hAt(pos.x,pos.z), lvl=(LV+h)/ZU, floor=(LV-depthAt(pos.x,pos.z)*WU)/ZU;
     const W=RIG.water(st,{level:lvl,floor}); W.go=!!go; W.fast=W.in&&(keys.has('k')||keys.has('shift'))?1:0; RIVER.swim=W.in;
-    const under=W.in&&W.y<lvl-34; RIVER.air=under?Math.max(0,RIVER.air-dt/24):Math.min(1,RIVER.air+dt/3); if(RIVER.air<=0)noAir=true; if(noAir&&RIVER.air>.33)noAir=false; if(noAir)W.dive=false;
+    const under=W.in&&W.y<lvl-34;   // your air is VIT.air (103-vitals): one breath for every water
     RIVER.dep=Math.max(0,(lvl-34-W.y)*ZU*MPU); RIVER.bot=(lvl-floor)*ZU*MPU;
     if(under!==wasUnder){ wasUnder=under; if(!under&&W.in)sound(.1,false); }
     if(W.in&&!wasIn){ RIVER.drop(pos.x,pos.z,.55*T,.09*WU); splash(pos.x,LV+h,pos.z,70,2.6); sound(.8,false); }
@@ -306,13 +306,12 @@ RIVER.build=()=>{ if(RIVER.on)return; const n0=scene.children.length; const R=RI
   RIVER.post=scene=>{ if(uw){ scene.fog=fog0; scene.background.copy(bg0); uw=false; } };
 
   const css=document.createElement('style'); css.textContent=`#rvhud{position:fixed;left:12px;bottom:64px;z-index:20;background:#0e1016;border:2px solid #3a3f4e;padding:6px 10px;font:12px Silkscreen,monospace;color:#9aa3b5;display:none}
-    #rvhud b{color:#8fe3d6;font-weight:400} #rvhud .air{width:140px;height:8px;border:2px solid #3a3f4e;margin-top:5px} #rvhud .air i{display:block;height:100%;background:#8fe3d6} #rvhud .air.low i{background:#f0b45a}
-    #rvpan{position:fixed;left:12px;top:12px;z-index:30;width:300px;background:#0e1016;border:2px solid #3a3f4e;padding:10px 12px 12px;font:12px Silkscreen,monospace;color:#cfd6e4;max-height:calc(100vh - 24px);overflow:auto}
+    #rvhud b{color:#8fe3d6;font-weight:400}    #rvpan{position:fixed;left:12px;top:12px;z-index:30;width:300px;background:#0e1016;border:2px solid #3a3f4e;padding:10px 12px 12px;font:12px Silkscreen,monospace;color:#cfd6e4;max-height:calc(100vh - 24px);overflow:auto}
     #rvpan h3{margin:0 30px 2px 0;font:14px Silkscreen,monospace;color:#f2c14e} #rvpan .d{color:#8a8f9c;margin:2px 0 8px;line-height:1.45;font-size:11px;font-family:ui-sans-serif,system-ui,sans-serif}
     #rvpan .r{display:flex;flex-wrap:wrap;gap:4px;margin:4px 0} #rvpan .l{color:#8a8f9c;margin-top:8px} #rvpan button{font:11px Silkscreen,monospace;color:#cfd6e4;background:#161a24;border:2px solid #3a3f4e;padding:5px 7px;cursor:pointer}
     #rvpan button.on{border-color:#8fe3d6;color:#8fe3d6;background:#1b2b30} #rvpan button:hover{border-color:#f2c14e}`;
   document.head.appendChild(css);
-  const hud=document.createElement('div'); hud.id='rvhud'; hud.innerHTML='depth <b id="rvd">0.0 m</b> &nbsp;bed <span id="rvb">0.0 m</span><div class="air" id="rva"><i id="rvai"></i></div>'; document.body.appendChild(hud);
+  const hud=document.createElement('div'); hud.id='rvhud'; hud.innerHTML='depth <b id="rvd">0.0 m</b> &nbsp;bed <span id="rvb">0.0 m</span>'; document.body.appendChild(hud);
   const pan=document.createElement('div'); pan.id='rvpan'; document.body.appendChild(pan);   const WAYS=[['flat','FLAT','The river as it was: one painted sheet, glints drifting. You can still swim. 2 triangles.'],
     ['swell','SWELL','Waves on the graphics card (the mockup\'s swell and chop), the sky and the sun in them, foam on the crests; the murk laid over the bed by its depth. ~8,000 triangles, no extra pass.'],
     ['fluid','FLUID','Completely fluid: the water round you (48 tiles) is a wave simulation. The sea\'s waves come in at its open sides, slow over the shallows, bend, steepen, come back off the quay and round the pier\'s posts, and meet your splashes and wakes; seen through, bent, coloured by the depth; caustics on the bed. ~8,000 triangles + one extra scene pass.'],
@@ -336,7 +335,7 @@ RIVER.build=()=>{ if(RIVER.on)return; const n0=scene.children.length; const R=RI
   const pl=new THREE.Plane(new THREE.Vector3(0,1,0),-LV), ph=new THREE.Vector3();
   RIVER.pick=(ray,pos)=>{ if(SHARED.LVL!=='up'||!ray.intersectPlane(pl,ph)||!RIVER.over(ph.x,ph.z)||onPier(ph.x,ph.z)||Math.hypot(ph.x-pos.x,ph.z-pos.z)>40*T)return false; pan.hidden=false; return true; };
   RIVER.hud=()=>{ if(!RIVER.swim){ hud.style.display='none'; return; } hud.style.display='block'; document.getElementById('rvd').textContent=RIVER.dep.toFixed(1)+' m'; document.getElementById('rvb').textContent=RIVER.bot.toFixed(1)+' m';
-    document.getElementById('rvai').style.width=(RIVER.air*100).toFixed(0)+'%'; document.getElementById('rva').classList.toggle('low',RIVER.air<.3); };
+    };
   RIVER.U={SU,uCau,uRipOn,SIM,surf,bed,grass,kit:RIVER.kit}; RIVER.on=true;
   for(const f of RIVER.onBuild)f();
   for(const o of scene.children.slice(n0))if(o!==RIVERG)RIVERG.add(o);

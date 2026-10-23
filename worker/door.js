@@ -1,4 +1,5 @@
-import { routePartykitRequest, Server } from "partyserver";
+import { DurableObject } from "cloudflare:workers";
+import { getServerByName, routePartykitRequest, Server } from "partyserver";
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i, CODE = /^[A-Z0-9-]{6,32}$/, MAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 const json = (o, status = 200) => Response.json(o, { status, headers: { "cache-control": "no-store" } });
 const loopback = ip => !ip || ip === "::1" || ip === "localhost" || /^127\./.test(ip) || /^::ffff:127\./.test(ip);
@@ -35,6 +36,13 @@ export default {
         const id = await who(env, request, dev); if (!id) return new Response("login", { status: 401 });
         const r = new Request(req); r.headers.set("x-tsfm-id", id); r.headers.set("x-partykit-room", name); return r; },
       onBeforeRequest: () => new Response("not found", { status: 404 }) })) || new Response("not found", { status: 404 });
+    if (request.method === "POST" && (p === "/post" || p === "/admin")) {
+      if (request.headers.get("Origin") !== url.origin && !(dev && !request.headers.get("Origin"))) return json({ why: "not from the game's page" }, 403);
+      const id = await who(env, request, dev); if (!id) return json({ why: "login" }, 401);
+      let body; try { body = await request.json(); } catch (e) { body = {}; } if (!body || typeof body !== "object") body = {};
+      if (p === "/post") return json({ letters: await postOf(env).mine(id, Array.isArray(body.seen) ? body.seen.filter(Number.isInteger).slice(0, 50) : []) });
+      if (!(await owner(env, id, dev))) return json({ why: "only the owner" }, 403);
+      return json(await admin(env, body)); }
     if (request.method !== "POST" || !["/enter", "/join/check", "/join"].includes(p)) return new Response("not found", { status: 404 });
     if (request.headers.get("Origin") !== url.origin && !(dev && !request.headers.get("Origin"))) return json({ why: "not from the game's page" }, 403);
     if (tooMany(request.headers.get("CF-Connecting-IP") || "local")) return json({ why: "too many tries, wait a minute" }, 429);
@@ -65,7 +73,7 @@ async function pass(env, token, dev) {
   if (dev && token.startsWith("dev:")) return { ok: true, id: "dev-" + token.slice(4, 40) };
   const headers = { apikey: env.SUPABASE_KEY, Authorization: "Bearer " + token }, get = path => fetch(env.SUPABASE_URL + path, { headers });
   const r = await get("/auth/v1/user"); if (!r.ok) return { why: "login" };
-  const u = await r.json(); if (!u || !UUID.test(u.id || "")) return { why: "login" };
+  const u = await r.json(); if (!u || !UUID.test(u.id || "") || (u.banned_until && Date.parse(u.banned_until) > Date.now())) return { why: "login" };
   const pr = await get("/rest/v1/players?select=id&id=eq." + u.id);
   return pr.ok && (await pr.json()).length > 0 ? { ok: true, id: u.id } : { why: "code" };
 }
@@ -114,5 +122,88 @@ export class Block extends Server {
       const text = word(m.text, 200); if (text) this.broadcast(JSON.stringify({ t: "say", id: s.id, name: s.name, text }), [c.id]);
     }
   }
+  async onRequest(req) { const path = new URL(req.url).pathname;
+    if (path === "/who") return Response.json(this.roster().map(p => p.id));
+    let b = {}; try { b = await req.json(); } catch (e) {}
+    if (path === "/tell") { const m = JSON.stringify({ t: "tell", from: "THE MARKET", text: word(b.text, 500) }); let n = 0;
+      for (const c of this.getConnections()) if (c.state && (b.to === "*" || c.state.id === b.to)) { c.send(m); n++; } return Response.json({ n }); }
+    if (path === "/kick") { for (const c of this.getConnections()) if (c.state && c.state.id === b.id) c.close(4001, "removed"); return Response.json({ ok: true }); }
+    return new Response("not found", { status: 404 }); }
   onClose(c) { const s = c.state; if (s && s.id && !this.roster(c.id).some(p => p.id === s.id)) this.broadcast(JSON.stringify({ t: "out", id: s.id })); }
+}
+
+// the owner's panel (TENANTS in the game): every call checks the caller is in admins, then uses the service key
+const owners = new Map();
+async function owner(env, id, dev) {
+  if (dev && id.startsWith("dev-owner")) return true;
+  const now = Date.now(), c = owners.get(id); if (c && c.until > now) return c.ok;
+  const k = svc(env); if (!k) return false;
+  const r = await fetch(env.SUPABASE_URL + "/rest/v1/admins?select=user_id&user_id=eq." + encodeURIComponent(id), { headers: k });
+  const ok = r.ok && (await r.json()).length > 0; owners.set(id, { until: now + 60000, ok }); return ok;
+}
+const postOf = env => env.Post.get(env.Post.idFromName("post"));
+const blockAsk = async (env, room, path, body) => { const s = await getServerByName(env.Block, room);
+  const r = await s.fetch(new Request("https://block/" + path, { method: body ? "POST" : "GET", body: body ? JSON.stringify(body) : undefined, headers: { "x-partykit-room": room, "content-type": "application/json" } }));
+  return r.json(); };
+const newCode = () => { const A = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789", b = crypto.getRandomValues(new Uint8Array(8)); let s = ""; for (const x of b) s += A[x % 32]; return "MARKET-" + s.slice(0, 4) + "-" + s.slice(4); };
+// one request per 100 emails (Resend's batch), so a message to everyone stays under the worker's subrequest limit
+async function email(env, to, subject, text) {
+  const from = env.MAIL_FROM || "THE MARKET <market@thestrangestfleamarket.com>"; let n = 0;
+  for (let i = 0; i < to.length; i += 100) { const part = to.slice(i, i + 100);
+    const r = await fetch("https://api.resend.com/emails/batch", { method: "POST", headers: { Authorization: "Bearer " + env.RESEND_API_KEY, "content-type": "application/json" },
+      body: JSON.stringify(part.map(x => ({ from, to: [x], subject, text }))) });
+    if (r.ok) n += part.length; }
+  return n;
+}
+async function admin(env, b) {
+  const k = svc(env); if (!k && b.do !== "tell") return { why: "the server has no service key" };
+  const call = (path, init = {}) => fetch(env.SUPABASE_URL + path, { ...init, headers: { ...k, "content-type": "application/json", Prefer: "return=minimal", ...(init.headers || {}) } });
+  const res = async r => r.ok ? { ok: true } : { why: r.status + " " + (await r.text()).slice(0, 200) };
+  const room = ROOM.test(b.room || "") ? b.room : "s-a", id = String(b.id || ""), user = () => UUID.test(id);
+  const users = async () => { if (!k) return []; const r = await call("/auth/v1/admin/users?per_page=1000"); return r.ok ? (await r.json()).users || [] : []; };
+  if (b.do === "list") {
+    const [us, pl, ad, co, on] = await Promise.all([users(), call("/rest/v1/players?select=*").then(r => r.ok ? r.json() : []), call("/rest/v1/admins?select=*").then(r => r.ok ? r.json() : []),
+      call("/rest/v1/invite_codes?select=*").then(r => r.ok ? r.json() : []), blockAsk(env, room, "who").catch(() => [])]);
+    return { ok: true, email: !!env.RESEND_API_KEY, codes: co, letters: await postOf(env).list(),
+      users: us.map(x => ({ id: x.id, email: x.email, phone: x.phone || "", joined: x.created_at, last: x.last_sign_in_at, confirmed: x.email_confirmed_at, provider: x.app_metadata && x.app_metadata.provider,
+        banned: x.banned_until && Date.parse(x.banned_until) > Date.now() ? x.banned_until : null, player: pl.find(p => p.id === x.id) || null, admin: ad.some(a => a.user_id === x.id), online: on.includes(x.id) })) };
+  }
+  if (b.do === "code") { const n = Math.max(1, Math.min(1000, Math.floor(+b.uses || 1))), code = newCode();
+    const r = await call("/rest/v1/invite_codes", { method: "POST", body: JSON.stringify({ code, uses: 0, max_uses: n }) }); return r.ok ? { ok: true, code } : res(r); }
+  if (b.do === "codeoff") { const code = String(b.code || ""); if (!CODE.test(code)) return { why: "no such code" };
+    const r = await call("/rest/v1/invite_codes?select=uses&code=eq." + encodeURIComponent(code)), c = r.ok ? (await r.json())[0] : null; if (!c) return { why: "no such code" };
+    return res(await call("/rest/v1/invite_codes?code=eq." + encodeURIComponent(code), { method: "PATCH", body: JSON.stringify({ max_uses: c.uses }) })); }
+  if (b.do === "tell") {
+    const to = b.to === "*" ? "*" : id, subject = String(b.subject || "A LETTER FROM THE MARKET").slice(0, 120), text = String(b.text || "").slice(0, 4000).trim(), out = { ok: true };
+    if (!text || (to !== "*" && !user())) return { why: "who to, and what?" };
+    if (b.live) out.live = (await blockAsk(env, room, "tell", { to, text: text.slice(0, 500) }).catch(() => ({ n: 0 }))).n;
+    if (b.letter) out.letter = await postOf(env).send(to, subject, text);
+    if (b.email) out.email = env.RESEND_API_KEY ? await email(env, (await users()).filter(x => x.email && (to === "*" || x.id === to)).map(x => x.email).slice(0, 1000), subject, text) : "email is not set up";
+    return out;
+  }
+  if (!user()) return { why: "no such player" };
+  if (b.do === "user") {
+    const a = {}; if (b.email) a.email = String(b.email).trim().toLowerCase(), a.email_confirm = true; if (b.password) a.password = String(b.password);
+    if (a.email && !MAIL.test(a.email)) return { why: "that email doesn't look right" }; if (a.password && a.password.length < 8) return { why: "a password needs 8 letters or more" };
+    if (Object.keys(a).length) { const r = await call("/auth/v1/admin/users/" + id, { method: "PUT", body: JSON.stringify(a) }); if (!r.ok) return res(r); }
+    if (b.apt !== undefined) { const apt = b.apt === "" || b.apt === null ? null : Math.floor(+b.apt); if (apt !== null && !(apt > 0)) return { why: "an apartment is a number" };
+      const r = await call("/rest/v1/players?id=eq." + id, { method: "PATCH", body: JSON.stringify({ apt }) }); if (!r.ok) return res(r); }
+    return { ok: true };
+  }
+  if (b.do === "admin") return res(b.on ? await call("/rest/v1/admins", { method: "POST", body: JSON.stringify({ user_id: id }) }) : await call("/rest/v1/admins?user_id=eq." + id, { method: "DELETE" }));
+  if (b.do === "ban") { const r = await call("/auth/v1/admin/users/" + id, { method: "PUT", body: JSON.stringify({ ban_duration: b.on ? "876000h" : "none" }) });
+    if (r.ok && b.on) await blockAsk(env, room, "kick", { id }).catch(() => {}); return res(r); }
+  if (b.do === "delete") { const r = await call("/auth/v1/admin/users/" + id, { method: "DELETE" }); if (!r.ok) return res(r);
+    await blockAsk(env, room, "kick", { id }).catch(() => {}); await call("/rest/v1/admins?user_id=eq." + id, { method: "DELETE" }); await call("/rest/v1/players?id=eq." + id, { method: "DELETE" }); return { ok: true }; }
+  return { why: "unknown" };
+}
+// letters from the market: kept here (no Supabase table needed), shown to the player when they next open the game
+export class Post extends DurableObject {
+  constructor(ctx, env) { super(ctx, env); this.sql = ctx.storage.sql;
+    this.sql.exec("create table if not exists letters(id integer primary key autoincrement, too text not null, subject text, body text, at integer)");
+    this.sql.exec("create table if not exists seen(letter integer, who text, primary key(letter, who))"); }
+  send(to, subject, body) { this.sql.exec("insert into letters(too, subject, body, at) values(?, ?, ?, ?)", to, subject, body, Date.now()); return true; }
+  mine(id, seen) { for (const l of seen) this.sql.exec("insert or ignore into seen(letter, who) values(?, ?)", l, id);
+    return this.sql.exec("select id, subject, body, at from letters where (too = ? or too = '*') and at > ? and id not in (select letter from seen where who = ?) order by id limit 20", id, Date.now() - 30 * 864e5, id).toArray(); }
+  list() { return this.sql.exec("select id, too, subject, body, at, (select count(*) from seen where letter = letters.id) as read from letters order by id desc limit 100").toArray(); }
 }

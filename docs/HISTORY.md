@@ -4407,3 +4407,6 @@ Owner: "Let's add a fighting system with swords"; asked for prebuilt systems fir
 - **Enemies fight back the same way**: skeleton guards block light blows (more on deeper levels), a heavy one gets through; slimes, skeletons, bolts and golems all go through `VIT.hurt(d, from)`.
 - **THE DUEL** in the holodeck ($15, dearer than the drills): the knight winds up, you block or parry, strike while he is open; six exchanges, no health lost, trains SWORDSMANSHIP to 80.
 Rule: a fight is one strike path (`STRIKES`) and one blow path (`VIT.hurt` through `VIT.guard`); weapons are rows on the item model, never code per blade.
+
+## 23 Oct 2026: the sparring ring
+Owner: "can you add npcs in game to test these out?" A ring on Market St by the swordsmith (`146g-sparring.js`): SPAR with a sword in hand and two skeleton partners (blade and shield) come at you, block, take your hits, fall and get up. Light blows (a scratch of health each); parries, hits and a partner going down teach SWORDSMANSHIP. Nothing until you spar: the partners are made on the first bout.

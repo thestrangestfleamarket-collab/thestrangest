@@ -2,7 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {SKIN} from './003a-skin.js';
 import {FORAGE, INV, ITEMS, LEVELS, NPCS, pos, SFX, st, UI, VIT, W3, WIELD} from './003b-systems.js';
-import {scene} from './004-main.js';
+import {renderer, scene} from './004-main.js';
 import {MAPG, MODS, SOL, SYS, TILE, ZU} from './006-map-pre.js';
 import {SKELGO} from './077-npc-skel.js';
 import {CREATURES} from './086-npc-fox.js';
@@ -11,9 +11,9 @@ import {GEMS} from './101-gems.js';
   const TIER={green:{c:0x5ce04a,hp:2,v:.9,dmg:0,s:1,loot:.25,sk:[-10,40],nm:'GREEN',p:4,see:0},blue:{c:0x3fa2ff,hp:3,v:1.1,dmg:.03,s:1.06,loot:.35,sk:[0,50],nm:'BLUE',p:8,see:3},
     purple:{c:0xb058ff,hp:5,v:1.3,dmg:.05,s:1.14,loot:.45,sk:[15,65],nm:'PURPLE',p:15,see:3.6},red:{c:0xff4434,hp:7,v:1.5,dmg:.07,s:1.24,loot:.6,sk:[30,80],nm:'RED',p:25,see:4.2}};
   FORAGE.add({names:Object.fromEntries(Object.keys(TIER).map(k=>['slime_'+k,'BOTTLE OF '+TIER[k].nm+' SLIME'])),prices:Object.fromEntries(Object.keys(TIER).map(k=>['slime_'+k,TIER[k].p]))});
-  const STRIKES=(()=>{ const STR=/jab|cross|upper|hook|slap|punch|kick|sweep|round/i, T=TILE; let last=null, swT=0, swAt=0, swing={};   // your strikes, read by every mob system (the dungeon's, the cave's golems)
+  const STRIKES=(()=>{ const STR=/jab|cross|upper|hook|slap|punch|kick|sweep|round/i, T=TILE; let last=null, swT=0, swAt=0, swing={}, fr=-1, cache=[];   // your strikes, read by every mob system (the dungeon's, the cave's golems, the sparring ring): one list a frame, the same for every reader
     SYS.add('strike',()=>{ const now=performance.now(); if(WIELD.sword&&now-swT>220){ swT=now; swing=WIELD.swing||{}; swAt=now+(swing.heavy?140:90); } },'146b-dunmobs');
-    const strikes=()=>{ const out=[], s=(st.up&&STR.test(st.up.name)&&st.up)||(st.move&&STR.test(st.move.name)&&st.move);
+    const strikes=()=>{ const f=renderer.info.render.frame; if(f===fr)return cache; fr=f; const out=cache=[], s=(st.up&&STR.test(st.up.name)&&st.up)||(st.move&&STR.test(st.move.name)&&st.move);
       if(s&&s!==last&&s.t>=.08){ last=s; const k=/kick|sweep|round/i.test(s.name); out.push({r:(k?1.15:1)*T,d:k?1.5:1}); }
       if(swAt&&performance.now()>=swAt){ swAt=0; if(WIELD.sword){ const h=!!swing.heavy, d=(+ITEMS.prop(WIELD.on,'damage')||2)*(h?1.5:1)*(swing.winded?.6:1); out.push({r:(h?1.8:1.55)*T,d,kb:h?1.8:1,sk:'sword',heavy:h}); } } return out; };
     const inCone=(s,x,z,y,rad)=>{ const dx=x-pos.x, dz=z-pos.z, d=Math.hypot(dx,dz); if(Math.abs(y-SHARED.py)>1.4*T||d>s.r+rad)return false; return d<.35*T||(dx*Math.sin(SHARED.heading)+dz*Math.cos(SHARED.heading))/d>.3; };

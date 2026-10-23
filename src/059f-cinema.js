@@ -17,7 +17,7 @@ import {FADE, STORE, SYS, TILE} from './006-map-pre.js';
   const DEF={id:ROW,playlist:[],idx:0,video_id:'',started_at:null,size:1,brightness:.8,loop:true,autoplay:true};
   const cur=()=>rec||DEF; CINEMA.now=()=>cur(); CINEMA.title='';
 
-  const pull=async()=>{ '@later'; try{ const r=await fetch('/now'); if(!r.ok)return;
+  const pull=async()=>{ '@later'; if(location.protocol==='file:')return; try{ const r=await fetch('/now'); if(!r.ok)return;
     const a=await r.json(); rec=a[0]||null; onRec(); }catch(e){} };
   const push=async patch=>{ '@later'; const t=await tok(); if(!t)return false; try{
     const r=await fetch(SB+'/rest/v1/now_playing?id=eq.'+ROW,{method:'PATCH',headers:{apikey:KEY,Authorization:'Bearer '+t,'content-type':'application/json',Prefer:'return=representation'},body:JSON.stringify({...patch,updated_at:new Date().toISOString()})});

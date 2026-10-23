@@ -60,7 +60,8 @@ CHARED.build=()=>{ '@editor';
     case 'speed': return r.speed!=null?r.speed:+(((N.st?N.st.v:0)/TILE)).toFixed(2);
     case 'size': return r.size!=null?r.size:+(((N.st?N.st.R:.3*TILE)/TILE)).toFixed(2); } };
 
-  const listHTML=()=>{ const groups={}; NPCS.forEach((N,i)=>{ if(!N||!N.st)return; (groups[kindOf(N.key)]||(groups[kindOf(N.key)]=[])).push([i,N]); });
+  const ALL=()=>NPCS.concat(NPCS.extra||[]);
+  const listHTML=()=>{ const groups={}; ALL().forEach((N,i)=>{ if(!N||!N.st)return; (groups[kindOf(N.key)]||(groups[kindOf(N.key)]=[])).push([i,N]); });
     return Object.keys(groups).sort().map(k=>'<div class="grp">'+k+' ('+groups[k].length+')</div>'+groups[k].map(([i,N])=>'<button class="row mb'+(N===sel?' hot':'')+'" data-i="'+i+'">'+esc(N.name||N.key||'someone')+'</button>').join('')).join(''); };
   const detailHTML=()=>{ if(!sel)return '<div class="dim">Pick a character from the list to edit it. Changes are a draft in this browser; EXPORT writes characters.json, which the game reads.</div>';
     const N=sel, tabs=TABS.map(([k,n])=>'<button class="mb'+(tab===k?' hot':'')+'" data-tab="'+k+'">'+n+'</button>').join(''); let b='';
@@ -106,7 +107,7 @@ CHARED.build=()=>{ '@editor';
     VIEW.onclose=()=>draw();
     VIEW.open({name:N.name||N.key,lend:()=>N.g?[N.g]:[],lendScale:()=>1,opacity:()=>1,look:()=>({})},side); };
 
-  q('#chL').addEventListener('click',e=>{ const b=e.target.closest&&e.target.closest('button[data-i]'); if(!b)return; sel=NPCS[+b.dataset.i]||null; draw(); });
+  q('#chL').addEventListener('click',e=>{ const b=e.target.closest&&e.target.closest('button[data-i]'); if(!b)return; sel=ALL()[+b.dataset.i]||null; draw(); });
   q('#chD').addEventListener('click',e=>{ const b=e.target.closest&&e.target.closest('button'); if(!b||!sel)return;
     if(b.dataset.tab){ tab=b.dataset.tab; draw(); } else if(b.id==='chV')openView(sel);
     else if(b.id==='chHere'){ const ht=homeTiles(sel); setField(sel,'homex',CHARS.tx(pos.x)); setField(sel,'homey',CHARS.tz(pos.z)); if(!(ht[2]>0))setField(sel,'range',6); draw(); }
@@ -125,7 +126,7 @@ CHARED.build=()=>{ '@editor';
     if(e.key==='Escape'){ e.preventDefault(); if(VIEW&&VIEW.on)VIEW.close(); else CHARED.toggle(); } },true);
   addEventListener('keyup',e=>{ if(CHARED.on&&!(e.target&&/INPUT|TEXTAREA|SELECT/.test(e.target.tagName)))e.stopImmediatePropagation(); },true);
 
-  CHARED.show=(on,tab0)=>{ CHARED.on=on; R.style.display=on?'flex':'none'; if(on){ if(tab0)tab=tab0; if(keys.clear)keys.clear(); if(sel&&NPCS.indexOf(sel)<0)sel=null; draw(); } else if(VIEW&&VIEW.on)VIEW.close(); };
+  CHARED.show=(on,tab0)=>{ CHARED.on=on; R.style.display=on?'flex':'none'; if(on){ if(tab0)tab=tab0; if(keys.clear)keys.clear(); if(sel&&ALL().indexOf(sel)<0)sel=null; draw(); } else if(VIEW&&VIEW.on)VIEW.close(); };
 };
 CHARED.toggle=async tab0=>{ '@later'; if(CHARED.busy)return;
   if(CHARED.built){ if(CHARED.on){ if(tab0)CHARED.show(true,tab0); else CHARED.show(false); } else CHARED.show(true,tab0); return; }

@@ -24,12 +24,12 @@ import {OWNED} from './005-save.js';
   const P=document.createElement('div'); P.id='ited'; P.hidden=true; document.body.appendChild(P);
   const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   const norm=s=>String(s||'').toLowerCase().replace(/\s+/g,'_');
-  const discovered=()=>{ const s=new Set();
+  const discovered=()=>{ '@later'; const s=new Set();
     try{ if(window.FORAGE&&FORAGE.ids)for(const id of FORAGE.ids())s.add(norm(id)); }catch(e){}
     try{ const G=window.GPH; if(G&&G.loose)for(const it of G.loose())if(it&&it.name)s.add(norm(it.name)); }catch(e){}
     for(const id in ITEMS.defs)s.delete(id); return [...s].sort(); };
   const nameOf=id=>{ try{ return (window.FORAGE&&FORAGE.NM&&FORAGE.NM[id])||id; }catch(e){ return id; } };
-  function draw(){ const ids=ITEMS.ids();
+  function draw(){ '@later'; const ids=ITEMS.ids();
     P.innerHTML=`<h2>ITEMS — PROPERTIES</h2><div class="pane">
       <div class="dim">A property is shared by every item of its kind. Turn one on here and the systems that react to it (fire, crafting, …) use it the same way everywhere.</div>
       <div class="row"><input type="text" id="itnew" placeholder="new item id, e.g. crate"><button class="btn" id="itadd">ADD</button></div>
@@ -40,7 +40,7 @@ import {OWNED} from './005-save.js';
       ${(()=>{ const d=discovered(); return d.length?`<div class="dim" style="margin-top:10px">FROM THE GAME — click to add (${d.length})</div><div class="props" style="margin:6px 0">${d.map(id=>`<button class="chip" data-add="${esc(id)}" title="${esc(nameOf(id))}">${esc(id)}</button>`).join('')}</div>`:''; })()}
       <div class="row"><button class="btn" id="itexp">EXPORT</button><button class="btn" id="itdone">DONE</button></div>
       <div class="dim">Export writes items.json; drop it in data/ to ship. BURNS (fire), EDIBLE and BREATH (eating), SELLABLE (shops), OFF-WORLD (merchant-only) and WORN/HELD + GRANTS (gear: a merchant sells it, you hold or wear it) react in-game; the rest define properties systems will read.</div></div>`; }
-  P.addEventListener('click',e=>{ const b=e.target.closest&&e.target.closest('button'); if(!b)return;
+  P.addEventListener('click',e=>{ '@later'; const b=e.target.closest&&e.target.closest('button'); if(!b)return;
     if(b.id==='itadd'){ const v=(P.querySelector('#itnew').value||'').trim().toLowerCase().replace(/\s+/g,'_'); if(v&&!ITEMS.defs[v]){ ITEMS.defs[v]=DEF(); save(); draw(); } return; }
     if(b.dataset.add){ const id=b.dataset.add; if(!ITEMS.defs[id]){ ITEMS.defs[id]=DEF(); save(); draw(); } return; }
     if(b.dataset.del){ delete ITEMS.defs[b.dataset.del]; save(); draw(); return; }

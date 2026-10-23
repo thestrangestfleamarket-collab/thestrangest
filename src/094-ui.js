@@ -114,7 +114,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
   UI.follow=()=>{ const mv=fx!=null&&Math.hypot(pos.x-fx,pos.z-fz)>1e-4; fx=pos.x; fz=pos.z; if(!mv||UI.off.lengthSq()<1e-8)return;
     fv.set(pos.x,SHARED.py+.9,pos.z).project(SHARED.cam); if(Math.abs(fv.x)>.92||Math.abs(fv.y)>.92){ UI.off.set(0,0,0); zAt=null; } };
   cv.addEventListener('pointerdown',e=>{ '@later'; if(e.button!==0||ED.on)return; if(window.WIELD&&WIELD.on&&!MAPED.on&&!WE.on&&!LAND.on&&!UI.freeCam){ WIELD.strike(); return; } if(MAPED.down(e)||WE.down(e)||LAND.down(e)){ cv.setPointerCapture(e.pointerId); return; } L={x:e.clientX,y:e.clientY,x0:e.clientX,y0:e.clientY,moved:false}; UI.grab(e); cv.setPointerCapture(e.pointerId); });
-  cv.addEventListener('pointermove',e=>{ if(MAPED.dragging){ MAPED.move(e); return; } if(WE.dragging){ WE.move(e); return; } if(LAND.dragging){ LAND.move(e); return; } if(!L)return; if(!L.moved&&Math.hypot(e.clientX-L.x0,e.clientY-L.y0)>5)L.moved=true;
+  cv.addEventListener('pointermove',e=>{ '@later'; if(MAPED.dragging){ MAPED.move(e); return; } if(WE.dragging){ WE.move(e); return; } if(LAND.dragging){ LAND.move(e); return; } if(!L)return; if(!L.moved&&Math.hypot(e.clientX-L.x0,e.clientY-L.y0)>5)L.moved=true;
     if(L.moved){ const dx=e.clientX-L.x, dy=e.clientY-L.y; if(!e.shiftKey&&!e.altKey&&!UI.persp)UI.pan(dx,dy); else UI.orbit(dx,dy); } L.x=e.clientX; L.y=e.clientY; });
   cv.addEventListener('pointerup',()=>{ MAPED.up(); WE.up(); if(LAND.up)LAND.up(); L=null; });
   const THINGS=[]; UI.thing=o=>THINGS.push(o); UI.things=THINGS;

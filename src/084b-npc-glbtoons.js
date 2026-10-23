@@ -19,7 +19,7 @@ const GLBTOONS={list:[]}; window.GLBTOONS=GLBTOONS;
   const skirt=def=>{ const S=def.bones.filter(b=>/^[kc]\d+$/.test(b[0])).map(b=>b[0]); if(!S.length)return null;
     const ys=def.bones.filter(b=>S.includes(b[0])).map(b=>b[2][1]), top=Math.max(...ys), bot=Math.min(...ys), hip=def.bones.find(b=>b[0]==='hips')[2], r=Math.max(...def.bones.filter(b=>S.includes(b[0])).map(b=>Math.abs(b[2][0])))||1;
     const at=Object.fromEntries(def.bones.map(b=>[b[0],b[2]]));
-    return c=>{ const B=c.B, H=B.hips, lL=B.legL?B.legL.rotation.x:0, lR=B.legR?B.legR.rotation.x:0, dy=H.position.y-H.userData.rest.y, rz=H.rotation.z;
+    return c=>{ '@later'; const B=c.B, H=B.hips, lL=B.legL?B.legL.rotation.x:0, lR=B.legR?B.legR.rotation.x:0, dy=H.position.y-H.userData.rest.y, rz=H.rotation.z;
       for(const n of S){ const p=at[n], t=(top-p[1])/((top-bot)||1), wl=Math.max(0,Math.min(1,.5-p[0]/(2*r))), a=lL*wl+lR*(1-wl), d=hip[1]-p[1];
         const b=B[n]; b.position.y+=dy; b.position.z+=Math.sin(-a)*Math.max(0,d)*t*.9; b.position.x+=-rz*(p[1]-hip[1]); b.position.y+=(1-Math.cos(a))*Math.max(0,d)*t*.5; } }; };
   const make=(key,D)=>{ const K=KIND[key], g=RIGNPC.glb(D), sk=skirt(g);

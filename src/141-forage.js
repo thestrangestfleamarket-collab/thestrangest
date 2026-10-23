@@ -90,7 +90,7 @@ import {GEMS} from './101-gems.js';
   if(WEEDS.chunks)for(const [k,g] of WEEDS.chunks)if(g&&g.sq)CH.set(k,spawns(k,g)); FORAGE.sync();
   setInterval(()=>{ const d=day(); if(d!==S.pd){ const old=S.pd; S.pd=d; for(const k in S.picked)if(!k.startsWith(d+':'))delete S.picked[k]; if(old!==-1&&WEEDS.chunks){ CH.clear(); for(const [k,g] of WEEDS.chunks)if(g&&g.sq)CH.set(k,spawns(k,g)); FORAGE.sync(); } save(); } },1000);
   { const TRL=[], shod0=()=>LOOKS.L&&!LOOKS.L.bare; let acc=0, lx=pos.x, lz=pos.z;
-    const pressed=(x,z,now)=>{ '@later'; if(WEEDS.pressAt)return WEEDS.pressAt(x,z); const R=.8*T; for(const p of TRL)if(now-p[2]<3.5&&Math.hypot(x-p[0],z-p[1])<R)return 1;
+    const pressed=(x,z,now)=>{ if(WEEDS.pressAt)return WEEDS.pressAt(x,z); const R=.8*T; for(const p of TRL)if(now-p[2]<3.5&&Math.hypot(x-p[0],z-p[1])<R)return 1;
       for(const N of NPCS)if(N.lv==='up'&&!N.far&&N.st&&Math.abs(N.st.x-x)<R&&Math.hypot(N.st.x-x,N.st.z-z)<R)return 1; return 0; };
     SYS.add('life',(dt)=>{ if((acc+=dt)<.12)return; const h=acc; acc=0; if(!CH.size)return; const now=performance.now()/1e3, up=SHARED.LVL==='up', mv=Math.hypot(pos.x-lx,pos.z-lz)/h; lx=pos.x; lz=pos.z;
       if(up&&(!TRL.length||Math.hypot(pos.x-TRL[0][0],pos.z-TRL[0][1])>.3*T)){ TRL.unshift([pos.x,pos.z,now]); if(TRL.length>16)TRL.pop(); } if(up&&TRL.length)TRL[0][2]=now;

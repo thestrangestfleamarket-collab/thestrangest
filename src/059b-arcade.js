@@ -7,7 +7,7 @@ import {BATCH} from './008-batch.js';
 import {LAMPS} from './014-gamekit.js';
 await grab('arcade',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Y=SHARED.BOD.Y, {hash:hs}=SHARED.BOD.g, sh=SHARED.BOD.K.sh, MS=STORE.main;
   const HOLO=STORE.holo={programs:[],run:null}, say=(t,c)=>FORAGE.say&&FORAGE.say(t,c);
-  HOLO.open=(x,z,G)=>{ const n=HOLO.programs.length; HOLO.programs.forEach((P,i)=>{ const px=x+(i-(n-1)/2)*2.2*TILE; if(P.place)P.place(px,z,0,G);
+  HOLO.open=(x,z,G)=>{ '@later'; const n=HOLO.programs.length; HOLO.programs.forEach((P,i)=>{ const px=x+(i-(n-1)/2)*2.2*TILE; if(P.place)P.place(px,z,0,G);
       const hb=new THREE.Mesh(new THREE.BoxGeometry(.8*TILE,2*TILE,.8*TILE),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(px,TILE,z); scene.add(hb);
       UI.thing({name:P.name,obj:hb,reach:1.6*TILE,near:2.6*TILE,tall:2*TILE,act:()=>HOLO.start(P,px,z)}); }); };
   HOLO.close=()=>{ HOLO.run=null; for(const P of HOLO.programs)if(P.hide)P.hide(); };

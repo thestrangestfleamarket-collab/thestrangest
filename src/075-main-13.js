@@ -79,7 +79,7 @@ function frame(now){ requestAnimationFrame(frame); if(PARK.hold)return; renderer
     { st.world=RAG.on?null:{x:pos.x,z:pos.z,y:SHARED.py,hd:SHARED.heading,kx:1/W3.group.scale.x,ky:1/W3.group.scale.y,gnd:SHARED.groundY,t:now/1000}; B=ED.anim?ED.animPose():RIG.pose(st); ragBlend(B); ragStrikes(B,J0,J0t?(now-J0t)/1000:0); J0=B.J; J0t=now; ASTEP.you.B=B; } }
   const hdA=(RAG.on?RAG.hd:SHARED.heading)-a;
   if(loose.length||FLOATS.bodies.some(b=>Math.hypot(b.x[0]*TL-pos.x,-b.x[1]*TL-pos.z)<2.5))RIG.draw(B,cloud,hdA,uimg,PW,PICH,AX,AY,1,false);
-  W3.place(B,pos.x,SHARED.py,pos.z,RAG.on?RAG.hd:SHARED.heading,hdA,ZU); if(window.WIELD)WIELD.post(B); FEEL.ui(dt); PB.step(dt,B,pos.x,SHARED.py,pos.z,RAG.on?RAG.hd:SHARED.heading,SHARED.groundY(pos.x,pos.z),RAG.on); if(ED.on)ED.tick();
+  W3.place(B,pos.x,SHARED.py,pos.z,RAG.on?RAG.hd:SHARED.heading,hdA,ZU); if(window.WIELD)WIELD.post(B); if(window.EQUIP&&EQUIP.post)EQUIP.post(B); FEEL.ui(dt); PB.step(dt,B,pos.x,SHARED.py,pos.z,RAG.on?RAG.hd:SHARED.heading,SHARED.groundY(pos.x,pos.z),RAG.on); if(ED.on)ED.tick();
   phyYouNow(dt); looseAcc+=dt; let nst=0; while(looseAcc>=PHH&&nst<6){ looseAcc-=PHH; nst++; phyStep(loose,STATIC,PHH,null,null); } if(nst>=6)looseAcc=0; looseDraw();
 
   if(UI.freeCam)LITE.tick(dt,UI.camT.x,UI.camT.y,UI.camT.z); else LITE.tick(dt,pos.x,SHARED.py+1.2*TILE,pos.z);

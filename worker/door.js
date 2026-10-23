@@ -41,7 +41,7 @@ export default {
       const id = await who(env, request, dev); if (!id) return json({ why: "login" }, 401);
       let body; try { body = await request.json(); } catch (e) { body = {}; } if (!body || typeof body !== "object") body = {};
       if (p === "/post") return json({ letters: await postOf(env).mine(id, Array.isArray(body.seen) ? body.seen.filter(Number.isInteger).slice(0, 50) : []) });
-      if (!(await owner(env, id, dev))) return json({ why: "only the owner" }, 403);
+      const own = await owner(env, id, dev); if (own !== true) return json({ why: "only the owner (" + own + ")" }, 403);
       return json(await admin(env, body)); }
     if (request.method !== "POST" || !["/enter", "/join/check", "/join"].includes(p)) return new Response("not found", { status: 404 });
     if (request.headers.get("Origin") !== url.origin && !(dev && !request.headers.get("Origin"))) return json({ why: "not from the game's page" }, 403);
@@ -136,10 +136,12 @@ export class Block extends Server {
 const owners = new Map();
 async function owner(env, id, dev) {
   if (dev && id.startsWith("dev-owner")) return true;
-  const now = Date.now(), c = owners.get(id); if (c && c.until > now) return c.ok;
-  const k = svc(env); if (!k) return false;
+  const now = Date.now(), c = owners.get(id); if (c && c.until > now) return true;
+  const k = svc(env); if (!k) return "the worker has no SUPABASE_SERVICE_KEY";
   const r = await fetch(env.SUPABASE_URL + "/rest/v1/admins?select=user_id&user_id=eq." + encodeURIComponent(id), { headers: k });
-  const ok = r.ok && (await r.json()).length > 0; owners.set(id, { until: now + 60000, ok }); return ok;
+  if (!r.ok) return "Supabase refused the worker's key: " + r.status + " " + (await r.text()).slice(0, 120);
+  if (!(await r.json()).length) return "no admins row for " + id;
+  owners.set(id, { until: now + 60000 }); return true;
 }
 const postOf = env => env.Post.get(env.Post.idFromName("post"));
 const blockAsk = async (env, room, path, body) => { const s = await getServerByName(env.Block, room);

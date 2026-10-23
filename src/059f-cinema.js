@@ -1,6 +1,6 @@
 // THE CINEMA: the movie theatre screen plays one shared YouTube reel at the same timecode for everyone, projected from the back; its marquee and poster outside follow what plays.
 import {SHARED, THREE} from './003-shx.js';
-import {CINEMA, pos, UI} from './003b-systems.js';
+import {CINEMA, CLOCK, pos, UI} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {FADE, STORE, SYS, TILE} from './006-map-pre.js';
 
@@ -81,23 +81,23 @@ import {FADE, STORE, SYS, TILE} from './006-map-pre.js';
     const g=new THREE.BufferGeometry(), ps=[], cs=[], A=[1,.95,.78], B=[.1,.09,.07];
     for(let i=0;i<4;i++){ const q0=Q[i], q1=Q[(i+1)%4]; ps.push(P.x,P.y,P.z,q0.x,q0.y,q0.z,q1.x,q1.y,q1.z); cs.push(...A,...B,...B); }
     g.setAttribute('position',new THREE.Float32BufferAttribute(ps,3)); g.setAttribute('color',new THREE.Float32BufferAttribute(cs,3));
-    const beam=new THREE.Mesh(g,new THREE.MeshBasicMaterial({vertexColors:true,transparent:true,opacity:.08,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}));
-    const N=260, dp=new Float32Array(N*3), dv=new Float32Array(N*3), s0=new THREE.Vector3(), s1=new THREE.Vector3();
+    const beam=new THREE.Mesh(g,new THREE.MeshBasicMaterial({vertexColors:true,transparent:true,opacity:.05,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}));
+    const N=170, dp=new Float32Array(N*3), dv=new Float32Array(N*3), s0=new THREE.Vector3(), s1=new THREE.Vector3();
     const seed=i=>{ const t=.08+Math.random()*.92, u=Math.random(), v=Math.random(); s0.copy(Q[0]).lerp(Q[1],u); s1.copy(Q[3]).lerp(Q[2],u); s0.lerp(s1,v); s0.lerp(P,1-t);
       dp[i*3]=s0.x; dp[i*3+1]=s0.y; dp[i*3+2]=s0.z; dv[i*3]=(Math.random()-.5)*.0035; dv[i*3+1]=(Math.random()-.5)*.0025; dv[i*3+2]=(Math.random()-.5)*.0035; };
     for(let i=0;i<N;i++)seed(i);
     const dg=new THREE.BufferGeometry(); dg.setAttribute('position',new THREE.BufferAttribute(dp,3));
-    const dust=new THREE.Points(dg,new THREE.PointsMaterial({color:0xfff0d0,size:.028,transparent:true,opacity:.45,blending:THREE.AdditiveBlending,depthWrite:false}));
+    const dust=new THREE.Points(dg,new THREE.PointsMaterial({color:0xfff0d0,size:.024,transparent:true,opacity:.32,blending:THREE.AdditiveBlending,depthWrite:false}));
     const dir=new THREE.Vector3().subVectors(p,P).normalize();
     const box=new THREE.Mesh(new THREE.BoxGeometry(.42,.3,.5),new THREE.MeshLambertMaterial({color:0x1c1715})); box.position.copy(P).addScaledVector(dir,-.1); box.lookAt(p);
     const lens=new THREE.Mesh(new THREE.SphereGeometry(.07,8,8),new THREE.MeshBasicMaterial({color:0xfff4d0})); lens.position.copy(P).addScaledVector(dir,.2);
     rig=new THREE.Group(); rig.add(beam,dust,box,lens); rig.visible=false; scene.add(rig); rig.u={beam,dust,dp,dv,N,seed}; };
-  const animRig=now=>{ if(!rig||!rig.visible)return; const u=rig.u, t=now/1000; u.beam.material.opacity=.075+.02*Math.sin(t*21)+.012*Math.sin(t*5.3); u.dust.material.opacity=.4+.08*Math.sin(t*3.1);
+  const animRig=now=>{ if(!rig||!rig.visible)return; const u=rig.u, t=now/1000; u.beam.material.opacity=.048+.012*Math.sin(t*21)+.008*Math.sin(t*5.3); u.dust.material.opacity=.28+.06*Math.sin(t*3.1);
     const {dp,dv,N}=u; for(let i=0;i<N;i++){ dp[i*3]+=dv[i*3]; dp[i*3+1]+=dv[i*3+1]; dp[i*3+2]+=dv[i*3+2]; if(Math.random()<.004)u.seed(i); } u.dust.geometry.attributes.position.needsUpdate=true; };
 
   let lastSync=0, adminThings=false;
   const tick=()=>{ const mt=STORE.main&&STORE.main.theatre; CINEMA.on=false; if(!mt||!mt.fm)return;
-    const up=SHARED.LVL==='up'; if(canopy)canopy.box.visible=up; if(post)post.group.visible=up;
+    const up=SHARED.LVL==='up'; if(canopy){ canopy.box.visible=canopy.pool.visible=up; const h=CLOCK.h??12; canopy.pool.material.opacity=h<6.5||h>18.5?1:.3; } if(post)post.group.visible=up;
     if(CINEMA.admin&&!adminThings&&canopy&&post){ adminThings=true;
       UI.thing({name:'THE MARQUEE',ghost:1,obj:canopy.box,reach:2.2*TILE,near:6*TILE,tall:1,act:()=>editMarquee()});
       UI.thing({name:'THE POSTER',ghost:1,obj:post.group,reach:1.6*TILE,near:5*TILE,tall:1,act:()=>editPoster()}); }
@@ -117,16 +117,16 @@ import {FADE, STORE, SYS, TILE} from './006-map-pre.js';
   let canopy=null, post=null;
   const canv=(w,h)=>{ const cv=document.createElement('canvas'); cv.width=w; cv.height=h; const tex=new THREE.CanvasTexture(cv); tex.magFilter=THREE.NearestFilter; tex.minFilter=THREE.LinearFilter; tex.generateMipmaps=false; tex.colorSpace=THREE.SRGBColorSpace; return {cv,g:cv.getContext('2d'),tex}; };
   const FACE='"Arial Narrow","Helvetica Neue",Arial,sans-serif';
-  const fit=(g,t,maxW,px)=>{ let s=px; do{ g.font='bold '+Math.round(s)+'px '+FACE; s-=1; }while(g.measureText(t).width>maxW&&s>8); };
+  const fit=(g,t,maxW,px)=>{ let s=px; do{ g.font='900 '+Math.round(s)+'px '+FACE; s-=1; }while(g.measureText(t).width>maxW&&s>8); };
   const qz=v=>Math.min(255,Math.round(v/56)*56), title=()=>(CINEMA.title||'THE STRANGEST CINEMA').toUpperCase();
-  const split2=t=>{ if(t.length<=20)return [t]; const m=t.length/2; let b=-1; for(let i=0;i<t.length;i++)if(t[i]===' '&&(b<0||Math.abs(i-m)<Math.abs(b-m)))b=i; return b<0?[t]:[t.slice(0,b),t.slice(b+1)]; };
+  const split2=t=>{ if(t.length<=34)return [t]; const m=t.length/2; let b=-1; for(let i=0;i<t.length;i++)if(t[i]===' '&&(b<0||Math.abs(i-m)<Math.abs(b-m)))b=i; return b<0?[t]:[t.slice(0,b),t.slice(b+1)]; };
   const own=k=>String(cur()[k]||'').trim();
   const lines=()=>{ const o=own('marquee'); return o?o.toUpperCase().split('\n').map(s=>s.trim()).filter(Boolean).slice(0,3):['NOW SHOWING',...split2(title())].slice(0,3); };
   const litBg=(g,W,H)=>{ const gr=g.createLinearGradient(0,0,0,H); gr.addColorStop(0,'#d9e6f5'); gr.addColorStop(.5,'#f6faff'); gr.addColorStop(1,'#d9e6f5'); g.fillStyle=gr; g.fillRect(0,0,W,H); };
-  const rails=(g,W,H,n)=>{ g.fillStyle='rgba(60,70,84,.35)'; for(let i=1;i<n;i++){ const y=Math.round(6+i*(H-12)/n); g.fillRect(0,y-1,W,2); } g.fillStyle='#8f98a3'; g.fillRect(0,0,W,6); g.fillRect(0,H-6,W,6); };
+  const rails=(g,W,H,n)=>{ g.fillStyle='rgba(60,70,84,.5)'; for(let i=1;i<n;i++){ const y=Math.round(6+i*(H-12)/n); g.fillRect(0,y-1,W,2); } g.fillStyle='#8f98a3'; g.fillRect(0,0,W,6); g.fillRect(0,H-6,W,6); };
   const drawCanopy=()=>{ const {front,side}=canopy, L=lines(), n=L.length, auto=!own('marquee');
     { const {g,cv,tex}=front, W=cv.width, H=cv.height, rh=(H-12)/n; litBg(g,W,H); rails(g,W,H,n); g.fillStyle='#111214'; g.textAlign='center'; g.textBaseline='middle'; if('letterSpacing' in g)g.letterSpacing='3px';
-      L.forEach((t,i)=>{ fit(g,t,W-60,rh*(auto&&n>1&&i===0?.48:.7)); g.fillText(t,W/2,6+rh*(i+.54)); }); tex.needsUpdate=true; }
+      L.forEach((t,i)=>{ fit(g,t,W-80,rh*(auto&&n>1&&i===0?.42:.74)); g.fillText(t,W/2,6+rh*(i+.54)); }); tex.needsUpdate=true; }
     { const {g,cv,tex}=side; litBg(g,cv.width,cv.height); rails(g,cv.width,cv.height,n); tex.needsUpdate=true; } };
   const posterSrc=()=>{ const o=own('poster'), y=vid(o); if(o)return y?'/yt/'+y+'.jpg':o; const id=vid(cur().video_id); return id?'/yt/'+id+'.jpg':''; };
   const drawPoster=()=>{ const {g,cv,tex}=post, W=cv.width, H=cv.height, src=posterSrc(), mine=!!own('poster'), band=mine?0:Math.round(H*.16);
@@ -141,14 +141,17 @@ import {FADE, STORE, SYS, TILE} from './006-map-pre.js';
     const Yb=SHARED.BOD.Y, tw=Math.abs(SHARED.BOD.X(1)-SHARED.BOD.X(0)), R=m.R, bx=dd[3], bz=dd[4]; let ox=dd[1]-bx, oz=dd[2]-bz; const L=Math.hypot(ox,oz)||1; ox/=L; oz/=L;
     const alongX=Math.abs(oz)>=Math.abs(ox), Wb=alongX?R.x1-R.x0:R.z1-R.z0, cS=alongX?(R.x0+R.x1)/2:(R.z0+R.z1)/2, ry=Math.atan2(ox,oz);
     const at=(s,out,y)=>alongX?new THREE.Vector3(s,y,bz+oz*out):new THREE.Vector3(bx+ox*out,y,s);
-    const cw=Wb*.74, ch=Yb(136)-Yb(100), cd=1.5*tw, front=canv(1024,256), side=canv(128,256), sof=canv(512,64), dark=new THREE.MeshLambertMaterial({color:0x26282c});
+    const cw=Wb*.74, ch=Yb(140)-Yb(98), cd=1.5*tw, front=canv(2048,Math.round(2048*ch/cw)), side=canv(64,256), sof=canv(512,64), dark=new THREE.MeshLambertMaterial({color:0x26282c});
     { const g=sof.g; g.fillStyle='#2e3136'; g.fillRect(0,0,512,64); g.fillStyle='#fff3d6'; for(let r=0;r<2;r++)for(let x=24;x<512;x+=44){ g.beginPath(); g.arc(x+(r?22:0),18+r*28,4,0,7); g.fill(); } sof.tex.needsUpdate=true; }
     const box=new THREE.Mesh(new THREE.BoxGeometry(cw,ch,cd),[new THREE.MeshBasicMaterial({map:side.tex}),new THREE.MeshBasicMaterial({map:side.tex}),dark,new THREE.MeshBasicMaterial({map:sof.tex}),new THREE.MeshBasicMaterial({map:front.tex}),dark]);
-    box.position.copy(at(cS,cd/2+.02,Yb(118))); box.rotation.y=ry; scene.add(box); canopy={box,front,side,key:''};
+    box.position.copy(at(cS,cd/2+.02,Yb(119))); box.rotation.y=ry; scene.add(box);
+    const pl=canv(512,128); { const g=pl.g; for(let i=0;i<5;i++){ const x=52+i*102, gr=g.createRadialGradient(x,64,0,x,64,60); gr.addColorStop(0,'rgba(255,233,184,.55)'); gr.addColorStop(1,'rgba(255,233,184,0)'); g.fillStyle=gr; g.fillRect(x-60,4,120,120); } pl.tex.needsUpdate=true; }
+    const pool=new THREE.Mesh(new THREE.PlaneGeometry(cw,cd*1.4).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({map:pl.tex,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false}));
+    const gp=at(cS,cd*.7,0); gp.y=SHARED.groundY(gp.x,gp.z)+.03; pool.position.copy(gp); pool.rotation.y=ry; scene.add(pool); canopy={box,pool,front,side,key:''};
     const dS=alongX?bx:bz, pS=cS+Math.sign(cS-dS||1)*Wb*.3, ph=Yb(84)-Yb(22), pw=ph*27/40, pc=canv(270,400);
     const frame=new THREE.Mesh(new THREE.BoxGeometry(pw*1.12,ph*1.08,.06*tw),new THREE.MeshLambertMaterial({color:0xb7bdc5}));
     const plane=new THREE.Mesh(new THREE.PlaneGeometry(pw,ph),new THREE.MeshBasicMaterial({map:pc.tex})); plane.position.z=.035*tw;
-    const group=new THREE.Group(); group.add(frame,plane); group.position.copy(at(pS,.04*tw,(Yb(84)+Yb(22))/2)); group.rotation.y=ry; scene.add(group); post={...pc,group,key:''};
+    const group=new THREE.Group(); group.add(frame,plane); group.position.copy(at(pS,.14*tw,(Yb(84)+Yb(22))/2)); group.rotation.y=ry; scene.add(group); post={...pc,group,key:''};
     sign(); };
   const sign=()=>{ if(canopy){ const k=lines().join('|'); if(k!==canopy.key){ canopy.key=k; drawCanopy(); } }
     if(post){ const k=posterSrc()+'|'+title()+'|'+own('poster'); if(k!==post.key){ post.key=k; drawPoster(); } } };

@@ -13,7 +13,7 @@ import {FADE, STORE, SYS, TILE} from './006-map-pre.js';
   const tok=async()=>{ '@later'; let t=ck()||T; if(t.startsWith('dev:'))return ''; if(!t||(jw(t).exp||0)*1000<Date.now()+60000)t=await renew().catch(()=>''); return t; };
   const vid=u=>{ u=String(u||'').trim(); const m=/(?:youtu\.be\/|v=|embed\/|shorts\/)([A-Za-z0-9_-]{11})/.exec(u)||/^([A-Za-z0-9_-]{11})$/.exec(u); return m?m[1]:''; };
 
-  let rec=null, adm=null;
+  let rec=null, adm=null, titleId='';
   const DEF={id:ROW,playlist:[],idx:0,video_id:'',started_at:null,size:1,brightness:.8,loop:true,autoplay:true};
   const cur=()=>rec||DEF; CINEMA.now=()=>cur(); CINEMA.title='';
 
@@ -69,8 +69,9 @@ import {FADE, STORE, SYS, TILE} from './006-map-pre.js';
       try{ const want=offset(), is=player.getCurrentTime(); if(Math.abs(is-want)>1.6)player.seekTo(want,true); if(player.getPlayerState&&player.getPlayerState()!==1)player.playVideo(); }catch(e){} } };
   CINEMA.tick=tick;
 
-  const onRec=()=>{ const id=vid(cur().video_id); CINEMA.title='';
-    if(id)fetch('https://www.youtube.com/oembed?format=json&url=https://youtu.be/'+id).then(r=>r.ok?r.json():null).then(j=>{ if(j&&j.title){ CINEMA.title=j.title; sign(); } }).catch(()=>{});
+  const onRec=()=>{ const id=vid(cur().video_id);
+    if(id!==titleId){ titleId=id; CINEMA.title='';
+      if(id)fetch('https://www.youtube.com/oembed?format=json&url=https://youtu.be/'+id).then(r=>r.ok?r.json():null).then(j=>{ if(j&&j.title){ CINEMA.title=j.title; sign(); } }).catch(()=>{}); }
     sign(); };
   let marq=null, post=null;
   const makePanel=(w,h,pw,ph)=>{ const cv=document.createElement('canvas'); cv.width=pw; cv.height=ph; const g=cv.getContext('2d');

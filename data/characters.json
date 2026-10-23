@@ -1,7 +1,7 @@
 {
  "shark": {
   "name": "THE SHARK",
-  "trade": {"sells": ["goggles", "headlight", "scanner", "cutter", "extractor"], "line": "Going down? You'll want the kit."},
+  "trade": {"sells": ["goggles", "headlight", "scanner", "cutter", "extractor", "rod", "bait"], "line": "Going down? You'll want the kit."},
   "home": [117.5, -113, 3]
  }
 }

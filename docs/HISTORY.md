@@ -4443,6 +4443,8 @@ Owner: "Add 100 npcs and test out the map. Have them report errors." A manual so
 ## 23 Oct 2026: the bear merchant stands by the nature merchant, with his coat rack
 Owner: "pin the bear near the nature merchant and build the coat rack". The coat bear no longer roams: his home is pinned on Main Street beside the nature merchant (characters.json `home`, r 0). Beside him stands his coat rack — two plain coats and the cloud coat, a coat of drifting clouds; using the rack opens his shop. Rule: a pinned home (r 0) means the character stands there — it is put on the spot when it spawns.
 
+## 23 Oct 2026: the put-away sword no longer hangs in the air
+Owner: "when you take your sword off it glitches and stays in same spot you left it." A blade you put away stayed drawn, frozen where you left it. Rule: a mesh's `.visible` is always set to a real `true`/`false`, never a truthy-or-undefined expression — three.js only skips drawing on `visible===false`.
 ## 23 Oct 2026: the apartment BBS and drone delivery (PR2)
 
 Owner: "simple bbs they can order things from bodega or catalog. catalog lists basic furniture for apartment. bodega as essential needs. all delivery ... dropped off by drone on front fire escape" (drone drops on the fire escape and you carry it in; ordered furniture auto-places).

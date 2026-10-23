@@ -1,0 +1,88 @@
+// THE CHARACTER PAGE: the menu's home (ESC) — your live avatar, drag-drop gear, and the menu buttons.
+import {THREE} from './003-shx.js';
+import {CHARP, CINEMA, EQUIP, FORAGE, INV, ITEMS, LOOKS, UI, VIT, W3, WE, WIELD} from './003b-systems.js';
+import {renderer} from './004-main.js';
+{ const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+  const SLOTS=[['head','HEAD'],['eyes','EYES'],['body','BODY'],['hand','HAND']];
+  const name=id=>(FORAGE.NM&&FORAGE.NM[id])||id, short=id=>{ const n=name(id); return n.length>11?n.slice(0,10)+'…':n; };
+  const slotOf=id=>ITEMS&&ITEMS.prop?ITEMS.prop(id,'slot'):null, holdable=id=>slotOf(id)==='hand'||(WIELD.LIST&&WIELD.LIST.includes(id));
+  const carried=()=>Object.keys(INV.items||{}).filter(id=>INV.items[id]>0&&(['head','eyes','body'].includes(slotOf(id))||holdable(id))).sort();
+  const wornIn=s=>s==='hand'?WIELD.on:(EQUIP.by&&EQUIP.by[s]);
+  const wear=id=>{ if(holdable(id))WIELD.set(WIELD.on===id?null:id); else EQUIP.wear(id); refresh(); };
+  const unwear=s=>{ const id=wornIn(s); if(!id)return; if(s==='hand')WIELD.set(null); else EQUIP.wear(id); refresh(); };
+
+  // the avatar: render W3.group into the panel canvas, box-fit so it reads full-body whatever the scale
+  let rt,cam,raf=0,last=0,el=null,cv=null,g2=null,isAdmin=!!CINEMA.admin; const W=256,H=384,FACE=Math.PI, V=new THREE.Vector3(), CC=new THREE.Color();
+  const shot=()=>{ const g=W3&&W3.group; if(!g||!cv)return; if(!rt){ rt=new THREE.WebGLRenderTarget(W,H); cam=new THREE.OrthographicCamera(-1,1,1,-1,.01,100); }
+    const sv={ry:g.rotation.y,vis:g.visible,am:g.matrixAutoUpdate}; g.visible=true; g.matrixAutoUpdate=true; g.rotation.y=FACE; g.updateMatrixWorld(true);
+    const box=new THREE.Box3().setFromObject(g); if(box.isEmpty()){ g.rotation.y=sv.ry; g.visible=sv.vis; g.matrixAutoUpdate=sv.am; return; }
+    const c=box.getCenter(V.clone()), s=box.getSize(new THREE.Vector3()), hh=Math.max(s.y,.3)*1.12, ww=hh*(W/H), d=Math.max(s.x,s.y,s.z)+s.z+4;
+    cam.left=-ww/2; cam.right=ww/2; cam.top=hh/2; cam.bottom=-hh/2; cam.near=.01; cam.far=d*3+60; cam.updateProjectionMatrix();
+    cam.position.set(c.x,c.y,c.z+d); cam.up.set(0,1,0); cam.lookAt(c); cam.updateMatrixWorld(true);
+    renderer.getClearColor(CC); const ca=renderer.getClearAlpha();
+    renderer.setRenderTarget(rt); renderer.setClearColor(0x15171e,1); renderer.clear(); renderer.render(g,cam);
+    const px=new Uint8Array(W*H*4); renderer.readRenderTargetPixels(rt,0,0,W,H,px);
+    renderer.setRenderTarget(null); renderer.setClearColor(CC,ca);
+    g.rotation.y=sv.ry; g.visible=sv.vis; g.matrixAutoUpdate=sv.am; g.updateMatrixWorld(true);
+    const im=g2.createImageData(W,H); for(let y=0;y<H;y++)im.data.set(px.subarray((H-1-y)*W*4,(H-y)*W*4),y*W*4); g2.putImageData(im,0,0); };
+  const loop=t=>{ if(!UI.menuOpen||!el){ raf=0; return; } raf=requestAnimationFrame(loop); if(t-last<55)return; last=t; shot(); bars(); };
+
+  const bars=()=>{ if(!el)return; const hp=el.querySelector('#cphp'), sta=el.querySelector('#cpst'); if(hp)hp.style.width=Math.round((VIT.hp||0)*100)+'%'; if(sta)sta.style.width=Math.round((VIT.sta||0)*100)+'%'; };
+  const drawSlots=()=>{ el.querySelector('#cpslots').innerHTML=SLOTS.map(([s,lab])=>{ const id=wornIn(s); return `<div class="cp-slot${id?' on':''}" data-slot="${s}"${id?' draggable="true"':''} title="${id?esc(name(id)):lab} — ${id?'click or drag off to remove':'drag gear here'}">${id?esc(short(id)):'<span class="cp-dim">'+lab+'</span>'}</div>`; }).join(''); };
+  const drawTray=()=>{ const ids=carried(); el.querySelector('#cptray').innerHTML='<div class="cp-trayh">CARRIED GEAR — drag onto your body, or click to wear</div>'+(ids.length?ids.map(id=>`<div class="cp-chip" draggable="true" data-id="${id}">${esc(short(id))}</div>`).join(''):'<span class="cp-dim">nothing to wear — gear turns up in your pack</span>'); };
+  const btns=()=>{ const B=[['HELP','?',()=>{ UI.toggleMenu(); UI.moves(); }],['MAP','',()=>UI.menuTab('map')],['PACK','I',()=>openPack('pack')],['SKILLS','',()=>openPack('skills')],['CRAFT','',()=>openPack('craft')],['SETTINGS','',()=>UI.menuTab('display')],['EDIT WORLD','⇧E',()=>{ UI.toggleMenu(); WE.toggle(); }],['REPORT A BUG','F8',()=>UI.menuTab('bug')]];
+    if(isAdmin)B.push(['ADMIN','',adminOpen,1]); B.push(['LOG OUT','',logout]);
+    el.querySelector('#cpbtns').innerHTML=B.map((b,i)=>`<button class="cp-btn${b[3]?' cp-adm':''}" data-i="${i}">${b[0]}<span class="cp-tag">${b[1]}</span></button>`).join(''); el._btns=B; };
+  const openPack=t=>{ if(UI.menuOpen)UI.toggleMenu(); if(FORAGE.PACK){ if(!FORAGE.PACK.open)FORAGE.PACK.toggle(t); else { FORAGE.PACK.tab=t; FORAGE.PACK.draw(); } } };
+  const logout=()=>{ if(!confirm('Log out of The Strangest Flea Market?'))return; try{ document.cookie='tsfm-pass=; path=/; max-age=0; samesite=strict'; }catch(e){} try{ localStorage.removeItem('sb-jvcetttmqseoteidfggn-auth-token'); }catch(e){} location.replace('/'); };
+  let ap=null; const adminOpen=()=>{ if(UI.menuOpen)UI.toggleMenu(); if(!ap){ ap=document.createElement('div'); ap.id='cpadmin'; ap.hidden=true; ap.style.cssText='position:fixed;left:50%;top:14%;transform:translateX(-50%);z-index:21;width:min(420px,92vw);padding:16px 18px;font:11px Silkscreen,monospace;letter-spacing:.4px;color:#d8dae2;background:#0b0d13f2;border:2px solid #7a3524;zoom:var(--uiz,1)';
+      ap.innerHTML='<div style="color:#e0633f;font:12px Silkscreen,monospace;letter-spacing:.14em;margin-bottom:10px">ADMIN</div><div style="color:#9b9584;line-height:1.6;margin-bottom:12px">Admin tools live here. More arrive as they are built.</div><button class="cp-btn cp-adm" id="cpaq" style="width:100%">BUG / REPORT QUEUE</button>';
+      document.body.appendChild(ap); ap.addEventListener('keydown',e=>e.stopPropagation()); ap.querySelector('#cpaq').onclick=()=>{ ap.hidden=true; UI.menuTab('bug'); }; }
+    ap.hidden=false; };
+
+  const refresh=()=>{ if(!el)return; drawSlots(); drawTray(); bars(); el.querySelector('#cpname').textContent=((LOOKS.L&&LOOKS.L.name)||'YOU').toUpperCase(); shot(); };
+
+  const build=host=>{ el=host; if(el._cp)return; el._cp=1;
+    el.innerHTML=`<div class="cp-wrap"><div class="cp-doll"><div class="cp-slots" id="cpslots"></div>
+      <div class="cp-stage"><canvas id="cpav" width="${W}" height="${H}"></canvas><span class="cp-live">LIVE</span>
+        <div class="cp-vit"><div>HP <span class="cp-bar"><i id="cphp" style="background:#c84a3a"></i></span></div><div>ST <span class="cp-bar"><i id="cpst" style="background:#d8b84a"></i></span></div></div></div></div>
+      <div class="cp-right"><div class="cp-name" id="cpname">YOU</div><div class="cp-btns" id="cpbtns"></div></div></div>
+      <div class="cp-tray" id="cptray"></div>`;
+    cv=el.querySelector('#cpav'); g2=cv.getContext('2d');
+    el.addEventListener('mousedown',e=>{ if(e.target.closest('.cp-slot,.cp-chip'))e.stopPropagation(); },true);
+    el.addEventListener('click',e=>{ const sl=e.target.closest('.cp-slot'); if(sl&&wornIn(sl.dataset.slot)){ unwear(sl.dataset.slot); return; } const ch=e.target.closest('.cp-chip'); if(ch){ wear(ch.dataset.id); return; } const b=e.target.closest('.cp-btn[data-i]'); if(b&&el._btns&&el._btns[+b.dataset.i])el._btns[+b.dataset.i][2](); });
+    el.addEventListener('dragstart',e=>{ const ch=e.target.closest('.cp-chip'), sl=e.target.closest('.cp-slot.on'); if(ch)e.dataTransfer.setData('text/plain','wear:'+ch.dataset.id); else if(sl)e.dataTransfer.setData('text/plain','off:'+sl.dataset.slot); else return; e.dataTransfer.effectAllowed='move'; });
+    el.addEventListener('dragover',e=>{ if(e.target.closest('.cp-slot,.cp-tray'))e.preventDefault(); });
+    el.addEventListener('drop',e=>{ const d=e.dataTransfer.getData('text/plain')||''; const sl=e.target.closest('.cp-slot'); e.preventDefault();
+      if(d.startsWith('wear:')){ if(sl)wear(d.slice(5)); } else if(d.startsWith('off:')&&e.target.closest('.cp-tray'))unwear(d.slice(4)); }); };
+
+  Object.assign(CHARP,{ show:host=>{ build(host); btns(); refresh(); if(!raf)raf=requestAnimationFrame(loop);
+      if(!isAdmin&&CINEMA.isAdmin)CINEMA.isAdmin().then(a=>{ if(a){ isAdmin=true; if(el&&UI.menuOpen)btns(); } }); },
+    hide:()=>{ if(raf){ cancelAnimationFrame(raf); raf=0; } } });
+
+  const css=document.createElement('style'); css.textContent=`
+  #dhome .cp-wrap{display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start}
+  #dhome .cp-doll{display:flex;gap:10px;align-items:stretch}
+  #dhome .cp-slots{display:flex;flex-direction:column;gap:8px;justify-content:center}
+  #dhome .cp-slot{width:48px;height:48px;background:#0b0d12;border:2px solid #3a3f4e;display:flex;align-items:center;justify-content:center;text-align:center;font:9px var(--pixel);color:var(--key);cursor:pointer;padding:2px;line-height:1.15;overflow:hidden;word-break:break-word}
+  #dhome .cp-slot.on{border-color:#6b6f80}
+  #dhome .cp-slot.cp-over{border-color:var(--key);border-style:dashed}
+  #dhome .cp-stage{position:relative;background:radial-gradient(120% 90% at 50% 6%,#22242c,#0b0c11);border:2px solid var(--line)}
+  #dhome .cp-stage canvas{display:block;width:200px;height:300px}
+  #dhome .cp-live{position:absolute;left:6px;top:6px;font:9px var(--pixel);color:var(--dim);border:1px solid #3a3f4e;padding:1px 5px;background:rgba(5,6,10,.5)}
+  #dhome .cp-vit{position:absolute;left:6px;right:6px;bottom:6px;display:grid;gap:3px;font:9px var(--pixel);color:var(--dim)}
+  #dhome .cp-bar{display:inline-block;width:86px;height:7px;background:#0b0d13;border:1px solid #2a3040;vertical-align:middle}
+  #dhome .cp-bar i{display:block;height:100%;width:0}
+  #dhome .cp-right{display:flex;flex-direction:column;gap:8px;min-width:180px;flex:1}
+  #dhome .cp-name{color:var(--key);letter-spacing:.08em;border-bottom:2px solid var(--line);padding-bottom:7px}
+  #dhome .cp-btns{display:flex;flex-direction:column;gap:7px}
+  #dhome .cp-btn{text-align:left;font:12px var(--pixel);color:var(--fg);background:#0e1016;border:2px solid #3a3f4e;padding:9px 12px;cursor:pointer;display:flex;justify-content:space-between;gap:12px;letter-spacing:.05em}
+  #dhome .cp-btn:hover{color:var(--key);border-color:#6b6f80}
+  #dhome .cp-btn .cp-tag{color:var(--dim);font-size:9px}
+  #dhome .cp-btn.cp-adm{color:#e0633f;border-color:#7a3524}
+  #dhome .cp-btn.cp-adm:hover{border-color:#e0633f}
+  #dhome .cp-tray{margin-top:14px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;border-top:2px solid var(--line);padding-top:10px}
+  #dhome .cp-trayh{width:100%;color:var(--dim);font-size:10px;margin-bottom:2px}
+  #dhome .cp-chip{background:#0e1016;border:2px solid #3a3f4e;color:var(--key);padding:5px 8px;cursor:grab;font:10px var(--pixel)}
+  #dhome .cp-chip:hover{border-color:#6b6f80}
+  #dhome .cp-dim{color:var(--dim)}`; document.head.appendChild(css); }

@@ -1,13 +1,12 @@
 -- Apartment numbers. Run once in the Supabase SQL editor (project jvcetttmqseoteidfggn).
--- Every player gets a number; the owner (admins) is 201; everyone else counts up in join order.
--- The client reads players.apt; until this is applied it just shows YOUR APARTMENT.
+-- Every player gets a number; they count up in join order from 201, so the first account
+-- (the owner) is 201. New players get the next number automatically on join.
+-- The client reads players.apt; until this is applied the game just shows YOUR APARTMENT.
 
 alter table players add column if not exists apt integer unique;
-create sequence if not exists apt_seq start 202;
+create sequence if not exists apt_seq start 201;
 
--- backfill: owner(s) -> 201, then the rest in join order
-update players p set apt = 201
-  where apt is null and exists (select 1 from admins a where a.user_id = p.id);
+-- existing players, in join order: 201, 202, 203, ...
 do $$
 declare r record;
 begin
@@ -16,13 +15,10 @@ begin
   end loop;
 end $$;
 
--- new players (join_beta inserts the row): owner -> 201, else next number
+-- new players (join_beta inserts the row) get the next number
 create or replace function assign_apt() returns trigger as $$
 begin
-  if new.apt is null then
-    if exists (select 1 from admins a where a.user_id = new.id) then new.apt := 201;
-    else new.apt := nextval('apt_seq'); end if;
-  end if;
+  if new.apt is null then new.apt := nextval('apt_seq'); end if;
   return new;
 end $$ language plpgsql;
 

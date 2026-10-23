@@ -128,6 +128,7 @@ await grab('apts',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Yr=SHARED.BOD.
         const P=px(AR.y1,-.03); bq(P(d0,0),P(d1,0),P(d1,DH),P(d0,DH),faceTex(Wd,DH,(ii,jj)=>C(dp(ii,jj))),'A'); APTS.door=[(d0+d1)/2,AR.y1]; }
       const put=(k,x,y,r=0,solid=true)=>{ const f=K.CATALOG[k]; if(!f)return null; const p=f(+x.toFixed(3),+y.toFixed(3)); if(!p)return null; SHARED.BOD.place(p,r); for(const b of p.boxes)SHARED.BOD.gbox(b,'A');
         const bs=p.boxes.filter(b=>!b.nb&&b.z0<30&&b.z1-b.z0>3); if(solid&&!p.walk&&!p.high&&bs.length)sol(Math.min(...bs.map(b=>b.x0)),Math.min(...bs.map(b=>b.y0)),Math.max(...bs.map(b=>b.x1)),Math.max(...bs.map(b=>b.y1))); p.kind=k; made.push(p); return p; };
+      APTS.put=put;
       const x0=AR.x0, y0=AR.y0, x1=AR.x1, y1=AR.y1, made=APTS.made=[];
       put('patterned rug',x0+3,y0+5,0,false); put('sofa',x0+.7,y0+5,1); put('coffee table',x0+2.6,y0+5); put('TV on a low stand',x0+5.1,y0+5,3); put('floor lamp',x0+.4,y0+6.2);
       put('single bed',x1-1.2,y0+1.7,0); put('fiddle-leaf fig',x1-.5,y0+4); put('bookcase',x0+.35,y0+2.2,1); put('plant pot',x0+4.5,y0+.5);

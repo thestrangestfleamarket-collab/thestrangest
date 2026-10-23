@@ -4394,3 +4394,10 @@ First pass, still to do (owner's call): worn gear has no body mesh yet (the clou
 
 ## 23 Oct 2026: one worn layer
 Owner: "fold GEAR into EQUIP then merge it". The goggles and the headlight are worn through EQUIP like the armour and the cloud coat: EQUIP now wears one thing a slot (body, head, eyes) and two new grants do the work — `light` (the headlight lights the caverns) and `sight` (goggles see further through the murk). What you wear stays on between visits. The scanner and extractor stay pack actions.
+
+## 23 Oct 2026: every player an apartment (201+), redesigned studio, fire-escape view
+
+Owner: "all players assigned an apartment. im 201, all other players go up in numbers, give them apartments in the order they login"; "open floor plan ... 1 apartment per floor ... front and back fire escape. small basic kitchen and bathroom. small wall phone. computer desk, and 1980 ibm pc and keyboard. simple bbs they can order things from bodega or catalog. catalog lists basic furniture for apartment. bodega as essential needs. all delivery ... dropped off by drone on front fire escape."
+His picks: the number is just your address (same off-map apartment for everyone), assigned server-side in login order, owner pinned 201; the drone drops on the front fire escape and you carry it in; ordered furniture auto-places. Two PRs.
+PR1: the number (Supabase `players.apt`, shown on your door plaque; run `supabase/apartments.sql` once to add it); a MY APARTMENT menu button; double-click the front door → your room (already wired); the fire-escape view shows one floor above and one below only (was three); the studio redone open-plan with a small bathroom, a wall phone and the 1980s computer desk (`home computer`).
+PR2 (next): the BBS lists the bodega (essentials) and a furniture catalog; orders fly in by drone onto the front fire escape.

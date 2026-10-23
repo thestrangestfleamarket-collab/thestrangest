@@ -29,3 +29,4 @@ const GLBTOONS={list:[]}; window.GLBTOONS=GLBTOONS;
     GLBTOONS.list.push(N); GLBTOONS[key]=N; return N; };
   GLBTOONS.load=()=>GLBTOONS.wait||(GLBTOONS.wait=DATA().then(J=>{ for(const k in KIND)if(J.chars[k])make(k,J.chars[k]); if(window.SHOPS&&window.SHOPS.sync)window.SHOPS.sync(); return GLBTOONS.list; }));
   const SH=QS.get('sheet'), go=()=>window.__started||SH&&KIND[SH]?GLBTOONS.load().catch(e=>console.warn('GLBTOONS',e)):setTimeout(go,600); go(); }
+export {GLBTOONS};

@@ -51,7 +51,12 @@
    ]
   },
   "scale": 0.5,
-  "tint": "#a86e3c"
+  "tint": "#a86e3c",
+  "home": [
+   -66.75,
+   49.2,
+   0
+  ]
  },
  "knight": {
   "name": "THE ARMOURER",

@@ -4461,3 +4461,8 @@ LAND (shift+9) now has a DRAW mode (hold-and-drag a brush over the ground, SIZE 
 
 Owner: "put a row of large trees around the edges of central park inside (right inside the brick wall) that goes around entire park, when you look in from this angle you should only be able to see trees, around the edges, very dense, vary tree size and shape 25% randomly." Reverses the earlier "no trees for now" for the park border only.
 A dense double row of tall trees now hugs the inside of the park wall all the way round (061-park, in the TREES list so it is the one swaying instanced mesh), skipping the four gates, the paths, the water and the castle; each tree a random kind and ±25% size, so from the street you see a wall of trees, not the park.
+
+## 23 Oct 2026: double-click any outside thing to edit its light, and editable signs
+
+Owner: "i should also be able to double click on any item in outside world and edit its properties like light, color, size, position, angle, tint, opacity, etc. ... double click the marquee and edit the brightness of the light, color, text, etc." (The world editor, shift+1, already did colour, size, position, angle, tint and opacity.)
+The world editor (WE, 099) now also edits the light on the thing you pick — BRIGHTNESS (through the light's i0 base, so it holds through day/night), LIGHT COLOUR and RANGE — and editable signs: a SIGNS registry (003b) lets a sign offer its text and glow; the theatre marquee (059f) registers, so you double-click it and change its SIGN TEXT, GLOW and GLOW COLOUR. The panel now shows only the controls the picked thing has (a light's, a sign's, or a solid's). All saved per browser, in world-edits.json, reset by BACK AS IT WAS / EVERYTHING BACK. tests/editors.cjs covers the light editing.

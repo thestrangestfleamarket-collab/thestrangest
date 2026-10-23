@@ -82,6 +82,25 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     ok(land.actions, 'LANDSCAPE: UNDO / CLEAR / EXPORT are present');
     ok(errs.length === before, 'LANDSCAPE: no errors driving the controls' + (errs.length > before ? ' (' + errs.slice(before).join('; ') + ')' : ''));
 
+    // the world editor: editing a light on an item (brightness/colour/range) and fit-to-item controls
+    const we = await pg.evaluate(() => {
+      const WE = window.WE, r = {}, $ = s => document.querySelector(s); if (!WE.on) WE.toggle();
+      r.lights = WE.dbgLights();
+      const a = WE.dbgSelLight(0); r.picked = !!a; const base = a ? a.intensity : 0;
+      r.lrows = !!$('[data-lrow]') && getComputedStyle($('[data-lrow]')).display !== 'none';
+      const bri = $('#wlbri'); bri.value = 2; bri.dispatchEvent(new Event('input', { bubbles: true }));
+      const b2 = WE.dbgSelLight(0); r.brighter = b2 && b2.intensity > base + 0.001;
+      const col = $('#wlcol'); col.value = '#ff0000'; col.dispatchEvent(new Event('input', { bubbles: true })); r.col = true;
+      bri.value = 1; bri.dispatchEvent(new Event('input', { bubbles: true })); $('#wlcol0').click();
+      const b3 = WE.dbgSelLight(0); r.reset = b3 && Math.abs(b3.intensity - base) < 0.01;
+      if (WE.on) WE.toggle();
+      return r;
+    }).catch(e => ({ err: e.message }));
+    ok(we.lights > 0 && we.picked, 'WORLD: scene lights are found and one can be selected' + (we.err ? ' (' + we.err + ')' : ''));
+    ok(we.lrows, 'WORLD: the light controls show for a lit item');
+    ok(we.brighter && we.col, 'WORLD: raising BRIGHTNESS brightens the light and colour applies');
+    ok(we.reset, 'WORLD: setting brightness back restores the light');
+
     ok(errs.length === 0, 'no page errors across all editors' + (errs.length ? ' (' + errs.join(' | ') + ')' : ''));
   }
 

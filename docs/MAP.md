@@ -159,7 +159,7 @@ Places built with `await grab(name, async()=>{...})` are one function each, ofte
 | `136-version.js` | 2.0 | top level |  | 135: BUILDV |
 | `136a-bugs.js` | 9.5 | top level |  | 003: SHARED; 003b: BUGS CLOCK UI pos; 004: renderer; 006: STORE; 135: BUILDV |
 | `136b-worldpub.js` | 1.3 | top level |  | 003b: BUGS WE |
-| `136c-tenants.js` | 8.9 | top level |  | 003: SHARED; 003b: BUGS TENANTS |
+| `136c-tenants.js` | 9.1 | top level |  | 003: SHARED; 003b: BUGS TENANTS |
 | `137-bvh.js` | 3.5 | top level | BVH (150 163) | 003: THREE; 004: scene; 006: QS |
 | `138-oldlook.js` | 3.9 | top level |  | 003: SHARED THREE; 003b: CLOCK DN LOOK; 004: RH RW ShaderPass; 005: SAVE; 006: OUT |
 | `139-clip.js` | 10.5 | top level |  | 003: SHARED THREE; 003b: CLIP NPCS; 006: CLIPX FIX MODS QS SOL STORE TILE ZU; 008: OBJS |

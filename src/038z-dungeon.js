@@ -153,11 +153,7 @@ function mover(kind,bx,draw,o){ '@later'; SHARED.PNAME=kind; const p=prop([{...b
     px:(x,y,z,c,L)=>{ const [fx,fy]=g.at(x,y,z), K=S.K; for(let j=0;j<K;j++)for(let i=0;i<K;i++){ const X=fx+i, Y=fy-1-j; if(X<0||Y<0||X>=S.W||Y>=S.H)continue; const q=(Y*S.W+X)*4; S.D[q]=c.e?c[0]:c[0]*L[0]; S.D[q+1]=c.e?c[1]:c[1]*L[1]; S.D[q+2]=c.e?c[2]:c[2]*L[2]; S.D[q+3]=255; } },
     dir:(x,y,dx,dy)=>{ const a=g.at(x,y,0), b=g.at(x+dx,y+dy,0); return b[0]>=a[0]?1:-1; } };
   p.lifeDraw=(D,W,H,ox,oy,t,K)=>{ S.D=D; S.W=W; S.H=H; S.ox=ox; S.oy=oy; S.K=K; g.t=t; draw(g,t); }; return p; }
-CATALOG['dust in the air']=(x,y)=>mover('dust in the air',{x0:x-.6,y0:y-.6,x1:x+.6,y1:y+.6,z0:0,z1:110},(g,t)=>{ const s=Math.round(x*5+y*3);
-  for(let i=0;i<22;i++){ const a=hash(s,i,901)*6.28, r=.12+hash(s,i,903)*.46, sp=.6+hash(s,i,905)*1.2, ph=hash(s,i,907)*40, u=(t*sp*.08+ph)%1;
-    const mx=x+Math.cos(a+t*.1*sp)*r+.05*Math.sin(t*1.3+i), my=y+Math.sin(a+t*.1*sp)*r+.05*Math.cos(t*1.1+i), mz=60+u*48+4*Math.sin(t*.7+i);
-    const near=Math.max(0,1-Math.hypot(mx-x,my-y,(mz-88)/24)/.7), b=.35+.65*near; if(hash(s,i,909)<.3&&Math.sin(t*2+i)<0)continue;
-    g.px(mx,my,mz,[Math.min(255,150+105*b),Math.min(255,110+100*b),70+60*b],[1,1,1]); } },{});
+CATALOG['dust in the air']=(x,y)=>mover('dust in the air',{x0:x-.6,y0:y-.6,x1:x+.6,y1:y+.6,z0:0,z1:110},()=>{},{});
 CAT_INFO['dust in the air']={no:'P-955',name:'Dust in the Air',dept:'Dungeon',price:0,desc:'Motes drifting in the torchlight, caught by it now and then.',mat:'dust'};
 CATALOG['mouse run']=(x0,y0,x1,y1)=>{ '@later'; const ax=Math.abs(x1-x0)>Math.abs(y1-y0), len=ax?x1-x0:y1-y0, nx=ax?.3:0, ny=ax?0:.3, s=Math.round(x0*9+y0*17);
   const M=[0,1,2].map(i=>({u:hash(s,i,11)<.5?0:1,st:'in',t0:-hash(s,i,13)*9,dir:1,v:0,sp:0,ph:hash(s,i,15)*6.28,nose:0})), G=[90,86,84], GL=[122,118,114], GD=[60,56,56], PK=[200,120,120], EY=[12,10,12];

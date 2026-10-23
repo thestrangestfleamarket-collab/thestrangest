@@ -52,7 +52,7 @@ const MAPLV=(py,pos,cam)=>{ SHARED.METRO.door(py,pos); if(MODS.dunDoor)MODS.dunD
   if(lv===SHARED.LVL)return false; SHARED.LVL=lv; SHARED.solids=SOL[lv]; SHARED.fixed=FIX[lv]; HEMI.color.set(lv==='down'?0x8a93a8:0x55607a); HEMI.groundColor.set(lv==='down'?0x1a1814:0x14110e); HEMI.intensity=lv==='down'?.1:.3; return true; };
 
 { const MB=SHARED.BOUND; STORE.tick=()=>{ STORE.pos=pos; STORE.cur=ROOMS.cur?ROOMS.cur.id:null; STORE.nl=lamps.length; STORE.lon=LITE.sel.length;
-    for(const r of STORE.roofs)SEEN(r.me,!(r.R.inside(pos.x,pos.z)||ROOMS.cur===r.R)); const L=SHARED.LVL==='down'&&LEVELS.at?LEVELS.of[LEVELS.at(pos.x,pos.z,'down')]:null; SHARED.BOUND=L&&L.bound?L.bound(pos.x,pos.z):STORE.inStore(pos.x,pos.z)?STORE.bound:MB; }; }
+    for(const r of STORE.roofs)SEEN(r.me,!(r.R.inside(pos.x,pos.z)||ROOMS.cur===r.R)); const L=SHARED.LVL==='down'&&LEVELS.at?LEVELS.of[LEVELS.at(pos.x,pos.z,'down')]:null; SHARED.BOUND=L&&L.bound?L.bound(pos.x,pos.z):ROOMS.cur&&ROOMS.cur.off?ROOMS.cur:STORE.inStore(pos.x,pos.z)?STORE.bound:MB; }; }   // an off-map inside (bodega, apt, arcade) is walled off the map, so bound by its own box, not the street's limit
 window.MAPDBG=()=>({LVL:SHARED.LVL,cut:MODS.stairCut.constant,vis:Object.fromEntries(Object.entries(MAPG).map(([k,g])=>[k,g.visible])),stairLamp:lamps.filter(L=>L.parent===MAPG.stairs).map(L=>L.intensity),py:typeof SHARED.py!=='undefined'?SHARED.py:null,pos:typeof pos!=='undefined'?[pos.x,pos.z]:null});
 
 { const K=32, N=K*24, c=document.createElement('canvas'); c.width=c.height=N; const g=c.getContext('2d'), im=g.createImageData(N,N), GC=SHARED.BOD.g.lawnCol;

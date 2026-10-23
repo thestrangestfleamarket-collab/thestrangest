@@ -55,6 +55,8 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
       o.soft = !!(DN.modes.includes('soft') && DN.D0.soft && DN.D0.soft.shaft > 0 && window.SHAFTS && SHAFTS.list.length && SKY.U.uCldC && SKY.U.uCldK);
       o.spar = !!(window.SPAR && typeof SPAR.start === 'function' && SPARDBG().ring && SPARDBG().thing);
       o.cinema = !!(CINEMA && typeof CINEMA.tick === 'function' && typeof CINEMA.push === 'function' && typeof CINEMA.isAdmin === 'function' && typeof CINEMA.now === 'function' && CINEMA.on === false);
+      o.online = !!(window.ONLINE && ONLINE.others instanceof Map && typeof ONLINE.feed === 'function' && typeof ONLINE.at === 'function' && ONLINE.V.length === 8 && typeof ONLINE.open === 'function' && SYS.P.life.some(s => s.name === '111d-online') && ONLINE.on === false && __dbg.ui().keyOf('chat') === 'enter');
+      o.tenants = document.querySelector('[data-t="tenants"]').hidden === true && !!document.getElementById('dten');
       o.equip = (() => { const E = window.EQUIP, I = window.ITEMS, V = __dbg.VIT, F = window.FORAGE; if (!E || !I || !V || !F || typeof E.wear !== 'function') return { ok: false };
         const slots = I.prop('armor', 'slot') === 'body' && I.prop('armor', 'grants') === 'guard' && I.prop('cloudcoat', 'slot') === 'body' && I.prop('cloudcoat', 'grants') === 'float';
         const d0 = V.def === 0 && E.float === false; F.give('armor', 1); E.wear('armor'); const guard = V.def > 0 && E.worn === 'armor';
@@ -95,6 +97,8 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
     ok(r.soft, 'the SOFT DAY look: a fourth look with its clouds, sun-side mist and sun shafts');
     ok(r.spar, 'the sparring ring stands by the swordsmith (partners come only when you spar)');
     ok(r.cinema, 'CINEMA is wired (shared screen: tick, push, admin, now; idle off the street)');
+    ok(r.tenants, 'the owner\'s TENANTS tab is there and hidden (only the owner sees it)');
+    ok(r.online, 'ONLINE is wired (other players: feed, at/V for the ragdoll, chat key, a SYS life entry; alone off the website)');
     ok(r.rack.ok && r.rack.pinned && r.rack.near && r.rack.free && r.rack.thing && r.rack.drawn && r.rack.rackBy, 'the bear merchant is pinned on free ground beside the nature merchant, his coat rack beside him and usable: ' + JSON.stringify(r.rack));
     ok(r.knight.ok && r.knight.street && r.knight.bound && r.knight.borrowed && r.knight.back, 'the plate knight walks the street as THE ARMOURER, is a shop, and comes back after the holodeck borrows him: ' + JSON.stringify(r.knight));
     ok(r.equip.ok && r.equip.slots && r.equip.d0 && r.equip.guard && r.equip.float && r.equip.off, 'EQUIP wears body gear and resolves its grant (guard softens blows, float lifts), one off at a time: ' + JSON.stringify(r.equip));

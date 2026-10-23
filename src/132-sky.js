@@ -45,9 +45,9 @@ import {HEMI} from './064-map-post.js';
           c=mix(c,mix(uSunCol,vec3(1.,.96,.9),.45),halo*uSunK); c=mix(c,uSunCol,disc*uSunK); }
         c=mix(c,uGrey,uGreyK); c=mix(c,uFogC,uFogK*(1.-smoothstep(0.,.4,el)));
         if(uMistK>0.){ vec3 sk=c, m=mix(uMistC*uHk,uMistC*.95,smoothstep(0.,.22,el)); m=mix(m,uMistC*uZk,smoothstep(.35,.95,el));
-          vec2 q=d.xz/(max(d.y,0.)+.06)*.9+vec2(uT*.012,uT*.005); float n=fbm(q), cov=step(uCov+uGap,n); cvr=cov; float lt=fbm(q+vec2(.05,.09)*2.);
+          float ael=abs(d.y); vec2 q=d.xz/(ael+.06)*.9+vec2(uT*.012,uT*.005); float n=fbm(q), cov=step(uCov+uGap,n); cvr=cov; float lt=fbm(q+vec2(.05,.09)*2.);
           vec3 cl=mix(uMistC*.72,mix(uMistC,uCldC,uCldK)*uCL,step(n,lt+.03)); cl=mix(cl,uMistC*.6,step(.62,n)*.5);
-          m=mix(m,cl,cov*smoothstep(.015,.12,el)); m=mix(m,uMistC*uHk,1.-smoothstep(0.,.06,el)); m+=st*(1.-cov)*step(.08,el);
+          m=mix(m,cl,cov*smoothstep(.015,.12,ael)); m=mix(m,uMistC*uHk,1.-smoothstep(0.,.06,ael)); m+=st*(1.-cov)*step(.08,el);   // clouds mirror below the horizon too, so high up you float in sky and clouds above and below (owner, 23 Oct 2026)
           m=mix(m,mix(sk,uS*.7+uMistC*.3,cov*.6),uSkyK*smoothstep(0.,.08,el)); c=mix(c,m,uMistK); { float sa=acos(clamp(dot(d,uSunDir),-1.,1.)), sd=1.-step(uSunR,sa), sh=floor((1.-smoothstep(uSunR,uSunR*5.,sa))*3.)/3.*.5, ok=uSunK*(1.-cov*.75); c=mix(c,mix(uSunCol,vec3(1.,.96,.9),.45),sh*ok); c=mix(c,uSunCol,sd*ok); } c=bt(moon(c,d,uMoonK*(1.-cov*.85)),el); c=pow(floor(pow(max(c,0.),vec3(1./2.2))*16.+.5)/16.,vec3(2.2)); }
         if(uMistK<.5)c=bt(c,el); if(uBands>0.&&uMistK<.5)c=floor(c*uBands+.5)/uBands; c+=mwc*(1.-uGreyK)*(1.-uFogK)*(1.-cvr*uMistK);
         gl_FragColor=vec4(c,1.); }`});

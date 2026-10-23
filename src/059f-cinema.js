@@ -74,7 +74,7 @@ import {FADE, STORE, SYS, TILE} from './006-map-pre.js';
     if(sz<1){ const cx=(q[0].x+q[2].x)/2, cy=(q[0].y+q[2].y)/2; q=q.map(p=>({x:cx+(p.x-cx)*sz,y:cy+(p.y-cy)*sz})); }
     wrap.style.transform=homog(q[0],q[1],q[2],q[3]); wrap.style.filter='brightness('+(cur().brightness??.8)+') contrast(1.06) saturate(1.05)'; };
 
-  // the projector at the back: a beam to the screen with dust in it, and the box it comes from
+  // the projector at the back: a flickering beam to the screen, and the box it comes from
   let rig=null;
   const buildRig=m=>{ if(rig||!m.port)return; const fm=m.fm, w=fm.geometry.parameters.width/2, h=fm.geometry.parameters.height/2, p=fm.position, P=new THREE.Vector3(...m.port);
     const Q=[[-1,1],[1,1],[1,-1],[-1,-1]].map(([sx,sy])=>new THREE.Vector3(p.x+sx*w,p.y+sy*h,p.z));
@@ -82,18 +82,11 @@ import {FADE, STORE, SYS, TILE} from './006-map-pre.js';
     for(let i=0;i<4;i++){ const q0=Q[i], q1=Q[(i+1)%4]; ps.push(P.x,P.y,P.z,q0.x,q0.y,q0.z,q1.x,q1.y,q1.z); cs.push(...A,...B,...B); }
     g.setAttribute('position',new THREE.Float32BufferAttribute(ps,3)); g.setAttribute('color',new THREE.Float32BufferAttribute(cs,3));
     const beam=new THREE.Mesh(g,new THREE.MeshBasicMaterial({vertexColors:true,transparent:true,opacity:.05,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}));
-    const N=170, dp=new Float32Array(N*3), dv=new Float32Array(N*3), s0=new THREE.Vector3(), s1=new THREE.Vector3();
-    const seed=i=>{ const t=.08+Math.random()*.92, u=Math.random(), v=Math.random(); s0.copy(Q[0]).lerp(Q[1],u); s1.copy(Q[3]).lerp(Q[2],u); s0.lerp(s1,v); s0.lerp(P,1-t);
-      dp[i*3]=s0.x; dp[i*3+1]=s0.y; dp[i*3+2]=s0.z; dv[i*3]=(Math.random()-.5)*.0035; dv[i*3+1]=(Math.random()-.5)*.0025; dv[i*3+2]=(Math.random()-.5)*.0035; };
-    for(let i=0;i<N;i++)seed(i);
-    const dg=new THREE.BufferGeometry(); dg.setAttribute('position',new THREE.BufferAttribute(dp,3));
-    const dust=new THREE.Points(dg,new THREE.PointsMaterial({color:0xfff0d0,size:.024,transparent:true,opacity:.32,blending:THREE.AdditiveBlending,depthWrite:false}));
     const dir=new THREE.Vector3().subVectors(p,P).normalize();
     const box=new THREE.Mesh(new THREE.BoxGeometry(.42,.3,.5),new THREE.MeshLambertMaterial({color:0x1c1715})); box.position.copy(P).addScaledVector(dir,-.1); box.lookAt(p);
     const lens=new THREE.Mesh(new THREE.SphereGeometry(.07,8,8),new THREE.MeshBasicMaterial({color:0xfff4d0})); lens.position.copy(P).addScaledVector(dir,.2);
-    rig=new THREE.Group(); rig.add(beam,dust,box,lens); rig.visible=false; scene.add(rig); rig.u={beam,dust,dp,dv,N,seed}; };
-  const animRig=now=>{ if(!rig||!rig.visible)return; const u=rig.u, t=now/1000; u.beam.material.opacity=.048+.012*Math.sin(t*21)+.008*Math.sin(t*5.3); u.dust.material.opacity=.28+.06*Math.sin(t*3.1);
-    const {dp,dv,N}=u; for(let i=0;i<N;i++){ dp[i*3]+=dv[i*3]; dp[i*3+1]+=dv[i*3+1]; dp[i*3+2]+=dv[i*3+2]; if(Math.random()<.004)u.seed(i); } u.dust.geometry.attributes.position.needsUpdate=true; };
+    rig=new THREE.Group(); rig.add(beam,box,lens); rig.visible=false; scene.add(rig); rig.u={beam}; };
+  const animRig=now=>{ if(!rig||!rig.visible)return; const t=now/1000; rig.u.beam.material.opacity=.048+.012*Math.sin(t*21)+.008*Math.sin(t*5.3); };
 
   let lastSync=0, adminThings=false;
   const tick=()=>{ const mt=STORE.main&&STORE.main.theatre; CINEMA.on=false; if(!mt||!mt.fm)return;

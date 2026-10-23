@@ -1,6 +1,6 @@
 // THE CAVERNS: CAVERNS makes the underground levels off the map (dry gem caves, flooded caverns), each its own level with its own way in and out.
 import {SHARED, THREE} from './003-shx.js';
-import {FORAGE, LEVELS, LITE, PARK, pos, st, UI} from './003b-systems.js';
+import {EQUIP, FORAGE, LEVELS, LITE, PARK, pos, st, UI} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {FADE, FIX, grab, MAPG, MODS, SOL, STN, SYS, TILE} from './006-map-pre.js';
 import {GCAVE} from './060-cave.js';
@@ -40,7 +40,7 @@ const CAVERNS={hooks:[],day:()=>0}; window.CAVERNS=CAVERNS; MODS.waters=MODS.wat
     if(C.wet){ const H=C.H, feed=(st,pos,dt,go,keys)=>{ if(SHARED.LVL!=='down'||!inside(pos.x,pos.z))return false; const W=RIG.water(st,{level:H+60,floor:0}); W.go=!!go; W.fast=W.in&&(keys.has('k')||keys.has('shift'))?1:0;
         if(W.y>H-30){ W.y=H-30; W.vy=Math.min(0,W.vy); } W.events.length=0; return true; };   // flooded to the roof: always under, so your air drains the whole way
       const UF=new THREE.Fog(C.murk,0,7*T), bg0=new THREE.Color(); let fog0=null, uw=false;
-      MODS.waters.push({feed,pre:scene=>{ uw=!!M&&SHARED.LVL==='down'&&inside(pos.x,pos.z)&&!!(scene.background&&scene.background.isColor); if(!uw)return; UF.far=(MODS.gear&&MODS.gear.on&&MODS.gear.on('goggles')?18:6)*T; fog0=scene.fog; bg0.copy(scene.background); scene.fog=UF; scene.background.copy(UF.color); },   // goggles see three times as far through the murk
+      MODS.waters.push({feed,pre:scene=>{ uw=!!M&&SHARED.LVL==='down'&&inside(pos.x,pos.z)&&!!(scene.background&&scene.background.isColor); if(!uw)return; UF.far=(EQUIP.sight?18:6)*T; fog0=scene.fog; bg0.copy(scene.background); scene.fog=UF; scene.background.copy(UF.color); },   // goggles see three times as far through the murk
         post:scene=>{ if(!uw)return; scene.fog=fog0; scene.background.copy(bg0); uw=false; }}); }
     SYS.add('places',()=>{ if(!window.__started||busy||FADE.busy)return; if(SHARED.LVL==='down'&&inside(pos.x,pos.z)&&!M)go(1,'load'); },'066a-caverns '+C.id);   // a saved spot down here builds it at the start
     const K=C.id.toUpperCase(); window[K]={go,get built(){ return !!M; }}; window[K+'DBG']=()=>({built:!!M,lv:SHARED.LVL,inside:inside(pos.x,pos.z),objs:M?M.objs.length:0,swim:!!(st.water&&st.water.in)});

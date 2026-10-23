@@ -28,3 +28,10 @@ drop policy if exists now_playing_write on now_playing;
 create policy now_playing_write on now_playing for update
   using (exists (select 1 from admins a where a.user_id = auth.uid()))
   with check (exists (select 1 from admins a where a.user_id = auth.uid()));
+
+-- the marquee's own lines and the poster's own picture (empty = from the playing video); safe to run again
+alter table now_playing add column if not exists marquee text not null default '';
+alter table now_playing add column if not exists poster  text not null default '';
+
+-- the projector's light (beam on, beam strength, warmth, flicker, glow on the room); safe to run again
+alter table now_playing add column if not exists beam jsonb not null default '{}';

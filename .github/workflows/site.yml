@@ -33,6 +33,8 @@ jobs:
         run: python3 build.py
       - name: The core's own logic (imports, level file, SYS, ZONES, VIS, FADE, collision)
         run: node tests/core.cjs dist/market.html
+      - name: The other players (bodies, name tags, the list, chat)
+        run: node tests/online.cjs dist/market.html
       - name: Check the site opens (door, then THE MARKET)
         run: node tests/site.cjs
       - name: Every place's code comes when you go there

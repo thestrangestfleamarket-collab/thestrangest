@@ -5,16 +5,17 @@ import {scene} from './004-main.js';
 import {SAVE} from './005-save.js';
 import {MISTE, MISTS, MISTSC, QS, SYS} from './006-map-pre.js';
 import {HEMI} from './064-map-post.js';
-Object.assign(DN,{lk:1,mode:'day',modes:['day','golden','soft','night'],names:{day:'DAY',golden:'GOLDEN',soft:'SOFT DAY',night:'NIGHT'}});
+Object.assign(DN,{lk:1,mode:'live',modes:['live','day','golden','soft','night'],names:{live:'LIVE',day:'DAY',golden:'GOLDEN',soft:'SOFT DAY',night:'NIGHT'}});
 { const U=SKY.U, Q=k=>(QS.get(k)??''),
-    D0={day:{h:13.2,sun:1.35,amb:1.2,sunc:'#fff0d6',zen:'#2370ec',hor:'#9ccbf6',cld:.02,cov:.92,cl:1.25,m0:70,m1:100,hz:.8,mist:'#86baf0',skym:.1,farb:1.15,grade:'#fff7ee',lift:'#000000',liftk:0,lamp:1,star:1,moon:1,cldc:'#ffffff',cldk:0,sunhz:'#ffffff',sunk:0,shaft:.8,glow:1,ambc:'#ffffff',dust:.5},
+    D0={live:{h:13,sun:1,amb:1,sunc:'#ffffff',zen:'#2370ec',hor:'#9ccbf6',cld:.06,cov:.9,cl:1.2,m0:60,m1:110,hz:.7,mist:'',skym:.2,farb:1.1,grade:'#ffffff',lift:'#000000',liftk:0,lamp:1.25,star:1,moon:1,cldc:'#ffffff',cldk:0,sunhz:'#ffffff',sunk:0,shaft:.8,glow:1,ambc:'#ffffff',dust:0},
+      day:{h:13.2,sun:1.35,amb:1.2,sunc:'#fff0d6',zen:'#2370ec',hor:'#9ccbf6',cld:.02,cov:.92,cl:1.25,m0:70,m1:100,hz:.8,mist:'#86baf0',skym:.1,farb:1.15,grade:'#fff7ee',lift:'#000000',liftk:0,lamp:1,star:1,moon:1,cldc:'#ffffff',cldk:0,sunhz:'#ffffff',sunk:0,shaft:.8,glow:1,ambc:'#ffffff',dust:.5},
       soft:{h:16.4,sun:1.2,amb:1.3,ambc:'#b4c6e6',sunc:'#ffe6c4',zen:'#2a6ae4',hor:'#a8cff6',cld:.08,cov:.38,cl:1.35,m0:14,m1:90,hz:.55,mist:'#a9bcd6',skym:.6,farb:1.1,grade:'#f6eee6',lift:'#c9b4c8',liftk:.12,lamp:1,star:1,moon:1,cldc:'#fff6ee',cldk:.9,sunhz:'#f4c9a8',sunk:.7,shaft:1,glow:1.6,dust:.5},
       golden:{h:16.3,sun:1.2,amb:1.2,sunc:'#ffe2a8',zen:'#f2c46a',hor:'#fff1bc',cld:.04,cov:.9,cl:1.1,m0:8,m1:60,hz:1,mist:'#f6d68e',skym:.5,farb:1,grade:'#fff2d2',lift:'#f2c463',liftk:.2,lamp:1,star:1,moon:1,cldc:'#ffffff',cldk:0,sunhz:'#ffffff',sunk:0,shaft:0,glow:1,ambc:'#ffffff',dust:.4},
       night:{h:22.5,sun:1.3,amb:1.25,sunc:'#ffffff',zen:'#04060e',hor:'#141c40',cld:.1,cov:.62,cl:.85,m0:34,m1:26,hz:.25,mist:'',skym:1,farb:.62,grade:'#ffffff',lift:'#000000',liftk:0,lamp:1.25,star:1.3,moon:1,cldc:'#ffffff',cldk:0,sunhz:'#ffffff',sunk:0,shaft:0,glow:1,ambc:'#ffffff',dust:0}};
   const F=[['h','SUN HEIGHT (THE HOUR)',7.5,18.5,.05,'dg'],['h','NIGHT HOUR (WHERE THE MOON IS)',19.5,29.5,.05,'n'],['sun','SUNLIGHT',0,2,.01,'dg'],['sun','MOONLIGHT',0,3,.01,'n'],['sunc','SUNLIGHT COLOUR','c','dg'],['amb','LIGHT ALL ROUND',0,3,.01],['ambc','LIGHT ALL ROUND COLOUR (THE SHADOWS)','c'],
     ['zen','SKY OVERHEAD','c'],['hor','SKY AT THE HORIZON','c'],['cld','CLOUDY (DIMS THE SUN)',0,1,.01],['cov','HIGH CLOUD COVER (LOWER = MORE)',.2,.95,.01],['cl','HIGH CLOUD BRIGHTNESS',.5,1.6,.01],
     ['m0','MIST STARTS (TILES PAST TOWN)',-10,120,1],['m1','MIST DEPTH (TILES)',4,160,1],['hz','MIST TINTED BY THE SKY',0,1,.01],['mist','MIST COLOUR','c','dg'],['skym','SKY HIDDEN BY THE MIST',0,1,.01],['farb','FAR CITY HAZE BRIGHTNESS',.3,1.3,.01],
-    ['cldc','HIGH CLOUD COLOUR','c','d'],['cldk','HIGH CLOUD COLOUR (HOW MUCH)',0,1,.01,'d'],['sunhz','MIST TOWARD THE SUN','c','d'],['sunk','MIST TOWARD THE SUN (HOW MUCH)',0,1,.01,'d'],['shaft','SUN SHAFTS',0,1,.01,'d'],['dust','DUST IN THE AIR',0,1,.01,'d'],['glow','GLOW',0,2.5,.01],
+    ['cldc','HIGH CLOUD COLOUR','c','d'],['cldk','HIGH CLOUD COLOUR (HOW MUCH)',0,1,.01,'d'],['sunhz','MIST TOWARD THE SUN','c','d'],['sunk','MIST TOWARD THE SUN (HOW MUCH)',0,1,.01,'d'],['shaft','SUN SHAFTS',0,1,.01,'d'],['glow','GLOW',0,2.5,.01],
     ['grade','COLOUR OF EVERYTHING','c'],['lift','HAZE OVER EVERYTHING','c'],['liftk','HAZE OVER EVERYTHING (HOW MUCH)',0,.6,.01],
     ['lamp','LAMPS',0,3,.01,'n'],['star','STARS',0,2,.01,'n'],['moon','MOON',0,1,.01,'n']];
   const S={}; for(const m of DN.modes){ S[m]={...D0[m]}; try{ Object.assign(S[m],JSON.parse(SAVE.get('dn-'+m)||'{}')); }catch(e){} }
@@ -22,13 +23,13 @@ Object.assign(DN,{lk:1,mode:'day',modes:['day','golden','soft','night'],names:{d
   { const q=Q('look').toLowerCase(), qh=+(Q('hour')||NaN); if(DN.modes.includes(q)){ DN.mode=q; DN.test=1; } else if(!isNaN(qh)){ DN.mode=qh<6||qh>19?'night':'day'; S[DN.mode].h=qh; DN.test=1; } }
   DN.P=()=>S[DN.mode]; DN.S=S; DN.D0=D0;
   const fix=()=>{ const P=DN.P(); WX.fix={cloud:P.cld,rain:0,snow:0,storm:0,wind:DN.mode==='night'?.08:.15,dir:1,fog:0}; window.PARK&&PARK.lampLit&&PARK.lampLit(); };
-  DN.set=m=>{ if(!DN.modes.includes(m))return; DN.mode=m; if(!DN.test)try{ SAVE.set('dn',m); }catch(e){} fix(); DN.draw(); };
+  DN.set=m=>{ if(!DN.modes.includes(m))return; DN.mode=m; CLOCK.run=(m==='live'&&!DN.test); if(!DN.test)try{ SAVE.set('dn',m); }catch(e){} fix(); DN.draw(); };
   const tc=new THREE.Color(); DN.U={grade:{value:new THREE.Color(1,1,1)},lift:{value:new THREE.Color(0,0,0)},liftK:{value:0}};
   SYS.add('clockPre',()=>{ if(!CLOCK.run)CLOCK.h=((DN.P().h%24)+24)%24; },'134b-daynight');
-  SYS.add('sky',()=>{ const P=DN.P(), night=DN.mode==='night', up=SHARED.LVL!=='down';
+  SYS.add('sky',()=>{ const P=DN.P(), live=DN.mode==='live', night=live?CLOCK.dark():DN.mode==='night', up=SHARED.LVL!=='down';
     CLOCK.sun.intensity*=P.sun; CLOCK.sun.color.multiply(tc.set(P.sunc)); if(up){ HEMI.intensity*=P.amb; if(P.ambc)HEMI.color.multiply(tc.set(P.ambc)); } DN.lk=night?P.lamp:1;
-    DN.U.grade.value.set(P.grade); DN.U.lift.value.set(P.lift); DN.U.liftK.value=up?P.liftk:0;
-    if(SKY.dome.visible){ U.uZ.value.set(P.zen); U.uH.value.set(P.hor); U.uM.value.copy(U.uH.value).lerp(U.uZ.value,.45); U.uCov.value=P.cov; U.uCL.value=P.cl; U.uMistK.value*=P.skym; U.uCldC.value.set(P.cldc||'#ffffff'); U.uCldK.value=P.cldk||0;
+    DN.U.grade.value.set(live?'#ffffff':P.grade); DN.U.lift.value.set(P.lift); DN.U.liftK.value=up&&!live?P.liftk:0;
+    if(SKY.dome.visible){ if(!live){ U.uZ.value.set(P.zen); U.uH.value.set(P.hor); U.uM.value.copy(U.uH.value).lerp(U.uZ.value,.45); U.uCov.value=P.cov; U.uCL.value=P.cl; U.uCldC.value.set(P.cldc||'#ffffff'); U.uCldK.value=P.cldk||0; } U.uMistK.value*=P.skym;
       if(night){ U.uStar.value=Math.min(2,U.uStar.value*P.star); U.uMoonK.value=Math.min(1,U.uMoonK.value*P.moon); } }
     MISTS.x=CLOCK.sunV.x; MISTS.y=CLOCK.sunV.y; MISTS.z=CLOCK.sunV.z; MISTS.w=up&&MISTE.x&&FAR3.mist?(P.sunk||0)*Math.max(0,Math.min(1,(CLOCK.elev()+2)/6)):0; MISTSC.set(P.sunhz||'#ffffff');
     if(MISTE.x&&FAR3.mist){ MISTE.y=P.m0; MISTE.z=P.m1; const f=FAR3.fog.color.lerp(P.mist?tc.set(P.mist):U.uH.value,P.hz); U.uMistC.value.copy(f); FAR3.FU.uMC.value.copy(f).multiplyScalar(P.farb); if(scene.background&&scene.background.isColor)scene.background.copy(f).multiplyScalar(.5); }
@@ -47,4 +48,4 @@ Object.assign(DN,{lk:1,mode:'day',modes:['day','golden','soft','night'],names:{d
       if(t.id==='dnreset'){ S[DN.mode]={...D0[DN.mode]}; SAVE.del('dn-'+DN.mode); dirty=false; fix(); DN.draw(); msg().textContent='back to the game\'s own'; }
       if(t.id==='dnexp'){ const o=box.querySelector('#dnout'); o.hidden=false; o.value=DN.names[DN.mode]+' '+JSON.stringify(DN.P()); o.select(); msg().textContent='copy this and send it to Claude'; } }); }
   addEventListener('keydown',e=>{ if(e.key.toLowerCase()==='n'&&!e.repeat&&!e.ctrlKey&&!e.metaKey&&!/INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName||''))DN.set(DN.modes[(DN.modes.indexOf(DN.mode)+1)%DN.modes.length]); });
-  CLOCK.run=false; fix(); DN.draw(); window.DN=DN; window.DNDBG=()=>({mode:DN.mode,h:CLOCK.h,elev:+CLOCK.elev().toFixed(1),wx:WX.now,lk:DN.lk}); }
+  CLOCK.run=(DN.mode==='live'&&!DN.test); fix(); DN.draw(); window.DN=DN; window.DNDBG=()=>({mode:DN.mode,run:CLOCK.run,h:+CLOCK.h.toFixed(2),elev:+CLOCK.elev().toFixed(1),wx:WX.now,lk:DN.lk}); }

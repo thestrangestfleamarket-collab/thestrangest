@@ -56,6 +56,9 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
         const d0 = V.def === 0 && E.float === false; F.give('armor', 1); E.wear('armor'); const guard = V.def > 0 && E.worn === 'armor';
         F.give('cloudcoat', 1); E.wear('cloudcoat'); const float = E.float === true && V.def === 0; E.wear('cloudcoat'); const off = E.float === false && !E.worn;
         return { ok: true, slots, d0, guard, float, off }; })();
+      o.rack = (() => { const R = window.RACK, G = window.GLBTOONS, bear = G && G.coatbear, fox = G && G.origamifox; if (!R || !R.at || !bear || !fox) return { ok: false };
+        const h = bear.st.home, f = fox.st.home, near = Math.hypot(h.x - f.x, h.z - f.z) < 5 * __dbg.MAPK.BOD.XS(1) - 5 * __dbg.MAPK.BOD.XS(0), c = __dbg.collide(h.x, h.z), free = Math.hypot(c[0] - h.x, c[1] - h.z) < 1e-6;
+        return { ok: true, pinned: h.r === 0, near, free, thing: __dbg.ui().things.some(t => /COAT RACK/.test(t.name)), rackBy: Math.hypot(R.at.x - h.x, R.at.z - h.z) < 4 }; })();
       o.knight = (() => { const B = window.BODIES, K = B && B.by && B.by.knight && B.by.knight.npc; if (!K) return { ok: false }; const T = __dbg.THREE, g0 = K.g.parent, G = new T.Group();
         const street = K.on === true && K.st.home.id === 'knight' && K.name === 'THE ARMOURER', bound = SHOPDBG().bound.includes('knight');
         B.place('knight', K.st.x + 1, K.st.z + 1, 0, G); const borrowed = K.g.parent === G && K.st.home.r === 0; B.restore('knight'); const back = K.g.parent === g0 && K.on === true && K.st.home.id === 'knight' && K.st.home.r > 0 && !K.prev;
@@ -85,6 +88,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
     ok(r.soft, 'the SOFT DAY look: a fourth look with its clouds, sun-side mist and sun shafts');
     ok(r.spar, 'the sparring ring stands by the swordsmith (partners come only when you spar)');
     ok(r.cinema, 'CINEMA is wired (shared screen: tick, push, admin, now; idle off the street)');
+    ok(r.rack.ok && r.rack.pinned && r.rack.near && r.rack.free && r.rack.thing && r.rack.rackBy, 'the bear merchant is pinned on free ground beside the nature merchant, his coat rack beside him and usable: ' + JSON.stringify(r.rack));
     ok(r.knight.ok && r.knight.street && r.knight.bound && r.knight.borrowed && r.knight.back, 'the plate knight walks the street as THE ARMOURER, is a shop, and comes back after the holodeck borrows him: ' + JSON.stringify(r.knight));
     ok(r.equip.ok && r.equip.slots && r.equip.d0 && r.equip.guard && r.equip.float && r.equip.off, 'EQUIP wears body gear and resolves its grant (guard softens blows, float lifts), one off at a time: ' + JSON.stringify(r.equip));
   }

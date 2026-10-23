@@ -4431,3 +4431,6 @@ Owner: "all items in grass should haev tuft around their edges (lampposts, rocks
 
 ## 23 Oct 2026: the soak — 100 pawns test the map; the playhouse lot is solid from the start
 Owner: "Add 100 npcs and test out the map. Have them report errors." A manual soak (tests/soak.cjs) scatters 100 pawns over the walkable map and reports every one that breaks an invariant (NaN, out of bounds, inside a solid, no ground, stuck) and every system that threw. First run: the map is clean except the playhouse — its lot was free ground until its deferred step ran, then anyone standing there was sealed in. Rule: a lot's collision is there from the start; only its painting may wait.
+
+## 23 Oct 2026: the bear merchant stands by the nature merchant, with his coat rack
+Owner: "pin the bear near the nature merchant and build the coat rack". The coat bear no longer roams: his home is pinned on Main Street beside the nature merchant (characters.json `home`, r 0). Beside him stands his coat rack — two plain coats and the cloud coat, a coat of drifting clouds; using the rack opens his shop.

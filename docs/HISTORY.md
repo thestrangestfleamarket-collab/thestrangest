@@ -4397,6 +4397,12 @@ Worn body gear now shows on the Walker, posed from the rig's joints each frame (
 ## 23 Oct 2026: one worn layer
 Owner: "fold GEAR into EQUIP then merge it". The goggles and the headlight are worn through EQUIP like the armour and the cloud coat: EQUIP now wears one thing a slot (body, head, eyes) and two new grants do the work — `light` (the headlight lights the caverns) and `sight` (goggles see further through the murk). What you wear stays on between visits. The scanner and extractor stay pack actions.
 
+## 23 Oct 2026: every player an apartment (201+), redesigned studio, fire-escape view
+
+Owner: "all players assigned an apartment. im 201, all other players go up in numbers, give them apartments in the order they login"; "open floor plan ... 1 apartment per floor ... front and back fire escape. small basic kitchen and bathroom. small wall phone. computer desk, and 1980 ibm pc and keyboard. simple bbs they can order things from bodega or catalog. catalog lists basic furniture for apartment. bodega as essential needs. all delivery ... dropped off by drone on front fire escape."
+His picks: the number is just your address (same off-map apartment for everyone), assigned server-side in login order, owner pinned 201; the drone drops on the front fire escape and you carry it in; ordered furniture auto-places. Two PRs.
+PR1: the number (Supabase `players.apt`, shown on your door plaque; run `supabase/apartments.sql` once to add it); a MY APARTMENT menu button; double-click the front door → your room (already wired); the fire-escape view shows one floor above and one below only (was three); the studio redone open-plan with a small bathroom, a wall phone and the 1980s computer desk (`home computer`).
+PR2 (next): the BBS lists the bodega (essentials) and a furniture catalog; orders fly in by drone onto the front fire escape.
 ## 23 Oct 2026: the cinema off the start's critical path
 `main` went red with the cinema (#235): its admin check and first pull ran as the page loaded and dragged the `later` chunk in at the start, and its polls hit a Supabase table that is not there yet (404 every 5 s). Now both wait until the start is up and `later` has come, and the poll and the poster go through the website's own server, which answers quietly on a miss. No change to what players see.
 
@@ -4431,3 +4437,6 @@ Owner: "all items in grass should haev tuft around their edges (lampposts, rocks
 
 ## 23 Oct 2026: the soak — 100 pawns test the map; the playhouse lot is solid from the start
 Owner: "Add 100 npcs and test out the map. Have them report errors." A manual soak (tests/soak.cjs) scatters 100 pawns over the walkable map and reports every one that breaks an invariant (NaN, out of bounds, inside a solid, no ground, stuck) and every system that threw. First run: the map is clean except the playhouse — its lot was free ground until its deferred step ran, then anyone standing there was sealed in. Rule: a lot's collision is there from the start; only its painting may wait.
+
+## 23 Oct 2026: the bear merchant stands by the nature merchant, with his coat rack
+Owner: "pin the bear near the nature merchant and build the coat rack". The coat bear no longer roams: his home is pinned on Main Street beside the nature merchant (characters.json `home`, r 0). Beside him stands his coat rack — two plain coats and the cloud coat, a coat of drifting clouds; using the rack opens his shop. Rule: a pinned home (r 0) means the character stands there — it is put on the spot when it spawns.

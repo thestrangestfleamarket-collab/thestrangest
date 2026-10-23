@@ -142,7 +142,8 @@ HOMES.assign=(st,key,o={},free)=>{ const id=HOMES.id(key||'someone'), H=LEVEL.ho
   else if((o.lv||'down')==='up'&&!o.pick&&!o.brain&&HOMES.street(st.x,st.z)){ const s=HOMES.slot(); h={x:s.x,z:s.z,r:HOMES.R*T}; }
   else h={x:st.x,z:st.z,r:(o.range??HOMES.R)*T};
   h.id=id; st.home=h;
-  if(h.r>0&&Math.hypot(st.x-h.x,st.z-h.z)>h.r)for(let k=0;k<24;k++){ const p=k<23?HOMES.inside(h):h; if(k===23||!free||(()=>{ try{ return free(p.x,p.z,st.R||.3*T); }catch(e){ return true; } })()){ st.x=p.x; st.z=p.z; st.to=null; break; } } };
+  if(!(h.r>0)){ if(Math.hypot(st.x-h.x,st.z-h.z)>1e-6){ st.x=h.x; st.z=h.z; st.to=st.next=null; } }
+  else if(Math.hypot(st.x-h.x,st.z-h.z)>h.r)for(let k=0;k<24;k++){ const p=k<23?HOMES.inside(h):h; if(k===23||!free||(()=>{ try{ return free(p.x,p.z,st.R||.3*T); }catch(e){ return true; } })()){ st.x=p.x; st.z=p.z; st.to=null; break; } } };
 HOMES.IN=.3; HOMES.NEAR=4;
 HOMES.doors=()=>{ '@later'; const B=SHARED.BOD, L=[]; for(const id in ROOMS.off){ const o=ROOMS.off[id]; if(o.door&&!o.mine)L.push({id,x:o.door[0],z:o.door[2]}); }
   for(const id in STORE.inside||{}){ const R=STORE.inside[id]; if(R.th)L.push({id,x:R.th.obj.position.x,z:R.th.obj.position.z}); }

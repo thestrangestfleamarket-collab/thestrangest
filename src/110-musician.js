@@ -17,12 +17,13 @@ function musBody(){ const R=RIG; if(!musBody.FG){ R.farOnly(false); R.fine(true)
   return {PCS:own.concat(musBody.FG.map(p=>Object.assign({},p))),J:musBody.J}; }
 const MUSGEO=new Map(), MUSNP=180;
 function figureMesh(PCS,key){ const NP=Math.max(MUSNP,PCS.length), PM={value:Array.from({length:NP},()=>new THREE.Matrix4().makeScale(0,0,0))};
-  const geos=PCS.map((P,i)=>{ const fine=P.step<1||/^(head|hair|beard|brow|eye|nose|ear|mouth)/.test(P.n), k=P.share||P; let g0=MUSGEO.get(k); if(!g0){ g0=P.box?musBox(P):W3.meshOf(P,P.step||(fine?.5:1),fine,null); if(P.share)MUSGEO.set(k,g0); }
+  if(!PCS.ALL){ const geos=PCS.map((P,i)=>{ const fine=P.step<1||/^(head|hair|beard|brow|eye|nose|ear|mouth)/.test(P.n), k=P.share||P; let g0=MUSGEO.get(k); if(!g0){ g0=P.box?musBox(P):W3.meshOf(P,P.step||(fine?.5:1),fine,null); if(P.share)MUSGEO.set(k,g0); }
     const g=new THREE.BufferGeometry(), n=g0.attributes.position.count; for(const a of ['position','normal','c1','mat'])g.setAttribute(a,g0.attributes[a]);
     if(P.recol){ const c=new Float32Array(n*3), mt=g0.attributes.mat.array; for(let j=0;j<n;j++){ const r=W3.ramp[P.recol(mt[j])]||W3.ramp[mt[j]]; c.set([r[1].r,r[1].g,r[1].b],j*3); } g.setAttribute('c1',new THREE.BufferAttribute(c,3)); }
     g.setAttribute('pidx',new THREE.BufferAttribute(new Float32Array(n).fill(i),1)); return g; });
   const all=new THREE.BufferGeometry(); for(const k of ['position','normal','c1','pidx']){ const sz=geos[0].attributes[k].itemSize, arr=new Float32Array(geos.reduce((a,g)=>a+g.attributes[k].array.length,0)); let o=0; for(const g of geos){ arr.set(g.attributes[k].array,o); o+=g.attributes[k].array.length; } all.setAttribute(k,new THREE.BufferAttribute(arr,sz)); }
-  all.setAttribute('color',all.attributes.c1);
+  all.setAttribute('color',all.attributes.c1); PCS.ALL=all; PCS.PER=geos.map((g,i)=>[PCS[i].n,g.attributes.position.count/3]); }
+  const all=PCS.ALL;
   const MOVE=`attribute float pidx; uniform mat4 uPM[${NP}];`, AT_=`mat4 PM=uPM[int(pidx+0.5)];`;
   const mat=new THREE.MeshToonMaterial({vertexColors:true,gradientMap:W3.GP,side:THREE.DoubleSide});
   mat.onBeforeCompile=sh=>{ sh.uniforms.uPM=PM; sh.vertexShader=MOVE+'\n'+sh.vertexShader.replace('#include <beginnormal_vertex>',AT_+' vec3 objectNormal=mat3(PM)*normal;').replace('#include <begin_vertex>','vec3 transformed=(PM*vec4(position,1.)).xyz;');
@@ -32,7 +33,7 @@ function figureMesh(PCS,key){ const NP=Math.max(MUSNP,PCS.length), PM={value:Arr
   const depth=new THREE.MeshDepthMaterial({side:THREE.DoubleSide,depthPacking:THREE.RGBADepthPacking}); depth.onBeforeCompile=sh=>{ sh.uniforms.uPM=PM; sh.vertexShader=MOVE+'\n'+sh.vertexShader.replace('#include <begin_vertex>',AT_+' vec3 transformed=(PM*vec4(position,1.)).xyz;'); }; depth.customProgramCacheKey=()=>'musdepth'+NP;
   const me=new THREE.Mesh(all,mat); me.customDistanceMaterial=dist; me.customDepthMaterial=depth; me.castShadow=true; me.receiveShadow=true; me.frustumCulled=false;
   const M=(F,out)=>out.set(F.x.x,F.y.x,F.z.x,F.o.x, F.x.y,F.y.y,F.z.y,F.o.y, F.x.z,F.y.z,F.z.z,F.o.z, 0,0,0,1);
-  return {me,PM,tris:all.attributes.position.count/3,per:geos.map((g,i)=>[PCS[i].n,g.attributes.position.count/3]),set:(i,F)=>{ M(F,PM.value[i]); const p=PCS[i], E=p.E!==undefined?p.E:p.e!=null&&W3.E&&W3.E[p.e]; if(E)W3.applyE(PM.value[i],E,F.o); }}; }
+  return {me,PM,tris:all.attributes.position.count/3,per:PCS.PER,set:(i,F)=>{ M(F,PM.value[i]); const p=PCS[i], E=p.E!==undefined?p.E:p.e!=null&&W3.E&&W3.E[p.e]; if(E)W3.applyE(PM.value[i],E,F.o); }}; }
 function musBox(P){ const [cx,cy,cz,hx,hy,hz]=P.box, F=P.F0, g=new THREE.BoxGeometry(2*hx,2*hy,2*hz).toNonIndexed(), p=g.attributes.position, nn=g.attributes.normal, n=p.count, mi=RIG.MATS.indexOf(P.m), r=W3.ramp[mi];
   const pos=new Float32Array(n*3), nor=new Float32Array(n*3), c1=new Float32Array(n*3), d=(x,y,z,v)=>x*v.x+y*v.y+z*v.z;
   for(let i=0;i<n;i++){ const x=p.getX(i)+cx-F.o.x, y=p.getY(i)+cy-F.o.y, z=p.getZ(i)+cz-F.o.z, a=nn.getX(i), b=nn.getY(i), c=nn.getZ(i);

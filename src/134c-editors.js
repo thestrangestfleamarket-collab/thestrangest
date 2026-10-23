@@ -10,7 +10,7 @@ import {CHARED, EDITORS, GAMEED, ITEMED, LAND, LIGHTED, UI, WE} from './003b-sys
     {key:6,n:'SOUND',d:'each sound and its level',go:()=>UI.menuTab('sound')},
     {key:7,n:'ITEM',d:'item types and their properties',go:()=>ITEMED.toggle()},
     {key:8,n:'BEHAVIOUR',d:'homes, routines, jobs',go:()=>CHARED.toggle('beh')},
-    {key:9,n:'LANDSCAPE',d:'paint ground patches (grass, cobble, ...)',go:()=>LAND.toggle()}];
+    {key:9,n:'LANDSCAPE',d:'paint ground, free-draw, place plants & rocks',go:()=>LAND.toggle()}];
   const css=document.createElement('style'); css.textContent=`
   #edmenu{position:fixed;inset:0;z-index:30;display:none;align-items:center;justify-content:center;background:#05070bcc;font:13px var(--pixel,monospace);color:var(--fg,#e9e6dd)}
   #edmenu.on{display:flex} #edmenu .box{background:var(--bg,#0c0e12);border:2px solid var(--line,#2a303a);min-width:300px;max-width:min(94vw,440px);padding:16px 18px}

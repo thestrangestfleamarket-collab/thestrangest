@@ -4510,6 +4510,14 @@ Owner (tenant 204 saw a white screen with a broken-page icon where he saw the mo
 ## 23 Oct 2026: the cinema's side exits, one staircase
 Owner: "the left and right side shouldnt be stairs, they should be exits out (with rails on side to block stairs) only middle part should have stair case ... the entrance to the projetor booth should be behind the stairs. double click to enter the room."; of the mockup: "exits lead to outside yes, booth entrance at top of stairs". The side aisles are flat walkways behind rails to a red EXIT door each at the back (double-click: out to the street); the middle aisle is the only staircase, and the booth's door is on the back wall at its top (double-click to enter).
 
+## 24 Oct 2026: park ring trees smaller, the gates taller
+
+Owner: "make trees around outer ring of park 25-50% smaller, make the brick gate 25% taller". Each ring tree is now a random 25–50% smaller; the gate piers (with their lanterns) and the CENTRAL PARK arch over the south gate are 25% taller.
+
+## 24 Oct 2026: the park's trees grown, not baked; bushes
+
+Owner: "the trees need to be way more natural, branches, realistic bunches of leaves, randomized"; of the mockups (https://claude.ai/artifact/PcYKZRKYKDLrKP7dm8iGjK): "A & C as the trees, B as bushes (scattered through out park, 10 total), shaped like bushes not trees".
+Every park tree is now grown (TREEGEN, 060b): a forked trunk and bent branches carrying round clumps (A) or many small bunches (C), from fixed variants so every player sees the same park. The street's stand-ins are made from the same trees' clumps and limbs. Ten low, wide leaf-bunch bushes (B) stand through the park. The street's tree pits keep their old tree for now.
 ## 24 Oct 2026: the Walker is the only body you play as
 Owner: "remove man and woman as playable, and knight. save in game for now." YOU's BODY row shows only WALKER; the knight, man and woman stay in the game (the knight still THE ARMOURER and the holodeck's sparring partner, one of each walks Main Street) but can't be picked. A body is on the row and selectable only if `body.playable` (set it true to put one back); a stale save or `?avatar=` of a non-playable body renders the Walker.
 ## 23 Oct 2026: players fight (step 1 and 2 of 3)

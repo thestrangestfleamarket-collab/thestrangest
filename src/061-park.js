@@ -10,6 +10,7 @@ import {BRICKS} from './014-gamekit.js';
 import {FOREST, PROPS} from './039-bodega.js';
 import {GCAVE} from './060-cave.js';
 import {FOUNT} from './060a-fount.js';
+import {TREEGEN} from './060b-trees.js';
 window.PARK=Object.assign(PARK,{x0:50,x1:108,y0:-61+NORTHY,y1:12.5+NORTHY+NORTHX,gate:[92.5,99.5],round:[96,-47,7]});
 PARK.sway={value:0}; PARK.windK={value:1}; PARK.swayAt={value:new THREE.Vector4(0,0,0,25*TILE)};
 PARK.tick=()=>{ PARK.sway.value=performance.now()/1000; const A=PARK.swayAt.value; A.x=pos.x; A.z=pos.z; if(NPCS.R)A.w=NPCS.R; };
@@ -109,7 +110,7 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
       return speck([c,c,c*.96],i/24,j/24,k+7); }));
     face([a,e,c],[b,e,c],[b,f,c],[a,f,c],W,H,(i,j)=>sideF(i,j,k,W,H)); face([b,e,d],[a,e,d],[a,f,d],[b,f,d],W,H,(i,j)=>sideF(i,j,k+1,W,H));
     face([a,e,d],[a,e,c],[a,f,c],[a,f,d],D,H,(i,j)=>sideF(i,j,k+2,D,H)); face([b,e,c],[b,e,d],[b,f,d],[b,f,c],D,H,(i,j)=>sideF(i,j,k+3,D,H)); };
-  const WH=96, PH=150, PG=.22, T=1.5, PW=2.4, [g0,g1]=P.gate, RUNS=[], PIERS=[], LEAVES=[];
+  const WH=96, GS=1.25, PH=Math.round(150*GS), PG=.22, T=1.5, PW=2.4, [g0,g1]=P.gate, RUNS=[], PIERS=[], LEAVES=[];
   const ashlar=(ch,l0,lv)=>(i,j,k,W,H)=>{ const co=Math.floor(j/ch), w=j-co*ch, u=i+Math.floor(hash(co,k,7)*l0); let s0=0, n=0, len=0; for(;;){ len=l0+Math.floor(lv*hash(n,co,k+3)); if(s0+len>u)break; s0+=len; n++; } const p=u-s0;
     let c=124+18*grain(i/24,j/24,k,1.2)+(hash(n,co,k+5)-.5)*40, wm=hash(n,co,k+9)-.5;
     const joint=w===ch-1||p===0; if(joint)c*=.5; else if(w===0)c*=1.16; else if(p===1)c*=1.07; else if(p===len-1||w===ch-2)c*=.86;
@@ -172,14 +173,14 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
       for(let u=.3;u<w-.2;u+=.6){ const [x,z]=at(u); GB.push([x,H*.73,z,ax==='x'?.27*M:.045*M,.27*M*VS,ax==='x'?.045*M:.27*M,IR[2]]); }
       const [a1,b1]=at(0), [a2,b2]=at(w); SOL.up.push([Math.min(a1,a2)-.09*M,Math.min(b1,b2)-.09*M,Math.max(a1,a2)+.09*M,Math.max(b1,b2)+.09*M]); FIX.up.push([Math.min(a1,a2)-.09*M,Math.min(b1,b2)-.09*M,0,Math.max(a1,a2)+.09*M,Math.max(b1,b2)+.09*M,H]); }
     put(GP,GB);
-    { const yc=P.y0+.42, xm=(g0+g1)/2, len=(g1-g0)*TILE, B=[], bar=(h,t)=>B.push([X(xm),Y(h),Z(yc),len,Y(t),.1*M,IR[0]]);
-      bar(124,4); bar(140,4); for(let u=g0+.25;u<g1-.1;u+=.25){ const n=Math.round(u*4); B.push([X(u),Y(132),Z(yc),.035*M,Y(12),.035*M,IR[n%3]]); if(Math.abs(u-xm)>1.5)B.push([X(u),Y(146+(n%2?3:0)),Z(yc),.03*M,Y(n%2?10:5),.03*M,IR[1]]); }
-      for(const u of [g0+.05,g1-.05])B.push([X(u),Y(134),Z(yc),.1*M,Y(26),.1*M,IR[1]]);
+    { const yc=P.y0+.42, xm=(g0+g1)/2, len=(g1-g0)*TILE, B=[], bar=(h,t)=>B.push([X(xm),Y(GS*h),Z(yc),len,Y(GS*t),.1*M,IR[0]]);
+      bar(124,4); bar(140,4); for(let u=g0+.25;u<g1-.1;u+=.25){ const n=Math.round(u*4); B.push([X(u),Y(GS*132),Z(yc),.035*M,Y(GS*12),.035*M,IR[n%3]]); if(Math.abs(u-xm)>1.5)B.push([X(u),Y(GS*(146+(n%2?3:0))),Z(yc),.03*M,Y(GS*(n%2?10:5)),.03*M,IR[1]]); }
+      for(const u of [g0+.05,g1-.05])B.push([X(u),Y(GS*134),Z(yc),.1*M,Y(GS*26),.1*M,IR[1]]);
       { const FONT={C:['.###','#...','#...','#...','.###'],E:['####','#...','###.','#...','####'],N:['#..#','##.#','#.##','#..#','#..#'],T:['###','.#.','.#.','.#.','.#.'],R:['###.','#..#','###.','#.#.','#..#'],A:['.##.','#..#','####','#..#','#..#'],L:['#...','#...','#...','#...','####'],P:['###.','#..#','###.','#...','#...'],K:['#..#','#.#.','##..','#.#.','#..#']};
-        const txt='CENTRAL PARK', cols=[...txt].reduce((a,ch)=>a+(ch===' '?2:FONT[ch][0].length+1),0), half=len*.44, step=half*2/cols, px=step*.95, pz=.07*M, hb=Y(147), ah=Y(13);
+        const txt='CENTRAL PARK', cols=[...txt].reduce((a,ch)=>a+(ch===' '?2:FONT[ch][0].length+1),0), half=len*.44, step=half*2/cols, px=step*.95, pz=.07*M, hb=Y(GS*147), ah=Y(GS*13);
         let u=-half; for(const ch of txt){ if(ch===' '){ u+=2*step; continue; } const G=FONT[ch], w=G[0].length, tc=(u+w*step/2)/half, base=hb+ah*(1-tc*tc);
           for(let r=0;r<5;r++)for(let c=0;c<w;c++)if(G[r][c]==='#')B.push([X(xm)-(u+(c+.5)*step),base+(4.5-r)*px,Z(yc),step*.96,px*1.04,pz,IR[0]]); u+=(w+1)*step; }
-        for(let i=0;i<24;i++){ const tm=-1+(i+.5)/12, w=half*1.06/12; B.push([X(xm)+tm*half*1.06,hb-Y(4)+ah*(1-tm*tm),Z(yc),w+.005,px*1.3,pz*1.2,IR[1]]); }
+        for(let i=0;i<24;i++){ const tm=-1+(i+.5)/12, w=half*1.06/12; B.push([X(xm)+tm*half*1.06,hb-Y(GS*4)+ah*(1-tm*tm),Z(yc),w+.005,px*1.3,pz*1.2,IR[1]]); }
         PARK.sign={x:X(xm),y:hb+ah*.5,z:Z(yc)}; }
       put([],B); }
     const LB=[], LG=[], LC_=[], HL=[];
@@ -210,25 +211,31 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
   const BATCHED=(g,RG,mat)=>{ const n=RG.length-1; if(QS.get('bm')==='0'||n<2)return new THREE.Mesh(g,mat); const me=new THREE.BatchedMesh(n,RG[n],0,mat), names=Object.keys(g.attributes), I=new THREE.Matrix4();
     for(let i=0;i<n;i++){ const a=RG[i], b=RG[i+1]; if(b<=a)continue; const G=new THREE.BufferGeometry(); for(const k of names){ const A=g.attributes[k], z=A.itemSize; G.setAttribute(k,new THREE.BufferAttribute(A.array.slice(a*z,b*z),z,A.normalized)); } me.setMatrixAt(me.addGeometry(G),I); }
     me.sortObjects=false; return me; };
-  const F=Object.assign({},FOREST,PROPS), mesh=(list,leafy,solid=true,sway=false)=>{ const P3=[], C3=[], SW=[], TR=[], LF=[], RN=[], RG=[], IT=[], c=new THREE.Color(); for(const [key,x,y,m,turn,lift] of list){ const p0=P3.length; RG.push(p0/3); const ph=hash(Math.round(x*7),Math.round(y*7),131)*6.28; const D=F[key], p=f32(D.p), col=b8(D.c), k=b8(D.k), s=m/.84*TILE, ca=Math.cos(turn||0), sa=Math.sin(turn||0), ox=X(x), oz=Z(y), oy=(lift||0)/.84*TILE+P.hill(x,y);
+  const F=Object.assign({},FOREST,PROPS), mesh=(list,leafy,solid=true,sway=false,opt={})=>{ const P3=[], C3=[], SW=[], TR=[], LF=[], RN=[], RG=[], IT=[], CN=[], UV=[], c=new THREE.Color(); for(const [key,x,y,m,turn,lift] of list){ const p0=P3.length; RG.push(p0/3); const ph=hash(Math.round(x*7),Math.round(y*7),131)*6.28; const D=F[key], p=f32(D.p), col=b8(D.c), k=b8(D.k), s=m/.84*TILE, ca=Math.cos(turn||0), sa=Math.sin(turn||0), ox=X(x), oz=Z(y), oy=(lift||0)/.84*TILE+P.hill(x,y);
       for(let i=0;i<p.length;i+=3){ const px=p[i]*s, py=p[i+1]*s+oy, pz=p[i+2]*s; P3.push(ox+px*ca-pz*sa,py,oz+px*sa+pz*ca); if(sway)SW.push(Math.max(0,p[i+1])*s,ph); if(TL)LF.push(col[i+1]>col[i]*1.08&&col[i+1]>col[i+2]*1.08?1:0); const t=Math.floor(i/9), sh=k[t]===0?.86+.28*hash(t,x*7,y*3):k[t]===2?.9+.2*hash(t,x*5,y*9):.92+.16*hash(t,x*3,y*5);
         c.setRGB(col[i]/255*sh,col[i+1]/255*sh,col[i+2]/255*sh,THREE.SRGBColorSpace); C3.push(c.r,c.g,c.b); }
+      if(D.n)CN.push([p0,D.n,ca,sa]); if(opt.map){ const u=D.uv; for(let i=0,n=p.length/3;i<n;i++)UV.push(u?u[i*2]:0,u?u[i*2+1]:0); }
       if(TL){ const q0=p0/3, q1=P3.length/3; let y0=1e9, y1=-1e9, cx=0, cz=0, n=0, r1=1e-3; for(let v=q0;v<q1;v++)if(LF[v]){ y0=Math.min(y0,P3[v*3+1]); y1=Math.max(y1,P3[v*3+1]); cx+=P3[v*3]; cz+=P3[v*3+2]; n++; } cx/=n||1; cz/=n||1;
         for(let v=q0;v<q1;v++)if(LF[v])r1=Math.max(r1,Math.hypot(P3[v*3]-cx,P3[v*3+2]-cz)); const cy=(y0+y1)/2, ry=Math.max(1e-3,(y1-y0)/2);
         for(let v=q0;v<q1;v++){ TR.push(LF[v]?(P3[v*3+1]-y0)/Math.max(1e-3,y1-y0):0,LF[v]?Math.hypot(P3[v*3]-cx,P3[v*3+2]-cz)/r1:0,LF[v]); RN.push((P3[v*3]-cx)/(r1*r1),(P3[v*3+1]-cy)/(ry*ry),(P3[v*3+2]-cz)/(r1*r1)); } }
       { let t=oy, r=0; for(let v=p0+1;v<P3.length;v+=3)if(P3[v]>t)t=P3[v]; const hm=(oy+t)/2; for(let v=p0;v<P3.length;v+=3)if(P3[v+1]>hm)r=Math.max(r,Math.hypot(P3[v]-ox,P3[v+2]-oz)); IT.push({k:key,x:ox,z:oz,y:oy,top:t,r}); }
       CLIPX.push({place:'park',name:key,P:P3.slice(p0)});
       if(solid){ const r=Math.max(.3,D.trunk*s*.5); SOL.up.push([ox-r,oz-r,ox+r,oz+r]); FIX.up.push([ox-r,oz-r,0,ox+r,oz+r,leafy?Y(60):s*.9]); } }
-    const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(P3,3)); g.setAttribute('color',new THREE.Float32BufferAttribute(C3,3)); g.computeVertexNormals(); if(sway)g.setAttribute('aSw',new THREE.Float32BufferAttribute(SW,2)); if(TL)g.setAttribute('aTr',new THREE.Float32BufferAttribute(TR,3));
+    const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(P3,3)); g.setAttribute('color',new THREE.Float32BufferAttribute(C3,3)); g.computeVertexNormals();
+    if(CN.length){ const N=g.attributes.normal.array; for(const [j0,n,ca,sa] of CN)for(let i=0;i<n.length;i+=3){ const j=j0+i; N[j]=n[i]*ca-n[i+2]*sa; N[j+1]=n[i+1]; N[j+2]=n[i]*sa+n[i+2]*ca; } }
+    if(opt.map)g.setAttribute('uv',new THREE.Float32BufferAttribute(UV,2)); if(sway)g.setAttribute('aSw',new THREE.Float32BufferAttribute(SW,2)); if(TL)g.setAttribute('aTr',new THREE.Float32BufferAttribute(TR,3));
     if(TL>1){ const N=g.attributes.normal.array; for(let v=0;v<LF.length;v++)if(LF[v]){ let x=RN[v*3], y=RN[v*3+1], z=RN[v*3+2]; const l=Math.hypot(x,y,z)||1; x=x/l*.8+N[v*3]*.2; y=y/l*.8+N[v*3+1]*.2; z=z/l*.8+N[v*3+2]*.2; const m=Math.hypot(x,y,z)||1; N[v*3]=x/m; N[v*3+1]=y/m; N[v*3+2]=z/m; } }
-    const mat=new THREE.MeshLambertMaterial({vertexColors:true,side:THREE.DoubleSide,shadowSide:THREE.BackSide});
+    const mat=new THREE.MeshLambertMaterial({vertexColors:true,side:THREE.DoubleSide,shadowSide:THREE.BackSide}); if(opt.map){ mat.map=opt.map; mat.alphaTest=.5; }
     const SR='sr=1.-smoothstep(uSwAt.w*.85,uSwAt.w,distance(transformed.xz,uSwAt.xz))', SWG=sway&&(sway===2?'{ float h=aSw.x, '+SR+', g=(.7+.3*sin(uSw*.23+aSw.y))*uWk*sr; transformed.x+=sin(uSw*2.3+aSw.y)*h*.12*g; transformed.z+=sin(uSw*1.9+aSw.y*1.7)*h*.08*g; }':'{ float h=aSw.x*aSw.x*.1, '+SR+', g=(.7+.3*sin(uSw*.23+aSw.y))*uWk*sr; transformed.x+=sin(uSw*1.6+aSw.y)*h*.035*g; transformed.z+=sin(uSw*1.2+aSw.y*1.7)*h*.025*g; }'), swayV=sh=>{ sh.uniforms.uSw=PARK.sway; sh.uniforms.uWk=PARK.windK; sh.uniforms.uSwAt=PARK.swayAt; sh.vertexShader='attribute vec2 aSw; uniform vec4 uSwAt; uniform float uSw,uWk;\n'+sh.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\n '+SWG); };
     if(sway||TL){ mat.onBeforeCompile=sh=>{ if(TL)treeLook(sh); if(sway)swayV(sh); }; mat.customProgramCacheKey=()=>'oaksway'+sway+'tl'+TL; }
     if(leafy)PEEK.mark(g); RG.push(P3.length/3); const me=BATCHED(g,RG,mat); if(leafy)for(const o of IT)PEEK.box(me,o.x-o.r,o.y,o.z-o.r,o.x+o.r,o.top,o.z+o.r); me.userData.P=P3; me.userData.LF=LF; me.userData.items=IT; me.castShadow=true; me.receiveShadow=TL!==2;
+    if(opt.map){ const M=new THREE.MeshDepthMaterial({depthPacking:THREE.RGBADepthPacking,map:opt.map,alphaTest:.5}); if(sway){ M.onBeforeCompile=swayV; M.customProgramCacheKey=()=>'leafd'+sway; } me.customDepthMaterial=M; }
     if(sway&&TL)for(const [k,M] of [['customDepthMaterial',new THREE.MeshDepthMaterial({depthPacking:THREE.RGBADepthPacking})],['customDistanceMaterial',new THREE.MeshDistanceMaterial()]]){ M.onBeforeCompile=swayV; M.customProgramCacheKey=()=>'oakswayd'+sway; me[k]=M; }
     if(me.isBatchedMesh){ const ids=[]; for(let i=0;i+1<RG.length;i++)if(RG[i+1]>RG[i])ids.push(i); WED.meshes.push({place:'park',me,items:IT,ids}); }
     scene.add(me); return me; };
   const TREEY=12+4.6; PARK.mesh=mesh;
+  const NV=10; for(let i=0;i<NV;i++){ F['GA'+i]=TREEGEN.model('clumps',1000+i); F['GC'+i]=TREEGEN.model('bunches',2000+i); } for(let i=0;i<4;i++)F['GB'+i]=TREEGEN.bush(3000+i);
+  const gk=(x,y,sd)=>(hash(Math.round(x*3),Math.round(y*3),sd)<.5?'GA':'GC')+Math.floor(hash(Math.round(x*5),Math.round(y*5),sd+2)*NV);
   const TREES=(()=>{ const out=[], RR=[], KEEP=[[LX-LR-2,LY-LR-2,LX+LR+2,LY+LR+2],[CASTLE.b[0]-3,CASTLE.b[2]-3,CASTLE.b[1]+3,CASTLE.b[3]+3],[P.gate[0]-16,P.y0,P.gate[1]+8,P.y0+12],(c=>[c.x-7,c.y-7,c.x+7,c.y+7])(P.campAt()),[RX(90)-3,RY(-41.5)-3,RX(102)+3,RY(-41.5)+3],...(typeof GCAVE!=='undefined'?GCAVE.keep(P):[])];
     const [cx,cy]=P.round, W=k=>/^Oak/.test(k)?.42:F[k].wide*.45, add=(k,x,y,m,t)=>{ out.push([k,+x.toFixed(1),+y.toFixed(1),+m.toFixed(1),+t.toFixed(2)]); RR.push(m*W(k)); }, near=(x,y,r,f,g)=>out.some((o,j)=>Math.hypot(o[1]-x,o[2]-y)<Math.max(g,(RR[j]+r)*f)),
       ok=(x,y,r)=>!(pd(x,y)<3+r||y<P.y0+TREEY+4||y>P.y1-r-8||x<P.x0+r+10||x>P.x1-r-10||Math.hypot(x-cx,y-cy)<P.round[2]+r+6||KEEP.some(b=>x>b[0]-r&&x<b[2]+r&&y>b[1]-r&&y<b[3]+r)||BK.wet(x,y,r)||FOUNT.lake(x,y)<r*.35+1.5||FOUNT.ter(x,y)<r+.5);
@@ -246,11 +253,12 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
       const gap=(v,g,pad)=>g&&v>g[0]-pad&&v<g[1]+pad, PAD=4.5;
       const edgeOK=(x,y)=>!(FOUNT.lake(x,y)<2.4||FOUNT.ter(x,y)<2.2||BK.wet(x,y,2)||path(x,y)||(x>CB[0]-3.5&&x<CB[1]+3.5&&y>CB[2]-3.5&&y<CB[3]+3.5));
       const ringAdd=(x,y,s)=>{ const jx=x+(hash(s,5,23)-.5)*2.2, jy=y+(hash(s,6,29)-.5)*2.2; if(!edgeOK(jx,jy))return;
-        const k=TK[Math.floor(hash(s,1,11)*TK.length)%TK.length], m=(20+hash(s,2,13)*6)*(1+(hash(s,3,17)-.5)*.5); add(k,jx,jy,m,hash(s,4,19)*6.28); };
+        const k=TK[Math.floor(hash(s,1,11)*TK.length)%TK.length], m=(20+hash(s,2,13)*6)*(1+(hash(s,3,17)-.5)*.5)*(.5+.25*hash(s,7,31)); add(k,jx,jy,m,hash(s,4,19)*6.28); };
       const STEP=6.4; let s=5000;
       for(let i=0;i<2;i++){ const off=2.6+i*4.6, st=i*STEP/2;
         for(let x=P.x0+off+1+st;x<=P.x1-off-1;x+=STEP){ if(!gap(x,P.gate,PAD))ringAdd(x,P.y0+off,s++); if(!gap(x,PARK.ngate,PAD))ringAdd(x,P.y1-off,s++); }
         for(let y=P.y0+off+1+st;y<=P.y1-off-1;y+=STEP){ if(!gap(y,PARK.wgate,PAD))ringAdd(P.x0+off,y,s++); if(!gap(y,PARK.egate,PAD))ringAdd(P.x1-off,y,s++); } } }
+    for(const e of out)e[0]=gk(e[1],e[2],215); for(const e of out.back)e[0]=gk(e[1],e[2],219);
     return out; })();
   PARK.later(()=>{ PARK.trees=QS.get('trees')==='0'?null:mesh(TREES,true,true,true); });
   PARK.oaks=TREES.map(([k,x,y,m])=>[X(x),Z(y),m]);
@@ -258,14 +266,31 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
     const look=k=>{ if(LK.has(k))return LK.get(k); const D=F[k], p=f32(D.p), col=b8(D.c), lc=[0,0,0], tc=[0,0,0]; let y0=1e9, y1=-1e9, r=0, ym=0, n=0, tn=0;
       for(let i=0;i<p.length;i+=3){ ym=Math.max(ym,p[i+1]); if(col[i+1]>col[i]*1.08&&col[i+1]>col[i+2]*1.08){ y0=Math.min(y0,p[i+1]); y1=Math.max(y1,p[i+1]); r=Math.max(r,Math.hypot(p[i],p[i+2])); for(let j=0;j<3;j++)lc[j]+=col[i+j]; n++; } else { for(let j=0;j<3;j++)tc[j]+=col[i+j]; tn++; } }
       const L=n?{y0,y1,r,lc:lc.map(v=>v/n)}:{y0:ym*.4,y1:ym,r:ym*.3,lc:[70,110,50]}; L.tc=tn?tc.map(v=>v/tn):[90,70,50]; L.tr=D.trunk||.1; L.cone=/Spruce|Pine|Fir/.test(k); LK.set(k,L); return L; };
-    const stand=list=>{ const CR=[], SP=[], TK=[], G=new THREE.Group();
-      for(const [k,x,y,m,t] of list){ const L=look(k), s=m/.84*TILE, ox=X(x), oz=Z(y), oy=P.hill(x,y), h=.94+.12*hash(Math.round(x*7),Math.round(y*7),131);
+    const CEL=16*TILE, CG=new THREE.IcosahedronGeometry(1,1), LG=new THREE.CylinderGeometry(.7,1,1,5), CM=new THREE.MeshLambertMaterial(), bin=(M,k)=>{ let a=M.get(k); if(!a)M.set(k,a=[]); return a; };
+    const stand=list=>{ const CR=[], SP=[], TK=[], G=new THREE.Group(), GC=new Map(), GL=new Map();
+      for(const [k,x,y,m,t] of list){ const s=m/.84*TILE, ox=X(x), oz=Z(y), oy=P.hill(x,y), h=.94+.12*hash(Math.round(x*7),Math.round(y*7),131), S=F[k].sum;
+        if(S){ const ca=Math.cos(t||0), sa=Math.sin(t||0), key=Math.floor(ox/CEL)+','+Math.floor(oz/CEL);
+          for(const [a,b,cz,r,R_,G_,B_] of S.cl)bin(GC,key).push([ox+(a*ca-cz*sa)*s,oy+b*s,oz+(a*sa+cz*ca)*s,r*s,[R_*h,G_*h,B_*h],t||0]);
+          for(const [ax,ay,az,bx,by,bz,r] of S.lb)bin(GL,key).push([ox+(ax*ca-az*sa)*s,oy+ay*s,oz+(ax*sa+az*ca)*s,ox+(bx*ca-bz*sa)*s,oy+by*s,oz+(bx*sa+bz*ca)*s,Math.max(.04*TILE,r*s),S.bc]); continue; }
+        const L=look(k);
         (L.cone?SP:CR).push([ox,oy+s*(L.y0+L.y1)/2,oz,s*L.r*.8,s*(L.y1-L.y0)/2,L.lc.map(v=>v*h),t]); TK.push([ox,oy+s*L.y0*.55,oz,Math.max(.12*TILE,s*L.tr*.5),s*L.y0*1.1,L.tc,0]); }
       const inst=(geo,L)=>{ if(!L.length)return; const me=new THREE.InstancedMesh(geo,new THREE.MeshLambertMaterial({flatShading:true}),L.length);
         L.forEach(([x,y,z,r,hh,cl,t],i)=>{ me.setMatrixAt(i,m4.compose(new V(x,y,z),q.setFromAxisAngle(up,t),new V(r,hh,r))); me.setColorAt(i,c.setRGB(cl[0]/255,cl[1]/255,cl[2]/255,THREE.SRGBColorSpace)); });
         me.computeBoundingSphere(); me.castShadow=true; me.receiveShadow=true; G.add(me); };
-      inst(new THREE.IcosahedronGeometry(1,0),CR); inst(new THREE.ConeGeometry(1,2,6),SP); inst(new THREE.CylinderGeometry(1,1,1,5),TK); scene.add(G); return G; };
+      inst(new THREE.IcosahedronGeometry(1,0),CR); inst(new THREE.ConeGeometry(1,2,6),SP); inst(new THREE.CylinderGeometry(1,1,1,5),TK);
+      const v=new V(), d=new V(), sc=new V();
+      for(const L of GC.values()){ const me=new THREE.InstancedMesh(CG,CM,L.length); L.forEach(([x,y,z,r,cl,tt],i)=>{ me.setMatrixAt(i,m4.compose(v.set(x,y,z),q.setFromAxisAngle(up,tt),sc.set(r,r*.82,r))); me.setColorAt(i,c.setRGB(cl[0]/255,cl[1]/255,cl[2]/255,THREE.SRGBColorSpace)); }); me.computeBoundingSphere(); me.castShadow=me.receiveShadow=true; G.add(me); }
+      for(const L of GL.values()){ const me=new THREE.InstancedMesh(LG,CM,L.length); L.forEach(([ax,ay,az,bx,by,bz,r,cl],i)=>{ d.set(bx-ax,by-ay,bz-az); const len=d.length(); me.setMatrixAt(i,m4.compose(v.set((ax+bx)/2,(ay+by)/2,(az+bz)/2),q.setFromUnitVectors(up,d.normalize()),sc.set(r,len,r))); me.setColorAt(i,c.setRGB(cl[0]/255,cl[1]/255,cl[2]/255,THREE.SRGBColorSpace)); }); me.computeBoundingSphere(); me.castShadow=me.receiveShadow=true; G.add(me); }
+      scene.add(G); return G; };
     P.stand=stand(TREES); P.standFar=stand(TREES.back); }
+  const BUSH=(()=>{ const out=[], [cx,cy]=P.round, cp=P.campAt(), keep=typeof GCAVE!=='undefined'?GCAVE.keep(P):[];
+    for(let i=0;i<6000&&out.length<10;i++){ const x=P.x0+14+(P.x1-P.x0-28)*hash(i,311,5), y=P.y0+TREEY+6+(P.y1-P.y0-TREEY-20)*hash(i,313,7);
+      if(pd(x,y)<2.5||BK.wet(x,y,2.5)||FOUNT.lake(x,y)<3||FOUNT.ter(x,y)<2.5||Math.hypot(x-cx,y-cy)<P.round[2]+4||Math.hypot(x-cp.x,y-cp.y)<7)continue;
+      if(x>CB[0]-3&&x<CB[1]+3&&y>CB[2]-3&&y<CB[3]+3||keep.some(b=>x>b[0]&&x<b[2]&&y>b[1]&&y<b[3]))continue;
+      if(out.some(o=>Math.hypot(o[1]-x,o[2]-y)<10)||TREES.some(e=>Math.hypot(e[1]-x,e[2]-y)<2.5))continue;
+      out.push(['GB'+Math.floor(hash(i,317,9)*4),+x.toFixed(1),+y.toFixed(1),+(1.1+hash(i,319,3)*.6).toFixed(2),+(hash(i,321,5)*6.28).toFixed(2)]); }
+    return out; })();
+  PARK.later(()=>{ PARK.bushes=BUSH.length?mesh(BUSH,false,true,2,{map:TREEGEN.leafTex()}):null; });
   window.PARKDBG=()=>({oaks:PARK.oaks,trees:TREES,back:TREES.back,TL,progs:renderer.info.programs.length});
   PARK.later(()=>{ '@park'; PARK.rocks=mesh([['BigRock3',87.5,-37,2.6,1.8],['BigRock5',126,-41,2.4,.2],['Rock_12',55.5,-41,1,1],['Rock1',111,-41,.6,2],['BigRock1',66,-35,2,1.1]].map(([k,x,y,...r])=>[k,RX(x),RY(y),...r]),false);
   { const UG=[['bush1',1.1],['bush2',1.2],['bush3',1.3],['bush4',1.5],['bush5',1.1],['flower1',.5],['flower2',.7],['flower3',.3],['flower4',.7],['flower5',.35],['flower6',.8],['grass1',.5],['grass2',.6],['grass1',.45],['grass2',.55],['mushroom1',.3],['mushroom2',.35],['mushroom3',.3],['mushroom4',.25],['stone2',.5],['stone3',.2],['stones1',.25]];

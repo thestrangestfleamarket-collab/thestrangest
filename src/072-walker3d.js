@@ -43,7 +43,7 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
         if(ni===1){ emit(E(ins[0],out[0])); emit(E(ins[0],out[1])); emit(E(ins[0],out[2])); }
         else if(ni===3){ emit(E(out[0],ins[0])); emit(E(out[0],ins[1])); emit(E(out[0],ins[2])); }
         else { const a=E(ins[0],out[0]),b=E(ins[0],out[1]),c=E(ins[1],out[1]),d=E(ins[1],out[0]); emit(a); emit(b); emit(c); emit(a); emit(c); emit(d); } } }
-    const fit0=R.fitPts(P.n,new Float32Array(raw)), {fit,mats:mts}=simplify(fit0,mats,(P.cell||CELL*(fine?0.5:1))*(/^(head|hair|eye|nose|ear|mouth)/.test(P.n)?1:1.42)*(/^eyes/.test(P.n)?1:RES)); mats.length=0; for(const q of mts)mats.push(q); const n=fit.length/6, pos=new Float32Array(n*3), nor=new Float32Array(n*3), c0=new Float32Array(n*3), c1=new Float32Array(n*3), c2=new Float32Array(n*3), cd=new Float32Array(n*3), mt=new Float32Array(n);
+    const fit0=R.fitPts(P.under||P.n,new Float32Array(raw)), {fit,mats:mts}=simplify(fit0,mats,(P.cell||CELL*(fine?0.5:1))*(/^(head|hair|eye|nose|ear|mouth)/.test(P.n)?1:1.42)*(/^eyes/.test(P.n)?1:RES)); mats.length=0; for(const q of mts)mats.push(q); const n=fit.length/6, pos=new Float32Array(n*3), nor=new Float32Array(n*3), c0=new Float32Array(n*3), c1=new Float32Array(n*3), c2=new Float32Array(n*3), cd=new Float32Array(n*3), mt=new Float32Array(n);
     for(let i=0;i<n;i++){ pos.set([fit[i*6],fit[i*6+1],fit[i*6+2]],i*3); nor.set([fit[i*6+3],fit[i*6+4],fit[i*6+5]],i*3); const r=ramp[mats[i]]||ramp[0]; c0.set([r[0].r,r[0].g,r[0].b],i*3); c1.set([r[1].r,r[1].g,r[1].b],i*3); c2.set([r[2].r,r[2].g,r[2].b],i*3); cd.set([(r[2].r+r[3].r)/2,(r[2].g+r[3].g)/2,(r[2].b+r[3].b)/2],i*3); mt[i]=mats[i]; }
     const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(pos,3)); g.setAttribute('normal',new THREE.BufferAttribute(nor,3));
     g.setAttribute('c0',new THREE.BufferAttribute(c0,3)); g.setAttribute('cd',new THREE.BufferAttribute(cd,3)); g.setAttribute('c1',new THREE.BufferAttribute(c1,3)); g.setAttribute('c2',new THREE.BufferAttribute(c2,3)); g.setAttribute('mat',new THREE.BufferAttribute(mt,1)); return g; }
@@ -133,6 +133,14 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
       const r2=(p,r)=>{ const x=sx(p), y=p.y-H.y; if(r.o){ const cx=(r.x[0]+r.x[1])/2, cy=(r.y[0]+r.y[1])/2; return Math.hypot(x-cx,y-cy)-(r.x[1]-r.x[0])*.45; } return Math.max(r.x[0]-x,x-r.x[1],r.y[0]-y,y-r.y[1]); };
       PCS.push({n:'eyes'+k,on:'head',m:E[0][4],bb:[H.x-5.5,H.x+5.5,H.y-1.5,H.y+3.5,H.z+1,H.z+12],step:.18,cell:.14,
         d:p=>Math.max(hd(p)-.22,Math.min(...R2.map(r=>r2(p,r))),H.z+2-p.z), paint:p=>{ let m=null; for(const r of R2)if(r2(p,r)<.03)m=r.m; return m; }, flatEye:{R2,H,hd}}); }); } }
+  { const J=rest.J, {V,add,rcone}=R, get=n=>PCS.find(P=>P.n===n), LAY={torso:'shirt',sleeveL:'shirt',sleeveR:'shirt',hips:'pants',thighL:'pants',thighR:'pants',shinL:'pants',shinR:'pants',shoeL:'shoes',shoeR:'shoes'};
+    for(const P of PCS){ if(LAY[P.n])P.layer=LAY[P.n]; else if(P.n==='hair'||P.on==='hair')P.layer='hair'; }
+    const under=(n,src,m,cover,d)=>{ const S=get(src); if(S)PCS.push({n,on:S.on||S.n,m,d:d||(p=>S.d(p)+.35),bb:S.bb,step:S.step,cell:S.cell,under:src,cover}); }, hips=get('hips');
+    under('bodyTorso','torso','skin',['shirt']);
+    if(hips)under('briefs','hips','under',['pants'],p=>Math.min(hips.d(p)+.15,...['L','R'].map(n=>Math.max(get('thigh'+n).d(p)+.15,J['hip'+n].y-3-p.y))));
+    for(const n of 'LR'){ const up=(k,y)=>add(J[k+n],V(0,y,0));
+      under('bodyThigh'+n,'thigh'+n,'skin',['pants']); under('bodyShin'+n,'shin'+n,'skin',['pants']);
+      under('foot'+n,'shoe'+n,'skin',['shoes'],p=>Math.min(rcone(p,up('heel',1.3),up('toe',1),1.55,1.25),rcone(p,J['ankle'+n],up('heel',1.3),1.9,1.6))); } }
   const NP=PCS.length; W3.HIDE=new Array(NP).fill(false); W3.idx=n=>PCS.findIndex(P=>P.n===n); W3.PM={value:PCS.map(()=>new THREE.Matrix4())}; W3.pcs=PCS;
   const MOVE=`attribute float pidx; uniform mat4 uPM[${NP}];`, AT=`mat4 PM=uPM[int(pidx+0.5)];`;
   const VS=MOVE+`attribute vec3 c0,c1,c2,cd; varying vec3 vC0,vC1,vC2,vCd,vN,vW; void main(){ `+AT+` vN=mat3(PM)*normal; vC0=c0; vC1=c1; vC2=c2; vCd=cd; vec4 w=modelMatrix*(PM*vec4(position,1.)); vW=w.xyz; gl_Position=projectionMatrix*viewMatrix*w; }`;
@@ -155,12 +163,15 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
   const IFS=`varying float vm,vd,vp; void main(){ gl_FragColor=vec4(floor(vp+0.5),floor(vm+0.5),0.,vd); }`;
   for(const P of PCS){ if(P.flatEye)continue; const fine=W3.fine(P); W3.warm(P,(P.step||(fine?STEP/2:STEP))*RES,fine,null); }
   const geos=PCS.map((P,i)=>{ const fine=P.step<1||/^(head|hair|beard|brow|eye|nose|ear|mouth)/.test(P.n), g=P.flatEye?flatEyeGeo(P):meshOf(P,(P.step||(fine?STEP/2:STEP))*RES,fine,null), n=g.attributes.position.count;
-    g.setAttribute('pidx',new THREE.BufferAttribute(new Float32Array(n).fill(i),1)); g.setAttribute('pid',new THREE.BufferAttribute(new Float32Array(n).fill(R.PIECES.indexOf(P.n)),1)); return g; });
+    g.setAttribute('pidx',new THREE.BufferAttribute(new Float32Array(n).fill(i),1)); g.setAttribute('pid',new THREE.BufferAttribute(new Float32Array(n).fill(R.PIECES.indexOf(P.under||P.n)),1)); return g; });
   const all=new THREE.BufferGeometry(); for(const k of Object.keys(geos[0].attributes)){ const sz=geos[0].attributes[k].itemSize, tot=geos.reduce((a,g)=>a+g.attributes[k].array.length,0), arr=new Float32Array(tot); let o=0; for(const g of geos){ arr.set(g.attributes[k].array,o); o+=g.attributes[k].array.length; } all.setAttribute(k,new THREE.BufferAttribute(arr,sz)); }
   W3.tris=all.attributes.position.count/3;
   { const RG=[]; let o=0; for(const g of geos){ const n=g.attributes.position.count; RG.push([o,n]); o+=n; }
     W3.reindex=()=>{ let n=0; for(let i=0;i<RG.length;i++)if(!W3.HIDE[i])n+=RG[i][1]; const I=new Uint32Array(n); let k=0; for(let i=0;i<RG.length;i++){ if(W3.HIDE[i])continue; const [a,c]=RG[i]; for(let v=0;v<c;v++)I[k++]=a+v; }
-      all.setIndex(new THREE.BufferAttribute(I,1)); W3.trisWorn=n/3; }; W3.reindex(); }
+      all.setIndex(new THREE.BufferAttribute(I,1)); W3.trisWorn=n/3; };
+    W3.worn={shirt:true,pants:true,shoes:true,hair:true}; W3.hair='hair';
+    W3.dress=()=>{ PCS.forEach((P,i)=>{ if(P.layer)W3.HIDE[i]=!W3.worn[P.layer]||P.layer==='hair'&&P.n!==W3.hair&&P.n!==W3.hair+'A'; else if(P.cover)W3.HIDE[i]=P.cover.some(l=>W3.worn[l]); }); W3.reindex(); };
+    W3.wear=(l,on)=>{ if(l in W3.worn){ W3.worn[l]=!!on; W3.dress(); } }; W3.dress(); }
   const U={uPM:W3.PM,uL:{value:W3.L},uTint:{value:W3.tint},uLv:W3.lv,uLVP:W3.LVP,uSM:{value:W3.sm.depthTexture},uLook:W3.look,uG:W3.G,uLP:W3.LP,uLC:W3.LC,uCamW:W3.CamW};
   const m=new THREE.Mesh(all,new THREE.ShaderMaterial({vertexShader:VS,fragmentShader:FS,side:THREE.DoubleSide,uniforms:U}));
   const dist=new THREE.MeshDistanceMaterial({side:THREE.DoubleSide}); dist.onBeforeCompile=sh=>{ sh.uniforms.uPM=W3.PM; sh.vertexShader=MOVE+'\n'+sh.vertexShader.replace('#include <begin_vertex>',AT+' vec3 transformed=(PM*vec4(position,1.)).xyz;'); }; dist.customProgramCacheKey=()=>'w3dist'+NP;

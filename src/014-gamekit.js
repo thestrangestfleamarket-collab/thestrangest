@@ -54,26 +54,7 @@ const DTBRICK=[118,50,44];
 const GRASSP=[[62,100,50],[76,116,58],[90,132,66],[104,146,74]], GRASSL=[128,168,88], GRASSS=[50,84,42];
 const GRASSY=[[96,104,54],[110,116,60],[124,128,68],[136,138,76]], GEARTH=[[104,88,64],[118,100,74]], GTROD=.32;
 const LAWN=[[46,86,38],[56,102,44],[66,116,50],[78,130,56]];
-// the lawn as paint (owner, 24 Oct 2026): brush strokes lying along a still current, periodic over K tiles; one painter for the land, the street's grass strips and the landscape editor's grass
-const LAWNP={K:32,PT:32,pal:{bed:[58,172,100],greens:[[76,198,108],[96,220,106],[120,244,98],[142,255,90]],dark:[46,160,98],earth:[[126,96,60],[146,114,76]],flower:['#f6f3e4','#f2d04a']}};
-function lawnFlow(tx,tz,K=LAWNP.K){ const p=6.2832/K, a=.4+1.1*Math.sin(p*tx+1.7*Math.cos(p*tz))+.6*Math.cos(2*p*tz-1.3*Math.sin(p*tx)); return [Math.cos(a),Math.sin(a)]; }
-function lawnPaint(g,N,K,pal,seed=1){ const PT=N/K, rgb=(c,k=1)=>'rgb('+Math.min(255,c[0]*k|0)+','+Math.min(255,c[1]*k|0)+','+Math.min(255,c[2]*k|0)+')', H=(i,s)=>hash(i,seed,s), fb=(x,y,s)=>cvNoise(x,y,s)*.6+cvNoise(x*2.1,y*2.1,s+1)*.28+cvNoise(x*4.3,y*4.3,s+2)*.12, M=1.2*PT;
-  const stroke=(x,y,len,w,col)=>{ const [dx,dy]=lawnFlow(x/PT,y/PT,K), nx=-dy*w, ny=dx*w, one=(x,y)=>{ g.beginPath(); g.moveTo(x+nx,y+ny); g.quadraticCurveTo(x+nx*.5+dx*len*.5,y+ny*.5+dy*len*.5,x+dx*len,y+dy*len); g.quadraticCurveTo(x-nx*.5+dx*len*.5,y-ny*.5+dy*len*.5,x-nx,y-ny); g.closePath(); g.fill(); };
-    g.fillStyle=col; one(x,y); if(x<M)one(x+N,y); if(x>N-M)one(x-N,y); if(y<M)one(x,y+N); if(y>N-M)one(x,y-N); if(x<M&&y<M)one(x+N,y+N); if(x>N-M&&y>N-M)one(x-N,y-N); if(x<M&&y>N-M)one(x+N,y-N); if(x>N-M&&y<M)one(x-N,y+N); };
-  g.fillStyle=rgb(pal.bed); g.fillRect(0,0,N,N);
-  if(pal.earth)for(let i=0,n=Math.round(K*K/60);i<n;i++){ const x=H(i,31)*N, y=H(i,32)*N, r=(.35+H(i,33)*.5)*PT, c=pal.earth[i%2], gr=g.createRadialGradient(x,y,0,x,y,r); gr.addColorStop(0,rgb(c)); gr.addColorStop(.7,rgb(c,.96)); gr.addColorStop(1,'rgba(0,0,0,0)'); g.fillStyle=gr; g.save(); g.translate(x,y); g.rotate(H(i,34)*3); g.scale(1.5,.8); g.beginPath(); g.arc(0,0,r,0,6.3); g.restore(); g.fill(); }
-  const G=pal.greens; for(let i=0,n=K*K*22;i<n;i++){ const x=H(i,41)*N, y=H(i,42)*N, t=fb(x/PT/2.8,y/PT/2.8,51), lv=t<.42?0:t<.56?1:2; stroke(x,y,(.45+H(i,43)*.4)*PT,(.05+H(i,44)*.03)*PT,rgb(G[lv],.92+(H(i,45)-.5)*.14)); }
-  for(let i=0,n=K*K*6;i<n;i++){ const x=H(i,61)*N, y=H(i,62)*N; stroke(x,y,(.3+H(i,63)*.3)*PT,.022*PT,rgb(pal.dark,.95)); }
-  for(let i=0,n=K*K*9;i<n;i++){ const x=H(i,71)*N, y=H(i,72)*N, len=(.4+H(i,73)*.35)*PT, c=G[H(i,74)>.6?3:2], [dx,dy]=lawnFlow(x/PT,y/PT,K); stroke(x,y,len,.04*PT,rgb(c,.98+H(i,75)*.1)); stroke(x+dx*len*.45,y+dy*len*.45,len*.5,.028*PT,rgb(c,1.1)); }
-  if(pal.flower)for(let i=0,n=Math.round(K*K*.6);i<n;i++){ const x=H(i,81)*N, y=H(i,82)*N; if(fb(x/PT/3.5,y/PT/3.5,91)<.5)continue; g.fillStyle=pal.flower[H(i,83)<.7?0:1]; g.beginPath(); g.arc(x,y,(.045+H(i,84)*.04)*PT,0,6.3); g.fill(); } }
-function lawnTuftTex(){ const W=1024, Hh=256, c=document.createElement('canvas'); c.width=W; c.height=Hh; const g=c.getContext('2d'), G=LAWNP.pal.greens, rgb=(c,k=1)=>'rgb('+Math.min(255,c[0]*k|0)+','+Math.min(255,c[1]*k|0)+','+Math.min(255,c[2]*k|0)+')';   // four sharp tuft clusters: a few blades fused at the foot, pointed at the tips, dark foot to lit tip
-  for(let v=0;v<4;v++){ const x0=v*256, H=(i,s)=>hash(i,v+1,s), n=6+Math.floor(H(0,9)*4); g.fillStyle=rgb(G[1],1.08); g.fillRect(x0,Hh-8,256,8);   // the solid foot the mass and the reeds read
-    for(let i=0;i<n;i++){ const u=(i+.5)/n, bx=x0+128+(u-.5)*70+(H(i,1)-.5)*20, spread=(u-.5)*200+(H(i,2)-.5)*40, h=Hh*(.55+.4*H(i,3))*(1-.35*Math.abs(u-.5)), w=11+8*H(i,5), y0=Hh-4, tx=Math.max(x0+4,Math.min(x0+252,bx+spread)), ty=y0-h, c1=G[1+Math.floor(H(i,6)*2.99)];
-      const gr=g.createLinearGradient(0,y0,0,ty); gr.addColorStop(0,rgb(G[0],.75)); gr.addColorStop(.5,rgb(c1,.95)); gr.addColorStop(1,rgb(G[3],1.1)); g.fillStyle=gr;
-      g.beginPath(); g.moveTo(bx-w,y0); g.quadraticCurveTo(bx-w*.3+spread*.35,(y0+ty)/2,tx,ty); g.quadraticCurveTo(bx+w*.3+spread*.35,(y0+ty)/2,bx+w,y0); g.closePath(); g.fill(); } }
-  return c; }
-let LAWND=null; function lawnData(){ if(LAWND)return LAWND; const N=LAWNP.K*LAWNP.PT, c=document.createElement('canvas'); c.width=c.height=N; const g=c.getContext('2d',{willReadFrequently:true}); lawnPaint(g,N,LAWNP.K,LAWNP.pal); return LAWND={N,c,d:g.getImageData(0,0,N,N).data}; }
-function lawnCol(x,y){ const L=lawnData(), N=L.N, PT=LAWNP.PT, i=((Math.floor(x*PT)%N)+N)%N, j=((Math.floor(y*PT)%N)+N)%N, k=(j*N+i)*4; return [L.d[k],L.d[k+1],L.d[k+2]]; }
+function lawnCol(x,y){ return LAWN[cvNoise(x/9,y/9,301)>.58?3:2]; }
 function grassCol(x,y){ '@later'; const n=(cvNoise(x/5,y/5,29)*3+cvNoise(x/1.7,y/1.7,31)*2+cvNoise(x*2.3,y*2.3,33))/6+(hash(Math.floor(x*48),Math.floor(y*48),35)-.5)*.07, dz=hash(Math.floor(x*48),Math.floor(y*48),53);
   let e=1; for(const [a,b] of [[1,0],[-1,0],[0,1],[0,-1]])for(const d of [.08,.16,.24,GTROD]){ const k=landK(x+a*d,y+b*d); if(k&&k!==1){ e=Math.min(e,d/GTROD); break; } }
   if(e<1&&n*.6+dz*.4>e*1.1+.25)return mt('grass',GEARTH[dz<.5?0:1]);
@@ -101,4 +82,4 @@ BRICKS.one=sd=>{ const n=hash(sd,7,3), tn=BRICKS.TINT[Math.floor(hash(sd,9,5)*BR
 BRICKS.quoins=(x0,y0,x1,y1,z0,z1,k,box)=>{ '@later'; for(let r=0;r*6<z1-z0;r++){ const zt=z1-r*6, zb=Math.max(z0,zt-5); if(zt-zb<2)continue;
   for(const [cx,sx] of [[x0,-1],[x1,1]])for(const [cy,sy] of [[y0,-1],[y1,1]]){ const sd=k*977+r*31+(sx+1)*5+(sy+1), lx=(r+(sx>0)+(sy>0))&1, L=.38+.08*hash(sd,1,1), S=.2+.06*hash(sd,2,1), pr=.012+.04*hash(sd,3,1), ex=lx?L:S, ey=lx?S:L;
     box(sx<0?cx-pr:cx-ex,sy<0?cy-pr:cy-ey,sx<0?cx+ex:cx+pr,sy<0?cy+ey:cy+pr,zb,zt,BRICKS.one(sd)); } } };
-export {BRICKS, CAT_DEPTS, CAT_INFO, CATALOG, COPE, crack, cvNoise, DTBRICK, FP, grain, grassCol, hash, kerbCol, kerbFace, KIND_OF, LAMPS, lawnCol, lawnData, lawnFlow, LAWNP, lawnPaint, lawnTuftTex, LBLD, LIFE, LSEED, mt, prop, PROPL, rlf, roadCol, ROT, sh, sided, slabCol, speck, spot, SQB, STORY, T, woodCol, zShift};
+export {BRICKS, CAT_DEPTS, CAT_INFO, CATALOG, COPE, crack, cvNoise, DTBRICK, FP, grain, grassCol, hash, kerbCol, kerbFace, KIND_OF, LAMPS, lawnCol, LBLD, LIFE, LSEED, mt, prop, PROPL, rlf, roadCol, ROT, sh, sided, slabCol, speck, spot, SQB, STORY, T, woodCol, zShift};

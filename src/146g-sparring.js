@@ -4,7 +4,7 @@ import {FORAGE, pos, SFX, UI, VIT, WIELD} from './003b-systems.js';
 import {MAPG, MODS, SYS, TILE} from './006-map-pre.js';
 import {SKELGO} from './077-npc-skel.js';
 const SPAR={on:false,list:[],ring:null}; window.SPAR=SPAR;
-{ const T=TILE, X=72, Y=-73.5, HP=5, say=(t,c)=>FORAGE.say&&FORAGE.say(t,c), d2=(a,b)=>Math.hypot(a.x-b.x,a.z-b.z);
+{ const T=TILE, X=72, Y=-71.8, HP=5, say=(t,c)=>FORAGE.say&&FORAGE.say(t,c), d2=(a,b)=>Math.hypot(a.x-b.x,a.z-b.z);
   const at=()=>({x:SHARED.BOD.XS(X),z:SHARED.BOD.ZS(Y)}), onStreet=()=>SHARED.LVL==='up'&&!SHARED.BODB.inside();
   const place=()=>{ if(SPAR.ring||!MODS.bodega||!MODS.bodega.ground)return; const p=at(), y=MODS.bodega.ground(p.x,p.z);
     const r=new THREE.Mesh(new THREE.RingGeometry(.9*T,1.05*T,24),new THREE.MeshBasicMaterial({color:0xd8b84a,transparent:true,opacity:.7,depthWrite:false})); r.rotation.x=-Math.PI/2; r.position.set(p.x,y+.02*T,p.z); MAPG.bodega.add(r); SPAR.ring=r;

@@ -1,7 +1,7 @@
 // THE OFFICE KIT: the old game's page room, its pieces as catalog kinds and its preset.
 import {CAT_DEPTS} from './014-gamekit.js';
 import {PRESETS, STOREK} from './023-west-kits.js';
-const pageOffice=()=>{ '@pagerooms'; const PGK=STOREK.cottage.PGK;   // the page rooms' kit lives in 027's block and is published on the kit object
+const pageOffice=()=>{ '@oldkits'; const PGK=STOREK.cottage.PGK;   // the page rooms' kit lives in 027's block and is published on the kit object
 // =====================================================================================
 // THE OFFICE, EXACT (owner, 12 Oct 2026: the second picture's room as the page built it, no person; "exact scenes ... in central park"):
 // the page's own code for the room, every piece where the page put it (the carpet, the walls with the big window and the hall door, the

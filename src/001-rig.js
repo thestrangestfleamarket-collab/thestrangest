@@ -649,6 +649,7 @@ function act(st,key){ const W=st.water;
   if(key==' '&&W&&W.edge&&!st.move&&W.level!=null){ begin(st,'cannonball',cannonMove(W.floor+STAND+9-(W.level+12))); return; }
   const name=KEYMOVE[key]; if(!name) return; const mv=st.move;
   if(ARMMOVES.has(name)&&!(st.climb||st.hang||st.ride)){ if(mv){ const d=mv.def,a=d.air; if(a&&d.airv&&d.airv[key]&&!mv.variant&&mv.t>a.t0&&mv.t<a.t0+a.T*0.75){ mv.variant={name:d.airv[key],t:mv.t}; return; } }
+    if(mv&&!st.up&&mv.def.combo&&ARMMOVES.has(mv.def.combo[key])&&(!mv.def.window||mv.t>=mv.def.window[0]*RIGT.combo)){ beginUp(st,mv.def.combo[key]); return; }   // a body move's arm follow-up (crouch, then J: an uppercut)
     const u=st.up; if(!u||name=='block'){ beginUp(st,name); return; } const ud=u.def; if(ud.combo&&ARMMOVES.has(ud.combo[key])){ if(u.t>=ud.window[0]*RIGT.combo) beginUp(st,ud.combo[key]); else st.upNext=ud.combo[key]; } else st.upNext=name; return; }
   if(MOVES[name]&&MOVES[name].again&&(st.climb||st.hang||st.ride)) return;
   if(!mv){ begin(st,pick(st,name)); return; }

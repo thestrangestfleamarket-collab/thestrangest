@@ -4574,3 +4574,6 @@ Rule: only the one holding you can throw you; the server passes a blow, grab or 
 
 ## 24 Oct 2026: martial arts and stamina (release 2 of 5)
 Owner chose "Martial arts + stamina". MARTIAL ARTS is a skill (in the skills list, starts at 10): bare-hand blows that land and kills train it, and it makes your punches and kicks stronger. A punch costs a little stamina, a kick more; with almost none left your blows land weak. At no stamina you can't run until a third is back.
+
+## 24 Oct 2026: bare-hand block and more moves (release 3 of 5)
+Owner chose "Bare-hand block + more moves on keys". P blocks with bare hands too (the arms come up; it softens a blow, more with MARTIAL ARTS; only a sword parries). New keys: N slap, I crouch (hold; then J an uppercut, K a sweep), 2 leg sweep, 3 back flip, 4 front flip; all rebindable, and others see them. The stale T "ghost's guitar" line is gone from the controls.

@@ -124,7 +124,7 @@ export class Block extends Server {
     } else if (m.t === "me") {
       const p = { ...s, name: word(m.name, 24), look: word(m.look, 24), dead: m.dead ? 1 : 0 }; c.setState(p); this.broadcast(JSON.stringify({ t: "in", p }), [c.id]);
     } else if (m.t === "act") {
-      const k = typeof m.k === "string" && /^([ JKRVUF]|carry)$/.test(m.k) ? m.k : "", mv = m.m === "flinch" ? m.m : ""; if (!k && !mv) return;
+      const k = typeof m.k === "string" && /^([ JKRVUFNXCQEB]|carry)$/.test(m.k) ? m.k : "", mv = m.m === "flinch" ? m.m : ""; if (!k && !mv) return;
       this.broadcast(JSON.stringify(mv ? { t: "act", id: s.id, m: mv } : { t: "act", id: s.id, k, on: m.on ? 1 : 0 }), [c.id]);
     } else if (m.t === "ragon" && Array.isArray(m.n) && Array.isArray(m.jl) && m.n.length <= 16) {
       const n = m.n.map(x => word(x, 12)), jl = m.jl.slice(0, 16).map(a => (Array.isArray(a) ? a.slice(0, 8) : []).filter(Array.isArray).map(j => [word(j[0], 12), num(j[1], -9, 9), num(j[2], -9, 9), num(j[3], -9, 9)]));

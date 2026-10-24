@@ -5,7 +5,7 @@ import {renderer, scene} from './004-main.js';
 import {BF, SYS, TILE} from './006-map-pre.js';
 import {BFLY} from './143-bfly.js';
 import {BIRDS} from './144b-birds.js';
-Object.assign(WIELD,{on:null,block:false,blockT:0,swing:null}); window.WIELD=WIELD; Object.defineProperty(WIELD,'sword',{get:()=>!!WIELD.on&&ITEMS.prop(WIELD.on,'grants')==='fight'});
+Object.assign(WIELD,{on:null,block:false,bare:false,blockT:0,swing:null}); window.WIELD=WIELD; Object.defineProperty(WIELD,'sword',{get:()=>!!WIELD.on&&ITEMS.prop(WIELD.on,'grants')==='fight'});
 { const T=TILE, V3=THREE.Vector3, NM={sword:'SWORD',sword_wood:'WOODEN SWORD',sword_steel:'STEEL SWORD',sword_ench:'ENCHANTED BLADE',net:'BUTTERFLY NET',bnet:'BIRD NET'}, say=FORAGE.say;
   const SWC={sword_wood:[0xa88a60,0x6a4a2a,0x4a3020],sword:[0xd8dce2,0x9a8450,0x4a3426],sword_steel:[0xeef2f8,0xb0b8c8,0x24242e],sword_ench:[0x9ad8ff,0xd8b060,0x3a2a5a]};
   const LIST=[...Object.keys(SWC).filter(id=>ITEMS.prop(id,'slot')==='hand'),'net','bnet'];
@@ -35,7 +35,9 @@ Object.assign(WIELD,{on:null,block:false,blockT:0,swing:null}); window.WIELD=WIE
   FORAGE.ROWB.push(id=>LIST.includes(id)?[[WIELD.on===id?'PUT AWAY':'HOLD','wield']]:[]); FORAGE.ACT.wield=id=>WIELD.set(WIELD.on===id?null:id);
   const free=()=>!(RAG.on||st.water&&st.water.in||st.ride||st.climb||st.hang||st.sit||VIT.dead);
   WIELD.pre=dt=>{ const on=!!WIELD.on&&free();
-    const bk=on&&WIELD.sword&&!sw&&keys.has('p')&&VIT.sta>.03; if(bk!==WIELD.block){ WIELD.block=bk; if(bk){ WIELD.blockT=performance.now(); SFX.play('step',{vol:.25,pitch:1.4}); } }
+    const bare=!WIELD.on&&free()&&!(VIT.out>0)&&keys.has('p')&&VIT.sta>.03&&!(st.up&&st.up.name!=='block');   // bare hands: the arms come up
+    const bk=bare||on&&WIELD.sword&&!sw&&keys.has('p')&&VIT.sta>.03; if(bk!==WIELD.block){ const was=WIELD.bare; WIELD.block=bk; WIELD.bare=bk&&bare; if(bk){ WIELD.blockT=performance.now(); SFX.play('step',{vol:.25,pitch:1.4}); }
+      try{ if(WIELD.bare){ RIG.act(st,'B'); SYS.run('act','B',1); } else if(was){ RIG.release(st,'B'); SYS.run('act','B',0); } }catch(e){} }
     if(WIELD.block){ VIT.sta=Math.max(0,VIT.sta-dt*.2); VIT.inFight(3); }
     if(on){ const r=renderer.domElement.getBoundingClientRect(); if(ms.x>=0){ rc.setFromCamera(new THREE.Vector2((ms.x-r.left)/r.width*2-1,-((ms.y-r.top)/r.height*2-1)),SHARED.cam); pl.constant=-(SHARED.py+.9*T); if(rc.ray.intersectPlane(pl,hit)){ aim.subVectors(hit,sh.lengthSq()?sh:new V3(pos.x,SHARED.py+1.3*T,pos.z)); aim.y=Math.min(aim.y,0); if(aim.lengthSq()>1e-6)aim0.copy(aim.normalize()); } } aim.copy(aim0);
       if(WIELD.block){ aim.set(Math.sin(SHARED.heading)*.35,.95,Math.cos(SHARED.heading)*.35).normalize(); aim0.copy(aim); }

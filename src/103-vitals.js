@@ -17,9 +17,10 @@ VIT.breathe=s=>{ VIT.air=Math.min(AIRCEIL,VIT.air+(+s||0)); };   // a breathing 
   VIT.hurt=(d,from)=>{ if(VIT.dead)return 0; if(VIT.out>0){ if(VIT.fainted&&d>=.03)VIT.die(); return 0; }
     let parry=false; if(VIT.guard&&from){ const g=VIT.guard(d,from); d=g.d; parry=!!g.parry; }
     if(d>0){ const now=performance.now(); if(now-thudAt>250){ thudAt=now; SFX.play('thud',{vol:.7,vary:.2}); } VIT.hp=Math.max(0,VIT.hp-d*(1-Math.max(0,Math.min(.9,VIT.def||0)))); } VIT.inFight(5); if(VIT.hp<=0)VIT.faint(); return parry?2:1; };
-  VIT.tick=dt=>{ const sp=Math.hypot(pos.x-lx,pos.z-lz)/Math.max(dt,1e-3); lx=pos.x; lz=pos.z; const running=st.run>.55&&sp>.6*TILE&&!UI.fly&&!UI.freeCam;
+  VIT.tick=dt=>{ if(VIT.sta<=0)VIT.tired=true; else if(VIT.tired&&VIT.sta>=1/3){ VIT.tired=false; if(keys.has('shift'))st.runTarget=1; }   // empty: no running till a third is back
+    if(VIT.tired)st.runTarget=0;
+    const sp=Math.hypot(pos.x-lx,pos.z-lz)/Math.max(dt,1e-3); lx=pos.x; lz=pos.z; const running=st.run>.55&&sp>.6*TILE&&!UI.fly&&!UI.freeCam;
     if(running){ VIT.sta=Math.max(0,VIT.sta-dt/12); rest=0; } else if((rest+=dt)>.8)VIT.sta=Math.min(1,VIT.sta+dt/7);
-    VIT.tired=false;
     const W=st.water, under=!!(W&&W.in&&W.level!=null&&W.y<W.level-34);     // fully under, by the river's own measure
     if(under){ VIT.air=Math.max(0,VIT.air-dt);
       if(VIT.air<=0&&!VIT.dead){ VIT.hp=Math.max(0,VIT.hp-dt/18); if((glug-=dt)<=0){ SFX.play('thud',{vol:.4,pitch:.6,vary:.2}); glug=1; } if(VIT.hp<=0)VIT.die(); } }

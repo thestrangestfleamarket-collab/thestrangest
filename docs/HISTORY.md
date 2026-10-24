@@ -4571,3 +4571,6 @@ Owner: "his base needs to be just his body and underwear, shoes, pants shirt and
 ## 24 Oct 2026: fight fixes (release 1 of 5)
 Owner: "look at the overall game mechanices for fighting, pvm, pvp, look for errors or things not funished", then "Yes, fix all of them", "Mash to break free", "Faint first, die if hit again". At no health you faint (out cold about 15 s, the medic comes, up again with some health); a real blow while you are out cold kills you; drowning still kills. Held down or carried, mash any key to break free; a blow while you are down doesn't keep you down longer. Ghosts can't fight, trip or be grabbed and others walk through them. Blocking softens a player's shove and stops their knockdown. Fire and other blows with no direction can't be blocked or parried.
 Rule: only the one holding you can throw you; the server passes a blow, grab or throw only between players close together on the same level and in the same room.
+
+## 24 Oct 2026: martial arts and stamina (release 2 of 5)
+Owner chose "Martial arts + stamina". MARTIAL ARTS is a skill (in the skills list, starts at 10): bare-hand blows that land and kills train it, and it makes your punches and kicks stronger. A punch costs a little stamina, a kick more; with almost none left your blows land weak. At no stamina you can't run until a third is back.

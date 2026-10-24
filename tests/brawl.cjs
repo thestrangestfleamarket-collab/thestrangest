@@ -21,8 +21,14 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     ok(pushed > .5, 'you cannot walk into them (pushed out to ' + pushed.toFixed(2) + ')');
     const ghost = await pg.evaluate(() => { ONLINE.feed({ t: 'in', p: { id: 'a', dead: 1 } }); const o = ONLINE.others.get('a'), c = __dbg.collide(o.p.x + .1, o.p.z), d = Math.hypot(c[0] - o.p.x, c[1] - o.p.z); ONLINE.feed({ t: 'in', p: { id: 'a', dead: 0 } }); return d; });
     ok(ghost < .3, 'a dead player is a ghost you walk through (' + ghost.toFixed(2) + ')');
+    await pg.evaluate(() => { __dbg.VIT.sta = 1; });
     await pg.keyboard.press('j'); await pg.waitForTimeout(1500);
     const hit = await pg.evaluate(() => __sent.filter(m => m.t === 'hit'));
+    const mart = await pg.evaluate(() => ({ sta: __dbg.VIT.sta, sk: FORAGE.sk('fight'), row: FORAGE.SK.some(r => r[0] === 'fight') }));
+    ok(mart.sta < .99, 'a punch costs stamina (' + mart.sta.toFixed(3) + ')');
+    ok(mart.row && mart.sk > 0, 'MARTIAL ARTS is a skill (' + mart.sk + ')');
+    const tired = await pg.evaluate(async () => { __dbg.VIT.sta = 0; await new Promise(r => setTimeout(r, 300)); const a = { tired: __dbg.VIT.tired, run: __dbg.ST ? __dbg.ST.runTarget : null }; __dbg.VIT.sta = .4; await new Promise(r => setTimeout(r, 300)); return { ...a, after: __dbg.VIT.tired }; });
+    ok(tired.tired && !tired.after, 'with no stamina you are too tired to run till a third is back (' + JSON.stringify(tired) + ')');
     ok(hit.length === 1 && hit[0].to === 'a' && hit[0].d > 0 && hit[0].k === 'fist', 'your jab lands once when your fist reaches them (' + JSON.stringify(hit) + ')');
     await place(-1.2); await pg.waitForTimeout(800); await pg.evaluate(() => { __sent.length = 0; });
     await pg.keyboard.press('j'); await pg.waitForTimeout(1500);

@@ -13,11 +13,13 @@ import {GEMS} from './101-gems.js';
   FORAGE.add({names:Object.fromEntries(Object.keys(TIER).map(k=>['slime_'+k,'BOTTLE OF '+TIER[k].nm+' SLIME'])),prices:Object.fromEntries(Object.keys(TIER).map(k=>['slime_'+k,TIER[k].p]))});
   const STRIKES=(()=>{ const STR=/jab|cross|upper|hook|slap|punch|kick|sweep|round/i, T=TILE; let last=null, swT=0, swAt=0, swing={}, fr=-1, cache=[];   // your strikes, read by every mob system (the dungeon's, the cave's golems, the sparring ring): one list a frame, the same for every reader
     SYS.add('strike',()=>{ const now=performance.now(); if(WIELD.sword&&now-swT>150){ swT=now; swing=WIELD.swing||{}; swAt=now+(swing.heavy?140:90); } },'146b-dunmobs');
+    let paid=null; SYS.add('life',()=>{ const s=(st.up&&STR.test(st.up.name)&&st.up)||(st.move&&STR.test(st.move.name)&&st.move); if(!s){ paid=null; return; } if(s===paid)return; paid=s;   // a punch or kick costs stamina; winded, it lands weak
+      s.winded=VIT.sta<.08; VIT.sta=Math.max(0,VIT.sta-(/kick|sweep|round/i.test(s.name)?.07:.04)); VIT.inFight(5); },'146b-dunmobs');
     const strikes=()=>{ const f=renderer.info.render.frame; if(f===fr)return cache; fr=f; const out=cache=[], s=(st.up&&STR.test(st.up.name)&&st.up)||(st.move&&STR.test(st.move.name)&&st.move);
-      if(s&&s!==last&&s.t>=.08){ last=s; const k=/kick|sweep|round/i.test(s.name); out.push({r:(k?1.15:1)*T,d:k?1.5:1}); }
+      if(s&&s!==last&&s.t>=.08){ last=s; const k=/kick|sweep|round/i.test(s.name); out.push({r:(k?1.15:1)*T,d:(k?1.5:1)*(s.winded?.6:1)}); }
       if(swAt&&performance.now()>=swAt){ swAt=0; if(WIELD.sword){ const h=!!swing.heavy, d=(+ITEMS.prop(WIELD.on,'damage')||2)*(h?1.5:1)*(swing.winded?.6:1); out.push({r:(h?1.8:1.55)*T,d,kb:h?1.8:1,sk:'sword',heavy:h,ax:swing.ax,az:swing.az}); } } return out; };
     const inCone=(s,x,z,y,rad)=>{ const dx=x-pos.x, dz=z-pos.z, d=Math.hypot(dx,dz); if(Math.abs(y-SHARED.py)>1.4*T||d>s.r+rad)return false; const a=Math.hypot(s.ax||0,s.az||0), fx=a>.1?s.ax/a:Math.sin(SHARED.heading), fz=a>.1?s.az/a:Math.cos(SHARED.heading); return d<.35*T||(dx*fx+dz*fz)/d>.3; };   // a blade cuts where it was aimed
-    const strength=s=>1+(FORAGE.sk(s&&s.sk||'fight')||0)/100, landed=s=>{ if(s&&s.sk)FORAGE.use(s.sk,-10,70); };   // a sword blow that lands teaches SWORDSMANSHIP
+    const strength=s=>1+(FORAGE.sk(s&&s.sk||'fight')||0)/100, landed=s=>{ if(s)FORAGE.use(s.sk||'fight',-10,70); };   // a blow that lands teaches SWORDSMANSHIP or MARTIAL ARTS
     return {strikes,inCone,strength,landed}; })(); window.STRIKES=STRIKES;
   const init=()=>{ '@dungeon'; const T=TILE, X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, say=FORAGE.say, G=new THREE.Group(), PK=new THREE.Group(); PK.visible=false; MAPG.dungeon.add(G); scene.add(LEVELS.own(PK,'dungeon'));
   const SLV={1:['green','green','green','green','green'],2:['green','green','green','blue','blue','blue','blue'],3:['blue','blue','blue','purple','purple','purple','red','red']};

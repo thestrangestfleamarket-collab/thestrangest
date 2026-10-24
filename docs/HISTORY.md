@@ -4531,3 +4531,6 @@ Owner: "the trees leaves are not all connected, make them denser, make sure ivy 
 - Ivy over about a quarter of the park wall's stone and the gate piers; the CENTRAL PARK sign 25% taller, ivy over one end of it and down a post.
 - A small dragon perches on the sign, watches you go by and breathes a fireball your way now and then; where it lands on grass or brush it can start a real fire, like the other dragons'.
 - Distance fog: past 20 tiles from you the world blurs into the haze, gone by 60, in every view; ATMOSPHERE → DISTANCE FOG sets it.
+## 24 Oct 2026: players fight (step 3 of 3)
+
+Owner: "merge it and start step 3". Everyone sees a downed player's ragdoll; double-click a player who is down to pick them up and carry them, punch to throw them, double-click again to put them down. A knockdown by another player keeps you down at least 2.5 s (longer while carried).

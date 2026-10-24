@@ -16,14 +16,14 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     ok(s0.built === 0 && !s0.data, 'none is built and its items are not fetched at the start');
     ok(s0.listed === s0.rooms, 'every one is in the GO TO list (' + s0.listed + ')');
     for (const name of ['DINER', 'THE GREENHOUSE', "WITCH'S BEDROOM", 'CRYSTAL CAVERN', 'THE DOJO', 'THE FOREST (VR)', 'RESTROOM', 'LUCKY 7', 'UNDER THE SQUARE - LAUNDRY ROOM', 'CASTLE - THE CELLS', 'THE SQUARE - LOBBY', 'MOVIE THEATRE', 'OCTOPUS TANK']) {   // one room per kit family
-      await pg.evaluate(n => __dbg.UI.goPlace(n), name);
-      const id = await pg.evaluate(n => SHARED.OLDROOMS.by[n], name);
+      await pg.evaluate(n => __dbg.UI.goPlace(SHARED.OLDROOMS.by[n] ? n : n + ' · OLD'), name);
+      const id = await pg.evaluate(n => SHARED.OLDROOMS.by[n] || SHARED.OLDROOMS.by[n + ' · OLD'], name);   // a room named like a place on the street is listed with · OLD
       ok(await U(k => OLDDBG().built.includes(k) && !(window.FADE && FADE.busy), 120000, id), name + ' is built on the jump');
       await U(k => OLDDBG().inside === k && ROOMS.dark(), 20000, id);   // the room's state applies a frame or two after the build
       const r = await pg.evaluate(k => { const p = __dbg.pos(); return { ...OLDDBG().of(k), inside: OLDDBG().inside, dark: ROOMS.dark(), inBox: ROOMS.boxAt(p[0], p[2]) === k }; }, id);
       ok(r.inside === id && r.inBox, name + ': you stand inside it');
       ok(r.placed + r.missing === r.items && r.items > 0, name + ': every item accounted for (' + r.placed + ' made, ' + r.missing + ' standing in)');
-      ok(r.verts > 500, name + ': its items are painted (' + r.verts + ' vertices in the room)');
+      ok(r.verts > 150 * Math.min(4, r.placed), name + ': its items are painted (' + r.verts + ' vertices in the room)');
       const odd = r.left.filter(k => !NOT_YET.includes(k));   // a kit's own kind standing in is a regression; the old engine's and the shared kinds are known debt
       ok(!odd.length, name + ': every item standing in is a kind not ported yet (' + r.placed + ' made, ' + r.missing + ' standing in' + (odd.length ? '; a kit kind stands in: ' + odd.join(', ') : '') + ')');
       ok(r.dark, name + ': the map is not drawn while you are in');

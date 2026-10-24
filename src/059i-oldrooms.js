@@ -32,7 +32,7 @@ import {loungePieces} from './039a-lounge-pieces.js';
     const B=R, cx=(B.x0+B.x1)/2, items=DATA&&DATA[R.id]||[], own=!!R.own&&items.some(([k])=>/ floor$/.test(k)&&CATALOG[k]);   // a room brings its own floor and walls only when its floor can be made here (the cavern's was the old engine's)
     const sol=(x0,y0,x1,y1,zt)=>{ const r=box4(x0,y0,x1,y1), f=[r[0],r[1],0,r[2],r[3],Math.max(.05,Y(zt))]; SOL.up.push(r); FIX.up.push(f); S.sol.push(r); S.fix.push(f); };
     const wall=(u,z,f)=>z<6?sh([70,62,58],f):sh([176,168,152],f*(1-.04*hs(Math.floor(u*4),Math.floor(z/8),9)));
-    const grass=items.some(([k])=>k==='pine'||k==='island ground'), floor=grass?(x,y)=>sh([88,128,58],.86+.22*hs(Math.floor(x*4),Math.floor(y*4),11)):(x,y)=>{ const r=Math.floor(y*3), b=Math.floor(x/1.5+hs(r,0,13)*3); return sh([128,98,66],(y*3-r)<.06||(x/1.5-Math.floor(x/1.5))<.03?.78:.9+.12*hs(b,r,7)); };   // a landscape room stands on grass, not planks
+    const grass=items.some(([k])=>k==='pine'), floor=grass?(x,y)=>sh([88,128,58],.86+.22*hs(Math.floor(x*4),Math.floor(y*4),11)):(x,y)=>{ const r=Math.floor(y*3), b=Math.floor(x/1.5+hs(r,0,13)*3); return sh([128,98,66],(y*3-r)<.06||(x/1.5-Math.floor(x/1.5))<.03?.78:.9+.12*hs(b,r,7)); };   // a landscape room stands on grass, not planks
     const WALL=(P0,a0,a1,paint,h=WH,z0=0)=>bq(P0(a0,z0),P0(a1,z0),P0(a1,h),P0(a0,h),faceTex((a1-a0)*24,h-z0,(i,j)=>C(paint(a0+(i+.5)/24,h-j-.5))),'A');
     const PX=(y,o=0)=>(a,z)=>[X(a),Y(z),Z(y+o)], PY=(x,o=0)=>(a,z)=>[X(x+o),Y(z),Z(a)];
     if(!own){ bq([X(B.x0),Y(.15),Z(B.y1)],[X(B.x1),Y(.15),Z(B.y1)],[X(B.x1),Y(.15),Z(B.y0)],[X(B.x0),Y(.15),Z(B.y0)],faceTex((B.x1-B.x0)*24,(B.y1-B.y0)*24,(i,j)=>C(floor(B.x0+(i+.5)/24,B.y1-(j+.5)/24))),'A');

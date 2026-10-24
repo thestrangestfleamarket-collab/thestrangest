@@ -87,6 +87,13 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     ok(g.sent.includes('grab'), 'double-clicking a player who is down picks them up (' + JSON.stringify(g) + ')');
     await pg.evaluate(() => { SYS.run('act', 'J', 1); __ragI = 0; });
     ok(await pg.evaluate(() => __sent.some(m => m.t === 'toss' && m.to === 'a')), 'a punch throws them');
+    const blade = await pg.evaluate(async () => { const o = ONLINE.others.get('a'); ONLINE.feed({ t: 'ragoff', id: 'a' }); ONLINE.feed({ t: 'aim', id: 'a', w: 'sword', v: [0, -.3, 1] }); await new Promise(r => setTimeout(r, 500));
+      const seen = WIELDDBG().find(x => x.id === 'a'); ONLINE.feed({ t: 'swing', id: 'a', s: 1, h: 0 }); const sw = WIELDDBG().find(x => x.id === 'a');
+      __sent.length = 0; ONLINE.on = true; FORAGE.give('sword', 1); WIELD.set('sword'); await new Promise(r => setTimeout(r, 1500)); const mine = __sent.find(m => m.t === 'aim');
+      WIELD.set(null); await new Promise(r => setTimeout(r, 800)); const off = __sent.filter(m => m.t === 'aim').pop(); ONLINE.on = false; ONLINE.feed({ t: 'aim', id: 'a', w: '' });
+      return { seen: !!(seen && seen.w === 'sword'), shown: !!(seen && seen.shown), swing: !!(sw && sw.sw), mine: mine ? mine.w + ':' + (mine.v || []).length : '', off: off ? off.w : null, left: WIELDDBG().length }; });
+    ok(blade.seen && blade.shown && blade.swing, 'a player\'s sword is drawn in their hand and swings (' + JSON.stringify(blade) + ')');
+    ok(blade.mine === 'sword:3' && blade.off === '' && blade.left === 0, 'your sword and your aim go out to everyone, and putting it away too');
     const faint = await pg.evaluate(async () => { const V = __dbg.VIT, o = ONLINE.others.get('a'); V.hp = .05; await new Promise(r => setTimeout(r, 200));
       ONLINE.feed({ t: 'hit', id: 'a', d: .1, kb: 1, k: 'fist', from: [o.p.x, o.p.z] }); const a = { fainted: V.fainted, dead: V.dead };
       await new Promise(r => setTimeout(r, 200)); ONLINE.feed({ t: 'hit', id: 'a', d: .1, kb: 1, k: 'fist', from: [o.p.x, o.p.z] }); return { ...a, dead2: V.dead }; });

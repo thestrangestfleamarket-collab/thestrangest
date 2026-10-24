@@ -4580,3 +4580,6 @@ Owner chose "Bare-hand block + more moves on keys". P blocks with bare hands too
 
 ## 24 Oct 2026: hit feedback and others' health (release 4 of 5)
 Owner chose "Hit feedback + health of others". When your blow lands on a player they flash and you hear it. A creature's blow jolts you back a step and you flinch. A hurt player shows a health bar under their name; a dead player is a pale see-through ghost named "(GHOST)". Stamina comes back only after a short rest from running, punching or swinging.
+
+## 24 Oct 2026: your sword seen by others (release 5 of 5)
+Owner chose "Your sword seen by others". What you hold (a sword or a net) shows in your hand for everyone, aimed where you aim it, and your swings sweep on their screens too.

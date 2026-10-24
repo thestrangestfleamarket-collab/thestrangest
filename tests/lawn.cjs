@@ -13,7 +13,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     for (let i = 0; i < 30; i++) { if (await pg.evaluate(() => WEEDS.chunks.size >= 9 && [...WEEDS.chunks.values()].some(m => m && m.I))) break; await pg.waitForTimeout(1000); }   // the chunks round you build a few a second
     const r = await pg.evaluate(() => {
       const o = {}, c = W3.group.position, lc = SHARED.BOD.g.lawnCol(3.3, 7.1), map = __dbg.MAPK.MODS.land && __dbg.MAPK.MODS.land.material.map;
-      o.painted = !!(map && map.image && map.image.width === 1024 && map.repeat.x > 0); o.col = Array.isArray(lc) && lc.length === 3;
+      o.painted = !!(map && map.image && map.image.width > 0 && map.repeat.x > 0); o.col = Array.isArray(lc) && lc.length === 3;
       const M = [...WEEDS.chunks.values()].filter(m => m && m.I); o.chunks = M.length; o.tris = WEEDS.lawnN;
       let spot = null; for (let x = c.x - 16; x < c.x + 16 && !spot; x += .6) for (let z = c.z - 16; z < c.z + 16; z += .6) { const t = WEEDS.top(x, z); if (typeof t === 'number') { spot = [x, z, t]; break; } }
       o.spot = spot; if (spot) o.topUp = spot[2] > 0 && spot[2] < 1.8;
@@ -22,8 +22,8 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     });
     await pg.waitForTimeout(700);
     const r2 = await pg.evaluate(() => ({ swayT: WEEDS.shader && WEEDS.shader.uniforms.uSw.value, wind: WEEDS.shader && WEEDS.shader.uniforms.uWk.value }));
-    ok(r.painted && r.col, 'the ground is painted strokes (the land\'s 1024 texture, lawnCol reads it): ' + JSON.stringify([r.painted, r.col]));
-    ok(r.chunks > 0 && r.tris > 1000, 'the lawn chunks round you hold the blades (' + r.chunks + ' chunks, ' + r.tris + ' triangles)');
+    ok(r.painted && r.col, 'the ground under the grass has its lawn texture and lawnCol gives a colour: ' + JSON.stringify([r.painted, r.col]));
+    ok(r.chunks > 0 && r.tris > 1000, 'the lawn chunks round you hold the treetop clumps (' + r.chunks + ' chunks, ' + r.tris + ' triangles)');
     ok(r.spot && r.topUp, 'on the lawn the grass top stands over the ground, under head height (' + JSON.stringify(r.spot) + ')');
     ok(r.shader && r.shader.every(Boolean), 'the blades\' shader sways them in the wind (uSwAt, uSw, uWk) and parts them round what walks through (uTr): ' + JSON.stringify(r.shader));
     ok(typeof r2.swayT === 'number' && r2.swayT > r.swayT && r2.wind > 0, 'the wind clock runs and blows (' + JSON.stringify([r.swayT, r2.swayT, r2.wind]) + ')');

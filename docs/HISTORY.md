@@ -4509,3 +4509,7 @@ Owner (tenant 204 saw a white screen with a broken-page icon where he saw the mo
 
 ## 23 Oct 2026: the cinema's side exits, one staircase
 Owner: "the left and right side shouldnt be stairs, they should be exits out (with rails on side to block stairs) only middle part should have stair case ... the entrance to the projetor booth should be behind the stairs. double click to enter the room."; of the mockup: "exits lead to outside yes, booth entrance at top of stairs". The side aisles are flat walkways behind rails to a red EXIT door each at the back (double-click: out to the street); the middle aisle is the only staircase, and the booth's door is on the back wall at its top (double-click to enter).
+
+## 23 Oct 2026: players fight (step 1 and 2 of 3)
+
+Owner: "we could also walk through each other. i want to add real physics back to all players. if someone punches someone they should affect the other player. full phyisc (think gangbeasts), make sure all hitboxes are 100% accurate." His picks: each player owns their body (their own game runs it; hits go to them through the block's server); a hit pushes and staggers, knocks down into the ragdoll, can be grabbed, carried and thrown, and hurts health ("full fighting (look at any preexisting moves add to current system) think longterm"); everywhere. Players are solid, see each other's moves, and your fists, feet and blade land on the other's body parts as drawn (same blows as from any foe: guard, parry, armour, death). Next: ragdolls seen by everyone, grab, carry and throw.

@@ -1017,7 +1017,7 @@ function entablature(x,y,nm='MUSEUM OF EARTH',k=1){ SHARED.PNAME=k>1?'bank entab
   B.push(fb(r,0,1,0,1,Z,Z+H,MARB,(s,t,z,len)=>{ const a=(1-t)*len*FP, L=len*FP;
     if(z>=H-5)return z>=H-2?MARBL:Math.floor(a/4)%2?MARBD:MARB;
     if(z<10)return z%3===0?MARBD:z<3?sh(MARB,.96):MARB;
-    if(s==='f'||k>1&&s==='b'){ const tw=muTW(nm,k), l=(L-tw)/2, cc=Math.floor(((s==='b'?L-a:a)-l)/k), zz=Math.floor((z-12)/k); if(cc>=0&&cc<tw/k&&zz>=0&&zz<7){ const g=MUF[nm[Math.floor(cc/6)]], q=cc%6; if(g&&q<5&&g[(6-zz)*5+q]==='#')return k>1?muLit([238,204,120]):[92,84,70]; } }
+    if(k>1?s==='b':s==='f'){ const tw=muTW(nm,k), l=(L-tw)/2, cc=Math.floor(((s==='b'?L-a:a)-l)/k), zz=Math.floor((z-12)/k); if(cc>=0&&cc<tw/k&&zz>=0&&zz<7){ const g=MUF[nm[Math.floor(cc/6)]], q=cc%6; if(g&&q<5&&g[(6-zz)*5+q]==='#')return k>1?muLit([238,204,120]):[92,84,70]; } }
     return MARB; },()=>MARBL,{foot:1}));
   for(const t of [0,1-.9/W])B.push(fb(r,t,t+.9/W,0,2.9,Z,Z+H,MARB,(s,tt,z)=>z>=H-2?MARBL:z<10&&z%3===0?MARBD:MARB,()=>MARBL,{foot:1}));
   const PH=26, ped=(s,t,z,len)=>{ if(s!=='f'&&s!=='b')return null; const a=t*len*FP, L=len*FP, w=(1-z/PH)*L/2, d=Math.abs(a-L/2); if(d>w)return null;

@@ -1,6 +1,6 @@
 // THE FIRE ESCAPE VIEW: your landing on the apartment house's fire escape, with the landings above and below, built off the map from the house's own facade and landings; the camera is held on it.
 import {SHARED, THREE} from './003-shx.js';
-import {CLOCK, FAR3, pos, ROOMS, SKY, UI} from './003b-systems.js';
+import {CLOCK, FAR3, pos, SKY, UI} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {BLDK, FADE, MISTE, MODS, STORE, SYS, TILE} from './006-map-pre.js';
 import {BATCH} from './008-batch.js';
@@ -12,7 +12,7 @@ import {BATCH} from './008-batch.js';
   F.on=false; F.G=G;
   const fade=async(txt,fn)=>{ busy=true; await FADE.run(txt,fn,{hold:200}); busy=false; };
   F.out=()=>{ if(busy)return; fade(F.built?'YOUR FIRE ESCAPE':'LOADING YOUR FIRE ESCAPE...',async()=>{ await STORE.offGo(F.name); UI.goTo(X(DX),Z(WY+.9),Y(HZ)); SHARED.heading=0; if(UI.persp&&window.__dbg)__dbg.face(Math.PI); }); };
-  F.back=()=>{ if(busy)return; fade('YOUR APARTMENT',async()=>{ await ROOMS.goIn('apt',[X(APTS.fw[0]),Z(APTS.fw[1]+.9),0,0]); SHARED.heading=0; }); };
+  F.back=()=>{ if(busy)return; APTS.enterReal(); };
   const hit=(w,h,d,x,y,z)=>{ const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),new THREE.MeshBasicMaterial({visible:false})); m.position.set(x,y,z); scene.add(m); return m; };
   let plaque=null; APTS.furnish(APTS.my,()=>{ '@later'; UI.thing({name:'YOUR FIRE ESCAPE',ghost:1,obj:hit(1.1*T*KK,SHARED.BOD.Y(52),.3*T,X(APTS.fw[0]),SHARED.BOD.Y(68),Z(APTS.fw[1]+.2)),reach:1.4*T,near:2.6*T,tall:1.4*T,act:()=>{ if(APTS.in)F.out(); }});
   const F3={Y:'101101010010010',O:'111101101101111',U:'101101101101111',R:'110101110101101',A:'010101111101101',P:'110101110100100',T:'111010010010010',M:'101111101101101',E:'111100110100111',N:'110101101101101','0':'111101101101111','1':'010110010010111','2':'111001111100111','3':'111001111001111','4':'101101111001001','5':'111100111001111','6':'111100111101111','7':'111001010010010','8':'111101111101111','9':'111101111001111'};

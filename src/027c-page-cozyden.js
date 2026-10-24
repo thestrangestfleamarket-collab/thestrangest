@@ -2,7 +2,7 @@
 import {CLOCK} from './003b-systems.js';
 import {CAT_DEPTS} from './014-gamekit.js';
 import {DEEPW, PRESETS, STOREK} from './023-west-kits.js';
-const pageCozyDen=()=>{ '@pagerooms'; const PGK=STOREK.cottage.PGK;   // the page rooms' kit lives in 027's block and is published on the kit object
+const pageCozyDen=()=>{ '@oldkits'; const PGK=STOREK.cottage.PGK;   // the page rooms' kit lives in 027's block and is published on the kit object
 // =====================================================================================
 // THE COZY DEN (owner, 12 Oct 2026: his picture of a little attic den, "add this to the same walkable game engine as the cottage ... make every
 // single thing its own item, full html5 atmosphere on every object, walkable, rotatable"; then: the plush, the poster and the console taken out,

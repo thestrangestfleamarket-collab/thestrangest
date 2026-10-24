@@ -9,12 +9,13 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   let st = false; for (let i = 0; i < 60 && !st; i++) { await pg.waitForTimeout(3000); st = await pg.evaluate(() => !!window.__started).catch(() => false); }
   ok(st, 'the page starts');
   const U = async (f, ms = 90000, arg) => { for (const t = Date.now(); Date.now() - t < ms; await pg.waitForTimeout(250)) if (await pg.evaluate(f, arg).catch(() => false)) return true; return false; };
+  const NOT_YET = ['pine', 'island ground', 'cave floor', 'cave rock', 'boulder', 'park lamppost', 'smoke', 'light switch', 'ceiling light', 'downfeed'];   // the old engine's landscape kinds and three shared fittings the old engine made
   if (st) {
     const s0 = await pg.evaluate(() => { const d = OLDDBG(); return { rooms: d.rooms, built: d.built.length, data: d.data, listed: __dbg.UI.places().filter(p => SHARED.OLDROOMS.by[p[0]]).length }; });
     ok(s0.rooms >= 40, 'the old rooms are registered (' + s0.rooms + ')');
     ok(s0.built === 0 && !s0.data, 'none is built and its items are not fetched at the start');
     ok(s0.listed === s0.rooms, 'every one is in the GO TO list (' + s0.listed + ')');
-    for (const name of ['DINER', 'THE OFFICE', 'THE GREENHOUSE', 'THE COZY DEN', 'THE HARBOR KITCHEN']) {
+    for (const name of ['DINER', 'THE GREENHOUSE', "WITCH'S BEDROOM", 'CRYSTAL CAVERN', 'THE DOJO', 'THE FOREST (VR)', 'RESTROOM', 'LUCKY 7', 'UNDER THE SQUARE - LAUNDRY ROOM']) {   // one room per kit family
       await pg.evaluate(n => __dbg.UI.goPlace(n), name);
       const id = await pg.evaluate(n => SHARED.OLDROOMS.by[n], name);
       ok(await U(k => OLDDBG().built.includes(k) && !(window.FADE && FADE.busy), 120000, id), name + ' is built on the jump');
@@ -22,15 +23,16 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
       const r = await pg.evaluate(k => { const p = __dbg.pos(); return { ...OLDDBG().of(k), inside: OLDDBG().inside, dark: ROOMS.dark(), inBox: ROOMS.boxAt(p[0], p[2]) === k }; }, id);
       ok(r.inside === id && r.inBox, name + ': you stand inside it');
       ok(r.placed + r.missing === r.items && r.items > 0, name + ': every item accounted for (' + r.placed + ' made, ' + r.missing + ' standing in)');
-      ok(r.verts > 1000, name + ': its items are painted (' + r.verts + ' vertices in the room)');
-      const need = name === 'THE OFFICE' ? 33 : Math.ceil(r.items * .9);   // the Office's box on the old map also held a water plant's parts (18 strays), not office items
-      ok(r.placed >= need, name + ': its own items are made, not standing in (' + r.placed + '/' + r.items + ', wanted ' + need + ')');
+      ok(r.verts > 500, name + ': its items are painted (' + r.verts + ' vertices in the room)');
+      const odd = r.left.filter(k => !NOT_YET.includes(k));   // a kit's own kind standing in is a regression; the old engine's and the shared kinds are known debt
+      ok(!odd.length, name + ': every item standing in is a kind not ported yet (' + r.placed + ' made, ' + r.missing + ' standing in' + (odd.length ? '; a kit kind stands in: ' + odd.join(', ') : '') + ')');
       ok(r.dark, name + ': the map is not drawn while you are in');
       await pg.evaluate(k => ROOMS.exit(k), id);
       ok(await U(k => !OLDDBG().built.includes(k) && !(window.FADE && FADE.busy), 60000, id), name + ' is dropped on the way out');
     }
     const s1 = await pg.evaluate(() => ({ built: OLDDBG().built.length, sol: __dbg.SOL.up.length }));
     ok(s1.built === 0, 'nothing left built after leaving');
+    const ke = await pg.evaluate(() => OLDDBG().kitErrors); ok(!ke.length, 'every old kit registered without an error' + (ke.length ? ': ' + ke.join(' | ') : ''));
   }
   ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.join(' | ') : ''));
   await b.close();

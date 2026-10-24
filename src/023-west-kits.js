@@ -371,6 +371,9 @@ DJ=null&&(()=>{ const g=WEND.dojo, r=WEND.row.find(q=>q[0]==='ldojo'), h={x0:r[2
   return {x0:g.x0,y0:g.y0,x1:g.x1,y1:g.y1,gate:g.gate,h,c:[(h.x0+h.x1)/2,(h.y0+h.y1)/2],T,H:72,DH:56,dw:1.5}; })();
 
 SHARED.BOD.GDJ={djAndon,djCandle,djIncense,djHanging,djTokonoma,djBokkenRack,djLeaf,DJTAT,DJBRD,DJWOOD,DJPAP,DJPLA,setDJ:v=>{ DJ=v; }};
+  { const last=f=>(...a)=>{ const n=PROPL.length; const p=f(...a); return p||PROPL[n]||null; };   // the dojo's makers as catalog kinds (the old dojo room's items); two of them push their prop without returning it
+    Object.assign(CATALOG,{'andon':last(djAndon),'dojo candle':last(djCandle),'incense':(x,y)=>djIncense(x,y,[0,1]),'hanging plant':(x,y)=>djHanging(x,y,[0,1],0),'tokonoma':(x,y)=>djTokonoma(x-1,y,x+1),'bokken rack':(x,y)=>djBokkenRack(x,y-.5,y+.5)});
+    for(const k of ['andon','dojo candle','incense','hanging plant','tokonoma','bokken rack'])KIND_OF[k]=k; }
 }
 
 const STOREK={LAMPS,PRESETS,CATALOG,PROPS:PROPL,LBLD,T,STORY,hash,sh,sided,prop,LSEED}; const SQLV={octo:0}; const DEEPW={ZPX:24,WATERS:[]};   // the old game's deep-water engine is not here yet: no body, no presets

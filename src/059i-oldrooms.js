@@ -9,13 +9,22 @@ import {pageOffice} from './027a-page-office.js';
 import {pageKitchen} from './027b-page-kitchen.js';
 import {pageCozyDen} from './027c-page-cozyden.js';
 import {pageGreenhouse} from './027d-page-greenhouse.js';
+import {witchBedroom} from './027e-witch-bedroom.js';
+import {crystalCavern} from './027f-crystal-cavern.js';
+import {vrForest} from './027g-vr-forest.js';
+import {westAwnings} from './027h-west-awnings.js';
+import {bathroomKit} from './027i-bathroom.js';
+import {laundryKit} from './027j-laundry.js';
+import {westDesk} from './027k-west-desk.js';
+import {bedroomKit} from './027l-bedroom.js';
+import {livedIn} from './027m-lived-in.js';
 { const {X,Y,Z,faceTex,bq,C,place,gbox}=SHARED.BOD, sh=SHARED.BOD.K.sh, hs=SHARED.BOD.g.hash, INDEX=__DATA__("data/oldrooms-index.json"), ITEMS=__LAZY__("data/oldrooms.json");
   const WH=130, DW=.8, DH=95, OUT0=[-2.2,3.2,0,0]; let DATA=null;
   const MKA=(k,map,emap)=>k==='B'?new THREE.MeshBasicMaterial({map,side:THREE.DoubleSide,alphaTest:.5}):new THREE.MeshLambertMaterial({map,alphaTest:.5,side:THREE.DoubleSide,...(emap?{emissiveMap:emap,emissive:0xffffff,emissiveIntensity:1.3}:{})});
   const box4=(x0,y0,x1,y1)=>{ const a=X(x0), b=X(x1), c=Z(y0), d=Z(y1); return [Math.min(a,b),Math.min(c,d),Math.max(a,b),Math.max(c,d)]; };
   const taken=new Set(STORE.places.map(p=>p[0]).concat(['THE STREET','THE BODEGA','THE PLATFORM','CENTRAL PARK','THE BATH HOUSE','THE CASTLE','DUNGEON L1','THE SHOP','THE BACK ROOM','THE BATHS','THE SUBWAY STAIRS']));
   const inside=(R,S)=>{ '@oldrooms';
-    const B=R, cx=(B.x0+B.x1)/2, items=DATA&&DATA[R.id]||[], own=!!R.own;   // a page room brings its own floor and walls (baked into the index)
+    const B=R, cx=(B.x0+B.x1)/2, items=DATA&&DATA[R.id]||[], own=!!R.own&&items.some(([k])=>/ floor$/.test(k)&&CATALOG[k]);   // a room brings its own floor and walls only when its floor can be made here (the cavern's was the old engine's)
     const sol=(x0,y0,x1,y1,zt)=>{ const r=box4(x0,y0,x1,y1), f=[r[0],r[1],0,r[2],r[3],Math.max(.05,Y(zt))]; SOL.up.push(r); FIX.up.push(f); S.sol.push(r); S.fix.push(f); };
     const wall=(u,z,f)=>z<6?sh([70,62,58],f):sh([176,168,152],f*(1-.04*hs(Math.floor(u*4),Math.floor(z/8),9)));
     const floor=(x,y)=>{ const r=Math.floor(y*3), b=Math.floor(x/1.5+hs(r,0,13)*3); return sh([128,98,66],(y*3-r)<.06||(x/1.5-Math.floor(x/1.5))<.03?.78:.9+.12*hs(b,r,7)); };
@@ -37,14 +46,14 @@ import {pageGreenhouse} from './027d-page-greenhouse.js';
     S.placed=items.length-S.missing;
     const W=B.x1-B.x0, H=B.y1-B.y0, n=Math.max(1,Math.min(3,Math.round(Math.max(W,H)/8)));
     for(let i=0;i<n;i++){ const t=(i+.5)/n, lx=W>=H?B.x0+t*W:cx, ly=W>=H?(B.y0+B.y1)/2:B.y0+t*H, Lt=new THREE.PointLight(0xffe9c8,8,12*TILE,1.6); Lt.position.set(X(lx),Y(118),Z(ly)); scene.add(Lt); } };
-  const OLD={ids:[],by:{}};
+  const OLD={ids:[],by:{},errors:[]};
   for(const R of INDEX){ const id='old-'+R.id, cx=(R.x0+R.x1)/2, wb=box4(R.x0-.2,R.y0-.2,R.x1+.2,R.y1+.2), S={sol:[],fix:[],missing:0,placed:0}; let G=null;
     const name=taken.has(R.name)?R.name+' · OLD':R.name; taken.add(name);
     const o=ROOMS.off[id]={name,box:{x0:wb[0],z0:wb[1],x1:wb[2],z1:wb[3],y0:-1,y1:Y(WH+40)},
-      need:()=>{ o.out=ROOMS.offIn()?OUT0:[pos.x,pos.z,SHARED.py,SHARED.heading]; return Promise.all([LOAD('pagerooms','oldrooms','later').then(()=>{ if(!OLD.kits){ OLD.kits=1; pageOffice(); pageKitchen(); pageCozyDen(); pageGreenhouse(); } }),DATA?null:ITEMS().then(d=>{ DATA=d; })]); },   // the page rooms' kits register their pieces on the first jump, never at the start
+      need:()=>{ o.out=ROOMS.offIn()?OUT0:[pos.x,pos.z,SHARED.py,SHARED.heading]; return Promise.all([LOAD('oldkits','oldrooms','later').then(()=>{ if(!OLD.kits){ OLD.kits=1; for(const [n,k] of [['office',pageOffice],['kitchen',pageKitchen],['cozy den',pageCozyDen],['greenhouse',pageGreenhouse],['witch bedroom',witchBedroom],['crystal cavern',crystalCavern],['vr forest',vrForest],['west awnings',westAwnings],['bathroom',bathroomKit],['laundry',laundryKit],['desk room',westDesk],['bedroom',bedroomKit],['lived in',livedIn]])try{ k(); }catch(e){ OLD.errors.push(n+': '+(e&&e.message||e)); console.error('old kit '+n+' failed',e); } } }),DATA?null:ITEMS().then(d=>{ DATA=d; })]); },   // the old game's kits register their pieces on the first jump, never at the start
       build:()=>{ G=new THREE.Group(); G.name=id; scene.add(G); S.sol=[]; S.fix=[]; S.missing=0; return o.P=ROOMS.part(G,()=>inside(R,S),MKA); },
       unbuild:()=>{ for(const r of S.sol){ const i=SOL.up.indexOf(r); if(i>=0)SOL.up.splice(i,1); } for(const f of S.fix){ const i=FIX.up.indexOf(f); if(i>=0)FIX.up.splice(i,1); } if(G){ G.removeFromParent(); G=null; } },
       spawn:[X(cx),Z(R.y1-(R.own?2.8:1.3)),0,Math.PI],out:OUT0,exit:[X(cx+(R.own?1.2:0)),0,Z(R.y1-(R.own?2.8:.25))],exitName:'OUTSIDE',old:R,S};   // a room with its own walls: you arrive just inside its south wall, the way out beside you
     STORE.places.push([name,o.spawn[0],o.spawn[1],'up',null,Math.PI]); OLD.ids.push(id); OLD.by[name]=id; }
   SHARED.OLDROOMS=OLD;
-  window.OLDDBG=()=>({rooms:OLD.ids.length,built:OLD.ids.filter(k=>ROOMS.off[k].P),inside:ROOMS.offIn(),data:!!DATA,of:k=>{ const o=ROOMS.off[k]; return o&&{name:o.name,items:o.old.n,placed:o.S.placed,missing:o.S.missing,things:o.P?o.P.things.length:0,verts:o.P?o.P.objs.reduce((n,q)=>{ q.traverse(c=>{ if(c.isMesh&&c.geometry.attributes.position)n+=c.geometry.attributes.position.count; }); return n; },0):0}; }}); }
+  window.OLDDBG=()=>({rooms:OLD.ids.length,kitErrors:OLD.errors,built:OLD.ids.filter(k=>ROOMS.off[k].P),inside:ROOMS.offIn(),data:!!DATA,of:k=>{ const o=ROOMS.off[k]; return o&&{name:o.name,items:o.old.n,placed:o.S.placed,missing:o.S.missing,things:o.P?o.P.things.length:0,left:o.P?[...new Set(o.P.things.filter(t=>/ \(NOT MADE YET\)$/.test(t.name)).map(t=>t.name.replace(' (NOT MADE YET)','').toLowerCase()))]:[],verts:o.P?o.P.objs.reduce((n,q)=>{ q.traverse(c=>{ if(c.isMesh&&c.geometry.attributes.position)n+=c.geometry.attributes.position.count; }); return n; },0):0}; }}); }

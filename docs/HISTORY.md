@@ -4507,3 +4507,7 @@ Owner: "the left and right side shouldnt be stairs, they should be exits out (wi
 ## 23 Oct 2026: players fight (step 1 and 2 of 3)
 
 Owner: "we could also walk through each other. i want to add real physics back to all players. if someone punches someone they should affect the other player. full phyisc (think gangbeasts), make sure all hitboxes are 100% accurate." His picks: each player owns their body (their own game runs it; hits go to them through the block's server); a hit pushes and staggers, knocks down into the ragdoll, can be grabbed, carried and thrown, and hurts health ("full fighting (look at any preexisting moves add to current system) think longterm"); everywhere. Players are solid, see each other's moves, and your fists, feet and blade land on the other's body parts as drawn (same blows as from any foe: guard, parry, armour, death). Next: ragdolls seen by everyone, grab, carry and throw.
+
+## 24 Oct 2026: players fight (step 3 of 3)
+
+Owner: "merge it and start step 3". Everyone sees a downed player's ragdoll; double-click a player who is down to pick them up and carry them, punch to throw them, double-click again to put them down. A knockdown by another player keeps you down at least 2.5 s (longer while carried).

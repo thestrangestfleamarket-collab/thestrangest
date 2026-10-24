@@ -1,8 +1,8 @@
 // THE WITCH'S GREENHOUSE KIT: the old game's page room, its pieces as catalog kinds (department greenhouse) and its preset.
 import {CLOCK} from './003b-systems.js';
 import {CAT_DEPTS} from './014-gamekit.js';
-import {PRESETS} from './023-west-kits.js';
-const pageGreenhouse=()=>{ '@pagerooms';
+import {PRESETS, STOREK} from './023-west-kits.js';
+const pageGreenhouse=()=>{ '@pagerooms'; const PGK=STOREK.cottage.PGK;   // the page rooms' kit lives in 027's block and is published on the kit object
 // =====================================================================================
 // THE WITCH'S GREENHOUSE (owner, 13 Oct 2026: a picture of an overgrown stone greenhouse full of a witch's things, "make it, place them
 // logically, use lighting, atmospherics"; then "same cat we alrd have, leave fish out, climb and all things are dynamic ... like the cottage

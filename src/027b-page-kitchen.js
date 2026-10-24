@@ -1,7 +1,7 @@
 // THE HARBOR KITCHEN KIT: the old game's page room, its pieces as catalog kinds and its preset.
 import {CAT_DEPTS} from './014-gamekit.js';
-import {PRESETS} from './023-west-kits.js';
-const pageKitchen=()=>{ '@pagerooms';
+import {PRESETS, STOREK} from './023-west-kits.js';
+const pageKitchen=()=>{ '@pagerooms'; const PGK=STOREK.cottage.PGK;   // the page rooms' kit lives in 027's block and is published on the kit object
 // =====================================================================================
 // THE HARBOR KITCHEN, EXACT (owner, 12 Oct 2026: the third picture's room as the page built it on its second pass; "exact scenes ... in
 // central park"): the page's own code for the room, every piece where the page put it (the tiled floor, the walls of slate tile and cream

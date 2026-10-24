@@ -4610,3 +4610,6 @@ Owner: "keep building out all rooms and items until finished". The Witch's Bedro
 
 ## 24 Oct 2026: the old rooms' landscape is this game's
 The old engine's landscape kinds in an old room (pines, boulders, cave rock, logs) are this game's baked models (`LAND.propMesh`, the landscape editor's own props), the cave floor a slab of dark stone; the Forest's 147 pines and the Cavern's rocks are real. What may still stand in: light switches, ceiling lights, downfeeds, lampposts and smoke, which the old engine made.
+
+## 24 Oct 2026: the old rooms use what this game already has
+Owner: "keep building out all rooms and items until finished". A kind an old room asks for that this game already makes is not written again (the rule: reuse, don't hand-write): the castle's well, iron bars and dungeon stone, the aquarium's octopus tank, the theatre's screen, seats, curtains, aisle lights, exit sign and projection port, the bar's wall light, and the dungeon's mouse run and wall torches are adapted to a point and the room's own walls. The old game's lounge pieces (the white sofa and coffee table, the big TV, the speaker, the small fridge, the arcade cabinets, the red stool) come in as a kit (`039a-lounge-pieces`) for the Square's lobby. What may still stand in: the old engine's fittings (roof tanks, the zipline, light switches, downfeeds).

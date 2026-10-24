@@ -3,6 +3,7 @@ import {SHARED, THREE} from './003-shx.js';
 import {LEVELS, LITE, NPCS, PARK, pos, ROOMS} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {CASTLE, FIX, grab, lamps, LAY, MAPG, MAPSTAIR, MODS, RING, SEEN, SHL, SOL, STORE, SYS, TILE, ZU} from './006-map-pre.js';
+import {lawnData, LAWNP} from './014-gamekit.js';
 import {FOUNT} from './060a-fount.js';
 await grab('stairs',async()=>SHARED.METRO.exit());
 const STAIRS=[MAPSTAIR,CASTLE.stair,...RING.stairs], inStair=(x,z,lv)=>{ const gx=x/TILE+72, gy=z/TILE-77; for(const S of STAIRS)if(S.has?S.has(x,z,lv):gx>=S.x0&&gx<S.x1&&gy>=S.y0&&gy<S.y1)return {S,gy}; return null; };
@@ -55,10 +56,8 @@ const MAPLV=(py,pos,cam)=>{ SHARED.METRO.door(py,pos); if(MODS.dunDoor)MODS.dunD
     for(const r of STORE.roofs)SEEN(r.me,!(r.R.inside(pos.x,pos.z)||ROOMS.cur===r.R)); const L=SHARED.LVL==='down'&&LEVELS.at?LEVELS.of[LEVELS.at(pos.x,pos.z,'down')]:null; SHARED.BOUND=L&&L.bound?L.bound(pos.x,pos.z):ROOMS.cur&&ROOMS.cur.off?ROOMS.cur:STORE.inStore(pos.x,pos.z)?STORE.bound:MB; }; }   // an off-map inside (bodega, apt, arcade) is walled off the map, so bound by its own box, not the street's limit
 window.MAPDBG=()=>({LVL:SHARED.LVL,cut:MODS.stairCut.constant,vis:Object.fromEntries(Object.entries(MAPG).map(([k,g])=>[k,g.visible])),stairLamp:lamps.filter(L=>L.parent===MAPG.stairs).map(L=>L.intensity),py:typeof SHARED.py!=='undefined'?SHARED.py:null,pos:typeof pos!=='undefined'?[pos.x,pos.z]:null});
 
-{ const K=32, N=K*24, c=document.createElement('canvas'); c.width=c.height=N; const g=c.getContext('2d'), im=g.createImageData(N,N), GC=SHARED.BOD.g.lawnCol;
-  for(let j=0;j<N;j++)for(let i=0;i<N;i++){ const v=GC((i+.5)/24+200,(j+.5)/24+200), k=(j*N+i)*4; im.data[k]=v[0]; im.data[k+1]=v[1]; im.data[k+2]=v[2]; im.data[k+3]=255; }
-  g.putImageData(im,0,0); const t=new THREE.CanvasTexture(c); t.magFilter=t.minFilter=THREE.NearestFilter; t.generateMipmaps=false; t.colorSpace=THREE.SRGBColorSpace;
-  t.wrapS=t.wrapT=THREE.MirroredRepeatWrapping; t.repeat.set(1/K,1/K);
+{ const K=LAWNP.K, t=new THREE.CanvasTexture(lawnData().c); t.magFilter=THREE.LinearFilter; t.minFilter=THREE.LinearMipmapLinearFilter; t.anisotropy=4; t.colorSpace=THREE.SRGBColorSpace;
+  t.wrapS=t.wrapT=THREE.RepeatWrapping; t.repeat.set(1/K,1/K);
   const XS=SHARED.BOD.XS, ZS=SHARED.BOD.ZS, M=SHARED.BOD.MAP, tt=v=>v/TILE, R=320, cx=tt(XS((M.x0+M.x1)/2)), cz=tt(ZS(M.y0));
   const LO=LAY.o('land'), LE=LAY.e('land'), LR=MODS.landR={x0:cx-R+LO.x+LE[0],z0:cz-R+LO.y+LE[1],x1:cx+R+LO.x+LE[2],z1:cz+R+LO.y+LE[3]};
   const sh=new THREE.Shape([[LR.x0,-LR.z0],[LR.x1,-LR.z0],[LR.x1,-LR.z1],[LR.x0,-LR.z1]].map(p=>new THREE.Vector2(...p)));

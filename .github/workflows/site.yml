@@ -33,6 +33,8 @@ jobs:
         run: python3 build.py
       - name: The core's own logic (imports, level file, SYS, ZONES, VIS, FADE, collision)
         run: node tests/core.cjs dist/market.html
+      - name: The lawn (painted ground, tall blades that sway and part)
+        run: node tests/lawn.cjs dist/market.html
       - name: The other players (bodies, name tags, the list, chat)
         run: node tests/online.cjs dist/market.html
       - name: Fights between players (hitboxes, blows, knockdown)

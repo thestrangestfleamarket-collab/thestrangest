@@ -3,7 +3,7 @@ import {SHARED, THREE} from './003-shx.js';
 import {BUGS, LOOKS, ONLINE, pos, ROOMS, UI, W3} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {ASTEP, MODS, QS, SYS, TILE} from './006-map-pre.js';
-import {TL} from './073-main-12.js';
+import {qMat, ragPoseOf, TL} from './073-main-12.js';
 import {figureMesh, musBody, MUSGEO, musScale} from './110-musician.js';
 import {BODIES} from './111a-bodies.js';
 Object.assign(ONLINE,{others:new Map(),on:false,me:'',log:[],hear:{}}); window.ONLINE=ONLINE;
@@ -18,7 +18,7 @@ Object.assign(ONLINE,{others:new Map(),on:false,me:'',log:[],hear:{}}); window.O
   const send=m=>{ if(sock&&sock.readyState===1)sock.send(JSON.stringify(m)); }; ONLINE.send=m=>send(m);
   /* ---------- other players are solid: you are pushed out of them as out of a character ---------- */
   ONLINE.push=p=>{ for(const o of ONLINE.others.values()){ if(o.why!=='near you'||!o.p)continue; const dx=p.x-o.p.x, dz=p.z-o.p.z, d=Math.hypot(dx,dz), R=.55; if(d<R&&d>1e-4){ p.x=o.p.x+dx/d*R; p.z=o.p.z+dz/d*R; } } };
-  SYS.add('act',(k,on)=>ONLINE.send(typeof k==='string'&&k.length>1?{t:'act',m:k}:{t:'act',k,on:on?1:0}),'111d-online');
+  SYS.add('act',(k,on)=>ONLINE.send(k==='flinch'?{t:'act',m:k}:{t:'act',k,on:on?1:0}),'111d-online');
 
   /* ---------- where someone is: their last moves, drawn a little behind so the steps between them are smooth ---------- */
   const place=(o,now)=>{ const s=o.s, n=s.length-1; if(n<0)return null; const t=now-LAG; if(t<=s[0].t)return s[0]; if(t>=s[n].t)return s[n];
@@ -38,6 +38,9 @@ Object.assign(ONLINE,{others:new Map(),on:false,me:'',log:[],hear:{}}); window.O
     else if(m.t==='out')drop(m.id);
     else if(m.t==='tell'&&m.text){ line(m.from||'THE MARKET',m.text); banner(m.from||'THE MARKET',m.text); }
     else if(m.t==='act'&&m.id){ const o=ONLINE.others.get(m.id); if(o){ try{ if(m.m)R.begin(o.S,m.m); else if(m.on)R.act(o.S,m.k); else R.release(o.S,m.k); }catch(e){} o.B=null; } return; }
+    else if(m.t==='ragon'&&m.id&&Array.isArray(m.n)&&Array.isArray(m.jl)){ const o=up(m.id); o.rag={n:m.n,jl:m.n.map((_,i)=>Object.fromEntries((m.jl[i]||[]).map(j=>[j[0],[+j[1],+j[2],+j[3]]]))),b:null,t:0}; return; }
+    else if(m.t==='rag'&&m.id&&Array.isArray(m.b)){ const o=ONLINE.others.get(m.id); if(!o||!o.rag)return; const r=o.rag; r.b=m.b.map((v,i)=>({name:r.n[i],x:[+v[0],+v[1],+v[2]],m3:qMat([+v[3],+v[4],+v[5],+v[6]]),jl:r.jl[i]||{}})); r.o=[+m.o[0],+m.o[1]]; r.hd=+m.hd||0; r.t=performance.now(); return; }
+    else if(m.t==='ragoff'&&m.id){ const o=ONLINE.others.get(m.id); if(o){ o.rag=null; o.B=null; } return; }
     else if(ONLINE.hear[m.t]){ ONLINE.hear[m.t](m); return; }
     else if(m.t==='say'&&m.text){ const o=m.id&&ONLINE.others.get(m.id); if(o){ o.say=String(m.text); o.sayT=performance.now(); } line(m.name||(o&&o.name)||'TENANT',m.text); }
     list(); };
@@ -55,8 +58,10 @@ Object.assign(ONLINE,{others:new Map(),on:false,me:'',log:[],hear:{}}); window.O
   const fig=o=>{ '@later'; unfig(o); const k=o.look||'w00', b=built(k), g=new THREE.Group();
     if(b.body){ const M=BODIES.mesh(b.body); g.add(M.me); o.fig={g,me:M.me,body:b.body,PM:M.PM}; }
     else{ const FM=figureMesh(b.PCS,'online'); g.add(FM.me); o.fig={g,me:FM.me,FM,PCS:b.PCS}; }
+    const hb=new THREE.Mesh(new THREE.BoxGeometry(22,58,24),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(0,29,2); g.add(hb);
+    o.fig.th={name:o.name||'TENANT',obj:hb,reach:1.6,tall:1.9,act:()=>{ if(ONLINE.use)ONLINE.use(o); }}; UI.thing(o.fig.th);
     o.key=k; o.B=null; g.userData.anyRoom=true; scene.add(g); };
-  const unfig=o=>{ if(o.fig){ scene.remove(o.fig.g); const me=o.fig.me; for(const m of [me.material,me.customDistanceMaterial,me.customDepthMaterial])if(m)m.dispose(); o.fig=null; }
+  const unfig=o=>{ if(o.fig){ const i=UI.things.indexOf(o.fig.th); if(i>=0)UI.things.splice(i,1); scene.remove(o.fig.g); const me=o.fig.me; for(const m of [me.material,me.customDistanceMaterial,me.customDepthMaterial])if(m)m.dispose(); o.fig=null; }
     if(o.tag){ scene.remove(o.tag); o.tag.material.map.dispose(); o.tag.material.dispose(); o.tag=null; o.tagS=''; } };
 
   /* ---------- the name over their head, and what they last said for a few seconds ---------- */
@@ -74,10 +79,10 @@ Object.assign(ONLINE,{others:new Map(),on:false,me:'',log:[],hear:{}}); window.O
   const draw=(dt,now)=>{ '@later'; const lv=SHARED.LVL||'up', rk=roomKey(), C=[];
     for(const o of ONLINE.others.values()){ const p=o.p=place(o,now), d=p?Math.hypot(p.x-pos.x,p.z-pos.z):1e9; o.why=!p?'no position yet':p.rm!==rk?'in another room':p.lv!==lv?'on another level':d>=FAR?'far away':'near you'; if(o.why==='near you'){ o.dd=d; C.push(o); } else hide(o); }
     C.sort((a,b)=>a.dd-b.dd); for(const o of C.slice(MAXN))hide(o);
-    for(const o of C.slice(0,MAXN)){ try{ const p=o.p; if(!o.fig||o.key!==(o.look||'w00'))fig(o); const F=o.fig, g=F.g;
+    for(const o of C.slice(0,MAXN)){ try{ const rg=o.rag&&o.rag.b&&now-o.rag.t<3000?o.rag:null, p=o.p=rg?{...o.p,x:rg.o[0]*TL,z:-rg.o[1]*TL,hd:rg.hd}:o.p; if(!o.fig||o.key!==(o.look||'w00'))fig(o); const F=o.fig, g=F.g;
       const sp=o.q?Math.hypot(p.x-o.q.x,p.z-o.q.z)/Math.max(dt,1e-3):0; o.q={x:p.x,z:p.z}; o.S.target=sp>.4*TILE?1:0; R.step(o.S,dt);
       g.visible=true; g.position.set(p.x,p.y,p.z); g.rotation.y=p.hd; if(F.body)musScale(g,1); else musScale(g); o.d=((Math.round(p.hd/PI4)%8)+8)%8;
-      if(!o.B||ASTEP.gate(o,dt)){ R.farOnly(false); const B=o.B=R.pose(o.S,true); if(F.body)BODIES.pose(B,F.PM,F.body); else F.PCS.forEach((pc,i)=>F.FM.set(i,R.frameOf(pc.on||pc.n,B))); }
+      if(rg||!o.B||ASTEP.gate(o,dt)){ R.farOnly(false); const B=o.B=rg?ragPoseOf(rg.b,{x:rg.o[0],y:rg.o[1]},rg.hd):R.pose(o.S,true); if(F.body)BODIES.pose(B,F.PM,F.body); else F.PCS.forEach((pc,i)=>F.FM.set(i,R.frameOf(pc.on||pc.n,B))); }
       tag(o); o.tag.visible=true; o.tag.position.set(p.x,p.y+2.65*TILE,p.z); }catch(e){ hide(o); if(!o.err){ o.err=1; console.warn('ONLINE: could not draw '+(o.name||o.id),e); } } } };
   window.ONLINEDBG=()=>({me:{lv:SHARED.LVL,rk:roomKey(),at:[+pos.x.toFixed(1),+pos.z.toFixed(1),+SHARED.py.toFixed(2)]},on:ONLINE.on,others:[...ONLINE.others.values()].map(o=>({name:o.name,look:o.look,p:o.p&&{x:+o.p.x.toFixed(1),z:+o.p.z.toFixed(1),y:+o.p.y.toFixed(2),lv:o.p.lv,rm:o.p.rm},why:o.why||'',shown:!!(o.fig&&o.fig.g.visible),err:!!o.err}))});
 

@@ -51,7 +51,7 @@ import {DRAGON} from './077-npc-skel.js';
     for(let k=0;k<32;k++){ const t=k/32*CLIPS.Flying_loop.duration; mx.setTime(t); g.updateMatrixWorld(true); let s=0; for(const b of L.concat(R)){ b.getWorldPosition(v); s+=Math.abs(v.x); } if(s>best){ best=s; bt=t; } } return bt; })();
   const GLC=new THREE.Color(), UP=new THREE.Vector3(0,1,0), qa=new THREE.Quaternion(), wq=new THREE.Quaternion(), ax=new THREE.Vector3();
   const bend=(b,axis,ang)=>{ if(!b||!ang)return; wq.copy(b.quaternion); for(let p=b.parent;p;p=p.parent)wq.premultiply(p.quaternion); ax.copy(axis).applyQuaternion(wq.invert()).normalize(); b.quaternion.multiply(qa.setFromAxisAngle(ax,ang)); };
-  const make=(i)=>{ const rig=rigOf(), mixer=new THREE.AnimationMixer(rig.bones[0]), act=n=>mixer.clipAction(CLIPS[n]);
+  const make=(i,o={})=>{ const rig=rigOf(), mixer=new THREE.AnimationMixer(rig.bones[0]), act=n=>mixer.clipAction(CLIPS[n]);
     const idle=act('Idle_loop'), fly=act('Flying_loop'), lift=act('GroundToFly'), attack=act('Attack');
     idle.play(); fly.play(); fly.time=Math.random()*CLIPS.Flying_loop.duration; lift.setLoop(THREE.LoopOnce); lift.clampWhenFinished=true;
     const D={mode:'fly',p:PER[i%PER.length],t:0,y:0,bank:0,pitch:0,v:.8*TI,to:sky(),fly:60+Math.random()*100,cruise:SHARED.BOD.Y(240+Math.random()*420),breath:40+Math.random()*200,pw:0,peek:false,pk:5,next:null,snap:0,style:'flap',bt:Math.random()*3,gl:0,turn:0,climb:0,tw:0}; D.y=D.cruise;
@@ -66,7 +66,7 @@ import {DRAGON} from './077-npc-skel.js';
       return null; };
     const spit=(hp,v)=>{ const vy=v.y, h=Math.max(0,hp.y-gy(hp.x,hp.z)), t=(vy+Math.sqrt(vy*vy+2*G*h))/G, lx=hp.x+v.x*t, lz=hp.z+v.z*t;
       if(SHARED.LVL==='up'&&Math.hypot(lx-pos.x,lz-pos.z)<4*TI)return false; D.snap=.6; fire(hp,v); return true; };
-    const N=makeNPC(null,{key:'dragon',name:'A DRAGON',names:M.parts,lv:'up',group:'bodega',geo:greenGeo(),skin:rig,tall:M.tall,eye:-1,rank:[0],metres:.64,x:s0.x,z:s0.z,lane:{x0:s0.x,x1:s0.x,z0:s0.z,z1:s0.z},ground:()=>0,radius:.3,speed:0,stride:0,rock:0,bob:0,noSelf:true,
+    const N=makeNPC(null,{key:'dragon',name:'A DRAGON',names:M.parts,lv:'up',group:'bodega',geo:greenGeo(),skin:rig,tall:M.tall,eye:-1,rank:[0],metres:o.m||.64,x:s0.x,z:s0.z,lane:{x0:s0.x,x1:s0.x,z0:s0.z,z1:s0.z},ground:()=>0,radius:.3,speed:0,stride:0,rock:0,bob:0,noSelf:true,
       anim:(dt)=>{ const k=Math.min(1,dt*3); wI=ease(wI,D.mode==='perch'?1:0,k); wF=ease(wF,D.mode==='fly'||D.mode==='come'?1:0,k); wL=ease(wL,D.mode==='lift'?1:0,Math.min(1,dt*8));
         idle.setEffectiveWeight(wI); fly.setEffectiveWeight(wF); lift.setEffectiveWeight(wL); attack.setEffectiveWeight(D.snap>0?1:0);
         D.gl+=((D.style==='glide'&&D.mode==='fly'?1:0)-D.gl)*Math.min(1,dt*1.5); fly.timeScale=(D.mode==='come'?.5:.62)*(1-D.gl);
@@ -83,6 +83,9 @@ import {DRAGON} from './077-npc-skel.js';
       const y0=D.y;
       D.breath-=dt;
       if(D.mode==='perch'){ const P=D.p; let x=P.x, z=P.z, y=P.y, h=P.h;
+        if(P.sign){ const dx=pos.x-st.x, dz=pos.z-st.z, d=Math.hypot(dx,dz); D.cool-=dt;
+          if(SHARED.LVL==='up'&&d<9*TI){ h=Math.atan2(dx,dz); if(D.cool<=0&&d>3*TI&&Math.abs(turnTo(st.h,h,9)[1])<.3){ const fw=new THREE.Vector3(Math.sin(st.h),0,Math.cos(st.h)), hp=new THREE.Vector3(st.x,D.y+.12*TI,st.z).addScaledVector(fw,.25*TI);
+            const tx=pos.x-dx/d*2*TI, tz=pos.z-dz/d*2*TI, fall=Math.max(.3*TI,hp.y-gy(tx,tz)), t=Math.sqrt(2*fall/G); D.snap=.6; fire(hp,new THREE.Vector3((tx-hp.x)/t,0,(tz-hp.z)/t)); D.cool=18+Math.random()*20; } } }
         if(P.tree){ if((D.pk-=dt)<=0){ D.peek=!D.peek; D.pk=D.peek?3+Math.random()*5:8+Math.random()*16; } D.pw=ease(D.pw,D.peek?1:0,Math.min(1,dt*1.2));
           const o=P.tree, a=P.h, k=.42+(.95-.42)*D.pw; x=o.x+Math.sin(a)*o.r*k; z=o.z+Math.cos(a)*o.r*k; y=P.y-(o.top-o.y)*.06*D.pw; h=a+(1-D.pw)*1.9+D.pw*Math.sin(D.t*.6)*.5;
           if(D.breath<=0&&D.pw>.85){ const fw=new THREE.Vector3(Math.sin(st.h),0,Math.cos(st.h)); D.breath=spit(new THREE.Vector3(st.x,D.y+.15*TI,st.z).addScaledVector(fw,.4*TI),fw.multiplyScalar(2.4*TI).add(new THREE.Vector3(0,-.5*TI,0)))?150+Math.random()*210:12; } }
@@ -106,6 +109,9 @@ import {DRAGON} from './077-npc-skel.js';
       N.g.position.set(st.x,D.y,st.z); N.g.rotation.set(D.mode==='perch'?0:-Math.max(-.3,Math.min(.3,D.climb*.5)),st.h,D.mode==='perch'?0:D.bank); };
     N.mixer=mixer; N.D=D; N.restless=()=>true; return N; };
   const DR=[]; for(let i=0;i<10;i++)DR.push(make(i));
+  // a small dragon perched on the park's sign: it turns to watch you go by and breathes real fire your way
+  { const SG=PARK.sign; if(SG&&SG.top){ const N=make(10,{m:.7}), D=N.D, st=N.st; D.home=D.p={x:SG.x,z:SG.z,y:SG.top,h:Math.atan2(SG.out[0]-SG.x,SG.out[1]-SG.z),sign:1}; D.mode='perch'; D.t=1e9; D.cool=6;
+    st.x=SG.x; st.z=SG.z; st.h=D.p.h; D.y=SG.top; N.home={x:SG.x,z:SG.z,r:0,id:N.home&&N.home.id}; DR.push(N); PARK.signDragon=N; } }
   window.DRAGONPERCH=(i,k)=>{ const N=DR[i], D=N.D; D.p=PER[k]; D.p.on=1; D.mode='perch'; D.t=999; N.st.x=D.p.x; N.st.z=D.p.z; D.y=D.p.y; return PER.length; };
   window.DRAGONHOME=i=>{ const N=DR[i], D=N.D; if(!D.home)return null; D.p=D.home; D.mode='perch'; D.t=999; N.st.x=D.p.x; N.st.z=D.p.z; D.y=D.p.y; return {x:D.p.x,z:D.p.z,y:D.p.y}; };
   window.DRAGONDBG=()=>DR.map(N=>({mode:N.D.mode,tree:!!N.D.p.tree,ground:!!N.D.p.ground,peek:+N.D.pw.toFixed(2),breath:Math.round(N.D.breath),x:+N.st.x.toFixed(1),y:+N.D.y.toFixed(1),z:+N.st.z.toFixed(1)}));

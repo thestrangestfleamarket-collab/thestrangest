@@ -4510,6 +4510,8 @@ Owner (tenant 204 saw a white screen with a broken-page icon where he saw the mo
 ## 23 Oct 2026: the cinema's side exits, one staircase
 Owner: "the left and right side shouldnt be stairs, they should be exits out (with rails on side to block stairs) only middle part should have stair case ... the entrance to the projetor booth should be behind the stairs. double click to enter the room."; of the mockup: "exits lead to outside yes, booth entrance at top of stairs". The side aisles are flat walkways behind rails to a red EXIT door each at the back (double-click: out to the street); the middle aisle is the only staircase, and the booth's door is on the back wall at its top (double-click to enter).
 
+## 23 Oct 2026: players in the same room always see each other
+Owner: "i teleported into the theatre and the other player could see me but i couldnt see them" (and the other way round before). Another player's figure made while you were inside a room was hidden by the room's own tidy-up (it was put down at the map's corner first). Now other players are never hidden by a room. Rule: a room's tidy-up never hides other players.
 ## 24 Oct 2026: park ring trees smaller, the gates taller
 
 Owner: "make trees around outer ring of park 25-50% smaller, make the brick gate 25% taller". Each ring tree is now a random 25–50% smaller; the gate piers (with their lanterns) and the CENTRAL PARK arch over the south gate are 25% taller.
@@ -4526,6 +4528,13 @@ Owner: "we could also walk through each other. i want to add real physics back t
 
 ## 24 Oct 2026: shop doorways no longer trap you outside; the bank's front fixed; the sparring ring removed
 Owner: "bank is glitched, two signs, half circle on ground, no door, when you walk in you cant walk inside stuck behind front still ? - this happens in a lot of interiors"; then "double clicknig the door still taks you in not jut walking up. and why is there a sparring ring on the sidwalk in front of the bank!?" and, of the ring, "Remove it". Walking up to a shop's door no longer switches you to the inside view while you stand outside; double-clicking the door takes you in, as before. The bank has a painted door and one sign (to the street). The sparring ring and its skeleton partners are gone. Rule: only double-clicking a door takes you in.
+## 24 Oct 2026: the park's edge — dense low trees, ivy, a taller sign and its dragon; distance fog
+
+Owner: "the trees leaves are not all connected, make them denser, make sure ivy covers 20-30% of bricks and gate around the park. ivy should cover some of the central park sign. make it 25% taller. make a small dragon perched on the logo. breathes fire when you walk by. mix these new trees with the old trees, 50%. then bake them all in low rendering as possible. add a distance blur fog that restricts how far away you can see ... the blur would start at the pole behind me"; "you shouldnt be able to see sky through the trees over the gate, should be blocking it, dense and lower". His answers: bake to a data file; the dragon's fire is real fire; the fog in every view; the 50/50 mix everywhere in the park.
+- Trees: fuller crowns with no floating clumps; the edge ring's crowns start just above the wall (and its old trees sit lower) so no sky shows over the gate; half the park's trees the old pack's, half grown. Grown once at bake time (`node tools/trees-bake.cjs` → data/trees.json), not in the browser.
+- Ivy over about a quarter of the park wall's stone and the gate piers; the CENTRAL PARK sign 25% taller, ivy over one end of it and down a post.
+- A small dragon perches on the sign, watches you go by and breathes a fireball your way now and then; where it lands on grass or brush it can start a real fire, like the other dragons'.
+- Distance fog: past 20 tiles from you the world blurs into the haze, gone by 60, in every view; ATMOSPHERE → DISTANCE FOG sets it.
 ## 24 Oct 2026: players fight (step 3 of 3)
 
 Owner: "merge it and start step 3". Everyone sees a downed player's ragdoll; double-click a player who is down to pick them up and carry them, punch to throw them, double-click again to put them down. A knockdown by another player keeps you down at least 2.5 s (longer while carried).

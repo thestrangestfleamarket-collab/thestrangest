@@ -1,4 +1,4 @@
-// THE BODIES YOU CAN BE: the Walker, or a body moved by his rig (each of its 15 bones takes the turn of the rig piece it stands for); YOU's BODY row; one of each walks main street.
+// THE BODIES: the Walker you play as, and bodies moved by his rig (each of its 15 bones takes the turn of the rig piece it stands for); only a body.playable one is on YOU's BODY row (just the Walker now); one of each walks main street.
 import {SHARED, THREE} from './003-shx.js';
 import {CHARS, NPCS, pos, W3} from './003b-systems.js';
 import {PPU} from './004-main.js';
@@ -35,21 +35,23 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
       PM.value[i].copy(ROT[n]).scale(OFV.set(S,S,S)).setPosition(POS[n]); if(body.binv)PM.value[i].multiply(body.binv[i]); } }
   BODIES.pose=pose; BODIES.mesh=mesh;
 
-  /* ---------- you (YOU's BODY: WALKER or a body, kept in the browser; ?avatar=key) ---------- */
+  /* ---------- you (YOU's BODY: only a playable body, else the Walker; knight/man/woman stay in the game but off the row — set body.playable to put one back; kept in the browser; ?avatar=key) ---------- */
+  const playable=b=>!!(b&&b.playable);
   let pick='walker'; try{ pick=SAVE.get('body')||'walker'; }catch(e){} if(QS.get('avatar'))pick=QS.get('avatar');
+  const curKey=()=>playable(BODIES.by[pick])?pick:'walker';
   let ME=null, MEK=null, hid=false;
-  W3.body={place:B=>{ const body=BODIES.by[pick];
+  W3.body={place:B=>{ const key=curKey(), body=BODIES.by[key];
     if(!body){ if(ME)ME.me.visible=false; if(hid){ hid=false; for(const m of W3.meshes)m.visible=!W3.hideMe; } return; }
-    if(MEK!==pick){ if(ME){ W3.group.remove(ME.me); ME.me.material.dispose(); } ME=mesh(body); MEK=pick; W3.group.add(ME.me); }
+    if(MEK!==key){ if(ME){ W3.group.remove(ME.me); ME.me.material.dispose(); } ME=mesh(body); MEK=key; W3.group.add(ME.me); }
     hid=true; for(const m of W3.meshes)m.visible=false; ME.me.visible=!W3.hideMe; pose(B,ME.PM,body); }};
-  BODIES.pick=()=>pick;
-  BODIES.set=key=>{ pick=BODIES.by[key]?key:'walker'; try{ SAVE.set('body',pick); }catch(e){} drawRow(); };
+  BODIES.pick=()=>curKey();
+  BODIES.set=key=>{ pick=(key==='walker'||playable(BODIES.by[key]))?key:'walker'; try{ SAVE.set('body',pick); }catch(e){} drawRow(); };
   const LP=document.getElementById('looks'); let ROW=null;
   if(LP){ const at=LP.querySelector('h3'), h=document.createElement('h3'); h.textContent='BODY'; ROW=document.createElement('div'); ROW.className='row';
     LP.insertBefore(h,at); LP.insertBefore(ROW,at); addButton('walker','WALKER'); }
   function addButton(key,label){ if(!ROW)return; const b=document.createElement('button'); b.id='lbody-'+key; b.textContent=label; b.onclick=()=>BODIES.set(key); ROW.appendChild(b); drawRow(); }
   BODIES.credit=t=>{ if(!ROW)return; const c=document.createElement('div'); c.textContent=t; c.style.cssText='color:var(--dim,#8a8f9c);font-size:9px;margin-top:3px'; ROW.after(c); };
-  function drawRow(){ if(ROW)for(const b of ROW.children)b.setAttribute('aria-pressed',String(b.id==='lbody-'+pick)); }
+  function drawRow(){ if(ROW)for(const b of ROW.children)b.setAttribute('aria-pressed',String(b.id==='lbody-'+curKey())); }
 
   /* ---------- a body that walks main street (?<key>=0 keeps it off, ?sheet=<key> shows its sheet) ---------- */
   const seen=o=>{ for(let q=o;q;q=q.parent)if(!q.visible)return false; return true; };
@@ -81,6 +83,6 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
 
   /* ---------- a body: key, label, geo() (position, normal, color, bi, bw), height and hip height (its units), off {bone:[parent,x,y,z]}, binv (or null), at (main street spot) ---------- */
   BODIES.add=body=>{ body.S=WALKER_H/body.height; body.KL=body.hipY*body.S/R.STAND; BODIES.list.push(body); BODIES.by[body.key]=body;
-    body.tris=()=>(body.GEO||(body.GEO=body.geo())).attributes.position.count/3; addButton(body.key,body.label); walker(body); };
+    body.tris=()=>(body.GEO||(body.GEO=body.geo())).attributes.position.count/3; if(body.playable)addButton(body.key,body.label); walker(body); };
 }
 export {BODIES};

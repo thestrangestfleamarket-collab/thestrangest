@@ -109,7 +109,7 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
       return speck([c,c,c*.96],i/24,j/24,k+7); }));
     face([a,e,c],[b,e,c],[b,f,c],[a,f,c],W,H,(i,j)=>sideF(i,j,k,W,H)); face([b,e,d],[a,e,d],[a,f,d],[b,f,d],W,H,(i,j)=>sideF(i,j,k+1,W,H));
     face([a,e,d],[a,e,c],[a,f,c],[a,f,d],D,H,(i,j)=>sideF(i,j,k+2,D,H)); face([b,e,c],[b,e,d],[b,f,d],[b,f,c],D,H,(i,j)=>sideF(i,j,k+3,D,H)); };
-  const WH=96, PH=150, PG=.22, T=1.5, PW=2.4, [g0,g1]=P.gate, RUNS=[], PIERS=[], LEAVES=[];
+  const WH=96, GS=1.25, PH=Math.round(150*GS), PG=.22, T=1.5, PW=2.4, [g0,g1]=P.gate, RUNS=[], PIERS=[], LEAVES=[];
   const ashlar=(ch,l0,lv)=>(i,j,k,W,H)=>{ const co=Math.floor(j/ch), w=j-co*ch, u=i+Math.floor(hash(co,k,7)*l0); let s0=0, n=0, len=0; for(;;){ len=l0+Math.floor(lv*hash(n,co,k+3)); if(s0+len>u)break; s0+=len; n++; } const p=u-s0;
     let c=124+18*grain(i/24,j/24,k,1.2)+(hash(n,co,k+5)-.5)*40, wm=hash(n,co,k+9)-.5;
     const joint=w===ch-1||p===0; if(joint)c*=.5; else if(w===0)c*=1.16; else if(p===1)c*=1.07; else if(p===len-1||w===ch-2)c*=.86;
@@ -172,14 +172,14 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
       for(let u=.3;u<w-.2;u+=.6){ const [x,z]=at(u); GB.push([x,H*.73,z,ax==='x'?.27*M:.045*M,.27*M*VS,ax==='x'?.045*M:.27*M,IR[2]]); }
       const [a1,b1]=at(0), [a2,b2]=at(w); SOL.up.push([Math.min(a1,a2)-.09*M,Math.min(b1,b2)-.09*M,Math.max(a1,a2)+.09*M,Math.max(b1,b2)+.09*M]); FIX.up.push([Math.min(a1,a2)-.09*M,Math.min(b1,b2)-.09*M,0,Math.max(a1,a2)+.09*M,Math.max(b1,b2)+.09*M,H]); }
     put(GP,GB);
-    { const yc=P.y0+.42, xm=(g0+g1)/2, len=(g1-g0)*TILE, B=[], bar=(h,t)=>B.push([X(xm),Y(h),Z(yc),len,Y(t),.1*M,IR[0]]);
-      bar(124,4); bar(140,4); for(let u=g0+.25;u<g1-.1;u+=.25){ const n=Math.round(u*4); B.push([X(u),Y(132),Z(yc),.035*M,Y(12),.035*M,IR[n%3]]); if(Math.abs(u-xm)>1.5)B.push([X(u),Y(146+(n%2?3:0)),Z(yc),.03*M,Y(n%2?10:5),.03*M,IR[1]]); }
-      for(const u of [g0+.05,g1-.05])B.push([X(u),Y(134),Z(yc),.1*M,Y(26),.1*M,IR[1]]);
+    { const yc=P.y0+.42, xm=(g0+g1)/2, len=(g1-g0)*TILE, B=[], bar=(h,t)=>B.push([X(xm),Y(GS*h),Z(yc),len,Y(GS*t),.1*M,IR[0]]);
+      bar(124,4); bar(140,4); for(let u=g0+.25;u<g1-.1;u+=.25){ const n=Math.round(u*4); B.push([X(u),Y(GS*132),Z(yc),.035*M,Y(GS*12),.035*M,IR[n%3]]); if(Math.abs(u-xm)>1.5)B.push([X(u),Y(GS*(146+(n%2?3:0))),Z(yc),.03*M,Y(GS*(n%2?10:5)),.03*M,IR[1]]); }
+      for(const u of [g0+.05,g1-.05])B.push([X(u),Y(GS*134),Z(yc),.1*M,Y(GS*26),.1*M,IR[1]]);
       { const FONT={C:['.###','#...','#...','#...','.###'],E:['####','#...','###.','#...','####'],N:['#..#','##.#','#.##','#..#','#..#'],T:['###','.#.','.#.','.#.','.#.'],R:['###.','#..#','###.','#.#.','#..#'],A:['.##.','#..#','####','#..#','#..#'],L:['#...','#...','#...','#...','####'],P:['###.','#..#','###.','#...','#...'],K:['#..#','#.#.','##..','#.#.','#..#']};
-        const txt='CENTRAL PARK', cols=[...txt].reduce((a,ch)=>a+(ch===' '?2:FONT[ch][0].length+1),0), half=len*.44, step=half*2/cols, px=step*.95, pz=.07*M, hb=Y(147), ah=Y(13);
+        const txt='CENTRAL PARK', cols=[...txt].reduce((a,ch)=>a+(ch===' '?2:FONT[ch][0].length+1),0), half=len*.44, step=half*2/cols, px=step*.95, pz=.07*M, hb=Y(GS*147), ah=Y(GS*13);
         let u=-half; for(const ch of txt){ if(ch===' '){ u+=2*step; continue; } const G=FONT[ch], w=G[0].length, tc=(u+w*step/2)/half, base=hb+ah*(1-tc*tc);
           for(let r=0;r<5;r++)for(let c=0;c<w;c++)if(G[r][c]==='#')B.push([X(xm)-(u+(c+.5)*step),base+(4.5-r)*px,Z(yc),step*.96,px*1.04,pz,IR[0]]); u+=(w+1)*step; }
-        for(let i=0;i<24;i++){ const tm=-1+(i+.5)/12, w=half*1.06/12; B.push([X(xm)+tm*half*1.06,hb-Y(4)+ah*(1-tm*tm),Z(yc),w+.005,px*1.3,pz*1.2,IR[1]]); }
+        for(let i=0;i<24;i++){ const tm=-1+(i+.5)/12, w=half*1.06/12; B.push([X(xm)+tm*half*1.06,hb-Y(GS*4)+ah*(1-tm*tm),Z(yc),w+.005,px*1.3,pz*1.2,IR[1]]); }
         PARK.sign={x:X(xm),y:hb+ah*.5,z:Z(yc)}; }
       put([],B); }
     const LB=[], LG=[], LC_=[], HL=[];
@@ -246,7 +246,7 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
       const gap=(v,g,pad)=>g&&v>g[0]-pad&&v<g[1]+pad, PAD=4.5;
       const edgeOK=(x,y)=>!(FOUNT.lake(x,y)<2.4||FOUNT.ter(x,y)<2.2||BK.wet(x,y,2)||path(x,y)||(x>CB[0]-3.5&&x<CB[1]+3.5&&y>CB[2]-3.5&&y<CB[3]+3.5));
       const ringAdd=(x,y,s)=>{ const jx=x+(hash(s,5,23)-.5)*2.2, jy=y+(hash(s,6,29)-.5)*2.2; if(!edgeOK(jx,jy))return;
-        const k=TK[Math.floor(hash(s,1,11)*TK.length)%TK.length], m=(20+hash(s,2,13)*6)*(1+(hash(s,3,17)-.5)*.5); add(k,jx,jy,m,hash(s,4,19)*6.28); };
+        const k=TK[Math.floor(hash(s,1,11)*TK.length)%TK.length], m=(20+hash(s,2,13)*6)*(1+(hash(s,3,17)-.5)*.5)*(.5+.25*hash(s,7,31)); add(k,jx,jy,m,hash(s,4,19)*6.28); };
       const STEP=6.4; let s=5000;
       for(let i=0;i<2;i++){ const off=2.6+i*4.6, st=i*STEP/2;
         for(let x=P.x0+off+1+st;x<=P.x1-off-1;x+=STEP){ if(!gap(x,P.gate,PAD))ringAdd(x,P.y0+off,s++); if(!gap(x,PARK.ngate,PAD))ringAdd(x,P.y1-off,s++); }

@@ -14,7 +14,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     ok(s0.rooms >= 40, 'the old rooms are registered (' + s0.rooms + ')');
     ok(s0.built === 0 && !s0.data, 'none is built and its items are not fetched at the start');
     ok(s0.listed === s0.rooms, 'every one is in the GO TO list (' + s0.listed + ')');
-    for (const name of ['DINER', 'THE OFFICE']) {
+    for (const name of ['DINER', 'THE OFFICE', 'THE GREENHOUSE', 'THE COZY DEN', 'THE HARBOR KITCHEN']) {
       await pg.evaluate(n => __dbg.UI.goPlace(n), name);
       const id = await pg.evaluate(n => SHARED.OLDROOMS.by[n], name);
       ok(await U(k => OLDDBG().built.includes(k) && !(window.FADE && FADE.busy), 120000, id), name + ' is built on the jump');

@@ -18,6 +18,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
       await pg.evaluate(n => __dbg.UI.goPlace(n), name);
       const id = await pg.evaluate(n => SHARED.OLDROOMS.by[n], name);
       ok(await U(k => OLDDBG().built.includes(k) && !(window.FADE && FADE.busy), 120000, id), name + ' is built on the jump');
+      await U(k => OLDDBG().inside === k && ROOMS.dark(), 20000, id);   // the room's state applies a frame or two after the build
       const r = await pg.evaluate(k => { const p = __dbg.pos(); return { ...OLDDBG().of(k), inside: OLDDBG().inside, dark: ROOMS.dark(), inBox: ROOMS.boxAt(p[0], p[2]) === k }; }, id);
       ok(r.inside === id && r.inBox, name + ': you stand inside it');
       ok(r.placed + r.missing === r.items && r.items > 0, name + ': every item accounted for (' + r.placed + ' made, ' + r.missing + ' standing in)');

@@ -49,6 +49,8 @@ jobs:
         run: node tests/online.cjs dist/market.html
       - name: Fights between players (hitboxes, blows, knockdown)
         run: node tests/brawl.cjs dist/market.html
+      - name: The old game's rooms (built on the jump, their items made)
+        run: node tests/oldrooms.cjs dist/market.html
       - name: Check the site opens (door, then THE MARKET)
         run: node tests/site.cjs
       - name: Every place's code comes when you go there

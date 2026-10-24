@@ -4575,3 +4575,5 @@ Owner: "build each room off map, but add to list of places you can jump to"; "th
 
 ## 24 Oct 2026: RPG townsfolk on the street
 From the same "both", his RPG Characters pack: six classes — the warrior, cleric, monk, ranger, rogue and wizard — walk the market street, each rigged and animated with the pack's own walk and idle. Flat-coloured from the pack's texture, no weapons (passers-by, not fighters), as the other townsfolk are. Life on the street, not a new mechanic.
+## 24 Oct 2026: CI caches Chromium
+Owner: "cache chromium in the workflow" (after "fixed billing"; Actions had refused every job since 08:59 that day). `site.yml` keeps Playwright's browser between runs (keyed on the playwright version), installing only the system packages on a hit.

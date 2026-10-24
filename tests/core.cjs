@@ -69,6 +69,11 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
         const street = K.on === true && K.st.home.id === 'knight' && K.name === 'THE ARMOURER', bound = SHOPDBG().bound.includes('knight');
         B.place('knight', K.st.x + 1, K.st.z + 1, 0, G); const borrowed = K.g.parent === G && K.st.home.r === 0; B.restore('knight'); const back = K.g.parent === g0 && K.on === true && K.st.home.id === 'knight' && K.st.home.r > 0 && !K.prev;
         return { ok: true, street, bound, borrowed, back }; })();
+      o.bodies = (() => { const B = window.BODIES; if (!B || !B.by || typeof B.set !== 'function') return { ok: false };
+        const inGame = ['knight', 'man', 'woman'].every(k => B.by[k]), none = ['knight', 'man', 'woman'].every(k => !B.by[k].playable);
+        const btns = [...document.querySelectorAll('[id^=lbody-]')].map(b => b.id.slice(6)), onlyWalker = btns.length === 1 && btns[0] === 'walker';
+        const saved = B.pick(); B.set('knight'); const stays = B.pick() === 'walker'; B.set(saved || 'walker');
+        return { ok: true, inGame, none, onlyWalker, stays, btns: btns.join(',') }; })();
       return o;
     });
     for (const p of ['dress', 'ring', 'sky', 'life', 'vitals', 'rooms', 'shadow', 'weedsAdd', 'roomsReset']) ok(r.phases.includes(p), 'SYS step "' + p + '" has systems');
@@ -101,6 +106,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
     ok(r.online, 'ONLINE is wired (other players: feed, at/V for the ragdoll, chat key, a SYS life entry; alone off the website)');
     ok(r.rack.ok && r.rack.pinned && r.rack.near && r.rack.free && r.rack.thing && r.rack.drawn && r.rack.rackBy, 'the bear merchant is pinned on free ground beside the nature merchant, his coat rack beside him and usable: ' + JSON.stringify(r.rack));
     ok(r.knight.ok && r.knight.street && r.knight.bound && r.knight.borrowed && r.knight.back, 'the plate knight walks the street as THE ARMOURER, is a shop, and comes back after the holodeck borrows him: ' + JSON.stringify(r.knight));
+    ok(r.bodies.ok && r.bodies.inGame && r.bodies.none && r.bodies.onlyWalker && r.bodies.stays, 'YOU can only be the Walker: knight/man/woman stay in the game but are off the BODY row, and picking one keeps you the Walker: ' + JSON.stringify(r.bodies));
     ok(r.equip.ok && r.equip.slots && r.equip.d0 && r.equip.guard && r.equip.float && r.equip.off, 'EQUIP wears body gear and resolves its grant (guard softens blows, float lifts), one off at a time: ' + JSON.stringify(r.equip));
   }
   ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.slice(0, 3).join(' | ') : ''));

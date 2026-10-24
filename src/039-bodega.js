@@ -420,6 +420,7 @@ const MLK=(()=>{ const {rect,sub,fb,worn,metal}=STUDIO.kit, FP=24, H=2, lit=c=>O
       fb(r,.3,.7,.8,.98,64,72,C.black,null,null,{foot:1}),fb(r,0,.1,.3,.7,22,34,C.black,null,null,{foot:1}),fb(r,.9,1,.3,.7,22,34,C.black,null,null,{foot:1})]); }
   function floorBottle(x,y){ SHARED.PNAME='bottle'; const r=rect(x,y,[0,1],.16,.16), c=C.bottle; return prop([fb(r,.2,.8,.2,.8,0,10,c,(s,t,z)=>z>3&&z<6?[70,120,210]:t<.3?sh(c,1.1):sh(c,.9)),fb(r,.38,.62,.38,.62,10,14,c,null,null,{foot:1})]); }
   return {art,onF,lit,C,fridge,bar,barEnd,stool,pcDesk,officeChair,longDesk,gamingChair,floorBottle,rect,sub,fb,worn,metal}; })();
+STOREK.lounge={MLK};
 {
 const THFONT={A:'.###.#...##...#######...##...##...#',B:'####.#...##...#####.#...##...#####.',C:'.#####....#....#....#....#.....####',E:'######....#....####.#....#....#####',
   G:'.#####....#....#..###...##...#.###.',H:'#...##...##...#######...##...##...#',I:'#####..#....#....#....#....#..#####',K:'#...##..#.#.#..##...#.#..#..#.#...#',

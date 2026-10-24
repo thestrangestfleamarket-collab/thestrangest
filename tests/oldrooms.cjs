@@ -9,13 +9,13 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   let st = false; for (let i = 0; i < 60 && !st; i++) { await pg.waitForTimeout(3000); st = await pg.evaluate(() => !!window.__started).catch(() => false); }
   ok(st, 'the page starts');
   const U = async (f, ms = 90000, arg) => { for (const t = Date.now(); Date.now() - t < ms; await pg.waitForTimeout(250)) if (await pg.evaluate(f, arg).catch(() => false)) return true; return false; };
-  const NOT_YET = ['park lamppost', 'smoke', 'light switch', 'ceiling light', 'downfeed'];   // fittings the old engine made (the landscape kinds are this game's baked models now)
+  const NOT_YET = ['park lamppost', 'smoke', 'light switch', 'ceiling light', 'downfeed', 'roof tank', 'roof tank fill', 'tank overflow', 'zipline'];   // fittings the old engine made (the landscape kinds are this game's baked models now)
   if (st) {
     const s0 = await pg.evaluate(() => { const d = OLDDBG(); return { rooms: d.rooms, built: d.built.length, data: d.data, listed: __dbg.UI.places().filter(p => SHARED.OLDROOMS.by[p[0]]).length }; });
     ok(s0.rooms >= 40, 'the old rooms are registered (' + s0.rooms + ')');
     ok(s0.built === 0 && !s0.data, 'none is built and its items are not fetched at the start');
     ok(s0.listed === s0.rooms, 'every one is in the GO TO list (' + s0.listed + ')');
-    for (const name of ['DINER', 'THE GREENHOUSE', "WITCH'S BEDROOM", 'CRYSTAL CAVERN', 'THE DOJO', 'THE FOREST (VR)', 'RESTROOM', 'LUCKY 7', 'UNDER THE SQUARE - LAUNDRY ROOM']) {   // one room per kit family
+    for (const name of ['DINER', 'THE GREENHOUSE', "WITCH'S BEDROOM", 'CRYSTAL CAVERN', 'THE DOJO', 'THE FOREST (VR)', 'RESTROOM', 'LUCKY 7', 'UNDER THE SQUARE - LAUNDRY ROOM', 'CASTLE - THE CELLS', 'THE SQUARE - LOBBY', 'MOVIE THEATRE', 'OCTOPUS TANK']) {   // one room per kit family
       await pg.evaluate(n => __dbg.UI.goPlace(n), name);
       const id = await pg.evaluate(n => SHARED.OLDROOMS.by[n], name);
       ok(await U(k => OLDDBG().built.includes(k) && !(window.FADE && FADE.busy), 120000, id), name + ' is built on the jump');

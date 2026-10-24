@@ -4573,3 +4573,4 @@ Owner: "build each room off map, but add to list of places you can jump to"; "th
 
 ## 24 Oct 2026: CI caches Chromium
 Owner: "cache chromium in the workflow" (after "fixed billing"; Actions had refused every job since 08:59 that day). `site.yml` keeps Playwright's browser between runs (keyed on the playwright version), installing only the system packages on a hit.
+- Owner, 24 Oct 2026: "why are all the rooms empty" (a room showed only floor, walls and ceiling): the items were placed but never painted — `put()`/`place()` only position a prop, the painting is its own pass; the old rooms now paint each item after placing it, name it in play, and light the room with up to three lamps. The check measures painted geometry, not a count.

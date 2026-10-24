@@ -3,8 +3,9 @@ import {SHARED, THREE} from './003-shx.js';
 import {pos, ROOMS, UI} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {FIX, SOL, STORE, TILE} from './006-map-pre.js';
+import {BATCH, OBJ} from './008-batch.js';
 import {CAT_INFO, CATALOG, prop, PROPL} from './014-gamekit.js';
-{ const {X,Y,Z,faceTex,bq,C,place}=SHARED.BOD, sh=SHARED.BOD.K.sh, hs=SHARED.BOD.g.hash, INDEX=__DATA__("data/oldrooms-index.json"), ITEMS=__LAZY__("data/oldrooms.json");
+{ const {X,Y,Z,faceTex,bq,C,place,gbox}=SHARED.BOD, sh=SHARED.BOD.K.sh, hs=SHARED.BOD.g.hash, INDEX=__DATA__("data/oldrooms-index.json"), ITEMS=__LAZY__("data/oldrooms.json");
   const WH=130, DW=.8, DH=95, OUT0=[-2.2,3.2,0,0]; let DATA=null;
   const MKA=(k,map,emap)=>k==='B'?new THREE.MeshBasicMaterial({map,side:THREE.DoubleSide,alphaTest:.5}):new THREE.MeshLambertMaterial({map,alphaTest:.5,side:THREE.DoubleSide,...(emap?{emissiveMap:emap,emissive:0xffffff,emissiveIntensity:1.3}:{})});
   const box4=(x0,y0,x1,y1)=>{ const a=X(x0), b=X(x1), c=Z(y0), d=Z(y1); return [Math.min(a,b),Math.min(c,d),Math.max(a,b),Math.max(c,d)]; };
@@ -21,16 +22,17 @@ import {CAT_INFO, CATALOG, prop, PROPL} from './014-gamekit.js';
       WALL(PX(B.y1,o),B.x0,cx-DW,(u,z)=>wall(u,z,.95)); WALL(PX(B.y1,o),cx+DW,B.x1,(u,z)=>wall(u,z,.95)); WALL(PX(B.y1,o),cx-DW,cx+DW,(u,z)=>wall(u,z,.95),WH,DH); }
     STORE.CEIL(X(B.x0),Z(B.y0),X(B.x1),Z(B.y1),Y(WH)-.02);
     sol(B.x0-.1,B.y0,B.x0+.1,B.y1,WH); sol(B.x1-.1,B.y0,B.x1+.1,B.y1,WH); sol(B.x0,B.y0-.1,B.x1,B.y0+.1,WH); sol(B.x0,B.y1-.1,cx-DW,B.y1+.1,WH); sol(cx+DW,B.y1-.1,B.x1,B.y1+.1,WH);
-    const n0=PROPL.length;
-    for(const [kind,x,y] of items){ const f=CATALOG[kind]; if(f){ const p=f(+x.toFixed(3),+y.toFixed(3)); if(p){ p.kind=kind; place(p,0); } continue; }
-      const nm=((CAT_INFO[kind]&&CAT_INFO[kind].name)||kind).toUpperCase(); SHARED.PNAME=nm; const p=prop([{x0:x-.3,y0:y-.3,x1:x+.3,y1:y+.3,z0:0,z1:30,c:[120,96,150]}],null,{kind}); place(p,0); S.missing++;
+    const n0=PROPL.length, paint=(p,nm)=>{ BATCH.tag=OBJ('old:'+R.id,nm); for(const b of p.boxes)gbox(b,'A'); BATCH.tag=null; };
+    for(const [kind,x,y] of items){ const f=CATALOG[kind]; if(f){ const p=f(+x.toFixed(3),+y.toFixed(3)); if(p){ p.kind=kind; place(p,0); paint(p,p.name||kind); } continue; }
+      const nm=((CAT_INFO[kind]&&CAT_INFO[kind].name)||kind).toUpperCase(); SHARED.PNAME=nm; const p=prop([{x0:x-.3,y0:y-.3,x1:x+.3,y1:y+.3,z0:0,z1:30,c:[120,96,150]}],null,{kind}); place(p,0); paint(p,nm); S.missing++;
       const hb=new THREE.Mesh(new THREE.BoxGeometry(.6*TILE,Y(30),.6*TILE),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(X(x),Y(15),Z(y)); scene.add(hb); UI.thing({name:nm+' (NOT MADE YET)',ghost:1,obj:hb,reach:1.4*TILE,near:2.4*TILE,tall:Y(30)}); }
     for(const p of PROPL.slice(n0)){ if(p.high||p.walk||!p.boxes)continue; if(p.solids){ for(const s of p.solids)sol(s.x0,s.y0,s.x1,s.y1,60); continue; }
       const bs=p.boxes.filter(b=>!b.nb&&b.z0<30&&b.z1-b.z0>3); if(!bs.length)continue;
       if(/wall|parapet/.test(p.kind||p.name||'')){ for(const b of bs)sol(b.x0,b.y0,b.x1,b.y1,b.z1); continue; }
       sol(Math.min(...bs.map(b=>b.x0)),Math.min(...bs.map(b=>b.y0)),Math.max(...bs.map(b=>b.x1)),Math.max(...bs.map(b=>b.y1)),Math.max(...bs.map(b=>b.z1))); }
     S.placed=items.length-S.missing;
-    const Lt=new THREE.PointLight(0xffe9c8,9,Math.max(B.x1-B.x0,B.y1-B.y0)*TILE,1.6); Lt.position.set(X(cx),Y(118),Z((B.y0+B.y1)/2)); scene.add(Lt); };
+    const W=B.x1-B.x0, H=B.y1-B.y0, n=Math.max(1,Math.min(3,Math.round(Math.max(W,H)/8)));
+    for(let i=0;i<n;i++){ const t=(i+.5)/n, lx=W>=H?B.x0+t*W:cx, ly=W>=H?(B.y0+B.y1)/2:B.y0+t*H, Lt=new THREE.PointLight(0xffe9c8,8,12*TILE,1.6); Lt.position.set(X(lx),Y(118),Z(ly)); scene.add(Lt); } };
   const OLD={ids:[],by:{}};
   for(const R of INDEX){ const id='old-'+R.id, cx=(R.x0+R.x1)/2, wb=box4(R.x0-.2,R.y0-.2,R.x1+.2,R.y1+.2), S={sol:[],fix:[],missing:0,placed:0}; let G=null;
     const name=taken.has(R.name)?R.name+' · OLD':R.name; taken.add(name);
@@ -41,4 +43,4 @@ import {CAT_INFO, CATALOG, prop, PROPL} from './014-gamekit.js';
       spawn:[X(cx),Z(R.y1-1.3),0,Math.PI],out:OUT0,exit:[X(cx),0,Z(R.y1-.25)],exitName:'OUTSIDE',old:R,S};
     STORE.places.push([name,o.spawn[0],o.spawn[1],'up',null,Math.PI]); OLD.ids.push(id); OLD.by[name]=id; }
   SHARED.OLDROOMS=OLD;
-  window.OLDDBG=()=>({rooms:OLD.ids.length,built:OLD.ids.filter(k=>ROOMS.off[k].P),inside:ROOMS.offIn(),data:!!DATA,of:k=>{ const o=ROOMS.off[k]; return o&&{name:o.name,items:o.old.n,placed:o.S.placed,missing:o.S.missing,things:o.P?o.P.things.length:0}; }}); }
+  window.OLDDBG=()=>({rooms:OLD.ids.length,built:OLD.ids.filter(k=>ROOMS.off[k].P),inside:ROOMS.offIn(),data:!!DATA,of:k=>{ const o=ROOMS.off[k]; return o&&{name:o.name,items:o.old.n,placed:o.S.placed,missing:o.S.missing,things:o.P?o.P.things.length:0,verts:o.P?o.P.objs.reduce((n,q)=>{ q.traverse(c=>{ if(c.isMesh&&c.geometry.attributes.position)n+=c.geometry.attributes.position.count; }); return n; },0):0}; }}); }

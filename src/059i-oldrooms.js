@@ -23,7 +23,7 @@ import {bedroomKit} from './027l-bedroom.js';
   const box4=(x0,y0,x1,y1)=>{ const a=X(x0), b=X(x1), c=Z(y0), d=Z(y1); return [Math.min(a,b),Math.min(c,d),Math.max(a,b),Math.max(c,d)]; };
   const taken=new Set(STORE.places.map(p=>p[0]).concat(['THE STREET','THE BODEGA','THE PLATFORM','CENTRAL PARK','THE BATH HOUSE','THE CASTLE','DUNGEON L1','THE SHOP','THE BACK ROOM','THE BATHS','THE SUBWAY STAIRS']));
   const inside=(R,S)=>{ '@oldrooms';
-    const B=R, cx=(B.x0+B.x1)/2, items=DATA&&DATA[R.id]||[], own=!!R.own;   // a page room brings its own floor and walls (baked into the index)
+    const B=R, cx=(B.x0+B.x1)/2, items=DATA&&DATA[R.id]||[], own=!!R.own&&items.some(([k])=>/ floor$/.test(k)&&CATALOG[k]);   // a room brings its own floor and walls only when its floor can be made here (the cavern's was the old engine's)
     const sol=(x0,y0,x1,y1,zt)=>{ const r=box4(x0,y0,x1,y1), f=[r[0],r[1],0,r[2],r[3],Math.max(.05,Y(zt))]; SOL.up.push(r); FIX.up.push(f); S.sol.push(r); S.fix.push(f); };
     const wall=(u,z,f)=>z<6?sh([70,62,58],f):sh([176,168,152],f*(1-.04*hs(Math.floor(u*4),Math.floor(z/8),9)));
     const floor=(x,y)=>{ const r=Math.floor(y*3), b=Math.floor(x/1.5+hs(r,0,13)*3); return sh([128,98,66],(y*3-r)<.06||(x/1.5-Math.floor(x/1.5))<.03?.78:.9+.12*hs(b,r,7)); };

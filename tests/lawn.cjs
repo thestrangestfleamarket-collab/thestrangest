@@ -16,7 +16,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
       o.painted = !!(map && map.image && map.image.width === 1024 && map.repeat.x > 0); o.col = Array.isArray(lc) && lc.length === 3;
       const M = [...WEEDS.chunks.values()].filter(m => m && m.I); o.chunks = M.length; o.tris = WEEDS.lawnN;
       let spot = null; for (let x = c.x - 16; x < c.x + 16 && !spot; x += .6) for (let z = c.z - 16; z < c.z + 16; z += .6) { const t = WEEDS.top(x, z); if (typeof t === 'number') { spot = [x, z, t]; break; } }
-      o.spot = spot; if (spot) o.topUp = spot[2] > 0 && spot[2] < 1.2;
+      o.spot = spot; if (spot) o.topUp = spot[2] > 0 && spot[2] < 1.8;
       const sh = WEEDS.shader; o.shader = !!sh && [sh.vertexShader.includes('uSwAt'), sh.vertexShader.includes('uTr'), sh.uniforms.uSwAt && sh.uniforms.uSw && sh.uniforms.uTr ? true : false];
       o.swayT = sh && sh.uniforms.uSw.value; return o;
     });

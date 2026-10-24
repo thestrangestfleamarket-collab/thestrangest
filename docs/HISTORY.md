@@ -4526,3 +4526,6 @@ Owner: "we could also walk through each other. i want to add real physics back t
 
 ## 24 Oct 2026: shop doorways no longer trap you outside; the bank's front fixed; the sparring ring removed
 Owner: "bank is glitched, two signs, half circle on ground, no door, when you walk in you cant walk inside stuck behind front still ? - this happens in a lot of interiors"; then "double clicknig the door still taks you in not jut walking up. and why is there a sparring ring on the sidwalk in front of the bank!?" and, of the ring, "Remove it". Walking up to a shop's door no longer switches you to the inside view while you stand outside; double-clicking the door takes you in, as before. The bank has a painted door and one sign (to the street). The sparring ring and its skeleton partners are gone. Rule: only double-clicking a door takes you in.
+## 24 Oct 2026: players fight (step 3 of 3)
+
+Owner: "merge it and start step 3". Everyone sees a downed player's ragdoll; double-click a player who is down to pick them up and carry them, punch to throw them, double-click again to put them down. A knockdown by another player keeps you down at least 2.5 s (longer while carried).

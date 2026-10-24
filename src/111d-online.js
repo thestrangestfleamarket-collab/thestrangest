@@ -6,7 +6,7 @@ import {ASTEP, MODS, QS, SYS, TILE} from './006-map-pre.js';
 import {TL} from './073-main-12.js';
 import {figureMesh, musBody, MUSGEO, musScale} from './110-musician.js';
 import {BODIES} from './111a-bodies.js';
-Object.assign(ONLINE,{others:new Map(),on:false,me:'',log:[]}); window.ONLINE=ONLINE;
+Object.assign(ONLINE,{others:new Map(),on:false,me:'',log:[],hear:{}}); window.ONLINE=ONLINE;
 { const R=RIG, PI4=Math.PI/4, LAG=160, SEND=1/6, FAR=60*TILE, MAXN=20, FADE_S=15000;
   const ROOM='s-'+String((SHARED.SECTION&&SHARED.SECTION.id)||'a').toLowerCase().replace(/[^a-z0-9-]/g,'');
   const V8=Array.from({length:8},(_,d)=>[Math.sin(d*PI4),-Math.cos(d*PI4)]);
@@ -15,7 +15,10 @@ Object.assign(ONLINE,{others:new Map(),on:false,me:'',log:[]}); window.ONLINE=ON
   const roomKey=()=>{ const c=ROOMS.cur; return c&&c.off?c.off+(c.off==='apt'&&MODS.apts&&MODS.apts.num?'#'+MODS.apts.num:''):''; };
   const lookKey=()=>{ const b=BODIES.pick(), L=LOOKS.L||{}; return b!=='walker'&&BODIES.by[b]?'b:'+b:'w'+(L.robe?1:0)+(L.bare?1:0); };
   const myName=()=>((LOOKS.L&&LOOKS.L.name)||'').trim()||('TENANT'+(MODS.apts&&MODS.apts.num?' '+MODS.apts.num:''));
-  const send=m=>{ if(sock&&sock.readyState===1)sock.send(JSON.stringify(m)); };
+  const send=m=>{ if(sock&&sock.readyState===1)sock.send(JSON.stringify(m)); }; ONLINE.send=m=>send(m);
+  /* ---------- other players are solid: you are pushed out of them as out of a character ---------- */
+  ONLINE.push=p=>{ for(const o of ONLINE.others.values()){ if(o.why!=='near you'||!o.p)continue; const dx=p.x-o.p.x, dz=p.z-o.p.z, d=Math.hypot(dx,dz), R=.55; if(d<R&&d>1e-4){ p.x=o.p.x+dx/d*R; p.z=o.p.z+dz/d*R; } } };
+  SYS.add('act',(k,on)=>ONLINE.send(typeof k==='string'&&k.length>1?{t:'act',m:k}:{t:'act',k,on:on?1:0}),'111d-online');
 
   /* ---------- where someone is: their last moves, drawn a little behind so the steps between them are smooth ---------- */
   const place=(o,now)=>{ const s=o.s, n=s.length-1; if(n<0)return null; const t=now-LAG; if(t<=s[0].t)return s[0]; if(t>=s[n].t)return s[n];
@@ -34,6 +37,8 @@ Object.assign(ONLINE,{others:new Map(),on:false,me:'',log:[]}); window.ONLINE=ON
     else if(m.t==='in'&&m.p&&m.p.id)up(m.p.id,m.p);
     else if(m.t==='out')drop(m.id);
     else if(m.t==='tell'&&m.text){ line(m.from||'THE MARKET',m.text); banner(m.from||'THE MARKET',m.text); }
+    else if(m.t==='act'&&m.id){ const o=ONLINE.others.get(m.id); if(o){ try{ if(m.m)R.begin(o.S,m.m); else if(m.on)R.act(o.S,m.k); else R.release(o.S,m.k); }catch(e){} o.B=null; } return; }
+    else if(ONLINE.hear[m.t]){ ONLINE.hear[m.t](m); return; }
     else if(m.t==='say'&&m.text){ const o=m.id&&ONLINE.others.get(m.id); if(o){ o.say=String(m.text); o.sayT=performance.now(); } line(m.name||(o&&o.name)||'TENANT',m.text); }
     list(); };
 

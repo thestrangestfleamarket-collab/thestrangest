@@ -4568,6 +4568,21 @@ Owner sent a snapshot of every item the old game placed, for the rebuild. Kept i
 ## 24 Oct 2026: the Walker is a body with clothes on top
 Owner: "his base needs to be just his body and underwear, shoes, pants shirt and hair should all be layers that go on top"; "Layers now, wardrobe later". The Walker's base is his body in underwear; shirt, pants, shoes and hair are layers worn over it (all on by default, so he looks the same). A wardrobe to change them comes later, through EQUIP and the paperdoll.
 
+## 24 Oct 2026: fight fixes (release 1 of 5)
+Owner: "look at the overall game mechanices for fighting, pvm, pvp, look for errors or things not funished", then "Yes, fix all of them", "Mash to break free", "Faint first, die if hit again". At no health you faint (out cold about 15 s, the medic comes, up again with some health); a real blow while you are out cold kills you; drowning still kills. Held down or carried, mash any key to break free; a blow while you are down doesn't keep you down longer. Ghosts can't fight, trip or be grabbed and others walk through them. Blocking softens a player's shove and stops their knockdown. Fire and other blows with no direction can't be blocked or parried.
+Rule: only the one holding you can throw you; the server passes a blow, grab or throw only between players close together on the same level and in the same room.
+
+## 24 Oct 2026: martial arts and stamina (release 2 of 5)
+Owner chose "Martial arts + stamina". MARTIAL ARTS is a skill (in the skills list, starts at 10): bare-hand blows that land and kills train it, and it makes your punches and kicks stronger. A punch costs a little stamina, a kick more; with almost none left your blows land weak. At no stamina you can't run until a third is back.
+
+## 24 Oct 2026: bare-hand block and more moves (release 3 of 5)
+Owner chose "Bare-hand block + more moves on keys". P blocks with bare hands too (the arms come up; it softens a blow, more with MARTIAL ARTS; only a sword parries). New keys: N slap, I crouch (hold; then J an uppercut, K a sweep), 2 leg sweep, 3 back flip, 4 front flip; all rebindable, and others see them. The stale T "ghost's guitar" line is gone from the controls.
+
+## 24 Oct 2026: hit feedback and others' health (release 4 of 5)
+Owner chose "Hit feedback + health of others". When your blow lands on a player they flash and you hear it. A creature's blow jolts you back a step and you flinch. A hurt player shows a health bar under their name; a dead player is a pale see-through ghost named "(GHOST)". Stamina comes back only after a short rest from running, punching or swinging.
+
+## 24 Oct 2026: your sword seen by others (release 5 of 5)
+Owner chose "Your sword seen by others". What you hold (a sword or a net) shows in your hand for everyone, aimed where you aim it, and your swings sweep on their screens too.
 ## 24 Oct 2026: real fish in the Hudson
 Owner shared his Cute Fish Pack (and his character packs); asked for fish in the river and new street people, "both". The river's shoal is now real fish from the pack — clownfish, blue tang, koi, puffer, lionfish, mandarinfish, moorish idol, butterflyfish — swimming in every water (reef fish in the temperate Hudson, strange on purpose), with a shark cruising the harbour. Decoration only; the fishing catch list is unchanged. Flat-coloured, no outlines, as the goldfish was. New street people (his RPG Characters pack) to follow.
 ## 24 Oct 2026: the old game's rooms, off the map, in the GO TO list

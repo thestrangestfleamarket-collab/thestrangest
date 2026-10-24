@@ -649,6 +649,7 @@ function act(st,key){ const W=st.water;
   if(key==' '&&W&&W.edge&&!st.move&&W.level!=null){ begin(st,'cannonball',cannonMove(W.floor+STAND+9-(W.level+12))); return; }
   const name=KEYMOVE[key]; if(!name) return; const mv=st.move;
   if(ARMMOVES.has(name)&&!(st.climb||st.hang||st.ride)){ if(mv){ const d=mv.def,a=d.air; if(a&&d.airv&&d.airv[key]&&!mv.variant&&mv.t>a.t0&&mv.t<a.t0+a.T*0.75){ mv.variant={name:d.airv[key],t:mv.t}; return; } }
+    if(mv&&!st.up&&mv.def.combo&&ARMMOVES.has(mv.def.combo[key])&&(!mv.def.window||mv.t>=mv.def.window[0]*RIGT.combo)){ beginUp(st,mv.def.combo[key]); return; }   // a body move's arm follow-up (crouch, then J: an uppercut)
     const u=st.up; if(!u||name=='block'){ beginUp(st,name); return; } const ud=u.def; if(ud.combo&&ARMMOVES.has(ud.combo[key])){ if(u.t>=ud.window[0]*RIGT.combo) beginUp(st,ud.combo[key]); else st.upNext=ud.combo[key]; } else st.upNext=name; return; }
   if(MOVES[name]&&MOVES[name].again&&(st.climb||st.hang||st.ride)) return;
   if(!mv){ begin(st,pick(st,name)); return; }
@@ -656,7 +657,7 @@ function act(st,key){ const W=st.water;
   // the one rule for body moves: a move runs to its end, and a key does nothing meanwhile except what the move itself allows (its in-air variant, its combo follow-up) or a fall
   if(a&&d.airv&&d.airv[key]&&!mv.variant&&airborne&&mv.t<a.t0+a.T*0.75){ mv.variant={name:d.airv[key],t:mv.t}; return; }
   if(name=='fall'){ begin(st,'fall'); return; }
-  if(d.combo&&d.combo[key]&&free(mv)&&!airborne) begin(st,d.combo[key]); }
+  if(d.combo&&d.combo[key]&&free(mv)&&!airborne&&(!d.window||mv.t>=d.window[0]*RIGT.combo)) begin(st,d.combo[key]); }
 function release(st,key){ if(key=='carry'){ if(st.up&&st.up.name=='carry') st.up.held=false; return; } if(st.move&&KEYMOVE[key]==st.move.name) st.move.held=false; if(st.up&&KEYMOVE[key]==st.up.name) st.up.held=false; }
 function tick(st,h){ st.run+=(st.runTarget-st.run)*Math.min(1,h*RIGT.blend); const g=gaitOf(st.run);
   if(st.up){ const u=st.up,d=u.def; if(!(d.hold&&u.held&&u.t+h>=d.hold)) u.t+=h*RIGT.moves*(st.anim||1); else u.t=d.hold; if(st.upNext&&d.window&&u.t>=d.window[0]*RIGT.combo) beginUp(st,st.upNext); else if(u.t>=d.dur){ st.up=null; if(st.upNext) beginUp(st,st.upNext); } }

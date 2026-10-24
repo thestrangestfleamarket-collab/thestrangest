@@ -4552,3 +4552,6 @@ Owner: "merge it and start step 3". Everyone sees a downed player's ragdoll; dou
 
 ## 24 Oct 2026: the Walker's lines smoothed
 Owner: "smooth out the lines, things like his eyes are tons of little bumps instead of just a circle", "the Walker just smoother lines", "ship it". The Walker is kept as-is; a smoothing pass in his mesher (072-walker3d) relaxes each piece's marched outline so edges read clean (jaw, hair, nose, eyes), his shape, proportions, pieces and triangle count unchanged. `?smooth=N` tunes it (0 = the raw marched mesh). An earlier attempt to rebuild him from clean primitives was dropped — he wanted the same Walker, just smoother.
+
+## 24 Oct 2026: the Walker smooth and round-eyed up close
+Owner: "why cant you just copy the walker shape", "does that look like a human to you?" (of a primitive rebuild — dropped), then "go, flat eyes and ship at 0.55". The real Walker (same shape, same human face) is baked finer (`RES` 0.55 in 072-walker3d; ~15K→41K drawn, in budget) so legs, feet, body and arms are smooth up close instead of faceted, and his eyes are flat clean circles on the face (`flatEyeGeo`) instead of marched blobs — round at any zoom and far cheaper (the 6 eye styles no longer march the head shell). `?res=N` tunes the bake (0.3–1, default 0.55).

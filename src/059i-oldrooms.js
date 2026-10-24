@@ -53,7 +53,7 @@ import {loungePieces} from './039a-lounge-pieces.js';
     S.placed=items.length-S.missing;   // (models count as made)
     const W=B.x1-B.x0, H=B.y1-B.y0, n=Math.max(1,Math.min(3,Math.round(Math.max(W,H)/8)));
     for(let i=0;i<n;i++){ const t=(i+.5)/n, lx=W>=H?B.x0+t*W:cx, ly=W>=H?(B.y0+B.y1)/2:B.y0+t*H, Lt=new THREE.PointLight(0xffe9c8,8,12*TILE,1.6); Lt.position.set(X(lx),Y(118),Z(ly)); scene.add(Lt); } };
-  const castlePieces=()=>{ const M=STOREK.keep.KMK; Object.assign(CATALOG,{'well':(x,y)=>M.well(x,y),'iron bars':(x,y)=>M.bars(x-.6,y,x+.6,y),'dungeon stone':(x,y)=>M.dblock(x-.5,y-.5,x+.5,y+.5,0,60,null,false)}); for(const k of ['well','iron bars','dungeon stone'])KIND_OF[k]=k; };
+  const castlePieces=()=>{ const M=SHARED.BOD.KC.KMK; Object.assign(CATALOG,{'well':(x,y)=>M.well(x,y),'iron bars':(x,y)=>M.bars(x-.6,y,x+.6,y),'dungeon stone':(x,y)=>M.dblock(x-.5,y-.5,x+.5,y+.5,0,60,null,false)}); for(const k of ['well','iron bars','dungeon stone'])KIND_OF[k]=k; };
   const theatrePieces=()=>{ const T=STOREK.theatre, S=(x,y)=>({x0:x-3,x1:x+3,y,z0:30,z1:102,m:4}), row=(x,y,n)=>{ const w=.7, out=[]; for(let i=0;i<n;i++)out.push(T.theatreSeat(x+(i-n/2)*w,y+.35,w,i===n-1)); return out; };
     const K={'cinema screen':(x,y)=>T.theatreScreen(S(x,y)),'cinema seats':(x,y)=>row(x,y,4),'playhouse seats':(x,y)=>row(x,y,4),'aisle lights':(x,y)=>T.theatreAisleLights([x],[y]),'exit sign':(x,y)=>T.theatreExit(x,y),'projection port':(x,y)=>T.theatrePort(x,y,96),
       'stage curtain':(x,y)=>T.theatreDrape(x-1,x+1,{y,z1:80,m:4}),'masking legs':(x,y)=>T.theatreDrape(x-.8,x+.8,{y,z1:80,m:4})}; for(const k in K){ CATALOG[k]=K[k]; KIND_OF[k]=k; } };

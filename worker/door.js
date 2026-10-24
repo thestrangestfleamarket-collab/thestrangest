@@ -118,6 +118,13 @@ export class Block extends Server {
       c.setState({ ...s, at }); this.broadcast(JSON.stringify({ t: "mv", id: s.id, at }), [c.id]);
     } else if (m.t === "me") {
       const p = { ...s, name: word(m.name, 24), look: word(m.look, 24) }; c.setState(p); this.broadcast(JSON.stringify({ t: "in", p }), [c.id]);
+    } else if (m.t === "act") {
+      const k = typeof m.k === "string" && /^[ JKRVUF]$/.test(m.k) ? m.k : "", mv = m.m === "flinch" ? m.m : ""; if (!k && !mv) return;
+      this.broadcast(JSON.stringify(mv ? { t: "act", id: s.id, m: mv } : { t: "act", id: s.id, k, on: m.on ? 1 : 0 }), [c.id]);
+    } else if (m.t === "hit" || m.t === "parried") {
+      const to = String(m.to || ""); if (!to || to === s.id) return;
+      const out = JSON.stringify(m.t === "hit" ? { t: "hit", id: s.id, d: num(m.d, 0, .5), kb: num(m.kb, 0, 3), heavy: !!m.heavy, k: word(m.k, 6), from: s.at ? [s.at[0], s.at[1]] : null } : { t: "parried", id: s.id });
+      for (const o of this.getConnections()) if (o.state && o.state.id === to) o.send(out);
     } else if (m.t === "say") {
       const text = word(m.text, 200); if (text) this.broadcast(JSON.stringify({ t: "say", id: s.id, name: s.name, text }), [c.id]);
     }

@@ -15,7 +15,7 @@ import {pageGreenhouse} from './027d-page-greenhouse.js';
   const box4=(x0,y0,x1,y1)=>{ const a=X(x0), b=X(x1), c=Z(y0), d=Z(y1); return [Math.min(a,b),Math.min(c,d),Math.max(a,b),Math.max(c,d)]; };
   const taken=new Set(STORE.places.map(p=>p[0]).concat(['THE STREET','THE BODEGA','THE PLATFORM','CENTRAL PARK','THE BATH HOUSE','THE CASTLE','DUNGEON L1','THE SHOP','THE BACK ROOM','THE BATHS','THE SUBWAY STAIRS']));
   const inside=(R,S)=>{ '@oldrooms';
-    const B=R, cx=(B.x0+B.x1)/2, items=DATA&&DATA[R.id]||[], own=items.some(([k])=>/ floor$| wall, (west|east|north|south)$/.test(k));   // a page room brings its own floor and walls
+    const B=R, cx=(B.x0+B.x1)/2, items=DATA&&DATA[R.id]||[], own=!!R.own;   // a page room brings its own floor and walls (baked into the index)
     const sol=(x0,y0,x1,y1,zt)=>{ const r=box4(x0,y0,x1,y1), f=[r[0],r[1],0,r[2],r[3],Math.max(.05,Y(zt))]; SOL.up.push(r); FIX.up.push(f); S.sol.push(r); S.fix.push(f); };
     const wall=(u,z,f)=>z<6?sh([70,62,58],f):sh([176,168,152],f*(1-.04*hs(Math.floor(u*4),Math.floor(z/8),9)));
     const floor=(x,y)=>{ const r=Math.floor(y*3), b=Math.floor(x/1.5+hs(r,0,13)*3); return sh([128,98,66],(y*3-r)<.06||(x/1.5-Math.floor(x/1.5))<.03?.78:.9+.12*hs(b,r,7)); };
@@ -44,7 +44,7 @@ import {pageGreenhouse} from './027d-page-greenhouse.js';
       need:()=>{ o.out=ROOMS.offIn()?OUT0:[pos.x,pos.z,SHARED.py,SHARED.heading]; return Promise.all([LOAD('pagerooms','oldrooms','later').then(()=>{ if(!OLD.kits){ OLD.kits=1; pageOffice(); pageKitchen(); pageCozyDen(); pageGreenhouse(); } }),DATA?null:ITEMS().then(d=>{ DATA=d; })]); },   // the page rooms' kits register their pieces on the first jump, never at the start
       build:()=>{ G=new THREE.Group(); G.name=id; scene.add(G); S.sol=[]; S.fix=[]; S.missing=0; return o.P=ROOMS.part(G,()=>inside(R,S),MKA); },
       unbuild:()=>{ for(const r of S.sol){ const i=SOL.up.indexOf(r); if(i>=0)SOL.up.splice(i,1); } for(const f of S.fix){ const i=FIX.up.indexOf(f); if(i>=0)FIX.up.splice(i,1); } if(G){ G.removeFromParent(); G=null; } },
-      spawn:[X(cx),Z(R.y1-1.3),0,Math.PI],out:OUT0,exit:[X(cx),0,Z(R.y1-.25)],exitName:'OUTSIDE',old:R,S};
+      spawn:[X(cx),Z(R.y1-(R.own?2.8:1.3)),0,Math.PI],out:OUT0,exit:[X(cx+(R.own?1.2:0)),0,Z(R.y1-(R.own?2.8:.25))],exitName:'OUTSIDE',old:R,S};   // a room with its own walls: you arrive just inside its south wall, the way out beside you
     STORE.places.push([name,o.spawn[0],o.spawn[1],'up',null,Math.PI]); OLD.ids.push(id); OLD.by[name]=id; }
   SHARED.OLDROOMS=OLD;
   window.OLDDBG=()=>({rooms:OLD.ids.length,built:OLD.ids.filter(k=>ROOMS.off[k].P),inside:ROOMS.offIn(),data:!!DATA,of:k=>{ const o=ROOMS.off[k]; return o&&{name:o.name,items:o.old.n,placed:o.S.placed,missing:o.S.missing,things:o.P?o.P.things.length:0,verts:o.P?o.P.objs.reduce((n,q)=>{ q.traverse(c=>{ if(c.isMesh&&c.geometry.attributes.position)n+=c.geometry.attributes.position.count; }); return n; },0):0}; }}); }

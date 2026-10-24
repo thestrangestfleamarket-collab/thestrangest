@@ -15,7 +15,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     ok(s0.rooms >= 40, 'the old rooms are registered (' + s0.rooms + ')');
     ok(s0.built === 0 && !s0.data, 'none is built and its items are not fetched at the start');
     ok(s0.listed === s0.rooms, 'every one is in the GO TO list (' + s0.listed + ')');
-    for (const name of ['DINER', 'THE GREENHOUSE', "WITCH'S BEDROOM", 'CRYSTAL CAVERN', 'THE DOJO', 'THE FOREST (VR)', 'RESTROOM', 'LUCKY 7', 'UNDER THE SQUARE - LAUNDRY ROOM', 'CASTLE - THE CELLS', 'THE SQUARE - LOBBY', 'MOVIE THEATRE', 'OCTOPUS TANK', 'UNDER THE SQUARE - POOL', 'SUBWAY - CAR', 'SUBWAY - PLATFORM']) {   // one room per kit family
+    for (const name of ['DINER', 'THE GREENHOUSE', "WITCH'S BEDROOM", 'CRYSTAL CAVERN', 'THE DOJO', 'THE FOREST (VR)', 'RESTROOM', 'LUCKY 7', 'UNDER THE SQUARE - LAUNDRY ROOM', 'CASTLE - THE CELLS', 'THE SQUARE - LOBBY', 'MOVIE THEATRE', 'OCTOPUS TANK', 'UNDER THE SQUARE - POOL', 'SUBWAY - CAR', 'SUBWAY - PLATFORM', 'UNDER THE SQUARE - BOXING GYM', 'THE DESK ROOM']) {   // one room per kit family
       await pg.evaluate(n => __dbg.UI.goPlace(SHARED.OLDROOMS.by[n] ? n : n + ' · OLD'), name);
       const id = await pg.evaluate(n => SHARED.OLDROOMS.by[n] || SHARED.OLDROOMS.by[n + ' · OLD'], name);   // a room named like a place on the street is listed with · OLD
       ok(await U(k => OLDDBG().built.includes(k) && !(window.FADE && FADE.busy), 120000, id), name + ' is built on the jump');

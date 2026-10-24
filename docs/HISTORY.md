@@ -4507,3 +4507,8 @@ Owner: "the left and right side shouldnt be stairs, they should be exits out (wi
 ## 24 Oct 2026: park ring trees smaller, the gates taller
 
 Owner: "make trees around outer ring of park 25-50% smaller, make the brick gate 25% taller". Each ring tree is now a random 25–50% smaller; the gate piers (with their lanterns) and the CENTRAL PARK arch over the south gate are 25% taller.
+
+## 24 Oct 2026: the park's trees grown, not baked; bushes
+
+Owner: "the trees need to be way more natural, branches, realistic bunches of leaves, randomized"; of the mockups (https://claude.ai/artifact/PcYKZRKYKDLrKP7dm8iGjK): "A & C as the trees, B as bushes (scattered through out park, 10 total), shaped like bushes not trees".
+Every park tree is now grown (TREEGEN, 060b): a forked trunk and bent branches carrying round clumps (A) or many small bunches (C), from fixed variants so every player sees the same park. The street's stand-ins are made from the same trees' clumps and limbs. Ten low, wide leaf-bunch bushes (B) stand through the park. The street's tree pits keep their old tree for now.

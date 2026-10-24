@@ -1,7 +1,10 @@
 // THE CRYSTAL CAVERN KIT: the old game's cavern pieces as catalog kinds; loads with the old rooms' kits on the first jump.
+import {SHARED} from './003-shx.js';
 import {wvV} from './003b-systems.js';
 import {CAT_DEPTS, CAT_INFO, CATALOG, hash, KIND_OF, LAMPS, LBLD, LIFE, mt, prop, sh, sided, T, zShift} from './014-gamekit.js';
 const crystalCavern=()=>{ '@oldkits';
+  const LBLDX=LBLD.some(b=>b.id==='lcave')?LBLD:LBLD.concat([{id:'lcave',x0:560,y0:-440,x1:571,y1:-432,h:130,st:1}]);   // the old game's cavern building is not on this map: a stand-in box, off it
+  const vw=(x,y)=>[x,y], HW=0, HH=0;   // the old renderer's screen projection: never reached here
 // =====================================================================================
 // THE CRYSTAL CAVERN (owner, 14 Oct 2026, his picture: a level "based on this image", "fully rotatable", "real itemized", "full
 // atmospheric elements", "a room off map you can teleport to", "only world in this image": no characters). A cave of its own out in the
@@ -15,7 +18,7 @@ const crystalCavern=()=>{ '@oldkits';
 // and the wisps (little white lights that drift about the room: moving pictures). The loose stones (kicked about, real physics):
 // 47-physics-9-cavern. The pink glowing things in the picture are creatures, not the world, so they are left out.
 // =====================================================================================
-const CAVB=LBLD.find(b=>b.id==='lcave');
+const CAVB=LBLDX.find(b=>b.id==='lcave');
 const CAVE={b:CAVB,x0:CAVB.x0+T,x1:CAVB.x1-T,y0:CAVB.y0+T,y1:CAVB.y1-T,H:CAVB.h-4,cx:(CAVB.x0+CAVB.x1)/2,cy:(CAVB.y0+CAVB.y1)/2,in:[CAVB.x0-T,CAVB.y0-T,CAVB.x1+T,CAVB.y1+T]};
 const CAVC={grout:[13,15,58],stone:[38,41,104],stoneL:[46,49,120],stoneD:[31,33,92],rim:[62,74,138],rock:[42,36,110],rockD:[28,22,84],rockL:[60,56,140],mortar:[14,8,48],
   beam:[52,58,142],beamL:[74,84,172],beamD:[34,38,110],cryst:[40,40,222],crystL:[104,104,232],crystD:[22,20,170],crystW:[196,200,250],
@@ -84,7 +87,7 @@ function cvCollar(u,z,h,k){ const c=CAVC, cu=u-Math.round(u), plate=Math.abs(cu)
   return sh(z>h-2?c.collarL:z<2?c.collarD:c.collar,k); }
 // THE CRYSTAL PILLAR: a pedestal of three rounded steps of rock, the column of blue crystal on it (two collars round it, a pointed top),
 // its light; the sparks across it move (a life picture of a few steps)
-function crystalPillar(x,y){ PNAME='crystal pillar'; const B=[], c=CAVC, seed=Math.abs(Math.round(x*7+y*3));
+function crystalPillar(x,y){ SHARED.PNAME='crystal pillar'; const B=[], c=CAVC, seed=Math.abs(Math.round(x*7+y*3));
   cvOct(B,x,y,1.2,.4,0,16,c.rock,seed); cvOct(B,x,y,.95,.3,16,30,c.rock,seed+2); cvOct(B,x,y,.7,.22,30,40,c.rockL,seed+4);
   const col=(hw,z0,z1)=>sided({x0:x-hw,y0:y-hw,x1:x+hw,y1:y+hw,z0,z1,c:c.cryst,foot:0,top:()=>cvLit(c.crystL),fs:(nx,ny,X,Y,z,k)=>cvCrystal((nx?Y-y:X-x)/hw*.5,z+z0,k,seed)});
   B.push(col(.5,40,196),col(.36,196,212),col(.22,212,224),col(.1,224,232));
@@ -94,7 +97,7 @@ function crystalPillar(x,y){ PNAME='crystal pillar'; const B=[], c=CAVC, seed=Ma
   const p=prop(B,null,{cave:1}); p.life=t=>{ FL.ph=Math.floor(t*3)%6; }; p.lifeKey=()=>FL.ph;
   for(const [a,b] of [[1,1],[-1,-1]])LAMPS.push({x:x+a,y:y+b,z:170,r:12,c:[.6,.72,2.1],own:1,room:1,day:true,in:CAVE.in,prop:p}); return p; }   // (the crystal's own light, either side of the column: a light inside a thing lights none of its faces)
 // A CRYSTAL CLUSTER: three shards of crystal standing out of a collar on the floor, a small blue light
-function crystalCluster(x,y){ PNAME='crystal cluster'; const B=[], c=CAVC, seed=Math.abs(Math.round(x*5+y*11));
+function crystalCluster(x,y){ SHARED.PNAME='crystal cluster'; const B=[], c=CAVC, seed=Math.abs(Math.round(x*5+y*11));
   const shard=(dx,dy,hw,h)=>{ const cx=x+dx, cy=y+dy, s=(a,z0,z1)=>sided({x0:cx-a,y0:cy-a,x1:cx+a,y1:cy+a,z0,z1,c:c.cryst,foot:z0===0?1:0,top:()=>cvLit(c.crystL),fs:(nx,ny,X,Y,z,k)=>cvCrystal((nx?Y-cy:X-cx)/a*.5,z+z0,k,seed+Math.round(dx*9))});
     B.push(s(hw,0,h),s(hw*.6,h,h+5),s(hw*.3,h+5,h+8)); };
   shard(-.2,-.08,.2,38); shard(.16,.12,.16,30); shard(.06,-.22,.12,22);
@@ -102,7 +105,7 @@ function crystalCluster(x,y){ PNAME='crystal cluster'; const B=[], c=CAVC, seed=
   const p=prop(B,null,{cave:1}); LAMPS.push({x,y,z:16,r:4.5,c:[.5,.6,1.7],own:1,room:1,day:true,in:CAVE.in,prop:p}); return p; }
 // THE KEYSTONE: a block of cut stone under the arch's top, a chevron carved on its faces, and the gem that floats over it, bobbing (a
 // life picture of six steps), its cold light
-function keystone(x,y){ PNAME='keystone'; const c=CAVC, seed=1441, B=[];
+function keystone(x,y){ SHARED.PNAME='keystone'; const c=CAVC, seed=1441, B=[];
   const face=(u,z,h,k)=>{ const cu=u-Math.round(u), v=Math.abs(cu)*48, chev=z>h-24&&z<h-6&&Math.abs((h-6-z)-v)<2.2; return chev?sh(c.beamL,k*1.15):cvFace(c.beam,z,h,k,u,seed); };
   B.push(sided({x0:x-.7,y0:y-.55,x1:x+.7,y1:y+.55,z0:0,z1:30,c:c.beam,foot:1,top:cvTop(c.beamL,seed),fs:(nx,ny,X,Y,z,k)=>face((nx?Y-y:X-x)+.5,z,30,k)}));
   B.push(sided({x0:x-.5,y0:y-.4,x1:x+.5,y1:y+.4,z0:30,z1:36,c:c.beamD,foot:0,top:cvTop(c.beam,seed+2),fs:(nx,ny,X,Y,z,k)=>cvFace(c.beamD,z,6,k,nx?Y:X,seed+2)}));
@@ -113,19 +116,19 @@ function keystone(x,y){ PNAME='keystone'; const c=CAVC, seed=1441, B=[];
   const p=prop(B,null,{cave:1}); p.life=t=>{ FL.ph=Math.floor(t*4)%6; }; p.lifeKey=()=>FL.ph;
   LAMPS.push({x,y,z:52,r:5,c:[.8,1.2,2],own:1,room:1,day:true,in:CAVE.in,prop:p}); return p; }
 // A BOULDER: a rounded rock in three rounded steps, s its size (tiles of half width), sd its seed
-function boulder(x,y,s=.8,sd=0){ PNAME='boulder'; const B=[], c=CAVC, seed=1451+sd*3, n=hash(sd,1,1453), base=n<.4?c.rock:n<.7?c.rockD:c.rockL;
+function boulder(x,y,s=.8,sd=0){ SHARED.PNAME='boulder'; const B=[], c=CAVC, seed=1451+sd*3, n=hash(sd,1,1453), base=n<.4?c.rock:n<.7?c.rockD:c.rockL;
   cvOct(B,x,y,s,s*.3,0,Math.round(s*18),base,seed); cvOct(B,x+s*.1,y-s*.08,s*.78,s*.26,Math.round(s*18),Math.round(s*30),base,seed+2); cvOct(B,x+s*.16,y-s*.1,s*.5,s*.18,Math.round(s*30),Math.round(s*37),sh(base,1.08),seed+4);
   return prop(B,null,{cave:1}); }
 // A CAVE FERN: fronds fanning up from the floor (purple, as the picture's), drawn on four thin crossed sheets so it reads from every turn;
 // you walk through it
-function caveFern(x,y){ PNAME='cave fern'; const c=CAVC, seed=Math.abs(Math.round(x*13+y*7)), H=28;
+function caveFern(x,y){ SHARED.PNAME='cave fern'; const c=CAVC, seed=Math.abs(Math.round(x*13+y*7)), H=28;
   const frond=(u,z,k)=>{ for(let j=-2;j<=2;j++){ const su=j*.1*z/H+(j?.012*Math.sin(z/5+j):0), d=Math.abs(u-su); if(d<.014&&z<H-2-Math.abs(j)*3)return sh(c.fernD,k);
       if(d<.06&&z>4&&z<H-3-Math.abs(j)*3&&Math.floor(z+j)%3!==1&&d>.014)return sh(Math.floor(z)%2?c.fern:c.fernL,k*(d<.035?1:.92)); } return null; };
   const sheet=(ax)=>sided({x0:ax?x-.03:x-.32,y0:ax?y-.32:y-.03,x1:ax?x+.03:x+.32,y1:ax?y+.32:y+.03,z0:0,z1:H,c:c.fern,foot:1,nb:1,top:()=>null,fs:(nx,ny,X,Y,z,k)=>nx?(ax?frond(Y-y,z,k):null):(ax?null:frond(X-x,z,k))});
   return prop([sheet(0),sheet(1)],null,{cave:1,walk:true,high:true}); }
 // A WISP: a little white light that drifts about its spot, a moving picture drawn each step (lifeDraw, 24-pack-life); nothing of it is
 // in the scenery's picture, only its place (an empty box: where its picture is)
-function wisp(x,y,sd=0){ PNAME='wisp'; const c=CAVC, p=prop([{x0:x-.5,y0:y-.5,x1:x+.5,y1:y+.5,z0:0,z1:60,c:c.wisp,foot:1,top:()=>null,fi:()=>null,fj:()=>null}],null,{cave:1,walk:true,high:true});
+function wisp(x,y,sd=0){ SHARED.PNAME='wisp'; const c=CAVC, p=prop([{x0:x-.5,y0:y-.5,x1:x+.5,y1:y+.5,z0:0,z1:60,c:c.wisp,foot:1,top:()=>null,fi:()=>null,fj:()=>null}],null,{cave:1,walk:true,high:true});
   p.lifeDraw=(D,W,Hh,ox,oy,t,K=1)=>{ const fw=p.ed||((a,b)=>[a,b]), px=x+.4*Math.sin(t*.37+sd), py=y+.4*Math.cos(t*.29+sd*1.7), z=28+14*Math.sin(t*.51+sd*2.3), bright=.8+.2*Math.sin(t*2.1+sd);
     const [wx,wy]=fw(px,py), [vx,vy]=vw(wx,wy), sx=Math.round(((vx-vy)*HW-ox)*K), sy=Math.round(((vx+vy)*HH-z-oy)*K);
     const put=(a,b,col,al)=>{ for(let j=0;j<K;j++)for(let i=0;i<K;i++){ const X=sx+a*K+i, Y=sy+b*K+j; if(X<0||Y<0||X>=W||Y>=Hh)continue; const q=(Y*W+X)*4; D[q]=col[0]*bright; D[q+1]=col[1]*bright; D[q+2]=col[2]*bright; D[q+3]=al; } };
@@ -135,7 +138,7 @@ function wisp(x,y,sd=0){ PNAME='wisp'; const c=CAVC, p=prop([{x0:x-.5,y0:y-.5,x1
   return p; }
 // THE GROUND: half-tile cells of rock at the height field's heights, their tops the flagstones, their sides rock (a ledge where one stands
 // over its neighbour); you walk up and down them a step at a time (stands, 30-walking), and the loose stones lie on them (47-physics-9)
-function caveGround(){ PNAME='cave floor'; const R=CAVE, cs=.5, nx=Math.round((R.x1-R.x0)/cs), ny=Math.round((R.y1-R.y0)/cs);
+function caveGround(){ SHARED.PNAME='cave floor'; const R=CAVE, cs=.5, nx=Math.round((R.x1-R.x0)/cs), ny=Math.round((R.y1-R.y0)/cs);
   for(let J=0;J<ny;J+=4)for(let I=0;I<nx;I+=4){ const B=[], st=[];
     for(let j=J;j<Math.min(ny,J+4);j++)for(let i=I;i<Math.min(nx,I+4);i++){ const x0=R.x0+i*cs, y0=R.y0+j*cs, x1=x0+cs, y1=y0+cs, h=caveH(x0+cs/2,y0+cs/2);
       B.push(sided({x0,y0,x1,y1,z0:0,z1:h,c:CAVC.stone,foot:1,top:(X,Y)=>caveFloorCol(X,Y),fs:(nx,ny,X,Y,z,k)=>cvFace(CAVC.rockD,z,h,k,nx?Y:X,1507)})); st.push({x0,y0,x1,y1,z:h}); }
@@ -145,7 +148,7 @@ function caveGround(){ PNAME='cave floor'; const R=CAVE, cs=.5, nx=Math.round((R
 // by noise, so no edge runs straight; cut from half-tile segments. The lowest band stands solid; the rest hang (high: taken down with the
 // walls in front of you, as the walls are). The back wall keeps only its lowest band, so the arch painted on it shows in full (owner,
 // 15 Oct 2026: "put the arch back in full")
-function caveLedges(){ PNAME='cave rock'; const R=CAVE, H=R.H, band=14, seg=.5, ins=(u,z,k)=>.1+1.7*(z/H)**2+.3*cvNoise(u*1.3,z/30,1511+k);
+function caveLedges(){ SHARED.PNAME='cave rock'; const R=CAVE, H=R.H, band=14, seg=.5, ins=(u,z,k)=>.1+1.7*(z/H)**2+.3*cvNoise(u*1.3,z/30,1511+k);
   for(const [ax,at,sg,a0,a1,k] of [['y',R.y0,1,R.x0,R.x1,0],['y',R.y1,-1,R.x0,R.x1,1],['x',R.x0,1,R.y0,R.y1,2],['x',R.x1,-1,R.y0,R.y1,3]])
     for(let zb=0;zb<H-4;zb+=band*2){ if(k===0&&zb>0)continue; const B=[];   // (the back wall: only its foot band, so the arch shows in full: owner, 15 Oct 2026)
       for(const z0 of [zb,zb+band]){ if(z0>=H-4)continue; const z1=Math.min(z0+band,H-4);
@@ -176,7 +179,7 @@ for(const k of ['crystal pillar','crystal cluster','keystone','boulder','cave fe
   for(const [a,b] of [[.8,6.6],[10.1,6.6],[.5,4.6],[10.5,4.8],[2,7.4],[9,7.4]])g(crystalCluster(...u(a,b)));
   for(const [a,b] of [[2.6,.6],[8.6,.7],[.6,2.4],[10.4,2.3],[6.5,.5]])g(caveFern(...u(a,b)));
   [[2.5,2.5],[4.5,4],[7,2.8],[8.5,5],[4,6]].forEach(([a,b],i)=>g(wisp(...u(a,b),i))); }
-PNAME='object';
+SHARED.PNAME='object';
 
 };
 export {crystalCavern};

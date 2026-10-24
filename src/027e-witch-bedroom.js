@@ -1,7 +1,21 @@
 // THE WITCH'S BEDROOM KIT: the old game's room, its pieces as catalog kinds; loads with the old rooms' kits on the first jump.
+import {SHARED} from './003-shx.js';
 import {CAT_DEPTS, CAT_INFO, CATALOG, hash, KIND_OF, LAMPS, LBLD, LIFE, mt, prop, sh, sided, speck, STORY, T, zShift} from './014-gamekit.js';
 import {SQLV} from './023-west-kits.js';
 const witchBedroom=()=>{ '@oldkits';
+  const DET=2;   // the old renderer's detail level (full)
+  // bedCanvas, from the bedroom's kit (the old game declared it at top level; a kit here is its own function)
+  function bedCanvas(W,H,draw){ const a=new Array(W*H).fill(null), px=(c,q,col)=>{ c=Math.floor(c); q=Math.floor(q); if(c>=0&&c<W&&q>=0&&q<H&&col)a[q*W+c]=col; };
+  const g={px,box:(c0,q0,c1,q1,col)=>{ for(let q=Math.floor(q0);q<q1;q++)for(let c=Math.floor(c0);c<c1;c++)px(c,q,col); },
+    disc:(cx,cq,rx,rq,col)=>{ for(let q=Math.floor(cq-rq);q<=cq+rq;q++)for(let c=Math.floor(cx-rx);c<=cx+rx;c++)if(((c+.5-cx)/rx)**2+((q+.5-cq)/rq)**2<=1)px(c,q,col); },
+    frame:(c0,q0,c1,q1,w,col)=>{ g.box(c0,q0,c1,q0+w,col); g.box(c0,q1-w,c1,q1,col); g.box(c0,q0,c0+w,q1,col); g.box(c1-w,q0,c1,q1,col); },
+    line:(c0,q0,c1,q1,col)=>{ const n=Math.ceil(Math.max(Math.abs(c1-c0),Math.abs(q1-q0)))+1; for(let i=0;i<=n;i++)px(c0+(c1-c0)*i/n,q0+(q1-q0)*i/n,col); },
+    shape:(c0,q0,rows,pal)=>rows.forEach((r,j)=>[...r].forEach((k,i)=>{ if(k!=='.')px(c0+i,q0+rows.length-1-j,pal[k]); }))};   // (rows top first, a letter a colour)
+  draw(g); const get=(c,q)=>{ c=Math.floor(c); q=Math.floor(q); return c>=0&&c<W&&q>=0&&q<H?a[q*W+c]:null; };
+  // at the scenery's detail (DET 1: an art pixel is two of these), each art pixel the colour most of its four have, if two or more aren't plaster
+  const a1=[]; for(let q=0;q<H;q+=2)for(let c=0;c<W;c+=2){ const n=new Map(); let best=null, bn=1; for(const [i,j] of [[0,0],[1,0],[0,1],[1,1]]){ const v=get(c+i,q+j); if(!v)continue; const k=v.join()+(v.e?'e':''), m=(n.get(k)||0)+1; n.set(k,m); if(m>bn||m===bn&&!best){ best=v; bn=m; } }
+    a1[(q>>1)*Math.ceil(W/2)+(c>>1)]=[...n.values()].reduce((s,v)=>s+v,0)>=2?best:null; }
+  const W1=Math.ceil(W/2); return (c,q)=>DET>=2?get(c,q):(c>=0&&q>=0&&c<W&&q<H?a1[(Math.floor(q)>>1)*W1+(Math.floor(c)>>1)]:null); }
 // =====================================================================================
 // THE WITCH'S BEDROOM (owner, 15 Oct 2026, her picture: "create walkable scene of this room, html5 graphics only (no actual image) each
 // object its own thing, rotating room 4 angles"). A small bedroom of its own out in the blackness below the crystal cavern (LBLD 'lwitch',
@@ -98,7 +112,7 @@ function wBooks(B,x0,y0,z0,n,ax,seed){ const C=[[150,40,44],[48,96,112],[120,36,
 // a scalloped hem, the frame's dark showing under the scallops; the two pillows (cream, rounded, little leaves printed on them: a brown
 // dot with a green tip); the cat cushion at the foot (a dark square: a white cat and a black cat curled together on it); the headboard
 // a low bookcase, books standing in a row on it and the moon book lying flat (purple, a gold crescent)
-function witchBed(x,y){ PNAME='witch bed'; const c=WFC, B=[], L=2.5, W=1.8, x0=x, y0=y, x1=x+L, y1=y+W;
+function witchBed(x,y){ SHARED.PNAME='witch bed'; const c=WFC, B=[], L=2.5, W=1.8, x0=x, y0=y, x1=x+L, y1=y+W;
   for(const [a,b] of [[x0+.5,y0+.05],[x1-.2,y0+.05],[x0+.5,y1-.2],[x1-.2,y1-.2]])B.push(WB(a,b,a+.15,b+.15,0,8,c.woodD));
   B.push(WB(x0+.45,y0,x1,y1,6,14,c.wood,{top:()=>c.woodL}));
   const hem=(u,z)=>z<3+2.5*Math.abs(Math.sin(u*24/5.5*Math.PI/2));   // the scallops: the spread ends short of the floor in a wavy line
@@ -120,34 +134,34 @@ function witchBed(x,y){ PNAME='witch bed'; const c=WFC, B=[], L=2.5, W=1.8, x0=x
     f:(nx,ny,u,z)=>z<1?[90,26,90]:z>2.5?[150,60,150]:[236,226,196]}));
   return prop(B); }
 // THE BEDSIDE TABLE: against a wall along y, a drawer in its x1 face with a brass knob, four turned feet; 0.9 by 0.65, 26 high
-function bedsideTable(x,y){ PNAME='bedside table'; const c=WFC, B=[], x1=x+.65, y1=y+.9;
+function bedsideTable(x,y){ SHARED.PNAME='bedside table'; const c=WFC, B=[], x1=x+.65, y1=y+.9;
   for(const [a,b] of [[x+.04,y+.05],[x1-.14,y+.05],[x+.04,y1-.15],[x1-.14,y1-.15]])B.push(WB(a,b,a+.1,b+.1,0,10,c.woodD));
   B.push(WB(x+.02,y+.02,x1,y1,10,24,c.wood,{f:(nx,ny,u,z,h,k)=>{ if(nx>0){ if(z>3&&z<11&&u>.08&&u<.82){ const kn=Math.abs(u-.45)<.03&&z>6&&z<8.5; return kn?c.brass:z<4||z>10||u<.1||u>.8?c.woodD:null; } return null; }
       return z>h-2?c.woodL:null; }}));
   B.push(WB(x,y,x1+.02,y1+.02,24,26,c.woodL,{top:()=>c.woodL}));
   return prop(B); }
 // THE FORTUNE TABLE: a small dark table under a teal cloth that hangs over its edges in folds, not quite to the floor; 1.2 by 0.9, 24 high
-function fortuneTable(x,y){ PNAME='fortune table'; const c=WFC, B=[], x1=x+.9, y1=y+1.2;
+function fortuneTable(x,y){ SHARED.PNAME='fortune table'; const c=WFC, B=[], x1=x+.9, y1=y+1.2;
   for(const [a,b] of [[x+.08,y+.1],[x1-.2,y+.1],[x+.08,y1-.2],[x1-.2,y1-.2]])B.push(WB(a,b,a+.12,b+.12,0,22,c.woodD));
   B.push(WB(x,y,x1,y1,22,24,c.wood));
   B.push(WB(x-.06,y-.06,x1+.06,y1+.06,8,25,c.cloth,{top:(X,Y)=>{ const n=hash(Math.floor(X*24/3),Math.floor(Y*24/3),1627); return n<.12?c.clothD:n>.9?c.clothL:c.cloth; },
     f:(nx,ny,u,z,h,k)=>{ const drop=2+3*hash(Math.floor(u*24/6),0,1629); if(z<drop)return false; const fold=Math.floor(u*24/5)%3; return z>h-1?c.clothL:fold===0?c.clothD:fold===2?c.clothL:null; }}));
   return prop(B); }
 // THE CRYSTAL BALL: a glass sphere on a brass ring (stepped rounds, a bright highlight up its left); it glows faintly
-function crystalBall(x,y){ PNAME='crystal ball'; const c=WFC, B=[]; WO(B,x,y,.17,.17,.05,0,2,c.brass,{top:()=>c.brassD});
+function crystalBall(x,y){ SHARED.PNAME='crystal ball'; const c=WFC, B=[]; WO(B,x,y,.17,.17,.05,0,2,c.brass,{top:()=>c.brassD});
   const g=(col,f)=>wrLit(sh(col,f));   // (it glows softly: its own rounds would shadow its faces otherwise, and in the picture it is the palest thing in the room)
   const sph=(hw,z0,z1,d)=>WO(B,x,y,hw,hw,d,z0,z1,c.ball,{top:wDisc(x,y,hw,hw,(X,Y)=>X-x<-hw*.3&&Y-y<-hw*.3?g(c.ballL,.9):g(c.ball,.8)),f:(nx,ny,u,z,h,k,X,Y)=>{ const t=(nx?Y-y:X-x)/hw; return t<-.25&&t>-.7&&z>h*.3?g(c.ballL,.85):t>.6?g(c.ballD,.6):g(c.ball,k>.8?.72:.62); }});
   sph(.1,2,4,.03); sph(.14,4,7,.04); sph(.16,7,13,.05); sph(.14,13,16,.04); sph(.09,16,18,.03);
   return prop(B); }
 // THE FAIRY SPROUT: a little plant in a tiny pot, a few leaves on a thin stem, three buds that glow (a small warm light)
-function fairySprout(x,y){ PNAME='fairy sprout'; const c=WFC, B=[]; WO(B,x,y,.1,.1,.03,0,4,c.pot,{top:()=>[70,46,30]});
+function fairySprout(x,y){ SHARED.PNAME='fairy sprout'; const c=WFC, B=[]; WO(B,x,y,.1,.1,.03,0,4,c.pot,{top:()=>[70,46,30]});
   B.push(WB(x-.012,y-.012,x+.012,y+.012,4,16,[70,112,46]));
   for(const [dx,dy,z] of [[.06,0,8],[-.06,.02,11],[.02,-.07,13]])B.push(WB(x+dx-.05,y+dy-.03,x+dx+.05,y+dy+.03,z,z+2,c.leaf,{top:()=>c.leafL}));
   for(const [dx,dy,z] of [[.08,.03,15],[-.07,-.04,17],[0,.08,19]])B.push(WB(x+dx-.025,y+dy-.025,x+dx+.025,y+dy+.025,z,z+2,c.bloom,{top:()=>wrLit([255,236,150]),f:()=>wrLit([255,210,90])}));
   const p=prop(B); LAMPS.push({x,y,z:18,r:1.6,c:[.7,.5,.2],own:1,room:1,day:true,in:WR.in,prop:p}); return p; }
 // THE PICTURE FRAMES, standing against a wall (their backs to x0, their fronts the +x face), each a thin box: the big orange one in an
 // ornate border round a dark portrait (a face in the dark with a red mouth), the purple one with a white star, the small red one on cream
-function pictureFrame(x,y,kind){ PNAME=kind==='star'?'star frame':kind==='small'?'small frame':'ornate frame'; const c=WFC, w=kind==='ornate'?.5:kind==='star'?.34:.28, h=kind==='ornate'?20:kind==='star'?12:10, B=[];
+function pictureFrame(x,y,kind){ SHARED.PNAME=kind==='star'?'star frame':kind==='small'?'small frame':'ornate frame'; const c=WFC, w=kind==='ornate'?.5:kind==='star'?.34:.28, h=kind==='ornate'?20:kind==='star'?12:10, B=[];
   const face=(u,z)=>{ const a=u*24, b=z, ea=Math.min(a,w*24-a), eb=Math.min(b,h-b), e=Math.min(ea,eb);
     if(kind==='ornate'){ if(e<1)return c.frameOD; if(e<3)return (Math.floor(a)+Math.floor(b))%2?c.frameO:c.frameOD; const fa=a-w*12, fb=b-h/2; if(Math.hypot(fa,fb*1.2)<3.5)return Math.abs(fb-1.2)<.6&&Math.abs(fa)<1.2?[210,60,70]:[70,44,60]; return hash(Math.floor(a),Math.floor(b),1631)<.05?[200,190,220]:[44,32,64]; }
     if(kind==='star'){ if(e<1.2)return [120,80,150]; if(e<2)return c.frameP; const fa=Math.abs(a-w*12), fb=Math.abs(b-h/2); return fa+fb<2.2||(fa<.8&&fb<2.8)||(fb<.8&&fa<2.8)?c.white:[60,36,96]; }
@@ -157,7 +171,7 @@ function pictureFrame(x,y,kind){ PNAME=kind==='star'?'star frame':kind==='small'
 // THE CANDLE on its saucer: cream wax, its rim melted down, a wick, and its flame: a moving picture (drawn only in the life layer, a
 // step at a time, as the mood candles' are: 23-w-studio-mood), its small warm light
 const WFLH=[3,4,4,3,2,4,3,4];
-function saucerCandle(x,y){ PNAME='saucer candle'; const c=WFC, B=[], FL={ph:0}, seed=Math.round(x*7+y*13); WO(B,x,y,.16,.16,.05,0,1,c.cream,{top:wDisc(x,y,.16,.16,(X,Y)=>Math.hypot(X-x,Y-y)>.12?[220,206,176]:c.cream)});
+function saucerCandle(x,y){ SHARED.PNAME='saucer candle'; const c=WFC, B=[], FL={ph:0}, seed=Math.round(x*7+y*13); WO(B,x,y,.16,.16,.05,0,1,c.cream,{top:wDisc(x,y,.16,.16,(X,Y)=>Math.hypot(X-x,Y-y)>.12?[220,206,176]:c.cream)});
   B.push(WB(x-.05,y-.05,x+.05,y+.05,1,12,c.wax,{top:()=>[200,186,160],f:(nx,ny,u,z,h)=>z>h-2?sh(c.wax,.86):hash(Math.floor(u*24),Math.floor(z),1635)<.12?sh(c.wax,1.06):null}));
   B.push(WB(x-.012,y-.012,x+.012,y+.012,12,13,[30,26,24]));
   B.push(sided({x0:x-.03,y0:y-.03,x1:x+.03,y1:y+.03,z0:13,z1:18,c:[255,200,90],foot:1,nb:1,life:1,top:()=>null,fs:(nx,ny,X,Y,z,k)=>{ if(typeof LIFE==='undefined'||LIFE.mode!==1)return null;
@@ -165,18 +179,18 @@ function saucerCandle(x,y){ PNAME='saucer candle'; const c=WFC, B=[], FL={ph:0},
   const p=prop(B); p.life=t=>{ FL.ph=Math.floor(hash(Math.floor(t*7),seed,425)*8); }; p.lifeKey=()=>FL.ph;
   LAMPS.push({x,y,z:16,r:2.8,c:[.72,.4,.15],own:1,room:1,day:true,in:WR.in,prop:p}); return p; }
 // THE WALL SHELF: a dark plank along y on two brackets, hung 58 art px up a wall (x0 at the wall), five books standing on it
-function wallShelf(x,y){ PNAME='wall shelf'; const c=WFC, B=[];
+function wallShelf(x,y){ SHARED.PNAME='wall shelf'; const c=WFC, B=[];
   B.push(WB(x,y,x+.42,y+2.2,58,61,c.wood,{top:()=>c.woodL,x:{foot:1}}));
   for(const by of [y+.3,y+1.7]){ B.push(WB(x,by,x+.3,by+.08,52,58,c.woodD),WB(x,by,x+.18,by+.08,48,52,c.woodD)); }
   wBooks(B,x+.08,y+.12,61,5,0,1633);
   return prop(B,null,{hang:48,walk:true,high:true}); }
 // A RED CURTAIN: hung from the ceiling beside the window (0.7 along x, thin), velvet red in folds, gathered in toward the floor
-function redCurtain(x,y){ PNAME='red curtain'; const c=WFC, B=[], H=WR.H-2;
+function redCurtain(x,y){ SHARED.PNAME='red curtain'; const c=WFC, B=[], H=WR.H-2;
   const fold=(u,z,h)=>{ const w=z<24?.4+.6*z/24:1, mid=.35, a=(u-mid)/w+mid; if(a<0||a>.7)return false; const f=Math.floor(a*24/3)%3; return f===0?c.curtD:f===1?c.curt:c.curtL; };
   B.push(WB(x,y,x+.7,y+.14,8,H,c.curt,{top:()=>c.curtD,x:{foot:1},f:(nx,ny,u,z,h)=>ny?fold(u,z,h):z<24?false:null}));
   return prop(B,null,{hang:8,walk:true,high:true}); }
 // THE WINDOW LEDGE: the low dark red cabinet under the window (along x, 0.5 deep, 30 high), two panels in its front, a lighter top
-function windowLedge(x,y,L=4.9){ PNAME='window ledge'; const c=WFC, B=[];
+function windowLedge(x,y,L=4.9){ SHARED.PNAME='window ledge'; const c=WFC, B=[];
   B.push(WB(x,y,x+L,y+.5,0,28,c.ledge,{f:(nx,ny,u,z,h)=>{ if(ny<=0)return null; const a=u*24, s=L*24/2, pa=a%s; return z>4&&z<24&&pa>4&&pa<s-4?(z<6||z>22||pa<6||pa>s-6?c.ledgeD:null):null; }}));
   B.push(WB(x-.02,y-.02,x+L+.02,y+.52,28,30,c.ledgeL,{top:()=>c.ledgeL}));
   return prop(B); }
@@ -186,7 +200,7 @@ function wPot(B,x,y,hw,h){ const c=WFC; WO(B,x,y,hw*.8,hw*.8,hw*.25,0,h*.3,c.pot
 // pink buds at its tops), a small one (a few leaves on stems)
 function leafMass(B,x,y,hw,z0,z1,seed){ const c=WFC, lf=(u,z,h)=>{ const n=hash(Math.floor(u*24/2),Math.floor(z/2),seed); if((z>h-4||z<2)&&n<.5)return false; return n<.3?c.leafD:n<.55?c.leaf:n<.7?c.leafL:n<.76?false:c.leaf; };
   WO(B,x,y,hw,hw,hw*.35,z0,z1,c.leaf,{top:wDisc(x,y,hw,hw,(X,Y)=>{ const n=hash(Math.floor(X*24/2),Math.floor(Y*24/2),seed+1); return n<.3?c.leafD:n<.6?c.leaf:c.leafL; }),f:(nx,ny,u,z,h)=>lf(u,z,h)}); }
-function pottedPlant(x,y,kind='bush'){ PNAME=kind==='cactus'?'cactus pot':kind==='small'?'small plant':'bushy plant'; const c=WFC, B=[], seed=Math.round(x*5+y*7);
+function pottedPlant(x,y,kind='bush'){ SHARED.PNAME=kind==='cactus'?'cactus pot':kind==='small'?'small plant':'bushy plant'; const c=WFC, B=[], seed=Math.round(x*5+y*7);
   if(kind==='bush'){ wPot(B,x,y,.22,9); leafMass(B,x,y,.42,9,30,1641+seed); leafMass(B,x+.06,y-.04,.3,30,38,1643+seed); }
   else if(kind==='cactus'){ wPot(B,x,y,.2,8); const rib=(u,z,h)=>{ const r=Math.floor(u*24)%4; return z>h-1?c.cactL:r===0?c.cactD:r===2?c.cactL:null; };
     WO(B,x,y,.12,.12,.04,8,30,c.cact,{top:()=>c.cactL,f:(nx,ny,u,z,h)=>rib(u,z,h)}); WO(B,x+.17,y+.02,.07,.07,.02,16,27,c.cact,{f:(nx,ny,u,z,h)=>rib(u,z,h)}); WO(B,x-.16,y-.03,.06,.06,.02,14,23,c.cact,{f:(nx,ny,u,z,h)=>rib(u,z,h)});
@@ -195,14 +209,14 @@ function pottedPlant(x,y,kind='bush'){ PNAME=kind==='cactus'?'cactus pot':kind==
     for(const [dx,dy,z] of [[.1,0,12],[-.1,.04,15],[.03,-.1,18],[-.04,.1,20]])B.push(WB(x+dx-.07,y+dy-.04,x+dx+.07,y+dy+.04,z,z+2,c.leaf,{top:()=>c.leafL})); }
   return prop(B); }
 // THE BLOOM LAMP: a tall thin dark stand with a pot at its top, leaves spreading from it, and a yellow flower that glows (a warm light)
-function bloomLamp(x,y){ PNAME='bloom lamp'; const c=WFC, B=[]; WO(B,x,y,.16,.16,.05,0,3,c.woodD); B.push(WB(x-.035,y-.035,x+.035,y+.035,3,62,c.woodD));
+function bloomLamp(x,y){ SHARED.PNAME='bloom lamp'; const c=WFC, B=[]; WO(B,x,y,.16,.16,.05,0,3,c.woodD); B.push(WB(x-.035,y-.035,x+.035,y+.035,3,62,c.woodD));
   WO(B,x,y,.17,.17,.05,62,72,c.pot,{top:()=>[70,46,30]}); WO(B,x,y,.14,.14,.04,58,62,c.potD);
   for(const [dx,dy,z,l] of [[.2,.04,70,.12],[-.2,-.02,72,.14],[.05,.2,71,.1],[-.04,-.2,73,.12],[.14,-.14,69,.1]])B.push(WB(x+dx-l,y+dy-.05,x+dx+l,y+dy+.05,z,z+2,c.leaf,{top:()=>c.leafL}));
   B.push(WB(x-.02,y-.02,x+.02,y+.02,72,80,[70,112,46]));
   WO(B,x,y,.2,.2,.07,80,84,c.bloom,{top:wDisc(x,y,.2,.2,(X,Y)=>wrLit(Math.hypot(X-x,Y-y)<.08?c.bloomD:c.bloom)),f:(nx,ny,u,z)=>wrLit(z<1?c.bloomD:c.bloom)});
   const p=prop(B); LAMPS.push({x,y,z:86,r:3.6,c:[.9,.7,.3],own:1,room:1,day:true,in:WR.in,prop:p}); return p; }
 // THE BROOM: leaning in a corner: a pale wooden handle (stepped over a little as it rises), a bound head of straw at the floor
-function broom(x,y){ PNAME='broom'; const c=WFC, B=[];
+function broom(x,y){ SHARED.PNAME='broom'; const c=WFC, B=[];
   WO(B,x,y,.16,.11,.04,0,16,c.straw,{top:()=>c.strawD,f:(nx,ny,u,z)=>z>13?[120,70,40]:Math.floor(u*24)%2?c.strawD:null});
   for(let i=0;i<5;i++){ const dx=-i*.03, dy=-i*.02; B.push(WB(x+dx-.035,y+dy-.035,x+dx+.035,y+dy+.035,16+i*14,30+i*14,c.broom,{top:()=>c.broom})); }
   return prop(B); }
@@ -217,7 +231,7 @@ const WTC={hat:[48,66,172],hatL:[74,98,206],hatD:[34,46,130],band:[204,40,56],sp
   teal:[40,146,134],tealD:[28,112,104],tealL:[70,178,162],page:[246,244,238],ink:[150,124,96],wing:[206,176,226],crate:[226,182,172],crateD:[196,148,140],crateL:[240,204,194],
   slot:[70,50,56],vinyl:[30,28,34],vinylL:[58,56,64],yellow:[242,212,62],walnut:[82,46,32],walnutL:[110,66,44],brass:[222,178,78],sleeve:[44,74,172],sleeveL:[80,120,210]};
 // THE WITCH'S HAT: a wide round brim with a red band, the cone in rounded steps leaning over at its tip, white sparkles on it
-function witchHat(x,y){ PNAME='witch hat'; const c=WTC, B=[], sp=(u,z,seed)=>{ const a=Math.floor(u*24), b=Math.floor(z), i=Math.floor(a/5), j=Math.floor(b/5), n=hash(i,j,seed); if(n>.3)return null;
+function witchHat(x,y){ SHARED.PNAME='witch hat'; const c=WTC, B=[], sp=(u,z,seed)=>{ const a=Math.floor(u*24), b=Math.floor(z), i=Math.floor(a/5), j=Math.floor(b/5), n=hash(i,j,seed); if(n>.3)return null;
     const ca=i*5+2, cb=j*5+2, da=Math.abs(a-ca), db=Math.abs(b-cb); return (da===0&&db<=1)||(db===0&&da<=1)?c.spark:null; };
   WO(B,x,y,.46,.4,.14,0,2,c.hat,{top:wDisc(x,y,.46,.4,(X,Y)=>{ const r=Math.hypot((X-x)/.46,(Y-y)/.4); if(r>.86)return c.hatD; const n=hash(Math.floor(X*24/4),Math.floor(Y*24/4),1651); return n<.12&&Math.floor(X*24)%4===2&&Math.floor(Y*24)%4===2?c.spark:c.hat; }),f:(nx,ny,u,z)=>z<1?c.hatD:c.hatL});
   WO(B,x,y,.3,.26,.08,2,5,c.band,{top:()=>c.band,f:()=>c.band});
@@ -225,19 +239,19 @@ function witchHat(x,y){ PNAME='witch hat'; const c=WTC, B=[], sp=(u,z,seed)=>{ c
   cone.forEach(([hx,hy,z0,z1,dx,dy],i)=>WO(B,x+dx,y+dy,hx,hy,hx*.3,z0,z1,c.hat,{top:()=>c.hatL,f:(nx,ny,u,z)=>sp(u,z+z0,1653+i)||(z>z1-z0-1?c.hatL:null)}));
   return prop(B); }
 // THE SATCHEL: a leather bag lying flat, its flap over the front, a brass clasp, the strap coiled beside it
-function satchel(x,y){ PNAME='satchel'; const c=WTC, B=[]; WO(B,x+.31,y+.21,.31,.21,.06,0,8,c.bag,{top:wDisc(x+.31,y+.21,.31,.21,(X,Y)=>Y-y>.24?c.bagL:c.bag),f:(nx,ny,u,z,h)=>z>h-1?c.bagL:z<1?c.bagD:null});
+function satchel(x,y){ SHARED.PNAME='satchel'; const c=WTC, B=[]; WO(B,x+.31,y+.21,.31,.21,.06,0,8,c.bag,{top:wDisc(x+.31,y+.21,.31,.21,(X,Y)=>Y-y>.24?c.bagL:c.bag),f:(nx,ny,u,z,h)=>z>h-1?c.bagL:z<1?c.bagD:null});
   B.push(WB(x+.04,y+.26,x+.58,y+.44,8,9,c.bagL,{top:()=>c.bagL})); B.push(WB(x+.27,y+.36,x+.35,y+.42,9,10,c.brass,{top:()=>c.brass}));
   B.push(WB(x+.62,y+.1,x+.72,y+.5,0,2,c.bagD,{top:()=>c.bagD}));
   return prop(B); }
 // THE FLOWERED RUG: a round pink rug with a darker edge, five-petal flowers with cream hearts strewn over it; you walk on it (flat: drawn
 // before what lies on it, as the cottage's rugs are: stackOrder, 43)
-function flowerRug(x,y){ PNAME='flower rug'; const c=WTC, r=1.1, cx=x+r, cy=y+r, FL=[[-.45,-.3],[.4,-.45],[.5,.35],[-.35,.5],[.05,.05]];
+function flowerRug(x,y){ SHARED.PNAME='flower rug'; const c=WTC, r=1.1, cx=x+r, cy=y+r, FL=[[-.45,-.3],[.4,-.45],[.5,.35],[-.35,.5],[.05,.05]];
   const top=wDisc(cx,cy,r,r,(X,Y)=>{ const d=Math.hypot(X-cx,Y-cy); if(d>r-.07)return c.rugD;
     for(const [a,b] of FL){ const fx=cx+a, fy=cy+b, dd=Math.hypot(X-fx,Y-fy); if(dd<.07)return c.flowerC; if(dd<.24){ const ang=Math.atan2(Y-fy,X-fx), pet=Math.cos(ang*5)*.07+.17; if(dd<pet)return c.flower; } }
     return hash(Math.floor(X*24),Math.floor(Y*24),1655)<.02?c.rugD:c.rug; });
   return prop([WB(x,y,x+2*r,y+2*r,0,1,c.rug,{top,f:()=>false})],null,{walk:true,flat:1}); }
 // THE SLEEPING CAT: black, curled on its side, its head tucked to its paws, ears up, the tail round its haunch, white paws
-function sleepingCat(x,y){ PNAME='sleeping cat'; const c=WTC, B=[], fur=(u,z,h)=>z>h-1.5?c.catL:z<1?c.catD:hash(Math.floor(u*24),Math.floor(z),1657)<.06?c.catL:null;
+function sleepingCat(x,y){ SHARED.PNAME='sleeping cat'; const c=WTC, B=[], fur=(u,z,h)=>z>h-1.5?c.catL:z<1?c.catD:hash(Math.floor(u*24),Math.floor(z),1657)<.06?c.catL:null;
   WO(B,x+.42,y+.26,.42,.26,.12,0,8,c.cat,{top:wDisc(x+.42,y+.26,.42,.26,(X,Y)=>hash(Math.floor(X*24),Math.floor(Y*24),1659)<.08?c.catL:c.cat),f:(nx,ny,u,z,h)=>fur(u,z,h)});
   WO(B,x+.1,y+.4,.16,.14,.05,1,10,c.cat,{top:()=>c.catL,f:(nx,ny,u,z,h)=>fur(u,z,h)});
   B.push(WB(x+.0,y+.3,x+.05,y+.35,10,13,c.cat),WB(x+.15,y+.28,x+.2,y+.33,10,13,c.cat));
@@ -245,20 +259,20 @@ function sleepingCat(x,y){ PNAME='sleeping cat'; const c=WTC, B=[], fur=(u,z,h)=
   B.push(WB(x+.72,y+.06,x+.9,y+.14,0,3,c.cat,{top:()=>c.catL}),WB(x+.84,y+.14,x+.9,y+.4,1,3,c.cat,{top:()=>c.catL}));
   return prop(B); }
 // THE TEAL BLANKET: thrown down in a heap: a ragged flat spread with folds, two humps where it bunches; you walk over it
-function tealBlanket(x,y){ PNAME='teal blanket'; const c=WTC, B=[], W=2.4, D=1.6, cx=x+W/2, cy=y+D/2;
+function tealBlanket(x,y){ SHARED.PNAME='teal blanket'; const c=WTC, B=[], W=2.4, D=1.6, cx=x+W/2, cy=y+D/2;
   const edge=(X,Y)=>{ const a=(X-cx)/(W/2), b=(Y-cy)/(D/2), ang=Math.atan2(b,a), r=Math.hypot(a,b); return r<.72+.22*Math.sin(ang*3+1)*Math.cos(ang*2)+.08*Math.sin(ang*7); };
   const col=(X,Y)=>{ const f=Math.sin(X*24/5+Y*24/7)+Math.sin(X*24/3-Y*24/9); return f>1.2?c.tealL:f<-1.1?c.tealD:hash(Math.floor(X*24),Math.floor(Y*24),1661)<.03?c.tealD:c.teal; };
   B.push(WB(x,y,x+W,y+D,0,2,c.teal,{top:(X,Y)=>edge(X,Y)?col(X,Y):null,f:(nx,ny,u,z,h,k,X,Y)=>false}));
   WO(B,cx-.3,cy+.1,.5,.3,.14,2,5,c.teal,{top:col,f:(nx,ny,u,z)=>z<1?c.tealD:c.teal}); WO(B,cx+.5,cy-.3,.3,.22,.1,2,4,c.teal,{top:col,f:(nx,ny,u,z)=>z<1?c.tealD:c.teal});
   return prop(B,null,{walk:true,flat:1}); }
 // THE SKETCHBOOK: lying open on the boards, a dragonfly drawn on its right page in brown ink, its wings washed lilac; you walk over it
-function sketchbook(x,y){ PNAME='sketchbook'; const c=WTC;
+function sketchbook(x,y){ SHARED.PNAME='sketchbook'; const c=WTC;
   const top=(X,Y)=>{ const a=(X-x)*24, b=(Y-y)*24; if(a<0||a>18||b<0||b>12)return null; if(Math.abs(a-9)<.6)return [200,196,186]; if(a<1||a>17||b<1||b>11)return [220,216,206];
     if(a>9){ const fa=a-13.5, fb=b-6; if(Math.abs(fa)<.6&&Math.abs(fb)<4)return c.ink; if(Math.abs(fb-1)<1.6&&Math.abs(fa)<3.2&&Math.abs(fa)>.6)return c.wing; if(Math.abs(fb+1.2)<1.2&&Math.abs(fa)<2.6&&Math.abs(fa)>.6)return c.wing; if(Math.hypot(fa,fb-4.2)<.9)return c.ink; }
     else if(hash(Math.floor(a),Math.floor(b),1663)<.04)return [226,222,210]; return c.page; };
   return prop([WB(x,y,x+.75,y+.5,0,1,c.page,{top,f:()=>[214,210,200]})],null,{walk:true,flat:1}); }
 // A PINK CRATE: a cardboard box with a hand slot in its +y face, its lid flaps folded over, stickers on it; sd picks the stickers
-function pinkCrate(x,y,sd=0){ PNAME='pink crate'; const c=WTC, B=[], S=[[120,160,220],[240,120,120],[240,200,80],[120,200,160]];
+function pinkCrate(x,y,sd=0){ SHARED.PNAME='pink crate'; const c=WTC, B=[], S=[[120,160,220],[240,120,120],[240,200,80],[120,200,160]];
   const stick=(u,z,face,seed)=>{ for(let i=0;i<3;i++){ const a=4+hash(i,face,seed)*12, b=2+hash(i,face+1,seed)*10, w=2+Math.round(hash(i,face+2,seed)*3); if(u*24>a&&u*24<a+w+1&&z>b&&z<b+w)return S[(i+sd+face)%4]; } return null; };
   B.push(WB(x,y,x+.9,y+.8,0,16,c.crate,{top:(X,Y)=>Math.abs(Y-y-.4)<.02?c.crateD:Y-y<.4?c.crateL:c.crate,
     f:(nx,ny,u,z,h,k)=>{ if(ny>0&&z>8&&z<10.5&&u>.3&&u<.6)return c.slot; const s=stick(u,z,ny?1:3,1665+sd); if(s)return s; return z>h-1?c.crateL:z<1?c.crateD:Math.floor(z)===5&&ny?c.crateD:null; }}));
@@ -266,20 +280,20 @@ function pinkCrate(x,y,sd=0){ PNAME='pink crate'; const c=WTC, B=[], S=[[120,160
   return prop(B); }
 // A STACK OF RECORDS: six discs in and out of their sleeves, the top one a yellow sleeve with a dark scrawl on it (a drawn flourish,
 // no maker's name), a black disc showing under it
-function recordStack(x,y){ PNAME='record stack'; const c=WTC, B=[], cx=x+.3, cy=y+.3, S=[[200,60,70],[70,120,200],[240,240,230],[40,110,90]];
+function recordStack(x,y){ SHARED.PNAME='record stack'; const c=WTC, B=[], cx=x+.3, cy=y+.3, S=[[200,60,70],[70,120,200],[240,240,230],[40,110,90]];
   for(let i=0;i<5;i++){ const col=i%2?c.vinyl:S[i>>1], dx=.02*Math.sin(i*2.1), dy=.02*Math.cos(i*1.7); WO(B,cx+dx,cy+dy,.3,.3,.09,i*1.4,i*1.4+1.4,col,{top:()=>col,f:()=>col}); }
   WO(B,cx+.03,cy-.02,.29,.29,.09,7,8.4,c.vinyl,{top:wDisc(cx+.03,cy-.02,.29,.29,(X,Y)=>{ const d=Math.hypot(X-cx-.03,Y-cy+.02); return d<.06?[180,60,60]:Math.floor(d*120)%3===0?c.vinylL:c.vinyl; })});
   B.push(WB(cx-.27,cy-.25,cx+.27,cy+.29,8.4,9.6,c.yellow,{top:(X,Y)=>{ const a=(X-cx)*24, b=(Y-cy)*24; const s=Math.sin(a*.9)*2.2; return Math.abs(b-s)<.7&&Math.abs(a)<5?[50,46,70]:Math.abs(b-s-1.4)<.5&&a>-2&&a<3?[50,46,70]:c.yellow; },f:()=>c.yellow}));
   return prop(B); }
 // THE RECORD PLAYER: a walnut box with brass corners, a black platter on top, a brass tone arm across it
-function recordPlayer(x,y){ PNAME='record player'; const c=WTC, B=[], cx=x+.42, cy=y+.32;
+function recordPlayer(x,y){ SHARED.PNAME='record player'; const c=WTC, B=[], cx=x+.42, cy=y+.32;
   B.push(WB(x,y,x+.9,y+.62,0,10,c.walnut,{top:()=>c.walnutL,f:(nx,ny,u,z,h)=>z>h-1?c.walnutL:(u*24<2||u*24>(nx?.62:.9)*24-2)&&z<3?c.brass:null}));
   for(const [a,b] of [[x,y],[x+.82,y],[x,y+.54],[x+.82,y+.54]])B.push(WB(a,b,a+.08,b+.08,10,11,c.brass,{top:()=>c.brass}));
   WO(B,cx,cy,.26,.26,.08,10,12,c.vinyl,{top:wDisc(cx,cy,.26,.26,(X,Y)=>{ const d=Math.hypot(X-cx,Y-cy); return d<.03?c.brass:Math.floor(d*120)%4===0?c.vinylL:c.vinyl; }),f:()=>c.vinyl});
   B.push(WB(x+.7,y+.08,x+.78,y+.16,10,15,c.brass,{top:()=>c.brass}),WB(x+.4,y+.1,x+.76,y+.14,14,15,c.brass,{top:()=>c.brass}));
   return prop(B); }
 // A RECORD SLEEVE on the floor: a blue square sleeve, a pale figure printed on it; you walk over it
-function recordSleeve(x,y){ PNAME='record sleeve'; const c=WTC;
+function recordSleeve(x,y){ SHARED.PNAME='record sleeve'; const c=WTC;
   const top=(X,Y)=>{ const a=(X-x)*24, b=(Y-y)*24; if(a<0||a>14||b<0||b>14)return null; if(a<1||a>13||b<1||b>13)return c.sleeveL; const fa=a-7, fb=b-6; if(Math.hypot(fa,fb+2.5)<1.8)return [236,206,180]; if(Math.abs(fa)<2.4&&fb>-1&&fb<4)return [230,200,160]; return c.sleeve; };
   return prop([WB(x,y,x+.6,y+.6,0,1,c.sleeve,{top,f:()=>c.sleeveL})],null,{walk:true,flat:1}); }
 // ---- THE CATALOG: each piece an item (placed where clicked, at real size); the frames, the candle, the ball and the sprout stand on
@@ -309,7 +323,7 @@ if(!CAT_DEPTS.some(d=>d[0]==="Witch's Bedroom"))CAT_DEPTS.push(["Witch's Bedroom
   ['record player',1926,'Record player','$220','A walnut record player with brass corners.'],['record sleeve',1927,'Record sleeve','$12','A blue record sleeve on the floor.']];
   for(const [k,n,name,price,line] of I){ CAT_INFO[k]={n,name,dept:D,price,line}; KIND_OF[k]=k; } }
 // the room laid out as the picture has it: 26-zzz-witch-placed (made last, so no other object's or lamp's number changes)
-PNAME='object';
+SHARED.PNAME='object';
 
 };
 export {witchBedroom};

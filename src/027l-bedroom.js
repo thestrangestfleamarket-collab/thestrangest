@@ -1,6 +1,7 @@
 // THE BEDROOM KIT: the old game's bedroom pieces as catalog kinds; loads with the old rooms' kits on the first jump.
 import {CAT_DEPTS, CAT_INFO, CATALOG, hash, KIND_OF, LAMPS, LBLD, mt, prop, sh, speck, T} from './014-gamekit.js';
 const bedroomKit=()=>{ '@oldkits';
+  const LBLDX=LBLD.some(b=>b.id==='lbed')?LBLD:LBLD.concat([{id:'lbed',x0:560,y0:-420,x1:563.9,y1:-416.96,h:96,st:1}]);   // the old game's building for this room is not on this map: a stand-in box, off it
   const DET=2, newsOpen=()=>{};   // the old renderer's detail level (full) and the market news: not here
 // =====================================================================================
 // THE BEDROOM (owner, 13 Oct 2026, his picture: "new scene for game. every item real, with physics and in game. rotatable room. put it next
@@ -11,7 +12,7 @@ const bedroomKit=()=>{ '@oldkits';
 // lights by the pink poster (they glow); the floor, honey boards. Its things (the furniture and everything on it, all real bodies): 47-
 // physics-4-bedroom. Characters someone else owns, in the picture, left out (owner, 13 Oct 2026: "remove the trademarked characters").
 // =====================================================================================
-const BEDR=(B=>({b:B,x0:B.x0+T,y0:B.y0+T,x1:B.x1-T,y1:B.y1-T,jx:.31,jy:.8,H:B.h-4}))(LBLD.find(b=>b.id==='lbed'));
+const BEDR=(B=>({b:B,x0:B.x0+T,y0:B.y0+T,x1:B.x1-T,y1:B.y1-T,jx:.31,jy:.8,H:B.h-4}))(LBLDX.find(b=>b.id==='lbed'));
 // a wall's picture, painted once: W x H fine pixels, c along the wall from its back end, q up from the floor (both in fine pixels: 48 a
 // tile along, 2 an art pixel up); null where it's plain plaster
 function bedCanvas(W,H,draw){ const a=new Array(W*H).fill(null), px=(c,q,col)=>{ c=Math.floor(c); q=Math.floor(q); if(c>=0&&c<W&&q>=0&&q<H&&col)a[q*W+c]=col; };

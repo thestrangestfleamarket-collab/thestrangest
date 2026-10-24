@@ -31,6 +31,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     }
     const s1 = await pg.evaluate(() => ({ built: OLDDBG().built.length, sol: __dbg.SOL.up.length }));
     ok(s1.built === 0, 'nothing left built after leaving');
+    const ke = await pg.evaluate(() => OLDDBG().kitErrors); ok(!ke.length, 'every old kit registered without an error' + (ke.length ? ': ' + ke.join(' | ') : ''));
   }
   ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.join(' | ') : ''));
   await b.close();

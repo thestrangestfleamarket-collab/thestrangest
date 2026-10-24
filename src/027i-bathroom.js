@@ -2,6 +2,7 @@
 import {SHARED} from './003-shx.js';
 import {CAT_DEPTS, CAT_INFO, CATALOG, hash, KIND_OF, LAMPS, LBLD, prop, sh, sided, speck, T} from './014-gamekit.js';
 const bathroomKit=()=>{ '@oldkits';
+  const LBLDX=LBLD.some(b=>b.id==='lbath')?LBLD:LBLD.concat([{id:'lbath',x0:560,y0:-420,x1:566,y1:-416,h:96,st:1}]);   // the old game's building for this room is not on this map: a stand-in box, off it
 // =====================================================================================
 // THE BATHROOM (owner, 15 Oct 2026, his picture: "create walkable scene of this room, html5 graphics only (no actual image) each object its
 // own thing, rotating room 4 angles"). A small bathroom of its own out in the blackness past the crystal cavern (LBLD 'lbath',
@@ -14,7 +15,7 @@ const bathroomKit=()=>{ '@oldkits';
 // fluted pedestal), the potted monstera, the wall mirror, the towel rail and its towel, the brush stand (brush and plunger on a plate), the
 // waste bin with its tissues, the floor drain. Two lights: the ceiling light and the window's day.
 // =====================================================================================
-const BATHB=LBLD.find(b=>b.id==='lbath');
+const BATHB=LBLDX.find(b=>b.id==='lbath');
 const BATH={b:BATHB,x0:BATHB.x0+T,y0:BATHB.y0+T,x1:BATHB.x1-T,y1:BATHB.y1-T,H:BATHB.h-4,cx:(BATHB.x0+BATHB.x1)/2,cy:(BATHB.y0+BATHB.y1)/2,in:[BATHB.x0-T,BATHB.y0-T,BATHB.x1+T,BATHB.y1+T],
   win:[2.5,4.5,60,88],TZ:34};   // win: the window along the left wall (tiles from the back corner) and up it (art px); TZ: the tiles' top
 const BTC={tile:[238,232,224],tileL:[246,242,236],tileD:[222,214,204],grout:[196,180,160],groutD:[172,152,132],rail:[146,112,84],railL:[178,142,108],railD:[104,78,58],

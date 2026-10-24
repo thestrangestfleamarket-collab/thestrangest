@@ -3,6 +3,7 @@ import {SHARED} from './003-shx.js';
 import {CAT_DEPTS, CAT_INFO, CATALOG, hash, KIND_OF, LAMPS, LBLD, LIFE, mt, prop, sh, sided, T} from './014-gamekit.js';
 import {STUDIO} from './020-studio-kit.js';
 const westDesk=()=>{ '@oldkits';
+  const LBLDX=LBLD.some(b=>b.id==='ldesk')?LBLD:LBLD.concat([{id:'ldesk',x0:560,y0:-420,x1:564,y1:-413,h:96,st:1}]);   // the old game's building for this room is not on this map: a stand-in box, off it
 // =====================================================================================
 // THE DESK ROOM, ITS ROOM (owner, 13 Oct 2026: "after the box level in davids intro level ... a small crt monitor and keyboard and mouse on
 // desk in middle of dark room"; back from the archive on the West End, owner 16 Oct 2026: "bring all of these back and put on map"): the
@@ -14,7 +15,7 @@ const westDesk=()=>{ '@oldkits';
 // 26-zzzzzzzzzzzz-west-desk. DESK: the building, the room inside its walls (r), the middle line (y), where you walk on to after the drones
 // (exit), whether you're in it and the lighting you had (in, lm).
 // =====================================================================================
-const DESK={b:LBLD.find(q=>q.id==='ldesk'),r:null,y:0,exit:null,in:false,lm:null};
+const DESK={b:LBLDX.find(q=>q.id==='ldesk'),r:null,y:0,exit:null,in:false,lm:null};
 { const b=DESK.b; DESK.r={x0:b.x0+T,y0:b.y0+T,x1:b.x1-T,y1:b.y1-T}; DESK.y=(b.y0+b.y1)/2; }
 const inDesk=(x,y)=>{ const b=DESK.b; return x>=b.x0&&x<b.x1&&y>=b.y0&&y<b.y1; };
 // the floor: dark concrete in coarse squares (four art px), now and then a paler or darker one (21: bldgCol)

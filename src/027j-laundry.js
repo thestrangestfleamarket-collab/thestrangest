@@ -1,8 +1,9 @@
 // THE LAUNDRY ROOM KIT: the old game's laundry pieces as catalog kinds; loads with the old rooms' kits on the first jump.
 import {SHARED} from './003-shx.js';
-import {CAT_DEPTS, CAT_INFO, CATALOG, hash, KIND_OF, mt, prop, sh, SQB, T} from './014-gamekit.js';
+import {CAT_DEPTS, CAT_INFO, CATALOG, hash, KIND_OF, LBLD, mt, prop, sh, SQB, T} from './014-gamekit.js';
 import {STUDIO} from './020-studio-kit.js';
 const laundryKit=()=>{ '@oldkits';
+  const LBLDX=LBLD.some(b=>b.id==='llaundry')?LBLD:LBLD.concat([{id:'llaundry',x0:560,y0:-420,x1:566,y1:-412,h:96,st:1}]);   // the old game's building for this room is not on this map: a stand-in box, off it
 // =====================================================================================
 // THE LAUNDRY ROOM (owner, 15 Oct 2026, his picture: "create walkable scene of this room, html5 graphics only (no actual image), each
 // object its own thing, rotating room 4 angles"): a small room of its own out in the blackness past the crystal cavern (LBLD 'llaundry',

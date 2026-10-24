@@ -1,0 +1,769 @@
+kind,no,name,department,price,about,made_of
+play tent,,Play tent,Attic,$85,,
+starry rug,,Starry rug,Attic,$120,,
+oval rug,,Oval rug,Attic,$35,,
+beanbag,,Beanbag,Attic,$60,,
+"cushion, red",,"Cushion, red",Attic,$15,,
+"cushion, green",,"Cushion, green",Attic,$15,,
+open book,,Open book,Attic,$12,,
+round stool,,Round stool,Attic,$28,,
+gift box,,Gift box,Attic,$6,,
+pennants,,Pennants,Attic,$9,,
+toy train,,Toy train,Attic,$40,,
+spotted plush,,Spotted plush,Attic,$30,,
+stacking rings,,Stacking rings,Attic,$14,,
+toy car,,Toy car,Attic,$8,,
+toy hamper,,Toy hamper,Attic,$45,,
+low cabinet,,Low cabinet,Attic,$220,,
+cube shelf,P-909,Cube Shelf,bedroom,70,"Tall and narrow, five cubes, white bins in four and a red toy car in one.","wood, plastic"
+whiteboard,,Whiteboard,Attic,$55,,
+"picture frame, large",,"Picture frame, large",Attic,$24,,
+"picture frame, wide",,"Picture frame, wide",Attic,$16,,
+"picture frame, small",,"Picture frame, small",Attic,$12,,
+potted plant,OF-119,Potted plant,office,35,Round dark leaves in a brown pot.,"ceramic, leaves"
+banister,,Banister,Attic,$180,,
+stairwell,,Stairwell,Attic,$0,,
+bakery barn,P-910,Bakery Barn,Bakery Island,120000,"A stone-footed barn under a barrel roof of red tiles, a leaded window.",plaster
+chimney,S-993,Chimney,street,1500,A brick chimney.,street
+bread sign,P-912,Bread Sign,Bakery Island,340,"A slice and a baguette cut from a board, on two brackets.",wood
+windmill tower,P-913,Windmill Tower,Bakery Island,60000,"A square stone and plaster tower under a red cap, four latticed sails turning on its face.",plaster
+wheat patch,P-914,Wheat Patch,Bakery Island,45,Eleven ears of wheat on their stems.,wheat
+hay bale,P-915,Hay Bale,Bakery Island,12,A rounded bale of straw.,straw
+bakery sign board,P-916,Bakery Sign Board,Bakery Island,65,An A-frame chalkboard with the day's bread on it.,wood
+cobbled path,P-917,Cobbled Path,Bakery Island,900,"A bend of warm sandstone cobbles, grass edging it.",stone
+turned earth,P-918,Turned Earth,Bakery Island,30,An oval of dark earth turned for planting.,earth
+red poppy,P-919,Red Poppy,Bakery Island,4,A red poppy on its stem.,flower
+pink daisy,P-920,Pink Daisy,Bakery Island,4,A pink daisy on its stem.,flower
+orange marigold,P-921,Orange Marigold,Bakery Island,5,An orange marigold on its stem.,flower
+bar counter,B-701,Bar Counter,bar,1800,"A run of oxblood bar, a step along its foot, shelves of glasses on the inside.","oak, lacquer"
+bar counter: ashtray,B-702,Bar Counter with an Ashtray,bar,1820,"The bar, an ashtray, the napkins and the sauces out.","oak, lacquer"
+bar counter: bottle,B-703,Bar Counter with a Bottle,bar,1810,"The bar, a bottle of beer and a glass left on it.","oak, lacquer"
+bar counter: glass,B-704,Bar Counter with a Glass,bar,1805,"The bar, a glass on a mat.","oak, lacquer"
+bar round end,B-705,"Bar Counter, Round End",bar,1400,"The bar's end, curving back to the wall.","oak, lacquer"
+bar corner,B-706,"Bar Counter, Corner",bar,2200,"The bar turning back to the wall, the till on it.","oak, lacquer"
+back bar,B-707,Back Bar,bar,3400,"Cupboards under a steel top: a sink, a row of bottles, glasses on towels.","oak, steel"
+bar stool,B-708,Bar Stool,bar,120,A red cushion on a green pole.,"steel, vinyl"
+bar fridge,B-709,Drinks Fridge,bar,900,"A glass-door fridge of bottles and cans, lit blue.","steel, glass"
+red leather sofa,B-711,Red Leather Sofa,bar,1600,A deep red sofa with rolled arms.,"leather, oak"
+red leather armchair,B-712,Red Leather Armchair,bar,800,"A club chair, its back in channels.","leather, oak"
+bar table,B-713,Round Table,bar,260,"A small round table on one foot, a glass, an ashtray and a candle on it.","walnut, cast iron"
+red rug,B-714,Red Runner,bar,180,A long deep red rug.,wool
+potted palm,L-018,potted palm,lounge,45,A palm in a terracotta pot.,"plant, clay"
+neon sign: BAR,B-717,"Neon Sign, BAR",bar,650,BAR in red tube. It glows.,"glass, neon"
+neon sign: LIVE,B-718,"Neon Sign, LIVE",bar,700,LIVE in red tube. It glows.,"glass, neon"
+"exit sign, lit",B-719,Exit Sign,bar,45,"EXIT, lit.",plastic
+bar window blinds,B-722,Window Blinds,bar,60,Blinds drawn in a wood frame.,"aluminium, oak"
+bar blinds,B-723,Bar Blinds,bar,180,"A wide window of blinds, drawn.","aluminium, oak"
+TV on a bracket,B-724,TV on a Bracket,bar,300,"A small set high on the wall, the game on.","plastic, glass"
+black cupboard,B-725,Black Cupboard,bar,110,"A low black cupboard, straws and a cup on it.",steel
+bar soffit,B-726,Bar Soffit,bar,900,"A dropped ceiling over the bar, its edge banded red.","plaster, oak"
+ceiling fan,B-727,Ceiling Fan,bar,240,"Four wooden blades that turn, a frosted globe that lights.","steel, oak, glass"
+small stage,B-734,Small Stage,bar,1500,A low black stage with a gilt edge.,pine
+stage cloth,B-735,Stage Cloth,bar,300,"A black cloth hung in folds, a stage's backing.",velvet
+stage,B-736,Stage,bar,2400,"A black stage with a gilt edge, room for a piano and a player.",pine
+wide stage cloth,B-737,Wide Stage Cloth,bar,420,A wide black cloth hung in folds.,velvet
+grand piano,B-738,Grand Piano,bar,42000,"A six-foot grand in black lacquer, the lid down.","spruce, maple, iron, felt"
+grand piano on a stage,B-739,Grand Piano (on a stage),bar,42000,"The grand, standing on a stage.","spruce, maple, iron, felt"
+candle on the bar,B-743,Candle on the Bar,bar,12,"A candle in red glass, standing on the counter.","wax, glass"
+console TV,B-744,Console TV,bar,380,"A walnut set on four legs, rabbit ears on top, a late show on in black and white.","walnut, glass, cloth"
+microphone stand on a stage,B-741,Microphone Stand (on a stage),bar,160,"The stand, on a stage.","steel, chrome"
+microphone cord on a stage,B-743,Microphone Cord (on a stage),bar,20,A black cord over the stage to the wall.,"rubber, copper"
+microphone stand,B-740,Microphone Stand,bar,160,"A chrome stand, a microphone at a singer's mouth, its cord over the floor.","steel, chrome"
+open guitar case,B-742,Open Guitar Case,bar,120,"A hard case lying open, red plush, a few coins in it.","wood, vinyl, plush"
+poster: koi night,B-728,"Poster, Koi Night",bar,15,"The koi pond on the moon shrine's roof, by night.",paper
+poster: ghost sale,B-729,"Poster, Ghost Shop",bar,15,The ghost shop's sale.,paper
+poster: hover taxi,B-730,"Poster, Hover Taxi",bar,15,"Every 30 seconds, down the street.",paper
+poster: moon shrine,B-731,"Poster, Moon Shrine",bar,20,The shrine on the roof.,paper
+poster: 190 street,B-732,"Poster, 190 Street",bar,15,The line to 190 Street.,paper
+poster: night painting,B-733,"Painting, Night",bar,90,A small dark painting of the river at night.,"oil, canvas"
+toilet,P-723,Toilet,apartment,0,"White, with a tank and a lever.",porcelain
+wash basin,,Wash basin,Bathroom,$180,,
+potted monstera,,Potted monstera,Bathroom,$35,,
+wall mirror,,Wall mirror,Bathroom,$60,,
+towel rail,P-726,Towel Rail,apartment,0,A chrome bar with a striped towel over it. Hangs on a wall.,"chrome, cotton"
+brush stand,,Brush stand,Bathroom,$15,,
+waste bin,,Waste bin,Bathroom,$12,,
+floor drain,,Floor drain,Bathroom,$30,,
+rubber mat,,,,,,
+counter mat,,,,,,
+counter,,,,,,
+long counter,,,,,,
+shelf of goods,,,,,,
+shop shelf,,,,,,
+door mat,,,,,,
+drinks fridge,,,,,,
+newspaper rack,S-925,Newspaper Rack,street,200,A rack of newspapers.,street
+drone box,,,,,,
+drone flap,,,,,,
+cigarette rack,,,,,,
+lottery machine,,,,,,
+candy jar,,,,,,
+paper bags,,,,,,
+wall phone,,,,,,
+radio,P-730,Radio,apartment,0,"A walnut tabletop radio: a cloth speaker, a dial that lights up, two knobs and an aerial. Plays the stations of the market.","walnut, cloth, glass, bakelite"
+convex mirror,,,,,,
+extension cord,,,,,,
+box fan,,,,,,
+fly strip,,,,,,
+fluorescent tube,,,,,,
+wall clock,,,,,,
+calendar,,,,,,
+door bell,,,,,,
+crystal cluster,,Crystal cluster,Crystal Cavern,$380,,
+lily,P-832,Lily,apartment,6,"A white lily on its stem, an orange heart, two leaves.",flower
+stone pillar,P-833,Stone Pillar,apartment,900,"A fluted stone column on its plinth, a capital at the top.",stone
+cellar slime,P-834,Cellar Slime,apartment,0,"A drop of blue jelly the size of a dog, breathing. It has a face.",jelly
+hooded figure,P-835,The Hooded One,apartment,0,"A slight figure whose hood glows cyan. He draws his blade and sheathes it, over and over.",cloth
+green-haired wanderer,P-836,The Green-Haired Wanderer,apartment,0,"Barefoot in a green dress under a wide hat, her long green hair blown out to one side, a pale blade held point down.",cloth
+cherry platform,,Cherry platform,Cherry Station,"$6,800",,
+cherry shelter,,Cherry shelter,Cherry Station,"$3,200",,
+station bench,,Station bench,Cherry Station,$140,,
+blue railing,,Blue railing,Cherry Station,$260,,
+rail track,,Rail track,Cherry Station,"$1,900",,
+cherry tree,,Cherry tree,Cherry Station,$450,,
+lantern barrel,,Lantern barrel,Cherry Station,$95,,
+ivy bush,,Ivy bush,Cherry Station,$22,,
+broken fence,,Broken fence,Cherry Station,$30,,
+post fence,,Post fence,Cherry Station,$85,,
+wildflowers,,Wildflowers,Cherry Station,$4,,
+worn patch,,Worn patch,Cherry Station,$0,,
+rabbit,,Rabbit,Cherry Station,$0,,
+coat rack,P-817,Coat Rack,apartment,60,"A bentwood coat tree in walnut: a pole on crossed feet, four hooks at the top.",walnut
+"cloud jacket, hung up",P-818,Cloud Jacket (hung up),apartment,0,"The cloud jacket on a hook: a cumulus in a jacket's shape, breathing.",cloud
+crystal pillar,,Crystal pillar,Crystal Cavern,"$2,400",,
+keystone,,Keystone,Crystal Cavern,$900,,
+boulder,,Boulder,Central Park,$0,,
+cave fern,,Cave fern,Crystal Cavern,$18,,
+wisp,,Wisp,Crystal Cavern,$0,,
+skull,P-951,Skull,Dungeon,0,"A human skull on the stones, its sockets dark. Whose, nobody left to say.",bone
+bone pile,P-952,Bone Pile,Dungeon,0,"Long bones crossed over a rib cage, a skull on top of the heap.",bone
+bones,P-953,Bones,Dungeon,0,Two long bones dropped on the stones. You walk over them.,bone
+wall torch,P-954,Wall Torch,Dungeon,30,"A pitch torch in an iron bracket, burning; the wall above it black with its soot.","iron, ash, pitch"
+dust in the air,P-955,Dust in the Air,Dungeon,0,"Motes drifting in the torchlight, caught by it now and then.",dust
+mouse run,P-956,Mice,Dungeon,0,"Three mice between two holes in the wall: out, a dash, a sniff, a dash, and back in.",mouse
+stone column,P-957,Stone Column,Dungeon,600,"An eight-sided column of rough stone, ridged at its edges, stepped at its foot and its head; cobwebs in its corners.",stone
+oak barrel,P-958,Oak Barrel,Dungeon,40,An oak barrel bound with three rusted hoops. Whatever was in it is long gone.,"oak, iron"
+crate,P-959,Crate,Dungeon,12,"A plank crate, nailed shut, dust on its lid.",wood
+iron chest,P-960,Iron-Banded Chest,Dungeon,80,"An oak chest banded with iron, its lock plate rusted shut.","oak, iron"
+brazier,P-961,Brazier,Dungeon,60,"An iron bowl of coals on three legs, the embers breathing red.","iron, coal"
+gibbet,P-962,Gibbet,Dungeon,0,"An iron cage on a chain from the ceiling, a skull at the bottom of it. Walk under it if you dare.","iron, bone"
+straw,P-963,Straw,Dungeon,2,"A heap of old straw, dry and pale. Something sleeps in it.",straw
+sarcophagus,P-964,Stone Sarcophagus,Dungeon,500,"A coffer of dressed stone under a heavy lid, a cross cut in it. Sealed.",stone
+fish tank: harbor water,P-812,"Fish Tank, Harbor Water",apartment,1400,"The Hudson in a tank: green and murky, a light chop on the top, silver fish and a striped bass over the mud, a crab, a tyre and two bottles. The water moves; the fish swim where they like.","glass, water, walnut"
+fish tank: open sea,P-813,"Fish Tank, Open Sea",apartment,1400,"The open sea in a tank: a swell and a wind sea at full size rolling in the glass, kelp swaying in it, sardines, two jellyfish, an anchor. The water moves; the fish swim where they like.","glass, water, walnut"
+fish tank: clear cove,P-814,"Fish Tank, Clear Cove",apartment,1400,"A clear cove in a tank: glassy water, light dancing on white sand, seagrass, yellow, blue and orange fish, a little ray, an amphora. The water moves; the fish swim where they like.","glass, water, walnut"
+small fish tank: clear cove,P-815,"Small Fish Tank, Clear Cove",apartment,800,"A clear cove in a tank: glassy water, light dancing on white sand, seagrass, yellow, blue and orange fish, a little ray, an amphora. A short tank.","glass, water, walnut"
+apartment fish tank,P-816,Apartment Fish Tank,apartment,0,"A little tank on a low cabinet, clear water, white sand, seagrass and one fish: yours, in your colour.","glass, water, walnut"
+ghost street shop,GS-101,"Wooden Shop, Ground Floor",ghoststreet,22000,"Plank front, a doorway, panels under the bay.","cedar, cypress"
+"ghost street shop, east end",GS-114,"Wooden Shop, Ground Floor East",ghoststreet,16000,The rest of the plank front and the doorway.,"cedar, cypress"
+"ghost street shop, upstairs",GS-102,"Wooden Shop, Upper Floor",ghoststreet,26000,"A lit window with drapes, a shutter with a faded flower.","cedar, paper"
+ghost street shop roof,GS-103,Tiled Roof,ghoststreet,14000,"Clay tiles, a ridge of ornaments, corners turned up.",fired clay
+ghost street eave,GS-104,Shop Eave with Sign,ghoststreet,3200,"A low tiled eave, a blue sign, a cooler whose fan turns.","clay, steel, wood"
+ghost street bay window,GS-105,Bay Window,ghoststreet,2400,Pink-lit panes in a wooden frame.,"wood, glass"
+door curtain,GS-106,Door Curtain,ghoststreet,85,Five blue strips over a doorway. They stir.,cotton
+drinks machine,GS-107,Drinks Machine,ghoststreet,4200,"A teal machine, its window of bottles lit.","steel, glass"
+planted bed with lanterns,GS-108,Planted Bed with Lanterns,ghoststreet,340,"Dark leaves, pink blossom, two paper lanterns.","stone, living, paper"
+long planted bed,GS-109,Long Planted Bed,ghoststreet,380,"Dark leaves, pink blossom, a paper lantern.","stone, living, paper"
+small planted bed,GS-110,Small Planted Bed,ghoststreet,120,Dark leaves and pink blossom in a stone edge.,"stone, living"
+wooden row house,GS-111,Wooden Row House,ghoststreet,160000,"Planks, a tiled roof, some windows lit.","cedar, clay"
+"wooden row house, narrow",GS-112,Narrow Row House,ghoststreet,120000,A narrower one of the row.,"cedar, clay"
+utility pole,S-950,Utility Pole,street,3000,A wooden utility pole with two crossarms and their insulators.,street
+classical guitar,,Classical guitar,Music,$180,,
+steel-string guitar,,Steel-string guitar,Music,$260,,
+electric guitar,,Electric guitar,Music,$420,,
+bass guitar,,Bass guitar,Music,$380,,
+ukulele,,Ukulele,Music,$60,,
+banjo,,Banjo,Music,$240,,
+mandolin,,Mandolin,Music,$200,,
+harp,,Harp,Music,$950,,
+violin,,Violin,Music,$320,,
+cello,,Cello,Music,$1200,,
+flute,,Flute,Music,$450,,
+recorder,,Recorder,Music,$25,,
+drum kit,,Drum kit,Music,$650,,
+drum kit on a stage,,Drum kit on a stage,Music,$650,,
+xylophone,,Xylophone,Music,$380,,
+marimba,,Marimba,Music,$1600,,
+glockenspiel,,Glockenspiel,Music,$95,,
+tubular bells,,Tubular bells,Music,$1100,,
+kalimba,,Kalimba,Music,$35,,
+steel pan,,Steel pan,Music,$290,,
+herb cottage floor,HC-101,Herb cottage floor,cottage,900,"Worn dark planks, the whole room's floor.",oak
+"herb cottage wall, west",HC-102,"Herb cottage wall, west",cottage,1200,"Damp plaster under ivy, a wooden trim along the top.","plaster, ivy"
+"herb cottage wall, north",HC-103,"Herb cottage wall, north",cottage,1100,Plaster and ivy with the arched window in it.,"plaster, ivy, glass"
+"herb cottage wall, east",HC-104,"Herb cottage wall, east",cottage,900,Plaster and ivy with the round-topped door in it.,"plaster, oak"
+"herb cottage wall, south",HC-105,"Herb cottage wall, south",cottage,900,Plaster with ivy at one end.,"plaster, ivy"
+window sill and branch rod,HC-106,Window sill and branch rod,cottage,45,A sill under the window and a crooked branch for the drapes.,"oak, branch"
+wall shelves with jars and candles,HC-108,Wall shelves with jars and candles,cottage,180,"Four little shelves of books, jars, frames and candles.","cherry, glass, wax"
+portrait in a red frame,HC-110,Portrait in a red frame,cottage,60,"Somebody's grandmother, probably.","cherry, canvas"
+herb garland,HC-111,Herb garland,cottage,25,"Twine with drying bundles, grapes and an apple.","twine, herbs"
+ivy along the walls,HC-112,Ivy along the walls,cottage,40,"Ivy along the wall tops, thick at one end.",ivy
+fiddle-leaf fig,P-739,Fiddle-Leaf Fig,apartment,45,"Big glossy leaves on a thin trunk, in a dark glazed pot.","ceramic, living"
+round table with pink flowers,HC-114,Round table with pink flowers,cottage,160,"A red pedestal table: pink flowers, a jar with a plant in it, two jars below.","cherry, glass"
+work table with candles,HC-115,Work table with candles,cottage,260,"Cutting board, knife, herbs, a fern and three candles.","oak, wax, steel"
+books and a leaning frame,HC-116,Books and a leaning frame,cottage,30,Three books on the floor and a botanical print against the wall.,paper
+red bookshelf,HC-117,Red bookshelf,cottage,420,"Four shelves of books, jars and a bowl, a pumpkin on top.","cherry, paper, glass"
+lily in a red pot,HC-118,Lily in a red pot,cottage,35,Tall leaves in a red pot.,"clay, leaves"
+round table with violets,HC-119,Round table with violets,cottage,150,Violets in a vase and a stack of books.,"cherry, glass, paper"
+tree stump with pumpkins,HC-120,Tree stump with pumpkins,cottage,120,"A stump with its roots, three pumpkins and two candles.","oak, pumpkin, wax"
+long table on tree roots,HC-121,Long table on tree roots,cottage,780,"A long rough plank on two root stumps: a cream lamp, candles, bowls, ferns at its feet.","oak, wax, ceramic"
+round purple rug,HC-122,Round purple rug,cottage,90,A round rug in plum.,wool
+"patterned rug, purple and gold",HC-123,"Patterned rug, purple and gold",cottage,340,A wool rug with a gold medallion and fringed ends.,wool
+purple doormat,HC-124,Purple doormat,cottage,25,A small fringed mat.,wool
+apothecary cabinet,HC-125,Apothecary cabinet,cottage,640,"Oak cupboard and open shelves: jars, purple books, candles, violets and a teapot on top.","oak, glass, wax"
+writing desk with a pink lamp,HC-126,Writing desk with a pink lamp,cottage,380,"An open book, a green kettle, books and a pink lamp.","cherry, paper, glass"
+wood stove,HC-127,Wood stove,cottage,900,"Cast iron on short legs, its pipe into the wall, a fire in its grate.",cast iron
+potted fern,HC-128,Potted fern,cottage,30,A fern in a clay pot.,"clay, fern"
+low chest with candles,HC-129,Low chest with candles,cottage,300,"An amber chest: books, candles, a pothos spilling over.","pine, wax"
+little table with jars,HC-130,Little table with jars,cottage,140,"Jars of this and that, a fern and two candles.","cherry, glass, wax"
+lilac in a pot,HC-131,Lilac in a pot,cottage,40,"Purple lilac in a cream pot, a jar beside it.","clay, lilac"
+folding screen,HC-132,Folding screen,cottage,260,"Three arched panels, dark blue with flowers.","oak, lacquer"
+"door step, cottage",HC-133,"Door step, cottage",cottage,10,A worn sill at the door.,oak
+shelf with a candle and jars,HC-134,Shelf with a candle and jars,cottage,60,"A small red shelf, a candle and two jars.","cherry, glass"
+cottage wall clock,HC-135,Cottage wall clock,cottage,45,A round clock in a wooden rim.,"oak, enamel"
+shelf with jars and a candle,HC-136,Shelf with jars and a candle,cottage,60,"A red shelf, two jars and a candle.","cherry, glass"
+framed flower print,HC-137,Framed flower print,cottage,30,"A red flower, framed.",paper
+green drapes,HC-107,Green drapes,cottage,55,Ragged green drapes. They stir.,linen
+bead strings,HC-109,Bead strings,cottage,30,Strings of glass and wooden beads. They swing.,"glass, wood, twine"
+herb cottage roof,HC-138,Herb cottage roof,cottage,120,A pitched roof of clay tiles over oak eaves.,"clay, oak"
+office floor,OF-101,Office floor,office,1400,Dark teal carpet.,wool
+"office wall, west",OF-102,"Office wall, west",office,1500,"Dusky plaster over red wood panelling, the big window in it.","plaster, mahogany, glass"
+"office wall, north",OF-103,"Office wall, north",office,1400,Plaster with dark wood pilasters.,"plaster, wood"
+"office wall, east",OF-104,"Office wall, east",office,1100,The wall with the door to the hall.,"plaster, oak"
+"office wall, south",OF-105,"Office wall, south",office,1100,Plaster with pilasters.,"plaster, wood"
+window sill with a case,OF-106,Window sill with a case,office,60,"A sill, a white case on it, the curtain rod above.","oak, plastic"
+filing cabinets with boxes,OF-108,Filing cabinets with boxes,office,520,"Two steel cabinets, a drawer out, boxes of case files on top.","steel, cardboard"
+"hanging lamp, sage",OF-109,"Hanging lamp, sage",office,95,A sage shade on a long cord. On at night.,enamel
+office desk,OF-110,Office desk,office,780,"A blotter, a red rotary phone, file boxes and papers everywhere.","mahogany, paper"
+blue executive chair,OF-111,Blue executive chair,office,420,A tall tufted chair on wheels.,"vinyl, steel"
+dumbbell,OF-112,Dumbbell,office,30,Somebody was keeping in shape.,iron
+fallen thermos,OF-113,Fallen thermos,office,20,"Knocked over, still warm.",steel
+rug of rings,OF-114,Rug of rings,office,420,Orange discs ringed in cream and tan.,wool
+"filing cabinet, a drawer out",OF-115,"Filing cabinet, a drawer out",office,260,"A drawer full of papers, a book on top.","steel, paper"
+fish plaque,,,,,,
+arc floor lamp,OF-117,Arc floor lamp,office,190,A bronze arc with a scalloped sage shade. On at night.,"bronze, enamel"
+rubber plant,OF-118,Rubber plant,office,45,Dark glossy leaves in a black pot.,"ceramic, leaves"
+books and papers on the floor,OF-120,Books and papers on the floor,office,5,A blue book and a mess of papers.,paper
+tufted sofa,OF-121,Tufted sofa,office,1100,"A long maroon sofa, channel-tufted.","velvet, oak"
+side table with a lamp,OF-122,Side table with a lamp,office,160,A gourd lamp with a pale shade. On at night.,"walnut, ceramic"
+"side table with a lamp, second",OF-123,"Side table with a lamp, second",office,160,The other one.,"walnut, ceramic"
+LOST CAT poster,OF-124,LOST CAT poster,office,2,"Grey cat, answers to nothing.",paper
+photo board,OF-125,Photo board,office,40,Photos pinned in rows.,"cork, paper"
+sideboard with a globe,OF-126,Sideboard with a globe,office,540,"Low shelves of books, a globe, a magazine and a lamp.","walnut, paper"
+framed map,OF-127,Framed map,office,55,A pale map of somewhere.,"paper, aluminium"
+wooden chair,OF-128,Wooden chair,office,65,A plain chair with a dusty rose seat.,"beech, vinyl"
+credenza,OF-129,Credenza,office,460,Two pale drawers and sliding doors on splayed legs.,walnut
+"door step, office",OF-130,"Door step, office",office,10,The sill at the hall door.,oak
+coat stand with a trench coat,OF-131,Coat stand with a trench coat,office,150,A trench coat and a grey hat.,"oak, cotton, felt"
+office wall clock,OF-132,Office wall clock,office,45,A round clock.,"wood, enamel"
+framed certificate,OF-133,Framed certificate,office,30,Some licence or other.,paper
+sheer curtains,OF-107,Sheer curtains,office,60,Pale sheers either side of the window. They stir.,voile
+kitchen floor,HK-101,Kitchen floor,harbor,800,Big cream tiles with a blue cross at every other corner.,tile
+"kitchen wall, west",HK-102,"Kitchen wall, west",harbor,900,"Slate tiles under cream plaster, a beam on top.","tile, plaster, pine"
+"kitchen wall, north",HK-103,"Kitchen wall, north",harbor,800,"The same, cream brick by the corner.","tile, plaster, brick"
+"kitchen wall, east",HK-104,"Kitchen wall, east",harbor,800,The open doorway to the wharf.,"tile, plaster, pine"
+"kitchen wall, south",HK-105,"Kitchen wall, south",harbor,800,Tile and plaster.,"tile, plaster"
+low wall troughs and pillars,HK-106,Low wall troughs and pillars,harbor,300,Planter troughs and cream pillars along the low front walls.,"stone, enamel"
+retro fridge,HK-107,Retro fridge,harbor,890,"Cream, two doors, rounded shoulders.","steel, enamel"
+counter with a cutting board and knives,HK-108,Counter with a cutting board and knives,harbor,240,"A cutting board, a stone mortar and a knife block.","pine, tile, stone"
+counter with a spice rack and pots,HK-110,Counter with a spice rack and pots,harbor,520,"A microwave, a spice rack, a drawer unit with pots and plates on top.","pine, tile, steel"
+counter with a bread box and toaster,HK-112,Counter with a bread box and toaster,harbor,260,A roll-top bread box and a toaster.,"pine, tile, steel"
+six-burner stove,HK-109,Six-burner stove,harbor,760,Six burners and an oven.,"steel, cast iron"
+sink counter,HK-111,Sink counter,harbor,310,A steel basin and a gooseneck tap.,"pine, steel"
+green checked mat,HK-113,Green checked mat,harbor,20,Olive and yellow lattice.,cotton
+lollipop tree in a pot,HK-114,Lollipop tree in a pot,harbor,70,A little round-crowned tree.,"clay, leaves"
+tiled cabinet,HK-115,Tiled cabinet,harbor,180,Two drawers under a tiled top.,"pine, tile"
+hutch of plates,HK-116,Hutch of plates,harbor,340,"Plates standing in rows, two painted tiles, books on top.","pine, china"
+little table under a cloth,HK-117,Little table under a cloth,harbor,90,A green cloth over it.,"pine, cotton"
+table with a candle in a bottle,HK-118,Table with a candle in a bottle,harbor,230,Four plates and a candle in a wine bottle.,"pine, cotton, glass"
+cushioned stool,HK-119,Cushioned stool,harbor,45,A green cushion.,"pine, cotton"
+wooden stool,HK-120,Wooden stool,harbor,35,Three legs and a round seat.,pine
+plank bench,HK-121,Plank bench,harbor,80,A plank on two legs.,pine
+long table with wine glasses,HK-122,Long table with wine glasses,harbor,260,Three glasses on a green cloth.,"pine, cotton, glass"
+"plank bench, west",HK-123,"Plank bench, west",harbor,80,A plank on two legs.,pine
+"plank bench, east",HK-124,"Plank bench, east",harbor,80,A plank on two legs.,pine
+"cushioned stool, second",HK-125,"Cushioned stool, second",harbor,45,A green cushion.,"pine, cotton"
+"wooden stool, second",HK-126,"Wooden stool, second",harbor,35,Three legs.,pine
+counter with pots and books,HK-127,Counter with pots and books,harbor,420,"Wood above, grey tile below, pots, books and a plant.","pine, tile"
+tiled block,HK-128,Tiled block,harbor,60,A low tiled block.,"brick, tile"
+small pot on the floor,HK-129,Small pot on the floor,harbor,15,A little grey pot.,iron
+grey tiled block,HK-130,Grey tiled block,harbor,60,A tiled block on a wooden base.,"pine, tile"
+potted fig,HK-131,Potted fig,harbor,60,A fig with a forked trunk.,"clay, leaves"
+box of yellow flowers,HK-132,Box of yellow flowers,harbor,35,Marigolds in a white box.,"wood, flowers"
+kitchen wall clock,HK-133,Kitchen wall clock,harbor,45,A round clock.,"pine, enamel"
+sea print,HK-134,Sea print,harbor,30,A sailboat on a blue sea.,paper
+apron hooks,HK-135,Apron hooks,harbor,25,Two aprons on hooks.,"cotton, steel"
+cozy den floor,CD-101,Cozy den floor,cozyden,900,"Red-brown planks, worn pale by the door and the chair.",pine
+"cozy den wall, west",CD-103,"Cozy den wall, west",cozyden,700,"Pink plaster, a dark red beam, sloping at its far end under the roof.","plaster, oak"
+"cozy den wall, north",CD-104,"Cozy den wall, north",cozyden,800,"Pink plaster with the arched window, sloping at its far end.","plaster, oak"
+"cozy den wall, east",CD-105,"Cozy den wall, east",cozyden,700,"Pink plaster, a dark red beam, sloping at its far end.","plaster, oak"
+"cozy den wall, south",CD-106,"Cozy den wall, south",cozyden,750,"Pink plaster and the way in, sloping at its far end.","plaster, oak"
+arched window frame,CD-107,Arched window frame,cozyden,180,A deep red sill under the arched window; dust turns in its light by day.,oak
+red mountain tapestry,CD-108,Red mountain tapestry,cozyden,220,"Woven red and cream: a key border, mountains under a big sun, a fringe.",wool
+two small framed pictures,CD-109,Two small framed pictures,cozyden,60,"A hill under a blue sky, and a white figure on lilac.","paper, oak"
+peg rail with hats and a satchel,CD-110,Peg rail with hats and a satchel,cozyden,190,"A straw hat with a red ribbon, a purple scarf, a leather satchel, a wizard's hat.","oak, straw, felt, leather"
+"front step, cozy den",CD-111,"Front step, cozy den",cozyden,40,A broad plank step at the door.,pine
+big-leaf plant on a stand,CD-112,Big-leaf plant on a stand,cozyden,95,"A monstera with split leaves, in a cream pot on a low stand.","clay, leaves, oak"
+tv stand with drawers,CD-113,TV stand with drawers,cozyden,240,Two drawers with brass knobs and an open cubby.,cherry
+old tv,CD-114,Old TV,cozyden,120,A grey-blue tube set with a smiley sticker. It's on.,"plastic, glass"
+little bookshelf,CD-115,Little bookshelf,cozyden,260,"Three shelves: books, a globe, a little brass figure.","oak, paper"
+lava lamp,P-915,Lava Lamp,bedroom,25,"Real wax in real water: warmed by the bulb it rises, cools and sinks. Glows teal.","glass, steel, wax"
+small cactus in a pot,CD-117,Small cactus in a pot,cozyden,15,A round cactus with a pink flower.,"clay, cactus"
+popcorn bucket,CD-118,Popcorn bucket,cozyden,8,A grey pail heaped with popcorn.,"tin, popcorn"
+spilled popcorn,CD-119,Spilled popcorn,cozyden,1,A few that got away.,popcorn
+bunny food bowl with a carrot,CD-120,Bunny food bowl with a carrot,cozyden,12,Pellets and a carrot with its leaves.,stoneware
+bunny water bowl,CD-121,Bunny water bowl,cozyden,10,Fresh water in a heavy bowl.,stoneware
+"round rug, red and gold",CD-122,"Round rug, red and gold",cozyden,180,"A red rug with a gold ring, worn where feet go.",wool
+easel with a painting,CD-123,Easel with a painting,cozyden,150,A white bunny in the snow on a lilac night.,"pine, canvas"
+sketchbook and loose pages,CD-124,Sketchbook and loose pages,cozyden,14,"Open at a drawing, a page beside it.",paper
+paintbrushes and a tube of paint,CD-125,Paintbrushes and a tube of paint,cozyden,18,"Two brushes, a tube of blue and a dab of it.","wood, paint"
+bunny box,CD-126,Bunny box,cozyden,5,An open box with a blanket and hay: the bunny's.,"cardboard, cotton"
+side table,CD-127,Side table,cozyden,110,A square table with a drawer.,oak
+table lamp,CD-128,Table lamp,cozyden,65,"A cream shade on a dark round base, lit.","ceramic, linen"
+"scissors, a key and a pencil",CD-129,"Scissors, a key and a pencil",cozyden,6,Left on the floor by the table.,"steel, brass, wood"
+red doormat,CD-130,Red doormat,cozyden,20,"Striped red, inside the door.",coir
+leather recliner,CD-131,Leather recliner,cozyden,650,"Oxblood leather, tufted, its seat sagged where you sit.",leather
+tray table with a cup of tea,CD-132,Tray table with a cup of tea,cozyden,70,A tray on a post by the chair; the tea is hot.,"oak, porcelain"
+greenhouse floor,WG-101,Greenhouse floor,greenhouse,1400,"Dark checker tiles and mossy flagstone paths, leaves and pebbles where they fell.","clay tile, stone"
+"greenhouse wall, west",WG-102,"Greenhouse wall, west",greenhouse,2200,"Old stone, an oak band with iron studs, the window seat's arched window, the carved arch.","stone, oak, iron, glass"
+"greenhouse wall, north",WG-103,"Greenhouse wall, north",greenhouse,2600,"Old stone and tall leaded windows, a frosted arched window at its end.","stone, oak, iron, glass"
+"greenhouse wall, east",WG-104,"Greenhouse wall, east",greenhouse,1900,"Old stone, a window and the way in.","stone, oak, iron, glass"
+"greenhouse wall, south",WG-105,"Greenhouse wall, south",greenhouse,1900,"Old stone and two leaded windows, ivy at one end.","stone, oak, iron, glass"
+greenhouse sunroom,WG-106,Greenhouse sunroom,greenhouse,3200,"A little stone room through the arch, all sun through its small panes; a picture of a rabbit.","stone, glass"
+stone platform,WG-107,Stone platform,greenhouse,1800,"Big stone blocks along the north wall, flagstones on top. You can climb up.",stone
+stone steps to the platform,WG-108,Stone steps to the platform,greenhouse,420,"Three worn treads up to the platform, moss at their ends.",stone
+platform railing,WG-109,Platform railing,greenhouse,380,Dark turned posts and a handrail. A spider lives in it.,walnut
+crockery shelves under the platform,WG-110,Crockery shelves under the platform,greenhouse,260,"A jug, an owl jar, a crock, amber beads, books, blueberries, a window box.","walnut, stoneware, glass"
+rafters over the greenhouse,WG-111,Rafters over the greenhouse,greenhouse,900,"Dark oak beams across the open top, iron straps where they cross.","oak, iron"
+stone tower with ivy,WG-112,Stone tower with ivy,greenhouse,2400,"A square stone tower in the corner, under ivy.",stone
+rubble on the wall tops,WG-113,Rubble on the wall tops,greenhouse,0,What the wall dropped: sandstone lumps and broken brick.,"stone, brick"
+ivy hanging off the walls,WG-114,Ivy hanging off the walls,greenhouse,60,"Ivy, flowering, trailing down from the wall tops.",ivy
+carved arch pillars,WG-115,Carved arch pillars,greenhouse,780,"Dark oak pillars with a running swirl, a band of fretwork over the arch.",oak
+"apothecary cabinet, greenhouse",WG-116,"Apothecary cabinet, greenhouse",greenhouse,540,"Four drawers, two shelves of flasks and bottles, an open book, bell jars and candles on top.","walnut, glass, brass"
+"straw broom, leaning",WG-117,"Straw broom, leaning",greenhouse,25,"Straw on an ash handle, leaning where it was left.","straw, ash"
+seed crate on legs,WG-118,Seed crate on legs,greenhouse,80,"A slatted crate of soil on short legs, seedlings in rows.","pine, soil"
+grey bin,WG-119,Grey bin,greenhouse,30,"A tin bin with a loose lid. Compost, probably.",tin
+hand pump,WG-120,Hand pump,greenhouse,160,"Cast iron, a long handle; it still draws water.",cast iron
+corner bookcase with a sink,WG-121,Corner bookcase with a sink,greenhouse,310,"Tall and narrow, books in arched niches, letters, a stone sink on top.","oak, stone"
+bench of rolled scrolls,WG-122,Bench of rolled scrolls,greenhouse,120,A low bench under rolled papers sealed in red wax; somebody left a rose.,"oak, paper, wax"
+dark patterned rug,L-11,Dark Patterned Rug,laundry,120,Plum-black wool with pale lines in big diamonds.,wool
+rain barrel,WG-124,Rain barrel,greenhouse,95,"An oak barrel by the steps, brimful of rain.","oak, iron, water"
+bubbling cauldron,WG-125,Bubbling cauldron,greenhouse,420,"Black iron on three feet, murky green brew to the brim. It bubbles.",cast iron
+round desk with a spellbook,WG-126,Round desk with a spellbook,greenhouse,380,"A round table: a spellbook open at a drawing, ink and a quill, three candles, a green glass lamp.","walnut, paper, glass"
+crystal ball on a carved stand,WG-127,Crystal ball on a carved stand,greenhouse,290,"A violet ball on a wooden base, on a carved stand of books and bottles. Something turns in it.","oak, glass"
+wicker chair,WG-128,Wicker chair,greenhouse,150,"A round seat and a woven back. The black cat's, by the look of it.","rattan, cotton"
+cream bench with a frog in a gold cage,WG-129,Cream bench with a frog in a gold cage,greenhouse,110,"A worn cream bench; on it a gold cage, and a frog who isn't going anywhere.","pine, brass, frog"
+alchemy table,WG-130,Alchemy table,greenhouse,640,"Coiled glass, coloured flasks, a spirit flame under a retort, a skull, purple crystal.","oak, glass, brass, bone"
+brass hourglass,WG-131,Brass hourglass,greenhouse,85,Two glass bulbs in a brass frame. The sand runs.,"brass, glass, sand"
+potion table,WG-132,Potion table,greenhouse,520,"Blue powder, orange powder and its scoop, a mortar, plates, a green crystal on a gold stand, a glass lamp.","oak, glass, stone, brass"
+canary in a tall cage,WG-133,Canary in a tall cage,greenhouse,180,"A tall gold cage on a turned stand, a yellow canary hopping on its perch.","brass, walnut"
+plank bench by the steps,WG-134,Plank bench by the steps,greenhouse,90,"A plank on two stones: folded cloths, a quill, two little flasks.","elm, stone, linen"
+glass case round the tower,WG-135,Glass case round the tower,greenhouse,950,"Three glass tiers round the tower's foot: powders, a gourd lantern, crystal, a pumpkin, a sleeping dormouse, a lantern, sprouts.","walnut, glass"
+hutch of drawers and old books,WG-136,Hutch of drawers and old books,greenhouse,360,"Drawers with iron pulls, old books stood on end, red books and a silver flask on top.","walnut, paper"
+chameleon on a bonsai,WG-137,Chameleon on a bonsai,greenhouse,240,"A bonsai in a clay pot on a round stone, and a chameleon on its branch, watching.","clay, juniper"
+flowering tree,WG-138,Flowering tree,greenhouse,320,"Pale twisting trunk, a broad crown dotted pink.","clay, myrtle"
+window sill with a spider plant,WG-139,Window sill with a spider plant,greenhouse,45,"A stone sill under the frosted window, a spider plant on it.","stone, clay"
+ladder against the wall,WG-140,Ladder against the wall,greenhouse,70,An old wooden ladder leaning on the wall.,ash
+trunk of old tomes,WG-141,Trunk of old tomes,greenhouse,210,"An iron-banded trunk, old tomes stood on it against the wall.","oak, iron, leather"
+long glass cabinet on the east wall,WG-142,Long glass cabinet on the east wall,greenhouse,780,"Glass doors in small panes, shelves of jars and potted cuttings; a stone pillar at its end.","walnut, glass, stone"
+iron plant stands,WG-143,Iron plant stands,greenhouse,140,"Black iron stands for pots: two round ones on curled legs, a long one.",iron
+little table with a cactus garden,WG-144,Little table with a cactus garden,greenhouse,150,"A tray of pebbles on a little table, a prickly pear catching the light on its spines.","pine, stone, cactus"
+white chair,WG-145,White chair,greenhouse,60,"A white painted chair, a pale blue seat; the plants have it now.",pine
+window seat with cushions,WG-146,Window seat with cushions,greenhouse,1250,"An arched window set deep in the stone: a seat with a thick cushion, pillows, a blanket, a book, a teapot, a candle lantern, string lights and velvet curtains. Step up and stay a while.","stone, oak, velvet, wool"
+firefly bottle hooks,WG-147,Firefly bottle hooks,greenhouse,20,Three iron hooks under the rafter; the bottles of fireflies hang from them.,iron
+cattails,,Cattails,Central Park,$15,,
+basking log,,Basking log,Central Park,$40,,
+brush pile,,Brush pile,Central Park,$0,,
+clover patch,,Clover,Central Park,$2,,
+fallen acorns,,Fallen acorns,Central Park,$0,,
+fire hydrant,L-030,fire hydrant,lounge,1100,A red fire hydrant.,cast iron
+mailbox,S-902,Mailbox,street,900,A blue mailbox on its legs.,street
+parking meter,S-903,Parking Meter,street,400,A parking meter on its post.,street
+pay phone,S-904,Pay Phone,street,1500,"A pay phone on a post, its blue cap.",street
+street sign,S-905,Street Sign,street,300,"A street sign on its post, two green plates up out of reach.",street
+bus stop,S-906,Bus Stop,street,600,A bus stop sign on its post.,street
+bollard,L-032,bollard,lounge,120,A short black bollard.,cast iron
+manhole cover,S-908,Manhole Cover,street,350,"A round iron manhole cover, flush with the street.",street
+subway grate,S-909,Subway Grate,street,800,"An iron grate in the sidewalk, 2 by 1.",street
+storm drain,S-910,Storm Drain,street,500,"A storm drain at the curb: a slotted iron grate, 1 by half.",street
+puddle,S-911,Puddle,street,0,Rainwater lying on the ground.,street
+litter,S-912,Litter,street,0,Litter blown into a corner.,street
+chalk hopscotch,S-913,Chalk Hopscotch,street,0,A hopscotch court in chalk.,street
+pigeons,,,,,,
+bike rack,S-915,Bike Rack,street,300,An iron bike rack.,street
+standpipe,S-916,Standpipe,street,700,A red standpipe with two brass caps.,street
+dumpster,S-917,Dumpster,street,1800,A green dumpster with its lid.,street
+pallets,S-918,Pallets,street,60,Three pallets stacked.,street
+tires,S-919,Tires,street,90,Three tires stacked.,street
+oil drum,S-920,Oil Drum,street,80,A blue oil drum.,street
+wire basket,S-921,Wire Basket,street,250,"A wire trash basket, 0.9 m.",street
+cardboard boxes,L-019,cardboard boxes,lounge,6,"Three cardboard boxes, taped, stacked.",cardboard
+milk crates,S-924,Milk Crates,street,30,Three milk crates stacked.,street
+newsstand,S-926,Newsstand,street,6000,"A green newsstand, its papers and magazines.",street
+produce stand,S-927,Produce Stand,street,400,Tiers of crates of produce.,street
+ice chest,S-928,Ice Chest,street,300,"An ice chest, its blue lid.",street
+flower buckets,S-929,Flower Buckets,street,80,Four buckets of flowers.,street
+water jugs,S-930,Water Jugs,street,20,Four water jugs.,street
+hand truck,S-931,Hand Truck,street,120,A red hand truck with a crate.,street
+shopping cart,S-932,Shopping Cart,street,150,A shopping cart.,street
+bicycle,S-933,Bicycle,street,250,A bicycle leant up.,street
+scooter,S-934,Scooter,street,1800,A red scooter.,street
+weeds,S-936,Weeds,street,0,Weeds in the cracks.,street
+stain,S-937,Stain,street,0,A stain on the ground.,street
+cracked slab,S-938,Cracked Slab,street,0,A cracked paving slab.,street
+asphalt patch,S-939,Asphalt Patch,street,0,A patch of darker tar.,street
+folding chair,S-940,Folding Chair,street,30,A folding chair.,street
+dominoes table,S-941,Dominoes Table,street,60,A table with a game of dominoes on it.,street
+broom,,Broom,Witch's Bedroom,$24,,
+mop bucket,S-944,Mop Bucket,street,25,A yellow mop bucket.,street
+cat bowl,S-945,Cat Bowl,street,5,A cat bowl.,street
+coiled hose,S-946,Coiled Hose,street,30,A hose coiled up.,street
+newspaper stack,S-947,Newspaper Stack,street,0,A stack of newspapers tied up.,street
+coffee cup,S-948,Coffee Cup,street,2,A coffee cup left behind.,street
+stoop,S-949,Stoop,street,2500,Two stone steps.,street
+overhead wires,S-951,Overhead Wires,street,0,"Three wires slung between poles, 6 tiles.",street
+umbrella,S-952,Umbrella,street,120,A market umbrella.,street
+string lights,S-953,String Lights,street,40,A string of lights.,street
+rug of wares,S-954,Rug Of Wares,street,0,A rug with wares laid out.,street
+window AC,S-960,Window AC,street,400,An air conditioner stuck out of a window.,street
+drainpipe,S-961,Drainpipe,street,300,A drainpipe down the wall.,street
+fire escape,S-962,Fire Escape,street,8000,"A fire escape landing, its ladder down.",street
+clothesline,S-963,Clothesline,street,20,Washing on a line.,street
+wall cable,S-964,Wall Cable,street,0,A cable stapled along a wall.,street
+bare bulb,S-965,Bare Bulb,street,10,A bare bulb on its cord.,street
+door lamp,S-966,Door Lamp,street,60,A lamp over a door.,street
+paper lantern,S-967,Paper Lantern,street,15,A paper lantern.,street
+flag,S-968,Flag,street,40,A flag on its pole.,street
+posters,S-969,Posters,street,0,Posters pasted on a wall.,street
+painted sign,S-970,Painted Sign,street,0,An old painted ad fading on the brick.,street
+graffiti,S-971,Graffiti,street,0,A tag on a wall.,street
+awning,S-972,Awning,street,900,"A striped awning, its valance.",street
+shop sign,S-973,Shop Sign,street,700,"A sign box over a door, lit.",street
+neon sign,S-974,Neon Sign,street,500,A neon word in a window.,street
+lit window,S-975,Lit Window,street,0,A window lit at night.,street
+meter box,S-976,Meter Box,street,150,A meter box on the wall.,street
+house number,S-977,House Number,street,10,A house number by the door.,street
+boarded window,S-978,Boarded Window,street,0,A window boarded up with plywood.,street
+ivy,S-979,Ivy,street,0,Ivy climbing a wall.,street
+window box,S-980,Window Box,street,60,A window box of flowers.,street
+plant pot,S-981,Plant Pot,street,40,A pot with a plant.,street
+hanging plant,S-982,Hanging Plant,street,30,A plant hanging in its pot.,street
+moss,S-983,Moss,street,0,Moss along the foot of a wall.,street
+rust streak,S-985,Rust Streak,street,0,A rust streak down a wall.,street
+water tower,S-990,Water Tower,street,30000,"A wooden water tower on its legs, on a roof.",street
+rooftop AC,S-991,Rooftop AC,street,5000,An air conditioning unit on a roof.,street
+roof vent,S-992,Roof Vent,street,200,A vent stack on a roof.,street
+TV antenna,S-994,TV Antenna,street,80,A TV antenna on a roof.,street
+roof door,S-995,Roof Door,street,2000,The bulkhead door out onto a roof.,street
+skylight,S-996,Skylight,street,1200,A skylight in a roof.,street
+pigeon coop,,,,,,
+billboard,S-998,Billboard,street,0,"A billboard on a roof, lit.",street
+roof garden,S-999,Roof Garden,street,100,Pots of plants on a roof.,street
+roof clutter,S-989,Roof Clutter,street,0,A tire and a crate left on a roof.,street
+traffic signal,S-1001,Traffic Signal,street,9000,"A steel signal pole, its mast arm over the lane, a three-lens head under the arm and one on the pole, a walk signal. The lights change on a minute.",street
+walk signal,S-1002,Walk Signal,street,2500,"A steel pole with a lettered WALK / DONT WALK head, lit in its turn.",street
+guide gantry,S-1003,Guide Gantry,street,40000,"A green guide sign gantry over a two-lane street, 7 tiles across.",street
+no pedestrians sign,S-1004,No Pedestrians Sign,street,150,"A NO PEDESTRIANS sign on its post: the walking figure in a red ring, slashed.",street
+speed limit sign,S-1005,Speed Limit Sign,street,150,A SPEED LIMIT 30 sign on its post.,street
+no parking sign,S-1006,No Parking Sign,street,120,A NO PARKING 8AM-6PM sign on its post.,street
+street light,S-1007,Street Light,street,4000,"A cobra-head street light, its arm out over the street, sodium orange at night.",street
+crosswalk,S-1008,Crosswalk,street,0,"A crosswalk: two white lines across a street, 7 tiles.",street
+stop line,S-1009,Stop Line,street,0,"A white stop bar across a lane, 3 tiles.",street
+lane line,S-1010,Lane Line,street,0,"A dashed white lane line, 6 tiles.",street
+double yellow line,S-1011,Double Yellow Line,street,0,"The double yellow down the middle of a street, 6 tiles.",street
+turn arrow,S-1012,Turn Arrow,street,0,A white arrow in a lane: ahead and turn right.,street
+home computer,P-727,Home Computer,apartment,0,"A long oak desk and a big home computer: the boxy monitor on its case, the keyboard, the mouse on its pad, a floppy and a box of disks.","oak, plastic, glass"
+entrance mat,P-701,Entrance Mat,apartment,0,"A coir mat, trodden thin in the middle. Goes by the door.",coir
+wardrobe,P-702,Wardrobe,apartment,0,"Dark oak, two doors, one of them sticks.",oak
+shelves with boxes,P-703,Shelves with Boxes,apartment,0,"Three pine boards on the wall, with cardboard boxes and old papers on them. Hangs on a wall.","pine, cardboard"
+vacuum,P-704,Vacuum Cleaner,apartment,0,An upright with a red dust bag. Loud.,"steel, plastic, cloth"
+TV on a low stand,P-705,TV on a Low Stand,apartment,0,A black set on a walnut cabinet. Gets three channels on a good night.,"walnut, glass"
+poster,P-706,Poster,apartment,0,"A gig poster, yellowed, one corner torn. Hangs on a wall.",paper
+wall shelf with plant,P-707,Wall Shelf with Plant,apartment,0,"One pine board on two brackets, a pot plant that is still alive. Hangs on a wall.","pine, terracotta, living"
+bookcase,P-708,Bookcase,apartment,0,"Four shelves in an oak case, for real books.",oak
+desk,P-709,Desk,apartment,0,An oak desk with three drawers down the right.,oak
+office chair,L-006,office chair,lounge,140,A black mesh office chair on a star base.,"mesh, steel"
+computer,P-711,Computer,apartment,0,A beige monitor and keyboard. The screen glows a little green.,"plastic, glass"
+desk lamp,P-712,Desk Lamp,apartment,0,A bent-arm lamp with a warm shade.,steel
+sofa,P-713,Sofa,apartment,0,"Two seats of grey-blue cloth, a little worn where people sit.","cloth, pine"
+rug,P-714,Rug,apartment,0,"A red wool rug with a dark border and a diamond, faded along the walkway.",wool
+coffee table,P-715,Coffee Table,apartment,0,A low pine table on square legs.,pine
+single bed,P-716,Single Bed,apartment,0,"A pine frame, a cream sheet, a blue blanket and one pillow.","pine, cotton, wool"
+dining table,P-717,Dining Table,apartment,0,A square walnut table for two.,walnut
+stool,P-718,Stool,apartment,0,A pine stool with a footrest.,pine
+fridge,P-719,Fridge,apartment,0,White enamel gone grey. The freezer is the top door.,"steel, enamel"
+"fridge, open",,,,,,
+"fridge door, open",,,,,,
+stove,P-720,Stove,apartment,0,Four burners and an oven. The window in the oven door is black with use.,"steel, enamel"
+sink and counter,P-721,Sink and Counter,apartment,0,A steel counter with a basin and a tap over a two-door cupboard.,"steel, pine"
+bath,P-722,Bath,apartment,0,A white enamel tub on short feet.,enamel
+washing machine,P-724,Washing Machine,apartment,0,A front loader with a porthole and one dial.,"steel, enamel, glass"
+bathroom sink,P-725,Bathroom Sink,apartment,0,"A basin on a pedestal, a tap and a bar of soap.","porcelain, chrome"
+floor lamp,P-728,Floor Lamp,apartment,0,"An iron pole on a round foot, a cream drum shade. A warm, low light for a corner.","iron, cotton"
+window blinds,P-729,Window Blinds,apartment,0,"Cream slats on a rail, let all the way down. Hangs in a window.",aluminium
+venetian blinds,P-730,Venetian Blinds,apartment,40,"Cream slats on a rail, tilted half open: the daylight comes through in stripes. Hangs in a window.","aluminium, cord"
+"venetian blinds, up",P-731,Venetian Blinds (pulled up),apartment,40,"The same blinds pulled up under their rail, for an open window.","aluminium, cord"
+silk curtains,P-732,Silk Curtains,apartment,160,"Two panels of plum silk on a brass rail, tied back with gold cord.","silk, brass"
+"silk curtains, loose",P-733,Silk Curtains (loose),apartment,160,Plum silk hanging straight from a brass rail; it stirs when the air does.,"silk, brass"
+trailing ivy,P-734,Trailing Ivy,apartment,20,"English ivy along the top of a wall, its strands hanging down. Goes on a wall.",living
+"trailing ivy, long",P-735,Trailing Ivy (long),apartment,25,"English ivy along the top of a wall, its strands hanging well down. Goes on a wall.",living
+candles,P-736,Candles,apartment,12,"Three pillar candles on a brass dish, burning.","wax, brass"
+two candles,P-737,Two Candles,apartment,8,"Two pillar candles on a brass dish, burning.","wax, brass"
+patterned rug,P-738,Patterned Rug,apartment,220,"Purple and gold: a checked border, a gold lattice, a medallion round a rose diamond, fringed ends.",wool
+tea tray,P-740,Tea Tray,apartment,30,"A walnut tray, a white teapot with a blue band, a cup of tea still steaming.","walnut, porcelain"
+peg rail with a hat and a bag,P-741,Peg Rail,apartment,35,"Walnut, three pegs: a felt hat, a striped scarf and a canvas bag on them. Goes on a wall.","walnut, felt, wool, canvas"
+stack of books with a candle,P-742,Stack of Books,apartment,20,"Five books every which way, a candle burning on top.","paper, wax"
+butterfly house,P-743,Butterfly House,apartment,180,"A mesh cube on a walnut stand, moss, leaves and a flower of nectar inside, and two of the world's rarest butterflies.","walnut, mesh, living"
+pothos shelf,P-744,Pothos Shelf,apartment,40,"A pine board on two brackets, a pothos trailing off one end, three books. Goes on a wall.","pine, clay, living"
+hanging pothos,P-745,Hanging Pothos,apartment,35,"A pothos in a terracotta pot in a macrame hanger, on an iron bracket on the wall, trailing. Goes on a wall.","clay, cotton, living"
+VR pine,G-204,Pine,vrforest,0,A tall dark pine. Nobody walks through one.,living
+rock,G-205,Rock,vrforest,0,A grey boulder with moss on its shady side.,granite
+fallen log,G-206,Fallen Log,vrforest,0,"A trunk down on its side, one branch left on it.",pine
+VR headset,P-727,VR-85 Headset,apartment,0,A bulky beige visor with a black strap and a cable as thick as a thumb.,"plastic, foam, glass"
+VR headset station,P-728,VR-85 Station,apartment,0,"The VR-85 on its console, plugged in, its light green. Put it on and pick where to go.","plastic, foam, glass"
+dining table with six chairs,DR-101,"Dining Table, Six Chairs",dining,2400,"Walnut top on steel legs, six white chairs, set for six.","walnut, steel, ash"
+sideboard,DR-102,Sideboard,dining,1100,"Low walnut sideboard: drawers, a niche, a vase on top.",walnut
+wall lamp,DR-103,Wall Lamp,dining,180,A small sconce that throws its light up and down the wall.,"steel, glass"
+white wall mirror,DR-104,Wall Mirror,dining,220,A white-framed mirror.,"glass, wood"
+wide wall mirror,DR-105,Wide Wall Mirror,dining,340,A wider white-framed mirror.,"glass, wood"
+arcade machine,R-803,Arcade Machine,gamer,2500,Upright arcade cabinet.,"wood, glass"
+tube TV,R-812,TV,gamer,120,Tube TV.,"plastic, glass"
+game console,R-824,Game Console,gamer,120,Home game console.,plastic
+couch,R-804,Couch,gamer,900,Red two-seat couch.,fabric
+metal waste bin,R-809,Waste Bin,gamer,15,Metal waste bin.,steel
+skateboard,R-811,Skateboard,gamer,90,Complete skateboard.,"wood, steel"
+poster: GAME OVER,R-839,"Poster, GAME OVER",gamer,20,Art poster.,paper
+neon sign: 80s gamer room,R-836,80's Gamer Room Neon Sign,gamer,350,Neon wall sign.,"glass, neon"
+crt desk,M-605,CRT Desk,mach,0,"A big black monitor, a keyboard and a mouse on a dark desk. The screen says DRONE LINK.","wood, plastic, glass"
+crt desk chair,M-606,CRT Desk Chair,mach,0,Sit down and the screen is all there is.,"steel, cloth"
+diner bar counter,D-701,Bar Counter,diner,1800,"A run of oxblood bar, a step along its foot, shelves of glasses on the inside.","oak, lacquer"
+diner bar counter: menu,D-702,Bar Counter with Menus,diner,1820,"The bar, with the menu stand, the napkins and the sauces out.","oak, lacquer"
+diner bar counter: can,D-703,Bar Counter with a Can,diner,1810,"The bar, a can and a glass left on it.","oak, lacquer"
+diner bar counter: glass,D-704,Bar Counter with a Glass,diner,1805,"The bar, a glass on a mat.","oak, lacquer"
+diner bar round end,D-705,"Bar Counter, Round End",diner,1400,"The bar's end, curving back to the wall.","oak, lacquer"
+diner bar corner,D-706,"Bar Counter, Corner",diner,2200,"The bar turning back to the wall, the till on it.","oak, lacquer"
+diner back bar,D-707,Back Bar,diner,3400,"Cupboards under a steel top: a sink, a row of bottles, the coffee machine.","oak, steel"
+diner bar stool,D-708,Bar Stool,diner,120,A red cushion on a green pole.,"steel, vinyl"
+diner drinks fridge,D-709,Drinks Fridge,diner,900,"A glass-door fridge of bottles and cans, lit blue.","steel, glass"
+diner air cooler,D-710,Air Cooler,diner,150,A grey box that hums.,steel
+diner red leather sofa,D-711,Red Leather Sofa,diner,1600,A deep red sofa with rolled arms.,"leather, oak"
+diner red leather armchair,D-712,Red Leather Armchair,diner,800,"A club chair, its back in channels.","leather, oak"
+diner table,D-713,Round Table,diner,260,"A small round table on one foot, a glass and an ashtray on it.","walnut, cast iron"
+diner red rug,D-714,Red Runner,diner,180,A long deep red rug.,wool
+diner potted palm,D-715,Potted Palm,diner,140,A big spiky palm in a clay pot.,living
+diner potted plant,D-716,Potted Plant,diner,90,A tall spiky plant in a grey pot.,living
+diner neon sign: BAR,D-717,"Neon Sign, BAR",diner,650,BAR in red tube. It glows.,"glass, neon"
+diner neon sign: DINER,D-718,"Neon Sign, DINER",diner,780,DINER in red tube. It glows.,"glass, neon"
+diner exit sign,D-719,Exit Sign,diner,45,"EXIT, lit.",plastic
+diner double doors,D-720,Double Doors,diner,1200,"Two dark wood doors with windows and push bars, stickers on the glass.","oak, glass, steel"
+diner door,D-721,Wooden Door,diner,600,A pair of narrow panelled doors.,oak
+diner window blinds,D-722,Window Blinds,diner,60,Blinds drawn in a wood frame.,"aluminium, oak"
+diner bar blinds,D-723,Bar Blinds,diner,180,"A wide window of blinds, drawn.","aluminium, oak"
+diner TV on a bracket,D-724,TV on a Bracket,diner,300,"A small set high on the wall, the game on.","plastic, glass"
+diner black cupboard,D-725,Black Cupboard,diner,110,"A low black cupboard, straws and a cup on it.",steel
+diner soffit,D-726,Bar Soffit,diner,900,"A dropped ceiling over the bar, its edge banded red.","plaster, oak"
+diner ceiling fan,D-727,Ceiling Fan,diner,240,"Four wooden blades that turn, a frosted globe that lights.","steel, oak, glass"
+diner poster: koi night,D-728,"Poster, Koi Night",diner,15,"The koi pond on the moon shrine's roof, by night.",paper
+diner poster: ghost sale,D-729,"Poster, Ghost Shop",diner,15,The ghost shop's sale.,paper
+diner poster: hover taxi,D-730,"Poster, Hover Taxi",diner,15,"Every 30 seconds, down the street.",paper
+diner poster: moon shrine,D-731,"Poster, Moon Shrine",diner,20,The shrine on the roof.,paper
+diner poster: 190 street,D-732,"Poster, 190 Street",diner,15,The line to 190 Street.,paper
+diner poster: night painting,D-733,"Painting, Night",diner,90,A small dark painting of the river at night.,"oil, canvas"
+dojo candle,J-104,Dojo Candle,dojo,0,"A pillar of cream wax as thick as your wrist, on a lacquered stand.","beeswax, lacquer"
+andon,J-101,Andon,dojo,0,A paper lantern on four short legs. It burns low and does not flicker.,"cedar, washi"
+stone lantern,J-102,Stone Lantern,dojo,0,"Granite, in six stacked pieces, a candle in its light box.",granite
+water basin,J-103,Water Basin,dojo,0,"A low stone basin under a bamboo spout, its hollow dry and grown with moss.","stone, bamboo"
+garden rock,J-105,Garden Rock,dojo,0,"A weathered boulder, lichen on its crown, set in the raked gravel.",granite
+stone terrace,G-410,Stone Terrace,shrine,8500,Raised stone platform.,stone
+mossy steps,G-404,Mossy Stone Steps,shrine,2200,Two stone steps with side walls.,stone
+spiral stone plaza,G-405,Spiral-Carved Stone Plaza,shrine,6500,Flagstone plaza with a carved spiral.,stone
+statue plinth,G-403,Lotus Plinth,shrine,3500,Stone drum with a carved lotus.,granite
+moon shrine statue,G-402,Robed Stone Statue,shrine,18000,Carved stone figure with a staff and a gold halo.,"granite, gold leaf"
+moon shrine gate,G-401,Vine-Wrapped Red Gate,shrine,12000,Red timber shrine gate with two hanging lanterns.,"cedar, lacquer, paper"
+hanging paper lantern,L-502,Hanging Paper Lantern,shrine,40,Round paper lantern on a cord.,"paper, bamboo"
+blossom clump,W-604,Pink Blossom Clump,shrine,60,Flowering cherry shrub.,living
+square stone post,G-407,Square Stone Post,shrine,900,Stone post with a pointed cap.,stone
+stone post with vines,G-408,Stone Post with Vines,shrine,950,Stone post with ivy.,stone
+paper ground lantern,L-501,Paper Ground Lantern,shrine,85,Wood-framed paper floor lantern.,"wood, paper"
+floating pond lantern,L-503,Floating Pond Lantern,shrine,15,Paper lantern on a wooden float.,"paper, wood"
+stone garden lantern,L-504,Stone Garden Lantern,shrine,1400,Carved stone lantern on a mossy rock.,granite
+mossy cliff rock,W-607,Mossy Cliff Rock,shrine,750,Boulder cluster with moss.,"stone, moss"
+fern bush,W-606,Dark Fern Bush,shrine,35,Shade fern.,living
+moss and grass tuft,W-605,Moss & Grass Tuft,shrine,8,Clump of moss and grass.,living
+wooden marker post,G-409,Wooden Marker Post,shrine,120,Wooden post with a crossbar.,wood
+mossy walkway stone,G-406,Mossy Stepping Stone,shrine,180,Flat stepping stone.,stone
+moon pond,W-601,Koi Pond Kerb,shrine,9000,Stone kerb round a koi pond (the water is the land's: water squares).,stone
+mossy parapet,G-411,Mossy Parapet Section,shrine,900,Six-tile run of low stone wall with hanging vines.,"stone, ivy"
+subway bench,S-801,Subway Bench,street,1800,"Three moulded seats, orange and yellow, on a heater, an end panel and a pole at each end. Tagged.","fibreglass, stainless steel"
+subway pole,S-802,Subway Pole,street,120,"A stainless pole, floor to ceiling, worn bright where hands hold it.",stainless steel
+soda can,H-341,Crushed Soda Can,stock,0,"Empty, on its side.",aluminium
+crumpled newspaper,H-342,Crumpled Newspaper,stock,0,"Yesterday’s paper, balled up.",newsprint
+witch bed,,Witch's bed,Witch's Bedroom,$640,,
+bedside table,,Bedside table,Witch's Bedroom,$95,,
+fortune table,,Fortune table,Witch's Bedroom,$120,,
+crystal ball,,Crystal ball,Witch's Bedroom,$260,,
+fairy sprout,,Fairy sprout,Witch's Bedroom,$30,,
+ornate frame,,Ornate frame,Witch's Bedroom,$48,,
+star frame,,Star frame,Witch's Bedroom,$18,,
+small frame,,Small frame,Witch's Bedroom,$12,,
+saucer candle,,Saucer candle,Witch's Bedroom,$6,,
+wall shelf,,Wall shelf,Witch's Bedroom,$55,,
+red curtain,,Red curtain,Witch's Bedroom,$70,,
+window ledge,,Window ledge,Witch's Bedroom,$180,,
+bushy plant,,Bushy plant,Witch's Bedroom,$35,,
+cactus pot,,Cactus,Witch's Bedroom,$22,,
+small plant,,Small plant,Witch's Bedroom,$14,,
+bloom lamp,,Bloom lamp,Witch's Bedroom,$140,,
+witch hat,,Witch's hat,Witch's Bedroom,$45,,
+satchel,,Satchel,Witch's Bedroom,$85,,
+flower rug,,Flower rug,Witch's Bedroom,$75,,
+sleeping cat,,,,,,
+teal blanket,,Teal blanket,Witch's Bedroom,$40,,
+sketchbook,,Sketchbook,Witch's Bedroom,$15,,
+pink crate,,Pink crate,Witch's Bedroom,$8,,
+record stack,,Record stack,Witch's Bedroom,$60,,
+record player,,Record player,Witch's Bedroom,$220,,
+record sleeve,,Record sleeve,Witch's Bedroom,$12,,
+lounge fridge,L-001,lounge fridge,lounge,2200,"A tall glass-front drinks fridge, lit inside; its bottles are real boxes behind the glass.","steel, glass, bottles"
+lounge bar,L-002,lounge bar,lounge,1800,A long pale-wood bar with a dark panelled front.,wood
+bar end counter,L-003,bar end counter,lounge,700,"The short leg of the bar, a can left on it.",wood
+red bar stool,L-004,red bar stool,lounge,85,A round red stool on a chrome column.,"vinyl, chrome"
+PC desk,L-005,PC desk,lounge,260,"A black desk with a monitor, keyboard and mouse; the screen glows.","steel, plastic"
+mezzanine desk,L-007,mezzanine desk,lounge,640,The long desk with three monitors and a tower.,"steel, plastic"
+gaming chair,L-008,gaming chair,lounge,220,A black winged gaming chair.,"leatherette, steel"
+bottle,L-009,bottle,lounge,3,A bottle set down on the floor.,glass
+white sofa,L-010,white sofa,lounge,1400,"A white three-seater, two loose cushions.",leatherette
+backpack,L-011,backpack,lounge,60,A khaki backpack left leaning.,canvas
+white coffee table,L-012,white coffee table,lounge,180,"A low white table with cups, a bottle of sauce and a slice of pizza.",lacquered wood
+pizza box,L-013,pizza box,lounge,14,"An open pizza box, the last slices in it.",cardboard
+paper bag,L-014,paper bag,lounge,1,"A brown paper bag, crumpled.",paper
+big TV,L-015,big TV,lounge,1600,"A big flat screen on a low black stand, a games box and a speaker bar on it; the screen glows.","glass, plastic"
+tall speaker,L-016,tall speaker,lounge,320,A tall white speaker column.,plastic
+small fridge,L-017,small fridge,lounge,260,A small white fridge.,steel
+floor grille,L-020,floor grille,lounge,90,An iron grating let into the floor.,iron
+"arcade cabinet, pink",L-021,"arcade cabinet, pink",lounge,2400,"A white candy cabinet with pink trim, two sticks and six buttons; its screen glows.","steel, plastic, glass"
+"arcade cabinet, green",L-022,"arcade cabinet, green",lounge,2400,A white candy cabinet with green trim; its screen glows.,"steel, plastic, glass"
+red stool,L-023,red stool,lounge,40,A little red padded stool on chrome legs.,"vinyl, chrome"
+market awning and sign,L-024,market awning and sign,lounge,900,"A dark red awning on two posts, the lit MARKET sign over it.","canvas, steel, acrylic"
+planter,L-025,planter,lounge,70,A wooden trough of greens.,"wood, plants"
+"planter, fruiting",L-026,"planter, fruiting",lounge,70,A wooden trough of greens with orange fruit.,"wood, plants"
+"vending machine, white",L-027,"vending machine, white",lounge,3200,"A white drinks machine, its window lit.","steel, glass"
+"vending machine, red",L-028,"vending machine, red",lounge,3200,"A dark red drinks machine, its window lit.","steel, glass"
+bin bag,L-029,bin bag,lounge,0,"A tied grey bin bag, bottles beside it.",plastic
+spray cans,L-031,spray cans,lounge,9,Two spray cans left on the pavement.,tin
+weed,L-033,weed,lounge,0,A weed up through a crack.,plant
+wall ladder,L-034,wall ladder,lounge,480,An iron ladder up a wall to the roof.,iron
+"steel door, open",L-035,"steel door, open",lounge,350,A grey steel door leaf standing open against a wall.,steel
+mezzanine,L-100,mezzanine,lounge,0,"The lounge's deck over its back corner, with its railing and steps (it stands only there).","wood, steel"
+ducting,L-101,ducting,lounge,0,The lounge's duct along the back wall and the unit at its end (it stands only there).,galvanised steel
+stacked washer and dryer,L-01,Stacked Washer and Dryer,laundry,1299,"Two front loaders, the dryer on the washer. The drums show through the portholes.","steel, enamel, glass"
+laundry basket,L-02,Laundry Basket,laundry,14,"Pink woven plastic, full of white washing.","plastic, cotton"
+utility sink,L-03,Utility Sink,laundry,349,A white cabinet with a deep basin on top and a chrome tap.,"enamel, chrome"
+round mirror,L-04,Round Mirror,laundry,39,A small round mirror in a dark rim. Hangs on a wall.,glass
+wall planter,L-05,Wall Planter,laundry,22,"A cream pot on a bracket, dry stalks and red blooms in it. Hangs on a wall.",ceramic
+hanging cabinet,L-06,Hanging Cabinet,laundry,89,A lilac-grey wall cabinet with one door.,"pine, paint"
+"hanging cabinet, wide",L-07,"Hanging Cabinet, Wide",laundry,149,Two doors over an open shelf. Hangs on a wall.,"pine, paint"
+supply cupboard,L-08,Supply Cupboard,laundry,69,"Open at the front: a red jug, a bottle and a cloth in it. Hangs on a wall.","pine, paint"
+basket shelf,L-09,Basket Shelf,laundry,119,A low white unit with two wicker baskets on top and boxes under.,"pine, wicker"
+tall shelf unit,L-10,Tall Shelf Unit,laundry,179,"Dark grey, five shelves of jars, boxes and towels. TUTU on the rail.","steel, paint"
+vent grille,L-12,Vent Grille,laundry,18,A grey grille with dark slats. Hangs on a wall.,steel
+worn path,W-01,Worn Path,lived,0,A path worn into the floor where everyone walks.,wear
+gum spots,W-02,Gum Spots,lived,0,Old gum trodden flat into the ground.,wear
+scuffs,W-03,Scuffs,lived,0,Black scuffs where shoes and chair feet rub.,wear
+hairline crack,W-04,Hairline Crack,lived,0,A thin crack wandering across the floor.,wear
+moss in the joints,W-05,Moss In The Joints,lived,0,Moss and grass come up where the floor is cracked or jointed.,wear
+chalk dust,W-06,Chalk Dust,lived,0,A dusting of chalk on the floor.,wear
+popcorn,W-07,Popcorn,lived,0,Kernels dropped in an aisle.,wear
+tape marks,W-08,Tape Marks,lived,0,Spike marks taped on a floor.,wear
+cord,W-09,Cord,lived,0,A cord lying along the floor.,wear
+cigarette butts,W-10,Cigarette Butts,lived,0,Butts stubbed out by a door.,wear
+tokens and tickets,W-11,Tokens And Tickets,lived,0,Dropped tokens and torn ticket strips.,wear
+clover,W-12,Clover,lived,0,Clover and dandelions along the edge of a path.,wear
+trodden earth,W-13,Trodden Earth,lived,0,Grass worn down to earth where people stand and cut across.,wear
+floor lettering,W-14,Floor Lettering,lived,0,"NO DIVING, painted on a deck.",wear
+drain grate,W-15,Drain Grate,lived,0,An iron grate over a floor drain.,wear
+cobweb,W-16,Cobweb,lived,0,A cobweb up in a corner.,wear
+flyer,W-17,Flyer,lived,0,A flyer taped up.,wear
+pipe,W-18,Pipe,lived,0,"A pipe along a wall, the white crust of an old leak under it.",wear
+knob wiring,W-19,Knob Wiring,lived,0,Old wiring on porcelain knobs.,wear
+drying herbs,W-20,Drying Herbs,lived,0,Bundles of herbs hung up to dry.,wear
+tally marks,W-21,Tally Marks,lived,0,"Marks scratched in a wall, counting days.",wear
+letters on the mantel,W-22,Letters On The Mantel,lived,0,Letters stuck to the mantel with a jack-knife.,wear
+dryer duct,W-23,Dryer Duct,lived,0,A foil duct from a dryer to its vent.,wear
+lone sock,W-24,Lone Sock,lived,0,A sock that missed the basket.,wear
+spare roll,W-25,Spare Roll,lived,0,A spare toilet roll.,wear
+crushed cup,W-26,Crushed Cup,lived,0,A cup left under a seat.,wear
+goggles,W-27,Goggles,lived,0,Swimming goggles someone forgot.,wear
+sandbag,W-28,Sandbag,lived,0,A stage weight: a canvas bag of sand.,wear
+dust bunny,W-29,Dust Bunny,lived,0,Fluff gathered in a corner.,wear
+crystal shards,W-30,Crystal Shards,lived,0,Broken bits of crystal.,wear
+stalagmites,W-31,Stalagmites,lived,0,Stubs of stone grown up from the floor.,wear
+candle wax,W-32,Candle Wax,lived,0,Hardened drips of wax.,wear
+power strip,W-33,Power Strip,lived,0,A power strip on the floor.,wear
+dust,W-34,Dust,lived,0,"Dust, flour, ash or rust lying thin on a floor.",wear
+ring stains,W-36,Ring Stains,lived,0,Rings left by glasses on a table top.,wear
+fallen leaves,W-37,Fallen Leaves,lived,0,Leaves dropped round a plant.,wear
+hay strands,W-38,Hay Strands,lived,0,Strands of hay blown loose.,wear
+rust stain,W-35,Rust Stain,lived,0,Rust run down onto the floor.,wear
+museum portico steps,M-23,Portico Steps,museum,2400,"Portland stone, three steps up to the doors.",stone
+museum column,M-18,Ionic Column,museum,1600,"Marble, its shaft fluted, its capital curled into the spiral volutes of the Ionic order, as on the portico of the British Museum (1823 to 1847).",marble
+museum hall column,M-19,"Ionic Column, Tall",museum,1900,"The great hall's columns: the portico's order, taller.",marble
+museum entablature,M-24,Entablature and Pediment,museum,5200,"The beam across the portico's columns, MUSEUM OF EARTH cut in its frieze, the pediment over it with Earth carved in the middle.",marble
+information desk,M-20,Information Desk,museum,780,Walnut and marble. Floor plans in the rack. Ask here.,"walnut, marble, bronze"
+museum bench,M-21,Gallery Bench,museum,420,"Buttoned leather on a black steel frame, for sitting a while with something old.","leather, steel"
+rope barrier,M-22,Rope Barrier,museum,160,"Two brass posts and red velvet rope across a room that is not open yet: Gallery 5, opening soon.","brass, velvet"
+T. rex,M-01,Tyrannosaurus rex · Sue,museum,90000,"Cast of the most complete T. rex ever found: 90% of one animal, 12.3 m long, 4 m to the hips. She lived 67 million years ago in what is now South Dakota and was found in 1990 by Sue Hendrickson. The original is at the Field Museum, Chicago. Before humans, this was the largest hunter on land; an asteroid ended her kind 66 million years ago. Drawn here by hand from photographs and measurements: no free 3D scan of it exists.","resin cast of fossil bone, steel"
+the Rosetta Stone,M-02,The Rosetta Stone,museum,4500,"Egypt, 196 BC. One decree cut three times: in hieroglyphs for the gods, in Demotic for daily use, in Greek for the rulers. French soldiers found it at Rashid in 1799. Because the Greek could still be read, Champollion used it in 1822 to read hieroglyphs again after 1,400 years. This is how humans learned to read their own dead. British Museum, London. Drawn here by hand from photographs and measurements: no free 3D scan of it exists.","granodiorite, 112 x 76 x 28 cm, 760 kg"
+clay tablets,M-03,Clay Tablets and the Cyrus Cylinder,museum,1800,"Writing began here, about 3200 BC in Uruk, Iraq: a reed pressed into wet clay to count grain and sheep. Left to right: the Flood Tablet, with a story of a great flood from the Epic of Gilgamesh (7th century BC); Plimpton 322, a table of right triangles (about 1800 BC); an accounting tablet from Uruk; a letter between kings from Amarna. Lying on its cradle is the Cyrus Cylinder (539 BC), a king's account of taking Babylon. Drawn here by hand from photographs and measurements: no free 3D scan of it exists.",fired and sun-dried clay
+the Ishango bone,M-04,The Ishango Bone,museum,600,"Congo, about 20,000 years old. A baboon's leg bone with rows of notches cut in groups, and a chip of quartz fixed in one end. One row reads 11, 13, 17, 19: the prime numbers between 10 and 20. Nobody knows if that was meant. It may be a tally, or a calendar of the moon. It is one of the oldest records of humans counting. Found in 1950; now in Brussels. Drawn six times bigger behind it. Drawn here by hand from photographs and measurements: no free 3D scan of it exists.","bone, quartz; 10 cm"
+the Antikythera mechanism,M-05,The Antikythera Mechanism,museum,3200,"Greece, about 150 to 100 BC. In 1901 sponge divers found it in a shipwreck off the island of Antikythera. It is a hand-cranked computer of at least 30 bronze gears. It showed where the sun and moon would be on any day, the moon's phase, the coming eclipses and the dates of the Olympic Games. Nothing as complex was built again for over a thousand years. Beside the fragments is a working model of it. Athens. Drawn here by hand from photographs and measurements: no free 3D scan of it exists.",corroded bronze; fragment A 18 x 15 cm
+Inca khipu,M-06,Inca Khipu,museum,1400,"Peru, about 1400 to 1532. The Inca ran an empire of millions without writing on paper. They kept records in knotted cotton cords. Each hanging cord is one count, and its knots count in tens: ones at the bottom, tens above them, hundreds above that. Colour said what was counted. Keepers called khipukamayuq read them aloud. About a thousand survive, and most are still not understood. Drawn here by hand from photographs and measurements: no free 3D scan of it exists.","cotton, dyes"
+Tutankhamun's mask,M-07,The Mask of Tutankhamun,museum,12000,"Egypt, about 1323 BC. It lay on the face of the young king's mummy, inside three coffins in a tomb in the Valley of the Kings. Howard Carter found the tomb in 1922 and the mask in 1925. It is 10 kg of gold, inlaid with lapis lazuli, quartz, obsidian and coloured glass. Tutankhamun was about 19 when he died. Egyptians believed the face would help his spirit know its body. Cairo. Drawn here by hand from photographs and measurements: no free 3D scan of it exists.","gold, lapis lazuli, quartz, obsidian, glass; 54 cm"
+painted coffin,M-08,The Coffin of Nespawershefyt,museum,5200,"Thebes, Egypt, about 1000 BC. The coffin of a scribe at the great temple of Amun at Karnak. It is painted inside and out with gods, spells and the sky goddess Nut, whose wings fold over the chest. Its yellow varnish was meant to look like gold. Egyptians believed the coffin itself helped the dead pass into the next life. Fitzwilliam Museum, Cambridge. Drawn here by hand from photographs and measurements: no free 3D scan of it exists.",painted and varnished wood
+terracotta warriors,M-09,Terracotta Warriors,museum,6800,"China, before 210 BC. Farmers digging a well near Xi'an in 1974 found an army of over 8,000 soldiers in clay, buried to guard Qin Shi Huang, the first emperor of China, after his death. Each face is different. All were once painted, and the paint flakes away within minutes in the air. Here: an officer, two infantrymen and a kneeling archer. Their bronze weapons are gone. Drawn here by hand from photographs and measurements: no free 3D scan of it exists.","fired clay, traces of paint; 1.2 to 1.9 m"
+the Sutton Hoo helmet,M-10,The Sutton Hoo Helmet,museum,2600,"England, about AD 625. It was buried with a king, probably Raedwald of East Anglia, in a 27 m ship pulled up a hill and covered with earth. It was dug up in 1939 in hundreds of rusted pieces. This reconstruction shows how it shone: tinned bronze panels of dancing warriors, and a dragon flying up the face whose wings are the eyebrows. British Museum, London. Drawn here by hand from photographs and measurements: no free 3D scan of it exists.","iron, tinned bronze, gilt; 32 cm"
+jade burial suit,M-11,Jade Burial Suit of Liu Sheng,museum,7400,"China, 113 BC. Liu Sheng, a Han prince, was buried in a suit of 2,498 plates of jade sewn together with about 1.1 kg of gold wire. People believed jade kept a body from decay. It did not: when the tomb was opened in 1968, only the suit was left. Hebei Museum. Drawn here by hand from photographs and measurements: no free 3D scan of it exists.","jade, gold wire; 1.88 m"
+Lucy,M-12,Lucy · Dinkinesh,museum,3000,"Ethiopia, 3.2 million years ago. Found at Hadar in 1974 by Donald Johanson and Tom Gray: 40% of one skeleton of Australopithecus afarensis, about 1.1 m tall. Her knees and hips show she walked upright, on two legs, long before brains grew large. The bones that were found are brown; the pale ones are cast to fill the gaps. Named after a song played in camp that night. In Ethiopia she is Dinkinesh: you are marvellous. Drawn here by hand from photographs and measurements: no free 3D scan of it exists.",cast of fossil bone
+Laetoli footprints,M-13,The Laetoli Footprints,museum,2400,"Tanzania, 3.66 million years ago. Two early humans walked side by side across wet volcanic ash, which set hard like cement. These are the oldest footprints of upright walkers: a heel, an arch, and a big toe in line with the others. Found by Mary Leakey's team in 1978. The trail is 27 m long. This is a cast of part of it. Drawn here by hand from photographs and measurements: no free 3D scan of it exists.",cast of volcanic ash
+hand axes,M-14,Hand Axes from Olduvai,museum,900,"Tanzania. The chopper on the right is about 1.8 million years old: a pebble with a few flakes knocked off to make an edge. The hand axe is about 1.2 million years old, flaked all over on both faces into a planned shape. Humans made this tool for over a million years, longer than anything else they have made. British Museum, London. Drawn here by hand from photographs and measurements: no free 3D scan of it exists.",lava; hand axe 23 cm
+four skulls,M-15,Four Skulls,museum,2200,"Casts, oldest on the left. The Taung child (South Africa, about 2.8 million years). The Turkana boy, Homo erectus (Kenya, about 1.5 million years). A Neanderthal from La Ferrassie (France, about 50,000 years); Neanderthals buried their dead and lived alongside us. Cro-Magnon 1 (France, about 28,000 years): Homo sapiens, the only kind of human still alive. The bone that was found is brown. Drawn here by hand from photographs and measurements: no free 3D scan of it exists.",resin casts
+woolly mammoth,M-16,Woolly Mammoth,museum,24000,"Mammuthus primigenius. This is the real skeleton's shape: a 3D scan of the woolly mammoth at the Smithsonian's National Museum of Natural History, Washington (CC0), its bone coloured from photographs. About 3 m at the shoulder, with long curling tusks. Mammoths lived through the last ice age alongside humans, who hunted them, built huts of their bones and painted them on cave walls. The last ones died on Wrangel Island about 4,000 years ago, when the pyramids of Egypt were already old.","fossil bone; scan: Smithsonian 3D, CC0"
+Gibeon meteorite,M-17,The Gibeon Meteorite · please touch,museum,1500,"Namibia. This iron fell from space in prehistoric times. It formed 4.5 billion years ago in the core of a small planet that broke apart, so it is older than any rock on Earth. The pits on its skin melted as it fell through the air. On the cut face are crossing bands of nickel and iron that only grow in metal cooled over millions of years. Touch it: you are touching the inside of another world. Drawn here by hand from photographs and measurements: no free 3D scan of it exists.",nickel-iron
+palm tree,V-101,Coconut Palm,vr island,0,"A coconut palm, seven and a half metres, a bunch of nuts under its crown.",palm
+bent palm,V-102,Leaning Palm,vr island,0,A coconut palm grown leaning out toward the light.,palm
+lean-to,V-103,Lean-to,vr island,0,Driftwood poles and a roof of palm thatch: shade and a dry place to sleep.,"driftwood, palm thatch"
+campfire,V-104,Campfire,vr island,0,A fire in a ring of stones.,"stone, wood"
+driftwood log,V-105,Driftwood Log,vr island,0,"A log the sea brought in, silver with salt.",driftwood
+outrigger canoe,V-106,Outrigger Canoe,vr island,0,"A dugout with a float on two booms, and its paddle.",wood
+net rack,V-107,Net Rack,vr island,0,A fishing net hung up to dry.,"driftwood, net"
+coconut shells,V-108,Coconut Shells,vr island,0,"Two halves of a coconut, eaten.",coconut
+message in a bottle,V-109,Message in a Bottle,vr island,0,A green bottle with a rolled note in it.,"glass, paper"
+music desk,P-901,Music Desk,bedroom,180,"Dark green steel and warm wood, a deep board for a keyboard; comes with its gear: an orange keyboard, a drum pad, a little synth, effect boxes and a postcard.","steel, wood, plastic"
+monitor,P-902,Monitor,bedroom,200,A flat black screen on a neck and a foot. Off.,"plastic, glass"
+speaker on stand,P-903,Speaker on Stand,bedroom,220,A dark green box clamped on a tall pole. Top-heavy: it topples if you bump it.,"wood, steel"
+teal stool,P-904,Stool,bedroom,40,A teal cushion on four dark legs.,"steel, foam, cloth"
+synth on stand,P-905,Synth on X-Stand,bedroom,650,"Five octaves, a panel of knobs, wooden cheeks, on a steel X-stand.","steel, wood, plastic"
+crt on cart,P-906,CRT on a Cart,bedroom,300,"A white steel cart with four consoles on its shelves, the old set on top showing its picture, a plant and a toy dinosaur.","steel, glass, plastic"
+bookcase with books,P-907,Bookcase with Books,bedroom,150,"Red-brown, five shelves, every book its own; a box and a plant on top.","wood, paper"
+low shelf,P-908,Low Shelf,bedroom,90,"Light wood, games and records in it, a console and a pad on top.","wood, plastic, vinyl"
+bed with pillows,P-910,Bed with Pillows,bedroom,400,"A white mattress with a teal stripe, a dark teal duvet in soft folds, two striped pillows.","steel, cotton"
+terrarium,P-911,Terrarium with Gecko,bedroom,350,"A glass tank on a low bench: sand, a branch, a flat stone and a leopard gecko who walks about and climbs.","glass, wood, sand"
+wall shelf with pothos,P-912,Wall Shelf with Pothos,bedroom,45,"A board on two brackets, a pothos in a clay pot and four books on it. Goes on a wall.","wood, steel, clay"
+floor plant,P-913,Floor Plant,bedroom,35,Tall pointed leaves out of a white pot.,"ceramic, plant"
+hanging pot,P-914,Hanging Pot,bedroom,30,A terracotta pot of trailing pothos on three cords. It swings when you brush it.,"clay, cord, plant"
+teddy bear,P-916,Teddy Bear,bedroom,15,"Brown, soft, a pale muzzle.",plush
+night light,P-101,Night Light,pool,0,"A little amber lamp low on a wall, so you can find your way in the dark.","glass, plastic"
+pool ladder,P-102,Pool Ladder,pool,0,Two steel rails curving over the edge and down into the water.,steel
+pool bench,P-103,Pool Bench,pool,0,"A slatted wooden bench on steel feet, for drying off.","wood, steel"
+liam's photo,,,,,,
+elm,,Elm,Central Park,"$2,400",,
+giant elm,,Giant elm,Central Park,"$6,000",,
+oak,,Oak,Central Park,"$2,200",,
+giant oak,,Giant oak,Central Park,"$5,500",,
+maple,,Maple,Central Park,$900,,
+yellow maple,,Yellow maple,Central Park,$900,,
+young tree,,Young tree,Central Park,$300,,
+pine,,Pine,Central Park,"$1,400",,
+park bush,,Park bush,Central Park,$120,,
+park bench,,Park bench,Central Park,"$1,100",,
+park lamppost,,Park lamppost,Central Park,"$3,800",,

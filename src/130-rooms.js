@@ -97,8 +97,7 @@ ROOMS.roofAt=(x,y,z)=>{ '@later'; const h=new THREE.Raycaster(new THREE.Vector3(
   const unclip=g=>{ if(g)g.traverse(c=>{ if(c.material)for(const mt of [].concat(c.material))if(mt.clippingPlanes===NEAR){ mt.clippingPlanes=null; mt.needsUpdate=true; } }); };
   ROOMS.tick=()=>{ if(!RL)build(); let hit=null, bnd=null; if(NEARON)unclip(W3.group); if(LOOKS.light)LOOKS.light();
     if(SHARED.LVL==='up'&&!UI.freeCam&&!ED.on&&!MAPED.on&&!(window.DRONE&&DRONE.cam)){
-      hit=RL.find(b=>(within(b,pos.x,pos.z,0)||!!b.band&&within(b.band,pos.x,pos.z,0))&&SHARED.py>b.y0-.3&&SHARED.py<b.y1)||null; }
-    if(hit&&hit.band&&hit.id&&!within(hit,pos.x,pos.z,0)&&STORE.inside&&STORE.inside[hit.id]&&STORE.enter&&!FADE.busy)STORE.enter(hit.id,true);   // walking into a shop's doorway takes you in, a couple of steps past the door
+      hit=RL.find(b=>(within(b,pos.x,pos.z,0)||!!b.band&&!b.id&&within(b.band,pos.x,pos.z,0))&&SHARED.py>b.y0-.3&&SHARED.py<b.y1)||null; }
     if(!hit&&!IV.key&&!IV.busy)drop(null);
     ROOMS.cur=hit; { const w=hit?{key:kOf(hit),b:hit}:null; IV.want=w; const wk=w?w.key:null; if(wk!==IV.key&&!IV.busy){ if(wk&&wk===IV.re&&!lazyOf(hit))apply(w); else swap().catch(()=>{ IV.busy=false; }); } IV.re=null; }
     if(SHARED.BOD.GDK&&SHARED.BOD.GDK.card)VIS.hide(SHARED.BOD.GDK.card,'room',!!(IV.b&&IV.b.lz==='bath')); if(IV.key&&scene.background)scene.background.setRGB(0,0,0);

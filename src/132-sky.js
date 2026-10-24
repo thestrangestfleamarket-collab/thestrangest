@@ -27,10 +27,10 @@ import {HEMI} from './064-map-post.js';
       float fbm(vec2 p){ return vn(p)*.55+vn(p*2.1+7.3)*.3+vn(p*4.3+3.1)*.15; }
       float fbm4(vec2 p){ return vn(p)*.5+vn(p*2.03+7.3)*.27+vn(p*4.1+3.1)*.14+vn(p*8.3+11.7)*.09; }
       float sheet(vec2 q,float sc,float cov,float sh){ vec2 w=vec2(fbm(q*.55+3.1),fbm(q*.55+9.4))-.5; float n=fbm4((q+w*.6)*sc)*.64+fbm4((q+w*.28)*sc*2.7+5.)*.36; return smoothstep(cov,cov+sh,n); }
-      float cloudAt(vec3 d,float t,float cov){ float el=max(d.y,0.); vec2 q=d.xz/(el+.06);
+      float cloudAt(vec3 d,float t,float cov){ float el=abs(d.y); vec2 q=d.xz/(el+.06);   // abs, not max: clouds mirror below the horizon too, so high up you float in sky and clouds above and below (owner, 23 Oct 2026)
         float hi=sheet(q*vec2(.3,.62)+vec2(t*.004,t*.0015),1.,cov+.12,.5)*.45, cu=sheet(q*.9+vec2(t*.012,t*.005),1.,cov,.22), lo=sheet(q*1.7+vec2(t*.02,t*.009)+vec2(31.,17.),1.,cov+.08,.3)*.85;
         return (1.-(1.-hi)*(1.-cu)*(1.-lo))*smoothstep(.015,.12,el); }
-      float cloudFast(vec3 d,float t,float cov){ float el=max(d.y,0.); vec2 q=d.xz/(el+.06); return sheet(q*.9+vec2(t*.012,t*.005),1.,cov,.22)*smoothstep(.015,.12,el); }`;
+      float cloudFast(vec3 d,float t,float cov){ float el=abs(d.y); vec2 q=d.xz/(el+.06); return sheet(q*.9+vec2(t*.012,t*.005),1.,cov,.22)*smoothstep(.015,.12,el); }`;
   SKY.GLSL=CLOUD;   // the clouds as a function of a direction: the dome paints them, the look's last pass asks it what stands in front of the sun
   const mat=new THREE.ShaderMaterial({uniforms:U,side:THREE.BackSide,depthWrite:false,depthTest:true,
     vertexShader:'varying vec3 vD; void main(){ vD=position; vec4 p=projectionMatrix*modelViewMatrix*vec4(position,1.); gl_Position=p.xyww; }',

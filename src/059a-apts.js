@@ -1,12 +1,12 @@
 // THE APARTMENTS: the brownstone apartment house on the street as one painted block (brick, windows, flower boxes, ivy), its 3D fire escapes with plants and its stoop; YOUR APARTMENT inside is built off the map when you go in (its own builder).
 import {SHARED, THREE} from './003-shx.js';
-import {pos, ROOMS, st, UI} from './003b-systems.js';
+import {CLOCK, pos, ROOMS, st, UI} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {BLDK, FIX, grab, LOTX, LOTY, MODS, SOL, TILE, TURN, WP} from './006-map-pre.js';
+import {BLDK, FADE, FIX, grab, LOTX, LOTY, MODS, SOL, STORE, SYS, TILE, TURN, WP} from './006-map-pre.js';
 import {BATCH} from './008-batch.js';
 const APTS={EMPTY:true};
 await grab('apts',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Yr=SHARED.BOD.Y,
-  RZ=APTS.RZ=28, Y=z=>Yr(z+RZ), gbox=(b,k)=>tgbox({...b,z0:b.z0+RZ,z1:b.z1+RZ},k), R0=APTS.R0=Yr(RZ)-Yr(0), {hash}=SHARED.BOD.g, {LSEED,STORY,sh}=SHARED.BOD.K, S=STORY, ST=5, AH=ST*S, TOP=RZ+AH, W=LSEED.walk, T=.1;
+  RZ=APTS.RZ=28, Y=z=>Yr(z+RZ), gbox=(b,k)=>tgbox({...b,z0:b.z0+RZ,z1:b.z1+RZ},k), R0=APTS.R0=Yr(RZ)-Yr(0), {hash}=SHARED.BOD.g, {LSEED,STORY,sh}=SHARED.BOD.K, S=STORY, ST=12, AH=ST*S, TOP=RZ+AH, W=LSEED.walk, T=.1;
   const AY=WP.apts.y1!=null?LOTY(WP.apts.y1):W, AW=WP.apts.y1!=null?{x0:LOTX(WP.apts.x0),x1:LOTX(WP.apts.x1),y0:LOTY(WP.apts.y0),y1:AY}:{x0:LOTX(WP.apts.x0),x1:LOTX(WP.apts.x1),y0:AY-14,y1:AY}, TA=TURN(AW,WP.apts.face), A=TA.L, m=(A.x0+A.x1)/2, H={y0:A.y0+5.6,y1:A.y0+8.4}, DW=.78, DH=94;
   const XZ=(x,y)=>{ const p=TA.pt(x,y); return [X(p[0]),Z(p[1])]; }, loc=(x,z)=>TA.back(x/(TILE*BLDK)+SHARED.BOD.OX,z/(TILE*BLDK)+SHARED.BOD.OY);
   const tgbox=(b,k)=>{ if(!TA.q)return SHARED.BOD.gbox(b,k); const p={boxes:[b],x0:b.x0,y0:b.y0,x1:b.x1,y1:b.y1}; SHARED.BOD.placeAt(p,TA.q,TA.cx,TA.cy,TA.cx,TA.cy); return SHARED.BOD.gbox(p.boxes[0],k); };
@@ -18,14 +18,14 @@ await grab('apts',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Yr=SHARED.BOD.
       if(fy<1||fx<1)return sh(base,f*.7); let k=(.9+.16*TN(bi,bc,sd))*(1+.14*(gr(ui/24,z/24,sd+4,1)-.5))*(z<5?.8+.04*z:1); if(fy>=bh-1)k*=1.08; return sh(base,f*k); };
     return {fs:(nx,ny,X_,Y_,z,f)=>P(nx?Y_:X_,z,f),top:(x,y)=>{ let k=1+.12*(gr(x,y,sd+10,.5)-.5); if(mid)k*=1+.1*Math.max(0,1-Math.abs(x-mid[0])/mid[1]); return sh(base,k); }}; };
 
-  const FWU=[3.25,9.75], DU=6.5, DI=.85, DO=1.65, RD=5.3, steel=[34,36,40];
+  const FWU=[3.25,9.75], DU=6.5, DI=.85, DO=1.65, RD=5.3, steel=[34,36,40], WINA=Math.round(S*.12), WINB=Math.round(S*.88), WDH=1.5;
   const feats=[]; let seed=3; const win=(side,a,z0,z1,o={})=>{ seed++; feats.push({side,a0:a-.55,a1:a+.55,z0,z1,lit:hash(seed,1,9)<.45,seed,box:!o.door&&hash(seed,4,9)<.78,...o}); };
   for(const [side] of [['f'],['b']])for(let lv=0;lv<ST;lv++){ const z=RZ+lv*S; for(const u of FWU)win(side,A.x0+u,z+42,z+94); if(lv)win(side,A.x0+DU,z+3,z+94,{door:true,lit:false}); }
   feats.push({side:'f',a0:m-DW,a1:m+DW,z0:RZ,z1:RZ+DH,door:true,arch:true,lit:false,seed:41},{side:'b',a0:m-DW,a1:m+DW,z0:RZ,z1:RZ+DH,door:true,lit:false,seed:43});
   for(const [side,a0,a1] of [['w',A.y0,A.y1],['e',A.y0,A.y1]])for(let lv=1;lv<ST;lv++)for(const k of [.22,.5,.78])win(side,a0+(a1-a0)*k,RZ+lv*S+42,RZ+lv*S+94,{box:false});
   const ivy=[{side:'f',a0:A.x0,a1:A.x0+2.4,h:RZ+S*1.7,seed:5,fall:.6},{side:'f',a0:A.x1-2,a1:A.x1,h:RZ+S*2.4,seed:7,fall:.6},{side:'w',a0:A.y1-4.5,a1:A.y1,h:RZ+S*2.2,seed:9,fall:.8},{side:'e',a0:A.y0+4,a1:A.y1-.4,h:RZ+S*2.1,seed:11},{side:'b',a0:A.x0+10,a1:A.x1,h:RZ+S*1.4,seed:13,fall:.6}];
   const roofCol=(x,y)=>{ const n=hash(Math.floor(x*4),Math.floor(y*4),61), e=Math.min(x-A.x0,A.x1-x,y-A.y0,A.y1-y); return e<.25?sh([118,50,38],e<.1?.8:1.05):n<.3?[50,50,52]:n>.7?[66,64,62]:[58,57,57]; };
-  const PAINT=APTS.paint=BLOCKS.facade({feats,ivy,top:TOP,wall:BLOCKS.brick([138,60,44]),trim:[118,50,38],base:{z1:RZ,paint:BLOCKS.brick([120,52,40])}}), BB=BLOCKS.make({...AW,z0:0,z1:TOP,kind:'A',turn:TA,roof:(x,y)=>roofCol(...TA.back(x,y)),paint:PAINT});
+  const PAINT=APTS.paint=BLOCKS.facade({feats,ivy,top:TOP,wall:BLOCKS.brick([138,60,44]),trim:[118,50,38],base:{z1:RZ,paint:BLOCKS.brick([120,52,40])}}), BB=BLOCKS.make({...AW,z0:0,z1:TOP,kind:'A',turn:TA,roof:(x,y)=>roofCol(...TA.back(x,y)),paint:PAINT});   // the house on the street is a solid painted block (floors 1-9 just a block); your floor-10 apartment is built off the map
   { const CN=[118,50,38]; tgbox({x0:A.x0-.3,x1:A.x1+.3,y0:A.y0-.3,y1:A.y1+.3,z0:TOP-12,z1:TOP,c:CN,...rock(CN,61,.9,14)},'A'); }
 
   const SOLS=[]; APTS.sol=SOLS; for(let lv=0;lv<ST;lv++)SOLS[lv]=[];
@@ -102,13 +102,13 @@ await grab('apts',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Yr=SHARED.BOD.
   const EB=ESC.map(F=>tbox4(U(F.ua-.05),F.yf,U(F.ub+.05),F.yf+F.o*(DO+.05))), ovl=(s,b)=>s[0]<b[2]&&s[2]>b[0]&&s[1]<b[3]&&s[3]>b[1];
   APTS.in=false; APTS.esc=false; let was=-1;
   APTS.tick=()=>{ const ib=APTS.inside(pos.x,pos.z), roof=ib&&window.POSOK&&SHARED.py>RFY, eg=!ib&&SHARED.LVL==='up'&&EG(pos.x,pos.z)!=null, lv=APTS.floor();
-    APTS.in=!!ROOMS.offIn&&ROOMS.offIn()==='apt'; APTS.esc=eg;
+    APTS.in=!!APTS.inReal; APTS.esc=eg;
     const key=(eg?2:0)+(roof?16:0)+lv*4; if(key!==was){ was=key; return eg?SOL.up.filter(s=>s===BLK||!EB.some(b=>ovl(s,b))).concat(SOLS[lv]):roof?SOL.up.filter(s=>s!==BLK).concat(EDGE):SOL[SHARED.LVL]||SOL.up; } return null; };
   window.HOUSEAT=(dy=0)=>XZ(m,A.y1+dy); APTS.doorAt=XZ(m,A.y1); APTS.doorHd=TA.hd(0);
   window.APTSDBG=()=>({in:APTS.in,esc:APTS.esc,floor:APTS.floor(),py:SHARED.py,pos:[+pos.x.toFixed(2),+pos.z.toFixed(2)],door:+X(m).toFixed(1),lad:LAD.F?+LAD.y.toFixed(1):null,block:BB});
 
-  const AR={x0:1300,y0:-100,x1:1312,y1:-91}, AX=(AR.x0+AR.x1)/2, WH=S-10, MY=APTS.my=ST-1, DC=AR.x0+3.98; APTS.R=AR; APTS.fw=[AX,AR.y0];
-  const FURN=[]; let PA=null, AS=[], AG=null;
+  const AR={x0:994,y0:20,x1:1006,y1:29}, AX=(AR.x0+AR.x1)/2, WH=S-10, MY=APTS.my=ST-1, DC=AR.x0+DU; APTS.R=AR; APTS.fw=[DC,AR.y0];   // off-map in the empty sky, near the fire escape's own lot, so the windows open on nothing but sky
+  const FURN=[], DYN={win:[],bar:[],cur:[],flame:[]}; let PA=null, AS=[], AG=null;
   APTS.furnish=(lv,fn)=>{ FURN.push(fn); if(PA){ const Q=ROOMS.part(AG,fn); for(const k of ['objs','things','cuts','lights'])PA[k].push(...Q[k]); } };
   const build=()=>{ '@apts'; const K=SHARED.BOD.K, n0=K.PROPS.length, l0=SHARED.BOD.STOREK.LAMPS.length; AG=new THREE.Group(); AG.name='apts-in'; scene.add(AG); AS=[];
     const sol=(x0,y0,x1,y1)=>{ const r=box4(x0,y0,x1,y1); AS.push(r); SOL.up.push(r); };
@@ -119,10 +119,13 @@ await grab('apts',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Yr=SHARED.BOD.
       bq([X(AR.x0),Yr(.15),Z(AR.y1)],[X(AR.x1),Yr(.15),Z(AR.y1)],[X(AR.x1),Yr(.15),Z(AR.y0)],[X(AR.x0),Yr(.15),Z(AR.y0)],faceTex((AR.x1-AR.x0)*24,(AR.y1-AR.y0)*24,(i,j)=>C(boards(AR.x0+(i+.5)/24,AR.y1-(j+.5)/24))),'A');
       const wall=(ax,at,a0,a1,f,P)=>{ bq(P(a0,0),P(a1,0),P(a1,WH),P(a0,WH),faceTex((a1-a0)*24,WH,(i,j)=>C(plaster(a0+(i+.5)/24,WH-j-.5,f))),'A'); ax==='x'?sol(a0,at-.1,a1,at+.1):sol(at-.1,a0,at+.1,a1); };
       const px=(at,o)=>(a,z)=>[X(a),Yr(z),Z(at+o)], py=(at,o)=>(a,z)=>[X(at+o),Yr(z),Z(a)];
-      wall('x',AR.y0,AR.x0,AR.x1,.84,px(AR.y0,0)); wall('x',AR.y1,AR.x0,AR.x1,.84,px(AR.y1,0)); wall('y',AR.x0,AR.y0,AR.y1,.68,py(AR.x0,0)); wall('y',AR.x1,AR.y0,AR.y1,.68,py(AR.x1,0));
+      wall('y',AR.x0,AR.y0,AR.y1,.68,py(AR.x0,0)); wall('y',AR.x1,AR.y0,AR.y1,.68,py(AR.x1,0));   // side party walls stay solid
+      const HOL=FWU.map(u=>[AR.x0+u-.62,AR.x0+u+.62]), WZ0=40, WZ1=96;   // two window openings per face, left as real holes onto the sky
+      const strip=(a0,a1,z0,z1,f,P)=>{ if(a1-a0<.02||z1-z0<.02)return; const W=Math.max(1,Math.round((a1-a0)*24)), Hh=Math.max(1,Math.round(z1-z0)); bq(P(a0,z0),P(a1,z0),P(a1,z1),P(a0,z1),faceTex(W,Hh,(i,j)=>C(plaster(a0+(i+.5)/W*(a1-a0),z1-(j+.5)/Hh*(z1-z0),f))),'A'); };
+      const wallH=(at,f,P)=>{ const b=[AR.x0]; for(const [h0,h1] of HOL)b.push(h0,h1); b.push(AR.x1); for(let k=0;k<b.length;k+=2)strip(b[k],b[k+1],0,WH,f,P); for(const [h0,h1] of HOL){ strip(h0,h1,0,WZ0,f,P); strip(h0,h1,WZ1,WH,f,P); } sol(AR.x0,at-.1,AR.x1,at+.1); };
+      wallH(AR.y0,.84,px(AR.y0,0)); wallH(AR.y1,.84,px(AR.y1,0));   // front & back: plaster around two open windows
       const pane=(P,a,z0,z1,lit,sd,door)=>SHARED.BOD.window([P(a-.55,z0),P(a+.55,z0),P(a+.55,z1),P(a-.55,z1)],1.1,z1-z0,lit,sd,'A',door);
-      pane(px(AR.y0,.03),AR.x0+2.75,42,94,false,5); pane(px(AR.y0,.03),AR.x1-2.75,42,94,false,6); pane(px(AR.y0,.03),AX,3,94,false,7,true);
-      pane(px(AR.y1,-.03),AR.x0+1.6,42,94,false,8); pane(px(AR.y1,-.03),AR.x1-2.4,42,94,false,9); pane(py(AR.x0,.03),AR.y0+4.5,42,94,false,10);
+      pane(px(AR.y0,.03),AR.x0+DU,3,94,false,7,true);
       { const d0=DC-.78, d1=DC+.78, Wd=Math.round((d1-d0)*24), WD=[86,54,34], WL=[104,68,44], WK=[62,38,24], BR=[212,176,84];
         const dp=(ii,jj)=>{ const z=DH-jj, q=(ii+.5)/Wd; if(ii<2||ii>=Wd-2||z>DH-2)return WK; if(q>.82&&q<.9&&Math.abs(z-DH*.42)<2)return BR; const tp=z>DH*.55; if(q>.16&&q<.84&&(tp?z>DH*.6&&z<DH*.92:z>DH*.1&&z<DH*.48))return (ii+jj)%7?WL:WD; return WD; };
         const P=px(AR.y1,-.03); bq(P(d0,0),P(d1,0),P(d1,DH),P(d0,DH),faceTex(Wd,DH,(ii,jj)=>C(dp(ii,jj))),'A'); APTS.door=[(d0+d1)/2,AR.y1]; }
@@ -132,21 +135,60 @@ await grab('apts',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Yr=SHARED.BOD.
       const x0=AR.x0, y0=AR.y0, x1=AR.x1, y1=AR.y1, made=APTS.made=[];
       put('patterned rug',x0+3,y0+5,0,false); put('sofa',x0+.7,y0+5,1); put('coffee table',x0+2.6,y0+5); put('TV on a low stand',x0+5.1,y0+5,3); put('floor lamp',x0+.4,y0+6.2);
       put('single bed',x1-1.2,y0+1.7,0); put('fiddle-leaf fig',x1-.5,y0+4); put('bookcase',x0+.35,y0+2.2,1); put('plant pot',x0+4.5,y0+.5);
-      put('home computer',x0+6.8,y0+.9,0); put('office chair',x0+6.8,y0+2); put('wall phone',x0+.03,y0+3.2,0,false);
+      put('home computer',x0+8.6,y0+.9,0); put('office chair',x0+8.6,y0+2); put('wall phone',x0+.03,y0+3.2,0,false);
       put('bath',x0+1.3,y1-.6,0); put('toilet',x0+2.7,y1-.6,0); put('bathroom sink',x0+2.3,y1-1.7,0);
       put('sink and counter',x1-2.2,y1-.45,2); put('stove',x1-3.6,y1-.45,2); put('fridge',x1-.6,y1-.5,2); put('dining table',x1-2.4,y1-2.8); put('pothos shelf',x0+.2,y0+7.2,1,false);
       put('hanging pothos',x1-2.75,y0+.5,0,false); put('hanging pothos',x0+.5,y0+4.5,1,false); put('stack of books with a candle',x0+5.1,y0+6.2);
       for(const [lx,ly] of [[x0+3,y0+5],[x1-2.6,y0+3]]){ const L=new THREE.PointLight(0xffe2b8,5,7*TILE,1.6); L.position.set(X(lx),Yr(WH-14),Z(ly)); scene.add(L); }
+      { // cozy fittings: daylight through the glass, venetian slats, drifting sheer curtains, the sun's slats on the floor, and candlelight — all keyed to the live sun
+        const FR=px(AR.y0,.02), BK=px(AR.y1,-.02), flY=Yr(.17), AU=Math.abs(X(AR.x0+1)-X(AR.x0));
+        const addm=(p3,mat,ro=4)=>{ const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(new Float32Array(p3),3)); g.computeVertexNormals(); const m=new THREE.Mesh(g,mat); m.renderOrder=ro; m.frustumCulled=false; scene.add(m); return m; };
+        const QD=(a,b,c,d)=>[a[0],a[1],a[2],b[0],b[1],b[2],c[0],c[1],c[2],a[0],a[1],a[2],c[0],c[1],c[2],d[0],d[1],d[2]];
+        const slatMat=new THREE.MeshBasicMaterial({color:0x15120d,transparent:true,opacity:.4,depthWrite:false,side:THREE.DoubleSide});
+        const curMat=new THREE.MeshBasicMaterial({color:0xf4e8d2,transparent:true,opacity:.4,depthWrite:false,side:THREE.DoubleSide,fog:false});
+        for(const [P,fw] of [[FR,1],[BK,-1]])for(const u of FWU){ const a=AR.x0+u;
+          DYN.win.push(addm(QD(P(a-.62,40),P(a+.62,40),P(a+.62,98),P(a-.62,98)),new THREE.MeshBasicMaterial({color:0xffeccb,side:THREE.BackSide,fog:false,transparent:true}),3));
+          { const sl=[]; for(let z=80;z<96;z+=4.4)sl.push(...QD(P(a-.57,z),P(a+.57,z),P(a+.57,z+2.4),P(a-.57,z+2.4))); addm(sl,slatMat,6); }   // blinds raised to the top of the glass so you can see out
+          for(const s of [-1,1]){ const cols=3, rows=4, w=s*.55, top=98, h=58, seg=[], node=(i,j)=>P(a+s*.6+(i/cols)*w, top-(j/rows)*h);
+            for(let j=0;j<rows;j++)for(let i=0;i<cols;i++)seg.push(...QD(node(i,j),node(i+1,j),node(i+1,j+1),node(i,j+1)));
+            const cm=addm(seg,curMat,7), bs=Float32Array.from(cm.geometry.attributes.position.array); let y0=1e9,y1=-1e9; for(let k=1;k<bs.length;k+=3){ y0=Math.min(y0,bs[k]); y1=Math.max(y1,bs[k]); }
+            DYN.cur.push({m:cm,base:bs,y0,y1,fw,ph:u+s*1.7}); }
+          if(fw>0){ const bars=[]; for(let k=0;k<6;k++){ const b0=AR.y0+.6+k*1.2, b1=b0+.55; bars.push(...QD([X(a-.62),flY,Z(b0)],[X(a+.62),flY,Z(b0)],[X(a+.62),flY,Z(b1)],[X(a-.62),flY,Z(b1)])); }
+            DYN.bar.push(addm(bars,new THREE.MeshBasicMaterial({color:0xffdf9a,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide,fog:false}),8)); }
+        }
+        const candle=(wx,wy,z0,h=7)=>{ const cx=X(wx), cz=Z(wy), yb=Yr(z0), hh=Yr(z0+h)-yb, r=.12*AU, fh=Yr(z0+h+5)-Yr(z0+h);
+          const wax=new THREE.Mesh(new THREE.BoxGeometry(r*2,hh,r*2),new THREE.MeshLambertMaterial({color:0xefe4c8})); wax.position.set(cx,yb+hh/2,cz); wax.castShadow=true; scene.add(wax);
+          const fm=new THREE.Mesh(new THREE.ConeGeometry(.16*AU,fh,6),new THREE.MeshBasicMaterial({color:0xffcf7a,transparent:true,opacity:.9,blending:THREE.AdditiveBlending,depthWrite:false,fog:false})); fm.position.set(cx,Yr(z0+h)+fh/2,cz); fm.renderOrder=9; scene.add(fm);
+          const L=new THREE.PointLight(0xffb45a,5,4.5*TILE,2); L.position.set(cx,Yr(z0+h)+fh,cz); scene.add(L); DYN.flame.push({L,fm,i0:5,fy:fm.position.y}); };
+        candle(AR.x0+FWU[0],AR.y0+.35,40); candle(AR.x0+FWU[1],AR.y0+.35,40); candle(AR.x0+FWU[0],AR.y1-.35,40); candle(AR.x0+2.6,AR.y0+5,16,5); candle(AR.x0+.4,AR.y0+2.2,30,5);
+      }
       for(const f of FURN)f(); },MKA);
     K.PROPS.length=n0; SHARED.BOD.STOREK.LAMPS.length=l0; return PA; };
-  const unbuild=()=>{ for(const r of AS){ const i=SOL.up.indexOf(r); if(i>=0)SOL.up.splice(i,1); } AS=[]; PA=null; if(AG){ AG.removeFromParent(); AG=null; } };
-  const wb=box4(AR.x0-.2,AR.y0-.2,AR.x1+.2,AR.y1+.2);
-  ROOMS.off.apt={name:'YOUR APARTMENT',mine:true,box:{x0:wb[0],z0:wb[1],x1:wb[2],z1:wb[3],y0:-1,y1:Yr(S)},need:()=>LOAD('apts','later'),build,unbuild,spawn:[X(DC),Z(AR.y1-1.3),0,Math.PI],out:[...XZ(m,A.y1+.7),Y(1),TA.hd(0)],
-    door:(d=>[d[0],Y(0),d[1]])(XZ(m,A.y1+.25)),exit:[X(DC),0,Z(AR.y1-.25)],exitName:'OUT TO THE STREET'};
-  APTS.spawn=ROOMS.off.apt.spawn;
+  const unbuild=()=>{ for(const r of AS){ const i=SOL.up.indexOf(r); if(i>=0)SOL.up.splice(i,1); } AS=[]; PA=null; for(const k in DYN)DYN[k].length=0; if(AG){ AG.removeFromParent(); AG=null; } };
+  SYS.add('places',()=>{ if(!APTS.in&&!APTS.inReal)return; const t=performance.now()/1000, e=CLOCK.elev(), day=Math.max(0,Math.min(1,(e+2)/10)), sv=CLOCK.sunV;   // the apartment breathes with the live sun: daylight at the glass, slats creeping over the floor, candle flames guttering
+    for(const m of DYN.win)m.material.opacity=(.06+.14*day)*.5;   // faint bloom only; the real sky shows through the open window
+    for(const m of DYN.bar){ m.material.opacity=day*.5*(.62+.38*Math.sin(t*.22)); m.position.set(sv.x*day*3,0,sv.z*day*3); }
+    for(const c of DYN.cur){ const b=c.base, p=c.m.geometry.attributes.position.array, span=Math.max(.1,c.y1-c.y0);
+      for(let k=0;k<p.length;k+=3){ const by=b[k+1], f=(c.y1-by)/span, g=f*f+.05; p[k+2]=b[k+2]+Math.sin(t*1.6+by*.05+c.ph)*.5*c.fw*g; p[k]=b[k]+Math.cos(t*1.3+by*.04+c.ph)*.3*g; } c.m.geometry.attributes.position.needsUpdate=true; }
+    for(const f of DYN.flame){ const fl=.7+.3*Math.sin(t*11+f.fy)+.15*Math.sin(t*23.3+f.fy*2); f.L.intensity=f.i0*(.6+.4*fl); f.fm.scale.set(1,.85+.3*fl,1); f.fm.material.opacity=.72+.24*fl; f.fm.position.y=f.fy+Math.sin(t*7+f.fy)*.3; }
+  },'059a-apts');
+  APTS.spawn=[X(DC),Z(AR.y1-1.3),0,Math.PI];   // the apartment is entered off the map (not a clipped ROOMS room), so the live sky shows through its open windows
+  APTS.doorW=(d=>[d[0],Y(0),d[1]])(XZ(m,A.y1+.25)); APTS.exitW=[X(DC),0,Z(AR.y1-.25)];
   APTS.num=(()=>{ try{ return localStorage.getItem('market-apt')||null; }catch(e){ return null; } })();
   APTS.loadNum=async()=>{ try{ const SB='https://jvcetttmqseoteidfggn.supabase.co', KEY='sb_publishable_UkzD8hOizW1hPr6hm3duQQ_07ZodPik', raw=localStorage.getItem('sb-jvcetttmqseoteidfggn-auth-token'); if(!raw)return; const s=JSON.parse(raw); if(!s||!s.access_token)return;
     const uid=JSON.parse(atob(s.access_token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/'))).sub, r=await fetch(SB+'/rest/v1/players?select=apt&id=eq.'+uid,{headers:{apikey:KEY,Authorization:'Bearer '+s.access_token}}); if(!r.ok)return; const a=await r.json(), n=a&&a[0]&&a[0].apt;
     if(n!=null&&String(n)!==APTS.num){ APTS.num=String(n); try{ localStorage.setItem('market-apt',APTS.num); }catch(e){} if(window.FIREV&&FIREV.setPlaque)FIREV.setPlaque(); } }catch(e){} };
   APTS.loadNum();
+  // YOUR APARTMENT: entered off the map (the street never draws here), the live sky showing through the open windows with the far city hidden, so you look out on nothing but sky and clouds (owner, 23 Oct 2026)
+  { APTS.inReal=false;
+    const hideFar=()=>{ const F=window.FAR3; if(F){ if(F.mesh)F.mesh.visible=false; if(F.panels)F.panels.visible=false; if(F.trees)F.trees.visible=false; if(F.FU)F.FU.uMK.value=0; if(F.fog&&scene.fog===F.fog)scene.fog=null; } };
+    APTS.enterReal=async()=>{ if(FADE.busy)return; await FADE.run('YOUR APARTMENT',async()=>{ if(!PA){ if(window.LOAD)await LOAD('apts','later'); build(); } if(AG)AG.visible=true; APTS.inReal=true; hideFar(); UI.goTo(X((AR.x0+AR.x1)/2),Z((AR.y0+AR.y1)/2),Yr(0)); SHARED.heading=0; },{hold:200}); };
+    APTS.exitReal=async()=>{ if(FADE.busy)return; await FADE.run('OUT TO THE STREET',async()=>{ APTS.inReal=false; if(AG)AG.visible=false; const d=XZ(m,A.y1+.9); UI.goTo(d[0],d[1],Yr(1)); SHARED.heading=TA.hd(0); },{hold:200}); };
+    let hbMade=false; const mkHB=()=>{ if(hbMade||!UI.thing)return; hbMade=true; const hb=(p,name,act)=>{ const o=new THREE.Mesh(new THREE.BoxGeometry(1.3*TILE,2.4*TILE,.5*TILE),new THREE.MeshBasicMaterial({visible:false})); o.position.set(p[0],p[1]+1.2*TILE,p[2]); scene.add(o); UI.thing({name,ghost:1,obj:o,reach:1.4*TILE,near:2.6*TILE,tall:2.4*TILE,act}); };
+      hb(APTS.doorW,'YOUR APARTMENT',()=>APTS.enterReal()); hb(APTS.exitW,'OUT TO THE STREET',()=>APTS.exitReal()); };   // the front door on the street, and the way back out from inside
+    const inR=(x,z)=>{ const a=X(AR.x0),b=X(AR.x1),c=Z(AR.y0),d=Z(AR.y1); return x>Math.min(a,b)-3&&x<Math.max(a,b)+3&&z>Math.min(c,d)-3&&z<Math.max(c,d)+3; };
+    const sg0=STORE.stackGround; STORE.stackGround=(x,z)=>APTS.inReal&&inR(x,z)?Yr(0):sg0?sg0(x,z):null;
+    SYS.add('places',()=>{ mkHB(); if(APTS.inReal)hideFar(); },'059a-aptsky');
+    window.ENTERAPT=()=>APTS.enterReal(); window.EXITAPT=()=>APTS.exitReal();
+    APTS.REALDBG=()=>({inReal:APTS.inReal,built:!!PA}); }
   MODS.apts=APTS; });

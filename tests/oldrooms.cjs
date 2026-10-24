@@ -9,7 +9,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   let st = false; for (let i = 0; i < 60 && !st; i++) { await pg.waitForTimeout(3000); st = await pg.evaluate(() => !!window.__started).catch(() => false); }
   ok(st, 'the page starts');
   const U = async (f, ms = 90000, arg) => { for (const t = Date.now(); Date.now() - t < ms; await pg.waitForTimeout(250)) if (await pg.evaluate(f, arg).catch(() => false)) return true; return false; };
-  const NOT_YET = ['pine', 'island ground', 'cave floor', 'cave rock', 'boulder', 'park lamppost', 'smoke', 'light switch', 'ceiling light'];   // the old engine's landscape kinds and two shared fittings from a kit not ported yet
+  const NOT_YET = ['pine', 'island ground', 'cave floor', 'cave rock', 'boulder', 'park lamppost', 'smoke', 'light switch', 'ceiling light', 'downfeed'];   // the old engine's landscape kinds and three shared fittings the old engine made
   if (st) {
     const s0 = await pg.evaluate(() => { const d = OLDDBG(); return { rooms: d.rooms, built: d.built.length, data: d.data, listed: __dbg.UI.places().filter(p => SHARED.OLDROOMS.by[p[0]]).length }; });
     ok(s0.rooms >= 40, 'the old rooms are registered (' + s0.rooms + ')');

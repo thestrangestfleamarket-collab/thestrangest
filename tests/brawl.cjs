@@ -53,8 +53,9 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     await pg.keyboard.up('p'); await pg.waitForTimeout(400);
     ok(bk.block && bk.bare && bk.d < .1 && bk.act, 'P with bare hands blocks and softens a blow (' + JSON.stringify(bk) + ')');
     const before = await pg.evaluate(() => ({ hp: __dbg.VIT.hp, p: __dbg.you() }));
-    const busy = await pg.evaluate(() => { const o = ONLINE.others.get('a'), S = __dbg.ST || {}; ONLINE.feed({ t: 'hit', id: 'a', d: .1, kb: 1, k: 'fist', from: [o.p.x, o.p.z] }); return JSON.stringify({ rag: RAGON(), out: __dbg.VIT.out }); });
-    await pg.waitForTimeout(2500);
+    const busy = await pg.evaluate(() => { const o = ONLINE.others.get('a'); ONLINE.feed({ t: 'hit', id: 'a', d: .1, kb: 1, k: 'fist', from: [o.p.x, o.p.z] }); return JSON.stringify({ rag: RAGON(), out: __dbg.VIT.out }); });
+    await pg.waitForFunction(b => { const p = __dbg.you(); return Math.hypot(p.x - b.x, p.z - b.z) > .1 || window.RAGON(); }, before.p, { timeout: 6000 }).catch(() => {});   // the shove lands when the runner gets to it; wait for it rather than a fixed time
+    await pg.waitForTimeout(300);
     const after = await pg.evaluate(() => ({ hp: __dbg.VIT.hp, p: __dbg.you(), rag: window.RAGON() }));
     ok(after.hp < before.hp, 'their blow takes health (' + before.hp.toFixed(2) + ' -> ' + after.hp.toFixed(2) + ')');
     ok(Math.hypot(after.p.x - before.p.x, after.p.z - before.p.z) > .1 && !after.rag, 'a light blow shoves you without knocking you down' + (after.rag || Math.hypot(after.p.x - before.p.x, after.p.z - before.p.z) <= .1 ? ' ' + busy + JSON.stringify([before, after]) : ''));

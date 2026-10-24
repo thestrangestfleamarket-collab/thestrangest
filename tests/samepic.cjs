@@ -17,7 +17,7 @@ let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
     let s=false; for(let i=0;i<900&&!(s=await pg.evaluate(()=>!!window.__started).catch(()=>false));i++)await pg.waitForTimeout(500);
     if(s&&inside)await pg.evaluate(id=>{ const T=__dbg.cv().TILE, A=MAIL.addr.find(a=>a.id===id); if(!A)return; const st=A.b.step; STORE.goTo(st.x-A.b.F.n.x*1.2*T,st.z-A.b.F.n.z*1.2*T,'up'); },inside);
     if(s&&place==='CENTRAL PARK')await pg.waitForFunction(()=>window.PARK&&PARK.ready,null,{polling:500,timeout:600000}).catch(()=>{});
-    await pg.waitForTimeout(20000); await pg.evaluate(()=>{ const R=window.RAYS; if(R)for(const k of ['beams','dust'])if(R[k])Object.defineProperty(R[k],'visible',{get:()=>false,set(){},configurable:true}); }); await pg.waitForTimeout(500); const f=path.join(OUT,place.replace(/\W+/g,'-').toLowerCase()+'-'+tag+'.png'); await pg.screenshot({path:f}); await pg.close(); return {f,s,errs}; };
+    await pg.waitForTimeout(20000); const f=path.join(OUT,place.replace(/\W+/g,'-').toLowerCase()+'-'+tag+'.png'); await pg.screenshot({path:f}); await pg.close(); return {f,s,errs}; };
   const cmp=await b.newPage();
   const TWICE=!!process.env.SAMEPIC_NOISE;
   for(const place of PLACES){ const A=await shot(BASE,place,'base'), A2=TWICE?await shot(BASE,place,'base2'):null, B=await shot(HEAD,place,'head');

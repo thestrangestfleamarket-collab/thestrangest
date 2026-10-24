@@ -4536,3 +4536,4 @@ Owner: "the trees leaves are not all connected, make them denser, make sure ivy 
 ## 24 Oct 2026: players fight (step 3 of 3)
 
 Owner: "merge it and start step 3". Everyone sees a downed player's ragdoll; double-click a player who is down to pick them up and carry them, punch to throw them, double-click again to put them down. A knockdown by another player keeps you down at least 2.5 s (longer while carried).
+- Owner, 24 Oct 2026: "remove the dust field". The `dust` look field is gone from every look, and with it the dust code that had been left switched off in the shafts (`134d`); no editor shows it. Nothing in the air but the sun's beams.

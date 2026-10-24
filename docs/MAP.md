@@ -153,9 +153,9 @@ Places built with `await grab(name, async()=>{...})` are one function each, ofte
 | `133a-lightedit.js` | 6.2 | top level |  | 003: SHARED THREE; 003b: LIGHTED; 004: RESMAX renderer resize scene; 005: SAVE |
 | `134-skyline.js` | 23.3 | top level |  | 003: SHARED THREE; 003b: CLOCK CULL FAR3 SKY WX pos; 004: RH RW renderer scene; 005: SAVE; 006: MAPG MISTB MISTE MISTF MODS OUT PFAR QS SYS TILE ZU; 065: RINGX |
 | `134a-parkfar.js` | 2.9 | top level |  | 003: SHARED THREE; 004: scene; 006: MAPG MISTE PFAR SYS TILE; 065: RINGX |
-| `134b-daynight.js` | 8.4 | top level |  | 003: SHARED THREE; 003b: CLOCK DN FAR3 PARK SKY WX; 004: scene; 005: SAVE; 006: MISTE MISTS MISTSC QS SYS; 064: HEMI |
+| `134b-daynight.js` | 8.3 | top level |  | 003: SHARED THREE; 003b: CLOCK DN FAR3 PARK SKY WX; 004: scene; 005: SAVE; 006: MISTE MISTS MISTSC QS SYS; 064: HEMI |
 | `134c-editors.js` | 4.4 | top level |  | 003b: CHARED EDITORS GAMEED ITEMED LAND LIGHTED UI WE |
-| `134d-shafts.js` | 7.3 | top level |  | 003: SHARED THREE; 003b: CLOCK DN SKY WX pos; 004: renderer scene; 006: OUT SYS TILE |
+| `134d-shafts.js` | 5.5 | top level |  | 003: SHARED THREE; 003b: CLOCK DN SKY WX pos; 004: renderer scene; 006: OUT SYS TILE |
 | `134e-distfog.js` | 3.9 | top level |  | 003: SHARED THREE; 003b: FAR3 pos; 004: ShaderPass scene; 005: SAVE; 006: TILE |
 | `135-where.js` | 1.8 | top level | BUILDV (136 136a) | 003: SHARED; 003b: CLIP PH RAG UI WHERE pos; 005: SAVE; 006: MODS QS SOL STORE TILE |
 | `136-version.js` | 2.0 | top level |  | 135: BUILDV |

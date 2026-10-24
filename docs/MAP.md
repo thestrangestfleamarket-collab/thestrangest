@@ -126,7 +126,7 @@ Places built with `await grab(name, async()=>{...})` are one function each, ofte
 | `111a-bodies.js` | 9.5 | top level | BODIES (111b 111c 111d 146f) | 003: SHARED THREE; 003b: CHARS NPCS W3 pos; 004: PPU; 005: SAVE; 006: ASTEP MAPG MODS SYS TILE; 076: HOMES ROAM stfree; 110: musScale sheetView spreadPose |
 | `111b-knight.js` | 14.4 | top level |  | 003: THREE; 006: STORE; 111a: BODIES |
 | `111c-bases.js` | 2.5 | top level |  | 003: THREE; 111a: BODIES |
-| `111d-online.js` | 15.6 | top level |  | 003: SHARED THREE; 003b: BUGS LOOKS ONLINE ROOMS UI W3 pos; 004: scene; 006: ASTEP MODS QS SYS TILE; 073: TL qMat ragPoseOf; 110: MUSGEO figureMesh musBody musScale; 111a: BODIES |
+| `111d-online.js` | 16.1 | top level |  | 003: SHARED THREE; 003b: BUGS LOOKS ONLINE ROOMS UI W3 pos; 004: scene; 006: ASTEP MODS QS SYS TILE; 073: TL qMat ragPoseOf; 110: MUSGEO figureMesh musBody musScale; 111a: BODIES |
 | `112-main-14.js` | 1.3 | top level | POSES (116 122), castPose (116 124) | 106: CAST |
 | `113-game-play-5-piano-samples-data.js` | 0.5 | top level | PNSAMP (114) |  |
 | `114-game-play-5-piano-1-sound.js` | 1.3 | top level | PNA (116 117 128), pnAudio (117), pnPlay (117), pnStop (117) | 003b: SND; 113: PNSAMP |
@@ -146,7 +146,7 @@ Places built with `await grab(name, async()=>{...})` are one function each, ofte
 | `128-bandstand.js` | 1.5 | top level |  | 003b: DRM MUS NPCS PNM SGM STAGE pos; 006: AWAY MAPG QS STORE; 106: GTA; 114: PNA; 119: IMX; 123: VOX |
 | `129-clock.js` | 8.5 | top level |  | 003: SHARED THREE; 003b: CLOCK NPCS ROOMS W3 pos; 004: renderer scene; 006: QS RING TILE; 009: WATER; 064: HEMI |
 | `129a-vis.js` | 3.6 | top level | VIS (130 161 162) | 003: SHARED; 003b: LEVELS PARK ROOMS ZONES pos; 004: scene; 006: TILE |
-| `130-rooms.js` | 16.9 | top level |  | 003: SHARED THREE; 003b: BLK CIVIC CULL DRM DRONE ED LEVELS LITE LOOKS MAPED MUS NPCS PNM ROOMS SGM UI W3 pos; 004: renderer scene; 006: FADE FREE MAPG MODS OUT OVERHEAD SEEN STORE SYS TILE ZU cutWalls; 007: FLAME; 008: BATCH; 009: WATER; 129a: VIS |
+| `130-rooms.js` | 17.0 | top level |  | 003: SHARED THREE; 003b: BLK CIVIC CULL DRM DRONE ED LEVELS LITE LOOKS MAPED MUS NPCS PNM ROOMS SGM UI W3 pos; 004: renderer scene; 006: FADE FREE MAPG MODS OUT OVERHEAD SEEN STORE SYS TILE ZU cutWalls; 007: FLAME; 008: BATCH; 009: WATER; 129a: VIS |
 | `131-weather.js` | 6.0 | top level |  | 003: SHARED THREE; 003b: CLOCK PARK WX pos; 004: scene; 006: OUT QS SYS TILE; 064: HEMI |
 | `132-sky.js` | 12.5 | top level |  | 003: SHARED THREE; 003b: CLOCK LOOK SKY WX; 004: scene; 006: CEL LFX OUT QS SMOOTH SYS; 064: HEMI |
 | `133-lookfx.js` | 6.0 | top level |  | 003: SHARED THREE; 003b: CLOCK LOOK PARK ROOMS WEEDS WX pos; 004: scene; 006: LFX OUT SOL SYS TILE |

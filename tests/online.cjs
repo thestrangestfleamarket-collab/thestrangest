@@ -36,6 +36,8 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     const r3 = await pg.evaluate(() => ({ n: ONLINE.others.size, bShown: !!(ONLINE.others.get('b').fig && ONLINE.others.get('b').fig.g.visible), who: document.querySelector('#onlwho').textContent, err: Object.entries(SYS.P).flatMap(([k, v]) => v.filter(s => s.err).map(s => k + ':' + s.name)) }));
     ok(r3.n === 1 && /ONLINE 2/.test(r3.who), 'ROSA leaves: one other left (' + r3.who + ')');
     ok(!r3.bShown, 'a player on another level is not drawn');
+    const r5 = await pg.evaluate(() => { document.querySelector('#onlwho').click(); return document.querySelector('#onllist').textContent; });
+    ok(/on another level/.test(r5), 'the online list says where a player you cannot see is (' + r5 + ')');
     ok(!r3.err.length, 'no SYS errors (' + r3.err.join(',') + ')');
   }
   ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.slice(0, 3).join(' | ') : ''));

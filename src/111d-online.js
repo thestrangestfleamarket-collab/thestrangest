@@ -10,9 +10,9 @@ Object.assign(ONLINE,{others:new Map(),on:false,me:'',log:[]}); window.ONLINE=ON
 { const R=RIG, PI4=Math.PI/4, LAG=160, SEND=1/6, FAR=60*TILE, MAXN=20, FADE_S=15000;
   const ROOM='s-'+String((SHARED.SECTION&&SHARED.SECTION.id)||'a').toLowerCase().replace(/[^a-z0-9-]/g,'');
   const V8=Array.from({length:8},(_,d)=>[Math.sin(d*PI4),-Math.cos(d*PI4)]);
-  let sock=null, last=null, acc=0, meAcc=1, meSent='', EL=null;
+  let sock=null, last=null, acc=0, keep=0, meAcc=1, meSent='', EL=null;
 
-  const roomKey=()=>{ const c=ROOMS.cur; if(!c)return ''; return [c.off||'',(+c.x0).toFixed(1),(+c.z0).toFixed(1),(+c.y0||0).toFixed(1)].join()+(c.off==='apt'&&MODS.apts&&MODS.apts.num?'#'+MODS.apts.num:''); };
+  const roomKey=()=>{ const c=ROOMS.cur; return c&&c.off?c.off+(c.off==='apt'&&MODS.apts&&MODS.apts.num?'#'+MODS.apts.num:''):''; };
   const lookKey=()=>{ const b=BODIES.pick(), L=LOOKS.L||{}; return b!=='walker'&&BODIES.by[b]?'b:'+b:'w'+(L.robe?1:0)+(L.bare?1:0); };
   const myName=()=>((LOOKS.L&&LOOKS.L.name)||'').trim()||('TENANT'+(MODS.apts&&MODS.apts.num?' '+MODS.apts.num:''));
   const send=m=>{ if(sock&&sock.readyState===1)sock.send(JSON.stringify(m)); };
@@ -66,18 +66,15 @@ Object.assign(ONLINE,{others:new Map(),on:false,me:'',log:[]}); window.ONLINE=ON
 
   /* ---------- each frame: the nearest twenty on your level and in your room, walking where they were sent ---------- */
   const hide=o=>{ if(o.fig)o.fig.g.visible=false; if(o.tag)o.tag.visible=false; };
-  const boxAt=(x,z,y)=>{ const L=ROOMS.boxes?ROOMS.boxes():[]; return L.find(b=>!b.off&&(x>b.x0&&x<b.x1&&z>b.z0&&z<b.z1||b.band&&x>b.band.x0&&x<b.band.x1&&z>b.band.z0&&z<b.band.z1)&&y>b.y0-.3&&y<b.y1)||null; };
-  const same=(p,rk)=>{ const off=s=>String(s||'').split(',')[0]; if(off(p.rm)||off(rk))return p.rm===rk; return boxAt(p.x,p.z,p.y)===boxAt(pos.x,pos.z,SHARED.py); };   // a room off the map by its name (apartments share one box); one on the map by where they stand, not by what their game last said
-  ONLINE.same=same;
   const draw=(dt,now)=>{ '@later'; const lv=SHARED.LVL||'up', rk=roomKey(), C=[];
-    for(const o of ONLINE.others.values()){ const p=o.p=place(o,now), d=p?Math.hypot(p.x-pos.x,p.z-pos.z):1e9; if(p&&p.lv===lv&&same(p,rk)&&d<FAR){ o.dd=d; C.push(o); } else hide(o); }
+    for(const o of ONLINE.others.values()){ const p=o.p=place(o,now), d=p?Math.hypot(p.x-pos.x,p.z-pos.z):1e9; o.why=!p?'no position yet':p.rm!==rk?'in another room':p.lv!==lv?'on another level':d>=FAR?'far away':'near you'; if(o.why==='near you'){ o.dd=d; C.push(o); } else hide(o); }
     C.sort((a,b)=>a.dd-b.dd); for(const o of C.slice(MAXN))hide(o);
     for(const o of C.slice(0,MAXN)){ try{ const p=o.p; if(!o.fig||o.key!==(o.look||'w00'))fig(o); const F=o.fig, g=F.g;
       const sp=o.q?Math.hypot(p.x-o.q.x,p.z-o.q.z)/Math.max(dt,1e-3):0; o.q={x:p.x,z:p.z}; o.S.target=sp>.4*TILE?1:0; R.step(o.S,dt);
       g.visible=true; g.position.set(p.x,p.y,p.z); g.rotation.y=p.hd; if(F.body)musScale(g,1); else musScale(g); o.d=((Math.round(p.hd/PI4)%8)+8)%8;
       if(!o.B||ASTEP.gate(o,dt)){ R.farOnly(false); const B=o.B=R.pose(o.S,true); if(F.body)BODIES.pose(B,F.PM,F.body); else F.PCS.forEach((pc,i)=>F.FM.set(i,R.frameOf(pc.on||pc.n,B))); }
       tag(o); o.tag.visible=true; o.tag.position.set(p.x,p.y+2.65*TILE,p.z); }catch(e){ hide(o); if(!o.err){ o.err=1; console.warn('ONLINE: could not draw '+(o.name||o.id),e); } } } };
-  window.ONLINEDBG=()=>({me:{lv:SHARED.LVL,rk:roomKey(),at:[+pos.x.toFixed(1),+pos.z.toFixed(1),+SHARED.py.toFixed(2)]},on:ONLINE.on,others:[...ONLINE.others.values()].map(o=>({name:o.name,look:o.look,p:o.p&&{x:+o.p.x.toFixed(1),z:+o.p.z.toFixed(1),y:+o.p.y.toFixed(2),lv:o.p.lv,rm:o.p.rm},same:!!(o.p&&same(o.p,roomKey())),shown:!!(o.fig&&o.fig.g.visible),err:!!o.err}))});
+  window.ONLINEDBG=()=>({me:{lv:SHARED.LVL,rk:roomKey(),at:[+pos.x.toFixed(1),+pos.z.toFixed(1),+SHARED.py.toFixed(2)]},on:ONLINE.on,others:[...ONLINE.others.values()].map(o=>({name:o.name,look:o.look,p:o.p&&{x:+o.p.x.toFixed(1),z:+o.p.z.toFixed(1),y:+o.p.y.toFixed(2),lv:o.p.lv,rm:o.p.rm},why:o.why||'',shown:!!(o.fig&&o.fig.g.visible),err:!!o.err}))});
 
   /* ---------- the chat and who's online (ENTER talks; the key is in the controls) ---------- */
   const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
@@ -104,8 +101,8 @@ Object.assign(ONLINE,{others:new Map(),on:false,me:'',log:[]}); window.ONLINE=ON
     BN.innerHTML='<div style="color:#ffd27a">'+esc(from)+'</div>'+esc(text); BN.hidden=false; clearTimeout(BN.t); BN.t=setTimeout(()=>{ BN.hidden=true; },12000); };
   const list=()=>{ if(!EL)return; const all=[...ONLINE.others.values()], who=EL.querySelector('#onlwho'), L=EL.querySelector('#onllist');
     who.textContent='ONLINE '+(all.length+1)+(ONLINE.on||!sock?'':' · OFF'); EL.querySelector('.k').textContent=UI.keyOf?UI.keyOf('chat').toUpperCase()+' TO TALK':'';
-    if(!L.hidden)L.innerHTML='<div><b>'+esc(myName())+'</b> (you)</div>'+all.map(o=>'<div>'+esc(o.name||'TENANT')+'</div>').join(''); };
-  let fadeT=0; const fade=dt=>{ if(!EL||(fadeT+=dt)<1)return; fadeT=0; const now=performance.now(); for(const d of EL.querySelector('#onllog').children)d.classList.toggle('old',now-+d.dataset.t>FADE_S); };
+    if(!L.hidden)L.innerHTML='<div><b>'+esc(myName())+'</b> (you)</div>'+all.map(o=>'<div>'+esc(o.name||'TENANT')+' <span style="color:#8a8f9c">'+esc(o.why||(o.s.length?'':'no position yet'))+'</span></div>').join(''); };
+  let fadeT=0; const fade=dt=>{ if(!EL||(fadeT+=dt)<1)return; fadeT=0; if(!EL.querySelector('#onllist').hidden)list(); const now=performance.now(); for(const d of EL.querySelector('#onllog').children)d.classList.toggle('old',now-+d.dataset.t>FADE_S); };
 
   /* ---------- the connection: partysocket (it reconnects by itself); your moves at most six times a second, only when you move ---------- */
   const connect=async()=>{ '@later'; let PS=null; try{ const m=await import('https://cdn.jsdelivr.net/npm/partysocket@1.3.0/+esm'); PS=m.PartySocket||m.default; }catch(e){ console.warn('ONLINE: no connection',e); return; }
@@ -117,8 +114,8 @@ Object.assign(ONLINE,{others:new Map(),on:false,me:'',log:[]}); window.ONLINE=ON
   ONLINE.tick=dt=>{ const now=performance.now();
     if(ONLINE.on){ acc+=dt; meAcc+=dt;
       if(meAcc>1){ meAcc=0; const n=myName(), k=lookKey(), s=n+'|'+k; if(s!==meSent){ meSent=s; send({t:'me',name:n,look:k}); } }
-      if(acc>=SEND){ acc=0; const a=[+pos.x.toFixed(2),+pos.z.toFixed(2),+SHARED.py.toFixed(2),+SHARED.heading.toFixed(2),SHARED.LVL||'up',roomKey()];
-        if(!last||Math.abs(a[0]-last[0])+Math.abs(a[1]-last[1])+Math.abs(a[2]-last[2])>.01||Math.abs(a[3]-last[3])>.04||a[4]!==last[4]||a[5]!==last[5]){ last=a; send({t:'mv',at:a}); } } }
+      keep+=dt; if(acc>=SEND){ acc=0; const a=[+pos.x.toFixed(2),+pos.z.toFixed(2),+SHARED.py.toFixed(2),+SHARED.heading.toFixed(2),SHARED.LVL||'up',roomKey()];
+        if(!last||Math.abs(a[0]-last[0])+Math.abs(a[1]-last[1])+Math.abs(a[2]-last[2])>.01||Math.abs(a[3]-last[3])>.04||a[4]!==last[4]||a[5]!==last[5]||keep>4){ last=a; keep=0; send({t:'mv',at:a}); } } }
     if(ONLINE.others.size)draw(dt,now); fade(dt); };
   SYS.add('life',dt=>ONLINE.tick(dt||0),'111d-online');
   const go=async()=>{ while(!window.__started)await new Promise(r=>setTimeout(r,500)); await LOAD('later');

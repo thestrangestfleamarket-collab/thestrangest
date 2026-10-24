@@ -68,6 +68,7 @@ import {FOREST, PROPS} from './039-bodega.js';
   const makeProp=o=>{ '@later'; const g=propGeo(o.k); if(!g)return; const me=new THREE.Mesh(g,pmat); me.scale.setScalar(o.s/.84*T); me.rotation.y=o.rot||0;
     me.position.set(o.x,groundYAt(o.x,o.z,o.y||0),o.z); me.castShadow=true; me.receiveShadow=true; me.userData.landProp=o; o.mesh=me; gardGroup().add(me); };
   const unprop=o=>{ if(o.mesh){ gardGroup().remove(o.mesh); o.mesh=null; } };
+  LAND.propMesh=(k,s)=>{ '@later'; const g=propGeo(k); if(!g)return null; const me=new THREE.Mesh(g,pmat); me.scale.setScalar((s??dftScale(k))/.84*T); me.castShadow=true; me.receiveShadow=true; return me; };   // a baked model as one mesh (the old rooms' pines and rocks)
   let gprops; try{ const B=__DATA__("data/garden.json")||[]; const G=JSON.parse(SAVE.get('land-props')||'null'); gprops=Array.isArray(G)?G:B.slice(); }catch(e){ gprops=[]; }
   const serP=o=>({k:o.k,x:o.x,z:o.z,y:o.y,s:o.s,rot:o.rot});
   const saveP=()=>{ try{ SAVE.set('land-props',JSON.stringify(gprops.map(serP))); }catch(e){} };

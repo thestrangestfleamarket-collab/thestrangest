@@ -15,7 +15,7 @@ for (const f of files) { text[f] = fs.readFileSync(SRC + '/' + f, 'utf8'); strip
 let page = '', spans = [];
 for (const f of files) { spans.push([page.length, f]); page += stripped[f]; }
 const A = page.indexOf('<script type="module">') + 22, B = page.lastIndexOf('</script>');
-const code = page.slice(A, B).replace(/__(DATA|LAZY|B64)__\("[^"]+"\)/g, m => '0'.padEnd(m.length, ' ')).replace(/__BUILDV__/g, '0'.padEnd(10, ' '));
+const code = page.slice(A, B).replace(/__(DATA|LAZY|B64)__\("[^"]+"\)/g, m => '0'.padEnd(m.length, ' ')).replace(/__BUILDV__/g, '0'.padEnd(10, ' ')).replace(/__CHANGELOG__/g, '0'.padEnd(13, ' '));
 const fileAt = off => { let r = null; for (const [s, f] of spans) { if (s <= off + A) r = f; else break; } return r; };
 const { root, refs } = analyse(code);
 const ord = f => files.indexOf(f), uses = {}, exps = {}, bad = [];

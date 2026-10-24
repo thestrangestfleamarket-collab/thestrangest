@@ -27,8 +27,8 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
       const odd = r.left.filter(k => !NOT_YET.includes(k));   // a kit's own kind standing in is a regression; the old engine's and the shared kinds are known debt
       ok(!odd.length, name + ': every item standing in is a kind not ported yet (' + r.placed + ' made, ' + r.missing + ' standing in' + (odd.length ? '; a kit kind stands in: ' + odd.join(', ') : '') + ')');
       ok(r.dark, name + ': the map is not drawn while you are in');
-      await pg.evaluate(k => ROOMS.exit(k), id);
-      ok(await U(k => !OLDDBG().built.includes(k) && !(window.FADE && FADE.busy), 60000, id), name + ' is dropped on the way out');
+      ok(await U(k => ROOMS.exit(k) != null, 30000, id), name + ': the way out runs');   // exit does nothing while a fade or swap is still busy: ask again until it runs
+      ok(await U(k => !OLDDBG().built.includes(k) && !(window.FADE && FADE.busy), 120000, id), name + ' is dropped on the way out');   // the street is drawn again on the way out: as long as a build on a slow machine
     }
     const s1 = await pg.evaluate(() => ({ built: OLDDBG().built.length, sol: __dbg.SOL.up.length }));
     ok(s1.built === 0, 'nothing left built after leaving');

@@ -2,7 +2,7 @@
 # Wizard), each a rigged .fbx with its own clips (Walk, Run, Idle, ...), baked into data/rpgchars.json for src/NNN-npc-rpg.js the way the
 # creatures are (rig + skinned mesh + clips, the armature's 100x and quarter-turn folded into the root bone). Unlike the creatures their
 # colour is sampled from the pack's per-character texture at each vertex (so the model ships no texture, as the rule is); the face and
-# shoulder pads are still meshes hung on their bone (bound to it whole), and the held weapon is dropped — these are passers-by, not fighters.
+# shoulder pads and the held weapon (on the right hand's Weapon.R bone, coloured from its own texture) are still meshes bound whole to their bone.
 # Run: the .fbx first to .glb with FBX2glTF, then  python3 tools/rpgchars-bake.py <glb dir> <textures dir> Warrior Cleric Monk Ranger Rogue Wizard
 import sys, os, json, struct, base64, numpy as np
 from PIL import Image
@@ -25,9 +25,10 @@ clean=lambda n:n.replace('.','_').replace('|','_').replace(':','_')
 OUT={}
 for key in KEYS:
     j,b=glb(os.path.join(R,key+'.glb')); par={c:i for i,n in enumerate(j['nodes']) for c in n.get('children',[])}; G={}
-    TEX=np.array(Image.open(os.path.join(TEXDIR,key+'_Texture.png')).convert('RGB'))
-    def colours(uv):   # the texture's colour under each vertex (nearest texel; glTF's v runs down from the top, as the image rows do)
-        u=np.clip((uv[:,0]%1)*TEX.shape[1],0,TEX.shape[1]-1).astype(int); v=np.clip((uv[:,1]%1)*TEX.shape[0],0,TEX.shape[0]-1).astype(int); return TEX[v,u]
+    TX={}
+    def colours(uv,mn):   # the colour under each vertex in the material's texture (<material>.png, or <Class>_<material>.png: the ranger's Bow_Texture)
+        if mn not in TX: TX[mn]=np.array(Image.open(next(f for f in (os.path.join(TEXDIR,mn+'.png'),os.path.join(TEXDIR,key+'_'+mn+'.png')) if os.path.exists(f))).convert('RGB'))
+        T=TX[mn]; u=np.clip((uv[:,0]%1)*T.shape[1],0,T.shape[1]-1).astype(int); v=np.clip((uv[:,1]%1)*T.shape[0],0,T.shape[0]-1).astype(int); return T[v,u]   # (nearest texel; glTF's v runs down, as the image rows do)
     def glob_(i):
         if i in G: return G[i]
         M=trs(j['nodes'][i]); G[i]=(glob_(par[i])@M) if i in par else M; return G[i]
@@ -51,7 +52,6 @@ for key in KEYS:
     Gf=np.stack([glob_(J[k]) for k in order]); ibm=np.linalg.inv(Gf)
     rig={'names':names,'parent':par_,'t':t,'q':q,'ibm':b64(ibm.transpose(0,2,1).astype(np.float32))}
     if any(abs(np.array(x)-1).max()>1e-4 for x in sc_): rig['s']=sc_
-    MAIN=key+'_Texture'   # the body/face/pads; everything else (the weapon's own texture) is dropped
     # the skin: body skinned by its weights; the face and shoulder pads bound whole to the bone they hang on; all at rest in the world
     P=[];C=[];RG=[];JJ=[];WW=[];IX=[]; parts=[]; base=0
     for ni,n in enumerate(j['nodes']):
@@ -67,7 +67,6 @@ for key in KEYS:
         pn=clean(n['name'])
         for p in j['meshes'][n['mesh']]['primitives']:
             mn=j['materials'][p['material']]['name']
-            if mn!=MAIN: continue   # drop the held weapon (its own texture)
             A=p['attributes']; pos=acc(j,b,A['POSITION']).astype(float); uv=acc(j,b,A['TEXCOORD_0']).astype(float); idx=acc(j,b,p['indices']).reshape(-1).astype(int)
             if skinned:
                 jn=acc(j,b,A['JOINTS_0']).astype(int); w=acc(j,b,A['WEIGHTS_0']).astype(float); w=w/np.maximum(1e-9,w.sum(1,keepdims=True))
@@ -77,7 +76,7 @@ for key in KEYS:
             else:
                 out=(GM[:3,:3]@pos.T).T+GM[:3,3]; jj=np.zeros((len(pos),4),int); jj[:,0]=kr; w=np.zeros((len(pos),4)); w[:,0]=1
             if pn not in parts: parts.append(pn)
-            P.append(out); C.append(colours(uv)); RG.append(np.full(len(pos),parts.index(pn))); JJ.append(jj); WW.append(w); IX.append(idx+base); base+=len(pos)
+            P.append(out); C.append(colours(uv,mn)); RG.append(np.full(len(pos),parts.index(pn))); JJ.append(jj); WW.append(w); IX.append(idx+base); base+=len(pos)
     P=np.vstack(P); C=np.vstack(C); RG=np.concatenate(RG); JJ=np.vstack(JJ); WW=np.vstack(WW); IX=np.concatenate(IX)
     lo=P.min(0); hi=P.max(0); sc=(hi-lo).max()/65000
     mesh={'n':len(P),'lo':np.round(lo,5).tolist(),'sc':float(sc),'p':b64(np.round((P-lo)/sc-32500).astype(np.int16)),'c':b64(C.round().astype(np.uint8)),'r':b64(RG.astype(np.uint8)),'j':b64(JJ.astype(np.uint8)),'w':b64(np.round(WW*255).astype(np.uint8)),'i':b64(IX.astype(np.uint16)),'parts':parts,'tris':len(IX)//3}

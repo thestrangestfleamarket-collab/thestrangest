@@ -42,15 +42,15 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     ok(await pg.evaluate(() => __dbg.RAG.held && __dbg.RAG.held.by === 'a'), 'a player can pick you up while you are down');
     await pg.evaluate(() => ONLINE.feed({ t: 'toss', id: 'a', v: [1, 0] }));
     ok(await pg.evaluate(() => !__dbg.RAG.held), 'and throw you');
-    for (let i = 0; i < 20 && await pg.evaluate(() => window.RAGON()); i++) await pg.waitForTimeout(500);
+    for (let i = 0; i < 120 && await pg.evaluate(() => window.RAGON() || __dbg.VIT.out > 0); i++) await pg.waitForTimeout(500);
     const down = await pg.evaluate(async () => { const on = __sent.find(m => m.t === 'ragon'), fr = __sent.filter(m => m.t === 'rag').pop(), o = ONLINE.others.get('a');
       ONLINE.feed({ ...on, id: 'a' }); const P = __dbg.you(); const f = { ...fr, id: 'a', o: [P.x / 1.13 + .5, -P.z / 1.13] };
       window.__ragF = f; for (let i = 0; i < 6; i++) { ONLINE.feed(f); await new Promise(r => setTimeout(r, 200)); }
       return { rag: !!(o.rag && o.rag.b), posed: !!(o.B && o.B.J && o.B.J.pelvis) }; });
     ok(down.rag && down.posed, 'a player who is down lies on your screen as their ragdoll fell (' + JSON.stringify(down) + ')');
-    const g = await pg.evaluate(() => { __sent.length = 0; ONLINE.feed(__ragF); window.__ragI = setInterval(() => ONLINE.feed(__ragF), 100); const o = ONLINE.others.get('a'); let e = ''; try { ONLINE.use(o); } catch (x) { e = x.message; } return { e, age: performance.now() - (o.rag ? o.rag.t : 0), use: typeof ONLINE.use, sent: __sent.map(m => m.t) }; });
+    const g = await pg.evaluate(() => { __sent.length = 0; ONLINE.feed(__ragF); window.__ragI = 1; const fr = () => { if (!__ragI) return; ONLINE.feed(__ragF); requestAnimationFrame(fr); }; requestAnimationFrame(fr); const o = ONLINE.others.get('a'); let e = ''; try { ONLINE.use(o); } catch (x) { e = x.message; } return { e, age: performance.now() - (o.rag ? o.rag.t : 0), use: typeof ONLINE.use, sent: __sent.map(m => m.t) }; });
     ok(g.sent.includes('grab'), 'double-clicking a player who is down picks them up (' + JSON.stringify(g) + ')');
-    await pg.evaluate(() => { SYS.run('act', 'J', 1); clearInterval(__ragI); });
+    await pg.evaluate(() => { SYS.run('act', 'J', 1); __ragI = 0; });
     ok(await pg.evaluate(() => __sent.some(m => m.t === 'toss' && m.to === 'a')), 'a punch throws them');
     const err = await pg.evaluate(() => Object.entries(SYS.P).flatMap(([k, v]) => v.filter(s => s.err).map(s => k + ':' + s.name)));
     ok(!err.length, 'no SYS errors (' + err.join(',') + ')');

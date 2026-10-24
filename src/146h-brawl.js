@@ -3,7 +3,7 @@ import {SHARED, THREE} from './003-shx.js';
 import {FORAGE, ONLINE, pos, RAG, st, VIT, W3} from './003b-systems.js';
 import {PPU} from './004-main.js';
 import {ASTEP, SYS, TILE, ZU} from './006-map-pre.js';
-import {PHYOU} from './073-main-12.js';
+import {P, PHYOU} from './073-main-12.js';
 import {collide} from './075-main-13.js';
 { const T=TILE, A=new THREE.Vector3(), B=new THREE.Vector3(), C=new THREE.Vector3(), E=new THREE.Vector3(), Q=new THREE.Vector3();
   // the parts a body is hit on: joint to joint, radius in rig units (the figure's own pose, as it is drawn)
@@ -37,10 +37,29 @@ import {collide} from './075-main-13.js';
     const r=VIT.hurt(Math.max(0,Math.min(.5,+m.d||0)),f); if(r===2){ ONLINE.send({t:'parried',to:m.id}); return; } if(!r)return;
     recent=recent.filter(t=>now-t<2000); recent.push(now); const dx=pos.x-f.x, dz=pos.z-f.z, l=Math.hypot(dx,dz)||1, kb=Math.max(0,Math.min(3,+m.kb||1));
     if(VIT.dead)return;
-    if(m.heavy||recent.length>=3||(m.k==='foot'&&shove&&now-shove.at<700)){ recent=[]; PHYOU.hitN=[-dx/l,dz/l,0]; PHYOU.hit=30*Math.min(3,1.5+kb*.5); return; }
+    if(m.heavy||recent.length>=3||(m.k==='foot'&&shove&&now-shove.at<700)){ recent=[]; RAG.ko=now+2500; PHYOU.hitN=[-dx/l,dz/l,0]; PHYOU.hit=30*Math.min(3,1.5+kb*.5); return; }
     shove={x:dx/l*kb*.35*T/.2,z:dz/l*kb*.35*T/.2,t:.2,at:now}; flinch(); };
   ONLINE.hear.parried=()=>{ flinch(); if(FORAGE.say)FORAGE.say('PARRIED!','#ffd27a'); };
 
-  SYS.add('life',dt=>{ swing(dt);
+  /* ---------- your ragdoll for everyone: the bodies' joint offsets when you go down, then ten times a second their places and turns ---------- */
+  let ragT=0; const r2=v=>Math.round(v*100)/100, r3=v=>Math.round(v*1000)/1000;
+  const ragSend=dt=>{ if(!RAG.on||!RAG.bodies.length)return; if(!wasRag){ ragT=0; ONLINE.send({t:'ragon',n:RAG.bodies.map(b=>b.name),jl:RAG.bodies.map(b=>Object.entries(b.jl).map(([k,l])=>[k,r3(l[0]),r3(l[1]),r3(l[2])]))}); }
+    if((ragT-=dt)>0)return; ragT=.1; ONLINE.send({t:'rag',o:[r2(P.x),r2(P.y)],hd:r3(RAG.hd),b:RAG.bodies.map(b=>[r2(b.x[0]),r2(b.x[1]),r2(b.x[2]),r3(b.q[0]),r3(b.q[1]),r3(b.q[2]),r3(b.q[3])])}); };
+
+  /* ---------- grab, carry and throw: double-click a player who is down to pick them up (they hang from your hands, held by their own ragdoll); punch to throw, double-click to put them down ---------- */
+  let carry=null;
+  const letGo=(toss)=>{ if(!carry)return; const id=carry.id; carry=null; try{ RIG.release(st,'carry'); }catch(e){} SYS.run('act','carry',0);
+    if(toss){ const h=SHARED.heading; ONLINE.send({t:'toss',to:id,v:[r2(Math.sin(h)*1.2),r2(-Math.cos(h)*1.2)]}); } else ONLINE.send({t:'drop',to:id}); };
+  ONLINE.use=o=>{ if(carry&&carry.id===o.id)return letGo(false); if(!(o.rag&&o.rag.b&&performance.now()-o.rag.t<3000)){ if(FORAGE.say)FORAGE.say((o.name||'TENANT')+' IS STANDING. KNOCK THEM DOWN FIRST.'); return; }
+    if(carry)letGo(false); carry={id:o.id,t:0}; try{ RIG.act(st,'carry'); }catch(e){} SYS.run('act','carry',1); ONLINE.send({t:'grab',to:o.id}); };
+  SYS.add('act',(k,on)=>{ if(carry&&k==='J'&&on)letGo(true); },'146h-brawl');
+  const carrying=dt=>{ if(!carry)return; const o=ONLINE.others.get(carry.id);
+    if(!o||!(o.rag&&o.rag.b&&performance.now()-o.rag.t<3000)||RAG.on||VIT.out>0)return letGo(false);
+    if((carry.t-=dt)<=0){ carry.t=1; ONLINE.send({t:'grab',to:carry.id}); } };
+  ONLINE.hear.grab=m=>{ if(RAG.on&&ONLINE.others.has(m.id))RAG.held={by:m.id,at:performance.now()}; };
+  ONLINE.hear.drop=m=>{ if(RAG.held&&RAG.held.by===m.id)RAG.held=null; };
+  ONLINE.hear.toss=m=>{ if(!RAG.on)return; if(RAG.held&&RAG.held.by===m.id)RAG.held=null; const v=Array.isArray(m.v)?m.v:[0,0]; RAG.toss=[Math.max(-2,Math.min(2,+v[0]||0)),Math.max(-2,Math.min(2,+v[1]||0))]; };
+
+  SYS.add('life',dt=>{ swing(dt); ragSend(dt); carrying(dt);
     if(shove&&shove.t>0&&!RAG.on){ const k=Math.min(dt,shove.t); pos.x+=shove.x*k; pos.z+=shove.z*k; shove.t-=k; collide(pos); }
-    if(RAG.on!==wasRag){ wasRag=RAG.on; if(RAG.on)SYS.run('act','F',1); } },'146h-brawl'); }
+    if(RAG.on!==wasRag){ wasRag=RAG.on; if(RAG.on)SYS.run('act','F',1); else ONLINE.send({t:'ragoff'}); } },'146h-brawl'); }

@@ -12,14 +12,15 @@ import {renderer} from './004-main.js';
   const wear=id=>{ if(holdable(id))WIELD.set(WIELD.on===id?null:id); else EQUIP.wear(id); refresh(); };
   const unwear=s=>{ const id=wornIn(s); if(!id)return; if(s==='hand')WIELD.set(null); else EQUIP.wear(id); refresh(); };
 
-  // the avatar: render W3.group into the panel canvas, box-fit so it reads full-body whatever the scale
+  // the avatar: render W3.group into the panel canvas. The body is one mesh posed by shader uniforms, so its
+  // geometry bounds are the bind pose, not the real figure: frame from the feet (group y) to the head (W3.eyeAt).
   let rt,cam,raf=0,last=0,el=null,cv=null,g2=null,isAdmin=!!CINEMA.admin; const W=256,H=384,FACE=Math.PI, V=new THREE.Vector3(), CC=new THREE.Color();
-  const shot=()=>{ const g=W3&&W3.group; if(!g||!cv)return; if(!rt){ rt=new THREE.WebGLRenderTarget(W,H); cam=new THREE.OrthographicCamera(-1,1,1,-1,.01,100); }
+  const shot=()=>{ const g=W3&&W3.group; if(!g||!cv||!W3.mesh)return; if(!rt){ rt=new THREE.WebGLRenderTarget(W,H); cam=new THREE.OrthographicCamera(-1,1,1,-1,.01,100); }
     const sv={ry:g.rotation.y,vis:g.visible,am:g.matrixAutoUpdate}; g.visible=true; g.matrixAutoUpdate=true; g.rotation.y=FACE; g.updateMatrixWorld(true);
-    const box=new THREE.Box3().setFromObject(g); if(box.isEmpty()){ g.rotation.y=sv.ry; g.visible=sv.vis; g.matrixAutoUpdate=sv.am; return; }
-    const c=box.getCenter(V.clone()), s=box.getSize(new THREE.Vector3()), hh=Math.max(s.y,.3)*1.12, ww=hh*(W/H), d=Math.max(s.x,s.y,s.z)+s.z+4;
+    const gp=g.getWorldPosition(V.clone()), head=W3.eyeAt&&W3.eyeAt(new THREE.Vector3());
+    const topY=(head?head.y:gp.y+2.2)+.18, botY=gp.y-.05, hh=Math.max(.6,topY-botY)*1.06, ww=hh*(W/H), cy=(topY+botY)/2, d=hh*3+6;
     cam.left=-ww/2; cam.right=ww/2; cam.top=hh/2; cam.bottom=-hh/2; cam.near=.01; cam.far=d*3+60; cam.updateProjectionMatrix();
-    cam.position.set(c.x,c.y,c.z+d); cam.up.set(0,1,0); cam.lookAt(c); cam.updateMatrixWorld(true);
+    cam.position.set(gp.x,cy,gp.z+d); cam.up.set(0,1,0); cam.lookAt(gp.x,cy,gp.z); cam.updateMatrixWorld(true);
     renderer.getClearColor(CC); const ca=renderer.getClearAlpha();
     renderer.setRenderTarget(rt); renderer.setClearColor(0x15171e,1); renderer.clear(); renderer.render(g,cam);
     const px=new Uint8Array(W*H*4); renderer.readRenderTargetPixels(rt,0,0,W,H,px);

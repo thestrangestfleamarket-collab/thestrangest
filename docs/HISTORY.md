@@ -4552,3 +4552,7 @@ Owner: "merge it and start step 3". Everyone sees a downed player's ragdoll; dou
 
 ## 24 Oct 2026: the Walker's lines smoothed
 Owner: "smooth out the lines, things like his eyes are tons of little bumps instead of just a circle", "the Walker just smoother lines", "ship it". The Walker is kept as-is; a smoothing pass in his mesher (072-walker3d) relaxes each piece's marched outline so edges read clean (jaw, hair, nose, eyes), his shape, proportions, pieces and triangle count unchanged. `?smooth=N` tunes it (0 = the raw marched mesh). An earlier attempt to rebuild him from clean primitives was dropped — he wanted the same Walker, just smoother.
+
+## 24 Oct 2026: the sky apartment, 1:1 — a ceiling, a free fire escape
+
+Owner: "the scale of inside of apartment should be same size as outside scale 1:1"; "allow free view when on fireescape, you should see building all the way up and down, clouds are below you, blue sky and more clouds above you, your ceiling isnt gone you just cant see it, if you are in 1st person though you would see it if you look up in your room (only cant see it when viewing outside of room)." The apartment interior now takes its footprint, storey height and window heights straight from the facade, so inside and out are 1:1. It has a ceiling again: seen in first person when you look up, hidden when you view the room from outside (iso) so you still see in. On the fire escape the camera is free, and the building runs the whole way — street to roof — past your landing, with sky and clouds above and below.

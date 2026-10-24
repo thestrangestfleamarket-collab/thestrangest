@@ -122,7 +122,7 @@ export class Block extends Server {
       const a = m.at, at = [num(a[0], -1e5, 1e5), num(a[1], -1e5, 1e5), num(a[2], -1e4, 1e4), num(a[3], -10, 10), word(a[4], 8), word(a[5], 60)];
       c.setState({ ...s, at }); this.broadcast(JSON.stringify({ t: "mv", id: s.id, at }), [c.id]);
     } else if (m.t === "me") {
-      const p = { ...s, name: word(m.name, 24), look: word(m.look, 24), dead: m.dead ? 1 : 0 }; c.setState(p); this.broadcast(JSON.stringify({ t: "in", p }), [c.id]);
+      const p = { ...s, name: word(m.name, 24), look: word(m.look, 24), dead: m.dead ? 1 : 0, hp: typeof m.hp === "number" ? num(m.hp, 0, 1) : 1 }; c.setState(p); this.broadcast(JSON.stringify({ t: "in", p }), [c.id]);
     } else if (m.t === "act") {
       const k = typeof m.k === "string" && /^([ JKRVUFNXCQEB]|carry)$/.test(m.k) ? m.k : "", mv = m.m === "flinch" ? m.m : ""; if (!k && !mv) return;
       this.broadcast(JSON.stringify(mv ? { t: "act", id: s.id, m: mv } : { t: "act", id: s.id, k, on: m.on ? 1 : 0 }), [c.id]);

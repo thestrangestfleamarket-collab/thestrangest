@@ -29,7 +29,7 @@ Object.assign(ONLINE,{others:new Map(),on:false,me:'',log:[],hear:{}}); window.O
 
   const push=(o,a)=>{ o.s.push({t:performance.now(),x:+a[0]||0,z:+a[1]||0,y:+a[2]||0,hd:+a[3]||0,lv:a[4]||'up',rm:a[5]||''}); if(o.s.length>8)o.s.shift(); };
   const up=(id,p)=>{ let o=ONLINE.others.get(id); if(!o){ o={id,name:'',look:'',s:[],S:R.create(),fig:null,key:'',say:'',sayT:0,tag:null,tagS:'',d:0}; ONLINE.others.set(id,o); }
-    if(p){ if(p.name!=null)o.name=String(p.name); if(p.look!=null)o.look=String(p.look); if(p.dead!=null)o.dead=!!p.dead; if(p.at)push(o,p.at); } return o; };
+    if(p){ if(p.name!=null)o.name=String(p.name); if(p.look!=null)o.look=String(p.look); if(p.dead!=null)o.dead=!!p.dead; if(p.hp!=null)o.hp=Math.max(0,Math.min(1,+p.hp||0)); if(p.at)push(o,p.at); } return o; };
   const drop=id=>{ const o=ONLINE.others.get(id); if(o){ unfig(o); ONLINE.others.delete(id); } };
   ONLINE.feed=m=>{ '@later'; if(!m||typeof m!=='object')return; ui();
     if(m.t==='mv'&&m.id&&Array.isArray(m.at)){ push(up(m.id),m.at); return; }
@@ -65,11 +65,12 @@ Object.assign(ONLINE,{others:new Map(),on:false,me:'',log:[],hear:{}}); window.O
     if(o.tag){ scene.remove(o.tag); o.tag.material.map.dispose(); o.tag.material.dispose(); o.tag=null; o.tagS=''; } };
 
   /* ---------- the name over their head, and what they last said for a few seconds ---------- */
-  const tag=o=>{ const say=o.say&&performance.now()-o.sayT<7000?o.say:'', nm=o.name||'TENANT', s=nm+'\n'+say; if(o.tag&&o.tagS===s)return; o.tagS=s;
+  const tag=o=>{ const say=o.say&&performance.now()-o.sayT<7000?o.say:'', nm=(o.name||'TENANT')+(o.dead?' (GHOST)':''), hp=o.dead||o.hp==null||o.hp>.99?-1:Math.round(o.hp*20)/20, s=nm+'\n'+say+'\n'+hp; if(o.tag&&o.tagS===s)return; o.tagS=s;
     const c=document.createElement('canvas'); c.width=512; c.height=128; const x=c.getContext('2d'); x.font='28px Silkscreen, monospace'; x.textAlign='center'; x.textBaseline='middle';
     if(say){ let t=say; while(t.length>3&&x.measureText(t+'…').width>480)t=t.slice(0,-1); if(t!==say)t+='…'; const w=Math.min(504,x.measureText(t).width+20);
       x.fillStyle='rgba(11,13,19,.88)'; x.fillRect(256-w/2,28,w,44); x.fillStyle='#f4f2ea'; x.fillText(t,256,51); }
-    x.lineWidth=6; x.strokeStyle='#0b0d13'; x.strokeText(nm,256,100); x.fillStyle='#ffd27a'; x.fillText(nm,256,100);
+    x.lineWidth=6; x.strokeStyle='#0b0d13'; x.strokeText(nm,256,100); x.fillStyle=o.dead?'#cfe0ff':'#ffd27a'; x.fillText(nm,256,100);
+    if(hp>=0){ x.fillStyle='#0b0d13'; x.fillRect(176,116,160,10); x.fillStyle='#c84a3a'; x.fillRect(178,118,156*hp,6); }   // their health, while it's not full
     const tx=new THREE.CanvasTexture(c); tx.magFilter=tx.minFilter=THREE.NearestFilter; tx.generateMipmaps=false; tx.colorSpace=THREE.SRGBColorSpace;
     if(!o.tag){ o.tag=new THREE.Sprite(new THREE.SpriteMaterial({map:tx,transparent:true,depthWrite:false,toneMapped:false,fog:false})); o.tag.scale.set(5.2*TILE,1.3*TILE,1); o.tag.renderOrder=5; o.tag.userData.anyRoom=true; scene.add(o.tag); }
     else{ o.tag.material.map.dispose(); o.tag.material.map=tx; } };
@@ -81,6 +82,8 @@ Object.assign(ONLINE,{others:new Map(),on:false,me:'',log:[],hear:{}}); window.O
     C.sort((a,b)=>a.dd-b.dd); for(const o of C.slice(MAXN))hide(o);
     for(const o of C.slice(0,MAXN)){ try{ const rg=o.rag&&o.rag.b&&now-o.rag.t<3000?o.rag:null, p=o.p=rg?{...o.p,x:rg.o[0]*TL,z:-rg.o[1]*TL,hd:rg.hd}:o.p; if(!o.fig||o.key!==(o.look||'w00'))fig(o); const F=o.fig, g=F.g;
       const sp=o.q?Math.hypot(p.x-o.q.x,p.z-o.q.z)/Math.max(dt,1e-3):0; o.q={x:p.x,z:p.z}; o.S.target=sp>.4*TILE?1:0; R.step(o.S,dt);
+      const M=F.me.material, gh=!!o.dead, fl=o.flashT>now; if(F.ghost!==gh){ F.ghost=gh; M.transparent=gh; M.opacity=gh?.35:1; M.depthWrite=!gh; M.color.set(gh?0xcfe0ff:0xffffff); M.needsUpdate=true; F.me.castShadow=!gh; }
+      if(F.fl!==fl&&M.emissive){ F.fl=fl; M.emissive.setScalar(fl?.55:0); }
       g.visible=true; g.position.set(p.x,p.y,p.z); g.rotation.y=p.hd; if(F.body)musScale(g,1); else musScale(g); o.d=((Math.round(p.hd/PI4)%8)+8)%8;
       if(rg||!o.B||ASTEP.gate(o,dt)){ R.farOnly(false); const B=o.B=rg?ragPoseOf(rg.b,{x:rg.o[0],y:rg.o[1]},rg.hd):R.pose(o.S,true); if(F.body)BODIES.pose(B,F.PM,F.body); else F.PCS.forEach((pc,i)=>F.FM.set(i,R.frameOf(pc.on||pc.n,B))); }
       tag(o); o.tag.visible=true; o.tag.position.set(p.x,p.y+2.65*TILE,p.z); }catch(e){ hide(o); if(!o.err){ o.err=1; console.warn('ONLINE: could not draw '+(o.name||o.id),e); } } } };
@@ -123,7 +126,7 @@ Object.assign(ONLINE,{others:new Map(),on:false,me:'',log:[],hear:{}}); window.O
     sock.addEventListener('message',e=>{ let m=null; try{ m=JSON.parse(e.data); }catch(x){} if(m)ONLINE.feed(m); }); };
   ONLINE.tick=dt=>{ const now=performance.now();
     if(ONLINE.on){ acc+=dt; meAcc+=dt;
-      if(meAcc>1){ meAcc=0; const n=myName(), k=lookKey(), dead=VIT.dead?1:0, s=n+'|'+k+'|'+dead; if(s!==meSent){ meSent=s; send({t:'me',name:n,look:k,dead}); } }
+      if(meAcc>1){ meAcc=0; const n=myName(), k=lookKey(), dead=VIT.dead?1:0, hp=Math.round(VIT.hp*20)/20, s=n+'|'+k+'|'+dead+'|'+hp; if(s!==meSent){ meSent=s; send({t:'me',name:n,look:k,dead,hp}); } }
       keep+=dt; if(acc>=SEND){ acc=0; const a=[+pos.x.toFixed(2),+pos.z.toFixed(2),+SHARED.py.toFixed(2),+Math.atan2(Math.sin(SHARED.heading),Math.cos(SHARED.heading)).toFixed(2),SHARED.LVL||'up',roomKey()];
         if(!last||Math.abs(a[0]-last[0])+Math.abs(a[1]-last[1])+Math.abs(a[2]-last[2])>.01||Math.abs(a[3]-last[3])>.04||a[4]!==last[4]||a[5]!==last[5]||keep>4){ last=a; keep=0; send({t:'mv',at:a}); } } }
     if(ONLINE.others.size)draw(dt,now); fade(dt); };

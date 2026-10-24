@@ -4577,3 +4577,6 @@ Owner chose "Martial arts + stamina". MARTIAL ARTS is a skill (in the skills lis
 
 ## 24 Oct 2026: bare-hand block and more moves (release 3 of 5)
 Owner chose "Bare-hand block + more moves on keys". P blocks with bare hands too (the arms come up; it softens a blow, more with MARTIAL ARTS; only a sword parries). New keys: N slap, I crouch (hold; then J an uppercut, K a sweep), 2 leg sweep, 3 back flip, 4 front flip; all rebindable, and others see them. The stale T "ghost's guitar" line is gone from the controls.
+
+## 24 Oct 2026: hit feedback and others' health (release 4 of 5)
+Owner chose "Hit feedback + health of others". When your blow lands on a player they flash and you hear it. A creature's blow jolts you back a step and you flinch. A hurt player shows a health bar under their name; a dead player is a pale see-through ghost named "(GHOST)". Stamina comes back only after a short rest from running, punching or swinging.

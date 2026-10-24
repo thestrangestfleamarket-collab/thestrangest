@@ -1,7 +1,7 @@
 // THE VITALS: VIT keeps the player's health, stamina and breath and shows their bars; every blow goes through VIT.hurt (and the guard the swords set on it).
 import {SHARED} from './003-shx.js';
 import {FORAGE, keys, LOOKS, pos, SFX, st, UI, VIT} from './003b-systems.js';
-import {TILE} from './006-map-pre.js';
+import {SYS, TILE} from './006-map-pre.js';
 const AIR=16, AIRCEIL=240;                       // seconds: a plain breath, and the most air you can bank from mushrooms
 Object.assign(VIT,{hp:1,sta:1,out:0,fainted:false,tired:false,fight:0,dead:false,def:0,air:AIR,airMax:AIR});
 VIT.inFight=t=>{ VIT.fight=Math.max(VIT.fight,t||5); };
@@ -16,7 +16,8 @@ VIT.breathe=s=>{ VIT.air=Math.min(AIRCEIL,VIT.air+(+s||0)); };   // a breathing 
   VIT.faint=()=>{ if(VIT.dead||VIT.out>0)return; VIT.hp=0; VIT.out=FAINT; VIT.fainted=true; SHARED.trip=true; if(FORAGE.say)FORAGE.say('YOU FAINT'); };
   VIT.hurt=(d,from)=>{ if(VIT.dead)return 0; if(VIT.out>0){ if(VIT.fainted&&d>=.03)VIT.die(); return 0; }
     let parry=false; if(VIT.guard&&from){ const g=VIT.guard(d,from); d=g.d; parry=!!g.parry; }
-    if(d>0){ const now=performance.now(); if(now-thudAt>250){ thudAt=now; SFX.play('thud',{vol:.7,vary:.2}); } VIT.hp=Math.max(0,VIT.hp-d*(1-Math.max(0,Math.min(.9,VIT.def||0)))); } VIT.inFight(5); if(VIT.hp<=0)VIT.faint(); return parry?2:1; };
+    if(d>0){ const now=performance.now(); if(now-thudAt>250){ thudAt=now; SFX.play('thud',{vol:.7,vary:.2}); } VIT.hp=Math.max(0,VIT.hp-d*(1-Math.max(0,Math.min(.9,VIT.def||0)))); } VIT.inFight(5); if(VIT.hp<=0)VIT.faint(); else if(d>0&&!parry)SYS.run('hurt',d,from); return parry?2:1; };
+  VIT.spend=x=>{ VIT.sta=Math.max(0,VIT.sta-x); rest=0; };   // effort: stamina comes back only after a rest
   VIT.tick=dt=>{ if(VIT.sta<=0)VIT.tired=true; else if(VIT.tired&&VIT.sta>=1/3){ VIT.tired=false; if(keys.has('shift'))st.runTarget=1; }   // empty: no running till a third is back
     if(VIT.tired)st.runTarget=0;
     const sp=Math.hypot(pos.x-lx,pos.z-lz)/Math.max(dt,1e-3); lx=pos.x; lz=pos.z; const running=st.run>.55&&sp>.6*TILE&&!UI.fly&&!UI.freeCam;

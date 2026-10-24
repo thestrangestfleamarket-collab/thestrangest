@@ -7,7 +7,7 @@
 import sys, os, json, struct, base64, numpy as np
 from PIL import Image
 R=sys.argv[1]; TEXDIR=sys.argv[2]; KEYS=sys.argv[3:]
-TARGET=2200   # triangles per character after simplification (street passers-by, seen from afar)
+# (not simplified: the meshes are already low (1.7k-6.7k triangles) and made of parts on different bones; cutting them tore holes)
 def glb(f):
     d=open(f,'rb').read(); ln=struct.unpack_from('<I',d,12)[0]; j=json.loads(d[20:20+ln]); bl=struct.unpack_from('<I',d,20+ln)[0]; return j,d[28+ln:28+ln+bl]
 CT={5126:np.float32,5123:np.uint16,5121:np.uint8,5125:np.uint32}; NC={'SCALAR':1,'VEC2':2,'VEC3':3,'VEC4':4,'MAT4':16}
@@ -22,10 +22,6 @@ def trs(n):
     M=np.eye(4); M[:3,:3]=quat2m(q)*s; M[:3,3]=t; return M
 b64=lambda a:base64.b64encode(np.ascontiguousarray(a).tobytes()).decode()
 clean=lambda n:n.replace('.','_').replace('|','_').replace(':','_')
-def nearest(src,dst):
-    j=np.empty(len(dst),np.int64)
-    for a in range(0,len(dst),256): j[a:a+256]=((dst[a:a+256,None,:]-src[None])**2).sum(2).argmin(1)
-    return j
 OUT={}
 for key in KEYS:
     j,b=glb(os.path.join(R,key+'.glb')); par={c:i for i,n in enumerate(j['nodes']) for c in n.get('children',[])}; G={}
@@ -83,10 +79,6 @@ for key in KEYS:
             if pn not in parts: parts.append(pn)
             P.append(out); C.append(colours(uv)); RG.append(np.full(len(pos),parts.index(pn))); JJ.append(jj); WW.append(w); IX.append(idx+base); base+=len(pos)
     P=np.vstack(P); C=np.vstack(C); RG=np.concatenate(RG); JJ=np.vstack(JJ); WW=np.vstack(WW); IX=np.concatenate(IX)
-    if len(IX)//3>TARGET:
-        import fast_simplification as fs
-        P2,F2=fs.simplify(P.astype(np.float64),IX.reshape(-1,3).astype(np.int32),target_reduction=1-TARGET/(len(IX)//3)); near=nearest(P,P2.astype(np.float32))
-        C=C[near]; RG=RG[near]; JJ=JJ[near]; WW=WW[near]; P=P2.astype(float); IX=F2.reshape(-1).astype(int)
     lo=P.min(0); hi=P.max(0); sc=(hi-lo).max()/65000
     mesh={'n':len(P),'lo':np.round(lo,5).tolist(),'sc':float(sc),'p':b64(np.round((P-lo)/sc-32500).astype(np.int16)),'c':b64(C.round().astype(np.uint8)),'r':b64(RG.astype(np.uint8)),'j':b64(JJ.astype(np.uint8)),'w':b64(np.round(WW*255).astype(np.uint8)),'i':b64(IX.astype(np.uint16)),'parts':parts,'tris':len(IX)//3}
     # the clips, 24 a second: every bone's turn (quaternion int16), the bones that move (float32), the armature folded into the roots

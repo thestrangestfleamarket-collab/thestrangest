@@ -5,7 +5,6 @@ import {LAND, W3} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {SAVE} from './005-save.js';
 import {TILE} from './006-map-pre.js';
-import {LAWNP, lawnPaint} from './014-gamekit.js';
 import {FOREST, PROPS} from './039-bodega.js';
 { const T=TILE;
   const TYPES=[['grass','GRASS','#4a7a3a'],['grass2','DRY GRASS','#6f863a'],['grass3','LUSH GRASS','#2f6b2c'],['grass4','PALE GRASS','#8fa05a'],['sidewalk','SIDEWALK','#9a968e'],['cobble','COBBLE','#6b6b70'],['dirt','DIRT','#6b4f33'],['gravel','GRAVEL','#7a766f'],['slab','STONE SLAB','#8a857a'],['sand','SAND','#c9b885']];
@@ -14,9 +13,7 @@ import {FOREST, PROPS} from './039-bodega.js';
   function tex(t){ '@later'; if(texCache[t])return texCache[t]; const N=64, cv=document.createElement('canvas'); cv.width=cv.height=N; const g=cv.getContext('2d');
     const base=(TYPES.find(a=>a[0]===t)||['','','#4a7a3a'])[2]; g.fillStyle=base; g.fillRect(0,0,N,N);
     const dot=(x,y,r,c)=>{ g.fillStyle=c; g.fillRect(x-r,y-r,r*2,r*2); };
-    if(t==='grass'||t==='grass2'||t==='grass3'||t==='grass4'){ const P=LAWNP.pal, K=4, M=N*2, tint=t==='grass2'?[1.05,.92,.6]:t==='grass3'?[.72,.86,.72]:t==='grass4'?[1.2,1.1,.85]:[1,1,1], tc=c=>c.map((v,i)=>Math.min(255,v*tint[i])); cv.width=cv.height=M;
-      lawnPaint(g,M,K,{bed:tc(P.bed),greens:P.greens.map(tc),dark:tc(P.dark),earth:t==='grass2'?P.earth:null,flower:t==='grass3'||t==='grass'?P.flower:null});
-      const tx=new THREE.CanvasTexture(cv); tx.magFilter=THREE.LinearFilter; tx.minFilter=THREE.LinearMipmapLinearFilter; tx.wrapS=tx.wrapT=THREE.RepeatWrapping; tx.repeat.set(1/K,1/K); tx.colorSpace=THREE.SRGBColorSpace; texCache[t]=tx; return tx; }
+    if(t==='grass'||t==='grass2'||t==='grass3'||t==='grass4'){ const pal=t==='grass'?['#3d6630','#5c8f46']:t==='grass2'?['#5f7430','#86a24c']:t==='grass3'?['#244f22','#3f7a38']:['#75874a','#a2b56a']; for(let i=0;i<340;i++){ const x=rnd(i*1.3)*N,y=rnd(i*2.7+3)*N,v=rnd(i*5.1); dot(x,y,1,v<.5?pal[0]:pal[1]); } }
     else if(t==='sidewalk'){ const cell=20; for(let p=0;p<=N;p+=cell){ g.fillStyle='rgba(60,58,54,.55)'; g.fillRect(p,0,1,N); } for(let i=0;i<180;i++){ const x=rnd(i*1.9)*N,y=rnd(i*2.4+4)*N; dot(x,y,1,rnd(i*3.7)<.5?'#8d8980':'#a7a39a'); } }
     else if(t==='cobble'||t==='slab'){ const cell=t==='cobble'?12:16; for(let cy=0;cy<N;cy+=cell)for(let cx=0;cx<N;cx+=cell){ const off=t==='cobble'?(rnd(cx*cy+1)-.5)*3:0, s=rnd(cx+cy*7); g.fillStyle=t==='cobble'?(s<.33?'#5f5f64':s<.66?'#74747a':'#656569'):(s<.5?'#8f8a7f':'#827d72'); g.fillRect(cx+1+off,cy+1+off,cell-2,cell-2); } g.fillStyle='rgba(30,30,34,.5)'; for(let p=0;p<=N;p+=cell){ g.fillRect(p,0,1,N); g.fillRect(0,p,N,1); } }
     else if(t==='dirt'){ for(let i=0;i<300;i++){ const x=rnd(i*1.7)*N,y=rnd(i*3.1+2)*N,v=rnd(i*4.3); dot(x,y,1,v<.5?'#5a4028':'#7a5c3c'); } }

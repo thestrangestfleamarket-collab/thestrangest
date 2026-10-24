@@ -27,7 +27,8 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     ok(await pg.evaluate(() => !__sent.some(m => m.t === 'hit')), 'a jab with them behind you misses');
     const before = await pg.evaluate(() => ({ hp: __dbg.VIT.hp, p: __dbg.you() }));
     await pg.evaluate(() => { const o = ONLINE.others.get('a'); ONLINE.feed({ t: 'hit', id: 'a', d: .1, kb: 1, k: 'fist', from: [o.p.x, o.p.z] }); });
-    await pg.waitForTimeout(2500);
+    await pg.waitForFunction(b => { const p = __dbg.you(); return Math.hypot(p.x - b.x, p.z - b.z) > .1 || window.RAGON(); }, before.p, { timeout: 6000 }).catch(() => {});   // the shove lands when the runner gets to it; wait for it rather than a fixed time
+    await pg.waitForTimeout(300);
     const after = await pg.evaluate(() => ({ hp: __dbg.VIT.hp, p: __dbg.you(), rag: window.RAGON() }));
     ok(after.hp < before.hp, 'their blow takes health (' + before.hp.toFixed(2) + ' -> ' + after.hp.toFixed(2) + ')');
     ok(Math.hypot(after.p.x - before.p.x, after.p.z - before.p.z) > .1 && !after.rag, 'a light blow shoves you without knocking you down');

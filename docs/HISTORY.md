@@ -4503,3 +4503,6 @@ Owner (tenant 204 saw a white screen with a broken-page icon where he saw the mo
 
 ## 23 Oct 2026: the cinema's side exits, one staircase
 Owner: "the left and right side shouldnt be stairs, they should be exits out (with rails on side to block stairs) only middle part should have stair case ... the entrance to the projetor booth should be behind the stairs. double click to enter the room."; of the mockup: "exits lead to outside yes, booth entrance at top of stairs". The side aisles are flat walkways behind rails to a red EXIT door each at the back (double-click: out to the street); the middle aisle is the only staircase, and the booth's door is on the back wall at its top (double-click to enter).
+
+## 24 Oct 2026: the Walker is the only body you play as
+Owner: "remove man and woman as playable, and knight. save in game for now." YOU's BODY row shows only WALKER; the knight, man and woman stay in the game (the knight still THE ARMOURER and the holodeck's sparring partner, one of each walks Main Street) but can't be picked. A body is on the row and selectable only if `body.playable` (set it true to put one back); a stale save or `?avatar=` of a non-playable body renders the Walker.

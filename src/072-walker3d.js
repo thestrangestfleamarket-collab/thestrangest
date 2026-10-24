@@ -13,6 +13,7 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
   W3.wholeBox=/wholebox/.test(location.search);
   W3.lite=QS.get('walker')==='lite';
   W3.smooth=QS.has('smooth')?+QS.get('smooth'):6;   // Taubin passes that smooth each piece's lines (0 = the raw marched mesh)
+  const RES=QS.has('res')?Math.max(.3,Math.min(1,+QS.get('res'))):.55;   // bake resolution: <1 is finer (smoother, more triangles); the eyes are flat circles, not marched
   W3.ramp=ramp; W3.meshOf=(P,step,fine,RB)=>meshOf(P,step,fine,RB); W3.legs=R.PIECES.map(n=>/^(thigh|shin|shoe)/.test(n)?(n.endsWith('L')?1:2):0);
   const PRE=new WeakMap(); W3.warm=(P,step,fine,RB)=>{ PRE.set(P,{step,fine,RB,g:meshOf0(P,step,fine,RB)}); };
   W3.fine=P=>P.step<1||/^(head|hair|beard|brow|eye|nose|ear|mouth)/.test(P.n);
@@ -42,7 +43,7 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
         if(ni===1){ emit(E(ins[0],out[0])); emit(E(ins[0],out[1])); emit(E(ins[0],out[2])); }
         else if(ni===3){ emit(E(out[0],ins[0])); emit(E(out[0],ins[1])); emit(E(out[0],ins[2])); }
         else { const a=E(ins[0],out[0]),b=E(ins[0],out[1]),c=E(ins[1],out[1]),d=E(ins[1],out[0]); emit(a); emit(b); emit(c); emit(a); emit(c); emit(d); } } }
-    const fit0=R.fitPts(P.n,new Float32Array(raw)), {fit,mats:mts}=simplify(fit0,mats,(P.cell||CELL*(fine?0.5:1))*(/^(head|hair|eye|nose|ear|mouth)/.test(P.n)?1:1.42)); mats.length=0; for(const q of mts)mats.push(q); const n=fit.length/6, pos=new Float32Array(n*3), nor=new Float32Array(n*3), c0=new Float32Array(n*3), c1=new Float32Array(n*3), c2=new Float32Array(n*3), cd=new Float32Array(n*3), mt=new Float32Array(n);
+    const fit0=R.fitPts(P.n,new Float32Array(raw)), {fit,mats:mts}=simplify(fit0,mats,(P.cell||CELL*(fine?0.5:1))*(/^(head|hair|eye|nose|ear|mouth)/.test(P.n)?1:1.42)*(/^eyes/.test(P.n)?1:RES)); mats.length=0; for(const q of mts)mats.push(q); const n=fit.length/6, pos=new Float32Array(n*3), nor=new Float32Array(n*3), c0=new Float32Array(n*3), c1=new Float32Array(n*3), c2=new Float32Array(n*3), cd=new Float32Array(n*3), mt=new Float32Array(n);
     for(let i=0;i<n;i++){ pos.set([fit[i*6],fit[i*6+1],fit[i*6+2]],i*3); nor.set([fit[i*6+3],fit[i*6+4],fit[i*6+5]],i*3); const r=ramp[mats[i]]||ramp[0]; c0.set([r[0].r,r[0].g,r[0].b],i*3); c1.set([r[1].r,r[1].g,r[1].b],i*3); c2.set([r[2].r,r[2].g,r[2].b],i*3); cd.set([(r[2].r+r[3].r)/2,(r[2].g+r[3].g)/2,(r[2].b+r[3].b)/2],i*3); mt[i]=mats[i]; }
     const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(pos,3)); g.setAttribute('normal',new THREE.BufferAttribute(nor,3));
     g.setAttribute('c0',new THREE.BufferAttribute(c0,3)); g.setAttribute('cd',new THREE.BufferAttribute(cd,3)); g.setAttribute('c1',new THREE.BufferAttribute(c1,3)); g.setAttribute('c2',new THREE.BufferAttribute(c2,3)); g.setAttribute('mat',new THREE.BufferAttribute(mt,1)); return g; }
@@ -69,6 +70,22 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
     for(let i=0;i<tri.length;i++){ const c=tri[i], a=acc[c], l=Math.hypot(a.nn[0],a.nn[1],a.nn[2])||1;
       out[i*6]=px[c]; out[i*6+1]=py[c]; out[i*6+2]=pz[c]; out[i*6+3]=a.nn[0]/l; out[i*6+4]=a.nn[1]/l; out[i*6+5]=a.nn[2]/l; om.push(a.m); }
     return {fit:out,mats:om}; }
+  // the eyes as flat clean circles (and rects) sitting on the face, not marched: round at any zoom, a few dozen triangles a style instead of thousands
+  function flatEyeGeo(P){ const {R2,H,hd}=P.flatEye, F=R.frameOf('head',rest), cross=R.cross, pos=[],nor=[],C0=[],C1=[],C2=[],CD=[],MT=[];
+    const grad=(x,y,z)=>{ const e=.05; return nrm(V(hd(V(x+e,y,z))-hd(V(x-e,y,z)),hd(V(x,y+e,z))-hd(V(x,y-e,z)),hd(V(x,y,z+e))-hd(V(x,y,z-e)))); };
+    const surf=(x,y)=>{ let z=H.z+9; for(let i=0;i<140&&hd(V(x,y,z))>.22;i++)z-=.1; let a=z,b=z+.1; for(let i=0;i<22;i++){ const m=(a+b)/2; if(hd(V(x,y,m))>.22)a=m; else b=m; } return (a+b)/2; };
+    const push=(p,g,mi)=>{ const l=sub(add(p,mul(g,OUT)),F.o); pos.push(dot(l,F.x),dot(l,F.y),dot(l,F.z)); nor.push(dot(g,F.x),dot(g,F.y),dot(g,F.z));
+      const rm=ramp[mi]||ramp[0]; C0.push(rm[0].r,rm[0].g,rm[0].b); C1.push(rm[1].r,rm[1].g,rm[1].b); C2.push(rm[2].r,rm[2].g,rm[2].b); CD.push((rm[2].r+rm[3].r)/2,(rm[2].g+rm[3].g)/2,(rm[2].b+rm[3].b)/2); MT.push(mi); };
+    R2.forEach((r,ri)=>{ const mi=MATS.indexOf(r.m); if(mi<0)return; const outz=.1+ri*.04, cx=(r.x[0]+r.x[1])/2, cy=(r.y[0]+r.y[1])/2;
+      for(const sgn of [1,-1]){ const ex=H.x-sgn*cx, ey=H.y+cy, Nrm=grad(ex,ey,surf(ex,ey)), E=add(V(ex,ey,surf(ex,ey)),mul(Nrm,outz));
+        let Uu=cross(Nrm,V(0,1,0)); if(dot(Uu,Uu)<1e-4)Uu=cross(Nrm,V(1,0,0)); Uu=nrm(Uu); const Wv=nrm(cross(Nrm,Uu));
+        if(r.o){ const rad=(r.x[1]-r.x[0])*.45, N=18; for(let i=0;i<N;i++){ const a0=i/N*2*Math.PI, a1=(i+1)/N*2*Math.PI,
+            p0=add(E,add(mul(Uu,Math.cos(a0)*rad),mul(Wv,Math.sin(a0)*rad))), p1=add(E,add(mul(Uu,Math.cos(a1)*rad),mul(Wv,Math.sin(a1)*rad)));
+            push(E,Nrm,mi); push(p0,Nrm,mi); push(p1,Nrm,mi); } }
+        else{ const hw=(r.x[1]-r.x[0])/2, hh=(r.y[1]-r.y[0])/2, q=[[-hw,-hh],[hw,-hh],[hw,hh],[-hw,hh]].map(d=>add(E,add(mul(Uu,d[0]),mul(Wv,d[1]))));
+          push(q[0],Nrm,mi);push(q[1],Nrm,mi);push(q[2],Nrm,mi); push(q[0],Nrm,mi);push(q[2],Nrm,mi);push(q[3],Nrm,mi); } } });
+    const g=new THREE.BufferGeometry(), F32=a=>new THREE.BufferAttribute(new Float32Array(a),3);
+    g.setAttribute('position',F32(pos)); g.setAttribute('normal',F32(nor)); g.setAttribute('c0',F32(C0)); g.setAttribute('cd',F32(CD)); g.setAttribute('c1',F32(C1)); g.setAttribute('c2',F32(C2)); g.setAttribute('mat',new THREE.BufferAttribute(new Float32Array(MT),1)); return g; }
   const around=(ps,m)=>{ const b=[1e9,-1e9,1e9,-1e9,1e9,-1e9]; for(const p of ps){ b[0]=Math.min(b[0],p.x-m); b[1]=Math.max(b[1],p.x+m); b[2]=Math.min(b[2],p.y-m); b[3]=Math.max(b[3],p.y+m); b[4]=Math.min(b[4],p.z-m); b[5]=Math.max(b[5],p.z+m); } return b; };
   function liteShell(){ '@later'; const J=rest.J, {V,add,sub,mul,ell,rcone,rbox,box}=R, P=[], put=(n,m,d,ps,mrg,st,cl)=>P.push({n,m,d,bb:around(ps,mrg),step:st,cell:cl});
     const sw=Math.abs(J.shoulderL.x)*0.72+2.2, hc=add(J.head,mul(sub(J.headTop,J.head),0.44)), hr=V(5.3,6.1,5.6), hhc=add(hc,V(0,0.9,-0.5));
@@ -115,7 +132,7 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
     EYES.forEach((E,k)=>{ const R2=E.map(r=>({x:RX(r),y:RY(r),m:r[4],o:r[5]})), sx=p=>-Math.abs(p.x-H.x);
       const r2=(p,r)=>{ const x=sx(p), y=p.y-H.y; if(r.o){ const cx=(r.x[0]+r.x[1])/2, cy=(r.y[0]+r.y[1])/2; return Math.hypot(x-cx,y-cy)-(r.x[1]-r.x[0])*.45; } return Math.max(r.x[0]-x,x-r.x[1],r.y[0]-y,y-r.y[1]); };
       PCS.push({n:'eyes'+k,on:'head',m:E[0][4],bb:[H.x-5.5,H.x+5.5,H.y-1.5,H.y+3.5,H.z+1,H.z+12],step:.18,cell:.14,
-        d:p=>Math.max(hd(p)-.22,Math.min(...R2.map(r=>r2(p,r))),H.z+2-p.z), paint:p=>{ let m=null; for(const r of R2)if(r2(p,r)<.03)m=r.m; return m; }}); }); } }
+        d:p=>Math.max(hd(p)-.22,Math.min(...R2.map(r=>r2(p,r))),H.z+2-p.z), paint:p=>{ let m=null; for(const r of R2)if(r2(p,r)<.03)m=r.m; return m; }, flatEye:{R2,H,hd}}); }); } }
   const NP=PCS.length; W3.HIDE=new Array(NP).fill(false); W3.idx=n=>PCS.findIndex(P=>P.n===n); W3.PM={value:PCS.map(()=>new THREE.Matrix4())}; W3.pcs=PCS;
   const MOVE=`attribute float pidx; uniform mat4 uPM[${NP}];`, AT=`mat4 PM=uPM[int(pidx+0.5)];`;
   const VS=MOVE+`attribute vec3 c0,c1,c2,cd; varying vec3 vC0,vC1,vC2,vCd,vN,vW; void main(){ `+AT+` vN=mat3(PM)*normal; vC0=c0; vC1=c1; vC2=c2; vCd=cd; vec4 w=modelMatrix*(PM*vec4(position,1.)); vW=w.xyz; gl_Position=projectionMatrix*viewMatrix*w; }`;
@@ -136,8 +153,8 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
     gl_FragColor=vec4(c*uTint,1.); }`;
   const IVS=MOVE+`attribute float mat,pid; varying float vm,vd,vp; void main(){ `+AT+` vm=mat; vp=pid; vec4 mv=modelViewMatrix*(PM*vec4(position,1.)); vd=-mv.z; gl_Position=projectionMatrix*mv; }`;
   const IFS=`varying float vm,vd,vp; void main(){ gl_FragColor=vec4(floor(vp+0.5),floor(vm+0.5),0.,vd); }`;
-  for(const P of PCS){ const fine=W3.fine(P); W3.warm(P,P.step||(fine?STEP/2:STEP),fine,null); }
-  const geos=PCS.map((P,i)=>{ const fine=P.step<1||/^(head|hair|beard|brow|eye|nose|ear|mouth)/.test(P.n), g=meshOf(P,P.step||(fine?STEP/2:STEP),fine,null), n=g.attributes.position.count;
+  for(const P of PCS){ if(P.flatEye)continue; const fine=W3.fine(P); W3.warm(P,(P.step||(fine?STEP/2:STEP))*RES,fine,null); }
+  const geos=PCS.map((P,i)=>{ const fine=P.step<1||/^(head|hair|beard|brow|eye|nose|ear|mouth)/.test(P.n), g=P.flatEye?flatEyeGeo(P):meshOf(P,(P.step||(fine?STEP/2:STEP))*RES,fine,null), n=g.attributes.position.count;
     g.setAttribute('pidx',new THREE.BufferAttribute(new Float32Array(n).fill(i),1)); g.setAttribute('pid',new THREE.BufferAttribute(new Float32Array(n).fill(R.PIECES.indexOf(P.n)),1)); return g; });
   const all=new THREE.BufferGeometry(); for(const k of Object.keys(geos[0].attributes)){ const sz=geos[0].attributes[k].itemSize, tot=geos.reduce((a,g)=>a+g.attributes[k].array.length,0), arr=new Float32Array(tot); let o=0; for(const g of geos){ arr.set(g.attributes[k].array,o); o+=g.attributes[k].array.length; } all.setAttribute(k,new THREE.BufferAttribute(arr,sz)); }
   W3.tris=all.attributes.position.count/3;

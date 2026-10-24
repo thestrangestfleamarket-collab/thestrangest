@@ -4565,3 +4565,5 @@ Owner: "why cant you just copy the walker shape", "does that look like a human t
 
 ## 24 Oct 2026: the old game's items, catalogued
 Owner sent a snapshot of every item the old game placed, for the rebuild. Kept in `docs/old-game/` as reference (not shipped): `rooms.csv`, `all-items.csv` (2,417 placed), `catalog.csv` (768), `loose-things.csv` (882 physics pieces). Editor changes on the live site and items taken off the map aren't in it. The gym and pool are under the Square, not Central Park.
+## 24 Oct 2026: the Walker is a body with clothes on top
+Owner: "his base needs to be just his body and underwear, shoes, pants shirt and hair should all be layers that go on top"; "Layers now, wardrobe later". The Walker's base is his body in underwear; shirt, pants, shoes and hair are layers worn over it (all on by default, so he looks the same). A wardrobe to change them comes later, through EQUIP and the paperdoll.

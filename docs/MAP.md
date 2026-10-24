@@ -45,9 +45,9 @@ Places built with `await grab(name, async()=>{...})` are one function each, ofte
 | `015-game-w-bodega-shop.js` | 15.3 | top level | bodegaFloorCol (039), bodegaWall (039) | 003: SHARED; 003b: DRONE; 014: CATALOG KIND_OF LAMPS LBLD LIFE crack grain hash mt prop sh sided spot |
 | `016-street-kit.js` | 65.2 | top level | MKS (039) | 003: SHARED; 006: NEONS; 014: CATALOG CAT_DEPTS CAT_INFO KIND_OF LAMPS LIFE LSEED STORY hash mt prop sh sided speck |
 | `020-studio-kit.js` | 35.9 | top level | STUDIO (023 039) | 003: SHARED; 014: CATALOG CAT_DEPTS CAT_INFO KIND_OF LAMPS LIFE ROT hash mt prop sh |
-| `023-west-kits.js` | 42.4 | top level | DEEPW (027 027c), KEEPC (039), PRESETS (027 027a 027b 027c 027d 039), SQLV (027), STOREK (027 027a 027b 027c 027d 039) | 003: SHARED; 003b: vwV; 006: WROW; 014: CATALOG CAT_DEPTS CAT_INFO KIND_OF LAMPS LBLD LIFE LSEED PROPL SQB STORY T hash mt prop sh sided; 020: STUDIO |
+| `023-west-kits.js` | 42.5 | top level | DEEPW (027 027c), KEEPC (039), PRESETS (027 027a 027b 027c 027d 039), SQLV (027), STOREK (027 027a 027b 027c 027d 039) | 003: SHARED; 003b: vwV; 006: WROW; 014: CATALOG CAT_DEPTS CAT_INFO KIND_OF LAMPS LBLD LIFE LSEED PROPL SQB STORY T hash mt prop sh sided; 020: STUDIO |
 | `026z-barkit.js` | 18.2 | top level | barKit (027) | 003: SHARED; 014: LAMPS hash prop sh sided zShift |
-| `027-rooms-kits.js` | 149.4 | top level |  | 003: SHARED; 003b: vwV wvV; 014: CATALOG CAT_DEPTS CAT_INFO KIND_OF LAMPS LBLD LIFE STORY T cvNoise hash prop sh sided speck woodCol zShift; 023: DEEPW PRESETS SQLV STOREK; 026z: barKit |
+| `027-rooms-kits.js` | 149.6 | top level |  | 003: SHARED; 003b: vwV wvV; 014: CATALOG CAT_DEPTS CAT_INFO KIND_OF LAMPS LBLD LIFE STORY T cvNoise hash prop sh sided speck woodCol zShift; 023: DEEPW PRESETS SQLV STOREK; 026z: barKit |
 | `027a-page-office.js` | 28.1 | top level | pageOffice (059i) | 014: CAT_DEPTS; 023: PRESETS STOREK |
 | `027b-page-kitchen.js` | 29.0 | top level | pageKitchen (059i) | 014: CAT_DEPTS; 023: PRESETS STOREK |
 | `027c-page-cozyden.js` | 45.1 | top level | pageCozyDen (059i) | 003b: CLOCK; 014: CAT_DEPTS; 023: DEEPW PRESETS STOREK |

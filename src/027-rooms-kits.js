@@ -962,7 +962,8 @@ const PGK=(()=>{ const ZS=27, TX=24, E1=1<<24, E2=2<<24, SKY=3<<24, FIRE=4<<24, 
         faces:(nx,ny)=>{ const o=at(0,0), q=at(nx,ny), s=seen(); return (q[0]-o[0])*s[0]>0.5||(q[1]-o[1])*s[1]>0.5; },
         light:(lx,ly,lz)=>{ const now=performance.now(); if(now-litAt>1000&&typeof lightEnv==='function'){ litAt=now; const [X,Y]=at(lx,ly), env=lightEnv(X-.5,Y-.5,X+.5,Y+.5,false,LVZ(p.lv||0)); L=env?lightAt(env,X,Y,(lz*ZS+LVZ(p.lv||0))/24,null).map(v=>Math.max(.15,Math.min(1.2,v))):[1,1,1]; } return L; }};
       p.lifeDraw=(D,W,H,ox,oy,t,K=1)=>draw(D,W,H,ox,oy,t,K,S); return p; }; }
-  const water=(cx,cy,r,rimZ,wi,cfg={})=>{ '@later'; let Wb=null, lv=0; const HT=0.75, w=DEEPW.WATERS[wi], amp=w.waves.reduce((t,v)=>t+v[1],0)*(cfg.height??1);
+  const water=(cx,cy,r,rimZ,wi,cfg={})=>{ '@later'; if(!DEEPW.body||!DEEPW.WATERS[wi])return ()=>{};   // no deep-water engine: the round things hold no live water yet
+    let Wb=null, lv=0; const HT=0.75, w=DEEPW.WATERS[wi], amp=w.waves.reduce((t,v)=>t+v[1],0)*(cfg.height??1);
     return (D,W,H,ox,oy,t,K,S,life)=>{ if(!Wb){ Wb=DEEPW.body(2*r,2*r,HT,wi,{...DEEPW.DEFAULTS,timer:0,bare:true,...cfg,life}); lv=Math.max(0.5,HT-amp-0.08); }
       const Z0=rimZ*ZS-lv*DEEPW.ZPX+LVZ(S.p.lv||0)-LVZ(V.lv); Wb.draw(D,W,H,ox,oy,K,t,(a,b)=>S.at(cx-r+a,cy-r+b),Z0,false,[],null);
       const [ex,ey]=S.scr(cx,cy,rimZ,ox,oy,K), A=r*0.97*Math.SQRT2*HW*K, B=r*0.97*Math.SQRT2*HH*K;

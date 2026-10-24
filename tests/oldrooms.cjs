@@ -8,24 +8,24 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   await pg.goto('file://' + path.resolve(process.argv[2] || 'dist/market.html') + '?fresh=1&hour=13&at=53,10', { waitUntil: 'commit' });
   let st = false; for (let i = 0; i < 60 && !st; i++) { await pg.waitForTimeout(3000); st = await pg.evaluate(() => !!window.__started).catch(() => false); }
   ok(st, 'the page starts');
-  const U = async (f, ms = 90000) => { for (const t = Date.now(); Date.now() - t < ms; await pg.waitForTimeout(250)) if (await pg.evaluate(f).catch(() => false)) return true; return false; };
+  const U = async (f, ms = 90000, arg) => { for (const t = Date.now(); Date.now() - t < ms; await pg.waitForTimeout(250)) if (await pg.evaluate(f, arg).catch(() => false)) return true; return false; };
   if (st) {
-    const s0 = await pg.evaluate(() => { const d = OLDDBG(); return { rooms: d.rooms, built: d.built.length, data: d.data, listed: UI.places().filter(p => SHARED.OLDROOMS.by[p[0]]).length }; });
+    const s0 = await pg.evaluate(() => { const d = OLDDBG(); return { rooms: d.rooms, built: d.built.length, data: d.data, listed: __dbg.UI.places().filter(p => SHARED.OLDROOMS.by[p[0]]).length }; });
     ok(s0.rooms >= 40, 'the old rooms are registered (' + s0.rooms + ')');
     ok(s0.built === 0 && !s0.data, 'none is built and its items are not fetched at the start');
     ok(s0.listed === s0.rooms, 'every one is in the GO TO list (' + s0.listed + ')');
     for (const name of ['DINER', 'THE OFFICE']) {
-      await pg.evaluate(n => UI.goPlace(n), name);
+      await pg.evaluate(n => __dbg.UI.goPlace(n), name);
       const id = await pg.evaluate(n => SHARED.OLDROOMS.by[n], name);
-      ok(await U(k => OLDDBG().built.includes(k) && !(window.FADE && FADE.busy), 90000, id) || await pg.evaluate(k => OLDDBG().built.includes(k), id), name + ' is built on the jump');
-      const r = await pg.evaluate(k => ({ ...OLDDBG().of(k), inside: OLDDBG().inside, dark: ROOMS.dark(), inBox: ROOMS.boxAt(pos.x, pos.z) === k }), id);
+      ok(await U(k => OLDDBG().built.includes(k) && !(window.FADE && FADE.busy), 120000, id), name + ' is built on the jump');
+      const r = await pg.evaluate(k => { const p = __dbg.pos(); return { ...OLDDBG().of(k), inside: OLDDBG().inside, dark: ROOMS.dark(), inBox: ROOMS.boxAt(p[0], p[2]) === k }; }, id);
       ok(r.inside === id && r.inBox, name + ': you stand inside it');
       ok(r.placed + r.missing === r.items && r.items > 0, name + ': every item accounted for (' + r.placed + ' made, ' + r.missing + ' standing in)');
       ok(r.dark, name + ': the map is not drawn while you are in');
       await pg.evaluate(k => ROOMS.exit(k), id);
       ok(await U(k => !OLDDBG().built.includes(k) && !(window.FADE && FADE.busy), 60000, id), name + ' is dropped on the way out');
     }
-    const s1 = await pg.evaluate(() => ({ built: OLDDBG().built.length, sol: SOL.up.length }));
+    const s1 = await pg.evaluate(() => ({ built: OLDDBG().built.length, sol: __dbg.SOL.up.length }));
     ok(s1.built === 0, 'nothing left built after leaving');
   }
   ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.join(' | ') : ''));

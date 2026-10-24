@@ -28,7 +28,7 @@ import {livedIn} from './027m-lived-in.js';
     const B=R, cx=(B.x0+B.x1)/2, items=DATA&&DATA[R.id]||[], own=!!R.own&&items.some(([k])=>/ floor$/.test(k)&&CATALOG[k]);   // a room brings its own floor and walls only when its floor can be made here (the cavern's was the old engine's)
     const sol=(x0,y0,x1,y1,zt)=>{ const r=box4(x0,y0,x1,y1), f=[r[0],r[1],0,r[2],r[3],Math.max(.05,Y(zt))]; SOL.up.push(r); FIX.up.push(f); S.sol.push(r); S.fix.push(f); };
     const wall=(u,z,f)=>z<6?sh([70,62,58],f):sh([176,168,152],f*(1-.04*hs(Math.floor(u*4),Math.floor(z/8),9)));
-    const floor=(x,y)=>{ const r=Math.floor(y*3), b=Math.floor(x/1.5+hs(r,0,13)*3); return sh([128,98,66],(y*3-r)<.06||(x/1.5-Math.floor(x/1.5))<.03?.78:.9+.12*hs(b,r,7)); };
+    const grass=items.some(([k])=>k==='pine'||k==='island ground'), floor=grass?(x,y)=>sh([88,128,58],.86+.22*hs(Math.floor(x*4),Math.floor(y*4),11)):(x,y)=>{ const r=Math.floor(y*3), b=Math.floor(x/1.5+hs(r,0,13)*3); return sh([128,98,66],(y*3-r)<.06||(x/1.5-Math.floor(x/1.5))<.03?.78:.9+.12*hs(b,r,7)); };   // a landscape room stands on grass, not planks
     const WALL=(P0,a0,a1,paint,h=WH,z0=0)=>bq(P0(a0,z0),P0(a1,z0),P0(a1,h),P0(a0,h),faceTex((a1-a0)*24,h-z0,(i,j)=>C(paint(a0+(i+.5)/24,h-j-.5))),'A');
     const PX=(y,o=0)=>(a,z)=>[X(a),Y(z),Z(y+o)], PY=(x,o=0)=>(a,z)=>[X(x+o),Y(z),Z(a)];
     if(!own){ bq([X(B.x0),Y(.15),Z(B.y1)],[X(B.x1),Y(.15),Z(B.y1)],[X(B.x1),Y(.15),Z(B.y0)],[X(B.x0),Y(.15),Z(B.y0)],faceTex((B.x1-B.x0)*24,(B.y1-B.y0)*24,(i,j)=>C(floor(B.x0+(i+.5)/24,B.y1-(j+.5)/24))),'A');
@@ -38,7 +38,7 @@ import {livedIn} from './027m-lived-in.js';
     sol(B.x0-.1,B.y0,B.x0+.1,B.y1,WH); sol(B.x1-.1,B.y0,B.x1+.1,B.y1,WH); sol(B.x0,B.y0-.1,B.x1,B.y0+.1,WH); sol(B.x0,B.y1-.1,cx-DW,B.y1+.1,WH); sol(cx+DW,B.y1-.1,B.x1,B.y1+.1,WH); }
     const n0=PROPL.length, paint=(p,nm)=>{ BATCH.tag=OBJ('old:'+R.id,nm); for(const b of p.boxes)gbox(b,'A'); BATCH.tag=null; };
     for(const [kind,x,y] of items){ const f=CATALOG[kind]; if(f){ const p=f(+x.toFixed(3),+y.toFixed(3)); if(p){ p.kind=kind; place(p,0); paint(p,p.name||kind); } continue; }
-      if(kind==='cave floor'){ SHARED.PNAME='cave floor'; const p=prop([{x0:x-.8,y0:y-.8,x1:x+.8,y1:y+.8,z0:0,z1:1.2,c:[52,46,60],top:(u,v)=>sh([52,46,60],.9+.2*hs(Math.floor(u*3),Math.floor(v*3),3))}],null,{kind,walk:1}); place(p,0); paint(p,'cave floor'); continue; }   // the old engine's cave floor: a slab of dark stone a tile wide, walked on
+      if(kind==='cave floor'){ SHARED.PNAME='cave floor'; const p=prop([{x0:x-1,y0:y-1,x1:x+1,y1:y+1,z0:0,z1:1.2,c:[52,46,60],top:(u,v)=>sh([52,46,60],.9+.2*hs(Math.floor(u*3),Math.floor(v*3),3))}],null,{kind,walk:1}); place(p,0); paint(p,'cave floor'); continue; }   // the old engine's cave floor: a slab of dark stone a tile wide, walked on
       const md=MODELS[kind]; if(md&&LAND.propMesh){ const me=LAND.propMesh(md[0],md[1]); if(me){ me.position.set(X(x),0,Z(y)); me.rotation.y=hs(Math.round(x*7),Math.round(y*7),5)*6.283; scene.add(me); if(md[2])sol(x-md[2],y-md[2],x+md[2],y+md[2],60); S.models++; continue; } }
       const nm=((CAT_INFO[kind]&&CAT_INFO[kind].name)||kind).toUpperCase(); SHARED.PNAME=nm; const p=prop([{x0:x-.3,y0:y-.3,x1:x+.3,y1:y+.3,z0:0,z1:30,c:[120,96,150]}],null,{kind}); place(p,0); paint(p,nm); S.missing++;
       const hb=new THREE.Mesh(new THREE.BoxGeometry(.6*TILE,Y(30),.6*TILE),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(X(x),Y(15),Z(y)); scene.add(hb); UI.thing({name:nm+' (NOT MADE YET)',ghost:1,obj:hb,reach:1.4*TILE,near:2.4*TILE,tall:Y(30)}); }

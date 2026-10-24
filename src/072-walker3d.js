@@ -12,6 +12,7 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
   const ramp=MATS.map(m=>(R.RAMP[m]||['#ff00ff','#ff00ff','#ff00ff','#ff00ff']).map(h=>new THREE.Color(h)));
   W3.wholeBox=/wholebox/.test(location.search);
   W3.lite=QS.get('walker')==='lite';
+  W3.smooth=QS.has('smooth')?+QS.get('smooth'):6;   // Taubin passes that smooth each piece's lines (0 = the raw marched mesh)
   W3.ramp=ramp; W3.meshOf=(P,step,fine,RB)=>meshOf(P,step,fine,RB); W3.legs=R.PIECES.map(n=>/^(thigh|shin|shoe)/.test(n)?(n.endsWith('L')?1:2):0);
   const PRE=new WeakMap(); W3.warm=(P,step,fine,RB)=>{ PRE.set(P,{step,fine,RB,g:meshOf0(P,step,fine,RB)}); };
   W3.fine=P=>P.step<1||/^(head|hair|beard|brow|eye|nose|ear|mouth)/.test(P.n);
@@ -48,8 +49,26 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
   function simplify(fit,mats,cell){ const n=fit.length/6, key=new Map(), cid=new Int32Array(n), acc=[];
     for(let i=0;i<n;i++){ const fx=Math.floor(fit[i*6]/cell), fy=Math.floor(fit[i*6+1]/cell), fz=Math.floor(fit[i*6+2]/cell), m=mats[i], k=Math.abs(fx)<5e3&&Math.abs(fy)<5e3&&Math.abs(fz)<5e3&&m>=0&&m<256?(((fx+5e3)*1e4+fy+5e3)*1e4+fz+5e3)*256+m:fx+'|'+fy+'|'+fz+'|'+m; let c=key.get(k); if(c==null){ c=acc.length; key.set(k,c); acc.push({p:[0,0,0],nn:[0,0,0],k:0,m:mats[i]}); }
       const a=acc[c]; for(let q=0;q<3;q++){ a.p[q]+=fit[i*6+q]; a.nn[q]+=fit[i*6+3+q]; } a.k++; cid[i]=c; }
+    const NC=acc.length, px=new Float64Array(NC), py=new Float64Array(NC), pz=new Float64Array(NC);
+    for(let c=0;c<NC;c++){ const a=acc[c]; px[c]=a.p[0]/a.k; py[c]=a.p[1]/a.k; pz[c]=a.p[2]/a.k; }
     const tri=[]; for(let i=0;i<n;i+=3){ const a=cid[i],b=cid[i+1],c=cid[i+2]; if(a!==b&&b!==c&&a!==c)tri.push(a,b,c); }
-    const out=new Float32Array(tri.length*6), om=[]; tri.forEach((c,i)=>{ const a=acc[c], l=Math.hypot(...a.nn)||1; for(let q=0;q<3;q++){ out[i*6+q]=a.p[q]/a.k; out[i*6+3+q]=a.nn[q]/l; } om.push(a.m); }); return {fit:out,mats:om}; }
+    const SM=W3.smooth|0;
+    // smooth each piece's lines: Taubin (shrink-free) over the welded mesh; a vertex on an open edge follows only that boundary curve, so an outline (an eye, a collar) cleans up without the shell caving in
+    if(SM>0&&tri.length){ const nb=[], bnb=[], bnd=new Uint8Array(NC), ec=new Map();
+      for(let c=0;c<NC;c++){ nb.push(new Set()); bnb.push([]); }
+      for(let t=0;t<tri.length;t+=3){ const a=tri[t],b=tri[t+1],c=tri[t+2]; nb[a].add(b);nb[a].add(c);nb[b].add(a);nb[b].add(c);nb[c].add(a);nb[c].add(b);
+        for(let e=0;e<3;e++){ const u=tri[t+e], v=tri[t+(e+1)%3], k=u<v?u*NC+v:v*NC+u; ec.set(k,(ec.get(k)||0)+1); } }
+      for(const [k,ct] of ec)if(ct===1){ const a=Math.floor(k/NC), b=k%NC; bnd[a]=bnd[b]=1; bnb[a].push(b); bnb[b].push(a); }
+      const qx=new Float64Array(NC), qy=new Float64Array(NC), qz=new Float64Array(NC);
+      const pass=lam=>{ for(let c=0;c<NC;c++){ const src=bnd[c]?bnb[c]:nb[c]; let sx=0,sy=0,sz=0,k=0;
+          for(const d of src){ sx+=px[d];sy+=py[d];sz+=pz[d];k++; }
+          if(k){ qx[c]=px[c]+lam*(sx/k-px[c]); qy[c]=py[c]+lam*(sy/k-py[c]); qz[c]=pz[c]+lam*(sz/k-pz[c]); } else { qx[c]=px[c];qy[c]=py[c];qz[c]=pz[c]; } }
+        px.set(qx); py.set(qy); pz.set(qz); };
+      for(let it=0;it<SM;it++){ pass(.5); pass(-.53); } }
+    const out=new Float32Array(tri.length*6), om=[];   // smoothed positions; the SDF-gradient normals as before (consistent, no shading specks)
+    for(let i=0;i<tri.length;i++){ const c=tri[i], a=acc[c], l=Math.hypot(a.nn[0],a.nn[1],a.nn[2])||1;
+      out[i*6]=px[c]; out[i*6+1]=py[c]; out[i*6+2]=pz[c]; out[i*6+3]=a.nn[0]/l; out[i*6+4]=a.nn[1]/l; out[i*6+5]=a.nn[2]/l; om.push(a.m); }
+    return {fit:out,mats:om}; }
   const around=(ps,m)=>{ const b=[1e9,-1e9,1e9,-1e9,1e9,-1e9]; for(const p of ps){ b[0]=Math.min(b[0],p.x-m); b[1]=Math.max(b[1],p.x+m); b[2]=Math.min(b[2],p.y-m); b[3]=Math.max(b[3],p.y+m); b[4]=Math.min(b[4],p.z-m); b[5]=Math.max(b[5],p.z+m); } return b; };
   function liteShell(){ '@later'; const J=rest.J, {V,add,sub,mul,ell,rcone,rbox,box}=R, P=[], put=(n,m,d,ps,mrg,st,cl)=>P.push({n,m,d,bb:around(ps,mrg),step:st,cell:cl});
     const sw=Math.abs(J.shoulderL.x)*0.72+2.2, hc=add(J.head,mul(sub(J.headTop,J.head),0.44)), hr=V(5.3,6.1,5.6), hhc=add(hc,V(0,0.9,-0.5));

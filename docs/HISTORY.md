@@ -4536,3 +4536,6 @@ Owner: "the trees leaves are not all connected, make them denser, make sure ivy 
 ## 24 Oct 2026: players fight (step 3 of 3)
 
 Owner: "merge it and start step 3". Everyone sees a downed player's ragdoll; double-click a player who is down to pick them up and carry them, punch to throw them, double-click again to put them down. A knockdown by another player keeps you down at least 2.5 s (longer while carried).
+
+## 24 Oct 2026: the Walker's lines smoothed
+Owner: "smooth out the lines, things like his eyes are tons of little bumps instead of just a circle", "the Walker just smoother lines", "ship it". The Walker is kept as-is; a smoothing pass in his mesher (072-walker3d) relaxes each piece's marched outline so edges read clean (jaw, hair, nose, eyes), his shape, proportions, pieces and triangle count unchanged. `?smooth=N` tunes it (0 = the raw marched mesh). An earlier attempt to rebuild him from clean primitives was dropped — he wanted the same Walker, just smoother.

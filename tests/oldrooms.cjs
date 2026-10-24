@@ -21,6 +21,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
       const r = await pg.evaluate(k => { const p = __dbg.pos(); return { ...OLDDBG().of(k), inside: OLDDBG().inside, dark: ROOMS.dark(), inBox: ROOMS.boxAt(p[0], p[2]) === k }; }, id);
       ok(r.inside === id && r.inBox, name + ': you stand inside it');
       ok(r.placed + r.missing === r.items && r.items > 0, name + ': every item accounted for (' + r.placed + ' made, ' + r.missing + ' standing in)');
+      ok(r.verts > 1000, name + ': its items are painted (' + r.verts + ' vertices in the room)');
       ok(r.dark, name + ': the map is not drawn while you are in');
       await pg.evaluate(k => ROOMS.exit(k), id);
       ok(await U(k => !OLDDBG().built.includes(k) && !(window.FADE && FADE.busy), 60000, id), name + ' is dropped on the way out');

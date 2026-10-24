@@ -12,11 +12,11 @@ import {GEMS} from './101-gems.js';
     purple:{c:0xb058ff,hp:5,v:1.3,dmg:.05,s:1.14,loot:.45,sk:[15,65],nm:'PURPLE',p:15,see:3.6},red:{c:0xff4434,hp:7,v:1.5,dmg:.07,s:1.24,loot:.6,sk:[30,80],nm:'RED',p:25,see:4.2}};
   FORAGE.add({names:Object.fromEntries(Object.keys(TIER).map(k=>['slime_'+k,'BOTTLE OF '+TIER[k].nm+' SLIME'])),prices:Object.fromEntries(Object.keys(TIER).map(k=>['slime_'+k,TIER[k].p]))});
   const STRIKES=(()=>{ const STR=/jab|cross|upper|hook|slap|punch|kick|sweep|round/i, T=TILE; let last=null, swT=0, swAt=0, swing={}, fr=-1, cache=[];   // your strikes, read by every mob system (the dungeon's, the cave's golems, the sparring ring): one list a frame, the same for every reader
-    SYS.add('strike',()=>{ const now=performance.now(); if(WIELD.sword&&now-swT>220){ swT=now; swing=WIELD.swing||{}; swAt=now+(swing.heavy?140:90); } },'146b-dunmobs');
+    SYS.add('strike',()=>{ const now=performance.now(); if(WIELD.sword&&now-swT>150){ swT=now; swing=WIELD.swing||{}; swAt=now+(swing.heavy?140:90); } },'146b-dunmobs');
     const strikes=()=>{ const f=renderer.info.render.frame; if(f===fr)return cache; fr=f; const out=cache=[], s=(st.up&&STR.test(st.up.name)&&st.up)||(st.move&&STR.test(st.move.name)&&st.move);
       if(s&&s!==last&&s.t>=.08){ last=s; const k=/kick|sweep|round/i.test(s.name); out.push({r:(k?1.15:1)*T,d:k?1.5:1}); }
-      if(swAt&&performance.now()>=swAt){ swAt=0; if(WIELD.sword){ const h=!!swing.heavy, d=(+ITEMS.prop(WIELD.on,'damage')||2)*(h?1.5:1)*(swing.winded?.6:1); out.push({r:(h?1.8:1.55)*T,d,kb:h?1.8:1,sk:'sword',heavy:h}); } } return out; };
-    const inCone=(s,x,z,y,rad)=>{ const dx=x-pos.x, dz=z-pos.z, d=Math.hypot(dx,dz); if(Math.abs(y-SHARED.py)>1.4*T||d>s.r+rad)return false; return d<.35*T||(dx*Math.sin(SHARED.heading)+dz*Math.cos(SHARED.heading))/d>.3; };
+      if(swAt&&performance.now()>=swAt){ swAt=0; if(WIELD.sword){ const h=!!swing.heavy, d=(+ITEMS.prop(WIELD.on,'damage')||2)*(h?1.5:1)*(swing.winded?.6:1); out.push({r:(h?1.8:1.55)*T,d,kb:h?1.8:1,sk:'sword',heavy:h,ax:swing.ax,az:swing.az}); } } return out; };
+    const inCone=(s,x,z,y,rad)=>{ const dx=x-pos.x, dz=z-pos.z, d=Math.hypot(dx,dz); if(Math.abs(y-SHARED.py)>1.4*T||d>s.r+rad)return false; const a=Math.hypot(s.ax||0,s.az||0), fx=a>.1?s.ax/a:Math.sin(SHARED.heading), fz=a>.1?s.az/a:Math.cos(SHARED.heading); return d<.35*T||(dx*fx+dz*fz)/d>.3; };   // a blade cuts where it was aimed
     const strength=s=>1+(FORAGE.sk(s&&s.sk||'fight')||0)/100, landed=s=>{ if(s&&s.sk)FORAGE.use(s.sk,-10,70); };   // a sword blow that lands teaches SWORDSMANSHIP
     return {strikes,inCone,strength,landed}; })(); window.STRIKES=STRIKES;
   const init=()=>{ '@dungeon'; const T=TILE, X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, say=FORAGE.say, G=new THREE.Group(), PK=new THREE.Group(); PK.visible=false; MAPG.dungeon.add(G); scene.add(LEVELS.own(PK,'dungeon'));
@@ -66,7 +66,7 @@ import {GEMS} from './101-gems.js';
     if(r.kk)N.an.play('Death_A',{hold:true}); sfx('clunk',{vol:.6,pitch:.7}); say(r.kk?'THE '+N.name+' FALLS.':'THE SKELETON CRUMBLES.','#e8e2cc');
     FORAGE.use('fight',10+lvl*8,60+lvl*8); const n=r.key==='Gold'?2:1; for(let i=0;i<n;i++)drop(r.key==='Gold'?'gold':'bone',N.st.x,N.st.z); };
   const hitRes=(r,dmg,from,s)=>{ if(r.dead)return; const N=r.N, st=N.st; r.agg=true;
-    if(r.kk&&!(s&&s.heavy)&&!N.an.once&&Math.random()<Math.min(.5,lvl*.1)){ N.an.play('Block'); sfx('clunk',{vol:.5,pitch:2.1}); say('THE '+N.name+' BLOCKS.','#c8c2b0'); return; }   // a guard blocks a light blow; a heavy one gets through
+    if(r.kk&&!(s&&s.heavy)&&!N.an.once&&Math.random()<Math.min(.5,lvl*.1)){ N.an.play('Block'); sfx('clunk',{vol:.5,pitch:2.1}); say('THE '+N.name+' BLOCKS.','#c8c2b0'); return false; }   // a guard blocks a light blow; a heavy one gets through
     r.hp-=dmg; const dx=st.x-from.x, dz=st.z-from.z, l=Math.hypot(dx,dz)||1, kb=2.2*T*(s&&s.kb||1); st.sx=dx/l*kb; st.sz=dz/l*kb;
     sfx('clunk',{vol:.5,pitch:1.5,vary:.2}); if(r.hp<=0)return killRes(r); if(s&&s.heavy)r.cool=Math.max(r.cool,2.4); if(r.kk){ r.act=0; N.an.play('Hit_A'); } else{ r.lunge=null; r.jolt=s&&s.heavy?.6:.25; } };
   const {strikes,inCone,strength}=STRIKES;
@@ -80,7 +80,7 @@ import {GEMS} from './101-gems.js';
   const arrange=n=>{ const R=resolve(), used=[]; for(const r of R){ if(n&&r.lv.includes(n))place(r,used); else park(r); } };
   const spawnSlimes=n=>{ slimes=[]; const used=[]; (SLV[n]||[]).forEach((k,i)=>{ const p=spot(.2*T,[L.atUp,L.atDn,...used]); used.push(p); const t=TIER[k];
     slimes.push({i,k,x:p.x,z:p.z,h:Math.random()*6.28,hp:t.hp,to:null,wait:Math.random()*3,air:0,ph:0,cool:1,flash:0,dead:false,pop:0,agg:false,kb:null}); }); IM.count=GL.count=slimes.length; draw(); };
-  const onLevel=n=>{ for(const th of [...things])unthing(th); for(const b of bolts)b.m.removeFromParent(); bolts=[]; lvl=n; L=n?D.lay(n):null; slimes=[]; IM.count=GL.count=0;
+  const onLevel=n=>{ for(const th of [...things])unthing(th); for(const b of bolts){ b.m.removeFromParent(); b.m.geometry.dispose(); b.m.material.dispose(); } bolts=[]; lvl=n; L=n?D.lay(n):null; slimes=[]; IM.count=GL.count=0;
     if(!n){ arrange(0); return; } spawnSlimes(n); arrange(n);
     if(SKL[n]&&SKL[n].some(k=>KK.includes(k))&&!(window.GUARDX)){ SKELGO().then(()=>{ RES=null; if(lvl===n)arrange(n); else arrange(lvl); }); } };
   const draw=()=>{ slimes.forEach((S,i)=>{ const t=TIER[S.k], s=S0*t.s; let sx=1, sy=1, y=0;
@@ -113,7 +113,7 @@ import {GEMS} from './101-gems.js';
   const shoot=(r,col)=>{ const N=r.N, m=new THREE.Mesh(new THREE.BoxGeometry(.06*T,.06*T,.3*T),new THREE.MeshBasicMaterial({color:new THREE.Color(...col),toneMapped:false})), y=N.g.position.y+N.H*.55;
     m.position.set(N.st.x,y,N.st.z); G.add(m); const to=new THREE.Vector3(pos.x,SHARED.py+.9*T,pos.z); m.lookAt(to); bolts.push({m,to,dmg:r.dmg,from:{x:N.st.x,z:N.st.z}}); };
   const boltTick=dt=>{ for(const b of [...bolts]){ const d=b.to.clone().sub(b.m.position), l=d.length(), stp=11*T*dt;
-    if(l<=stp){ b.m.removeFromParent(); b.m.geometry.dispose(); bolts.splice(bolts.indexOf(b),1); if(!VIT.dead&&Math.hypot(pos.x-b.to.x,pos.z-b.to.z)<.5*T)VIT.hurt(b.dmg,b.from); } else b.m.position.addScaledVector(d,stp/l); } };
+    if(l<=stp){ b.m.removeFromParent(); b.m.geometry.dispose(); b.m.material.dispose(); bolts.splice(bolts.indexOf(b),1); if(!VIT.dead&&Math.hypot(pos.x-b.to.x,pos.z-b.to.z)<.5*T)VIT.hurt(b.dmg,b.from); } else b.m.position.addScaledVector(d,stp/l); } };
   const resTick=(r,dt,you,alive)=>{ const N=r.N, st=N.st; if(!r.kk)pawnTick(r,dt); if(r.dead||!r.on)return;
     const d=Math.hypot(you.x-st.x,you.z-st.z); r.cool-=dt;
     if(r.ogre){ if(!st.to&&(r.w-=dt)<=0){ st.to=near(st.x,st.z,1.5*T,4*T,st.R); st.v=r.v0; r.w=3+Math.random()*5; } return; }
@@ -128,7 +128,7 @@ import {GEMS} from './101-gems.js';
     if(r.kk)N.an.play(r.style.hit==='1H_Melee_Attack_Chop'&&Math.random()<.5?'1H_Melee_Attack_Slice_Diagonal':r.style.hit,{at:[r.style.at,land]}); else r.lunge={t:0,hit:land}; };
   const tick=dt=>{ if(!lvl||!L)return; const you={x:pos.x,z:pos.z}, alive=!VIT.dead&&SHARED.LVL==='down';
     const S=alive?strikes():[]; for(const s of S){ const m=strength(s); for(const sl of slimes)if(!sl.dead&&inCone(s,sl.x,sl.z,D.ground(sl.x,sl.z),.2*T)){ hitSlime(sl,s.d*m,you,s); STRIKES.landed(s); }
-      if(RES)for(const r of RES)if(r.on&&!r.dead&&!r.ogre&&inCone(s,r.N.st.x,r.N.st.z,r.N.g.position.y,.25*T)){ hitRes(r,s.d*m,you,s); STRIKES.landed(s); } }
+      if(RES)for(const r of RES)if(r.on&&!r.dead&&!r.ogre&&inCone(s,r.N.st.x,r.N.st.z,r.N.g.position.y,.25*T)){ if(hitRes(r,s.d*m,you,s)!==false)STRIKES.landed(s); } }
     if(slimeTick(dt,you,alive)||S.length)draw(); if(RES)for(const r of RES)if(r.on)resTick(r,dt,you,alive); boltTick(dt); };
   window.DUNMOBS={T,get slimes(){ return slimes; },get res(){ return RES; },hit:(i,d=1)=>hitSlime(slimes[i],d,{x:pos.x,z:pos.z}),hitRes:(i,d=1)=>hitRes(RES.filter(r=>r.on)[i],d,{x:pos.x,z:pos.z}),things:()=>things};
   window.DUNMOBDBG=()=>({level:lvl,slimes:slimes.map(S=>({k:S.k,hp:S.hp,dead:S.dead,gone:!!S.gone,x:+(S.x/T).toFixed(1),z:+(S.z/T).toFixed(1)})),

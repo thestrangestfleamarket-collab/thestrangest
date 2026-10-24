@@ -19,6 +19,8 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     ok(await pg.evaluate(() => { const o = ONLINE.others.get('a'); return !!(o.S.up && /jab/.test(o.S.up.name)); }), 'their jab plays on their figure');
     const pushed = await pg.evaluate(() => { const o = ONLINE.others.get('a'), c = __dbg.collide(o.p.x + .1, o.p.z); return Math.hypot(c[0] - o.p.x, c[1] - o.p.z); });
     ok(pushed > .5, 'you cannot walk into them (pushed out to ' + pushed.toFixed(2) + ')');
+    const ghost = await pg.evaluate(() => { ONLINE.feed({ t: 'in', p: { id: 'a', dead: 1 } }); const o = ONLINE.others.get('a'), c = __dbg.collide(o.p.x + .1, o.p.z), d = Math.hypot(c[0] - o.p.x, c[1] - o.p.z); ONLINE.feed({ t: 'in', p: { id: 'a', dead: 0 } }); return d; });
+    ok(ghost < .3, 'a dead player is a ghost you walk through (' + ghost.toFixed(2) + ')');
     await pg.keyboard.press('j'); await pg.waitForTimeout(1500);
     const hit = await pg.evaluate(() => __sent.filter(m => m.t === 'hit'));
     ok(hit.length === 1 && hit[0].to === 'a' && hit[0].d > 0 && hit[0].k === 'fist', 'your jab lands once when your fist reaches them (' + JSON.stringify(hit) + ')');
@@ -26,11 +28,11 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     await pg.keyboard.press('j'); await pg.waitForTimeout(1500);
     ok(await pg.evaluate(() => !__sent.some(m => m.t === 'hit')), 'a jab with them behind you misses');
     const before = await pg.evaluate(() => ({ hp: __dbg.VIT.hp, p: __dbg.you() }));
-    await pg.evaluate(() => { const o = ONLINE.others.get('a'); ONLINE.feed({ t: 'hit', id: 'a', d: .1, kb: 1, k: 'fist', from: [o.p.x, o.p.z] }); });
+    const busy = await pg.evaluate(() => { const o = ONLINE.others.get('a'), S = __dbg.ST || {}; ONLINE.feed({ t: 'hit', id: 'a', d: .1, kb: 1, k: 'fist', from: [o.p.x, o.p.z] }); return JSON.stringify({ rag: RAGON(), out: __dbg.VIT.out }); });
     await pg.waitForTimeout(2500);
     const after = await pg.evaluate(() => ({ hp: __dbg.VIT.hp, p: __dbg.you(), rag: window.RAGON() }));
     ok(after.hp < before.hp, 'their blow takes health (' + before.hp.toFixed(2) + ' -> ' + after.hp.toFixed(2) + ')');
-    ok(Math.hypot(after.p.x - before.p.x, after.p.z - before.p.z) > .1 && !after.rag, 'a light blow shoves you without knocking you down');
+    ok(Math.hypot(after.p.x - before.p.x, after.p.z - before.p.z) > .1 && !after.rag, 'a light blow shoves you without knocking you down' + (after.rag || Math.hypot(after.p.x - before.p.x, after.p.z - before.p.z) <= .1 ? ' ' + busy + JSON.stringify([before, after]) : ''));
     await pg.waitForTimeout(400);
     await pg.evaluate(() => { const o = ONLINE.others.get('a'); ONLINE.feed({ t: 'hit', id: 'a', d: .05, kb: 1.8, heavy: true, k: 'blade', from: [o.p.x, o.p.z] }); });
     await pg.waitForTimeout(600);
@@ -40,6 +42,14 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     ok(sent.on && sent.on.n.length >= 11 && sent.frames >= 1, 'your ragdoll goes out to everyone (' + (sent.on ? sent.on.n.length : 0) + ' bodies, ' + sent.frames + ' frames)');
     await pg.evaluate(() => ONLINE.feed({ t: 'grab', id: 'a' }));
     ok(await pg.evaluate(() => __dbg.RAG.held && __dbg.RAG.held.by === 'a'), 'a player can pick you up while you are down');
+    await pg.evaluate(() => ONLINE.feed({ t: 'toss', id: 'b', v: [1, 0] }));
+    ok(await pg.evaluate(() => __dbg.RAG.held && __dbg.RAG.held.by === 'a'), 'only the one holding you can throw you');
+    const ko0 = await pg.evaluate(() => __dbg.RAG.ko);
+    await pg.waitForTimeout(200); await pg.evaluate(() => { const o = ONLINE.others.get('a'); ONLINE.feed({ t: 'hit', id: 'a', d: .01, kb: 1, heavy: true, k: 'fist', from: [o.p.x, o.p.z] }); });
+    ok(await pg.evaluate(k => __dbg.RAG.ko === k, ko0), 'a blow while you are down does not keep you down longer');
+    ok(await pg.evaluate(() => { ONLINE.feed({ t: 'grab', id: 'a' }); for (let i = 0; i < 7; i++) { dispatchEvent(new KeyboardEvent('keydown', { key: 'a' })); dispatchEvent(new KeyboardEvent('keyup', { key: 'a' })); }
+      return !__dbg.RAG.held && __sent.some(m => m.t === 'free' && m.to === 'a'); }), 'mashing keys breaks you free of their hands');
+    await pg.evaluate(() => ONLINE.feed({ t: 'grab', id: 'a' }));
     await pg.evaluate(() => ONLINE.feed({ t: 'toss', id: 'a', v: [1, 0] }));
     ok(await pg.evaluate(() => !__dbg.RAG.held), 'and throw you');
     for (let i = 0; i < 120 && await pg.evaluate(() => window.RAGON() || __dbg.VIT.out > 0); i++) await pg.waitForTimeout(500);
@@ -52,6 +62,11 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     ok(g.sent.includes('grab'), 'double-clicking a player who is down picks them up (' + JSON.stringify(g) + ')');
     await pg.evaluate(() => { SYS.run('act', 'J', 1); __ragI = 0; });
     ok(await pg.evaluate(() => __sent.some(m => m.t === 'toss' && m.to === 'a')), 'a punch throws them');
+    const faint = await pg.evaluate(async () => { const V = __dbg.VIT, o = ONLINE.others.get('a'); V.hp = .05; await new Promise(r => setTimeout(r, 200));
+      ONLINE.feed({ t: 'hit', id: 'a', d: .1, kb: 1, k: 'fist', from: [o.p.x, o.p.z] }); const a = { fainted: V.fainted, dead: V.dead };
+      await new Promise(r => setTimeout(r, 200)); ONLINE.feed({ t: 'hit', id: 'a', d: .1, kb: 1, k: 'fist', from: [o.p.x, o.p.z] }); return { ...a, dead2: V.dead }; });
+    ok(faint.fainted && !faint.dead, 'at no health you faint, not die (' + JSON.stringify(faint) + ')');
+    ok(faint.dead2, 'and a blow while you are out cold kills you');
     const err = await pg.evaluate(() => Object.entries(SYS.P).flatMap(([k, v]) => v.filter(s => s.err).map(s => k + ':' + s.name)));
     ok(!err.length, 'no SYS errors (' + err.join(',') + ')');
   }

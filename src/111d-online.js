@@ -1,6 +1,6 @@
 // THE OTHER PLAYERS: ONLINE, everyone on your block (one server a section, worker/door.js Block): their bodies and name tags, who's online, and the chat.
 import {SHARED, THREE} from './003-shx.js';
-import {BUGS, LOOKS, ONLINE, pos, ROOMS, UI, W3} from './003b-systems.js';
+import {BUGS, keys, LOOKS, ONLINE, pos, ROOMS, UI, VIT, W3} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {ASTEP, MODS, QS, SYS, TILE} from './006-map-pre.js';
 import {qMat, ragPoseOf, TL} from './073-main-12.js';
@@ -17,7 +17,7 @@ Object.assign(ONLINE,{others:new Map(),on:false,me:'',log:[],hear:{}}); window.O
   const myName=()=>((LOOKS.L&&LOOKS.L.name)||'').trim()||('TENANT'+(MODS.apts&&MODS.apts.num?' '+MODS.apts.num:''));
   const send=m=>{ if(sock&&sock.readyState===1)sock.send(JSON.stringify(m)); }; ONLINE.send=m=>send(m);
   /* ---------- other players are solid: you are pushed out of them as out of a character ---------- */
-  ONLINE.push=p=>{ for(const o of ONLINE.others.values()){ if(o.why!=='near you'||!o.p)continue; const dx=p.x-o.p.x, dz=p.z-o.p.z, d=Math.hypot(dx,dz), R=.55; if(d<R&&d>1e-4){ p.x=o.p.x+dx/d*R; p.z=o.p.z+dz/d*R; } } };
+  ONLINE.push=p=>{ for(const o of ONLINE.others.values()){ if(o.why!=='near you'||!o.p||o.dead)continue; const dx=p.x-o.p.x, dz=p.z-o.p.z, d=Math.hypot(dx,dz), R=.55; if(d<R&&d>1e-4){ p.x=o.p.x+dx/d*R; p.z=o.p.z+dz/d*R; } } };
   SYS.add('act',(k,on)=>ONLINE.send(k==='flinch'?{t:'act',m:k}:{t:'act',k,on:on?1:0}),'111d-online');
 
   /* ---------- where someone is: their last moves, drawn a little behind so the steps between them are smooth ---------- */
@@ -29,7 +29,7 @@ Object.assign(ONLINE,{others:new Map(),on:false,me:'',log:[],hear:{}}); window.O
 
   const push=(o,a)=>{ o.s.push({t:performance.now(),x:+a[0]||0,z:+a[1]||0,y:+a[2]||0,hd:+a[3]||0,lv:a[4]||'up',rm:a[5]||''}); if(o.s.length>8)o.s.shift(); };
   const up=(id,p)=>{ let o=ONLINE.others.get(id); if(!o){ o={id,name:'',look:'',s:[],S:R.create(),fig:null,key:'',say:'',sayT:0,tag:null,tagS:'',d:0}; ONLINE.others.set(id,o); }
-    if(p){ if(p.name!=null)o.name=String(p.name); if(p.look!=null)o.look=String(p.look); if(p.at)push(o,p.at); } return o; };
+    if(p){ if(p.name!=null)o.name=String(p.name); if(p.look!=null)o.look=String(p.look); if(p.dead!=null)o.dead=!!p.dead; if(p.at)push(o,p.at); } return o; };
   const drop=id=>{ const o=ONLINE.others.get(id); if(o){ unfig(o); ONLINE.others.delete(id); } };
   ONLINE.feed=m=>{ '@later'; if(!m||typeof m!=='object')return; ui();
     if(m.t==='mv'&&m.id&&Array.isArray(m.at)){ push(up(m.id),m.at); return; }
@@ -105,7 +105,7 @@ Object.assign(ONLINE,{others:new Map(),on:false,me:'',log:[],hear:{}}); window.O
       else if(e.key==='Escape')shut(); });
     I.addEventListener('blur',()=>setTimeout(shut,0)); };
   const shut=()=>{ if(!EL)return; const I=EL.querySelector('#onlin'); I.value=''; I.hidden=true; EL.classList.remove('open'); I.blur(); };
-  ONLINE.open=()=>{ if(!EL||EL.hidden)return; const I=EL.querySelector('#onlin'); EL.classList.add('open'); I.hidden=false; I.focus(); };
+  ONLINE.open=()=>{ if(!EL||EL.hidden)return; keys.clear(); const I=EL.querySelector('#onlin'); EL.classList.add('open'); I.hidden=false; I.focus(); };
   const line=(name,text)=>{ '@later'; ui(); const d=document.createElement('div'); d.dataset.t=String(performance.now()); d.innerHTML='<b>'+esc(name)+'</b> '+esc(text); const G=EL.querySelector('#onllog'); G.appendChild(d); while(G.children.length>30)G.firstChild.remove(); ONLINE.log.push([name,text]); if(ONLINE.log.length>30)ONLINE.log.shift(); };
   let BN=null; const banner=(from,text)=>{ if(!BN){ BN=document.createElement('div'); BN.id='onltell'; BN.setAttribute('role','status'); BN.style.cssText='position:fixed;left:50%;top:14%;transform:translateX(-50%);max-width:min(60ch,90vw);padding:10px 16px;background:#0b0d13f0;border:2px solid #ffd27a;color:#f4f2ea;font:12px/1.6 Silkscreen,monospace;letter-spacing:1px;text-align:center;z-index:41;pointer-events:none;white-space:pre-wrap'; document.body.appendChild(BN); }
     BN.innerHTML='<div style="color:#ffd27a">'+esc(from)+'</div>'+esc(text); BN.hidden=false; clearTimeout(BN.t); BN.t=setTimeout(()=>{ BN.hidden=true; },12000); };
@@ -123,8 +123,8 @@ Object.assign(ONLINE,{others:new Map(),on:false,me:'',log:[],hear:{}}); window.O
     sock.addEventListener('message',e=>{ let m=null; try{ m=JSON.parse(e.data); }catch(x){} if(m)ONLINE.feed(m); }); };
   ONLINE.tick=dt=>{ const now=performance.now();
     if(ONLINE.on){ acc+=dt; meAcc+=dt;
-      if(meAcc>1){ meAcc=0; const n=myName(), k=lookKey(), s=n+'|'+k; if(s!==meSent){ meSent=s; send({t:'me',name:n,look:k}); } }
-      keep+=dt; if(acc>=SEND){ acc=0; const a=[+pos.x.toFixed(2),+pos.z.toFixed(2),+SHARED.py.toFixed(2),+SHARED.heading.toFixed(2),SHARED.LVL||'up',roomKey()];
+      if(meAcc>1){ meAcc=0; const n=myName(), k=lookKey(), dead=VIT.dead?1:0, s=n+'|'+k+'|'+dead; if(s!==meSent){ meSent=s; send({t:'me',name:n,look:k,dead}); } }
+      keep+=dt; if(acc>=SEND){ acc=0; const a=[+pos.x.toFixed(2),+pos.z.toFixed(2),+SHARED.py.toFixed(2),+Math.atan2(Math.sin(SHARED.heading),Math.cos(SHARED.heading)).toFixed(2),SHARED.LVL||'up',roomKey()];
         if(!last||Math.abs(a[0]-last[0])+Math.abs(a[1]-last[1])+Math.abs(a[2]-last[2])>.01||Math.abs(a[3]-last[3])>.04||a[4]!==last[4]||a[5]!==last[5]||keep>4){ last=a; keep=0; send({t:'mv',at:a}); } } }
     if(ONLINE.others.size)draw(dt,now); fade(dt); };
   SYS.add('life',dt=>ONLINE.tick(dt||0),'111d-online');

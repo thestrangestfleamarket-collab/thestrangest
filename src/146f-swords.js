@@ -5,7 +5,7 @@ import {STORE, TILE} from './006-map-pre.js';
 import {BODIES} from './111a-bodies.js';
 const FIGHT={PARRY:.28,parries:0,blocks:0}; window.FIGHT=FIGHT;
 { const T=TILE, say=(t,c)=>FORAGE.say&&FORAGE.say(t,c);
-  const front=from=>{ if(!from||from.x==null)return true; const dx=from.x-pos.x, dz=from.z-pos.z, l=Math.hypot(dx,dz)||1; return (dx*Math.sin(SHARED.heading)+dz*Math.cos(SHARED.heading))/l>.2; };
+  const front=from=>{ if(!from||from.x==null)return false; const dx=from.x-pos.x, dz=from.z-pos.z, l=Math.hypot(dx,dz)||1; return (dx*Math.sin(SHARED.heading)+dz*Math.cos(SHARED.heading))/l>.2; };
   const onBeat=()=>performance.now()-WIELD.blockT<FIGHT.PARRY*1000;
   VIT.guard=(d,from)=>{ if(!WIELD.block||!front(from))return {d};
     if(onBeat()){ FIGHT.parries++; VIT.sta=Math.min(1,VIT.sta+.1); SFX.play('clunk',{vol:.6,pitch:2.2}); say('PARRIED. THEY STAGGER.','#7dffa4'); FORAGE.use('sword',0,80); return {d:0,parry:true}; }

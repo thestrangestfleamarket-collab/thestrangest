@@ -656,7 +656,7 @@ function act(st,key){ const W=st.water;
   // the one rule for body moves: a move runs to its end, and a key does nothing meanwhile except what the move itself allows (its in-air variant, its combo follow-up) or a fall
   if(a&&d.airv&&d.airv[key]&&!mv.variant&&airborne&&mv.t<a.t0+a.T*0.75){ mv.variant={name:d.airv[key],t:mv.t}; return; }
   if(name=='fall'){ begin(st,'fall'); return; }
-  if(d.combo&&d.combo[key]&&free(mv)&&!airborne) begin(st,d.combo[key]); }
+  if(d.combo&&d.combo[key]&&free(mv)&&!airborne&&(!d.window||mv.t>=d.window[0]*RIGT.combo)) begin(st,d.combo[key]); }
 function release(st,key){ if(key=='carry'){ if(st.up&&st.up.name=='carry') st.up.held=false; return; } if(st.move&&KEYMOVE[key]==st.move.name) st.move.held=false; if(st.up&&KEYMOVE[key]==st.up.name) st.up.held=false; }
 function tick(st,h){ st.run+=(st.runTarget-st.run)*Math.min(1,h*RIGT.blend); const g=gaitOf(st.run);
   if(st.up){ const u=st.up,d=u.def; if(!(d.hold&&u.held&&u.t+h>=d.hold)) u.t+=h*RIGT.moves*(st.anim||1); else u.t=d.hold; if(st.upNext&&d.window&&u.t>=d.window[0]*RIGT.combo) beginUp(st,st.upNext); else if(u.t>=d.dur){ st.up=null; if(st.upNext) beginUp(st,st.upNext); } }

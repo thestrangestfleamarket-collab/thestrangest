@@ -1,6 +1,6 @@
 // THE CINEMA: the movie theatre screen plays one shared YouTube reel at the same timecode for everyone, thrown from the projection booth (its projector holds the settings); its marquee and poster outside follow what plays.
 import {SHARED, THREE} from './003-shx.js';
-import {CINEMA, CLOCK, pos, ROOMS, UI} from './003b-systems.js';
+import {CINEMA, CLOCK, pos, ROOMS, SIGNS, UI} from './003b-systems.js';
 import {renderer, scene, ShaderPass} from './004-main.js';
 import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
 
@@ -45,23 +45,29 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
     clip.style.cssText='position:absolute;left:0;top:0;width:0;height:0;overflow:hidden;pointer-events:none;display:none';
     wrap=document.createElement('div'); wrap.style.cssText='position:absolute;left:0;top:0;width:'+W0+'px;height:'+H0+'px;transform-origin:0 0;overflow:hidden;background:#000;will-change:transform';
     holder=document.createElement('div'); holder.style.cssText='position:absolute;inset:0;width:100%;height:100%'; wrap.appendChild(holder);
-    if(!document.getElementById('cinema-css')){ const st=document.createElement('style'); st.id='cinema-css'; st.textContent='@keyframes cmgrain{0%{background-position:0 0}20%{background-position:-61px 37px}40%{background-position:43px -83px}60%{background-position:-97px -21px}80%{background-position:71px 89px}100%{background-position:0 0}}@keyframes cmflick{0%,100%{opacity:.05}13%{opacity:.11}27%{opacity:.03}52%{opacity:.09}71%{opacity:.04}88%{opacity:.1}}'; document.head.appendChild(st); }
+    if(!document.getElementById('cinema-css')){ const st=document.createElement('style'); st.id='cinema-css'; st.textContent='@keyframes cmgrain{0%{background-position:0 0}20%{background-position:-61px 37px}40%{background-position:43px -83px}60%{background-position:-97px -21px}80%{background-position:71px 89px}100%{background-position:0 0}}@keyframes cmflick{0%,100%{opacity:.02}13%{opacity:.05}27%{opacity:.01}52%{opacity:.04}71%{opacity:.02}88%{opacity:.05}}'; document.head.appendChild(st); }
     const nz=document.createElement('canvas'); nz.width=nz.height=192; { const g=nz.getContext('2d'), d=g.createImageData(192,192); for(let i=0;i<d.data.length;i+=4){ const v=Math.random()*255|0; d.data[i]=d.data[i+1]=d.data[i+2]=v; d.data[i+3]=255; } g.putImageData(d,0,0); }
     const lay=css=>{ const d=document.createElement('div'); d.style.cssText='position:absolute;inset:0;pointer-events:none;'+css; wrap.appendChild(d); return d; };
-    lay('background:radial-gradient(circle,rgba(0,0,0,.28) .8px,rgba(0,0,0,0) 1.4px) 0 0/5px 5px;opacity:.6');
-    lay('background:url('+nz.toDataURL()+') 0 0/384px 384px;mix-blend-mode:overlay;opacity:.16;animation:cmgrain .42s steps(1) infinite');
-    lay('background:radial-gradient(ellipse 60% 55% at 50% 47%,rgba(255,246,228,.09) 0%,rgba(0,0,0,0) 55%,rgba(0,0,0,.5) 100%);box-shadow:inset 0 0 90px 18px rgba(0,0,0,.6)');
+    lay('background:radial-gradient(circle,rgba(0,0,0,.28) .8px,rgba(0,0,0,0) 1.4px) 0 0/5px 5px;opacity:.3');
+    lay('background:url('+nz.toDataURL()+') 0 0/384px 384px;mix-blend-mode:overlay;opacity:.07;animation:cmgrain .42s steps(1) infinite');
+    lay('background:radial-gradient(ellipse 60% 55% at 50% 47%,rgba(255,246,228,0) 0%,rgba(0,0,0,0) 55%,rgba(0,0,0,.5) 100%);box-shadow:inset 0 0 90px 18px rgba(0,0,0,.6)');
     lay('background:#000;animation:cmflick 2.3s steps(1) infinite');
     soundBtn=document.createElement('button'); soundBtn.textContent='🔇 tap for sound';
     soundBtn.style.cssText='position:fixed;left:0;top:0;transform:translate(-50%,-100%);display:none;z-index:3;pointer-events:auto;font:600 13px system-ui;color:#fff;background:rgba(0,0,0,.6);border:2px solid rgba(255,255,255,.4);border-radius:999px;padding:6px 14px;cursor:pointer';
     soundBtn.onclick=()=>CINEMA.sound(true,null); document.body.appendChild(soundBtn);
     clip.appendChild(wrap); const stg=document.getElementById('stage')||document.body; stg.insertBefore(clip,stg.firstChild); };
-  const makePlayer=async id=>{ '@later'; mkWrap(); if(player){ if(id!==haveVid){ haveVid=id; try{ player.loadVideoById({videoId:id,startSeconds:offset()}); }catch(e){} } return; }
-    if(making)return; making=true; await ensureYT();
-    player=new window.YT.Player(holder,{videoId:id,host:'https://www.youtube-nocookie.com',width:'100%',height:'100%',
-      playerVars:{autoplay:1,mute:1,controls:0,rel:0,playsinline:1,modestbranding:1,disablekb:1,fs:0,iv_load_policy:3,cc_load_policy:0},
-      events:{onReady:e=>{ haveVid=id; try{ e.target.mute(); e.target.seekTo(offset(),true); e.target.playVideo(); e.target.unloadModule('captions'); e.target.unloadModule('cc'); }catch(x){} applySnd(); },
-        onStateChange:e=>{ if(e.data===window.YT.PlayerState.ENDED)onEnded(); }}}); };
+  let vOK=false, vFail='', tries=0, t0=0; const HOSTS=['https://www.youtube-nocookie.com','https://www.youtube.com'];
+  const makePlayer=async id=>{ '@later'; mkWrap();
+    if(player){ if(id!==haveVid){ haveVid=id; vOK=false; vFail=''; tries=0; t0=performance.now(); try{ player.loadVideoById({videoId:id,startSeconds:offset()}); }catch(e){} }
+      else if(!vOK&&!vFail&&performance.now()-t0>15000)retry(id); return; }
+    if(making)return; making=true; await ensureYT(); haveVid=id; vOK=false; t0=performance.now();
+    player=new window.YT.Player(holder,{videoId:id,host:HOSTS[Math.min(tries,HOSTS.length-1)],width:'100%',height:'100%',
+      playerVars:{autoplay:1,mute:1,controls:0,rel:0,playsinline:1,modestbranding:1,disablekb:1,fs:0,iv_load_policy:3,cc_load_policy:0,origin:location.origin},
+      events:{onReady:e=>{ try{ e.target.mute(); e.target.seekTo(offset(),true); e.target.playVideo(); e.target.unloadModule('captions'); e.target.unloadModule('cc'); }catch(x){} applySnd(); },
+        onStateChange:e=>{ if(e.data===1){ vOK=true; vFail=''; } if(e.data===window.YT.PlayerState.ENDED)onEnded(); },
+        onError:e=>{ if(e.data===101||e.data===150)vFail='this video only plays on YouTube'; else retry(haveVid); }}}); };
+  const retry=id=>{ '@later'; if(tries>=HOSTS.length-1){ if(!vOK)vFail=vFail||'the video could not load here'; return; } tries++; try{ player.destroy(); }catch(e){} player=null; making=false;
+    holder=document.createElement('div'); holder.style.cssText='position:absolute;inset:0;width:100%;height:100%'; wrap.insertBefore(holder,wrap.firstChild); makePlayer(id); };
   const onEnded=async()=>{ '@later'; const c=cur(), pl=c.playlist||[];
     if(adm&&pl.length>1){ const last=(c.idx|0)+1>=pl.length; if(last&&c.loop===false)return; const ni=last?0:(c.idx|0)+1, nid=vid(pl[ni]&&(pl[ni].url||pl[ni].id||pl[ni]));
       if(nid)await push({idx:ni,video_id:nid,started_at:new Date().toISOString()}); }
@@ -83,20 +89,21 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
       let t=0, b=0, l=0, r=0; while(t<h/2&&dark(0,t,w,t+1))t++; while(b<h/2&&dark(0,h-1-b,w,h-b))b++; while(l<w/2&&dark(l,0,l+1,h))l++; while(r<w/2&&dark(w-1-r,0,w-r,h))r++;
       const cw=w-l-r, ch=h-t-b; if(aspId===id&&cw>w*.3&&ch>h*.3)aspect=Math.max(.45,Math.min(2.6,cw/ch)); }catch(e){} }; im.src='/yt/'+id+'.jpg'; };
   const vrect=()=>aspect>=W0/H0?{x:0,y:(H0-W0/aspect)/2,w:W0,h:W0/aspect}:{x:(W0-H0*aspect)/2,y:0,w:H0*aspect,h:H0};
-  const placeOver=(me,dim=1)=>{ const {r,q}=corners(me), cv=renderer.domElement, k=coef(q[0],q[1],q[2],q[3]), V=vrect();
+  const placeOver=(me,dim=1,ok=true)=>{ const {r,q}=corners(me), cv=renderer.domElement, k=coef(q[0],q[1],q[2],q[3]), V=vrect();
     clip.style.left=r.left+'px'; clip.style.top=r.top+'px'; clip.style.width=r.width+'px'; clip.style.height=r.height+'px'; clip.style.borderRadius=getComputedStyle(cv.parentElement||cv).borderRadius;
     const u0=-V.x/V.w, u1=(W0-V.x)/V.w, v0=-V.y/V.h, v1=(H0-V.y)/V.h;
-    wrap.style.transform=m3d(coef(ap(k,u0,v0),ap(k,u1,v0),ap(k,u1,v1),ap(k,u0,v1))); wrap.style.filter='brightness('+((cur().brightness??.8)*dim)+') contrast(1.04) saturate(.92) sepia(.05) blur(.5px)';
-    if(CUT){ CUT.uniforms.uOn.value=1; q.forEach((p,i)=>CUT.uniforms.uQ.value[i].set(p.u,p.v)); }
-    if(!snd.on){ const b=ap(k,.5,1); soundBtn.style.display='block'; soundBtn.style.left=(r.left+b.x)+'px'; soundBtn.style.top=(r.top+b.y-6)+'px'; } else soundBtn.style.display='none'; };
+    wrap.style.transform=m3d(coef(ap(k,u0,v0),ap(k,u1,v0),ap(k,u1,v1),ap(k,u0,v1))); wrap.style.filter='brightness('+((cur().brightness??.8)*dim)+') contrast(1.08) saturate(1.02) blur(.4px)';
+    if(CUT){ CUT.uniforms.uOn.value=ok?1:0; q.forEach((p,i)=>CUT.uniforms.uQ.value[i].set(p.u,p.v)); }
+    soundBtn.textContent=vFail?vFail.toUpperCase():'🔇 tap for sound'; soundBtn.style.pointerEvents=vFail?'none':'auto';
+    if(vFail||ok&&!snd.on){ const b=ap(k,.5,1); soundBtn.style.display='block'; soundBtn.style.left=(r.left+b.x)+'px'; soundBtn.style.top=(r.top+b.y-6)+'px'; } else soundBtn.style.display='none'; };
   // the screen's see-through face (the video shows through it, darker at its edges) and the last pass that keeps the rest of the picture solid
   const HOLE=new THREE.ShaderMaterial({blending:THREE.NoBlending,depthWrite:true,vertexShader:'varying vec2 vU; void main(){ vU=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.); }',
-    fragmentShader:'varying vec2 vU; void main(){ vec2 d=(vU-.5)*vec2(1.,1.12); float v=smoothstep(.12,.62,length(d)); float a=.05+.4*v*v; gl_FragColor=vec4(vec3(.012,.012,.014)+vec3(.03,.03,.034)*(1.-v),a); }'});
+    fragmentShader:'varying vec2 vU; void main(){ vec2 d=(vU-.5)*vec2(1.,1.12); float v=smoothstep(.12,.62,length(d)); float a=.04+.45*v*v; gl_FragColor=vec4(0.,0.,0.,a); }'});
   let CUT=null;
   const mkCut=()=>{ if(CUT||!SHARED.composer)return; CUT=new ShaderPass({uniforms:{tDiffuse:{value:null},uOn:{value:0},uQ:{value:[0,1,2,3].map(()=>new THREE.Vector2())}},
     vertexShader:'varying vec2 vUv; void main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.); }',
     fragmentShader:'uniform sampler2D tDiffuse; uniform float uOn; uniform vec2 uQ[4]; varying vec2 vUv; float s(vec2 a,vec2 b,vec2 p){ return (b.x-a.x)*(p.y-a.y)-(b.y-a.y)*(p.x-a.x); }\n'
-      +'void main(){ vec4 c=texture2D(tDiffuse,vUv); float a=1.; if(uOn>.5){ float s0=s(uQ[0],uQ[1],vUv), s1=s(uQ[1],uQ[2],vUv), s2=s(uQ[2],uQ[3],vUv), s3=s(uQ[3],uQ[0],vUv); if((s0>=0.&&s1>=0.&&s2>=0.&&s3>=0.)||(s0<=0.&&s1<=0.&&s2<=0.&&s3<=0.))a=c.a; } gl_FragColor=vec4(c.rgb,a); }'});
+      +'void main(){ vec4 c=texture2D(tDiffuse,vUv); float a=1.; vec3 rgb=c.rgb; if(uOn>.5){ float s0=s(uQ[0],uQ[1],vUv), s1=s(uQ[1],uQ[2],vUv), s2=s(uQ[2],uQ[3],vUv), s3=s(uQ[3],uQ[0],vUv); if((s0>=0.&&s1>=0.&&s2>=0.&&s3>=0.)||(s0<=0.&&s1<=0.&&s2<=0.&&s3<=0.)){ a=c.a; if(a<.99)rgb=vec3(0.); } } gl_FragColor=vec4(rgb,a); }'});
     SHARED.composer.addPass(CUT); };
   const facing=me=>{ me.updateMatrixWorld(); const n=new THREE.Vector3(0,0,1).transformDirection(me.matrixWorld), p=new THREE.Vector3().setFromMatrixPosition(me.matrixWorld); return n.dot(new THREE.Vector3().subVectors(SHARED.cam.position,p))>0; };
 
@@ -108,7 +115,7 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
   const buildRig=m=>{ if(rig||!m.port)return; const fm=m.fm; fm.updateMatrixWorld(); const w=fm.geometry.parameters.width/2, h=fm.geometry.parameters.height/2, P=new THREE.Vector3(...m.port);
     const W_=(x,y,z=0)=>new THREE.Vector3(x,y,z).applyMatrix4(fm.matrixWorld), p=W_(0,0), N=new THREE.Vector3(0,0,1).transformDirection(fm.matrixWorld);
     const Q=[[-1,1],[1,1],[1,-1],[-1,-1]].map(([sx,sy])=>W_(sx*w,sy*h));
-    const g=new THREE.BufferGeometry(), ps=[], cs=[], A=[1,1,1], B=[.1,.1,.1];
+    const g=new THREE.BufferGeometry(), ps=[], cs=[], A=[.5,.5,.5], B=[.14,.14,.14];
     for(let i=0;i<4;i++){ const q0=Q[i], q1=Q[(i+1)%4]; ps.push(P.x,P.y,P.z,q0.x,q0.y,q0.z,q1.x,q1.y,q1.z); cs.push(...A,...B,...B); }
     g.setAttribute('position',new THREE.Float32BufferAttribute(ps,3)); g.setAttribute('color',new THREE.Float32BufferAttribute(cs,3));
     const beam=new THREE.Mesh(g,new THREE.MeshBasicMaterial({vertexColors:true,transparent:true,opacity:.05,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}));
@@ -122,8 +129,8 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
   const fitHole=()=>{ const u=holeM.u, sz=Math.max(.4,Math.min(1,cur().size??1)); let hw=u.w, hh=u.w/aspect; if(hh>u.h){ hh=u.h; hw=u.h*aspect; } holeM.scale.set(hw*sz,hh*sz,1); };
   const bcol=c=>new THREE.Color().setRGB(.62+.16*c.warm,.64+.02*c.warm,.76-.32*c.warm);
   const animRig=now=>{ if(!rig)return; const u=rig.u, c=bcfg(); if(!rig.visible){ u.spill.intensity=0; return; } const t=now/1000; u.lv+=(Math.random()-.5)*.06*c.flicker*2; u.lv=Math.max(.25,Math.min(1,u.lv+(.6-u.lv)*.01));
-    const f=1+(.06*Math.sin(t*23)+.04*Math.sin(t*5.1))*c.flicker*2, b=(cur().brightness??.8)*(.6+.4*u.lv)*f; u.beam.visible=!!c.on; u.beam.material.color.copy(bcol(c)); u.beam.material.opacity=(.016+.014*b)*c.power;
-    u.halo.material.opacity=(.06+.12*b)*c.spill; u.pool.material.opacity=(.04+.08*b)*c.spill; u.spill.intensity=7*b*c.spill; u.spill.color.copy(bcol(c)).lerp(new THREE.Color(0xc8d4ff),.6); };
+    const f=1+(.06*Math.sin(t*23)+.04*Math.sin(t*5.1))*c.flicker*2, b=(cur().brightness??.8)*(.6+.4*u.lv)*f; u.beam.visible=!!c.on; u.beam.material.color.copy(bcol(c)); u.beam.material.opacity=(.008+.008*b)*c.power;
+    u.halo.material.opacity=(.03+.05*b)*c.spill; u.pool.material.opacity=(.02+.04*b)*c.spill; u.spill.intensity=3*b*c.spill; u.spill.color.copy(bcol(c)).lerp(new THREE.Color(0xc8d4ff),.6); };
 
   let lastSync=0, adminThings=false;
   const tick=()=>{ const mt=STORE.main&&STORE.main.theatre; CINEMA.on=false; if(!mt||!mt.fm)return;
@@ -136,9 +143,9 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
     const tgt=inB?booth.port:up&&holeM&&mt.R.inside(pos.x,pos.z)?holeM:null;
     if(holeM)holeM.visible=false; if(booth.port&&booth.glass)booth.port.material=booth.glass;
     if(!tgt||!id||FADE.busy){ if(CUT)CUT.uniforms.uOn.value=0; if(soundBtn)soundBtn.style.display='none'; if(clip&&clip.style.display!=='none'){ clip.style.display='none'; try{ player&&player.pauseVideo(); }catch(e){} } if(rig){ rig.visible=!1; animRig(0); } return; }
-    CINEMA.on=true; mkWrap(); mkCut(); makePlayer(id); sniff(id); if(tgt===holeM)fitHole(); else tgt.material=HOLE; tgt.visible=true;
+    mkWrap(); mkCut(); makePlayer(id); sniff(id); const ok=vOK&&!vFail; CINEMA.on=ok; if(tgt===holeM)fitHole(); if(ok){ if(tgt!==holeM)tgt.material=HOLE; tgt.visible=true; }
     if(rig){ rig.visible=!inB; animRig(now); }
-    if(facing(tgt)){ clip.style.display='block'; placeOver(tgt,inB?.6:1); } else { clip.style.display='none'; soundBtn.style.display='none'; if(CUT)CUT.uniforms.uOn.value=0; }
+    if(facing(tgt)){ clip.style.display='block'; placeOver(tgt,inB?.6:1,ok); } else { clip.style.display='none'; soundBtn.style.display='none'; if(CUT)CUT.uniforms.uOn.value=0; }
     sync(); };
   const sync=()=>{ const now=performance.now(); if(now-lastSync>1500&&player&&player.getCurrentTime){ lastSync=now;
       try{ const want=offset(), is=player.getCurrentTime(); if(Math.abs(is-want)>1.6)player.seekTo(want,true); if(player.getPlayerState&&player.getPlayerState()!==1)player.playVideo(); }catch(e){} } };
@@ -150,14 +157,14 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
     sign(); };
 
   // the front: a lit marquee box over the doors (the video's title unless an admin wrote its lines) and a lit poster case on the wall
-  let canopy=null, post=null;
+  let canopy=null, post=null; const ovr={text:null,bri:null,col:null};
   const canv=(w,h)=>{ const cv=document.createElement('canvas'); cv.width=w; cv.height=h; const tex=new THREE.CanvasTexture(cv); tex.magFilter=THREE.NearestFilter; tex.minFilter=THREE.LinearFilter; tex.generateMipmaps=false; tex.colorSpace=THREE.SRGBColorSpace; return {cv,g:cv.getContext('2d'),tex}; };
   const FACE='"Arial Narrow","Helvetica Neue",Arial,sans-serif';
   const fit=(g,t,maxW,px)=>{ let s=px; do{ g.font='900 '+Math.round(s)+'px '+FACE; s-=1; }while(g.measureText(t).width>maxW&&s>8); };
   const qz=v=>Math.min(255,Math.round(v/56)*56), title=()=>(CINEMA.title||'THE STRANGEST CINEMA').toUpperCase();
   const split2=t=>{ if(t.length<=34)return [t]; const m=t.length/2; let b=-1; for(let i=0;i<t.length;i++)if(t[i]===' '&&(b<0||Math.abs(i-m)<Math.abs(b-m)))b=i; return b<0?[t]:[t.slice(0,b),t.slice(b+1)]; };
   const own=k=>String(cur()[k]||'').trim();
-  const lines=()=>{ const o=own('marquee'); return o?o.toUpperCase().split('\n').map(s=>s.trim()).filter(Boolean).slice(0,3):['NOW SHOWING',...split2(title())].slice(0,3); };
+  const lines=()=>{ const o=ovr.text!=null?ovr.text:own('marquee'); return o?o.toUpperCase().split('\n').map(s=>s.trim()).filter(Boolean).slice(0,3):['NOW SHOWING',...split2(title())].slice(0,3); };
   const litBg=(g,W,H)=>{ const gr=g.createLinearGradient(0,0,0,H); gr.addColorStop(0,'#d9e6f5'); gr.addColorStop(.5,'#f6faff'); gr.addColorStop(1,'#d9e6f5'); g.fillStyle=gr; g.fillRect(0,0,W,H); };
   const rails=(g,W,H,n)=>{ g.fillStyle='rgba(60,70,84,.5)'; for(let i=1;i<n;i++){ const y=Math.round(6+i*(H-12)/n); g.fillRect(0,y-1,W,2); } g.fillStyle='#8f98a3'; g.fillRect(0,0,W,6); g.fillRect(0,H-6,W,6); };
   const drawCanopy=()=>{ const {front,side}=canopy, L=lines(), n=L.length, auto=!own('marquee');
@@ -188,6 +195,9 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
     const frame=new THREE.Mesh(new THREE.BoxGeometry(pw*1.12,ph*1.08,.06*tw),new THREE.MeshLambertMaterial({color:0xb7bdc5}));
     const plane=new THREE.Mesh(new THREE.PlaneGeometry(pw,ph),new THREE.MeshBasicMaterial({map:pc.tex})); plane.position.z=.035*tw;
     const group=new THREE.Group(); group.add(frame,plane); group.position.copy(at(pS,.14*tw,(Yb(70)+Yb(14))/2)); group.rotation.y=ry; scene.add(group); post={...pc,group,key:''};
+    SIGNS.list.push({me:box,name:'THEATRE MARQUEE',place:'street',get:()=>({text:ovr.text,bri:ovr.bri,col:ovr.col}),
+      set:o=>{ ovr.text=o&&o.text!=null?o.text:null; ovr.bri=o&&o.bri!=null?o.bri:null; ovr.col=o&&o.col!=null?o.col:null;
+        const c=new THREE.Color(ovr.col||'#ffffff').multiplyScalar(ovr.bri==null?1:ovr.bri); for(const i of [0,1,4]){ const mm=box.material[i]; if(mm&&mm.color)mm.color.copy(c); } canopy.key=''; sign(); }});
     sign(); };
   const sign=()=>{ if(canopy){ const k=lines().join('|'); if(k!==canopy.key){ canopy.key=k; drawCanopy(); } }
     if(post){ const k=posterSrc()+'|'+title()+'|'+own('poster'); if(k!==post.key){ post.key=k; drawPoster(); } } };
@@ -306,6 +316,7 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
 
   let attached=false;
   const attach=()=>{ if(attached)return; const m=STORE.main&&STORE.main.theatre; if(!m||!m.fm)return; attached=true;
+    for(const [x,z] of m.exits||[]){ const hb=new THREE.Mesh(new THREE.BoxGeometry(.5*TILE,2.4*TILE,1.2*TILE),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(x,1.2*TILE,z); scene.add(hb); UI.thing({name:'EXIT',ghost:1,obj:hb,reach:1.4*TILE,near:2.6*TILE,tall:2.4*TILE,act:()=>STORE.exit('theatre')}); }
     buildSigns(m); buildRig(m); };
 
   window.CINEMA=CINEMA; SYS.add('places',()=>{ mkCut(); attach(); tick(); },'059f-cinema');

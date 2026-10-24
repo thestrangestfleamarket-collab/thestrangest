@@ -1,10 +1,10 @@
-// THE SUN SHAFTS: SHAFTS hangs beams of light along the sun through the air (fixed spots of the world, two crossed sheets each, never turning with you); every beam is lit by the sun's shadow map, so what the sun does not reach (trees, buildings, the ground) blocks it with a soft fade. It also streaks rays out from the sun on the screen when the look asks for them (SUN SHAFTS in ATMOSPHERE); the rays are drawn by the look's last pass. (The sunlit dust is off: no dust in the air, owner 23 Oct 2026.)
+// THE SUN SHAFTS: SHAFTS hangs beams of light along the sun through the air (fixed spots of the world, two crossed sheets each, never turning with you); every beam is lit by the sun's shadow map, so what the sun does not reach (trees, buildings, the ground) blocks it with a soft fade. These are the sun's rays (SUN SHAFTS in ATMOSPHERE): a real sun up in the sky shining down into the park, seen from the side, never a star drawn at the player.
 import {SHARED, THREE} from './003-shx.js';
-import {CLOCK, DN, LOOK, pos, WX} from './003b-systems.js';
+import {CLOCK, DN, pos, SKY, WX} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {OUT, SYS, TILE} from './006-map-pre.js';
 const SHAFTS={on:0,dust:0,occ:0,list:[]}; window.SHAFTS=SHAFTS;
-{ const T=TILE, N=12, CELL=36*TILE, hsh=(i,j,k)=>{ const v=Math.sin(i*127.1+j*311.7+k*74.7)*43758.5453; return v-Math.floor(v); }, cv=document.createElement('canvas'); cv.width=64; cv.height=256; const g=cv.getContext('2d'), img=g.createImageData(64,256);
+{ const T=TILE, N=16, CELL=36*TILE, hsh=(i,j,k)=>{ const v=Math.sin(i*127.1+j*311.7+k*74.7)*43758.5453; return v-Math.floor(v); }, cv=document.createElement('canvas'); cv.width=64; cv.height=256; const g=cv.getContext('2d'), img=g.createImageData(64,256);
   for(let y=0;y<256;y++)for(let x=0;x<64;x++){ const u=(x+.5)/64*2-1, v=(y+.5)/256, a=Math.pow(Math.max(0,1-u*u),4)*Math.pow(Math.sin(Math.PI*v),1.2), i=(y*64+x)*4; img.data[i]=img.data[i+1]=img.data[i+2]=255; img.data[i+3]=Math.round(a*255); }
   g.putImageData(img,0,0); const tex=new THREE.CanvasTexture(cv); tex.minFilter=tex.magFilter=THREE.LinearFilter;
   // the sun's shadow test, shared by the beams and the dust: 1 where the sun reaches a point of the world, 0 where something solid is in the way (a 3x3 spread so the edge is a fade, never a cut)
@@ -18,7 +18,7 @@ const SHAFTS={on:0,dust:0,occ:0,list:[]}; window.SHAFTS=SHAFTS;
     fragmentShader:`#include <packing>
       uniform sampler2D uMap; uniform vec3 uCol; uniform float uOp; varying vec2 vUv; varying vec3 vW; ${LIT}
       void main(){ float a=texture2D(uMap,vUv).a*uOp*lit(vW); if(a<.002)discard; gl_FragColor=vec4(uCol,a); }`});
-  const RU=LOOK.rays={uSun:{value:new THREE.Vector2(.5,.5)},uRayK:{value:0},uRayCol:{value:new THREE.Color(1,.9,.75)},uAsp:{value:1},uRayT:{value:0}}, sv=new THREE.Vector3(), WARM=new THREE.Color(1,.92,.8);   // read by the look's last pass (138), which draws the sun's rays
+  const WARM=new THREE.Color(1,.92,.8);
   const G=new THREE.Group(); G.visible=false; scene.add(G); OUT.add(G,'open'); const geo=new THREE.PlaneGeometry(1,1);
   for(let i=0;i<N;i++){ const m=new THREE.Mesh(geo,mat), m2=new THREE.Mesh(geo,mat); for(const q of [m,m2]){ q.frustumCulled=false; q.matrixAutoUpdate=false; q.renderOrder=850; G.add(q); } m.cross=m2; SHAFTS.list.push(m); }
   // the dust: square motes on a lattice of the world, drifting and slowly falling, tiled in a box that follows the camera; each one lit by the same sun test, so the dust shows only where the sun reaches
@@ -34,13 +34,11 @@ const SHAFTS={on:0,dust:0,occ:0,list:[]}; window.SHAFTS=SHAFTS;
   const pts=new THREE.Points(dg,dmat); pts.frustumCulled=false; pts.visible=false; pts.renderOrder=851; scene.add(pts); OUT.add(pts,'open'); SHAFTS.pts=pts;
   const sd=new THREE.Vector3(), rt=new THREE.Vector3(), nm=new THREE.Vector3(), UP=new THREE.Vector3(0,1,0), M=new THREE.Matrix4(), c=new THREE.Vector3(), X=new THREE.Vector3(), Y=new THREE.Vector3(); let t=0; SHAFTS.at=[];
   SYS.add('sky',dt=>{ t+=dt; DU.uT.value+=dt; const P=DN.P?DN.P():null, e=CLOCK.elev(), W=WX.now||{cloud:0}, up=SHARED.LVL!=='down'&&OUT.open, cam=SHARED.cam;
-    const sunK=up&&P?Math.max(0,Math.min(1,(e-4)/8))*(1-Math.max(0,Math.min(1,(W.cloud-.4)/.5))):0, k=P&&P.shaft?P.shaft*sunK:0, dk=0;
+    const sunK=up&&P?Math.max(0,Math.min(1,(e-4)/8))*(1-Math.max(0,Math.min(1,(W.cloud-.4)/.5))):0, k=P&&P.shaft?P.shaft*sunK*(1-(SKY.sunCover||0)):0, dk=0;
     { const sun=CLOCK.sun, sh=sun&&sun.shadow, occ=!!(sh&&sh.map&&renderer.shadowMap.enabled&&renderer.shadowMap.type!==THREE.VSMShadowMap);   // VSM keeps moments, not depths: then the beams go unblocked
       SU.uOcc.value=occ?1:0; SHAFTS.occ=occ?1:0; if(occ){ SU.uShadow.value=sh.map.texture; SU.uShMat.value=sh.matrix; SU.uTx.value=1/sh.mapSize.x; } }
-    SHAFTS.on=k; SHAFTS.dust=dk; G.visible=k>.01; BU.uOp.value=(cam.isOrthographicCamera?.045:.09)*k; BU.uCol.value.copy(CLOCK.sun.color).lerp(WARM,.5);
+    SHAFTS.on=k; SHAFTS.dust=dk; G.visible=k>.01; BU.uOp.value=(cam.isOrthographicCamera?.055:.11)*k; BU.uCol.value.copy(CLOCK.sun.color).lerp(WARM,.5);
     DU.uK.value=dk*.6; DU.uCam.value.copy(cam.position); pts.visible=dk>.01;
-    { sv.copy(CLOCK.sunV).multiplyScalar(600).add(cam.position).project(cam);   // the sun's rays always shine from its place through the day, even when it is off the top of the screen
-      RU.uRayK.value=up&&sv.z<1?sunK*.9:0; RU.uSun.value.set(sv.x*.5+.5,sv.y*.5+.5); RU.uRayT.value=CLOCK.h*.12; RU.uAsp.value=cam.aspect||1; RU.uRayCol.value.copy(BU.uCol.value); }
     if(!G.visible)return;
     sd.copy(CLOCK.sunV).normalize(); rt.crossVectors(sd,UP); if(rt.lengthSq()<1e-6)rt.set(1,0,0); rt.normalize(); nm.crossVectors(rt,sd);   // the two sheets' directions, fixed in the world (never turned to face you)
     const L=140*T, cx=Math.floor(pos.x/CELL), cz=Math.floor(pos.z/CELL); let n=0; SHAFTS.at.length=0;   // beams stand on a fixed lattice of the world: the same spots whoever walks by
@@ -49,4 +47,4 @@ const SHAFTS={on:0,dust:0,occ:0,list:[]}; window.SHAFTS=SHAFTS;
       M.makeBasis(X.copy(rt).multiplyScalar(w),Y.copy(sd).multiplyScalar(L),nm).setPosition(c); m.visible=true; m.matrix.copy(M); m.matrixWorld.copy(M);
       M.makeBasis(X.copy(nm).multiplyScalar(w),Y.copy(sd).multiplyScalar(L),rt).setPosition(c); m.cross.visible=true; m.cross.matrix.copy(M); m.cross.matrixWorld.copy(M); }
     for(;n<N;n++){ SHAFTS.list[n].visible=false; SHAFTS.list[n].cross.visible=false; } },'134d-shafts');
-  window.SHAFTDBG=()=>({on:+SHAFTS.on.toFixed(2),dust:+SHAFTS.dust.toFixed(2),occ:SHAFTS.occ,rays:+RU.uRayK.value.toFixed(2),sun:RU.uSun.value.toArray().map(v=>+v.toFixed(2)),look:DN.mode,open:OUT.open,beams:SHAFTS.at.slice()}); }
+  window.SHAFTDBG=()=>({on:+SHAFTS.on.toFixed(2),dust:+SHAFTS.dust.toFixed(2),occ:SHAFTS.occ,look:DN.mode,open:OUT.open,beams:SHAFTS.at.slice()}); }

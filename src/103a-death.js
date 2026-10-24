@@ -12,7 +12,7 @@ import {FADE, QS, STORE, SYS, TILE} from './006-map-pre.js';
   const MH=T/.84; let S=null, gh=0, rise=-1, busy=false, dp=null;
   const sheet=()=>{ '@later'; if(S||!window.GHOSTS||!GHOSTS.cloth)return S; const MV=SHARED.BOD.YS(24)/.84, mat=new THREE.MeshToonMaterial({color:0xf2f0ea,emissive:0x2a3040,gradientMap:W3.GP,transparent:true,opacity:0,side:THREE.DoubleSide,depthWrite:false}), em=new THREE.MeshBasicMaterial({color:0x0c0c10,transparent:true,opacity:0}), eg=new THREE.CircleGeometry(1,10);
     S=GHOSTS.cloth(1.15,true,17,.24,mat,pos.x/MH,SHARED.py/MV+1.5,pos.z/MH); S.MV=MV; S.mat=mat; S.em=em; S.eyes=[-1,1].map(()=>{ const e=new THREE.Mesh(eg,em); e.scale.set(.05*MH,.075*MV,1); e.renderOrder=4; scene.add(LEVELS.own(e,'*')); return e; }); return S; };
-  const look=on=>{ W3.mesh.visible=!on; if(S){ S.me.visible=on; for(const e of S.eyes)e.visible=on; } };
+  const look=on=>{ W3.mesh.visible=!on; W3.ghost=on; if(S){ S.me.visible=on; for(const e of S.eyes)e.visible=on; } };
   const V=new THREE.Vector3();
   VIT.die=()=>{ if(VIT.dead)return; VIT.dead=true; VIT.fainted=false; VIT.hp=0; VIT.out=2.4; SHARED.trip=true; gh=0; rise=-1; try{ SAVE.set('dead','1'); }catch(e){} note(DEAD); };
   const back=async()=>{ '@later'; busy=true; await FADE.run('REFRESHED',async()=>{ await wait(1500);

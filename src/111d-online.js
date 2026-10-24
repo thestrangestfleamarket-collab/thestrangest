@@ -13,7 +13,7 @@ Object.assign(ONLINE,{others:new Map(),on:false,me:'',log:[],hear:{}}); window.O
   let sock=null, last=null, acc=0, keep=0, meAcc=1, meSent='', EL=null;
 
   const roomKey=()=>{ if(MODS.apts&&MODS.apts.inReal)return 'apt'+(MODS.apts.num?'#'+MODS.apts.num:''); const c=ROOMS.cur; return c&&c.off?c.off:''; };   // your apartment is off the map (not a ROOMS room); scope players to it by its number
-  const lookKey=()=>{ const b=BODIES.pick(), L=LOOKS.L||{}; return b!=='walker'&&BODIES.by[b]?'b:'+b:'w'+(L.robe?1:0)+(L.bare?1:0); };
+  const lookKey=()=>{ const b=BODIES.pick(), L=LOOKS.L||{}, body=BODIES.by[b]; return b!=='walker'&&body?'b:'+b+(body.look?':'+body.look():''):'w'+(L.robe?1:0)+(L.bare?1:0); };   // (a body with a look of its own, your avatar, sends it: b:avatar:<code>)
   const myName=()=>((LOOKS.L&&LOOKS.L.name)||'').trim()||('TENANT'+(MODS.apts&&MODS.apts.num?' '+MODS.apts.num:''));
   const send=m=>{ if(sock&&sock.readyState===1)sock.send(JSON.stringify(m)); }; ONLINE.send=m=>send(m);
   /* ---------- other players are solid: you are pushed out of them as out of a character ---------- */
@@ -49,7 +49,7 @@ Object.assign(ONLINE,{others:new Map(),on:false,me:'',log:[],hear:{}}); window.O
   const BUILT=new Map();
   const robeMat=()=>{ const M=R.MATS; if(!M.includes('robe')){ M.push('robe'); W3.ramp.push(['#f6f4ee','#dddbd6','#acaaa7','#676664'].map(h=>new THREE.Color(h))); } return M.indexOf('robe'); };
   const built=k=>{ '@later'; let b=BUILT.get(k); if(b)return b;
-    if(k.startsWith('b:')){ const body=BODIES.by[k.slice(2)]; b=body?{body}:built('w00'); BUILT.set(k,b); return b; }
+    if(k.startsWith('b:')){ const [key,c]=k.slice(2).split(':'), base=BODIES.by[key], body=base&&c&&base.variant?base.variant(c):base; b=body?{body}:built('w00'); BUILT.set(k,b); return b; }
     const robe=k[1]==='1', bare=k[2]==='1', MI=n=>R.MATS.indexOf(n), SK=MI('skin'), PA=MI('pants'), RO=robe?robeMat():-1, E=LOOKS.shape(robe), PCS=musBody().PCS;
     for(const p of PCS){ if(p.e!=null)p.E=E[p.e]||null;
       if(bare&&/^shoe/.test(p.n))p.recol=()=>SK; else if(robe&&LOOKS.robed(p.n))p.recol=()=>RO; else if(robe&&/^shin/.test(p.n))p.recol=m=>m===PA?SK:undefined; }

@@ -4,7 +4,10 @@
 # and beads taken off is the bald base every avatar wears. HAIR and BEARD: pieces cut from the other heads by colour and place (skin is warm
 # and mid-saturated; hair, hoods and beards are not; a beard sits low and in front), each fitted from its own skull's box onto the base skull
 # and kept in the Head bone's own space, so it rides any outfit's head. Every point carries its role (0 skin, 1 hair, 2 hood, 3 cloth) so the
-# game can recolour skin and hair. Run (after tools/rpgchars-bake.py): python3 tools/avatar-bake.py
+# game can recolour skin and hair. Each outfit is a BODIES body (src/111a-bodies.js), as tools/bases-bake.py makes the man and the woman: the
+# rig's 15 bones fitted to its skeleton at rest (each bone's origin and rest frame; limbs' frames along the bone), its 32 bones' weights folded
+# into those 15, two a point; its height to the top of the bald head (so hair never shrinks it) and the Head bone's rest matrix, which seats
+# the head pieces. Run (after tools/rpgchars-bake.py): python3 tools/avatar-bake.py
 import json, base64, colorsys, numpy as np
 B=lambda s,t:np.frombuffer(base64.b64decode(s),t); b64=lambda a:base64.b64encode(np.ascontiguousarray(a).tobytes()).decode()
 D=json.load(open('data/rpgchars.json')); HEADB={'Head','Neck'}; WEAPON=('Sword','Staff','Bow','Dagger')
@@ -46,14 +49,38 @@ def pack(P,C,I,role,extra=None):   # the skin format (points 16-bit over their b
        'i':b64(I.reshape(-1).astype(np.uint16)),'k':b64(role.astype(np.uint8)),'tris':int(len(I))}
     if extra: d.update(extra)
     return d
-OUT={'outfits':{},'head':None,'hair':{},'beard':{}}
-for k in ['monk','warrior','cleric','ranger','rogue','wizard']:   # monk first: the base outfit
-    o=load(k); u,I=keep(o,tris(o,False)); C=o['C'][u]
-    role=np.where(skin(C),0,3); v=o['v']
-    mesh=pack(o['P'][u],C,I,role,{'r':b64(np.zeros(len(u),np.uint8)),'j':b64(o['J'][u].astype(np.uint8)),'w':b64(np.round(o['W'][u]*255).astype(np.uint8)),'parts':['body']})
-    OUT['outfits'][k]={'rig':v['rig'],'mesh':mesh,'clips':v['clips'],'tall':v['tall']}
-    print('outfit',k,mesh['tris'],'tris')
+BONES=['hips','torso','head','upperArmL','forearmL','handL','upperArmR','forearmR','handR','thighL','shinL','shoeL','thighR','shinR','shoeR']
+GROUP={'Root':'hips','Body':'hips','Hips':'hips','PoleTarget_L':'hips','PoleTarget_R':'hips','Abdomen':'torso','Torso':'torso','Shoulder_L':'torso','Shoulder_R':'torso','Neck':'head','Head':'head'}
+for sd in 'LR':
+    GROUP.update({'UpperArm_'+sd:'upperArm'+sd,'LowerArm_'+sd:'forearm'+sd,'UpperLeg_'+sd:'thigh'+sd,'LowerLeg_'+sd:'shin'+sd,'Foot_'+sd:'shoe'+sd})
+    for n in ('Fist','Fist1','Fist2','Thumb1','Thumb2','Weapon'): GROUP[n+'_'+sd]='hand'+sd
+def basis(y):
+    y=y/np.linalg.norm(y); x=np.array([1.0,0,0]); x=x-y*x.dot(y); x/=np.linalg.norm(x); return np.stack([x,y,np.cross(x,y)],1)
+def body(o,u,topY):   # the 15 bones on this skeleton, and every kept point's two of them
+    at=lambda n:o['G'][o['names'].index(n)][:3,3]; gi=np.array([BONES.index(GROUP[n]) for n in o['names']])
+    Wg=np.zeros((len(u),15))
+    for kk in range(4): np.add.at(Wg,(np.arange(len(u)),gi[o['J'][u,kk]]),o['W'][u,kk])
+    top=np.argsort(-Wg,1)[:,:2]; w0=Wg[np.arange(len(u)),top[:,0]]; w1=Wg[np.arange(len(u)),top[:,1]]; bw=w0/np.maximum(1e-9,w0+w1)
+    P=o['P'][u]; J={'pelvis':at('Hips'),'waist':at('Abdomen'),'neck':at('Neck')}; J['headTop']=np.array([0,topY,J['neck'][2]])
+    for sd in 'LR':
+        J['shoulder'+sd]=at('UpperArm_'+sd); J['elbow'+sd]=at('LowerArm_'+sd); J['wrist'+sd]=at('Fist_'+sd); J['tip'+sd]=at('Fist2_'+sd)
+        J['hip'+sd]=at('UpperLeg_'+sd); J['knee'+sd]=at('LowerLeg_'+sd)
+        sh,so=BONES.index('shin'+sd),BONES.index('shoe'+sd); m=(Wg[:,sh]>.25)&(Wg[:,so]>.25)   # the ankle: where the shin's hold hands over to the foot's
+        J['ankle'+sd]=P[m].mean(0) if m.sum()>3 else J['knee'+sd]+(at('Foot_'+sd)-J['knee'+sd])*.85
+        f=P[Wg[:,so]>.5]; t=f[f[:,2]>f[:,2].max()-.06].mean(0); t[1]=f[:,1].min()+.03; J['toe'+sd]=t
+    I3=np.eye(3); F={'hips':(J['pelvis'],I3),'torso':(J['waist'],I3),'head':(J['neck'],I3)}
+    for sd in 'LR':
+        for b,a,c in (('upperArm','shoulder','elbow'),('forearm','elbow','wrist'),('hand','wrist','tip'),('thigh','hip','knee'),('shin','knee','ankle')): F[b+sd]=(J[a+sd],basis(J[a+sd]-J[c+sd]))
+        F['shoe'+sd]=(J['ankle'+sd],I3)
+    return {'origin':[np.round(F[b][0],5).tolist() for b in BONES],'rest':[np.round(F[b][1].T.reshape(-1),6).tolist() for b in BONES],'height':round(float(topY),5),'hipY':round(float(J['pelvis'][1]),5),
+            'bi':b64(top.astype(np.uint8)),'bw':b64(np.round(bw*255).astype(np.uint8))}
+OUT={'bones':BONES,'outfits':{},'head':None,'hair':{},'beard':{}}
 base=head('monk'); BX=box(base); f=cut(base,[0,1],True)
+for k in ['monk','warrior','cleric','ranger','rogue','wizard']:   # monk first: the base outfit
+    o=load(k); u,I=keep(o,tris(o,False)); C=o['C'][u]; role=np.where(skin(C),0,3); HM=o['G'][o['names'].index('Head')]
+    topY=float((HM@np.c_[f['Pl'],np.ones(len(f['Pl']))].T).T[:,1].max())
+    OUT['outfits'][k]=pack(o['P'][u],C,I,role,{**body(o,u,topY),'headM':np.round(HM.T.reshape(-1),7).tolist()})   # (headM column-major, as THREE.Matrix4.fromArray reads)
+    print('outfit',k,len(I),'tris, height',round(topY,3),'hip',OUT['outfits'][k]['hipY'])
 OUT['head']=pack(f['Pl'],f['C'],f['I'],np.where(f['cls']==0,0,1)); print('head',OUT['head']['tris'],'tris')
 for name,src,cl in [('bun','warrior',[1]),('slick','cleric',[1]),('mane','wizard',[1]),('greenhood','ranger',[1]),('redhood','rogue',[1]),('long','monk',[2]),('full','wizard',[2])]:
     h=head(src); pc=cut(h,cl,False); (a0,a1)=box(h); P=(pc['Pl']-a0)/np.maximum(1e-6,a1-a0)*(BX[1]-BX[0])+BX[0]

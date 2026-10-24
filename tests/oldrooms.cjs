@@ -14,14 +14,17 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     ok(s0.rooms >= 40, 'the old rooms are registered (' + s0.rooms + ')');
     ok(s0.built === 0 && !s0.data, 'none is built and its items are not fetched at the start');
     ok(s0.listed === s0.rooms, 'every one is in the GO TO list (' + s0.listed + ')');
-    for (const name of ['DINER', 'THE OFFICE']) {
+    for (const name of ['DINER', 'THE OFFICE', 'THE GREENHOUSE', 'THE COZY DEN', 'THE HARBOR KITCHEN']) {
       await pg.evaluate(n => __dbg.UI.goPlace(n), name);
       const id = await pg.evaluate(n => SHARED.OLDROOMS.by[n], name);
       ok(await U(k => OLDDBG().built.includes(k) && !(window.FADE && FADE.busy), 120000, id), name + ' is built on the jump');
+      await U(k => OLDDBG().inside === k && ROOMS.dark(), 20000, id);   // the room's state applies a frame or two after the build
       const r = await pg.evaluate(k => { const p = __dbg.pos(); return { ...OLDDBG().of(k), inside: OLDDBG().inside, dark: ROOMS.dark(), inBox: ROOMS.boxAt(p[0], p[2]) === k }; }, id);
       ok(r.inside === id && r.inBox, name + ': you stand inside it');
       ok(r.placed + r.missing === r.items && r.items > 0, name + ': every item accounted for (' + r.placed + ' made, ' + r.missing + ' standing in)');
       ok(r.verts > 1000, name + ': its items are painted (' + r.verts + ' vertices in the room)');
+      const need = name === 'THE OFFICE' ? 33 : Math.ceil(r.items * .9);   // the Office's box on the old map also held a water plant's parts (18 strays), not office items
+      ok(r.placed >= need, name + ': its own items are made, not standing in (' + r.placed + '/' + r.items + ', wanted ' + need + ')');
       ok(r.dark, name + ': the map is not drawn while you are in');
       await pg.evaluate(k => ROOMS.exit(k), id);
       ok(await U(k => !OLDDBG().built.includes(k) && !(window.FADE && FADE.busy), 60000, id), name + ' is dropped on the way out');

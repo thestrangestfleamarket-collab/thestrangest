@@ -21,7 +21,8 @@ for i, name in enumerate(n for n in order if n in rooms):
     sx, sy = X0 + (i % COLS) * SLOT + SLOT / 2, Y0 + (i // COLS) * SLOT + SLOT / 2
     dx, dy = sx - cx, sy - cy
     rid = re.sub(r'[^a-z0-9]+', '-', name.lower()).strip('-')
-    index.append({'id': rid, 'name': name.upper(), 'lv': int(float(lv)), 'x0': round(sx - w / 2, 2), 'y0': round(sy - h / 2, 2), 'x1': round(sx + w / 2, 2), 'y1': round(sy + h / 2, 2), 'n': len(L)})
+    own = any(re.search(r' floor$| wall, (west|east|north|south)$', k) for k, _, _ in L)
+    index.append({'id': rid, 'name': name.upper(), 'lv': int(float(lv)), 'own': int(own), 'x0': round(sx - w / 2, 2), 'y0': round(sy - h / 2, 2), 'x1': round(sx + w / 2, 2), 'y1': round(sy + h / 2, 2), 'n': len(L)})
     items[rid] = [[k, round(x + dx, 2), round(y + dy, 2)] for k, x, y in L]
 json.dump(index, open('data/oldrooms-index.json', 'w'), separators=(',', ':'))
 json.dump(items, open('data/oldrooms.json', 'w'), separators=(',', ':'))

@@ -1,4 +1,4 @@
-// THE BODIES: the Walker you play as, and bodies moved by his rig (each of its 15 bones takes the turn of the rig piece it stands for); only a body.playable one is on YOU's BODY row (just the Walker now); one of each walks main street.
+// THE BODIES: the Walker, and bodies moved by his rig (each of its 15 bones takes the turn of the rig piece it stands for); a body.playable one is on YOU's BODY row (the Walker and your avatar, the default); one of each walks main street.
 import {SHARED, THREE} from './003-shx.js';
 import {CHARS, NPCS, pos, W3} from './003b-systems.js';
 import {PPU} from './004-main.js';
@@ -10,6 +10,11 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
 { const R=RIG, QS=new URLSearchParams(location.search), V3=THREE.Vector3;
   const BONES=BODIES.BONES=['hips','torso','head','upperArmL','forearmL','handL','upperArmR','forearmR','handR','thighL','shinL','shoeL','thighR','shinR','shoeR'];
   const LIMB=/^(upperArm|forearm|hand|thigh|shin)/, NB=BONES.length, WALKER_H=52;
+  const PARENT=BODIES.PARENT={torso:'hips',head:'torso',upperArmL:'torso',upperArmR:'torso',forearmL:'upperArmL',forearmR:'upperArmR',handL:'forearmL',handR:'forearmR',thighL:'hips',thighR:'hips',shinL:'thighL',shinR:'thighR',shoeL:'shinL',shoeR:'shinR'};
+  // a fitted skeleton (each bone's origin and rest frame, rows of 9) as off (each bone from its parent, in the parent's frame) and binv
+  BODIES.skeleton=(origin,rest)=>{ const R=rest.map(r=>new THREE.Matrix4().makeBasis(new V3(r[0],r[1],r[2]),new V3(r[3],r[4],r[5]),new V3(r[6],r[7],r[8]))), O=origin.map(o=>new V3(...o)), off={};
+    BONES.forEach((n,i)=>{ if(!PARENT[n])return; const p=BONES.indexOf(PARENT[n]), d=O[i].clone().sub(O[p]), r=rest[p]; off[n]=[PARENT[n],r[0]*d.x+r[1]*d.y+r[2]*d.z,r[3]*d.x+r[4]*d.y+r[5]*d.z,r[6]*d.x+r[7]*d.y+r[8]*d.z]; });
+    return {off,binv:BONES.map((n,i)=>R[i].clone().setPosition(O[i]).invert())}; };
 
   /* ---------- one mesh a body: every face flat (its normal from the screen), coloured, held by up to two bones ---------- */
   function mesh(body){ const PM={value:Array.from({length:NB},()=>new THREE.Matrix4())};
@@ -26,7 +31,7 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
   /* ---------- posing: the rig's turns, the body's own bone lengths ---------- */
   const X=new V3(),Y=new V3(),Z=new V3(), ROT={}, POS={}, OFV=new V3(), M3=new THREE.Matrix3();
   for(const n of BONES){ ROT[n]=new THREE.Matrix4(); POS[n]=new V3(); }
-  function pose(B,PM,body){ '@later'; const S=body.S, KL=body.KL;
+  function pose(B,PM,body){ const S=body.S, KL=body.KL;
     for(let i=0;i<NB;i++){ const n=BONES[i], F=R.frameOf(n,B);
       X.set(F.x.x,F.x.y,F.x.z); Y.set(F.y.x,F.y.y,F.y.z); Z.set(F.z.x,F.z.y,F.z.z); if(LIMB.test(n)){ Y.negate(); Z.negate(); }
       ROT[n].makeBasis(X,Y,Z);
@@ -35,15 +40,15 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
       PM.value[i].copy(ROT[n]).scale(OFV.set(S,S,S)).setPosition(POS[n]); if(body.binv)PM.value[i].multiply(body.binv[i]); } }
   BODIES.pose=pose; BODIES.mesh=mesh;
 
-  /* ---------- you (YOU's BODY: only a playable body, else the Walker; knight/man/woman stay in the game but off the row — set body.playable to put one back; kept in the browser; ?avatar=key) ---------- */
+  /* ---------- you (YOU's BODY: a playable body — your avatar by default, or the Walker; knight/man/woman stay in the game but off the row — set body.playable to put one back; kept in the browser; ?avatar=key) ---------- */
   const playable=b=>!!(b&&b.playable);
-  let pick='walker'; try{ pick=SAVE.get('body')||'walker'; }catch(e){} if(QS.get('avatar'))pick=QS.get('avatar');
+  let pick='avatar'; try{ pick=SAVE.get('body')||'avatar'; }catch(e){} if(QS.get('avatar'))pick=QS.get('avatar');
   const curKey=()=>playable(BODIES.by[pick])?pick:'walker';
   let ME=null, MEK=null, hid=false;
-  W3.body={place:B=>{ const key=curKey(), body=BODIES.by[key];
+  W3.body={on:false,place:B=>{ const key=curKey(), body=BODIES.by[key]; W3.body.on=!!body;   // (on: a body is worn this frame, so the Walker's physics body stands down: 090-physbody)
     if(!body){ if(ME)ME.me.visible=false; if(hid){ hid=false; for(const m of W3.meshes)m.visible=!W3.hideMe; } return; }
-    if(MEK!==key){ if(ME){ W3.group.remove(ME.me); ME.me.material.dispose(); } ME=mesh(body); MEK=key; W3.group.add(ME.me); }
-    hid=true; for(const m of W3.meshes)m.visible=false; ME.me.visible=!W3.hideMe; pose(B,ME.PM,body); }};
+    if(MEK!==key||ME.me.geometry!==body.GEO){ if(ME){ W3.group.remove(ME.me); ME.me.material.dispose(); } ME=mesh(body); MEK=key; W3.group.add(ME.me); }
+    hid=true; for(const m of W3.meshes)m.visible=false; ME.me.visible=!W3.hideMe&&!W3.ghost; pose(B,ME.PM,body); }};   // (dead, you're the ghost sheet: 103a-death)
   BODIES.pick=()=>curKey();
   BODIES.set=key=>{ pick=(key==='walker'||playable(BODIES.by[key]))?key:'walker'; try{ SAVE.set('body',pick); }catch(e){} drawRow(); };
   const LP=document.getElementById('looks'); let ROW=null;
@@ -82,7 +87,10 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
     SYS.add('dress',dt=>NPC.tick(dt||0),'111a-bodies '+body.key); }
 
   /* ---------- a body: key, label, geo() (position, normal, color, bi, bw), height and hip height (its units), off {bone:[parent,x,y,z]}, binv (or null), at (main street spot) ---------- */
-  BODIES.add=body=>{ body.S=WALKER_H/body.height; body.KL=body.hipY*body.S/R.STAND; BODIES.list.push(body); BODIES.by[body.key]=body;
-    body.tris=()=>(body.GEO||(body.GEO=body.geo())).attributes.position.count/3; if(body.playable)addButton(body.key,body.label); walker(body); };
+  BODIES.fit=body=>{ body.S=WALKER_H/body.height; body.KL=body.hipY*body.S/R.STAND; body.tris=()=>(body.GEO||(body.GEO=body.geo())).attributes.position.count/3; return body; };   // (scaled so its height is the Walker's)
+  // a body whose shape changed (your avatar's look): new scale, new geometry, rebuilt where you wear it next frame
+  BODIES.refit=key=>{ const b=BODIES.by[key]; if(!b)return; BODIES.fit(b); if(b.GEO)b.GEO.dispose(); b.GEO=null; };
+  BODIES.add=body=>{ BODIES.fit(body); BODIES.list.push(body); BODIES.by[body.key]=body;
+    if(body.playable)addButton(body.key,body.label); walker(body); };
 }
 export {BODIES};

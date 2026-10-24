@@ -4555,3 +4555,6 @@ Owner: "smooth out the lines, things like his eyes are tons of little bumps inst
 
 ## 24 Oct 2026: the castle matches a red-roofed château, full-scale, on a large hill
 Owner, with a reference picture: "update castle in central park to match , close as possible, on large hill" — and, asked: make it full-scale (not the old half height), windmill left for later. Central Park's castle now has red cone roofs capping its towers with pennants above, and blue heraldic banners on the gatehouse (062-castle.js). It is built full-scale (`CYS` 1), reversing the 18 Oct woodland-creature half height. It sits on a large grassy mound — a flat plateau over its footprint sloping down to the lawn (`CASTLE.hillH`, the hill in 061-park.js); the castle, its stairs and collision are lifted onto it and the stairwell is carved open. The dungeon below is unchanged.
+
+## 24 Oct 2026: park trees no longer drape through the gates
+Owner, with a shot of the entrance: "make the trees along side the gate not go through the gate (all objects should be treated as real objects with hit boxes and spacial presence so things cant just go through each other)". The dense edge-ring trees now join the ring only where their crown won't reach into a gate opening (061-park.js) — big trees stand clear, small ones can sit close — so nothing drapes through a gate or its arch. All four park gates.

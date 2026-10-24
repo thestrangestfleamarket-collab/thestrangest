@@ -268,14 +268,15 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
     const R0=out.length;
     // a dense ring of tall trees just inside the wall, right round the park, so from outside only trees show at the edge
     { const TK=['OakTree1','OakTree2','OakTree3','Elder1','Elder2','Giant1','OakTree1','OakTree2','Spruce1','Willow1'];
-      const gap=(v,g,pad)=>g&&v>g[0]-pad&&v<g[1]+pad, PAD=4.5;
       const edgeOK=(x,y)=>!(FOUNT.lake(x,y)<2.4||FOUNT.ter(x,y)<2.2||BK.wet(x,y,2)||path(x,y)||(x>CB[0]-3.5&&x<CB[1]+3.5&&y>CB[2]-3.5&&y<CB[3]+3.5));
-      const ringAdd=(x,y,s)=>{ const jx=x+(hash(s,5,23)-.5)*2.2, jy=y+(hash(s,6,29)-.5)*2.2; if(!edgeOK(jx,jy))return;
-        const k=TK[Math.floor(hash(s,1,11)*TK.length)%TK.length], m=(20+hash(s,2,13)*6)*(1+(hash(s,3,17)-.5)*.5)*(.5+.25*hash(s,7,31)); add(k,jx,jy,m,hash(s,4,19)*6.28); };
+      // a tree joins the ring only if its crown won't reach into the gate opening (g), so big trees stand clear and small ones can sit close — nothing drapes through a gate
+      const clearGate=(c,R,g)=>!g||c-R>g[1]+1||c+R<g[0]-1;
+      const ringAdd=(x,y,s,g,ax)=>{ const jx=x+(hash(s,5,23)-.5)*2.2, jy=y+(hash(s,6,29)-.5)*2.2; if(!edgeOK(jx,jy))return;
+        const k=TK[Math.floor(hash(s,1,11)*TK.length)%TK.length], m=(20+hash(s,2,13)*6)*(1+(hash(s,3,17)-.5)*.5)*(.5+.25*hash(s,7,31)), R=m*.5+2; if(!clearGate(ax?jx:jy,R,g))return; add(k,jx,jy,m,hash(s,4,19)*6.28); };
       const STEP=6.4; let s=5000;
       for(let i=0;i<2;i++){ const off=2.6+i*4.6, st=i*STEP/2;
-        for(let x=P.x0+off+1+st;x<=P.x1-off-1;x+=STEP){ if(!gap(x,P.gate,PAD))ringAdd(x,P.y0+off,s++); if(!gap(x,PARK.ngate,PAD))ringAdd(x,P.y1-off,s++); }
-        for(let y=P.y0+off+1+st;y<=P.y1-off-1;y+=STEP){ if(!gap(y,PARK.wgate,PAD))ringAdd(P.x0+off,y,s++); if(!gap(y,PARK.egate,PAD))ringAdd(P.x1-off,y,s++); } } }
+        for(let x=P.x0+off+1+st;x<=P.x1-off-1;x+=STEP){ ringAdd(x,P.y0+off,s++,P.gate,1); ringAdd(x,P.y1-off,s++,PARK.ngate,1); }
+        for(let y=P.y0+off+1+st;y<=P.y1-off-1;y+=STEP){ ringAdd(P.x0+off,y,s++,PARK.wgate,0); ringAdd(P.x1-off,y,s++,PARK.egate,0); } } }
     out.forEach((e,i)=>{ const ring=i>=R0, k=gk(e[1],e[2],215,ring); if(k)e[0]=k; else if(ring)e[5]=-.3*e[3]; });
     for(const e of out.back){ const k=gk(e[1],e[2],219,false); if(k)e[0]=k; }
     return out; })();

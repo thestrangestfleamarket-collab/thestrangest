@@ -1,6 +1,6 @@
 // THE FEEL: FEEL tunes how the player moves: speed, grip, jumps, slopes, steps and the follow camera.
 import {SHARED, THREE} from './003-shx.js';
-import {BOAT, ED, FEEL, keys, NPCS, pos, RAG, st, UI, W3} from './003b-systems.js';
+import {BOAT, ED, FEEL, keys, NPCS, pos, RAG, st, UI, VIT, W3} from './003b-systems.js';
 import {SAVE} from './005-save.js';
 import {QS, TILE, ZU} from './006-map-pre.js';
 Object.assign(FEEL,{on:false,dbg:false,ready:false,lib:null,S:null,go:0,ev:{jump:0,land:0,imp:0},hs:0});
@@ -100,7 +100,7 @@ window.FEEL=FEEL;
     if(FEEL.yard&&!FEEL.yard.bvh)FEEL.yard.build();
     if(S.sync||Math.abs(pos.x-W.x)>1e-6||Math.abs(pos.z-W.z)>1e-6||Math.abs(SHARED.py-W.y)>1e-6)FEEL.sync();
     if(Math.abs(SHARED.heading-W.h)>1e-6){ S.face=S.facePrev=SHARED.heading; }
-    FEEL.input(mx,mz,keys.has('shift')||st.runTarget>0,keys.has(' '));
+    FEEL.input(mx,mz,(keys.has('shift')||st.runTarget>0)&&!VIT.tired,keys.has(' '));
     S.acc=Math.min(S.acc+dt,H*6); const x0=S.p.x, z0=S.p.z;
     while(S.acc>=H){ S.acc-=H; S.prev.copy(S.p); S.facePrev=S.face; col=colAt(); sim(H); }
     const a=S.acc/H; let df=S.face-S.facePrev; df=Math.atan2(Math.sin(df),Math.cos(df));

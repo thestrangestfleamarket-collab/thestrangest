@@ -40,10 +40,10 @@ export default {
       if (request.headers.get("Origin") !== url.origin && !(dev && !request.headers.get("Origin"))) return json({ why: "not from the game's page" }, 403);
       const id = await who(env, request, dev); if (!id) return json({ why: "login" }, 401);
       let body; try { body = await request.json(); } catch (e) { body = {}; } if (!body || typeof body !== "object") body = {};
-      if (p === "/home") { if (body.put === undefined) return json({ home: await homeOf(env).get(id) });
+      if (p === "/home") { if (body.put === undefined) return json({ home: await homeOf(env).home(id) });
         const t = JSON.stringify(body.put); if (!body.put || typeof body.put !== "object" || Array.isArray(body.put) || t.length > 65536) return json({ why: "bad room" }, 400);
         if (tooMany("home:" + id, 120)) return json({ why: "too many saves, wait a minute" }, 429);
-        return json({ ok: await homeOf(env).put(id, t) }); }
+        return json({ ok: await homeOf(env).keep(id, t) }); }
       if (p === "/post") return json({ letters: await postOf(env).mine(id, Array.isArray(body.seen) ? body.seen.filter(Number.isInteger).slice(0, 50) : []) });
       const own = await owner(env, id, dev); if (own !== true) return json({ why: "only the owner (" + own + ")" }, 403);
       return json(await admin(env, body)); }
@@ -178,7 +178,7 @@ async function owner(env, id, dev) {
   owners.set(id, { until: now + 60000 }); return true;
 }
 const postOf = env => env.Post.get(env.Post.idFromName("post"));
-const homeOf = env => env.Home.get(env.Home.idFromName("homes"));
+const homeOf = env => env.Post.get(env.Post.idFromName("homes"));
 const blockAsk = async (env, room, path, body) => { const s = await getServerByName(env.Block, room);
   const r = await s.fetch(new Request("https://block/" + path, { method: body ? "POST" : "GET", body: body ? JSON.stringify(body) : undefined, headers: { "x-partykit-room": room, "content-type": "application/json" } }));
   return r.json(); };
@@ -243,11 +243,8 @@ export class Post extends DurableObject {
   mine(id, seen) { for (const l of seen) this.sql.exec("insert or ignore into seen(letter, who) values(?, ?)", l, id);
     return this.sql.exec("select id, subject, body, at from letters where (too = ? or too = '*') and at > ? and id not in (select letter from seen where who = ?) order by id limit 20", id, Date.now() - 30 * 864e5, id).toArray(); }
   list() { return this.sql.exec("select id, too, subject, body, at, (select count(*) from seen where letter = letters.id) as read from letters order by id desc limit 100").toArray(); }
-}
-
-// HOMES: each player's apartment as they decorated it (the room editor), one row a player
-export class Home extends DurableObject {
-  constructor(ctx, env) { super(ctx, env); this.sql = ctx.storage.sql; this.sql.exec("create table if not exists homes(who text primary key, room text, at integer)"); }
-  get(id) { const r = this.sql.exec("select room from homes where who = ?", id).toArray()[0]; try { return r ? JSON.parse(r.room) : null; } catch (e) { return null; } }
-  put(id, room) { this.sql.exec("insert into homes(who, room, at) values(?, ?, ?) on conflict(who) do update set room = excluded.room, at = excluded.at", id, room, Date.now()); return true; }
+  // homes: each player's decorated apartment, kept in the Post object named "homes" (the free plan allows no new Durable Object class)
+  homes() { this.sql.exec("create table if not exists homes(who text primary key, room text, at integer)"); return this.sql; }
+  home(id) { const r = this.homes().exec("select room from homes where who = ?", id).toArray()[0]; try { return r ? JSON.parse(r.room) : null; } catch (e) { return null; } }
+  keep(id, room) { this.homes().exec("insert into homes(who, room, at) values(?, ?, ?) on conflict(who) do update set room = excluded.room, at = excluded.at", id, room, Date.now()); return true; }
 }

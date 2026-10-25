@@ -5,7 +5,7 @@ import {renderer, scene} from './004-main.js';
 import {QS, RING, TILE} from './006-map-pre.js';
 import {WATER} from './009-down.js';
 import {HEMI} from './064-map-post.js';
-Object.assign(CLOCK,{h:17.4,run:false,speed:1,sunV:new THREE.Vector3(0,1,0),moonV:new THREE.Vector3(0,1,0)});
+Object.assign(CLOCK,{h:17.4,run:false,speed:1,shadeH:16,sunV:new THREE.Vector3(0,1,0),moonV:new THREE.Vector3(0,1,0)});
 { const D=Math.PI/180, sunL=new THREE.DirectionalLight(0xffffff,0), sunD=new THREE.DirectionalLight(0xffffff,0), sunF=new THREE.DirectionalLight(0xffffff,0), R=32*TILE, RD=20*TILE, FM=Math.min(4096,renderer.capabilities.maxTextureSize);
   for(const [L,r,m] of [[sunL,R,3072],[sunD,RD,2048],[sunF,R,FM]]){ L.castShadow=true; L.shadow.mapSize.set(m,m); Object.assign(L.shadow.camera,{left:-r,right:r,top:r,bottom:-r,near:.5,far:260*TILE}); L.shadow.camera.updateProjectionMatrix();
     L.shadow.bias=-.06/260; L.shadow.normalBias=+(QS.get("snb")||.12); L.shadow.autoUpdate=false; scene.add(L,L.target); }
@@ -25,7 +25,7 @@ Object.assign(CLOCK,{h:17.4,run:false,speed:1,sunV:new THREE.Vector3(0,1,0),moon
     const e=elev(CLOCK.h); let i=0; while(i<K.length-2&&e>K[i+1][0])i++; const A=K[i], B=K[i+1], t=Math.max(0,Math.min(1,(e-A[0])/(B[0]-A[0])));
     const up=SHARED.LVL!=='down';
     if(up){ mixC(A[1],B[1],t,scene.background); mixC(A[2],B[2],t,HEMI.color); mixC(A[3],B[3],t,HEMI.groundColor); HEMI.intensity=A[4]+(B[4]-A[4])*t; }
-    const sun=e>-1, az=sun?azim(CLOCK.h):azim(CLOCK.h+12)*.5+.6, el=sun?Math.max(3,e)*D:48*D;
+    const sun=e>-1, hd=CLOCK.run?(sun?CLOCK.shadeH:1):CLOCK.h, az=sun?azim(hd):azim(hd+12)*.5+.6, el=sun?Math.max(3,elev(hd))*D:48*D;   // while the clock runs the light comes from one held hour, so the shadows stay put (baked)
     mixC(A[5],B[5],t,sunL.color); sunL.intensity=up?A[6]+(B[6]-A[6])*t:0;
     const dir=new THREE.Vector3(Math.sin(az)*Math.cos(el),Math.sin(el),Math.cos(az)*Math.cos(el)); CLOCK.dir=dir;
     { const sa=azim(CLOCK.h), se=e*D; CLOCK.sunV.set(Math.sin(sa)*Math.cos(se),Math.sin(se),Math.cos(sa)*Math.cos(se));
@@ -62,5 +62,5 @@ Object.assign(CLOCK,{h:17.4,run:false,speed:1,sunV:new THREE.Vector3(0,1,0),moon
       if(!dk&&lights.includes(sunD)&&sunD.shadow.needsUpdate){ const ch=SC.root.children; ch.length=0; for(const o of DYN())if(o.visible&&o.parent)ch.push(o); SM.needsUpdate=true; orig.call(SM,[sunD],SC.root,camera); SC.nd++; }
       SM.needsUpdate=true; orig.call(SM,rest,sc,camera); camera.layers.mask=m0; }; }
   window.SUNDBG=()=>({still:SC.n,moving:SC.nd,far:SC.nf,box:SC.fb&&SC.fb.map(v=>+(v/TILE).toFixed(1)),fcam:[sunF.shadow.camera.right/TILE,sunF.shadow.camera.top/TILE,sunF.shadow.camera.far/TILE,sunF.shadow.normalBias].map(v=>+v.toFixed(2)),dyn:DYN().size,maps:[sunL.shadow.mapSize.x,sunD.shadow.mapSize.x,sunF.shadow.mapSize.x],patch:THREE.ShaderChunk.lights_fragment_begin.includes('NUM_DIR_LIGHT_SHADOWS > 2')});
-  CLOCK.sun=sunL; CLOCK.sunD=sunD; CLOCK.sunF=sunF; window.CLOCK=CLOCK; CLOCK.elev=()=>elev(CLOCK.h); CLOCK.SKYV=SKYV;
+  CLOCK.sun=sunL; CLOCK.sunD=sunD; CLOCK.sunF=sunF; CLOCK.dyn=DYN; window.CLOCK=CLOCK; CLOCK.elev=()=>elev(CLOCK.h); CLOCK.SKYV=SKYV;
   }

@@ -69,7 +69,8 @@ const GRASS={};
   // what to build: every chunk of the map once, nearest first; again where the land is edited; the park's only while you are in it (its water and paths are there then)
   const Q=new Set(), inPark=(cx,cz)=>{ if(!PARK.rect)return false; const r=PARK.rect(), cs=WEEDS.CS; return (cx+1)*cs>r[0]&&cx*cs<r[2]&&(cz+1)*cs>r[1]&&cz*cs<r[3]; };
   let queued=false; const fill=()=>{ const B=SHARED.BOUND, cs=WEEDS.CS; if(!B||!cs)return false; for(let cz=Math.floor(B.z0/cs);cz<=Math.floor(B.z1/cs);cz++)for(let cx=Math.floor(B.x0/cs);cx<=Math.floor(B.x1/cs);cx++)Q.add(cx+','+cz); return true; };
-  SYS.add('lawnEdit',r=>{ const cs=WEEDS.CS; if(!cs)return; for(let cz=Math.floor(r[1]/cs)-1;cz<=Math.floor(r[3]/cs)+1;cz++)for(let cx=Math.floor(r[0]/cs)-1;cx<=Math.floor(r[2]/cs)+1;cx++){ if(Math.abs(cx)>4e3||Math.abs(cz)>4e3)continue; const k=cx+','+cz; if(CH.has(k)||queued)Q.add(k); } },'140b-grassfield');
+  SYS.add('lawnEdit',r=>{ const cs=WEEDS.CS, B=SHARED.BOUND; if(!cs||!B)return; const c=(v,lo,hi)=>Math.max(Math.floor(lo/cs)-1,Math.min(Math.floor(hi/cs)+1,Math.floor(v/cs)));   // only the map's own chunks (an edit may cover everything)
+    for(let cz=c(r[1],B.z0,B.z1)-1;cz<=c(r[3],B.z0,B.z1)+1;cz++)for(let cx=c(r[0],B.x0,B.x1)-1;cx<=c(r[2],B.x0,B.x1)+1;cx++){ const k=cx+','+cz; if(CH.has(k)||queued)Q.add(k); } },'140b-grassfield');
   WEEDS.hideForMask=hid=>{ for(const g of CH.values())if(g&&g.visible)hid.push(g); };
   GRASS.rebuild=()=>{ for(const k of CH.keys())Q.add(k); };
   // the floor's blades, painted once into a tile it repeats, pixel by pixel: red how far up a blade, green a blade there; tips away from the camera, nearer blades over farther, wrapped so it tiles; one texel to one screen pixel at the usual zoom

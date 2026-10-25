@@ -86,4 +86,19 @@ for name,src,cl in [('bun','warrior',[1]),('slick','cleric',[1]),('mane','wizard
     h=head(src); pc=cut(h,cl,False); (a0,a1)=box(h); P=(pc['Pl']-a0)/np.maximum(1e-6,a1-a0)*(BX[1]-BX[0])+BX[0]
     hood=name.endswith('hood'); d=pack(P,pc['C'],pc['I'],np.full(len(P),2 if hood else 1))
     (OUT['beard'] if cl==[2] else OUT['hair'])[name]=d; print('beard' if cl==[2] else 'hair',name,d['tris'],'tris')
+# more hair from the pawns (data/pawns.json; their hair is its own part): fitted at rest from the pawn's bare head (its skin on the head
+# bone) onto the monk's, then into the monk's Head space. The villager's hair and beard are one part: split under his eyes, in front.
+mo=load('monk'); mh=mo['names'].index('Head'); u,_=keep(mo,tris(mo,True)); m=(headcls('monk',mo['P'][u],mo['C'][u])==0)&(mo['dom'][u]==mh)
+MB=(mo['P'][u][m].min(0),mo['P'][u][m].max(0)); MINV=np.linalg.inv(mo['G'][mh]); PW=json.load(open('data/pawns.json'))
+def pawn(k,skin,hair,eyes,beard=None):
+    M=PW[k]['mesh']; P=(B(M['p'],np.int16).reshape(-1,3).astype(float)+32500)*M['sc']+np.array(M['lo']); C=B(M['c'],np.uint8).reshape(-1,3).astype(float)
+    R=B(M['r'],np.uint8); I=B(M['i'],np.uint16).reshape(-1,3).astype(int); J=B(M['j'],np.uint8).reshape(-1,4); W=B(M['w'],np.uint8).reshape(-1,4)
+    hb=PW[k]['rig']['names'].index('DEF_head'); s=np.unique(I[R[I[:,0]]==skin]); s=s[J[s,W[s].argmax(1)]==hb]; a0,a1=P[s].min(0),P[s].max(0)
+    T=I[R[I[:,0]]==hair]; c=P[T].mean(1); low=(c[:,1]<P[np.unique(I[R[I[:,0]]==eyes]),1].min())&(c[:,2]>.05)
+    if beard is not None: T=T[low==beard]
+    q,inv=np.unique(T.reshape(-1),return_inverse=True); Pw=(P[q]-a0)/(a1-a0)*(MB[1]-MB[0])+MB[0]
+    return pack((MINV@np.c_[Pw,np.ones(len(Pw))].T).T[:,:3],C[q],inv.reshape(-1,3),np.ones(len(q)))
+for name,args in [('spiky',('hero_m',2,5,4)),('ponytail',('hero_f',2,4,3)),('shaggy',('villager_m',2,4,3,False)),('bob',('villager_f',3,5,4))]:
+    OUT['hair'][name]=d=pawn(*args); print('hair',name,d['tris'],'tris')
+OUT['beard']['short']=d=pawn('villager_m',2,4,3,True); print('beard short',d['tris'],'tris')
 s=json.dumps(OUT,separators=(',',':')); open('data/avatar.json','w').write(s); print('data/avatar.json',len(s),'bytes')

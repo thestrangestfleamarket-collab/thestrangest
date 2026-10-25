@@ -1,6 +1,6 @@
 // THE WORLD EDITOR: WE lets you pick, move, turn, scale, recolour and hide objects in the world.
 import {SHARED, THREE} from './003-shx.js';
-import {LEVELS, SIGNS, UI, WE, WED} from './003b-systems.js';
+import {LEVELS, SIGNS, UI, WE, WED, WEEDS} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {TILE} from './006-map-pre.js';
 import {OBJS} from './008-batch.js';
@@ -17,11 +17,16 @@ Object.assign(WE,{on:false}); window.WE=WE;
   const stOf=o=>{ const k=keyOf(o); return ST[k]||(ST[k]=E0()); };
   const v=new THREE.Vector3(), vv=new THREE.Vector3(), E3=new THREE.Euler(), col=new THREE.Color(), touched=new Set();
   const D2R=Math.PI/180, Mx=new THREE.Matrix4(), Tx=new THREE.Matrix4(), Ex=new THREE.Euler(), PB=new THREE.Box3();
+  // a moved, scaled or removed thing takes its footprint (what you bump into) with it, and the grass round it is grown again
+  const foot=(it,e)=>{ if(!it||!it.sol)return; const b=it.sol, f=it.fix, b0=it.sol0||(it.sol0=b.slice()), f0=it.fix0||(f&&(it.fix0=f.slice())), cx=(b0[0]+b0[2])/2+e.t[0], cz=(b0[1]+b0[3])/2+e.t[2], hx=(b0[2]-b0[0])/2*Math.abs(e.s[0]), hz=(b0[3]-b0[1])/2*Math.abs(e.s[2]), was=b.slice();
+    if(e.del){ b[0]=b[2]=b[1]=b[3]=1e9; } else { b[0]=cx-hx; b[2]=cx+hx; b[1]=cz-hz; b[3]=cz+hz; }
+    if(f&&f0){ if(e.del){ f[0]=f[3]=f[1]=f[4]=1e9; } else { f[0]=b[0]; f[3]=b[2]; f[1]=b[1]; f[4]=b[3]; f[5]=f0[5]*Math.abs(e.s[1]); } }
+    if(window.WEEDS&&WEEDS.lawnDrop&&was.some((v,i)=>v!==b[i])){ for(const r of [was,b])if(r[0]<1e8)WEEDS.lawnDrop([r[0]-TILE,r[1]-TILE,r[2]+TILE,r[3]+TILE]); } };
   function applyProp(o){ '@later'; const e=stOf(o), me=o.me, id=o.id, pv=o.pivot; if(!me||!me.setMatrixAt)return;
-    if(e.del){ me.setVisibleAt&&me.setVisibleAt(id,false); return; } me.setVisibleAt&&me.setVisibleAt(id,true);
+    foot(o.it,e); if(e.del){ me.setVisibleAt&&me.setVisibleAt(id,false); return; } me.setVisibleAt&&me.setVisibleAt(id,true);
     Ex.set((e.rx||0)*D2R,(e.r||0)*D2R,(e.rz||0)*D2R,'YXZ'); Mx.makeRotationFromEuler(Ex); Mx.multiply(Tx.makeScale(e.s[0],e.s[1],e.s[2]));
     Mx.multiply(Tx.makeTranslation(-pv[0],-pv[1],-pv[2])); Mx.premultiply(Tx.makeTranslation(pv[0]+e.t[0],pv[1]+e.t[1],pv[2]+e.t[2])); me.setMatrixAt(id,Mx); if(me.computeBoundingSphere)me.computeBoundingSphere(); }
-  const propHandle=(en,bid)=>{ const it=en.items[en.ids[bid]]; return {prop:true,me:en.me,id:bid,place:en.place,name:it.k,pivot:[it.x,it.y,it.z]}; };
+  const propHandle=(en,bid)=>{ const it=en.items[en.ids[bid]]; return {prop:true,me:en.me,id:bid,place:en.place,name:it.k,pivot:[it.x,it.y,it.z],it}; };
   const applyWED=()=>{ for(const en of WED.meshes)for(let bid=0;bid<en.ids.length;bid++){ const h=propHandle(en,bid); if(ST[keyOf(h)])applyProp(h); } };
   // copies: a picked park thing again beside it, its own mesh cut from the same batch; kept in ST as 'C|n' {copy:name, of:the original's key, place, at:[x,y,z], ...the usual edits}
   const CP=new Map(); let cpg=null; const D2=Math.PI/180;

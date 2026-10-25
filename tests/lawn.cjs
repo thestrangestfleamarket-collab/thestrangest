@@ -17,8 +17,8 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
       const M = [...WEEDS.chunks.values()].filter(m => m && m.I); o.chunks = M.length; o.tris = WEEDS.lawnN;
       let spot = null; for (let x = c.x - 16; x < c.x + 16 && !spot; x += .6) for (let z = c.z - 16; z < c.z + 16; z += .6) { const t = WEEDS.top(x, z); if (typeof t === 'number') { spot = [x, z, t]; break; } }
       o.spot = spot; if (spot) o.topUp = spot[2] > 0 && spot[2] < 1.8;
-      o.floors = GRASS.floors.size; o.blades = GRASS.n; o.bare = [...GRASS.floors.values()].filter(f => !f.b && f.QT.length > 30).length;
-      const CS = 8 * __dbg.cv().TILE, pcx = Math.floor(c.x / CS), pcz = Math.floor(c.z / CS); o.missing = 0; for (let j = -2; j <= 2; j++) for (let i = -2; i <= 2; i++) if (!WEEDS.chunks.has((pcx + i) + ',' + (pcz + j))) o.missing++; const U = GRASS.U; o.shader = [!!U.uRocks, U.uRockCount.value > 0, U.uSunOn != null, !U.uTime && !U.uWindStrength];
+      o.floors = GRASS.chunks.size; o.blades = GRASS.n; o.bare = [...GRASS.chunks.values()].filter(g => g && g.floor && !g.blades).length;
+      const CS = 8 * __dbg.cv().TILE, pcx = Math.floor(c.x / CS), pcz = Math.floor(c.z / CS); o.missing = 0; for (let j = -2; j <= 2; j++) for (let i = -2; i <= 2; i++) if (!WEEDS.chunks.has((pcx + i) + ',' + (pcz + j))) o.missing++; const U = GRASS.U; o.shader = [!!U.uRocks, U.uRockCount != null, U.uSunOn != null, !U.uTime && !U.uWindStrength];
       return o;
     });
     await pg.waitForTimeout(700);
@@ -29,7 +29,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     ok(r.chunks > 0 && r.floors > 0 && r.blades > 1000, 'the lawn chunks round you hold the grass field (' + r.chunks + ' chunks, ' + r.floors + ' floors, ' + r.blades + ' blades)');
     ok(!r.missing && !r.bare, 'every lawn chunk that can be on screen is built, each floor with its blades baked in (' + r.missing + ' missing, ' + r.bare + ' bare)');
     ok(r.spot && r.topUp, 'on the lawn the grass top stands over the ground, under head height (' + JSON.stringify(r.spot) + ')');
-    ok(r.shader && r.shader.every(Boolean), 'the blades are baked and still (no wind), pressed where you stand (uRocks, uRockCount), shadowed only while the sun is up (uSunOn): ' + JSON.stringify(r.shader));
+    ok(r.shader && r.shader.every(Boolean), 'the blades are baked and still (no wind), pressed where you step and standing back up round you when you stop (uRocks, uRockCount), shadowed only while the sun is up (uSunOn): ' + JSON.stringify(r.shader));
     if (r.spot) {   // a second start right on the lawn: a step, then the grass is pressed where you stand
       await pg.goto('file://' + path.resolve(process.argv[2] || 'dist/market.html') + '?fresh=1&hour=13&at=' + r.spot[0].toFixed(1) + ',' + r.spot[1].toFixed(1), { waitUntil: 'commit' });
       let st2 = false; for (let i = 0; i < 60 && !st2; i++) { await pg.waitForTimeout(3000); st2 = await pg.evaluate(() => !!window.__started).catch(() => false); }

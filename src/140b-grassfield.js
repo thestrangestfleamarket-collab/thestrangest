@@ -1,18 +1,18 @@
-// THE GRASS FIELD: the lawns' grass, after cortiz2894/stylized-components (MIT, Christian Ortiz): a floor painted with blades under every lawn and thin blades over all of it, baked once (their colours and the still things' shadows fixed in, no wind), pressed flat and splayed only where you, the walkers and the rocks and trunks stand; its season presets in ATMOSPHERE.
+// THE GRASS FIELD: the lawns' grass, after cortiz2894/stylized-components (MIT, Christian Ortiz): on every lawn of the map, built once (the park's when you enter it) and the same everywhere: a floor painted with blades and blades over it, the still things' shadows baked in, thicker in tufts round rocks and trunks, still, pressed flat only where you and the walkers step; its season presets in ATMOSPHERE.
 import {SHARED, THREE} from './003-shx.js';
-import {CLOCK, pos, WEEDS} from './003b-systems.js';
+import {CLOCK, PARK, pos, ROOMS, WEEDS} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {SAVE} from './005-save.js';
-import {MAPG, SOL, SYS, TILE} from './006-map-pre.js';
+import {FADE, MAPG, SOL, SYS, TILE} from './006-map-pre.js';
 const GRASS={};
-{ const T=TILE, MAXR=24;
-  // the repo's settings as its control panel starts them, brighter (owner), and its presets (each applied on top of the default)
-  const DEF={grDensity:300,grMinWidth:.06,grMaxWidth:.06,grMinLength:.375,grMaxLength:.625,grTiltMax:.16,grColorBottom:'#4a9a22',grColorTop:'#86c93a',grGradStart:.15,grGradEnd:1,grGradPower:1.6,grBrightness:1.2,
+{ const T=TILE, MAXR=24, NEAR=36*T;
+  // the repo's settings as its control panel starts them, in its own darker green (owner), and its presets (each applied on top of the default)
+  const DEF={grDensity:58,grMinWidth:.14,grMaxWidth:.2,grMinLength:.5,grMaxLength:.85,grTiltMax:.16,grColorBottom:'#4f7c13',grColorTop:'#79a01c',grGradStart:.3,grGradEnd:1,grGradPower:1.6,grBrightness:.8,
     grShadowStrength:.6,grShadowSampleY:.15,grPatchStrength:.73,grPatchLinkColors:true,grPatchDry:'#b8a94e',grPatchLush:'#6f9a2a',grPatchScale:.9,grPatchBias:1.6,
-    grRockFlatten:1,grRockBend:.41,grRockRadiusMul:.2,grRockFalloff:.35,grTransColor:'#c1e54d',grTransStrength:2.5,grTransPower:6.4,grTransTip:1,grTransShadow:1};
+    grRockFlatten:1,grRockBend:.41,grRockRadiusMul:.2,grRockFalloff:.35,grTransColor:'#c1e54d',grTransStrength:1,grTransPower:6.4,grTransTip:1,grTransShadow:1};
   const PRESETS={default:{label:'SPRING',values:{}},
-    autumn:{label:'AUTUMN',values:{grColorBottom:'#7e8005',grColorTop:'#d2db18',grTransColor:'#f8f454',grTransStrength:3}},
-    mars:{label:'MARS',values:{grMinWidth:.08,grMaxWidth:.025,grMinLength:.6,grMaxLength:1,grColorBottom:'#c7611a',grColorTop:'#f879e7',grGradStart:.14,grGradEnd:.75,grBrightness:.9,grTransColor:'#ffffff',grTransStrength:2.5}}};
+    autumn:{label:'AUTUMN',values:{grColorBottom:'#7e8005',grColorTop:'#d2db18',grTransColor:'#f8f454',grTransStrength:1.2}},
+    mars:{label:'MARS',values:{grMinWidth:.2,grMaxWidth:.08,grMinLength:.8,grMaxLength:1.35,grColorBottom:'#c7611a',grColorTop:'#f879e7',grGradStart:.14,grGradEnd:.75,grBrightness:.9,grTransColor:'#ffffff',grTransStrength:1}}};
   const F=v=>({value:v}), C=()=>new THREE.Color();
   const U={uGrassBottom:F(C()),uGrassTop:F(C()),uBrightness:F(1),uGradStart:F(0),uGradEnd:F(1),uGradPower:F(1),uPatchStrength:F(0),uShadowStrength:F(0),uShadowSampleY:F(0),uSunOn:F(1),
     uRocks:F([...Array(MAXR)].map(()=>new THREE.Vector4())),uRockCount:F(0),uRockRadiusMul:F(1),uRockFalloff:F(.35),uRockFlatten:F(1),uRockBend:F(0),uSunDir:F(new THREE.Vector3(0,1,0)),uSunColor:F(new THREE.Color(1,1,1)),
@@ -44,7 +44,7 @@ const GRASS={};
   const bladeGeo=seg=>{ const hw=t=>.5*Math.pow(1-t,1.2), P=[], I=[]; for(let i=0;i<seg;i++){ const t=i/seg, w=hw(t); P.push(-w,t,0,w,t,0); } P.push(0,1,0);
     for(let i=0;i<seg-1;i++){ const l=i*2; I.push(l,l+2,l+1,l+1,l+2,l+3); } const L=(seg-1)*2; I.push(L,seg*2,L+1);
     const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); g.setIndex(I); g.computeVertexNormals(); return g; };
-  const BLD={dens:.3,w:2.4,g:bladeGeo(1)};   // one detail everywhere: no steps between near and far grass
+  const BG=bladeGeo(2);
   const bmat=new THREE.MeshLambertMaterial({side:THREE.DoubleSide});
   bmat.onBeforeCompile=sh=>{ Object.assign(sh.uniforms,U);
     sh.vertexShader=sh.vertexShader.replace('#include <common>',`#include <common>
@@ -84,35 +84,45 @@ const GRASS={};
   vec4 diffuseColor=vec4(mix(mix(uGrassBottom,uGrassTop,_gT),vPatchF,uPatchStrength)*(_g.g>.5?mix(.68,1.22,_g.r):.56)*uBrightness,opacity);`)
       .replace('#include <opaque_fragment>','#include <opaque_fragment>\n  gl_FragColor.rgb*=(1.-uShadowStrength*(1.-grassShadow(vGndW)));'); };
   gmat.customProgramCacheKey=()=>'grassfloor4';
-  const FL=new Map(); GRASS.floors=FL; GRASS.n=0;   // per lawn chunk: its floor and its blades, baked together
-  const pc=new THREE.Color();
-  const paint=f=>{ const P=f.P, col=f.m.geometry.attributes.aPatch.array; for(let i=0;i<P.length;i+=3){ patch(P[i],P[i+2],pc); col[i]=pc.r; col[i+1]=pc.g; col[i+2]=pc.b; } f.m.geometry.attributes.aPatch.needsUpdate=true; };
-  const floor=(key,me)=>{ const {x0,z0,N,CELL,MG}=me, W=N+2*MG, ci=(i,j)=>(j+MG)*W+i+MG, N1=N+1, VI=new Int32Array(N1*N1).fill(-1), P=[], IX=[];
+  const CH=new Map(); GRASS.chunks=CH; GRASS.n=0; GRASS.area=0; GRASS.stop=0; GRASS.px=0; GRASS.pz=0;   // per chunk of the map: its floor and blades, built once
+  const pc=new THREE.Color(), SPILL=[1,1,.7,.35];
+  const paint=(m,P)=>{ const col=m.geometry.attributes.aPatch.array; for(let i=0;i<P.length;i+=3){ patch(P[i],P[i+2],pc); col[i]=pc.r; col[i+1]=pc.g; col[i+2]=pc.b; } m.geometry.attributes.aPatch.needsUpdate=true; };
+  const make=(cx,cz)=>{ const me=WEEDS.lawnMask(cx,cz); const {x0,z0,N,CELL,MG}=me, W=N+2*MG, ci=(i,j)=>(j+MG)*W+i+MG, N1=N+1, VI=new Int32Array(N1*N1).fill(-1), P=[], IX=[];
+    if(!me.I.some(Boolean))return null;
     // the lawn wider: the floor two squares out, under the paths' edges; the blades three, thinning as they go, so the grass spills messily over the edges of paths and walls
     let I=me.I, G=me.G; const RG=new Uint8Array(I.length); for(let r=0;r<3;r++){ const I2=new Uint8Array(I), G2=new Float32Array(G); for(let j=-MG+1;j<N+MG-1;j++)for(let i=-MG+1;i<N+MG-1;i++){ const c=ci(i,j); if(I[c])continue; let g=0, n=0; for(const [di,dj] of [[1,0],[-1,0],[0,1],[0,-1]]){ const d=ci(i+di,j+dj); if(I[d]){ g+=G[d]; n++; } } if(n){ I2[c]=1; G2[c]=g/n; RG[c]=r+1; } } I=I2; G=G2; }
     const v=(a,b)=>{ const k=b*N1+a; if(VI[k]>=0)return VI[k]; let g=0, n=0, ox=0, oz=0; for(const [di,dj] of [[-1,-1],[0,-1],[-1,0],[0,0]]){ const c=ci(a+di,b+dj); if(I[c]){ g+=G[c]; n++; ox+=di+.5; oz+=dj+.5; } }
-      const f=n===1?.5:n===3?-.5:0; P.push(x0+(a+ox*f)*CELL,g/n+.015*T,z0+(b+oz*f)*CELL); return VI[k]=P.length/3-1; };
-    const QT=[], QR=[];   // the triangles for the scatter, and how far past the lawn each lies
-    for(let j=0;j<N;j++)for(let i=0;i<N;i++){ const c=ci(i,j); if(!I[c])continue; const A=v(i,j), B=v(i+1,j), Cc=v(i,j+1), D=v(i+1,j+1); if(RG[c]<3)IX.push(A,Cc,B,B,Cc,D); QT.push(A,Cc,B,B,Cc,D); QR.push(RG[c],RG[c]); }
-    if(!IX.length)return; const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); g.setAttribute('normal',new THREE.Float32BufferAttribute(P.map((_,i)=>i%3===1?1:0),3)); g.setAttribute('aPatch',new THREE.Float32BufferAttribute(new Float32Array(P.length),3)); g.setIndex(IX);
-    const m=new THREE.Mesh(g,gmat); m.receiveShadow=true; m.raycast=()=>{}; MAPG.bodega.add(m); const f={me,m,P,QT,QR,b:null}; paint(f); blades(f); FL.set(key,f); };
-  const unfloor=key=>{ const f=FL.get(key); if(!f)return; MAPG.bodega.remove(f.m); f.m.geometry.dispose(); unblade(f); FL.delete(key); };
-  // a chunk's blades, baked once with its floor: area-weighted over its floor triangles (a triangle by its area, then a uniform point in it), seeded so the field is the same every time, each blade's patch colour fixed in
-  const area=f=>{ const P=f.P, Q=f.QT, cum=[]; let A=0; for(let t=0;t<Q.length;t+=3){ const a=Q[t]*3, b=Q[t+1]*3, c=Q[t+2]*3, ux=P[b]-P[a], uy=P[b+1]-P[a+1], uz=P[b+2]-P[a+2], vx=P[c]-P[a], vy=P[c+1]-P[a+1], vz=P[c+2]-P[a+2];
-      A+=.5*Math.hypot(uy*vz-uz*vy,uz*vx-ux*vz,ux*vy-uy*vx); cum.push(A); } return {A,cum}; };
-  const blades=f=>{ const P=f.P, Q=f.QT, {A,cum}=area(f), n=Math.round(S.grDensity*BLD.dens*A); if(!n)return; const M=new THREE.Matrix4(), Qn=new THREE.Quaternion(), E=new THREE.Euler(), Sc=new THREE.Vector3(), V=new THREE.Vector3(), AP=new Float32Array(n*3);
-    let a=((Math.floor(f.me.x0*7.13)*73856093)^(Math.floor(f.me.z0*3.71)*19349663))>>>0||1; const R=()=>{ a=(a*16807)%2147483647; return a/2147483647; };
-    const im=new THREE.InstancedMesh(BLD.g,bmat,n);
-    for(let i=0;i<n;i++){ const r=R()*A; let lo=0, hi=cum.length-1; while(lo<hi){ const mid=(lo+hi)>>1; if(cum[mid]<r)lo=mid+1; else hi=mid; } const t=lo*3, pa=Q[t]*3, pb=Q[t+1]*3, pc2=Q[t+2]*3, rg=f.QR[lo]; if(rg&&R()>SPILL[rg]){ im.setMatrixAt(i,ZERO); AP[i*3]=AP[i*3+1]=AP[i*3+2]=0; continue; }
-      let u=R(), w=R(); if(u+w>1){ u=1-u; w=1-w; } V.set(P[pa]+(P[pb]-P[pa])*u+(P[pc2]-P[pa])*w,P[pa+1]+(P[pb+1]-P[pa+1])*u+(P[pc2+1]-P[pa+1])*w,P[pa+2]+(P[pb+2]-P[pa+2])*u+(P[pc2+2]-P[pa+2])*w);
-      E.set((R()-.5)*2*S.grTiltMax,R()*Math.PI*2,(R()-.5)*S.grTiltMax*.5); Qn.setFromEuler(E); Sc.set((S.grMinWidth+R()*(S.grMaxWidth-S.grMinWidth))*BLD.w,S.grMinLength+R()*(S.grMaxLength-S.grMinLength),1); if(rg)Sc.y*=.55+R()*.75; im.setMatrixAt(i,M.compose(V,Qn,Sc));
-      patch(V.x,V.z,pc); AP[i*3]=pc.r; AP[i*3+1]=pc.g; AP[i*3+2]=pc.b; }
-    im.geometry=BLD.g.clone(); im.geometry.setAttribute('aPatch',new THREE.InstancedBufferAttribute(AP,3));
-    im.computeBoundingSphere(); im.boundingSphere.radius+=1; im.receiveShadow=true; im.raycast=()=>{}; MAPG.bodega.add(im); f.b=im; GRASS.n+=n; };
-  const SPILL=[1,1,.7,.35], ZERO=new THREE.Matrix4().makeScale(0,0,0);   // how many blades stand at each step past the lawn's edge
-  const unblade=f=>{ const im=f.b; if(im){ MAPG.bodega.remove(im); im.geometry.dispose(); im.dispose(); GRASS.n-=im.count; } f.b=null; };
-  GRASS.preset=k=>{ if(!PRESETS[k])return; cur=k; S=Object.assign({},DEF,PRESETS[k].values); sync(); try{ SAVE.set('grass',k); }catch(e){} for(const f of FL.values()){ paint(f); unblade(f); blades(f); } };   // baked: a new look rebakes the field round you
-  GRASS.PRESETS=PRESETS; GRASS.U=U; GRASS.get=()=>Object.assign({},S); GRASS.cur=()=>cur;
+      const f=n===1?.5:n===3?-.5:0, x=x0+(a+ox*f)*CELL, z=z0+(b+oz*f)*CELL; P.push(x,SHARED.groundY(x,z)+.015*T,z); return VI[k]=P.length/3-1; };   // on the real ground (the park's hills too)
+    const QT=[], QR=[]; for(let j=0;j<N;j++)for(let i=0;i<N;i++){ const c=ci(i,j); if(!I[c])continue; const A=v(i,j), B=v(i+1,j), Cc=v(i,j+1), D=v(i+1,j+1); if(RG[c]<3)IX.push(A,Cc,B,B,Cc,D); QT.push(A,Cc,B,B,Cc,D); QR.push(RG[c],RG[c]); }
+    const grp=new THREE.Group(); grp.userData.grass=1;
+    if(IX.length){ const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); g.setAttribute('normal',new THREE.Float32BufferAttribute(P.map((_,i)=>i%3===1?1:0),3)); g.setAttribute('aPatch',new THREE.Float32BufferAttribute(new Float32Array(P.length),3)); g.setIndex(IX);
+      const m=new THREE.Mesh(g,gmat); m.receiveShadow=true; m.raycast=()=>{}; paint(m,P); grp.add(m); grp.floor=m; grp.P=P; }
+    // the blades: area-weighted over the triangles (a triangle by its area, then a uniform point in it), seeded so the field is the same every time, each blade's patch colour fixed in
+    const cum=[]; let A=0, A0=0; for(let t=0;t<QT.length;t+=3){ const a=QT[t]*3, b=QT[t+1]*3, c=QT[t+2]*3, ux=P[b]-P[a], uy=P[b+1]-P[a+1], uz=P[b+2]-P[a+2], vx=P[c]-P[a], vy=P[c+1]-P[a+1], vz=P[c+2]-P[a+2], ar=.5*Math.hypot(uy*vz-uz*vy,uz*vx-ux*vz,ux*vy-uy*vx); A+=ar; if(!QR[t/3])A0+=ar; cum.push(A); }
+    let s0=((cx*73856093)^(cz*19349663))>>>0||1; const R=()=>{ s0=(s0*16807)%2147483647; return s0/2147483647; };
+    const M=new THREE.Matrix4(), Qn=new THREE.Quaternion(), E=new THREE.Euler(), Sc=new THREE.Vector3(), V=new THREE.Vector3(), MS=[], AP=[];
+    const put=(x,y,z,lm,wm)=>{ E.set((R()-.5)*2*S.grTiltMax,R()*Math.PI*2,(R()-.5)*S.grTiltMax*.5); Qn.setFromEuler(E); Sc.set((S.grMinWidth+R()*(S.grMaxWidth-S.grMinWidth))*wm,(S.grMinLength+R()*(S.grMaxLength-S.grMinLength))*lm,1);
+      MS.push(M.compose(V.set(x,y,z),Qn,Sc).clone()); patch(x,z,pc); AP.push(pc.r,pc.g,pc.b); };
+    const n=Math.round(S.grDensity*A);
+    for(let i=0;i<n;i++){ const r=R()*A; let lo=0, hi=cum.length-1; while(lo<hi){ const mid=(lo+hi)>>1; if(cum[mid]<r)lo=mid+1; else hi=mid; } const t=lo*3, pa=QT[t]*3, pb=QT[t+1]*3, pc2=QT[t+2]*3, rg=QR[lo];
+      let u=R(), w=R(); if(u+w>1){ u=1-u; w=1-w; } if(rg&&R()>SPILL[rg])continue;
+      put(P[pa]+(P[pb]-P[pa])*u+(P[pc2]-P[pa])*w,P[pa+1]+(P[pb+1]-P[pa+1])*u+(P[pc2+1]-P[pa+1])*w,P[pa+2]+(P[pb+2]-P[pa+2])*u+(P[pc2+2]-P[pa+2])*w,rg?.55+R()*.75:1,1); }
+    // tufts: thicker, taller grass round the foot of every rock, log, post and trunk on the lawn
+    const gAt=(x,z)=>{ const i=Math.floor((x-x0)/CELL), j=Math.floor((z-z0)/CELL); if(i<0||j<0||i>=N||j>=N)return null; const c=ci(i,j); return I[c]?SHARED.groundY(x,z)+.015*T:null; };
+    const t0=performance.now(); for(const b of SOL.up){ if(b[2]<x0-T||b[0]>x0+N*CELL+T||b[3]<z0-T||b[1]>z0+N*CELL+T)continue; const w=b[2]-b[0], d=b[3]-b[1]; if(Math.max(w,d)>5*T||Math.min(w,d)<.03*T)continue;
+      const cx2=(b[0]+b[2])/2, cz2=(b[1]+b[3])/2, rx=w/2, rz=d/2, k=Math.min(240,Math.ceil(2*(w+d)*40));
+      for(let q=0;q<k;q++){ const a=R()*Math.PI*2, o=Math.pow(R(),1.6)*.45, x=cx2+Math.cos(a)*(rx+o), z=cz2+Math.sin(a)*(rz+o); if(x<x0||z<z0||x>=x0+N*CELL||z>=z0+N*CELL)continue; const y=gAt(x,z); if(y==null)continue; put(x,y,z,1.25+R()*.45*(1-o/.45),.85); } }
+    for(let i=MS.length-1;i>0;i--){ const j=Math.floor(R()*(i+1)); [MS[i],MS[j]]=[MS[j],MS[i]]; for(let c=0;c<3;c++)[AP[i*3+c],AP[j*3+c]]=[AP[j*3+c],AP[i*3+c]]; }   // in no order, so any first part of them is an even thinning
+    if(MS.length){ const im=new THREE.InstancedMesh(BG,bmat,MS.length); MS.forEach((m,i)=>im.setMatrixAt(i,m)); im.geometry=BG.clone(); im.geometry.setAttribute('aPatch',new THREE.InstancedBufferAttribute(new Float32Array(AP),3));
+      im.computeBoundingSphere(); im.receiveShadow=true; im.raycast=()=>{}; grp.add(im); grp.blades=im; }
+    GRASS.ms=(GRASS.ms||0)+performance.now()-t0; grp.n=MS.length; grp.A=A0; grp.c=[x0+N*CELL/2,z0+N*CELL/2]; MAPG.bodega.add(grp); return grp; };
+  const unmake=grp=>{ if(!grp)return; MAPG.bodega.remove(grp); grp.traverse(o=>{ if(o.geometry&&o.geometry!==BG)o.geometry.dispose(); if(o.isInstancedMesh)o.dispose(); }); GRASS.n-=grp.n||0; GRASS.area-=grp.A||0; };
+  // what to build: every chunk of the map once, nearest first; again where the land is edited; the park's only while you are in it (its water and paths are there then)
+  const Q=new Set(), inPark=(cx,cz)=>{ if(!PARK.rect)return false; const r=PARK.rect(), cs=WEEDS.CS; return (cx+1)*cs>r[0]&&cx*cs<r[2]&&(cz+1)*cs>r[1]&&cz*cs<r[3]; };
+  let queued=false; const fill=()=>{ const B=SHARED.BOUND, cs=WEEDS.CS; if(!B||!cs)return false; for(let cz=Math.floor(B.z0/cs);cz<=Math.floor(B.z1/cs);cz++)for(let cx=Math.floor(B.x0/cs);cx<=Math.floor(B.x1/cs);cx++)Q.add(cx+','+cz); return true; };
+  SYS.add('lawnEdit',r=>{ const cs=WEEDS.CS; if(!cs)return; for(let cz=Math.floor(r[1]/cs)-1;cz<=Math.floor(r[3]/cs)+1;cz++)for(let cx=Math.floor(r[0]/cs)-1;cx<=Math.floor(r[2]/cs)+1;cx++){ if(Math.abs(cx)>4e3||Math.abs(cz)>4e3)continue; const k=cx+','+cz; if(CH.has(k)||queued)Q.add(k); } },'140b-grassfield');
+  WEEDS.hideForMask=hid=>{ for(const g of CH.values())if(g&&g.visible)hid.push(g); };
+  GRASS.rebuild=()=>{ for(const k of CH.keys())Q.add(k); };
   // the floor's blades, painted once into a tile it repeats, pixel by pixel: red how far up a blade, green a blade there; tips away from the camera, nearer blades over farther, wrapped so it tiles; one texel to one screen pixel at the usual zoom
   { const N=256, cv=document.createElement('canvas'); cv.width=cv.height=N; const g=cv.getContext('2d'), im=g.createImageData(N,N), D=im.data; for(let i=3;i<D.length;i+=4)D[i]=255;
     let a=12345; const R=()=>{ a=(a*16807)%2147483647; return a/2147483647; }, B=[]; for(let i=0;i<3400;i++)B.push([R()*N,R()*N,8+R()*14,(R()-.5)*5,R()<.3?2:1]);
@@ -128,7 +138,6 @@ const GRASS={};
   const BDS=new THREE.Scene(), BDM=new THREE.Mesh(new THREE.BufferGeometry().setAttribute('position',new THREE.Float32BufferAttribute(9,3)),new THREE.MeshBasicMaterial()), BRT=new THREE.WebGLRenderTarget(1,1);   // the shadow pass runs only inside a render: an empty mesh's turn runs it
   BDM.geometry.setDrawRange(0,0); BDM.frustumCulled=false; BDS.add(BDM); BDM.onBeforeRender=()=>{ const hid=[]; for(const o of CLOCK.dyn())if(o.visible){ o.visible=false; hid.push(o); } renderer.shadowMap.render([BL],scene,SHARED.cam); for(const o of hid)o.visible=true; };
   const sl=(a,b)=>(((b%BS)+BS)%BS)*BS+((a%BS)+BS)%BS;
-  const ground=(x,z)=>{ const me=WEEDS.chunks&&WEEDS.chunks.get(Math.floor(x/CSZ)+','+Math.floor(z/CSZ)); if(!me||!me.G)return 0; const W=me.N+2*me.MG, i=Math.floor((x-me.x0)/me.CELL), j=Math.floor((z-me.z0)/me.CELL), c=(j+me.MG)*W+i+me.MG; return me.I[c]?me.G[c]:0; };
   const bakeOne=(cx,cz)=>{ const d=CLOCK.dir, x0=cx*CSZ, z0=cz*CSZ, st=CSZ/BP, out=piece.image.data;
     BNM.lookAt(d,O0,UP); BR.setFromMatrixColumn(BNM,0); BU.setFromMatrixColumn(BNM,1); BC.set(x0+CSZ/2,0,z0+CSZ/2); let hr=0, hu=0;
     for(let k=0;k<8;k++){ BQ.set(k&1?x0+CSZ:x0,k&2?3*T:-T,k&4?z0+CSZ:z0).sub(BC); hr=Math.max(hr,Math.abs(BQ.dot(BR))); hu=Math.max(hu,Math.abs(BQ.dot(BU))); }
@@ -137,21 +146,24 @@ const GRASS={};
     { const rt0=renderer.getRenderTarget(), ac=renderer.autoClear; renderer.autoClear=false; renderer.setRenderTarget(BRT); renderer.render(BDS,SHARED.cam); renderer.setRenderTarget(rt0); renderer.autoClear=ac; }
     renderer.readRenderTargetPixels(BL.shadow.map,0,0,BM,BM,BPX);
     const M=BL.shadow.matrix.elements, eps=.08*T/(400*T-1), dep=(px,py)=>{ if(px<0||py<0||px>=BM||py>=BM)return 1; const k=(py*BM+px)*4; return (BPX[k]/16777216+BPX[k+1]/65536+BPX[k+2]/256+BPX[k+3])/256; };
-    for(let j=0;j<BP;j++)for(let i=0;i<BP;i++){ const x=x0+(i+.5)*st, z=z0+(j+.5)*st, y=ground(x,z)+.03*T, sx=(M[0]*x+M[4]*y+M[8]*z+M[12])*BM-.5, sy=(M[1]*x+M[5]*y+M[9]*z+M[13])*BM-.5, sz=M[2]*x+M[6]*y+M[10]*z+M[14]-eps;
+    for(let j=0;j<BP;j++)for(let i=0;i<BP;i++){ const x=x0+(i+.5)*st, z=z0+(j+.5)*st, y=SHARED.groundY(x,z)+.03*T, sx=(M[0]*x+M[4]*y+M[8]*z+M[12])*BM-.5, sy=(M[1]*x+M[5]*y+M[9]*z+M[13])*BM-.5, sz=M[2]*x+M[6]*y+M[10]*z+M[14]-eps;
       const px=Math.floor(sx), py=Math.floor(sy), fx=sx-px, fy=sy-py, l=(a,b)=>sz<=dep(a,b)?1:0;
       out[j*BP+i]=Math.round(255*((l(px,py)*(1-fx)+l(px+1,py)*fx)*(1-fy)+(l(px,py+1)*(1-fx)+l(px+1,py+1)*fx)*fy)); }
     piece.needsUpdate=true; renderer.copyTextureToTexture(PV.set((((cx%BS)+BS)%BS)*BP,(((cz%BS)+BS)%BS)*BP),piece,bake); };
-  S=Object.assign({},DEF,PRESETS[cur].values); sync();
-  SYS.add('weedsAdd',(key,me)=>{ if(me&&me.I)floor(key,me); },'140b-grassfield'); SYS.add('weedsDrop',key=>{ unfloor(key); const [a,b]=key.split(',').map(Number); for(let j=-1;j<=1;j++)for(let i=-1;i<=1;i++){ const k=sl(a+i,b+j); if(slot[k]===(a+i)+','+(b+j))slot[k]=null; } },'140b-grassfield');
-  if(WEEDS.chunks)for(const [k,me] of WEEDS.chunks)if(me&&me.I)floor(k,me);
+  SYS.add('weedsDrop',key=>{ const [a,b]=key.split(',').map(Number); for(let j=-1;j<=1;j++)for(let i=-1;i<=1;i++){ const k=sl(a+i,b+j); if(slot[k]===(a+i)+','+(b+j))slot[k]=null; } },'140b-grassfield');
   let suns=null; const SP=new THREE.Vector3(), ST=new THREE.Vector3();
-  SYS.add('life',()=>{ if(SHARED.LVL!=='up')return;
-    // what presses the grass: you, the walkers near you, the trail you leave, and the rocks, logs and trunks round you (the repo's rocks; radii over its radius multiplier)
-    const RK=U.uRocks.value, MV=WEEDS.movers, TR=WEEDS.UTR&&WEEDS.UTR.value, rm=S.grRockRadiusMul||1; let n=0; RK[n++].set(pos.x,0,pos.z,.28/rm);
+  SYS.add('life',()=>{ if(SHARED.LVL!=='up'||!WEEDS.lawnMask||!window.__started)return;
+    if(!queued)queued=fill();
+    if(Q.size&&!(ROOMS&&ROOMS.cur)){ const t0=performance.now(), budget=window.FADE&&FADE.busy?40:6, ks=[...Q].map(k=>{ const [a,b]=k.split(',').map(Number); return [Math.hypot((a+.5)*WEEDS.CS-pos.x,(b+.5)*WEEDS.CS-pos.z),k,a,b]; }).sort((p,q)=>p[0]-q[0]);
+      for(const [,k,a,b] of ks){ if(performance.now()-t0>budget)break; if(inPark(a,b)&&!PARK.in)continue; Q.delete(k); const old=CH.get(k); const tm=performance.now(); const g=make(a,b); GRASS.mk=(GRASS.mk||0)+performance.now()-tm; GRASS.built=(GRASS.built||0)+1; unmake(old); if(g){ CH.set(k,g); GRASS.n+=g.n; GRASS.area+=g.A; } else CH.delete(k); } }
+    // all of it drawn wherever it is seen, the far blades thinned (never rebuilt)
+    const inR=!!(ROOMS&&ROOMS.cur); for(const g of CH.values()){ if(!g)continue; g.visible=!inR; if(inR||!g.blades)continue; const d=Math.hypot(g.c[0]-pos.x,g.c[1]-pos.z), f=d<NEAR?1:Math.max(.3,(NEAR/d)**2); g.blades.count=Math.max(1,Math.round(g.n*f)); }
+    // what presses the grass: you (until you stand still), the walkers near you, the trail you leave
+    const RK=U.uRocks.value, MV=WEEDS.movers, TR=WEEDS.UTR&&WEEDS.UTR.value, rm=S.grRockRadiusMul||1; let n=0; const now=performance.now()/1e3; if(Math.hypot(pos.x-GRASS.px,pos.z-GRASS.pz)>.004*T)GRASS.stop=now; GRASS.px=pos.x; GRASS.pz=pos.z;
+    let up=Math.max(0,Math.min(1,(now-GRASS.stop-.5)/1.5)); up=up*up*(3-2*up); const keep=1-up;   // half a second after you stop, the grass round your legs stands back up
+    if(keep>.02)RK[n++].set(pos.x,0,pos.z,.28*keep/rm);
     if(MV)for(let i=1;i<MV.length&&n<MAXR;i++)if(MV[i].w>=.5)RK[n++].set(MV[i].x,0,MV[i].y,.25/rm);
-    if(TR)for(let i=0;i<TR.length&&n<10;i++)if(TR[i].w>.05)RK[n++].set(TR[i].x,0,TR[i].y,TR[i].z*.45*Math.min(1,TR[i].w)/rm);
-    if(SOL.up){ const near=[]; for(const b of SOL.up){ const cx=(b[0]+b[2])/2, cz=(b[1]+b[3])/2, r=Math.hypot(b[2]-b[0],b[3]-b[1])/2; if(r>2.5*T)continue; const d=Math.hypot(cx-pos.x,cz-pos.z); if(d<8)near.push([d,cx,cz,r]); }
-      near.sort((p,q)=>p[0]-q[0]); for(const [,cx,cz,r] of near){ if(n>=MAXR)break; RK[n++].set(cx,0,cz,r/rm); } }
+    if(TR)for(let i=0;i<TR.length&&n<12;i++)if(TR[i].w>.05&&(i>1||keep>.02))RK[n++].set(TR[i].x,0,TR[i].y,TR[i].z*.45*Math.min(1,TR[i].w)*(i>1?1:keep)/rm);
     U.uRockCount.value=n;
     // the baked shadows: all again when the sun's held direction turns (a new look, dusk) or the shadows are switched off or soft (VSM); the chunks round you, nearest first, one at a time
     { const SM=renderer.shadowMap, ok=SM.enabled&&SM.type!==THREE.VSMShadowMap&&!!CLOCK.dir; U.uBakeOn.value=ok?1:0;
@@ -165,6 +177,9 @@ const GRASS={};
     let sun=null; for(const L of suns)if(!sun||L.intensity>sun.intensity)sun=L;
     U.uSunOn.value=sun&&sun.intensity>0?1:0;
     if(sun){ sun.getWorldPosition(SP); sun.target.getWorldPosition(ST); U.uSunDir.value.subVectors(SP,ST).normalize(); U.uSunColor.value.copy(sun.color).multiplyScalar(sun.intensity); } },'140b-grassfield');
+  GRASS.preset=k=>{ if(!PRESETS[k])return; cur=k; S=Object.assign({},DEF,PRESETS[k].values); sync(); try{ SAVE.set('grass',k); }catch(e){} GRASS.rebuild(); };   // baked: a new look rebakes the field
+  GRASS.PRESETS=PRESETS; GRASS.U=U; GRASS.get=()=>Object.assign({},S); GRASS.cur=()=>cur;
+  S=Object.assign({},DEF,PRESETS[cur].values); sync();
   // the season presets, in ATMOSPHERE
   const ui=()=>{ const P=document.querySelector('[data-p="atmo"]'); if(!P)return setTimeout(ui,1000); if(P.querySelector('#grassp'))return;
     const B=document.createElement('div'); B.id='grassp'; B.innerHTML='<h3>GRASS</h3><div class="row">'+Object.entries(PRESETS).map(([k,p])=>`<button class="btn" data-g="${k}">${p.label}</button>`).join('')+'</div><div class="dim">the grass field\'s season look</div>';

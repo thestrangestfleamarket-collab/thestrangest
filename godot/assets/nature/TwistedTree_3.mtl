@@ -1,0 +1,17 @@
+# flat matte materials (regenerated for Godot; textures were missing)
+
+newmtl Bark_TwistedTree
+Ka 0.000000 0.000000 0.000000
+Kd 0.380000 0.240000 0.160000
+Ks 0.000000 0.000000 0.000000
+Ns 0.000000
+d 1.000000
+illum 1
+
+newmtl Leaves_TwistedTree
+Ka 0.000000 0.000000 0.000000
+Kd 0.860000 0.420000 0.120000
+Ks 0.000000 0.000000 0.000000
+Ns 0.000000
+d 1.000000
+illum 1

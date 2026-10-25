@@ -4623,3 +4623,6 @@ Owner: "keep building out all rooms and items until finished". The old West End 
 
 ## 25 Oct 2026: the old game's rooms removed
 Owner: "lets remove all the newly added rooms from game". The forty old rooms off the map and their GO TO entries are gone, with the kits made only for them (027a-027o, 039a), their data and their check. A player saved in one comes back in the park. The catalogue of the old game (`docs/old-game/`) stays as reference.
+
+## 25 Oct 2026: a separate Godot forest walk (`godot/`)
+Owner: "i want to create a 3d walkable game with this world ... using these assets" / "godot"; chose a separate Godot project, the three.js market untouched. `godot/` is a Godot 4 first-person forest walk built from the owner's nature pack (Drive); nothing in the market's build, site or tests reads it.

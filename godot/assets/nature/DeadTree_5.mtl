@@ -1,0 +1,9 @@
+# flat matte materials (regenerated for Godot; textures were missing)
+
+newmtl Bark_DeadTree
+Ka 0.000000 0.000000 0.000000
+Kd 0.450000 0.370000 0.280000
+Ks 0.000000 0.000000 0.000000
+Ns 0.000000
+d 1.000000
+illum 1

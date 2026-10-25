@@ -1,0 +1,17 @@
+# flat matte materials (regenerated for Godot; textures were missing)
+
+newmtl Bark_NormalTree
+Ka 0.000000 0.000000 0.000000
+Kd 0.420000 0.260000 0.150000
+Ks 0.000000 0.000000 0.000000
+Ns 0.000000
+d 1.000000
+illum 1
+
+newmtl Leaves_Pine
+Ka 0.000000 0.000000 0.000000
+Kd 0.160000 0.400000 0.220000
+Ks 0.000000 0.000000 0.000000
+Ns 0.000000
+d 1.000000
+illum 1

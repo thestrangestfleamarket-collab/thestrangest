@@ -1,0 +1,17 @@
+# flat matte materials (regenerated for Godot; textures were missing)
+
+newmtl Leaves
+Ka 0.000000 0.000000 0.000000
+Kd 0.340000 0.560000 0.220000
+Ks 0.000000 0.000000 0.000000
+Ns 0.000000
+d 1.000000
+illum 1
+
+newmtl Flowers
+Ka 0.000000 0.000000 0.000000
+Kd 0.880000 0.280000 0.260000
+Ks 0.000000 0.000000 0.000000
+Ns 0.000000
+d 1.000000
+illum 1

@@ -1,0 +1,26 @@
+; Engine configuration file.
+; Godot 4.3+ project: a walkable low-poly forest built from the nature pack in assets/nature.
+
+config_version=5
+
+[application]
+
+config/name="Forest Walk"
+config/description="A first-person walk through a low-poly forest."
+run/main_scene="res://scenes/main.tscn"
+config/features=PackedStringArray("4.3", "Forward Plus")
+config/icon="res://icon.svg"
+
+[display]
+
+window/size/viewport_width=1600
+window/size/viewport_height=900
+
+[physics]
+
+common/physics_ticks_per_second=60
+
+[rendering]
+
+anti_aliasing/quality/msaa_3d=2
+lights_and_shadows/directional_shadow/soft_shadow_filter_quality=3

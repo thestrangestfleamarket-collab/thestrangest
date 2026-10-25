@@ -4638,3 +4638,8 @@ Owner: "the skyline is missing from edge of screen, neesd to go back". The dista
 
 ## 25 Oct 2026: the lawn one flat sheet, ankle deep
 Owner (a picture of the leaf clumps' round shapes): "no circles, no shapes, flat, thick grass that goes up to my ankles, treetop flat all the way across". Every lawn is one level sheet of grass in a single green, up to your ankles, dipping only a little where you step; its edge drops straight to the ground. The leaf clumps and their light and dark patches are gone. Tufts at the feet of things and the gold reeds stay.
+
+## 25 Oct 2026: the lawn flat and faceted like a treetop; still trunks; no flowers or bushes in the park
+Owner (a picture of the plain sheet's square steps): "dark green areas? blocky square grass? completely flat no shadows or any angles at all? not like trees?"; of two in-game options he picked "2 - treetop facets". The lawn stays one flat sheet at ankle height, now of irregular triangles each lit as its own facet in a few greens, like the tree crowns from above; its edge slopes down softly instead of stepping in squares.
+Owner: "tree trunks shouldnt sway, only the treetops should sway in wind, and only when you are near". Only the leaves sway, and only near you; trunks and branches stand still.
+Owner: "remove al flowers and plants from park"; asked which, he chose flowers and flower beds, and bushes. The park has no flower beds, wild flowers, flower models or bushes any more (the street keeps its own); trees, grass, weed tufts, reeds and mushrooms stay. Wild flowers for GARDENING grow only outside the park; garden plots you plant are yours anywhere.

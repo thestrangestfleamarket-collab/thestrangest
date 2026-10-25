@@ -16,7 +16,7 @@ Places built with `await grab(name, async()=>{...})` are one function each, ofte
 - `grab(fire)`: 059d-fireview.js to 059d-fireview.js (0 KB)
 - `grab(ghostdojo)`: 059e-ghostdojo.js to 059e-ghostdojo.js (38 KB)
 - `grab(bank)`: 059h-bank.js to 059h-bank.js (2 KB)
-- `grab(parkwall)`: 061-park.js to 061-park.js (50 KB)
+- `grab(parkwall)`: 061-park.js to 061-park.js (49 KB)
 - `grab(park)`: 061-park.js to 061-park.js (0 KB)
 - `grab(castle)`: 062-castle.js to 062-castle.js (0 KB)
 - `grab(castlestairs)`: 062-castle.js to 062-castle.js (2 KB)
@@ -61,8 +61,8 @@ Places built with `await grab(name, async()=>{...})` are one function each, ofte
 | `059h-bank.js` | 2.0 | top level, opens grab(bank) |  | 003: SHARED; 006: BLDK BLOCK STORE grab |
 | `060-cave.js` | 11.3 | top level | GCAVE (061 063 066a 094 140 142a 146e 151) | 003: SHARED THREE; 003b: CITY CLOCK INV LITE MAIL PARK ROOMS TRADE UI; 004: scene; 006: FIX MAPG MODS PARKCAVE PARKTOWER SOL STORE TILE; 007: FLAME |
 | `060a-fount.js` | 21.6 | top level | FOUNT (061 064 075 076 080 087 089a 093 094 096 140 142 142a 151 153) | 003: SHARED THREE; 003b: BROOK CLOCK PARK ROOMS SKY; 004: scene; 006: FIX MAPG SOL STORE TILE ZU |
-| `060b-trees.js` | 3.9 | top level | TREEGEN (061) | 003: THREE |
-| `061-park.js` | 53.7 | top level, opens grab(parkwall) |  | 003: SHARED THREE; 003a: B64 F32; 003b: CLIP CLOCK CULL DN LITE NPCS PARK PERFX ROOMS UI WED WEEDS pos; 004: renderer scene; 006: CASTLE CLIPX EASTX FADE FIX LAY LEVEL MAINX MAPG MODS NORTHX NORTHY PARKGX PARKLAKE PARKRY QS SOL TILE ZU grab lamps; 007: FLAME; 008: BATCH OBJ PEEK; 014: BRICKS; 039: FOREST PROPS; 060: GCAVE; 060a: FOUNT; 060b: TREEGEN |
+| `060b-trees.js` | 3.0 | top level | TREEGEN (061) | 003: THREE |
+| `061-park.js` | 52.6 | top level, opens grab(parkwall) |  | 003: SHARED THREE; 003a: B64 F32; 003b: CLIP CLOCK CULL DN LITE NPCS PARK PERFX ROOMS UI WED WEEDS pos; 004: renderer scene; 006: CASTLE CLIPX EASTX FADE FIX LAY LEVEL MAINX MAPG MODS NORTHX NORTHY PARKGX PARKLAKE PARKRY QS SOL TILE ZU grab lamps; 007: FLAME; 008: BATCH OBJ PEEK; 014: BRICKS; 039: FOREST PROPS; 060: GCAVE; 060a: FOUNT; 060b: TREEGEN |
 | `062-castle.js` | 6.5 | top level, opens grab(castle) | castleMat (062a), gboxS (062a) | 003: SHARED THREE; 003b: PARK pos; 004: scene; 006: CASTLE FIX MODS SOL STN TILE cutWalls grab lamps; 008: BATCH OBJ |
 | `062a-dungeon.js` | 10.0 | top level, opens grab(dungeon) |  | 003: SHARED THREE; 003b: LEVELS LITE PH RAG UI pos; 004: scene; 006: CASTLE FADE FIX MAPG MODS SOL STN TILE cutWalls grab; 007: FLAME; 008: BATCH; 062: castleMat gboxS |
 | `063-tower.js` | 5.7 | top level | GTOWER (085 094) | 003: SHARED THREE; 003b: PARK; 006: FIX LEVEL MAPG SOL TILE; 008: BATCH OBJ; 060: GCAVE |
@@ -116,7 +116,7 @@ Places built with `await grab(name, async()=>{...})` are one function each, ofte
 | `100-use.js` | 14.6 | top level |  | 003: SHARED THREE; 003b: LEVELS LITE PARK PERFX RAG SFX SND UI USE W3 pos st; 004: renderer scene; 006: TILE ZU; 008: OBJS; 068: KIT; 091: SOUND |
 | `101-gems.js` | 5.9 | top level | GEMS (141 142 146b 146c) | 003b: CITY CIVIC FORAGE INV LINES MAIL SFX TRADE UI pos; 005: OWNED; 006: QS |
 | `102-looks.js` | 8.2 | top level |  | 003: SHARED THREE; 003b: CLOCK FORAGE LEVELS LOOKS UI W3 pos st; 004: renderer scene; 005: SAVE; 006: QS SHL TILE |
-| `102b-designer.js` | 21.3 | top level | DESIGN (111d) | 003: THREE; 003b: LOOKS W3; 004: renderer; 005: OWNED |
+| `102b-designer.js` | 21.4 | top level | DESIGN (111d) | 003: THREE; 003b: LOOKS W3; 004: renderer; 005: OWNED |
 | `103-vitals.js` | 4.3 | top level |  | 003: SHARED; 003b: FORAGE LOOKS SFX UI VIT keys pos st; 006: SYS TILE |
 | `103a-death.js` | 5.0 | top level |  | 003: SHARED THREE; 003b: GHOSTS LEVELS LOOKS PH RAG VIT W3 keys pos st; 004: scene; 005: SAVE; 006: FADE QS STORE SYS TILE |
 | `106-game-play-3-guitar-1-body.js` | 5.6 | top level | CAST (109 112), GT (108 109 110), GTA (109 110 119 128), GTPHYS (109), GTWR (109 110), GTYP (109), PLAY221 (109), PLAYA (109), gtAudio (109 110 119), gtHz (109), gtMute (109 110), gtPlay (109 110) | 003b: GTRH GTSAMP SND UI; 068: KIT |
@@ -167,7 +167,7 @@ Places built with `await grab(name, async()=>{...})` are one function each, ofte
 | `137-bvh.js` | 3.5 | top level | BVH (150 163) | 003: THREE; 004: scene; 006: QS |
 | `138-oldlook.js` | 2.8 | top level |  | 003: SHARED THREE; 003b: CLOCK DN LOOK; 004: RH RW ShaderPass; 005: SAVE; 006: OUT |
 | `139-clip.js` | 10.5 | top level |  | 003: SHARED THREE; 003b: CLIP NPCS; 006: CLIPX FIX MODS QS SOL STORE TILE ZU; 008: OBJS |
-| `140-weeds.js` | 29.8 | top level |  | 003: SHARED THREE; 003b: NPCS PARK POND RAG ROOMS UI W3 WEEDS pos st; 004: renderer scene; 006: CASTLE FIX MAPG MODS SOL STORE SYS TILE; 060: GCAVE; 060a: FOUNT; 065: RINGX; 081: STALL |
+| `140-weeds.js` | 30.1 | top level |  | 003: SHARED THREE; 003b: NPCS PARK POND RAG ROOMS UI W3 WEEDS pos st; 004: renderer scene; 006: CASTLE FIX MAPG MODS SOL STORE SYS TILE; 060: GCAVE; 060a: FOUNT; 065: RINGX; 081: STALL |
 | `141-forage.js` | 29.3 | top level |  | 003: SHARED THREE; 003b: CITY CIVIC ED EQUIP FORAGE INV ITEMS LINES LOOKS MAIL NPCS SFX UI VIT WE WEEDS pos st; 004: scene; 005: OWNED; 006: MAPG QS SYS TILE; 007: FLAME; 083a: MUSH; 101: GEMS |
 | `141b-fairy.js` | 3.5 | top level |  | 003: SHARED THREE; 003b: FORAGE PARK ROOMS UI WEEDS pos; 004: scene; 006: SOL SYS TILE |
 | `141c-fireview.js` | 5.3 | top level |  | 003: SHARED THREE; 003b: CLOCK FAR3 SKY UI pos; 004: scene; 006: BLDK FADE MISTE MODS STORE SYS TILE; 008: BATCH |
@@ -176,7 +176,7 @@ Places built with `await grab(name, async()=>{...})` are one function each, ofte
 | `142a-flora.js` | 15.7 | top level | FLORA (143 144b) | 003: SHARED THREE; 003b: DRESS PARK WEEDS; 006: CASTLE FIX MAPG SOL STORE TILE; 060: GCAVE; 060a: FOUNT; 081: STALL |
 | `143-bfly.js` | 7.6 | top level | BFLY (146a) | 003: SHARED THREE; 003b: CLOCK FORAGE MAIL PARK SFX UI W3 WEEDS WX pos; 004: scene; 006: BF SYS TILE; 142a: FLORA |
 | `144-veggies.js` | 6.4 | top level | VEG (144a 144e) | 003: SHARED; 003b: CIVIC FORAGE INV LINES PARK SFX UI VIT; 006: TILE; 081: STALL; 083a: MUSH; 084: TOONS |
-| `144a-garden.js` | 10.2 | top level | GARDEN (144b) | 003: SHARED THREE; 003b: CITY CLOCK FORAGE MAIL ROOMS SFX UI WEEDS pos; 004: scene; 005: SAVE; 006: MAPG SYS TILE; 144: VEG |
+| `144a-garden.js` | 10.3 | top level | GARDEN (144b) | 003: SHARED THREE; 003b: CITY CLOCK FORAGE MAIL ROOMS SFX UI WEEDS pos; 004: scene; 005: SAVE; 006: MAPG SYS TILE; 144: VEG |
 | `144b-birds.js` | 25.2 | top level | BIRDS (146a) | 003: SHARED THREE; 003b: CLOCK DRESS FORAGE INV MAIL NPCS PARK ROOMS SFX UI WEEDS WX pos; 004: scene; 005: OWNED; 006: SYS TILE; 080: PARTSNPC; 142a: FLORA; 144a: GARDEN |
 | `144c-books.js` | 7.7 | top level |  | 003: SHARED THREE; 003b: BOOKS CITY DRESS FORAGE INV MAIL SFX UI; 004: scene; 005: OWNED; 006: TILE |
 | `144e-trees.js` | 4.3 | top level |  | 003: SHARED THREE; 003b: CITY FORAGE INV MAIL PARK UI pos st; 004: scene; 006: MAPG MODS STORE SYS TILE; 144: VEG |

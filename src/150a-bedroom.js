@@ -1,14 +1,13 @@
 // THE APARTMENT ROOM: your apartment as one open room in the owner's cozy picture's style (25 Oct 2026): cream walls under a dark wood crown, wide orange planks on a cream slab, curtained windows onto the live sky, and its things (the checkered bed, the nightstands and lamps, the monstera, the diamond frames, the shelves of plants and books, the desk and chair); every small thing a real body.
 import {SHARED, THREE} from './003-shx.js';
-import {CLOCK, SFX, SHAD, SKY, UI, USE} from './003b-systems.js';
+import {CLOCK, GPH, SFX, SHAD, SKY, UI, USE} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {MODS, SYS} from './006-map-pre.js';
-import {GPH} from './150-loose.js';
 const ROOMK={parts:[],wires:{},built:[],api:null};   // the room's other parts (the kitchen, 150b) add their builders and what their pieces do (wires); the room editor (150c) hears when it is built and works through api
 { const APTS=MODS.apts;
   if(APTS&&APTS.R){ const V3=THREE.Vector3, cl=(v,a,b)=>Math.max(a,Math.min(b,v)), MPU=.907;   // the apartment's art unit is .907 m: the picture's sizes are metres
     const col=c=>new THREE.Color('rgb('+c.join(',')+')');
-    const mat=(c,o={})=>new THREE.MeshStandardMaterial({color:col(c),roughness:.75,metalness:0,...o});
+    const mat=(c,o={})=>{ const {roughness,metalness,...r}=o; return new THREE.MeshLambertMaterial({color:col(c),...r}); };   // the game's cel shading: flat steps of light, no smooth gradients (owner, 25 Oct 2026)
     // a rounded box (metres, centred), its corners and edges smooth
     const rbox=(w,h,d,r=.015,s=4)=>{ r=Math.min(r,w/2-1e-4,h/2-1e-4,d/2-1e-4); const g=new THREE.BoxGeometry(w,h,d,s,s,s), p=g.attributes.position, n=g.attributes.normal, hx=w/2-r, hy=h/2-r, hz=d/2-r, v=new V3(), q=new V3();
       for(let i=0;i<p.count;i++){ v.fromBufferAttribute(p,i); q.set(cl(v.x,-hx,hx),cl(v.y,-hy,hy),cl(v.z,-hz,hz)); v.sub(q); const l=v.length()||1; v.multiplyScalar(1/l); n.setXYZ(i,v.x,v.y,v.z); p.setXYZ(i,q.x+v.x*r,q.y+v.y*r,q.z+v.z*r); }
@@ -22,11 +21,11 @@ const ROOMK={parts:[],wires:{},built:[],api:null};   // the room's other parts (
       for(let r=0;r<rows;r++){ let u=-(r%3)*.7-rnd()*.3; while(u<Lu){ const L=1.4+rnd()*1.2, k=.84+rnd()*.24, x0=u/Lu*W, x1=(u+L)/Lu*W, y0=r*ph, b=1.4, pw2=x1-x0-3;
           g.fillStyle=`rgb(${B0[0]*k|0},${B0[1]*k|0},${B0[2]*k|0})`; g.fillRect(x0+1.5,y0+1.5,pw2,ph-3);
           for(let i=0;i<6;i++){ g.strokeStyle=`rgba(${B0[0]*.6|0},${B0[1]*.5|0},${B0[2]*.4|0},${.08+rnd()*.1})`; g.lineWidth=.8+rnd(); g.beginPath(); const yy=y0+3+rnd()*(ph-6); g.moveTo(x0+2,yy); g.bezierCurveTo(x0+(x1-x0)*.35,yy+(rnd()-.5)*ph*.3,x0+(x1-x0)*.65,yy+(rnd()-.5)*ph*.3,x1-2,yy); g.stroke(); }
-          const sh=g.createLinearGradient(0,y0,0,y0+ph); sh.addColorStop(0,'rgba(255,220,170,.10)'); sh.addColorStop(1,'rgba(60,24,8,.14)'); g.fillStyle=sh; g.fillRect(x0+1.5,y0+1.5,pw2,ph-3);
+          g.fillStyle='rgba(60,24,8,.06)'; g.fillRect(x0+1.5,y0+1.5,pw2,ph-3);
           g.fillStyle='rgba(255,224,180,.34)'; g.fillRect(x0+1.5,y0+1.5,pw2,b); g.fillRect(x0+1.5,y0+1.5,b,ph-3);   // grout depth: each plank a raised lip, lit top/left
           g.fillStyle='rgba(12,5,1,.55)'; g.fillRect(x0+1.5,y0+ph-1.5-b,pw2,b); g.fillRect(x1-1.5-b,y0+1.5,b,ph-3); u+=L; } } });   // ...shadowed bottom/right, so the gaps read recessed
     const checker=()=>tex(256,256,(g,W,H)=>{ const n=10, s=W/n; for(let i=0;i<n;i++)for(let j=0;j<n;j++){ g.fillStyle=(i+j)&1?'#e4e2d6':'#2c3430'; g.fillRect(i*s,j*s,s,s); } });
-    const glowTex=tex(64,64,(g,W,H)=>{ const r=g.createRadialGradient(32,32,0,32,32,32); r.addColorStop(0,'rgba(255,214,150,1)'); r.addColorStop(.35,'rgba(255,190,110,.45)'); r.addColorStop(1,'rgba(255,170,90,0)'); g.fillStyle=r; g.fillRect(0,0,W,H); });
+    const glowTex=tex(64,64,(g,W,H)=>{ for(const [r,c] of [[30,'rgba(255,180,100,.18)'],[21,'rgba(255,196,120,.32)'],[12,'rgba(255,214,150,.7)']]){ g.fillStyle=c; g.beginPath(); g.arc(32,32,r,0,7); g.fill(); } });
     // the walls and floors you can choose (the room editor): a paint, or a paper painted once and repeated by the metre
     const rep_=(t,w,h)=>{ t.wrapS=t.wrapT=THREE.RepeatWrapping; t.repeat.set(1/w,1/h); return t; };
     const WALLS={cream:{n:'CREAM',c:[238,228,198]},white:{n:'WHITE',c:[242,240,234]},sage:{n:'SAGE',c:[176,196,166]},blush:{n:'BLUSH',c:[230,190,180]},sky:{n:'SKY',c:[180,204,226]},butter:{n:'BUTTER',c:[242,224,168]},charcoal:{n:'CHARCOAL',c:[78,78,84]},
@@ -95,7 +94,6 @@ const ROOMK={parts:[],wires:{},built:[],api:null};   // the room's other parts (
       const win=c=>[c-WW/2,c+WW/2,wz[0],wz[1]];
       // aged plaster: cream kept, but soft stains, faint streaks and fine grain so the walls aren't flat (owner: grittier, keep cozy)
       const wallTex=(()=>{ const t=tex(512,512,(g,W,H)=>{ g.fillStyle='#ffffff'; g.fillRect(0,0,W,H);
-        for(let i=0;i<30;i++){ const x=rnd()*W, y=rnd()*H, r=50+rnd()*150, rg=g.createRadialGradient(x,y,0,x,y,r); rg.addColorStop(0,`rgba(108,90,62,${.03+rnd()*.07})`); rg.addColorStop(1,'rgba(108,90,62,0)'); g.fillStyle=rg; g.fillRect(x-r,y-r,2*r,2*r); }
         for(let i=0;i<50;i++){ g.strokeStyle=`rgba(120,102,72,${.015+rnd()*.03})`; g.lineWidth=.8+rnd()*1.6; g.beginPath(); const x=rnd()*W, y0=rnd()*H*.4; g.moveTo(x,y0); g.lineTo(x+(rnd()-.5)*18,y0+H*(.3+rnd()*.5)); g.stroke(); }
         for(let i=0;i<900;i++){ const b=rnd()<.5; g.fillStyle=`rgba(${b?70:255},${b?60:244},${b?44:220},${.02+rnd()*.03})`; g.fillRect(rnd()*W,rnd()*H,1,1); } }); t.wrapS=t.wrapT=THREE.MirroredRepeatWrapping; t.repeat.set(.2,.5); return t; })();
       R.plaster=wallTex;
@@ -125,7 +123,7 @@ const ROOMK={parts:[],wires:{},built:[],api:null};   // the room's other parts (
         for(let j=1;j<panes[1];j++)part(rbox(w,.04,.05,.006),wm,0,z0+(z1-z0)*j/panes[1],-.13,0,g);
         if(!curtains)return g; const rod=mat([40,30,24],{roughness:.4,metalness:.5,...clip(k)}); part(new THREE.CylinderGeometry(.014,.014,w+.8,10).rotateZ(Math.PI/2),rod,0,z1+.18,.08,0,g);
         for(const s of [-1,1]){ part(new THREE.SphereGeometry(.025,10,8),rod,s*(w/2+.4),z1+.18,.08,0,g);
-          const sheer=new THREE.MeshStandardMaterial({color:col(MINT),roughness:.9,transparent:true,opacity:.62,side:THREE.DoubleSide,emissive:col([60,90,84]),emissiveIntensity:.25,...clip(k)});
+          const sheer=new THREE.MeshLambertMaterial({color:col(MINT),transparent:true,opacity:.62,side:THREE.DoubleSide,emissive:col([60,90,84]),emissiveIntensity:.25,...clip(k)});
           const top=z1+.17, bot=Math.max(.6,z0-.35), cg=new THREE.PlaneGeometry(1,1,18,26), p=cg.attributes.position, outer=s*(w/2+.38), inner=s*(w/2-.08);
           for(let i=0;i<p.count;i++){ const a=p.getX(i)+.5, b=.5-p.getY(i), h=top-(top-bot)*b, gather=.35+.65*Math.pow(1-b,1.4), u=outer+(inner-outer)*a*gather;
             p.setXYZ(i,u,h,.09+Math.sin(a*Math.PI*6+s)*.03*(.4+b)+.02*b); }
@@ -205,14 +203,14 @@ const ROOMK={parts:[],wires:{},built:[],api:null};   // the room's other parts (
         solid(0,v-.23,.46,v+.23,.59); });
       nightstand(BV-BW/2-.32); nightstand(BV+BW/2+.32);
       // the lamps: a turned wooden foot and a cream bell that glows, a soft halo round it
-      const lamp=(u,h,v,s=1)=>{ const g=thing(u,h,v), sm=new THREE.MeshStandardMaterial({color:col([244,234,196]),roughness:.9,side:THREE.DoubleSide,emissive:col([255,214,150]),emissiveIntensity:.55});
+      const lamp=(u,h,v,s=1)=>{ const g=thing(u,h,v), sm=new THREE.MeshLambertMaterial({color:col([244,234,196]),side:THREE.DoubleSide,emissive:col([255,214,150]),emissiveIntensity:.55});
         part(new THREE.LatheGeometry([[0,0],[.06,0],[.065,.02],[.035,.05],[.03,.16],[.045,.2],[.015,.22]].map(([x,y])=>new THREE.Vector2(x*s,y*s)),20),mat([196,120,58],{roughness:.45}),0,0,0,0,g);
         part(new THREE.CylinderGeometry(.075*s,.14*s,.17*s,24,1,true),sm,0,.27*s,0,0,g,false).userData.shade=1;
         const halo=new THREE.Sprite(new THREE.SpriteMaterial({map:glowTex,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,opacity:.32})); halo.scale.set(.5*s,.5*s,1); halo.position.set(0,.26*s,0); halo.userData.halo=1; g.add(halo);
         const L=new THREE.PointLight(0xffb870,2.2,4.2*M,1.8); L.userData.pool=true; L.userData.lamp=1; L.userData.i0=2.2; L.position.set(0,.24*s,0); g.add(L); return g; };
       R.loose.push([lamp(.23,.59,BV-BW/2-.32),'LAMP',1.5,false,'lamp'],[lamp(.23,.59,BV+BW/2+.32),'LAMP',1.5,false,'lamp']);
       // the monstera by the window corner
-      { const g=thing(.42,0,.5), pm=mat([214,180,140],{roughness:.8}), lm=mat([58,138,52],{roughness:.6,side:THREE.DoubleSide}), sm2=mat([70,120,50],{roughness:.6});
+      { const g=thing(.6,0,.66), pm=mat([214,180,140],{roughness:.8}), lm=mat([58,138,52],{roughness:.6,side:THREE.DoubleSide}), sm2=mat([70,120,50],{roughness:.6});
         part(new THREE.LatheGeometry([[0,0],[.13,0],[.15,.03],[.17,.3],[.18,.32],[.165,.32]].map(([x,y])=>new THREE.Vector2(x,y)),22),pm,0,0,0,0,g); part(new THREE.CircleGeometry(.16,18).rotateX(-Math.PI/2),mat([60,40,26],{roughness:1}),0,.31,0,0,g,false);
         const leaf=()=>{ const sh=new THREE.Shape(); sh.moveTo(0,0); sh.bezierCurveTo(.16,.04,.2,.22,.0,.34); sh.bezierCurveTo(-.2,.22,-.16,.04,0,0); const gg=new THREE.ShapeGeometry(sh,10), p=gg.attributes.position;
           for(let i=0;i<p.count;i++){ const x=p.getX(i), y=p.getY(i); const slit=Math.abs(x)>.06&&Math.sin(y*38)>.55?.0:1; p.setZ(i,-x*x*1.2-y*.12); if(!slit)p.setX(i,x*.86); } gg.computeVertexNormals(); return gg; };
@@ -237,7 +235,7 @@ const ROOMK={parts:[],wires:{},built:[],api:null};   // the room's other parts (
       { const g=thing(DU2-.25,.785,.25,.3); part(rbox(.18,.03,.13,.004),mat([60,90,160],{roughness:.6}),0,.015,0,0,g); part(rbox(.16,.03,.12,.004),mat([200,60,50],{roughness:.6}),.005,.045,0,0,g); R.loose.push([g,'BOOKS',.4]); }
       { const g=thing(DU2+.05,.785,.22,-.2); part(rbox(.08,.004,.1,.002),mat([238,214,90],{roughness:.8}),0,.002,0,0,g); R.loose.push([g,'NOTE',.05]); }
       { const g=thing(DU2+.38,.785,.18), dm=mat([40,36,32],{roughness:.4,metalness:.5}); part(new THREE.CylinderGeometry(.05,.055,.015,16),dm,0,.008,0,0,g); const n=part(new THREE.CylinderGeometry(.006,.006,.26,6),dm,0,.13,0,0,g); n.rotation.z=-.3;
-        const sh=new THREE.MeshStandardMaterial({color:col([50,44,40]),roughness:.4,emissive:col([255,200,130]),emissiveIntensity:.0}); const cn=part(new THREE.ConeGeometry(.045,.07,14,1,true),sh,.06,.25,0,0,g); cn.rotation.z=-1.2; cn.userData.shade=1;
+        const sh=new THREE.MeshLambertMaterial({color:col([50,44,40]),emissive:col([255,200,130]),emissiveIntensity:.0}); const cn=part(new THREE.ConeGeometry(.045,.07,14,1,true),sh,.06,.25,0,0,g); cn.rotation.z=-1.2; cn.userData.shade=1;
         const L=new THREE.PointLight(0xffc98a,.9,2*M,2); L.userData.pool=true; L.userData.lamp=1; L.userData.i0=.9; L.position.set(.09,.22,0); g.add(L); R.loose.push([g,'DESK LAMP',.8,false,'lamp']); }
       { const g=thing(DU2,0,.92,Math.PI+.15), cm=mat(WOODO,{roughness:.5});
         part(rbox(.42,.04,.4,.01),cm,0,.46,0,0,g); for(const [x,z] of [[-.18,-.17],[.18,-.17],[-.18,.17],[.18,.17]])part(rbox(.035,.46,.035,.006),cm,x,.23,z,0,g);
@@ -253,6 +251,8 @@ const ROOMK={parts:[],wires:{},built:[],api:null};   // the room's other parts (
       { const AL=APTS.AL, lv=Math.min(APTS.my,APTS.floors-2), S0=APTS.S, RZ=APTS.RZ, cp=k=>[WPL[k],R.tops[k],R.bot];
         const outside=(F,k,face)=>{ if(!APTS.escapeMeshes)return; const G=new THREE.Group(); scene.add(G); R.outs[k].push(G);
           for(const me of APTS.escapeMeshes(F,[lv-1,lv,lv+1],(lv-1)*S0,(lv+2)*S0)){ for(const m of [].concat(me.material)){ m.clippingPlanes=cp(k); m.needsUpdate=true; } me.castShadow=me.receiveShadow=true; G.add(me); }
+          const LW=X(1)-X(0), YH=h=>Yr(h)-Yr(0); for(const sp of APTS.escPlants||[]){ if(!APTS.plant3D)break; const o=APTS.plant3D(sp.kind,sp.seed,sp.w*LW,YH(sp.h)); o.rotation.y=(sp.seed*2.39)%6.28; o.position.set(X(sp.x),Yr(sp.z),Z(sp.y));
+            o.traverse(q=>{ if(q.isMesh){ q.material=q.material.clone(); q.material.clippingPlanes=cp(k); } }); G.add(o); }   // the escape's real pots, seen through your glass
           G.scale.z=-1; G.position.set(X(A.x0)-X(AL.x0),fy-Yr(lv*S0+RZ),Z(face)+Z(F.yf)); };
         outside(APTS.ESC[0],'Wf',A.y0-TH/MPU); outside(APTS.ESC[1],'Wb',A.y1+TH/MPU);
         // the house's brick outside your walls, above and below you, for the landings to hang on

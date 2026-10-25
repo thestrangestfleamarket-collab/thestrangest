@@ -4663,3 +4663,15 @@ Owner: links to https://tympanus.net/codrops/2025/02/04/how-to-make-the-fluffies
 
 ## 25 Oct 2026: the Walker's base shape is broader (S4)
 Owner: "give me better versions of our avatar body shape"; shown four, picked STRONG (then "tons of missing pixels and body does not look naturally posed" — both were my offline preview, not the game). The Walker's base body (`BODYS` in 001-rig) is a new broader build `S4`, now the default (was S2F): wider square shoulders, fuller chest and thighs, less sloped. Head (1/3 height) and leg length unchanged; body types (AVERAGE/SLIM/… ) still layer on top. `?body=S2F` and the earlier presets stay.
+
+## 25 Oct 2026: first person no longer bobs
+Owner: "when walking its too bump, in 1st person pov the view should be smooth when you walk, not up and down". In first person the eye height is smoothed, so walking doesn't bounce the view; stairs, crouch and jumps still move it.
+
+## 25 Oct 2026: no neck line on the bare body
+Owner: "remove neck line, make body white there instead". The bare chest has no V collar line; the shirt keeps its collar.
+
+## 25 Oct 2026: a leg no longer vanishes on a step
+Owner: "if i press down arrow one time ... their leg will vanish for 1 frame" (every stop). Fixed: stopping mid-step had turned a leg's position invalid for a moment.
+
+## 25 Oct 2026: station pillars reach the ceiling
+Owner: "the pillars should go as high as the walls (all the way to ceiling)". In the isometric view the platform's columns are no longer cut at chest height; they stand full height like the walls.

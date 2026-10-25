@@ -291,7 +291,7 @@ const SSUB=(()=>{ const W={};
       out.push({x0:xc-w,x1:xc+w,y0:y0+r,y1:y1-r,z0:z,z1:zz,c:[120,124,126],fs:(nx,ny,X,Yy,zr)=>ny?(front&&ny>0&&z<Z1+8?sh(ST,.8):[110,114,116]):sh([96,100,102],.85+.3*fbm(Yy*.5,z/9,193)),
         top:(X,Yy)=>{ const e2=Math.min(Yy-y0,y1-Yy); return e2<1.2?[150,154,156]:sh(Math.floor((X-xc+Wd)*24/4.8)%2?[118,122,124]:[78,80,84],.8+.35*fbm(Yy*.3,X,195)); }}); }
     return prop(out); };
-  const PB=plane(), PF=plane(), PC=plane();
+  const PB=plane(), PF=plane();
   flat(P0,0,P1,LEN,0,floorPaint);
   for(const [x0,x1] of [[0,P0],[P1,XW]])flat(x0,0,x1,LEN,-32,trackPaint,16);
   wallY(P0,0,LEN,-32,0,edgePaint); wallY(P1,0,LEN,-32,0,edgePaint);
@@ -309,7 +309,7 @@ const SSUB=(()=>{ const W={};
   for(const [a,b] of [[0,SL.STEPS[0]],[1,SL.STEPS[1]]])for(const [y0,y1] of b)for(let k=0;k<3;k++){ const c=[150,146,138], e=a?P1:P0, s=a?1:-1, xa=e+s*k*.25, xb=e+s*(k+1)*.25; gbox({x0:Math.min(xa,xb),x1:Math.max(xa,xb),y0,y1,z0:-32,z1:-8*(k+1),c,top:()=>c,fi:()=>sh(c,.62),fj:()=>sh(c,.8)},SZ); }
   BATCH.cast=true;
   SL.COLX.forEach((cx,i)=>SL.COLY.forEach((cy,j)=>{ const p=colFace(i*10+j); put(prop([{x0:cx,y0:cy,x1:cx+.7,y1:cy+.7,z0:0,z1:H2,noTop:true,fs:(nx,ny,X,Yy,zr,b)=>p(nx,ny,X,Yy,zr,b)}]),'column'); solid(cx,cy,cx+.7,cy+.7,H2); }));
-  BATCH.build((k,map,emap)=>new THREE.MeshLambertMaterial({map,alphaTest:.5,side:THREE.DoubleSide,clippingPlanes:[PC],...(emap?{emissiveMap:emap,emissive:0xffffff,emissiveIntensity:1.6}:{})}));
+  BATCH.build((k,map,emap)=>new THREE.MeshLambertMaterial({map,alphaTest:.5,side:THREE.DoubleSide,...(emap?{emissiveMap:emap,emissive:0xffffff,emissiveIntensity:1.6}:{})}));
   SL.BENCH.forEach((y,i)=>{ put(benchBoxes(MID,y,3.2,i+1),'bench'); solid(MID-.75,y,MID+.75,y+3.2,36); });
   SL.BINS.forEach(y=>{ put(binBoxes(MID,y),'trash bin'); solid(MID-.28,y-.28,MID+.28,y+.28,32); });
   litter.forEach(p=>put(p,'litter'));
@@ -342,7 +342,7 @@ const SSUB=(()=>{ const W={};
       for(let k=0;k<4;k++)q(t[k],t[(k+1)%4],b[(k+1)%4],b[k]); }
     g.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); const me=new THREE.Mesh(g,BEAM); me.renderOrder=5; scene.add(me); }
   { const R=new THREE.PointLight(new THREE.Color(1,.18,.12),1.4,6*TILE,1.6); R.position.set(...V(LT,SL.CARS[SL.CARS.length-1]+SL.CARL+.5,SZ+40)); R.userData.i0=R.intensity; scene.add(R); lamps.push(R); }
-  cutWalls.push({pl:PF,nx:0,nz:0,foot:Y(SZ+100),always:true,me:null},{pl:PC,nx:0,nz:0,foot:Y(SZ+72),always:true,me:null});
+  cutWalls.push({pl:PF,nx:0,nz:0,foot:Y(SZ+100),always:true,me:null});
   solid(-1,0,0,LEN,UH*2); solid(XW,0,XW+1,LEN,UH*2); solid(P0,-1,SL.EX0,0,UH*2); solid(SL.EX1,-1,P1,0,UH*2); solid(SL.EX0,-SL.ED-1,SL.EX1,-SL.ED,UH*2); solid(P0,LEN,P1,LEN+1,UH*2);
   const TUN=(()=>{ const R=(mx0,mx1,my0,my1,k)=>({x0:SL.MY0-my1,x1:SL.MY0-my0,y0:mx0-XS0,y1:mx1-XS0,k}), N=[SL.MY0-4.4,SL.MY0], S=[SL.MY0-21.8,SL.MY0-17.4], {EAST,WN,WS,TOP}=SL, E0=XS0+LEN;
     return [R(E0,EAST,...N,'y'),R(E0,EAST,...S,'y'),R(WN+2.2,XS0,...N,'y'),R(WN-2.2,WN+2.2,...N,'c'),R(WN-2.2,WN+2.2,N[1],TOP,'x'),R(WS+2.2,XS0,...S,'y'),R(WS-2.2,WS+2.2,...S,'c'),R(WS-2.2,WS+2.2,S[1],TOP,'x')]; })();

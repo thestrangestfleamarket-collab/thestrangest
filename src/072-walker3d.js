@@ -210,11 +210,11 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
   W3.group.add(m); W3.meshes.push(m); W3.mesh=m;
   scene.add(LEVELS.own(W3.group,'*'));
   const LIGHT=nrm(V(-0.55,0.75,0.5)), m4=new THREE.Matrix4();
-  W3.SZ=1.2;
+  W3.SZ=1.2; W3.rest=rest;
   { const HI=PCS.findIndex(P=>P.n==='head'), EYEL=new THREE.Vector3(); W3.eyeAt=out=>{ if(HI<0||!W3.mesh)return null; W3.mesh.updateWorldMatrix(true,false); return out.copy(EYEL.set(0,2,7)).applyMatrix4(W3.PM.value[HI]).applyMatrix4(W3.mesh.matrixWorld); }; }
   W3.hideMe=W3.hideMeQ=!!QS.get('hideme');
   W3.body={place:()=>{}};
-  W3.place=(B,x,y,z,hd,yawA,ZY)=>{ if(W3.hideMe)W3.group.traverse(o=>{ if(o.isMesh)o.visible=false; }); W3.group.position.set(x,y,z); W3.group.rotation.set(0,hd,0); W3.group.scale.set(W3.SZ/PPU,ZY*W3.SZ*(W3.BH||1),W3.SZ/PPU);
+  W3.place=(B,x,y,z,hd,yawA,ZY)=>{ W3.lastB=B; if(W3.hideMe)W3.group.traverse(o=>{ if(o.isMesh)o.visible=false; }); W3.group.position.set(x,y,z); W3.group.rotation.set(0,hd,0); W3.group.scale.set(W3.SZ/PPU,ZY*W3.SZ*(W3.BH||1),W3.SZ/PPU);
     const L=R.yaw(LIGHT,-yawA); W3.L.set(L.x,L.y,L.z);
     W3.G.value.set(Math.cos(hd),0,Math.sin(hd),0,1,0,-Math.sin(hd),0,Math.cos(hd)); SHL.forEach((S,i)=>{ W3.LP.value[i].copy(S.position);
       const k=1;

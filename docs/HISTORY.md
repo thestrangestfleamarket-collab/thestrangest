@@ -4597,6 +4597,9 @@ Owner: "cache chromium in the workflow" (after "fixed billing"; Actions had refu
 Owner: "add the weapons back to the townsfolk". The warrior's sword, the cleric's and the wizard's staffs, the ranger's bow and the rogue's dagger are in their right hands again, coloured from the pack; the monk has none. They still only walk and idle.
 - Owner, 24 Oct 2026: "why are all the rooms empty" (a room showed only floor, walls and ceiling): the items were placed but never painted — `put()`/`place()` only position a prop, the painting is its own pass; the old rooms now paint each item after placing it, name it in play, and light the room with up to three lamps. The check measures painted geometry, not a count.
 
+## 25 Oct 2026: the designer, stage 1 (shape)
+Owner: "a full character editor that allows reshaping resizing, etc entire avatar, rotate, scale, view, all options, drag, drop, push, pull ... full designer, all features"; his picks: every player, parts + sculpt brush, and face, hair & colours, clothes, pose & moves (later stages). YOU's DESIGN YOUR WALKER opens a studio: you alone, turned, zoomed and seen front, side, back or ¾; click a part (head, neck, chest, hips, upper arms, forearms, hands, thighs, shins, feet) and size, turn or move it by its handles or sliders, both sides mirrored or each alone; his height; undo, redo, reset. Kept in OWNED (`design`) and sent with your look, so other players see your shape. Next: the sculpt brush, then face, hair & colours, clothes, pose & moves.
+
 ## 25 Oct 2026: the Walker's hems straight, his surface smooth
 Owner: "the avatar is STILL NOT SMOOTHED OUT", "YOU CALL THAT STRAIGHT EDGE?", "that looks like straight pant line to you?", then "yup" (to fixing it). Hems, cuffs, the collar, shoe edges and the hairline are clean lines and his surface has no ripples; same look, same triangles. `?smooth=N` is gone.
 
@@ -4639,5 +4642,13 @@ Owner: "lets remove all the newly added rooms from game". The forty old rooms of
 Owner: "make grass totally flat tree top, no humps or bumps". Every leaf clump is a level disc at one height (no raised middle, no turned-down rim, the wind slides it but never dips it); the leaf colouring (lighter middle, darker rim) stays, so it still reads as a treetop.
 Owner: "the skyline is missing from edge of screen, neesd to go back". The distance fog had washed the sky and the far city into haze; now it leaves the sky and everything past the map's edge clear and only blurs the world itself.
 
+## 25 Oct 2026: the park's edge-ring trees smaller again
+
+Owner: "just make them smaller" (the ring of trees inside the park wall — asked for before and still too big: from the street they swallowed the whole gate). Each edge-ring tree is about a third smaller now, so the gate, its CENTRAL PARK sign and the lanterns read against the trees instead of being hidden behind them.
 ## 25 Oct 2026: the lawn one flat sheet, ankle deep
-Owner (a picture of the leaf clumps' round shapes): "no circles, no shapes, flat, thick grass that goes up to my ankles, treetop flat all the way across". Every lawn is one level sheet of grass in a single green, up to your ankles, dipping only a little where you step; its edge drops straight to the ground. The leaf clumps and their light and dark patches are gone. Tufts at the feet of things and the gold reeds stay.
+Owner (a picture of the leaf clumps' round shapes): "no circles, no shapes, flat, thick grass that goes up to my ankles, treetop flat all the way across". Every lawn is one level sheet of grass in a single green, up to your ankles, dipping only a little where you step; its edge drops straight to the ground. The leaf clumps and their light and dark patches are gone. Tufts at the feet of things and the gold reeds stay. (Merged with the half-size ring above: one size, the half, not both cuts stacked.)
+
+## 25 Oct 2026: the lawn flat and faceted like a treetop; still trunks; no flowers or bushes in the park
+Owner (a picture of the plain sheet's square steps): "dark green areas? blocky square grass? completely flat no shadows or any angles at all? not like trees?"; of two in-game options he picked "2 - treetop facets". The lawn stays one flat sheet at ankle height, now of irregular triangles each lit as its own facet in a few greens, like the tree crowns from above; its edge slopes down softly instead of stepping in squares.
+Owner: "tree trunks shouldnt sway, only the treetops should sway in wind, and only when you are near". Only the leaves sway, and only near you; trunks and branches stand still.
+Owner: "remove al flowers and plants from park"; asked which, he chose flowers and flower beds, and bushes. The park has no flower beds, wild flowers, flower models or bushes any more (the street keeps its own); trees, grass, weed tufts, reeds and mushrooms stay. Wild flowers for GARDENING grow only outside the park; garden plots you plant are yours anywhere.

@@ -1,4 +1,4 @@
-// THE FLORA: FLORA plants the bushes and flower beds in the park and on the street.
+// THE FLORA: FLORA plants the bushes and flower beds on the street (none in the park).
 import {SHARED, THREE} from './003-shx.js';
 import {DRESS, PARK, WEEDS} from './003b-systems.js';
 import {CASTLE, FIX, MAPG, SOL, STORE, TILE} from './006-map-pre.js';
@@ -101,7 +101,7 @@ const FLORA={bushes:[],beds:[],tris:0,n:{}}; window.FLORA=FLORA;
     L.forEach((o,i)=>{ const v=.88+.2*hsh(o.x,o.z,57), s=o.s*sc; me.setMatrixAt(i,m4.compose(new V3(o.x,o.y,o.z),q.setFromAxisAngle(new V3(0,1,0),o.a),new V3(s,s,s))); me.setColorAt(i,col.setRGB(v,v*(.97+.06*hsh(o.z,o.x,59)),v)); });
     me.computeBoundingSphere(); me.castShadow=cast; me.receiveShadow=true; me.name=nm; me.raycast=()=>{}; grp.add(me); FLORA.tris+=tri(G)*L.length; FLORA.n[nm]=L.length; return me; };
   FLORA.meshes.push(...[...BG.map((G,k)=>inst(G,MB,BU.filter(b=>b.k===k),VB*WU,true,BUSH[k][0])),...FG.map((G,k)=>inst(G,MF,FL.filter(f=>f.k===k),VF*WU,false,FLOW[k][0]))].filter(Boolean)); FLORA.flowers+=FL.length; };
-  grow(false); PARK.later(()=>grow(true));
+  grow(false);
   FLORA.near=(x,z,R,what)=>(what==='bed'?FLORA.beds:FLORA.bushes).filter(o=>Math.hypot(o.x-x,o.z-z)<R);
   FLORA.cover=(bx,bz,px,pz,R=8*T)=>{ let best=null, bd=1e9; for(const b of FLORA.bushes){ const d=Math.hypot(b.x-bx,b.z-bz); if(d>R)continue; const dp=Math.hypot(b.x-px,b.z-pz); if(dp<2.2*T||dp<Math.hypot(bx-px,bz-pz)*.7)continue; const s=d-dp*.3; if(s<bd){ bd=s; best=b; } } return best; };
   window.FLORADBG=()=>({bushes:FLORA.bushes.length,flowers:FLORA.flowers,beds:FLORA.beds.length,tris:FLORA.tris,n:FLORA.n,K:FLORA.K}); }

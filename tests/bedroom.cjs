@@ -1,4 +1,4 @@
-// THE BEDROOM CHECK: node tests/bedroom.cjs dist/market.html. Your apartment's bedroom (the owner's picture): built with its things as real bodies, the near walls down in the isometric view, the far ones at the picture's height, the doors and lamps working.
+// THE APARTMENT ROOM CHECK: node tests/bedroom.cjs dist/market.html. Your apartment as one open room in the owner's cozy style: built with its things as real bodies, the near walls down in the isometric view, black outside, the lamps switching, the bed and chair to sit on.
 const { chromium } = require('playwright'), path = require('path');
 const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process.env.GITHUB_ACTIONS ? '::error title=bedroom::' : 'FAIL ') + m); } else console.log('ok   ' + m); };
 (async () => {
@@ -13,14 +13,14 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     await pg.evaluate(() => { const b = __dbg.MAPK.MODS.apts.BED, B = SHARED.BOD; __dbg.UI.goTo(B.X(b.x0 + 2), B.Z(b.y0 + 2.4), SHARED.py); SHARED.yawTo = SHARED.yaw = Math.PI / 4; });
     await pg.waitForTimeout(2000);
     const d = await pg.evaluate(() => BEDROOMDBG());
-    ok(d.built && d.loose >= 16, 'the bedroom is built, its small things real bodies (' + d.loose + ')');
+    ok(d.built && d.loose >= 10, 'the room is built, its small things real bodies (' + d.loose + ')');
     const fy = await pg.evaluate(() => SHARED.BOD.Y(.15));
-    ok(d.walls.filter(w => w < fy + .1).length === 2 && d.walls.filter(w => w > fy + 3 && w < 1e5).length === 2, 'in the isometric view the two near walls are down and the far two stand at the picture\'s height (' + d.walls.map(w => w.toFixed(2)) + ')');
-    ok(d.sun > 0, 'the late sun comes in through the window');
-    const used = await pg.evaluate(async () => { const T = __dbg.UI.things.filter(t => /WARDROBE|LAMP:/.test(t.name)); for (const t of T) t.act(); for (let i = 0; i < 40 && !(BEDROOMDBG().doors[0] > .5); i++) await new Promise(r => setTimeout(r, 250)); return { names: T.map(t => t.name), d: BEDROOMDBG() }; });   // the doors swing frame by frame: wait for them, not a fixed time
-    ok(used.d.doors[0] > .5 && used.d.doors[1] > .5, 'the wardrobe opens (' + JSON.stringify(used.d.doors) + ')');
-    ok(used.d.lamps.every(l => l !== d.lamps[0]) || used.d.lamps.some((l, i) => l !== d.lamps[i]), 'the lamps switch (' + JSON.stringify(d.lamps) + ' -> ' + JSON.stringify(used.d.lamps) + ')');
-    ok(await pg.evaluate(() => !!(window.GPH && GPH.loose().some(i => i.k === 'o' && i.name === 'TEAPOT'))), 'the teapot is a loose thing you can pick up');
+    ok(d.walls.filter(w => w < fy + .1).length === 2 && d.walls.filter(w => w > 1e5).length === 2, 'in the isometric view the two walls nearest the camera are down, the far two stand (' + d.walls.map(w => w.toFixed(2)) + ')');
+    ok(d.sky === false && await pg.evaluate(() => __dbg.scene.background.getHexString() === '000000'), 'outside is black in the isometric view; the sky shows only in the windows');
+    const used = await pg.evaluate(async () => { const T = __dbg.UI.things.filter(t => /LAMP:/.test(t.name)); for (const t of T) t.act(); await new Promise(r => setTimeout(r, 300)); return { n: T.length, d: BEDROOMDBG() }; });
+    ok(used.n >= 3 && used.d.lamps.every((l, i) => l !== d.lamps[i]), 'the lamps switch (' + JSON.stringify(d.lamps) + ' -> ' + JSON.stringify(used.d.lamps) + ')');
+    ok(await pg.evaluate(() => !!(window.GPH && GPH.loose().some(i => i.k === 'o' && i.name === 'CHAIR'))), 'the chair is a loose thing you can push and pick up');
+    ok(await pg.evaluate(() => __dbg.UI.things.some(t => t.name === 'SIT ON THE BED')), 'you can sit on the bed');
     const err = await pg.evaluate(() => Object.entries(SYS.P).flatMap(([k, v]) => v.filter(s => s.err).map(s => k + ':' + s.name)));
     ok(!err.length, 'no SYS errors (' + err.join(',') + ')');
   }

@@ -22,7 +22,7 @@ import {BATCH} from './008-batch.js';
       let tw=0; for(const ch of txt)tw+=ch===' '?2:4; let x=Math.max(3,Math.round((W-tw)/2)); g.fillStyle='#2a1e10';
       for(const ch of txt){ const q=F3[ch]; if(q)for(let r=0;r<5;r++)for(let c=0;c<3;c++)if(q[r*3+c]==='1')g.fillRect(x+c,2+r,1,1); x+=ch===' '?2:4; } t.needsUpdate=true; };
     paint(); F.setPlaque=paint;
-    plaque=new THREE.Mesh(new THREE.PlaneGeometry(W/24*T*KK,SHARED.BOD.Y(H)),new THREE.MeshLambertMaterial({map:t})); plaque.position.set(X(APTS.door[0]),SHARED.BOD.Y(104),Z(APTS.door[1]-.04)); scene.add(plaque); } });
+    plaque=new THREE.Mesh(new THREE.PlaneGeometry(W/24*T*KK,SHARED.BOD.Y(H)),new THREE.MeshLambertMaterial({map:t,clippingPlanes:APTS.WPL?[APTS.WPL.Wb]:[]})); plaque.position.set(X(APTS.door[0]),SHARED.BOD.Y(104),Z(APTS.door[1]-.04)); scene.add(plaque); } });
   const z0=APTS.RZ+S;
   F.build=()=>{ '@fire'; if(F.built)return; const keep=BATCH.items.splice(0), km=BATCH.meshes, kc=BATCH.cast; BATCH.meshes={}; BATCH.cast=true; BATCH.tag=null;
     BLOCKS.make({x0:A.x0,x1:A.x1,y0:A.y0,y1:A.y1,z0:0,z1:HZ+2*S,kind:'A',paint:(sd,a,z,f)=>APTS.paint(sd,a,z0+((z-z0)%(3*S)+3*S)%(3*S),f)});   // the whole building, street to roof, so you see it run all the way up and down past the landing

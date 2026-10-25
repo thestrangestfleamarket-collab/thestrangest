@@ -4692,7 +4692,11 @@ Owner: "lower resolution slightly of floor, give grout depth"; then "more realis
 
 ## 25 Oct 2026: subway props get contact shadows; apartment walls aged
 
-Same `SHAD.blob` now grounds the subway's benches, trash bins and the passport machine. The apartment's cream walls got a subtle aged-plaster texture (soft stains, faint streaks, fine grain) so they aren't flat — the "grittier, keep cozy" wall pass. (Shops' props and any moodier-lighting pass still to come.)
+Same `SHAD.blob` now grounds the subway's benches, trash bins and the passport machine. The apartment's cream walls got a subtle aged-plaster texture (soft stains, faint streaks, fine grain) so they aren't flat — the "grittier, keep cozy" wall pass. (Any moodier-lighting pass still to come.)
+
+## 25 Oct 2026: the shops' furniture gets contact shadows
+
+`put` now drops a `SHAD.blob` under each floor-standing shop prop (stools, tables, chairs, sofas, exhibits — not rugs, litter or room-spanning counters), so they sit on the floor in the bar, museum, bank, theatre and playhouse. The blobs are occluded by the solid shop fronts from the street, same as the props.
 
 ## 25 Oct 2026: the grass field baked, brighter, to every edge; lamps and water fixed
 Owner (pictures of bare green under the trees and along the paths, dark grass, wrong shadows): "still large areas of green that arent covered by the grass. the grass is too dark. the shadow isnt right, brighter green , baked grass (not rendered nonstop)"; asked, "Still, built once"; then "grass should go all the way to edges and look messy", "lights vanishing when i walk around", "water is glitchy". The grass is baked once (each blade's colour fixed in, no wind; it moves only where something presses it), brighter and greener, grows under the trees (only low things keep it off) and over every lawn round you farther out, and spills messily over the edges of paths and walls. Its shadows only while the sun is up and as dark as the ground's. The lamps light the grass again as you walk; the water's sparkles no longer fall into a grid of dots. Rule: the lawn's grass is still unless something presses it.
@@ -4713,3 +4717,5 @@ Owner: "add 5 more types of floor for apartment, add the kitchen into the apartm
 
 ## 25 Oct 2026: dragons always flap
 Owner: "the dragons dont animated when flying"; his pick: always flap. A flying dragon beats its wings the whole flight; it still rises and sinks gently around its height. Rule change: no more frozen wings-out glides (was "glides in slow banking turns", 17 Oct).
+## 25 Oct 2026: your apartment lit only by its windows and its own lights; the real fire escapes outside
+Owner: "remove all lighting except for natural lighting from windows and light sources inside (no over head lights on ceiling) the front and back door and windows to fire escapes should show the fire escape. dont do flat images, do real depth showing the fire escape from inside"; approved the mockups ("go"). Rule: no overhead or fill light in the apartment; daylight comes only through its windows.

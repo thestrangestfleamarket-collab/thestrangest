@@ -9,7 +9,7 @@ import {FOUNT} from './060a-fount.js';
 import {GPH} from './150-loose.js';
 
 { const T=TILE, M=1/.84*T, G=(x,z)=>MODS.bodega.ground(x,z), F=BLAZE.F, rnd=Math.random, MAX=+(QS.get('fires')||12), WET=3.2, HOLD=240, FADE=360, V3=THREE.Vector3;
-  const its=L=>L.filter(Boolean).flatMap(m=>m.userData.items||[]).filter(o=>!/rock|stone|pillar/i.test(o.k)), ITEMS=its([PARK.trees,PARK.under,PARK.underStill,DRESS.trees,DRESS.plants]); PARK.later(()=>ITEMS.push(...its([PARK.trees,PARK.under,PARK.underStill])));
+  const its=L=>L.filter(Boolean).flatMap(m=>m.userData.items||[]).filter(o=>!/rock|stone|pillar/i.test(o.k)), ITEMS=its([PARK.trees,PARK.under,PARK.underStill,DRESS.trees,DRESS.plants]); PARK.later(()=>ITEMS.push(...its([PARK.trees,PARK.ring,PARK.under,PARK.underStill])));
   const top=(x,z)=>WEEDS.top?WEEDS.top(x,z):undefined, surf=(x,z)=>{ const t=top(x,z); return typeof t==='number'?t:G(x,z); };
   const lawn=(x,z)=>{ if(!PARK.in||!WEEDS.inPark||!WEEDS.inPark(x,z,1))return false; const a=x/T+SHARED.BOD.OX-PARK.ox, b=z/T+SHARED.BOD.OY-PARK.oy; return !PARK.path(a,b)&&!(PARK.brook&&PARK.brook.wet(a,b,.6))&&!(FOUNT.lake&&FOUNT.lake(a,b)<1.5); };
   const brush=(x,z)=>ITEMS.some(o=>Math.hypot(o.x-x,o.z-z)<Math.max(.5*T,o.r*.6));

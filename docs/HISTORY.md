@@ -4702,3 +4702,6 @@ Owner: "if i press forward, i vanish for 1 frame completely before stopping agai
 
 ## 25 Oct 2026: the character page's avatar is lit
 Owner: screenshots of the character page (ESC) and DESIGN YOUR WALKER with an empty, black avatar. The character page's LIVE avatar was drawn with no light (black in shade); it now uses the designer's studio light.
+
+## 25 Oct 2026: the gear slots open a list
+Owner: "these buttons dont do aynthing" (HEAD, EYES, BODY, HAND on the character page); his pick: a list. Clicking an empty slot lists your carried gear that fits it (click one to wear it), or says nothing fits yet; a full slot still takes it off on click; dragging still works. The LIVE avatar now shows your front (it showed your back).

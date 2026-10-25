@@ -31,7 +31,7 @@ const RESL=[.5,.75,1,1.5,2,3,4,6,8,12,16,24,32,48,64], V0=PPU*PXS;
 const ZUPX=6, RES=()=>RESL[Math.min(RESL.length-1,SHARED.RESI+(V0*SHARED.ppu/PPU/(PPU*RESL[SHARED.RESI])>=ZUPX?1:0))];
 const MINPX=()=>Math.max(1,Math.round(PXS/RES())), ZMAX=PPU*80;
 const RESMAX=FULLRES?10:3, vpu=()=>V0*SHARED.ppu/PPU, art=()=>PPU*RES(), PCAP=()=>Math.max(1,Math.round(PXS/RESL[SHARED.RESI])), pxS=()=>Math.min(Math.max(MINPX(),PCAP()),Math.max(MINPX(),Math.round(vpu()/art()))), rppu=()=>{ const r=Math.round(vpu()/art()); return r<MINPX()||r>Math.max(MINPX(),PCAP())?vpu()/pxS():art(); };
-function frustum(){ const u=rppu(); SHARED.cam.left=-RW/2/u; SHARED.cam.right=RW/2/u; SHARED.cam.top=RH/2/u; SHARED.cam.bottom=-RH/2/u; SHARED.cam.updateProjectionMatrix(); }
+function frustum(){ const u=rppu(); let hw=RW/2/u, hh=RH/2/u; const mw=SHARED.camMaxW; if(mw>0&&2*hw>mw){ const k=mw/(2*hw); hw*=k; hh*=k; } SHARED.cam.left=-hw; SHARED.cam.right=hw; SHARED.cam.top=hh; SHARED.cam.bottom=-hh; SHARED.cam.updateProjectionMatrix(); }   // the visible width is capped at SHARED.camMaxW (set by the UI) so zooming all the way out shows the same extent at every resolution
 addEventListener('resize',resize);
 
 const hash3=(x,y,s)=>{ let h=(Math.imul(x,374761393)+Math.imul(y,668265263)+Math.imul(s,982451653))|0; h=Math.imul(h^(h>>>13),1274126177); h^=h>>>16; return (h>>>0)/4294967296; };

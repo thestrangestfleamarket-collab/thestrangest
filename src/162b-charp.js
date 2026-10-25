@@ -2,6 +2,7 @@
 import {THREE} from './003-shx.js';
 import {CHARP, CINEMA, EQUIP, FORAGE, INV, ITEMS, LOOKS, UI, VIT, W3, WE, WIELD} from './003b-systems.js';
 import {renderer} from './004-main.js';
+import {DESIGN} from './102b-designer.js';
 { const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
   const CLOG=__CHANGELOG__;   // [date, summary] of every HISTORY update, newest first; baked by build.py
   const SLOTS=[['head','HEAD'],['eyes','EYES'],['body','BODY'],['hand','HAND']];
@@ -14,17 +15,15 @@ import {renderer} from './004-main.js';
 
   // the avatar: render W3.group into the panel canvas. The body is one mesh posed by shader uniforms, so its
   // geometry bounds are the bind pose, not the real figure: frame from the feet (group y) to the head (W3.eyeAt).
-  let rt,cam,raf=0,last=0,el=null,cv=null,g2=null,isAdmin=!!CINEMA.admin; const W=256,H=384,FACE=Math.PI, V=new THREE.Vector3(), CC=new THREE.Color();
-  const shot=()=>{ const g=W3&&W3.group; if(!g||!cv||!W3.mesh)return; if(!rt){ rt=new THREE.WebGLRenderTarget(W,H); cam=new THREE.OrthographicCamera(-1,1,1,-1,.01,100); }
+  let rt,cam,raf=0,last=0,el=null,cv=null,g2=null,isAdmin=!!CINEMA.admin; const W=256,H=384,FACE=Math.PI, V=new THREE.Vector3();
+  const shot=()=>{ const g=W3&&W3.group; if(!g||!cv||!W3.mesh)return; if(!rt){ rt=new THREE.WebGLRenderTarget(W,H); rt.texture.colorSpace=THREE.SRGBColorSpace; cam=new THREE.OrthographicCamera(-1,1,1,-1,.01,100); }
     const sv={ry:g.rotation.y,vis:g.visible,am:g.matrixAutoUpdate}; g.visible=true; g.matrixAutoUpdate=true; g.rotation.y=FACE; g.updateMatrixWorld(true);
     const gp=g.getWorldPosition(V.clone()), head=W3.eyeAt&&W3.eyeAt(new THREE.Vector3());
     const topY=(head?head.y:gp.y+2.2)+.18, botY=gp.y-.05, hh=Math.max(.6,topY-botY)*1.06, ww=hh*(W/H), cy=(topY+botY)/2, d=hh*3+6;
     cam.left=-ww/2; cam.right=ww/2; cam.top=hh/2; cam.bottom=-hh/2; cam.near=.01; cam.far=d*3+60; cam.updateProjectionMatrix();
     cam.position.set(gp.x,cy,gp.z+d); cam.up.set(0,1,0); cam.lookAt(gp.x,cy,gp.z); cam.updateMatrixWorld(true);
-    renderer.getClearColor(CC); const ca=renderer.getClearAlpha();
-    renderer.setRenderTarget(rt); renderer.setClearColor(0x15171e,1); renderer.clear(); renderer.render(g,cam);
+    DESIGN.portrait(rt,cam);
     const px=new Uint8Array(W*H*4); renderer.readRenderTargetPixels(rt,0,0,W,H,px);
-    renderer.setRenderTarget(null); renderer.setClearColor(CC,ca);
     g.rotation.y=sv.ry; g.visible=sv.vis; g.matrixAutoUpdate=sv.am; g.updateMatrixWorld(true);
     const im=g2.createImageData(W,H); for(let y=0;y<H;y++)im.data.set(px.subarray((H-1-y)*W*4,(H-y)*W*4),y*W*4); g2.putImageData(im,0,0); };
   const loop=t=>{ if(!UI.menuOpen||!el){ raf=0; return; } raf=requestAnimationFrame(loop); if(t-last<55)return; last=t; shot(); bars(); };

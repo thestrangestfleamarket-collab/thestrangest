@@ -4691,3 +4691,6 @@ Owner (pictures of bare green under the trees and along the paths, dark grass, w
 
 ## 25 Oct 2026: you no longer vanish when you start walking
 Owner: "if i press forward, i vanish for 1 frame completely before stopping again and being seen". Fixed: the behind/third-person camera dodged things right beside you by diving into your head; something within 1.5 tiles of you no longer pulls the camera in.
+
+## 25 Oct 2026: the character page's avatar is lit
+Owner: screenshots of the character page (ESC) and DESIGN YOUR WALKER with an empty, black avatar. The character page's LIVE avatar was drawn with no light (black in shade); it now uses the designer's studio light.

@@ -81,7 +81,7 @@ import {ROOMK} from './150a-bedroom.js';
     if(tab==='lights'){ const K=A.kinds(), fit=m=>Object.keys(K).filter(k=>K[k].cat==='light'&&K[k].mount===m);
       h+=`<div class="lab">ADD A LIGHT · CEILING</div><div class="row">${fit('ceil').map(k=>`<button class="btn" data-add="${k}">${K[k].name}</button>`).join('')}</div>
         <div class="lab">ADD A LIGHT · WALL</div><div class="row">${fit('wall').map(k=>`<button class="btn" data-add="${k}">${K[k].name}</button>`).join('')}</div>
-        <div class="lab">ROOM GLOW</div><div class="row"><input type="range" min="0" max="300" value="${Math.round(A.R.glowK*100)}" data-glow="1"> <span>${Math.round(A.R.glowK*100)}%</span></div>`;
+`;
       const rng=(id,key,lab,v,lo,hi,f=1,unit='%')=>`<div class="row">${lab} <input type="range" min="${lo}" max="${hi}" value="${Math.round(v*f)}" data-lset="${key}" data-id="${id}" data-f="${f}"> <span>${Math.round(v*f)}${unit}</span></div>`;
       for(const q of A.lightsAll()){ const L=A.lightGet(q.id), open=ED.open===q.id;
         h+=`<div class="light"><div class="row"><button class="btn ${L.on?'on':''}" data-lon="${q.id}">${L.on?'ON':'OFF'}</button><span>${q.name}</span><button class="btn" data-lopen="${q.id}" style="margin-left:auto">${open?'LESS':'MORE'}</button></div>${rng(q.id,'k','BRIGHTNESS',L.k,0,300,100)}`;

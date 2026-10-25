@@ -10,7 +10,7 @@ Places built with `await grab(name, async()=>{...})` are one function each, ofte
 - `grab(bodega)`: 039-bodega.js to 039-bodega.js (71 KB)
 - `grab(store)`: 059-store.js to 059-store.js (30 KB)
 - `grab(mainstreet)`: 059-street.js to 059-street.js (29 KB)
-- `grab(apts)`: 059a-apts.js to 059a-apts.js (21 KB)
+- `grab(apts)`: 059a-apts.js to 059a-apts.js (22 KB)
 - `grab(arcade)`: 059b-arcade.js to 059b-arcade.js (19 KB)
 - `grab(nightmkt)`: 059c-market.js to 059c-market.js (11 KB)
 - `grab(fire)`: 059d-fireview.js to 059d-fireview.js (0 KB)
@@ -53,7 +53,7 @@ Places built with `await grab(name, async()=>{...})` are one function each, ofte
 | `039-bodega.js` | 225.9 | top level, opens grab(bodega) | FOREST (061 152a), PROPS (061 152a) | 003: SHARED THREE; 003b: CLOCK DRESS ROOMS pos; 004: scene; 006: BF BLDK BLOCK CASTLE EASTX FIX LAY LOTX MAPG MAPSTAIR MODS NEONS NORTHX PARKGX RING SOL TILE TURN WESTX WP WROW ZU cutWalls grab lamps; 006a: PAINTC; 008: BATCH OBJ; 014: BRICKS CATALOG CAT_DEPTS CAT_INFO COPE DTBRICK FP KIND_OF LAMPS LBLD LIFE LSEED PROPL STORY T cvNoise grain grassCol hash kerbCol kerbFace lawnCol mt prop rlf roadCol sh sided slabCol speck zShift; 015: bodegaFloorCol bodegaWall; 016: MKS; 020: STUDIO; 023: KEEPC PRESETS STOREK; 038z: dgnRoom dgnThings |
 | `059-store.js` | 30.4 | top level, opens grab(store) |  | 003: SHARED THREE; 003b: INTERIORS LITE ROOMS UI WEEDS pos; 004: scene; 006: AWAY BF BLDK EASTX FADE FIX LAY QS SOL STORE TILE TURN WP ZU cutWalls grab lamps; 007: FLAME; 008: BATCH OBJ; 009: WATER |
 | `059-street.js` | 29.3 | top level, opens grab(mainstreet) |  | 003: SHARED THREE; 003b: BLK CINEMA LITE ROOMS SFX USE pos; 004: scene; 006: BLDK BLOCK FIX SOL STORE SYS TILE TURN WP cutWalls grab; 008: BATCH OBJ OBJS |
-| `059a-apts.js` | 21.9 | top level, opens grab(apts) |  | 003: SHARED THREE; 003b: CLOCK ROOMS UI pos st; 004: scene; 006: BLDK FADE FIX LOTX LOTY MODS SOL STORE SYS TILE TURN WP cutWalls grab; 008: BATCH |
+| `059a-apts.js` | 22.3 | top level, opens grab(apts) |  | 003: SHARED THREE; 003b: CLOCK ROOMS UI pos st; 004: scene; 006: BLDK FADE FIX LOTX LOTY MODS SOL STORE SYS TILE TURN WP cutWalls grab; 008: BATCH |
 | `059b-arcade.js` | 19.1 | top level, opens grab(arcade) |  | 003: SHARED THREE; 003b: FORAGE INV ROOMS UI WIELD pos; 004: scene; 006: FIX SOL STORE SYS TILE TURN WP grab; 008: BATCH; 014: LAMPS |
 | `059c-market.js` | 11.7 | top level, opens grab(nightmkt) |  | 003: SHARED THREE; 003b: FAR3 ROOMS pos; 004: scene; 006: MISTE STORE SYS TILE grab |
 | `059d-fireview.js` | 0.7 | top level, opens grab(fire) |  | 003: SHARED; 006: MODS STORE grab |
@@ -197,9 +197,9 @@ Places built with `await grab(name, async()=>{...})` are one function each, ofte
 | `148b-drains.js` | 2.1 | top level | DRAINS (163) | 003: SHARED THREE; 004: scene; 006: TILE |
 | `149-ghosts.js` | 7.3 | top level |  | 003: SHARED THREE; 003b: GHOSTS NPCS UI pos; 004: scene; 006: SYS TILE |
 | `150-loose.js` | 27.5 | top level | GPH (150a 151 163) | 003: SHARED THREE; 003b: DRESS ED PB PERFX UI USE W3 keys pos st; 004: scene; 006: FIX MODS QS SOL SYS TILE; 008: OBJS; 137: BVH |
-| `150a-bedroom.js` | 49.5 | top level | ROOMK (150b 150c 150d) | 003: SHARED THREE; 003b: CLOCK SFX SHAD SKY UI USE; 004: renderer scene; 006: MODS SYS; 150: GPH |
+| `150a-bedroom.js` | 53.6 | top level | ROOMK (150b 150c 150d) | 003: SHARED THREE; 003b: CLOCK SFX SHAD SKY UI USE; 004: renderer scene; 006: MODS SYS; 150: GPH |
 | `150b-kitchen.js` | 25.5 | top level |  | 003: THREE; 003b: SFX; 150a: ROOMK |
-| `150c-roomedit.js` | 19.1 | top level |  | 003: SHARED THREE; 003b: pos; 004: renderer scene; 006: MODS SYS; 150a: ROOMK |
+| `150c-roomedit.js` | 18.9 | top level |  | 003: SHARED THREE; 003b: pos; 004: renderer scene; 006: MODS SYS; 150a: ROOMK |
 | `150d-lights.js` | 6.7 | top level |  | 003: THREE; 150a: ROOMK |
 | `151-blaze.js` | 15.4 | top level |  | 003: SHARED THREE; 003b: BLAZE DRESS PARK WEEDS pos; 004: scene; 006: FIX MAPG MODS QS RING SOL SYS TILE; 007: FLAME; 060: GCAVE; 060a: FOUNT; 150: GPH |
 | `152-city.js` | 9.4 | top level |  | 003: SHARED; 003b: CITY CLIP CLOCK MAPED NPCS PARK; 006: CASTLE MAPSTAIR MODS QS SOL STORE TILE; 076: STHOLE |

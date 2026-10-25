@@ -4,7 +4,7 @@ import {FAR3, pos} from './003b-systems.js';
 import {scene, ShaderPass} from './004-main.js';
 import {SAVE} from './005-save.js';
 import {TILE} from './006-map-pre.js';
-{ const D0={on:true,start:20,end:60,blur:2.2,haze:.75}; let C; try{ C=Object.assign({},D0,JSON.parse(SAVE.get('dfog')||'{}')); }catch(e){ C=Object.assign({},D0); }
+{ const D0={on:true,start:20,end:60,blur:2.2,haze:.75}; let C; try{ C=Object.assign({},D0,JSON.parse(SAVE.get('dfog2')||'{}')); }catch(e){ C=Object.assign({},D0); }
   const comp=SHARED.composer;
   for(const rt of [comp.renderTarget1,comp.renderTarget2])if(!rt.depthTexture){ rt.depthTexture=new THREE.DepthTexture(rt.width,rt.height); rt.depthTexture.type=THREE.UnsignedIntType; rt.dispose(); }
   const pass=new ShaderPass({uniforms:{tDiffuse:{value:null},tDepth:{value:null},uPInv:{value:new THREE.Matrix4()},uCamW:{value:new THREE.Matrix4()},uP:{value:new THREE.Vector3()},uC:{value:new THREE.Color()},
@@ -21,15 +21,16 @@ import {TILE} from './006-map-pre.js';
     u.uP.value.copy(pos); u.uS.value=C.start*TILE; u.uE.value=Math.max(C.start+1,C.end)*TILE; u.uB.value=C.blur; u.uH.value=C.haze;
     u.uC.value.copy(FAR3.fog&&FAR3.fog.color||(scene.background&&scene.background.isColor?scene.background:HZ)); u.uR.value.set(rb.width,rb.height); if(FAR3.land)u.uK.value.set(...FAR3.land); draw(r,w,rb,dt,mask); };
   pass.enabled=C.on; comp.insertPass(pass,1);
-  const save=()=>{ try{ SAVE.set('dfog',JSON.stringify(C)); }catch(e){} pass.enabled=C.on; };
+  const save=()=>{ try{ SAVE.set('dfog2',JSON.stringify(C)); }catch(e){} pass.enabled=C.on; };
   window.DFOG={get:()=>Object.assign({},C),set:o=>{ Object.assign(C,o); save(); }};
   // its numbers in ATMOSPHERE, under HAZE
   const ui=()=>{ const P=document.querySelector('[data-p="atmo"]'); if(!P)return setTimeout(ui,1000); if(P.querySelector('#dfog'))return;
     const S=[['dfs','START','start',4,60,1],['dfe','END','end',8,120,1],['dfb','BLUR','blur',0,5,.1],['dfh','HAZE','haze',0,1,.01]];
     const B=document.createElement('div'); B.id='dfog';
-    B.innerHTML='<h3>DISTANCE FOG</h3><div class="row"><button class="btn" id="dfon"></button>'+S.map(([id,n,,a,b,st])=>`<span style="width:56px">${n}</span><input type="range" id="${id}" min="${a}" max="${b}" step="${st}">`).join('')+'</div><div class="dim">how far from you the world starts to blur into the haze (START, in tiles) and where it is gone (END)</div>';
+    B.innerHTML='<h3>DISTANCE FOG</h3><div class="row"><button class="btn" id="dfon"></button><button class="btn" id="dfrs">RESET</button>'+S.map(([id,n,,a,b,st])=>`<span style="width:56px">${n}</span><input type="range" id="${id}" min="${a}" max="${b}" step="${st}">`).join('')+'</div><div class="dim">how far from you the world starts to blur into the haze (START, in tiles) and where it is gone (END)</div>';
     P.appendChild(B); const sync=()=>{ B.querySelector('#dfon').textContent=C.on?'ON':'OFF'; for(const [id,,k] of S)B.querySelector('#'+id).value=C[k]; };
     B.querySelector('#dfon').onclick=()=>{ C.on=!C.on; save(); sync(); };
+    B.querySelector('#dfrs').onclick=()=>{ Object.assign(C,D0); save(); sync(); };   // back to the owner's default haze
     for(const [id,,k] of S)B.querySelector('#'+id).oninput=e=>{ C[k]=+e.target.value; if(k==='start'&&C.end<C.start+1)C.end=C.start+1; save(); sync(); };
     sync(); };
   ui();

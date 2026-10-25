@@ -4619,3 +4619,6 @@ Owner: "keep building out all rooms and items until finished". The light switch 
 
 ## 24 Oct 2026: the subway's pieces
 Owner: "keep building out all rooms and items until finished". The old West End subway's car (benches, poles, doors, windows, light strips, litter) and station pieces (column, bench, lit sign, tunnel signal) are kinds for the old rooms (`027o-west-subway`); a piece on a car's wall takes the room's near or far wall by its own place. The car's walls, the ride and the raster train are not here: the subway as a place is its own mechanic, for when it exists. SUBWAY - CAR 47/47, SUBWAY - PLATFORM 7/7. The gym's boxing ring (26-gym-course) and the desk room's corner street lamp are kinds too: UNDER THE SQUARE - BOXING GYM 1/1, THE DESK ROOM 5/5.
+
+## 25 Oct 2026: the old game's rooms removed
+Owner: "lets remove all the newly added rooms from game". The forty old rooms off the map and their GO TO entries are gone, with the kits made only for them (027a-027o, 039a), their data and their check. A player saved in one comes back in the park. The catalogue of the old game (`docs/old-game/`) stays as reference.

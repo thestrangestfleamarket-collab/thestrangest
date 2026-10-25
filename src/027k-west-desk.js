@@ -92,6 +92,7 @@ function wdeskLamp(x,y){ SHARED.PNAME='corner street lamp'; const IR=[46,48,54],
   // where you stand to get in and out): sitting in it is sitting at the CRT
   function crtChair(x,y){ STUDIO.face([0,-1]); let p; try{ p=CATALOG['office chair'](x,y); }finally{ STUDIO.face(null); } p.seats=[{x,y,z:22,f:[0,-1],stand:[x,y+.6]}]; return p; }
   CATALOG['crt desk']=(x,y)=>crtDesk(x,y);
+  CATALOG['corner street lamp']=(x,y)=>wdeskLamp(x,y); KIND_OF['corner street lamp']='corner street lamp';
   CATALOG['crt desk chair']=(x,y)=>crtChair(x,y);                                   // (kept apart from the studio's chair, so the drones are only here)
   CAT_INFO['crt desk']={no:'M-605',name:'CRT Desk',dept:'mach',price:0,desc:'A big black monitor, a keyboard and a mouse on a dark desk. The screen says DRONE LINK.',mat:'wood, plastic, glass'};
   CAT_INFO['crt desk chair']={no:'M-606',name:'CRT Desk Chair',dept:'mach',price:0,desc:'Sit down and the screen is all there is.',mat:'steel, cloth'};

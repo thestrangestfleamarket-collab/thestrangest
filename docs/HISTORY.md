@@ -4665,6 +4665,21 @@ Owner: "remove al flowers and plants from park"; asked which, he chose flowers a
 ## 25 Oct 2026: the grass is the GrassField of cortiz2894/stylized-components
 Owner: links to https://tympanus.net/codrops/2025/02/04/how-to-make-the-fluffiest-grass-with-three-js/ and https://github.com/cortiz2894/stylized-components; "dont integrate it with our grass, start over, use the github only"; asked, he chose no flowers and to keep our sky; then "no brown spots", "no flat green on map, all grass, 2-3x taller, covering ankles". Our lawn grass (the faceted sheet, the tufts at the feet of things) is gone; every lawn is the repo's grass field (MIT, credited; docs/licenses): its floor in the grass's colour, its thin blades lit as if facing up, dark base to light tip, lush and dry patches, its wind, its per-blade shadows, the light through the blades against the sun, pressed flat and splayed where you, the walkers and the rocks, logs and trunks stand. Its settings and its Spring, Autumn and Mars presets (ATMOSPHERE, GRASS), with no dirt patches and the blades 2.5 times taller, to your ankles; grass on all of every lawn near you, farther blades fewer and wider so no bare floor shows. The gold reeds and the mushrooms stay.
 
+## 25 Oct 2026: the Walker's base shape is broader (S4)
+Owner: "give me better versions of our avatar body shape"; shown four, picked STRONG (then "tons of missing pixels and body does not look naturally posed" — both were my offline preview, not the game). The Walker's base body (`BODYS` in 001-rig) is a new broader build `S4`, now the default (was S2F): wider square shoulders, fuller chest and thighs, less sloped. Head (1/3 height) and leg length unchanged; body types (AVERAGE/SLIM/… ) still layer on top. `?body=S2F` and the earlier presets stay.
+
+## 25 Oct 2026: first person no longer bobs
+Owner: "when walking its too bump, in 1st person pov the view should be smooth when you walk, not up and down". In first person the eye height is smoothed, so walking doesn't bounce the view; stairs, crouch and jumps still move it.
+
+## 25 Oct 2026: no neck line on the bare body
+Owner: "remove neck line, make body white there instead". The bare chest has no V collar line; the shirt keeps its collar.
+
+## 25 Oct 2026: a leg no longer vanishes on a step
+Owner: "if i press down arrow one time ... their leg will vanish for 1 frame" (every stop). Fixed: stopping mid-step had turned a leg's position invalid for a moment.
+
+## 25 Oct 2026: station pillars reach the ceiling
+Owner: "the pillars should go as high as the walls (all the way to ceiling)". In the isometric view the platform's columns are no longer cut at chest height; they stand full height like the walls.
+
 ## 25 Oct 2026: your apartment one open room, in the owner's cozy style
 Owner: "remove all the furniture and items from the large room ... show mockups"; "the outside should be all black the windows should show the real sky outside (sun should shine inside ... get rid of the interior walls of bedroom, open floorplan 100%"; "the windows should look realistically shaped, edges, depth, framed"; then his pictures of a cozy low-poly bedroom: "match this exact style, use these assets", "extremely atmospheric"; chose "Whole apartment, these items only" and "This picture's walls"; then "Approved". Your apartment is one open room: cream walls under a dark wood crown and skirting with warm glow strips, wide orange planks on a cream slab, deep orange four-pane windows with mint curtains onto the live sky, a glazed door to the fire escape. Its things are the picture's: the checkered bed between two nightstands and lamps, the monstera, the diamond frames, the little window above the bed, the desk and chair under shelves of plants and books. In the isometric view it hangs in black; the sky only in its windows; the real sun comes in through them. This replaces the earlier bedroom picture's room and the rest of the old furniture (the computer's spot still opens the BBS).
 
@@ -4685,6 +4700,14 @@ Owner (pictures of bare green under the trees and along the paths, dark grass, w
 ## 25 Oct 2026: the grass on every lawn, built once; stone bricks along the paths
 Owner: "the grass should be thicker and taller, should come up to your ankles and go back to normal around your legs when you stop"; "make the blades less grainy, bake the grass in so its not all rendered. rocks and trees should still have tufts around them"; "the grass shouldnt be painted on as you get near, it should be the default grass everywhere" (asked, he chose the same grass everywhere, built once); "why is my shadow not directly under my feet?"; "random squares of flat blur green"; of stones between grass and cobbles: "straight stone bricks along the path". Every lawn on the map gets the same grass, built once at the start (the park's when you enter it), wider and less grainy blades to the ankle, thicker taller tufts round rocks and trunks; nothing grows in as you walk. The grass round your legs stands back up half a second after you stop. The grass follows the park's real hills (it sat inside them, so your shadow fell away from your feet). Rocks no longer flatten the grass round them. A row of straight stone bricks lines both edges of every park path and the plaza.
 - Owner (his own shot beside a clean start's): "that is the level of haze and mist i want at that exact range... set that haze level in 1st image as the default (you can change it in menu but reset to default)". The distance fog and the distance haze start from that default for everyone again (earlier saved settings set aside), and DISTANCE FOG in ATMOSPHERE has a RESET back to it.
+## 25 Oct 2026: you no longer vanish when you start walking
+Owner: "if i press forward, i vanish for 1 frame completely before stopping again and being seen". Fixed: the behind/third-person camera dodged things right beside you by diving into your head; something within 1.5 tiles of you no longer pulls the camera in.
+
+## 25 Oct 2026: the character page's avatar is lit
+Owner: screenshots of the character page (ESC) and DESIGN YOUR WALKER with an empty, black avatar. The character page's LIVE avatar was drawn with no light (black in shade); it now uses the designer's studio light.
+
+## 25 Oct 2026: the gear slots open a list
+Owner: "these buttons dont do aynthing" (HEAD, EYES, BODY, HAND on the character page); his pick: a list. Clicking an empty slot lists your carried gear that fits it (click one to wear it), or says nothing fits yet; a full slot still takes it off on click; dragging still works. The LIVE avatar now shows your front (it showed your back).
 ## 25 Oct 2026: DECORATE, the room editor in your apartment
 Owner: "we need to add a room editor that allows player to edit all things in their room ... full control"; asked, he chose the game-style way (click, drag, Q/E turn, wheel resizes, a panel for walls, floor and lights) and adding and removing things. T in your apartment: every piece moves, turns, resizes, goes away and comes back, or is added new; walls, floor and every light are yours to set. Saved to your account. Rule: each piece carries its own floor shadow.
 

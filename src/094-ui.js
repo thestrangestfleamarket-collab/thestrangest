@@ -92,12 +92,14 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
   UI.setView=v=>{ UI.view=v; UI.persp=v==='third'||v==='first'||v==='follow'; if(UI.freeCam&&UI.persp)setFree(false);
     if(v==='iso'){ UI.isoTo(); SHARED.pitchTo=Math.PI/6; SHARED.ppuTo=PPU*1.5; UI.off.set(0,0,0); zAt=null; }
     if(v==='follow'){ UI.dist=4*TILE; SHARED.pitchTo=.2; }
-    if(v==='first')SHARED.pitchTo=.05; if(v==='third')SHARED.pitchTo=.3; if(!UI.persp)SHARED.pitchTo=clampP(SHARED.pitchTo); try{ SAVE.set('view',v); }catch(e){} };
+    if(v==='first'){ SHARED.pitchTo=.05; UI._fpy=null; } if(v==='third')SHARED.pitchTo=.3; if(!UI.persp)SHARED.pitchTo=clampP(SHARED.pitchTo); try{ SAVE.set('view',v); }catch(e){} };
   UI.turn4=()=>{ if(UI.view==='first'||UI.view==='follow')return; if(UI.view==='iso'){ UI.isoStep(-1); return; } SHARED.yawTo=Math.round((SHARED.yawTo-Math.PI/4)/(Math.PI/2))*(Math.PI/2)+Math.PI/4-Math.PI/2; };
   UI.view3=a=>{
     SHARED.cam=UI.persp?PCAM:OCAM; if(SHARED.RPASS)SHARED.RPASS.camera=SHARED.cam; if(UI.persp&&Math.abs(PCAM.aspect-RW/RH)>1e-3){ PCAM.aspect=RW/RH; PCAM.updateProjectionMatrix(); } };
-  UI.view3b=a=>{ W3.group.visible=UI.view!=='first'; if(!UI.persp)return; const sk=W3.SZ||1;
-    if(UI.view==='first'){ if(!(W3.eyeAt&&W3.eyeAt(SHARED.cam.position))){ SHARED.cam.position.set(pos.x,SHARED.py+EYE*sk,pos.z); SHARED.cam.position.addScaledVector(new THREE.Vector3(-Math.sin(a),0,-Math.cos(a)),.12*TILE); } { const b=FOUNT.bedAt&&FOUNT.bedAt(SHARED.cam.position.x,SHARED.cam.position.z); if(b!=null&&SHARED.cam.position.y<b+LOW*.3)SHARED.cam.position.y=b+LOW*.3; } SHARED.cam.updateMatrixWorld(); return; }
+  UI.view3b=(a,dt)=>{ W3.group.visible=UI.view!=='first'; if(!UI.persp)return; const sk=W3.SZ||1;
+    if(UI.view==='first'){ if(!(W3.eyeAt&&W3.eyeAt(SHARED.cam.position))){ SHARED.cam.position.set(pos.x,SHARED.py+EYE*sk,pos.z); SHARED.cam.position.addScaledVector(new THREE.Vector3(-Math.sin(a),0,-Math.cos(a)),.12*TILE); }
+      { const ey=SHARED.cam.position.y; if(UI._fpy==null||Math.abs(ey-UI._fpy)>TILE)UI._fpy=ey; else UI._fpy+=(ey-UI._fpy)*Math.min(1,(dt||.016)/.22); SHARED.cam.position.y=UI._fpy; }   // low-pass the eye height so the walk bounce doesn't jolt the view; real elevation still comes through
+      { const b=FOUNT.bedAt&&FOUNT.bedAt(SHARED.cam.position.x,SHARED.cam.position.z); if(b!=null&&SHARED.cam.position.y<b+LOW*.3)SHARED.cam.position.y=b+LOW*.3; } SHARED.cam.updateMatrixWorld(); return; }
     const FT=FEEL.take(); let T=new THREE.Vector3(pos.x,SHARED.py+(FT?FEEL.cfg.camH*FEEL.MV:HEAD*sk),pos.z); const F=new THREE.Vector3(Math.sin(a)*Math.cos(SHARED.pitch),Math.sin(SHARED.pitch),Math.cos(a)*Math.cos(SHARED.pitch));
     const dv=FOUNT.swim&&st.water&&FOUNT.bedAt?st.water.under:0; if(dv>.01&&W3.eyeAt&&W3.eyeAt(eyeV))T.y+=(Math.min(T.y,eyeV.y+LOW*.4)-T.y)*dv;
     if(FT){ T=FEEL.camT(T).clone(); if(UI.view!=='first'){ FEEL.cfg.camDist=UI.dist/FEEL.MH; FEEL.cfg.camPitch=SHARED.pitchTo; } }

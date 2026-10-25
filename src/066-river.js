@@ -1,5 +1,6 @@
 // THE RIVER: RIVER builds the river, its banks and its moving water past the edge of town.
 import {SHARED, THREE} from './003-shx.js';
+import {B64, F32} from './003a-skin.js';
 import {CLOCK, LITE, pos, ROOMS, SFX, SKY, UI} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {SAVE} from './005-save.js';
@@ -15,13 +16,13 @@ RIVER.build=()=>{ '@later'; if(RIVER.on)return; const n0=scene.children.length; 
   RIVER.box={x0:lx0,x1:lx1,z0:rz0,z1:rz1,lv:LV};
   const WATERS=[
    {key:'a',name:'A · HARBOR',desc:'The Hudson by the river walk: green and murky, a light chop off the wind, a tyre and bottles in the mud.',
-    sig:[0.55,0.24,0.33],scat:[0.10,0.20,0.15],deep:7,bed:0,foam:0.35,refr:1.0,fish:[[0.66,0.7,0.7],[0.62,0.66,0.66],[0.45,0.48,0.34]],
+    sig:[0.55,0.24,0.33],scat:[0.10,0.20,0.15],deep:7,bed:0,foam:0.35,refr:1.0,
     waves:[[6.5,0.09,265,.45],[4.0,0.07,250,.6],[2.6,0.05,285,.6],[1.7,0.035,240,.5],[3.1,0.04,300,.5],[1.2,0.02,270,.5]]},
    {key:'b',name:'B · OPEN SEA',desc:'A long swell under a wind sea: crests a metre high that break white. A rock bed.',
-    sig:[0.42,0.10,0.06],scat:[0.03,0.13,0.26],deep:8,bed:1,foam:1,refr:1.2,fish:[[0.55,0.66,0.76],[0.7,0.78,0.85]],
+    sig:[0.42,0.10,0.06],scat:[0.03,0.13,0.26],deep:8,bed:1,foam:1,refr:1.2,
     waves:[[18,0.42,268,.5],[11,0.24,255,.6],[7,0.14,280,.7],[4,0.08,245,.8],[2.5,0.05,290,.8],[1.6,0.025,230,.7],[5.5,0.09,262,.7]]},
    {key:'c',name:'C · CLEAR COVE',desc:'Glassy and clear: the sand rippled eight metres down, light dancing over it, bright fish.',
-    sig:[0.62,0.16,0.12],scat:[0.03,0.34,0.38],deep:8,bed:2,foam:0.15,refr:1.4,fish:[[0.96,0.82,0.22],[0.28,0.48,0.92],[0.95,0.52,0.22]],
+    sig:[0.62,0.16,0.12],scat:[0.03,0.34,0.38],deep:8,bed:2,foam:0.15,refr:1.4,
     waves:[[9,0.07,268,.3],[3.5,0.016,240,.4],[2.2,0.01,290,.4],[1.4,0.006,255,.4]]}];
   RIVER.WATERS=WATERS;
   const cl=(v,a,b)=>v<a?a:v>b?b:v;
@@ -193,14 +194,18 @@ RIVER.build=()=>{ '@later'; if(RIVER.on)return; const n0=scene.children.length; 
     B.forEach((b,i)=>{ M.makeScale(b[3]-b[0],b[4]-b[1],b[5]-b[2]); M.setPosition((b[0]+b[3])/2,(b[1]+b[4])/2,(b[2]+b[5])/2); im.setMatrixAt(i,M); im.setColorAt(i,C.setRGB(...b[6])); });
     im.castShadow=true; im.receiveShadow=true; scene.add(im); RIVER.kit=im; RIVER.kitN=B.length; }
 
-  const fishG=(()=>{ const s=.26*T, P=[[s,0,0],[0,.35*s,0],[0,0,.18*s],[0,-.3*s,0],[0,0,-.18*s],[-.9*s,0,0],[-1.3*s,.3*s,0],[-1.3*s,-.3*s,0]],
-      F=[[0,1,2],[0,2,3],[0,3,4],[0,4,1],[5,2,1],[5,3,2],[5,4,3],[5,1,4],[5,6,7],[5,7,6]], pos=[]; for(const f of F)for(const v of f)pos.push(...P[v]);
-    const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3)); g.computeVertexNormals(); return g; })();
-  const NF=36; let fishM=null;
-  const FISH=[], SCH=[]; const seedFish=()=>{ if(!fishM)return; FISH.length=0; SCH.length=0; const Wt=WATERS[RIVER.wi], C=new THREE.Color();
+  const FISHDATA=__DATA__("data/fish.json"), FISHKEYS=Object.keys(FISHDATA), FSIZE={clownfish:.42,bluetang:.46,koi:.6,puffer:.5,lionfish:.5,mandarinfish:.34,moorishidol:.44,butterflyfish:.4,shark:1.6};
+  const SHARKI=FISHKEYS.indexOf('shark'), SHOAL=FISHKEYS.map((k,i)=>i).filter(i=>i!==SHARKI);   // the shark swims alone, not in the shoal rotation
+  const fishGeo=k=>{ const D=FISHDATA[k], p=F32(D.p), col=B64(D.c), n=col.length/3, C=new Float32Array(n*3), c=new THREE.Color();
+    for(let i=0;i<n;i++){ c.setRGB(col[i*3]/255,col[i*3+1]/255,col[i*3+2]/255,THREE.SRGBColorSpace); C[i*3]=c.r; C[i*3+1]=c.g; C[i*3+2]=c.b; }
+    const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(p,3)); g.setAttribute('color',new THREE.BufferAttribute(C,3)); return g; };
+  const FISHGEO=FISHKEYS.map(fishGeo), fishMat=new THREE.MeshBasicMaterial({vertexColors:true});
+  const NF=36; let fishMs=null;
+  const FISH=[], SCH=[]; const seedFish=()=>{ if(!fishMs)return; FISH.length=0; SCH.length=0; const Wt=WATERS[RIVER.wi], cnt=new Array(FISHKEYS.length).fill(0);
     for(let s=0;s<3;s++)SCH.push({x:0,z:0,y:0,tx:0,tz:0,ty:0,t:0,set:false});
-    for(let i=0;i<NF;i++){ FISH.push({s:SCH[i%3],x:0,y:0,z:0,vx:0,vy:0,vz:0,o:[Math.random()*2-1,Math.random()*2-1,Math.random()-.5],big:Wt.bed===0&&i===NF-1}); fishM.setColorAt(i,C.setRGB(...Wt.fish[i%Wt.fish.length])); }
-    fishM.instanceColor.needsUpdate=true; };
+    for(let i=0;i<NF;i++){ const big=SHARKI>=0&&Wt.bed===0&&i===NF-1, sp=big?SHARKI:(SHOAL.length?SHOAL[i%SHOAL.length]:0);
+      FISH.push({s:SCH[i%3],x:0,y:0,z:0,vx:0,vy:0,vz:0,o:[Math.random()*2-1,Math.random()*2-1,Math.random()-.5],big,sp,li:cnt[sp]++}); }
+    for(let s=0;s<FISHKEYS.length;s++)fishMs[s].count=cnt[s]; };
   const buoyG=new THREE.Group(); { const red=new THREE.MeshLambertMaterial({color:0xb0302a}), white=new THREE.MeshLambertMaterial({color:0xece9e2}), dark=new THREE.MeshLambertMaterial({color:0x1b1c1f}), r=.32*T;
     const add=(g,m,y)=>{ const o=new THREE.Mesh(g,m); o.position.y=y; buoyG.add(o); };
     add(new THREE.CylinderGeometry(r,r*.85,.35*T,8),red,0); add(new THREE.CylinderGeometry(r*.9,r,.18*T,8),white,.26*T); add(new THREE.ConeGeometry(r*.9,.5*T,8),red,.6*T); add(new THREE.CylinderGeometry(.03*T,.03*T,.4*T,4),dark,1.0*T); }
@@ -230,7 +235,7 @@ RIVER.build=()=>{ '@later'; if(RIVER.on)return; const n0=scene.children.length; 
 
   RIVER.deep=false; let dbusy=false; const wait=ms=>new Promise(r=>setTimeout(r,ms)), frames=k=>new Promise(r=>{ const f=()=>--k<=0?r():requestAnimationFrame(f); requestAnimationFrame(f); });
   const deepGo=()=>{ if(RIVER.deep)return; RIVER.deep=true; for(const [m,c,g] of [[surf,surfF,PG(DZ,NX,NZ,0)],[bed,bedF,PG(DZ,BN[0],BN[1],0)]]){ m.remove(c); c.geometry.dispose(); m.geometry.dispose(); m.geometry=g; }
-    fishM=new THREE.InstancedMesh(fishG,new THREE.MeshBasicMaterial({color:0xffffff}),NF); fishM.frustumCulled=false; scene.add(fishM); seedFish(); seedJunk(); RIVER.cx=1e9; };
+    fishMs=FISHGEO.map(g=>{ const m=new THREE.InstancedMesh(g,fishMat,NF); m.frustumCulled=false; m.count=0; scene.add(m); return m; }); seedFish(); seedJunk(); RIVER.cx=1e9; };
   RIVER.load=async()=>{ if(RIVER.deep||dbusy)return; dbusy=true; await FADE.run('LOADING...',()=>deepGo()); dbusy=false; };
   RIVER.over=(x,z)=>SHARED.LVL==='up'&&x>lx0&&x<lx1&&z>rz0&&z<rz1;
   RIVER.dep=0; RIVER.bot=0; let wasIn=false, wake=0, wasUnder=false;
@@ -260,7 +265,7 @@ RIVER.build=()=>{ '@later'; if(RIVER.on)return; const n0=scene.children.length; 
   const F=new THREE.Frustum(), M4=new THREE.Matrix4(), bb=new THREE.Box3();
   RIVER.tick=(dt,pos)=>{ RIVER.t+=dt; uT0.value=RIVER.t; const up=OUT.world, way=RIVER.way;
     const cx=snapX(pos.x); if(Math.abs(cx-RIVER.cx)>1){ RIVER.cx=cx; buildBed(); setFlats(); surf.position.set(cx,LV,(rz0+rz1)/2); SU.uWin.value.set(cx-WIN/2,cx+WIN/2,0,0); SU.uBedR.value.set(cx-WIN/2,rz0,WIN,DZ); }
-    const real=way!=='flat'; surf.visible=up&&real; bed.visible=up&&real; flatL.visible=flatR.visible=up&&real; flatAll.visible=up&&!real; junk.visible=grass.visible=up&&real; if(fishM)fishM.visible=up&&real;
+    const real=way!=='flat'; surf.visible=up&&real; bed.visible=up&&real; flatL.visible=flatR.visible=up&&real; flatAll.visible=up&&!real; junk.visible=grass.visible=up&&real; if(fishMs)for(const m of fishMs)m.visible=up&&real;
     if(!RIVER.deep&&up&&RIVER.over(pos.x,pos.z)&&(pos.z<rz1-10*T||RIVER.swim&&RIVER.dep>2.5))RIVER.load();
     RIVER.wallN.visible=up; if(RIVER.sea)RIVER.sea.visible=up; cope.visible=RIVER.kit.visible=spm.visible=up; for(const B of BUOYS)B.m.visible=B.ln.visible=up;
     surfMat.transparent=way==='swell'; surfMat.depthWrite=way!=='swell'; SU.uMode.value=way==='swell'?1:way==='fluid'?2:0; SU.uStep.value=RIVER.step?1:0;
@@ -268,15 +273,15 @@ RIVER.build=()=>{ '@later'; if(RIVER.on)return; const n0=scene.children.length; 
     const S=CLOCK.sun; uSunD.value.copy(CLOCK.sunV); SU.uSunC.value.copy(S.color).multiplyScalar(Math.min(1.4,S.intensity)); if(window.SKY&&SKY.U){ SU.uSkyH.value.copy(SKY.U.uH.value); SU.uSkyZ.value.copy(SKY.U.uZ.value); FU.uSky.value.copy(SKY.U.uH.value); }
     SU.uAmb.value.copy(SU.uSkyZ.value).multiplyScalar(.55).addScalar(.03); uAmbB.value.copy(SU.uSkyZ.value).multiplyScalar(.6).add(SU.uSkyH.value.clone().multiplyScalar(.25)); uSunCB.value.copy(SU.uSunC.value).multiplyScalar(.75); FU.uDay.value=cl((CLOCK.elev()+4)/14,.15,1);
     LITE.pool.forEach((Lp,i)=>{ if(i>=8)return; SU.uLP.value[i].copy(Lp.position); SU.uLC.value[i].set(Lp.color.r,Lp.color.g,Lp.color.b).multiplyScalar(Math.min(1,Lp.intensity/3)); });
-    if(real&&up&&fishM){ const C=new THREE.Matrix4(), Q=new THREE.Quaternion(), E=new THREE.Euler(), Sv=new THREE.Vector3(), Pv=new THREE.Vector3();
+    if(real&&up&&fishMs){ const C=new THREE.Matrix4(), Q=new THREE.Quaternion(), E=new THREE.Euler(), Sv=new THREE.Vector3(), Pv=new THREE.Vector3();
       for(const s of SCH){ s.t-=dt; if(!s.set||s.t<=0||Math.abs(s.x-pos.x)>26*T){ s.t=3+Math.random()*4; s.tx=cl(pos.x+(Math.random()*2-1)*14*T,lx0+2*T,lx1-2*T); s.tz=rz1-(2+Math.random()*16)*T; if(!s.set){ s.x=s.tx; s.z=s.tz; s.set=true; s.y=LV-1.5*WU; } }
         const bz=LV-depthAt(s.tx,s.tz)*WU; s.ty=bz+(LV-bz)*(.3+.4*Math.sin(RIVER.t*.1+s.tx)); s.x+=(s.tx-s.x)*dt*.25; s.z+=(s.tz-s.z)*dt*.25; s.y+=(s.ty-s.y)*dt*.3; }
       FISH.forEach((f,i)=>{ const s=f.s, tx=s.x+f.o[0]*1.4*T, tz=s.z+f.o[1]*1.4*T, ty=s.y+f.o[2]*WU; let ax=(tx-f.x)*1.2, ay=(ty-f.y)*1.2, az=(tz-f.z)*1.2;
         if(RIVER.swim){ const dx=f.x-pos.x, dy=f.y-(LV-1*WU), dz=f.z-pos.z, d=Math.hypot(dx,dy,dz)+1e-3; if(d<3*T){ ax+=dx/d*9*T; ay+=dy/d*4*T; az+=dz/d*9*T; } }
         if(!f.x&&!f.z){ f.x=tx; f.y=ty; f.z=tz; }
         const k=Math.exp(-1.2*dt); f.vx=(f.vx+ax*dt)*k; f.vy=(f.vy+ay*dt)*k; f.vz=(f.vz+az*dt)*k; f.x+=f.vx*dt; f.y+=f.vy*dt; f.z=cl(f.z+f.vz*dt,rz0+.4*T,rz1-.4*T);
-        f.y=cl(f.y,LV-depthAt(f.x,f.z)*WU+.3*WU,LV-.35*WU); E.set(0,Math.atan2(-f.vz,f.vx),cl(f.vy/(Math.hypot(f.vx,f.vz)+1e-3),-.6,.6)); Q.setFromEuler(E); const sc=f.big?2.2:1; C.compose(Pv.set(f.x,f.y,f.z),Q,Sv.set(sc,sc,sc)); fishM.setMatrixAt(i,C); });
-      fishM.instanceMatrix.needsUpdate=true; }
+        f.y=cl(f.y,LV-depthAt(f.x,f.z)*WU+.3*WU,LV-.35*WU); E.set(0,Math.atan2(-f.vz,f.vx),cl(f.vy/(Math.hypot(f.vx,f.vz)+1e-3),-.6,.6)); Q.setFromEuler(E); const L=(FSIZE[FISHKEYS[f.sp]]||.45)*T; C.compose(Pv.set(f.x,f.y,f.z),Q,Sv.set(L,L,L)); fishMs[f.sp].setMatrixAt(f.li,C); });
+      for(const m of fishMs)if(m.count)m.instanceMatrix.needsUpdate=true; }
     for(const B of BUOYS){ const h=hAt(B.x,B.z), [sx,sz]=slopeAt(B.x,B.z); B.m.position.set(B.x,LV+h-.12*T,B.z); B.m.rotation.set(-sz*.8,0,sx*.8); const a=B.ln.geometry.attributes.position; a.setXYZ(0,B.x,LV+h-.2*T,B.z); a.setXYZ(1,B.x+.8*T,LV-depthAt(B.x,B.z)*WU,B.z-.5*T); a.needsUpdate=true; }
     spray(Math.min(dt,1/30)); };
 
@@ -296,7 +301,7 @@ RIVER.build=()=>{ '@later'; if(RIVER.on)return; const n0=scene.children.length; 
         uRip.value=SIM.A.texture; }
       else if(SIM.quiet<7){ const cc=renderer.getClearColor(new THREE.Color()), ca=renderer.getClearAlpha(); renderer.setClearColor(0,0); for(const Tg of [SIM.A,SIM.B]){ renderer.setRenderTarget(Tg); renderer.clear(true,false,false); } renderer.setClearColor(cc,ca); renderer.setRenderTarget(null); SIM.quiet=99; } }
     else SIM.drops.length=0;
-    if(surf.visible){ M4.multiplyMatrices(cam.projectionMatrix,cam.matrixWorldInverse); F.setFromProjectionMatrix(M4); bb.min.set(RIVER.cx-WIN/2,LV-WU,rz0); bb.max.set(RIVER.cx+WIN/2,LV+2*WU,rz1); if(cam.position.y>LV+2*WU&&!SEE()){ surf.visible=bed.visible=junk.visible=grass.visible=false; if(fishM)fishM.visible=false; } }
+    if(surf.visible){ M4.multiplyMatrices(cam.projectionMatrix,cam.matrixWorldInverse); F.setFromProjectionMatrix(M4); bb.min.set(RIVER.cx-WIN/2,LV-WU,rz0); bb.max.set(RIVER.cx+WIN/2,LV+2*WU,rz1); if(cam.position.y>LV+2*WU&&!SEE()){ surf.visible=bed.visible=junk.visible=grass.visible=false; if(fishMs)for(const m of fishMs)m.visible=false; } }
     if((RIVER.way==='full'||fl)&&surf.visible){
       if(cam.position.y<=LV+2*WU||SEE()){ const w=renderer.domElement.width, h=renderer.domElement.height; if(RT.width!==w||RT.height!==h)RT.setSize(w,h); SU.uRes.value.set(w,h); SU.uNear.value=cam.near; SU.uFar.value=cam.far; cam.getWorldDirection(SU.uCamD.value);
         surf.visible=false; spm.visible=false; renderer.setRenderTarget(RT); renderer.render(scene,cam); renderer.setRenderTarget(null); surf.visible=true; spm.visible=true; } }

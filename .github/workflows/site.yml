@@ -28,15 +28,29 @@ jobs:
         with:
           python-version: '3.12'
       - run: npm ci --no-audit --no-fund
+      - id: pw
+        run: echo "v=$(node -p "require('playwright/package.json').version")" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@v4
+        id: pwcache
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.pw.outputs.v }}
       - run: npx playwright install --with-deps chromium
+        if: steps.pwcache.outputs.cache-hit != 'true'
+      - run: npx playwright install-deps chromium
+        if: steps.pwcache.outputs.cache-hit == 'true'
       - name: Build
         run: python3 build.py
       - name: The core's own logic (imports, level file, SYS, ZONES, VIS, FADE, collision)
         run: node tests/core.cjs dist/market.html
+      - name: The lawn (painted ground, tall blades that sway and part)
+        run: node tests/lawn.cjs dist/market.html
       - name: The other players (bodies, name tags, the list, chat)
         run: node tests/online.cjs dist/market.html
       - name: Fights between players (hitboxes, blows, knockdown)
         run: node tests/brawl.cjs dist/market.html
+      - name: The old game's rooms (built on the jump, their items made)
+        run: node tests/oldrooms.cjs dist/market.html
       - name: Check the site opens (door, then THE MARKET)
         run: node tests/site.cjs
       - name: Every place's code comes when you go there
@@ -81,7 +95,17 @@ jobs:
         with:
           python-version: '3.12'
       - run: npm ci --no-audit --no-fund
+      - id: pw
+        run: echo "v=$(node -p "require('playwright/package.json').version")" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@v4
+        id: pwcache
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.pw.outputs.v }}
       - run: npx playwright install --with-deps chromium
+        if: steps.pwcache.outputs.cache-hit != 'true'
+      - run: npx playwright install-deps chromium
+        if: steps.pwcache.outputs.cache-hit == 'true'
       - name: Build the base and this pull request (readable)
         run: |
           git fetch --depth=1 origin ${{ github.base_ref || 'main' }}

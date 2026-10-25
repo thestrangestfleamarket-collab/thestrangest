@@ -57,7 +57,7 @@ import {FOUNT} from './060a-fount.js';
     for(const o of RK){ if(o.kind==='s'){ BK.st.push([o.x,o.y,o.r*.95/.84,(o.top3-G0)/WU]); continue; } if(o.r<.3)continue; const b=o.wr*.7; SOL.up.push([o.wx-b,o.wz-b,o.wx+b,o.wz+b]); FIX.up.push([o.wx-b,o.wz-b,G0-T,o.wx+b,o.wz+b,o.top3]); }
     const VS='attribute vec4 aF; varying vec4 vF; varying vec3 vW; void main(){ vF=aF; vec4 w=modelMatrix*vec4(position,1.); vW=w.xyz; gl_Position=projectionMatrix*viewMatrix*w; }';
     const FS=`uniform float uT,uDay; uniform vec3 uSky,uSun; uniform vec4 uMe, uRk[24]; varying vec4 vF; varying vec3 vW;
-      float h1(vec2 p){ return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453); }
+      float h1(vec2 p){ p=fract(p*vec2(.1031,.1030)); p+=dot(p,p.yx+33.33); return fract((p.x+p.y)*p.x); }
       float vn(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.-2.*f); return mix(mix(h1(i),h1(i+vec2(1,0)),f.x),mix(h1(i+vec2(0,1)),h1(i+vec2(1,1)),f.x),f.y); }
       void main(){ if(vF.z<-.5)discard; float sp=vF.w, ta=vF.x-uT*.8, u=vF.y, pl=step(sp,.3); vec2 wp=vW.xz/${T.toFixed(4)};
         vec2 fp=mix(vec2(ta*.8,u*2.4),wp*.7+vec2(uT*.05,0.),pl); float n=vn(fp)*.65+vn(fp*2.3+7.)*.35, n2=vn(vec2(ta*2.2,u*5.)+3.);

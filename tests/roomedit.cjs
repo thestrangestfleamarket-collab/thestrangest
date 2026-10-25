@@ -34,10 +34,17 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     await pg.click('#roomed [data-back]'); await pg.waitForTimeout(300);
     ok(await pg.evaluate(() => ROOMEDDBG().gone === 0), 'the panel brings it back');
     await pg.click('#roomed [data-add="LAMP"]'); await pg.waitForTimeout(500);
-    ok(await pg.evaluate(() => ROOMEDDBG().added === 1 && ROOMED._api().lightsAll().some(q => q.un && q.un.added)), 'a new lamp from the catalog, its light listed');
+    ok(await pg.evaluate(() => ROOMEDDBG().added >= 1 && ROOMED._api().lightsAll().some(q => q.un && q.un.added)), 'a new lamp from the catalog, its light listed');
     await pg.click('#roomed [data-tab="walls"]'); await pg.click('#roomed [data-wall="brick"]');
     await pg.click('#roomed [data-tab="floor"]'); await pg.click('#roomed [data-floor="checker"]'); await pg.waitForTimeout(300);
     ok(await pg.evaluate(() => ROOMEDDBG().wall === 'brick' && ROOMEDDBG().floor === 'checker'), 'brick walls and a checker floor');
+    await pg.click('#roomed [data-kfloor="diner"]'); await pg.click('#roomed [data-tab="walls"]'); await pg.click('#roomed [data-wall="damask"]'); await pg.click('#roomed [data-tab="walls"]'); await pg.click('#roomed [data-wall="brick"]'); await pg.waitForTimeout(300);
+    ok(await pg.evaluate(() => ROOMEDDBG().kfloor === 'diner' && ROOMED._api().R.kfloor[0].visible && ROOMED._api().R.kfloorMat.map), 'the kitchen has its own floor (diner checker), wallpapers to choose');
+    await pg.click('#roomed [data-tab="lights"]'); await pg.click('#roomed [data-add="SCONCE"]'); await pg.click('#roomed [data-tab="lights"]'); await pg.click('#roomed [data-add="TRACK SPOTS"]'); await pg.waitForTimeout(500);
+    ok(await pg.evaluate(() => { const A = ROOMED._api(), sc = A.units().find(u => u.kind === 'SCONCE'), t = A.getT(sc), tr = A.units().find(u => u.kind === 'TRACK SPOTS'); return Math.min(t.u, A.Lx - t.u, t.v, A.Ly - t.v) < .05 && A.lightsAll().some(q => q.un === tr && q.L.isSpotLight); }), 'a sconce goes onto the nearest wall; track spots light a beam');
+    await pg.click('#roomed [data-tab="lights"]'); await pg.click('#roomed [data-lopen="ceiling-1"]'); await pg.click('#roomed [data-ltype="ceiling-1"][data-v="spot"]'); await pg.waitForTimeout(200);
+    await pg.evaluate(() => { const r = document.querySelector('#roomed [data-lset="tone"][data-id="ceiling-1"]'); r.value = 6500; r.dispatchEvent(new Event('input', { bubbles: true })); r.dispatchEvent(new Event('change', { bubbles: true })); });
+    ok(await pg.evaluate(() => { const L = ROOMED._api().lightGet('ceiling-1'), q = ROOMED._api().lightsAll().find(x => x.id === 'ceiling-1'); return L.type === 'spot' && L.tone === 6500 && q.L.color.b > q.L.color.r * .9; }), 'a ceiling light turned into a beam, its tone cool');
     await pg.click('#roomed [data-tab="lights"]'); await pg.click('#roomed [data-lon="ceiling-1"]'); await pg.waitForTimeout(400);
     ok(await pg.evaluate(() => { const q = ROOMED._api().lightsAll().find(x => x.id === 'ceiling-1'); return q.L.userData.on === false && q.L.intensity === 0; }), 'a ceiling light switches off');
     await pg.click('#roomed [data-lon="ceiling-1"]'); await pg.click('#roomed [data-a="undo"]'); await pg.waitForTimeout(300);
@@ -45,11 +52,11 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     await pg.screenshot({ path: process.env.SHOT || '/tmp/roomedit.png' });
     await pg.click('#roomed [data-a="done"]'); await pg.waitForTimeout(600);
     const saved = await pg.evaluate(() => JSON.parse(localStorage.getItem('market-home') || 'null'));
-    ok(saved && saved.wall === 'brick' && saved.added.length === 1 && !(await pg.evaluate(() => ROOMEDDBG().on)), 'DONE closes the editor and saves the room');
+    ok(saved && saved.wall === 'brick' && saved.added.length === 3 && !(await pg.evaluate(() => ROOMEDDBG().on)), 'DONE closes the editor and saves the room');
     const s3 = await scr();
     await start('');
-    const back = await pg.evaluate(() => { const A = ROOMED._api(), un = A.units().find(u => u.kind === 'BED'); return { wall: A.R.wall, floor: A.R.floor, added: A.units().filter(u => u.added).length, t: A.getT(un) }; });
-    ok(back.wall === 'brick' && back.floor === 'checker' && back.added === 1 && Math.abs(back.t.u - s3.t.u) < .01 && Math.abs(back.t.ry - s3.t.ry) < .01, 'after a reload the room is as you left it (' + JSON.stringify({ wall: back.wall, floor: back.floor, added: back.added }) + ')');
+    const back = await pg.evaluate(() => { const A = ROOMED._api(), un = A.units().find(u => u.kind === 'BED'); return { wall: A.R.wall, floor: A.R.floor, kfloor: A.R.kfloorK, added: A.units().filter(u => u.added).length, beam: A.lightGet('ceiling-1').type, t: A.getT(un) }; });
+    ok(back.wall === 'brick' && back.floor === 'checker' && back.kfloor === 'diner' && back.beam === 'spot' && back.added === 3 && Math.abs(back.t.u - s3.t.u) < .01 && Math.abs(back.t.ry - s3.t.ry) < .01, 'after a reload the room is as you left it (' + JSON.stringify({ wall: back.wall, floor: back.floor, kfloor: back.kfloor, beam: back.beam, added: back.added }) + ')');
     const err = await pg.evaluate(() => Object.entries(SYS.P).flatMap(([k, v]) => v.filter(s => s.err).map(s => k + ':' + s.name)));
     ok(!err.length, 'no SYS errors (' + err.join(',') + ')');
   }

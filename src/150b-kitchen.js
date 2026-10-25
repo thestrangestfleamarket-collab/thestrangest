@@ -39,6 +39,10 @@ import {ROOMK} from './150a-bedroom.js';
       p(rbox(Lx-PU-.04,CH-TT-KK-.04,.015,.004,1),cabd,(PU+Lx)/2,KK+(CH-TT-KK)/2,P1+.008); p(rbox(.015,CH-TT-KK-.04,P1-P0-.04,.004,1),cabd,PU-.008,KK+(CH-TT-KK)/2,(P0+P1)/2);   // its plain panels
       solid(PU-.03,P0-.03,Lx,P1+.03,CH); },BK);
 
+    /* ---------- the kitchen's own floor: its corner of the room, edged in dark wood where it meets the room's floor (the room editor sets it) ---------- */
+    { const z=R.kzone=[6.85,0,Lx,4.35], w=z[2]-z[0], d=z[3]-z[1]; R.kfloorMat=mat([255,255,255],{roughness:.5,polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-1});
+      const fl=part(new THREE.PlaneGeometry(w,d).rotateX(-Math.PI/2),R.kfloorMat,z[0]+w/2,.002,z[1]+d/2,0,c.apt,false), tm=mat([66,36,20],{roughness:.5});
+      R.kfloor=[fl,part(rbox(.04,.008,d,.003,1),tm,z[0],.004,z[1]+d/2,0,c.apt,false),part(rbox(w,.008,.04,.003,1),tm,z[0]+w/2,.004,z[3],0,c.apt,false)]; }
     /* ---------- the white subway tiles from the counter up, round the window ---------- */
     const tF=mat([255,255,255],{map:tile,roughness:.3,...clip('Wf')}), tE=mat([255,255,255],{map:tile,roughness:.3,...clip('We')});
     const tiles=(m,w,h,u,hh,v,ry)=>{ const g=new THREE.PlaneGeometry(w,h), uv=g.attributes.uv; for(let i=0;i<uv.count;i++)uv.setXY(i,uv.getX(i)*w/.6,uv.getY(i)*h/.3); p(g,m,u,hh,v,ry,cur(),false); };

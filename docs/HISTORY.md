@@ -4680,3 +4680,6 @@ Owner (pictures of bare green under the trees and along the paths, dark grass, w
 
 ## 25 Oct 2026: DECORATE, the room editor in your apartment
 Owner: "we need to add a room editor that allows player to edit all things in their room ... full control"; asked, he chose the game-style way (click, drag, Q/E turn, wheel resizes, a panel for walls, floor and lights) and adding and removing things. T in your apartment: every piece moves, turns, resizes, goes away and comes back, or is added new; walls, floor and every light are yours to set. Saved to your account. Rule: each piece carries its own floor shadow.
+
+## 25 Oct 2026: more floors, the kitchen's own floor, wallpapers, light fittings and every light setting
+Owner: "add 5 more types of floor for apartment, add the kitchen into the apartment with its own flooring, kitchen has 5 types, wallpaper has 5 types, allow all changes through the room editor"; then "add 5 types of lights for ceiling and walls and allow to edit all settings of the light, (tone, color, tint, brightness, direction, type of light, etc)". Five ceiling and five wall fittings to add; every light has tone, colour, tint, brightness, all round or beam, aim, beam width, softness and reach. Rule: wall fittings sit on the nearest wall.

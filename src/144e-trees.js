@@ -11,12 +11,12 @@ const TREES={h:null,want:null}; window.TREES=TREES;
   FORAGE.add({names:Object.fromEntries([...FR,BL].map(f=>[f[0],f[1]])),prices:Object.fromEntries([...FR,BL].map(f=>[f[0],f[2]]))}); VEG.add({},Object.fromEntries([...FR,BL].map(f=>[f[0],f[2]])));
   // climbing: while you are on a trunk the ground is where you are on it, so the walk and the camera follow you up
   const C={it:null,h:0}; const sg0=STORE.stackGround; STORE.stackGround=(x,z)=>TREES.h!=null?TREES.h:(sg0?sg0(x,z):null);
-  MODS.climbs=MODS.climbs||[]; MODS.climbs.push((dt,up,dn,off)=>{ if(SHARED.LVL!=='up'||!PARK.trees)return false; const IT=PARK.trees.userData.items||[];
+  MODS.climbs=MODS.climbs||[]; MODS.climbs.push((dt,up,dn,off)=>{ if(SHARED.LVL!=='up'||!PARK.treeItems)return false; const IT=PARK.treeItems();
     if(!C.it){ if(!up&&!TREES.want)return false; const it=TREES.want||IT.find(o=>Math.hypot(o.x-pos.x,o.z-pos.z)<1.1*T&&o.top-o.y>3*T); TREES.want=null; if(!it)return false; C.it=it; C.h=0; st.climb={z:0,ph:0}; }
     const it=C.it, dx=pos.x-it.x, dz=pos.z-it.z, l=Math.hypot(dx,dz)||1; pos.x=it.x+dx/l*.5*T; pos.z=it.z+dz/l*.5*T; SHARED.heading=Math.atan2(-dx,-dz);
     C.h=Math.max(0,Math.min(it.top-it.y-.8*T,C.h+(up?1:dn?-1:0)*dt*1.7*T)); st.climb.ph=C.h/(.6*T); TREES.h=it.y+C.h;
     if(off||(dn&&C.h<=0)){ st.climb=null; TREES.h=null; C.it=null; pos.x=it.x+dx/l*.9*T; pos.z=it.z+dz/l*.9*T; } return true; });
-  PARK.later(()=>{ '@park'; const IT=(PARK.trees&&PARK.trees.userData.items)||[], g=MAPG.park||scene, SP=[]; let n=0;
+  PARK.later(()=>{ '@park'; const IT=PARK.treeItems(), g=MAPG.park||scene, SP=[]; let n=0;
     for(const it of IT){ const i=n++; if(it.top-it.y<=3*T)continue; const f=/^Oak/.test(it.k)?BL:FR[Math.floor(hs(i,1)*FR.length)];   // blossoms on the oaks, fruit on the tall trees
       const tb=new THREE.Mesh(new THREE.BoxGeometry(.9*T,1.6*T,.9*T),new THREE.MeshBasicMaterial({visible:false})); tb.position.set(it.x,it.y+.8*T,it.z); g.add(tb); UI.thing({name:'CLIMB THE TREE',obj:tb,reach:1.3*T,near:2.4*T,tall:2*T,act:()=>{ TREES.want=it; }});
       for(let k=0;k<3;k++){ const a=hs(i,k,2)*6.28, r=it.r*(.35+.3*hs(i,k,3)); SP.push({x:it.x+Math.cos(a)*r,y:it.y+(it.top-it.y)*(.62+.2*hs(i,k,4)),z:it.z+Math.sin(a)*r,f,key:'tree:'+i+':'+k,i:SP.length}); } }

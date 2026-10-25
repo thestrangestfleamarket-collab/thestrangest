@@ -24,6 +24,13 @@ const TREEGEN={};
     let H=0, wd=0; for(let i=0;i<A.P.length;i+=3){ H=Math.max(H,A.P[i+1]); wd=Math.max(wd,Math.hypot(A.P[i],A.P[i+2])); } H=H||1;
     const p=new Float32Array(A.P.length); for(let i=0;i<p.length;i++)p[i]=A.P[i]/H;
     return {p,n:new Float32Array(A.N),c:new Uint8ClampedArray(A.C),k:new Uint8Array(A.K),uv:new Float32Array(A.U),metres:1,tris:A.K.length,H,wide:2*wd/H,trunk:rec.tr/H}; };
+  // a tree's low bake from its summary: one faceted 20-sided clump per leaf clump, an open five-sided limb per limb, coloured per vertex
+  TREEGEN.low=(S,trunk)=>{ const A=acc(), q=new THREE.Quaternion(), C=new THREE.IcosahedronGeometry(1,0), L=new THREE.CylinderGeometry(.7,1,1,5,1,true);
+    for(const [ax,ay,az,bx,by,bz,r] of S.lb){ const d=new V(bx-ax,by-ay,bz-az), len=d.length(); if(len<1e-4)continue; const g=L.clone(); g.scale(r,len,r); g.translate(0,len/2,0); g.applyQuaternion(q.setFromUnitVectors(UP,d.normalize())); g.translate(ax,ay,az); put(A,g,S.bc,1); }
+    const lo=Math.min(...S.cl.map(c=>c[1]-c[3])), hi=Math.max(...S.cl.map(c=>c[1]+c[3]))||1;
+    for(const [x,y,z,r,R,G,B] of S.cl){ const g=C.clone(); g.scale(r,r*.82,r); g.translate(x,y,z); const f=.74+.32*(y-lo)/Math.max(1e-3,hi-lo); put(A,g,[R*f,G*f,B*f],0); }
+    C.dispose(); L.dispose(); let H=0, wd=0; for(let i=0;i<A.P.length;i+=3){ H=Math.max(H,A.P[i+1]); wd=Math.max(wd,Math.hypot(A.P[i],A.P[i+2])); }
+    return {p:new Float32Array(A.P),c:new Uint8ClampedArray(A.C),k:new Uint8Array(A.K),metres:1,tris:A.K.length,H:H||1,wide:2*wd,rad:wd,trunk,sum:S}; };
   const cache={};
   TREEGEN.get=(set,i)=>{ const key=set+i; if(cache[key])return cache[key]; const rec=TD[set][i], m=TREEGEN.assemble(rec); if(rec.sum)m.sum=rec.sum; return cache[key]=m; };
   TREEGEN.count=set=>(TD[set]||[]).length; TREEGEN.old=TD.old||{};

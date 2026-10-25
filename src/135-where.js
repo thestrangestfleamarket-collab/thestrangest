@@ -7,6 +7,7 @@ import {MODS, QS, SOL, STORE, TILE} from './006-map-pre.js';
 { const KEY='where', test=['at','place','sheet','npcat'].some(k=>QS.get(k)!=null);
   let W=null; try{ if(QS.get('fresh')!=null)SAVE.del(KEY); else W=JSON.parse(SAVE.get(KEY)||'null'); }catch(e){}
   const back=async()=>{ let w=W; if(test||!w||![w.x,w.z,w.y,w.hd].every(Number.isFinite))return false; await LOAD('later');
+    if((w.lv||(w.y<-1.6?'down':'up'))==='up'){ const X=SHARED.BOD.X, Z=SHARED.BOD.Z, xs=[X(598),X(882)], zs=[Z(-402),Z(-158)]; if(w.x>Math.min(...xs)&&w.x<Math.max(...xs)&&w.z>Math.min(...zs)&&w.z<Math.max(...zs)){ W=null; return false; } }   // where the old game's rooms stood off the map (removed 25 Oct 2026): nothing there now, so the park
     if((w.lv||(w.y<-1.6?'down':'up'))==='down'&&!(MODS.dungeon&&MODS.dungeon.inside(w.x,w.z))&&(Math.abs(MODS.station.ground(w.x,w.z)-w.y)>.5||CLIP.hit(SOL.down,w.x,w.z,.3*TILE))){ const p=MODS.station.plat; w={x:p.x,z:p.z,y:MODS.station.ground(p.x,p.z),hd:w.hd,lv:'down'}; }
     if(STORE.inStore&&STORE.inStore(w.x,w.z)&&STORE.ensure)await STORE.ensure(); if(STORE.offAt)await STORE.offAt(w.x,w.z);
     STORE.goTo(w.x,w.z,w.y,null,w.lv); SHARED.heading=w.hd; PH.hd=w.hd; return true; };

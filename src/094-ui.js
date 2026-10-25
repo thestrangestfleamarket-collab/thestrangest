@@ -1,7 +1,7 @@
 // THE UI: the camera (isometric, behind, first person), zoom and turn, the menu, places, and the top-down shot.
 import {SHARED, THREE} from './003-shx.js';
 import {AMB, BLK, BUGS, CHARP, DN, ED, EDITORS, FEEL, FORAGE, GAMEED, keys, LAND, LEVELS, LINES, LOOK, LOOKS, MAPED, MUS, NPCS, ONLINE, PARK, PB, pos, RINSP, ROOMS, SFX, SNDED, st, TENANTS, UI, USE, VIT, W3, WE, WIELD} from './003b-systems.js';
-import {art, OCAM, PCAM, PPU, pxS, renderer, RES, resize, RESL, RESMAX, RH, RW, scene, SCL, vpu, ZMAX} from './004-main.js';
+import {art, OCAM, PCAM, PPU, pxS, renderer, RES, resize, RESL, RESMAX, RH, rppu, RW, scene, SCL, vpu, ZMAX} from './004-main.js';
 import {SAVE} from './005-save.js';
 import {ASTEP, BLDK, CASTLE, CEL, MAPG, MAPSTAIR, MODS, QS, RING, STORE, TILE} from './006-map-pre.js';
 import {GCAVE} from './060-cave.js';
@@ -73,10 +73,11 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     tv.subVectors(disp,piv); const t0=tv.clone(); tv.applyQuaternion(q0.invert()).applyQuaternion(q1); viewV().add(tv.sub(t0)); disp.add(tv);
     if(!UI.freeCam){ tv.set(0,0,1).applyQuaternion(q1); UI.off.addScaledVector(tv,-UI.off.dot(tv)); } };
   UI.MAXW=30*TILE; UI.NEARH=6.6/.84*TILE; window.CAMW=()=>(SHARED.cam.right-SHARED.cam.left)/TILE;
+  SHARED.camMaxW=UI.MAXW;   // the frustum (004-main) caps the visible width here, so full zoom-out is the same extent at every resolution; the zoom just freezes once the view fills it
   let zAt=null; UI.wheelAt=e=>{ '@later'; if(UI.persp){ SHARED.ppuTo=SHARED.ppu; if(UI.view==='third'||UI.view==='follow')UI.dist=Math.max(1.2*TILE,Math.min(22*TILE,UI.dist*Math.pow(1.0015,e.deltaY))); return; }
-    if(e.deltaY>0){ const w=SHARED.cam.right-SHARED.cam.left; SHARED.ppuTo=Math.max(SHARED.ppuTo,SHARED.ppu*w/UI.MAXW); if(w>=UI.MAXW*.995){ SHARED.ppuTo=SHARED.ppu; zAt=null; return; } } const r=cv.getBoundingClientRect(); zAt={x:e.clientX-r.left-r.width/2,y:r.height/2-(e.clientY-r.top)}; };
+    if(e.deltaY>0&&RW/rppu()>=UI.MAXW*.995){ SHARED.ppuTo=SHARED.ppu; zAt=null; return; } const r=cv.getBoundingClientRect(); zAt={x:e.clientX-r.left-r.width/2,y:r.height/2-(e.clientY-r.top)}; };
   UI.zk=()=>(SHARED.cam.right-SHARED.cam.left)/cv.getBoundingClientRect().width;
-  UI.zoomStep=k0=>{ const w0=SHARED.cam.right-SHARED.cam.left; if(w0>UI.MAXW*1.002)SHARED.ppuTo=Math.max(SHARED.ppuTo,SHARED.ppu*w0/UI.MAXW);
+  UI.zoomStep=k0=>{ if(!UI.persp&&RW/rppu()>=UI.MAXW)SHARED.ppuTo=Math.max(SHARED.ppuTo,SHARED.ppu);   // at the zoom-out limit, hold ppu steady (the frustum cap keeps the extent at MAXW) instead of snapping back
     if(!zAt)return; const k1=UI.zk(); if(Math.abs(k1-k0)<1e-9){ if(Math.abs(SHARED.ppu/SHARED.ppuTo-1)<1e-3)zAt=null; return; } const R0=tv.setFromMatrixColumn(SHARED.cam.matrixWorld,0).clone(), U0=new THREE.Vector3().setFromMatrixColumn(SHARED.cam.matrixWorld,1);
     viewV().addScaledVector(R0,zAt.x*(k0-k1)).addScaledVector(U0,zAt.y*(k0-k1)); };
   UI.pan=(dx,dy)=>{ '@later'; const r=cv.getBoundingClientRect(), k=(SHARED.cam.right-SHARED.cam.left)/r.width, R0=new THREE.Vector3().setFromMatrixColumn(SHARED.cam.matrixWorld,0), U0=new THREE.Vector3().setFromMatrixColumn(SHARED.cam.matrixWorld,1);
@@ -244,8 +245,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
   $('#myapt').onclick=()=>{ if(UI.menuOpen)toggleMenu(); if(MODS.apts&&MODS.apts.enterReal)MODS.apts.enterReal(); };
   const PLACES=[['THE STREET',-2.2,3.2,'up'],['THE BODEGA',SHARED.BOD.X((SHARED.BOD.SB.x0+SHARED.BOD.SB.x1)/2),SHARED.BOD.Z(SHARED.BOD.SB.y1)-1.6,'up',null,Math.PI],['THE PLATFORM',MODS.station.plat.x,MODS.station.plat.z,'down'],['CENTRAL PARK',SHARED.BOD.XS(PARK.round[0]+PARK.ox),SHARED.BOD.ZS(PARK.y0+7+PARK.oy),'up'],['THE BATH HOUSE',SHARED.BOD.X(SHARED.BOD.GD.door[0]),SHARED.BOD.Z(SHARED.BOD.GD.door[1]+4.5),'up'],...(STORE.main?STORE.main.doors.map(d=>[...d,'up']):[]),['THE CASTLE',SHARED.BOD.XS(CASTLE.gate),SHARED.BOD.ZS(CASTLE.b[2]-3),'up'],['DUNGEON L1',MODS.dungeon.arrive(1).x,MODS.dungeon.arrive(1).z,'down']];
   UI.places=()=>PLACES.concat(STORE.places||[]);
-  const goPlace=async n=>{ if(n==='YOUR APARTMENT'&&MODS.apts&&MODS.apts.enterReal)return MODS.apts.enterReal(); const P0=STORE.places.find(p=>p[0]===n); if(P0&&P0[3]==='up'&&ROOMS.boxAt&&ROOMS.boxAt(P0[1],P0[2]))return toPlace(P0[1],P0[2],P0[3],P0[5]);   // an off-map inside: nothing else need load
-    if(STORE.ensure)await STORE.ensure(); if(STORE.offGo)await STORE.offGo(n); const P=PLACES.concat(STORE.places).find(p=>p[0]===n); if(P)toPlace(P[1],P[2],P[3],P[5]); }; UI.goPlace=goPlace;
+  const goPlace=async n=>{ if(n==='YOUR APARTMENT'&&MODS.apts&&MODS.apts.enterReal)return MODS.apts.enterReal(); if(STORE.ensure)await STORE.ensure(); if(STORE.offGo)await STORE.offGo(n); const P=PLACES.concat(STORE.places).find(p=>p[0]===n); if(P)toPlace(P[1],P[2],P[3],P[5]); }; UI.goPlace=goPlace;
   { const q=QS.get('place'); const go=()=>window.__started?goPlace(q.toUpperCase()):setTimeout(go,200); if(q)setTimeout(go,300); }
   for(const [n,x,z,lv,,hd] of PLACES){ const b=document.createElement('button'); b.className='btn'; b.textContent=n; b.onclick=()=>toPlace(x,z,lv,hd); $('#places').appendChild(b); }
   { const h=document.createElement('h3'); h.textContent='ROOMS'; $('#places').parentNode.appendChild(h); const row=document.createElement('div'); row.className='row'; row.id='roomsrow'; $('#places').parentNode.appendChild(row);

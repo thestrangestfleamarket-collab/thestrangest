@@ -1,4 +1,4 @@
-// THE BODIES: the Walker, and bodies moved by his rig (each of its 15 bones takes the turn of the rig piece it stands for); a body.playable one is on YOU's BODY row (the Walker and your avatar, the default); one of each walks main street.
+// THE BODIES: the Walker you play as, and bodies moved by his rig (each of its 15 bones takes the turn of the rig piece it stands for); only a body.playable one is on YOU's BODY row (just the Walker now); one of each walks main street.
 import {SHARED, THREE} from './003-shx.js';
 import {CHARS, NPCS, pos, W3} from './003b-systems.js';
 import {PPU} from './004-main.js';
@@ -40,9 +40,9 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
       PM.value[i].copy(ROT[n]).scale(OFV.set(S,S,S)).setPosition(POS[n]); if(body.binv)PM.value[i].multiply(body.binv[i]); } }
   BODIES.pose=pose; BODIES.mesh=mesh;
 
-  /* ---------- you (YOU's BODY: a playable body — your avatar by default, or the Walker; knight/man/woman stay in the game but off the row — set body.playable to put one back; kept in the browser; ?avatar=key) ---------- */
+  /* ---------- you (YOU's BODY: only a playable body, else the Walker; knight/man/woman stay in the game but off the row — set body.playable to put one back; kept in the browser; ?avatar=key) ---------- */
   const playable=b=>!!(b&&b.playable);
-  let pick='avatar'; try{ pick=SAVE.get('body')||'avatar'; }catch(e){} if(QS.get('avatar'))pick=QS.get('avatar');
+  let pick='walker'; try{ pick=SAVE.get('body')||'walker'; }catch(e){} if(QS.get('avatar'))pick=QS.get('avatar');
   const curKey=()=>playable(BODIES.by[pick])?pick:'walker';
   let ME=null, MEK=null, hid=false;
   W3.body={on:false,place:B=>{ const key=curKey(), body=BODIES.by[key]; W3.body.on=!!body;   // (on: a body is worn this frame, so the Walker's physics body stands down: 090-physbody)
@@ -88,8 +88,6 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
 
   /* ---------- a body: key, label, geo() (position, normal, color, bi, bw), height and hip height (its units), off {bone:[parent,x,y,z]}, binv (or null), at (main street spot) ---------- */
   BODIES.fit=body=>{ body.S=WALKER_H/body.height; body.KL=body.hipY*body.S/R.STAND; body.tris=()=>(body.GEO||(body.GEO=body.geo())).attributes.position.count/3; return body; };   // (scaled so its height is the Walker's)
-  // a body whose shape changed (your avatar's look): new scale, new geometry, rebuilt where you wear it next frame
-  BODIES.refit=key=>{ const b=BODIES.by[key]; if(!b)return; BODIES.fit(b); if(b.GEO)b.GEO.dispose(); b.GEO=null; };
   BODIES.add=body=>{ BODIES.fit(body); BODIES.list.push(body); BODIES.by[body.key]=body;
     if(body.playable)addButton(body.key,body.label); walker(body); };
 }

@@ -4746,3 +4746,4 @@ Owner (pictures of the park's grass in blocks): "its still doing the blocks of g
 ## 25 Oct 2026: the website on Workers Paid
 Deploys failed from #315 on: the free plan allows 100 Durable Object namespaces and the room editor's `Home` was one too many. Owner: "yes i upgraded" (Workers Paid, 500).
 - Owner (a picture of "Page Unresponsive" in the park): "the game is now extremely laggy". The grass's blades are drawn out to the haze again (thinner far off); past it the floor painted with blades covers the ground.
+- Owner: "lets bake the grass in and not render it, our walking dosent affect it at all, low render as possible". The lawns are the floor painted with blades and the still things' shadows, built once; no 3D blades, nothing on them moves.

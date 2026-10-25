@@ -1,6 +1,6 @@
 // THE APARTMENT ROOM: your apartment as one open room in the owner's cozy picture's style (25 Oct 2026): cream walls under a dark wood crown, warm glow strips, wide orange planks on a cream slab, curtained windows onto the live sky, and its things (the checkered bed, the nightstands and lamps, the monstera, the diamond frames, the shelves of plants and books, the desk and chair); every small thing a real body.
 import {SHARED, THREE} from './003-shx.js';
-import {CLOCK, SFX, SKY, UI, USE} from './003b-systems.js';
+import {CLOCK, SFX, SHAD, SKY, UI, USE} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {MODS, SYS} from './006-map-pre.js';
 import {GPH} from './150-loose.js';
@@ -17,11 +17,13 @@ import {GPH} from './150-loose.js';
 
     /* ---------- the textures, painted once ---------- */
     // wide orange planks, staggered, with dark gaps between them, as the picture's floor
-    const planks=(Lu,Lv)=>tex(1024,1024,(g,W,H)=>{ const pw=.22, rows=Math.ceil(Lv/pw), ph=H/rows; g.fillStyle='#2a160a'; g.fillRect(0,0,W,H);
-      for(let r=0;r<rows;r++){ let u=-(r%3)*.7-rnd()*.3; while(u<Lu){ const L=1.4+rnd()*1.2, k=.84+rnd()*.24, x0=u/Lu*W, x1=(u+L)/Lu*W, y0=r*ph;
-          g.fillStyle=`rgb(${198*k|0},${116*k|0},${56*k|0})`; g.fillRect(x0+1.5,y0+1.5,x1-x0-3,ph-3);
+    const planks=(Lu,Lv)=>tex(640,640,(g,W,H)=>{ const pw=.22, rows=Math.ceil(Lv/pw), ph=H/rows; g.fillStyle='#160a03'; g.fillRect(0,0,W,H);
+      for(let r=0;r<rows;r++){ let u=-(r%3)*.7-rnd()*.3; while(u<Lu){ const L=1.4+rnd()*1.2, k=.84+rnd()*.24, x0=u/Lu*W, x1=(u+L)/Lu*W, y0=r*ph, b=1.4, pw2=x1-x0-3;
+          g.fillStyle=`rgb(${198*k|0},${116*k|0},${56*k|0})`; g.fillRect(x0+1.5,y0+1.5,pw2,ph-3);
           for(let i=0;i<6;i++){ g.strokeStyle=`rgba(120,60,24,${.08+rnd()*.1})`; g.lineWidth=.8+rnd(); g.beginPath(); const yy=y0+3+rnd()*(ph-6); g.moveTo(x0+2,yy); g.bezierCurveTo(x0+(x1-x0)*.35,yy+(rnd()-.5)*ph*.3,x0+(x1-x0)*.65,yy+(rnd()-.5)*ph*.3,x1-2,yy); g.stroke(); }
-          const sh=g.createLinearGradient(0,y0,0,y0+ph); sh.addColorStop(0,'rgba(255,220,170,.10)'); sh.addColorStop(1,'rgba(60,24,8,.14)'); g.fillStyle=sh; g.fillRect(x0+1.5,y0+1.5,x1-x0-3,ph-3); u+=L; } } });
+          const sh=g.createLinearGradient(0,y0,0,y0+ph); sh.addColorStop(0,'rgba(255,220,170,.10)'); sh.addColorStop(1,'rgba(60,24,8,.14)'); g.fillStyle=sh; g.fillRect(x0+1.5,y0+1.5,pw2,ph-3);
+          g.fillStyle='rgba(255,224,180,.34)'; g.fillRect(x0+1.5,y0+1.5,pw2,b); g.fillRect(x0+1.5,y0+1.5,b,ph-3);   // grout depth: each plank a raised lip, lit top/left
+          g.fillStyle='rgba(12,5,1,.55)'; g.fillRect(x0+1.5,y0+ph-1.5-b,pw2,b); g.fillRect(x1-1.5-b,y0+1.5,b,ph-3); u+=L; } } });   // ...shadowed bottom/right, so the gaps read recessed
     const checker=()=>tex(256,256,(g,W,H)=>{ const n=10, s=W/n; for(let i=0;i<n;i++)for(let j=0;j<n;j++){ g.fillStyle=(i+j)&1?'#e4e2d6':'#2c3430'; g.fillRect(i*s,j*s,s,s); } });
     const glowTex=tex(64,64,(g,W,H)=>{ const r=g.createRadialGradient(32,32,0,32,32,32); r.addColorStop(0,'rgba(255,214,150,1)'); r.addColorStop(.35,'rgba(255,190,110,.45)'); r.addColorStop(1,'rgba(255,170,90,0)'); g.fillStyle=r; g.fillRect(0,0,W,H); });
     const washTex=tex(4,128,(g,W,H)=>{ const r=g.createLinearGradient(0,0,0,H); r.addColorStop(0,'rgba(255,196,120,1)'); r.addColorStop(.25,'rgba(255,178,100,.45)'); r.addColorStop(1,'rgba(255,160,90,0)'); g.fillStyle=r; g.fillRect(0,0,W,H); });
@@ -147,6 +149,10 @@ import {GPH} from './150-loose.js';
         part(rbox(.42,.04,.4,.01),cm,0,.46,0,0,g); for(const [x,z] of [[-.18,-.17],[.18,-.17],[-.18,.17],[.18,.17]])part(rbox(.035,.46,.035,.006),cm,x,.23,z,0,g);
         for(const s of [-1,1])part(rbox(.035,.5,.035,.006),cm,s*.18,.73,-.17,0,g); for(let i=0;i<3;i++)part(rbox(.36,.05,.02,.006),cm,0,.6+i*.13,-.17,0,g);
         R.loose.push([g,'CHAIR',5,true]); R.chair=g; }
+      // a soft contact shadow under each floor-standing piece, so furniture sits on the planks (SHAD.blob; cheap, no light)
+      { const bm=SHAD.mat({alpha:.42}), bl=(u,v,rx,rz)=>SHAD.blob(apt,u,0,v,rx,rz,{mat:bm});
+        bl((BL+.08)/2,BV,BL+.3,BW+.25); bl(.23,BV-BW/2-.32,.62,.62); bl(.23,BV+BW/2+.32,.62,.62);
+        bl(.42,.5,.52,.52); bl(DU2,.29,1.12,.66); bl(DU2,.92,.62,.6); }
 
       /* ---------- the light: dim and warm all round, the glow strips, the lamps, the late sun through the panes ---------- */
       for(const [u,v] of [[Lx*.25,Ly*.3],[Lx*.3,Ly*.75],[Lx*.72,Ly*.72],[Lx*.72,Ly*.28]]){ const L=new THREE.PointLight(0xffc48a,2.8,9*M,1.2); L.userData.pool=true; L.position.set(X(A.x0)+u*M,fy+(HW-.4)*M,Z(A.y0)+v*M); scene.add(L); R.lights.push(L); }

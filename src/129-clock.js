@@ -62,5 +62,5 @@ Object.assign(CLOCK,{h:17.4,run:false,speed:1,sunV:new THREE.Vector3(0,1,0),moon
       if(!dk&&lights.includes(sunD)&&sunD.shadow.needsUpdate){ const ch=SC.root.children; ch.length=0; for(const o of DYN())if(o.visible&&o.parent)ch.push(o); SM.needsUpdate=true; orig.call(SM,[sunD],SC.root,camera); SC.nd++; }
       SM.needsUpdate=true; orig.call(SM,rest,sc,camera); camera.layers.mask=m0; }; }
   window.SUNDBG=()=>({still:SC.n,moving:SC.nd,far:SC.nf,box:SC.fb&&SC.fb.map(v=>+(v/TILE).toFixed(1)),fcam:[sunF.shadow.camera.right/TILE,sunF.shadow.camera.top/TILE,sunF.shadow.camera.far/TILE,sunF.shadow.normalBias].map(v=>+v.toFixed(2)),dyn:DYN().size,maps:[sunL.shadow.mapSize.x,sunD.shadow.mapSize.x,sunF.shadow.mapSize.x],patch:THREE.ShaderChunk.lights_fragment_begin.includes('NUM_DIR_LIGHT_SHADOWS > 2')});
-  CLOCK.sun=sunL; CLOCK.sunD=sunD; window.CLOCK=CLOCK; CLOCK.elev=()=>elev(CLOCK.h); CLOCK.SKYV=SKYV;
+  CLOCK.sun=sunL; CLOCK.sunD=sunD; CLOCK.sunF=sunF; window.CLOCK=CLOCK; CLOCK.elev=()=>elev(CLOCK.h); CLOCK.SKYV=SKYV;
   }

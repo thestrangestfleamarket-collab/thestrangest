@@ -48,7 +48,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
       o.old = window.OLDDBG ? (d => [d.rooms, d.built.length, d.data, __dbg.UI.places().filter(p => SHARED.OLDROOMS.by[p[0]]).length])(OLDDBG()) : null;
       o.chars = (() => { const C = window.CHARS; if (!C || ['apply', 'put', 'live', 'applyAll', 'id'].some(k => typeof C[k] !== 'function')) return { fns: false }; const F = { name: 'x', hp: 1, sta: 1, st: { v: 1, R: 1, home: { id: 'z' } }, g: { scale: { setScalar(v) { F.g.scale._v = v; } } } }; C.put(F, { name: 'NN', hp: 9, stamina: 4, scale: 3 }); return { fns: true, levelChars: C.rec('___none') === null, applied: F.name === 'NN' && F.hp === 9 && F.sta === 4 && F.g.scale._v === 3 }; })();
       o.shops = (() => { const S = window.SHOPS, C = window.CHARS; if (!S || !C) return { ok: false }; const fns = ['open', 'close', 'sync'].every(k => typeof S[k] === 'function') && typeof C.trade === 'function'; const N = (window.__dbg.NPCS || [])[0]; return { ok: fns, noTrade: N ? C.trade(N) === null : true }; })();
-      o.shafts = window.SHAFTS ? [SHAFTS.on > 0, SHAFTS.occ === 1] : null;
+      o.shafts = window.SHAFTS ? [SHAFTS.on > 0, SHAFTS.occ === 1, SHAFTS.list[0].material.depthTest === true] : null;
       o.lawn = (() => { const lc = SHARED.BOD.g.lawnCol(3.3, 7.1), map = __dbg.MAPK.MODS.land && __dbg.MAPK.MODS.land.material.map; return { painted: !!(map && map.image && map.image.width > 0), col: Array.isArray(lc) && lc.length === 3 && lc.every(v => v >= 0 && v <= 255), top: typeof WEEDS.top === 'function' }; })();
       o.sky = [typeof SKY.sunCover === 'number' && SKY.sunCover >= 0 && SKY.sunCover <= 1, typeof SKY.cloudAt === 'function' && SKY.cloudAt(0, 1, 0, 0, .5) >= 0 && SKY.cloudAt(0, 1, 0, 0, .5) <= 1, typeof SKY.GLSL === 'string' && SKY.GLSL.includes('cloudAt')];
       o.breath = [typeof __dbg.VIT.air === 'number', typeof __dbg.VIT.breathe === 'function', (window.ITEMS && ITEMS.prop ? +ITEMS.prop('airshroom', 'breath') : 0) || 0];
@@ -110,7 +110,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
     ok(r.chars.fns && r.chars.levelChars && r.chars.applied, 'CHARS applies character overrides (name, stats, scale) and reads characters.json: ' + JSON.stringify(r.chars));
     ok(r.shops.ok && r.shops.noTrade, 'SHOPS is wired and a character with no shop config sells nothing: ' + JSON.stringify(r.shops));
     ok(r.lawn && r.lawn.painted && r.lawn.col && r.lawn.top, 'the lawn: the land wears its lawn texture and lawnCol gives a colour (the grass itself: tests/lawn.cjs) (' + JSON.stringify(r.lawn) + ')');
-    ok(r.shafts && r.shafts.every(Boolean), 'the sun shafts are up in the day and lit by the sun\'s shadow map, so solids block them (SHAFTS: ' + JSON.stringify(r.shafts) + ')');
+    ok(r.shafts && r.shafts.every(Boolean), 'the sun shafts are up in the day, lit by the sun\'s shadow map so solids block them, and hidden by what stands in front (SHAFTS: ' + JSON.stringify(r.shafts) + ')');
     ok(r.sky && r.sky.every(Boolean), 'the sky knows its clouds: the sun\'s cover is a number in 0..1, the CPU cloud mirror answers in 0..1 (' + JSON.stringify(r.sky) + ')');
     ok(r.breath[0] && r.breath[1] && r.breath[2] > 0, 'breath: VIT.air + VIT.breathe exist and the AIRCAP mushroom grants air (' + r.breath.join(',') + ')');
     ok(r.downs.every(Boolean), 'every down level (dungeon, gem cave, hudson cavern) gives its own has/ground/bound through LEVELS.of (' + r.downs.join(',') + ')');

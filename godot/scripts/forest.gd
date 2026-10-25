@@ -44,19 +44,20 @@ const TEXTURE_FILES := {
 
 # clear: distance kept from the path's centre; solid: collision radius (none = walk through); gap: room kept from other solid things.
 const GROUPS := [
-	{"meshes": ["Pine_1", "Pine_2", "Pine_3", "Pine_4", "Pine_5"], "count": 240, "clear": 5.0, "scale": Vector2(0.9, 1.5), "solid": 0.35, "gap": 1.8},
-	{"meshes": ["CommonTree_2"], "count": 45, "clear": 5.0, "scale": Vector2(0.9, 1.3), "solid": 0.4, "gap": 2.2},
-	{"meshes": ["DeadTree_1", "DeadTree_2", "DeadTree_3", "DeadTree_4", "DeadTree_5"], "count": 30, "clear": 4.5, "scale": Vector2(0.8, 1.2), "solid": 0.4, "gap": 2.2},
-	{"meshes": ["TwistedTree_1", "TwistedTree_2", "TwistedTree_3", "TwistedTree_4", "TwistedTree_5"], "count": 12, "clear": 9.0, "scale": Vector2(0.8, 1.0), "solid": 0.8, "gap": 3.0},
+	{"meshes": ["Pine_1", "Pine_2", "Pine_3", "Pine_4", "Pine_5"], "count": 240, "clear": 5.0, "scale": Vector2(1.4, 2.2), "solid": 0.35, "gap": 1.6},
+	{"meshes": ["CommonTree_2"], "count": 45, "clear": 5.0, "scale": Vector2(1.4, 1.9), "solid": 0.4, "gap": 1.8},
+	{"meshes": ["DeadTree_1", "DeadTree_2", "DeadTree_3", "DeadTree_4", "DeadTree_5"], "count": 30, "clear": 4.5, "scale": Vector2(1.2, 1.7), "solid": 0.4, "gap": 1.8},
+	{"meshes": ["TwistedTree_1", "TwistedTree_2", "TwistedTree_3", "TwistedTree_4", "TwistedTree_5"], "count": 12, "clear": 9.0, "scale": Vector2(1.0, 1.3), "solid": 0.8, "gap": 2.6},
 	{"meshes": ["Rock_Medium_1", "Rock_Medium_2", "Rock_Medium_3"], "count": 70, "clear": 3.0, "scale": Vector2(0.5, 1.3), "solid": 1.2, "gap": 1.6},
-	{"meshes": ["Grass_Common_Short", "Grass_Common_Tall", "Grass_Wispy_Short", "Grass_Wispy_Tall"], "count": 14000, "clear": 1.3, "scale": Vector2(0.7, 1.3)},
-	{"meshes": ["Fern_1", "Plant_1", "Plant_1_Big", "Plant_7", "Plant_7_Big"], "count": 2200, "clear": 2.2, "scale": Vector2(0.7, 1.4)},
-	{"meshes": ["Flower_3_Group", "Flower_3_Single", "Flower_4_Group", "Flower_4_Single"], "count": 1400, "clear": 1.8, "scale": Vector2(0.7, 1.2)},
-	{"meshes": ["Mushroom_Common", "Mushroom_Laetiporus"], "count": 350, "clear": 2.2, "scale": Vector2(0.7, 1.5)},
-	{"meshes": ["Petal_1", "Petal_2", "Petal_3", "Petal_4", "Petal_5"], "count": 900, "clear": 0.0, "scale": Vector2(0.8, 1.4)},
+	{"meshes": ["Grass_Common_Short", "Grass_Common_Tall", "Grass_Wispy_Short", "Grass_Wispy_Tall"], "count": 16000, "clear": 1.2, "scale": Vector2(0.35, 0.6)},
+	{"meshes": ["Fern_1"], "count": 500, "clear": 2.5, "scale": Vector2(0.18, 0.28)},
+	{"meshes": ["Plant_1", "Plant_1_Big", "Plant_7", "Plant_7_Big"], "count": 1700, "clear": 1.8, "scale": Vector2(0.3, 0.5)},
+	{"meshes": ["Flower_3_Group", "Flower_3_Single", "Flower_4_Group", "Flower_4_Single"], "count": 1600, "clear": 1.6, "scale": Vector2(0.3, 0.45)},
+	{"meshes": ["Mushroom_Common", "Mushroom_Laetiporus"], "count": 350, "clear": 2.0, "scale": Vector2(0.4, 0.8)},
+	{"meshes": ["Petal_1", "Petal_2", "Petal_3", "Petal_4", "Petal_5"], "count": 900, "clear": 0.0, "scale": Vector2(0.6, 1.0)},
 	{"meshes": ["Pebble_Round_1", "Pebble_Round_2", "Pebble_Round_3", "Pebble_Round_4", "Pebble_Round_5",
 		"Pebble_Square_1", "Pebble_Square_2", "Pebble_Square_3", "Pebble_Square_4", "Pebble_Square_5", "Pebble_Square_6"],
-		"count": 1600, "clear": 0.0, "scale": Vector2(0.6, 1.4)},
+		"count": 1600, "clear": 0.0, "scale": Vector2(0.5, 1.1)},
 ]
 
 const PATH_STONES := ["RockPath_Round_Small_1", "RockPath_Round_Small_2", "RockPath_Round_Small_3",
@@ -76,7 +77,7 @@ func _ready() -> void:
 	_make_ground()
 	_make_path()
 	var start_z := half_size - 8.0
-	_place_solid("TwistedTree_1", Vector3(path_x(start_z - 35.0) + 10.0, 0.0, start_z - 35.0), 0.9, 0.8, 3.0)
+	_place_solid("TwistedTree_1", Vector3(path_x(start_z - 35.0) + 12.0, 0.0, start_z - 35.0), 1.2, 0.8, 2.6)
 	for group in GROUPS:
 		_scatter(group)
 	_build_buckets()

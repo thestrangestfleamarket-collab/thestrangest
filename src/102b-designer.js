@@ -5,6 +5,13 @@ import {renderer} from './004-main.js';
 import {OWNED} from './005-save.js';
 const DESIGN={}; window.DESIGN=DESIGN;
 { const R=RIG, D2R=Math.PI/180;
+  // his studio light: a key over your left shoulder and a soft fill, no shadows from the street; the designer and the character page draw him in it
+  const ROOM=new THREE.Scene(), KEY=new THREE.DirectionalLight(0xffffff,2.1), LC=new THREE.Vector3(-.45,.65,.62).normalize(), UP=new THREE.Vector3(0,1,0), CC=new THREE.Color(); ROOM.add(new THREE.AmbientLight(0xffffff,.6),KEY,KEY.target);
+  DESIGN.portrait=(target,c,mat)=>{ const g=W3.group, home=g.parent, sv={vis:g.visible,lv:W3.lv.value,L:W3.L.clone()}; g.visible=true; ROOM.add(g); g.updateMatrixWorld(true);
+    const lw=LC.clone().applyQuaternion(c.quaternion); KEY.target.position.copy(g.position); KEY.position.copy(g.position).addScaledVector(lw,10); KEY.target.updateMatrixWorld();
+    W3.lv.value=1; W3.L.copy(lw).applyAxisAngle(UP,-g.rotation.y).normalize(); const m0=W3.mesh.material; if(mat)W3.mesh.material=mat;
+    renderer.getClearColor(CC); const ca=renderer.getClearAlpha(); renderer.setRenderTarget(target); renderer.setClearColor(mat?0x000000:0x15171e,mat?0:1); renderer.clear(); renderer.render(ROOM,c);
+    renderer.setRenderTarget(null); renderer.setClearColor(CC,ca); W3.mesh.material=m0; if(home)home.add(g); g.visible=sv.vis; W3.lv.value=sv.lv; W3.L.copy(sv.L); };
   // the parts you shape, each the pieces on one of his bones (a sleeve with its arm, the hair with the head); pairs end L / R
   const PARTS=['head','neck','torso','hips','upperArmL','upperArmR','forearmL','forearmR','handL','handR','thighL','thighR','shinL','shinR','footL','footR'];
   const NAME={head:'HEAD',neck:'NECK',torso:'CHEST',hips:'HIPS',upperArm:'UPPER ARM',forearm:'FOREARM',hand:'HAND',thigh:'THIGH',shin:'SHIN',foot:'FOOT'};
@@ -43,7 +50,7 @@ const DESIGN={}; window.DESIGN=DESIGN;
   DESIGN.open=()=>{ '@later';
     if(!DESIGN.el)studio(); DESIGN.el.hidden=false; DESIGN.on=true; DESIGN.view('front'); DESIGN.redraw(); requestAnimationFrame(DESIGN.loop); };
   function studio(){ '@later';
-    const SW=560, SH=700, LC=new THREE.Vector3(-.45,.65,.62).normalize(), Y=new THREE.Vector3(0,1,0), V=new THREE.Vector3(), V2=new THREE.Vector3(), CC=new THREE.Color();
+    const SW=560, SH=700, Y=new THREE.Vector3(0,1,0), V=new THREE.Vector3(), V2=new THREE.Vector3();
     const cam=new THREE.OrthographicCamera(-1,1,1,-1,.01,500); let rt=null, prt=null, az=0, elv=.12, zoom=1, h0=2, ty=0, sel='head', mode='size', mirror=true, last=0, drag=null;
     const undo=[], redo=[]; let snap=JSON.stringify(mine);
     const css=document.createElement('style'); css.textContent=`#design{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:22;display:flex;gap:12px;padding:12px;background:#0b0d13f4;border:2px solid #2a3040;color:#d8dbe4;font:11px Silkscreen,monospace;letter-spacing:.4px;zoom:var(--uiz,1);max-width:98vw;max-height:96vh} #design[hidden]{display:none}
@@ -113,13 +120,7 @@ const DESIGN={}; window.DESIGN=DESIGN;
       const hh=h0/2/zoom, hw=hh*SW/SH, c=new THREE.Vector3(gp.x,(top+bot)/2+ty,gp.z), d=h0*3+8;
       cam.left=-hw; cam.right=hw; cam.top=hh; cam.bottom=-hh; cam.near=.01; cam.far=d*2+40; cam.updateProjectionMatrix();
       cam.position.set(c.x+Math.sin(az)*Math.cos(elv)*d,c.y+Math.sin(elv)*d,c.z+Math.cos(az)*Math.cos(elv)*d); cam.up.copy(Y); cam.lookAt(c); cam.updateMatrixWorld(true); };
-    // he's drawn in a room of his own for a moment: a key light over your left shoulder and a soft fill, no shadows from the street
-    const ROOM=new THREE.Scene(), KEY=new THREE.DirectionalLight(0xffffff,2.1); ROOM.add(new THREE.AmbientLight(0xffffff,.6),KEY,KEY.target);
-    const draw=(target,mat)=>{ const g=W3.group, home=g.parent, sv={vis:g.visible,lv:W3.lv.value,L:W3.L.clone()}; g.visible=true; ROOM.add(g); g.updateMatrixWorld(true);
-      const lw=LC.clone().applyQuaternion(cam.quaternion); KEY.target.position.copy(g.position); KEY.position.copy(g.position).addScaledVector(lw,10); KEY.target.updateMatrixWorld();
-      W3.lv.value=1; W3.L.copy(lw).applyAxisAngle(Y,-g.rotation.y).normalize(); const m0=W3.mesh.material; if(mat)W3.mesh.material=mat;
-      renderer.getClearColor(CC); const ca=renderer.getClearAlpha(); renderer.setRenderTarget(target); renderer.setClearColor(mat?0x000000:0x15171e,mat?0:1); renderer.clear(); renderer.render(ROOM,cam);
-      renderer.setRenderTarget(null); renderer.setClearColor(CC,ca); W3.mesh.material=m0; if(home)home.add(g); g.visible=sv.vis; W3.lv.value=sv.lv; W3.L.copy(sv.L); };
+    const draw=(target,mat)=>DESIGN.portrait(target,cam,mat);
     const shot=()=>{ if(!W3.mesh)return; if(!rt){ rt=new THREE.WebGLRenderTarget(SW,SH); rt.texture.colorSpace=THREE.SRGBColorSpace; } frame(); draw(rt,null);
       const px=new Uint8Array(SW*SH*4); renderer.readRenderTargetPixels(rt,0,0,SW,SH,px); const im=g2.createImageData(SW,SH); for(let y=0;y<SH;y++)im.data.set(px.subarray((SH-1-y)*SW*4,(SH-y)*SW*4),y*SW*4); g2.putImageData(im,0,0); handles(); };
     DESIGN.loop=t=>{ if(!DESIGN.on)return; requestAnimationFrame(DESIGN.loop); if(t-last<33)return; last=t; shot(); };

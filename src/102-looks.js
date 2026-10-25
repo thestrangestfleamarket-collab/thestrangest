@@ -21,7 +21,7 @@ import {QS, SHL, TILE} from './006-map-pre.js';
   const shape=on=>W3.pcs.map((P,i)=>{ const e=E0[i], k=on&&RB[P.n]; return k?{s:(e?e.s:[1,1,1]).map((v,j)=>v*k[j]),o:[0,0,0],q:[0,0,0,1]}:e; });
   LOOKS.shape=shape; LOOKS.robed=n=>!!RB[n];
   LOOKS.robe=on=>{ '@later'; L.robe=!!on; save(); recolor();
-    shape(on).forEach((e,i)=>{ W3.E[i]=e; }); if(!on)return feet();
+    shape(on).forEach((e,i)=>{ W3.E[i]=LOOKS.mix?LOOKS.mix(e,i):e; }); if(!on)return feet();
     const A=W3.mesh.geometry.attributes, n=A.mat.count, ti=W3.idx('torso'), hi=W3.idx('hips'), SK=W3.ramp[MATS.indexOf('skin')]; let y0=1e9, y1=-1e9, h1=-1e9;
     for(let i=0;i<n;i++){ const k=A.pidx.getX(i), y=A.position.getY(i); if(k===ti){ y0=Math.min(y0,y); y1=Math.max(y1,y); } else if(k===hi)h1=Math.max(h1,y); }
     for(let i=0;i<n;i++){ const P=W3.pcs[A.pidx.getX(i)|0], x=A.position.getX(i), y=A.position.getY(i), z=A.position.getZ(i); if(!P)continue;

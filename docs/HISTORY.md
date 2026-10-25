@@ -4597,6 +4597,9 @@ Owner: "cache chromium in the workflow" (after "fixed billing"; Actions had refu
 Owner: "add the weapons back to the townsfolk". The warrior's sword, the cleric's and the wizard's staffs, the ranger's bow and the rogue's dagger are in their right hands again, coloured from the pack; the monk has none. They still only walk and idle.
 - Owner, 24 Oct 2026: "why are all the rooms empty" (a room showed only floor, walls and ceiling): the items were placed but never painted — `put()`/`place()` only position a prop, the painting is its own pass; the old rooms now paint each item after placing it, name it in play, and light the room with up to three lamps. The check measures painted geometry, not a count.
 
+## 25 Oct 2026: the designer, stage 1 (shape)
+Owner: "a full character editor that allows reshaping resizing, etc entire avatar, rotate, scale, view, all options, drag, drop, push, pull ... full designer, all features"; his picks: every player, parts + sculpt brush, and face, hair & colours, clothes, pose & moves (later stages). YOU's DESIGN YOUR WALKER opens a studio: you alone, turned, zoomed and seen front, side, back or ¾; click a part (head, neck, chest, hips, upper arms, forearms, hands, thighs, shins, feet) and size, turn or move it by its handles or sliders, both sides mirrored or each alone; his height; undo, redo, reset. Kept in OWNED (`design`) and sent with your look, so other players see your shape. Next: the sculpt brush, then face, hair & colours, clothes, pose & moves.
+
 ## 25 Oct 2026: the Walker's hems straight, his surface smooth
 Owner: "the avatar is STILL NOT SMOOTHED OUT", "YOU CALL THAT STRAIGHT EDGE?", "that looks like straight pant line to you?", then "yup" (to fixing it). Hems, cuffs, the collar, shoe edges and the hairline are clean lines and his surface has no ripples; same look, same triangles. `?smooth=N` is gone.
 

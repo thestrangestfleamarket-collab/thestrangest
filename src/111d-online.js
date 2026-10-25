@@ -4,6 +4,7 @@ import {BUGS, keys, LOOKS, ONLINE, pos, ROOMS, UI, VIT, W3} from './003b-systems
 import {scene} from './004-main.js';
 import {ASTEP, MODS, QS, SYS, TILE} from './006-map-pre.js';
 import {qMat, ragPoseOf, TL} from './073-main-12.js';
+import {DESIGN} from './102b-designer.js';
 import {figureMesh, musBody, MUSGEO, musScale} from './110-musician.js';
 import {BODIES} from './111a-bodies.js';
 Object.assign(ONLINE,{others:new Map(),on:false,me:'',log:[],hear:{}}); window.ONLINE=ONLINE;
@@ -13,7 +14,7 @@ Object.assign(ONLINE,{others:new Map(),on:false,me:'',log:[],hear:{}}); window.O
   let sock=null, last=null, acc=0, keep=0, meAcc=1, meSent='', EL=null;
 
   const roomKey=()=>{ if(MODS.apts&&MODS.apts.inReal)return 'apt'+(MODS.apts.num?'#'+MODS.apts.num:''); const c=ROOMS.cur; return c&&c.off?c.off:''; };   // your apartment is off the map (not a ROOMS room); scope players to it by its number
-  const lookKey=()=>{ const b=BODIES.pick(), L=LOOKS.L||{}, body=BODIES.by[b]; return b!=='walker'&&body?'b:'+b+(body.look?':'+body.look():''):'w'+(L.robe?1:0)+(L.bare?1:0); };   // (a body with a look of its own, your avatar, sends it: b:avatar:<code>)
+  const lookKey=()=>{ const b=BODIES.pick(), L=LOOKS.L||{}, body=BODIES.by[b]; return b!=='walker'&&body?'b:'+b+(body.look?':'+body.look():''):'w'+(L.robe?1:0)+(L.bare?1:0)+(DESIGN.code()?'.'+DESIGN.code():''); };   // (a body with a look of its own, your avatar, sends it: b:avatar:<code>)
   const myName=()=>((LOOKS.L&&LOOKS.L.name)||'').trim()||('TENANT'+(MODS.apts&&MODS.apts.num?' '+MODS.apts.num:''));
   const send=m=>{ if(sock&&sock.readyState===1)sock.send(JSON.stringify(m)); }; ONLINE.send=m=>send(m);
   /* ---------- other players are solid: you are pushed out of them as out of a character ---------- */
@@ -50,14 +51,14 @@ Object.assign(ONLINE,{others:new Map(),on:false,me:'',log:[],hear:{}}); window.O
   const robeMat=()=>{ const M=R.MATS; if(!M.includes('robe')){ M.push('robe'); W3.ramp.push(['#f6f4ee','#dddbd6','#acaaa7','#676664'].map(h=>new THREE.Color(h))); } return M.indexOf('robe'); };
   const built=k=>{ '@later'; let b=BUILT.get(k); if(b)return b;
     if(k.startsWith('b:')){ const [key,c]=k.slice(2).split(':'), base=BODIES.by[key], body=base&&c&&base.variant?base.variant(c):base; b=body?{body}:built('w00'); BUILT.set(k,b); return b; }
-    const robe=k[1]==='1', bare=k[2]==='1', MI=n=>R.MATS.indexOf(n), SK=MI('skin'), PA=MI('pants'), RO=robe?robeMat():-1, E=LOOKS.shape(robe), PCS=musBody().PCS;
-    for(const p of PCS){ if(p.e!=null)p.E=E[p.e]||null;
+    const robe=k[1]==='1', bare=k[2]==='1', MI=n=>R.MATS.indexOf(n), SK=MI('skin'), PA=MI('pants'), RO=robe?robeMat():-1, E=LOOKS.shape(robe), PCS=musBody().PCS, D=DESIGN.decode(k.split('.')[1]||'');
+    for(const p of PCS){ if(p.e!=null)p.E=DESIGN.mix(E[p.e]||null,p.e,D);
       if(bare&&/^shoe/.test(p.n))p.recol=()=>SK; else if(robe&&LOOKS.robed(p.n))p.recol=()=>RO; else if(robe&&/^shin/.test(p.n))p.recol=m=>m===PA?SK:undefined; }
     for(const P of PCS)if(!P.box&&!MUSGEO.has(P.share)){ const fine=W3.fine(P); W3.warm(P,P.step||(fine?.5:1),fine,null); }
-    b={PCS}; BUILT.set(k,b); return b; };
+    b={PCS,bh:D.h}; BUILT.set(k,b); return b; };
   const fig=o=>{ '@later'; unfig(o); const k=o.look||'w00', b=built(k), g=new THREE.Group();
     if(b.body){ const M=BODIES.mesh(b.body); g.add(M.me); o.fig={g,me:M.me,body:b.body,PM:M.PM}; }
-    else{ const FM=figureMesh(b.PCS,'online'); g.add(FM.me); o.fig={g,me:FM.me,FM,PCS:b.PCS}; }
+    else{ const FM=figureMesh(b.PCS,'online'); g.add(FM.me); o.fig={g,me:FM.me,FM,PCS:b.PCS,bh:b.bh}; }
     const hb=new THREE.Mesh(new THREE.BoxGeometry(22,58,24),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(0,29,2); g.add(hb);
     o.fig.th={name:o.name||'TENANT',obj:hb,reach:1.6,tall:1.9,act:()=>{ if(ONLINE.use)ONLINE.use(o); }}; UI.thing(o.fig.th);
     o.key=k; o.B=null; g.userData.anyRoom=true; scene.add(g); };
@@ -84,7 +85,7 @@ Object.assign(ONLINE,{others:new Map(),on:false,me:'',log:[],hear:{}}); window.O
       const sp=o.q?Math.hypot(p.x-o.q.x,p.z-o.q.z)/Math.max(dt,1e-3):0; o.q={x:p.x,z:p.z}; o.S.target=sp>.4*TILE?1:0; R.step(o.S,dt);
       const M=F.me.material, gh=!!o.dead, fl=o.flashT>now; if(F.ghost!==gh){ F.ghost=gh; M.transparent=gh; M.opacity=gh?.35:1; M.depthWrite=!gh; M.color.set(gh?0xcfe0ff:0xffffff); M.needsUpdate=true; F.me.castShadow=!gh; }
       if(F.fl!==fl&&M.emissive){ F.fl=fl; M.emissive.setScalar(fl?.55:0); }
-      g.visible=true; g.position.set(p.x,p.y,p.z); g.rotation.y=p.hd; if(F.body)musScale(g,1); else musScale(g); o.d=((Math.round(p.hd/PI4)%8)+8)%8;
+      g.visible=true; g.position.set(p.x,p.y,p.z); g.rotation.y=p.hd; if(F.body)musScale(g,1); else musScale(g,F.bh||1); o.d=((Math.round(p.hd/PI4)%8)+8)%8;
       if(rg||!o.B||o.wantPose||ASTEP.gate(o,dt)){ o.wantPose=false; R.farOnly(false); const B=o.B=rg?ragPoseOf(rg.b,{x:rg.o[0],y:rg.o[1]},rg.hd):R.pose(o.S,true); if(F.body)BODIES.pose(B,F.PM,F.body); else F.PCS.forEach((pc,i)=>F.FM.set(i,R.frameOf(pc.on||pc.n,B))); }
       tag(o); o.tag.visible=true; o.tag.position.set(p.x,p.y+2.65*TILE,p.z); }catch(e){ hide(o); if(!o.err){ o.err=1; console.warn('ONLINE: could not draw '+(o.name||o.id),e); } } } };
   window.ONLINEDBG=()=>({me:{lv:SHARED.LVL,rk:roomKey(),at:[+pos.x.toFixed(1),+pos.z.toFixed(1),+SHARED.py.toFixed(2)]},on:ONLINE.on,others:[...ONLINE.others.values()].map(o=>({name:o.name,look:o.look,p:o.p&&{x:+o.p.x.toFixed(1),z:+o.p.z.toFixed(1),y:+o.p.y.toFixed(2),lv:o.p.lv,rm:o.p.rm},why:o.why||'',shown:!!(o.fig&&o.fig.g.visible),err:!!o.err}))});

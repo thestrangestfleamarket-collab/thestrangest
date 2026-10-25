@@ -348,7 +348,9 @@ RIVER.build=()=>{ '@later'; if(RIVER.on)return; const n0=scene.children.length; 
   const t0=RIVER.tick, p0=RIVER.pre; RIVER.tick=(dt,pos)=>{ if(RIVER.shown)t0(dt,pos); }; RIVER.pre=(...a)=>{ if(RIVER.shown)p0(...a); };
   if(window.CLIP)window.CLIP.run(); };
 { const zA=()=>Math.min(SHARED.BOD.ZS(BLOCK.alley[0]),SHARED.BOD.ZS(BLOCK.alley[1])), zN=()=>Math.max(SHARED.BOD.ZS(BLOCK.alley[0]),SHARED.BOD.ZS(BLOCK.alley[1])); let busy=false;
-  RIVER.inZone=(x,z)=>SHARED.LVL==='up'&&z<zA();
+  // the river's side of the map, but not the places built off the map there (your fire escape, the night market) nor your apartment
+  const offMap=(x,z)=>{ if(MODS.apts&&MODS.apts.inReal)return true; const X=SHARED.BOD.X, Z=SHARED.BOD.Z; for(const n in STORE.off||{}){ const [a,b,c,d]=STORE.off[n].lot, x0=Math.min(X(a),X(c)), x1=Math.max(X(a),X(c)), z0=Math.min(Z(b),Z(d)), z1=Math.max(Z(b),Z(d)); if(x>x0&&x<x1&&z>z0&&z<z1)return true; } return false; };
+  RIVER.inZone=(x,z)=>SHARED.LVL==='up'&&z<zA()&&!offMap(x,z);
   SYS.add('places',()=>{ if(!window.__started||busy||ROOMS.cur)return; const p=pos, inz=RIVER.inZone(p.x,p.z);
     if(inz&&!RIVER.on){ busy=true; FADE.run('ENTERING THE HUDSON',()=>RIVER.build()).then(()=>{ busy=false; }); return; }
     const show=RIVER.on&&(inz||p.z<zN()); if(show!==RIVER.shown){ RIVER.shown=show; RIVERG.visible=show; } },'066-river'); }

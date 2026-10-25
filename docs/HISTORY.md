@@ -4717,3 +4717,6 @@ Owner: "add 5 more types of floor for apartment, add the kitchen into the apartm
 
 ## 25 Oct 2026: your apartment lit only by its windows and its own lights; the real fire escapes outside
 Owner: "remove all lighting except for natural lighting from windows and light sources inside (no over head lights on ceiling) the front and back door and windows to fire escapes should show the fire escape. dont do flat images, do real depth showing the fire escape from inside"; approved the mockups ("go"). Rule: no overhead or fill light in the apartment; daylight comes only through its windows.
+
+## 25 Oct 2026: your fire escape: sky and clouds, real pots, ledges, deeper landings, real windows and door; no gradients
+Owner (a picture of the fire escape view): "the outside shouldnt be black, it should be blue sky, clouds floating below around the building, thick, cant zoom out further than this. all the pots and plants on fireescape are real. the windows and rails should have place to puts flowers and items down. make it go out 25% further. also it keeps saying "entering the hudson""; "the windows and door need to be more realistic texture and depth. not flat surfaces. room for items in front of window, real glass, realistic atmosphere"; "dont use gradients". Rule: no gradients — the apartment and the fire escape shade in the game's cel steps.

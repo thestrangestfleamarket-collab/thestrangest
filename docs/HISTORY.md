@@ -4629,3 +4629,7 @@ Owner: "lets remove all the newly added rooms from game". The forty old rooms of
 ## 25 Oct 2026: the treetop grass level; the skyline back
 Owner: "make grass totally flat tree top, no humps or bumps". Every leaf clump is a level disc at one height (no raised middle, no turned-down rim, the wind slides it but never dips it); the leaf colouring (lighter middle, darker rim) stays, so it still reads as a treetop.
 Owner: "the skyline is missing from edge of screen, neesd to go back". The distance fog had washed the sky and the far city into haze; now it leaves the sky and everything past the map's edge clear and only blurs the world itself.
+
+## 25 Oct 2026: the park's edge-ring trees smaller again
+
+Owner: "just make them smaller" (the ring of trees inside the park wall — asked for before and still too big: from the street they swallowed the whole gate). Each edge-ring tree is about a third smaller now, so the gate, its CENTRAL PARK sign and the lanterns read against the trees instead of being hidden behind them.

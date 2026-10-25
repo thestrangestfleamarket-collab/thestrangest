@@ -7,7 +7,7 @@ import {MAPG, SOL, SYS, TILE} from './006-map-pre.js';
 const GRASS={};
 { const T=TILE, MAXR=24;
   // the repo's settings as its control panel starts them, brighter (owner), and its presets (each applied on top of the default)
-  const DEF={grDensity:300,grMaxCount:200000,grMinWidth:.06,grMaxWidth:.06,grMinLength:.375,grMaxLength:.625,grTiltMax:.16,grColorBottom:'#4a9a22',grColorTop:'#86c93a',grGradStart:.15,grGradEnd:1,grGradPower:1.6,grBrightness:1.2,
+  const DEF={grDensity:300,grMinWidth:.06,grMaxWidth:.06,grMinLength:.375,grMaxLength:.625,grTiltMax:.16,grColorBottom:'#4a9a22',grColorTop:'#86c93a',grGradStart:.15,grGradEnd:1,grGradPower:1.6,grBrightness:1.2,
     grShadowStrength:.6,grShadowSampleY:.15,grPatchStrength:.73,grPatchLinkColors:true,grPatchDry:'#b8a94e',grPatchLush:'#6f9a2a',grPatchScale:.9,grPatchBias:1.6,
     grRockFlatten:1,grRockBend:.41,grRockRadiusMul:.2,grRockFalloff:.35,grTransColor:'#c1e54d',grTransStrength:2.5,grTransPower:6.4,grTransTip:1,grTransShadow:1};
   const PRESETS={default:{label:'SPRING',values:{}},
@@ -48,7 +48,7 @@ const GRASS={};
   const bladeGeo=seg=>{ const hw=t=>.5*Math.pow(1-t,1.2), P=[], I=[]; for(let i=0;i<seg;i++){ const t=i/seg, w=hw(t); P.push(-w,t,0,w,t,0); } P.push(0,1,0);
     for(let i=0;i<seg-1;i++){ const l=i*2; I.push(l,l+2,l+1,l+1,l+2,l+3); } const L=(seg-1)*2; I.push(L,seg*2,L+1);
     const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); g.setIndex(I); g.computeVertexNormals(); return g; };
-  const LOD=[{to:8,dens:1,w:1,g:bladeGeo(3)},{to:17,dens:.3,w:2.4,g:bladeGeo(2)},{to:29,dens:.09,w:5,g:bladeGeo(2)},{to:42,dens:.03,w:8,g:bladeGeo(1)}];
+  const BL={dens:.3,w:2.4,g:bladeGeo(1)};   // one detail everywhere: no steps between near and far grass
   const bmat=new THREE.MeshLambertMaterial({side:THREE.DoubleSide});
   bmat.onBeforeCompile=sh=>{ Object.assign(sh.uniforms,U);
     sh.vertexShader=sh.vertexShader.replace('#include <common>',`#include <common>
@@ -85,7 +85,7 @@ const GRASS={};
     sh.fragmentShader='varying vec3 vGndW; uniform float uShadowStrength;\n'+sh.fragmentShader.replace('#include <shadowmap_pars_fragment>','#include <shadowmap_pars_fragment>\n'+SHFRAG)
       .replace('#include <opaque_fragment>','#include <opaque_fragment>\n  gl_FragColor.rgb*=(1.-uShadowStrength*(1.-grassShadow(vGndW)));'); };
   gmat.customProgramCacheKey=()=>'grassfloor3';
-  const FL=new Map(); GRASS.floors=FL; GRASS.n=0;   // per lawn chunk: its floor and its four quarters' blades
+  const FL=new Map(); GRASS.floors=FL; GRASS.n=0;   // per lawn chunk: its floor and its blades, baked together
   const tint=new THREE.Color(), pc=new THREE.Color(), base=new THREE.Color();
   const paint=f=>{ const P=f.P, col=f.m.geometry.attributes.color.array; base.copy(U.uGrassBottom.value); for(let i=0;i<P.length;i+=3){ patch(P[i],P[i+2],pc); tint.copy(base).lerp(pc,S.grPatchStrength).multiplyScalar(S.grBrightness); col[i]=tint.r; col[i+1]=tint.g; col[i+2]=tint.b; } f.m.geometry.attributes.color.needsUpdate=true; };
   const floor=(key,me)=>{ const {x0,z0,N,CELL,MG}=me, W=N+2*MG, ci=(i,j)=>(j+MG)*W+i+MG, N1=N+1, VI=new Int32Array(N1*N1).fill(-1), P=[], IX=[];
@@ -93,37 +93,32 @@ const GRASS={};
     let I=me.I, G=me.G; const RG=new Uint8Array(I.length); for(let r=0;r<3;r++){ const I2=new Uint8Array(I), G2=new Float32Array(G); for(let j=-MG+1;j<N+MG-1;j++)for(let i=-MG+1;i<N+MG-1;i++){ const c=ci(i,j); if(I[c])continue; let g=0, n=0; for(const [di,dj] of [[1,0],[-1,0],[0,1],[0,-1]]){ const d=ci(i+di,j+dj); if(I[d]){ g+=G[d]; n++; } } if(n){ I2[c]=1; G2[c]=g/n; RG[c]=r+1; } } I=I2; G=G2; }
     const v=(a,b)=>{ const k=b*N1+a; if(VI[k]>=0)return VI[k]; let g=0, n=0, ox=0, oz=0; for(const [di,dj] of [[-1,-1],[0,-1],[-1,0],[0,0]]){ const c=ci(a+di,b+dj); if(I[c]){ g+=G[c]; n++; ox+=di+.5; oz+=dj+.5; } }
       const f=n===1?.5:n===3?-.5:0; P.push(x0+(a+ox*f)*CELL,g/n+.015*T,z0+(b+oz*f)*CELL); return VI[k]=P.length/3-1; };
-    const QT=[[],[],[],[]], QR=[[],[],[],[]], h=N/2;   // each quarter's triangles for the scatter, and how far past the lawn each lies
-    for(let j=0;j<N;j++)for(let i=0;i<N;i++){ const c=ci(i,j); if(!I[c])continue; const A=v(i,j), B=v(i+1,j), Cc=v(i,j+1), D=v(i+1,j+1), q=(i>=h?1:0)+(j>=h?2:0); if(RG[c]<3)IX.push(A,Cc,B,B,Cc,D); QT[q].push(A,Cc,B,B,Cc,D); QR[q].push(RG[c],RG[c]); }
+    const QT=[], QR=[];   // the triangles for the scatter, and how far past the lawn each lies
+    for(let j=0;j<N;j++)for(let i=0;i<N;i++){ const c=ci(i,j); if(!I[c])continue; const A=v(i,j), B=v(i+1,j), Cc=v(i,j+1), D=v(i+1,j+1); if(RG[c]<3)IX.push(A,Cc,B,B,Cc,D); QT.push(A,Cc,B,B,Cc,D); QR.push(RG[c],RG[c]); }
     if(!IX.length)return; const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); g.setAttribute('normal',new THREE.Float32BufferAttribute(P.map((_,i)=>i%3===1?1:0),3)); g.setAttribute('color',new THREE.Float32BufferAttribute(new Float32Array(P.length),3)); g.setIndex(IX);
-    const m=new THREE.Mesh(g,gmat); m.receiveShadow=true; m.raycast=()=>{}; MAPG.bodega.add(m); const f={me,m,P,QT,QR,q:[null,null,null,null]}; paint(f); FL.set(key,f); };
-  const unfloor=key=>{ const f=FL.get(key); if(!f)return; MAPG.bodega.remove(f.m); f.m.geometry.dispose(); for(let k=0;k<4;k++)unblade(f,k); FL.delete(key); };
-  // a quarter's blades, baked once: area-weighted over its floor triangles (a triangle by its area, then a uniform point in it), seeded so the field is the same every time, each blade's patch colour fixed in
-  const area=(f,k)=>{ const P=f.P, Q=f.QT[k], cum=[]; let A=0; for(let t=0;t<Q.length;t+=3){ const a=Q[t]*3, b=Q[t+1]*3, c=Q[t+2]*3, ux=P[b]-P[a], uy=P[b+1]-P[a+1], uz=P[b+2]-P[a+2], vx=P[c]-P[a], vy=P[c+1]-P[a+1], vz=P[c+2]-P[a+2];
+    const m=new THREE.Mesh(g,gmat); m.receiveShadow=true; m.raycast=()=>{}; MAPG.bodega.add(m); const f={me,m,P,QT,QR,b:null}; paint(f); blades(f); FL.set(key,f); };
+  const unfloor=key=>{ const f=FL.get(key); if(!f)return; MAPG.bodega.remove(f.m); f.m.geometry.dispose(); unblade(f); FL.delete(key); };
+  // a chunk's blades, baked once with its floor: area-weighted over its floor triangles (a triangle by its area, then a uniform point in it), seeded so the field is the same every time, each blade's patch colour fixed in
+  const area=f=>{ const P=f.P, Q=f.QT, cum=[]; let A=0; for(let t=0;t<Q.length;t+=3){ const a=Q[t]*3, b=Q[t+1]*3, c=Q[t+2]*3, ux=P[b]-P[a], uy=P[b+1]-P[a+1], uz=P[b+2]-P[a+2], vx=P[c]-P[a], vy=P[c+1]-P[a+1], vz=P[c+2]-P[a+2];
       A+=.5*Math.hypot(uy*vz-uz*vy,uz*vx-ux*vz,ux*vy-uy*vx); cum.push(A); } return {A,cum}; };
-  const blades=(f,k,n,L)=>{ const lod=LOD[L], P=f.P, Q=f.QT[k], {A,cum}=f.ar[k], M=new THREE.Matrix4(), Qn=new THREE.Quaternion(), E=new THREE.Euler(), Sc=new THREE.Vector3(), V=new THREE.Vector3(), AP=new Float32Array(n*3);
-    let a=((Math.floor(f.me.x0*7.13)*73856093)^(Math.floor(f.me.z0*3.71)*19349663)^(k*83492791))>>>0||1; const R=()=>{ a=(a*16807)%2147483647; return a/2147483647; };
-    const im=new THREE.InstancedMesh(lod.g,bmat,n); im.lod=L;
-    for(let i=0;i<n;i++){ const r=R()*A; let lo=0, hi=cum.length-1; while(lo<hi){ const mid=(lo+hi)>>1; if(cum[mid]<r)lo=mid+1; else hi=mid; } const t=lo*3, pa=Q[t]*3, pb=Q[t+1]*3, pc2=Q[t+2]*3, rg=f.QR[k][lo]; if(rg&&R()>SPILL[rg]){ im.setMatrixAt(i,ZERO); AP[i*3]=AP[i*3+1]=AP[i*3+2]=0; continue; }
+  const blades=f=>{ const P=f.P, Q=f.QT, {A,cum}=area(f), n=Math.round(S.grDensity*BL.dens*A); if(!n)return; const M=new THREE.Matrix4(), Qn=new THREE.Quaternion(), E=new THREE.Euler(), Sc=new THREE.Vector3(), V=new THREE.Vector3(), AP=new Float32Array(n*3);
+    let a=((Math.floor(f.me.x0*7.13)*73856093)^(Math.floor(f.me.z0*3.71)*19349663))>>>0||1; const R=()=>{ a=(a*16807)%2147483647; return a/2147483647; };
+    const im=new THREE.InstancedMesh(BL.g,bmat,n);
+    for(let i=0;i<n;i++){ const r=R()*A; let lo=0, hi=cum.length-1; while(lo<hi){ const mid=(lo+hi)>>1; if(cum[mid]<r)lo=mid+1; else hi=mid; } const t=lo*3, pa=Q[t]*3, pb=Q[t+1]*3, pc2=Q[t+2]*3, rg=f.QR[lo]; if(rg&&R()>SPILL[rg]){ im.setMatrixAt(i,ZERO); AP[i*3]=AP[i*3+1]=AP[i*3+2]=0; continue; }
       let u=R(), w=R(); if(u+w>1){ u=1-u; w=1-w; } V.set(P[pa]+(P[pb]-P[pa])*u+(P[pc2]-P[pa])*w,P[pa+1]+(P[pb+1]-P[pa+1])*u+(P[pc2+1]-P[pa+1])*w,P[pa+2]+(P[pb+2]-P[pa+2])*u+(P[pc2+2]-P[pa+2])*w);
-      E.set((R()-.5)*2*S.grTiltMax,R()*Math.PI*2,(R()-.5)*S.grTiltMax*.5); Qn.setFromEuler(E); Sc.set((S.grMinWidth+R()*(S.grMaxWidth-S.grMinWidth))*lod.w,S.grMinLength+R()*(S.grMaxLength-S.grMinLength),1); if(rg)Sc.y*=.55+R()*.75; im.setMatrixAt(i,M.compose(V,Qn,Sc));
+      E.set((R()-.5)*2*S.grTiltMax,R()*Math.PI*2,(R()-.5)*S.grTiltMax*.5); Qn.setFromEuler(E); Sc.set((S.grMinWidth+R()*(S.grMaxWidth-S.grMinWidth))*BL.w,S.grMinLength+R()*(S.grMaxLength-S.grMinLength),1); if(rg)Sc.y*=.55+R()*.75; im.setMatrixAt(i,M.compose(V,Qn,Sc));
       patch(V.x,V.z,pc); AP[i*3]=pc.r; AP[i*3+1]=pc.g; AP[i*3+2]=pc.b; }
-    im.geometry=lod.g.clone(); im.geometry.setAttribute('aPatch',new THREE.InstancedBufferAttribute(AP,3));
-    im.frustumCulled=false; im.receiveShadow=true; im.raycast=()=>{}; MAPG.bodega.add(im); f.q[k]=im; GRASS.n+=n; };
+    im.geometry=BL.g.clone(); im.geometry.setAttribute('aPatch',new THREE.InstancedBufferAttribute(AP,3));
+    im.computeBoundingSphere(); im.boundingSphere.radius+=1; im.receiveShadow=true; im.raycast=()=>{}; MAPG.bodega.add(im); f.b=im; GRASS.n+=n; };
   const SPILL=[1,1,.7,.35], ZERO=new THREE.Matrix4().makeScale(0,0,0);   // how many blades stand at each step past the lawn's edge
-  const unblade=(f,k)=>{ const im=f.q[k]; if(im){ MAPG.bodega.remove(im); im.geometry.dispose(); im.dispose(); GRASS.n-=im.count; } f.q[k]=null; };
-  GRASS.preset=k=>{ if(!PRESETS[k])return; cur=k; S=Object.assign({},DEF,PRESETS[k].values); sync(); try{ SAVE.set('grass',k); }catch(e){} for(const f of FL.values()){ paint(f); for(let q=0;q<4;q++)unblade(f,q); } };   // baked: a new look rebakes the field round you
+  const unblade=f=>{ const im=f.b; if(im){ MAPG.bodega.remove(im); im.geometry.dispose(); im.dispose(); GRASS.n-=im.count; } f.b=null; };
+  GRASS.preset=k=>{ if(!PRESETS[k])return; cur=k; S=Object.assign({},DEF,PRESETS[k].values); sync(); try{ SAVE.set('grass',k); }catch(e){} for(const f of FL.values()){ paint(f); unblade(f); blades(f); } };   // baked: a new look rebakes the field round you
   GRASS.PRESETS=PRESETS; GRASS.U=U; GRASS.get=()=>Object.assign({},S); GRASS.cur=()=>cur;
   S=Object.assign({},DEF,PRESETS[cur].values); sync();
   SYS.add('weedsAdd',(key,me)=>{ if(me&&me.I)floor(key,me); },'140b-grassfield'); SYS.add('weedsDrop',key=>unfloor(key),'140b-grassfield');
   if(WEEDS.chunks)for(const [k,me] of WEEDS.chunks)if(me&&me.I)floor(k,me);
   let suns=null; const SP=new THREE.Vector3(), ST=new THREE.Vector3();
   SYS.add('life',()=>{ if(SHARED.LVL!=='up')return;
-    // the blades on every lawn round you, nearest quarter first: the repo's blades close by, fewer and wider ones farther out (they cover the same ground), up to the field's count
-    let best=null, bd=1e9; for(const f of FL.values()){ const me=f.me, hc=me.N/2*me.CELL; if(!f.ar)f.ar=[0,1,2,3].map(k=>area(f,k));
-      for(let k=0;k<4;k++){ const cx=me.x0+((k&1)+.5)*hc, cz=me.z0+((k>>1)+.5)*hc, d=Math.max(0,Math.hypot(pos.x-cx,pos.z-cz)-hc*.7), L=LOD.findIndex(l=>d<=l.to), im=f.q[k];
-        if(im&&(L<0||im.lod!==L&&(L<im.lod||d>LOD[im.lod].to+1.5)))unblade(f,k); else if(im===null&&L>=0&&d<bd){ bd=d; best=[f,k,L]; } } }
-    if(best){ const [f,k,L]=best, n=Math.round(S.grDensity*LOD[L].dens*f.ar[k].A); if(!n)f.q[k]=false; else if(GRASS.n+n<=S.grMaxCount)blades(f,k,n,L); }
     // what presses the grass: you, the walkers near you, the trail you leave, and the rocks, logs and trunks round you (the repo's rocks; radii over its radius multiplier)
     const RK=U.uRocks.value, MV=WEEDS.movers, TR=WEEDS.UTR&&WEEDS.UTR.value, rm=S.grRockRadiusMul||1; let n=0; RK[n++].set(pos.x,0,pos.z,.28/rm);
     if(MV)for(let i=1;i<MV.length&&n<MAXR;i++)if(MV[i].w>=.5)RK[n++].set(MV[i].x,0,MV[i].y,.25/rm);

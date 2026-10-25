@@ -1,4 +1,4 @@
-// THE WEEDS: WEEDS grows the grass (the 18 Oct treetop grass: over every lawn a carpet of flat faceted leaf clumps, each lit as one round crown, overlapping so no ground shows, a gentle wind lifting their tops; tufts only at the feet of things), the weeds and the gold reeds, bending them as things move through.
+// THE WEEDS: WEEDS grows the grass (the 18 Oct treetop grass: over every lawn a level carpet of flat leaf clumps, overlapping so no ground shows, sliding gently in the wind; tufts only at the feet of things), the weeds and the gold reeds, bending them as things move through.
 import {SHARED, THREE} from './003-shx.js';
 import {NPCS, PARK, POND, pos, RAG, ROOMS, st, UI, W3, WEEDS} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
@@ -75,7 +75,7 @@ WEEDS.lawnInit=()=>{ const T=TILE, CS=8*T, N=16, CELL=CS/N, MG=4, W=N+2*MG, hsh=
     +' pu/=max(1.,length(pu)); rp=clamp(rp,-1.,1.); return k; }\n';
   mat.onBeforeCompile=sh=>{ WEEDS.shader=sh; Object.assign(sh.uniforms,{uMv:WEEDS.UMV,uTr:WEEDS.UTR,uTk:WEEDS.UTK,uSw:PARK.sway,uWk:PARK.windK,uSwAt:PARK.swayAt});
     sh.vertexShader=HEAD+sh.vertexShader.replace('#include <beginnormal_vertex>','#include <beginnormal_vertex>\n vec3 tgW=(modelMatrix*vec4(position,1.)).xyz; vec2 tgU, tgD; float tgR, tgS, tgK=tgP(tgW.xz,tgU,tgR); if(aT>.5){ vec2 tgG=vec2(tgP(tgW.xz+vec2('+F(.15)+',0.),tgD,tgS),tgP(tgW.xz+vec2(0.,'+F(.15)+'),tgD,tgS))-tgK; objectNormal=normalize(objectNormal+vec3(tgG.x,0.,tgG.y)*aH*.9/'+F(.15)+'); }')
-    .replace('#include <begin_vertex>','#include <begin_vertex>\n vG=aG; vB=vec2(aH,aC); { transformed.xz+=tgU*(aH*.3+aL*.45); transformed.y+=tgR*aH*.15-aH*tgK*.55; }\n { float sr=1.-smoothstep(uSwAt.w*.85,uSwAt.w,distance(tgW.xz,uSwAt.xz)), ph=(tgW.x*.31+tgW.z*.17)/'+F(1)+', g=(.6+.4*sin(uSw*.37+ph*.5))*uWk*sr, s1=sin(uSw*1.3-ph*1.1+aS*2.)*.6+sin(uSw*2.3-ph*2.2+1.3+aS)*.3, b=aH*aH/'+F(.6)+'*(1.-tgK)*(.35+.65*max(aC,0.)); transformed.xz+=vec2(cos(aS),sin(aS))*s1*b*.2*g; transformed.y-=abs(s1)*b*.1*g; }')
+    .replace('#include <begin_vertex>','#include <begin_vertex>\n vG=aG; vB=vec2(aH,aC); { transformed.xz+=tgU*(aH*.3+aL*.45); transformed.y+=tgR*aH*.15-aH*tgK*.55; }\n { float sr=1.-smoothstep(uSwAt.w*.85,uSwAt.w,distance(tgW.xz,uSwAt.xz)), ph=(tgW.x*.31+tgW.z*.17)/'+F(1)+', g=(.6+.4*sin(uSw*.37+ph*.5))*uWk*sr, s1=sin(uSw*1.3-ph*1.1+aS*2.)*.6+sin(uSw*2.3-ph*2.2+1.3+aS)*.3, b=aH*aH/'+F(.6)+'*(1.-tgK)*(.35+.65*max(aC,0.)); transformed.xz+=vec2(cos(aS),sin(aS))*s1*b*.2*g; transformed.y-=abs(s1)*b*.1*g*step(aT,1.5); }')
     .replace('#include <beginnormal_vertex>','#include <beginnormal_vertex>\n if(aC>=0.&&aT<.5)objectNormal=vec3(0.,1.,0.);').replace('#include <shadowmap_vertex>',THREE.ShaderChunk.shadowmap_vertex.replace(/(directional|point)LightShadows\[ i \]\.shadowNormalBias/g,'($&+.12)'));
     sh.fragmentShader='uniform float uSw; varying vec3 vG; varying vec2 vB;\n'+sh.fragmentShader.replace('#include <normal_fragment_begin>',THREE.ShaderChunk.normal_fragment_begin.replace(/normal\s*\*?=\s*normal\s*\*\s*faceDirection;|normal\s*\*=\s*faceDirection;/g,'')).replace('#include <color_fragment>','#include <color_fragment>\n diffuseColor.rgb*=lfn(vWP.xz*.031+7.)>.6?1.07:1.; if(vB.y>=0.)diffuseColor.rgb*=mix(vec3(.74,.84,.82),vec3(1.34,1.34,.9),clamp(vB.x/'+F(.6)+',0.,1.)*.4+vB.y*.6)*mix(vec3(.9,.96,.84),vec3(1.06,1.03,.9),lfn(vWP.xz*.23+3.));'
       +' { int gv=int(vG.x+.5); if(vG.z>.5||gv>0&&vG.y>.42){ vec3 gc=gv==1?'+LC(222,184,92)+':gv==2?'+LC(201,140,46)+':gv==3?'+LC(208,172,86)+':'+LC(236,190,40)+';'
@@ -156,14 +156,14 @@ WEEDS.lawnInit=()=>{ const T=TILE, CS=8*T, N=16, CELL=CS/N, MG=4, W=N+2*MG, hsh=
     for(let j=0;j<N;j+=2)for(let i=0;i<N;i+=2){ const c=ci(i,j); if(I[c])SQ.push(x0+(i+1)*CELL,G[c],z0+(j+1)*CELL); }
     const AL=[], AC=[];
     const blade=(x,g,z,ang,len,rise,w,h,c)=>{ const dx=Math.cos(ang), dz=Math.sin(ang), v=P.length/3, g0=g+.04*T; P.push(x-dz*w,g0,z+dx*w, x+dz*w,g0,z-dx*w, x+dx*len,g0+rise,z+dz*len); AH.push(0,0,h); AL.push(0,0,len); AT.push(0,0,0); AG.push(0,0,0,0,0,0,0,0,0); AC.push(c,c,c); IX.push(v,v+1,v+2); };
-    // the treetop grass (18 Oct): one flat leaf clump a half-tile square, a flattened faceted crown more than twice as wide as its square so the clumps overlap and no ground shows; the middle faces up, the rim turns down; every clump lit as one round shape (normals four fifths out from its middle); a step darker at the foot
+    // the treetop grass: one flat leaf clump a half-tile square, a level disc more than twice as wide as its square so the clumps overlap and no ground shows, all at one height (a hair apart so they don't flicker); lighter in the middle, a step darker at the rim
     const RN=8, clump=(cx,cz,g,Wd,Hh,tone)=>{ const a0=hsh(cx,cz,951)*6.28, push=(x,y,z,h,c,nx,ny,nz)=>{ P.push(x,y,z); AH.push(h); AT.push(2); AG.push(0,0,0); AL.push(0); AC.push(c); AS.push(.5); UV.push(0,0); AN.push(nx,ny,nz); return P.length/3-1; };
-      const apex=push(cx,g+Hh,cz,Hh,Math.min(1,tone+.35),0,1,0), inner=[], outer=[];
+      const y=g+Hh, apex=push(cx,y,cz,Hh,Math.min(1,tone+.35),0,1,0), inner=[], outer=[];
       for(let k=0;k<RN;k++){ const a=a0+k/RN*6.2832, r1=Wd*.27*(.9+.2*hsh(cx+k,cz,952)), r2=Wd*.5*(.85+.3*hsh(cx,cz+k,953)), dx=Math.cos(a), dz=Math.sin(a);
-        inner.push(push(cx+dx*r1,g+Hh*.88,cz+dz*r1,Hh*.88,tone+.12,dx*.5,.86,dz*.5)); outer.push(push(cx+dx*r2,g+Hh*.3,cz+dz*r2,Hh*.3,Math.max(0,tone-.3),dx*.8,.45,dz*.8)); }
+        inner.push(push(cx+dx*r1,y,cz+dz*r1,Hh,tone+.12,0,1,0)); outer.push(push(cx+dx*r2,y,cz+dz*r2,Hh,Math.max(0,tone-.3),0,1,0)); }
       for(let k=0;k<RN;k++){ const k2=(k+1)%RN; IX.push(apex,inner[k2],inner[k]); IX.push(inner[k],inner[k2],outer[k2]); IX.push(inner[k],outer[k2],outer[k]); } };
     for(let j=0;j<N;j++)for(let i=0;i<N;i++){ const c=ci(i,j); if(!I[c])continue;   // the same clumps all the way to the lawn's edge (owner, 24 Oct)
-      const x=x0+(i+.3+.4*hsh(i+x0,j+z0,941))*CELL, z=z0+(j+.3+.4*hsh(j+z0,i+x0,942))*CELL, r=hsh(x,z,943), Wd=CELL*(2.3+.5*r), Hh=CPH*(.8+.4*hsh(z,x,944)), tone=.1+.45*vn(x/T/2.2,z/T/2.2,901)+.1*r;
+      const x=x0+(i+.3+.4*hsh(i+x0,j+z0,941))*CELL, z=z0+(j+.3+.4*hsh(j+z0,i+x0,942))*CELL, r=hsh(x,z,943), Wd=CELL*(2.3+.5*r), Hh=CPH*(.97+.06*hsh(z,x,944)), tone=.1+.45*vn(x/T/2.2,z/T/2.2,901)+.1*r;
       clump(x,z,G[c],Wd,Hh,tone); }
     const bx0=x0-1.5*T, bz0=z0-1.5*T, bx1=x0+CS+1.5*T, bz1=z0+CS+1.5*T;   // tufts scattered out from the foot of every small solid thing on the lawn (posts, rocks, logs, trunks), thickest against it
     for(const b of SOL.up){ if(b[2]<bx0||b[0]>bx1||b[3]<bz0||b[1]>bz1)continue; const w=b[2]-b[0], d=b[3]-b[1]; if(Math.max(w,d)>5*T||Math.min(w,d)<.05*T)continue; const per=2*(w+d), n=Math.ceil(per/(.22*T));

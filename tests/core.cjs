@@ -86,7 +86,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
       o.layers = (() => { const W = window.W3; if (!W || !W.wear) return { ok: false }; const t0 = W.trisWorn, sh = W.HIDE[W.idx('bodyTorso')];
         W.wear('shirt', false); const off = !W.HIDE[W.idx('bodyTorso')] && W.HIDE[W.idx('torso')]; W.wear('shirt', true);
         return { ok: true, hid: sh, off, back: W.trisWorn === t0, briefs: W.idx('briefs') >= 0 }; })();
-      o.wsmooth = (() => { const W = window.W3; return { on: !!(W && W.smooth > 0), tris: (W && W.tris) || 0 }; })();
+      o.wsmooth = (() => { const W = window.W3; return { on: !!(W && W.weld === 'dc'), tris: (W && W.tris) || 0 }; })();
       return o;
     });
     for (const p of ['dress', 'ring', 'sky', 'life', 'vitals', 'rooms', 'shadow', 'weedsAdd', 'roomsReset']) ok(r.phases.includes(p), 'SYS step "' + p + '" has systems');
@@ -122,7 +122,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
     ok(r.rpg.ok && r.rpg.n === 6 && r.rpg.keys === 'cleric,monk,ranger,rogue,warrior,wizard' && r.rpg.skinned && r.rpg.mixer && r.rpg.street, 'the six RPG townsfolk walk the street, each a rigged skinned body with its own clips: ' + JSON.stringify(r.rpg));
     ok(r.bodies.ok && r.bodies.inGame && r.bodies.none && r.bodies.onlyWalker && r.bodies.stays, 'YOU can only be the Walker: knight/man/woman stay in the game but are off the BODY row, and picking one makes you the Walker: ' + JSON.stringify(r.bodies));
     ok(r.layers.ok && r.layers.hid && r.layers.off && r.layers.back && r.layers.briefs, 'the Walker is a base body in underwear with shirt, pants, shoes and hair as layers on top: ' + JSON.stringify(r.layers));
-    ok(r.wsmooth.on && r.wsmooth.tris > 30000 && r.wsmooth.tris < 90000, 'the Walker is built with the line-smoothing pass on and a sane triangle count: ' + JSON.stringify(r.wsmooth));
+    ok(r.wsmooth.on && r.wsmooth.tris > 30000 && r.wsmooth.tris < 90000, 'the Walker is welded by dual contouring (straight hems, no ripples) with a sane triangle count: ' + JSON.stringify(r.wsmooth));
     ok(r.equip.ok && r.equip.slots && r.equip.d0 && r.equip.guard && r.equip.float && r.equip.off, 'EQUIP wears body gear and resolves its grant (guard softens blows, float lifts), one off at a time: ' + JSON.stringify(r.equip));
     ok(r.charp.ok && r.charp.open && r.charp.built && r.charp.tabsHidden && r.charp.closed && r.charp.log >= 50, 'the character page is the menu home (ESC): avatar + buttons built, the old tabs hidden, opens and closes, and the admin menu game log is baked from HISTORY: ' + JSON.stringify(r.charp));
     const pk = await pg.evaluate(() => { const P = window.PARK, D = window.DFOG, c = window.SHARED && window.SHARED.composer; return { sign: !!(P.sign && P.sign.top > P.sign.y), fog: !!D && D.get().start === 20 && D.get().end === 60, pass: !!c && c.passes.some(q => q.uniforms && q.uniforms.tDepth), stand: !!(P.stand && P.stand.children.length) }; }).catch(e => ({ err: e.message }));

@@ -1,4 +1,4 @@
-// THE WALKER'S BODY: pieces built from shapes (meshOf0: distance fields, tetrahedra, simplify), warmed before first use.
+// THE WALKER'S BODY: pieces built from shapes (meshOf0: distance fields, tetrahedra, welded by dual contouring), warmed before first use.
 import {SHARED, THREE} from './003-shx.js';
 import {CLOCK, LEVELS, W3} from './003b-systems.js';
 import {PPU, scene} from './004-main.js';
@@ -12,13 +12,14 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
   const ramp=MATS.map(m=>(R.RAMP[m]||['#ff00ff','#ff00ff','#ff00ff','#ff00ff']).map(h=>new THREE.Color(h)));
   W3.wholeBox=/wholebox/.test(location.search);
   W3.lite=QS.get('walker')==='lite';
-  W3.smooth=QS.has('smooth')?+QS.get('smooth'):6;   // Taubin passes that smooth each piece's lines (0 = the raw marched mesh)
+  W3.weld='dc';   // how his pieces are welded: dual contouring (straight hems, no ripples)
+  const CLOTH=/^(torso|hips|thigh|shin|shoe|sleeve|upperArm|forearm|neck|body|briefs|foot)/, HANDS=/^(fing|hand)/;   // his clothes and limbs finer (clean hems, crisp shoes), hands and fingers coarser: the same triangles in all
   const RES=QS.has('res')?Math.max(.3,Math.min(1,+QS.get('res'))):.55;   // bake resolution: <1 is finer (smoother, more triangles); the eyes are flat circles, not marched
   W3.ramp=ramp; W3.meshOf=(P,step,fine,RB)=>meshOf(P,step,fine,RB); W3.legs=R.PIECES.map(n=>/^(thigh|shin|shoe)/.test(n)?(n.endsWith('L')?1:2):0);
   const PRE=new WeakMap(); W3.warm=(P,step,fine,RB)=>{ PRE.set(P,{step,fine,RB,g:meshOf0(P,step,fine,RB)}); };
   W3.fine=P=>P.step<1||/^(head|hair|beard|brow|eye|nose|ear|mouth)/.test(P.n);
   function meshOf(P,step,fine,RB){ const c=PRE.get(P); if(c&&c.step===step&&c.fine===fine&&c.RB===RB){ PRE.delete(P); return c.g; } return meshOf0(P,step,fine,RB); }
-  function meshOf0(P,step,fine,RB){ const bb=P.bb||[-13,13,-1,55,-11,13], nx=Math.ceil((bb[1]-bb[0])/step)+2, ny=Math.ceil((bb[3]-bb[2])/step)+2, nz=Math.ceil((bb[5]-bb[4])/step)+2;
+  function meshOf0(P,step,fine,RB){ if(CLOTH.test(P.n))step*=.6; const bb=P.bb||[-13,13,-1,55,-11,13], nx=Math.ceil((bb[1]-bb[0])/step)+2, ny=Math.ceil((bb[3]-bb[2])/step)+2, nz=Math.ceil((bb[5]-bb[4])/step)+2;
     const at=(i,j,k)=>V(bb[0]+i*step,bb[2]+j*step,bb[4]+k*step), val=new Float32Array(nx*ny*nz), I=(i,j,k)=>(i*ny+j)*nz+k;
     let r0=[0,0,0], r1=[nx,ny,nz];
     if(!W3.wholeBox){ const cs=3, cn=[0,2,4].map(a=>Math.ceil((bb[a+1]-bb[a])/cs)+1), lo=[1e9,1e9,1e9], hi=[-1e9,-1e9,-1e9], reach=cs*.87+1.5;
@@ -30,45 +31,40 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
         if(Math.abs(d)>(n-1)*SQ3+MG){ for(let i=i0;i<i1;i++)for(let j=j0;j<j1;j++)for(let k=k0;k<k1;k++)val[I(i,j,k)]=d; continue; }
         const h=Math.ceil(n/2); for(const a of [0,h])for(const b of [0,h])for(const c of [0,h])Q.push([i0+a,j0+b,k0+c,h]); continue; }
       for(let i=i0;i<i1;i++)for(let j=j0;j<j1;j++)for(let k=k0;k<k1;k++)val[I(i,j,k)]=P.d(at(i,j,k)); }
-    const F=P.F0||R.frameOf(P.on||P.n,RB||rest), raw=[], mats=[];
-    const vert=p=>{ const e=0.02, g=nrm(V(P.d(V(p.x+e,p.y,p.z))-P.d(V(p.x-e,p.y,p.z)),P.d(V(p.x,p.y+e,p.z))-P.d(V(p.x,p.y-e,p.z)),P.d(V(p.x,p.y,p.z+e))-P.d(V(p.x,p.y,p.z-e))));
-      const l=sub(add(p,mul(g,OUT)),F.o); return [dot(l,F.x),dot(l,F.y),dot(l,F.z),dot(g,F.x),dot(g,F.y),dot(g,F.z),MATS.indexOf(P.paint&&P.paint(p)||P.m)]; };
-    const VC=new Map(), NT=nx*ny*nz, emit=r=>{ raw.push(r[0],r[1],r[2],r[3],r[4],r[5]); mats.push(r[6]); };
+    const F=P.F0||R.frameOf(P.on||P.n,RB||rest), WP=[], tri=[];
+    const VC=new Map(), NT=nx*ny*nz, emit=r=>{ tri.push(r); };
     const OF=CO.map(([a,b,c])=>(a*ny+b)*nz+c);
     const cv8=[0,0,0,0,0,0,0,0], cg8=[0,0,0,0,0,0,0,0], ins=[0,0,0,0], out=[0,0,0,0]; let ci=0, cj=0, ck=0;
     const E=(a,b)=>{ const key=cg8[a]*NT+cg8[b]; let r=VC.get(key); if(!r){ const va=cv8[a], f=va/(va-cv8[b]), A=CO[a], B=CO[b], ax=bb[0]+(ci+A[0])*step, ay=bb[2]+(cj+A[1])*step, az=bb[4]+(ck+A[2])*step, bx=bb[0]+(ci+B[0])*step, by=bb[2]+(cj+B[1])*step, bz=bb[4]+(ck+B[2])*step;
-      r=vert(V(ax+(bx-ax)*f,ay+(by-ay)*f,az+(bz-az)*f)); VC.set(key,r); } return r; };
+      r=WP.length/3; WP.push(ax+(bx-ax)*f,ay+(by-ay)*f,az+(bz-az)*f); VC.set(key,r); } return r; };
     for(let i=r0[0];i<r1[0]-1;i++)for(let j=r0[1];j<r1[1]-1;j++)for(let k=r0[2];k<r1[2]-1;k++){ const o=I(i,j,k); let np=0, nn=0; for(let c=0;c<8;c++){ const x=val[o+OF[c]]; if(x>0)np++; else if(x<=0)nn++; } if(np===8||nn===8)continue; for(let c=0;c<8;c++){ cv8[c]=val[o+OF[c]]; cg8[c]=o+OF[c]; } ci=i; cj=j; ck=k;
       for(const t of TET){ let ni=0, no=0; for(let q=0;q<4;q++){ const c=t[q]; if(cv8[c]<=0)ins[ni++]=c; if(cv8[c]>0)out[no++]=c; } if(!ni||!no)continue;
         if(ni===1){ emit(E(ins[0],out[0])); emit(E(ins[0],out[1])); emit(E(ins[0],out[2])); }
         else if(ni===3){ emit(E(out[0],ins[0])); emit(E(out[0],ins[1])); emit(E(out[0],ins[2])); }
         else { const a=E(ins[0],out[0]),b=E(ins[0],out[1]),c=E(ins[1],out[1]),d=E(ins[1],out[0]); emit(a); emit(b); emit(c); emit(a); emit(c); emit(d); } } }
-    const fit0=R.fitPts(P.under||P.n,new Float32Array(raw)), {fit,mats:mts}=simplify(fit0,mats,(P.cell||CELL*(fine?0.5:1))*(/^(head|hair|eye|nose|ear|mouth)/.test(P.n)?1:1.42)*(/^eyes/.test(P.n)?1:RES)); mats.length=0; for(const q of mts)mats.push(q); const n=fit.length/6, pos=new Float32Array(n*3), nor=new Float32Array(n*3), c0=new Float32Array(n*3), c1=new Float32Array(n*3), c2=new Float32Array(n*3), cd=new Float32Array(n*3), mt=new Float32Array(n);
+    const rl=relax(P,WP,tri,(P.cell||CELL*(fine?0.5:1))*(/^(head|hair|eye|nose|ear|mouth)/.test(P.n)?1:1.42)*(/^eyes/.test(P.n)?1:RES)*(CLOTH.test(P.n)?.5:HANDS.test(P.n)?2.2:1),F), fit=R.fitPts(P.under||P.n,rl.fit), mats=rl.mats, n=fit.length/6, pos=new Float32Array(n*3), nor=new Float32Array(n*3), c0=new Float32Array(n*3), c1=new Float32Array(n*3), c2=new Float32Array(n*3), cd=new Float32Array(n*3), mt=new Float32Array(n);
     for(let i=0;i<n;i++){ pos.set([fit[i*6],fit[i*6+1],fit[i*6+2]],i*3); nor.set([fit[i*6+3],fit[i*6+4],fit[i*6+5]],i*3); const r=ramp[mats[i]]||ramp[0]; c0.set([r[0].r,r[0].g,r[0].b],i*3); c1.set([r[1].r,r[1].g,r[1].b],i*3); c2.set([r[2].r,r[2].g,r[2].b],i*3); cd.set([(r[2].r+r[3].r)/2,(r[2].g+r[3].g)/2,(r[2].b+r[3].b)/2],i*3); mt[i]=mats[i]; }
     const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(pos,3)); g.setAttribute('normal',new THREE.BufferAttribute(nor,3));
     g.setAttribute('c0',new THREE.BufferAttribute(c0,3)); g.setAttribute('cd',new THREE.BufferAttribute(cd,3)); g.setAttribute('c1',new THREE.BufferAttribute(c1,3)); g.setAttribute('c2',new THREE.BufferAttribute(c2,3)); g.setAttribute('mat',new THREE.BufferAttribute(mt,1)); return g; }
-  function simplify(fit,mats,cell){ const n=fit.length/6, key=new Map(), cid=new Int32Array(n), acc=[];
-    for(let i=0;i<n;i++){ const fx=Math.floor(fit[i*6]/cell), fy=Math.floor(fit[i*6+1]/cell), fz=Math.floor(fit[i*6+2]/cell), m=mats[i], k=Math.abs(fx)<5e3&&Math.abs(fy)<5e3&&Math.abs(fz)<5e3&&m>=0&&m<256?(((fx+5e3)*1e4+fy+5e3)*1e4+fz+5e3)*256+m:fx+'|'+fy+'|'+fz+'|'+m; let c=key.get(k); if(c==null){ c=acc.length; key.set(k,c); acc.push({p:[0,0,0],nn:[0,0,0],k:0,m:mats[i]}); }
-      const a=acc[c]; for(let q=0;q<3;q++){ a.p[q]+=fit[i*6+q]; a.nn[q]+=fit[i*6+3+q]; } a.k++; cid[i]=c; }
-    const NC=acc.length, px=new Float64Array(NC), py=new Float64Array(NC), pz=new Float64Array(NC);
-    for(let c=0;c<NC;c++){ const a=acc[c]; px[c]=a.p[0]/a.k; py[c]=a.p[1]/a.k; pz[c]=a.p[2]/a.k; }
-    const tri=[]; for(let i=0;i<n;i+=3){ const a=cid[i],b=cid[i+1],c=cid[i+2]; if(a!==b&&b!==c&&a!==c)tri.push(a,b,c); }
-    const SM=W3.smooth|0;
-    // smooth each piece's lines: Taubin (shrink-free) over the welded mesh; a vertex on an open edge follows only that boundary curve, so an outline (an eye, a collar) cleans up without the shell caving in
-    if(SM>0&&tri.length){ const nb=[], bnb=[], bnd=new Uint8Array(NC), ec=new Map();
-      for(let c=0;c<NC;c++){ nb.push(new Set()); bnb.push([]); }
-      for(let t=0;t<tri.length;t+=3){ const a=tri[t],b=tri[t+1],c=tri[t+2]; nb[a].add(b);nb[a].add(c);nb[b].add(a);nb[b].add(c);nb[c].add(a);nb[c].add(b);
-        for(let e=0;e<3;e++){ const u=tri[t+e], v=tri[t+(e+1)%3], k=u<v?u*NC+v:v*NC+u; ec.set(k,(ec.get(k)||0)+1); } }
-      for(const [k,ct] of ec)if(ct===1){ const a=Math.floor(k/NC), b=k%NC; bnd[a]=bnd[b]=1; bnb[a].push(b); bnb[b].push(a); }
-      const qx=new Float64Array(NC), qy=new Float64Array(NC), qz=new Float64Array(NC);
-      const pass=lam=>{ for(let c=0;c<NC;c++){ const src=bnd[c]?bnb[c]:nb[c]; let sx=0,sy=0,sz=0,k=0;
-          for(const d of src){ sx+=px[d];sy+=py[d];sz+=pz[d];k++; }
-          if(k){ qx[c]=px[c]+lam*(sx/k-px[c]); qy[c]=py[c]+lam*(sy/k-py[c]); qz[c]=pz[c]+lam*(sz/k-pz[c]); } else { qx[c]=px[c];qy[c]=py[c];qz[c]=pz[c]; } }
-        px.set(qx); py.set(qy); pz.set(qz); };
-      for(let it=0;it<SM;it++){ pass(.5); pass(-.53); } }
-    const out=new Float32Array(tri.length*6), om=[];   // smoothed positions; the SDF-gradient normals as before (consistent, no shading specks)
-    for(let i=0;i<tri.length;i++){ const c=tri[i], a=acc[c], l=Math.hypot(a.nn[0],a.nn[1],a.nn[2])||1;
-      out[i*6]=px[c]; out[i*6+1]=py[c]; out[i*6+2]=pz[c]; out[i*6+3]=a.nn[0]/l; out[i*6+4]=a.nn[1]/l; out[i*6+5]=a.nn[2]/l; om.push(a.m); }
+  // the piece's surface, welded on a grid (cell); each weld's point is where the surface's own tangent planes there meet (dual contouring), so
+  // a hem, a cuff or a shoe's edge stays a clean line and nothing ripples; colours never weld together
+  function relax(P,WP,tri,cell,F){ const n=WP.length/3, key=new Map(), cid=new Int32Array(n), S=[];
+    const q=V(0,0,0), D=(x,y,z)=>{ q.x=x; q.y=y; q.z=z; return P.d(q); }, G=[0,0,0], grad=(x,y,z)=>{ const e=.02, gx=D(x+e,y,z)-D(x-e,y,z), gy=D(x,y+e,z)-D(x,y-e,z), gz=D(x,y,z+e)-D(x,y,z-e), l=Math.hypot(gx,gy,gz)||1; G[0]=gx/l; G[1]=gy/l; G[2]=gz/l; return G; };
+    const VM=[], pq=V(0,0,0);
+    for(let i=0;i<n;i++){ const x=WP[i*3], y=WP[i*3+1], z=WP[i*3+2]; pq.x=x; pq.y=y; pq.z=z; const m=MATS.indexOf(P.paint&&P.paint(pq)||P.m), k=(((Math.floor(x/cell)+5e3)*1e4+Math.floor(y/cell)+5e3)*1e4+Math.floor(z/cell)+5e3)*64+(m+1); let c=key.get(k);
+      if(c==null){ c=S.length/16; key.set(k,c); for(let j=0;j<16;j++)S.push(0); VM.push(m); } const o=c*16; grad(x,y,z); const a=G[0], b=G[1], d=G[2], w=a*x+b*y+d*z;
+      S[o]+=x; S[o+1]+=y; S[o+2]+=z; S[o+3]++; S[o+4]+=a*a; S[o+5]+=a*b; S[o+6]+=a*d; S[o+7]+=b*b; S[o+8]+=b*d; S[o+9]+=d*d; S[o+10]+=a*w; S[o+11]+=b*w; S[o+12]+=d*w; S[o+13]+=a; S[o+14]+=b; S[o+15]+=d; cid[i]=c; }
+    const NC=S.length/16, px=new Float64Array(NC), py=new Float64Array(NC), pz=new Float64Array(NC), lim=cell*1.2;
+    for(let c=0;c<NC;c++){ const o=c*16, k=S[o+3]*.03, mx=S[o]/S[o+3], my=S[o+1]/S[o+3], mz=S[o+2]/S[o+3]; px[c]=mx; py[c]=my; pz[c]=mz;
+      const A=S[o+4]+k, B=S[o+5], C=S[o+6], Dd=S[o+7]+k, E=S[o+8], Ff=S[o+9]+k, r0=S[o+10]+k*mx, r1=S[o+11]+k*my, r2=S[o+12]+k*mz;   // (the tangent planes' least squares, held to the welded points' middle)
+      const det=A*(Dd*Ff-E*E)-B*(B*Ff-E*C)+C*(B*E-Dd*C); if(Math.abs(det)<1e-12)continue;
+      const x=(r0*(Dd*Ff-E*E)-B*(r1*Ff-E*r2)+C*(r1*E-Dd*r2))/det, y=(A*(r1*Ff-E*r2)-r0*(B*Ff-E*C)+C*(B*r2-r1*C))/det, z=(A*(Dd*r2-r1*E)-B*(B*r2-r1*C)+r0*(B*E-Dd*C))/det;
+      const dx=x-mx, dy=y-my, dz=z-mz, L=Math.hypot(dx,dy,dz), f=L>lim?lim/L:1; px[c]=mx+dx*f; py[c]=my+dy*f; pz[c]=mz+dz*f; }
+    const T=[]; for(let t=0;t<tri.length;t+=3){ const a=cid[tri[t]], b=cid[tri[t+1]], c=cid[tri[t+2]]; if(a!==b&&b!==c&&a!==c)T.push(a,b,c); }
+    const VX=new Float32Array(NC*6), p=V(0,0,0);   // (each weld's normal the mean of its samples': one way across a crease, so a hem's shading doesn't flicker)
+    for(let c=0;c<NC;c++){ const o=c*16, gl=Math.hypot(S[o+13],S[o+14],S[o+15])||1, g=[S[o+13]/gl,S[o+14]/gl,S[o+15]/gl]; p.x=px[c]; p.y=py[c]; p.z=pz[c]; const l=sub(add(p,mul(V(g[0],g[1],g[2]),OUT)),F.o);
+      VX.set([dot(l,F.x),dot(l,F.y),dot(l,F.z),g[0]*F.x.x+g[1]*F.x.y+g[2]*F.x.z,g[0]*F.y.x+g[1]*F.y.y+g[2]*F.y.z,g[0]*F.z.x+g[1]*F.z.y+g[2]*F.z.z],c*6); }
+    const out=new Float32Array(T.length*6), om=[]; for(let i=0;i<T.length;i++){ out.set(VX.subarray(T[i]*6,T[i]*6+6),i*6); om.push(VM[T[i]]); }
     return {fit:out,mats:om}; }
   // the eyes as flat clean circles (and rects) sitting on the face, not marched: round at any zoom, a few dozen triangles a style instead of thousands
   function flatEyeGeo(P){ const {R2,H,hd}=P.flatEye, F=R.frameOf('head',rest), cross=R.cross, pos=[],nor=[],C0=[],C1=[],C2=[],CD=[],MT=[];

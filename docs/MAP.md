@@ -168,8 +168,8 @@ Places built with `await grab(name, async()=>{...})` are one function each, ofte
 | `137-bvh.js` | 3.5 | top level | BVH (150 163) | 003: THREE; 004: scene; 006: QS |
 | `138-oldlook.js` | 2.8 | top level |  | 003: SHARED THREE; 003b: CLOCK DN LOOK; 004: RH RW ShaderPass; 005: SAVE; 006: OUT |
 | `139-clip.js` | 10.5 | top level |  | 003: SHARED THREE; 003b: CLIP NPCS; 006: CLIPX FIX MODS QS SOL STORE TILE ZU; 008: OBJS |
-| `140-weeds.js` | 26.9 | top level |  | 003: SHARED THREE; 003b: NPCS PARK POND RAG ROOMS UI W3 WEEDS pos st; 004: renderer scene; 006: CASTLE FIX MAPG MODS SOL STORE SYS TILE; 060: GCAVE; 060a: FOUNT; 065: RINGX; 081: STALL |
-| `140b-grassfield.js` | 18.0 | top level |  | 003: SHARED THREE; 003b: WEEDS pos; 004: scene; 005: SAVE; 006: MAPG SOL SYS TILE |
+| `140-weeds.js` | 27.1 | top level |  | 003: SHARED THREE; 003b: NPCS PARK POND RAG ROOMS UI W3 WEEDS pos st; 004: renderer scene; 006: CASTLE FIX MAPG MODS SOL STORE SYS TILE; 060: GCAVE; 060a: FOUNT; 065: RINGX; 081: STALL |
+| `140b-grassfield.js` | 17.1 | top level |  | 003: SHARED THREE; 003b: WEEDS pos; 004: scene; 005: SAVE; 006: MAPG SOL SYS TILE |
 | `141-forage.js` | 29.3 | top level |  | 003: SHARED THREE; 003b: CITY CIVIC ED EQUIP FORAGE INV ITEMS LINES LOOKS MAIL NPCS SFX UI VIT WE WEEDS pos st; 004: scene; 005: OWNED; 006: MAPG QS SYS TILE; 007: FLAME; 083a: MUSH; 101: GEMS |
 | `141b-fairy.js` | 3.5 | top level |  | 003: SHARED THREE; 003b: FORAGE PARK ROOMS UI WEEDS pos; 004: scene; 006: SOL SYS TILE |
 | `141c-fireview.js` | 11.1 | top level |  | 003: SHARED THREE; 003b: CLOCK FAR3 GPH SKY UI pos; 004: scene; 006: BLDK FADE MISTE MODS STORE SYS TILE; 008: BATCH |

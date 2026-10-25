@@ -25,6 +25,7 @@ export default {
     if (request.method === "GET" && p === "/now") {
       let r = null; try { r = await fetch("https://jvcetttmqseoteidfggn.supabase.co/rest/v1/now_playing?select=*&id=eq.theatre", { headers: { apikey: "sb_publishable_UkzD8hOizW1hPr6hm3duQQ_07ZodPik" } }); } catch (e) {}
       const out = new Response(r && r.ok ? r.body : "[]", { status: 200 }); out.headers.set("content-type", "application/json"); out.headers.set("cache-control", "no-store"); return out; }
+    if (request.method === "GET" && p === "/world") { const id = await who(env, request, dev); return id ? json(await worldLive(env)) : json({ why: "login" }, 401); }
     if (request.method === "GET" || request.method === "HEAD") { const m = YT.exec(p); if (m) {
       let r = null; try { r = await fetch("https://i.ytimg.com/vi/" + m[1] + "/hqdefault.jpg"); } catch (e) {}
       const miss = !r || !r.ok, out = miss ? new Response(Uint8Array.from(atob(BLANK), c => c.charCodeAt(0)), { status: 200 }) : new Response(r.body, { status: r.status });
@@ -36,7 +37,7 @@ export default {
         const id = await who(env, request, dev); if (!id) return new Response("login", { status: 401 });
         const r = new Request(req); r.headers.set("x-tsfm-id", id); r.headers.set("x-partykit-room", name); return r; },
       onBeforeRequest: () => new Response("not found", { status: 404 }) })) || new Response("not found", { status: 404 });
-    if (request.method === "POST" && (p === "/post" || p === "/admin" || p === "/home")) {
+    if (request.method === "POST" && (p === "/post" || p === "/admin" || p === "/home" || p === "/world")) {
       if (request.headers.get("Origin") !== url.origin && !(dev && !request.headers.get("Origin"))) return json({ why: "not from the game's page" }, 403);
       const id = await who(env, request, dev); if (!id) return json({ why: "login" }, 401);
       let body; try { body = await request.json(); } catch (e) { body = {}; } if (!body || typeof body !== "object") body = {};
@@ -45,8 +46,9 @@ export default {
         if (tooMany("home:" + id, 120)) return json({ why: "too many saves, wait a minute" }, 429);
         return json({ ok: await homeOf(env).put(id, t) }); }
       if (p === "/post") return json({ letters: await postOf(env).mine(id, Array.isArray(body.seen) ? body.seen.filter(Number.isInteger).slice(0, 50) : []) });
+      if (p === "/world") return json(await worldSend(env, id, body));
       const own = await owner(env, id, dev); if (own !== true) return json({ why: "only the owner (" + own + ")" }, 403);
-      return json(await admin(env, body)); }
+      return json(await admin(env, body, id)); }
     if (request.method !== "POST" || !["/enter", "/join/check", "/join"].includes(p)) return new Response("not found", { status: 404 });
     if (request.headers.get("Origin") !== url.origin && !(dev && !request.headers.get("Origin"))) return json({ why: "not from the game's page" }, 403);
     if (tooMany(request.headers.get("CF-Connecting-IP") || "local")) return json({ why: "too many tries, wait a minute" }, 429);
@@ -160,6 +162,7 @@ export class Block extends Server {
     let b = {}; try { b = await req.json(); } catch (e) {}
     if (path === "/tell") { const m = JSON.stringify({ t: "tell", from: "THE MARKET", text: word(b.text, 500) }); let n = 0;
       for (const c of this.getConnections()) if (c.state && (b.to === "*" || c.state.id === b.to)) { c.send(m); n++; } return Response.json({ n }); }
+    if (path === "/world") { this.broadcast(JSON.stringify({ t: "world" })); return Response.json({ ok: true }); }
     if (path === "/kick") { for (const c of this.getConnections()) if (c.state && c.state.id === b.id) c.close(4001, "removed"); return Response.json({ ok: true }); }
     return new Response("not found", { status: 404 }); }
   onClose(c) { const s = c.state; if (s && s.id && !this.roster(c.id).some(p => p.id === s.id)) { this.broadcast(JSON.stringify({ t: "out", id: s.id }));
@@ -192,16 +195,17 @@ async function email(env, to, subject, text) {
     if (r.ok) n += part.length; }
   return n;
 }
-async function admin(env, b) {
+async function admin(env, b, me) {
   const k = svc(env); if (!k && b.do !== "tell") return { why: "the server has no service key" };
   const call = (path, init = {}) => fetch(env.SUPABASE_URL + path, { ...init, headers: { ...k, "content-type": "application/json", Prefer: "return=minimal", ...(init.headers || {}) } });
   const res = async r => r.ok ? { ok: true } : { why: r.status + " " + (await r.text()).slice(0, 200) };
   const room = ROOM.test(b.room || "") ? b.room : "s-a", id = String(b.id || ""), user = () => UUID.test(id);
   const users = async () => { if (!k) return []; const r = await call("/auth/v1/admin/users?per_page=1000"); return r.ok ? (await r.json()).users || [] : []; };
   if (b.do === "list") {
-    const [us, pl, ad, co, on] = await Promise.all([users(), call("/rest/v1/players?select=*").then(r => r.ok ? r.json() : []), call("/rest/v1/admins?select=*").then(r => r.ok ? r.json() : []),
-      call("/rest/v1/invite_codes?select=*").then(r => r.ok ? r.json() : []), blockAsk(env, room, "who").catch(() => [])]);
-    return { ok: true, email: !!env.RESEND_API_KEY, codes: co, letters: await postOf(env).list(),
+    const [us, pl, ad, co, on, reqs] = await Promise.all([users(), call("/rest/v1/players?select=*").then(r => r.ok ? r.json() : []), call("/rest/v1/admins?select=*").then(r => r.ok ? r.json() : []),
+      call("/rest/v1/invite_codes?select=*").then(r => r.ok ? r.json() : []), blockAsk(env, room, "who").catch(() => []),
+      call("/rest/v1/world_requests?select=*&status=eq.pending&order=created_at.asc&limit=100").then(async r => r.ok ? r.json() : { why: r.status + " " + (await r.text()).slice(0, 120) })]);
+    return { ok: true, email: !!env.RESEND_API_KEY, codes: co, reqs, letters: await postOf(env).list(),
       users: us.map(x => ({ id: x.id, email: x.email, phone: x.phone || "", joined: x.created_at, last: x.last_sign_in_at, confirmed: x.email_confirmed_at, provider: x.app_metadata && x.app_metadata.provider,
         banned: x.banned_until && Date.parse(x.banned_until) > Date.now() ? x.banned_until : null, player: pl.find(p => p.id === x.id) || null, admin: ad.some(a => a.user_id === x.id), online: on.includes(x.id) })) };
   }
@@ -218,6 +222,11 @@ async function admin(env, b) {
     if (b.email) out.email = env.RESEND_API_KEY ? await email(env, (await users()).filter(x => x.email && (to === "*" || x.id === to)).map(x => x.email).slice(0, 1000), subject, text) : "email is not set up";
     return out;
   }
+  if (b.do === "wdecide") { if (!UUID.test(id)) return { why: "no such request" };
+    const r = await call("/rest/v1/world_requests?id=eq." + id + "&status=eq.pending", { method: "PATCH", headers: { Prefer: "return=representation" },
+      body: JSON.stringify({ status: b.ok ? "approved" : "rejected", decided_by: UUID.test(me || "") ? me : null, decided_at: new Date().toISOString() }) });
+    if (!r.ok) return res(r); if (!(await r.json()).length) return { why: "already decided" };
+    if (b.ok) await blockAsk(env, room, "world", {}).catch(() => {}); return { ok: true }; }
   if (!user()) return { why: "no such player" };
   if (b.do === "user") {
     const a = {}; if (b.email) a.email = String(b.email).trim().toLowerCase(), a.email_confirm = true; if (b.password) a.password = String(b.password);
@@ -234,6 +243,31 @@ async function admin(env, b) {
     await blockAsk(env, room, "kick", { id }).catch(() => {}); await call("/rest/v1/admins?user_id=eq." + id, { method: "DELETE" }); await call("/rest/v1/players?id=eq." + id, { method: "DELETE" }); return { ok: true }; }
   return { why: "unknown" };
 }
+// world requests: a player's EDIT WORLD changes wait in world_requests until the owner decides (TENANTS); the approved ones, oldest first, are what every game puts live
+const HEX = /^#[0-9a-f]{6}$/i, WKEY = /^[^\u0000-\u001f]{3,200}$/;
+function edit(v) { if (!v || typeof v !== "object" || Array.isArray(v)) return null; const o = {};
+  for (const k of ["t", "s"]) if (Array.isArray(v[k]) && v[k].length === 3) o[k] = v[k].map(x => num(x, -1e4, 1e4));
+  for (const k of ["r", "rx", "rz", "bri", "op", "li", "ldist", "sbri"]) if (v[k] === null || typeof v[k] === "number") o[k] = v[k] === null ? null : num(v[k], -1e5, 1e5);
+  for (const k of ["col", "lcol", "scol"]) if (v[k] === null || HEX.test(String(v[k]))) o[k] = v[k];
+  if (Array.isArray(v.at) && v.at.length === 3) o.at = v.at.map(x => num(x, -1e5, 1e5));
+  for (const k of ["copy", "of", "place"]) if (typeof v[k] === "string") o[k] = v[k].slice(0, 200);
+  if (typeof v.del === "boolean") o.del = v.del; if (v.text === null || typeof v.text === "string") o.text = v.text === null ? null : v.text.slice(0, 300);
+  return Object.keys(o).length ? o : null; }
+async function worldSend(env, id, b) {
+  const k = svc(env); if (!k) return { why: "the server has no service key" }; if (tooMany("w:" + id)) return { why: "too many, wait a minute" };
+  const E = {}, src = b.edits && typeof b.edits === "object" ? b.edits : {}, keys = Object.keys(src); if (keys.length > 200) return { why: "too many changes at once" };
+  for (const key of keys) { const v = edit(src[key]); if (WKEY.test(key) && v) E[key] = v; }
+  if (!Object.keys(E).length) return { why: "nothing to send" }; if (JSON.stringify(E).length > 40000) return { why: "too big" };
+  const w = await fetch(env.SUPABASE_URL + "/rest/v1/world_requests?select=id&status=eq.pending&user_id=eq." + encodeURIComponent(id), { headers: k });
+  if (w.ok && (await w.json()).length >= 30) return { why: "30 of your requests are already waiting for the owner" };
+  const at = Array.isArray(b.at) ? [num(b.at[0], -1e5, 1e5), num(b.at[1], -1e5, 1e5), num(b.at[2], -1e4, 1e4)] : null;
+  const r = await fetch(env.SUPABASE_URL + "/rest/v1/world_requests", { method: "POST", headers: { ...k, "content-type": "application/json", Prefer: "return=minimal" },
+    body: JSON.stringify({ user_id: id, name: word(b.name, 24), kind: "edit", payload: E, at, lvl: word(b.lvl, 12) }) });
+  return r.ok ? { ok: true, n: Object.keys(E).length } : { why: "not kept (" + r.status + " " + (await r.text()).slice(0, 120) + ")" };
+}
+async function worldLive(env) { const k = svc(env); if (!k) return { edits: {} };
+  const r = await fetch(env.SUPABASE_URL + "/rest/v1/world_requests?select=payload&status=eq.approved&order=decided_at.desc&limit=2000", { headers: k }); if (!r.ok) return { edits: {} };
+  const edits = {}; for (const x of (await r.json()).reverse()) Object.assign(edits, x.payload || {}); return { edits }; }
 // letters from the market: kept here (no Supabase table needed), shown to the player when they next open the game
 export class Post extends DurableObject {
   constructor(ctx, env) { super(ctx, env); this.sql = ctx.storage.sql;

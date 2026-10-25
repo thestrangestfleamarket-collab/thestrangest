@@ -4710,3 +4710,6 @@ Owner: "we need to add a room editor that allows player to edit all things in th
 
 ## 25 Oct 2026: more floors, the kitchen's own floor, wallpapers, light fittings and every light setting
 Owner: "add 5 more types of floor for apartment, add the kitchen into the apartment with its own flooring, kitchen has 5 types, wallpaper has 5 types, allow all changes through the room editor"; then "add 5 types of lights for ceiling and walls and allow to edit all settings of the light, (tone, color, tint, brightness, direction, type of light, etc)". Five ceiling and five wall fittings to add; every light has tone, colour, tint, brightness, all round or beam, aim, beam width, softness and reach. Rule: wall fittings sit on the nearest wall.
+
+## 25 Oct 2026: dragons always flap
+Owner: "the dragons dont animated when flying"; his pick: always flap. A flying dragon beats its wings the whole flight; it still rises and sinks gently around its height. Rule change: no more frozen wings-out glides (was "glides in slow banking turns", 17 Oct).

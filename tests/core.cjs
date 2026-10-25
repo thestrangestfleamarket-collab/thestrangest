@@ -143,6 +143,13 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
       dispatchEvent(new KeyboardEvent('keydown', { key: 'w' })); for (let i = 0; i < 3; i++) { await raf(); const h = new D.THREE.Vector3().setFromMatrixPosition(W.PM.value[hi]).applyMatrix4(W.mesh.matrixWorld); min = Math.min(min, D.camO().position.distanceTo(h) / T); }
       dispatchEvent(new KeyboardEvent('keyup', { key: 'w' })); D.UI.setView('iso'); return { min: +min.toFixed(2) }; }).catch(e => ({ err: e.message }));
     ok(cm.min >= 1.5, 'the behind view never pulls the camera into his head as he starts walking beside a solid: ' + JSON.stringify(cm));
+    const dg = await pg.evaluate(async () => { const raf = () => new Promise(r => requestAnimationFrame(r)); for (let i = 0; i < 600 && !window.DRAGONDBG; i++) await raf();
+      const D = window.__dbg, TI = D.cv().TILE, you = D.pos(), n = D.npcs().find(q => q.key === 'dragon' && !q.D.p.sign); if (!n) return { err: 'no dragon' };
+      let root = null; n.g.traverse(o => { if (o.isBone && o.name === 'Body_002_L_005') root = o; }); if (n.D.p) n.D.p.on = 0; const out = {};
+      for (let k = 0; k < 2; k++) { const put = () => { n.D.mode = 'fly'; n.D.fly = 99; n.st.x = you[0] + 2 * TI; n.st.z = you[2] + 2 * TI; n.D.y = n.D.cruise = you[1] + 4 * TI; };
+        n.D.bt = k ? 0 : 99; put(); for (let i = 0; i < 30; i++) { await raf(); put(); } const q0 = root.quaternion.clone(); let mx = 0;
+        for (let i = 0; i < 40; i++) { await raf(); put(); mx = Math.max(mx, 2 * Math.acos(Math.min(1, Math.abs(q0.dot(root.quaternion)))) * 57.3); } out['phase' + k] = { style: n.D.style, swing: +mx.toFixed(1) }; } return out; }).catch(e => ({ err: e.message }));
+    ok(dg.phase0 && dg.phase1 && dg.phase0.style !== dg.phase1.style && dg.phase0.swing > 15 && dg.phase1.swing > 15, 'a flying dragon beats its wings through both halves of its flight: ' + JSON.stringify(dg));
   }
   ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.slice(0, 3).join(' | ') : ''));
   await b.close();

@@ -1,9 +1,10 @@
-// THE APARTMENT ROOM: your apartment as one open room in the owner's cozy picture's style (25 Oct 2026): cream walls under a dark wood crown, warm glow strips, wide orange planks on a cream slab, curtained windows onto the live sky, and its things (the checkered bed, the nightstands and lamps, the monstera, the diamond frames, the shelves of plants and books, the desk and chair); every small thing a real body.
+// THE APARTMENT ROOM: your apartment as one open room in the owner's cozy picture's style (25 Oct 2026): cream walls under a dark wood crown, wide orange planks on a cream slab, curtained windows onto the live sky, and its things (the checkered bed, the nightstands and lamps, the monstera, the diamond frames, the shelves of plants and books, the desk and chair); every small thing a real body.
 import {SHARED, THREE} from './003-shx.js';
 import {CLOCK, SFX, SHAD, SKY, UI, USE} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {MODS, SYS} from './006-map-pre.js';
 import {GPH} from './150-loose.js';
+const ROOMK={parts:[]};   // the room's other parts (the kitchen, 150b) add their builders here
 { const APTS=MODS.apts;
   if(APTS&&APTS.R){ const V3=THREE.Vector3, cl=(v,a,b)=>Math.max(a,Math.min(b,v)), MPU=.907;   // the apartment's art unit is .907 m: the picture's sizes are metres
     const col=c=>new THREE.Color('rgb('+c.join(',')+')');
@@ -26,7 +27,6 @@ import {GPH} from './150-loose.js';
           g.fillStyle='rgba(12,5,1,.55)'; g.fillRect(x0+1.5,y0+ph-1.5-b,pw2,b); g.fillRect(x1-1.5-b,y0+1.5,b,ph-3); u+=L; } } });   // ...shadowed bottom/right, so the gaps read recessed
     const checker=()=>tex(256,256,(g,W,H)=>{ const n=10, s=W/n; for(let i=0;i<n;i++)for(let j=0;j<n;j++){ g.fillStyle=(i+j)&1?'#e4e2d6':'#2c3430'; g.fillRect(i*s,j*s,s,s); } });
     const glowTex=tex(64,64,(g,W,H)=>{ const r=g.createRadialGradient(32,32,0,32,32,32); r.addColorStop(0,'rgba(255,214,150,1)'); r.addColorStop(.35,'rgba(255,190,110,.45)'); r.addColorStop(1,'rgba(255,170,90,0)'); g.fillStyle=r; g.fillRect(0,0,W,H); });
-    const washTex=tex(4,128,(g,W,H)=>{ const r=g.createLinearGradient(0,0,0,H); r.addColorStop(0,'rgba(255,196,120,1)'); r.addColorStop(.25,'rgba(255,178,100,.45)'); r.addColorStop(1,'rgba(255,160,90,0)'); g.fillStyle=r; g.fillRect(0,0,W,H); });
     const ISO={value:0}, skyOff={on:false};
     const blackOut=()=>{ if(skyOff.on&&scene.background&&scene.background.isColor)scene.background.setRGB(0,0,0); };   // as a shop's inside does (ROOMS): after the sky has set the colour this frame
 
@@ -34,10 +34,13 @@ import {GPH} from './150-loose.js';
     const build=()=>{ '@apts'; const X=SHARED.BOD.X, Z=SHARED.BOD.Z, Yr=SHARED.BOD.Y, A=APTS.R, WI=APTS.WIN, WPL=APTS.WPL, M=(X(A.x0+1)-X(A.x0))/MPU, fy=Yr(.15)+.012, HW=(Yr(APTS.S||130)-Yr(0))/M;
       const px=z=>z/32.4, Lx=(A.x1-A.x0)*MPU, Ly=(A.y1-A.y0)*MPU, TH=.24, W=(u,h,v)=>new V3(X(A.x0)+u*M,fy+h*M,Z(A.y0)+v*M);
       const apt=new THREE.Group(); apt.position.set(X(A.x0),fy,Z(A.y0)); apt.scale.setScalar(M); scene.add(apt);
-      R={apt,M,loose:[],lights:[],lamps:[],th:[],glow:[]};
+      R={apt,M,loose:[],lights:[],lamps:[],th:[]};
       const part=(geo,m,u,h,v,ry=0,par=apt,cast=true)=>{ const me=new THREE.Mesh(geo,m); me.position.set(u,h,v); me.rotation.y=ry; me.castShadow=cast; me.receiveShadow=true; par.add(me); return me; };
       const thing=(u,h,v,ry=0)=>{ const g=new THREE.Group(); g.position.copy(W(u,h,v)); g.rotation.y=ry; g.scale.setScalar(M); scene.add(g); return g; };
       const clip=k=>k?{clippingPlanes:[WPL[k]]}:{};
+      // what loose things stand on: a solid up to a top (metres over the floor), a shelf between two heights; the top a hair under the surface, or the physics leaves it out
+      const solid=(u0,v0,u1,v1,t)=>APTS.solid(A.x0+u0/MPU,A.y0+v0/MPU,A.x0+u1/MPU,A.y0+v1/MPU,(fy+(t-.002)*M-Yr(0))/(Yr(1)-Yr(0)));
+      const shelf=(u0,v0,u1,v1,b,t)=>APTS.shelf&&APTS.shelf(A.x0+u0/MPU,A.y0+v0/MPU,A.x0+u1/MPU,A.y0+v1/MPU,fy+b*M,fy+(t-.002)*M);
       const CREAM=[238,228,198], TRIM=[66,36,20], WOODO=[184,104,50], WOODD=[96,54,30], MINT=[156,214,200];
 
       /* ---------- the shell: one open room; cream walls, the dark crown and skirting, the glow strips, the planks on a cream slab ---------- */
@@ -46,19 +49,21 @@ import {GPH} from './150-loose.js';
       const rect=(w,h,holes=[])=>{ const sh=new THREE.Shape([new THREE.Vector2(0,0),new THREE.Vector2(w,0),new THREE.Vector2(w,h),new THREE.Vector2(0,h)]); for(const [a0,a1,b0,b1] of holes)sh.holes.push(new THREE.Path([new THREE.Vector2(a0,b0),new THREE.Vector2(a1,b0),new THREE.Vector2(a1,b1),new THREE.Vector2(a0,b1)])); return sh; };
       const WW=1.24*MPU, fw=WI.FWU.map(u=>u*MPU), du=WI.DU*MPU, wz=[1.05,2.35], FD=[du-.48,du+.48,0,2.3], BD=[du-.5,du+.5,0,2.2], SW=[2.79,1.55,2.0,1.1];   // the side window: centre, sill, head, width
       const win=c=>[c-WW/2,c+WW/2,wz[0],wz[1]];
-      const wallOf=(k,len,holes,u,v,ry)=>part(new THREE.ExtrudeGeometry(rect(len,HW,holes),{depth:TH,bevelEnabled:false}),[mat(CREAM,{roughness:.95,side:THREE.DoubleSide,shadowSide:THREE.DoubleSide,...clip(k)}),mat([30,22,16],{roughness:.9,side:THREE.DoubleSide,...clip(k)})],u,0,v,ry,apt);
+      // aged plaster: cream kept, but soft stains, faint streaks and fine grain so the walls aren't flat (owner: grittier, keep cozy)
+      const wallTex=(()=>{ const t=tex(512,512,(g,W,H)=>{ g.fillStyle='#ffffff'; g.fillRect(0,0,W,H);
+        for(let i=0;i<30;i++){ const x=rnd()*W, y=rnd()*H, r=50+rnd()*150, rg=g.createRadialGradient(x,y,0,x,y,r); rg.addColorStop(0,`rgba(108,90,62,${.03+rnd()*.07})`); rg.addColorStop(1,'rgba(108,90,62,0)'); g.fillStyle=rg; g.fillRect(x-r,y-r,2*r,2*r); }
+        for(let i=0;i<50;i++){ g.strokeStyle=`rgba(120,102,72,${.015+rnd()*.03})`; g.lineWidth=.8+rnd()*1.6; g.beginPath(); const x=rnd()*W, y0=rnd()*H*.4; g.moveTo(x,y0); g.lineTo(x+(rnd()-.5)*18,y0+H*(.3+rnd()*.5)); g.stroke(); }
+        for(let i=0;i<900;i++){ const b=rnd()<.5; g.fillStyle=`rgba(${b?70:255},${b?60:244},${b?44:220},${.02+rnd()*.03})`; g.fillRect(rnd()*W,rnd()*H,1,1); } }); t.wrapS=t.wrapT=THREE.MirroredRepeatWrapping; t.repeat.set(.2,.5); return t; })();
+      const wallOf=(k,len,holes,u,v,ry)=>part(new THREE.ExtrudeGeometry(rect(len,HW,holes),{depth:TH,bevelEnabled:false}),[mat(CREAM,{roughness:.96,map:wallTex,side:THREE.DoubleSide,shadowSide:THREE.DoubleSide,...clip(k)}),mat([30,22,16],{roughness:.9,side:THREE.DoubleSide,...clip(k)})],u,0,v,ry,apt);
       wallOf('Wf',Lx,[win(fw[0]),win(fw[1]),FD],0,-TH,0); wallOf('Wb',Lx,[win(fw[0]),win(fw[1]),BD],0,Ly,0);
       wallOf('Ww',Ly,[[SW[0]-SW[3]/2,SW[0]+SW[3]/2,SW[1],SW[2]]],0,0,-Math.PI/2); wallOf('We',Ly,[],Lx,Ly,Math.PI/2);
-      // the crown at the top of every wall, the skirting at the foot, and the warm strips of light along both (their glow washes the cream)
+      // the crown at the top of every wall and the skirting at the foot
       // each wall's own frame: x along it from its start, z into the room
       const run=[['Wf',Lx,0,0,0],['Wb',Lx,Lx,Ly,Math.PI],['Ww',Ly,0,Ly,Math.PI/2],['We',Ly,Lx,0,-Math.PI/2]];
       for(const [k,L,ox,oz,ry] of run){ const g=new THREE.Group(); apt.add(g); g.position.set(ox,0,oz); g.rotation.y=ry;
-        const tm=mat(TRIM,{roughness:.5,...clip(k)}), led=new THREE.MeshBasicMaterial({color:col([255,206,140]),...clip(k)}), wash=new THREE.MeshBasicMaterial({map:washTex,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,opacity:.55,...clip(k)});
+        const tm=mat(TRIM,{roughness:.5,...clip(k)});
         part(rbox(L,.16,.1,.01),tm,L/2,HW-.08,.05,0,g); part(rbox(L,.03,.045,.008),tm,L/2,HW-.2,.03,0,g);
-        part(rbox(L,.12,.03,.006),tm,L/2,.06,.015,0,g);
-        part(new THREE.BoxGeometry(L-.1,.012,.012),led,L/2,HW-.17,.09,0,g,false); part(new THREE.BoxGeometry(L-.1,.012,.012),led,L/2,.125,.022,0,g,false);
-        const w1=part(new THREE.PlaneGeometry(L-.1,.9),wash,L/2,HW-.62,.004,0,g,false); w1.renderOrder=6;
-        const w2=part(new THREE.PlaneGeometry(L-.1,.35),wash,L/2,.3,.004,0,g,false); w2.rotation.z=Math.PI; w2.renderOrder=6; R.glow.push(wash); }
+        part(rbox(L,.12,.03,.006),tm,L/2,.06,.015,0,g); }
       // the sky through the glass: the live sky's own shader (sun, clouds) — seen straight out in the isometric view, along your eye in first person
       const skyGlass=(k,nx,nz,ax,az)=>{ const D=SKY.dome&&SKY.dome.material; if(!D||!D.fragmentShader)return mat([150,190,230],{roughness:.1,...clip(k)});
         return new THREE.ShaderMaterial({uniforms:Object.assign({},D.uniforms,{uN:{value:new V3(nx,.08,nz)},uA:{value:new V3(ax,0,az)},uIso:ISO}),defines:{...(D.defines||{})},clipping:true,...clip(k),
@@ -85,7 +90,7 @@ import {GPH} from './150-loose.js';
         if(out){ for(let r=0;r<3;r++)for(let c=0;c<2;c++)part(new THREE.PlaneGeometry(w*.36,h*.24),skyGlass(k,out[0],out[1],out[2],out[3]),(c-.5)*w*.42,h*(.3+r*.26),.027,0,leaf,false); }
         else for(let r=0;r<2;r++)for(let c=0;c<2;c++)part(rbox(w*.34,h*(r?.42:.3),.012,.006),mat([118,68,38],{roughness:.5,...clip(k)}),(c-.5)*w*.44,h*(r?.68:.25),.03,0,leaf);
         part(new THREE.SphereGeometry(.03,12,8),mat([200,160,90],{roughness:.3,metalness:.7,...clip(k)}),w/2-.1,1.0,.05,0,leaf); };
-      windowAt('Wf',fw[0],0,0,[0,-1,1,0],wz[0],wz[1],WW); windowAt('Wf',fw[1],0,0,[0,-1,1,0],wz[0],wz[1],WW);
+      windowAt('Wf',fw[0],0,0,[0,-1,1,0],wz[0],wz[1],WW); windowAt('Wf',fw[1],0,0,[0,-1,1,0],wz[0],wz[1],WW,[2,2],false);
       windowAt('Wb',fw[0],Ly,Math.PI,[0,1,-1,0],wz[0],wz[1],WW); windowAt('Wb',fw[1],Ly,Math.PI,[0,1,-1,0],wz[0],wz[1],WW);
       windowAt('Ww',SW[0],0,Math.PI/2,[-1,0,0,1],SW[1],SW[2],SW[3],[4,1],false).position.set(0,0,SW[0]);   // the little row of four panes above the bed
       doorAt('Wf',du,0,0,[0,-1,1,0],FD); doorAt('Wb',du,Ly,Math.PI,null,BD);
@@ -105,10 +110,10 @@ import {GPH} from './150-loose.js';
         for(let i=0;i<p.count;i++){ const a=(p.getX(i)+.5)*(Lb+D*.6), b=(p.getY(i)+.5)*(Wb+2*D)-D, ov=Math.max(0,a-Lb), sv=Math.max(0,-b,b-Wb), dr=Math.hypot(ov,sv), soft=.012*Math.min(1,dr/.03);
           p.setXYZ(i,L0+Math.min(a,Lb)+ov*.06,top+.012*Math.sin(a*7+b*4)*cl(1-dr*8,0,1)-dr*.98-soft,cl(b,0,Wb)-Wb/2+(b<0?-1:b>Wb?1:0)*sv*.06); uv.setXY(i,a/1.0,(b+D)/1.0); }
         gb.computeVertexNormals(); const ct=checker(); ct.wrapS=ct.wrapT=THREE.RepeatWrapping; ct.repeat.set(1,1); part(gb,mat([255,255,255],{map:ct,roughness:.85,side:THREE.DoubleSide}),0,0,0,0,g);
-        APTS.solid(A.x0,A.y0+(BV-BW/2-.05)/MPU,A.x0+(BL+.08)/MPU,A.y0+(BV+BW/2+.05)/MPU,.6*32.4); R.bed=g; }
+        solid(0,BV-BW/2-.05,BL+.08,BV+BW/2+.05,.56); R.bed=g; }
       const nightstand=v=>{ const g=new THREE.Group(); g.position.set(.23,0,v); apt.add(g); part(rbox(.44,.56,.44,.015),wdk,0,.28,0,0,g); part(rbox(.46,.03,.46,.01),wd,0,.575,0,0,g);
         for(const h of [.16,.4]){ part(rbox(.012,.2,.38,.008),mat([110,64,36],{roughness:.5}),.222,h,0,0,g); part(new THREE.SphereGeometry(.016,10,8),knob,.235,h,0,0,g); }
-        APTS.solid(A.x0,A.y0+(v-.23)/MPU,A.x0+.46/MPU,A.y0+(v+.23)/MPU,.6*32.4); };
+        solid(0,v-.23,.46,v+.23,.59); };
       nightstand(BV-BW/2-.32); nightstand(BV+BW/2+.32);
       // the lamps: a turned wooden foot and a cream bell that glows, a soft halo round it
       const lamp=(u,h,v,s=1)=>{ const g=thing(u,h,v), sm=new THREE.MeshStandardMaterial({color:col([244,234,196]),roughness:.9,side:THREE.DoubleSide,emissive:col([255,214,150]),emissiveIntensity:.55});
@@ -132,10 +137,10 @@ import {GPH} from './150-loose.js';
       const DU2=fw[0]+1.75;
       { const g=new THREE.Group(); g.position.set(DU2,0,.3); apt.add(g); part(rbox(1.0,.045,.52,.012),wd,0,.76,0,0,g); part(rbox(.4,.14,.48,.01),wd,.28,.665,0,0,g); part(new THREE.SphereGeometry(.014,8,6),knob,.28,.665,.25,0,g);
         for(const [x,z] of [[-.46,-.22],[.46,-.22],[-.46,.22],[.46,.22]])part(rbox(.045,.74,.045,.008),wd,x,.37,z,0,g);
-        APTS.solid(A.x0+(DU2-.52)/MPU,A.y0,A.x0+(DU2+.52)/MPU,A.y0+.58/MPU,.8*32.4); }
-      for(const h of [1.42,1.82])part(rbox(.86,.035,.22,.008),wdk,DU2+.05,h,.11,0,apt);
+        solid(DU2-.52,0,DU2+.52,.58,.7825); }
+      for(const h of [1.42,1.82]){ part(rbox(.86,.035,.22,.008),wdk,DU2+.05,h,.11,0,apt); shelf(DU2-.38,0,DU2+.48,.22,h-.0175,h+.0175); }
       const pot=(u,h,v,green,trail)=>{ const g=thing(u,h,v); part(new THREE.CylinderGeometry(.055,.045,.1,16),mat([240,238,230],{roughness:.6}),0,.05,0,0,g); const lm=mat(green,{roughness:.6,side:THREE.DoubleSide});
-        if(trail){ for(let k=0;k<9;k++){ const lf=part(new THREE.CircleGeometry(.035,8),lm,(k%3-1)*.04,.08-k*.06,.02+Math.sin(k)*.02,0,g,false); lf.rotation.set(.3,k,0); } }
+        if(trail){ for(let k=0;k<9;k++){ const lf=part(new THREE.CircleGeometry(.035,8),lm,(k%3-1)*.04,.08-k*.06,.02+Math.sin(k)*.02,0,g,false); lf.rotation.set(.3,k,0); lf.userData.soft=1; } }
         else for(let k=0;k<6;k++){ const a=k/6*Math.PI*2, lf=part(new THREE.ConeGeometry(.02,.12,4),lm,Math.cos(a)*.02,.14,Math.sin(a)*.02,0,g); lf.rotation.set(Math.sin(a)*.5,0,-Math.cos(a)*.5); }
         return g; };
       R.loose.push([pot(DU2-.25,1.835,.11,[66,140,60]),'PLANT',.4],[pot(DU2+.05,1.835,.11,[52,120,58]),'PLANT',.4],[pot(DU2+.33,1.835,.11,[74,150,64]),'PLANT',.4],[pot(DU2-.36,1.435,.11,[60,138,54],true),'TRAILING PLANT',.4]);
@@ -154,7 +159,7 @@ import {GPH} from './150-loose.js';
         bl((BL+.08)/2,BV,BL+.3,BW+.25); bl(.23,BV-BW/2-.32,.62,.62); bl(.23,BV+BW/2+.32,.62,.62);
         bl(.42,.5,.52,.52); bl(DU2,.29,1.12,.66); bl(DU2,.92,.62,.6); }
 
-      /* ---------- the light: dim and warm all round, the glow strips, the lamps, the late sun through the panes ---------- */
+      /* ---------- the light: dim and warm all round, the lamps, the late sun through the panes ---------- */
       for(const [u,v] of [[Lx*.25,Ly*.3],[Lx*.3,Ly*.75],[Lx*.72,Ly*.72],[Lx*.72,Ly*.28]]){ const L=new THREE.PointLight(0xffc48a,2.8,9*M,1.2); L.userData.pool=true; L.position.set(X(A.x0)+u*M,fy+(HW-.4)*M,Z(A.y0)+v*M); scene.add(L); R.lights.push(L); }
       const hemi=new THREE.HemisphereLight(0xffd6a8,0x3a2414,0); scene.add(hemi); R.hemi=hemi;
       // a sunbeam through each front window, seen in the air only where it is
@@ -167,6 +172,7 @@ import {GPH} from './150-loose.js';
           fragmentShader:'uniform float uOp; uniform vec3 uC; varying vec2 vU; void main(){ float a=uOp*(1.-vU.y)*smoothstep(0.,.2,vU.y); gl_FragColor=vec4(uC*a,a); }'});
         const beam=new THREE.Mesh(bg,bm); beam.renderOrder=7; beam.frustumCulled=false; scene.add(beam); R.beams.push(bm); }
 
+      for(const f of ROOMK.parts)f({apt,R,M,W,part,thing,mat,rbox,col,tex,rnd,cl,V3,Lx,Ly,HW,fw,du,WW,wz,clip,glowTex,solid,shelf});
       /* ---------- real bodies, and what a double click does ---------- */
       for(const [g,name,m,seat] of R.loose){ if(GPH.add)R.th.push(GPH.add(g,{name,m}));
         if(seat){ const hb=new THREE.Mesh(new THREE.BoxGeometry(.5,1,.5),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(0,.5,0); g.add(hb); const th={name:'SIT ON THE CHAIR',obj:hb,reach:1.2*M,near:2.2*M,tall:1*M,act:()=>{ if(USE.sit)USE.sit(g,th); }}; UI.thing(th); } }
@@ -175,12 +181,12 @@ import {GPH} from './150-loose.js';
       const bedTh={name:'SIT ON THE BED',obj:bedHB,reach:1.4*M,near:2.6*M,tall:.6*M,act:()=>{ if(USE.sit)USE.sit(R.bed,bedTh); }}; UI.thing(bedTh);
       for(const Lp of R.lamps){ const hb=new THREE.Mesh(new THREE.BoxGeometry(.3,.5,.3),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(0,.25,0); Lp.g.add(hb);
         const th={name:'LAMP: '+(Lp.on?'ON':'OFF'),obj:hb,reach:1.3*M,near:2.6*M,tall:.5*M,act:()=>{ Lp.on=!Lp.on; th.name='LAMP: '+(Lp.on?'ON':'OFF'); if(SFX)SFX.play('click',{vol:.8,vary:.2}); }}; UI.thing(th); }
-      window.BEDROOMDBG=()=>({built:!!R,loose:R?R.th.length:0,walls:Object.values(APTS.WPL||{}).map(p=>+p.constant.toFixed(2)),sky:!skyOff.on,lamps:R?R.lamps.map(l=>l.on):[]}); };
+      window.BEDROOMDBG=()=>({built:!!R,Lx,Ly,fw,du,HW,loose:R?R.th.length:0,walls:Object.values(APTS.WPL||{}).map(p=>+p.constant.toFixed(2)),sky:!skyOff.on,lamps:R?R.lamps.map(l=>l.on):[]}); };
 
     // gone with the apartment: the loose things leave the physics too
     APTS.furnish(APTS.my,()=>{ if(R&&GPH.drop)for(const it of R.th)GPH.drop(it); R=null; build(); });
 
-    /* ---------- each frame: the lamps and strips glow (brighter as the day goes), the sun's beams follow the hour, the sky is only in the windows in the isometric view ---------- */
+    /* ---------- each frame: the lamps glow (brighter as the day goes), the sun's beams follow the hour, the sky is only in the windows in the isometric view ---------- */
     let prevShadow=null;
     SYS.add('places',dt=>{ const inn=!!APTS.inReal;
       if(inn&&prevShadow==null&&renderer.shadowMap.type!==THREE.PCFSoftShadowMap){ prevShadow=renderer.shadowMap.type; renderer.shadowMap.type=THREE.PCFSoftShadowMap; scene.traverse(o=>{ if(o.material)for(const m of [].concat(o.material))m.needsUpdate=true; }); }
@@ -188,7 +194,8 @@ import {GPH} from './150-loose.js';
       if(!R||!R.apt.parent){ R=null; return; }
       const k=Math.min(1,(dt||0)*5), e=CLOCK.elev(), day=cl((e+3)/12,0,1);
       for(const L of R.lamps){ const t=L.on?L.i0*(1.2-.4*day):0; L.L.intensity+=(t-L.L.intensity)*k; L.sm.emissiveIntensity=L.on?.55:.03; if(L.halo)L.halo.material.opacity=L.on?.32:0; }
-      for(const g of R.glow)g.opacity=.7+.25*(1-day); R.hemi.intensity=inn?.42+.25*day:0;
+      R.hemi.intensity=inn?.42+.25*day:0;
       for(const b of R.beams)b.uniforms.uOp.value=inn?.16*day:0;
       const iso=!UI.persp&&SHARED.pitch<1.45; ISO.value=iso?1:0;
       const D=SKY.dome&&SKY.dome.material; if(D){ const off=inn&&iso; if(off!==skyOff.on){ skyOff.on=off; D.visible=!off; } } blackOut(); }, '150a-bedroom'); } }
+export {ROOMK};

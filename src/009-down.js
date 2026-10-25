@@ -1,6 +1,6 @@
 // UNDER THE STREET: the water's shader, the station and platform under the street (grab('down')), the day's start and FADE.
 import {SHARED, THREE} from './003-shx.js';
-import {keys, LEVELS, LINES, pos, RAG, SFX, UI} from './003b-systems.js';
+import {keys, LEVELS, LINES, pos, RAG, SFX, SHAD, UI} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {SAVE} from './005-save.js';
 import {cutWalls, FADE, FIX, grab, LAMPD, LAMPI, lamps, MAPG, MAPSTAIR, MODS, QS, SOL, STN, SYS, TILE, ZU} from './006-map-pre.js';
@@ -310,10 +310,11 @@ const SSUB=(()=>{ const W={};
   BATCH.cast=true;
   SL.COLX.forEach((cx,i)=>SL.COLY.forEach((cy,j)=>{ const p=colFace(i*10+j); put(prop([{x0:cx,y0:cy,x1:cx+.7,y1:cy+.7,z0:0,z1:H2,noTop:true,fs:(nx,ny,X,Yy,zr,b)=>p(nx,ny,X,Yy,zr,b)}]),'column'); solid(cx,cy,cx+.7,cy+.7,H2); }));
   BATCH.build((k,map,emap)=>new THREE.MeshLambertMaterial({map,alphaTest:.5,side:THREE.DoubleSide,...(emap?{emissiveMap:emap,emissive:0xffffff,emissiveIntensity:1.6}:{})}));
-  SL.BENCH.forEach((y,i)=>{ put(benchBoxes(MID,y,3.2,i+1),'bench'); solid(MID-.75,y,MID+.75,y+3.2,36); });
-  SL.BINS.forEach(y=>{ put(binBoxes(MID,y),'trash bin'); solid(MID-.28,y-.28,MID+.28,y+.28,32); });
+  const sBlob=SHAD.mat({alpha:.5}), blobAt=(x0,y0,x1,y1)=>{ const v=V((x0+x1)/2,(y0+y1)/2,SZ); SHAD.blob(scene,v[0],v[1],v[2],(y1-y0)*TILE*1.1,(x1-x0)*TILE*1.3,{mat:sBlob}); };   // a soft contact shadow grounds each platform prop
+  SL.BENCH.forEach((y,i)=>{ put(benchBoxes(MID,y,3.2,i+1),'bench'); solid(MID-.75,y,MID+.75,y+3.2,36); blobAt(MID-.75,y,MID+.75,y+3.2); });
+  SL.BINS.forEach(y=>{ put(binBoxes(MID,y),'trash bin'); solid(MID-.28,y-.28,MID+.28,y+.28,32); blobAt(MID-.28,y-.28,MID+.28,y+.28); });
   litter.forEach(p=>put(p,'litter'));
-  const MX=SL.EX0-.95, MY=.06; put(W.mach(MX,MY),'passport machine'); solid(MX,MY,MX+.56,MY+.7,46);
+  const MX=SL.EX0-.95, MY=.06; put(W.mach(MX,MY),'passport machine'); solid(MX,MY,MX+.56,MY+.7,46); blobAt(MX,MY,MX+.56,MY+.7);
   put(W.signal(XW-.35,-1.4,1),'signal',SZ-32); put(W.signal(XW-.35,LEN+1.4,0),'signal',SZ-32); put(W.signal(.35,LEN+1.4,0),'signal',SZ-32);
   SL.CARS.forEach((y0,i)=>{ put(carBoxes(y0,i+1,i===SL.CARS.length-1),'train car',SZ-32); solid(LT-SL.CARW,y0,LT+SL.CARW,y0+SL.CARL,144-32); });
   BATCH.build((k,map,emap)=>k==='B'?new THREE.MeshBasicMaterial({map,alphaTest:.5,side:THREE.DoubleSide}):new THREE.MeshLambertMaterial({map,alphaTest:.5,side:THREE.DoubleSide,...(emap?{emissiveMap:emap,emissive:0xffffff,emissiveIntensity:1.6}:{})}));

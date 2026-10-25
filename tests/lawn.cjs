@@ -22,6 +22,9 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
       return o;
     });
     await pg.waitForTimeout(700);
+    for (let i = 0; i < 30; i++) { if (await pg.evaluate(() => GRASS.baked > 0)) break; await pg.waitForTimeout(1000); }
+    const bk = await pg.evaluate(() => ({ baked: GRASS.baked, on: GRASS.U.uBakeOn.value, held: !CLOCK.run || CLOCK.shadeH != null, tex: !!GRASS.U.uGTex.value }));
+    ok(bk.baked > 0 && bk.on === 1 && bk.held && bk.tex, 'the still things\' shadows are baked into the grass, the sun\'s shadow direction held, the floor painted with blades: ' + JSON.stringify(bk));
     ok(r.painted && r.col, 'the ground under the grass has its lawn texture and lawnCol gives a colour: ' + JSON.stringify([r.painted, r.col]));
     ok(r.chunks > 0 && r.floors > 0 && r.blades > 1000, 'the lawn chunks round you hold the grass field (' + r.chunks + ' chunks, ' + r.floors + ' floors, ' + r.blades + ' blades)');
     ok(!r.missing && !r.bare, 'every lawn chunk that can be on screen is built, each floor with its blades baked in (' + r.missing + ' missing, ' + r.bare + ' bare)');

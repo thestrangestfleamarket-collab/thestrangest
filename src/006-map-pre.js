@@ -38,7 +38,7 @@ THREE.ShaderChunk.fog_fragment=THREE.ShaderChunk.fog_fragment.replace('fogFactor
 const FLOOR=(()=>{ const q=+new URLSearchParams(location.search).get("floor"); return (q>=0&&q<1&&q?q:.2).toFixed(3); })();
 const SOFT=(()=>{ const q=new URLSearchParams(location.search).get('soft'); return q!=null?Math.max(0,+q|0):7; })();
 const DITH=0&&(()=>{ const q=new URLSearchParams(location.search).get('dith'); if(q!=null)return +q; let v=null; try{ v=SAVE.get('grain'); }catch(e){} return v!=null?+v:16; })();
-const LFX={on:new Set((new URLSearchParams(location.search).get('fx')??'cs,cool').split(',').filter(Boolean))}; if(LFX.on.has('all'))['cs','cool','ao','var','wet','sway','life'].forEach(k=>LFX.on.add(k));
+const LFX={on:new Set((new URLSearchParams(location.search).get('fx')??'cool').split(',').filter(Boolean))}; if(LFX.on.has('all'))['cs','cool','ao','var','wet','sway','life'].forEach(k=>LFX.on.add(k));
 LFX.AO={x0:-45,z0:-40,w:160,h:150,k:6};
 LFX.shade=true;
 if(LFX.shade){ LFX.env=new THREE.DataTexture(new Uint8Array(64*64*4),64,64); LFX.env.wrapS=LFX.env.wrapT=THREE.RepeatWrapping; LFX.env.magFilter=LFX.env.minFilter=THREE.LinearFilter; LFX.env.needsUpdate=true;

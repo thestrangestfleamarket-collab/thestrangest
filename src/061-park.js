@@ -324,6 +324,15 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
       ].map(([k,x,y,...r])=>[k,RX(x),RY(y),...r]).concat([['sitlog',LOG[0],LOG[1],.5,.4+wa(LOG[0]-CF.x,LOG[1]-CF.y)-wa(-1.5,-.9)]]),false,false); PARK.sitlog=[X(LOG[0]),Z(LOG[1])];
     for(const [x,y,m] of [[RX(90),RY(-41.5),3.2],[RX(102),RY(-41.5),2.6]]){ const r=.35*m/.84*.2; SOL.up.push([X(x)-r,Z(y)-r,X(x)+r,Z(y)+r]); FIX.up.push([X(x)-r,Z(y)-r,0,X(x)+r,Z(y)+r,m/.84*TILE]); } }
   });
+  // the paths' kerb: a row of straight stone bricks along both edges of every path and round the plaza, where the cobbles meet the grass
+  PARK.later(()=>{ '@park'; const L=[], step=.5, BW=.46, ok=(x,y)=>Math.abs(pd(x,y))<.18&&!BK.wet(x,y,.4)&&FOUNT.lake(x,y)>.6&&x>P.x0+1&&x<P.x1-1&&y>P.y0+1&&y<P.y1-1;
+    const lay=(x,y,ux,uy)=>{ if(!ok(x,y))return; if(L.some(b=>Math.abs(b[0]-x)<.3&&Math.abs(b[1]-y)<.3))return; L.push([x,y,Math.atan2(uy,ux)]); };
+    for(const [ax,ay,bx,by] of SEG){ const dx=bx-ax, dy=by-ay, Ln=Math.hypot(dx,dy), ux=dx/Ln, uy=dy/Ln; for(const sd of [-1,1])for(let t=0;t<=Ln;t+=step)lay(ax+ux*t-uy*3.6*sd,ay+uy*t+ux*3.6*sd,ux,uy); }
+    { const [cx,cy,r]=P.round, n=Math.ceil(2*Math.PI*r/step); for(let i=0;i<n;i++){ const a=i/n*2*Math.PI; lay(cx+Math.cos(a)*r,cy+Math.sin(a)*r,-Math.sin(a),Math.cos(a)); } }
+    if(!L.length)return; const g=new THREE.BoxGeometry(1,1,1), m=new THREE.MeshLambertMaterial(), im=new THREE.InstancedMesh(g,m,L.length), M=new THREE.Matrix4(), Q=new THREE.Quaternion(), V=new THREE.Vector3(), S=new THREE.Vector3(), c=new THREE.Color(), up=new THREE.Vector3(0,1,0);
+    L.forEach(([x,y,a],i)=>{ const h=hash(Math.round(x*9),Math.round(y*9),71), hh=(.09+.03*h)*TILE; Q.setFromAxisAngle(up,-a+(h-.5)*.06); S.set(BW*TILE,hh,(.2+.03*hash(i,3,73))*TILE); V.set(X(x),P.hill(x,y)+hh/2-.02*TILE,Z(y)); im.setMatrixAt(i,M.compose(V,Q,S));
+      const k=.82+.3*hash(i,5,79); im.setColorAt(i,c.setRGB(.56*k,.54*k,.5*k,THREE.SRGBColorSpace)); });
+    im.castShadow=true; im.receiveShadow=true; im.computeBoundingSphere(); scene.add(im); PARK.kerb=im; });
   PARK.later(()=>{ '@park'; const LP=[]; { const [cx,cy]=P.round; for(let y=P.y0+4;y<P.y1-2;y+=13)if(Math.abs(y-cy)>9){ let v=y; while(BK.wet(P.armX(v)+(LP.length%2?4.2:-4.2),v,.8))v+=1.5; LP.push([P.armX(v)+(LP.length%2?4.2:-4.2),v]); } for(let x=P.x0+6;x<P.x1-4;x+=16)if(Math.abs(x-cx)>9){ let u=x; while(BK.wet(u,P.armY(u)+(LP.length%2?4.2:-4.2),.8))u+=1.5; LP.push([u,P.armY(u)+(LP.length%2?4.2:-4.2)]); }
     for(const [ax,ay,bx,by] of SEG.slice(2)){ const L=Math.hypot(bx-ax,by-ay), ux=(bx-ax)/L, uy=(by-ay)/L; for(let s=9;s<L-4;s+=16){ const f=LP.length%2?4.2:-4.2, x=ax+ux*s-uy*f, y=ay+uy*s+ux*f; if(x>P.x0+2&&x<P.x1-2&&y>P.y0+2&&y<P.y1-2&&!BK.wet(x,y,.8)&&FOUNT.lake(x,y)>1&&Math.hypot(x-cx,y-cy)>9)LP.push([x,y]); } }
     LP.push(...FOUNT.S.lamps); for(const [a,b] of [[-1,-1],[1,-1],[1,1],[-1,1]]){ const x=cx+a*4.2, y=cy+b*4.2; LP.push([x,y]); } }

@@ -141,8 +141,9 @@ WEEDS.lawnInit=()=>{ const T=TILE, CS=8*T, N=16, CELL=CS/N, MG=4, W=N+2*MG, hsh=
       else if(v===2&&r<.07)for(let k=0;k<3;k++){ const a=la+k*2.1, f=.35+.2*hsh(x,z,620+k); prism(x,top,z,top-.25*T,top+(.28+.22*hsh(z,x,630+k))*T,.018*T,Math.cos(a)*f,Math.sin(a)*f,g,2,2); }
       else if(v===3&&r<.11){ const yt=top+(.45+.3*hsh(x,z,607))*T; prism(x,top,z,top-.3*T,yt,.022*T,lx*.5,lz*.5,g,3,2); spin(x,top,z,yt-.04*T,yt+.26*T,.05*T,3,lx*.5,lz*.5,g,3,3,.35); }
       else if(v===4&&r<.09)spin(x,top,z,top-.02*T,top+.13*T,.05*T,4,0,0,g,4,4,.5); } };
-  const build=(cx,cz)=>{ const x0=cx*CS, z0=cz*CS, LW=[MODS.land,typeof POND!=='undefined'?POND.hills:null].filter(Boolean), hid=[];
-    scene.traverseVisible(o=>{ if((o.isMesh||o.isPoints||o.isLine||o.isSprite)&&skip(o))hid.push(o); }); for(const g of [W3.group,...NPCS.map(N=>N.g)])if(g&&g.visible)hid.push(g); for(const m of CH.values())if(m&&m.visible)hid.push(m); hid.forEach(o=>o.visible=false);
+  // where the lawn is in one chunk: drawn from above, the land showing through what stands low on it; WEEDS.lawnMask for the grass field
+  const mask=(cx,cz)=>{ const x0=cx*CS, z0=cz*CS, LW=[MODS.land,typeof POND!=='undefined'?POND.hills:null].filter(Boolean), hid=[];
+    scene.traverseVisible(o=>{ if((o.isMesh||o.isPoints||o.isLine||o.isSprite)&&skip(o))hid.push(o); }); for(const g of [W3.group,...NPCS.map(N=>N.g)])if(g&&g.visible)hid.push(g); for(const m of CH.values())if(m&&m.visible)hid.push(m); if(WEEDS.hideForMask)WEEDS.hideForMask(hid); hid.forEach(o=>o.visible=false);
     const lm=LW.map(o=>o.layers.mask); LW.forEach(o=>o.layers.set(5));
     const rt0=renderer.getRenderTarget(), ac=renderer.autoClear, ov=scene.overrideMaterial, cc=renderer.getClearColor(new THREE.Color()), ca=renderer.getClearAlpha(), bg=scene.background, fg=scene.fog;
     CAM.position.set(x0+CS/2,40*T,z0+CS/2); CAM.up.set(0,0,-1); CAM.lookAt(x0+CS/2,0,z0+CS/2); CAM.updateMatrixWorld();
@@ -151,9 +152,12 @@ WEEDS.lawnInit=()=>{ const T=TILE, CS=8*T, N=16, CELL=CS/N, MG=4, W=N+2*MG, hsh=
     renderer.readRenderTargetPixels(RT,0,0,W,W,PIX);
     scene.overrideMaterial=ov; renderer.setRenderTarget(rt0); renderer.autoClear=ac; renderer.setClearColor(cc,ca); scene.background=bg; scene.fog=fg;
     LW.forEach((o,i)=>o.layers.mask=lm[i]); hid.forEach(o=>o.visible=true);
-    const G=new Float32Array(W*W), I=new Uint8Array(W*W), SQ=[], P=[], AH=[], AT=[], AG=[], IX=[], AS=[], UV=[], AN=[], ci=(i,j)=>(j+MG)*W+i+MG;
+    const G=new Float32Array(W*W), I=new Uint8Array(W*W), SQ=[], ci=(i,j)=>(j+MG)*W+i+MG;
     for(let r=0;r<W;r++)for(let u=0;u<W;u++){ const k=(r*W+u)*4, i=u-MG, j=N+MG-1-r, x=x0+(i+.5)*CELL, z=z0+(j+.5)*CELL; if(PIX[k]<128||clr.some(q=>x>q[0]&&x<q[2]&&z>q[1]&&z<q[3]))continue; I[ci(i,j)]=1; G[ci(i,j)]=PIX[k+1]/255*4-.5; }
     for(let j=0;j<N;j+=2)for(let i=0;i<N;i+=2){ const c=ci(i,j); if(I[c])SQ.push(x0+(i+1)*CELL,G[c],z0+(j+1)*CELL); }
+    return {I,G,SQ,x0,z0,N,CELL,MG}; };
+  WEEDS.lawnMask=mask; WEEDS.CS=CS;
+  const build=(cx,cz)=>{ const {I,G,SQ,x0,z0}=mask(cx,cz), P=[], AH=[], AT=[], AG=[], IX=[], AS=[], UV=[], AN=[], ci=(i,j)=>(j+MG)*W+i+MG;
     const AL=[], AC=[];
     if(!I.some(Boolean))return null; if(WEEDS.GP&&WEEDS.GP.some(p=>p.wx+p.wr*1.6>x0&&p.wx-p.wr*1.6<x0+CS&&p.wz+p.wr*1.6>z0&&p.wz-p.wr*1.6<z0+CS))stalks(x0,z0,G,I,ci,P,AH,AT,AG,IX);
     while(AL.length<AH.length){ AL.push(0); AC.push(-1); } while(AS.length<AH.length)AS.push(.5); while(UV.length<AH.length*2)UV.push(0,0); while(AN.length<AH.length*3)AN.push(0,1,0);   // the reeds take the plain colour and the lawn's sway
@@ -162,7 +166,7 @@ WEEDS.lawnInit=()=>{ const T=TILE, CS=8*T, N=16, CELL=CS/N, MG=4, W=N+2*MG, hsh=
     MAPG.bodega.add(me); WEEDS.lawnN+=me.tri; return me; };
   const drop=k=>{ const me=CH.get(k); if(me){ MAPG.bodega.remove(me); me.dispose(); WEEDS.lawnN-=me.tri; } CH.delete(k); SYS.run('weedsDrop',k); };
   WEEDS.top=(x,z)=>{ const k=Math.floor(x/CS)+','+Math.floor(z/CS); if(!CH.has(k))return undefined; const me=CH.get(k); if(!me)return null; const i=Math.floor((x-me.x0)/CELL), j=Math.floor((z-me.z0)/CELL); if(i<0||j<0||i>=N||j>=N)return null; const c=(j+MG)*W+i+MG; return me.I[c]?me.G[c]+GH:null; };
-  WEEDS.lawnDrop=r=>{ for(const k of [...CH.keys()]){ const [a,b]=k.split(',').map(Number); if(r[2]>a*CS-MG*CELL&&r[0]<(a+1)*CS+MG*CELL&&r[3]>b*CS-MG*CELL&&r[1]<(b+1)*CS+MG*CELL)drop(k); } };
+  WEEDS.lawnDrop=r=>{ SYS.run('lawnEdit',r); for(const k of [...CH.keys()]){ const [a,b]=k.split(',').map(Number); if(r[2]>a*CS-MG*CELL&&r[0]<(a+1)*CS+MG*CELL&&r[3]>b*CS-MG*CELL&&r[1]<(b+1)*CS+MG*CELL)drop(k); } };
   let busy=0, next=0; WEEDS.lawnTick=()=>{ if(SHARED.LVL!=='up'||(ROOMS&&ROOMS.cur)||STORE.rooms&&STORE.rooms.some(R=>R.inside(pos.x,pos.z)))return; const pcx=Math.floor(pos.x/CS), pcz=Math.floor(pos.z/CS);
     for(const k of [...CH.keys()]){ const [a,b]=k.split(',').map(Number); if(Math.max(Math.abs(a-pcx),Math.abs(b-pcz))>4)drop(k); }
     let best=null, bd=1e9; for(let b=-3;b<=3;b++)for(let a=-3;a<=3;a++){ const k=(pcx+a)+','+(pcz+b); if(CH.has(k))continue; const d=a*a+b*b; if(d<bd){ bd=d; best=[pcx+a,pcz+b,k]; } }

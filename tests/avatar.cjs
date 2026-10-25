@@ -21,7 +21,9 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
       AVATAR.set('outfit', 5); AVATAR.set('hair', 3); AVATAR.set('beard', 2); AVATAR.set('skin', 0); AVATAR.set('hairc', 8); AVATAR.set('tall', 2);
       await new Promise(r => setTimeout(r, 400));
       const saved = (localStorage.getItem('market-save') || '').includes(AVATAR.code());
-      return { bad, taller: sT > sS * 1.15, code: AVATAR.code(), sends: BODIES.by.avatar.look() === AVATAR.code(), saved, worn: __dbg.W3.group.children.some(m => m.geometry && m.geometry === BODIES.by.avatar.GEO && m.visible) }; });
+      return { bad, taller: sT > sS * 1.15, code: AVATAR.code(), sends: BODIES.by.avatar.look() === AVATAR.code(), saved }; });
+    // (worn on the next frame drawn: frames can be held a while behind a fade as a place loads in)
+    r1.worn = await pg.waitForFunction(() => __dbg.W3.group.children.some(m => m.geometry && m.geometry === BODIES.by.avatar.GEO && m.visible), { timeout: 30000 }).then(() => true, () => false);
     ok(!r1.bad.length, 'every choice builds a whole avatar' + (r1.bad.length ? ': ' + r1.bad.join(' ') : ''));
     ok(r1.taller, 'TALL makes you taller than SHORT');
     ok(r1.code === '532082' && r1.worn, 'a new look is worn at once (' + r1.code + ')');

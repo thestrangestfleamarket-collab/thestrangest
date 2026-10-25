@@ -4597,6 +4597,9 @@ Owner: "cache chromium in the workflow" (after "fixed billing"; Actions had refu
 Owner: "add the weapons back to the townsfolk". The warrior's sword, the cleric's and the wizard's staffs, the ranger's bow and the rogue's dagger are in their right hands again, coloured from the pack; the monk has none. They still only walk and idle.
 - Owner, 24 Oct 2026: "why are all the rooms empty" (a room showed only floor, walls and ceiling): the items were placed but never painted — `put()`/`place()` only position a prop, the painting is its own pass; the old rooms now paint each item after placing it, name it in play, and light the room with up to three lamps. The check measures painted geometry, not a count.
 
+## 25 Oct 2026: the Walker's hems straight, his surface smooth
+Owner: "the avatar is STILL NOT SMOOTHED OUT", "YOU CALL THAT STRAIGHT EDGE?", "that looks like straight pant line to you?", then "yup" (to fixing it). Hems, cuffs, the collar, shoe edges and the hairline are clean lines and his surface has no ripples; same look, same triangles. `?smooth=N` is gone.
+
 ## 25 Oct 2026: back to the Walker only
 Owner: "lets remove the new avatar from player menu, revert back to walker only". The avatar is gone from YOU and from the game (its creator, `data/avatar.json`); the Walker is again the only body you play as (the 24 Oct rule is back, and with it "no beards" for players). `tools/avatar-bake.py` and git keep it if it comes back.
 ## 24 Oct 2026: your avatar, from the townsfolk
@@ -4633,3 +4636,5 @@ Owner: "the skyline is missing from edge of screen, neesd to go back". The dista
 ## 25 Oct 2026: the park's edge-ring trees smaller again
 
 Owner: "just make them smaller" (the ring of trees inside the park wall — asked for before and still too big: from the street they swallowed the whole gate). Each edge-ring tree is about a third smaller now, so the gate, its CENTRAL PARK sign and the lanterns read against the trees instead of being hidden behind them.
+## 25 Oct 2026: the lawn one flat sheet, ankle deep
+Owner (a picture of the leaf clumps' round shapes): "no circles, no shapes, flat, thick grass that goes up to my ankles, treetop flat all the way across". Every lawn is one level sheet of grass in a single green, up to your ankles, dipping only a little where you step; its edge drops straight to the ground. The leaf clumps and their light and dark patches are gone. Tufts at the feet of things and the gold reeds stay.

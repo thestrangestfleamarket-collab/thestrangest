@@ -5,7 +5,7 @@ import {renderer, scene} from './004-main.js';
 import {SAVE} from './005-save.js';
 import {FADE, MAPG, SOL, SYS, TILE} from './006-map-pre.js';
 const GRASS={};
-{ const T=TILE, MAXR=24, NEAR=36*T;
+{ const T=TILE, MAXR=24, NEAR=30*T, FAR=64*T;
   // the repo's settings as its control panel starts them, in its own darker green (owner), and its presets (each applied on top of the default)
   const DEF={grDensity:58,grMinWidth:.14,grMaxWidth:.2,grMinLength:.5,grMaxLength:.85,grTiltMax:.16,grColorBottom:'#4f7c13',grColorTop:'#79a01c',grGradStart:.3,grGradEnd:1,grGradPower:1.6,grBrightness:.8,
     grShadowStrength:.6,grShadowSampleY:.15,grPatchStrength:.73,grPatchLinkColors:true,grPatchDry:'#b8a94e',grPatchLush:'#6f9a2a',grPatchScale:.9,grPatchBias:1.6,
@@ -156,8 +156,8 @@ const GRASS={};
     if(!queued)queued=fill();
     if(Q.size&&!(ROOMS&&ROOMS.cur)){ const t0=performance.now(), budget=window.FADE&&FADE.busy?40:6, ks=[...Q].map(k=>{ const [a,b]=k.split(',').map(Number); return [Math.hypot((a+.5)*WEEDS.CS-pos.x,(b+.5)*WEEDS.CS-pos.z),k,a,b]; }).sort((p,q)=>p[0]-q[0]);
       for(const [,k,a,b] of ks){ if(performance.now()-t0>budget)break; if(inPark(a,b)&&!PARK.in)continue; Q.delete(k); const old=CH.get(k); const tm=performance.now(); const g=make(a,b); GRASS.mk=(GRASS.mk||0)+performance.now()-tm; GRASS.built=(GRASS.built||0)+1; unmake(old); if(g){ CH.set(k,g); GRASS.n+=g.n; GRASS.area+=g.A; } else CH.delete(k); } }
-    // all of it drawn wherever it is seen, the far blades thinned (never rebuilt)
-    const inR=!!(ROOMS&&ROOMS.cur); for(const g of CH.values()){ if(!g)continue; g.visible=!inR; if(inR||!g.blades)continue; const d=Math.hypot(g.c[0]-pos.x,g.c[1]-pos.z), f=d<NEAR?1:Math.max(.3,(NEAR/d)**2); g.blades.count=Math.max(1,Math.round(g.n*f)); }
+    // the floor (painted with blades) drawn wherever it is seen; the blades out to the haze, thinned far off (never rebuilt)
+    const inR=!!(ROOMS&&ROOMS.cur); for(const g of CH.values()){ if(!g)continue; g.visible=!inR; if(inR||!g.blades)continue; const d=Math.hypot(g.c[0]-pos.x,g.c[1]-pos.z); g.blades.visible=d<FAR; if(d<FAR)g.blades.count=Math.max(1,Math.round(g.n*(d<NEAR?1:Math.max(.25,(NEAR/d)**2)))); }
     // what presses the grass: you (until you stand still), the walkers near you, the trail you leave
     const RK=U.uRocks.value, MV=WEEDS.movers, TR=WEEDS.UTR&&WEEDS.UTR.value, rm=S.grRockRadiusMul||1; let n=0; const now=performance.now()/1e3; if(Math.hypot(pos.x-GRASS.px,pos.z-GRASS.pz)>.004*T)GRASS.stop=now; GRASS.px=pos.x; GRASS.pz=pos.z;
     let up=Math.max(0,Math.min(1,(now-GRASS.stop-.5)/1.5)); up=up*up*(3-2*up); const keep=1-up;   // half a second after you stop, the grass round your legs stands back up

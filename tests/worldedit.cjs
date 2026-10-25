@@ -25,6 +25,8 @@ const wait=ms=>new Promise(r=>setTimeout(r,ms));
     WE.dbgPick(mi,0); document.querySelector('#we #wback').click();
     me.getMatrixAt(0,m); out.visBack=me.getVisibleAt(0); out.backToStart=Math.abs(m.elements[13]-y0)<1e-4;
     out.colHidden=document.querySelector('#we [data-prow]').style.display==='none';
+    WE.dbgPick(mi,0); document.querySelector('#we #wcopy').click(); { const c=WE.copies(), st=WE.getState(), e=c.length&&st[c[0]]; out.copies=c.length; out.copyOf=e&&e.copy;
+      const up2=document.querySelector('#we [data-up="1"]'); up2.click(); out.copyUp=e?e.t[1]:0; document.querySelector('#we #wdel').click(); out.copiesAfterDel=WE.copies().length; }
     WE.toggle(); return out; });
   console.log(JSON.stringify(R));
   ok(R.meshes>0&&R.props>0,'WED holds '+R.props+' props across '+R.meshes+' meshes');
@@ -33,5 +35,8 @@ const wait=ms=>new Promise(r=>setTimeout(r,ms));
   ok(R.hidden===false,'DELETE hides the prop');
   ok(R.visBack===true&&R.backToStart,'BACK AS IT WAS restores it');
   ok(R.colHidden===true,'colour/brightness rows hidden for a prop');
+  ok(R.copies===1&&R.copyOf===R.name,'COPY puts a second '+R.name+' beside it, kept in the edits ('+R.copyOf+')');
+  ok(R.copyUp>0,'the copy is picked and moves on its own');
+  ok(R.copiesAfterDel===0,'DELETE takes the copy away');
   await b.close(); process.exit(bad?1:0);
 })();

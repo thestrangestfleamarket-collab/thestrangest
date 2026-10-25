@@ -19,7 +19,7 @@ await grab('apts',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Yr=SHARED.BOD.
       if(fy<1||fx<1)return sh(base,f*.7); let k=(.9+.16*TN(bi,bc,sd))*(1+.14*(gr(ui/24,z/24,sd+4,1)-.5))*(z<5?.8+.04*z:1); if(fy>=bh-1)k*=1.08; return sh(base,f*k); };
     return {fs:(nx,ny,X_,Y_,z,f)=>P(nx?Y_:X_,z,f),top:(x,y)=>{ let k=1+.12*(gr(x,y,sd+10,.5)-.5); if(mid)k*=1+.1*Math.max(0,1-Math.abs(x-mid[0])/mid[1]); return sh(base,k); }}; };
 
-  const FWU=[3.25,9.75], DU=6.5, DI=.85, DO=1.65, RD=5.3, steel=[34,36,40], WINA=Math.round(S*.12), WINB=Math.round(S*.88), WDH=1.5;
+  const FWU=[3.25,9.75], DU=6.5, DI=.85, DO=2.06, RD=5.3, steel=[34,36,40], WINA=Math.round(S*.12), WINB=Math.round(S*.88), WDH=1.5;
   const feats=[]; let seed=3; const win=(side,a,z0,z1,o={})=>{ seed++; feats.push({side,a0:a-.55,a1:a+.55,z0,z1,lit:hash(seed,1,9)<.45,seed,box:!o.door&&hash(seed,4,9)<.78,...o}); };
   for(const [side] of [['f'],['b']])for(let lv=0;lv<ST;lv++){ const z=RZ+lv*S; for(const u of FWU)win(side,A.x0+u,z+42,z+94); if(lv)win(side,A.x0+DU,z+3,z+94,{door:true,lit:false}); }
   feats.push({side:'f',a0:m-DW,a1:m+DW,z0:RZ,z1:RZ+DH,door:true,arch:true,lit:false,seed:41},{side:'b',a0:m-DW,a1:m+DW,z0:RZ,z1:RZ+DH,door:true,lit:false,seed:43});
@@ -33,22 +33,42 @@ await grab('apts',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Yr=SHARED.BOD.
   const U=u=>A.x0+u, V=v=>A.y0+v; APTS.U=U; APTS.V=V;
   const ESC=[{yf:A.y1,o:1,lx:11.9,k:'A'},{yf:A.y0,o:-1,lx:1.1,k:'E'}].map(F=>({...F,ua:.8,ub:12.6}));
   const ESCB=(F,lvs,h0,h1,keep)=>{ const Yd=d=>F.yf+F.o*d, B=(u0,u1,d0,d1,z0,z1,top)=>gbox({x0:U(u0),x1:U(u1),y0:Math.min(Yd(d0),Yd(d1)),y1:Math.max(Yd(d0),Yd(d1)),z0,z1,c:steel,foot:0,top:top?(x,y)=>(Math.floor(x*10)+Math.floor(y*10))&1?sh(steel,.6):steel:null},F.k);
+    const pl=(x,y,z,w,h,kind,seed,k,cross=true)=>{ if(FLAT)APTS.escPlants.push({x,y,z,w,h,kind:cross===false?'box':kind,seed}); else tcard(x,y,z,w,h,kind,seed,k,cross); };   // the views (your landing, out of your windows) have real pots; the street keeps flat cards
+    const stone=(u0,u1,d0,d1,z0,z1)=>gbox({x0:U(u0),x1:U(u1),y0:Math.min(Yd(d0),Yd(d1)),y1:Math.max(Yd(d0),Yd(d1)),z0,z1,c:[150,138,124],foot:0},F.k);
     const rs=(lv,u0,u1,d0,d1)=>{ if(!keep)return; SOLS[lv].push(tbox4(U(u0),Yd(d0),U(u1),Yd(d1))); };
     const rail=(lv,u0,u1,d0,d1)=>{ rs(lv,u0,u1,d0,d1); const z=lv*S, al=u1-u0>d1-d0, L=al?u1-u0:d1-d0, n=Math.max(1,Math.round(L/.36));
       B(u0,u1,d0,d1,z+30,z+33); B(u0,u1,d0,d1,z+14,z+16); for(let i=0;i<=n;i++){ const t=i/n*L; al?B(u0+t-.02,u0+t+.02,d0,d1,z,z+30):B(u0,u1,d0+t-.02,d0+t+.02,z,z+30); } };
     for(const lv of lvs){ const z=lv*S; B(F.ua,F.ub,0,DI,z-3,z,1);
       B(F.ua,F.lx-.4,DI,DO,z-3,z,1); B(F.lx+.4,F.ub,DI,DO,z-3,z,1);
       B(F.ua,F.ub,DO-.06,DO,z-9,z); for(let u=F.ua+.3;u<F.ub;u+=2.4)B(u,u+.06,0,DO,z-12,z-3);
-      rail(lv,F.ua,F.ub,DO-.05,DO); rail(lv,F.ua,F.ua+.05,0,DO); rail(lv,F.ub-.05,F.ub,0,DO);
+      rail(lv,F.ua,F.ub,DO-.05,DO); rail(lv,F.ua,F.ua+.05,0,DO); rail(lv,F.ub-.05,F.ub,0,DO); B(F.ua,F.ub,DO-.16,DO+.02,z+33,z+35,1);   // a flat ledge along the top rail to set things on
+      if(FLAT)for(const u of FWU)stone(u-.62,u+.62,0,.26,z+39.5,z+42);   // the windows' stone sills, deep enough for a pot
       const sp=[F.ua+.45,F.ua+1.5,F.ua+2.6,F.ub-2.4,F.ub-1.4,F.ub-.45].filter(u=>Math.abs(u-F.lx)>.7&&Math.abs(u-DU)>.95), K=['pot','flower','fern','tall','flower'];
-      sp.forEach((u,i)=>{ const h=hash(lv,i,F.o+5); if(h<.25)return; const kd=K[Math.floor(hash(lv,i,F.o+7)*K.length)]; tcard(U(u),Yd(DO-.3),RZ+z,.7,kd==='tall'?54:kd==='fern'?40:46,kd,lv*13+i*7+F.o,F.k); });
-      for(const [du,j] of [[-1.05,0],[1.05,1]])tcard(U(DU+du),Yd(.4),RZ+z,.6,hash(lv,j,F.o+13)<.5?34:44,K[Math.floor(hash(lv,j+8,F.o)*K.length)],lv*17+j*5+F.o+29,F.k);
-      if(hash(lv,3,F.o+9)<.6)tcard(U(DU+(hash(lv,4,F.o)<.5?-1.3:1.3)),Yd(DO-.2),RZ+z+33,1.1,12,'flower',lv*5+F.o+17,F.k,false);
-      if((lv<ST-1||!keep)&&hash(lv,5,F.o+11)<.7)tcard(U(F.ua+.6+hash(lv,6,F.o)*(F.ub-F.ua-1.2)),Yd(DO-.35),RZ+z+S-58,.6,46,'hang',lv*9+F.o+3,F.k); }
+      sp.forEach((u,i)=>{ const h=hash(lv,i,F.o+5); if(h<.25)return; const kd=K[Math.floor(hash(lv,i,F.o+7)*K.length)]; pl(U(u),Yd(DO-.3),RZ+z,.7,kd==='tall'?54:kd==='fern'?40:46,kd,lv*13+i*7+F.o,F.k); });
+      for(const [du,j] of [[-1.05,0],[1.05,1]])pl(U(DU+du),Yd(.4),RZ+z,.6,hash(lv,j,F.o+13)<.5?34:44,K[Math.floor(hash(lv,j+8,F.o)*K.length)],lv*17+j*5+F.o+29,F.k);
+      if(hash(lv,3,F.o+9)<.6)pl(U(DU+(hash(lv,4,F.o)<.5?-1.3:1.3)),Yd(DO-.08),RZ+z+35,1.1,12,'flower',lv*5+F.o+17,F.k,false);
+      if((lv<ST-1||!keep)&&hash(lv,5,F.o+11)<.7)pl(U(F.ua+.6+hash(lv,6,F.o)*(F.ub-F.ua-1.2)),Yd(DO-.35),RZ+z+S-58,.6,46,'hang',lv*9+F.o+3,F.k); }
     const l=F.lx, H1=Math.min(h1,AH+38); for(const u of [l-.24,l+.2]){ for(let h=h0;h<H1;h+=S)B(u,u+.04,DI+.03,DI+.07,h,Math.min(H1,h+S)); if(h1>=AH){ B(u,u+.04,-.35,DI+.07,AH+34,AH+38); B(u,u+.04,-.39,-.35,AH,AH+38); } }
     for(let h=h0+10;h<Math.min(h1,AH+32);h+=12)B(l-.2,l+.2,DI+.04,DI+.06,h,h+2); };
   for(const F of ESC)ESCB(F,Array.from({length:ST-1},(_,i)=>i+1),-RZ,AH+38,true);
-  Object.assign(APTS,{ESC,DU,DI,DO,S,ST,TOP,escape:(F,lvs,h0,h1)=>{ FLAT=true; try{ ESCB(F,lvs,h0,h1,false); }finally{ FLAT=false; } }});
+  Object.assign(APTS,{ESC,DU,DI,DO,S,ST,TOP,FWU,escape:(F,lvs,h0,h1)=>{ APTS.escPlants=[]; FLAT=true; try{ ESCB(F,lvs,h0,h1,false); }finally{ FLAT=false; } }});
+  // a real pot and plant (or a hanging basket, or a planter box for a ledge), w across and h tall in world units, standing on its base
+  { const PM={}, pm=(k,c,o={})=>PM[k]||(PM[k]=new THREE.MeshLambertMaterial({color:new THREE.Color('rgb('+c.join(',')+')'),...o}));
+    APTS.plant3D=(kind,seed,w,h)=>{ const g=new THREE.Group(), r=i=>hash(seed,i,77), add=(geo,m,x,y,z)=>{ const me=new THREE.Mesh(geo,m); me.position.set(x,y,z); me.castShadow=me.receiveShadow=true; g.add(me); return me; };
+      const G=[pm('g1',[70,128,58]),pm('g2',[96,150,70]),pm('g3',[52,104,50])], FL=[[230,90,120],[245,200,70],[200,110,220],[240,240,235],[240,130,60]], terr=pm('terr',[176,92,58]);
+      if(kind==='box'){ const L=w, d=w*.22, bh=h*.9; add(new THREE.BoxGeometry(L,bh,d),pm('wood',[120,78,46]),0,bh/2,0); for(let i=0;i<9;i++){ const x=(i/8-.5)*L*.9; add(new THREE.IcosahedronGeometry(d*.45,0),G[i%3],x,bh+d*.2,(r(i)-.5)*d*.3); add(new THREE.IcosahedronGeometry(d*.18,0),pm('f'+(i%5),FL[(seed+i)%5]),x+(r(i+9)-.5)*d*.3,bh+d*.55,(r(i+5)-.5)*d*.3); } return g; }
+      if(kind==='hang'){ const bR=w*.35, by=h*.5; add(new THREE.SphereGeometry(bR,12,6,0,Math.PI*2,Math.PI/2,Math.PI/2),pm('bask',[150,110,70],{side:THREE.DoubleSide}),0,by+bR,0); add(new THREE.CylinderGeometry(w*.012,w*.012,h-by-bR,4),pm('chain',[40,40,44]),0,(h+by+bR)/2,0);
+        for(let i=0;i<11;i++){ const a=i/11*Math.PI*2, L=h*(.2+r(i)*.3); add(new THREE.BoxGeometry(w*.06,L,w*.06),G[i%3],Math.cos(a)*bR*.8,by+bR-L/2,Math.sin(a)*bR*.8); } return g; }
+      const pH=Math.min(h*.32,w*.55), pR=w*.3; add(new THREE.CylinderGeometry(pR,pR*.76,pH,12),terr,0,pH/2,0); add(new THREE.CylinderGeometry(pR*1.1,pR*1.1,pH*.16,12),terr,0,pH*.94,0); add(new THREE.CylinderGeometry(pR*.95,pR*.95,.01,12),pm('soil',[60,40,28]),0,pH*.99,0);
+      if(kind==='pot'){ for(let i=0;i<6;i++){ const s=w*(.18+r(i)*.12); add(new THREE.IcosahedronGeometry(s,0),G[i%3],(r(i+9)-.5)*w*.3,pH+s*.7+r(i+3)*h*.18,(r(i+5)-.5)*w*.3); } }
+      else if(kind==='flower'){ for(let i=0;i<4;i++)add(new THREE.IcosahedronGeometry(w*.18,0),G[i%3],(r(i)-.5)*w*.3,pH+w*.1,(r(i+4)-.5)*w*.3); for(let i=0;i<7;i++){ const x=(r(i+11)-.5)*w*.5, z=(r(i+21)-.5)*w*.5, y=pH+h*(.22+r(i+31)*.3); add(new THREE.CylinderGeometry(w*.015,w*.015,y-pH,4),G[2],x,(y+pH)/2,z); add(new THREE.IcosahedronGeometry(w*.075,0),pm('f'+(i%5),FL[(seed+i)%5]),x,y,z); } }
+      else if(kind==='fern'){ for(let i=0;i<10;i++){ const a=i/10*Math.PI*2+r(i), L=h*(.35+r(i+9)*.25), fr=add(new THREE.ConeGeometry(w*.07,L,4),G[i%3],Math.cos(a)*L*.28,pH+L*.32,Math.sin(a)*L*.28); fr.rotation.z=-Math.cos(a)*.9; fr.rotation.x=Math.sin(a)*.9; } }
+      else { add(new THREE.CylinderGeometry(w*.03,w*.04,h*.18,5),pm('trunk',[96,66,40]),0,pH+h*.09,0); add(new THREE.ConeGeometry(w*.3,h*.6,8),G[0],0,pH+h*.45,0); add(new THREE.ConeGeometry(w*.24,h*.36,8),G[1],0,pH+h*.68,0); }
+      return g; };
+    APTS.plantName={pot:'POTTED PLANT',flower:'FLOWER POT',fern:'FERN',tall:'CYPRESS',box:'FLOWER BOX',hang:'HANGING BASKET'}; }
+  // a fire escape's levels as meshes of their own (unturned), for the view of it from inside your apartment
+  APTS.escapeMeshes=(F,lvs,h0,h1)=>{ const keep=BATCH.items.splice(0), km=BATCH.meshes, kc=BATCH.cast; BATCH.meshes={}; BATCH.cast=true;
+    try{ APTS.escape(F,lvs,h0,h1); BATCH.build(APTS.MKA); return Object.values(BATCH.meshes||{}); } finally { BATCH.cast=kc; BATCH.meshes=km; BATCH.items=keep; } };
 
   const ST0={x0:m-DW-.25,x1:m+DW+.25,y0:A.y1,land:.85,tr:.42,n:3}; ST0.y1=A.y1+ST0.land+ST0.n*ST0.tr; APTS.ST0=ST0;
   { const BS=[98,95,90], NO=[136,131,122], CH=[86,84,80], IRN=[28,30,34], top=i=>(RZ+1)*(ST0.n-i)/(ST0.n+1), MID=[(ST0.x0+ST0.x1)/2,(ST0.x1-ST0.x0)/2], g=b=>tgbox(b.c===IRN?b:{...b,...rock(b.c,b.c===CH?67:63,.7,9,b.c===CH?null:MID)},'A');

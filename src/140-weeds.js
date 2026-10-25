@@ -1,6 +1,6 @@
 // THE WEEDS: WEEDS grows the grass (where the lawns are, chunk by chunk, for the grass field in 140b and the foragers), the weeds and the gold reeds, bending them as things move through.
 import {SHARED, THREE} from './003-shx.js';
-import {NPCS, PARK, POND, pos, RAG, ROOMS, st, UI, W3, WEEDS} from './003b-systems.js';
+import {NPCS, PARK, POND, pos, RAG, ROOMS, st, UI, W3, WED, WEEDS} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {CASTLE, FIX, MAPG, MODS, SOL, STORE, SYS, TILE} from './006-map-pre.js';
 import {GCAVE} from './060-cave.js';
@@ -102,7 +102,7 @@ WEEDS.lawnInit=()=>{ const T=TILE, CS=8*T, N=16, CELL=CS/N, MG=4, W=N+2*MG, hsh=
   const near=[]; WEEDS.moveTick=(...a)=>{ const r=WEEDS_moveTick0(...a); SYS.run('weedsMove'); return r; };
   const skip=o=>o.isInstancedMesh||o.isSkinnedMesh||o.isPoints||o.isSprite||o.isLine||(o.material&&(o.material.visible===false||o.material.isMeshToonMaterial||o.material.transparent||o.material.depthWrite===false||o.material.side===THREE.BackSide));
   const CH=new Map(); WEEDS.chunks=CH; WEEDS.lawnN=0; const clr=WEEDS.clr||(WEEDS.clr=[]);
-  const RT=new THREE.WebGLRenderTarget(W,W,{depthBuffer:true}), CAM=new THREE.OrthographicCamera(-CS/2-MG*CELL,CS/2+MG*CELL,CS/2+MG*CELL,-CS/2-MG*CELL,.1,80*T), PIX=new Uint8Array(W*W*4);
+  const SS=4, RT=new THREE.WebGLRenderTarget(W*SS,W*SS,{depthBuffer:true}), CAM=new THREE.OrthographicCamera(-CS/2-MG*CELL,CS/2+MG*CELL,CS/2+MG*CELL,-CS/2-MG*CELL,.1,80*T), PIX=new Uint8Array(W*W*SS*SS*4);   // each cell looked at 4x4 times: lawn unless the path covers half of it, so loose edge stones keep their grass
   const VS='varying float vY; void main(){ vec4 w=modelMatrix*vec4(position,1.);'+'\n#ifdef USE_INSTANCING\n w=modelMatrix*instanceMatrix*vec4(position,1.);\n#endif\n vY=w.y; gl_Position=projectionMatrix*viewMatrix*w; }';
   const M0=new THREE.ShaderMaterial({vertexShader:VS,fragmentShader:'varying float vY; void main(){ if(vY>'+(1.6*T).toFixed(3)+')discard; gl_FragColor=vec4(0.); }',side:THREE.DoubleSide});   // only low things keep the lawn off: tree crowns and awnings overhead don't
   const M1=new THREE.ShaderMaterial({vertexShader:VS,fragmentShader:'varying float vY; void main(){ gl_FragColor=vec4(1.,clamp((vY+.5)/4.,0.,1.),0.,1.); }',side:THREE.DoubleSide});
@@ -143,17 +143,18 @@ WEEDS.lawnInit=()=>{ const T=TILE, CS=8*T, N=16, CELL=CS/N, MG=4, W=N+2*MG, hsh=
       else if(v===4&&r<.09)spin(x,top,z,top-.02*T,top+.13*T,.05*T,4,0,0,g,4,4,.5); } };
   // where the lawn is in one chunk: drawn from above, the land showing through what stands low on it; WEEDS.lawnMask for the grass field
   const mask=(cx,cz)=>{ const x0=cx*CS, z0=cz*CS, LW=[MODS.land,typeof POND!=='undefined'?POND.hills:null].filter(Boolean), hid=[];
-    scene.traverseVisible(o=>{ if((o.isMesh||o.isPoints||o.isLine||o.isSprite)&&skip(o))hid.push(o); }); for(const g of [W3.group,...NPCS.map(N=>N.g)])if(g&&g.visible)hid.push(g); for(const m of CH.values())if(m&&m.visible)hid.push(m); if(WEEDS.hideForMask)WEEDS.hideForMask(hid); hid.forEach(o=>o.visible=false);
+    scene.traverseVisible(o=>{ if((o.isMesh||o.isPoints||o.isLine||o.isSprite)&&skip(o))hid.push(o); }); for(const g of [W3.group,...NPCS.map(N=>N.g),...WED.meshes.map(en=>en.me)])if(g&&g.visible)hid.push(g); scene.traverse(o=>{ if(o.visible&&o.userData.landProp)hid.push(o); }); for(const m of CH.values())if(m&&m.visible)hid.push(m); if(WEEDS.hideForMask)WEEDS.hideForMask(hid); hid.forEach(o=>o.visible=false);
     const lm=LW.map(o=>o.layers.mask); LW.forEach(o=>o.layers.set(5));
     const rt0=renderer.getRenderTarget(), ac=renderer.autoClear, ov=scene.overrideMaterial, cc=renderer.getClearColor(new THREE.Color()), ca=renderer.getClearAlpha(), bg=scene.background, fg=scene.fog;
     CAM.position.set(x0+CS/2,40*T,z0+CS/2); CAM.up.set(0,0,-1); CAM.lookAt(x0+CS/2,0,z0+CS/2); CAM.updateMatrixWorld();
     renderer.setRenderTarget(RT); renderer.setClearColor(0,0); scene.background=null; scene.fog=null; renderer.autoClear=false; renderer.clear();
     CAM.layers.set(0); scene.overrideMaterial=M0; renderer.render(scene,CAM); CAM.layers.set(5); scene.overrideMaterial=M1; renderer.render(scene,CAM);
-    renderer.readRenderTargetPixels(RT,0,0,W,W,PIX);
+    renderer.readRenderTargetPixels(RT,0,0,W*SS,W*SS,PIX);
     scene.overrideMaterial=ov; renderer.setRenderTarget(rt0); renderer.autoClear=ac; renderer.setClearColor(cc,ca); scene.background=bg; scene.fog=fg;
     LW.forEach((o,i)=>o.layers.mask=lm[i]); hid.forEach(o=>o.visible=true);
     const G=new Float32Array(W*W), I=new Uint8Array(W*W), SQ=[], ci=(i,j)=>(j+MG)*W+i+MG;
-    for(let r=0;r<W;r++)for(let u=0;u<W;u++){ const k=(r*W+u)*4, i=u-MG, j=N+MG-1-r, x=x0+(i+.5)*CELL, z=z0+(j+.5)*CELL; if(PIX[k]<128||clr.some(q=>x>q[0]&&x<q[2]&&z>q[1]&&z<q[3]))continue; I[ci(i,j)]=1; G[ci(i,j)]=PIX[k+1]/255*4-.5; }
+    for(let r=0;r<W;r++)for(let u=0;u<W;u++){ const i=u-MG, j=N+MG-1-r, x=x0+(i+.5)*CELL, z=z0+(j+.5)*CELL; let n=0, g=0; for(let b=0;b<SS;b++)for(let a=0;a<SS;a++){ const k=((r*SS+b)*W*SS+u*SS+a)*4; if(PIX[k]>=128){ n++; g+=PIX[k+1]; } }
+      if(n*2<SS*SS||clr.some(q=>x>q[0]&&x<q[2]&&z>q[1]&&z<q[3]))continue; I[ci(i,j)]=1; G[ci(i,j)]=g/n/255*4-.5; }
     for(let j=0;j<N;j+=2)for(let i=0;i<N;i+=2){ const c=ci(i,j); if(I[c])SQ.push(x0+(i+1)*CELL,G[c],z0+(j+1)*CELL); }
     return {I,G,SQ,x0,z0,N,CELL,MG}; };
   WEEDS.lawnMask=mask; WEEDS.CS=CS;
@@ -169,6 +170,8 @@ WEEDS.lawnInit=()=>{ const T=TILE, CS=8*T, N=16, CELL=CS/N, MG=4, W=N+2*MG, hsh=
   WEEDS.lawnDrop=r=>{ SYS.run('lawnEdit',r); for(const k of [...CH.keys()]){ const [a,b]=k.split(',').map(Number); if(r[2]>a*CS-MG*CELL&&r[0]<(a+1)*CS+MG*CELL&&r[3]>b*CS-MG*CELL&&r[1]<(b+1)*CS+MG*CELL)drop(k); } };
   let busy=0, next=0; WEEDS.lawnTick=()=>{ if(SHARED.LVL!=='up'||(ROOMS&&ROOMS.cur)||STORE.rooms&&STORE.rooms.some(R=>R.inside(pos.x,pos.z)))return; const pcx=Math.floor(pos.x/CS), pcz=Math.floor(pos.z/CS);
     for(const k of [...CH.keys()]){ const [a,b]=k.split(',').map(Number); if(Math.max(Math.abs(a-pcx),Math.abs(b-pcz))>4)drop(k); }
+    const add=(a,b,k)=>{ const gb=build(a,b); CH.set(k,gb); if(gb)SYS.run('weedsAdd',k,gb); };
+    for(let b=-2;b<=2;b++)for(let a=-2;a<=2;a++){ const k=(pcx+a)+','+(pcz+b); if(!CH.has(k))add(pcx+a,pcz+b,k); }   // all that can be on screen, at once, so no lawn shows half built
     let best=null, bd=1e9; for(let b=-3;b<=3;b++)for(let a=-3;a<=3;a++){ const k=(pcx+a)+','+(pcz+b); if(CH.has(k))continue; const d=a*a+b*b; if(d<bd){ bd=d; best=[pcx+a,pcz+b,k]; } }
-    if(best&&performance.now()>=next){ const t0=performance.now(); const gb=build(best[0],best[1]); CH.set(best[2],gb); if(gb)SYS.run('weedsAdd',best[2],gb); busy=performance.now()-t0; WEEDS.busy=busy; next=performance.now()+Math.max(120,busy*3); } };
+    if(best&&performance.now()>=next){ const t0=performance.now(); add(...best); busy=performance.now()-t0; WEEDS.busy=busy; next=performance.now()+Math.max(120,busy*3); } };
   SYS.add('life',(dt)=>{ WEEDS.lawnTick(); WEEDS.moveTick(); },'140-weeds'); };

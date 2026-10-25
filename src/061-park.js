@@ -144,11 +144,11 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
   wall(ex,P.y0+T,P.x1,EG[0]-PW,31); wall(ex,EG[1]+PW,P.x1,P.y1,35);
   pier(ex-.6,EG[0]-PW,P.x1+.3,EG[0],41); pier(ex-.6,EG[1],P.x1+.3,EG[1]+PW,45);
   LEAVES.push([ex-.85,EG[0],-1,'y',1.5],[ex-.85,EG[1],1,'y',1.5]);
-  const CB=[CASTLE.b[0]-PO.x,CASTLE.b[1]-PO.x,CASTLE.b[2]-PO.y,CASTLE.b[3]-PO.y], wx=P.x0, ny=P.y1-T, WG=PARK.wgate=[P.round[1]-1.5,P.round[1]+1.5], NG=PARK.ngate=[P.round[0]-3.5,P.round[0]+3.5];
+  const CB=[CASTLE.b[0]-PO.x,CASTLE.b[1]-PO.x,CASTLE.b[2]-PO.y,CASTLE.b[3]-PO.y], wx=P.x0, ny=P.y1-T, WG=PARK.wgate=[P.round[1]-(g1-g0)/2,P.round[1]+(g1-g0)/2], NG=PARK.ngate=[P.round[0]-3.5,P.round[0]+3.5];
   const wTop=Math.min(P.y1,CB[2]), nLeft=CB[3]<P.y1-T-1?P.x0:Math.max(P.x0,CB[1]);
   wall(wx,P.y0+T,wx+T,WG[0]-PW,51); wall(wx,WG[1]+PW,wx+T,wTop,55); if(CB[3]<P.y1-T-1)wall(wx,CB[3],wx+T,ny,59);
   pier(wx-.3,WG[0]-PW,wx+T+.6,WG[0],57); pier(wx-.3,WG[1],wx+T+.6,WG[1]+PW,61);
-  LEAVES.push([wx+T+.85,WG[0],-1,'y',1.5],[wx+T+.85,WG[1],1,'y',1.5]);
+  LEAVES.push([wx+T+.85,WG[0],-1,'y',(WG[1]-WG[0])/2],[wx+T+.85,WG[1],1,'y',(WG[1]-WG[0])/2]);
   wall(nLeft,ny,NG[0]-PW,P.y1,65); wall(NG[1]+PW,ny,P.x1-T,P.y1,69);
   pier(NG[0]-PW,ny-.6,NG[0],P.y1+.3,71); pier(NG[1],ny-.6,NG[1]+PW,P.y1+.3,75);
   LEAVES.push([NG[0],ny-.85,-1,'x',3.5],[NG[1],ny-.85,1,'x',3.5]);
@@ -178,20 +178,22 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
       for(let u=.3;u<w-.2;u+=.6){ const [x,z]=at(u); GB.push([x,H*.73,z,ax==='x'?.27*M:.045*M,.27*M*VS,ax==='x'?.045*M:.27*M,IR[2]]); }
       const [a1,b1]=at(0), [a2,b2]=at(w); SOL.up.push([Math.min(a1,a2)-.09*M,Math.min(b1,b2)-.09*M,Math.max(a1,a2)+.09*M,Math.max(b1,b2)+.09*M]); FIX.up.push([Math.min(a1,a2)-.09*M,Math.min(b1,b2)-.09*M,0,Math.max(a1,a2)+.09*M,Math.max(b1,b2)+.09*M,H]); }
     put(GP,GB);
-    { const yc=P.y0+.42, xm=(g0+g1)/2, len=(g1-g0)*TILE, B=[], bar=(h,t)=>B.push([X(xm),Y(GS*h),Z(yc),len,Y(GS*t),.1*M,IR[0]]);
-      bar(124,4); bar(140,4); for(let u=g0+.25;u<g1-.1;u+=.25){ const n=Math.round(u*4); B.push([X(u),Y(GS*132),Z(yc),.035*M,Y(GS*12),.035*M,IR[n%3]]); if(Math.abs(u-xm)>1.5)B.push([X(u),Y(GS*(146+(n%2?3:0))),Z(yc),.03*M,Y(GS*(n%2?10:5)),.03*M,IR[1]]); }
-      for(const u of [g0+.05,g1-.05])B.push([X(u),Y(GS*134),Z(yc),.1*M,Y(GS*26),.1*M,IR[1]]);
+    // a gateway's arch: two rails and their pickets, end posts, CENTRAL PARK in iron letters on a bowed bar, ivy over its end and down its post; laid out along the gate (ax), at its line c0, reading td along it from outside
+    const arch=(q0,q1,c0,ax,td,main)=>{ const m=(q0+q1)/2, len=(q1-q0)*TILE, B=[], at=(a,y,c,sa,sy,sc,col)=>B.push(ax==='x'?[X(m)+a,y,Z(c0)+c,sa,sy,sc,col]:[X(c0)+c,y,Z(m)+a,sc,sy,sa,col]), bar=(h,t)=>at(0,Y(GS*h),0,len,Y(GS*t),.1*M,IR[0]);
+      bar(124,4); bar(140,4); for(let u=q0+.25;u<q1-.1;u+=.25){ const n=Math.round(u*4); at((u-m)*TILE,Y(GS*132),0,.035*M,Y(GS*12),.035*M,IR[n%3]); if(Math.abs(u-m)>1.5)at((u-m)*TILE,Y(GS*(146+(n%2?3:0))),0,.03*M,Y(GS*(n%2?10:5)),.03*M,IR[1]); }
+      for(const u of [q0+.05,q1-.05])at((u-m)*TILE,Y(GS*134),0,.1*M,Y(GS*26),.1*M,IR[1]);
       { const FONT={C:['.###','#...','#...','#...','.###'],E:['####','#...','###.','#...','####'],N:['#..#','##.#','#.##','#..#','#..#'],T:['###','.#.','.#.','.#.','.#.'],R:['###.','#..#','###.','#.#.','#..#'],A:['.##.','#..#','####','#..#','#..#'],L:['#...','#...','#...','#...','####'],P:['###.','#..#','###.','#...','#...'],K:['#..#','#.#.','##..','#.#.','#..#']};
         const txt='CENTRAL PARK', cols=[...txt].reduce((a,ch)=>a+(ch===' '?2:FONT[ch][0].length+1),0), half=len*.44, step=half*2/cols, px=step*.95, py=px*1.25, pz=.07*M, hb=Y(GS*147), ah=Y(GS*13)*1.25;
         let u=-half; for(const ch of txt){ if(ch===' '){ u+=2*step; continue; } const G=FONT[ch], w=G[0].length, tc=(u+w*step/2)/half, base=hb+ah*(1-tc*tc);
-          for(let r=0;r<5;r++)for(let c=0;c<w;c++)if(G[r][c]==='#')B.push([X(xm)-(u+(c+.5)*step),base+(4.5-r)*py,Z(yc),step*.96,py*1.04,pz,IR[0]]); u+=(w+1)*step; }
-        for(let i=0;i<24;i++){ const tm=-1+(i+.5)/12, w=half*1.06/12; B.push([X(xm)+tm*half*1.06,hb-Y(GS*4)+ah*(1-tm*tm),Z(yc),w+.005,px*1.3,pz*1.2,IR[1]]); }
-        // ivy over the sign's left side and hanging down its left post
+          for(let r=0;r<5;r++)for(let c=0;c<w;c++)if(G[r][c]==='#')at(td*(u+(c+.5)*step),base+(4.5-r)*py,0,step*.96,py*1.04,pz,IR[0]); u+=(w+1)*step; }
+        for(let i=0;i<24;i++){ const tm=-1+(i+.5)/12, w=half*1.06/12; at(tm*half*1.06,hb-Y(GS*4)+ah*(1-tm*tm),0,w+.005,px*1.3,pz*1.2,IR[1]); }
+        // ivy over the sign's far end and hanging down that post
         { const LV=[0x2e4e24,0x426c2c,0x5c8838], lr=(a,b)=>hash(a,b,601);
-          for(let i=0;i<80;i++){ const tm=-1.06+.8*lr(i,3), s=(.07+.07*lr(i,7))*M; B.push([X(xm)+tm*half*1.06+(lr(i,11)-.5)*.1*M,hb+ah*(1-tm*tm)+(lr(i,5)-.62)*py*6.5,Z(yc)+(lr(i,9)-.5)*pz*3,s,s*VS,s,LV[i%3]]); }
-          for(let k=0;k<4;k++){ const x=X(g0+.12+k*.18), n=4+Math.floor(lr(k,13)*6); for(let i=0;i<n;i++){ const s=(.06+.05*lr(k*9+i,15))*M; B.push([x+(lr(k*9+i,17)-.5)*.08*M,hb-i*s*VS*1.6,Z(yc)+(lr(k*9+i,19)-.5)*pz*2,s,s*VS,s,LV[(k+i)%3]]); } } }
-        PARK.sign={x:X(xm),y:hb+ah*.5,z:Z(yc),top:hb+ah+py*5,out:[X(xm),Z(yc-4)]}; }
-      put([],B); }
+          for(let i=0;i<80;i++){ const tm=-1.06+.8*lr(i,3), s=(.07+.07*lr(i,7))*M; at(-td*tm*half*1.06+(lr(i,11)-.5)*.1*M,hb+ah*(1-tm*tm)+(lr(i,5)-.62)*py*6.5,(lr(i,9)-.5)*pz*3,s,s*VS,s,LV[i%3]); }
+          for(let k=0;k<4;k++){ const a0=td*(m-(q0+.12+k*.18))*TILE, n=4+Math.floor(lr(k,13)*6); for(let i=0;i<n;i++){ const s=(.06+.05*lr(k*9+i,15))*M; at(a0+(lr(k*9+i,17)-.5)*.08*M,hb-i*s*VS*1.6,(lr(k*9+i,19)-.5)*pz*2,s,s*VS,s,LV[(k+i)%3]); } } }
+        if(main)PARK.sign={x:X(m),y:hb+ah*.5,z:Z(c0),top:hb+ah+py*5,out:[X(m),Z(c0-4)]}; (PARK.arches=PARK.arches||[]).push([X(ax==='x'?m:c0),Z(ax==='x'?c0:m),ax]); }
+      put([],B); };
+    arch(g0,g1,P.y0+.42,'x',-1,true); arch(WG[0],WG[1],wx+.42,'y',1,false);   // the west gate as the main one, turned to face West St
     const LB=[], LG=[], LC_=[], HL=[];
     for(const [x,y] of PIERS){ const wx_=X(x), wz_=Z(y), t=Y(PH+18), K=1.4, b=(h0,h,w,c=IR[0])=>LB.push([wx_,t+mv((h0+h/2)*K),wz_,w*M*K,mv(h*K),w*M*K,c]);
       b(0,.22,.62,IR[1]); b(.22,.05,.5); b(.27,.05,.4); for(const [dx,dz] of [[-1,-1],[1,-1],[-1,1],[1,1]])LB.push([wx_+dx*.16*M*K,t+mv(.62*K),wz_+dz*.16*M*K,.045*M*K,mv(.66*K),.045*M*K,IR[0]]);

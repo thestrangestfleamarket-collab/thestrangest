@@ -1,11 +1,11 @@
 // THE LOOSE THINGS: GPH lets the light furniture and goods be pushed, kicked, picked up and carried.
 import {SHARED, THREE} from './003-shx.js';
-import {DRESS, ED, keys, PB, PERFX, pos, st, UI, USE, W3} from './003b-systems.js';
+import {DRESS, ED, GPH, keys, PB, PERFX, pos, st, UI, USE, W3} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {FIX, MODS, QS, SOL, SYS, TILE} from './006-map-pre.js';
 import {OBJS} from './008-batch.js';
 import {BVH} from './137-bvh.js';
-const GPH=window.GPH={ms:0,n:0};
+
 { const T=TILE, M1=T/.84, RS=12*T, RF=15*T, CARRY=30, G0=0x00040001, GI=0x00010007, GH=0x00010005, GY=0x00020001, DT=1/60;
   const CLS=[[/drinks fridge|shelf|shelves|sink|counter|back bar|fern bush|drone|wall|DJ|stove|meter|planted/i,0],
     [/wardrobe|fridge|bookshelf|cabinet|bed$|dumpster|speaker|shelving|garden lantern|long table|stump|chest|repair bench|planter|sofa|desk|TV on|brazier/i,70],
@@ -169,4 +169,3 @@ const GPH=window.GPH={ms:0,n:0};
     nearest:n=>{ const it=nearest(q=>rx(n).test(q.name)); return it&&{name:it.name,m:it.m,heavy:it.heavy,awake:it===held||!!it.rb&&!it.rb.isSleeping(),at:(p=>[p.x,p.y,p.z])(at(it)),h:it.h,sols:it.sol.map(([r])=>r.slice()),dm:!!it.dm}; },
     pickAt:(n)=>{ const it=nearest(q=>rx(n).test(q.name)); if(!it)return null; const p=it.rb.translation(), rc=new THREE.Raycaster(); rc.setFromCamera(new THREE.Vector2().copy(new THREE.Vector3(p.x,p.y,p.z).project(SHARED.cam)),SHARED.cam); const r=USE.pick(rc); return r&&r.th.name; }};
 }
-export {GPH};

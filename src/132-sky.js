@@ -87,7 +87,7 @@ import {HEMI} from './064-map-post.js';
     U.uSideK.value=1-.6*cl((e-8)/20);
     U.uSunDir.value.copy(CLOCK.sunV); U.uSunR.value=(1.6+1.4*(1-cl(e/12)))*D; { let j=0; while(j<SUN.length-2&&e>SUN[j+1][0])j++; mixC(SUN[j][1],SUN[j+1][1],cl((e-SUN[j][0])/(SUN[j+1][0]-SUN[j][0])),U.uSunCol.value); }
     U.uSunK.value=cl((e+1.5)/1.5)*(1-.9*cl((W.cloud-.3)/.6));
-    { const sv=CLOCK.sunV, cv=SKY.cloudAt(sv.x,sv.y,sv.z,U.uT.value,U.uCov.value+U.uGap.value); SKY.sunCover+=(cv-SKY.sunCover)*Math.min(1,dt*2.5); if(up){ CLOCK.sun.intensity*=1-.78*SKY.sunCover; HEMI.intensity*=1+.25*SKY.sunCover; } }
+    { const sv=CLOCK.sunV, cv=SKY.cloudAt(sv.x,sv.y,sv.z,U.uT.value,U.uCov.value+U.uGap.value); SKY.sunCover+=(cv-SKY.sunCover)*Math.min(1,dt*2.5); }
     U.uMoonDir.value.copy(CLOCK.moonV); const night=cl((-e-4)/6); U.uMoonK.value=night*(1-.8*cl((W.cloud-.3)/.6)); U.uStar.value=night*(1-cl(W.cloud*1.4)*(1-SC.stars)); U.uGap.value=SC.gap; U.uSkyK.value=Math.max(SC.sky,cl((e-3)/10)*(1-cl((W.cloud-.4)/.5))*.85); U.uBlood.value=SC.blood*night; U.uMoonR.value=.03+.025*SC.blood; U.uMoonCol.value.setRGB(.86,.89,.95).lerp(MB,SC.blood); if(SC.blood&&up)HEMI.color.lerp(MB,.55*SC.blood*night);
     U.uGrey.value.setRGB(.55,.58,.62).multiplyScalar(.25+.75*day); if(W.storm)U.uGrey.value.multiplyScalar(1-.45*W.storm); U.uGreyK.value=cl(W.cloud*W.cloud*.85);
     if(W.flash&&up){ U.uGrey.value.setRGB(.85,.88,.95); U.uGreyK.value=Math.max(U.uGreyK.value,.9); }

@@ -28,7 +28,7 @@ Object.assign(WE,{on:false}); window.WE=WE;
     Mx.multiply(Tx.makeTranslation(-pv[0],-pv[1],-pv[2])); Mx.premultiply(Tx.makeTranslation(pv[0]+e.t[0],pv[1]+e.t[1],pv[2]+e.t[2])); me.setMatrixAt(id,Mx); if(me.computeBoundingSphere)me.computeBoundingSphere(); }
   const propHandle=(en,bid)=>{ const it=en.items[en.ids[bid]]; return {prop:true,me:en.me,id:bid,place:en.place,name:it.k,pivot:[it.x,it.y,it.z],it}; };
   const applyWED=()=>{ for(const en of WED.meshes)for(let bid=0;bid<en.ids.length;bid++){ const h=propHandle(en,bid); if(ST[keyOf(h)])applyProp(h); } };
-  // copies: a picked park thing again beside it, its own mesh cut from the same batch; kept in ST as 'C|<id>' {copy:name, of:the original's key, place, at:[x,y,z], ...the usual edits}
+  // copies: a picked park thing again beside it, its own mesh cut from the same batch; kept in ST as 'C|n' {copy:name, of:the original's key, place, at:[x,y,z], ...the usual edits}
   const CP=new Map(); let cpg=null; const D2=Math.PI/180;
   const fromWED=key=>{ for(const en of WED.meshes)for(let bid=0;bid<en.ids.length;bid++){ const h=propHandle(en,bid); if(keyOf(h)===key)return h; } return null; };
   const geoOf=h=>{ const me=h.me, R=me._reservedRanges&&me._reservedRanges[h.id]; if(!R)return null; const G=new THREE.BufferGeometry();
@@ -63,18 +63,14 @@ Object.assign(WE,{on:false}); window.WE=WE;
   // signs (editable text + glow, e.g. the theatre marquee): each registers get/set in SIGNS.list
   const signKey=o=>'S|'+o.place+'|'+o.name, sgOf=m=>{ for(const sg of SIGNS.list)if(sg.me===m)return sg; return null; };
   const applySigns=()=>{ if(!Object.keys(ST).some(k=>k[0]==='S'&&k[1]==='|'))return; for(const sg of SIGNS.list){ const st=ST['S|'+sg.place+'|'+sg.name]; if(st&&sg.set)sg.set({text:st.text,bri:st.sbri,col:st.scol}); } };
-  // BASE is what everyone sees (the baked file and the approved requests); this browser keeps only its own changes on top (pending)
-  const BASE={}, cl=v=>JSON.parse(JSON.stringify(v)), def=k=>k[0]==='L'&&k[1]==='|'?E0L():k[0]==='S'&&k[1]==='|'?{text:null,sbri:null,scol:null}:E0();
-  const norm=(k,v)=>JSON.stringify(Object.assign(def(k),v||{}));
-  const pending=()=>{ const out={}; for(const k of new Set([...Object.keys(ST),...Object.keys(BASE)])){ const a=norm(k,ST[k]); if(a!==norm(k,BASE[k]))out[k]=JSON.parse(a); } return out; };
-  const save=()=>{ try{ localStorage.setItem('market-world',JSON.stringify(pending())); }catch(e){} WE.changed&&WE.changed(); };
+  const save=()=>{ try{ localStorage.setItem('market-world',JSON.stringify(ST)); }catch(e){} };
   let BAKED={}; try{ BAKED=__DATA__("data/world-edits.json")||{}; }catch(e){}
   let LOCAL={}; try{ LOCAL=JSON.parse(localStorage.getItem('market-world')||'{}'); }catch(e){}
-  try{ Object.assign(BASE,cl(BAKED)); Object.assign(ST,cl(BAKED),LOCAL); }catch(e){}
+  try{ Object.assign(ST,BAKED,LOCAL); }catch(e){}
   const applyAll=()=>{ if(!Object.keys(ST).length)return; for(const o of OBJS)if(ST[kid(o)])apply(o); applyWED(); applyCopies(); applyLights(); applySigns(); settle(); };
   const drainWED=()=>{ let t=800; const re=()=>{ applyWED(); applyLights(); applySigns(); if((t*=2)<40000)setTimeout(re,t); }; setTimeout(re,t); };
   { const go=()=>{ if(!Object.keys(ST).length)return; if(!window.__started){ setTimeout(go,300); return; } (window.LOAD?LOAD('later'):Promise.resolve()).then(applyAll).catch(applyAll); drainWED(); }; go(); }
-  WE.getState=()=>ST; WE.pending=pending; WE.now=k=>JSON.parse(norm(k,ST[k]));
+  WE.getState=()=>ST;
   const css=document.createElement('style'); css.textContent=`
   #we{position:fixed;right:calc(12px + env(safe-area-inset-right,0px));top:12px;width:300px;max-height:calc(100vh - 24px);overflow:auto;background:var(--bg);border:2px solid var(--line);font:12px var(--pixel);color:var(--fg);z-index:20}
   #we[hidden]{display:none} #we h2{font:12px var(--pixel);color:var(--key);margin:0;padding:12px 14px;border-bottom:2px solid var(--line)} #we .pane{padding:10px 14px}
@@ -108,8 +104,8 @@ Object.assign(WE,{on:false}); window.WE=WE;
       <div class="row" data-srow><button class="btn" id="wsback">BACK AS IT WAS</button></div>
       <div class="row"><button class="btn" id="wcopy">COPY</button><button class="btn" id="wdel">DELETE</button><button class="btn" id="wback">BACK AS IT WAS</button></div>
 </div>
-    <div class="row" style="margin-top:10px"><button class="btn" id="wall">EVERYTHING BACK</button><button class="btn" id="wexp">EXPORT</button><button class="btn" id="wimp">IMPORT</button><input type="file" id="wimpf" accept="application/json" style="display:none"><button class="btn" id="wsend" hidden>SEND FOR APPROVAL</button><button class="btn" id="wout">DONE (SHIFT+E)</button></div>
-    <div class="dim" id="wsay"></div><div class="dim">what he bumps into stays where it was, for now</div></div>`;
+    <div class="row" style="margin-top:10px"><button class="btn" id="wall">EVERYTHING BACK</button><button class="btn" id="wexp">EXPORT</button><button class="btn" id="wimp">IMPORT</button><input type="file" id="wimpf" accept="application/json" style="display:none"><button class="btn" id="wsend" hidden>SEND TO SERVER</button><button class="btn" id="wout">DONE (SHIFT+E)</button></div>
+    <div class="dim">what he bumps into stays where it was, for now</div></div>`;
   document.body.appendChild(P); const $=s=>P.querySelector(s);
   P.querySelectorAll('#wtools .row').forEach(r=>{ if(!r.hasAttribute('data-srow'))r.setAttribute('data-orow',''); });
   ['keydown','keyup','keypress'].forEach(ev=>$('#wstext').addEventListener(ev,e=>e.stopPropagation()));
@@ -147,16 +143,12 @@ Object.assign(WE,{on:false}); window.WE=WE;
   $('#wsback').onclick=()=>{ if(!sel||!sel.sign)return; delete ST[signKey(sel)]; sel.ref.set&&sel.ref.set({text:null,bri:null,col:null}); save(); draw(); };
   $('#wexp').onclick=()=>{ const blob=new Blob([JSON.stringify(ST,null,1)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='world-edits.json'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),2e3); };
   $('#wimp').onclick=()=>$('#wimpf').click();
-  // one way in for a set of edits: an imported file, or (live) the approved requests everyone sees, under this browser's own pending changes
-  const put=(j,live)=>{ const mine=live?pending():null; for(const k in j){ const v=j[k]; if(!v||typeof v!=='object')continue; if(live)BASE[k]=cl(v); if(!mine||!(k in mine))ST[k]=cl(v); }
-    for(const o of OBJS)if(ST[kid(o)])apply(o); applyWED(); applyCopies(); applyLights(); applySigns(); settle(); save(); frame(); draw(); if(live)drainWED(); };
-  WE.live=j=>put(j,true);
-  $('#wimpf').onchange=async ev=>{ const f=ev.target.files&&ev.target.files[0]; ev.target.value=''; if(!f)return; try{ put(JSON.parse(await f.text()),false); }catch(e){} };
+  $('#wimpf').onchange=async ev=>{ const f=ev.target.files&&ev.target.files[0]; ev.target.value=''; if(!f)return; try{ const j=JSON.parse(await f.text()); Object.assign(ST,j); for(const o of OBJS)if(ST[kid(o)])apply(o); applyWED(); applyLights(); applySigns(); settle(); save(); frame(); draw(); }catch(e){} };
   $('#wdel').onclick=()=>{ change(e=>{ e.del=true; }); sel=null; frame(); draw(); };
   $('#wcopy').onclick=()=>{ if(!sel||!(sel.prop||sel.copy))return; const src=stOf(sel), [r]=ground(); let at, of;
     if(sel.copy){ const e=ST[sel.key]; at=[e.at[0]+e.t[0],e.at[1]+e.t[1],e.at[2]+e.t[2]]; of=e.of; } else { at=[sel.pivot[0]+src.t[0],sel.pivot[1]+src.t[1],sel.pivot[2]+src.t[2]]; of=keyOf(sel); }
     const it=(()=>{ const h=fromWED(of); return h&&h.me.userData.items?h.me.userData.items.find(q=>q.k===h.name&&Math.abs(q.x-h.pivot[0])<1e-3&&Math.abs(q.z-h.pivot[2])<1e-3):null; })(), w=Math.max(.6*T,(it&&it.r?it.r*2:0)+.3*T);
-    let k; do k='C|'+Date.now().toString(36)+Math.random().toString(36).slice(2,6); while(ST[k]);   // unique across players: their approved copies sit side by side ST[k]=Object.assign(E0(),{copy:sel.name,of,place:sel.place,at:[at[0]+r.x*w,at[1],at[2]+r.z*w],r:src.r||0,rx:src.rx||0,rz:src.rz||0,s:src.s.slice()});
+    let n=1; while(ST['C|'+n])n++; const k='C|'+n; ST[k]=Object.assign(E0(),{copy:sel.name,of,place:sel.place,at:[at[0]+r.x*w,at[1],at[2]+r.z*w],r:src.r||0,rx:src.rx||0,rz:src.rz||0,s:src.s.slice()});
     if(!copyMesh(k)){ delete ST[k]; return; } sel=copyHandle(k); applyCopy(sel); settle(); save(); frame(); draw(); };
   $('#wback').onclick=()=>{ change(e=>{ Object.assign(e,E0()); }); if(sel&&sel.lite){ const k=sel.liteKey; ST[k]=E0L(); applyLight(sel.lite,ST[k]); delete ST[k]; settle(); save(); draw(); } };
   $('#wall').onclick=()=>{ '@later'; if(!confirm('Put everything back as it was?'))return; for(const k of Object.keys(ST))if(k[0]==='C'&&k[1]==='|'){ ST[k].del=true; applyCopy({key:k}); delete ST[k]; } for(const o of OBJS){ const k=kid(o); if(ST[k]){ ST[k]=E0(); apply(o); delete ST[k]; } }
@@ -165,7 +157,7 @@ Object.assign(WE,{on:false}); window.WE=WE;
     for(const sg of SIGNS.list){ const k='S|'+sg.place+'|'+sg.name; if(ST[k]){ sg.set&&sg.set({text:null,bri:null,col:null}); delete ST[k]; } } settle(); save(); frame(); draw(); };
   $('#wout').onclick=()=>WE.toggle();
   WE.copies=()=>[...CP.keys()];
-  WE.toggle=()=>{ WE.on=!WE.on; P.hidden=!WE.on; if(!WE.on){ sel=null; frame(); WE.closed&&WE.closed(); } draw(); UI.badge&&UI.badge(); };
+  WE.toggle=()=>{ WE.on=!WE.on; P.hidden=!WE.on; if(!WE.on){ sel=null; frame(); } draw(); UI.badge&&UI.badge(); };
   const vis=m=>{ let q=m; while(q){ if(!q.visible)return false; q=q.parent; } return true; };
   const ray=new THREE.Raycaster(), meshes=()=>[...new Set(OBJS.flatMap(o=>o.parts.map(p=>p.me)))].filter(vis);
   const wedOf=o=>{ for(const en of WED.meshes)if(en.me===o)return en; return null; };
@@ -182,7 +174,6 @@ Object.assign(WE,{on:false}); window.WE=WE;
   WE.up=()=>{ if(!drag)return; drag=null; settle(); save(); };
   Object.defineProperty(WE,'dragging',{get:()=>!!drag});
   WE.dbgProps=()=>WED.meshes; WE.dbgPick=(mi,bid)=>{ const en=WED.meshes[mi]; if(!en||en.ids[bid]==null)return null; sel=propHandle(en,bid); frame(); draw(); return keyOf(sel); };
-  WE.dbgObj=i=>{ const o=OBJS[i]; if(!o)return null; base(o); sel=o; draw(); const p=o.parts[0]; return {key:kid(o),y:p.me.geometry.attributes.position.array[p.v0*3+1]}; };
   WE.dbgLights=()=>sceneLights().length; WE.dbgSelLight=i=>{ const L=sceneLights()[i]; if(!L)return null; litOrig(L); sel={name:'TEST',place:'world',prop:true,pivot:[0,0,0],lite:L,liteKey:litKey(L)}; draw(); return {key:litKey(L),i0:L.userData.i0,intensity:+L.intensity.toFixed(3)}; };
   WE.dbgSigns=()=>SIGNS.list.map(s=>s.name); WE.dbgSelSign=i=>{ const sg=SIGNS.list[i]; if(!sg)return null; sel={sign:true,ref:sg,name:sg.name,place:sg.place,me:sg.me}; draw(); return {key:signKey(sel),has:!!sg.set}; };
   WE.dbgSignMat=i=>{ const sg=SIGNS.list[i]; if(!sg||!sg.me)return null; const m=sg.me.material, mm=Array.isArray(m)?(m.find(x=>x&&x.color&&x.map)||m[0]):m; if(!mm||!mm.color)return null; const c=mm.color; return [+c.r.toFixed(2),+c.g.toFixed(2),+c.b.toFixed(2)]; };

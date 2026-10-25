@@ -1,30 +1,18 @@
-// THE TENANTS: the owner's panel in the menu (world change requests, players, invite codes, messages; worker/door.js /admin) and the letters the market sends you (/post).
+// THE TENANTS: the owner's panel in the menu (players, invite codes, messages; worker/door.js /admin) and the letters the market sends you (/post).
 import {SHARED} from './003-shx.js';
-import {BUGS, TENANTS, UI, WE} from './003b-systems.js';
-import {STORE} from './006-map-pre.js';
+import {BUGS, TENANTS} from './003b-systems.js';
 { const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
   const day=t=>t?new Date(typeof t==='number'?t:Date.parse(t)).toLocaleString():'—';
   const api=async(path,body)=>{ try{ if(BUGS.tok)await BUGS.tok(); }catch(e){}
     const r=await fetch(path,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body||{})}); let j={}; try{ j=await r.json(); }catch(e){} if(!r.ok&&!j.why)j.why='the server said '+r.status; return j; };
   const room=()=>'s-'+String((SHARED.SECTION&&SHARED.SECTION.id)||'a').toLowerCase().replace(/[^a-z0-9-]/g,'');
   let el=null, D=null, open=null, say='';
-  // a world request's changes in words: each thing's name and what changed on it (keys as 099-worldedit makes them)
-  const what=E=>Object.entries(E||{}).map(([k,v])=>{ const p=k.split('|'), L=p[0]==='L', S=p[0]==='S', f=[], n=(a,b)=>a!=null&&a!==b; if(p[0]==='C')return 'A COPY OF '+(v.copy||'A THING')+(v.del?': DELETED':': ADDED');
-    if(v.del)f.push('DELETED'); else { if(v.t&&v.t.some(x=>x))f.push('MOVED'); if(v.r||v.rx||v.rz)f.push('TURNED'); if(v.s&&v.s.some(x=>x!==1))f.push('SIZE');
-      if(n(v.col,'#ffffff'))f.push('COLOUR '+v.col); if(n(v.bri,1))f.push('BRIGHTNESS'); if(n(v.op,1))f.push('SEE-THROUGH');
-      if(n(v.li,1))f.push('LIGHT x'+v.li); if(v.lcol)f.push('LIGHT COLOUR '+v.lcol); if(v.ldist!=null)f.push('RANGE'); if(v.text!=null)f.push('TEXT "'+v.text+'"'); if(n(v.sbri,1)||v.scol)f.push('GLOW'); }
-    return (L?'A LIGHT':S?p[2]:p[1])+(L?'':' ('+(S?p[1]:p[0])+')')+': '+(f.join(', ')||'BACK AS IT WAS'); });
 
   /* ---------- the panel ---------- */
   const draw=()=>{ '@later'; if(!el)return; if(!D){ el.innerHTML='<div class="dim">...</div>'; return; } if(D.why){ el.innerHTML='<div class="dim">'+esc(D.why)+'</div>'; return; }
     const U=D.users.slice().sort((a,b)=>((a.player&&a.player.apt)||1e9)-((b.player&&b.player.apt)||1e9)), on=U.filter(u=>u.online).length;
     const opts='<option value="*">EVERYONE</option>'+U.map(u=>`<option value="${esc(u.id)}">${esc((u.player&&u.player.apt?u.player.apt+' · ':'')+u.email)}</option>`).join('');
-    const R=Array.isArray(D.reqs)?D.reqs:[], who=id=>{ const u=U.find(x=>x.id===id); return u?(u.player&&u.player.apt?u.player.apt+' · ':'')+u.email:id; };
     el.innerHTML=`<h3>TENANTS</h3><div class="dim">${U.length} players · ${on} online now${say?' · '+esc(say):''}</div>
-      <h3>REQUESTS</h3>${R.length?R.map(r=>`<div data-req="${esc(r.id)}" style="border:2px solid var(--line);padding:6px 8px;margin:6px 0">
-        <div class="row"><b>${esc(r.name||'TENANT')}</b><span>${esc(who(r.user_id))}</span><span class="dim">${esc(day(r.created_at))}${Array.isArray(r.at)?' · at '+esc(r.at[0])+', '+esc(r.at[1]):''}</span></div>
-        <div class="dim" style="white-space:pre-wrap;margin:4px 0">${esc(what(r.payload).join('\n'))}</div>
-        <div class="row">${Array.isArray(r.at)?'<button class="btn" data-w="go">GO TO</button>':''}<button class="btn" data-w="yes">APPROVE</button><button class="btn" data-w="no">REJECT</button></div></div>`).join(''):`<div class="dim">${D.reqs&&D.reqs.why?'requests would not load: '+esc(D.reqs.why):'none waiting'}</div>`}
       <h3>INVITE CODES</h3><div class="row"><span>USES</span><input id="tuses" type="number" min="1" max="1000" value="1" style="width:60px;font:inherit;background:#0e1016;color:var(--fg);border:2px solid #3a3f4e;padding:4px"><button class="btn" id="tcode">NEW CODE</button><span id="tnew"></span></div>
       <div>${D.codes.slice().reverse().map(c=>`<div class="row"><code>${esc(c.code)}</code><span class="dim">${esc(c.uses)} of ${esc(c.max_uses)} used</span><span class="dim">${esc(Object.entries(c).filter(([k,v])=>!['code','uses','max_uses'].includes(k)&&v!=null&&v!=='').map(([k,v])=>k+': '+(typeof v==='object'?JSON.stringify(v):v)).join(' · '))}</span>${c.uses<c.max_uses?`<button class="btn" data-off="${esc(c.code)}">TURN OFF</button>`:'<span class="dim">used up</span>'}</div>`).join('')||'<div class="dim">no codes</div>'}</div>
       <h3>MESSAGE</h3><div class="row"><span>TO</span><select id="tto" style="font:inherit;background:#0e1016;color:var(--fg);border:2px solid #3a3f4e;padding:4px">${opts}</select></div>
@@ -40,9 +28,6 @@ import {STORE} from './006-map-pre.js';
     const $=s=>el.querySelector(s); for(const f of el.querySelectorAll('input,textarea,select'))for(const ev of ['keydown','keyup'])f.addEventListener(ev,e=>e.stopPropagation());
     const act=async(b,body,ok)=>{ if(b)b.disabled=true; const r=await api('/admin',{room:room(),...body}); say=r.why?'not done: '+r.why:ok(r); await load(); };
     $('#tcode').onclick=e=>act(e.target,{do:'code',uses:+$('#tuses').value||1},r=>{ try{ navigator.clipboard.writeText(r.code); }catch(x){} return 'new code '+r.code+' (copied)'; });
-    el.querySelectorAll('[data-req]').forEach(box=>box.onclick=e=>{ const b=e.target.closest('[data-w]'); if(!b)return; const r=R.find(x=>x.id===box.dataset.req), a=b.dataset.w;
-      if(a==='go'){ UI.toggleMenu(); STORE.goTo(r.at[0],r.at[1],r.at[2],null,r.lvl||undefined); return; }
-      act(b,{do:'wdecide',id:r.id,ok:a==='yes'},()=>{ if(a==='yes'&&WE.fetchLive)WE.fetchLive().catch(()=>{}); return a==='yes'?'approved: live for everyone':'rejected'; }); });
     el.querySelectorAll('[data-off]').forEach(b=>b.onclick=()=>act(b,{do:'codeoff',code:b.dataset.off},()=>'code turned off'));
     $('#tsend').onclick=e=>{ const text=$('#ttext').value.trim(); if(!text){ say='write the message first'; draw(); return; }
       act(e.target,{do:'tell',to:$('#tto').value,subject:$('#tsub').value.trim(),text,live:$('#tlive').checked,letter:$('#tletter').checked,email:$('#temail').checked},
@@ -54,7 +39,6 @@ import {STORE} from './006-map-pre.js';
       if(a==='ban'){ if(!u.banned&&!confirm('Ban '+u.email+'? They are sent out and cannot log in.'))return; act(b,{do:'ban',id,on:!u.banned},()=>u.banned?'unbanned':'banned'); return; }
       if(a==='delete'){ if(!confirm('Delete '+u.email+' for good? This cannot be undone.'))return; act(b,{do:'delete',id},()=>'deleted'); } }); };
   const load=async()=>{ '@later'; D=await api('/admin',{do:'list',room:room()}); draw(); };
-  TENANTS.api=api; window.TENANTS=TENANTS;
   TENANTS.open=e=>{ el=e; D=null; draw(); load(); };
 
   /* ---------- letters waiting for you, shown when you come in ---------- */

@@ -150,25 +150,6 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
       for (let k = 0; k < 2; k++) { n.D.bt = k ? 0 : 99; for (let i = 0; i < (k ? 12 : 2); i++) { await raf(); put(); }
         out['phase' + k] = { style: n.D.style, speed: +fly.getEffectiveTimeScale().toFixed(2), weight: +fly.getEffectiveWeight().toFixed(2) }; } return out; }).catch(e => ({ err: e.message }));
     ok(dg.phase0 && dg.phase1 && dg.phase0.style !== dg.phase1.style && dg.phase0.speed > .4 && dg.phase1.speed > .4, 'a flying dragon beats its wings through both halves of its flight: ' + JSON.stringify(dg));
-    const wr = await pg.evaluate(async () => { const W = window.WE, T = window.TENANTS; if (!W || !W.live || !W.send || !W.fetchLive || !T || !T.api) return { ok: false };
-      await LOAD('later'); const f0 = window.fetch, sent = []; let live = {};
-      window.fetch = async (u, o) => { const post = !!(o && o.method === 'POST'); if (u === '/world' && !post) return new Response(JSON.stringify({ edits: live }));
-        if (u === '/world' || u === '/admin') { const b = JSON.parse(o.body); sent.push([u, b]);
-          return new Response(JSON.stringify(b.do === 'list' ? { ok: true, users: [], codes: [], letters: [], reqs: [{ id: 'r1', user_id: 'u1', name: 'ROSA', created_at: Date.now(), payload: live, at: [1, 2, 0], lvl: 'up' }] } : { ok: true })); }
-        return f0(u, o); };
-      try { const a = W.dbgObj(0), k = a.key, E = t => ({ t, r: 0, rx: 0, rz: 0, s: [1, 1, 1], col: '#ffffff', bri: 1, op: 1, del: false });
-        live = { [k]: E([0, 2, 0]) }; const n = await W.fetchLive(), up = W.dbgObj(0).y - a.y, notMine = !(k in W.pending());
-        document.querySelector('#we [data-up="1"]').click(); const mine = k in W.pending();
-        await W.send(); const body = (sent.find(x => x[0] === '/world') || [])[1], once = (await W.send()) === null && sent.filter(x => x[0] === '/world').length === 1;
-        live = { [k]: body.edits[k] }; await W.fetchLive(); const settled = !(k in W.pending());
-        const el = document.createElement('div'); T.open(el); for (let i = 0; i < 30 && !el.querySelector('[data-req]'); i++) await new Promise(r => setTimeout(r, 100));
-        const shown = !!el.querySelector('[data-req]') && /MOVED/.test(el.textContent) && /ROSA/.test(el.textContent);
-        if (shown) el.querySelector('[data-w="yes"]').click(); for (let i = 0; i < 30 && !sent.some(x => x[1].do === 'wdecide'); i++) await new Promise(r => setTimeout(r, 100));
-        const dec = sent.find(x => x[1].do === 'wdecide');
-        live = { [k]: E([0, 0, 0]) }; await W.fetchLive(); const back = Math.abs(W.dbgObj(0).y - a.y) < 1e-4;
-        return { ok: true, n, up: +up.toFixed(3), notMine, mine, send: !!(body && body.do === 'send' && body.edits[k] && Array.isArray(body.at)), once, settled, shown, approve: !!(dec && dec[1].id === 'r1' && dec[1].ok === true), back };
-      } finally { window.fetch = f0; } }).catch(e => ({ err: e.message }));
-    ok(wr.ok && wr.n === 1 && Math.abs(wr.up - 2) < 1e-3 && wr.notMine && wr.mine && wr.send && wr.once && wr.settled && wr.shown && wr.approve && wr.back, 'world requests: an approved edit is put live through the editor\'s own apply, a change of yours is pending and sent once, the owner\'s REQUESTS lists it and APPROVE decides it (no network): ' + JSON.stringify(wr));
   }
   ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.slice(0, 3).join(' | ') : ''));
   await b.close();

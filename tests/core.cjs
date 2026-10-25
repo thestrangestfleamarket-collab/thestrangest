@@ -47,7 +47,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
       o.offSpawn = Object.keys(ROOMS.off).every(k => { const s = ROOMS.off[k].spawn; return !!(s && ROOMS.boxAt(s[0], s[1]) === k); });
       o.chars = (() => { const C = window.CHARS; if (!C || ['apply', 'put', 'live', 'applyAll', 'id'].some(k => typeof C[k] !== 'function')) return { fns: false }; const F = { name: 'x', hp: 1, sta: 1, st: { v: 1, R: 1, home: { id: 'z' } }, g: { scale: { setScalar(v) { F.g.scale._v = v; } } } }; C.put(F, { name: 'NN', hp: 9, stamina: 4, scale: 3 }); return { fns: true, levelChars: C.rec('___none') === null, applied: F.name === 'NN' && F.hp === 9 && F.sta === 4 && F.g.scale._v === 3 }; })();
       o.shops = (() => { const S = window.SHOPS, C = window.CHARS; if (!S || !C) return { ok: false }; const fns = ['open', 'close', 'sync'].every(k => typeof S[k] === 'function') && typeof C.trade === 'function'; const N = (window.__dbg.NPCS || [])[0]; return { ok: fns, noTrade: N ? C.trade(N) === null : true }; })();
-      o.shafts = window.SHAFTS ? [SHAFTS.on > 0, SHAFTS.occ === 1] : null;
+      o.shafts = window.SHAFTS ? [SHAFTS.on > 0, SHAFTS.occ === 1, SHAFTS.list[0].material.depthTest === true] : null;
       o.lawn = (() => { const lc = SHARED.BOD.g.lawnCol(3.3, 7.1), map = __dbg.MAPK.MODS.land && __dbg.MAPK.MODS.land.material.map; return { painted: !!(map && map.image && map.image.width > 0), col: Array.isArray(lc) && lc.length === 3 && lc.every(v => v >= 0 && v <= 255), top: typeof WEEDS.top === 'function' }; })();
       o.sky = [typeof SKY.sunCover === 'number' && SKY.sunCover >= 0 && SKY.sunCover <= 1, typeof SKY.cloudAt === 'function' && SKY.cloudAt(0, 1, 0, 0, .5) >= 0 && SKY.cloudAt(0, 1, 0, 0, .5) <= 1, typeof SKY.GLSL === 'string' && SKY.GLSL.includes('cloudAt')];
       o.breath = [typeof __dbg.VIT.air === 'number', typeof __dbg.VIT.breathe === 'function', (window.ITEMS && ITEMS.prop ? +ITEMS.prop('airshroom', 'breath') : 0) || 0];
@@ -108,7 +108,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
     ok(r.chars.fns && r.chars.levelChars && r.chars.applied, 'CHARS applies character overrides (name, stats, scale) and reads characters.json: ' + JSON.stringify(r.chars));
     ok(r.shops.ok && r.shops.noTrade, 'SHOPS is wired and a character with no shop config sells nothing: ' + JSON.stringify(r.shops));
     ok(r.lawn && r.lawn.painted && r.lawn.col && r.lawn.top, 'the lawn: the land wears its lawn texture and lawnCol gives a colour (the grass itself: tests/lawn.cjs) (' + JSON.stringify(r.lawn) + ')');
-    ok(r.shafts && r.shafts.every(Boolean), 'the sun shafts are up in the day and lit by the sun\'s shadow map, so solids block them (SHAFTS: ' + JSON.stringify(r.shafts) + ')');
+    ok(r.shafts && r.shafts.every(Boolean), 'the sun shafts are up in the day, lit by the sun\'s shadow map so solids block them, and hidden by what stands in front (SHAFTS: ' + JSON.stringify(r.shafts) + ')');
     ok(r.sky && r.sky.every(Boolean), 'the sky knows its clouds: the sun\'s cover is a number in 0..1, the CPU cloud mirror answers in 0..1 (' + JSON.stringify(r.sky) + ')');
     ok(r.breath[0] && r.breath[1] && r.breath[2] > 0, 'breath: VIT.air + VIT.breathe exist and the AIRCAP mushroom grants air (' + r.breath.join(',') + ')');
     ok(r.downs.every(Boolean), 'every down level (dungeon, gem cave, hudson cavern) gives its own has/ground/bound through LEVELS.of (' + r.downs.join(',') + ')');
@@ -127,6 +127,10 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
     ok(r.charp.ok && r.charp.open && r.charp.built && r.charp.tabsHidden && r.charp.closed && r.charp.log >= 50, 'the character page is the menu home (ESC): avatar + buttons built, the old tabs hidden, opens and closes, and the admin menu game log is baked from HISTORY: ' + JSON.stringify(r.charp));
     const pk = await pg.evaluate(() => { const P = window.PARK, D = window.DFOG, c = window.SHARED && window.SHARED.composer; return { sign: !!(P.sign && P.sign.top > P.sign.y), fog: !!D && D.get().start === 20 && D.get().end === 60, pass: !!c && c.passes.some(q => q.uniforms && q.uniforms.tDepth), stand: !!(P.stand && P.stand.children.length) }; }).catch(e => ({ err: e.message }));
     ok(pk.sign && pk.fog && pk.pass && pk.stand, 'the park: its sign has a top for the dragon, the street stand-ins are built, the distance fog pass reads depth (20 to 60 tiles from you): ' + JSON.stringify(pk));
+    const rg = await pg.evaluate(() => { const P = window.PARK, R = P.ring; if (!R) return { ring: false }; const A = R.userData.P; let out = 0;
+      for (let v = 0; v < A.length; v += 3) { const [x, y] = P.at(A[v], A[v + 2]); if (x < P.x0 + 1.5 || x > P.x1 - 1.5 || y < P.y0 + 1.5 || y > P.y1 - 1.5) out++; }
+      return { ring: true, n: P.ringN, still: !R.geometry.attributes.aSw, low: R.userData.items.every(o => /\.low$/.test(o.k)), out, climb: P.treeItems().length >= P.ringN }; }).catch(e => ({ err: e.message }));
+    ok(rg.ring && rg.n > 100 && rg.still && rg.low && rg.out === 0 && rg.climb, "the park's edge ring is one still low bake, every crown inside the wall, its trees climbable: " + JSON.stringify(rg));
   }
   ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.slice(0, 3).join(' | ') : ''));
   await b.close();

@@ -259,21 +259,33 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
         if(ok(x2,y2,rr)&&!near(x2,y2,rr,.5,4.5))add(kk,x2,y2,mm,hash(i,83+j,9)*6.28); } }
     for(const [k0,x,y,m] of FOUNT.S.oaks){ const k=hash(Math.round(x),Math.round(y),87)<.35?'Elder'+(1+Math.abs(Math.round(x))%2):k0; if(!near(x,y,m*W(k),.6,8)&&!BK.wet(x,y,m*.42))add(k,x,y,m,hash(Math.round(x),Math.round(y),89)*6.28); }
     { const FY=[P.y1+6,P.y1+20,P.y1+36], XA=P.x0-16, XB=P.x1+16, BACK=out.back=[]; let n=0; for(const [ri,fy] of FY.entries())for(let x=XA+9*ri+6;x<XB;x+=18,n++){ const k=hash(n,201,3)<.3?'Elder'+(1+n%2):'OakTree'+(1+n%3), m=(30+hash(n,203,5)*18)*(1+.18*ri), xx=x+(hash(n,205,7)-.5)*9, yy=fy+(hash(n,207,9)-.5)*8; BACK.push([k,+xx.toFixed(1),+yy.toFixed(1),+m.toFixed(1),+(hash(n,209,11)*6.28).toFixed(2)]); } }
-    const R0=out.length;
+    const R0=out.length; let edgeOK;
     // a dense ring of tall trees just inside the wall, right round the park, so from outside only trees show at the edge
     { const TK=['OakTree1','OakTree2','OakTree3','Elder1','Elder2','Giant1','OakTree1','OakTree2','Spruce1','Willow1'];
       const gap=(v,g,pad)=>g&&v>g[0]-pad&&v<g[1]+pad, PAD=4.5;
-      const edgeOK=(x,y)=>!(FOUNT.lake(x,y)<2.4||FOUNT.ter(x,y)<2.2||BK.wet(x,y,2)||path(x,y)||(x>CB[0]-3.5&&x<CB[1]+3.5&&y>CB[2]-3.5&&y<CB[3]+3.5));
+      edgeOK=(x,y)=>!(FOUNT.lake(x,y)<2.4||FOUNT.ter(x,y)<2.2||BK.wet(x,y,2)||path(x,y)||(x>CB[0]-3.5&&x<CB[1]+3.5&&y>CB[2]-3.5&&y<CB[3]+3.5));
       const ringAdd=(x,y,s)=>{ const jx=x+(hash(s,5,23)-.5)*2.2, jy=y+(hash(s,6,29)-.5)*2.2; if(!edgeOK(jx,jy))return;
-        const k=TK[Math.floor(hash(s,1,11)*TK.length)%TK.length], m=(12+hash(s,2,13)*5)*(1+(hash(s,3,17)-.5)*.5)*(.5+.25*hash(s,7,31)); add(k,jx,jy,m,hash(s,4,19)*6.28); };   // the edge ring trees smaller again (owner, 25 Oct 2026)
+        const k=TK[Math.floor(hash(s,1,11)*TK.length)%TK.length], m=(20+hash(s,2,13)*6)*(1+(hash(s,3,17)-.5)*.5)*(.5+.25*hash(s,7,31))*.5; add(k,jx,jy,m,hash(s,4,19)*6.28); };
       const STEP=6.4; let s=5000;
       for(let i=0;i<2;i++){ const off=2.6+i*4.6, st=i*STEP/2;
         for(let x=P.x0+off+1+st;x<=P.x1-off-1;x+=STEP){ if(!gap(x,P.gate,PAD))ringAdd(x,P.y0+off,s++); if(!gap(x,PARK.ngate,PAD))ringAdd(x,P.y1-off,s++); }
         for(let y=P.y0+off+1+st;y<=P.y1-off-1;y+=STEP){ if(!gap(y,PARK.wgate,PAD))ringAdd(P.x0+off,y,s++); if(!gap(y,PARK.egate,PAD))ringAdd(P.x1-off,y,s++); } } }
     out.forEach((e,i)=>{ const ring=i>=R0, k=gk(e[1],e[2],215,ring); if(k)e[0]=k; else if(ring)e[5]=-.3*e[3]; });
+    // the edge ring baked low, its crowns kept inside the wall and clear of the gateways: moved in or along, else shrunk to fit, else left out
+    { const low=k=>{ const q=k+'.low'; if(!F[q])F[q]=TREEGEN.low(F[k].sum,F[k].trunk); return q; }, M=.6, w0=[P.x0+T,P.x1-T,P.y0+T,P.y1-T], D=7;
+      const GB=[[P.gate,0,w0[2],1],[PARK.ngate,0,w0[3],-1],[PARK.wgate,1,w0[0],1],[PARK.egate,1,w0[1],-1]].filter(g=>g[0]).map(([g,ax,f,sg])=>{ const a=Math.min(f,f+D*sg), b=Math.max(f,f+D*sg); return ax?[a,g[0]-PW,b,g[1]+PW,1]:[g[0]-PW,a,g[1]+PW,b,0]; });
+      const bd=(x,y,b)=>Math.hypot(x-Math.max(b[0],Math.min(b[2],x)),y-Math.max(b[1],Math.min(b[3],y))), fit=(x,y)=>Math.min(x-w0[0],w0[1]-x,y-w0[2],w0[3]-y,...GB.map(b=>bd(x,y,b)))-M;
+      const slide=(x,y,r)=>{ for(const b of GB){ if(bd(x,y,b)>=r+M)continue; if(b[4])y=y<(b[1]+b[3])/2?b[1]-r-M:b[3]+r+M; else x=x<(b[0]+b[2])/2?b[0]-r-M:b[2]+r+M; }
+        return [Math.max(w0[0]+r+M,Math.min(w0[1]-r-M,x)),Math.max(w0[2]+r+M,Math.min(w0[3]-r-M,y))]; };
+      for(let i=out.length-1;i>=R0;i--){ const e=out[i]; if(!F[e[0]].sum)continue; e[0]=low(e[0]); const r=F[e[0]].rad*e[3]/.84, [x,y]=slide(e[1],e[2],r);
+        if(edgeOK(x,y)&&fit(x,y)>=r-.01){ e[1]=+x.toFixed(1); e[2]=+y.toFixed(1); continue; }
+        const m=e[3]*Math.max(0,fit(e[1],e[2]))/r; if(m<3){ out.splice(i,1); continue; } if(e[5])e[5]*=m/e[3]; e[3]=+m.toFixed(1); }
+      PARK.ringN=out.length-R0; }
     for(const e of out.back){ const k=gk(e[1],e[2],219,false); if(k)e[0]=k; }
     return out; })();
-  PARK.later(()=>{ PARK.trees=QS.get('trees')==='0'?null:mesh(TREES,true,true,true); });
+  const NI=TREES.length-PARK.ringN; PARK.later(()=>{ PARK.trees=QS.get('trees')==='0'?null:mesh(TREES.slice(0,NI),true,true,true); });
+  PARK.ring=QS.get('trees')==='0'?null:mesh(TREES.slice(NI),true,true,false);
+  { let c0={}, L=[]; PARK.treeItems=()=>{ if(c0!==PARK.trees){ c0=PARK.trees; L=[PARK.trees,PARK.ring].filter(Boolean).flatMap(m=>m.userData.items||[]); } return L; }; }
   PARK.oaks=TREES.map(([k,x,y,m])=>[X(x),Z(y),m]);
   { const LK=new Map(), V=THREE.Vector3, m4=new THREE.Matrix4(), q=new THREE.Quaternion(), c=new THREE.Color(), up=new V(0,1,0);
     const look=k=>{ if(LK.has(k))return LK.get(k); const D=F[k], p=f32(D.p), col=b8(D.c), lc=[0,0,0], tc=[0,0,0]; let y0=1e9, y1=-1e9, r=0, ym=0, n=0, tn=0;
@@ -295,7 +307,7 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
       for(const L of GC.values()){ const me=new THREE.InstancedMesh(CG,CM,L.length); L.forEach(([x,y,z,r,cl,tt],i)=>{ me.setMatrixAt(i,m4.compose(v.set(x,y,z),q.setFromAxisAngle(up,tt),sc.set(r,r*.82,r))); me.setColorAt(i,c.setRGB(cl[0]/255,cl[1]/255,cl[2]/255,THREE.SRGBColorSpace)); }); me.computeBoundingSphere(); me.castShadow=me.receiveShadow=true; G.add(me); }
       for(const L of GL.values()){ const me=new THREE.InstancedMesh(LG,CM,L.length); L.forEach(([ax,ay,az,bx,by,bz,r,cl],i)=>{ d.set(bx-ax,by-ay,bz-az); const len=d.length(); me.setMatrixAt(i,m4.compose(v.set((ax+bx)/2,(ay+by)/2,(az+bz)/2),q.setFromUnitVectors(up,d.normalize()),sc.set(r,len,r))); me.setColorAt(i,c.setRGB(cl[0]/255,cl[1]/255,cl[2]/255,THREE.SRGBColorSpace)); }); me.computeBoundingSphere(); me.castShadow=me.receiveShadow=true; G.add(me); }
       scene.add(G); return G; };
-    P.stand=stand(TREES); P.standFar=stand(TREES.back); }
+    P.stand=stand(TREES.slice(0,NI)); P.standFar=stand(TREES.back); }
   window.PARKDBG=()=>({oaks:PARK.oaks,trees:TREES,back:TREES.back,TL,progs:renderer.info.programs.length});
   PARK.later(()=>{ '@park'; PARK.rocks=mesh([['BigRock3',87.5,-37,2.6,1.8],['BigRock5',126,-41,2.4,.2],['Rock_12',55.5,-41,1,1],['Rock1',111,-41,.6,2],['BigRock1',66,-35,2,1.1]].map(([k,x,y,...r])=>[k,RX(x),RY(y),...r]),false);
   { const UG=[['bush1',1.1],['bush2',1.2],['bush3',1.3],['bush4',1.5],['bush5',1.1],['flower1',.5],['flower2',.7],['flower3',.3],['flower4',.7],['flower5',.35],['flower6',.8],['grass1',.5],['grass2',.6],['grass1',.45],['grass2',.55],['mushroom1',.3],['mushroom2',.35],['mushroom3',.3],['mushroom4',.25],['stone2',.5],['stone3',.2],['stones1',.25]];

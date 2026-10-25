@@ -49,6 +49,9 @@ await grab('apts',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Yr=SHARED.BOD.
     for(let h=h0+10;h<Math.min(h1,AH+32);h+=12)B(l-.2,l+.2,DI+.04,DI+.06,h,h+2); };
   for(const F of ESC)ESCB(F,Array.from({length:ST-1},(_,i)=>i+1),-RZ,AH+38,true);
   Object.assign(APTS,{ESC,DU,DI,DO,S,ST,TOP,escape:(F,lvs,h0,h1)=>{ FLAT=true; try{ ESCB(F,lvs,h0,h1,false); }finally{ FLAT=false; } }});
+  // a fire escape's levels as meshes of their own (unturned), for the view of it from inside your apartment
+  APTS.escapeMeshes=(F,lvs,h0,h1)=>{ const keep=BATCH.items.splice(0), km=BATCH.meshes, kc=BATCH.cast; BATCH.meshes={}; BATCH.cast=true;
+    try{ APTS.escape(F,lvs,h0,h1); BATCH.build(APTS.MKA); return Object.values(BATCH.meshes||{}); } finally { BATCH.cast=kc; BATCH.meshes=km; BATCH.items=keep; } };
 
   const ST0={x0:m-DW-.25,x1:m+DW+.25,y0:A.y1,land:.85,tr:.42,n:3}; ST0.y1=A.y1+ST0.land+ST0.n*ST0.tr; APTS.ST0=ST0;
   { const BS=[98,95,90], NO=[136,131,122], CH=[86,84,80], IRN=[28,30,34], top=i=>(RZ+1)*(ST0.n-i)/(ST0.n+1), MID=[(ST0.x0+ST0.x1)/2,(ST0.x1-ST0.x0)/2], g=b=>tgbox(b.c===IRN?b:{...b,...rock(b.c,b.c===CH?67:63,.7,9,b.c===CH?null:MID)},'A');

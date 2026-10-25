@@ -1,0 +1,36 @@
+name: godot
+on:
+  push:
+    paths: ['godot/**', '.github/workflows/godot.yml']
+  workflow_dispatch:
+concurrency:
+  group: godot-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: npm ci --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium
+      - name: Build THE MARKET
+        run: SKIP=g python3 build.py
+      - name: The map and the characters, from the running game
+        run: node godot/tools/export.cjs
+      - name: Read back with three.js's glTF reader (every repeated thing, every character)
+        run: node godot/tools/check.cjs godot/shots
+      - uses: actions/upload-artifact@v4
+        with:
+          name: market-godot
+          path: |
+            godot/
+            !godot/tools/
+          retention-days: 30

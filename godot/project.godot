@@ -1,0 +1,13 @@
+; THE STRANGEST FLEA MARKET's map in Godot: main.tscn and map/ are written by godot/tools/export.cjs from the three.js game.
+
+config_version=5
+
+[application]
+
+config/name="The Strangest Flea Market"
+run/main_scene="res://main.tscn"
+config/features=PackedStringArray("4.5", "Forward Plus")
+
+[rendering]
+
+textures/canvas_textures/default_texture_filter=0

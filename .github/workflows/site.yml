@@ -51,6 +51,8 @@ jobs:
         run: node tests/brawl.cjs dist/market.html
       - name: Your bedroom (the owner's picture, real bodies, iso walls)
         run: node tests/bedroom.cjs dist/market.html
+      - name: The room editor (decorate your apartment, saved and back after a reload)
+        run: node tests/roomedit.cjs dist/market.html
       - name: Check the site opens (door, then THE MARKET)
         run: node tests/site.cjs
       - name: Every place's code comes when you go there

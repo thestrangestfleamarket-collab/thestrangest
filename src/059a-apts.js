@@ -113,8 +113,9 @@ await grab('apts',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Yr=SHARED.BOD.
   const FURN=[], DYN={win:[],bar:[],cur:[],flame:[]}; let PA=null, AS=[], AF=[], AG=null;
   APTS.furnish=(lv,fn)=>{ FURN.push(fn); if(PA){ const Q=ROOMS.part(AG,fn); for(const k of ['objs','things','cuts','lights'])PA[k].push(...Q[k]); } };
   const build=()=>{ '@apts'; const K=SHARED.BOD.K, n0=K.PROPS.length, l0=SHARED.BOD.STOREK.LAMPS.length; AG=new THREE.Group(); AG.name='apts-in'; scene.add(AG); AS=[];
-    const sol=(x0,y0,x1,y1,h)=>{ const r=box4(x0,y0,x1,y1); AS.push(r); SOL.up.push(r); if(h!=null){ const f=[r[0],r[1],Yr(0),r[2],r[3],Yr(h)]; AF.push(f); FIX.up.push(f); } }; APTS.solid=sol;
-    APTS.shelf=(x0,y0,x1,y1,b,t)=>{ const r=box4(x0,y0,x1,y1), f=[r[0],r[1],b,r[2],r[3],t]; AF.push(f); FIX.up.push(f); };   // a surface off the floor (a shelf) for loose things to rest on
+    const sol=(x0,y0,x1,y1,h)=>{ const r=box4(x0,y0,x1,y1); AS.push(r); SOL.up.push(r); let f=null; if(h!=null){ f=[r[0],r[1],Yr(0),r[2],r[3],Yr(h)]; AF.push(f); FIX.up.push(f); } return {r,f}; }; APTS.solid=sol;
+    APTS.shelf=(x0,y0,x1,y1,b,t)=>{ const r=box4(x0,y0,x1,y1), f=[r[0],r[1],b,r[2],r[3],t]; AF.push(f); FIX.up.push(f); return {r:null,f}; };   // a surface off the floor (a shelf) for loose things to rest on
+    APTS.unsolid=h=>{ const rm=(L,x)=>{ const i=L.indexOf(x); if(i>=0)L.splice(i,1); }; if(h.r){ rm(AS,h.r); rm(SOL.up,h.r); } if(h.f){ rm(AF,h.f); rm(FIX.up,h.f); } };   // a piece moved in the room editor lifts its old solid
     PA=ROOMS.part(AG,()=>{
       for(const [k,nx,nz] of [['Wf',0,1],['Wb',0,-1],['Ww',1,0],['We',-1,0]])cutWalls.push({pl:WPL[k],nx,nz,foot:Yr(1),me:null,when:()=>!!APTS.inReal});
       // the shell (brick walls, the windows and doors, the planks) is your room's own build (150a-bedroom); here only what you walk into

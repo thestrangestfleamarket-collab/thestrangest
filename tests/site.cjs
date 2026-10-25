@@ -13,6 +13,10 @@ let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
   const fs=require('fs'), gf=fs.readdirSync('dist/g').filter(f=>f!=='market.html');
   for(const p of ['/market.html','/market','/door.html','/avatar.html','/g/market.html','/g/market','/g/'+gf[0]])ok((await fetch(BASE+p)).status===404,p+' is not handed out by itself');
   ok((await fetch(BASE+'/g/'+gf[0],{headers:{cookie:'tsfm-pass=dev:site-check'}})).status===200,'/g/'+gf[0]+' with a login');
+  { const home=body=>fetch(BASE+'/home',{method:'POST',headers:{cookie:'tsfm-pass=dev:site-check',origin:BASE,'content-type':'application/json'},body:JSON.stringify(body)}).then(r=>r.json()).catch(e=>({why:String(e)}));
+    ok((await fetch(BASE+'/home',{method:'POST',headers:{origin:BASE},body:'{}'})).status===401,'/home without a login is refused');
+    const put=await home({put:{v:1,wall:'brick',things:{}}}), got=await home({});
+    ok(put.ok===true&&got.home&&got.home.wall==='brick','/home keeps your decorated room ('+JSON.stringify(got).slice(0,80)+')'); }
   const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist']});
   const door=await b.newPage(), derr=[]; door.on('pageerror',e=>derr.push(e.message));
   await door.goto(BASE+'/',{waitUntil:'load'}); await door.waitForTimeout(1500);

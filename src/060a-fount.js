@@ -60,7 +60,7 @@ const FOUNT={ready:false,swim:false,on:false}; window.FOUNT=FOUNT;
     const wmat=(deep,shal,ring)=>{ const m=new THREE.MeshLambertMaterial({color:0xffffff,transparent:true,side:THREE.DoubleSide}), uC={value:new THREE.Vector4(...ring)}, uD={value:new THREE.Color().setRGB(...deep,THREE.SRGBColorSpace)}, uS={value:new THREE.Color().setRGB(...shal,THREE.SRGBColorSpace)};
       m.onBeforeCompile=sh=>{ Object.assign(sh.uniforms,{uT,uGl,uP,uO,uOw,uC,uDeep:uD,uShal:uS});
         sh.vertexShader='attribute float aD; varying float vD; varying vec3 vWq;\n'+sh.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\n vD=aD;').replace('#include <project_vertex>','#include <project_vertex>\n vWq=(modelMatrix*vec4(transformed,1.)).xyz;');
-        sh.fragmentShader='uniform float uT,uGl; uniform vec4 uC,uP,uO; uniform vec2 uOw; uniform vec3 uDeep,uShal; varying float vD; varying vec3 vWq; float wg=0.;\nfloat wh(vec2 p){ return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453); }\n'+sh.fragmentShader
+        sh.fragmentShader='uniform float uT,uGl; uniform vec4 uC,uP,uO; uniform vec2 uOw; uniform vec3 uDeep,uShal; varying float vD; varying vec3 vWq; float wg=0.;\nfloat wh(vec2 p){ p=fract(p*vec2(.1031,.1030)); p+=dot(p,p.yx+33.33); return fract((p.x+p.y)*p.x); }\n'+sh.fragmentShader
           .replace('#include <color_fragment>',`#include <color_fragment>
  if(uOw.x>0.){ vec2 o=vWq.xz-uO.xy; float a=dot(o,uO.zw); if(a>0.&&a<uOw.y&&abs(o.x*uO.w-o.y*uO.z)<uOw.x)discard; }
  { vec2 p=vWq.xz/${T.toFixed(3)}; float h=sin(p.x*.9+p.y*.35+uT*.8)+sin(p.y*1.3-p.x*.5-uT*.6)+.6*sin((p.x+p.y)*2.1+uT*1.3);

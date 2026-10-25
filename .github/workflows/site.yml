@@ -49,6 +49,8 @@ jobs:
         run: node tests/online.cjs dist/market.html
       - name: Fights between players (hitboxes, blows, knockdown)
         run: node tests/brawl.cjs dist/market.html
+      - name: Your bedroom (the owner's picture, real bodies, iso walls)
+        run: node tests/bedroom.cjs dist/market.html
       - name: Check the site opens (door, then THE MARKET)
         run: node tests/site.cjs
       - name: Every place's code comes when you go there

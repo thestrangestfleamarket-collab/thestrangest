@@ -144,19 +144,30 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
   #mode[hidden],#shd[hidden],#said[hidden]{display:none}
   #menu .box,#looks,#we,#movesp,#maped,#snded,#shbar,#hud,#stat,#shd,#said,.said2,#vit,#moves{zoom:var(--uiz,1)}
   #said{position:fixed;transform:translate(-50%,-100%);font:12px var(--pixel);color:var(--key);background:var(--panel);border:2px solid var(--line);padding:4px 8px;pointer-events:none;z-index:14}
-  #menu{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(5,6,10,.55);z-index:30}
+  #menu{--mf:#c8d0d8;--mi:#4a5868;--mb:#1a2432;--mt:#f0f4f8;--md:#8090a4;--mo:#ffb030;--me:#2c3848;--pixel:'Press Start 2P',Silkscreen,monospace;--key:var(--mo);--fg:var(--mt);--dim:var(--md);--line:var(--mi);position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(5,6,10,.55);z-index:30}
   #menu[hidden]{display:none}
-  #menu .box{width:min(860px,94vw);max-height:90vh;overflow:auto;background:var(--bg);border:2px solid var(--line);font:12px var(--pixel);color:var(--fg)}
-  #menu .tabs{display:flex;gap:0;border-bottom:2px solid var(--line);padding-right:32px} #menu .tabs button{flex:1;font:inherit;color:var(--dim);background:transparent;border:0;border-right:2px solid var(--line);padding:12px;cursor:pointer}
-  #menu .tabs button[aria-selected="true"]{color:var(--key);background:var(--panel)} #menu .tabs button:last-child{border-right:0}
-  #menu .pane{padding:14px 16px} #menu .pane[hidden]{display:none} #menu h3{font:12px var(--pixel);color:var(--key);margin:12px 0 8px} #menu h3:first-child{margin-top:0}
-  #menu .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:6px 0} #menu .btn{font:inherit;color:var(--fg);background:#0e1016;border:2px solid #3a3f4e;padding:6px 10px;cursor:pointer}
-  #menu .btn[aria-pressed="true"]{color:var(--key);border-color:#6b6f80} #menu .dim{color:var(--dim)} #menu input[type=range]{width:220px}
-  #menu canvas{display:block;margin:0 auto;max-width:100%;image-rendering:pixelated;border:2px solid var(--line);cursor:crosshair;background:#000}
-  #menu table{border-collapse:collapse;width:100%} #menu td{padding:5px 6px;border-bottom:1px solid #22252f} #menu td:last-child{text-align:right}
-  #menu .foot{padding:10px 16px;border-top:2px solid var(--line);color:var(--dim);display:flex;justify-content:space-between}`;
+  #menu .box{width:min(880px,94vw);max-height:90vh;overflow:auto;display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-rows:auto 1fr auto;gap:8px;padding:8px;background:repeating-conic-gradient(#10161e 0 25%,#151d27 0 50%) 0 0/4px 4px;box-shadow:0 0 0 2px #000;font:8px/1.9 'Press Start 2P',var(--pixel);color:var(--mt)}
+  #menu .frame,#menu .tabs,#menu .pane{background:linear-gradient(#fff,#fff) 2px 2px/2px 2px no-repeat,linear-gradient(#fff,#fff) right 2px top 2px/2px 2px no-repeat,linear-gradient(#fff,#fff) 2px bottom 2px/2px 2px no-repeat,linear-gradient(#fff,#fff) right 2px bottom 2px/2px 2px no-repeat,var(--mb);box-shadow:0 0 0 1px #000,inset 0 0 0 2px var(--mf),inset 0 0 0 3px var(--mi)}
+  #menu .ttl{grid-column:1/-1;display:flex;justify-content:space-between;gap:12px;padding:10px 44px 10px 14px;color:var(--mf)} #menu .ttl span:last-child{color:var(--md)}
+  #menu .tabs{display:flex;flex-direction:column;padding:10px 8px;align-self:start} #menu .tabs button{font:inherit;text-align:left;white-space:nowrap;color:var(--mt);background:transparent;border:0;padding:6px 10px;cursor:pointer}
+  #menu .tabs button:hover{color:var(--mo)} #menu .tabs button[aria-selected="true"]{color:var(--mb);background:var(--mf)}
+  #menu .pane{grid-column:2;grid-row:2;padding:14px 16px;min-width:0} #menu .box.home .pane{grid-column:1/-1} #menu .pane[hidden]{display:none}
+  #menu h3{font:inherit;color:var(--mf);margin:14px 0 8px;padding-bottom:4px;border-bottom:2px solid var(--mi)} #menu h3:first-child{margin-top:0}
+  #menu .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0} #menu .btn{font:inherit;color:var(--mt);background:var(--mb);border:2px solid var(--mi);box-shadow:0 0 0 1px #000;padding:6px 10px;cursor:pointer}
+  #menu .btn:hover{border-color:var(--mf)} #menu .btn[aria-pressed="true"]{color:var(--mo);border-color:var(--mf)} #menu .dim{color:var(--md)}
+  #menu input[type=range]{width:220px;height:12px;-webkit-appearance:none;appearance:none;background:var(--me);border:1px solid #000;accent-color:var(--mo)}
+  #menu input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:10px;height:16px;background:var(--mo);border:2px solid #000;border-radius:0}
+  #menu input[type=range]::-moz-range-thumb{width:8px;height:14px;background:var(--mo);border:2px solid #000;border-radius:0}
+  #menu select{font:inherit}
+  #menu #dhome .cp-slot,#menu #dhome .cp-live,#menu #dhome .cp-vit,#menu #dhome .cp-btn,#menu #dhome .cp-btn .cp-tag,#menu #dhome .cp-trayh,#menu #dhome .cp-chip{font-size:8px;line-height:1.6}
+  #menu #dhome .cp-slot,#menu #dhome .cp-btn,#menu #dhome .cp-chip{background:var(--mb);border-color:var(--mi);box-shadow:0 0 0 1px #000} #menu #dhome .cp-btn:hover,#menu #dhome .cp-chip:hover,#menu #dhome .cp-slot.on{border-color:var(--mf)}
+  #menu canvas{display:block;margin:0 auto;max-width:100%;image-rendering:pixelated;border:2px solid var(--mi);cursor:crosshair;background:#000}
+  #menu table{border-collapse:collapse;width:100%} #menu td{padding:6px;border-bottom:1px solid var(--me)} #menu td:last-child{text-align:right}
+  #menu .foot{grid-column:1/-1;padding:4px 6px;color:var(--md);display:flex;justify-content:space-between}
+  @media (max-width:640px){ #menu .box{grid-template-columns:minmax(0,1fr)} #menu .tabs{flex-direction:row;flex-wrap:wrap} #menu .pane{grid-column:1;grid-row:3} }`;
   document.head.appendChild(css);
   const M=document.createElement('div'); M.id='menu'; M.hidden=true; M.innerHTML=`<div class="box" role="dialog" aria-label="Menu">
+    <div class="ttl frame"><span id="mttl">OPTIONS</span><span>THE MARKET</span></div>
     <div class="tabs" role="tablist"><button role="tab" data-t="home">◀ CHARACTER</button><button role="tab" data-t="map">MAP</button><button role="tab" data-t="display">DISPLAY</button><button role="tab" data-t="atmo">ATMOSPHERE</button><button role="tab" data-t="graphics">GRAPHICS</button><button role="tab" data-t="sound">SOUND</button><button role="tab" data-t="keys">KEYS</button><button role="tab" data-t="bug">REPORT A BUG</button><button role="tab" data-t="tenants" hidden>TENANTS</button></div>
     <div class="pane" data-p="home" id="dhome"></div>
     <div class="pane" data-p="map"><div class="row"><button class="btn" data-lv="up">THE STREET</button><button class="btn" data-lv="down">UNDERGROUND</button><button class="btn" id="myapt">MY APARTMENT</button><span class="dim">click the map to go there</span></div>
@@ -182,10 +193,10 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
       <div class="row" style="margin-top:10px"><button class="btn" id="kreset">ALL BACK AS THEY WERE</button></div></div>
     <div class="pane" data-p="bug" id="dbug"></div>
     <div class="pane" data-p="tenants" id="dten"></div>
-    <div class="foot"><span>ESC closes</span><span>THE MARKET</span></div></div>`;
+    <div class="foot"><span>ESC: CLOSE</span><span>CLICK: PICK</span></div></div>`;
   document.body.appendChild(M);
   const $=s=>M.querySelector(s); let tab='home', mapLv='up'; if(!SOUND)$('[data-t="sound"]').style.display='none';
-  const show=t=>{ tab=t; const home=t==='home'; M.querySelector('.tabs').style.display=home?'none':''; M.querySelectorAll('[data-t]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.t===t))); M.querySelectorAll('[data-p]').forEach(p=>p.hidden=p.dataset.p!==t); if(home){ if(CHARP.show)CHARP.show($('#dhome')); } else if(CHARP.hide)CHARP.hide(); if(t==='map')drawMap(); if(t==='display'||t==='graphics'||t==='sound'||t==='atmo')drawDisplay(); if(t==='sound')SNDED.into($('#dsndin')); if(t==='keys')drawKeys(); if(t==='bug')BUGS.open($('#dbug')); if(t==='tenants'&&TENANTS.open)TENANTS.open($('#dten')); if(t==='atmo')window.DN&&DN.draw(); };
+  const show=t=>{ tab=t; const home=t==='home'; M.querySelector('.tabs').style.display=home?'none':''; M.querySelector('.box').classList.toggle('home',home); { const b=M.querySelector(`[data-t="${t}"]`); $('#mttl').textContent='OPTIONS : '+(b?b.textContent.replace('◀','').trim():''); } M.querySelectorAll('[data-t]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.t===t))); M.querySelectorAll('[data-p]').forEach(p=>p.hidden=p.dataset.p!==t); if(home){ if(CHARP.show)CHARP.show($('#dhome')); } else if(CHARP.hide)CHARP.hide(); if(t==='map')drawMap(); if(t==='display'||t==='graphics'||t==='sound'||t==='atmo')drawDisplay(); if(t==='sound')SNDED.into($('#dsndin')); if(t==='keys')drawKeys(); if(t==='bug')BUGS.open($('#dbug')); if(t==='tenants'&&TENANTS.open)TENANTS.open($('#dten')); if(t==='atmo')window.DN&&DN.draw(); };
   M.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>show(b.dataset.t));
   M.addEventListener('click',e=>{ if(e.target===M)toggleMenu(); });
   UI.toggleMenu=()=>toggleMenu(); UI.menuTab=t=>{ if(!UI.menuOpen)toggleMenu(); show(t); };

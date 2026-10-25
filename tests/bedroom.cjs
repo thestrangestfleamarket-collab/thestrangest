@@ -17,7 +17,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     const fy = await pg.evaluate(() => SHARED.BOD.Y(.15));
     ok(d.walls.filter(w => w < fy + .1).length === 2 && d.walls.filter(w => w > fy + 3 && w < 1e5).length === 2, 'in the isometric view the two near walls are down and the far two stand at the picture\'s height (' + d.walls.map(w => w.toFixed(2)) + ')');
     ok(d.sun > 0, 'the late sun comes in through the window');
-    const used = await pg.evaluate(async () => { const T = __dbg.UI.things.filter(t => /WARDROBE|LAMP:/.test(t.name)); for (const t of T) t.act(); await new Promise(r => setTimeout(r, 1500)); return { names: T.map(t => t.name), d: BEDROOMDBG() }; });
+    const used = await pg.evaluate(async () => { const T = __dbg.UI.things.filter(t => /WARDROBE|LAMP:/.test(t.name)); for (const t of T) t.act(); for (let i = 0; i < 40 && !(BEDROOMDBG().doors[0] > .5); i++) await new Promise(r => setTimeout(r, 250)); return { names: T.map(t => t.name), d: BEDROOMDBG() }; });   // the doors swing frame by frame: wait for them, not a fixed time
     ok(used.d.doors[0] > .5 && used.d.doors[1] > .5, 'the wardrobe opens (' + JSON.stringify(used.d.doors) + ')');
     ok(used.d.lamps.every(l => l !== d.lamps[0]) || used.d.lamps.some((l, i) => l !== d.lamps[i]), 'the lamps switch (' + JSON.stringify(d.lamps) + ' -> ' + JSON.stringify(used.d.lamps) + ')');
     ok(await pg.evaluate(() => !!(window.GPH && GPH.loose().some(i => i.k === 'o' && i.name === 'TEAPOT'))), 'the teapot is a loose thing you can pick up');

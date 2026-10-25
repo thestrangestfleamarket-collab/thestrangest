@@ -1,6 +1,6 @@
 // THE STORE: rooms with doors (diner, bar, museum, keep, cottage, aquarium, avenue) and their places in the menu. Its own builder.
 import {SHARED, THREE} from './003-shx.js';
-import {INTERIORS, LITE, pos, ROOMS, UI, WEEDS} from './003b-systems.js';
+import {INTERIORS, LITE, pos, ROOMS, SHAD, UI, WEEDS} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {AWAY, BF, BLDK, cutWalls, EASTX, FADE, FIX, grab, lamps, LAY, QS, SOL, STORE, TILE, TURN, WP, ZU} from './006-map-pre.js';
 import {FLAME} from './007-fire.js';
@@ -14,7 +14,10 @@ await grab('store',async()=>{ const K=SHARED.BOD.STOREK, {X,Y,Z,gbox,faceTex,bq,
   const laid=(k,fn)=>{ const h=LAY.h(k); return h?lift(h*TILE/ZU/BLDK,fn):fn(); };
   const PLATE={x0:334,y0:-100,x1:456,y1:-70};
   const flat=(x0,y0,x1,y1,z,col,kind)=>bq([X(x0),Y(z),Z(y1)],[X(x1),Y(z),Z(y1)],[X(x1),Y(z),Z(y0)],[X(x0),Y(z),Z(y0)],faceTex((x1-x0)*24,(y1-y0)*24,(i,j)=>C(col(x0+(i+.5)/24,y1-(j+.5)/24))),kind);
-  const put=(kind,x,y,rot=0)=>{ const f=CATALOG[kind]; if(!f){ console.warn('store: no',kind); return null; } const p=f(+x.toFixed(3),+y.toFixed(3)); if(!p)return null; p.kind=kind; place(p,rot); return p; };
+  const sBlobM=SHAD.mat({alpha:.4}), storeBlob=(p,rot)=>{ if(!p.boxes||!p.boxes.some(b=>b.z0<2&&b.z1-b.z0>1.5))return;   // floor-standing furniture only: skip flat things (rugs, litter) and anything up a wall
+    let w=Math.abs(X(p.x1)-X(p.x0)), d=Math.abs(Z(p.y1)-Z(p.y0)); const a=w*d/(TILE*TILE); if(a<.08||a>5)return;   // skip tiny bits and room-spanning counters/walls
+    if(rot&1){ const t=w; w=d; d=t; } SHAD.blob(scene,X((p.x0+p.x1)/2),Y(0),Z((p.y0+p.y1)/2),w*1.12,d*1.15,{mat:sBlobM}); };
+  const put=(kind,x,y,rot=0)=>{ const f=CATALOG[kind]; if(!f){ console.warn('store: no',kind); return null; } const p=f(+x.toFixed(3),+y.toFixed(3)); if(!p)return null; p.kind=kind; place(p,rot); storeBlob(p,rot); return p; };
   const sol=(x0,y0,x1,y1,zt)=>{ SOL.up.push([X(x0),Z(y0),X(x1),Z(y1)]); FIX.up.push([X(x0),Z(y0),0,X(x1),Z(y1),Math.max(.05,Y(zt))]); };
   const roofCol=(x,y)=>{ const n=grain(x,y,61,1.4); return speck(n<.35?[50,50,52]:n>.7?[66,64,62]:[58,57,57],x,y,63); };
   const planes={}, cuts=[]; STORE.inside={};

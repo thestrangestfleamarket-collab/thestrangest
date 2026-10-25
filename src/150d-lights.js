@@ -3,7 +3,7 @@ import {THREE} from './003-shx.js';
 import {ROOMK} from './150a-bedroom.js';
 { ROOMK.parts.push(c=>{ '@apts'; const {R,M,mat,rbox,col,V3,HW,kind}=c;
     const brass=mat([196,156,84],{roughness:.35,metalness:.8}), black=mat([34,32,30],{roughness:.5,metalness:.4}), white=mat([240,238,232],{roughness:.6}), wood=mat([150,98,58],{roughness:.55});
-    const bulb=(c0=[255,226,180],o={})=>{ const m=new THREE.MeshStandardMaterial({color:col(c0),roughness:.5,emissive:col(c0),emissiveIntensity:1.2,...o}); return m; };
+    const bulb=(c0=[255,226,180],o={})=>{ const m=new THREE.MeshLambertMaterial({color:col(c0),emissive:col(c0),emissiveIntensity:1.2,...(({roughness,metalness,...r})=>r)(o)}); return m; };
     const add=(g,geo,m,x,y,z,o={})=>{ const me=new THREE.Mesh(geo,m); me.position.set(x,y,z); if(o.rx)me.rotation.x=o.rx; if(o.rz)me.rotation.z=o.rz; if(o.ry)me.rotation.y=o.ry; me.castShadow=!o.glow; me.receiveShadow=true; if(o.glow)me.userData.bulb=1; g.add(me); return me; };
     const lit=(g,x,y,z,c0,i,d,spot)=>{ const L=spot?new THREE.SpotLight(c0,i,d*M,(spot.angle||40)*Math.PI/180,spot.soft??.5,1.6):new THREE.PointLight(c0,i,d*M,1.8); L.userData.pool=true; L.userData.i0=i; L.position.set(x,y,z); g.add(L);
       if(spot){ L.userData.pitch=spot.pitch??90; L.userData.yaw=spot.yaw??0; L.userData.angle=spot.angle||40; g.add(L.target); } return L; };

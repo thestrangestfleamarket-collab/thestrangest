@@ -75,7 +75,7 @@ const GPH=window.GPH={ms:0,n:0};
     for(const it of act)if(it.rest)add(it,[it.a[0],it.a[1]-.06*T,it.a[2],it.b[0],it.a[1],it.b[2]],true);
     for(const [key,s] of stat)if(!W.has(key)){ for(const c of s.cs)world.removeCollider(c,false); stat.delete(key); }
     for(const [key,b] of W)if(!stat.has(key))stat.set(key,{b,cs:(Array.isArray(b[0])?b:[b]).map(q=>world.createCollider(R.ColliderDesc.cuboid((q[3]-q[0])/2,(q[4]-q[1])/2,(q[5]-q[2])/2).setTranslation((q[0]+q[3])/2,(q[1]+q[4])/2,(q[2]+q[5])/2).setFriction(.8).setCollisionGroups(G0),fb))}); };
-  const pickList=(A=act)=>{ const S=new Set(); for(const it of A){ if(it.k==='v')S.add(gm); else if(it.k==='i')for(const q of it.inst)S.add(q[0]); else for(const p of it.parts)S.add(p.me); } picks=[...S]; };
+  const pickList=(A=act)=>{ const S=new Set(); for(const it of A){ if(it.k==='v')S.add(gm); else if(it.k==='i')for(const q of it.inst)S.add(q[0]); else if(it.k==='o')it.obj.traverse(c=>{ if(c.isMesh)S.add(c); }); else for(const p of it.parts)S.add(p.me); } picks=[...S]; };
   const zone=()=>{ '@later'; if(++zn%40===0)LIGHTS=null; if(!cg||!cc)catalog(); more(); const lo=SHARED.py-1.1*T, hi=SHARED.py+2.4*T;
     for(const it of items){ const t=it.rb?it.rb.translation():it.t, d=Math.hypot(t.x-pos.x,t.z-pos.z), b=t.y-it.h[1], inL=b>lo&&b<hi;
       if(!it.rb){ if(d<RS&&inL)on(it); } else if(it!==held&&(d>RF||!inL)&&it.rb.isSleeping())off(it); }
@@ -90,6 +90,7 @@ const GPH=window.GPH={ms:0,n:0};
       for(let v=it.v0;v<it.v1;v++){ const o=v*3; V.set(P0[o]-it.c[0],P0[o+1]-it.c[1],P0[o+2]-it.c[2]).applyQuaternion(Q); A[o]=V.x+t.x; A[o+1]=V.y+t.y; A[o+2]=V.z+t.z; V.set(N0[o],N0[o+1],N0[o+2]).applyQuaternion(Q); NA[o]=V.x; NA[o+1]=V.y; NA[o+2]=V.z; }
       pa.addUpdateRange(it.v0*3,(it.v1-it.v0)*3); na.addUpdateRange(it.v0*3,(it.v1-it.v0)*3); pa.needsUpdate=na.needsUpdate=true; if(gm.geometry.boundingSphere)gm.geometry.boundingSphere.union(SB.set(V.set(t.x,t.y,t.z),Math.hypot(it.b[0]-it.a[0],it.b[1]-it.a[1],it.b[2]-it.a[2]))); }
     else if(it.k==='i'){ M4.compose(V.set(t.x,t.y,t.z),Q,S1); for(const [me,i,L] of it.inst){ me.setMatrixAt(i,M5.multiplyMatrices(M4,L)); me.instanceMatrix.needsUpdate=true; } }
+    else if(it.k==='o'){ const o=it.obj; o.quaternion.copy(Q).multiply(it.q0); o.position.copy(it.off).applyQuaternion(Q).add(V.set(t.x,t.y,t.z)); }
     else { if(!it.dm)detach(it); for(const D of it.dm){ const g=D.me.geometry, pa=g.attributes.position, na=g.attributes.normal, A=pa.array, NA=na.array;
         for(let o=0;o<A.length;o+=3){ V.set(D.B[o],D.B[o+1],D.B[o+2]).applyQuaternion(Q); A[o]=V.x+t.x; A[o+1]=V.y+t.y; A[o+2]=V.z+t.z; V.set(D.N[o],D.N[o+1],D.N[o+2]).applyQuaternion(Q); NA[o]=V.x; NA[o+1]=V.y; NA[o+2]=V.z; }
         pa.needsUpdate=na.needsUpdate=true; g.computeBoundingSphere(); } }
@@ -124,7 +125,7 @@ const GPH=window.GPH={ms:0,n:0};
   const asks=()=>{ if(want)return true; const s=(st.up&&STRIKE.test(st.up.name))||(st.move&&STRIKE.test(st.move.name)), I=intent(), mv=I[0]||I[1];
     if(!s&&!mv)return false; for(const it of pre){ const t=it.t, d=Math.hypot(Math.max(it.a[0]-pos.x,0,pos.x-it.b[0]),Math.max(it.a[2]-pos.z,0,pos.z-it.b[2])); if(s?d<1.1*T:!it.heavy&&d<.6*T&&(t.x-pos.x)*I[0]+(t.z-pos.z)*I[1]>0)return true; } return false; };
   const burning=new Map(), BURN=4;
-  const hideMesh=it=>{ '@later'; try{ if(it.k==='v'&&gm){ const A=gm.geometry.attributes.position.array; for(let vx=it.v0;vx<it.v1;vx++){ A[vx*3]=it.c[0]; A[vx*3+1]=it.c[1]-60*T; A[vx*3+2]=it.c[2]; } gm.geometry.attributes.position.needsUpdate=true; } else if(it.k==='i'&&it.inst){ const Z=new THREE.Matrix4().makeScale(0,0,0); for(const z of it.inst){ z[0].setMatrixAt(z[1],Z); z[0].instanceMatrix.needsUpdate=true; } } else if(it.parts){ for(const p of it.parts)if(p.me)p.me.visible=false; } }catch(e){} };
+  const hideMesh=it=>{ '@later'; try{ if(it.k==='o'){ it.obj.visible=false; return; } if(it.k==='v'&&gm){ const A=gm.geometry.attributes.position.array; for(let vx=it.v0;vx<it.v1;vx++){ A[vx*3]=it.c[0]; A[vx*3+1]=it.c[1]-60*T; A[vx*3+2]=it.c[2]; } gm.geometry.attributes.position.needsUpdate=true; } else if(it.k==='i'&&it.inst){ const Z=new THREE.Matrix4().makeScale(0,0,0); for(const z of it.inst){ z[0].setMatrixAt(z[1],Z); z[0].instanceMatrix.needsUpdate=true; } } else if(it.parts){ for(const p of it.parts)if(p.me)p.me.visible=false; } }catch(e){} };
   GPH.burn=it=>{ if(it&&!it.gone&&!burning.has(it))burning.set(it,0); };
   GPH.tick=dt=>{ if(!ready){ if(PB.R)build(); else if(!PB.loading){ wake(); if(asks()||QS.get('physics'))PB.load(); } return; } const t0=performance.now();
     if(burning.size)for(const [it,t] of burning){ const nt=t+dt; if(nt>=BURN){ burning.delete(it); it.gone=1; if(it.rb)try{ off(it); }catch(e){} hideMesh(it); } else burning.set(it,nt); }
@@ -150,6 +151,10 @@ const GPH=window.GPH={ms:0,n:0};
     const o=new THREE.Object3D(), p=it.rb.translation(), r=Math.max(it.h[0],it.h[2]); o.position.set(p.x,p.y-it.h[1],p.z);
     return {d:h.distance,th:{name:(it.name||'').replace(/^cottage: /,'').toUpperCase(),pick:true,obj:o,reach:.85*T+r,near:1.6*T+r,tall:Math.max(.4*T,it.h[1]*2),act:()=>grab(it)}}; };
   GPH.loose=()=>items;
+  // a whole object (its own meshes, any shape) as a loose thing: pushed, knocked over, picked up and thrown like the rest; GPH.drop takes it out again
+  GPH.add=(obj,{name,m=1}={})=>{ obj.updateMatrixWorld(true); const B=new THREE.Box3().setFromObject(obj), c=B.getCenter(new THREE.Vector3());
+    const it=mk(null,'o',B.min.toArray(),B.max.toArray(),{name:name||obj.name||'',obj,m,q0:obj.quaternion.clone(),off:obj.position.clone().sub(c)}); obj.traverse(q=>{ if(q.isMesh)q.userData.loose=it; }); items.push(it); fin([it]); return it; };
+  GPH.drop=it=>{ if(!it)return; if(it===held)held=null; if(it.rb)off(it); pre.delete(it); const i=items.indexOf(it); if(i>=0)items.splice(i,1); GPH.n=items.length; };
   GPH.init=()=>{ if(typeof USE==='undefined'){ setTimeout(GPH.init,500); return; } const p0=USE.pick; USE.pick=ray=>{ const a=p0(ray), b=GPH.pick(ray); return b&&(!a||b.d<=a.d)?b:a; };
     SYS.add('life',(dt)=>{ GPH.tick(dt); },'150-loose'); };
   const nearest=f=>{ let b=null, bd=1e9; for(const it of ready?act:pre){ if(!f(it))continue; const p=at(it), d=Math.hypot(p.x-pos.x,p.z-pos.z); if(d<bd){ bd=d; b=it; } } return b; };

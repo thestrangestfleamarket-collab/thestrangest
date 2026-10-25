@@ -4644,6 +4644,11 @@ Owner: "the skyline is missing from edge of screen, neesd to go back". The dista
 
 ## 25 Oct 2026: the park's edge-ring trees smaller again
 
+Owner: "just make them smaller" (the ring of trees inside the park wall — asked for before and still too big: from the street they swallowed the whole gate). Each edge-ring tree is about a third smaller now, so the gate, its CENTRAL PARK sign and the lanterns read against the trees instead of being hidden behind them.
+
+## 25 Oct 2026: the park's backdrop forest halved
+
+Owner: "dude, the trees are massive, 50% smaller" (the tall tree wall beyond the park wall, towering over the skyline from inside the park — the earlier passes had only shrunk the inner ring, not this backdrop). The three backdrop rows are now half as tall.
 Owner: "just make them smaller" (the ring of trees inside the park wall — asked for before and still too big: from the street they swallowed the whole gate). Each edge-ring tree is about a third smaller now, so the gate, its CENTRAL PARK sign and the lanterns read against the trees instead of being hidden behind them. (Merged with the half-size ring above: one size, the half, not both cuts stacked.)
 ## 25 Oct 2026: the lawn one flat sheet, ankle deep
 Owner (a picture of the leaf clumps' round shapes): "no circles, no shapes, flat, thick grass that goes up to my ankles, treetop flat all the way across". Every lawn is one level sheet of grass in a single green, up to your ankles, dipping only a little where you step; its edge drops straight to the ground. The leaf clumps and their light and dark patches are gone. Tufts at the feet of things and the gold reeds stay.

@@ -111,7 +111,7 @@ function footLock(st,P,AK,LK,w){ const W=st.world,c=Math.cos(W.hd),s=Math.sin(W.
   if(drop>1e-3) P.root=add(P.root,V(0,-Math.min(5,st.smooth?drop:Math.ceil(drop/PX)*PX),0));
   if(st.smooth&&st.world){ const t=st.world.t, y=P.root.y; if(st.rT!=null&&t>st.rT&&t-st.rT<.2){ st.rY+=(y-st.rY)*(1-Math.exp(-(t-st.rT)*(y<st.rY?30:14))); P.root=V(P.root.x,st.rY,P.root.z); } else st.rY=y; st.rT=t; }
   for(const s2 of [1,-1]){ const n=s2>0?'L':'R',[H]=hipAt(P,s2),d=sub(AK[n],H); if(len(d)>Lg+0.02){ const v=nrm(d),A=add(H,mul(v,Lg)); st.fslide=(st.fslide||0)+1;
-      if(F[n]&&F[n].on&&!stand&&LK[n]&&LK[n].on){ const p=toW(V(A.x,0,A.z)); st.fquick=(st.fquick||0)+1; F[n]={x:p.x,z:p.z,y:F[n].y,ly:A.y,fy:F[n].fy||0,on:0,quick:1,t:0}; } AK[n]=A; } }
+      if(F[n]&&F[n].on&&!stand&&LK[n]&&LK[n].on){ const p=toW(V(A.x,0,A.z)); st.fquick=(st.fquick||0)+1; F[n]={x:p.x,z:p.z,y:F[n].y,hd:F[n].hd,ly:A.y,fy:F[n].fy||0,on:0,quick:1,t:0}; } AK[n]=A; } }
   return true; }
 function walkPose(st,abd){ const r=st.run||0,rs=r*r,g=gaitOf(r); if(st.smooth){ const s2=g.stance-.1*r; g.stride*=s2/g.stance; g.stance=s2; } const w=st.w,ST=g.stance,h=g.stride*w/(st.anim||1),q=phases(st.ph),P=neutral(),sw=drive(q.L,w)-drive(q.R,w);
   const fa=(n,qq)=>lab('foot',qq,ST,rs)*w,kn=(qq)=>lab('knee',qq,ST,rs)*w;

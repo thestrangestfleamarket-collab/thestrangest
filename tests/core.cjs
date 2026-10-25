@@ -13,6 +13,12 @@ const pl = L.places.filter(p => p.kind !== 'park'), lap = pl.find((p, i) => pl.s
 ok(!lap, 'no two places overlap (stairs may stand in a passage)' + (lap ? ' (' + lap.id + ')' : ''));
 ok(L.paths.every(p => p.a && p.b), 'every park path has two ends');
 ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x1), 'every place sits on Market St');
+{ const S = fs.readFileSync(ROOT + '/src/001-rig.js', 'utf8'), src = S.slice(S.indexOf('const WDRAWN='), S.indexOf('\n})();') + 6);
+  const R = new Function('location', 'localStorage', 'document', '__DATA__', src + '\nreturn RIG;')({ search: '' }, { getItem: () => null, setItem() {} }, { createElement: () => ({ getContext: () => ({}) }) }, p => JSON.parse(fs.readFileSync(ROOT + '/' + p, 'utf8')));
+  let bad = 0; for (const hold of [1, 3, 6, 10]) { const st = R.create(); st.snap = st.smooth = true; let z = 0, t = 0;
+    for (let f = 0; f < 70; f++) { st.target = f >= 30 && f < 30 + hold ? 1 : 0; const b = st.dist; R.step(st, 1 / 60); z += st.dist - b; t += 1 / 60; st.world = { x: 0, z, y: 0, hd: 0, kx: 1, ky: 1, gnd: () => 0, t };
+      const J = R.pose(st).J; if (!['ankleL', 'ankleR', 'kneeL', 'kneeR'].every(n => isFinite(J[n].x + J[n].y + J[n].z))) bad++; } }
+  ok(!bad, 'a one-tap step and stop keeps both legs finite (world foot lock)' + (bad ? ' (' + bad + ' bad frames)' : '')); }
 
 (async () => {
   const b = await chromium.launch({ args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });

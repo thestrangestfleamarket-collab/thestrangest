@@ -1,4 +1,4 @@
-// THE TREES' MODELS: TREEGEN puts the park's baked trees and bushes (data/trees.json, grown by tools/trees-bake.cjs) together as unit-height models in the park's baked format, and paints the leaf-card texture.
+// THE TREES' MODELS: TREEGEN puts the park's baked trees and bushes (data/trees.json, grown by tools/trees-bake.cjs) together as unit-height models in the park's baked format.
 import {THREE} from './003-shx.js';
 const TREEGEN={};
 { const TD=__DATA__("data/trees.json"), V=THREE.Vector3, UP=new V(0,1,0);
@@ -27,11 +27,5 @@ const TREEGEN={};
   const cache={};
   TREEGEN.get=(set,i)=>{ const key=set+i; if(cache[key])return cache[key]; const rec=TD[set][i], m=TREEGEN.assemble(rec); if(rec.sum)m.sum=rec.sum; return cache[key]=m; };
   TREEGEN.count=set=>(TD[set]||[]).length; TREEGEN.old=TD.old||{};
-  let tex=null;
-  TREEGEN.leafTex=()=>{ if(tex)return tex; const S=128, cv=document.createElement('canvas'); cv.width=cv.height=S; const g=cv.getContext('2d'); let a=7; const R=()=>{ a=(a*16807)%2147483647; return a/2147483647; };
-    for(let i=0;i<22;i++){ const t=R()*6.283, r=18+R()*36, x=S/2+Math.cos(t)*r*.9, y=S/2+Math.sin(t)*r*.9, L=13+R()*9, W=6+R()*3, sh=R();
-      g.save(); g.translate(x,y); g.rotate(t+(R()-.5)*1.2); g.beginPath(); g.ellipse(0,0,L,W,0,0,6.283); g.fillStyle=sh<.33?'#9c9c9c':sh<.7?'#c9c9c9':'#eeeeee'; g.fill();
-      g.strokeStyle='rgba(40,40,40,.55)'; g.lineWidth=1.5; g.stroke(); g.beginPath(); g.moveTo(-L*.8,0); g.lineTo(L*.8,0); g.strokeStyle='rgba(60,60,60,.45)'; g.lineWidth=1; g.stroke(); g.restore(); }
-    tex=new THREE.CanvasTexture(cv); tex.colorSpace=THREE.SRGBColorSpace; tex.magFilter=THREE.NearestFilter; return tex; };
 }
 export {TREEGEN};

@@ -4684,3 +4684,5 @@ Owner (pictures of bare green under the trees and along the paths, dark grass, w
 
 ## 25 Oct 2026: the menu in 16-bit pixel, Subway steel
 Owner, of menu mockups (https://claude.ai/artifact/Sip8kAsfZ7hTTENhTTNEJN): "for menus lets do more pixelated and or low res ps2 style menus", then "menu 3 but give me 6 versinos of colors schemes", then "D". The menu (Esc) is the 16-bit pixel look in Subway steel: one bitmap font (Press Start 2P), steel frames with white corner studs on a dithered blue-grey ground, a title bar naming the tab, the tabs in a column on the left, signal orange for what is on. The character pane follows it.
+- Owner: "match closer" (a picture of mockup D). The menu is the mockup's size and layout: the pixel font at double size, one setting per row, its value on the right (ON / OFF, < CHOICE >, segmented orange bars), plain rows that light steel under the pointer, ESC: CLOSE  ENTER: PICK.
+- Owner: "you should always be facing forward in the profile image by default (you can rotate)". The character page shows you from the front each time it opens; drag across the picture to turn yourself.

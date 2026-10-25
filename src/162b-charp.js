@@ -14,9 +14,9 @@ import {renderer} from './004-main.js';
 
   // the avatar: render W3.group into the panel canvas. The body is one mesh posed by shader uniforms, so its
   // geometry bounds are the bind pose, not the real figure: frame from the feet (group y) to the head (W3.eyeAt).
-  let rt,cam,raf=0,last=0,el=null,cv=null,g2=null,isAdmin=!!CINEMA.admin; const W=256,H=384,FACE=Math.PI, V=new THREE.Vector3(), CC=new THREE.Color();
+  let rt,cam,raf=0,last=0,el=null,cv=null,g2=null,spin=0,isAdmin=!!CINEMA.admin; const W=256,H=384,FACE=0, V=new THREE.Vector3(), CC=new THREE.Color();
   const shot=()=>{ const g=W3&&W3.group; if(!g||!cv||!W3.mesh)return; if(!rt){ rt=new THREE.WebGLRenderTarget(W,H); cam=new THREE.OrthographicCamera(-1,1,1,-1,.01,100); }
-    const sv={ry:g.rotation.y,vis:g.visible,am:g.matrixAutoUpdate}; g.visible=true; g.matrixAutoUpdate=true; g.rotation.y=FACE; g.updateMatrixWorld(true);
+    const sv={ry:g.rotation.y,vis:g.visible,am:g.matrixAutoUpdate}; g.visible=true; g.matrixAutoUpdate=true; g.rotation.y=FACE+spin; g.updateMatrixWorld(true);
     const gp=g.getWorldPosition(V.clone()), head=W3.eyeAt&&W3.eyeAt(new THREE.Vector3());
     const topY=(head?head.y:gp.y+2.2)+.18, botY=gp.y-.05, hh=Math.max(.6,topY-botY)*1.06, ww=hh*(W/H), cy=(topY+botY)/2, d=hh*3+6;
     cam.left=-ww/2; cam.right=ww/2; cam.top=hh/2; cam.bottom=-hh/2; cam.near=.01; cam.far=d*3+60; cam.updateProjectionMatrix();
@@ -55,6 +55,7 @@ import {renderer} from './004-main.js';
       <div class="cp-right"><div class="cp-name" id="cpname">YOU</div><div class="cp-btns" id="cpbtns"></div></div></div>
       <div class="cp-tray" id="cptray"></div>`;
     cv=el.querySelector('#cpav'); g2=cv.getContext('2d');
+    { let dx=null; cv.style.cursor='grab'; cv.addEventListener('pointerdown',e=>{ dx=e.clientX; cv.setPointerCapture(e.pointerId); cv.style.cursor='grabbing'; }); cv.addEventListener('pointermove',e=>{ if(dx==null)return; spin+=(e.clientX-dx)*.025; dx=e.clientX; }); const up=()=>{ dx=null; cv.style.cursor='grab'; }; cv.addEventListener('pointerup',up); cv.addEventListener('pointercancel',up); }   // drag to turn yourself; facing you again each time the menu opens
     el.addEventListener('mousedown',e=>{ if(e.target.closest('.cp-slot,.cp-chip'))e.stopPropagation(); },true);
     el.addEventListener('click',e=>{ const sl=e.target.closest('.cp-slot'); if(sl&&wornIn(sl.dataset.slot)){ unwear(sl.dataset.slot); return; } const ch=e.target.closest('.cp-chip'); if(ch){ wear(ch.dataset.id); return; } const b=e.target.closest('.cp-btn[data-i]'); if(b&&el._btns&&el._btns[+b.dataset.i])el._btns[+b.dataset.i][2](); });
     el.addEventListener('dragstart',e=>{ const ch=e.target.closest('.cp-chip'), sl=e.target.closest('.cp-slot.on'); if(ch)e.dataTransfer.setData('text/plain','wear:'+ch.dataset.id); else if(sl)e.dataTransfer.setData('text/plain','off:'+sl.dataset.slot); else return; e.dataTransfer.effectAllowed='move'; });
@@ -62,7 +63,7 @@ import {renderer} from './004-main.js';
     el.addEventListener('drop',e=>{ const d=e.dataTransfer.getData('text/plain')||''; const sl=e.target.closest('.cp-slot'); e.preventDefault();
       if(d.startsWith('wear:')){ if(sl)wear(d.slice(5)); } else if(d.startsWith('off:')&&e.target.closest('.cp-tray'))unwear(d.slice(4)); }); };
 
-  Object.assign(CHARP,{ show:host=>{ build(host); btns(); refresh(); if(!raf)raf=requestAnimationFrame(loop);
+  Object.assign(CHARP,{ show:host=>{ spin=0; build(host); btns(); refresh(); if(!raf)raf=requestAnimationFrame(loop);
       if(!isAdmin&&CINEMA.isAdmin)CINEMA.isAdmin().then(a=>{ if(a){ isAdmin=true; if(el&&UI.menuOpen)btns(); } }); },
     hide:()=>{ if(raf){ cancelAnimationFrame(raf); raf=0; } }, admin:adminOpen, log:CLOG }); window.CHARP=CHARP;
 

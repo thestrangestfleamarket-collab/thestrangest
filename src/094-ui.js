@@ -146,25 +146,29 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
   #said{position:fixed;transform:translate(-50%,-100%);font:12px var(--pixel);color:var(--key);background:var(--panel);border:2px solid var(--line);padding:4px 8px;pointer-events:none;z-index:14}
   #menu{--mf:#c8d0d8;--mi:#4a5868;--mb:#1a2432;--mt:#f0f4f8;--md:#8090a4;--mo:#ffb030;--me:#2c3848;--pixel:'Press Start 2P',Silkscreen,monospace;--key:var(--mo);--fg:var(--mt);--dim:var(--md);--line:var(--mi);position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(5,6,10,.55);z-index:30}
   #menu[hidden]{display:none}
-  #menu .box{width:min(880px,94vw);max-height:90vh;overflow:auto;display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-rows:auto 1fr auto;gap:8px;padding:8px;background:repeating-conic-gradient(#10161e 0 25%,#151d27 0 50%) 0 0/4px 4px;box-shadow:0 0 0 2px #000;font:8px/1.9 'Press Start 2P',var(--pixel);color:var(--mt)}
-  #menu .frame,#menu .tabs,#menu .pane{background:linear-gradient(#fff,#fff) 2px 2px/2px 2px no-repeat,linear-gradient(#fff,#fff) right 2px top 2px/2px 2px no-repeat,linear-gradient(#fff,#fff) 2px bottom 2px/2px 2px no-repeat,linear-gradient(#fff,#fff) right 2px bottom 2px/2px 2px no-repeat,var(--mb);box-shadow:0 0 0 1px #000,inset 0 0 0 2px var(--mf),inset 0 0 0 3px var(--mi)}
-  #menu .ttl{grid-column:1/-1;display:flex;justify-content:space-between;gap:12px;padding:10px 44px 10px 14px;color:var(--mf)} #menu .ttl span:last-child{color:var(--md)}
-  #menu .tabs{display:flex;flex-direction:column;padding:10px 8px;align-self:start} #menu .tabs button{font:inherit;text-align:left;white-space:nowrap;color:var(--mt);background:transparent;border:0;padding:6px 10px;cursor:pointer}
+  #menu .box{width:min(1000px,96vw);max-height:92vh;overflow:auto;display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-rows:auto 1fr auto;gap:12px;padding:12px;background:repeating-conic-gradient(#10161e 0 25%,#151d27 0 50%) 0 0/8px 8px;box-shadow:0 0 0 3px #000;font:16px/1.5 'Press Start 2P',var(--pixel);color:var(--mt)}
+  #menu .frame,#menu .tabs,#menu .pane{background:linear-gradient(#fff,#fff) 4px 4px/4px 4px no-repeat,linear-gradient(#fff,#fff) right 4px top 4px/4px 4px no-repeat,linear-gradient(#fff,#fff) 4px bottom 4px/4px 4px no-repeat,linear-gradient(#fff,#fff) right 4px bottom 4px/4px 4px no-repeat,var(--mb);box-shadow:0 0 0 2px #000,inset 0 0 0 4px var(--mf),inset 0 0 0 6px var(--mi)}
+  #menu .ttl{grid-column:1/-1;display:flex;justify-content:space-between;gap:16px;padding:14px 52px 14px 18px;color:var(--mf)} #menu .ttl span:last-child{color:var(--md)}
+  #menu .tabs{display:flex;flex-direction:column;gap:4px;padding:16px 10px;align-self:start} #menu .tabs button{font:inherit;text-align:left;white-space:nowrap;color:var(--mt);background:transparent;border:0;padding:8px 10px;cursor:pointer}
   #menu .tabs button:hover{color:var(--mo)} #menu .tabs button[aria-selected="true"]{color:var(--mb);background:var(--mf)}
-  #menu .pane{grid-column:2;grid-row:2;padding:14px 16px;min-width:0} #menu .box.home .pane{grid-column:1/-1} #menu .pane[hidden]{display:none}
-  #menu h3{font:inherit;color:var(--mf);margin:14px 0 8px;padding-bottom:4px;border-bottom:2px solid var(--mi)} #menu h3:first-child{margin-top:0}
-  #menu .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0} #menu .btn{font:inherit;color:var(--mt);background:var(--mb);border:2px solid var(--mi);box-shadow:0 0 0 1px #000;padding:6px 10px;cursor:pointer}
-  #menu .btn:hover{border-color:var(--mf)} #menu .btn[aria-pressed="true"]{color:var(--mo);border-color:var(--mf)} #menu .dim{color:var(--md)}
-  #menu input[type=range]{width:220px;height:12px;-webkit-appearance:none;appearance:none;background:var(--me);border:1px solid #000;accent-color:var(--mo)}
-  #menu input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:10px;height:16px;background:var(--mo);border:2px solid #000;border-radius:0}
-  #menu input[type=range]::-moz-range-thumb{width:8px;height:14px;background:var(--mo);border:2px solid #000;border-radius:0}
-  #menu select{font:inherit}
-  #menu #dhome .cp-slot,#menu #dhome .cp-live,#menu #dhome .cp-vit,#menu #dhome .cp-btn,#menu #dhome .cp-btn .cp-tag,#menu #dhome .cp-trayh,#menu #dhome .cp-chip{font-size:8px;line-height:1.6}
+  #menu .pane{grid-column:2;grid-row:2;padding:18px 16px;min-width:0} #menu .box.home .pane{grid-column:1/-1} #menu .pane[hidden]{display:none}
+  #menu h3{font-size:8px;color:var(--md);margin:18px 0 6px;padding:0 4px 6px;border-bottom:2px solid var(--mi)} #menu h3:first-child{margin-top:0}
+  #menu .row{display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center;margin:4px 0} #menu .row>span:first-child{flex:1;width:auto!important;padding:6px 4px;white-space:nowrap}
+  #menu .btn{font:inherit;color:var(--md);background:transparent;border:0;padding:6px 6px;cursor:pointer} #menu .btn:hover,#menu .btn:focus-visible{color:var(--mb);background:var(--mf);outline:0}
+  #menu .btn[aria-pressed="true"]{color:var(--mo)} #menu .btn[aria-pressed="true"]:hover{color:var(--mb)} #menu .btn:not([aria-pressed]){color:var(--mt)} #menu .dim{color:var(--md);font-size:8px;line-height:1.8}
+  #menu input[type=range]{width:168px;height:16px;margin:0;-webkit-appearance:none;appearance:none;border:0;box-shadow:0 0 0 2px #000;cursor:pointer;background:repeating-linear-gradient(90deg,transparent 0 16px,var(--mb) 16px 21px),linear-gradient(90deg,var(--mo) var(--p,50%),var(--me) var(--p,50%))}
+  #menu input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:4px;height:16px;background:transparent;border:0}
+  #menu input[type=range]::-moz-range-thumb{width:4px;height:16px;background:transparent;border:0}
+  #menu .pick .btn{display:none} #menu .pick .btn[aria-pressed="true"],#menu .pick .btn.arr{display:inline-block;color:var(--mt)} #menu .pick .btn.arr{color:var(--md)} #menu .pick .btn:hover{color:var(--mb)}
+  #menu .onoff .btn{flex:1;display:flex;justify-content:space-between;text-align:left;color:var(--mt)} #menu .onoff .btn::after{content:'OFF';color:var(--md)} #menu .onoff .btn[aria-pressed="true"]::after{content:'ON';color:var(--mo)} #menu .onoff .btn:hover::after{color:inherit}
+  #menu select{font:inherit;color:var(--mt);background:var(--mb);border:2px solid var(--mi);padding:6px 8px}
+  #menu #dhome .cp-slot,#menu #dhome .cp-live,#menu #dhome .cp-vit,#menu #dhome .cp-btn .cp-tag,#menu #dhome .cp-trayh,#menu #dhome .cp-chip{font-size:8px;line-height:1.6} #menu #dhome .cp-btn{font-size:16px}
   #menu #dhome .cp-slot,#menu #dhome .cp-btn,#menu #dhome .cp-chip{background:var(--mb);border-color:var(--mi);box-shadow:0 0 0 1px #000} #menu #dhome .cp-btn:hover,#menu #dhome .cp-chip:hover,#menu #dhome .cp-slot.on{border-color:var(--mf)}
+  #menu #dhome .cp-btn{border-color:transparent;background:transparent;box-shadow:none;padding:8px 10px} #menu #dhome .cp-btn:hover{color:var(--mb);background:var(--mf)} #menu #dhome .cp-btn:hover .cp-tag{color:var(--mb)} #menu #dhome .cp-dim,#menu #dhome .cp-name{font-size:8px}
   #menu canvas{display:block;margin:0 auto;max-width:100%;image-rendering:pixelated;border:2px solid var(--mi);cursor:crosshair;background:#000}
-  #menu table{border-collapse:collapse;width:100%} #menu td{padding:6px;border-bottom:1px solid var(--me)} #menu td:last-child{text-align:right}
-  #menu .foot{grid-column:1/-1;padding:4px 6px;color:var(--md);display:flex;justify-content:space-between}
-  @media (max-width:640px){ #menu .box{grid-template-columns:minmax(0,1fr)} #menu .tabs{flex-direction:row;flex-wrap:wrap} #menu .pane{grid-column:1;grid-row:3} }`;
+  #menu table{border-collapse:collapse;width:100%} #menu td{padding:6px;border-bottom:2px solid var(--me)} #menu td:last-child{text-align:right}
+  #menu .foot{grid-column:1/-1;padding:0 6px;color:var(--md);display:flex;gap:48px}
+  @media (max-width:640px){ #menu .box{grid-template-columns:minmax(0,1fr);font-size:8px} #menu .tabs{flex-direction:row;flex-wrap:wrap} #menu .pane{grid-column:1;grid-row:3} #menu #dhome .cp-btn{font-size:8px} }`;
   document.head.appendChild(css);
   const M=document.createElement('div'); M.id='menu'; M.hidden=true; M.innerHTML=`<div class="box" role="dialog" aria-label="Menu">
     <div class="ttl frame"><span id="mttl">OPTIONS</span><span>THE MARKET</span></div>
@@ -173,11 +177,16 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     <div class="pane" data-p="map"><div class="row"><button class="btn" data-lv="up">THE STREET</button><button class="btn" data-lv="down">UNDERGROUND</button><button class="btn" id="myapt">MY APARTMENT</button><span class="dim">click the map to go there</span></div>
       <canvas id="mapcv"></canvas><h3>GO TO</h3><div class="row"><select id="placesel" class="btn" style="font:inherit;min-width:min(340px,80vw);padding:6px 8px;background:#0e1016;color:#ece5d3;border:2px solid #3a3f4e"></select></div><div class="row" id="places" hidden></div></div>
     <div class="pane" data-p="display">
-      <h3>VIEW</h3><div class="row"><span style="width:60px">ZOOM</span><input type="range" id="dzoom" min="0" max="1" step="0.001"></div>
-      <div class="row"><span style="width:60px">TILT</span><input type="range" id="dtilt" min="0" max="1" step="0.001"><button class="btn" id="dreset">RESET THE VIEW</button></div>
-      <h3>VIEW</h3><div class="row" id="dview"><button class="btn" data-view="map">MAP VIEW</button><button class="btn" data-view="iso">ISOMETRIC</button><button class="btn" data-view="third">THIRD PERSON</button><button class="btn" data-view="follow">BEHIND</button><button class="btn" data-view="first">FIRST PERSON</button></div>
-      <div class="row"><button class="btn" id="dbody">PHYSICS BODY</button><span style="width:60px">LOOSE</span><input type="range" id="dloose" min="0" max="1" step="0.01"></div>
-      <h3>ON SCREEN</h3><div class="row"><button class="btn" id="dhelp">HELP PANEL</button><button class="btn" id="dstat">STATS</button><button class="btn" id="drin">RENDER INSPECTOR</button><span style="width:70px;margin-left:8px">UI SCALE</span><button class="btn" data-ui="small">SMALL</button><button class="btn" data-ui="medium">MEDIUM</button><button class="btn" data-ui="large">LARGE</button></div></div>
+      <div class="row"><span>ZOOM</span><input type="range" id="dzoom" min="0" max="1" step="0.001"></div>
+      <div class="row"><span>TILT</span><input type="range" id="dtilt" min="0" max="1" step="0.001"></div>
+      <div class="row pick" id="dview"><span>VIEW</span><button class="btn" data-view="map">MAP VIEW</button><button class="btn" data-view="iso">ISOMETRIC</button><button class="btn" data-view="third">THIRD PERSON</button><button class="btn" data-view="follow">BEHIND</button><button class="btn" data-view="first">FIRST PERSON</button></div>
+      <div class="row onoff"><button class="btn" id="dbody">PHYSICS BODY</button></div>
+      <div class="row"><span>LOOSE</span><input type="range" id="dloose" min="0" max="1" step="0.01"></div>
+      <div class="row onoff"><button class="btn" id="dhelp">HELP PANEL</button></div>
+      <div class="row onoff"><button class="btn" id="dstat">STATS</button></div>
+      <div class="row onoff"><button class="btn" id="drin">RENDER INSPECTOR</button></div>
+      <div class="row pick"><span>UI SCALE</span><button class="btn" data-ui="small">SMALL</button><button class="btn" data-ui="medium">MEDIUM</button><button class="btn" data-ui="large">LARGE</button></div>
+      <div class="row"><button class="btn" id="dreset">RESET THE VIEW</button></div></div>
     <div class="pane" data-p="atmo">
       <div id="adn"></div>
       <h3>WEATHER</h3><div class="row" id="awx"></div>
@@ -193,11 +202,14 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
       <div class="row" style="margin-top:10px"><button class="btn" id="kreset">ALL BACK AS THEY WERE</button></div></div>
     <div class="pane" data-p="bug" id="dbug"></div>
     <div class="pane" data-p="tenants" id="dten"></div>
-    <div class="foot"><span>ESC: CLOSE</span><span>CLICK: PICK</span></div></div>`;
+    <div class="foot"><span>ESC: CLOSE</span><span>ENTER: PICK</span></div></div>`;
   document.body.appendChild(M);
   const $=s=>M.querySelector(s); let tab='home', mapLv='up'; if(!SOUND)$('[data-t="sound"]').style.display='none';
-  const show=t=>{ tab=t; const home=t==='home'; M.querySelector('.tabs').style.display=home?'none':''; M.querySelector('.box').classList.toggle('home',home); { const b=M.querySelector(`[data-t="${t}"]`); $('#mttl').textContent='OPTIONS : '+(b?b.textContent.replace('◀','').trim():''); } M.querySelectorAll('[data-t]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.t===t))); M.querySelectorAll('[data-p]').forEach(p=>p.hidden=p.dataset.p!==t); if(home){ if(CHARP.show)CHARP.show($('#dhome')); } else if(CHARP.hide)CHARP.hide(); if(t==='map')drawMap(); if(t==='display'||t==='graphics'||t==='sound'||t==='atmo')drawDisplay(); if(t==='sound')SNDED.into($('#dsndin')); if(t==='keys')drawKeys(); if(t==='bug')BUGS.open($('#dbug')); if(t==='tenants'&&TENANTS.open)TENANTS.open($('#dten')); if(t==='atmo')window.DN&&DN.draw(); };
+  const show=t=>{ tab=t; const home=t==='home'; M.querySelector('.tabs').style.display=home?'none':''; M.querySelector('.box').classList.toggle('home',home); { const b=M.querySelector(`[data-t="${t}"]`); $('#mttl').textContent='OPTIONS : '+(b?b.textContent.replace('◀','').trim():''); } M.querySelectorAll('[data-t]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.t===t))); M.querySelectorAll('[data-p]').forEach(p=>p.hidden=p.dataset.p!==t); if(home){ if(CHARP.show)CHARP.show($('#dhome')); } else if(CHARP.hide)CHARP.hide(); if(t==='map')drawMap(); if(t==='display'||t==='graphics'||t==='sound'||t==='atmo')drawDisplay(); if(t==='sound')SNDED.into($('#dsndin')); if(t==='keys')drawKeys(); if(t==='bug')BUGS.open($('#dbug')); if(t==='tenants'&&TENANTS.open)TENANTS.open($('#dten')); if(t==='atmo')window.DN&&DN.draw(); bars(); };
   M.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>show(b.dataset.t));
+  M.querySelectorAll('.row.pick').forEach(r=>{ const o=()=>[...r.querySelectorAll('.btn:not(.arr)')], arr=(t,d)=>{ const b=document.createElement('button'); b.className='btn arr'; b.textContent=t; b.setAttribute('aria-label',d<0?'previous':'next');
+    b.onclick=()=>{ const L=o(), i=L.findIndex(x=>x.getAttribute('aria-pressed')==='true'); L[(i+d+L.length)%L.length].click(); }; return b; }; r.insertBefore(arr('<',-1),o()[0]); r.appendChild(arr('>',1)); });   // a row of choices shows only the one picked, stepped with < >
+  const bars=()=>M.querySelectorAll('input[type=range]').forEach(r=>r.style.setProperty('--p',(r.value-r.min)/((r.max-r.min)||1)*100+'%')); M.addEventListener('input',bars);
   M.addEventListener('click',e=>{ if(e.target===M)toggleMenu(); });
   UI.toggleMenu=()=>toggleMenu(); UI.menuTab=t=>{ if(!UI.menuOpen)toggleMenu(); show(t); };
   function toggleMenu(){ UI.menuOpen=!UI.menuOpen; M.hidden=!UI.menuOpen; keys.clear(); st.runTarget=0; if(UI.menuOpen){ mapLv=SHARED.LVL; show('home'); } else if(CHARP.hide)CHARP.hide(); }
@@ -276,7 +288,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     for(const id of ['places','roomsrow','stored'])if($('#'+id)){ $('#'+id).style.display='none'; const h=$('#'+id).previousElementSibling; if(id!=='places'&&h&&h.tagName==='H3')h.style.display='none'; } }
   const zMin=3, zMax=ZMAX, z2r=v=>Math.log(v/zMin)/Math.log(zMax/zMin), r2z=r=>zMin*Math.pow(zMax/zMin,r);
   function drawDisplay(){ '@later'; $('#dsfx').textContent='EFFECTS '+(SFX.on?'ON':'OFF'); $('#dsfx').setAttribute('aria-pressed',String(SFX.on)); $('#damb').textContent='AMBIENCE '+(AMB.on?'ON':'OFF'); $('#damb').setAttribute('aria-pressed',String(AMB.on)); $('#dvol').value=SFX.vol; M.querySelectorAll('[data-res]').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.res===SHARED.RESI))); $('#dlook').setAttribute('aria-pressed',String(LOOK.on)); $('#dlook').textContent='GLOW AND NIGHT LOOK '+(LOOK.on?'ON':'OFF'); $('#dsteps').value=W3.shade.steps; $('#ddepth').value=W3.shade.depth; M.querySelectorAll('[data-view]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.view===UI.view))); $('#dsharp').textContent=(SCL===1&&vpu()<art()?'full':RES()+'×')+' the game\'s detail'; $('#dzoom').value=z2r(SHARED.ppuTo); $('#dtilt').value=(SHARED.pitchTo-PMIN)/(PMAX-PMIN);
-    $('#dlit').textContent='LIGHT ON THEM: '+(UI.lit?'LAMPS':'FLAT'); $('#dlit').setAttribute('aria-pressed',String(UI.lit)); $('#dbody').setAttribute('aria-pressed',String(PB.on)); $('#dbody').textContent='PHYSICS BODY '+(PB.on?'ON':'OFF'); $('#dloose').value=PB.loose; $('#doutl').setAttribute('aria-pressed',String(OUTL.on)); $('#doutl').textContent='OUTLINE '+(OUTL.on?'ON':'OFF'); $('#dhelp').setAttribute('aria-pressed',String(!document.getElementById('hud').hidden)); $('#dstat').setAttribute('aria-pressed',String(!document.getElementById('stat').hidden)); $('#drin').setAttribute('aria-pressed',String(!!(window.RINSP&&RINSP.on)));
+    $('#dlit').textContent='LIGHT ON THEM: '+(UI.lit?'LAMPS':'FLAT'); $('#dlit').setAttribute('aria-pressed',String(UI.lit)); $('#dbody').setAttribute('aria-pressed',String(PB.on));  $('#dloose').value=PB.loose; $('#doutl').setAttribute('aria-pressed',String(OUTL.on)); $('#doutl').textContent='OUTLINE '+(OUTL.on?'ON':'OFF'); $('#dhelp').setAttribute('aria-pressed',String(!document.getElementById('hud').hidden)); $('#dstat').setAttribute('aria-pressed',String(!document.getElementById('stat').hidden)); $('#drin').setAttribute('aria-pressed',String(!!(window.RINSP&&RINSP.on)));
     const sh=document.getElementById('shd'); $('#dshd').innerHTML=''; sh.querySelectorAll('button').forEach(b=>{ const c=document.createElement('button'); c.className='btn'; c.textContent=b.textContent; c.setAttribute('aria-pressed',b.getAttribute('aria-pressed')); c.onclick=()=>{ b.click(); drawDisplay(); }; $('#dshd').appendChild(c); }); }
   const RESN=['COARSEST','COARSE','NORMAL','SHARP'];
   for(let i=0;i<=RESMAX;i++){ const b=document.createElement('button'); b.className='btn'; b.dataset.res=i; b.textContent=RESN[i]||RESL[i]+'×'; b.onclick=()=>{ if(i<SHARED.RESI)SHARED.RESI=i; while(SHARED.RESI<i&&(pxS()>1||vpu()>art()))SHARED.RESI++; resize(); drawDisplay(); }; $('#dres').appendChild(b); }

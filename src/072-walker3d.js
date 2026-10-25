@@ -132,7 +132,9 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
   { const J=rest.J, {V,add,rcone}=R, get=n=>PCS.find(P=>P.n===n), LAY={torso:'shirt',sleeveL:'shirt',sleeveR:'shirt',hips:'pants',thighL:'pants',thighR:'pants',shinL:'pants',shinR:'pants',shoeL:'shoes',shoeR:'shoes'};
     for(const P of PCS){ if(LAY[P.n])P.layer=LAY[P.n]; else if(P.n==='hair'||P.on==='hair')P.layer='hair'; }
     const under=(n,src,m,cover,d)=>{ const S=get(src); if(S)PCS.push({n,on:S.on||S.n,m,d:d||(p=>S.d(p)+.35),bb:S.bb,step:S.step,cell:S.cell,under:src,cover}); }, hips=get('hips');
-    under('bodyTorso','torso','skin',['shirt']);
+    { const TOR=get('torso'), cz=J.chest.z, sqz=p=>V(p.x,p.y,cz+(p.z-cz)/.78),   // fill the shirt-collar V so the bare chest reads as smooth skin, not a seam
+        neck=p=>rcone(sqz(p),add(J.chest,V(0,2.2,0)),add(J.neck,V(0,0.4,0)),3.1,2.4);
+      under('bodyTorso','torso','skin',['shirt'],p=>Math.min(TOR.d(p)+.35,neck(p))); }
     if(hips)under('briefs','hips','under',['pants'],p=>Math.min(hips.d(p)+.15,...['L','R'].map(n=>Math.max(get('thigh'+n).d(p)+.15,J['hip'+n].y-3-p.y))));
     for(const n of 'LR'){ const up=(k,y)=>add(J[k+n],V(0,y,0));
       under('bodyThigh'+n,'thigh'+n,'skin',['pants']); under('bodyShin'+n,'shin'+n,'skin',['pants']);

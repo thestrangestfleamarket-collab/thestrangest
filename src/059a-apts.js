@@ -9,8 +9,9 @@ await grab('apts',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Yr=SHARED.BOD.
   RZ=APTS.RZ=28, Y=z=>Yr(z+RZ), gbox=(b,k)=>tgbox({...b,z0:b.z0+RZ,z1:b.z1+RZ},k), R0=APTS.R0=Yr(RZ)-Yr(0), {hash}=SHARED.BOD.g, {LSEED,STORY,sh}=SHARED.BOD.K, S=STORY, ST=12, AH=ST*S, TOP=RZ+AH, W=LSEED.walk, T=.1;
   const AY=WP.apts.y1!=null?LOTY(WP.apts.y1):W, AW=WP.apts.y1!=null?{x0:LOTX(WP.apts.x0),x1:LOTX(WP.apts.x1),y0:LOTY(WP.apts.y0),y1:AY}:{x0:LOTX(WP.apts.x0),x1:LOTX(WP.apts.x1),y0:AY-14,y1:AY}, TA=TURN(AW,WP.apts.face), A=TA.L, m=(A.x0+A.x1)/2, H={y0:A.y0+5.6,y1:A.y0+8.4}, DW=.78, DH=94;
   const XZ=(x,y)=>{ const p=TA.pt(x,y); return [X(p[0]),Z(p[1])]; }, loc=(x,z)=>TA.back(x/(TILE*BLDK)+SHARED.BOD.OX,z/(TILE*BLDK)+SHARED.BOD.OY);
-  const tgbox=(b,k)=>{ if(!TA.q)return SHARED.BOD.gbox(b,k); const p={boxes:[b],x0:b.x0,y0:b.y0,x1:b.x1,y1:b.y1}; SHARED.BOD.placeAt(p,TA.q,TA.cx,TA.cy,TA.cx,TA.cy); return SHARED.BOD.gbox(p.boxes[0],k); };
-  const tcard=(x,y,z,w,h,kind,seed,k,cross=true)=>{ const p=TA.pt(x,y); BLOCKS.card(p[0],p[1],z,w,h,kind,seed,k,cross,!!(TA.q&1)); };
+  let FLAT=false;   // the fire escape view builds the house unturned
+  const tgbox=(b,k)=>{ if(!TA.q||FLAT)return SHARED.BOD.gbox(b,k); const p={boxes:[b],x0:b.x0,y0:b.y0,x1:b.x1,y1:b.y1}; SHARED.BOD.placeAt(p,TA.q,TA.cx,TA.cy,TA.cx,TA.cy); return SHARED.BOD.gbox(p.boxes[0],k); };
+  const tcard=(x,y,z,w,h,kind,seed,k,cross=true)=>{ const p=FLAT?[x,y]:TA.pt(x,y); BLOCKS.card(p[0],p[1],z,w,h,kind,seed,k,cross,!FLAT&&!!(TA.q&1)); };
   const tbox4=(x0,y0,x1,y1)=>{ const r=TA.box(x0,y0,x1,y1), a=X(r.x0), b=X(r.x1), c=Z(r.y0), d=Z(r.y1); return [Math.min(a,b),Math.min(c,d),Math.max(a,b),Math.max(c,d)]; };
   APTS.A=AW; APTS.AL=A; APTS.T=TA; APTS.H=H; APTS.floors=ST; APTS.DX=m;
   const TN=SHARED.BOD.g.hash, vn=BLOCKS.vn, gr=(x,y,k,s=1)=>(vn(x/(5*s),y/(5*s),k)*3+vn(x/(1.7*s),y/(1.7*s),k+2)*2+vn(x*2.3/s,y*2.3/s,k+4))/6;
@@ -47,7 +48,7 @@ await grab('apts',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Yr=SHARED.BOD.
     const l=F.lx, H1=Math.min(h1,AH+38); for(const u of [l-.24,l+.2]){ for(let h=h0;h<H1;h+=S)B(u,u+.04,DI+.03,DI+.07,h,Math.min(H1,h+S)); if(h1>=AH){ B(u,u+.04,-.35,DI+.07,AH+34,AH+38); B(u,u+.04,-.39,-.35,AH,AH+38); } }
     for(let h=h0+10;h<Math.min(h1,AH+32);h+=12)B(l-.2,l+.2,DI+.04,DI+.06,h,h+2); };
   for(const F of ESC)ESCB(F,Array.from({length:ST-1},(_,i)=>i+1),-RZ,AH+38,true);
-  Object.assign(APTS,{ESC,DU,DI,DO,S,ST,TOP,escape:(F,lvs,h0,h1)=>ESCB(F,lvs,h0,h1,false)});
+  Object.assign(APTS,{ESC,DU,DI,DO,S,ST,TOP,escape:(F,lvs,h0,h1)=>{ FLAT=true; try{ ESCB(F,lvs,h0,h1,false); }finally{ FLAT=false; } }});
 
   const ST0={x0:m-DW-.25,x1:m+DW+.25,y0:A.y1,land:.85,tr:.42,n:3}; ST0.y1=A.y1+ST0.land+ST0.n*ST0.tr; APTS.ST0=ST0;
   { const BS=[98,95,90], NO=[136,131,122], CH=[86,84,80], IRN=[28,30,34], top=i=>(RZ+1)*(ST0.n-i)/(ST0.n+1), MID=[(ST0.x0+ST0.x1)/2,(ST0.x1-ST0.x0)/2], g=b=>tgbox(b.c===IRN?b:{...b,...rock(b.c,b.c===CH?67:63,.7,9,b.c===CH?null:MID)},'A');
@@ -113,10 +114,11 @@ await grab('apts',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Yr=SHARED.BOD.
   APTS.furnish=(lv,fn)=>{ FURN.push(fn); if(PA){ const Q=ROOMS.part(AG,fn); for(const k of ['objs','things','cuts','lights'])PA[k].push(...Q[k]); } };
   const build=()=>{ '@apts'; const K=SHARED.BOD.K, n0=K.PROPS.length, l0=SHARED.BOD.STOREK.LAMPS.length; AG=new THREE.Group(); AG.name='apts-in'; scene.add(AG); AS=[];
     const sol=(x0,y0,x1,y1,h)=>{ const r=box4(x0,y0,x1,y1); AS.push(r); SOL.up.push(r); if(h!=null){ const f=[r[0],r[1],Yr(0),r[2],r[3],Yr(h)]; AF.push(f); FIX.up.push(f); } }; APTS.solid=sol;
+    APTS.shelf=(x0,y0,x1,y1,b,t)=>{ const r=box4(x0,y0,x1,y1), f=[r[0],r[1],b,r[2],r[3],t]; AF.push(f); FIX.up.push(f); };   // a surface off the floor (a shelf) for loose things to rest on
     PA=ROOMS.part(AG,()=>{
       for(const [k,nx,nz] of [['Wf',0,1],['Wb',0,-1],['Ww',1,0],['We',-1,0]])cutWalls.push({pl:WPL[k],nx,nz,foot:Yr(1),me:null,when:()=>!!APTS.inReal});
       // the shell (brick walls, the windows and doors, the planks) is your room's own build (150a-bedroom); here only what you walk into
-      sol(AR.x0,AR.y0-.1,AR.x1,AR.y0+.1); sol(AR.x0,AR.y1-.1,AR.x1,AR.y1+.1); sol(AR.x0-.1,AR.y0,AR.x0+.1,AR.y1); sol(AR.x1-.1,AR.y0,AR.x1+.1,AR.y1); APTS.door=[DC,AR.y1];
+      sol(AR.x0-.4,AR.y0-.4,AR.x1+.4,AR.y0,WH); sol(AR.x0-.4,AR.y1,AR.x1+.4,AR.y1+.4,WH); sol(AR.x0-.4,AR.y0,AR.x0,AR.y1,WH); sol(AR.x1,AR.y0,AR.x1+.4,AR.y1,WH); APTS.door=[DC,AR.y1];   // the walls stand outside the room's faces, so no loose thing starts inside one (the physics leaves out any wall a thing overlaps), floor to ceiling
       const put=(k,x,y,r=0,solid=true)=>{ const f=K.CATALOG[k]; if(!f)return null; const p=f(+x.toFixed(3),+y.toFixed(3)); if(!p)return null; SHARED.BOD.place(p,r); for(const b of p.boxes)SHARED.BOD.gbox(b,'A');
         const bs=p.boxes.filter(b=>!b.nb&&b.z0<30&&b.z1-b.z0>3); if(solid&&!p.walk&&!p.high&&bs.length)sol(Math.min(...bs.map(b=>b.x0)),Math.min(...bs.map(b=>b.y0)),Math.max(...bs.map(b=>b.x1)),Math.max(...bs.map(b=>b.y1))); p.kind=k; made.push(p); return p; };
       APTS.put=put; const made=APTS.made=[];

@@ -221,7 +221,7 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
     for(let i=0;i<n;i++){ const a=RG[i], b=RG[i+1]; if(b<=a)continue; const G=new THREE.BufferGeometry(); for(const k of names){ const A=g.attributes[k], z=A.itemSize; G.setAttribute(k,new THREE.BufferAttribute(A.array.slice(a*z,b*z),z,A.normalized)); } me.setMatrixAt(me.addGeometry(G),I); }
     me.sortObjects=false; return me; };
   const F=Object.assign({},FOREST,PROPS), mesh=(list,leafy,solid=true,sway=false,opt={})=>{ const P3=[], C3=[], SW=[], TR=[], LF=[], RN=[], RG=[], IT=[], CN=[], UV=[], c=new THREE.Color(); for(const [key,x,y,m,turn,lift] of list){ const p0=P3.length; RG.push(p0/3); const ph=hash(Math.round(x*7),Math.round(y*7),131)*6.28; const D=F[key], p=f32(D.p), col=b8(D.c), k=b8(D.k), s=m/.84*TILE, ca=Math.cos(turn||0), sa=Math.sin(turn||0), ox=X(x), oz=Z(y), oy=(lift||0)/.84*TILE+P.hill(x,y);
-      for(let i=0;i<p.length;i+=3){ const px=p[i]*s, py=p[i+1]*s+oy, pz=p[i+2]*s; P3.push(ox+px*ca-pz*sa,py,oz+px*sa+pz*ca); if(sway)SW.push(k[Math.floor(i/9)]===0?Math.max(0,p[i+1])*s:0,ph); if(TL)LF.push(col[i+1]>col[i]*1.08&&col[i+1]>col[i+2]*1.08?1:0); const t=Math.floor(i/9), sh=k[t]===0?.86+.28*hash(t,x*7,y*3):k[t]===2?.9+.2*hash(t,x*5,y*9):.92+.16*hash(t,x*3,y*5);
+      const nt=opt.noTrunk&&/^OakTree/.test(key); for(let i=0;i<p.length;i+=3){ const px=p[i]*s, py=p[i+1]*s+oy, pz=p[i+2]*s; if(nt&&k[Math.floor(i/9)]===1)P3.push(ox,oy,oz); else P3.push(ox+px*ca-pz*sa,py,oz+px*sa+pz*ca); if(sway)SW.push(k[Math.floor(i/9)]===0?Math.max(0,p[i+1])*s:0,ph); if(TL)LF.push(col[i+1]>col[i]*1.08&&col[i+1]>col[i+2]*1.08?1:0); const t=Math.floor(i/9), sh=k[t]===0?.86+.28*hash(t,x*7,y*3):k[t]===2?.9+.2*hash(t,x*5,y*9):.92+.16*hash(t,x*3,y*5);
         c.setRGB(col[i]/255*sh,col[i+1]/255*sh,col[i+2]/255*sh,THREE.SRGBColorSpace); C3.push(c.r,c.g,c.b); }
       if(D.n)CN.push([p0,D.n,ca,sa]); if(opt.map){ const u=D.uv; for(let i=0,n=p.length/3;i<n;i++)UV.push(u?u[i*2]:0,u?u[i*2+1]:0); }
       if(TL){ const q0=p0/3, q1=P3.length/3; let y0=1e9, y1=-1e9, cx=0, cz=0, n=0, r1=1e-3; for(let v=q0;v<q1;v++)if(LF[v]){ y0=Math.min(y0,P3[v*3+1]); y1=Math.max(y1,P3[v*3+1]); cx+=P3[v*3]; cz+=P3[v*3+2]; n++; } cx/=n||1; cz/=n||1;
@@ -283,8 +283,39 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
       PARK.ringN=out.length-R0; }
     for(const e of out.back){ const k=gk(e[1],e[2],219,false); if(k)e[0]=k; }
     return out; })();
-  const NI=TREES.length-PARK.ringN; PARK.later(()=>{ PARK.trees=QS.get('trees')==='0'?null:mesh(TREES.slice(0,NI),true,true,true); });
-  PARK.ring=QS.get('trees')==='0'?null:mesh(TREES.slice(NI),true,true,false);
+  // the oaks' trunks: a tapering, slightly bent stem with rounded root flares at its foot and a few limbs into the crown, in a bark texture; a ring of small wild flowers round each foot
+  const trunks=(()=>{ let bark=null; const barkTex=()=>{ if(bark)return bark; const W=64, H=256, cv=document.createElement('canvas'); cv.width=W; cv.height=H; const g=cv.getContext('2d'); let a=11; const R=()=>{ a=(a*16807)%2147483647; return a/2147483647; };
+      g.fillStyle='#d8d0c4'; g.fillRect(0,0,W,H); for(let i=0;i<70;i++){ const x=R()*W, w=1+R()*2.5, y=R()*H, h=30+R()*120, sh=R(); g.fillStyle=sh<.5?'rgba(70,58,48,.55)':'rgba(120,104,90,.45)'; g.fillRect(x,y,w,h); if(y+h>H)g.fillRect(x,y-H,w,h); }
+      for(let i=0;i<40;i++){ g.fillStyle='rgba(60,50,40,.5)'; g.fillRect(R()*W,R()*H,3+R()*6,1); } for(let i=0;i<300;i++){ g.fillStyle=R()<.5?'rgba(255,255,255,.12)':'rgba(0,0,0,.12)'; g.fillRect(R()*W,R()*H,1,1+R()*3); }
+      bark=new THREE.CanvasTexture(cv); bark.wrapS=bark.wrapT=THREE.RepeatWrapping; bark.colorSpace=THREE.SRGBColorSpace; bark.magFilter=THREE.NearestFilter; return bark; };
+    // one trunk shape per seed: rings up a bent stem, the radius tapering, lobed and flared into roots at the foot
+    const shape=(seed,top)=>{ let a=seed*7919+1; const R=()=>{ a=(a*16807)%2147483647; return a/2147483647; }, RS=10, RH=9, P=[], UV=[], I=[], r0=.042, bx=(R()-.5)*.05, bz=(R()-.5)*.05, ph=R()*6.28, nl=5;
+      const ring=(y,rad,cx,cz,lob,v)=>{ const b=P.length/3; for(let i=0;i<=RS;i++){ const t=i/RS*Math.PI*2, w=1+lob*Math.max(0,Math.cos(nl*t+ph))**3+.06*Math.sin(3*t+ph*2); P.push(cx+Math.cos(t)*rad*w,y,cz+Math.sin(t)*rad*w); UV.push(i/RS*2,v); } return b; };
+      const tube=(rows)=>{ for(let j=0;j<rows.length-1;j++){ const a0=rows[j], a1=rows[j+1]; for(let i=0;i<RS;i++)I.push(a0+i,a1+i,a0+i+1,a0+i+1,a1+i,a1+i+1); } };
+      const rows=[]; for(let j=0;j<=RH;j++){ const t=j/RH, y=t*top, fl=Math.max(0,1-t/.18), rad=r0*(1-.42*t)*(1+1.1*fl*fl), lob=1.4*fl*fl; rows.push(ring(y-(j?0:.01),rad,bx*t*t,bz*t*t,lob,y*14)); } tube(rows);
+      // limbs: from the upper stem out and up into the crown
+      for(let l=0,n=2+Math.floor(R()*2);l<n;l++){ const t0=.55+R()*.3, az=ph+l/n*6.28+R()*.6, len=.18+R()*.1, y0=t0*top, sx=bx*t0*t0, sz=bz*t0*t0, ex=sx+Math.cos(az)*len*.75, ez=sz+Math.sin(az)*len*.75, ey=y0+len*.7, rr=r0*.5;
+        const lr=[]; for(let j=0;j<=3;j++){ const u=j/3; lr.push(ring(y0+(ey-y0)*u,rr*(1-.6*u),sx+(ex-sx)*u,sz+(ez-sz)*u,0,(y0+(ey-y0)*u)*14)); } tube(lr); }
+      const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); g.setAttribute('uv',new THREE.Float32BufferAttribute(UV,2)); g.setIndex(I); g.computeVertexNormals(); return g; };
+    const FLW=[[.95,.93,.86],[.98,.84,.25],[.72,.55,.9],[.95,.6,.7],[.6,.75,.98]];
+    return list=>{ const oaks=list.filter(e=>/^OakTree/.test(e[0])); if(!oaks.length)return null; const grp=new THREE.Group(), byK=new Map(), M=new THREE.Matrix4(), Q=new THREE.Quaternion(), V=new THREE.Vector3(), S=new THREE.Vector3(), up=new THREE.Vector3(0,1,0), c=new THREE.Color();
+      for(const e of oaks){ if(!byK.has(e[0]))byK.set(e[0],[]); byK.get(e[0]).push(e); }
+      const mat=new THREE.MeshLambertMaterial({map:barkTex()}); let fl=[];
+      for(const [key,L] of byK){ const D=F[key], kk=b8(D.k), pp=f32(D.p), cc=b8(D.c); let top=0, t0=-1; for(let t=0;t<kk.length;t++)if(kk[t]===1){ if(t0<0)t0=t; for(let v=0;v<3;v++)top=Math.max(top,pp[t*9+v*3+1]); }
+        const bc=t0<0?[90,70,50]:[cc[t0*9],cc[t0*9+1],cc[t0*9+2]], geo=shape(key.length*31+key.charCodeAt(7),Math.min(.55,top*.8)), im=new THREE.InstancedMesh(geo,mat,L.length);
+        L.forEach(([k2,x,y,m,turn,lift],i)=>{ const s=m/.84*TILE; Q.setFromAxisAngle(up,turn||0); im.setMatrixAt(i,M.compose(V.set(X(x),(lift||0)/.84*TILE+P.hill(x,y),Z(y)),Q,S.set(s,s,s))); const j=.85+.3*hash(Math.round(x*7),Math.round(y*7),157);
+          im.setColorAt(i,c.setRGB(bc[0]/255*j*1.25,bc[1]/255*j*1.25,bc[2]/255*j*1.25,THREE.SRGBColorSpace));
+          for(let f=0,nf=4+Math.floor(hash(i,Math.round(x),163)*6);f<nf;f++){ const a=hash(Math.round(x*9)+f,Math.round(y*9),167)*6.28, d=(.09+.12*hash(f,Math.round(x*5),171))*s; fl.push([X(x)+Math.cos(a)*d,Z(y)+Math.sin(a)*d,x,y,FLW[Math.floor(hash(f,Math.round(y*5),173)*FLW.length)],a]); } });
+        im.castShadow=true; im.receiveShadow=true; im.computeBoundingSphere(); grp.add(im); }
+      // the flowers: a stem and a little head each, standing out of the grass at the trunk's foot
+      fl=fl.filter(([wx,wz,x,y])=>!path(x,y)&&!BK.wet(x,y,.3)); if(fl.length){ const sg=new THREE.CylinderGeometry(.012*TILE,.016*TILE,1,4,1,true).translate(0,.5,0), hg=new THREE.IcosahedronGeometry(.06*TILE,0), lm=new THREE.MeshLambertMaterial(), hm=new THREE.MeshLambertMaterial({flatShading:true});
+        const st=new THREE.InstancedMesh(sg,lm,fl.length), hd=new THREE.InstancedMesh(hg,hm,fl.length);
+        fl.forEach(([wx,wz,x,y,col,a],i)=>{ const h=(.5+.35*hash(i,7,177))*TILE, gy=SHARED.groundY?SHARED.groundY(wx,wz):P.hill(x,y); st.setMatrixAt(i,M.compose(V.set(wx,gy,wz),Q.setFromAxisAngle(up,a),S.set(1,h,1))); st.setColorAt(i,c.setRGB(.25,.45,.18,THREE.SRGBColorSpace));
+          hd.setMatrixAt(i,M.compose(V.set(wx,gy+h,wz),Q,S.set(1,.7,1))); hd.setColorAt(i,c.setRGB(col[0],col[1],col[2],THREE.SRGBColorSpace)); });
+        st.receiveShadow=hd.receiveShadow=true; grp.add(st,hd); grp.flowers=fl.length; }
+      scene.add(grp); return grp; }; })();
+  const NI=TREES.length-PARK.ringN; PARK.later(()=>{ PARK.trees=QS.get('trees')==='0'?null:mesh(TREES.slice(0,NI),true,true,true,{noTrunk:1}); PARK.trunks=trunks(TREES.slice(0,NI)); if(window.WEEDS&&WEEDS.lawnDrop)WEEDS.lawnDrop(P.rect()); });
+  PARK.ring=QS.get('trees')==='0'?null:mesh(TREES.slice(NI),true,true,false,{noTrunk:1}); PARK.ringTrunks=trunks(TREES.slice(NI));
   { let c0={}, L=[]; PARK.treeItems=()=>{ if(c0!==PARK.trees){ c0=PARK.trees; L=[PARK.trees,PARK.ring].filter(Boolean).flatMap(m=>m.userData.items||[]); } return L; }; }
   PARK.oaks=TREES.map(([k,x,y,m])=>[X(x),Z(y),m]);
   { const LK=new Map(), V=THREE.Vector3, m4=new THREE.Matrix4(), q=new THREE.Quaternion(), c=new THREE.Color(), up=new V(0,1,0);

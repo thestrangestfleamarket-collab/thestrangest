@@ -1,6 +1,6 @@
 // THE LOOK EFFECTS: LFX's shading, ambient occlusion and wetness on the world, by weather and hour.
 import {SHARED, THREE} from './003-shx.js';
-import {CLOCK, LOOK, PARK, pos, ROOMS, WEEDS, WX} from './003b-systems.js';
+import {CLOCK, LOOK, PARK, pos, ROOMS, WX} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {LFX, OUT, SOL, SYS, TILE} from './006-map-pre.js';
 { const F=LFX.on, cl=v=>Math.max(0,Math.min(1,v));
@@ -21,7 +21,7 @@ import {LFX, OUT, SOL, SYS, TILE} from './006-map-pre.js';
       if(WS.wet==null){} else if(W.rain>.05)WS.wet=Math.min(1,WS.wet+dt/25*(.5+W.rain)); else WS.wet=Math.max(0,WS.wet-Math.max(dt/240,dh/2));
       if(WS.wet==null){} else if(W.snow>.05)WS.snow=Math.min(1,WS.snow+dt/90*(.5+W.snow)); else WS.snow=Math.max(0,WS.snow-Math.max(dt/(W.rain>.05?60:300),dh/3));
       E[row+1]=inside?0:Math.round(255*(F.has('wet')?1:WS.wet||0)); E[row+6]=inside?0:Math.round(255*WS.snow); LFX.ws=WS;
-      { const v=inside||WS.snow<.6; if(!v||WS.bv===false){ WS.bv=v; if(WEEDS.meshes)for(const m of WEEDS.meshes)m.visible=v; if(WEEDS.chunks)for(const m of WEEDS.chunks.values())if(m)m.visible=v; } }
+      
       E[row+2]=F.has('ao')?255:0; E[row+3]=F.has('var')?255:0;
       const sp=.004+W.wind*.02; E[row+4]=Math.round(((t*sp)%1)*255); E[row+5]=Math.round(((t*sp*.6)%1)*255);
       sky.copy(scene.background); E[row+8]=Math.round(sky.r*255); E[row+9]=Math.round(sky.g*255); E[row+10]=Math.round(sky.b*255);

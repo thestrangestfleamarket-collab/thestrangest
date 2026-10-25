@@ -380,7 +380,7 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
   const BM=(k,map,emap)=>new THREE.MeshLambertMaterial({map,emissiveMap:emap||null,emissive:emap?new THREE.Color(1,1,1):new THREE.Color(0,0,0),alphaTest:.5,side:THREE.DoubleSide});
   BATCH.cast=true; BATCH.build(BM); BATCH.cast=false;
   PARK.later(()=>FOUNT.paint({flat,X,Z,Y,hash,grain,speck}));
-  PARK.later(()=>{ BATCH.cast=true; BATCH.build(BM); BATCH.cast=false; if(window.WEEDS&&WEEDS.more)WEEDS.more(P.tufts||[]); });
+  PARK.later(()=>{ BATCH.cast=true; BATCH.build(BM); BATCH.cast=false; });
   MODS.park={BOUND:{x0:X(P.x0+.3),x1:X(P.x1-.3),z0:Z(P.y0),z1:Z(P.y1-.3)},inside:()=>false}; });
 PARK.later(()=>GCAVE.build&&GCAVE.build());
 await grab('park',async()=>{});

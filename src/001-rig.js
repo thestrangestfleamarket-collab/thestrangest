@@ -22,11 +22,12 @@ const BODYS={A:{so:6.3,sq:.9,r1:5.6,r2:6.1},B:{so:7.4,sq:.9,r1:5.4,r2:5.6},C:{so
   S1:{so:7.4,sq:.72,r1:4.9,r2:5.7,hx:3.9,pel:[4.9,4.5],hr:3,th:[3.45,2.75],sh:[2.7,2.85,2.1],shoe:{r:.5},bar:1.9,col:[2.6,2.0],slv:[2.66,2.6]},
   S2:{so:7.1,sq:.72,r1:4.9,r2:5.7,hx:3.9,pel:[4.9,4.5],hr:3,th:[3.45,2.75],sh:[2.7,2.85,2.1],shoe:{r:.5},sy:2.5,bar:1.8,col:[2.7,1.9],slv:[2.64,2.58]},
   S2F:{so:7.1,sq:.72,r1:4.9,r2:5.7,hx:3.4,pel:[4.8,4.4],hr:2.9,th:[3.35,2.7],sh:[2.62,2.66,2.05],shoe:{r:.5},sy:2.5,bar:1.8,col:[2.7,1.9],slv:[2.64,2.58]},
+  S4:{so:8.2,sq:.78,r1:5.2,r2:6.2,hx:3.7,pel:[5,4.6],hr:3.1,th:[3.8,3],sh:[2.9,2.9,2.2],shoe:{r:.5},sy:3,bar:2.7,col:[2.9,2],slv:[3,2.9]},
   S3:{so:7.0,sq:.72,r1:4.9,r2:5.7,hx:3.9,pel:[4.9,4.5],hr:3,th:[3.45,2.75],sh:[2.7,2.85,2.1],shoe:{r:.5},sy:2.2,bar:1.5,col:[2.9,1.8],slv:[2.6,2.55],r2:5.5},
 
   C2:{so:7.4,sq:.72,r1:4.9,r2:5.7,hx:3.7,pel:[4.8,4.3],hr:2.8,th:[3.2,2.5],sh:[2.45,2.6,1.9],shoe:{r:.3}},
   C3:{so:7.4,sq:.72,r1:4.9,r2:5.7,hx:4.0,pel:[5,4.6],hr:3.1,th:[3.7,2.85],sh:[2.75,3.1,2.15],shoe:{r:.4}}};
-const BODY={...LEG0,...(BODYS[(typeof location!=='undefined'&&new URLSearchParams(location.search).get('body')||'S2F').toUpperCase()]||BODYS.S2F)};
+const BODY={...LEG0,...(BODYS[(typeof location!=='undefined'&&new URLSearchParams(location.search).get('body')||'S4').toUpperCase()]||BODYS.S4)};
 const RIGP0={bones:{thigh:6.9,shin:6.5,upper:7.4,fore:6.3,spine:[0,5,0],chest:[0,10,0],neck:[0,14,0],headBase:[0,16.5,0.1],head:[0,25.2,0.5],headTop:[0,34,0.3],
   clav:[1.5,3,0],shoulder:[BODY.so,BODY.sy,0],hip:[BODY.hx,-0.4,0],hand:[0,0,0],handSize:1},pieces:{}};
 let RIGP=JSON.parse(JSON.stringify(RIGP0)),RIGGEN=0,THIGH,SHIN,UPPER,FORE,HIPX,HIP;

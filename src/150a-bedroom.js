@@ -49,7 +49,12 @@ const ROOMK={parts:[]};   // the room's other parts (the kitchen, 150b) add thei
       const rect=(w,h,holes=[])=>{ const sh=new THREE.Shape([new THREE.Vector2(0,0),new THREE.Vector2(w,0),new THREE.Vector2(w,h),new THREE.Vector2(0,h)]); for(const [a0,a1,b0,b1] of holes)sh.holes.push(new THREE.Path([new THREE.Vector2(a0,b0),new THREE.Vector2(a1,b0),new THREE.Vector2(a1,b1),new THREE.Vector2(a0,b1)])); return sh; };
       const WW=1.24*MPU, fw=WI.FWU.map(u=>u*MPU), du=WI.DU*MPU, wz=[1.05,2.35], FD=[du-.48,du+.48,0,2.3], BD=[du-.5,du+.5,0,2.2], SW=[2.79,1.55,2.0,1.1];   // the side window: centre, sill, head, width
       const win=c=>[c-WW/2,c+WW/2,wz[0],wz[1]];
-      const wallOf=(k,len,holes,u,v,ry)=>part(new THREE.ExtrudeGeometry(rect(len,HW,holes),{depth:TH,bevelEnabled:false}),[mat(CREAM,{roughness:.95,side:THREE.DoubleSide,shadowSide:THREE.DoubleSide,...clip(k)}),mat([30,22,16],{roughness:.9,side:THREE.DoubleSide,...clip(k)})],u,0,v,ry,apt);
+      // aged plaster: cream kept, but soft stains, faint streaks and fine grain so the walls aren't flat (owner: grittier, keep cozy)
+      const wallTex=(()=>{ const t=tex(512,512,(g,W,H)=>{ g.fillStyle='#ffffff'; g.fillRect(0,0,W,H);
+        for(let i=0;i<30;i++){ const x=rnd()*W, y=rnd()*H, r=50+rnd()*150, rg=g.createRadialGradient(x,y,0,x,y,r); rg.addColorStop(0,`rgba(108,90,62,${.03+rnd()*.07})`); rg.addColorStop(1,'rgba(108,90,62,0)'); g.fillStyle=rg; g.fillRect(x-r,y-r,2*r,2*r); }
+        for(let i=0;i<50;i++){ g.strokeStyle=`rgba(120,102,72,${.015+rnd()*.03})`; g.lineWidth=.8+rnd()*1.6; g.beginPath(); const x=rnd()*W, y0=rnd()*H*.4; g.moveTo(x,y0); g.lineTo(x+(rnd()-.5)*18,y0+H*(.3+rnd()*.5)); g.stroke(); }
+        for(let i=0;i<900;i++){ const b=rnd()<.5; g.fillStyle=`rgba(${b?70:255},${b?60:244},${b?44:220},${.02+rnd()*.03})`; g.fillRect(rnd()*W,rnd()*H,1,1); } }); t.wrapS=t.wrapT=THREE.MirroredRepeatWrapping; t.repeat.set(.2,.5); return t; })();
+      const wallOf=(k,len,holes,u,v,ry)=>part(new THREE.ExtrudeGeometry(rect(len,HW,holes),{depth:TH,bevelEnabled:false}),[mat(CREAM,{roughness:.96,map:wallTex,side:THREE.DoubleSide,shadowSide:THREE.DoubleSide,...clip(k)}),mat([30,22,16],{roughness:.9,side:THREE.DoubleSide,...clip(k)})],u,0,v,ry,apt);
       wallOf('Wf',Lx,[win(fw[0]),win(fw[1]),FD],0,-TH,0); wallOf('Wb',Lx,[win(fw[0]),win(fw[1]),BD],0,Ly,0);
       wallOf('Ww',Ly,[[SW[0]-SW[3]/2,SW[0]+SW[3]/2,SW[1],SW[2]]],0,0,-Math.PI/2); wallOf('We',Ly,[],Lx,Ly,Math.PI/2);
       // the crown at the top of every wall and the skirting at the foot

@@ -4734,6 +4734,8 @@ Owner: "add 5 more types of floor for apartment, add the kitchen into the apartm
 
 ## 25 Oct 2026: the west gate is the main gate
 Owner (a picture of the park's main entrance): "use this same central park entrance on the other entrance too, match exactly." The west gate onto West St is now the main gate's twin: as wide, the same lantern piers and iron leaves, the CENTRAL PARK arch with its ivy, reading from the street. One arch for both (061, `arch`).
+## 25 Oct 2026: dragons always flap
+Owner: "the dragons dont animated when flying"; his pick: always flap. A flying dragon beats its wings the whole flight; it still rises and sinks gently around its height. Rule change: no more frozen wings-out glides (was "glides in slow banking turns", 17 Oct).
 ## 25 Oct 2026: your apartment lit only by its windows and its own lights; the real fire escapes outside
 Owner: "remove all lighting except for natural lighting from windows and light sources inside (no over head lights on ceiling) the front and back door and windows to fire escapes should show the fire escape. dont do flat images, do real depth showing the fire escape from inside"; approved the mockups ("go"). Rule: no overhead or fill light in the apartment; daylight comes only through its windows.
 

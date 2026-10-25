@@ -93,7 +93,7 @@ const GRASS={};
     // the lawn wider: the floor two squares out, under the paths' edges; the blades three, thinning as they go, so the grass spills messily over the edges of paths and walls
     let I=me.I, G=me.G; const RG=new Uint8Array(I.length); for(let r=0;r<3;r++){ const I2=new Uint8Array(I), G2=new Float32Array(G); for(let j=-MG+1;j<N+MG-1;j++)for(let i=-MG+1;i<N+MG-1;i++){ const c=ci(i,j); if(I[c])continue; let g=0, n=0; for(const [di,dj] of [[1,0],[-1,0],[0,1],[0,-1]]){ const d=ci(i+di,j+dj); if(I[d]){ g+=G[d]; n++; } } if(n){ I2[c]=1; G2[c]=g/n; RG[c]=r+1; } } I=I2; G=G2; }
     const v=(a,b)=>{ const k=b*N1+a; if(VI[k]>=0)return VI[k]; let g=0, n=0, ox=0, oz=0; for(const [di,dj] of [[-1,-1],[0,-1],[-1,0],[0,0]]){ const c=ci(a+di,b+dj); if(I[c]){ g+=G[c]; n++; ox+=di+.5; oz+=dj+.5; } }
-      const f=n===1?.5:n===3?-.5:0; P.push(x0+(a+ox*f)*CELL,g/n+.015*T,z0+(b+oz*f)*CELL); return VI[k]=P.length/3-1; };
+      const f=n===1?.5:n===3?-.5:0, x=x0+(a+ox*f)*CELL, z=z0+(b+oz*f)*CELL; P.push(x,SHARED.groundY(x,z)+.015*T,z); return VI[k]=P.length/3-1; };   // on the real ground (the park's hills too)
     const QT=[], QR=[]; for(let j=0;j<N;j++)for(let i=0;i<N;i++){ const c=ci(i,j); if(!I[c])continue; const A=v(i,j), B=v(i+1,j), Cc=v(i,j+1), D=v(i+1,j+1); if(RG[c]<3)IX.push(A,Cc,B,B,Cc,D); QT.push(A,Cc,B,B,Cc,D); QR.push(RG[c],RG[c]); }
     const grp=new THREE.Group(); grp.userData.grass=1;
     if(IX.length){ const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); g.setAttribute('normal',new THREE.Float32BufferAttribute(P.map((_,i)=>i%3===1?1:0),3)); g.setAttribute('color',new THREE.Float32BufferAttribute(new Float32Array(P.length),3)); g.setIndex(IX);
@@ -109,7 +109,7 @@ const GRASS={};
       let u=R(), w=R(); if(u+w>1){ u=1-u; w=1-w; } if(rg&&R()>SPILL[rg])continue;
       put(P[pa]+(P[pb]-P[pa])*u+(P[pc2]-P[pa])*w,P[pa+1]+(P[pb+1]-P[pa+1])*u+(P[pc2+1]-P[pa+1])*w,P[pa+2]+(P[pb+2]-P[pa+2])*u+(P[pc2+2]-P[pa+2])*w,rg?.55+R()*.75:1,1); }
     // tufts: thicker, taller grass round the foot of every rock, log, post and trunk on the lawn
-    const gAt=(x,z)=>{ const i=Math.floor((x-x0)/CELL), j=Math.floor((z-z0)/CELL); if(i<0||j<0||i>=N||j>=N)return null; const c=ci(i,j); return I[c]?G[c]+.015*T:null; };
+    const gAt=(x,z)=>{ const i=Math.floor((x-x0)/CELL), j=Math.floor((z-z0)/CELL); if(i<0||j<0||i>=N||j>=N)return null; const c=ci(i,j); return I[c]?SHARED.groundY(x,z)+.015*T:null; };
     const t0=performance.now(); for(const b of SOL.up){ if(b[2]<x0-T||b[0]>x0+N*CELL+T||b[3]<z0-T||b[1]>z0+N*CELL+T)continue; const w=b[2]-b[0], d=b[3]-b[1]; if(Math.max(w,d)>5*T||Math.min(w,d)<.03*T)continue;
       const cx2=(b[0]+b[2])/2, cz2=(b[1]+b[3])/2, rx=w/2, rz=d/2, k=Math.min(240,Math.ceil(2*(w+d)*40));
       for(let q=0;q<k;q++){ const a=R()*Math.PI*2, o=Math.pow(R(),1.6)*.45, x=cx2+Math.cos(a)*(rx+o), z=cz2+Math.sin(a)*(rz+o); if(x<x0||z<z0||x>=x0+N*CELL||z>=z0+N*CELL)continue; const y=gAt(x,z); if(y==null)continue; put(x,y,z,1.25+R()*.45*(1-o/.45),.85); } }

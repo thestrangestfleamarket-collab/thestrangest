@@ -149,6 +149,8 @@ await grab('apts',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Yr=SHARED.BOD.
     let hbMade=false; const mkHB=()=>{ if(hbMade||!UI.thing)return; hbMade=true; const hb=(p,name,act)=>{ const o=new THREE.Mesh(new THREE.BoxGeometry(1.3*TILE,2.4*TILE,.5*TILE),new THREE.MeshBasicMaterial({visible:false})); o.position.set(p[0],p[1]+1.2*TILE,p[2]); scene.add(o); UI.thing({name,ghost:1,obj:o,reach:1.4*TILE,near:2.6*TILE,tall:2.4*TILE,act}); };
       hb(APTS.doorW,'YOUR APARTMENT',()=>APTS.enterReal()); hb(APTS.exitW,'OUT TO THE STREET',()=>APTS.exitReal()); };   // the front door on the street, and the way back out from inside
     const inR=(x,z)=>{ const a=X(AR.x0),b=X(AR.x1),c=Z(AR.y0),d=Z(AR.y1); return x>Math.min(a,b)-3&&x<Math.max(a,b)+3&&z>Math.min(c,d)-3&&z<Math.max(c,d)+3; };
+    APTS.inR=inR;   // a saved spot inside the apartment (off the map): rebuild and re-enter it on reload, else you land in the empty sky
+    APTS.offAt=async(x,z)=>{ if(APTS.inReal)return true; if(!inR(x,z))return false; await APTS.enterReal(); return true; };
     const sg0=STORE.stackGround; STORE.stackGround=(x,z)=>APTS.inReal&&inR(x,z)?Yr(0):sg0?sg0(x,z):null;
     SYS.add('places',()=>{ mkHB(); if(APTS.inReal)hideFar(); if(APTS.ceil)APTS.ceil.visible=APTS.inReal&&!!UI.persp; },'059a-aptsky');   // ceiling only in first person; gone when you view the room from outside
     window.ENTERAPT=()=>APTS.enterReal(); window.EXITAPT=()=>APTS.exitReal();

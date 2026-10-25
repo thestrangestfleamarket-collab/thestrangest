@@ -1,4 +1,4 @@
-// THE APARTMENT ROOM CHECK: node tests/bedroom.cjs dist/market.html. Your apartment as one open room in the owner's cozy style: built with its things as real bodies, the near walls down in the isometric view, black outside, the lamps switching, the bed and chair to sit on.
+// THE APARTMENT ROOM CHECK: node tests/bedroom.cjs dist/market.html. Your apartment as one open room in the owner's cozy style: built with its things as real bodies, the near walls down in the isometric view, black outside, the lamps switching, the bed and chair to sit on; the kitchen with its fridge, stove and tap working; every loose thing clear of the walls.
 const { chromium } = require('playwright'), path = require('path');
 const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process.env.GITHUB_ACTIONS ? '::error title=bedroom::' : 'FAIL ') + m); } else console.log('ok   ' + m); };
 (async () => {
@@ -21,6 +21,12 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     ok(used.n >= 3 && used.d.lamps.every((l, i) => l !== d.lamps[i]), 'the lamps switch (' + JSON.stringify(d.lamps) + ' -> ' + JSON.stringify(used.d.lamps) + ')');
     ok(await pg.evaluate(() => !!(window.GPH && GPH.loose().some(i => i.k === 'o' && i.name === 'CHAIR'))), 'the chair is a loose thing you can push and pick up');
     ok(await pg.evaluate(() => __dbg.UI.things.some(t => t.name === 'SIT ON THE BED')), 'you can sit on the bed');
+    const k = await pg.evaluate(async () => { const k0 = KITCHENDBG(); for (const n of ['OPEN THE FRIDGE', 'STOVE: OFF', 'TAP: OFF']) { const t = __dbg.UI.things.find(t => t.name === n); if (t) t.act(); } await new Promise(r => setTimeout(r, 300)); return { k0, k1: KITCHENDBG() }; });
+    ok(k.k0.built && !k.k0.fridge && k.k1.fridge && k.k1.stove && k.k1.tap, 'the kitchen is built; the fridge opens, the stove lights, the tap runs (' + JSON.stringify(k) + ')');
+    ok(k.k0.meshes < 80, 'the kitchen\'s still parts are baked into few meshes (' + k.k0.meshes + ')');
+    const inside = await pg.evaluate(() => { const A = __dbg.MAPK.MODS.apts.R, B = SHARED.BOD, x0 = Math.min(B.X(A.x0), B.X(A.x1)), x1 = Math.max(B.X(A.x0), B.X(A.x1)), z0 = Math.min(B.Z(A.y0), B.Z(A.y1)), z1 = Math.max(B.Z(A.y0), B.Z(A.y1));
+      return LOOSE.list(true).filter(q => q.k === 'o' && (q.c[0] - q.h[0] < x0 || q.c[0] + q.h[0] > x1 || q.c[2] - q.h[2] < z0 || q.c[2] + q.h[2] > z1)).map(q => q.name); });
+    ok(!inside.length && d.loose >= 40, 'every loose thing starts clear of the walls, so the walls stay solid to it (' + d.loose + ' things; in a wall: ' + inside.join(',') + ')');
     const err = await pg.evaluate(() => Object.entries(SYS.P).flatMap(([k, v]) => v.filter(s => s.err).map(s => k + ':' + s.name)));
     ok(!err.length, 'no SYS errors (' + err.join(',') + ')');
   }

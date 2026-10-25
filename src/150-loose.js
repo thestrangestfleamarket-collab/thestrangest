@@ -152,7 +152,7 @@ const GPH=window.GPH={ms:0,n:0};
     return {d:h.distance,th:{name:(it.name||'').replace(/^cottage: /,'').toUpperCase(),pick:true,obj:o,reach:.85*T+r,near:1.6*T+r,tall:Math.max(.4*T,it.h[1]*2),act:()=>grab(it)}}; };
   GPH.loose=()=>items;
   // a whole object (its own meshes, any shape) as a loose thing: pushed, knocked over, picked up and thrown like the rest; GPH.drop takes it out again
-  GPH.add=(obj,{name,m=1}={})=>{ obj.updateMatrixWorld(true); const B=new THREE.Box3().setFromObject(obj), c=B.getCenter(new THREE.Vector3());
+  GPH.add=(obj,{name,m=1}={})=>{ obj.updateMatrixWorld(true); const B=new THREE.Box3(); obj.traverse(q=>{ if(q.isMesh&&!q.userData.soft)B.expandByObject(q,true); }); if(B.isEmpty())B.setFromObject(obj); const c=B.getCenter(new THREE.Vector3());   // soft parts (hanging leaves) stay out of the body's box
     const it=mk(null,'o',B.min.toArray(),B.max.toArray(),{name:name||obj.name||'',obj,m,q0:obj.quaternion.clone(),off:obj.position.clone().sub(c)}); obj.traverse(q=>{ if(q.isMesh)q.userData.loose=it; }); items.push(it); fin([it]); return it; };
   GPH.drop=it=>{ if(!it)return; if(it===held)held=null; if(it.rb)off(it); pre.delete(it); const i=items.indexOf(it); if(i>=0)items.splice(i,1); GPH.n=items.length; };
   GPH.init=()=>{ if(typeof USE==='undefined'){ setTimeout(GPH.init,500); return; } const p0=USE.pick; USE.pick=ray=>{ const a=p0(ray), b=GPH.pick(ray); return b&&(!a||b.d<=a.d)?b:a; };

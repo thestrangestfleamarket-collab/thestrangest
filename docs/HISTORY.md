@@ -4628,3 +4628,7 @@ Owner: "keep building out all rooms and items until finished". The old West End 
 
 ## 25 Oct 2026: the old game's rooms removed
 Owner: "lets remove all the newly added rooms from game". The forty old rooms off the map and their GO TO entries are gone, with the kits made only for them (027a-027o, 039a), their data and their check. A player saved in one comes back in the park. The catalogue of the old game (`docs/old-game/`) stays as reference.
+
+## 25 Oct 2026: the treetop grass level; the skyline back
+Owner: "make grass totally flat tree top, no humps or bumps". Every leaf clump is a level disc at one height (no raised middle, no turned-down rim, the wind slides it but never dips it); the leaf colouring (lighter middle, darker rim) stays, so it still reads as a treetop.
+Owner: "the skyline is missing from edge of screen, neesd to go back". The distance fog had washed the sky and the far city into haze; now it leaves the sky and everything past the map's edge clear and only blurs the world itself.

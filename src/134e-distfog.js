@@ -20,7 +20,7 @@ import {TILE} from './006-map-pre.js';
   pass.render=(r,w,rb,dt,mask)=>{ const u=pass.uniforms, cam=(SHARED.RPASS&&SHARED.RPASS.camera)||SHARED.cam; u.tDepth.value=rb.depthTexture; u.uPInv.value.copy(cam.projectionMatrixInverse); u.uCamW.value.copy(cam.matrixWorld);
     u.uP.value.copy(pos); u.uS.value=C.start*TILE; u.uE.value=Math.max(C.start+1,C.end)*TILE; u.uB.value=C.blur; u.uH.value=C.haze;
     u.uC.value.copy(FAR3.fog&&FAR3.fog.color||(scene.background&&scene.background.isColor?scene.background:HZ)); u.uR.value.set(rb.width,rb.height); if(FAR3.land)u.uK.value.set(...FAR3.land); draw(r,w,rb,dt,mask); };
-  pass.enabled=C.on; comp.insertPass(pass,1);
+  pass.enabled=C.on; comp.insertPass(pass,1); SHARED.carry(pass);
   const save=()=>{ try{ SAVE.set('dfog2',JSON.stringify(C)); }catch(e){} pass.enabled=C.on; };
   window.DFOG={get:()=>Object.assign({},C),set:o=>{ Object.assign(C,o); save(); }};
   // its numbers in ATMOSPHERE, under HAZE

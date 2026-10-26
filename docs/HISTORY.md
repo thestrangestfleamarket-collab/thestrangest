@@ -4749,3 +4749,14 @@ Deploys failed from #315 on: the free plan allows 100 Durable Object namespaces 
 - Owner: "lets bake the grass in and not render it, our walking dosent affect it at all, low render as possible". The lawns are the floor painted with blades and the still things' shadows, built once; no 3D blades, nothing on them moves.
 - Owner: "its stlil freezing", "it freezes about 10-15 seconds after loading game". The page froze for good once the street finished building (a grass refresh over an everywhere-sized area walked it piece by piece); it now stays within the map.
 - Owner: "lets remove all grass functinos and data from game, i want to start from scratch, just make it green flat ground"; asked, he chose the weeds and gold reeds to go too. The grass field, the weed tufts and the gold reeds (and the mushrooms that grew in them) are gone; lawns are one flat green; small creatures no longer hide on lawns. Where the lawns are is still known, for foraging, birds, butterflies, gardens and fire.
+- Owner: "when you double click an item to pick it up and are holding it, if you double click somewhere else you will put the item down in that spot (not throw the item)". Holding a thing, a double-click on the ground walks you there and sets it down (PUT DOWN); it is no longer thrown.
+- Owner (a picture of the trees tangled at the wall): "lots of glitchy trees near brick wall edge of park". The edge ring is one row, each crown just clear of the next.
+- Owner: "the bridge should go over the river correctly angled"; his pick: turn the bridge and the path. The path bends to cross the stream square, on a bridge square across the water.
+
+## 25 Oct 2026: the same picture, fewer passes
+Owner: "keep this exact look but dont waste render". The screen passes now share a draw where one only changes its own pixel (the colour output into the haze, the cinema cut into the look), and the look's glow is blurred in two steps; the picture is unchanged.
+## 25 Oct 2026: a lighter player model
+Owner: "a lighter player model that looks nearly the same". The Walker's body is welded coarser (his hair as fine as before): about half the triangles drawn, the same look at play zoom; the figures built the same way (other players, the second walker, the musicians) get lighter too. With OUTLINE on, its extra pass draws only the patch of screen round him.
+- The park hills built again (they had stopped being built since 22 Oct: a part not built).
+## 25 Oct 2026: cheaper shadow edges
+Owner: "cheaper shadow edges: less blurring on shadow edges, the shadows themselves stay". PCF and SOFT read 4 texels per shadow instead of 17 and 16 (a lamp's shadow 4 instead of 9), so their edges are a little crisper; the sun reads its near or its far map, never both, and the moving things' map only where the still map leaves light. HARD (the default) looks the same.

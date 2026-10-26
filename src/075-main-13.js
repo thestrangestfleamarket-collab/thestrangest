@@ -98,11 +98,39 @@ function frame(now){ requestAnimationFrame(frame); if(PARK.hold)return; renderer
   you.quaternion.copy(SHARED.cam.quaternion); you.position.copy(disp).addScaledVector(F,0.35);
   for(const w of cutWalls)w.pl.constant=(!UI.persp&&(w.always||Math.sin(a)*w.nx+Math.cos(a)*w.nz<-0.05)&&SHARED.pitch<1.45&&(!w.when||w.when()))?w.foot:1e6;
   { const bi=SHARED.BODB.inside(); for(const r of SHARED.BODB.roof)SEEN(r,!bi); }
-  SYS.go(()=>ROOMS.tick(),'rooms'); SYS.run('rooms'); SYS.go(()=>ZONES.tick(),'zones'); SYS.go(()=>INTERIORS.tick(),'interiors'); SYS.go(()=>PERFX.tick(),'perfx'); SYS.go(()=>STORE.tick(),'store'); SYS.go(()=>NPCS.cull(true),'npccullA'); SYS.go(()=>INTERIORS.cull(true),'intcullA'); SYS.go(()=>{ LEVELS.H=LEVELS.hide(); },'levelhide'); SYS.go(()=>CULL.begin(),'cullbegin'); SYS.go(()=>{ if(PERFX.bfNear())BF.tick(dt); },'bf'); SYS.go(()=>WATER.tickAll(renderer,dt,pos),'water'); renderer.shadowMap.needsUpdate=true; SYS.go(()=>WATER.underAll(renderer,scene,SHARED.cam,lamps),'waterunder'); SYS.go(()=>RIVER.pre(renderer,scene,SHARED.cam,dt,pos),'riverpre'); SYS.go(()=>{ FOUNT.pre&&FOUNT.pre(scene,SHARED.cam); },'fountpre'); SYS.go(()=>{ for(const w of MODS.waters||[])if(w.pre)w.pre(scene,SHARED.cam); },'waterspre'); SYS.go(()=>FAR3.pre(renderer,SHARED.cam),'far3pre'); SYS.go(()=>W3.shadowPass(renderer),'w3shadow'); SYS.go(()=>{ if(OUTL.on)OUTL.render(renderer,scene,SHARED.cam); },'outl'); SYS.go(()=>PEEK.tick(dt),'peek'); CLOCK.main=1; SHARED.composer.render(); CLOCK.main=0; SYS.go(()=>{ for(const w of MODS.waters||[])if(w.post)w.post(scene); },'waterspost'); SYS.go(()=>{ FOUNT.post&&FOUNT.post(scene); },'fountpost'); SYS.go(()=>RIVER.post(scene),'riverpost'); SYS.go(()=>FAR3.post(),'far3post'); SYS.go(()=>CULL.end(),'cullend'); SYS.go(()=>{ LEVELS.show(LEVELS.H); LEVELS.H=null; },'levelshow'); SYS.go(()=>NPCS.cull(false),'npccullB'); SYS.go(()=>INTERIORS.cull(false),'intcullB');
+  SYS.go(()=>ROOMS.tick(),'rooms'); SYS.run('rooms'); SYS.go(()=>ZONES.tick(),'zones'); SYS.go(()=>INTERIORS.tick(),'interiors'); SYS.go(()=>PERFX.tick(),'perfx'); SYS.go(()=>STORE.tick(),'store'); SYS.go(()=>NPCS.cull(true),'npccullA'); SYS.go(()=>INTERIORS.cull(true),'intcullA'); SYS.go(()=>{ LEVELS.H=LEVELS.hide(); },'levelhide'); SYS.go(()=>CULL.begin(),'cullbegin'); SYS.go(()=>{ if(PERFX.bfNear())BF.tick(dt); },'bf'); SYS.go(()=>WATER.tickAll(renderer,dt,pos),'water'); renderer.shadowMap.needsUpdate=true; SYS.go(()=>WATER.underAll(renderer,scene,SHARED.cam,lamps),'waterunder'); SYS.go(()=>RIVER.pre(renderer,scene,SHARED.cam,dt,pos),'riverpre'); SYS.go(()=>{ FOUNT.pre&&FOUNT.pre(scene,SHARED.cam); },'fountpre'); SYS.go(()=>{ for(const w of MODS.waters||[])if(w.pre)w.pre(scene,SHARED.cam); },'waterspre'); SYS.go(()=>FAR3.pre(renderer,SHARED.cam),'far3pre'); SYS.go(()=>W3.shadowPass(renderer),'w3shadow'); SYS.go(()=>{ if(OUTL.on)OUTL.render(renderer,scene,SHARED.cam); },'outl'); SYS.go(()=>PEEK.tick(dt),'peek'); SYS.go(()=>SHARED.foldPick(),'fold'); CLOCK.main=1; SHARED.composer.render(); CLOCK.main=0; SYS.go(()=>{ for(const w of MODS.waters||[])if(w.post)w.post(scene); },'waterspost'); SYS.go(()=>{ FOUNT.post&&FOUNT.post(scene); },'fountpost'); SYS.go(()=>RIVER.post(scene),'riverpost'); SYS.go(()=>FAR3.post(),'far3post'); SYS.go(()=>CULL.end(),'cullend'); SYS.go(()=>{ LEVELS.show(LEVELS.H); LEVELS.H=null; },'levelshow'); SYS.go(()=>NPCS.cull(false),'npccullB'); SYS.go(()=>INTERIORS.cull(false),'intcullB');
   fpsN++; fpsT+=dt; if(fpsT>0.5){ const RI=renderer.info.render; statEl.textContent=`${Math.round(fpsN/fpsT)} fps · ${Math.round(RI.calls/fpsN)} draws · ${(RI.triangles/fpsN/1000).toFixed(1)}k tris · ${RW}×${RH} px · turn ${Math.round(((a*180/Math.PI)%360+360)%360)}° · tilt ${Math.round(SHARED.pitch*180/Math.PI)}° · zoom ${(SCL*rppu()/V0).toFixed(2)}× · art ${SCL===1&&vpu()<art()?'full':RES()+'×'}`; renderer.info.reset(); fpsN=0; fpsT=0; }
 }
 SHARED.composer=new EffectComposer(renderer); SHARED.composer.setPixelRatio(1); SHARED.composer.addPass(SHARED.RPASS=new RenderPass(scene,SHARED.cam)); { const sp=new ShaderPass(OUTL.pass); SHARED.composer.addPass(sp); OUTL.sp=sp; sp.enabled=!!OUTL.on; OUTL.pass.uniforms=sp.uniforms; sp.uniforms.tId.value=OUTL.rt.texture; sp.uniforms.tint.value=W3.tint; }
-SHARED.composer.addPass(new OutputPass());
+// a pass that only changes its own pixel (SHARED.fold) is drawn at the end of the enabled pass just before it when that one can carry it (SHARED.carry): one full-screen pass fewer, the same maths in the same order; folded code reads gl_FragColor and vUv
+{ const C=SHARED.composer, FO=[], CA=[], OP=new OutputPass(), EXP={value:1}, TM={[THREE.LinearToneMapping]:'LINEAR',[THREE.ReinhardToneMapping]:'REINHARD',[THREE.CineonToneMapping]:'CINEON',[THREE.ACESFilmicToneMapping]:'ACES_FILMIC',[THREE.AgXToneMapping]:'AGX'};
+  C.addPass(OP);
+  const glsl=sp=>{ const m=sp.material, u=m.userData, src=u.src||(u.src=m.fragmentShader); if(!u.def0)u.def0=Object.assign({},m.defines);
+    for(const f of FO)Object.assign(sp.uniforms,f.uniforms);
+    m.fragmentShader=FO.map(f=>f.head).join('\n')+'\n'+src.replace('void main()','void main0()')+'\nvoid main(){ main0();\n'+FO.map(f=>'#ifdef FOLD_'+f.name+'\n'+f.code+'\n#endif').join('\n')+'\n}'; m.needsUpdate=true; };
+  SHARED.carry=sp=>{ sp.material.toneMapped=false; CA.push(sp); glsl(sp); };
+  SHARED.fold=(name,p,o)=>{ FO.push(Object.assign({name,p},o)); FO.sort((a,b)=>C.passes.indexOf(a.p)-C.passes.indexOf(b.p)); CA.forEach(glsl); };
+  SHARED.foldPick=()=>{ const P=C.passes, D=new Map(CA.map(s=>[s,Object.assign({},s.material.userData.def0)]));
+    for(const f of FO){ f.p.enabled=true; let c=null; for(let k=P.indexOf(f.p)-1;k>=0&&!c;k--)if(P[k].enabled)c=P[k]; const d=c&&D.get(c); if(d){ Object.assign(d,{['FOLD_'+f.name]:''},f.defs&&f.defs()); f.p.enabled=false; } }
+    for(const [s,d] of D){ const m=s.material, k=JSON.stringify(d); if(m.userData.dk!==k){ m.userData.dk=k; m.defines=d; m.needsUpdate=true; } }
+    EXP.value=renderer.toneMappingExposure; };
+  SHARED.fold('out',OP,{uniforms:{toneMappingExposure:EXP},head:'#include <tonemapping_pars_fragment>',
+    code:`#ifdef LINEAR_TONE_MAPPING
+gl_FragColor.rgb=LinearToneMapping(gl_FragColor.rgb);
+#elif defined(REINHARD_TONE_MAPPING)
+gl_FragColor.rgb=ReinhardToneMapping(gl_FragColor.rgb);
+#elif defined(CINEON_TONE_MAPPING)
+gl_FragColor.rgb=OptimizedCineonToneMapping(gl_FragColor.rgb);
+#elif defined(ACES_FILMIC_TONE_MAPPING)
+gl_FragColor.rgb=ACESFilmicToneMapping(gl_FragColor.rgb);
+#elif defined(AGX_TONE_MAPPING)
+gl_FragColor.rgb=AgXToneMapping(gl_FragColor.rgb);
+#endif
+#ifdef SRGB_TRANSFER
+gl_FragColor=sRGBTransferOETF(gl_FragColor);
+#endif`,
+    defs:()=>{ const d={}; if(THREE.ColorManagement.getTransfer(renderer.outputColorSpace)===THREE.SRGBTransfer)d.SRGB_TRANSFER=''; const t=TM[renderer.toneMapping]; if(t)d[t+'_TONE_MAPPING']=''; return d; }});
+  SHARED.carry(OUTL.sp); }
 { const SH={on:true,lv:2}, el=document.getElementById('shd'), draw=()=>{ W3.lv.value=SH.on?(SH.lv>=2?2:1):0; el.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.s?String(SH.on):String(SH.on&&SH.lv===+b.dataset.l))); el.querySelector('[data-s]').textContent=SH.on?'ON':'OFF'; };
   el.querySelectorAll('button').forEach(b=>b.onclick=()=>{ if(b.dataset.s)SH.on=!SH.on; else{ SH.lv=+b.dataset.l; SH.on=true; } b.blur(); draw(); }); draw(); }
 const SKEL=__LAZY__("data/skel.json");

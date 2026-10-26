@@ -120,6 +120,8 @@ import {BVH} from './137-bvh.js';
   const grab=it=>{ if(held||!it.rb)return; held=it; it.rb.setBodyType(R.RigidBodyType.KinematicPositionBased,true); it.rb.collider(0).setCollisionGroups(GH); RIG.act(st,'carry'); };
   const throwTo=(it,g)=>{ '@later'; held=null; RIG.release(st,'carry'); it.rb.setBodyType(R.RigidBodyType.Dynamic,true); it.rb.collider(0).setCollisionGroups(GI); const h=hand(), dx=g.x-h.x, dz=g.z-h.z, d=Math.max(.5,Math.hypot(dx,dz)), sp=Math.min(9,3+d*.9)*Math.min(1,Math.sqrt(8/Math.max(8,it.m)));
     it.rb.setLinvel({x:dx/d*sp,y:2.6+d*.25,z:dz/d*sp},true); it.rb.setAngvel({x:(Math.random()-.5)*6,y:(Math.random()-.5)*6,z:(Math.random()-.5)*6},true); };
+  const putAt=(it,g)=>{ '@later'; held=null; RIG.release(st,'carry'); it.rb.setBodyType(R.RigidBodyType.Dynamic,true); it.rb.collider(0).setCollisionGroups(GI);
+    it.rb.setTranslation({x:g.x,y:g.y+it.h[1]+.02*T,z:g.z},true); it.rb.setRotation({x:0,y:Math.sin(SHARED.heading/2),z:0,w:Math.cos(SHARED.heading/2)},true); it.rb.setLinvel({x:0,y:0,z:0},true); it.rb.setAngvel({x:0,y:0,z:0},true); };
   const wake=()=>{ if((pt-=1)>0)return false; pt=6; catalog(); more(); const lo=SHARED.py-1.1*T, hi=SHARED.py+2.4*T; pre.clear();
       for(const it of items){ const t=it.t, b=t.y-it.h[1]; if(Math.hypot(t.x-pos.x,t.z-pos.z)<RS&&b>lo&&b<hi)pre.add(it); } pickList(pre); return true; };
   const asks=()=>{ if(want)return true; const s=(st.up&&STRIKE.test(st.up.name))||(st.move&&STRIKE.test(st.move.name)), I=intent(), mv=I[0]||I[1];
@@ -146,7 +148,7 @@ import {BVH} from './137-bvh.js';
       const o=new THREE.Object3D(), r=Math.max(it.h[0],it.h[2]); o.position.set(it.t.x,it.t.y-it.h[1],it.t.z);
       return {d:h.distance,th:{name:(it.name||'').replace(/^cottage: /,'').toUpperCase(),pick:true,obj:o,reach:.85*T+r,near:1.6*T+r,tall:Math.max(.4*T,it.h[1]*2),act:()=>{ want=it; }}}; }
     if(held){ const pl=new THREE.Plane(new THREE.Vector3(0,1,0),-SHARED.py), g=new THREE.Vector3(); if(!ray.ray.intersectPlane(pl,g))return null; const it=held, o=new THREE.Object3D(); o.position.copy(g);
-      return {d:0,th:{name:'THROW',obj:o,reach:1e9,act:()=>throwTo(it,g)}}; }
+      return {d:0,th:{name:'PUT DOWN',obj:o,reach:.9*T+Math.max(it.h[0],it.h[2]),near:1.4*T,act:()=>putAt(it,g)}}; }
     const h=ray.intersectObjects(picks,false)[0]; if(!h)return null; const it=itemOf(h); if(!it||!it.rb||it.m>CARRY)return null; if(it.o&&USE.test&&USE.test.kindOf(it.o)&&!keys.has('shift'))return null;
     const o=new THREE.Object3D(), p=it.rb.translation(), r=Math.max(it.h[0],it.h[2]); o.position.set(p.x,p.y-it.h[1],p.z);
     return {d:h.distance,th:{name:(it.name||'').replace(/^cottage: /,'').toUpperCase(),pick:true,obj:o,reach:.85*T+r,near:1.6*T+r,tall:Math.max(.4*T,it.h[1]*2),act:()=>grab(it)}}; };
@@ -161,6 +163,7 @@ import {BVH} from './137-bvh.js';
   const rx=s=>s instanceof RegExp?s:new RegExp(s||'.','i');
   window.GOODSGRAB=(n)=>{ const b=nearest(it=>it.m<=CARRY&&(n?rx(n).test(it.name):it.k==='v')); if(!b)return null; grab(b); return b.name; };
   window.GOODSTHROW=(dx,dz)=>{ if(!held)return false; throwTo(held,new THREE.Vector3(pos.x+dx,SHARED.py,pos.z+dz)); return true; };
+  window.GOODSPUT=(dx,dz)=>{ if(!held)return false; const it=held; putAt(it,new THREE.Vector3(pos.x+dx,SHARED.py,pos.z+dz)); const p=it.rb.translation(); return [p.x-pos.x,p.z-pos.z]; };
   window.GOODSAT=i=>{ const it=items.filter(q=>q.k==='v')[i]; const p=it.rb?it.rb.translation():it.t; return [p.x,p.y,p.z]; };
   window.GOODSDBG=()=>({built:ready,pre:pre.size,n:items.length,active:act.size,awake:[...act].filter(it=>!it.rb.isSleeping()).length,moved:items.filter(it=>it.moved).length,held:held&&held.name,statics:[...stat.values()].reduce((s,q)=>s+q.cs.length,0),ms:+GPH.ms.toFixed(3),hooks:!!hooks});
   window.GOODSHIT=(k=4,r=3,n)=>{ let c=0; for(const it of act){ const p=it.rb.translation(); if(Math.hypot(p.x-pos.x,p.z-pos.z)<r*T&&(!n||rx(n).test(it.name))){ c++; it.rb.wakeUp(); it.rb.applyImpulse({x:(Math.random()-.5)*k*it.rb.mass(),y:k*.5*it.rb.mass(),z:(Math.random()-.5)*k*it.rb.mass()},true); } } return c; };

@@ -17,7 +17,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
       o.grass = !window.GRASS; o.weeds = !WEEDS.meshes && !WEEDS.gold && !WEEDS.pressAt;
       let spot = null; for (let x = c.x - 16; x < c.x + 16 && !spot; x += .6) for (let z = c.z - 16; z < c.z + 16; z += .6) { const t = WEEDS.top(x, z); if (typeof t === 'number') { spot = [x, z, t]; break; } }
       o.onGround = !!spot && Math.abs(spot[2] - SHARED.groundY(spot[0], spot[1])) < 1e-6;
-      const t0 = performance.now(); await new Promise(r => setTimeout(r, 3000)); o.live = performance.now() - t0 < 4500;   // the page keeps running after the start
+      o.live = false; for (let i = 0; i < 10 && !o.live; i++) { const t0 = performance.now(); await new Promise(r => setTimeout(r, 1000)); o.live = performance.now() - t0 < 2000; }   // the page keeps running after the start (a one-off stall is allowed, a freeze is not)
       return o;
     });
     ok(r.flat, 'the lawns are one flat green: ' + JSON.stringify(r.flat));

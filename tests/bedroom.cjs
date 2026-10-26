@@ -1,4 +1,4 @@
-// THE APARTMENT ROOM CHECK: node tests/bedroom.cjs dist/market.html. Your apartment as one open room: built with its things as real bodies, the near walls down in the isometric view, the picture's green-grey void outside, the lamp and screens switching, the bed, bench and chairs to sit on, the drawers opening, the record turning; the kitchen with its fridge, stove and tap working; every loose thing clear of the walls.
+// THE APARTMENT ROOM CHECK: node tests/bedroom.cjs dist/market.html. Your apartment as one open room: built with its things as real bodies, the near walls down in the isometric view, the picture's green-grey void outside, the lamp and screens switching, the bed, bench and chairs to sit on, the drawers opening, the record turning; the kitchen with its fridge, stove and tap working; every loose thing clear of the walls (the fire escape's pots, out on the landing, aside).
 const { chromium } = require('playwright'), path = require('path');
 const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process.env.GITHUB_ACTIONS ? '::error title=bedroom::' : 'FAIL ') + m); } else console.log('ok   ' + m); };
 (async () => {
@@ -14,7 +14,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     await pg.waitForTimeout(2000);
     const d = await pg.evaluate(() => BEDROOMDBG());
     ok(d.built && d.loose >= 10, 'the room is built, its small things real bodies (' + d.loose + ')');
-    const fy = await pg.evaluate(() => SHARED.BOD.Y(.15));
+    const fy = await pg.evaluate(() => SHARED.BOD.Y(__dbg.MAPK.MODS.apts.RB + .15));
     ok(d.walls.filter(w => w < fy + .1).length === 2 && d.walls.filter(w => w > 1e5).length === 2, 'in the isometric view the two walls nearest the camera are down, the far two stand (' + d.walls.map(w => w.toFixed(2)) + ')');
     ok(d.sky === false && await pg.evaluate(() => { const c = __dbg.scene.background; return c.r < .06 && c.g > c.r && c.g < .08; }), 'outside is the picture\'s deep green-grey in the isometric view; the sky shows only in the windows');
     const used = await pg.evaluate(async () => { const s0 = BEDPICDBG().screens, T = __dbg.UI.things.filter(t => /^(LAMP|MONITOR|TV):/.test(t.name)); for (const t of T) t.act(); await new Promise(r => setTimeout(r, 300)); return { n: T.length, d: BEDROOMDBG(), s0, s1: BEDPICDBG().screens }; });
@@ -27,7 +27,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     ok(k.k0.built && !k.k0.fridge && k.k1.fridge && k.k1.stove && k.k1.tap, 'the kitchen is built; the fridge opens, the stove lights, the tap runs (' + JSON.stringify(k) + ')');
     ok(k.k0.meshes < 120, 'the kitchen\'s pieces are each baked into a few meshes (' + k.k0.meshes + ')');
     const inside = await pg.evaluate(() => { const A = __dbg.MAPK.MODS.apts.R, B = SHARED.BOD, x0 = Math.min(B.X(A.x0), B.X(A.x1)), x1 = Math.max(B.X(A.x0), B.X(A.x1)), z0 = Math.min(B.Z(A.y0), B.Z(A.y1)), z1 = Math.max(B.Z(A.y0), B.Z(A.y1));
-      return LOOSE.list(true).filter(q => q.k === 'o' && (q.c[0] - q.h[0] < x0 || q.c[0] + q.h[0] > x1 || q.c[2] - q.h[2] < z0 || q.c[2] + q.h[2] > z1)).map(q => q.name); });
+      return LOOSE.list(true).filter(q => q.k === 'o' && q.c[2] > Math.min(B.Z(A.y0), B.Z(A.y1)) - .1 && (q.c[0] - q.h[0] < x0 || q.c[0] + q.h[0] > x1 || q.c[2] - q.h[2] < z0 || q.c[2] + q.h[2] > z1)).map(q => q.name); });
     ok(!inside.length && d.loose >= 40, 'every loose thing starts clear of the walls, so the walls stay solid to it (' + d.loose + ' things; in a wall: ' + inside.join(',') + ')');
     const err = await pg.evaluate(() => Object.entries(SYS.P).flatMap(([k, v]) => v.filter(s => s.err).map(s => k + ':' + s.name)));
     ok(!err.length, 'no SYS errors (' + err.join(',') + ')');

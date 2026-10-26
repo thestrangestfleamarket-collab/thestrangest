@@ -83,6 +83,7 @@ await grab('apts',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Yr=SHARED.BOD.
     tcard(ST0.x0+.22,ST0.y0+.5,RZ+1,.4,34,'tall',71,'A'); tcard(ST0.x1-.22,ST0.y0+.5,RZ+1,.4,26,'flower',73,'A'); }
 
   const WPL=APTS.WPL=Object.fromEntries(['Wf','Wb','Ww','We'].map(k=>[k,new THREE.Plane(new THREE.Vector3(0,-1,0),1e6)]));   // your apartment's four walls, each cut down in the isometric view when it stands between you and the camera
+  { const P=()=>new THREE.Plane(new THREE.Vector3(0,-1,0),1e6); APTS.OUTP={tops:{Wf:P(),Wb:P(),Ww:P()},bot:P(),side:{Wf:[P(),P()],Wb:[P(),P()],Ww:[P(),P()]},far:P()}; }   // what is outside a windowed wall shows only through it in the isometric view (150a sets them each frame)
   const MKA=(k,map,emap)=>k==='B'?new THREE.MeshBasicMaterial({map,side:THREE.DoubleSide,alphaTest:.5}):new THREE.MeshLambertMaterial({map,alphaTest:.5,side:THREE.DoubleSide,...(emap?{emissiveMap:emap,emissive:0xffffff,emissiveIntensity:1.3}:{}),...(WPL[k]?{clippingPlanes:[WPL[k]]}:{})});
   APTS.MKA=MKA; BATCH.build(MKA); const AM=Object.values(BATCH.meshes); APTS.back=BATCH.all(BATCH.meshes,'E'); BATCH.meshes={}; APTS.meshes=AM; for(const me of AM){ me.castShadow=true; me.receiveShadow=true; }
 
@@ -129,27 +130,28 @@ await grab('apts',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Yr=SHARED.BOD.
   window.HOUSEAT=(dy=0)=>XZ(m,A.y1+dy); APTS.doorAt=XZ(m,A.y1); APTS.doorHd=TA.hd(0);
   window.APTSDBG=()=>({in:APTS.in,esc:APTS.esc,floor:APTS.floor(),py:SHARED.py,pos:[+pos.x.toFixed(2),+pos.z.toFixed(2)],door:+X(m).toFixed(1),lad:LAD.F?+LAD.y.toFixed(1):null,block:BB});
 
-  const AW_=+(A.x1-A.x0).toFixed(3), AD_=+(A.y1-A.y0).toFixed(3), AR={x0:994,y0:20,x1:994+AW_,y1:20+AD_}, AX=(AR.x0+AR.x1)/2, WH=S, MY=APTS.my=ST-1, DC=AR.x0+DU; APTS.R=AR; APTS.fw=[DC,AR.y0]; APTS.WIN={FWU,WINA,WINB,DU,DC,DH}; const BED=APTS.BED={x0:AR.x0+7.75,y0:AR.y0,x1:AR.x1,y1:AR.y0+5,H:WH};   // the bedroom's corner (front right): its own walls, things and light (150a-bedroom)   // off-map in the empty sky; footprint and one-storey height match the real building exactly (1:1)
+  const AW_=+(A.x1-A.x0).toFixed(3), AD_=+(A.y1-A.y0).toFixed(3), AR={x0:994,y0:20,x1:994+AW_,y1:20+AD_}, AX=(AR.x0+AR.x1)/2, WH=S, MY=APTS.my=ST-1, RB=APTS.RB=RZ+Math.min(MY,ST-2)*S, Yh=z=>Yr(RB+z), DC=AR.x0+DU; APTS.R=AR; APTS.fw=[DC,AR.y0]; APTS.WIN={FWU,WINA,WINB,DU,DC,DH}; const BED=APTS.BED={x0:AR.x0+7.75,y0:AR.y0,x1:AR.x1,y1:AR.y0+5,H:WH};   // the bedroom's corner (front right): its own walls, things and light (150a-bedroom)   // off-map in the empty sky; footprint and one-storey height match the real building exactly (1:1)
   const FURN=[], DYN={win:[],bar:[],cur:[],flame:[]}; let PA=null, AS=[], AF=[], AG=null;
+  const DG=.5, ED=APTS.escDoor={open:false,sol:null,set:o=>{ ED.open=!!o; if(!APTS.solid)return; if(ED.open&&ED.sol){ APTS.unsolid(ED.sol); ED.sol=null; } else if(!ED.open&&!ED.sol)ED.sol=APTS.solid(DC-DG,AR.y0-.4,DC+DG,AR.y0,WH); }};   // the door to the fire escape: open, you walk through; shut, it is wall
   APTS.furnish=(lv,fn)=>{ FURN.push(fn); if(PA){ const Q=ROOMS.part(AG,fn); for(const k of ['objs','things','cuts','lights'])PA[k].push(...Q[k]); } };
   const build=()=>{ '@apts'; const K=SHARED.BOD.K, n0=K.PROPS.length, l0=SHARED.BOD.STOREK.LAMPS.length; AG=new THREE.Group(); AG.name='apts-in'; scene.add(AG); AS=[];
-    const sol=(x0,y0,x1,y1,h)=>{ const r=box4(x0,y0,x1,y1); AS.push(r); SOL.up.push(r); let f=null; if(h!=null){ f=[r[0],r[1],Yr(0),r[2],r[3],Yr(h)]; AF.push(f); FIX.up.push(f); } return {r,f}; }; APTS.solid=sol;
+    const sol=(x0,y0,x1,y1,h)=>{ const r=box4(x0,y0,x1,y1); AS.push(r); SOL.up.push(r); let f=null; if(h!=null){ f=[r[0],r[1],Yh(0),r[2],r[3],Yh(h)]; AF.push(f); FIX.up.push(f); } return {r,f}; }; APTS.solid=sol;
     APTS.shelf=(x0,y0,x1,y1,b,t)=>{ const r=box4(x0,y0,x1,y1), f=[r[0],r[1],b,r[2],r[3],t]; AF.push(f); FIX.up.push(f); return {r:null,f}; };   // a surface off the floor (a shelf) for loose things to rest on
     APTS.unsolid=h=>{ const rm=(L,x)=>{ const i=L.indexOf(x); if(i>=0)L.splice(i,1); }; if(h.r){ rm(AS,h.r); rm(SOL.up,h.r); } if(h.f){ rm(AF,h.f); rm(FIX.up,h.f); } };   // a piece moved in the room editor lifts its old solid
     PA=ROOMS.part(AG,()=>{
-      for(const [k,nx,nz] of [['Wf',0,1],['Wb',0,-1],['Ww',1,0],['We',-1,0]])cutWalls.push({pl:WPL[k],nx,nz,foot:Yr(1),me:null,when:()=>!!APTS.inReal});
+      for(const [k,nx,nz] of [['Wf',0,1],['Wb',0,-1],['Ww',1,0],['We',-1,0]])cutWalls.push({pl:WPL[k],nx,nz,foot:Yh(1),me:null,when:()=>!!APTS.inReal&&!APTS.onEsc});
       // the shell (brick walls, the windows and doors, the planks) is your room's own build (150a-bedroom); here only what you walk into
-      sol(AR.x0-.4,AR.y0-.4,AR.x1+.4,AR.y0,WH); sol(AR.x0-.4,AR.y1,AR.x1+.4,AR.y1+.4,WH); sol(AR.x0-.4,AR.y0,AR.x0,AR.y1,WH); sol(AR.x1,AR.y0,AR.x1+.4,AR.y1,WH); APTS.door=[DC,AR.y1];   // the walls stand outside the room's faces, so no loose thing starts inside one (the physics leaves out any wall a thing overlaps), floor to ceiling
-      const put=(k,x,y,r=0,solid=true)=>{ const f=K.CATALOG[k]; if(!f)return null; const p=f(+x.toFixed(3),+y.toFixed(3)); if(!p)return null; SHARED.BOD.place(p,r); for(const b of p.boxes)SHARED.BOD.gbox(b,'A');
+      sol(AR.x0-.4,AR.y0-.4,DC-DG,AR.y0,WH); sol(DC+DG,AR.y0-.4,AR.x1+.4,AR.y0,WH); ED.sol=null; ED.set(ED.open); sol(AR.x0-.4,AR.y1,AR.x1+.4,AR.y1+.4,WH); sol(AR.x0-.4,AR.y0,AR.x0,AR.y1,WH); sol(AR.x1,AR.y0,AR.x1+.4,AR.y1,WH); APTS.door=[DC,AR.y1];   // the walls stand outside the room's faces, so no loose thing starts inside one (the physics leaves out any wall a thing overlaps), floor to ceiling
+      const put=(k,x,y,r=0,solid=true)=>{ const f=K.CATALOG[k]; if(!f)return null; const p=f(+x.toFixed(3),+y.toFixed(3)); if(!p)return null; SHARED.BOD.place(p,r); for(const b of p.boxes)SHARED.BOD.gbox({...b,z0:b.z0+RB,z1:b.z1+RB},'A');
         const bs=p.boxes.filter(b=>!b.nb&&b.z0<30&&b.z1-b.z0>3); if(solid&&!p.walk&&!p.high&&bs.length)sol(Math.min(...bs.map(b=>b.x0)),Math.min(...bs.map(b=>b.y0)),Math.max(...bs.map(b=>b.x1)),Math.max(...bs.map(b=>b.y1))); p.kind=k; made.push(p); return p; };
       APTS.put=put; const made=APTS.made=[];
       for(const f of FURN)f(); },MKA);
     K.PROPS.length=n0; SHARED.BOD.STOREK.LAMPS.length=l0;
     { const g=new THREE.PlaneGeometry(Math.abs(X(AR.x1)-X(AR.x0)),Math.abs(Z(AR.y1)-Z(AR.y0))); g.rotateX(Math.PI/2);   // the ceiling: there, but hidden while you look in from outside (iso); seen in first person when you look up
-      const ceil=new THREE.Mesh(g,new THREE.MeshLambertMaterial({color:0xe0dace,side:THREE.DoubleSide})); ceil.position.set((X(AR.x0)+X(AR.x1))/2,Yr(WH),(Z(AR.y0)+Z(AR.y1))/2); ceil.visible=false; AG.add(ceil); APTS.ceil=ceil;
+      const ceil=new THREE.Mesh(g,new THREE.MeshLambertMaterial({color:0xe0dace,side:THREE.DoubleSide})); ceil.position.set((X(AR.x0)+X(AR.x1))/2,Yh(WH),(Z(AR.y0)+Z(AR.y1))/2); ceil.visible=false; AG.add(ceil); APTS.ceil=ceil;
       const roof=new THREE.Mesh(g,new THREE.MeshBasicMaterial({colorWrite:false,depthWrite:false,side:THREE.DoubleSide})); roof.position.copy(ceil.position); roof.position.y+=.02; roof.castShadow=true; roof.renderOrder=-9; AG.add(roof); }   // the sun reaches in only through the windows
     return PA; };
-  const unbuild=()=>{ for(const r of AS){ const i=SOL.up.indexOf(r); if(i>=0)SOL.up.splice(i,1); } AS=[]; for(const f of AF){ const i=FIX.up.indexOf(f); if(i>=0)FIX.up.splice(i,1); } AF=[]; PA=null; for(const k in DYN)DYN[k].length=0; if(AG){ AG.removeFromParent(); AG=null; } };
+  const unbuild=()=>{ ED.sol=null; for(const r of AS){ const i=SOL.up.indexOf(r); if(i>=0)SOL.up.splice(i,1); } AS=[]; for(const f of AF){ const i=FIX.up.indexOf(f); if(i>=0)FIX.up.splice(i,1); } AF=[]; PA=null; for(const k in DYN)DYN[k].length=0; if(AG){ AG.removeFromParent(); AG=null; } };
   SYS.add('places',()=>{ if(!APTS.in&&!APTS.inReal)return; const t=performance.now()/1000, e=CLOCK.elev(), day=Math.max(0,Math.min(1,(e+2)/10)), sv=CLOCK.sunV;   // the apartment breathes with the live sun: daylight at the glass, slats creeping over the floor, candle flames guttering
     for(const m of DYN.win)m.material.opacity=(.06+.14*day)*.5;   // faint bloom only; the real sky shows through the open window
     for(const m of DYN.bar){ m.material.opacity=day*.5*(.62+.38*Math.sin(t*.22)); m.position.set(sv.x*day*3,0,sv.z*day*3); }
@@ -158,7 +160,7 @@ await grab('apts',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Yr=SHARED.BOD.
     for(const f of DYN.flame){ const fl=.7+.3*Math.sin(t*11+f.fy)+.15*Math.sin(t*23.3+f.fy*2); f.L.intensity=f.i0*(.6+.4*fl); f.fm.scale.set(1,.85+.3*fl,1); f.fm.material.opacity=.72+.24*fl; f.fm.position.y=f.fy+Math.sin(t*7+f.fy)*.3; }
   },'059a-apts');
   APTS.spawn=[X(DC),Z(AR.y1-1.3),0,Math.PI];   // the apartment is entered off the map (not a clipped ROOMS room), so the live sky shows through its open windows
-  APTS.doorW=(d=>[d[0],Y(0),d[1]])(XZ(m,A.y1+.25)); APTS.exitW=[X(DC),0,Z(AR.y1-.25)];
+  APTS.doorW=(d=>[d[0],Y(0),d[1]])(XZ(m,A.y1+.25)); APTS.exitW=[X(DC),Yh(0),Z(AR.y1-.25)];
   APTS.num=(()=>{ try{ return localStorage.getItem('market-apt')||null; }catch(e){ return null; } })();
   APTS.loadNum=async()=>{ try{ const SB='https://jvcetttmqseoteidfggn.supabase.co', KEY='sb_publishable_UkzD8hOizW1hPr6hm3duQQ_07ZodPik', raw=localStorage.getItem('sb-jvcetttmqseoteidfggn-auth-token'); if(!raw)return; const s=JSON.parse(raw); if(!s||!s.access_token)return;
     const uid=JSON.parse(atob(s.access_token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/'))).sub, r=await fetch(SB+'/rest/v1/players?select=apt&id=eq.'+uid,{headers:{apikey:KEY,Authorization:'Bearer '+s.access_token}}); if(!r.ok)return; const a=await r.json(), n=a&&a[0]&&a[0].apt;
@@ -167,14 +169,15 @@ await grab('apts',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Yr=SHARED.BOD.
   // YOUR APARTMENT: entered off the map (the street never draws here), the live sky showing through the open windows with the far city hidden, so you look out on nothing but sky and clouds (owner, 23 Oct 2026)
   { APTS.inReal=false;
     const hideFar=()=>{ const F=window.FAR3; if(F){ if(F.mesh)F.mesh.visible=false; if(F.panels)F.panels.visible=false; if(F.trees)F.trees.visible=false; if(F.FU)F.FU.uMK.value=0; if(F.fog&&scene.fog===F.fog)scene.fog=null; } };
-    APTS.enterReal=async()=>{ if(FADE.busy)return; await FADE.run('YOUR APARTMENT',async()=>{ if(!PA){ if(window.LOAD)await LOAD('apts','later'); build(); } if(AG)AG.visible=true; APTS.inReal=true; hideFar(); UI.goTo(X((AR.x0+AR.x1)/2),Z((AR.y0+AR.y1)/2),Yr(0)); SHARED.heading=0; },{hold:200}); };
+    APTS.enterReal=async at=>{ if(FADE.busy)return; await FADE.run('YOUR APARTMENT',async()=>{ if(!PA){ if(window.LOAD)await LOAD('apts','later'); build(); } if(window.FIREV&&STORE.offGo)await STORE.offGo(FIREV.name); if(AG)AG.visible=true; APTS.inReal=true; hideFar(); if(at){ UI.goTo(at[0],at[1],at[2]); SHARED.heading=at[3]; } else { UI.goTo(X((AR.x0+AR.x1)/2),Z((AR.y0+AR.y1)/2),Yh(0)); SHARED.heading=0; } },{hold:200}); };   // your rooms and their fire escape are one place, built together
     APTS.exitReal=async()=>{ if(FADE.busy)return; await FADE.run('OUT TO THE STREET',async()=>{ APTS.inReal=false; if(AG)AG.visible=false; const d=XZ(m,A.y1+.9); UI.goTo(d[0],d[1],Yr(1)); SHARED.heading=TA.hd(0); },{hold:200}); };
     let hbMade=false; const mkHB=()=>{ if(hbMade||!UI.thing)return; hbMade=true; const hb=(p,name,act)=>{ const o=new THREE.Mesh(new THREE.BoxGeometry(1.3*TILE,2.4*TILE,.5*TILE),new THREE.MeshBasicMaterial({visible:false})); o.position.set(p[0],p[1]+1.2*TILE,p[2]); scene.add(o); UI.thing({name,ghost:1,obj:o,reach:1.4*TILE,near:2.6*TILE,tall:2.4*TILE,act}); };
       hb(APTS.doorW,'YOUR APARTMENT',()=>APTS.enterReal()); hb(APTS.exitW,'OUT TO THE STREET',()=>APTS.exitReal()); };   // the front door on the street, and the way back out from inside
-    const inR=(x,z)=>{ const a=X(AR.x0),b=X(AR.x1),c=Z(AR.y0),d=Z(AR.y1); return x>Math.min(a,b)-3&&x<Math.max(a,b)+3&&z>Math.min(c,d)-3&&z<Math.max(c,d)+3; };
+    const inR=(x,z)=>{ const a=X(AR.x0),b=X(AR.x1),c=Z(AR.y0),d=Z(AR.y1); return x>Math.min(a,b)-3&&x<Math.max(a,b)+3&&z>Math.min(c,d)-4&&z<Math.max(c,d)+3; };
     APTS.inR=inR;   // a saved spot inside the apartment (off the map): rebuild and re-enter it on reload, else you land in the empty sky
-    APTS.offAt=async(x,z)=>{ if(APTS.inReal)return true; if(!inR(x,z))return false; await APTS.enterReal(); return true; };
-    const sg0=STORE.stackGround; STORE.stackGround=(x,z)=>APTS.inReal&&inR(x,z)?Yr(0):sg0?sg0(x,z):null;
+    APTS.offAt=async(x,z,lv)=>{ if(lv==='down')return false; const F=window.FIREV, u=x/(TILE*BLDK)+SHARED.BOD.OX, v=z/(TILE*BLDK)+SHARED.BOD.OY; if(inR(x,z)){ if(!APTS.inReal)await APTS.enterReal(); return [x,z,Yh(0)]; }   // your rooms and their fire escape are all on one floor
+      if(F&&F.out&&Math.abs(u-F.CX)<10&&Math.abs(v-F.WY-1)<4){ await F.out(); return [pos.x,pos.z,SHARED.py]; } return false; };   // a spot saved where the fire escape used to stand: your landing
+    const sg0=STORE.stackGround; STORE.stackGround=(x,z)=>APTS.inReal&&inR(x,z)?Yh(0):sg0?sg0(x,z):null;
     SYS.add('places',()=>{ mkHB(); if(APTS.inReal)hideFar(); if(APTS.ceil)APTS.ceil.visible=APTS.inReal&&!!UI.persp; },'059a-aptsky');   // ceiling only in first person; gone when you view the room from outside
     window.ENTERAPT=()=>APTS.enterReal(); window.EXITAPT=()=>APTS.exitReal();
     APTS.REALDBG=()=>({inReal:APTS.inReal,built:!!PA}); }

@@ -74,7 +74,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     if(!UI.freeCam){ tv.set(0,0,1).applyQuaternion(q1); UI.off.addScaledVector(tv,-UI.off.dot(tv)); } };
   UI.MAXW=30*TILE; UI.NEARH=6.6/.84*TILE; window.CAMW=()=>(SHARED.cam.right-SHARED.cam.left)/TILE;
   SHARED.camMaxW=UI.MAXW;   // the frustum (004-main) caps the visible width here, so full zoom-out is the same extent at every resolution; the zoom just freezes once the view fills it
-  let zAt=null; UI.wheelAt=e=>{ '@later'; if(UI.persp){ SHARED.ppuTo=SHARED.ppu; if(UI.view==='third'||UI.view==='follow')UI.dist=Math.max(1.2*TILE,Math.min(22*TILE,UI.dist*Math.pow(1.0015,e.deltaY))); return; }
+  let zAt=null; UI.wheelAt=e=>{ '@later'; if(UI.persp){ SHARED.ppuTo=SHARED.ppu; if(UI.view==='third'||UI.view==='follow')UI.dist=Math.max(1.2*TILE,Math.min(UI.distMax||22*TILE,UI.dist*Math.pow(1.0015,e.deltaY))); return; }
     if(e.deltaY>0&&RW/rppu()>=UI.MAXW*.995){ SHARED.ppuTo=SHARED.ppu; zAt=null; return; } const r=cv.getBoundingClientRect(); zAt={x:e.clientX-r.left-r.width/2,y:r.height/2-(e.clientY-r.top)}; };
   UI.zk=()=>(SHARED.cam.right-SHARED.cam.left)/cv.getBoundingClientRect().width;
   UI.zoomStep=k0=>{ if(!UI.persp&&RW/rppu()>=UI.MAXW)SHARED.ppuTo=Math.max(SHARED.ppuTo,SHARED.ppu);   // at the zoom-out limit, hold ppu steady (the frustum cap keeps the extent at MAXW) instead of snapping back
@@ -109,6 +109,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
       if(L>1e-3&&typeof SHARED.solids!=='undefined'){ const x0=Math.min(ax,bx)-m, x1=Math.max(ax,bx)+m, z0=Math.min(az,bz)-m, z1=Math.max(az,bz)+m, near=SHARED.solids.filter(b=>b[2]>x0&&b[0]<x1&&b[3]>z0&&b[1]<z1);
         if(near.length){ const n=Math.ceil(L/(.05*TILE)), A=tv.set(pos.x,SHARED.py+HEAD*sk,pos.z).clone(); for(let i=1;i<=n;i++){ const u=i/n, x=ax+(bx-ax)*u, z=az+(bz-az)*u;
           if(near.some(b=>x>b[0]-m&&x<b[2]+m&&z>b[1]-m&&z<b[3]+m)){ const f=(i-1)/n; if(f*A.distanceTo(SHARED.cam.position)>=1.5*TILE*sk)SHARED.cam.position.lerpVectors(A,SHARED.cam.position,f); break; } } } } }
+    if(UI.camKeep)UI.camKeep(SHARED.cam.position,T);   // a place that keeps the camera out of its walls
     if(FT)FEEL.cam(T,SHARED.cam.position); else { let g=SHARED.groundY(SHARED.cam.position.x,SHARED.cam.position.z)+LOW; const b=FOUNT.bedAt&&FOUNT.bedAt(SHARED.cam.position.x,SHARED.cam.position.z); if(b!=null&&dv>.01)g+=(b+LOW*.3-g)*dv; if(SHARED.cam.position.y<g)SHARED.cam.position.y=g; }
     SHARED.cam.lookAt(T); SHARED.cam.updateMatrixWorld(); };
   UI.setView(new URLSearchParams(location.search).get('view')||'iso');
@@ -270,7 +271,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
   $('#myapt').onclick=()=>{ if(UI.menuOpen)toggleMenu(); if(MODS.apts&&MODS.apts.enterReal)MODS.apts.enterReal(); };
   const PLACES=[['THE STREET',-2.2,3.2,'up'],['THE BODEGA',SHARED.BOD.X((SHARED.BOD.SB.x0+SHARED.BOD.SB.x1)/2),SHARED.BOD.Z(SHARED.BOD.SB.y1)-1.6,'up',null,Math.PI],['THE PLATFORM',MODS.station.plat.x,MODS.station.plat.z,'down'],['CENTRAL PARK',SHARED.BOD.XS(PARK.round[0]+PARK.ox),SHARED.BOD.ZS(PARK.y0+7+PARK.oy),'up'],['THE BATH HOUSE',SHARED.BOD.X(SHARED.BOD.GD.door[0]),SHARED.BOD.Z(SHARED.BOD.GD.door[1]+4.5),'up'],...(STORE.main?STORE.main.doors.map(d=>[...d,'up']):[]),['THE CASTLE',SHARED.BOD.XS(CASTLE.gate),SHARED.BOD.ZS(CASTLE.b[2]-3),'up'],['DUNGEON L1',MODS.dungeon.arrive(1).x,MODS.dungeon.arrive(1).z,'down']];
   UI.places=()=>PLACES.concat(STORE.places||[]);
-  const goPlace=async n=>{ if(n==='YOUR APARTMENT'&&MODS.apts&&MODS.apts.enterReal)return MODS.apts.enterReal(); if(STORE.ensure)await STORE.ensure(); if(STORE.offGo)await STORE.offGo(n); const P=PLACES.concat(STORE.places).find(p=>p[0]===n); if(P)toPlace(P[1],P[2],P[3],P[5]); }; UI.goPlace=goPlace;
+  const goPlace=async n=>{ if(n==='YOUR APARTMENT'&&MODS.apts&&MODS.apts.enterReal)return MODS.apts.enterReal(); if(window.FIREV&&n===FIREV.name&&FIREV.out)return FIREV.out(); if(STORE.ensure)await STORE.ensure(); if(STORE.offGo)await STORE.offGo(n); const P=PLACES.concat(STORE.places).find(p=>p[0]===n); if(P)toPlace(P[1],P[2],P[3],P[5]); }; UI.goPlace=goPlace;
   { const q=QS.get('place'); const go=()=>window.__started?goPlace(q.toUpperCase()):setTimeout(go,200); if(q)setTimeout(go,300); }
   for(const [n,x,z,lv,,hd] of PLACES){ const b=document.createElement('button'); b.className='btn'; b.textContent=n; b.onclick=()=>toPlace(x,z,lv,hd); $('#places').appendChild(b); }
   { const h=document.createElement('h3'); h.textContent='ROOMS'; $('#places').parentNode.appendChild(h); const row=document.createElement('div'); row.className='row'; row.id='roomsrow'; $('#places').parentNode.appendChild(row);

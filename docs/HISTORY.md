@@ -4758,3 +4758,5 @@ Owner: "keep this exact look but dont waste render". The screen passes now share
 ## 25 Oct 2026: a lighter player model
 Owner: "a lighter player model that looks nearly the same". The Walker's body is welded coarser (his hair as fine as before): about half the triangles drawn, the same look at play zoom; the figures built the same way (other players, the second walker, the musicians) get lighter too. With OUTLINE on, its extra pass draws only the patch of screen round him.
 - The park hills built again (they had stopped being built since 22 Oct: a part not built).
+## 25 Oct 2026: cheaper shadow edges
+Owner: "cheaper shadow edges: less blurring on shadow edges, the shadows themselves stay". PCF and SOFT read 4 texels per shadow instead of 17 and 16 (a lamp's shadow 4 instead of 9), so their edges are a little crisper; the sun reads its near or its far map, never both, and the moving things' map only where the still map leaves light. HARD (the default) looks the same.

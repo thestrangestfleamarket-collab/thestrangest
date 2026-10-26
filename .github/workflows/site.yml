@@ -49,6 +49,8 @@ jobs:
         run: node tests/online.cjs dist/market.html
       - name: Fights between players (hitboxes, blows, knockdown)
         run: node tests/brawl.cjs dist/market.html
+      - name: The headset (VR on an emulated Quest 3)
+        run: node tests/vr.cjs dist/market.html
       - name: Your bedroom (the owner's picture, real bodies, iso walls)
         run: node tests/bedroom.cjs dist/market.html
       - name: The room editor (decorate your apartment, saved and back after a reload)

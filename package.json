@@ -5,6 +5,7 @@
     "@recast-navigation/core": "0.43.1",
     "@recast-navigation/generators": "0.43.1",
     "esbuild": "0.24.0",
+    "iwer": "2.5.0",
     "playwright": "^1.56.1",
     "three": "0.160.0",
     "three-mesh-bvh": "0.8.3",

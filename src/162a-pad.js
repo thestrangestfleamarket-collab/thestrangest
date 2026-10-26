@@ -1,15 +1,16 @@
 // THE GAMEPAD: PAD lets the player play with an Xbox or PlayStation controller.
-import {FORAGE, keys, UI} from './003b-systems.js';
+import {FORAGE, keys, UI, VR} from './003b-systems.js';
 import {renderer} from './004-main.js';
 import {SAVE} from './005-save.js';
 import {PAD} from './075-main-13.js';
 {
   const css=document.createElement('style'); css.textContent='.padon{outline:2px solid #f2c14e!important;outline-offset:2px}.padgrab{outline-color:#5cc337!important}body.padcur,body.padcur *{cursor:none!important}#keytab img.padi,#movesp img.padi{width:18px;height:18px;image-rendering:pixelated;vertical-align:middle}';
   document.head.appendChild(css);
-  Object.assign(PAD,{id:'',ps:false,held:new Map(),ui:null,at:null,grab:null,mouse:false,cur:false,aWait:false,useX:false,capture:null,prev:[],t:0});
+  Object.assign(PAD,{id:'',ps:false,held:new Map(),ui:null,at:null,grab:null,mouse:false,cur:false,aWait:false,useX:false,capture:null,prev:[],t:0,xr:null,q:false});
   const PADXB=['A','B','X','Y','LB','RB','LT','RT','VIEW','START','L3','R3','D-PAD UP','D-PAD DOWN','D-PAD LEFT','D-PAD RIGHT'],
-    PADPS=['CROSS','CIRCLE','SQUARE','TRIANGLE','L1','R1','L2','R2','CREATE','OPTIONS','L3','R3','D-PAD UP','D-PAD DOWN','D-PAD LEFT','D-PAD RIGHT'];
-  const bn=i=>i<0?'NONE':(PAD.ps?PADPS:PADXB)[i]||'BUTTON '+i;
+    PADPS=['CROSS','CIRCLE','SQUARE','TRIANGLE','L1','R1','L2','R2','CREATE','OPTIONS','L3','R3','D-PAD UP','D-PAD DOWN','D-PAD LEFT','D-PAD RIGHT'],
+    PADQ=['A','B','X','Y','LEFT GRIP','RIGHT GRIP','LEFT TRIGGER','RIGHT TRIGGER',,,'LEFT STICK PRESS','RIGHT STICK PRESS'];
+  const bn=i=>i<0?'NONE':(PAD.q?PADQ:PAD.ps?PADPS:PADXB)[i]||'BUTTON '+i;
   const GL={xb:[['.###.#...#######...##...#','#5cc337'],['####.#...#####.#...#####.','#e5403a'],['#...#.#.#...#...#.#.#...#','#3b7bff'],['#...#.#.#...#....#....#..','#f0c230']],
     ps:[['#...#.#.#...#...#.#.#...#','#7aa9ff'],['.###.#...##...##...#.###.','#ff6a6a'],['######...##...##...######','#f39bd6'],['.......#...#.#.#...######','#3ed8a6']]}, IC={};
   const icon=i=>{ '@later'; const k=(PAD.ps?'ps':'xb')+i; if(IC[k])return IC[k]; const [gl,col]=GL[PAD.ps?'ps':'xb'][i], c=document.createElement('canvas'); c.width=c.height=9; const g=c.getContext('2d');
@@ -31,7 +32,7 @@ import {PAD} from './075-main-13.js';
   const cv=renderer.domElement;
   const zoom=d=>{ const r=cv.getBoundingClientRect(); cv.dispatchEvent(new WheelEvent('wheel',{deltaY:d*-240,clientX:r.left+r.width/2,clientY:r.top+r.height/2,bubbles:true,cancelable:true})); };
   const C='button:not([disabled]),input:not([type=hidden]):not([disabled]),select:not([disabled]),textarea,a[href],[tabindex]:not([tabindex="-1"])';
-  const panels=()=>[...document.body.children].filter(e=>e!==cv&&!/^(stage|newver|shbar|subfade)$/.test(e.id)&&!e.hidden&&e.getClientRects().length&&getComputedStyle(e).display!=='none'&&e.querySelector(C));
+  const panels=PAD.panels=()=>[...document.body.children].filter(e=>e!==cv&&!/^(stage|newver|shbar|subfade)$/.test(e.id)&&!e.hidden&&e.getClientRects().length&&getComputedStyle(e).display!=='none'&&e.querySelector(C));
   const ctls=()=>panels().flatMap(p=>[...p.querySelectorAll(C)]).filter(e=>{ if(e.closest('[inert],[hidden]'))return false; const r=e.getBoundingClientRect(); return r.width>0&&r.height>0&&r.bottom>0&&r.top<innerHeight&&getComputedStyle(e).visibility!=='hidden'; });
   const grab=el=>{ if(PAD.grab)PAD.grab.classList.remove('padgrab'); PAD.grab=el; if(el)el.classList.add('padgrab'); };
   const mark=el=>{ grab(null); if(PAD.ui)PAD.ui.classList.remove('padon'); PAD.ui=el; if(el){ el.classList.add('padon'); el.focus({preventScroll:true}); el.scrollIntoView({block:'nearest'}); const r=el.getBoundingClientRect(); PAD.at=[r.left+r.width/2,r.top+r.height/2]; } };
@@ -54,11 +55,11 @@ import {PAD} from './075-main-13.js';
     if(hit(4))tab(-1); if(hit(5))tab(1);
     if(hit(0)&&PAD.ui){ if(PAD.ui.type==='range')grab(PAD.grab?null:PAD.ui); else if(PAD.ui.tagName!=='SELECT')PAD.ui.click(); } };
   let capUp=false, capT=0;
-  const pick=()=>{ const gs=[...navigator.getGamepads()].filter(g=>g&&g.connected), st=gs.filter(g=>g.mapping==='standard'), pool=st.length?st:gs; return pool.reduce((a,g)=>!a||g.timestamp>a.timestamp?g:a,null); };
+  const pick=()=>{ const gs=[...navigator.getGamepads(),PAD.xr].filter(g=>g&&g.connected), st=gs.filter(g=>g.mapping==='standard'), pool=st.length?st:gs; return pool.reduce((a,g)=>!a||g.timestamp>a.timestamp?g:a,null); };
   const zr={};
   const rep=(k,on)=>{ const now=performance.now(); if(!on){ zr[k]=0; return false; } if(!zr[k]){ zr[k]=now+350; return true; } if(now>=zr[k]){ zr[k]=now+120; return true; } return false; };
   const tick=now=>{ '@later'; if(!PAD.n){ letGo(); return; } requestAnimationFrame(tick); const dt=Math.min(.05,(now-(PAD.t||now))/1000); PAD.t=now; const gp=pick(); if(!gp){ if(PAD.held.size)letGo(); return; }
-    if(gp.id!==PAD.id){ PAD.id=gp.id; PAD.ps=/054c|playstation|dualsense|dualshock/i.test(gp.id); }
+    if(gp.id!==PAD.id){ PAD.id=gp.id; PAD.ps=/054c|playstation|dualsense|dualshock/i.test(gp.id); PAD.q=gp===PAD.xr; }
     const Bv=gp.buttons.map(b=>b.value), pr=PAD.prev, on=i=>i>=0&&(Bv[i]||0)>.5, hit=i=>on(i)&&!((pr[i]||0)>.5), ax=gp.axes, b=a=>BIND[a];
     const act=Bv.some((v,i)=>Math.abs(v-(pr[i]||0))>.1)||ax.some(a=>Math.abs(a)>.4); PAD.prev=Bv;
     if(act&&!PAD.cur){ PAD.cur=true; document.body.classList.add('padcur'); }
@@ -69,7 +70,7 @@ import {PAD} from './075-main-13.js';
     if(Math.hypot(lx,ly)>.2){ const s=(Math.round(Math.atan2(ly,lx)/(Math.PI/4))+8)%8; h=s===0||s===1||s===7?'d':s>=3&&s<=5?'a':null; v=s>=1&&s<=3?'s':s>=5?'w':null; }
     hold('h',h&&K(h)); hold('v',v&&K(v)); PAD.mv=(h&&keys.has(h))||(v&&keys.has(v))?[lx,ly]:null;
     const rx=ax[2]||0, ry=ax[3]||0, rr=Math.hypot(rx,ry);
-    if(rr>.2&&!UI.menuOpen){ const k=(rr-.2)/.8/rr; if(UI.persp)UI.orbit(rx*k*dt*420,ry*k*dt*300); else UI.orbit(rx*k*dt*420,0); }
+    if(rr>.2&&!UI.menuOpen&&!VR.on){ const k=(rr-.2)/.8/rr; if(UI.persp)UI.orbit(rx*k*dt*420,ry*k*dt*300); else UI.orbit(rx*k*dt*420,0); }
     if(!PAD.useX&&hit(b('use'))&&UI.useNear())PAD.useX=true; else if(PAD.useX&&!on(b('use')))PAD.useX=false;
     hold('A',on(b('jump'))&&!PAD.aWait?K(' '):null); hold('X',on(b('punch'))&&!PAD.useX?K('j'):null); hold('Y',on(b('kick'))?K('k'):null);
     const run=(Bv[b('run')]||0)>.3; hold('RT',run?K('shift'):null); hold('LB',on(b('turnL'))?K('q'):null); hold('RB',on(b('turnR'))?K('e'):null);

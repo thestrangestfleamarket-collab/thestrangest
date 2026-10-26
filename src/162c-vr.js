@@ -7,7 +7,7 @@ import {collide, frame, PAD} from './075-main-13.js';
 {
   const xr=navigator.xr, V3=THREE.Vector3, SNAP=Math.PI/6, LEASH=.3;
   Object.assign(VR,{s:null,busy:false,cal:false,pose:null,rt:null,yaw:0,eye:0,y0:0,px:0,pz:0,view:'',fov:60,tip:0,m:'',win:false,ct:0,bt:0,sn:0,err:0});
-  window.VR=VR; VR.state=()=>({view:UI.view,body:W3.group.visible,pad:!!PAD.xr,menu:!!UI.menuOpen,fov:PCAM.fov});
+  window.VR=VR; VR.state=()=>({view:UI.view,body:W3.group.visible,pad:!!PAD.xr,menu:!!UI.menuOpen,fov:PCAM.fov,yaw:SHARED.yawTo,pitch:SHARED.pitchTo});
   const O=new V3(), HL=new V3(), HQ=new THREE.Quaternion(), FW=new V3(), EV=new V3();
   const DOLLY=new THREE.Group(), CAM=new THREE.PerspectiveCamera(70,1,.05,450); DOLLY.add(CAM); VR.cam=CAM; VR.dolly=DOLLY;
   const HUD=new THREE.Scene(), HG=new THREE.Group(); HG.matrixAutoUpdate=false; HUD.add(HG);
@@ -48,8 +48,8 @@ import {collide, frame, PAD} from './075-main-13.js';
     if(Math.abs(rx)<.3)VR.sn=0; else if(!VR.sn&&Math.abs(rx)>.65){ VR.sn=1; turn(rx>0?-SNAP:SNAP); }
     if(edge('q',keys.has('q')))turn(SNAP); if(edge('e',keys.has('e')))turn(-SNAP);
     if(edge('rc',B[11].value>.5))VR.cal=false;
-    if(edge('y',B[3].value>.5)&&VR.m==='win')VR.leave();
-    if(B[1].value>.5){ const n=performance.now(); if(!VR.bt)VR.bt=n; else if(n-VR.bt>1500){ VR.bt=Infinity; VR.leave(); } } else VR.bt=0;
+    if(edge('y',B[3].value>.5)&&VR.m==='win')return VR.leave();
+    if(B[1].value>.5){ const n=performance.now(); if(!VR.bt)VR.bt=n; else if(n-VR.bt>1500){ VR.bt=Infinity; return VR.leave(); } } else VR.bt=0;
     head(EV); let dx=EV.x-pos.x, dz=EV.z-pos.z, d=Math.hypot(dx,dz); const L=LEASH*FEEL.MH;
     if(d>L){ if(free()){ const k=1-L/d; pos.x+=dx*k; pos.z+=dz*k; collide(pos); if(FEEL.take())FEEL.sync(); dx=EV.x-pos.x; dz=EV.z-pos.z; d=Math.hypot(dx,dz); }
       if(d>L){ const m=(d-L)/d; O.x-=dx*m; O.z-=dz*m; } }

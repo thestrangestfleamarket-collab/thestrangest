@@ -100,11 +100,12 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
   const HOLE=new THREE.ShaderMaterial({blending:THREE.NoBlending,depthWrite:true,vertexShader:'varying vec2 vU; void main(){ vU=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.); }',
     fragmentShader:'varying vec2 vU; void main(){ vec2 d=(vU-.5)*vec2(1.,1.12); float v=smoothstep(.12,.62,length(d)); float a=.04+.45*v*v; gl_FragColor=vec4(0.,0.,0.,a); }'});
   let CUT=null;
+  const CUTH='uniform float uOn; uniform vec2 uQ[4]; float cutS(vec2 a,vec2 b,vec2 p){ return (b.x-a.x)*(p.y-a.y)-(b.y-a.y)*(p.x-a.x); }',
+    CUTC='{ vec4 c=gl_FragColor; float a=1.; vec3 rgb=c.rgb; if(uOn>.5){ float s0=cutS(uQ[0],uQ[1],vUv), s1=cutS(uQ[1],uQ[2],vUv), s2=cutS(uQ[2],uQ[3],vUv), s3=cutS(uQ[3],uQ[0],vUv); if((s0>=0.&&s1>=0.&&s2>=0.&&s3>=0.)||(s0<=0.&&s1<=0.&&s2<=0.&&s3<=0.)){ a=c.a; if(a<.99)rgb=vec3(0.); } } gl_FragColor=vec4(rgb,a); }';
   const mkCut=()=>{ if(CUT||!SHARED.composer)return; CUT=new ShaderPass({uniforms:{tDiffuse:{value:null},uOn:{value:0},uQ:{value:[0,1,2,3].map(()=>new THREE.Vector2())}},
     vertexShader:'varying vec2 vUv; void main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.); }',
-    fragmentShader:'uniform sampler2D tDiffuse; uniform float uOn; uniform vec2 uQ[4]; varying vec2 vUv; float s(vec2 a,vec2 b,vec2 p){ return (b.x-a.x)*(p.y-a.y)-(b.y-a.y)*(p.x-a.x); }\n'
-      +'void main(){ vec4 c=texture2D(tDiffuse,vUv); float a=1.; vec3 rgb=c.rgb; if(uOn>.5){ float s0=s(uQ[0],uQ[1],vUv), s1=s(uQ[1],uQ[2],vUv), s2=s(uQ[2],uQ[3],vUv), s3=s(uQ[3],uQ[0],vUv); if((s0>=0.&&s1>=0.&&s2>=0.&&s3>=0.)||(s0<=0.&&s1<=0.&&s2<=0.&&s3<=0.)){ a=c.a; if(a<.99)rgb=vec3(0.); } } gl_FragColor=vec4(rgb,a); }'});
-    SHARED.composer.addPass(CUT); };
+    fragmentShader:'uniform sampler2D tDiffuse; varying vec2 vUv; '+CUTH+'\nvoid main(){ gl_FragColor=texture2D(tDiffuse,vUv); '+CUTC+' }'});
+    SHARED.composer.addPass(CUT); SHARED.fold('cut',CUT,{head:CUTH,code:CUTC,uniforms:{uOn:CUT.uniforms.uOn,uQ:CUT.uniforms.uQ}}); };
   const facing=me=>{ me.updateMatrixWorld(); const n=new THREE.Vector3(0,0,1).transformDirection(me.matrixWorld), p=new THREE.Vector3().setFromMatrixPosition(me.matrixWorld); return n.dot(new THREE.Vector3().subVectors(SHARED.cam.position,p))>0; };
 
   // the projector at the back: a flickering beam to the screen, and the box it comes from

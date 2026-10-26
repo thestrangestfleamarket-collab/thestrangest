@@ -4752,3 +4752,6 @@ Deploys failed from #315 on: the free plan allows 100 Durable Object namespaces 
 - Owner: "when you double click an item to pick it up and are holding it, if you double click somewhere else you will put the item down in that spot (not throw the item)". Holding a thing, a double-click on the ground walks you there and sets it down (PUT DOWN); it is no longer thrown.
 - Owner (a picture of the trees tangled at the wall): "lots of glitchy trees near brick wall edge of park". The edge ring is one row, each crown just clear of the next.
 - Owner: "the bridge should go over the river correctly angled"; his pick: turn the bridge and the path. The path bends to cross the stream square, on a bridge square across the water.
+
+## 25 Oct 2026: the same picture, fewer passes
+Owner: "keep this exact look but dont waste render". The screen passes now share a draw where one only changes its own pixel (the colour output into the haze, the cinema cut into the look), and the look's glow is blurred in two steps; the picture is unchanged.

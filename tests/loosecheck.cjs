@@ -39,6 +39,9 @@ const walkInto=(pg,n,k=2.5)=>pg.evaluate(([n,k])=>{ const T=__dbg.cv().TILE, a=L
     const c1=await pg.evaluate(()=>({h:GOODSDBG().held,a:LOOSE.nearest('office chair')})); ok(c1.h==='office chair','picked up the office chair (held: '+c1.h+')');
     await pg.evaluate(()=>GOODSTHROW(-3*__dbg.cv().TILE,0)); await wait(pg,300); const {a:c2,t}=await settle(pg,'office chair');
     ok(!c2.awake&&Math.hypot(c2.at[0]-c0.a.at[0],c2.at[2]-c0.a.at[2])>.5,`thrown, it lands ${Math.hypot(c2.at[0]-c0.a.at[0],c2.at[2]-c0.a.at[2]).toFixed(2)} away and sleeps (${(t/1000).toFixed(1)} s)`);
+    await beside(pg,'office chair',.6); await wait(pg,1500); await pg.evaluate(()=>GOODSGRAB('office chair')); await wait(pg,800);
+    const pu=await pg.evaluate(()=>{ const T=__dbg.cv().TILE, r=GOODSPUT(1.5*T,0); return {r,T,h:GOODSDBG().held}; }); await wait(pg,300); const {a:c3}=await settle(pg,'office chair'); const p3=await pg.evaluate(()=>__dbg.pos());
+    ok(pu.r&&!pu.h&&Math.abs(c3.at[0]-p3[0]-1.5*pu.T)<.5*pu.T&&Math.abs(c3.at[2]-p3[2])<.5*pu.T,'held, a double-click puts it down where you clicked, not thrown ('+JSON.stringify([c3.at[0]-p3[0],c3.at[2]-p3[2]].map(v=>+(v/pu.T).toFixed(2)))+' tiles)');
     const hit=await pg.evaluate(()=>GOODSHIT(3,5)); await wait(pg,300); const ms=[]; let aw=0;
     for(let i=0;i<10;i++){ await wait(pg,200); const d=await pg.evaluate(()=>GOODSDBG()); ms.push(d.ms); aw=Math.max(aw,d.awake); }
     console.log(`  knocked ${hit}: up to ${aw} awake, the physics ${Math.max(...ms).toFixed(2)} ms a frame (EMA), ${Math.min(...ms).toFixed(2)} at least`);

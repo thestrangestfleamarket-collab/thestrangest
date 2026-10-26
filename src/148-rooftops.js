@@ -1,11 +1,12 @@
 // THE ROOFTOPS: ROOFS dresses the roofs with tanks, vents, ducts and ledges.
 import {SHARED, THREE} from './003-shx.js';
+import {BLK} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {MODS, OUT, TILE} from './006-map-pre.js';
+import {BLOCK, MODS, OUT, TILE} from './006-map-pre.js';
 const ROOFS=window.ROOFS={};
 ROOFS.init=()=>{ if(typeof SHARED.BOD==='undefined'||!MODS.apts||!MODS.apts.A)return;
   const X=SHARED.BOD.X, Y=SHARED.BOD.Y, Z=SHARED.BOD.Z, MH=TILE/.84, MV=SHARED.BOD.YS(24)/.84;
-  const BX=[], CY=[], m4=new THREE.Matrix4(), q=new THREE.Quaternion(), e=new THREE.Euler(), V=THREE.Vector3, col=new THREE.Color();
+  const BX=[], CY=[], B2=[], C2=[], m4=new THREE.Matrix4(), q=new THREE.Quaternion(), e=new THREE.Euler(), V=THREE.Vector3, col=new THREE.Color();
   const b=(x,y,z,sx,sy,sz,c)=>BX.push([x,y,z,sx,sy,sz,c]), cyl=(x,y,z,r,h,c,cone=0)=>CY.push([x,y,z,r,h,c,cone]);
   const rnd=(()=>{ let t=19; return ()=>{ t=(t*16807)%2147483647; return t/2147483647; }; })();
   const leader=(x,z,ox,oz,top,c)=>{ const r=.07*MH, h=top-.15*MV; b(x,h/2,z,r*2,h,r*2,c);
@@ -54,6 +55,41 @@ ROOFS.init=()=>{ if(typeof SHARED.BOD==='undefined'||!MODS.apts||!MODS.apts.A)re
     { const lx=xa+.25; b(X(lx),Y(zr)+.08*MV,Z(ym),.12*MH,.16*MV,.12*MH,0x9a6a40); b(X(lx),Y(zr)+1.1*MV,Z(ym),.03*MH,2*MV,.03*MH,0xb07a48); b(X(lx),Y(zr)+1.6*MV,Z(ym),.14*MH,.14*MV,.14*MH,0x6aa0b0);
       b(X(xa)-.02*MH,(Y(ze)+Y(zr))/2,Z(ym),.03*MH,Y(zr)-Y(ze),.03*MH,0x9a6a40); } } }
 
+  // The across-street block: the Market St row (row 1), the Hudson row (row 2) and the alley between, dressed busy (units, dishes, ducts, planters, furniture, debris).
+  if(BLK&&BLK.blds&&BLK.blds.length){ const XS=SHARED.BOD.XS, ZS=SHARED.BOD.ZS, YS=SHARED.BOD.YS;
+    const b=(x,y,z,sx,sy,sz,c)=>B2.push([x,y,z,sx,sy,sz,c]), cyl=(x,y,z,r,h,c,cone=0)=>C2.push([x,y,z,r,h,c,cone]), vent=(x,y,z)=>{ cyl(x,y,z,.18*MH,.55*MV,0x8a8e90); cyl(x,y+.55*MV,z,.3*MH,.18*MV,0x9a9ea0,1); };
+    let rs=7; const rr=()=>((rs=(rs*48271)%2147483647)/2147483647), pick=a=>a[(rr()*a.length)|0];
+    const GR=[0x9a9ea2,0x8a8e90,0xb0b4b6,0x7a7e80], DK=0x4a4c4e, DK2=0x3a3c3e, RUST=0x6a4a38, WOOD=0x7a5a3a, WHT=0xd8dade, DISH=0xcfd2d4, GRN=[0x4a7a3a,0x5a8a44,0x3c6a30], TER=0xa0563a, GLASS=0x8aa6b4, DUCT=0x9aa0a2;
+    const unit=(x,z,t,w,d,h,c)=>{ b(x,t+h/2,z,w,h,d,c); b(x,t+h+.02*MV,z,w*1.04,.05*MV,d*1.04,DK2); };
+    const ac=(x,z,t,sc)=>{ const w=.7*MH*sc, h=.42*MV*sc; unit(x,z,t,w,.7*MH*sc,h,pick(GR)); cyl(x,t+h+.03*MV,z,.26*MH*sc,.07*MV,DK); cyl(x,t+h+.03*MV,z,.08*MH*sc,.1*MV,0x6a6e70); };
+    const hvac=(x,z,t,sc)=>{ const w=1.5*MH*sc, d=.95*MH*sc, h=.5*MV*sc; unit(x,z,t,w,d,h,pick(GR)); for(let k=0;k<3;k++)b(x-w*.25+k*w*.25,t+h+.06*MV,z,.04*MH*sc,.09*MV,d*.8,DK); b(x+w*.36,t+h*.5,z,.06*MH*sc,h*.7,d*.5,DK2); cyl(x-w*.52,t+h*.6,z,.12*MH*sc,.5*MV,DUCT); };
+    const dish=(x,z,t,sc)=>{ b(x,t+.05*MV,z,.3*MH*sc,.1*MV,.3*MH*sc,DK); cyl(x,t+.1*MV,z,.05*MH*sc,.55*MV,0x8a8e90); cyl(x,t+.58*MV,z,.42*MH*sc,.2*MV,DISH,1); cyl(x,t+.74*MV,z,.1*MH*sc,.08*MV,WHT); b(x+.3*MH*sc,t+.72*MV,z,.05*MH*sc,.04*MV,.05*MH*sc,DK); };
+    const duct=(x,z,t,len,ax)=>{ b(x,t+.26*MV,z,ax?len:.4*MH,.3*MV,ax?.4*MH:len,DUCT); for(const e of [-1,1])b(x+(ax?e*len/2:0),t+.4*MV,z+(ax?0:e*len/2),ax?.14*MH:.5*MH,.6*MV,ax?.5*MH:.14*MH,DK2); };
+    const planter=(x,z,t,sc)=>{ b(x,t+.12*MV,z,.5*MH*sc,.24*MV,.3*MH*sc,TER); for(let k=0;k<3;k++)cyl(x-.16*MH*sc+k*.16*MH*sc,t+.24*MV,z,.1*MH*sc,.3*MV*(.8+rr()*.6),pick(GRN),1); };
+    const bush=(x,z,t,sc)=>{ cyl(x,t+.04*MV,z,.16*MH*sc,.1*MV,TER); cyl(x,t+.14*MV,z,.26*MH*sc,.5*MV*sc,pick(GRN),1); cyl(x-.1*MH*sc,t+.14*MV,z+.08*MH*sc,.18*MH*sc,.36*MV*sc,pick(GRN),1); };
+    const patio=(x,z,t)=>{ cyl(x,t+.3*MV,z,.04*MH,.3*MV,DK); cyl(x,t+.3*MV,z,.3*MH,.04*MV,0xd8d4c8); for(const [ox,oz] of [[-1,0],[1,0],[0,-1],[0,1]])b(x+ox*.48*MH,t+.17*MV,z+oz*.48*MH,.2*MH,.34*MV,.2*MH,pick([0x5a5c5e,0x7a4a3a,0x3a5a6a])); };
+    const skylight=(x,z,t,sc)=>{ b(x,t+.08*MV,z,.7*MH*sc,.16*MV,.5*MH*sc,DK2); b(x,t+.18*MV,z,.6*MH*sc,.06*MV,.4*MH*sc,GLASS); };
+    const crate=(x,z,t,sc)=>b(x,t+.14*MV*sc,z,.3*MH*sc,.28*MV*sc,.3*MH*sc,pick([WOOD,RUST,0x5a5c5e]));
+    const pallet=(x,z,t)=>{ b(x,t+.04*MV,z,.6*MH,.06*MV,.45*MH,WOOD); for(const o of [-.2,0,.2])b(x+o*MH,t+.1*MV,z,.05*MH,.06*MV,.45*MH,WOOD); };
+    const pipes=(x,z,t)=>{ for(let k=0;k<3;k++)cyl(x+(k-1)*.12*MH,t+.5*MV,z,.05*MH,1*MV,pick([DK,DUCT,RUST])); b(x,t+.05*MV,z,.4*MH,.1*MV,.22*MH,DK2); };
+    const ant=(x,z,t,sc)=>{ const h=1.6*MV*sc; b(x,t+h/2,z,.05*MH,h,.05*MH,0x9aa0a6); for(const [y,w] of [[.75,.5],[.88,.38],[.97,.26]])b(x,t+h*y,z,w*MH,.03*MV,.04*MH,0x9aa0a6); };
+    const tank=(x,z,t,sc)=>{ const legH=1.6*MV*sc, r=.9*MH*sc; for(const [a,c] of [[-1,-1],[1,-1],[-1,1],[1,1]])b(x+a*r*.7,t+legH/2,z+c*r*.7,.1*MH*sc,legH,.1*MH*sc,DK); b(x,t+legH,z,r*1.5,.1*MV,r*1.5,WOOD); cyl(x,t+legH+.1*MV,z,r,1.8*MV*sc,0x8a6a44); for(const k of [.4,1,1.5])cyl(x,t+legH+.1*MV+k*MV*sc,z,r*1.03,.06*MV,DK2); cyl(x,t+legH+.1*MV+1.9*MV*sc,z,r*1.08,.7*MV*sc,0x5a4634,1); };
+    const bulk=(x,z,t,sc)=>{ const w=1.1*MH*sc, d=.9*MH*sc, h=.9*MV*sc; unit(x,z,t,w,d,h,0x6a3a2c); b(x,t+h*.5,z+d*.5,w*.4,h*.7,.06*MH,DK2); };
+    const KINDS=[['ac',6],['hvac',3],['dish',2],['duct',2],['planter',2],['bush',3],['patio',1],['skylight',1],['crate',3],['pallet',1],['pipes',2],['ant',1]];
+    const put=(x,z,t,kind)=>{ const sc=.85+rr()*.5; switch(kind){ case'hvac':return hvac(x,z,t,sc); case'dish':return dish(x,z,t,sc); case'duct':return duct(x,z,t,(1.2+rr()*1.6)*MH,rr()<.5?1:0); case'planter':return planter(x,z,t,sc); case'bush':return bush(x,z,t,sc); case'patio':return patio(x,z,t); case'skylight':return skylight(x,z,t,sc); case'crate':return crate(x,z,t,sc); case'pallet':return pallet(x,z,t); case'pipes':return pipes(x,z,t); case'ant':return ant(x,z,t,sc); default:return ac(x,z,t,sc); } };
+    const weighted=()=>{ let tot=0; for(const [,w] of KINDS)tot+=w; let r=rr()*tot; for(const [k,w] of KINDS)if((r-=w)<0)return k; return 'ac'; };
+    let props=0;
+    for(const q of BLK.blds){ if(q.row!==1&&q.row!==2)continue; rs=(Math.abs((q.x0*131+q.y0*17+q.h)|0)%2147483646)+1;
+      const x0=Math.min(XS(q.x0),XS(q.x1)), x1=Math.max(XS(q.x0),XS(q.x1)), z0=Math.min(ZS(q.y0),ZS(q.y1)), z1=Math.max(ZS(q.y0),ZS(q.y1)), top=YS(q.h);
+      const inn=.6*MH, gx0=x0+inn, gx1=x1-inn, gz0=z0+inn, gz1=z1-inn, W=gx1-gx0, D=gz1-gz0; if(W<MH||D<MH)continue;
+      if(rr()<.4){ tank(gx0+(.1+rr()*.25)*W,gz0+(.1+rr()*.25)*D,top,.7+rr()*.45); props++; }
+      bulk(gx0+(.3+rr()*.4)*W,gz0+(.3+rr()*.4)*D,top,.8+rr()*.4); props++;
+      const edge=q.row===1?gz0+.3*MH:gz1-.3*MH; for(let k=0,m=Math.max(2,Math.round(W/(2.3*MH)));k<m;k++){ ac(gx0+(k+.5)/m*W,edge,top,.9+rr()*.4); props++; }
+      const cell=2.2*MH, cols=Math.max(1,Math.round(W/cell)), rows=Math.max(1,Math.round(D/cell));
+      for(let i=0;i<cols;i++)for(let j=0;j<rows;j++){ if(rr()<.12)continue; put(gx0+(i+.15+rr()*.7)/cols*W,gz0+(j+.15+rr()*.7)/rows*D,top,weighted()); props++; } }
+    { rs=991; const za=ZS(BLOCK.back), zb=ZS(BLOCK.row2[1]), zm=(za+zb)/2, ax0=XS(BLOCK.x0), ax1=XS(BLOCK.x1);
+      for(let x=ax0+3*MH;x<ax1-3*MH;x+=5*MH){ b(x,YS(116+(((x|0)%5)*4)),zm,.14*MH,.14*MV,Math.abs(zb-za),pick([DK,DUCT,RUST])); if(rr()<.5)vent(x+1.4*MH,YS(114),zm); } }
+    ROOFS.blockBoxes=B2.length; ROOFS.blockProps=props; }
   const geo=new THREE.BoxGeometry(1,1,1), lam=new THREE.MeshLambertMaterial({color:0xffffff});
   const BM=new THREE.InstancedMesh(geo,lam,BX.length); BX.forEach(([x,y,z,sx,sy,sz,c],i)=>{ BM.setMatrixAt(i,m4.compose(new V(x,y,z),q,new V(Math.max(.001,sx),Math.max(.001,sy),Math.max(.001,sz)))); BM.setColorAt(i,col.setHex(c)); });
   const CG=new THREE.CylinderGeometry(1,1,1,8).translate(0,.5,0), KG=new THREE.ConeGeometry(1,1,8).translate(0,.5,0);
@@ -61,5 +97,9 @@ ROOFS.init=()=>{ if(typeof SHARED.BOD==='undefined'||!MODS.apts||!MODS.apts.A)re
   const CM=mk(CG,cy), KM=mk(KG,co);
   for(const M of [BM,CM,KM]){ M.castShadow=M.receiveShadow=true; scene.add(M); }
   for(const M of [BM,CM,KM])OUT.add(M,'open');
-  ROOFS.tris=BX.length*12+cy.length*32+co.length*16; window.ROOFSDBG=()=>({boxes:BX.length,rounds:cy.length,cones:co.length,tris:ROOFS.tris}); };
+  // the across-street block's clutter: its own meshes, no shadow cast (a distant backdrop), still lit and shadowed by the sun.
+  const c2=C2.filter(c=>!c[6]), k2=C2.filter(c=>c[6]), BM2=new THREE.InstancedMesh(geo,lam,Math.max(1,B2.length)); B2.forEach(([x,y,z,sx,sy,sz,c],i)=>{ BM2.setMatrixAt(i,m4.compose(new V(x,y,z),q,new V(Math.max(.001,sx),Math.max(.001,sy),Math.max(.001,sz)))); BM2.setColorAt(i,col.setHex(c)); }); BM2.count=B2.length;
+  const CM2=mk(CG,c2), KM2=mk(KG,k2);
+  for(const M of [BM2,CM2,KM2]){ M.castShadow=false; M.receiveShadow=true; scene.add(M); OUT.add(M,'open'); }
+  ROOFS.tris=BX.length*12+cy.length*32+co.length*16+B2.length*12+c2.length*32+k2.length*16; window.ROOFSDBG=()=>({boxes:BX.length,rounds:cy.length,cones:co.length,blockBoxes:B2.length,blockRounds:C2.length,blockProps:ROOFS.blockProps||0,tris:ROOFS.tris}); };
 export {ROOFS};

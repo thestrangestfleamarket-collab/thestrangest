@@ -14,7 +14,7 @@ Object.assign(CULL,{L:[],M:new Map(),CS:10*TILE,on:QS.get('cull')!=='0'});
     else { const P=g.attributes.position, I=g.index, nT=(I?I.count:P.count)/3; for(let t=0;t<nT;t++){ v.set(0,0,0); for(let k=0;k<3;k++){ const a=I?I.getX(t*3+k):t*3+k; v.x+=P.getX(a); v.y+=P.getY(a); v.z+=P.getZ(a); } v.multiplyScalar(1/3).applyMatrix4(s.matrixWorld); put(key(v.x,v.z),t); } }
     if(cells.size<2){ R.off=true; return; }
     for(const L of cells.values()){ let p;
-      if(s.isInstancedMesh){ p=new THREE.InstancedMesh(g,s.material,L.length); if(s.instanceColor)p.instanceColor=new THREE.InstancedBufferAttribute(new Float32Array(L.length*3),3); }
+      if(s.isInstancedMesh){ p=new THREE.InstancedMesh(g,s.material,L.length); if(s.userData.weOnly)p.raycast=()=>{}; if(s.instanceColor)p.instanceColor=new THREE.InstancedBufferAttribute(new Float32Array(L.length*3),3); }
       else { const G=new THREE.BufferGeometry(), P=g.attributes.position; B.makeEmpty();
         if(g.index){ for(const n in g.attributes)G.setAttribute(n,g.attributes[n]); const ix=[]; for(const t of L)for(let k=0;k<3;k++){ const a=g.index.getX(t*3+k); ix.push(a); B.expandByPoint(v.fromBufferAttribute(P,a)); } G.setIndex(ix); }
         else for(const n in g.attributes){ const A=g.attributes[n], z=A.itemSize, d=new A.array.constructor(L.length*3*z); L.forEach((t,k)=>d.set(A.array.subarray(t*3*z,(t+1)*3*z),k*3*z)); G.setAttribute(n,new THREE.BufferAttribute(d,z,A.normalized)); if(n==='position')B.setFromBufferAttribute(G.attributes.position); }

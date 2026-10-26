@@ -4757,3 +4757,4 @@ Deploys failed from #315 on: the free plan allows 100 Durable Object namespaces 
 Owner: "keep this exact look but dont waste render". The screen passes now share a draw where one only changes its own pixel (the colour output into the haze, the cinema cut into the look), and the look's glow is blurred in two steps; the picture is unchanged.
 ## 25 Oct 2026: a lighter player model
 Owner: "a lighter player model that looks nearly the same". The Walker's body is welded coarser (his hair as fine as before): about half the triangles drawn, the same look at play zoom; the figures built the same way (other players, the second walker, the musicians) get lighter too. With OUTLINE on, its extra pass draws only the patch of screen round him.
+- The park hills built again (they had stopped being built since 22 Oct: a part not built).

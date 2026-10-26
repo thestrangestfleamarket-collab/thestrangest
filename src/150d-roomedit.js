@@ -113,7 +113,7 @@ import {ROOMK} from './150a-bedroom.js';
   P.addEventListener('change',()=>{ if(slid){ did(slid); slid=null; } });
   ED.reset=()=>{ const A=A_(); if(!A||!confirm('PUT YOUR APARTMENT BACK AS IT CAME?'))return; select(null);
     for(const un of A.units().slice()){ if(un.added){ A.drop(un); continue; } if(un.gone)A.restore(un); if(BASE[un.id])A.setT(un,BASE[un.id]); }
-    A.wall('cream'); A.floor('planks'); A.kfloor('oak'); A.glow(1); for(const q of A.lightsAll())A.lightReset(q.id);
+    A.wall('beige'); A.floor('warm'); A.kfloor('oak'); A.glow(1); for(const q of A.lightsAll())A.lightReset(q.id);
     ED.undo.length=0; dirty(); ED.panel(); };
   ED.toggle=()=>{ if(!ED.on&&!inHome())return; ED.on=!ED.on; if(!ED.on){ select(null); const A=A_(); clearTimeout(saveT); if(A)HOME.save(snapshot(A)); } ED.panel(); B.textContent=ED.on?'DONE · T':'DECORATE · T'; };
 
@@ -142,7 +142,7 @@ import {ROOMK} from './150a-bedroom.js';
     else used=false; if(used){ e.stopImmediatePropagation(); e.preventDefault(); } },true);
 
   // the button shows in your apartment; the editor closes if you leave it
-  SYS.add('places',()=>{ const h=inHome(); if(B.hidden===h)B.hidden=!h; if(ED.on&&!h)ED.toggle(); if(helper&&ED.sel){ if(ED.sel.gone||!ED.sel.obj.parent)select(null); else helper.update(); } },'150c-roomedit');
+  SYS.add('places',()=>{ const h=inHome(); if(B.hidden===h)B.hidden=!h; if(ED.on&&!h)ED.toggle(); if(helper&&ED.sel){ if(ED.sel.gone||!ED.sel.obj.parent)select(null); else helper.update(); } },'150d-roomedit');
   window.ROOMEDDBG=()=>{ const A=A_(); return {on:ED.on,sel:ED.sel&&ED.sel.id,undo:ED.undo.length,saved:HOME.saved||0,layout:!!HOME.layout,units:A?A.units().length:0,gone:A?A.units().filter(u=>u.gone).length:0,added:A?A.units().filter(u=>u.added).length:0,wall:A&&A.R.wall,floor:A&&A.R.floor,kfloor:A&&A.R.kfloorK}; };
   ED._api=A_; ED.HOME=HOME; ED.snapshot=()=>A_()&&snapshot(A_()); ED.apply=L=>apply(A_(),L); ED.add=add; ED.select=select; ED.putAway=putAway; ED.turn=turn; ED.size=size;
 }

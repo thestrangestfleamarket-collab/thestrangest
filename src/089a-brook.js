@@ -1,6 +1,6 @@
 // THE BROOK: BROOK builds the park's brook, its banks, riffles, pools and flowing water.
 import {SHARED, THREE} from './003-shx.js';
-import {BROOK, CLOCK, PARK, SFX, SKY} from './003b-systems.js';
+import {BROOK, CLOCK, PARK, SFX, SKY, WED} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {FIX, MAPG, MODS, SOL, TILE, ZU} from './006-map-pre.js';
 import {FOUNT} from './060a-fount.js';
@@ -45,16 +45,17 @@ import {FOUNT} from './060a-fount.js';
     for(let i=0;i<260;i++){ const s=BK.m+hs(i,41)*(SL-BK.m), k=kAt(s); if(nearBr(s))continue; const lv=L(s), f=hs(i,42)<.5?1:-1, d0=W(s)*(.7+hs(i,43)*.7), [x,y]=sideAt(k,f,d0), h=bed(x,y); if(h>lv+.25||h<lv-.15)continue; PB.push([x,y,h,.06+hs(i,44)*.1]); }
     const rgeo=(det,sd)=>{ const g=new THREE.IcosahedronGeometry(1,det), p=g.attributes.position; for(let i=0;i<p.count;i++){ const x=p.getX(i), y=p.getY(i), z=p.getZ(i), n=1+.12*Math.sin(x*3.1+sd)*Math.cos(z*2.7+y*1.9+sd*2)+.06*Math.sin(y*5.3+x*4.1); p.setXYZ(i,x*n,y*n,z*n); } return g; };
     const rmat=new THREE.MeshLambertMaterial({color:0xffffff}), m4=new THREE.Matrix4(), q=new THREE.Quaternion(), e=new THREE.Euler(), cc=new THREE.Color(), V3=THREE.Vector3;
-    const NB=5, bin=(x,y)=>{ const r=BK.q(x,y); return Math.min(NB-1,Math.floor((r?r[1]:0)/SL*NB)); }, RG=rgeo(1,3), PG=new THREE.IcosahedronGeometry(1,0); BROOK.rocks=[]; BROOK.pebbles=[];
+    const NB=5, bin=(x,y)=>{ const r=BK.q(x,y); return Math.min(NB-1,Math.floor((r?r[1]:0)/SL*NB)); }, RG=rgeo(1,3), PG=new THREE.IcosahedronGeometry(1,0); BROOK.rocks=[]; BROOK.pebbles=[]; const REG=[];
     for(let bi=0;bi<NB;bi++){ const list=RK.filter(o=>bin(o.x,o.y)===bi), pl=PB.filter(p=>bin(p[0],p[1])===bi);
       if(list.length){ const me=new THREE.InstancedMesh(RG,rmat,list.length);
         list.forEach((o,i)=>{ const s=BK.q(o.x,o.y), lv=L(s?s[1]:0), wx=X(o.x), wz=Z(o.y), rx=o.r*WU, ry=o.r*o.sy*WU, g=o.top!=null?(lv+o.top)*WU-ry:bed(o.x,o.y)*WU-ry*.35, a=hs(o.sd,51)*6.28;
           o.wx=wx; o.wz=wz; o.wr=rx; o.top3=g+ry+G0; me.setMatrixAt(i,m4.compose(new V3(wx,g+G0,wz),q.setFromEuler(e.set((hs(o.sd,52)-.5)*.25,a,(hs(o.sd,53)-.5)*.25)),new V3(rx*(.85+hs(o.sd,54)*.35),ry,rx*(.8+hs(o.sd,55)*.3))));
           const v=.5+hs(o.sd,56)*.16, mo=o.kind==='b'&&hs(o.sd,57)<.35; me.setColorAt(i,cc.setRGB(v*(mo?.86:1),v*(mo?1:.99),v*(mo?.8:.96))); });
-        me.castShadow=true; me.computeBoundingSphere(); grp.add(me); BROOK.rocks.push(me); }
+        me.castShadow=true; me.computeBoundingSphere(); grp.add(me); BROOK.rocks.push(me); REG.push([me,list]); }
       if(pl.length){ const me=new THREE.InstancedMesh(PG,rmat,pl.length); pl.forEach(([x,y,h,r],i)=>{ const R=r*WU; me.setMatrixAt(i,m4.compose(new V3(X(x),h*WU+G0,Z(y)),q.setFromEuler(e.set(hs(i,61)*3,hs(i,62)*3,0)),new V3(R,R*.55,R*.8))); const v=.42+hs(i,63)*.3; me.setColorAt(i,cc.setRGB(v,v*.97,v*.92)); });
-        me.computeBoundingSphere(); grp.add(me); BROOK.pebbles.push(me); } }
-    for(const o of RK){ if(o.kind==='s'){ BK.st.push([o.x,o.y,o.r*.95/.84,(o.top3-G0)/WU]); continue; } if(o.r<.3)continue; const b=o.wr*.7; SOL.up.push([o.wx-b,o.wz-b,o.wx+b,o.wz+b]); FIX.up.push([o.wx-b,o.wz-b,G0-T,o.wx+b,o.wz+b,o.top3]); }
+        me.computeBoundingSphere(); grp.add(me); BROOK.pebbles.push(me); REG.push([me,null]); } }
+    for(const o of RK){ if(o.kind==='s'){ BK.st.push([o.x,o.y,o.r*.95/.84,(o.top3-G0)/WU]); continue; } if(o.r<.3)continue; const b=o.wr*.7; o.sol=[o.wx-b,o.wz-b,o.wx+b,o.wz+b]; o.fix=[o.wx-b,o.wz-b,G0-T,o.wx+b,o.wz+b,o.top3]; SOL.up.push(o.sol); FIX.up.push(o.fix); }
+    for(const [me,list] of REG)WED.meshes.push({place:'park',me,items:Array.from({length:me.count},(_,i)=>{ me.getMatrixAt(i,m4); const E=m4.elements, o=list&&list[i]; return {k:!o?'pebble':o.kind==='s'?'stepping stone':'river rock',x:E[12],y:E[13],z:E[14],sol:o&&o.sol,fix:o&&o.fix}; })});
     const VS='attribute vec4 aF; varying vec4 vF; varying vec3 vW; void main(){ vF=aF; vec4 w=modelMatrix*vec4(position,1.); vW=w.xyz; gl_Position=projectionMatrix*viewMatrix*w; }';
     const FS=`uniform float uT,uDay; uniform vec3 uSky,uSun; uniform vec4 uMe, uRk[24]; varying vec4 vF; varying vec3 vW;
       float h1(vec2 p){ p=fract(p*vec2(.1031,.1030)); p+=dot(p,p.yx+33.33); return fract((p.x+p.y)*p.x); }

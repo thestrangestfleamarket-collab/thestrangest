@@ -207,6 +207,9 @@ Object.assign(WE,{on:false}); window.WE=WE;
     const s=stOf(sel); s.t[0]+=dx; s.t[2]+=dz; applySel(sel); frame(); };
   WE.up=()=>{ if(!drag)return; drag=null; settle(); save(); };
   Object.defineProperty(WE,'dragging',{get:()=>!!drag});
+  // the editor's instanced things (bricks, rocks, lanterns...) answer rays only while editing: the camera's every-frame ray skips them
+  { const gate=en=>{ const m=en&&en.me; if(!m||!m.isInstancedMesh||m.userData.weOnly)return; m.userData.weOnly=1; const r0=m.raycast; m.raycast=function(r,i){ if(WE.on)r0.call(this,r,i); }; };
+    WED.meshes.forEach(gate); const p0=WED.meshes.push.bind(WED.meshes); WED.meshes.push=(...a)=>{ a.forEach(gate); return p0(...a); }; }
   WE.dbgProps=()=>ents(); WE.dbgPick=(mi,bid)=>{ const en=ents()[mi]; if(!en||en.ids[bid]==null)return null; sel=propHandle(en,bid); frame(); draw(); return keyOf(sel); };
   WE.dbgSel=()=>sel; WE.dbgLinked=()=>sel?linked(sel).length:0; WE.dbgObj=(name,i=0)=>{ const o=OBJS.filter(q=>q.name===name)[i]; if(!o)return null; base(o); sel=o; sel.lite=null; frame(); draw(); return kid(o); };
   WE.dbgLights=()=>sceneLights().length; WE.dbgSelLight=i=>{ const L=sceneLights()[i]; if(!L)return null; litOrig(L); sel={name:'TEST',place:'world',prop:true,pivot:[0,0,0],lite:L,liteKey:litKey(L)}; draw(); return {key:litKey(L),i0:L.userData.i0,intensity:+L.intensity.toFixed(3)}; };

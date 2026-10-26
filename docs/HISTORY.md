@@ -4749,3 +4749,6 @@ Deploys failed from #315 on: the free plan allows 100 Durable Object namespaces 
 - Owner: "lets bake the grass in and not render it, our walking dosent affect it at all, low render as possible". The lawns are the floor painted with blades and the still things' shadows, built once; no 3D blades, nothing on them moves.
 - Owner: "its stlil freezing", "it freezes about 10-15 seconds after loading game". The page froze for good once the street finished building (a grass refresh over an everywhere-sized area walked it piece by piece); it now stays within the map.
 - Owner: "lets remove all grass functinos and data from game, i want to start from scratch, just make it green flat ground"; asked, he chose the weeds and gold reeds to go too. The grass field, the weed tufts and the gold reeds (and the mushrooms that grew in them) are gone; lawns are one flat green; small creatures no longer hide on lawns. Where the lawns are is still known, for foraging, birds, butterflies, gardens and fire.
+
+## 25 Oct 2026: the same picture, fewer passes
+Owner: "keep this exact look but dont waste render". The screen passes now share a draw where one only changes its own pixel (the colour output into the haze, the cinema cut into the look), and the look's glow is blurred in two steps; the picture is unchanged.

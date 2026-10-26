@@ -216,5 +216,5 @@ Places built with `await grab(name, async()=>{...})` are one function each, ofte
 | `162-interiors.js` | 3.8 | top level |  | 003: SHARED THREE; 003b: INTERIORS MAPED pos; 004: scene; 006: FREE QS STORE TILE; 009: WATER; 129a: VIS |
 | `162a-pad.js` | 12.9 | top level |  | 003b: FORAGE UI VR keys; 004: renderer; 005: SAVE; 075: PAD |
 | `162b-charp.js` | 12.4 | top level |  | 003: THREE; 003b: CHARP CINEMA EQUIP FORAGE INV ITEMS LOOKS UI VIT W3 WE WIELD; 004: renderer; 102b: DESIGN |
-| `162c-vr.js` | 9.3 | top level |  | 003: SHARED THREE; 003b: BOAT ED FEEL RAG UI VIT VR W3 keys pos st; 004: PCAM renderer resize scene; 006: FADE SYS TILE; 075: PAD collide frame |
+| `162c-vr.js` | 9.4 | top level |  | 003: SHARED THREE; 003b: BOAT ED FEEL RAG UI VIT VR W3 keys pos st; 004: PCAM renderer resize scene; 006: FADE SYS TILE; 075: PAD collide frame |
 | `163-main-15.js` | 4.0 | top level |  | 003: SHARED THREE; 003b: AMB CLIP CLOCK CULL DRONE ED GHOSTS GPH INTERIORS LINES LITE LOOKS NPCS PARK PERFX RAG ROOMS SFX SNDED UI VIT W3 WEEDS WHERE keys pos st; 004: PPU RES SCL art pxS renderer resize scene vpu; 005: SAVE; 006: AWAY CASTLE DITH FIX FREE LAY MAPG MAPSTAIR MODS QS RING SOL STORE SYS TILE applyTime cutWalls lamps; 008: OBJS; 072: OUTL; 075: collide frame; 137: BVH; 147: NEWS; 148: ROOFS; 148a: GATES; 148b: DRAINS; 153: NAV |

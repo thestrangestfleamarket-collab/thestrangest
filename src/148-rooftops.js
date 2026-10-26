@@ -59,14 +59,24 @@ ROOFS.init=()=>{ if(typeof SHARED.BOD==='undefined'||!MODS.apts||!MODS.apts.A)re
   if(BLK&&BLK.blds&&BLK.blds.length){ const XS=SHARED.BOD.XS, ZS=SHARED.BOD.ZS, YS=SHARED.BOD.YS;
     const b=(x,y,z,sx,sy,sz,c)=>B2.push([x,y,z,sx,sy,sz,c]), cyl=(x,y,z,r,h,c,cone=0)=>C2.push([x,y,z,r,h,c,cone]), vent=(x,y,z)=>{ cyl(x,y,z,.18*MH,.55*MV,0x8a8e90); cyl(x,y+.55*MV,z,.3*MH,.18*MV,0x9a9ea0,1); };
     let rs=7; const rr=()=>((rs=(rs*48271)%2147483647)/2147483647), pick=a=>a[(rr()*a.length)|0];
-    const GR=[0x9a9ea2,0x8a8e90,0xb0b4b6,0x7a7e80], DK=0x4a4c4e, DK2=0x3a3c3e, RUST=0x6a4a38, WOOD=0x7a5a3a, WHT=0xd8dade, DISH=0xcfd2d4, GRN=[0x4a7a3a,0x5a8a44,0x3c6a30], TER=0xa0563a, GLASS=0x8aa6b4, DUCT=0x9aa0a2;
+    const GR=[0x9a9ea2,0x8a8e90,0xb0b4b6,0x7a7e80], DK=0x4a4c4e, DK2=0x3a3c3e, RUST=0x6a4a38, WOOD=0x7a5a3a, WHT=0xd8dade, DISH=0xcfd2d4, GRN=[0x6fae3e,0x86c24a,0x58923a,0x9ad24e,0x4e8232], TER=0xb0603a, GLASS=0x8aa6b4, DUCT=0x9aa0a2, SOIL=0x4a3828, FL=[0xe0483a,0xf0a0c0,0xf0d040,0xf2efe6,0x9a5ac0,0xf08a30], FAB=[0xc94a3a,0x3a6a9a,0xe0b040,0x5a9a5a,0xd8d0c0,0x8a5aa0], WARM=0xffe0a0;
     const unit=(x,z,t,w,d,h,c)=>{ b(x,t+h/2,z,w,h,d,c); b(x,t+h+.02*MV,z,w*1.04,.05*MV,d*1.04,DK2); };
     const ac=(x,z,t,sc)=>{ const w=.7*MH*sc, h=.42*MV*sc; unit(x,z,t,w,.7*MH*sc,h,pick(GR)); cyl(x,t+h+.03*MV,z,.26*MH*sc,.07*MV,DK); cyl(x,t+h+.03*MV,z,.08*MH*sc,.1*MV,0x6a6e70); };
     const hvac=(x,z,t,sc)=>{ const w=1.5*MH*sc, d=.95*MH*sc, h=.5*MV*sc; unit(x,z,t,w,d,h,pick(GR)); for(let k=0;k<3;k++)b(x-w*.25+k*w*.25,t+h+.06*MV,z,.04*MH*sc,.09*MV,d*.8,DK); b(x+w*.36,t+h*.5,z,.06*MH*sc,h*.7,d*.5,DK2); cyl(x-w*.52,t+h*.6,z,.12*MH*sc,.5*MV,DUCT); };
     const dish=(x,z,t,sc)=>{ b(x,t+.05*MV,z,.3*MH*sc,.1*MV,.3*MH*sc,DK); cyl(x,t+.1*MV,z,.05*MH*sc,.55*MV,0x8a8e90); cyl(x,t+.58*MV,z,.42*MH*sc,.2*MV,DISH,1); cyl(x,t+.74*MV,z,.1*MH*sc,.08*MV,WHT); b(x+.3*MH*sc,t+.72*MV,z,.05*MH*sc,.04*MV,.05*MH*sc,DK); };
     const duct=(x,z,t,len,ax)=>{ b(x,t+.26*MV,z,ax?len:.4*MH,.3*MV,ax?.4*MH:len,DUCT); for(const e of [-1,1])b(x+(ax?e*len/2:0),t+.4*MV,z+(ax?0:e*len/2),ax?.14*MH:.5*MH,.6*MV,ax?.5*MH:.14*MH,DK2); };
-    const planter=(x,z,t,sc)=>{ b(x,t+.12*MV,z,.5*MH*sc,.24*MV,.3*MH*sc,TER); for(let k=0;k<3;k++)cyl(x-.16*MH*sc+k*.16*MH*sc,t+.24*MV,z,.1*MH*sc,.3*MV*(.8+rr()*.6),pick(GRN),1); };
-    const bush=(x,z,t,sc)=>{ cyl(x,t+.04*MV,z,.16*MH*sc,.1*MV,TER); cyl(x,t+.14*MV,z,.26*MH*sc,.5*MV*sc,pick(GRN),1); cyl(x-.1*MH*sc,t+.14*MV,z+.08*MH*sc,.18*MH*sc,.36*MV*sc,pick(GRN),1); };
+    const foli=(x,z,t,r,h)=>cyl(x,t,z,r,h,pick(GRN),1);   // a leafy crown (reads as a green mass at the game's iso angle, like the park trees)
+    const planter=(x,z,t,sc)=>{ b(x,t+.12*MV,z,.62*MH*sc,.24*MV,.32*MH*sc,pick([TER,WOOD])); b(x,t+.25*MV,z,.56*MH*sc,.04*MV,.28*MH*sc,SOIL); for(const o of [-1,1])foli(x+o*.17*MH*sc,t+.26*MV,z,.18*MH*sc,.46*MV*sc); if(rr()<.5)b(x,t+.74*MV,z,.05*MH,.06*MV,.05*MH,pick(FL)); };
+    const bush=(x,z,t,sc)=>{ cyl(x,t+.02*MV,z,.2*MH*sc,.08*MV,TER); foli(x,t+.1*MV,z,.42*MH*sc,.78*MV*sc); };
+    const gardenbed=(x,z,t,sc)=>{ const w=1.5*MH*sc, d=.58*MH*sc; b(x,t+.13*MV,z,w,.26*MV,d,pick([TER,WOOD,0x6a6e70])); b(x,t+.27*MV,z,w*.92,.05*MV,d*.86,SOIL); for(let k=0,n=Math.max(2,Math.round(w/(.55*MH)));k<n;k++){ const px=x-w/2+(k+.5)/n*w; foli(px,t+.3*MV,z,.24*MH,.5*MV*(.8+rr()*.5)); if(rr()<.4)b(px,t+.82*MV,z,.05*MH,.06*MV,.05*MH,pick(FL)); } };
+    const pots=(x,z,t,sc)=>{ for(let k=0,n=2+(rr()*2|0);k<n;k++){ const px=x+(rr()-.5)*.9*MH, pz=z+(rr()-.5)*.9*MH, pr=.13*MH*(.8+rr()*.5); cyl(px,t,pz,pr,.2*MV,pick([TER,0x9a9ea0,WOOD])); foli(px,t+.2*MV,pz,pr*2.1,.52*MV*(.7+rr()*.7)); } };
+    const planttree=(x,z,t,sc)=>{ cyl(x,t,z,.3*MH*sc,.22*MV,pick([TER,0x6a6e70])); b(x,t+.22*MV,z,.09*MH*sc,.55*MV*sc,.09*MH*sc,WOOD); foli(x,t+.55*MV*sc,z,.66*MH*sc,1.3*MV*sc); };
+    const trellis=(x,z,t,sc)=>{ const w=1*MH*sc, h=1.2*MV*sc; for(const o of [-1,1])b(x+o*w/2,t+h/2,z,.05*MH,h,.05*MH,WOOD); for(let k=1;k<4;k++)b(x,t+h*k/4,z,w,.03*MV,.04*MH,WOOD); for(let k=0;k<3;k++)foli(x-w/2+(k+.5)/3*w,t+.34*MV+rr()*h*.35,z,.22*MH,.42*MV); };
+    const umbrella=(x,z,t,sc)=>{ const c=pick(FAB); cyl(x,t,z,.32*MH*sc,.04*MV,DK); cyl(x,t+.04*MV,z,.32*MH*sc,.04*MV,0xd8d4c8); cyl(x,t+.04*MV,z,.04*MH,1.4*MV*sc,WOOD); cyl(x,t+1.4*MV*sc,z,.72*MH*sc,.42*MV,c,1); for(const o of [-1,1])b(x+o*.46*MH,t+.17*MV,z,.18*MH,.34*MV,.18*MH,c); };
+    const lounge=(x,z,t,sc)=>{ const c=pick(FAB); b(x,t+.1*MV,z,.4*MH*sc,.14*MV,.8*MH*sc,c); b(x,t+.28*MV,z-.34*MH*sc,.4*MH*sc,.34*MV,.08*MH,c); for(const [ox,oz] of [[-1,-1],[1,-1],[-1,1],[1,1]])b(x+ox*.16*MH*sc,t+.05*MV,z+oz*.36*MH*sc,.04*MH,.1*MV,.04*MH,DK); };
+    const grill=(x,z,t,sc)=>{ b(x,t+.3*MV,z,.4*MH*sc,.28*MV,.4*MH*sc,0x2a2c2e); cyl(x,t+.44*MV,z,.24*MH*sc,.18*MV,0x3a3c3e,1); for(const [ox,oz] of [[-1,-1],[1,-1],[-1,1],[1,1]])b(x+ox*.16*MH*sc,t+.14*MV,z+oz*.16*MH*sc,.04*MH,.28*MV,.04*MH,DK); b(x+.38*MH*sc,t+.24*MV,z,.14*MH,.04*MV,.3*MH,0x6a6e70); };
+    const strng=(x,z,t,len,ax)=>{ const n=Math.max(4,Math.round(len/(.5*MH))); for(const e of [-1,1])b(x+(ax?e*len/2:0),t+.9*MV,z+(ax?0:e*len/2),.05*MH,1.8*MV,.05*MH,WOOD); for(let k=1;k<n;k++){ const f=k/n, bx=ax?x-len/2+f*len:x, bz=ax?z:z-len/2+f*len; b(bx,t+1.8*MV-Math.sin(f*Math.PI)*.5*MV,bz,.06*MH,.1*MV,.06*MH,WARM); } };
+    const laundry=(x,z,t,len,ax)=>{ const n=Math.max(3,Math.round(len/(.7*MH))); for(const e of [-1,1])b(x+(ax?e*len/2:0),t+.9*MV,z+(ax?0:e*len/2),.05*MH,1.8*MV,.05*MH,0x9aa0a6); for(let k=1;k<n;k++){ const f=k/n, bx=ax?x-len/2+f*len:x, bz=ax?z:z-len/2+f*len; b(bx,t+1.5*MV,bz,.22*MH,.5*MV,.03*MH,pick(FAB)); } };
     const patio=(x,z,t)=>{ cyl(x,t+.3*MV,z,.04*MH,.3*MV,DK); cyl(x,t+.3*MV,z,.3*MH,.04*MV,0xd8d4c8); for(const [ox,oz] of [[-1,0],[1,0],[0,-1],[0,1]])b(x+ox*.48*MH,t+.17*MV,z+oz*.48*MH,.2*MH,.34*MV,.2*MH,pick([0x5a5c5e,0x7a4a3a,0x3a5a6a])); };
     const skylight=(x,z,t,sc)=>{ b(x,t+.08*MV,z,.7*MH*sc,.16*MV,.5*MH*sc,DK2); b(x,t+.18*MV,z,.6*MH*sc,.06*MV,.4*MH*sc,GLASS); };
     const crate=(x,z,t,sc)=>b(x,t+.14*MV*sc,z,.3*MH*sc,.28*MV*sc,.3*MH*sc,pick([WOOD,RUST,0x5a5c5e]));
@@ -75,8 +85,10 @@ ROOFS.init=()=>{ if(typeof SHARED.BOD==='undefined'||!MODS.apts||!MODS.apts.A)re
     const ant=(x,z,t,sc)=>{ const h=1.6*MV*sc; b(x,t+h/2,z,.05*MH,h,.05*MH,0x9aa0a6); for(const [y,w] of [[.75,.5],[.88,.38],[.97,.26]])b(x,t+h*y,z,w*MH,.03*MV,.04*MH,0x9aa0a6); };
     const tank=(x,z,t,sc)=>{ const legH=1.6*MV*sc, r=.9*MH*sc; for(const [a,c] of [[-1,-1],[1,-1],[-1,1],[1,1]])b(x+a*r*.7,t+legH/2,z+c*r*.7,.1*MH*sc,legH,.1*MH*sc,DK); b(x,t+legH,z,r*1.5,.1*MV,r*1.5,WOOD); cyl(x,t+legH+.1*MV,z,r,1.8*MV*sc,0x8a6a44); for(const k of [.4,1,1.5])cyl(x,t+legH+.1*MV+k*MV*sc,z,r*1.03,.06*MV,DK2); cyl(x,t+legH+.1*MV+1.9*MV*sc,z,r*1.08,.7*MV*sc,0x5a4634,1); };
     const bulk=(x,z,t,sc)=>{ const w=1.1*MH*sc, d=.9*MH*sc, h=.9*MV*sc; unit(x,z,t,w,d,h,0x6a3a2c); b(x,t+h*.5,z+d*.5,w*.4,h*.7,.06*MH,DK2); };
-    const KINDS=[['ac',6],['hvac',3],['dish',2],['duct',2],['planter',2],['bush',3],['patio',1],['skylight',1],['crate',3],['pallet',1],['pipes',2],['ant',1]];
-    const put=(x,z,t,kind)=>{ const sc=.85+rr()*.5; switch(kind){ case'hvac':return hvac(x,z,t,sc); case'dish':return dish(x,z,t,sc); case'duct':return duct(x,z,t,(1.2+rr()*1.6)*MH,rr()<.5?1:0); case'planter':return planter(x,z,t,sc); case'bush':return bush(x,z,t,sc); case'patio':return patio(x,z,t); case'skylight':return skylight(x,z,t,sc); case'crate':return crate(x,z,t,sc); case'pallet':return pallet(x,z,t); case'pipes':return pipes(x,z,t); case'ant':return ant(x,z,t,sc); default:return ac(x,z,t,sc); } };
+    const KINDS=[['ac',3],['hvac',1],['dish',1],['duct',1],['skylight',1],['pipes',1],['ant',1],['crate',2],['pallet',1],
+      ['bush',5],['planter',4],['gardenbed',5],['pots',5],['planttree',2],['trellis',2],
+      ['patio',2],['umbrella',2],['lounge',2],['grill',1],['strng',2],['laundry',1]];
+    const put=(x,z,t,kind)=>{ const sc=.85+rr()*.5; switch(kind){ case'hvac':return hvac(x,z,t,sc); case'dish':return dish(x,z,t,sc); case'duct':return duct(x,z,t,(1.2+rr()*1.6)*MH,rr()<.5?1:0); case'planter':return planter(x,z,t,sc); case'bush':return bush(x,z,t,sc); case'gardenbed':return gardenbed(x,z,t,sc); case'pots':return pots(x,z,t,sc); case'planttree':return planttree(x,z,t,sc); case'trellis':return trellis(x,z,t,sc); case'patio':return patio(x,z,t); case'umbrella':return umbrella(x,z,t,sc); case'lounge':return lounge(x,z,t,sc); case'grill':return grill(x,z,t,sc); case'strng':return strng(x,z,t,(1.5+rr()*1.5)*MH,rr()<.5?1:0); case'laundry':return laundry(x,z,t,(1.5+rr()*1.2)*MH,rr()<.5?1:0); case'skylight':return skylight(x,z,t,sc); case'crate':return crate(x,z,t,sc); case'pallet':return pallet(x,z,t); case'pipes':return pipes(x,z,t); case'ant':return ant(x,z,t,sc); default:return ac(x,z,t,sc); } };
     const weighted=()=>{ let tot=0; for(const [,w] of KINDS)tot+=w; let r=rr()*tot; for(const [k,w] of KINDS)if((r-=w)<0)return k; return 'ac'; };
     let props=0;
     for(const q of BLK.blds){ if(q.row!==1&&q.row!==2)continue; rs=(Math.abs((q.x0*131+q.y0*17+q.h)|0)%2147483646)+1;
@@ -84,11 +96,13 @@ ROOFS.init=()=>{ if(typeof SHARED.BOD==='undefined'||!MODS.apts||!MODS.apts.A)re
       const inn=.6*MH, gx0=x0+inn, gx1=x1-inn, gz0=z0+inn, gz1=z1-inn, W=gx1-gx0, D=gz1-gz0; if(W<MH||D<MH)continue;
       if(rr()<.4){ tank(gx0+(.1+rr()*.25)*W,gz0+(.1+rr()*.25)*D,top,.7+rr()*.45); props++; }
       bulk(gx0+(.3+rr()*.4)*W,gz0+(.3+rr()*.4)*D,top,.8+rr()*.4); props++;
-      const edge=q.row===1?gz0+.3*MH:gz1-.3*MH; for(let k=0,m=Math.max(2,Math.round(W/(2.3*MH)));k<m;k++){ ac(gx0+(k+.5)/m*W,edge,top,.9+rr()*.4); props++; }
-      const cell=2.2*MH, cols=Math.max(1,Math.round(W/cell)), rows=Math.max(1,Math.round(D/cell));
+      const edge=q.row===1?gz0+.3*MH:gz1-.3*MH; for(let k=0,m=Math.max(2,Math.round(W/(3*MH)));k<m;k++){ ac(gx0+(k+.5)/m*W,edge,top,.9+rr()*.4); props++; }
+      const gedge=q.row===1?gz1-.4*MH:gz0+.4*MH; for(let k=0,m=Math.max(1,Math.round(W/(3.4*MH)));k<m;k++){ const px=gx0+(k+.5)/m*W; [pots,bush,planter][rr()*3|0](px,gedge,top,.9+rr()*.4); props++; }
+      const cell=2.5*MH, cols=Math.max(1,Math.round(W/cell)), rows=Math.max(1,Math.round(D/cell));
       for(let i=0;i<cols;i++)for(let j=0;j<rows;j++){ if(rr()<.12)continue; put(gx0+(i+.15+rr()*.7)/cols*W,gz0+(j+.15+rr()*.7)/rows*D,top,weighted()); props++; } }
-    { rs=991; const za=ZS(BLOCK.back), zb=ZS(BLOCK.row2[1]), zm=(za+zb)/2, ax0=XS(BLOCK.x0), ax1=XS(BLOCK.x1);
-      for(let x=ax0+3*MH;x<ax1-3*MH;x+=5*MH){ b(x,YS(116+(((x|0)%5)*4)),zm,.14*MH,.14*MV,Math.abs(zb-za),pick([DK,DUCT,RUST])); if(rr()<.5)vent(x+1.4*MH,YS(114),zm); } }
+    { rs=991; const za=ZS(BLOCK.back), zb=ZS(BLOCK.row2[1]), zm=(za+zb)/2, D=Math.abs(zb-za), ax0=XS(BLOCK.x0), ax1=XS(BLOCK.x1);
+      for(let x=ax0+3*MH;x<ax1-3*MH;x+=5*MH){ if(rr()<.5){ const y=YS(112); for(let k=1,n=Math.max(4,Math.round(D/(.5*MH)));k<n;k++){ const f=k/n; b(x,y-Math.sin(f*Math.PI)*.5*MV,zm-D/2+f*D,.06*MH,.1*MV,.06*MH,WARM); } }
+        else { b(x,YS(116+(((x|0)%5)*4)),zm,.14*MH,.14*MV,D,pick([DK,DUCT,RUST])); if(rr()<.5)vent(x+1.4*MH,YS(114),zm); } } }
     ROOFS.blockBoxes=B2.length; ROOFS.blockProps=props; }
   const geo=new THREE.BoxGeometry(1,1,1), lam=new THREE.MeshLambertMaterial({color:0xffffff});
   const BM=new THREE.InstancedMesh(geo,lam,BX.length); BX.forEach(([x,y,z,sx,sy,sz,c],i)=>{ BM.setMatrixAt(i,m4.compose(new V(x,y,z),q,new V(Math.max(.001,sx),Math.max(.001,sy),Math.max(.001,sz)))); BM.setColorAt(i,col.setHex(c)); });

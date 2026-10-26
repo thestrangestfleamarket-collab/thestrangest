@@ -5,7 +5,7 @@ import {renderer, resize, RESMAX, scene} from './004-main.js';
 import {SAVE} from './005-save.js';
 { const SHAD={basic:THREE.BasicShadowMap,pcf:THREE.PCFShadowMap,soft:THREE.PCFSoftShadowMap,vsm:THREE.VSMShadowMap};
   const TONE={none:THREE.NoToneMapping,linear:THREE.LinearToneMapping,reinhard:THREE.ReinhardToneMapping,cineon:THREE.CineonToneMapping,aces:THREE.ACESFilmicToneMapping};
-  const D=()=>({q:'lowest',sharp:SHARED.RESI,shadows:renderer.shadowMap.enabled,shadowType:'basic',tone:'none',exposure:1});
+  const D=()=>({q:'lowest',sharp:SHARED.RESI,shadows:renderer.shadowMap.enabled,shadowType:'basic',tone:'none',exposure:1,edges:true});
   const TIERS={ lowest:{sharp:SHARED.RESI,shadows:true,shadowType:'basic',tone:'none',exposure:1},
     low:{sharp:SHARED.RESI,shadows:true,shadowType:'pcf',tone:'none',exposure:1},
     med:{sharp:Math.min(RESMAX,SHARED.RESI+1),shadows:true,shadowType:'pcf',tone:'reinhard',exposure:1},
@@ -15,7 +15,7 @@ import {SAVE} from './005-save.js';
   const recompile=()=>{ scene.traverse(o=>{ if(o.material)for(const m of [].concat(o.material))m.needsUpdate=true; }); renderer.shadowMap.needsUpdate=true; };
   function apply(heavy){ SHARED.RESI=Math.max(0,Math.min(RESMAX,st.sharp|0));
     renderer.shadowMap.enabled=!!st.shadows; renderer.shadowMap.type=SHAD[st.shadowType]??THREE.BasicShadowMap;
-    renderer.toneMapping=TONE[st.tone]??THREE.NoToneMapping; renderer.toneMappingExposure=+st.exposure||1;
+    renderer.toneMapping=TONE[st.tone]??THREE.NoToneMapping; renderer.toneMappingExposure=+st.exposure||1; SHARED.edges(st.edges===false?0:4);
     if(heavy)recompile(); if(resize)resize(); }
   const save=()=>{ try{ SAVE.set('lighting',JSON.stringify(st)); }catch(e){} };
   apply(st.shadowType!=='basic'||!st.shadows||st.tone!=='none');
@@ -33,6 +33,7 @@ import {SAVE} from './005-save.js';
     <div class="dim">Cel is the floor. High tiers are for finding a look; take the top ones out after.</div>
     <div class="row"><span class="lab">QUALITY</span>${tierBtns()}</div>
     <div class="row"><span class="lab">SHARPNESS</span><input type="range" id="lsharp" min="0" max="${RESMAX}" step="1" value="${st.sharp}"><span id="lsharpv">${st.sharp}</span></div>
+    <div class="row"><span class="lab">EDGES</span><button class="btn" data-edges="1" aria-pressed="${st.edges!==false}">SMOOTH</button><button class="btn" data-edges="0" aria-pressed="${st.edges===false}">HARD</button></div>
     <div class="row"><span class="lab">SHADOWS</span><button class="btn" data-shadows="1" aria-pressed="${!!st.shadows}">ON</button><button class="btn" data-shadows="0" aria-pressed="${!st.shadows}">OFF</button></div>
     <div class="row"><span class="lab">SHADOW EDGE</span>${sel('sh',[['basic','HARD'],['pcf','PCF'],['soft','SOFT'],['vsm','VSM']])}</div>
     <div class="row"><span class="lab">TONE MAP</span>${sel('tn',[['none','NONE'],['linear','LINEAR'],['reinhard','REINHARD'],['cineon','CINEON'],['aces','ACES']])}</div>
@@ -42,6 +43,7 @@ import {SAVE} from './005-save.js';
   const refresh=()=>{ draw(); };
   P.addEventListener('click',e=>{ '@later'; const b=e.target.closest&&e.target.closest('button'); if(!b)return;
     if(b.dataset.q){ st.q=b.dataset.q; Object.assign(st,TIERS[st.q]); apply(true); save(); refresh(); return; }
+    if(b.dataset.edges!==undefined){ st.edges=b.dataset.edges==='1'; apply(false); save(); refresh(); return; }
     if(b.dataset.shadows!==undefined){ st.shadows=b.dataset.shadows==='1'; st.q='custom'; apply(true); save(); refresh(); return; }
     if(b.dataset.sh){ st.shadowType=b.dataset.sh; st.q='custom'; apply(true); save(); refresh(); return; }
     if(b.dataset.tn){ st.tone=b.dataset.tn; st.q='custom'; apply(false); save(); refresh(); return; }

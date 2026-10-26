@@ -4760,3 +4760,6 @@ Owner: "a lighter player model that looks nearly the same". The Walker's body is
 - The park hills built again (they had stopped being built since 22 Oct: a part not built).
 ## 25 Oct 2026: cheaper shadow edges
 Owner: "cheaper shadow edges: less blurring on shadow edges, the shadows themselves stay". PCF and SOFT read 4 texels per shadow instead of 17 and 16 (a lamp's shadow 4 instead of 9), so their edges are a little crisper; the sun reads its near or its far map, never both, and the moving things' map only where the still map leaves light. HARD (the default) looks the same.
+
+## 26 Oct 2026: smooth edges, square pixels
+Owner, with a close shot of the Walker's stair-stepped shoes and legs: "lets work on fixing the jagged edges of avatar"; his pick, "blend edges, keep pixels". Every outline (the Walker, other bodies, the world) blends into what's behind it, while pixels stay square and textures crisp. On by default; LIGHTED's EDGES row (SMOOTH / HARD) turns it off.

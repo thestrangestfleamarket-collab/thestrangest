@@ -43,6 +43,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
       VIS.hide(m, 'a'); VIS.hide(m, 'b'); const h2 = !m.visible; VIS.hide(m, 'a', false); const h1 = !m.visible; VIS.hide(m, 'b', false);
       o.vis = [h2, h1, m.visible, VIS.hidden(m)];
       o.fade = FADE.busy;
+      o.msaa = [SHARED.composer.readBuffer === SHARED.MSRT, SHARED.MSRT.samples];
       const Bd = SHARED.BOUND, c = __dbg.collide(Bd.x1 + 500, Bd.z1 + 500); o.clamp = c[0] <= Bd.x1 + 1e-6 && c[1] <= Bd.z1 + 1e-6;
       o.shared = Object.keys(SHARED).length;
       o.lazy = [Object.keys(ROOMS.lazy).length, Object.keys(ROOMS.lazy).filter(k => ROOMS.lazy[k].done)];
@@ -106,6 +107,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
     ok(r.floor === 'up,down,down,up', 'LEVELS.floor: the floor changes only on a stairway, never from height alone (' + r.floor + ')');
     ok(r.vis[0] && r.vis[1] && r.vis[2] && !r.vis[3], 'VIS: hidden while any reason is left, shown when none is');
     ok(r.fade === 0, 'no fade is left running after the start');
+    ok(r.msaa[0] && r.msaa[1] > 0, 'the scene is drawn into the multisampled target, edges smooth by default (' + r.msaa + ')');
     ok(r.clamp, 'collision keeps you inside the world');
     ok(r.queues >= 2, 'the far painting queues are there (bodega ground, park wall): ' + r.queues);
     ok(r.lazy[0] >= 3 && !r.lazy[1].length, 'no inside of a building is built at the start (' + r.lazy[0] + ' insides wait; built: ' + r.lazy[1].join(',') + ')');

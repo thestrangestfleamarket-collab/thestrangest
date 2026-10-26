@@ -14,7 +14,7 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
   W3.lite=QS.get('walker')==='lite';
   W3.weld='dc';   // how his pieces are welded: dual contouring (straight hems, no ripples)
   const CLOTH=/^(torso|hips|thigh|shin|shoe|sleeve|upperArm|forearm|neck|body|briefs|foot)/, HANDS=/^(fing|hand)/;   // his clothes and limbs finer (clean hems, crisp shoes), hands and fingers coarser: the same triangles in all
-  const RES=QS.has('res')?Math.max(.3,Math.min(1,+QS.get('res'))):.55;   // bake resolution: <1 is finer (smoother, more triangles); the eyes are flat circles, not marched
+  const RES=QS.has('res')?Math.max(.3,Math.min(1,+QS.get('res'))):.8;   // bake resolution: <1 is finer (smoother, more triangles); the eyes are flat circles, not marched
   W3.ramp=ramp; W3.meshOf=(P,step,fine,RB)=>meshOf(P,step,fine,RB); W3.legs=R.PIECES.map(n=>/^(thigh|shin|shoe)/.test(n)?(n.endsWith('L')?1:2):0);
   const PRE=new WeakMap(); W3.warm=(P,step,fine,RB)=>{ PRE.set(P,{step,fine,RB,g:meshOf0(P,step,fine,RB)}); };
   W3.fine=P=>P.step<1||/^(head|hair|beard|brow|eye|nose|ear|mouth)/.test(P.n);
@@ -42,7 +42,7 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
         if(ni===1){ emit(E(ins[0],out[0])); emit(E(ins[0],out[1])); emit(E(ins[0],out[2])); }
         else if(ni===3){ emit(E(out[0],ins[0])); emit(E(out[0],ins[1])); emit(E(out[0],ins[2])); }
         else { const a=E(ins[0],out[0]),b=E(ins[0],out[1]),c=E(ins[1],out[1]),d=E(ins[1],out[0]); emit(a); emit(b); emit(c); emit(a); emit(c); emit(d); } } }
-    const rl=relax(P,WP,tri,(P.cell||CELL*(fine?0.5:1))*(/^(head|hair|eye|nose|ear|mouth)/.test(P.n)?1:1.42)*(/^eyes/.test(P.n)?1:RES)*(CLOTH.test(P.n)?.5:HANDS.test(P.n)?2.2:1),F), fit=R.fitPts(P.under||P.n,rl.fit), mats=rl.mats, n=fit.length/6, pos=new Float32Array(n*3), nor=new Float32Array(n*3), c0=new Float32Array(n*3), c1=new Float32Array(n*3), c2=new Float32Array(n*3), cd=new Float32Array(n*3), mt=new Float32Array(n);
+    const rl=relax(P,WP,tri,(P.cell||CELL*(fine?0.5:1))*(/^(head|hair|eye|nose|ear|mouth)/.test(P.n)?1:1.78)*(/^eyes/.test(P.n)?1:RES)*(CLOTH.test(P.n)?.5:HANDS.test(P.n)?2.2:/^hair/.test(P.n)?.7:1),F), fit=R.fitPts(P.under||P.n,rl.fit), mats=rl.mats, n=fit.length/6, pos=new Float32Array(n*3), nor=new Float32Array(n*3), c0=new Float32Array(n*3), c1=new Float32Array(n*3), c2=new Float32Array(n*3), cd=new Float32Array(n*3), mt=new Float32Array(n);
     for(let i=0;i<n;i++){ pos.set([fit[i*6],fit[i*6+1],fit[i*6+2]],i*3); nor.set([fit[i*6+3],fit[i*6+4],fit[i*6+5]],i*3); const r=ramp[mats[i]]||ramp[0]; c0.set([r[0].r,r[0].g,r[0].b],i*3); c1.set([r[1].r,r[1].g,r[1].b],i*3); c2.set([r[2].r,r[2].g,r[2].b],i*3); cd.set([(r[2].r+r[3].r)/2,(r[2].g+r[3].g)/2,(r[2].b+r[3].b)/2],i*3); mt[i]=mats[i]; }
     const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(pos,3)); g.setAttribute('normal',new THREE.BufferAttribute(nor,3));
     g.setAttribute('c0',new THREE.BufferAttribute(c0,3)); g.setAttribute('cd',new THREE.BufferAttribute(cd,3)); g.setAttribute('c1',new THREE.BufferAttribute(c1,3)); g.setAttribute('c2',new THREE.BufferAttribute(c2,3)); g.setAttribute('mat',new THREE.BufferAttribute(mt,1)); return g; }
@@ -164,6 +164,7 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
     g.setAttribute('pidx',new THREE.BufferAttribute(new Float32Array(n).fill(i),1)); g.setAttribute('pid',new THREE.BufferAttribute(new Float32Array(n).fill(R.PIECES.indexOf(P.under||P.n)),1)); return g; });
   const all=new THREE.BufferGeometry(); for(const k of Object.keys(geos[0].attributes)){ const sz=geos[0].attributes[k].itemSize, tot=geos.reduce((a,g)=>a+g.attributes[k].array.length,0), arr=new Float32Array(tot); let o=0; for(const g of geos){ arr.set(g.attributes[k].array,o); o+=g.attributes[k].array.length; } all.setAttribute(k,new THREE.BufferAttribute(arr,sz)); }
   W3.tris=all.attributes.position.count/3;
+  W3.BS=geos.map(g=>{ g.computeBoundingSphere(); return g.boundingSphere; });
   { const RG=[]; let o=0; for(const g of geos){ const n=g.attributes.position.count; RG.push([o,n]); o+=n; }
     W3.reindex=()=>{ let n=0; for(let i=0;i<RG.length;i++)if(!W3.HIDE[i])n+=RG[i][1]; const I=new Uint32Array(n); let k=0; for(let i=0;i<RG.length;i++){ if(W3.HIDE[i])continue; const [a,c]=RG[i]; for(let v=0;v<c;v++)I[k++]=a+v; }
       all.setIndex(new THREE.BufferAttribute(I,1)); W3.trisWorn=n/3; };
@@ -255,11 +256,21 @@ OUTL.pass={uniforms:{tDiffuse:{value:null},tId:{value:OUTL.rt.texture},px:{value
     if(q.w-c.w>(abs(q.y-c.y)<0.5?t1:t2))return true; float a=legs[int(c.x+0.5)], b=legs[int(q.x+0.5)]; return a>0.&&b>0.&&a!=b&&q.w>=c.w; }
   void main(){ vec4 c=texture2D(tId,vUv); vec4 base=texture2D(tDiffuse,vUv); if(c.x<0.){ gl_FragColor=base; return; }
     bool e=edgeTo(c,vec2(1,0))||edgeTo(c,vec2(-1,0))||edgeTo(c,vec2(0,1))||edgeTo(c,vec2(0,-1)); gl_FragColor=e?vec4(mix(cols[int(c.y+0.5)]*tint,oc,ocK),1.):base; }`};
-OUTL.render=(renderer,scene,cam)=>{ '@later'; const w=renderer.domElement.width, h=renderer.domElement.height; if(OUTL.rt.width!==w||OUTL.rt.height!==h)OUTL.rt.setSize(w,h); OUTL.pass.uniforms.px.value.set(1/w,1/h);
-  const ac=renderer.autoClear; renderer.setRenderTarget(OUTL.rt); renderer.state.buffers.color.setClear(-2,0,0,1e9); renderer.clear(true,true,false);
+// the Walker's box on screen plus the outline's reach (pixels from the top left): the outline reads nothing outside it; null draws it all
+OUTL.rect=(cam,w,h)=>{ '@later'; const me=W3.mesh; if(!cam.isOrthographicCamera||cam.view||!me||!me.visible||!W3.group.visible)return null;
+  let only=true; W3.group.traverseVisible(o=>{ if(o!==me&&(o.isMesh||o.isLine||o.isPoints||o.isSprite))only=false; }); if(!only)return null;
+  const M=me.matrixWorld, sc=M.getMaxScaleOnAxis(), kx=w*cam.zoom/(cam.right-cam.left), ky=h*cam.zoom/(cam.top-cam.bottom), v=OUTL.v||(OUTL.v=new THREE.Vector3()); let x0=1e9, y0=1e9, x1=-1e9, y1=-1e9;
+  for(let i=0;i<W3.BS.length;i++){ if(W3.HIDE[i])continue; const S=W3.BS[i], P=W3.PM.value[i], r=S.radius*P.getMaxScaleOnAxis()*sc; v.copy(S.center).applyMatrix4(P).applyMatrix4(M).project(cam);
+    const px=(v.x+1)/2*w, py=(1-v.y)/2*h; x0=Math.min(x0,px-r*kx); x1=Math.max(x1,px+r*kx); y0=Math.min(y0,py-r*ky); y1=Math.max(y1,py+r*ky); }
+  const m=OUTL.pass.uniforms.wid.value+3; x0=Math.max(0,Math.floor(x0-m)); y0=Math.max(0,Math.floor(y0-m)); x1=Math.min(w,Math.ceil(x1+m)); y1=Math.min(h,Math.ceil(y1+m));
+  return x1>x0&&y1>y0?[x0,y0,x1-x0,y1-y0]:null; };
+OUTL.render=(renderer,scene,cam)=>{ '@later'; const w=renderer.domElement.width, h=renderer.domElement.height, rt=OUTL.rt; if(rt.width!==w||rt.height!==h)rt.setSize(w,h); OUTL.pass.uniforms.px.value.set(1/w,1/h);
+  const ac=renderer.autoClear; rt.viewport.set(0,0,w,h); rt.scissorTest=false; renderer.setRenderTarget(rt); renderer.state.buffers.color.setClear(-2,0,0,1e9); renderer.clear(true,true,false);
+  const rc=OUTL.rect(cam,w,h); if(rc){ const sub=OUTL.sub||(OUTL.sub=cam.clone()); sub.copy(cam); sub.setViewOffset(w,h,rc[0],rc[1],rc[2],rc[3]); sub.updateMatrixWorld(); cam=sub;
+    rt.viewport.set(rc[0],h-rc[1]-rc[3],rc[2],rc[3]); rt.scissor.copy(rt.viewport); rt.scissorTest=true; renderer.setRenderTarget(rt); }
   const cut=(OUTL.hidden?OUTL.hidden():[]).filter(Boolean); for(const o of cut)o.visible=false; W3.group.visible=false; scene.overrideMaterial=OUTL.occ; const bg=scene.background; scene.background=null; renderer.autoClear=false; renderer.render(scene,cam); scene.overrideMaterial=null; scene.background=bg; W3.group.visible=true; for(const o of cut)o.visible=true;
   const m0=W3.mesh.material; W3.mesh.material=W3.idMat; renderer.render(W3.group,cam); W3.mesh.material=m0;
-  renderer.autoClear=ac; renderer.setRenderTarget(null); };
+  renderer.autoClear=ac; rt.viewport.set(0,0,w,h); rt.scissorTest=false; renderer.setRenderTarget(null); };
 
 W3.shadowPass=renderer=>{ SYS.run('shadowPre',renderer); W3.shadowBase(renderer); SYS.run('shadow',renderer); }; W3.shadowBase=renderer=>{ if(W3.lv.value<1.5)return; if(W3.selfOff){ if(!W3.smClr){ W3.smClr=true; renderer.setRenderTarget(W3.sm); renderer.clear(); renderer.setRenderTarget(null); } return; } const m0=W3.mesh.material; W3.mesh.material=W3.depthMat;
   renderer.setRenderTarget(W3.sm); renderer.clear(); renderer.render(W3.group,W3.smCam); renderer.setRenderTarget(null); W3.mesh.material=m0; };

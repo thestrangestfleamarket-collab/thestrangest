@@ -282,6 +282,11 @@ const ROOMK={parts:[],wires:{},built:[],api:null};   // the room's other parts (
       for(const L of R.lamps){ const t=L.on?L.i0*(L.L.userData.k??1)*(1.2-.4*day):0; L.L.intensity+=(t-L.L.intensity)*k; L.sm.emissiveIntensity=L.on?.55:.03; if(L.halo)L.halo.material.opacity=L.on?.32:0; }
       for(const q of R.api.lightsAll()){ const u=q.L.userData; if(!u.lamp)q.L.intensity=(u.on===false?0:1)*(u.i0??0)*(u.k??1); }
       for(const un of R.units)if(un.tick&&!un.gone)un.tick(dt||0);
+      // what hangs high on a wall that is cut away goes with it (the cubbies, the shelves and what stands on them), so nothing floats between you and the camera
+      if((R.hiT=(R.hiT||0)-(dt||0))<=0){ R.hiT=.2; const A=R.api, cut=k=>APTS.WPL[k].constant<1e5;
+        for(const un of R.units){ if(un.gone)continue; const o=un.obj, p=un.loose?A.toApt(o.position.x,o.position.y,o.position.z):{u:o.position.x,h:o.position.y,v:o.position.z};
+          const hide=p.h>1.2&&((cut('Ww')&&p.u<.5)||(cut('We')&&A.Lx-p.u<.5)||(cut('Wf')&&p.v<.5)||(cut('Wb')&&A.Ly-p.v<.5));
+          if(hide!==!!un.st.hi){ un.st.hi=hide; o.traverse(q=>{ if(q.isMesh&&!q.userData.hit)q.visible=!hide; }); } } }
       const nt=1-day; for(const L of R.winL)L.intensity=inn?18*day+6*nt:0; const sunK=cl((e-2)/10,0,1); for(const L of R.winL)L.color.setRGB(1-.28*nt,.86+.1*sunK-.12*nt,.72+.26*sunK+.2*nt*(1-sunK));   // the light at the glass: warm when the sun is low, a cool blue moonlight by night
       // outside: hidden on a side whose wall is cut away; in the isometric view kept between the floor and the far walls' top edge as the camera sees it, so it shows only through the glass
       { const isoV=!UI.persp&&SHARED.pitch<1.45, d=TV3; SHARED.cam.getWorldDirection(d); const hz=Math.max(.01,Math.hypot(d.x,d.z)), tA=Math.max(.2,-d.y/hz);   // a ray over the wall's top falls tA a metre, and crosses the 2 m beyond the wall in 2/cos(its angle to the wall) metres

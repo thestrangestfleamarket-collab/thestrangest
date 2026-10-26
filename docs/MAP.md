@@ -196,7 +196,7 @@ Places built with `await grab(name, async()=>{...})` are one function each, ofte
 | `148b-drains.js` | 2.1 | top level | DRAINS (163) | 003: SHARED THREE; 004: scene; 006: TILE |
 | `149-ghosts.js` | 7.3 | top level |  | 003: SHARED THREE; 003b: GHOSTS NPCS UI pos; 004: scene; 006: SYS TILE |
 | `150-loose.js` | 28.0 | top level |  | 003: SHARED THREE; 003b: DRESS ED GPH PB PERFX UI USE W3 keys pos st; 004: scene; 006: FIX MODS QS SOL SYS TILE; 008: OBJS; 137: BVH |
-| `150a-bedroom.js` | 45.7 | top level | ROOMK (150b 150c 150d 150e) | 003: SHARED THREE; 003b: CLOCK GPH SFX SHAD SKY UI USE; 004: renderer scene; 006: MODS SYS |
+| `150a-bedroom.js` | 46.4 | top level | ROOMK (150b 150c 150d 150e) | 003: SHARED THREE; 003b: CLOCK GPH SFX SHAD SKY UI USE; 004: renderer scene; 006: MODS SYS |
 | `150b-bedpic.js` | 27.1 | top level |  | 003: THREE; 003b: SFX; 150a: ROOMK |
 | `150c-kitchen.js` | 25.4 | top level |  | 003: THREE; 003b: SFX; 150a: ROOMK |
 | `150d-roomedit.js` | 18.9 | top level |  | 003: SHARED THREE; 003b: pos; 004: renderer scene; 006: MODS SYS; 150a: ROOMK |

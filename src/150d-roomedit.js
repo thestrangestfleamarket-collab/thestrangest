@@ -121,7 +121,7 @@ import {ROOMK} from './150a-bedroom.js';
   const rc=new THREE.Raycaster(), ndc=new THREE.Vector2(), plane=new THREE.Plane(), hitP=new THREE.Vector3();
   const ray=e=>{ const r=renderer.domElement.getBoundingClientRect(); ndc.set((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1); rc.setFromCamera(ndc,SHARED.cam); return rc; };
   const pick=e=>{ const A=A_(), map=new Map(), objs=[]; for(const un of A.units())if(!un.gone){ objs.push(un.obj); map.set(un.obj,un); }
-    for(const h of ray(e).intersectObjects(objs,true)){ const o=h.object; if(!o.isMesh||o.userData.hit||o.userData.blob||(o.material&&o.material.visible===false))continue; let q=o; while(q&&!map.has(q))q=q.parent; if(q)return {un:map.get(q),p:h.point}; } return null; };
+    for(const h of ray(e).intersectObjects(objs,true)){ const o=h.object; if(!o.isMesh||!o.visible||o.userData.hit||o.userData.blob||(o.material&&o.material.visible===false))continue; let q=o; while(q&&!map.has(q))q=q.parent; if(q)return {un:map.get(q),p:h.point}; } return null; };
   let drag=null;
   addEventListener('pointerdown',e=>{ if(!ED.on||e.button!==0||e.target!==renderer.domElement)return; e.stopImmediatePropagation(); e.preventDefault(); const A=A_(); if(!A)return;
     const h=pick(e); if(!h){ select(null); return; } select(h.un); const o=h.un.obj, prev=A.getT(h.un), wp=new THREE.Vector3(); o.getWorldPosition(wp);

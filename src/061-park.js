@@ -161,7 +161,7 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
     const put=(P_,B_)=>{ if(P_.length){ const me=new THREE.InstancedMesh(pick,iron,P_.length); P_.forEach(([x,y,z,h,lean,ax,c],i)=>{ q.setFromEuler(e.set(ax==='x'?lean:0,0,ax==='x'?0:lean)); me.setMatrixAt(i,m4.compose(new V(x,y,z),q,new V(1,h,1))); me.setColorAt(i,col.setHex(c)); });
         me.computeBoundingSphere(); me.castShadow=true; me.receiveShadow=true; scene.add(me); PARK.iron=(PARK.iron||0)+P_.length*28; }
       if(B_.length){ const me=new THREE.InstancedMesh(unit,iron,B_.length); B_.forEach(([x,y,z,sx,sy,sz,c],i)=>{ me.setMatrixAt(i,m4.compose(new V(x,y,z),q.identity(),new V(sx,sy,sz))); me.setColorAt(i,col.setHex(c)); });
-        me.computeBoundingSphere(); me.castShadow=true; me.receiveShadow=true; scene.add(me); PARK.iron=(PARK.iron||0)+B_.length*12; } };
+        me.computeBoundingSphere(); me.castShadow=true; me.receiveShadow=true; scene.add(me); PARK.iron=(PARK.iron||0)+B_.length*12; return me; } };
     const SP=.19, RH=mv(1.5);
     for(const [x0,y0,x1,y1,k] of RUNS){ const ax=x1-x0>=y1-y0?'x':'y', L=ax==='x'?x1-x0:y1-y0, c0=ax==='x'?(y0+y1)/2:(x0+x1)/2, s0=ax==='x'?x0:y0, NP=Math.ceil(L/16);
       for(let pc=0;pc<NP;pc++){ const a=s0+L*pc/NP, b=s0+L*(pc+1)/NP, Pk=[], Bx=[], at=(u,v)=>ax==='x'?[X(u),Z(v)]:[X(v),Z(u)];
@@ -194,20 +194,20 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
         if(main)PARK.sign={x:X(m),y:hb+ah*.5,z:Z(c0),top:hb+ah+py*5,out:[X(m),Z(c0-4)]}; (PARK.arches=PARK.arches||[]).push([X(ax==='x'?m:c0),Z(ax==='x'?c0:m),ax]); }
       put([],B); };
     arch(g0,g1,P.y0+.42,'x',-1,true); arch(WG[0],WG[1],wx+.42,'y',1,false);   // the west gate as the main one, turned to face West St
-    const LB=[], LG=[], LC_=[], HL=[];
+    const LB=[], LG=[], LC_=[], HL=[], LBP=[], LGP=[];
     for(const [x,y] of PIERS){ const wx_=X(x), wz_=Z(y), t=Y(PH+18), K=1.4, b=(h0,h,w,c=IR[0])=>LB.push([wx_,t+mv((h0+h/2)*K),wz_,w*M*K,mv(h*K),w*M*K,c]);
       b(0,.22,.62,IR[1]); b(.22,.05,.5); b(.27,.05,.4); for(const [dx,dz] of [[-1,-1],[1,-1],[-1,1],[1,1]])LB.push([wx_+dx*.16*M*K,t+mv(.62*K),wz_+dz*.16*M*K,.045*M*K,mv(.66*K),.045*M*K,IR[0]]);
       b(.6,.03,.38,IR[2]); b(.95,.06,.5); b(1.01,.06,.4); b(1.07,.06,.3); b(1.13,.06,.2); b(1.19,.08,.1,IR[1]); b(1.27,.16,.04,IR[1]);
-      LG.push([wx_,t+mv(.62*K),wz_,.3*M*K,mv(.64*K),.3*M*K]); LC_.push([wx_,t+mv(.6*K),wz_,.1*M*K,mv(.16*K),.1*M*K]); HL.push([wx_,t+mv(.62*K),wz_]); }
-    put([],LB);
+      LG.push([wx_,t+mv(.62*K),wz_,.3*M*K,mv(.64*K),.3*M*K]); LC_.push([wx_,t+mv(.6*K),wz_,.1*M*K,mv(.16*K),.1*M*K]); HL.push([wx_,t+mv(.62*K),wz_]); const pv={k:'gate lantern',x:wx_,y:t,z:wz_}; while(LBP.length<LB.length)LBP.push(pv); LGP.push(Object.assign({},pv)); }
+    { const me=put([],LB); if(me)WED.meshes.push({place:'park',me,items:LBP}); }
     if(LG.length){ const box=(L_,mat)=>{ const me=new THREE.InstancedMesh(unit,mat,L_.length); L_.forEach(([x,y,z,sx,sy,sz],i)=>me.setMatrixAt(i,m4.compose(new V(x,y,z),q.identity(),new V(sx,sy,sz)))); me.computeBoundingSphere(); scene.add(me); return me; };
-      PARK.lanterns=box(LG,glass); box(LC_,core);
+      PARK.lanterns=box(LG,glass); WED.meshes.push({place:'park',me:PARK.lanterns,items:LGP},{place:'park',me:box(LC_,core),items:LGP.map(o=>({k:o.k,x:o.x,y:o.y,z:o.z}))});
       const HT=(()=>{ const W=48, cv=document.createElement('canvas'); cv.width=cv.height=W; const g=cv.getContext('2d'), im=g.createImageData(W,W), Bm=[0,8,2,10,12,4,14,6,3,11,1,9,15,7,13,5];
         for(let j=0;j<W;j++)for(let i=0;i<W;i++){ const d=Math.hypot((i+.5)/W*2-1,(j+.5)/W*2-1), t=(Bm[(j%4)*4+i%4]+.5)/16, a=d<.14?1:d<.3+(t-.5)*.06?.42:d<.55+(t-.5)*.08?.2:d<.9+(t-.5)*.08?.08:0, o=(j*W+i)*4; im.data[o]=255; im.data[o+1]=d<.14?236:204; im.data[o+2]=d<.14?190:130; im.data[o+3]=a*255; }
         g.putImageData(im,0,0); const tx=new THREE.CanvasTexture(cv); tx.magFilter=tx.minFilter=THREE.NearestFilter; tx.generateMipmaps=false; tx.colorSpace=THREE.SRGBColorSpace; return tx; })();
       const hm=new THREE.SpriteMaterial({map:HT,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,toneMapped:false}), SPR=[], LL=[];
       for(const [x,y,z] of HL){ const s=new THREE.Sprite(hm); s.position.set(x,y,z); s.scale.set(2.6*M,2.6*M,1); s.renderOrder=2; s.visible=false; scene.add(s); SPR.push(s);
-        const L=new THREE.PointLight(new THREE.Color(1,.8,.52),24,12*TILE,1.6); L.position.set(x,y,z); L.userData.i0=24; L.intensity=0; scene.add(L); lamps.push(L); LL.push(L); }
+        const L=new THREE.PointLight(new THREE.Color(1,.8,.52),24,12*TILE,1.6); L.position.set(x,y,z); L.userData.i0=24; L.intensity=0; scene.add(L); lamps.push(L); LL.push(L); LGP[LL.length-1].follow=[L,s]; }
       const lit=()=>{ let d=false; try{ d=CLOCK.dark(); }catch(_){ } glass.color.setHex(d?0xffc978:0x6e6656); core.color.setHex(d?0xfff6dc:0x8a7e66); for(const s of SPR)s.visible=d; for(const L of LL)L.intensity=d?L.userData.i0*(window.DN?DN.lk:1):0; }; lit(); setInterval(lit,2000); PARK.lampLit=lit; } }
   const TL=[0,1,2,3].includes(+QS.get('treelook'))&&QS.get('treelook')!==null?+QS.get('treelook'):0;
   const treeLook=sh=>{ '@later'; sh.vertexShader='attribute vec3 aTr; varying vec3 vTr; varying vec3 vLw;\n'+sh.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\n vTr=aTr; vLw=transformed;')
@@ -357,24 +357,31 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
       ].map(([k,x,y,...r])=>[k,RX(x),RY(y),...r]).concat([['sitlog',LOG[0],LOG[1],.5,.4+wa(LOG[0]-CF.x,LOG[1]-CF.y)-wa(-1.5,-.9)]]),false,false); PARK.sitlog=[X(LOG[0]),Z(LOG[1])];
     for(const [x,y,m] of [[RX(90),RY(-41.5),3.2],[RX(102),RY(-41.5),2.6]]){ const r=.35*m/.84*.2; SOL.up.push([X(x)-r,Z(y)-r,X(x)+r,Z(y)+r]); FIX.up.push([X(x)-r,Z(y)-r,0,X(x)+r,Z(y)+r,m/.84*TILE]); } }
   });
-  // the paths' kerb: a row of straight stone bricks along both edges of every path and round the plaza, where the cobbles meet the grass
+  // the paths' kerb: a row of straight stone bricks along both edges of every path (following its bends) and round the plaza, where the cobbles meet the grass
   PARK.later(()=>{ '@park'; const L=[], step=.5, BW=.46, ok=(x,y)=>Math.abs(pd(x,y))<.18&&!BK.wet(x,y,.4)&&FOUNT.lake(x,y)>.6&&x>P.x0+1&&x<P.x1-1&&y>P.y0+1&&y<P.y1-1;
     const lay=(x,y,ux,uy)=>{ if(!ok(x,y))return; if(L.some(b=>Math.abs(b[0]-x)<.3&&Math.abs(b[1]-y)<.3))return; L.push([x,y,Math.atan2(uy,ux)]); };
-    for(const [ax,ay,bx,by] of SEG){ const dx=bx-ax, dy=by-ay, Ln=Math.hypot(dx,dy), ux=dx/Ln, uy=dy/Ln; for(const sd of [-1,1])for(let t=0;t<=Ln;t+=step)lay(ax+ux*t-uy*3.6*sd,ay+uy*t+ux*3.6*sd,ux,uy); }
+    for(const [ax,ay,bx,by] of SEG){ const dx=bx-ax, dy=by-ay, Ln=Math.hypot(dx,dy), ux=dx/Ln, uy=dy/Ln, k=2*Math.PI*Math.round(Ln/70)/Ln;
+      for(const sd of [-1,1]){ let px=null, py=0, run=step; for(let t=0;t<=Ln;t+=.05){ const n=WA*Math.sin(k*t)+3.6*sd, x=ax+ux*t-uy*n, y=ay+uy*t+ux*n; if(px!==null)run+=Math.hypot(x-px,y-py); px=x; py=y; if(run<step)continue; run=0; const d=WA*k*Math.cos(k*t); lay(x,y,ux-uy*d,uy+ux*d); } } }
     { const [cx,cy,r]=P.round, n=Math.ceil(2*Math.PI*r/step); for(let i=0;i<n;i++){ const a=i/n*2*Math.PI; lay(cx+Math.cos(a)*r,cy+Math.sin(a)*r,-Math.sin(a),Math.cos(a)); } }
     if(!L.length)return; const g=new THREE.BoxGeometry(1,1,1), m=new THREE.MeshLambertMaterial(), im=new THREE.InstancedMesh(g,m,L.length), M=new THREE.Matrix4(), Q=new THREE.Quaternion(), V=new THREE.Vector3(), S=new THREE.Vector3(), c=new THREE.Color(), up=new THREE.Vector3(0,1,0);
     L.forEach(([x,y,a],i)=>{ const h=hash(Math.round(x*9),Math.round(y*9),71), hh=(.09+.03*h)*TILE; Q.setFromAxisAngle(up,-a+(h-.5)*.06); S.set(BW*TILE,hh,(.2+.03*hash(i,3,73))*TILE); V.set(X(x),P.hill(x,y)+hh/2-.02*TILE,Z(y)); im.setMatrixAt(i,M.compose(V,Q,S));
       const k=.82+.3*hash(i,5,79); im.setColorAt(i,c.setRGB(.56*k,.54*k,.5*k,THREE.SRGBColorSpace)); });
-    im.castShadow=true; im.receiveShadow=true; im.computeBoundingSphere(); scene.add(im); PARK.kerb=im; });
+    im.castShadow=true; im.receiveShadow=true; im.computeBoundingSphere(); scene.add(im); PARK.kerb=im;
+    WED.meshes.push({place:'park',me:im,items:L.map((_,i)=>{ im.getMatrixAt(i,M); const e=M.elements; return {k:'kerb brick',x:e[12],y:e[13],z:e[14]}; })}); });
+  // the oaks' trunks and the flowers at their feet in the world editor: a trunk shares its crown's key, so the two move and go together
+  PARK.later(()=>{ '@park'; const M=new THREE.Matrix4(), cr=new Map(), at=(x,z)=>Math.round(x*10)+','+Math.round(z*10); for(const t of [PARK.trees,PARK.ring])for(const it of (t&&t.userData.items)||[])cr.set(at(it.x,it.z),it);
+    for(const g of [PARK.trunks,PARK.ringTrunks]){ if(!g)continue; const fl=g.flowers?g.children.slice(-2):[];
+      for(const me of g.children){ if(!me.isInstancedMesh)continue; const items=[]; for(let i=0;i<me.count;i++){ (fl.length&&fl.includes(me)?fl[0]:me).getMatrixAt(i,M); const e=M.elements, c=fl.includes(me)?null:cr.get(at(e[12],e[14]));
+          items.push(c?{k:c.k,x:c.x,y:c.y,z:c.z}:{k:fl.includes(me)?'flower':'tree trunk',x:e[12],y:e[13],z:e[14]}); } WED.meshes.push({place:'park',me,items}); } } });
   PARK.later(()=>{ '@park'; const LP=[]; { const [cx,cy]=P.round; for(let y=P.y0+4;y<P.y1-2;y+=13)if(Math.abs(y-cy)>9){ let v=y; while(BK.wet(P.armX(v)+(LP.length%2?4.2:-4.2),v,.8))v+=1.5; LP.push([P.armX(v)+(LP.length%2?4.2:-4.2),v]); } for(let x=P.x0+6;x<P.x1-4;x+=16)if(Math.abs(x-cx)>9){ let u=x; while(BK.wet(u,P.armY(u)+(LP.length%2?4.2:-4.2),.8))u+=1.5; LP.push([u,P.armY(u)+(LP.length%2?4.2:-4.2)]); }
     for(const [ax,ay,bx,by] of SEG.slice(2)){ const L=Math.hypot(bx-ax,by-ay), ux=(bx-ax)/L, uy=(by-ay)/L; for(let s=9;s<L-4;s+=16){ const f=LP.length%2?4.2:-4.2, x=ax+ux*s-uy*f, y=ay+uy*s+ux*f; if(x>P.x0+2&&x<P.x1-2&&y>P.y0+2&&y<P.y1-2&&!BK.wet(x,y,.8)&&FOUNT.lake(x,y)>1&&Math.hypot(x-cx,y-cy)>9)LP.push([x,y]); } }
     LP.push(...FOUNT.S.lamps); for(const [a,b] of [[-1,-1],[1,-1],[1,1],[-1,1]]){ const x=cx+a*4.2, y=cy+b*4.2; LP.push([x,y]); } }
-  for(const [x,y] of LP){ const h0=170, h1=179, w=.17; BATCH.tag=OBJ('park','park lamp'); block(x-.07,y-.07,x+.07,y+.07,0,h0,31,()=>[40,40,44]); block(x-w-.04,y-w-.04,x+w+.04,y+w+.04,h1,h1+3,35,()=>[48,46,44]);
+  for(const [x,y] of LP){ const h0=170, h1=179, w=.17; const o=BATCH.tag=OBJ('park','park lamp'); block(x-.07,y-.07,x+.07,y+.07,0,h0,31,()=>[40,40,44]); block(x-w-.04,y-w-.04,x+w+.04,y+w+.04,h1,h1+3,35,()=>[48,46,44]);
     for(const [a,b,c,d] of [[[X(x-w),Y(h0),Z(y+w)],[X(x+w),Y(h0),Z(y+w)],[X(x+w),Y(h1),Z(y+w)],[X(x-w),Y(h1),Z(y+w)]],[[X(x+w),Y(h0),Z(y-w)],[X(x-w),Y(h0),Z(y-w)],[X(x-w),Y(h1),Z(y-w)],[X(x+w),Y(h1),Z(y-w)]],
         [[X(x-w),Y(h0),Z(y-w)],[X(x-w),Y(h0),Z(y+w)],[X(x-w),Y(h1),Z(y+w)],[X(x-w),Y(h1),Z(y-w)]],[[X(x+w),Y(h0),Z(y+w)],[X(x+w),Y(h0),Z(y-w)],[X(x+w),Y(h1),Z(y-w)],[X(x+w),Y(h1),Z(y+w)]]])
       SHARED.BOD.bq(a,b,c,d,SHARED.BOD.faceTex(9,9,(i,j)=>i<1||i>7||j<1||j>7?[48,46,44]:[255,236,190,1]),'G');
     const L=new THREE.PointLight(new THREE.Color(1,.86,.62),24,12*TILE,1.6); L.position.set(X(x),Y(h0+4),Z(y)); L.userData.i0=L.intensity; scene.add(L); lamps.push(L);
-    SOL.up.push([X(x-.1),Z(y-.1),X(x+.1),Z(y+.1)]); FIX.up.push([X(x-.1),Z(y-.1),0,X(x+.1),Z(y+.1),Y(h0)]); } BATCH.tag=null; });
+    o.sol=[X(x-.1),Z(y-.1),X(x+.1),Z(y+.1)]; o.fix=[X(x-.1),Z(y-.1),0,X(x+.1),Z(y+.1),Y(h0)]; o.follow=[L]; SOL.up.push(o.sol); FIX.up.push(o.fix); } BATCH.tag=null; });
   const sol=(x0,y0,x1,y1,h)=>{ SOL.up.push([X(x0),Z(y0),X(x1),Z(y1)]); FIX.up.push([X(x0),Z(y0),0,X(x1),Z(y1),Y(h)]); };
   for(const [x0,y0,x1,y1] of RUNS)sol(x0,y0,x1,y1,WH); for(const [,,x0,y0,x1,y1] of PIERS)sol(x0-.14,y0-.14,x1+.14,y1+.14,PH+18);
   const BM=(k,map,emap)=>new THREE.MeshLambertMaterial({map,emissiveMap:emap||null,emissive:emap?new THREE.Color(1,1,1):new THREE.Color(0,0,0),alphaTest:.5,side:THREE.DoubleSide});

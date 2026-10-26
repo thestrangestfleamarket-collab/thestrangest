@@ -8,7 +8,7 @@ const TLX={tick:()=>{}}; window.DRESS=Object.assign(DRESS,{gaps:()=>{ const G=[]
   const sw=zc-.5, far=zf+.6, AX=SHARED.BOD.X(MODS.apts.A.x1), AX0=SHARED.BOD.X(MODS.apts.A.x0), BX0=SHARED.BOD.X(SHARED.BOD.B0.x0);
   DRESS.kerb={sw,far}; DRESS.cans=[];
   const CY=[], cyl=(x,y,z,r,h,c)=>CY.push([x,y,z,r*2,h,r*2,c]);
-  const BL=[], blk=(x,y,z,sx,sy,sz,c)=>BL.push([x,y,z,sx,sy,sz,c]), solid=(x,z,r,h)=>{ SOL.up.push([x-r,z-r,x+r,z+r]); FIX.up.push([x-r,z-r,G(x,z),x+r,z+r,G(x,z)+h]); };
+  const BL=[], blk=(x,y,z,sx,sy,sz,c)=>BL.push([x,y,z,sx,sy,sz,c]), solid=(x,z,r,h)=>{ const s=[x-r,z-r,x+r,z+r], f=[x-r,z-r,G(x,z),x+r,z+r,G(x,z)+h]; SOL.up.push(s); FIX.up.push(f); return {sol:s,fix:f}; };
   { const M=1/.84*TILE, CN=[], hs=(a,b)=>{ const v=Math.sin(a*12.9898+b*78.233)*43758.5453; return v-Math.floor(v); }; for(const x of [BX0-1.2,AX0-1.5]){ const z=sw-.25*M, y=G(x,z); DRESS.cans.push({x,z}); CN.push([x,y,z]); solid(x,z,.28*M,.9*M); }
     const tex=(W,H,f)=>{ const cv=document.createElement('canvas'); cv.width=W; cv.height=H; const g=cv.getContext('2d'), im=g.createImageData(W,H); for(let j=0;j<H;j++)for(let i=0;i<W;i++){ const c=f(i,j), q=(j*W+i)*4; im.data[q]=c[0]; im.data[q+1]=c[1]; im.data[q+2]=c[2]; im.data[q+3]=255; } g.putImageData(im,0,0); const t=new THREE.CanvasTexture(cv); t.magFilter=t.minFilter=THREE.NearestFilter; t.generateMipmaps=false; t.colorSpace=THREE.SRGBColorSpace; return t; };
     const LIT=[[226,222,210],[196,48,40],[150,120,80],[60,110,170],[40,40,44]], wire=tex(48,24,(i,j)=>{ const r=hs(i,j); if(j<2)return r<.1?[120,80,50]:[44,84,52]; if(j>21)return [38,70,44]; if(i%3===0||j%3===0)return r<.06?[126,84,52]:r<.2?[64,104,66]:[48,88,56];
@@ -17,7 +17,7 @@ const TLX={tick:()=>{}}; window.DRESS=Object.assign(DRESS,{gaps:()=>{ const G=[]
     for(const [g,mt] of parts){ const me=new THREE.InstancedMesh(g,mt,CN.length); CN.forEach(([x,y,z],i)=>me.setMatrixAt(i,m4.compose(new THREE.Vector3(x,y,z),q.setFromAxisAngle(new THREE.Vector3(0,1,0),i*2.1),new THREE.Vector3(1,1,1)))); me.castShadow=me.receiveShadow=true; scene.add(me); } }
   { const M=1/.84*TILE, SP=46*M, SX0=SHARED.BOD.XS(SHARED.BOD.MAP.x0), SX1=SHARED.BOD.XS(SHARED.BOD.MAP.x1), n=Math.floor((SX1-SX0-8)/SP)+1, x0=(SX0+SX1)/2-(n-1)*SP/2, warm=new THREE.Color(1,.88,.68);
     const sl=(x,z,d,ax='z',ring)=>{ const y=G(x,z);
-      solid(x,z,.18*M,6*M); const P={x,z,d,ax,ring:ring||(d>0?'outer':'inner'),y:y+5.45*M,h:heads.length}; POLES.push(P); return P; };
+      const P={x,z,d,ax,ring:ring||(d>0?'outer':'inner'),y:y+5.45*M,h:heads.length,...solid(x,z,.18*M,6*M)}; POLES.push(P); return P; };
     const heads=[], pools=[], POLES=[], POSTS=[], hsh=n=>{ const v=Math.sin(n*12.9898+78.233)*43758.5453; return v-Math.floor(v); },
       light=(x,y,z,i,r)=>{ const L=new THREE.PointLight(warm,i,r,1.6); L.position.set(x,y,z); L.userData.i0=i; scene.add(L); const P=[L,x,z,r*.2]; P.on=1.5-hsh(pools.length)*4; pools.push(P); return L; };
     const poolTex=(()=>{ const N=48, cv=document.createElement('canvas'); cv.width=cv.height=N; const g=cv.getContext('2d'), im=g.createImageData(N,N), h=(i,j)=>{ const v=Math.sin(i*12.9898+j*78.233)*43758.5453; return v-Math.floor(v); };
@@ -32,7 +32,7 @@ const TLX={tick:()=>{}}; window.DRESS=Object.assign(DRESS,{gaps:()=>{ const G=[]
       { const xo=XS(R.wr0)-.25*M, xi=XS(R.wr1)+.25*M, z0=ZS(SHARED.BOD.FAR)+2*M, z1=ZS(R.wy1)-1*M; for(let z=z0,k=0;z<z1;z+=26*M,k++){ if(k&1)put(xi,z,-1,'x','inner'); else put(xo,z,1,'x','outer'); } } }
     if(DRESS.tall){ const x=CP.x, z=CP.z, y=G(x,z), T8=8.2*M, AL=2.7*M, L2=[];
       for(const [dx,dz] of [[0,-1],[1,0]]){ const ex=x+dx*AL, ez=z+dz*AL, ay=y+T8-.15*M, h=heads.length, L=light(ex,ay-.25*M,ez,55,16*TILE); heads.push([ex,ay-.06*M,ez]); L2.push([L,h]); }
-      solid(x,z,.3*M,T8); POLES.push({x,z,d:-1,ax:'z',ring:'inner',y:y+T8-.6*M,h:L2[0][1],h2:L2[1][1],L:L2[0][0],L2:L2[1][0],corner:1}); DRESS.corner={x,z,y,lamps:L2.map(q=>q[0])}; }
+      POLES.push({x,z,d:-1,ax:'z',ring:'inner',y:y+T8-.6*M,h:L2[0][1],h2:L2[1][1],L:L2[0][0],L2:L2[1][0],corner:1,...solid(x,z,.3*M,T8)}); DRESS.corner={x,z,y,lamps:L2.map(q=>q[0])}; }
     const wz=SHARED.BOD.ZS(PARK.y0+PARK.oy), pz=far+.95*M, g0=SHARED.BOD.XS(PARK.gate[0]+PARK.ox), g1=SHARED.BOD.XS(PARK.gate[1]+PARK.ox), pts=[[g0-.9*M,pz],[g1+.9*M,pz]], px1=SHARED.BOD.XS(PARK.x1+PARK.ox)-2;
     for(let x=g0-28*M;x>SHARED.BOD.XS(PARK.x0+PARK.ox)+2;x-=28*M)pts.push([x,pz]); for(let x=g1+28*M;x<px1;x+=28*M)pts.push([x,pz]);
     { const A=MODS.apts&&MODS.apts.A, dz=[SHARED.BOD.X((SHARED.BOD.B0.x0+SHARED.BOD.B0.x1)/2),A?SHARED.BOD.X(MODS.apts.DX!=null?MODS.apts.DX:A.x1-1):1e9,SHARED.BOD.XS((MAPSTAIR.x0+MAPSTAIR.x1)/2),...(STORE.main?STORE.main.doors.map(d=>d[1]):[])], sz=sw-.75*M;
@@ -42,8 +42,8 @@ const TLX={tick:()=>{}}; window.DRESS=Object.assign(DRESS,{gaps:()=>{ const G=[]
     const H=4.2*M, pole=new THREE.InstancedMesh(new THREE.CylinderGeometry(.055*M,.07*M,H,8).translate(0,H/2,0),new THREE.MeshLambertMaterial({color:0x22262b,flatShading:true}),xs.length*2),
       lant=new THREE.InstancedMesh(new THREE.BoxGeometry(.34*M,.5*M,.34*M),new THREE.MeshBasicMaterial({color:0xffe4b0}),xs.length), m4=new THREE.Matrix4(), y0=G(xs[0],pz);
     pts.forEach(([x,pz],i)=>{ const y=G(x,pz); pole.setMatrixAt(i*2,m4.makeTranslation(x,y,pz)); pole.setMatrixAt(i*2+1,m4.makeScale(2.4,.06,2.4).setPosition(x,y,pz));
-      lant.setMatrixAt(i,m4.makeTranslation(x,y+H+.25*M,pz)); POSTS.push({x,z:pz,y:y+H+.5*M,i,L:light(x,y+H+.2*M,pz,28,12*TILE)});
-      SOL.up.push([x-.12*M,pz-.12*M,x+.12*M,pz+.12*M]); FIX.up.push([x-.12*M,pz-.12*M,y,x+.12*M,pz+.12*M,y+H]); });
+      lant.setMatrixAt(i,m4.makeTranslation(x,y+H+.25*M,pz)); const sol=[x-.12*M,pz-.12*M,x+.12*M,pz+.12*M], fix=[x-.12*M,pz-.12*M,y,x+.12*M,pz+.12*M,y+H]; POSTS.push({x,z:pz,y:y+H+.5*M,i,L:light(x,y+H+.2*M,pz,28,12*TILE),sol,fix});
+      SOL.up.push(sol); FIX.up.push(fix); });
     const hd=new THREE.InstancedMesh(new THREE.BoxGeometry(.5*M,.08*M,.26*M),lant.material,heads.length); heads.forEach(([x,y,z],i)=>hd.setMatrixAt(i,m4.makeTranslation(x,y-.08*M,z))); scene.add(hd);
     for(const P of pools){ const [L,x,z,r]=P, me=new THREE.Mesh(poolGeo,poolMat); me.scale.set(r,1,r); me.position.set(x,G(x,z)+.03,z); me.renderOrder=1; me.visible=false; scene.add(me); P.push(me); }
     DRESS.pools=pools;

@@ -4760,3 +4760,6 @@ Owner: "a lighter player model that looks nearly the same". The Walker's body is
 - The park hills built again (they had stopped being built since 22 Oct: a part not built).
 ## 25 Oct 2026: cheaper shadow edges
 Owner: "cheaper shadow edges: less blurring on shadow edges, the shadows themselves stay". PCF and SOFT read 4 texels per shadow instead of 17 and 16 (a lamp's shadow 4 instead of 9), so their edges are a little crisper; the sun reads its near or its far map, never both, and the moving things' map only where the still map leaves light. HARD (the default) looks the same.
+
+## 26 Oct 2026: THE MARKET in VR (Quest 3, in its browser)
+Owner: "i want to work on adding VR capabilties to the game, i have a quest 3 and want to be able to use it in game from browser, do all needed, go". ENTER VR (only when a headset is there) puts you behind the Walker's eyes at true size; the left stick walks where you look, the right stick turns in 30° steps, the other buttons are the controller's (A jump, X use, Y kick, B back, triggers roll and run); stepping in the room moves him; a window opened on the screen shows a card in the headset (Y leaves VR to use it); hold B to leave. For the owner to try and approve: snap turning, the button layout; distance fog and the colour grade are not drawn in the headset.

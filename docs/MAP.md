@@ -191,7 +191,7 @@ Places built with `await grab(name, async()=>{...})` are one function each, ofte
 | `146f-swords.js` | 3.1 | top level |  | 003: SHARED; 003b: FORAGE SFX VIT WIELD pos; 006: STORE TILE; 111a: BODIES |
 | `146h-brawl.js` | 9.0 | top level |  | 003: SHARED THREE; 003b: FORAGE ONLINE RAG SFX VIT W3 WIELD pos st; 004: PPU; 006: ASTEP SYS TILE ZU; 073: P PHYOU TL; 075: collide |
 | `147-newsstand.js` | 16.5 | top level | NEWS (163) | 003: SHARED THREE; 003b: CITY CIVIC CLOCK DRONE LINES UI pos; 004: scene; 006: FIX MAPSTAIR QS SOL SYS TILE; 084: TOONS |
-| `148-rooftops.js` | 7.7 | top level | ROOFS (163) | 003: SHARED THREE; 004: scene; 006: MODS OUT TILE |
+| `148-rooftops.js` | 19.7 | top level | ROOFS (163) | 003: SHARED THREE; 003b: BLK; 004: scene; 006: BLOCK MODS OUT TILE |
 | `148a-gates.js` | 4.2 | top level | GATES (163) | 003: SHARED THREE; 003b: BLK MAPED; 004: scene; 006: BLDK BLOCK FIX MAPSTAIR MODS SOL TILE WROW |
 | `148b-drains.js` | 2.1 | top level | DRAINS (163) | 003: SHARED THREE; 004: scene; 006: TILE |
 | `149-ghosts.js` | 7.3 | top level |  | 003: SHARED THREE; 003b: GHOSTS NPCS UI pos; 004: scene; 006: SYS TILE |

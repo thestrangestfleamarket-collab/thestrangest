@@ -153,7 +153,8 @@ import {ROOMK} from './150a-bedroom.js';
     for(const k of ks){ const p=price(k); if(!PICS[k]&&!PQ.includes(k))PQ.push(k);
       h+=`<button class="tile${have<p?' poor':''}" data-add="${k}">${PICS[k]?`<img alt="" src="${PICS[k]}">`:`<i data-pic="${k}"></i>`}<span>${K[k].name}</span><em>$${p}</em></button>`; }
     const f=document.activeElement&&document.activeElement.id==='roomfind'; BUY.innerHTML=h+(ks.length?'':'<span style="color:var(--dim)">NOTHING HERE</span>')+'</div>';
-    if(f){ const i=BUY.querySelector('#roomfind'); i.focus(); i.setSelectionRange(i.value.length,i.value.length); } };
+    if(f){ const i=BUY.querySelector('#roomfind'); i.focus(); i.setSelectionRange(i.value.length,i.value.length); }
+    P.style.maxHeight=Math.max(160,innerHeight-BUY.offsetHeight-48)+'px'; };   // the panel stops above the bar, however tall its tabs wrap
   BUY.addEventListener('click',e=>{ const b=e.target.closest('[data-dept],[data-add]'); if(!b)return; if(b.dataset.dept){ dept=b.dataset.dept; find=''; return drawBuy(); } ED.buy(b.dataset.add); });
   BUY.addEventListener('input',e=>{ if(e.target.id==='roomfind'){ find=e.target.value; drawBuy(); } });
 

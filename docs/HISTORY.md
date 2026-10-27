@@ -4855,3 +4855,6 @@ Owner (his Drive G folder, the Downtown City MegaKit glTF): "lets use these asse
 ## 27 Oct 2026: rounder grass, no haze in the isometric view
 Owner (his pictures): "the grass should be flatter, rounder not poking up like pine trees"; "remove the haze when you're in isometric view". The near tufts are low rounded mounds; the isometric view has no distance haze (and nothing is cut by it there).
 - Owner: "when i go into T decorate mode i still cant move around freely", "dont change how view works in T mode at all". DECORATE leaves the view as it is (no camera of its own, no keys or wheel of its own for the view). Supersedes the build camera above.
+
+## 27 Oct 2026: leaf-card trees
+Owner (a picture of the booth game): "can we do trees and graphics more lke this ?"; of a mockup (now, A small leaf cards, B big clumps, C cards over the faceted crown): "A". The park's trees, its edge ring (fewer, bigger cards) and the street's trees are built from small cut-out leaf cards in the game's own paint, over the same tree shapes: ragged edges, sky through the gaps, darker inside. No photo textures. The far stand-ins stay faceted. The moodier night is still to decide.

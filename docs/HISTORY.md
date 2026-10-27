@@ -4854,3 +4854,4 @@ Owner (his Drive G folder, the Downtown City MegaKit glTF): "lets use these asse
 
 ## 27 Oct 2026: rounder grass, no haze in the isometric view
 Owner (his pictures): "the grass should be flatter, rounder not poking up like pine trees"; "remove the haze when you're in isometric view". The near tufts are low rounded mounds; the isometric view has no distance haze (and nothing is cut by it there).
+- Owner: "when i go into T decorate mode i still cant move around freely", "dont change how view works in T mode at all". DECORATE leaves the view as it is (no camera of its own, no keys or wheel of its own for the view). Supersedes the build camera above.

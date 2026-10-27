@@ -25,12 +25,9 @@ function resize(){ const dpr=devicePixelRatio||1, pw=innerWidth*FRAMEK*dpr, ph=i
   const c=renderer.domElement, cw=RW*S/dpr, ch=RH*S/dpr; c.style.width=cw+'px'; c.style.height=ch+'px';
   c.style.left=Math.floor((innerWidth-cw)/2)+'px'; c.style.top=Math.floor((innerHeight-ch)/2)+'px'; c.style.borderRadius=FRAMEK<1?'18px':'0';
   frustum(); }
-let SCL=1; SHARED.ppu=PPU; SHARED.RESI=2;
-const FULLRES=+(new URLSearchParams(location.search).get('fullres')||0); if(FULLRES)SHARED.RESI=FULLRES;
-const RESL=[.5,.75,1,1.5,2,3,4,6,8,12,16,24,32,48,64], V0=PPU*PXS;
-const ZUPX=6, RES=()=>RESL[Math.min(RESL.length-1,SHARED.RESI+(V0*SHARED.ppu/PPU/(PPU*RESL[SHARED.RESI])>=ZUPX?1:0))];
-const MINPX=()=>Math.max(1,Math.round(PXS/RES())), ZMAX=PPU*80;
-const RESMAX=FULLRES?10:3, vpu=()=>V0*SHARED.ppu/PPU, art=()=>PPU*RES(), PCAP=()=>Math.max(1,Math.round(PXS/RESL[SHARED.RESI])), pxS=()=>Math.min(Math.max(MINPX(),PCAP()),Math.max(MINPX(),Math.round(vpu()/art()))), rppu=()=>{ const r=Math.round(vpu()/art()); return r<MINPX()||r>Math.max(MINPX(),PCAP())?vpu()/pxS():art(); };
+let SCL=1; SHARED.ppu=PPU;
+const V0=PPU*PXS, ZMAX=PPU*80;
+const vpu=()=>V0*SHARED.ppu/PPU, art=vpu, pxS=()=>1, rppu=vpu;
 function frustum(){ const u=rppu(); let hw=RW/2/u, hh=RH/2/u; const mw=SHARED.camMaxW; if(mw>0&&2*hw>mw){ const k=mw/(2*hw); hw*=k; hh*=k; } SHARED.cam.left=-hw; SHARED.cam.right=hw; SHARED.cam.top=hh; SHARED.cam.bottom=-hh; SHARED.cam.updateProjectionMatrix(); }   // the visible width is capped at SHARED.camMaxW (set by the UI) so zooming all the way out shows the same extent at every resolution
 addEventListener('resize',resize);
 
@@ -53,4 +50,4 @@ function M(color,map=grainT,o={}){ const k=color+'|'+(map?map.id:0)+'|'+JSON.str
 
 const TEXTURES=__DATA__("data/textures.json");
 const KITD=__DATA__("data/kit.json");
-export {art, EffectComposer, frustum, hash3, KITD, M, OCAM, OutputPass, PCAM, PPU, pxS, renderer, RenderPass, RES, resize, RESL, RESMAX, RH, rppu, RW, scene, SCL, ShaderPass, statEl, V0, vpu, ZMAX};
+export {EffectComposer, frustum, hash3, KITD, M, OCAM, OutputPass, PCAM, PPU, pxS, renderer, RenderPass, resize, RH, rppu, RW, scene, SCL, ShaderPass, statEl, V0, ZMAX};

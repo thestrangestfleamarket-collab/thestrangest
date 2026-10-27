@@ -4875,6 +4875,9 @@ Owner: "In order to go into the holodeck you have to double click the entrance. 
 
 ## 27 Oct 2026: camera sway, a menu choice
 Owner: "lets add this as option in menu to toggle on or off" (the idle camera sway from Security Booth). DISPLAY's CAMERA SWAY: on, the view drifts a fifth of a degree, slowly; off by default.
+
+## 27 Oct 2026: the arcade's cabinets are real games
+Owner: "put the cabinets back on the side walls, double click on each one to play it. make them real playable games. all 6. look at popular 3js games, github or other free sources and make 6 simple games to play". The six cabinets are back; double-click one to play it in a cabinet window (ESC leaves): RAINBOW RUN falling blocks, GALAXY RAID invaders, MAZE dots and ghosts, ROAD 85 a sunset road racer, TELEMAK paddles, ISTANBUL TAKSI fares across the city. A play is $2 and trains the cabinet's skill by your score (to 40).
 - Owner: "add curtains to the side windows too". The side walls' windows have the same cloth curtains as the front ones.
 
 ## 27 Oct 2026: the grass even, the trees past the wall small, bulkier crowns

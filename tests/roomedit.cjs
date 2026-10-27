@@ -7,7 +7,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   ctx.setDefaultTimeout(120000);   // full-resolution software drawing on CI is slow; a click may wait past Playwright's 30 s
   pg.on('pageerror', e => errs.push(e.message.slice(0, 300)));
   const url = 'file://' + path.resolve(process.argv[2] || 'dist/market.html');
-  const start = async q => { await pg.goto(url + '?hour=17&place=your%20apartment' + q, { waitUntil: 'commit' });
+  const start = async q => { await pg.goto(url + '?hour=17&res=0&place=your%20apartment' + q, { waitUntil: 'commit' });
     let st = false; for (let i = 0; i < 60 && !st; i++) { await pg.waitForTimeout(3000); st = await pg.evaluate(() => !!window.__started).catch(() => false); }
     for (let i = 0; i < 30 && !(await pg.evaluate(() => window.BEDROOMDBG && BEDROOMDBG().built && window.ROOMEDDBG && ROOMEDDBG().units > 0)); i++) await pg.waitForTimeout(1000);
     return st; };

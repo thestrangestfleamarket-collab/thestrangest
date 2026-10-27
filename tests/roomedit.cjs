@@ -61,7 +61,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     await pg.click('#roomed [data-back]'); await pg.waitForTimeout(300);
     ok((await db()).gone === 0, 'the panel brings it back');
     // a table, and a lamp put on it
-    const tab = await buy('TABLE', R.Lx * .55, 0, R.Ly * .3), tt = await T(tab);
+    const tab = await buy('TABLE', R.Lx * .8, 0, R.Ly * .2), tt = await T(tab);
     await pg.click('#roombuy [data-dept="lights"]');
     const lamp = await buy('LAMP', tt.u, .76, tt.v); await pg.waitForTimeout(1500);
     const tl = await T(lamp);

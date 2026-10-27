@@ -165,7 +165,7 @@ import {ROOMK} from './150a-bedroom.js';
     if(tab==='things'){ const s=ED.sel;
       h+=s?`<div class="lab">PICKED UP</div><div style="color:var(--key)">${name(s)}</div><div class="row"><button class="btn" data-a="turnl">⟲ TURN</button><button class="btn" data-a="turnr">TURN ⟳</button><button class="btn" data-a="small">SMALLER</button><button class="btn" data-a="big">BIGGER</button></div>
         <div class="row"><button class="btn" data-a="down">LOWER</button><button class="btn" data-a="up">RAISE</button><button class="btn" data-a="copy">COPY $${price(s.kind)}</button><button class="btn" data-a="away">PUT AWAY</button>${s.added?`<button class="btn" data-a="sell">SELL $${Math.floor((s.paid||0)/2)}</button>`:''}${A.lightsAll().some(q=>q.un===s)?'<button class="btn" data-a2="light">LIGHT SETTINGS</button>':''}</div>`
-        :`<div class="hint">CLICK A THING TO PICK IT UP, DRAG TO MOVE IT: GREEN FITS, RED DOESN'T.<br>Q / E TURN · ALT FOR FREE PLACING · WHEEL RESIZES · [ ] LOWER / RAISE · DEL PUTS IT AWAY · , . TURN THE VIEW · G GRID · CTRL+Z UNDO</div>`;
+        :`<div class="hint">CLICK A THING TO PICK IT UP, DRAG TO MOVE IT: GREEN FITS, RED DOESN'T.<br>Q / E TURN · ALT FOR FREE PLACING · SHIFT+WHEEL RESIZES · [ ] LOWER / RAISE · DEL PUTS IT AWAY · , . TURN THE VIEW · G GRID · CTRL+Z UNDO</div>`;
       const gone=A.units().filter(u=>u.gone);
       if(gone.length)h+=`<div class="lab">PUT AWAY</div><div class="row">${gone.map(u=>`<button class="btn" data-back="${u.id}">${name(u)}</button>`).join('')}</div>`; }
     const sw=(set,k,D,on)=>{ const t=A.thumb(set,k); return `<div class="sw ${on?'on':''}" data-${set}="${k}" style="background:${hexs(D.c)}${t?` url(${t}) center/cover`:''}"><span>${D.n}</span></div>`; };
@@ -212,22 +212,22 @@ import {ROOMK} from './150a-bedroom.js';
     ED.undo.length=0; dirty(); ED.panel(); };
 
   /* ---------- the camera over the room while you decorate (back as it was when you're done) ---------- */
-  // held with the game's own UI.hold, which keeps the view where it is put; , and . turn it a quarter, the wheel zooms when nothing is picked up
-  let view0=null, held=null;
-  // the room's middle in the middle of the open screen (left of the panel, above the buy bar)
+  // a starting view over the room, then the camera is yours (turn, tilt, zoom, drag); the home view's limits are off while you decorate (UI.decor)
+  let view0=null;
   const RV=new THREE.Vector3(), UV=new THREE.Vector3();
-  const roomMid=()=>{ const A=A_(), c=A.W(A.Lx/2,0,A.Ly/2), cam=SHARED.cam, el=renderer.domElement; held.off.set(c.x-pos.x,0,c.z-pos.z);
+  // the room's middle in the middle of the open screen (left of the panel, above the buy bar)
+  const roomMid=()=>{ const A=A_(), c=A.W(A.Lx/2,0,A.Ly/2), cam=SHARED.cam, el=renderer.domElement; UI.off.set(c.x-pos.x,0,c.z-pos.z);
     if(cam.isOrthographicCamera&&el.clientHeight){ const k=(cam.top-cam.bottom)/(cam.zoom||1)/el.clientHeight, dx=(P.hidden?0:P.offsetWidth+12)/2, dy=(BUY.hidden?0:BUY.offsetHeight+12)/2;
-      held.off.addScaledVector(RV.setFromMatrixColumn(cam.matrixWorld,0),dx*k).addScaledVector(UV.setFromMatrixColumn(cam.matrixWorld,1),-dy*k); } return held.off; };
-  const camIn=()=>{ const A=A_(); if(!A)return; view0={view:UI.view,yaw:SHARED.yawTo,pitch:SHARED.pitchTo,ppu:SHARED.ppuTo,off:UI.off?UI.off.clone():null,hold:UI.hold||null}; if(UI.persp&&UI.setView)UI.setView('iso');
-    held={yaw:SHARED.yawTo,pitch:ED.pitch,ppu:SHARED.ppuTo,off:new THREE.Vector3()}; roomMid(); UI.hold=held;
-    setTimeout(()=>{ if(!ED.on||UI.hold!==held)return; const cam=SHARED.cam, r=renderer.domElement.getBoundingClientRect(); let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;
+      UI.off.addScaledVector(RV.setFromMatrixColumn(cam.matrixWorld,0),dx*k).addScaledVector(UV.setFromMatrixColumn(cam.matrixWorld,1),-dy*k); } };
+  const camIn=()=>{ const A=A_(); if(!A||!UI.off)return; view0={view:UI.view,yaw:SHARED.yawTo,pitch:SHARED.pitchTo,ppu:SHARED.ppuTo,off:UI.off.clone()}; if(UI.persp&&UI.setView)UI.setView('iso');
+    UI.decor=true; SHARED.pitchTo=ED.pitch; roomMid();
+    setTimeout(()=>{ if(!ED.on||!view0)return; const cam=SHARED.cam, r=renderer.domElement.getBoundingClientRect(); let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;
       for(const [u,v] of [[0,0],[A.Lx,0],[0,A.Ly],[A.Lx,A.Ly]])for(const h of [0,A.HW*.6]){ const p=A.W(u,h,v).project(cam); x0=Math.min(x0,p.x); x1=Math.max(x1,p.x); y0=Math.min(y0,p.y); y1=Math.max(y1,p.y); }
-      const w=(x1-x0)/2*r.width, hh=(y1-y0)/2*r.height, k=Math.min((r.width-340)*.95/w,(r.height-220)*.95/hh); if(isFinite(k)&&k>0)held.ppu=SHARED.ppu*Math.max(.3,Math.min(3,k)); },600); };
-  const camOut=()=>{ if(!view0)return; const v=view0; view0=null; if(UI.hold===held)UI.hold=v.hold; held=null; SHARED.yawTo=v.yaw; SHARED.pitchTo=v.pitch; SHARED.ppuTo=v.ppu; if(UI.off&&v.off)UI.off.copy(v.off); if(v.view!==UI.view&&UI.setView)UI.setView(v.view); };
+      const w=(x1-x0)/2*r.width, hh=(y1-y0)/2*r.height, k=Math.min((r.width-340)*.95/w,(r.height-220)*.95/hh); if(isFinite(k)&&k>0)SHARED.ppuTo=SHARED.ppu*Math.max(.3,Math.min(3,k)); setTimeout(()=>{ if(ED.on&&view0)roomMid(); },400); },600); };
+  const camOut=()=>{ UI.decor=false; if(!view0)return; const v=view0; view0=null; SHARED.yawTo=v.yaw; SHARED.pitchTo=v.pitch; SHARED.ppuTo=v.ppu; UI.off.copy(v.off); if(v.view!==UI.view&&UI.setView)UI.setView(v.view); };
   ED.pitch=.8;
 
-  ED.toggle=()=>{ if(!ED.on&&!inHome())return; ED.on=!ED.on; if(!ED.on){ camOut(); if(ED.carry)placeCarry(true); select(null); setHover(null); showGrid(false); const A=A_(); clearTimeout(saveT); if(A)HOME.save(snapshot(A)); } else camIn(); ED.panel(); B.textContent=ED.on?'DONE · T':'DECORATE · T'; };
+  ED.toggle=()=>{ if(!ED.on&&!inHome())return; ED.on=!ED.on; if(!ED.on){ if(ED.carry)placeCarry(true); select(null); setHover(null); showGrid(false); camOut(); const A=A_(); clearTimeout(saveT); if(A)HOME.save(snapshot(A)); } else camIn(); ED.panel(); B.textContent=ED.on?'DONE · T':'DECORATE · T'; };
 
   /* ---------- the mouse and the keys while you decorate ---------- */
   const rc=new THREE.Raycaster(), ndc=new THREE.Vector2(), plane=new THREE.Plane(), hitP=new THREE.Vector3(), UP=new THREE.Vector3(0,1,0);
@@ -277,19 +277,19 @@ import {ROOMK} from './150a-bedroom.js';
     if(drag){ if(drag.carry&&e.target!==renderer.domElement)return; move(e); return; }
     if(e.target!==renderer.domElement||e.buttons)return; const now=performance.now(); if(now-hovT<60)return; hovT=now; const h=pick(e); setHover(h&&h.un); },true);
   addEventListener('pointerup',e=>{ if(!drag||drag.carry||e.button!==0)return; finish(); },true);
-  addEventListener('wheel',e=>{ if(!ED.on||e.target!==renderer.domElement)return; e.stopImmediatePropagation(); e.preventDefault(); if(ED.sel)size(e.deltaY<0?1.05:1/1.05); else if(held)held.ppu=Math.max(4,Math.min(80,held.ppu*(e.deltaY<0?1.1:1/1.1))); },{capture:true,passive:false});
+  addEventListener('wheel',e=>{ if(!ED.on||!ED.sel||!e.shiftKey||e.target!==renderer.domElement)return; e.stopImmediatePropagation(); e.preventDefault(); size((e.deltaY||e.deltaX)<0?1.05:1/1.05); },{capture:true,passive:false});   // the wheel zooms; Shift+wheel resizes what you picked up
   addEventListener('keydown',e=>{ const tg=e.target; if(tg&&(tg.tagName==='INPUT'||tg.tagName==='TEXTAREA'||tg.isContentEditable)&&tg.type!=='range')return; const k=e.key.toLowerCase();
     if(k==='t'&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&(ED.on||inHome())){ if(!e.repeat)ED.toggle(); e.stopImmediatePropagation(); e.preventDefault(); return; }
     if(!ED.on)return; let used=true;
     if(k==='escape'){ if(ED.carry)cancelCarry(); else ED.toggle(); } else if((e.ctrlKey||e.metaKey)&&k==='z')ED.back();
     else if(ED.sel&&k==='q')turn(e.altKey?Math.PI/12:RQ,e.altKey); else if(ED.sel&&k==='e')turn(e.altKey?-Math.PI/12:-RQ,e.altKey);
     else if(ED.sel&&k==='[')lift(-.05); else if(ED.sel&&k===']')lift(.05); else if(ED.sel&&(k==='delete'||k==='backspace'||k==='x'))putAway();
-    else if((k===','||k==='.')&&held)held.yaw+=k===','?RQ:-RQ; else if(k==='g'){ ED.grid=!ED.grid; ED.panel(); }
+    else if(k===','||k==='.')SHARED.yawTo+=k===','?RQ:-RQ; else if(k==='g'){ ED.grid=!ED.grid; ED.panel(); }
     else used=false; if(used){ e.stopImmediatePropagation(); e.preventDefault(); } },true);
 
   // the button shows in your apartment; the editor closes if you leave it; the buy bar's pictures a couple a frame
   SYS.add('places',()=>{ const h=inHome(); if(B.hidden===h)B.hidden=!h; if(ED.on&&!h)ED.toggle(); if(helper&&ED.sel){ if(ED.sel.gone||!ED.sel.obj.parent)select(null); else helper.update(); }
-    if(hover&&(hover.un.gone||!hover.un.obj.parent))setHover(null); if(held&&(!ED.on||!inHome())){ if(ED.on)ED.toggle(); else camOut(); } if(held&&UI.hold===held)roomMid();   // the camera is given back whenever you're not decorating at home
+    if(hover&&(hover.un.gone||!hover.un.obj.parent))setHover(null);
     if(ED.on&&PQ.length)for(let i=0;i<2&&PQ.length;i++){ const k=PQ.shift(); if(!PICS[k])try{ drawPic(k); }catch(err){ PICS[k]=''; } } },'150d-roomedit');
   window.ROOMEDDBG=()=>{ const A=A_(); return {on:ED.on,sel:ED.sel&&ED.sel.id,undo:ED.undo.length,saved:HOME.saved||0,layout:!!HOME.layout,units:A?A.units().length:0,gone:A?A.units().filter(u=>u.gone).length:0,added:A?A.units().filter(u=>u.added).length:0,wall:A&&A.R.wall,floor:A&&A.R.floor,kfloor:A&&A.R.kfloorK,
     carry:!!ED.carry,grid:ED.grid,cash:cash(),pics:Object.keys(PICS).filter(k=>PICS[k]).length,fp:fpG.visible?fpG.children.filter(m=>m.visible).map(m=>m.material===FPM.ok?'ok':'no'):[],said:ED.said||''}; };

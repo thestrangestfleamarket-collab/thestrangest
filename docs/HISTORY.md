@@ -4815,3 +4815,6 @@ Owner (his picture of the path kinking onto the bridge): "bridge needs to go str
 ## 27 Oct 2026: the teddy bear
 Owner (his Drive file teddy+bear+3d+model.glb): "i want to add this character to game". THE TEDDY BEAR (fur coat, blue striped sweater, brown trousers) walks Main Street with the other .glb toons, 1.4 m tall; in the character and map editors with the animals. No shop or job yet (owner to pick).
 - Owner: "why is he so bright". Darkened toward his file's grey-brown (tint in characters.json, editable in the character editor), and his surface no longer faces inward.
+
+## 27 Oct 2026: Market St's empty fronts from the MegaKit
+Owner (his Drive G folder, the Downtown City MegaKit glTF): "lets use these assets for the buildings on market st"; his picks: "Baked into the blocks", "Market St row only". The empty fronts on Market St's row are the kit's three whole buildings (small, medium, large), each side one baked picture on its block, chosen by width and scaled whole, so they now stand at the kit's own height (about 4 to 8 floors). The shops keep their own outsides. Rule: kit buildings stay blocks with baked pictures, not 3D pieces.

@@ -42,11 +42,17 @@ Object.assign(BLK,{blds:[],signs:[],band:()=>null,built:0,in:false,hi:[],LO:.5})
     g.fillStyle='rgba(20,18,16,.35)'; g.fillRect(0,h-4,w,4);
     return {map:tex(c),em:tex(e)}; }
   const roofM=new THREE.MeshLambertMaterial({color:0x3a3840}), sideCache={};
+  const MKIT={M:__DATA__("data/megakit.json"),img:[__B64__("data/megakit.png"),__B64__("data/megakit-lit.png")]};   // the MegaKit's buildings, each side one picture (tools/megakit-bake.cjs)
+  { const tl=new THREE.TextureLoader(), at=MKIT.img.map(u=>{ const t=tl.load(u); t.magFilter=t.minFilter=THREE.NearestFilter; t.generateMipmaps=false; return t; }); at[0].colorSpace=THREE.SRGBColorSpace;
+    MKIT.pick=w=>{ const b=MKIT.M.b; if(w<6)return {id:'small',k:1,side:w/b.small.d}; let best=null; for(const id in b){ const k=w/b[id].w; if(!best||Math.abs(Math.log(k))<Math.abs(Math.log(best.k)))best={id,k}; } return best; };
+    MKIT.mats=({id,side})=>{ const b=MKIT.M.b[id], cut=(t,[x,y,w,h],f=1)=>{ const c=t.clone(); c.repeat.set(w*f/MKIT.M.aw,h/MKIT.M.ah); c.offset.set(x/MKIT.M.aw,1-(y+h)/MKIT.M.ah); return c; },
+        L=(r,f)=>new THREE.MeshLambertMaterial({map:cut(at[0],r,f),emissive:0xffffff,emissiveMap:cut(at[1],r,f)});
+      return side?[L(b.east),L(b.west),roofM,roofM,L(b.east,side),L(b.west,side)]:[L(b.east),L(b.west),roofM,roofM,L(b.front),L(b.back)]; }; }
   function building(o){ const W=o.x1-o.x0, D=o.y1-o.y0, H=YP(o.h), s0=seed;
     const FW=o.e?D:W, SD=o.e?W:D;
     const fs=Q=>[()=>face(FW,o.h,{q:Q,k:o.k,tint:o.tint,lit:o.lit,shop:o.front,door:'r',doors:o.doors,blank:o.blankFace}),()=>face(FW,o.h,{q:Q,k:o.k+50,tint:o.tint,lit:o.lit,shop:o.back,door:'l',doors:o.doors,blank:o.blankFace}),()=>face(SD,o.h,{q:Q,k:o.k+90,tint:o.tint,lit:.1,blank:o.blankSide})];
     const mk=([fr,bk,sd])=>{ const L=(f)=>new THREE.MeshLambertMaterial({map:f.map,emissive:0xffffff,emissiveMap:f.em}), F=L(fr), Bk=L(bk), S=L(sd); return o.e?[F,Bk,roofM,roofM,S,S]:o.n?[S,S,roofM,roofM,F,Bk]:[S,S,roofM,roofM,Bk,F]; };
-    const mats=mk(fs(o.lazy?BLK.LO:1).map(f=>f()));
+    const mats=o.kit?MKIT.mats(o.kit):mk(fs(o.lazy?BLK.LO:1).map(f=>f()));
     const m=new THREE.Mesh(new THREE.BoxGeometry(W*T,H,D*T),mats); m.position.set((XS(o.x0)+XS(o.x1))/2,H/2,(ZS(o.y0)+ZS(o.y1))/2); m.castShadow=o.cheap?false:true; m.receiveShadow=true; G.add(m);
     const cope=new THREE.Mesh(new THREE.BoxGeometry(W*T+.1*T,YP(8),D*T+.1*T),new THREE.MeshLambertMaterial({color:0x4a464e})); cope.position.set(m.position.x,H+YP(4),m.position.z); cope.castShadow=!o.cheap; G.add(cope); PEEK.whole(m); PEEK.whole(cope);
     if(o.lazy)BLK.hi.push({m,lo:mats,hi:null,paint:async()=>{ const k=seed, r=[]; seed=s0; for(const f of fs(1)){ r.push(f()); await Y(); } seed=k; return mk(r); }});
@@ -57,7 +63,7 @@ Object.assign(BLK,{blds:[],signs:[],band:()=>null,built:0,in:false,hi:[],LO:.5})
   const fill=(a,b,mk)=>{ let x=a, i=0; while(b-x>1.5){ const r=((Math.sin(x*12.9898+i*78.233)*43758.5453)%1+1)%1, w=12+r*8, e=b-x-w<6?b:x+w; mk(x,e,i++,r); x=e; } };
   const holes=(on,a0,a1)=>{ const g=[]; let y=a0; for(const [a,b] of on.slice().sort((p,q)=>p[0]-q[0])){ if(a-.1>y)g.push([y,a-.1]); y=Math.max(y,b+.1); } if(a1>y)g.push([y,a1]); return g; };
   { const gaps=holes(MAINROW,B.x0,B.x1); let n=0;
-    for(const [a,b] of gaps)fill(a,b,(x0,x1,i,r)=>{ n++; building({x0,x1,y0:B.back,y1:SHARED.BOD.OY,h:120+Math.round(r*50),n:0,k:400+n*11,tint:TINTS[n%TINTS.length],front:'shut',back:'shut',lit:.12,garage:true,doors:Math.max(1,Math.round((x1-x0)/14)),blankSide:true,cheap:true,row:1}); }); }
+    for(const [a,b] of gaps)fill(a,b,(x0,x1,i,r)=>{ n++; const kit=MKIT.pick(x1-x0); building({x0,x1,y0:B.back,y1:SHARED.BOD.OY,h:Math.round(MKIT.M.b[kit.id].h*kit.k*28),n:0,k:400+n*11,kit,cheap:true,row:1}); }); }
   { const F=RING.wx0, gaps=holes([...LEVEL.places,...SHELLS].filter(p=>p.y1!=null&&Math.abs(p.x1-F)<.6).map(p=>[p.y0,p.y1]),LEVEL.park.y0+.5,RING.top-1); let n=0;
     for(const [a,b] of gaps)fill(a,b,(y0,y1,i,r)=>{ n++; building({x0:F-13,x1:F,y0,y1,h:120+Math.round(r*50),e:1,k:700+n*13,tint:TINTS[(n+3)%TINTS.length],front:'shut',back:'shut',lit:.12,garage:true,row:5,doors:Math.max(1,Math.round((y1-y0)/14)),blankSide:true,cheap:true}); }); }
   const BX=[], GL=[], zA=B.alley[1], zB=B.alley[0], mid=(zA+zB)/2;

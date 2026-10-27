@@ -150,8 +150,8 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
   pier(ex-.6,EG[0]-PW,P.x1+.3,EG[0],41); pier(ex-.6,EG[1],P.x1+.3,EG[1]+PW,45);
   LEAVES.push([ex-.85,EG[0],-1,'y',1.5],[ex-.85,EG[1],1,'y',1.5]);
   const CB=[CASTLE.b[0]-PO.x,CASTLE.b[1]-PO.x,CASTLE.b[2]-PO.y,CASTLE.b[3]-PO.y], wx=P.x0, ny=P.y1-T, WG=PARK.wgate=[P.round[1]-(g1-g0)/2,P.round[1]+(g1-g0)/2], NG=PARK.ngate=[P.round[0]-3.5,P.round[0]+3.5];
-  const wTop=Math.min(P.y1,CB[2]), nLeft=CB[3]<P.y1-T-1?P.x0:Math.max(P.x0,CB[1]);
-  wall(wx,P.y0+T,wx+T,WG[0]-PW,51); wall(wx,WG[1]+PW,wx+T,wTop,55); if(CB[3]<P.y1-T-1)wall(wx,CB[3],wx+T,ny,59);
+  const cw=CB[0]<=wx+T+.5, wTop=cw?Math.min(P.y1,CB[2]):ny, nLeft=CB[3]<P.y1-T-1?P.x0:Math.max(P.x0,CB[1]);   // the west wall breaks for the castle only where the castle stands on it
+  wall(wx,P.y0+T,wx+T,WG[0]-PW,51); wall(wx,WG[1]+PW,wx+T,wTop,55); if(cw&&CB[3]<P.y1-T-1)wall(wx,CB[3],wx+T,ny,59);
   pier(wx-.3,WG[0]-PW,wx+T+.6,WG[0],57); pier(wx-.3,WG[1],wx+T+.6,WG[1]+PW,61);
   LEAVES.push([wx+T+.85,WG[0],-1,'y',(WG[1]-WG[0])/2],[wx+T+.85,WG[1],1,'y',(WG[1]-WG[0])/2]);
   wall(nLeft,ny,NG[0]-PW,P.y1,65); wall(NG[1]+PW,ny,P.x1-T,P.y1,69);

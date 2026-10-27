@@ -4777,3 +4777,7 @@ Owner: "i want to work on adding VR capabilties to the game, i have a quest 3 an
 
 ## 27 Oct 2026: the subway entrance, NYC style
 Owner (two pictures of NYC subway entrances): "i want to replace the subway entrance with these examples (just 1), no grass". The stairs on Market St are one entrance like the pictures: green iron railings with balusters on a stone base, SUBWAY signs on both sides, a MARKET ST sign with the line dots at the back, four green lamp posts with globes, red-brown steps. No grass round it: the lawn beside it is paved, and the hole is open (the paving had covered it).
+
+## 27 Oct 2026: no pixelation, sharpest only
+Owner: "lets remove all pixelation and make sharpest level the default only setting". The game always draws at the screen's own pixels; the resolution choices, the -/= keys, the guitarist's SHARPEN bar and the lighting editor's SHARPNESS are gone. Supersedes "Never sharper than the opening" (RESI, RESMAX, ZUPX).
+Owner: "dont do any pixelation effects, just let the items and graphics be what they are". No pixel-grid snapping of the camera or the characters, no pixelated scaling of the picture; textures and models left as they are.

@@ -7,7 +7,7 @@
 :root{ --bg:#0d0f14; --panel:rgba(16,18,26,.82); --fg:#ece5d3; --dim:#9b9584; --key:#f2c14e; --line:#2a2e3a; --pixel:'Silkscreen',ui-monospace,Menlo,monospace; color-scheme:dark }
 html,body{height:100%;margin:0;background:var(--bg);overflow:hidden}
 #stage{position:fixed;inset:0;overflow:hidden;background:var(--bg)}
-#stage canvas{position:absolute;image-rendering:pixelated;image-rendering:crisp-edges;display:block;cursor:crosshair}
+#stage canvas{position:absolute;display:block;cursor:crosshair}
 #hud{position:fixed;left:calc(12px + env(safe-area-inset-left,0px));top:calc(12px + env(safe-area-inset-top,0px));font:12px/1.7 var(--pixel);color:var(--fg);background:var(--panel);border:2px solid var(--line);padding:10px 12px;max-width:calc(100vw - 48px);user-select:none}
 #hud h1{font:inherit;font-size:14px;margin:0 0 6px;color:var(--key);letter-spacing:.04em}
 #hud div{white-space:nowrap}
@@ -29,7 +29,6 @@ html,body{height:100%;margin:0;background:var(--bg);overflow:hidden}
   <div><b>Wheel</b> zoom · <b>0</b> reset the view</div>
   <div>The bodega, Ghost Street, the apartment house and the subway · jump into the Hudson to swim · <b>Space</b> (held) under</div>
   <div><b>Space</b> jump · <b>J</b> punch · <b>K</b> kick · <b>R</b> roll · <b>B</b> wave · <b>V</b> change the view · <b>F</b> fall</div>
-  <div><b>-</b> / <b>=</b> coarser / sharper</div>
   <div class="dim"><b>Esc</b> menu: map, display, keys · <b>H</b> hide this</div>
 </div>
 <div id="stat" hidden>--</div>

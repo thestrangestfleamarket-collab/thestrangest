@@ -4858,3 +4858,6 @@ Owner (his pictures): "the grass should be flatter, rounder not poking up like p
 
 ## 27 Oct 2026: the holodeck's door, no cabinets
 Owner: "In order to go into the holodeck you have to double click the entrance. remoev the other arcade cabinets from arcade". The holodeck's doorway is a closed door: double-click it (THE HOLODECK) to go in, and BACK TO THE ARCADE from the holodeck side to come out; walking into it does nothing. The six arcade cabinets (and their skill plays) are gone; the arcade is the black room, its carpet and the holodeck.
+
+## 27 Oct 2026: camera sway, a menu choice
+Owner: "lets add this as option in menu to toggle on or off" (the idle camera sway from Security Booth). DISPLAY's CAMERA SWAY: on, the view drifts a fifth of a degree, slowly; off by default.

@@ -4814,3 +4814,6 @@ Owner (his picture of the path kinking onto the bridge): "bridge needs to go str
 
 ## 27 Oct 2026: the menu's portrait through the PS2 filter
 Owner: "the character should ahve t he same effecst on this shot as real game (looks too clear)". The character page's live portrait wears the PS2 filter too, its pixels the game's size on screen.
+
+## 27 Oct 2026: the menu in the Codec style
+Owner picked mockup 3 (Codec) of six PS2-style menus; then "simplify the menu, dont need these sections" (the gear slots, carried gear, YOU), "this top should just say The Strangest Flea Market", "MAP, INVENTORY, SKILLS, SETTINGS, REPORT A BUG, LOG OUT, HELP only options", "in that order". The menu is green on black with scanlines and a mono type; the title THE STRANGEST FLEA MARKET; those seven options in that order (ADMIN after them for owners only).

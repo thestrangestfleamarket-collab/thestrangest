@@ -1,6 +1,6 @@
 // THE CHARACTER PAGE: the menu's home (ESC) — your live avatar, drag-drop gear, and the menu buttons.
 import {THREE} from './003-shx.js';
-import {CHARP, CINEMA, EQUIP, FORAGE, INV, ITEMS, LOOKS, PS2, UI, VIT, W3, WE, WIELD} from './003b-systems.js';
+import {CHARP, CINEMA, EQUIP, FORAGE, INV, ITEMS, LOOKS, PS2, UI, VIT, W3, WIELD} from './003b-systems.js';
 import {renderer} from './004-main.js';
 import {DESIGN} from './102b-designer.js';
 { const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
@@ -35,8 +35,8 @@ import {DESIGN} from './102b-designer.js';
   const bars=()=>{ if(!el)return; const hp=el.querySelector('#cphp'), sta=el.querySelector('#cpst'); if(hp)hp.style.width=Math.round((VIT.hp||0)*100)+'%'; if(sta)sta.style.width=Math.round((VIT.sta||0)*100)+'%'; };
   const drawSlots=()=>{ el.querySelector('#cpslots').innerHTML=SLOTS.map(([s,lab])=>{ const id=wornIn(s); return `<div class="cp-slot${id?' on':''}" data-slot="${s}"${id?' draggable="true"':''} title="${id?esc(name(id)):lab} — ${id?'click or drag off to remove':'click to pick gear, or drag it here'}">${id?esc(short(id)):'<span class="cp-dim">'+lab+'</span>'}</div>`; }).join(''); };
   const drawTray=()=>{ const ids=carried(); el.querySelector('#cptray').innerHTML='<div class="cp-trayh">CARRIED GEAR — drag onto your body, or click to wear</div>'+(ids.length?ids.map(id=>`<div class="cp-chip" draggable="true" data-id="${id}">${esc(short(id))}</div>`).join(''):'<span class="cp-dim">nothing to wear — gear turns up in your pack</span>'); };
-  const btns=()=>{ const B=[['HELP','?',()=>{ UI.toggleMenu(); UI.moves(); }],['MAP','',()=>UI.menuTab('map')],['PACK','I',()=>openPack('pack')],['SKILLS','',()=>openPack('skills')],['CRAFT','',()=>openPack('craft')],['SETTINGS','',()=>UI.menuTab('display')],['EDIT WORLD','⇧E',()=>{ UI.toggleMenu(); WE.toggle(); }],['REPORT A BUG','F8',()=>UI.menuTab('bug')]];
-    if(isAdmin)B.push(['ADMIN','',adminOpen,1]); B.push(['LOG OUT','',logout]);
+  const btns=()=>{ const B=[['MAP','',()=>UI.menuTab('map')],['INVENTORY','I',()=>openPack('pack')],['SKILLS','',()=>openPack('skills')],['SETTINGS','',()=>UI.menuTab('display')],['REPORT A BUG','F8',()=>UI.menuTab('bug')],['LOG OUT','',logout],['HELP','?',()=>{ UI.toggleMenu(); UI.moves(); }]];
+    if(isAdmin)B.push(['ADMIN','',adminOpen,1]);
     el.querySelector('#cpbtns').innerHTML=B.map((b,i)=>`<button class="cp-btn${b[3]?' cp-adm':''}" data-i="${i}">${b[0]}<span class="cp-tag">${b[1]}</span></button>`).join(''); el._btns=B; };
   const openPack=t=>{ if(UI.menuOpen)UI.toggleMenu(); if(FORAGE.PACK){ if(!FORAGE.PACK.open)FORAGE.PACK.toggle(t); else { FORAGE.PACK.tab=t; FORAGE.PACK.draw(); } } };
   const logout=()=>{ if(!confirm('Log out of The Strangest Flea Market?'))return; try{ document.cookie='tsfm-pass=; path=/; max-age=0; samesite=strict'; }catch(e){} try{ localStorage.removeItem('sb-jvcetttmqseoteidfggn-auth-token'); }catch(e){} location.replace('/'); };
@@ -77,7 +77,7 @@ import {DESIGN} from './102b-designer.js';
   #dhome .cp-doll{display:flex;gap:10px;align-items:stretch;position:relative}
   #dhome .cp-pick{position:absolute;left:58px;z-index:2;width:190px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;background:#0b0d12;border:2px solid var(--key);padding:8px;font:10px var(--pixel)}
   #dhome .cp-pick[hidden]{display:none}
-  #dhome .cp-slots{display:flex;flex-direction:column;gap:8px;justify-content:center}
+  #dhome .cp-slots,#dhome .cp-pick,#dhome .cp-tray,#dhome .cp-name{display:none}
   #dhome .cp-slot{width:48px;height:48px;background:#0b0d12;border:2px solid #3a3f4e;display:flex;align-items:center;justify-content:center;text-align:center;font:9px var(--pixel);color:var(--key);cursor:pointer;padding:2px;line-height:1.15;overflow:hidden;word-break:break-word}
   #dhome .cp-slot.on{border-color:#6b6f80}
   #dhome .cp-slot.cp-over{border-color:var(--key);border-style:dashed}

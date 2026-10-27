@@ -6,7 +6,7 @@ import {SYS, TILE} from './006-map-pre.js';
 import {TUFTC} from './014-gamekit.js';
 const TUFTS=window.TUFTS={wind:0};
 { const T=TILE, R1=10*T, R2=22*T, NP=24, hsh=(a,b,s)=>{ let h=(a*374761393+b*668265263+s*1442695041)|0; h=(h^(h>>>13))*1274126177|0; return ((h^(h>>>16))>>>0)/4294967296; };
-  const RINGS=[{sp:.4,sz:1,cap:Math.ceil(Math.PI*R1*R1/(.4*.4)*1.15),geo:new THREE.IcosahedronGeometry(.5,0)},{sp:.62,sz:.8,cap:Math.ceil(Math.PI*(R2*R2-R1*R1)/(.62*.62)*1.15),geo:new THREE.OctahedronGeometry(.5,0)}];
+  const RINGS=[{sp:.4,sz:1,cap:Math.ceil(Math.PI*R1*R1/(.4*.4)*1.15),geo:new THREE.SphereGeometry(.5,7,4,0,6.283,0,1.75)},{sp:.62,sz:.8,cap:Math.ceil(Math.PI*(R2*R2-R1*R1)/(.62*.62)*1.15),geo:new THREE.OctahedronGeometry(.5,0)}];
   const W=TUFTC.reduce((a,c)=>a+c[3],0), COLS=TUFTC.map(c=>new THREE.Color().setRGB(c[0]/255,c[1]/255,c[2]/255,THREE.SRGBColorSpace)), pick=r=>{ r*=W; for(let i=0;i<TUFTC.length;i++)if((r-=TUFTC[i][3])<0)return COLS[i]; return COLS[0]; };
   const PP=[...Array(NP)].map(()=>new THREE.Vector4()), U={uPP:{value:PP},uTt:{value:0},uKn:{value:.6},uWd:{value:TUFTS.wind}};
   // each tuft leans away from what presses it (more at its top); the push is turned into the tuft's own frame (a turn about Y and a scale)
@@ -17,7 +17,7 @@ const TUFTS=window.TUFTS={wind:0};
         vec3 dw=vec3(dv.x,-.45*dot(dv,dv),dv.y)*uKn*h*h*1.1; vec3 c0=instanceMatrix[0].xyz, c1=instanceMatrix[1].xyz, c2=instanceMatrix[2].xyz;
         transformed+=vec3(dot(c0,dw)/dot(c0,c0),dot(c1,dw)/dot(c1,c1),dot(c2,dw)/dot(c2,c2)); }`); };
   mat.customProgramCacheKey=()=>'tufts';
-  for(const R of RINGS){ R.geo.translate(0,.5,0); R.geo.scale(.45,1,.45); R.me=new THREE.InstancedMesh(R.geo,mat,R.cap); R.me.count=0; R.me.instanceMatrix.setUsage(THREE.DynamicDrawUsage); R.me.setColorAt(0,COLS[0]); R.me.instanceColor.setUsage(THREE.DynamicDrawUsage);
+  for(const R of RINGS){ R.geo.translate(0,.36,0); R.geo.scale(.5,.62,.5); R.me=new THREE.InstancedMesh(R.geo,mat,R.cap); R.me.count=0; R.me.instanceMatrix.setUsage(THREE.DynamicDrawUsage); R.me.setColorAt(0,COLS[0]); R.me.instanceColor.setUsage(THREE.DynamicDrawUsage);
     R.me.frustumCulled=false; R.me.receiveShadow=true; R.me.castShadow=false; R.me.raycast=()=>{}; R.me.userData.tufts=1; }
   const G=new THREE.Group(); G.add(...RINGS.map(R=>R.me)); let added=false;
   let knee=0; const kneeOf=()=>{ const e=W3.eyeAt&&W3.eyeAt(new THREE.Vector3()), g=SHARED.groundY?SHARED.groundY(pos.x,pos.z):0, h=e?e.y-g:0; return h>1&&h<4?.3*h:.63; };

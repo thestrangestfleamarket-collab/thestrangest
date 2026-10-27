@@ -4811,3 +4811,7 @@ Owner (his pictures of the trees by the park wall): "the trees on edges arent co
 ## 27 Oct 2026: the bridge straight across
 Owner (his picture of the path kinking onto the bridge): "bridge needs to go straight across". The path runs straight over the bridge; the stream turns to run square to it there, so the bridge still crosses the water square. Supersedes the path that bent to cross square.
 - Owner (his picture of the open stretch of park wall by the castle): "gap of wall missing too at this spot". The park's west wall runs unbroken past the castle (it only breaks where the castle stands on the wall).
+
+## 27 Oct 2026: the teddy bear
+Owner (his Drive file teddy+bear+3d+model.glb): "i want to add this character to game". THE TEDDY BEAR (fur coat, blue striped sweater, brown trousers) walks Main Street with the other .glb toons, 1.4 m tall; in the character and map editors with the animals. No shop or job yet (owner to pick).
+- Owner: "why is he so bright". Darkened toward his file's grey-brown (tint in characters.json, editable in the character editor), and his surface no longer faces inward.

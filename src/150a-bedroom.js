@@ -1,4 +1,4 @@
-// THE APARTMENT ROOM: your apartment as one open room (25 Oct 2026), its shell as the owner's isometric apartment picture (26 Oct 2026): warm beige walls plain to their light grey tops, warm brown boards, the side wall's three windows onto the live sky, a cool moonlight through them by night, a deep green-grey void outside; its pieces are each a unit you move (the bedroom 150b, the kitchen 150c).
+// THE APARTMENT ROOM: your apartment as one open room (25 Oct 2026), its shell as the owner's isometric apartment picture (26 Oct 2026): warm beige walls plain to their light grey tops, warm brown boards, the side wall's three windows onto the live sky, a cool moonlight through them by night, the house below and the sky round it; its pieces are each a unit you move (the bedroom 150b, the kitchen 150c).
 import {SHARED, THREE} from './003-shx.js';
 import {CLOCK, GPH, SFX, SHAD, SKY, UI, USE} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
@@ -67,8 +67,7 @@ const ROOMK={parts:[],wires:{},built:[],api:null};   // the room's other parts (
         g.fillStyle='#ece6d8'; for(const [x,y] of [[0,0],[128,0],[0,128],[128,128]]){ g.beginPath(); g.arc(x,y,28,0,7); g.fill(); } g.fillStyle='#c98a4a'; g.beginPath(); g.arc(64,64,14,0,7); g.fill(); g.strokeStyle='#4e7ea6'; g.lineWidth=4; g.beginPath(); g.moveTo(64,30); g.lineTo(98,64); g.lineTo(64,98); g.lineTo(30,64); g.closePath(); g.stroke(); g.strokeStyle='rgba(120,110,100,.5)'; g.lineWidth=2; g.strokeRect(0,0,w,w); })},
       ceramic:{n:'WHITE CERAMIC',c:[238,238,234],gen:tiled(128,.9,(g,w)=>{ g.fillStyle='#c6c2ba'; g.fillRect(0,0,w,w); for(let i=0;i<2;i++)for(let j=0;j<2;j++){ const f=.96+rnd()*.05; g.fillStyle=`rgb(${242*f|0},${242*f|0},${238*f|0})`; g.fillRect(i*64+1.5,j*64+1.5,61,61); } })},
       room:{n:'SAME AS ROOM',c:[120,100,80]}};
-    const ISO={value:0}, skyOff={on:false};
-    const blackOut=()=>{ if(skyOff.on&&scene.background&&scene.background.isColor)scene.background.setRGB(.035,.05,.042); };   // as a shop's inside does (ROOMS): after the sky has set the colour this frame
+    const ISO={value:0};
 
     let R=null;   // the built room: its meshes, lights and loose things
     const build=()=>{ '@apts'; const X=SHARED.BOD.X, Z=SHARED.BOD.Z, Yr=SHARED.BOD.Y, A=APTS.R, WI=APTS.WIN, WPL=APTS.WPL, M=(X(A.x0+1)-X(A.x0))/MPU, fy=Yr(APTS.RB+.15)+.012, HW=(Yr(APTS.S||130)-Yr(0))/M;
@@ -266,7 +265,7 @@ const ROOMK={parts:[],wires:{},built:[],api:null};   // the room's other parts (
       const lift=un=>{ const g=un.gone; un.gone=true; body(un); un.gone=g; };   // out of the physics while you carry it
       R.api={R,M,Lx,Ly,HW,units:()=>R.units,kinds:()=>R.kinds,getT,setT,remove,restore,spawn,drop,lift,toApt,W,unitBox,wall,floor,lightsAll,light,lightGet,lightReset,walls:WALLS,floors:FLOORS,kfloors:KFLOORS,kfloor,thumb,glow:k=>{ R.glowK=cl(k,0,3); }};
       if(R.kfloor)kfloor('oak'); ROOMK.api=R.api; for(const f of ROOMK.built)f(R.api);
-      window.BEDROOMDBG=()=>({built:!!R,Lx,Ly,fw,du,HW,loose:R?R.th.length:0,units:R?R.units.length:0,walls:Object.values(APTS.WPL||{}).map(p=>+p.constant.toFixed(2)),sky:!skyOff.on,lamps:R?R.lamps.map(l=>l.on):[]}); };
+      window.BEDROOMDBG=()=>({built:!!R,Lx,Ly,fw,du,HW,loose:R?R.th.length:0,units:R?R.units.length:0,walls:Object.values(APTS.WPL||{}).map(p=>+p.constant.toFixed(2)),lamps:R?R.lamps.map(l=>l.on):[]}); };
 
     // gone with the apartment: the loose things leave the physics, the ones you added leave the scene
     const clear=Q=>{ if(!Q)return; if(GPH.drop)for(const it of Q.th)GPH.drop(it); for(const un of Q.units||[]){ for(const t of un.th){ const i=UI.things.indexOf(t); if(i>=0)UI.things.splice(i,1); } if(un.loose)un.obj.removeFromParent(); } };
@@ -288,14 +287,12 @@ const ROOMK={parts:[],wires:{},built:[],api:null};   // the room's other parts (
           const hide=p.h>1.2&&((cut('Ww')&&p.u<.5)||(cut('We')&&A.Lx-p.u<.5)||(cut('Wf')&&p.v<.5)||(cut('Wb')&&A.Ly-p.v<.5));
           if(hide!==!!un.st.hi){ un.st.hi=hide; o.traverse(q=>{ if(q.isMesh&&!q.userData.hit)q.visible=!hide; }); } } }
       const nt=1-day; for(const L of R.winL)L.intensity=inn?18*day+6*nt:0; const sunK=cl((e-2)/10,0,1); for(const L of R.winL)L.color.setRGB(1-.28*nt,.86+.1*sunK-.12*nt,.72+.26*sunK+.2*nt*(1-sunK));   // the light at the glass: warm when the sun is low, a cool blue moonlight by night
-      // outside: hidden on a side whose wall is cut away; in the isometric view kept between the floor and the far walls' top edge as the camera sees it, so it shows only through the glass
-      { const isoV=!UI.persp&&SHARED.pitch<1.45&&!APTS.onEsc, d=TV3; SHARED.cam.getWorldDirection(d);   // the isometric camera's rays are parallel: what is outside a wall shows only inside the prism its edges cut along them
-        for(const k in R.tops){ const p=R.tops[k], [a,b]=R.edges[k]; if(!isoV){ p.constant=1e6; continue; } p.normal.crossVectors(TV4.subVectors(b,a),d).normalize(); if(p.normal.y>0)p.normal.negate(); p.constant=-p.normal.dot(TV4.copy(a).setY(a.y+R.api.HW*R.M)); } R.bot.constant=isoV?-(R.fy-.05*R.M):1e6;   // nothing past the wall shows above its top edge
-        for(const k in R.edges){ const [a,b]=R.edges[k]; for(let i=0;i<2;i++){ const p=APTS.OUTP.side[k][i], P=i?b:a, Q=i?a:b; if(!isoV){ p.constant=1e6; continue; }   // and only within the wall's own width: never past the room's corners into the dark
-            p.normal.set(d.z,0,-d.x).normalize(); if(p.normal.dot(TV4.subVectors(Q,P))<0)p.normal.negate(); p.constant=-p.normal.dot(P); } }
-        for(const k in R.outs){ const on=APTS.WPL[k].constant>1e5&&!APTS.onEsc; for(const o of R.outs[k])o.visible=on&&(!R.backs.includes(o)||isoV); } }
+      // outside: the house's brick and the back fire escape round your rooms; in the isometric view nothing above your ceiling
+      { const isoV=!UI.persp&&SHARED.pitch<1.45&&!APTS.onEsc;
+        for(const k in R.tops){ const p=R.tops[k]; p.normal.set(0,-1,0); p.constant=isoV?R.fy+R.api.HW*R.M-SHARED.BOD.Y(6)+SHARED.BOD.Y(0):1e6; } R.bot.constant=1e6; for(const k in R.edges)for(const p of APTS.OUTP.side[k])p.constant=1e6;
+        for(const k in R.outs)for(const o of R.outs[k])o.visible=!APTS.onEsc&&!R.backs.includes(o); }
       { const D=R.doors.Wf, ED=APTS.escDoor; if(D&&ED){ const t=ED.open?-1.45:0; D.rotation.y+=(t-D.rotation.y)*Math.min(1,(dt||0)*7); } }
       for(const b of R.beams)b.uniforms.uOp.value=inn?.16*day:0;
       const iso=!UI.persp&&SHARED.pitch<1.45; ISO.value=iso?1:0;
-      const D=SKY.dome&&SKY.dome.material; if(D){ const off=inn&&iso&&!APTS.onEsc; if(off!==skyOff.on){ skyOff.on=off; D.visible=!off; } } blackOut(); }, '150a-bedroom'); } }
+    }, '150a-bedroom'); } }
 export {ROOMK};

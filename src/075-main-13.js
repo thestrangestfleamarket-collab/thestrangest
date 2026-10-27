@@ -134,4 +134,4 @@ gl_FragColor=sRGBTransferOETF(gl_FragColor);
 { const SH={on:true,lv:2}, el=document.getElementById('shd'), draw=()=>{ W3.lv.value=SH.on?(SH.lv>=2?2:1):0; el.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.s?String(SH.on):String(SH.on&&SH.lv===+b.dataset.l))); el.querySelector('[data-s]').textContent=SH.on?'ON':'OFF'; };
   el.querySelectorAll('button').forEach(b=>b.onclick=()=>{ if(b.dataset.s)SH.on=!SH.on; else{ SH.lv=+b.dataset.l; SH.on=true; } b.blur(); draw(); }); draw(); }
 const SKEL=__LAZY__("data/skel.json");
-export {clampP, collide, disp, frame, gplane, hit, marker, PAD, PMAX, PMIN, ray, SKEL, VIEW0};
+export {clampP, collide, disp, frame, marker, PAD, PMAX, PMIN, ray, SKEL, VIEW0};

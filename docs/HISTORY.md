@@ -4817,3 +4817,10 @@ Owner: "i want to work on a room organizer that will allow people to easily move
 ## 27 Oct 2026: the teddy bear
 Owner (his Drive file teddy+bear+3d+model.glb): "i want to add this character to game". THE TEDDY BEAR (fur coat, blue striped sweater, brown trousers) walks Main Street with the other .glb toons, 1.4 m tall; in the character and map editors with the animals. No shop or job yet (owner to pick).
 - Owner: "why is he so bright". Darkened toward his file's grey-brown (tint in characters.json, editable in the character editor), and his surface no longer faces inward.
+
+## 27 Oct 2026: the eight sections and THE LOOP
+Owner: "i want to building out the remaining sectors. fill them with basic elements for now. i want the subway and street to do a full loop. i want two subways on a real schedule that stops at each stop. each sector needs a subway exit and platform. real signs indicating which platform and subway exit is which. you should be abel to get in the subway train and ride it nonstop. it stops at each exit for 60 sconds. real tunnels, show mockup"; of the mockup (https://claude.ai/artifact/3mf1hW4LBT5kR3PhkPh5K4): "yes letters right, one each way, slow, you decide on names of streets".
+- Sections A to H (`sections` in world.json, A's size each): A B / C D / E F / G H up the columns. B to H have basic street, buildings and park for now.
+- The ring street: MARKET ST (south), WEST ST (west), LANTERN ST (north), CURIO AVE (east).
+- THE LOOP (`loop` in world.json): a station under the ring street in every section (A MARKET ST, B MOTH ST, C TINKER ST, D KETTLE ST, E RAG ST, F BUTTON ST, G BRASS ST, H CLOCK ST), each with its exit (A1 to H1) up to its street. Two trains: 1 clockwise on the outer track, 2 counterclockwise on the inner, slow, 60 s at every station, timed from the clock so every player sees the same train. Ride as long as you like.
+- A's parked train is gone (the two trains run through A's station now).

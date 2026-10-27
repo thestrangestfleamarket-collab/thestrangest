@@ -2,7 +2,7 @@
 import {SHARED} from './003-shx.js';
 import {LEVELS, PARK, pos, ROOMS, ZONES} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {TILE} from './006-map-pre.js';
+import {SECTIONS, TILE} from './006-map-pre.js';
 const VIS={all:false};
 { const M=new Map();
   const apply=(o,r)=>{ const h=r.why.size>0&&!VIS.all; if(r.self)o.layers.mask=h?0:r.mask; else o.visible=!h; };
@@ -32,6 +32,8 @@ Object.assign(ZONES,{cur:null,list:[['market','MARKET ST'],['cp','CENTRAL PARK']
 { const mid=()=>{ const P=PARK; return (P.y0+P.y1)/2+(P.oy||0); };
   ZONES.at=(x,z,lv,room)=>{ if(lv==='down'){ const id=LEVELS.at(x,z,'down'), L=LEVELS.of[id]; return {id,name:L.label?L.label():L.name}; }
     if(room)return {id:'inside',name:String(room.name||room.lz||room.id||'INSIDE').toUpperCase()};
+    { const mx=x/TILE+72, my=z/TILE-77, id=SECTIONS.at(mx,my), H=(SHARED.SECTION&&SHARED.SECTION.id)||'A';
+      if(id&&id!==H){ const P=SECTIONS.ring.park, N=SECTIONS.streets, st=mx<P.x0?N.west:mx>P.x1?N.east:my<P.y0?N.south:my>P.y1?N.north:'CENTRAL PARK'; return {id:'sec-'+id,name:st+' \u00b7 '+id}; } }
     if(PARK.within&&PARK.within(x,z)){ const y=z/TILE+SHARED.BOD.OY; return y>mid()?{id:'cp',name:'CENTRAL PARK'}:{id:'secp',name:'SOUTH EAST CENTRAL PARK'}; }
     return {id:'market',name:'MARKET ST'}; };
   ZONES.on=f=>ZONES.fns.push(f);

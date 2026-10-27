@@ -4,7 +4,7 @@ import {keys, LEVELS, LINES, pos, RAG, SFX, SHAD, UI} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {SAVE} from './005-save.js';
 import {cutWalls, FADE, FIX, grab, LAMPD, LAMPI, lamps, MAPG, MAPSTAIR, MODS, QS, SOL, STN, SYS, TILE, ZU} from './006-map-pre.js';
-import {BATCH, OBJ} from './008-batch.js';
+import {BATCH, OBJ, PEEK} from './008-batch.js';
 const WATER={drops:[], uH:{value:null}, uWB:{value:new THREE.Vector4()}, uLevel:{value:0}, uGrid:{value:new THREE.Vector2()}, uCK:{value:+(QS0=>QS0.get('ck')||160)(new URLSearchParams(location.search))}, mats:[]};
 WATER.caustic=m=>{ '@later'; m.onBeforeCompile=sh=>{ Object.assign(sh.uniforms,{uH:WATER.uH,uWB:WATER.uWB,uLevel:WATER.uLevel,uGrid:WATER.uGrid,uCK:WATER.uCK});
   sh.vertexShader='varying vec3 vWp;\n'+sh.vertexShader.replace('#include <project_vertex>','#include <project_vertex>\n vWp=(modelMatrix*vec4(transformed,1.)).xyz;');
@@ -111,7 +111,7 @@ await grab('down',async()=>{ const solids=SOL.down, fixed=FIX.down, SHL=[]; let 
   const fbm=(x,y,c)=>vn(x,y,c)*.55+vn(x*2.7,y*2.7,c+1)*.3+vn(x*7.3,y*7.3,c+2)*.15;
 const SL=(()=>{ const W={TK:4.4,P0:4.4,P1:17.4,XW:21.8,L:46,TE:0,H:196,XS:12.4,TR:[2.2,19.6],CARL:22.4,CARW:1.8,MY0:-46.6,EAST:258,WN:-31.5,WS:-44.5,TOP:186};
   W.MID=(W.P0+W.P1)/2; W.COLX=[W.P0+1.5,W.P1-2.2]; W.COLY=[3.5,9,14.5,20,25.5,31,36.5,42]; W.FIXY=[9.25,14.75,20.25,25.75,31.25,36.75,42.25];
-  W.BENCH=[11.2,22.4,32.8]; W.BINS=[17.1,28.5]; W.STEPS=[[[44.4,45.6]],[[.6,1.8],[44.4,45.6]]]; W.CARS=[-2.2,20.4]; W.EX0=W.XS-1.5; W.EX1=W.XS+1.5; W.ED=3;
+  W.BENCH=[11.2,22.4,32.8]; W.BINS=[17.1,28.5]; W.STEPS=[[[44.4,45.6]],[[.6,1.8],[44.4,45.6]]]; W.EX0=W.XS-1.5; W.EX1=W.XS+1.5; W.ED=3;
   W.fzAt=(x,y)=>{ const e=x<W.P0?W.P0-x:x-W.P1, s=W.STEPS[x<W.P0?0:1]; return e<.75&&s.some(([a,b])=>y>=a&&y<b)?-8*(1+Math.floor(e/.25)):-32; };
   return W; })();
 const GRAF=(()=>{ const P={yel:[246,208,44],ora:[246,132,38],red:[224,48,52],grn:[64,204,84],lim:[168,232,64],blu:[48,122,236],sky:[84,196,244],pur:[152,72,212],pnk:[246,100,180],wht:[242,242,234],blk:[18,18,22],cyn:[44,212,200]};
@@ -316,7 +316,6 @@ const SSUB=(()=>{ const W={};
   litter.forEach(p=>put(p,'litter'));
   const MX=SL.EX0-.95, MY=.06; put(W.mach(MX,MY),'passport machine'); solid(MX,MY,MX+.56,MY+.7,46); blobAt(MX,MY,MX+.56,MY+.7);
   put(W.signal(XW-.35,-1.4,1),'signal',SZ-32); put(W.signal(XW-.35,LEN+1.4,0),'signal',SZ-32); put(W.signal(.35,LEN+1.4,0),'signal',SZ-32);
-  SL.CARS.forEach((y0,i)=>{ put(carBoxes(y0,i+1,i===SL.CARS.length-1),'train car',SZ-32); solid(LT-SL.CARW,y0,LT+SL.CARW,y0+SL.CARL,144-32); });
   BATCH.build((k,map,emap)=>k==='B'?new THREE.MeshBasicMaterial({map,alphaTest:.5,side:THREE.DoubleSide}):new THREE.MeshLambertMaterial({map,alphaTest:.5,side:THREE.DoubleSide,...(emap?{emissiveMap:emap,emissive:0xffffff,emissiveIntensity:1.6}:{})}));
   BATCH.cast=false;
   const SC6={dark:[38,38,44],board:[14,12,12],dot:[255,168,40,1],dotDim:[60,36,14],cam:[62,64,70],lens:[10,10,14]};
@@ -342,42 +341,21 @@ const SSUB=(()=>{ const W={};
     for(const {fy} of FIXL){ const t=[V(MID-.18,fy-1.5,SZ+150),V(MID+.18,fy-1.5,SZ+150),V(MID+.18,fy+1.5,SZ+150),V(MID-.18,fy+1.5,SZ+150)], b=[V(MID-1.1,fy-2.2,SZ),V(MID+1.1,fy-2.2,SZ),V(MID+1.1,fy+2.2,SZ),V(MID-1.1,fy+2.2,SZ)];
       for(let k=0;k<4;k++)q(t[k],t[(k+1)%4],b[(k+1)%4],b[k]); }
     g.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); const me=new THREE.Mesh(g,BEAM); me.renderOrder=5; scene.add(me); }
-  { const R=new THREE.PointLight(new THREE.Color(1,.18,.12),1.4,6*TILE,1.6); R.position.set(...V(LT,SL.CARS[SL.CARS.length-1]+SL.CARL+.5,SZ+40)); R.userData.i0=R.intensity; scene.add(R); lamps.push(R); }
   cutWalls.push({pl:PF,nx:0,nz:0,foot:Y(SZ+100),always:true,me:null});
   solid(-1,0,0,LEN,UH*2); solid(XW,0,XW+1,LEN,UH*2); solid(P0,-1,SL.EX0,0,UH*2); solid(SL.EX1,-1,P1,0,UH*2); solid(SL.EX0,-SL.ED-1,SL.EX1,-SL.ED,UH*2); solid(P0,LEN,P1,LEN+1,UH*2);
-  const TUN=(()=>{ const R=(mx0,mx1,my0,my1,k)=>({x0:SL.MY0-my1,x1:SL.MY0-my0,y0:mx0-XS0,y1:mx1-XS0,k}), N=[SL.MY0-4.4,SL.MY0], S=[SL.MY0-21.8,SL.MY0-17.4], {EAST,WN,WS,TOP}=SL, E0=XS0+LEN;
-    return [R(E0,EAST,...N,'y'),R(E0,EAST,...S,'y'),R(WN+2.2,XS0,...N,'y'),R(WN-2.2,WN+2.2,...N,'c'),R(WN-2.2,WN+2.2,N[1],TOP,'x'),R(WS+2.2,XS0,...S,'y'),R(WS-2.2,WS+2.2,...S,'c'),R(WS-2.2,WS+2.2,S[1],TOP,'x')]; })();
-  { const PT=plane(), STA={x0:0,x1:XW,y0:0,y1:LEN}, all=[...TUN,STA], e=1e-3, tp=(u,v)=>{ const r=Math.abs(Math.abs(u)-.7);
-      if(r<.07)return r<.025?[202,204,208]:sh([116,112,108],.85+.2*vn(v*2,u,7)); if(r<.14&&mod(v,1.1)<.34)return [70,52,40];
-      const t3=Math.abs(u-1.42); if(t3<.12)return t3<.08?sh([150,118,64],.8+.25*vn(v*3,1,9)):[40,36,32];
-      if(Math.abs(u)<.98&&mod(v,1.1)<.34)return sh([96,66,44],.7+.35*hash(Math.floor(v/1.1),3,11));
-      const n=hash(Math.floor(u*14),Math.floor(v*14),103); return sh(n<.3?[34,32,34]:n<.6?[26,25,26]:[46,42,40],.8+.4*vn(u*.7,v*.7,105)); };
-    const tw=(u,z)=>{ const c=sh(concreteCol(u,z/24),.78*(.8+.4*vn(u*.5,z/30,141))); return z<-26?sh(c,.55):Math.abs(z-30)<3?sh(c,.6):mod(u,9)<.12?sh(c,.55):c; };
-    const free=(lo,hi,cut)=>{ let iv=[[lo,hi]]; for(const [a,b] of cut){ const nx=[]; for(const [p,q] of iv){ if(b<=p||a>=q){ nx.push([p,q]); continue; } if(a>p)nx.push([p,a]); if(b<q)nx.push([b,q]); } iv=nx; } return iv.filter(([p,q])=>q-p>.05); };
-    const bw=(ax,c,a,b,ch)=>{ for(let p=a;p<b-.01;p+=ch){ const q=Math.min(b,p+ch), R=12, tx=faceTex((q-p)*R,172,(i,j)=>tw(p+(i+.5)/R,140-j-.5));
-        if(ax==='x')bq(V(c,p,-32+SZ),V(c,q,-32+SZ),V(c,q,140+SZ),V(c,p,140+SZ),tx,true); else bq(V(p,c,-32+SZ),V(q,c,-32+SZ),V(q,c,140+SZ),V(p,c,140+SZ),tx,true); } };
-    for(const r of TUN){ const other=all.filter(o=>o!==r);
-      for(const [x,side] of [[r.x0,-1],[r.x1,1]]){ const cut=other.filter(o=>Math.abs((side<0?o.x1:o.x0)-x)<e).map(o=>[o.y0,o.y1]); for(const [a,b] of free(r.y0,r.y1,cut)){ bw('x',x,a,b,40); solid(side<0?x-.4:x,a,side<0?x:x+.4,b,UH*2); } }
-      for(const [y,side] of [[r.y0,-1],[r.y1,1]]){ const cut=other.filter(o=>Math.abs((side<0?o.y1:o.y0)-y)<e).map(o=>[o.x0,o.x1]); for(const [a,b] of free(r.x0,r.x1,cut)){ bw('y',y,a,b,40); solid(a,side<0?y-.4:y,b,side<0?y:y+.4,UH*2); } }
-      const xm=(r.x0+r.x1)/2, ym=(r.y0+r.y1)/2, paint=r.k==='y'?(x,y)=>tp(x-xm,y):r.k==='x'?(x,y)=>tp(y-ym,x):(x,y)=>{ const d=Math.hypot(x-r.x0,y-r.y1); return tp(d-2.2,Math.atan2(r.y1-y,x-r.x0)*2.2); };
-      const L=r.k==='x'?r.x1-r.x0:r.y1-r.y0;
-      for(let p=0;p<L-.01;p+=40){ const q=Math.min(L,p+40), [x0,x1,y0,y1]=r.k==='x'?[r.x0+p,r.x0+q,r.y0,r.y1]:[r.x0,r.x1,r.y0+p,r.y0+q], R=12;
-        bq(V(x0,y1,-32+SZ),V(x1,y1,-32+SZ),V(x1,y0,-32+SZ),V(x0,y0,-32+SZ),faceTex((x1-x0)*R,(y1-y0)*R,(i,j)=>paint(x0+(i+.5)/R,y0+(j+.5)/R)),true); }
-      if(r.k!=='c')for(let p=4;p<L-2;p+=9){ const [lx,ly,px,py]=r.k==='y'?[r.x0+.06,r.y0+p,xm,r.y0+p]:[r.x0+p,r.y0+.06,r.x0+p,ym];
-        put(prop([r.k==='y'?{x0:lx,x1:lx+.12,y0:ly-.3,y1:ly+.3,z0:62,z1:70,c:[40,40,44],em:1,fs:nx=>nx?[255,226,160,1]:[40,40,44]}:{x0:lx-.3,x1:lx+.3,y0:ly,y1:ly+.12,z0:62,z1:70,c:[40,40,44],em:1,fs:(nx,ny)=>ny?[255,226,160,1]:[40,40,44]}]),'tunnel lamp',SZ-32);
-        const Lt=new THREE.PointLight(new THREE.Color(1,.86,.62),LAMPI*.9,10*TILE,LAMPD); Lt.position.set(...V(px,py,SZ+30)); Lt.userData.i0=Lt.intensity; scene.add(Lt); lamps.push(Lt); } }
+  { const PT=plane();
     BATCH.build((k,map,emap)=>k==='B'?new THREE.MeshBasicMaterial({map,alphaTest:.5,side:THREE.DoubleSide}):new THREE.MeshLambertMaterial({map,alphaTest:.5,side:THREE.DoubleSide,clippingPlanes:[PT]}));
-    cutWalls.push({pl:PT,nx:0,nz:0,foot:Y(SZ+40),always:true,me:null});
-    for(const r of TUN)lid(r.x0,r.y0,r.x1,r.y1,140,0x141416); }
-  for(const [e,st] of [[P0,SL.STEPS[0]],[P1,SL.STEPS[1]]]){ let y=0; for(const [a,b] of st){ if(a>y)solid(e-.05,y,e+.05,a,0); y=b; } if(y<LEN)solid(e-.05,y,e+.05,LEN,0); }
-  { const P=[[-1,-SL.ED-2],[XW+1,LEN+1]]; for(const r of TUN)P.push([r.x0,r.y0],[r.x1,r.y1]); const Q=P.map(([x,y])=>V(x,y,0)); BOUND={x0:Math.min(...Q.map(q=>q[0])),x1:Math.max(...Q.map(q=>q[0])),z0:Math.min(...Q.map(q=>q[2])),z1:Math.max(...Q.map(q=>q[2]))}; }
+    cutWalls.push({pl:PT,nx:0,nz:0,foot:Y(SZ+40),always:true,me:null}); }
+  { const P=[[-1,-SL.ED-2],[XW+1,LEN+1]]; const Q=P.map(([x,y])=>V(x,y,0)); BOUND={x0:Math.min(...Q.map(q=>q[0])),x1:Math.max(...Q.map(q=>q[0])),z0:Math.min(...Q.map(q=>q[2])),z1:Math.max(...Q.map(q=>q[2]))}; }
   const TX=(wx,wz)=>SL.MY0+77-wz/TILE, TY=(wx,wz)=>wx/TILE+72-XS0, at=(x,y)=>{ const p=V(x,y,0); return {x:p[0],z:p[2]}; }, box=(x0,y0,x1,y1)=>{ const a=at(x0,y0), b=at(x1,y1); return {x0:Math.min(a.x,b.x),x1:Math.max(a.x,b.x),z0:Math.min(a.z,b.z),z1:Math.max(a.z,b.z)}; };
   const M=window.METRO=SHARED.METRO={V,Y,TX,TY,at,DY:Y(SZ),XC,ZB,SL,MACH:{x:MX+.28,y:MY+.35}};
-  LEVELS.of.station={name:'THE SUBWAY STATION',floor:'down',base:true,groups:['down'],ceil:Y(SZ+H2)};
-  const inTun=(tx,ty)=>TUN.some(r=>tx>=r.x0-.3&&tx<=r.x1+.3&&ty>=r.y0-.3&&ty<=r.y1+.3), inSta=(tx,ty)=>tx>-1&&tx<XW+1&&ty>-SL.ED-1&&ty<LEN+1;
-  M.inside=(x,z)=>{ const tx=TX(x,z), ty=TY(x,z); return inSta(tx,ty)||inTun(tx,ty); };
-  M.ground=(x,z)=>{ const tx=TX(x,z), ty=TY(x,z); return Y(SZ+(inSta(tx,ty)&&ty>=-SL.ED-.5&&ty<=LEN&&tx>=P0&&tx<=P1?0:inSta(tx,ty)&&ty>=0&&ty<=LEN?SL.fzAt(tx,ty):-32)); };
-  M.tunnels=TUN; { const nb=(SHARED.SECTION&&SHARED.SECTION.neighbours)||{}; M.seams=[{edge:'east',to:nb.east&&nb.east.id||null,ends:[TUN[0],TUN[1]].map(r=>at((r.x0+r.x1)/2,r.y1))},{edge:'north',to:nb.north&&nb.north.id||null,ends:[TUN[4],TUN[7]].map(r=>at(r.x0,(r.y0+r.y1)/2))}]; }
+  LEVELS.of.station={name:'THE SUBWAY STATION',label:()=>M.label?M.label():'THE SUBWAY STATION',floor:'down',base:true,groups:['down'],ceil:Y(SZ+H2)};
+  const inSta=(tx,ty)=>tx>-1&&tx<XW+1&&ty>-SL.ED-1&&ty<LEN+1;
+  M.more=[]; M.inside=(x,z)=>{ const tx=TX(x,z), ty=TY(x,z); return inSta(tx,ty)||M.more.some(m=>m.inside(x,z)); };
+  M.ground=(x,z)=>{ for(const m of M.more){ const g=m.ground(x,z); if(g!=null)return g; } const tx=TX(x,z), ty=TY(x,z); return Y(SZ+(inSta(tx,ty)&&ty>=-SL.ED-.5&&ty<=LEN&&tx>=P0&&tx<=P1?0:inSta(tx,ty)&&ty>=0&&ty<=LEN?SL.fzAt(tx,ty):-32)); };
+  M.GRAF=GRAF; M.car=(seed,front)=>{ const keep=BATCH.items.splice(0), m0=BATCH.meshes, tg=BATCH.tag, G=new THREE.Group(), c=V(LT,SL.CARL/2,SZ-32); BATCH.meshes={}; put(carBoxes(0,seed,front),'train car',SZ-32);
+    BATCH.build((k,map)=>k==='B'?new THREE.MeshBasicMaterial({map,alphaTest:.5,side:THREE.DoubleSide}):new THREE.MeshLambertMaterial({map,alphaTest:.5,side:THREE.DoubleSide}));
+    const ms=Object.values(BATCH.meshes); for(const me of ms){ me.removeFromParent(); me.geometry.translate(-c[0],-c[1],-c[2]); me.castShadow=false; G.add(me); } PEEK.boxes=PEEK.boxes.filter(o=>!ms.includes(o.me)); BATCH.meshes=m0; BATCH.items=keep; BATCH.tag=tg; return G; };
   M.plat=at(8.2,16); M.foot=at(SL.XS,1.1); M.street={x:XC,z:(SM.y1+77)*TILE+1.4*TILE};
   M.lane=box(P0+.6,7.5,P1-.6,LEN-.6); M.edge=box(P1-.75,7,P1-.15,LEN-.6); M.track=box(P1+.3,1,XW-.3,LEN-1);
   M.rats=[[M.lane,8.6,27.2],[M.lane,13.8,19.6],[M.edge,P1-.4,25],[M.track,SL.TR[1],30]].map(([lane,x,y])=>({lane,...at(x,y)}));

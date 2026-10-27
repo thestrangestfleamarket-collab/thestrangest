@@ -1,10 +1,11 @@
 // THE LANDSCAPE EDITOR: paint ground (box, border, free brush), place plants & rocks from a dropdown, erase; shift+9, edit while you walk.
 import {SHARED, THREE} from './003-shx.js';
 import {B64, F32} from './003a-skin.js';
-import {LAND, W3} from './003b-systems.js';
+import {LAND, W3, WEEDS} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {SAVE} from './005-save.js';
 import {TILE} from './006-map-pre.js';
+import {TUFTC, tuftCol} from './014-gamekit.js';
 import {FOREST, PROPS} from './039-bodega.js';
 { const T=TILE;
   const TYPES=[['grass','GRASS','#4a7a3a'],['grass2','DRY GRASS','#6f863a'],['grass3','LUSH GRASS','#2f6b2c'],['grass4','PALE GRASS','#8fa05a'],['sidewalk','SIDEWALK','#9a968e'],['cobble','COBBLE','#6b6b70'],['dirt','DIRT','#6b4f33'],['gravel','GRAVEL','#7a766f'],['slab','STONE SLAB','#8a857a'],['sand','SAND','#c9b885']];
@@ -13,8 +14,11 @@ import {FOREST, PROPS} from './039-bodega.js';
   function tex(t){ '@later'; if(texCache[t])return texCache[t]; const N=64, cv=document.createElement('canvas'); cv.width=cv.height=N; const g=cv.getContext('2d');
     const base=(TYPES.find(a=>a[0]===t)||['','','#4a7a3a'])[2]; g.fillStyle=base; g.fillRect(0,0,N,N);
     const dot=(x,y,r,c)=>{ g.fillStyle=c; g.fillRect(x-r,y-r,r*2,r*2); };
-    if(t==='grass'||t==='grass2'||t==='grass3'||t==='grass4'){ const pal=t==='grass'?['#3d6630','#5c8f46']:t==='grass2'?['#5f7430','#86a24c']:t==='grass3'?['#244f22','#3f7a38']:['#75874a','#a2b56a']; for(let i=0;i<340;i++){ const x=rnd(i*1.3)*N,y=rnd(i*2.7+3)*N,v=rnd(i*5.1); dot(x,y,1,v<.5?pal[0]:pal[1]); } }
-    else if(t==='sidewalk'){ const cell=20; for(let p=0;p<=N;p+=cell){ g.fillStyle='rgba(60,58,54,.55)'; g.fillRect(p,0,1,N); } for(let i=0;i<180;i++){ const x=rnd(i*1.9)*N,y=rnd(i*2.4+4)*N; dot(x,y,1,rnd(i*3.7)<.5?'#8d8980':'#a7a39a'); } }
+    if(/^grass/.test(t)){ const M=256, b=[1,3,5].map(i=>parseInt(base.slice(i,i+2),16)), A=[0,0,0], W=TUFTC.reduce((a,c)=>a+c[3],0); for(const c of TUFTC)for(let k=0;k<3;k++)A[k]+=c[k]*c[3]/W*.6;   // the lawn's tufts from above, in this grass's colour; 4 tiles a picture, mirrored
+      const f=[b[0]/A[0],b[1]/A[1],b[2]/A[2]]; cv.width=cv.height=M; const im=g.createImageData(M,M);
+      for(let j=0;j<M;j++)for(let i=0;i<M;i++){ const c=tuftCol((i+.5)/64+300,(j+.5)/64+300), q=(j*M+i)*4; for(let k=0;k<3;k++)im.data[q+k]=Math.min(255,c[k]*f[k]); im.data[q+3]=255; }
+      g.putImageData(im,0,0); const tx=new THREE.CanvasTexture(cv); tx.magFilter=THREE.NearestFilter; tx.wrapS=tx.wrapT=THREE.MirroredRepeatWrapping; tx.repeat.set(.25,.25); tx.colorSpace=THREE.SRGBColorSpace; texCache[t]=tx; return tx; }
+    if(t==='sidewalk'){ const cell=20; for(let p=0;p<=N;p+=cell){ g.fillStyle='rgba(60,58,54,.55)'; g.fillRect(p,0,1,N); } for(let i=0;i<180;i++){ const x=rnd(i*1.9)*N,y=rnd(i*2.4+4)*N; dot(x,y,1,rnd(i*3.7)<.5?'#8d8980':'#a7a39a'); } }
     else if(t==='cobble'||t==='slab'){ const cell=t==='cobble'?12:16; for(let cy=0;cy<N;cy+=cell)for(let cx=0;cx<N;cx+=cell){ const off=t==='cobble'?(rnd(cx*cy+1)-.5)*3:0, s=rnd(cx+cy*7); g.fillStyle=t==='cobble'?(s<.33?'#5f5f64':s<.66?'#74747a':'#656569'):(s<.5?'#8f8a7f':'#827d72'); g.fillRect(cx+1+off,cy+1+off,cell-2,cell-2); } g.fillStyle='rgba(30,30,34,.5)'; for(let p=0;p<=N;p+=cell){ g.fillRect(p,0,1,N); g.fillRect(0,p,N,1); } }
     else if(t==='dirt'){ for(let i=0;i<300;i++){ const x=rnd(i*1.7)*N,y=rnd(i*3.1+2)*N,v=rnd(i*4.3); dot(x,y,1,v<.5?'#5a4028':'#7a5c3c'); } }
     else if(t==='gravel'){ for(let i=0;i<220;i++){ const x=rnd(i*2.1)*N,y=rnd(i*1.9+5)*N,v=rnd(i*6.7); dot(x,y,rnd(i)>.6?2:1,v<.4?'#5e5a54':v<.75?'#8a867e':'#9c988f'); } }
@@ -31,7 +35,8 @@ import {FOREST, PROPS} from './039-bodega.js';
   const ser=r=>r.brush?{brush:r.brush,r:r.r,y:r.y,t:r.t}:r.poly?{poly:r.poly,y:r.y,t:r.t}:{x0:r.x0,x1:r.x1,z0:r.z0,z1:r.z1,y:r.y,t:r.t};
   const save=()=>{ try{ SAVE.set('land',JSON.stringify(regions.map(ser))); }catch(e){} };
   const addPatch=(geo,cx,cz,t)=>{ '@later'; geo.attributes.position.needsUpdate=true; if(geo.attributes.uv)geo.attributes.uv.needsUpdate=true; geo.computeVertexNormals(); geo.computeBoundingSphere();
-    const me=new THREE.Mesh(geo,mat(t)); me.position.set(cx,0,cz); me.receiveShadow=true; me.renderOrder=1; me.frustumCulled=false; me.userData.landPatch=1; scene.add(me); return me; };
+    const me=new THREE.Mesh(geo,mat(t)); me.position.set(cx,0,cz); me.receiveShadow=true; me.renderOrder=1; me.frustumCulled=false; me.userData.landPatch=t; scene.add(me); relawn(me); return me; };
+  const relawn=me=>{ if(!WEEDS.lawnDrop)return; const b=new THREE.Box3().setFromObject(me); WEEDS.lawnDrop([b.min.x,b.min.z,b.max.x,b.max.z]); };
   const makeBox=r=>{ '@later'; const w=r.x1-r.x0, h=r.z1-r.z0; if(w<=0||h<=0)return;
     const nx=Math.max(1,Math.min(24,Math.round(w/T))), nz=Math.max(1,Math.min(24,Math.round(h/T)));
     const geo=new THREE.PlaneGeometry(w,h,nx,nz); geo.rotateX(-Math.PI/2);
@@ -49,7 +54,7 @@ import {FOREST, PROPS} from './039-bodega.js';
     const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); geo.setAttribute('uv',new THREE.Float32BufferAttribute(UV,2)); geo.setIndex(IDX);
     r.mesh=addPatch(geo,0,0,r.t); };
   const make=r=>r.brush?makeBrush(r):r.poly?makePoly(r):makeBox(r);
-  const unmake=r=>{ if(r.mesh){ scene.remove(r.mesh); r.mesh.geometry.dispose(); r.mesh.material.dispose(); r.mesh=null; } };
+  const unmake=r=>{ if(r.mesh){ scene.remove(r.mesh); relawn(r.mesh); r.mesh.geometry.dispose(); r.mesh.material.dispose(); r.mesh=null; } };
 
   // ----- plants & rocks (placed props, one path: the baked PROPS/FOREST models) -----
   const MODELS=Object.assign({},FOREST,PROPS);

@@ -236,7 +236,7 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
         for(let v=q0;v<q1;v++)if(LF[v])r1=Math.max(r1,Math.hypot(P3[v*3]-cx,P3[v*3+2]-cz)); const cy=(y0+y1)/2, ry=Math.max(1e-3,(y1-y0)/2);
         for(let v=q0;v<q1;v++){ TR.push(LF[v]?(P3[v*3+1]-y0)/Math.max(1e-3,y1-y0):0,LF[v]?Math.hypot(P3[v*3]-cx,P3[v*3+2]-cz)/r1:0,LF[v]); RN.push((P3[v*3]-cx)/(r1*r1),(P3[v*3+1]-cy)/(ry*ry),(P3[v*3+2]-cz)/(r1*r1)); } }
       { let t=oy, r=0; for(let v=p0+1;v<P3.length;v+=3)if(P3[v]>t)t=P3[v]; const hm=(oy+t)/2; for(let v=p0;v<P3.length;v+=3)if(P3[v+1]>hm)r=Math.max(r,Math.hypot(P3[v]-ox,P3[v+2]-oz)); IT.push({k:key,x:ox,z:oz,y:oy,top:t,r}); }
-      CLIPX.push({place:'park',name:key,P:P3.slice(p0)});
+      if(!opt.far)CLIPX.push({place:'park',name:key,P:P3.slice(p0)});
       if(solid){ const r=Math.max(.3,D.trunk*s*.5), sb=[ox-r,oz-r,ox+r,oz+r], fb=[ox-r,oz-r,0,ox+r,oz+r,leafy?Y(60):s*.9]; SOL.up.push(sb); FIX.up.push(fb); const it=IT[IT.length-1]; if(it){ it.sol=sb; it.fix=fb; } } }   // the item keeps its footprint, so the world editor can move it
     const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(P3,3)); g.setAttribute('color',new THREE.Float32BufferAttribute(C3,3)); g.computeVertexNormals();
     if(CN.length){ const N=g.attributes.normal.array; for(const [j0,n,ca,sa] of CN)for(let i=0;i<n.length;i+=3){ const j=j0+i; N[j]=n[i]*ca-n[i+2]*sa; N[j+1]=n[i+1]; N[j+2]=n[i]*sa+n[i+2]*ca; } }
@@ -248,7 +248,7 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
     if(leafy)PEEK.mark(g); RG.push(P3.length/3); const me=BATCHED(g,RG,mat); if(leafy)for(const o of IT)PEEK.box(me,o.x-o.r,o.y,o.z-o.r,o.x+o.r,o.top,o.z+o.r); me.userData.P=P3; me.userData.LF=LF; me.userData.items=IT; me.castShadow=true; me.receiveShadow=TL!==2;
     if(opt.map){ const M=new THREE.MeshDepthMaterial({depthPacking:THREE.RGBADepthPacking,map:opt.map,alphaTest:.5}); if(sway){ M.onBeforeCompile=swayV; M.customProgramCacheKey=()=>'leafd'+sway; } me.customDepthMaterial=M; }
     if(sway&&TL)for(const [k,M] of [['customDepthMaterial',new THREE.MeshDepthMaterial({depthPacking:THREE.RGBADepthPacking})],['customDistanceMaterial',new THREE.MeshDistanceMaterial()]]){ M.onBeforeCompile=swayV; M.customProgramCacheKey=()=>'oakswayd'+sway; me[k]=M; }
-    if(me.isBatchedMesh){ const ids=[]; for(let i=0;i+1<RG.length;i++)if(RG[i+1]>RG[i])ids.push(i); WED.meshes.push({place:'park',me,items:IT,ids}); }
+    if(me.isBatchedMesh&&!opt.far){ const ids=[]; for(let i=0;i+1<RG.length;i++)if(RG[i+1]>RG[i])ids.push(i); WED.meshes.push({place:'park',me,items:IT,ids}); }
     scene.add(me); return me; };
   const TREEY=12+4.6; PARK.mesh=mesh;
   for(const S of ['A','C','AL','CL'])for(let i=0;i<TREEGEN.count(S);i++)F['G'+S+i]=TREEGEN.get(S,i);
@@ -266,7 +266,7 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
       if(hash(i,65,9)<.45)for(let j=0,nb=1+Math.floor(hash(i,67,5)*2);j<nb;j++){ const a=hash(i,69+j,3)*6.28, mm=m*(.5+.25*hash(i,79+j,5)), kk=hash(i,81+j,7)<.5?k:el?'OakTree'+(1+(i+j)%3):'Elder'+(1+(i+j)%2), rr=mm*W(kk), d=r*.55+rr*.6+2, x2=x+Math.cos(a)*d, y2=y+Math.sin(a)*d;
         if(ok(x2,y2,rr)&&!near(x2,y2,rr,.5,4.5))add(kk,x2,y2,mm,hash(i,83+j,9)*6.28); } }
     for(const [k0,x,y,m] of FOUNT.S.oaks){ const k=hash(Math.round(x),Math.round(y),87)<.35?'Elder'+(1+Math.abs(Math.round(x))%2):k0; if(!near(x,y,m*W(k),.6,8)&&!BK.wet(x,y,m*.42))add(k,x,y,m,hash(Math.round(x),Math.round(y),89)*6.28); }
-    { const FY=[P.y1+6,P.y1+20,P.y1+36], XA=P.x0-16, XB=P.x1+16, BACK=out.back=[]; let n=0; for(const [ri,fy] of FY.entries())for(let x=XA+9*ri+6;x<XB;x+=18,n++){ const k=hash(n,201,3)<.3?'Elder'+(1+n%2):'OakTree'+(1+n%3), m=(15+hash(n,203,5)*9)*(1+.18*ri), xx=x+(hash(n,205,7)-.5)*9, yy=fy+(hash(n,207,9)-.5)*8; BACK.push([k,+xx.toFixed(1),+yy.toFixed(1),+m.toFixed(1),+(hash(n,209,11)*6.28).toFixed(2)]); } }
+    { const FY=[P.y1+6,P.y1+20,P.y1+36], XA=P.x0-16, XB=P.x1+16, BACK=out.back=[]; let n=0; for(const [ri,fy] of FY.entries())for(let x=XA+9*ri+6;x<XB;x+=18,n++){ const k=hash(n,201,3)<.3?'Elder'+(1+n%2):'OakTree'+(1+n%3), m=5.25*(1.1+.25*hash(n,203,5)), xx=x+(hash(n,205,7)-.5)*9, yy=fy+(hash(n,207,9)-.5)*8; BACK.push([k,+xx.toFixed(1),+yy.toFixed(1),+m.toFixed(1),+(hash(n,209,11)*6.28).toFixed(2)]); } }
     const R0=out.length; let edgeOK;
     // a dense ring of tall trees just inside the wall, right round the park, so from outside only trees show at the edge
     { const TK=['Giant1','Elder1','Elder2','OakTree1','OakTree2','OakTree3','Spruce1','Willow1'];
@@ -327,27 +327,8 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
   PARK.ring=QS.get('trees')==='0'?null:mesh(TREES.slice(NI),true,true,false,{noTrunk:1,cards:2}); PARK.ringTrunks=trunks(TREES.slice(NI));
   { let c0={}, L=[]; PARK.treeItems=()=>{ if(c0!==PARK.trees){ c0=PARK.trees; L=[PARK.trees,PARK.ring].filter(Boolean).flatMap(m=>m.userData.items||[]); } return L; }; }
   PARK.oaks=TREES.map(([k,x,y,m])=>[X(x),Z(y),m]);
-  { const LK=new Map(), V=THREE.Vector3, m4=new THREE.Matrix4(), q=new THREE.Quaternion(), c=new THREE.Color(), up=new V(0,1,0);
-    const look=k=>{ if(LK.has(k))return LK.get(k); const D=F[k], p=f32(D.p), col=b8(D.c), lc=[0,0,0], tc=[0,0,0]; let y0=1e9, y1=-1e9, r=0, ym=0, n=0, tn=0;
-      for(let i=0;i<p.length;i+=3){ ym=Math.max(ym,p[i+1]); if(col[i+1]>col[i]*1.08&&col[i+1]>col[i+2]*1.08){ y0=Math.min(y0,p[i+1]); y1=Math.max(y1,p[i+1]); r=Math.max(r,Math.hypot(p[i],p[i+2])); for(let j=0;j<3;j++)lc[j]+=col[i+j]; n++; } else { for(let j=0;j<3;j++)tc[j]+=col[i+j]; tn++; } }
-      const L=n?{y0,y1,r,lc:lc.map(v=>v/n)}:{y0:ym*.4,y1:ym,r:ym*.3,lc:[70,110,50]}; L.tc=tn?tc.map(v=>v/tn):[90,70,50]; L.tr=D.trunk||.1; L.cone=/Spruce|Pine|Fir/.test(k); LK.set(k,L); return L; };
-    const CEL=16*TILE, CG=new THREE.IcosahedronGeometry(1,1), LG=new THREE.CylinderGeometry(.7,1,1,5), CM=new THREE.MeshLambertMaterial(), bin=(M,k)=>{ let a=M.get(k); if(!a)M.set(k,a=[]); return a; };
-    const stand=list=>{ const CR=[], SP=[], TK=[], G=new THREE.Group(), GC=new Map(), GL=new Map();
-      for(const [k,x,y,m,t,lift] of list){ const s=m/.84*TILE, ox=X(x), oz=Z(y), oy=(lift||0)/.84*TILE+P.hill(x,y), h=.94+.12*hash(Math.round(x*7),Math.round(y*7),131), S=F[k].sum;
-        if(S){ const ca=Math.cos(t||0), sa=Math.sin(t||0), key=Math.floor(ox/CEL)+','+Math.floor(oz/CEL);
-          for(const [a,b,cz,r,R_,G_,B_] of S.cl)bin(GC,key).push([ox+(a*ca-cz*sa)*s,oy+b*s,oz+(a*sa+cz*ca)*s,r*s,[R_*h,G_*h,B_*h],t||0]);
-          for(const [ax,ay,az,bx,by,bz,r] of S.lb)bin(GL,key).push([ox+(ax*ca-az*sa)*s,oy+ay*s,oz+(ax*sa+az*ca)*s,ox+(bx*ca-bz*sa)*s,oy+by*s,oz+(bx*sa+bz*ca)*s,Math.max(.04*TILE,r*s),S.bc]); continue; }
-        const L=look(k);
-        (L.cone?SP:CR).push([ox,oy+s*(L.y0+L.y1)/2,oz,s*L.r*.8,s*(L.y1-L.y0)/2,L.lc.map(v=>v*h),t]); TK.push([ox,oy+s*L.y0*.55,oz,Math.max(.12*TILE,s*L.tr*.5),s*L.y0*1.1,L.tc,0]); }
-      const inst=(geo,L)=>{ if(!L.length)return; const me=new THREE.InstancedMesh(geo,new THREE.MeshLambertMaterial({flatShading:true}),L.length);
-        L.forEach(([x,y,z,r,hh,cl,t],i)=>{ me.setMatrixAt(i,m4.compose(new V(x,y,z),q.setFromAxisAngle(up,t),new V(r,hh,r))); me.setColorAt(i,c.setRGB(cl[0]/255,cl[1]/255,cl[2]/255,THREE.SRGBColorSpace)); });
-        me.computeBoundingSphere(); me.castShadow=true; me.receiveShadow=true; G.add(me); };
-      inst(new THREE.IcosahedronGeometry(1,0),CR); inst(new THREE.ConeGeometry(1,2,6),SP); inst(new THREE.CylinderGeometry(1,1,1,5),TK);
-      const v=new V(), d=new V(), sc=new V();
-      for(const L of GC.values()){ const me=new THREE.InstancedMesh(CG,CM,L.length); L.forEach(([x,y,z,r,cl,tt],i)=>{ me.setMatrixAt(i,m4.compose(v.set(x,y,z),q.setFromAxisAngle(up,tt),sc.set(r,r*.82,r))); me.setColorAt(i,c.setRGB(cl[0]/255,cl[1]/255,cl[2]/255,THREE.SRGBColorSpace)); }); me.computeBoundingSphere(); me.castShadow=me.receiveShadow=true; G.add(me); }
-      for(const L of GL.values()){ const me=new THREE.InstancedMesh(LG,CM,L.length); L.forEach(([ax,ay,az,bx,by,bz,r,cl],i)=>{ d.set(bx-ax,by-ay,bz-az); const len=d.length(); me.setMatrixAt(i,m4.compose(v.set((ax+bx)/2,(ay+by)/2,(az+bz)/2),q.setFromUnitVectors(up,d.normalize()),sc.set(r,len,r))); me.setColorAt(i,c.setRGB(cl[0]/255,cl[1]/255,cl[2]/255,THREE.SRGBColorSpace)); }); me.computeBoundingSphere(); me.castShadow=me.receiveShadow=true; G.add(me); }
-      scene.add(G); return G; };
-    P.stand=stand(TREES.slice(0,NI)); P.standFar=stand(TREES.back); }
+  // seen from outside the park, and the rows past its north wall: the same leaf-card trees, the fewer bigger cards, still
+  P.stand=mesh(TREES.slice(0,NI),false,false,false,{cards:2,far:1}); P.standFar=mesh(TREES.back,false,false,false,{cards:2,far:1});
   window.PARKDBG=()=>({oaks:PARK.oaks,trees:TREES,back:TREES.back,TL,progs:renderer.info.programs.length});
   PARK.later(()=>{ '@park'; PARK.rocks=mesh([['BigRock3',87.5,-37,2.6,1.8],['BigRock5',126,-41,2.4,.2],['Rock_12',55.5,-41,1,1],['Rock1',111,-41,.6,2],['BigRock1',66,-35,2,1.1]].map(([k,x,y,...r])=>[k,RX(x),RY(y),...r]),false);
   { const UG=[['bush1',1.1],['bush2',1.2],['bush3',1.3],['bush4',1.5],['bush5',1.1],['flower1',.5],['flower2',.7],['flower3',.3],['flower4',.7],['flower5',.35],['flower6',.8],['grass1',.5],['grass2',.6],['grass1',.45],['grass2',.55],['mushroom1',.3],['mushroom2',.35],['mushroom3',.3],['mushroom4',.25],['stone2',.5],['stone3',.2],['stones1',.25]];

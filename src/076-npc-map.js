@@ -2,7 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {B64} from './003a-skin.js';
 import {CHARS, CLIP, LEVELS, NPCS, PARK, pos, ROOMS, SELFSH, UI, VIT, W3} from './003b-systems.js';
-import {PPU, renderer, rppu} from './004-main.js';
+import {PPU, renderer} from './004-main.js';
 import {ASTEP, CASTLE, LEVEL, MAPG, MAPSTAIR, MODS, RING, SOL, STN, STORE, SYS, TILE, ZU} from './006-map-pre.js';
 import {FOUNT} from './060a-fount.js';
 import {RINGX} from './065-ring.js';
@@ -174,15 +174,5 @@ SYS.add('near',(x,z)=>NPCS.near(x,z),'npc shading');
     for(const X of NPCS.extra){ const a=X.at; X.hid=!!a&&!FR.intersectsSphere(SP.set(V.set(a.x,(a.y||0)+1,a.z),2*TILE)); } };
   NPCS.R=25*TILE; NPCS.seen=(x,y,z,r)=>FR.intersectsSphere(SP.set(V.set(x,y,z),r||2*TILE)); NPCS.live=(x,y,z,r)=>Math.hypot(x-pos.x,z-pos.z)<NPCS.R&&NPCS.seen(x,y,z,r);
   NPCS.cull=on=>{ const one=(o,g)=>{ if(on){ if(o.hid&&g.visible){ g.visible=false; o._cv=true; } } else if(o._cv){ g.visible=true; o._cv=false; } };
-    for(const N of NPCS)one(N,N.g); for(const X of NPCS.extra)if(X.g)one(X,X.g); PXSNAP(on); }; }
-const PXSNAP=on=>{ const L=PXSNAP.L;
-  if(!on){ for(let i=0;i<L.length;i+=4){ const p=L[i].position; p.x-=L[i+1]; p.y-=L[i+2]; p.z-=L[i+3]; } L.length=0; return; }
-  if(UI.persp||!UI.snR)return; PXSNAP.u=rppu(); const one=PXSNAP.one;
-  if(W3.group&&one(W3.group,UI.snD)){ const c=W3.smCam, M=W3.LVP, n=L.length, dx=L[n-3], dy=L[n-2], dz=L[n-1];
-    c.position.x+=dx; c.position.y+=dy; c.position.z+=dz; L.push(c,dx,dy,dz); c.updateMatrixWorld(); if(M)M.value.multiplyMatrices(c.projectionMatrix,c.matrixWorldInverse); }
-  for(const N of NPCS)if(!N.far)one(N.g);
-  for(const X of NPCS.extra)if(X.g)one(X.g); };
-PXSNAP.one=(o,D)=>{ if(!o||!o.visible)return false; const u=PXSNAP.u, cr=UI.snR, cu=UI.snU, p=o.position, x=p.dot(cr), y=p.dot(cu), a=Math.round(x*u)/u-x, b=Math.round(y*u)/u-y, dx=D?D.x:cr.x*a+cu.x*b, dy=D?D.y:cr.y*a+cu.y*b, dz=D?D.z:cr.z*a+cu.z*b;
-  p.x+=dx; p.y+=dy; p.z+=dz; PXSNAP.L.push(o,dx,dy,dz); return true; };
-PXSNAP.L=[]; window.PXSNAP=PXSNAP;
+    for(const N of NPCS)one(N,N.g); for(const X of NPCS.extra)if(X.g)one(X,X.g); }; }
 export {CSB, CSHOLE, DUN, HOMES, makeNPC, ROAM, stfree, STHOLE, STLANE};

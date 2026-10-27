@@ -23,7 +23,7 @@ DRONE.init=()=>{ const APTS=MODS.apts; if(!APTS||!APTS.R)return; const T=TILE, X
   const mkDrone=()=>{ const D=new THREE.Group(), GREY=lam(0x3a3d44), LIGHT=lam(0x9aa0aa); D.add(bx(.3,.08,.3,GREY)); const rot=[];
     for(const [sx,sz] of [[1,1],[1,-1],[-1,1],[-1,-1]]){ const arm=bx(.22,.03,.04,GREY); arm.position.set(sx*.13,0,sz*.13); D.add(arm); const r=new THREE.Group(); r.position.set(sx*.22,.06,sz*.22); r.add(bx(.24,.01,.035,LIGHT)); D.add(r); rot.push(r); }
     const dot=bx(.05,.03,.05,flat(0xff3a3a)); dot.position.set(0,.055,.1); D.add(dot); const parcel=bx(.2,.15,.2,lam(0xa77a48)); parcel.position.set(0,-.13,0); D.add(parcel); D.scale.setScalar(T/1.13); return {D,rot,parcel}; };
-  const dropPoint=()=>{ const F=window.FIREV; if(!F||!APTS.AL)return null; const A=APTS.AL, du=F.CX-(A.x0+A.x1)/2, DX=A.x0+APTS.DU+du; return {x:X(DX),y:Y(F.HZ),z:Z(F.WY+.5)}; };
+  const dropPoint=()=>{ const F=window.FIREV; return F&&F.spot?F.spot(.5):null; };
 
   const flights=[], parcels=[]; let spin=0; const V=new THREE.Vector3();
   const landParcel=(label,onIn,dp)=>{ const p=bx(.32*T,.24*T,.32*T,lam(0xc89a5a)); p.position.set(dp.x+(Math.random()-.5)*.5*T,dp.y+.12*T,dp.z); scene.add(p); parcels.push(p);
@@ -54,6 +54,6 @@ DRONE.init=()=>{ const APTS=MODS.apts; if(!APTS||!APTS.R)return; const T=TILE, X
     deliver(label,furn?()=>bringFurn(it[0]):()=>{}); draw(); P.querySelector('#pcst').textContent='ORDERED: '+label+'. THE DRONE IS TAKING IT TO YOUR FIRE ESCAPE.'; };
   DRONE.open=()=>{ draw(); P.hidden=false; };
 
-  const hit=bx(.9*T,1.4*T,.9*T,new THREE.MeshBasicMaterial({visible:false})); hit.position.set(X(AR.x0+6.8),Y(25),Z(AR.y0+.9)); scene.add(hit);
+  const hit=bx(.9*T,1.4*T,.9*T,new THREE.MeshBasicMaterial({visible:false})); hit.position.set(X(AR.x0+6.8),Y((APTS.RB||0)+25),Z(AR.y0+.9)); scene.add(hit);
   UI.thing({name:'THE COMPUTER',ghost:1,obj:hit,reach:1.4*T,near:2.8*T,tall:1.6*T,act:DRONE.open});
   window.DRONEDBG=()=>({state:DRONE.state,flights:flights.length,parcels:parcels.length,owned:ownedFurn().length,cash:purse.get(),furn:FURN.length}); };

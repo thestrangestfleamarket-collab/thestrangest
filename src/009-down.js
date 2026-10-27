@@ -144,7 +144,7 @@ const GRAF=(()=>{ const P={yel:[246,208,44],ora:[246,132,38],red:[224,48,52],grn
   return G; })();
 const SSUB=(()=>{ const W={};
   W.tile=(u,z,f)=>sh([186,190,197],f);
-  const LED35={P:'111101111100100',L:'100100100100111',E:'111100110100111',A:'010101111101101',S:'011100010001110',M:'101111111101101',I:'111010010010111',O:'111101101101111',U:'101101101101111',
+  const LED35={P:'111101111100100',L:'100100100100111',E:'111100110100111',A:'010101111101101',S:'011100010001110',B:'110101110101110',M:'101111111101101',I:'111010010010111',O:'111101101101111',U:'101101101101111',
     N:'101111111111101',D:'110101101101110',T:'111010010010010',H:'101101111101101',G:'011100101101011',R:'110101110101101',V:'101101101101010',W:'101101111111101',' ':'000000000000000',C:'111100100100111',K:'101101110101101',
     Y:'101101010010010',0:'111101101101111',1:'010110010010111',2:'111001111100111',3:'111001011001111',4:'101101111001001',':':'000010000010000','^':'010111010010010','>':'100010001010100',X:'101101010101101','<':'001010100010001'};
   W.text=(s,k,ink,bg,rim,pad)=>{ const w=(s.length*4-1)*k+2*pad, h=5*k+2*pad, a=new Array(w*h).fill(bg);
@@ -392,20 +392,38 @@ const SSUB=(()=>{ const W={};
     const q4=(B,a,b,c,d,col)=>{ c3.setRGB(col[0]/255,col[1]/255,col[2]/255,THREE.SRGBColorSpace); for(const v of [a,b,c,a,c,d]){ B[0].push(...v); B[1].push(c3.r,c3.g,c3.b); } };
     const bx=(x0,y0,z0,x1,y1,z1,col)=>{ const [a,b,c,d]=[X(x0),X(x1),Z(y0),Z(y1)], [e,f]=[z0*ZU,z1*ZU], dk=col.map(v=>v*.8), lt=col.map(v=>Math.min(255,v*1.08));
       q4(WL,[a,f,d],[b,f,d],[b,f,c],[a,f,c],lt); q4(WL,[a,e,d],[b,e,d],[b,f,d],[a,f,d],col); q4(WL,[b,e,c],[a,e,c],[a,f,c],[b,f,c],col); q4(WL,[a,e,c],[a,e,d],[a,f,d],[a,f,c],dk); q4(WL,[b,e,d],[b,e,c],[b,f,c],[b,f,d],dk); };
-    const CON=[132,128,120], CON2=[118,114,108], TL=[186,190,197], RAIL=[52,84,62];
+    const CON=[124,80,68], CON2=[108,68,58], TL=[186,190,197], RAIL=[40,92,72], GRN=[142,142,138], PNL=[30,32,40];
     for(let k=0;k<n;k++){ const yA=S.y1-(k+1)*run, yB=S.y1-k*run, zt=-(k+1)*rise*ZU, zr=-k*rise*ZU, a=X(S.x0), b=X(S.x1);
       q4(TR,[a,zt,Z(yB)],[b,zt,Z(yB)],[b,zt,Z(yA)],[a,zt,Z(yA)],(k&1)?CON:CON2); q4(TR,[a,zt,Z(yB)],[b,zt,Z(yB)],[b,zr,Z(yB)],[a,zr,Z(yB)],CON2.map(v=>v*.82));
-      q4(TR,[a,zt,Z(yB-.03)],[b,zt,Z(yB-.03)],[b,zt+1.2*ZU,Z(yB-.03)],[a,zt+1.2*ZU,Z(yB-.03)],[196,170,64]); }
-    for(const x of [S.x0-.2,S.x1]){ for(let k=0;k<n;k++)bx(x,S.y1-(k+1)*run,-(k+1)*rise-2,x+.2,S.y1-k*run,0,TL); bx(x+.05,S.y0,27,x+.15,S.y1,30,RAIL); bx(x+.07,S.y0,14,x+.13,S.y1,16,RAIL); for(let y=S.y0;y<S.y1;y+=(S.y1-S.y0)/5)bx(x+.06,y,0,x+.14,y+.08,27,RAIL); bx(x+.06,S.y1-.08,0,x+.14,S.y1,27,RAIL); }
-    bx(S.x0-.15,S.y0-.15,27,S.x1+.15,S.y0-.05,30,RAIL); bx(S.x0-.15,S.y0-.13,14,S.x1+.15,S.y0-.07,16,RAIL); for(let x=S.x0+1;x<S.x1;x+=1)bx(x-.04,S.y0-.14,0,x+.04,S.y0-.06,27,RAIL);
+      q4(TR,[a,zt,Z(yB-.03)],[b,zt,Z(yB-.03)],[b,zt+1.2*ZU,Z(yB-.03)],[a,zt+1.2*ZU,Z(yB-.03)],[86,52,44]); }
+    const P=.3, xl=S.x0-P/2, xr=S.x1+P/2, yb=S.y0-P/2, LP=[[xl,S.y1-.08],[xr,S.y1-.08],[xl,yb],[xr,yb]];
+    for(const x of [S.x0-.2,S.x1])for(let k=0;k<n;k++)bx(x,S.y1-(k+1)*run,-(k+1)*rise-2,x+.2,S.y1-k*run,0,TL);
+    bx(S.x0-P,S.y0-P,0,S.x0,S.y1,5,GRN); bx(S.x1,S.y0-P,0,S.x1+P,S.y1,5,GRN); bx(S.x0,S.y0-P,0,S.x1,S.y0,5,GRN);
+    const fence=(ax,c,a,b,sg)=>{ const B=(u0,u1,v0,v1,z0,z1,col)=>ax==='y'?bx(c+v0,u0,z0,c+v1,u1,z1,col):bx(u0,c+v0,z0,u1,c+v1,z1,col);
+      B(a,b,-.04,.04,7,9,RAIL); B(a,b,-.05,.05,33,36,RAIL); B(a,b,-.03,.03,29,30,RAIL);
+      for(let u=a+.2;u<b-.1;u+=.2)if(Math.abs(u-(a+b)/2)>sg/2)B(u-.02,u+.02,-.02,.02,9,33,RAIL);
+      B((a+b)/2-sg/2,(a+b)/2+sg/2,-.03,.03,11,29,PNL); B((a+b)/2-sg/2-.04,(a+b)/2+sg/2+.04,-.035,.035,10,11,RAIL); B((a+b)/2-sg/2-.04,(a+b)/2+sg/2+.04,-.035,.035,29,30,RAIL);
+      for(const u of [a+(b-a)/3,a+2*(b-a)/3])if(Math.abs(u-(a+b)/2)>sg/2+.05)B(u-.05,u+.05,-.05,.05,5,38,RAIL); };
+    fence('y',xl,yb,S.y1-.08,2.2); fence('y',xr,yb,S.y1-.08,2.2); fence('x',yb,xl,xr,3.2);
+    for(const [x,y] of LP){ bx(x-.1,y-.1,5,x+.1,y+.1,14,RAIL); bx(x-.05,y-.05,14,x+.05,y+.05,100,RAIL); bx(x-.08,y-.08,96,x+.08,y+.08,103,RAIL); bx(x-.09,y-.09,113,x+.09,y+.09,116,RAIL); bx(x-.03,y-.03,116,x+.03,y+.03,120,RAIL); }
     MODS.stairCut=new THREE.Plane(new THREE.Vector3(0,-1,0),1e6); const SW=new THREE.Plane(new THREE.Vector3(0,-1,0),1e6);
     const mk=(B,pl)=>{ const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(B[0],3)); g.setAttribute('color',new THREE.Float32BufferAttribute(B[1],3)); g.computeVertexNormals();
       const me=new THREE.Mesh(g,new THREE.MeshLambertMaterial({vertexColors:true,side:THREE.DoubleSide,clippingPlanes:pl})); me.receiveShadow=me.castShadow=true; scene.add(me); return me; };
     mk(TR,[MODS.stairCut]); cutWalls.push({pl:SW,nx:0,nz:0,foot:Y(SZ+8),me:mk(WL,[MODS.stairCut,SW]),get always(){ return SHARED.LVL==='down'&&MODS.inStair(pos.x,pos.z)==null; }});
-    for(const [y,z,c,i] of [[S.y1-.3,60,[1,.92,.78],5],[S.y0+.6,-40,[.5,.54,.64],6]]){ const L=new THREE.PointLight(new THREE.Color(...c),i,7*TILE,1.6); L.position.set(XC,z*ZU,Z(y)); L.userData.i0=i; scene.add(L); lamps.push(L); }
+    { const CL=[MODS.stairCut,SW], ink=[244,242,232,1], DOT=[[250,196,40,1],[244,128,40,1],[40,104,200,1],[230,52,44,1],[150,70,170,1],[40,150,80,1]];
+      const tex=(s,w,h,dots)=>{ const t=W.text(s,2,ink,null,null,0), ox=Math.round((w-t.w)/2), oy=dots?2:Math.round((h-t.h)/2)-1;
+        return faceTex(w,h,(i,j)=>{ const c=t.at(i-ox,j-oy); if(c)return c; if(dots&&j>=14&&j<17){ const k=Math.floor((i-ox)/5), r=(i-ox)%5; if(k>=0&&k<DOT.length&&r<3)return DOT[k]; }
+          if(j===h-3&&i>=ox&&i<w-ox)return [200,200,196]; return j<1||j>=h-1||i<1||i>=w-1?[58,60,68]:[30,32,40]; }); };
+      const sign=(ax,c,m,L,z0,z1,tx)=>{ for(const s of [-1,1]){ const o=c+s*.034, a=m+s*L/2*(ax==='y'?1:-1), b=m-s*L/2*(ax==='y'?1:-1), P=(u,z)=>ax==='y'?[X(o),z*ZU,Z(u)]:[X(u),z*ZU,Z(o)];
+          const me=quad(P(a,z0),P(b,z0),P(b,z1),P(a,z1),tx,true); me.material.clippingPlanes=CL; } };
+      const SUB=tex('SUBWAY',57,17), STA=tex('MARKET ST',83,21,1), ym=(yb+S.y1-.08)/2;
+      sign('y',xl,ym,2.2,11,29,SUB); sign('y',xr,ym,2.2,11,29,SUB); sign('x',yb,(xl+xr)/2,3.2,11,29,STA);
+      const gm=new THREE.MeshBasicMaterial({color:0xdcf3dc,clippingPlanes:CL}), gg=new THREE.SphereGeometry(.13*TILE,10,8);
+      for(const [x,y] of LP){ const g=new THREE.Mesh(gg,gm); g.position.set(X(x),107*ZU,Z(y)); scene.add(g); } }
+    for(const [y,z,c,i] of [[S.y1-.3,100,[.9,1,.9],5],[S.y0+.6,-40,[.5,.54,.64],6]]){ const L=new THREE.PointLight(new THREE.Color(...c),i,7*TILE,1.6); L.position.set(XC,z*ZU,Z(y)); L.userData.i0=i; scene.add(L); lamps.push(L); }
     const sol=(lv,x0,y0,x1,y1,h)=>{ SOL[lv].push([X(x0),Z(y0),X(x1),Z(y1)]); FIX[lv].push([X(x0),Z(y0),0,X(x1),Z(y1),h]); };
-    for(const x of [S.x0-.2,S.x1])sol('up',x,S.y0,x+.2,S.y1,30*ZU);
-    sol('up',S.x0-.2,S.y0-.2,S.x1+.2,S.y0,30*ZU); };
+    for(const x of [S.x0-.3,S.x1])sol('up',x,S.y0,x+.3,S.y1,36*ZU);
+    sol('up',S.x0-.3,S.y0-.3,S.x1+.3,S.y0,36*ZU); };
   { const run=(SM.y1-SM.y0)/SM.steps, tread=(x,z)=>{ const gx=x/TILE+72, gy=z/TILE-77; return gx>=SM.x0&&gx<SM.x1&&gy>=SM.y0&&gy<SM.y1?Math.min(SM.steps,Math.floor((SM.y1-gy)/run)+1):null; };
     const lid=new THREE.Mesh(new THREE.PlaneGeometry(1,1).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({color:0x000000,fog:false}));
     lid.scale.set((SM.x1-SM.x0)*TILE,1,(SM.y1-SM.y0)*TILE); lid.position.set(XC,-6*SM.depth/SM.steps*ZU+.012,(SM.y0+SM.y1)/2*TILE+77*TILE); M.lid=lid;

@@ -1,4 +1,4 @@
-// THE HEADSET CHECK: node tests/vr.cjs dist/market.html. An emulated Quest 3 (IWER): ENTER VR shows, the headset sees the street out of the Walker's eyes, the sticks walk and snap-turn, stepping in the room moves him, an open window shows its card, Y and a held B leave VR.
+// THE HEADSET CHECK: node tests/vr.cjs dist/market.html [folder for screenshots]. An emulated Quest 3 (IWER): ENTER VR shows, the headset sees the street out of the Walker's eyes, the sticks walk and snap-turn, stepping in the room moves him, an open window shows its card, Y and a held B leave VR.
 const { chromium } = require('playwright'), path = require('path'), fs = require('fs');
 const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process.env.GITHUB_ACTIONS ? '::error title=vr::' : 'FAIL ') + m); } else console.log('ok   ' + m); };
 (async () => {
@@ -15,18 +15,24 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   if (st) {
     await pg.waitForTimeout(2000);
     ok(await pg.isVisible('#vrbtn'), 'ENTER VR shows when a headset is there');
-    const view0 = await pg.evaluate(() => VR.state().view), fov0 = await pg.evaluate(() => VR.state().fov);
+    const view0 = await pg.evaluate(() => VR.state().view), fov0 = await pg.evaluate(() => VR.state().fov), pitch0 = await pg.evaluate(() => VR.state().pitch);
+    const camBack = async () => { const s = await pg.evaluate(() => VR.state()); return Math.abs(s.pitch - pitch0) < 1e-3 ? '' : ' (looking ' + s.pitch.toFixed(2) + ' down, was ' + pitch0.toFixed(2) + ')'; };
     const frames = n => pg.evaluate(n => new Promise(r => { const d = VR.draw; let k = 0; VR.draw = h => { d(h); if (++k >= n) { VR.draw = d; r(k); } }; }), n);
     const drawn = () => pg.evaluate(() => new Promise(r => { const C = SHARED.composer, d = C.render; let n = 0; C.render = function (...a) { n++; return d.apply(this, a); }; setTimeout(() => { C.render = d; r(n); }, 6000); }));
+    const OUT = process.argv[3]; let nShot = 0; if (OUT) fs.mkdirSync(OUT, { recursive: true });
+    const shot = async name => { if (!OUT) return; if (await pg.evaluate(() => VR.on)) await frames(2); const f = path.join(OUT, String(++nShot).padStart(2, '0') + '-' + name + '.png'); await pg.screenshot({ path: f }); console.log('shot ' + f); };
     const until = async (f, ms = 20000) => { for (let t = 0; t < ms; t += 250) { if (await pg.evaluate(f).catch(() => false)) return true; await pg.waitForTimeout(250); } return false; };
+    await shot('enter-vr-button');
     await pg.evaluate(() => { window.__cv = document.querySelector('#stage canvas'); });
     await pg.click('#vrbtn', { noWaitAfter: true });
     ok(await until(() => VR.on && VR.cal), 'the headset starts and stands you in the Walker');
+    await shot('headset-welcome');
     ok(await pg.evaluate(() => { const s = VR.state(); return s.view === 'first' && !s.body && s.fov > 100; }), 'in the headset you look out of his eyes (first view, his body hidden)');
     const pic = await pg.evaluate(() => new Promise(res => { const d = VR.draw; VR.draw = h => { d(h); VR.draw = d; const gl = __cv.getContext('webgl2'), w = gl.drawingBufferWidth, hh = gl.drawingBufferHeight, n = 24, px = new Uint8Array(4), seen = new Set(); let lit = 0;
       for (let i = 0; i < n; i++)for (let j = 0; j < n; j++){ gl.readPixels(Math.floor((i + .5) * w / n), Math.floor((j + .5) * hh / n), 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px); if (px[0] + px[1] + px[2] > 30) lit++; seen.add(px[0] >> 4 << 8 | px[1] >> 4 << 4 | px[2] >> 4); }
       res({ lit: lit / (n * n), colours: seen.size, w, h: hh }); }; }));
     ok(pic.lit > .5 && pic.colours > 8, 'the headset draws the world, not black (' + JSON.stringify(pic) + ')');
+    if (OUT) { await pg.evaluate(() => { __xrd.stereoEnabled = true; }); await shot('both-eyes'); await pg.evaluate(() => { __xrd.stereoEnabled = false; }); }
     const fr = await pg.evaluate(() => new Promise(r => { const d = VR.draw; let n = 0; VR.draw = h => { n++; d(h); }; setTimeout(() => { VR.draw = d; r(n); }, 4000); }));
     ok(fr >= 2, 'the headset keeps getting frames (' + fr + ' in 4 s here, software drawing)');
     const s0 = await pg.evaluate(() => ({ x: __dbg.you().x, z: __dbg.you().z, a: SHARED.yaw }));
@@ -37,26 +43,33 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     const s1 = await pg.evaluate(() => ({ x: __dbg.you().x, z: __dbg.you().z }));
     const mv = Math.hypot(s1.x - s0.x, s1.z - s0.z), along = mv && ((s1.x - s0.x) * -Math.sin(s0.a) + (s1.z - s0.z) * -Math.cos(s0.a)) / mv;
     ok(mv > .3 && along > .7, 'the left stick walks him where you look (' + mv.toFixed(2) + ' units, ' + (along || 0).toFixed(2) + ' along your gaze)');
+    await shot('walked-forward');
     const y0 = await pg.evaluate(() => VR.yaw);
     await pg.evaluate(() => __xrd.controllers.right.updateAxes('thumbstick', 1, 0)); await frames(3);
     await pg.evaluate(() => __xrd.controllers.right.updateAxes('thumbstick', 0, 0)); await frames(2);
     const y1 = await pg.evaluate(() => VR.yaw);
     ok(Math.abs(y1 - y0 + Math.PI / 6) < 1e-3, 'the right stick turns you right by one 30° step (' + ((y1 - y0) * 180 / Math.PI).toFixed(1) + '°)');
+    await shot('turned-right');
     const g0 = await pg.evaluate(() => ({ x: __dbg.you().x, z: __dbg.you().z }));
     await pg.evaluate(() => { const p = __xrd.position; p.x += 1; });
     await frames(3);
     const g1 = await pg.evaluate(() => ({ x: __dbg.you().x, z: __dbg.you().z, mh: FEEL.MH }));
     const step = Math.hypot(g1.x - g0.x, g1.z - g0.z);
     ok(step > .5 * g1.mh && step < 1.1 * g1.mh, 'a metre stepped in the room carries him with you (' + (step / g1.mh).toFixed(2) + ' m)');
+    await shot('stepped-in-room');
     await pg.evaluate(() => { const p = __xrd.position; p.x -= 1; });
     await pg.keyboard.press('Escape');
     ok(await until(() => VR.m === 'win', 5000), 'an open menu shows its card in the headset');
+    await shot('menu-card');
     await pg.evaluate(() => __xrd.controllers.left.updateButtonValue('y-button', 1));
     const left = await until(() => !VR.on, 15000);
     await pg.evaluate(() => __xrd.controllers.left.updateButtonValue('y-button', 0));
     ok(left, 'Y leaves VR while a window is open');
     const back = await pg.evaluate(() => VR.state());
+    const cb1 = await camBack();
+    ok(!cb1, 'leaving VR with Y gives back your camera angle' + cb1);
     ok(back.view === view0 && !back.pad && back.fov === fov0, 'leaving VR gives back the view you had and drops the headset pad (' + JSON.stringify(back) + ', was ' + view0 + ')');
+    await shot('back-on-screen');
     if (await pg.evaluate(() => VR.state().menu)) await pg.keyboard.press('Escape');
     ok(await drawn() > 0, 'the game draws on the screen again after VR');
     await pg.evaluate(() => { window.__quest = true; });
@@ -67,14 +80,18 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     await pg.evaluate(() => __xrd.controllers.left.updateAxes('thumbstick', 0, 0)); await frames(3);
     const q1 = await pg.evaluate(() => ({ x: __dbg.you().x, z: __dbg.you().z }));
     ok(Math.hypot(q1.x - q0.x, q1.z - q0.z) > .3, 'with the page frames stopped the controllers still walk him (' + Math.hypot(q1.x - q0.x, q1.z - q0.z).toFixed(2) + ' units)');
+    await shot('quest-walked');
     ok(await pg.evaluate(() => window.__blocked > 20), 'the page frames really were stopped (' + await pg.evaluate(() => window.__blocked) + ' held back)');
     ok(await pg.evaluate(() => new Promise(r => { let k = 0; const f = () => ++k >= 3 ? r(true) : requestAnimationFrame(f); requestAnimationFrame(f); setTimeout(() => r(false), 30000); })), 'waiting on frames (fades, loading) still ends in VR');
     await pg.evaluate(() => __xrd.controllers.right.updateButtonValue('b-button', 1));
     const held = await until(() => !VR.on, 15000);
     await pg.evaluate(() => __xrd.controllers.right.updateButtonValue('b-button', 0));
     ok(held, 'holding B leaves VR');
+    const cb2 = await camBack();
+    ok(!cb2, 'leaving VR by holding B gives back your camera angle' + cb2);
     await pg.evaluate(() => { window.__quest = false; });
     ok(await drawn() > 0, 'after VR on a Quest the game draws on the screen again');
+    await shot('after-hold-b');
   }
   ok(!warns.length, 'no VR warnings' + (warns.length ? ': ' + warns.slice(0, 3).join(' | ') : ''));
   ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.slice(0, 3).join(' | ') : ''));

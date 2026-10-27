@@ -4798,3 +4798,6 @@ Owner: "add a resolution setting in graphics  Lowest Low Med High Highest (highe
 
 ## 27 Oct 2026: the PS2 filter like the booth game
 Owner (his crop of the see-through character, the booth game picture): "fix the see-through character with the ps2 filter, and i dont wnt the colors glitched this bad match the graphics of this booth game accurately". Colour bleed only one pixel each side, faint rainbow only on hard edges, a faint echo; the character solid.
+
+## 27 Oct 2026: the PS2 filter without dither
+Owner (his picture of the lawn): "what can we do about the pattern that looks repetetive overlay", then "1" (remove the dither). The PS2 filter has no 4x4 dither; flat colour with the faint grain.

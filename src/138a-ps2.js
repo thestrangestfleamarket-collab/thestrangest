@@ -1,4 +1,4 @@
-// THE PS2 FILTER: PS2, the picture's last pass: 240 lines of chunky pixels, 15-bit colour with the console's 4x4 dither, a slight colour bleed, faint rainbow fringes on hard edges and a faint echo, a faint grain.
+// THE PS2 FILTER: PS2, the picture's last pass: 240 lines of chunky pixels, 15-bit colour (no dither), a slight colour bleed, faint rainbow fringes on hard edges and a faint echo, a faint grain.
 import {SHARED, THREE} from './003-shx.js';
 import {PS2} from './003b-systems.js';
 import {RH, RW, ShaderPass} from './004-main.js';
@@ -7,9 +7,7 @@ import {SYS} from './006-map-pre.js';
 PS2.shader={uniforms:{tDiffuse:{value:null},uT:{value:0},uL:{value:new THREE.Vector2(427,240)}},
   vertexShader:'varying vec2 vUv; void main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.); }',
   fragmentShader:`uniform sampler2D tDiffuse; uniform float uT; uniform vec2 uL; varying vec2 vUv;
-    float dm(vec2 c){ int i=int(mod(c.x,4.))+4*int(mod(c.y,4.)); float d[16]; d[0]=-4.;d[1]=0.;d[2]=-3.;d[3]=1.;d[4]=2.;d[5]=-2.;d[6]=3.;d[7]=-1.;d[8]=-3.;d[9]=1.;d[10]=-4.;d[11]=0.;d[12]=3.;d[13]=-1.;d[14]=2.;d[15]=-2.;
-      for(int k=0;k<16;k++)if(k==i)return d[k]; return 0.; }
-    vec3 fb(vec2 cell){ vec3 c=texture2D(tDiffuse,(cell+.5)/uL).rgb; return floor(clamp(c*255.+dm(cell)*1.5,0.,255.)/8.)*8./255.; }
+    vec3 fb(vec2 cell){ vec3 c=texture2D(tDiffuse,(cell+.5)/uL).rgb; return floor(clamp(c*255.,0.,255.)/8.)*8./255.; }
     vec3 yiq(vec3 c){ return vec3(dot(c,vec3(.299,.587,.114)),dot(c,vec3(.596,-.274,-.322)),dot(c,vec3(.211,-.523,.312))); }
     vec3 rgb(vec3 y){ return vec3(y.x+.956*y.y+.621*y.z,y.x-.272*y.y-.647*y.z,y.x-1.106*y.y+1.703*y.z); }
     float h(vec2 p){ return fract(sin(dot(p,vec2(12.9898,78.233)))*43758.5453); }

@@ -13,7 +13,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   const st = await start('&fresh=1');
   ok(st, 'the page starts');
   if (st) {
-    await pg.evaluate(() => { const A = __dbg.MAPK.MODS.apts.R, B = SHARED.BOD; __dbg.UI.goTo(B.X(A.x0 + (A.x1 - A.x0) * .3), B.Z(A.y0 + (A.y1 - A.y0) * .3), SHARED.py); SHARED.yawTo = SHARED.yaw = -Math.PI / 4; SHARED.ppuTo = SHARED.ppu = SHARED.ppu * .6; });
+    await pg.evaluate(() => { const A = __dbg.MAPK.MODS.apts.R, B = SHARED.BOD; __dbg.UI.goTo(B.X(A.x0 + (A.x1 - A.x0) * .3), B.Z(A.y0 + (A.y1 - A.y0) * .3), SHARED.py); SHARED.yawTo = SHARED.yaw = Math.PI / 4; SHARED.ppuTo = SHARED.ppu = SHARED.ppu * .6; });
     await pg.waitForTimeout(2500);
     ok(await pg.evaluate(() => !document.getElementById('roomedbtn').hidden), 'the DECORATE button shows in your apartment');
     await pg.keyboard.press('t'); await pg.waitForTimeout(400);

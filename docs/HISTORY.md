@@ -4875,3 +4875,9 @@ Owner: "In order to go into the holodeck you have to double click the entrance. 
 
 ## 27 Oct 2026: camera sway, a menu choice
 Owner: "lets add this as option in menu to toggle on or off" (the idle camera sway from Security Booth). DISPLAY's CAMERA SWAY: on, the view drifts a fifth of a degree, slowly; off by default.
+
+## 27 Oct 2026: sway level, first person only
+Owner: "add a sway level from 1-10. also it only affects 1st person view". DISPLAY's SWAY LEVEL (1-10, 2 is Security Booth's); the sway only in FIRST PERSON.
+
+## 27 Oct 2026: the inspect window
+Owner: "build the item inspect spin window"; his picks: every item (held, goods, the pack) and a key while holding. Press 5 (KEYS: INSPECT) holding a thing or pointing at a loose good, or LOOK in the pack: the thing spins in a window (drag to turn, wheel to zoom, Esc closes) with its name and properties. Each item family shows its own model; one with none is a parcel.

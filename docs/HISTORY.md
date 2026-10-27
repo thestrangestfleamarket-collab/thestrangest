@@ -4875,3 +4875,4 @@ Owner: "In order to go into the holodeck you have to double click the entrance. 
 
 ## 27 Oct 2026: camera sway, a menu choice
 Owner: "lets add this as option in menu to toggle on or off" (the idle camera sway from Security Booth). DISPLAY's CAMERA SWAY: on, the view drifts a fifth of a degree, slowly; off by default.
+- Owner: "add curtains to the side windows too". The side walls' windows have the same cloth curtains as the front ones.

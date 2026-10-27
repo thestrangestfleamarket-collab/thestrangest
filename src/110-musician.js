@@ -8,11 +8,12 @@ import {GT, GTA, gtAudio, gtMute, gtPlay, GTWR} from './106-game-play-3-guitar-1
 import {GTBEAT, GTEND, GTEV, gtNext, GTS, gtSet} from './108-game-play-3-guitar-2-tunes.js';
 import {GTF, gtFing, GTH, GTPOLE, gtPose, NPCARMS, NPCFING, npcSpring} from './109-game-play-3-guitar-3-hands.js';
 Object.assign(MUS,{shelf:true,tick:()=>{}}); STORE.MUS=MUS;
-function musBody(){ const R=RIG; if(!musBody.FG){ R.farOnly(false); R.fine(true); const J=R.build(R.walkPose({ph:0,w:0},null),null).J, FG=R.shell(J,0).filter(p=>/^fing\d\d[LR]$/.test(p.n)); R.fine(false);
+function musBody(st){ const R=RIG; if(!musBody.FG){ R.farOnly(false); R.fine(true); const J=R.build(R.walkPose({ph:0,w:0},null),null).J, FG=R.shell(J,0).filter(p=>/^fing\d\d[LR]$/.test(p.n)); R.fine(false);
     const around=(ps,m)=>{ const b=[1e9,-1e9,1e9,-1e9,1e9,-1e9]; for(const p of ps){ b[0]=Math.min(b[0],p.x-m); b[1]=Math.max(b[1],p.x+m); b[2]=Math.min(b[2],p.y-m); b[3]=Math.max(b[3],p.y+m); b[4]=Math.min(b[4],p.z-m); b[5]=Math.max(b[5],p.z+m); } return b; };
     for(const p of FG){ const f=/^fing(\d)(\d)([LR])$/.exec(p.n); p.bb=around([J['k'+f[1]+f[2]+f[3]],J['k'+f[1]+(+f[2]+1)+f[3]]],1); p.step=.12; p.cell=.12; p.share=p; }
     musBody.FG=FG; musBody.J=J; }
-  const own=W3.pcs.map((p,i)=>W3.HIDE[i]||/^fing/.test(p.n)?null:Object.assign({},p,{e:i,share:p})).filter(Boolean);
+  const ALL={shirt:1,pants:1,shoes:1,hair:1,beard:1}, S=st||{form:'M',hair:'hair',beard:''}, hid=(p,i)=>{ const v=W3.shows?W3.shows(p,S,ALL):null; return v===null?W3.HIDE[i]:!v; };
+  const own=W3.pcs.map((p,i)=>hid(p,i)||/^fing/.test(p.n)?null:Object.assign({},p,{e:i,share:p})).filter(Boolean);
   return {PCS:own.concat(musBody.FG.map(p=>Object.assign({},p))),J:musBody.J}; }
 const MUSGEO=new Map(), MUSNP=180;
 function figureMesh(PCS,key){ const NP=Math.max(MUSNP,PCS.length), PM={value:Array.from({length:NP},()=>new THREE.Matrix4().makeScale(0,0,0))};

@@ -1,8 +1,8 @@
-// THE ARCADE: the arcade on Main Street as one painted block (its neon ARCADE front); its inside is built off the map when you go in: black walls, three cabinets along each side wall, and the holodeck behind the back wall with its training programs.
+// THE ARCADE: the arcade on Main Street as one painted block (its neon ARCADE front); its inside is built off the map when you go in: black walls, and the holodeck behind the back wall (double-click its door) with its training programs.
 import {SHARED, THREE} from './003-shx.js';
 import {FORAGE, INV, pos, ROOMS, UI, WIELD} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {FIX, grab, SOL, STORE, SYS, TILE, TURN, WP} from './006-map-pre.js';
+import {FADE, FIX, grab, SOL, STORE, SYS, TILE, TURN, WP} from './006-map-pre.js';
 import {BATCH} from './008-batch.js';
 import {LAMPS} from './014-gamekit.js';
 await grab('arcade',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Y=SHARED.BOD.Y, {hash:hs}=SHARED.BOD.g, sh=SHARED.BOD.K.sh, MS=STORE.main;
@@ -51,9 +51,7 @@ await grab('arcade',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Y=SHARED.BOD
   const bx=(x0,y0,x1,y1,z0,z1,c,o={})=>({x0:Math.min(x0,x1),y0:Math.min(y0,y1),x1:Math.max(x0,x1),y1:Math.max(y0,y1),z0,z1,c,...o});
   const pb=(b,sd,p,glow)=>{ const [ax,ay]=SIDE[sd]; b.fs=(nx,ny,P,Q,z,s)=>{ if(nx===ax&&ny===ay){ const r=p(fu(sd,b,P,Q),1-z/(b.z1-b.z0)); if(r)return glow&&!b.em?lit(r):r; } return b.em?b.c:sh(b.c,s); }; return b; };
   const mb=(x0,z0,x1,z1,h0,h1,c,o)=>bx(mx(x0),my(z0),mx(x1),my(z1),h0*ZM,h1*ZM,c,o);
-  const thing=(name,boxes,o={})=>{ for(const b of boxes)SHARED.BOD.gbox(b,'A'); if(!o.high&&boxes.length){ sol(Math.min(...boxes.map(b=>b.x0)),Math.min(...boxes.map(b=>b.y0)),Math.max(...boxes.map(b=>b.x1)),Math.max(...boxes.map(b=>b.y1))); }
-    if(o.skill&&boxes.length){ const x0=Math.min(...boxes.map(b=>b.x0)), x1=Math.max(...boxes.map(b=>b.x1)), y0=Math.min(...boxes.map(b=>b.y0)), y1=Math.max(...boxes.map(b=>b.y1)), hb=new THREE.Mesh(new THREE.BoxGeometry(Math.abs(X(x1)-X(x0))+.4*TILE,Y(70),Math.abs(Z(y1)-Z(y0))+.4*TILE),new THREE.MeshBasicMaterial({visible:false}));
-      hb.position.set((X(x0)+X(x1))/2,Y(35),(Z(y0)+Z(y1))/2); scene.add(hb); UI.thing({name:'PLAY '+o.title,obj:hb,reach:1.5*TILE,near:2.5*TILE,tall:Y(70),act:()=>FORAGE.train(o.skill,400,2,3)}); } };
+  const thing=(name,boxes,o={})=>{ for(const b of boxes)SHARED.BOD.gbox(b,'A'); if(!o.high&&boxes.length){ sol(Math.min(...boxes.map(b=>b.x0)),Math.min(...boxes.map(b=>b.y0)),Math.max(...boxes.map(b=>b.x1)),Math.max(...boxes.map(b=>b.y1))); }  };
   const lamp=(x,z,h,r,c,o={})=>LAMPS.push({own:1,room:1,day:true,x:mx(x),y:my(z),z:h*ZM,r,c,...o});
   const wallAt={b:m=>[mx(m),B.y0+.1],f:m=>[mx(m),B.y1-.1],e:m=>[B.x0+.1,my(m)],w:m=>[B.x1-.1,my(m)],pw:m=>[PX-.13,my(m)],pe:m=>[PX+.13,my(m)]};
   const FACE={b:'f',f:'b',e:'e',w:'w',pw:'w',pe:'e'};
@@ -93,42 +91,13 @@ await grab('arcade',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Y=SHARED.BOD
     WALL(PY(AR.x0),PY(AR.x0),AR.y0,AR.y1,(u,z)=>black(u,z,.7)); WALL(PY(AR.x1),PY(AR.x1),AR.y0,AR.y1,(u,z)=>black(u,z,.7));
     WALL(PX(AR.y1),PX(AR.y1),AR.x0,AR.x1,(u,z)=>{ const d=Math.abs(u-cx); if(d<.78&&z<94)return d>.7||z>88?[255,42,42,1]:sh([30,20,40],.9); return black(u,z,.85); });
     const back=(u,z)=>inf(u,z)||GRID(u,z/24);
-    WALL(PX(AR.y0,.03),PX(AR.y0,.03),AR.x0,cx-DW,back); WALL(PX(AR.y0,.03),PX(AR.y0,.03),cx+DW,AR.x1,back); WALL(PX(AR.y0,.03),PX(AR.y0,.03),cx-DW,cx+DW,back,WH,DH);
-    for(const o of [-.03])WALL(PX(AR.y0,o),PX(AR.y0,o),AR.x0,AR.x1,(u,z)=>Math.abs(u-cx)<DW&&z<DH?null:GRID(u,z/24));
+    const door=(u,z)=>{ const d=Math.abs(u-cx); return d>DW-.06||z>DH-3?[60,255,120,1]:Math.abs(d-DW/2)<.03?[28,120,58,1]:sh([10,18,14],.9); };
+    WALL(PX(AR.y0,.03),PX(AR.y0,.03),AR.x0,AR.x1,(u,z)=>Math.abs(u-cx)<DW&&z<DH?door(u,z):back(u,z));
+    WALL(PX(AR.y0,-.03),PX(AR.y0,-.03),AR.x0,AR.x1,(u,z)=>Math.abs(u-cx)<DW&&z<DH?door(u,z):GRID(u,z/24));
     WALL(PY(HD.x0),PY(HD.x0),HD.y0,HD.y1,(u,z)=>GRID(u,z/24)); WALL(PY(HD.x1),PY(HD.x1),HD.y0,HD.y1,(u,z)=>GRID(u,z/24)); WALL(PX(HD.y0),PX(HD.y0),HD.x0,HD.x1,(u,z)=>GRID(u,z/24));
-    sol(AR.x0-.1,HD.y0,AR.x0+.1,AR.y1); sol(AR.x1-.1,HD.y0,AR.x1+.1,AR.y1); sol(AR.x0,AR.y1-.1,AR.x1,AR.y1+.1); sol(HD.x0,HD.y0-.1,HD.x1,HD.y0+.1); sol(AR.x0,AR.y0-.1,cx-DW,AR.y0+.1); sol(cx+DW,AR.y0-.1,AR.x1,AR.y0+.1);
-    const SIDE2={e:[1,0],w:[-1,0]}, dk=[16,14,20];
-    const CABSK={'RAINBOW RUN':'bird','GALAXY RAID':'sword','MAZE':'prosp','ROAD 85':'fish','TELEMAK':'ento','ISTANBUL TAKSI':'forage'};   // each game trains a skill, a token a play
-    const cab=(sd,yc,o)=>{ const [ax]=SIDE2[sd], w=(o.w||.74)*S, xb=sd==='e'?AR.x0+.1:AR.x1-.1, yb=yc, bs=[];
-      const R_=(a0,a1,d0,d1)=>ax>0?[xb+d0*S,yb+a0*w,xb+d1*S,yb+a1*w]:[xb-d1*S,yb-a1*w,xb-d0*S,yb-a0*w];
-      const art=pic(32,64,(g,W_,H_)=>{ g.fillStyle=o.body; g.fillRect(0,0,W_,H_);
-        if(o.art==='stripes'){ const Cs=['#27a84a','#ff8a2a','#e2304a','#141016']; for(let i=-10;i<20;i++){ g.fillStyle=Cs[(i+40)%4]; g.beginPath(); g.moveTo(0,H_-i*6); g.lineTo(W_,H_-i*6-20); g.lineTo(W_,H_-i*6-25); g.lineTo(0,H_-i*6-5); g.fill(); } }
-        else if(o.art==='check'){ g.fillStyle='#141016'; for(let i=0;i<8;i++)for(let j=0;j<2;j++)if((i+j)%2)g.fillRect(i*4,34+j*4,4,4); }
-        else { g.fillStyle=o.art; g.beginPath(); g.moveTo(0,H_); g.lineTo(W_,H_-14); g.lineTo(W_,H_-26); g.lineTo(0,H_-12); g.fill(); g.fillRect(0,0,W_,5); } });
-      const dep=(P)=>ax>0?(P-xb)/S:(xb-P)/S, fu2=(b,Q)=>ax>0?(b.y1-Q)/(b.y1-b.y0):(Q-b.y0)/(b.y1-b.y0);
-      const part=(a0,a1,d0,d1,h0,h1,c,fr,em)=>{ const [x0,y0,x1,y1]=R_(a0,a1,d0,d1), b=bx(x0,y0,x1,y1,h0*ZM,h1*ZM,c,em?{em:1}:{});
-        b.fs=(nx,ny,P,Q,z,s)=>{ if(nx===ax&&!ny){ if(fr){ const q=fr(fu2(b,Q),1-z/(b.z1-b.z0)); if(q)return q; } return em?c:sh(c,s); }
-          if(ny){ const q=art(Math.min(.99,dep(P)),1-(b.z0+z)/ZM/1.84); return sh(q||c,s); } return em?c:sh(c,s); }; bs.push(b); return b; };
-      const trim=o.trim||dk, coin=(u_,v)=>(v>.45&&v<.75&&((u_>.3&&u_<.4)||(u_>.6&&u_<.7)))?lit([255,60,60]):(v>.3&&v<.9&&u_>.2&&u_<.8)?[28,26,32]:null;
-      part(-.5,.5,0,.78,0,.82,trim,coin); part(-.5,.5,0,.98,.82,.97,trim); part(-.5,.5,0,.6,.97,1.56,trim); part(-.5,.5,0,.8,1.56,1.84,trim);
-      part(-.42,.42,.6,.64,1.0,1.5,[10,10,16],o.scr,1);
-      const mq=pic(64,14,(g)=>{ g.fillStyle=o.mbg||'#141016'; g.fillRect(0,0,64,14); const k=tw(o.name,1)>60?1:2; ctxt(g,o.name,32,k===2?2:4,k,o.mcol||'#fff'); });
-      part(-.46,.46,.8,.82,1.58,1.82,[20,18,24],mq,1);
-      if(o.edge)for(const a of [-.52,.5]){ const [x0,y0,x1,y1]=R_(a,a+.02,.74,.8); bs.push(bx(x0,y0,x1,y1,0,1.84*ZM,o.edge,{em:1})); }
-      thing('arcade cabinet: '+o.name.toLowerCase(),bs,{skill:CABSK[o.name],title:o.name}); };
-      const scr=k=>pic(48,40,(g,W,H)=>{ g.fillStyle='#05060c'; g.fillRect(0,0,W,H);
-        if(k==='paddles'){ g.fillStyle='#e8f0ff'; g.fillRect(3,14,2,8); g.fillRect(43,10,2,8); g.fillRect(26,20,2,2); for(let y=1;y<H;y+=4)g.fillRect(23,y,2,2); txt(g,'3',14,3,1,'#e8f0ff'); txt(g,'7',30,3,1,'#e8f0ff'); }
-        else if(k==='raid'){ const C=['#ff4fd8','#4ff0ff','#5aff6a']; for(let r=0;r<3;r++)for(let i=0;i<5;i++){ g.fillStyle=C[r]; const x=4+i*8, y=4+r*6; g.fillRect(x,y,5,3); g.fillRect(x+1,y+3,1,1); g.fillRect(x+3,y+3,1,1); } g.fillStyle='#ffe83c'; g.fillRect(21,35,6,3); g.fillRect(23,33,2,2); }
-        else if(k==='taksi'){ g.fillStyle='#ff8a2a'; g.fillRect(0,8,W,10); g.fillStyle='#283048'; g.fillRect(0,18,W,22); g.fillStyle='#606a80'; g.beginPath(); g.moveTo(20,18); g.lineTo(28,18); g.lineTo(46,40); g.lineTo(2,40); g.fill(); g.fillStyle='#ffd21c'; g.fillRect(17,28,14,6); g.fillStyle='#111'; g.fillRect(18,29,12,2); }
-        else if(k==='maze'){ g.strokeStyle='#2a7bff'; for(let i=0;i<3;i++)g.strokeRect(3.5+i*6,3.5+i*6,40-i*12,32-i*12); g.fillStyle='#ffe83c'; g.fillRect(22,18,4,4); g.fillStyle='#ff4f6a'; g.fillRect(8,8,3,3); }
-        else { const C=['#ff4fd8','#4ff0ff','#ffe83c','#5aff6a','#ff8a2a']; for(let y=20;y<H;y+=4)for(let x=2;x<W-2;x+=4)if(hs(x,y,710)<.5+(y-20)/40){ g.fillStyle=C[Math.floor(hs(y,x,711)*5)]; g.fillRect(x,y,3,3); } g.fillStyle='#4ff0ff'; g.fillRect(20,6,4,4); g.fillRect(24,6,4,4); g.fillRect(24,10,4,4); } });
-    const YS=[AR.y0+3.4,AR.y0+6.4,AR.y0+9.4];
-    cab('e',YS[0],{name:'RAINBOW RUN',body:'#141016',art:'stripes',scr:scr('blocks'),mcol:'#ff8a2a',w:.86,edge:[226,48,74]});
-    cab('e',YS[1],{name:'GALAXY RAID',body:'#2a1030',art:'#ff3ca8',scr:scr('raid'),mcol:'#ff7ad8',edge:[255,60,168]});
-    cab('e',YS[2],{name:'MAZE',body:'#1a2050',art:'#2a7bff',scr:scr('maze'),mcol:'#ffe83c'});
-    cab('w',YS[0],{name:'ROAD 85',body:'#2a1a12',art:'#ff8a2a',scr:scr('taksi'),mcol:'#ff8a2a',edge:[255,138,42]});
-    cab('w',YS[1],{name:'TELEMAK',body:'#1a1a2a',art:'#2a7bff',scr:scr('paddles'),mbg:'#2a7bff',edge:[42,123,255]});
-    cab('w',YS[2],{name:'ISTANBUL TAKSI',body:'#ffd21c',art:'check',scr:scr('taksi'),mbg:'#ffd21c',mcol:'#141016',trim:[216,168,18],w:.86});
+    sol(AR.x0-.1,HD.y0,AR.x0+.1,AR.y1); sol(AR.x1-.1,HD.y0,AR.x1+.1,AR.y1); sol(AR.x0,AR.y1-.1,AR.x1,AR.y1+.1); sol(HD.x0,HD.y0-.1,HD.x1,HD.y0+.1); sol(AR.x0,AR.y0-.1,AR.x1,AR.y0+.1);
+    for(const [y,name,ty,hd] of [[AR.y0+.3,'THE HOLODECK',AR.y0-1.3,Math.PI],[AR.y0-.3,'BACK TO THE ARCADE',AR.y0+1.3,0]]){ const hb=new THREE.Mesh(new THREE.BoxGeometry(1.3*TILE,2.4*TILE,.5*TILE),new THREE.MeshBasicMaterial({visible:false}));
+      hb.position.set(X(cx),1.2*TILE,Z(y)); scene.add(hb); UI.thing({name,ghost:1,obj:hb,reach:1.4*TILE,near:2.6*TILE,tall:2.4*TILE,act:()=>!FADE.busy&&FADE.run('',()=>UI.goTo(X(cx),Z(ty),0,hd),{cut:true})}); }
     for(const [x,y,c,i] of [[cx,(AR.y0+AR.y1)/2,0xc070ff,9],[cx,AR.y1-1,0xff4fa0,5],[cx,hy,0x66ff99,5]]){ const Lt=new THREE.PointLight(c,i,10*TILE,1.6); Lt.position.set(X(x),Y(118),Z(y)); scene.add(Lt); }
     HOLO.open(X(cx),Z(hy-1.5),AG); };
   const unbuild=()=>{ HOLO.close(); for(const r of AS){ const i=SOL.up.indexOf(r); if(i>=0)SOL.up.splice(i,1); } AS=[]; if(AG){ AG.removeFromParent(); AG=null; } };

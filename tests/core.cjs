@@ -155,6 +155,18 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
         out['phase' + k] = { style: n.D.style, speed: +fly.getEffectiveTimeScale().toFixed(2), weight: +fly.getEffectiveWeight().toFixed(2) }; } return out; }).catch(e => ({ err: e.message }));
     ok(dg.phase0 && dg.phase1 && dg.phase0.style !== dg.phase1.style && dg.phase0.speed > .4 && dg.phase1.speed > .4, 'a flying dragon beats its wings through both halves of its flight: ' + JSON.stringify(dg));
   }
+  { const hp = await pg.evaluate(async () => { const raf = () => new Promise(r => requestAnimationFrame(r)), D = window.__dbg, T = D.cv().TILE, o = {};
+      o.before = !!(window.PIER && PIER.G);
+      for (let k = 0; k < 4 && !(RIVER.on && window.PIER && PIER.G); k++) { for (let i = 0; i < 600 && FADE.busy; i++) await raf(); if (!RIVER.on) STORE.goTo(SHARED.BOD.XS(61), SHARED.BOD.ZS(-118), 'up'); for (let i = 0; i < 900 && !(RIVER.on && window.PIER && PIER.G); i++) await raf(); } if (!PIER.G) return { built: false, before: o.before };
+      o.built = PIER.G.parent && PIER.G.parent.name === 'river'; o.long = +((PIER.z0 - PIER.zE) / T).toFixed(1); o.longest = RIVER.decks.every(d => d.pier || d.r.every(r => PIER.z0 - r[1] < PIER.z0 - PIER.zE));
+      o.deck = [RIVER.onPier(PIER.x, (PIER.z0 + PIER.zH) / 2), RIVER.onPier(PIER.x + PIER.HW - T, PIER.zE + T), !RIVER.onPier(PIER.x, PIER.zE - T)];
+      for (let i = 0; i < 400 && FADE.busy; i++) await raf(); D.UI.goTo(PIER.x + 1.5 * T, PIER.zE + 1.2 * T, 'up', .8); for (let i = 0; i < 30; i++) await raf(); for (let i = 0; i < 400 && FADE.busy; i++) await raf(); for (let i = 0; i < 20; i++) await raf();
+      const p = D.pos(); o.stand = !RIVER.swim && Math.abs(p[1]) < .2 && RIVER.onPier(p[0], p[2]);
+      const w = FISHING.at(PIER.x, PIER.zE - 6 * T), od = FISHING.odds(PIER.x, PIER.zE - 6 * T, 'bait_cut', 19);
+      o.fish = { water: w && w.kind, rod: !!WIELD.kinds.rod, bass: od && od.per.x_bass > 0, sum: od && +Object.values(od.per).reduce((a, b) => a + b, 0).toFixed(2), deck: !FISHING.at(PIER.x, PIER.zH + 2 * T) };
+      return o; }).catch(e => ({ err: e.message }));
+    ok(hp.built && !hp.before && hp.long >= 30 && hp.longest && hp.deck.every(Boolean) && hp.stand, 'the fishing pier is built only with the Hudson, reaches further out than any other, and you stand on its deck (not in the water): ' + JSON.stringify(hp));
+    ok(hp.fish && hp.fish.water === 'river' && hp.fish.rod && hp.fish.bass && hp.fish.sum === 1 && hp.fish.deck, 'the Hudson is a fishing spot through the one fishing system (the rod held, the odds by species, not on the deck): ' + JSON.stringify(hp.fish)); }
   { const ps = await pg.evaluate(() => { const C = SHARED.composer.passes, i = C.findIndex(q => q.uniforms && q.uniforms.uL && q.uniforms.uT), on = C.filter(q => q.enabled); return { found: i >= 0, on: i >= 0 && C[i].enabled, last: on[on.length - 1] === C[i], lines: i >= 0 && C[i].uniforms.uL.value.y }; }).catch(e => ({ err: e.message }));
     ok(ps.found && ps.on && ps.last && ps.lines === 240, 'the PS2 filter is on by default and is the last pass (240 lines): ' + JSON.stringify(ps)); }
   { const rs = await pg.evaluate(async () => { const c = document.querySelector('#stage canvas'), out = {}, raf = () => new Promise(r => requestAnimationFrame(r)); for (const i of [0, 2, 4]) { document.querySelector('[data-res="' + i + '"]').click(); await raf(); out[i] = c.height; } return out; }).catch(e => ({ err: e.message }));

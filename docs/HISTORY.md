@@ -4801,3 +4801,6 @@ Owner (his crop of the see-through character, the booth game picture): "fix the 
 
 ## 27 Oct 2026: the PS2 filter without dither
 Owner (his picture of the lawn): "what can we do about the pattern that looks repetetive overlay", then "1" (remove the dither). The PS2 filter has no 4x4 dither; flat colour with the faint grain.
+
+## 27 Oct 2026: the Hudson calm and green, the fishing pier, real fishing
+Owner: "make the hudson water darker green like lake, more calm. able to fish. add a pier that goes out further into the water. realistic style pier, very detailed and intricate design, mood atmopshere, realistic set design, authnetic vibes"; "fully functioning ability to buy rod, bait, hook it on line, cast, catch it, reel in, take fish off hook"; "put real fish in hudson to catch, work out physics systems and liklihood they will catch". The Hudson's own water (A · HUDSON) is dark green and calm; a long timber fishing pier by BAIT & BOATS, built with the river. Rule: a fish's habits (where, depth, hour, bait, fight, how common, weight) are fields on the item model; the odds and the fight come from them.

@@ -1,10 +1,10 @@
 // THE MAIL: MAIL, the town's mail: names, addresses, letters, parcels and the mail carrier's round.
 import {SHARED, THREE} from './003-shx.js';
-import {CITY, CIVIC, CLOCK, MAIL, PARK, UI} from './003b-systems.js';
+import {CITY, CIVIC, CLOCK, INV, MAIL, PARK, UI} from './003b-systems.js';
 import {OWNED} from './005-save.js';
 import {FIX, MAPG, MODS, QS, RING, SOL, STORE, TILE} from './006-map-pre.js';
 import {JOBS} from './159-jobs.js';
-Object.assign(MAIL,{on:QS.has('mail')?QS.get('mail')!=='0':CITY.on,addr:[],L:[],nid:0,day0:0,you:{cash:100},cboxes:[],ready:false}); window.MAIL=MAIL;
+Object.assign(MAIL,{on:QS.has('mail')?QS.get('mail')!=='0':CITY.on,addr:[],L:[],nid:0,day0:0,you:{cash:INV.START,g1m:1},cboxes:[],ready:false}); window.MAIL=MAIL;
 if(MAIL.on){ const T=TILE, M=1/.84*T, X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, G=(x,z)=>MODS.bodega.ground(x,z), rnd=Math.random, pick=a=>a[Math.floor(rnd()*a.length)], log=(w,p)=>CIVIC.note(w,p||'post');
   const hs=s=>{ let h=2166136261; for(const c of String(s))h=Math.imul(h^c.charCodeAt(0),16777619); return (h>>>0)/4294967296; };
   const FIRST=['ADA','BEN','CORA','DEV','EDIE','FINN','GUS','HAZEL','IVO','JUNE','KAI','LENA','MILO','NELL','OTIS','PIA','QUINN','ROSA','SAUL','TESS','URI','VERA','WES','YARA','ZEKE'];
@@ -207,7 +207,7 @@ if(MAIL.on){ const T=TILE, M=1/.84*T, X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, G=(x,z)=
   const save=()=>{ if(!MAIL.ready)return; try{ OWNED.set('mail',JSON.stringify({v:1,day:MAIL.day(),h:CLOCK.h,nid:MAIL.nid,you:MAIL.you,L:MAIL.L.slice(-500),cb:MAIL.cboxes.map(c=>c.in),cash:Object.fromEntries(MAIL.addr.filter(a=>a.who&&a.who.type==='walker').map(a=>[a.id,a.who.ref.cash||0]))})); }catch(e){} };
   const restore=()=>{ '@later'; let D=null; try{ D=JSON.parse(OWNED.get('mail')||'null'); }catch(e){} if(QS.get('fresh')&&QS.get('keepmail')!=='1')D=null;
     if(!D||D.v!==1)return;
-    MAIL.day0=Math.max(0,(D.day||0)+((D.h||0)>CLOCK.h?1:0)); MAIL.nid=D.nid||0; MAIL.you=D.you||MAIL.you; MAIL.L=(D.L||[]).filter(l=>l&&l.id);
+    MAIL.day0=Math.max(0,(D.day||0)+((D.h||0)>CLOCK.h?1:0)); MAIL.nid=D.nid||0; MAIL.you=D.you||MAIL.you; if(!MAIL.you.g1m){ MAIL.you.cash=Math.max(MAIL.you.cash||0,INV.START); MAIL.you.g1m=1; } MAIL.L=(D.L||[]).filter(l=>l&&l.id);
     (D.cb||[]).forEach((a,i)=>{ if(MAIL.cboxes[i])MAIL.cboxes[i].in=a||[]; }); for(const [id,v] of Object.entries(D.cash||{})){ const A=MAIL.byId(id); if(A&&A.who&&A.who.ref)A.who.ref.cash=v; }
     for(const l of MAIL.L)if(l.state==='out')l.state='sorted'; refresh(); };
   setInterval(save,30000); addEventListener('beforeunload',save); MAIL.save=save;

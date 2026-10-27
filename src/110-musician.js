@@ -1,8 +1,7 @@
 // THE MUSICIAN: MUS, the street musician, and the shared figure makers (musBody, figureMesh) the players use.
 import {SHARED, THREE} from './003-shx.js';
 import {LEVELS, MUS, NPCS, pos, SKY, SND, UI, W3} from './003b-systems.js';
-import {PPU, renderer, RES, resize, RESL, RESMAX, scene} from './004-main.js';
-import {SAVE} from './005-save.js';
+import {PPU, renderer, scene} from './004-main.js';
 import {ASTEP, MAPG, MODS, STORE, TILE, ZU} from './006-map-pre.js';
 import {SOUND} from './091-sfx.js';
 import {GT, GTA, gtAudio, gtMute, gtPlay, GTWR} from './106-game-play-3-guitar-1-body.js';
@@ -125,7 +124,7 @@ if(!MUS.shelf){ const R=RIG, V=R.V, AT={x:SHARED.BOD.XS(70),z:SHARED.BOD.ZS(-73)
   MUS.tick=dt=>{ '@later'; if(SHEET){ R.farOnly(false); const B=MUS.B=R.settle(R.build(spreadPose(),null),0), F=backOf(); AT.x=SHARED.BOD.XS(100); AT.z=SHARED.BOD.ZS((SHARED.BOD.MAP.y0+SHARED.BOD.MAP.y1)/2); AT.hd=Math.PI/4; AT.y=MODS.bodega.ground(AT.x,AT.z);
       g.position.set(AT.x,AT.y,AT.z); g.rotation.y=AT.hd; musScale(g); SF.pose(dt,B,F);
       if(!MUS.sheetOn){ MUS.sheetOn=true; sheetView(g,AT.y+g.scale.y*27); } return; }
-    if(MUS.watch&&!UI.freeCam){ MUS.watch=false; SHB.hidden=true; SHB.style.display='none'; if(MUS.res0!=null){ SHARED.RESI=MUS.res0; MUS.res0=null; resize(); } } const d=Math.hypot(pos.x-AT.x,pos.z-AT.z);
+    if(MUS.watch&&!UI.freeCam){ MUS.watch=false; } const d=Math.hypot(pos.x-AT.x,pos.z-AT.z);
     if(WK.mode==='play'&&(d>18&&!MUS.watch||GTS.t>GTEND+1.5)){ WK.mode='stop'; WK.t=1.5+Math.random()*2; }
     if(WK.mode!=='play'){ if(!MUS.lent)gtHush(); const near=MAPG.bodega.visible&&LEVELS.drawn(MAPG.bodega)&&d<40, B=MUS.on&&near?walkTick(dt,near):null; if(!B)return SF.cloth(dt,null); MUS.B=B; SF.pose(dt,B,backOf()); musScale(g); return; }
     if(!MUS.on||!MAPG.bodega.visible){ gtHush(); return; }
@@ -143,13 +142,6 @@ if(!MUS.shelf){ const R=RIG, V=R.V, AT={x:SHARED.BOD.XS(70),z:SHARED.BOD.ZS(-73)
   addEventListener('pointerdown',wake); addEventListener('keydown',wake);
   const hitBox=new THREE.Mesh(new THREE.BoxGeometry(22,58,24),new THREE.MeshBasicMaterial({visible:false})); hitBox.position.set(0,29,2); g.add(hitBox);
   UI.thing({name:'THE GUITARIST',obj:hitBox,reach:1.6,tall:1.9,act:()=>{ '@later'; MUS.ask(); const p=new THREE.Vector3().setFromMatrixPosition(new THREE.Matrix4().multiplyMatrices(g.matrixWorld,new THREE.Matrix4().makeTranslation(GTF.o.x,GTF.o.y,GTF.o.z)));
-    UI.setFree(true); UI.camT.copy(p); SHARED.ppuTo=PPU*16; MUS.watch=true; MUS.res0=SHARED.RESI; SHARED.RESI=MUS.sharp(); resize(); SHB.show(); }});
-  const SHB=document.createElement('div'); SHB.id='shbar'; SHB.hidden=true; SHB.style.cssText='position:fixed;left:50%;bottom:52px;transform:translateX(-50%);z-index:6;display:none;gap:10px;align-items:center;padding:8px 12px;background:#0b0d13e0;border:2px solid #2a3040;font:11px Silkscreen,monospace;letter-spacing:1px;color:#c9ccd6';
-  SHB.innerHTML='<span>SHARPEN</span><input type="range" min="0" step="1" style="width:220px"><span class="v" style="width:52px;text-align:right"></span><span style="color:#8a8f9c">C BACK</span>'; document.body.appendChild(SHB);
-  const shIn=SHB.querySelector('input'), shV=SHB.querySelector('.v'); shIn.max=RESL.length-1;
-  MUS.sharp=()=>{ let v=null; try{ v=SAVE.get('gtsharp'); }catch(e){} return v!=null?+v:Math.min(RESL.length-1,RESMAX+2); };
-  SHB.show=()=>{ shIn.value=SHARED.RESI; shV.textContent=RES()+'x'; SHB.hidden=false; SHB.style.display='flex'; };
-  shIn.oninput=()=>{ SHARED.RESI=+shIn.value; resize(); shV.textContent=RES()+'x'; try{ SAVE.set('gtsharp',String(SHARED.RESI)); }catch(e){} };
-  shIn.addEventListener('pointerdown',e=>e.stopPropagation()); shIn.addEventListener('keydown',e=>e.stopPropagation());
+    UI.setFree(true); UI.camT.copy(p); SHARED.ppuTo=PPU*16; MUS.watch=true; }});
 }
 export {figureMesh, musBody, MUSGEO, musScale, sheetView, spreadPose};

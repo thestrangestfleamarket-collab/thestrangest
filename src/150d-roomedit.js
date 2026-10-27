@@ -227,7 +227,7 @@ import {ROOMK} from './150a-bedroom.js';
   const camOut=()=>{ if(!view0)return; const v=view0; view0=null; if(UI.hold===held)UI.hold=v.hold; held=null; SHARED.yawTo=v.yaw; SHARED.pitchTo=v.pitch; SHARED.ppuTo=v.ppu; if(UI.off&&v.off)UI.off.copy(v.off); if(v.view!==UI.view&&UI.setView)UI.setView(v.view); };
   ED.pitch=.8;
 
-  ED.toggle=()=>{ if(!ED.on&&!inHome())return; ED.on=!ED.on; if(!ED.on){ if(ED.carry)placeCarry(true); select(null); setHover(null); showGrid(false); camOut(); const A=A_(); clearTimeout(saveT); if(A)HOME.save(snapshot(A)); } else camIn(); ED.panel(); B.textContent=ED.on?'DONE · T':'DECORATE · T'; };
+  ED.toggle=()=>{ if(!ED.on&&!inHome())return; ED.on=!ED.on; if(!ED.on){ camOut(); if(ED.carry)placeCarry(true); select(null); setHover(null); showGrid(false); const A=A_(); clearTimeout(saveT); if(A)HOME.save(snapshot(A)); } else camIn(); ED.panel(); B.textContent=ED.on?'DONE · T':'DECORATE · T'; };
 
   /* ---------- the mouse and the keys while you decorate ---------- */
   const rc=new THREE.Raycaster(), ndc=new THREE.Vector2(), plane=new THREE.Plane(), hitP=new THREE.Vector3(), UP=new THREE.Vector3(0,1,0);
@@ -289,7 +289,7 @@ import {ROOMK} from './150a-bedroom.js';
 
   // the button shows in your apartment; the editor closes if you leave it; the buy bar's pictures a couple a frame
   SYS.add('places',()=>{ const h=inHome(); if(B.hidden===h)B.hidden=!h; if(ED.on&&!h)ED.toggle(); if(helper&&ED.sel){ if(ED.sel.gone||!ED.sel.obj.parent)select(null); else helper.update(); }
-    if(hover&&(hover.un.gone||!hover.un.obj.parent))setHover(null); if(held&&UI.hold===held)roomMid();
+    if(hover&&(hover.un.gone||!hover.un.obj.parent))setHover(null); if(held&&(!ED.on||!inHome())){ if(ED.on)ED.toggle(); else camOut(); } if(held&&UI.hold===held)roomMid();   // the camera is given back whenever you're not decorating at home
     if(ED.on&&PQ.length)for(let i=0;i<2&&PQ.length;i++){ const k=PQ.shift(); if(!PICS[k])try{ drawPic(k); }catch(err){ PICS[k]=''; } } },'150d-roomedit');
   window.ROOMEDDBG=()=>{ const A=A_(); return {on:ED.on,sel:ED.sel&&ED.sel.id,undo:ED.undo.length,saved:HOME.saved||0,layout:!!HOME.layout,units:A?A.units().length:0,gone:A?A.units().filter(u=>u.gone).length:0,added:A?A.units().filter(u=>u.added).length:0,wall:A&&A.R.wall,floor:A&&A.R.floor,kfloor:A&&A.R.kfloorK,
     carry:!!ED.carry,grid:ED.grid,cash:cash(),pics:Object.keys(PICS).filter(k=>PICS[k]).length,fp:fpG.visible?fpG.children.filter(m=>m.visible).map(m=>m.material===FPM.ok?'ok':'no'):[],said:ED.said||''}; };

@@ -4811,3 +4811,6 @@ Owner (his pictures of the trees by the park wall): "the trees on edges arent co
 ## 27 Oct 2026: the bridge straight across
 Owner (his picture of the path kinking onto the bridge): "bridge needs to go straight across". The path runs straight over the bridge; the stream turns to run square to it there, so the bridge still crosses the water square. Supersedes the path that bent to cross square.
 - Owner (his picture of the open stretch of park wall by the castle): "gap of wall missing too at this spot". The park's west wall runs unbroken past the castle (it only breaks where the castle stands on the wall).
+
+## 27 Oct 2026: the menu's portrait through the PS2 filter
+Owner: "the character should ahve t he same effecst on this shot as real game (looks too clear)". The character page's live portrait wears the PS2 filter too, its pixels the game's size on screen.

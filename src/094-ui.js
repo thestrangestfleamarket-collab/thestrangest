@@ -1,9 +1,9 @@
 // THE UI: the camera (isometric, behind, first person), zoom and turn, the menu, places, and the top-down shot.
 import {SHARED, THREE} from './003-shx.js';
-import {AMB, BLK, BUGS, CHARP, DN, ED, EDITORS, FEEL, FORAGE, GAMEED, keys, LAND, LEVELS, LINES, LOOK, LOOKS, MAPED, MUS, NPCS, ONLINE, PARK, PB, pos, RINSP, ROOMS, SFX, SNDED, st, TENANTS, UI, USE, VIT, W3, WE, WIELD} from './003b-systems.js';
+import {AMB, BLK, BUGS, CHARP, DN, ED, EDITORS, FEEL, FORAGE, GAMEED, keys, LAND, LEVELS, LINES, LOOK, LOOKS, MAPED, MUS, NPCS, ONLINE, PARK, PB, pos, RINSP, ROOMS, SFX, SNDED, st, TENANTS, UI, USE, VIT, VR, W3, WE, WIELD} from './003b-systems.js';
 import {OCAM, PCAM, PPU, renderer, resize, RESN, RH, rppu, RW, scene, ZMAX} from './004-main.js';
 import {SAVE} from './005-save.js';
-import {ASTEP, BLDK, CASTLE, CEL, MAPG, MAPSTAIR, MODS, QS, RING, STORE, TILE} from './006-map-pre.js';
+import {ASTEP, BLDK, CASTLE, CEL, MAPG, MAPSTAIR, MODS, QS, RING, STORE, SYS, TILE} from './006-map-pre.js';
 import {GCAVE} from './060-cave.js';
 import {FOUNT} from './060a-fount.js';
 import {GTOWER} from './063-tower.js';
@@ -187,6 +187,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
       <div class="row"><span>LOOSE</span><input type="range" id="dloose" min="0" max="1" step="0.01"></div>
       <div class="row onoff"><button class="btn" id="dhelp">HELP PANEL</button></div>
       <div class="row onoff"><button class="btn" id="dstat">STATS</button></div>
+      <div class="row onoff"><button class="btn" id="dsway">CAMERA SWAY</button></div>
       <div class="row onoff"><button class="btn" id="drin">RENDER INSPECTOR</button></div>
       <div class="row pick"><span>UI SCALE</span><button class="btn" data-ui="small">SMALL</button><button class="btn" data-ui="medium">MEDIUM</button><button class="btn" data-ui="large">LARGE</button></div>
       <div class="row"><button class="btn" id="dreset">RESET THE VIEW</button></div></div>
@@ -291,7 +292,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     for(const id of ['places','roomsrow','stored'])if($('#'+id)){ $('#'+id).style.display='none'; const h=$('#'+id).previousElementSibling; if(id!=='places'&&h&&h.tagName==='H3')h.style.display='none'; } }
   const zMin=3, zMax=ZMAX, z2r=v=>Math.log(v/zMin)/Math.log(zMax/zMin), r2z=r=>zMin*Math.pow(zMax/zMin,r);
   function drawDisplay(){ '@later'; M.querySelectorAll('[data-res]').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.res===SHARED.RESI))); $('#dsfx').textContent='EFFECTS '+(SFX.on?'ON':'OFF'); $('#dsfx').setAttribute('aria-pressed',String(SFX.on)); $('#damb').textContent='AMBIENCE '+(AMB.on?'ON':'OFF'); $('#damb').setAttribute('aria-pressed',String(AMB.on)); $('#dvol').value=SFX.vol; $('#dlook').setAttribute('aria-pressed',String(LOOK.on)); $('#dlook').textContent='GLOW AND NIGHT LOOK '+(LOOK.on?'ON':'OFF'); $('#dsteps').value=W3.shade.steps; $('#ddepth').value=W3.shade.depth; M.querySelectorAll('[data-view]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.view===UI.view))); $('#dzoom').value=z2r(SHARED.ppuTo); $('#dtilt').value=(SHARED.pitchTo-PMIN)/(PMAX-PMIN);
-    $('#dlit').textContent='LIGHT ON THEM: '+(UI.lit?'LAMPS':'FLAT'); $('#dlit').setAttribute('aria-pressed',String(UI.lit)); $('#dbody').setAttribute('aria-pressed',String(PB.on));  $('#dloose').value=PB.loose; $('#doutl').setAttribute('aria-pressed',String(OUTL.on)); $('#doutl').textContent='OUTLINE '+(OUTL.on?'ON':'OFF'); $('#dhelp').setAttribute('aria-pressed',String(!document.getElementById('hud').hidden)); $('#dstat').setAttribute('aria-pressed',String(!document.getElementById('stat').hidden)); $('#drin').setAttribute('aria-pressed',String(!!(window.RINSP&&RINSP.on)));
+    $('#dlit').textContent='LIGHT ON THEM: '+(UI.lit?'LAMPS':'FLAT'); $('#dlit').setAttribute('aria-pressed',String(UI.lit)); $('#dbody').setAttribute('aria-pressed',String(PB.on)); $('#dsway').setAttribute('aria-pressed',String(UI.sway));  $('#dloose').value=PB.loose; $('#doutl').setAttribute('aria-pressed',String(OUTL.on)); $('#doutl').textContent='OUTLINE '+(OUTL.on?'ON':'OFF'); $('#dhelp').setAttribute('aria-pressed',String(!document.getElementById('hud').hidden)); $('#dstat').setAttribute('aria-pressed',String(!document.getElementById('stat').hidden)); $('#drin').setAttribute('aria-pressed',String(!!(window.RINSP&&RINSP.on)));
     const sh=document.getElementById('shd'); $('#dshd').innerHTML=''; sh.querySelectorAll('button').forEach(b=>{ const c=document.createElement('button'); c.className='btn'; c.textContent=b.textContent; c.setAttribute('aria-pressed',b.getAttribute('aria-pressed')); c.onclick=()=>{ b.click(); drawDisplay(); }; $('#dshd').appendChild(c); }); }
   { const b=$('#danim'), L=[8,10,12,0], name=()=>'ANIMATION '+(ASTEP.fps>0?'STEPPED '+ASTEP.fps:'EVERY FRAME'); b.textContent=name();
     b.onclick=()=>{ const i=L.indexOf(ASTEP.fps); ASTEP.fps=L[(i+1)%L.length]; try{ SAVE.set('animfps',String(ASTEP.fps)); }catch(e){} b.textContent=name(); }; }
@@ -312,7 +313,13 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
   { let v='1'; try{ v=SAVE.get('avlight')||'1'; }catch(e){} UI.setLit(v==='1'); }
   $('#dlit').onclick=()=>{ UI.setLit(!UI.lit); drawDisplay(); };
   $('#dsfx').onclick=()=>{ SFX.set(!SFX.on,null); drawDisplay(); }; $('#damb').onclick=()=>{ AMB.set(!AMB.on); drawDisplay(); }; $('#dvol').oninput=e=>SFX.set(null,+e.target.value);
-  $('#dbody').onclick=()=>{ PB.set(!PB.on,true); drawDisplay(); }; $('#dloose').oninput=e=>{ PB.loose=+e.target.value; try{ SAVE.set('loose',String(PB.loose)); }catch(err){} };
+  $('#dbody').onclick=()=>{ PB.set(!PB.on,true); drawDisplay(); };
+  { UI.sway=false; try{ UI.sway=SAVE.get('sway')==='1'; }catch(e){}
+    $('#dsway').onclick=()=>{ UI.sway=!UI.sway; try{ SAVE.set('sway',UI.sway?'1':'0'); }catch(e){} drawDisplay(); };
+    const S=new THREE.Quaternion(), Qi=new THREE.Quaternion(), E=new THREE.Euler(), O=new THREE.Vector3(), D=Math.PI/180, ph=[0,0,0].map(()=>Math.random()*6.283); let t=0;
+    SYS.add('cam',(dt,at)=>{ if(!UI.sway||ED.on||VR.on||UI.view==='map'||!at)return; t+=dt; const c=SHARED.cam;
+      S.setFromEuler(E.set(.2*D*Math.sin(.75*t+ph[0]),.1*D*Math.sin(.75*t+ph[1]),.1*D*Math.sin(.75*t+ph[2]),'YXZ'));
+      Qi.copy(c.quaternion).invert(); O.subVectors(c.position,at).applyQuaternion(Qi); c.quaternion.multiply(S); O.applyQuaternion(c.quaternion); c.position.copy(at).add(O); },'094-ui'); } $('#dloose').oninput=e=>{ PB.loose=+e.target.value; try{ SAVE.set('loose',String(PB.loose)); }catch(err){} };
   function drawKeys(){ '@later'; const t=$('#keytab'); t.innerHTML=''; for(const [a,what] of ACTS){ const tr=document.createElement('tr'), b=document.createElement('button'); b.className='btn'; b.textContent=waiting===a?'PRESS A KEY…':NAME(keyOf(a)); b.setAttribute('aria-pressed',String(waiting===a)); b.onclick=()=>{ waiting=a; drawKeys(); };
       const td1=document.createElement('td'); td1.textContent=what.toUpperCase(); const td2=document.createElement('td'); td2.appendChild(b); tr.append(td1,td2); t.appendChild(tr); }
     const e=document.createElement('tr'); e.innerHTML='<td>MENU</td><td><span class="dim">ESC</span></td>'; t.appendChild(e); if(UI.padKeys)UI.padKeys(t); }

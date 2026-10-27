@@ -46,7 +46,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     ok((await db()).sel === bed && moved > .2 && Math.abs(tb1.u / .25 - Math.round(tb1.u / .25)) < 1e-6, 'a click picks it up and a drag moves it on the grid (' + moved.toFixed(2) + ' m)');
     ok(await pg.evaluate(id => { const un = ROOMED._api().units().find(u => u.id === id); return un.h.length > 0 && un.h.every(h => h.r && SHARED.solids.includes(h.r)); }, bed), 'its solid moved with it');
     // a fridge: dragged onto the bed it goes red and back
-    const fr = await buy('FRIDGE', R.Lx * .75, 0, R.Ly * .75), tf0 = await T(fr);
+    const fr = await buy('FRIDGE', Math.min(R.Lx - .6, tb1.u + 2), 0, tb1.v), tf0 = await T(fr);
     const pf = await at(tf0.u, .8, tf0.v), pb = await at(tb1.u, 0, tb1.v);
     await pg.mouse.move(pf.x, pf.y); await pg.mouse.down(); await pg.mouse.move(pb.x, pb.y, { steps: 8 }); await pg.waitForTimeout(200);
     const red = (await db()).fp.includes('no'); await pg.mouse.up(); await pg.waitForTimeout(400); const tf1 = await T(fr);
@@ -61,7 +61,9 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     await pg.click('#roomed [data-back]'); await pg.waitForTimeout(300);
     ok((await db()).gone === 0, 'the panel brings it back');
     // a table, and a lamp put on it
-    const tab = await buy('TABLE', R.Lx * .55, 0, R.Ly * .3), tt = await T(tab);
+    // a spot for the table that is open floor on screen (not under the panel or the bar)
+    let spot = [R.Lx * .5, R.Ly * .5]; for (const [fu, fv] of [[.2, .2], [.2, .8], [.5, .2], [.8, .8], [.35, .65], [.65, .35], [.8, .2]]) { const q = await at(R.Lx * fu, .76, R.Ly * fv); if (await pg.evaluate(([x, y]) => { const e = document.elementFromPoint(x, y); return e && e.tagName === 'CANVAS'; }, [q.x, q.y])) { spot = [R.Lx * fu, R.Ly * fv]; break; } }
+    const tab = await buy('TABLE', spot[0], 0, spot[1]), tt = await T(tab);
     await pg.click('#roombuy [data-dept="lights"]');
     const lamp = await buy('LAMP', tt.u, .76, tt.v); await pg.waitForTimeout(1500);
     const tl = await T(lamp);
@@ -88,9 +90,9 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     const lid = await pg.evaluate(() => { const A = ROOMED._api(), q = A.lightsAll().find(x => x.un && x.un.kind === 'TRACK SPOTS'); return q && q.id; });
     ok(lid && await pg.evaluate(id => ROOMED._api().lightsAll().find(q => q.id === id).L.isSpotLight, lid), 'track spots bought, lighting a beam');
     await pg.click('#roomed [data-tab="lights"]'); await pg.click(`#roomed [data-lon="${lid}"]`); await pg.waitForTimeout(400);
-    ok(await pg.evaluate(id => { const q = ROOMED._api().lightsAll().find(x => x.id === id); return q.L.userData.on === false && q.L.intensity === 0; }, lid), 'the light switches off');
-    await pg.click(`#roomed [data-lon="${lid}"]`); await pg.click('#roomed [data-a="undo"]'); await pg.waitForTimeout(300);
-    ok(await pg.evaluate(id => ROOMED._api().lightsAll().find(x => x.id === id).L.userData.on === false, lid), 'UNDO takes the last change back');
+    ok(await pg.evaluate(id => { const q = ROOMED._api().lightsAll().find(x => x.id === id); return q.L.userData.on === true && q.L.intensity > 0; }, lid), 'the light (off when it comes) switches on');
+    await pg.click('#roomed [data-a="undo"]'); await pg.waitForTimeout(300);
+    ok(await pg.evaluate(id => { const q = ROOMED._api().lightsAll().find(x => x.id === id); return q.L.userData.on === false && q.L.intensity === 0; }, lid), 'UNDO takes it back: off');
     await pg.screenshot({ path: process.env.SHOT || '/tmp/roomedit.png' });
     const n = (await db()).added, tbx = await T(bed);
     await pg.click('#roomed [data-a="done"]'); await pg.waitForTimeout(600);

@@ -32,6 +32,12 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     await pg.waitForFunction(() => { const o = ONLINE.others.get('a'); return !!(o && o.fig); }, { timeout: 30000 }).catch(() => {});
     const r4 = await pg.evaluate(() => { const o = ONLINE.others.get('a'), F = o && o.fig; if (!F || !F.PCS) return null; const p = F.PCS.find(q => q.n === 'upperArmL'); return { s: p && p.E && p.E.s[0], head: !!(F.PCS.find(q => q.n === 'head') || {}).E }; });
     ok(r4 && r4.s > 1.4 && r4.head, 'another player in your look is drawn with your shape (' + JSON.stringify(r4) + ')');
+    const r5 = await pg.evaluate(async () => { const W = __dbg.W3; W.ghost = true; W.mesh.visible = false; W.meshes.forEach(m => m.visible = false);
+      document.getElementById('looks').hidden = false; DESIGN.open(); await new Promise(r => setTimeout(r, 1500));
+      const cv = document.querySelector('#design canvas'), d = cv.getContext('2d').getImageData(0, 0, cv.width, cv.height).data; let lit = 0; for (let i = 0; i < d.length; i += 4) if (d[i] + d[i + 1] + d[i + 2] > 120) lit++;
+      const l = lit / (d.length / 4), vis = W.meshes.map(m => m.visible); DESIGN.el.querySelector('#dzok').click(); return { l, vis }; });
+    ok(r5.l > .05, 'the studio draws you while you are the dead ghost (walker hidden in the world) (' + JSON.stringify(r5) + ')');
+    ok(r5.vis.every(v => v === false), 'and the walker stays hidden in the world afterwards');
   }
   ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.join(' | ') : ''));
   await b.close(); console.log(fails.length ? fails.length + ' failed' : 'all designer checks passed'); process.exit(fails.length ? 1 : 0);

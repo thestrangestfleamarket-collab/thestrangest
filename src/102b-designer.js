@@ -7,11 +7,11 @@ const DESIGN={}; window.DESIGN=DESIGN;
 { const R=RIG, D2R=Math.PI/180;
   // his studio light: a key over your left shoulder and a soft fill, no shadows from the street; the designer and the character page draw him in it
   const ROOM=new THREE.Scene(), KEY=new THREE.DirectionalLight(0xffffff,2.1), LC=new THREE.Vector3(-.45,.65,.62).normalize(), UP=new THREE.Vector3(0,1,0), CC=new THREE.Color(); ROOM.add(new THREE.AmbientLight(0xffffff,.6),KEY,KEY.target);
-  DESIGN.portrait=(target,c,mat)=>{ const g=W3.group, home=g.parent, sv={vis:g.visible,lv:W3.lv.value,L:W3.L.clone()}; g.visible=true; ROOM.add(g); g.updateMatrixWorld(true);
+  DESIGN.portrait=(target,c,mat)=>{ const g=W3.group, home=g.parent, sv={vis:g.visible,lv:W3.lv.value,L:W3.L.clone(),mv:W3.meshes.map(m=>m.visible)}; g.visible=true; W3.meshes.forEach(m=>m.visible=true); ROOM.add(g); g.updateMatrixWorld(true);
     const lw=LC.clone().applyQuaternion(c.quaternion); KEY.target.position.copy(g.position); KEY.position.copy(g.position).addScaledVector(lw,10); KEY.target.updateMatrixWorld();
     W3.lv.value=1; W3.L.copy(lw).applyAxisAngle(UP,-g.rotation.y).normalize(); const m0=W3.mesh.material; if(mat)W3.mesh.material=mat;
     renderer.getClearColor(CC); const ca=renderer.getClearAlpha(); renderer.setRenderTarget(target); renderer.setClearColor(mat?0x000000:0x15171e,mat?0:1); renderer.clear(); renderer.render(ROOM,c);
-    renderer.setRenderTarget(null); renderer.setClearColor(CC,ca); W3.mesh.material=m0; if(home)home.add(g); g.visible=sv.vis; W3.lv.value=sv.lv; W3.L.copy(sv.L); };
+    renderer.setRenderTarget(null); renderer.setClearColor(CC,ca); W3.mesh.material=m0; if(home)home.add(g); g.visible=sv.vis; W3.meshes.forEach((m,i)=>m.visible=sv.mv[i]); W3.lv.value=sv.lv; W3.L.copy(sv.L); };
   // the parts you shape, each the pieces on one of his bones (a sleeve with its arm, the hair with the head); pairs end L / R
   const PARTS=['head','neck','torso','hips','upperArmL','upperArmR','forearmL','forearmR','handL','handR','thighL','thighR','shinL','shinR','footL','footR'];
   const NAME={head:'HEAD',neck:'NECK',torso:'CHEST',hips:'HIPS',upperArm:'UPPER ARM',forearm:'FOREARM',hand:'HAND',thigh:'THIGH',shin:'SHIN',foot:'FOOT'};

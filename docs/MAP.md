@@ -117,7 +117,7 @@ Places built with `await grab(name, async()=>{...})` are one function each, ofte
 | `100-use.js` | 14.8 | top level |  | 003: SHARED THREE; 003b: LEVELS LITE PARK PERFX RAG SFX SND UI USE W3 pos st; 004: renderer scene; 006: TILE ZU; 008: OBJS; 068: KIT; 091: SOUND |
 | `101-gems.js` | 5.9 | top level | GEMS (141 142 146b 146c) | 003b: CITY CIVIC FORAGE INV LINES MAIL SFX TRADE UI pos; 005: OWNED; 006: QS |
 | `102-looks.js` | 8.2 | top level |  | 003: SHARED THREE; 003b: CLOCK FORAGE LEVELS LOOKS UI W3 pos st; 004: renderer scene; 005: SAVE; 006: QS SHL TILE |
-| `102b-designer.js` | 21.5 | top level | DESIGN (111d 162b) | 003: THREE; 003b: LOOKS W3; 004: renderer; 005: OWNED |
+| `102b-designer.js` | 21.6 | top level | DESIGN (111d 162b) | 003: THREE; 003b: LOOKS W3; 004: renderer; 005: OWNED |
 | `103-vitals.js` | 4.3 | top level |  | 003: SHARED; 003b: FORAGE LOOKS SFX UI VIT keys pos st; 006: SYS TILE |
 | `103a-death.js` | 5.0 | top level |  | 003: SHARED THREE; 003b: GHOSTS LEVELS LOOKS PH RAG VIT W3 keys pos st; 004: scene; 005: SAVE; 006: FADE QS STORE SYS TILE |
 | `106-game-play-3-guitar-1-body.js` | 5.6 | top level | CAST (109 112), GT (108 109 110), GTA (109 110 119 128), GTPHYS (109), GTWR (109 110), GTYP (109), PLAY221 (109), PLAYA (109), gtAudio (109 110 119), gtHz (109), gtMute (109 110), gtPlay (109 110) | 003b: GTRH GTSAMP SND UI; 068: KIT |

@@ -4807,3 +4807,6 @@ Owner (his pictures at home): "stop removing walls at all, also i cant scroll up
 
 ## 27 Oct 2026: the edge ring whole and mixed
 Owner (his pictures of the trees by the park wall): "the trees on edges arent complete, make sure they are all complete, also mix in different styles of trees". The edge-ring trees stand whole on the ground (none sunk), the same height as before, and mix all eight of the old pack's kinds (oaks, elders, the giant, spruce, willow). Supersedes "only those three" (25 Oct).
+
+## 27 Oct 2026: the bridge straight across
+Owner (his picture of the path kinking onto the bridge): "bridge needs to go straight across". The path runs straight over the bridge; the stream turns to run square to it there, so the bridge still crosses the water square. Supersedes the path that bent to cross square.

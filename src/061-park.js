@@ -31,7 +31,7 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
     let d=Math.min(pd(x,y),x-P.x0-1.5,P.x1-x-1.5,y-P.y0-9,P.y1-y-1.5,FOUNT.away(x,y)); if(d<=0)return 0;
     for(const b of HK){ const e=Math.max(b[0]-x,x-b[2],b[1]-y,y-b[3]); if(e<d)d=e; if(d<=0)return 0; }
     const n=cvn(x/12,y/12,501)*.7+cvn(x/5,y/5,503)*.3; return 1.6*TILE*ss(0,6,d)*Math.max(0,(n-.33)/.67); };
-  const BK=P.brook=(()=>{ const K=[[248,168],[230,150],[212,128],[200,114],[190,104],[203,90],[205,76],[190,62],[176,48],[165,34],[155,20],[LX,LY]], Q=[]; let bs=null;
+  const BK=P.brook=(()=>{ const K=[[248,168],[230,150],[212,128],[200,114],[190,104],[203,90],[205,76],[187.5,68],[189,59],[190.5,50],[178,42],[165,34],[155,20],[LX,LY]], Q=[]; let bs=null;
     { const [ax,ay]=K[0], l=Math.hypot(ax-K[1][0],ay-K[1][1]), ux=(ax-K[1][0])/l, uy=(ay-K[1][1])/l; for(let a=-1.3;a<=1.3;a+=.05){ const dx=ux*Math.cos(a)-uy*Math.sin(a), dy=ux*Math.sin(a)+uy*Math.cos(a); let t=0; while(t<40&&FOUNT.lake(ax+dx*t,ay+dy*t)>=0)t+=.25; if(t>=40)continue; let ok=true; for(let u=0;u<=t+4;u+=.5)if(FOUNT.ter(ax+dx*u,ay+dy*u)<7)ok=false; if(ok&&(!bs||t<bs[0]))bs=[t,dx,dy]; } if(bs)K.unshift([ax+bs[1]*(bs[0]+4),ay+bs[2]*(bs[0]+4)]); }
     for(let i=0;i<K.length-1;i++){ const a=K[Math.max(0,i-1)], b=K[i], c=K[i+1], d=K[Math.min(K.length-1,i+2)]; for(let k=0;k<16;k++){ const t=k/16, f=j=>.5*(2*b[j]+(c[j]-a[j])*t+(2*a[j]-5*b[j]+4*c[j]-d[j])*t*t+(3*b[j]-a[j]-3*c[j]+d[j])*t*t*t); Q.push([f(0),f(1)]); } } Q.push(K[K.length-1]);
     const acc=[0]; for(let i=1;i<Q.length;i++)acc.push(acc[i-1]+Math.hypot(Q[i][0]-Q[i-1][0],Q[i][1]-Q[i-1][1])); const SL=acc[acc.length-1], N=Math.round(SL/.5), C=[];
@@ -50,9 +50,8 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
     let kM=kC; const out=k=>{ const [nx,ny]=nrm(k), c=C[k], w=W(c[2])+B+.2; for(let f=-1;f<=1;f+=.25)if(FOUNT.lake(c[0]+nx*f*w,c[1]+ny*f*w)<.05)return false; return true; }; while(kM<N&&!out(kM))kM++; const m=C[kM][2], sW=m+2.5;
     const ks=C.map((c,k)=>Math.abs(c[1]-RY0)<3.6?k:-1).filter(k=>k>=0), km=ks[ks.length>>1], yc=C[km][1], xc=C[km][0], S=W(C[km][2])+B+.6, br={k:km,yc,xc,S,H:.55}, hump=(x,y)=>{ const t=Math.hypot(x-xc,y-yc)/(S+2); return t>=1||segD(x,y)>=3.6?0:br.H*.5*(1+Math.cos(Math.PI*t)); };
     return {C,SL,N,B,W,L,D,RF,q,h,st,nrm,rim,br,hump,m,kM,sW,sK,wet:(x,y,m=0)=>{ const r=q(x,y); return !!r&&r[0]<W(r[1])+B+m; }}; })();
-  // the path turns to cross the stream square, on a bridge across the water, and back again
-  { const C=BK.C, k=BK.br.k, a0=C[Math.max(0,k-3)], b0=C[Math.min(BK.N,k+3)], tl=Math.hypot(b0[0]-a0[0],b0[1]-a0[1]); let ax=(b0[1]-a0[1])/tl, ay=-(b0[0]-a0[0])/tl; if(ax<0){ ax=-ax; ay=-ay; }
-    const {xc,yc,S}=BK.br, U=S+2, D=9, y0=P.armY, ex=xc-ax*U, ey=yc-ay*U, fx=xc+ax*U, fy=yc+ay*U, L=[[ex-D,y0(ex-D)],[ex,ey],[fx,fy],[fx+D,y0(fx+D)]];
+  // the path goes straight over the bridge; the stream runs square to it there
+  { const {xc,yc,S}=BK.br, U=S+2, D=9, y0=P.armY, cl=Math.hypot(2*(U+D),y0(xc+U+D)-y0(xc-U-D)), ax=2*(U+D)/cl, ay=(y0(xc+U+D)-y0(xc-U-D))/cl, ex=xc-ax*U, ey=yc-ay*U, fx=xc+ax*U, fy=yc+ay*U, L=[[ex-D,y0(ex-D)],[ex,ey],[fx,fy],[fx+D,y0(fx+D)]];
     BK.br.ax=ax; BK.br.ay=ay; P.bend={L,x0:L[0][0],x1:L[3][0]};
     P.armY=x=>{ if(x<=L[0][0]||x>=L[3][0])return y0(x); for(let i=0;i<3;i++){ const p=L[i], q=L[i+1]; if(x<=q[0])return p[1]+(q[1]-p[1])*(x-p[0])/(q[0]-p[0]||1); } return y0(x); }; }
   FOUNT.S.rocks=FOUNT.S.rocks.filter(r=>!BK.wet(r[0],r[1],.6));

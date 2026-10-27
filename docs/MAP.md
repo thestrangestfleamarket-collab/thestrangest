@@ -6,7 +6,7 @@ Places built with `await grab(name, async()=>{...})` are one function each, ofte
 
 ## The builders
 
-- `grab(down)`: 009-down.js to 009-down.js (48 KB)
+- `grab(down)`: 009-down.js to 009-down.js (50 KB)
 - `grab(bodega)`: 039-bodega.js to 039-bodega.js (71 KB)
 - `grab(store)`: 059-store.js to 059-store.js (30 KB)
 - `grab(mainstreet)`: 059-street.js to 059-street.js (29 KB)
@@ -41,7 +41,7 @@ Places built with `await grab(name, async()=>{...})` are one function each, ofte
 | `007-fire.js` | 8.3 | top level | FLAME (059 059e 060 061 062a 070 075 078 130 141 151 156) | 003: THREE; 003b: LEVELS; 004: scene; 006: TILE |
 | `008-batch.js` | 11.0 | top level | BATCH (009 039 059 059a 059b 059e 061 062 062a 063 075 130 141c 161b), OBJ (009 039 059 059e 061 062 063), OBJS (059 099 100 139 150 161 163), PEEK (061 069a 075 155) | 003: SHARED THREE; 003b: ED LEVELS ROOMS UI pos; 004: RH RW renderer scene; 006: QS SYS TILE |
 | `008a-blob.js` | 1.3 | top level |  | 003: THREE; 003b: SHAD; 004: scene |
-| `009-down.js` | 60.6 | top level, opens grab(down) | WATER (059 075 129 130 161 162) | 003: SHARED THREE; 003b: LEVELS LINES RAG SFX SHAD UI keys pos; 004: scene; 005: SAVE; 006: FADE FIX LAMPD LAMPI MAPG MAPSTAIR MODS QS SOL STN SYS TILE ZU cutWalls grab lamps; 008: BATCH OBJ |
+| `009-down.js` | 62.7 | top level, opens grab(down) | WATER (059 075 129 130 161 162) | 003: SHARED THREE; 003b: LEVELS LINES RAG SFX SHAD UI keys pos; 004: scene; 005: SAVE; 006: FADE FIX LAMPD LAMPI MAPG MAPSTAIR MODS QS SOL STN SYS TILE ZU cutWalls grab lamps; 008: BATCH OBJ |
 | `014-gamekit.js` | 8.4 | top level | BRICKS (039 061 069a), CATALOG (015 016 020 023 027 039), CAT_DEPTS (016 020 023 027 039), CAT_INFO (016 020 023 027 039 146), COPE (039), DTBRICK (039), FP (039), KIND_OF (015 016 020 023 027 039), LAMPS (015 016 020 023 026z 027 039 059b), LBLD (015 023 027 039), LIFE (015 016 020 023 027 038z 039), LSEED (016 023 039), PROPL (023 039), ROT (020), SQB (023), STORY (016 023 027 039), T (023 027 038z 039), crack (015), cvNoise (027 038z 039), grain (015 039), grassCol (039), hash (015 016 020 023 026z 027 038z 039), kerbCol (039), kerbFace (039), lawnCol (039), mt (015 016 020 023 039), prop (015 016 020 023 026z 027 038z 039), rlf (039), roadCol (039), sh (015 016 020 023 026z 027 038z 039), sided (015 016 023 026z 027 038z 039), slabCol (039), speck (016 027 039), spot (015), woodCol (027), zShift (026z 027 039) | 003: SHARED |
 | `015-game-w-bodega-shop.js` | 15.3 | top level | bodegaFloorCol (039), bodegaWall (039) | 003: SHARED; 003b: DRONE; 014: CATALOG KIND_OF LAMPS LBLD LIFE crack grain hash mt prop sh sided spot |
 | `016-street-kit.js` | 65.2 | top level | MKS (039) | 003: SHARED; 006: NEONS; 014: CATALOG CAT_DEPTS CAT_INFO KIND_OF LAMPS LIFE LSEED STORY hash mt prop sh sided speck |
@@ -50,7 +50,7 @@ Places built with `await grab(name, async()=>{...})` are one function each, ofte
 | `026z-barkit.js` | 18.2 | top level | barKit (027) | 003: SHARED; 014: LAMPS hash prop sh sided zShift |
 | `027-rooms-kits.js` | 149.4 | top level |  | 003: SHARED; 003b: vwV wvV; 014: CATALOG CAT_DEPTS CAT_INFO KIND_OF LAMPS LBLD LIFE STORY T cvNoise hash prop sh sided speck woodCol zShift; 023: DEEPW PRESETS SQLV STOREK; 026z: barKit |
 | `038z-dungeon.js` | 27.8 | top level | dgnRoom (039), dgnThings (039) | 003: SHARED; 014: LIFE T cvNoise hash prop sh sided |
-| `039-bodega.js` | 225.9 | top level, opens grab(bodega) | FOREST (061 152a), PROPS (061 152a) | 003: SHARED THREE; 003b: CLOCK DRESS ROOMS pos; 004: scene; 006: BF BLDK BLOCK CASTLE EASTX FIX LAY LOTX MAPG MAPSTAIR MODS NEONS NORTHX PARKGX RING SOL TILE TURN WESTX WP WROW ZU cutWalls grab lamps; 006a: PAINTC; 008: BATCH OBJ; 014: BRICKS CATALOG CAT_DEPTS CAT_INFO COPE DTBRICK FP KIND_OF LAMPS LBLD LIFE LSEED PROPL STORY T cvNoise grain grassCol hash kerbCol kerbFace lawnCol mt prop rlf roadCol sh sided slabCol speck zShift; 015: bodegaFloorCol bodegaWall; 016: MKS; 020: STUDIO; 023: KEEPC PRESETS STOREK; 038z: dgnRoom dgnThings |
+| `039-bodega.js` | 226.0 | top level, opens grab(bodega) | FOREST (061 152a), PROPS (061 152a) | 003: SHARED THREE; 003b: CLOCK DRESS ROOMS pos; 004: scene; 006: BF BLDK BLOCK CASTLE EASTX FIX LAY LOTX MAPG MAPSTAIR MODS NEONS NORTHX PARKGX RING SOL TILE TURN WESTX WP WROW ZU cutWalls grab lamps; 006a: PAINTC; 008: BATCH OBJ; 014: BRICKS CATALOG CAT_DEPTS CAT_INFO COPE DTBRICK FP KIND_OF LAMPS LBLD LIFE LSEED PROPL STORY T cvNoise grain grassCol hash kerbCol kerbFace lawnCol mt prop rlf roadCol sh sided slabCol speck zShift; 015: bodegaFloorCol bodegaWall; 016: MKS; 020: STUDIO; 023: KEEPC PRESETS STOREK; 038z: dgnRoom dgnThings |
 | `059-store.js` | 31.0 | top level, opens grab(store) |  | 003: SHARED THREE; 003b: INTERIORS LITE ROOMS SHAD UI WEEDS pos; 004: scene; 006: AWAY BF BLDK EASTX FADE FIX LAY QS SOL STORE TILE TURN WP ZU cutWalls grab lamps; 007: FLAME; 008: BATCH OBJ; 009: WATER |
 | `059-street.js` | 29.3 | top level, opens grab(mainstreet) |  | 003: SHARED THREE; 003b: BLK CINEMA LITE ROOMS SFX USE pos; 004: scene; 006: BLDK BLOCK FIX SOL STORE SYS TILE TURN WP cutWalls grab; 008: BATCH OBJ OBJS |
 | `059a-apts.js` | 27.2 | top level, opens grab(apts) |  | 003: SHARED THREE; 003b: CLOCK ROOMS UI pos st; 004: scene; 006: BLDK FADE FIX LOTX LOTY MODS SOL STORE SYS TILE TURN WP cutWalls grab; 008: BATCH |
@@ -108,7 +108,7 @@ Places built with `await grab(name, async()=>{...})` are one function each, ofte
 | `091-sfx.js` | 9.1 | top level | SOUND (094 100 110) | 003: SHARED THREE; 003b: SFX SND USE pos; 005: SAVE; 006: QS TILE |
 | `092-lines.js` | 4.6 | top level |  | 003: SHARED THREE; 003b: CLOCK LEVELS LINES LOOKS SFX; 004: renderer; 005: SAVE; 006: TILE |
 | `093-ambience.js` | 3.3 | top level |  | 003: SHARED; 003b: AMB CLOCK NPCS ROOMS SFX WX pos; 005: SAVE; 006: TILE; 060a: FOUNT |
-| `094-ui.js` | 53.5 | top level |  | 003: SHARED THREE; 003b: AMB BLK BUGS CHARP DN ED EDITORS FEEL FORAGE GAMEED LAND LEVELS LINES LOOK LOOKS MAPED MUS NPCS ONLINE PARK PB RINSP ROOMS SFX SNDED TENANTS UI USE VIT W3 WE WIELD keys pos st; 004: OCAM PCAM PPU RES RESL RESMAX RH RW SCL ZMAX art pxS renderer resize rppu scene vpu; 005: SAVE; 006: ASTEP BLDK CASTLE CEL MAPG MAPSTAIR MODS QS RING STORE TILE; 060: GCAVE; 060a: FOUNT; 063: GTOWER; 064: HEMI; 066: RIVER; 072: OUTL; 075: PMAX PMIN VIEW0 clampP disp gplane hit marker ray; 091: SOUND |
+| `094-ui.js` | 53.6 | top level |  | 003: SHARED THREE; 003b: AMB BLK BUGS CHARP DN ED EDITORS FEEL FORAGE GAMEED LAND LEVELS LINES LOOK LOOKS MAPED MUS NPCS ONLINE PARK PB RINSP ROOMS SFX SNDED TENANTS UI USE VIT W3 WE WIELD keys pos st; 004: OCAM PCAM PPU RES RESL RESMAX RH RW SCL ZMAX art pxS renderer resize rppu scene vpu; 005: SAVE; 006: ASTEP BLDK CASTLE CEL MAPG MAPSTAIR MODS QS RING STORE TILE; 060: GCAVE; 060a: FOUNT; 063: GTOWER; 064: HEMI; 066: RIVER; 072: OUTL; 075: PMAX PMIN VIEW0 clampP disp gplane hit marker ray; 091: SOUND |
 | `095-sndedit.js` | 4.6 | top level |  | 003b: SFX SNDED |
 | `096-mapedit.js` | 48.6 | top level |  | 003: SHARED THREE; 003b: BLK GAMEED MAPED NPCS PARK W3 keys pos; 004: renderer; 006: BLDK BLOCK CASTLE FADE LEVEL MAPSTAIR MODS PARKCAVE PARKTOWER RING STORE TILE WP WROW; 060a: FOUNT |
 | `096b-charedit.js` | 13.4 | top level |  | 003: SHARED; 003b: CHARED CHARS FORAGE GAMEED ITEMS MAPED NPCS SHOPS keys pos; 006: FADE TILE |
@@ -171,7 +171,7 @@ Places built with `await grab(name, async()=>{...})` are one function each, ofte
 | `140-weeds.js` | 9.2 | top level |  | 003: SHARED THREE; 003b: NPCS PARK POND ROOMS W3 WED WEEDS pos; 004: renderer scene; 006: MODS STORE SYS TILE |
 | `141-forage.js` | 28.8 | top level |  | 003: SHARED THREE; 003b: CITY CIVIC ED EQUIP FORAGE INV ITEMS LINES LOOKS MAIL NPCS SFX UI VIT WE WEEDS pos st; 004: scene; 005: OWNED; 006: MAPG QS SYS TILE; 007: FLAME; 083a: MUSH; 101: GEMS |
 | `141b-fairy.js` | 3.5 | top level |  | 003: SHARED THREE; 003b: FORAGE PARK ROOMS UI WEEDS pos; 004: scene; 006: SOL SYS TILE |
-| `141c-fireview.js` | 13.8 | top level |  | 003: SHARED THREE; 003b: CLOCK FAR3 GPH SFX SKY UI pos; 004: scene; 006: BLDK MISTE MODS STORE SYS TILE; 008: BATCH |
+| `141c-fireview.js` | 14.3 | top level |  | 003: SHARED THREE; 003b: CLOCK FAR3 GPH SFX SKY UI pos; 004: scene; 006: BLDK MISTE MODS STORE SYS TILE; 008: BATCH |
 | `141d-items.js` | 7.1 | top level |  | 003b: FORAGE ITEMED ITEMS; 005: OWNED |
 | `142-fishing.js` | 15.7 | top level |  | 003: SHARED THREE; 003b: BOAT BOOKS CLOCK FORAGE INV SFX UI VIT W3 pos st; 004: scene; 006: FIX MAPG SOL SYS TILE ZU; 060a: FOUNT; 066: RIVER; 101: GEMS |
 | `142a-flora.js` | 15.6 | top level | FLORA (143 144b) | 003: SHARED THREE; 003b: DRESS PARK WEEDS; 006: CASTLE FIX MAPG SOL STORE TILE; 060: GCAVE; 060a: FOUNT; 081: STALL |

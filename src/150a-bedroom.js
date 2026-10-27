@@ -287,9 +287,9 @@ const ROOMK={parts:[],wires:{},built:[],api:null};   // the room's other parts (
           const hide=p.h>1.2&&((cut('Ww')&&p.u<.5)||(cut('We')&&A.Lx-p.u<.5)||(cut('Wf')&&p.v<.5)||(cut('Wb')&&A.Ly-p.v<.5));
           if(hide!==!!un.st.hi){ un.st.hi=hide; o.traverse(q=>{ if(q.isMesh&&!q.userData.hit)q.visible=!hide; }); } } }
       const nt=1-day; for(const L of R.winL)L.intensity=inn?18*day+6*nt:0; const sunK=cl((e-2)/10,0,1); for(const L of R.winL)L.color.setRGB(1-.28*nt,.86+.1*sunK-.12*nt,.72+.26*sunK+.2*nt*(1-sunK));   // the light at the glass: warm when the sun is low, a cool blue moonlight by night
-      // outside: the house's brick and the back fire escape round your rooms; in the isometric view nothing above your ceiling
+      // outside: the house's brick and the back fire escape round your rooms; in the isometric view nothing above your landing's rails
       { const isoV=!UI.persp&&SHARED.pitch<1.45&&!APTS.onEsc;
-        for(const k in R.tops){ const p=R.tops[k]; p.normal.set(0,-1,0); p.constant=isoV?R.fy+R.api.HW*R.M-SHARED.BOD.Y(6)+SHARED.BOD.Y(0):1e6; } R.bot.constant=1e6; for(const k in R.edges)for(const p of APTS.OUTP.side[k])p.constant=1e6;
+        for(const k in R.tops){ const p=R.tops[k]; p.normal.set(0,-1,0); p.constant=isoV?R.fy+SHARED.BOD.Y(45)-SHARED.BOD.Y(0):1e6; } R.bot.constant=1e6; for(const k in R.edges)for(const p of APTS.OUTP.side[k])p.constant=1e6;
         for(const k in R.outs)for(const o of R.outs[k])o.visible=!APTS.onEsc&&!R.backs.includes(o); }
       { const D=R.doors.Wf, ED=APTS.escDoor; if(D&&ED){ const t=ED.open?-1.45:0; D.rotation.y+=(t-D.rotation.y)*Math.min(1,(dt||0)*7); } }
       for(const b of R.beams)b.uniforms.uOp.value=inn?.16*day:0;

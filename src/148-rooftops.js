@@ -90,6 +90,19 @@ ROOFS.init=()=>{ if(typeof SHARED.BOD==='undefined'||!MODS.apts||!MODS.apts.A)re
       ['patio',2],['umbrella',2],['lounge',2],['grill',1],['strng',2],['laundry',1]];
     const put=(x,z,t,kind)=>{ const sc=.85+rr()*.5; switch(kind){ case'hvac':return hvac(x,z,t,sc); case'dish':return dish(x,z,t,sc); case'duct':return duct(x,z,t,(1.2+rr()*1.6)*MH,rr()<.5?1:0); case'planter':return planter(x,z,t,sc); case'bush':return bush(x,z,t,sc); case'gardenbed':return gardenbed(x,z,t,sc); case'pots':return pots(x,z,t,sc); case'planttree':return planttree(x,z,t,sc); case'trellis':return trellis(x,z,t,sc); case'patio':return patio(x,z,t); case'umbrella':return umbrella(x,z,t,sc); case'lounge':return lounge(x,z,t,sc); case'grill':return grill(x,z,t,sc); case'strng':return strng(x,z,t,(1.5+rr()*1.5)*MH,rr()<.5?1:0); case'laundry':return laundry(x,z,t,(1.5+rr()*1.2)*MH,rr()<.5?1:0); case'skylight':return skylight(x,z,t,sc); case'crate':return crate(x,z,t,sc); case'pallet':return pallet(x,z,t); case'pipes':return pipes(x,z,t); case'ant':return ant(x,z,t,sc); default:return ac(x,z,t,sc); } };
     const weighted=()=>{ let tot=0; for(const [,w] of KINDS)tot+=w; let r=rr()*tot; for(const [k,w] of KINDS)if((r-=w)<0)return k; return 'ac'; };
+    // bake each building's props into one still low-poly mesh (6-sided rounds) that frustum-culls off-screen; no shadow cast (a distant backdrop), still sunlit and shadowed-on.
+    const RM=new THREE.Group(); RM.name='roofclutter'; scene.add(RM); window.ROOFS.blockG=RM;
+    const BMAT=new THREE.MeshLambertMaterial({vertexColors:true});
+    const BG=new THREE.BoxGeometry(1,1,1).toNonIndexed(), CG6=new THREE.CylinderGeometry(1,1,1,6).translate(0,.5,0).toNonIndexed(), KG6=new THREE.ConeGeometry(1,1,6).translate(0,.5,0).toNonIndexed();
+    const v=new V(), vn=new V(), sv=new V(), nm=new THREE.Matrix3(); let blkV=0, blkB=0, blkR=0, blkM=0;
+    const emit=(G,P,N,pos,nor,cl,o,hex)=>{ col.setHex(hex); nm.getNormalMatrix(m4); const cnt=P.count; for(let i=0;i<cnt;i++,o++){ v.set(P.getX(i),P.getY(i),P.getZ(i)).applyMatrix4(m4); vn.set(N.getX(i),N.getY(i),N.getZ(i)).applyMatrix3(nm).normalize(); const o3=o*3; pos[o3]=v.x; pos[o3+1]=v.y; pos[o3+2]=v.z; nor[o3]=vn.x; nor[o3+1]=vn.y; nor[o3+2]=vn.z; cl[o3]=col.r; cl[o3+1]=col.g; cl[o3+2]=col.b; } return o; };
+    const flush=()=>{ const boxes=B2, cyls=C2; if(boxes.length||cyls.length){ let nv=boxes.length*BG.attributes.position.count; for(const c of cyls)nv+=(c[6]?KG6:CG6).attributes.position.count;
+      const pos=new Float32Array(nv*3), nor=new Float32Array(nv*3), cl=new Float32Array(nv*3); let o=0;
+      for(const [x,y,z,sx,sy,sz,hex] of boxes){ m4.compose(sv.set(x,y,z),q,new V(Math.max(.001,sx),Math.max(.001,sy),Math.max(.001,sz))); o=emit(BG,BG.attributes.position,BG.attributes.normal,pos,nor,cl,o,hex); }
+      for(const [x,y,z,r,h,hex,cone] of cyls){ const G=cone?KG6:CG6; m4.compose(sv.set(x,y,z),q,new V(Math.max(.001,r),Math.max(.001,h),Math.max(.001,r))); o=emit(G,G.attributes.position,G.attributes.normal,pos,nor,cl,o,hex); }
+      const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(pos,3)); g.setAttribute('normal',new THREE.BufferAttribute(nor,3)); g.setAttribute('color',new THREE.BufferAttribute(cl,3)); g.computeBoundingSphere();
+      const m=new THREE.Mesh(g,BMAT); m.castShadow=false; m.receiveShadow=true; RM.add(m); OUT.add(m,'open'); blkV+=nv; blkB+=boxes.length; blkR+=cyls.length; blkM++; }
+      B2.length=0; C2.length=0; };
     let props=0;
     for(const q of BLK.blds){ if(q.row!==1&&q.row!==2)continue; rs=(Math.abs((q.x0*131+q.y0*17+q.h)|0)%2147483646)+1;
       const x0=Math.min(XS(q.x0),XS(q.x1)), x1=Math.max(XS(q.x0),XS(q.x1)), z0=Math.min(ZS(q.y0),ZS(q.y1)), z1=Math.max(ZS(q.y0),ZS(q.y1)), top=YS(q.h);
@@ -99,11 +112,13 @@ ROOFS.init=()=>{ if(typeof SHARED.BOD==='undefined'||!MODS.apts||!MODS.apts.A)re
       const edge=q.row===1?gz0+.3*MH:gz1-.3*MH; for(let k=0,m=Math.max(2,Math.round(W/(3*MH)));k<m;k++){ ac(gx0+(k+.5)/m*W,edge,top,.9+rr()*.4); props++; }
       const gedge=q.row===1?gz1-.4*MH:gz0+.4*MH; for(let k=0,m=Math.max(1,Math.round(W/(3.4*MH)));k<m;k++){ const px=gx0+(k+.5)/m*W; [pots,bush,planter][rr()*3|0](px,gedge,top,.9+rr()*.4); props++; }
       const cell=2.5*MH, cols=Math.max(1,Math.round(W/cell)), rows=Math.max(1,Math.round(D/cell));
-      for(let i=0;i<cols;i++)for(let j=0;j<rows;j++){ if(rr()<.12)continue; put(gx0+(i+.15+rr()*.7)/cols*W,gz0+(j+.15+rr()*.7)/rows*D,top,weighted()); props++; } }
+      for(let i=0;i<cols;i++)for(let j=0;j<rows;j++){ if(rr()<.12)continue; put(gx0+(i+.15+rr()*.7)/cols*W,gz0+(j+.15+rr()*.7)/rows*D,top,weighted()); props++; }
+      flush(); }
     { rs=991; const za=ZS(BLOCK.back), zb=ZS(BLOCK.row2[1]), zm=(za+zb)/2, D=Math.abs(zb-za), ax0=XS(BLOCK.x0), ax1=XS(BLOCK.x1);
       for(let x=ax0+3*MH;x<ax1-3*MH;x+=5*MH){ if(rr()<.5){ const y=YS(112); for(let k=1,n=Math.max(4,Math.round(D/(.5*MH)));k<n;k++){ const f=k/n; b(x,y-Math.sin(f*Math.PI)*.5*MV,zm-D/2+f*D,.06*MH,.1*MV,.06*MH,WARM); } }
-        else { b(x,YS(116+(((x|0)%5)*4)),zm,.14*MH,.14*MV,D,pick([DK,DUCT,RUST])); if(rr()<.5)vent(x+1.4*MH,YS(114),zm); } } }
-    ROOFS.blockBoxes=B2.length; ROOFS.blockProps=props; }
+        else { b(x,YS(116+(((x|0)%5)*4)),zm,.14*MH,.14*MV,D,pick([DK,DUCT,RUST])); if(rr()<.5)vent(x+1.4*MH,YS(114),zm); }
+        if((x|0)%37<5)flush(); } flush(); }
+    ROOFS.blockProps=props; ROOFS.blockBoxes=blkB; ROOFS.blockRounds=blkR; ROOFS.blockMeshes=blkM; ROOFS.blockTris=Math.round(blkV/3); }
   const geo=new THREE.BoxGeometry(1,1,1), lam=new THREE.MeshLambertMaterial({color:0xffffff});
   const BM=new THREE.InstancedMesh(geo,lam,BX.length); BX.forEach(([x,y,z,sx,sy,sz,c],i)=>{ BM.setMatrixAt(i,m4.compose(new V(x,y,z),q,new V(Math.max(.001,sx),Math.max(.001,sy),Math.max(.001,sz)))); BM.setColorAt(i,col.setHex(c)); });
   const CG=new THREE.CylinderGeometry(1,1,1,8).translate(0,.5,0), KG=new THREE.ConeGeometry(1,1,8).translate(0,.5,0);
@@ -111,9 +126,5 @@ ROOFS.init=()=>{ if(typeof SHARED.BOD==='undefined'||!MODS.apts||!MODS.apts.A)re
   const CM=mk(CG,cy), KM=mk(KG,co);
   for(const M of [BM,CM,KM]){ M.castShadow=M.receiveShadow=true; scene.add(M); }
   for(const M of [BM,CM,KM])OUT.add(M,'open');
-  // the across-street block's clutter: its own meshes, no shadow cast (a distant backdrop), still lit and shadowed by the sun.
-  const c2=C2.filter(c=>!c[6]), k2=C2.filter(c=>c[6]), BM2=new THREE.InstancedMesh(geo,lam,Math.max(1,B2.length)); B2.forEach(([x,y,z,sx,sy,sz,c],i)=>{ BM2.setMatrixAt(i,m4.compose(new V(x,y,z),q,new V(Math.max(.001,sx),Math.max(.001,sy),Math.max(.001,sz)))); BM2.setColorAt(i,col.setHex(c)); }); BM2.count=B2.length;
-  const CM2=mk(CG,c2), KM2=mk(KG,k2);
-  for(const M of [BM2,CM2,KM2]){ M.castShadow=false; M.receiveShadow=true; scene.add(M); OUT.add(M,'open'); }
-  ROOFS.tris=BX.length*12+cy.length*32+co.length*16+B2.length*12+c2.length*32+k2.length*16; window.ROOFSDBG=()=>({boxes:BX.length,rounds:cy.length,cones:co.length,blockBoxes:B2.length,blockRounds:C2.length,blockProps:ROOFS.blockProps||0,tris:ROOFS.tris}); };
+  ROOFS.tris=BX.length*12+cy.length*32+co.length*16+(ROOFS.blockTris||0); window.ROOFSDBG=()=>({boxes:BX.length,rounds:cy.length,cones:co.length,blockMeshes:ROOFS.blockMeshes||0,blockBoxes:ROOFS.blockBoxes||0,blockRounds:ROOFS.blockRounds||0,blockProps:ROOFS.blockProps||0,blockTris:ROOFS.blockTris||0,tris:ROOFS.tris}); };
 export {ROOFS};

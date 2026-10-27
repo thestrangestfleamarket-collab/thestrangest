@@ -4814,3 +4814,9 @@ Owner (his picture of the path kinking onto the bridge): "bridge needs to go str
 
 ## 27 Oct 2026: the subway stairs go on down
 Owner (a picture looking down the new entrance, sky showing at the bottom): "should just see stairs going down (concrete) further and then turn corner, gets darker". Under the back of the entrance the stairs go on in grey concrete under a lintel to a landing and turn the corner, darker the further down; the black lid halfway down is gone.
+
+## 27 Oct 2026: the alley gates close the whole mouth
+Owner (a picture of an alley gate): "the gates on the side of alley entrances should go all the way across (reall block entranrce)". Each alley gate reaches the buildings on both sides.
+
+## 27 Oct 2026: the Hudson gate; the far city three times as far
+Owner (pictures down the path to the river): "the hudson shouldnt load until you go through a gate entrance here ... closer to the hudson. the buildings should be 3x as far away, way more water". An open iron gateway stands where the path meets the promenade; the Hudson loads only once you walk through it (was: past the alley). Across the water the far city stands three times as far off, so there is much more open water.

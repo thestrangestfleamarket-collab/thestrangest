@@ -137,6 +137,6 @@ await grab('arcade',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Y=SHARED.BOD
   ROOMS.off.arcade={name:'THE ARCADE',box:{x0:wb[0],z0:wb[1],x1:wb[2],z1:wb[3],y0:-1,y1:Y(WH+40)},rooms:[rb(AR),rb(HD)],need:()=>LOAD('arcade','later'),
     build:()=>{ AG=new THREE.Group(); AG.name='arcade-in'; scene.add(AG); AS=[]; PA=ROOMS.part(AG,build,MKA); return PA; },unbuild,
     spawn:[X(cx),Z(AR.y1-1.3),0,Math.PI],out:[...at(lcx,L.y1+.9),0,TA.hd(0)],door:(d=>[d[0],Y(0),d[1]])(at(lcx,L.y1+.25)),exit:[X(cx),0,Z(AR.y1-.25)],exitName:'OUT TO MAIN STREET'};
-  STORE.places.push(['THE ARCADE',...ROOMS.off.arcade.spawn],['THE HOLODECK',X(cx),Z(hy+3),0,Math.PI]);
+  { const sp=ROOMS.off.arcade.spawn; STORE.places.push(['THE ARCADE',sp[0],sp[1],'up','off',sp[3]],['THE HOLODECK',X(cx),Z(hy+3),'up','off',Math.PI]); }
   window.ARCDBG=()=>({built:!!PA,cabs:PA?PA.things.filter(t=>/SWORD/.test(t.name)).length:0,things:PA?PA.things.map(t=>t.name):[],knight:(q=>!!(q&&q.by.knight&&q.by.knight.npc&&q.by.knight.npc.on))(window.BODIES)});
 });

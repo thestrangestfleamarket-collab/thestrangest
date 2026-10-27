@@ -4801,3 +4801,13 @@ Owner (his crop of the see-through character, the booth game picture): "fix the 
 
 ## 27 Oct 2026: the PS2 filter without dither
 Owner (his picture of the lawn): "what can we do about the pattern that looks repetetive overlay", then "1" (remove the dither). The PS2 filter has no 4x4 dither; flat colour with the faint grain.
+
+## 27 Oct 2026: at home, the walls stay up; the view stops at the clouds
+Owner (his pictures at home): "stop removing walls at all, also i cant scroll up past this", "i shouldnt be able to go down this far", "it should stop here" (the clouds filling the bottom). Your apartment's walls are never cut. In the isometric view at home the view drags up until your room's far top corner is at the top of the screen, and down only until the clouds fill the bottom.
+
+## 27 Oct 2026: the edge ring whole and mixed
+Owner (his pictures of the trees by the park wall): "the trees on edges arent complete, make sure they are all complete, also mix in different styles of trees". The edge-ring trees stand whole on the ground (none sunk), the same height as before, and mix all eight of the old pack's kinds (oaks, elders, the giant, spruce, willow). Supersedes "only those three" (25 Oct).
+
+## 27 Oct 2026: the bridge straight across
+Owner (his picture of the path kinking onto the bridge): "bridge needs to go straight across". The path runs straight over the bridge; the stream turns to run square to it there, so the bridge still crosses the water square. Supersedes the path that bent to cross square.
+- Owner (his picture of the open stretch of park wall by the castle): "gap of wall missing too at this spot". The park's west wall runs unbroken past the castle (it only breaks where the castle stands on the wall).

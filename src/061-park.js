@@ -31,7 +31,7 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
     let d=Math.min(pd(x,y),x-P.x0-1.5,P.x1-x-1.5,y-P.y0-9,P.y1-y-1.5,FOUNT.away(x,y)); if(d<=0)return 0;
     for(const b of HK){ const e=Math.max(b[0]-x,x-b[2],b[1]-y,y-b[3]); if(e<d)d=e; if(d<=0)return 0; }
     const n=cvn(x/12,y/12,501)*.7+cvn(x/5,y/5,503)*.3; return 1.6*TILE*ss(0,6,d)*Math.max(0,(n-.33)/.67); };
-  const BK=P.brook=(()=>{ const K=[[248,168],[230,150],[212,128],[200,114],[190,104],[203,90],[205,76],[190,62],[176,48],[165,34],[155,20],[LX,LY]], Q=[]; let bs=null;
+  const BK=P.brook=(()=>{ const K=[[248,168],[230,150],[212,128],[200,114],[190,104],[203,90],[205,76],[187.5,68],[189,59],[190.5,50],[178,42],[165,34],[155,20],[LX,LY]], Q=[]; let bs=null;
     { const [ax,ay]=K[0], l=Math.hypot(ax-K[1][0],ay-K[1][1]), ux=(ax-K[1][0])/l, uy=(ay-K[1][1])/l; for(let a=-1.3;a<=1.3;a+=.05){ const dx=ux*Math.cos(a)-uy*Math.sin(a), dy=ux*Math.sin(a)+uy*Math.cos(a); let t=0; while(t<40&&FOUNT.lake(ax+dx*t,ay+dy*t)>=0)t+=.25; if(t>=40)continue; let ok=true; for(let u=0;u<=t+4;u+=.5)if(FOUNT.ter(ax+dx*u,ay+dy*u)<7)ok=false; if(ok&&(!bs||t<bs[0]))bs=[t,dx,dy]; } if(bs)K.unshift([ax+bs[1]*(bs[0]+4),ay+bs[2]*(bs[0]+4)]); }
     for(let i=0;i<K.length-1;i++){ const a=K[Math.max(0,i-1)], b=K[i], c=K[i+1], d=K[Math.min(K.length-1,i+2)]; for(let k=0;k<16;k++){ const t=k/16, f=j=>.5*(2*b[j]+(c[j]-a[j])*t+(2*a[j]-5*b[j]+4*c[j]-d[j])*t*t+(3*b[j]-a[j]-3*c[j]+d[j])*t*t*t); Q.push([f(0),f(1)]); } } Q.push(K[K.length-1]);
     const acc=[0]; for(let i=1;i<Q.length;i++)acc.push(acc[i-1]+Math.hypot(Q[i][0]-Q[i-1][0],Q[i][1]-Q[i-1][1])); const SL=acc[acc.length-1], N=Math.round(SL/.5), C=[];
@@ -50,9 +50,8 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
     let kM=kC; const out=k=>{ const [nx,ny]=nrm(k), c=C[k], w=W(c[2])+B+.2; for(let f=-1;f<=1;f+=.25)if(FOUNT.lake(c[0]+nx*f*w,c[1]+ny*f*w)<.05)return false; return true; }; while(kM<N&&!out(kM))kM++; const m=C[kM][2], sW=m+2.5;
     const ks=C.map((c,k)=>Math.abs(c[1]-RY0)<3.6?k:-1).filter(k=>k>=0), km=ks[ks.length>>1], yc=C[km][1], xc=C[km][0], S=W(C[km][2])+B+.6, br={k:km,yc,xc,S,H:.55}, hump=(x,y)=>{ const t=Math.hypot(x-xc,y-yc)/(S+2); return t>=1||segD(x,y)>=3.6?0:br.H*.5*(1+Math.cos(Math.PI*t)); };
     return {C,SL,N,B,W,L,D,RF,q,h,st,nrm,rim,br,hump,m,kM,sW,sK,wet:(x,y,m=0)=>{ const r=q(x,y); return !!r&&r[0]<W(r[1])+B+m; }}; })();
-  // the path turns to cross the stream square, on a bridge across the water, and back again
-  { const C=BK.C, k=BK.br.k, a0=C[Math.max(0,k-3)], b0=C[Math.min(BK.N,k+3)], tl=Math.hypot(b0[0]-a0[0],b0[1]-a0[1]); let ax=(b0[1]-a0[1])/tl, ay=-(b0[0]-a0[0])/tl; if(ax<0){ ax=-ax; ay=-ay; }
-    const {xc,yc,S}=BK.br, U=S+2, D=9, y0=P.armY, ex=xc-ax*U, ey=yc-ay*U, fx=xc+ax*U, fy=yc+ay*U, L=[[ex-D,y0(ex-D)],[ex,ey],[fx,fy],[fx+D,y0(fx+D)]];
+  // the path goes straight over the bridge; the stream runs square to it there
+  { const {xc,yc,S}=BK.br, U=S+2, D=9, y0=P.armY, cl=Math.hypot(2*(U+D),y0(xc+U+D)-y0(xc-U-D)), ax=2*(U+D)/cl, ay=(y0(xc+U+D)-y0(xc-U-D))/cl, ex=xc-ax*U, ey=yc-ay*U, fx=xc+ax*U, fy=yc+ay*U, L=[[ex-D,y0(ex-D)],[ex,ey],[fx,fy],[fx+D,y0(fx+D)]];
     BK.br.ax=ax; BK.br.ay=ay; P.bend={L,x0:L[0][0],x1:L[3][0]};
     P.armY=x=>{ if(x<=L[0][0]||x>=L[3][0])return y0(x); for(let i=0;i<3;i++){ const p=L[i], q=L[i+1]; if(x<=q[0])return p[1]+(q[1]-p[1])*(x-p[0])/(q[0]-p[0]||1); } return y0(x); }; }
   FOUNT.S.rocks=FOUNT.S.rocks.filter(r=>!BK.wet(r[0],r[1],.6));
@@ -151,8 +150,8 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
   pier(ex-.6,EG[0]-PW,P.x1+.3,EG[0],41); pier(ex-.6,EG[1],P.x1+.3,EG[1]+PW,45);
   LEAVES.push([ex-.85,EG[0],-1,'y',1.5],[ex-.85,EG[1],1,'y',1.5]);
   const CB=[CASTLE.b[0]-PO.x,CASTLE.b[1]-PO.x,CASTLE.b[2]-PO.y,CASTLE.b[3]-PO.y], wx=P.x0, ny=P.y1-T, WG=PARK.wgate=[P.round[1]-(g1-g0)/2,P.round[1]+(g1-g0)/2], NG=PARK.ngate=[P.round[0]-3.5,P.round[0]+3.5];
-  const wTop=Math.min(P.y1,CB[2]), nLeft=CB[3]<P.y1-T-1?P.x0:Math.max(P.x0,CB[1]);
-  wall(wx,P.y0+T,wx+T,WG[0]-PW,51); wall(wx,WG[1]+PW,wx+T,wTop,55); if(CB[3]<P.y1-T-1)wall(wx,CB[3],wx+T,ny,59);
+  const cw=CB[0]<=wx+T+.5, wTop=cw?Math.min(P.y1,CB[2]):ny, nLeft=CB[3]<P.y1-T-1?P.x0:Math.max(P.x0,CB[1]);   // the west wall breaks for the castle only where the castle stands on it
+  wall(wx,P.y0+T,wx+T,WG[0]-PW,51); wall(wx,WG[1]+PW,wx+T,wTop,55); if(cw&&CB[3]<P.y1-T-1)wall(wx,CB[3],wx+T,ny,59);
   pier(wx-.3,WG[0]-PW,wx+T+.6,WG[0],57); pier(wx-.3,WG[1],wx+T+.6,WG[1]+PW,61);
   LEAVES.push([wx+T+.85,WG[0],-1,'y',(WG[1]-WG[0])/2],[wx+T+.85,WG[1],1,'y',(WG[1]-WG[0])/2]);
   wall(nLeft,ny,NG[0]-PW,P.y1,65); wall(NG[1]+PW,ny,P.x1-T,P.y1,69);
@@ -269,17 +268,17 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
     { const FY=[P.y1+6,P.y1+20,P.y1+36], XA=P.x0-16, XB=P.x1+16, BACK=out.back=[]; let n=0; for(const [ri,fy] of FY.entries())for(let x=XA+9*ri+6;x<XB;x+=18,n++){ const k=hash(n,201,3)<.3?'Elder'+(1+n%2):'OakTree'+(1+n%3), m=(15+hash(n,203,5)*9)*(1+.18*ri), xx=x+(hash(n,205,7)-.5)*9, yy=fy+(hash(n,207,9)-.5)*8; BACK.push([k,+xx.toFixed(1),+yy.toFixed(1),+m.toFixed(1),+(hash(n,209,11)*6.28).toFixed(2)]); } }
     const R0=out.length; let edgeOK;
     // a dense ring of tall trees just inside the wall, right round the park, so from outside only trees show at the edge
-    { const TK=['Giant1','Elder2','OakTree1'];
+    { const TK=['Giant1','Elder1','Elder2','OakTree1','OakTree2','OakTree3','Spruce1','Willow1'];
       const gap=(v,g,pad)=>g&&v>g[0]-pad&&v<g[1]+pad, PAD=4.5;
       edgeOK=(x,y)=>!(FOUNT.lake(x,y)<2.4||FOUNT.ter(x,y)<2.2||BK.wet(x,y,2)||path(x,y)||(x>CB[0]-3.5&&x<CB[1]+3.5&&y>CB[2]-3.5&&y<CB[3]+3.5));
       // one row along the wall, each crown just clear of the next (owner: "this size and distance from each other")
       const lowR=k=>{ const q=k+'.low'; if(!F[q])F[q]=TREEGEN.low(F[k].sum,F[k].trunk); return F[q].rad/.84; }; let s=5000;
-      const row=(a0,a1,at,g)=>{ let u=a0, prev=0; for(;;){ const k=TK[Math.floor(hash(s,1,11)*TK.length)%TK.length], m=7.5*(.8+.4*hash(s,2,13)), r=lowR(k)*m; u+=prev+r+.3; if(u>a1-r)break; prev=r;
+      const row=(a0,a1,at,g)=>{ let u=a0, prev=0; for(;;){ const k=TK[Math.floor(hash(s,1,11)*TK.length)%TK.length], m=5.25*(.8+.4*hash(s,2,13)), r=lowR(k)*m; u+=prev+r+.3; if(u>a1-r)break; prev=r;
         const [x,y]=at(u,r+1.1), sd=s++; if(gap(u,g,PAD+r)||!edgeOK(x,y))continue; add(k,x,y,m,hash(sd,4,19)*6.28); } };
       row(P.x0+1,P.x1-1,(u,o)=>[u,P.y0+o],P.gate); row(P.x0+1,P.x1-1,(u,o)=>[u,P.y1-o],PARK.ngate);
       const RM=Math.max(...TK.map(k=>lowR(k)*9))*2;   // the side rows leave the corners to the end rows
       row(P.y0+RM,P.y1-RM,(u,o)=>[P.x0+o,u],PARK.wgate); row(P.y0+RM,P.y1-RM,(u,o)=>[P.x1-o,u],PARK.egate); }
-    out.forEach((e,i)=>{ if(i>=R0){ e[5]=-.3*e[3]; return; } const k=gk(e[1],e[2],215,false); if(k)e[0]=k; });
+    out.forEach((e,i)=>{ if(i>=R0)return; const k=gk(e[1],e[2],215,false); if(k)e[0]=k; });
     // the edge ring baked low, its crowns kept inside the wall and clear of the gateways: moved in or along, else shrunk to fit, else left out
     { const low=k=>{ const q=k+'.low'; if(!F[q])F[q]=TREEGEN.low(F[k].sum,F[k].trunk); return q; }, M=.6, w0=[P.x0+T,P.x1-T,P.y0+T,P.y1-T], D=7;
       const GB=[[P.gate,0,w0[2],1],[PARK.ngate,0,w0[3],-1],[PARK.wgate,1,w0[0],1],[PARK.egate,1,w0[1],-1]].filter(g=>g[0]).map(([g,ax,f,sg])=>{ const a=Math.min(f,f+D*sg), b=Math.max(f,f+D*sg); return ax?[a,g[0]-PW,b,g[1]+PW,1]:[g[0]-PW,a,g[1]+PW,b,0]; });

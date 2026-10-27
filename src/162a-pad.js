@@ -32,7 +32,7 @@ import {PAD} from './075-main-13.js';
   const cv=renderer.domElement;
   const zoom=d=>{ const r=cv.getBoundingClientRect(); cv.dispatchEvent(new WheelEvent('wheel',{deltaY:d*-240,clientX:r.left+r.width/2,clientY:r.top+r.height/2,bubbles:true,cancelable:true})); };
   const C='button:not([disabled]),input:not([type=hidden]):not([disabled]),select:not([disabled]),textarea,a[href],[tabindex]:not([tabindex="-1"])';
-  const panels=PAD.panels=()=>[...document.body.children].filter(e=>e!==cv&&!/^(stage|newver|shbar|subfade)$/.test(e.id)&&!e.hidden&&e.getClientRects().length&&getComputedStyle(e).display!=='none'&&e.querySelector(C));
+  const panels=PAD.panels=()=>[...document.body.children].filter(e=>e!==cv&&!/^(stage|newver|shbar|subfade|onl|vrbtn)$/.test(e.id)&&!e.hidden&&e.getClientRects().length&&getComputedStyle(e).display!=='none'&&e.querySelector(C));
   const ctls=()=>panels().flatMap(p=>[...p.querySelectorAll(C)]).filter(e=>{ if(e.closest('[inert],[hidden]'))return false; const r=e.getBoundingClientRect(); return r.width>0&&r.height>0&&r.bottom>0&&r.top<innerHeight&&getComputedStyle(e).visibility!=='hidden'; });
   const grab=el=>{ if(PAD.grab)PAD.grab.classList.remove('padgrab'); PAD.grab=el; if(el)el.classList.add('padgrab'); };
   const mark=el=>{ grab(null); if(PAD.ui)PAD.ui.classList.remove('padon'); PAD.ui=el; if(el){ el.classList.add('padon'); el.focus({preventScroll:true}); el.scrollIntoView({block:'nearest'}); const r=el.getBoundingClientRect(); PAD.at=[r.left+r.width/2,r.top+r.height/2]; } };
@@ -55,10 +55,10 @@ import {PAD} from './075-main-13.js';
     if(hit(4))tab(-1); if(hit(5))tab(1);
     if(hit(0)&&PAD.ui){ if(PAD.ui.type==='range')grab(PAD.grab?null:PAD.ui); else if(PAD.ui.tagName!=='SELECT')PAD.ui.click(); } };
   let capUp=false, capT=0;
-  const pick=()=>{ const gs=[...navigator.getGamepads(),PAD.xr].filter(g=>g&&g.connected), st=gs.filter(g=>g.mapping==='standard'), pool=st.length?st:gs; return pool.reduce((a,g)=>!a||g.timestamp>a.timestamp?g:a,null); };
+  const pick=()=>{ const gs=[...navigator.getGamepads()].filter(g=>g&&g.connected), st=gs.filter(g=>g.mapping==='standard'), pool=st.length?st:gs; return pool.reduce((a,g)=>!a||g.timestamp>a.timestamp?g:a,null); };
   const zr={};
   const rep=(k,on)=>{ const now=performance.now(); if(!on){ zr[k]=0; return false; } if(!zr[k]){ zr[k]=now+350; return true; } if(now>=zr[k]){ zr[k]=now+120; return true; } return false; };
-  const tick=now=>{ '@later'; if(!PAD.n){ letGo(); return; } requestAnimationFrame(tick); const dt=Math.min(.05,(now-(PAD.t||now))/1000); PAD.t=now; const gp=pick(); if(!gp){ if(PAD.held.size)letGo(); return; }
+  const pump=PAD.step=(now,gp)=>{ '@later'; const dt=Math.min(.05,(now-(PAD.t||now))/1000); PAD.t=now; if(!gp){ if(PAD.held.size)letGo(); return; }
     if(gp.id!==PAD.id){ PAD.id=gp.id; PAD.ps=/054c|playstation|dualsense|dualshock/i.test(gp.id); PAD.q=gp===PAD.xr; }
     const Bv=gp.buttons.map(b=>b.value), pr=PAD.prev, on=i=>i>=0&&(Bv[i]||0)>.5, hit=i=>on(i)&&!((pr[i]||0)>.5), ax=gp.axes, b=a=>BIND[a];
     const act=Bv.some((v,i)=>Math.abs(v-(pr[i]||0))>.1)||ax.some(a=>Math.abs(a)>.4); PAD.prev=Bv;
@@ -78,12 +78,15 @@ import {PAD} from './075-main-13.js';
     if(hit(b('view')))tap(K('view')); if(hit(b('reset')))tap(K('0')); if(hit(b('moves')))tap('?'); if(hit(b('pack')))tap('i');
     if(run){ if(rep('zu',on(12)))zoom(1); if(rep('zd',on(13)))zoom(-1); } else { rep('zu',false); rep('zd',false); }
     if(hit(b('back'))&&(FORAGE.PACK.open||document.getElementById('movesp')?.style.display==='block'))back(); if(hit(b('menu')))tap('Escape'); };
+  const tick=now=>{ '@later'; if(!PAD.n){ letGo(); return; } requestAnimationFrame(tick); if(!VR.on)pump(now,pick()); };
   addEventListener('gamepadconnected',()=>{ if(!PAD.n++){ PAD.t=0; requestAnimationFrame(tick); } if(UI.menuOpen)UI.padKeys(); });
   addEventListener('gamepaddisconnected',()=>{ PAD.n=Math.max(0,PAD.n-1); if(!PAD.n){ letGo(); mark(null); } });
   addEventListener('pointerdown',e=>{ if(e.isTrusted&&PAD.n){ mark(null); PAD.mouse=true; } },true);
   addEventListener('pointermove',e=>{ if(PAD.cur&&e.isTrusted&&(e.movementX||e.movementY)){ PAD.cur=false; document.body.classList.remove('padcur'); } },true);
   addEventListener('blur',()=>letGo());
-  UI.padMoves=(row,h)=>{ '@later'; if(!PAD.n)return ''; let o=h('THE CONTROLLER (CHANGE ITS BUTTONS IN THE MENU\'S KEYS)')+row('LEFT STICK','WALK, ANY WAY')+row('RIGHT STICK','LOOK ROUND (BEHIND, FIRST) · SPIN THE VIEW (ISOMETRIC)');
+  UI.padMoves=(row,h)=>{ '@later'; if(!PAD.n)return ''; if(VR.on){ let o=h('THE QUEST CONTROLLERS (CHANGE THEIR BUTTONS IN THE MENU\'S KEYS)')+row('LEFT STICK','WALK WHERE YOU LOOK')+row('RIGHT STICK','TURN, 30° A PUSH')+row('LEFT STICK PRESS','THE MENU')+row('RIGHT STICK PRESS','STAND HERE AGAIN (RECENTRE)');
+      for(const [a,w] of ACTS)if(BIND[a]>=0&&BIND[a]<8)o+=row(bhtml(BIND[a]),w.toUpperCase()); return o+row('HOLD '+bn(1),'LEAVE VR')+row('IN A WINDOW','POINT AND PULL THE TRIGGER · THE RIGHT STICK SCROLLS · '+bn(1)+' BACK')+h('YOUR HANDS')+row('POINT AND PINCH','PRESS · PINCH AND DRAG SCROLLS')+row('YOUR LEFT WRIST','THE MENU BUTTON (TOUCH IT)'); }
+    let o=h('THE CONTROLLER (CHANGE ITS BUTTONS IN THE MENU\'S KEYS)')+row('LEFT STICK','WALK, ANY WAY')+row('RIGHT STICK','LOOK ROUND (BEHIND, FIRST) · SPIN THE VIEW (ISOMETRIC)');
     for(const [a,w] of ACTS)if(BIND[a]>=0)o+=row(bhtml(BIND[a]),w.toUpperCase()); return o+row('IN A MENU OR A BOX','STICK OR D-PAD MOVES, '+bn(0)+' PRESSES, '+bn(4)+' / '+bn(5)+' THE TABS, '+bn(1)+' BACK'); };
   let waiting=null;
   UI.padKeys=t=>{ '@later'; t=t||document.getElementById('keytab'); if(!t||!PAD.n)return; [...t.querySelectorAll('.padrow')].forEach(r=>r.remove());

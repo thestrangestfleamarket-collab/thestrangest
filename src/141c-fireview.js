@@ -26,7 +26,7 @@ import {BATCH} from './008-batch.js';
     plaque=new THREE.Mesh(new THREE.PlaneGeometry(W/24*T*KK,SHARED.BOD.Y(H)),new THREE.MeshLambertMaterial({map:t,clippingPlanes:APTS.WPL?[APTS.WPL.Wb]:[]})); plaque.position.set(X(APTS.door[0]),Y(HZ+104),Z(APTS.door[1]-.04)); scene.add(plaque); } });
   const z0=APTS.RZ+S;
   F.build=()=>{ '@fire'; if(F.built)return; const keep=BATCH.items.splice(0), km=BATCH.meshes, kc=BATCH.cast; BATCH.meshes={}; BATCH.cast=true; BATCH.tag=null;
-    const hole=(sd,a,z)=>{ const h=z-HZ; if(h<0||h>S)return false; if(sd==='f'||sd==='b')return sd==='f'&&Math.abs(a-A.x0-DU)<.55&&h<75||APTS.FWU.some(u=>Math.abs(a-A.x0-u)<.55&&h>42&&h<77); return sd==='e'&&Math.abs(a-(A.y1-3.076))<.55&&h>51&&h<65; };   // your floor: open where your rooms' windows and doors are, so you see in
+    const near=(a,c)=>Math.abs(a-c)<.55, hole=(sd,a,z)=>{ const h=z-HZ; if(h<0||h>S)return false; if(sd==='f'||sd==='b')return near(a,A.x0+DU)&&h<75||APTS.FWU.some(u=>near(a,A.x0+u)&&h>42&&h<77); return APTS.WIN.SIDE.some(k=>near(a,A.y0+(A.y1-A.y0)*k)&&h>42&&h<77); };   // your floor: open where your rooms' windows and doors are (both doors, the side windows too), so you see in
     const bm=BATCH.meshes, HB={x0:A.x0-AR.y0+FY,x1:A.x1+AR.y0-FY,y0:A.y0-2*(AR.y0-FY),y1:A.y1}; BLOCKS.make({...HB,z0:0,z1:Math.min(HZ+3*S,APTS.TOP),kind:'A',roof:(x,y)=>{ const r=((Math.sin(Math.floor(x*4)*12.99+Math.floor(y*4)*78.23)*43758.5)%1+1)%1, e=Math.min(x-HB.x0,HB.x1-x,y-HB.y0,HB.y1-y); return e<.25?[118,50,38]:r<.3?[50,50,52]:r>.7?[66,64,62]:[58,57,57]; },paint:(sd,a,z,f)=>hole(sd,a,z)?null:APTS.paint(sd,a,z0+((z-z0)%(3*S)+3*S)%(3*S),f)});   // the whole building, street to roof, so you see it run all the way up and down past the landing
     BATCH.build(APTS.MKA); const house=new Set(Object.values(bm)); BATCH.meshes={};
     APTS.escape(FE,Array.from({length:Math.min(LV+2,APTS.ST-1)},(_,i)=>i+1),-APTS.RZ,(LV+3)*S);
@@ -60,7 +60,8 @@ import {BATCH} from './008-batch.js';
       const ww=1.1*.907, wh=(94-42)/32.4, dh=(94-3)/32.4;
       for(let lv=1;lv<=Math.min(LV+2,APTS.ST-1);lv++){ const z=APTS.RZ+lv*S;
         for(const u of APTS.FWU){ const o=window3D(ww,wh); o.position.set(X(A.x0+u),Y(z+42),Z(A.y1)); G.add(o); }
-        if(lv>0&&lv!==LV){ const o=door3D(ww,dh); o.position.set(X(A.x0+DU),Y(z+3),Z(A.y1)); G.add(o); } } }   // your own door is your rooms' (150a), and it opens
+        if(lv>0&&lv!==LV){ const o=door3D(ww,dh); o.position.set(X(A.x0+DU),Y(z+3),Z(A.y1)); G.add(o); } }
+      { const z=APTS.RZ+LV*S; for(const k of APTS.WIN.SIDE)for(const [x,r] of [[A.x1+AR.y0-FY,Math.PI/2],[A.x0-AR.y0+FY,-Math.PI/2]]){ const o=window3D(ww,wh); o.position.set(X(x),Y(z+42),Z(A.y0+(A.y1-A.y0)*k)); o.rotation.y=r; G.add(o); } } }   // your floor's side windows, framed like the front ones   // your own door is your rooms' (150a), and it opens
     // the sky round the house: a thick layer of clouds below the lowest landing, drifting very slowly
     { const puff=()=>{ const cv=document.createElement('canvas'); cv.width=256; cv.height=160; const g=cv.getContext('2d'), P=[];
         for(let i=0;i<16;i++){ const x=40+Math.random()*176, r=16+Math.random()*30*(1-Math.abs(x-128)/150), y=110-r*.55-Math.random()*26; P.push([x,y,r]); }

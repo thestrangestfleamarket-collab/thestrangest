@@ -74,7 +74,7 @@ import {BATCH} from './008-batch.js';
     sol2(FE.ua-.12,DO-.16,FE.ub+.12,DO+.06,HZ+35); for(const u of APTS.FWU||[])sol2(u-.62,0,u+.62,.26,HZ+42); sol2(FE.ua-.12,0,FE.ua+.04,DO,H); sol2(FE.ub-.04,0,FE.ub+.12,DO,H); sol2(FE.lx-.45,APTS.DI,FE.lx+.45,DO,H);
     light=new THREE.PointLight(0xffc890,0,7*T,1.6); light.position.set(X(DX),Y(HZ+70),Z(V(.4))); scene.add(light);
     const pl=STORE.places.find(q=>q[0]===F.name); if(pl){ pl[1]=X(DX); pl[2]=Z(V(.9)); pl[3]=Y(HZ); }
-    // seen from your rooms in the isometric view: the house below your floor, the fire escapes up to your landing's rails (cut down with your front wall), nothing above
+    // seen from your rooms in the isometric view: the house up to your ceiling (its real outside round your walls), the fire escapes up to your landing's rails (cut down with your front wall), nothing above
     G.traverse(o=>{ if(o.material&&!o.isSprite)for(const m of [].concat(o.material)){ m.clippingPlanes=house.has(o)?[BOT]:[TOP,APTS.WPL.Wf]; m.needsUpdate=true; } });
     F.built=true; };
   const TOP=new THREE.Plane(new THREE.Vector3(0,-1,0),1e6), BOT=new THREE.Plane(new THREE.Vector3(0,-1,0),1e6), upV=new THREE.Vector3(), cd=new THREE.Vector3();
@@ -87,7 +87,7 @@ import {BATCH} from './008-batch.js';
   SYS.add('places',()=>{ const home=F.built&&!!APTS.inReal, on=home&&SHARED.LVL==='up'&&outL(pos.x,pos.z);
     if(on!==F.on){ F.on=on; APTS.onEsc=on; if(!UI.persp)UI.isoTurn(on?Math.PI*3/4:-Math.PI/4); }   // through the door: the isometric view turns to look at the house from outside, or into your rooms
     UI.distMax=home?WMAX:null; if(home&&UI.dist>WMAX)UI.dist=WMAX;   // on your fire escape you can't zoom out past the landings round yours
-    const iso=home&&!UI.persp; TOP.constant=iso?Y(HZ+45):1e6; BOT.constant=iso?Y(HZ+.1):1e6; G.visible=home;
+    const iso=home&&!UI.persp; TOP.constant=iso?Y(HZ+45):1e6; BOT.constant=iso?Y(HZ+S):1e6; G.visible=home;
     if(home&&!UI.persp&&!UI.freeCam){ upV.setFromMatrixColumn(SHARED.cam.matrixWorld,1); const u=UI.off.dot(upV), lo=(Y(HZ-2.5*S)-SHARED.py)*upV.y; let hi=lo;
       for(const x of [AR.x0,AR.x1])for(const z of [AR.y0,AR.y1])hi=Math.max(hi,(X(x)-pos.x)*upV.x+(Y(HZ+S)-SHARED.py)*upV.y+(Z(z)-pos.z)*upV.z);
       const c=SHARED.cam; hi=Math.max(lo,hi-.85*(c.top-c.bottom)/2/(c.zoom||1)); const k=Math.max(lo,Math.min(hi,u)); if(k!==u)UI.off.addScaledVector(upV,k-u); }   // the view drags between the clouds' top and your ceiling's far corner at the top of the screen

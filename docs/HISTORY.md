@@ -4875,3 +4875,6 @@ Owner: "In order to go into the holodeck you have to double click the entrance. 
 
 ## 27 Oct 2026: camera sway, a menu choice
 Owner: "lets add this as option in menu to toggle on or off" (the idle camera sway from Security Booth). DISPLAY's CAMERA SWAY: on, the view drifts a fifth of a degree, slowly; off by default.
+
+## 27 Oct 2026: the grass even, the trees past the wall small, bulkier crowns
+Owner: "i still see the circle around my character that is lighter"; "when you look at the grass from zoomed out low angle it looks like triangles spread out"; "the trees on the outside of map are way too big, need to be barely bigger than other trees, and need to be same new tree style"; "make the trees leaves less 2d? bulker like old teres and new tress, mixed". The far tufts are the same rounded tufts as the near ones (no lighter ring, no triangles). The rows past the park's north wall are barely bigger than the edge ring and, like the park seen from outside, are leaf-card trees. Every leaf-card crown has a darker faceted core under its cards.

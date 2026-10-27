@@ -16,7 +16,7 @@ Places built with `await grab(name, async()=>{...})` are one function each, ofte
 - `grab(fire)`: 059d-fireview.js to 059d-fireview.js (0 KB)
 - `grab(ghostdojo)`: 059e-ghostdojo.js to 059e-ghostdojo.js (38 KB)
 - `grab(bank)`: 059h-bank.js to 059h-bank.js (2 KB)
-- `grab(parkwall)`: 061-park.js to 061-park.js (61 KB)
+- `grab(parkwall)`: 061-park.js to 061-park.js (58 KB)
 - `grab(park)`: 061-park.js to 061-park.js (0 KB)
 - `grab(castle)`: 062-castle.js to 062-castle.js (0 KB)
 - `grab(castlestairs)`: 062-castle.js to 062-castle.js (2 KB)
@@ -63,8 +63,8 @@ Places built with `await grab(name, async()=>{...})` are one function each, ofte
 | `059h-bank.js` | 2.0 | top level, opens grab(bank) |  | 003: SHARED; 006: BLDK BLOCK STORE grab |
 | `060-cave.js` | 11.3 | top level | GCAVE (061 063 066a 094 142a 146e 151) | 003: SHARED THREE; 003b: CITY CLOCK INV LITE MAIL PARK ROOMS TRADE UI; 004: scene; 006: FIX MAPG MODS PARKCAVE PARKTOWER SOL STORE TILE; 007: FLAME |
 | `060a-fount.js` | 21.9 | top level | FOUNT (061 064 075 076 080 087 089a 093 094 096 142 142a 151 153) | 003: SHARED THREE; 003b: BROOK CLOCK PARK ROOMS SKY WED; 004: scene; 006: FIX MAPG SOL STORE TILE ZU |
-| `060b-trees.js` | 7.6 | top level | TREEGEN (061) | 003: THREE |
-| `061-park.js` | 65.5 | top level, opens grab(parkwall) |  | 003: SHARED THREE; 003a: B64 F32; 003b: CLIP CLOCK CULL DN LITE NPCS PARK PERFX ROOMS UI WED WEEDS pos; 004: renderer scene; 006: CASTLE CLIPX EASTX FADE FIX LAY LEVEL MAINX MAPG MODS NORTHX NORTHY PARKGX PARKLAKE PARKRY QS SOL TILE ZU grab lamps; 007: FLAME; 008: BATCH OBJ PEEK; 014: BRICKS; 039: FOREST PROPS; 060: GCAVE; 060a: FOUNT; 060b: TREEGEN |
+| `060b-trees.js` | 8.0 | top level | TREEGEN (061) | 003: THREE |
+| `061-park.js` | 62.3 | top level, opens grab(parkwall) |  | 003: SHARED THREE; 003a: B64 F32; 003b: CLIP CLOCK CULL DN LITE NPCS PARK PERFX ROOMS UI WED WEEDS pos; 004: renderer scene; 006: CASTLE CLIPX EASTX FADE FIX LAY LEVEL MAINX MAPG MODS NORTHX NORTHY PARKGX PARKLAKE PARKRY QS SOL TILE ZU grab lamps; 007: FLAME; 008: BATCH OBJ PEEK; 014: BRICKS; 039: FOREST PROPS; 060: GCAVE; 060a: FOUNT; 060b: TREEGEN |
 | `062-castle.js` | 6.5 | top level, opens grab(castle) | castleMat (062a), gboxS (062a) | 003: SHARED THREE; 003b: PARK pos; 004: scene; 006: CASTLE FIX MODS SOL STN TILE cutWalls grab lamps; 008: BATCH OBJ |
 | `062a-dungeon.js` | 10.0 | top level, opens grab(dungeon) |  | 003: SHARED THREE; 003b: LEVELS LITE PH RAG UI pos; 004: scene; 006: CASTLE FADE FIX MAPG MODS SOL STN TILE cutWalls grab; 007: FLAME; 008: BATCH; 062: castleMat gboxS |
 | `063-tower.js` | 5.7 | top level | GTOWER (085 094) | 003: SHARED THREE; 003b: PARK; 006: FIX LEVEL MAPG SOL TILE; 008: BATCH OBJ; 060: GCAVE |

@@ -269,17 +269,17 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
     { const FY=[P.y1+6,P.y1+20,P.y1+36], XA=P.x0-16, XB=P.x1+16, BACK=out.back=[]; let n=0; for(const [ri,fy] of FY.entries())for(let x=XA+9*ri+6;x<XB;x+=18,n++){ const k=hash(n,201,3)<.3?'Elder'+(1+n%2):'OakTree'+(1+n%3), m=(15+hash(n,203,5)*9)*(1+.18*ri), xx=x+(hash(n,205,7)-.5)*9, yy=fy+(hash(n,207,9)-.5)*8; BACK.push([k,+xx.toFixed(1),+yy.toFixed(1),+m.toFixed(1),+(hash(n,209,11)*6.28).toFixed(2)]); } }
     const R0=out.length; let edgeOK;
     // a dense ring of tall trees just inside the wall, right round the park, so from outside only trees show at the edge
-    { const TK=['Giant1','Elder2','OakTree1'];
+    { const TK=['Giant1','Elder1','Elder2','OakTree1','OakTree2','OakTree3','Spruce1','Willow1'];
       const gap=(v,g,pad)=>g&&v>g[0]-pad&&v<g[1]+pad, PAD=4.5;
       edgeOK=(x,y)=>!(FOUNT.lake(x,y)<2.4||FOUNT.ter(x,y)<2.2||BK.wet(x,y,2)||path(x,y)||(x>CB[0]-3.5&&x<CB[1]+3.5&&y>CB[2]-3.5&&y<CB[3]+3.5));
       // one row along the wall, each crown just clear of the next (owner: "this size and distance from each other")
       const lowR=k=>{ const q=k+'.low'; if(!F[q])F[q]=TREEGEN.low(F[k].sum,F[k].trunk); return F[q].rad/.84; }; let s=5000;
-      const row=(a0,a1,at,g)=>{ let u=a0, prev=0; for(;;){ const k=TK[Math.floor(hash(s,1,11)*TK.length)%TK.length], m=7.5*(.8+.4*hash(s,2,13)), r=lowR(k)*m; u+=prev+r+.3; if(u>a1-r)break; prev=r;
+      const row=(a0,a1,at,g)=>{ let u=a0, prev=0; for(;;){ const k=TK[Math.floor(hash(s,1,11)*TK.length)%TK.length], m=5.25*(.8+.4*hash(s,2,13)), r=lowR(k)*m; u+=prev+r+.3; if(u>a1-r)break; prev=r;
         const [x,y]=at(u,r+1.1), sd=s++; if(gap(u,g,PAD+r)||!edgeOK(x,y))continue; add(k,x,y,m,hash(sd,4,19)*6.28); } };
       row(P.x0+1,P.x1-1,(u,o)=>[u,P.y0+o],P.gate); row(P.x0+1,P.x1-1,(u,o)=>[u,P.y1-o],PARK.ngate);
       const RM=Math.max(...TK.map(k=>lowR(k)*9))*2;   // the side rows leave the corners to the end rows
       row(P.y0+RM,P.y1-RM,(u,o)=>[P.x0+o,u],PARK.wgate); row(P.y0+RM,P.y1-RM,(u,o)=>[P.x1-o,u],PARK.egate); }
-    out.forEach((e,i)=>{ if(i>=R0){ e[5]=-.3*e[3]; return; } const k=gk(e[1],e[2],215,false); if(k)e[0]=k; });
+    out.forEach((e,i)=>{ if(i>=R0)return; const k=gk(e[1],e[2],215,false); if(k)e[0]=k; });
     // the edge ring baked low, its crowns kept inside the wall and clear of the gateways: moved in or along, else shrunk to fit, else left out
     { const low=k=>{ const q=k+'.low'; if(!F[q])F[q]=TREEGEN.low(F[k].sum,F[k].trunk); return q; }, M=.6, w0=[P.x0+T,P.x1-T,P.y0+T,P.y1-T], D=7;
       const GB=[[P.gate,0,w0[2],1],[PARK.ngate,0,w0[3],-1],[PARK.wgate,1,w0[0],1],[PARK.egate,1,w0[1],-1]].filter(g=>g[0]).map(([g,ax,f,sg])=>{ const a=Math.min(f,f+D*sg), b=Math.max(f,f+D*sg); return ax?[a,g[0]-PW,b,g[1]+PW,1]:[g[0]-PW,a,g[1]+PW,b,0]; });

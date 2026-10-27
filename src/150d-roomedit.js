@@ -1,6 +1,6 @@
-// THE ROOM EDITOR: DECORATE your apartment like the Sims (owner, 25 and 27 Oct 2026): T in your apartment; a camera over the room, a click picks a thing up and a drag moves it on a grid (green fits, red doesn't), small things onto tables and shelves, pictures and wall lights onto the wall you point at; Q/E turn, the wheel resizes, DEL puts it away; a buy bar of pictured things at prices; walls, floor and every light; saved to your account.
+// THE ROOM EDITOR: DECORATE your apartment like the Sims (owner, 25 and 27 Oct 2026): T in your apartment (the view as it is); a click picks a thing up and a drag moves it on a grid (green fits, red doesn't), small things onto tables and shelves, pictures and wall lights onto the wall you point at; Q/E turn, Shift+wheel resizes, DEL puts it away; a buy bar of pictured things at prices; walls, floor and every light; saved to your account.
 import {SHARED, THREE} from './003-shx.js';
-import {INV, pos, UI} from './003b-systems.js';
+import {INV, pos} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {MODS, QS, SYS} from './006-map-pre.js';
 import {ROOMK} from './150a-bedroom.js';
@@ -165,7 +165,7 @@ import {ROOMK} from './150a-bedroom.js';
     if(tab==='things'){ const s=ED.sel;
       h+=s?`<div class="lab">PICKED UP</div><div style="color:var(--key)">${name(s)}</div><div class="row"><button class="btn" data-a="turnl">⟲ TURN</button><button class="btn" data-a="turnr">TURN ⟳</button><button class="btn" data-a="small">SMALLER</button><button class="btn" data-a="big">BIGGER</button></div>
         <div class="row"><button class="btn" data-a="down">LOWER</button><button class="btn" data-a="up">RAISE</button><button class="btn" data-a="copy">COPY $${price(s.kind)}</button><button class="btn" data-a="away">PUT AWAY</button>${s.added?`<button class="btn" data-a="sell">SELL $${Math.floor((s.paid||0)/2)}</button>`:''}${A.lightsAll().some(q=>q.un===s)?'<button class="btn" data-a2="light">LIGHT SETTINGS</button>':''}</div>`
-        :`<div class="hint">CLICK A THING TO PICK IT UP, DRAG TO MOVE IT: GREEN FITS, RED DOESN'T.<br>Q / E TURN · ALT FOR FREE PLACING · SHIFT+WHEEL RESIZES · [ ] LOWER / RAISE · DEL PUTS IT AWAY · , . TURN THE VIEW · G GRID · CTRL+Z UNDO</div>`;
+        :`<div class="hint">CLICK A THING TO PICK IT UP, DRAG TO MOVE IT: GREEN FITS, RED DOESN'T.<br>Q / E TURN · ALT FOR FREE PLACING · SHIFT+WHEEL RESIZES · [ ] LOWER / RAISE · DEL PUTS IT AWAY · G GRID · CTRL+Z UNDO</div>`;
       const gone=A.units().filter(u=>u.gone);
       if(gone.length)h+=`<div class="lab">PUT AWAY</div><div class="row">${gone.map(u=>`<button class="btn" data-back="${u.id}">${name(u)}</button>`).join('')}</div>`; }
     const sw=(set,k,D,on)=>{ const t=A.thumb(set,k); return `<div class="sw ${on?'on':''}" data-${set}="${k}" style="background:${hexs(D.c)}${t?` url(${t}) center/cover`:''}"><span>${D.n}</span></div>`; };
@@ -212,22 +212,7 @@ import {ROOMK} from './150a-bedroom.js';
     ED.undo.length=0; dirty(); ED.panel(); };
 
   /* ---------- the camera over the room while you decorate (back as it was when you're done) ---------- */
-  // a starting view over the room, then the camera is yours (turn, tilt, zoom, drag); the home view's limits are off while you decorate (UI.decor)
-  let view0=null;
-  const RV=new THREE.Vector3(), UV=new THREE.Vector3();
-  // the room's middle in the middle of the open screen (left of the panel, above the buy bar)
-  const roomMid=()=>{ const A=A_(), c=A.W(A.Lx/2,0,A.Ly/2), cam=SHARED.cam, el=renderer.domElement; UI.off.set(c.x-pos.x,0,c.z-pos.z);
-    if(cam.isOrthographicCamera&&el.clientHeight){ const k=(cam.top-cam.bottom)/(cam.zoom||1)/el.clientHeight, dx=(P.hidden?0:P.offsetWidth+12)/2, dy=(BUY.hidden?0:BUY.offsetHeight+12)/2;
-      UI.off.addScaledVector(RV.setFromMatrixColumn(cam.matrixWorld,0),dx*k).addScaledVector(UV.setFromMatrixColumn(cam.matrixWorld,1),-dy*k); } };
-  const camIn=()=>{ const A=A_(); if(!A||!UI.off)return; view0={view:UI.view,yaw:SHARED.yawTo,pitch:SHARED.pitchTo,ppu:SHARED.ppuTo,off:UI.off.clone()}; if(UI.persp&&UI.setView)UI.setView('iso');
-    UI.decor=true; SHARED.pitchTo=ED.pitch; roomMid();
-    setTimeout(()=>{ if(!ED.on||!view0)return; const cam=SHARED.cam, r=renderer.domElement.getBoundingClientRect(); let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;
-      for(const [u,v] of [[0,0],[A.Lx,0],[0,A.Ly],[A.Lx,A.Ly]])for(const h of [0,A.HW*.6]){ const p=A.W(u,h,v).project(cam); x0=Math.min(x0,p.x); x1=Math.max(x1,p.x); y0=Math.min(y0,p.y); y1=Math.max(y1,p.y); }
-      const w=(x1-x0)/2*r.width, hh=(y1-y0)/2*r.height, k=Math.min((r.width-340)*.95/w,(r.height-220)*.95/hh); if(isFinite(k)&&k>0)SHARED.ppuTo=SHARED.ppu*Math.max(.3,Math.min(3,k)); setTimeout(()=>{ if(ED.on&&view0)roomMid(); },400); },600); };
-  const camOut=()=>{ UI.decor=false; if(!view0)return; const v=view0; view0=null; SHARED.yawTo=v.yaw; SHARED.pitchTo=v.pitch; SHARED.ppuTo=v.ppu; UI.off.copy(v.off); if(v.view!==UI.view&&UI.setView)UI.setView(v.view); };
-  ED.pitch=.8;
-
-  ED.toggle=()=>{ if(!ED.on&&!inHome())return; ED.on=!ED.on; if(!ED.on){ if(ED.carry)placeCarry(true); select(null); setHover(null); showGrid(false); camOut(); const A=A_(); clearTimeout(saveT); if(A)HOME.save(snapshot(A)); } else camIn(); ED.panel(); B.textContent=ED.on?'DONE · T':'DECORATE · T'; };
+  ED.toggle=()=>{ if(!ED.on&&!inHome())return; ED.on=!ED.on; if(!ED.on){ if(ED.carry)placeCarry(true); select(null); setHover(null); showGrid(false); const A=A_(); clearTimeout(saveT); if(A)HOME.save(snapshot(A)); } ED.panel(); B.textContent=ED.on?'DONE · T':'DECORATE · T'; };
 
   /* ---------- the mouse and the keys while you decorate ---------- */
   const rc=new THREE.Raycaster(), ndc=new THREE.Vector2(), plane=new THREE.Plane(), hitP=new THREE.Vector3(), UP=new THREE.Vector3(0,1,0);
@@ -284,7 +269,7 @@ import {ROOMK} from './150a-bedroom.js';
     if(k==='escape'){ if(ED.carry)cancelCarry(); else ED.toggle(); } else if((e.ctrlKey||e.metaKey)&&k==='z')ED.back();
     else if(ED.sel&&k==='q')turn(e.altKey?Math.PI/12:RQ,e.altKey); else if(ED.sel&&k==='e')turn(e.altKey?-Math.PI/12:-RQ,e.altKey);
     else if(ED.sel&&k==='[')lift(-.05); else if(ED.sel&&k===']')lift(.05); else if(ED.sel&&(k==='delete'||k==='backspace'||k==='x'))putAway();
-    else if(k===','||k==='.')SHARED.yawTo+=k===','?RQ:-RQ; else if(k==='g'){ ED.grid=!ED.grid; ED.panel(); }
+    else if(k==='g'){ ED.grid=!ED.grid; ED.panel(); }
     else used=false; if(used){ e.stopImmediatePropagation(); e.preventDefault(); } },true);
 
   // the button shows in your apartment; the editor closes if you leave it; the buy bar's pictures a couple a frame

@@ -78,7 +78,7 @@ def scan(j,b,tris,nm):
     # the scan is hundreds of loose fur shells: filled as voxels, its skin re-cut as one closed surface, then simplified (the head at three times the body's density)
     lo=P0.min(0); vx=(P0.max(0)-lo).max()/180; G=np.zeros(tuple(((P0.max(0)-lo)/vx).astype(int)+5),bool); G[tuple(((P0-lo)/vx).astype(int).T+2)]=True
     G=ND.binary_erosion(ND.binary_fill_holes(ND.binary_dilation(G,iterations=2)),iterations=2,border_value=0)
-    V,F,_,_=marching_cubes(ND.gaussian_filter(G.astype(float),1),.5); V=(V-2)*vx+lo
+    V,F,_,_=marching_cubes(ND.gaussian_filter(G.astype(float),1),.5); V=(V-2)*vx+lo; F=F[:,::-1]
     Hy=V[:,1].max(); head=V[F].mean(1)[:,1]>Hy*.72; parts=[]
     for m,n in ((head,tris*.35),(~head,tris*.65)):
         u,inv=np.unique(F[m],return_inverse=True); v,f=FS.simplify(V[u].astype(np.float32),inv.reshape(-1,3).astype(np.int32),target_reduction=1-n/m.sum(),preserve_border=True); parts.append((v,f))

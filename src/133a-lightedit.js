@@ -1,6 +1,6 @@
 // THE LIGHTING EDITOR: LIGHTED, the global render-system and quality panel (cel is the floor); shift+5.
 import {THREE} from './003-shx.js';
-import {LIGHTED} from './003b-systems.js';
+import {LIGHTED, PS2} from './003b-systems.js';
 import {renderer, resize, scene} from './004-main.js';
 import {SAVE} from './005-save.js';
 { const SHAD={basic:THREE.BasicShadowMap,pcf:THREE.PCFShadowMap,soft:THREE.PCFSoftShadowMap,vsm:THREE.VSMShadowMap};
@@ -32,6 +32,7 @@ import {SAVE} from './005-save.js';
   function draw(){ '@later'; P.innerHTML=`<h2>LIGHTING — GLOBAL</h2><div class="pane">
     <div class="dim">Cel is the floor. High tiers are for finding a look; take the top ones out after.</div>
     <div class="row"><span class="lab">QUALITY</span>${tierBtns()}</div>
+    <div class="row"><span class="lab">PS2 FILTER</span><button class="btn" data-ps2="1" aria-pressed="${!!PS2.on}">ON</button><button class="btn" data-ps2="0" aria-pressed="${!PS2.on}">OFF</button></div>
     <div class="row"><span class="lab">SHADOWS</span><button class="btn" data-shadows="1" aria-pressed="${!!st.shadows}">ON</button><button class="btn" data-shadows="0" aria-pressed="${!st.shadows}">OFF</button></div>
     <div class="row"><span class="lab">SHADOW EDGE</span>${sel('sh',[['basic','HARD'],['pcf','PCF'],['soft','SOFT'],['vsm','VSM']])}</div>
     <div class="row"><span class="lab">TONE MAP</span>${sel('tn',[['none','NONE'],['linear','LINEAR'],['reinhard','REINHARD'],['cineon','CINEON'],['aces','ACES']])}</div>
@@ -41,6 +42,7 @@ import {SAVE} from './005-save.js';
   const refresh=()=>{ draw(); };
   P.addEventListener('click',e=>{ '@later'; const b=e.target.closest&&e.target.closest('button'); if(!b)return;
     if(b.dataset.q){ st.q=b.dataset.q; Object.assign(st,TIERS[st.q]); apply(true); save(); refresh(); return; }
+    if(b.dataset.ps2!==undefined){ PS2.set(b.dataset.ps2==='1'); refresh(); return; }
     if(b.dataset.shadows!==undefined){ st.shadows=b.dataset.shadows==='1'; st.q='custom'; apply(true); save(); refresh(); return; }
     if(b.dataset.sh){ st.shadowType=b.dataset.sh; st.q='custom'; apply(true); save(); refresh(); return; }
     if(b.dataset.tn){ st.tone=b.dataset.tn; st.q='custom'; apply(false); save(); refresh(); return; }

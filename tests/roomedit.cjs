@@ -30,7 +30,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     await pg.keyboard.press('t'); await pg.waitForTimeout(2500);
     ok(await pg.evaluate(() => ROOMEDDBG().on && !document.getElementById('roomed').hidden && !document.getElementById('roombuy').hidden), 'T opens the room editor, its panel and the buy bar');
     ok(await pg.evaluate(() => Math.abs(SHARED.pitch - ROOMED.pitch) < .05), 'the camera looks down over the room');
-    const z0 = await pg.evaluate(() => SHARED.ppuTo), cv = await at(R0.Lx / 2, 0, R0.Ly / 2); await pg.mouse.move(cv.x, cv.y); await pg.mouse.wheel(0, 240); await pg.waitForTimeout(600);
+    const z0 = await pg.evaluate(() => SHARED.ppuTo), cv = await at(R0.Lx / 2, 0, R0.Ly / 2); await pg.mouse.move(cv.x, cv.y); await pg.mouse.wheel(0, -240); await pg.waitForTimeout(600);
     ok(await pg.evaluate(z0 => !__dbg.UI.hold && Math.abs(SHARED.ppuTo - z0) > .01, z0), 'the camera stays free: the wheel zooms');
     const tabs = await pg.evaluate(() => [...document.querySelectorAll('#roombuy [data-dept]')].map(b => b.dataset.dept));
     ok(tabs.includes('beds') && tabs.includes('g:street'), 'the buy bar has the room\'s departments and the game\'s (' + tabs.length + ')');

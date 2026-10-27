@@ -1,4 +1,4 @@
-// THE PS2 FILTER: PS2, the picture's last pass: 240 lines of chunky pixels, 15-bit colour with the console's 4x4 dither, the composite signal's colour bleed and rainbow fringes, a faint grain.
+// THE PS2 FILTER: PS2, the picture's last pass: 240 lines of chunky pixels, 15-bit colour with the console's 4x4 dither, a slight colour bleed, faint rainbow fringes on hard edges and a faint echo, a faint grain.
 import {SHARED, THREE} from './003-shx.js';
 import {PS2} from './003b-systems.js';
 import {RH, RW, ShaderPass} from './004-main.js';
@@ -15,11 +15,12 @@ PS2.shader={uniforms:{tDiffuse:{value:null},uT:{value:0},uL:{value:new THREE.Vec
     float h(vec2 p){ return fract(sin(dot(p,vec2(12.9898,78.233)))*43758.5453); }
     void main(){ vec2 cell=floor(vUv*uL);
       vec3 c0=yiq(fb(cell)), cl=yiq(fb(cell-vec2(1.,0.))), cr=yiq(fb(cell+vec2(1.,0.)));
-      float Y=c0.x*.8+(cl.x+cr.x)*.1;
-      vec2 IQ=vec2(0.); float w=0.; for(int k=-3;k<=1;k++){ float a=exp(-float(k+1)*float(k+1)/3.); IQ+=yiq(fb(cell+vec2(float(k),0.))).yz*a; w+=a; } IQ/=w;
-      float e=cr.x-cl.x, ph=(cell.x+cell.y)*1.5708+uT*3.1416; IQ+=e*.9*vec2(cos(ph),sin(ph));
+      float Y=c0.x*.84+(cl.x+cr.x)*.08, e=cr.x-cl.x;
+      Y+=(yiq(fb(cell-vec2(3.,0.))).x-c0.x)*.05;
+      vec2 IQ=c0.yz*.5+(cl.yz+cr.yz)*.25;
+      float ph=(cell.x+cell.y)*1.5708+uT*3.1416; IQ+=e*.18*smoothstep(.2,.5,abs(e))*vec2(cos(ph),sin(ph));
       vec3 c=rgb(vec3(Y,IQ));
-      c+=(h(cell+fract(uT))-.5)*.035;
+      c+=(h(cell+fract(uT))-.5)*.03;
       gl_FragColor=vec4(clamp(c,0.,1.),1.); }`};
 PS2.sp=new ShaderPass(PS2.shader); PS2.sp.material.toneMapped=false; SHARED.composer.addPass(PS2.sp);
 PS2.set=on=>{ PS2.on=!!on; PS2.sp.enabled=PS2.on; try{ SAVE.set('ps2',PS2.on?'1':'0'); }catch(e){} };

@@ -170,7 +170,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
   #menu #dhome .cp-btn{border-color:transparent;background:transparent;box-shadow:none;padding:8px 10px} #menu #dhome .cp-btn:hover{color:var(--mk);background:var(--mf)} #menu #dhome .cp-btn:hover .cp-tag{color:var(--mk)} #menu #dhome .cp-dim,#menu #dhome .cp-name{font-size:13px} #menu #dhome .cp-stage{background:var(--mb)} #menu #dhome .cp-tray{display:none} #menu #dhome .cp-bar{background:var(--mk);border-color:var(--mi)} #menu #dhome #cphp{background:var(--mf)!important} #menu #dhome #cpst{background:var(--mo)!important}
   #menu canvas{display:block;margin:0 auto;max-width:100%;image-rendering:pixelated;border:2px solid var(--mi);cursor:crosshair;background:var(--mk)}
   #menu table{border-collapse:collapse;width:100%} #menu td{padding:6px;border-bottom:2px solid var(--me)} #menu td:last-child{text-align:right}
-  #menu .foot{grid-column:1/-1;padding:0 6px;color:var(--md);display:flex;gap:48px}
+  #menu .foot{display:none}
   @media (max-width:640px){ #menu .box{grid-template-columns:minmax(0,1fr);font-size:14px} #menu .tabs{flex-direction:row;flex-wrap:wrap} #menu .pane{grid-column:1;grid-row:3} #menu #dhome .cp-btn{font-size:14px} }`;
   document.head.appendChild(css);
   const M=document.createElement('div'); M.id='menu'; M.hidden=true; M.innerHTML=`<div class="box" role="dialog" aria-label="Menu">

@@ -11,7 +11,7 @@ const RIGNPC={};
       B.userData.rest=B.position.clone(); by[n]=B; bones.push(B); }
     bones[0].updateMatrixWorld(true); const skeleton=new THREE.Skeleton(bones);
     let n=0, P, C, R, SI, SW, ranges={}, top=0;
-    if(def.mesh){ const m=def.mesh; n=m.P.length/3; P=m.P; C=m.C; SI=m.SI; SW=m.SW; R=new Float32Array(n); def.parts=[{name:'body',rank:0}]; ranges.body={start:0,count:n}; for(let i=0;i<n;i++)top=Math.max(top,P[i*3+1]); }
+    if(def.mesh){ const m=def.mesh; n=m.P.length/3; P=m.P; C=m.C; SI=m.SI; SW=m.SW; R=new Float32Array(n); const L=m.parts||[['body',0,n]]; def.parts=L.map(q=>({name:q[0],rank:q[3]||0})); L.forEach((q,k)=>{ ranges[q[0]]={start:q[1],count:q[2]}; R.fill(k,q[1],q[1]+q[2]); }); for(let i=0;i<n;i++)top=Math.max(top,P[i*3+1]); }
     else{ for(const p of def.parts)for(const s of p.of)n+=s.P.length/3;
       P=new Float32Array(n*3); C=new Float32Array(n*3); R=new Float32Array(n); SI=new Uint16Array(n*4); SW=new Float32Array(n*4); let at=0;
     def.parts.forEach((p,pi)=>{ const start=at, bi=bones.indexOf(by[p.bone]); for(const s of p.of){ P.set(s.P,at*3); C.set(s.C,at*3); at+=s.P.length/3; }
@@ -63,7 +63,7 @@ const RIGNPC={};
     if(m<1)B[body].position.y+=Math.sin(c.t*1.7)*.003*(1-m); };
   const pts=M=>{ const q=new Int16Array(B64(M.p).buffer), P=new Float32Array(q.length); for(let i=0;i<q.length;i++)P[i]=(q[i]+32500)*M.sc+M.lo[i%3]; return P; };
   RIGNPC.glb=D=>{ const c=B64(D.c), C=new Float32Array(c.length); for(let i=0;i<c.length;i++)C[i]=c[i]/255; const w=B64(D.w), SW=new Float32Array(w.length); for(let i=0;i<w.length;i++)SW[i]=w[i]/255;
-    return {bones:D.bones, mesh:{P:pts(D),C,I:new Uint16Array(B64(D.i).buffer),SI:Uint16Array.from(B64(D.j)),SW}, glass:D.glass&&{P:pts(D.glass),I:new Uint16Array(B64(D.glass.i).buffer),c:D.glass.c,a:D.glass.a,bone:D.glass.bone}}; };
+    return {bones:D.bones, mesh:{P:pts(D),C,I:new Uint16Array(B64(D.i).buffer),SI:Uint16Array.from(B64(D.j)),SW,parts:D.parts}, glass:D.glass&&{P:pts(D.glass),I:new Uint16Array(B64(D.glass.i).buffer),c:D.glass.c,a:D.glass.a,bone:D.glass.bone}}; };
   RIGNPC.limbs=(c,o={})=>{ const B=c.B, ph=c.st.ph, m=c.mv, sw=Math.sin(ph)*m;
     RIGNPC.walk(c,Object.assign({body:'hips'},o));
     if(c.sheet)return;

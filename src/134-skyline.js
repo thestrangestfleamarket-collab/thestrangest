@@ -115,7 +115,7 @@ import {RINGX} from './065-ring.js';
     b.onclick=()=>{ if(!FAR3.on){ FAR3.on=true; FAR3.mist=true; } else if(FAR3.mist)FAR3.mist=false; else FAR3.on=false; try{ localStorage.setItem('market-haze3',!FAR3.on?'0':FAR3.mist?'1':'2'); }catch(e){} draw(); }; g.appendChild(b); draw();
     const H=SHARED.METRO&&SHARED.METRO.haze; if(H){ const s=document.createElement('button'); s.className='btn'; s.id='dshaze'; const dr=()=>{ s.textContent='STATION HAZE '+['OFF','LIGHT','THICK'][H.k]; s.setAttribute('aria-pressed',String(H.on)); };
       s.onclick=()=>{ H.set((H.k+1)%3); try{ SAVE.set('stationhaze',String(H.k)); }catch(e){} dr(); }; g.appendChild(s); dr(); } }
-  { const on=QS.get('farblur')!=='0', BGC=scene.background, LAY=4, rt=()=>{ const t=new THREE.WebGLRenderTarget(2,2,{depthBuffer:true}); t.texture.minFilter=t.texture.magFilter=THREE.LinearFilter; return t; }, A=rt(), Bt=rt();
+  { const on=QS.get('farblur')!=='0', BGC=scene.background, LAY=4, rt=()=>{ const t=new THREE.WebGLRenderTarget(2,2,{depthBuffer:true,type:THREE.HalfFloatType}); t.texture.minFilter=t.texture.magFilter=THREE.LinearFilter; return t; }, A=rt(), Bt=rt();
     const BM=new THREE.ShaderMaterial({uniforms:{uT:{value:null},uD:{value:new THREE.Vector2()}},depthTest:false,depthWrite:false,
       vertexShader:'varying vec2 vU; void main(){ vU=uv; gl_Position=vec4(position.xy,0.,1.); }',
       fragmentShader:'uniform sampler2D uT; uniform vec2 uD; varying vec2 vU; void main(){ vec4 c=texture2D(uT,vU)*.2; float w[4]; w[0]=.17; w[1]=.13; w[2]=.08; w[3]=.04; for(int i=1;i<=4;i++){ c+=texture2D(uT,vU+uD*float(i))*w[i-1]+texture2D(uT,vU-uD*float(i))*w[i-1]; } gl_FragColor=c; }'});

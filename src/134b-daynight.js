@@ -13,9 +13,9 @@ Object.assign(DN,{lk:1,mode:'live',modes:['live','day','golden','soft','night'],
       golden:{h:16.3,sun:1.2,amb:1.2,sunc:'#ffe2a8',zen:'#f2c46a',hor:'#fff1bc',cld:.04,cov:.9,cl:1.1,m0:8,m1:60,hz:1,mist:'#f6d68e',skym:.5,farb:1,grade:'#fff2d2',lift:'#f2c463',liftk:.2,lamp:1,star:1,moon:1,cldc:'#ffffff',cldk:0,sunhz:'#ffffff',sunk:0,shaft:0,glow:1,ambc:'#ffffff'},
       night:{h:22.5,sun:1.3,amb:1.25,sunc:'#ffffff',zen:'#04060e',hor:'#141c40',cld:.1,cov:.62,cl:.85,m0:34,m1:26,hz:.25,mist:'',skym:1,farb:.62,grade:'#ffffff',lift:'#000000',liftk:0,lamp:1.25,star:1.3,moon:1,cldc:'#ffffff',cldk:0,sunhz:'#ffffff',sunk:0,shaft:0,glow:1,ambc:'#ffffff'}};
   const F=[['h','SUN HEIGHT (THE HOUR)',7.5,18.5,.05,'dg'],['h','NIGHT HOUR (WHERE THE MOON IS)',19.5,29.5,.05,'n'],['sun','SUNLIGHT',0,2,.01,'dg'],['sun','MOONLIGHT',0,3,.01,'n'],['sunc','SUNLIGHT COLOUR','c','dg'],['amb','LIGHT ALL ROUND',0,3,.01],['ambc','LIGHT ALL ROUND COLOUR (THE SHADOWS)','c'],
-    ['zen','SKY OVERHEAD','c'],['hor','SKY AT THE HORIZON','c'],['cld','CLOUDY (DIMS THE SUN)',0,1,.01],['cov','HIGH CLOUD COVER (LOWER = MORE)',.2,.95,.01],['cl','HIGH CLOUD BRIGHTNESS',.5,1.6,.01],
+    ['zen','SKY OVERHEAD','c'],['hor','SKY AT THE HORIZON','c'],['cld','CLOUDY (DIMS THE SUN)',0,1,.01],['cov','CLOUD COVER (LOWER = MORE)',.2,.95,.01],['cl','CLOUD BRIGHTNESS',.5,1.6,.01],
     ['m0','MIST STARTS (TILES PAST TOWN)',-10,120,1],['m1','MIST DEPTH (TILES)',4,160,1],['hz','MIST TINTED BY THE SKY',0,1,.01],['mist','MIST COLOUR','c','dg'],['skym','SKY HIDDEN BY THE MIST',0,1,.01],['farb','FAR CITY HAZE BRIGHTNESS',.3,1.3,.01],
-    ['cldc','HIGH CLOUD COLOUR','c','d'],['cldk','HIGH CLOUD COLOUR (HOW MUCH)',0,1,.01,'d'],['sunhz','MIST TOWARD THE SUN','c','d'],['sunk','MIST TOWARD THE SUN (HOW MUCH)',0,1,.01,'d'],['shaft','SUN SHAFTS',0,1,.01,'d'],['glow','GLOW',0,2.5,.01],
+    ['cldc','CLOUD COLOUR','c','d'],['cldk','CLOUD COLOUR (HOW MUCH)',0,1,.01,'d'],['sunhz','MIST TOWARD THE SUN','c','d'],['sunk','MIST TOWARD THE SUN (HOW MUCH)',0,1,.01,'d'],['shaft','SUN SHAFTS',0,1,.01,'d'],['glow','GLOW',0,2.5,.01],
     ['grade','COLOUR OF EVERYTHING','c'],['lift','HAZE OVER EVERYTHING','c'],['liftk','HAZE OVER EVERYTHING (HOW MUCH)',0,.6,.01],
     ['lamp','LAMPS',0,3,.01,'n'],['star','STARS',0,2,.01,'n'],['moon','MOON',0,1,.01,'n']];
   const S={}; for(const m of DN.modes){ S[m]={...D0[m]}; try{ Object.assign(S[m],JSON.parse(SAVE.get('dn-'+m)||'{}')); }catch(e){} }
@@ -29,7 +29,7 @@ Object.assign(DN,{lk:1,mode:'live',modes:['live','day','golden','soft','night'],
   SYS.add('sky',()=>{ const P=DN.P(), live=DN.mode==='live', night=live?CLOCK.dark():DN.mode==='night', up=SHARED.LVL!=='down';
     CLOCK.sun.intensity*=P.sun; CLOCK.sun.color.multiply(tc.set(P.sunc)); if(up){ HEMI.intensity*=P.amb; if(P.ambc)HEMI.color.multiply(tc.set(P.ambc)); } DN.lk=night?P.lamp:1;
     DN.U.grade.value.set(live?'#ffffff':P.grade); DN.U.lift.value.set(P.lift); DN.U.liftK.value=up&&!live?P.liftk:0;
-    if(SKY.dome.visible){ if(!live){ U.uZ.value.set(P.zen); U.uH.value.set(P.hor); U.uM.value.copy(U.uH.value).lerp(U.uZ.value,.45); U.uCov.value=P.cov; U.uCL.value=P.cl; U.uCldC.value.set(P.cldc||'#ffffff'); U.uCldK.value=P.cldk||0; } U.uMistK.value*=P.skym;
+    if(SKY.on()){ if(!live){ U.uZ.value.set(P.zen); U.uH.value.set(P.hor); U.uM.value.copy(U.uH.value).lerp(U.uZ.value,.45); U.uCov.value=P.cov; U.uCL.value=P.cl; U.uCldC.value.set(P.cldc||'#ffffff'); U.uCldK.value=P.cldk||0; } U.uMistK.value*=P.skym;
       if(night){ U.uStar.value=Math.min(2,U.uStar.value*P.star); U.uMoonK.value=Math.min(1,U.uMoonK.value*P.moon); } }
     MISTS.x=CLOCK.sunV.x; MISTS.y=CLOCK.sunV.y; MISTS.z=CLOCK.sunV.z; MISTS.w=up&&MISTE.x&&FAR3.mist?(P.sunk||0)*Math.max(0,Math.min(1,(CLOCK.elev()+2)/6)):0; MISTSC.set(P.sunhz||'#ffffff');
     if(MISTE.x&&FAR3.mist){ MISTE.y=P.m0; MISTE.z=P.m1; const f=FAR3.fog.color.lerp(P.mist?tc.set(P.mist):U.uH.value,P.hz); U.uMistC.value.copy(f); FAR3.FU.uMC.value.copy(f).multiplyScalar(P.farb); if(scene.background&&scene.background.isColor)scene.background.copy(f).multiplyScalar(.5); }

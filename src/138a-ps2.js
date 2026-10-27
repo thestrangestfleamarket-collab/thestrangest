@@ -16,7 +16,8 @@ PS2.shader={uniforms:{tDiffuse:{value:null},uT:{value:0},uL:{value:new THREE.Vec
       float Y=c0.x*.84+(cl.x+cr.x)*.08, e=cr.x-cl.x;
       Y+=(yiq(fb(cell-vec2(3.,0.))).x-c0.x)*.05;
       vec2 IQ=c0.yz*.5+(cl.yz+cr.yz)*.25;
-      float ph=(cell.x+cell.y)*1.5708+uT*3.1416; IQ+=e*.18*smoothstep(.2,.5,abs(e))*vec2(cos(ph),sin(ph));
+      float ph=(cell.x+cell.y)*1.5708;   // a fixed phase: one that turns each frame makes every far edge flicker
+      IQ+=e*.18*smoothstep(.2,.5,abs(e))*vec2(cos(ph),sin(ph));
       vec3 c=rgb(vec3(Y,IQ));
       c+=(h(cell+fract(uT))-.5)*.03;
       gl_FragColor=vec4(clamp(c,0.,1.),1.); }`};

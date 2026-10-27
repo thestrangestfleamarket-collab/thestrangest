@@ -16,7 +16,8 @@ PS2.shader={uniforms:{tDiffuse:{value:null},uT:{value:0},uL:{value:new THREE.Vec
       float Y=c0.x*.84+(cl.x+cr.x)*.08, e=cr.x-cl.x;
       Y+=(yiq(fb(cell-vec2(3.,0.))).x-c0.x)*.05;
       vec2 IQ=c0.yz*.5+(cl.yz+cr.yz)*.25;
-      float ph=(cell.x+cell.y)*1.5708+uT*3.1416; IQ+=e*.18*smoothstep(.2,.5,abs(e))*vec2(cos(ph),sin(ph));
+      float ph=(cell.x+cell.y)*1.5708;   // a fixed phase: one that turns each frame makes every far edge flicker
+      IQ+=e*.18*smoothstep(.2,.5,abs(e))*vec2(cos(ph),sin(ph));
       vec3 c=rgb(vec3(Y,IQ));
       c+=(h(cell+fract(uT))-.5)*.03;
       gl_FragColor=vec4(clamp(c,0.,1.),1.); }`};
@@ -25,7 +26,7 @@ PS2.img=(px,W,H,lines)=>{ const L=Math.max(8,Math.round(lines)), Lx=Math.max(8,M
   for(let j=0;j<L;j++)for(let i=0;i<Lx;i++){ const k=(Math.floor((j+.5)*H/L)*W+Math.floor((i+.5)*W/Lx))*4, r=q(px[k]), g=q(px[k+1]), b=q(px[k+2]), n=j*Lx+i;
     A[n]=px[k+3]>=24?px[k+3]:0; Y[n]=.299*r+.587*g+.114*b; I[n]=.596*r-.274*g-.322*b; Q[n]=.211*r-.523*g+.312*b; }
   const t=PS2.sp.uniforms.uT.value, at=(i,j,F,c)=>{ const n=j*Lx+i; return i<0||i>=Lx||!A[n]?c:F[n]; };
-  for(let j=0;j<L;j++)for(let i=0;i<Lx;i++){ const n=j*Lx+i; if(!A[n])continue; const y0=Y[n], yl=at(i-1,j,Y,y0), yr=at(i+1,j,Y,y0), e=yr-yl, s=Math.min(1,Math.max(0,(Math.abs(e)-.2)/.3)), f=.18*s*s*(3-2*s)*e, ph=(i+j)*1.5708+t*3.1416;
+  for(let j=0;j<L;j++)for(let i=0;i<Lx;i++){ const n=j*Lx+i; if(!A[n])continue; const y0=Y[n], yl=at(i-1,j,Y,y0), yr=at(i+1,j,Y,y0), e=yr-yl, s=Math.min(1,Math.max(0,(Math.abs(e)-.2)/.3)), f=.18*s*s*(3-2*s)*e, ph=(i+j)*1.5708;
     const y=y0*.84+(yl+yr)*.08+(at(i-3,j,Y,y0)-y0)*.05, ii=I[n]*.5+(at(i-1,j,I,I[n])+at(i+1,j,I,I[n]))*.25+f*Math.cos(ph), qq=Q[n]*.5+(at(i-1,j,Q,Q[n])+at(i+1,j,Q,Q[n]))*.25+f*Math.sin(ph), h=Math.sin(i*12.9898+j*78.233+t)*43758.5453, z=(h-Math.floor(h)-.5)*.03;
     const R=255*Math.min(1,Math.max(0,y+.956*ii+.621*qq+z)), G=255*Math.min(1,Math.max(0,y-.272*ii-.647*qq+z)), B=255*Math.min(1,Math.max(0,y-1.106*ii+1.703*qq+z));
     for(let yy=Math.floor(j*H/L);yy<Math.floor((j+1)*H/L);yy++)for(let xx=Math.floor(i*W/Lx);xx<Math.floor((i+1)*W/Lx);xx++){ const k=(yy*W+xx)*4; px[k]=R; px[k+1]=G; px[k+2]=B; px[k+3]=A[n]; } }

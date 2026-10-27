@@ -153,6 +153,10 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
         out['phase' + k] = { style: n.D.style, speed: +fly.getEffectiveTimeScale().toFixed(2), weight: +fly.getEffectiveWeight().toFixed(2) }; } return out; }).catch(e => ({ err: e.message }));
     ok(dg.phase0 && dg.phase1 && dg.phase0.style !== dg.phase1.style && dg.phase0.speed > .4 && dg.phase1.speed > .4, 'a flying dragon beats its wings through both halves of its flight: ' + JSON.stringify(dg));
   }
+  { const ps = await pg.evaluate(() => { const C = SHARED.composer.passes, i = C.findIndex(q => q.uniforms && q.uniforms.uL && q.uniforms.uT), on = C.filter(q => q.enabled); return { found: i >= 0, on: i >= 0 && C[i].enabled, last: on[on.length - 1] === C[i], lines: i >= 0 && C[i].uniforms.uL.value.y }; }).catch(e => ({ err: e.message }));
+    ok(ps.found && ps.on && ps.last && ps.lines === 240, 'the PS2 filter is on by default and is the last pass (240 lines): ' + JSON.stringify(ps)); }
+  { const rs = await pg.evaluate(async () => { const c = document.querySelector('#stage canvas'), out = {}, raf = () => new Promise(r => requestAnimationFrame(r)); for (const i of [0, 2, 4]) { document.querySelector('[data-res="' + i + '"]').click(); await raf(); out[i] = c.height; } return out; }).catch(e => ({ err: e.message }));
+    ok(rs[0] > 0 && rs[0] < rs[2] && rs[2] < rs[4], 'RESOLUTION: LOWEST, MED and HIGHEST draw fewer to more lines: ' + JSON.stringify(rs)); }
   ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.slice(0, 3).join(' | ') : ''));
   await b.close();
   console.log(fails.length ? fails.length + ' failed' : 'all core checks passed');

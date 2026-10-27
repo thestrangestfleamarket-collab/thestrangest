@@ -4817,3 +4817,5 @@ Owner: "the character should ahve t he same effecst on this shot as real game (l
 
 ## 27 Oct 2026: the menu in the Codec style
 Owner picked mockup 3 (Codec) of six PS2-style menus; then "simplify the menu, dont need these sections" (the gear slots, carried gear, YOU), "this top should just say The Strangest Flea Market", "MAP, INVENTORY, SKILLS, SETTINGS, REPORT A BUG, LOG OUT, HELP only options", "in that order". The menu is green on black with scanlines and a mono type; the title THE STRANGEST FLEA MARKET; those seven options in that order (ADMIN after them for owners only).
+## 27 Oct 2026: nothing drawn past the haze
+Owner: "i want to make sure that stuff that is hazed out is not being fully rendered, it should be rendered as you get closer, never render extra stuff"; asked, he chose the haze whole at its far end. The distance fog now hides the world fully at its END (60 tiles); nothing wholly past it is drawn (things and characters), only the sky and the skyline; things come into view as you walk closer. Rule: the cut follows DISTANCE FOG's END; in free camera and the editors the haze stays as before and nothing is cut.

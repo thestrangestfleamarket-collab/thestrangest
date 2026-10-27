@@ -19,11 +19,11 @@ await grab('apts',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Yr=SHARED.BOD.
       if(fy<1||fx<1)return sh(base,f*.7); let k=(.9+.16*TN(bi,bc,sd))*(1+.14*(gr(ui/24,z/24,sd+4,1)-.5))*(z<5?.8+.04*z:1); if(fy>=bh-1)k*=1.08; return sh(base,f*k); };
     return {fs:(nx,ny,X_,Y_,z,f)=>P(nx?Y_:X_,z,f),top:(x,y)=>{ let k=1+.12*(gr(x,y,sd+10,.5)-.5); if(mid)k*=1+.1*Math.max(0,1-Math.abs(x-mid[0])/mid[1]); return sh(base,k); }}; };
 
-  const FWU=[3.25,9.75], SIDE=[.22,.5,.78], DU=6.5, DI=.85, DO=2.06, RD=5.3, steel=[34,36,40], WINA=Math.round(S*.12), WINB=Math.round(S*.88), WDH=1.5;
-  const feats=[]; let seed=3; const win=(side,a,z0,z1,o={})=>{ seed++; feats.push({side,a0:a-.55,a1:a+.55,z0,z1,lit:hash(seed,1,9)<.45,seed,box:!o.door&&hash(seed,4,9)<.78,...o}); };
-  for(const [side] of [['f'],['b']])for(let lv=0;lv<ST;lv++){ const z=RZ+lv*S; for(const u of FWU)win(side,A.x0+u,z+42,z+94); if(lv)side==='f'?win(side,A.x0+DU,z+3,z+94,{door:true,lit:false}):win(side,A.x0+DU,z+42,z+94); }
+  const FWU=[3.25,9.75], SIDE=[.22,.5,.78], WHW=.775, WZ=[24,87], DU=6.5, DI=.85, DO=2.06, RD=5.3, steel=[34,36,40], WINA=Math.round(S*.12), WINB=Math.round(S*.88), WDH=1.5;
+  const feats=[]; let seed=3; const win=(side,a,z0,z1,o={})=>{ seed++; feats.push({side,a0:a-(o.hw||.55),a1:a+(o.hw||.55),z0,z1,lit:hash(seed,1,9)<.45,seed,box:!o.door&&hash(seed,4,9)<.78,...o}); };
+  for(const [side] of [['f'],['b']])for(let lv=0;lv<ST;lv++){ const z=RZ+lv*S; for(const u of FWU)win(side,A.x0+u,z+WZ[0],z+WZ[1],{hw:WHW}); if(lv)side==='f'?win(side,A.x0+DU,z+3,z+94,{door:true,lit:false}):win(side,A.x0+DU,z+WZ[0],z+WZ[1],{hw:WHW}); }
   feats.push({side:'f',a0:m-DW,a1:m+DW,z0:RZ,z1:RZ+DH,door:true,arch:true,lit:false,seed:41},{side:'b',a0:m-DW,a1:m+DW,z0:RZ,z1:RZ+DH,door:true,lit:false,seed:43});
-  for(const [side,a0,a1] of [['w',A.y0,A.y1],['e',A.y0,A.y1]])for(let lv=1;lv<ST;lv++)for(const k of SIDE)win(side,a0+(a1-a0)*k,RZ+lv*S+42,RZ+lv*S+94,{box:false});
+  for(const [side,a0,a1] of [['w',A.y0,A.y1],['e',A.y0,A.y1]])for(let lv=1;lv<ST;lv++)for(const k of SIDE)win(side,a0+(a1-a0)*k,RZ+lv*S+WZ[0],RZ+lv*S+WZ[1],{box:false,hw:WHW});
   const ivy=[{side:'f',a0:A.x0,a1:A.x0+2.4,h:RZ+S*1.7,seed:5,fall:.6},{side:'f',a0:A.x1-2,a1:A.x1,h:RZ+S*2.4,seed:7,fall:.6},{side:'w',a0:A.y1-4.5,a1:A.y1,h:RZ+S*2.2,seed:9,fall:.8},{side:'e',a0:A.y0+4,a1:A.y1-.4,h:RZ+S*2.1,seed:11},{side:'b',a0:A.x0+10,a1:A.x1,h:RZ+S*1.4,seed:13,fall:.6}];
   const roofCol=(x,y)=>{ const n=hash(Math.floor(x*4),Math.floor(y*4),61), e=Math.min(x-A.x0,A.x1-x,y-A.y0,A.y1-y); return e<.25?sh([118,50,38],e<.1?.8:1.05):n<.3?[50,50,52]:n>.7?[66,64,62]:[58,57,57]; };
   const PAINT=APTS.paint=BLOCKS.facade({feats,ivy,top:TOP,wall:BLOCKS.brick([138,60,44]),trim:[118,50,38],base:{z1:RZ,paint:BLOCKS.brick([120,52,40])}}), BB=BLOCKS.make({...AW,z0:0,z1:TOP,kind:'A',turn:TA,roof:(x,y)=>roofCol(...TA.back(x,y)),paint:PAINT});   // the house on the street is a solid painted block (floors 1-9 just a block); your floor-10 apartment is built off the map
@@ -42,7 +42,7 @@ await grab('apts',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Yr=SHARED.BOD.
       B(F.ua,F.lx-.4,DI,DO,z-3,z,1); B(F.lx+.4,F.ub,DI,DO,z-3,z,1);
       B(F.ua,F.ub,DO-.06,DO,z-9,z); for(let u=F.ua+.3;u<F.ub;u+=2.4)B(u,u+.06,0,DO,z-12,z-3);
       rail(lv,F.ua,F.ub,DO-.05,DO); rail(lv,F.ua,F.ua+.05,0,DO); rail(lv,F.ub-.05,F.ub,0,DO); B(F.ua,F.ub,DO-.16,DO+.02,z+33,z+35,1);   // a flat ledge along the top rail to set things on
-      if(FLAT)for(const u of FWU)stone(u-.62,u+.62,0,.26,z+39.5,z+42);   // the windows' stone sills, deep enough for a pot
+      if(FLAT)for(const u of FWU)stone(u-WHW-.07,u+WHW+.07,0,.26,z+WZ[0]-2.5,z+WZ[0]);   // the windows' stone sills, deep enough for a pot
       const sp=[F.ua+.45,F.ua+1.5,F.ua+2.6,F.ub-2.4,F.ub-1.4,F.ub-.45].filter(u=>Math.abs(u-F.lx)>.7&&Math.abs(u-DU)>.95), K=['pot','flower','fern','tall','flower'];
       sp.forEach((u,i)=>{ const h=hash(lv,i,F.o+5); if(h<.25)return; const kd=K[Math.floor(hash(lv,i,F.o+7)*K.length)]; pl(U(u),Yd(DO-.3),RZ+z,.7,kd==='tall'?54:kd==='fern'?40:46,kd,lv*13+i*7+F.o,F.k); });
       for(const [du,j] of [[-1.05,0],[1.05,1]])pl(U(DU+du),Yd(.4),RZ+z,.6,hash(lv,j,F.o+13)<.5?34:44,K[Math.floor(hash(lv,j+8,F.o)*K.length)],lv*17+j*5+F.o+29,F.k);
@@ -130,7 +130,11 @@ await grab('apts',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Yr=SHARED.BOD.
   window.HOUSEAT=(dy=0)=>XZ(m,A.y1+dy); APTS.doorAt=XZ(m,A.y1); APTS.doorHd=TA.hd(0);
   window.APTSDBG=()=>({in:APTS.in,esc:APTS.esc,floor:APTS.floor(),py:SHARED.py,pos:[+pos.x.toFixed(2),+pos.z.toFixed(2)],door:+X(m).toFixed(1),lad:LAD.F?+LAD.y.toFixed(1):null,block:BB});
 
-  const AW_=+(A.x1-A.x0).toFixed(3), AD_=+(A.y1-A.y0).toFixed(3), AR={x0:994,y0:20,x1:994+AW_,y1:20+AD_}, AX=(AR.x0+AR.x1)/2, WH=S, MY=APTS.my=ST-1, RB=APTS.RB=RZ+Math.min(MY,ST-2)*S, Yh=z=>Yr(RB+z), DC=AR.x0+DU; APTS.R=AR; APTS.fw=[DC,AR.y0]; APTS.WIN={FWU,SIDE,WINA,WINB,DU,DC,DH}; const BED=APTS.BED={x0:AR.x0+7.75,y0:AR.y0,x1:AR.x1,y1:AR.y0+5,H:WH};   // the bedroom's corner (front right): its own walls, things and light (150a-bedroom)   // off-map in the empty sky; footprint and one-storey height match the real building exactly (1:1)
+  const AW_=+(A.x1-A.x0).toFixed(3), AD_=+(A.y1-A.y0).toFixed(3), AR={x0:994,y0:20,x1:994+AW_,y1:20+AD_}, AX=(AR.x0+AR.x1)/2, WH=S, MY=APTS.my=ST-1, RB=APTS.RB=RZ+Math.min(MY,ST-2)*S, Yh=z=>Yr(RB+z), DC=AR.x0+DU; APTS.R=AR; APTS.fw=[DC,AR.y0]; APTS.WIN={FWU,SIDE,WHW,WZ,WINA,WINB,DU,DC,DH};
+  // real window glass: clear looked through straight, the sky's sheen at a slant, the sun's glint
+  APTS.glassMat=(o={})=>{ const m=new THREE.MeshPhongMaterial({color:0xa8bccb,specular:0xffffff,shininess:160,transparent:true,opacity:.14,depthWrite:false,side:THREE.DoubleSide,...o});
+    m.onBeforeCompile=sh=>{ sh.fragmentShader=sh.fragmentShader.replace('#include <opaque_fragment>','#include <opaque_fragment>\n float fr=pow(1.-abs(dot(normalize(normal),normalize(vViewPosition))),3.); gl_FragColor.rgb=mix(gl_FragColor.rgb,vec3(.72,.82,.92),fr*.5); gl_FragColor.a=mix(gl_FragColor.a,.55,fr);'); };
+    m.customProgramCacheKey=()=>'aptglass'; return m; }; const BED=APTS.BED={x0:AR.x0+7.75,y0:AR.y0,x1:AR.x1,y1:AR.y0+5,H:WH};   // the bedroom's corner (front right): its own walls, things and light (150a-bedroom)   // off-map in the empty sky; footprint and one-storey height match the real building exactly (1:1)
   const FURN=[], DYN={win:[],bar:[],cur:[],flame:[]}; let PA=null, AS=[], AF=[], AG=null;
   const DG=.5, ED=APTS.escDoor={open:false,sol:null,set:o=>{ ED.open=!!o; if(!APTS.solid)return; if(ED.open&&ED.sol){ APTS.unsolid(ED.sol); ED.sol=null; } else if(!ED.open&&!ED.sol)ED.sol=APTS.solid(DC-DG,AR.y0-.4,DC+DG,AR.y0,WH); }};   // the door to the fire escape: open, you walk through; shut, it is wall
   APTS.furnish=(lv,fn)=>{ FURN.push(fn); if(PA){ const Q=ROOMS.part(AG,fn); for(const k of ['objs','things','cuts','lights'])PA[k].push(...Q[k]); } };

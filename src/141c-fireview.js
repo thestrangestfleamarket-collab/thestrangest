@@ -88,7 +88,9 @@ import {BATCH} from './008-batch.js';
     if(on!==F.on){ F.on=on; APTS.onEsc=on; if(!UI.persp)UI.isoTurn(on?Math.PI*3/4:-Math.PI/4); }   // through the door: the isometric view turns to look at the house from outside, or into your rooms
     UI.distMax=home?WMAX:null; if(home&&UI.dist>WMAX)UI.dist=WMAX;   // on your fire escape you can't zoom out past the landings round yours
     const iso=home&&!UI.persp; TOP.constant=iso?Y(HZ+45):1e6; BOT.constant=iso?Y(HZ+.1):1e6; G.visible=home;
-    if(home&&!UI.persp&&!UI.freeCam){ const u=UI.off.dot(upV.setFromMatrixColumn(SHARED.cam.matrixWorld,1)); if(u>0)UI.off.addScaledVector(upV,-u); }   // and the view can't be dragged up past your floor
+    if(home&&!UI.persp&&!UI.freeCam){ upV.setFromMatrixColumn(SHARED.cam.matrixWorld,1); const u=UI.off.dot(upV), lo=(Y(HZ-2.5*S)-SHARED.py)*upV.y; let hi=lo;
+      for(const x of [AR.x0,AR.x1])for(const z of [AR.y0,AR.y1])hi=Math.max(hi,(X(x)-pos.x)*upV.x+(Y(HZ+S)-SHARED.py)*upV.y+(Z(z)-pos.z)*upV.z);
+      const c=SHARED.cam; hi=Math.max(lo,hi-.85*(c.top-c.bottom)/2/(c.zoom||1)); const k=Math.max(lo,Math.min(hi,u)); if(k!==u)UI.off.addScaledVector(upV,k-u); }   // the view drags between the clouds' top and your ceiling's far corner at the top of the screen
     if(!home){ if(light)light.intensity=0; return; }
     if(FAR3.mesh)FAR3.mesh.visible=false; if(FAR3.panels)FAR3.panels.visible=false; if(FAR3.trees)FAR3.trees.visible=false; if(FAR3.FU)FAR3.FU.uMK.value=0; MISTE.x=0; if(SKY.U.uMistK)SKY.U.uMistK.value=0; if(scene.fog===FAR3.fog)scene.fog=null;
     light.intensity=on?2.4*nk():0;

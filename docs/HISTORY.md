@@ -4801,3 +4801,6 @@ Owner (his crop of the see-through character, the booth game picture): "fix the 
 
 ## 27 Oct 2026: the PS2 filter without dither
 Owner (his picture of the lawn): "what can we do about the pattern that looks repetetive overlay", then "1" (remove the dither). The PS2 filter has no 4x4 dither; flat colour with the faint grain.
+
+## 27 Oct 2026: at home, the walls stay up; the view stops at the clouds
+Owner (his pictures at home): "stop removing walls at all, also i cant scroll up past this", "i shouldnt be able to go down this far", "it should stop here" (the clouds filling the bottom). Your apartment's walls are never cut. In the isometric view at home the view drags up until your room's far top corner is at the top of the screen, and down only until the clouds fill the bottom.

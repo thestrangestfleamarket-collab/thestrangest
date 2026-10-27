@@ -60,7 +60,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
       o.edges = (() => { const C = __dbg.THREE.ShaderChunk, f = C.shadowmap_pars_fragment, L = C.lights_fragment_begin; return [(f.match(/texture2DCompare\(/g) || []).length, L.includes('if ( sh > 0. )'), window.SUNDBG ? SUNDBG().patch : false]; })();
       o.shafts = window.SHAFTS ? [SHAFTS.on > 0, SHAFTS.occ === 1, SHAFTS.list[0].material.depthTest === true] : null;
       o.lawn = (() => { const lc = SHARED.BOD.g.lawnCol(3.3, 7.1), map = __dbg.MAPK.MODS.land && __dbg.MAPK.MODS.land.material.map; return { painted: !!(map && map.image && map.image.width > 0), col: Array.isArray(lc) && lc.length === 3 && lc.every(v => v >= 0 && v <= 255), top: typeof WEEDS.top === 'function' }; })();
-      o.sky = [typeof SKY.sunCover === 'number' && SKY.sunCover >= 0 && SKY.sunCover <= 1, typeof SKY.cloudAt === 'function' && SKY.cloudAt(0, 1, 0, 0, .5) >= 0 && SKY.cloudAt(0, 1, 0, 0, .5) <= 1, typeof SKY.GLSL === 'string' && SKY.GLSL.includes('cloudAt')];
+      o.sky = [typeof SKY.sunCover === 'number' && SKY.sunCover >= 0 && SKY.sunCover <= 1, SKY.CU && SKY.CU.cover(0, 1, 0, 0) >= 0 && SKY.CU.cover(0, 1, 0, 0) <= 1, SKY.CU && SKY.CU.n > 0 && typeof SKY.cumulus === 'function'];
       o.breath = [typeof __dbg.VIT.air === 'number', typeof __dbg.VIT.breathe === 'function', (window.ITEMS && ITEMS.prop ? +ITEMS.prop('airshroom', 'breath') : 0) || 0];
       o.downs = ['dungeon', 'gemcave', 'hudson'].map(k => { const L = LEVELS.of[k]; return !!(L && L.floor === 'down' && typeof L.has === 'function' && typeof L.ground === 'function' && typeof L.bound === 'function'); });
       o.swords = (() => { const I = window.ITEMS, W = window.WIELD, F = window.FIGHT, S = window.STRIKES, V = __dbg.VIT; if (!I || !W || !F || !S) return { ok: false };
@@ -123,7 +123,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
     ok(r.lawn && r.lawn.painted && r.lawn.col && r.lawn.top, 'the lawn: the land wears its lawn texture and lawnCol gives a colour (the grass itself: tests/lawn.cjs) (' + JSON.stringify(r.lawn) + ')');
     ok(r.edges && r.edges[0] <= 16 && r.edges[1] && r.edges[2], 'cheaper shadow edges: PCF and SOFT read 4 texels (not 17/16), the point light 4 (not 9), the sun reads its near or far map and the moving map only where lit (' + JSON.stringify(r.edges) + ')');
     ok(r.shafts && r.shafts.every(Boolean), 'the sun shafts are up in the day, lit by the sun\'s shadow map so solids block them, and hidden by what stands in front (SHAFTS: ' + JSON.stringify(r.shafts) + ')');
-    ok(r.sky && r.sky.every(Boolean), 'the sky knows its clouds: the sun\'s cover is a number in 0..1, the CPU cloud mirror answers in 0..1 (' + JSON.stringify(r.sky) + ')');
+    ok(r.sky && r.sky.every(Boolean), 'the sky knows its clouds: the sun\'s cover is a number in 0..1, the cumulus field answers in 0..1 and is baked (SKY.cumulus) (' + JSON.stringify(r.sky) + ')');
     ok(r.breath[0] && r.breath[1] && r.breath[2] > 0, 'breath: VIT.air + VIT.breathe exist and the AIRCAP mushroom grants air (' + r.breath.join(',') + ')');
     ok(r.downs.every(Boolean), 'every down level (dungeon, gem cave, hudson cavern) gives its own has/ground/bound through LEVELS.of (' + r.downs.join(',') + ')');
     ok(r.swords.ok && r.swords.dmg === '1,2,3,5' && r.swords.hand && r.swords.api && r.swords.took === 1, 'swords: four blades carry DAMAGE on the item model, every blow passes the guard, landed strikes feed SWORDSMANSHIP: ' + JSON.stringify(r.swords));
@@ -141,12 +141,21 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
     ok(r.charp.ok && r.charp.open && r.charp.built && r.charp.tabsHidden && r.charp.pick && r.charp.closed && r.charp.log >= 50, 'the character page is the menu home (ESC): avatar + buttons built, the old tabs hidden, an empty slot opens its gear list, opens and closes, and the admin menu game log is baked from HISTORY: ' + JSON.stringify(r.charp));
     const pk = await pg.evaluate(() => { const P = window.PARK, D = window.DFOG, c = window.SHARED && window.SHARED.composer; return { sign: !!(P.sign && P.sign.top > P.sign.y), fog: !!D && D.get().start === 20 && D.get().end === 60, pass: !!c && c.passes.some(q => q.uniforms && q.uniforms.tDepth), stand: !!(P.stand && P.stand.children.length) }; }).catch(e => ({ err: e.message }));
     ok(pk.sign && pk.fog && pk.pass && pk.stand, 'the park: its sign has a top for the dragon, the street stand-ins are built, the distance fog pass reads depth (20 to 60 tiles from you): ' + JSON.stringify(pk));
+    await pg.evaluate(() => window.__dbg.UI.setView('follow')).catch(() => {}); await pg.waitForTimeout(800);
+    const hz = await pg.evaluate(() => { const D = window.__dbg, C = D.CULL, T = D.cv().TILE, [x, , z] = D.pos(), mk = d => { const m = new D.THREE.Mesh(new D.THREE.BoxGeometry(1, 1, 1)); m.position.set(x + d * T, 0, z); m.updateMatrixWorld(); D.scene.add(m); return m; };
+      const far = mk(80), near = mk(10), sky = window.FAR3.mesh, skyV = sky && sky.visible, pass = window.SHARED.composer.passes.find(q => q.uniforms && q.uniforms.uF);
+      C.scan(); C.begin(); const r = { cut: +(window.DFOG.cut() / T).toFixed(1), farHid: !far.visible, nearShown: near.visible, sky: !!sky && sky.visible === skyV && !C.FL.includes(sky), npc: C.past(x + 80 * T, z, T) && !C.past(x + 30 * T, z, T), full: !!pass && pass.uniforms.uF.value === 1 };
+      C.end(); r.back = far.visible; far.removeFromParent(); near.removeFromParent(); return r; }).catch(e => ({ err: e.message }));
+    ok(hz.cut === 60 && hz.farHid && hz.nearShown && hz.sky && hz.npc && hz.full && hz.back, 'the haze is whole at its end and nothing wholly past it is drawn (a mesh 80 tiles off hidden for the frame, one 10 tiles off drawn, the skyline kept, characters by the same test): ' + JSON.stringify(hz));
+    { const iz = await pg.evaluate(() => { window.__dbg.UI.setView('iso'); return window.DFOG.cut(); }).catch(e => e.message); ok(iz === 0, 'no haze and nothing cut in the isometric view (27 Oct 2026): ' + iz); }
     const rg = await pg.evaluate(() => { const P = window.PARK, R = P.ring; if (!R) return { ring: false }; const A = R.userData.P; let out = 0;
       for (let v = 0; v < A.length; v += 3) { const [x, y] = P.at(A[v], A[v + 2]); if (x < P.x0 + 1.5 || x > P.x1 - 1.5 || y < P.y0 + 1.5 || y > P.y1 - 1.5) out++; }
       return { ring: true, n: P.ringN, still: !R.geometry.attributes.aSw, low: R.userData.items.every(o => /\.low$/.test(o.k)), out, climb: P.treeItems().length >= P.ringN }; }).catch(e => ({ err: e.message }));
     ok(rg.ring && rg.n > 40 && rg.still && rg.low && rg.out === 0 && rg.climb, "the park's edge ring is one still low bake, every crown inside the wall, its trees climbable: " + JSON.stringify(rg));
     const rf = await pg.evaluate(() => typeof ROOFSDBG !== 'undefined' ? ROOFSDBG() : null).catch(e => ({ err: e.message }));
     ok(rf && rf.blockProps > 300 && rf.blockBoxes > 1000 && rf.tris < 160000, 'the across-street block (Market St + Hudson rows) wears a busy roof of units, dishes, ducts, planters and debris, within budget: ' + JSON.stringify(rf));
+    const mk = await pg.evaluate(() => { const r = BLK.blds.filter(q => q.row === 1); return { n: r.length, kit: r.filter(q => q.kit && q.mesh.material[4].map && q.mesh.material[4].map.image).length }; }).catch(e => ({ err: e.message }));
+    ok(mk.n > 5 && mk.kit === mk.n, "Market St's empty fronts are MegaKit buildings, each side its baked picture: " + JSON.stringify(mk));
     const cm = await pg.evaluate(async () => { const raf = () => new Promise(r => requestAnimationFrame(r)), D = window.__dbg, W = D.W3, T = D.cv().TILE, hi = W.idx('head');
       D.UI.goTo(-2.2, 3.2, 'up', .8); D.UI.setView('follow'); for (let i = 0; i < 12; i++) await raf(); let min = 1e9;
       dispatchEvent(new KeyboardEvent('keydown', { key: 'w' })); for (let i = 0; i < 3; i++) { await raf(); const h = new D.THREE.Vector3().setFromMatrixPosition(W.PM.value[hi]).applyMatrix4(W.mesh.matrixWorld); min = Math.min(min, D.camO().position.distanceTo(h) / T); }
@@ -160,6 +169,18 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
         out['phase' + k] = { style: n.D.style, speed: +fly.getEffectiveTimeScale().toFixed(2), weight: +fly.getEffectiveWeight().toFixed(2) }; } return out; }).catch(e => ({ err: e.message }));
     ok(dg.phase0 && dg.phase1 && dg.phase0.style !== dg.phase1.style && dg.phase0.speed > .4 && dg.phase1.speed > .4, 'a flying dragon beats its wings through both halves of its flight: ' + JSON.stringify(dg));
   }
+  { const hp = await pg.evaluate(async () => { const raf = () => new Promise(r => requestAnimationFrame(r)), D = window.__dbg, T = D.cv().TILE, o = {};
+      o.before = !!(window.PIER && PIER.G);
+      for (let k = 0; k < 4 && !(RIVER.on && window.PIER && PIER.G); k++) { for (let i = 0; i < 600 && FADE.busy; i++) await raf(); if (!RIVER.on) STORE.goTo(SHARED.BOD.XS(61), SHARED.BOD.ZS(-118), 'up'); for (let i = 0; i < 900 && !(RIVER.on && window.PIER && PIER.G); i++) await raf(); } if (!PIER.G) return { built: false, before: o.before };
+      o.built = PIER.G.parent && PIER.G.parent.name === 'river'; o.long = +((PIER.z0 - PIER.zE) / T).toFixed(1); o.longest = RIVER.decks.every(d => d.pier || d.r.every(r => PIER.z0 - r[1] < PIER.z0 - PIER.zE));
+      o.deck = [RIVER.onPier(PIER.x, (PIER.z0 + PIER.zH) / 2), RIVER.onPier(PIER.x + PIER.HW - T, PIER.zE + T), !RIVER.onPier(PIER.x, PIER.zE - T)];
+      for (let i = 0; i < 400 && FADE.busy; i++) await raf(); D.UI.goTo(PIER.x + 1.5 * T, PIER.zE + 1.2 * T, 'up', .8); for (let i = 0; i < 30; i++) await raf(); for (let i = 0; i < 400 && FADE.busy; i++) await raf(); for (let i = 0; i < 20; i++) await raf();
+      const p = D.pos(); o.stand = !RIVER.swim && Math.abs(p[1]) < .2 && RIVER.onPier(p[0], p[2]);
+      const w = FISHING.at(PIER.x, PIER.zE - 6 * T), od = FISHING.odds(PIER.x, PIER.zE - 6 * T, 'bait_cut', 19);
+      o.fish = { water: w && w.kind, rod: !!WIELD.kinds.rod, bass: od && od.per.x_bass > 0, sum: od && +Object.values(od.per).reduce((a, b) => a + b, 0).toFixed(2), deck: !FISHING.at(PIER.x, PIER.zH + 2 * T) };
+      return o; }).catch(e => ({ err: e.message }));
+    ok(hp.built && !hp.before && hp.long >= 30 && hp.longest && hp.deck.every(Boolean) && hp.stand, 'the fishing pier is built only with the Hudson, reaches further out than any other, and you stand on its deck (not in the water): ' + JSON.stringify(hp));
+    ok(hp.fish && hp.fish.water === 'river' && hp.fish.rod && hp.fish.bass && hp.fish.sum === 1 && hp.fish.deck, 'the Hudson is a fishing spot through the one fishing system (the rod held, the odds by species, not on the deck): ' + JSON.stringify(hp.fish)); }
   { const ps = await pg.evaluate(() => { const C = SHARED.composer.passes, i = C.findIndex(q => q.uniforms && q.uniforms.uL && q.uniforms.uT), on = C.filter(q => q.enabled); return { found: i >= 0, on: i >= 0 && C[i].enabled, last: on[on.length - 1] === C[i], lines: i >= 0 && C[i].uniforms.uL.value.y }; }).catch(e => ({ err: e.message }));
     ok(ps.found && ps.on && ps.last && ps.lines === 240, 'the PS2 filter is on by default and is the last pass (240 lines): ' + JSON.stringify(ps)); }
   { const rs = await pg.evaluate(async () => { const c = document.querySelector('#stage canvas'), out = {}, raf = () => new Promise(r => requestAnimationFrame(r)); for (const i of [0, 2, 4]) { document.querySelector('[data-res="' + i + '"]').click(); await raf(); out[i] = c.height; } return out; }).catch(e => ({ err: e.message }));

@@ -368,12 +368,24 @@ const SSUB=(()=>{ const W={};
 // THE STATION'S END AND THE BODEGA'S START: closes grab('down') (the platform under the street) and sets up BOD, the bodega's bag of makers.
   M.exit=()=>{ const S=SM, X=x=>(x-72)*TILE, Z=y=>(y+77)*TILE, n=S.steps, rise=S.depth/n, run=(S.y1-S.y0)/n, c3=new THREE.Color(), TR=[[],[]], WL=[[],[]];
     const q4=(B,a,b,c,d,col)=>{ c3.setRGB(col[0]/255,col[1]/255,col[2]/255,THREE.SRGBColorSpace); for(const v of [a,b,c,a,c,d]){ B[0].push(...v); B[1].push(c3.r,c3.g,c3.b); } };
-    const bx=(x0,y0,z0,x1,y1,z1,col)=>{ const [a,b,c,d]=[X(x0),X(x1),Z(y0),Z(y1)], [e,f]=[z0*ZU,z1*ZU], dk=col.map(v=>v*.8), lt=col.map(v=>Math.min(255,v*1.08));
-      q4(WL,[a,f,d],[b,f,d],[b,f,c],[a,f,c],lt); q4(WL,[a,e,d],[b,e,d],[b,f,d],[a,f,d],col); q4(WL,[b,e,c],[a,e,c],[a,f,c],[b,f,c],col); q4(WL,[a,e,c],[a,e,d],[a,f,d],[a,f,c],dk); q4(WL,[b,e,d],[b,e,c],[b,f,c],[b,f,d],dk); };
+    const boxer=Q=>(x0,y0,z0,x1,y1,z1,col)=>{ const [a,b,c,d]=[X(x0),X(x1),Z(y0),Z(y1)], [e,f]=[z0*ZU,z1*ZU], dk=col.map(v=>v*.8), lt=col.map(v=>Math.min(255,v*1.08));
+      Q([a,f,d],[b,f,d],[b,f,c],[a,f,c],lt); Q([a,e,d],[b,e,d],[b,f,d],[a,f,d],col); Q([b,e,c],[a,e,c],[a,f,c],[b,f,c],col); Q([a,e,c],[a,e,d],[a,f,d],[a,f,c],dk); Q([b,e,d],[b,e,c],[b,f,c],[b,f,d],dk); }, bx=boxer((...p)=>q4(WL,...p));
     const CON=[124,80,68], CON2=[108,68,58], TL=[186,190,197], RAIL=[40,92,72], GRN=[142,142,138], PNL=[30,32,40];
     for(let k=0;k<n;k++){ const yA=S.y1-(k+1)*run, yB=S.y1-k*run, zt=-(k+1)*rise*ZU, zr=-k*rise*ZU, a=X(S.x0), b=X(S.x1);
-      q4(TR,[a,zt,Z(yB)],[b,zt,Z(yB)],[b,zt,Z(yA)],[a,zt,Z(yA)],(k&1)?CON:CON2); q4(TR,[a,zt,Z(yB)],[b,zt,Z(yB)],[b,zr,Z(yB)],[a,zr,Z(yB)],CON2.map(v=>v*.82));
+      q4(TR,[a,zt,Z(yB)],[b,zt,Z(yB)],[b,zt,Z(yA)],[a,zt,Z(yA)],((k&1)?CON:CON2).map(v=>v*(1-.3*k/n))); q4(TR,[a,zt,Z(yB)],[b,zt,Z(yB)],[b,zr,Z(yB)],[a,zr,Z(yB)],CON2.map(v=>v*.82));
       q4(TR,[a,zt,Z(yB-.03)],[b,zt,Z(yB-.03)],[b,zt+1.2*ZU,Z(yB-.03)],[a,zt+1.2*ZU,Z(yB-.03)],[86,52,44]); }
+    const EX=[[],[]], E=4, J=6, yL=S.y0-E*run, LD=S.x1-S.x0, zL=-S.depth-E*rise, xE=S.x1+J*run, xm=(S.x0+S.x1)/2, CC=[138,136,130], CR=[104,102,98], CW=[120,118,112], CK=[84,84,82];
+    const dim=v=>{ const x=v[0]/TILE+72, y=v[2]/TILE-77, d=Math.max(0,S.y0-Math.max(y,yL))+Math.max(0,x-xm)+Math.max(0,yL-y)*.4; return Math.max(0,1-Math.min(10,d)/10)**1.5; };
+    const qe=(a,b,c,d,col)=>{ for(const v of [a,b,c,a,c,d]){ const k=dim(v); c3.setRGB(col[0]/255*k,col[1]/255*k,col[2]/255*k,THREE.SRGBColorSpace); EX[0].push(...v); EX[1].push(c3.r,c3.g,c3.b); } }, be=boxer(qe);
+    for(let k=0;k<E;k++){ const yA=S.y0-(k+1)*run, yB=S.y0-k*run, zt=(-S.depth-(k+1)*rise)*ZU, zr=zt+rise*ZU, a=X(S.x0), b=X(S.x1);
+      qe([a,zt,Z(yB)],[b,zt,Z(yB)],[b,zt,Z(yA)],[a,zt,Z(yA)],CC); qe([a,zt,Z(yB)],[b,zt,Z(yB)],[b,zr,Z(yB)],[a,zr,Z(yB)],CR); }
+    { const a=X(S.x0), b=X(S.x1), z=zL*ZU; qe([a,z,Z(yL)],[b,z,Z(yL)],[b,z,Z(yL-LD)],[a,z,Z(yL-LD)],CC); }
+    for(let j=0;j<J;j++){ const xA=S.x1+j*run, xB=xA+run, zt=(zL-(j+1)*rise)*ZU, zr=zt+rise*ZU, zc=Math.min(-30,zL-(j+1)*rise+100);
+      qe([X(xA),zt,Z(yL)],[X(xB),zt,Z(yL)],[X(xB),zt,Z(yL-LD)],[X(xA),zt,Z(yL-LD)],CC); qe([X(xA),zt,Z(yL)],[X(xA),zt,Z(yL-LD)],[X(xA),zr,Z(yL-LD)],[X(xA),zr,Z(yL)],CR);
+      be(xA,yL-LD,zc,xB,yL,zc+4,CK); }
+    const zD=zL-J*rise-2;
+    be(S.x0-.2,yL-LD,zL-2,S.x0,S.y0,-30,CW); be(S.x1,yL,zL-2,S.x1+.2,S.y0,-30,CW); be(S.x1,yL,zD,xE,yL+.2,-30,CW); be(S.x0-.2,yL-LD-.2,zD,xE+.2,yL-LD,-30,CW); be(xE,yL-LD,zD,xE+.2,yL,-30,[0,0,0]);
+    be(S.x0-.2,yL-LD-.2,-34,S.x1+.2,S.y0,-30,CK); be(S.x0-.2,S.y0-.3,-30,S.x1+.2,S.y0,0,CW);
     const P=.3, xl=S.x0-P/2, xr=S.x1+P/2, yb=S.y0-P/2, LP=[[xl,S.y1-.08],[xr,S.y1-.08],[xl,yb],[xr,yb]];
     for(const x of [S.x0-.2,S.x1])for(let k=0;k<n;k++)bx(x,S.y1-(k+1)*run,-(k+1)*rise-2,x+.2,S.y1-k*run,0,TL);
     bx(S.x0-P,S.y0-P,0,S.x0,S.y1,5,GRN); bx(S.x1,S.y0-P,0,S.x1+P,S.y1,5,GRN); bx(S.x0,S.y0-P,0,S.x1,S.y0,5,GRN);
@@ -387,7 +399,7 @@ const SSUB=(()=>{ const W={};
     MODS.stairCut=new THREE.Plane(new THREE.Vector3(0,-1,0),1e6); const SW=new THREE.Plane(new THREE.Vector3(0,-1,0),1e6);
     const mk=(B,pl)=>{ const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(B[0],3)); g.setAttribute('color',new THREE.Float32BufferAttribute(B[1],3)); g.computeVertexNormals();
       const me=new THREE.Mesh(g,new THREE.MeshLambertMaterial({vertexColors:true,side:THREE.DoubleSide,clippingPlanes:pl})); me.receiveShadow=me.castShadow=true; scene.add(me); return me; };
-    mk(TR,[MODS.stairCut]); cutWalls.push({pl:SW,nx:0,nz:0,foot:Y(SZ+8),me:mk(WL,[MODS.stairCut,SW]),get always(){ return SHARED.LVL==='down'&&MODS.inStair(pos.x,pos.z)==null; }});
+    mk(TR,[MODS.stairCut]); M.deep=mk(EX,[MODS.stairCut]); cutWalls.push({pl:SW,nx:0,nz:0,foot:Y(SZ+8),me:mk(WL,[MODS.stairCut,SW]),get always(){ return SHARED.LVL==='down'&&MODS.inStair(pos.x,pos.z)==null; }});
     { const CL=[MODS.stairCut,SW], ink=[244,242,232,1], DOT=[[250,196,40,1],[244,128,40,1],[40,104,200,1],[230,52,44,1],[150,70,170,1],[40,150,80,1]];
       const tex=(s,w,h,dots)=>{ const t=W.text(s,2,ink,null,null,0), ox=Math.round((w-t.w)/2), oy=dots?2:Math.round((h-t.h)/2)-1;
         return faceTex(w,h,(i,j)=>{ const c=t.at(i-ox,j-oy); if(c)return c; if(dots&&j>=14&&j<17){ const k=Math.floor((i-ox)/5), r=(i-ox)%5; if(k>=0&&k<DOT.length&&r<3)return DOT[k]; }
@@ -403,8 +415,6 @@ const SSUB=(()=>{ const W={};
     for(const x of [S.x0-.3,S.x1])sol('up',x,S.y0,x+.3,S.y1,36*ZU);
     sol('up',S.x0-.3,S.y0-.3,S.x1+.3,S.y0,36*ZU); };
   { const run=(SM.y1-SM.y0)/SM.steps, tread=(x,z)=>{ const gx=x/TILE+72, gy=z/TILE-77; return gx>=SM.x0&&gx<SM.x1&&gy>=SM.y0&&gy<SM.y1?Math.min(SM.steps,Math.floor((SM.y1-gy)/run)+1):null; };
-    const lid=new THREE.Mesh(new THREE.PlaneGeometry(1,1).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({color:0x000000,fog:false}));
-    lid.scale.set((SM.x1-SM.x0)*TILE,1,(SM.y1-SM.y0)*TILE); lid.position.set(XC,-6*SM.depth/SM.steps*ZU+.012,(SM.y0+SM.y1)/2*TILE+77*TILE); M.lid=lid;
     const el=document.createElement('div'); el.id='subfade';
     el.style.cssText='position:fixed;inset:0;background:#000;opacity:0;pointer-events:none;transition:opacity .32s steps(4);z-index:60;display:flex;align-items:center;justify-content:center;color:#d8d2c4;font:14px/1 monospace;letter-spacing:3px';
     document.body.appendChild(el);
@@ -416,12 +426,12 @@ const SSUB=(()=>{ const W={};
       if(live){ await fr(o.cut?2:3); if(o.hold)await w(o.hold); if(FADE.busy===1){ el.style.transition=o.cut?'none':'opacity .4s steps(5)'; el.style.opacity='0'; el.style.pointerEvents='none'; if(!o.cut)await w(420); el.style.transition=tr; } }
       FADE.busy--; };
     const qy=QS.get('subyaw'); M.YAW=-Math.PI/4+(qy!=null?+qy:0)*Math.PI/2;
-    let busy=false, lidT=0; const wait=ms=>new Promise(r=>setTimeout(r,ms)), frames=k=>new Promise(r=>{ const f=()=>--k<=0?r():requestAnimationFrame(f); requestAnimationFrame(f); });
+    let busy=false; const wait=ms=>new Promise(r=>setTimeout(r,ms)), frames=k=>new Promise(r=>{ const f=()=>--k<=0?r():requestAnimationFrame(f); requestAnimationFrame(f); });
     const go=async dir=>{ '@later'; busy=true; await FADE.run(dir==='in'?'ENTERING SUBWAY':'LEAVING SUBWAY',()=>{
       const p=dir==='in'?M.foot:M.street; UI.goTo(p.x,p.z,dir==='in'?'down':'up');
       if(UI.view==='iso'||UI.view==='map'){ if(dir==='in'){ SHARED.yaw=SHARED.yawTo=M.YAW; } else if(UI.isoTo){ UI.isoTo(); SHARED.yaw=SHARED.yawTo; } } },{hold:120}); busy=false; };
     const inExit=p=>{ const tx=TX(p.x,p.z), ty=TY(p.x,p.z); return tx>SL.EX0&&tx<SL.EX1&&ty<-2.5&&ty>-SL.ED-1; };
-    M.door=(py,p)=>{ lid.visible=SHARED.LVL==='up'; if(!lidT++){ const top=MAPG.bodega; if(top)top.add(lid); } if(busy||UI.freeCam||(RAG.on))return; const k=tread(p.x,p.z);
+    M.door=(py,p)=>{ if(M.deep)M.deep.visible=SHARED.LVL==='up'; if(busy||UI.freeCam||(RAG.on))return; const k=tread(p.x,p.z);
       if(SHARED.LVL!=='down'&&k!=null&&k>=3)go('in'); else if(SHARED.LVL==='down'&&inExit(p))go('out'); };
     { const S=SM; S.has=(x,z)=>{ if(SHARED.LVL==='down')return false; const gx=x/TILE+72, gy=z/TILE-77; return gx>=S.x0&&gx<S.x1&&gy>=S.y0&&gy<S.y1; }; }
     M.doorBusy=()=>busy; window.SUBGO=(x,z,lv)=>UI.goTo(x,z,lv); }

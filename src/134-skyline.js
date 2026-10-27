@@ -55,7 +55,7 @@ import {VIS} from './129a-vis.js';
   const ftex=new THREE.DataTexture(atlas,FW,FH*NV); ftex.magFilter=ftex.minFilter=THREE.NearestFilter; ftex.colorSpace=THREE.SRGBColorSpace; ftex.flipY=false; ftex.needsUpdate=true;
   const FU={uBake:{value:0},uAvg:{value:AVG},uWin:{value:WIN},uMC:{value:new THREE.Color()},uMK:{value:0},uMP:{value:new THREE.Vector3()},uFT:{value:ftex},uLit:{value:0},uAmb:{value:0},uBay:{value:3*TILE},uStorey:{value:3.2*TILE},uY0:{value:-.5*ZU},uTW:{value:0},uBX:{value:MISTB},uTL:{value:TILE},uHN:{value:.2},uHF:{value:.82},uHD:{value:170},uHS:{value:8},uDT:{value:.45}};
   const FARIMG={"day": __B64__("data/far-day.png"), "night": __B64__("data/far-night.png"), "meta": {"CX": 33.62, "CZ": -15.82, "EYE": 1.9, "V0": -0.03492, "V1": 0.57735, "N": 450, "dens": 5, "W": 900, "H": 138, "faces": 2}}, BAKE=QS.get('farbake')==='1', FARON=!!FARIMG&&!BAKE&&QS.get('farbaked')!=='0';
-  const outPast=([x,z])=>Math.max(LR.x0-x,x-LR.x1,LR.z0-z,z-LR.z1), BN=B.filter(b=>!(FARON&&outPast(b)>=40)&&!(mist&&outPast(b)<10&&((b[0]*TILE>PFAR.x&&b[1]*TILE>MISTB.w)||(b[1]*TILE>PFAR.y&&b[0]*TILE>MISTB.z)))), BF=B.filter(b=>outPast(b)>=40);
+  const outPast=([x,z])=>Math.max(LR.x0-x,x-LR.x1,LR.z0-z,z-LR.z1), south=([x,z])=>z<LR.z0+20&&LR.z0+20-z>LR.x0-x&&LR.z0+20-z>x-LR.x1, BN=B.filter(b=>!(FARON&&outPast(b)>=40)&&!(FARON&&south(b))&&!(mist&&outPast(b)<10&&((b[0]*TILE>PFAR.x&&b[1]*TILE>MISTB.w)||(b[1]*TILE>PFAR.y&&b[0]*TILE>MISTB.z)))), BF=B.filter(b=>outPast(b)>=40);
   const geo=new THREE.BoxGeometry(1,1,1).translate(0,.5,0), mat=new THREE.MeshLambertMaterial({color:0xffffff}), m4=new THREE.Matrix4(), c=new THREE.Color(), y0=-.5*ZU;
   const mk=L=>{ const g=geo.clone(), m=new THREE.InstancedMesh(g,mat,L.length), aV=new Float32Array(L.length), aS=new Float32Array(L.length);
     L.forEach(([x,z,sx,sz,h,col,fv],i)=>{ const j=B.indexOf(L[i]); m.setMatrixAt(i,m4.makeScale(sx*TILE,h*TILE,sz*TILE).setPosition(x*TILE,y0,z*TILE)); m.setColorAt(i,c.setRGB(1,1,1)); aV[i]=fv!=null?fv:Math.floor(hs(j,9)*NV); aS[i]=hs(j,11)*97; });
@@ -87,9 +87,9 @@ import {VIS} from './129a-vis.js';
       renderer.setRenderTarget(null); renderer.localClippingEnabled=lce; scene.remove(fm); kept.forEach(o=>o.visible=true); scene.fog=fog; scene.background=bg; renderer.setClearColor(cc,ca); FU.uMK.value=mk0; FU.uBake.value=0; rt.dispose();
       return {W:N*4,H,data:Array.from(out),meta:{R:0,CX,CZ,EYE,V0,V1,N,dens}}; }; }
   let pan=null; if(FARON){ const M=FARIMG.meta, Rr=(Math.min(LR.x1-LR.x0,LR.z1-LR.z0)/2+38)*TILE, pos=[], uv=[], idx=[];
-    DIRS.forEach(([dx,dz],f)=>{ const rx=-dz, rz=dx, b=pos.length/3;
-      for(const [u,v] of [[0,0],[1,0],[1,1],[0,1]]){ const t=(u*2-1), vy=v?M.V1:M.V0; pos.push(M.CX+dx*Rr+rx*t*Rr,EYE+vy*Rr,M.CZ+dz*Rr+rz*t*Rr); uv.push(((f%(M.faces||4))+u)/(M.faces||4),v); }
-      idx.push(b,b+1,b+2,b,b+2,b+3); });
+    DIRS.forEach(([dx,dz],f)=>{ const rx=-dz, rz=dx, n=dz<0?3:1;
+      for(let i=0;i<n;i++){ const b=pos.length/3; for(const [u,v] of [[0,0],[1,0],[1,1],[0,1]]){ const t=(u+i)/n*2-1, vy=(v?M.V1:M.V0)/n; pos.push(M.CX+dx*Rr+rx*t*Rr,EYE+vy*Rr,M.CZ+dz*Rr+rz*t*Rr); uv.push(((f%(M.faces||4))+u)/(M.faces||4),v); }
+        idx.push(b,b+1,b+2,b,b+2,b+3); } });
     const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3)); g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2)); g.setIndex(idx);
     const tl=new THREE.TextureLoader(), tx=u=>{ const t=tl.load(u); t.magFilter=t.minFilter=THREE.NearestFilter; t.generateMipmaps=false; t.colorSpace=THREE.SRGBColorSpace; return t; }, TD=tx(FARIMG.day), TN=tx(FARIMG.night), PU={uN:{value:TN},uNK:{value:0}};
     const pm=new THREE.MeshBasicMaterial({map:TD,alphaTest:.5,fog:true,toneMapped:true});
@@ -118,7 +118,7 @@ import {VIS} from './129a-vis.js';
     b.onclick=()=>{ if(!FAR3.on){ FAR3.on=true; FAR3.mist=true; } else if(FAR3.mist)FAR3.mist=false; else FAR3.on=false; try{ localStorage.setItem('market-haze3',!FAR3.on?'0':FAR3.mist?'1':'2'); }catch(e){} draw(); }; g.appendChild(b); draw();
     const H=SHARED.METRO&&SHARED.METRO.haze; if(H){ const s=document.createElement('button'); s.className='btn'; s.id='dshaze'; const dr=()=>{ s.textContent='STATION HAZE '+['OFF','LIGHT','THICK'][H.k]; s.setAttribute('aria-pressed',String(H.on)); };
       s.onclick=()=>{ H.set((H.k+1)%3); try{ SAVE.set('stationhaze',String(H.k)); }catch(e){} dr(); }; g.appendChild(s); dr(); } }
-  { const on=QS.get('farblur')!=='0', BGC=scene.background, LAY=4, rt=()=>{ const t=new THREE.WebGLRenderTarget(2,2,{depthBuffer:true}); t.texture.minFilter=t.texture.magFilter=THREE.LinearFilter; return t; }, A=rt(), Bt=rt();
+  { const on=QS.get('farblur')!=='0', BGC=scene.background, LAY=4, rt=()=>{ const t=new THREE.WebGLRenderTarget(2,2,{depthBuffer:true,type:THREE.HalfFloatType}); t.texture.minFilter=t.texture.magFilter=THREE.LinearFilter; return t; }, A=rt(), Bt=rt();
     const BM=new THREE.ShaderMaterial({uniforms:{uT:{value:null},uD:{value:new THREE.Vector2()}},depthTest:false,depthWrite:false,
       vertexShader:'varying vec2 vU; void main(){ vU=uv; gl_Position=vec4(position.xy,0.,1.); }',
       fragmentShader:'uniform sampler2D uT; uniform vec2 uD; varying vec2 vU; void main(){ vec4 c=texture2D(uT,vU)*.2; float w[4]; w[0]=.17; w[1]=.13; w[2]=.08; w[3]=.04; for(int i=1;i<=4;i++){ c+=texture2D(uT,vU+uD*float(i))*w[i-1]+texture2D(uT,vU-uD*float(i))*w[i-1]; } gl_FragColor=c; }'});

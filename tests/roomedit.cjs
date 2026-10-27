@@ -1,4 +1,4 @@
-// THE ROOM EDITOR CHECK: node tests/roomedit.cjs dist/market.html. DECORATE in your apartment, like the Sims: the room starts empty and you start with $1,000,000; T opens the camera over the room, the panel and the buy bar (pictured things, prices, the game's items too); a bought thing follows the pointer and a click puts it down on the grid; a drag moves it (its solid follows), red where it doesn't fit (back where it was); a small thing onto a table, a picture onto a wall; Q turns a quarter, the wheel resizes, DEL puts it away and the panel brings it back; SELL pays half back; walls, floor and a light; UNDO; DONE saves, and the room comes back the same after a reload.
+// THE ROOM EDITOR CHECK: node tests/roomedit.cjs dist/market.html. DECORATE in your apartment, like the Sims: the room starts empty and you start with $1,000,000; T opens the panel and the buy bar (pictured things, prices, the game's items too); a bought thing follows the pointer and a click puts it down on the grid; a drag moves it (its solid follows), red where it doesn't fit (back where it was); a small thing onto a table, a picture onto a wall; Q turns a quarter, Shift+wheel resizes, DEL puts it away and the panel brings it back; SELL pays half back; walls, floor and a light; UNDO; DONE saves, and the room comes back the same after a reload.
 const { chromium } = require('playwright'), path = require('path');
 const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process.env.GITHUB_ACTIONS ? '::error title=roomedit::' : 'FAIL ') + m); } else console.log('ok   ' + m); };
 (async () => {
@@ -23,13 +23,15 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   const st = await start('&fresh=1');
   ok(st, 'the page starts');
   if (st) {
-    const R = await room();
+    const R = await room(), R0 = R;
     ok(await pg.evaluate(() => ROOMED._api().units().length === 0), 'the apartment starts empty');
     ok((await db()).cash >= 1e6, 'you start with $1,000,000 (' + (await db()).cash + ')');
     ok(await pg.evaluate(() => !document.getElementById('roomedbtn').hidden), 'the DECORATE button shows in your apartment');
+    await pg.evaluate(() => { const A = __dbg.MAPK.MODS.apts.R, B = SHARED.BOD; __dbg.UI.goTo(B.X(A.x0 + (A.x1 - A.x0) * .5), B.Z(A.y0 + (A.y1 - A.y0) * .5), SHARED.py); SHARED.yawTo = SHARED.yaw = Math.PI / 4; SHARED.ppuTo = SHARED.ppu = SHARED.ppu * .6; });
+    await pg.waitForTimeout(2500);
     await pg.keyboard.press('t'); await pg.waitForTimeout(2500);
     ok(await pg.evaluate(() => ROOMEDDBG().on && !document.getElementById('roomed').hidden && !document.getElementById('roombuy').hidden), 'T opens the room editor, its panel and the buy bar');
-    ok(await pg.evaluate(() => Math.abs(SHARED.pitch - ROOMED.pitch) < .05), 'the camera looks down over the room');
+    ok(await pg.evaluate(() => !__dbg.UI.hold), 'the view is left as it is');
     const tabs = await pg.evaluate(() => [...document.querySelectorAll('#roombuy [data-dept]')].map(b => b.dataset.dept));
     ok(tabs.includes('beds') && tabs.includes('g:street'), 'the buy bar has the room\'s departments and the game\'s (' + tabs.length + ')');
     await pg.click('#roombuy [data-dept="beds"]'); await pg.waitForTimeout(4000);
@@ -51,9 +53,9 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     ok(red && Math.hypot(tf1.u - tf0.u, tf1.v - tf0.v) < .01 && /IN THE WAY/.test((await db()).said), 'a fridge dragged onto the bed shows red and goes back (' + (await db()).said + ')');
     // Q turns a quarter, the wheel makes it bigger
     await pg.evaluate(id => ROOMED.select(ROOMED._api().units().find(u => u.id === id)), bed);
-    const tq0 = await T(bed); await pg.keyboard.press('q'); await pg.waitForTimeout(200); const pq = await at(tq0.u, .5, tq0.v); await pg.mouse.move(pq.x, pq.y); await pg.mouse.wheel(0, -120); await pg.waitForTimeout(300);
+    const tq0 = await T(bed); await pg.keyboard.press('q'); await pg.waitForTimeout(200); const pq = await at(tq0.u, .5, tq0.v); await pg.mouse.move(pq.x, pq.y); await pg.keyboard.down('Shift'); await pg.mouse.wheel(0, -120); await pg.keyboard.up('Shift'); await pg.waitForTimeout(300);
     const tq = await T(bed);
-    ok(Math.abs(Math.abs(tq.ry - tq0.ry) - Math.PI / 2) < .01 && tq.s > 1.02, 'Q turns it a quarter and the wheel makes it bigger (turn ' + (tq.ry - tq0.ry).toFixed(2) + ', size ' + tq.s.toFixed(2) + ')');
+    ok(Math.abs(Math.abs(tq.ry - tq0.ry) - Math.PI / 2) < .01 && tq.s > 1.02, 'Q turns it a quarter and Shift+wheel makes it bigger (turn ' + (tq.ry - tq0.ry).toFixed(2) + ', size ' + tq.s.toFixed(2) + ')');
     await pg.keyboard.press('Delete'); await pg.waitForTimeout(300);
     ok((await db()).gone === 1 && await pg.evaluate(() => !!document.querySelector('#roomed [data-back]')), 'DEL puts it away and the panel lists it');
     await pg.click('#roomed [data-back]'); await pg.waitForTimeout(300);

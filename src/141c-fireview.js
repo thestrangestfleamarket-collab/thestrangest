@@ -26,10 +26,10 @@ import {BATCH} from './008-batch.js';
     plaque=new THREE.Mesh(new THREE.PlaneGeometry(W/24*T*KK,SHARED.BOD.Y(H)),new THREE.MeshLambertMaterial({map:t,clippingPlanes:APTS.WPL?[APTS.WPL.Wb]:[]})); plaque.position.set(X(APTS.door[0]),Y(HZ+104),Z(APTS.door[1]-.04)); scene.add(plaque); } });
   const z0=APTS.RZ+S;
   F.build=()=>{ '@fire'; if(F.built)return; const keep=BATCH.items.splice(0), km=BATCH.meshes, kc=BATCH.cast; BATCH.meshes={}; BATCH.cast=true; BATCH.tag=null;
-    const hole=(sd,a,z)=>{ const h=z-HZ; if(h<0||h>S)return false; if(sd==='f'||sd==='b')return Math.abs(a-A.x0-DU)<.55&&h<75||APTS.FWU.some(u=>Math.abs(a-A.x0-u)<.55&&h>42&&h<77); return sd==='e'&&Math.abs(a-(A.y1-3.076))<.55&&h>51&&h<65; };   // your floor: open where your rooms' windows and doors are, so you see in
-    const bm=BATCH.meshes; BLOCKS.make({x0:A.x0-AR.y0+FY,x1:A.x1+AR.y0-FY,y0:A.y0-2*(AR.y0-FY),y1:A.y1,z0:0,z1:HZ+2*S,kind:'A',paint:(sd,a,z,f)=>hole(sd,a,z)?null:APTS.paint(sd,a,z0+((z-z0)%(3*S)+3*S)%(3*S),f)});   // the whole building, street to roof, so you see it run all the way up and down past the landing
+    const hole=(sd,a,z)=>{ const h=z-HZ; if(h<0||h>S)return false; if(sd==='f'||sd==='b')return sd==='f'&&Math.abs(a-A.x0-DU)<.55&&h<75||APTS.FWU.some(u=>Math.abs(a-A.x0-u)<.55&&h>42&&h<77); return sd==='e'&&Math.abs(a-(A.y1-3.076))<.55&&h>51&&h<65; };   // your floor: open where your rooms' windows and doors are, so you see in
+    const bm=BATCH.meshes, HB={x0:A.x0-AR.y0+FY,x1:A.x1+AR.y0-FY,y0:A.y0-2*(AR.y0-FY),y1:A.y1}; BLOCKS.make({...HB,z0:0,z1:Math.min(HZ+3*S,APTS.TOP),kind:'A',roof:(x,y)=>{ const r=((Math.sin(Math.floor(x*4)*12.99+Math.floor(y*4)*78.23)*43758.5)%1+1)%1, e=Math.min(x-HB.x0,HB.x1-x,y-HB.y0,HB.y1-y); return e<.25?[118,50,38]:r<.3?[50,50,52]:r>.7?[66,64,62]:[58,57,57]; },paint:(sd,a,z,f)=>hole(sd,a,z)?null:APTS.paint(sd,a,z0+((z-z0)%(3*S)+3*S)%(3*S),f)});   // the whole building, street to roof, so you see it run all the way up and down past the landing
     BATCH.build(APTS.MKA); const house=new Set(Object.values(bm)); BATCH.meshes={};
-    APTS.escape(FE,[LV-1,LV,LV+1],(LV-1)*S,(LV+2)*S);
+    APTS.escape(FE,Array.from({length:Math.min(LV+2,APTS.ST-1)},(_,i)=>i+1),-APTS.RZ,(LV+3)*S);
     BATCH.build(APTS.MKA); for(const me of house){ me.castShadow=me.receiveShadow=true; G.add(me); } BATCH.cast=kc; for(const me of Object.values(BATCH.meshes||{})){ me.castShadow=me.receiveShadow=true; G.add(me); } BATCH.meshes=km; BATCH.items=keep;
     G.rotation.y=Math.PI; G.position.set(X(AR.x1)+X(A.x0),0,Z(FY)+Z(A.y1)); G.updateMatrix(); G.updateMatrixWorld(true);
     // the pots and plants are real: on your landing each one a thing you can pick up, push or knock off; the landings above and below keep theirs in place
@@ -58,7 +58,7 @@ import {BATCH} from './008-batch.js';
         const g0=h*.42+.05, g1=h-.1; bx(L,.035,g1-g0,.04,wood,0,(g0+g1)/2,lz); bx(L,w-.2,.035,.04,wood,0,g0+(g1-g0)/3,lz); bx(L,w-.2,.035,.04,wood,0,g0+(g1-g0)*2/3,lz); pane(L,w-.2,g1-g0,0,(g0+g1)/2,lz-.01);
         const kb=new THREE.Mesh(new THREE.SphereGeometry(mm(.03),12,8),brass); kb.position.set(mm(w/2-.12),mm(1.0),mm(lz+.05)); L.add(kb); return g; };
       const ww=1.1*.907, wh=(94-42)/32.4, dh=(94-3)/32.4;
-      for(const lv of [LV-1,LV,LV+1]){ const z=APTS.RZ+lv*S;
+      for(let lv=1;lv<=Math.min(LV+2,APTS.ST-1);lv++){ const z=APTS.RZ+lv*S;
         for(const u of APTS.FWU){ const o=window3D(ww,wh); o.position.set(X(A.x0+u),Y(z+42),Z(A.y1)); G.add(o); }
         if(lv>0&&lv!==LV){ const o=door3D(ww,dh); o.position.set(X(A.x0+DU),Y(z+3),Z(A.y1)); G.add(o); } } }   // your own door is your rooms' (150a), and it opens
     // the sky round the house: a thick layer of clouds below the lowest landing, drifting very slowly
@@ -79,7 +79,7 @@ import {BATCH} from './008-batch.js';
     F.built=true; };
   const TOP=new THREE.Plane(new THREE.Vector3(0,-1,0),1e6), BOT=new THREE.Plane(new THREE.Vector3(0,-1,0),1e6), upV=new THREE.Vector3(), cd=new THREE.Vector3();
   const sg0=STORE.stackGround; STORE.stackGround=(x,z)=>F.built&&APTS.inReal&&onL(x,z)?Y(HZ):sg0?sg0(x,z):null;
-  const WMAX=12*T, cb=new THREE.Box3();
+  const WMAX=12*T, cb=new THREE.Box3(), BLUE=new THREE.Color(0x6a9fe0); let skyOff=false;
   UI.camKeep=(c,t)=>{ if(!F.built||!APTS.inReal)return; const m=.35*T;
     if(F.on){ const zl=Z(FY)-m; if(c.z<=zl)return; const ox=c.x-t.x, oz=zl-t.z, L=Math.hypot(ox,c.z-t.z); c.z=zl; if(L>Math.abs(oz))c.x=t.x+(ox<0?-1:1)*Math.sqrt(L*L-oz*oz); return; }   // on the landing: the camera swings along the wall, never into the house
     cb.min.set(Math.min(X(AR.x0),X(AR.x1))+m,-1e9,Math.min(Z(AR.y0),Z(AR.y1))+m); cb.max.set(Math.max(X(AR.x0),X(AR.x1))-m,Y(HZ+S)-m,Math.max(Z(AR.y0),Z(AR.y1))-m); if(cb.containsPoint(c))return;   // in your rooms: in front of the walls, under the ceiling
@@ -87,11 +87,12 @@ import {BATCH} from './008-batch.js';
   SYS.add('places',()=>{ const home=F.built&&!!APTS.inReal, on=home&&SHARED.LVL==='up'&&outL(pos.x,pos.z);
     if(on!==F.on){ F.on=on; APTS.onEsc=on; if(!UI.persp)UI.isoTurn(on?Math.PI*3/4:-Math.PI/4); }   // through the door: the isometric view turns to look at the house from outside, or into your rooms
     UI.distMax=home?WMAX:null; if(home&&UI.dist>WMAX)UI.dist=WMAX;   // on your fire escape you can't zoom out past the landings round yours
-    const iso=home&&!UI.persp; TOP.constant=iso?Y(HZ+45):1e6; BOT.constant=iso?Y(HZ+.1):1e6; G.visible=home;
+    const iso=home&&!UI.persp; TOP.constant=iso?Y(on?HZ+3*S:HZ+45):1e6; BOT.constant=iso?Y(on?HZ+3*S:HZ+S-.1):1e6; G.visible=home;   // out on your landing the two floors above you show; inside, nothing above your floor
     if(home&&!UI.persp&&!UI.freeCam&&!UI.decor){ upV.setFromMatrixColumn(SHARED.cam.matrixWorld,1); const u=UI.off.dot(upV), lo=(Y(HZ-2.5*S)-SHARED.py)*upV.y; let hi=lo;
-      for(const x of [AR.x0,AR.x1])for(const z of [AR.y0,AR.y1])hi=Math.max(hi,(X(x)-pos.x)*upV.x+(Y(HZ+S)-SHARED.py)*upV.y+(Z(z)-pos.z)*upV.z);
+      for(const x of [AR.x0,AR.x1])for(const z of [AR.y0,AR.y1])hi=Math.max(hi,(X(x)-pos.x)*upV.x+(Y(HZ+(on?3:1)*S)-SHARED.py)*upV.y+(Z(z)-pos.z)*upV.z);
       const c=SHARED.cam; hi=Math.max(lo,hi-.85*(c.top-c.bottom)/2/(c.zoom||1)); const k=Math.max(lo,Math.min(hi,u)); if(k!==u)UI.off.addScaledVector(upV,k-u); }   // the view drags between the clouds' top and your ceiling's far corner at the top of the screen
-    if(!home){ if(light)light.intensity=0; return; }
+    if(!home){ if(light)light.intensity=0; if(skyOff){ skyOff=false; if(SKY.dome)SKY.dome.visible=true; } return; }
+    if(SKY.dome){ SKY.dome.visible=false; skyOff=true; } if(scene.background&&scene.background.isColor)scene.background.copy(BLUE);   // at home a plain blue sky
     if(FAR3.mesh)FAR3.mesh.visible=false; if(FAR3.panels)FAR3.panels.visible=false; if(FAR3.trees)FAR3.trees.visible=false; if(FAR3.FU)FAR3.FU.uMK.value=0; MISTE.x=0; if(SKY.U.uMistK)SKY.U.uMistK.value=0; if(scene.fog===FAR3.fog)scene.fog=null;
     light.intensity=on?2.4*nk():0;
     if(F.clouds){ const t=performance.now()/1000, n=nk(); for(const m of F.cloudMs)m.color.setRGB(1-.72*n,1-.68*n,1-.55*n);

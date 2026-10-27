@@ -172,7 +172,7 @@ const ROOMK={parts:[],wires:{},built:[],api:null};   // the room's other parts (
       const WIRES=ROOMK.wires;
       WIRES.sit=un=>{ hit(un,()=>'SIT ON THE '+un.name,th=>{ if(USE.sit)USE.sit(un.obj,th); }); };
       WIRES.lamp=un=>{ let L=null, halo=null; const sm=[]; un.obj.traverse(o=>{ if(o.isPointLight)L=o; if(o.userData.halo)halo=o; if(o.userData.shade){ o.material=o.material.clone(); sm.push(o.material); } }); if(!L)return;
-        if(halo)halo.material=halo.material.clone(); const Lp={g:un.obj,L,sm:sm[0]||{},halo,on:true,i0:L.userData.i0}; L.userData.lp=Lp; R.lamps.push(Lp);
+        if(halo)halo.material=halo.material.clone(); const Lp={g:un.obj,L,sm:sm[0]||{},halo,on:false,i0:L.userData.i0}; L.userData.lp=Lp; R.lamps.push(Lp);
         Lp.th=hit(un,()=>'LAMP: '+(Lp.on?'ON':'OFF'),()=>{ Lp.on=!Lp.on; if(SFX)SFX.play('click',{vol:.8,vary:.2}); },[.3,.5,.3,0,.25,0]); };
       const wireUp=un=>{ if(un.wire&&WIRES[un.wire])WIRES[un.wire](un,ctx); };
       // a soft contact shadow under each piece that stands on the floor, carried with it wherever it goes (SHAD.blob; cheap, no light)
@@ -183,17 +183,16 @@ const ROOMK={parts:[],wires:{},built:[],api:null};   // the room's other parts (
 
       /* ---------- the light: dim and warm all round, the lamps, the late sun through the panes ---------- */
       // no light overhead and no fill (owner, 25 Oct 2026): the room is lit only by the daylight through its windows and by its own lamps and fittings
-      R.winL=[]; const winLight=(u,h,v,du_,dv,sh)=>{ const L=new THREE.SpotLight(0xdfe8ff,0,14*M,1.3,1,.9); if(sh){ L.castShadow=true; L.shadow.mapSize.set(512,512); L.shadow.bias=-.002; L.shadow.radius=4; } L.userData.pool=true; L.position.copy(W(u,h,v)); L.target.position.copy(W(u+du_*2.4,0,v+dv*2.4)); scene.add(L); scene.add(L.target); R.winL.push(L); };
+      R.winL=[]; const winLight=(u,h,v,du_,dv,sh)=>{ const L=new THREE.SpotLight(0xdfe8ff,0,14*M,.95,1,.9); if(sh){ L.castShadow=true; L.shadow.mapSize.set(512,512); L.shadow.bias=-.002; L.shadow.radius=4; } L.userData.pool=true; L.position.copy(W(u,h,v)); L.target.position.copy(W(u+du_*1.6,0,v+dv*1.6)); scene.add(L); scene.add(L.target); R.winL.push(L); };
       for(const c of fw){ winLight(c,wz[1]-.1,.25,0,1); winLight(c,wz[1]-.1,Ly-.25,0,-1); } for(const w of SWS)winLight(.25,w[2]-.1,w[0],1,0,w[3]>1);   // the two big windows cast the shadows of what stands in them (two 512 maps, only while you're in)
       /* ---------- out of the windows and doors: the house's fire escapes (front and back, the landings above and below yours) and the sky beyond, seen only through the glass ---------- */
       R.tops=APTS.OUTP.tops; R.bot=APTS.OUTP.bot; R.bot.normal.set(0,1,0); R.edges={Wf:[W(0,0,0),W(Lx,0,0)],Wb:[W(0,0,Ly),W(Lx,0,Ly)],Ww:[W(0,0,0),W(0,0,Ly)]}; R.outs={Wf:[],Wb:[],Ww:[]}; R.backs=[];   // what is outside each windowed wall; the sky behind it (the isometric view only)
       { const AL=APTS.AL, lv=Math.min(APTS.my,APTS.floors-2), S0=APTS.S, RZ=APTS.RZ, cp=k=>[WPL[k],R.tops[k],R.bot,...APTS.OUTP.side[k]];
         const outside=(F,k,face)=>{ if(!APTS.escapeMeshes)return; const G=new THREE.Group(); scene.add(G); R.outs[k].push(G);
-          for(const me of APTS.escapeMeshes(F,[lv-1,lv,lv+1],(lv-1)*S0,(lv+2)*S0)){ for(const m of [].concat(me.material)){ m.clippingPlanes=cp(k); m.needsUpdate=true; } me.castShadow=me.receiveShadow=true; G.add(me); }
+          for(const me of APTS.escapeMeshes(F,Array.from({length:Math.min(lv+1,APTS.ST-1)},(_,i)=>i+1),-RZ,(lv+2)*S0)){ for(const m of [].concat(me.material)){ m.clippingPlanes=cp(k); m.needsUpdate=true; } me.castShadow=me.receiveShadow=true; G.add(me); }
           const LW=X(1)-X(0), YH=h=>Yr(h)-Yr(0); for(const sp of APTS.escPlants||[]){ if(!APTS.plant3D)break; const o=APTS.plant3D(sp.kind,sp.seed,sp.w*LW,YH(sp.h)); o.rotation.y=(sp.seed*2.39)%6.28; o.position.set(X(sp.x),Yr(sp.z),Z(sp.y));
             o.traverse(q=>{ if(q.isMesh){ q.material=q.material.clone(); q.material.clippingPlanes=cp(k); } }); G.add(o); }   // the escape's real pots, seen through your glass
           G.scale.z=-1; G.position.set(X(A.x0)-X(AL.x0),fy-Yr(lv*S0+RZ),Z(face)+Z(F.yf)); };
-        outside(APTS.ESC[1],'Wb',A.y1+TH/MPU);   // the front one is the real fire escape (141c) you step out onto
         // the house's brick outside your walls, above and below you, for the landings to hang on
         const bt=WALLS.brick.t||(WALLS.brick.t=WALLS.brick.gen()), brick=k=>mat([255,255,255],{map:bt,roughness:.9,...{clippingPlanes:cp(k)}});
         const face=(k,u,v,ry,len)=>R.outs[k].push(part(new THREE.PlaneGeometry(len,HW*3).translate(0,HW/2,0),brick(k),u,0,v,ry,apt));
@@ -245,7 +244,7 @@ const ROOMK={parts:[],wires:{},built:[],api:null};   // the room's other parts (
       // a little picture of a paint, paper or floor for the editor's swatches (painted the first time it is asked for)
       const thumb=(set,k)=>{ const D={wall:WALLS,floor:FLOORS,kfloor:KFLOORS}[set][k]; if(!D||!D.gen)return null; if(!D.t){ const z=kz(); D.t=set==='wall'?D.gen():set==='floor'?D.gen(Lx,Ly):D.gen(z[2]-z[0],z[3]-z[1]); }
         if(!D.thumb){ const c=document.createElement('canvas'); c.width=c.height=48; const g=c.getContext('2d'), im=D.t.image; if(im.width>=300){ g.drawImage(im,0,0,160,160,0,0,48,48); } else { const k=24/Math.max(im.width,im.height), p=g.createPattern(im,'repeat'); g.scale(k,k); g.fillStyle=p; g.fillRect(0,0,48/k,48/k); } D.thumb=c.toDataURL(); } return D.thumb; };
-      const lightsAll=()=>{ if(R.LL)return R.LL; const out=R.ceil.slice(); for(const un of R.units){ if(un.gone)continue; let n=0; un.obj.traverse(o=>{ if((o.isPointLight||o.isSpotLight)&&!o.userData.flame)out.push({id:un.id+(n++?'.'+n:''),name:un.name,L:o,un}); }); } return R.LL=out; };
+      const lightsAll=()=>{ if(R.LL)return R.LL; const out=R.ceil.slice(); for(const un of R.units){ if(un.gone)continue; let n=0; un.obj.traverse(o=>{ if((o.isPointLight||o.isSpotLight)&&!o.userData.flame){ if(o.userData.on===undefined&&!o.userData.lamp)o.userData.on=false; } if((o.isPointLight||o.isSpotLight)&&!o.userData.flame)out.push({id:un.id+(n++?'.'+n:''),name:un.name,L:o,un}); }); } return R.LL=out; };
       // a light's settings (the room editor): on, brightness, tone (kelvin), a colour and how much of it (tint), all round or a beam, the beam's aim, width and softness, how far it reaches
       const kelvin=K=>{ const t=K/100; let r,g,b; if(t<=66){ r=255; g=99.47*Math.log(t)-161.12; b=t<=19?0:138.52*Math.log(t-10)-305.04; } else { r=329.7*Math.pow(t-60,-.1332); g=288.12*Math.pow(t-60,-.0755); b=255; } const c=v=>cl(v,0,255)/255; return new THREE.Color().setRGB(c(r),c(g),c(b),THREE.SRGBColorSpace); };
       const paint=L=>{ const u=L.userData; if(u.c0==null)u.c0=L.color.getHex(); if(u.d0==null)u.d0=L.distance; if(u.type0==null)u.type0=L.isSpotLight?'spot':'point'; if(!u.def)u.def={yaw:u.yaw??null,pitch:u.pitch??null,angle:u.angle??null,soft:u.soft??null};
@@ -273,6 +272,11 @@ const ROOMK={parts:[],wires:{},built:[],api:null};   // the room's other parts (
 
     /* ---------- each frame: the lamps glow (brighter as the day goes), the room's lights at their brightness, the pieces that move (fridge doors, flames), the sun's beams follow the hour, the sky is only in the windows in the isometric view ---------- */
     let prevShadow=null; const TV3=new THREE.Vector3(), TV4=new THREE.Vector3();
+    const DARK={value:0}, LFB=THREE.ShaderChunk.lights_fragment_begin.replace('getDirectionalLightInfo( directionalLight, directLight );','getDirectionalLightInfo( directionalLight, directLight ); directLight.color*=1.-uIn;')
+      .replace('vec3 irradiance = getAmbientLightIrradiance( ambientLightColor );','vec3 irradiance = getAmbientLightIrradiance( ambientLightColor )*(1.-uIn);').replace('irradiance += getHemisphereLightIrradiance( hemisphereLights[ i ], geometryNormal );','irradiance += getHemisphereLightIrradiance( hemisphereLights[ i ], geometryNormal )*(1.-uIn);');
+    const darken=o=>o&&o.traverse(q=>{ if(!q.isMesh)return; for(const m of [].concat(q.material)){ if(!m||m.userData.dk||m.isMeshBasicMaterial||m.isShaderMaterial)continue; m.userData.dk=1; const f=m.onBeforeCompile, ck=m.customProgramCacheKey;
+      m.onBeforeCompile=function(sh,r){ if(f)f.call(this,sh,r); if(sh.fragmentShader.indexOf('#include <lights_fragment_begin>')<0)return; sh.uniforms.uIn=DARK; sh.fragmentShader='uniform float uIn;\n'+sh.fragmentShader.replace('#include <lights_fragment_begin>',LFB); };
+      m.customProgramCacheKey=function(){ return (ck?ck.call(this):'')+'|dk'; }; m.needsUpdate=true; } });   // your rooms take no sky or sun (there is a ceiling, even when the view leaves it off)
     SYS.add('places',dt=>{ const inn=!!APTS.inReal;
       if(inn&&prevShadow==null&&renderer.shadowMap.type!==THREE.PCFSoftShadowMap){ prevShadow=renderer.shadowMap.type; renderer.shadowMap.type=THREE.PCFSoftShadowMap; scene.traverse(o=>{ if(o.material)for(const m of [].concat(o.material))m.needsUpdate=true; }); }
       else if(!inn&&prevShadow!=null){ renderer.shadowMap.type=prevShadow; prevShadow=null; scene.traverse(o=>{ if(o.material)for(const m of [].concat(o.material))m.needsUpdate=true; }); }
@@ -282,10 +286,11 @@ const ROOMK={parts:[],wires:{},built:[],api:null};   // the room's other parts (
       for(const q of R.api.lightsAll()){ const u=q.L.userData; if(!u.lamp)q.L.intensity=(u.on===false?0:1)*(u.i0??0)*(u.k??1); }
       for(const un of R.units)if(un.tick&&!un.gone)un.tick(dt||0);
       // what hangs high on a wall that is cut away goes with it (the cubbies, the shelves and what stands on them), so nothing floats between you and the camera
-      if((R.hiT=(R.hiT||0)-(dt||0))<=0){ R.hiT=.2; const A=R.api, cut=k=>APTS.WPL[k].constant<1e5;
+      if((R.hiT=(R.hiT||0)-(dt||0))<=0){ R.hiT=.2; const A=R.api, cut=k=>APTS.WPL[k].constant<1e5; darken(R.apt); for(const l of R.loose)darken(l[0]);
         for(const un of R.units){ if(un.gone)continue; const o=un.obj, p=un.loose?A.toApt(o.position.x,o.position.y,o.position.z):{u:o.position.x,h:o.position.y,v:o.position.z};
           const hide=p.h>1.2&&((cut('Ww')&&p.u<.5)||(cut('We')&&A.Lx-p.u<.5)||(cut('Wf')&&p.v<.5)||(cut('Wb')&&A.Ly-p.v<.5));
           if(hide!==!!un.st.hi){ un.st.hi=hide; o.traverse(q=>{ if(q.isMesh&&!q.userData.hit)q.visible=!hide; }); } } }
+      DARK.value=APTS.inReal?1:0;   // inside, no sky or sun: only the windows' light and the lamps you switch on
       const nt=1-day; for(const L of R.winL)L.intensity=inn?18*day+6*nt:0; const sunK=cl((e-2)/10,0,1); for(const L of R.winL)L.color.setRGB(1-.28*nt,.86+.1*sunK-.12*nt,.72+.26*sunK+.2*nt*(1-sunK));   // the light at the glass: warm when the sun is low, a cool blue moonlight by night
       // outside: the house's brick and the back fire escape round your rooms; in the isometric view nothing above your landing's rails
       { const isoV=!UI.persp&&SHARED.pitch<1.45&&!APTS.onEsc;

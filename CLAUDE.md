@@ -133,5 +133,5 @@ Set 22 Oct 2026. Every change to the game goes by these.
 
 `tests/core.cjs` is the fast check of the core's logic (imports, the level file, SYS, ZONES, VIS, FADE, collision), run on every
 pull request: add a line there when you add to the core. `tests/*.cjs` drive `dist/market.html` in headless Chromium (Playwright; software rendering here, slow: run in the
-background). The page takes `?at=x,z`, `?place=NAME`, `?hour=H`, `?fresh=1` for tests.
+background). The page takes `?at=x,z`, `?place=NAME`, `?hour=H`, `?fresh=1`, `?furnished=1` (your apartment as built, not empty) for tests.
 `tools/mocap-rig.cjs` and `tests/jumpcheck.cjs` read the rig out of the built page: build with `MIN=0` first.

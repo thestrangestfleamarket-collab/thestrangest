@@ -4817,3 +4817,4 @@ Owner: "i want to work on a room organizer that will allow people to easily move
 ## 27 Oct 2026: the teddy bear
 Owner (his Drive file teddy+bear+3d+model.glb): "i want to add this character to game". THE TEDDY BEAR (fur coat, blue striped sweater, brown trousers) walks Main Street with the other .glb toons, 1.4 m tall; in the character and map editors with the animals. No shop or job yet (owner to pick).
 - Owner: "why is he so bright". Darkened toward his file's grey-brown (tint in characters.json, editable in the character editor), and his surface no longer faces inward.
+- Owner (his picture of DECORATE): "its locking me in this view and it cant see top of room, i need to be able to freely move entire time". DECORATE only sets a starting view over the room; the camera stays free (turn, tilt, zoom, drag) the whole time, past the home view's limits. The wheel always zooms; Shift+wheel resizes what you picked up.

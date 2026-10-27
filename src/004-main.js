@@ -25,7 +25,7 @@ function resize(){ const dpr=devicePixelRatio||1, pw=innerWidth*FRAMEK*dpr, ph=i
   const c=renderer.domElement, cw=RW*S/dpr, ch=RH*S/dpr; c.style.width=cw+'px'; c.style.height=ch+'px'; c.style.imageRendering=S>1?'pixelated':'';
   c.style.left=Math.floor((innerWidth-cw)/2)+'px'; c.style.top=Math.floor((innerHeight-ch)/2)+'px'; c.style.borderRadius=FRAMEK<1?'18px':'0';
   frustum(); }
-let SCL=1; SHARED.ppu=PPU; SHARED.RESI=4;
+let SCL=1; SHARED.ppu=PPU; SHARED.RESI=(r=>r>=0&&r<=4?r:4)(+(new URLSearchParams(location.search).get('res')??4));
 const V0=PPU*PXS, ZMAX=PPU*80;
 const RESN=['LOWEST','LOW','MED','HIGH','HIGHEST'], RESLN=[240,360,480,720,0];
 const vpu=()=>V0*SHARED.ppu/PPU, art=vpu, pxS=()=>{ const L=RESLN[SHARED.RESI]; return L?Math.max(1,innerHeight*FRAMEK*(devicePixelRatio||1)/L):1; }, rppu=()=>vpu()/pxS();

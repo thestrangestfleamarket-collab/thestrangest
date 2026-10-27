@@ -297,7 +297,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     b.onclick=()=>{ const i=L.indexOf(ASTEP.fps); ASTEP.fps=L[(i+1)%L.length]; try{ SAVE.set('animfps',String(ASTEP.fps)); }catch(e){} b.textContent=name(); }; }
   $('#dsmooth').textContent='LIGHT BANDS '+CEL; $('#dsmooth').onclick=()=>{ const n=CEL>=5?3:CEL+1; try{ SAVE.set('bands',String(n)); localStorage.removeItem('market-shade'); }catch(e){} location.reload(); };
   RESN.forEach((n,i)=>{ const b=document.createElement('button'); b.className='btn'; b.dataset.res=i; b.textContent=n; b.onclick=()=>{ SHARED.RESI=i; try{ SAVE.set('res',String(i)); }catch(e){} resize(); drawDisplay(); }; $('#dres').appendChild(b); });
-  { let v=null; try{ v=SAVE.get('res'); }catch(e){} if(v!=null&&RESN[+v]){ SHARED.RESI=+v; resize(); } }
+  { let v=null; try{ v=SAVE.get('res'); }catch(e){} if(v!=null&&RESN[+v]&&QS.get('res')==null){ SHARED.RESI=+v; resize(); } }
   $('#dlook').onclick=()=>{ LOOK.on=!LOOK.on; try{ SAVE.set('look',LOOK.on?'1':'0'); }catch(e){} drawDisplay(); };
   $('#dzoom').oninput=e=>{ SHARED.ppuTo=r2z(+e.target.value); }; $('#dtilt').oninput=e=>{ SHARED.pitchTo=clampP(PMIN+(+e.target.value)*(PMAX-PMIN)); };
   M.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>{ UI.setView(b.dataset.view); drawDisplay(); });

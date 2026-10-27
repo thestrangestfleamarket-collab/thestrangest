@@ -4811,3 +4811,6 @@ Owner (his pictures of the trees by the park wall): "the trees on edges arent co
 ## 27 Oct 2026: the bridge straight across
 Owner (his picture of the path kinking onto the bridge): "bridge needs to go straight across". The path runs straight over the bridge; the stream turns to run square to it there, so the bridge still crosses the water square. Supersedes the path that bent to cross square.
 - Owner (his picture of the open stretch of park wall by the castle): "gap of wall missing too at this spot". The park's west wall runs unbroken past the castle (it only breaks where the castle stands on the wall).
+
+## 27 Oct 2026: the subway stairs go on down
+Owner (a picture looking down the new entrance, sky showing at the bottom): "should just see stairs going down (concrete) further and then turn corner, gets darker". Under the back of the entrance the stairs go on in grey concrete under a lintel to a landing and turn the corner, darker the further down; the black lid halfway down is gone.

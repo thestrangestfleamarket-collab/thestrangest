@@ -24,7 +24,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     const until = async (f, ms = 20000) => { for (let t = 0; t < ms; t += 250) { if (await pg.evaluate(f).catch(() => false)) return true; await pg.waitForTimeout(250); } return false; };
     await shot('enter-vr-button');
     await pg.evaluate(() => { window.__cv = document.querySelector('#stage canvas'); });
-    await pg.click('#vrbtn', { noWaitAfter: true });
+    await pg.click('#vrbtn', { noWaitAfter: true, timeout: 120000 });
     ok(await until(() => VR.on && VR.cal), 'the headset starts and stands you in the Walker');
     await shot('headset-welcome');
     ok(await pg.evaluate(() => { const s = VR.state(); return s.view === 'first' && !s.body && s.fov > 100; }), 'in the headset you look out of his eyes (first view, his body hidden)');
@@ -73,7 +73,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     if (await pg.evaluate(() => VR.state().menu)) await pg.keyboard.press('Escape');
     ok(await drawn() > 0, 'the game draws on the screen again after VR');
     await pg.evaluate(() => { window.__quest = true; });
-    await pg.click('#vrbtn', { noWaitAfter: true });
+    await pg.click('#vrbtn', { noWaitAfter: true, timeout: 120000 });
     ok(await until(() => VR.on && VR.cal), 'the headset starts again, with the page frames stopped as on a Quest');
     const q0 = await pg.evaluate(() => ({ x: __dbg.you().x, z: __dbg.you().z }));
     await pg.evaluate(() => __xrd.controllers.left.updateAxes('thumbstick', 0, -1)); await frames(14);

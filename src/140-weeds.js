@@ -1,6 +1,6 @@
-// THE LAWNS: WEEDS knows where the lawns are, chunk by chunk round you (for the foragers, birds, butterflies, gardens and fire), and who walks near (the flower beds part round them); the lawns themselves are plain flat green ground.
+// THE LAWNS: WEEDS knows where the lawns are, chunk by chunk round you (for the tufts, foragers, birds, butterflies, gardens and fire), and who walks near (the tufts and flower beds part round them).
 import {SHARED, THREE} from './003-shx.js';
-import {NPCS, PARK, POND, pos, ROOMS, W3, WED, WEEDS} from './003b-systems.js';
+import {NPCS, ONLINE, PARK, POND, pos, ROOMS, W3, WED, WEEDS} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {MODS, STORE, SYS, TILE} from './006-map-pre.js';
 
@@ -10,9 +10,10 @@ WEEDS.clear=r=>{ (WEEDS.clr=WEEDS.clr||[]).push(r); if(WEEDS.lawnDrop)WEEDS.lawn
 WEEDS.lawnInit=()=>{ const T=TILE, CS=8*T, N=16, CELL=CS/N, MG=4, W=N+2*MG, MV=WEEDS.movers, hsh=(a,b,s)=>{ let h=(Math.floor(a*97)*374761393+Math.floor(b*89)*668265263+s*1442695041)|0; h=(h^(h>>>13))*1274126177|0; return ((h^(h>>>16))>>>0)/4294967296; };
   // who walks near: you and the nearest walkers, for the things that part round them
   const near=[]; WEEDS.moveTick=()=>{ near.length=0; near.push([pos.x,pos.z,0]); for(const N of NPCS){ if(N.lv!=='up'||N.far||!N.st||!N.g.visible)continue; const small=!!(window.CREATS&&CREATS.includes(N)), gy=N.ground?N.ground(N.st.x,N.st.z):0; if(N.g.position.y-gy>.35*T)continue; const d=Math.hypot(N.st.x-pos.x,N.st.z-pos.z); if(d<14*T)near.push([N.st.x,N.st.z,d,small]); }
+    if(ONLINE.others)for(const o of ONLINE.others.values()){ const g=o.fig&&o.fig.g; if(!g||!g.visible||!g.parent)continue; const d=Math.hypot(g.position.x-pos.x,g.position.z-pos.z); if(d<14*T)near.push([g.position.x,g.position.z,d,false]); }
     near.sort((a,b)=>a[2]-b[2]); for(let i=0;i<8;i++){ const n=near[i]; if(n)MV[i].set(n[0],n[1],n[3]?.3*T:.55*T,n[3]?.6:1); else MV[i].w=0; }
     SYS.run('weedsMove'); };
-  const skip=o=>o.isInstancedMesh||o.isSkinnedMesh||o.isPoints||o.isSprite||o.isLine||(o.material&&(o.material.visible===false||o.material.isMeshToonMaterial||o.material.transparent||o.material.depthWrite===false||o.material.side===THREE.BackSide));
+  const skip=o=>!o.userData.landPatch&&(o.isInstancedMesh||o.isSkinnedMesh||o.isPoints||o.isSprite||o.isLine||(o.material&&(o.material.visible===false||o.material.isMeshToonMaterial||o.material.transparent||o.material.depthWrite===false||o.material.side===THREE.BackSide)));
   const CH=new Map(); WEEDS.chunks=CH; const clr=WEEDS.clr||(WEEDS.clr=[]);
   const SS=4, RT=new THREE.WebGLRenderTarget(W*SS,W*SS,{depthBuffer:true}), CAM=new THREE.OrthographicCamera(-CS/2-MG*CELL,CS/2+MG*CELL,CS/2+MG*CELL,-CS/2-MG*CELL,.1,80*T), PIX=new Uint8Array(W*W*SS*SS*4);   // each cell looked at 4x4 times: lawn unless the path covers half of it, so loose edge stones keep their grass
   const VS='varying float vY; void main(){ vec4 w=modelMatrix*vec4(position,1.);'+'\n#ifdef USE_INSTANCING\n w=modelMatrix*instanceMatrix*vec4(position,1.);\n#endif\n vY=w.y; gl_Position=projectionMatrix*viewMatrix*w; }';
@@ -40,7 +41,7 @@ WEEDS.lawnInit=()=>{ const T=TILE, CS=8*T, N=16, CELL=CS/N, MG=4, W=N+2*MG, MV=W
   WEEDS.kindAt=patch;
   // where the lawn is in one chunk: drawn from above, the land showing through what stands low on it
   const mask=(cx,cz)=>{ const x0=cx*CS, z0=cz*CS, LW=[MODS.land,typeof POND!=='undefined'?POND.hills:null].filter(Boolean), hid=[];
-    scene.traverseVisible(o=>{ if((o.isMesh||o.isPoints||o.isLine||o.isSprite)&&skip(o))hid.push(o); }); for(const g of [W3.group,...NPCS.map(N=>N.g),...WED.meshes.map(en=>en.me)])if(g&&g.visible)hid.push(g); scene.traverse(o=>{ if(o.visible&&o.userData.landProp)hid.push(o); }); hid.forEach(o=>o.visible=false);
+    scene.traverseVisible(o=>{ if((o.isMesh||o.isPoints||o.isLine||o.isSprite)&&skip(o))hid.push(o); }); for(const g of [W3.group,...NPCS.map(N=>N.g),...WED.meshes.map(en=>en.me)])if(g&&g.visible)hid.push(g); scene.traverse(o=>{ if(o.visible&&o.userData.landProp)hid.push(o); if(o.visible&&/^grass/.test(o.userData.landPatch))LW.push(o); }); hid.forEach(o=>o.visible=false);
     const lm=LW.map(o=>o.layers.mask); LW.forEach(o=>o.layers.set(5));
     const rt0=renderer.getRenderTarget(), ac=renderer.autoClear, ov=scene.overrideMaterial, cc=renderer.getClearColor(new THREE.Color()), ca=renderer.getClearAlpha(), bg=scene.background, fg=scene.fog;
     CAM.position.set(x0+CS/2,40*T,z0+CS/2); CAM.up.set(0,0,-1); CAM.lookAt(x0+CS/2,0,z0+CS/2); CAM.updateMatrixWorld();
@@ -49,15 +50,17 @@ WEEDS.lawnInit=()=>{ const T=TILE, CS=8*T, N=16, CELL=CS/N, MG=4, W=N+2*MG, MV=W
     renderer.readRenderTargetPixels(RT,0,0,W*SS,W*SS,PIX);
     scene.overrideMaterial=ov; renderer.setRenderTarget(rt0); renderer.autoClear=ac; renderer.setClearColor(cc,ca); scene.background=bg; scene.fog=fg;
     LW.forEach((o,i)=>o.layers.mask=lm[i]); hid.forEach(o=>o.visible=true);
-    const G=new Float32Array(W*W), I=new Uint8Array(W*W), SQ=[], ci=(i,j)=>(j+MG)*W+i+MG;
-    for(let r=0;r<W;r++)for(let u=0;u<W;u++){ const i=u-MG, j=N+MG-1-r, x=x0+(i+.5)*CELL, z=z0+(j+.5)*CELL; let n=0, g=0; for(let b=0;b<SS;b++)for(let a=0;a<SS;a++){ const k=((r*SS+b)*W*SS+u*SS+a)*4; if(PIX[k]>=128){ n++; g+=PIX[k+1]; } }
-      if(n*2<SS*SS||clr.some(q=>x>q[0]&&x<q[2]&&z>q[1]&&z<q[3]))continue; I[ci(i,j)]=1; G[ci(i,j)]=g/n/255*4-.5; }
+    const G=new Float32Array(W*W), I=new Uint8Array(W*W), F=new Uint16Array(W*W), SQ=[], ci=(i,j)=>(j+MG)*W+i+MG;   // F: each cell's 4x4 looks, a bit each (the lawn to a quarter of a cell, for the tufts)
+    for(let r=0;r<W;r++)for(let u=0;u<W;u++){ const i=u-MG, j=N+MG-1-r, x=x0+(i+.5)*CELL, z=z0+(j+.5)*CELL; let n=0, g=0, f=0; for(let b=0;b<SS;b++)for(let a=0;a<SS;a++){ const k=((r*SS+b)*W*SS+u*SS+a)*4; if(PIX[k]>=128){ n++; g+=PIX[k+1]; f|=1<<((SS-1-b)*SS+a); } }
+      if(!n||clr.some(q=>x>q[0]&&x<q[2]&&z>q[1]&&z<q[3]))continue; F[ci(i,j)]=f; if(n*2<SS*SS)continue; I[ci(i,j)]=1; G[ci(i,j)]=g/n/255*4-.5; }
     for(let j=0;j<N;j+=2)for(let i=0;i<N;i+=2){ const c=ci(i,j); if(I[c])SQ.push(x0+(i+1)*CELL,G[c],z0+(j+1)*CELL); }
-    return {I,G,SQ,x0,z0,N,CELL,MG}; };
+    return {I,G,F,SQ,x0,z0,N,CELL,MG}; };
   WEEDS.CS=CS;
   const build=(cx,cz)=>{ const m=mask(cx,cz); if(!m.I.some(Boolean))return null; m.sq=m.SQ; m.top=(x,y,z)=>SHARED.groundY(x,z); return m; };
   const drop=k=>{ CH.delete(k); SYS.run('weedsDrop',k); };
   WEEDS.top=(x,z)=>{ const k=Math.floor(x/CS)+','+Math.floor(z/CS); if(!CH.has(k))return undefined; const me=CH.get(k); if(!me)return null; const i=Math.floor((x-me.x0)/CELL), j=Math.floor((z-me.z0)/CELL); if(i<0||j<0||i>=N||j>=N)return null; const c=(j+MG)*W+i+MG; return me.I[c]?SHARED.groundY(x,z):null; };
+  WEEDS.fine=(x,z)=>{ const me=CH.get(Math.floor(x/CS)+','+Math.floor(z/CS)); if(!me)return me===null?null:undefined; const u=(x-me.x0)/CELL, v=(z-me.z0)/CELL, i=Math.floor(u), j=Math.floor(v); if(i<0||j<0||i>=N||j>=N)return null;
+    return me.F[(j+MG)*W+i+MG]>>(Math.floor((v-j)*SS)*SS+Math.floor((u-i)*SS))&1?SHARED.groundY(x,z):null; };
   WEEDS.lawnDrop=r=>{ SYS.run('lawnEdit',r); for(const k of [...CH.keys()]){ const [a,b]=k.split(',').map(Number); if(r[2]>a*CS-MG*CELL&&r[0]<(a+1)*CS+MG*CELL&&r[3]>b*CS-MG*CELL&&r[1]<(b+1)*CS+MG*CELL)drop(k); } };
   let busy=0, next=0; WEEDS.lawnTick=()=>{ if(SHARED.LVL!=='up'||(ROOMS&&ROOMS.cur)||STORE.rooms&&STORE.rooms.some(R=>R.inside(pos.x,pos.z)))return; const pcx=Math.floor(pos.x/CS), pcz=Math.floor(pos.z/CS);
     for(const k of [...CH.keys()]){ const [a,b]=k.split(',').map(Number); if(Math.max(Math.abs(a-pcx),Math.abs(b-pcz))>4)drop(k); }

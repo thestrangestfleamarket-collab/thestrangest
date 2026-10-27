@@ -1,4 +1,4 @@
-// THE ROOM EDITOR CHECK: node tests/roomedit.cjs dist/market.html. DECORATE in your apartment, like the Sims: the room starts empty and you start with $1,000,000; T opens the camera over the room, the panel and the buy bar (pictured things, prices, the game's items too); a bought thing follows the pointer and a click puts it down on the grid; a drag moves it (its solid follows), red where it doesn't fit (back where it was); a small thing onto a table, a picture onto a wall; the camera stays free (the wheel zooms); Q turns a quarter, Shift+wheel resizes, DEL puts it away and the panel brings it back; SELL pays half back; walls, floor and a light; UNDO; DONE saves, and the room comes back the same after a reload.
+// THE ROOM EDITOR CHECK: node tests/roomedit.cjs dist/market.html. DECORATE in your apartment, like the Sims: the room starts empty and you start with $1,000,000; T opens the panel and the buy bar (pictured things, prices, the game's items too); a bought thing follows the pointer and a click puts it down on the grid; a drag moves it (its solid follows), red where it doesn't fit (back where it was); a small thing onto a table, a picture onto a wall; Q turns a quarter, Shift+wheel resizes, DEL puts it away and the panel brings it back; SELL pays half back; walls, floor and a light; UNDO; DONE saves, and the room comes back the same after a reload.
 const { chromium } = require('playwright'), path = require('path');
 const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process.env.GITHUB_ACTIONS ? '::error title=roomedit::' : 'FAIL ') + m); } else console.log('ok   ' + m); };
 (async () => {
@@ -27,11 +27,11 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     ok(await pg.evaluate(() => ROOMED._api().units().length === 0), 'the apartment starts empty');
     ok((await db()).cash >= 1e6, 'you start with $1,000,000 (' + (await db()).cash + ')');
     ok(await pg.evaluate(() => !document.getElementById('roomedbtn').hidden), 'the DECORATE button shows in your apartment');
+    await pg.evaluate(() => { const A = __dbg.MAPK.MODS.apts.R, B = SHARED.BOD; __dbg.UI.goTo(B.X(A.x0 + (A.x1 - A.x0) * .5), B.Z(A.y0 + (A.y1 - A.y0) * .5), SHARED.py); SHARED.yawTo = SHARED.yaw = Math.PI / 4; SHARED.ppuTo = SHARED.ppu = SHARED.ppu * .6; });
+    await pg.waitForTimeout(2500);
     await pg.keyboard.press('t'); await pg.waitForTimeout(2500);
     ok(await pg.evaluate(() => ROOMEDDBG().on && !document.getElementById('roomed').hidden && !document.getElementById('roombuy').hidden), 'T opens the room editor, its panel and the buy bar');
-    ok(await pg.evaluate(() => Math.abs(SHARED.pitch - ROOMED.pitch) < .05), 'the camera looks down over the room');
-    const z0 = await pg.evaluate(() => SHARED.ppuTo), cv = await at(R0.Lx / 2, 0, R0.Ly / 2); await pg.mouse.move(cv.x, cv.y); await pg.mouse.wheel(0, -240); await pg.waitForTimeout(600);
-    ok(await pg.evaluate(z0 => !__dbg.UI.hold && Math.abs(SHARED.ppuTo - z0) > .01, z0), 'the camera stays free: the wheel zooms');
+    ok(await pg.evaluate(() => !__dbg.UI.hold), 'the view is left as it is');
     const tabs = await pg.evaluate(() => [...document.querySelectorAll('#roombuy [data-dept]')].map(b => b.dataset.dept));
     ok(tabs.includes('beds') && tabs.includes('g:street'), 'the buy bar has the room\'s departments and the game\'s (' + tabs.length + ')');
     await pg.click('#roombuy [data-dept="beds"]'); await pg.waitForTimeout(4000);

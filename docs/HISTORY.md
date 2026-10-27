@@ -4788,3 +4788,6 @@ Owner: "dont do any pixelation effects, just let the items and graphics be what 
 
 ## 27 Oct 2026: the PS2 filter
 Owner (two pictures of a PS2-style horror game; picked A, "true PS2", of a mockup on Market St at night: "this is good"). The PS2 filter is the picture's last pass, always on: 240 lines of chunky pixels, 15-bit colour with the 4x4 dither, colour bleed and rainbow fringes, faint grain. The lighting editor has PS2 FILTER on/off. Changes the 27 Oct "no pixelation" rule: the pixels are now this filter's, nothing else.
+
+## 27 Oct 2026: RESOLUTION back in GRAPHICS
+Owner: "add a resolution setting in graphics  Lowest Low Med High Highest (highest is what it is now)". The game drawn at 240, 360, 480 or 720 lines, or the screen's own pixels (HIGHEST, the default); kept in the browser. The PS2 filter goes on top at every step.

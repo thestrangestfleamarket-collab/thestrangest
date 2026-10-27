@@ -27,9 +27,10 @@ import {BATCH} from './008-batch.js';
   const z0=APTS.RZ+S;
   F.build=()=>{ '@fire'; if(F.built)return; const keep=BATCH.items.splice(0), km=BATCH.meshes, kc=BATCH.cast; BATCH.meshes={}; BATCH.cast=true; BATCH.tag=null;
     const hole=(sd,a,z)=>{ const h=z-HZ; if(h<0||h>S)return false; if(sd==='f'||sd==='b')return Math.abs(a-A.x0-DU)<.55&&h<75||APTS.FWU.some(u=>Math.abs(a-A.x0-u)<.55&&h>42&&h<77); return sd==='e'&&Math.abs(a-(A.y1-3.076))<.55&&h>51&&h<65; };   // your floor: open where your rooms' windows and doors are, so you see in
-    BLOCKS.make({x0:A.x0-AR.y0+FY,x1:A.x1+AR.y0-FY,y0:A.y0-2*(AR.y0-FY),y1:A.y1,z0:0,z1:HZ+2*S,kind:'A',paint:(sd,a,z,f)=>hole(sd,a,z)?null:APTS.paint(sd,a,z0+((z-z0)%(3*S)+3*S)%(3*S),f)});   // the whole building, street to roof, so you see it run all the way up and down past the landing
+    const bm=BATCH.meshes; BLOCKS.make({x0:A.x0-AR.y0+FY,x1:A.x1+AR.y0-FY,y0:A.y0-2*(AR.y0-FY),y1:A.y1,z0:0,z1:HZ+2*S,kind:'A',paint:(sd,a,z,f)=>hole(sd,a,z)?null:APTS.paint(sd,a,z0+((z-z0)%(3*S)+3*S)%(3*S),f)});   // the whole building, street to roof, so you see it run all the way up and down past the landing
+    BATCH.build(APTS.MKA); const house=new Set(Object.values(bm)); BATCH.meshes={};
     APTS.escape(FE,[LV-1,LV,LV+1],(LV-1)*S,(LV+2)*S);
-    BATCH.build(APTS.MKA); BATCH.cast=kc; for(const me of Object.values(BATCH.meshes||{})){ me.castShadow=me.receiveShadow=true; G.add(me); } BATCH.meshes=km; BATCH.items=keep;
+    BATCH.build(APTS.MKA); for(const me of house){ me.castShadow=me.receiveShadow=true; G.add(me); } BATCH.cast=kc; for(const me of Object.values(BATCH.meshes||{})){ me.castShadow=me.receiveShadow=true; G.add(me); } BATCH.meshes=km; BATCH.items=keep;
     G.rotation.y=Math.PI; G.position.set(X(AR.x1)+X(A.x0),0,Z(FY)+Z(A.y1)); G.updateMatrix(); G.updateMatrixWorld(true);
     // the pots and plants are real: on your landing each one a thing you can pick up, push or knock off; the landings above and below keep theirs in place
     const LW=T*KK, YH=h=>Y(h)-Y(0); F.loose=[]; F.pots=[];
@@ -60,22 +61,23 @@ import {BATCH} from './008-batch.js';
       for(const lv of [LV-1,LV,LV+1]){ const z=APTS.RZ+lv*S;
         for(const u of APTS.FWU){ const o=window3D(ww,wh); o.position.set(X(A.x0+u),Y(z+42),Z(A.y1)); G.add(o); }
         if(lv>0&&lv!==LV){ const o=door3D(ww,dh); o.position.set(X(A.x0+DU),Y(z+3),Z(A.y1)); G.add(o); } } }   // your own door is your rooms' (150a), and it opens
-    // the sky round the house: thick clouds drifting below your floor and around the building, a few far above
+    // the sky round the house: a thick layer of clouds below the lowest landing, drifting very slowly
     { const puff=()=>{ const cv=document.createElement('canvas'); cv.width=256; cv.height=160; const g=cv.getContext('2d'), P=[];
         for(let i=0;i<16;i++){ const x=40+Math.random()*176, r=16+Math.random()*30*(1-Math.abs(x-128)/150), y=110-r*.55-Math.random()*26; P.push([x,y,r]); }
         P.sort((a,b)=>b[1]-a[1]); for(const [x,y,r] of P){ g.fillStyle='#c4cad8'; g.beginPath(); g.arc(x,y+r*.18,r,0,7); g.fill(); } for(const [x,y,r] of P){ g.fillStyle='#e8ebf2'; g.beginPath(); g.arc(x,y,r*.9,0,7); g.fill(); } for(const [x,y,r] of P){ g.fillStyle='#ffffff'; g.beginPath(); g.arc(x-r*.18,y-r*.22,r*.62,0,7); g.fill(); }   // three flat tones: shade, body, sunlit top
         const t=new THREE.CanvasTexture(cv); t.colorSpace=THREE.SRGBColorSpace; return new THREE.SpriteMaterial({map:t,transparent:true,depthWrite:false,fog:false}); };
-      F.cloudMs=[puff(),puff(),puff(),puff()]; F.clouds=[]; const cx=(A.x0+A.x1)/2, cy=(A.y0+A.y1)/2;
-      for(let i=0;i<190;i++){ const hi=i>=164, a=Math.random()*6.283, d=(hi?34:13)+Math.random()*(hi?60:50), x=cx+Math.cos(a)*d, y=cy+Math.sin(a)*d, z=hi?HZ+S*(2+Math.random()*5):HZ-S*(.75+Math.random()*2.8), sz=LW*(hi?12+Math.random()*14:7+Math.random()*12);
-        const sp=new THREE.Sprite(F.cloudMs[i%4]); sp.position.set(X(x),Y(z),Z(y)); sp.scale.set(sz,sz*.62,1); sp.renderOrder=3; G.add(sp); F.clouds.push({sp,x0:sp.position.x,v:.15+Math.random()*.35,span:LW*120}); } }
+      F.cloudMs=[puff(),puff(),puff(),puff()]; F.clouds=[]; const cx=(A.x0+A.x1)/2, cy=(A.y0+A.y1)/2; F.cc=[X(cx),Z(cy)];
+      const hw=Math.hypot(A.x1-A.x0,A.y1-A.y0)/2+6;   // clear of the house, so none cuts into it
+      for(let i=0;i<260;i++){ const a=Math.random()*6.283, d=hw+Math.sqrt(Math.random())*70, x=cx+Math.cos(a)*d, y=cy+Math.sin(a)*d, z=HZ-S*(2.5+Math.random()*2.2), sz=LW*(10+Math.random()*14);
+        const sp=new THREE.Sprite(F.cloudMs[i%4]); sp.position.set(X(x),Y(z),Z(y)); sp.scale.set(sz,sz*.62,1); sp.renderOrder=3; G.add(sp); F.clouds.push({sp,x0:sp.position.x,y0:sp.position.y,v:.02+Math.random()*.03,span:LW*160}); } }
     const H=HZ+33;   // the wall behind the landing is your rooms' own (059a), with its door
     sol2(FE.ua-.12,DO-.16,FE.ub+.12,DO+.06,HZ+35); for(const u of APTS.FWU||[])sol2(u-.62,0,u+.62,.26,HZ+42); sol2(FE.ua-.12,0,FE.ua+.04,DO,H); sol2(FE.ub-.04,0,FE.ub+.12,DO,H); sol2(FE.lx-.45,APTS.DI,FE.lx+.45,DO,H);
     light=new THREE.PointLight(0xffc890,0,7*T,1.6); light.position.set(X(DX),Y(HZ+70),Z(V(.4))); scene.add(light);
     const pl=STORE.places.find(q=>q[0]===F.name); if(pl){ pl[1]=X(DX); pl[2]=Z(V(.9)); pl[3]=Y(HZ); }
-    // seen from inside your rooms in the isometric view, the outside shows only through the glass of the wall you look out of
-    G.traverse(o=>{ if(o.material)for(const m of [].concat(o.material)){ m.clippingPlanes=GP; m.needsUpdate=true; } });
+    // seen from your rooms in the isometric view: the house below your floor, the fire escapes up to your landing's rails (cut down with your front wall), nothing above
+    G.traverse(o=>{ if(o.material&&!o.isSprite)for(const m of [].concat(o.material)){ m.clippingPlanes=house.has(o)?[BOT]:[TOP,APTS.WPL.Wf]; m.needsUpdate=true; } });
     F.built=true; };
-  const OP=APTS.OUTP, GP=[OP.tops.Wf,OP.bot,...OP.side.Wf,OP.far]; OP.far.normal.set(0,0,-1);
+  const TOP=new THREE.Plane(new THREE.Vector3(0,-1,0),1e6), BOT=new THREE.Plane(new THREE.Vector3(0,-1,0),1e6), upV=new THREE.Vector3(), cd=new THREE.Vector3();
   const sg0=STORE.stackGround; STORE.stackGround=(x,z)=>F.built&&APTS.inReal&&onL(x,z)?Y(HZ):sg0?sg0(x,z):null;
   const WMAX=12*T, cb=new THREE.Box3();
   UI.camKeep=(c,t)=>{ if(!F.built||!APTS.inReal)return; const m=.35*T;
@@ -85,11 +87,13 @@ import {BATCH} from './008-batch.js';
   SYS.add('places',()=>{ const home=F.built&&!!APTS.inReal, on=home&&SHARED.LVL==='up'&&outL(pos.x,pos.z);
     if(on!==F.on){ F.on=on; APTS.onEsc=on; if(!UI.persp)UI.isoTurn(on?Math.PI*3/4:-Math.PI/4); }   // through the door: the isometric view turns to look at the house from outside, or into your rooms
     UI.distMax=home?WMAX:null; if(home&&UI.dist>WMAX)UI.dist=WMAX;   // on your fire escape you can't zoom out past the landings round yours
-    const iso=home&&!on&&!UI.persp; G.visible=home&&(on||UI.persp||APTS.WPL.Wf.constant>1e5); OP.far.constant=iso?Z(FY-.01):1e6;
-    for(const p of F.pots||[]){ const l=onL(p.o.position.x,p.o.position.z), w=iso&&l; p.o.visible=G.visible||!l; if(w!==p.on){ p.on=w; p.o.traverse(q=>{ if(q.isMesh){ q.material.clippingPlanes=w?GP:null; q.material.needsUpdate=true; } }); } }   // a pot on the landing shows only through the glass too; one you carried in, always
+    const iso=home&&!UI.persp; TOP.constant=iso?Y(HZ+45):1e6; BOT.constant=iso?Y(HZ+.1):1e6; G.visible=home;
+    if(home&&!UI.persp&&!UI.freeCam){ const u=UI.off.dot(upV.setFromMatrixColumn(SHARED.cam.matrixWorld,1)); if(u>0)UI.off.addScaledVector(upV,-u); }   // and the view can't be dragged up past your floor
     if(!home){ if(light)light.intensity=0; return; }
     if(FAR3.mesh)FAR3.mesh.visible=false; if(FAR3.panels)FAR3.panels.visible=false; if(FAR3.trees)FAR3.trees.visible=false; if(FAR3.FU)FAR3.FU.uMK.value=0; MISTE.x=0; if(SKY.U.uMistK)SKY.U.uMistK.value=0; if(scene.fog===FAR3.fog)scene.fog=null;
     light.intensity=on?2.4*nk():0;
-    if(F.clouds){ const t=performance.now()/1000, n=nk(); for(const m of F.cloudMs)m.color.setRGB(1-.72*n,1-.68*n,1-.55*n); for(const c of F.clouds){ c.sp.position.x=c.x0+((t*c.v*T)%c.span)-c.span/2; } } },'141c-fireview');
+    if(F.clouds){ const t=performance.now()/1000, n=nk(); for(const m of F.cloudMs)m.color.setRGB(1-.72*n,1-.68*n,1-.55*n);
+      SHARED.cam.getWorldDirection(cd); const h=Math.hypot(cd.x,cd.z)||1, fx=-cd.x/h, fz=-cd.z/h, tp=iso?-cd.y/h:0;   // G is turned half round; in the isometric view each cloud is moved up or down by its depth, so the layer stays one band at the bottom of the screen
+      for(const c of F.clouds){ const p=c.sp.position; p.x=c.x0+((t*c.v*T+c.span/2)%c.span)-c.span/2; p.y=c.y0-((p.x-F.cc[0])*fx+(p.z-F.cc[1])*fz)*tp; } } },'141c-fireview');
   window.FIREDBG=()=>({built:F.built,on:F.on,door:!!(APTS.escDoor&&APTS.escDoor.open),dist:+(UI.dist/T).toFixed(2),meshes:G.children.length,pos:[+ix(pos.x).toFixed(2),+iy(pos.z).toFixed(2)],py:+SHARED.py.toFixed(2),apt:{in:APTS.in,floor:APTS.floor()}});
 }

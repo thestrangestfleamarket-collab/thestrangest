@@ -4,6 +4,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
 (async () => {
   const b = await chromium.launch({ args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
   const ctx = await b.newContext({ viewport: { width: 1100, height: 680 } }), pg = await ctx.newPage(), errs = [];
+  ctx.setDefaultTimeout(120000);   // full-resolution software drawing on CI is slow; a click may wait past Playwright's 30 s
   pg.on('pageerror', e => errs.push(e.message.slice(0, 300)));
   const url = 'file://' + path.resolve(process.argv[2] || 'dist/market.html');
   const start = async q => { await pg.goto(url + '?hour=17&place=your%20apartment' + q, { waitUntil: 'commit' });

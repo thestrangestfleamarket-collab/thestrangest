@@ -2,7 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {CLOCK, DN, pos, SKY, WX} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
-import {OUT, SYS, TILE} from './006-map-pre.js';
+import {MODS, OUT, SYS, TILE} from './006-map-pre.js';
 const SHAFTS={on:0,occ:0,list:[]}; window.SHAFTS=SHAFTS;
 { const T=TILE, N=16, CELL=36*TILE, hsh=(i,j,k)=>{ const v=Math.sin(i*127.1+j*311.7+k*74.7)*43758.5453; return v-Math.floor(v); }, cv=document.createElement('canvas'); cv.width=64; cv.height=256; const g=cv.getContext('2d'), img=g.createImageData(64,256);
   for(let y=0;y<256;y++)for(let x=0;x<64;x++){ const u=(x+.5)/64*2-1, v=(y+.5)/256, a=Math.pow(Math.max(0,1-u*u),4)*Math.pow(Math.sin(Math.PI*v),1.2), i=(y*64+x)*4; img.data[i]=img.data[i+1]=img.data[i+2]=255; img.data[i+3]=Math.round(a*255); }
@@ -29,7 +29,7 @@ const SHAFTS={on:0,occ:0,list:[]}; window.SHAFTS=SHAFTS;
   for(let i=0;i<N;i++){ const m=new THREE.Mesh(geo,mat), m2=new THREE.Mesh(geo,mat); for(const q of [m,m2]){ q.frustumCulled=false; q.matrixAutoUpdate=false; q.renderOrder=850; G.add(q); } m.cross=m2; SHAFTS.list.push(m); }
   const sd=new THREE.Vector3(), rt=new THREE.Vector3(), nm=new THREE.Vector3(), UP=new THREE.Vector3(0,1,0), M=new THREE.Matrix4(), c=new THREE.Vector3(), X=new THREE.Vector3(), Y=new THREE.Vector3(); let t=0; SHAFTS.at=[];
   const put=(S,m,P,id)=>{ const has=!!(S&&S.map); if(has){ SU[m].value=S.map.texture; SU['uM'+id].value=S.matrix; if(P){ const c=S.camera, w=c.right-c.left; SU[P].value.set(T/(c.far-c.near),.15*T/w,4*T/w,0); } } return has?1:0; };   // one shadow map into the beams' uniforms
-  SYS.add('sky',dt=>{ t+=dt; const P=DN.P?DN.P():null, e=CLOCK.elev(), W=WX.now||{cloud:0}, up=SHARED.LVL!=='down'&&OUT.open, cam=SHARED.cam;
+  SYS.add('sky',dt=>{ t+=dt; const P=DN.P?DN.P():null, e=CLOCK.elev(), W=WX.now||{cloud:0}, up=SHARED.LVL!=='down'&&OUT.open&&!(MODS.apts&&MODS.apts.inReal), cam=SHARED.cam;   // not in your apartment: its light is the real sun through the glass
     const sunK=up&&P?Math.max(0,Math.min(1,(e-4)/8))*(1-Math.max(0,Math.min(1,(W.cloud-.4)/.5))):0, k=P&&P.shaft?P.shaft*sunK*(1-(SKY.sunCover||0)):0;
     { const sh=CLOCK.sun&&CLOCK.sun.shadow, occ=!!(sh&&sh.map&&renderer.shadowMap.enabled&&renderer.shadowMap.type!==THREE.VSMShadowMap);   // VSM keeps moments, not depths: then the beams go unblocked
       SU.uOcc.value=occ?1:0; SHAFTS.occ=occ?1:0;

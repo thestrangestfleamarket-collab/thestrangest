@@ -7,8 +7,9 @@ const GEMS=[['quartz','QUARTZ CRYSTAL',6,30],['amethyst','AMETHYST',14,22],['geo
 Object.assign(INV,{items:{},picked:{}}); window.INV=INV;
 { const KEY='inv', W=GEMS.reduce((a,g)=>a+g[3],0), byId=id=>GEMS.find(g=>g[0]===id);
   const day=()=>window.MAIL&&MAIL.ready?MAIL.day():window.CITY?CITY.day||0:0;
-  try{ const D=JSON.parse(OWNED.get(KEY)||'null'); if(D&&D.v===1){ INV.items=D.items||{}; INV.picked=D.picked||{}; INV.own=D.cash??100; } }catch(e){} if(QS.get('fresh')&&QS.get('keepinv')!=='1'){ INV.items={}; INV.picked={}; } if(INV.own==null)INV.own=100;
-  const save=()=>{ OWNED.set(KEY,JSON.stringify({v:1,items:INV.items,picked:INV.picked,cash:INV.own})); if(window.MAIL&&MAIL.save)MAIL.save(); };
+  INV.START=1e6;   // what a player starts with for now; a save from before is topped up to it once
+  try{ const D=JSON.parse(OWNED.get(KEY)||'null'); if(D&&D.v===1){ INV.items=D.items||{}; INV.picked=D.picked||{}; INV.own=D.cash??INV.START; if(!D.g1m)INV.own=Math.max(INV.own,INV.START); } }catch(e){} if(QS.get('fresh')&&QS.get('keepinv')!=='1'){ INV.items={}; INV.picked={}; } if(INV.own==null)INV.own=INV.START;
+  const save=()=>{ OWNED.set(KEY,JSON.stringify({v:1,g1m:1,items:INV.items,picked:INV.picked,cash:INV.own})); if(window.MAIL&&MAIL.save)MAIL.save(); };
   Object.defineProperty(INV,'cash',{get:()=>window.MAIL&&MAIL.on&&MAIL.you?MAIL.you.cash:INV.own,set:v=>{ if(window.MAIL&&MAIL.on&&MAIL.you)MAIL.you.cash=v; else INV.own=v; }});
   INV.add=(id,n=1)=>{ INV.items[id]=(INV.items[id]||0)+n; save(); TRADE.draw(); };
   INV.count=()=>Object.values(INV.items).reduce((a,b)=>a+b,0);

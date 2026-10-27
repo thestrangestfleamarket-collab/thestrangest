@@ -4791,3 +4791,6 @@ Owner (two pictures of a PS2-style horror game; picked A, "true PS2", of a mocku
 
 ## 27 Oct 2026: RESOLUTION back in GRAPHICS
 Owner: "add a resolution setting in graphics  Lowest Low Med High Highest (highest is what it is now)". The game drawn at 240, 360, 480 or 720 lines, or the screen's own pixels (HIGHEST, the default); kept in the browser. The PS2 filter goes on top at every step.
+
+## 27 Oct 2026: the PS2 filter like the booth game
+Owner (his crop of the see-through character, the booth game picture): "fix the see-through character with the ps2 filter, and i dont wnt the colors glitched this bad match the graphics of this booth game accurately". Colour bleed only one pixel each side, faint rainbow only on hard edges, a faint echo; the character solid.

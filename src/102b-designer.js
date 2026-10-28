@@ -13,9 +13,9 @@ const DESIGN={}; window.DESIGN=DESIGN;
     renderer.getClearColor(CC); const ca=renderer.getClearAlpha(); renderer.setRenderTarget(target); renderer.setClearColor(mat?0x000000:0x15171e,mat?0:1); renderer.clear(); renderer.render(ROOM,c);
     renderer.setRenderTarget(null); renderer.setClearColor(CC,ca); W3.mesh.material=m0; if(home)home.add(g); g.visible=sv.vis; W3.lv.value=sv.lv; W3.L.copy(sv.L); };
   // the parts you shape, each the pieces on one of his bones (a sleeve with its arm, the hair with the head); pairs end L / R
-  const PARTS=['head','neck','torso','hips','upperArmL','upperArmR','forearmL','forearmR','handL','handR','thighL','thighR','shinL','shinR','footL','footR'];
-  const NAME={head:'HEAD',neck:'NECK',torso:'CHEST',hips:'HIPS',upperArm:'UPPER ARM',forearm:'FOREARM',hand:'HAND',thigh:'THIGH',shin:'SHIN',foot:'FOOT'};
-  const partOf=P=>{ const f=P.on||P.n, s=f.slice(-1); if(/^(head|hair|beard|ear|eye)/.test(f))return 'head'; if(f==='neck'||f==='torso'||f==='hips')return f;
+  const PARTS=['head','neck','torso','hips','upperArmL','upperArmR','forearmL','forearmR','handL','handR','thighL','thighR','shinL','shinR','footL','footR','bust'];
+  const NAME={bust:'BUST',head:'HEAD',neck:'NECK',torso:'CHEST',hips:'HIPS',upperArm:'UPPER ARM',forearm:'FOREARM',hand:'HAND',thigh:'THIGH',shin:'SHIN',foot:'FOOT'};
+  const partOf=P=>{ if(/^(bust|bodyBust)/.test(P.n))return 'bust'; const f=P.on||P.n, s=f.slice(-1); if(/^(head|hair|beard|ear|eye)/.test(f))return 'head'; if(f==='neck'||f==='torso'||f==='hips')return f;
     for(const [re,k] of [[/^(sleeve|upperArm)/,'upperArm'],[/^forearm/,'forearm'],[/^(hand|fing)/,'hand'],[/^thigh/,'thigh'],[/^shin/,'shin'],[/^(shoe|foot)/,'foot']])if(re.test(f))return k+s; return null; };
   const PART=W3.pcs.map(partOf);
   const blank=()=>({s:[1,1,1],r:[0,0,0],o:[0,0,0]}), plain=d=>d.s.every(v=>Math.abs(v-1)<1e-3)&&d.r.every(v=>Math.abs(v)<.5)&&d.o.every(v=>Math.abs(v)<.025);
@@ -65,7 +65,7 @@ const DESIGN={}; window.DESIGN=DESIGN;
     el.innerHTML=`<canvas width="${SW}" height="${SH}" title="drag to turn him, wheel to zoom, right-drag to slide up and down, click a part to pick it"></canvas>
       <div class="dz-side"><div class="dz-t">DESIGN YOUR WALKER</div>
         <h3>VIEW</h3><div class="row">${['front','side','back','three'].map(v=>`<button data-view="${v}">${v==='three'?'¾':v.toUpperCase()}</button>`).join('')}</div>
-        <h3>PART</h3><div class="row"><button data-part="head">HEAD</button><button data-part="neck">NECK</button><button data-part="torso">CHEST</button><button data-part="hips">HIPS</button></div>
+        <h3>PART</h3><div class="row"><button data-part="head">HEAD</button><button data-part="neck">NECK</button><button data-part="torso">CHEST</button><button data-part="hips">HIPS</button>${(LOOKS.L||{}).form==='F'?'<button data-part="bust">BUST</button>':''}</div>
         ${pairs.map(k=>`<div class="dz-part"><span>${NAME[k]}</span><button data-part="${k}L">LEFT</button><button data-part="${k}R">RIGHT</button></div>`).join('')}
         <div class="row"><button id="dzmir">MIRROR SIDES</button></div>
         <h3>CHANGE</h3><div class="row">${['size','turn','move'].map(m=>`<button data-mode="${m}">${m.toUpperCase()}</button>`).join('')}</div>
